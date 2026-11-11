@@ -22,7 +22,7 @@ assert.equal(entries[0].locationRechecks.filter(x=>x.resolved).length,2);
 assert.equal(src.gyeonggiCycle2Slot16.coordinateAdded,2);
 assert.equal(src.gyeonggiCycle2Slot16.locationPending,29);
 assert.equal(src.coverage.coordinatesAvailable+src.coverage.coordinatesMissing,src.coverage.uniqueRestaurants);
-assert.deepEqual(src.coverage,src.latestCoverageAudit.currentCoverage);
+assert.deepEqual(src.coverage,src.coverageAuditHistory.at(-1).currentCoverage,'current totals follow the latest recorded data change, including separate broadcast updates');
 const slot16History=src.coverageAuditHistory.find(x=>x.cycle===2&&x.slot===16&&x.coordinateAddedCount===2);
 assert.ok(slot16History,'16회차 감사는 최신 집계와 별개로 보존해야 합니다');
 assert.equal(slot16History.currentCoverage.coordinatesAvailable,1093);

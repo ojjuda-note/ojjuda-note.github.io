@@ -62,7 +62,7 @@ assert.equal(auditRow.newRestaurantCount, sidecar.restaurants.length);
 assert.equal(auditRow.modificationCount, 1);
 assert.equal(auditRow.coordinateAddedCount, sidecar.restaurants.length + sidecar.locationEnrichments.length);
 assert.equal(auditRow.locationExcludedCount, 0);
-assert.deepEqual(sources.coverage, sources.latestCoverageAudit.currentCoverage);
+assert.deepEqual(sources.coverage, sources.coverageAuditHistory.at(-1).currentCoverage, 'current totals include separately recorded broadcast updates without advancing the regional audit');
 assert.equal(auditRow.currentCoverage.uniqueRestaurants - auditRow.previousCoverage.uniqueRestaurants, 7);
 assert.equal(auditRow.currentCoverage.coordinatesAvailable - auditRow.previousCoverage.coordinatesAvailable, 8);
 assert.equal(auditRow.currentCoverage.coordinatesMissing - auditRow.previousCoverage.coordinatesMissing, -1);
