@@ -10,7 +10,7 @@ let world = read('world.html')
   .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";', 'const screwGame={};');
 // This fixture supplies preloaded synthetic admin modules; provide their real styles too.
 world = world.replace('</head>', '<link rel="stylesheet" href="/note/admin.css"></head>');
-world = world.replace('<script type="module">', `<script>${read('app/world/world-navigation.js')}</script><script>${read('note/admin.js')}\nwindow.actualNoteAdmin=window.OjjudaNoteAdmin;</script><script type="module">`);
+world = world.replace('<script type="module">', `<script>${read('admin/navigation.js')}</script><script>${read('app/world/world-navigation.js')}</script><script>${read('note/admin.js')}\nwindow.actualNoteAdmin=window.OjjudaNoteAdmin;</script><script type="module">`);
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0, 'replace only the live boot with a synthetic service fixture');
 
@@ -79,7 +79,7 @@ function fixtureBoot() {
     };
   }
   U.cleanupMedia = async () => { throw new Error('A navigation test must not delete media'); };
-  U.overview = async () => ({ users: 12, users_today: 2, banned: 3 });
+  U.overview = async () => ({ users: 12, users_today: 2, banned: 3, reports_open: 3, feedback_open: 1, errors_24h: 2 });
   U.contentFeed = async kind => kind === 'risk' ? [] : [{
     id: 'synthetic-post', kind: 'diary', title: '검증용 제목', body: '검증용 원문',
     author_nick: '합성 회원', author_id: 'synthetic-member', created_at: '2026-10-04T00:00:00Z'
@@ -136,16 +136,26 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     page.on('dialog', dialog => { dialogCount++; return acceptDialogs ? dialog.accept() : dialog.dismiss(); });
     const loaded = () => page.waitForFunction(() => window.worldTest?.auth.online);
     const current = () => page.evaluate(() => ({ area: worldTest.admin.area, tab: worldTest.admin.tab }));
-    const area = id => page.locator(`[data-act="adm-area"][data-v="${id}"]`).click();
-    const tab = id => page.locator(`[data-act="adm-tab"][data-v="${id}"]`).click();
+    const area = id => page.evaluate(id => worldTest.actions['adm-area']({v:id}), id);
+    const tab = id => page.evaluate(id => worldTest.actions['adm-tab']({v:id}), id);
     const mounted = name => page.waitForFunction(name => !!fixture.controllers[name], name);
 
     await page.goto('https://fixture.test/world.html?admin=overview'); await loaded();
     await page.locator('.adm-stat').filter({ hasText: '정지 계정' }).waitFor();
-    assert.deepEqual(await page.locator('.adm-areas button').allTextContents(),
-      ['계정', '콘텐츠', '휴지통', '신고·문의', 'ZU', '운영', '자료실']);
-    assert.equal(await page.locator('.adm-areas').evaluate(node => node.scrollWidth <= node.clientWidth), true,
-      'all seven navigation groups fit the mobile width');
+    assert.deepEqual(await page.locator('.adm-menu-group > summary').allTextContents(),
+      ['운영 현황⌄','회원·ZU⌄','콘텐츠 관리⌄','신고·안전⌄','운영·보관⌄']);
+    assert.equal(await page.locator('.adm-navigation').evaluate(node => node.scrollWidth <= node.clientWidth), true,
+      'five grouped menus fit the mobile width');
+    await page.locator('[data-act="adm-nav-toggle"]').click();
+    await page.getByLabel('기능 찾기').fill('포토땅');
+    assert.equal(await page.locator('.adm-menu-group:not([hidden])').count(),1,'search narrows the group list');
+    assert.equal(await page.locator('.adm-menu-link:not([hidden])').filter({hasText:'포토땅따먹기'}).count(),1);
+    await page.getByLabel('기능 찾기').fill('');
+    const mountsBeforePin = await page.evaluate(() => fixture.mounts.length);
+    await page.locator('[data-act="adm-pin"][data-area="account"][data-v="visitors"]').click();
+    assert.equal(await page.locator('.adm-menu-favorites [data-act="adm-open"][data-v="visitors"]').count(),1);
+    assert.equal(await page.evaluate(() => fixture.mounts.length),mountsBeforePin,'pinning does not reset the active module');
+    assert.equal(await page.locator('.adm-menu-count[data-admin-count="support:reports"]').first().textContent(),'3');
     await area('library');
     await mounted('asset-library');
     assert.deepEqual(await current(), {area:'library', tab:'assets'});
@@ -206,13 +216,16 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.evaluate(() => fixture.controllers.accounts.destroyed), true);
     for (const width of [320, 390, 1280]) {
       await page.setViewportSize({ width, height: 844 });
-      const labels = await page.locator('.adm-tabs button,.adm-tabs a').evaluateAll(buttons => buttons.map(button => ({
+      if(width<960 && !(await page.locator('.adm-navigation').evaluate(nav=>nav.classList.contains('is-open'))))
+        await page.locator('.adm-menu-toggle').click();
+      const labels = await page.locator('.adm-menu-link').evaluateAll(buttons => buttons.filter(button=>button.getClientRects().length).map(button => ({
         text: button.textContent, width: button.clientWidth, content: button.scrollWidth,
         height: button.getBoundingClientRect().height
       })));
+      assert.ok(labels.length>0,'active menu entries are visible');
       for (const label of labels) {
-        assert.ok(label.content <= label.width + 1, `submenu label fits its button at ${width}px: ${label.text}`);
-        assert.ok(label.height >= 44, `submenu touch target at ${width}px: ${label.text}`);
+        assert.ok(label.content <= label.width + 1, `menu label fits its button at ${width}px: ${label.text}`);
+        assert.ok(label.height >= 44, `menu touch target at ${width}px: ${label.text}`);
       }
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     }
@@ -238,8 +251,10 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.evaluate(() => fixture.options.note.initialTab), 'spam');
     assert.equal(await page.locator('[data-act="adm-content-kind"], [data-act="adm-chatlim"]').count(), 0, 'spam prevention only exposes current card rules');
     await tab('activity');
-    const selectedTab = await page.locator('.adm-tabs').evaluate(bar => {
-      const active = bar.querySelector('[aria-pressed="true"]');
+    if(!(await page.locator('.adm-navigation').evaluate(nav=>nav.classList.contains('is-open'))))
+      await page.locator('.adm-menu-toggle').click();
+    const selectedTab = await page.locator('.adm-navigation').evaluate(bar => {
+      const active = bar.querySelector('[aria-current="page"]');
       const a = active.getBoundingClientRect(), b = bar.getBoundingClientRect();
       return { left: a.left, right: a.right, start: b.left, end: b.right };
     });
@@ -252,7 +267,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     await page.locator('[data-act="adm-limit"]').click();
     assert.equal(await page.locator('#adm-limit').inputValue(), '0', 'zero daily charges stays zero after saving');
     await area('content');
-    assert.deepEqual(await page.locator('.adm-tabs button,.adm-tabs a').allTextContents(), ['카드','쪽지 관리','그룹 관리','포토땅따먹기','위험 신호','위치 지도','상품권 등록']);
+    assert.deepEqual(await page.locator('.adm-menu-group[data-group="content"] .adm-menu-link').allTextContents(), ['카드','쪽지 관리','그룹 관리','포토땅따먹기','위치 지도','자료 모아보기']);
     assert.equal(await page.getByRole('link',{name:'상품권 등록'}).getAttribute('href'),'/admin/rewards.html');
     await tab('messages'); await assertRefreshPreservesHost('messages');
     for (const id of ['cards','risk','map']) { await tab(id); assert.equal(await page.evaluate(() => fixture.options.note.initialTab), id); }
@@ -263,7 +278,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
 
     await area('trash'); await tab('trash-cards'); await assertRefreshPreservesHost('trash');
     assert.equal(await page.evaluate(() => fixture.options.trash.category), 'cards');
-    assert.deepEqual(await page.locator('.adm-tabs button').allTextContents(),['전체','탈퇴 계정','삭제한 카드','삭제한 쪽지','기타 보관']);
+    assert.deepEqual(await page.locator('.adm-menu-group[data-group="system"] [data-area="trash"].adm-menu-link').allTextContents(),['휴지통 전체','삭제한 카드','삭제한 쪽지','기타 보관']);
     assert.equal(await page.locator('[data-act="adm-content-kind"]').count(), 0);
 
     await page.goto('https://fixture.test/world.html?admin=note-actions'); await loaded(); await mounted('activity');
@@ -299,8 +314,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
       assert.equal(await page.locator('[data-act="adm-cr"], [data-act="adm-chatlim"], [data-act="adm-content-kind"]').count(), 0);
     }
     assert.deepEqual(await page.locator('.adm-site-links [data-act="adm-back"]').allTextContents(), ['← 관리자 메인']);
-    assert.equal(await page.locator('.adm-areas a').textContent(), '원고실');
-    assert.equal(await page.locator('.adm-areas').locator('button,a').last().textContent(), '원고실', 'the studio follows operations');
+    assert.equal(await page.locator('.adm-menu-external a').last().textContent(), '원고실');
     assert.equal(await page.locator('.adm-site-links [data-act="adm-back"]').getAttribute('type'), 'button');
     // Each administrator section goes straight to the dashboard; its Back stays in Admin.
     await area('operations'); await tab('errors');
@@ -340,7 +354,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     await page.getByRole('button', { name: '이 작성자의 카드 모두 보기', exact: true }).click();
     await page.waitForFunction(() => worldTest.admin.tab === 'cards');
     assert.deepEqual(await current(), { area: 'content', tab: 'cards' }, 'a card action updates the functional host navigation');
-    assert.equal(await page.locator('.adm-tabs [aria-pressed="true"]').textContent(), '카드');
+    assert.equal(await page.locator('.adm-navigation [aria-current="page"]').first().textContent(), '카드');
     if (process.env.ADMIN_SCREENSHOT_DIR) {
       fs.mkdirSync(process.env.ADMIN_SCREENSHOT_DIR, { recursive: true });
       for (const width of [320, 390, 1280]) {

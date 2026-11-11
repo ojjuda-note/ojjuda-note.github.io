@@ -22,7 +22,7 @@ function boot(){
  D.online=true;D.user={id:actor};D.isAdmin=true;g.tab='admin';L.area='content';L.tab='photo-stages';H();
 }
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
-world=world.replace('<script type="module">',`<script>${read('app/world/world-navigation.js')}\n${read('admin/photo-stages.js')}</script><script type="module">`);
+world=world.replace('<script type="module">',`<script>${read('admin/navigation.js')}</script><script>${read('app/world/world-navigation.js')}\n${read('admin/photo-stages.js')}</script><script type="module">`);
 const start=world.indexOf('j1(()=>H());gm(');assert.ok(start>0);world=world.slice(0,start)+`(${boot.toString()})();`+world.slice(world.indexOf('</script>',start));
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});
@@ -31,7 +31,7 @@ const start=world.indexOf('j1(()=>H());gm(');assert.ok(start>0);world=world.slic
   page.on('pageerror',e=>errors.push(e.message));
   await context.route('**/*',r=>{const u=new URL(r.request().url());if(u.hostname!=='fixture.test')return r.abort();if(u.pathname==='/world.html')return r.fulfill({contentType:'text/html',body:world});if(u.pathname==='/photo.jpg')return r.fulfill({path:photo,contentType:'image/jpeg'});const p=path.join(root,u.pathname);return p.startsWith(root+path.sep)&&fs.existsSync(p)?r.fulfill({path:p}):r.abort();});
   await page.goto('https://fixture.test/world.html');await page.waitForSelector('.ap-card');
-  assert.equal(await page.locator('[data-act="adm-tab"][data-v="photo-stages"]').textContent(),'포토땅따먹기');
+  assert.equal(await page.locator('[data-act="adm-open"][data-v="photo-stages"]').textContent(),'포토땅따먹기');
   assert.equal(await page.locator('.ap-card').count(),2,'admin initially reviews pending public uploads only');
   await page.waitForSelector('.ap-image');assert.equal(await page.locator('.ap-image').evaluate(im=>getComputedStyle(im).filter),'none','admin can inspect the sharp original before approval');
   await page.getByText('사진을 열지 못했어요. 새로고침해 주세요.',{exact:true}).waitFor();
@@ -50,7 +50,10 @@ const start=world.indexOf('j1(()=>H());gm(');assert.ok(start>0);world=world.slic
   await page.evaluate(()=>fixture.rows.push({id:'new',nick:'새 전체공개 사진',status:'pending',visibility:'public',image_path:'new.jpg',created_at:new Date().toISOString()}));
   await page.locator('.ap-stage').getByRole('button',{name:'새로고침',exact:true}).click();await card('new').waitFor();
   await page.evaluate(()=>fixture.delay=true);await card('new').getByRole('button',{name:'승인 · 공개',exact:true}).click();await page.waitForFunction(()=>typeof fixture.resolve==='function');
-  await page.locator('[data-act="adm-area"][data-v="account"]').click();assert.equal(await page.locator('#world-admin-photo-stages').count(),1,'navigation is held while photo approval saves');
+  await page.locator('[data-act="adm-nav-toggle"]').click();
+  await page.locator('.adm-menu-group[data-group="status"] summary').click();
+  await page.locator('[data-act="adm-open"][data-area="account"][data-v="overview"]').click();
+  assert.equal(await page.locator('#world-admin-photo-stages').count(),1,'navigation is held while photo approval saves');
   await page.evaluate(()=>{fixture.delay=false;fixture.resolve();});await page.waitForFunction(()=>fixture.rows.find(r=>r.id==='new').status==='approved');await page.waitForFunction(()=>!document.querySelector('.ap-head select').disabled);
   await page.evaluate(()=>{fixture.admin=false;fixture.listeners.forEach(fn=>fn('SIGNED_OUT',null));});await page.getByText('관리자 계정으로 다시 열어 주세요.',{exact:true}).waitFor();assert.equal(await page.locator('.ap-image').count(),0,'account changes remove reviewed originals');
   assert.deepEqual(errors,[]);console.log('PASS: World admin entry, pending public photos, sharp moderation preview, approve/reject/hide/retry, newly uploaded photos, save navigation guard and sign-out cleanup');
