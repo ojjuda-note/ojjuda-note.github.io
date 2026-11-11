@@ -70,7 +70,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ runner.temp }}/ojjuda-fan-photo-cache
-          key: fan-commons-webp-v1-${{ hashFiles('features/fanpages/artists.js') }}
+          key: fan-commons-webp-v1-${{ hashFiles('features/fanpages/artists.js', 'features/fanpages/artists-extra.js') }}
           restore-keys: fan-commons-webp-v1-
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
@@ -82,6 +82,7 @@ jobs:
           python -m pip install --quiet --disable-pip-version-check 'Pillow==11.3.0'
           python scripts/mirror-fanpage-commons.py \
             --source features/fanpages/artists.js \
+            --source features/fanpages/artists-extra.js \
             --cache "$RUNNER_TEMP/ojjuda-fan-photo-cache" \
             --output "$RUNNER_TEMP/ojjuda-public/features/fanpages"
       - name: Upload Pages artifact
