@@ -9,7 +9,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const backSource = read('shared/navigation/section-back.js');
 
 function fixture({section='hub', from='', embedded=false, returnLink=false, hash='', initialState=null, failReplace=false, failPush=false}={}) {
-  const events = new Map(), replacements = [], warnings = [];
+  const events = new Map(), replacements = [], warnings = [], emittedEvents = [];
   const window = {addEventListener(name, fn) { events.set(name, fn); }};
   window.top = embedded ? {} : window;
   const initialUrl='https://ojjuda.test/guide.html'+(from?'?from='+from:'')+hash;
@@ -24,14 +24,25 @@ function fixture({section='hub', from='', embedded=false, returnLink=false, hash
     location.href=entry.href;
     location.search=new URL(entry.href).search;
   }
-  function emitNavigation(previousHref, {popstate=true}={}) {
-    if (popstate) events.get('popstate')?.({state:history.state});
-    if (previousHref!==location.href && previousHref.split('#')[0]===location.href.split('#')[0]) {
+  function emitNavigation(previousHref, {popstate=true, hashchangeFirst=false, duplicatePopstate=false}={}) {
+    const fragmentChanged=previousHref!==location.href && previousHref.split('#')[0]===location.href.split('#')[0];
+    const emitPopstate=() => {
+      emittedEvents.push('popstate');
+      events.get('popstate')?.({state:history.state});
+    };
+    const emitHashchange=() => {
+      if (!fragmentChanged) return;
+      emittedEvents.push('hashchange');
       events.get('hashchange')?.({oldURL:previousHref,newURL:location.href});
-    }
+    };
+    if (hashchangeFirst) emitHashchange();
+    if (popstate) emitPopstate();
+    if (!hashchangeFirst) emitHashchange();
+    if (popstate && duplicatePopstate) emitPopstate();
   }
   const history = {
     get state() { return entries[cursor].state; },
+    get length() { return entries.length; },
     pushes:0, replaces:0,
     replaceState(value, title, href=location.href) {
       if (failReplace) throw new Error('replaceState blocked');
@@ -55,14 +66,23 @@ function fixture({section='hub', from='', embedded=false, returnLink=false, hash
   };
   vm.runInNewContext(backSource,{window,history,location,document,URLSearchParams,console:{warn(...args) { warnings.push(args); }},Object});
   return {
-    history,replacements,anchor,label,location,warnings,
-    back(state=null) { events.get('popstate')?.({state}); },
+    history,replacements,anchor,label,location,warnings,emittedEvents,
+    back(state) {
+      if (arguments.length===0) return this.go(-1);
+      events.get('popstate')?.({state});
+    },
     hash(value, options) {
       const previousHref=location.href, next=new URL(previousHref);
       next.hash=value;
-      entries.splice(cursor+1);
-      entries.push({href:next.href,state:null});
-      cursor++;
+      const entry={href:next.href,state:null};
+      // Reactivating the current fragment replaces its entry. It still emits
+      // popstate with null classic history state, but no hashchange.
+      if (next.href===previousHref) entries[cursor]=entry;
+      else {
+        entries.splice(cursor+1);
+        entries.push(entry);
+        cursor++;
+      }
       select(entries[cursor]);
       emitNavigation(previousHref,options);
     },
@@ -155,6 +175,52 @@ test('hash navigation is tracked when a browser only emits hashchange', () => {
   f.go(-1);
   f.go(-1);
   assert.deepEqual(f.replacements,['/world.html?tab=park']);
+});
+
+test('reactivating the current fragment stays local and preserves the real exit boundary', () => {
+  for (const initialHash of ['', '#videos']) {
+    const f=fixture({section:'hub',hash:initialHash});
+    if (!initialHash) f.hash('#videos');
+    const length=f.history.length, eventCount=f.emittedEvents.length;
+    f.hash('#videos');
+    assert.equal(f.history.length,length,'same-fragment activation replaces, rather than adds, an entry');
+    assert.deepEqual(f.emittedEvents.slice(eventCount),['popstate'],'an unchanged fragment must not emit hashchange');
+    assert.equal(f.history.state,null,'native fragment activation does not inherit the guard state');
+    assert.deepEqual(f.replacements,[],`${initialHash || 'page top'}: activating the same anchor must not leave the page`);
+    f.hash('#profile');
+    f.go(-1);
+    assert.ok(f.location.href.endsWith('#videos'));
+    assert.deepEqual(f.replacements,[],'Back from another section must return to the reactivated anchor');
+    if (!initialHash) f.go(-1);
+    f.go(-1);
+    assert.deepEqual(f.replacements,['/world.html?tab=hub'],'the explicitly marked exit still returns to the owner');
+  }
+});
+
+test('a hashchange observed before popstate cannot turn a local anchor into an exit', () => {
+  const f=fixture({section:'park'});
+  f.hash('#videos',{hashchangeFirst:true});
+  assert.deepEqual(f.emittedEvents,['hashchange','popstate']);
+  assert.deepEqual(f.replacements,[],'event delivery order must not determine whether a local section is an exit');
+  f.hash('#profile',{hashchangeFirst:true});
+  assert.deepEqual(f.replacements,[],'a later unmarked fragment also remains local');
+  f.go(-1);
+  f.go(-1);
+  f.go(-1);
+  assert.deepEqual(f.replacements,['/world.html?tab=park']);
+});
+
+test('duplicate popstate notifications for a local fragment are harmless', () => {
+  const f=fixture({section:'my'});
+  f.hash('#videos');
+  const eventCount=f.emittedEvents.length;
+  f.hash('#profile',{duplicatePopstate:true});
+  assert.deepEqual(f.emittedEvents.slice(eventCount),['popstate','hashchange','popstate']);
+  assert.deepEqual(f.replacements,[],'a repeated null-state notification is not evidence of leaving the page');
+  f.go(-1);
+  f.go(-1);
+  f.go(-1);
+  assert.deepEqual(f.replacements,['/world.html?tab=my']);
 });
 
 test('a page opened at a hash preserves local history and its real exit', () => {
