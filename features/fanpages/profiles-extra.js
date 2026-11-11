@@ -91,6 +91,7 @@ if (hearts2heartsProfile) {
 /* BLACKPINK: YG-published member birthdays; no inferred physical or school details. */
 const blackpinkProfile = window.OJJUDA_FAN_PROFILES.blackpink;
 if (blackpinkProfile) {
+  blackpinkProfile.expanded = true;
   blackpinkProfile.records = [
     { year: '2026.02', title: '유튜브 공식 아티스트 채널 최초 1억 구독자', detail: '2026.02.20 달성 · 유튜브 레드 다이아몬드 크리에이터 어워드', href: 'https://en.yna.co.kr/view/AEN20260221002851320' },
     { year: '2025–2026', title: '월드투어 DEADLINE', detail: '16개 도시·33회 공연 후 2026년 1월 종료', href: 'https://www.ygfamily.com/en/news/report/7378' }
