@@ -71,7 +71,9 @@
         { date: '2026-11-27', title: '첫 월드투어 ZERO FRONTIER 피날레', sub: '인천 인스파이어 아레나 · 19:00 · JYP 주최', href: 'https://nol.yanolja.com/ticket/products/26013946' },
         { date: '2026-11-28', title: '첫 월드투어 ZERO FRONTIER 피날레', sub: '인천 인스파이어 아레나 · 17:00 · JYP 주최', href: 'https://nol.yanolja.com/ticket/products/26013946' },
         { date: '2026-11-29', title: '첫 월드투어 ZERO FRONTIER 피날레', sub: '인천 인스파이어 아레나 · 16:00 · JYP 주최', href: 'https://nol.yanolja.com/ticket/products/26013946' },
-        { date: '2026-12-09', title: '일본 첫 베스트 앨범 N=MIXX 발매', sub: '일본 정식 발매 예정 · 공식 일본 사이트', href: 'https://nmixxjapan.com/s/222o/page/best_album_n_mixx' }
+        { date: '2026-12-09', title: '일본 첫 베스트 앨범 N=MIXX 발매', sub: '일본 정식 발매 예정 · 공식 일본 사이트', href: 'https://nmixxjapan.com/s/222o/page/best_album_n_mixx' },
+        { date: '2026-12-12', title: '일본 데뷔 쇼케이스 N=MIXX', sub: '일본 아이치 · 쿠로코군 홀 · 18:00 · 워너뮤직 재팬 주최', href: 'https://nmixxjapan.com/s/222o/page/Japan_debut_showcase' },
+        { date: '2026-12-13', title: '일본 데뷔 쇼케이스 N=MIXX', sub: '일본 아이치 · 쿠로코군 홀 · 17:00 · 워너뮤직 재팬 주최', href: 'https://nmixxjapan.com/s/222o/page/Japan_debut_showcase' }
       ],
       news: [
         { date: '2026.10.19', tag: '컴백', title: '미니 6집 Strange Muse · 긴 소원 (Birthday Wish) 발매', href: 'https://nmixx.jype.com/notice/fsigcq5u' },
