@@ -170,6 +170,28 @@ test('local and cloud state preserve the most recent popup day', () => {
   assert.equal(state.shownDay, '2026-11-11');
 });
 
+test('hidden existing notification and support dialogs do not block a greeting', () => {
+  const previous = global.document;
+  const overlays = [{ getClientRects: () => [] }, { getClientRects: () => [] }];
+  global.document = {
+    hidden: false,
+    body: { classList: { contains: () => false } },
+    querySelector: selector => selector === '#app .shell' ? {} : null,
+    querySelectorAll: () => overlays
+  };
+  try {
+    assert.equal(hello.isBlocked(), false, 'invisible dialogs cannot prevent the hello');
+    overlays.push({ getClientRects: () => [{ width: 320, height: 200 }] });
+    assert.equal(hello.isBlocked(), true, 'a visible dialog gets priority');
+    overlays.pop();
+    global.document.hidden = true;
+    assert.equal(hello.isBlocked(), true, 'background tabs cannot show the hello');
+  } finally {
+    if (previous === undefined) delete global.document;
+    else global.document = previous;
+  }
+});
+
 test('world entry wires both guest and member greeting and cache-busted CSS/JS', () => {
   const html = fs.readFileSync(path.join(__dirname, '../world.html'), 'utf8');
   for (const fragment of [

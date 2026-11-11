@@ -304,7 +304,8 @@
   function blocked() {
     if (!document.querySelector('#app .shell') || document.hidden) return true;
     if (document.body.classList.contains('gaming') || document.body.classList.contains('matgo-open')) return true;
-    if (document.querySelector('dialog[open], [role="dialog"], #modal-root > :not(:empty), .ov.on, .auth-loading')) return true;
+    const overlays = document.querySelectorAll('dialog[open], [role="dialog"], #modal-root > :not(:empty), .ov.on, .auth-loading');
+    if ([...overlays].some(overlay => overlay.getClientRects().length > 0)) return true;
     return false;
   }
   function close() {
@@ -458,6 +459,6 @@
   root.addEventListener?.('ojjuda:leaders-loaded', onLeadersLoaded);
   root.OjjudaAgitWelcome = { enter, revoke, close, isOpen: () => !!openDialog, koreaDay, koreaHour,
     cleanState, mergeStates, visit, chooseGreeting: selectGreeting, observeLeaders, observePersonalRecord,
-    addPending, monthForRanking };
+    addPending, monthForRanking, isBlocked: blocked };
   if (typeof module !== 'undefined' && module.exports) module.exports = root.OjjudaAgitWelcome;
 })(typeof window !== 'undefined' ? window : globalThis);
