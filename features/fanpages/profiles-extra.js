@@ -87,3 +87,15 @@ if (hearts2heartsProfile) {
   ];
   hearts2heartsProfile.sources.unshift({ label: 'Hearts2Hearts 일본 공식 프로필·공연', href: 'https://hearts2heartsofficial.jp/' });
 }
+
+/* KiiiKiii: only officially published group achievements; personal details remain unknown. */
+const kiiikiiiProfile = window.OJJUDA_FAN_PROFILES.kiiikiii;
+if (kiiikiiiProfile) {
+  kiiikiiiProfile.records = [
+    { year: '2025', title: '데뷔 첫해 신인상 7개', detail: '서울시 공식 발표 · 시상 내역 상세는 원문 확인', href: 'https://mediahub.seoul.go.kr/archives/2016856' },
+    { year: '2026.02', title: '404 (New Era) 멜론 TOP100 1위', detail: '카카오엔터테인먼트 발표 · 발매 16일 만에 1위', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' }
+  ];
+  kiiikiiiProfile.sources.unshift({ label: 'STARSHIP 공식 앨범·아티스트 프로필', href: 'https://www.starship-ent.com/musician/kiiikiii' });
+  kiiikiiiProfile.sources.push({ label: '서울시 홍보대사·수상 이력', href: 'https://mediahub.seoul.go.kr/archives/2016856' });
+  kiiikiiiProfile.sources.push({ label: '카카오엔터테인먼트 활동·차트', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' });
+}
