@@ -36,7 +36,9 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
           sources: ['direct', 'naver', 'google', 'search', 'social', 'external', 'internal', 'campaign']
             .map((source, i) => ({ source, visits: 10 - i })),
           guest_games: [{ feature: 'game_mole', uses: 7 }, { feature: 'game_stacker', uses: 5 }],
-          guest_boards: [{ feature: 'park', uses: 12 }, { feature: 'fanpages', uses: 4 }]
+          guest_boards: [{ feature: 'park', uses: 12 }, { feature: 'fanpages', uses: 4 }],
+          agit_details: [{ detail: 'agit_stamp', uses: 8 }, { detail: 'agit_group', uses: 4 }],
+          arcade_details: [{ detail: 'arcade_game_mole', uses: 7 }, { detail: 'arcade_game_stacker', uses: 3 }]
         };
         const legacy = { today: 5, month: 40, total: 130, started_at: '2026-10-27T00:00:00Z', daily: [], monthly: [] };
         const growth = { started_at: '2026-11-01T00:00:00Z', today_date: '2026-11-11', today: growthRows, month: growthRows };
@@ -60,7 +62,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
           focusable: dateScroll.tabIndex === 0
         };
       });
-      assert.equal(layout.charts, 7, `${width}px: all chart cards`);
+      assert.equal(layout.charts, 9, `${width}px: all chart cards`);
       assert.ok(layout.rootWidth <= layout.viewport + 1, `${width}px: no horizontal page overflow (${JSON.stringify(layout)})`);
       assert.equal(layout.columns, width > 760 ? 2 : 1, `${width}px: chart grid changes with viewport`);
       assert.ok(layout.chartWidth > 240, `${width}px: content remains readable`);
