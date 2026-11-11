@@ -35,7 +35,7 @@ const copy = '오늘 하루 어땠나요? 괜찮았나요';
           async signOut() { fixture.user = null; return { error: null }; }
         },
         from() { return { select() { return this; }, eq() { return this; }, async maybeSingle() { return { data: null }; } }; },
-        async rpc(name) { assertRpc(name); return { data: true }; }
+        async rpc(name) { if (name === 'has_banned') return { data: false }; assertRpc(name); return { data: true }; }
       };
       function assertRpc(name) { if (name !== 'ensure_member_for_note') throw Error('Unexpected fixture RPC: ' + name); }
       window.supabase = { createClient: () => client };
@@ -82,11 +82,16 @@ const copy = '오늘 하루 어땠나요? 괜찮았나요';
     await page.locator('[data-close-dialog]').click();
     await page.locator('#account-actions:not([hidden])').waitFor();
     await page.locator('[data-open-auth="signup"]').click();
-    for (const [id, value] of Object.entries({ nickname: '테스터', email: 'signup-fixture@ojjuda.kr', password: 'fixture-password', 'password-confirm': 'fixture-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '01023456789' })) await page.locator('#' + id).fill(value);
+    const signupNickname = await page.locator('#nickname').inputValue();
+    assert.ok(signupNickname.length > 0 && signupNickname.length <= 12, 'signup automatically provides a valid-length nickname');
+    assert.equal(await page.locator('#nickname').evaluate(el => el.readOnly), false, 'the automatic nickname can be changed during signup');
+    await page.locator('#nickname').fill('테스터');
+    for (const [id, value] of Object.entries({ email: 'signup-fixture@ojjuda.kr', password: 'fixture-password', 'password-confirm': 'fixture-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '01023456789' })) await page.locator('#' + id).fill(value);
     await page.locator('#age-check').check();
     await page.locator('#policy-check').check();
     await page.locator('#auth-submit').click();
     await page.waitForFunction(() => portalFixture.signups.length === 1);
+    assert.equal(await page.evaluate(() => portalFixture.signups[0].options.data.nickname), '테스터', 'signup preserves the nickname entered by the user');
     const confirmation = await page.evaluate(() => portalFixture.signups[0].options.emailRedirectTo);
     assert.equal(new URL(confirmation).searchParams.get('next'), 'world', 'header signup resumes World');
 

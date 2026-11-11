@@ -43,6 +43,8 @@
   const logoutButton = $('logout-button');
 
   let authMode = 'login';
+  let signupNickname = null;
+  let generatedSignupNickname = null;
   let session = null;
   let authReady = false;
   let pendingDestination = null;
@@ -78,6 +80,8 @@
 
   function messageFor(error) {
     const text = String(error?.message || error || '').toLowerCase();
+    if (text.includes('nickname_unavailable')) return '닉네임을 만들지 못했어요. 잠시 후 다시 시도해 주세요.';
+    if (text.includes('nickname_not_allowed')) return '사용할 수 없는 닉네임이에요. 다른 이름을 입력해 주세요.';
     if (text.includes('invalid_signup_referrer')) return '추천인 정보가 바뀌었어요. 다시 찾아 확인해 주세요.';
     if (text.startsWith('추천인')) return error.message;
     if (text.includes('rejoin_wait_3_days')) return '탈퇴 후 3일(72시간)이 지난 뒤 다시 가입할 수 있어요.';
@@ -103,6 +107,37 @@
     return '처리하지 못했어요. 잠시 후 다시 시도해 주세요.';
   }
 
+  function ensureSignupNickname(captureInput = false) {
+    if (captureInput) signupNickname = nickname.value.trim();
+    if (signupNickname === null) {
+      const words = ['구름', '새싹', '고래', '바다', '별빛', '달빛', '바람', '나무', '하늘', '햇살', '노을', '여우', '수달', '라임', '사과', '오리'];
+      const alphabet = '0123456789abcdefghjkmnpqrstvwxyz';
+      const random = new Uint8Array(11);
+      if (window.crypto?.getRandomValues) window.crypto.getRandomValues(random);
+      else for (let i = 0; i < random.length; i++) random[i] = Math.floor(Math.random() * 256);
+      signupNickname = words[random[0] % words.length]
+        + Array.from(random.slice(1), value => alphabet[value % alphabet.length]).join('');
+      generatedSignupNickname = signupNickname;
+    }
+    nickname.value = signupNickname;
+    return signupNickname;
+  }
+
+  async function prepareSignupNickname(currentView) {
+    // Only regenerate rejected candidates; never retry the account creation.
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const candidate = ensureSignupNickname();
+      const { data, error } = await client.rpc('has_banned', { t: candidate });
+      if (!currentView()) return null;
+      if (error) throw new Error('nickname_unavailable');
+      if (data === false) return candidate;
+      if (data !== true) throw new Error('nickname_unavailable');
+      if (candidate !== generatedSignupNickname) throw new Error('nickname_not_allowed');
+      signupNickname = null;
+    }
+    throw new Error('nickname_unavailable');
+  }
+
   function setBusy(value) {
     busy = value;
     referral?.setBusy(value);
@@ -112,7 +147,7 @@
     forgot.disabled = value;
     $('recovery-reset-button').disabled = value;
     $('back-to-login').disabled = value;
-    for (const id of ['email', 'recovery-phone', 'recovery-birth', 'recovery-gender']) $(id).disabled = value;
+    for (const id of ['nickname', 'email', 'recovery-phone', 'recovery-birth', 'recovery-gender']) $(id).disabled = value;
   }
 
   function clearRecoveryGrant() {
@@ -131,6 +166,7 @@
   }
 
   function setAuthMode(mode, notice = '') {
+    if (dialog.open && authMode === 'signup') signupNickname = nickname.value.trim();
     authViewVersion++;
     authMode = mode;
     $('guest-browse').hidden = mode !== 'login';
@@ -152,6 +188,9 @@
     $('recovery-identity-slot').hidden = !isForgot;
     if (prepareIdentity()) $('recovery-birth').max = window.OjjudaIdentity.todayKorea();
     nickname.closest('.field').hidden = !(isSignup || isNickname);
+    nickname.setAttribute('aria-describedby', isSignup ? 'nickname-auto-help' : '');
+    $('nickname-auto-help').hidden = !isSignup;
+    if (isSignup) ensureSignupNickname();
     dialog.querySelector('.email-field').hidden = isReset || isNickname;
     dialog.querySelector('.password-field').hidden = isForgot || isNickname;
     dialog.querySelector('.password-confirm-field').hidden = !(isSignup || isReset);
@@ -189,7 +228,7 @@
       return;
     }
     submit.disabled = busy || (['signup', 'forgot'].includes(mode) && !window.OjjudaIdentity);
-    (mode === 'signup' || mode === 'nickname' ? nickname : mode === 'reset' ? password : email).focus();
+    (mode === 'nickname' ? nickname : mode === 'reset' ? password : email).focus();
   }
 
   function showState(title, body, buttonText = '로그인 화면으로') {
@@ -445,17 +484,19 @@
       return;
     }
     if (authMode === 'signup' || authMode === 'nickname') {
-      const name = nickname.value.trim();
+      const name = authMode === 'signup' ? ensureSignupNickname(true) : nickname.value.trim();
       if (!name || name.length > 12) {
         feedback.textContent = '닉네임을 1~12자로 입력해 주세요.';
         nickname.focus();
         return;
       }
-      if (authMode === 'signup' && !$('age-check').checked) {
+    }
+    if (authMode === 'signup') {
+      if (!$('age-check').checked) {
         feedback.textContent = '만 14세 이상인지 확인해 주세요.';
         return;
       }
-      if (authMode === 'signup' && !$('policy-check').checked) {
+      if (!$('policy-check').checked) {
         feedback.textContent = '이용약관과 개인정보처리방침에 동의해 주세요.';
         return;
       }
@@ -468,6 +509,7 @@
 
     const requestView = authViewVersion;
     const currentView = () => dialog.open && authViewVersion === requestView;
+    let nicknameRejected = false;
     setBusy(true);
     try {
       if (authMode === 'login') {
@@ -484,7 +526,8 @@
       } else if (authMode === 'signup') {
         await referral?.verify(signupReferrer);
         if (!currentView()) return;
-        const name = nickname.value.trim();
+        const name = await prepareSignupNickname(currentView);
+        if (!currentView() || !name) return;
         const confirmationUrl = new URL('/', location.href);
         if (destinationPath(pendingDestination)) confirmationUrl.searchParams.set('next', pendingDestination);
         if (pendingDestination === 'groups' && groupInvite) confirmationUrl.searchParams.set('invite', groupInvite);
@@ -509,6 +552,7 @@
         });
         if (!currentView()) return;
         if (error) throw error;
+        signupNickname = generatedSignupNickname = null;
         referral?.reset();
         for (const input of $('signup-identity-slot').querySelectorAll('input')) input.value = '';
         $('signup-result').textContent = '';
@@ -556,6 +600,7 @@
     } catch (error) {
       console.warn('계정 처리 실패:', error);
       if (!currentView()) return;
+      nicknameRejected = error.message === 'nickname_not_allowed';
       if (authMode === 'direct-reset' && !/invalid_recovery_password|recovery_password_mismatch/.test(error.message || '')) setAuthMode('forgot', messageFor(error));
       else feedback.textContent = messageFor(error);
     } finally {
@@ -564,6 +609,7 @@
         passwordConfirm.value = '';
       }
       setBusy(false);
+      if (nicknameRejected && currentView()) nickname.focus();
     }
   }
 
@@ -590,6 +636,7 @@
     clearRecoveryGrant();
     recoveryCompleted = false;
     form.reset();
+    signupNickname = generatedSignupNickname = null;
     referral?.reset(); referral?.setActive(false);
     feedback.textContent = '';
     if ($('signup-result')) $('signup-result').textContent = '';

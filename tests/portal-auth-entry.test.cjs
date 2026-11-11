@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const { webcrypto } = require('node:crypto');
 const identity = require('../shared/auth/signup-identity.js');
 const source = fs.readFileSync(path.join(__dirname, '../app/portal/portal.js'), 'utf8');
 const entrance = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
@@ -25,21 +26,22 @@ for (const path of ['/?auth=login', '/?auth=signup&next=world', '/?auth=forgot',
 }
 
 // Exercise the real controller with a fake Auth service: no accounts or emails are created.
-function setup(query, { user = null, confirmed = false, sessionError = false, sessionResponse = null, userResponse = null, signInResponse = null, signupResponse = null, recoveryResponse = null, recoveryError = null, recoveryVerified = true, resetError = null, now = Date.now() } = {}) {
+function setup(query, { user = null, confirmed = false, sessionError = false, sessionResponse = null, userResponse = null, signInResponse = null, signupResponse = null, nicknameResponse = null, recoveryResponse = null, recoveryError = null, recoveryVerified = true, resetError = null, now = Date.now() } = {}) {
   let clock = now;
   let taskId = 0;
   let serviceUser = user;
+  let focused = null;
   const elements = new Map(), tasks = new Map(), navigations = [], signups = [], signins = [], passwordUpdates = [], recoveries = [], storage = new Map();
   const element = key => {
     if (!elements.has(key)) elements.set(key, {
-      hidden: false, disabled: false, value: '', checked: false, textContent: '',
+      hidden: false, disabled: false, readOnly: false, tabIndex: 0, value: '', checked: false, textContent: '',
       firstChild: { textContent: '' }, dataset: {}, attributes: {}, listeners: {}, open: false,
       addEventListener(name, callback) { this.listeners[name] = callback; },
       setAttribute(name, value) { this.attributes[name] = value; },
       closest(selector) { return element(`${key}:${selector}`); },
       querySelector(selector) { return selector.startsWith('#') ? element(selector.slice(1)) : element(selector); },
       querySelectorAll(selector) { return selector === '[data-auth-mode]' ? tabs : []; },
-      focus() {}, scrollIntoView() {}, reset() {},
+      focus() { focused = key; }, scrollIntoView() {}, reset() {},
       showModal() { this.open = true; }, close() { this.open = false; }
     });
     return elements.get(key);
@@ -71,10 +73,13 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     },
     functions: { async invoke(name, args) { recoveries.push({ name, ...args }); if (recoveryResponse) return recoveryResponse(args.body); const error = args.body.action === 'reset' ? resetError : recoveryError; return error ? { error: { context: { json: async () => ({ error }) } } } : { data: args.body.action === 'reset' ? { reset: true } : { verified: recoveryVerified, reset_token: 'a'.repeat(64), expires_in: 300 } }; } },
     from() { return { select() { return this; }, eq() { return this; }, async maybeSingle() { return { data: null }; } }; },
-    async rpc() { return { data: true }; }
+    async rpc(name, args) {
+      if (name === 'has_banned') return nicknameResponse ? nicknameResponse(args.t) : { data: false };
+      return { data: true };
+    }
   };
   const context = {
-    window: { OJJUDA_CONFIG: { supabaseUrl: 'https://example.test', supabaseKey: 'test' }, supabase: { createClient: () => client }, OjjudaIdentity: identity },
+    window: { OJJUDA_CONFIG: { supabaseUrl: 'https://example.test', supabaseKey: 'test' }, supabase: { createClient: () => client }, OjjudaIdentity: identity, crypto: webcrypto },
     document: { getElementById: element, querySelector: element, querySelectorAll: selector => selector === '[data-policy-document]' ? policyLinks : [] },
     Date: class extends Date { static now() { return clock; } },
     location, URL, URLSearchParams, console: { warn() {}, error() {} },
@@ -97,10 +102,10 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   const emit = async (event, session) => { emitNow(event, session); await flush(); };
   const submit = async () => { await element('auth-form').listeners.submit({ preventDefault() {} }); await flush(); };
   const fill = () => {
-    for (const [key, value] of Object.entries({ nickname: '테스트', email: 'signup-fixture@ojjuda.kr', password: 'test-password', 'password-confirm': 'test-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '010-2345-6789' })) element(key).value = value;
+    for (const [key, value] of Object.entries({ email: 'signup-fixture@ojjuda.kr', password: 'test-password', 'password-confirm': 'test-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '010-2345-6789' })) element(key).value = value;
     element('age-check').checked = element('policy-check').checked = true;
   };
-  return { element, flush, emit, emitNow, submit, fill, navigations, signups, signins, passwordUpdates, recoveries, storage, location, window: context.window, client, advance: ms => { clock += ms; } };
+  return { element, flush, emit, emitNow, submit, fill, navigations, signups, signins, passwordUpdates, recoveries, storage, location, window: context.window, client, get focused() { return focused; }, advance: ms => { clock += ms; } };
 }
 
 // The login controller shares its auth client with navigation tracking.
@@ -130,6 +135,12 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   assert.deepEqual(worldRoutes, ['/?auth=signup&next=world', '/?auth=forgot&next=world']);
   for (const destination of ['world', 'note']) {
     const app = setup(`?auth=signup&next=${destination}`); await app.flush();
+    const generatedNickname = app.element('nickname').value;
+    assert.match(generatedNickname, /^[가-힣]{2}[0-9a-z]{10}$/);
+    assert.equal(app.element('nickname').readOnly, false, 'the automatic nickname remains editable');
+    assert.equal(app.element('nickname').tabIndex, 0);
+    assert.equal(app.element('nickname-auto-help').hidden, false);
+    assert.equal(app.focused, 'email', 'signup starts with the first editable field');
     assert.equal(app.element('auth-dialog').open, true);
     assert.equal(app.element('signup-tab').attributes['aria-selected'], 'true');
     assert.equal(app.element('auth-title').textContent, '오쭈다 아지트');
@@ -141,6 +152,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     app.fill(); await app.submit();
     assert.equal(app.signups.length, 1);
     const sent = app.signups[0];
+    assert.equal(sent.options.data.nickname, generatedNickname, 'signup uses the displayed automatic nickname without manual input');
     assert.equal(sent.options.emailRedirectTo, `https://ojjuda.kr/?next=${destination}`);
     assert.equal(sent.options.data.phone_number, '01023456789');
     assert.equal(sent.options.data.birth_yymmdd, '000101');
@@ -186,11 +198,70 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     assert.equal(app.element('password-confirm').value, '');
   }
   const switched = setup('?auth=signup'); await switched.flush(); switched.fill();
+  const retainedNickname = switched.element('nickname').value;
   switched.element('login-tab').listeners.click();
   assert.equal(switched.element('.password-confirm-field').hidden, true);
   assert.equal(switched.element('password-confirm').required, false);
   assert.equal(switched.element('password-confirm').disabled, true);
   assert.equal(switched.element('password-confirm').value, '');
+  switched.element('signup-tab').listeners.click();
+  assert.equal(switched.element('nickname').value, retainedNickname, 'tab switches preserve the assigned name');
+  switched.element('email').value = 'broken-email'; await switched.submit();
+  assert.equal(switched.element('nickname').value, retainedNickname, 'validation failures preserve the assigned name');
+  switched.element('nickname').value = '나만의별명';
+  switched.element('login-tab').listeners.click(); switched.element('signup-tab').listeners.click();
+  assert.equal(switched.element('nickname').value, '나만의별명', 'tab switches preserve an edited nickname');
+  switched.fill();
+  await switched.submit();
+  assert.equal(switched.signups[0].options.data.nickname, '나만의별명', 'signup sends the nickname chosen by the member');
+
+  const checkedNames = [];
+  const rejectedName = setup('?auth=signup', { nicknameResponse: name => {
+    checkedNames.push(name); return { data: checkedNames.length === 1 };
+  } });
+  await rejectedName.flush(); rejectedName.fill(); await rejectedName.submit();
+  assert.equal(checkedNames.length, 2, 'a forbidden candidate is regenerated before account creation');
+  assert.notEqual(checkedNames[0], checkedNames[1]);
+  assert.equal(rejectedName.signups.length, 1);
+  assert.equal(rejectedName.signups[0].options.data.nickname, checkedNames[1]);
+  let customChecks = 0;
+  const rejectedCustom = setup('?auth=signup', { nicknameResponse: () => { customChecks++; return { data: true }; } });
+  await rejectedCustom.flush(); rejectedCustom.fill(); rejectedCustom.element('nickname').value = '직접고른이름';
+  await rejectedCustom.submit();
+  assert.equal(customChecks, 1, 'a rejected custom nickname is never silently regenerated');
+  assert.equal(rejectedCustom.signups.length, 0);
+  assert.equal(rejectedCustom.element('nickname').value, '직접고른이름');
+  assert.equal(rejectedCustom.element('nickname').disabled, false);
+  assert.equal(rejectedCustom.focused, 'nickname');
+  assert.match(rejectedCustom.element('auth-feedback').textContent, /다른 이름을 입력/);
+  let rejectedChecks = 0;
+  const blockedNames = setup('?auth=signup', { nicknameResponse: () => { rejectedChecks++; return { data: true }; } });
+  await blockedNames.flush(); blockedNames.fill(); await blockedNames.submit();
+  assert.equal(rejectedChecks, 4, 'candidate retries are bounded');
+  assert.equal(blockedNames.signups.length, 0);
+  assert.match(blockedNames.element('auth-feedback').textContent, /닉네임을 만들지 못했어요/);
+  for (const result of [{ data: null }, { data: 'false' }, { error: { message: 'network' } }]) {
+    const app = setup('?auth=signup', { nicknameResponse: () => result });
+    await app.flush(); app.fill(); await app.submit();
+    assert.equal(app.signups.length, 0, 'only a successful false result allows signup');
+  }
+  const failedSignup = setup('?auth=signup', { signupResponse: () => ({ error: { message: 'network' } }) });
+  await failedSignup.flush(); failedSignup.fill(); const failedName = failedSignup.element('nickname').value;
+  await failedSignup.submit();
+  assert.equal(failedSignup.signups.length, 1, 'an account creation failure never triggers an automatic retry');
+  assert.equal(failedSignup.element('nickname').value, failedName);
+
+  const nicknameMember = { id: 'nickname-member', email: 'member@ojjuda.kr', user_metadata: { nickname: '기존별명' } };
+  const repair = setup('?auth=login&next=note', { user: nicknameMember });
+  repair.client.rpc = async () => ({ error: { code: '23505', message: 'nickname conflict' } });
+  await repair.flush();
+  assert.equal(repair.element('auth-title').textContent, '닉네임 정하기');
+  assert.equal(repair.element('nickname').readOnly, false, 'existing nickname repair remains editable');
+  assert.equal(repair.element('nickname-auto-help').hidden, true);
+  repair.element('nickname').value = '새별명';
+  repair.client.rpc = async () => ({ data: true });
+  await repair.submit();
+  assert.deepEqual(repair.navigations, ['/world.html?place=park']);
   const existing = setup('?auth=signup&next=world', { user: { id: 'existing', email: 'member@example.invalid' } });
   await existing.flush();
   assert.deepEqual(existing.navigations, ['/world.html']);
@@ -355,6 +426,17 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   closed.element('recovery-reset-button').listeners.click();
   assert.equal(closed.recoveries.length, 1); assert.equal(closed.element('recovery-reset-button').hidden, true);
   const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
+  const oldNickname = deferred();
+  const nicknameRace = setup('?auth=signup', { nicknameResponse: () => oldNickname.promise });
+  await nicknameRace.flush(); nicknameRace.fill(); const pendingNickname = nicknameRace.submit();
+  await nicknameRace.flush();
+  nicknameRace.element('auth-dialog').close(); nicknameRace.element('auth-dialog').listeners.close();
+  nicknameRace.element('login-tab').listeners.click(); nicknameRace.element('auth-dialog').showModal();
+  nicknameRace.element('nickname').value = '새창의이름';
+  oldNickname.resolve({ data: true }); await pendingNickname;
+  assert.equal(nicknameRace.signups.length, 0, 'a late nickname check cannot create an account after closing signup');
+  assert.equal(nicknameRace.element('nickname').value, '새창의이름', 'a late rejection cannot regenerate a name in another view');
+  assert.equal(nicknameRace.element('login-tab').attributes['aria-selected'], 'true');
   const oldSession = deferred();
   const sessionRace = setup('?auth=login', { sessionResponse: () => oldSession.promise });
   await sessionRace.emit('SIGNED_IN', { user: reader });
@@ -384,6 +466,8 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   const oldSignup = deferred();
   const signupRace = setup('?auth=signup', { signupResponse: () => oldSignup.promise });
   await signupRace.flush(); signupRace.fill(); const pendingSignup = signupRace.submit();
+  await signupRace.flush();
+  assert.equal(signupRace.signups.length, 1, 'the signup request is pending before the dialog closes');
   signupRace.element('auth-dialog').close(); signupRace.element('auth-dialog').listeners.close();
   signupRace.element('login-tab').listeners.click(); signupRace.element('auth-dialog').showModal();
   signupRace.element('password').value = 'replacement-password';

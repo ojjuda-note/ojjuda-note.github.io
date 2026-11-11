@@ -12,6 +12,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin=
   await context.addInitScript(()=>{
    const f=window.referralFixture={signups:[],searches:[],people:[{id:'00000000-0000-4000-8000-000000000001',nickname:'민준'},{id:'00000000-0000-4000-8000-000000000002',nickname:'민준이'}],pending:[],defer:false,fail:false};
    const client={auth:{onAuthStateChange(){},async getSession(){return{data:{session:null}};},async getUser(){return{data:{user:null}};},async signUp(args){f.signups.push(args);return{data:{session:null}};}},async rpc(name,args){
+    if(name==='has_banned')return{data:false};
     if(name!=='search_signup_referrers')throw Error('Unexpected RPC '+name);
     f.searches.push(args);if(f.defer)return new Promise(resolve=>f.pending.push(resolve));
     return f.fail?{error:{message:'synthetic failure'}}:{data:args.p_query==='없음'?[]:f.people};
@@ -20,12 +21,17 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin=
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   const open=async()=>{await page.goto(origin+'/?auth=signup');await page.locator('#auth-dialog[open]').waitFor();await page.locator('#signup-referrer').waitFor();};
   const fill=async()=>{
-   for(const[id,value]of Object.entries({nickname:'합성회원',email:'referral-fixture@ojjuda.kr',password:'fixture-password','password-confirm':'fixture-password','signup-birth':'000101','signup-code':'3','signup-phone':'01023456789'}))await page.locator('#'+id).fill(value);
+   for(const[id,value]of Object.entries({email:'referral-fixture@ojjuda.kr',password:'fixture-password','password-confirm':'fixture-password','signup-birth':'000101','signup-code':'3','signup-phone':'01023456789'}))await page.locator('#'+id).fill(value);
    await page.locator('#age-check').check();await page.locator('#policy-check').check();
   };
   const confirm=async()=>{await page.getByRole('button',{name:'민준 추천인으로 선택',exact:true}).click();await page.getByRole('button',{name:'이 사람이 맞아요',exact:true}).click();};
-  await open();await fill();assert.equal(await page.locator('#signup-referrer').getAttribute('required'),null);
+  await open();
+  const initialNickname=await page.locator('#nickname').inputValue();
+  assert.ok(initialNickname.length>0&&initialNickname.length<=12,'signup provides a valid-length nickname without input');
+  assert.equal(await page.locator('#nickname').evaluate(el=>el.readOnly),false,'signup nickname is suggested automatically and remains editable');
+  await fill();assert.equal(await page.locator('#signup-referrer').getAttribute('required'),null);
   await page.locator('#auth-submit').click();await page.waitForFunction(()=>referralFixture.signups.length===1);
+  assert.equal(await page.evaluate(()=>referralFixture.signups[0].options.data.nickname),initialNickname,'signup sends the displayed automatic nickname');
   assert.equal(await page.evaluate(()=>'referrer_id'in referralFixture.signups[0].options.data),false,'blank referral is optional');
   assert.equal(await page.evaluate(()=>referralFixture.searches.length),0,'blank signup needs no lookup');
 
