@@ -219,7 +219,7 @@
         { title: 'SWEAT -JAPANESE EP-', date: '2026.09.16', type: '일본 미니 2집 · 타이틀 SWEAT (Japanese Ver.)', songs: ['SWEAT (Japanese Ver.)', 'Was It You', 'BREAK IT', 'Who is she (Japanese Ver.)', 'Igloo (Remix)', 'BREAK IT (English Ver.)'], href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' },
         { title: 'SWEAT', date: '2026.08.04', type: '싱글 3집 · 타이틀 SWEAT', songs: ['SWEAT', 'WHAT!'], href: 'https://music.apple.com/us/album/sweat-single/6792701507' },
         { title: 'Who is she', date: '2026.04.06', type: '싱글 2집 · 타이틀 Who is she', songs: ['Who is she', "Don't mind me"], href: 'https://music.apple.com/us/album/who-is-she-single/1886385269' },
-        { title: 'KISS OF LIFE', date: '2023.07.05', type: '데뷔 미니 1집 · 타이틀 쉿 (Shhh)', songs: ['쉿 (Shhh)', '안녕, 네버랜드'], href: 'https://music.apple.com/us/album/kiss-of-life-ep/1696040314' }
+        { title: 'KISS OF LIFE', date: '2023.07.05', type: '데뷔 미니 1집 · 타이틀 쉿 (Shhh)', songs: ['쉿 (Shhh)', '안녕, 네버랜드', 'Sugarcoat (NATTY)', 'Countdown (BELLE)', 'Kitty Cat (JULIE)', 'Play Love Games (HANEUL)'], href: 'https://music.apple.com/us/album/kiss-of-life-ep/1694699906' }
       ],
       appearances: [
         { date: '2026-12-05', title: '2026 Asia Artist Awards (AAA)', sub: '대만 가오슝 국가체육장 · 공식 12/5 출연진 · 현지 17:00 본 행사', href: 'https://www.asiaartistawards.com/en/news/3225' }
