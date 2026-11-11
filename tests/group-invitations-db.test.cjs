@@ -122,5 +122,7 @@ assert.equal(recentPage.length,31);assert.deepEqual(recentPage.slice(0,30).map(x
 const lastRecent=recentPage[29],olderRecent=await api('search',{room_id:safeRoom,query:'신규',before:lastRecent.created_at,before_id:lastRecent.user_id});
 assert.equal(olderRecent.length,10);assert.equal(new Set([...recentPage.slice(0,30),...olderRecent].map(x=>x.user_id)).size,40);
 
+await db.exec('reset role');
+await require('./helpers/group-age-scenarios.cjs')({db,assert,as,api,board,val,uid,migration});
 }finally{await db.close();}
 });

@@ -7,11 +7,11 @@ alter table ojjuda_groups_internal.rooms
   (age_policy='all' and min_age is null and max_age is null) or
   (age_policy='adults' and min_age is not null and min_age=19 and max_age is null) or
   (age_policy='minors' and min_age is not null and min_age=14 and max_age is not null and max_age=18) or
-  (age_policy='range' and min_age is not null and max_age is not null and min_age between 14 and 120 and max_age between min_age and 120)
+  (age_policy='range' and min_age is not null and max_age is not null and min_age between 14 and 150 and max_age between min_age and 150)
  );
 create function ojjuda_groups_internal.registered_age(peer uuid)
 returns integer language sql stable set search_path='' as $$
- select case when a between 14 and 120 then a end from (
+ select case when a between 14 and 150 then a end from (
   select ojjuda_account_internal.age_on(birth_date,(now() at time zone 'Asia/Seoul')::date) a
   from ojjuda_account_internal.member_identity where user_id=peer
  ) x;
@@ -33,13 +33,13 @@ returns jsonb language sql stable set search_path='' as $$
  'age_eligible',eligible,'age_note',case when eligible then ''
  when a is null then '가입 시 입력한 생년월일 정보가 없어 연령 제한 그룹을 이용할 수 없어요.'
  else '이 그룹의 연령 조건에 맞지 않아 이용할 수 없어요.' end)
- from (select t.*,ojjuda_groups_internal.age_matches(age_policy,min_age,max_age,a) eligible
+ from (select t.*,a,ojjuda_groups_internal.age_matches(age_policy,min_age,max_age,a) eligible
  from ojjuda_groups_internal.rooms t cross join lateral (select ojjuda_groups_internal.registered_age(peer) a) v where id=r) x;
 $$;
 create function ojjuda_groups_internal.require_room_age(r uuid,peer uuid)
 returns void language plpgsql stable set search_path='' as $$
 begin
- if not ojjjuda_groups_internal.age_allowed(r,peer) then
+ if not ojjuda_groups_internal.age_allowed(r,peer) then
   raise exception '%',coalesce(ojjuda_groups_internal.age_details(r,peer)->>'age_note','그룹을 확인해 주세요.') using errcode='42501';
  end if;
 end $$;
@@ -51,8 +51,8 @@ begin
  when 'adults' then new.min_age:=19;new.max_age:=null;
  when 'minors' then new.min_age:=14;new.max_age:=18;
  when 'range' then
-  if new.min_age is null or new.max_age is null or new.min_age<14 or new.max_age>120 or new.min_age>new.max_age then
-   raise exception '만 14~120세 사이에서 최소·최대 나이를 확인해 주세요.' using errcode='22023';
+  if new.min_age is null or new.max_age is null or new.min_age<14 or new.max_age>150 or new.min_age>new.max_age then
+   raise exception '만 14~150세 사이에서 최소·최대 나이를 확인해 주세요.' using errcode='22023';
   end if;
  else raise exception '연령 설정을 확인해 주세요.' using errcode='22023';
  end case;
