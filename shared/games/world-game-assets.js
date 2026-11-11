@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261111-restaurants-c2s42-ulsan4'
+ const revision='20261111-restaurants-broadcast1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -9,7 +9,7 @@
   chacha_rush:'1.0.5',
   byeolcheonji:'1.0.5',
   festival:'1.6.2',
-  restaurants:'1.12.34',
+  restaurants:'1.13.0',
   recommendations:'1.7.2',
   archery:'3.3.3',
   roulette:'1.9.6',
@@ -46,7 +46,7 @@
   group:[],
   byeolcheonji:[],
   festival:['/games/festival-schedule/world-festival-schedule.css?v=20261107-festival-location2','/games/festival-schedule/world-festival-schedule.js?v=20261110-navigation-return1'],
-  restaurants:[...restaurantRatings,...restaurantComments,...restaurantLocation,'/games/certified-restaurants/world-restaurant-guide.css?v=20261106-source-folders1','/games/certified-restaurants/world-restaurant-guide.js?v=20261111-restaurants-c2s42-ulsan4','/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1',recommendedRestaurantScript],
+  restaurants:[...restaurantRatings,...restaurantComments,...restaurantLocation,'/games/certified-restaurants/world-restaurant-guide.css?v=20261106-source-folders1','/games/certified-restaurants/world-restaurant-guide.js?v=20261111-restaurants-broadcast1','/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1',recommendedRestaurantScript],
   recommendations:[...restaurantRatings,...restaurantComments,...restaurantLocation,'/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1',recommendedRestaurantScript],
   archery:['/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/forest-archer/world-archery-game.css?v=20261106-source-folders1','/games/forest-archer/world-archery-game.js?v=20261110-game-back-arcade1'],
   roulette:[session,'/games/roulette/world-roulette-game.css?v=20261106-source-folders1','/games/roulette/world-roulette-game.js?v=20261110-game-back-arcade1'],
