@@ -30,7 +30,7 @@
     "test:results:unit": "node --experimental-vm-modules --test game-results.test.cjs game-results-arcade.test.cjs game-results-stages.test.cjs game-results-multiplayer.test.cjs sacheonseong-result-ranking.test.cjs matgo-result-receipt-db.test.cjs game-ui-consistency.test.cjs",
     "test:pwa": "node --test pwa-install.test.cjs pwa-service-worker.test.cjs",
     "test:byeolcheonji": "node --test byeolcheonji-retired.test.cjs",
-    "test:groups": "node --test group-board-db.test.cjs group-board-dom.test.cjs group-invitations-db.test.cjs group-media-performance.test.cjs",
+    "test:groups": "node --test group-board-db.test.cjs group-board-dom.test.cjs group-invitations-db.test.cjs group-media-performance.test.cjs group-age-policy-db.test.cjs group-age-policy-dom.test.cjs",
     "test:monthly-personal": "node --test monthly-game-personal-rank-db.test.cjs monthly-game-personal-rank-dom.test.cjs"
   },
   "devDependencies": {
