@@ -23,6 +23,12 @@
     game_roulette:'룰렛',game_photo_ttang:'포토땅따먹기',game_other:'기타 게임'
   });
   const guestBoardLabels = Object.freeze({park:'공원 카드',group:'그룹',fanpages:'팬페이지',restaurants:'인증맛집'});
+  const agitDetailLabels = Object.freeze({
+    agit_stamp:'방문 도장',agit_mission:'오늘의 미션',agit_recommended_game:'오늘의 추천게임',
+    agit_group:'그룹',agit_festival:'축제 일정',agit_restaurants:'인증맛집',agit_fanpages:'팬페이지'
+  });
+  const arcadeDetailLabels = Object.freeze(Object.fromEntries(Object.entries(featureLabels)
+    .filter(([key]) => key.startsWith('game_')).map(([key,label]) => ['arcade_' + key,label])));
   const chart = (title, subtitle, rows, kind, labels) => {
     const card = el('section', undefined, 'visitor-chart-card');
     card.append(el('h4', title), el('p', subtitle, 'visitor-chart-subtitle'));
@@ -60,7 +66,7 @@
     rows.forEach(row => {
       const item = el('div', undefined, 'visitor-rank-row');
       const top = el('div',undefined,'visitor-rank-top');
-      top.append(el('span',labelMap[row.feature || row.source] || '기타'),el('strong',`${number(row[key])}회`));
+      top.append(el('span',labelMap[row.feature || row.source || row.detail] || '기타'),el('strong',`${number(row[key])}회`));
       const track = el('div',undefined,'visitor-rank-track');
       const fill = el('div',undefined,'visitor-rank-fill');
       fill.style.width = `${100 * Number(row[key]) / max}%`;
@@ -78,13 +84,17 @@
       || !Array.isArray(data.sources) || data.sources.length !== 8
       || !Array.isArray(data.guest_games) || data.guest_games.length > 12
       || !Array.isArray(data.guest_boards) || data.guest_boards.length > 4
+      || !Array.isArray(data.agit_details) || data.agit_details.length > 7
+      || !Array.isArray(data.arcade_details) || data.arcade_details.length > 24
       || !data.daily.every(row => /^\d{4}-\d{2}-\d{2}$/.test(row.period) && validCount(row.visits))
       || !data.hourly.every((row,i) => Number(row.hour) === i && validCount(row.visits))
       || !data.weekday.every((row,i) => Number(row.day) === i + 1 && validCount(row.visits))
       || !data.features.every(row => Object.hasOwn(featureLabels,row.feature) && validCount(row.uses))
       || !data.sources.every(row => Object.hasOwn(sourceLabels,row.source) && validCount(row.visits))
       || !data.guest_games.every(row => typeof row.feature === 'string' && row.feature.startsWith('game_') && Object.hasOwn(featureLabels,row.feature) && validCount(row.uses))
-      || !data.guest_boards.every(row => Object.hasOwn(guestBoardLabels,row.feature) && validCount(row.uses))) {
+      || !data.guest_boards.every(row => Object.hasOwn(guestBoardLabels,row.feature) && validCount(row.uses))
+      || !data.agit_details.every(row => Object.hasOwn(agitDetailLabels,row.detail) && validCount(row.uses))
+      || !data.arcade_details.every(row => Object.hasOwn(arcadeDetailLabels,row.detail) && validCount(row.uses))) {
       throw new Error('invalid_site_usage_statistics');
     }
     host.replaceChildren(el('h3','사이트 방문·이용 분석'));
@@ -107,11 +117,13 @@
       horizontalChart('많이 선택한 기능','최근 30일 · 브라우저당 기능별 하루 1회',data.features,'uses',featureLabels),
       horizontalChart('유입 경로','최근 30일 · 방문 시 분류된 경로',data.sources,'visits',sourceLabels),
       horizontalChart('비회원 인기 게임','최근 30일 · 로그인하지 않은 브라우저당 하루 1회',data.guest_games,'uses',featureLabels),
-      horizontalChart('비회원 인기 게시판','최근 30일 · 게시판 진입 선택 기준',data.guest_boards,'uses',guestBoardLabels)
+      horizontalChart('비회원 인기 게시판','최근 30일 · 게시판 진입 선택 기준',data.guest_boards,'uses',guestBoardLabels),
+      horizontalChart('아지트 · 세부 항목','방문 도장, 미션, 추천게임, 생활 메뉴 · 최근 30일',data.agit_details,'uses',agitDetailLabels),
+      horizontalChart('오락실 · 게임별','각 게임 선택 횟수 · 최근 30일 · 브라우저당 하루 1회',data.arcade_details,'uses',arcadeDetailLabels)
     );
     host.append(grid);
   }
-  function mount({ container, client, getAdminId, isCurrent = () => container.isConnected, compact = false }) {
+  function mount({ container, client, getAdminId, isCurrent = () => container.isConnected }) {
     const owner = getAdminId?.();
     let disposed = false, request = 0, subscription;
     const current = () => !disposed && isCurrent() && !!owner && getAdminId?.() === owner;
@@ -130,7 +142,7 @@
       body);
     const insights = el('section', undefined, 'visitor-insights');
     insights.setAttribute('aria-label','사이트 방문·이용 분석');
-    section.append(header, status, insights, compact ? body : legacy); container.replaceChildren(section);
+    section.append(header, status, insights, legacy); container.replaceChildren(section);
     refreshButton.addEventListener('click', () => void refresh());
     function clear(message) {
       request++; body.replaceChildren(); insights.replaceChildren(); refreshButton.disabled = true;
@@ -167,19 +179,14 @@
       }
       const since = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(data.started_at));
       body.append(cards, el('p', `${since}부터 집계`, 'visitor-note'));
-      if (compact) {
-        const link = el('button', '날짜별·월별 통계 보기 →', 'btn'); link.type = 'button';
-        link.dataset.act = 'adm-tab'; link.dataset.v = 'visitors'; body.append(link);
-      } else {
-        body.append(table('최근 30일', data.daily, false), table('최근 12개월', data.monthly, true));
-      }
+      body.append(table('최근 30일', data.daily, false), table('최근 12개월', data.monthly, true));
     }
     async function refresh() {
       if (!current()) { if (!disposed && isCurrent()) clear('관리자로 로그인해 주세요.'); return; }
       const version = ++request; refreshButton.disabled = true;
       section.setAttribute('aria-busy', 'true'); status.textContent = '불러오는 중'; status.hidden = false; body.replaceChildren();
-      const insightsRequest = compact ? null : Promise.resolve().then(() => client.rpc('admin_site_usage_stats')).catch(error => ({ error }));
-      if (insightsRequest) insights.replaceChildren(el('p','방문 그래프를 불러오는 중이에요…','visitor-status'));
+      const insightsRequest = Promise.resolve().then(() => client.rpc('admin_site_usage_stats')).catch(error => ({ error }));
+      insights.replaceChildren(el('p','방문 그래프를 불러오는 중이에요…','visitor-status'));
       try {
         const { data, error } = await client.rpc('admin_guest_visit_stats');
         if (version !== request || !current()) return;
@@ -195,16 +202,14 @@
       } finally {
         if (version === request && current()) { refreshButton.disabled = false; section.setAttribute('aria-busy', 'false'); }
       }
-      if (insightsRequest) {
-        const insightsResult = await insightsRequest;
-        if (version !== request || !current()) return;
-        try {
-          if (insightsResult.error) throw insightsResult.error;
-          renderInsights(insights,insightsResult.data);
-        } catch {
-          insights.replaceChildren(el('h3','사이트 방문·이용 분석'),
-            el('p','통계 그래프를 불러오지 못했어요. 잠시 후 새로고침해 주세요.','visitor-status'));
-        }
+      const insightsResult = await insightsRequest;
+      if (version !== request || !current()) return;
+      try {
+        if (insightsResult.error) throw insightsResult.error;
+        renderInsights(insights,insightsResult.data);
+      } catch {
+        insights.replaceChildren(el('h3','사이트 방문·이용 분석'),
+          el('p','통계 그래프를 불러오지 못했어요. 잠시 후 새로고침해 주세요.','visitor-status'));
       }
     }
     subscription = client.auth?.onAuthStateChange?.((_event, session) => {

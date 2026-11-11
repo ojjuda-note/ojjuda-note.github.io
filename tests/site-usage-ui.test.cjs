@@ -7,7 +7,7 @@ const read = file => fs.readFileSync(path.join(root,file),'utf8');
 const settle = () => new Promise(resolve => setImmediate(resolve));
 
 (async () => {
-  const browser = new JSDOM('<button data-tab="arcade">오락실</button><button data-act="agit-daily" data-v="group">그룹</button><button data-act="agit-play" data-v="mole">두더지 잡기</button><button data-act="agit-fan">팬페이지</button><div data-arcade-games="solo"><button class="gbtn" data-v="stacker">탑 쌓기</button></div>',{
+  const browser = new JSDOM('<button data-tab="arcade">오락실</button><button data-act="agit-daily" data-v="group">그룹</button><button data-act="agit-play" data-v="mole">두더지 잡기</button><button data-act="agit-fan">팬페이지</button><button data-act="agit-stamp">방문 도장</button><button data-act="agit-task" data-v="park">오늘의 미션</button><div data-arcade-games="solo"><button class="gbtn" data-v="stacker">탑 쌓기</button></div>',{
     url:'https://ojjuda.kr/world.html?tab=hub',referrer:'https://search.naver.com/search.naver?query=anything',
     runScripts:'outside-only',pretendToBeVisual:true
   });
@@ -29,8 +29,14 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
   w.document.querySelector('[data-arcade-games] .gbtn').click();
   w.document.querySelector('[data-act=agit-play]').click();
   w.document.querySelector('[data-act=agit-fan]').click();
+  w.document.querySelector('[data-act=agit-stamp]').click();
+  w.document.querySelector('[data-act=agit-task]').click();
   await settle(); await settle();
   assert.deepEqual(calls.map(call=>call.args.p_feature).filter(Boolean),['agit','arcade','group','game_stacker','game_mole','fanpages']);
+  assert.deepEqual(calls.filter(call=>call.name==='record_site_detail').map(call=>call.args.p_detail),
+    ['agit_group','arcade_game_stacker','agit_recommended_game','agit_fanpages','agit_stamp','agit_mission']);
+  assert.equal(Object.keys(calls.find(call=>call.name==='record_site_detail').args).length,2,
+    'detail telemetry transmits only daily visit token and allowlisted detail');
   const before = calls.length;
   w.document.querySelector('[data-tab=arcade]').click();
   await settle();
@@ -54,6 +60,18 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
   assert.ok(parkFeatures.includes('park'),'direct park links count as board selections');
   directPark.window.close();
 
+  const directGame = new JSDOM('<main></main>',{url:'https://ojjuda.kr/world.html?game=stacker',runScripts:'outside-only',pretendToBeVisual:true});
+  Object.defineProperty(directGame.window.crypto,'randomUUID',{value:randomUUID,configurable:true});
+  const gameDetails=[];
+  directGame.window.eval(read('shared/analytics/site-usage.js'));
+  directGame.window.OjjudaSiteUsage.configure({client:{rpc:async(name,args)=>{
+    if(name==='record_site_detail')gameDetails.push(args.p_detail);
+    return {data:{ok:true,day:new Date(Date.now()+9*3600000).toISOString().slice(0,10),server_now:new Date().toISOString()}};
+  }}});
+  await settle();await settle();
+  assert.deepEqual(gameDetails,['arcade_game_stacker'],'direct game links count toward that game');
+  directGame.window.close();
+
   const ui = new JSDOM('<main id="host"></main>',{url:'https://ojjuda.kr/world.html?admin=visitors',runScripts:'outside-only'});
   const v = ui.window,host = v.document.querySelector('#host');v.eval(read('admin/visitors.js'));
   const visitor = {today:1,month:2,total:3,started_at:'2026-10-27T00:00:00Z',daily:[],monthly:[]};
@@ -65,7 +83,9 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     features:[{feature:'arcade',uses:2},{feature:'game_stacker',uses:1}],
     sources:['direct','naver','google','search','social','external','internal','campaign'].map(source=>({source,visits:source==='naver'?2:0})),
     guest_games:[{feature:'game_stacker',uses:2},{feature:'game_mole',uses:1}],
-    guest_boards:[{feature:'park',uses:3},{feature:'group',uses:1}]
+    guest_boards:[{feature:'park',uses:3},{feature:'group',uses:1}],
+    agit_details:[{detail:'agit_stamp',uses:4},{detail:'agit_mission',uses:2},{detail:'agit_group',uses:1}],
+    arcade_details:[{detail:'arcade_game_stacker',uses:3},{detail:'arcade_game_mole',uses:1}]
   };
   let owner='admin',authChange,insightsError=false;
   const called = [];
@@ -77,7 +97,7 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
   const control = v.OjjudaAdminVisitors.mount({container:host,client:adminClient,getAdminId:()=>owner});
   await settle();await settle();
   assert.equal(host.querySelector('.visitor-insights h3').textContent,'사이트 방문·이용 분석');
-  assert.equal(host.querySelectorAll('.visitor-chart-card').length,7);
+  assert.equal(host.querySelectorAll('.visitor-chart-card').length,9);
   assert.equal(host.querySelectorAll('.visitor-chart-col').length,61,'30 dates + 24 hours + 7 weekdays');
   assert.match(host.querySelector('.visitor-insights').textContent,/네이버 검색/);
   assert.match(host.querySelector('.visitor-insights').textContent,/탑 쌓기/);
@@ -85,6 +105,9 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
   assert.match(host.querySelector('.visitor-insights').textContent,/비회원 인기 게임/);
   assert.match(host.querySelector('.visitor-insights').textContent,/비회원 인기 게시판/);
   assert.match(host.querySelector('.visitor-insights').textContent,/공원 카드/);
+  assert.match(host.querySelector('.visitor-insights').textContent,/아지트 · 세부 항목/);
+  assert.match(host.querySelector('.visitor-insights').textContent,/방문 도장/);
+  assert.match(host.querySelector('.visitor-insights').textContent,/오락실 · 게임별/);
   assert.equal(host.querySelector('.visitor-growth'),null,'obsolete challenge/share detail is removed');
   assert.equal(called.includes('admin_game_growth_stats'),false,'no obsolete growth RPC');
   insightsError=true;await control.refresh();
@@ -92,12 +115,8 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
   assert.equal(host.querySelectorAll('.visitor-body .visitor-card').length,3,'insight errors do not erase guest totals');
   insightsError=false;await control.refresh();owner=null;authChange('SIGNED_OUT',null);
   assert.equal(host.querySelector('.visitor-insights').childElementCount,0,'logout removes private graphs');
-  control.destroy();owner='admin';
-  called.length=0;
-  const compact = v.OjjudaAdminVisitors.mount({container:host,client:adminClient,getAdminId:()=>owner,compact:true});
-  await settle();assert.equal(called.includes('admin_site_usage_stats'),false,'overview does not load heavy charts');
-  compact.destroy();ui.window.close();
+  control.destroy();ui.window.close();
   assert.match(read('world.html'),/OjjudaSiteUsage\?\.configure\(\{client:S\}\)/);
   assert.match(read('admin/world-admin-loader.js'),/visitors-charts\.css/);
-  console.log('PASS: anonymous tracking, park/game click capture, seven charts, guest game/board popularity, obsolete table removal and logout isolation');
+  console.log('PASS: detailed Agit/Arcade actions, park/direct-game tracking, nine charts, guest popularity and logout isolation');
 })().catch(error=>{console.error(error);process.exitCode=1});

@@ -45,8 +45,6 @@ const read = file => fs.readFileSync(path.join(__dirname,'..',file),'utf8');
   control=v.OjjudaAdminVisitors.mount({container:host,client:adminClient,getAdminId:()=>admin});
   admin=null;authChanged('SIGNED_OUT',null);resolve({data});await tick();assert.equal(host.querySelectorAll('.visitor-card').length,0,'late responses cannot restore data after logout');control.destroy();
   admin='admin';response=null;
-  control=v.OjjudaAdminVisitors.mount({container:host,client:adminClient,getAdminId:()=>admin,compact:true});await tick();
-  assert.equal(host.querySelectorAll('table').length,0);assert.equal(host.querySelector('[data-v="visitors"]').textContent,'날짜별·월별 통계 보기 →');control.destroy();
   const world=read('world.html');
   assert.match(world,/\["visitors","방문 통계"\]/);assert.match(world,/OjjudaGuestVisits\?\.record\(\)/);assert.match(read('admin/world-admin-loader.js'),/admin\/visitors.js\?v=/);
   ui.window.close();

@@ -8,6 +8,9 @@
     'janggi','chess','billiards','matgo','poker','roulette','photo_ttang']);
   const FEATURES = new Set(['agit','arcade','park','settings','portal','group','fanpages',
     'restaurants','festival','game_other',...[...GAMES].map(game => 'game_' + game)]);
+  const DETAILS = new Set(['agit_stamp','agit_mission','agit_recommended_game','agit_group',
+    'agit_festival','agit_restaurants','agit_fanpages','arcade_game_other',
+    ...[...GAMES].map(game => 'arcade_game_' + game)]);
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   let client, running = false, clockOffset = 0, retryAfter = 0, retryTimer;
   const pending = new Map();
@@ -46,10 +49,12 @@
     if (!record || entry.day !== date()) return record ? 'done' : 'later';
     if (record.sent.includes(entry.key)) return 'done';
     try {
-      let rpc = client.rpc('record_site_usage', {
-        p_visit_id: record.id, p_event: entry.event,
-        p_feature: entry.feature || null, p_source: entry.event === 'visit' ? record.source : null
-      });
+      let rpc = entry.event === 'detail'
+        ? client.rpc('record_site_detail', { p_visit_id:record.id,p_detail:entry.feature })
+        : client.rpc('record_site_usage', {
+          p_visit_id: record.id, p_event: entry.event,
+          p_feature: entry.feature || null, p_source: entry.event === 'visit' ? record.source : null
+        });
       if (rpc?.abortSignal && typeof window.AbortSignal?.timeout === 'function') rpc = rpc.abortSignal(window.AbortSignal.timeout(5000));
       const { data, error } = await rpc;
       if (error || data?.ok !== true || !/^\d{4}-\d{2}-\d{2}$/.test(data.day)) return 'retry';
@@ -84,9 +89,10 @@
     } catch {} finally { running = false; }
   }
   function track(event,feature = '') {
-    if (event !== 'visit' && (event !== 'feature' || !FEATURES.has(feature))) return;
+    if (event !== 'visit' && !(event === 'feature' && FEATURES.has(feature))
+      && !(event === 'detail' && DETAILS.has(feature))) return;
     if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl) return;
-    const key = event === 'visit' ? 'visit' : feature;
+    const key = event === 'visit' ? 'visit' : event === 'detail' ? 'detail:' + feature : feature;
     const today = date();
     const queueKey = today + ':' + key;
     if (!pending.has(queueKey)) pending.set(queueKey,{key,event,feature,day:today});
@@ -106,12 +112,22 @@
     const gameButton = event.target.closest('[data-arcade-games] .gbtn,[data-act="agit-play"]');
     if (gameButton) {
       const id = gameButton.dataset.v || ({'matgo-open':'matgo','bl-open':'billiards'})[gameButton.dataset.act];
-      track('feature','game_' + (GAMES.has(id) ? id : 'other'));
+      const game = GAMES.has(id) ? id : 'other';
+      track('feature','game_' + game);
+      track('detail',gameButton.matches('[data-act="agit-play"]') ? 'agit_recommended_game' : 'arcade_game_' + game);
       return;
     }
+    if (event.target.closest('[data-act="agit-stamp"]')) { track('detail','agit_stamp'); return; }
+    if (event.target.closest('[data-act="agit-task"]')) { track('detail','agit_mission'); return; }
     const daily = event.target.closest('[data-act="agit-daily"]');
-    if (daily && FEATURES.has(daily.dataset.v)) { track('feature',daily.dataset.v); return; }
-    if (event.target.closest('[data-act="agit-fan"]')) { track('feature','fanpages'); return; }
+    if (daily && FEATURES.has(daily.dataset.v)) {
+      track('feature',daily.dataset.v);
+      track('detail','agit_' + daily.dataset.v);
+      return;
+    }
+    if (event.target.closest('[data-act="agit-fan"]')) {
+      track('feature','fanpages'); track('detail','agit_fanpages'); return;
+    }
     const tab = event.target.closest('[data-tab]')?.dataset.tab;
     const feature = ({hub:'agit',arcade:'arcade',park:'park',my:'settings'})[tab];
     if (feature) track('feature',feature);
@@ -124,5 +140,7 @@
     client = options.client;
     if (!client) return;
     track('visit'); track('feature',initialFeature());
+    const game = new URL(location.href).searchParams.get('game');
+    if (location.pathname.endsWith('/world.html') && GAMES.has(game)) track('detail','arcade_game_' + game);
   }, track });
 })();
