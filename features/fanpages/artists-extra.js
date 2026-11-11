@@ -19,7 +19,7 @@
       news: { title: 'KiiiKiii Berriz 공식 공지', href: 'https://berriz.in/ko/kiiikiii/notice/' }
     },
     blackpink: {
-      album: { href: 'https://www.ygfamily.com/en/artists/blackpink/discography/228' },
+      album: { href: 'https://ygfamily.com/en/artists/blackpink/discography/1651' },
       merch: { title: 'BLACKPINK 공식 상품', sub: 'YG SELECT · BLACKPINK 상품 검색', href: 'https://www.ygselect.com/product/search.html?keyword=BLACKPINK' },
       schedule: { title: 'BLACKPINK 공식 공연 안내', sub: 'YG · 투어·공연 정보', href: 'https://www.ygfamily.com/en/artists/blackpink/concert' },
       news: { tag: '로그인', title: 'BLACKPINK Weverse 공식 공지', href: 'https://weverse.io/blackpink/notice' }
@@ -332,10 +332,39 @@
     {
       id: 'blackpink', name: 'BLACKPINK', korean: '블랙핑크', category: 'girl', fan: 'BLINK', agency: 'YG Entertainment',
       members: ['지수', '제니', '로제', '리사'],
-      debut: '2016.08.08', debutWork: 'SQUARE ONE', songs: ['휘파람 (WHISTLE)', '붐바야 (BOOMBAYAH)'],
+      debut: '2016.08.08', debutWork: 'SQUARE ONE', songs: ['WHISTLE', 'BOOMBAYAH'],
       concept: '블랙과 핑크, 서로 다른 매력이 공존하는 무대.',
-      official: 'https://www.ygfamily.com/', youtube: 'https://www.youtube.com/@BLACKPINK',
+      official: 'https://ygfamily.com/ko/artists/blackpink/profile', youtube: 'https://www.youtube.com/@BLACKPINK',
       photo: '20240809 Blackpink Pink Carpet 09.png', photoLabel: '핑크 카펫', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
+      morePhotos: [
+        commonsPhoto('20240809 Blackpink Pink Carpet 07.png', '영화 핑크 카펫 · 단체', '2024', 'K-POPIT 케이팝잇', 'CC BY 3.0'),
+        commonsPhoto('20240809 Blackpink Pink Carpet 12.png', '영화 핑크 카펫 · 현장', '2024', 'K-POPIT 케이팝잇', 'CC BY 3.0')
+      ],
+      music: [
+        { title: 'DEADLINE', date: '2026.02.27', type: '미니 3집 · 타이틀 GO', songs: ['JUMP', 'GO', 'Me and my', 'Champion', 'Fxxxboy'], href: 'https://ygfamily.com/en/artists/blackpink/discography/1651' },
+        { title: '뛰어 (JUMP)', date: '2025.07.11', type: '디지털 싱글 · DEADLINE 선공개', songs: ['JUMP'], href: 'https://ygfamily.com/en/artists/blackpink/discography/1632' },
+        { title: 'BORN PINK', date: '2022.09.16', type: '정규 2집 · 타이틀 Shut Down', songs: ['Pink Venom', 'Shut Down', 'Typa Girl', 'Yeah Yeah Yeah', 'Hard to Love', 'The Happiest Girl', 'Tally', 'Ready For Love'], href: 'https://ygfamily.com/en/artists/blackpink/discography/255' },
+        { title: 'THE ALBUM', date: '2020.10.02', type: '정규 1집 · 타이틀 Lovesick Girls', songs: ['How You Like That', 'Ice Cream (with Selena Gomez)', 'Pretty Savage', 'Bet You Wanna (Feat. Cardi B)', 'Lovesick Girls', 'Crazy Over You', 'Love To Hate Me', 'You Never Know'], href: 'https://ygfamily.com/en/artists/blackpink/discography/249' },
+        { title: 'SQUARE ONE', date: '2016.08.08', type: '데뷔 싱글', songs: ['WHISTLE', 'BOOMBAYAH'], href: 'https://ygfamily.com/en/artists/blackpink/discography/228' }
+      ],
+      appearances: [],
+      schedules: [
+        { title: 'YG BLACKPINK 공식 공연 안내', sub: '투어 이력·새 공연 발표 확인', href: 'https://ygfamily.com/en/artists/blackpink/concert' },
+        { title: 'YG BLACKPINK 공식 공지', sub: '행사·예매·변경 사항', href: 'https://ygfamily.com/ko/artists/blackpink/notice' }
+      ],
+      news: [
+        { date: '2026.08.08', tag: '활동', title: '데뷔 10주년 기념 공식 영상 공개', href: 'https://www.youtube.com/watch?v=k--lCrP69hg' },
+        { date: '2026.02.27', tag: '컴백', title: '미니 3집 DEADLINE · 타이틀 GO 발매', href: 'https://ygfamily.com/en/artists/blackpink/discography/1651' },
+        { date: '2026.02.21', tag: '기록', title: '공식 YouTube 아티스트 채널 최초 1억 구독자 기록', href: 'https://en.yna.co.kr/view/AEN20260221002851320' }
+      ],
+      merch: [
+        { title: 'DEADLINE 공식 앨범 BLACK Ver.', sub: 'YG SELECT · 포토북·포토카드 수록 · 재고는 판매처 확인', href: 'https://ygselect.com/product/blackpink-3rd-mini-album-deadline-black-ver/12808/' },
+        { title: 'DEADLINE 공식 앨범 PINK Ver.', sub: 'YG SELECT · 포토북·포토카드 수록 · 재고는 판매처 확인', href: 'https://ygselect.com/product/blackpink-3rd-mini-album-deadline-pink-ver/12809/' },
+        { title: 'DEADLINE MOOD LIGHT Ver.', sub: 'YG SELECT · 앨범·무드등 구성 · 재고는 판매처 확인', href: 'https://www.ygselect.com/product/blackpink-3rd-mini-album-deadline-mood-light-ver/12813/' }
+      ],
+      campaigns: [
+        { kind: '콜라보', date: '2026.02.26', title: '국립중앙박물관 × BLACKPINK × Spotify', sub: 'DEADLINE 발매 기념 박물관 오디오 도슨트·리스닝존 · 2.26~3.08 종료', href: 'https://weverse.io/blackpink/notice/33735' }
+      ],
       accent: '#ff82b4', light: '#482938', dark: '#fff2f7', bg: '#180f18', night: true, shape: '♥'
     },
     {

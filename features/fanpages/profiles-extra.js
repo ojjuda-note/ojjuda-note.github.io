@@ -87,3 +87,22 @@ if (hearts2heartsProfile) {
   ];
   hearts2heartsProfile.sources.unshift({ label: 'Hearts2Hearts 일본 공식 프로필·공연', href: 'https://hearts2heartsofficial.jp/' });
 }
+
+/* BLACKPINK: YG-published member birthdays; no inferred physical or school details. */
+const blackpinkProfile = window.OJJUDA_FAN_PROFILES.blackpink;
+if (blackpinkProfile) {
+  blackpinkProfile.records = [
+    { year: '2026.02', title: '유튜브 공식 아티스트 채널 최초 1억 구독자', detail: '2026.02.20 달성 · 유튜브 레드 다이아몬드 크리에이터 어워드', href: 'https://en.yna.co.kr/view/AEN20260221002851320' },
+    { year: '2025–2026', title: '월드투어 DEADLINE', detail: '16개 도시·33회 공연 후 2026년 1월 종료', href: 'https://www.ygfamily.com/en/news/report/7378' }
+  ];
+  blackpinkProfile.awards = [
+    { year: '2026.01', title: '제40회 골든디스크 어워즈 디지털 음원 본상', detail: 'YG 공식 수상 이력', href: 'https://ygfamily.com/ko/artists/blackpink/profile' }
+  ];
+  const birthdays = { '지수': '1995.01.03', '제니': '1996.01.16', '로제': '1997.02.11', '리사': '1997.03.27' };
+  for (const member of blackpinkProfile.members) {
+    member.birthday = birthdays[member.name] || null;
+    member.source = 'https://ygfamily.com/ko/artists/blackpink/profile';
+  }
+  blackpinkProfile.sources.unshift({ label: 'YG 공식 멤버 프로필·생일·수상', href: 'https://ygfamily.com/ko/artists/blackpink/profile' });
+  blackpinkProfile.sources.push({ label: 'YG 공식 DEADLINE 음반·수록곡', href: 'https://ygfamily.com/en/artists/blackpink/discography/1651' });
+}
