@@ -419,7 +419,14 @@ function rankingCarousel(groups,head,token,items,onChange=()=>{},onResize=()=>{}
    }
    // Fetch the visible games in one request instead of competing with the feed
    // for thirty separate HTTP/database connections.
-   const batch=result(readLeaders(client,owner,entries.map(([id])=>id),fresh));
+   const batch=result(readLeaders(client,owner,entries.map(([id])=>id),fresh)).then(leaders=>{
+    if(active()&&token===request&&typeof CustomEvent==='function'){
+     window.dispatchEvent(new CustomEvent('ojjuda:leaders-loaded',{
+      detail:{owner,month:rankingMonth(),leaders}
+     }));
+    }
+    return leaders;
+   });
    const loads=entries.map(async([id])=>{
     const record=records.get(id);let loadVersion=0,loading=false;
     async function load(initial=false){

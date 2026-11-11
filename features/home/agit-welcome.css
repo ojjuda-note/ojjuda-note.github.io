@@ -1,0 +1,172 @@
+/* A gentle daily greeting; separate from the game's overlays. */
+dialog.agit-welcome-dialog {
+  box-sizing: border-box;
+  width: min(440px, calc(100vw - 28px));
+  max-width: 440px;
+  max-height: min(90dvh, 740px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid rgba(255, 210, 228, .8);
+  border-radius: 29px;
+  background: #fff8fc;
+  color: #44324c;
+  box-shadow: 0 28px 90px rgba(49, 29, 60, .26);
+  font-family: 'Noto Sans KR', sans-serif;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+dialog.agit-welcome-dialog::backdrop {
+  background: rgba(36, 30, 51, .52);
+  backdrop-filter: blur(6px);
+}
+.agit-welcome-card {
+  position: relative;
+  isolation: isolate;
+  padding: 42px 29px 27px;
+  text-align: center;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 8%, rgba(255, 213, 224, .95), transparent 48%),
+    radial-gradient(ellipse at 0% 70%, rgba(235, 223, 255, .55), transparent 48%),
+    linear-gradient(155deg, #fffafc 0%, #fff3f9 100%);
+}
+.agit-welcome-card::before,
+.agit-welcome-card::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 175px;
+  height: 175px;
+  border: 1px solid rgba(245, 149, 185, .27);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.agit-welcome-card::before { top: -89px; left: -63px; }
+.agit-welcome-card::after { right: -105px; bottom: 95px; }
+.agit-welcome-close {
+  position: absolute;
+  z-index: 2;
+  top: 15px;
+  right: 16px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .82);
+  color: #705b70;
+  font-size: 27px;
+  font-weight: 400;
+  cursor: pointer;
+}
+.agit-welcome-orbit {
+  position: absolute;
+  inset: 22px 24px auto;
+  display: flex;
+  justify-content: space-between;
+  color: #ec92ae;
+  font-size: 24px;
+  pointer-events: none;
+  user-select: none;
+}
+.agit-welcome-orbit span:nth-child(2) { margin-top: 47px; color: #d1a3e7; font-size: 18px; }
+.agit-welcome-orbit span:nth-child(3) { margin-top: 82px; font-size: 18px; }
+.agit-welcome-heart {
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  margin: 0 auto 17px;
+  border: 3px solid rgba(255, 255, 255, .95);
+  border-radius: 32px;
+  background: linear-gradient(140deg, #fff, #ffe1ee);
+  box-shadow: 0 10px 25px rgba(240, 100, 150, .16);
+  font-size: 47px;
+  transform: rotate(-7deg);
+  animation: agit-welcome-pop .62s cubic-bezier(.2, 1.4, .4, 1) both;
+}
+.agit-welcome-eyebrow {
+  display: inline-block;
+  color: #b15a81;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .17em;
+}
+#agit-welcome-title {
+  margin: 13px auto 12px;
+  color: #663956;
+  font-size: clamp(19px, 5vw, 24px);
+  font-weight: 800;
+  line-height: 1.45;
+  letter-spacing: -.055em;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+#agit-welcome-copy {
+  max-width: 33ch;
+  min-height: 3.6em;
+  margin: 0 auto 24px;
+  color: #705b70;
+  font-size: 14px;
+  line-height: 1.85;
+  word-break: keep-all;
+}
+.agit-welcome-actions { display: grid; gap: 10px; }
+.agit-welcome-actions button {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 16px;
+  border-radius: 15px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform .18s ease, background-color .18s ease;
+}
+.agit-welcome-actions button:active { transform: scale(.985); }
+.agit-welcome-okay {
+  border: 1px solid #e66c9f;
+  background: linear-gradient(110deg, #e85c98, #d978b8);
+  color: #fff;
+  box-shadow: 0 7px 18px rgba(218, 95, 143, .2);
+}
+.agit-welcome-next {
+  border: 1px solid #e9cbdc;
+  background: rgba(255, 255, 255, .8);
+  color: #924c74;
+}
+.agit-welcome-actions button:focus-visible,
+.agit-welcome-close:focus-visible { outline: 3px solid #7040cc; outline-offset: 3px; }
+.agit-welcome-note {
+  display: block;
+  margin-top: 17px;
+  color: #9b8493;
+  font-size: 11px;
+}
+@keyframes agit-welcome-pop {
+  from { opacity: 0; transform: translateY(14px) rotate(-13deg) scale(.78); }
+  to { opacity: 1; transform: translateY(0) rotate(-7deg) scale(1); }
+}
+@media (max-width: 380px) {
+  .agit-welcome-card { padding: 37px 18px 23px; }
+  .agit-welcome-heart { width: 78px; height: 78px; font-size: 39px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .agit-welcome-heart { animation: none; }
+  .agit-welcome-actions button { transition: none; }
+}
+@media (prefers-color-scheme: dark) {
+  dialog.agit-welcome-dialog { border-color: #79546d; background: #39293b; color: #fce7f0; }
+  .agit-welcome-card {
+    background: radial-gradient(ellipse at top, #593951, transparent 70%), linear-gradient(150deg, #39293b, #36253e);
+  }
+  .agit-welcome-close { background: #60465b; color: #fff1f8; }
+  .agit-welcome-heart { background: linear-gradient(140deg, #68405a, #7e4867); border-color: #8b6481; }
+  .agit-welcome-eyebrow { color: #f9b1ce; }
+  #agit-welcome-title { color: #ffdfef; }
+  #agit-welcome-copy { color: #e8cada; }
+  .agit-welcome-next { background: #5a3b52; border-color: #a16a8c; color: #ffdef0; }
+  .agit-welcome-note { color: #c7a8bd; }
+}
