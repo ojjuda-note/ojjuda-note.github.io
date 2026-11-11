@@ -416,8 +416,13 @@
     dialog.querySelector('.agit-welcome-close').addEventListener('click', close);
     dialog.querySelector('.agit-welcome-next').addEventListener('click', close);
     dialog.querySelector('.agit-welcome-okay').addEventListener('click', () => {
+      if (!previewOnly && isCurrent(session)) {
+        // Keep the overlay open until departure: closing it triggers World Back
+        // and can cancel the navigation before the signup page has loaded.
+        root.location.assign('/?auth=signup&next=world');
+        return;
+      }
       close();
-      if (!previewOnly && isCurrent(session)) root.location.assign('/?auth=signup&next=world');
     });
     dialog.addEventListener('click', event => { if (event.target === dialog) close(); });
     dialog.addEventListener('close', () => { dialog.remove(); if (openDialog === dialog) openDialog = null; });
