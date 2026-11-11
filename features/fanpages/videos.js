@@ -72,5 +72,15 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'xXZwZ0DolJc', title: 'MOON', kind: '뮤직비디오', source: 'BABYMONSTER / YG Entertainment' },
     { id: 'wlHwjkYpSr0', title: 'WE GO UP', kind: '뮤직비디오', source: 'BABYMONSTER / YG Entertainment' },
     { id: 'o9V8HrgJgIg', title: 'WE GO UP', kind: '퍼포먼스', source: 'BABYMONSTER Official' }
+  ],
+
+  hearts2hearts: [
+    { id: 'lu9GinsuyUQ', title: 'Next Chapter', kind: '뮤직비디오', source: 'Hearts2Hearts Official · 2026.10.16' },
+    { id: 'chl0R8C4NJ8', title: 'ICONIC HEART', kind: '뮤직비디오', source: 'SMTOWN · 2026.08.11' },
+    { id: '1VqxWNwgf5Q', title: 'Lemon Tang', kind: '뮤직비디오', source: 'SMTOWN · 2026.06.22' },
+    { id: 'F7sGJVUrkjQ', title: 'RUDE!', kind: '뮤직비디오', source: 'SMTOWN · 2026.02.20' },
+    { id: 'Ur7aK4FvK-U', title: 'FOCUS', kind: '뮤직비디오', source: 'SMTOWN · 2025.10.20' },
+    { id: 'ufwB9Uja_wM', title: 'Pretty Please', kind: '뮤직비디오', source: 'SMTOWN · 2025' },
+    { id: 'kxUA2wwYiME', title: 'The Chase', kind: '뮤직비디오', source: 'SMTOWN · 2025.02.24' }
   ]
 });
