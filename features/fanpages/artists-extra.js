@@ -3,8 +3,121 @@
    The single lead photo per group comes from Wikimedia Commons with attribution. */
 (() => {
   'use strict';
+  // Checked against the actual album, artist shop and official notice/calendar pages
+  // on 2026-11-11. A profile/home page is not a substitute for a resource destination.
+  const officialResources = {
+    kissoflife: {
+      album: { href: 'https://s2ent.co.kr/36/?bmode=view&idx=16134650&q=YToyOntzOjEyOiJrZXl3b3JkX3R5cGUiO3M6MzoiYWxsIjtzOjQ6InBhZ2UiO2k6Mjt9&t=board' },
+      merch: { title: 'KISS OF LIFE 일본 공식 굿즈', sub: 'Believe Music Store · 가격·재고는 판매처 확인', href: 'https://believemusicstore.com/?cbid=2987983&csid=0&mode=cate' },
+      schedule: { title: '일본 방송·미디어 일정', sub: 'KISS OF LIFE 일본 공식 사이트', href: 'https://kissoflife.jp/page/media.html' },
+      news: { title: 'KISS OF LIFE 일본 공식 소식', href: 'https://kissoflife.jp/page/index.html' }
+    },
+    kiiikiii: {
+      album: { href: 'https://www.starship-ent.com/board/newrelease/637' },
+      merch: { title: 'KiiiKiii 공식 상품', sub: '스타쉽 스퀘어 · KiiiKiii 상품 검색', href: 'https://starship-square.com/product/search.html?keyword=KiiiKiii' },
+      schedule: { title: 'Berriz 공식 일정', sub: 'KiiiKiii 월별 활동 달력', href: 'https://berriz.in/ko/kiiikiii/calendar/' },
+      news: { title: 'KiiiKiii Berriz 공식 공지', href: 'https://berriz.in/ko/kiiikiii/notice/' }
+    },
+    blackpink: {
+      album: { href: 'https://www.ygfamily.com/en/artists/blackpink/discography/228' },
+      merch: { title: 'BLACKPINK 공식 상품', sub: 'YG SELECT · BLACKPINK 상품 검색', href: 'https://www.ygselect.com/product/search.html?keyword=BLACKPINK' },
+      schedule: { title: 'BLACKPINK 공식 공연 안내', sub: 'YG · 투어·공연 정보', href: 'https://www.ygfamily.com/en/artists/blackpink/concert' },
+      news: { title: 'BLACKPINK Weverse 공식 공지', href: 'https://weverse.io/blackpink/notice' }
+    },
+    stayc: {
+      album: { href: 'https://www.highup-ent.com/stayc/star-to-a-young-culture/' },
+      merch: { title: 'STAYC 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/34' },
+      schedule: { title: '공연·활동 공지', sub: 'STAYC Weverse · 공연·방송 관련 공지', href: 'https://weverse.io/stayc/notice' },
+      news: { title: 'STAYC Weverse 공식 공지', href: 'https://weverse.io/stayc/notice' }
+    },
+    idle: {
+      album: { href: 'https://music.apple.com/us/album/i-am-ep/1378887583', source: 'Apple Music' },
+      merch: { title: 'i-dle 공식 상품', sub: 'CUBEE · i-dle 상품 목록', href: 'https://www.cubee.co.kr/product/list.html?cate_no=160' },
+      schedule: { title: '일본 공식 일정', sub: 'i-dle 일본 공식 사이트 · 활동 일정 목록', href: 'https://i-dle.cubeent.co.jp/?post_type=schedule' },
+      news: { title: 'i-dle 일본 공식 소식', href: 'https://i-dle.cubeent.co.jp/news/' }
+    },
+    bts: {
+      album: { href: 'https://shop.weverse.io/ko/shop/KRW/artists/2/sales/15', source: 'Weverse Shop 음반 상세' },
+      merch: { title: 'BTS 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/2' },
+      schedule: { title: '공연·활동 공지', sub: 'BTS Weverse · 공연·방송 관련 공지', href: 'https://weverse.io/bts/notice' },
+      news: { title: 'BTS Weverse 공식 공지', href: 'https://weverse.io/bts/notice' }
+    },
+    seventeen: {
+      album: { href: 'https://shop.weverse.io/ko/shop/KRW/artists/7/sales/16096', source: 'Weverse Shop 음반 상세' },
+      merch: { title: 'SEVENTEEN 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/7' },
+      schedule: { title: '공연·활동 공지', sub: 'SEVENTEEN Weverse · 공연·방송 관련 공지', href: 'https://weverse.io/seventeen/notice' },
+      news: { title: 'SEVENTEEN Weverse 공식 공지', href: 'https://weverse.io/seventeen/notice' }
+    },
+    straykids: {
+      album: { href: 'https://straykids.jype.com/discography/vuykzg89' },
+      merch: { title: 'Stray Kids 공식 상품', sub: 'FANS SHOP · Stray Kids 상품 목록', href: 'https://app.fans/shop/straykids' },
+      schedule: { title: 'Stray Kids 공식 일정', sub: 'JYP · 월별 활동 달력', href: 'https://straykids.jype.com/schedule' },
+      news: { title: 'Stray Kids JYP 공식 공지', href: 'https://straykids.jype.com/notice' }
+    },
+    txt: {
+      album: { href: 'https://ibighit.com/legacy/txt/the_dream_chapter-star-ko.html' },
+      merch: { title: 'TXT 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/3' },
+      schedule: { title: '공연·활동 공지', sub: 'TXT Weverse · 공연·방송 관련 공지', href: 'https://weverse.io/txt/notice' },
+      news: { title: 'TXT Weverse 공식 공지', href: 'https://weverse.io/txt/notice' }
+    },
+    enhypen: {
+      album: { href: 'https://beliftlab.com/artist/discography/ENHYPEN/1' },
+      merch: { title: 'ENHYPEN 공식 상품', sub: 'Weverse Shop · ENCHIN 상품 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/10?categoryId=7935' },
+      schedule: { title: 'ENHYPEN 공식 일정', sub: 'BELIFT LAB · 활동 달력', href: 'https://beliftlab.com/artist/schedule/ENHYPEN' },
+      news: { title: 'ENHYPEN Weverse 공식 공지', href: 'https://weverse.io/enhypen/notice' }
+    },
+    riize: {
+      album: { href: 'https://riizeofficial.jp/discography/the-1st-single-album-get-a-guitar/' },
+      merch: { title: 'RIIZE 공식 상품', sub: 'SMTOWN GLOBAL SHOP · RIIZE 상품 목록', href: 'https://global.shop.smtown.com/collections/riize' },
+      schedule: { title: '일본 공연·활동 공지', sub: 'RIIZE 일본 공식 사이트 · 공연·방송 관련 공지', href: 'https://riizeofficial.jp/news/' },
+      news: { title: 'RIIZE 일본 공식 소식', href: 'https://riizeofficial.jp/news/' }
+    },
+    boynextdoor: {
+      album: { href: 'https://kozofficial.com/artist/discography/BOYNEXTDOOR/23' },
+      merch: { title: 'BOYNEXTDOOR 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/112' },
+      schedule: { title: '공연·활동 공지', sub: 'BOYNEXTDOOR Weverse · 공연·방송 관련 공지', href: 'https://weverse.io/boynextdoor/notice' },
+      news: { title: 'BOYNEXTDOOR Weverse 공식 공지', href: 'https://weverse.io/boynextdoor/notice' }
+    },
+    tws: {
+      album: { href: 'https://shop.weverse.io/ko/shop/KRW/artists/165/sales/22961', source: 'Weverse Shop 음반 상세' },
+      merch: { title: 'TWS 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/165' },
+      schedule: { title: '공연·활동 공지', sub: 'TWS Weverse · 공연·방송 관련 공지', href: 'https://weverse.io/tws/notice' },
+      news: { title: 'TWS Weverse 공식 공지', href: 'https://weverse.io/tws/notice' }
+    },
+    nctdream: {
+      album: { href: 'https://music.apple.com/us/album/chewing-gum-single/1147458439', source: 'Apple Music' },
+      merch: { title: 'NCT DREAM 공식 상품', sub: 'SMTOWN GLOBAL SHOP · NCT DREAM 상품 목록', href: 'https://global.shop.smtown.com/collections/nct-dream' },
+      schedule: { title: '공연·활동 공지', sub: 'NCT DREAM Weverse · 공연·방송 관련 공지', href: 'https://weverse.io/nctdream/notice' },
+      news: { title: 'NCT DREAM Weverse 공식 공지', href: 'https://weverse.io/nctdream/notice' }
+    },
+    ateez: {
+      album: { href: 'https://ateez-official.jp/musics/7674' },
+      merch: { title: 'ATEEZ 일본 공식 굿즈 안내', sub: '일본 공식 사이트 · 굿즈 통신판매 안내', href: 'https://ateez-official.jp/contents/539062' },
+      schedule: { title: '일본 공식 일정', sub: 'ATEEZ 일본 공식 사이트 · 활동 달력', href: 'https://ateez-official.jp/vertical_calendar' },
+      news: { title: 'ATEEZ 일본 공식 소식', href: 'https://ateez-official.jp/contents/news' }
+    },
+    treasure: {
+      album: { href: 'https://www.ygfamily.com/en/artists/treasure/discography/423' },
+      merch: { title: 'TREASURE 공식 상품', sub: 'YG SELECT · TREASURE 상품 검색', href: 'https://www.ygselect.com/product/search.html?keyword=TREASURE' },
+      schedule: { title: 'TREASURE 공식 공연 안내', sub: 'YG · 투어·공연 정보', href: 'https://www.ygfamily.com/en/artists/treasure/concert' },
+      news: { title: 'TREASURE Weverse 공식 공지', href: 'https://weverse.io/treasure/notice' }
+    },
+    nctwish: {
+      album: { href: 'https://music.apple.com/us/album/wish-ep/1732218887', source: 'Apple Music' },
+      merch: { title: 'NCT WISH 공식 상품', sub: 'SMTOWN GLOBAL SHOP · NCT WISH 상품 목록', href: 'https://global.shop.smtown.com/collections/nct-wish' },
+      schedule: { title: '공연·활동 공지', sub: 'NCT WISH Weverse · 공연·방송 관련 공지', href: 'https://weverse.io/nctwish/notice' },
+      news: { title: 'NCT WISH Weverse 공식 공지', href: 'https://weverse.io/nctwish/notice' }
+    },
+    andteam: {
+      album: { href: 'https://www.andteam-official.jp/news/owsyjh', source: '공식 발매·트랙 안내' },
+      merch: { title: '&TEAM 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/USD/artists/75' },
+      schedule: { title: '일본 공식 사이트 일정', sub: '&TEAM 공식 사이트 · 활동 달력', href: 'https://www.andteam-official.jp/schedule' },
+      news: { title: '&TEAM 일본 공식 소식', href: 'https://www.andteam-official.jp/news' }
+    }
+  };
   const artistFrom = (entry) => {
     const image = commonsPhoto(entry.photo, entry.photoLabel || '단체', entry.photoYear, entry.credit, entry.license);
+    const resources = officialResources[entry.id] || {};
     return {
       id: entry.id,
       name: entry.name,
@@ -32,19 +145,13 @@
         { label: '공식 사이트', icon: '✦', url: entry.official },
         { label: 'YouTube', icon: '▷', url: entry.youtube }
       ],
-      merch: entry.merch || [
-        { title: '공식 앨범·굿즈 안내', sub: '아티스트 공식 채널에서 확인', href: entry.official }
-      ],
-      music: entry.music || [
-        { title: entry.debutWork, date: entry.debut, type: '데뷔 음반·싱글', songs: entry.songs, href: entry.official }
-      ],
+      merch: entry.merch || (resources.merch ? [resources.merch] : []),
+      music: entry.music || (resources.album ? [
+        { title: entry.debutWork, date: entry.debut, type: '데뷔 음반·싱글' + (resources.album.source ? ' · ' + resources.album.source : ''), songs: entry.songs, href: resources.album.href }
+      ] : []),
       appearances: entry.appearances || [],
-      schedules: entry.schedules || [
-        { title: '공식 활동·일정 확인', sub: '아티스트 공식 채널', href: entry.official }
-      ],
-      news: entry.news || [
-        { date: '공식', tag: '소식', title: entry.name + ' 최신 안내', href: entry.official }
-      ],
+      schedules: entry.schedules || (resources.schedule ? [resources.schedule] : []),
+      news: entry.news || (resources.news ? [{ date: '공식', tag: '소식', ...resources.news }] : []),
       campaigns: entry.campaigns || [],
       official: entry.official
     };

@@ -14,18 +14,63 @@
   const page = document.body.dataset.page;
   const ids = new Set(artists.map((item) => item.id));
   const categoryOf = (artist) => artist.category || (artist.id === 'a2osoul' ? 'boy' : 'girl');
+  let savedSnapshot = [];
+  const pendingSaved = new Map();
+  let savedTemporarily = false;
 
   function getSaved() {
     try {
       const parsed = JSON.parse(localStorage.getItem(savedKey) || '[]');
-      return Array.isArray(parsed) ? parsed.filter((id) => ids.has(id)) : [];
-    } catch { return []; }
+      savedSnapshot = Array.isArray(parsed) ? parsed.filter((id) => ids.has(id)) : [];
+    } catch { /* Keep the last readable state when browser storage is unavailable. */ }
+    const saved = new Set(savedSnapshot);
+    pendingSaved.forEach((active, id) => { active ? saved.add(id) : saved.delete(id); });
+    return [...saved];
+  }
+  function persistSaved() {
+    const next = getSaved();
+    try {
+      localStorage.setItem(savedKey, JSON.stringify(next));
+      savedSnapshot = next;
+      pendingSaved.clear();
+      savedTemporarily = false;
+    } catch { savedTemporarily = true; }
   }
   function toggleSaved(id) {
-    const next = new Set(getSaved());
-    next.has(id) ? next.delete(id) : next.add(id);
-    try { localStorage.setItem(savedKey, JSON.stringify([...next])); } catch { /* optional */ }
-    return next.has(id);
+    const active = !getSaved().includes(id);
+    if (savedSnapshot.includes(id) === active) pendingSaved.delete(id);
+    else pendingSaved.set(id, active);
+    if (pendingSaved.size) persistSaved();
+    else savedTemporarily = false;
+    return active;
+  }
+  function savedNotice(anchor, position = 'afterend') {
+    let notice = null;
+    return () => {
+      if (!savedTemporarily) { notice?.remove(); notice = null; return; }
+      if (notice) return;
+      notice = document.createElement('p');
+      notice.id = 'fan-saved-status';
+      notice.className = 'source-note';
+      notice.setAttribute('role', 'status');
+      notice.textContent = '이 브라우저에 저장하지 못해 관심 목록을 이 화면에서만 보관하고 있어요. 페이지를 닫으면 변경 내용이 사라질 수 있어요.';
+      anchor.insertAdjacentElement(position, notice);
+    };
+  }
+  function watchSavedState(refresh) {
+    const synchronize = () => {
+      // Merge only our unsaved choices into the latest stored list on recovery.
+      if (pendingSaved.size) persistSaved();
+      refresh();
+    };
+    window.addEventListener('storage', (event) => {
+      if (event.key === savedKey || event.key === null) synchronize();
+    });
+    window.addEventListener('pageshow', synchronize);
+    window.addEventListener('focus', synchronize);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') synchronize();
+    });
   }
   function groupUrl(id) { return `./artist.html?group=${encodeURIComponent(id)}`; }
   function openLink(url, label, className = '') { return `<a class="${className}" href="${url}" target="_blank" rel="noopener noreferrer">${label} <span aria-hidden="true">↗</span></a>`; }
@@ -220,9 +265,17 @@
     const grid = $('#artist-grid');
     const search = $('#artist-search');
     const buttons = [...document.querySelectorAll('[data-category]')];
+    const updateSavedNotice = savedNotice(grid, 'beforebegin');
     let filter = 'all';
     $('#artist-total').textContent = String(artists.length).padStart(2, '0');
     function render() {
+      const focused = document.activeElement;
+      const card = focused?.closest('.artist-tile');
+      const previousFocus = card && grid.contains(card) ? {
+        id: card.querySelector('[data-save]').dataset.save,
+        index: [...grid.children].indexOf(card),
+        control: [...card.querySelectorAll('a, button')].indexOf(focused)
+      } : null;
       const query = search.value.trim().toLocaleLowerCase();
       const saved = new Set(getSaved());
       const items = artists.filter((item) => {
@@ -251,6 +304,15 @@
         nextFocus?.focus({ preventScroll: true });
       }));
       attachImageFallback(grid);
+      updateSavedNotice();
+      if (previousFocus) {
+        const cards = [...grid.children];
+        const nextCard = cards.find((item) => item.querySelector('[data-save]').dataset.save === previousFocus.id)
+          || cards[Math.min(previousFocus.index, cards.length - 1)];
+        const nextFocus = nextCard?.querySelectorAll('a, button')[previousFocus.control]
+          || buttons.find((item) => item.dataset.category === filter);
+        nextFocus?.focus({ preventScroll: true });
+      }
     }
     buttons.forEach((button) => button.addEventListener('click', () => {
       filter = button.dataset.category;
@@ -258,6 +320,7 @@
       render();
     }));
     search.addEventListener('input', render);
+    watchSavedState(render);
     render();
   }
 
@@ -532,12 +595,20 @@
       <section class="other-section"><div class="detail-heading"><div><span>MORE FAN SPACES</span><h2>다른 아이돌</h2></div><a class="section-more" href="./index.html">모두 보기 ↗</a></div><div class="other-grid">${other}</div></section>
       <div class="detail-source-note">비공식 팬페이지 · 소개 정보 ${profile?.checkedAt || '확인 중'} 기준 · 사진 출처 및 일정·판매 정보는 공식 원문 확인 · 테마 색상은 팬메이드</div>`;
     const saveButton = $('#detail-save', root);
-    saveButton.addEventListener('click', () => {
-      const active = toggleSaved(artist.id);
+    const updateSavedNotice = savedNotice(saveButton.closest('.detail-hero-actions'));
+    function refreshSavedButton() {
+      const active = getSaved().includes(artist.id);
       saveButton.classList.toggle('is-saved', active);
       saveButton.textContent = active ? '♥ 관심 등록됨' : '♡ 관심 등록';
       saveButton.setAttribute('aria-pressed', String(active));
+      updateSavedNotice();
+    }
+    saveButton.addEventListener('click', () => {
+      toggleSaved(artist.id);
+      refreshSavedButton();
     });
+    watchSavedState(refreshSavedButton);
+    refreshSavedButton();
     initShareButton($('#detail-share', root), new URL(groupUrl(artist.id), location.href).href, `${artist.korean} | 오쭈다 팬페이지`);
     attachImageFallback(root);
     initProgressiveReveal(root);
