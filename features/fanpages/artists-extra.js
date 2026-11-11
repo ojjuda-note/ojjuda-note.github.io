@@ -390,7 +390,7 @@
         { title: 'STAY ALIVE 일본 정규 1집 CD', sub: 'UNIVERSAL MUSIC STORE · 통상반 · 재고·특전은 판매처 확인', href: 'https://store-annex.universal-music.co.jp/product/upch29482/' }
       ],
       campaigns: [
-        { kind: '협업', date: '2025.07.21', title: '태국관광청(TAT) × Kimpton Maa-Lai Bangkok', sub: 'I WANT IT 공식 뮤직비디오 협찬 · 광고 모델 계약과 별개', href: 'https://www.youtube.com/watch?v=W8ml4ryPwic' }
+        { kind: '콜라보', date: '2025.07.21', title: '태국관광청(TAT) × Kimpton Maa-Lai Bangkok', sub: 'I WANT IT 공식 뮤직비디오 협찬 · 광고 모델 계약과 별개', href: 'https://www.youtube.com/watch?v=W8ml4ryPwic' }
       ],
       accent: '#e4897b', light: '#ffe7df', dark: '#865366', bg: '#fff8f3', shape: '✾'
     },
