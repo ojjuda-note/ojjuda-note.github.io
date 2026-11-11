@@ -24,8 +24,8 @@ const commonsPhoto = (file, label, year, author, license = 'CC BY 4.0') => {
     optimized: Boolean(stored),
   };
 };
-const creditedPhoto = (image, label, year, credit, href) => ({
-  label, meta: `${year} · PHOTO`, image, full: image, href, credit
+const creditedPhoto = (image, label, year, credit, href, sourceLabel) => ({
+  label, meta: `${year} · PHOTO`, image, full: image, href, credit, sourceLabel
 });
 window.OJJUDA_FAN_ARTISTS = [
   {
@@ -316,13 +316,13 @@ window.OJJUDA_FAN_ARTISTS = [
     id: "a2omay", name: "A2O MAY", korean: "에이투오 메이", fan: "MAYnia", agency: "A2O ENTERTAINMENT", members: ["CHENYU", "SHIJIE", "QUCHANG", "MICHE", "KAT"],
     accent: "#d13f61", light: "#ffd7d6", dark: "#602034", shape: "✺", status: "BAD HABITS TONITE · 2026",
     image: "https://assets.monstr.dev/media/group/4005a04cdc3c4c829588f35d3397b0d6b94538a2-w480.webp",
-    imageCredit: "A2O Entertainment · PR TIMES", imageLink: "https://a2o.monstr.dev/en/groups/a2o-may",
+    imageCredit: "A2O Entertainment · PR TIMES", imageLink: "https://prtimes.jp/main/html/rd/p/000001831.000055377.html",
     photos: [
-      creditedPhoto("https://assets.monstr.dev/media/group/4005a04cdc3c4c829588f35d3397b0d6b94538a2-w480.webp", "Love Got Me Ooh · 단체", "2026", "A2O Entertainment", "https://a2o.monstr.dev/en/groups/a2o-may"),
-      creditedPhoto("https://assets.monstr.dev/media/media/354c70d0ea9c298f81db0207b87d2ad80a682b48-w480.webp", "FILA FUSION · 단체", "2026", "FILA FUSION × A2O MAY", "https://a2o.monstr.dev/en/groups/a2o-may"),
+      creditedPhoto("https://assets.monstr.dev/media/group/4005a04cdc3c4c829588f35d3397b0d6b94538a2-w480.webp", "Love Got Me Ooh · 단체", "2026", "A2O Entertainment", "https://prtimes.jp/main/html/rd/p/000001831.000055377.html"),
+      creditedPhoto("https://assets.monstr.dev/media/media/354c70d0ea9c298f81db0207b87d2ad80a682b48-w480.webp", "FILA FUSION · 단체", "2026", "FILA FUSION × A2O MAY", "https://assets.monstr.dev/media/media/354c70d0ea9c298f81db0207b87d2ad80a682b48-w480.webp", "사진 파일 ↗"),
       creditedPhoto("https://assets.monstr.dev/media/media/b19c24d6b76eb7962384299a5d0b2bcc85576500-w480.webp", "MAYgic Tonite", "2026", "A2O MAY 공식 X", "https://x.com/A2O_MAY"),
-      creditedPhoto("https://assets.monstr.dev/media/member/7f994106bc11cb80b5b3672d124f429c2c5cd8ec-w480.webp", "CHENYU · 콘셉트", "2026", "A2O Entertainment", "https://a2o.monstr.dev/en/groups/a2o-may"),
-      creditedPhoto("https://assets.monstr.dev/media/member/3e12c379ad52370fc20ea78b6f84060fbbfe10c7-w480.webp", "SHIJIE · 콘셉트", "2026", "A2O Entertainment", "https://a2o.monstr.dev/en/groups/a2o-may")
+      creditedPhoto("https://assets.monstr.dev/media/member/7f994106bc11cb80b5b3672d124f429c2c5cd8ec-w480.webp", "CHENYU · 콘셉트", "2026", "A2O Entertainment", "https://assets.monstr.dev/media/member/7f994106bc11cb80b5b3672d124f429c2c5cd8ec-w480.webp", "사진 파일 ↗"),
+      creditedPhoto("https://assets.monstr.dev/media/member/3e12c379ad52370fc20ea78b6f84060fbbfe10c7-w480.webp", "SHIJIE · 콘셉트", "2026", "A2O Entertainment", "https://assets.monstr.dev/media/member/3e12c379ad52370fc20ea78b6f84060fbbfe10c7-w480.webp", "사진 파일 ↗")
     ],
     links: [
       { label: "Instagram", icon: "◎", url: "https://www.instagram.com/a2o.may/" },
@@ -399,9 +399,9 @@ window.OJJUDA_FAN_ARTISTS = [
     imageCredit: "A2O Entertainment · PR TIMES", imageLink: "https://prtimes.jp/main/html/rd/p/000000007.000192898.html",
     photos: [
       creditedPhoto("https://assets.monstr.dev/media/group/aaa802f2e5fe886835dc4933eef8493812d91c5b-w480.webp", "SUPERSTAR · 단체", "2026", "A2O Entertainment", "https://prtimes.jp/main/html/rd/p/000000007.000192898.html"),
-      creditedPhoto("https://assets.monstr.dev/media/media/bc930cab6fa911b05649407729dcefbd7d168c8d-w480.webp", "인기가요 · 단체", "2026", "SBS KPOP", "https://a2o.monstr.dev/th/groups/a2o-soul"),
-      creditedPhoto("https://assets.monstr.dev/media/media/dbfa6b5321c46c9ba887d472aebbf6c4b99bdfb6-w480.webp", "M2 릴레이댄스", "2026", "M2 · A2O SOUL", "https://x.com/A2O_SOUL"),
-      creditedPhoto("https://assets.monstr.dev/media/media/20ee677318e7be3b74412416b8ed705470d87019-w480.webp", "SUPERSTAR · 연습실", "2026", "A2O Entertainment", "https://a2o.monstr.dev/th/groups/a2o-soul"),
+      creditedPhoto("https://assets.monstr.dev/media/media/bc930cab6fa911b05649407729dcefbd7d168c8d-w480.webp", "인기가요 · 단체", "2026", "SBS KPOP", "https://x.com/kpop_sbs/status/2114210723551445233"),
+      creditedPhoto("https://assets.monstr.dev/media/media/dbfa6b5321c46c9ba887d472aebbf6c4b99bdfb6-w480.webp", "M2 릴레이댄스", "2026", "M2 · A2O SOUL", "https://x.com/M2MPD/status/2116417492256166020"),
+      creditedPhoto("https://assets.monstr.dev/media/media/20ee677318e7be3b74412416b8ed705470d87019-w480.webp", "SUPERSTAR · 연습실", "2026", "A2O Entertainment", "https://assets.monstr.dev/media/media/20ee677318e7be3b74412416b8ed705470d87019-w480.webp", "사진 파일 ↗"),
       creditedPhoto("https://cdnimg.melon.co.kr/cm2/artistcrop/images/052/17/448/5217448_20261012183224_500.jpg", "데뷔 · 단체", "2026", "A2O Entertainment · Melon", "https://www.melon.com/artist/detail.htm?artistId=5217448")
     ],
     links: [
