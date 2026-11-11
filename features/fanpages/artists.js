@@ -242,7 +242,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "FANS", icon: "✦", url: "https://app.fans/community/twice" }
     ],
     merch: [
-      { title: "TWICE OFFICIAL", sub: "공식 스토어", href: "https://TWICE.lnk.to/Shop" },
+      { title: "TWICE OFFICIAL", sub: "공식 스토어 · FANS SHOP", href: "https://app.fans/shop/twice" },
       { title: "JYP FANS", sub: "커뮤니티", href: "https://app.fans/community/twice" }
     ],
     music: [
