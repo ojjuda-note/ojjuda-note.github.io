@@ -337,7 +337,7 @@ window.OJJUDA_FAN_ARTISTS = [
     music: [
       { title: "BAD HABITS TONITE", date: "2026.10.18", type: "싱글", songs: ["BAD HABITS TONITE", "I Follow", "BAD HABITS TONITE (Chinese Ver.)", "I Follow (Chinese Ver.)"], href: "https://www.melon.com/album/detail.htm?albumId=14801672" },
       { title: "Love Got Me Ooh", date: "2026.07.17", type: "싱글", songs: ["Love Got Me Ooh"], href: "https://orcd.co/A2OMAY_Love_Got_Me_Ooh" },
-      { title: "Under My Skin (A2O)", date: "2024.12.20", type: "데뷔 싱글", songs: ["Under My Skin (A2O)"], href: "https://www.melon.com/artist/detail.htm?artistId=4531270" }
+      { title: "Under My Skin (A2O)", date: "2024.12.20", type: "데뷔 싱글", songs: ["Under My Skin (A2O) [English Ver.]", "Under My Skin (A2O) [Chinese Ver.]"], href: "https://music.apple.com/us/album/under-my-skin-a2o-single/1791613999" }
     ],
     appearances: [],
     campaigns: [
