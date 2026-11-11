@@ -58,7 +58,7 @@
     if(lastLocation&&lastLocation!==locationKey)query='';
     lastLocation=locationKey;
     const selected=activeGroup(area,tab);
-    const selectedLabel=GROUPS.find(group=>group.id===selected)?.label || '운영 현황';
+    const selectedLabel=allItems.find(item=>key(item.area,item.tab)===locationKey)?.label || '운영 요약';
     const favorites=pins.map(id=>allItems.find(item=>key(item.area,item.tab)===id)).filter(Boolean);
     const matchedFavorites=favorites.filter(item=>!query||(item.label+' '+GROUPS.find(group=>group.id===item.group)?.label).toLocaleLowerCase('ko-KR').includes(query));
     const favoriteHtml=favorites.map(item=>itemHtml(item,area,tab,summary,GROUPS.find(group=>group.id===item.group)?.label)).join('');
@@ -71,8 +71,10 @@
       return `<details class="adm-menu-group" data-group="${group.id}" data-active="${selected===group.id}"${(query&&matched)||(!query&&selected===group.id)?' open':''}${query&&!matched?' hidden':''}><summary>${escape(group.label)}<span class="adm-menu-chevron" aria-hidden="true">⌄</span></summary><div class="adm-menu-group-items">${items}</div></details>`;
     }).join('');
     return `<aside class="adm-navigation" aria-label="관리자 메뉴" data-area="${escape(area)}" data-tab="${escape(tab)}">
-      <button type="button" class="adm-menu-toggle" data-act="adm-nav-toggle" aria-expanded="false" aria-controls="adm-nav-body"><span>☰ 관리 메뉴</span><strong>${escape(selectedLabel)}</strong><span aria-hidden="true">⌄</span></button>
+      <button type="button" class="adm-menu-toggle" data-act="adm-nav-toggle" aria-expanded="false" aria-controls="adm-nav-body"><span>☰ 메뉴 선택</span><strong>${escape(selectedLabel)}</strong><span aria-hidden="true">⌄</span></button>
+      <button type="button" class="adm-nav-backdrop" data-act="adm-nav-toggle" aria-label="관리 메뉴 닫기" tabindex="-1" hidden></button>
       <div class="adm-nav-body" id="adm-nav-body">
+        <div class="adm-drawer-head"><strong>관리 메뉴</strong><button type="button" data-act="adm-nav-toggle" aria-label="관리 메뉴 닫기">닫기 ×</button></div>
         <label class="adm-menu-search-label" for="adm-menu-search">기능 찾기</label>
         <input class="adm-menu-search" id="adm-menu-search" data-admin-search type="search" autocomplete="off" placeholder="관리 기능 검색" value="${escape(query)}">
         <section class="adm-menu-favorites" data-admin-pins${matchedFavorites.length?'':' hidden'}><h3>★ 즐겨찾기 <small>최대 6개</small></h3>${favoriteHtml}</section>
@@ -120,16 +122,20 @@
   }
   function replaceNav(options,focusKey='') {
     const old=global.document.querySelector('.adm-navigation');if(!old)return;
-    const expanded=old.classList.contains('is-open'),scrollTop=old.scrollTop;
+    const expanded=old.classList.contains('is-open'),scrollTop=old.scrollTop,bodyScroll=old.querySelector('.adm-nav-body')?.scrollTop||0;
     const template=global.document.createElement('template');template.innerHTML=render(options);
     const next=template.content.querySelector('.adm-navigation');if(!next)return;
-    if(expanded){next.classList.add('is-open');next.querySelector('.adm-menu-toggle')?.setAttribute('aria-expanded','true');}
-    old.replaceWith(next);next.scrollTop=scrollTop;
+    if(expanded){next.classList.add('is-open');next.querySelector('.adm-menu-toggle')?.setAttribute('aria-expanded','true');next.querySelector('.adm-nav-backdrop')?.removeAttribute('hidden');}
+    old.replaceWith(next);next.scrollTop=scrollTop;if(next.querySelector('.adm-nav-body'))next.querySelector('.adm-nav-body').scrollTop=bodyScroll;
     if(focusKey){const [area,tab]=focusKey.split(':');next.querySelector(`[data-act="adm-pin"][data-area="${area}"][data-v="${tab}"]`)?.focus({preventScroll:true});}
   }
   function toggleDrawer(button) {
     const nav=button.closest('.adm-navigation');if(!nav)return;
-    const expanded=nav.classList.toggle('is-open');button.setAttribute('aria-expanded',String(expanded));
+    const expanded=nav.classList.toggle('is-open');
+    nav.querySelector('.adm-menu-toggle')?.setAttribute('aria-expanded',String(expanded));
+    const backdrop=nav.querySelector('.adm-nav-backdrop');if(backdrop)backdrop.hidden=!expanded;
+    if(expanded)nav.querySelector('.adm-drawer-head button')?.focus({preventScroll:true});
+    else nav.querySelector('.adm-menu-toggle')?.focus({preventScroll:true});
   }
   global.document.addEventListener('input',event=>{
     if(event.target?.matches?.('[data-admin-search]')) filter(event.target);

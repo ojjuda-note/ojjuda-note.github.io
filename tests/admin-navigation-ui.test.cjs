@@ -146,7 +146,14 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
       ['운영 현황⌄','회원·ZU⌄','콘텐츠 관리⌄','신고·안전⌄','운영·보관⌄']);
     assert.equal(await page.locator('.adm-navigation').evaluate(node => node.scrollWidth <= node.clientWidth), true,
       'five grouped menus fit the mobile width');
-    await page.locator('[data-act="adm-nav-toggle"]').click();
+    await page.locator('.adm-menu-toggle').click();
+    assert.equal(await page.locator('.adm-nav-body').evaluate(node => getComputedStyle(node).position), 'fixed',
+      'phone menu opens as a floating sheet without pushing the page down');
+    assert.equal(await page.locator('.adm-nav-backdrop').isVisible(), true, 'touch backdrop covers the underlying page');
+    assert.ok(await page.locator('.adm-drawer-head button').evaluate(node => node.getBoundingClientRect().height >= 44));
+    await page.locator('.adm-drawer-head button').click();
+    assert.equal(await page.locator('.adm-nav-body').isVisible(), false, 'a large close control dismisses the mobile menu');
+    await page.locator('.adm-menu-toggle').click();
     await page.getByLabel('기능 찾기').fill('포토땅');
     assert.equal(await page.locator('.adm-menu-group:not([hidden])').count(),1,'search narrows the group list');
     assert.equal(await page.locator('.adm-menu-link:not([hidden])').filter({hasText:'포토땅따먹기'}).count(),1);
@@ -216,7 +223,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.evaluate(() => fixture.controllers.accounts.destroyed), true);
     for (const width of [320, 390, 1280]) {
       await page.setViewportSize({ width, height: 844 });
-      if(width<960 && !(await page.locator('.adm-navigation').evaluate(nav=>nav.classList.contains('is-open'))))
+      if(width<1180 && !(await page.locator('.adm-navigation').evaluate(nav=>nav.classList.contains('is-open'))))
         await page.locator('.adm-menu-toggle').click();
       const labels = await page.locator('.adm-menu-link').evaluateAll(buttons => buttons.filter(button=>button.getClientRects().length).map(button => ({
         text: button.textContent, width: button.clientWidth, content: button.scrollWidth,

@@ -37,8 +37,8 @@
 <meta name="apple-mobile-web-app-title" content="오쭈다 아지트">
 <!-- 서버 연결 정보 (같은 폴더의 config.js). 없으면 체험 모드로 실행돼요 -->
 <script src="config.js?v=20261111-shared-member-auth1" defer></script>
-<link rel="stylesheet" href="/admin/navigation.css?v=20261111-admin-nav1">
-<script src="/admin/navigation.js?v=20261111-admin-nav1" defer></script>
+<link rel="stylesheet" href="/admin/navigation.css?v=20261111-admin-nav2">
+<script src="/admin/navigation.js?v=20261111-admin-nav2" defer></script>
 <script src="/admin/world-admin-loader.js?v=20261111-feature-detail1" defer></script>
 <link rel="stylesheet" href="/features/friends/friend-messages.css?v=20261106-source-folders1">
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
@@ -436,7 +436,7 @@ function adminDataTab(){return L.tab;}
 let adminMenuSummary={owner:null,data:null,pending:false};
 function ensureAdminMenuSummary(){
  const owner=D.user?.id;
- if(!owner||!D.isAdmin)return;
+ if(!owner||!D.isAdmin||!S?.from||!S?.rpc||!S?.schema)return;
  if(adminMenuSummary.owner!==owner)adminMenuSummary={owner,data:null,pending:false};
  if(L.cache.overview&&!L.cache.overview.error){adminMenuSummary.data=L.cache.overview;return;}
  if(L.tab==='overview'||adminMenuSummary.pending||adminMenuSummary.data)return;

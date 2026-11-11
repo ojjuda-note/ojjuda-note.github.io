@@ -45,6 +45,7 @@ assert.ok(mountStart>0);
     await page.addScriptTag({content:read('admin/connections.js')});
     await page.addScriptTag({content:`var ${nav} var ${segment};
       function adminIsHome(){return g.tab==='admin'&&L.area==='account'&&L.tab==='overview'}
+      function ensureAdminMenuSummary(){}
       ${render} ${mount}
       function showConnections(){L.tab='connections';L.area=adminAreaForTab(L.tab);document.querySelector('#admin-root').innerHTML=y0();mountConnections();}
       showConnections();`});
