@@ -82,5 +82,15 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'Ur7aK4FvK-U', title: 'FOCUS', kind: '뮤직비디오', source: 'SMTOWN · 2025.10.20' },
     { id: 'ufwB9Uja_wM', title: 'Pretty Please', kind: '뮤직비디오', source: 'SMTOWN · 2025' },
     { id: 'kxUA2wwYiME', title: 'The Chase', kind: '뮤직비디오', source: 'SMTOWN · 2025.02.24' }
-  ]
+  ],
+
+  kissoflife: [
+    { id: 'RcRYAE0ZcLQ', title: '2026 KGMA 무대 안무 연습', kind: '안무 영상', source: 'KISS OF LIFE Official · 2026.11.08' },
+    { id: 'CLittbmuKGY', title: '일본 유니버설 스튜디오 탐방', kind: '비하인드', source: 'KISS OF LIFE Official · 2026.11.05' },
+    { id: 'q9rdAk_XPpE', title: 'NOL FESTIVAL 2026 현장', kind: '비하인드', source: 'KISS OF LIFE Official · 2026.10.31' },
+    { id: 'fJ4KZ3reb50', title: 'SWEAT (Japanese Ver.)', kind: '뮤직비디오', source: 'KISS OF LIFE Official · 2026.09.16' },
+    { id: 'EOH0DTOoEfg', title: 'SWEAT', kind: '퍼포먼스', source: 'KISS OF LIFE Official · 2026.08.11' },
+    { id: 'eTvUZymLyGY', title: 'SWEAT', kind: '뮤직비디오', source: 'KISS OF LIFE Official · 2026.08.04' },
+    { id: 'ygYPwsjyCzQ', title: 'Who is she', kind: '뮤직비디오', source: 'KISS OF LIFE Official · 2026.04.06' }
+  ],
 });
