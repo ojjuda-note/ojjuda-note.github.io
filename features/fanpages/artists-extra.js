@@ -100,10 +100,62 @@
     {
       id: 'babymonster', name: 'BABYMONSTER', korean: '베이비몬스터', category: 'girl', fan: 'MONSTIEZ', agency: 'YG Entertainment',
       members: ['루카', '파리타', '아사', '아현', '라미', '로라', '치키타'],
-      debut: '2023.11.27', debutWork: 'BATTER UP', songs: ['BATTER UP'],
-      concept: '강렬한 무대와 다채로운 보컬이 만나는 일곱 멤버.',
-      official: 'https://www.ygfamily.com/', youtube: 'https://www.youtube.com/@BABYMONSTER',
+      debut: '2024.04.01', debutWork: 'BABYMONS7ER', songs: ['SHEESH', 'LIKE THAT'],
+      concept: '2023년 BATTER UP을 발표하고, 2024년 4월 일곱 멤버로 정식 데뷔한 YG의 걸그룹.',
+      official: 'https://ygfamily.com/ko/artists/babymonster/profile', youtube: 'https://www.youtube.com/@BABYMONSTER',
       photo: 'BabyMonster Promoting drip on 2024112.png', photoLabel: 'DRIP 활동', photoYear: '2024', credit: 'SBS Radio', license: 'CC BY 3.0',
+      morePhotos: [
+        commonsPhoto('BABYMONSTER in Seattle.jpg', '시애틀 월드투어 공연', '2025', 'David Lee', 'CC BY 4.0'),
+        commonsPhoto('Rora at Babymonster World Tour in Jakarta 2026.jpg', '로라 · 자카르타 투어', '2026', 'Izzatfikry99', 'CC BY-SA 4.0'),
+        commonsPhoto('Adidas Orchard Ignition Event X Babymonster - Chiquita 30082026.jpg', '치키타 · 아디다스 행사', '2026', 'Asalover2004', 'CC BY-SA 4.0')
+      ],
+      music: [
+        { title: 'DESERVE', date: '2026.10.23', type: '디지털 싱글', songs: ['DESERVE'], href: 'https://www.ygfamily.com/jp/artists/babymonster/discography/1673' },
+        { title: 'SUGAR HONEY ICE TEA', date: '2026.06.08', type: '디지털 싱글', songs: ['SUGAR HONEY ICE TEA'], href: 'https://www.ygfamily.com/en/artists/babymonster/discography/1664' },
+        { title: '춤 (CHOOM)', date: '2026.05.04', type: '미니 3집 · 타이틀 CHOOM', songs: ['MOON', 'CHOOM', 'I LIKE IT', 'LOCKED IN'], href: 'https://www.ygfamily.com/en/artists/babymonster/discography/1656' },
+        { title: 'WE GO UP', date: '2025.10.10', type: '미니 2집 · 타이틀 WE GO UP', songs: ['WE GO UP', 'PSYCHO', 'SUPA DUPA LUV', 'WILD'], href: 'https://www.ygfamily.com/en/artists/babymonster/discography/1644' },
+        { title: 'HOT SAUCE', date: '2025.07.01', type: '디지털 싱글', songs: ['HOT SAUCE'], href: 'https://ygfamily.com/en/artists/babymonster/discography/1628' },
+        { title: 'DRIP', date: '2024.11.01', type: '정규 1집 · 더블 타이틀 DRIP / CLIK CLAK', songs: ['CLIK CLAK', 'DRIP', 'Love, Maybe', 'Really Like You', 'BILLIONAIRE', 'Love In My Heart', 'Woke Up In Tokyo (RUKA & ASA)', 'FOREVER', 'BATTER UP (Remix)'], href: 'https://ygfamily.com/en/artists/babymonster/discography/1615' },
+        { title: 'FOREVER', date: '2024.07.01', type: '디지털 싱글', songs: ['FOREVER'], href: 'https://ygfamily.com/en/artists/babymonster/discography/1606' },
+        { title: 'BABYMONS7ER', date: '2024.04.01', type: '7인조 정식 데뷔 미니 앨범 · 타이틀 SHEESH', songs: ['MONSTERS (Intro)', 'SHEESH', 'LIKE THAT', 'Stuck In The Middle (7 ver.)', 'BATTER UP (7 ver.)', 'DREAM', 'Stuck In The Middle (Remix)'], href: 'https://ygfamily.com/en/artists/babymonster/discography/1594' },
+        { title: 'Stuck In The Middle', date: '2024.02.01', type: '선공개 싱글', songs: ['Stuck In The Middle'], href: 'https://ygfamily.com/en/artists/babymonster/discography/1591' },
+        { title: 'BATTER UP', date: '2023.11.27', type: '첫 디지털 싱글', songs: ['BATTER UP'], href: 'https://www.ygfamily.com/en/artists/babymonster/discography/1578' }
+      ],
+      appearances: [
+        { date: '2026-11-12', title: 'MTV JAPAN BABYMONSTER VideoSelects', sub: '일본 MTV · 23:00~24:00 (현지 시간) · 뮤직비디오 특집', href: 'https://www.sonymusic.co.jp/artist/BABYMONSTER/info/587656' },
+        { date: '2026-11-14', title: 'CHOOM 월드투어 · 쿠알라룸푸르', sub: '말레이시아 Unifi Arena · 현지 17:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
+        { date: '2026-11-18', title: 'MTV JAPAN BABYMONSTER VideoSelects 재방송', sub: '일본 MTV · 21:00~22:00 (현지 시간)', href: 'https://www.sonymusic.co.jp/artist/BABYMONSTER/info/587656' },
+        { date: '2026-11-21', title: 'CHOOM 월드투어 · 타이베이', sub: '대만 Taipei Arena · 현지 19:30', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
+        { date: '2026-11-22', title: 'CHOOM 월드투어 · 타이베이', sub: '대만 Taipei Arena · 현지 18:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
+        { date: '2026-11-28', title: 'CHOOM 월드투어 · 싱가포르', sub: 'Singapore Indoor Stadium · 현지 18:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
+        { date: '2026-11-29', title: 'CHOOM 월드투어 · 싱가포르 추가 공연', sub: 'Singapore Indoor Stadium · 현지 18:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
+        { date: '2026-12-08', title: 'CHOOM 월드투어 · 오클랜드', sub: '뉴질랜드 Spark Arena · 시간은 예매처 확인', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
+        { date: '2026-12-11', title: 'CHOOM 월드투어 · 멜버른', sub: '호주 Rod Laver Arena · 시간은 예매처 확인', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
+        { date: '2026-12-13', title: 'CHOOM 월드투어 · 시드니', sub: '호주 Afterpay Arena · 시간은 예매처 확인', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
+        { date: '2027-01-08', title: 'CHOOM 월드투어 · 홍콩', sub: 'AsiaWorld-Arena · 현지 20:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
+        { date: '2027-01-09', title: 'CHOOM 월드투어 · 홍콩', sub: 'AsiaWorld-Arena · 현지 18:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
+        { date: '2027-01-10', title: 'CHOOM 월드투어 · 홍콩', sub: 'AsiaWorld-Arena · 현지 18:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' }
+      ],
+      schedules: [
+        { title: 'YG 공식 월드투어 일정·예매', sub: '도시별 장소·현지 시간·변경사항', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
+        { title: 'YG 공식 공연 공지', sub: '현지 예매 규정·추가 회차 안내', href: 'https://ygfamily.com/ko/artists/babymonster/notice' },
+        { title: '일본 공식 미디어·일정', sub: '일본 방송·발매 일정', href: 'https://yg-babymonster-official.jp/schedule' }
+      ],
+      news: [
+        { date: '2026.10.23', tag: '컴백', title: '디지털 싱글 DESERVE · 공식 MV 공개', href: 'https://www.sonymusic.co.jp/artist/BABYMONSTER/info/587905' },
+        { date: '2026.10.15', tag: '방송', title: '11.12·11.18 일본 MTV 뮤직비디오 특집 방송 안내', href: 'https://www.sonymusic.co.jp/artist/BABYMONSTER/info/587656' },
+        { date: '2026.09.25', tag: '협업', title: '루카·아사, 일본 패션 브랜드 SNIDEL 홍보대사 선정', href: 'https://prtimes.jp/main/html/rd/p/000004511.000018505.html' }
+      ],
+      merch: [
+        { title: 'DESERVE 공식 MD 예약 판매', sub: 'YG SELECT · 11.06 11:00 시작 · 한정 수량, 품절 여부 판매처 확인', href: 'https://www.ygselect.com/article/event/12/657823/' },
+        { title: '춤 (CHOOM) 공식 앨범', sub: 'YG SELECT · Crimson / Metallic / Prism 구성 · 재고는 판매처 확인', href: 'https://ygselect.com/product/babymonster-3rd-mini-album-%EC%B6%A4-choom-crimson-metallic-prism-ver/12957/' },
+        { title: 'BABYMONSTER 공식 응원봉', sub: 'YG SELECT · 판매·재입고 상태는 판매처 확인', href: 'https://www.ygselect.com/product/babymonster-official-light-stick/10557/category/32/display/1/' }
+      ],
+      campaigns: [
+        { kind: '콜라보', date: '2026.08.30', title: 'adidas × Mercedes-AMG F1 · Orchard Ignition', sub: '싱가포르 adidas × F1 협업 행사에 초청 아티스트로 참여', href: 'https://cnalifestyle.channelnewsasia.com/entertainment/babymonster-adidas-orchard-ignition-singapore-2026-587441' },
+        { kind: '홍보대사', date: '2026.09.24', title: '루카·아사 × SNIDEL', sub: '일본 패션 브랜드 홍보대사 · 브랜드 공식 발표', href: 'https://prtimes.jp/main/html/rd/p/000004511.000018505.html' },
+        { kind: '광고', date: '2025.02.13', title: 'BANILA CO × BABYMONSTER', sub: '바닐라코 브랜드 모델·메이크업 캠페인 (2025년 발표)', href: 'https://www.wwdjapan.com/articles/2035672' }
+      ],
       accent: '#d13f5c', light: '#ffe3e8', dark: '#702f45', bg: '#fff5f5', shape: '✴'
     },
     {

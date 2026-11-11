@@ -145,13 +145,13 @@ def photo_record(filename: str, cache: Path, *, offline: bool) -> tuple[str, dic
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source", type=Path, required=True)
+    parser.add_argument("--source", type=Path, required=True, action="append", help="Repeat to include more fanpage source files")
     parser.add_argument("--cache", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--offline", action="store_true", help="Use already-licensed cache without network")
     args = parser.parse_args()
 
-    source = args.source.read_text(encoding="utf-8")
+    source = "\n".join(path.read_text(encoding="utf-8") for path in args.source)
     filenames = list(dict.fromkeys(FILE_PATTERN.findall(source)))
     if not filenames:
         raise RuntimeError("No Commons photos found; check the source parser")

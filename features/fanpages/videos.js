@@ -64,5 +64,13 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'Yw4f2ov6BrA', title: '긴 소원 (Birthday Wish) M/V REACTION', kind: '리액션', source: 'NMIXX Official · 2026.10.27' },
     { id: '-SEKt_0pdHM', title: 'Crescendo', kind: '뮤직비디오', source: 'NMIXX / JYP Entertainment' },
     { id: 'EmeW6li6bbo', title: 'Blue Valentine', kind: '뮤직비디오', source: 'NMIXX / JYP Entertainment' }
+  ],
+  babymonster: [
+    { id: 'oC6brLXQe4I', title: 'DESERVE', kind: '뮤직비디오', source: 'BABYMONSTER / YG Entertainment' },
+    { id: 'naoGk-Zjc1s', title: 'SUGAR HONEY ICE TEA', kind: '뮤직비디오', source: 'BABYMONSTER / YG Entertainment' },
+    { id: 'x3eqqoZPV_E', title: '춤 (CHOOM)', kind: '뮤직비디오', source: 'BABYMONSTER / YG Entertainment' },
+    { id: 'xXZwZ0DolJc', title: 'MOON', kind: '뮤직비디오', source: 'BABYMONSTER / YG Entertainment' },
+    { id: 'wlHwjkYpSr0', title: 'WE GO UP', kind: '뮤직비디오', source: 'BABYMONSTER / YG Entertainment' },
+    { id: 'o9V8HrgJgIg', title: 'WE GO UP', kind: '퍼포먼스', source: 'BABYMONSTER Official' }
   ]
 });
