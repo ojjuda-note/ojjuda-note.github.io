@@ -74,6 +74,12 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'o9V8HrgJgIg', title: 'WE GO UP', kind: '퍼포먼스', source: 'BABYMONSTER Official' }
   ],
 
+  kissoflife: [
+    { id: '6bIVPKhafSI', title: 'SWEAT (Japanese Ver.) / THE FIRST TAKE', kind: '라이브', source: 'THE FIRST TAKE · 2026.10.12' },
+    { id: 'dsGK0HZZx1k', title: 'SWEAT (Japanese Ver.)', kind: '뮤직비디오', source: 'KISS OF LIFE Official · 2026.09.15' },
+    { id: 'EJ2fIbl35Oc', title: 'WHAT!', kind: '스페셜 비디오', source: 'KISS OF LIFE Official · 2026.08.19' },
+    { id: 'eTvUZymLyGY', title: 'SWEAT', kind: '뮤직비디오', source: 'KISS OF LIFE Official · 2026.08.04' }
+  ],
   hearts2hearts: [
     { id: 'lu9GinsuyUQ', title: 'Next Chapter', kind: '뮤직비디오', source: 'Hearts2Hearts Official · 2026.10.16' },
     { id: 'chl0R8C4NJ8', title: 'ICONIC HEART', kind: '뮤직비디오', source: 'SMTOWN · 2026.08.11' },
