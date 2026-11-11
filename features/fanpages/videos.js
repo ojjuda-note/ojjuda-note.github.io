@@ -60,6 +60,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'roHWN9fL2SM', title: '긴 소원 (Birthday Wish)', kind: '뮤직비디오', source: 'NMIXX / JYP Entertainment' },
     { id: 'jPjK8fPCwE4', title: '긴 소원 (Birthday Wish)', kind: '퍼포먼스', source: 'NMIXX Official' },
     { id: '6Ycn9qZK09I', title: 'Heavy Serenade', kind: '뮤직비디오', source: 'NMIXX / JYP Entertainment' },
+    { id: 'yiXhwYIcdOI', title: '릴리 몰래 준비한 릴리들의 생일 파티', kind: '비하인드', source: 'NMIXX Official · 2026.11.09' },
+    { id: 'Yw4f2ov6BrA', title: '긴 소원 (Birthday Wish) M/V REACTION', kind: '리액션', source: 'NMIXX Official · 2026.10.27' },
     { id: '-SEKt_0pdHM', title: 'Crescendo', kind: '뮤직비디오', source: 'NMIXX / JYP Entertainment' },
     { id: 'EmeW6li6bbo', title: 'Blue Valentine', kind: '뮤직비디오', source: 'NMIXX / JYP Entertainment' }
   ]
