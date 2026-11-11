@@ -52,3 +52,28 @@ if (nmixxProfile) {
   nmixxProfile.sources.unshift({ label: 'JYP 공식 멤버 프로필·생일', href: 'https://nmixx.jype.com/profile' });
   nmixxProfile.sources.push({ label: '2026 TMA 수상', href: 'https://www.soompi.com/article/1871808wpp/winners-of-2026-the-fact-music-awards' });
 }
+
+/* BABYMONSTER: YG-published birthdays and seven-member debut; private details stay blank. */
+const babymonsterProfile = window.OJJUDA_FAN_PROFILES.babymonster;
+if (babymonsterProfile) {
+  babymonsterProfile.expanded = true;
+  babymonsterProfile.records = [
+    { year: '2024.04', title: '7인조 정식 데뷔', detail: '미니 1집 BABYMONS7ER · SHEESH', href: 'https://ygfamily.com/ko/artists/babymonster/profile' },
+    { year: '2026', title: '두 번째 월드투어', detail: '2026–27 춤 (CHOOM) · 아시아·오세아니아 공연', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' }
+  ];
+  const birthdays = {
+    '루카': '2002.03.20',
+    '파리타': '2005.08.26',
+    '아사': '2006.04.17',
+    '아현': '2007.04.11',
+    '라미': '2007.10.17',
+    '로라': '2008.08.14',
+    '치키타': '2009.02.17'
+  };
+  for (const member of babymonsterProfile.members) {
+    member.birthday = birthdays[member.name] || null;
+    member.source = 'https://ygfamily.com/ko/artists/babymonster/profile';
+  }
+  babymonsterProfile.sources.unshift({ label: 'YG 공식 프로필 · 멤버 생일·정식 데뷔', href: 'https://ygfamily.com/ko/artists/babymonster/profile' });
+  babymonsterProfile.sources.push({ label: 'YG 공식 디스코그래피 · 첫 디지털 싱글', href: 'https://www.ygfamily.com/en/artists/babymonster/discography/1578' });
+}
