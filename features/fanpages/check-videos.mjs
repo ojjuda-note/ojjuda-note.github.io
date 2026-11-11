@@ -6,7 +6,7 @@ const source = readFileSync(new URL('./videos.js', import.meta.url), 'utf8');
 const context = { window: {} };
 runInNewContext(source, context);
 const library = context.window.OJJUDA_FAN_VIDEOS;
-const expectedGroups = ['rescene', 'ive', 'aespa', 'lesserafim', 'twice', 'illit', 'a2omay', 'a2olite', 'a2osoul', 'nmixx'];
+const expectedGroups = ['rescene', 'ive', 'aespa', 'lesserafim', 'twice', 'illit', 'a2omay', 'a2olite', 'a2osoul', 'nmixx', 'babymonster'];
 assert.deepEqual(Object.keys(library).sort(), expectedGroups.sort(), 'Exactly ten supported idol groups');
 const seen = new Set();
 for (const [group, videos] of Object.entries(library)) {
