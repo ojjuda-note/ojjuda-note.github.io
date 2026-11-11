@@ -87,6 +87,6 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: '2GJfWMYCWY0', title: 'GO', kind: '뮤직비디오', source: 'BLACKPINK / YG Entertainment · 2026.02.27' },
     { id: 'CgCVZdcKcqY', title: '뛰어 (JUMP)', kind: '뮤직비디오', source: 'BLACKPINK / YG Entertainment · 2025.07.11' },
     { id: 'k--lCrP69hg', title: 'BLACKPINK 10TH ANNIVERSARY', kind: '기념 영상', source: 'BLACKPINK Official · 2026.08.07' },
-    { id: 'PWBgiqpOQqo', title: 'GO', kind: '뮤직비디오 하이라이트', source: 'BLACKPINK Official · 2026.02.27' }
+    { id: 'uw4OYow_v7Y', title: 'BLACKPINK 10th Anniversary MEET & GREET', kind: '기념 영상', source: 'BLACKPINK Official · 2026.08.17' }
   ]
 });
