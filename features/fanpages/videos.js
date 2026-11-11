@@ -75,7 +75,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
   ],
 
   hearts2hearts: [
+    { id: 'DK_dr_n2rM4', title: 'ICONIC HEART (Korean Ver.)', kind: '뮤직비디오', source: 'SMTOWN · 2026.10.19' },
     { id: 'lu9GinsuyUQ', title: 'Next Chapter', kind: '뮤직비디오', source: 'Hearts2Hearts Official · 2026.10.16' },
+    { id: 'gNUMxMuxH20', title: 'Moonride', kind: '뮤직비디오', source: 'Hearts2Hearts Official · 2026.09.09' },
     { id: 'chl0R8C4NJ8', title: 'ICONIC HEART', kind: '뮤직비디오', source: 'SMTOWN · 2026.08.11' },
     { id: '1VqxWNwgf5Q', title: 'Lemon Tang', kind: '뮤직비디오', source: 'SMTOWN · 2026.06.22' },
     { id: 'F7sGJVUrkjQ', title: 'RUDE!', kind: '뮤직비디오', source: 'SMTOWN · 2026.02.20' },
