@@ -11,17 +11,26 @@ const Age=(() => {
   if (room.age_policy === 'range') return `만 ${validAge(room.min_age,14)}~${validAge(room.max_age,150)}세`;
   return '전체 · 연령 제한 없음';
  }
- function badge(room) { return `<span class="tag age-tag">${escape(label(room))}</span>`; }
+ const policy = room => modes.some(([value])=>value===room?.age_policy) ? room.age_policy : 'all';
+ function badge(room = {}) { return `<span class="tag age-tag" data-age-policy="${policy(room)}">${escape(label(room))}</span>`; }
  function note(room = {}) { return room.age_eligible === false ? `<p class="hint age-note" role="status">${escape(room.age_note || '이 그룹의 연령 조건에 맞지 않아 이용할 수 없어요.')}</p>` : ''; }
  function fields(room = {}, editing = false) {
-  const mode = room.age_policy || 'all', lo = validAge(room.min_age,20), hi = validAge(room.max_age,29);
-  return `<fieldset class="age-settings"><legend>참여 연령</legend><label class="field">연령 조건<select name="age_policy">${modes.map(([v,t])=>`<option value="${v}" ${v===mode?'selected':''}>${t}</option>`).join('')}</select></label><div data-age-range ${mode==='range'?'':'hidden'}><label class="field">나이대 빠른 선택<select data-age-preset><option value="">직접 입력</option>${[['14-18','청소년 · 만 14~18세'],['20-29','20대'],['30-39','30대'],['40-49','40대'],['50-59','50대'],['60-69','60대'],['70-150','70세 이상']].map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select></label><div class="two"><label class="field">최소 나이<input name="min_age" type="number" min="14" max="150" step="1" inputmode="numeric" value="${lo}" ${mode==='range'?'required':'disabled'}></label><label class="field">최대 나이<input name="max_age" type="number" min="14" max="150" step="1" inputmode="numeric" value="${hi}" ${mode==='range'?'required':'disabled'}></label></div></div><p class="hint">성인전용: 만 19세 이상 · 성인불가: 만 14~18세.<br>한국 시간 기준, 가입 시 입력한 생년월일로 판단해요. 본인인증된 정보는 아니에요. 방장도 같은 조건을 충족해야 해요.${editing?'<br>기존 그룹원이 새 조건에 맞지 않으면 변경할 수 없어요.':''}</p></fieldset>`;
+  const mode = policy(room), lo = validAge(room.min_age,20), hi = validAge(room.max_age,29);
+  return `<fieldset class="age-settings" data-age-policy="${mode}"><legend>참여 연령</legend><label class="field">연령 조건<select name="age_policy">${modes.map(([v,t])=>`<option value="${v}" ${v===mode?'selected':''}>${t}</option>`).join('')}</select></label><p class="age-preview" data-age-preview role="status" aria-live="polite" aria-atomic="true">${badge(room)}</p><div data-age-range ${mode==='range'?'':'hidden'}><label class="field">나이대 빠른 선택<select data-age-preset><option value="">직접 입력</option>${[['14-18','청소년 · 만 14~18세'],['20-29','20대'],['30-39','30대'],['40-49','40대'],['50-59','50대'],['60-69','60대'],['70-150','70세 이상']].map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select></label><div class="two"><label class="field">최소 나이<input name="min_age" type="number" min="14" max="150" step="1" inputmode="numeric" value="${lo}" ${mode==='range'?'required':'disabled'}></label><label class="field">최대 나이<input name="max_age" type="number" min="14" max="150" step="1" inputmode="numeric" value="${hi}" ${mode==='range'?'required':'disabled'}></label></div></div><p class="hint">성인전용: 만 19세 이상 · 성인불가: 만 14~18세.<br>한국 시간 기준, 가입 시 입력한 생년월일로 판단해요. 본인인증된 정보는 아니에요. 방장도 같은 조건을 충족해야 해요.${editing?'<br>기존 그룹원이 새 조건에 맞지 않으면 변경할 수 없어요.':''}</p></fieldset>`;
  }
  function bind(form) {
   if (!form?.elements.age_policy) return;
   const mode=form.elements.age_policy, lo=form.elements.min_age, hi=form.elements.max_age;
   const range=form.querySelector('[data-age-range]'), preset=form.querySelector('[data-age-preset]');
-  const validate=()=>hi.setCustomValidity(mode.value==='range' && lo.value!=='' && hi.value!=='' && Number(lo.value)>Number(hi.value)?'최대 나이는 최소 나이 이상이어야 해요.':'');
+  const settings=mode.closest('.age-settings'), preview=settings.querySelector('[data-age-preview]');
+  const paint=()=>{
+   const selected=policy({age_policy:mode.value}), lower=Number(lo.value), upper=Number(hi.value);
+   settings.dataset.agePolicy=selected;
+   preview.innerHTML=badge({age_policy:selected,min_age:lo.value,max_age:hi.value});
+   if(selected==='range' && (lo.value==='' || hi.value==='' || !Number.isInteger(lower) || !Number.isInteger(upper) || lower<14 || upper>150 || lower>upper))
+    preview.querySelector('.age-tag').textContent='나이대 설정 · 나이 범위를 확인해 주세요.';
+  };
+  const validate=()=>{hi.setCustomValidity(mode.value==='range' && lo.value!=='' && hi.value!=='' && Number(lo.value)>Number(hi.value)?'최대 나이는 최소 나이 이상이어야 해요.':'');paint();};
   const sync=()=>{const on=mode.value==='range';range.hidden=!on;for(const el of [lo,hi]){el.disabled=!on;el.required=on;}preset.disabled=!on;validate();};
   mode.addEventListener('change',sync);
   for(const el of [lo,hi])el.addEventListener('input',()=>{preset.value='';validate();});
