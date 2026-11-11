@@ -60,6 +60,9 @@ for (const id of basicArtists) {
           assert.notEqual(target, official, `${section} must not fall back to the artist/company landing page`);
           assert.equal(link.target, '_blank', `${section} should keep the fanpage available`);
           assert.ok(link.relList.contains('noopener'), `${section} should safely open its new tab`);
+          if (new URL(href).hostname === 'weverse.io') {
+            assert.match(link.textContent, /로그인/, `${section} must disclose the community notice login requirement`);
+          }
           const label = link.querySelector('strong')?.textContent.trim() || link.textContent.trim();
           assert.ok(label, `${section} needs a readable label`);
           for (const generic of ['공식 앨범·굿즈 안내', '공식 활동·일정 확인', `${artist.name} 최신 안내`]) {

@@ -22,13 +22,13 @@
       album: { href: 'https://www.ygfamily.com/en/artists/blackpink/discography/228' },
       merch: { title: 'BLACKPINK 공식 상품', sub: 'YG SELECT · BLACKPINK 상품 검색', href: 'https://www.ygselect.com/product/search.html?keyword=BLACKPINK' },
       schedule: { title: 'BLACKPINK 공식 공연 안내', sub: 'YG · 투어·공연 정보', href: 'https://www.ygfamily.com/en/artists/blackpink/concert' },
-      news: { title: 'BLACKPINK Weverse 공식 공지', href: 'https://weverse.io/blackpink/notice' }
+      news: { tag: '로그인', title: 'BLACKPINK Weverse 공식 공지', href: 'https://weverse.io/blackpink/notice' }
     },
     stayc: {
       album: { href: 'https://www.highup-ent.com/stayc/star-to-a-young-culture/' },
       merch: { title: 'STAYC 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/34' },
-      schedule: { title: '공연·활동 공지', sub: 'STAYC Weverse · 공연·방송 관련 공지', href: 'https://weverse.io/stayc/notice' },
-      news: { title: 'STAYC Weverse 공식 공지', href: 'https://weverse.io/stayc/notice' }
+      schedule: { title: '공연·활동 공지', sub: 'STAYC Weverse · 로그인·커뮤니티 가입 후 확인', href: 'https://weverse.io/stayc/notice' },
+      news: { tag: '로그인', title: 'STAYC Weverse 공식 공지', href: 'https://weverse.io/stayc/notice' }
     },
     idle: {
       album: { href: 'https://music.apple.com/us/album/i-am-ep/1378887583', source: 'Apple Music' },
@@ -39,14 +39,14 @@
     bts: {
       album: { href: 'https://shop.weverse.io/ko/shop/KRW/artists/2/sales/15', source: 'Weverse Shop 음반 상세' },
       merch: { title: 'BTS 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/2' },
-      schedule: { title: '공연·활동 공지', sub: 'BTS Weverse · 공연·방송 관련 공지', href: 'https://weverse.io/bts/notice' },
-      news: { title: 'BTS Weverse 공식 공지', href: 'https://weverse.io/bts/notice' }
+      schedule: { title: '공연·활동 공지', sub: 'BTS Weverse · 로그인·커뮤니티 가입 후 확인', href: 'https://weverse.io/bts/notice' },
+      news: { tag: '로그인', title: 'BTS Weverse 공식 공지', href: 'https://weverse.io/bts/notice' }
     },
     seventeen: {
       album: { href: 'https://shop.weverse.io/ko/shop/KRW/artists/7/sales/16096', source: 'Weverse Shop 음반 상세' },
       merch: { title: 'SEVENTEEN 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/7' },
-      schedule: { title: '공연·활동 공지', sub: 'SEVENTEEN Weverse · 공연·방송 관련 공지', href: 'https://weverse.io/seventeen/notice' },
-      news: { title: 'SEVENTEEN Weverse 공식 공지', href: 'https://weverse.io/seventeen/notice' }
+      schedule: { title: '공연·활동 공지', sub: 'SEVENTEEN Weverse · 로그인·커뮤니티 가입 후 확인', href: 'https://weverse.io/seventeen/notice' },
+      news: { tag: '로그인', title: 'SEVENTEEN Weverse 공식 공지', href: 'https://weverse.io/seventeen/notice' }
     },
     straykids: {
       album: { href: 'https://straykids.jype.com/discography/vuykzg89' },
@@ -57,14 +57,14 @@
     txt: {
       album: { href: 'https://ibighit.com/legacy/txt/the_dream_chapter-star-ko.html' },
       merch: { title: 'TXT 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/3' },
-      schedule: { title: '공연·활동 공지', sub: 'TXT Weverse · 공연·방송 관련 공지', href: 'https://weverse.io/txt/notice' },
-      news: { title: 'TXT Weverse 공식 공지', href: 'https://weverse.io/txt/notice' }
+      schedule: { title: '공연·활동 공지', sub: 'TXT Weverse · 로그인·커뮤니티 가입 후 확인', href: 'https://weverse.io/txt/notice' },
+      news: { tag: '로그인', title: 'TXT Weverse 공식 공지', href: 'https://weverse.io/txt/notice' }
     },
     enhypen: {
       album: { href: 'https://beliftlab.com/artist/discography/ENHYPEN/1' },
       merch: { title: 'ENHYPEN 공식 상품', sub: 'Weverse Shop · ENCHIN 상품 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/10?categoryId=7935' },
       schedule: { title: 'ENHYPEN 공식 일정', sub: 'BELIFT LAB · 활동 달력', href: 'https://beliftlab.com/artist/schedule/ENHYPEN' },
-      news: { title: 'ENHYPEN Weverse 공식 공지', href: 'https://weverse.io/enhypen/notice' }
+      news: { tag: '로그인', title: 'ENHYPEN Weverse 공식 공지', href: 'https://weverse.io/enhypen/notice' }
     },
     riize: {
       album: { href: 'https://riizeofficial.jp/discography/the-1st-single-album-get-a-guitar/' },
@@ -75,20 +75,20 @@
     boynextdoor: {
       album: { href: 'https://kozofficial.com/artist/discography/BOYNEXTDOOR/23' },
       merch: { title: 'BOYNEXTDOOR 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/112' },
-      schedule: { title: '공연·활동 공지', sub: 'BOYNEXTDOOR Weverse · 공연·방송 관련 공지', href: 'https://weverse.io/boynextdoor/notice' },
-      news: { title: 'BOYNEXTDOOR Weverse 공식 공지', href: 'https://weverse.io/boynextdoor/notice' }
+      schedule: { title: '공연·활동 공지', sub: 'BOYNEXTDOOR Weverse · 로그인·커뮤니티 가입 후 확인', href: 'https://weverse.io/boynextdoor/notice' },
+      news: { tag: '로그인', title: 'BOYNEXTDOOR Weverse 공식 공지', href: 'https://weverse.io/boynextdoor/notice' }
     },
     tws: {
       album: { href: 'https://shop.weverse.io/ko/shop/KRW/artists/165/sales/22961', source: 'Weverse Shop 음반 상세' },
       merch: { title: 'TWS 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/165' },
-      schedule: { title: '공연·활동 공지', sub: 'TWS Weverse · 공연·방송 관련 공지', href: 'https://weverse.io/tws/notice' },
-      news: { title: 'TWS Weverse 공식 공지', href: 'https://weverse.io/tws/notice' }
+      schedule: { title: '공연·활동 공지', sub: 'TWS Weverse · 로그인·커뮤니티 가입 후 확인', href: 'https://weverse.io/tws/notice' },
+      news: { tag: '로그인', title: 'TWS Weverse 공식 공지', href: 'https://weverse.io/tws/notice' }
     },
     nctdream: {
       album: { href: 'https://music.apple.com/us/album/chewing-gum-single/1147458439', source: 'Apple Music' },
       merch: { title: 'NCT DREAM 공식 상품', sub: 'SMTOWN GLOBAL SHOP · NCT DREAM 상품 목록', href: 'https://global.shop.smtown.com/collections/nct-dream' },
-      schedule: { title: '공연·활동 공지', sub: 'NCT DREAM Weverse · 공연·방송 관련 공지', href: 'https://weverse.io/nctdream/notice' },
-      news: { title: 'NCT DREAM Weverse 공식 공지', href: 'https://weverse.io/nctdream/notice' }
+      schedule: { title: '공연·활동 공지', sub: 'NCT DREAM Weverse · 로그인·커뮤니티 가입 후 확인', href: 'https://weverse.io/nctdream/notice' },
+      news: { tag: '로그인', title: 'NCT DREAM Weverse 공식 공지', href: 'https://weverse.io/nctdream/notice' }
     },
     ateez: {
       album: { href: 'https://ateez-official.jp/musics/7674' },
@@ -100,13 +100,13 @@
       album: { href: 'https://www.ygfamily.com/en/artists/treasure/discography/423' },
       merch: { title: 'TREASURE 공식 상품', sub: 'YG SELECT · TREASURE 상품 검색', href: 'https://www.ygselect.com/product/search.html?keyword=TREASURE' },
       schedule: { title: 'TREASURE 공식 공연 안내', sub: 'YG · 투어·공연 정보', href: 'https://www.ygfamily.com/en/artists/treasure/concert' },
-      news: { title: 'TREASURE Weverse 공식 공지', href: 'https://weverse.io/treasure/notice' }
+      news: { tag: '로그인', title: 'TREASURE Weverse 공식 공지', href: 'https://weverse.io/treasure/notice' }
     },
     nctwish: {
       album: { href: 'https://music.apple.com/us/album/wish-ep/1732218887', source: 'Apple Music' },
       merch: { title: 'NCT WISH 공식 상품', sub: 'SMTOWN GLOBAL SHOP · NCT WISH 상품 목록', href: 'https://global.shop.smtown.com/collections/nct-wish' },
-      schedule: { title: '공연·활동 공지', sub: 'NCT WISH Weverse · 공연·방송 관련 공지', href: 'https://weverse.io/nctwish/notice' },
-      news: { title: 'NCT WISH Weverse 공식 공지', href: 'https://weverse.io/nctwish/notice' }
+      schedule: { title: '공연·활동 공지', sub: 'NCT WISH Weverse · 로그인·커뮤니티 가입 후 확인', href: 'https://weverse.io/nctwish/notice' },
+      news: { tag: '로그인', title: 'NCT WISH Weverse 공식 공지', href: 'https://weverse.io/nctwish/notice' }
     },
     andteam: {
       album: { href: 'https://www.andteam-official.jp/news/owsyjh', source: '공식 발매·트랙 안내' },
