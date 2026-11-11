@@ -239,7 +239,7 @@
         { title: 'SWEAT -JAPANESE EP- 통상판', sub: '일본 컬럼비아 공식 CD · 판매 여부·가격은 판매처 확인', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' }
       ],
       campaigns: [
-        { kind: 'OST·콜라보', date: '2026.07.04', title: 'DIGIMON BEATBREAK × BREAK IT', sub: '일본 TV 애니메이션 엔딩 테마 음원 협업', href: 'https://prtimes.jp/main/html/rd/p/000005074.000019470.html' }
+        { kind: '콜라보', date: '2026.07.04', title: 'DIGIMON BEATBREAK × BREAK IT', sub: '일본 TV 애니메이션 엔딩 테마 음원 협업', href: 'https://prtimes.jp/main/html/rd/p/000005074.000019470.html' }
       ],
       accent: '#b74472', light: '#ffe4ed', dark: '#68314e', bg: '#fff4f7', shape: '✿'
     },
