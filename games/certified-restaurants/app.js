@@ -28,7 +28,7 @@
   let commentSequence = 0, commentEditor = null;
   const mobile = window.matchMedia('(max-width: 760px)');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const state = { restaurants: [], certified: [], recommended: [], collections: [], visible: [], renderedCount: 0, mapPage: 0, category: '', guide: '', region: '', query: '', savedOnly: false, saved: new Set(), selected: '', position: null, view: 'map', sort: 'name', sortChosen: false, sortBusy: false, sortError: false, loading: true, loadError: false };
+  const state = { restaurants: [], certified: [], recommended: [], collections: [], visible: [], renderedCount: 0, mapPage: 0, category: '', guide: entryParams.get('guide') === 'broadcast' ? 'broadcast' : '', region: '', query: '', savedOnly: false, saved: new Set(), selected: '', position: null, view: 'map', sort: 'name', sortChosen: false, sortBusy: false, sortError: false, loading: true, loadError: false };
   let map = null, backgroundLayer = null, backgroundTimer = null, markers = new Map(), userMarker = null, searchTimer = null, storageWarned = false, loadController = null, locationRequest = 0;
   const bookmarkSvg = '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 3h10v14l-5-3-5 3V3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
 
@@ -153,24 +153,34 @@
   function sourceDate(value) { return /^\d{4}(?:-\d{2}(?:-\d{2})?)?$/.test(value || '') ? value : ''; }
   function dateLabel(value) { return validDate(value) ? value.replaceAll('-', '.') : '미표기'; }
   function hasCoordinates(item) { return typeof item.lat === 'number' && typeof item.lng === 'number' && Number.isFinite(item.lat) && Number.isFinite(item.lng) && Math.abs(item.lat) <= 90 && Math.abs(item.lng) <= 180; }
+  function normalizeBroadcasts(value) {
+    if (!Array.isArray(value)) return [];
+    return value.filter(row => row && text(row.program) && safeHttps(row.sourceUrl)).map(row => ({
+      program: text(row.program, 120), broadcaster: text(row.broadcaster, 80),
+      episode: Number.isInteger(row.episode) && row.episode > 0 ? String(row.episode) + '회' : text(row.episode, 40),
+      airedAt: validDate(row.airedAt), sourceUrl: safeHttps(row.sourceUrl),
+      sourceName: text(row.sourceName, 160) || '방송 출연 출처', verifiedAt: validDate(row.verifiedAt)
+    }));
+  }
   function normalize(item) {
     if (!item || !text(item.id) || !text(item.name) || !Array.isArray(item.guides)) return null;
     const guides = item.guides.filter(g => g && Object.hasOwn(PROVIDERS, g.provider) && safeHttps(g.sourceUrl)).map(g => ({ provider: g.provider, label: text(g.label, 80) || (g.provider === 'post-office' ? '추천' : '선정 이력'), year: Number.isInteger(g.year) && g.year >= 1900 && g.year <= 2200 ? g.year : null, yearType: ['edition', 'selection', 'publication', 'source', 'listing'].includes(g.yearType) ? g.yearType : '', sourceUrl: safeHttps(g.sourceUrl), sourceName: text(g.sourceName, 120) || PROVIDERS[g.provider] + (g.provider === 'post-office' ? ' 추천 자료' : ' 선정 출처'), verifiedAt: validDate(g.verifiedAt), sourceAsOf: sourceDate(g.sourceAsOf || item.sourceAsOf), sourceRegisteredAt: safeHttps(g.sourceRegistrationUrl) ? validDate(g.sourceRegisteredAt) : SOURCE_REGISTRATIONS[g.sourceUrl] || '', sourceRegistrationUrl: safeHttps(g.sourceRegistrationUrl) || (SOURCE_REGISTRATIONS[g.sourceUrl] ? safeHttps(g.sourceUrl) : ''), sourceDateType: g.sourceDateType === 'official-page-last-modified' ? 'page-modified' : 'as-of', selectionCriteria: text(g.selectionCriteria, 300) }));
-    if (!guides.length) return null;
-    const result = { id: text(item.id, 120), name: text(item.name, 160), category: CATEGORIES.includes(item.category) ? item.category : '기타', region: text(item.region, 40) || '지역 미표기', district: text(item.district, 80), address: text(item.address, 300), lat: item.lat, lng: item.lng, menu: Array.isArray(item.menu) ? item.menu.map(v => text(v, 80)).filter(Boolean).slice(0, 8) : [], guides };
+    const broadcasts = normalizeBroadcasts(item.broadcasts);
+    if (!guides.length && !broadcasts.length) return null;
+    const result = { id: text(item.id, 120), name: text(item.name, 160), category: CATEGORIES.includes(item.category) ? item.category : '기타', region: text(item.region, 40) || '지역 미표기', district: text(item.district, 80), address: text(item.address, 300), lat: item.lat, lng: item.lng, menu: Array.isArray(item.menu) ? item.menu.map(v => text(v, 80)).filter(Boolean).slice(0, 8) : [], guides, broadcasts };
     result.sourceRegisteredAt = guides.map(guide => guide.sourceRegisteredAt).filter(Boolean).sort().at(-1) || '';
     result.registrationTime = result.sourceRegisteredAt ? Date.parse(result.sourceRegisteredAt) : 0;
     result.ratingKind = 'certified'; result.ratingId = result.id;
     const coordinateSource = item.coordinateSource;
     if (coordinateSource && text(coordinateSource.name) && safeHttps(coordinateSource.url)) result.coordinateSource = { name: text(coordinateSource.name, 160), url: safeHttps(coordinateSource.url), method: text(coordinateSource.method, 120), checkedAt: validDate(coordinateSource.checkedAt) };
-    result.searchText = searchKey([result.name, result.category, result.region, result.district, result.address, ...result.menu].join(' '));
+    result.searchText = searchKey([result.name, result.category, result.region, result.district, result.address, ...result.menu, ...broadcasts.flatMap(row => [row.program, row.broadcaster])].join(' '));
     return result;
   }
   function normalizeRecommendation(item) {
     if (!item || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id || '') || !text(item.name)) return null;
     const date = validDate(typeof item.created_at === 'string' ? item.created_at.slice(0, 10) : '');
     const timestamp = date && Number.isFinite(Date.parse(item.created_at)) ? Date.parse(item.created_at) : 0;
-    const result = { id: 'recommended-' + item.id, recommendationId: item.id, ratingKind: 'recommended', ratingId: item.id, name: text(item.name, 160), category: CATEGORIES.includes(item.category) ? item.category : '기타', region: text(item.region, 40) || '지역 미표기', district: '', address: text(item.address), lat: item.latitude, lng: item.longitude, menu: (Array.isArray(item.menu) ? item.menu : [item.menu]).map(value => text(value, 80)).filter(Boolean).slice(0, 8), guides: [], sourceRegisteredAt: timestamp ? date : '', registrationTime: timestamp };
+    const result = { id: 'recommended-' + item.id, recommendationId: item.id, ratingKind: 'recommended', ratingId: item.id, name: text(item.name, 160), category: CATEGORIES.includes(item.category) ? item.category : '기타', region: text(item.region, 40) || '지역 미표기', district: '', address: text(item.address), lat: item.latitude, lng: item.longitude, menu: (Array.isArray(item.menu) ? item.menu : [item.menu]).map(value => text(value, 80)).filter(Boolean).slice(0, 8), guides: [], broadcasts: [], sourceRegisteredAt: timestamp ? date : '', registrationTime: timestamp };
     result.searchText = searchKey([result.name, result.category, result.region, result.address, ...result.menu].join(' '));
     return result;
   }
@@ -230,6 +240,9 @@
     const year = includeYear && guide.year ? ' · ' + guide.year : '';
     return el('span', 'guide-badge ' + (guide.provider === 'michelin' ? 'is-michelin' : guide.provider === 'post-office' ? 'is-post-office' : guide.provider === 'local-guide' ? 'is-local-guide' : 'is-ribbon'), PROVIDERS[guide.provider] + ' ' + guide.label + year);
   }
+  function appendBroadcastBadges(container, broadcasts) {
+    [...new Set(broadcasts.map(row => row.program))].forEach(program => container.append(el('span', 'guide-badge is-broadcast', '방송 · ' + program)));
+  }
   function saveButton(item, detail = false) {
     const button = el('button', 'save-button' + (detail ? ' detail-save' : ''));
     button.type = 'button'; button.innerHTML = bookmarkSvg; button.dataset.saveId = item.id;
@@ -261,9 +274,9 @@
       if (state.region && item.region !== state.region) return false;
       if (state.savedOnly && !state.saved.has(item.id)) return false;
       const providers = new Set(item.guides.map(g => g.provider));
-      if (state.guide === 'both' && !(providers.has('michelin') && providers.has('blue-ribbon'))) return false;
       if (state.guide === 'recommended' && !item.recommendationId) return false;
-      if (state.guide && !['both', 'recommended'].includes(state.guide) && !providers.has(state.guide)) return false;
+      if (state.guide === 'broadcast' && !item.broadcasts.length) return false;
+      if (state.guide && !['recommended', 'broadcast'].includes(state.guide) && !providers.has(state.guide)) return false;
       return words.every(word => item.searchText.includes(word));
     });
     const popularityReady = state.sort === 'popular' && memberRatings && items.every(item => ratingCache.has(item.id));
@@ -341,6 +354,7 @@
       if (item.menu.length) main.append(el('p', 'card-menu', item.menu.slice(0, 2).join(' · ')));
       if (state.sort === 'recent' && item.sourceRegisteredAt) main.append(el('p', 'card-registered', (item.recommendationId ? '추천 등록 ' : '자료 등록 ') + dateLabel(item.sourceRegisteredAt)));
       const badges = el('div', 'guide-badges'); item.guides.forEach(g => badges.append(badge(g, false)));
+      appendBroadcastBadges(badges, item.broadcasts);
       if (item.recommendationId) badges.append(el('span', 'guide-badge is-recommendation', '회원 추천'));
       main.append(badges);
       if (memberRatings) { const summary = el('span', 'card-rating'); summary.dataset.ratingId = item.id; ratingUI.renderSummary(summary, ratingCache.get(item.id)); main.append(summary); }
@@ -357,9 +371,10 @@
     $('category').value = state.category;
     $('guides').querySelectorAll('[data-guide]').forEach(button => { const active = button.dataset.guide === state.guide; button.classList.toggle('is-active', active); button.setAttribute('aria-pressed', String(active)); });
     $('saved-only').setAttribute('aria-pressed', String(state.savedOnly));
-    const active = [state.region, state.guide === 'both' ? '미쉐린·블루리본 모두' : state.guide === 'recommended' ? '회원 추천' : state.guide === 'post-office' ? '우체국 추천' : PROVIDERS[state.guide], state.savedOnly ? '저장한 곳' : ''].filter(Boolean);
+    const active = [state.region, state.guide === 'recommended' ? '회원 추천' : state.guide === 'broadcast' ? '방송' : state.guide === 'post-office' ? '우체국 추천' : PROVIDERS[state.guide], state.savedOnly ? '저장한 곳' : ''].filter(Boolean);
     $('filter-summary').textContent = active.join(' · '); $('filter-summary').hidden = !active.length;
     $('filter-label').textContent = '가이드' + (state.guide ? ' 1' : '');
+    $('broadcast-note').hidden = state.guide !== 'broadcast';
     syncSortControls();
   }
   function renderCollections() {
@@ -470,7 +485,9 @@
       let marker = markers.get(item.id);
       if (!marker) {
         marker = window.L.marker([item.lat, item.lng], { icon: pinIcon(index + 1, state.selected === item.id, !!item.recommendationId), keyboard: true, title: item.name, alt: item.name });
-        const tooltip = el('span', '', item.name + (item.recommendationId ? ' · 회원 추천' : '')); marker.bindTooltip(tooltip, { direction: 'top' });
+        const tooltip = el('div', '', item.name + (item.recommendationId ? ' · 회원 추천' : ''));
+        if (item.broadcasts.length) { const badges = el('div', 'guide-badges'); appendBroadcastBadges(badges, item.broadcasts); tooltip.append(badges); }
+        marker.bindTooltip(tooltip, { direction: 'top' });
         marker.on('click', () => selectRestaurant(item.id, true)); marker.addTo(map); markers.set(item.id, marker);
       } else { marker.setIcon(pinIcon(index + 1, state.selected === item.id, !!item.recommendationId)); marker.setLatLng([item.lat, item.lng]); }
       marker.setZIndexOffset(state.selected === item.id ? 1000 : 0);
@@ -526,7 +543,7 @@
     const commentsSection = el('section', 'detail-comments');
     body.append(commentsSection);
     if (!hasCoordinates(item)) body.append(el('p', 'coord-note', '네이버·카카오맵에서 위치 확인'));
-    body.append(el('h3', 'detail-section-label', '선정·추천 정보와 출처'));
+    if (item.guides.length) body.append(el('h3', 'detail-section-label', '선정·추천 정보와 출처'));
     const sources = el('ul', 'source-list');
     item.guides.forEach(guide => {
       const yearType = guide.yearType || (guide.provider === 'post-office' ? 'publication' : guide.provider === 'blue-ribbon' ? 'edition' : 'selection');
@@ -544,7 +561,20 @@
       coordinateRow.append(link('위치 출처: ' + item.coordinateSource.name + ' ↗', item.coordinateSource.url, 'coordinate-source-link'));
       sources.append(coordinateRow);
     }
-    body.append(sources, el('p', 'detail-note', '선정·추천 당시와 현재 영업 상태는 다를 수 있어요. 메뉴·가격·영업시간은 방문 전 가게에서 확인해 주세요.'));
+    if (sources.childElementCount) body.append(sources);
+    if (item.broadcasts.length) {
+      const section = el('section', 'broadcast-sources'), broadcastSources = el('ul', 'source-list');
+      section.append(el('h3', 'detail-section-label', '방송 출연'));
+      item.broadcasts.forEach(broadcast => {
+        const row = el('li', 'source-item'), heading = el('div', 'source-heading');
+        heading.append(el('span', 'guide-badge is-broadcast', broadcast.program));
+        const airing = [broadcast.broadcaster, broadcast.episode, broadcast.airedAt ? dateLabel(broadcast.airedAt) + ' 방영' : '방영일 미확인'].filter(Boolean).join(' · ');
+        row.append(heading, el('p', 'broadcast-airing', airing), el('p', 'source-verified', '출처 확인일 ' + dateLabel(broadcast.verifiedAt)), link(broadcast.sourceName + ' ↗', broadcast.sourceUrl, 'source-link'));
+        broadcastSources.append(row);
+      });
+      section.append(broadcastSources); body.append(section);
+    }
+    body.append(el('p', 'detail-note', '선정·추천·방송 소개 당시와 현재 영업 상태는 다를 수 있어요. 메뉴·가격·영업시간은 방문 전 가게에서 확인해 주세요.'));
     const query = encodeURIComponent([item.name, item.address].filter(Boolean).join(' ')), links = el('div', 'detail-links');
     links.append(link('네이버지도 ↗', 'https://map.naver.com/p/search/' + query), link('카카오맵 ↗', 'https://map.kakao.com/link/search/' + query));
     const route = hasCoordinates(item) ? 'https://map.kakao.com/link/to/' + encodeURIComponent(item.name) + ',' + item.lat + ',' + item.lng : 'https://map.kakao.com/link/search/' + query;
@@ -614,7 +644,7 @@
     const timeout = setTimeout(() => controller.abort(), 18000);
     try {
       const [response, supplementResponse, seoulResponse, northeastResponse, southwestResponse, southeastResponse, incheonResponse, incheonBResponse, gyeonggiResponse, seongnamResponse, goyangPajuResponse, bucheonGimpoResponse, gyeonggiSlot12Response, gyeonggiSlot13Response, guriSlot15Response, slot17Response, slot18Response, slot19Response, slot20Response, slot21Response, slot23Response, slot25Response, slot26Response, slot27Response, slot28Response, slot30Response, slot32Response, slot33Response, slot34Response, slot36Response, slot37Response, slot38Response, slot39Response, slot41MapResponse, slot44Response, slot45LocationResponse, slot47JejuResponse, slot48SeogwipoResponse, slot49GyeonggiResponse, slot50GangwonResponse, slot51ChungbukResponse, slot52ChungnamResponse, slot55GyeongbukResponse, slot56GyeongnamResponse, slot57JejuResponse, slot59Response, slot61Response, slot62Response, slot63Response, slot64Response, slot65Response, slot66Response, slot68Response, slot69Response, slot70Response, slot71Response, slot74Response, slot75Response, slot77Response, slot80Response, slot81Response, slot83Response] = await Promise.all([
-        fetch('./restaurants.json?v=20261111-restaurants-c2s42-ulsan4', { signal: controller.signal, cache: 'no-cache' }),
+        fetch('./restaurants.json?v=20261111-restaurants-broadcast1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-ulsan-tourism.json?v=20261105-restaurants-seoul1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-seoul-blue-ribbon.json?v=20261108-restaurants-slot58-seoulblue-2', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-seoul-visitseoul-northeast.json?v=20261109-restaurants-c2s02-seoulblue1-loc4', { signal: controller.signal, cache: 'no-cache' }),

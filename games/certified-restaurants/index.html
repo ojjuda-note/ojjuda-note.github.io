@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="theme-color" content="#faf9f5">
-  <meta name="description" content="미쉐린·블루리본·우체국 추천과 지자체 지정 맛집을 음식 종류와 지역별로 찾아보는 오쭈다 맛집 지도.">
+  <meta name="description" content="미쉐린·블루리본·우체국 추천, 지자체 지정 맛집과 방송에 소개된 식당을 음식 종류와 지역별로 찾아보는 오쭈다 맛집 지도.">
   <title>인증맛집 · 오쭈다</title>
   <link rel="stylesheet" href="./vendor/leaflet.css">
   <link rel="stylesheet" href="/games/certified-restaurants/restaurant-ratings.css?v=20261106-source-folders1">
   <link rel="stylesheet" href="/games/certified-restaurants/restaurant-comments.css?v=20261109-restaurants-comments1">
-  <link rel="stylesheet" href="./style.css?v=20261107-nearby-map1">
+  <link rel="stylesheet" href="./style.css?v=20261111-restaurants-broadcast1">
   <script src="./vendor/leaflet.js" defer></script>
   <script src="/games/certified-restaurants/restaurant-ratings.js?v=20261106-source-folders1" defer></script>
   <script src="/games/certified-restaurants/restaurant-comments.js?v=20261109-restaurants-comments1" defer></script>
-  <script src="./app.js?v=20261111-restaurants-c2s42-ulsan4" defer></script>
+  <script src="./app.js?v=20261111-restaurants-broadcast1" defer></script>
   <link rel="stylesheet" href="/shared/share/page-share.css?v=20261106-source-folders1">
   <script src="/shared/share/page-share.js?v=20261106-source-folders1" defer></script>
 </head>
@@ -53,16 +53,17 @@
       <p id="result-coverage" class="result-coverage sr-only" aria-live="polite" hidden></p>
     </div>
     <section id="filter-options" class="filter-options" aria-label="상세 검색 조건" hidden>
-      <div id="guides" class="guide-filters" role="group" aria-label="선정 가이드">
+      <div id="guides" class="guide-filters" role="group" aria-label="맛집 분류">
           <button type="button" class="guide-filter is-active" data-guide="" aria-pressed="true">전체 가이드</button>
           <button type="button" class="guide-filter" data-guide="michelin" aria-pressed="false"><span class="guide-dot michelin-dot" aria-hidden="true"></span>미쉐린</button>
           <button type="button" class="guide-filter" data-guide="blue-ribbon" aria-pressed="false"><span class="guide-dot ribbon-dot" aria-hidden="true"></span>블루리본</button>
           <button type="button" class="guide-filter" data-guide="post-office" aria-pressed="false"><span class="guide-dot post-office-dot" aria-hidden="true"></span>우체국 추천</button>
           <button type="button" class="guide-filter" data-guide="local-guide" aria-pressed="false"><span class="guide-dot local-guide-dot" aria-hidden="true"></span>지자체 지정</button>
           <button id="guide-recommended" type="button" class="guide-filter" data-guide="recommended" aria-pressed="false" hidden><span class="guide-dot recommendation-dot" aria-hidden="true"></span>회원 추천</button>
-          <button type="button" class="guide-filter" data-guide="both" aria-pressed="false">미쉐린·블루리본 모두</button>
+          <button type="button" class="guide-filter" data-guide="broadcast" aria-pressed="false"><span class="guide-dot broadcast-dot" aria-hidden="true"></span>방송</button>
       </div>
     </section>
+    <p id="broadcast-note" class="broadcast-note" hidden>방송에 소개된 식당을 모았어요. 프로그램과 방영 정보는 가게 정보에서 확인할 수 있어요.</p>
     <p id="status" class="status" role="status" hidden></p>
     <div id="recommendations-error" class="status is-error" role="status" hidden>추천맛집을 불러오지 못했어요. <button id="retry-recommendations" type="button">다시 불러오기</button></div>
     <section id="workspace" class="workspace" data-view="map" aria-label="맛집 지도와 목록">
