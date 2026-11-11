@@ -1,0 +1,48 @@
+name: Group age policy build
+on:
+  push:
+    branches: [feat/group-age-policy-20261111]
+    paths: ['.github/workflows/group-age-build.yml', 'ops/patch-group-age.py', 'ops/group-age-dom-tests.txt', 'groups/age-policy.js', 'tests/helpers/group-age-scenarios.cjs', 'supabase/scripts/groups/group_age_policy_2026_11_11.sql']
+permissions:
+  contents: write
+jobs:
+  build:
+    if: github.ref == 'refs/heads/feat/group-age-policy-20261111'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Inspect CLI and generate migration file
+        run: |
+          npx --yes supabase@2.59.0 --version
+          npx --yes supabase@2.59.0 migration new --help
+          npx --yes supabase@2.59.0 migration new group_age_policy
+      - name: Apply focused source edits
+        run: |
+          python3 ops/patch-group-age.py
+          target=$(find supabase/migrations -maxdepth 1 -name '*_group_age_policy.sql')
+          test $(printf '%s\n' "$target" | wc -l) -eq 1
+          cp supabase/scripts/groups/group_age_policy_2026_11_11.sql "$target"
+          rm supabase/scripts/groups/group_age_policy_2026_11_11.sql ops/patch-group-age.py ops/group-age-dom-tests.txt .github/workflows/group-age-build.yml
+      - name: Syntax, source layout and group regression tests
+        run: |
+          node --check groups/app.js
+          node scripts/check-source-layout.mjs
+          npm --prefix tests run test:groups
+          node tests/inline-scripts.test.cjs
+          git diff --check
+      - name: Commit tested files to the feature branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add groups tests supabase/migrations supabase/scripts/groups ops/patch-group-age.py ops/group-age-dom-tests.txt .github/workflows/group-age-build.yml world.html version.json
+          git diff --cached --stat
+          git commit -m 'feat(groups): enforce room age policies with regression tests'
+          git push origin HEAD:feat/group-age-policy-20261111
