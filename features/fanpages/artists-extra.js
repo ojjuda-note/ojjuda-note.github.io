@@ -373,7 +373,7 @@
       debut: '2020.11.12', debutWork: 'Star To A Young Culture', songs: ['SO BAD', 'LIKE THIS'],
       concept: '선명한 개성과 상큼한 멜로디를 담는 여섯 멤버.',
       official: 'https://www.highup-ent.com/', youtube: 'https://www.youtube.com/@STAYC',
-      photo: 'STAYC Metamorphic Showcase 240701.jpg', photoLabel: 'Metamorphic 쇼케이스', photoYear: '2024', credit: '티비텐 TV10', license: 'CC BY 3.0',
+      photo: 'STAYC Metamorphic Showcase 240701.jpg', photoLabel: 'Metamorphic 쇼케이스', photoYear: '2024', credit: 'K-POPIT 케이팝잇 · 원저작 티비텐 TV10', license: 'CC BY 3.0',
       music: [
         { title: '2:LOVE', date: '2026.06.16', type: '싱글 6집 · 타이틀 2 L0VE', songs: ['2 L0VE', 'WHERE YOU AT?', 'SORRY', 'BEAT MY LOVE'], href: 'https://www.highup-ent.com/stayc/2love/' },
         { title: 'STAY ALIVE', date: '2026.02.11', type: '일본 정규 1집 · 대표 수록곡', songs: ['MWUAH', 'Satellite', 'I WANT IT -Japanese Ver.-', 'Stay WITH me -Japanese Ver.-'], href: 'https://www.universal-music.co.jp/stayc/news/2025-11-11/' },
