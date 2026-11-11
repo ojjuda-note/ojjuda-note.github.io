@@ -168,7 +168,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "팬 커뮤니티", sub: "Weverse", href: "https://weverse.io/aespa/feed" }
     ],
     news: [
-      { date: "2026", tag: "팬미팅", title: "MY 보고싶다 ae가 · 공지", href: "https://weverse.io/aespa/highlight" },
+      { date: "2026", tag: "팬미팅", title: "MY 보고싶다 ae가 · 공지", href: "https://weverse.io/aespa/notice/40306" },
       { date: "2026", tag: "굿즈", title: "aesParty 공식 MD 안내", href: "https://weverse.io/aespa/notice/38335" }
     ]
   },
@@ -197,7 +197,7 @@ window.OJJUDA_FAN_ARTISTS = [
     ],
     merch: [
       { title: "Weverse Shop", sub: "공식 굿즈", href: "https://shop.weverse.io/en/shop/USD/artists/50/notices/13192" },
-      { title: "OFFICIAL LINKS", sub: "공식 스토어", href: "https://linktr.ee/lesserafim" }
+      { title: "LE SSERAFIM 공식 스토어", sub: "앨범·공식 굿즈", href: "https://shop.weverse.io/ko/shop/KRW/artists/50" }
     ],
     music: [
       { title: "'PUREFLOW' pt.1", date: "2026.05.22", type: "정규 2집", songs: ["BOOMPALA", "CELEBRATION", "Creatures", "iffy iffy"], href: "https://sourcemusic.com/artist/discography/LE%20SSERAFIM/17" },
@@ -214,7 +214,7 @@ window.OJJUDA_FAN_ARTISTS = [
     ],
     news: [
       { date: "2026", tag: "굿즈", title: "LE SSERAFIM Official Merch", href: "https://shop.weverse.io/en/shop/USD/artists/50/notices/13192" },
-      { date: "공식", tag: "채널", title: "LE SSERAFIM 최신 소식", href: "https://linktr.ee/lesserafim" }
+      { date: "공식", tag: "굿즈", title: "LE SSERAFIM 공식 굿즈 소식", href: "https://shop.weverse.io/ko/shop/KRW/artists/50/notices" }
     ]
   },
   {
@@ -248,7 +248,7 @@ window.OJJUDA_FAN_ARTISTS = [
     music: [
       { title: "THIS IS FOR", date: "2025.07.11", type: "정규 4집", songs: ["THIS IS FOR", "FOUR", "OPTIONS", "MARS"], href: "https://twice.jype.com/discography/7lpxlcye" },
       { title: "STRATEGY", date: "2024.12.06", type: "미니 14집", songs: ["Strategy (feat. Megan Thee Stallion)", "Kiss My Troubles Away", "Sweetest Obsession"], href: "https://twice.jype.com/discography/1xokcjbo" },
-      { title: "With YOU-th", date: "2024.02.23", type: "미니 13집", songs: ["ONE SPARK", "I GOT YOU"], href: "https://twice.jype.com/discography" }
+      { title: "With YOU-th", date: "2024.02.23", type: "미니 13집", songs: ["ONE SPARK", "I GOT YOU"], href: "https://twice.jype.com/discography/jfzzhl4x" }
     ],
     appearances: [
       { date: "2026-11-21", title: "2026 MAMA AWARDS", sub: "나연 솔로 출연 · 일본 오사카", href: "https://www.cj.net/jp/press-release/view/1132" },
@@ -291,7 +291,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Weverse", icon: "✦", url: "https://weverse.io/illit" }
     ],
     merch: [
-      { title: "Weverse Shop", sub: "아일릿 앨범·공식 굿즈", href: "https://shop.weverse.io/" },
+      { title: "Weverse Shop", sub: "아일릿 앨범·공식 굿즈", href: "https://shop.weverse.io/ko/shop/KRW/artists/120" },
       { title: "BELIFT LAB", sub: "공식 앨범 안내", href: "https://beliftlab.com/artist/discography/ILLIT" }
     ],
     music: [
@@ -336,12 +336,12 @@ window.OJJUDA_FAN_ARTISTS = [
     ],
     music: [
       { title: "BAD HABITS TONITE", date: "2026.10.18", type: "싱글", songs: ["BAD HABITS TONITE", "I Follow", "BAD HABITS TONITE (Chinese Ver.)", "I Follow (Chinese Ver.)"], href: "https://www.melon.com/album/detail.htm?albumId=14801672" },
-      { title: "Love Got Me Ooh", date: "2026.07.17", type: "싱글", songs: ["Love Got Me Ooh"], href: "https://a2o.monstr.dev/en/groups/a2o-may" },
+      { title: "Love Got Me Ooh", date: "2026.07.17", type: "싱글", songs: ["Love Got Me Ooh"], href: "https://orcd.co/A2OMAY_Love_Got_Me_Ooh" },
       { title: "Under My Skin (A2O)", date: "2024.12.20", type: "데뷔 싱글", songs: ["Under My Skin (A2O)"], href: "https://www.melon.com/artist/detail.htm?artistId=4531270" }
     ],
     appearances: [],
     campaigns: [
-      { kind: "콜라보", date: "2026.10", title: "FILA FUSION × A2O MAY", sub: "브랜드 화보 캠페인", href: "https://a2o.monstr.dev/en/groups/a2o-may" }
+      { kind: "콜라보", date: "2026.10", title: "FILA FUSION × A2O MAY", sub: "상하이 행사·브랜드 제공 사진 · Hypebeast", href: "https://hypebeast.cn/2026/11/fila-fusion-a2o-may-idol" }
     ],
     schedules: [
       { title: "A2O MAY 공식 X", sub: "행사·활동 공지", href: "https://x.com/A2O_MAY" },
@@ -349,7 +349,7 @@ window.OJJUDA_FAN_ARTISTS = [
     ],
     news: [
       { date: "10.18", tag: "앨범", title: "BAD HABITS TONITE 발매", href: "https://www.melon.com/album/detail.htm?albumId=14801672" },
-      { date: "10.30", tag: "콜라보", title: "FILA FUSION 화보", href: "https://a2o.monstr.dev/en/groups/a2o-may" }
+      { date: "2026.10", tag: "콜라보", title: "FILA FUSION 행사·화보", href: "https://hypebeast.cn/2026/11/fila-fusion-a2o-may-idol" }
     ]
   },
   {
@@ -396,9 +396,9 @@ window.OJJUDA_FAN_ARTISTS = [
     id: "a2osoul", name: "A2O SOUL", korean: "에이투오 소울", fan: "미발표", agency: "A2O ENTERTAINMENT", members: ["MOON", "TAI", "GAKU", "SEE-ONE", "SEOHA", "SONO", "LUCIEN", "ZAI", "AYDEN", "ALURE", "ZET", "SORA", "TEO", "JUNE", "HANSUNG"],
     accent: "#8e85fc", light: "#cbe5ff", dark: "#1e2350", shape: "✷", status: "SUPERSTAR · 2026.11.09",
     image: "https://assets.monstr.dev/media/group/aaa802f2e5fe886835dc4933eef8493812d91c5b-w480.webp",
-    imageCredit: "A2O Entertainment · PR TIMES", imageLink: "https://a2o.monstr.dev/th/groups/a2o-soul",
+    imageCredit: "A2O Entertainment · PR TIMES", imageLink: "https://prtimes.jp/main/html/rd/p/000000007.000192898.html",
     photos: [
-      creditedPhoto("https://assets.monstr.dev/media/group/aaa802f2e5fe886835dc4933eef8493812d91c5b-w480.webp", "SUPERSTAR · 단체", "2026", "A2O Entertainment", "https://a2o.monstr.dev/th/groups/a2o-soul"),
+      creditedPhoto("https://assets.monstr.dev/media/group/aaa802f2e5fe886835dc4933eef8493812d91c5b-w480.webp", "SUPERSTAR · 단체", "2026", "A2O Entertainment", "https://prtimes.jp/main/html/rd/p/000000007.000192898.html"),
       creditedPhoto("https://assets.monstr.dev/media/media/bc930cab6fa911b05649407729dcefbd7d168c8d-w480.webp", "인기가요 · 단체", "2026", "SBS KPOP", "https://a2o.monstr.dev/th/groups/a2o-soul"),
       creditedPhoto("https://assets.monstr.dev/media/media/dbfa6b5321c46c9ba887d472aebbf6c4b99bdfb6-w480.webp", "M2 릴레이댄스", "2026", "M2 · A2O SOUL", "https://x.com/A2O_SOUL"),
       creditedPhoto("https://assets.monstr.dev/media/media/20ee677318e7be3b74412416b8ed705470d87019-w480.webp", "SUPERSTAR · 연습실", "2026", "A2O Entertainment", "https://a2o.monstr.dev/th/groups/a2o-soul"),
