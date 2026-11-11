@@ -289,10 +289,10 @@ async function fixture(browser, options = {}) {
     await page.locator('#category').selectOption(combined.category);
     await openFilters(page);
     await page.locator('#region').selectOption(combined.region);
-    await page.locator('[data-guide="both"]').click();
-    const intersection = dataset.restaurants.filter(item => item.category === combined.category && item.region === combined.region && item.guides.some(guide => guide.provider === 'michelin') && item.guides.some(guide => guide.provider === 'blue-ribbon'));
+    await page.locator('[data-guide="michelin"]').click();
+    const intersection = dataset.restaurants.filter(item => item.category === combined.category && item.region === combined.region && item.guides.some(guide => guide.provider === 'michelin'));
     await waitForCount(page, intersection.length);
-    assert.deepEqual(await visibleIds(page), ids(intersection), 'cuisine, region and both-guide filters intersect');
+    assert.deepEqual(await visibleIds(page), ids(intersection), 'cuisine, region and guide filters intersect');
     await page.locator('#filter-toggle').click();
     assert.equal(await page.locator('#filter-options').isVisible(), false);
     assert.match(await page.locator('#filter-summary').textContent(), new RegExp(combined.region), 'active filters remain readable after folding the panel');
@@ -428,7 +428,7 @@ async function fixture(browser, options = {}) {
         const bounds = container.getBoundingClientRect();
         return [...container.querySelectorAll('button:not(#guide-recommended)')].map(button => { const rect = button.getBoundingClientRect(); return { guide: button.dataset.guide, text: button.textContent, width: rect.width, height: rect.height, fits: rect.left >= bounds.left - 1 && rect.right <= bounds.right + 1 && button.scrollWidth <= button.clientWidth + 1 }; });
       });
-      assert.deepEqual(filterLayout.map(button => button.guide), ['', 'michelin', 'blue-ribbon', 'post-office', 'local-guide', 'both'], 'all public guide filters remain present');
+      assert.deepEqual(filterLayout.map(button => button.guide), ['', 'michelin', 'blue-ribbon', 'post-office', 'local-guide', 'broadcast'], 'broadcast replaces the former combined-guide filter in the last position');
       assert.ok(filterLayout.every(button => button.width > 0 && button.height >= 32 && button.fits), 'every public guide filter stays exposed and unclipped at ' + width + ': ' + JSON.stringify(filterLayout));
       await municipalPage.locator('[data-guide="local-guide"]').click(); await waitForCount(municipalPage, 2);
       assert.deepEqual(await visibleIds(municipalPage), ['municipal-and-ribbon', 'municipal-only']);
