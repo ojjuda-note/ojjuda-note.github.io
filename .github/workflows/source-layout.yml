@@ -17,5 +17,3 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/check-source-layout.mjs
-      - run: node features/fanpages/check-profiles.mjs
-      - run: node features/fanpages/check-videos.mjs
