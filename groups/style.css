@@ -83,3 +83,5 @@
 .gallery-stage[aria-busy="true"]::after{content:"고화질 사진을 준비하는 중…";position:absolute;bottom:10px;left:50%;transform:translateX(-50%);padding:7px 12px;border-radius:30px;background:#20392ce0;color:#fff;font-size:12px;white-space:nowrap}
 .gallery-stage .gallery-preview{filter:blur(.7px)}
 @media(prefers-reduced-motion:reduce){.media-slot[data-loaded="loading"]{animation:none}}
+
+.age-settings{margin:18px 0;padding:14px;border:1px solid #c8d5cc;border-radius:12px;min-width:0}.age-settings legend{padding:0 6px;font-weight:700}.age-settings [data-age-range]{margin-top:12px}.age-settings [data-age-range]>.field{margin-bottom:12px}.age-settings input,.age-settings select{min-width:0;max-width:100%}.age-settings [hidden]{display:none!important}.age-tag{display:inline-block;white-space:normal;margin:6px 0}.age-note{max-width:36rem;overflow-wrap:anywhere}
