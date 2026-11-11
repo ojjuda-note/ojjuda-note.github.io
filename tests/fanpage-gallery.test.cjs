@@ -200,3 +200,130 @@ test('all artist reveal controls, saved buttons and photograph credits have work
     });
   }
 });
+
+function hubPage() {
+  const dom = new JSDOM(read('index.html'), {
+    url: 'https://ojjuda.test/features/fanpages/index.html',
+    runScripts: 'outside-only',
+    pretendToBeVisual: true
+  });
+  dom.window.matchMedia = () => ({ matches: true });
+  dom.window.eval(`${data}\n${behavior}`);
+  return dom;
+}
+
+test('hub category buttons and search show the matching artists and empty state', () => {
+  const dom = hubPage();
+  try {
+    const { window } = dom;
+    const { document } = window;
+    const grid = document.getElementById('artist-grid');
+    const visibleIds = () => [...grid.querySelectorAll('[data-save]')].map(button => button.dataset.save);
+    const filters = [...document.querySelectorAll('[data-category]')];
+    const search = document.getElementById('artist-search');
+    const select = category => {
+      const button = filters.find(item => item.dataset.category === category);
+      button.focus();
+      button.click();
+      assert.equal(document.activeElement, button);
+      for (const filter of filters) {
+        assert.equal(filter.getAttribute('aria-pressed'), String(filter === button));
+        assert.equal(filter.classList.contains('is-active'), filter === button);
+      }
+    };
+    const expectIds = expected => {
+      assert.deepEqual(visibleIds().sort(), [...expected].sort());
+      assert.equal(document.getElementById('filter-count').textContent, `${expected.length} / ${artists.length}`);
+      assert.equal(document.getElementById('empty-content').hidden, expected.length > 0);
+    };
+    expectIds(artists.map(artist => artist.id));
+    const legacyGirls = ['a2olite', 'a2omay', 'aespa', 'illit', 'ive', 'lesserafim', 'rescene', 'twice'];
+    select('girl');
+    expectIds(artists.filter(artist => artist.category === 'girl' || legacyGirls.includes(artist.id)).map(artist => artist.id));
+    select('boy');
+    expectIds(artists.filter(artist => artist.category === 'boy' || artist.id === 'a2osoul').map(artist => artist.id));
+    select('saved');
+    expectIds([]);
+    select('all');
+    expectIds(artists.map(artist => artist.id));
+
+    const searchFor = value => {
+      search.focus();
+      search.value = value;
+      search.dispatchEvent(new window.Event('input', { bubbles: true }));
+      assert.equal(document.activeElement, search);
+    };
+    searchFor('  tWiCe  ');
+    expectIds(['twice']);
+    select('boy');
+    expectIds([]);
+    select('girl');
+    expectIds(['twice']);
+    searchFor('리센느');
+    expectIds(['rescene']);
+    searchFor('REMINE');
+    expectIds(['rescene']);
+    searchFor('does not match any artist');
+    expectIds([]);
+    searchFor('');
+    select('all');
+    expectIds(artists.map(artist => artist.id));
+  } finally {
+    dom.window.close();
+  }
+});
+
+test('every hub saved button keeps focus and correct state after registration and removal', () => {
+  const dom = hubPage();
+  try {
+    const { document, localStorage } = dom.window;
+    const grid = document.getElementById('artist-grid');
+    const buttonFor = id => grid.querySelector(`[data-save="${id}"]`);
+    for (const artist of artists) {
+      for (const saved of [true, false]) {
+        const button = buttonFor(artist.id);
+        button.focus();
+        button.click();
+        const replacement = buttonFor(artist.id);
+        assert.equal(document.activeElement, replacement, `${artist.id} must retain keyboard focus`);
+        assert.equal(replacement.getAttribute('aria-pressed'), String(saved), artist.id);
+        assert.equal(replacement.classList.contains('is-saved'), saved, artist.id);
+        assert.equal(replacement.getAttribute('aria-label'), `${artist.korean} 관심 ${saved ? '취소' : '등록'}`);
+        assert.deepEqual(JSON.parse(localStorage.getItem('ojjuda-fanpages-saved-v1')), saved ? [artist.id] : []);
+        assert.equal(grid.querySelectorAll('[data-save]').length, artists.length);
+      }
+    }
+  } finally {
+    dom.window.close();
+  }
+});
+
+test('removing saved artists focuses the next artist, previous artist, or saved filter', () => {
+  const dom = hubPage();
+  try {
+    const { document, localStorage } = dom.window;
+    const grid = document.getElementById('artist-grid');
+    const buttonFor = id => grid.querySelector(`[data-save="${id}"]`);
+    const ids = [...grid.querySelectorAll('[data-save]')].slice(0, 3).map(button => button.dataset.save);
+    for (const id of ids) buttonFor(id).click();
+    const savedFilter = document.querySelector('[data-category="saved"]');
+    savedFilter.click();
+    assert.equal(grid.querySelectorAll('[data-save]').length, 3);
+    const remove = (id, expectedFocus) => {
+      const button = buttonFor(id);
+      button.focus();
+      button.click();
+      assert.equal(buttonFor(id), null);
+      assert.equal(document.activeElement, expectedFocus ? buttonFor(expectedFocus) : savedFilter);
+      assert.equal(savedFilter.getAttribute('aria-pressed'), 'true');
+    };
+    remove(ids[1], ids[2]);
+    remove(ids[2], ids[0]);
+    remove(ids[0], null);
+    assert.equal(document.getElementById('empty-content').hidden, false);
+    assert.equal(document.getElementById('filter-count').textContent, `0 / ${artists.length}`);
+    assert.deepEqual(JSON.parse(localStorage.getItem('ojjuda-fanpages-saved-v1')), []);
+  } finally {
+    dom.window.close();
+  }
+});

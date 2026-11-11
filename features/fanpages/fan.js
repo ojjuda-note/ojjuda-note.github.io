@@ -240,7 +240,16 @@
       </article>`).join('');
       $('#filter-count').textContent = `${items.length} / ${artists.length}`;
       $('#empty-content').hidden = items.length > 0;
-      grid.querySelectorAll('[data-save]').forEach((button) => button.addEventListener('click', () => { toggleSaved(button.dataset.save); render(); }));
+      grid.querySelectorAll('[data-save]').forEach((button, index) => button.addEventListener('click', () => {
+        const id = button.dataset.save;
+        toggleSaved(id);
+        render();
+        const remaining = [...grid.querySelectorAll('[data-save]')];
+        const nextFocus = remaining.find((item) => item.dataset.save === id)
+          || remaining[Math.min(index, remaining.length - 1)]
+          || buttons.find((item) => item.dataset.category === 'saved');
+        nextFocus?.focus({ preventScroll: true });
+      }));
       attachImageFallback(grid);
     }
     buttons.forEach((button) => button.addEventListener('click', () => {
