@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
  const scripts=[
-  "/admin/visitors.js?v=20261111-admin-insights1","/admin/trash.js?v=20261021-trash1",
+  "/admin/visitors.js?v=20261111-guest-popularity1","/admin/trash.js?v=20261021-trash1",
   "/admin/friend-messages.js?v=20261021-trash1","/admin/member-identity.js?v=20260929-phone-unique",
   "/admin/connections.js?v=20261022-entry1","/admin/accounts.js?v=20261110-member-history1",
   "/admin/activity.js?v=20261107-account-guard1","/admin/photo-stages.js?v=20261006-photo1",
@@ -10,7 +10,7 @@
   "/note/operations.js?v=20261021-admin1",
   "note/admin.js?v=20261107-risk-pass1"
  ],styles=[
-  "/admin/visitors.css?v=20261101-game-challenges1",
+  "/admin/visitors.css?v=20261111-guest-popularity1",
   "/admin/visitors-charts.css?v=20261111-admin-insights1",
   "/admin/trash.css?v=20261021-trash1","/admin/friend-messages.css?v=20261020-messages1",
   "/admin/connections.css?v=20261004-design1","/admin/accounts.css?v=20261110-member-history1",

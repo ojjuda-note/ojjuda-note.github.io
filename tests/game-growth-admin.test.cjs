@@ -1,25 +1,32 @@
-const assert=require('node:assert/strict');
-const fs=require('node:fs'),path=require('node:path');
-const {JSDOM}=require('jsdom');
-const tick=()=>new Promise(resolve=>setImmediate(resolve));
-(async()=>{
-  const dom=new JSDOM('<main id="host"></main>',{url:'https://ojjuda.kr/world.html?admin=visitors',runScripts:'outside-only'});
-  const w=dom.window,host=w.document.getElementById('host');w.eval(fs.readFileSync(path.join(__dirname,'../admin/visitors.js'),'utf8'));
-  let owner='admin',authChanged,failGrowth=false,resolveGrowth,delayGrowth=false;
-  const visitor={today:3,month:3,total:3,started_at:'2026-11-01T00:00:00Z',daily:[],monthly:[]};
-  const rows=['stacker','mole'].flatMap(game=>['challenge','direct'].map(source=>({game,source,visits:8,starts:6,completes:4,shares:2})));
-  const growth={started_at:'2026-11-01T00:00:00Z',today_date:'2026-11-01',today:rows,month:rows};
-  const client={rpc(name){if(name==='admin_guest_visit_stats')return Promise.resolve({data:visitor});if(delayGrowth)return new Promise(resolve=>{resolveGrowth=resolve});return Promise.resolve(failGrowth?{error:{message:'offline'}}:{data:growth});},auth:{onAuthStateChange(fn){authChanged=fn;return{data:{subscription:{unsubscribe(){}}}}}}};
-  const control=w.OjjudaAdminVisitors.mount({container:host,client,getAdminId:()=>owner});await tick();
-  const section=host.querySelector('.visitor-growth');
-  assert.equal(section.querySelector('h3').textContent,'게임 도전·공유 상세');assert.equal(section.querySelectorAll('table').length,2);
-  assert.equal(section.querySelectorAll('tbody tr').length,8);
-  assert.match(section.querySelector('h3').title,/하루·브라우저·게임·경로별/);
-  assert.match(section.textContent,/탑 쌓기/);assert.match(section.textContent,/두더지 잡기/);assert.match(section.textContent,/도전 링크/);
-  assert.deepEqual([...section.querySelectorAll('thead th')].slice(0,6).map(node=>node.textContent),['게임','경로','방문','시작','완료','공유']);
-  failGrowth=true;await control.refresh();assert.match(section.textContent,/불러오지 못했어요/);assert.equal(section.querySelectorAll('table').length,0);assert.equal(host.querySelectorAll('.visitor-card').length,3,'growth failure does not erase existing visitor stats');
-  failGrowth=false;delayGrowth=true;const pending=control.refresh();await tick();owner=null;authChanged('SIGNED_OUT',null);resolveGrowth({data:growth});await pending;assert.equal(section.childElementCount,0,'a delayed growth response cannot restore admin data after logout');
-  control.destroy();owner='admin';delayGrowth=false;
-  const compact=w.OjjudaAdminVisitors.mount({container:host,client,getAdminId:()=>owner,compact:true});await tick();assert.equal(host.querySelector('.visitor-growth').childElementCount,0,'compact summary avoids additional tables');compact.destroy();
-  dom.window.close();console.log('PASS: compact growth tables, source labels, independent failure handling and logout race protection');
+const assert = require('node:assert/strict');
+const fs = require('node:fs'), path = require('node:path');
+const { JSDOM } = require('jsdom');
+const settle = () => new Promise(resolve => setImmediate(resolve));
+
+(async () => {
+  const dom = new JSDOM('<main id="host"></main>', { url:'https://ojjuda.kr/world.html?admin=visitors', runScripts:'outside-only' });
+  const w = dom.window, host = w.document.getElementById('host');
+  w.eval(fs.readFileSync(path.join(__dirname,'../admin/visitors.js'),'utf8'));
+  const calls = [];
+  let owner='admin', authChanged;
+  const visitor = { today:3,month:3,total:3,started_at:'2026-11-01T00:00:00Z',daily:[],monthly:[] };
+  const client = { rpc:async name => {
+    calls.push(name);
+    return name === 'admin_guest_visit_stats' ? {data:visitor} : {error:{message:'unavailable'}};
+  },auth:{onAuthStateChange(fn){authChanged=fn;return {data:{subscription:{unsubscribe(){}}}}}}};
+  const control = w.OjjudaAdminVisitors.mount({container:host,client,getAdminId:()=>owner});
+  await settle();await settle();
+  assert.equal(host.querySelector('.visitor-growth'),null,'the obsolete challenge/share UI is removed');
+  assert.doesNotMatch(host.textContent,/게임 도전·공유 상세|도전 링크/);
+  assert.equal(calls.includes('admin_game_growth_stats'),false,'the obsolete admin RPC is not requested');
+  assert.match(host.textContent,/3회/,'the existing guest count is preserved');
+  owner=null;authChanged('SIGNED_OUT',null);
+  assert.equal(host.querySelectorAll('.visitor-card').length,0,'sign out removes sensitive statistics');
+  control.destroy();owner='admin';calls.length=0;
+  const compact=w.OjjudaAdminVisitors.mount({container:host,client,getAdminId:()=>owner,compact:true});
+  await settle();
+  assert.equal(calls.includes('admin_site_usage_stats'),false,'compact summary avoids chart RPC');
+  assert.equal(calls.includes('admin_game_growth_stats'),false);
+  compact.destroy();dom.window.close();
+  console.log('PASS: removed obsolete challenge/share admin tables and RPC, kept guest history and logout protection');
 })().catch(error=>{console.error(error);process.exitCode=1});

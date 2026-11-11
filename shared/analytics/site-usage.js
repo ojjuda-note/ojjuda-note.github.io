@@ -98,11 +98,12 @@
     const game = params.get('game');
     if (GAMES.has(game)) return 'game_' + game;
     if (game) return 'game_other';
+    if (params.get('place') === 'park') return 'park';
     return ({ arcade:'arcade',park:'park',my:'settings',settings:'settings' })[params.get('tab')] || 'agit';
   }
   function clicked(event) {
     if (!event.target?.closest || event.target.closest('button:disabled,[aria-disabled="true"]')) return;
-    const gameButton = event.target.closest('[data-arcade-games] .gbtn');
+    const gameButton = event.target.closest('[data-arcade-games] .gbtn,[data-act="agit-play"]');
     if (gameButton) {
       const id = gameButton.dataset.v || ({'matgo-open':'matgo','bl-open':'billiards'})[gameButton.dataset.act];
       track('feature','game_' + (GAMES.has(id) ? id : 'other'));
