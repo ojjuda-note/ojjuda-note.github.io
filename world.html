@@ -44,7 +44,7 @@
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261110-janggi-entry2">
 <link rel="stylesheet" href="/games/janggi/replay.css?v=20261110-janggi-replay1">
-<script src="/shared/games/world-game-assets.js?v=20261111-restaurants-broadcast1" defer></script>
+<script src="/shared/games/world-game-assets.js?v=20261111-game-score-save1" defer></script>
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
 <script src="/shared/games/game-challenges.js?v=20261110-admin-record-free1" defer></script>
@@ -1881,10 +1881,26 @@ function syncFlatDrills(){
 }
 function screwStageResult(score,outcome){
  if(R?.id!=='screw'||!R.running||!R.game||(outcome==='success'?!R.game.stageCleared:!R.game.stageFailed))return;
- const game=R.game;R.running=false;cancelAnimationFrame(R.raf);game.draw(R.ctx);R.ov.querySelector('#gctrl').innerHTML='';
+ const session=R,game=R.game,stage=game.stage;R.running=false;cancelAnimationFrame(R.raf);game.draw(R.ctx);R.ov.querySelector('#gctrl').innerHTML='';
  finishWorldGuestRound(R);
- ti(worldGameResultMarkup({game:R.screwMode==='flat'?'screw_flat':'screw_box',outcome,metric:`${game.stage}단계 · ${score}점`,score,key:worldGameResultKey(game,`${game.stage}:${outcome}`),actions:screwStagePicker()+'<button class="btn" data-g="screw-stages">전체 단계 선택</button>'+(outcome==='success'&&game.viewPicture?'<button class="btn" data-g="screw-view">그림 보기</button>':'')+(game.canResume?'<button class="btn" data-g="screw-resume">계속하기</button>':'')+'<button class="btn" data-g="close">닫기</button>',extra:'<p id="screw-state" role="status"></p>'}));
+ ti(worldGameResultMarkup({game:R.screwMode==='flat'?'screw_flat':'screw_box',outcome,metric:`${game.stage}단계 · ${score}점`,score,key:worldGameResultKey(game,`${game.stage}:${outcome}`),actions:screwStagePicker()+'<button class="btn" data-g="screw-stages">전체 단계 선택</button>'+(outcome==='success'&&game.viewPicture?'<button class="btn" data-g="screw-view">그림 보기</button>':'')+(game.canResume?'<button class="btn" data-g="screw-resume">계속하기</button>':'')+'<button class="btn" data-g="close">닫기</button>',extra:'<p id="screw-save-state" role="status"></p><p id="screw-state" role="status"></p>'}));
  syncFlatDrills();
+ const status=R.ov.querySelector('#screw-save-state');
+ if(status){
+  const current=()=>R===session&&R.game===game&&game.stage===stage&&!R.running&&session.owner===worldRewardOwner()&&R.ov.querySelector('#screw-save-state')===status;
+  const failed='점수를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.';
+  if(window.OjjudaAdminPreview?.isEnabled?.()===true)status.textContent='관리자 체험 · 점수는 저장하지 않아요.';
+  else if(score<=0)status.textContent='아직 저장할 점수가 없어요.';
+  else if(session.owner!==worldRewardOwner()||!session.saveScore)status.textContent=failed;
+  else{
+   status.textContent='점수 저장 중…';
+   Promise.resolve().then(()=>session.saveScore(score)).then(receipt=>{
+    if(!current())return;
+    status.textContent=receipt?.preview?'관리자 체험 · 점수는 저장하지 않아요.':!receipt?.ok?failed:
+     session.screwMode==='box'&&Number.isSafeInteger(receipt.total)&&receipt.total>=0?`누적 ${receipt.total.toLocaleString('ko-KR')}점 저장 완료`:'점수 저장 완료';
+   },()=>{if(current())status.textContent=failed;});
+  }
+ }
  R.ov.querySelector(`[data-g="screw-stage"][data-stage="${game.stage}"]`)?.focus({preventScroll:true});
 }
 async function chooseScrewStage(stage){
@@ -1922,21 +1938,33 @@ function pendingScrewScore(game,owner){
 }
 // Box score is cumulative across sessions. The backend only credits increases
 // of this durable per-account/device run ID; repeats and retries are idempotent.
+// Keep the same run in memory when browser storage is blocked or full.
+var screwBoxScoreStates=new Map();
 function screwBoxScoreState(owner){
  const key='ojjuda-screw-box-cumulative-v1:'+String(owner||'guest');
+ const cached=screwBoxScoreStates.get(key);
  try{
   const state=JSON.parse(localStorage.getItem(key)||'null');
   if(typeof state?.runId==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(state.runId)&&
    Number.isSafeInteger(state.total)&&state.total>=0&&state.total<=1999999999&&
-   Number.isSafeInteger(state.acked)&&state.acked>=0&&state.acked<=state.total)
-   return {key,...state};
+   Number.isSafeInteger(state.acked)&&state.acked>=0&&state.acked<=state.total){
+   // Storage access can recover mid-game and reveal an older run. Keep the
+   // page's run ID stable so its active recorder can still submit each score.
+   if(cached&&cached.runId!==state.runId)return {...cached};
+   if(cached?.runId===state.runId){state.total=Math.max(state.total,cached.total);state.acked=Math.max(state.acked,cached.acked);}
+   const current={key,runId:state.runId,total:state.total,acked:state.acked};
+   screwBoxScoreStates.set(key,current);return {...current};
+  }
  }catch{}
+ if(cached)return {...cached};
  const state={key,runId:crypto.randomUUID(),total:0,acked:0};
- try{localStorage.setItem(key,JSON.stringify({runId:state.runId,total:0,acked:0}));}catch{}
+ saveScrewBoxScoreState(state);
  return state;
 }
 function saveScrewBoxScoreState(state){
- try{localStorage.setItem(state.key,JSON.stringify({runId:state.runId,total:state.total,acked:state.acked}));}catch{}
+ const current={key:state.key,runId:state.runId,total:state.total,acked:state.acked};
+ screwBoxScoreStates.set(state.key,current);
+ try{localStorage.setItem(state.key,JSON.stringify({runId:state.runId,total:state.total,acked:state.acked}));return true;}catch{return false;}
 }
 function createScrewBoxScoreRecorder(){
  const owner=worldRewardOwner(),first=screwBoxScoreState(owner);
@@ -1965,7 +1993,8 @@ function createScrewBoxScoreRecorder(){
      if(attempt<2)await new Promise(resolve=>setTimeout(resolve,result.reason==='too_fast'?5100:1000));
     }
     if(!result?.ok){
-     if(worldRewardCurrent(request))M('박스형 점수를 임시 보관했어요. 다음 접속 때 다시 저장해요.');
+     const retained=saveScrewBoxScoreState(screwBoxScoreState(owner));
+     if(worldRewardCurrent(request))M(retained?'박스형 점수를 임시 보관했어요. 다음 접속 때 다시 저장해요.':'박스형 점수를 저장하지 못했어요. 연결을 확인한 뒤 다시 시도해 주세요.');
      return result||{ok:false};
     }
     saved=target;receipt=result;
@@ -3009,7 +3038,7 @@ let chachaRushPortalPromise = null;
 const chachaRushPortal = {
  async open() {
   try {
-   chachaRushPortalPromise ??= import('/shared/games/chacha-rush-portal.js?v=20261109-unified-multiplayer-ui2').then(({installChachaRushPortal}) => installChachaRushPortal({
+   chachaRushPortalPromise ??= import('/shared/games/chacha-rush-portal.js?v=20261111-game-score-save1').then(({installChachaRushPortal}) => installChachaRushPortal({
     currentOwner:()=>worldRewardOwner(),
     submitScore:score=>tf('chacha_rush',score),
     onSaved:owner=>window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner,game:'chacha_rush'}})),

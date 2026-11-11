@@ -41,12 +41,12 @@ function tourShowError() {
   document.addEventListener('ojjuda-tour:setup', refresh);
   let initialized = false;
   let pendingResult = null, recordTimer = 0;
-  function recordStatus(ok) {
+  function recordStatus(ok, preview = false) {
     const status = document.getElementById('tourRecordStatus');
     if (!status || !pendingResult || !G?.over || G.runId !== pendingResult.runId) return;
     clearTimeout(recordTimer);
-    status.textContent = ok ? '기록 저장 완료' : '저장 실패 · ';
-    if (!ok) {
+    status.textContent = preview ? '관리자 체험 · 기록은 저장하지 않아요.' : ok ? '기록 저장 완료' : '저장 실패 · ';
+    if (!ok && !preview) {
       const retry = document.createElement('button');
       retry.type = 'button'; retry.className = 'btn sec'; retry.textContent = '다시 저장';
       retry.onclick = sendResult; status.append(retry);
@@ -73,7 +73,7 @@ function tourShowError() {
     if (!embedded || event.origin !== location.origin || event.source !== window.parent) return;
     const message = event.data;
     if (initialized && message?.source === 'ojjuda-world' && message.type === 'ojjuda-tour-record' && message.runId === pendingResult?.runId) {
-      recordStatus(message.ok === true); return;
+      recordStatus(message.ok === true, message.preview === true); return;
     }
     if (initialized || G) return;
     if (message?.source !== 'ojjuda-world' || message.type !== 'ojjuda-tour-init') return;

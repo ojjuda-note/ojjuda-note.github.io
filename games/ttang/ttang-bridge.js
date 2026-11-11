@@ -2,16 +2,41 @@
 (()=>{
  'use strict';
  let overlay=null,frame=null,session=null,previousFocus=null,watcher=null;
+ const SAVE_TIMEOUT=30000;
  const adminPreview=()=>window.OjjudaAdminPreview?.isEnabled?.()===true;
  const retired=new Set();
  const bridge={client:null,open,close,createPublicRoom};window.OjjudaTtangBridge=bridge;
  function close(){
   if(!overlay){if(!retired.size)return true;const pending=finishRetired();pending.catch(()=>{});return pending;}
-  const current=session;current.closed=true;let networkClose,roomClose;
-  try{const game=frame?.contentWindow?.OjjudaTtang,result=game?.result?.();if(result?.round===current.round&&!result.abandoned&&typeof result.win==='boolean')current.outcomes.set(result.round,result.win);if(game?.dispose)networkClose=game.dispose();else game?.menu();}catch{}
+  const current=session;
+  if(!current.authorized())return remove(current);
+  if(current.closing)return current.closing;
+  try{const result=frame?.contentWindow?.OjjudaTtang?.result?.();if(result?.round===current.round&&!result.abandoned&&typeof result.win==='boolean')current.outcomes.set(result.round,result.win);}catch{}
   // Leaving an unfinished round is not a loss. Retry only a result that the
-  // game actually completed, so a later visit can extend the saved streak.
-  if(current.round&&!current.submitted.has(current.round)&&!current.excluded.has(current.round)&&current.outcomes.has(current.round))void saveResult(current,current.outcomes.get(current.round),current.round);
+  // game actually completed, and keep its screen until the receipt arrives.
+  const outcomes=[...current.outcomes].filter(([round])=>!current.excluded.has(round)&&(!current.submitted.has(round)||current.pending.has(round)));
+  if(!outcomes.length)return remove(current);
+  const openedFrame=frame;openedFrame.inert=true;openedFrame.setAttribute('aria-busy','true');
+  const cancelled=new Promise(resolve=>{current.cancelClose=()=>resolve(null);});
+  current.closing=Promise.resolve().then(async()=>{
+   try{
+    if(session!==current)return true;
+    const results=await Promise.race([Promise.all(outcomes.map(([round,won])=>saveResult(current,won,round))),cancelled]);
+    if(session!==current)return true;
+    if(!current.authorized())return remove(current);
+    if(results?.some(saved=>!saved)){saveFailure(current,()=>void close());return false;}
+    return remove(current);
+   }finally{
+    if(session===current){openedFrame.inert=false;openedFrame.setAttribute('aria-busy','false');}
+    current.closing=null;current.cancelClose=null;
+   }
+  });
+  current.closing.catch(()=>{});return current.closing;
+ }
+ function remove(current){
+  if(session!==current)return true;
+  current.closed=true;current.cancelClose?.();let networkClose,roomClose;
+  try{const game=frame?.contentWindow?.OjjudaTtang;if(game?.dispose)networkClose=game.dispose();else game?.menu();}catch{}
   if(current.arcadeRoom||current.createRpc){retired.add(current);roomClose=leavePublicRoom(current);roomClose.catch(()=>{});}
   clearInterval(watcher);overlay.remove();overlay=frame=session=null;bridge.client=null;
   document.body.classList.remove('ttang-open','gaming');
@@ -36,7 +61,7 @@
   if(adminPreview())throw Error('admin_preview');
   const current=session,client=bridge.client,game=frame?.contentWindow?.OjjudaTtang;
   if(!current?.owner||!current.authorized()||!client?.rpc||!game)throw Error('not_signed_in');
-  if(current.creating||current.arcadeRoom)return false;
+  if(current.creating||current.arcadeRoom||current.closing)return false;
   current.creating=true;current.createRequest ||= crypto.randomUUID();
   try{
    await finishRetired();if(session!==current||!current.authorized())return false;
@@ -60,7 +85,7 @@
  function open({client,owner,authorized=()=>true,onResult=async()=>({ok:false}),joinCode,hostCode,arcadeRoom}={}){
   if(adminPreview()){joinCode=null;hostCode=null;arcadeRoom=null;}
   if(overlay||!authorized())return;
-  previousFocus=document.activeElement;session={owner,authorized,onResult,client,round:null,mode:null,guestFinished:false,submitted:new Set(),excluded:new Set(),outcomes:new Map(),arcadeRoom,hostCode,nextHeartbeat:0,heartbeatBusy:false,hosting:false};bridge.client=client;
+  previousFocus=document.activeElement;session={owner,authorized,onResult,client,round:null,mode:null,guestFinished:false,submitted:new Set(),pending:new Map(),excluded:new Set(),outcomes:new Map(),arcadeRoom,hostCode,nextHeartbeat:0,heartbeatBusy:false,hosting:false};bridge.client=client;
   overlay=document.createElement('section');overlay.id='ttang-overlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','월드땅따먹기');
   overlay.style.cssText='position:fixed;inset:0;z-index:99999;height:100dvh;display:flex;flex-direction:column;background:#f3eafa;padding-top:env(safe-area-inset-top,0px)';
   const bar=document.createElement('header');bar.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 12px;flex:none;color:#684a8a;background:#fff9ee;border-bottom:1px solid #e5d5ef;font-size:12px';
@@ -86,26 +111,41 @@
    else{window.dispatchEvent(new Event('ojjuda:arcade-rooms-changed'));return true;}
   }catch{current.nextHeartbeat=Date.now()+5000;}finally{current.heartbeatBusy=false;}
  }
- async function saveResult(current,won,round){
+ function saveResult(current,won,round){
+  if(current.pending.has(round))return current.pending.get(round);
   if(adminPreview()){
    current.submitted.add(round);
    if(session===current)statusMessage('관리자 체험 · 승패 기록은 저장하지 않아요');
-   return;
+   return Promise.resolve(true);
   }
-  if(!current.authorized()||current.excluded.has(round)||current.submitted.has(round))return;
+  if(!current.authorized()||current.excluded.has(round))return Promise.resolve(false);
+  if(current.submitted.has(round))return Promise.resolve(true);
+  if(!current.owner&&!current.guestFinished){current.guestFinished=true;window.OjjudaGuestAccess?.finished();}
   current.outcomes.set(round,won);current.submitted.add(round);
-  if(session===current)statusMessage('승패 기록을 저장하고 있어요…');
-  try{
-   const result=await current.onResult(won,round);
-   if(!result?.ok)throw Error('record');
-   if(session===current&&current.round===round&&current.authorized())statusMessage((won?'승리':'패배·무승부')+' · '+(current.owner?'기록했어요!':'손님으로 기록했어요!'));
-  }catch{
-   current.submitted.delete(round);
-   if(session!==current||current.round!==round)return;
-   statusMessage('승패 기록을 저장하지 못했어요. ');
-   const retry=document.createElement('button');retry.type='button';retry.textContent='다시 저장';
-   retry.onclick=()=>{retry.remove();void saveResult(current,won,round)};overlay.querySelector('#ttang-save-status').append(retry);
-  }
+  if(session===current&&(current.round===round||current.closing))statusMessage('승패 기록을 저장하고 있어요…');
+  const pending=(async()=>{
+   let timer;
+   try{
+    const result=await Promise.race([
+     Promise.resolve().then(()=>current.authorized()?current.onResult(won,round):{ok:false}),
+     new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('save_timeout')),SAVE_TIMEOUT);})
+    ]);
+    if(!result?.ok)throw Error('record');
+    if(session===current&&current.round===round&&current.authorized())statusMessage((won?'승리':'패배·무승부')+' · '+(current.owner?'기록했어요!':'손님으로 기록했어요!'));
+    return true;
+   }catch{
+    current.submitted.delete(round);
+    if(current.round===round)saveFailure(current,()=>void saveResult(current,won,round));
+    return false;
+   }finally{clearTimeout(timer);current.pending.delete(round);}
+  })();
+  current.pending.set(round,pending);return pending;
+ }
+ function saveFailure(current,retrySave){
+  if(session!==current||!current.authorized())return;
+  statusMessage('승패 기록을 저장하지 못했어요. ');
+  const retry=document.createElement('button');retry.type='button';retry.textContent='다시 저장';
+  retry.onclick=()=>{retry.remove();retrySave();};overlay.querySelector('#ttang-save-status').append(retry);
  }
  function statusMessage(text){const status=overlay?.querySelector('#ttang-save-status');if(status)status.textContent=text;}
  addEventListener('keydown',e=>{if(overlay&&e.key==='Escape'){e.preventDefault();close();}});
@@ -116,9 +156,9 @@
   if(d.type==='ojjuda:ttang:network-end'||d.type==='ojjuda:ttang:menu'||d.type==='ojjuda:ttang:opponent-bot'){current.hosting=false;void leavePublicRoom(current).catch(()=>{statusMessage('대전방 정리를 다시 시도해 주세요.');});return;}
   if(d.type==='ojjuda:ttang:excluded'&&d.round===current.round){current.excluded.add(d.round);current.outcomes.delete(d.round);return;}
   if(d.type==='ojjuda:ttang:close'){close();return;}
+  if(current.closing)return;
   if(d.type==='ojjuda:ttang:start'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(d.round||'')&&['solo','duo'].includes(d.mode)){current.round=d.round;current.mode=d.mode;status.textContent='월드땅따먹기';return;}
   if(d.type!=='ojjuda:ttang:result'||d.abandoned||d.mode!==current.mode||!d.round||d.round!==current.round||typeof d.win!=='boolean'||current.submitted.has(d.round)||current.excluded.has(d.round))return;
-  if(!current.owner&&!current.guestFinished){current.guestFinished=true;window.OjjudaGuestAccess?.finished();}
   await saveResult(current,d.win,d.round);
  });
 })();

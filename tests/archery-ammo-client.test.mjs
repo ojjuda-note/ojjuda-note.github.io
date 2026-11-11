@@ -16,13 +16,13 @@ const snapshot = (extra = {}) => ({ ok: true, launch_epoch: 5, remaining: 20, fr
 
 // Real client, isolated browser globals and fake parent messages. No RPC or wallet
 // connector is present in this harness, including the purchase tests.
-async function fixture({ store = new Map(), initialize = true, owner = OWNER, sessionId = SESSION, storageFails = false, recordsOnly = false } = {}) {
+async function fixture({ store = new Map(), initialize = true, owner = OWNER, sessionId = SESSION, storageFails = false, storageReadFails = false, recordsOnly = false } = {}) {
   let now = 0, sequence = 0, timerId = 0;
   const fixtureId = ++fixtureSequence;
   const listeners = new Set(), messages = [], timers = new Map(), changes = [];
   const parent = { postMessage(data, origin) { messages.push({ data: JSON.parse(JSON.stringify(data)), origin }); } };
   const window = { parent, location: { origin: ORIGIN }, addEventListener(type, fn) { if (type === 'message') listeners.add(fn); }, removeEventListener(type, fn) { listeners.delete(fn); } };
-  const storage = { getItem: key => store.get(key) ?? null, setItem(key, value) { if (storageFails) throw Error('storage blocked');store.set(key, String(value)); }, removeItem: key => store.delete(key) };
+  const storage = { getItem(key) { if (storageReadFails) throw Error('storage read blocked');return store.get(key) ?? null; }, setItem(key, value) { if (storageFails) throw Error('storage blocked');store.set(key, String(value)); }, removeItem: key => store.delete(key) };
   const context = vm.createContext({ window, localStorage: storage, performance: {now: () => now}, crypto: { randomUUID: () => `00000000-0000-4000-8000-${String(fixtureId * 10000 + ++sequence).padStart(12, '0')}` }, Uint8Array,
     setTimeout(fn, delay) { const id = ++timerId;timers.set(id, { fn, due: now + delay });return id; }, clearTimeout(id) { timers.delete(id); } });
   const module = new vm.SourceTextModule(source, { context });await module.link(() => {});await module.evaluate();
@@ -177,6 +177,9 @@ test('invalid inputs and unavailable durable storage never submit a financial re
   const f = await fixture({ storageFails: true });const count = f.requests().length;
   assert.equal((await f.client.buy()).reason, 'storage_unavailable');
   assert.equal((await f.client.buyCoach()).reason, 'storage_unavailable');
+  assert.equal((await f.client.spend('event-round')).reason, 'storage_unavailable');
+  assert.equal((await f.client.startRound(OTHER, 1)).reason, 'storage_unavailable', 'legacy mode keeps its durable storage requirement');
+  assert.equal((await f.client.completeRound(SESSION, 1, 30)).reason, 'storage_unavailable');
   assert.equal((await f.client.startRound('bad', 1)).reason, 'invalid');
   for (const stage of [0, 221, 220.5, '220']) {
     assert.equal((await f.client.startRound(OTHER, stage)).reason, 'invalid');
@@ -369,6 +372,60 @@ test('records-only mode rejects financial operations before handshake and during
   assert.deepEqual(f.requests().map(request => request.action), ['status', 'round-start', 'round-complete']);
   assert.equal(f.client.snapshot.remaining, 0, 'record mode never fabricates an ammunition balance');
   f.client.dispose();
+});
+
+for (const storageFailure of ['storageFails', 'storageReadFails']) {
+  test(`records-only rounds reach the server when ${storageFailure}`, async () => {
+    const f = await fixture({recordsOnly: true, [storageFailure]: true});
+    const started = f.client.startRound(OTHER, 220), duplicateStart = f.client.startRound(OTHER, 220);
+    await f.flush();const start = f.requests().at(-1);
+    assert.equal(start.action, 'round-start');assert.equal(start.requestId, OTHER);
+    assert.equal(f.requests().filter(request => request.action === 'round-start').length, 1);
+    f.reply(start, snapshot({run_id: SESSION, revision: 2}));
+    assert.equal((await started).run_id, SESSION);assert.equal((await duplicateStart).run_id, SESSION);
+    const completed = f.client.completeRound(SESSION, 220, 48), duplicateComplete = f.client.completeRound(SESSION, 220, 48);
+    await f.flush();const completion = f.requests().at(-1);
+    assert.equal(completion.action, 'round-complete');assert.equal(completion.runId, SESSION);assert.equal(completion.score, 48);
+    for (const result of await Promise.all([f.client.spend('event'), f.client.buy(), f.client.buyCoach()])) assert.equal(result.reason, 'ammo_retired');
+    f.reply(completion, snapshot({main_rounds: 6, revision: 3}));
+    assert.equal((await completed).ok, true);assert.equal((await duplicateComplete).ok, true);
+    assert.equal(f.client.pending, null);
+    assert.deepEqual(f.requests().map(request => request.action), ['status', 'round-start', 'round-complete']);
+    f.client.dispose();
+  });
+
+  test(`in-memory record retries and late receipts keep the same request when ${storageFailure}`, async () => {
+    const f = await fixture({recordsOnly: true, [storageFailure]: true});
+    const completed = f.client.completeRound(SESSION, 220, 48);await f.flush();const request = f.requests().at(-1);
+    assert.equal(request.action, 'round-complete');f.advance(12000);
+    assert.equal((await completed).reason, 'pending');assert.equal(f.client.pending.requestId, request.requestId);
+    const retried = f.client.retryPending();await f.flush();const retry = f.requests().at(-1);
+    assert.equal(retry.action, request.action);assert.equal(retry.requestId, request.requestId);assert.equal(retry.runId, SESSION);
+    f.reply(retry, snapshot({main_rounds: 6, revision: 2}));assert.equal((await retried).ok, true);
+    const next = f.client.completeRound(OTHER, 219, 40);await f.flush();const late = f.requests().at(-1);
+    f.advance(12000);assert.equal((await next).reason, 'pending');
+    f.reply(late, snapshot({main_rounds: 7, revision: 3}));await f.flush();
+    assert.equal(f.client.pending.status, 'confirmed');const count = f.requests().length;
+    assert.equal((await f.client.retryPending()).ok, true);assert.equal(f.client.pending, null);
+    assert.equal(f.requests().length, count, 'a late confirmation is acknowledged without submitting twice');
+    f.client.dispose();
+  });
+}
+
+test('an in-memory record stays bound to its account when all storage access fails', async () => {
+  const f = await fixture({recordsOnly: true, storageFails: true, storageReadFails: true});
+  const completed = f.client.completeRound(SESSION, 220, 48);await f.flush();const old = f.requests().at(-1);
+  assert.equal(old.owner, OWNER);assert.equal(old.action, 'round-complete');
+  f.init({owner: OTHER, sessionId: OTHER});assert.equal((await completed).reason, 'identity_changed');await f.flush();
+  f.reply(old, snapshot({main_rounds: 900, coins: 0, revision: 100}));assert.equal(f.client.snapshot, null);
+  const status = f.requests().at(-1);assert.equal(status.owner, OTHER);
+  f.reply(status, snapshot({main_rounds: 1}));await f.flush();
+  assert.equal(f.client.pending, null);assert.equal((await f.client.retryPending()).reason, 'nothing_pending');
+  const started = f.client.startRound(SESSION, 1);await f.flush();const request = f.requests().at(-1);
+  assert.equal(request.owner, OTHER);assert.equal(request.sessionId, OTHER);assert.equal(request.stage, 1);
+  f.reply(request, snapshot({run_id: OTHER, main_rounds: 1, revision: 2}));assert.equal((await started).ok, true);
+  assert.equal(f.requests().filter(item => item.action === 'round-complete').length, 1, 'the old score is never replayed as the new account');
+  assert.equal(f.client.snapshot.main_rounds, 1);f.client.dispose();
 });
 
 test('records-only mode archives old financial intents and never replays them or overwrites a new round', async () => {

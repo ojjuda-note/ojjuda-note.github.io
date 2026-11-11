@@ -6,7 +6,7 @@ import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera}
 import {createBulletCinematic, sampleBulletCinematic, desiredBulletCamera} from './bullet-cinematic.mjs?v=20261104-archery-bullet-penetration1';
 import {drawCinematicBullet, drawBulletMark, drawBulletImpact, drawBulletVignette} from './bullet-effects.mjs?v=20261104-archery-bullet-cinematic1';
 import {evaluateCoachShot} from './coach.mjs?v=20261106-archery-distance1';
-import {createAmmoClient, createRequestId, LAUNCH_EPOCH} from './ammo-client.mjs?v=20261104-archery-reset5';
+import {createAmmoClient, createRequestId, LAUNCH_EPOCH} from './ammo-client.mjs?v=20261111-game-score-save1';
 import {LASER_PRICE, LASER_CLICK_DEGREES, LASER_MAX_CLICKS, canEquipLaser, normalizeLaserSettings, traceLaserPoint} from './laser.mjs?v=20261106-archery-distance1';
 
 const $ = id => document.getElementById(id);

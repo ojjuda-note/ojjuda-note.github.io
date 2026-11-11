@@ -15,7 +15,8 @@ test('server-verified admins alone can enable account-scoped game previews',asyn
     dispatchEvent:event=>{events.push(event);listeners.get(event.type)?.(event);}
   };
   const CustomEvent=class {constructor(type,options){this.type=type;this.detail=options.detail;}};
-  vm.runInNewContext(read('shared/games/admin-preview.js'),{window,localStorage,CustomEvent,setTimeout:callback=>Promise.resolve().then(callback)});
+  vm.runInNewContext(read('shared/games/admin-preview.js'),{window,localStorage,CustomEvent,
+    document:{readyState:'loading',addEventListener(){}},setTimeout:callback=>Promise.resolve().then(callback)});
   let owner='admin-account',admin=true;
   const client={auth:{
     getSession:async()=>({data:{session:owner?{user:{id:owner}}:null}}),

@@ -158,7 +158,25 @@ function eliminationGame(embedded=false) {
     $('#tourRecordStatus button').click();assert.equal(messages.at(-1)[0].runId,runId,'retry retains the result identity');
     receive({type:'ojjuda-tour-record',runId,ok:true});
     assert.match($('#tourRecordStatus').textContent,/기록 저장 완료/);
+    receive({type:'ojjuda-tour-record',runId,ok:true,preview:true});
+    assert.match($('#tourRecordStatus').textContent,/관리자 체험.*저장하지 않아요/,'preview receipts explicitly say no ranking was saved');
+    assert.doesNotMatch($('#tourRecordStatus').textContent,/저장 완료/);
+    assert.equal($('#tourRecordStatus button'),null,'preview results never offer a real-score retry');
   } finally {resultGame.dom.window.close();}
+  const blockedGame=game(true);
+  try {
+    const {w,$,messages}=blockedGame;
+    w.Storage.prototype.getItem=()=>{throw Error('storage blocked');};
+    w.Storage.prototype.setItem=()=>{throw Error('storage blocked');};
+    const receive=data=>w.dispatchEvent(new w.MessageEvent('message',{origin:'https://fixture.test',source:w.parent,data:{source:'ojjuda-world',...data}}));
+    receive({type:'ojjuda-tour-init',owner:'member-storage-blocked',nickname:'여행친구'});
+    w.eval('begin=()=>{};confetti=()=>{}');$('#startBtn').click();
+    const runId=w.eval('G.runId');
+    w.eval("G.players[0].money=0;G.players[0].bankrupt=true;endScreen(G.players[1],'라운드 종료')");
+    assert.equal(messages.filter(([message])=>message.type==='ojjuda-game-result'&&message.runId===runId).length,1,'blocked local storage still sends the completed result once');
+    receive({type:'ojjuda-tour-record',runId,ok:true});
+    assert.match($('#tourRecordStatus').textContent,/기록 저장 완료/,'server acknowledgement works without local persistence');
+  } finally {blockedGame.dom.window.close();}
   const resultHost=new JSDOM('',{url:'https://fixture.test/world.html',runScripts:'outside-only'});
   try {
     const w=resultHost.window,calls=[],receipts=[];let allowed=true,finish;
