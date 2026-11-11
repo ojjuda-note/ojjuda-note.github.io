@@ -55,7 +55,7 @@ if (nmixxProfile) {
     { year: '2026.09', title: '더팩트 뮤직 어워즈 대상', detail: 'Sound of the Year · 2026.09.19', href: 'https://www.soompi.com/article/1871808wpp/winners-of-2026-the-fact-music-awards' }
   ];
   nmixxProfile.records = [
-    { year: '2026', title: '첫 월드투어 진행', detail: 'EPISODE 1: ZERO FRONTIER · 유럽·아시아 투어', href: 'https://www.livenation.nl/en/event/nmixx-1st-world-tour-episode-1-zero-frontier-in-amsterdam-amsterdam-tickets-edp1642212' }
+    { year: '2026', title: '첫 월드투어 진행', detail: 'EPISODE 1: ZERO FRONTIER · 유럽·아시아 투어', href: 'https://recruit.jype.com/ko/news/60' }
   ];
   const birthdays = {
     '릴리': '2002.10.17',
