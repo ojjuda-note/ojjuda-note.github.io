@@ -360,8 +360,8 @@ function fixture(options = {}) {
   const compactCard = actual.$('[data-restaurant-id="' + combined.id + '"]');
   assert.equal(compactCard.querySelector('.card-address,.coord-note'), null, 'repeated detailed fields stay out of the compact list');
   assert.doesNotMatch(compactCard.querySelector('.guide-badges').textContent, /20\d{2}/, 'edition dates are reserved for the detail');
-  actual.change('#category', combined.category); actual.change('#region', combined.region); actual.click('[data-guide="both"]');
-  const intersection = dataset.restaurants.filter(item => item.category === combined.category && item.region === combined.region && item.guides.some(g => g.provider === 'michelin') && item.guides.some(g => g.provider === 'blue-ribbon'));
+  actual.change('#category', combined.category); actual.change('#region', combined.region); actual.click('[data-guide="michelin"]');
+  const intersection = dataset.restaurants.filter(item => item.category === combined.category && item.region === combined.region && item.guides.some(g => g.provider === 'michelin'));
   actual.all(); assert.deepEqual(actual.records(), ids(intersection), 'all active filters intersect');
   actual.click('#filter-toggle'); assert.equal(actual.$('#filter-options').hidden, true);
   assert.match(actual.$('#filter-summary').textContent, new RegExp(combined.region), 'active conditions remain visible in the summary');
@@ -462,7 +462,7 @@ function fixture(options = {}) {
   municipal.click('[data-guide=""]'); assert.deepEqual(municipal.records(), ['michelin-only', 'municipal-only'], 'all guides removes only the guide condition');
   municipal.change('#region', ''); assert.deepEqual(municipal.records(), ids(localRows));
   municipal.click('[data-guide="michelin"]'); assert.deepEqual(municipal.records(), ['michelin-only']);
-  municipal.click('[data-guide="both"]'); assert.deepEqual(municipal.records(), [], 'municipal plus blue ribbon never satisfies the Michelin-and-blue-ribbon intersection');
+  municipal.click('[data-guide="broadcast"]'); assert.deepEqual(municipal.records(), [], 'municipal or private guide selections do not imply a broadcast appearance');
   municipal.click('#reset'); assert.deepEqual(municipal.records(), ids(localRows));
   municipal.click('[data-restaurant-id="municipal-only"] .card-main');
   assert.equal(municipal.$('.source-heading .is-local-guide').textContent, '지자체 지정 ' + localGuide.label);

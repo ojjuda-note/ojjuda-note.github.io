@@ -1,0 +1,125 @@
+{
+  "id": "20261111-restaurants-broadcast1",
+  "checkedAt": "2026-11-11",
+  "type": "user_requested_broadcast_directory",
+  "scope": "방송 출연 11곳 초기 목록. 전국 또는 프로그램 전체 명단은 아님.",
+  "newRestaurantCount": 9,
+  "broadcastEnrichmentCount": 2,
+  "addedRestaurantIds": [
+    "broadcast-uri-sikdang-gangjin",
+    "broadcast-gwangju-sikdang-gangjin",
+    "broadcast-myeongsan-sikdang-eumseong",
+    "broadcast-samchang-gui-jincheon",
+    "broadcast-cheonyeo-bapsang-dalseong",
+    "broadcast-ganjanggejang-dam-yangpyeong",
+    "broadcast-jeonju-sikdang-seongnam-jungang",
+    "broadcast-munhwaok-junggu",
+    "broadcast-jangsullu-gongju"
+  ],
+  "enrichedRestaurantIds": [
+    "local-gg-322de0659d9207",
+    "local-north-1bb4045b51b9061a"
+  ],
+  "previousCoverage": {
+    "uniqueRestaurants": 3761,
+    "providerCounts": {
+      "michelin": 237,
+      "blue-ribbon": 531,
+      "local-guide": 3030,
+      "post-office": 240
+    },
+    "coordinatesAvailable": 1133,
+    "coordinatesMissing": 2628,
+    "regionalCounts": {
+      "서울": 367,
+      "부산": 387,
+      "충북": 270,
+      "충남": 137,
+      "울산": 42,
+      "경남": 348,
+      "강원": 133,
+      "전북": 223,
+      "경기": 453,
+      "인천": 344,
+      "제주": 120,
+      "대구": 144,
+      "전남": 250,
+      "세종": 100,
+      "대전": 123,
+      "경북": 233,
+      "광주": 87
+    },
+    "categoryCounts": {
+      "한식": 2324,
+      "중식": 158,
+      "일식": 159,
+      "기타": 570,
+      "양식": 233,
+      "분식": 48,
+      "디저트": 269
+    }
+  },
+  "currentCoverage": {
+    "uniqueRestaurants": 3770,
+    "providerCounts": {
+      "michelin": 237,
+      "blue-ribbon": 531,
+      "local-guide": 3030,
+      "post-office": 240
+    },
+    "coordinatesAvailable": 1133,
+    "coordinatesMissing": 2637,
+    "regionalCounts": {
+      "서울": 368,
+      "부산": 387,
+      "충북": 272,
+      "충남": 138,
+      "울산": 42,
+      "경남": 348,
+      "강원": 133,
+      "전북": 223,
+      "경기": 455,
+      "인천": 344,
+      "제주": 120,
+      "대구": 145,
+      "전남": 252,
+      "세종": 100,
+      "대전": 123,
+      "경북": 233,
+      "광주": 87
+    },
+    "categoryCounts": {
+      "한식": 2332,
+      "중식": 159,
+      "일식": 159,
+      "기타": 570,
+      "양식": 233,
+      "분식": 48,
+      "디저트": 269
+    },
+    "broadcastRestaurants": 11,
+    "broadcastOnlyRestaurants": 9
+  },
+  "sourceUrls": [
+    "https://broadcast.tvchosun.com/broadcast/program/3/C201900033/bbs/8663/C201900033_7/714533.cstv",
+    "https://broadcast.tvchosun.com/broadcast/program/3/C201900033/bbs/8663/C201900033_7/685747.cstv",
+    "https://iaudience.kbs.co.kr/broadcast/11429",
+    "https://iaudience.kbs.co.kr/broadcast/11415",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=103"
+  ],
+  "coordinateAddedCount": 0,
+  "deferred": [
+    {
+      "name": "원조정할머니기름떡볶이",
+      "reason": "방송사 안내 주소와 관광공사 개별 식당 주소가 달라 현재 지점 주소 재확인 후 추가",
+      "broadcastAddress": "서울특별시 종로구 자하문로15길 18",
+      "tourismAddress": "서울특별시 종로구 자하문로11길 40",
+      "sourceUrls": [
+        "https://iaudience.kbs.co.kr/broadcast/11415",
+        "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=6e9b26aa-0764-4cc3-a9cd-ceeed31991e1"
+      ],
+      "checkedAt": "2026-11-11"
+    }
+  ],
+  "note": "기존 84회차 순환을 진행하거나 초기화하지 않은 별도 사용자 요청. 회원 추천·글·사진과 기존 식당 ID·가이드·좌표 보존."
+}
