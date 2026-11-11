@@ -1,9 +1,9 @@
 name: Tank solo and multiplayer
 on:
   push:
-    paths: ['games/tank/**', 'games/tank/world-tank-game.*', 'shared/games/multiplayer-entry.*', 'shared/games/world-game-rankings.js', 'supabase/functions/tank/**', 'supabase/migrations/*_tank_*.sql', 'tests/tank-*', 'tests/world-board-tank.test.cjs', 'tests/arcade-catalog.test.cjs', 'tests/arcade-entry-flows.test.cjs', '.github/workflows/tank.yml']
+    paths: ['world.html', 'shared/games/game-session.js', 'shared/games/world-game-assets.js', 'games/tank/**', 'games/tank/world-tank-game.*', 'shared/games/multiplayer-entry.*', 'shared/games/world-game-rankings.js', 'supabase/functions/tank/**', 'supabase/migrations/*_tank_*.sql', 'tests/tank-*', 'tests/world-board-tank.test.cjs', 'tests/arcade-catalog.test.cjs', 'tests/arcade-entry-flows.test.cjs', '.github/workflows/tank.yml']
   pull_request:
-    paths: ['games/tank/**', 'games/tank/world-tank-game.*', 'shared/games/multiplayer-entry.*', 'shared/games/world-game-rankings.js', 'supabase/functions/tank/**', 'supabase/migrations/*_tank_*.sql', 'tests/tank-*', 'tests/world-board-tank.test.cjs', 'tests/arcade-catalog.test.cjs', 'tests/arcade-entry-flows.test.cjs', '.github/workflows/tank.yml']
+    paths: ['world.html', 'shared/games/game-session.js', 'shared/games/world-game-assets.js', 'games/tank/**', 'games/tank/world-tank-game.*', 'shared/games/multiplayer-entry.*', 'shared/games/world-game-rankings.js', 'supabase/functions/tank/**', 'supabase/migrations/*_tank_*.sql', 'tests/tank-*', 'tests/world-board-tank.test.cjs', 'tests/arcade-catalog.test.cjs', 'tests/arcade-entry-flows.test.cjs', '.github/workflows/tank.yml']
 permissions:
   contents: read
 jobs:
@@ -28,6 +28,7 @@ jobs:
       - run: node tests/tank-local.test.cjs
       - run: node --experimental-vm-modules tests/tank-client.test.cjs
       - run: node --experimental-vm-modules tests/tank-entry-recovery.test.cjs
+      - run: node --experimental-vm-modules --test tests/tank-entry-guard.test.cjs tests/game-session-reentry.test.cjs tests/game-assets-loading.test.cjs
       - run: node tests/tank-entry-ui.test.cjs
       - run: node tests/arcade-catalog.test.cjs
       - run: node tests/arcade-entry-flows.test.cjs

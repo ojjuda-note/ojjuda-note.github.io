@@ -44,7 +44,7 @@
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261110-janggi-entry2">
 <link rel="stylesheet" href="/games/janggi/replay.css?v=20261110-janggi-replay1">
-<script src="/shared/games/world-game-assets.js?v=20261111-game-score-save1" defer></script>
+<script src="/shared/games/world-game-assets.js?v=20261111-tank-entry1" defer></script>
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
 <script src="/shared/games/game-challenges.js?v=20261110-admin-record-free1" defer></script>
@@ -1513,8 +1513,8 @@ vl=async function(name,args,request){
  return originalWorldGameRpc(name,args,request);
 };
 function Al(t,options={}){
- if(typeof adminGamePreviewActive==='function'&&adminGamePreviewActive()&&['roulette','poker','bang'].includes(t)){
-  M('관리자 체험 중에는 온라인 대전 기록이 남는 게임을 시작할 수 없어요.');return;
+ if(typeof adminGamePreviewActive==='function'&&adminGamePreviewActive()&&['roulette','poker','bang','tank'].includes(t)){
+  M(t==='tank'?'관리자 체험 모드에서는 탱크게임을 시작할 수 없어요. 설정 → 관리자에서 관리자 모드를 끄고 다시 열어 주세요.':'관리자 체험 중에는 온라인 대전 기록이 남는 게임을 시작할 수 없어요.');return;
  }
  if(t==="group"){
   const exit=worldGameEntryGate(()=>Al(t,options));if(exit!==true)return exit;
@@ -1585,7 +1585,7 @@ function Al(t,options={}){
  }
  if(t==="tank"){
   const owner=D.online?D.user?.id:null,authorized=()=>(D.online?D.user?.id:null)===owner;
-  window.OjjudaTankGame?.open({owner,client:S,authorized,joinCode:options.joinCode,onCoins:amount=>{if(authorized()){$.coins=amount;qf();}}});return;
+  window.OjjudaTankGame?.open({owner,client:S,authorized,joinCode:options.joinCode,onError:message=>M(message),onCoins:amount=>{if(authorized()){$.coins=amount;qf();}}});return;
  }
  if(t==="archery"){
   if(!window.OjjudaArcheryGame){M("게임을 불러오지 못했어요. 다시 눌러 주세요.");return;}

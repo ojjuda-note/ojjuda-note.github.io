@@ -79,6 +79,17 @@ test('the shell reports slow loading and ignores a timeout after leaving or chan
  }
 });
 
+test('administrator Tank entry explains the restriction before loading or opening a game',()=>{
+ const messages=[],starts=[];
+ const context=vm.createContext({window:{},adminGamePreviewActive:()=>true,M:message=>messages.push(message),worldGameEntryGate:()=>{starts.push('gate');return true;}});
+ const start=world.indexOf('function Al('),end=world.indexOf('// User-requested exits ask first;',start);
+ assert.ok(start>=0&&end>start);vm.runInContext(world.slice(start,end),context);
+ context.Al('tank');
+ assert.deepEqual(starts,[],'the restriction is resolved before any game launch or previous-room cleanup');
+ assert.equal(messages.length,1);assert.match(messages[0],/관리자 체험/);assert.match(messages[0],/설정.*관리자.*끄고/);
+ assert.doesNotMatch(messages[0],/연결/,'an intentional preview restriction must not be presented as a connection failure');
+});
+
 test('a Bang direct link uses the guarded game entrance',()=>{
  const starts=[];let onLoad;
  const context=vm.createContext({entryGame:'bang',window:{addEventListener(type,handler){assert.equal(type,'load');onLoad=handler;}},Al:game=>starts.push(game)});
