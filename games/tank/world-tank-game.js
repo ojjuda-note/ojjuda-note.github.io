@@ -1,20 +1,37 @@
 /* Same-origin game bridge. Login tokens never leave the existing authenticated client. */
 (()=>{
  'use strict';let active=null;
+ const adminPreview=()=>window.OjjudaAdminPreview?.isEnabled?.()===true;
+ const previewMessage='관리자 체험 중에는 탱크게임을 시작할 수 없어요. 관리자 체험을 끈 뒤 다시 들어와 주세요.';
+ const readActions=new Set(['read','list','mine']),boundedActions=new Set([...readActions,'leave']);
+ // Reply before the iframe's 20-second retry, without completing an uncertain
+ // create/start/fire operation while the server may still be processing it.
+ const requestTimeout=18000;
+ function previewReceipt(onError){onError?.(previewMessage);return {ok:false,error:'admin_preview',message:previewMessage};}
  window.OjjudaTankGame={
-  open({owner=null,client=null,joinCode='',authorized=()=>true,onCoins=()=>{}}={}){
+  open({owner=null,client=null,joinCode='',authorized=()=>true,onCoins=()=>{},onError=()=>{}}={}){
+   if(adminPreview())return previewReceipt(onError);
    if(active){active.dialog.focus();return;}
    const previous=document.activeElement,wasGaming=document.body.classList.contains('gaming');
    const dialog=document.createElement('dialog');dialog.className='tour-game-dialog tank-game-dialog';dialog.setAttribute('aria-label','탱크게임');
-   dialog.innerHTML='<header class="tour-game-header"><button type="button">← 오락실</button><span>탱크게임 · 혼자 / 같은 기기 / 온라인</span></header><iframe title="탱크게임" src="/games/tank/index.html?v=20261110-game-back-arcade1" allow="fullscreen; clipboard-write; web-share"></iframe>';
-   const frame=dialog.querySelector('iframe');let invitation=new AbortController(),requests=0,rankedRoom=null,guestFinished=false;
+   dialog.innerHTML='<header class="tour-game-header"><button type="button">← 오락실</button><span>탱크게임 · 혼자 / 같은 기기 / 온라인</span></header><iframe title="탱크게임" src="/games/tank/index.html?v=20261111-tank-entry1" allow="fullscreen; clipboard-write; web-share"></iframe>';
+   const frame=dialog.querySelector('iframe');let invitation=new AbortController(),requests=0,rankedRoom=null,guestFinished=false,latestInvoke=0;
    function dispose(){if(active?.dialog!==dialog)return;active=null;invitation.abort();window.removeEventListener('message',receive);clearInterval(authTimer);dialog.close();dialog.remove();if(!wasGaming)document.body.classList.remove('gaming');if(previous?.isConnected)previous.focus({preventScroll:true});}
    function close(){invitation.abort();const result=session.close();if(result?.then)result.then(closed=>{if(!closed&&active?.dialog===dialog)invitation=new AbortController();});return result;}
    async function invoke(body){
-    if(window.OjjudaAdminPreview?.isEnabled?.()===true&&!['read','list','mine'].includes(body.action))return {error:'admin_preview'};
-    const {data,error}=await client.functions.invoke('tank',{body});let result;
-    if(error){try{result=await error.context.json();}catch{result={error:'unavailable'};}}else result=data||{error:'unavailable'};
-    if(active?.dialog===dialog&&authorized()){
+    if(adminPreview()&&!readActions.has(body.action))return previewReceipt(onError);
+    const invocation=++latestInvoke;let timer,result;
+    try{
+     const response=(async()=>{
+      const {data,error}=await client.functions.invoke('tank',{body});
+      if(error){try{return await error.context.json();}catch{return {error:'unavailable'};}}
+      return data||{error:'unavailable'};
+     })();
+     result=await(boundedActions.has(body.action)?Promise.race([response,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('unavailable')),requestTimeout);})]):response);
+    }finally{clearTimeout(timer);}
+    // Expired responses never reach this point; older reads and retired visits
+    // cannot overwrite the current game's balance or result notification.
+    if(invocation===latestInvoke&&active?.dialog===dialog&&authorized()){
      if(result?.ok&&['create','join','start','leave','surrender'].includes(body.action))window.dispatchEvent(new Event('ojjuda:arcade-rooms-changed'));
      const amount=result?.room?.coins??result?.coins;if(Number.isInteger(amount)&&amount>=0)onCoins(amount);
      if(result?.room?.status==='finished'&&result.room.mode!=='local'&&rankedRoom!==result.room.id){rankedRoom=result.room.id;window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{game:'tank',owner}}));}
@@ -42,7 +59,8 @@
     requests++;let result={error:'not_signed_in'};
     try{
      if(owner&&client?.functions&&authorized()){
-      if(m.body.action==='invite')result=await invite(m.body);
+      if(adminPreview()&&!readActions.has(m.body.action))result=previewReceipt(onError);
+      else if(m.body.action==='invite')result=await invite(m.body);
       else result=await invoke(m.body);
      }
     }catch{result={error:'unavailable'};}

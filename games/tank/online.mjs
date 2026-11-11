@@ -8,6 +8,7 @@ let soloSpeed=1;
 try{const saved=Number(localStorage.getItem('ojjuda.tank.solo.speed'));if(SOLO_SPEEDS.includes(saved))soloSpeed=saved;}catch{}
 const playbackSpeed=()=>current?.mode==='solo'?soloSpeed:1;
 const messages={not_signed_in:'오쭈다에 로그인한 뒤 이용해 주세요.',banned:'지금은 대전방을 이용할 수 없어요.',room_in_progress:'참여 중인 방을 먼저 마무리해 주세요.',room_rate_limit:'잠시 후 방을 다시 만들어 주세요.',room_full:'방 인원이 꽉 찼어요.',room_not_found:'방 번호를 확인해 주세요.',room_unavailable:'이미 닫힌 방이에요.',room_already_started:'이미 전투가 시작됐어요.',not_room_owner:'방장만 시작할 수 있어요.',need_players:'두 명 이상 모이면 시작할 수 있어요.',state_conflict:'다른 기기에서 진행됐어요. 최신 화면으로 맞추고 있어요.',not_your_turn:'내 차례에 발사해 주세요.',coins:'쭈가 부족해요. 무료 기본탄을 선택할 수 있어요.',wallet_unavailable:'쭈 잔액을 확인하지 못했어요.',already_eliminated:'이미 탈락해 관전 중이에요.',unavailable:'연결이 원활하지 않아요. 다시 연결하고 있어요.'};
+messages.admin_preview='관리자 체험 중에는 탱크게임을 시작할 수 없어요. 관리자 체험을 끈 뒤 다시 들어와 주세요.';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function notify(text){$('netMessage').textContent=text;$('netNotice').textContent=current?.game&&!resumeOnEntry?text:'';clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>{$('netNotice').textContent='';},6000);}
 function rpc(body){
