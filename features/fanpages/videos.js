@@ -82,5 +82,11 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'Ur7aK4FvK-U', title: 'FOCUS', kind: '뮤직비디오', source: 'SMTOWN · 2025.10.20' },
     { id: 'ufwB9Uja_wM', title: 'Pretty Please', kind: '뮤직비디오', source: 'SMTOWN · 2025' },
     { id: 'kxUA2wwYiME', title: 'The Chase', kind: '뮤직비디오', source: 'SMTOWN · 2025.02.24' }
+  ],
+  kiiikiii: [
+    { id: 'UsbRoaH6y-Q', title: 'Pop Off Pop Off', kind: '뮤직비디오', source: 'KiiiKiii / STARSHIP · 2026.08.10' },
+    { id: 'hjcG58y_Fyc', title: 'Pop Off Pop Off', kind: '안무 영상', source: 'KiiiKiii Official · 2026.08.26' },
+    { id: 'zhHB4dZTChw', title: '404 (New Era)', kind: '뮤직비디오', source: 'KiiiKiii / STARSHIP · 2026.01.26' },
+    { id: 'hAEfi_SKTEU', title: 'I DO ME', kind: '뮤직비디오', source: 'KiiiKiii / STARSHIP · 2025.02.16' }
   ]
 });
