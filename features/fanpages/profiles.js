@@ -168,7 +168,7 @@ window.OJJUDA_FAN_PROFILES = {
     concept: '다섯 멤버가 선보이는 Zalpha Pop.',
     heightSource: 'https://kpopdiscover.com/en/groups/a2o-may/',
     awards: [
-      { year: '2025', title: 'Weibo Music Awards 신인상', detail: 'Annual Newcomer Group', href: 'https://tokytunes.com/the-orchard-japan-711/' }
+      { year: '2025', title: 'Weibo Music Awards 신인상', detail: 'Annual Newcomer Group', href: 'https://prtimes.jp/main/html/rd/p/000001831.000055377.html' }
     ],
     records: [
       { year: '2025', title: 'Mediabase Top 40 진입', detail: 'Under My Skin (A2O) · 39위', href: 'https://www.melon.com/artist/detail.htm?artistId=4531270' }
@@ -177,7 +177,7 @@ window.OJJUDA_FAN_PROFILES = {
     sources: [
       { label: 'Melon 공식 유통 정보', href: 'https://www.melon.com/artist/detail.htm?artistId=4531270' },
       { label: 'A2O 공식', href: 'https://www.a2oentertainment.world/' },
-      { label: '신인상 자료', href: 'https://tokytunes.com/the-orchard-japan-711/' }
+      { label: '신인상 자료 · The Orchard Japan', href: 'https://prtimes.jp/main/html/rd/p/000001831.000055377.html' }
     ]
   },
   a2olite: {
