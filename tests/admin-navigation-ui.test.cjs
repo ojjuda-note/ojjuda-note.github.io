@@ -142,18 +142,13 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
 
     await page.goto('https://fixture.test/world.html?admin=overview'); await loaded();
     await page.locator('.adm-stat').filter({ hasText: '정지 계정' }).waitFor();
-    assert.deepEqual(await page.locator('.adm-menu-group > summary').allTextContents(),
-      ['운영 현황⌄','회원·ZU⌄','콘텐츠 관리⌄','신고·안전⌄','운영·보관⌄']);
+    assert.deepEqual(await page.locator('.adm-menu-group > h3').allTextContents(),
+      ['운영 현황','회원·ZU','콘텐츠 관리','신고·안전','운영·보관']);
+    assert.equal(await page.locator('[data-admin-folder]').count(),6,'all category folders are visible without expansion');
     assert.equal(await page.locator('.adm-navigation').evaluate(node => node.scrollWidth <= node.clientWidth), true,
-      'five grouped menus fit the mobile width');
-    await page.locator('.adm-menu-toggle').click();
-    assert.equal(await page.locator('.adm-nav-body').evaluate(node => getComputedStyle(node).position), 'fixed',
-      'phone menu opens as a floating sheet without pushing the page down');
-    assert.equal(await page.locator('.adm-nav-backdrop').isVisible(), true, 'touch backdrop covers the underlying page');
-    assert.ok(await page.locator('.adm-drawer-head button').evaluate(node => node.getBoundingClientRect().height >= 44));
-    await page.locator('.adm-drawer-head button').click();
-    assert.equal(await page.locator('.adm-nav-body').isVisible(), false, 'a large close control dismisses the mobile menu');
-    await page.locator('.adm-menu-toggle').click();
+      'file folders fit the mobile width');
+    await page.locator('[data-admin-folder="all"]').click();
+    assert.equal(await page.locator('.adm-menu-group:not([hidden])').count(),5);
     await page.getByLabel('기능 찾기').fill('포토땅');
     assert.equal(await page.locator('.adm-menu-group:not([hidden])').count(),1,'search narrows the group list');
     assert.equal(await page.locator('.adm-menu-link:not([hidden])').filter({hasText:'포토땅따먹기'}).count(),1);
@@ -223,8 +218,9 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.evaluate(() => fixture.controllers.accounts.destroyed), true);
     for (const width of [320, 390, 1280]) {
       await page.setViewportSize({ width, height: 844 });
-      if(width<1180 && !(await page.locator('.adm-navigation').evaluate(nav=>nav.classList.contains('is-open'))))
-        await page.locator('.adm-menu-toggle').click();
+      await page.locator('[data-admin-folder="all"]').click();
+      assert.equal(await page.locator('[data-admin-folder]').evaluateAll(buttons => buttons.every(button => button.getBoundingClientRect().height >= 44)),true,
+        'all folder tabs are large enough to tap');
       const labels = await page.locator('.adm-menu-link').evaluateAll(buttons => buttons.filter(button=>button.getClientRects().length).map(button => ({
         text: button.textContent, width: button.clientWidth, content: button.scrollWidth,
         height: button.getBoundingClientRect().height
@@ -258,8 +254,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.evaluate(() => fixture.options.note.initialTab), 'spam');
     assert.equal(await page.locator('[data-act="adm-content-kind"], [data-act="adm-chatlim"]').count(), 0, 'spam prevention only exposes current card rules');
     await tab('activity');
-    if(!(await page.locator('.adm-navigation').evaluate(nav=>nav.classList.contains('is-open'))))
-      await page.locator('.adm-menu-toggle').click();
+    await page.locator('[data-admin-folder="system"]').click();
     const selectedTab = await page.locator('.adm-navigation').evaluate(bar => {
       const active = bar.querySelector('[aria-current="page"]');
       const a = active.getBoundingClientRect(), b = bar.getBoundingClientRect();
@@ -275,6 +270,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.locator('#adm-limit').inputValue(), '0', 'zero daily charges stays zero after saving');
     await area('content');
     assert.deepEqual(await page.locator('.adm-menu-group[data-group="content"] .adm-menu-link').allTextContents(), ['카드','쪽지 관리','그룹 관리','포토땅따먹기','위치 지도','자료 모아보기']);
+    await page.locator('[data-admin-folder="members"]').click();
     assert.equal(await page.getByRole('link',{name:'상품권 등록'}).getAttribute('href'),'/admin/rewards.html');
     await tab('messages'); await assertRefreshPreservesHost('messages');
     for (const id of ['cards','risk','map']) { await tab(id); assert.equal(await page.evaluate(() => fixture.options.note.initialTab), id); }

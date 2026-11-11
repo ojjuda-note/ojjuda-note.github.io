@@ -6,7 +6,7 @@
 
 - 대상 저장소: `ojjuda-note/ojjuda-note.github.io`
 - 최초 점검 기준 커밋: `101979e9c8fcf7a48419589ef1a9ce239c240a17`
-- 최종 통합 기준 커밋: `fa3870139ac3ba3a6291c70cdf9b8b23aafbd71e` (추가된 관리자 메뉴·터치 개선과 팬페이지 변경 유지)
+- 최종 통합 기준 커밋: `e91f3a4672929e895f542ed34b9706c1c911ea47` (추가된 관리자 메뉴·상시 탭 개선과 팬페이지 변경 유지)
 - 작업 브랜치: `fix/game-score-storage-20261111`
 - 준비한 게임 릴리스: `20261111-game-score-save1`
 - 아지트 버전: `0.60.0-beta` 유지
@@ -80,6 +80,8 @@
 Supabase 보안 advisory 종류·등급·건수는 전후 동일했다. 기존 advisory는 이번 점수 수정의 결과가 아니다. 참고: [보안 정의자 뷰 안내](https://supabase.com/docs/guides/database/database-linter?lint=0010_security_definer_view), [RLS 정책 안내](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy), [함수 실행 권한 안내](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable).
 
 ## 자동 검증
+
+GitHub 검증 중 궁수 진입 테스트의 캐시 기대값이 이전 모듈 버전을 가리키는 것을 확인해, 실제 갱신한 기록 클라이언트 버전에 맞췄다. 운영 코드의 저장 동작을 되돌리지 않았다.
 
 - `npm --prefix tests run test:score-save`: 56개 통과. 손님 저장·DB 상한·차차 포털·땅따먹기 닫기 회귀 검사.
 - `npm --prefix tests run test:results:unit`: 169개 통과.
