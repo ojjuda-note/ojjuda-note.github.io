@@ -2547,7 +2547,7 @@ async function worldRecheckRestriction(){
  }catch{}
 }
 function invalidateWorldAuth(user=null){
- window.OjjudaAgitWelcome?.revoke();
+ if(typeof window!=="undefined")window.OjjudaAgitWelcome?.revoke();
  worldAuthEpoch++;ga=false;D.user=user;D.online=false;D.walletReady=false;D.walletLegacy=false;D.isAdmin=false;
  // Do not save the previous account's model while a new identity is loading.
  ua=null;clearTimeout(fi);$d(null);
@@ -2631,7 +2631,7 @@ async function Un(user,epoch=worldAuthEpoch){
   Fs(U1(record,defaults));
   if(await rm(owner,record.priv,epoch)&&current()){
    restoreAgitProgress(owner);
-   window.OjjudaAgitWelcome?.enter({
+   if(typeof window!=="undefined")window.OjjudaAgitWelcome?.enter({
     member:true,owner,client:S,settings:$.settings,nickname:$.me.nick,
     stamps:window.OjjudaAgitHub?.safeState($.settings)?.stamps||[],
     createdDay:user.created_at?window.OjjudaAgitHub?.kstDate(new Date(user.created_at)):null,
