@@ -77,3 +77,13 @@ if (babymonsterProfile) {
   babymonsterProfile.sources.unshift({ label: 'YG 공식 프로필 · 멤버 생일·정식 데뷔', href: 'https://ygfamily.com/ko/artists/babymonster/profile' });
   babymonsterProfile.sources.push({ label: 'YG 공식 디스코그래피 · 첫 디지털 싱글', href: 'https://www.ygfamily.com/en/artists/babymonster/discography/1578' });
 }
+
+/* Hearts2Hearts: official group milestones; private member details stay blank. */
+const hearts2heartsProfile = window.OJJUDA_FAN_PROFILES.hearts2hearts;
+if (hearts2heartsProfile) {
+  hearts2heartsProfile.records = [
+    { year: '2026.08', title: '일본 정식 데뷔', detail: '첫 일본 싱글 ICONIC HEART · 2026.08.12', href: 'https://hearts2heartsofficial.jp/news/2026081203/' },
+    { year: '2026.11', title: '일본 첫 팬 이벤트', detail: 'READY! S2U · 도쿄 아리아케 아레나 11.22~23', href: 'https://hearts2heartsofficial.jp/news/2026081203/' }
+  ];
+  hearts2heartsProfile.sources.unshift({ label: 'Hearts2Hearts 일본 공식 프로필·공연', href: 'https://hearts2heartsofficial.jp/' });
+}
