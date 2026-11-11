@@ -27,6 +27,26 @@ for (const artist of window.OJJUDA_FAN_ARTISTS.filter((item) => item.basicProfil
   };
 }
 
+/* i-dle: birthdays and tour from Cube's Japanese official site. */
+const idleProfile = window.OJJUDA_FAN_PROFILES.idle;
+if (idleProfile) {
+  idleProfile.expanded = true;
+  idleProfile.records = [
+    { year: '2025', title: 'i-dle로 활동명 변경', detail: '데뷔 7주년 이후 다섯 멤버의 팀 이름으로 활동', href: 'https://i-dle.cubeent.co.jp/profile/' },
+    { year: '2026', title: '네 번째 월드투어 Syncopation', detail: '2026.02.21 서울 KSPO DOME 개막 · 아시아·오세아니아 공연', href: 'https://i-dle.cubeent.co.jp/news/2588/' }
+  ];
+  const birthdays = {
+    '미연': '1997.01.31', '민니': '1997.10.23', '소연': '1998.08.26',
+    '우기': '1999.09.23', '슈화': '2000.01.06'
+  };
+  for (const member of idleProfile.members) {
+    member.birthday = birthdays[member.name] || null;
+    member.source = 'https://i-dle.cubeent.co.jp/profile/';
+  }
+  idleProfile.sources.unshift({ label: '큐브 일본 공식 프로필 · 생일', href: 'https://i-dle.cubeent.co.jp/profile/' });
+  idleProfile.sources.push({ label: '큐브 일본 공식 2026 월드투어 발표', href: 'https://i-dle.cubeent.co.jp/news/2588/' });
+}
+
 /* NMIXX: only publicly documented dates are filled. Unknown personal facts remain blank. */
 const nmixxProfile = window.OJJUDA_FAN_PROFILES.nmixx;
 if (nmixxProfile) {
