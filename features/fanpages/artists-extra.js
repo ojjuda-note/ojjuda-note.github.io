@@ -225,7 +225,7 @@
         { title: 'Delulu Pack', date: '2026.01.26', type: '미니 2집 · 타이틀 404 (New Era)', songs: ['Delulu', '404 (New Era)', 'UNDERDOGS', '멍냥 (MUNGNYANG)', 'Dizzy', 'To Me From Me (Prod. TABLO)'], href: 'https://music.apple.com/us/album/delulu-pack-ep/1866860579' },
         { title: 'To Me From Me (Prod. TABLO)', date: '2025.11.04', type: '디지털 싱글', songs: ['To Me From Me (Prod. TABLO)'], href: 'https://music.apple.com/us/album/to-me-from-me-single/1848046045' },
         { title: 'DANCING ALONE', date: '2025.08.06', type: '디지털 싱글', songs: ['DANCING ALONE', '딸기게임 (Strawberry Cheesegame)'], href: 'https://music.apple.com/us/album/dancing-alone-single/1830522219' },
-        { title: 'UNCUT GEM', date: '2025.03.24', type: '데뷔 미니 1집 · BTG', songs: ['I DO ME', 'BTG', 'DEBUT SONG', 'THERE THEY GO', 'ONE OFF', 'GROUNDWORK'], href: 'https://music.apple.com/us/album/uncut-gem-ep/1800872866' }
+        { title: 'UNCUT GEM', date: '2025.03.24', type: '데뷔 미니 1집 · 타이틀 I DO ME', songs: ['DEBUT SONG', 'GROUNDWORK', 'I DO ME', 'THERE THEY GO', 'BTG', '한 개뿐인 (ONE OFF)'], href: 'https://music.apple.com/us/album/uncut-gem-ep/1800872866' }
       ],
       appearances: [
         { date: '2026-11-15', title: 'MMA2026 · Music Day', sub: '서울 고척스카이돔 · 11월 15일 · 카카오엔터테인먼트 발표', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' },
