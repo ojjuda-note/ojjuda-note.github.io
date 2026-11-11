@@ -95,5 +95,16 @@ if (kissoflifeProfile) {
     { year: '2025.11', title: '일본 데뷔 미니앨범 발매', detail: 'TOKYO MISSION START · 2025.11.05', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' },
     { year: '2026.09', title: '일본 두 번째 미니앨범 발매', detail: 'SWEAT -JAPANESE EP- · 2026.09.16', href: 'https://columbia.jp/artist-info/kissoflife/discography/COCP-42739.html' }
   ];
+  const verifiedBirthdays = {
+    '쥴리': '2000.03.29',
+    '나띠': '2002.05.30',
+    '벨': '2004.03.20',
+    '하늘': '2005.05.25'
+  };
+  for (const member of kissoflifeProfile.members) {
+    member.birthday = verifiedBirthdays[member.name] || null;
+    member.source = 'https://s2ent.co.kr/34';
+  }
+  kissoflifeProfile.sources.unshift({ label: 'S2 공식 멤버 프로필·생일', href: 'https://s2ent.co.kr/34' });
   kissoflifeProfile.sources.unshift({ label: '일본 컬럼비아 공식 음반 정보', href: 'https://columbia.jp/artist-info/kissoflife/' });
 }
