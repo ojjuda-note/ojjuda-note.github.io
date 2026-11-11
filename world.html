@@ -37,7 +37,7 @@
 <meta name="apple-mobile-web-app-title" content="오쭈다 아지트">
 <!-- 서버 연결 정보 (같은 폴더의 config.js). 없으면 체험 모드로 실행돼요 -->
 <script src="config.js?v=20261111-shared-member-auth1" defer></script>
-<script src="/admin/world-admin-loader.js?v=20261111-asset-library1" defer></script>
+<script src="/admin/world-admin-loader.js?v=20261111-admin-insights-asset-library2" defer></script>
 <link rel="stylesheet" href="/features/friends/friend-messages.css?v=20261106-source-folders1">
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261110-janggi-entry2">
@@ -77,6 +77,7 @@
 <script src="/shared/games/admin-preview.js?v=20261111-shared-auth3" defer></script>
 <script src="/shared/auth/guest-access.js?v=20261106-source-folders1" defer></script>
 <script src="/shared/auth/guest-visits.js?v=20261106-source-folders1" defer></script>
+<script src="/shared/analytics/site-usage.js?v=20261111-admin-insights1" defer></script>
 <script src="/shared/games/guest-game-scores.js?v=20261110-admin-record-free1" defer></script>
 
 <link rel="stylesheet" href="note/notifications.css?v=20261108-daily-sections1">
@@ -3042,6 +3043,7 @@ sr['profile-photo']=()=>openWorldProfilePhoto();
 sr["account-login"]=()=>{location.href="/?auth=login&next="+(g.place?.id==="park"?"note":"world");};
 window.OjjudaGuestAccess?.configure(()=>D.parkGuest===true&&!D.user);
 window.OjjudaGuestVisits?.configure({client:S,isGuest:()=>D.parkGuest===true&&!D.user});
+window.OjjudaSiteUsage?.configure({client:S});
 try{window.OjjudaGameChallenges?.configure?.({client:S,notify:M})}catch{}
 var worldParkNotes=window.OjjudaParkNotes?.install({
   previousPlace:()=>sr.tab({tab:"arcade"}),

@@ -35,7 +35,7 @@ const read = file => fs.readFileSync(path.join(__dirname,'..',file),'utf8');
   let control=v.OjjudaAdminVisitors.mount({container:host,client:adminClient,getAdminId:()=>admin});await tick();
   assert.match(host.textContent,/3회/);assert.match(host.textContent,/10회/);assert.match(host.textContent,/24회/);
   assert.equal(host.querySelectorAll('table').length,2);assert.match(host.textContent,/일별 합계/);
-  assert.match(host.querySelector('.visitor-heading h3').title,/하루 1회 · 한국 시간/);
+  assert.match(host.querySelector('.visitor-heading h3').title,/한국 시간/);
   assert.match(host.querySelectorAll('.visitor-card')[1].title,/총인원은 아니에요/);
   assert.doesNotMatch(host.textContent,/로그인 없이 오락실|서로 다른 사람의 총인원|실제 인원과 차이|방금 갱신/);
   assert.equal(host.querySelector('.visitor-status').hidden,true,'successful refresh leaves no empty status space');

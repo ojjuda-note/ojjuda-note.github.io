@@ -1,0 +1,30 @@
+/* Aggregate charts; intentionally lightweight and usable without a chart library. */
+.visitor-insights{margin-top:18px;padding-bottom:24px;border-bottom:1px solid var(--line,#deded7);min-width:0}
+.visitor-insights h3{font-size:clamp(19px,2.8vw,23px);margin:0 0 7px;line-height:1.4;word-break:keep-all}
+.visitor-insights .visitor-note{margin:8px 0}
+.visitor-site-cards{margin:16px 0 8px}
+.visitor-chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}
+.visitor-chart-card{min-width:0;padding:18px 17px;border:1px solid var(--line,#deded7);border-radius:18px;background:var(--surface-2,#f8f7f4)}
+.visitor-chart-card h4{font-size:16px;font-weight:800;color:var(--ink,#263831);margin:0 0 4px;line-height:1.5;word-break:keep-all}
+.visitor-chart-subtitle{font-size:12px;line-height:1.55;color:var(--muted,#637168);margin:0 0 15px;word-break:keep-all}
+.visitor-chart-empty{margin:0 0 6px;color:var(--muted,#637168);font-size:12px}
+.visitor-chart-scroll{max-width:100%;overflow-x:auto;overflow-y:hidden;padding:0 0 5px;scrollbar-width:thin;overscroll-behavior-x:contain}
+.visitor-chart-bars{display:flex;align-items:flex-end;gap:5px;min-width:0;height:185px;padding:0 1px 2px}
+.visitor-chart-bars.is-date{min-width:670px}.visitor-chart-bars.is-hour{min-width:570px}
+.visitor-chart-col{display:flex;align-items:center;flex:1;min-width:0;flex-direction:column;gap:5px;height:100%}
+.visitor-chart-value{display:flex;align-items:flex-end;justify-content:center;height:26px;min-height:26px;white-space:nowrap;font-size:10px;color:var(--ink,#263831);font-variant-numeric:tabular-nums}
+.visitor-chart-track{display:flex;align-items:flex-end;width:100%;flex:1;min-height:0;border-radius:7px 7px 3px 3px;overflow:hidden;background:color-mix(in srgb,var(--line,#deded7) 38%,transparent)}
+.visitor-chart-fill{width:100%;min-height:0;background:linear-gradient(0deg,#a54f76,#cb7997);border-radius:6px 6px 2px 2px}
+.visitor-chart-label{height:18px;min-height:18px;display:block;text-align:center;font-size:11px;white-space:nowrap;color:var(--muted,#637168);font-variant-numeric:tabular-nums}
+.visitor-chart-bars.is-weekday{gap:11px}.visitor-chart-bars.is-weekday .visitor-chart-value{font-size:12px}
+.visitor-rank-list{display:grid;gap:12px;max-height:380px;overflow:auto}
+.visitor-rank-row{min-width:0}
+.visitor-rank-top{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:13px;line-height:1.6}
+.visitor-rank-top span{min-width:0;overflow-wrap:anywhere}.visitor-rank-top strong{flex:none;font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.visitor-rank-track{height:10px;overflow:hidden;border-radius:100px;margin-top:5px;background:color-mix(in srgb,var(--line,#deded7) 55%,transparent)}
+.visitor-rank-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#9d5579,#d289a8)}
+.visitor-empty{padding:28px 4px;font-size:13px;text-align:center;color:var(--muted,#637168)}
+.visitor-insights .visitor-chart-card:first-child{grid-column:1/-1}
+.visitor-history summary:focus-visible,.visitor-chart-scroll:focus-visible{outline:2px solid var(--accent-ink,#a54f76);outline-offset:4px}
+@media(max-width:760px){.visitor-chart-grid{grid-template-columns:minmax(0,1fr);gap:12px}.visitor-chart-card{padding:15px 13px}.visitor-insights .visitor-chart-card:first-child{grid-column:auto}}
+@media(max-width:420px){.visitor-chart-bars.is-weekday{gap:6px}.visitor-chart-bars.is-weekday .visitor-chart-label{font-size:10px}.visitor-chart-bars.is-weekday .visitor-chart-value{font-size:10px}}

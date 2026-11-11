@@ -120,7 +120,9 @@ jobs:
         working-directory: tests
         run: npx playwright install --with-deps chromium
       - name: Check full viewport hosts, resize preservation and reachable controls
-        run: npm --prefix tests run test:fullscreen
+        run: |
+          npm --prefix tests run test:fullscreen
+          node tests/site-usage-responsive.test.cjs
 
   restaurant_recommendations:
     name: Member restaurant recommendations

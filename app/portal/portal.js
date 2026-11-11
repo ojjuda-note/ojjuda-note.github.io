@@ -16,8 +16,9 @@
   if ($('policy-revision-note')) $('policy-revision-note').hidden = termsVersion === '2026-11-20';
   const config = window.OJJUDA_CONFIG;
   const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
-    ? (window.ojjudaSupabase?.auth || (window.ojjudaSupabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey)))
+    ? (window.ojjudaSupabase || (window.ojjudaSupabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey)))
     : null;
+  window.OjjudaSiteUsage?.configure({ client });
 
   const dialog = $('auth-dialog');
   const form = $('auth-form');

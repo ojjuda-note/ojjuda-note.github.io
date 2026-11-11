@@ -12,7 +12,7 @@ const tick=()=>new Promise(resolve=>setImmediate(resolve));
   const client={rpc(name){if(name==='admin_guest_visit_stats')return Promise.resolve({data:visitor});if(delayGrowth)return new Promise(resolve=>{resolveGrowth=resolve});return Promise.resolve(failGrowth?{error:{message:'offline'}}:{data:growth});},auth:{onAuthStateChange(fn){authChanged=fn;return{data:{subscription:{unsubscribe(){}}}}}}};
   const control=w.OjjudaAdminVisitors.mount({container:host,client,getAdminId:()=>owner});await tick();
   const section=host.querySelector('.visitor-growth');
-  assert.equal(section.querySelector('h3').textContent,'도전 유입');assert.equal(section.querySelectorAll('table').length,2);
+  assert.equal(section.querySelector('h3').textContent,'게임 도전·공유 상세');assert.equal(section.querySelectorAll('table').length,2);
   assert.equal(section.querySelectorAll('tbody tr').length,8);
   assert.match(section.querySelector('h3').title,/하루·브라우저·게임·경로별/);
   assert.match(section.textContent,/탑 쌓기/);assert.match(section.textContent,/두더지 잡기/);assert.match(section.textContent,/도전 링크/);
