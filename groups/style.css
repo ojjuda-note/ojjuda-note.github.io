@@ -85,3 +85,17 @@
 @media(prefers-reduced-motion:reduce){.media-slot[data-loaded="loading"]{animation:none}}
 
 .age-settings{margin:18px 0;padding:14px;border:1px solid #c8d5cc;border-radius:12px;min-width:0}.age-settings legend{padding:0 6px;font-weight:700}.age-settings [data-age-range]{margin-top:12px}.age-settings [data-age-range]>.field{margin-bottom:12px}.age-settings input,.age-settings select{min-width:0;max-width:100%}.age-settings [hidden]{display:none!important}.age-tag{display:inline-block;white-space:normal;margin:6px 0}.age-note{max-width:36rem;overflow-wrap:anywhere}
+
+/* Age policy colors: keep the written condition visible, not color alone. */
+.age-tag,.age-settings{--age-ink:#4b5563;--age-bg:#f3f4f6;--age-line:#d1d5db}
+.age-tag[data-age-policy="adults"],.age-settings[data-age-policy="adults"]{--age-ink:#9a3412;--age-bg:#fff7ed;--age-line:#fdba74}
+.age-tag[data-age-policy="minors"],.age-settings[data-age-policy="minors"]{--age-ink:#1e40af;--age-bg:#eff6ff;--age-line:#93c5fd}
+.age-tag[data-age-policy="range"],.age-settings[data-age-policy="range"]{--age-ink:#6b21a8;--age-bg:#faf5ff;--age-line:#d8b4fe}
+.age-tag{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:1px solid var(--age-line);background:var(--age-bg);color:var(--age-ink);font-size:12px;font-weight:700;line-height:1.5;vertical-align:middle;white-space:normal;overflow-wrap:anywhere}
+.age-tag::before{content:"";width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:currentColor}
+.age-settings{border-color:var(--age-line);border-left:4px solid var(--age-ink)}
+.age-settings legend{color:var(--age-ink)}
+.age-settings select[name="age_policy"]{background:var(--age-bg);border-color:var(--age-line);color:var(--age-ink);font-weight:700}
+.age-preview{margin:10px 0 0}
+.age-preview .age-tag{margin:0}
+@media(forced-colors:active){.age-tag,.age-settings{border-color:CanvasText}}
