@@ -91,6 +91,7 @@ if (hearts2heartsProfile) {
 /* KISS OF LIFE: official Japanese release milestones. Unpublished personal data remains blank. */
 const kissoflifeProfile = window.OJJUDA_FAN_PROFILES.kissoflife;
 if (kissoflifeProfile) {
+  kissoflifeProfile.expanded = true;
   kissoflifeProfile.records = [
     { year: '2025.11', title: '일본 데뷔 미니앨범 발매', detail: 'TOKYO MISSION START · 2025.11.05', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' },
     { year: '2026.09', title: '일본 두 번째 미니앨범 발매', detail: 'SWEAT -JAPANESE EP- · 2026.09.16', href: 'https://columbia.jp/artist-info/kissoflife/discography/COCP-42739.html' }
