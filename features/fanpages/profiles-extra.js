@@ -107,3 +107,23 @@ if (blackpinkProfile) {
   blackpinkProfile.sources.unshift({ label: 'YG 공식 멤버 프로필·생일·수상', href: 'https://ygfamily.com/ko/artists/blackpink/profile' });
   blackpinkProfile.sources.push({ label: 'YG 공식 DEADLINE 음반·수록곡', href: 'https://ygfamily.com/en/artists/blackpink/discography/1651' });
 }
+
+/* STAYC: birthdays are publicly provided by the agency; other personal fields stay blank. */
+const staycProfile = window.OJJUDA_FAN_PROFILES.stayc;
+if (staycProfile) {
+  staycProfile.expanded = true;
+  const birthdays = {
+    '수민': '2001.03.13',
+    '시은': '2001.08.01',
+    '아이사': '2002.01.23',
+    '세은': '2003.06.14',
+    '윤': '2004.04.14',
+    '재이': '2004.12.09'
+  };
+  for (const member of staycProfile.members) {
+    member.birthday = birthdays[member.name] || null;
+    member.source = 'https://www.highup-ent.com/en/stayc/';
+  }
+  staycProfile.sources.unshift({ label: '하이업엔터테인먼트 공식 멤버 소개·생일', href: 'https://www.highup-ent.com/en/stayc/' });
+  staycProfile.sources.push({ label: '공식 2:LOVE 음반·트랙리스트', href: 'https://www.highup-ent.com/stayc/2love/' });
+}
