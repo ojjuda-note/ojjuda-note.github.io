@@ -1,14 +1,17 @@
 {
-  "updatedAt": "2026-11-07",
+  "updatedAt": "2026-11-13",
   "sourceName": "한국관광공사 대한민국 구석구석 · 소상공인시장진흥공단 상권정보 공개 지도 자료",
   "sourceUrls": [
     "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=3aa0ec5f-8c54-475a-9649-2516e583ccd1",
     "https://trip.happynowinfo.com/place/2546530/",
     "https://smi.purpleo.kr/article/19209",
-    "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=45"
+    "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=45",
+    "https://iaudience.kbs.co.kr/broadcast/11370",
+    "https://iaudience.kbs.co.kr/broadcast/11359",
+    "https://iaudience.kbs.co.kr/broadcast/10827"
   ],
-  "sourceScope": "1순환 44회차 경상남도 진주시·사천시 공개 관광 식당과 우체국 추천 위치 보강. 지역 전수조사가 아님.",
-  "verificationLimit": "과거 사천시 모범음식점 이력과 KTO 공식 여행정보 수록만 확인. 현재 영업상태·정규 블루리본 등급은 단정하지 않음.",
+  "sourceScope": "1순환44회차 관광/좌표 이력 보존. 2순환44회차 KBS 공식 사천 방송정보 병합. 전수 아님.",
+  "verificationLimit": "2025-03-14 KBS 스페셜 재방송은 2025-02-26 본 방송과 구별. 이력은 현재 운영이나 리본 등급을 확정하지 않음.",
   "coordinatePolicy": "현재 등록 ID·상호·정확한 도로명주소가 일치하는 공개 상권업소 좌표만 사용. 추정 주소 좌표와 개인 위치를 사용하지 않음.",
   "completeRegionalCollection": false,
   "restaurants": [
@@ -38,7 +41,22 @@
         }
       ],
       "addressSourceUrl": "https://trip.happynowinfo.com/place/2546530/",
-      "addressSourceCheckedAt": "2026-11-07"
+      "addressSourceCheckedAt": "2026-11-07",
+      "broadcasts": [
+        {
+          "program": "생생정보 스페셜",
+          "broadcaster": "KBS",
+          "episode": null,
+          "airedAt": "2025-03-14",
+          "sourceUrl": "https://iaudience.kbs.co.kr/broadcast/10827",
+          "sourceName": "KBS 시청자상담실 · 공식 방송정보",
+          "verifiedAt": "2026-11-13",
+          "sourceType": "broadcaster_program_information",
+          "airedAtSourceUrl": "https://iaudience.kbs.co.kr/broadcast/10827",
+          "sourcePublishedAt": "2025-03-14",
+          "addressAtSource": "경남 사천시 진삼로 269 삼천포맛집정서방"
+        }
+      ]
     }
   ],
   "locationEnrichments": [
