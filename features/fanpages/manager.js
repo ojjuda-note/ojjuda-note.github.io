@@ -133,7 +133,10 @@
         input.value=bucket.getPublicUrl(path).data.publicUrl; file.value='';
       }
       const value=input.value.trim();
-      if(['url','image','video'].includes(f.type) && value && !/^https:\/\//i.test(value)) invalid(f.label+'에 https 주소를 입력해 주세요.');
+      if(['url','image','video'].includes(f.type) && value
+        && (!/^https:\/\//i.test(value) || !catalog.address(value))) {
+        invalid(f.label+'에 올바른 https 주소를 입력해 주세요.');
+      }
       if(f.type==='bool') return input.checked;
       if(f.type==='lines') return value.split('\n').map(s=>s.trim()).filter(Boolean);
       return value;
