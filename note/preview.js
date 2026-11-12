@@ -929,29 +929,28 @@ function fillCardQuote(quote, body, compact, style) {
   quote.style.overflowWrap = 'anywhere';
 }
 function previewCardWidth(compact) {
-  const area = compact ? $('#reply-list') : $('.feed-layout');
-  let width = area?.getBoundingClientRect().width || 0;
-  if (width < 180) {
-    const main = $('.main'), css = getComputedStyle(main);
-    const available = main.clientWidth - parseFloat(css.paddingLeft) - parseFloat(css.paddingRight);
-    width = compact ? available - 42 : available;
-  }
-  return Math.max(180, Math.min(compact ? 310 : 560, width));
+  const original = $('#detail-card-slot .photo-card')?.getBoundingClientRect().width
+    || $('#feed-list .photo-card')?.getBoundingClientRect().width
+    || $('.compose-photo').clientWidth;
+  return compact ? original * 2 / 3 : original;
 }
 function cardPhotoOverflows(body, values = []) {
   if (!body) return false;
   const compact = kind === 'comment', style = currentStyle();
-  const probe = node('div', compact ? 'reply-card' : kind === 'event' ? 'photo-card note-event-card' : 'photo-card');
-  probe.style.cssText = `position:fixed;left:-10000px;top:0;width:${previewCardWidth(compact)}px;visibility:hidden;pointer-events:none`;
+  const probe = node('article', compact ? 'reply-card' : kind === 'event' ? 'photo-card note-event-card' : 'photo-card');
+  probe.style.maxWidth = 'none';
+  const host = node('div', 'park-photo-cards');
+  host.setAttribute('aria-hidden', 'true');
+  host.style.cssText = `position:fixed;left:-10000px;top:0;width:${previewCardWidth(compact)}px;visibility:hidden;pointer-events:none`;
   const photo = node('span', 'photo'), quote = node('span', 'card-quote'), tagRow = node('span', 'card-tags');
   applyVisualStyle(photo, style);
   fillCardQuote(quote, body, compact, style);
   for (const value of values) tagRow.append(node('span', '', `#${value}`));
-  photo.append(quote, tagRow); probe.append(photo); document.body.append(probe);
+  photo.append(quote, tagRow); probe.append(photo); host.append(probe); $('#main').append(host);
   try {
-    fitTagRow(tagRow);
+    fitPhotoQuote(photo, quote, tagRow, quote.style.fontSize);
     return photoQuoteClipped(photo, quote, tagRow);
-  } finally { probe.remove(); }
+  } finally { host.remove(); }
 }
 
 function message(value) {

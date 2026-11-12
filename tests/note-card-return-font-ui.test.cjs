@@ -109,7 +109,7 @@ async function checkReplyBrowsing(page) {
    }));
    assert.equal(faces.length,2);
    assert.ok(faces.every(face=>Math.abs(face.height-face.width*.75)<1),width+'px: original and reply are both 4:3');
-   assert.ok(faces[0].width<=601&&faces[0].width>=(width>=1280?550:0),'original grows up to the desktop cap');
+   if(width===1280)assert.ok(Math.abs(faces[0].width-600)<1,'original reaches 600×450 on desktop');
    assert.ok(Math.abs(faces[1].width-faces[0].width*2/3)<1,`${width}px: replies are two thirds of the parent card width`);
    assert.ok(faces.every(face=>Math.abs(face.footer)<1&&face.buttonsFit&&face.textFits),`${width}px: photo, text and controls fit without a footer`);
    if(width===390)await checkReplyBrowsing(page);
