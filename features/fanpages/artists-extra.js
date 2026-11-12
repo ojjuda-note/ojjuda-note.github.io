@@ -821,7 +821,7 @@
         { title: "KYUNGMIN'S FAVORITE BOX", sub: 'Weverse Shop · 포토북·포토카드·키링 구성 · 재고 확인', href: 'https://shop.weverse.io/en/shop/MXN/artists/165/sales/68020' }
       ],
       campaigns: [
-        { kind: '브랜드 앰배서더', date: '2026.09.02', title: '트윅스(Twix) 한국 첫 브랜드 앰배서더', sub: '한국마즈 · 두 개니까, 트윅스 캠페인 · 9월 2일 발표', href: 'https://www.segye.com/newsView/20260902506986' }
+        { kind: '홍보대사', date: '2026.09.02', title: '트윅스(Twix) 한국 첫 브랜드 앰배서더', sub: '한국마즈 · 두 개니까, 트윅스 캠페인 · 9월 2일 발표', href: 'https://www.segye.com/newsView/20260902506986' }
       ],
       accent: '#76a8d7', light: '#e0efff', dark: '#456a91', bg: '#f6fbff', shape: '✦'
     },
