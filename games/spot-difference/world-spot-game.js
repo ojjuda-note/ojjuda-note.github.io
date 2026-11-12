@@ -7,7 +7,7 @@
       const previous=document.activeElement;
       const dialog=document.createElement('dialog');
       dialog.className='spot-game-dialog arcade-game-view';dialog.setAttribute('aria-label','틀린그림찾기');
-      dialog.innerHTML='<div class="spot-game-header"><strong>🔎 틀린그림찾기</strong><button type="button" aria-label="오락실로 돌아가기">오락실로</button></div><iframe title="쭈다 틀린그림찾기" src="/games/spot-difference/index.html?v=20261110-game-back-arcade1" allow="fullscreen; web-share"></iframe>';
+      dialog.innerHTML='<div class="spot-game-header"><strong>🔎 틀린그림찾기</strong><button type="button" aria-label="오락실로 돌아가기">오락실로</button></div><iframe title="쭈다 틀린그림찾기" src="/games/spot-difference/index.html?v=20261112-spot-motion30" allow="fullscreen; web-share"></iframe>';
       const frame=dialog.querySelector('iframe');
       let scoreQueue=Promise.resolve(),guestFinished=false;
       const current=()=>active===dialog&&authorized();
@@ -19,7 +19,7 @@
           if(!owner&&!guestFinished){guestFinished=true;window.OjjudaGuestAccess?.finished();}
           return;
         }
-        if(event.data?.type==='ojjuda:spot-clear'&&Number.isInteger(event.data.stage)&&event.data.stage>=1&&event.data.stage<=152&&(typeof event.data.owner==='string'||event.data.owner===null)){
+        if(event.data?.type==='ojjuda:spot-clear'&&Number.isInteger(event.data.stage)&&event.data.stage>=1&&event.data.stage<=182&&(typeof event.data.owner==='string'||event.data.owner===null)){
           if(window.OjjudaAdminPreview?.isEnabled?.()===true)return;
           const {stage,owner}=event.data;
           const save=()=>window.OjjudaAdminPreview?.isEnabled?.()===true?Promise.resolve():Promise.resolve(onClear?.(stage,owner)).catch(error=>{
