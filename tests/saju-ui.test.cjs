@@ -159,6 +159,9 @@ test('only the selected monthly product is generated before its explicit ten-ju 
   assert.equal(h.$('reading-lifelong'),null);assert.equal(h.$('reading-annual'),null);
   assert.ok(h.$('report-content').textContent.length>=10000);
   assert.equal(h.$('reading-month-11').open,true);
+  assert.match(h.$('result-warnings').textContent,/태어난 시간을 몰라서.*두 글자는 비워/);
+  assert.match(h.$('result-warnings').textContent,/확인한 6글자.*나무·불·흙·쇠·물/);
+  assert.match(h.$('convention-list').textContent,/원래 안내: 태어난 시간을 모르므로 시주는 표시하지 않아요/);
 });
 
 test('choosing another product never charges or exposes it before the labelled open button', async t => {
@@ -181,7 +184,7 @@ test('a new annual year is a separate explicit purchase and changing the selecti
   assert.equal(h.state.starts.length,1);assert.equal(h.$('reading-annual').textContent,previous);
   assert.match(h.$('open-product').textContent,/2027.*10쭈|10쭈.*2027/);
   h.$('copy-reading').click();await waitFor(()=>h.state.copies.length===1);
-  assert.match(h.state.copies[0],/2026년 (운세|연간운)/);assert.doesNotMatch(h.state.copies[0],/2027년 (운세|연간운)/);
+  assert.match(h.state.copies[0],/2026년 (운세|연간운|올해운)/);assert.doesNotMatch(h.state.copies[0],/2027년 (운세|연간운|올해운)/);
   h.$('open-product').click();await h.ready('annual',2027);
   assert.equal(h.state.charges,2);assert.notEqual(h.$('reading-annual').textContent,previous);
   h.pickReport('annual',2026);assert.match(h.$('open-product').textContent,/0쭈/);
@@ -210,6 +213,46 @@ test('copy and evidence contain only the opened product, with method and common 
   assert.match(h.$('report-content').textContent,/공통 참고 설명/);
   assert.match(h.$('reading-method').textContent,/계산하지 않은/);
   assert.match(h.window.document.querySelector('.method-preview').textContent,/대운.*용신.*신살/);
+});
+
+test('each chapter leads with its title, clear subtitle and easy detail before complete expandable evidence', async t => {
+  const h=await harness({adminPreview:true});t.after(h.close);
+  h.fill({hour:8,minute:37});h.submit();await h.ready();
+  const {analyzeFortune}=await import('../games/starlit-saju/fortune-data.mjs');
+  const {buildDetailedReading}=await import('../games/starlit-saju/readings.mjs');
+  const fortune=analyzeFortune(h.state.starts[0].chart,{year:2026,now:new Date(fixedNow)});
+  const expected=buildDetailedReading(h.state.starts[0].chart,fortune);
+  assert.equal(h.window.document.querySelector('.birth-chart-details').open,false);
+  assert.ok(h.$('reading-guide-title'));assert.ok(h.$('reading-glossary'));
+  for (const topic of ['lifelong','annual','monthly']) {
+    if(topic!=='lifelong') {h.pickReport(topic,2026);h.$('open-product').click();await h.ready(topic,2026);}
+    const chapters=topic==='monthly'?expected.months.flatMap(month=>month.chapters):expected.sections.find(section=>section.id===topic).chapters;
+    const articles=[...h.$('report-content').querySelectorAll('.report-chapter')];
+    assert.equal(articles.length,chapters.length);
+    for (const [index,chapter] of chapters.entries()) {
+      const article=articles[index];
+      const title=article.querySelector(':scope > h4.chapter-title');
+      const subtitle=article.querySelector(':scope > h5.chapter-summary');
+      const easy=article.querySelector(':scope > .easy-reading');
+      const details=article.querySelector(':scope > details.chapter-evidence');
+      assert.ok(title.textContent.includes(chapter.title));
+      assert.equal(subtitle.textContent,chapter.summary);
+      assert.equal(title.nextElementSibling,subtitle);
+      assert.equal(subtitle.nextElementSibling,easy);
+      assert.ok(chapter.easyParagraphs.length>0);
+      assert.deepEqual([...easy.children].map(p=>p.textContent),chapter.easyParagraphs);
+      assert.equal(details.open,false);
+      assert.ok([...article.children].indexOf(easy)<[...article.children].indexOf(details));
+      assert.deepEqual([...details.querySelectorAll('.calculated-reading > p:not(.reading-kind)')].map(p=>p.textContent),chapter.calculation);
+      assert.deepEqual([...details.querySelectorAll('.interpreted-reading > p:not(.reading-kind)')].map(p=>p.textContent),chapter.interpretation);
+      assert.deepEqual([...details.querySelectorAll('.shared-reference > p:not(.reading-kind)')].map(p=>p.textContent),chapter.reference);
+      details.querySelector('summary').click();
+      assert.equal(details.open,true);
+    }
+    assert.equal(h.$('reading-evidence').querySelectorAll('.evidence-row').length,expected.evidence[topic].groups.reduce((count,group)=>count+group.rows.length,0));
+  }
+  assert.equal(h.state.starts.length,3,'only the three explicit product buttons open purchases');
+  assert.equal(h.state.charges,0,'reading and expanding calculation evidence never creates a payment');
 });
 
 test('signed-out and anonymous sessions cannot purchase or reveal paid products', async t => {

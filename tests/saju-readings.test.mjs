@@ -70,8 +70,8 @@ test('common definitions, suggestions and authored combinations stay in labelled
     assert.ok(applied.text.includes(value.reading));
     assert.ok(!combined.interpretation.some(text => text.includes(value.reading)));
   }
-  assert.match(report.method.reuseNotice, /같은 계산 조건에는 같은 문장 규칙/);
-  assert.match(report.method.reuseNotice, /이 서비스가 작성한 공통 참고 해설/);
+  assert.match(report.method.reuseNotice, /같은 글자와 관계가 나오면 같은 설명/);
+  assert.match(report.method.reuseNotice, /저희가 작성한 공통 참고 해설/);
 });
 
 test('same day master in another season changes actual evidence and the applicable relation rule', () => {
@@ -105,6 +105,20 @@ test('unknown pillars retain every candidate and never gain fabricated character
   assert.equal(season.rules[0].id, 'natal.season-unavailable');
   assert.doesNotMatch(season.interpretation.join(' '), /봄|여름|가을|겨울/);
   assert.match(report.intro, /확정된 2글자/);
+  assert.match(lifelong(report).chapters[0].summary, /2글자/);
+  assert.match(season.easyParagraphs.join(' '), /계절.*(?:정하지|정할 수 없|확인할 수 없)/);
+
+  // A known hour can still leave year/month unresolved when the supplied
+  // minute straddles a solar term. Do not call that an unknown birth time.
+  const timed = reading({year:2024,month:2,day:4,hour:17,minute:27});
+  assert.equal(timed.chart.timeKnown, true);
+  assert.equal(timed.fortune.profile.knownCharacterCount, 4);
+  const timedChapters = lifelong(timed.report).chapters;
+  const timedPicture = timedChapters.find(chapter => chapter.id === 'natal-picture');
+  const timedSeason = timedChapters.find(chapter => chapter.id === 'day-season');
+  assert.match(timedPicture.summary, /4글자/);
+  assert.doesNotMatch(timedPicture.easyParagraphs.join(' '), /모르는 시간|시간을 (?:몰라|모르)/);
+  assert.match(timedSeason.easyParagraphs.join(' '), /계절.*(?:정하지|정할 수 없|확인할 수 없)/);
 });
 
 test('category copies and advertised scope include only their selected periods and no birth date', () => {
@@ -112,9 +126,9 @@ test('category copies and advertised scope include only their selected periods a
   assert.deepEqual(lifelong(first.report), lifelong(next.report));
   assert.equal(first.report.copyByCategory.lifelong, next.report.copyByCategory.lifelong);
   assert.doesNotMatch(first.report.methodByCategory.lifelong.calculated.join(' '), /세운|절기월/);
-  assert.match(next.report.methodByCategory.annual.calculated.join(' '), /2027년 세운/);
+  assert.ok(next.report.methodByCategory.annual.calculated.some(text => text.includes('2027년') && text.includes('세운')));
   assert.doesNotMatch(next.report.methodByCategory.annual.calculated.join(' '), /절기월/);
-  assert.match(next.report.methodByCategory.monthly.calculated.join(' '), /2027년 12개 절기월/);
+  assert.ok(next.report.methodByCategory.monthly.calculated.some(text => text.includes('2027년 12개월') && text.includes('월운')));
   assert.doesNotMatch(next.report.methodByCategory.monthly.calculated.join(' '), /세운/);
   assert.doesNotMatch(next.report.copyByCategory.lifelong, /2027년/);
   assert.doesNotMatch(next.report.copyByCategory.annual, /2027년 [1-9][0-2]?월 월운/);
@@ -127,10 +141,72 @@ test('category copies and advertised scope include only their selected periods a
   }
 });
 
+test('every purchased topic includes an easy explanation before its complete source appendix', () => {
+  const { report } = reading();
+  assert.ok(report.guide?.title);
+  assert.ok(report.guide.paragraphs.every(text => typeof text === 'string' && text.trim()));
+  assert.ok(report.guide.paragraphs.length > 0, 'the reader needs an introduction to the symbols');
+  assert.ok(Array.isArray(report.glossary) && report.glossary.length > 0);
+  for (const entry of report.glossary) {
+    assert.ok(entry.term && entry.meaning, 'a term needs a usable explanation');
+    assert.notEqual(entry.meaning, entry.term, 'repeating a term is not an explanation');
+  }
+  for (const term of ['원국','일간','오행','십성','재성','합','충','세운','월운','지장간','공망']) {
+    assert.ok(report.glossary.some(entry => entry.term.includes(term)), `missing explanation of ${term}`);
+  }
+  for (const topic of ['lifelong','annual','monthly']) {
+    const chapters = topic === 'monthly'
+      ? report.months.flatMap(month => month.chapters)
+      : report.sections.find(section => section.id === topic).chapters;
+    const text = report.copyByCategory[topic];
+    const appendix = text.indexOf(report.evidence[topic].title);
+    assert.ok(appendix > 0, 'complete source records still need their own appendix');
+    let previousChapter = 0;
+    for (const chapter of chapters) {
+      assert.ok(chapter.title && chapter.summary, `${topic}/${chapter.id}: a heading and its key point are required`);
+      assert.ok(Array.isArray(chapter.easyParagraphs) && chapter.easyParagraphs.length > 0,
+        `${topic}/${chapter.id}: the easy explanation is missing`);
+      const heading = text.indexOf(`${chapter.title}\n`, previousChapter);
+      const keyPoint = text.indexOf(chapter.summary, heading + chapter.title.length);
+      const detail = text.indexOf(chapter.easyParagraphs[0], keyPoint + chapter.summary.length);
+      assert.ok(heading >= previousChapter && keyPoint > heading && detail > keyPoint,
+        `${topic}/${chapter.id}: copy must read as heading, key point, then explanation`);
+      previousChapter = detail + chapter.easyParagraphs[0].length;
+      for (const paragraph of chapter.easyParagraphs) {
+        assert.ok(typeof paragraph === 'string' && paragraph.trim());
+        const index = text.indexOf(paragraph);
+        assert.ok(index >= 0 && index < appendix,
+          `${topic}/${chapter.id}: the copied reading must keep the easy explanation ahead of the appendix`);
+      }
+    }
+  }
+});
+
+test('plain pair summaries keep the exact connection and clash counts, including months with no pairs', () => {
+  const { fortune, report } = reading({year:2015,month:12,day:9,hour:11,minute:37});
+  function sameCounts(chapter, pairs) {
+    const clashes = pairs.filter(value => value.kind === 'branch-clash').length;
+    const connections = pairs.length - clashes;
+    assert.ok(chapter.summary.includes(`서로 맞추는 짝 ${connections}쌍`), chapter.summary);
+    assert.ok(chapter.summary.includes(`서로 다른 방향의 짝 ${clashes}쌍`), chapter.summary);
+    const detail = chapter.easyParagraphs.join(' ');
+    assert.ok(detail.includes(`서로 맞추는 짝은 ${connections}쌍`), detail);
+    assert.ok(detail.includes(`서로 다른 방향의 짝은 ${clashes}쌍`), detail);
+  }
+  sameCounts(lifelong(report).chapters.find(chapter => chapter.id === 'natal-interactions'), fortune.profile.interactions);
+  sameCounts(report.sections.find(section => section.id === 'annual').chapters.find(chapter => chapter.id === 'annual-interactions'), fortune.annual.interactions);
+  assert.ok(fortune.months.some(month => month.interactions.length === 0));
+  assert.ok(fortune.months.some(month => month.interactions.length >= 4));
+  for (const month of fortune.months) {
+    const chapter = report.months.find(value => value.month === month.month).chapters.find(value => value.id === 'month-interactions');
+    sameCounts(chapter, month.interactions);
+  }
+});
+
 test('all ten day masters and different years produce valid values and Korean particles', () => {
   const stems = new Set();
   // Strip parenthesized Hanja before checking adjacent Korean particles.
-  const badParticles = /(?:화|토|수|무|기|계|자|묘|사|오|미|유|해)은(?=\s)|(?:화|토|수)은(?=\s)|(?:화|토|수)을(?=\s)|(?:화|토|수)과(?=\s)|(?:정재|편재|겁재)으로|(?:병화|정화|무토|기토|임수|계수)이에요|바다이라는|개이에요/;
+  const badParticles = /(?:화|토|수|무|기|계|자|묘|사|오|미|유|해)은(?=\s)|(?:화|토|수)은(?=\s)|(?:화|토|수)을(?=\s)|(?:화|토|수)과(?=\s)|(?:정재|편재|겁재)으로|(?:병화|정화|무토|기토|임수|계수)이에요|바다이라는|개이에요|(?:나무|쇠)(?:은|을|과)(?=\s)|(?:불|흙|물)(?:는|를|와)(?=\s)/;
   for (let day = 1; day <= 10; day++) {
     for (const year of [2024,2027]) {
       const { chart, report } = reading({year:1990,month:5,day,hour:9,minute:30},year);

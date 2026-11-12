@@ -1,7 +1,8 @@
 import {
   STEM_REFERENCE, GROUP_REFERENCE, GOD_REFERENCE, ELEMENT_RELATIONS,
   RELATION_REFERENCE, GROUP_PAIR_RULES, PRACTICE_SUGGESTIONS,
-} from './readings-data.mjs?v=20261113-saju-topics1';
+} from './readings-data.mjs?v=20261113-saju-easy1';
+import { attachPlainLanguage } from './plain-language.mjs?v=20261113-saju-easy1';
 
 const GROUP_KEYS = ['peer', 'expression', 'wealth', 'authority', 'resource'];
 const ELEMENT_KEYS = ['wood', 'fire', 'earth', 'metal', 'water'];
@@ -268,30 +269,39 @@ function buildEvidence(fortune,registry) {
 }
 
 function methodMetadata(fortune,topic='all') {
+  const profile=fortune.profile;
   return {
-    title:'계산한 자료와 규칙 해설의 범위',
-    description:'입력에서 계산한 명식과 관계를 공개하고, 그 결과를 전통 상징에 따라 설명한 참고 풀이예요. 계산 사실, 적용한 해석 규칙, 공통 용어 설명, 생활 제안을 구분해서 표시해요. 기호의 분류가 실제 성격·능력이나 미래 사건을 확인한 사실이라는 뜻은 아니에요.',
-    reuseNotice:'같은 계산 조건에는 같은 문장 규칙과 용어 설명을 사용해요. 십성군을 연결하는 주제 설명은 이 서비스가 작성한 공통 참고 해설이에요.',
+    title:'이 풀이에서 알려 주는 내용',
+    description:'입력한 생일로 사주 글자를 계산하고, 옛 사주 풀이에서 어떤 뜻으로 읽는지 설명해요. 계산한 내용과 옛 풀이, 함께 쓰는 설명, 생활에서 해 볼 일은 따로 표시해요. 성격을 검사하거나 미래를 확인한 결과는 아니에요.',
+    reuseNotice:'같은 글자와 관계가 나오면 같은 설명을 써요. 여러 이야기를 함께 읽는 설명 중에는 저희가 작성한 공통 참고 해설도 있어요.',
     calculated:[
-      '확정된 년주·월주·일주·시주와 미확정 주의 후보·사유',
-      '확정 글자의 오행·음양 개수, 일간과 출생 절기 계절의 오행 관계',
-      '일간을 제외한 천간과 지지 본기의 십성, 각 자리와 십성군 개수',
-      '확정된 원국 내부의 천간합·지지육합·지지충 전체',
-      ...(topic==='annual'?[`${fortune.year}년 세운의 간지·구간·십성, 원국과의 해당 합·충 전체`]
-        :topic==='monthly'?[`${fortune.year}년 12개 절기월의 간지·구간·십성, 원국과의 해당 합·충 전체`]
-        :topic==='all'?[`${fortune.year}년 세운과 12개 절기월의 간지·구간·십성, 원국과의 해당 합·충 전체`]:[]),
-      '확정된 각 주의 전체 지장간과 그 십성, 십이운성·납음·순·공망 원자료',
-      '확정된 원국에 두 십성군이 함께 표시되는지 확인',
+      '태어난 해·달·날·시간의 글자와, 아직 정할 수 없는 부분의 후보와 이유',
+      '나무·불·흙·쇠·물의 개수와 음양의 개수, 나를 나타내는 글자와 태어난 계절의 관계',
+      '다른 글자를 친구·표현·돈·약속·배움의 이야기로 읽는 이름과 그 위치·개수',
+      '태어난 사주 안에서 서로 맞추거나 다른 방향인 글자의 모든 짝',
+      ...(topic==='annual'?[fortune.year+'년 한 해의 글자와 날짜, 내 사주와의 관계 전체(세운)']
+        :topic==='monthly'?[fortune.year+'년 12개월의 글자와 날짜, 내 사주와의 관계 전체(월운)']
+        :topic==='all'?[fortune.year+'년 한 해와 12개월의 글자·날짜, 내 사주와의 관계 전체']:[]),
+      '아래쪽 글자에 연결된 글자 전체(지장간)와 십이운성·납음·순·공망의 원래 자료',
+      '태어난 사주에 두 가지 생활 이야기의 이름이 함께 나오는지 확인',
     ],
     notCalculated:[
-      '나이별 대운과 기운 시작 시점, 초년·중년·말년의 사건',
-      '신강·신약·용신·희신·기신·격국의 종합 판정',
-      '지장간의 중기·여기 명명과 비중 판정, 통근·조후와 계절 가중치',
-      '합화 성립, 삼합·방합·형·파·해·원진·신살과 공망의 적용·효력 판정',
-      '특정 사건의 발생 시점, 수익·합격·결혼의 보장, 질병·사고·수명 예측',
-      '출생지 태양시·과거 표준시·서머타임 보정',
+      '10년씩 나누어 보는 큰 흐름과 시작 나이(대운), 어느 나이에 어떤 사건이 생기는지',
+      '내 사주가 강한지 약한지, 어떤 기운이 이로운지에 대한 종합 판단(신강·신약·용신·희신·기신·격국)',
+      '안쪽 글자마다 이름과 중요도를 더 자세히 정하거나 계절에 따라 힘을 다르게 매기는 것(중기·여기·통근·조후)',
+      '짝을 이루는 글자가 다른 기운으로 바뀌는지와 그 밖의 조합·이름이 미치는 영향(합화·삼합·방합·형·파·해·원진·신살·공망)',
+      '수입 금액, 합격·결혼 날짜, 병·사고·수명처럼 실제로 일어날 일을 정하는 것',
+      '태어난 지역에 맞춰 시간을 따로 고치거나, 옛날에 쓰던 시계 차이를 맞추는 것(태양시·과거 표준시·서머타임)',
     ],
-    warnings:[...fortune.limitations],
+    warnings:[
+      ...(!profile.complete?['아직 정하지 못한 글자가 있어 확인된 '+profile.knownCharacterCount+'글자만 읽어요. 여기에 어떤 이름이 없다고 전체 사주에도 없다고 정하지 않아요.']:[]),
+      '친구·표현·돈·약속·배움의 개수를 셀 때는 나를 나타내는 기준 글자 자체를 빼고 다른 자리만 세어요.',
+      '아래쪽 글자는 대표가 되는 글자로 관계를 읽어요. 안쪽에 연결된 다른 글자들은 별도 자료에서 모두 보여 드려요.',
+      '글자 사이에 맞추는 짝이나 다른 방향의 짝이 있어도, 실제 사건이 일어난다는 뜻은 아니에요.',
+      '현재 한국 시계인 한국 표준시(UTC+9)로 계산해요. 해외 출생이나 과거의 시계 차이는 따로 맞추지 않아요.',
+      '글자마다 한 개씩 똑같이 세어요. 개수가 많다고 더 좋은 운이거나 더 뛰어난 능력이라는 뜻은 아니에요.',
+      ...(!profile.season?['계절을 나누는 경계의 어느 쪽인지 정하지 못해, 태어난 계절에 따른 풀이를 넣지 않았어요.']:[]),
+    ],
   };
 }
 function sectionCopy(chapters) {
@@ -304,11 +314,28 @@ function sectionCopy(chapters) {
   }
   return lines;
 }
+function easySectionCopy(chapters) {
+  const lines=[];
+  for(const chapter of chapters){
+    lines.push('',chapter.title,chapter.summary,...chapter.easyParagraphs);
+    if(chapter.practice.length)lines.push('[생활에서 해 볼 수 있는 일]',...chapter.practice);
+  }
+  return lines;
+}
 function copyCategory(report,topic) {
   const method=report.methodByCategory[topic];
-  const lines=['오쭈다 · 별빛 사주팔자',topic==='lifelong'?'평생운 · 원국의 장기 주제':`${report.year}년 ${topic==='annual'?'연간운':'월별운'}`,'',method.title,method.description,method.reuseNotice,'[이 상품에 포함된 계산 범위]',...method.calculated,'[계산하지 않은 범위]',...method.notCalculated,...method.warnings];
+  const lines=['오쭈다 · 별빛 사주팔자',topic==='lifelong'?'평생운 · 나의 사주와 생활 이야기':report.year+'년 '+(topic==='annual'?'올해운':'월별운'),'',report.guide.title,...report.guide.paragraphs];
   if(topic==='monthly'){
     lines.push('',report.monthsIntro);
+    for(const month of report.months)lines.push('',month.title,month.summary,month.periodLabel,...easySectionCopy(month.chapters));
+  }else{
+    const section=report.sections.find(value=>value.id===topic);
+    lines.push('',section.title,section.summary,...easySectionCopy(section.chapters));
+  }
+  lines.push('','사주 이름을 쉬운 말로',...report.glossary.map(value=>value.term+': '+value.meaning));
+  lines.push('',method.title,method.description,method.reuseNotice,'[이 상품에 포함된 계산 범위]',...method.calculated,'[계산하지 않은 범위]',...method.notCalculated,...method.warnings);
+  lines.push('','원래의 계산과 해석 전체');
+  if(topic==='monthly'){
     for(const month of report.months)lines.push('',month.title,month.summary,month.periodLabel,...sectionCopy(month.chapters));
   }else{
     const section=report.sections.find(value=>value.id===topic);
@@ -317,7 +344,7 @@ function copyCategory(report,topic) {
   const evidence=report.evidence[topic];
   lines.push('',evidence.title);
   for(const group of evidence.groups){
-    lines.push('',group.title,...group.rows.map(row=>`${row.label}: ${row.value}`),...group.notes);
+    lines.push('',group.title,...group.rows.map(row=>row.label+': '+row.value),...group.notes);
   }
   return lines.join('\n');
 }
@@ -343,6 +370,7 @@ export function buildDetailedReading(chart,fortune) {
     monthsIntro:fortune.notes.join(' '),months:monthlyReadings(fortune,registry),
     evidence:buildEvidence(fortune,registry),
   };
+  attachPlainLanguage(report,chart,fortune);
   report.copyByCategory=Object.fromEntries(['lifelong','annual','monthly'].map(topic=>[topic,copyCategory(report,topic)]));
   report.copyText=['lifelong','annual','monthly'].map(topic=>report.copyByCategory[topic]).join('\n\n');
   return report;

@@ -13,6 +13,7 @@ const examples = [
   {name:'multiple natal and monthly pairs',input:{year:2015,month:12,day:9,hour:11,minute:37},year:2026},
   {name:'unknown hour',input:{year:2005,month:12,day:23,hour:null},year:2027},
   {name:'ipchun with unknown year/month/hour',input:{year:2024,month:2,day:4,hour:null},year:2026},
+  {name:'known birth minute straddles ipchun',input:{year:2024,month:2,day:4,hour:17,minute:27},year:2026},
   {name:'civil-day late Zi hour',input:{year:1991,month:7,day:18,hour:23,minute:30},year:2027},
 ];
 
@@ -169,6 +170,7 @@ test('conditional service commentary and common advice remain distinct from calc
   assert.match(limits,/대운/);
   assert.match(limits,/용신/);
   assert.match(limits,/신살/);
-  assert.match(limits,/공망의 적용·효력 판정/);
+  assert.ok(report.method.notCalculated.some(text=>text.includes('공망')&&/영향|적용|효력/.test(text)),
+    'the raw xun-kong names are available, but their claimed effect on life is not calculated');
   assert.ok(!/신살·12운성|지지 본기 이외의 중기·여기/.test(limits),'newly provided raw classifications cannot still be advertised as omitted');
 });

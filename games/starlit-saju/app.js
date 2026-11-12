@@ -19,56 +19,58 @@ let reportGeneration = 0;
 let reportBusy = false;
 let toastTimer;
 
+const ELEMENT_WORDS = Object.freeze({wood:'나무',fire:'불',earth:'흙',metal:'쇠',water:'물'});
+
 const STEM_READINGS = {
   "甲": {
     "name": "갑목",
     "symbol": "곧게 자라는 큰 나무",
-    "intro": "갑목은 하늘을 향해 자라는 큰 나무를 상징해요. 자신의 기준을 세우고, 오래 지켜 가고 싶은 가치를 돌아보는 글자예요."
+    "intro": "갑목은 큰 나무에 빗댄 이름이에요. 나무가 뿌리를 내리듯, 내가 중요하게 생각하는 것을 지키는 모습을 떠올려요."
   },
   "乙": {
     "name": "을목",
     "symbol": "바람과 함께 자라는 풀",
-    "intro": "을목은 부드럽게 뻗어 가는 풀과 덩굴을 상징해요. 주변과 어울리면서도 자신만의 방향을 찾아가는 모습을 떠올려 보세요."
+    "intro": "을목은 풀과 덩굴에 빗댄 이름이에요. 주변에 맞춰 자라는 풀처럼, 새로운 곳에서 방법을 바꾸며 자라는 모습을 떠올려요."
   },
   "丙": {
     "name": "병화",
     "symbol": "주변을 밝히는 햇살",
-    "intro": "병화는 넓은 곳을 환하게 비추는 태양을 상징해요. 드러내고 나누는 즐거움, 그리고 스스로 쉬는 시간을 함께 돌아보는 글자예요."
+    "intro": "병화는 태양에 빗댄 이름이에요. 햇빛을 널리 나누듯, 기쁨이나 생각을 다른 사람에게 전하는 모습을 떠올려요."
   },
   "丁": {
     "name": "정화",
     "symbol": "어둠을 밝혀 주는 등불",
-    "intro": "정화는 가까운 곳을 따뜻하게 비추는 등불을 상징해요. 작은 차이를 알아보는 마음과 한 가지에 정성을 기울이는 모습을 떠올려 보세요."
+    "intro": "정화는 등불에 빗댄 이름이에요. 등불이 한곳을 밝히듯, 한 가지 일에 마음을 쏟는 모습을 떠올려요."
   },
   "戊": {
     "name": "무토",
     "symbol": "든든하게 서 있는 산",
-    "intro": "무토는 넓고 단단한 산을 상징해요. 흔들리는 순간에도 중심을 찾는 마음, 익숙한 틀을 조금 넓히는 여유를 돌아보는 글자예요."
+    "intro": "무토는 산에 빗댄 이름이에요. 산이 제자리를 지키듯, 힘든 일이 있어도 차분하게 버티는 모습을 떠올려요."
   },
   "己": {
     "name": "기토",
-    "symbol": "생명을 품는 부드러운 대지",
-    "intro": "기토는 씨앗을 품고 돌보는 흙을 상징해요. 일상을 가꾸는 세심함과 가까운 사람을 보살피는 마음을 돌아보는 글자예요."
+    "symbol": "씨앗을 기르는 부드러운 흙",
+    "intro": "기토는 씨앗을 기르는 흙에 빗댄 이름이에요. 필요한 것을 챙겨 주고, 작은 일도 꾸준히 돌보는 모습을 떠올려요."
   },
   "庚": {
     "name": "경금",
     "symbol": "형태를 잡는 단단한 쇠",
-    "intro": "경금은 단단한 금속을 상징해요. 기준을 분명히 세우고 불필요한 것을 덜어 내는 힘, 그 기준을 전하는 방식을 함께 돌아보세요."
+    "intro": "경금은 단단한 쇠에 빗댄 이름이에요. 필요한 것과 그렇지 않은 것을 가리고, 해야 할 일을 분명하게 정하는 모습을 떠올려요."
   },
   "辛": {
     "name": "신금",
-    "symbol": "섬세하게 빛나는 보석",
-    "intro": "신금은 정교하게 다듬은 보석을 상징해요. 작은 차이를 알아보는 감각과 자신만의 기준을 소중히 여기는 마음을 떠올려 보세요."
+    "symbol": "곱게 다듬어 빛나는 보석",
+    "intro": "신금은 잘 다듬은 보석에 빗댄 이름이에요. 작은 차이를 살피며 하나씩 정성껏 다듬는 모습을 떠올려요."
   },
   "壬": {
     "name": "임수",
     "symbol": "넓게 흐르는 큰 물",
-    "intro": "임수는 강과 바다처럼 넓게 흐르는 물을 상징해요. 새로운 것을 품는 넓은 시야와 여러 가능성 사이에서 방향을 찾는 마음을 돌아보세요."
+    "intro": "임수는 강과 바다에 빗댄 이름이에요. 물이 길을 찾아 흐르듯, 여러 생각을 모아 새로운 길을 찾는 모습을 떠올려요."
   },
   "癸": {
     "name": "계수",
     "symbol": "조용히 스며드는 빗물",
-    "intro": "계수는 이슬과 빗물처럼 조용히 스며드는 물을 상징해요. 자세히 관찰하는 마음과 깊이 생각하는 시간을 돌아보는 글자예요."
+    "intro": "계수는 이슬과 비에 빗댄 이름이에요. 작은 물방울이 스며들듯, 자세히 살피고 생각을 차근차근 정리하는 모습을 떠올려요."
   }
 };
 
@@ -156,42 +158,58 @@ updateTime();
 function renderPillar(pillar, index) {
   const card = element('article', 'pillar-card' + (pillar.key === 'day' ? ' is-day' : ''));
   card.style.setProperty('--i', index);
-  card.append(element('h3', 'pillar-label', pillar.label));
-  card.append(element('span', 'pillar-caption', {year:'태어난 해',month:'태어난 달',day:'태어난 날',hour:'태어난 시'}[pillar.key]));
+  card.append(element('h3', 'pillar-label', {year:'태어난 해',month:'태어난 달',day:'태어난 날',hour:'태어난 시간'}[pillar.key]));
+  card.append(element('span', 'pillar-caption', pillar.label));
   if (pillar.hanja && pillar.stem && pillar.branch) {
     const glyphs = element('div', 'pillar-glyphs');
     [pillar.stem, pillar.branch].forEach((part, partIndex) => {
       const glyph = element('span', 'pillar-glyph', part.hanja);
       glyph.style.setProperty('--element-color', part.color);
-      glyph.append(element('small', '', `${part.hangul} · ${partIndex ? '지지' : '천간'}`));
+      glyph.append(element('small', '', `${part.hangul} · ${partIndex ? '아래 글자' : '위 글자'}`));
       glyphs.append(glyph);
     });
     card.append(glyphs, element('p', 'pillar-name', pillar.hangul));
-    card.append(element('p', 'pillar-elements', `${pillar.stem.elementLabel} · ${pillar.branch.elementLabel}`));
+    card.append(element('p', 'pillar-elements', `${ELEMENT_WORDS[pillar.stem.element]} · ${ELEMENT_WORDS[pillar.branch.element]}`));
   } else {
     card.append(element('div', 'pillar-unknown', '✧'));
     card.append(element('p', 'pillar-status', pillar.alternatives?.length ? '시간 확인 필요' : '시간 미상'));
     if (pillar.alternatives?.length) {
       const choices = element('div', 'pillar-alternatives');
       pillar.alternatives.forEach(choice => choices.append(element('span', '', `${choice.hanja} ${choice.hangul}`)));
-      card.append(choices, element('p', 'pillar-empty-note', '절기 전후에 따라 달라져요.'));
+      card.append(choices, element('p', 'pillar-empty-note', '계절을 나누는 시각 전인지 후인지에 따라 달라져요.'));
     } else card.append(element('p', 'pillar-empty-note', '시간을 알면 펼칠 수 있어요.'));
   }
   return card;
+}
+
+function plainWarning(message) {
+  if (message==='태어난 시간을 모르므로 시주는 표시하지 않아요.') {
+    return '태어난 시간을 몰라서, 시간에 해당하는 두 글자는 비워 두었어요.';
+  }
+  const count=message.match(/^오행은 확정된 (\d+)글자만 세었어요\. 전체 사주의 오행 비율은 아니에요\.$/);
+  if (count) return `확인한 ${count[1]}글자만 나무·불·흙·쇠·물로 나누어 세었어요. 모르는 글자가 있어서 여덟 글자 전체의 모습과는 다를 수 있어요.`;
+  if (message.startsWith('입력한 분 안에 절기가 바뀌어 ') || message.startsWith('이 날은 절기가 바뀌어 ')) {
+    return message
+      .replace('입력한 분 안에 절기가 바뀌어 ','입력한 1분 안에 계절을 나누는 기준 시각이 들어 있어 ')
+      .replace('이 날은 절기가 바뀌어 ','이 날에는 계절을 나누는 기준 시각이 있어요. 그래서 ')
+      .replaceAll('년주','태어난 해의 글자').replaceAll('월주','태어난 달의 글자')
+      .replace('두 후보를 함께','가능한 두 가지 글자 조합을 함께');
+  }
+  return message;
 }
 
 function renderReading(result) {
   $('result-pillars').replaceChildren(...result.pillars.map(renderPillar));
   $('birth-summary').textContent = `양력 ${result.solar.label} · ${result.timeLabel || (result.timeKnown ? '시간 입력' : '태어난 시간 모름')}`;
   $('lunar-summary').textContent = `음력 ${result.lunar.label}`;
-  const warningNodes = result.warnings.map(message => element('p', '', message));
+  const warningNodes = result.warnings.map(message => element('p', '', plainWarning(message)));
   $('result-warnings').replaceChildren(...warningNodes);
   $('result-warnings').hidden = warningNodes.length === 0;
   const stem = result.dayMaster;
   const reading = STEM_READINGS[stem.hanja];
   $('day-master-glyph').textContent = stem.hanja;
   $('day-master-glyph').style.setProperty('--element-color', stem.color);
-  $('day-master-title').textContent = `${reading.name} · ${stem.hanja}${{wood:'木',fire:'火',earth:'土',metal:'金',water:'水'}[stem.element]}`;
+  $('day-master-title').textContent = `${reading.name} · ${ELEMENT_WORDS[stem.element]}`;
   $('day-master-symbol').textContent = reading.symbol;
   $('day-master-reading').textContent = reading.intro;
   $('element-count').textContent = `확인된 ${result.knownCharacterCount}글자`;
@@ -199,7 +217,7 @@ function renderReading(result) {
     const row = element('div', 'element-row');
     row.style.setProperty('--element-color', item.color);
     const label = element('span', 'element-label');
-    label.append(element('b', '', item.hanja), document.createTextNode(item.label));
+    label.append(element('b', '', item.hanja), document.createTextNode(ELEMENT_WORDS[item.key] || item.label));
     const track = element('div', 'element-track');
     track.setAttribute('aria-hidden', 'true');
     const fill = element('div', 'element-fill');
@@ -209,7 +227,7 @@ function renderReading(result) {
     return row;
   });
   $('element-bars').replaceChildren(...rows);
-  $('convention-list').replaceChildren(...result.conventions.map(message => element('li', '', message)));
+  $('convention-list').replaceChildren(...[...result.warnings.map(message=>`원래 안내: ${message}`),...result.conventions].map(message => element('li', '', message)));
   $('intro').hidden = true;
   $('result').hidden = false;
   document.querySelector('.skip-link').href = '#result-title';
@@ -219,8 +237,8 @@ function renderReading(result) {
 }
 
 const TOPICS = Object.freeze({
-  lifelong:{label:'평생운',description:'원국을 바탕으로 성향과 삶의 주제를 읽어요.'},
-  annual:{label:'올해운',description:'선택한 한 해의 글자와 원국을 함께 읽어요.'},
+  lifelong:{label:'평생운',description:'태어난 때의 사주로 나의 성향과 생활을 살펴봐요.'},
+  annual:{label:'올해운',description:'선택한 해의 글자와 내 사주를 함께 살펴봐요.'},
   monthly:{label:'월별운',description:'선택한 연도의 1~12월 전체 풀이를 포함해요.'}
 });
 let entryQuote = null;
@@ -269,7 +287,7 @@ function readBirth() {
 function birthSignature(input=readBirth()) { return JSON.stringify(input); }
 function hasBirth() { return ['birth-year','birth-month','birth-day'].every(id => $(id).value !== ''); }
 async function calculateBirth(input) {
-  enginePromise ||= import('./engine.mjs?v=20261113-saju-topics1').catch(error => { enginePromise=null; throw error; });
+  enginePromise ||= import('./engine.mjs?v=20261113-saju-easy1').catch(error => { enginePromise=null; throw error; });
   const {calculateSaju} = await enginePromise;
   return calculateSaju(input);
 }
@@ -359,9 +377,9 @@ $('fortune-year').addEventListener('change',updateProductOffer);
 
 async function prepareDetailedReading(chart,target) {
   detailModulesPromise ||= Promise.all([
-    import('./fortune-data.mjs?v=20261113-saju-topics1'),
-    import('./readings.mjs?v=20261113-saju-topics1'),
-    import('./report-view.mjs?v=20261113-saju-topics1')
+    import('./fortune-data.mjs?v=20261113-saju-easy1'),
+    import('./readings.mjs?v=20261113-saju-easy1'),
+    import('./report-view.mjs?v=20261113-saju-easy1')
   ]).catch(error=>{detailModulesPromise=null;throw error;});
   const [dataModule,readingModule,viewModule]=await detailModulesPromise;
   const fortune=dataModule.analyzeFortune(chart,{year:target.topic==='lifelong'?koreanYear():target.year,now:new Date()});
@@ -509,7 +527,7 @@ function resetAfterAccountChange() {
 async function readyBilling() {
   if (billingPromise) return billingPromise;
   const task=(async()=>{
-    const {SajuPayment}=await import('./payment.js?v=20261113-saju-topics1');
+    const {SajuPayment}=await import('./payment.js?v=20261113-saju-easy1');
     billing ||= new SajuPayment({
       onBalance:()=>updateBillingStatus(),
       onAccountChange:()=>{

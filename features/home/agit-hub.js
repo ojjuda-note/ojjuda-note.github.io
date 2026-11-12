@@ -260,7 +260,7 @@
       </a>
       <a class="agit-saju-banner" href="/games/starlit-saju/" aria-label="별빛 사주팔자, 평생운·올해운·월별운 각각 10쭈">
         <span class="agit-saju-stars" aria-hidden="true"></span>
-        <div class="agit-saju-copy"><span class="agit-saju-kicker">STARLIT SAJU <i aria-hidden="true">✦</i> 별빛 서고</span><h2>별빛 사주팔자</h2><p>평생운부터 올해·월별운까지,<br>나의 사주와 풀이의 근거를 읽어 보세요.</p><span class="agit-saju-cta">항목별 10쭈 · 사주 펼치기 <span aria-hidden="true">→</span></span></div>
+        <div class="agit-saju-copy"><span class="agit-saju-kicker">STARLIT SAJU <i aria-hidden="true">✦</i> 별빛 서고</span><h2>별빛 사주팔자</h2><p>평생운부터 올해·월별운까지,<br>쉬운 설명으로 차근차근 읽어 보세요.</p><span class="agit-saju-cta">항목별 10쭈 · 사주 펼치기 <span aria-hidden="true">→</span></span></div>
         <div class="agit-saju-art" aria-hidden="true"><span class="agit-saju-orbit"></span><span class="agit-saju-moon">☾</span><div class="agit-saju-scrolls"><span><small>YEAR</small><b>年</b><i>태어난 해</i></span><span><small>MONTH</small><b>月</b><i>태어난 달</i></span><span><small>DAY</small><b>日</b><i>태어난 날</i></span><span><small>HOUR</small><b>時</b><i>태어난 시</i></span></div></div>
       </a>
       <footer class="agit-footer"><span>오쭈다 아지트</span><button type="button" data-act="feedback-open">의견 보내기 <span aria-hidden="true">→</span></button></footer>

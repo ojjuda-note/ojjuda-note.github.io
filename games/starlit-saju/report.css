@@ -239,3 +239,60 @@
   .month-content{padding-left:11px;padding-right:11px}
   .year-control select{width:134px}
 }
+
+/* Plain explanations lead; the complete calculation remains one tap away. */
+.result-explanation{max-width:720px;margin:-10px auto 24px;text-align:center;font-size:14px;line-height:1.95;color:#d3c3dc;word-break:keep-all;overflow-wrap:anywhere}
+.result-warnings{font-size:14px;line-height:1.95}
+.birth-chart-details{padding:0 22px;border:1px solid #c3a56c42;border-radius:9px;background:#20162980}
+.birth-chart-details>summary{padding:18px 0;min-height:48px;cursor:pointer;font:18px/1.65 var(--serif);color:#e5cd9f;word-break:keep-all;overflow-wrap:anywhere}
+.birth-chart-details[open]{padding-bottom:24px}
+.birth-chart-details[open]>summary{margin-bottom:23px;border-bottom:1px solid #c3a56c24}
+.birth-chart-details .result-layout{margin-bottom:0}
+.birth-chart-details .day-master-reading,.birth-chart-details .gentle-note{font-size:14px;line-height:1.95}
+.reading-guide{max-width:790px;margin:0 auto 28px;padding:24px 28px;border-left:2px solid #d1ad72;border-radius:0 8px 8px 0;background:linear-gradient(110deg,#62435b23,#231a302e)}
+.reading-guide h3{font:23px/1.65 var(--serif);color:#ead2a9;margin:0 0 15px;word-break:keep-all;overflow-wrap:anywhere}
+.reading-guide>p{font-size:15px;line-height:1.95;color:#d8c9df;word-break:keep-all;overflow-wrap:anywhere}
+.reading-guide>p+p{margin-top:13px}
+.reading-glossary{margin-top:22px;border-top:1px solid #bea06b38;padding-top:7px}
+.reading-glossary>summary{padding:12px 0;min-height:44px;cursor:pointer;color:#e3c995;font-size:14px;line-height:1.8;word-break:keep-all;overflow-wrap:anywhere}
+.glossary-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:21px 26px;margin:12px 0 5px}
+.glossary-entry{min-width:0;word-break:keep-all;overflow-wrap:anywhere}
+.glossary-entry dt{font-size:15px;line-height:1.8;color:#efd5a8;margin-bottom:5px}
+.glossary-entry dd{margin:0;color:#d0bfd9;font-size:14px;line-height:1.9}
+.glossary-example{margin-top:7px;color:#bca8ca}
+.chapter-summary{color:#e6d1b0;font:600 17px/1.85 var(--sans);margin:-5px 0 18px;word-break:keep-all;overflow-wrap:anywhere}
+.report-prose.easy-reading,.month-content .report-prose.easy-reading{font-size:16px;line-height:2;color:#e1d5e7;letter-spacing:0}
+.easy-reading>p+p,.month-content .easy-reading>p+p{margin-top:19px}
+.chapter-evidence{margin-top:24px;border:1px solid #bd9f6838;border-radius:7px;background:#130e1a66}
+.chapter-evidence>summary{padding:14px 16px;min-height:46px;font-size:13px;line-height:1.8;color:#d5bd93;cursor:pointer;word-break:keep-all;overflow-wrap:anywhere}
+.chapter-evidence[open]>summary{border-bottom:1px solid #bd9f6826}
+.chapter-evidence-content{padding:19px 17px;min-width:0}
+.chapter-evidence-content>.reading-basis{margin-top:0}
+.chapter-evidence-content .report-prose{font-size:14px;line-height:1.95}
+.chapter-evidence-content>p{font-size:14px;line-height:1.95;color:#c9bad6;word-break:keep-all;overflow-wrap:anywhere}
+.chapter-evidence-content>p+p{margin-top:14px}
+.birth-chart-details>summary:focus-visible,.reading-glossary>summary:focus-visible,.chapter-evidence>summary:focus-visible,.evidence-group>summary:focus-visible{outline:2px solid #ecd099;outline-offset:3px;border-radius:4px}
+.reading-practice{font-size:14px;line-height:1.95}
+.practice-label{font-size:12px}
+@media(max-width:540px){
+  .result-explanation{font-size:14px;margin-bottom:21px;text-align:left}
+  .birth-chart-details{padding:0 13px}
+  .birth-chart-details>summary{font-size:17px;padding:15px 0}
+  .birth-chart-details[open]{padding-bottom:17px}
+  .birth-chart-details .pillar-label{font-size:10px}
+  .birth-chart-details .result-pillars{gap:6px}
+  .birth-chart-details .day-master-panel,.birth-chart-details .elements-panel{padding:19px 16px}
+  .reading-guide{padding:21px 18px;margin-bottom:23px}
+  .reading-guide h3{font-size:21px}
+  .reading-guide>p{font-size:15px;line-height:1.95}
+  .glossary-list{grid-template-columns:1fr;gap:19px}
+  .reading-glossary>summary{font-size:14px}
+  .chapter-summary{font-size:16px;line-height:1.85;margin-bottom:17px}
+  .chapter-evidence{margin-top:21px}
+  .chapter-evidence>summary{padding:13px 12px;font-size:13px}
+  .chapter-evidence-content{padding:16px 12px}
+  .chapter-evidence-content .calculated-reading{padding:12px 10px}
+  .report-section-heading .section-summary,.report-opening>p:last-child{font-size:14px}
+  .months-note{font-size:12px}
+  .method-preview p{font-size:13px}
+}
