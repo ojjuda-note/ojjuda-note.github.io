@@ -117,5 +117,11 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'bDvtb6Pywes', title: 'Checkmate', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.09.11' },
     { id: 'W-D8GSXg1W8', title: 'Bloody Paradise', kind: '퍼포먼스 뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.08.31' },
     { id: 'R6e4tBWxIxE', title: 'Knife', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.01.16' }
+  ],
+  andteam: [
+    {"id":"F-NcvXY8_vU","title":"Mark on Me","kind":"뮤직비디오","source":"HYBE LABELS / YX LABELS · 2026.09.08"},
+    {"id":"8hU6P7MmRyk","title":"We on Fire","kind":"뮤직비디오","source":"&TEAM / YX LABELS · 2026.04.13"},
+    {"id":"KqE0P1qMtQg","title":"Back to Life","kind":"뮤직비디오","source":"&TEAM / YX LABELS · 2025.10.22"},
+    {"id":"1fVsSx5ggQc","title":"For us · 라라포트 BLACK FRIDAY TV CM","kind":"광고 영상","source":"미쓰이 쇼핑파크 / &TEAM · 2026.11.12"}
   ]
 });
