@@ -13,7 +13,7 @@ const assets = fs.readFileSync(path.join(root, 'shared/games/world-game-assets.j
 const world = fs.readFileSync(path.join(root, 'world.html'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'games/certified-restaurants/index.html'), 'utf8');
 
-assert.equal(supplement.updatedAt, '2026-11-07');
+assert.equal(supplement.updatedAt, '2026-11-13');
 assert.equal(supplement.restaurants.length, 1, 'only official KTO-backed restaurant imported');
 const [newPlace] = supplement.restaurants;
 assert.equal(newPlace.id, 'local-sacheon-slot44-samcheonpo-jeongseobang');
@@ -100,3 +100,28 @@ assert.equal(slot48.locationPending, 16);
 assert.ok(app.includes('slot48Seogwipo.locationEnrichments'), 'the live app uses verified overlay');
 assert.match(assets, /restaurants:'\d+\.\d+\.\d+'/, 'the restaurant game has an independent release version');
 console.log('restaurant slot44 Jinju/Sacheon official listing and location checks passed');
+
+const newAudit = audit.entries.find(x=>x.cycle===2&&x.slot===44);
+assert.ok(newAudit, 'new scheduled audit exists');
+assert.equal(newAudit.additions, 3);
+assert.equal(newAudit.modifications, 1);
+assert.equal(newAudit.locationPending, 8);
+assert.equal(newAudit.locationCoordinatesAdded, 0);
+assert.equal(newAudit.locationHidden, 0);
+assert.deepEqual(newAudit.nextRegions, ['경상남도 통영시', '경상남도 거제시']);
+assert.equal(supplement.restaurants[0].broadcasts?.length, 1, 'retain old tourism ID and add 방송 record');
+assert.equal(supplement.restaurants[0].broadcasts[0].sourceUrl,'https://iaudience.kbs.co.kr/broadcast/10827');
+for (const id of ['broadcast-jinju-c2s44-sigol-chueotang','broadcast-jinju-c2s44-jeil-sikdang','broadcast-jinju-c2s44-chamjinju-myeonok']) {
+  const item = db.restaurants.find(x=>x.id===id);
+  assert.ok(item, id);
+  assert.deepEqual(item.guides, [], 'broadcast is not certified guide');
+  assert.equal(item.broadcasts?.length, 1);
+  assert.equal(item.lat, null);
+  assert.equal(item.lng, null);
+}
+const auditC2S44 = sources.coverageAuditHistory.find(x=>x.id==='20261113-restaurants-c2s44-jinju3-sacheon-broadcast1');
+assert.ok(auditC2S44);
+assert.equal(auditC2S44.newRestaurantCount, 3);
+assert.equal(auditC2S44.broadcastEnrichmentCount, 1);
+assert.equal(auditC2S44.currentCoverage.broadcastRestaurants - auditC2S44.previousCoverage.broadcastRestaurants, 4);
+assert.equal(auditC2S44.currentCoverage.uniqueRestaurants - auditC2S44.previousCoverage.uniqueRestaurants, 3);

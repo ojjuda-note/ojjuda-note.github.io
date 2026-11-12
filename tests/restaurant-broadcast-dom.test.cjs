@@ -10,7 +10,8 @@ const code = fs.readFileSync(path.join(directory, 'app.js'), 'utf8');
 const catalog = JSON.parse(fs.readFileSync(path.join(directory, 'restaurants.json'), 'utf8'));
 const sources = JSON.parse(fs.readFileSync(path.join(directory, 'sources.json'), 'utf8'));
 const broadcastAudit = sources.latestBroadcastAudit;
-const broadcastRecords = catalog.restaurants.filter(row => row.broadcasts?.length);
+const slot44 = JSON.parse(fs.readFileSync(path.join(directory, 'official-gyeongnam-slot44.json'), 'utf8'));
+const broadcastRecords = [...catalog.restaurants, ...slot44.restaurants].filter(row => row.broadcasts?.length);
 assert.ok(broadcastAudit && typeof broadcastAudit.id === 'string' && broadcastAudit.id.length > 0, 'the latest broadcast audit has a stable identity');
 assert.ok(Number.isInteger(broadcastAudit.newRestaurantCount) && broadcastAudit.newRestaurantCount >= 0 && Number.isInteger(broadcastAudit.broadcastEnrichmentCount) && broadcastAudit.broadcastEnrichmentCount >= 0, 'broadcast audits record nonnegative addition and enrichment counts regardless of their trigger');
 assert.deepEqual(broadcastAudit, sources.coverageAuditHistory.find(row => row.id === broadcastAudit.id), 'broadcast audit preserves its exact coverage snapshot');
@@ -54,6 +55,7 @@ function fixture(query = '') {
     assert.equal(url.origin, window.location.origin);
     const filename = path.basename(url.pathname);
     const data = filename === 'restaurants.json' ? { restaurants: structuredClone(rows), updatedAt: '2026-11-11' } : JSON.parse(fs.readFileSync(path.join(directory, filename), 'utf8'));
+    if (filename === 'official-gyeongnam-slot44.json') data.restaurants = []; // Isolate fixture rows from real sidebar broadcast records.
     return { ok: true, json: async () => data };
   };
   window.L = {
