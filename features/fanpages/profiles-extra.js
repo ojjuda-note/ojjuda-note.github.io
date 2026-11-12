@@ -27,6 +27,33 @@ for (const artist of window.OJJUDA_FAN_ARTISTS.filter((item) => item.basicProfil
   };
 }
 
+/* TXT: public birthdays and reference heights from official Japanese profiles. */
+const txtProfile = window.OJJUDA_FAN_PROFILES.txt;
+if (txtProfile) {
+  txtProfile.expanded = true;
+  txtProfile.heightSource = 'https://txt-official.jp/profile/';
+  const txtOfficialMembers = {
+    '수빈': { birthday: '2000.12.05', height: '185', slug: 'SOOBIN' },
+    '연준': { birthday: '1999.09.13', height: '181.5', slug: 'YEONJUN' },
+    '범규': { birthday: '2001.03.13', height: '180', slug: 'BEOMGYU' },
+    '태현': { birthday: '2002.02.05', height: '177', slug: 'TAEHYUN' },
+    '휴닝카이': { birthday: '2002.08.14', height: '183', slug: 'HUENINGKAI' }
+  };
+  for (const member of txtProfile.members) {
+    const official = txtOfficialMembers[member.name];
+    if (!official) continue;
+    member.birthday = official.birthday;
+    member.height = official.height;
+    member.source = 'https://txt-official.jp/profile/' + official.slug;
+  }
+  txtProfile.records = [
+    { year: '2025.08', title: '빅히트 뮤직과 멤버 전원 재계약', detail: '2026년 미니 8집 공식 소개에서 확인', href: 'https://ibighit.com/ko/txt/discography/detail/7th_year' },
+    { year: '2026.11', title: 'STEAL THE WIND 월드투어 개막', detail: '11.13~15 서울 KSPO DOME 공연 예정', href: 'https://weverse.io/txt/notice/39106' }
+  ];
+  txtProfile.sources.unshift({ label: 'TXT 일본 공식 멤버 프로필 · 생일·신장', href: 'https://txt-official.jp/profile/' });
+  txtProfile.sources.push({ label: 'BIGHIT MUSIC 공식 2026 미니 8집', href: 'https://ibighit.com/ko/txt/discography/detail/7th_year' });
+}
+
 /* i-dle: birthdays and tour from Cube's Japanese official site. */
 const idleProfile = window.OJJUDA_FAN_PROFILES.idle;
 if (idleProfile) {
