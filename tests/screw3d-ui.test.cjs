@@ -185,7 +185,13 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
           }finally{Math.random=originalRandom;}
         },
         rabbitOcclusion() {
-          boot(20);
+          // A random stage 20 can intentionally fall back to a robot. Keep this
+          // rabbit-specific rendering fixture deterministic without changing gameplay.
+          const originalRandom=Math.random;let value=4;
+          Math.random=()=>((value=(Math.imul(value,1664525)+1013904223)>>>0)/4294967296);
+          try{boot(20);}finally{Math.random=originalRandom;}
+          if(state.lvl.name!=='토끼'||!state.lvl.els.some(e=>e.faceFeature))
+            throw Error('Rabbit occlusion fixture must open a rabbit with facial details: '+state.lvl.name);
           const shots=[];
           for(const yaw of [0,Math.PI/2,Math.PI,3*Math.PI/2]){
             state.yaw=yaw;state.pitch=0.18;game.draw(ctx);
