@@ -13,12 +13,16 @@ const root=path.join(__dirname,'..'),out=path.join(__dirname,'artifacts/fanpage-
  await page.addInitScript(()=>{const D=Date;window.Date=class extends D{constructor(...a){super(...(a.length?a:['2026-11-12T14:00:00Z']))}static now(){return new D('2026-11-12T14:00:00Z').getTime()}}});
  await page.route('**/*',async route=>{
   const u=new URL(route.request().url());
-  if(u.origin!=='https://fan.test') return route.request().resourceType()==='image'?route.continue():route.abort();
+  if(u.origin!=='https://fan.test') return (route.request().resourceType()==='image'||['fonts.googleapis.com','fonts.gstatic.com'].includes(u.hostname))?route.continue():route.abort();
   if(u.pathname.endsWith('/vendor/supabase.js'))return route.fulfill({contentType:'application/javascript',body:'window.supabase={createClient:()=>({auth:{onAuthStateChange:()=>{}},from:()=>({select(){return this},order(){return this},range(){return this},abortSignal:async()=>({data:[],error:null})})})};'});
   const file=path.join(root,decodeURIComponent(u.pathname));if(!fs.existsSync(file)||!fs.statSync(file).isFile())return route.abort();
   return route.fulfill({path:file,contentType:({'.html':'text/html','.js':'application/javascript','.css':'text/css','.svg':'image/svg+xml','.webp':'image/webp','.png':'image/png'})[path.extname(file)]});
  });
  await page.goto('https://fan.test/features/fanpages/artist.html?group='+group);await page.waitForSelector('.event-card');
+ await page.evaluate(()=>document.fonts.ready);
+ const reveal=page.locator('[data-reveal-target="artist-events"]');
+ if(await reveal.count()){await reveal.click();assert.equal(await reveal.getAttribute('aria-expanded'),'true');await reveal.click();assert.equal(await reveal.getAttribute('aria-expanded'),'false');await reveal.click();}
+ for(const card of await page.locator('.event-card').all())assert.equal(await card.isVisible(),true);
  const cards=await page.locator('.event-card').evaluateAll(nodes=>nodes.map(n=>({text:n.innerText,href:n.href,target:n.target,rel:n.rel})));
  assert.equal(cards.length,{tws:2,ateez:4,nctdream:6}[group]);
  for(const card of cards){assert.ok(card.href.startsWith('https://'));assert.equal(card.target,'_blank');assert.match(card.rel,/noopener/)}
