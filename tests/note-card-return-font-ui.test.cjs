@@ -45,6 +45,26 @@ const html=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   if(!expectBug){
    // A reply opens another detail screen, then returns through the real history stack.
    await page.locator('#feed-list .photo-open').first().click();await page.locator('#reply-list .photo-open').first().waitFor();await settle();
+   const replyPanel=await page.locator('#detail .replies').evaluate(panel=>({
+    background:getComputedStyle(panel).backgroundColor,
+    padding:getComputedStyle(panel).paddingInlineStart
+   }));
+   assert.deepEqual(replyPanel,{background:'rgba(0, 0, 0, 0)',padding:'0px'});
+   const bars=await page.locator('#detail article').evaluateAll(cards=>cards.map(card=>{
+    const bounds=card.getBoundingClientRect();
+    const author=card.querySelector('.card-meta').getBoundingClientRect();
+    const actions=card.querySelector('.card-actions').getBoundingClientRect();
+    return {
+     sameRow:author.top<actions.bottom&&actions.top<author.bottom,
+     buttonsFit:[...card.querySelectorAll('.card-actions button')].every(button=>{
+      const box=button.getBoundingClientRect();
+      return box.height>=44&&box.left>=bounds.left-1&&box.right<=bounds.right+1;
+     })
+    };
+   }));
+   assert.equal(bars.length,2);
+   assert.ok(bars.every(bar=>bar.buttonsFit),`${width}px: card and reply actions fit inside their footers`);
+   if(width===390)assert.ok(bars.every(bar=>bar.sameRow),'phone author and actions share one row');
    const parentFont=await page.locator('#detail-card-slot .card-quote').evaluate(n=>getComputedStyle(n).fontSize);
    await page.locator('#reply-list .photo-open').first().click();await page.waitForFunction(()=>document.querySelector('#detail-card-slot .card-quote').textContent.includes('공감해요'));
    await page.locator('.back-button').click();await page.waitForFunction(()=>document.querySelector('#detail-card-slot .card-quote').textContent.includes('백수'));await settle();
