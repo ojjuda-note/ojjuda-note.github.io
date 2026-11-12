@@ -282,7 +282,7 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 @media(prefers-reduced-motion:reduce){.agit-navigation-spinner{animation:none}}
 
 /* Moonlit Tarot: the final destination below the daily-life tiles. */
-.agit-tarot-banner{position:relative;isolation:isolate;display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:236px;margin:26px 0 10px;padding:30px 38px;overflow:hidden;border:1px solid #b9986666;border-radius:24px;color:#f6e5c7!important;text-decoration:none;background:#160e24 url('/games/moonlit-tarot/assets/scene.webp') 80% 30%/cover;box-shadow:0 16px 35px #32203e20}
+.agit-tarot-banner{grid-column:1/-1;min-width:0;position:relative;isolation:isolate;display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:236px;margin:26px 0 10px;padding:30px 38px;overflow:hidden;border:1px solid #b9986666;border-radius:24px;color:#f6e5c7!important;text-decoration:none;background:#160e24 url('/games/moonlit-tarot/assets/scene.webp') 80% 30%/cover;box-shadow:0 16px 35px #32203e20}
 .agit-tarot-banner::before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#160e24f5 0%,#1d1025d9 39%,#1b0e2045 70%,#160e2499 100%)}
 .agit-tarot-banner::after{content:'';position:absolute;inset:7px;border:1px solid #d6b98330;border-radius:18px;pointer-events:none}
 .agit-tarot-copy{position:relative;z-index:1}.agit-tarot-kicker{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.12em;color:#d7b9e7}.agit-tarot-kicker i{color:#dfc194;font-style:normal;font-size:15px}
