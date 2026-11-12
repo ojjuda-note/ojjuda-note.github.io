@@ -725,12 +725,12 @@ function fitTagRow(row) {
   frame?.style.setProperty('--card-tags-height', `${row.childElementCount ? row.offsetHeight : 0}px`);
 }
 let tagFitFrame = null;
-function refreshTagRows() {
-  tagFitFrame = null;
-  document.querySelectorAll('.card-tags, .compose-tag-display').forEach(fitTagRow);
-}
 function requestTagFit() {
-  if (tagFitFrame === null) tagFitFrame = requestAnimationFrame(refreshExpandedBodies);
+  if (tagFitFrame !== null) return;
+  tagFitFrame = requestAnimationFrame(() => {
+    tagFitFrame = null;
+    refreshExpandedBodies();
+  });
 }
 const expandedBodyEntries = new Set(), quoteFitEntries = new Set();
 function fitPhotoQuote(photo, quote, tagRow, initialFontSize) {
@@ -756,7 +756,8 @@ function refreshExpandedBodies() {
     if (!entry.photo.isConnected) { quoteFitEntries.delete(entry); continue; }
     fitPhotoQuote(entry.photo, entry.quote, entry.tagRow, entry.initialFontSize);
   }
-  refreshTagRows();
+  // Each card's tags were fitted with its quote. Only the composer is separate.
+  fitTagRow($('#compose-tag-display'));
   for (const entry of expandedBodyEntries) {
     if (!entry.item.isConnected) { expandedBodyEntries.delete(entry); continue; }
     if (entry.photo.getBoundingClientRect().width <= 0) continue;
@@ -831,7 +832,6 @@ function cardElement(card, compact = false, expanded = false) {
     full.append(node('summary', '', '전체 글 보기'), node('p', '', body));
     item.append(full);
     expandedBodyEntries.add({ item, photo, quote, tagRow, full });
-    requestAnimationFrame(refreshExpandedBodies);
   }
 
   const meta = node('div', 'card-meta');
@@ -3271,8 +3271,8 @@ document.addEventListener('keydown', event => { if (event.key === 'Escape' && !b
 text.addEventListener('input', () => { if (autoTagMode && document.activeElement !== tags) refreshAutoTags(); updateComposer(); recordDraft(); });
 tags.addEventListener('input', () => { noteTagEdit(); updateComposer(); recordDraft(); });
 tags.addEventListener('focus', () => updateComposer()); tags.addEventListener('blur', () => updateComposer());
-window.addEventListener('resize', () => { if (!backdrop.hidden) updateComposer(); refreshExpandedBodies(); });
-document.fonts?.addEventListener?.('loadingdone', () => { if (!backdrop.hidden) updateComposer(); refreshExpandedBodies(); });
+window.addEventListener('resize', () => { if (!backdrop.hidden) updateComposer(); requestTagFit(); });
+document.fonts?.addEventListener?.('loadingdone', () => { if (!backdrop.hidden) updateComposer(); requestTagFit(); });
 submit.addEventListener('click', publishCard);
 document.querySelectorAll('input[name="identity"]').forEach(input => input.addEventListener('change', () => {
   rememberComposerSetting('identity', input.value); updateComposer(); recordDraft();
@@ -3311,6 +3311,7 @@ $('#quick-gender')?.addEventListener('change', event => pickQuickChoice('gender'
 
 
 function receiveAuth(current) {
+  const firstSession = !authKnown;
   const changed = session?.user?.id !== current?.user?.id;
   session = current; authKnown = true;
   if (changed) {
@@ -3335,16 +3336,18 @@ function receiveAuth(current) {
     showFeed(!initialCardId);
   }
   updateAuth();
-  // Auth callbacks must finish before using Supabase for further requests.
+  // Start the feed once for this identity, outside the auth callback.
+  const epoch = identityEpoch;
   setTimeout(() => {
-    if (session?.user?.id !== current?.user?.id) return;
+    if (epoch !== identityEpoch) return;
+    if (firstSession || changed) void loadFeed();
     draftController?.setUser(current?.user?.id);
     loadWorldBalance(current?.user?.id); loadModerator(current?.user?.id); loadNoteState();
     if (changed || accountNickname === null) void loadAccountProfile(current?.user?.id);
     if (current?.user?.id && !myIdentityReady) void loadMyGender(current.user.id).catch(() => {});
     if (current?.user?.id) void loadPhotoEntitlements(current.user.id).catch(error => console.warn('Note photo entitlement:', error));
     notificationController?.refresh?.();
-    if (changed) loadFeed(); else consumeInitialCard();
+    if (!firstSession && !changed) consumeInitialCard();
   }, 0);
 }
 
@@ -3396,9 +3399,8 @@ if (client) {
     receiveAuth(error ? null : data?.session || null);
   }).catch(error => {
     console.warn('Note Auth:', error);
-    if (authEventVersion === initialAuthVersion) { authKnown = true; updateAuth(); loadNoteState(); consumeInitialCard(); }
+    if (authEventVersion === initialAuthVersion) receiveAuth(null);
   });
-  loadFeed();
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
     loadWorldBalance(session?.user?.id); loadNoteState(); notificationController?.refresh?.();
