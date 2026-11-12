@@ -41,7 +41,7 @@ const tick=()=>new Promise(r=>setImmediate(r));
   assert.match(w.document.querySelector('#ttang-save-status').textContent,/다시 저장/);allowed=false;w.OjjudaTtangBridge.close();
   // Exercise the actual picture completion function with a paid hint/time result.
   const app=read('games/spot-difference/app.js'),finish=app.slice(app.indexOf('  function finish(reason){'),app.indexOf('  function tick(){'));
-  for(const [stage,total] of [[17,6],[82,10],[83,10],[152,10]]){
+  for(const [stage,total] of [[17,6],[82,10],[83,10],[152,10],[153,10],[182,10]]){
    const messages=[],r0={status:'playing',rankOwner:'a',assisted:true,paid:[0],timeBought:true},p={id:stage,spots:Array.from({length:total},()=>({}))};
    const context={previewSession:false,state:{completed:[1]},round:()=>r0,core:{timeLeft:()=>12000},zoomDialog:{open:false},hideHint(){},refresh(){},speak(){},celebrate(){},showFailure(){},$:()=>({focus(){}}),
     found:()=>Array.from({length:total},(_,i)=>i),puzzle:()=>p,targetCount:()=>p.spots.length,window:{scrollTo(){},location:{origin:'https://fixture.test'},parent:{postMessage:m=>messages.push(m)}},wallet:{}};
@@ -64,8 +64,11 @@ const tick=()=>new Promise(r=>setImmediate(r));
   w.eval(read('games/spot-difference/world-spot-game.js'));const pictures=[];w.OjjudaSpotGame.open({onClear:async(stage,owner)=>pictures.push([stage,owner])});
   const sf=w.document.querySelector('iframe');
   const spot=(stage,source=sf.contentWindow,origin=w.location.origin)=>w.dispatchEvent(new w.MessageEvent('message',{source,origin,data:{type:'ojjuda:spot-clear',stage,owner:'a'}}));
-  spot(0);spot(153);spot(1,w);spot(1,sf.contentWindow,'https://other.test');spot(17);spot(49);spot(62);spot(63);spot(82);spot(83);spot(152);await tick();
-  assert.deepEqual(pictures,[[17,'a'],[49,'a'],[62,'a'],[63,'a'],[82,'a'],[83,'a'],[152,'a']]);
-  console.log('PASS: territory win/loss/solo quit, multiplayer handoff and ranking exclusion, remaining-human results, stale results, duplicates/retries, paid six/ten-answer picture completion, partial finds, 152-stage bounds and cross-origin isolation');
+  for(const invalid of [0,-1,183,153.5,'153',NaN,Infinity])spot(invalid);
+  spot(153,w);spot(182,sf.contentWindow,'https://other.test');
+  const validStages=[1,17,49,62,63,82,83,152,153,182];
+  for(const stage of validStages)spot(stage);await tick();
+  assert.deepEqual(pictures,validStages.map(stage=>[stage,'a']),'only integer stages 1–182 from the same-origin game frame are accepted');
+  console.log('PASS: territory win/loss/solo quit, multiplayer handoff and ranking exclusion, remaining-human results, stale results, duplicates/retries, paid six/ten-answer picture completion, partial finds, 182-stage bounds and cross-origin isolation');
  }finally{w.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
