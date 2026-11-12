@@ -90,7 +90,17 @@ for (const member of [false, true]) {
       window.matchMedia = () => ({ matches: false });
       const session = member ? { user: { id: 'member' } } : null;
       const requested = [];
-      let onAuth;
+      const cards = Array.from({ length: 20 }, (_, index) => ({
+        id: '12345678-1234-4123-8123-' + String(index + 1).padStart(12, '0'), kind: 'memo',
+        body: '공원 이야기', background_key: String(10 + index), tags: [], created_at: '2026-11-10T00:00:00Z'
+      }));
+      let onAuth, intersect;
+      const observed = new Set();
+      window.IntersectionObserver = class {
+        constructor(callback) { intersect = callback; }
+        observe(photo) { observed.add(photo); }
+        unobserve(photo) { observed.delete(photo); }
+      };
       const client = {
         auth: {
           onAuthStateChange(callback) { onAuth = callback; },
@@ -100,6 +110,7 @@ for (const member of [false, true]) {
         from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null }) }) }) }),
         schema: () => ({ rpc: async name => {
           if (name === 'list_cards') requested.push(name);
+          if (name === 'list_cards') return { data: cards };
           return { data: name === 'get_note_state' ? {} : [] };
         } })
       };
@@ -110,7 +121,13 @@ for (const member of [false, true]) {
       const settle = () => new Promise(resolve => window.setTimeout(resolve, 0));
       await settle();
       assert.equal(requested.length, 1);
-      assert.match(window.document.querySelector('#feed-list').textContent, /아직 카드가 없어요/);
+      const photos = [...window.document.querySelectorAll('#feed-list article .photo')];
+      assert.equal(photos.length, 20);
+      assert.equal(photos.filter(photo => photo.style.backgroundImage).length, 3);
+      assert.equal(observed.size, 17);
+      intersect([{ target: photos[3], isIntersecting: true }]);
+      assert.match(photos[3].style.backgroundImage, /13\.jpg/);
+      assert.equal(observed.has(photos[3]), false);
       onAuth('TOKEN_REFRESHED', session);
       await settle();
       assert.equal(requested.length, 1);

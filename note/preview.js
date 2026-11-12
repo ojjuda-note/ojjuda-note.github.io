@@ -107,10 +107,28 @@ async function photoActionFor(key, userId) {
   return window.confirm(`${title}을 10 ZU에 1개월 동안 사용할까요? 구매 기간에는 다른 카드에도 적용할 수 있어요.`)
     ? 'purchase_card_photo' : null;
 }
-function setPhotoBackground(element, value) {
+// Keep the first row eager. Start the remaining public backgrounds as the reader
+// approaches them, including when the Park feed scrolls inside the World iframe.
+const feedBackgroundObserver = typeof IntersectionObserver === 'function'
+  ? new IntersectionObserver(entries => {
+      for (const entry of entries) if (entry.isIntersecting) revealFeedBackground(entry.target);
+    }, { rootMargin: '600px 0px' }) : null;
+function revealFeedBackground(photo) {
+  const key = photo.dataset.pendingBackground;
+  if (!key) return;
+  feedBackgroundObserver.unobserve(photo);
+  delete photo.dataset.pendingBackground;
+  setPhotoBackground(photo, key);
+}
+function setPhotoBackground(element, value, defer = false) {
   const key = photoAssetKey(value);
   element.classList.toggle('note-plain', !key);
   element.classList.remove('image-forest', 'image-lake');
+  if (defer && key && feedBackgroundObserver) {
+    element.dataset.pendingBackground = key;
+    feedBackgroundObserver.observe(element);
+    return;
+  }
   element.style.backgroundImage = key ? `url("/note/assets/${key}.jpg")` : '';
 }
 async function loadEventBackground(element, card) {
@@ -753,7 +771,11 @@ function fitPhotoQuote(photo, quote, tagRow, initialFontSize) {
 }
 function refreshExpandedBodies() {
   for (const entry of quoteFitEntries) {
-    if (!entry.photo.isConnected) { quoteFitEntries.delete(entry); continue; }
+    if (!entry.photo.isConnected) {
+      if (entry.photo.dataset.pendingBackground) feedBackgroundObserver?.unobserve(entry.photo);
+      quoteFitEntries.delete(entry);
+      continue;
+    }
     fitPhotoQuote(entry.photo, entry.quote, entry.tagRow, entry.initialFontSize);
   }
   // Each card's tags were fitted with its quote. Only the composer is separate.
@@ -772,7 +794,7 @@ function photoQuoteClipped(photo, quote, tagRow) {
     || (tagRow.childElementCount > 0
       && quoteBounds.bottom + 6 > tagBounds.top);
 }
-function cardElement(card, compact = false, expanded = false) {
+function cardElement(card, compact = false, expanded = false, deferBackground = false) {
   const item = node('article', compact ? 'reply-card' : 'photo-card');
   if (card.kind === 'event') item.classList.add('note-event-card');
   item.dataset.cardId = card.id;
@@ -789,7 +811,7 @@ function cardElement(card, compact = false, expanded = false) {
   const photo = node('span', 'photo');
   if (card.kind === 'event') photo.dataset.protectPhoto = String(!card.is_mine);
   const hiddenEvent = card.kind === 'event' && card.body == null;
-  setPhotoBackground(photo, hiddenEvent ? null : visiblePhoto);
+  setPhotoBackground(photo, hiddenEvent ? null : visiblePhoto, deferBackground && card.kind !== 'event');
   if (card.kind === 'event' && !hiddenEvent) void loadEventBackground(photo, card);
   applyVisualStyle(photo, style);
   const quote = node('span', 'card-quote');
@@ -1063,7 +1085,7 @@ async function loadFeed(more = false, quiet = false) {
           pinned.append(node('h2', '', '지금 볼 수 있는 이벤트')); list.prepend(pinned);
         }
         pinned.append(cardElement(card));
-      } else list.append(cardElement(card));
+      } else list.append(cardElement(card, false, false, more || shown > 3));
     }
   }
   if (!more && !shown) state(list, feedMode === 'events' ? '아직 만든 이벤트가 없어요.' : feedTerm ? '검색 결과가 없어요.' : feedMode === 'saved'
@@ -1510,6 +1532,7 @@ function shareCard(cardId) {
         return rect.width > 0 && rect.height > 0 && getComputedStyle(element).visibility !== 'hidden';
       });
       if (!photo || !window.OjjudaCardShareImage) throw new Error('card_image_unavailable');
+      revealFeedBackground(photo);
       const prepared = await window.OjjudaCardShareImage.prepare(photo, {
         filename: `ojjuda-card-${cardId}.png`, isCurrent: active, beforeCapture: refreshExpandedBodies
       });
