@@ -243,3 +243,25 @@ if (seventeenProfile) {
   seventeenProfile.sources.push({ label: 'PLEDIS · SEVENTEEN 공식 프로필', href: 'https://www.pledis.co.kr/artist/detail/seventeen/profile/' });
   seventeenProfile.sources.push({ label: '일본 공식 일정 · 11월 공연', href: 'https://www.seventeen-17.jp/posts/schedule' });
 }
+
+/* BOYNEXTDOOR: member birth dates from KOZ's official group profile (2026-11-12). */
+const boynextdoorProfile = window.OJJUDA_FAN_PROFILES.boynextdoor;
+if (boynextdoorProfile) {
+  boynextdoorProfile.expanded = true;
+  const officialBirthdays = {
+    '성호': '2003.09.04', '리우': '2003.10.22', '명재현': '2003.12.04',
+    '태산': '2004.08.10', '이한': '2004.10.20', '운학': '2006.11.29'
+  };
+  for (const member of boynextdoorProfile.members) {
+    member.birthday = officialBirthdays[member.name] || null;
+    member.source = 'https://kozofficial.com/artist/profile/BOYNEXTDOOR';
+  }
+  boynextdoorProfile.awards = [
+    { year: '2026', title: '40회 골든디스크어워즈 음원 본상 · 네이버 AI Choice', href: 'https://enews.imbc.com/News/RetrieveNewsInfo/490432' }
+  ];
+  boynextdoorProfile.sources.push(
+    { label: 'KOZ 공식 그룹 프로필 · 멤버 생일', href: 'https://kozofficial.com/artist/profile/BOYNEXTDOOR' },
+    { label: 'KOZ 공식 정규 1집 트랙리스트', href: 'https://www.kozofficial.com/artist/discography/BOYNEXTDOOR/32' },
+    { label: 'BOYNEXTDOOR 일본 공식 일정', href: 'https://boynextdoor-official.jp/Schedule' }
+  );
+}
