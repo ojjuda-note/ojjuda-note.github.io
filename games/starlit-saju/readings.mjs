@@ -1,10 +1,12 @@
 import {
   STEM_REFERENCE, GROUP_REFERENCE, GOD_REFERENCE, ELEMENT_RELATIONS,
   RELATION_REFERENCE, GROUP_PAIR_RULES, PRACTICE_SUGGESTIONS,
-} from './readings-data.mjs?v=20261113-saju-all1';
-import { attachPlainLanguage } from './plain-language.mjs?v=20261113-saju-all1';
-import { attachAdvice } from './advice.mjs?v=20261113-saju-all1';
-import { getReadingSources } from './sources.mjs?v=20261113-saju-all1';
+} from './readings-data.mjs?v=20261113-saju-depth1';
+import { attachPlainLanguage } from './plain-language.mjs?v=20261113-saju-depth1';
+import { attachAdvice } from './advice.mjs?v=20261113-saju-depth1';
+import { attachDeeperReadings } from './deeper-reading.mjs?v=20261113-saju-depth1';
+import { attachStageReadings } from './stage-reading.mjs?v=20261113-saju-depth1';
+import { getReadingSources } from './sources.mjs?v=20261113-saju-depth1';
 
 const GROUP_KEYS = ['peer', 'expression', 'wealth', 'authority', 'resource'];
 const ELEMENT_KEYS = ['wood', 'fire', 'earth', 'metal', 'water'];
@@ -411,6 +413,8 @@ export function buildDetailedReading(chart,fortune) {
   };
   attachPlainLanguage(report,chart,fortune);
   attachAdvice(report,fortune);
+  attachDeeperReadings(report,fortune);
+  attachStageReadings(report,fortune);
   report.copyByCategory=Object.fromEntries(['lifelong','annual','monthly','all'].map(topic=>[topic,copyCategory(report,topic)]));
   report.copyText=report.copyByCategory.all;
   return report;

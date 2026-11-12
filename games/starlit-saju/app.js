@@ -299,7 +299,7 @@ function readBirth() {
 function birthSignature(input=readBirth()) { return JSON.stringify(input); }
 function hasBirth() { return ['birth-year','birth-month','birth-day'].every(id => $(id).value !== ''); }
 async function calculateBirth(input) {
-  enginePromise ||= import('./engine.mjs?v=20261113-saju-all1').catch(error => { enginePromise=null; throw error; });
+  enginePromise ||= import('./engine.mjs?v=20261113-saju-depth1').catch(error => { enginePromise=null; throw error; });
   const {calculateSaju} = await enginePromise;
   return calculateSaju(input);
 }
@@ -394,9 +394,9 @@ document.querySelectorAll('.reading-size-control button').forEach(button=>button
 
 async function prepareDetailedReading(chart,target) {
   detailModulesPromise ||= Promise.all([
-    import('./fortune-data.mjs?v=20261113-saju-all1'),
-    import('./readings.mjs?v=20261113-saju-all1'),
-    import('./report-view.mjs?v=20261113-saju-all1')
+    import('./fortune-data.mjs?v=20261113-saju-depth1'),
+    import('./readings.mjs?v=20261113-saju-depth1'),
+    import('./report-view.mjs?v=20261113-saju-depth1')
   ]).catch(error=>{detailModulesPromise=null;throw error;});
   const [dataModule,readingModule,viewModule]=await detailModulesPromise;
   const fortune=dataModule.analyzeFortune(chart,{year:target.topic==='lifelong'?koreanYear():target.year,now:new Date()});
@@ -552,7 +552,7 @@ function resetAfterAccountChange() {
 async function readyBilling() {
   if (billingPromise) return billingPromise;
   const task=(async()=>{
-    const {SajuPayment}=await import('./payment.js?v=20261113-saju-all1');
+    const {SajuPayment}=await import('./payment.js?v=20261113-saju-depth1');
     billing ||= new SajuPayment({
       onBalance:()=>updateBillingStatus(),
       onAccountChange:()=>{

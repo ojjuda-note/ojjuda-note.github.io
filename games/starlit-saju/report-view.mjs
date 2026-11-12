@@ -1,4 +1,4 @@
-import {getReadingSources} from './sources.mjs?v=20261113-saju-all1';
+import {getReadingSources} from './sources.mjs?v=20261113-saju-depth1';
 
 function node(tag, className, text) {
   const value = document.createElement(tag);

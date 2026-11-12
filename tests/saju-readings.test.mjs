@@ -5,6 +5,7 @@ import { analyzeFortune } from '../games/starlit-saju/fortune-data.mjs';
 import { buildDetailedReading } from '../games/starlit-saju/readings.mjs';
 import * as referenceText from '../games/starlit-saju/readings-data.mjs';
 import { getReadingSources } from '../games/starlit-saju/sources.mjs';
+import { GOD_CONTEXTS, PAIR_CONTEXTS, TOPIC_CONTEXTS } from '../games/starlit-saju/deeper-reading-data.mjs';
 
 const now = new Date('2026-11-13T00:00:00Z');
 const sample = { year: 2005, month: 12, day: 23, hour: 8, minute: 37 };
@@ -303,4 +304,91 @@ test('all ten day masters and different years produce valid values and Korean pa
     }
   }
   assert.equal(stems.size,10);
+});
+
+test('natal combined themes explain only two groups actually observed and disclose authored examples', () => {
+  let sawNoPair=false;
+  for(const input of [sample,{year:2015,month:12,day:9,hour:11,minute:37},{year:2024,month:2,day:4,hour:null}]){
+    const {fortune,report}=reading(input);
+    const chapter=lifelong(report).chapters.find(value=>value.id==='natal-combined-themes');
+    assert.ok(chapter,'the two-theme explanation must be a readable chapter');
+    const active=referenceText.GROUP_PAIR_RULES.filter(value=>
+      fortune.profile.gods.some(entry=>entry.god.group===value.left)
+      &&fortune.profile.gods.some(entry=>entry.god.group===value.right));
+    assert.deepEqual(chapter.referenceRules.map(value=>value.id),active.map(value=>`natal.deep-pair.${value.id}`));
+    assert.deepEqual(chapter.interpretation,[],'the service-authored combination is not a traditional verdict');
+    const text=chapter.easyParagraphs.join(' ');
+    assert.match(text,/저희가 쓴 참고 풀이/);
+    assert.match(text,/같은 조합에는 같은 설명 규칙/);
+    if(!active.length)sawNoPair=true;
+    for(const pair of active){
+      const applied=chapter.referenceRules.find(value=>value.id===`natal.deep-pair.${pair.id}`);
+      const expected=fortune.profile.gods.filter(value=>[pair.left,pair.right].includes(value.god.group));
+      assert.deepEqual([...applied.factIds].sort(),expected.map(value=>`natal.god.${value.pillarKey}.${value.position}`).sort());
+      for(const value of Object.values(PAIR_CONTEXTS[pair.id]))assert.ok(text.includes(value),'the actual pair keeps meaning, example and a usable question');
+      for(const entry of expected)assert.ok(text.includes(entry.god.name));
+      assert.equal(applied.origin,'service-reference');
+    }
+  }
+  assert.ok(sawNoPair,'an uncertain chart must exercise the absent-condition branch');
+});
+
+test('yearly work and money and every monthly life topic follow their actual ten-gods and natal comparison', () => {
+  const observedCodes=new Set();
+  let sawRepeatedGod=false,sawSameNative=false,sawRelatedNative=false,sawNoNative=false,sawNoPair=false;
+  const topicNames=Object.keys(TOPIC_CONTEXTS);
+  for(const input of [sample,{year:2015,month:12,day:9,hour:11,minute:37},{year:2024,month:2,day:4,hour:null}]){
+    const {fortune,report}=reading(input);
+    const contexts=[
+      {source:fortune.annual,prefix:'annual',topic:'annual',chapters:report.sections.find(value=>value.id==='annual').chapters,
+        ids:{work:'annual-career-detail',money:'annual-money-detail'}},
+      ...report.months.map(month=>({source:fortune.months.find(value=>value.month===month.month),prefix:`month.${month.month}`,topic:'monthly',chapters:month.chapters,
+        ids:Object.fromEntries(topicNames.map(topic=>[topic,`month-${topic}-detail`]))})),
+    ];
+    for(const {source,prefix,topic,chapters,ids} of contexts){
+      const codes=[...new Set([source.stemGod.code,source.branchGod.code])];
+      if(codes.length===1)sawRepeatedGod=true;
+      if(!source.interactions.length)sawNoPair=true;
+      for(const [lifeTopic,id] of Object.entries(ids)){
+        const chapter=chapters.find(value=>value.id===id);
+        assert.ok(chapter,`${prefix} is missing its ${lifeTopic} explanation`);
+        assert.deepEqual(chapter.interpretation,[],'a life application remains visibly service-authored');
+        const text=chapter.easyParagraphs.join(' ');
+        assert.match(text,/저희가 쓴 생활 풀이/);
+        const explanations=chapter.referenceRules.filter(value=>codes.some(code=>value.id===`${prefix}.life-topic.${lifeTopic}.${code}`));
+        assert.deepEqual(explanations.map(value=>value.id),codes.map(code=>`${prefix}.life-topic.${lifeTopic}.${code}`),
+          'one explanation per observed code; repeated positions share the actual rule');
+        for(const code of codes){
+          observedCodes.add(code);
+          const applied=explanations.find(value=>value.id===`${prefix}.life-topic.${lifeTopic}.${code}`);
+          for(const position of ['stem','branch'])if(source[position+'God'].code===code)assert.ok(applied.factIds.includes(`${prefix}.god.${position}`));
+          for(const value of Object.values(GOD_CONTEXTS[code][lifeTopic]))assert.ok(text.includes(value),`${prefix}/${lifeTopic}/${code} lost meaning, example or question`);
+          const same=fortune.profile.gods.filter(value=>value.god.code===code);
+          const god=source.stemGod.code===code?source.stemGod:source.branchGod;
+          const related=fortune.profile.gods.filter(value=>value.god.group===god.group&&value.god.code!==code);
+          if(same.length){
+            sawSameNative=true;
+            for(const entry of same)assert.ok(applied.factIds.includes(`natal.god.${entry.pillarKey}.${entry.position}`));
+          }else{
+            if(related.length)sawRelatedNative=true;else sawNoNative=true;
+            for(const entry of fortune.profile.gods)assert.ok(applied.factIds.includes(`natal.god.${entry.pillarKey}.${entry.position}`),
+              'an absence claim must be backed by the complete observed principal-god set');
+          }
+        }
+        source.interactions.forEach((pair,index)=>{
+          const type=pair.kind==='branch-clash'?'clash':'connect';
+          const applied=chapter.referenceRules.find(value=>value.id===`${prefix}.life-topic.${lifeTopic}.${type}`);
+          assert.ok(applied?.factIds.includes(`${prefix}.interaction.${index}`));
+          assert.ok(text.includes(pair.pairHanja),'the explanation keeps the actual pair, not just its count');
+        });
+        for(const factId of chapter.factIds)assert.ok(factId.startsWith('natal.')||factId.startsWith(prefix+'.'),`${prefix} borrowed another period's evidence`);
+        for(const paragraph of chapter.easyParagraphs){
+          assert.ok(report.copyByCategory[topic].includes(paragraph));
+          assert.ok(report.copyByCategory.all.includes(paragraph),'the complete copy must keep every new chapter');
+        }
+      }
+    }
+  }
+  assert.equal(observedCodes.size,10,'fixtures exercise all ten rules rather than a small selection');
+  assert.ok(sawRepeatedGod&&sawSameNative&&sawRelatedNative&&sawNoNative&&sawNoPair);
 });

@@ -194,3 +194,51 @@ test('conditional service commentary and common advice remain distinct from calc
     'the raw xun-kong names are available, but their claimed effect on life is not calculated');
   assert.ok(!/신살·12운성|지지 본기 이외의 중기·여기/.test(limits),'newly provided raw classifications cannot still be advertised as omitted');
 });
+
+test('full hidden-stem chapters explain each original character, order and ten-god without changing principal counts',()=>{
+  let sawAdditional=false,sawSingle=false;
+  for(const example of examples){
+    const {fortune,report}=sample(example),facts=mapFacts(report);
+    const contexts=[
+      {prefix:'natal',topic:'lifelong',source:fortune.profile,chapters:report.sections.find(value=>value.id==='lifelong').chapters,id:'natal-hidden-meaning'},
+      {prefix:'annual',topic:'annual',source:fortune.annual,chapters:report.sections.find(value=>value.id==='annual').chapters,id:'annual-hidden-meaning'},
+      ...report.months.map(month=>({prefix:`month.${month.month}`,topic:'monthly',source:fortune.months.find(value=>value.month===month.month),chapters:month.chapters,id:'month-hidden-meaning'})),
+    ];
+    for(const {prefix,topic,source,chapters,id} of contexts){
+      const chapter=chapters.find(value=>value.id===id);
+      assert.ok(chapter,`${prefix} lacks the promised hidden-stem explanation`);
+      const entries=source.reference.pillars.flatMap(pillar=>pillar.hiddenStems.map(hidden=>({pillar,hidden})));
+      assert.equal(chapter.rules.length,entries.length,'every hidden entry needs its own observed-place explanation');
+      for(const {pillar,hidden} of entries){
+        const rule=chapter.rules.find(value=>value.id===`${prefix}.hidden-reading.${pillar.pillarKey}.${hidden.order}`);
+        const factId=`${prefix}.reference.${pillar.pillarKey}.hidden.${hidden.order}`;
+        assert.ok(rule?.factIds.includes(factId));
+        assert.ok(facts.has(factId));
+        for(const value of [pillar.hanja,hidden.stem.hanja,hidden.god.name,hidden.god.hanja])assert.ok(rule.text.includes(value),`${prefix}: hidden meaning lost ${value}`);
+        assert.ok(chapter.easyParagraphs.includes(rule.text),'each individual explanation must be in the readable body');
+        if(hidden.isMain)assert.match(rule.text,/代表|대표로 쓰는 글자\(본기\)/);
+        else{
+          sawAdditional=true;
+          assert.ok(rule.text.includes(`자료 순서 ${hidden.order}`));
+          assert.match(rule.text,/추가로 연결된 글자/);
+        }
+        if(pillar.hiddenStems.length===1)sawSingle=true;
+      }
+      const codes=[...new Set(entries.map(({hidden})=>hidden.god.code))];
+      assert.deepEqual(chapter.referenceRules.map(value=>value.id),codes.map(code=>`${prefix}.hidden-example.${code}`));
+      for(const rule of chapter.referenceRules){
+        assert.equal(rule.origin,'service-reference');
+        assert.match(rule.text,/서비스 작성 생활 예시/);
+        assert.ok(!chapter.interpretation.includes(rule.text),'a life example is not an original classification');
+      }
+      for(const factId of chapter.factIds)assert.ok(factId.startsWith('natal.')||factId.startsWith(prefix+'.'),'a hidden-stem chapter cannot borrow another month');
+      for(const paragraph of chapter.easyParagraphs){
+        assert.ok(report.copyByCategory[topic].includes(paragraph));
+        assert.ok(report.copyByCategory.all.includes(paragraph));
+      }
+    }
+    const principal=report.facts.filter(value=>value.id.startsWith('natal.god.'));
+    assert.equal(principal.length,fortune.profile.gods.length,'additional hidden characters do not inflate the principal summary');
+  }
+  assert.ok(sawAdditional&&sawSingle,'fixtures cover both multi-character and single-character branches');
+});

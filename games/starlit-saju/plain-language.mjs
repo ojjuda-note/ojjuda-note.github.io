@@ -22,6 +22,7 @@ const GODS = {
   explorer:{topic:'궁금한 것을 깊이 알아보기',meaning:'궁금한 것을 파고들고, 다른 방법이나 생각을 찾아보는 일을 뜻해요.',example:'잘 이해되지 않는 부분을 여러 자료에서 찾아보고 내 방식으로 정리하는 장면을 떠올릴 수 있어요.'},
   scholar:{topic:'차근차근 배우고 도움받기',meaning:'기초부터 배우고, 필요할 때 다른 사람의 도움을 받는 일을 뜻해요.',example:'모르는 것을 물어보고 배운 내용을 한 번 더 연습하는 장면을 떠올릴 수 있어요.'},
 };
+export const PLAIN_GOD_EXPLANATIONS = GODS;
 const STEMS = {
   '甲':{name:'갑목',image:'큰 나무',meaning:'큰 나무가 뿌리를 내리고 위로 자라는 모습에 빗대어, 내 생각을 세우고 오래 지켜 가는 일을 이야기해요.'},
   '乙':{name:'을목',image:'풀과 덩굴',meaning:'풀이 주변을 따라 부드럽게 자라는 모습에 빗대어, 사람들과 어울리며 내 길을 찾는 일을 이야기해요.'},
@@ -38,13 +39,14 @@ const unique = values => [...new Set(values)];
 const entries = (profile,group) => profile.gods.filter(value=>value.god.group===group);
 const count = (profile,group) => entries(profile,group).length;
 const transitCount = (transit,group) => ['stemGod','branchGod'].filter(key=>transit[key].group===group).length;
-const names = (profile,group) => unique(entries(profile,group).map(value=>value.god.name)).join('·');
 const hasFinal = value => ((String(value).match(/[가-힣]/g)?.at(-1)?.charCodeAt(0)||0)-0xac00)%28!==0;
 const ending = value => value+(hasFinal(value)?'이에요.':'예요.');
 const topicParticle = value => value+(hasFinal(value)?'은':'는');
 const wayParticle = value => value+(hasFinal(value)?'으로':'로');
 const named = value => value+(hasFinal(value)?'이라는':'라는');
-const location = entry => PILLARS[entry.pillarKey]+'의 '+(entry.position==='stem'?'위쪽 글자':'아래쪽 글자');
+const location = entry => PILLARS[entry.pillarKey]+'의 '+(entry.position==='stem'
+  ?'위쪽 '+entry.sourceHangul+'('+entry.sourceHanja+')'
+  :'아래쪽 '+entry.sourceHangul+'('+entry.sourceHanja+')의 대표 '+entry.stem.hangul+'('+entry.stem.hanja+')');
 const elementCounts = profile => profile.elements.map(value=>ELEMENTS[value.key]+' '+value.count+'개').join(', ');
 const topicNames = transit => unique([GODS[transit.stemGod.code].topic,GODS[transit.branchGod.code].topic]);
 function themeSummary(profile,groups) {
@@ -54,14 +56,25 @@ function themeSummary(profile,groups) {
 }
 function paragraphGroup(profile,group) {
   const definition=GROUPS[group], found=entries(profile,group);
-  if(!found.length)return '내 사주의 확인된 부분에는 ‘'+definition.name+'’로 읽는 이름이 나오지 않았어요. 이 이름이 없다는 이유로 그 일을 못하거나 나쁜 일이 생긴다고 읽지는 않아요.';
-  return '내 사주에서는 ‘'+definition.name+'’로 읽는 곳이 '+found.length+'곳이에요. '+found.map(location).join(', ')+'에서 확인했어요. 자세한 이름은 '+ending(names(profile,group));
+  if(!found.length)return ['내 사주의 확인된 위쪽 글자와 아래쪽 대표 표에는 ‘'+definition.name+'’로 읽는 이름이 나오지 않았어요. 이 생활 이야기에서 특정한 성향을 정할 근거가 없다는 뜻이에요.'];
+  return unique(found.map(value=>value.god.code)).flatMap(code=>{
+    const same=found.filter(value=>value.god.code===code),meaning=GODS[code],name=same[0].god.name;
+    return [
+      name+' · '+meaning.topic+': '+same.map(location).join(', ')+'에서 확인한 이름이에요. '+meaning.meaning,
+      '저희가 쓴 생활 예시 · '+name+': '+meaning.example,
+    ];
+  });
 }
 function comparison(profile,transit,group,label) {
   const own=count(profile,group), moving=transitCount(transit,group), name=GROUPS[group].name;
-  if(moving && own)return topicParticle('‘'+name+'’')+' 태어난 때의 사주에서 '+own+'곳, '+label+'의 두 글자에서 '+moving+'곳에 나와요. 오래 살펴볼 이야기와 이 시기의 이야기에 같은 이름이 들어 있는 셈이에요.';
-  if(moving)return topicParticle('‘'+name+'’')+' 태어난 때의 사주에서 확인한 부분에는 없고, '+label+'의 두 글자 중 '+moving+'곳에 나와요. 그래서 이 시기의 글자를 볼 때 새로 살펴보는 이야기예요.';
-  if(own)return topicParticle('‘'+name+'’')+' 태어난 때의 사주에 '+own+'곳 있어요. '+label+'의 두 글자에서는 나오지 않지만, 태어난 사주에 있던 이름이 사라지는 것은 아니에요.';
+  const movingDetails=['stem','branch'].filter(position=>transit[position+'God'].group===group).map(position=>{
+    const god=transit[position+'God'];
+    return (position==='stem'?'위쪽 글자':'아래쪽 대표')+'의 '+god.name+': '+GODS[god.code].meaning;
+  }).join(' ');
+  const natalDetails=entries(profile,group).map(value=>location(value)+'의 '+value.god.name).join(', ');
+  if(moving && own)return topicParticle('‘'+name+'’')+' 태어난 사주와 '+label+'에 모두 나와요. 태어난 사주에서 확인한 이름과 자리: '+natalDetails+'. '+label+'의 이름과 뜻: '+movingDetails+' 같은 생활 묶음이 양쪽에 있지만, 각각 나온 이름의 뜻을 나누어 읽으면 공통점과 차이를 살펴볼 수 있어요.';
+  if(moving)return topicParticle('‘'+name+'’')+' 태어난 사주의 확인된 위쪽 글자와 아래쪽 대표 표에는 없고, '+label+'에 나와요. '+movingDetails+' 이번 시기의 글자에서 새로 비교해 읽는 이야기예요.';
+  if(own)return topicParticle('‘'+name+'’')+' 태어난 사주에 나와요. 확인한 이름과 자리: '+natalDetails+'. '+label+'의 두 글자에는 이 생활 묶음이 없어요. 이 항목에서는 태어난 사주에 있던 각각의 이름을 바탕으로 읽으면 돼요.';
   return '이번에 확인한 태어난 사주와 '+label+'의 두 글자에는 ‘'+name+'’로 읽는 이름이 나오지 않았어요. 이 표에서 찾지 못했다는 뜻으로 읽으면 돼요.';
 }
 function interactionParagraphs(interactions,label) {
@@ -73,9 +86,19 @@ function interactionParagraphs(interactions,label) {
     '사주에서는 두 글자가 만났을 때 서로 맞추는 짝을 ‘합’, 서로 다른 방향을 가진 짝을 ‘충’이라고 불러요. 사람 사이에서 함께 맞출 점과 생각이 다른 점을 나누어 보는 것에 빗댄 설명이에요.',
     label+'에서 서로 맞추는 짝은 '+connect+'쌍, 서로 다른 방향의 짝은 '+clash+'쌍이에요. 맞추는 짝 중 위쪽 글자끼리는 '+upper+'쌍, 아래쪽 글자끼리는 '+lower+'쌍이에요.',
   ];
-  if(connect&&clash)result.push('맞추는 짝과 다른 방향의 짝이 함께 있어요. 전통 풀이에서는 함께할 수 있는 부분과 조정할 부분을 둘 다 살펴봐요. 한쪽만 골라 좋거나 나쁘다고 정하지 않아요.');
-  else if(clash)result.push('여기서는 서로 다른 방향의 짝이 나왔어요. 전통 풀이에서는 차이를 알아보고 조정할 부분을 살피라는 뜻으로 읽어요. 다툼이나 사고가 생긴다는 말은 아니에요.');
-  else if(connect)result.push('여기서는 서로 맞추는 짝이 나왔어요. 전통 풀이에서는 두 사람이나 두 일을 어떻게 함께 맞춰 갈지 살펴보는 뜻으로 읽어요. 원하는 일이 저절로 이루어진다는 말은 아니에요.');
+  for(const value of interactions){
+    const first=PILLARS[value.birthPillarKey]+'의 '+(value.position==='stem'?'위쪽 ':'아래쪽 ')+value.birthCharacter.hangul+'('+value.birthCharacter.hanja+')';
+    const other=(PILLARS[value.otherPillarKey]||value.transitLabel||value.otherPillarLabel)+'의 '+(value.position==='stem'?'위쪽 ':'아래쪽 ')+value.otherCharacter.hangul+'('+value.otherCharacter.hanja+')';
+    const meaning=value.kind==='stem-combination'
+      ?'위쪽 글자끼리 서로 맞추고 조율하는 뜻으로 읽는 짝이에요.'
+      :value.kind==='branch-combination'
+        ?'아래쪽 글자끼리 연결되고 맞물리는 뜻으로 읽는 짝이에요.'
+        :'아래쪽 글자끼리 서로 다른 방향을 살피고 조정하는 뜻으로 읽는 짝이에요.';
+    result.push(value.pairHangul+'('+value.pairHanja+') '+value.label+': '+first+' / '+other+'. '+meaning);
+  }
+  if(connect&&clash)result.push('맞추는 짝과 다른 방향의 짝이 함께 있어요. 저희가 쓴 생활 예시로는, 함께할 계획에서 이미 뜻이 맞는 부분과 다시 의논할 부분을 따로 적는 장면에 빗댈 수 있어요. 두 쪽을 모두 읽어야 확인된 짝을 빠뜨리지 않아요.');
+  else if(clash)result.push('여기서는 서로 다른 방향의 짝이 나왔어요. 저희가 쓴 생활 예시로는, 의견이 다른 문제에서 각자가 중요하게 여기는 이유를 먼저 묻는 장면에 빗댈 수 있어요. 충이라는 이름이 다툼이나 사고를 예고하는 것은 아니에요.');
+  else if(connect)result.push('여기서는 서로 맞추는 짝이 나왔어요. 저희가 쓴 생활 예시로는, 함께할 일에서 서로 원하는 역할과 도울 수 있는 부분을 나누어 이야기하는 장면에 빗댈 수 있어요. 글자의 짝과 실제 사람의 의사는 따로 확인해 주세요.');
   else result.push('확인된 글자에서는 이 세 가지 종류의 짝을 찾지 못했어요. 실제 생활에서 만남이나 갈등이 없다는 뜻은 아니에요.');
   return result;
 }
@@ -145,26 +168,26 @@ function lifelong(profile,chart) {
     'natal-interactions':chapter('서로 맞추는 부분과 다른 방향인 부분',interactionSummary(profile.interactions),...interactionParagraphs(profile.interactions,'태어난 때의 사주')),
     relationships:chapter('내 생각과 사람들과의 관계',themeSummary(profile,['peer']),
       '이 항목은 내 생각을 지키는 일과, 비슷한 처지의 사람들과 함께하는 일을 읽어요. 이 두 가지를 살펴보는 사주 이름이 ‘비겁’이에요.',
-      paragraphGroup(profile,'peer'),
+      ...paragraphGroup(profile,'peer'),
       count(profile,'peer')
-        ? '여기 나온 이름은 내 생각과 다른 사람의 생각을 어떻게 함께 둘지 살펴보는 데 쓰여요. 많다고 고집이 세다거나, 적다고 친구가 없다고 정하지 않아요.'
+        ? '생각해 볼 질문: 나는 어떤 일을 스스로 정하고 싶고, 어떤 일은 함께 정하고 싶은가요? 위에서 실제로 나온 이름의 뜻에 내 상황을 대입해 읽어 보세요.'
         : '친구를 사귀는 능력이나 사랑받을 가능성을 이 이름의 유무로 정할 수는 없어요. 사람들과의 관계는 실제로 나누는 말과 행동도 함께 살펴봐야 해요.'),
     work:chapter('잘 표현하는 일과 맡은 일을 해내는 것',themeSummary(profile,['expression','authority']),
       '일을 볼 때는 생각을 말이나 결과물로 만드는 쪽과, 약속을 지키고 맡은 일을 하는 쪽을 함께 봐요. 사주에서는 앞쪽을 ‘식상’, 뒤쪽을 ‘관성’이라고 불러요.',
-      paragraphGroup(profile,'expression'),
-      paragraphGroup(profile,'authority'),
-      '표현하는 이름이 있으면 생각을 어떻게 전할지, 약속에 관한 이름이 있으면 어디까지 맡고 어떤 기준을 지킬지 살펴보는 뜻이에요. 직업이나 성적을 이 숫자만으로 고르지는 않아요.'),
+      ...paragraphGroup(profile,'expression'),
+      ...paragraphGroup(profile,'authority'),
+      '생각해 볼 질문: 지금 하고 싶은 일에서 내가 만들 결과는 무엇이고, 함께 지킬 약속은 무엇인가요? 위에서 확인한 이름마다 어떤 부분을 살피는지 나누어 읽으면 생각을 구체적으로 정리할 수 있어요.'),
     resources:chapter('돈과 물건을 챙기는 이야기',themeSummary(profile,['wealth']),
       '사주에서 ‘재성’은 돈과 물건을 쓰고 챙기는 일을 살펴보는 이름이에요. 가진 돈이 얼마인지 알려 주는 숫자는 아니에요.',
-      paragraphGroup(profile,'wealth'),
+      ...paragraphGroup(profile,'wealth'),
       count(profile,'wealth')
-        ? '여기서 편재는 여러 곳에 쓰고 주고받는 일을, 정재는 정해진 것을 차근차근 챙기는 일을 뜻해요. 내 표에 나온 이름을 보고 어떤 이야기를 읽는지 구별하면 돼요.'
+        ? '생각해 볼 질문: 이미 쓰기로 한 돈과 새로 쓰고 싶은 돈은 어떻게 나뉘나요? 내 표에 나온 각각의 이름이 여러 쓰임을 살피는 쪽인지, 반복해서 챙기는 쪽인지 구별해 보세요.'
         : '이번 표에서 이 이름이 나오지 않았다고 돈을 벌지 못한다는 뜻은 아니에요. 수입과 지출은 실제로 하는 일과 쓰는 습관을 보고 판단해야 해요.'),
     'learning-inner':chapter('배우는 방법과 도움받는 일',themeSummary(profile,['resource']),
       '배우고 도움을 받는 일을 살펴보는 사주 이름은 ‘인성’이에요. 사람의 품성이나 착한 정도를 말하는 ‘인성’과는 뜻이 달라요.',
-      paragraphGroup(profile,'resource'),
+      ...paragraphGroup(profile,'resource'),
       count(profile,'resource')
-        ? '여기서 편인은 궁금한 것을 깊이 찾아보는 쪽, 정인은 기초부터 차근차근 배우는 쪽으로 풀어요. 어느 쪽이 더 똑똑하다는 순서는 없어요.'
+        ? '생각해 볼 질문: 지금은 다른 설명을 더 찾아볼 때인가요, 기초를 직접 해 보며 확인할 때인가요? 내 표에서 실제로 나온 이름의 뜻을 참고해, 막힌 부분과 필요한 도움을 말로 정리해 보세요.'
         : '이 이름이 안 나와도 배우거나 도움받을 수 있어요. 공부 실력이나 시험 결과를 이 표 하나로 판단하지 않아요.',
       profile.knownPillars.some(value=>value.key==='hour')
         ? '태어난 시간의 글자도 이번 계산에 들어 있어요. 여러 생활 이야기가 함께 나오는 경우의 참고 설명은 근거를 펼쳐 볼 수 있어요.'

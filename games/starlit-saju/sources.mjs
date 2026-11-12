@@ -18,6 +18,14 @@ const COMMON_SOURCES = [
     limitation: '전통 분류표의 결과입니다. 용신·대운이나 실제 사건의 발생 여부까지 계산한 것은 아닙니다.',
   },
   {
+    id: 'twelve-stage-meanings',
+    title: '열두 단계 이름의 뜻을 확인한 옛 문헌',
+    publisher: '만민영 · 《삼명통회》 권2 「論五行旺相休囚死並寄生十二宫」 · 식전고적 원문',
+    url: 'https://www.shidianguji.com/zh/book/SK1610/chapter/1kf5v6ol1tqg5',
+    usedFor: '장생부터 양까지 열두 단계의 이름과 자라고 거두는 비유를 쉬운 말로 설명합니다. 이름만으로 좋고 나쁨을 단정하지 않는다는 원문의 설명도 함께 전합니다.',
+    limitation: '전통 문헌에 적힌 뜻을 설명하는 자료입니다. 개인의 미래·질병·수명을 검증한 자료가 아니며, 생활 질문은 오쭈다가 따로 작성한 예시입니다.',
+  },
+  {
     id: 'saju-background',
     title: '사주라는 말과 기본 개념을 설명하는 자료',
     publisher: '한국학중앙연구원 · 한국민족문화대백과사전 「사주」',
