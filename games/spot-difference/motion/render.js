@@ -63,10 +63,11 @@
     const cx = spot.x * image.width / 1000, cy = spot.y * image.height / 1000;
     const rx = Math.max(2, spot.w * image.width / 2000), ry = Math.max(2, spot.h * image.height / 2000);
     const sx = spot.sx * image.width / 1000, sy = spot.sy * image.height / 1000;
-    const rotation = (index % 2 ? 1 : -1) * .43;
+    const rotation = (index % 2 ? 1 : -1) * .48;
     const sin = Math.sin(rotation), cos = Math.cos(rotation);
     const p = image.data, out = target.data, color = [0, 0, 0];
     const middle = bytePosition(cx, cy, image);
+    const toneGain = spot.type === 'tint' || spot.type === 'metal' ? 1.10 : 1;
     // Use a cool change on warm metal, bronze on cool/neutral metal.
     const warm = p[middle] - p[middle + 2] > 9;
     const endX = Math.min(image.width, Math.ceil(cx + rx)), endY = Math.min(image.height, Math.ceil(cy + ry));
@@ -76,7 +77,7 @@
         const u = (x + .5 - cx) / rx;
         const radius = Math.hypot(u, v);
         if (radius >= 1) continue;
-        const feather = smooth((1 - radius) / .24);
+        const feather = smooth((1 - radius) / .18);
         const i = (y * image.width + x) * 4;
         const r = p[i], g = p[i + 1], b = p[i + 2], luma = .2126 * r + .7152 * g + .0722 * b;
         switch (spot.type) {
@@ -88,23 +89,23 @@
             sample(image, cx - u * rx, cy + v * ry, color);
             break;
           case 'shift':
-            sample(image, x - rx * .27 * (1 - v * v), y + ry * .13, color);
+            sample(image, x - rx * .30 * (1 - v * v), y + ry * .145, color);
             break;
           case 'rotate':
             sample(image, cx + (u * cos + v * sin) * rx, cy + (v * cos - u * sin) * ry, color);
             break;
           case 'notch': {
             // A small break entering the photographed detail from its upper edge.
-            const groove = Math.exp(-Math.pow((u - .24 * v) / .18, 2)) * smooth((.57 - v) / .48);
-            const lip = Math.exp(-Math.pow((u - .24 * v - .18) / .085, 2)) * smooth((.57 - v) / .48);
+            const groove = Math.exp(-Math.pow((u - .24 * v) / .20, 2)) * smooth((.57 - v) / .48);
+            const lip = Math.exp(-Math.pow((u - .24 * v - .20) / .09, 2)) * smooth((.57 - v) / .48);
             for (let k = 0; k < 3; k++) color[k] = p[i + k] * (1 - .76 * groove) + 24 * lip;
             break;
           }
           case 'stripe': {
             // Double inlaid line, slightly tilted to follow a natural printed/tooled pattern.
             const d = v - .10 * u;
-            const lines = Math.max(Math.exp(-Math.pow((d + .13) / .070, 2)),
-              Math.exp(-Math.pow((d - .11) / .052, 2)));
+            const lines = Math.max(Math.exp(-Math.pow((d + .13) / .078, 2)),
+              Math.exp(-Math.pow((d - .11) / .058, 2)));
             const contrast = luma > 155 ? -.52 * luma : 47 + .17 * luma;
             color[0] = r + contrast * lines; color[1] = g + contrast * lines * .88;
             color[2] = b + contrast * lines * .66;
@@ -127,7 +128,10 @@
           }
           default: throw new Error('Unknown static photograph effect: ' + spot.type);
         }
-        for (let k = 0; k < 3; k++) out[i + k] = out[i + k] * (1 - feather) + color[k] * feather;
+        for (let k = 0; k < 3; k++) {
+          const changed = p[i + k] + (color[k] - p[i + k]) * toneGain;
+          out[i + k] += (changed - out[i + k]) * feather;
+        }
       }
     }
   }
@@ -393,8 +397,8 @@
     // pose, then diverge in tempo or travel direction.
     let time = seconds;
     if (alternate && actor.different) {
-      if (airborneMotion.has(actor.type) && actor.type !== 'dust') time *= 1.79;
-      else time *= actor.direction > 0 ? -1.14 : 1.83;
+      if (airborneMotion.has(actor.type) && actor.type !== 'dust') time *= 1.96;
+      else time *= actor.direction > 0 ? -1.28 : 2;
     }
     c.save();c.translate(actor.x, actor.y);
     if (surfaceMotion.has(actor.type)) drawSurface(c, actor, time);

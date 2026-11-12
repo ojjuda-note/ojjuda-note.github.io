@@ -5,9 +5,44 @@ const source=read('note/preview.js'),boot=source.lastIndexOf('\nif (client) {\n 
 const expectBug=process.env.EXPECT_CARD_FONT_BUG==='1',proof=process.env.CARD_FONT_PROOF_DIR;
 if(proof)fs.mkdirSync(proof,{recursive:true});
 const html=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');
+async function checkReplyBrowsing(page) {
+ const rail=page.locator('#reply-list'),cards=rail.locator('.reply-card');
+ await page.evaluate(async()=>{
+  window.replyRequests=[];
+  window.testReplies=Array.from({length:32},(_,i)=>({...fontCards.reply,
+   id:'00000000-0000-4000-8000-'+String(100-i).padStart(12,'0'),body:'답글 '+(100-i)}));
+  await loadReplies(stack.at(-1),detailRun);
+ });
+ assert.equal(await cards.count(),30);
+ await rail.scrollIntoViewIfNeeded();
+ const bounds=await rail.boundingBox(),first=await cards.first().boundingBox(),second=await cards.nth(1).boundingBox();
+ assert.equal(Math.round(first.x),Math.round(bounds.x));
+ assert.equal(first.y,second.y);
+ assert.ok(second.x>=first.x+first.width&&second.x<bounds.x+bounds.width,'the next reply peeks in from the right');
+ const x=first.x+first.width*.8,y=first.y+first.height/2;
+ await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x-110,y,{steps:8});await page.mouse.up();
+ assert.ok(await rail.evaluate(el=>el.scrollLeft)>90,'dragging a photo with the mouse reveals older replies');
+ assert.ok(await page.locator('#detail-card-slot .card-quote').textContent().then(text=>text.includes('백수')),'drag does not open a reply');
+ await page.mouse.move(x-110,y);await page.mouse.down();await page.mouse.move(x,y,{steps:8});await page.mouse.up();
+ assert.ok(await rail.evaluate(el=>el.scrollLeft)<2,'dragging right returns to the newest reply');
+ const touch=await page.context().newCDPSession(page);
+ await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
+ for(let i=1;i<=6;i++)await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x-i*18,y}]});
+ await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+ await page.waitForFunction(()=>replies.scrollLeft>30);
+ await touch.detach();
+ await rail.evaluate(el=>{el.scrollLeft=el.scrollWidth;});
+ await page.waitForFunction(()=>replies.querySelectorAll('.reply-card').length===32);
+ const requests=await page.evaluate(()=>replyRequests);
+ assert.deepEqual(requests.map(r=>r.orders),Array(2).fill([['created_at',false],['id',false]]));
+ assert.equal(requests[1].after,'created_at.lt.2026-10-20T22:00:00Z,and(created_at.eq.2026-10-20T22:00:00Z,id.lt.00000000-0000-4000-8000-000000000071)');
+ assert.equal(await cards.last().locator('.card-quote').textContent(),'답글 69');
+ await page.evaluate(async()=>{delete window.testReplies;await loadReplies(stack.at(-1),detailRun);});
+ assert.equal(await rail.evaluate(el=>el.scrollLeft),0);
+}
 (async()=>{const browser=await chromium.launch({headless:true,args:['--no-sandbox']});try{
  for(const width of expectBug?[390]:[320,390,768,1280]){
-  const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage(),errors=[];
+  const context=await browser.newContext({viewport:{width,height:900},hasTouch:width===390}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.origin!=='https://card-font.test')return route.abort();if(u.pathname==='/park/')return route.fulfill({contentType:'text/html',body:html});const f=path.join(root,u.pathname);return f.startsWith(root+path.sep)&&fs.existsSync(f)&&fs.statSync(f).isFile()?route.fulfill({path:f}):route.abort();});
   await page.goto('https://card-font.test/park/');
@@ -15,7 +50,14 @@ const html=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
    document.documentElement.classList.add('park-embedded');
    window.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'synthetic'};
    window.supabase={createClient:()=>({schema:()=>({from:()=>{
-    const q={select:()=>q,eq:()=>q,not:()=>q,order:()=>q,contains:()=>q,lte:()=>q,gte:()=>q,or:()=>q,limit:async()=>({data:[window.fontCards.reply],error:null})};return q;
+    const orders=[];let after;
+    const q={select:()=>q,eq:()=>q,not:()=>q,contains:()=>q,lte:()=>q,gte:()=>q,
+     order:(key,options)=>{orders.push([key,options.ascending]);return q;},or:value=>{after=value;return q;},
+     limit:async size=>{
+      if(!window.testReplies)return {data:[window.fontCards.reply],error:null};
+      window.replyRequests.push({orders,after,size});
+      return {data:after?window.testReplies.slice(size):window.testReplies.slice(0,size),error:null};
+     }};return q;
    }})})};
   });
   await page.addScriptTag({content:source.slice(0,boot)});
@@ -67,6 +109,7 @@ const html=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
    assert.equal(faces.length,2);
    assert.ok(Math.abs(faces[1].width-faces[0].width*2/3)<1,`${width}px: replies are two thirds of the parent card width`);
    assert.ok(faces.every(face=>Math.abs(face.footer)<1&&face.buttonsFit&&face.textFits),`${width}px: photo, text and controls fit without a footer`);
+   if(width===390)await checkReplyBrowsing(page);
    const full=page.locator('#detail-card-slot .note-full-body');
    await full.evaluate(el=>{el.hidden=false;el.open=true;});
    const actionBottom=await page.locator('#detail-card-slot .card-actions').evaluate(el=>el.getBoundingClientRect().bottom);

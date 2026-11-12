@@ -1173,19 +1173,25 @@ function showFeed(updateUrl = true) {
 async function loadReplies(id, version, more = false) {
   if (more && replyLoading) return;
   replyLoading = true;
-  if (!more) { replyCursor = null; state(replies, '답글을 불러오는 중이에요.'); }
-  else replies.querySelector('[data-more-replies]')?.remove();
+  const pageButton = more ? replies.querySelector('[data-more-replies]') : null;
+  if (pageButton) pageButton.disabled = true;
+  if (!more) {
+    replyCursor = null;
+    state(replies, '답글을 불러오는 중이에요.');
+    replies.scrollLeft = 0;
+  }
   let data, error;
   try {
     let request = filterSearchOnlyTags(query().from('public_cards').select(columns)
       .eq('kind', 'comment').eq('parent_id', id), feedTerm);
-    const after = cursorFilter(replyCursor, true);
+    const after = cursorFilter(replyCursor);
     if (after) request = request.or(after);
-    ({ data, error } = await request.order('created_at', { ascending: true })
-      .order('id', { ascending: true }).limit(30));
+    ({ data, error } = await request.order('created_at', { ascending: false })
+      .order('id', { ascending: false }).limit(30));
   } catch (cause) { error = cause; }
   if (version !== detailRun || stack.at(-1) !== id) return;
   replyLoading = false;
+  pageButton?.remove();
   if (error) {
     console.warn('Note replies:', error);
     if (!more) state(replies, '답글을 불러오지 못했어요.');
