@@ -123,8 +123,13 @@ html body .shell > .col > .main { width: min(100%, 1268px); }
   grid-row: 1;
   top: auto;
   min-height: 0;
+  max-width: 100%;
   max-height: 100%;
+  line-height: 1.28;
   overflow: hidden;
+}
+#main .park-photo-cards :is(.note-font-handwriting, .ju-font-letter) .card-quote {
+  line-height: 1.08;
 }
 #main .park-photo-cards .card-tags {
   position: static;

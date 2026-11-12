@@ -40,8 +40,33 @@ async function checkReplyBrowsing(page) {
  await page.evaluate(async()=>{delete window.testReplies;await loadReplies(stack.at(-1),detailRun);});
  assert.equal(await rail.evaluate(el=>el.scrollLeft),0);
 }
+async function checkSixLineCard(page, width) {
+ const lines = ['나는 오늘도 공원을 걸었어', '천천히', '오래된 나무 옆에 앉아서', '지나가는 구름을 바라봤어',
+  '그래서 난 잠시 더 머물기로 했어', '바람이 멈출 때까지 여기 있을래'];
+ await page.setViewportSize({width,height:900});
+ const sample = await page.evaluate(async lines=>{
+  Object.assign(fontCards.feed[0], {body:lines.join('\n'), tags:['공원','나무','오늘','산책','구름'], style:{font:'handwriting',size:'normal'}});
+  await renderDetail();
+  await document.fonts.ready;
+  refreshExpandedBodies();
+  const item=document.querySelector('#detail-card-slot article'), quote=item.querySelector('.card-quote');
+  const textBounds = [...quote.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE).map(n=>{
+   const range=document.createRange();range.selectNodeContents(n);return range.getBoundingClientRect();
+  });
+  const box=quote.getBoundingClientRect(), tags=item.querySelector('.card-tags').getBoundingClientRect();
+  return {size:parseFloat(getComputedStyle(quote).fontSize), lines:quote.innerText.split('\n'),
+   fits:!photoQuoteClipped(item.querySelector('.photo'),quote,item.querySelector('.card-tags')),
+   separate:box.top>=item.querySelector('.card-meta').getBoundingClientRect().bottom && box.bottom+5<=tags.top,
+   inside:textBounds.every(r=>r.left>=box.left-1 && r.right<=box.right+1)};
+ },lines);
+ console.log(`Six-line handwriting at ${width}px: ${sample.size}px`);
+ assert.deepEqual(sample.lines,lines);
+ assert.ok(sample.fits && sample.separate && sample.inside,'all six lines fit between the author and tags');
+ const minimum=width>=600?28:width>=390?20:width>=360?18:15;
+ assert.ok(sample.size>=minimum,`${width}px: six lines should be at least ${minimum}px (was ${sample.size}px)`);
+}
 (async()=>{const browser=await chromium.launch({headless:true,args:['--no-sandbox']});try{
- for(const width of expectBug?[390]:[320,390,768,1280]){
+ for(const width of expectBug?[390]:[320,360,390,768,1280]){
   const context=await browser.newContext({viewport:{width,height:900},hasTouch:width===390}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.origin!=='https://card-font.test')return route.abort();if(u.pathname==='/park/')return route.fulfill({contentType:'text/html',body:html});const f=path.join(root,u.pathname);return f.startsWith(root+path.sep)&&fs.existsSync(f)&&fs.statSync(f).isFile()?route.fulfill({path:f}):route.abort();});
@@ -138,8 +163,9 @@ async function checkReplyBrowsing(page) {
    assert.equal(await disclosure.locator('p').textContent(),longText,'all lines can be read below the fixed face');
    const fixed=await page.locator('#detail-card-slot .photo').boundingBox();
    assert.ok(Math.abs(fixed.height-fixed.width*.75)<1,'opening long text keeps the photograph 4:3');
+   await checkSixLineCard(page,width);
   }
   assert.deepEqual(errors,[]);await context.close();
  }
- if(!expectBug)console.log('PASS: card Back preserves fonts and heights, repeated button/browser/embedded return, nested replies, late fonts, hidden insertion and responsive sizes at four widths');
+ if(!expectBug)console.log('PASS: card Back preserves fonts and heights, repeated button/browser/embedded return, nested replies, late fonts, hidden insertion and responsive sizes at five widths');
  }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
