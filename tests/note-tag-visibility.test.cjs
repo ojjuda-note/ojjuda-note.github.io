@@ -196,7 +196,12 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   const separate = (await db.query(`insert into ojjuda_note.cards(author_id,identity_mode)
     values($1,'nickname') returning id`,[viewer])).rows[0].id;
   const earlierNamed = await namedReply(author,separate);
-  await add([], {author,kind:'comment',parent:earlierNamed});
+  const firstAnonymous = await add([], {author,kind:'comment',parent:earlierNamed});
+  // PGlite can assign consecutive inserts the same millisecond. This case
+  // specifically checks a named comment strictly before the first anonymous one.
+  await db.query(`update ojjuda_note.cards set created_at = case when id=$1
+    then timestamptz '2026-11-12 10:00:00+00' else timestamptz '2026-11-12 10:01:00+00' end
+    where id in ($1,$2)`,[earlierNamed,firstAnonymous]);
   const correction = fs.readdirSync(path.join(root,'supabase/migrations')).find(name => name.endsWith('_inherit_reply_alias.sql'));
   await db.exec(read(`supabase/migrations/${correction}`));
   vm.runInContext(source.slice(source.indexOf('const ANON_ALIAS_EXPANDED_AT'),source.indexOf('const GENDER_LOOK')),context);
