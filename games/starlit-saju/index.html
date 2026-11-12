@@ -8,8 +8,8 @@
   <title>별빛 사주팔자 · 오쭈다</title>
   <link rel="icon" href="../moonlit-tarot/assets/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="../moonlit-tarot/assets/moon-serif.woff" as="font" type="font/woff" crossorigin>
-  <link rel="stylesheet" href="./style.css?v=20261113-saju-reader1">
-  <link rel="stylesheet" href="./report.css?v=20261113-saju-reader1">
+  <link rel="stylesheet" href="./style.css?v=20261113-saju-all1">
+  <link rel="stylesheet" href="./report.css?v=20261113-saju-all1">
 </head>
 <body>
   <a class="skip-link" href="#birth-form">출생 정보 입력으로 바로가기</a>
@@ -65,9 +65,10 @@
             <label><input type="radio" name="entry-topic" value="lifelong" checked><span class="product-option"><strong>평생운 · 나의 바탕</strong><small>내 성향과 생활 이야기</small><b data-entry-price="lifelong">10쭈</b></span></label>
             <label><input type="radio" name="entry-topic" value="annual"><span class="product-option"><strong>올해운</strong><small>선택한 한 해의 흐름</small><b data-entry-price="annual">10쭈</b></span></label>
             <label><input type="radio" name="entry-topic" value="monthly"><span class="product-option"><strong>월별운</strong><small>1~12월 전체 포함</small><b data-entry-price="monthly">10쭈</b></span></label>
+            <label class="product-option-all"><input type="radio" name="entry-topic" value="all"><span class="product-option"><strong>전체 풀이</strong><small>평생운 + 올해운 + 12개월 월별운</small><b data-entry-price="all">30쭈</b></span></label>
           </div><div id="entry-year-field" class="year-control entry-year-control" hidden><label for="entry-year">운세를 볼 연도</label><select id="entry-year" aria-describedby="entry-price-note"></select></div></fieldset>
           <p class="saju-price"><strong id="entry-price-value">평생운 · 10쭈</strong></p>
-          <p id="entry-price-note" class="saju-price-note">항목마다 10쭈예요. 구매한 항목은 같은 사주·같은 연도로 다시 볼 때 추가 차감이 없어요.</p>
+          <p id="entry-price-note" class="saju-price-note">전체는 30쭈, 각각은 10쭈예요. 전체를 볼 때 이미 산 항목은 빼고 남은 금액만 차감해요. 같은 사주·항목·연도로 구매한 풀이는 다시 볼 때 0쭈예요.</p>
           <p class="method-before-purchase">태어난 날과 시간으로 사주 글자를 계산해요. 그 뜻과 서로의 관계를 쉬운 말로 설명해 드려요.</p>
           <details class="method-preview"><summary>구매 전, 어떤 풀이인지 알아보기</summary><p>정해진 계산법과 설명을 사용하는 자동 풀이예요. 같은 글자와 관계에는 같은 설명을 써요. 직접 작성한 참고 설명과 생활 제안은 따로 표시해요. 앞으로 일어날 일을 확실하게 맞힌다는 뜻은 아니에요.</p><p>10년씩 나누는 운의 흐름(대운), 나에게 필요한 기운을 고르는 해석(용신), 특별한 글자 조합을 풀이하는 해석(신살)은 아직 제공하지 않아요.</p><p>시간은 지금의 한국 시간(UTC+9)으로 계산해요. 태어난 곳이나 옛날의 시간 제도에 따른 시간 차이는 따로 고치지 않아요.</p></details>
           <div id="entry-check-error" class="form-error" role="alert" hidden><p id="entry-check-error-text"></p><button id="retry-entry-status" class="secondary-button" type="button">구매 내역 다시 확인하기</button></div>
@@ -104,17 +105,18 @@
           <div class="reading-size-control" role="group" aria-label="본문 글자 크기"><span aria-hidden="true">글자 크기</span><button type="button" data-reading-size="normal" aria-pressed="true" aria-controls="report-content">보통</button><button type="button" data-reading-size="large" aria-pressed="false" aria-controls="report-content">크게</button></div>
         </div>
         <details id="other-reading-options" class="other-reading-options">
-          <summary><span>다른 풀이 보기</span><small>풀이마다 10쭈 · 다시 보기 0쭈</small></summary>
+          <summary><span>다른 풀이 보기</span><small>전체 30쭈 · 각각 10쭈</small></summary>
           <div class="report-purchase-panel">
           <fieldset class="product-picker" id="report-product-picker"><legend>다른 풀이 선택하기</legend><div class="product-options">
             <label><input type="radio" name="report-topic" value="lifelong" checked><span class="product-option"><strong>평생운 · 나의 바탕</strong><small>태어난 때의 사주 풀이</small><b data-report-price="lifelong">10쭈</b></span></label>
             <label><input type="radio" name="report-topic" value="annual"><span class="product-option"><strong>올해운</strong><small>선택한 한 해의 흐름</small><b data-report-price="annual">10쭈</b></span></label>
             <label><input type="radio" name="report-topic" value="monthly"><span class="product-option"><strong>월별운</strong><small>1~12월 전체 포함</small><b data-report-price="monthly">10쭈</b></span></label>
+            <label class="product-option-all"><input type="radio" name="report-topic" value="all"><span class="product-option"><strong>전체 풀이</strong><small>평생운 + 올해운 + 12개월 월별운</small><b data-report-price="all">30쭈</b></span></label>
           </div></fieldset>
-          <div id="report-year-field" class="report-toolbar" hidden><div class="year-control"><label for="fortune-year">운세를 볼 연도</label><select id="fortune-year" aria-describedby="fortune-year-help"></select></div><p id="fortune-year-help">다른 연도의 올해운·월별운은 각각 10쭈예요. 연도 선택만으로 차감되지 않아요.</p></div>
+          <div id="report-year-field" class="report-toolbar" hidden><div class="year-control"><label for="fortune-year">운세를 볼 연도</label><select id="fortune-year" aria-describedby="fortune-year-help"></select></div><p id="fortune-year-help">선택한 연도는 올해운·월별운에 적용돼요. 다른 연도는 각각 10쭈이며, 평생운은 연도와 관계없이 다시 볼 수 있어요. 연도 선택만으로 차감되지 않아요.</p></div>
           <p id="product-offer" class="product-offer"></p>
           <button id="open-product" class="primary-button" type="button" disabled>선택한 풀이 펼치기</button>
-          <p class="product-purchase-note">항목이나 연도를 고르기만 해서는 차감되지 않아요. 위 버튼을 눌러 열어 주세요. 같은 출생 정보·항목·연도로 구매한 풀이의 다시 보기는 0쭈예요.</p>
+          <p class="product-purchase-note">항목이나 연도를 고르기만 해서는 차감되지 않아요. 위 버튼을 눌러 열어 주세요. 전체 풀이도 이미 산 항목은 빼고 남은 금액만 차감해요. 같은 출생 정보·항목·연도로 구매한 풀이의 다시 보기는 0쭈예요.</p>
           </div>
         </details>
         <div id="report-status" class="report-status" role="status" aria-live="polite"></div>
@@ -133,6 +135,6 @@
   </main>
   <footer class="site-footer"><span class="footer-wordmark">THE STARLIT ARCHIVE <i>✧</i></span><p>사주의 옛 풀이 방법으로 나를 돌아보는 시간이에요.<br>앞으로의 이야기는 당신의 선택으로 써 내려가세요.</p><span class="footer-no">VOL. 02 · STARLIGHT</span></footer>
   <div id="status" class="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="./app.js?v=20261113-saju-reader1"></script>
+  <script type="module" src="./app.js?v=20261113-saju-all1"></script>
 </body>
 </html>

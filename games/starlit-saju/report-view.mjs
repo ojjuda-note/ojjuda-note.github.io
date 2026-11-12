@@ -1,4 +1,4 @@
-import {getReadingSources} from './sources.mjs?v=20261113-saju-reader1';
+import {getReadingSources} from './sources.mjs?v=20261113-saju-all1';
 
 function node(tag, className, text) {
   const value = document.createElement(tag);
@@ -370,26 +370,44 @@ function monthSection(reading, fortune) {
   return section;
 }
 
+function allNavigation(year) {
+  const nav=node('nav','all-reading-navigation');
+  nav.id='reading-all';
+  nav.setAttribute('aria-labelledby','reading-all-title');
+  const title=node('h3','','전체 풀이 바로가기');
+  title.id='reading-all-title';title.tabIndex=-1;
+  nav.append(title,node('p','',`평생운과 ${year}년의 올해운·월별운을 모두 열었어요. 원하는 이야기부터 읽어 보세요.`));
+  const links=node('div','all-reading-links');
+  for (const [id,label,detail] of [['lifelong','평생운','나의 바탕과 생활 이야기'],['annual','올해운',`${year}년의 흐름`],['months','월별운',`${year}년 1~12월 전체`]]) {
+    const link=node('a','');link.href=`#reading-${id}`;
+    link.append(node('strong','',label),node('span','',detail));links.append(link);
+  }
+  nav.append(links);
+  return nav;
+}
+
 /** Render plain-text reading data atomically, preserving the prior view on error. */
 export function renderDetailedReport(container, {reading, fortune, topic}) {
   const sections = reading?.sections;
   const months = reading?.months;
   const method = reading?.methodByCategory?.[topic] || reading?.method;
-  if (!['lifelong','annual','monthly'].includes(topic) || !method || !Array.isArray(reading.evidence?.[topic]?.groups)) {
+  if (!['lifelong','annual','monthly','all'].includes(topic) || !method || !Array.isArray(reading.evidence?.[topic]?.groups)) {
     throw new Error('선택한 풀이의 계산 근거를 준비하지 못했어요. 다시 불러와 주세요.');
   }
-  if (topic==='monthly' && (!Array.isArray(months) || months.length!==12 || new Set(months.map(month=>month.month)).size!==12
+  if (['monthly','all'].includes(topic) && (!Array.isArray(months) || months.length!==12 || new Set(months.map(month=>month.month)).size!==12
       || months.some(month=>!Number.isInteger(month.month)||month.month<1||month.month>12||!Array.isArray(month.chapters)))) {
     throw new Error('월별 풀이를 모두 준비하지 못했어요. 다시 불러와 주세요.');
   }
   const fragment = document.createDocumentFragment();
   fragment.append(guideView(reading.guide,reading.glossary));
-  if (topic==='monthly') fragment.append(monthSection({...reading,months:[...months].sort((a,b)=>a.month-b.month)},fortune));
-  else {
-    const section=sections?.find(value=>value.id===topic);
+  if (topic==='all') fragment.append(allNavigation(fortune.year));
+  const visibleTopics=topic==='all'?['lifelong','annual']:topic==='monthly'?[]:[topic];
+  for (const item of visibleTopics) {
+    const section=sections?.find(value=>value.id===item);
     if (!section?.chapters?.length) throw new Error('선택한 풀이를 준비하지 못했어요.');
-    fragment.append(reportSection(section,topic==='lifelong'?'01':'02',reading.adviceByCategory?.[topic],reading.adviceNotice));
+    fragment.append(reportSection(section,item==='lifelong'?'01':'02',reading.adviceByCategory?.[item],reading.adviceNotice));
   }
+  if (['monthly','all'].includes(topic)) fragment.append(monthSection({...reading,months:[...months].sort((a,b)=>a.month-b.month)},fortune));
   fragment.append(evidenceView(reading.evidence[topic]),methodView(method),sourcesView(topic,fortune.year));
   container.replaceChildren(fragment);
 }

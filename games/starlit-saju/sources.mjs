@@ -38,7 +38,7 @@ const CALENDAR_2026 = {
 
 export function getReadingSources(topic = 'lifelong', year) {
   const sources = COMMON_SOURCES.map(source => ({ ...source }));
-  if ((topic === 'annual' || topic === 'monthly') && Number(year) === 2026) {
+  if (['annual', 'monthly', 'all'].includes(topic) && Number(year) === 2026) {
     sources.push({ ...CALENDAR_2026 });
   }
   return sources;

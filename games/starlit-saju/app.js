@@ -239,7 +239,8 @@ function renderReading(result) {
 const TOPICS = Object.freeze({
   lifelong:{label:'평생운',description:'태어난 때의 사주로 나의 성향과 생활을 살펴봐요.'},
   annual:{label:'올해운',description:'선택한 해의 글자와 내 사주를 함께 살펴봐요.'},
-  monthly:{label:'월별운',description:'선택한 연도의 1~12월 전체 풀이를 포함해요.'}
+  monthly:{label:'월별운',description:'선택한 연도의 1~12월 전체 풀이를 포함해요.'},
+  all:{label:'전체 풀이',description:'평생운과 선택한 연도의 올해운·12개월 월별운을 모두 읽어요.'}
 });
 let entryQuote = null;
 let entryQuoteError = false;
@@ -269,11 +270,22 @@ function targetFrom(prefix) {
   return {topic,year};
 }
 function targetLabel({topic,year}) {
+  if (topic==='all') return `${year}년 전체 풀이`;
   return topic==='lifelong' ? '평생운' : `${year}년 ${topic==='annual'?'운세':'월별운'}`;
 }
 function sameTarget(left,right) { return left?.topic===right?.topic && left?.year===right?.year; }
+function includedTargets(target) {
+  return target.topic==='all' ? [{topic:'lifelong',year:0},{topic:'annual',year:target.year},{topic:'monthly',year:target.year}] : [target];
+}
 function owned(status,target) {
-  return Boolean(status?.adminPreview || status?.bundle_entitlement || status?.entitlements?.some(item => item.topic===target.topic && Number(item.year)===target.year));
+  return Boolean(status?.adminPreview || status?.bundle_entitlement || includedTargets(target).every(choice=>status?.entitlements?.some(item => item.topic===choice.topic && Number(item.year)===choice.year)));
+}
+function payable(status,target) {
+  return includedTargets(target).reduce((total,choice)=>total+(owned(status,choice)?0:10),0);
+}
+function priceLabel(status,target) {
+  const price=payable(status,target);
+  return target.topic==='all' && price>0 && price<30 ? `남은 ${price}쭈` : `${price}쭈`;
 }
 function readBirth() {
   return {
@@ -287,7 +299,7 @@ function readBirth() {
 function birthSignature(input=readBirth()) { return JSON.stringify(input); }
 function hasBirth() { return ['birth-year','birth-month','birth-day'].every(id => $(id).value !== ''); }
 async function calculateBirth(input) {
-  enginePromise ||= import('./engine.mjs?v=20261113-saju-reader1').catch(error => { enginePromise=null; throw error; });
+  enginePromise ||= import('./engine.mjs?v=20261113-saju-all1').catch(error => { enginePromise=null; throw error; });
   const {calculateSaju} = await enginePromise;
   return calculateSaju(input);
 }
@@ -303,13 +315,13 @@ function updateEntryOffer() {
   document.querySelectorAll('[data-entry-price]').forEach(value => {
     const topic = value.dataset.entryPrice;
     const choice = {topic,year:topic==='lifelong'?0:Number($('entry-year').value)};
-    value.textContent = preview ? '차감 없음' : owned(quote?.status,choice) ? '구매 완료' : '10쭈';
+    value.textContent = preview ? '차감 없음' : owned(quote?.status,choice) ? '구매 완료' : priceLabel(quote?.status,choice);
   });
-  $('entry-price-value').textContent = `${targetLabel(target)} · ${preview?'관리자 미리보기':purchased?'추가 차감 없음':'10쭈'}`;
+  $('entry-price-value').textContent = `${targetLabel(target)} · ${preview?'관리자 미리보기':purchased?'추가 차감 없음':priceLabel(quote?.status,target)}`;
   if (busy) return;
   submit.disabled = entryCheckPending || entryQuoteError;
   submit.querySelector('span').textContent = entryCheckPending ? '구매 내역 확인 중…'
-    : preview ? `${targetLabel(target)} 미리보기` : purchased ? `${targetLabel(target)} 다시 보기 · 0쭈` : `10쭈로 ${targetLabel(target)} 펼치기`;
+    : preview ? `${targetLabel(target)} 미리보기` : purchased ? `${targetLabel(target)} 다시 보기 · 0쭈` : `${priceLabel(quote?.status,target)}로 ${targetLabel(target)} 펼치기`;
 }
 function updateProductOffer() {
   const target = targetFrom('report');
@@ -320,12 +332,12 @@ function updateProductOffer() {
   document.querySelectorAll('[data-report-price]').forEach(value => {
     const topic = value.dataset.reportPrice;
     const choice = {topic,year:topic==='lifelong'?0:Number($('fortune-year').value)};
-    value.textContent = status?.adminPreview ? '차감 없음' : owned(status,choice) ? '구매 완료' : '10쭈';
+    value.textContent = status?.adminPreview ? '차감 없음' : owned(status,choice) ? '구매 완료' : priceLabel(status,choice);
   });
-  $('product-offer').textContent = `${targetLabel(target)} · ${status?.adminPreview?'관리자 미리보기, 차감 없음':purchased?'구매한 풀이, 추가 차감 없음':status?'10쭈':'구매 내역 확인 필요'}`;
+  $('product-offer').textContent = `${targetLabel(target)} · ${status?.adminPreview?'관리자 미리보기, 차감 없음':purchased?'구매한 풀이, 추가 차감 없음':status?priceLabel(status,target):'구매 내역 확인 필요'}`;
   $('open-product').disabled = reportBusy || !status || Boolean(current);
   if (!reportBusy) $('open-product').textContent = current ? '현재 보고 있는 풀이'
-    : status?.adminPreview ? `${targetLabel(target)} 미리보기` : purchased ? `${targetLabel(target)} 다시 보기 · 0쭈` : `10쭈로 ${targetLabel(target)} 펼치기`;
+    : status?.adminPreview ? `${targetLabel(target)} 미리보기` : purchased ? `${targetLabel(target)} 다시 보기 · 0쭈` : `${priceLabel(status,target)}로 ${targetLabel(target)} 펼치기`;
   $('report-product-picker').disabled = reportBusy;
   $('fortune-year').disabled = reportBusy;
 }
@@ -382,9 +394,9 @@ document.querySelectorAll('.reading-size-control button').forEach(button=>button
 
 async function prepareDetailedReading(chart,target) {
   detailModulesPromise ||= Promise.all([
-    import('./fortune-data.mjs?v=20261113-saju-reader1'),
-    import('./readings.mjs?v=20261113-saju-reader1'),
-    import('./report-view.mjs?v=20261113-saju-reader1')
+    import('./fortune-data.mjs?v=20261113-saju-all1'),
+    import('./readings.mjs?v=20261113-saju-all1'),
+    import('./report-view.mjs?v=20261113-saju-all1')
   ]).catch(error=>{detailModulesPromise=null;throw error;});
   const [dataModule,readingModule,viewModule]=await detailModulesPromise;
   const fortune=dataModule.analyzeFortune(chart,{year:target.topic==='lifelong'?koreanYear():target.year,now:new Date()});
@@ -401,9 +413,9 @@ function commitDetailedReading(chart,{fortune,reading,content,copyText,target}) 
   $('report-content').dataset.topic=target.topic;
   $('report-content').dataset.year=String(target.year);
   $('report-content').removeAttribute('aria-busy');
-  $('detailed-intro').textContent=target.topic==='monthly' ? reading.monthsIntro : reading.sections.find(section=>section.id===target.topic)?.summary || reading.intro;
+  $('detailed-intro').textContent=target.topic==='all' ? `평생운과 ${target.year}년 올해운, 1~12월 월별운을 한자리에서 읽어요. 아래에서 원하는 풀이로 바로 갈 수 있어요.` : target.topic==='monthly' ? reading.monthsIntro : reading.sections.find(section=>section.id===target.topic)?.summary || reading.intro;
   $('current-report-link').href=target.topic==='monthly'?'#reading-months':`#reading-${target.topic}`;
-  $('current-report-label').textContent=target.topic==='monthly'?'12개월 풀이':targetLabel(target);
+  $('current-report-label').textContent=target.topic==='all'?'전체 풀이':target.topic==='monthly'?'12개월 풀이':targetLabel(target);
   $('current-reading-title').textContent=`${targetLabel(target)}${target.topic==='monthly'?' · 1~12월 전체':''}`;
   $('current-reading-note').textContent=currentAccess?.status?.adminPreview?'관리자 미리보기 · 차감 없음':'구매한 풀이 · 이 풀이 다시 보기 0쭈';
   $('reading-controls').hidden=false;
@@ -419,7 +431,10 @@ function recordReceipt(status,receipt,target) {
   const next={...status,coins:receipt.coins??status.coins,entitlements:[...(status.entitlements||[])]};
   if (receipt.adminPreview) next.adminPreview=true;
   else if (receipt.legacy_bundle) next.bundle_entitlement=next.bundle_entitlement||{price:10};
-  else if (!next.entitlements.some(item=>sameTarget(item,target))) next.entitlements.push({...target,price:10,request_id:receipt.request_id});
+  else {
+    const items=target.topic==='all'?receipt.items:[{...target,price:10,request_id:receipt.request_id}];
+    for (const item of items) if (!next.entitlements.some(current=>sameTarget(current,item))) next.entitlements.push({...item});
+  }
   return next;
 }
 function openInitialReport(chart,prepared,status,receipt,signature) {
@@ -537,7 +552,7 @@ function resetAfterAccountChange() {
 async function readyBilling() {
   if (billingPromise) return billingPromise;
   const task=(async()=>{
-    const {SajuPayment}=await import('./payment.js?v=20261113-saju-reader1');
+    const {SajuPayment}=await import('./payment.js?v=20261113-saju-all1');
     billing ||= new SajuPayment({
       onBalance:()=>updateBillingStatus(),
       onAccountChange:()=>{

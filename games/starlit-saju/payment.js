@@ -3,12 +3,14 @@
 const SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const HASH = /^[0-9a-f]{64}$/;
-const TOPICS = new Set(['lifelong', 'annual', 'monthly']);
+const SINGLE_TOPICS = ['lifelong', 'annual', 'monthly'];
+const PRICES = Object.freeze({ lifelong: 10, annual: 10, monthly: 10, all: 30 });
+const TOPICS = new Set(Object.keys(PRICES));
 const messages = {
   not_signed_in: '아지트에 로그인한 뒤 사주를 펼쳐 주세요.',
   member_required: '아지트 회원으로 로그인하면 사주를 볼 수 있어요.',
   banned: '현재 계정으로는 사주를 펼칠 수 없어요.',
-  coins: '쭈가 부족해요. 선택한 사주 풀이에는 10쭈가 필요해요.',
+  coins: '쭈가 부족해요. 표시된 이용료와 보유한 쭈를 확인해 주세요.',
   wallet_unavailable: '보유한 쭈를 확인하지 못했어요. 잠시 후 다시 눌러 주세요.',
   request_conflict: '사주 이용 내역을 확인하지 못했어요. 새로고침한 뒤 다시 눌러 주세요.',
   invalid: '사주 이용 정보를 확인하지 못했어요. 입력을 확인한 뒤 다시 눌러 주세요.',
@@ -17,8 +19,12 @@ const messages = {
   busy: '먼저 펼치던 사주를 확인하고 있어요. 잠시만 기다려 주세요.',
   network: '연결을 확인한 뒤 다시 눌러 주세요. 같은 사주의 같은 항목·연도에는 쭈가 두 번 차감되지 않아요.'
 };
-function problem(code = 'network') {
-  const error = new Error(messages[code] || messages.network);
+function problem(code = 'network', details = {}) {
+  const required = details.required ?? details.price;
+  const message = code === 'coins' && [10, 20, 30].includes(required)
+    ? `쭈가 부족해요. 아직 구매하지 않은 풀이를 열려면 ${required}쭈가 필요해요.`
+    : messages[code] || messages.network;
+  const error = new Error(message);
   error.name = 'SajuPaymentError';
   error.code = code;
   return error;
@@ -49,6 +55,31 @@ function purchaseOptions(options) {
   const year = options.topic === 'lifelong' ? 0 : options.year;
   if (options.topic !== 'lifelong' && (!Number.isInteger(year) || year < 1900 || year > 2050)) throw problem('invalid');
   return { topic: options.topic, year };
+}
+function validSingleReceipt(receipt, product, chartKey) {
+  return receipt?.ok === true && UUID.test(receipt.request_id || '') && receipt.chart_key === chartKey
+    && receipt.topic === product.topic && receipt.year === product.year && receipt.price === 10
+    && receipt.entitlement_version === 2 && typeof receipt.replayed === 'boolean'
+    && [0, 10].includes(receipt.charged) && Number.isSafeInteger(receipt.coins) && receipt.coins >= 0;
+}
+function validateReceipt(receipt, product, chartKey) {
+  if (!HASH.test(chartKey) || !receipt || receipt.chart_key !== chartKey) throw problem('invalid');
+  if (product.topic !== 'all') {
+    if (!validSingleReceipt(receipt, product, chartKey)) throw problem('invalid');
+    return;
+  }
+  if (!UUID.test(receipt.request_id || '') || receipt.topic !== 'all' || receipt.year !== product.year
+    || receipt.price !== 30 || receipt.entitlement_version !== 3 || receipt.entitled !== true
+    || typeof receipt.replayed !== 'boolean' || ![0, 10, 20, 30].includes(receipt.charged)
+    || !Number.isSafeInteger(receipt.coins) || receipt.coins < 0
+    || !Array.isArray(receipt.items) || receipt.items.length !== 3) throw problem('invalid');
+  for (const topic of SINGLE_TOPICS) {
+    const items = receipt.items.filter(item => item?.topic === topic);
+    if (items.length !== 1 || !validSingleReceipt(items[0], { topic, year: topic === 'lifelong' ? 0 : product.year }, chartKey)
+      || items[0].entitled !== true || items[0].coins !== receipt.coins) throw problem('invalid');
+  }
+  if (receipt.items.reduce((sum, item) => sum + item.charged, 0) !== receipt.charged
+    || (receipt.replayed && receipt.charged !== 0)) throw problem('invalid');
 }
 async function fingerprint(value, owner) {
   if (!globalThis.crypto?.subtle || !globalThis.crypto?.randomUUID) throw problem('invalid');
@@ -176,7 +207,7 @@ export class SajuPayment {
         await this.refreshAdminMode();
         if (owner !== this.user) throw problem('not_signed_in');
         if (!this.adminPreview) {
-          const status = await this.rpc('saju_reading_status_v2', { p_chart_key: null });
+          const status = await this.rpc('saju_reading_status_v3', { p_chart_key: null });
           if (!status?.ok) throw problem(status?.reason);
           this.setBalance(status.coins);
         }
@@ -197,19 +228,19 @@ export class SajuPayment {
     await this.refreshAdminMode();
     this.check(owner, version);
     if (this.adminPreview) return {
-      ok: true, coins: this.balance, prices: { lifelong: 10, annual: 10, monthly: 10 },
+      ok: true, coins: this.balance, prices: { ...PRICES },
       entitlements: [], bundle_entitlement: null, adminPreview: true
     };
     const chartKey = await fingerprint(value, owner);
     this.check(owner, version);
-    const result = await this.rpc('saju_reading_status_v2', { p_chart_key: chartKey });
+    const result = await this.rpc('saju_reading_status_v3', { p_chart_key: chartKey });
     this.check(owner, version);
     if (!result?.ok) throw problem(result?.reason);
     if (result.chart_key !== chartKey || !Number.isSafeInteger(result.coins) || result.coins < 0
-      || !Array.isArray(result.entitlements) || [...TOPICS].some(topic => result.prices?.[topic] !== 10)) throw problem('invalid');
+      || !Array.isArray(result.entitlements) || [...TOPICS].some(topic => result.prices?.[topic] !== PRICES[topic])) throw problem('invalid');
     for (const item of result.entitlements) {
       const product = purchaseOptions(item);
-      if (product.year !== item.year || !UUID.test(item.request_id || '') || item.price !== 10) throw problem('invalid');
+      if (!SINGLE_TOPICS.includes(product.topic) || product.year !== item.year || !UUID.test(item.request_id || '') || item.price !== 10) throw problem('invalid');
     }
     if (result.bundle_entitlement && (!UUID.test(result.bundle_entitlement.request_id || '') || result.bundle_entitlement.price !== 10)) throw problem('invalid');
     this.setBalance(result.coins);
@@ -239,17 +270,20 @@ export class SajuPayment {
       this.check(owner, version);
       const requestKey = `${chartKey}|${product.topic}|${product.year}`;
       if (!this.requests.has(requestKey)) this.requests.set(requestKey, crypto.randomUUID());
-      const result = await this.rpc('saju_reading_buy_v2', {
+      const args = {
         p_request_id: this.requests.get(requestKey), p_chart_key: chartKey,
-        p_topic: product.topic, p_year: product.year, p_expected_user: owner, p_verify_only: false
-      });
+        p_year: product.year, p_expected_user: owner, p_verify_only: false
+      };
+      if (product.topic !== 'all') args.p_topic = product.topic;
+      const result = await this.rpc(product.topic === 'all' ? 'saju_reading_buy_all_v3' : 'saju_reading_buy_v2', args);
       this.check(owner, version);
       this.setBalance(result?.coins);
-      if (!result?.ok) throw problem(result?.reason);
-      if (!UUID.test(result.request_id || '') || !HASH.test(result.chart_key || '') || result.chart_key !== chartKey
-        || result.price !== 10 || typeof result.replayed !== 'boolean' || ![0, 10].includes(result.charged)
-        || result.topic !== product.topic || result.year !== product.year || result.entitlement_version !== 2) throw problem('invalid');
+      if (!result?.ok) throw problem(result?.reason, { price: PRICES[product.topic], ...result });
+      validateReceipt(result, product, chartKey);
       this.requests.set(requestKey, result.request_id);
+      if (product.topic === 'all') {
+        for (const item of result.items) this.requests.set(`${chartKey}|${item.topic}|${item.year}`, item.request_id);
+      }
       return result;
     })();
     this.pending = task;

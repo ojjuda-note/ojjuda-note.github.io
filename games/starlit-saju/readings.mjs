@@ -1,10 +1,10 @@
 import {
   STEM_REFERENCE, GROUP_REFERENCE, GOD_REFERENCE, ELEMENT_RELATIONS,
   RELATION_REFERENCE, GROUP_PAIR_RULES, PRACTICE_SUGGESTIONS,
-} from './readings-data.mjs?v=20261113-saju-reader1';
-import { attachPlainLanguage } from './plain-language.mjs?v=20261113-saju-reader1';
-import { attachAdvice } from './advice.mjs?v=20261113-saju-reader1';
-import { getReadingSources } from './sources.mjs?v=20261113-saju-reader1';
+} from './readings-data.mjs?v=20261113-saju-all1';
+import { attachPlainLanguage } from './plain-language.mjs?v=20261113-saju-all1';
+import { attachAdvice } from './advice.mjs?v=20261113-saju-all1';
+import { getReadingSources } from './sources.mjs?v=20261113-saju-all1';
 
 const GROUP_KEYS = ['peer', 'expression', 'wealth', 'authority', 'resource'];
 const ELEMENT_KEYS = ['wood', 'fire', 'earth', 'metal', 'water'];
@@ -284,6 +284,7 @@ function buildEvidence(fortune,registry) {
     lifelong:{title:'평생운 풀이에 사용한 전체 계산자료',groups:natalGroups()},
     annual:{title:`${fortune.year}년 연간 풀이에 사용한 전체 계산자료`,groups:[...natalGroups(),...transitGroups(registry.annual)]},
     monthly:{title:`${fortune.year}년 월별 풀이에 사용한 전체 계산자료`,groups:[...natalGroups(),...registry.months.flatMap(transitGroups)]},
+    all:{title:`평생운과 ${fortune.year}년 올해운·월별운의 전체 계산자료`,groups:[...natalGroups(),...transitGroups(registry.annual),...registry.months.flatMap(transitGroups)]},
   };
 }
 
@@ -353,22 +354,29 @@ function adviceCopy(report,advice) {
 }
 function copyCategory(report,topic) {
   const method=report.methodByCategory[topic];
-  const lines=['오쭈다 · 별빛 사주팔자',topic==='lifelong'?'평생운 · 나의 사주와 생활 이야기':report.year+'년 '+(topic==='annual'?'올해운':'월별운'),'',report.guide.title,...report.guide.paragraphs];
-  if(topic==='monthly'){
-    lines.push('',report.monthsIntro);
-    for(const month of report.months)lines.push('',month.title,month.summary,month.periodLabel,...easySectionCopy(month.chapters),...adviceCopy(report,month.advice));
-  }else{
-    const section=report.sections.find(value=>value.id===topic);
-    lines.push('',section.title,section.summary,...easySectionCopy(section.chapters),...adviceCopy(report,report.adviceByCategory[topic]));
+  const topics=topic==='all'?['lifelong','annual','monthly']:[topic];
+  const title=topic==='all'?`전체 풀이 · 평생운과 ${report.year}년 올해운·월별운`:
+    topic==='lifelong'?'평생운 · 나의 사주와 생활 이야기':report.year+'년 '+(topic==='annual'?'올해운':'월별운');
+  const lines=['오쭈다 · 별빛 사주팔자',title,'',report.guide.title,...report.guide.paragraphs];
+  for(const current of topics){
+    if(current==='monthly'){
+      lines.push('',report.monthsIntro);
+      for(const month of report.months)lines.push('',month.title,month.summary,month.periodLabel,...easySectionCopy(month.chapters),...adviceCopy(report,month.advice));
+    }else{
+      const section=report.sections.find(value=>value.id===current);
+      lines.push('',section.title,section.summary,...easySectionCopy(section.chapters),...adviceCopy(report,report.adviceByCategory[current]));
+    }
   }
   lines.push('','사주 이름을 쉬운 말로',...report.glossary.map(value=>value.term+': '+value.meaning));
   lines.push('',method.title,method.description,method.reuseNotice,'[이 상품에 포함된 계산 범위]',...method.calculated,'[계산하지 않은 범위]',...method.notCalculated,...method.warnings);
   lines.push('','원래의 계산과 해석 전체');
-  if(topic==='monthly'){
-    for(const month of report.months)lines.push('',month.title,month.summary,month.periodLabel,...sectionCopy(month.chapters));
-  }else{
-    const section=report.sections.find(value=>value.id===topic);
-    lines.push('',section.title,section.summary,...sectionCopy(section.chapters));
+  for(const current of topics){
+    if(current==='monthly'){
+      for(const month of report.months)lines.push('',month.title,month.summary,month.periodLabel,...sectionCopy(month.chapters));
+    }else{
+      const section=report.sections.find(value=>value.id===current);
+      lines.push('',section.title,section.summary,...sectionCopy(section.chapters));
+    }
   }
   const evidence=report.evidence[topic];
   lines.push('',evidence.title);
@@ -393,7 +401,7 @@ export function buildDetailedReading(chart,fortune) {
     year:fortune.year,title:`${STEM_REFERENCE[profile.dayMaster.hanja].name} 원국과 ${fortune.year}년의 계산·해설`,
     intro:`확정된 ${profile.knownCharacterCount}글자와 실제로 계산한 관계만 풀이의 근거로 사용해요. 계산된 자료와 그 위에 적용한 해석 규칙은 서로 구분해서 읽어 주세요.`,
     method:methodMetadata(fortune),facts:registry.facts,
-    methodByCategory:Object.fromEntries(['lifelong','annual','monthly'].map(topic=>[topic,methodMetadata(fortune,topic)])),
+    methodByCategory:Object.fromEntries(['lifelong','annual','monthly','all'].map(topic=>[topic,methodMetadata(fortune,topic)])),
     sections:[
       {id:'lifelong',title:'평생운 · 원국의 장기 주제',kicker:'NATAL CHART',summary:'확정된 원국의 구성과 관계를 읽어요. 나이별 대운이나 정해진 사건의 순서를 계산한 내용은 아니에요.',chapters:lifelongChapters(chart,fortune,registry)},
       {id:'annual',title:`${fortune.year}년 연간운`,kicker:'YEARLY CHART',summary:`${fortune.annual.hangul}(${fortune.annual.hanja}) 세운과 실제 원국의 관계예요. ${fortune.annual.notes.join(' ')}`,chapters:annualChapters(fortune,registry)},
@@ -403,7 +411,7 @@ export function buildDetailedReading(chart,fortune) {
   };
   attachPlainLanguage(report,chart,fortune);
   attachAdvice(report,fortune);
-  report.copyByCategory=Object.fromEntries(['lifelong','annual','monthly'].map(topic=>[topic,copyCategory(report,topic)]));
-  report.copyText=['lifelong','annual','monthly'].map(topic=>report.copyByCategory[topic]).join('\n\n');
+  report.copyByCategory=Object.fromEntries(['lifelong','annual','monthly','all'].map(topic=>[topic,copyCategory(report,topic)]));
+  report.copyText=report.copyByCategory.all;
   return report;
 }
