@@ -117,5 +117,12 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'bDvtb6Pywes', title: 'Checkmate', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.09.11' },
     { id: 'W-D8GSXg1W8', title: 'Bloody Paradise', kind: '퍼포먼스 뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.08.31' },
     { id: 'R6e4tBWxIxE', title: 'Knife', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.01.16' }
+  ],
+  treasure: [
+    { id: 'u_hpZueWI9g', title: 'SHOCK', kind: '뮤직비디오', source: 'TREASURE Official / YG · 2026.11.02' },
+    { id: 'QERKD90hG98', title: 'IF I', kind: '뮤직비디오', source: 'TREASURE Official / YG · 2026.06.01' },
+    { id: 'nSKPJ2UmnqU', title: 'ZOOM ZOOM', kind: '안무 영상', source: 'TREASURE Official / YG · 2026.06.16' },
+    { id: 'KcW1_wI6rsc', title: 'EVERYTHING', kind: '뮤직비디오', source: 'TREASURE Official / YG · 2025.09.19' }
   ]
+
 });
