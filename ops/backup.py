@@ -17,6 +17,8 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import urllib.error
+import urllib.request
 from pathlib import Path
 from urllib.parse import quote, urlparse
 
@@ -42,6 +44,7 @@ def required_config():
     if missing:
         raise RuntimeError("Missing backup configuration: " + ", ".join(missing))
     cfg = {key: os.environ[key].strip() for key in NEEDED}
+    cfg["SUPABASE_ACCESS_TOKEN"] = os.environ.get("SUPABASE_ACCESS_TOKEN", "").strip()
     if not re.fullmatch(r"[a-z0-9]{20}", cfg["SUPABASE_PROJECT_REF"]):
         raise RuntimeError("Invalid Supabase project reference")
     ref = cfg["SUPABASE_PROJECT_REF"]
@@ -87,6 +90,36 @@ def required_config():
     cfg["retention"] = retention
     cfg["prefix"] = prefix
     return cfg
+
+
+def escrow_vault_root_key(dest, cfg):
+    """Save the project's Vault root key only inside the encrypted snapshot."""
+    token = cfg.get("SUPABASE_ACCESS_TOKEN", "")
+    if not token:
+        raise RuntimeError(
+            "Vault secrets require a scoped Supabase access token so their root key can be escrowed"
+        )
+    request = urllib.request.Request(
+        f"https://api.supabase.com/v1/projects/{cfg['SUPABASE_PROJECT_REF']}/pgsodium",
+        headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            payload = json.loads(response.read(4096))
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(
+            f"Vault root key request was rejected (HTTP {exc.code}); verify the scoped access token"
+        ) from None
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError):
+        raise RuntimeError("Vault root key request failed; verify Management API access") from None
+    root_key = payload.get("root_key", "") if isinstance(payload, dict) else ""
+    if not re.fullmatch(r"[0-9a-fA-F]{64}", root_key):
+        raise RuntimeError("Supabase Management API returned an invalid Vault root key")
+    fd = os.open(dest, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as stream:
+        json.dump({"format": 1, "project_ref": cfg["SUPABASE_PROJECT_REF"],
+                   "root_key": root_key.lower()}, stream)
+        stream.write("\n")
 
 
 def command_failure_reason(stderr):
@@ -419,7 +452,7 @@ def main():
         pg_query("Auth count", AUTH_COUNT_SQL, root / "auth_count.txt", cfg)
         pg_query("Vault secret count", VAULT_COUNT_SQL, root / "vault_secret_count.txt", cfg)
         if int((root / "vault_secret_count.txt").read_text().strip()):
-            raise RuntimeError("Vault secrets need a separately escrowed encryption root key before this is a complete recovery backup")
+            escrow_vault_root_key(root / "vault-root-key.json", cfg)
         pg_query("Cron jobs", CRON_SQL, root / "cron_jobs.jsonl", cfg)
         pg_query("Migration history", MIGRATIONS_SQL, root / "migration_history.jsonl", cfg)
         pg_query("Extensions", EXTENSIONS_SQL, root / "extensions.jsonl", cfg)

@@ -31,6 +31,7 @@
 | --- | --- |
 | `BACKUP_SUPABASE_DB_PASSWORD` | 프로젝트의 기존 DB 비밀번호. 접속 주소나 다른 키를 넣지 않는다. |
 | `BACKUP_SUPABASE_S3_ACCESS_KEY`, `BACKUP_SUPABASE_S3_SECRET_KEY` | 운영 Storage S3 전용 키 |
+| `BACKUP_SUPABASE_ACCESS_TOKEN` | 운영 프로젝트에 한정하고 Project Settings 읽기·쓰기 권한을 준 Supabase scoped PAT. Vault 루트 키 조회에만 사용한다. |
 | `BACKUP_S3_ACCESS_KEY`, `BACKUP_S3_SECRET_KEY` | 네이버 클라우드 백업 전용 API 인증키의 Access Key ID / Secret Key |
 
    엔드포인트 `https://kr.object.ncloudstorage.com`, 리전 `kr-standard`, 버킷 `ojjuda-backup-ziezbdjofcugznowiuda`는 workflow에 고정한다. 이 세 값과 공개 암호화 수신자는 Secret으로 등록할 필요가 없다. 로컬 실행에는 같은 값을 환경변수 `BACKUP_S3_ENDPOINT`, `BACKUP_S3_REGION`, `BACKUP_S3_BUCKET`으로 설정한다. 스크립트는 다른 업체·해외 리전으로의 잘못된 백업 설정을 거부한다. API 인증키는 네이버 클라우드 **My Account > 계정 및 보안 관리 > 보안 관리 > 접근 관리 > API 인증키**에서 관리한다. 키와 DB 연결 URL은 대화나 소스에 남기지 않는다.
@@ -56,7 +57,7 @@ GitHub Actions의 예약 실행은 정각에 지연되거나 드물게 누락될
 
 - 전체 Git mirror (`source-git-mirror.tar.gz`): 커밋과 브랜치·태그 이력 및 공개 자산. GitHub 계정 권한/저장소 설정은 별도 재설정.
 - `roles.sql`, `schema.sql`, `data.sql`: Supabase CLI의 역할·스키마·데이터 덤프. 작업이 `auth.users`와 `storage.objects` 데이터를 포함하지 않으면 **실패**한다.
-- `vault_secret_count.txt`: 현재는 Vault 비밀값이 0개다. 앞으로 Vault 비밀값이 생기면 암호화 루트 키를 별도로 안전하게 보관하기 전까지 이 작업은 완전한 복구 백업으로 성공하지 않도록 중단한다.
+- `vault_secret_count.txt`, `vault-root-key.json`: Vault 비밀값이 있으면 Management API에서 현재 프로젝트의 64자리 루트 키를 조회해 암호화 묶음 안에만 넣는다. scoped PAT가 없거나 키 조회·형식 검증이 실패하면 완전한 복구 백업으로 성공하지 않는다. 평문 키는 로그·GitHub artifact·저장소에 남기지 않는다.
 - `buckets.jsonl`, `objects.jsonl`, `storage-map.json`, `storage/blobs/`: 버킷·파일 메타데이터와 실제 바이트. 목록·개수·크기·ETag, 전후 목록 일치를 검사한다.
 - `cron_jobs.jsonl`, `migration_history.jsonl`, `extensions.jsonl`, `managed_schema_triggers.jsonl`, `managed_schema_policies.jsonl`: 복구 시 검토하여 재설치할 DB 예약 작업·마이그레이션·관리 스키마 사용자 정의 항목. 민감한 명령이 포함될 수 있으므로 암호화 파일 밖에 공개하지 않는다.
 - `manifest.json`: 내부 파일별 SHA-256와 크기. 업로드한 **암호문을 다시 다운로드해 전체 SHA-256을 확인**한다.
