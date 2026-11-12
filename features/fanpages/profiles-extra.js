@@ -243,3 +243,31 @@ if (seventeenProfile) {
   seventeenProfile.sources.push({ label: 'PLEDIS · SEVENTEEN 공식 프로필', href: 'https://www.pledis.co.kr/artist/detail/seventeen/profile/' });
   seventeenProfile.sources.push({ label: '일본 공식 일정 · 11월 공연', href: 'https://www.seventeen-17.jp/posts/schedule' });
 }
+
+
+/* TREASURE: official YG member birthdays; private physical/school details stay blank. */
+const treasureProfile = window.OJJUDA_FAN_PROFILES.treasure;
+if (treasureProfile) {
+  treasureProfile.checkedAt = '2026.11.12';
+  treasureProfile.expanded = true;
+  const birthdays = {
+    '최현석': '1999.04.21', '지훈': '2000.03.14', '요시': '2000.05.15',
+    '준규': '2000.09.09', '윤재혁': '2001.07.23', '아사히': '2001.08.20',
+    '도영': '2003.12.04', '하루토': '2004.04.05', '박정우': '2004.09.28',
+    '소정환': '2005.02.18'
+  };
+  for (const member of treasureProfile.members) {
+    member.birthday = birthdays[member.name] || null;
+    member.source = 'https://ygfamily.com/ko/artists/treasure/profile';
+  }
+  treasureProfile.awards = [
+    { year: '2023.01', title: '골든디스크 어워즈 베스트 그룹', detail: 'YG 공식 수상 이력', href: 'https://ygfamily.com/ko/artists/treasure/profile' },
+    { year: '2021.01', title: '서울가요대상 신인상', detail: '제30회 · YG 공식 수상 이력', href: 'https://ygfamily.com/ko/artists/treasure/profile' }
+  ];
+  treasureProfile.records = [
+    { year: '2020.08', title: 'THE FIRST STEP : CHAPTER ONE 데뷔', detail: '2020.08.07 · BOY', href: 'https://ygfamily.com/ko/artists/treasure/profile' },
+    { year: '2026.06', title: '4번째 미니앨범 NEW WAV', detail: '타이틀 IF I 포함 4곡', href: 'https://www.ygfamily.com/en/artists/treasure/discography/1660' }
+  ];
+  treasureProfile.sources.unshift({ label: 'YG 공식 프로필 · 멤버 생일·수상', href: 'https://ygfamily.com/ko/artists/treasure/profile' });
+  treasureProfile.sources.push({ label: 'YG 공식 최신 음반 정보', href: 'https://www.ygfamily.com/en/artists/treasure/discography' });
+}
