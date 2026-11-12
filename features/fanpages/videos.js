@@ -99,5 +99,12 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'b4iVv91Z6lY', title: 'SWIM', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.03.20' },
     { id: '_gyultVTesk', title: '2.0', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.04.01' },
     { id: 'diBO0gMuTXo', title: 'Hooligan', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.04.08' }
+  ],
+  seventeen: [
+    { id: 'hdwGWGSfABA', title: '정한×조슈아 (JxJ) · 12 o’clock', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.10.19' },
+    { id: 'pBpr9TnhhkE', title: 'V8 (디에잇×버논) · singasong', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.06.29' },
+    { id: 'dZNPbNkKAss', title: '도겸×승관 (DxS) · Blue (Epilogue Ver.)', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.01.19' },
+    { id: 'pS57UX6s-xw', title: 'THUNDER', kind: '뮤직비디오', source: 'SEVENTEEN / HYBE LABELS · 2025.05.26' },
+    { id: 'skso_fkQcg0', title: 'Bad Influence (Prod. by Pharrell Williams)', kind: '뮤직비디오', source: 'SEVENTEEN / HYBE LABELS · 2025.06.11' }
   ]
 });
