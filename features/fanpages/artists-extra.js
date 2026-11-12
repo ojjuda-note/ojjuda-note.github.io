@@ -728,6 +728,9 @@
       checkedAt: '2026.11.12',
       official: 'https://beliftlab.com/artist/profile/ENHYPEN?lang=ko', youtube: 'https://www.youtube.com/@ENHYPENOFFICIAL',
       photo: 'Enhypen, June 2026.jpg', photoLabel: '2026년 단체', photoYear: '2026', credit: 'K-POPIT', license: 'CC BY 4.0',
+      morePhotos: [
+        commonsPhoto('Enhypen at Golden disc awards.png', '2026 골든디스크 · 당시 7인 단체', '2026', '티비텐 TV10', 'CC BY 3.0')
+      ],
       music: [
         { title: 'THE SIN : BLISS', date: '2026.08.21', type: '미니 8집 · 타이틀 Bloody Paradise', songs: ['Two Fools', 'Breaking News', 'Stuck', 'Bad For You', 'Remnants of Love', 'Bloody Paradise', 'The Final Moment', 'Checkmate', 'Highlight', 'The Veiled Truth'], href: 'https://beliftlab.com/artist/discography/ENHYPEN/20' },
         { title: 'THE SIN : VANISH', date: '2026.01.16', type: '미니 7집 · 타이틀 Knife', songs: ['The Beginning', 'No Way Back (feat. So!YoON!)', 'The Fugitives', 'Knife', 'Stealer', 'The Voice', 'Witnesses', 'Big Girls Don\'t Cry', 'Lost Island', 'Sleep Tight', 'The Beyond'], href: 'https://beliftlab.com/artist/discography/ENHYPEN/17' },
