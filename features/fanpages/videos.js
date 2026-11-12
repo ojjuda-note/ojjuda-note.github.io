@@ -94,5 +94,10 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'bUMLC9lCgHo', title: 'Crow', kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.06.14 공개' },
     { id: 'w6FzChNkVrY', title: 'Crow', kind: '퍼포먼스', source: 'i-dle Official / CUBE · 2026.06.17' },
     { id: 'DYgE3SGPEqk', title: 'Mono (Feat. skaiwater)', kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.01.27' }
+  ],
+  bts: [
+    { id: 'b4iVv91Z6lY', title: 'SWIM', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.03.20' },
+    { id: '_gyultVTesk', title: '2.0', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.04.01' },
+    { id: 'diBO0gMuTXo', title: 'Hooligan', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.04.08' }
   ]
 });

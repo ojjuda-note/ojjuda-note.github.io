@@ -127,3 +127,36 @@ if (blackpinkProfile) {
   blackpinkProfile.sources.unshift({ label: 'YG 공식 멤버 프로필·생일·수상', href: 'https://ygfamily.com/ko/artists/blackpink/profile' });
   blackpinkProfile.sources.push({ label: 'YG 공식 DEADLINE 음반·수록곡', href: 'https://ygfamily.com/en/artists/blackpink/discography/1651' });
 }
+
+
+/* BTS: seven official member birth dates and blood types. Unpublished height,
+   MBTI, school and hometown information remains unset. */
+const btsProfile = window.OJJUDA_FAN_PROFILES.bts;
+if (btsProfile) {
+  btsProfile.checkedAt = '2026.11.12';
+  btsProfile.expanded = true;
+  btsProfile.records = [
+    { year: '2026.03', title: '정규 5집 ARIRANG 발매', detail: '2026.03.20 · 타이틀 SWIM · 총 14곡', href: 'https://ibighit.com/ko/bts/discography/detail/arirang' },
+    { year: '2026–27', title: 'BTS WORLD TOUR ARIRANG', detail: '고양에서 시작 · 아시아·미주·유럽·호주 등', href: 'https://btsworldtourofficial.com/' },
+    { year: '2026.07', title: 'NORMAL 뮤직비디오 스트리밍 기록', detail: 'Spotify K-pop 영상 공개 첫날 스트리밍 기록', href: 'https://newsroom.spotify.com/2026-07-18/bts-music-video-normal/' }
+  ];
+  const facts = {
+    'RM': ['1994.09.12', 'A', 'RM'],
+    '진': ['1992.12.04', 'O', 'Jin'],
+    '슈가': ['1993.03.09', 'O', 'SUGA'],
+    '제이홉': ['1994.02.18', 'A', 'j-hope'],
+    '지민': ['1995.10.13', 'A', 'Jimin'],
+    '뷔': ['1995.12.30', 'AB', 'V'],
+    '정국': ['1997.09.01', 'A', 'JungKook']
+  };
+  for (const member of btsProfile.members) {
+    const info = facts[member.name];
+    if (!info) continue;
+    member.birthday = info[0];
+    member.bloodType = info[1];
+    member.source = 'https://bts-official.jp/profile/' + info[2];
+  }
+  btsProfile.sources.unshift({ label: 'BTS 일본 공식 멤버 프로필 · 생일·혈액형', href: 'https://bts-official.jp/profile/' });
+  btsProfile.sources.push({ label: 'BIGHIT MUSIC · ARIRANG', href: 'https://ibighit.com/ko/bts/discography/detail/arirang' });
+  btsProfile.sources.push({ label: 'BTS WORLD TOUR 공식 일정', href: 'https://btsworldtourofficial.com/' });
+}

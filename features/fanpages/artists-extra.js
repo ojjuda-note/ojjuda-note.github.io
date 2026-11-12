@@ -418,6 +418,186 @@
       concept: '음악과 이야기를 통해 전 세계 아미와 연결되는 일곱 멤버.',
       official: 'https://ibighit.com/ko/bts/profile/', youtube: 'https://www.youtube.com/@BTS',
       photo: 'BTS during a White House press conference May 31, 2022 (cropped).jpg', photoLabel: '백악관 기자회견', photoYear: '2022', credit: 'The White House', license: 'Public domain',
+      music: [
+        {
+          "title": "ARIRANG",
+          "date": "2026.03.20",
+          "type": "정규 5집 · 타이틀 SWIM",
+          "songs": [
+            "Body to Body",
+            "Hooligan",
+            "Aliens",
+            "FYA",
+            "2.0",
+            "No. 29",
+            "SWIM",
+            "Merry Go Round",
+            "NORMAL",
+            "Like Animals",
+            "they don't know 'bout us",
+            "One More Night",
+            "Please",
+            "Into the Sun"
+          ],
+          "href": "https://ibighit.com/ko/bts/discography/detail/arirang"
+        },
+        {
+          "title": "2 COOL 4 SKOOL",
+          "date": "2013.06.13",
+          "type": "데뷔 싱글 · 타이틀 No More Dream",
+          "songs": [
+            "We Are Bulletproof Pt.2",
+            "No More Dream",
+            "좋아요 (Like)"
+          ],
+          "href": "https://bts.ibighit.com/kor/discography/detail/2_cool_4_school.html"
+        }
+      ],
+      appearances: [
+        {
+          "date": "2026-11-19",
+          "title": "BTS WORLD TOUR ARIRANG · 가오슝",
+          "sub": "가오슝 국립경기장 · Live Nation · 19:00 (현지)",
+          "href": "https://tixcraft.com/activity/detail/26_btskns"
+        },
+        {
+          "date": "2026-11-21",
+          "title": "BTS WORLD TOUR ARIRANG · 가오슝",
+          "sub": "가오슝 국립경기장 · Live Nation · 19:00 (현지)",
+          "href": "https://tixcraft.com/activity/detail/26_btskns"
+        },
+        {
+          "date": "2026-11-22",
+          "title": "BTS WORLD TOUR ARIRANG · 가오슝",
+          "sub": "가오슝 국립경기장 · Live Nation · 19:00 (현지)",
+          "href": "https://tixcraft.com/activity/detail/26_btskns"
+        },
+        {
+          "date": "2026-12-03",
+          "title": "BTS WORLD TOUR ARIRANG · 방콕",
+          "sub": "라자망갈라 국립경기장 · Live Nation · 현지 공연 시각은 예매처 확인",
+          "href": "https://btsworldtourofficial.com/"
+        },
+        {
+          "date": "2026-12-05",
+          "title": "BTS WORLD TOUR ARIRANG · 방콕",
+          "sub": "라자망갈라 국립경기장 · Live Nation · 현지 공연 시각은 예매처 확인",
+          "href": "https://btsworldtourofficial.com/"
+        },
+        {
+          "date": "2026-12-06",
+          "title": "BTS WORLD TOUR ARIRANG · 방콕",
+          "sub": "라자망갈라 국립경기장 · Live Nation · 현지 공연 시각은 예매처 확인",
+          "href": "https://btsworldtourofficial.com/"
+        },
+        {
+          "date": "2026-12-12",
+          "title": "BTS WORLD TOUR ARIRANG · 쿠알라룸푸르",
+          "sub": "TM 스타디움 나시오날 · Live Nation · 현지 공연 시각은 예매처 확인",
+          "href": "https://btsworldtourofficial.com/"
+        },
+        {
+          "date": "2026-12-13",
+          "title": "BTS WORLD TOUR ARIRANG · 쿠알라룸푸르",
+          "sub": "TM 스타디움 나시오날 · Live Nation · 현지 공연 시각은 예매처 확인",
+          "href": "https://btsworldtourofficial.com/"
+        },
+        {
+          "date": "2026-12-17",
+          "title": "BTS WORLD TOUR ARIRANG · 싱가포르",
+          "sub": "내셔널 스타디움 · Live Nation · 현지 공연 시각은 예매처 확인",
+          "href": "https://btsworldtourofficial.com/"
+        },
+        {
+          "date": "2026-12-19",
+          "title": "BTS WORLD TOUR ARIRANG · 싱가포르",
+          "sub": "내셔널 스타디움 · Live Nation · 현지 공연 시각은 예매처 확인",
+          "href": "https://btsworldtourofficial.com/"
+        },
+        {
+          "date": "2026-12-20",
+          "title": "BTS WORLD TOUR ARIRANG · 싱가포르",
+          "sub": "내셔널 스타디움 · Live Nation · 현지 공연 시각은 예매처 확인",
+          "href": "https://btsworldtourofficial.com/"
+        },
+        {
+          "date": "2026-12-22",
+          "title": "BTS WORLD TOUR ARIRANG · 싱가포르",
+          "sub": "내셔널 스타디움 · Live Nation · 현지 공연 시각은 예매처 확인",
+          "href": "https://btsworldtourofficial.com/"
+        },
+        {
+          "date": "2026-12-26",
+          "title": "BTS WORLD TOUR ARIRANG · 자카르타",
+          "sub": "겔로라 붕 카르노 주경기장 · Live Nation · 현지 공연 시각은 예매처 확인",
+          "href": "https://btsworldtourofficial.com/"
+        },
+        {
+          "date": "2026-12-27",
+          "title": "BTS WORLD TOUR ARIRANG · 자카르타",
+          "sub": "겔로라 붕 카르노 주경기장 · Live Nation · 현지 공연 시각은 예매처 확인",
+          "href": "https://btsworldtourofficial.com/"
+        },
+        {
+          "date": "2026-12-29",
+          "title": "BTS WORLD TOUR ARIRANG · 자카르타",
+          "sub": "겔로라 붕 카르노 주경기장 · Live Nation · 현지 공연 시각은 예매처 확인",
+          "href": "https://btsworldtourofficial.com/"
+        }
+      ],
+      news: [
+        {
+          "date": "2026.07.18",
+          "tag": "기록",
+          "title": "NORMAL 뮤직비디오, Spotify 공개 첫날 K-pop 영상 스트리밍 기록",
+          "href": "https://newsroom.spotify.com/2026-07-18/bts-music-video-normal/"
+        },
+        {
+          "date": "2026.03.20",
+          "tag": "컴백",
+          "title": "정규 5집 ARIRANG 발매 · 타이틀 SWIM",
+          "href": "https://ibighit.com/ko/bts/discography/detail/arirang"
+        },
+        {
+          "date": "2026.01.13",
+          "tag": "공연",
+          "title": "2026~27 BTS WORLD TOUR 발표 · 공식 일정 확인",
+          "href": "https://www.metlifestadium.com/news/detail/bts-announces-world-tour-to-play-metlife-stadium"
+        }
+      ],
+      schedules: [
+        {
+          "title": "BTS WORLD TOUR ARIRANG 공식 일정",
+          "sub": "도시·날짜·예매처 · 2026~2027",
+          "href": "https://btsworldtourofficial.com/"
+        },
+        {
+          "title": "BTS Weverse 공식 공지",
+          "sub": "공연·활동 공지 · 일부 로그인 필요",
+          "href": "https://weverse.io/bts/notice"
+        }
+      ],
+      merch: [
+        {
+          "title": "ARIRANG 공식 MD",
+          "sub": "Weverse · 일부 공지 로그인 필요 · 재고는 판매처 확인",
+          "href": "https://weverse.io/bts/notice/34135"
+        },
+        {
+          "title": "BTS 공식 응원봉 VER.4",
+          "sub": "Weverse · 2026년 3월 공식 판매 안내",
+          "href": "https://shop.weverse.io/en/shop/USD/artists/2/notices/12504"
+        }
+      ],
+      campaigns: [
+        {
+          "kind": "콜라보",
+          "date": "2026.03",
+          "title": "BTS × MU:DS 박물관 문화상품",
+          "sub": "국립박물관문화재단 협업 MD · Weverse 공식 판매 안내",
+          "href": "https://weverse.io/bts/notice/34135"
+        }
+      ],
       accent: '#875dca', light: '#eadfff', dark: '#52367b', bg: '#f7f2ff', shape: '✧'
     },
     {
