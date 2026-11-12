@@ -117,5 +117,10 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'bDvtb6Pywes', title: 'Checkmate', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.09.11' },
     { id: 'W-D8GSXg1W8', title: 'Bloody Paradise', kind: '퍼포먼스 뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.08.31' },
     { id: 'R6e4tBWxIxE', title: 'Knife', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.01.16' }
+  ],
+  riize: [
+    { id: 'RgkoXU4BlOE', title: 'Insomnia', kind: '뮤직비디오', source: 'RIIZE / 일본 공식 사이트 · 2026.10.26' },
+    { id: '1ccDZDpPzEI', title: 'Sunburst · 일본 팬미팅', kind: '라이브 무대', source: 'RIIZE 일본 공식 사이트 · 2026.08.25 공개' },
+    { id: 'iUw3LPM7OBU', title: 'Get A Guitar', kind: '뮤직비디오', source: 'SMTOWN · 2023.09.04' }
   ]
 });
