@@ -26,7 +26,7 @@
   <script src="/games/spot-difference/vendor/supabase.js?v=20261112-1" defer></script>
   <script src="/config.js?v=20261112-1" defer></script>
   <script src="./catalog.js?v=20261112-1" defer></script>
-  <script src="./fan.js?v=20261112-manager1" defer></script>
+  <script src="./fan.js?v=20261112-loading1" defer></script>
   <script src="./manager.js?v=20261112-validation1" defer></script>
   <script src="/shared/navigation/section-back.js?v=20261111-anchor2" data-return-to="hub" defer></script>
 </head>
@@ -39,8 +39,8 @@
   </header>
   <div class="fan-tools wrap"><span id="catalog-status" role="status" hidden></span><button id="fan-manage" type="button" hidden>팬페이지 관리</button></div>
 
-  <main id="artist-root" class="artist-page wrap" aria-live="polite">
-    <div class="loading-card">팬페이지를 불러오는 중…</div>
+  <main id="artist-root" class="artist-page wrap" aria-live="polite" aria-busy="true">
+    <div class="loading-card" role="status">팬페이지를 불러오는 중이에요.</div>
   </main>
 
   <footer class="footer"><div class="wrap footer-inner"><span><b>✿</b> OJJUDA <small>FAN SPACE</small></span><span>비공식 팬페이지 · 공식 출처 확인</span><a href="./index.html">팬페이지 홈 ↗</a></div></footer>

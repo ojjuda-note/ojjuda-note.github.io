@@ -642,6 +642,10 @@ function renderFanCatalog() {
 
   if (page === 'hub') initHub();
   if (page === 'artist') initArtist();
+  document.querySelector('main')?.setAttribute('aria-busy', 'false');
+  document.body.querySelectorAll('[data-fan-loading-control]').forEach(control => { control.disabled = false; });
+  const loadingStatus = $('#catalog-status');
+  if (loadingStatus && (!window.OjjudaFanCatalog || window.OjjudaFanCatalog.available)) loadingStatus.hidden = true;
 }
 
 if (window.OjjudaFanCatalog) window.OjjudaFanCatalog.ready.then(renderFanCatalog);
