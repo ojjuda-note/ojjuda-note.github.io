@@ -117,5 +117,11 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'bDvtb6Pywes', title: 'Checkmate', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.09.11' },
     { id: 'W-D8GSXg1W8', title: 'Bloody Paradise', kind: '퍼포먼스 뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.08.31' },
     { id: 'R6e4tBWxIxE', title: 'Knife', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.01.16' }
+  ],
+  nctwish: [
+    { id: 'xIlFjHHUfI0', title: 'I SPY', kind: '뮤직비디오', source: 'SMTOWN · 2026.10.12' },
+    { id: '1o5O2YvV3HU', title: 'Ode to Love', kind: '뮤직비디오', source: 'SMTOWN · 2026.04.20' },
+    { id: '8s23tBtQciU', title: 'Hello Mellow', kind: '뮤직비디오', source: 'NCT WISH / avex · 2026.01.14' },
+    { id: 'UulR1x4tvZE', title: 'Dreamcatcher', kind: '스페셜 비디오', source: 'NCT WISH / avex' }
   ]
 });
