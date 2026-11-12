@@ -12,11 +12,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/features/ai-meeting/style.css?v=20261109-1">
-  <link rel="stylesheet" href="/features/ai-meeting/activity.css?v=20261112-tasks1">
+  <link rel="stylesheet" href="/features/ai-meeting/activity.css?v=20261112-auto1">
   <script src="/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
-  <script src="/features/ai-meeting/tasks.js?v=20261112-tasks1" defer></script>
-  <script src="/features/ai-meeting/app.js?v=20261112-tasks1" defer></script>
+  <script src="/features/ai-meeting/tasks.js?v=20261112-auto1" defer></script>
+  <script src="/features/ai-meeting/app.js?v=20261112-auto1" defer></script>
   <script src="/admin/back-navigation.js?v=20261110-navigation-return1" defer></script>
 </head>
 <body>
@@ -41,11 +41,11 @@
           <div class="work-live"><strong id="work-detail">현재 진행 중인 회의 요청이 없습니다.</strong><ol id="work-steps" class="work-steps" aria-label="현재 요청의 실제 처리 단계" aria-live="polite"><li>요청을 보내면 실행 단계와 시간이 여기에 표시됩니다.</li></ol></div>
           <div class="work-recent"><div class="work-recent-title"><strong>최근 회의 처리 내역</strong><span id="work-updated">확인 전</span></div><ol id="work-history" class="work-history"><li>회의 기록을 확인하는 중입니다.</li></ol></div>
         </div>
-        <p class="work-note">회의 답변을 받은 뒤, 내 메시지의 <strong>실제 작업 실행</strong>을 누르면 사이트 코드 수정 작업으로 접수됩니다. 아래 작업 목록에서 진행 상황과 결과를 확인하세요.</p>
+        <p class="work-note">회의에 <strong>수정·개선 지시를 보내면 자동으로 작업이 접수됩니다.</strong> 추가 실행 버튼 없이 아래 작업 목록에서 진행 상황과 결과를 확인할 수 있습니다.</p>
       </section>
       <section class="work-panel task-panel" aria-labelledby="task-title">
         <div class="work-top">
-          <div><span class="work-kicker">사이트 코드 수정</span><h2 id="task-title">실제 작업</h2><p>실행한 요청은 화면을 닫아도 서버에서 이어집니다.</p></div>
+          <div><span class="work-kicker">사이트 코드 수정</span><h2 id="task-title">실제 작업</h2><p>자동 접수된 작업은 화면을 닫아도 서버에서 이어집니다.</p></div>
           <div class="task-tools"><span id="task-updated" class="work-clock">확인 전</span><button id="task-refresh" type="button" class="subtle-button">목록 새로고침</button></div>
         </div>
         <p id="task-feedback" class="task-feedback" role="status" aria-live="polite"></p>
@@ -65,7 +65,7 @@
             <li><span class="avatar platform">플</span><span><strong>플랫폼운영 AI</strong><small>서버·API·트래픽</small></span></li>
             <li><span class="avatar design">디</span><span><strong>디자인 AI</strong><small>전문적인 시각 디자인</small></span></li>
           </ul>
-          <div class="side-notice"><strong>회의와 작업</strong><p>AI가 제안한 내용을 검토하고, 내 메시지에서 실제 작업을 실행하세요. 사이트 오류 수정·기능 개선을 접수하며, 검증한 결과를 작업 목록에 표시합니다.</p></div>
+          <div class="side-notice"><strong>회의와 작업</strong><p>수정·개선할 내용을 메시지로 지시하면 바로 작업을 접수합니다. 질문과 검토 요청에는 답변하며, 실제 작업 결과는 목록에서 확인할 수 있습니다.</p></div>
         </aside>
 
         <section class="chat-card" aria-labelledby="chat-title">
@@ -73,13 +73,13 @@
           <div class="messages" id="messages" role="log" aria-label="회의 대화 기록" aria-live="off"><div class="empty">대화를 불러오는 중입니다…</div></div>
           <div class="composer">
             <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
-            <div id="retry-box" class="retry-box" hidden><span>AI 답변을 받지 못했어요.</span><button id="retry" type="button">다시 요청</button></div>
+            <div id="retry-box" class="retry-box" hidden><span>응답을 확인하지 못했어요.</span><button id="retry" type="button">같은 요청 다시 확인</button></div>
             <div id="file-preview" class="file-preview" hidden></div>
             <div class="compose-top"><label for="target">응답 요청</label><select id="target" aria-label="응답할 AI 선택"><option value="all">전체 회의 · 본부장과 관련 팀</option><option value="director">AI 총괄본부장</option><option value="growth">회원성장 AI</option><option value="marketing">마케팅 AI</option><option value="quality">품질안정 AI</option><option value="ux">UX AI</option><option value="platform">플랫폼운영 AI</option><option value="design">디자인 AI</option></select></div>
             <label for="message" class="sr-only">회의 메시지 입력</label>
-            <textarea id="message" maxlength="4000" rows="3" placeholder="예: 이번 주 회원을 늘리기 위한 우선 과제를 정해줘."></textarea>
+            <textarea id="message" maxlength="4000" rows="3" placeholder="예: 모바일에서 로그인 버튼이 반응하지 않아. 원인을 찾아 고쳐줘."></textarea>
             <div class="compose-bottom"><div class="attachment"><label for="file" class="attach-button">파일 첨부</label><input id="file" type="file" accept=".pdf,.txt,.png,.jpg,.jpeg,application/pdf,text/plain,image/png,image/jpeg"><span class="file-hint">PDF·TXT·이미지 / 최대 8MB</span></div><button id="send" type="button" class="send-button">회의에 보내기 <span aria-hidden="true">↗</span></button></div>
-            <p class="compose-footnote">대화 내용은 AI 답변을 위해 OpenAI API로 전송됩니다. 실제 작업으로 실행할 요청은 2,000자 이내로 적어 주세요. 첨부파일은 관리자끼리 공유되며 AI가 파일 내용까지 자동으로 읽지는 않습니다.</p>
+            <p class="compose-footnote">대화 내용은 AI 답변을 위해 OpenAI API로 전송됩니다. 자동 접수할 수정·개선 지시는 2,000자 이내로 적어 주세요. 첨부파일은 관리자끼리 공유되며 AI가 파일 내용까지 자동으로 읽지는 않습니다.</p>
           </div>
         </section>
       </div>

@@ -21,8 +21,10 @@ function fakeNode(id = '') {
 }
 
 async function tick() { await new Promise(resolve => setImmediate(resolve)); }
+function allNodes(node) { return [node, ...(node?.children || []).flatMap(allNodes)]; }
+function nodeText(node) { return allNodes(node).map(item => item?.textContent || '').join(' '); }
 
-async function harness({ initial = [], fail = false } = {}) {
+async function harness({ initial = [], fail = false, autoTask = false, outcomes = [] } = {}) {
   const nodes = new Map();
   const getNode = id => {
     if (!nodes.has(id)) nodes.set(id, fakeNode(id));
@@ -30,13 +32,19 @@ async function harness({ initial = [], fail = false } = {}) {
   };
   getNode('target').value = 'quality';
   const rows = [...initial];
+  const tasks = [];
   let finishInvoke;
-  const called = { invoke: 0 };
+  let authChanged;
+  const called = { invoke: 0, invocations: [], rpc: [], inserted: 0 };
   const client = {
-    rpc: async () => ({ data: [] }),
+    rpc: async (name, args) => {
+      called.rpc.push({ name, args });
+      if (name !== 'admin_ai_meeting_tasks') throw new Error('browser must not create tasks');
+      return { data: [...tasks] };
+    },
     auth: {
       getUser: async () => ({ data: { user: { id: 'admin-user' } } }),
-      onAuthStateChange() {}
+      onAuthStateChange(callback) { authChanged = callback; }
     },
     from(table) {
       if (table === 'app_admins') return {
@@ -46,17 +54,25 @@ async function harness({ initial = [], fail = false } = {}) {
       return {
         select: () => ({ eq: () => ({ order: () => ({ limit: async () => ({ data: [...rows].reverse() }) }) }) }),
         insert(record) {
+          called.inserted += 1;
           rows.push({ ...record, id: HUMAN, created_at: NOW });
           return { select: () => ({ single: async () => ({ data: { id: HUMAN } }) }) };
         }
       };
     },
     functions: {
-      invoke: () => {
+      invoke: (name, args) => {
         called.invoke += 1;
+        called.invocations.push({ name, args });
+        const outcome = outcomes[called.invoke - 1] ?? (fail ? 'ai_upstream_unavailable' : 'ok');
         return new Promise(resolve => { finishInvoke = () => {
-          if (!fail) rows.push({ id: 'ai-reply', created_at: NOW, sender_kind: 'ai', sender_role: 'quality', content: '검토 결과입니다.', reply_to: HUMAN });
-          resolve(fail ? { data: { error: 'ai_upstream_unavailable' } } : { data: { ok: true } });
+          if (autoTask && !tasks.length) tasks.push({
+            message_id: HUMAN, feedback_id: '87940136-a373-4e88-b15b-36d5c7974701',
+            content: rows.find(row => row.id === HUMAN)?.content, kind: 'bug', status: 'queued',
+            dispatch_status: 'pending', created_at: NOW
+          });
+          if (outcome === 'ok') rows.push({ id: 'ai-reply', created_at: NOW, sender_kind: 'ai', sender_role: 'quality', content: '검토 결과입니다.', reply_to: HUMAN });
+          resolve(outcome === 'ok' ? { data: { ok: true } } : { data: { error: outcome } });
         }; });
       }
     }
@@ -78,7 +94,7 @@ async function harness({ initial = [], fail = false } = {}) {
   });
   await tick();
   await tick();
-  return { nodes, getNode, called, resolve: () => finishInvoke(), rows };
+  return { nodes, getNode, called, resolve: () => finishInvoke(), rows, tasks, signOut: () => authChanged('SIGNED_OUT', null) };
 }
 
 test('idle is honestly shown when no request has been sent', async () => {
@@ -119,4 +135,100 @@ test('old unanswered messages are not mistaken for work in progress', async () =
   const h = await harness({ initial: [{ id: HUMAN, sender_kind: 'human', sender_role: 'representative', content: '과거 요청', created_at: NOW }] });
   assert.equal(h.getNode('work-state').textContent, '현재 대기');
   assert.ok(h.getNode('work-history').children[0].children.some(v => /답변 기록 없음/.test(v.textContent)));
+});
+
+test('sending a work instruction refreshes its server task without a second action', async () => {
+  const h = await harness({ autoTask: true });
+  h.getNode('message').value = '로그인 오류를 고쳐 주세요.';
+  const sending = h.getNode('send').listeners.click();
+  await tick();
+  assert.equal(h.called.invoke, 1);
+  assert.equal(h.called.inserted, 1);
+  assert.doesNotMatch(nodeText(h.getNode('messages')), /실제 작업 실행/);
+  h.resolve();
+  await sending;
+  assert.match(nodeText(h.getNode('task-list')), /접수됨 · 실행 대기/);
+  assert.match(nodeText(h.getNode('messages')), /실제 작업 · 접수됨/);
+  assert.ok(h.called.rpc.length >= 2);
+  assert.ok(h.called.rpc.every(call => call.name === 'admin_ai_meeting_tasks'));
+  assert.equal(allNodes(h.getNode('messages')).filter(node => node.id === 'button' || node.id === 'select').length, 0);
+});
+
+test('an unconfirmed submission retries the same saved message once automatically', async () => {
+  const h = await harness({ autoTask: true, outcomes: ['task_submission_unconfirmed', 'ok'] });
+  h.getNode('message').value = '메뉴 오류를 수정해 주세요.';
+  const sending = h.getNode('send').listeners.click();
+  await tick();
+  h.resolve();
+  await tick();
+  assert.equal(h.called.invoke, 2);
+  assert.equal(h.called.inserted, 1);
+  h.resolve();
+  await sending;
+  assert.equal(h.called.invoke, 2);
+  assert.deepEqual(h.called.invocations.map(call => call.args.body.message_id), [HUMAN, HUMAN]);
+  assert.match(nodeText(h.getNode('task-list')), /접수됨/);
+  assert.equal(h.getNode('retry-box').hidden, true);
+});
+
+test('repeated unconfirmed responses stop after one automatic retry and retain the request', async () => {
+  const h = await harness({ autoTask: true, outcomes: ['task_submission_unconfirmed', 'task_submission_unconfirmed'] });
+  h.getNode('message').value = '가입 화면을 개선해 주세요.';
+  const sending = h.getNode('send').listeners.click();
+  await tick();
+  h.resolve();
+  await tick();
+  h.resolve();
+  await sending;
+  assert.equal(h.called.invoke, 2);
+  assert.equal(h.called.inserted, 1);
+  assert.equal(h.getNode('retry-box').hidden, false);
+  assert.match(h.getNode('feedback').textContent, /같은 요청 다시 확인/);
+  assert.match(nodeText(h.getNode('task-list')), /접수됨/);
+});
+
+test('ordinary model failures are not automatically retried', async () => {
+  const h = await harness({ fail: true });
+  h.getNode('message').value = '의견을 들려줘.';
+  const sending = h.getNode('send').listeners.click();
+  await tick();
+  h.resolve();
+  await sending;
+  assert.equal(h.called.invoke, 1);
+  assert.equal(h.called.inserted, 1);
+  assert.equal(h.getNode('retry-box').hidden, false);
+});
+
+test('known submission errors explain the next step without automatic retry', async () => {
+  for (const [error, expected] of [
+    ['task_request_too_long', /2,000자 이내/],
+    ['task_request_needs_details', /메시지에 직접/],
+    ['executor_unavailable', /실행기 연결이 준비되지 않아/]
+  ]) {
+    const h = await harness({ outcomes: [error] });
+    h.getNode('message').value = '수정해 주세요.';
+    const sending = h.getNode('send').listeners.click();
+    await tick();
+    h.resolve();
+    await sending;
+    assert.equal(h.called.invoke, 1);
+    assert.equal(h.called.inserted, 1);
+    assert.match(h.getNode('feedback').textContent, expected);
+    assert.equal(h.getNode('retry-box').hidden, false);
+  }
+});
+
+test('a completed request after sign-out cannot refresh tasks or retry submission', async () => {
+  const h = await harness({ autoTask: true, outcomes: ['task_submission_unconfirmed'] });
+  h.getNode('message').value = '오류를 수정해 주세요.';
+  const sending = h.getNode('send').listeners.click();
+  await tick();
+  const readsBeforeLogout = h.called.rpc.length;
+  h.signOut();
+  h.resolve();
+  await sending;
+  assert.equal(h.called.invoke, 1);
+  assert.equal(h.called.rpc.length, readsBeforeLogout);
+  assert.equal(h.getNode('task-list').children.length, 0);
+  assert.equal(h.getNode('room').hidden, true);
 });

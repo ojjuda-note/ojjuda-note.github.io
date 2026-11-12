@@ -60,12 +60,7 @@
 .task-error { color: #a73857; font-size: 11px; margin: 8px 0 0; }
 .task-links { display: flex; flex-wrap: wrap; gap: 14px; }
 .task-link { color: #b2386a; font-size: 11px; font-weight: 700; margin-top: 10px; text-decoration: underline; text-underline-offset: 3px; }
-.message-task-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 7px; margin-top: 9px; }
-.task-kind-select { min-width: 0; border: 1px solid #dce2ee; border-radius: 7px; color: #5d6e87; background: #fff; padding: 6px 8px; font-size: 10px; }
-.task-execute { border: 1px solid #d7a1b7; border-radius: 7px; background: #fff9fc; color: #ad3867; padding: 6px 10px; font-size: 10px; font-weight: 800; }
-.task-execute:hover { background: #faeaf1; }
-.task-execute:disabled { cursor: wait; opacity: .6; }
-.task-action-note { width: 100%; color: #78869c; font-size: 10px; line-height: 1.5; text-align: right; }
+.message-task-status { display: flex; justify-content: flex-end; margin-top: 9px; }
 @keyframes meeting-activity-pulse { 50% { opacity: .4; box-shadow: 0 0 0 5px #30a77523; } }
 @media(max-width:700px) {
   .work-panel { padding: 16px 14px 12px; margin-bottom: 13px; border-radius: 15px; }
