@@ -7,7 +7,7 @@ const root=path.join(__dirname,'..'),out=path.join(__dirname,'artifacts/fanpage-
  const browser=await chromium.launch({executablePath:process.env.CHROME_BIN || (fs.existsSync('/usr/bin/google-chrome')?'/usr/bin/google-chrome':'/usr/bin/chromium'),headless:true,args:['--no-sandbox']});
  try {
  const report=[];
- for(const group of ['tws','ateez','nctdream']) {
+ for(const group of ['tws','ateez','nctdream','treasure','nctwish','andteam']) {
  const page=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{const D=Date;window.Date=class extends D{constructor(...a){super(...(a.length?a:['2026-11-12T14:00:00Z']))}static now(){return new D('2026-11-12T14:00:00Z').getTime()}}});
@@ -44,6 +44,6 @@ const root=path.join(__dirname,'..'),out=path.join(__dirname,'artifacts/fanpage-
  await page.locator('#photos').screenshot({path:path.join(out,`${group}-photos.png`)});
  assert.deepEqual(errors,[]);report.push({group,cards,images,widths:[320,390,768],pageErrors:errors});await page.close();
  }
- fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));console.log('PASS: three groups, data-matched upcoming events, 320/390/768px layouts, safe links, original gallery images and no runtime errors.');
+ fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));console.log('PASS: six groups, data-matched upcoming events, 320/390/768px layouts, safe links, original gallery images and no runtime errors.');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
