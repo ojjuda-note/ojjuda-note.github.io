@@ -790,6 +790,21 @@
       concept: '소년 시절의 반짝임과 일상을 담은 여섯 멤버.',
       official: 'https://www.pledis.co.kr/artist/detail/TWS/profile/', youtube: 'https://www.youtube.com/@TWS_PLEDIS',
       photo: 'TWS at the 2024 Melon Music Awards.png', photoLabel: '멜론뮤직어워드', photoYear: '2024', credit: 'TenAsia', license: 'CC BY 3.0',
+      // Official notices rechecked 2026-11-12; unverified backlog media stays pending.
+      appearances: [
+        {
+                "date": "2026-11-13",
+                "title": "TO US 위드뮤 1:1 영상통화 팬사인회",
+                "sub": "상세 시간 추후 안내 · 당첨자 대상 · 응모 종료 · PLEDIS/위드뮤 공식 공지",
+                "href": "https://weverse.io/tws/notice/40394"
+        },
+        {
+                "date": "2026-11-14",
+                "title": "MMA 2026 Global Day 출연",
+                "sub": "서울 고척스카이돔 · 카카오엔터테인먼트 · 개별 출연 시각은 공식 안내 확인",
+                "href": "https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/"
+        }
+],
       accent: '#76a8d7', light: '#e0efff', dark: '#456a91', bg: '#f6fbff', shape: '✦'
     },
     {
@@ -799,6 +814,41 @@
       concept: '성장을 노래하는 NCT의 여섯 멤버 유닛.',
       official: 'https://www.smentertainment.com/', youtube: 'https://www.youtube.com/@NCTDREAM',
       photo: 'NCT Dream at DREAM()SCAPE Press Conference.png', photoLabel: 'DREAM()SCAPE 기자회견 · 당시 사진', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
+      // Official notices rechecked 2026-11-12; unverified backlog media stays pending.
+      appearances: [
+        {"date":"2026-11-14","title":"MMA 2026 Global Day 출연","sub":"서울 고척스카이돔 · 카카오엔터테인먼트 · 개별 출연 시각은 공식 안내 확인","href":"https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/"},
+        {
+                "date": "2026-11-08",
+                "endDate": "2026-11-16",
+                "title": "WELCOME, DREAMERS 팝업 (11/8~11/16)",
+                "sub": "매일 12:00~20:00 KST · 서울 성동구 연무장7길16 · 방문·입장 안내는 공식 공지 확인",
+                "href": "https://weverse.io/nctdream/notice/40609"
+        },
+        {
+                "date": "2026-11-22",
+                "title": "TV아사히 드림페스티벌 헤드라이너 출연",
+                "sub": "K아레나 요코하마 · 전일정 매진(11/11 공식 공지) · 개별 출연 시각 미공개",
+                "href": "https://dreamfestival.jp/"
+        },
+        {
+                "date": "2026-12-07",
+                "title": "DREAM AFTER DREAM 일본 발매 이벤트 · 도쿄",
+                "sub": "도쿄 시내 · 시간·상세 장소는 당첨자 추후 안내 · 2차 응모 11/23 23:59 JST까지 · 조건은 공식 공지 확인",
+                "href": "https://www.nct-jp.net/news/detail.php?id=1137067"
+        },
+        {
+                "date": "2026-12-09",
+                "title": "2026 FNS 가요제 제2야 출연",
+                "sub": "후지TV 계열 · 전체 방송 18:30~21:54 JST/KST · 개별 출연 시각 미공개",
+                "href": "https://www.nct-jp.net/news/detail.php?id=1137066"
+        },
+        {
+                "date": "2026-12-27",
+                "title": "DREAM AFTER DREAM 일본 발매 이벤트 · 교토",
+                "sub": "교토 시내 · 시간·상세 장소는 당첨자 추후 안내 · 2차 응모 11/23 23:59 JST까지 · 조건은 공식 공지 확인",
+                "href": "https://www.nct-jp.net/news/detail.php?id=1137067"
+        }
+],
       accent: '#67b956', light: '#e6fbdc', dark: '#416e37', bg: '#f5fff1', shape: '☘'
     },
     {
@@ -808,6 +858,28 @@
       concept: '여덟 멤버가 함께 나아가는 모험과 항해.',
       official: 'https://kqent.com/', youtube: 'https://www.youtube.com/@ATEEZofficial',
       photo: 'ATEEZ in August 2024 (cropped).jpg', photoLabel: '2024년 단체', photoYear: '2024', credit: 'pinkllamanade', license: 'CC BY-SA 2.0',
+      // Official notices rechecked 2026-11-12; unverified backlog media stays pending.
+      appearances: [
+        {"date":"2026-11-14","title":"MMA 2026 Global Day 출연","sub":"서울 고척스카이돔 · 카카오엔터테인먼트 · 개별 출연 시각은 공식 안내 확인","href":"https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/"},
+        {
+                "date": "2026-11-13",
+                "title": "GOLDEN HOUR : Part.6 발매 예정",
+                "sub": "14:00 KST · 타이틀 UP · KQ 공식 발표",
+                "href": "https://ateez.kqent.com/en/contents/6ade0ef2ba711e7b9ec3e59c"
+        },
+        {
+                "date": "2026-11-13",
+                "title": "KBS2 뮤직뱅크 출연",
+                "sub": "사전녹화 08:45 / 생방송 17:10 KST · KBS 신관 공개홀 · 방청 신청 종료, 선정 참가자 대상 · 집합 안내는 공식 공지 확인",
+                "href": "https://ateez.kqent.com/surveys/6af41182a993a556cdd4e773"
+        },
+        {
+                "date": "2026-11-14",
+                "title": "MBC 쇼! 음악중심 사전녹화",
+                "sub": "05:30 KST · 상암 MBC 신사옥 공개홀 · 방청 신청 종료, 선정 참가자 대상 · 집합 안내는 공식 공지 확인",
+                "href": "https://ateez.kqent.com/surveys/6af55eeab2aee70bd8ed5ff5"
+        }
+],
       accent: '#d7af68', light: '#4f422a', dark: '#fff2d5', bg: '#171e2c', night: true, shape: '✶'
     },
     {
