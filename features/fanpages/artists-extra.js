@@ -707,7 +707,7 @@
         { date: '2026.11.09', tag: '팬 행사', title: '일본 후쿠오카·도쿄·오사카·아이치 공연 사운드체크 추첨 행사 안내', href: 'https://txt-official.jp/news/061bdc0cc1e4' },
         { date: '2026.11.09', tag: '이벤트', title: '일본 4개 도시 THE MAGIC WORLD 랜턴 행사 예정 · 시간·세부 장소 추후 공지', href: 'https://txt-official.jp/news/64e2fa6963fc' },
         { date: '2026.11.04', tag: '굿즈', title: 'STEAL THE WIND 월드투어 공식 MD 11.05 판매 시작 안내 · 재고는 위버스샵 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/3/notices/14842' },
-        { date: '2026.10.20', tag: '컴백', title: '11월 16일 미니 9집 PERFECT STORM 발매 예정 · 위버스 공지 확인', href: 'https://weverse.io/txt/notice/40097' }
+        { date: '2026.10.20', tag: '컴백', title: '11월 16일 미니 9집 PERFECT STORM 발매 예정 · 위버스 공지 로그인 후 확인', href: 'https://weverse.io/txt/notice/40097' }
       ],
       merch: [
         { title: 'PERFECT STORM 미니 9집 공식 예약 음반', sub: '위버스샵 · 2026.10.20~11.15 예약 · 11.16 발매 예정 · 가격·재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/3/notices/14652' },
