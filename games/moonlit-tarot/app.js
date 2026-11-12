@@ -54,7 +54,7 @@ function updatePaymentStatus() {
   $('.tarot-price strong').textContent = preview ? '관리자 모드' : `1회 ${getTarotPrice(state.topic)}쭈`;
   $('.tarot-price span').textContent = preview ? '쭈 차감 없음 · 기록 미저장' : '세 장의 풀이와 종합 점괘';
   $('#daily-limit-note').textContent = preview ? '횟수 제한 없이 매번 새로운 카드로 시작해요.' : '분야별 하루 1회 · 한국시간 밤 12시에 새 운세';
-  $('#help-usage-note').textContent = preview ? '관리자 모드가 켜져 있어요. 쭈 차감 없이 새로운 운세를 계속 볼 수 있고, 체험한 점괘는 저장되지 않아요. 아지트에서 관리자 모드를 끄면 일반 이용으로 돌아가요.' : '전체운세는 30쭈, 연애·금전·일과 도전은 각각 10쭈예요. 분야별로 하루에 한 번 새 운세를 볼 수 있어요. 오늘 본 운세는 추가 차감 없이 다시 열 수 있고, 한국시간 밤 12시부터 새 운세를 볼 수 있어요.';
+  $('#help-usage-note').textContent = preview ? '쭈 차감·기록 저장 없이 횟수 제한 없이 이용해요. 일반 이용은 아지트에서 관리자 모드를 꺼 주세요.' : '전체 30쭈 · 연애·금전·일과 도전 각 10쭈. 분야별 하루 1회, 당일 다시 보기는 무료예요. 한국시간 밤 12시에 새 운세가 열려요.';
   $('#restart-small span').textContent = preview ? '새 운세 보기' : '다른 주제 고르기';
   $('#restart-result span').textContent = preview ? '새 운세 보기' : '다른 주제 고르기';
   if (preview) {
@@ -205,7 +205,12 @@ function play(name) { if (state.sound) audio.play(name); }
 function setTitle(title, subtitle, eyebrow = 'THE MOONLIT ORACLE') {
   $('#game-title').textContent = title;
   $('#game-subtitle').textContent = subtitle;
+  $('#game-subtitle').hidden = !subtitle;
   $('#eyebrow').innerHTML = `<span></span>${eyebrow}<span></span>`;
+}
+function setStageCaption(text = '') {
+  $('#stage-caption').textContent = text;
+  $('#stage-caption').hidden = !text;
 }
 function setPhase(phase) {
   const wasBusy = state.busy;
@@ -342,15 +347,14 @@ async function summon() {
   $('#intro-controls').hidden = true;
   $('#play-controls').hidden = false;
   $('#action-button').hidden = false;
-  $('#selection-count').textContent = '별빛 속에서 카드가 모이고 있어요';
+  $('#selection-count').textContent = '카드를 모으는 중';
   $('#action-button').disabled = true;
   $('#action-button span').textContent = '카드가 날아오는 중';
-  $('#action-note').textContent = '마음속 질문에 잠시 집중해 보세요.';
-  $('#stage-caption').textContent = '별빛을 따라, 당신에게로';
+  setStageCaption();
   setPhase('summoning');
   updatePaymentStatus();
-  setTitle('별빛을 따라 카드가 찾아옵니다', '궁금한 일을 떠올리며 잠시만 기다려 주세요.', 'THE SUMMONING');
-  setOracle('궁금한 일을 하나 떠올려 보렴. 달빛을 건너온 다섯 장의 카드가 곧 네 앞에 놓일 거야.', { tag: '카드가 찾아오는 시간' });
+  setTitle('카드를 불러오는 중', '', 'THE SUMMONING');
+  setOracle('잠시만 기다려 보렴.', { tag: '마녀의 속삭임' });
   effects.setMood('dealing');
   play('summon');
   followFlightTrails();
@@ -386,9 +390,8 @@ async function summon() {
   if (epoch !== state.epoch) return;
   effects.setMood('idle');
   setPhase('discard');
-  setTitle('버릴 카드 두 장을 고르세요', '카드를 누르면 바로 사라져요. 남은 세 장으로 운세를 볼 거예요.', 'THE CHOICE');
-  setOracle('마음이 덜 가는 카드 두 장을 하나씩 눌러 보렴. 누른 카드는 곧바로 별빛 속으로 사라질 거야. 네 곁에 남은 세 장이 어떤 이야기를 들려줄지 함께 살펴보자.', { tag: '두 장을 하나씩 버리기' });
-  $('#stage-caption').textContent = '버릴 카드를 누르세요';
+  setTitle('버릴 카드 두 장을 고르세요', '누르면 바로 버려져요.', 'THE CHOICE');
+  setOracle('마음이 덜 가는 카드부터 골라 보렴.', { tag: '마녀의 속삭임' });
   updateDiscardProgress();
 }
 
@@ -414,10 +417,9 @@ function updateDiscardProgress() {
   });
   $('#selection-count').innerHTML = `버린 카드 <strong>${count} <span>/ 2</span></strong>`;
   $('#discard-preview').hidden = !count;
-  $('#discard-preview').innerHTML = count ? `<span class="discard-preview-title">버린 카드</span>${numbers.map(number => `<span class="discard-number">× <b>${number}번</b></span>`).join('')}<span class="discard-preview-note">${count < 2 ? '남은 카드 중 한 장을 더 누르세요' : '두 장을 모두 버렸어요'}</span>` : '';
+  $('#discard-preview').innerHTML = count ? `<span class="discard-preview-title">버린 카드</span>${numbers.map(number => `<span class="discard-number">× <b>${number}번</b></span>`).join('')}` : '';
   $('#action-button').hidden = true;
-  $('#action-note').textContent = count ? '한 장만 더 버리면, 남은 세 장을 펼칠 수 있어요.' : '버릴 카드를 한 장씩 누르세요. 누르면 바로 사라져요.';
-  $('#stage-caption').textContent = count ? '남은 네 장 중 한 장을 더 버려주세요' : '버릴 카드를 누르면 바로 사라집니다';
+  setStageCaption();
 }
 
 function leaveDiscardGhost(card, pose) {
@@ -440,7 +442,7 @@ async function discardCard(index) {
   setPhase('discarding');
   effects.setMood('discard');
   updateDiscardProgress();
-  $('#stage-caption').textContent = `${String(index + 1).padStart(2, '0')}번 카드가 별빛으로 사라집니다`;
+  setStageCaption(`${String(index + 1).padStart(2, '0')}번 카드를 버렸어요`);
   card.wrap.style.zIndex = '60';
   cards.forEach(item => {
     item.button.classList.toggle('selected', item.index === index);
@@ -472,8 +474,8 @@ async function discardCard(index) {
   if (state.discarded.size < 2) {
     setPhase('discard');
     effects.setMood('idle');
-    setTitle('한 장 더 버려주세요', `${String(index + 1).padStart(2, '0')}번 카드를 버렸어요. 남은 네 장 중 한 장을 더 누르세요.`, 'THE CHOICE');
-    setOracle(`${index + 1}번 카드는 별빛 속으로 사라졌구나. 이제 한 장만 더 골라 보렴. 남은 세 장에 어떤 이야기가 담겼는지 함께 살펴보자.`, { tag: '한 장을 버렸어요 · 1 / 2' });
+    setTitle('한 장 더 버려주세요', '', 'THE CHOICE');
+    setOracle('남길 카드에 마음을 기울여 보렴.', { tag: '마녀의 속삭임' });
     updateDiscardProgress();
     cards.find(item => !state.discarded.has(item.index))?.button.focus({ preventScroll: true });
     return;
@@ -486,7 +488,7 @@ async function discardCard(index) {
   if (epoch !== state.epoch) return;
   effects.setMood('reading');
   setPhase('reading');
-  setOracle('이제 세 장이 남았구나. 가장 마음이 가는 카드부터 열어 봐. 첫 번째는 지금의 마음, 두 번째는 다가오는 흐름, 마지막은 내가 전하는 조언이야.', { tag: '여는 순서를 직접 골라 보세요' });
+  setOracle('끌리는 카드부터 열어 보렴.', { tag: '마녀의 속삭임' });
   prepareNextReveal();
   focusUnopenedCard();
 }
@@ -523,10 +525,9 @@ function prepareNextReveal() {
   $('#action-button').hidden = state.revealed < 3;
   $('#action-button').disabled = false;
   $('#action-button span').textContent = '종합 점괘 보기';
-  $('#action-note').textContent = state.revealed < 3 ? '마음이 가는 카드를 누르세요. 고른 순서대로 이야기를 들려드려요.' : '열린 카드를 누르면 각 카드의 설명을 다시 볼 수 있어요.';
   if (state.revealed < 3) {
-    setTitle(state.revealed === 0 ? '먼저 열 카드를 골라주세요' : `${order[state.revealed]}로 열 카드를 골라주세요`, `${order[state.revealed]} 카드는 ‘${POSITIONS[state.revealed].label}’을 보여줘요.`, 'YOUR CHOICE, YOUR STORY');
-    $('#stage-caption').textContent = state.revealed === 2 ? '마지막 카드를 열고 마녀의 조언을 들어 보세요' : `남은 ${3 - state.revealed}장 중 끌리는 카드를 눌러주세요`;
+    setTitle(state.revealed === 0 ? '먼저 열 카드를 고르세요' : `${order[state.revealed]} 카드를 고르세요`, '', 'YOUR CHOICE, YOUR STORY');
+    setStageCaption();
   }
 }
 
@@ -574,7 +575,7 @@ async function revealCard(index) {
   card.button.classList.add('revealed');
   card.wrap.querySelector('.card-front').setAttribute('aria-hidden', 'false');
   setTitle(`${POSITIONS[slot].label} · ${data.name}`, data.message, `${['I', 'II', 'III'][slot]} · THE REVELATION`);
-  $('#stage-caption').textContent = `${String(slot + 1).padStart(2, '0')}  ${data.english}  ✧  ${data.keyword}`;
+  setStageCaption(`${String(slot + 1).padStart(2, '0')}  ${data.english}  ✧  ${data.keyword}`);
   setOracle(reading.summary || reading.text, { title: data.name, tag: `${slot + 1}번째 카드 · ${POSITIONS[slot].label}`, keyword: reading.keyword });
   await sleep(duration(1200));
   if (epoch !== state.epoch) return;
@@ -586,7 +587,7 @@ async function revealCard(index) {
   if (state.revealed === 3) {
     effects.setMood('reading');
     $('#restart-small').hidden = false;
-    $('#stage-caption').textContent = '세 장이 전하는 이야기가 모두 펼쳐졌어요';
+    setStageCaption('열린 카드를 누르면 풀이를 다시 볼 수 있어요');
     play('complete');
     buildResults();
   }
@@ -656,7 +657,7 @@ function showReading(slot = state.lastReading) {
 }
 
 function showOverallOracle(summary = getSummary(state.openOrder.map(index => state.drawn[index]), state.topic)) {
-  setOracle(state.summaryReady ? summary.oneLine : '세 장의 이야기가 모였구나. 수정구에 비친 오늘의 흐름을 함께 살펴보렴.', { tag: state.summaryReady ? '종합 점괘 · 한마디 정리' : '마녀가 전하는 종합 점괘', speak: false });
+  setOracle(state.summaryReady ? summary.oneLine : '세 장의 이야기를 함께 살펴보렴.', { tag: state.summaryReady ? '종합 점괘 · 한마디 정리' : '종합 점괘', speak: false });
   $('#reading-open span').textContent = '종합 점괘 자세히 보기';
   $('#reading-open').hidden = false;
   $('#reading-open').disabled = false;
@@ -733,7 +734,7 @@ async function copyResult() {
   const drawn = state.openOrder.map(i => state.drawn[i]);
   const summary = getSummary(drawn, state.topic);
   const parts = ['오쭈다 · 달의 마녀 타로', '종합 점괘', $('#result-date').textContent, ''];
-  parts.push('한마디 정리', summary.oneLine, '', summary.headline, summary.text, '', `오늘 해 볼 일: ${summary.ritual}`, '', '카드에 담긴 뜻을 읽는 이야기예요. 미래가 꼭 이렇게 된다는 말은 아니에요. 다음 선택은 당신이 정해요.');
+  parts.push('한마디 정리', summary.oneLine, '', summary.headline, summary.text, '', `오늘 해 볼 일: ${summary.ritual}`, '', '타로의 전통 해석이에요. 미래를 확정하지 않아요.');
   const text = parts.join('\n');
   try {
     if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
@@ -803,10 +804,11 @@ function reset({ clearPaid = true } = {}) {
   $('#login-link').hidden = true;
   updatePaymentStatus();
   $('#game-title').innerHTML = '운명이 속삭이는 밤,<br><em>달의 마녀</em>를 만나다';
-  $('#game-subtitle').innerHTML = '별빛을 따라 찾아온 다섯 장의 카드.<br class="mobile-break"> 그중 세 장에 담긴 이야기를 들어 보세요.';
+  $('#game-subtitle').textContent = '세 장으로 읽는 오늘의 운세.';
+  $('#game-subtitle').hidden = false;
   $('#eyebrow').innerHTML = '<span></span> THE MOONLIT ORACLE <span></span>';
-  $('#stage-caption').textContent = '별빛을 따라 찾아온 다섯 장의 카드';
-  setOracle('다시 왔구나. 이번에는 어떤 이야기가 궁금하니? 마음에 떠오르는 질문을 골라 봐. 카드가 들려줄 이야기를 함께 들어 보자.', { tag: '마녀의 초대' });
+  setStageCaption();
+  setOracle('이번에는 어떤 이야기가 궁금하니?', { tag: '마녀의 초대' });
   effects.setMood('idle');
   layout(false);
   $('#summon-button').focus({ preventScroll: true });
@@ -835,10 +837,10 @@ $$('[data-topic]').forEach(button => button.addEventListener('click', () => {
   state.topic = button.dataset.topic;
   $$('[data-topic]').forEach(b => { b.classList.toggle('active', b === button); b.setAttribute('aria-pressed', String(b === button)); });
   const invitations = {
-    overall: '오늘 마음에 남은 일을 하나 떠올려 봐. 작은 고민이어도 괜찮아. 카드에 비친 네 마음을 함께 살펴보자.',
-    love: '마음에 떠오르는 사람이 있니? 설렘도, 아직 말하지 못한 마음도 괜찮아. 지금 네 마음에 무엇이 필요한지 함께 들어 보자.',
-    money: '돈 때문에 마음에 걸리는 일이 있니? 쓰고 싶은 곳과 남겨 두고 싶은 여유를 떠올려 보렴. 네게 맞는 선택을 카드와 함께 살펴보자.',
-    work: '하고 싶은 일이 있는데 첫걸음이 망설여지니? 지금 가진 힘과 필요한 도움을 함께 찾아보자. 작은 시작에도 너만의 빛이 있단다.',
+    overall: '오늘 마음에 남은 일을 하나 떠올려 봐.',
+    love: '지금 네 마음을 함께 살펴보자.',
+    money: '돈에 관해 마음에 걸리는 일을 떠올려 보렴.',
+    work: '지금 가진 힘과 필요한 도움을 살펴보자.',
   };
   setOracle(invitations[state.topic], { tag: '마녀의 초대' });
   updatePaymentStatus();
@@ -912,7 +914,7 @@ document.addEventListener('visibilitychange', () => {
 });
 applyMotionPreference(state.reduced);
 layout(false);
-$('#oracle-text').textContent = '서두르지 않아도 괜찮아. 마음에 걸리는 일을 하나 떠올려 보렴. 달빛 아래서 카드의 이야기를 함께 들어 보자.';
+$('#oracle-text').textContent = '마음에 걸리는 일을 하나 떠올려 보렴.';
 // Start image requests while the visitor chooses a topic; five cards share at most five atlases.
 for (const src of new Set(DECK.map(card => card.art.src))) {
   const atlas = new Image();
@@ -950,14 +952,14 @@ function restorePaidReading(receipt) {
     prepareNextReveal();
     if (state.revealed === 3) {
       buildResults();
-      setTitle('세 장의 이야기가 기다리고 있어요', '각 카드의 설명과 종합 점괘를 다시 읽어 보세요.', 'YOUR MOONLIT STORY');
-      $('#stage-caption').textContent = '열린 카드를 누르면 자세한 설명을 볼 수 있어요';
+      setTitle('오늘의 타로', '', 'YOUR MOONLIT STORY');
+      setStageCaption('열린 카드를 누르면 풀이를 다시 볼 수 있어요');
       $('#restart-small').hidden = false;
     }
   } else {
     setPhase('discard');
     updateDiscardProgress();
-    setTitle(state.discarded.size ? '한 장 더 버려주세요' : '버릴 카드 두 장을 고르세요', '진행하던 운세를 이어갑니다.', 'WELCOME BACK');
+    setTitle(state.discarded.size ? '한 장 더 버려주세요' : '버릴 카드 두 장을 고르세요', '누르면 바로 버려져요.', 'WELCOME BACK');
   }
   if (state.revealed > 0 && state.revealed < 3) {
     const data = state.drawn[state.openOrder[state.lastReading]];
@@ -966,7 +968,7 @@ function restorePaidReading(receipt) {
     $('#reading-open').hidden = false;
     $('#reading-open').disabled = false;
     $('#reading-open span').textContent = '이 카드의 이야기 자세히 읽기';
-  } else if (!state.revealed) setOracle('다시 왔구나. 아까 펼치던 이야기를 이어가 보자. 아직 열지 않은 카드 중 마음이 가는 것을 골라 보렴.', { tag: '진행하던 운세 이어보기', speak: false });
+  } else if (!state.revealed) setOracle('아까의 이야기를 이어가 보자.', { tag: '이어보기', speak: false });
   effects.setMood(state.kept.length ? 'reading' : 'idle');
   layout(false);
   updatePaymentStatus();

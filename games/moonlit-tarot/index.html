@@ -59,7 +59,7 @@
         <div class="section-heading">
           <p id="eyebrow" class="eyebrow"><span></span> THE MOONLIT ORACLE <span></span></p>
           <h1 id="game-title">운명이 속삭이는 밤,<br><em>달의 마녀</em>를 만나다</h1>
-          <p id="game-subtitle" class="game-subtitle">별빛을 따라 찾아온 다섯 장의 카드.<br class="mobile-break"> 그중 세 장에 담긴 이야기를 들어 보세요.</p>
+          <p id="game-subtitle" class="game-subtitle">세 장으로 읽는 오늘의 운세.</p>
         </div>
 
         <ol id="journey" class="journey" aria-label="진행 단계">
@@ -74,7 +74,7 @@
             <svg viewBox="0 0 600 600" class="sigil-svg"><defs><radialGradient id="sigil-glow"><stop stop-color="#bc8cec" stop-opacity=".45"/><stop offset="1" stop-color="#bc8cec" stop-opacity="0"/></radialGradient></defs><circle cx="300" cy="300" r="290" fill="url(#sigil-glow)" stroke="none"/><g fill="none" stroke="currentColor"><circle cx="300" cy="300" r="270"/><circle cx="300" cy="300" r="256" stroke-dasharray="1 11" stroke-width="5"/><circle cx="300" cy="300" r="235"/><circle cx="300" cy="300" r="178"/><path d="M300 70 500 415H100ZM300 530 100 185H500Z"/><path d="m300 30 10 24-10 24-10-24Zm270 270-24 10-24-10 24-10ZM300 570l-10-24 10-24 10 24ZM30 300l24-10 24 10-24 10Z" fill="currentColor"/><circle cx="300" cy="300" r="90"/><path d="M300 210v180M210 300h180"/></g></svg>
           </div>
           <div id="cards-plane" class="cards-plane"></div>
-          <div id="stage-caption" class="stage-caption" aria-live="polite">별빛을 따라 찾아온 다섯 장의 카드</div>
+          <div id="stage-caption" class="stage-caption" aria-live="polite" hidden></div>
         </div>
 
         <div id="intro-controls" class="intro-controls">
@@ -90,7 +90,6 @@
           <button id="summon-button" class="primary-button"><svg><use href="#i-star"/></svg><span>마녀의 카드 불러오기</span><svg class="button-arrow"><use href="#i-arrow"/></svg></button>
           <p id="payment-status" class="payment-status" role="status"></p>
           <a id="login-link" class="login-link" href="/world.html?tab=hub" hidden>아지트에서 로그인·쭈 확인하기 →</a>
-          <p class="button-note">달빛 아래, 마녀가 당신을 기다려요.</p>
         </div>
 
         <div id="play-controls" class="play-controls" hidden>
@@ -98,35 +97,34 @@
           <div id="discard-preview" class="discard-preview" hidden aria-live="polite"></div>
           <ol id="reveal-order" class="reveal-order" hidden aria-label="내가 고른 카드 순서"><li><b>1</b><span>첫 번째<small>지금의 마음</small></span></li><li><b>2</b><span>두 번째<small>다가오는 흐름</small></span></li><li><b>3</b><span>세 번째<small>마녀의 조언</small></span></li></ol>
           <button id="action-button" class="primary-button" disabled><svg><use href="#i-star"/></svg><span>카드가 날아오는 중</span><svg class="button-arrow"><use href="#i-arrow"/></svg></button>
-          <p id="action-note" class="button-note">버릴 카드를 한 장씩 누르세요.</p>
           <button id="restart-small" class="text-button" hidden><svg><use href="#i-reset"/></svg><span>다른 주제 고르기</span></button>
         </div>
       </section>
 
       <aside id="oracle" class="oracle" aria-label="마녀 루나의 안내">
         <div class="oracle-identity"><span class="oracle-line"></span><span class="witch-name">Luna</span><span class="oracle-line"></span></div>
-        <p class="witch-role">달의 마녀 · 카드 속 이야기를 들려줄게</p>
+        <p class="witch-role">달의 마녀</p>
         <div class="oracle-dialogue">
           <div class="dialogue-topline"><span class="live-dot"></span><span id="dialogue-tag">마녀의 초대</span><button id="voice-toggle" class="voice-button" aria-pressed="false" aria-label="마녀의 안내 음성 켜기" title="안내 음성 켜기"><svg><use href="#i-voice"/></svg></button></div>
           <h2 id="oracle-card-name" hidden></h2>
-          <p id="oracle-text">서두르지 않아도 괜찮아.<br>마음에 걸리는 일을 하나 떠올려 보렴.<br>달빛 아래서 카드의 이야기를 함께 들어 보자.</p>
+          <p id="oracle-text">마음에 걸리는 일을 하나 떠올려 보렴.</p>
           <div id="oracle-keyword" class="oracle-keyword" hidden></div>
           <button id="reading-open" class="reading-open" hidden><span>이 카드의 이야기 자세히 읽기</span><svg><use href="#i-arrow"/></svg></button>
         </div>
       </aside>
     </main>
 
-    <footer class="site-footer"><span><i></i> A MOMENT FOR YOURSELF</span><p>카드는 마음을 비추는 작은 이야기예요. 다음 걸음은 당신이 정해요.</p><span class="footer-no">VOL. 01 <span>✧</span> MOONLIGHT</span></footer>
+    <footer class="site-footer"><span><i></i> A MOMENT FOR YOURSELF</span><p>타로의 전통 해석이에요. 미래를 확정하지 않아요.</p><span class="footer-no">VOL. 01 <span>✧</span> MOONLIGHT</span></footer>
   </div>
 
   <dialog id="help-dialog" class="modal help-modal" aria-labelledby="help-title">
     <button class="modal-close" data-close="help-dialog" aria-label="이용 안내 닫기"><svg><use href="#i-close"/></svg></button>
     <p class="eyebrow">YOUR LITTLE RITUAL</p><h2 id="help-title">마녀와 만나는 방법</h2>
-    <ol class="help-steps"><li><span>01</span><div><h3>마음속 질문을 떠올리세요</h3><p>전체운세, 연애운, 금전운, 일과 도전 중 궁금한 이야기를 골라 주세요.</p></div></li><li><span>02</span><div><h3>두 장을 하나씩 버리세요</h3><p>버릴 카드를 한 장씩 누르세요. 확인 없이 바로 별빛 속으로 사라져요. 두 장을 버리면 남은 세 장이 자리를 잡아요.</p></div></li><li><span>03</span><div><h3>여는 순서를 직접 고르세요</h3><p>마음이 가는 카드부터 누르세요. 첫 번째는 지금의 마음, 두 번째는 다가오는 흐름, 마지막은 마녀의 조언을 보여줘요. 풀이를 읽고 다음 카드를 골라 주세요. 열린 카드를 다시 누르면 설명을 한 번 더 읽을 수 있어요.</p></div></li></ol>
-    <p id="help-usage-note" class="help-footnote">전체운세는 30쭈, 연애·금전·일과 도전은 각각 10쭈예요. 분야별로 하루에 한 번 새 운세를 볼 수 있어요. 오늘 본 운세는 추가 차감 없이 다시 열 수 있고, 한국시간 밤 12시부터 새 운세를 볼 수 있어요.</p>
-    <p class="help-footnote">카드의 뜻과 여는 순서, 고른 주제에 맞춰 미리 써 둔 풀이를 골라요. 뜻이 비슷한 카드에는 같은 본문을 쓸 수 있어요. 그때도 실제로 펼친 카드의 뜻과 조심할 점을 함께 설명해요. 앞으로 생길 일이나 상대의 속마음을 알아낸 정보는 아니에요.</p>
+    <ol class="help-steps"><li><span>01</span><div><h3>궁금한 주제를 고르세요</h3></div></li><li><span>02</span><div><h3>두 장을 하나씩 버리세요</h3><p>누르면 바로 버려져요.</p></div></li><li><span>03</span><div><h3>원하는 순서로 세 장을 펼치세요</h3><p>마음 → 흐름 → 조언 순서예요. 열린 카드는 다시 볼 수 있어요.</p></div></li></ol>
+    <p id="help-usage-note" class="help-footnote">전체 30쭈 · 연애·금전·일과 도전 각 10쭈. 분야별 하루 1회, 당일 다시 보기는 무료예요. 한국시간 밤 12시에 새 운세가 열려요.</p>
+    <p class="help-footnote">카드·순서·주제에 맞춘 전통 해석이며 일부 본문은 공통으로 사용해요. 미래나 상대의 속마음을 알아낸 정보는 아니에요.</p>
     <details class="reading-source help-footnote"><summary>어떤 자료로 풀이했나요?</summary><p>오래된 타로 책에 나온 그림과 뜻을 참고해 쉬운 말로 썼어요. 같은 카드도 읽는 방법에 따라 뜻이 달라질 수 있어요. 여기서는 카드를 모두 똑바로 세운 뜻으로 읽어요. 왕·여왕·기사·시종은 누군가의 성별이나 나이를 맞히는 카드로 쓰지 않아요. 첫째·둘째·셋째 자리의 뜻과 생활 속 예시는 오쭈다에서 정하고 쓴 내용이에요.</p><p><a href="https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot" target="_blank" rel="noopener noreferrer">참고한 옛 타로 책 읽기 ↗</a></p></details>
-    <p class="help-footnote">효과음과 마녀의 안내 음성은 따로 켤 수 있어요. 기기에서 한국어 읽기를 지원하면 이야기를 음성으로도 들을 수 있어요. 화면의 움직임을 줄이려면 위쪽의 바람 아이콘을 눌러 주세요.</p>
+    <p class="help-footnote">효과음·음성은 따로 켤 수 있어요. 음성은 기기 지원 시 이용할 수 있고, 바람 버튼은 움직임을 줄여요.</p>
     <button id="preview-revelation" class="primary-button" data-close="help-dialog">마녀의 마법 미리보기<svg><use href="#i-arrow"/></svg></button>
   </dialog>
 
@@ -135,7 +133,7 @@
     <p id="reading-position" class="eyebrow">LUNA'S READING</p>
     <div class="reading-intro">
       <div id="reading-art" class="result-card-art" role="img"></div>
-      <div><p class="small-kicker">마녀 루나가 읽어 주는 카드 이야기</p><h2 id="reading-title"></h2><p id="reading-keyword" class="reading-keyword"></p></div>
+      <div><h2 id="reading-title"></h2><p id="reading-keyword" class="reading-keyword"></p></div>
     </div>
     <div class="reading-summary-box"><span>이 카드가 전하는 한마디</span><p id="reading-summary"></p></div>
     <details id="reading-name-help" class="reading-name-help" hidden><summary>카드 이름 쉽게 보기</summary><p id="reading-name-guide"></p></details>
@@ -154,10 +152,10 @@
     </section>
     <section class="summary-box"><span class="summary-star">✧</span><p class="small-kicker">마녀 루나의 마지막 속삭임</p><h3 id="summary-headline"></h3><div id="summary-text" class="reading-sections"></div><div class="ritual"><svg><use href="#i-moon"/></svg><div><span>오늘 해 볼 일</span><p id="summary-ritual"></p></div></div></section>
     <div class="result-actions"><button id="copy-result" class="secondary-button"><svg><use href="#i-copy"/></svg>종합 점괘 복사하기</button><button id="restart-result" class="primary-button"><svg><use href="#i-reset"/></svg><span>다른 주제 고르기</span></button></div>
-    <p class="result-footnote">카드에 담긴 뜻을 읽는 이야기예요. 미래가 꼭 이렇게 된다는 말은 아니에요. 다음 선택은 당신이 정해요.</p>
+    <p class="result-footnote">타로의 전통 해석이에요. 미래를 확정하지 않아요.</p>
   </dialog>
   <div id="toast" class="toast" role="status"></div>
   <script src="/shared/games/admin-preview.js?v=20261111-shared-auth3"></script>
-  <script type="module" src="./app.js?v=20261113-tarot-corpus1"></script>
+  <script type="module" src="./app.js?v=20261113-tarot-quiet-ui1"></script>
 </body>
 </html>
