@@ -697,7 +697,7 @@
       ],
       news: [
         { date: '2026.10.20', tag: '컴백', title: '11월 16일 미니 9집 PERFECT STORM 발매 예정 · 예약 판매 안내', href: 'https://weverse.io/txt/notice/40097' },
-        { date: '2026.11.05', tag: '굿즈', title: 'STEAL THE WIND 월드투어 공식 MD 판매 시작 · 품절 여부는 위버스샵 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/3/notices/14842' }
+        { date: '2026.11.04', tag: '굿즈', title: 'STEAL THE WIND 월드투어 공식 MD 11.05 판매 시작 안내 · 재고는 위버스샵 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/3/notices/14842' }
       ],
       merch: [
         { title: 'PERFECT STORM 미니 9집 공식 예약 음반', sub: '위버스샵 · 2026.10.20~11.15 예약 · 11.16 발매 예정 · 가격·재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/3/notices/14652' },
