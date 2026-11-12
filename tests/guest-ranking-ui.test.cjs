@@ -62,7 +62,7 @@ world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,log
   await page.waitForFunction(()=>document.querySelector('.spot-game-dialog iframe')?.contentDocument?.body?.textContent.includes('game frame'));
   await page.evaluate(()=>{const frame=document.querySelector('.spot-game-dialog iframe');dispatchEvent(new MessageEvent('message',{origin:location.origin,source:frame.contentWindow,data:{type:'ojjuda:spot-clear',stage:4,owner:null}}));});
   await page.waitForFunction(()=>calls.some(c=>c.name==='record_spot_clear'&&c.args.p_stage===4));
-  await page.getByRole('button',{name:'오락실로 돌아가기',exact:true}).click();
+  await page.getByRole('button',{name:'← 오쭈다 오락실',exact:true}).click();
   await page.evaluate(()=>{guestFixture.member();return guestFixture.submit('runner',99)});
   assert.equal(await page.evaluate(()=>calls.at(-1).name),'submit_score','member writes retain the authenticated API');
   assert.equal(await page.evaluate(()=>calls.at(-1).guest),false);
