@@ -31,6 +31,37 @@ def private_acl():
          "Permission": "FULL_CONTROL"}]}
 
 class RecoveryTest(unittest.TestCase):
+    def test_vault_root_key_is_fetched_without_logging_and_saved_privately(self):
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_):
+                return False
+
+            def read(self, _limit):
+                return json.dumps({"root_key": "AB" * 32}).encode()
+
+        cfg = {"SUPABASE_PROJECT_REF": "a" * 20,
+               "SUPABASE_ACCESS_TOKEN": "synthetic-scoped-token"}
+        with tempfile.TemporaryDirectory() as temp, patch.object(
+                backup.urllib.request, "urlopen", return_value=Response()) as urlopen:
+            dest = Path(temp) / "vault-root-key.json"
+            backup.escrow_vault_root_key(dest, cfg)
+            payload = json.loads(dest.read_text())
+            self.assertEqual(payload["project_ref"], "a" * 20)
+            self.assertEqual(payload["root_key"], "ab" * 32)
+            self.assertEqual(dest.stat().st_mode & 0o777, 0o600)
+            request = urlopen.call_args.args[0]
+            self.assertEqual(request.get_header("Authorization"),
+                             "Bearer synthetic-scoped-token")
+
+        with tempfile.TemporaryDirectory() as temp:
+            with self.assertRaisesRegex(RuntimeError, "scoped Supabase access token"):
+                backup.escrow_vault_root_key(
+                    Path(temp) / "vault-root-key.json",
+                    {"SUPABASE_PROJECT_REF": "a" * 20, "SUPABASE_ACCESS_TOKEN": ""})
+
     def test_psql_receives_explicit_connection_and_private_password(self):
         password = " private:@/?#%[]'\\ +한글\t\n "
         host = "aws-0-ap-northeast-2.pooler.supabase.com"
