@@ -1,6 +1,6 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261112-tarot-words1';
 import { TarotFX, TarotAudio } from './fx.js';
-import { TarotPayment } from './payment.js';
+import { TarotPayment } from './payment.js?v=20261112-tarot-words1';
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -257,15 +257,15 @@ async function summon() {
   $('#intro-controls').hidden = true;
   $('#play-controls').hidden = false;
   $('#action-button').hidden = false;
-  $('#selection-count').textContent = '별빛이 당신의 카드를 찾고 있어요';
+  $('#selection-count').textContent = '별빛 속에서 카드가 모이고 있어요';
   $('#action-button').disabled = true;
-  $('#action-button span').textContent = '카드를 소환하는 중';
+  $('#action-button span').textContent = '카드가 날아오는 중';
   $('#action-note').textContent = '마음속 질문에 잠시 집중해 보세요.';
   $('#stage-caption').textContent = '별빛을 따라, 당신에게로';
   setPhase('summoning');
   updatePaymentStatus();
-  setTitle('별들이 당신에게로 모입니다', '흩어진 운명의 조각들이 하나의 이야기가 됩니다.', 'THE SUMMONING');
-  setOracle('눈을 감고 마음속 질문을 떠올려 보렴. 밤하늘을 건너온 다섯 장이 네 이야기를 품고 있단다.', { tag: '운명의 카드 소환' });
+  setTitle('별빛을 따라 카드가 찾아옵니다', '궁금한 일을 떠올리며 잠시만 기다려 주세요.', 'THE SUMMONING');
+  setOracle('궁금한 일을 하나 떠올려 보렴. 달빛을 건너온 다섯 장의 카드가 곧 네 앞에 놓일 거야.', { tag: '카드가 찾아오는 시간' });
   effects.setMood('dealing');
   play('summon');
   followFlightTrails();
@@ -301,8 +301,8 @@ async function summon() {
   if (epoch !== state.epoch) return;
   effects.setMood('idle');
   setPhase('discard');
-  setTitle('버릴 카드 두 장을 고르세요', '고른 두 장은 사라지고, 남은 세 장으로 운세를 봅니다.', 'THE CHOICE');
-  setOracle('버리고 싶은 카드를 한 장씩 눌러 보렴. 누른 카드는 바로 앞으로 떠오른 뒤 별빛으로 사라진단다. 두 장을 버리고 나면, 네 곁에 남은 세 장의 이야기를 들려줄게.', { tag: '두 장을 하나씩 버리기' });
+  setTitle('버릴 카드 두 장을 고르세요', '카드를 누르면 바로 사라져요. 남은 세 장으로 운세를 볼 거예요.', 'THE CHOICE');
+  setOracle('마음이 덜 가는 카드 두 장을 하나씩 눌러 보렴. 누른 카드는 곧바로 별빛 속으로 사라질 거야. 네 곁에 남은 세 장이 어떤 이야기를 들려줄지 함께 살펴보자.', { tag: '두 장을 하나씩 버리기' });
   $('#stage-caption').textContent = '버릴 카드를 누르세요';
   updateDiscardProgress();
 }
@@ -331,7 +331,7 @@ function updateDiscardProgress() {
   $('#discard-preview').hidden = !count;
   $('#discard-preview').innerHTML = count ? `<span class="discard-preview-title">버린 카드</span>${numbers.map(number => `<span class="discard-number">× <b>${number}번</b></span>`).join('')}<span class="discard-preview-note">${count < 2 ? '남은 카드 중 한 장을 더 누르세요' : '두 장을 모두 버렸어요'}</span>` : '';
   $('#action-button').hidden = true;
-  $('#action-note').textContent = count ? '한 장을 더 버리면 세 장의 점괘가 시작돼요.' : '버릴 카드를 한 장씩 누르세요. 누르면 바로 사라져요.';
+  $('#action-note').textContent = count ? '한 장만 더 버리면, 남은 세 장을 펼칠 수 있어요.' : '버릴 카드를 한 장씩 누르세요. 누르면 바로 사라져요.';
   $('#stage-caption').textContent = count ? '남은 네 장 중 한 장을 더 버려주세요' : '버릴 카드를 누르면 바로 사라집니다';
 }
 
@@ -387,7 +387,7 @@ async function discardCard(index) {
     setPhase('discard');
     effects.setMood('idle');
     setTitle('한 장 더 버려주세요', `${String(index + 1).padStart(2, '0')}번 카드를 버렸어요. 남은 네 장 중 한 장을 더 누르세요.`, 'THE CHOICE');
-    setOracle(`${index + 1}번 카드가 별빛으로 돌아갔구나. 이제 한 장만 더 눌러 보렴. 마지막 두 번째 카드가 사라지면 남은 세 장이 네 이야기를 시작할 거야.`, { tag: '한 장을 버렸어요 · 1 / 2' });
+    setOracle(`${index + 1}번 카드는 별빛 속으로 사라졌구나. 이제 한 장만 더 골라 보렴. 남은 세 장에 어떤 이야기가 담겼는지 함께 살펴보자.`, { tag: '한 장을 버렸어요 · 1 / 2' });
     updateDiscardProgress();
     cards.find(item => !state.discarded.has(item.index))?.button.focus({ preventScroll: true });
     return;
@@ -400,7 +400,7 @@ async function discardCard(index) {
   if (epoch !== state.epoch) return;
   effects.setMood('reading');
   setPhase('reading');
-  setOracle('두 장을 잘 놓아주었구나. 이제 끌리는 카드부터 눌러 보렴. 네가 처음 여는 카드는 지금의 마음, 두 번째는 다가오는 흐름, 마지막은 나의 조언을 들려줄 거야. 순서는 네 마음이 정하는 거란다.', { tag: '여는 순서를 직접 골라 보세요' });
+  setOracle('이제 세 장이 남았구나. 가장 마음이 가는 카드부터 열어 봐. 첫 번째는 지금의 마음, 두 번째는 다가오는 흐름, 마지막은 내가 전하는 조언이야.', { tag: '여는 순서를 직접 골라 보세요' });
   prepareNextReveal();
   focusUnopenedCard();
 }
@@ -424,7 +424,7 @@ function prepareNextReveal() {
       card.button.setAttribute('aria-label', `${['왼쪽', '가운데', '오른쪽'][physicalSlot]} 카드, 누르면 ${order[state.revealed]}로 열기`);
     }
   });
-  $('#selection-count').innerHTML = `직접 고른 순서 <strong>${state.revealed} <span>/ 3</span></strong>`;
+  $('#selection-count').innerHTML = `펼친 카드 <strong>${state.revealed} <span>/ 3</span></strong>`;
   $('#reveal-order').hidden = false;
   $$('#reveal-order li').forEach((item, slot) => {
     const opened = slot < state.revealed;
@@ -437,10 +437,10 @@ function prepareNextReveal() {
   $('#action-button').hidden = state.revealed < 3;
   $('#action-button').disabled = false;
   $('#action-button span').textContent = '종합 점괘 보기';
-  $('#action-note').textContent = state.revealed < 3 ? '끌리는 카드를 누르세요. 누른 순서대로 점괘를 읽어요.' : '열린 카드를 누르면 각 카드의 설명을 다시 볼 수 있어요.';
+  $('#action-note').textContent = state.revealed < 3 ? '마음이 가는 카드를 누르세요. 고른 순서대로 이야기를 들려드려요.' : '열린 카드를 누르면 각 카드의 설명을 다시 볼 수 있어요.';
   if (state.revealed < 3) {
-    setTitle(state.revealed === 0 ? '먼저 열 카드를 골라주세요' : `${order[state.revealed]}로 열 카드를 골라주세요`, `${order[state.revealed]}로 고른 카드는 ‘${POSITIONS[state.revealed].label}’을 들려줍니다.`, 'YOUR CHOICE, YOUR STORY');
-    $('#stage-caption').textContent = state.revealed === 2 ? '마지막 카드를 눌러 마녀의 조언을 만나세요' : `남은 ${3 - state.revealed}장 중 끌리는 카드를 눌러주세요`;
+    setTitle(state.revealed === 0 ? '먼저 열 카드를 골라주세요' : `${order[state.revealed]}로 열 카드를 골라주세요`, `${order[state.revealed]} 카드는 ‘${POSITIONS[state.revealed].label}’을 보여줘요.`, 'YOUR CHOICE, YOUR STORY');
+    $('#stage-caption').textContent = state.revealed === 2 ? '마지막 카드를 열고 마녀의 조언을 들어 보세요' : `남은 ${3 - state.revealed}장 중 끌리는 카드를 눌러주세요`;
   }
 }
 
@@ -500,7 +500,7 @@ async function revealCard(index) {
   if (state.revealed === 3) {
     effects.setMood('reading');
     $('#restart-small').hidden = false;
-    $('#stage-caption').textContent = '세 번의 계시가 모두 당신에게 도착했습니다';
+    $('#stage-caption').textContent = '세 장이 전하는 이야기가 모두 펼쳐졌어요';
     play('complete');
     buildResults();
   }
@@ -591,7 +591,7 @@ async function copyResult() {
   const drawn = state.openOrder.map(i => state.drawn[i]);
   const summary = getSummary(drawn, state.topic);
   const parts = ['오쭈다 · 달의 마녀 타로', '종합 점괘', $('#result-date').textContent, ''];
-  parts.push(summary.headline, summary.text, '', `오늘의 작은 의식: ${summary.ritual}`, '', '재미와 자기 성찰을 위한 카드 풀이입니다.');
+  parts.push(summary.headline, summary.text, '', `오늘의 작은 한 걸음: ${summary.ritual}`, '', '카드의 이야기를 참고하며, 내 마음을 돌아보는 시간이에요.');
   const text = parts.join('\n');
   try {
     if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
@@ -609,7 +609,7 @@ async function copyResult() {
       textarea.remove();
       showToast('종합 점괘를 복사했어요.');
     } else {
-      showToast('선택된 해석을 길게 누르거나 Ctrl+C로 복사하세요.');
+      showToast('선택된 글을 길게 누르거나 Ctrl+C를 눌러 복사해 주세요.');
       textarea.addEventListener('blur', () => textarea.remove(), { once: true });
     }
   }
@@ -652,15 +652,15 @@ function reset({ clearPaid = true } = {}) {
   $('#reveal-order').hidden = true;
   $('#reading-open').hidden = true;
   $('#summon-button').disabled = !billingReady;
-  $('#summon-button span').textContent = billing.enabled ? '10쭈로 운세 시작하기' : '운명의 카드 소환하기';
+  $('#summon-button span').textContent = billing.enabled ? '10쭈로 운세 시작하기' : '마녀의 카드 불러오기';
   $$('[data-topic]').forEach(button => { button.disabled = false; });
   $('#login-link').hidden = true;
   updatePaymentStatus();
   $('#game-title').innerHTML = '운명이 속삭이는 밤,<br><em>달의 마녀</em>를 만나다';
-  $('#game-subtitle').innerHTML = '다섯 장의 카드, 세 번의 계시.<br class="mobile-break"> 오늘, 당신에게 도착한 별들의 이야기.';
+  $('#game-subtitle').innerHTML = '별빛을 따라 찾아온 다섯 장의 카드.<br class="mobile-break"> 그중 세 장에 담긴 이야기를 들어 보세요.';
   $('#eyebrow').innerHTML = '<span></span> THE MOONLIT ORACLE <span></span>';
-  $('#stage-caption').textContent = '당신을 찾아온 다섯 장의 운명';
-  setOracle('다시 찾아왔구나. 새로운 질문이 생겼다면 마음을 가만히 기울여 보렴. 별들의 이야기는 언제나 여기에 있단다.', { tag: '마녀의 초대' });
+  $('#stage-caption').textContent = '별빛을 따라 찾아온 다섯 장의 카드';
+  setOracle('다시 왔구나. 이번에는 어떤 이야기가 궁금하니? 마음에 떠오르는 질문을 골라 봐. 카드가 들려줄 이야기를 함께 들어 보자.', { tag: '마녀의 초대' });
   effects.setMood('idle');
   layout(false);
   $('#summon-button').focus({ preventScroll: true });
@@ -685,10 +685,10 @@ $$('[data-topic]').forEach(button => button.addEventListener('click', () => {
   state.topic = button.dataset.topic;
   $$('[data-topic]').forEach(b => { b.classList.toggle('active', b === button); b.setAttribute('aria-pressed', String(b === button)); });
   const invitations = {
-    overall: '오늘 네 마음에 머무는 질문을 떠올려 보렴. 사소해 보여도 네게 소중한 이야기라면 충분하단다.',
-    love: '마음에 떠오르는 사람이 있니? 그 사람보다 먼저, 네 마음이 어떤 이야기를 하는지 들어 보자.',
-    money: '풍요의 모습은 저마다 다르지. 지금 네게 소중한 것이 무엇인지, 카드와 함께 살펴보렴.',
-    work: '가고 싶은 길과 망설여지는 한 걸음. 네 안에 잠든 가능성을 함께 찾아보자꾸나.',
+    overall: '오늘 마음에 남은 일을 하나 떠올려 봐. 작은 고민이어도 괜찮아. 카드에 비친 네 마음을 함께 살펴보자.',
+    love: '마음에 떠오르는 사람이 있니? 설렘도, 아직 말하지 못한 마음도 괜찮아. 지금 네 마음에 무엇이 필요한지 함께 들어 보자.',
+    money: '돈 때문에 마음에 걸리는 일이 있니? 쓰고 싶은 곳과 남겨 두고 싶은 여유를 떠올려 보렴. 네게 맞는 선택을 카드와 함께 살펴보자.',
+    work: '하고 싶은 일이 있는데 첫걸음이 망설여지니? 지금 가진 힘과 필요한 도움을 함께 찾아보자. 작은 시작에도 너만의 빛이 있단다.',
   };
   setOracle(invitations[state.topic], { tag: '마녀의 초대' });
   play('hover');
@@ -706,7 +706,7 @@ $('#sound-toggle').addEventListener('click', async () => {
   audio.setMuted(!next);
   $('#sound-toggle').setAttribute('aria-pressed', String(next));
   $('#sound-toggle').title = next ? '효과음 끄기' : '효과음 켜기';
-  $('#sound-toggle').innerHTML = `${icon(next ? 'sound' : 'muted')}<span>사운드 ${next ? 'ON' : 'OFF'}</span>`;
+  $('#sound-toggle').innerHTML = `${icon(next ? 'sound' : 'muted')}<span>효과음 ${next ? 'ON' : 'OFF'}</span>`;
   if (next) play('hover');
 });
 
@@ -714,8 +714,8 @@ function applyMotionPreference(value) {
   state.reduced = value;
   document.body.classList.toggle('reduced-motion', value);
   $('#motion-toggle').setAttribute('aria-pressed', String(value));
-  $('#motion-toggle').setAttribute('aria-label', value ? '풍부한 움직임 켜기' : '움직임 줄이기');
-  $('#motion-toggle').title = value ? '풍부한 움직임 켜기' : '움직임 줄이기';
+  $('#motion-toggle').setAttribute('aria-label', value ? '마법 연출 켜기' : '움직임 줄이기');
+  $('#motion-toggle').title = value ? '마법 연출 켜기' : '움직임 줄이기';
   effects.setReducedMotion(value);
   if (value) cards.forEach(card => card.wrap.getAnimations().forEach(animation => {
     try { animation.finish(); } catch { /* Already finished or cancelled. */ }
@@ -752,7 +752,7 @@ document.addEventListener('visibilitychange', () => {
 });
 applyMotionPreference(state.reduced);
 layout(false);
-$('#oracle-text').textContent = '서두르지 않아도 괜찮단다. 네 마음이 머무는 카드를 별들이 이미 알고 있으니까.';
+$('#oracle-text').textContent = '서두르지 않아도 괜찮아. 마음에 걸리는 일을 하나 떠올려 보렴. 달빛 아래서 카드의 이야기를 함께 들어 보자.';
 // Start image requests while the visitor chooses a topic; five cards share at most five atlases.
 for (const src of new Set(DECK.map(card => card.art.src))) {
   const atlas = new Image();
@@ -800,7 +800,7 @@ function restorePaidReading(receipt) {
     setOracle(reading.summary, { title: data.name, tag: '다시 찾아온 카드 이야기', keyword: reading.keyword, speak: false });
     $('#reading-open').hidden = false;
     $('#reading-open').disabled = false;
-  } else setOracle('다시 왔구나. 이미 시작한 이야기를 그대로 이어가면 된단다. 마음이 머무는 카드를 천천히 골라 보렴.', { tag: '진행하던 운세 이어보기', speak: false });
+  } else setOracle('다시 왔구나. 아까 펼치던 이야기를 이어가 보자. 아직 열지 않은 카드 중 마음이 가는 것을 골라 보렴.', { tag: '진행하던 운세 이어보기', speak: false });
   effects.setMood(state.kept.length ? 'reading' : 'idle');
   layout(false);
   updatePaymentStatus();
@@ -809,8 +809,8 @@ function restorePaidReading(receipt) {
 async function initializeBilling() {
   $('#summon-button').disabled = true;
   $('#azit-back').hidden = !billing.enabled;
-  $('#summon-button span').textContent = billing.enabled ? '10쭈로 운세 시작하기' : '운명의 카드 소환하기';
-  $('#payment-status').textContent = billing.enabled ? '로그인과 쭈 잔액을 확인하고 있어요…' : '미리보기 · 실제 쭈는 차감되지 않아요';
+  $('#summon-button span').textContent = billing.enabled ? '10쭈로 운세 시작하기' : '마녀의 카드 불러오기';
+  $('#payment-status').textContent = billing.enabled ? '로그인 상태와 보유한 쭈를 확인하고 있어요…' : '미리보기 · 실제 쭈는 차감되지 않아요';
   try {
     const result = await billing.init();
     billingReady = true;
@@ -823,7 +823,7 @@ async function initializeBilling() {
         button.setAttribute('aria-pressed', String(button.dataset.topic === state.topic));
       });
       $('#summon-button span').textContent = '같은 운세 다시 확인하기';
-      $('#payment-status').textContent = '진행하던 요청을 이어서 확인해요. 같은 요청에는 한 번만 차감됩니다.';
+      $('#payment-status').textContent = '시작하던 운세를 이어서 확인해요. 같은 운세에는 10쭈가 한 번만 사용돼요.';
     }
     else if (result.signedIn === false) {
       $('#payment-status').textContent = '아지트에 로그인한 뒤 이용해 주세요.';

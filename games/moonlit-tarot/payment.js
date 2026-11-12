@@ -4,14 +4,14 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const TOPICS = new Set(['overall', 'love', 'money', 'work']);
 const messages = {
   not_signed_in: '아지트에 로그인한 뒤 이용해 주세요.',
-  member_required: '회원 로그인 후 이용할 수 있어요.',
+  member_required: '아지트 회원으로 로그인하면 이용할 수 있어요.',
   banned: '현재 계정으로는 운세를 시작할 수 없어요.',
-  coins: '쭈가 부족해요. 운세 한 번에 10쭈가 필요합니다.',
-  wallet_unavailable: '쭈 지갑을 확인하지 못했어요. 아지트에서 다시 접속해 주세요.',
-  request_conflict: '진행 중인 운세 정보를 확인하지 못했어요. 다시 접속해 주세요.',
-  storage_unavailable: '진행 상황을 저장할 수 없어 시작하지 않았어요. 브라우저의 저장소를 허용해 주세요.',
-  invalid: '운세 정보를 확인하지 못했어요. 다시 접속해 주세요.',
-  network: '연결을 확인해 주세요. 다시 누르면 같은 요청을 확인하며 중복 차감하지 않아요.'
+  coins: '쭈가 부족해요. 운세를 한 번 보려면 10쭈가 필요해요.',
+  wallet_unavailable: '보유한 쭈를 확인하지 못했어요. 아지트로 돌아가 다시 열어 주세요.',
+  request_conflict: '진행 중인 운세를 확인하지 못했어요. 아지트로 돌아가 다시 열어 주세요.',
+  storage_unavailable: '진행 상황을 저장할 수 없어 운세를 시작하지 않았어요. 브라우저에서 이 사이트의 데이터 저장을 허용해 주세요.',
+  invalid: '운세를 불러오지 못했어요. 아지트로 돌아가 다시 열어 주세요.',
+  network: '연결이 잠시 끊겼어요. 다시 누르면 시작하던 운세를 이어서 확인해요. 같은 운세로 쭈가 두 번 사용되지는 않아요.'
 };
 function problem(code = 'network') {
   const error = new Error(messages[code] || messages.network);
