@@ -833,7 +833,7 @@
       music: [
         { title: 'I SPY', date: '2026.10.12', type: '미니 4집 · 타이틀 I SPY',
           songs: ['I SPY', 'We Own This Street', 'UPGRADE', 'Super Major', 'Hubble Time', '꿈결 (Like A Dream)'],
-          href: 'https://smtownandstore.com/product/nct-wish-the-4th-mini-album-i-spy-deluxe-book-ver/29341/category/53/display/1/' },
+          href: 'https://en.smtownandstore.com/product/nct-wish-the-4th-mini-album-i-spy-disc-pack-ver/29342/category/646/display/1/' },
         { title: 'Ode to Love', date: '2026.04.20', type: '한국 정규 1집 · 타이틀 Ode to Love',
           songs: ['2.0 (TWO POINT O)', 'Ode to Love', 'Sticky', 'Feel The Beat', '여우비 (Crush)', 'Street (2AM)', 'Glow Up', 'Everglow', "Don't Say You Love Me", 'Voyage'],
           href: 'https://www.youtube.com/watch?v=1o5O2YvV3HU' },
