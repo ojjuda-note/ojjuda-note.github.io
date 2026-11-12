@@ -846,7 +846,7 @@
       ],
       campaigns: [
         { kind: '광고', date: '2026.06.05', title: 'Reebok × TREASURE', sub: '2026 여름 시즌 일본 비주얼 모델', href: 'https://www.oricon.co.jp/news/2459226/full/' },
-        { kind: '협업', date: '2026.09.07', title: 'Reebok × AZUL BY MOUSSY × TREASURE', sub: '일본 가을 컬렉션 비주얼 · 9.16 매장 발매', href: 'https://prtimes.jp/main/html/rd/p/000001201.000014511.html' }
+        { kind: '콜라보', date: '2026.09.07', title: 'Reebok × AZUL BY MOUSSY × TREASURE', sub: '일본 가을 컬렉션 비주얼 · 9.16 매장 발매', href: 'https://prtimes.jp/main/html/rd/p/000001201.000014511.html' }
       ],
       accent: '#478dce', light: '#dff3ff', dark: '#28577e', bg: '#f1f9ff', shape: '◆'
     },
