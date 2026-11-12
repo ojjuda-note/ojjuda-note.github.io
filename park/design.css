@@ -19,7 +19,7 @@ html.park-embedded .main{width:min(100%,1264px);padding:32px 32px 96px}
 @keyframes park-skeleton-breathe{to{opacity:.42}}
 @media(prefers-reduced-motion:reduce){.park-skeleton-quote,.park-skeleton-meta span{animation:none}}
 
-/* The detail view pairs each photo with a single, wrapping caption and action bar. */
+/* Card detail and its reply column. */
 .detail-screen .back-button {
   min-height: 40px;
   margin: 0 0 4px;
@@ -52,113 +52,38 @@ html.park-embedded .main{width:min(100%,1264px);padding:32px 32px 96px}
 .detail-screen .reply-heading .button:hover { background: var(--accent-soft); }
 .detail-screen #reply-list { display: grid; gap: 12px; }
 .detail-screen .reply-empty { margin: 0; padding: 8px 0; }
-.detail-screen :is(.photo-card, .reply-card) {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  width: 100%;
+.detail-screen .detail-card-slot { min-width: 0; }
+.detail-screen .reply-card {
+  width: calc(200% / 3);
   max-width: none;
-  border: 0;
-  border-radius: 14px;
-  background: var(--accent-soft);
-  box-shadow: none;
+  justify-self: start;
 }
-.detail-screen :is(.card-photo-frame, .note-full-body) { flex: 0 0 100%; }
-.detail-screen .card-meta {
-  display: grid;
-  flex: 1 1 134px;
-  grid-template-columns: 24px auto minmax(0, 1fr);
-  align-content: center;
-  align-items: center;
-  gap: 1px 5px;
-  min-width: 0;
-  padding: 5px 4px 5px 10px !important;
+@media (min-width: 780px) {
+  .detail-screen .detail-layout { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+  .detail-screen .reply-card { width: 100%; }
 }
-.detail-screen .card-meta .avatar {
-  grid-area: 1 / 1 / span 2;
-  width: 24px;
-  height: 24px;
-  border-radius: 8px;
-  font-size: 12px;
-}
-.detail-screen .card-meta > span:nth-child(2) { display: contents; }
-.detail-screen .card-meta strong {
-  grid-area: 1 / 2 / auto / -1;
-  font-size: 12px;
-  line-height: 1.35;
-}
-.detail-screen .card-meta small {
-  grid-area: 2 / 2;
-  font-size: 10px;
-  line-height: 1.3;
-}
-.detail-screen .card-meta .meta-tail {
-  grid-area: 2 / 3;
-  display: block;
-  margin: 0;
-  max-width: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.detail-screen .card-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 2px;
-  max-width: 100%;
-  margin-left: auto;
-  padding: 0 6px !important;
-  border: 0;
-  background: transparent;
-}
-.detail-screen .card-actions button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  min-width: 32px;
-  min-height: 44px;
-  margin: 0;
-  padding: 0 3px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  font-size: 12px;
-}
-.detail-screen .card-actions svg { width: 17px; height: 17px; }
-.detail-screen .card-actions .action-label { display: none; }
-.detail-screen .card-actions :is(.card-share, .card-manage) {
-  width: 32px;
-  min-height: 44px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  font-size: 0;
-}
-.detail-screen .card-actions .card-share::after,
-.detail-screen .card-actions .card-manage::after { font-size: 18px; line-height: 1; }
-.detail-screen .card-actions .card-share::after { content: '↗'; }
-.detail-screen .card-actions .card-manage::after { content: '⋯'; }
-.detail-screen .card-actions button:focus-visible { outline-offset: -3px; }
 @media (max-width: 779px) {
   .shell > .col > .main:has(> #detail:not([hidden])) { padding: 4px 12px 16px; }
 }
 
-/* Feed cards keep their controls on the photo, with a clear band for the quote and tags. */
-#feed .feed-list .photo-card {
-  --top-tools: 44px;
+/* Keep the quote, tags and edge controls in separate parts of the photo. */
+#main .park-photo-cards :is(.photo-card, .reply-card) {
+  --top-tools: 0px;
   --attachment: 0px;
-  display: block;
+  display: grid;
+  grid-template: "face" auto "body" auto / minmax(0, 1fr);
   border: 0;
   background: transparent;
   box-shadow: none;
   isolation: isolate;
 }
-#feed .feed-list .photo-card:has(.card-manage) { --top-tools: 88px; }
-#feed .feed-list .photo-card:has(.has-card-photo) { --attachment: 46px; }
-#feed .feed-list .photo {
+#main .park-photo-cards article:has(.save, .card-manage) { --top-tools: 44px; }
+#main .park-photo-cards article:has(.save):has(.card-manage) { --top-tools: 88px; }
+#main .park-photo-cards article:has(.has-card-photo) { --attachment: 46px; }
+/* Expanded text can grow below the face without moving the overlaid controls. */
+#main .park-photo-cards :is(.card-photo-frame, .card-meta, .card-actions) { grid-area: face; }
+#main .park-photo-cards .note-full-body { grid-area: body; }
+#main .park-photo-cards .photo {
   display: grid;
   grid-template: minmax(min-content, 1fr) auto / minmax(0, 1fr);
   align-items: center;
@@ -166,16 +91,18 @@ html.park-embedded .main{width:min(100%,1264px);padding:32px 32px 96px}
   height: auto;
   padding: 50px 14px 44px;
 }
-#feed .feed-list .note-event-card .photo { min-height: max(174px, 40cqw); }
-#feed .feed-list .card-quote { grid-row: 1; top: auto; }
-#feed .feed-list .card-tags {
+#detail-card-slot .photo-card:not(.note-event-card) .photo { min-height: max(286px, 51.2cqw); }
+#reply-list .reply-card .photo { min-height: max(167px, 60cqw); }
+#main .park-photo-cards .note-event-card .photo { min-height: max(174px, 40cqw); }
+#main .park-photo-cards .card-quote { grid-row: 1; top: auto; }
+#main .park-photo-cards .card-tags {
   position: static;
   grid-row: 2;
   justify-self: stretch;
 }
-#feed .feed-list .card-tags:empty { display: none; }
-#feed .feed-list .card-tags > span { border: 0; background: #141c27a8; }
-#feed .feed-list .card-photo-frame::after {
+#main .park-photo-cards .card-tags:empty { display: none; }
+#main .park-photo-cards .card-tags > span { border: 0; background: #141c27a8; }
+#main .park-photo-cards .card-photo-frame::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -183,7 +110,7 @@ html.park-embedded .main{width:min(100%,1264px);padding:32px 32px 96px}
   background: linear-gradient(to bottom, #101820c7, transparent 58px),
               linear-gradient(to top, #101820bf, transparent 54px);
 }
-#feed .feed-list .card-meta {
+#main .park-photo-cards .card-meta {
   position: absolute;
   z-index: 2;
   inset: 6px calc(14px + var(--top-tools) + var(--attachment)) auto 12px;
@@ -198,26 +125,26 @@ html.park-embedded .main{width:min(100%,1264px);padding:32px 32px 96px}
   text-shadow: 0 1px 3px #101820;
   pointer-events: none;
 }
-#feed .feed-list .card-meta .avatar {
+#main .park-photo-cards .card-meta .avatar {
   grid-area: 1 / 1 / span 2;
   width: 23px;
   height: 23px;
   border-radius: 50%;
   font-size: 11px;
 }
-#feed .feed-list .card-meta > span:nth-child(2) { display: contents; }
-#feed .feed-list .card-meta strong {
+#main .park-photo-cards .card-meta > span:nth-child(2) { display: contents; }
+#main .park-photo-cards .card-meta strong {
   grid-area: 1 / 2 / auto / -1;
   font-size: 12px;
   line-height: 1.4;
 }
-#feed .feed-list .card-meta small, #feed .feed-list .meta-tail {
+#main .park-photo-cards .card-meta small, #main .park-photo-cards .meta-tail {
   color: inherit;
   font-size: 10px;
   line-height: 1.4;
 }
-#feed .feed-list .card-meta small { grid-area: 2 / 2; }
-#feed .feed-list .meta-tail {
+#main .park-photo-cards .card-meta small { grid-area: 2 / 2; }
+#main .park-photo-cards .meta-tail {
   grid-area: 2 / 3;
   display: block;
   max-width: none;
@@ -225,7 +152,7 @@ html.park-embedded .main{width:min(100%,1264px);padding:32px 32px 96px}
   overflow: hidden;
   text-overflow: ellipsis;
 }
-#feed .feed-list .card-actions {
+#main .park-photo-cards .card-actions {
   position: absolute;
   z-index: 3;
   inset: 0 5px;
@@ -237,7 +164,7 @@ html.park-embedded .main{width:min(100%,1264px);padding:32px 32px 96px}
   background: transparent;
   pointer-events: none;
 }
-#feed .feed-list .card-actions button {
+#main .park-photo-cards .card-actions button {
   display: inline-flex;
   justify-content: center;
   gap: 3px;
@@ -252,23 +179,23 @@ html.park-embedded .main{width:min(100%,1264px);padding:32px 32px 96px}
   text-shadow: 0 1px 3px #101820;
   pointer-events: auto;
 }
-#feed .feed-list .card-actions svg { width: 17px; height: 17px; }
-#feed .feed-list .card-actions .action-label { display: none; }
-#feed .feed-list .card-actions .card-share { margin-left: auto; }
-#feed .feed-list .card-actions :is(.save, .card-manage) { position: absolute; top: 0; right: 0; }
-#feed .feed-list .card-actions .save { right: calc(var(--top-tools) - 44px); }
-#feed .feed-list .card-actions :is(.card-share, .card-manage) { font-size: 0; }
-#feed .feed-list .card-share::after { content: '↗'; font-size: 19px; line-height: 1; }
-#feed .feed-list .card-manage::after { content: '⋯'; font-size: 20px; line-height: 1; }
-#feed .feed-list .card-actions [aria-pressed="true"] svg { fill: currentColor; }
-#feed .feed-list .card-actions button:disabled { opacity: .8; }
-#feed .feed-list .card-actions button:hover:not(:disabled) { background: #10182060; border-radius: 10px; }
-#feed .feed-list :is(.photo-open, .card-actions button):focus-visible { outline: 2px solid white; outline-offset: -3px; }
-#feed .feed-list .card-photo-thumb {
+#main .park-photo-cards .card-actions svg { width: 17px; height: 17px; }
+#main .park-photo-cards .card-actions .action-label { display: none; }
+#main .park-photo-cards .card-actions .card-share { margin-left: auto; }
+#main .park-photo-cards .card-actions :is(.save, .card-manage) { position: absolute; top: 0; right: 0; }
+#main .park-photo-cards .card-actions .save { right: calc(var(--top-tools) - 44px); }
+#main .park-photo-cards .card-actions :is(.card-share, .card-manage) { font-size: 0; }
+#main .park-photo-cards .card-share::after { content: '↗'; font-size: 19px; line-height: 1; }
+#main .park-photo-cards .card-manage::after { content: '⋯'; font-size: 20px; line-height: 1; }
+#main .park-photo-cards .card-actions [aria-pressed="true"] svg { fill: currentColor; }
+#main .park-photo-cards .card-actions button:disabled { opacity: .8; }
+#main .park-photo-cards .card-actions button:hover:not(:disabled) { background: #10182060; border-radius: 10px; }
+#main .park-photo-cards :is(.photo-open, .card-actions button):focus-visible { outline: 2px solid white; outline-offset: -3px; }
+#main .park-photo-cards .card-photo-thumb {
   --card-thumb-size: 42px;
   top: 3px;
   right: calc(6px + var(--top-tools));
   bottom: auto;
   border-width: 1px;
 }
-#feed .feed-list .note-event-badge { top: auto; bottom: 10px; left: 12px; border: 0; }
+#main .park-photo-cards .note-event-badge { top: auto; bottom: 10px; left: 12px; border: 0; }
