@@ -37,6 +37,19 @@
     return false;
   }
 
+  function returnHome() {
+    if (!authKnown || overlayOpen() || pendingAction) return false;
+    initialCardId = initialKeepId = null;
+    initialParkCompose = false;
+    composerRun++;
+    const latestFeed = feedMode === 'all' && feedSort === 'latest' && !feedTerm;
+    feedSort = 'latest'; feedTerm = ''; tagTabReset?.();
+    window.OjjudaNoteNavigation?.leaveMy();
+    if (latestFeed) returnToFeed();
+    else void selectCollection('all');
+    return true;
+  }
+
   const actions = new Set(['feed', 'saved', 'mine', 'events', 'event-new', 'blocked', 'settings', 'member-info', 'compose', 'notifications', 'support', 'world', 'menu', 'board', 'library', 'glasses']);
   function navigate(action) {
     if (!actions.has(action)) return false;
@@ -156,7 +169,7 @@
   });
 
   window.OjjudaNoteNavigation?.leaveMy();
-  window.OjjudaParkFull = Object.freeze({ embedded: hosted, navigate, compose: () => navigate('compose'), back, canLeave, overlayOpen, cardOpen:()=>!detail.hidden,
+  window.OjjudaParkFull = Object.freeze({ embedded: hosted, navigate, returnHome, compose: () => navigate('compose'), back, canLeave, overlayOpen, cardOpen:()=>!detail.hidden,
     refresh: () => overlayOpen()||!canLeave()?false:detail.hidden?loadFeed(false,true):refreshCards(true),
     refreshBalance: () => loadWorldBalance(session?.user?.id) });
   reportState();

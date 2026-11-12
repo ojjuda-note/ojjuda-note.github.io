@@ -259,7 +259,7 @@ jobs:
       - name: Verify read reduction, visibility and account isolation
         run: |
           npm --prefix tests run test:performance
-          node --test tests/park-loading.test.cjs
+          node --test tests/park-loading.test.cjs tests/park-frame-cache.test.cjs
 
   automatic_repair:
     name: Automatic repair deployment boundaries

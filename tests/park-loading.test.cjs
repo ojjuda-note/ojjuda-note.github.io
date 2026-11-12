@@ -11,7 +11,7 @@ const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
   const timers = [];
   const cover = { hidden: false }, compose = { hidden: false };
   const frame = { isConnected: true, dataset: {}, events: {},
-    contentWindow: { location: new URL('https://fixture.test/park/'), postMessage() {}, OjjudaParkFull: { cardOpen: () => false } },
+    contentWindow: { location: new URL('https://fixture.test/park/'), postMessage() {}, OjjudaParkFull: { cardOpen: () => false, returnHome: () => true } },
     addEventListener(name, listener) { this.events[name] = listener; } };
   const slot = { replaceChildren(child) { assert.equal(child, frame); } };
   const panel = { hidden: false, isConnected: true,
@@ -145,8 +145,12 @@ test('a shared card starts before the feed and fetches reply backgrounds near th
   const dom = new JSDOM(read('park/index.html'), {
     url: 'https://fixture.test/park/?card=' + id, runScripts: 'outside-only', pretendToBeVisual: true
   });
+  const observers = [];
   try {
     const w = dom.window, doc = w.document, calls = [], watches = new Map();
+    w.MutationObserver = class extends w.MutationObserver {
+      constructor(callback) { super(callback); observers.push(this); }
+    };
     w.scrollTo = () => {};
     w.matchMedia = () => ({ matches: false });
     doc.documentElement.setAttribute('data-park-webp', '');
@@ -168,7 +172,7 @@ test('a shared card starts before the feed and fetches reply backgrounds near th
         return {data:[]};
       } })
     }) };
-    w.eval(read('note/preview.js'));
+    w.eval(read('note/preview.js') + '\n' + read('park/integration.js'));
     const settle = () => new Promise(resolve => w.setTimeout(resolve, 0));
     await settle(); await settle();
     assert.deepEqual(calls, ['get_card','replies']);
@@ -188,5 +192,26 @@ test('a shared card starts before the feed and fetches reply backgrounds near th
     await settle();
     assert.deepEqual(calls, ['get_card','replies','list_cards']);
     assert.equal(doc.querySelectorAll('#feed-list article').length, 1);
-  } finally { dom.window.close(); }
+    doc.querySelector('#feed-list article .photo').click();
+    await settle();
+    assert.equal(doc.querySelector('#detail').hidden,false);
+    const feedRequests = () => calls.filter(name=>name==='list_cards').length;
+    assert.equal(w.OjjudaParkFull.returnHome(),true);
+    assert.equal(doc.querySelector('#detail').hidden,true);
+    assert.equal(doc.querySelector('#feed').hidden,false);
+    assert.equal(new URL(w.location.href).searchParams.has('card'),false);
+    assert.equal(feedRequests(),1,'returning from a card reuses the default feed');
+    doc.querySelector('[data-sort="popular"]').click();
+    await settle();
+    assert.equal(w.OjjudaParkFull.returnHome(),true);
+    await settle();
+    assert.equal(doc.querySelector('[data-sort="latest"]').getAttribute('aria-pressed'),'true');
+    assert.equal(feedRequests(),3,'switching back from Popular loads the Latest feed once');
+    doc.querySelector('#composer-backdrop').hidden=false;
+    assert.equal(w.OjjudaParkFull.returnHome(),false,'an open dialog requires a clean document on re-entry');
+    await settle();
+  } finally {
+    for (const observer of observers) observer.disconnect();
+    dom.window.close();
+  }
 });
