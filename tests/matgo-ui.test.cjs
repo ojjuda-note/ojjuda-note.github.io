@@ -28,13 +28,13 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     }
     if(body.action==='tazza_start'){
       if(state.coins<5)return{data:{error:'insufficient_zzu'}};
-      state.coins-=5;state.round={id:crypto.randomUUID(),rules_version:state.rulesVersion??13,seed:state.purchaseSeed??10,gold:state.gold,first:0,carry:1,tazza_mode:state.purchaseMode??'peek'};return{data:snapshot()};
+      state.coins-=5;state.round={id:crypto.randomUUID(),rules_version:state.rulesVersion??14,seed:state.purchaseSeed??10,gold:state.gold,first:0,carry:1,tazza_mode:state.purchaseMode??'peek'};return{data:snapshot()};
     }
     if(body.action==='vent'){if(state.coins<1)return{data:{error:'insufficient_zzu'}};state.coins--;return{data:{...snapshot(),purchase:{effect:body.effect,price:1}}};}
     if(body.action==='start'){
       if(state.updateRequired)return{data:{error:'client_update_required'}};
       if(!state.gold)return{data:{error:'gold_empty'}};
-      state.round ||= {id:crypto.randomUUID(),rules_version:state.rulesVersion??13,seed:state.seed??10,gold:state.gold,first:0,carry:1};return{data:snapshot()};
+      state.round ||= {id:crypto.randomUUID(),rules_version:state.rulesVersion??14,seed:state.seed??10,gold:state.gold,first:0,carry:1};return{data:snapshot()};
     }
     if(body.action==='refill'){
       if(state.round)return{data:{error:'round_in_progress'}};
@@ -259,7 +259,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.locator('#chongtong-'+decision).click();
     if(decision==='win'){
       await assertSettledResult(f);assert.equal(f.state.gold,5700);assert.equal(f.state.outcome,'win');assert.match(await f.page.locator('.game-result-extra').textContent(),/7점/);
-      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,13);
+      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,14);
     }else{
       await f.page.waitForFunction(()=>!matgoTest.ui.busy);assert.equal(f.state.settled,undefined);
       assert.equal(await f.page.evaluate(()=>matgoTest.game.over),false);assert.equal(await f.page.locator('.hand.me .c.ok').count(),10);
@@ -353,7 +353,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     const old={id:crypto.randomUUID(),rules_version:11,seed:5,gold:5000,first:0,carry:1,cpu_level:1};
     const f=await fixture({round:old,seed:5});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();
     await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
-    assert.notEqual(f.state.round.id,old.id);assert.equal(f.state.round.rules_version,13);
+    assert.notEqual(f.state.round.id,old.id);assert.equal(f.state.round.rules_version,14);
     assert.equal(await f.page.evaluate(()=>matgoTest.game.openingPpuk),true);
     assert.equal(await f.page.locator('#round-rules-note').isHidden(),true);
     assert.equal(f.state.gold,5000);assert.equal(f.state.requests.some(r=>r.action==='settle'),false);
@@ -370,7 +370,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.equal(f.state.requests.some(r=>r.action==='settle'),false);
     assert.deepEqual(f.state.requests.filter(r=>r.action==='abandon').map(r=>r.round_id),[old.id,firstRound]);
     assert.equal(await f.page.locator('#round-rules-note').isHidden(),true);
-    assert.equal(await f.page.locator('#cpuLevel').textContent(),'기본');
+    assert.equal(await f.page.locator('#cpuLevel').textContent(),'아주 쉬움');
     assert.equal(await f.page.locator('.stack.ppuk').getAttribute('data-ppuk-label'),'바닥뻑');
     fs.mkdirSync('/tmp/matgo-round-refresh-proof',{recursive:true});await f.page.screenshot({path:'/tmp/matgo-round-refresh-proof/current.png'});
     assert.deepEqual(f.errors,[]);await f.context.close();
@@ -383,7 +383,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.waitForURL(url=>url.searchParams.has('update'));await f.page.locator('#matgo-start-play').click();
     assert.equal(new URL(f.page.url()).searchParams.get('entry'),'kept');
     await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
-    assert.equal(f.state.round.rules_version,13);assert.deepEqual(f.errors,[]);await f.context.close();
+    assert.equal(f.state.round.rules_version,14);assert.deepEqual(f.errors,[]);await f.context.close();
   }
   // Opening triples come from a real deal and pay one pi, including a whole bonus.
   for(const p of [0,1])for(const route of ['hand','flip']){

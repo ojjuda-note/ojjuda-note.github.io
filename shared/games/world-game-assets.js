@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261112-spot-motion30'
+ const revision='20261112-matgo-gold-tiers'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -32,7 +32,7 @@
   janggi:'1.10.2',
   chess:'1.4.8',
   billiards:'1.4.8',
-  matgo:'1.5.5'
+  matgo:'1.6.0'
  });
  const controls=['/shared/games/game-controls.css?v=20261109-unified-multiplayer-ui2','/shared/games/game-controls.js?v=20261106-source-folders1'];
  const session='/shared/games/game-session.js?v=20261108-streak-exit1';

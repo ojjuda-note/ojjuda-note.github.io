@@ -99,3 +99,59 @@ try{
   }
   console.log('PASS: strict gold tiers, basic strategy without deliberate mistakes, combo/blocking expert policy, hidden-card isolation, all paid modes, server replay, legacy migration/resume, no streak progression, saved stakes and bankruptcy/refill');
 }finally{await f.close();}
+
+const goldTiers=[[0,1],[4999,1],[5000,1],[5001,2],[99999,2],[100000,3],[200000,3],[200001,4],[500000,4],[500001,5]];
+for (const [gold,tier] of goldTiers) {
+  assert.equal(E.soloTierForGold(gold),tier);
+  assert.equal(server.soloTierForGold(gold),tier);
+  for (const mode of [null,...Object.keys(TAZZA_MODES)]) {
+    const round={rules_version:14,seed:71,gold,first:0,carry:1,rate:100,cpu_level:tier,tazza_mode:mode};
+    const {g}=await playRound(E,dealSoloRound,round);
+    assert.equal(g.cpuLevel,tier);
+    assert.equal((await verifyRound(round,g.actions)).gold,g.bank[0]);
+  }
+}
+// Count correct choices on a board with one clear capture.
+function capturesAt(gold) {
+  const g=new E.Game({});g.cpuMode='gold';g.bank=[gold,5000];g.random=E.seededRandom(1);g.deal();
+  g.floor=[[E.CARDS[1]]];g.hand[1]=[0,4,8,12].map(i=>E.CARDS[i]);g.caps=[[],[]];
+  let captures=0;
+  for(let seed=0;seed<500;seed++){
+    g.random=E.seededRandom(seed);
+    if(E.aiChooseCard(g,1).id===0)captures++;
+  }
+  return captures;
+}
+assert.ok(capturesAt(5000)<capturesAt(5001));
+assert.ok(capturesAt(5001)<capturesAt(100000));
+assert.equal(capturesAt(100000),500);
+
+const upgraded=await fixture({basic:true,fresh:true});
+try {
+  const {db,call}=upgraded;
+  const start=version=>call(A,{action:'start',stakes_version:1,rules_version:version});
+  const old=await start(13);
+  const {g}=await playRound(E,dealSoloRound,old.round);
+  const dir=new URL('../supabase/migrations/',import.meta.url);
+  const read=suffix=>fs.readFileSync(new URL(fs.readdirSync(dir).find(n=>n.endsWith(suffix)),dir),'utf8');
+  await db.exec(read('_matgo_result_receipts.sql'));
+  await db.exec(read('_matgo_beginner_difficulty.sql'));
+  assert.deepEqual((await start(13)).round,old.round);
+  const done=await call(A,{action:'settle',rules_version:13,round_id:old.round.id,actions:g.actions});
+  assert.equal(done.gold,g.bank[0]);assert.equal(done.settlement.round_id,old.round.id);
+  assert.equal((await start(13)).error,'client_update_required');
+  for(const [gold,tier] of goldTiers){
+    const row=(await db.query('select ojjuda_matgo_internal.cpu_tier_for_gold($1) as tier',[gold])).rows[0];
+    assert.equal(row.tier,tier);
+    if(!gold)continue;
+    await db.query('update ojjuda_matgo_internal.wallets set gold=$2 where user_id=$1',[A,gold]);
+    const state=await start(14);
+    assert.equal(state.round.rules_version,14);assert.equal(state.round.cpu_level,tier);
+    const {g}=await playRound(E,dealSoloRound,state.round);
+    const result=await call(A,{action:'settle',rules_version:14,round_id:state.round.id,actions:g.actions});
+    assert.equal(result.status,200);assert.equal(result.gold,g.bank[0]);
+  }
+  const paid=await call(B,{action:'tazza_start',stakes_version:1,rules_version:14,request_id:crypto.randomUUID()});
+  assert.equal(paid.round.rules_version,14);assert.equal(paid.round.cpu_level,1);
+  console.log('PASS: five gold tiers, easier decisions, paid play, v13 resume and v14 server settlement');
+} finally { await upgraded.close(); }
