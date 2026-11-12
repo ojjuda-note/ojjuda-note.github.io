@@ -774,20 +774,26 @@ function requestTagFit() {
   });
 }
 const expandedBodyEntries = new Set(), quoteFitEntries = new Set();
-function fitPhotoQuote(photo, quote, tagRow, initialFontSize) {
+function fitPhotoQuote(photo, quote, tagRow) {
   // A hidden feed has zero bounds, not an overflowing card. Leave its layout intact.
   if (!photo.isConnected || photo.getBoundingClientRect().width <= 0) return;
   photo.style.height = '';
   const minimumHeight = photo.getBoundingClientRect().height;
   // Tags have their own fitting rules; settle their layout before measuring the quote.
   fitTagRow(tagRow);
-  // Start from the authored size each time, including responsive CSS after a resize.
-  quote.style.fontSize = initialFontSize;
-  const base = parseFloat(getComputedStyle(quote).fontSize);
-  for (let size = base; size >= 12; size -= 1) {
+  // Measure at the authored CSS size first so a short wide line is not penalized by its character count.
+  quote.style.fontSize = '';
+  if (!photoQuoteClipped(photo, quote, tagRow)) return;
+  const authored = parseFloat(getComputedStyle(quote).fontSize);
+  let best = Math.min(12, authored);
+  let low = Math.floor(best) + 1, high = Math.ceil(authored) - 1;
+  while (low <= high) {
+    const size = Math.floor((low + high) / 2);
     quote.style.fontSize = `${size}px`;
-    if (!photoQuoteClipped(photo, quote, tagRow)) return;
+    if (photoQuoteClipped(photo, quote, tagRow)) high = size - 1;
+    else { best = size; low = size + 1; }
   }
+  quote.style.fontSize = `${best}px`;
   // Fixed-ratio faces use the full-text disclosure for overflow.
   if (getComputedStyle(photo).aspectRatio === 'auto' && photoQuoteClipped(photo, quote, tagRow)) {
     photo.style.height = `${Math.ceil(Math.max(minimumHeight, quote.scrollHeight + (tagRow.childElementCount ? tagRow.offsetHeight * 2 + 80 : 70)))}px`;
@@ -800,7 +806,7 @@ function refreshExpandedBodies() {
       quoteFitEntries.delete(entry);
       continue;
     }
-    fitPhotoQuote(entry.photo, entry.quote, entry.tagRow, entry.initialFontSize);
+    fitPhotoQuote(entry.photo, entry.quote, entry.tagRow);
   }
   // Each card's tags were fitted with its quote. Only the composer is separate.
   fitTagRow($('#compose-tag-display'));
@@ -852,7 +858,7 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
   applyVisualStyle(photo, style);
   const quote = node('span', 'card-quote');
   const body = hiddenEvent ? '범위 안에서만 보이는 이벤트' : typeof card.body === 'string' ? card.body : '';
-  fillCardQuote(quote, body, compact, style);
+  fillCardQuote(quote, body);
   const tagRow = node('span', 'card-tags');
   for (const tag of Array.isArray(card.tags) ? card.tags.slice(0, 5) : []) {
     const chip = node('span', '', `#${tag}`); chip.dataset.tag = tag; chip.setAttribute('role', 'button'); chip.title = `#${tag} 태그로 찾기`;
@@ -866,7 +872,7 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
   }
   photo.append(node('span', 'photo-shade'), quote, tagRow);
   open.append(photo); frame.append(open);
-  quoteFitEntries.add({ photo, quote, tagRow, initialFontSize: quote.style.fontSize });
+  quoteFitEntries.add({ photo, quote, tagRow });
   if (card.kind === 'event') frame.append(node('span', 'note-event-badge', '이벤트/광고'));
   if ((card.kind === 'memo' || card.kind === 'comment') && card.id) {
     const thumb = node('button', 'card-photo-thumb'); thumb.type = 'button'; thumb.hidden = true;
@@ -954,13 +960,11 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
   }
   return item;
 }
-function fillCardQuote(quote, body, compact, style) {
+function fillCardQuote(quote, body) {
   body.replace(/\r\n?/g, '\n').split('\n').forEach((line, index) => {
     if (index) quote.append(document.createElement('br'));
     quote.append(document.createTextNode(line));
   });
-  if (body.length > 120 && (!style.size || style.size === 'normal')) quote.style.fontSize = compact ? '15px' : '18px';
-  else if (body.length > 70 && (!style.size || style.size === 'normal')) quote.style.fontSize = compact ? '17px' : '22px';
   quote.style.overflowWrap = 'anywhere';
 }
 function previewCardWidth(compact) {
@@ -979,11 +983,11 @@ function cardPhotoOverflows(body, values = []) {
   host.style.cssText = `position:fixed;left:-10000px;top:0;width:${previewCardWidth(compact)}px;visibility:hidden;pointer-events:none`;
   const photo = node('span', 'photo'), quote = node('span', 'card-quote'), tagRow = node('span', 'card-tags');
   applyVisualStyle(photo, style);
-  fillCardQuote(quote, body, compact, style);
+  fillCardQuote(quote, body);
   for (const value of values) tagRow.append(node('span', '', `#${value}`));
   photo.append(quote, tagRow); probe.append(photo); host.append(probe); $('#main').append(host);
   try {
-    fitPhotoQuote(photo, quote, tagRow, quote.style.fontSize);
+    fitPhotoQuote(photo, quote, tagRow);
     return photoQuoteClipped(photo, quote, tagRow);
   } finally { host.remove(); }
 }
