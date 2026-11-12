@@ -112,6 +112,12 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'IcwHopeT5gY', title: 'Beautiful Strangers', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2025.07.21' },
     { id: '80SH8Z_DOnY', title: 'Over The Moon', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2024.11.04' }
   ],
+  ateez: [
+    { id: 'iqQWCYMlMw0', title: 'DRIP', kind: '뮤직비디오', source: 'ATEEZ / KQ ENTERTAINMENT · 2026.10.23' },
+    { id: 'S1g5qrY5w3o', title: 'UP MV Teaser 2', kind: '뮤직비디오 티저', source: 'ATEEZ / KQ ENTERTAINMENT · 2026.11.12' },
+    { id: 'lYH1OEsyhaQ', title: 'UP MV Teaser 1', kind: '뮤직비디오 티저', source: 'ATEEZ / KQ ENTERTAINMENT · 2026.11.10' },
+    { id: 'vqkfEUqjl6Y', title: 'Adrenaline', kind: '뮤직비디오', source: 'ATEEZ / KQ ENTERTAINMENT · 2026.02.06' }
+  ],
   enhypen: [
     { id: 'h_EaeC1hTqo', title: 'Bloody Paradise', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.08.21' },
     { id: 'bDvtb6Pywes', title: 'Checkmate', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.09.11' },
