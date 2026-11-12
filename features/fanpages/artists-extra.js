@@ -135,7 +135,7 @@
       debut: entry.debut,
       debutWork: entry.debutWork,
       concept: entry.concept,
-      checkedAt: '2026.11.11',
+      checkedAt: entry.checkedAt || '2026.11.11',
       basicProfile: true,
       image: image.image,
       imageCredit: image.credit + ' · ' + image.license,
@@ -604,9 +604,52 @@
       id: 'seventeen', name: 'SEVENTEEN', korean: '세븐틴', category: 'boy', fan: 'CARAT', agency: 'PLEDIS Entertainment',
       members: ['에스쿱스', '정한', '조슈아', '준', '호시', '원우', '우지', '디에잇', '민규', '도겸', '승관', '버논', '디노'],
       debut: '2015.05.26', debutWork: '17 CARAT', songs: ['아낀다 (Adore U)', '20'],
+      checkedAt: '2026.11.12',
       concept: '보컬·퍼포먼스·힙합 유닛이 함께 빚는 팀워크.',
       official: 'https://www.pledis.co.kr/', youtube: 'https://www.youtube.com/@pledis17',
       photo: 'Seventeen Carat Land 24.jpg', photoLabel: 'CARAT LAND', photoYear: '2024', credit: 'SEVENTEEN', license: 'CC BY 3.0',
+      music: [
+        { title: 'DREAMSCAPE (정한×조슈아 · JxJ)', date: '2026.10.19', type: '유닛 미니 1집 · 타이틀 12 o’clock',
+          songs: ['Like you', '12 o’clock', 'Outside', 'One plus one', 'Not personal (JOSHUA Solo)', '컬러링 (JEONGHAN Solo)', 'No looking back'],
+          href: 'https://www.pledis.co.kr/en/artist/detail/seventeen/discography/?albumType=ALL' },
+        { title: 'HAPPY BURSTDAY', date: '2025.05.26', type: '정규 5집 · 타이틀 THUNDER',
+          songs: ['HBD', 'THUNDER', 'Bad Influence (Prod. by Pharrell Williams)', 'Skyfall (THE 8 Solo)', 'Fortunate Change (JOSHUA Solo)', '99.9% (WONWOO Solo)', 'Raindrops (SEUNGKWAN Solo)', 'Damage (HOSHI Solo) (feat. Timbaland)', 'Shake It Off (MINGYU Solo)', 'Happy Virus (DK Solo)', 'Destiny (WOOZI Solo)', 'Shining Star (Vernon Solo)', 'Gemini (JUN Solo)', 'Trigger (DINO Solo)', 'Coincidence (JEONGHAN Solo)', 'Jungle (S.COUPS Solo)'],
+          href: 'https://www.seventeen-17.jp/posts/discography/incaiv' },
+        { title: '17 CARAT', date: '2015.05.26', type: '데뷔 미니 1집 · 타이틀 아낀다',
+          songs: ['Shining Diamond', '아낀다 (Adore U)', 'Ah Yeah', 'Jam Jam', '20'],
+          href: 'https://www.seventeen-17.jp/posts/discography/insmxq' }
+      ],
+      appearances: [
+        { date: '2026-11-21', title: '정한×조슈아 JOURNEY INTO [DREAMING] · 일본 공연',
+          sub: '베루나 돔(사이타마) · 17:00 (일본 현지) · PLEDIS / 공식 일본 팬클럽 · 티켓 변경은 공식 사이트 확인',
+          href: 'https://www.seventeen-17.jp/posts/schedule/ztckpb' },
+        { date: '2026-11-22', title: '정한×조슈아 JOURNEY INTO [DREAMING] · 일본 공연',
+          sub: '베루나 돔(사이타마) · 17:00 (일본 현지) · 공식 라이브뷰잉 별도 진행',
+          href: 'https://www.seventeen-17.jp/posts/schedule/ztckpb' },
+        { date: '2026-12-02', title: '정한×조슈아 DREAMSCAPE · 프리미엄 사인회',
+          sub: '도쿄 내 비공개 장소 · 당첨자 대상 · 상세 시간·장소는 당첨자 개별 안내',
+          href: 'https://www.seventeen-17.jp/posts/schedule/fwczng' },
+        { date: '2026-12-05', title: '정한×조슈아 DREAMSCAPE · 온라인 개별 대화 행사',
+          sub: '당첨자 대상 온라인 행사 · 시간은 당첨자 개별 안내 · 신규 응모 기간 종료',
+          href: 'https://www.seventeen-17.jp/posts/schedule/yaprrj' }
+      ],
+      schedules: [
+        { title: 'SEVENTEEN 일본 공식 일정', sub: '방송·공연·발매 달력', href: 'https://www.seventeen-17.jp/posts/schedule' },
+        { title: 'PLEDIS · SEVENTEEN 공지', sub: '일정 변경·예매 및 공식 알림', href: 'https://weverse.io/seventeen/notice' }
+      ],
+      news: [
+        { date: '2026.11.11', tag: '공연', title: '정한×조슈아 일본 공연 공식 티켓 쉐어링 개시', href: 'https://www.seventeen-17.jp/posts/information/gnelcq' },
+        { date: '2026.11.10', tag: '팬 행사', title: '11월 21·22일 일본 공연장 CARAT 공식 팬클럽 부스 안내', href: 'https://www.seventeen-17.jp/posts/information/deipgt' },
+        { date: '2026.10.19', tag: '음악', title: '정한×조슈아 유닛 JxJ 미니 1집 DREAMSCAPE 발매', href: 'https://weverse.io/seventeen/notice/39436/' }
+      ],
+      merch: [
+        { title: 'THE 8 생일 기념 공식 굿즈 ver.6', sub: '젓가락 세트 · 2026.11.06 예약 개시 · 재고·종료 여부는 위버스샵 확인', href: 'https://www.seventeen-17.jp/posts/information/mwgnvy' },
+        { title: 'JxJ DREAMSCAPE 공식 MD', sub: '포토카드 홀더·키링·포스터·파우치 등 · 수량·재고는 위버스샵 확인', href: 'https://www.seventeen-17.jp/posts/information/kfxdkv' },
+        { title: 'SEVENTEEN 공식 상품 목록', sub: 'Weverse Shop · 앨범·응원봉·공식 MD · 가격·재고 확인', href: 'https://shop.weverse.io/ko/shop/KRW/artists/7' }
+      ],
+      campaigns: [
+        { kind: '브랜드 협업', date: '2025.06.11', title: 'SEVENTEEN × sacai · Bad Influence 의상', sub: '뮤직비디오 협업 의상 제작 · 자선 경매 수익 UNESCO 기부 안내', href: 'https://www.billboard-japan.com/d_news/detail/150491/2' }
+      ],
       accent: '#88a9d8', light: '#dfeeff', dark: '#466386', bg: '#f7faff', shape: '◇'
     },
     {
