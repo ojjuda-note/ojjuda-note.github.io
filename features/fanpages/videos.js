@@ -112,6 +112,12 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'IcwHopeT5gY', title: 'Beautiful Strangers', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2025.07.21' },
     { id: '80SH8Z_DOnY', title: 'Over The Moon', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2024.11.04' }
   ],
+  tws: [
+    { id: '3MPUCncZBR0', title: '내 이름을 불러줘 (Call My Name)', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.11.02' },
+    { id: 'OTxxIomLDGw', title: 'Call My Name MV Shoot Sketch', kind: '메이킹', source: 'TWS Official / PLEDIS · 2026.11.10' },
+    { id: '5U5qBHwDA_M', title: '널 따라가 (You, You)', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.04.27' },
+    { id: 'tXvopPZFY8Y', title: 'TO US Highlight Medley', kind: '하이라이트 메들리', source: 'HYBE LABELS / PLEDIS · 2026.10.26' }
+  ],
   enhypen: [
     { id: 'h_EaeC1hTqo', title: 'Bloody Paradise', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.08.21' },
     { id: 'bDvtb6Pywes', title: 'Checkmate', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.09.11' },
