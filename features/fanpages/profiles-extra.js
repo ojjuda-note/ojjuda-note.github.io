@@ -27,6 +27,29 @@ for (const artist of window.OJJUDA_FAN_ARTISTS.filter((item) => item.basicProfil
   };
 }
 
+/* TWS: birthdays from MyNavi News's published member guide (2024.09.05).
+   Uncertain or time-sensitive height, blood type, MBTI and school details remain blank. */
+const twsProfile = window.OJJUDA_FAN_PROFILES.tws;
+if (twsProfile) {
+  twsProfile.expanded = true;
+  twsProfile.checkedAt = '2026.11.12';
+  twsProfile.records = [
+    { year: '2024.01', title: 'Sparkling Blue 데뷔', detail: 'PLEDIS 공식 6인조 · 보이후드 팝', href: 'https://www.pledis.co.kr/artist/detail/TWS/profile/' },
+    { year: '2026.11', title: 'TO US 두 번째 싱글', detail: '11월 2일 발매 · 3곡', href: 'https://music.apple.com/us/album/to-us-single/6818392534' }
+  ];
+  const twsBirthdays = {
+    '신유': '2003.11.07', '도훈': '2005.01.30', '영재': '2005.05.31',
+    '한진': '2006.01.05', '지훈': '2006.03.28', '경민': '2007.10.02'
+  };
+  for (const member of twsProfile.members) {
+    member.birthday = twsBirthdays[member.name] || null;
+    member.source = 'https://news.mynavi.jp/article/20240905-2935437/';
+  }
+  twsProfile.sources.unshift({ label: 'PLEDIS · 공식 그룹 소개', href: 'https://www.pledis.co.kr/artist/detail/TWS/profile/' });
+  twsProfile.sources.push({ label: '마이나비뉴스 · 멤버 공개 생일 (2024.09)', href: 'https://news.mynavi.jp/article/20240905-2935437/' });
+  twsProfile.sources.push({ label: 'Apple Music · TO US 음반', href: 'https://music.apple.com/us/album/to-us-single/6818392534' });
+}
+
 /* ENHYPEN: dates from BELIFT LAB's current six-member profile. */
 const enhypenProfile = window.OJJUDA_FAN_PROFILES.enhypen;
 if (enhypenProfile) {
