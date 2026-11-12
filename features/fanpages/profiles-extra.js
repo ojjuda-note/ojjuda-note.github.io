@@ -160,3 +160,40 @@ if (btsProfile) {
   btsProfile.sources.push({ label: 'BIGHIT MUSIC · ARIRANG', href: 'https://ibighit.com/ko/bts/discography/detail/arirang' });
   btsProfile.sources.push({ label: 'BTS WORLD TOUR 공식 일정', href: 'https://btsworldtourofficial.com/' });
 }
+
+/* SEVENTEEN: member birth dates from each official Japanese profile.
+   Other personal data are unpublished or unverified and remain blank. */
+const seventeenProfile = window.OJJUDA_FAN_PROFILES.seventeen;
+if (seventeenProfile) {
+  seventeenProfile.checkedAt = '2026.11.12';
+  seventeenProfile.expanded = true;
+  seventeenProfile.records = [
+    { year: '2015.05', title: '17 CARAT로 데뷔', detail: '13명 · 보컬/힙합/퍼포먼스 3유닛 · 직접 제작에 참여', href: 'https://www.pledis.co.kr/artist/detail/seventeen/profile/' },
+    { year: '2025.05', title: '정규 5집 HAPPY BURSTDAY', detail: '타이틀 THUNDER · 단체곡 3곡과 멤버 솔로 13곡', href: 'https://www.seventeen-17.jp/posts/discography/incaiv' },
+    { year: '2026.10', title: '정한×조슈아 JxJ 유닛 DREAMSCAPE', detail: '타이틀 12 o’clock · 미니 1집 7곡', href: 'https://www.pledis.co.kr/en/artist/detail/seventeen/discography/?albumType=ALL' }
+  ];
+  const officialBirthdays = {
+    '에스쿱스': ['1995.08.08', 'scoups'],
+    '정한': ['1995.10.04', 'jeonghan'],
+    '조슈아': ['1995.12.30', 'joshua'],
+    '준': ['1996.06.10', 'jun'],
+    '호시': ['1996.06.15', 'hoshi'],
+    '원우': ['1996.07.17', 'wonwoo'],
+    '우지': ['1996.11.22', 'woozi'],
+    '디에잇': ['1997.11.07', 'the8'],
+    '민규': ['1997.04.06', 'mingyu'],
+    '도겸': ['1997.02.18', 'dk'],
+    '승관': ['1998.01.16', 'seungkwan'],
+    '버논': ['1998.02.18', 'vernon'],
+    '디노': ['1999.02.11', 'dino']
+  };
+  for (const member of seventeenProfile.members) {
+    const detail = officialBirthdays[member.name];
+    if (!detail) continue;
+    member.birthday = detail[0];
+    member.source = 'https://www.seventeen-17.jp/pages/profile-' + detail[1];
+  }
+  seventeenProfile.sources.unshift({ label: 'SEVENTEEN 일본 공식 멤버 프로필 · 생일', href: 'https://www.seventeen-17.jp/pages/profile' });
+  seventeenProfile.sources.push({ label: 'PLEDIS · SEVENTEEN 공식 프로필', href: 'https://www.pledis.co.kr/artist/detail/seventeen/profile/' });
+  seventeenProfile.sources.push({ label: '일본 공식 일정 · 11월 공연', href: 'https://www.seventeen-17.jp/posts/schedule' });
+}
