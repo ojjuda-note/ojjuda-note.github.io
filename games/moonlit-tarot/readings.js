@@ -215,7 +215,7 @@ export const DECK = [
 export const TOPICS = [
   {
     "id": "overall",
-    "label": "오늘의 운세",
+    "label": "전체운세",
     "subtitle": "별빛 아래서 들여다보는 오늘의 마음",
     "icon": "✦"
   },
@@ -821,6 +821,33 @@ const SPREAD_TOPIC_PROSE = {
   }
 };
 
+const SPREAD_ONE_LINES = {
+  overall: {
+    advance: '새로운 길이 궁금하다면, 오늘 해 볼 수 있는 작은 일부터 시작해 보렴.',
+    clarify: '답이 흐릿할수록 서두르지 말고, 확실히 아는 것부터 차근차근 살펴보렴.',
+    care: '오늘은 더 멀리 가려 애쓰기보다, 네 마음과 소중한 일상을 돌봐 주렴.',
+    renew: '익숙한 길이 달라져도 괜찮으니, 지금 네게 맞는 방법을 다시 골라 보렴.'
+  },
+  love: {
+    advance: '가까워지고 싶은 마음이 있다면, 부담 없는 다정한 말 한마디부터 건네 보렴.',
+    clarify: '상대의 마음을 혼자 짐작하기보다, 궁금한 것을 부드럽게 물어보는 게 좋겠구나.',
+    care: '두 사람의 마음이 편안해지도록, 서로에게 필요한 다정함을 나눠 보렴.',
+    renew: '관계가 예전과 달라졌다면, 지금 서로에게 편안한 거리를 함께 찾아보렴.'
+  },
+  money: {
+    advance: '돈과 관련된 새 계획이 있다면, 생활에 무리 없는 작은 일부터 시작해 보렴.',
+    clarify: '돈을 쓰기 전에는 서두르지 말고, 가격과 조건을 하나씩 확인해 보렴.',
+    care: '오늘은 가진 것을 잘 쓰고, 꼭 필요한 곳에 마음 편히 돈을 써 보렴.',
+    renew: '돈 쓰는 습관을 조금 바꾸면, 지금의 생활에 맞는 여유를 찾을 수 있단다.'
+  },
+  work: {
+    advance: '생각하던 일을 작게 시작하면, 다음에 할 일이 조금씩 보일 수 있단다.',
+    clarify: '빨리 끝내려 하기보다, 중요한 확인 하나를 챙기는 것이 도움이 되겠구나.',
+    care: '혼자 모든 일을 짊어지지 말고, 필요한 도움을 받으며 네 속도로 이어 가 보렴.',
+    renew: '막힌 길을 억지로 밀기보다, 해 본 경험을 살려 다른 방법을 찾아보렴.'
+  }
+};
+
 /** Returns one cohesive interpretation of the spread, without card-by-card retelling. */
 export function getSummary(cards = [], topic = 'overall') {
   const unique = [];
@@ -839,6 +866,9 @@ export function getSummary(cards = [], topic = 'overall') {
   const prose = SPREAD_TOPIC_PROSE[topicId];
   const innerTone = SPREAD_TONES[inner.id] || inner.spread.tone;
   const flowTone = SPREAD_TONES[flow.id] || flow.spread.tone;
+  const adviceTone = SPREAD_TONES[advice.id] || advice.spread.tone;
+  // A shared tone leads; when all three differ, the final advice breaks the tie.
+  const summaryTone = innerTone === flowTone || innerTone === adviceTone ? innerTone : flowTone === adviceTone ? flowTone : adviceTone;
   const connection = SPREAD_LINKS[innerTone][flowTone];
   const opening = SPREAD_OPENINGS[flow.id] || flow.spread.opening;
   const openingSubject = opening + (objectParticle(opening) === '을' ? '이' : '가');
@@ -858,6 +888,7 @@ export function getSummary(cards = [], topic = 'overall') {
     }
   ];
   return {
+    oneLine: SPREAD_ONE_LINES[topicId][summaryTone],
     headline: topicSummary.headline,
     summary: prose.summary,
     sections,

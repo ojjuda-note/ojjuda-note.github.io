@@ -1,6 +1,7 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261112-tarot-words1';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261112-tarot-daily1';
 import { TarotFX, TarotAudio } from './fx.js';
-import { TarotPayment } from './payment.js?v=20261112-tarot-words1';
+import { TarotPayment } from './payment.js?v=20261112-tarot-daily1';
+import { TarotRevelation } from './revelation.js?v=20261112-tarot-daily1';
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -22,12 +23,14 @@ let oracleTimeout;
 let trailRaf = null;
 let voiceNoticeShown = false;
 let billingReady = false;
+let dailyResetTimer;
 const billing = new TarotPayment({
   enabled: document.documentElement.dataset.billing === 'ojjuda',
   onBalance: updatePaymentStatus,
   onAccountChange: () => {
     reset({ clearPaid: false });
     billingReady = false;
+    clearTimeout(dailyResetTimer);
     $('#summon-button').disabled = true;
     $('#payment-status').textContent = '로그인이 바뀌었어요. 새로고침 후 다시 이용해 주세요.';
     $('#login-link').hidden = false;
@@ -37,7 +40,57 @@ const billing = new TarotPayment({
 function updatePaymentStatus() {
   if (!billing.enabled) return;
   const balance = Number.isInteger(billing.balance) ? `보유 ${billing.balance.toLocaleString('ko-KR')}쭈` : '';
-  $('#payment-status').textContent = state.phase === 'intro' ? balance : `이번 운세 결제 완료${balance ? ' · ' + balance : ''}`;
+  if (state.phase !== 'intro') {
+    $('#payment-status').textContent = `오늘의 점괘 · 다시 보기는 무료예요${balance ? ' · ' + balance : ''}`;
+    return;
+  }
+  const unfinished = billing.record && (!billing.record.paid || billing.record.unsynced);
+  const previous = billing.receiptFor(state.topic);
+  $('#summon-button span').textContent = unfinished ? '진행하던 운세 이어보기' : previous ? (previous.openOrder.length === 3 ? '오늘 점괘 다시 보기' : '오늘 점괘 이어보기') : '10쭈로 운세 시작하기';
+  $('#payment-status').textContent = unfinished ? '시작하던 운세를 이어서 확인해요. 쭈는 다시 사용되지 않아요.' : previous ? `오늘 본 주제예요. 추가 차감 없이 볼 수 있어요.${balance ? ' · ' + balance : ''}` : balance;
+  $$('[data-topic]').forEach(button => {
+    button.disabled = !!unfinished || state.busy;
+    button.dataset.readToday = String(!!billing.receiptFor(button.dataset.topic));
+  });
+}
+
+function scheduleDailyRefresh() {
+  clearTimeout(dailyResetTimer);
+  if (!billing.enabled || !billing.resetAt) return;
+  const delay = Math.max(1000, Date.parse(billing.resetAt) - Date.now() + 100);
+  dailyResetTimer = setTimeout(() => { void refreshDailyAvailability(); }, Math.min(delay, 2147483647));
+}
+async function refreshDailyAvailability() {
+  if (!billingReady || !billing.user || state.phase !== 'intro' || state.busy) return;
+  try {
+    await billing.refreshToday();
+    if (state.phase === 'intro') updatePaymentStatus();
+    scheduleDailyRefresh();
+  } catch { /* Starting a reading always rechecks the server before any payment. */ }
+}
+function saveProgress() {
+  // Capture the choice immediately, but let its animation begin without a dialog.
+  return billing.save(state).then(receipt => ({ receipt }), error => ({ error }));
+}
+async function confirmProgress(saved, epoch) {
+  const result = await saved;
+  if (epoch !== state.epoch) return false;
+  if (!result.error) return true;
+  const error = result.error;
+  reset({ clearPaid: false });
+  if (error.receipt) restorePaidReading(error.receipt);
+  else {
+    state.topic = billing.record?.topic || state.topic;
+    $$('[data-topic]').forEach(button => {
+      button.classList.toggle('active', button.dataset.topic === state.topic);
+      button.setAttribute('aria-pressed', String(button.dataset.topic === state.topic));
+    });
+    updatePaymentStatus();
+    $('#payment-status').textContent = error.message;
+    $('#login-link').hidden = !['not_signed_in', 'member_required'].includes(error.code);
+  }
+  showToast(error.message);
+  return false;
 }
 
 function icon(name) { return `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`; }
@@ -234,6 +287,8 @@ async function summon() {
     if (epoch !== state.epoch) return;
     if (receipt && (receipt.discarded?.length || receipt.openOrder?.length)) {
       restorePaidReading(receipt);
+      if (state.revealed === 3) void showResultsWithRevelation();
+      if (receipt.progressChanged) showToast('다른 화면에 저장된 오늘의 점괘를 불러왔어요.');
       return;
     }
     state.drawn = receipt ? receipt.drawn.map(id => DECK.find(card => card.id === id)) : randomDeck();
@@ -245,14 +300,13 @@ async function summon() {
     $('#summon-button').disabled = false;
     $('#payment-status').textContent = error.message;
     $('#login-link').hidden = !['not_signed_in', 'member_required', 'coins', 'wallet_unavailable'].includes(error.code);
-    $$('[data-topic]').forEach(button => { button.disabled = !!billing.record; });
+    $$('[data-topic]').forEach(button => { button.disabled = !!billing.record && (!billing.record.paid || billing.record.unsynced); });
     return;
   }
   state.discarded.clear();
   state.kept = [];
   state.openOrder = [];
   state.revealed = 0;
-  billing.save(state);
   cards.forEach((card, i) => setCardArtwork(card, state.drawn[i]));
   $('#intro-controls').hidden = true;
   $('#play-controls').hidden = false;
@@ -351,7 +405,7 @@ async function discardCard(index) {
   const card = cards[index];
   const original = locationFor(index, 'five');
   state.discarded.add(index);
-  billing.save(state);
+  const saved = saveProgress();
   setPhase('discarding');
   effects.setMood('discard');
   updateDiscardProgress();
@@ -379,6 +433,7 @@ async function discardCard(index) {
   effects.burst(point.x, point.y, { kind: 'discard', color: '#ef9cbb', power: 1.25 });
   try { await animation.finished; } catch { return; }
   if (epoch !== state.epoch) return;
+  if (!await confirmProgress(saved, epoch)) return;
   card.wrap.hidden = true;
   animation.cancel();
   leaveDiscardGhost(card, original);
@@ -467,7 +522,7 @@ async function revealCard(index) {
   setPhase('revealing');
   // Reserve the chosen order before the artwork is visible, including across a reload.
   state.openOrder.push(index);
-  billing.save(state);
+  const saved = saveProgress();
   $('#reading-open').disabled = true;
   $('#action-button').disabled = true;
   $('#action-button span').textContent = '마녀가 카드를 읽고 있어요';
@@ -479,6 +534,7 @@ async function revealCard(index) {
   moveCard(card, revealPose, duration(500));
   await sleep(duration(220));
   if (epoch !== state.epoch) return;
+  if (!await confirmProgress(saved, epoch)) return;
   card.turner.classList.add('flipped');
   await sleep(duration(420));
   if (epoch !== state.epoch) return;
@@ -494,7 +550,6 @@ async function revealCard(index) {
   await moveCard(card, pose, duration(500));
   if (epoch !== state.epoch) return;
   state.revealed = state.openOrder.length;
-  billing.save(state);
   setPhase(state.revealed === 3 ? 'complete' : 'reading');
   prepareNextReveal();
   if (state.revealed === 3) {
@@ -556,8 +611,10 @@ function buildResults() {
   const drawn = state.openOrder.map(index => state.drawn[index]);
   const summary = getSummary(drawn, state.topic);
   const topic = TOPICS.find(t => t.id === state.topic);
-  $('#result-date').textContent = `${new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' }).format(new Date())} · ${topic.label}`;
+  const readingDate = billing.record?.readingDay ? new Date(`${billing.record.readingDay}T12:00:00+09:00`) : new Date();
+  $('#result-date').textContent = `${new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' }).format(readingDate)} · ${topic.label}`;
   $('#result-title').textContent = '당신을 위한 종합 점괘';
+  $('#result-one-line').textContent = summary.oneLine;
   $('#result-intro').textContent = summary.summary || '';
   $('#summary-headline').textContent = summary.headline;
   renderReadingSections($('#summary-text'), summary.sections, summary.text, 'h4');
@@ -586,12 +643,37 @@ $$('dialog').forEach(dialog => {
 $$('[data-close]').forEach(button => button.addEventListener('click', () => closeDialog(button.dataset.close)));
 $('#help-open').addEventListener('click', () => openDialog('help-dialog'));
 
+const revelation = new TarotRevelation();
+let resultPresentation = null;
+const revelationOptions = () => ({
+  reducedMotion: state.reduced,
+  onCue: cue => { if (cue === 'gather') play('summon'); else if (cue === 'reveal') play('reveal'); }
+});
+$('#preview-revelation').addEventListener('click', () => { void revelation.play(revelationOptions()); });
+async function showResultsWithRevelation() {
+  if (state.phase !== 'complete' || state.revealed !== 3 || resultPresentation || $('#result-dialog').open) return;
+  const presentation = { epoch: state.epoch };
+  resultPresentation = presentation;
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  let ready;
+  try {
+    ready = await revelation.play(revelationOptions());
+  } catch {
+    // A visual effect must never hide an already saved, paid reading.
+    revelation.cancel();
+    ready = true;
+  }
+  if (resultPresentation !== presentation || presentation.epoch !== state.epoch) return;
+  resultPresentation = null;
+  if (ready && state.phase === 'complete' && state.revealed === 3) openDialog('result-dialog');
+}
+
 async function copyResult() {
   if (state.revealed !== 3) return;
   const drawn = state.openOrder.map(i => state.drawn[i]);
   const summary = getSummary(drawn, state.topic);
   const parts = ['오쭈다 · 달의 마녀 타로', '종합 점괘', $('#result-date').textContent, ''];
-  parts.push(summary.headline, summary.text, '', `오늘의 작은 한 걸음: ${summary.ritual}`, '', '카드의 이야기를 참고하며, 내 마음을 돌아보는 시간이에요.');
+  parts.push('한마디 정리', summary.oneLine, '', summary.headline, summary.text, '', `오늘의 작은 한 걸음: ${summary.ritual}`, '', '카드의 이야기를 참고하며, 내 마음을 돌아보는 시간이에요.');
   const text = parts.join('\n');
   try {
     if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
@@ -617,6 +699,8 @@ async function copyResult() {
 
 function reset({ clearPaid = true } = {}) {
   state.epoch++;
+  resultPresentation = null;
+  revelation.cancel();
   if (clearPaid && !billing.pending) billing.newReading();
   if ('speechSynthesis' in window) speechSynthesis.cancel();
   if (trailRaf) cancelAnimationFrame(trailRaf);
@@ -665,11 +749,12 @@ function reset({ clearPaid = true } = {}) {
   layout(false);
   $('#summon-button').focus({ preventScroll: true });
   if (innerWidth <= 760) window.scrollTo({ top: 0, behavior: state.reduced ? 'instant' : 'smooth' });
+  if (clearPaid) void refreshDailyAvailability();
 }
 
 $('#summon-button').addEventListener('click', summon);
 $('#action-button').addEventListener('click', () => {
-  if (state.phase === 'complete') openDialog('result-dialog');
+  if (state.phase === 'complete') void showResultsWithRevelation();
 });
 $('#restart-small').addEventListener('click', reset);
 $('#restart-result').addEventListener('click', reset);
@@ -677,7 +762,7 @@ $('#copy-result').addEventListener('click', copyResult);
 $('#reading-open').addEventListener('click', () => showReading());
 $('#reading-next').addEventListener('click', () => {
   closeDialog('reading-dialog');
-  if (state.phase === 'complete') openDialog('result-dialog');
+  if (state.phase === 'complete') void showResultsWithRevelation();
   else if (state.phase === 'reading') focusUnopenedCard();
 });
 $$('[data-topic]').forEach(button => button.addEventListener('click', () => {
@@ -691,6 +776,8 @@ $$('[data-topic]').forEach(button => button.addEventListener('click', () => {
     work: '하고 싶은 일이 있는데 첫걸음이 망설여지니? 지금 가진 힘과 필요한 도움을 함께 찾아보자. 작은 시작에도 너만의 빛이 있단다.',
   };
   setOracle(invitations[state.topic], { tag: '마녀의 초대' });
+  updatePaymentStatus();
+  void refreshDailyAvailability();
   play('hover');
 }));
 
@@ -743,12 +830,20 @@ window.addEventListener('resize', () => {
   resizeFrame = requestAnimationFrame(() => { if (!state.busy) layout(false); });
 }, { passive: true });
 window.addEventListener('pagehide', () => {
+  resultPresentation = null;
+  revelation.cancel();
   if ('speechSynthesis' in window) speechSynthesis.cancel();
   if (state.sound) audio.setMuted(true);
 });
-window.addEventListener('pageshow', event => { if (event.persisted && state.sound) audio.setMuted(false); });
+window.addEventListener('pageshow', event => { if (event.persisted && state.sound) audio.setMuted(false); void refreshDailyAvailability(); });
+window.addEventListener('focus', () => { void refreshDailyAvailability(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) void refreshDailyAvailability(); });
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden && 'speechSynthesis' in window) speechSynthesis.cancel();
+  if (document.hidden) {
+    resultPresentation = null;
+    revelation.cancel();
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+  }
 });
 applyMotionPreference(state.reduced);
 layout(false);
@@ -764,6 +859,10 @@ function restorePaidReading(receipt) {
   if (!drawn || drawn.length !== 5 || drawn.some(card => !card) || new Set(drawn.map(card => card.id)).size !== 5) throw new Error('저장된 카드를 불러오지 못했어요. 새로고침 후 다시 확인해 주세요.');
   state.drawn = drawn;
   state.topic = receipt.topic;
+  $$('[data-topic]').forEach(button => {
+    button.classList.toggle('active', button.dataset.topic === state.topic);
+    button.setAttribute('aria-pressed', String(button.dataset.topic === state.topic));
+  });
   state.discarded = new Set(receipt.discarded);
   state.openOrder = [...receipt.openOrder];
   state.revealed = state.openOrder.length;
@@ -814,7 +913,10 @@ async function initializeBilling() {
   try {
     const result = await billing.init();
     billingReady = true;
-    if (result.resume) restorePaidReading(result.resume);
+    if (result.resume) {
+      restorePaidReading(result.resume);
+      if (result.resume.progressChanged) showToast('다른 화면에 저장된 오늘의 점괘를 불러왔어요.');
+    }
     else if (result.pending) {
       state.topic = result.pending.topic;
       $$('[data-topic]').forEach(button => {
@@ -830,11 +932,20 @@ async function initializeBilling() {
       $('#login-link').hidden = false;
     } else updatePaymentStatus();
     $('#summon-button').disabled = result.signedIn === false;
+    scheduleDailyRefresh();
   } catch (error) {
     billingReady = !!billing.user;
+    if (billing.record && (!billing.record.paid || billing.record.unsynced)) {
+      state.topic = billing.record.topic;
+      $$('[data-topic]').forEach(button => {
+        button.classList.toggle('active', button.dataset.topic === state.topic);
+        button.setAttribute('aria-pressed', String(button.dataset.topic === state.topic));
+      });
+      $('#summon-button span').textContent = '진행하던 운세 이어보기';
+    }
     $('#summon-button').disabled = !billingReady;
     $('#payment-status').textContent = error.message;
-    $$('[data-topic]').forEach(button => { button.disabled = !!billing.record; });
+    $$('[data-topic]').forEach(button => { button.disabled = !!billing.record && (!billing.record.paid || billing.record.unsynced); });
     if (!billingReady) $('#login-link').hidden = false;
   }
 }
