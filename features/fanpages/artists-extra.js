@@ -1196,9 +1196,9 @@
           "href": "https://www.andteam-official.jp/news/56e8ec3cf6be"
         },
         {
-          "title": "Mark on Me 공식 앨범·포토카드",
-          "sub": "일반반 2종·솔로반 9종 · 상품 구성·재고·판매 조건은 공식 안내 확인",
-          "href": "https://www.andteam-official.jp/discography/1affd625347f"
+          "title": "Mark on Me 공식 포토카드·키링 MD",
+          "sub": "2026.09.08 판매 개시 · 수량 한정·소진 가능 · 재고·판매 조건은 공식 안내 확인",
+          "href": "https://www.andteam-official.jp/news/5975b9ab0505"
         },
         {
           "title": "Mark on You 투어 공식 MD",
