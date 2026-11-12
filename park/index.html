@@ -42,7 +42,7 @@
 <link rel="stylesheet" href="/shared/brand/brand-copy.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/features/wallet/paid-ui.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/app/world/world-design.css?v=20261106-source-folders1">
-<link rel="stylesheet" href="/park/design.css?v=20261112-feed-overlay1">
+<link rel="stylesheet" href="/park/design.css?v=20261112-reply-overlay1">
 <link rel="stylesheet" href="/app/world/world-themes.css?v=20261110-themes3">
 <script src="/app/world/world-themes.js?v=20261110-theme-copy1" defer></script>
 <meta property="og:type" content="website">
@@ -146,7 +146,7 @@
           <div class="feed-layout">
             <div class="feed-column">
               <div class="feed-sort-tabs tabs" role="group" aria-label="카드 정렬"></div>
-              <div class="feed-list" id="feed-list" aria-live="polite"><p class="park-feed-loading-status" role="status">🌷 쭈가 오늘의 카드를 모으는 중…</p>
+              <div class="feed-list park-photo-cards" id="feed-list" aria-live="polite"><p class="park-feed-loading-status" role="status">🌷 쭈가 오늘의 카드를 모으는 중…</p>
                 <div class="park-skeleton-card" aria-hidden="true"><div class="park-skeleton-photo"><span class="park-skeleton-quote"></span><span class="park-skeleton-quote short"></span></div><div class="park-skeleton-meta"><span></span><span></span></div></div>
                 <div class="park-skeleton-card" aria-hidden="true"><div class="park-skeleton-photo"><span class="park-skeleton-quote"></span><span class="park-skeleton-quote short"></span></div><div class="park-skeleton-meta"><span></span><span></span></div></div>
                 <div class="park-skeleton-card" aria-hidden="true"><div class="park-skeleton-photo"><span class="park-skeleton-quote"></span><span class="park-skeleton-quote short"></span></div><div class="park-skeleton-meta"><span></span><span></span></div></div>
@@ -157,7 +157,7 @@
 
         <section id="detail" class="screen detail-screen" aria-label="카드와 답글" hidden>
           <button class="back-button" type="button" data-show="feed"><svg><use href="#arrow"/></svg>카드로 돌아가기</button>
-          <div class="detail-layout">
+          <div class="detail-layout park-photo-cards">
             <div class="detail-card-slot" id="detail-card-slot"></div>
             <div class="replies"><div class="reply-heading"><div><h2>답글 카드 <span id="reply-count">0</span></h2></div><button class="button primary" type="button" data-compose="reply"><svg><use href="#plus"/></svg>답글 쓰기</button></div><div id="reply-list" aria-live="polite"></div></div>
           </div>

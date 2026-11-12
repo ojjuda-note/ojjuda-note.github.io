@@ -50,21 +50,28 @@ const html=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
     padding:getComputedStyle(panel).paddingInlineStart
    }));
    assert.deepEqual(replyPanel,{background:'rgba(0, 0, 0, 0)',padding:'0px'});
-   const bars=await page.locator('#detail article').evaluateAll(cards=>cards.map(card=>{
-    const bounds=card.getBoundingClientRect();
-    const author=card.querySelector('.card-meta').getBoundingClientRect();
-    const actions=card.querySelector('.card-actions').getBoundingClientRect();
+   const faces=await page.locator('#detail article').evaluateAll(cards=>cards.map(card=>{
+    const box=selector=>card.querySelector(selector).getBoundingClientRect();
+    const photo=box('.photo'),author=box('.card-meta'),quote=box('.card-quote'),tags=box('.card-tags');
     return {
-     sameRow:author.top<actions.bottom&&actions.top<author.bottom,
+     width:photo.width,
+     footer:card.getBoundingClientRect().bottom-photo.bottom,
+     textFits:author.bottom<=quote.top&&quote.bottom<=tags.top,
      buttonsFit:[...card.querySelectorAll('.card-actions button')].every(button=>{
-      const box=button.getBoundingClientRect();
-      return box.height>=44&&box.left>=bounds.left-1&&box.right<=bounds.right+1;
+      const rect=button.getBoundingClientRect();
+      return rect.width>=44&&rect.height>=44&&rect.left>=photo.left-1&&rect.right<=photo.right+1&&
+       rect.top>=photo.top-1&&rect.bottom<=photo.bottom+1&&(rect.bottom<=quote.top||rect.top>=tags.bottom);
      })
     };
    }));
-   assert.equal(bars.length,2);
-   assert.ok(bars.every(bar=>bar.buttonsFit),`${width}px: card and reply actions fit inside their footers`);
-   if(width===390)assert.ok(bars.every(bar=>bar.sameRow),'phone author and actions share one row');
+   assert.equal(faces.length,2);
+   assert.ok(Math.abs(faces[1].width-faces[0].width*2/3)<1,`${width}px: replies are two thirds of the parent card width`);
+   assert.ok(faces.every(face=>Math.abs(face.footer)<1&&face.buttonsFit&&face.textFits),`${width}px: photo, text and controls fit without a footer`);
+   const full=page.locator('#detail-card-slot .note-full-body');
+   await full.evaluate(el=>{el.hidden=false;el.open=true;});
+   const actionBottom=await page.locator('#detail-card-slot .card-actions').evaluate(el=>el.getBoundingClientRect().bottom);
+   const photoBottom=await page.locator('#detail-card-slot .photo').evaluate(el=>el.getBoundingClientRect().bottom);
+   assert.ok(Math.abs(actionBottom-photoBottom)<1,'opening the full text keeps the controls on the photograph');
    const parentFont=await page.locator('#detail-card-slot .card-quote').evaluate(n=>getComputedStyle(n).fontSize);
    await page.locator('#reply-list .photo-open').first().click();await page.waitForFunction(()=>document.querySelector('#detail-card-slot .card-quote').textContent.includes('공감해요'));
    await page.locator('.back-button').click();await page.waitForFunction(()=>document.querySelector('#detail-card-slot .card-quote').textContent.includes('백수'));await settle();
