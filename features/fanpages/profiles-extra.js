@@ -243,3 +243,28 @@ if (seventeenProfile) {
   seventeenProfile.sources.push({ label: 'PLEDIS · SEVENTEEN 공식 프로필', href: 'https://www.pledis.co.kr/artist/detail/seventeen/profile/' });
   seventeenProfile.sources.push({ label: '일본 공식 일정 · 11월 공연', href: 'https://www.seventeen-17.jp/posts/schedule' });
 }
+
+/* RIIZE: birthdays verified from six official Japan member profiles. */
+const riizeProfile = window.OJJUDA_FAN_PROFILES.riize;
+if (riizeProfile) {
+  riizeProfile.expanded = true;
+  const officialBirthdays = {
+    '쇼타로': ['2000.11.25', 'shotaro'],
+    '은석': ['2001.03.19', 'eunseok'],
+    '성찬': ['2001.09.13', 'sungchan'],
+    '원빈': ['2002.03.02', 'wonbin'],
+    '소희': ['2003.11.21', 'sohee'],
+    '앤톤': ['2004.03.21', 'anton']
+  };
+  for (const member of riizeProfile.members) {
+    const info = officialBirthdays[member.name];
+    if (!info) continue;
+    member.birthday = info[0];
+    member.source = 'https://riizeofficial.jp/profile/' + info[1] + '/';
+  }
+  riizeProfile.records = [
+    { year: '2026.08', title: '일본 싱글 3집 Sunburst 발매', detail: '2026.08.26 CD 발매 · Sunburst/Rise Over/KILL SHOT', href: 'https://riizeofficial.jp/discography/sunburst_normal/' }
+  ];
+  riizeProfile.sources.unshift({ label: 'RIIZE 일본 공식 6인 프로필 · 생일', href: 'https://riizeofficial.jp/profile/' });
+  riizeProfile.sources.push({ label: 'RIIZE 일본 공식 음반 목록', href: 'https://riizeofficial.jp/discography/' });
+}
