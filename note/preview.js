@@ -107,10 +107,28 @@ async function photoActionFor(key, userId) {
   return window.confirm(`${title}을 10 ZU에 1개월 동안 사용할까요? 구매 기간에는 다른 카드에도 적용할 수 있어요.`)
     ? 'purchase_card_photo' : null;
 }
-function setPhotoBackground(element, value) {
+// Keep the first row eager. Start the remaining public backgrounds as the reader
+// approaches them, including when the Park feed scrolls inside the World iframe.
+const feedBackgroundObserver = typeof IntersectionObserver === 'function'
+  ? new IntersectionObserver(entries => {
+      for (const entry of entries) if (entry.isIntersecting) revealFeedBackground(entry.target);
+    }, { rootMargin: '600px 0px' }) : null;
+function revealFeedBackground(photo) {
+  const key = photo.dataset.pendingBackground;
+  if (!key) return;
+  feedBackgroundObserver.unobserve(photo);
+  delete photo.dataset.pendingBackground;
+  setPhotoBackground(photo, key);
+}
+function setPhotoBackground(element, value, defer = false) {
   const key = photoAssetKey(value);
   element.classList.toggle('note-plain', !key);
   element.classList.remove('image-forest', 'image-lake');
+  if (defer && key && feedBackgroundObserver) {
+    element.dataset.pendingBackground = key;
+    feedBackgroundObserver.observe(element);
+    return;
+  }
   element.style.backgroundImage = key ? `url("/note/assets/${key}.jpg")` : '';
 }
 async function loadEventBackground(element, card) {
@@ -725,12 +743,12 @@ function fitTagRow(row) {
   frame?.style.setProperty('--card-tags-height', `${row.childElementCount ? row.offsetHeight : 0}px`);
 }
 let tagFitFrame = null;
-function refreshTagRows() {
-  tagFitFrame = null;
-  document.querySelectorAll('.card-tags, .compose-tag-display').forEach(fitTagRow);
-}
 function requestTagFit() {
-  if (tagFitFrame === null) tagFitFrame = requestAnimationFrame(refreshExpandedBodies);
+  if (tagFitFrame !== null) return;
+  tagFitFrame = requestAnimationFrame(() => {
+    tagFitFrame = null;
+    refreshExpandedBodies();
+  });
 }
 const expandedBodyEntries = new Set(), quoteFitEntries = new Set();
 function fitPhotoQuote(photo, quote, tagRow, initialFontSize) {
@@ -753,10 +771,15 @@ function fitPhotoQuote(photo, quote, tagRow, initialFontSize) {
 }
 function refreshExpandedBodies() {
   for (const entry of quoteFitEntries) {
-    if (!entry.photo.isConnected) { quoteFitEntries.delete(entry); continue; }
+    if (!entry.photo.isConnected) {
+      if (entry.photo.dataset.pendingBackground) feedBackgroundObserver?.unobserve(entry.photo);
+      quoteFitEntries.delete(entry);
+      continue;
+    }
     fitPhotoQuote(entry.photo, entry.quote, entry.tagRow, entry.initialFontSize);
   }
-  refreshTagRows();
+  // Each card's tags were fitted with its quote. Only the composer is separate.
+  fitTagRow($('#compose-tag-display'));
   for (const entry of expandedBodyEntries) {
     if (!entry.item.isConnected) { expandedBodyEntries.delete(entry); continue; }
     if (entry.photo.getBoundingClientRect().width <= 0) continue;
@@ -771,7 +794,7 @@ function photoQuoteClipped(photo, quote, tagRow) {
     || (tagRow.childElementCount > 0
       && quoteBounds.bottom + 6 > tagBounds.top);
 }
-function cardElement(card, compact = false, expanded = false) {
+function cardElement(card, compact = false, expanded = false, deferBackground = false) {
   const item = node('article', compact ? 'reply-card' : 'photo-card');
   if (card.kind === 'event') item.classList.add('note-event-card');
   item.dataset.cardId = card.id;
@@ -788,7 +811,7 @@ function cardElement(card, compact = false, expanded = false) {
   const photo = node('span', 'photo');
   if (card.kind === 'event') photo.dataset.protectPhoto = String(!card.is_mine);
   const hiddenEvent = card.kind === 'event' && card.body == null;
-  setPhotoBackground(photo, hiddenEvent ? null : visiblePhoto);
+  setPhotoBackground(photo, hiddenEvent ? null : visiblePhoto, deferBackground && card.kind !== 'event');
   if (card.kind === 'event' && !hiddenEvent) void loadEventBackground(photo, card);
   applyVisualStyle(photo, style);
   const quote = node('span', 'card-quote');
@@ -831,7 +854,6 @@ function cardElement(card, compact = false, expanded = false) {
     full.append(node('summary', '', '전체 글 보기'), node('p', '', body));
     item.append(full);
     expandedBodyEntries.add({ item, photo, quote, tagRow, full });
-    requestAnimationFrame(refreshExpandedBodies);
   }
 
   const meta = node('div', 'card-meta');
@@ -1063,7 +1085,7 @@ async function loadFeed(more = false, quiet = false) {
           pinned.append(node('h2', '', '지금 볼 수 있는 이벤트')); list.prepend(pinned);
         }
         pinned.append(cardElement(card));
-      } else list.append(cardElement(card));
+      } else list.append(cardElement(card, false, false, more || shown > 3));
     }
   }
   if (!more && !shown) state(list, feedMode === 'events' ? '아직 만든 이벤트가 없어요.' : feedTerm ? '검색 결과가 없어요.' : feedMode === 'saved'
@@ -1510,6 +1532,7 @@ function shareCard(cardId) {
         return rect.width > 0 && rect.height > 0 && getComputedStyle(element).visibility !== 'hidden';
       });
       if (!photo || !window.OjjudaCardShareImage) throw new Error('card_image_unavailable');
+      revealFeedBackground(photo);
       const prepared = await window.OjjudaCardShareImage.prepare(photo, {
         filename: `ojjuda-card-${cardId}.png`, isCurrent: active, beforeCapture: refreshExpandedBodies
       });
@@ -3271,8 +3294,8 @@ document.addEventListener('keydown', event => { if (event.key === 'Escape' && !b
 text.addEventListener('input', () => { if (autoTagMode && document.activeElement !== tags) refreshAutoTags(); updateComposer(); recordDraft(); });
 tags.addEventListener('input', () => { noteTagEdit(); updateComposer(); recordDraft(); });
 tags.addEventListener('focus', () => updateComposer()); tags.addEventListener('blur', () => updateComposer());
-window.addEventListener('resize', () => { if (!backdrop.hidden) updateComposer(); refreshExpandedBodies(); });
-document.fonts?.addEventListener?.('loadingdone', () => { if (!backdrop.hidden) updateComposer(); refreshExpandedBodies(); });
+window.addEventListener('resize', () => { if (!backdrop.hidden) updateComposer(); requestTagFit(); });
+document.fonts?.addEventListener?.('loadingdone', () => { if (!backdrop.hidden) updateComposer(); requestTagFit(); });
 submit.addEventListener('click', publishCard);
 document.querySelectorAll('input[name="identity"]').forEach(input => input.addEventListener('change', () => {
   rememberComposerSetting('identity', input.value); updateComposer(); recordDraft();
@@ -3311,6 +3334,7 @@ $('#quick-gender')?.addEventListener('change', event => pickQuickChoice('gender'
 
 
 function receiveAuth(current) {
+  const firstSession = !authKnown;
   const changed = session?.user?.id !== current?.user?.id;
   session = current; authKnown = true;
   if (changed) {
@@ -3335,16 +3359,18 @@ function receiveAuth(current) {
     showFeed(!initialCardId);
   }
   updateAuth();
-  // Auth callbacks must finish before using Supabase for further requests.
+  // Start the feed once for this identity, outside the auth callback.
+  const epoch = identityEpoch;
   setTimeout(() => {
-    if (session?.user?.id !== current?.user?.id) return;
+    if (epoch !== identityEpoch) return;
+    if (firstSession || changed) void loadFeed();
     draftController?.setUser(current?.user?.id);
     loadWorldBalance(current?.user?.id); loadModerator(current?.user?.id); loadNoteState();
     if (changed || accountNickname === null) void loadAccountProfile(current?.user?.id);
     if (current?.user?.id && !myIdentityReady) void loadMyGender(current.user.id).catch(() => {});
     if (current?.user?.id) void loadPhotoEntitlements(current.user.id).catch(error => console.warn('Note photo entitlement:', error));
     notificationController?.refresh?.();
-    if (changed) loadFeed(); else consumeInitialCard();
+    if (!firstSession && !changed) consumeInitialCard();
   }, 0);
 }
 
@@ -3396,9 +3422,8 @@ if (client) {
     receiveAuth(error ? null : data?.session || null);
   }).catch(error => {
     console.warn('Note Auth:', error);
-    if (authEventVersion === initialAuthVersion) { authKnown = true; updateAuth(); loadNoteState(); consumeInitialCard(); }
+    if (authEventVersion === initialAuthVersion) receiveAuth(null);
   });
-  loadFeed();
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
     loadWorldBalance(session?.user?.id); loadNoteState(); notificationController?.refresh?.();

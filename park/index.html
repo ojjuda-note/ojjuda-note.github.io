@@ -2,9 +2,9 @@
 <html lang="ko">
 <head>
   <script src="/park/route.js?v=20261004-full1"></script>
-<script src="/shared/diagnostics/diagnostics.js?v=20261106-source-folders1"></script>
+<script src="/shared/diagnostics/diagnostics.js?v=20261106-source-folders1" defer></script>
   <link rel="stylesheet" href="/shared/auth/signup-identity.css?v=20261106-source-folders1">
-  <script src="/shared/auth/signup-identity.js?v=20261106-source-folders1" defer></script>
+  <script src="/shared/auth/signup-identity.js?v=20261107-account-guard2" defer></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#245A48">
@@ -15,13 +15,13 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261022-agit-logo2">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="/note/style.css?v=20261004-home2">
   <link rel="stylesheet" href="/note/features.css?v=20261031-card-combined-share1">
   <link rel="stylesheet" href="/note/event-photo.css?v=20261004-design1">
   <link rel="stylesheet" href="/note/effects.css?v=0.45.28-beta">
   <link rel="stylesheet" href="/note/support.css?v=20261004-design1">
-  <link rel="stylesheet" href="/note/notifications.css?v=0.45.45-beta">
+  <link rel="stylesheet" href="/note/notifications.css?v=20261108-daily-sections1">
   <link rel="stylesheet" href="/note/map.css?v=20261004-design1">
   <link rel="stylesheet" href="/note/pull-refresh.css?v=0.45.10-beta">
   <link rel="stylesheet" href="/note/feed-swipe.css?v=20260929-swipe1">
@@ -33,8 +33,8 @@
 <link rel="stylesheet" href="/features/wallet/ju-charge.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/ju-coins/ju-coins.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/features/wallet/ju-decorations.css?v=20261106-source-folders1">
-<script src="/features/wallet/ju-decorations.js?v=20261106-source-folders1"></script>
-<script src="/features/wallet/ju-charge.js?v=20261106-source-folders1"></script>
+<script src="/features/wallet/ju-decorations.js?v=20261106-source-folders1" defer></script>
+<script src="/features/wallet/ju-charge.js?v=20261106-source-folders1" defer></script>
 <script src="/shared/media/photo-protection.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1">
 <script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders1" defer></script>
@@ -43,8 +43,8 @@
 <link rel="stylesheet" href="/features/wallet/paid-ui.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/app/world/world-design.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/park/design.css?v=20261107-park-card-loading1">
-<link rel="stylesheet" href="/app/world/world-themes.css?v=20261106-source-folders1">
-<script src="/app/world/world-themes.js?v=20261106-source-folders1"></script>
+<link rel="stylesheet" href="/app/world/world-themes.css?v=20261110-themes3">
+<script src="/app/world/world-themes.js?v=20261110-theme-copy1" defer></script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="오쭈다 아지트">
 <meta property="og:url" content="https://ojjuda.kr/world.html?place=park">
@@ -240,17 +240,17 @@
       <footer class="composer-footer"><span id="compose-message" role="status" aria-live="polite">로그인 확인 중</span><div class="compose-quick"><label class="quick-choice"><span class="quick-label">이름</span><select id="quick-identity" aria-label="표시 이름"><option value="anonymous">익명</option><option value="nickname">닉네임</option></select></label></div><button class="button primary" id="publish-card" type="button" disabled>등록하기</button></footer>
     </section>
   </div>
-  <script src="/config.js?v=20261031-kakao-card-share1"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2"></script>
+  <script src="/config.js?v=20261111-shared-member-auth1" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
   <script src="/note/map.js?v=20260929-pinch" defer></script>
-  <script src="/note/support.js?v=20261022-agit1" defer></script>
+  <script src="/note/support.js?v=20261025-beta1" defer></script>
   <script src="/note/drafts.js?v=20261009-card-restore1" defer></script>
-  <script src="/note/notifications.js?v=20261031-performance1" defer></script>
+  <script src="/note/notifications.js?v=20261108-daily-sections1" defer></script>
   <script src="/note/feed-swipe.js?v=20261022-1" defer></script>
   <script src="/features/account/account-deletion.js?v=20261106-source-folders1" defer></script>
   <script src="/note/share-image.js?v=20261031-card-image-share1" defer></script>
   <script src="/note/share-kakao.js?v=20261031-kakao-card-share1" defer></script>
-  <script src="/note/preview.js?v=20261110-park-mission1" defer></script>
+  <script src="/note/preview.js?v=20261112-park-speed1" defer></script>
   <script src="/note/pull-refresh.js?v=20261004-refresh1" defer></script>
   <script src="/note/navigation.js?v=20260929-my1" defer></script>
   <script src="/park/integration.js?v=20261110-park-mission1" defer></script>

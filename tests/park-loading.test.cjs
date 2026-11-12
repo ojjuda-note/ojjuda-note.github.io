@@ -75,3 +75,67 @@ const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
 }
 
 console.log('PASS: Park preview during cold iframe and card fetch, immediate readiness, no cached re-entry delay and reduced-motion placeholders');
+
+const { test } = require('node:test');
+const { JSDOM } = require('jsdom');
+
+for (const member of [false, true]) {
+  test(`cold Park entry requests the first page once for a ${member ? 'member' : 'guest'}`, async () => {
+    const dom = new JSDOM(read('park/index.html'), {
+      url: 'https://fixture.test/park/', runScripts: 'outside-only', pretendToBeVisual: true
+    });
+    try {
+      const window = dom.window;
+      window.scrollTo = () => {};
+      window.matchMedia = () => ({ matches: false });
+      const session = member ? { user: { id: 'member' } } : null;
+      const requested = [];
+      const cards = Array.from({ length: 20 }, (_, index) => ({
+        id: '12345678-1234-4123-8123-' + String(index + 1).padStart(12, '0'), kind: 'memo',
+        body: '공원 이야기', background_key: String(10 + index), tags: [], created_at: '2026-11-10T00:00:00Z'
+      }));
+      let onAuth, intersect;
+      const observed = new Set();
+      window.IntersectionObserver = class {
+        constructor(callback) { intersect = callback; }
+        observe(photo) { observed.add(photo); }
+        unobserve(photo) { observed.delete(photo); }
+      };
+      const client = {
+        auth: {
+          onAuthStateChange(callback) { onAuth = callback; },
+          async getSession() { return { data: { session } }; }
+        },
+        rpc: async () => ({ data: {} }),
+        from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null }) }) }) }),
+        schema: () => ({ rpc: async name => {
+          if (name === 'list_cards') requested.push(name);
+          if (name === 'list_cards') return { data: cards };
+          return { data: name === 'get_note_state' ? {} : [] };
+        } })
+      };
+      window.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
+      window.supabase = { createClient: () => client };
+      window.eval(read('note/preview.js'));
+      onAuth('INITIAL_SESSION', session);
+      const settle = () => new Promise(resolve => window.setTimeout(resolve, 0));
+      await settle();
+      assert.equal(requested.length, 1);
+      const photos = [...window.document.querySelectorAll('#feed-list article .photo')];
+      assert.equal(photos.length, 20);
+      assert.equal(photos.filter(photo => photo.style.backgroundImage).length, 3);
+      assert.equal(observed.size, 17);
+      intersect([{ target: photos[3], isIntersecting: true }]);
+      assert.match(photos[3].style.backgroundImage, /13\.jpg/);
+      assert.equal(observed.has(photos[3]), false);
+      onAuth('TOKEN_REFRESHED', session);
+      await settle();
+      assert.equal(requested.length, 1);
+      onAuth('SIGNED_IN', { user: { id: 'another-member' } });
+      await settle();
+      assert.equal(requested.length, 2);
+    } finally {
+      dom.window.close();
+    }
+  });
+}
