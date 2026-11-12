@@ -770,8 +770,32 @@
       members: ['쇼타로', '은석', '성찬', '원빈', '소희', '앤톤'],
       debut: '2023.09.04', debutWork: 'Get A Guitar', songs: ['Get A Guitar', 'Memories'],
       concept: '함께 성장하며 꿈을 실현해 가는 여섯 멤버.',
-      official: 'https://www.smentertainment.com/', youtube: 'https://www.youtube.com/@RIIZE_official',
+      checkedAt: '2026.11.12',
+      official: 'https://riizeofficial.jp/', youtube: 'https://www.youtube.com/@RIIZE_official',
       photo: 'Riize at the 2024 Melon Music Awards-2.png', photoLabel: '멜론뮤직어워드', photoYear: '2024', credit: 'TenAsia', license: 'CC BY 3.0',
+      music: [
+        { title: 'Insomnia', date: '2026.10.26', type: '디지털 싱글 · 공식 뮤직비디오', songs: ['Insomnia'], href: 'https://riizeofficial.jp/news/20261026/' },
+        { title: 'Sunburst', date: '2026.08.26', type: '일본 싱글 3집 · CD 발매', songs: ['Sunburst', 'Rise Over', 'KILL SHOT'], href: 'https://riizeofficial.jp/discography/sunburst_normal/' },
+        { title: 'II', date: '2026.06.15', type: '미니 2집 · 디지털 발매', songs: ['SOAR', 'Do your dance', 'D-D-Done', 'Overdrive', 'Like a Bomb', 'In a Loop'], href: 'https://riizeofficial.jp/discography/ii/' },
+        { title: 'Get A Guitar', date: '2023.09.04', type: '데뷔 싱글', songs: ['Get A Guitar', 'Memories'], href: 'https://www.youtube.com/watch?v=iUw3LPM7OBU' }
+      ],
+      appearances: [
+        { date: '2026-12-09', title: '2026 FNS 가요제 제2야 생방송', sub: '후지TV 계열 · 일본 현지 18:30~21:54 방송 · 출연 시간 미정', href: 'https://riizeofficial.jp/news/20261103/' },
+        { date: '2026-12-27', title: 'Sunburst 오프라인 팬 이벤트', sub: '일본 도쿄 · 추첨 당첨자 대상 · 상세 장소·시간 비공개', href: 'https://riizeofficial.jp/news/2026102302/' },
+        { date: '2026-12-27', title: 'Sunburst 프리미엄 그룹 사인회', sub: '일본 도쿄 · 추첨 당첨자 50명 · 개최 시간 추후 공지', href: 'https://riizeofficial.jp/news/2026102303/' }
+      ],
+      news: [
+        { date: '2026.11.03', tag: '방송', title: '12월 9일 일본 FNS 가요제 제2야 생방송 출연 발표', href: 'https://riizeofficial.jp/news/20261103/' },
+        { date: '2026.10.26', tag: '음악', title: '디지털 싱글 Insomnia 발매 · 공식 뮤직비디오 공개', href: 'https://riizeofficial.jp/news/20261026/' },
+        { date: '2026.10.23', tag: '이벤트', title: '12월 27일 Sunburst 일본 오프라인 이벤트·사인회 발표', href: 'https://riizeofficial.jp/news/2026102303/' }
+      ],
+      merch: [
+        { title: 'RIIZE 2027 SEASON’S GREETINGS', sub: 'Weverse Shop 공식 예약 안내 · 2026.10.13 시작 · 품절·재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/151/notices/14559' },
+        { title: 'Sunburst 일본 싱글 3집', sub: '일본 공식 음반 · 2026.08.26 발매 · 구성·가격은 판매처 확인', href: 'https://riizeofficial.jp/discography/sunburst_normal/' }
+      ],
+      schedules: [
+        { title: 'RIIZE 일본 공식 활동 공지', sub: '방송·공연·팬 이벤트 변경 및 취소 확인', href: 'https://riizeofficial.jp/news/' }
+      ],
       accent: '#df8a52', light: '#ffe7d2', dark: '#855234', bg: '#fff8ef', shape: '☀'
     },
     {
