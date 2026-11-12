@@ -59,9 +59,9 @@ jobs:
         run: node tests/agit-progress-db.test.cjs
 
   tarot:
-    name: Tarot daily limits, admin preview and reading flow
+    name: Fortune readings, tarot billing and saju calculations
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -71,11 +71,25 @@ jobs:
           node-version: '22'
       - name: Install locked test dependencies
         run: npm --prefix tests ci --ignore-scripts
-      - name: Check daily readings, administrator preview and combined results
+      - name: Check original readings, daily limits, administrator preview and combined results
         run: |
+          node --test tests/saju-engine.test.mjs
+          node tests/tarot-corpus.test.cjs
           node tests/tarot-payment-client.test.cjs
           node tests/tarot-payment-db.test.cjs
           node tests/tarot-ui.test.cjs
+      - name: Install the test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Check mobile reading layout and reveal flow
+        run: node tests/fortune-reading-browser.test.cjs
+      - name: Save reading screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fortune-reading-screenshots
+          path: tests/artifacts/fortune-readings
+          retention-days: 7
 
   private_groups:
     name: Private group membership, media and schedules

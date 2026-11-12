@@ -4,7 +4,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { randomUUID } = require('node:crypto');
 const sourcePath = process.env.TAROT_PAYMENT_SOURCE || path.join(__dirname, '../games/moonlit-tarot/payment.js');
-const source = fs.readFileSync(sourcePath, 'utf8').replace('export class TarotPayment', 'class TarotPayment');
+const source = fs.readFileSync(sourcePath, 'utf8').replace(/^export /gm, '');
 const previewSource = fs.readFileSync(path.join(__dirname, '../shared/games/admin-preview.js'), 'utf8');
 const plain = value => JSON.parse(JSON.stringify(value));
 const prefix = (a, b) => a.length <= b.length && a.every((value, index) => value === b[index]);
@@ -41,7 +41,7 @@ function harness() {
         if (this.loseSave) { this.loseSave = false; return { error: { message: 'response lost after save' } }; }
         return { data: this.value(item) };
       }
-      assert.equal(name, 'tarot_reading_buy_v1');
+      assert.equal(name, 'tarot_reading_buy_v2');
       if (this.beforeBuy) await this.beforeBuy(args);
       const exact = this.receipts.get(args.p_request_id);
       if (exact) {
@@ -52,10 +52,12 @@ function harness() {
       const previous = this.daily.get(dailyKey);
       if (previous) return { data: this.value(previous, { replayed: true, daily_replayed: true }) };
       if (args.p_verify_only) return { data: { ok: false, reason: 'not_found', coins: this.coins.get(owner) } };
-      if (this.coins.get(owner) < 10) return { data: { ok: false, reason: 'coins', coins: this.coins.get(owner) } };
-      this.coins.set(owner, this.coins.get(owner) - 10);
+      const price = args.p_topic === 'overall' ? 30 : 10;
+      if (args.p_expected_price !== price) return { data: { ok: false, reason: 'price_changed', coins: this.coins.get(owner), price } };
+      if (this.coins.get(owner) < price) return { data: { ok: false, reason: 'coins', coins: this.coins.get(owner), price } };
+      this.coins.set(owner, this.coins.get(owner) - price);
       const item = {
-        ok: true, owner, request_id: args.p_request_id, topic: args.p_topic, price: 10,
+        ok: true, owner, request_id: args.p_request_id, topic: args.p_topic, price,
         reading_day: this.day(), reset_at: this.resetAt(), discarded: [], open_order: [],
         drawn: ['fool', 'sun', 'world', 'cups_ace', 'swords_king'], replayed: false, daily_replayed: false
       };
@@ -106,10 +108,10 @@ function harness() {
   await assert.rejects(payment.start('love'), error => error.code === 'network');
   const originalId = payment.record.requestId;
   assert.equal(server.coins.get('member-a'), 30);
-  const beforeRetry = server.requests.filter(call => call.name === 'tarot_reading_buy_v1').length;
+  const beforeRetry = server.requests.filter(call => call.name === 'tarot_reading_buy_v2').length;
   const both = await Promise.all([payment.start('love'), payment.start('love')]);
   assert.ok(both.every(result => result.request_id === originalId));
-  assert.equal(server.requests.filter(call => call.name === 'tarot_reading_buy_v1').length, beforeRetry + 1, 'rapid retries share one request');
+  assert.equal(server.requests.filter(call => call.name === 'tarot_reading_buy_v2').length, beforeRetry + 1, 'rapid retries share one request');
   assert.equal(server.coins.get('member-a'), 30);
   await payment.save({ discarded: new Set([0]), openOrder: [] });
   await payment.save({ discarded: new Set([0, 2]), openOrder: [] });
@@ -125,9 +127,13 @@ function harness() {
   assert.equal(repeated.request_id, originalId);
   assert.deepEqual(plain(repeated.openOrder), [4, 1, 3]);
   assert.equal(server.coins.get('member-a'), 30);
+  server.coins.set('member-a', 50); // Fixture balance covers 10 + 10 + 30 for the remaining topics.
   for (const topic of ['money', 'work', 'overall']) {
     restored.newReading();
-    assert.equal((await restored.start(topic)).topic, topic);
+    const purchased = await restored.start(topic);
+    assert.equal(purchased.topic, topic);
+    assert.equal(purchased.price, topic === 'overall' ? 30 : 10);
+    assert.equal(server.requests.filter(call => call.name === 'tarot_reading_buy_v2').at(-1).args.p_expected_price, purchased.price);
   }
   assert.equal(server.receipts.size, 4, 'four topics have four independent daily readings');
   assert.equal(server.coins.get('member-a'), 0);
@@ -209,9 +215,9 @@ function harness() {
   const blockedStorage = page();
   await blockedStorage.payment.init();
   blockedStorage.context.localStorage.setItem = () => { throw new Error('storage blocked'); };
-  const beforePurchase = server.requests.filter(call => call.name === 'tarot_reading_buy_v1').length;
+  const beforePurchase = server.requests.filter(call => call.name === 'tarot_reading_buy_v2').length;
   await assert.rejects(blockedStorage.payment.start('overall'), error => error.code === 'storage_unavailable');
-  assert.equal(server.requests.filter(call => call.name === 'tarot_reading_buy_v1').length, beforePurchase, 'new payment waits until retry ID is saved');
+  assert.equal(server.requests.filter(call => call.name === 'tarot_reading_buy_v2').length, beforePurchase, 'new payment waits until retry ID is saved');
   assert.equal(server.coins.get('member-b'), 40);
   let accountChanges = 0;
   const changingAccount = page(new Map(), { onAccountChange: () => accountChanges++ });
@@ -315,7 +321,7 @@ function harness() {
   spoofPage.payment.newReading();
   assert.equal((await spoofPage.payment.start('overall')).request_id, regularFirst.request_id);
   assert.equal(spoofed.server.receipts.size, 1);
-  assert.equal(spoofed.server.coins.get('member-a'), 30);
+  assert.equal(spoofed.server.coins.get('member-a'), 10);
 
   // Revocation during a free start stops it instead of silently charging.
   const revoked = harness();
@@ -414,7 +420,35 @@ function harness() {
   await toggledPage.payment.refreshAdminMode();
   assert.equal(toggledPage.payment.adminPreview, false);
 
+  // A pending draft from a cached 10-ju page may not be silently repriced.
+  const changedPrice = harness();
+  const oldQuotePage = changedPrice.page(new Map([['ojjuda.tarot.session.v1.member-a', JSON.stringify({
+    owner: 'member-a', requestId: randomUUID(), topic: 'overall', paid: false, discarded: [], openOrder: []
+  })]]));
+  assert.ok((await oldQuotePage.payment.init()).pending);
+  await assert.rejects(oldQuotePage.payment.start('overall'), error => error.code === 'price_changed' && /새 가격/.test(error.message));
+  assert.equal(changedPrice.server.coins.get('member-a'), 40);
+  assert.equal(changedPrice.server.receipts.size, 0);
+  assert.equal(oldQuotePage.payment.record, null, 'clear the stale quote and return to the new displayed price');
+  changedPrice.server.losePurchase = true;
+  await assert.rejects(oldQuotePage.payment.start('overall'), error => error.code === 'network');
+  assert.equal(oldQuotePage.payment.record.quotedPrice, 30);
+  assert.equal(changedPrice.server.coins.get('member-a'), 10);
+  const priceRecovered = changedPrice.page(oldQuotePage.storage).payment;
+  assert.equal((await priceRecovered.init()).resume.price, 30);
+  assert.equal(changedPrice.server.coins.get('member-a'), 10, 'lost 30-ju response is recovered without another debit');
+
+  const lowBalance = harness();
+  lowBalance.server.coins.set('member-a', 29);
+  const lowBalancePage = lowBalance.page();
+  await lowBalancePage.payment.init();
+  await assert.rejects(lowBalancePage.payment.start('overall'), error => error.code === 'coins' && /30쭈/.test(error.message));
+  assert.equal(lowBalance.server.coins.get('member-a'), 29);
+  assert.equal(lowBalance.server.receipts.size, 0);
+  assert.equal((await lowBalancePage.payment.start('money')).price, 10);
+
   console.log('PASS: four independent daily topics, free canonical replay, server progress across devices, conflict recovery, KST midnight and yesterday handling.');
   console.log('PASS: preview/guest safety, lost purchase/save responses, same-ID concurrent retry, delayed original POST, overnight pending receipt, storage-before-charge.');
   console.log('PASS: verified administrator switch, repeated fresh previews without billing, paid-state preservation, OFF daily replay, spoof/revocation safety, account and in-flight mode changes.');
+  console.log('PASS: quoted overall 30 ju, other topics 10 ju, stale-price rejection, 29-ju balance and lost 30-ju response recovery.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

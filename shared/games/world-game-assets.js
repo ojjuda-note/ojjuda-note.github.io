@@ -1,12 +1,12 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261113-saju-all1'
+ const revision='20261113-fortune-reading1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
-  tarot:'1.2.0',
-  saju:'1.3.0',
+  tarot:'1.3.0',
+  saju:'1.3.1',
   group:'1.2.2',
   chacha_rush:'1.1.0',
   byeolcheonji:'1.0.5',

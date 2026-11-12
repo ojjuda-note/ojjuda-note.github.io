@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const { JSDOM } = require('jsdom');
+const { createTarotLoader } = require('./tarot-module-fixture.cjs');
 
 const root = path.join(__dirname, '../games/moonlit-tarot');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
@@ -13,7 +14,7 @@ async function until(predicate) {
   assert.ok(predicate(), 'tarot UI did not finish the expected transition');
 }
 
-async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12' } = {}) {
+async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12', drawn = ['fool', 'magician', 'priestess', 'empress', 'emperor'], pendingTopic = null, initError = false } = {}) {
   const dom = new JSDOM(read('index.html'), { url: 'https://ojjuda.kr/games/moonlit-tarot/', runScripts: 'outside-only', pretendToBeVisual: true });
   const { window } = dom;
   const context = dom.getInternalVMContext();
@@ -31,15 +32,13 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12' 
     values.forEach((_, i) => { values[i] = (i * 2654435761 + shuffle * 2000000000) >>> 0; });
     return values;
   } } });
-  const loadPack = (file, name) => vm.runInContext(`(() => { ${unmodule(read(file))}; return ${name}; })()`, context);
-  window.EXTRA_CARDS_A = loadPack('deck-pack-a.js', 'EXTRA_CARDS_A');
-  window.EXTRA_CARDS_B = loadPack('deck-pack-b.js', 'EXTRA_CARDS_B');
-  Object.assign(window, vm.runInContext(`(() => { ${unmodule(read('readings.js'))}; return {DECK, TOPICS, POSITIONS, getReading, getSummary}; })()`, context));
+  Object.assign(window, createTarotLoader(context)('readings.js'));
+  window.getTarotPrice = createTarotLoader(context)('payment.js').getTarotPrice;
   window.TarotFX = class { setMood() {} setReducedMotion() {} burst() {} trail() {} };
   window.TarotAudio = class { play() {} setMuted() {} };
   const receipt = {
     topic: 'love', reading_day: paidDay, request_id: 'paid-original',
-    drawn: ['fool', 'magician', 'priestess', 'empress', 'emperor'], discarded: [0, 1], openOrder: opened
+    drawn, discarded: [0, 1], openOrder: opened
   };
   let payment, revelations = 0;
   window.TarotRevelation = class { play() { revelations++; return Promise.resolve(true); } cancel() {} };
@@ -48,9 +47,15 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12' 
       payment = this;
       this.options = options; this.enabled = true; this.adminPreview = admin;
       this.user = 'account'; this.balance = 40; this.starts = 0; this.saves = 0;
-      this.record = { paid: true, readingDay: paidDay, topic: receipt.topic };
+      this.record = { paid: !pendingTopic, readingDay: paidDay, topic: pendingTopic || receipt.topic };
     }
-    async init() { return this.adminPreview ? { signedIn: true, preview: true, adminPreview: true } : { signedIn: true, resume: receipt }; }
+    async init() {
+      if (pendingTopic) {
+        if (initError) throw Error('연결을 다시 확인해 주세요.');
+        return { signedIn: true, pending: { topic: pendingTopic } };
+      }
+      return this.adminPreview ? { signedIn: true, preview: true, adminPreview: true } : { signedIn: true, resume: receipt };
+    }
     async refreshAdminMode() { return this.adminPreview; }
     async refreshToday() {}
     receiptFor(topic) { return !this.adminPreview && topic === receipt.topic ? receipt : null; }
@@ -85,11 +90,45 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12' 
   completed.click('.card[data-index="2"]');
   assert.equal(completed.$('#reading-dialog').open, true, 'opened cards retain their individual explanations');
   assert.equal(completed.$('#reading-title').textContent, '여사제');
+  for (const section of completed.window.document.querySelectorAll('#reading-sections .reading-part')) {
+    assert.equal(section.children[0].tagName, 'H3');
+    assert.equal(section.children[1].tagName, 'H4');
+    assert.ok(section.children[1].textContent.length > 0);
+    assert.equal(section.children[2].tagName, 'P');
+  }
   assert.equal(completed.$('#oracle-text').textContent, expected, 'individual modal does not replace the combined lower panel');
   completed.closeReading();
   completed.click('#reading-open');
   await until(() => completed.$('#result-dialog').open);
   completed.dom.window.close();
+
+  // Extra reference notes follow the actual card and disappear on other cards.
+  const references = await page({ drawn: ['magician', 'empress', 'star', 'cups_six', 'fool'] });
+  references.click('.card[data-index="2"]');
+  assert.equal(references.$('#reading-name-help').hidden, true);
+  assert.equal(references.$('#reading-source-note').hidden, false);
+  assert.match(references.$('#reading-source-note-body').textContent, /부족함/);
+  assert.match(references.$('#reading-source-note-link').href, /Part_3$/);
+  references.closeReading();
+  references.click('.card[data-index="3"]');
+  assert.equal(references.$('#reading-name-help').hidden, false);
+  assert.match(references.$('#reading-name-guide').textContent, /컵은 잔/);
+  assert.match(references.$('#reading-source-note-body').textContent, /추억/);
+  references.closeReading();
+  references.click('.card[data-index="4"]');
+  assert.equal(references.$('#reading-name-help').hidden, true);
+  assert.equal(references.$('#reading-source-note').hidden, true);
+  assert.equal(references.$('#reading-source-note-body').textContent, '');
+  assert.equal(references.$('#reading-source-note-link').hasAttribute('href'), false);
+  references.dom.window.close();
+
+  for (const [pendingTopic, initError] of [['love', false], ['money', true]]) {
+    const recovery = await page({ pendingTopic, initError });
+    assert.equal(recovery.$('[data-topic].active').dataset.topic, pendingTopic);
+    assert.equal(recovery.$('.tarot-price strong').textContent, '1회 10쭈', 'the price follows the recovered topic');
+    if (initError) assert.equal(recovery.$('#payment-status').textContent, '연결을 다시 확인해 주세요.', 'price refresh does not hide recovery errors');
+    recovery.dom.window.close();
+  }
 
   // Before the last card, the lower CTA still shows the selected card's explanation.
   const partial = await page({ opened: [2] });
@@ -144,7 +183,12 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12' 
   admin.payment.switchMode(false);
   assert.equal(admin.phase('intro'), true, 'turning off admin mode cancels the active preview');
   assert.equal(admin.payment.record, originalRecord, 'turning off preview preserves the original paid record');
+  assert.equal(admin.$('.tarot-price strong').textContent, '1회 30쭈');
+  admin.click('[data-topic="money"]');
   assert.equal(admin.$('.tarot-price strong').textContent, '1회 10쭈');
+  assert.equal(admin.$('#summon-button span').textContent, '10쭈로 운세 시작하기');
+  admin.click('[data-topic="overall"]');
+  assert.equal(admin.$('#summon-button span').textContent, '30쭈로 운세 시작하기');
   assert.equal(admin.$('#daily-limit-note').textContent, '분야별 하루 1회 · 한국시간 밤 12시에 새 운세');
   assert.equal(admin.$('#reading-open').hidden, true);
   assert.equal(admin.$('#reading-open span').textContent, '이 카드의 이야기 자세히 읽기');

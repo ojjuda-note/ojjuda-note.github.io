@@ -253,10 +253,10 @@
           </button>`;
         }).join('')}</div>
       </section>
-      <a class="agit-tarot-banner" href="/games/moonlit-tarot/" aria-label="달의 마녀 타로 만나기, 분야별 하루 1회, 1회 10쭈">
+      <a class="agit-tarot-banner" href="/games/moonlit-tarot/" aria-label="달의 마녀 타로 만나기, 전체운세 30쭈, 나머지 분야 각각 10쭈, 분야별 하루 1회">
         <span class="agit-tarot-shimmer" aria-hidden="true"></span>
         <div class="agit-tarot-copy"><span class="agit-tarot-kicker">MOONLIT TAROT <i aria-hidden="true">✦</i> 마녀의 초대</span><h2>달의 마녀 타로</h2><p>마음이 끌리는 세 장,<br>오늘의 이야기를 펼쳐 보세요.</p><span class="agit-tarot-cta">마녀 만나러 가기 <span aria-hidden="true">→</span></span></div>
-        <div class="agit-tarot-price"><strong>1회 <b>10</b>쭈</strong><small>분야별 하루 1회</small></div>
+        <div class="agit-tarot-price"><strong>전체 <b>30</b>쭈</strong><small>다른 분야 각 10쭈</small><small>분야별 하루 1회</small></div>
       </a>
       <a class="agit-saju-banner" href="/games/starlit-saju/" aria-label="별빛 사주팔자, 전체 풀이 30쭈, 평생운·올해운·월별운 각각 10쭈">
         <span class="agit-saju-stars" aria-hidden="true"></span>

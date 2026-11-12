@@ -1,3 +1,6 @@
+import { getFortune, CORPUS_VERSION } from './fortune-corpus/index.js?v=20261113-tarot-corpus1';
+import { getSpreadPattern } from './spread-patterns.js?v=20261113-tarot-corpus1';
+import { CARD_FOUNDATIONS, CARD_SOURCE_NOTES, TAROT_REFERENCES, getCardNameGuide } from './card-foundations.js?v=20261113-tarot-corpus1';
 import { EXTRA_CARDS_A } from './deck-pack-a.js?v=20261112-tarot-words1';
 import { EXTRA_CARDS_B } from './deck-pack-b.js?v=20261112-tarot-words1';
 
@@ -282,29 +285,6 @@ const CARD_STEPS = {
   "star": "오래 바라던 일에 조금 가까워질 방법을 찾아보렴",
   "moon": "직접 확인한 것과 아직 모르는 것을 천천히 나눠 봐",
   "sun": "네가 해낸 작은 일 하나를 마음껏 기뻐해 줘"
-};
-
-const TOPIC_SUMMARIES = {
-  "overall": {
-    "headline": "작은 선택이 비추는 오늘의 길",
-    "bridge": "하루에 어떤 일이 생길지 다 알 수는 없어도, 어디에 마음을 둘지는 네가 고를 수 있단다.",
-    "ritual": "오늘 마음에 남은 이야기 하나를 떠올리고, 그와 닿아 있는 작은 일을 해 보렴."
-  },
-  "love": {
-    "headline": "다정한 말이 마음에 닿는 시간",
-    "bridge": "상대의 마음을 혼자 짐작하기보다 네 마음을 솔직하게 전하고, 그 사람의 이야기도 들어 보렴.",
-    "ritual": "전하고 싶었던 고마움이나 바람 하나를 부담 없는 말로 건네 봐."
-  },
-  "money": {
-    "headline": "네 하루에 머무는 작은 풍요",
-    "bridge": "무엇이 필요한지, 이미 충분한 것은 무엇인지 차례로 살펴보렴. 네가 바라는 하루를 알면 돈을 쓰는 이유도 분명해질 거야.",
-    "ritual": "이미 가진 것 중 오늘 잘 쓸 수 있는 물건 하나를 다시 꺼내 보렴."
-  },
-  "work": {
-    "headline": "가능성을 깨우는 작은 한 걸음",
-    "bridge": "큰일도 네가 시작할 수 있는 작은 크기로 나누면 길이 조금씩 보일 수 있어.",
-    "ritual": "내일의 시작이 편해지도록 오늘 준비해 둘 작은 일 하나를 골라 봐."
-  }
 };
 
 // Each reading combines an original card explanation, a position-specific lens,
@@ -668,7 +648,7 @@ function resolveCard(card) {
 
 function resolveTopic(topic) {
   const id = typeof topic === 'object' && topic ? topic.id : topic;
-  return typeof id === 'string' && Object.hasOwn(TOPIC_SUMMARIES, id) ? id : 'overall';
+  return typeof id === 'string' && TOPICS.some(item => item.id === id) ? id : 'overall';
 }
 
 function resolvePosition(position) {
@@ -679,7 +659,15 @@ function resolvePosition(position) {
 }
 
 function sectionsToText(summary, sections) {
-  return [summary, ...sections.map(section => `${section.title}\n${section.body}`)].join('\n\n');
+  return [summary, ...sections.map(section => [section.title, section.subtitle, section.body].filter(Boolean).join('\n'))].join('\n\n');
+}
+
+// Present an existing authored sentence as the takeaway, then its explanation.
+// This only changes presentation; it does not create or count another reading.
+function readingSection(title, text, subtitle = '') {
+  if (subtitle) return { title, subtitle, body: text };
+  const match = String(text).match(/^(.+?[.!?])(?:\s+|$)([\s\S]*)$/);
+  return match ? { title, subtitle: match[1], body: match[2] } : { title, subtitle: text, body: '' };
 }
 
 function objectParticle(text) {
@@ -693,35 +681,31 @@ export function getReading(card, topic = 'overall', position = 0) {
   const topicId = resolveTopic(topic);
   const index = resolvePosition(position);
   const guidance = CARD_GUIDANCE[selected.id] || selected.guidance;
+  const foundation = CARD_FOUNDATIONS[selected.id];
   const detail = (TOPIC_DETAILS[selected.id] || selected.details)[topicId];
+  const practice = readingSection('생활 속 예시와 해 볼 일', detail.action);
+  practice.body = [detail.example, practice.body].filter(Boolean).join('\n\n');
   const sections = [
-    {
-      title: '카드가 들려주는 이야기',
-      body: `${guidance.meaning} ${POSITION_INTROS[index]} ${guidance.positions[index]}`
-    },
-    { title: '지금 나에게 전하는 말', body: selected.topics[topicId] },
-    { title: '일상에서 떠올려 볼 장면', body: detail.example },
-    { title: '오늘 해 보면 좋은 일', body: detail.action },
-    { title: '마음에 담아 둘 조언', body: `${guidance.caution} ${TOPIC_REMINDERS[topicId]}` }
+    readingSection('그림에 담긴 뜻', foundation.symbol, foundation.takeaway),
+    readingSection('이 카드가 전하는 말', `${guidance.meaning}\n\n${POSITION_INTROS[index]} ${guidance.positions[index]}`, guidance.summary),
+    readingSection('고른 주제에 관한 이야기', selected.topics[topicId]),
+    practice,
+    readingSection('조심할 점', `${foundation.caution}\n\n${guidance.caution} ${TOPIC_REMINDERS[topicId]}`)
   ];
   return {
     title: `${POSITIONS[index].label} · ${selected.name}`,
-    keyword: selected.keyword,
+    keyword: foundation.theme,
     summary: guidance.summary,
+    nameGuide: getCardNameGuide(selected),
     sections,
     text: sectionsToText(guidance.summary, sections),
+    reference: TAROT_REFERENCES[selected.arcana === 'major' ? 'major' : 'minor'],
+    sourceNote: CARD_SOURCE_NOTES[selected.id] ? { body: CARD_SOURCE_NOTES[selected.id], reference: TAROT_REFERENCES.minor } : null,
     whisper: index === 2 ? `“${CARD_STEPS[selected.id] || selected.step}.”` : POSITION_WHISPERS[index]
   };
 }
 
-// Spread-level prose: combines the whole reading without restating card meanings.
-const SPREAD_TONES = {
-  fool: 'advance', magician: 'advance', chariot: 'advance',
-  priestess: 'clarify', hermit: 'clarify', moon: 'clarify',
-  empress: 'care', lovers: 'care', strength: 'care',
-  wheel: 'renew', star: 'renew', sun: 'renew'
-};
-
+// Card-specific nuances used in the whole-spread interpretation.
 const SPREAD_INNER = {
   "fool": "새로운 일을 향한 호기심",
   "magician": "네가 잘하는 것을 직접 써 보고 싶은 마음",
@@ -752,33 +736,6 @@ const SPREAD_OPENINGS = {
   "sun": "잘됐던 일을 함께 기뻐하고 다시 해 볼 기회"
 };
 
-const SPREAD_LINKS = {
-  "advance": {
-    "advance": "해 보고 싶은 일이 많을수록 오늘은 하나만 골라도 좋아. 작은 시도를 끝낸 뒤 어떤 마음이 들었는지 돌아보렴. 그 경험이 다음 길을 고르는 데 도움이 될 거야.",
-    "clarify": "새 길이 궁금하면서도 한 번 더 살펴보고 싶은 마음이 함께 있을 수 있겠구나. 궁금한 점 하나를 알아본 뒤 작게 시작해 봐. 모든 걱정이 사라질 때까지 기다리지 않아도 괜찮아.",
-    "care": "새로운 일을 해 보고 싶어도 네가 쉬어 갈 자리는 남겨 두렴. 가까운 사람과의 시간이나 작은 즐거움을 함께 챙기면 무리 없이 이어 가기 쉬워질 거야.",
-    "renew": "처음 고른 방법이 꼭 마지막 방법일 필요는 없어. 직접 해 보며 네게 맞는 부분을 남기고, 어려웠던 곳은 조금 바꿔 봐. 달라진 길에서도 처음 품은 마음을 이어 갈 수 있단다."
-  },
-  "clarify": {
-    "advance": "생각을 충분히 했다면 이제 작은 경험으로 알아볼 차례일 수 있어. 모든 답을 얻고 나서 움직이려 하면 첫걸음이 무거워지지. 잠깐 해 본 뒤 계속할지 고를 수 있는 일부터 시작해 보렴.",
-    "clarify": "오늘은 여러 답을 한꺼번에 찾으려 하지 않아도 돼. 직접 아는 것과 더 물어보고 싶은 것을 나눠 봐. 가장 궁금한 질문 하나가 분명해지면 막연했던 걱정도 조금 작아질 수 있어.",
-    "care": "머릿속에서만 맴돌던 이야기를 편안한 사람에게 꺼내 봐도 좋아. 누군가의 답을 그대로 따르기보다 네 마음을 말하며 알아가는 거야. 잠깐 쉬고 자신을 돌보는 시간도 도움이 될 수 있단다.",
-    "renew": "지난 선택을 계속 따지다 보면 지금 할 수 있는 일을 놓치기도 하지. 그때의 너를 탓하기보다 오늘 달라진 것을 살펴봐. 다시 해 볼 만한 작은 이유가 보인다면 천천히 이어 가 보렴."
-  },
-  "care": {
-    "advance": "익숙한 것을 아끼는 마음과 새롭게 해 보고 싶은 마음이 함께 있을 수 있어. 모든 것을 한 번에 챙기려 하지 말고, 지금 네가 편하게 지킬 수 있는 약속부터 골라 봐.",
-    "clarify": "가까운 사이일수록 네 바람을 당연히 알 것이라 여기기 쉽지. 배려하고 싶어서 하는 일인지, 거절하기 어려워 무리하는 일인지 살펴보렴. 네 마음을 알아야 더 솔직하게 나눌 수 있단다.",
-    "care": "큰 변화를 만들지 않아도 지금의 하루를 따뜻하게 가꿀 수 있어. 주고받는 관심이 한 사람에게만 쏠리지 않는지 살펴봐. 필요한 도움은 말로 청하고, 네가 쉴 자리도 남겨 두렴.",
-    "renew": "소중한 것을 지키는 방법도 때에 따라 달라질 수 있단다. 예전처럼 해야만 한다고 붙잡지 말고, 지금의 생활에 맞게 작은 약속을 바꿔 봐. 조금 편해진 마음이 다시 움직일 힘을 줄 거야."
-  },
-  "renew": {
-    "advance": "분위기가 달라지는 때에는 무엇부터 해야 할지 막막할 수도 있어. 지나간 일을 한꺼번에 만회하려 하지 말고 오늘 마칠 작은 일 하나를 골라 봐. 그 한 걸음에서 새 길을 찾을 수 있단다.",
-    "clarify": "다시 잘해 보고 싶다면 무엇이 달라지면 좋을지 구체적으로 떠올려 봐. 기대하는 마음과 지금 알고 있는 사정을 함께 살피렴. 알아봐야 할 것이 분명해지면 다음 선택도 조금 편해질 거야.",
-    "care": "주변이 달라져도 너를 편안하게 해 주는 작은 것들은 남아 있을 수 있어. 바쁜 틈에 시간을 조금 내어 가까운 사람이나 자주 머무는 곳을 돌봐. 무엇을 계속 이어 가고 싶은지 느낄 여유가 생길 거야.",
-    "renew": "길을 걸어 본 뒤에야 네게 맞는 속도를 알게 되기도 하지. 한 번의 반응으로 모든 것을 정하지 말고, 어떤 일이 반복되고 네 마음은 어떤지 살펴봐. 조금씩 고쳐 가며 이어 가도 괜찮단다."
-  }
-};
-
 const SPREAD_DIRECTIONS = {
   "fool": "새롭게 궁금한 일을 잠깐 경험해 보렴. 시작은 마음에 부담이 남지 않을 만큼 작아도 좋아.",
   "magician": "새로운 준비를 더하기 전에 이미 익힌 방법과 지금 가진 도구부터 써 봐.",
@@ -794,105 +751,64 @@ const SPREAD_DIRECTIONS = {
   "sun": "잘됐던 순간을 기뻐하고, 다음에도 이어 가고 싶은 방법을 기억해 둬."
 };
 
-const SPREAD_TOPIC_PROSE = {
-  "overall": {
-    "summary": "오늘의 이야기는 네가 고르는 작은 한 걸음에 빛을 비추고 있단다. 모든 일을 한꺼번에 해결하려 하지 않아도 돼. 네 마음이 조금 편해질 선택 하나부터 살펴보렴.",
-    "choice": "하루가 바쁘게 흘러가면 남의 부탁을 챙기느라 네가 원했던 일을 놓칠 수 있어. 지금 하는 일이 정말 급한지, 오늘의 너에게 필요한지 잠깐 물어봐. 모두와 같은 속도로 움직이지 않아도 괜찮단다. 네가 편하게 이어 갈 순서를 정해 보렴.",
-    "action": "오늘 가장 마음에 남은 일 하나를 떠올려 봐. 네가 바로 할 수 있는 작은 부분이 있다면 거기부터 시작하렴. 다른 사람의 답을 기다려야 한다면 언제 다시 이야기할지 정해 두어도 좋아. 하나를 마친 뒤에는 마음이 어땠는지 느껴 보고, 다음 일을 천천히 고르는 거야.",
-    "closing": "한 번의 실수나 누군가의 반응이 네 하루 전체를 말해 주지는 않는단다. 힘들었던 순간만큼 편안했던 순간도 알아봐 줘. 네 마음을 살피는 시간이 다음에 무엇을 고를지 알려 줄 수 있어."
-  },
-  "love": {
-    "summary": "이번 이야기는 서로의 마음이 편하게 닿을 자리를 비추고 있어. 상대의 뜻을 혼자 짐작하기보다 네가 느끼고 바라는 것을 먼저 알아봐. 다정하고 솔직한 한마디에서 대화가 시작될 수 있단다.",
-    "choice": "관계가 빨리 가까워지는 것만으로 좋은 사이를 알 수는 없지. 함께 있을 때 편안한지, 원하는 것을 솔직하게 말할 수 있는지 살펴봐. 연락 한 번에 모든 뜻을 담으려 하기보다 서로 어떤 시간을 보내는지 들어 보렴. 두 사람에게 맞는 속도는 함께 알아가는 거야.",
-    "action": "최근 마음에 남은 장면 하나를 떠올리고 네가 어떤 기분이었는지 살펴봐. 이야기할 여유가 생기면 그때의 마음이나 작은 바람 하나를 부드럽게 전해 보렴. 상대에게도 자기 이야기를 할 시간을 주는 거야. 당장 답이 같지 않아도 서로를 조금 더 알게 된 대화로 남을 수 있어.",
-    "closing": "상대의 마음을 모두 알아야만 관계를 이어 갈 수 있는 것은 아니란다. 생각이 달라도 서로의 말을 듣고 존중할 수 있는지 살펴봐. 네 마음도 다정하게 대우받고 있는지 잊지 말고 돌아보렴."
-  },
-  "money": {
-    "summary": "이번 이야기는 더 많이 갖는 것보다 네 하루를 편안하게 하는 선택에 빛을 비추고 있단다. 어디에 돈을 쓰고 싶은지, 무엇은 이미 충분한지 천천히 알아봐. 그 마음이 분명해지면 작은 선택도 한결 쉬워질 수 있어.",
-    "choice": "눈에 띄는 가격이나 남이 만족했다는 말만으로 네게도 좋은 선택인지 알 수는 없지. 지금 필요한 이유와 나중에도 드는 돈을 함께 살펴보렴. 이해가 어려운 부분은 그대로 물어봐도 좋아. 네 생활에 무리가 없는지 알고 나서 골라도 괜찮단다.",
-    "action": "최근 쓴 돈이나 앞으로 사고 싶은 것 하나를 골라 봐. 전체 비용이 얼마이고 실제로 어떻게 쓸지 살펴보렴. 이미 가진 것으로 해결할 수 있는지도 알아보는 거야. 지금 꼭 필요한 것은 챙기고, 급하지 않은 것은 조금 기다려 봐도 좋아. 나중에 다시 보아도 마음이 같은지 느껴 보자.",
-    "closing": "비교하는 마음에서 잠시 떨어지면 네게 충분한 것이 더 잘 보일 수 있어. 앞으로 생길 돈을 미리 확신하기보다 지금의 생활과 지출을 살펴보렴. 네가 이해하고 감당할 수 있는 만큼 고르는 것이 마음을 편하게 해 줄 거야."
-  },
-  "work": {
-    "summary": "이번 이야기는 멀게 느껴지는 계획을 오늘 할 수 있는 작은 일로 바꿔 보라고 속삭이고 있어. 바라는 결과를 떠올리고, 지금 네 손으로 시작할 수 있는 부분을 찾아보렴. 작은 완성 하나가 다음 걸음을 도와줄 수 있단다.",
-    "choice": "여러 일을 동시에 시작하면 바쁘게 움직여도 끝낸 일이 잘 보이지 않을 수 있어. 지금 가장 중요한 것이 무엇인지 먼저 골라 봐. 어디까지 하면 마친 것인지도 분명히 해 두렴. 다른 사람과 함께하는 일이라면 서로 같은 결과를 생각하는지 짧게 이야기해 보면 좋아.",
-    "action": "오늘 마칠 수 있는 작은 작업 하나를 정해 보렴. 막힌 곳이 있다면 혼자 오래 붙잡기보다 필요한 정보나 도움을 물어봐. 네가 이미 해 본 방법을 함께 말하면 도움을 받기도 쉬워져. 일을 마친 뒤에는 잘됐던 방법 하나를 기억해 둬. 다음에 시작할 때 든든한 길잡이가 될 거야.",
-    "closing": "한 번의 평가가 네 가능성의 끝을 정해 주는 것은 아니란다. 무엇을 배웠고 다음에는 어떻게 해 보고 싶은지 돌아봐. 잘되지 않았던 경험에서도 다시 써 볼 방법을 찾을 수 있어. 네가 걸어온 시간도 함께 알아봐 주렴."
-  }
+// Preserve the difficult side of these symbols instead of recasting every
+// unfolding theme as a welcome opportunity. These are editorial lenses, not
+// predictions that the named event will happen.
+const SPREAD_FLOW_NUANCES = {
+  devil: '자꾸 되풀이되는 습관이나 벗어나기 어려운 관계의 힘을 알아볼 필요',
+  tower: '믿었던 계획의 약점과 갑작스러운 변화에 대비할 필요',
+  death: '역할을 다한 일의 끝을 인정하고 다음 자리를 만들 필요',
+  wands_five: '서로 다른 요구가 부딪칠 때 기준을 맞출 필요',
+  wands_seven: '주변의 요구 속에서 자신의 자리와 한계를 지킬 필요',
+  wands_ten: '이미 버거워진 책임을 덜거나 나눌 필요',
+  cups_five: '잃은 것에 대한 실망과 아직 남은 도움을 함께 바라볼 필요',
+  swords_three: '마음에 남은 상처를 덮지 않고 다룰 필요',
+  swords_five: '다툼에서 이기는 일과 소중한 것을 지키는 일을 구분할 필요',
+  swords_eight: '가로막는 조건과 도움을 받아 바꿀 수 있는 부분을 구분할 필요',
+  swords_ten: '더는 맞지 않는 방법을 끝내고 회복할 자리를 남길 필요',
+  pentacles_five: '혼자 감당하기 어려운 부족함을 인정하고 도움을 찾을 필요'
 };
 
-const SPREAD_ONE_LINES = {
-  overall: {
-    advance: '새로운 길이 궁금하다면, 오늘 해 볼 수 있는 작은 일부터 시작해 보렴.',
-    clarify: '답이 흐릿할수록 서두르지 말고, 확실히 아는 것부터 차근차근 살펴보렴.',
-    care: '오늘은 더 멀리 가려 애쓰기보다, 네 마음과 소중한 일상을 돌봐 주렴.',
-    renew: '익숙한 길이 달라져도 괜찮으니, 지금 네게 맞는 방법을 다시 골라 보렴.'
-  },
-  love: {
-    advance: '가까워지고 싶은 마음이 있다면, 부담 없는 다정한 말 한마디부터 건네 보렴.',
-    clarify: '상대의 마음을 혼자 짐작하기보다, 궁금한 것을 부드럽게 물어보는 게 좋겠구나.',
-    care: '두 사람의 마음이 편안해지도록, 서로에게 필요한 다정함을 나눠 보렴.',
-    renew: '관계가 예전과 달라졌다면, 지금 서로에게 편안한 거리를 함께 찾아보렴.'
-  },
-  money: {
-    advance: '돈과 관련된 새 계획이 있다면, 생활에 무리 없는 작은 일부터 시작해 보렴.',
-    clarify: '돈을 쓰기 전에는 서두르지 말고, 가격과 조건을 하나씩 확인해 보렴.',
-    care: '오늘은 가진 것을 잘 쓰고, 꼭 필요한 곳에 마음 편히 돈을 써 보렴.',
-    renew: '돈 쓰는 습관을 조금 바꾸면, 지금의 생활에 맞는 여유를 찾을 수 있단다.'
-  },
-  work: {
-    advance: '생각하던 일을 작게 시작하면, 다음에 할 일이 조금씩 보일 수 있단다.',
-    clarify: '빨리 끝내려 하기보다, 중요한 확인 하나를 챙기는 것이 도움이 되겠구나.',
-    care: '혼자 모든 일을 짊어지지 말고, 필요한 도움을 받으며 네 속도로 이어 가 보렴.',
-    renew: '막힌 길을 억지로 밀기보다, 해 본 경험을 살려 다른 방법을 찾아보렴.'
-  }
+// Whole-spread cautions keep the focus on the combined situation; explanations
+// of what an individual symbol depicts remain in the individual card dialog.
+const SPREAD_CAUTIONS = {
+  death: '정리가 필요해 보여도 큰 결정을 서두르지는 마렴. 실제로 끝난 것과 아직 바꿀 수 있는 것을 나누고, 남길 가치가 있는 경험은 챙겨 보자.',
+  tower: '놀람이나 불편함만으로 모든 계획을 뒤집지는 마렴. 이미 드러난 변화와 아직 예상인 일을 나누고, 무리했던 부분부터 줄일 방법을 찾아봐.',
+  swords_three: '아팠던 감정을 가볍게 넘기지 않되, 그 아픔만으로 상대의 의도까지 정하지는 마렴. 어떤 말과 행동이 상처였는지 구체적으로 살펴보고 필요한 도움을 청해도 좋아.',
+  swords_seven: '빠진 설명을 상상으로 채우면 의심만 커질 수 있어. 직접 확인할 것은 묻고, 네 쪽에서도 함께 알아야 할 약속을 숨기고 있지는 않은지 돌아보렴.',
+  swords_nine: '걱정이 크게 느껴져도 예상한 일이 모두 사실이 되는 것은 아니야. 반복되는 생각을 글이나 말로 꺼내고, 오늘 확인할 수 있는 작은 부분부터 살펴보렴.',
+  pentacles_five: '지금의 부족함을 네 가치 전체와 같게 여기지는 마렴. 당장 필요한 것을 구체적으로 나누고 실제로 닿을 수 있는 도움부터 확인해 봐. 혼자 참는 시간만 늘릴 필요는 없어.',
+  pentacles_ten: '오래 이어 온 방식이라도 누군가만 참고 있다면 돌아볼 필요가 있어. 공동의 기대와 각자가 바라는 생활을 같은 무게로 이야기하고 수고도 나누어 보렴.'
 };
 
-/** Returns one cohesive interpretation of the spread, without card-by-card retelling. */
+/**
+ * One literal authored record plus the actual cards' positional nuances.
+ * Different card arrays are not counted as additional authored records.
+ * Rereading/copying the same ordered draw and topic never resamples prose.
+ */
 export function getSummary(cards = [], topic = 'overall') {
-  const unique = [];
-  for (const value of Array.isArray(cards) ? cards : []) {
-    const card = resolveCard(value);
-    if (!unique.some(item => item.id === card.id)) unique.push(card);
-    if (unique.length === 3) break;
-  }
-  for (const fallback of ['star', 'moon', 'sun'].map(id => DECK.find(card => card.id === id))) {
-    if (unique.length === 3) break;
-    if (!unique.some(item => item.id === fallback.id)) unique.push(fallback);
-  }
-  const [inner, flow, advice] = unique;
-  const topicId = resolveTopic(topic);
-  const topicSummary = TOPIC_SUMMARIES[topicId];
-  const prose = SPREAD_TOPIC_PROSE[topicId];
-  const innerTone = SPREAD_TONES[inner.id] || inner.spread.tone;
-  const flowTone = SPREAD_TONES[flow.id] || flow.spread.tone;
-  const adviceTone = SPREAD_TONES[advice.id] || advice.spread.tone;
-  // A shared tone leads; when all three differ, the final advice breaks the tie.
-  const summaryTone = innerTone === flowTone || innerTone === adviceTone ? innerTone : flowTone === adviceTone ? flowTone : adviceTone;
-  const connection = SPREAD_LINKS[innerTone][flowTone];
-  const opening = SPREAD_OPENINGS[flow.id] || flow.spread.opening;
-  const openingSubject = opening + (objectParticle(opening) === '을' ? '이' : '가');
+  // Validate the actual input before resolving it; never substitute another card.
+  const pattern = getSpreadPattern(cards);
+  const selected = cards.map(card => DECK.find(item => item.id === (typeof card === 'string' ? card : card.id)));
+  const [inner, flow, advice] = selected;
+  const topicId = typeof topic === 'object' && topic ? topic.id : topic;
+  const record = getFortune(topicId, pattern);
+  const innerMeaning = SPREAD_INNER[inner.id] || inner.spread.inner;
+  const flowMeaning = SPREAD_FLOW_NUANCES[flow.id] || SPREAD_OPENINGS[flow.id] || flow.spread.opening;
+  const direction = SPREAD_DIRECTIONS[advice.id] || advice.spread.direction;
+  const flowCaution = SPREAD_CAUTIONS[flow.id] || (CARD_GUIDANCE[flow.id] || flow.guidance).caution;
+  const adviceCaution = SPREAD_CAUTIONS[advice.id] || (CARD_GUIDANCE[advice.id] || advice.guidance).caution;
   const sections = [
-    {
-      title: '전체적인 운의 흐름',
-      body: `지금은 ${SPREAD_INNER[inner.id] || inner.spread.inner}에 귀를 기울여 보렴. ${openingSubject} 생긴다면 네가 편한 만큼만 해 봐. ${connection}`
-    },
-    {
-      title: '지금 가장 중요한 선택',
-      body: `${prose.choice} ${SPREAD_DIRECTIONS[advice.id] || advice.spread.direction}`
-    },
-    { title: '오늘부터 해 볼 일', body: prose.action },
-    {
-      title: '마녀의 마지막 조언',
-      body: `${prose.closing} 오늘의 이야기를 모두 기억하려 애쓰지 않아도 돼. 마음에 남는 한 가지를 네 하루에 써 보렴. 그 작은 선택이 다음 길을 찾는 데 도움이 될 거야.`
-    }
+    readingSection('지금 살펴볼 일', flowCaution + `\n\n세 장을 함께 읽은 이 이야기는 ${innerMeaning}${objectParticle(innerMeaning)} 다루고 있어. 이어서 ${flowMeaning}${objectParticle(flowMeaning)} 살펴보렴. 이 두 가지가 네 생활에서 어떻게 이어지는지 생각해 보렴.`),
+    readingSection('선택할 때 기억할 것', `${direction}\n\n${adviceCaution}`)
   ];
   return {
-    oneLine: SPREAD_ONE_LINES[topicId][summaryTone],
-    headline: topicSummary.headline,
-    summary: prose.summary,
+    oneLine: record.oneLine,
+    headline: '세 장이 함께 비추는 길',
+    summary: record.body,
     sections,
-    text: sectionsToText(prose.summary, sections),
-    ritual: topicSummary.ritual
+    text: sectionsToText(record.body, sections),
+    ritual: record.action,
+    source: Object.freeze({ version: CORPUS_VERSION, recordId: record.id, pattern, cards: selected.map(card => card.id) })
   };
 }

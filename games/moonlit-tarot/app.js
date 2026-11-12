@@ -1,6 +1,6 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261112-tarot-daily1';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261113-tarot-corpus1';
 import { TarotFX, TarotAudio } from './fx.js';
-import { TarotPayment } from './payment.js?v=20261112-tarot-admin1';
+import { TarotPayment, getTarotPrice } from './payment.js?v=20261113-tarot-corpus1';
 import { TarotRevelation } from './revelation.js?v=20261112-tarot-daily1';
 
 const $ = (selector) => document.querySelector(selector);
@@ -48,13 +48,13 @@ function handleBillingModeChange() {
 }
 
 function updatePaymentStatus() {
-  if (!billing.enabled) return;
+  if (!billing.enabled) { $('.tarot-price strong').textContent = `1회 ${getTarotPrice(state.topic)}쭈`; return; }
   const preview = billing.adminPreview;
   app.dataset.adminPreview = String(preview);
-  $('.tarot-price strong').textContent = preview ? '관리자 모드' : '1회 10쭈';
+  $('.tarot-price strong').textContent = preview ? '관리자 모드' : `1회 ${getTarotPrice(state.topic)}쭈`;
   $('.tarot-price span').textContent = preview ? '쭈 차감 없음 · 기록 미저장' : '세 장의 풀이와 종합 점괘';
   $('#daily-limit-note').textContent = preview ? '횟수 제한 없이 매번 새로운 카드로 시작해요.' : '분야별 하루 1회 · 한국시간 밤 12시에 새 운세';
-  $('#help-usage-note').textContent = preview ? '관리자 모드가 켜져 있어요. 쭈 차감 없이 새로운 운세를 계속 볼 수 있고, 체험한 점괘는 저장되지 않아요. 아지트에서 관리자 모드를 끄면 일반 이용으로 돌아가요.' : '각 분야의 새 운세는 하루에 한 번, 10쭈로 볼 수 있어요. 오늘 본 운세는 추가 차감 없이 다시 열 수 있고, 한국시간 밤 12시부터 새 운세를 볼 수 있어요.';
+  $('#help-usage-note').textContent = preview ? '관리자 모드가 켜져 있어요. 쭈 차감 없이 새로운 운세를 계속 볼 수 있고, 체험한 점괘는 저장되지 않아요. 아지트에서 관리자 모드를 끄면 일반 이용으로 돌아가요.' : '전체운세는 30쭈, 연애·금전·일과 도전은 각각 10쭈예요. 분야별로 하루에 한 번 새 운세를 볼 수 있어요. 오늘 본 운세는 추가 차감 없이 다시 열 수 있고, 한국시간 밤 12시부터 새 운세를 볼 수 있어요.';
   $('#restart-small span').textContent = preview ? '새 운세 보기' : '다른 주제 고르기';
   $('#restart-result span').textContent = preview ? '새 운세 보기' : '다른 주제 고르기';
   if (preview) {
@@ -74,7 +74,7 @@ function updatePaymentStatus() {
   }
   const unfinished = billing.record && (!billing.record.paid || billing.record.unsynced);
   const previous = billing.receiptFor(state.topic);
-  $('#summon-button span').textContent = unfinished ? '진행하던 운세 이어보기' : previous ? (previous.openOrder.length === 3 ? '오늘 점괘 다시 보기' : '오늘 점괘 이어보기') : '10쭈로 운세 시작하기';
+  $('#summon-button span').textContent = unfinished ? '진행하던 운세 이어보기' : previous ? (previous.openOrder.length === 3 ? '오늘 점괘 다시 보기' : '오늘 점괘 이어보기') : `${getTarotPrice(state.topic)}쭈로 운세 시작하기`;
   $('#payment-status').textContent = unfinished ? '시작하던 운세를 이어서 확인해요. 쭈는 다시 사용되지 않아요.' : previous ? `오늘 본 주제예요. 추가 차감 없이 볼 수 있어요.${balance ? ' · ' + balance : ''}` : balance;
   $$('[data-topic]').forEach(button => {
     button.disabled = !!unfinished || state.busy;
@@ -611,6 +611,12 @@ function renderReadingSections(container, sections, fallback = '', headingTag = 
     number.textContent = String(index + 1).padStart(2, '0');
     heading.append(number, document.createTextNode(part.title));
     section.append(heading);
+    if (part.subtitle) {
+      const subtitle = document.createElement(headingTag === 'h3' ? 'h4' : 'h5');
+      subtitle.className = 'reading-part-subtitle';
+      subtitle.textContent = part.subtitle;
+      section.append(subtitle);
+    }
     String(part.body || '').split(/\n\s*\n/).filter(Boolean).forEach(text => {
       const paragraph = document.createElement('p');
       paragraph.textContent = text;
@@ -629,9 +635,18 @@ function showReading(slot = state.lastReading) {
   $('#reading-title').textContent = data.name;
   $('#reading-keyword').textContent = `✧ ${reading.keyword}`;
   $('#reading-summary').textContent = reading.summary || data.message;
+  $('#reading-name-help').hidden = !reading.nameGuide;
+  $('#reading-name-help').open = false;
+  $('#reading-name-guide').textContent = reading.nameGuide;
   applyArtwork($('#reading-art'), data);
   $('#reading-art').setAttribute('aria-label', `${data.name} 카드`);
   renderReadingSections($('#reading-sections'), reading.sections, reading.text);
+  $('#reading-source-link').href = reading.reference.url;
+  $('#reading-source-link').textContent = `${reading.reference.label} ↗`;
+  $('#reading-source-note').hidden = !reading.sourceNote;
+  $('#reading-source-note-body').textContent = reading.sourceNote?.body || '';
+  if (reading.sourceNote) $('#reading-source-note-link').href = reading.sourceNote.reference.url;
+  else $('#reading-source-note-link').removeAttribute('href');
   $('#reading-next span').textContent = state.revealed < 3 ? '다음 카드 고르기' : '종합 점괘 보기';
   $('#reading-open span').textContent = state.revealed < 3 ? '이 카드의 이야기 자세히 읽기' : '종합 점괘 자세히 보기';
   $('#reading-open').hidden = false;
@@ -718,7 +733,7 @@ async function copyResult() {
   const drawn = state.openOrder.map(i => state.drawn[i]);
   const summary = getSummary(drawn, state.topic);
   const parts = ['오쭈다 · 달의 마녀 타로', '종합 점괘', $('#result-date').textContent, ''];
-  parts.push('한마디 정리', summary.oneLine, '', summary.headline, summary.text, '', `오늘의 작은 한 걸음: ${summary.ritual}`, '', '카드의 이야기를 참고하며, 내 마음을 돌아보는 시간이에요.');
+  parts.push('한마디 정리', summary.oneLine, '', summary.headline, summary.text, '', `오늘 해 볼 일: ${summary.ritual}`, '', '카드에 담긴 뜻을 읽는 이야기예요. 미래가 꼭 이렇게 된다는 말은 아니에요. 다음 선택은 당신이 정해요.');
   const text = parts.join('\n');
   try {
     if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
@@ -783,7 +798,7 @@ function reset({ clearPaid = true } = {}) {
   $('#reading-open').hidden = true;
   $('#reading-open span').textContent = '이 카드의 이야기 자세히 읽기';
   $('#summon-button').disabled = !billingReady;
-  $('#summon-button span').textContent = billing.enabled ? '10쭈로 운세 시작하기' : '마녀의 카드 불러오기';
+  $('#summon-button span').textContent = billing.enabled ? `${getTarotPrice(state.topic)}쭈로 운세 시작하기` : '마녀의 카드 불러오기';
   $$('[data-topic]').forEach(button => { button.disabled = false; });
   $('#login-link').hidden = true;
   updatePaymentStatus();
@@ -960,7 +975,7 @@ function restorePaidReading(receipt) {
 async function initializeBilling() {
   $('#summon-button').disabled = true;
   $('#azit-back').hidden = !billing.enabled;
-  $('#summon-button span').textContent = billing.enabled ? '10쭈로 운세 시작하기' : '마녀의 카드 불러오기';
+  $('#summon-button span').textContent = billing.enabled ? `${getTarotPrice(state.topic)}쭈로 운세 시작하기` : '마녀의 카드 불러오기';
   $('#payment-status').textContent = billing.enabled ? '로그인 상태와 보유한 쭈를 확인하고 있어요…' : '미리보기 · 실제 쭈는 차감되지 않아요';
   try {
     const result = await billing.init();
@@ -976,8 +991,9 @@ async function initializeBilling() {
         button.classList.toggle('active', button.dataset.topic === state.topic);
         button.setAttribute('aria-pressed', String(button.dataset.topic === state.topic));
       });
+      updatePaymentStatus();
       $('#summon-button span').textContent = '같은 운세 다시 확인하기';
-      $('#payment-status').textContent = '시작하던 운세를 이어서 확인해요. 같은 운세에는 10쭈가 한 번만 사용돼요.';
+      $('#payment-status').textContent = '시작하던 운세를 이어서 확인해요. 같은 운세의 이용 금액은 한 번만 사용돼요.';
     }
     else if (result.signedIn === false) {
       $('#payment-status').textContent = '아지트에 로그인한 뒤 이용해 주세요.';
@@ -993,6 +1009,7 @@ async function initializeBilling() {
         button.classList.toggle('active', button.dataset.topic === state.topic);
         button.setAttribute('aria-pressed', String(button.dataset.topic === state.topic));
       });
+      updatePaymentStatus();
       $('#summon-button span').textContent = '진행하던 운세 이어보기';
     }
     $('#summon-button').disabled = !billingReady;

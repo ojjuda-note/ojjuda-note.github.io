@@ -2,11 +2,16 @@
 const SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const TOPICS = new Set(['overall', 'love', 'money', 'work']);
+export function getTarotPrice(topic) {
+  if (!TOPICS.has(topic)) throw problem('invalid');
+  return topic === 'overall' ? 30 : 10;
+}
 const messages = {
   not_signed_in: '아지트에 로그인한 뒤 이용해 주세요.',
   member_required: '아지트 회원으로 로그인하면 이용할 수 있어요.',
   banned: '현재 계정으로는 운세를 시작할 수 없어요.',
-  coins: '쭈가 부족해요. 운세를 한 번 보려면 10쭈가 필요해요.',
+  coins: '선택한 운세를 볼 쭈가 부족해요.',
+  price_changed: '이용 금액이 바뀌었어요. 표시된 새 가격을 확인한 뒤 다시 시작해 주세요.',
   wallet_unavailable: '보유한 쭈를 확인하지 못했어요. 아지트로 돌아가 다시 열어 주세요.',
   request_conflict: '진행 중인 운세를 확인하지 못했어요. 아지트로 돌아가 다시 열어 주세요.',
   progress_conflict: '다른 화면에 저장된 오늘의 점괘를 불러왔어요.',
@@ -17,8 +22,9 @@ const messages = {
   invalid: '운세를 불러오지 못했어요. 아지트로 돌아가 다시 열어 주세요.',
   network: '연결이 잠시 끊겼어요. 다시 누르면 시작하던 운세를 이어서 확인해요. 같은 운세로 쭈가 두 번 사용되지는 않아요.'
 };
-function problem(code = 'network') {
-  const error = new Error(messages[code] || messages.network);
+function problem(code = 'network', price) {
+  const text = code === 'coins' && Number.isInteger(price) && price > 0 ? `쭈가 부족해요. 선택한 운세는 ${price}쭈가 필요해요.` : messages[code] || messages.network;
+  const error = new Error(text);
   error.code = code;
   return error;
 }
@@ -274,8 +280,8 @@ export class TarotPayment {
     return { signedIn: true, resume: restored };
   }
   request(record, verifyOnly) {
-    return this.rpc('tarot_reading_buy_v1', {
-      p_request_id: record.requestId, p_topic: record.topic, p_verify_only: verifyOnly
+    return this.rpc('tarot_reading_buy_v2', {
+      p_request_id: record.requestId, p_topic: record.topic, p_expected_price: record.quotedPrice ?? 10, p_verify_only: verifyOnly
     });
   }
   async start(topic) {
@@ -298,7 +304,7 @@ export class TarotPayment {
       const record = uncertain ? draft : previous ? {
         owner: this.user, requestId: previous.request_id, topic: previous.topic,
         paid: true, readingDay: previous.reading_day, discarded: previous.discarded, openOrder: previous.openOrder
-      } : { owner: this.user, requestId: crypto.randomUUID(), topic, paid: false, discarded: [], openOrder: [] };
+      } : { owner: this.user, requestId: crypto.randomUUID(), topic, quotedPrice: getTarotPrice(topic), paid: false, discarded: [], openOrder: [] };
       // Persist a new request BEFORE sending it, so retries can never buy twice.
       if (!record.paid) this.write(record);
       const result = await this.request(record, !!record.paid);
@@ -306,9 +312,9 @@ export class TarotPayment {
       // purchase. Turning preview off recovers that receipt without repaying.
       this.checkMode(owner, version);
       if (!result?.ok) {
-        if (['coins', 'banned', 'member_required', 'wallet_unavailable', 'invalid'].includes(result?.reason)) this.clearRecord();
+        if (['coins', 'price_changed', 'banned', 'member_required', 'wallet_unavailable', 'invalid'].includes(result?.reason)) this.clearRecord();
         if (Number.isInteger(result?.coins)) this.setBalance(result.coins);
-        throw problem(result?.reason);
+        throw problem(result?.reason, result?.price ?? getTarotPrice(record.topic));
       }
       this.previewRun = false;
       const restored = await this.resume(result, draft);
