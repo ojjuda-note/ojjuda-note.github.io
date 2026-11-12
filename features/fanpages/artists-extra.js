@@ -801,7 +801,7 @@
       ],
       schedules: [
         { title: 'BOYNEXTDOOR 일본 공식 일정', sub: '공식 사이트 · 방송·공연·발매 일정', href: 'https://boynextdoor-official.jp/Schedule' },
-        { title: 'BOYNEXTDOOR Weverse 공지', sub: '공연·행사 변경 및 예매는 공식 공지에서 확인', href: 'https://weverse.io/boynextdoor/notice' }
+        { title: 'BOYNEXTDOOR Weverse 공지', sub: '로그인·커뮤니티 가입 후 공연·행사 변경과 예매 정보 확인', href: 'https://weverse.io/boynextdoor/notice' }
       ],
       news: [
         { date: '2026.11.01', tag: '굿즈', title: 'One and Only 후드 재판매 발표 · 11.02 예약 시작', href: 'https://boynextdoor-official.jp/news/1eaa7468d773' },
