@@ -802,7 +802,7 @@
       checkedAt: '2026.11.12',
       music: [
         { title: 'DREAM AFTER DREAM', date: '2026.11.09', type: '정규 6집 · 타이틀 Boogie Woogie', songs: ['The Sun', 'Boogie Woogie', 'Dream After Dream', 'Skydive', 'Pressure', 'Watch U Watch Me', 'Cool for Me', 'Tumbler', 'Smile for U', 'This Is Your World'], href: 'https://music.apple.com/us/album/dream-after-dream/6827483714' },
-        { title: 'Chewing Gum', date: '2016.08.25', type: '데뷔 디지털 싱글 · Chewing Gum', songs: ['Chewing Gum'], href: 'https://music.apple.com/us/album/chewing-gum-single/1147458439' }
+        { title: 'Chewing Gum', date: '2016.08.27', type: '데뷔 디지털 싱글 · 유통사 표시 발매일', songs: ['Chewing Gum', 'Chewing Gum (Chinese Ver.)'], href: 'https://music.apple.com/us/album/chewing-gum-single/1147458439' }
       ],
       appearances: [
         { date: '2026-11-12', title: 'The Harvest Day · DREAM AFTER DREAM', sub: '서울 CUBE 컨벤션센터 · 20:00 KST · 앨범 구매자 대상 행사·공식 온라인 생중계', href: 'https://weverse.io/nctdream/notice/40463' },
