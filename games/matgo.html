@@ -513,8 +513,8 @@ function render(){
   if(!$('#fl')) mount();
   syncTazza();vent.sync();
   const my=score(game.caps[ME]), op=score(game.caps[CPU]); const myTurn=game.turn===ME&&!game.over&&!ui.busy;
-  $('#cpuLevel').textContent=game.cpuMode==='standard'?['기본','조금 어려움','아주 어려움'][game.cpuLevel-1]:`${game.cpuLevel??1}단계`;
-  $('#round-rules-note').hidden=game.over||game.cpuMode==='standard';
+  $('#cpuLevel').textContent=game.cpuMode==='gold'?soloTierLabel(game.cpuLevel):game.cpuMode==='standard'?['기본','조금 어려움','아주 어려움'][game.cpuLevel-1]:`${game.cpuLevel??1}단계`;
+  $('#round-rules-note').hidden=game.over||game.cpuMode==='gold';
   $('#round-rules-note').textContent=game.openingPpuk===false?'이전 판 이어하기 · 새 규칙·새 난이도는 다음 판부터':'이전 판 이어하기 · 새 난이도는 다음 판부터';
   $('#stakeRate').textContent='점당 '+(game.over?(wallet.current.stake_rate??game.rate):game.rate).toLocaleString()+'G';
   $('#money').textContent=game.bank[ME].toLocaleString()+UNIT; $('#opHand').textContent=`손패 ${game.hand[CPU].length}장`; $('#opPts').textContent=op.pts+'점'; $('#mePts').textContent=my.pts+'점';
@@ -695,7 +695,7 @@ async function startRound(){
   currentRound=state.round.id;game.roundCpuLevel=state.round.cpu_level;game.rate=state.round.rate??100;game.bank=[state.gold,5000];game.first=state.round.first;game.carry=state.round.carry;
   Sound.cancel();ui.chooseStacks=null;ui.resolveChoose=null;ui.holdRect=null;ui.lastHandRect=null;ui.dealing=true;ui.busy=true;ui.warned={};LAYOUT_N=-1;dealSoloRound(game,state.round,{Game,seededRandom});tazza.finish(true);stackEls.forEach(el=>el.remove());stackEls=new Map();
   if($('#fl'))document.querySelectorAll('#capsOp .cap .c,#capsMe .cap .c,#handMe .c,#handOp .c').forEach(e=>e.remove());
-  render();if(game.cpuMode!=='standard')toast('이전에 시작한 판을 이어갑니다. 이 판을 끝내고 다음 판을 누르면 새 난이도가 적용돼요.',6000);else if(game.tazzaMode)toast(TAZZA_MODES[game.tazzaMode]+' · '+TAZZA_DETAILS[game.tazzaMode],3500);await dealAnim();ui.dealing=false;await resolveChongtong();ui.busy=false;render();if(!game.over&&game.turn===CPU)await cpuTurn();return true;
+  render();if(game.cpuMode!=='gold')toast('이전에 시작한 판을 이어갑니다. 이 판을 끝내고 다음 판을 누르면 새 난이도가 적용돼요.',6000);else if(game.tazzaMode)toast(TAZZA_MODES[game.tazzaMode]+' · '+TAZZA_DETAILS[game.tazzaMode],3500);await dealAnim();ui.dealing=false;await resolveChongtong();ui.busy=false;render();if(!game.over&&game.turn===CPU)await cpuTurn();return true;
 }
 async function dealAnim(){
   const cards=game.floor.flat(),flights=[];
