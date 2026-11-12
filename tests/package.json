@@ -33,7 +33,7 @@
     "test:byeolcheonji": "node --test byeolcheonji-retired.test.cjs",
     "test:groups": "node --test group-board-db.test.cjs group-board-dom.test.cjs group-invitations-db.test.cjs group-media-performance.test.cjs",
     "test:monthly-personal": "node --test monthly-game-personal-rank-db.test.cjs monthly-game-personal-rank-dom.test.cjs",
-    "test:fanpages": "node --test fanpages-responsive.test.cjs fanpage-controls.test.cjs fanpage-gallery.test.cjs fanpage-saved-state.test.cjs fanpage-resource-links.test.cjs section-back-navigation.test.cjs && node ../features/fanpages/check-profiles.mjs && node ../features/fanpages/check-videos.mjs"
+    "test:fanpages": "node --test fanpages-responsive.test.cjs fanpage-controls.test.cjs fanpage-gallery.test.cjs fanpage-saved-state.test.cjs fanpage-resource-links.test.cjs section-back-navigation.test.cjs && node ../features/fanpages/check-profiles.mjs && node ../features/fanpages/check-videos.mjs && node fanpage-manager-ui.test.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",
