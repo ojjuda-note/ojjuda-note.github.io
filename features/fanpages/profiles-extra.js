@@ -243,3 +243,34 @@ if (seventeenProfile) {
   seventeenProfile.sources.push({ label: 'PLEDIS · SEVENTEEN 공식 프로필', href: 'https://www.pledis.co.kr/artist/detail/seventeen/profile/' });
   seventeenProfile.sources.push({ label: '일본 공식 일정 · 11월 공연', href: 'https://www.seventeen-17.jp/posts/schedule' });
 }
+
+/* &TEAM: official Japanese birth dates; private personal facts stay unset. */
+const andteamProfile = window.OJJUDA_FAN_PROFILES.andteam;
+if (andteamProfile) {
+  andteamProfile.checkedAt = '2026.11.12';
+  andteamProfile.expanded = true;
+  andteamProfile.records = [
+    { year: '2022.12', title: '일본 데뷔', detail: 'First Howling : ME · Under the skin', href: 'https://www.andteam-official.jp/news/owsyjh' },
+    { year: '2026–2027', title: 'Mark on You 일본 투어', detail: '홀·아레나 공연 · 변경은 공식 일정 확인', href: 'https://www.andteam-official.jp/news/dd0f71998bc8' }
+  ];
+  const officialMembers = {
+    '의주': ['2002.09.07', 'EJ'],
+    '후마': ['1998.06.29', 'FUMA'],
+    '케이': ['1997.10.21', 'K'],
+    '니콜라스': ['2002.07.09', 'NICHOLAS'],
+    '유마': ['2004.02.07', 'YUMA'],
+    '조': ['2004.07.08', 'JO'],
+    '하루아': ['2005.05.01', 'HARUA'],
+    '타키': ['2005.05.04', 'TAKI'],
+    '마키': ['2006.02.17', 'MAKI']
+  };
+  for (const member of andteamProfile.members) {
+    const official = officialMembers[member.name];
+    if (!official) continue;
+    member.birthday = official[0];
+    member.source = 'https://www.andteam-official.jp/profile/' + official[1];
+  }
+  andteamProfile.sources.unshift({ label: '&TEAM 일본 공식 멤버 프로필 · 생일', href: 'https://www.andteam-official.jp/profile' });
+  andteamProfile.sources.push({ label: '&TEAM 공식 2026 음반·곡 목록', href: 'https://www.andteam-official.jp/discography' });
+  andteamProfile.sources.push({ label: '2026–2027 Mark on You 공식 공연 일정', href: 'https://www.andteam-official.jp/news/021ab1de6a61' });
+}
