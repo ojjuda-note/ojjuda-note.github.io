@@ -47,7 +47,7 @@
     refresh,
     async recordClear(owner,stage){
       if(window.OjjudaAdminPreview?.isEnabled?.()===true)return {ok:true,preview:true};
-      if(!Number.isInteger(stage)||stage<1||stage>152)throw new Error('잘못된 그림 번호예요.');
+      if(!Number.isInteger(stage)||stage<1||stage>182)throw new Error('잘못된 그림 번호예요.');
       for(let attempt=0;attempt<2;attempt++){
         if(window.OjjudaAdminPreview?.isEnabled?.()===true)return {ok:true,preview:true};
         if(!client||!owner||state.userId!==owner)throw new Error('게임을 시작한 계정으로 로그인해 주세요.');

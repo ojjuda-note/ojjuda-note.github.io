@@ -149,5 +149,22 @@ const migrationFile=process.env.SPOT70_MIGRATION||path.join(root,'supabase/migra
  const tenReceipt=await buy(62,9);assert.equal(tenReceipt.ok,true);assert.equal(tenReceipt.coins,43);
  await db.exec('reset role');
  assert.equal(await value('select count(*)::int value from ojjuda_note_internal.spend_requests'),7,'only the one new valid hint purchase charges a coin');
- console.log('PASS: 70 stable IDs83–152 plus hard stage 62 ten answers, independent hints, unchanged auth/ACL/RLS/wallets and exact-once receipts');
+ const motionBefore=await definitions(),motionGrants=await privileges(),motionData=await snapshot();
+ await db.exec(read('supabase/migrations/20261112050656_spot_motion_stage_collection.sql'));
+ assert.equal(await definitions(),motionBefore.replaceAll('p_stage not between 1 and 152','p_stage not between 1 and 182').replaceAll('p_stage between 62 and 152 then 9 else 5 end','p_stage between 62 and 182 then 9 else 5 end'));
+ assert.equal(await privileges(),motionGrants);assert.equal(await snapshot(),motionData);
+ await claims(null,'anon');
+ for(let stage=153;stage<=182;stage++)assert.equal((await clear(stage,guest)).ok,true,'guest clear '+stage);
+ assert.equal((await clear(182,guest)).duplicate,true);assert.equal((await clear(183,guest)).reason,'invalid');
+ await claims(user,'authenticated');
+ for(let stage=153;stage<=182;stage++){
+   assert.equal((await clear(stage)).ok,true,'member clear '+stage);
+   assert.equal((await buy(stage,9,randomUUID(),'hint',true)).reason,'not_found','tenth hint on '+stage);
+   assert.equal((await buy(stage,10)).reason,'invalid','eleventh hint on '+stage);
+ }
+ const motionRequest=randomUUID(),motionReceipt=await buy(182,9,motionRequest);
+ assert.equal(motionReceipt.ok,true);assert.equal(motionReceipt.coins,42);
+ assert.deepEqual(await buy(182,9,motionRequest),motionReceipt);
+ assert.equal((await buy(183,0)).reason,'invalid');assert.equal((await clear(183)).reason,'invalid');
+ console.log('PASS: stable IDs 83–152, stage 62 ten-answer hints, motion stages 153–182, unchanged auth/ACL/RLS/wallets and exact-once receipts');
 }finally{await db.close();}})().catch(error=>{console.error(error);process.exitCode=1;});

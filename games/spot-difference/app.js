@@ -18,8 +18,28 @@
   let previewSession=false;
   const canPlay=index=>Number.isInteger(index)&&index>=0&&index<puzzles.length&&(adminPreview()||core.canSelectPuzzle(state,puzzles,index));
   const canOpen=index=>canPlay(index)||!!state.rounds[puzzles[index]?.id]?.pending;
-  if(!canOpen(state.current))state.current=core.nextUnclearedIndex(state,puzzles);
+  const classicOrder=state.order.filter(i=>!puzzles[i].motionScene),motionOrder=state.order.filter(i=>puzzles[i].motionScene);
+  const collectionOf=index=>puzzles[index].motionScene?'motion':'classic';
+  const collectionOrder=()=>puzzles[state.current].motionScene?motionOrder:classicOrder;
+  const lastStage={};
+  for(const [name,order] of [['classic',classicOrder],['motion',motionOrder]]){
+    const last=order.find(i=>puzzles[i].id===stored?.collectionLast?.[name]);
+    if(last!==undefined)lastStage[name]=puzzles[last].id;
+  }
+  function collectionTarget(moving){
+    const lastId=lastStage[moving?'motion':'classic'],order=moving?motionOrder:classicOrder;
+    const previous=order.find(i=>puzzles[i].id===lastId&&canOpen(i));
+    return previous??core.nextUnclearedIndex(state,puzzles,moving);
+  }
+  lastStage[collectionOf(state.current)]=puzzles[state.current].id;
+  const requestedCollection=new URLSearchParams(location.search).get('collection');
+  if(!state.rounds[puzzles[state.current].id]?.pending){
+    if(requestedCollection==='motion'&&motionOrder.length)state.current=collectionTarget(true);
+    else if(requestedCollection==='classic')state.current=collectionTarget(false);
+    else if(!canOpen(state.current))state.current=collectionTarget(!!puzzles[state.current].motionScene);
+  }
   const surfaces=[...document.querySelectorAll('.picture')],zoomDialog=$('zoom-dialog'),authDialog=$('auth-dialog');
+  const motionBoard=window.OjjudaMotionBoard?.createBoard(surfaces,zoomDialog,[$('motion-pause'),$('zoom-motion-pause')].filter(Boolean));
   let autoStartToken=null;
   const celebration=$('celebration'),failure=$('spot-failure');
   let loadToken=0,imagesReady=false,paymentBusy=false,keyboardPoint={x:50,y:50},answerReview=null;
@@ -31,11 +51,11 @@
   const isCompleted=p=>state.completed.includes(p.id)||isSolved(p);
   const found=()=>state.found[puzzle().id]||(state.found[puzzle().id]=[]);
   const round=()=>state.rounds[puzzle().id]||(state.rounds[puzzle().id]=core.freshRound());
-  const position=()=>state.order.indexOf(state.current);
+  const position=()=>collectionOrder().indexOf(state.current);
   const clearedRound=()=>round().status==='won'&&isSolved(puzzle());
   function save(){
     if(adminPreview())previewSession=true;
-    if(!previewSession)try{localStorage.setItem(storageKey,JSON.stringify({version:2,...state}));storageWorks=true;}catch{storageWorks=false;}
+    if(!previewSession)try{localStorage.setItem(storageKey,JSON.stringify({version:2,...state,collectionLast:lastStage}));storageWorks=true;}catch{storageWorks=false;}
     $('storage-note').textContent=previewSession?'관리자 체험 중에는 실제 완료 기록이 바뀌지 않아요.':storageWorks?'한 그림을 완료하면 다음 그림이 열려요. 완료한 그림은 다시 고를 수 있어요.':'완료하면 다음 그림이 열려요. 진행을 기억하고 ZU를 쓰려면 브라우저 저장을 허용해 주세요.';
     return storageWorks;
   }
@@ -102,8 +122,8 @@
     $('board-shell').classList.toggle('round-ended',lost&&!answerReview);
     $('board-shell').classList.toggle('reviewing',!!answerReview);$('board-curtain').dataset.entry=!playing&&!won&&!lost&&!pending&&!answerReview?'menu':'round';
     $('gate-eyebrow').textContent=pending?'ZU 사용 확인':lost?'이번 도전 종료':'오쭈다 오락실';
-    $('gate-title').textContent=pending?(paymentBusy?'잠깐만 기다려 주세요':'구매 결과를 확인해 주세요'):lost?(r.hearts===0?'하트를 모두 썼어요':'시간이 다 됐어요'):'틀린그림찾기';
-    $('gate-copy').textContent=pending?'확인하는 동안 시간은 멈춰요. 같은 구매는 한 번만 차감돼요.':lost?'이전 그림이나 지금 그림에서 다시 도전하세요. 이번 그림을 완료하면 다음 그림으로 갈 수 있어요.':`두 그림에서 다른 곳 ${targetCount()}개를 찾아보세요. 난이도순으로 진행하며, 다시 열면 마지막 그림에서 새 판을 시작해요.`;
+    $('gate-title').textContent=pending?(paymentBusy?'잠깐만 기다려 주세요':'구매 결과를 확인해 주세요'):lost?(r.hearts===0?'하트를 모두 썼어요':'시간이 다 됐어요'):puzzle().motionScene?'움직이는 틀린그림찾기':'틀린그림찾기';
+    $('gate-copy').textContent=pending?'확인하는 동안 시간은 멈춰요. 같은 구매는 한 번만 차감돼요.':lost?'이전 그림이나 지금 그림에서 다시 도전하세요. 이번 그림을 완료하면 다음 그림으로 갈 수 있어요.':puzzle().motionScene?'그림 차이 5곳과 움직임 차이 5곳을 찾으세요. 똑같이 움직이는 곳도 10곳 있어요.':`두 그림에서 다른 곳 ${targetCount()}개를 찾아보세요. 난이도순으로 진행하며, 다시 열면 마지막 그림에서 새 판을 시작해요.`;
     $('retry-level-choice').hidden=(!lost&&!pending)||!!answerReview;
     if(lost||failure.open)updateEndChoices('retry');
     if(!lost&&!pending&&failure.open)failure.close();
@@ -127,7 +147,14 @@
     $('retry-extend').disabled=paymentBusy;
     $('retry-extend').textContent=pending?(paymentBusy?'확인 중…':'구매 다시 확인'):'30초 연장 · 1 ZU';
     $('zoom').disabled=(!playing&&!won&&!answerReview)||paymentBusy||!imagesReady;
-    const previousIndex=state.order[position()-1],nextIndex=state.order[position()+1];
+    const order=collectionOrder(),previousIndex=order[position()-1],nextIndex=order[position()+1];
+    const switcher=$('motion-entry');
+    if(switcher){
+      switcher.hidden=!motionOrder.length;
+      switcher.disabled=paymentBusy||!!r.pending;
+      switcher.textContent=puzzle().motionScene?'일반 그림으로':'움직이는 그림 30장';
+    }
+    motionBoard?.sync(playing||!!answerReview);
     $('prev').disabled=previousIndex===undefined||!canOpen(previousIndex)||paymentBusy||(!adminPreview()&&pending);$('next').disabled=nextIndex===undefined||!canPlay(nextIndex)||paymentBusy||(!adminPreview()&&pending)||(!adminPreview()&&!clearedRound());
     $('stage-picker').disabled=paymentBusy||(!adminPreview()&&pending);$('reset').disabled=paymentBusy||pending||!!answerReview;$('wallet-logout').disabled=paymentBusy;
     $('continue').disabled=paymentBusy||(!adminPreview()&&pending)||!!answerReview||(!adminPreview()&&!clearedRound())||(nextIndex!==undefined&&!canPlay(nextIndex));
@@ -147,15 +174,16 @@
   function refresh(){
     const ids=found(),total=targetCount();renderMarks();$('found-count').textContent=ids.length;$('found-total').textContent=total;
     $('dots').replaceChildren(...Array.from({length:total},(_,i)=>{const dot=document.createElement('span');dot.className='dot'+(i<ids.length?' found':'');return dot;}));
-    const solved=puzzles.filter(isCompleted).length;$('solved-total').textContent=solved;
+    const order=collectionOrder(),solved=order.filter(i=>isCompleted(puzzles[i])).length;
+    $('solved-total').textContent=solved;$('stage-total').textContent=order.length;
     for(const option of $('stage-picker').options){
       const index=Number(option.value),p=puzzles[index],locked=!canPlay(index),pending=!!state.rounds[p.id]?.pending;
       option.disabled=locked&&!pending;
-      option.textContent=`${String(state.order.indexOf(index)+1).padStart(2,'0')}. ${p.title}${pending?' · 구매 확인':locked?' 🔒':isCompleted(p)?' ✓':''}`;
+      option.textContent=`${String(order.indexOf(index)+1).padStart(2,'0')}. ${p.title}${pending?' · 구매 확인':locked?' 🔒':isCompleted(p)?' ✓':''}`;
     }
     $('found-details').hidden=ids.length===0;$('found-summary').textContent=`${ids.length} / ${total}`;
     $('answers').replaceChildren(...ids.map((i,order)=>{const li=document.createElement('li');li.value=order+1;li.textContent=puzzle().spots[i].text;return li;}));
-    $('continue').textContent=position()===puzzles.length-1?'아직 안 푼 문제':'다음 문제';$('continue').hidden=solved===puzzles.length;
+    $('continue').textContent=position()===order.length-1?'아직 안 푼 문제':'다음 문제';$('continue').hidden=solved===order.length;
     $('zoom-status').textContent=answerReview?'정답 확인 중 · 시간 정지 · ZU 차감 없음':`${ids.length} / ${total} 찾았어요`;
     refreshControls();save();
   }
@@ -189,12 +217,18 @@
     if(celebration.open)celebration.close();
     if(failure.open)failure.close();
   }
+  function lastClassicCleared(){
+    return !puzzle().motionScene&&motionOrder.length>0&&position()===classicOrder.length-1&&clearedRound();
+  }
   function updateEndChoices(prefix){
+    const order=collectionOrder();
     for(const [i,name] of ['previous','current','next'].entries()){
       const button=$(prefix+'-'+name),pos=position()+i-1;
-      const outside=pos<0||pos>=state.order.length,needsClear=i===2&&!adminPreview()&&!clearedRound(),locked=!outside&&!canOpen(state.order[pos]);
-      button.disabled=outside||needsClear||locked||paymentBusy||!!round().pending;
-      button.querySelector('small').textContent=outside?'없음':needsClear?'이번 그림 완료 후':locked?'앞선 그림 완료 후':`${pos+1} / ${puzzles.length} · ${difficultyLabels[core.puzzleDifficulty(puzzles[state.order[pos]])]}`;
+      const crossCollection=prefix==='celebration'&&i===2&&lastClassicCleared();
+      const outside=pos<0||pos>=order.length,needsClear=i===2&&!adminPreview()&&!clearedRound(),locked=!outside&&!canOpen(order[pos]);
+      button.querySelector('span').textContent=crossCollection?'움직이는 그림':['이전 그림','지금 그림','다음 그림'][i];
+      button.disabled=(outside&&!crossCollection)||needsClear||locked||paymentBusy||!!round().pending;
+      button.querySelector('small').textContent=crossCollection?'새 컬렉션 열기':outside?'없음':needsClear?'이번 그림 완료 후':locked?'앞선 그림 완료 후':`${pos+1} / ${order.length} · ${difficultyLabels[core.puzzleDifficulty(puzzles[order[pos]])]}`;
     }
   }
   function playChosenLevel(offset){
@@ -202,7 +236,8 @@
     if(window.OjjudaGameResults?.canPlay?.()===false)return;
     if(![-1,0,1].includes(offset))return;
     if(offset===1&&!adminPreview()&&!clearedRound())return;
-    const index=state.order[position()+offset];
+    if(offset===1&&lastClassicCleared()){show(collectionTarget(true));return;}
+    const index=collectionOrder()[position()+offset];
     if(index===undefined||!canOpen(index))return;
     const id=puzzles[index].id;
     if(state.rounds[id]?.pending){show(index,{navigation:offset===1?'next':'select'});return;}
@@ -211,7 +246,7 @@
     show(index,{autoStart:true,navigation:offset===1?'next':'select'});window.scrollTo({top:0,behavior:'instant'});
   }
   function celebrate(){
-    clearCelebration();const allDone=puzzles.every(isCompleted);
+    clearCelebration();const allDone=collectionOrder().every(i=>isCompleted(puzzles[i]));
     $('celebration-count').textContent=`${targetCount()} / ${targetCount()}`;
     const title=$('celebration-title'),copy=$('celebration-copy');
     if(title)title.textContent=allDone?'모든 그림을 완성했어요!':'축하해요! 모두 찾았어요!';
@@ -222,7 +257,7 @@
     }));
     window.OjjudaGameResults?.decorate(celebration,{game:'spot',outcome:'success',metric:$('celebration-count'),key:`spot:${puzzle().id}:${loadToken}:won`,actions:[celebration.querySelector('.end-picture-choices')]});
     celebration.removeAttribute('aria-labelledby');celebration.removeAttribute('aria-describedby');celebration.setAttribute('aria-label','틀린그림찾기 성공');
-    celebration.showModal();$(position()<state.order.length-1?'celebration-next':'celebration-current').focus({preventScroll:true});
+    celebration.showModal();$(position()<collectionOrder().length-1||lastClassicCleared()?'celebration-next':'celebration-current').focus({preventScroll:true});
   }
   function showFailure(){
     $('retry-count').textContent=`${found().length} / ${targetCount()} · ${round().hearts?'시간 종료':'하트 0'}`;
@@ -284,14 +319,22 @@
     if(!canOpen(index)){
       $('stage-picker').value=state.current;speak('앞선 그림을 완료하면 이 그림이 열려요.');return false;
     }
-    if(navigation==='next'&&((!adminPreview()&&!clearedRound())||state.order.indexOf(index)!==position()+1)){
+    if(navigation==='next'&&((!adminPreview()&&!clearedRound())||collectionOrder().indexOf(index)!==position()+1)){
       $('stage-picker').value=state.current;speak('이번 그림을 모두 찾으면 다음 그림으로 갈 수 있어요.');return false;
     }
     clearCelebration();autoStartToken=null;
-    closeAnswers();if(zoomDialog.open)zoomDialog.close();hideHint();state.current=index;imagesReady=false;keyboardPoint={x:50,y:50};
+    closeAnswers();if(zoomDialog.open)zoomDialog.close();hideHint();
+    const oldCollection=collectionOf(state.current);
+    motionBoard?.clear();state.current=index;imagesReady=false;keyboardPoint={x:50,y:50};
+    const collection=collectionOf(index);lastStage[collection]=puzzles[index].id;
+    if(oldCollection!==collection){
+      populatePicker();
+      const url=new URL(location.href);
+      if(url.searchParams.has('collection')){url.searchParams.set('collection',collection);history.replaceState(history.state,'',url);}
+    }
     $('found-details').open=false;$('hint-panel').hidden=true;
-    const p=puzzle(),difficulty=difficultyLabels[core.puzzleDifficulty(p)];$('scene-title').textContent=p.title;$('stage-label').textContent=`그림 ${String(position()+1).padStart(2,'0')} / ${puzzles.length} · 난이도순 · ${difficulty}`;
-    $('scene-instructions').textContent=`1분 안에 ${targetCount()}곳을 찾아보세요. 찾은 곳은 붉은 원으로 표시돼요.`;
+    const p=puzzle(),difficulty=difficultyLabels[core.puzzleDifficulty(p)];$('scene-title').textContent=p.title;$('stage-label').textContent=`${p.motionScene?'움직이는 그림':'그림'} ${String(position()+1).padStart(2,'0')} / ${collectionOrder().length} · ${p.motionScene?'': '난이도순 · '}${difficulty}`;
+    $('scene-instructions').textContent=p.motionScene?'그림 차이 5곳과 움직임 차이 5곳을 찾아보세요.':`1분 안에 ${targetCount()}곳을 찾아보세요. 찾은 곳은 붉은 원으로 표시돼요.`;
     $('difference-status').textContent=`${targetCount()}곳이 달라요`;$('answer-count').textContent=`다른 곳 ${targetCount()}개`;
     const brightness=Number.isFinite(p.displayBrightness)?Math.max(1,Math.min(1.15,p.displayBrightness)):1;
     for(const surface of surfaces){
@@ -303,7 +346,14 @@
     const layers=p.layers||(p.contrast?[p.contrast]:[]);
     $('stage-picker').value=index;$('load-error').hidden=true;const token=++loadToken,loaded=new Set(),required=2+layers.length;autoStartToken=autoStart?token:null;
     surfaces.forEach(surface=>surface.querySelectorAll('.contrast-overlay').forEach(image=>image.remove()));
-    function loadedSide(side){if(token!==loadToken)return;loaded.add(side);if($(side))$(side).parentElement.classList.remove('loading');if(loaded.size===required){imagesReady=true;$('load-error').hidden=true;refreshControls();if(adminPreview()&&!answerReview)toggleAnswers();startNextWhenReady();}}
+    function loadedSide(side){if(token!==loadToken)return;loaded.add(side);if($(side))$(side).parentElement.classList.remove('loading');if(loaded.size===required&&!imagesReady){
+      if(p.motionScene){
+        try{
+          if(!motionBoard)throw new Error('움직이는 그림을 불러올 수 없어요.');
+          motionBoard.load($('original'),p.motionScene);
+        }catch(error){$('load-error').hidden=false;refreshControls();return;}
+      }
+      imagesReady=true;$('load-error').hidden=true;refreshControls();if(adminPreview()&&!answerReview)toggleAnswers();startNextWhenReady();}}
     for(const side of ['original','difference']){
       const im=$(side);im.parentElement.classList.add('loading');im.onload=()=>loadedSide(side);
       im.onerror=()=>{if(token!==loadToken)return;imagesReady=false;$('load-error').hidden=false;im.parentElement.classList.add('loading');refreshControls();};
@@ -496,20 +546,34 @@
       else if(e.key==='Enter'||e.key===' '){e.preventDefault();guess(keyboardPoint.x,keyboardPoint.y,surface);}
     });
   }
-  $('stage-total').textContent=puzzles.length;
-  for(const [difficulty,label] of [['normal','쭈다의 일상 · 보통'],['slightly-hard','귀여운 동화와 반려동물 · 조금 어려움 · 10곳 찾기'],['hard','도시와 사계절 산 · 어려움'],['very-hard','세계 명화 · 매우 어려움 · 10곳 찾기']]){
-    const group=document.createElement('optgroup');group.label=label;
-    for(const i of state.order.filter(i=>core.puzzleDifficulty(puzzles[i])===difficulty)){const option=document.createElement('option');option.value=i;option.textContent=puzzles[i].title;group.append(option);}
-    if(group.children.length)$('stage-picker').append(group);
+  function populatePicker(){
+    const picker=$('stage-picker');
+    picker.replaceChildren();
+    const groups=puzzle().motionScene
+      ?[['very-hard','움직이는 그림 · 매우 어려움 · 10곳 찾기']]
+      :[['normal','쭈다의 일상 · 보통'],['slightly-hard','귀여운 동화와 반려동물 · 조금 어려움 · 10곳 찾기'],['hard','도시와 사계절 산 · 어려움'],['very-hard','세계 명화 · 매우 어려움 · 10곳 찾기']];
+    for(const [difficulty,label] of groups){
+      const group=document.createElement('optgroup');group.label=label;
+      for(const i of collectionOrder().filter(i=>core.puzzleDifficulty(puzzles[i])===difficulty)){
+        const option=document.createElement('option');option.value=i;option.textContent=puzzles[i].title;group.append(option);
+      }
+      if(group.children.length)picker.append(group);
+    }
   }
-  $('stage-picker').onchange=e=>{show(Number(e.target.value));closeWalletMenu();walletMenu.querySelector('summary').focus();};$('prev').onclick=()=>{const index=state.order[position()-1];if(index!==undefined)show(index);};$('next').onclick=()=>{const index=state.order[position()+1];if(index!==undefined)show(index,{navigation:'next'});};
+  populatePicker();
+  $('motion-entry')?.addEventListener('click',()=>{
+    if(paymentBusy||round().pending)return;
+    const index=collectionTarget(!puzzle().motionScene);
+    if(index!==undefined)show(index);
+  });
+  $('stage-picker').onchange=e=>{show(Number(e.target.value));closeWalletMenu();walletMenu.querySelector('summary').focus();};$('prev').onclick=()=>{const index=collectionOrder()[position()-1];if(index!==undefined)show(index);};$('next').onclick=()=>{const index=collectionOrder()[position()+1];if(index!==undefined)show(index,{navigation:'next'});};
   $('retry').onclick=()=>show(state.current);$('hint').onclick=hint;$('zoom-hint').onclick=hint;$('hide-hint').onclick=()=>hideHint();
   $('start').onclick=start;$('reset').onclick=reset;$('extend').onclick=()=>purchase('time');$('zoom-extend').onclick=()=>purchase('time');
   $('retry-extend').onclick=()=>purchase('time');
   failure.addEventListener('cancel',event=>event.preventDefault());
   for(const prefix of ['celebration','retry'])for(const [i,name] of ['previous','current','next'].entries())$(prefix+'-'+name).onclick=()=>playChosenLevel(i-1);
   $('reveal-answers').onclick=toggleAnswers;$('zoom-reveal-answers').onclick=()=>{toggleAnswers();closeZoomSettings();};$('close-answers').onclick=()=>closeAnswers(true);
-  $('continue').onclick=()=>{if(!clearedRound())return;const pos=position(),index=pos<puzzles.length-1?state.order[pos+1]:state.order.find(i=>!isCompleted(puzzles[i]));if(index!==undefined)show(index,{navigation:pos<puzzles.length-1?'next':'select'});window.scrollTo({top:0,behavior:'smooth'});};
+  $('continue').onclick=()=>{if(!clearedRound())return;const order=collectionOrder(),pos=position(),index=pos<order.length-1?order[pos+1]:order.find(i=>!isCompleted(puzzles[i]));if(index!==undefined)show(index,{navigation:pos<order.length-1?'next':'select'});window.scrollTo({top:0,behavior:'smooth'});};
   const scrollA=$('zoom-scroll-a'),scrollB=$('zoom-scroll-b'),zoomPanes=[scrollA,scrollB];let zoomScale=1;
   const picturePointers=new Map();let pictureDrag=false,picturePinch=null,picturePane=null,ignorePictureClickUntil=0;
   const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));

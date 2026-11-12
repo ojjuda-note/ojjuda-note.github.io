@@ -8,6 +8,12 @@
       index,bounds:spot.targetBounds,
       distance:Math.min(...[spot,...(spot.hitRegions||[])].map(region=>((x-region.x)/region.rx)**2+((y-region.y)/region.ry)**2))
     }));
+    // A forgiving hit area must not turn a matching movement into a correct answer.
+    // Scene annotations use thousandths of the image; game taps use percentages.
+    if(puzzle.motionScene?.common&&!candidates.some(c=>c.distance<=1)){
+      const sameMovement=puzzle.motionScene.common.some(s=>((10*x-s.x)/(s.w/2))**2+((10*y-s.y)/(s.h/2))**2<=1);
+      if(sameMovement)return null;
+    }
     const inBounds=b=>b&&x>=b.left&&x<=b.right&&y>=b.top&&y<=b.bottom;
     // Preserve the authored priority of photo and artwork answer bounds.
     if(puzzle.hitMode==='target-bounds'){
@@ -42,19 +48,26 @@
     return order;
   }
   function puzzleDifficulty(puzzle){return ['slightly-hard','hard','very-hard'].includes(puzzle.difficulty)?puzzle.difficulty:'normal';}
-  function difficultyOrder(puzzles){
+  function collectionOrder(puzzles,moving=false){
     const rank={normal:0,'slightly-hard':1,hard:2,'very-hard':3};
-    return puzzles.map((_,i)=>i).sort((a,b)=>rank[puzzleDifficulty(puzzles[a])]-rank[puzzleDifficulty(puzzles[b])]||puzzles[a].id-puzzles[b].id||a-b);
+    return puzzles.map((_,i)=>i).filter(i=>!!puzzles[i].motionScene===moving).sort((a,b)=>{
+      const left=puzzles[a],right=puzzles[b];
+      const difficulty=moving?0:rank[puzzleDifficulty(left)]-rank[puzzleDifficulty(right)];
+      return difficulty||left.id-right.id||a-b;
+    });
   }
-  function nextUnclearedIndex(progress,puzzles){
-    const completed=new Set(progress.completed||[]),order=difficultyOrder(puzzles);
+  function difficultyOrder(puzzles){
+    return [...collectionOrder(puzzles),...collectionOrder(puzzles,true)];
+  }
+  function nextUnclearedIndex(progress,puzzles,moving=!!puzzles[progress.current]?.motionScene){
+    const completed=new Set(progress.completed||[]),order=collectionOrder(puzzles,moving);
     return order.find(index=>!completed.has(puzzles[index].id))??order[order.length-1];
   }
   function canSelectPuzzle(progress,puzzles,index){
     if(!Number.isInteger(index)||!puzzles[index])return false;
     // A past clear can be replayed, but a skipped clear never opens the gaps
     // before it or the following uncleared pictures.
-    return (progress.completed||[]).includes(puzzles[index].id)||index===nextUnclearedIndex(progress,puzzles);
+    return (progress.completed||[]).includes(puzzles[index].id)||index===nextUnclearedIndex(progress,puzzles,!!puzzles[index].motionScene);
   }
   function cleanProgress(raw,puzzles){
     const result={current:0,found:{},rounds:{},completed:[],revisions:Object.fromEntries(puzzles.map(p=>[p.id,p.revision||'original'])),order:difficultyOrder(puzzles)};
@@ -98,7 +111,7 @@
     return round.status==='playing'?Math.max(0,Math.min(round.totalMs,round.deadline-now)):round.remainingMs;
   }
   function normalizedPoint(rect,clientX,clientY){return {x:(clientX-rect.left)/rect.width*100,y:(clientY-rect.top)/rect.height*100};}
-  const api={hitTest,cleanProgress,normalizedPoint,freshRound,timeLeft,shuffleOrder,puzzleDifficulty,difficultyOrder,nextUnclearedIndex,canSelectPuzzle,ROUND_MS,EXTEND_MS,HEARTS};
+  const api={hitTest,cleanProgress,normalizedPoint,freshRound,timeLeft,shuffleOrder,puzzleDifficulty,difficultyOrder,collectionOrder,nextUnclearedIndex,canSelectPuzzle,ROUND_MS,EXTEND_MS,HEARTS};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
   root.JjudaGame=api;
 })(typeof window!=='undefined'?window:globalThis);
