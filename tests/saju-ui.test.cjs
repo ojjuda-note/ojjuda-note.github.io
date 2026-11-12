@@ -28,10 +28,25 @@ async function harness(options = {}) {
   const dom = new JSDOM(html, {url:'https://ojjuda.kr/games/starlit-saju/', runScripts:'outside-only', pretendToBeVisual:true});
   const {window} = dom;
   const NativeDate = window.Date;
+  let nowMs=NativeDate.parse(fixedNow);
   window.Date = class FixedDate extends NativeDate {
-    constructor(...args) { super(...(args.length ? args : [fixedNow])); }
-    static now() { return NativeDate.parse(fixedNow); }
+    constructor(...args) { super(...(args.length ? args : [nowMs])); }
+    static now() { return nowMs; }
   };
+  const timers=new Map(),nativeSetTimeout=window.setTimeout.bind(window),nativeClearTimeout=window.clearTimeout.bind(window);
+  window.setTimeout=(callback,delay=0,...args)=>{
+    const id=nativeSetTimeout(()=>{timers.delete(id);callback(...args);},delay);
+    timers.set(id,{due:nowMs+Number(delay),callback,args});
+    return id;
+  };
+  window.clearTimeout=id=>{timers.delete(id);nativeClearTimeout(id);};
+  function advance(ms,{runTimers=true,focus=false}={}) {
+    nowMs+=ms;
+    if(runTimers) for(const [id,timer] of [...timers].sort((a,b)=>a[1].due-b[1].due)) {
+      if(timer.due<=nowMs&&timers.has(id)){window.clearTimeout(id);timer.callback(...timer.args);}
+    }
+    if(focus)window.dispatchEvent(new window.Event('focus'));
+  }
   window.matchMedia = () => ({matches:true, addEventListener(){}, removeEventListener(){}});
   window.scrollTo = () => {};
   window.HTMLElement.prototype.scrollIntoView = function() {};
@@ -50,31 +65,37 @@ async function harness(options = {}) {
     get user() { return state.user; }
     get balance() { return state.coins; }
     get adminPreview() { return state.adminPreview; }
+    remainingMs(access) { return access?.adminPreview?Infinity:Math.max(0,Date.parse(access?.expires_at)-nowMs)||0; }
+    isActive(access) { return this.remainingMs(access)>0; }
+    legacyAccess() { return {price:10,paid_at:fixedNow,expires_at:new Date(Date.parse(fixedNow)+86400000).toISOString()}; }
     async init() { state.initCalls++; return {signedIn:state.signedIn, adminPreview:state.adminPreview}; }
     async status(chart) {
       state.statusCalls.push(chart);
       if(state.failStatus>0){state.failStatus--;throw Object.assign(new Error('구매 내역을 확인하지 못했어요.'),{code:'network'});}
       const profile=profileKey(chart);
       return {ok:true,coins:state.coins,prices:{lifelong:10,annual:10,monthly:10,all:30},
-        entitlements:[...state.receipts.values()].filter(receipt=>receipt.profile===profile),
-        bundle_entitlement:state.legacyBundle?{price:10}:null,adminPreview:state.adminPreview};
+        entitlements:[...state.receipts.values()].filter(receipt=>receipt.profile===profile&&this.isActive(receipt)),
+        bundle_entitlement:state.legacyBundle&&this.isActive(this.legacyAccess())?this.legacyAccess():null,adminPreview:state.adminPreview};
     }
     async start(chart, target) {
       assert.ok(['lifelong','annual','monthly','all'].includes(target?.topic),'payment requires an explicit product');
       const owner = state.user;
       const topic=target.topic,year=topic==='lifelong'?0:target.year;
-      state.starts.push({chart,topic,year});
+      state.starts.push({chart,topic,year,expectedCharge:target.expectedCharge});
       if (state.purchaseGate) await state.purchaseGate.promise;
       if (!state.signedIn) throw Object.assign(new Error('아지트에 로그인해 주세요.'), {code:'not_signed_in'});
       if (state.adminPreview) return {ok:true,price:0,charged:0,replayed:false,adminPreview:true,topic,year};
       const profile=profileKey(chart,owner),key=`${profile}|${topic}|${year}`;
       const targets=topic==='all'?[{topic:'lifelong',year:0},{topic:'annual',year},{topic:'monthly',year}]:[{topic,year}];
-      const missing=state.legacyBundle?[]:targets.filter(item=>!state.receipts.has(`${profile}|${item.topic}|${item.year}`));
+      const legacy=state.legacyBundle&&this.isActive(this.legacyAccess());
+      const missing=legacy?[]:targets.filter(item=>!this.isActive(state.receipts.get(`${profile}|${item.topic}|${item.year}`)));
       const charged=missing.length*10,replayed=charged===0;
+      if(charged!==target.expectedCharge)throw Object.assign(new Error('이용 금액이 바뀌었어요. 표시된 금액을 확인한 뒤 다시 눌러 주세요.'),{code:'price_changed'});
       if (state.coins < charged) throw Object.assign(new Error(`쭈가 부족해요. 선택한 풀이에는 ${charged}쭈가 필요해요.`), {code:'coins'});
       for (const item of missing) {
         const request_id=`00000000-0000-4000-8000-${String(state.nextRequest++).padStart(12,'0')}`;
-        state.receipts.set(`${profile}|${item.topic}|${item.year}`,{profile,...item,price:10,request_id});
+        state.receipts.set(`${profile}|${item.topic}|${item.year}`,{profile,...item,price:10,request_id,
+          paid_at:new Date(nowMs).toISOString(),expires_at:new Date(nowMs+86400000).toISOString()});
       }
       if (charged) {
         state.charges++;
@@ -82,8 +103,10 @@ async function harness(options = {}) {
         if (owner === state.user) state.coins -= charged;
       }
       if (owner === state.user) this.callbacks.onBalance(state.coins);
-      const items=targets.map(item=>state.receipts.get(`${profile}|${item.topic}|${item.year}`)||{...item,price:10});
-      return {ok:true,price:topic==='all'?30:10,charged,replayed,legacy_bundle:state.legacyBundle,coins:state.coins,topic,year,items,request_id:state.receipts.get(key)?.request_id};
+      const items=targets.map(item=>legacy?{...item,...this.legacyAccess()}:state.receipts.get(`${profile}|${item.topic}|${item.year}`));
+      return {ok:true,price:topic==='all'?30:10,charged,replayed,legacy_bundle:legacy,coins:state.coins,topic,year,items,
+        paid_at:items[0].paid_at,expires_at:new Date(Math.min(...items.map(item=>Date.parse(item.expires_at)))).toISOString(),
+        request_id:state.receipts.get(key)?.request_id};
     }
   }
   const records = new Map();
@@ -151,7 +174,7 @@ async function harness(options = {}) {
     state.signedIn = signedIn;
     for (const instance of state.instances) instance.callbacks.onAccountChange();
   }
-  return {dom,window,state,$,fill,submit,ready,change,pickReport,changeAccount,close:()=>dom.window.close()};
+  return {dom,window,state,$,fill,submit,ready,change,pickReport,changeAccount,advance,close:()=>dom.window.close()};
 }
 
 test('only the selected monthly product is generated before its explicit ten-ju purchase', async t => {
@@ -441,7 +464,7 @@ test('the explicit thirty-ju full purchase opens all three readings and each can
   for(const topic of ['lifelong','annual','monthly']) {
     assert.equal(h.window.document.querySelector(`[data-entry-price="${topic}"]`).textContent,'10쭈');
   }
-  assert.match(h.$('entry-price-note').textContent,/이미 산 항목.*중복 차감.*같은 출생 정보·항목·연도.*0쭈/);
+  assert.match(h.$('entry-price-note').textContent,/결제 후 24시간.*다시 보기 0쭈.*다시 결제.*이용 시간이 남은 항목/);
   assert.equal(h.state.starts.length,0,'selecting the full product only checks ownership');
   h.submit();await h.ready('all',2026);
   assert.deepEqual(h.state.chargedAmounts,[30]);assert.equal(h.state.coins,0);
@@ -492,7 +515,7 @@ test('three separate purchases unlock the combined reading at zero extra ju', as
   for (const topic of ['annual','monthly']) {h.pickReport(topic);h.$('open-product').click();await h.ready(topic,2026);}
   assert.deepEqual(h.state.chargedAmounts,[10,10,10]);assert.equal(h.state.coins,0);
   h.pickReport('all');assert.match(h.$('open-product').textContent,/0쭈/);
-  assert.equal(h.window.document.querySelector('[data-report-price="all"]').textContent,'구매 완료');
+  assert.equal(h.window.document.querySelector('[data-report-price="all"]').textContent,'이용 가능');
   h.$('open-product').click();await h.ready('all',2026);
   assert.deepEqual(h.state.chargedAmounts,[10,10,10]);assert.equal(h.state.coins,0);
   h.$('edit-birth').click();h.fill({topic:'all'});
@@ -509,4 +532,130 @@ test('an insufficient full-reading balance exposes no partial report or purchase
   assert.equal(h.state.charges,0);assert.equal(h.state.receipts.size,0);
   h.state.coins=30;h.submit();await h.ready('all',2026);
   assert.deepEqual(h.state.chargedAmounts,[30]);assert.equal(h.state.receipts.size,3);
+});
+
+test('the reading closes exactly 24 hours after payment and only a new explicit click renews it',async t=>{
+  const h=await harness();t.after(h.close);h.fill();h.submit();await h.ready();
+  const original=h.$('report-content').textContent;
+  const first=[...h.state.receipts.values()][0];
+  assert.match(h.$('current-reading-note').textContent,/11월 14일.*12:00까지/);
+  h.advance(86400000-1);
+  assert.equal(h.$('report-content').textContent,original);
+  h.advance(1);
+  assert.equal(h.$('report-content').textContent,'');
+  assert.equal(h.$('copy-reading').disabled,true);
+  assert.equal(h.$('reading-controls').hidden,true);
+  assert.equal(h.window.document.querySelector('.birth-chart-details').hidden,true);
+  assert.equal(h.$('other-reading-options').open,true);
+  assert.match(h.$('report-status').textContent,/24시간 이용이 끝났어요/);
+  assert.match(h.$('open-product').textContent,/10쭈/);
+  assert.deepEqual(h.state.chargedAmounts,[10]);
+  h.$('open-product').click();await h.ready();
+  assert.deepEqual(h.state.chargedAmounts,[10,10]);
+  assert.equal(h.$('report-content').textContent,original,'repurchase does not invent a different natal reading');
+  assert.equal(h.window.document.querySelector('.birth-chart-details').hidden,false);
+  const renewed=[...h.state.receipts.values()][0];
+  assert.notEqual(renewed.request_id,first.request_id);
+  assert.equal(Date.parse(renewed.expires_at)-Date.parse(first.expires_at),86400000);
+});
+
+test('reopening inside the access window is free and does not extend the original deadline',async t=>{
+  const h=await harness();t.after(h.close);h.fill();h.submit();await h.ready();
+  const originalExpiry=[...h.state.receipts.values()][0].expires_at;
+  h.advance(23*3600000);h.$('edit-birth').click();h.submit();await h.ready();
+  assert.deepEqual(h.state.chargedAmounts,[10]);
+  assert.equal([...h.state.receipts.values()][0].expires_at,originalExpiry);
+  h.advance(3600000);
+  assert.equal(h.$('report-content').textContent,'');
+  assert.deepEqual(h.state.chargedAmounts,[10]);
+});
+
+test('a stale free entry offer cannot silently charge when the ownership check finds it expired',async t=>{
+  const h=await harness();t.after(h.close);h.fill();h.submit();await h.ready();h.$('edit-birth').click();
+  await waitFor(()=>/0쭈/.test(h.$('open-story').textContent)&&!h.$('open-story').disabled);
+  h.advance(86400000,{runTimers:false});
+  assert.equal(h.$('open-story').dataset.expectedCharge,'0');
+  h.submit();await waitFor(()=>!h.$('form-error').hidden);
+  assert.match(h.$('form-error').textContent,/금액.*바뀌/);
+  assert.equal(h.$('result').hidden,true);
+  assert.deepEqual(h.state.chargedAmounts,[10]);
+  assert.equal(h.state.starts.at(-1).expectedCharge,0);
+  assert.match(h.$('open-story').textContent,/10쭈/);
+  h.submit();await h.ready();assert.deepEqual(h.state.chargedAmounts,[10,10]);
+});
+
+test('a stale free product offer requires a second explicit click after the price increases',async t=>{
+  const h=await harness({coins:50});t.after(h.close);h.fill();h.submit();await h.ready();
+  h.pickReport('annual');h.$('open-product').click();await h.ready('annual',2026);
+  h.pickReport('lifelong');h.$('open-product').click();await h.ready();
+  h.pickReport('annual');assert.equal(h.$('open-product').dataset.expectedCharge,'0');
+  h.advance(86400000,{runTimers:false});
+  h.$('open-product').click();await waitFor(()=>!h.$('report-error').hidden);
+  assert.equal(h.$('report-content').textContent,'');
+  assert.deepEqual(h.state.chargedAmounts,[10,10]);
+  assert.equal(h.state.starts.at(-1).expectedCharge,0);
+  assert.match(h.$('open-product').textContent,/10쭈/);
+  h.$('open-product').click();await h.ready('annual',2026);
+  assert.deepEqual(h.state.chargedAmounts,[10,10,10]);
+});
+
+test('a partially expired full reading charges only the expired part and preserves active deadlines',async t=>{
+  const h=await harness({coins:60});t.after(h.close);h.fill();h.submit();await h.ready();
+  h.advance(3600000);
+  h.pickReport('all');h.$('open-product').click();await h.ready('all',2026);
+  assert.deepEqual(h.state.chargedAmounts,[10,20]);
+  const annual=[...h.state.receipts.values()].find(item=>item.topic==='annual');
+  h.advance(23*3600000);
+  assert.equal(h.$('report-content').textContent,'');
+  assert.match(h.$('open-product').textContent,/남은 10쭈/);
+  assert.equal(h.window.document.querySelector('[data-report-price="annual"]').textContent,'이용 가능');
+  h.$('open-product').click();await h.ready('all',2026);
+  assert.deepEqual(h.state.chargedAmounts,[10,20,10]);
+  assert.equal([...h.state.receipts.values()].find(item=>item.topic==='annual').expires_at,annual.expires_at);
+  h.advance(3600000);
+  assert.equal(h.$('report-content').textContent,'');
+  assert.match(h.$('open-product').textContent,/남은 20쭈/);
+  assert.deepEqual(h.state.chargedAmounts,[10,20,10]);
+});
+
+test('copying and returning to a sleeping tab check expiry before showing or copying the old report',async t=>{
+  for(const resume of ['copy','focus','pageshow','visibility']) {
+    const h=await harness();t.after(h.close);h.fill();h.submit();await h.ready();
+    h.advance(86400000,{runTimers:false});
+    if(resume==='copy')h.$('copy-reading').click();
+    else if(resume==='visibility')h.window.document.dispatchEvent(new h.window.Event('visibilitychange'));
+    else h.window.dispatchEvent(new h.window.Event(resume));
+    assert.equal(h.$('report-content').textContent,'');
+    assert.equal(h.$('copy-reading').disabled,true);
+    assert.equal(h.state.copies.length,0);
+    assert.deepEqual(h.state.chargedAmounts,[10]);
+  }
+});
+
+test('an old bundle expires at its original payment time and a status retry never renews it',async t=>{
+  const h=await harness({legacyBundle:true});t.after(h.close);h.fill({topic:'all'});h.submit();await h.ready('all',2026);
+  assert.deepEqual(h.state.chargedAmounts,[]);
+  h.advance(86400000);
+  h.$('retry-report').click();await waitFor(()=>!h.$('open-product').disabled);
+  assert.equal(h.$('report-content').textContent,'');assert.match(h.$('open-product').textContent,/30쭈/);
+  assert.deepEqual(h.state.chargedAmounts,[]);
+  h.$('open-product').click();await h.ready('all',2026);
+  assert.deepEqual(h.state.chargedAmounts,[30]);
+});
+
+test('a paid previous year remains selectable across New Year for the rest of its 24-hour window',async t=>{
+  const h=await harness();t.after(h.close);
+  h.advance(Date.parse('2026-12-31T14:00:00Z')-Date.parse(fixedNow));
+  h.fill({topic:'annual',fortuneYear:2025});h.submit();await h.ready('annual',2025);
+  h.advance(2*3600000,{focus:true});
+  await waitFor(()=>!h.$('report-product-picker').disabled);
+  assert.ok([...h.$('fortune-year').options].some(option=>option.value==='2025'));
+  h.$('edit-birth').click();h.fill({topic:'annual',fortuneYear:2025});
+  await waitFor(()=>!h.$('open-story').disabled&&/0쭈/.test(h.$('open-story').textContent));
+  assert.ok([...h.$('entry-year').options].some(option=>option.value==='2025'));
+  h.submit();await h.ready('annual',2025);assert.deepEqual(h.state.chargedAmounts,[10]);
+  const previousChecks=h.state.statusCalls.length;
+  h.changeAccount('member-b');h.fill({topic:'annual'});
+  await waitFor(()=>h.state.statusCalls.length>previousChecks&&!h.$('open-story').disabled);
+  assert.equal([...h.$('entry-year').options].some(option=>option.value==='2025'),false,'the next account cannot inherit an owned historical year');
 });

@@ -248,13 +248,16 @@ let entryCheckPending = false;
 let entryCheckTimer;
 let quoteGeneration = 0;
 let currentAccess = null;
+let accessTimer;
 
 function koreanYear(now = new Date()) {
   return Number(new Intl.DateTimeFormat('en', {year:'numeric',timeZone:'Asia/Seoul'}).format(now));
 }
-function fillYears(select, birthYear = 1900, preferred = Number(select.value)) {
+function fillYears(select, birthYear = 1900, preferred = Number(select.value), status=null) {
   const nowYear = koreanYear();
-  const choices = [nowYear-1,nowYear,nowYear+1].filter(year => year >= birthYear && year >= 1900 && year <= 2050);
+  const activeYears=(status?.entitlements||[]).filter(item=>['annual','monthly'].includes(item.topic)&&activeAccess(item)).map(item=>item.year);
+  const choices = [...new Set([nowYear-1,nowYear,nowYear+1,...activeYears])]
+    .filter(year => Number.isInteger(year) && year >= birthYear && year >= 1900 && year <= 2050).sort((a,b)=>a-b);
   select.replaceChildren(...choices.map(year => {
     const option = element('option','',`${year}년${year===nowYear?' · 올해':''}`);
     option.value = String(year);
@@ -277,8 +280,12 @@ function sameTarget(left,right) { return left?.topic===right?.topic && left?.yea
 function includedTargets(target) {
   return target.topic==='all' ? [{topic:'lifelong',year:0},{topic:'annual',year:target.year},{topic:'monthly',year:target.year}] : [target];
 }
+function activeAccess(access) {
+  return Boolean(access?.adminPreview || (access && billing?.isActive(access)));
+}
 function owned(status,target) {
-  return Boolean(status?.adminPreview || status?.bundle_entitlement || includedTargets(target).every(choice=>status?.entitlements?.some(item => item.topic===choice.topic && Number(item.year)===choice.year)));
+  return Boolean(status?.adminPreview || activeAccess(status?.bundle_entitlement)
+    || includedTargets(target).every(choice=>status?.entitlements?.some(item => sameTarget(item,choice) && activeAccess(item))));
 }
 function payable(status,target) {
   return includedTargets(target).reduce((total,choice)=>total+(owned(status,choice)?0:10),0);
@@ -286,6 +293,44 @@ function payable(status,target) {
 function priceLabel(status,target) {
   const price=payable(status,target);
   return target.topic==='all' && price>0 && price<30 ? `남은 ${price}쭈` : `${price}쭈`;
+}
+function accessEndLabel(access) {
+  const date=new Date(access?.expires_at);
+  if (!Number.isFinite(date.getTime())) return '';
+  return `${new Intl.DateTimeFormat('ko-KR',{month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Seoul'}).format(date)}까지`;
+}
+function expireCurrentReading(force=false) {
+  if (!currentDetail || (!force && activeAccess(currentDetail.access))) return false;
+  currentDetail=null;
+  $('report-content').replaceChildren();
+  delete $('report-content').dataset.topic;
+  delete $('report-content').dataset.year;
+  $('report-content').removeAttribute('aria-busy');
+  $('reading-controls').hidden=true;
+  $('report-toc').hidden=true;
+  $('copy-reading').disabled=true;
+  document.querySelector('.birth-chart-details').hidden=true;
+  document.querySelector('.conventions').hidden=true;
+  $('result-warnings').hidden=true;
+  $('other-reading-options').open=true;
+  $('report-status').textContent='24시간 이용이 끝났어요. 다시 볼 풀이를 선택해 결제해 주세요.';
+  return true;
+}
+function scheduleAccessExpiry() {
+  clearTimeout(accessTimer);
+  if (!billing) return;
+  const entry=validEntryQuote()?.status;
+  const current=currentAccess?.owner===billing.user ? currentAccess.status : null;
+  const candidates=[currentDetail?.access,entry?.bundle_entitlement,current?.bundle_entitlement,
+    ...(entry?.entitlements||[]),...(current?.entitlements||[])];
+  const remaining=candidates.filter(access=>access && !access.adminPreview)
+    .map(access=>billing.remainingMs(access)).filter(value=>Number.isFinite(value)&&value>0);
+  if (!remaining.length) return;
+  accessTimer=setTimeout(()=>{
+    expireCurrentReading();
+    updateEntryOffer();
+    if (currentReading) updateProductOffer();
+  },Math.max(1,Math.min(...remaining,2147483647)));
 }
 function readBirth() {
   return {
@@ -315,15 +360,18 @@ function updateEntryOffer() {
   document.querySelectorAll('[data-entry-price]').forEach(value => {
     const topic = value.dataset.entryPrice;
     const choice = {topic,year:topic==='lifelong'?0:Number($('entry-year').value)};
-    value.textContent = preview ? '차감 없음' : owned(quote?.status,choice) ? '구매 완료' : priceLabel(quote?.status,choice);
+    value.textContent = preview ? '차감 없음' : owned(quote?.status,choice) ? '이용 가능' : priceLabel(quote?.status,choice);
   });
   $('entry-price-value').textContent = `${targetLabel(target)} · ${preview?'관리자 미리보기':purchased?'추가 차감 없음':priceLabel(quote?.status,target)}`;
+  submit.dataset.expectedCharge=String(preview?0:payable(quote?.status,target));
+  scheduleAccessExpiry();
   if (busy) return;
   submit.disabled = entryCheckPending || entryQuoteError;
   submit.querySelector('span').textContent = entryCheckPending ? '구매 내역 확인 중…'
     : preview ? `${targetLabel(target)} 미리보기` : purchased ? `${targetLabel(target)} 다시 보기 · 0쭈` : `${priceLabel(quote?.status,target)}로 ${targetLabel(target)} 펼치기`;
 }
 function updateProductOffer() {
+  expireCurrentReading();
   const target = targetFrom('report');
   $('report-year-field').hidden = target.topic==='lifelong';
   const status = currentAccess?.chart===currentReading && currentAccess.owner===billing?.user ? currentAccess.status : null;
@@ -332,14 +380,16 @@ function updateProductOffer() {
   document.querySelectorAll('[data-report-price]').forEach(value => {
     const topic = value.dataset.reportPrice;
     const choice = {topic,year:topic==='lifelong'?0:Number($('fortune-year').value)};
-    value.textContent = status?.adminPreview ? '차감 없음' : owned(status,choice) ? '구매 완료' : priceLabel(status,choice);
+    value.textContent = status?.adminPreview ? '차감 없음' : owned(status,choice) ? '이용 가능' : priceLabel(status,choice);
   });
-  $('product-offer').textContent = `${targetLabel(target)} · ${status?.adminPreview?'관리자 미리보기, 차감 없음':purchased?'구매한 풀이, 추가 차감 없음':status?priceLabel(status,target):'구매 내역 확인 필요'}`;
+  $('product-offer').textContent = `${targetLabel(target)} · ${status?.adminPreview?'관리자 미리보기, 차감 없음':purchased?'이용 시간 안, 다시 보기 0쭈':status?priceLabel(status,target):'구매 내역 확인 필요'}`;
+  $('open-product').dataset.expectedCharge=String(status?.adminPreview?0:payable(status,target));
   $('open-product').disabled = reportBusy || !status || Boolean(current);
   if (!reportBusy) $('open-product').textContent = current ? '현재 보고 있는 풀이'
     : status?.adminPreview ? `${targetLabel(target)} 미리보기` : purchased ? `${targetLabel(target)} 다시 보기 · 0쭈` : `${priceLabel(status,target)}로 ${targetLabel(target)} 펼치기`;
   $('report-product-picker').disabled = reportBusy;
   $('fortune-year').disabled = reportBusy;
+  scheduleAccessExpiry();
 }
 function scheduleEntryCheck() {
   clearTimeout(entryCheckTimer);
@@ -348,7 +398,7 @@ function scheduleEntryCheck() {
   entryQuoteError=false;
   $('entry-check-error').hidden=true;
   if (entryQuote?.signature!==birthSignature()) entryQuote=null;
-  fillYears($('entry-year'),validEntryQuote()?.chart.solar.year || Number($('birth-year').value)||1900);
+  fillYears($('entry-year'),validEntryQuote()?.chart.solar.year || Number($('birth-year').value)||1900,Number($('entry-year').value),validEntryQuote()?.status);
   updateEntryOffer();
   if (!busy && !$('intro').hidden && billingSignedIn && hasBirth() && !validEntryQuote()) entryCheckTimer=setTimeout(()=>void refreshEntryQuote(),180);
 }
@@ -368,7 +418,7 @@ async function refreshEntryQuote() {
     const status=await payment.status(chart);
     if (generation!==quoteGeneration || busy || $('intro').hidden) return;
     entryQuote={signature,chart,status,owner:payment.user};
-    fillYears($('entry-year'),chart.solar.year);
+    fillYears($('entry-year'),chart.solar.year,Number($('entry-year').value),status);
   } catch (error) {
     if (generation!==quoteGeneration || busy || $('intro').hidden) return;
     entryQuote=null;
@@ -407,16 +457,22 @@ async function prepareDetailedReading(chart,target) {
   viewModule.renderDetailedReport(content,{reading,fortune,topic:target.topic});
   return {fortune,reading,content,copyText,target};
 }
-function commitDetailedReading(chart,{fortune,reading,content,copyText,target}) {
+function commitDetailedReading(chart,{fortune,reading,content,copyText,target},access) {
+  if (!activeAccess(access)) throw Object.assign(new Error('이용 시간이 끝났어요. 표시된 금액을 확인한 뒤 다시 펼쳐 주세요.'),{code:'access_expired'});
   $('report-content').replaceChildren(...content.childNodes);
-  currentDetail={chart,topic:target.topic,year:target.year,reading,fortune,copyText};
+  currentDetail={chart,topic:target.topic,year:target.year,reading,fortune,copyText,access};
+  document.querySelector('.birth-chart-details').hidden=false;
+  document.querySelector('.conventions').hidden=false;
+  $('result-warnings').hidden=!$('result-warnings').childElementCount;
   $('report-content').dataset.topic=target.topic;
   $('report-content').dataset.year=String(target.year);
   $('report-content').removeAttribute('aria-busy');
   $('current-report-link').href=target.topic==='monthly'?'#reading-months':`#reading-${target.topic}`;
   $('current-report-label').textContent=target.topic==='all'?'전체 풀이':target.topic==='monthly'?'12개월 풀이':targetLabel(target);
   $('current-reading-title').textContent=`${targetLabel(target)}${target.topic==='monthly'?' · 1~12월 전체':''}`;
-  $('current-reading-note').textContent=currentAccess?.status?.adminPreview?'관리자 미리보기 · 차감 없음':'다시 보기 0쭈';
+  const end=accessEndLabel(access);
+  $('current-reading-note').textContent=access.adminPreview?'관리자 미리보기 · 차감 없음'
+    : `${target.topic==='all'?'각 항목 결제 후 24시간 · 가장 빠른 만료: ':''}${end} · 다시 보기 0쭈`;
   $('reading-controls').hidden=false;
   $('other-reading-options').open=false;
   $('report-toc').hidden=false;
@@ -429,10 +485,13 @@ function commitDetailedReading(chart,{fortune,reading,content,copyText,target}) 
 function recordReceipt(status,receipt,target) {
   const next={...status,coins:receipt.coins??status.coins,entitlements:[...(status.entitlements||[])]};
   if (receipt.adminPreview) next.adminPreview=true;
-  else if (receipt.legacy_bundle) next.bundle_entitlement=next.bundle_entitlement||{price:10};
+  else if (receipt.legacy_bundle) next.bundle_entitlement={...receipt,price:10};
   else {
-    const items=target.topic==='all'?receipt.items:[{...target,price:10,request_id:receipt.request_id}];
-    for (const item of items) if (!next.entitlements.some(current=>sameTarget(current,item))) next.entitlements.push({...item});
+    const items=target.topic==='all'?receipt.items:[receipt];
+    for (const item of items) {
+      next.entitlements=next.entitlements.filter(current=>!sameTarget(current,item));
+      next.entitlements.push({...item});
+    }
   }
   return next;
 }
@@ -444,9 +503,9 @@ function openInitialReport(chart,prepared,status,receipt,signature) {
   reportGeneration++;
   reportBusy=false;
   $('report-product-picker').querySelector(`input[value="${prepared.target.topic}"]`).checked=true;
-  fillYears($('fortune-year'),chart.solar.year,prepared.target.year||koreanYear());
+  fillYears($('fortune-year'),chart.solar.year,prepared.target.year||koreanYear(),access);
   renderReading(chart);
-  commitDetailedReading(chart,prepared);
+  commitDetailedReading(chart,prepared,receipt);
 }
 async function refreshReportAccess() {
   if (!currentReading || reportBusy) return;
@@ -459,11 +518,14 @@ async function refreshReportAccess() {
     const status=await payment.status(chart);
     if (generation!==reportGeneration || currentReading!==chart || $('result').hidden) return;
     currentAccess={chart,owner:payment.user,status};
+    fillYears($('fortune-year'),chart.solar.year,Number($('fortune-year').value),status);
+    if (currentDetail && !owned(status,currentDetail)) expireCurrentReading(true);
     $('report-error').hidden=true;
   } catch {
     if (generation!==reportGeneration || currentReading!==chart) return;
     currentAccess=null;
-    $('report-error-text').textContent='구매 내역을 확인하지 못했어요. 지금 보고 있는 풀이는 유지되며, 새 차감은 하지 않아요.';
+    expireCurrentReading();
+    $('report-error-text').textContent='이용 시간을 확인하지 못했어요. 다시 확인해 주세요.';
     $('report-error').hidden=false;
   } finally {
     if (generation===reportGeneration && currentReading===chart) {
@@ -475,6 +537,8 @@ async function refreshReportAccess() {
 }
 async function openSelectedProduct() {
   if (reportBusy || !currentReading || !currentAccess) return;
+  const clickedCharge=Number($('open-product').dataset.expectedCharge);
+  expireCurrentReading();
   const chart=currentReading,target=targetFrom('report');
   if (sameTarget(currentDetail,target)) return;
   const generation=++reportGeneration;
@@ -495,20 +559,21 @@ async function openSelectedProduct() {
     const prepared=await prepareDetailedReading(chart,target);
     if (generation!==reportGeneration || currentReading!==chart || $('result').hidden) return;
     $('open-product').textContent='선택한 항목의 이용 내역 확인 중…';
-    const receipt=await payment.start(chart,target);
+    const receipt=await payment.start(chart,{...target,expectedCharge:Math.min(clickedCharge,payable(status,target))});
     if (generation!==reportGeneration || currentReading!==chart || $('result').hidden) return;
     if (!receipt?.ok) throw new Error('payment_unverified');
     currentAccess={chart,owner:payment.user,status:recordReceipt(status,receipt,target)};
-    commitDetailedReading(chart,prepared);
+    commitDetailedReading(chart,prepared,receipt);
     if (receipt.replayed) toast('구매한 항목을 추가 차감 없이 다시 펼쳤어요.');
     $('detailed-title').focus({preventScroll:true});
   } catch (error) {
     if (generation!==reportGeneration || currentReading!==chart || $('result').hidden) return;
     if (!inspected) currentAccess=null;
+    expireCurrentReading();
     const message=error?.code&&/[가-힣]/.test(error.message||'')?error.message:'선택한 풀이를 열지 못했어요. 다시 시도해 주세요.';
-    $('report-error-text').textContent=`${message} 현재 보이는 ${targetLabel(currentDetail)}는 그대로 두었어요.`;
+    $('report-error-text').textContent=message;
     $('report-error').hidden=false;
-    $('report-status').textContent=`현재 보는 풀이: ${targetLabel(currentDetail)}`;
+    if (currentDetail) $('report-status').textContent=`현재 보는 풀이: ${targetLabel(currentDetail)}`;
   } finally {
     if (generation===reportGeneration && currentReading===chart && !$('result').hidden) {
       reportBusy=false;
@@ -532,6 +597,7 @@ function updateBillingStatus() {
 function resetAfterAccountChange() {
   submitGeneration++;reportGeneration++;quoteGeneration++;
   clearTimeout(entryCheckTimer);
+  clearTimeout(accessTimer);
   busy=false;reportBusy=false;entryCheckPending=false;entryQuoteError=false;
   currentReading=null;currentDetail=null;currentAccess=null;entryQuote=null;
   $('result').hidden=true;$('intro').hidden=false;
@@ -551,7 +617,7 @@ function resetAfterAccountChange() {
 async function readyBilling() {
   if (billingPromise) return billingPromise;
   const task=(async()=>{
-    const {SajuPayment}=await import('./payment.js?v=20261113-saju-brief1');
+    const {SajuPayment}=await import('./payment.js?v=20261113-saju-24h1');
     billing ||= new SajuPayment({
       onBalance:()=>updateBillingStatus(),
       onAccountChange:()=>{
@@ -577,6 +643,7 @@ async function readyBilling() {
 form.addEventListener('submit',async event=>{
   event.preventDefault();
   if (busy || !form.reportValidity()) return;
+  const clickedCharge=Number(submit.dataset.expectedCharge);
   busy=true;
   const generation=++submitGeneration;
   quoteGeneration++;
@@ -602,7 +669,7 @@ form.addEventListener('submit',async event=>{
     const prepared=await prepareDetailedReading(chart,target);
     if(generation!==submitGeneration)return;
     submit.querySelector('span').textContent='선택한 항목의 이용 내역 확인 중…';
-    const receipt=await payment.start(chart,target);
+    const receipt=await payment.start(chart,{...target,expectedCharge:Math.min(clickedCharge,payable(status,target))});
     if(generation!==submitGeneration)return;
     if(!receipt?.ok)throw new Error('payment_unverified');
     openInitialReport(chart,prepared,status,receipt,signature);
@@ -636,6 +703,9 @@ void readyBilling().catch(()=>{$('payment-status').textContent='이용 정보를
 $('edit-birth').addEventListener('click',()=>{
   reportGeneration++;
   reportBusy=false;currentReading=null;currentDetail=null;currentAccess=null;
+  $('report-content').replaceChildren();
+  delete $('report-content').dataset.topic;
+  delete $('report-content').dataset.year;
   $('copy-reading').disabled=true;$('result').hidden=true;$('intro').hidden=false;
   document.querySelector('.skip-link').href='#birth-form';
   document.querySelector('.skip-link').textContent='출생 정보 입력으로 바로가기';
@@ -645,9 +715,24 @@ $('edit-birth').addEventListener('click',()=>{
 });
 function toast(message){clearTimeout(toastTimer);$('status').textContent=message;$('status').classList.add('is-visible');toastTimer=setTimeout(()=>$('status').classList.remove('is-visible'),2600);}
 $('copy-reading').addEventListener('click',async()=>{
+  if (expireCurrentReading()) { updateProductOffer(); return; }
   if(reportBusy||!currentDetail||currentDetail.chart!==currentReading)return;
   try{await navigator.clipboard.writeText(currentDetail.copyText);toast('풀이와 계산 근거를 복사했어요.');}
   catch{toast('복사 권한을 확인해 주세요. 풀이를 직접 선택해 복사할 수도 있어요.');}
+});
+
+function resumeAccessCheck() {
+  expireCurrentReading();
+  updateEntryOffer();
+  if (currentReading) {
+    updateProductOffer();
+    if (!reportBusy) void refreshReportAccess();
+  } else if (!busy && billingSignedIn && hasBirth()) void refreshEntryQuote();
+}
+window.addEventListener('focus',resumeAccessCheck);
+window.addEventListener('pageshow',resumeAccessCheck);
+document.addEventListener('visibilitychange',()=>{
+  if (document.visibilityState==='visible') resumeAccessCheck();
 });
 
 // An explicit contents link opens the requested supporting information.
