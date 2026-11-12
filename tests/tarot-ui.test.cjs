@@ -19,7 +19,16 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   const { window } = dom;
   const context = dom.getInternalVMContext();
   const nativeTimeout = window.setTimeout.bind(window);
-  window.setTimeout = (fn, ms) => ms >= 2000 ? -1 : nativeTimeout(fn, Math.min(ms, 2));
+  const nativeClearTimeout = window.clearTimeout.bind(window);
+  const deferred = new Map();
+  let nextTimer = -1, clock = Date.parse('2026-11-12T14:59:00Z');
+  window.setTimeout = (fn, ms) => {
+    if (ms < 2000) return nativeTimeout(fn, Math.min(ms, 2));
+    const id = nextTimer--;
+    deferred.set(id, { fn, at: clock + ms });
+    return id;
+  };
+  window.clearTimeout = id => { deferred.delete(id); nativeClearTimeout(id); };
   window.matchMedia = () => ({ matches: true, addEventListener() {} });
   window.scrollTo = () => {};
   window.HTMLElement.prototype.animate = () => ({ finished: Promise.resolve(), cancel() {} });
@@ -38,7 +47,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   window.TarotAudio = class { play() {} setMuted() {} };
   const receipt = {
     topic: 'love', reading_day: paidDay, request_id: 'paid-original',
-    drawn, discarded: [0, 1], openOrder: opened
+    reset_at: new Date(clock + 86400000).toISOString(), drawn, discarded: [0, 1], openOrder: opened
   };
   let payment, revelations = 0;
   window.TarotRevelation = class { play() { revelations++; return Promise.resolve(true); } cancel() {} };
@@ -47,7 +56,8 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
       payment = this;
       this.options = options; this.enabled = true; this.adminPreview = admin;
       this.user = 'account'; this.balance = 40; this.starts = 0; this.saves = 0;
-      this.record = { paid: !pendingTopic, readingDay: paidDay, topic: pendingTopic || receipt.topic };
+      this.record = { paid: !pendingTopic, requestId: receipt.request_id, resetAt: receipt.reset_at, readingDay: paidDay, topic: pendingTopic || receipt.topic };
+      this.resetAt = receipt.reset_at;
     }
     async init() {
       if (pendingTopic) {
@@ -57,10 +67,12 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
       return this.adminPreview ? { signedIn: true, preview: true, adminPreview: true } : { signedIn: true, resume: receipt };
     }
     async refreshAdminMode() { return this.adminPreview; }
-    async refreshToday() {}
-    receiptFor(topic) { return !this.adminPreview && topic === receipt.topic ? receipt : null; }
+    now() { return clock; }
+    async refreshToday() { this.resetAt = clock < Date.parse(receipt.reset_at) ? receipt.reset_at : new Date(clock + 86400000).toISOString(); }
+    receiptFor(topic) { return !this.adminPreview && topic === receipt.topic && clock < Date.parse(receipt.reset_at) ? receipt : null; }
     async start() { this.starts++; return this.adminPreview ? null : receipt; }
     async save() { this.saves++; return null; }
+    clearRecord() { this.record = null; }
     newReading() { if (!this.adminPreview) this.record = null; }
     switchMode(value) { this.adminPreview = value; this.options.onModeChange({ adminPreview: value }); }
   };
@@ -70,7 +82,16 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   const click = selector => $(selector).click();
   const closeReading = () => { if ($('#reading-dialog').open) $('#reading-dialog').close(); };
   const phase = name => $('#app').dataset.phase === name;
-  return { dom, window, $, click, closeReading, phase, payment, receipt, revelations: () => revelations };
+  const advanceTime = async (ms, { runTimers = true } = {}) => {
+    clock += ms;
+    if (runTimers) {
+      for (const [id, task] of [...deferred]) {
+        if (task.at <= clock && deferred.delete(id)) task.fn();
+      }
+    }
+    await settle();
+  };
+  return { dom, window, $, click, closeReading, phase, payment, receipt, advanceTime, revelations: () => revelations };
 }
 
 (async () => {
@@ -189,9 +210,142 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   assert.equal(admin.$('#summon-button span').textContent, '10쭈로 운세 시작하기');
   admin.click('[data-topic="overall"]');
   assert.equal(admin.$('#summon-button span').textContent, '30쭈로 운세 시작하기');
-  assert.equal(admin.$('#daily-limit-note').textContent, '분야별 하루 1회 · 한국시간 밤 12시에 새 운세');
+  assert.equal(admin.$('#daily-limit-note').textContent, '결제 후 24시간 이용 · 만료 후 재결제');
   assert.equal(admin.$('#reading-open').hidden, true);
   assert.equal(admin.$('#reading-open span').textContent, '이 카드의 이야기 자세히 읽기');
   admin.dom.window.close();
-  console.log('PASS tarot UI: combined lower result, individual cards, repeatable admin preview and mode reset');
+
+  // Crossing midnight keeps the purchased reading; exactly 24 hours closes it.
+  const expires = await page();
+  expires.click('#reading-open');
+  await until(() => expires.$('#result-dialog').open);
+  await expires.advanceTime(120000);
+  expires.window.dispatchEvent(new expires.window.Event('focus'));
+  await settle();
+  assert.equal(expires.phase('complete'), true, 'Korean midnight does not end a 24-hour purchase');
+  assert.equal(expires.$('#result-dialog').open, true);
+  await expires.advanceTime(86400000 - 120000 - 1);
+  assert.equal(expires.$('#result-dialog').open, true, 'reading remains open immediately before expiry');
+  await expires.advanceTime(1);
+  await until(() => expires.phase('intro'));
+  assert.equal(expires.$('#result-dialog').open, false);
+  assert.equal(expires.$('#result-one-line').textContent, '');
+  assert.equal(expires.$('#summary-text').textContent, '');
+  assert.ok([...expires.window.document.querySelectorAll('.front-title strong')].every(node => node.textContent === ''));
+  assert.equal(expires.payment.record, null);
+  assert.equal(expires.payment.starts, 0, 'expiry never automatically purchases a new reading');
+  assert.equal(expires.$('#summon-button span').textContent, '10쭈로 운세 시작하기');
+  assert.match(expires.$('#payment-status').textContent, /만료.*다시 결제/);
+  expires.dom.window.close();
+
+  // A suspended tab can miss its timer; direct card/result actions still expire.
+  for (const action of ['.card[data-index="2"]', '#reading-open', '#copy-result']) {
+    const suspended = await page();
+    if (action === '#copy-result') {
+      suspended.click('#reading-open');
+      await until(() => suspended.$('#result-dialog').open);
+    }
+    await suspended.advanceTime(86400000, { runTimers: false });
+    suspended.click(action);
+    await until(() => suspended.phase('intro'));
+    assert.equal(suspended.$('#reading-dialog').open, false);
+    assert.equal(suspended.$('#result-dialog').open, false);
+    assert.equal(suspended.payment.starts, 0);
+    suspended.dom.window.close();
+  }
+
+  // Returning to an expired tab removes already visible individual explanations.
+  const returned = await page({ opened: [2] });
+  returned.click('#reading-open');
+  assert.equal(returned.$('#reading-dialog').open, true);
+  await returned.advanceTime(86400000, { runTimers: false });
+  returned.window.dispatchEvent(new returned.window.Event('pageshow'));
+  await until(() => returned.phase('intro'));
+  assert.equal(returned.$('#reading-dialog').open, false);
+  assert.equal(returned.$('#reading-sections').textContent, '');
+  returned.dom.window.close();
+
+  // Another topic's earlier expiry must not close this topic's valid reading.
+  const independent = await page();
+  independent.payment.resetAt = new Date(independent.payment.now() + 60000).toISOString();
+  await independent.advanceTime(60001);
+  independent.window.dispatchEvent(new independent.window.Event('focus'));
+  await settle();
+  assert.equal(independent.phase('complete'), true);
+  assert.ok(independent.payment.record);
+  independent.dom.window.close();
+
+  // A suspended intro still showing a free CTA cannot silently become a charge.
+  const staleFree = await page();
+  staleFree.click('#restart-small');
+  await until(() => staleFree.phase('intro'));
+  await settle();
+  assert.equal(staleFree.payment.record, null);
+  assert.equal(staleFree.$('#summon-button span').textContent, '점괘 다시 보기');
+  assert.equal(staleFree.$('#summon-button').dataset.replay, 'true');
+  await staleFree.advanceTime(86400000, { runTimers: false });
+  assert.equal(staleFree.$('#summon-button').dataset.replay, 'true', 'the suspended page still displays the old free action');
+  staleFree.click('#summon-button');
+  await settle();
+  assert.equal(staleFree.payment.starts, 0, 'the stale free click does not invoke billing');
+  assert.equal(staleFree.phase('intro'), true);
+  assert.equal(staleFree.$('#summon-button span').textContent, '10쭈로 운세 시작하기');
+  assert.match(staleFree.$('#payment-status').textContent, /만료.*다시 결제/);
+  staleFree.dom.window.close();
+
+  // An earlier topic's refresh can hang; this reading still expires locally.
+  const hungRefresh = await page();
+  hungRefresh.click('#reading-open');
+  await until(() => hungRefresh.$('#result-dialog').open);
+  let releaseStatus;
+  const blockedStatus = new Promise(resolve => { releaseStatus = resolve; });
+  hungRefresh.payment.resetAt = new Date(hungRefresh.payment.now() + 60000).toISOString();
+  hungRefresh.payment.refreshToday = () => blockedStatus;
+  hungRefresh.window.dispatchEvent(new hungRefresh.window.Event('focus'));
+  await settle();
+  await hungRefresh.advanceTime(60000);
+  assert.equal(hungRefresh.phase('complete'), true, 'the first topic deadline does not expire this result');
+  await hungRefresh.advanceTime(86400000 - 60000);
+  await until(() => hungRefresh.phase('intro'));
+  assert.equal(hungRefresh.$('#result-dialog').open, false, 'local expiry does not wait for the hanging RPC');
+  assert.equal(hungRefresh.$('#summary-text').textContent, '');
+  assert.equal(hungRefresh.payment.starts, 0);
+  releaseStatus();
+  await settle();
+  hungRefresh.dom.window.close();
+
+  // A delayed clipboard rejection cannot recreate the cleared reading as a textarea.
+  const delayedCopy = await page();
+  delayedCopy.click('#reading-open');
+  await until(() => delayedCopy.$('#result-dialog').open);
+  let rejectCopy, copyCalls = 0;
+  Object.defineProperty(delayedCopy.window.navigator, 'clipboard', { value: {
+    writeText(text) {
+      assert.ok(text.includes('종합 점괘'));
+      copyCalls++;
+      return new Promise((_resolve, reject) => { rejectCopy = reject; });
+    }
+  } });
+  delayedCopy.window.document.execCommand = () => false;
+  delayedCopy.click('#copy-result');
+  assert.equal(copyCalls, 1);
+  await delayedCopy.advanceTime(86400000);
+  await until(() => delayedCopy.phase('intro'));
+  rejectCopy(new Error('clipboard permission denied after expiry'));
+  await settle();
+  assert.equal(delayedCopy.$('#result-dialog').open, false);
+  assert.equal(delayedCopy.$('#result-dialog').querySelectorAll('textarea').length, 0);
+  assert.equal(delayedCopy.$('#summary-text').textContent, '');
+  assert.equal(delayedCopy.payment.starts, 0);
+  delayedCopy.dom.window.close();
+
+  const freePreview = await page({ admin: true });
+  freePreview.click('#summon-button');
+  await until(() => freePreview.phase('discard'));
+  await freePreview.advanceTime(86400001);
+  freePreview.window.dispatchEvent(new freePreview.window.Event('focus'));
+  await settle();
+  assert.equal(freePreview.phase('discard'), true, 'administrator preview has no paid expiry');
+  freePreview.dom.window.close();
+  console.log('PASS tarot UI: readings, preview mode, rolling 24-hour expiry, suspended tabs, hung status, delayed clipboard and no automatic repurchase');
 })().catch(error => { console.error(error); process.exitCode = 1; });

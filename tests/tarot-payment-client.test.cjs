@@ -11,13 +11,16 @@ const prefix = (a, b) => a.length <= b.length && a.every((value, index) => value
 const deferred = () => { let resolve; const promise = new Promise(done => { resolve = done; }); return { promise, resolve }; };
 
 function harness() {
-  const clock = { now: Date.parse('2026-11-12T10:00:00Z') };
+  const clock = { now: Date.parse('2026-11-12T10:00:00Z'), localSkew: 0 };
+  const clockOrigin = clock.now;
   const server = {
     clock, owner: 'member-a', coins: new Map([['member-a', 40], ['member-b', 40]]), receipts: new Map(), daily: new Map(), requests: [],
     losePurchase: false, loseSave: false, beforeBuy: null, beforeSave: null, beforeAdmin: null, admins: new Set(),
     day() { return new Date(clock.now + 9 * 60 * 60 * 1000).toISOString().slice(0, 10); },
-    resetAt() { return new Date(Date.parse(`${this.day()}T00:00:00+09:00`) + 86400000).toISOString(); },
-    value(record, extra = {}) { return { ...plain(record), coins: this.coins.get(record.owner), ...extra }; },
+    resetAt() { return new Date(clock.now + 86400000).toISOString(); },
+    active(owner) { return [...this.daily.values()].filter(item => item.owner === owner && Date.parse(item.reset_at) > clock.now); },
+    value(record, extra = {}) { return { ...plain(record), server_now: new Date(clock.now).toISOString(), coins: this.coins.get(record.owner), ...extra }; },
+    expired(record) { return { ok: false, reason: 'expired', request_id: record.request_id, topic: record.topic, reset_at: record.reset_at, server_now: new Date(clock.now).toISOString(), coins: this.coins.get(record.owner) }; },
     async rpc(name, args = {}) {
       const owner = this.owner;
       this.requests.push({ name, args: plain(args), owner });
@@ -27,13 +30,15 @@ function harness() {
         return { data: this.admins.has(owner) };
       }
       if (name === 'tarot_reading_today_v1') return { data: {
-        ok: true, reading_day: this.day(), reset_at: this.resetAt(), coins: this.coins.get(owner),
-        readings: [...this.daily.values()].filter(item => item.owner === owner && item.reading_day === this.day()).map(item => this.value(item))
+        ok: true, reading_day: this.day(), server_now: new Date(clock.now).toISOString(),
+        reset_at: this.active(owner).map(item => item.reset_at).sort()[0] || this.resetAt(), coins: this.coins.get(owner),
+        readings: this.active(owner).map(item => this.value(item))
       } };
       if (name === 'tarot_reading_save_v1') {
         if (this.beforeSave) await this.beforeSave();
         const item = this.receipts.get(args.p_request_id);
         if (!item || item.owner !== owner || this.daily.get(`${owner}:${item.reading_day}:${item.topic}`)?.request_id !== item.request_id) return { data: { ok: false, reason: 'not_found' } };
+        if (Date.parse(item.reset_at) <= clock.now) return { data: this.expired(item) };
         const discarded = args.p_discarded, opened = args.p_open_order;
         if (prefix(discarded, item.discarded) && prefix(opened, item.open_order)) return { data: this.value(item) };
         if (!prefix(item.discarded, discarded) || !prefix(item.open_order, opened)) return { data: { ok: false, reason: 'progress_conflict', receipt: this.value(item) } };
@@ -46,10 +51,11 @@ function harness() {
       const exact = this.receipts.get(args.p_request_id);
       if (exact) {
         if (exact.owner !== owner || exact.topic !== args.p_topic) return { data: { ok: false, reason: 'request_conflict' } };
+        if (Date.parse(exact.reset_at) <= clock.now) return { data: this.expired(exact) };
         return { data: this.value(exact, { replayed: true }) };
       }
       const dailyKey = `${owner}:${this.day()}:${args.p_topic}`;
-      const previous = this.daily.get(dailyKey);
+      const previous = this.active(owner).find(item => item.topic === args.p_topic);
       if (previous) return { data: this.value(previous, { replayed: true, daily_replayed: true }) };
       if (args.p_verify_only) return { data: { ok: false, reason: 'not_found', coins: this.coins.get(owner) } };
       const price = args.p_topic === 'overall' ? 30 : 10;
@@ -68,7 +74,7 @@ function harness() {
   };
   function page(storage = new Map(), extra = {}) {
     const authChanges = [], listeners = new Map();
-    class ClockDate extends Date { constructor(...args) { super(...(args.length ? args : [clock.now])); } static now() { return clock.now; } }
+    class ClockDate extends Date { constructor(...args) { super(...(args.length ? args : [clock.now + clock.localSkew])); } static now() { return clock.now + clock.localSkew; } }
     const context = {
       window: { addEventListener: (type, listener) => {
         if (!listeners.has(type)) listeners.set(type, []);
@@ -80,7 +86,7 @@ function harness() {
           onAuthStateChange: fn => { authChanges.push(fn); return { data: { subscription: { unsubscribe() {} } } }; } },
         rpc: (...args) => server.rpc(...args)
       } },
-      crypto: { randomUUID }, Date: ClockDate, setTimeout, queueMicrotask,
+      crypto: { randomUUID }, Date: ClockDate, performance: { now: () => clock.now - clockOrigin }, setTimeout, queueMicrotask,
       document: { readyState: 'loading', addEventListener() {} },
       CustomEvent: class { constructor(type, init) { this.type = type; this.detail = init.detail; } },
       localStorage: { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) }, console
@@ -156,31 +162,42 @@ function harness() {
   assert.equal(legacyResume.request_id, originalId);
   assert.deepEqual(plain(legacyResume.openOrder), [4, 1, 3]);
 
-  // KST midnight changes availability, without reopening yesterday automatically.
+  // Midnight does not shorten the 24-hour entitlement or lose saved cards.
   server.clock.now = Date.parse('2026-11-12T14:59:59Z');
   assert.ok(restored.receiptFor('love'));
   server.clock.now = Date.parse('2026-11-12T15:00:00Z');
-  assert.equal(restored.receiptFor('love'), null);
+  assert.ok(restored.receiptFor('love'));
+  const afterDateChange = page(first.storage).payment;
+  const afterDateInit = await afterDateChange.init();
+  assert.equal(afterDateInit.resume.request_id, originalId);
+  assert.equal(afterDateChange.day, '2026-11-13');
+  assert.equal(afterDateInit.resume.reading_day, '2026-11-12');
+  assert.equal((await afterDateChange.start('love')).request_id, originalId);
+  assert.equal(server.coins.get('member-a'), 0, 'free replay survives midnight with zero balance');
+  server.clock.now = Date.parse('2026-11-13T09:59:59.999Z');
+  assert.ok(restored.receiptFor('love'), 'receipt remains active one millisecond before 24 hours');
+  server.clock.now++;
+  assert.equal(restored.receiptFor('love'), null, 'exactly 24 hours is expired');
   const tomorrow = page(first.storage).payment;
   const tomorrowInit = await tomorrow.init();
   assert.equal(tomorrowInit.resume, undefined);
+  assert.equal(tomorrowInit.expired, true);
   assert.equal(tomorrow.record, null);
-  assert.equal(tomorrow.day, '2026-11-13');
   const pastLegacy = page();
   pastLegacy.storage.set('ojjuda.tarot.session.v1.member-a', JSON.stringify({ owner: 'member-a', requestId: legacyId, topic: 'love', discarded: [1, 2], openOrder: [0] }));
   const savesBefore = server.requests.filter(call => call.name === 'tarot_reading_save_v1').length;
-  assert.equal((await pastLegacy.payment.init()).resume, undefined);
+  assert.equal((await pastLegacy.payment.init()).expired, true);
   assert.equal(pastLegacy.payment.record, null);
-  assert.equal(server.requests.filter(call => call.name === 'tarot_reading_save_v1').length, savesBefore, 'yesterday’s legacy duplicate cannot lock the chooser by retrying a save');
+  assert.equal(server.requests.filter(call => call.name === 'tarot_reading_save_v1').length, savesBefore, 'expired legacy duplicates cannot retry their old saves');
   const failedLegacyInit = page();
   failedLegacyInit.storage.set('ojjuda.tarot.session.v1.member-a', JSON.stringify({ owner: 'member-a', requestId: legacyId, topic: 'love', discarded: [1, 2], openOrder: [0] }));
   const normalRpc = server.rpc;
   server.rpc = async () => ({ error: { message: 'temporary status outage' } });
   await assert.rejects(failedLegacyInit.payment.init(), error => error.code === 'network');
   server.rpc = normalRpc;
-  await assert.rejects(failedLegacyInit.payment.start('love'), error => error.code === 'progress_missing');
-  assert.equal(failedLegacyInit.payment.record, null, 'a missing legacy save releases the stale draft after a server status refresh');
-  assert.equal(server.coins.get('member-a'), 0, 'legacy recovery never buys another reading automatically');
+  await assert.rejects(failedLegacyInit.payment.start('love'), error => error.code === 'expired');
+  assert.equal(failedLegacyInit.payment.record, null, 'server expiry releases the stale uncertain draft');
+  assert.equal(server.coins.get('member-a'), 0, 'expired recovery never buys another reading automatically');
   await assert.rejects(tomorrow.start('love'), error => error.code === 'coins');
   assert.equal(tomorrow.record, null);
   server.coins.set('member-a', 10);
@@ -260,8 +277,8 @@ function harness() {
   overnight.server.clock.now = Date.parse('2026-11-12T15:00:01Z');
   const afterMidnight = overnight.page(beforeMidnight.storage).payment;
   const afterMidnightInit = await afterMidnight.init();
-  assert.equal(afterMidnightInit.resume, undefined);
-  assert.equal(afterMidnight.record, null);
+  assert.equal(afterMidnightInit.resume.request_id, previousId);
+  assert.equal(afterMidnight.record.requestId, previousId);
   assert.equal(overnight.server.receipts.size, 1);
   assert.equal(overnight.server.coins.get('member-a'), 30);
   assert.equal(overnight.server.requests.at(-1).args.p_request_id, previousId);
@@ -447,8 +464,105 @@ function harness() {
   assert.equal(lowBalance.server.receipts.size, 0);
   assert.equal((await lowBalancePage.payment.start('money')).price, 10);
 
-  console.log('PASS: four independent daily topics, free canonical replay, server progress across devices, conflict recovery, KST midnight and yesterday handling.');
+  // Different purchase times have independent expiries, even with a wrong device clock.
+  const staggered = harness();
+  staggered.server.clock.localSkew = 3 * 86400000;
+  const skewedPage = staggered.page();
+  await skewedPage.payment.init();
+  assert.equal(skewedPage.payment.now(), staggered.server.clock.now, 'initial server response corrects wall-clock skew');
+  const early = await skewedPage.payment.start('love');
+  staggered.server.clock.now += 3600000;
+  skewedPage.payment.newReading();
+  const later = await skewedPage.payment.start('money');
+  staggered.server.clock.localSkew -= 7 * 86400000;
+  staggered.server.clock.now = Date.parse(early.reset_at) - 1;
+  assert.ok(skewedPage.payment.receiptFor('love'));
+  assert.ok(skewedPage.payment.receiptFor('money'));
+  assert.equal(skewedPage.payment.now(), staggered.server.clock.now, 'changing the wall clock cannot extend the window');
+  staggered.server.clock.now++;
+  assert.equal(skewedPage.payment.receiptFor('love'), null);
+  assert.equal(skewedPage.payment.receiptFor('money').request_id, later.request_id);
+  await skewedPage.payment.refreshToday();
+  assert.equal(skewedPage.payment.resetAt, later.reset_at, 'timer advances to the next topic expiry');
+  staggered.server.clock.now = Date.parse(later.reset_at);
+  const savesBeforeExpiry = staggered.server.requests.filter(item => item.name === 'tarot_reading_save_v1').length;
+  await assert.rejects(skewedPage.payment.save({ discarded: [0], openOrder: [] }), error => error.code === 'expired');
+  assert.equal(skewedPage.payment.record, null);
+  assert.equal(staggered.server.requests.filter(item => item.name === 'tarot_reading_save_v1').length, savesBeforeExpiry);
+  assert.equal(staggered.server.coins.get('member-a'), 20);
+
+  // An uncertain, already charged UUID expires without silently buying a replacement.
+  const expiredRetry = harness();
+  const lostPage = expiredRetry.page();
+  await lostPage.payment.init();
+  expiredRetry.server.losePurchase = true;
+  await assert.rejects(lostPage.payment.start('love'), error => error.code === 'network');
+  const expiredRequestId = lostPage.payment.record.requestId;
+  expiredRetry.server.clock.now += 86400000;
+  await assert.rejects(lostPage.payment.start('love'), error => error.code === 'expired');
+  assert.equal(lostPage.payment.record, null);
+  assert.equal(expiredRetry.server.receipts.size, 1);
+  assert.equal(expiredRetry.server.coins.get('member-a'), 30);
+  const repurchased = await lostPage.payment.start('love');
+  assert.notEqual(repurchased.request_id, expiredRequestId, 'the next explicit paid start gets a fresh UUID');
+  assert.equal(expiredRetry.server.coins.get('member-a'), 20);
+
+  // A free-reopen click that crosses the boundary must return to paid confirmation.
+  const crossing = harness();
+  const crossingPage = crossing.page();
+  await crossingPage.payment.init();
+  const crossingReceipt = await crossingPage.payment.start('work');
+  crossingPage.payment.newReading();
+  crossing.server.clock.now = Date.parse(crossingReceipt.reset_at) - 1;
+  crossing.server.beforeAdmin = async () => { crossing.server.clock.now++; };
+  await assert.rejects(crossingPage.payment.start('work'), error => error.code === 'expired');
+  assert.equal(crossing.server.coins.get('member-a'), 30);
+  assert.equal(crossing.server.receipts.size, 1);
+  crossing.server.beforeAdmin = null;
+  assert.notEqual((await crossingPage.payment.start('work')).request_id, crossingReceipt.request_id);
+  assert.equal(crossing.server.coins.get('member-a'), 20);
+
+  // Expiry while saving clears progress and cannot keep the expired reading open.
+  const savingExpiry = harness();
+  const savingPage = savingExpiry.page();
+  await savingPage.payment.init();
+  const savingReceipt = await savingPage.payment.start('money');
+  savingExpiry.server.beforeSave = async () => { savingExpiry.server.clock.now = Date.parse(savingReceipt.reset_at); };
+  await assert.rejects(savingPage.payment.save({ discarded: [1], openOrder: [] }), error => error.code === 'expired');
+  assert.equal(savingPage.payment.record, null);
+  assert.equal(savingPage.payment.receiptFor('money'), null);
+  assert.equal(savingExpiry.server.coins.get('member-a'), 30);
+
+  // An old response delivered after UI expiry and a new purchase cannot rewind
+  // server time or overwrite the new receipt with old saved progress.
+  const staleSave = harness();
+  const stalePage = staleSave.page();
+  await stalePage.payment.init();
+  const oldReceipt = await stalePage.payment.start('love');
+  const responseReady = deferred(), responseGate = deferred();
+  const underlyingRpc = staleSave.server.rpc;
+  staleSave.server.rpc = async function(name, args) {
+    const response = await underlyingRpc.call(this, name, args);
+    if (name === 'tarot_reading_save_v1') { responseReady.resolve(); await responseGate.promise; }
+    return response;
+  };
+  const lateSave = stalePage.payment.save({ discarded: [2], openOrder: [] });
+  await responseReady.promise;
+  staleSave.server.clock.now = Date.parse(oldReceipt.reset_at);
+  stalePage.payment.clearRecord();
+  await stalePage.payment.refreshToday();
+  const replacementReceipt = await stalePage.payment.start('love');
+  const oldSaveRejected = assert.rejects(lateSave, error => error.code === 'expired');
+  responseGate.resolve();
+  await oldSaveRejected;
+  assert.equal(stalePage.payment.record.requestId, replacementReceipt.request_id);
+  assert.deepEqual(plain(stalePage.payment.record.discarded), []);
+  assert.equal(stalePage.payment.now(), staleSave.server.clock.now, 'stale server_now cannot rewind the anchored clock');
+  assert.equal(staleSave.server.coins.get('member-a'), 20);
+
+  console.log('PASS: independent 24-hour topics, exact expiry, cross-midnight free replay, server progress across devices and conflict recovery.');
   console.log('PASS: preview/guest safety, lost purchase/save responses, same-ID concurrent retry, delayed original POST, overnight pending receipt, storage-before-charge.');
   console.log('PASS: verified administrator switch, repeated fresh previews without billing, paid-state preservation, OFF daily replay, spoof/revocation safety, account and in-flight mode changes.');
+  console.log('PASS: independent expiry, monotonic server clock, expired uncertain retries, boundary reopen/save and stale in-flight response isolation.');
   console.log('PASS: quoted overall 30 ju, other topics 10 ju, stale-price rejection, 29-ju balance and lost 30-ju response recovery.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

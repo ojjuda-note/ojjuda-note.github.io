@@ -17,6 +17,7 @@ const messages = {
   progress_conflict: '다른 화면에 저장된 오늘의 점괘를 불러왔어요.',
   progress_network: '선택을 저장하는 중 연결이 끊겼어요. 이어보기를 눌러 다시 확인해 주세요.',
   progress_missing: '이전 점괘의 진행을 이어갈 수 없어요. 주제를 다시 골라 주세요.',
+  expired: '24시간이 지나 풀이가 만료됐어요. 다시 결제해 주세요.',
   mode_changed: '이용 모드가 바뀌었어요. 확인한 뒤 다시 시작해 주세요.',
   storage_unavailable: '진행 상황을 저장할 수 없어 운세를 시작하지 않았어요. 브라우저에서 이 사이트의 데이터 저장을 허용해 주세요.',
   invalid: '운세를 불러오지 못했어요. 아지트로 돌아가 다시 열어 주세요.',
@@ -68,6 +69,7 @@ export class TarotPayment {
     this.balance = null;
     this.day = null;
     this.resetAt = null;
+    this.clockAnchor = null;
     this.readings = new Map();
     this.todayRequest = null;
     this.saveQueue = Promise.resolve();
@@ -147,9 +149,40 @@ export class TarotPayment {
     this.balance = value;
     this.onBalance(value);
   }
+  now() {
+    if (!this.clockAnchor) return Date.now();
+    const monotonic = globalThis.performance?.now?.();
+    const elapsed = Number.isFinite(monotonic) && Number.isFinite(this.clockAnchor.monotonic)
+      ? monotonic - this.clockAnchor.monotonic : Date.now() - this.clockAnchor.local;
+    return this.clockAnchor.server + Math.max(0, elapsed);
+  }
+  syncClock(value) {
+    const server = Date.parse(value?.server_now);
+    if (!Number.isFinite(server)) return;
+    // A delayed older response cannot rewind the clock and revive an expired result.
+    this.clockAnchor = { server: this.clockAnchor ? Math.max(server, this.now()) : server,
+      local: Date.now(), monotonic: globalThis.performance?.now?.() };
+  }
+  isExpired(value = this.record) {
+    const expiry = Date.parse(value?.reset_at ?? value?.resetAt);
+    return Number.isFinite(expiry) && this.now() >= expiry;
+  }
+  updateResetAt(fallback = this.resetAt) {
+    const expiries = [...this.readings.values()].map(item => Date.parse(item.reset_at)).filter(time => time > this.now());
+    this.resetAt = expiries.length ? new Date(Math.min(...expiries)).toISOString()
+      : Date.parse(fallback) > this.now() ? fallback : null;
+  }
+  expireRecord(value = this.record) {
+    if (!value) return;
+    const id = value.request_id ?? value.requestId;
+    if (this.readings.get(value.topic)?.request_id === id) this.readings.delete(value.topic);
+    if (this.record?.requestId === id) this.clearRecord();
+    this.updateResetAt();
+  }
   receiptFor(topic) {
-    if (this.adminPreview || !this.day || Date.now() >= Date.parse(this.resetAt)) return null;
-    return this.readings.get(topic) || null;
+    if (this.adminPreview) return null;
+    const value = this.readings.get(topic);
+    return value && !this.isExpired(value) ? value : null;
   }
   async rpc(name, args = {}) {
     if (!this.client || !this.user) throw problem('not_signed_in');
@@ -160,6 +193,7 @@ export class TarotPayment {
       if (error.code === '42501' || /not_signed_in|JWT expired/i.test(error.message || '')) throw problem('not_signed_in');
       throw problem();
     }
+    this.syncClock(data?.server_now ? data : data?.receipt);
     return data;
   }
   async refreshToday() {
@@ -170,10 +204,11 @@ export class TarotPayment {
       if (!data?.ok) throw problem(data?.reason);
       if (!/^\d{4}-\d{2}-\d{2}$/.test(data.reading_day || '') || !Number.isFinite(Date.parse(data.reset_at)) || !Array.isArray(data.readings)) throw problem('invalid');
       const readings = data.readings.map(receipt);
-      if (readings.some(item => item.reading_day !== data.reading_day) || new Set(readings.map(item => item.topic)).size !== readings.length) throw problem('invalid');
+      if (new Set(readings.map(item => item.topic)).size !== readings.length) throw problem('invalid');
       this.day = data.reading_day;
       this.resetAt = data.reset_at;
-      this.readings = new Map(readings.map(item => [item.topic, item]));
+      this.readings = new Map(readings.filter(item => !this.isExpired(item)).map(item => [item.topic, item]));
+      this.updateResetAt(data.reset_at);
       this.setBalance(data.coins);
       return data;
     })();
@@ -182,12 +217,11 @@ export class TarotPayment {
   }
   adopt(value) {
     const result = receipt(value);
-    // A purchase may cross midnight while the status request is in flight.
-    if (!this.day || result.reading_day > this.day) {
-      this.day = result.reading_day;
-      this.resetAt = result.reset_at;
-      this.readings.clear();
+    if (this.isExpired(result)) {
+      this.expireRecord(result);
+      throw problem('expired');
     }
+    if (!this.day || result.reading_day > this.day) this.day = result.reading_day;
     const record = {
       owner: this.user, requestId: result.request_id, topic: result.topic,
       readingDay: result.reading_day, resetAt: result.reset_at, paid: true, serverProgress: true,
@@ -195,14 +229,14 @@ export class TarotPayment {
     };
     // A confirmed receipt is recoverable from the server even if storage fills later.
     try { this.write(record); } catch { this.record = record; }
-    if (result.reading_day === this.day) this.readings.set(result.topic, result);
+    this.readings.set(result.topic, result);
+    this.updateResetAt(result.reset_at);
     this.setBalance(result.coins);
     return result;
   }
   async resume(value, draft) {
-    // Before the daily rule, a member could have bought this topic more than once.
-    // Keep today's chosen server receipt instead of retrying a legacy duplicate.
-    const canonical = value.reading_day === this.day ? this.readings.get(value.topic) : null;
+    // Keep the active canonical receipt instead of retrying a legacy duplicate.
+    const canonical = this.receiptFor(value.topic);
     let result = this.adopt(canonical && canonical.request_id !== value.request_id ? canonical : value);
     // Preserve an interrupted save or progress from the pre-daily-limit client.
     if (draft?.requestId === result.request_id && (draft.unsynced || !draft.serverProgress)) {
@@ -241,6 +275,7 @@ export class TarotPayment {
       this.balance = null;
       this.day = null;
       this.resetAt = null;
+      this.clockAnchor = null;
       this.readings.clear();
       this.onAccountChange();
     });
@@ -253,31 +288,29 @@ export class TarotPayment {
     this.checkMode(owner, version);
     const draft = this.record;
     if (!draft) return { signedIn: true };
-    // A known yesterday's reading must not replace today's topic chooser.
-    if (draft.paid && draft.readingDay !== this.day && !draft.unsynced) {
-      this.clearRecord();
-      return { signedIn: true };
-    }
+    // The server verifies old local dates and expiry metadata before restoration.
     const result = await this.request(draft, true);
     this.checkMode(owner, version);
-    // A missing receipt may still be in transit. Keep its UUID even across midnight.
-    if (result?.reason === 'not_found') return { signedIn: true, pending: draft };
+    if (result?.reason === 'expired') {
+      this.expireRecord(draft);
+      this.setBalance(result.coins);
+      return { signedIn: true, expired: true };
+    }
+    // A missing uncertain payment may still be in transit. Keep its UUID.
+    if (result?.reason === 'not_found') {
+      if (draft.paid) { this.clearRecord(); return { signedIn: true }; }
+      return { signedIn: true, pending: draft };
+    }
     if (!result?.ok) throw problem(result?.reason);
-    // Verify yesterday's uncertain payment, but do not try to save legacy choices
-    // into a duplicate receipt that was not selected for the daily archive.
-    const verified = receipt(result);
-    if (verified.reading_day < this.day) {
-      this.clearRecord();
-      this.setBalance(verified.coins);
-      return { signedIn: true };
+    try {
+      const restored = await this.resume(receipt(result), draft);
+      this.checkMode(owner, version);
+      return { signedIn: true, resume: restored };
+    } catch (error) {
+      if (error.code !== 'expired') throw error;
+      this.expireRecord(draft);
+      return { signedIn: true, expired: true };
     }
-    const restored = await this.resume(verified, draft);
-    this.checkMode(owner, version);
-    if (restored.reading_day !== this.day) {
-      this.clearRecord();
-      return { signedIn: true };
-    }
-    return { signedIn: true, resume: restored };
   }
   request(record, verifyOnly) {
     return this.rpc('tarot_reading_buy_v2', {
@@ -290,6 +323,7 @@ export class TarotPayment {
     if (!this.user) throw problem('not_signed_in');
     if (!TOPICS.has(topic)) throw problem('invalid');
     const owner = this.user, version = this.modeVersion;
+    const reopening = this.receiptFor(topic);
     this.pending = (async () => {
       await this.refreshAdminMode();
       // A click on the free preview must never turn into a paid request when
@@ -301,9 +335,14 @@ export class TarotPayment {
       const draft = this.record || this.read();
       const uncertain = draft && (!draft.paid || draft.unsynced);
       const previous = this.receiptFor(topic);
+      // A free reopen that expires during verification must not become a charge.
+      if (!previous && (reopening || (!uncertain && draft?.paid && draft.topic === topic && this.isExpired(draft)))) {
+        this.expireRecord(reopening || draft);
+        throw problem('expired');
+      }
       const record = uncertain ? draft : previous ? {
         owner: this.user, requestId: previous.request_id, topic: previous.topic,
-        paid: true, readingDay: previous.reading_day, discarded: previous.discarded, openOrder: previous.openOrder
+        paid: true, readingDay: previous.reading_day, resetAt: previous.reset_at, discarded: previous.discarded, openOrder: previous.openOrder
       } : { owner: this.user, requestId: crypto.randomUUID(), topic, quotedPrice: getTarotPrice(topic), paid: false, discarded: [], openOrder: [] };
       // Persist a new request BEFORE sending it, so retries can never buy twice.
       if (!record.paid) this.write(record);
@@ -312,6 +351,7 @@ export class TarotPayment {
       // purchase. Turning preview off recovers that receipt without repaying.
       this.checkMode(owner, version);
       if (!result?.ok) {
+        if (result?.reason === 'expired') this.expireRecord(record);
         if (['coins', 'price_changed', 'banned', 'member_required', 'wallet_unavailable', 'invalid'].includes(result?.reason)) this.clearRecord();
         if (Number.isInteger(result?.coins)) this.setBalance(result.coins);
         throw problem(result?.reason, result?.price ?? getTarotPrice(record.topic));
@@ -327,6 +367,7 @@ export class TarotPayment {
   save(value) {
     if (!this.enabled || this.adminPreview || !this.record) return Promise.resolve(null);
     if (this.previewRun) return Promise.reject(problem('mode_changed'));
+    if (this.isExpired()) { this.expireRecord(); return Promise.reject(problem('expired')); }
     let next;
     try { next = progress({ discarded: [...value.discarded], openOrder: [...value.openOrder] }); }
     catch (error) { return Promise.reject(error); }
@@ -338,6 +379,7 @@ export class TarotPayment {
     try { this.write(draft); } catch { this.record = draft; }
     const task = this.saveQueue.catch(() => {}).then(async () => {
       this.checkMode(owner, version);
+      if (this.record?.requestId !== requestId) throw problem(this.isExpired(draft) ? 'expired' : 'progress_missing');
       let result;
       try {
         result = await this.rpc('tarot_reading_save_v1', {
@@ -350,13 +392,20 @@ export class TarotPayment {
       // Keep the unsynced paid draft if the preview switch changed while this
       // save was in flight. Preview choices can never overwrite its progress.
       this.checkMode(owner, version);
+      if (this.record?.requestId !== requestId) throw problem(this.isExpired(draft) ? 'expired' : 'progress_missing');
       if (!result?.ok) {
+        if (result?.reason === 'expired') {
+          this.expireRecord(draft);
+          this.setBalance(result.coins);
+          throw problem('expired');
+        }
         if (result?.reason === 'not_found') {
           // A pre-limit receipt may no longer be the canonical daily reading.
           // Resolve the server's current choice before releasing the stale draft.
           await this.refreshToday();
           this.checkMode(owner, version);
-          const canonical = this.readings.get(draft.topic);
+          if (this.record?.requestId !== requestId) throw problem(this.isExpired(draft) ? 'expired' : 'progress_missing');
+          const canonical = this.receiptFor(draft.topic);
           this.clearRecord();
           const error = problem(canonical ? 'progress_conflict' : 'progress_missing');
           if (canonical) error.receipt = this.adopt(canonical);
