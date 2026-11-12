@@ -85,7 +85,7 @@
       news: { tag: '로그인', title: 'TWS Weverse 공식 공지', href: 'https://weverse.io/tws/notice' }
     },
     nctdream: {
-      album: { href: 'https://music.apple.com/us/album/chewing-gum-single/1147458439', source: 'Apple Music' },
+      album: { href: 'https://music.apple.com/us/album/dream-after-dream/6827483714', source: 'Apple Music' },
       merch: { title: 'NCT DREAM 공식 상품', sub: 'SMTOWN GLOBAL SHOP · NCT DREAM 상품 목록', href: 'https://global.shop.smtown.com/collections/nct-dream' },
       schedule: { title: '공연·활동 공지', sub: 'NCT DREAM Weverse · 로그인·커뮤니티 가입 후 확인', href: 'https://weverse.io/nctdream/notice' },
       news: { tag: '로그인', title: 'NCT DREAM Weverse 공식 공지', href: 'https://weverse.io/nctdream/notice' }
@@ -796,9 +796,42 @@
       id: 'nctdream', name: 'NCT DREAM', korean: '엔시티 드림', category: 'boy', fan: 'NCTzen', agency: 'SM Entertainment',
       members: ['런쥔', '제노', '해찬', '재민', '천러', '지성'],
       debut: '2016.08.25', debutWork: 'Chewing Gum', songs: ['Chewing Gum'],
-      concept: '성장을 노래하는 NCT의 여섯 멤버 유닛.',
+      concept: '2016년 데뷔한 NCT 유닛. 2026년 현재 여섯 멤버가 활동하고 있다.',
+      checkedAt: '2026.11.12',
       official: 'https://www.smentertainment.com/', youtube: 'https://www.youtube.com/@NCTDREAM',
       photo: 'NCT Dream at DREAM()SCAPE Press Conference.png', photoLabel: 'DREAM()SCAPE 기자회견 · 당시 사진', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
+      morePhotos: [
+        commonsPhoto('190802 NCT Dream KBS \'뮤직뱅크\' 리허설 출근길 직캠 영상 04.png', '2019년 뮤직뱅크 출근길 · 6인', '2019', '뉴스인스타 (News In Star)', 'CC BY 3.0'),
+        commonsPhoto('NCT Dream at MMA 2023.jpg', '2023 멜론뮤직어워드 · 당시 단체', '2023', 'K-POPIT 케이팝잇 (TV Ten)', 'CC BY 3.0')
+      ],
+      music: [
+        { title: 'DREAM AFTER DREAM', date: '2026.11.09', type: '정규 6집 · 타이틀 Boogie Woogie · 10곡', songs: ['The Sun', 'Boogie Woogie', 'Dream After Dream', 'Skydive', 'Pressure', 'Watch U Watch Me', 'Cool for Me', 'Tumbler', 'Smile for U', 'This Is Your World'], href: 'https://music.apple.com/us/album/dream-after-dream/6827483714' },
+        { title: 'Go Back To The Future', date: '2025.07.14', type: '정규 5집 · 타이틀 BTTF · CHILLER', songs: ['BTTF', 'CHILLER', 'I LIKE IT', 'DREAM TEAM', 'Interlude : Back to Our Paradise', '’Bout You', 'That Summer', 'Miss Me', 'Beautiful Sailing'], href: 'https://music.apple.com/us/album/go-back-to-the-future/1822449919' },
+        { title: 'Chewing Gum', date: '2016.08.25', type: '데뷔 싱글 · Apple Music', songs: ['Chewing Gum'], href: 'https://music.apple.com/us/album/chewing-gum-single/1147458439' }
+      ],
+      appearances: [
+        { date: '2026-11-12', title: 'The Harvest Day · DREAM AFTER DREAM 라이브', sub: '20:00 KST · 공식 YouTube·Weverse·TikTok 생중계 · 공개 온라인 행사', href: 'https://weverse.io/nctdream/notice/40463' },
+        { date: '2026-11-13', title: 'KBS 뮤직뱅크 Boogie Woogie 녹화·방송', sub: '11:40 사전녹화 · 서울 여의도 KBS 신관 · 팬클럽 신청 11.11 종료 · KBS', href: 'https://weverse.io/nctdream/notice/40926' },
+        { date: '2026-11-14', title: 'MBC 쇼! 음악중심 Boogie Woogie 사전녹화', sub: '07:30 KST · 서울 상암 MBC 신관 · 팬클럽 신청·당첨자 참여 · MBC', href: 'https://weverse.io/nctdream/notice/40968' },
+        { date: '2026-11-22', title: 'TV아사히 드림페스티벌 2026 · 헤드라이너', sub: '일본 요코하마 K 아레나 · 11.22 출연 · TV아사히 주최 · 공연 시작 시각은 공식 티켓 확인', href: 'https://prtimes.jp/main/html/rd/p/000000516.000030888.html' },
+        { date: '2026-11-24', title: '천러 생일 파티 Lele’s Show 2', sub: '20:00 KST · 서울 YES24 라이브홀 · SM 주최·FLOOD PRODUCTION 제작 · 예스24 예매', href: 'https://weverse.io/nctdream/notice/40261' },
+        { date: '2026-12-07', title: 'DREAM AFTER DREAM 일본 도쿄 발매 이벤트', sub: '도쿄 시내 · SM Entertainment Japan · 미니 쇼케이스·당첨자 이벤트 · 상세 장소·시간 개별 안내 · 선착순 구매 종료', href: 'https://smej.co.jp/topics/?p=1124' },
+        { date: '2026-12-27', title: 'DREAM AFTER DREAM 일본 교토 발매 이벤트', sub: '교토 시내 · SM Entertainment Japan · 미니 쇼케이스·당첨자 이벤트 · 상세 장소·시간 개별 안내 · 선착순 구매 종료', href: 'https://smej.co.jp/topics/?p=1124' }
+      ],
+      schedules: [
+        { title: 'NCT DREAM Weverse 공식 공지', sub: '일정·공연·팬클럽 신청·변경 확인', href: 'https://weverse.io/nctdream/notice' },
+        { title: 'SM Entertainment Japan 공연·발매 이벤트', sub: 'DREAM AFTER DREAM 일본 이벤트 공식 안내', href: 'https://smej.co.jp/topics/?p=1124' }
+      ],
+      news: [
+        { date: '2026.11.11', tag: '방송', title: '11.13 뮤직뱅크·11.14 음악중심 Boogie Woogie 활동 공지', href: 'https://weverse.io/nctdream/notice/40926' },
+        { date: '2026.11.09', tag: '컴백', title: '정규 6집 DREAM AFTER DREAM · Boogie Woogie 발매', href: 'https://music.apple.com/us/album/dream-after-dream/6827483714' },
+        { date: '2026.10.16', tag: '팬 행사', title: '12월 일본 도쿄·교토 발매 이벤트와 한정판 안내', href: 'https://smej.co.jp/topics/?p=1124' },
+        { date: '2026.08.20', tag: '활동', title: '현 멤버 여섯 명 SM엔터테인먼트 재계약 발표', href: 'https://www.yna.co.kr/view/AKR20260820064800005' }
+      ],
+      merch: [
+        { title: 'DREAM AFTER DREAM 일본 한정판·포토카드', sub: 'SM Entertainment Japan · Jewel Case Japan Exclusive·Photobook·SMini·Mini Box · 가격·재고는 공식 판매처 확인', href: 'https://smej.co.jp/topics/?p=1124' },
+        { title: 'NCT DREAM 공식 앨범·MD', sub: 'SMTOWN GLOBAL SHOP · 응원봉·굿즈 재고는 판매처 확인', href: 'https://global.shop.smtown.com/collections/nct-dream' }
+      ],
       accent: '#67b956', light: '#e6fbdc', dark: '#416e37', bg: '#f5fff1', shape: '☘'
     },
     {
