@@ -861,7 +861,7 @@
       ],
       schedules: [
         { title: 'NCT 일본 공식 뉴스·공연 안내', sub: 'NCT WISH 일본 아레나 투어·팬 이벤트·변경 소식', href: 'https://www.nct-jp.net/news/' },
-        { title: 'NCT WISH 공식 공지', sub: 'Weverse · 한국 공연·팬 행사 및 예매', href: 'https://weverse.io/nctwish/notice' }
+        { title: 'NCT WISH 공식 공지', sub: 'Weverse · 로그인·커뮤니티 가입 후 한국 공연·팬 행사 및 예매 확인', href: 'https://weverse.io/nctwish/notice' }
       ],
       news: [
         { date: '2026.11.04', tag: '공연', title: '2027 일본 전국 아레나 투어 10회 · 선예매 11.16까지', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' },
