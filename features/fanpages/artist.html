@@ -22,7 +22,12 @@
   <script src="./profiles.js?v=20261111-buttons5" defer></script>
   <script src="./profiles-extra.js?v=20261112-txt1" defer></script>
   <script src="./popularity.js?v=20261111-weekly1" defer></script>
-  <script src="./fan.js?v=20261111-buttons5" defer></script>
+  <link rel="stylesheet" href="./manager.css?v=20261112-1">
+  <script src="/games/spot-difference/vendor/supabase.js?v=20261112-1" defer></script>
+  <script src="/config.js?v=20261112-1" defer></script>
+  <script src="./catalog.js?v=20261112-1" defer></script>
+  <script src="./fan.js?v=20261112-manager1" defer></script>
+  <script src="./manager.js?v=20261112-1" defer></script>
   <script src="/shared/navigation/section-back.js?v=20261111-anchor2" data-return-to="hub" defer></script>
 </head>
 <body data-page="artist">
@@ -32,6 +37,7 @@
       <nav class="top-links" aria-label="위치"><a href="./index.html">전체 아티스트</a><a href="/world.html?tab=hub">아지트로 ↗</a></nav>
     </div>
   </header>
+  <div class="fan-tools wrap"><span id="catalog-status" role="status" hidden></span><button id="fan-manage" type="button" hidden>팬페이지 관리</button></div>
 
   <main id="artist-root" class="artist-page wrap" aria-live="polite">
     <div class="loading-card">팬페이지를 불러오는 중…</div>

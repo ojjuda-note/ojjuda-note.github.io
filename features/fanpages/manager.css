@@ -1,0 +1,17 @@
+.fan-tools{display:flex;justify-content:flex-end;align-items:center;gap:12px;font-size:.88rem}
+.fan-tools:has(> [hidden]:first-child + [hidden]){display:none}
+.fan-tools button,.fan-admin button{background:#f5f0fa;color:#51376c;border:1px solid #d9cce6;border-radius:10px;padding:.65rem 1rem;cursor:pointer;font:inherit;font-weight:700}
+.fan-tools button{margin:12px 0}
+.fan-admin{box-sizing:border-box;width:min(610px,94vw);max-height:88dvh;padding:clamp(16px,4vw,28px);background:#fff;color:#2b2432;border:1px solid #dfd3e9;border-radius:18px;font:normal 1rem/1.5 system-ui,sans-serif}
+.fan-admin::backdrop{background:rgb(27 17 43 / .55)}
+.fan-admin header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.fan-admin h2{margin:0;font-size:1.35rem}
+.fan-admin label{display:grid;gap:4px;margin:10px 0;font-size:.9rem;font-weight:650}
+.fan-admin input,.fan-admin select,.fan-admin textarea{box-sizing:border-box;max-width:100%;width:100%;border:1px solid #bbb2c3;border-radius:8px;padding:.55rem;color:#24202a;background:white;font:inherit}
+.fan-admin input[type=checkbox],.fan-admin input[type=color]{width:40px}
+.fan-admin textarea{min-height:76px}
+.fan-admin fieldset,.fan-admin details{min-width:0;border:1px solid #e2d9e9;border-radius:10px;padding:12px;margin:10px 0}
+.fan-admin summary{cursor:pointer;font-weight:700;overflow-wrap:anywhere}
+.fan-admin .fan-primary{display:block;margin-top:18px;background:#634386;color:white}
+.fan-admin [role=status]{min-height:1.3em;margin:8px 0}
+.video-viewer-player video{display:block;width:100%;height:100%;object-fit:contain}

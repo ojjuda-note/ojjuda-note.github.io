@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4eefb">
-  <meta name="description" content="오쭈다 팬페이지. 여돌과 남돌 30팀의 사진, 소개, 앨범, 공식 채널을 그룹별 테마로 만나보세요.">
+  <meta name="description" content="오쭈다 팬페이지. 아이돌의 사진, 소개, 앨범, 공식 채널을 그룹별 테마로 만나보세요.">
   <title>팬페이지 | 오쭈다 일상</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +15,12 @@
   <script src="./artists.js?v=20261111-buttons7" defer></script>
   <script src="./artists-extra.js?v=20261112-txt1" defer></script>
   <script src="./popularity.js?v=20261111-weekly1" defer></script>
-  <script src="./fan.js?v=20261111-buttons5" defer></script>
+  <link rel="stylesheet" href="./manager.css?v=20261112-1">
+  <script src="/games/spot-difference/vendor/supabase.js?v=20261112-1" defer></script>
+  <script src="/config.js?v=20261112-1" defer></script>
+  <script src="./catalog.js?v=20261112-1" defer></script>
+  <script src="./fan.js?v=20261112-manager1" defer></script>
+  <script src="./manager.js?v=20261112-1" defer></script>
 <script src="/shared/navigation/section-back.js?v=20261111-anchor2" data-return-to="hub" defer></script></head>
 <body data-page="hub">
   <header class="site-topbar">
@@ -27,6 +32,7 @@
       </nav>
     </div>
   </header>
+  <div class="fan-tools wrap"><span id="catalog-status" role="status" hidden></span><button id="fan-manage" type="button" hidden>아이돌 추가</button></div>
 
   <main>
     <section class="hub-hero wrap">
@@ -56,6 +62,6 @@
 
   </main>
 
-  <footer class="footer"><div class="wrap footer-inner"><span><b>✿</b> OJJUDA <small>FAN SPACE</small></span><span>비공식 팬페이지 · 자료 2026.11.11 기준 · 팬메이드 색상</span><a href="/world.html?tab=hub">오쭈다 아지트 ↗</a></div></footer>
+  <footer class="footer"><div class="wrap footer-inner"><span><b>✿</b> OJJUDA <small>FAN SPACE</small></span><span>비공식 팬페이지 · 팬메이드 색상</span><a href="/world.html?tab=hub">오쭈다 아지트 ↗</a></div></footer>
 </body>
 </html>

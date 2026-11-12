@@ -1,4 +1,4 @@
-(() => {
+function renderFanCatalog() {
   'use strict';
   const popularity = window.OJJUDA_FAN_POPULARITY || { rankedIds: [] };
   const popularityRanks = new Map(popularity.rankedIds.map((id, index) => [id, index]));
@@ -73,7 +73,7 @@
     });
   }
   function groupUrl(id) { return `./artist.html?group=${encodeURIComponent(id)}`; }
-  function openLink(url, label, className = '') { return `<a class="${className}" href="${url}" target="_blank" rel="noopener noreferrer">${label} <span aria-hidden="true">↗</span></a>`; }
+  function openLink(url, label, className = '') { if (!url) return ''; return `<a class="${className}" href="${url}" target="_blank" rel="noopener noreferrer">${label} <span aria-hidden="true">↗</span></a>`; }
   function initShareButton(button, url, title) {
     if (!button) return;
     const label = $('.share-label', button);
@@ -127,6 +127,7 @@
     });
   }
   function imageHtml(src, alt, extra = '') {
+    if (!src) return `<div class="image-surface image-failed ${extra}"><span class="image-placeholder" aria-hidden="true">✳</span></div>`;
     return `<div class="image-surface ${extra}"><span class="image-placeholder" aria-hidden="true">✳</span><img data-external-image src="${src}" alt="${alt}" loading="lazy" referrerpolicy="no-referrer"></div>`;
   }
 
@@ -281,7 +282,8 @@
       const items = artists.filter((item) => {
         if (filter === 'saved' && !saved.has(item.id)) return false;
         if ((filter === 'girl' || filter === 'boy') && categoryOf(item) !== filter) return false;
-        return `${item.name} ${item.korean} ${item.fan}`.toLocaleLowerCase().includes(query);
+        const raw = window.OjjudaFanCatalog?.raw.get(item.id)?.artist || item;
+        return `${raw.name} ${raw.korean} ${raw.fan}`.toLocaleLowerCase().includes(query);
       });
       grid.innerHTML = items.map((item, index) => `<article class="artist-tile ${item.theme?.night ? 'is-night' : ''}" style="--artist-accent:${item.accent};--artist-light:${item.light};--artist-dark:${item.dark}">
         <a class="tile-cover" href="${groupUrl(item.id)}" aria-label="${item.korean} 팬페이지 열기">
@@ -412,8 +414,8 @@
 
     root.querySelectorAll('[data-video-index]').forEach((button) => button.addEventListener('click', () => {
       const video = videos[Number(button.dataset.videoIndex)];
-      if (!video || !/^[a-zA-Z0-9_-]{11}$/.test(video.id)) return;
-      const url = `https://www.youtube.com/watch?v=${video.id}`;
+      if (!video || (!video.file && !/^[a-zA-Z0-9_-]{11}$/.test(video.id))) return;
+      const url = video.file || `https://www.youtube.com/watch?v=${video.id}`;
       if (typeof dialog.showModal !== 'function') {
         window.open(url, '_blank', 'noopener,noreferrer');
         return;
@@ -422,6 +424,13 @@
       title.textContent = video.title;
       source.textContent = `${video.kind} · ${video.source}`;
       original.href = url;
+      original.textContent = video.file ? '영상 파일 열기 ↗' : 'YouTube에서 보기 ↗';
+      if (video.file) {
+        const media = document.createElement('video');
+        media.src = video.file; media.controls = true; media.playsInline = true;
+        player.replaceChildren(media);
+        dialog.showModal(); close.focus(); return;
+      }
       const iframe = document.createElement('iframe');
       iframe.src = `https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0`;
       iframe.title = `${video.title} 영상 재생`;
@@ -447,7 +456,7 @@
       return `<section id="profile" class="detail-section profile-section basic-profile" aria-labelledby="profile-heading">
         <div class="detail-heading"><div><span>01 / ARTIST FILE</span><h2 id="profile-heading">소개 <em>${artist.shape}</em></h2></div><span class="profile-checked">CHECKED ${profile.checkedAt}</span></div>
         <div class="basic-profile-card">
-          <div class="basic-profile-story"><span>${artist.name} / THE STORY</span><strong>${profile.concept}</strong><p>데뷔 ${profile.debut} · ${profile.debutWork}</p><p>${profile.agency} · ${artist.fan}</p><a href="${official.href}" target="_blank" rel="noopener noreferrer">공식 정보 확인 ↗</a></div>
+          <div class="basic-profile-story"><span>${artist.name} / THE STORY</span><strong>${profile.concept}</strong><p>데뷔 ${profile.debut} · ${profile.debutWork}</p><p>${profile.agency} · ${artist.fan}</p>${openLink(official?.href, '공식 정보 확인')}</div>
           <div class="basic-profile-members"><div><span>MEMBER ARCHIVE</span><strong>${String(profile.members.length).padStart(2, '0')} MEMBERS</strong></div><ul>${profile.members.map((member) => `<li>${member.name}</li>`).join('')}</ul><small>개인 정보는 공식 자료가 확인되는 대로 보완해요.</small></div>
         </div>
       </section>`;
@@ -530,16 +539,18 @@
       };
       Object.entries(vars).forEach(([name, value]) => document.body.style.setProperty(`--theme-${name}`, value));
     }
-    document.title = `${artist.korean} (${artist.name}) | 오쭈다 팬페이지`;
+    const plain = window.OjjudaFanCatalog?.raw.get(artist.id);
+    const plainArtist = plain?.artist || artist;
+    document.title = `${plainArtist.korean} (${plainArtist.name}) | 오쭈다 팬페이지`;
     const gallery = artist.photos.map((photo, i) => `<button class="detail-photo" type="button" data-photo-index="${i}" aria-haspopup="dialog" aria-label="${artist.korean} ${photo.label} 사진 크게 보기">
       ${imageHtml(photo.image, `${artist.korean} ${photo.label} 사진`, `detail-photo-image image-${i}`)}
       <div class="detail-photo-caption"><div><small>${photo.meta}</small><strong>${photo.label}</strong><span>${photo.credit}</span></div><span class="out-arrow" aria-hidden="true">⤢</span></div>
     </button>`).join('');
     const videos = videoLibrary[artist.id] || [];
     const videoCards = videos.map((video, i) => `<button type="button" class="video-card" data-video-index="${i}" aria-haspopup="dialog" aria-label="${artist.korean} ${video.title} ${video.kind} 재생">
-      <span class="video-card-visual"><img src="https://i.ytimg.com/vi/${video.id}/hqdefault.jpg" alt="" loading="lazy" decoding="async"><span class="video-card-play" aria-hidden="true">▶</span><span class="video-card-kind">${video.kind}</span></span>
+      <span class="video-card-visual">${video.file ? '' : `<img src="https://i.ytimg.com/vi/${video.id}/hqdefault.jpg" alt="" loading="lazy" decoding="async">`}<span class="video-card-play" aria-hidden="true">▶</span><span class="video-card-kind">${video.kind}</span></span>
       <span class="video-card-info"><strong>${video.title}</strong><small>${video.source}</small></span>
-    </button>`).join('') || `<a class="fan-video-empty" href="${artist.links.find((link) => link.label === 'YouTube')?.url || artist.official}" target="_blank" rel="noopener noreferrer">공식 YouTube에서 영상 둘러보기 ↗</a>`;
+    </button>`).join('') || `<a class="fan-video-empty" href="${artist.links.find((link) => link.label === 'YouTube')?.url || artist.official || `https://www.youtube.com/results?search_query=${encodeURIComponent(plainArtist.name)}`}" target="_blank" rel="noopener noreferrer">공식 YouTube에서 영상 둘러보기 ↗</a>`;
     const resources = (entries, kind) => entries.map((entry, i) => `<a class="resource-item" href="${entry.href}" target="_blank" rel="noopener noreferrer"><span class="resource-icon">${kind === 'merch' ? '◈' : '▦'}</span><div><small>${entry.sub}</small><strong>${entry.title}</strong></div><span class="resource-arrow">↗</span></a>`).join('');
     const reveal = (target, closedLabel, openLabel) => `<button type="button" class="content-reveal" data-reveal-target="${target}" data-label-closed="${closedLabel}" data-label-open="${openLabel}" aria-controls="${target}" aria-expanded="false"><span class="content-reveal-text">${closedLabel}</span><span class="content-reveal-icon" aria-hidden="true">⌄</span></button>`;
     const albums = artist.music || [];
@@ -613,8 +624,8 @@
     initShareButton($('#detail-share', root), new URL(groupUrl(artist.id), location.href).href, `${artist.korean} | 오쭈다 팬페이지`);
     attachImageFallback(root);
     initProgressiveReveal(root);
-    initPhotoViewer(root, artist);
-    initVideoViewer(root, videos);
+    initPhotoViewer(root, plainArtist);
+    initVideoViewer(root, plain?.videos || videos);
     if ('IntersectionObserver' in window && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
       const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
@@ -630,4 +641,7 @@
 
   if (page === 'hub') initHub();
   if (page === 'artist') initArtist();
-})();
+}
+
+if (window.OjjudaFanCatalog) window.OjjudaFanCatalog.ready.then(renderFanCatalog);
+else renderFanCatalog();
