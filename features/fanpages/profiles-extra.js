@@ -248,10 +248,19 @@ if (seventeenProfile) {
 const nctwishProfile = window.OJJUDA_FAN_PROFILES.nctwish;
 if (nctwishProfile) {
   nctwishProfile.expanded = true;
+  const nctwishBirthdays = {
+    '시온': '2002.05.11', '리쿠': '2003.06.28', '유우시': '2004.04.05',
+    '재희': '2005.06.21', '료': '2007.08.04', '사쿠야': '2007.11.18'
+  };
+  for (const member of nctwishProfile.members) {
+    member.birthday = nctwishBirthdays[member.name] || null;
+    member.source = 'https://world.kbs.co.kr/service/contents_view.htm?board_seq=450066&lang=j';
+  }
   nctwishProfile.records = [
     { year: '2026.10', title: '미니 4집 I SPY 발매', detail: '2026.10.12 정식 발매 · 총 6곡 · SM ENTERTAINMENT 공식 음반 정보', href: 'https://smtownandstore.com/product/nct-wish-the-4th-mini-album-i-spy-deluxe-book-ver/29341/category/53/display/1/' },
     { year: '2026.11', title: '첫 일본 전국 아레나 투어 발표', detail: '2027.02~03 도쿄·고베·후쿠오카·아이치 10회 확정', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' }
   ];
+  nctwishProfile.sources.unshift({ label: 'KBS WORLD 공식 아티스트 소개 · 멤버 생일 및 발매일', href: 'https://world.kbs.co.kr/service/contents_view.htm?board_seq=450066&lang=j' });
   nctwishProfile.sources.unshift({ label: 'NCT 일본 공식 소개 · 데뷔 일자', href: 'https://www.nct-jp.net/profile/' });
   nctwishProfile.sources.push({ label: 'SM 공식 4집 음반·트랙리스트', href: 'https://smtownandstore.com/product/nct-wish-the-4th-mini-album-i-spy-deluxe-book-ver/29341/category/53/display/1/' });
 }
