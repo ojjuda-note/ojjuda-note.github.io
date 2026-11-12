@@ -69,8 +69,9 @@ async function checkReplyBrowsing(page) {
   });
   await page.addScriptTag({content:read('park/integration.js')});
   const settle=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
-  const sizes=()=>page.locator('#feed-list .card-quote').evaluateAll(nodes=>nodes.map(n=>({font:parseFloat(getComputedStyle(n).fontSize),height:n.closest('.photo').getBoundingClientRect().height,body:n.textContent})));
+  const sizes=()=>page.locator('#feed-list .card-quote').evaluateAll(nodes=>nodes.map(n=>({font:parseFloat(getComputedStyle(n).fontSize),height:n.closest('.photo').getBoundingClientRect().height,width:n.closest('.photo').getBoundingClientRect().width,body:n.textContent})));
   await settle();const before=await sizes();assert.equal(before.length,4);assert.ok(before[0].font>12);
+  if(!expectBug)assert.ok(before.every(card=>Math.abs(card.height-card.width*.75)<1&&card.width<=601),width+'px: feed faces have the same 4:3 ratio');
   if(proof&&width===390)await page.screenshot({path:path.join(proof,expectBug?'before-bug.png':'before-fixed.png'),fullPage:true});
   for(const route of expectBug?['button']:['button','browser','embedded']){
    await page.locator('#feed-list .photo-open').first().click();await page.locator('#detail-card-slot .card-quote').waitFor({state:'visible'});await settle();
@@ -96,7 +97,7 @@ async function checkReplyBrowsing(page) {
     const box=selector=>card.querySelector(selector).getBoundingClientRect();
     const photo=box('.photo'),author=box('.card-meta'),quote=box('.card-quote'),tags=box('.card-tags');
     return {
-     width:photo.width,
+     width:photo.width,height:photo.height,
      footer:card.getBoundingClientRect().bottom-photo.bottom,
      textFits:author.bottom<=quote.top&&quote.bottom<=tags.top,
      buttonsFit:[...card.querySelectorAll('.card-actions button')].every(button=>{
@@ -107,6 +108,8 @@ async function checkReplyBrowsing(page) {
     };
    }));
    assert.equal(faces.length,2);
+   assert.ok(faces.every(face=>Math.abs(face.height-face.width*.75)<1),width+'px: original and reply are both 4:3');
+   if(width===1280)assert.ok(Math.abs(faces[0].width-600)<1,'original reaches 600×450 on desktop');
    assert.ok(Math.abs(faces[1].width-faces[0].width*2/3)<1,`${width}px: replies are two thirds of the parent card width`);
    assert.ok(faces.every(face=>Math.abs(face.footer)<1&&face.buttonsFit&&face.textFits),`${width}px: photo, text and controls fit without a footer`);
    if(width===390)await checkReplyBrowsing(page);
@@ -127,7 +130,14 @@ async function checkReplyBrowsing(page) {
    // A card inserted while hidden must not acquire a shrunken base size.
    await page.evaluate(()=>{feed.hidden=true;list.replaceChildren(...fontCards.feed.map(c=>cardElement(c)));requestTagFit();});await settle();
    await page.evaluate(()=>showFeed(false));await settle();assert.deepEqual(await sizes(),resized,'hidden creation is measured only after returning');
-   assert.equal(await page.evaluate(()=>[...list.querySelectorAll('.photo')].every(photo=>!photoQuoteClipped(photo,photo.querySelector('.card-quote'),photo.querySelector('.card-tags')))),true,'all card text remains inside the card');
+   const longText=Array(60).fill('한 줄').join('\n');
+   await page.evaluate(body=>{fontCards.feed[0].body=body;},longText);
+   await page.locator('#feed-list .photo-open').first().click();
+   const disclosure=page.locator('#detail-card-slot .note-full-body');
+   await disclosure.locator('summary').click();
+   assert.equal(await disclosure.locator('p').textContent(),longText,'all lines can be read below the fixed face');
+   const fixed=await page.locator('#detail-card-slot .photo').boundingBox();
+   assert.ok(Math.abs(fixed.height-fixed.width*.75)<1,'opening long text keeps the photograph 4:3');
   }
   assert.deepEqual(errors,[]);await context.close();
  }
