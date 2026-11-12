@@ -243,3 +243,15 @@ if (seventeenProfile) {
   seventeenProfile.sources.push({ label: 'PLEDIS · SEVENTEEN 공식 프로필', href: 'https://www.pledis.co.kr/artist/detail/seventeen/profile/' });
   seventeenProfile.sources.push({ label: '일본 공식 일정 · 11월 공연', href: 'https://www.seventeen-17.jp/posts/schedule' });
 }
+
+/* NCT WISH: official Japanese and label announcements; unverified private details stay blank. */
+const nctwishProfile = window.OJJUDA_FAN_PROFILES.nctwish;
+if (nctwishProfile) {
+  nctwishProfile.expanded = true;
+  nctwishProfile.records = [
+    { year: '2026.10', title: '미니 4집 I SPY 발매', detail: '2026.10.12 정식 발매 · 총 6곡 · SM ENTERTAINMENT 공식 음반 정보', href: 'https://smtownandstore.com/product/nct-wish-the-4th-mini-album-i-spy-deluxe-book-ver/29341/category/53/display/1/' },
+    { year: '2026.11', title: '첫 일본 전국 아레나 투어 발표', detail: '2027.02~03 도쿄·고베·후쿠오카·아이치 10회 확정', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' }
+  ];
+  nctwishProfile.sources.unshift({ label: 'NCT 일본 공식 소개 · 데뷔 일자', href: 'https://www.nct-jp.net/profile/' });
+  nctwishProfile.sources.push({ label: 'SM 공식 4집 음반·트랙리스트', href: 'https://smtownandstore.com/product/nct-wish-the-4th-mini-album-i-spy-deluxe-book-ver/29341/category/53/display/1/' });
+}
