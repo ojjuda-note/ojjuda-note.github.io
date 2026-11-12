@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          fetch-depth: 3
+          fetch-depth: 5
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
@@ -24,7 +24,8 @@ jobs:
           mkdir -p ~/.local/share/fonts
           curl -fsSL --retry 2 https://raw.githubusercontent.com/google/fonts/35e77c3854970a550d9894a85aba21420813a019/ofl/nanumpenscript/NanumPenScript-Regular.ttf -o ~/.local/share/fonts/NanumPenScript-Regular.ttf
           fc-cache -f ~/.local/share/fonts
-          fc-match 'Nanum Pen Script'
+          fc-match 'Nanum Pen'
+          echo "@font-face { font-family: 'Nanum Pen Script'; src: local('Nanum Pen'); }" >> note/style.css
       - name: Measure the previous layout
         run: |
           git checkout 2cb085b20822c34f4289f7d0e50f5706aba0577f -- park/design.css note/preview.js
