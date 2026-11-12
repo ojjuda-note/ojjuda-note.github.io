@@ -3020,7 +3020,7 @@ function openWorldGameLink(id,options={}){
  if(['janggi','chess'].includes(id))return vn(id);
  if(id==='matgo')return window.openMatgo?.();
  if(id==='screw_box'||id==='screw_flat')return Al('screw',{screwMode:id==='screw_flat'?'flat':'box'});
- if(['sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw','bang','tank','tour','ttang','poker','roulette','photo_ttang','archery','festival'].includes(id))return Al(id);
+ if(['sacheonseong','solitaire','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw','bang','tank','tour','ttang','poker','roulette','photo_ttang','archery','festival'].includes(id))return Al(id);
 }
 function my(){py();if(!worldEntryRouted){worldEntryRouted=true;const url=new URL(location.href),tab=url.searchParams.get("tab"),place=url.searchParams.get("place");sr.tab({tab:url.searchParams.getAll("game").length===1?"arcade":place==="park"||tab==="park"?"park":tab==="my"||tab==="settings"?"my":tab==="hub"?"hub":tab==="arcade"?"arcade":"hub"});let entry=url.searchParams.get("game");try{entry=window.OjjudaGameChallenges?.requestedGame?.()||entry}catch{}if(url.searchParams.getAll("game").length===1){
  const gameOptions=entry==="restaurants"&&url.searchParams.get("restaurantView")==="recommendations"?{openRecommendations:true}:undefined;
