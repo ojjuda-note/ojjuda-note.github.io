@@ -814,9 +814,40 @@
       id: 'treasure', name: 'TREASURE', korean: '트레저', category: 'boy', fan: 'TREASURE MAKER', agency: 'YG Entertainment',
       members: ['최현석', '지훈', '요시', '준규', '윤재혁', '아사히', '도영', '하루토', '박정우', '소정환'],
       debut: '2020.08.07', debutWork: 'THE FIRST STEP : CHAPTER ONE', songs: ['BOY', '들어와 (COME TO ME)'],
-      concept: '다채로운 개성과 무대로 빛나는 열 명의 팀워크.',
-      official: 'https://www.ygfamily.com/', youtube: 'https://www.youtube.com/@TREASURE',
+      concept: '2020년 8월 BOY로 데뷔한 YG의 10인조 그룹. 2026년 NEW WAV와 SHOCK에서 힙합 사운드를 선보였다.',
+      official: 'https://ygfamily.com/ko/artists/treasure/profile', youtube: 'https://www.youtube.com/@TREASURE',
+      checkedAt: '2026.11.12',
       photo: '240405 트레저 TTA Malaysia 1st Place.jpg', photoLabel: '2024년 단체', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
+      morePhotos: [
+        commonsPhoto('230428 TREASURE(트레저) Yoshi ICN.jpg', '요시 · 인천공항', '2023', 'K-POPIT 케이팝잇', 'CC BY 3.0'),
+        commonsPhoto('230707 TREASURE(트레저) Junghwan(정환) ICN.jpg', '소정환 · 인천공항', '2023', 'K-POPIT 케이팝잇', 'CC BY 3.0')
+      ],
+      music: [
+        { title: 'SHOCK', date: '2026.11.02', type: '디지털 싱글 · 타이틀 SHOCK', songs: ['SHOCK'], href: 'https://www.ygfamily.com/en/artists/treasure/discography/1676' },
+        { title: 'NEW WAV', date: '2026.06.01', type: '미니 4집 · 타이틀 IF I', songs: ['IF I', 'ZOOM ZOOM', 'NALLY-NA (HYUNHAYO)', 'DANGER'], href: 'https://www.ygfamily.com/en/artists/treasure/discography/1660' },
+        { title: 'LOVE PULSE', date: '2025.09.01', type: '미니 3집 · 타이틀 PARADISE', songs: ['EVERYTHING', 'PARADISE', 'NOW FOREVER', 'BETTER THAN ME'], href: 'https://ygfamily.com/en/artists/treasure/discography/1640' }
+      ],
+      appearances: [
+        { date: '2026-11-20', title: '2026 MAMA AWARDS · CHAPTER 1', sub: '일본 교세라 돔 오사카 · 18:00 (KST/JST) · CJ ENM 주최 · YG 공식 일정', href: 'https://ygfamily.com/ko/artists/treasure/schedule' }
+      ],
+      schedules: [
+        { title: 'YG 공식 TREASURE 일정', sub: '방송·시상식·공식 일정 변경 확인', href: 'https://ygfamily.com/ko/artists/treasure/schedule' },
+        { title: 'YG 공식 공연 안내', sub: 'TREASURE 콘서트·팬콘 공식 안내', href: 'https://www.ygfamily.com/en/artists/treasure/concert' }
+      ],
+      news: [
+        { date: '2026.11.02', tag: '컴백', title: '디지털 싱글 SHOCK 발매 · 공식 트랙·크레딧 공개', href: 'https://www.ygfamily.com/en/artists/treasure/discography/1676' },
+        { date: '2026.09.27', tag: '협업', title: 'Reebok 2026 가을 시즌 TREASURE 비주얼 공개', href: 'https://e.usen.com/news/news-release/treasurereebok-1.html' },
+        { date: '2026.06.01', tag: '음악', title: '미니 4집 NEW WAV 발매 · IF I 포함 4곡', href: 'https://www.ygfamily.com/en/artists/treasure/discography/1660' }
+      ],
+      merch: [
+        { title: 'SHOCK 공식 MD', sub: 'YG SELECT · 포토카드 홀더·키링 등 · 판매·재고는 공식몰 확인', href: 'https://www.ygselect.com/' },
+        { title: 'TREASURE20FW 공식 의류', sub: 'YG SELECT · 체크 셔츠 등 2026 가을·겨울 MD', href: 'https://www.ygselect.com/' },
+        { title: 'TREASURE 6주년 공식 MD', sub: 'YG SELECT · 기념 브릭 세트·굿즈 · 재고는 판매처 확인', href: 'https://www.ygselect.com/' }
+      ],
+      campaigns: [
+        { kind: '광고', date: '2026.06.05', title: 'Reebok × TREASURE', sub: '2026 여름 시즌 일본 비주얼 모델', href: 'https://www.oricon.co.jp/news/2459226/full/' },
+        { kind: '협업', date: '2026.09.07', title: 'Reebok × AZUL BY MOUSSY × TREASURE', sub: '일본 가을 컬렉션 비주얼 · 9.16 매장 발매', href: 'https://prtimes.jp/main/html/rd/p/000001201.000014511.html' }
+      ],
       accent: '#478dce', light: '#dff3ff', dark: '#28577e', bg: '#f1f9ff', shape: '◆'
     },
     {
