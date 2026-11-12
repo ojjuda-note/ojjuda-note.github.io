@@ -725,8 +725,41 @@
       members: ['정원', '제이', '제이크', '성훈', '선우', '니키'],
       debut: '2020.11.30', debutWork: 'BORDER : DAY ONE', songs: ['Given-Taken', 'Let Me In (20 CUBE)'],
       concept: '서로 다른 세계를 음악으로 잇는 여섯 멤버.',
+      checkedAt: '2026.11.12',
       official: 'https://beliftlab.com/artist/profile/ENHYPEN?lang=ko', youtube: 'https://www.youtube.com/@ENHYPENOFFICIAL',
       photo: 'Enhypen, June 2026.jpg', photoLabel: '2026년 단체', photoYear: '2026', credit: 'K-POPIT', license: 'CC BY 4.0',
+      music: [
+        { title: 'THE SIN : BLISS', date: '2026.08.21', type: '미니 8집 · 타이틀 Bloody Paradise', songs: ['Two Fools', 'Breaking News', 'Stuck', 'Bad For You', 'Remnants of Love', 'Bloody Paradise', 'The Final Moment', 'Checkmate', 'Highlight', 'The Veiled Truth'], href: 'https://beliftlab.com/artist/discography/ENHYPEN/20' },
+        { title: 'THE SIN : VANISH', date: '2026.01.16', type: '미니 7집 · 타이틀 Knife', songs: ['The Beginning', 'No Way Back (feat. So!YoON!)', 'The Fugitives', 'Knife', 'Stealer', 'The Voice', 'Witnesses', 'Big Girls Don\'t Cry', 'Lost Island', 'Sleep Tight', 'The Beyond'], href: 'https://beliftlab.com/artist/discography/ENHYPEN/17' },
+        { title: 'BORDER : DAY ONE', date: '2020.11.30', type: '데뷔 미니앨범 · 타이틀 Given-Taken', songs: ['Given-Taken', 'Let Me In (20 CUBE)'], href: 'https://beliftlab.com/artist/discography/ENHYPEN/1' }
+      ],
+      appearances: [
+        { date: '2026-11-13', title: 'BLOOD SAGA 월드투어 공연 영상 일본 극장 상영 시작', sub: '11.13~11.26 · 일본 전국 영화관 · 한정 입장 선물 안내 · 상영·예매는 공식 사이트 확인', href: 'https://enhypen-jp.weverse.io/news/78707bf51814' },
+        { date: '2026-11-20', title: 'THE SIN : PARALLEL WORLD 디지털 싱글 발매 예정', sub: '14:00 한국시간 · 디지털 음원·미국 싱글 CD · 실물 발매일과 구분', href: 'https://weverse.io/enhypen/notice/40374' },
+        { date: '2026-11-23', title: 'THE SIN : PARALLEL WORLD 실물 싱글 앨범 발매 예정', sub: '12:00 한국시간 · 스핀오프 싱글 실물 발매 · 변경은 공식 공지 확인', href: 'https://weverse.io/enhypen/notice/40374' },
+        { date: '2026-12-13', title: '일본 도쿄 미트앤그리트 · 개별 사인회', sub: '도쿄 빅사이트 남3홀 · 응모 당첨자 대상 · 상세 시간 추후 공지', href: 'https://www.universal-music.co.jp/enhypen/news/2026-10-29/' },
+        { date: '2026-12-17', title: 'PARALLEL WORLD 발매 기념 온라인 2샷 행사', sub: '20:30경 일본 현지시간 · 당첨자 대상 · WithLIVE · 시간 변경 가능', href: 'https://enhypen-jp.weverse.io/news/cdaa6da839b4' },
+        { date: '2026-12-21', title: 'PARALLEL WORLD 발매 기념 온라인 2샷·토크 행사', sub: '20:30경 일본 현지시간 · 당첨자 대상 · WithLIVE · 시간 변경 가능', href: 'https://enhypen-jp.weverse.io/news/cdaa6da839b4' }
+      ],
+      schedules: [
+        { title: 'BELIFT LAB 공식 일정', sub: '공연·활동 달력 및 변경 안내', href: 'https://beliftlab.com/artist/schedule/ENHYPEN' },
+        { title: 'ENHYPEN 일본 공식 소식', sub: '발매·팬 이벤트·공연 안내', href: 'https://enhypen-jp.weverse.io/news/' },
+        { title: 'ENHYPEN Weverse 공식 공지', sub: '팬사인회·앨범 공지 · 로그인 필요할 수 있음', href: 'https://weverse.io/enhypen/notice' }
+      ],
+      news: [
+        { date: '2026.11.08', tag: '팬 행사', title: '12월 17·21일 일본 온라인 팬 이벤트 공지', href: 'https://enhypen-jp.weverse.io/news/cdaa6da839b4' },
+        { date: '2026.11.06', tag: '공연', title: '11월 13~26일 BLOOD SAGA 일본 극장 상영·입장 선물 안내', href: 'https://enhypen-jp.weverse.io/news/78707bf51814' },
+        { date: '2026.10.26', tag: '음악', title: 'THE SIN : PARALLEL WORLD 발매 발표 · 디지털 11.20 / 실물 11.23', href: 'https://weverse.io/enhypen/notice/40374' }
+      ],
+      merch: [
+        { title: 'THE SIN : PARALLEL WORLD 공식 예약 앨범', sub: '10.26 예약 시작 · 국내 실물 11.23 발매 예정 · 재고·특전은 공식 판매처 확인', href: 'https://www.universal-music.co.jp/enhypen/news/2026-10-26/' },
+        { title: 'THE SIN : BLISS 미니 8집 공식 음반', sub: '2026.08.21 국내 발매 · TAKE 1~4 버전 · 판매 상태는 공식 판매처 확인', href: 'https://enhypen-jp.weverse.io/news/ec88f679213e' },
+        { title: 'ENHYPEN 공식 앨범·굿즈 목록', sub: 'Weverse Shop · 응원봉·앨범·MD · 재고·가격은 판매처 확인', href: 'https://shop.weverse.io/ko/shop/KRW/artists/10' }
+      ],
+      campaigns: [
+        { kind: '광고', date: '2026.09.04', title: '신라면세점 · ENHYPEN 홍보 모델 발표', sub: '2026.08.26 소속사와 업무협약 · 09.04 공식 발표 · 온·오프라인 캠페인', href: 'https://mbiz.heraldcorp.com/article/10862443' },
+        { kind: '홍보대사', date: '2023.10.30', title: 'Dr.Jart+ · 최초 글로벌 앰배서더 위촉', sub: '2023년 공식 발표 · 현재 계약 상태는 별도 확인 필요', href: 'https://www.prnewswire.com/news-releases/drjart-announces-enhypen-as-its-first-global-ambassador-301970560.html' }
+      ],
       accent: '#d58b9e', light: '#4c3040', dark: '#fff1f5', bg: '#1c1521', night: true, shape: '♢'
     },
     {
