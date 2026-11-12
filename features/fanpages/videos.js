@@ -106,5 +106,10 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'dZNPbNkKAss', title: '도겸×승관 (DxS) · Blue (Epilogue Ver.)', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.01.19' },
     { id: 'pS57UX6s-xw', title: 'THUNDER', kind: '뮤직비디오', source: 'SEVENTEEN / HYBE LABELS · 2025.05.26' },
     { id: 'skso_fkQcg0', title: 'Bad Influence (Prod. by Pharrell Williams)', kind: '뮤직비디오', source: 'SEVENTEEN / HYBE LABELS · 2025.06.11' }
+  ],
+  txt: [
+    { id: 'jOnLqqDRfY4', title: '하루에 하루만 더 (Stick With You)', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2026.04.13' },
+    { id: 'IcwHopeT5gY', title: 'Beautiful Strangers', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2025.07.21' },
+    { id: '80SH8Z_DOnY', title: 'Over The Moon', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2024.11.04' }
   ]
 });
