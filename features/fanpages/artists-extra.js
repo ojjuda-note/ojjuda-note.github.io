@@ -607,11 +607,14 @@
       checkedAt: '2026.11.12',
       concept: '보컬·퍼포먼스·힙합 유닛이 함께 빚는 팀워크.',
       official: 'https://www.pledis.co.kr/', youtube: 'https://www.youtube.com/@pledis17',
-      photo: 'Seventeen Carat Land 24.jpg', photoLabel: 'CARAT LAND', photoYear: '2024', credit: 'SEVENTEEN', license: 'CC BY 3.0',
+      photo: 'Seventeen Carat Land 24.jpg', photoLabel: 'CARAT LAND', photoYear: '2025', credit: 'SEVENTEEN', license: 'CC BY 3.0',
       music: [
         { title: 'DREAMSCAPE (정한×조슈아 · JxJ)', date: '2026.10.19', type: '유닛 미니 1집 · 타이틀 12 o’clock',
           songs: ['Like you', '12 o’clock', 'Outside', 'One plus one', 'Not personal (JOSHUA Solo)', '컬러링 (JEONGHAN Solo)', 'No looking back'],
           href: 'https://www.pledis.co.kr/en/artist/detail/seventeen/discography/?albumType=ALL' },
+        { title: 'V8 (디에잇×버논)', date: '2026.06.29', type: '유닛 미니 1집 · 타이틀 singasong',
+          songs: ['Friend', 'BEAT', 'singasong', 'mia (Vernon Solo)', 'coloring', 'girlsnboys', '8DM (THE 8 Solo)', 'rat race'],
+          href: 'https://music.apple.com/us/album/v8/6780313409' },
         { title: 'HAPPY BURSTDAY', date: '2025.05.26', type: '정규 5집 · 타이틀 THUNDER',
           songs: ['HBD', 'THUNDER', 'Bad Influence (Prod. by Pharrell Williams)', 'Skyfall (THE 8 Solo)', 'Fortunate Change (JOSHUA Solo)', '99.9% (WONWOO Solo)', 'Raindrops (SEUNGKWAN Solo)', 'Damage (HOSHI Solo) (feat. Timbaland)', 'Shake It Off (MINGYU Solo)', 'Happy Virus (DK Solo)', 'Destiny (WOOZI Solo)', 'Shining Star (Vernon Solo)', 'Gemini (JUN Solo)', 'Trigger (DINO Solo)', 'Coincidence (JEONGHAN Solo)', 'Jungle (S.COUPS Solo)'],
           href: 'https://www.seventeen-17.jp/posts/discography/incaiv' },
@@ -626,6 +629,12 @@
         { date: '2026-11-22', title: '정한×조슈아 JOURNEY INTO [DREAMING] · 일본 공연',
           sub: '베루나 돔(사이타마) · 17:00 (일본 현지) · 공식 라이브뷰잉 별도 진행',
           href: 'https://www.seventeen-17.jp/posts/schedule/ztckpb' },
+        { date: '2026-11-22', title: '정한×조슈아 일본 돔 공연 · 영화관 생중계',
+          sub: '일본 전국 및 해외 일부 극장 · 17:00 (일본 현지) · 극장·예매는 공식 안내 확인',
+          href: 'https://www.seventeen-17.jp/posts/information/vzovft' },
+        { date: '2026-11-27', title: 'HYBE CINE FEST 2026 · SEVENTEEN 월드투어 공연 영상',
+          sub: '일본 전국 영화관 · 11월 27일~12월 10일 한정 상영 · 상영 시간은 극장별 확인',
+          href: 'https://www.seventeen-17.jp/posts/information/mcdmdc' },
         { date: '2026-12-02', title: '정한×조슈아 DREAMSCAPE · 프리미엄 사인회',
           sub: '도쿄 내 비공개 장소 · 당첨자 대상 · 상세 시간·장소는 당첨자 개별 안내',
           href: 'https://www.seventeen-17.jp/posts/schedule/fwczng' },
@@ -638,16 +647,21 @@
         { title: 'PLEDIS · SEVENTEEN 공지', sub: '일정 변경·예매 및 공식 알림 · 로그인 후 확인', href: 'https://weverse.io/seventeen/notice' }
       ],
       news: [
+        { date: '2026.11.11', tag: '차트', title: '정한×조슈아 DREAMSCAPE · 일본레코드협회 10월 골드디스크 골드 인증', href: 'https://www.seventeen-17.jp/posts/information?category=OTHER' },
         { date: '2026.11.11', tag: '공연', title: '정한×조슈아 일본 공연 공식 티켓 쉐어링 개시', href: 'https://www.seventeen-17.jp/posts/information/gnelcq' },
         { date: '2026.11.10', tag: '팬 행사', title: '11월 21·22일 일본 공연장 CARAT 공식 팬클럽 부스 안내', href: 'https://www.seventeen-17.jp/posts/information/deipgt' },
         { date: '2026.10.19', tag: '음악', title: '정한×조슈아 유닛 JxJ 미니 1집 DREAMSCAPE 발매 · 로그인 후 확인', href: 'https://weverse.io/seventeen/notice/39436/' }
       ],
       merch: [
+        { title: '정한×조슈아 일본 공연 공식 팝업 스토어',
+          sub: '2026.11.06~11.23 · SHIBUYA TSUTAYA B1F · 현장 한정 MD · 재고·입장 방식은 공식 안내 확인',
+          href: 'https://www.seventeen-17.jp/posts/information/cbaizr' },
         { title: 'THE 8 생일 기념 공식 굿즈 ver.6', sub: '젓가락 세트 · 2026.11.06 예약 개시 · 재고·종료 여부는 위버스샵 확인', href: 'https://www.seventeen-17.jp/posts/information/mwgnvy' },
         { title: 'JxJ DREAMSCAPE 공식 MD', sub: '포토카드 홀더·키링·포스터·파우치 등 · 수량·재고는 위버스샵 확인', href: 'https://www.seventeen-17.jp/posts/information/kfxdkv' },
         { title: 'SEVENTEEN 공식 상품 목록', sub: 'Weverse Shop · 앨범·응원봉·공식 MD · 가격·재고 확인', href: 'https://shop.weverse.io/ko/shop/KRW/artists/7' }
       ],
       campaigns: [
+        { kind: '홍보대사', date: '2024.06.26', title: '유네스코 청년 친선대사', sub: 'UNESCO 첫 청년 친선대사로 임명 · Going Together 청년 지원 협력', href: 'https://www.unesco.org/en/articles/unesco-and-k-pop-group-seventeen-announce-1-million-grant-scheme-youth-well-being-and-creativity' },
         { kind: '콜라보', date: '2025.06.11', title: 'SEVENTEEN × sacai · Bad Influence 의상', sub: '뮤직비디오 협업 의상 제작 · 자선 경매 수익 UNESCO 기부 안내', href: 'https://www.billboard-japan.com/d_news/detail/150491/2' }
       ],
       accent: '#88a9d8', light: '#dfeeff', dark: '#466386', bg: '#f7faff', shape: '◇'
