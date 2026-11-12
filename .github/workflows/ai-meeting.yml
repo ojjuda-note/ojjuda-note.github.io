@@ -1,0 +1,52 @@
+name: AI meeting task connection
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'admin/meeting/**'
+      - 'features/ai-meeting/**'
+      - 'supabase/functions/ai-meeting/**'
+      - 'supabase/functions/feedback-codex/**'
+      - 'supabase/migrations/**'
+      - 'tests/ai-meeting-tasks-db.test.cjs'
+      - 'tests/package*.json'
+      - '.github/workflows/ai-meeting.yml'
+  pull_request:
+    paths:
+      - 'admin/meeting/**'
+      - 'features/ai-meeting/**'
+      - 'supabase/functions/ai-meeting/**'
+      - 'supabase/functions/feedback-codex/**'
+      - 'supabase/migrations/**'
+      - 'tests/ai-meeting-tasks-db.test.cjs'
+      - 'tests/package*.json'
+      - '.github/workflows/ai-meeting.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ai-meeting-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  meeting_tasks:
+    name: Meeting permissions, dispatch and task states
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix tests ci --ignore-scripts
+      - name: Check meeting, task dispatch and existing repair gateway
+        run: |
+          node --check features/ai-meeting/app.js
+          node --test features/ai-meeting/*.test.mjs supabase/functions/ai-meeting/handler.test.mjs
+          node tests/ai-meeting-tasks-db.test.cjs
+          node tests/feedback-ai-dispatch-db.test.cjs
+          node tests/feedback-codex-gateway.test.cjs

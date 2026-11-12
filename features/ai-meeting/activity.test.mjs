@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 const code = readFileSync(new URL('./app.js', import.meta.url), 'utf8');
+const tasksCode = readFileSync(new URL('./tasks.js', import.meta.url), 'utf8');
 const HUMAN = '08ef9d48-ef85-49f0-94e8-860460923302';
 const NOW = '2026-11-09T12:00:00.000Z';
 
@@ -32,6 +33,7 @@ async function harness({ initial = [], fail = false } = {}) {
   let finishInvoke;
   const called = { invoke: 0 };
   const client = {
+    rpc: async () => ({ data: [] }),
     auth: {
       getUser: async () => ({ data: { user: { id: 'admin-user' } } }),
       onAuthStateChange() {}
@@ -65,12 +67,12 @@ async function harness({ initial = [], fail = false } = {}) {
     createElement: tag => fakeNode(tag),
     addEventListener() {}
   };
-  vm.runInNewContext(code, {
+  vm.runInNewContext(tasksCode + '\n' + code, {
     document, window: {
       OJJUDA_CONFIG: { supabaseUrl: 'https://demo.supabase.co', supabaseKey: 'publishable' },
       supabase: { createClient: () => client }
     },
-    Intl, Date, Math, Set, Map,
+    Intl, Date, Math, Set, Map, URL,
     setInterval: () => 1,
     clearInterval: () => {}
   });

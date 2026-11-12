@@ -23,7 +23,7 @@ function request({ origin = 'https://ojjuda.kr', token = 'member-session', body 
   });
 }
 
-function setup({ admin = true, existing = false, reply = { replies: [{ role: 'quality', text: '로그인 오류부터 재현하겠습니다.' }] }, target = 'quality' } = {}) {
+function setup({ admin = true, existing = false, reply = { replies: [{ role: 'quality', text: '로그인 오류부터 재현하겠습니다.' }] }, target = 'quality', tasks = [], taskStatus = 200 } = {}) {
   const calls = [];
   const fetchImpl = async (url, options = {}) => {
     calls.push({ url, options });
@@ -35,6 +35,7 @@ function setup({ admin = true, existing = false, reply = { replies: [{ role: 'qu
     }
     if (url.includes('reply_to=eq.')) return json(existing ? [{ id: MESSAGE }] : []);
     if (url.includes('sender_kind=eq.human')) return json([{ id: MESSAGE }]);
+    if (url.endsWith('/rest/v1/rpc/admin_ai_meeting_tasks')) return json(tasks, taskStatus);
     if (url.includes('order=created_at.desc')) {
       return json([{ sender_kind: 'human', sender_role: 'representative', content: '로그인 오류를 살펴보자' }]);
     }
@@ -125,4 +126,47 @@ test('missing server-side AI key reports configuration status without exposing a
   const result = await handler(request());
   assert.equal(result.status, 503);
   assert.equal((await result.json()).error, 'ai_not_configured');
+});
+
+test('AI receives actual task status and evidence without dispatch credentials', async () => {
+  const evidence = 'https://github.com/ojjuda-note/ojjuda-note.github.io/commit/' + 'a'.repeat(40);
+  const { handler, calls } = setup({ tasks: [{
+    feedback_id: 12, content: '로그인 오류 수정', status: 'resolved', dispatch_status: 'dispatched',
+    summary: '수정과 배포 검증 완료', result: '가입 흐름 정상', evidence_url: evidence,
+    dispatch_nonce: 'never-send-nonce', lease_token: 'never-send-lease', requested_by: 'private-actor'
+  }] });
+  assert.equal((await handler(request())).status, 200);
+  const taskRead = calls.find(item => item.url.endsWith('/rest/v1/rpc/admin_ai_meeting_tasks'));
+  assert.equal(taskRead.options.headers.Authorization, 'Bearer member-session');
+  assert.deepEqual(JSON.parse(taskRead.options.body), { p_limit: 5 });
+  const payload = JSON.parse(calls.find(item => item.url === 'https://api.openai.com/v1/responses').options.body);
+  assert.match(payload.input, /"verified":true/);
+  assert.match(payload.input, /"status":"resolved"/);
+  assert.ok(payload.input.includes(evidence));
+  assert.doesNotMatch(payload.input, /never-send|private-actor|dispatch_nonce|lease_token/);
+  assert.match(payload.instructions, /dispatched.*완료가 아니다/);
+  assert.equal(payload.tools, undefined);
+  assert.equal(calls.some(item => item.url.includes('create_task') || item.url.includes('feedback-codex')), false);
+});
+
+test('failed task lookup preserves chat and explicitly marks execution state unavailable', async () => {
+  const { handler, calls } = setup({ taskStatus: 503, tasks: { error: 'unavailable' } });
+  assert.equal((await handler(request())).status, 200);
+  const payload = JSON.parse(calls.find(item => item.url === 'https://api.openai.com/v1/responses').options.body);
+  assert.match(payload.input, /"verified":false,"tasks":\[\]/);
+  assert.match(payload.instructions, /현재 작업 상태를 확인하지 못했다고/);
+});
+
+test('unrecognized task states and external evidence links cannot become verified completion evidence', async () => {
+  const { handler, calls } = setup({ tasks: [{
+    feedback_id: 13, content: 'x'.repeat(2000), status: 'completed', dispatch_status: 'done',
+    evidence_url: 'https://example.invalid/pretend-success', summary: 'y'.repeat(2000)
+  }] });
+  assert.equal((await handler(request())).status, 200);
+  const payload = JSON.parse(calls.find(item => item.url === 'https://api.openai.com/v1/responses').options.body);
+  assert.match(payload.input, /"status":"unknown"/);
+  assert.match(payload.input, /"evidence_url":null/);
+  assert.doesNotMatch(payload.input, /example\.invalid/);
+  assert.ok(!payload.input.includes('x'.repeat(501)));
+  assert.ok(!payload.input.includes('y'.repeat(501)));
 });

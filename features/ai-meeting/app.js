@@ -13,11 +13,13 @@
     target: $('target'), text: $('message'), file: $('file'), filePreview: $('file-preview'),
     send: $('send'), retryBox: $('retry-box'), retry: $('retry'), refresh: $('refresh'),
     workState: $('work-state'), workClock: $('work-clock'), workDetail: $('work-detail'),
-    workSteps: $('work-steps'), workHistory: $('work-history'), workUpdated: $('work-updated')
+    workSteps: $('work-steps'), workHistory: $('work-history'), workUpdated: $('work-updated'),
+    taskList: $('task-list'), taskUpdated: $('task-updated'), taskFeedback: $('task-feedback'), taskRefresh: $('task-refresh')
   };
   const config = window.OJJUDA_CONFIG;
   let client, user, busy = false, loading = false, polling = null, clockTimer = null;
   let signature = null, retryId = null, activeWork = null, lastWork = null;
+  let taskBoard = null, messageRows = [];
 
   const tell = message => { ui.feedback.textContent = message || ''; };
   const guard = message => { ui.room.hidden = true; ui.guard.hidden = false; ui.guard.textContent = message; };
@@ -144,36 +146,61 @@
       link.addEventListener('click', () => downloadAttachment(message.file_path));
       body.append(link);
     }
+    const action = taskBoard?.renderAction(message);
+    if (action) body.append(action);
     row.append(avatar, body);
     return row;
   }
 
+  function renderMessages(rows) {
+    const next = `${rows.map(item => item.id).join(',')}:${taskBoard?.revision || 0}`;
+    if (next === signature) return;
+    const atBottom = ui.messages.scrollHeight - ui.messages.scrollTop - ui.messages.clientHeight < 130;
+    signature = next;
+    if (!rows.length) {
+      ui.messages.replaceChildren(make('div', 'empty', '첫 회의를 시작해 보세요.\nAI 본부장이 관련 담당자의 의견을 모아 답변합니다.'));
+    } else {
+      ui.messages.replaceChildren(...rows.map(renderMessage));
+    }
+    if (atBottom || rows.length <= 3) ui.messages.scrollTop = ui.messages.scrollHeight;
+  }
+
   async function loadMessages() {
     if (!user || loading) return;
+    const actorId = user.id;
     loading = true;
     try {
       const { data, error } = await client.from('ai_meeting_messages')
-        .select('id,created_at,sender_kind,sender_role,content,file_name,file_path,reply_to')
+        .select('id,created_at,created_by,room,sender_kind,sender_role,target_role,content,file_name,file_path,reply_to')
         .eq('room', 'hq').order('created_at', { ascending: false }).limit(80);
+      if (user?.id !== actorId) return false;
       if (error) throw error;
       const rows = (data || []).reverse();
+      messageRows = rows;
       renderWorkHistory(rows);
-      const next = rows.map(item => item.id).join(',');
-      if (next === signature) return true;
-      const atBottom = ui.messages.scrollHeight - ui.messages.scrollTop - ui.messages.clientHeight < 130;
-      signature = next;
-      if (!rows.length) {
-        ui.messages.replaceChildren(make('div', 'empty', '첫 회의를 시작해 보세요.\nAI 본부장이 관련 담당자의 의견을 모아 답변합니다.'));
-      } else {
-        ui.messages.replaceChildren(...rows.map(renderMessage));
-      }
-      if (atBottom || rows.length <= 3) ui.messages.scrollTop = ui.messages.scrollHeight;
+      renderMessages(rows);
       return true;
     } catch {
+      if (user?.id !== actorId) return false;
       tell('대화 기록을 불러오지 못했어요. 잠시 후 새로고침해 주세요.');
       ui.workUpdated.textContent = '갱신 실패 · 다시 시도 필요';
       return false;
     } finally { loading = false; }
+  }
+
+  function refreshAll() {
+    if (!user) return;
+    return Promise.all([loadMessages(), taskBoard?.refresh()]);
+  }
+
+  function stopSession(message) {
+    user = null;
+    activeWork = null;
+    messageRows = [];
+    taskBoard?.stop();
+    if (polling) clearInterval(polling);
+    if (clockTimer) clearInterval(clockTimer);
+    guard(message);
   }
 
   function friendlyError(code) {
@@ -282,27 +309,33 @@
       if (role.error) { guard('관리자 권한을 확인하지 못했어요.'); return; }
       if (!role.data) { guard('관리자만 이용할 수 있는 회의실입니다.'); return; }
       user = auth.data.user;
+      if (!window.OjjudaMeetingTasks?.create) { guard('작업 화면을 불러오지 못했어요. 새로고침해 주세요.'); return; }
+      taskBoard = window.OjjudaMeetingTasks.create({
+        client, getUser: () => user,
+        elements: { list: ui.taskList, updated: ui.taskUpdated, feedback: ui.taskFeedback, refreshButton: ui.taskRefresh },
+        formatTime,
+        onChange: () => { if (user) renderMessages(messageRows); },
+        onAuthLost: () => stopSession('관리자 인증을 다시 확인해 주세요. 다시 로그인한 뒤 열어 주세요.')
+      });
+      client.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_OUT' || (session?.user && user && session.user.id !== user.id)) {
+          stopSession('로그인 상태가 변경되었습니다. 관리자 계정으로 다시 열어 주세요.');
+        }
+      });
       ui.guard.hidden = true;
       ui.room.hidden = false;
       renderWork();
-      await loadMessages();
-      polling = setInterval(() => { if (!document.hidden) loadMessages(); }, 6500);
+      await refreshAll();
+      if (!user) return;
+      polling = setInterval(() => { if (!document.hidden) refreshAll(); }, 6500);
       clockTimer = setInterval(() => { if (activeWork && !document.hidden) renderWork(); }, 1000);
-      document.addEventListener('visibilitychange', () => { if (!document.hidden) loadMessages(); });
-      client.auth.onAuthStateChange((event) => {
-        if (event === 'SIGNED_OUT') {
-          user = null;
-          if (polling) clearInterval(polling);
-          if (clockTimer) clearInterval(clockTimer);
-          guard('로그아웃되었습니다. 다시 로그인해 주세요.');
-        }
-      });
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshAll(); });
     } catch { guard('회의실을 열지 못했어요. 잠시 후 다시 시도해 주세요.'); }
   }
 
   ui.file.addEventListener('change', filePreview);
   ui.send.addEventListener('click', send);
-  ui.refresh.addEventListener('click', loadMessages);
+  ui.refresh.addEventListener('click', refreshAll);
   ui.retry.addEventListener('click', async () => {
     if (!retryId || busy) return;
     const id = retryId;
