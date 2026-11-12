@@ -799,6 +799,35 @@
       concept: '성장을 노래하는 NCT의 여섯 멤버 유닛.',
       official: 'https://www.smentertainment.com/', youtube: 'https://www.youtube.com/@NCTDREAM',
       photo: 'NCT Dream at DREAM()SCAPE Press Conference.png', photoLabel: 'DREAM()SCAPE 기자회견 · 당시 사진', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
+      checkedAt: '2026.11.12',
+      music: [
+        { title: 'DREAM AFTER DREAM', date: '2026.11.09', type: '정규 6집 · 타이틀 Boogie Woogie', songs: ['The Sun', 'Boogie Woogie', 'Dream After Dream', 'Skydive', 'Pressure', 'Watch U Watch Me', 'Cool for Me', 'Tumbler', 'Smile for U', 'This Is Your World'], href: 'https://music.apple.com/us/album/dream-after-dream/6827483714' },
+        { title: 'Chewing Gum', date: '2016.08.25', type: '데뷔 디지털 싱글 · Chewing Gum', songs: ['Chewing Gum'], href: 'https://music.apple.com/us/album/chewing-gum-single/1147458439' }
+      ],
+      appearances: [
+        { date: '2026-11-12', title: 'The Harvest Day · DREAM AFTER DREAM', sub: '서울 CUBE 컨벤션센터 · 20:00 KST · 앨범 구매자 대상 행사·공식 온라인 생중계', href: 'https://weverse.io/nctdream/notice/40463' },
+        { date: '2026-11-16', title: 'WELCOME, DREAMERS 팝업 마지막 날', sub: '서울 성동구 연무장7길 16 · 11.08~11.16 운영 · 12:00~20:00', href: 'https://weverse.io/nctdream/notice/40609' },
+        { date: '2026-11-22', title: 'TV아사히 드림 페스티벌 2026 출연', sub: '일본 K아레나 요코하마 · 개연 15:00 · TV아사히 주최 · 매진 안내', href: 'https://dreamfestival.jp/' },
+        { date: '2026-12-07', title: 'DREAM AFTER DREAM 일본 발매 기념 이벤트 · 도쿄', sub: '도쿄 시내 · 구매자 추첨 초대 · 장소·시간 당첨자 개별 안내', href: 'https://www.nct-jp.net/news/detail.php?id=1137067' },
+        { date: '2026-12-09', title: '2026 FNS 가요제 제2야 생방송 출연', sub: '일본 후지TV · 18:30~21:54 JST 방송 · 출연 시각 미정', href: 'https://www.nct-jp.net/news/detail.php?id=1137066' },
+        { date: '2026-12-27', title: 'DREAM AFTER DREAM 일본 발매 기념 이벤트 · 교토', sub: '교토 시내 · 구매자 추첨 초대 · 장소·시간 당첨자 개별 안내', href: 'https://www.nct-jp.net/news/detail.php?id=1137067' }
+      ],
+      news: [
+        { date: '2026.11.09', tag: '컴백', title: '정규 6집 DREAM AFTER DREAM 발매 · 타이틀 Boogie Woogie', href: 'https://nct-jp.net/news/detail.php?id=1137002' },
+        { date: '2026.11.09', tag: '음원 이벤트', title: 'LINE MUSIC · iTunes · Spotify 공식 발매 기념 캠페인', href: 'https://nct-jp.net/news/detail.php?id=1137002' },
+        { date: '2026.11.03', tag: '방송', title: '12.09 일본 FNS 가요제 제2야 생방송 출연 발표', href: 'https://www.nct-jp.net/news/detail.php?id=1137066' },
+        { date: '2026.09.10', tag: '공연', title: '11.22 TV아사히 드림 페스티벌 출연 발표', href: 'https://nct-jp.net/en/news/detail.php?id=1135918' }
+      ],
+      merch: [
+        { title: 'DREAM AFTER DREAM 정규 6집', sub: 'Weverse Shop 공식 음반 · 포토북/주얼케이스/SMini/미니박스 · 재고는 판매처 확인', href: 'https://shop.weverse.io/ko/shop/USD/artists/131/notices/14634' },
+        { title: 'DREAM AFTER DREAM 일본 한정 주얼케이스', sub: 'mu-mo SHOP · 일본판 포토카드 · 추첨 응모 11.23까지', href: 'https://www.nct-jp.net/news/detail.php?id=1137067' },
+        { title: 'NCT DREAM 공식 굿즈', sub: 'SMTOWN GLOBAL SHOP · 판매 여부·가격은 판매처에서 확인', href: 'https://global.shop.smtown.com/collections/nct-dream' }
+      ],
+      campaigns: [
+        { kind: '콜라보', date: '2026.11.09', title: 'LINE MUSIC × NCT DREAM', sub: 'Boogie Woogie 스트리밍 캠페인 · 일본 공식 발표', href: 'https://nct-jp.net/news/detail.php?id=1137003' },
+        { kind: '콜라보', date: '2026.11.09', title: 'iTunes × NCT DREAM', sub: 'DREAM AFTER DREAM 다운로드 이벤트 · 일본 공식 발표', href: 'https://nct-jp.net/news/detail.php?id=1137004' },
+        { kind: '콜라보', date: '2026.11.09', title: 'Spotify × NCT DREAM', sub: 'Boogie Woogie Canvas 공유 캠페인 · 일본 공식 발표', href: 'https://nct-jp.net/news/detail.php?id=1137005' }
+      ],
       accent: '#67b956', light: '#e6fbdc', dark: '#416e37', bg: '#f5fff1', shape: '☘'
     },
     {
