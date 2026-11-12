@@ -1,7 +1,7 @@
 // Keep the immutable vendor URL shared with engine.mjs to avoid downloading
 // the same astronomy library twice. The importing app versions this module.
 import { Solar } from './vendor/lunar-1.7.8.mjs?v=20261112-starlit-saju1';
-import { makeReference, makeTransitReference } from './reference-data.mjs?v=20261113-saju-depth1';
+import { makeReference, makeTransitReference } from './reference-data.mjs?v=20261113-saju-brief1';
 
 const HOUR = 3600000;
 const MIN_YEAR = 1900;

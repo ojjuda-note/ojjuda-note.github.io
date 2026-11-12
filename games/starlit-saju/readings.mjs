@@ -1,12 +1,12 @@
 import {
   STEM_REFERENCE, GROUP_REFERENCE, GOD_REFERENCE, ELEMENT_RELATIONS,
   RELATION_REFERENCE, GROUP_PAIR_RULES, PRACTICE_SUGGESTIONS,
-} from './readings-data.mjs?v=20261113-saju-depth1';
-import { attachPlainLanguage } from './plain-language.mjs?v=20261113-saju-depth1';
-import { attachAdvice } from './advice.mjs?v=20261113-saju-depth1';
-import { attachDeeperReadings } from './deeper-reading.mjs?v=20261113-saju-depth1';
-import { attachStageReadings } from './stage-reading.mjs?v=20261113-saju-depth1';
-import { getReadingSources } from './sources.mjs?v=20261113-saju-depth1';
+} from './readings-data.mjs?v=20261113-saju-brief1';
+import { attachPlainLanguage } from './plain-language.mjs?v=20261113-saju-brief1';
+import { attachAdvice } from './advice.mjs?v=20261113-saju-brief1';
+import { attachDeeperReadings } from './deeper-reading.mjs?v=20261113-saju-brief1';
+import { attachStageReadings } from './stage-reading.mjs?v=20261113-saju-brief1';
+import { getReadingSources } from './sources.mjs?v=20261113-saju-brief1';
 
 const GROUP_KEYS = ['peer', 'expression', 'wealth', 'authority', 'resource'];
 const ELEMENT_KEYS = ['wood', 'fire', 'earth', 'metal', 'water'];
@@ -293,9 +293,9 @@ function buildEvidence(fortune,registry) {
 function methodMetadata(fortune,topic='all') {
   const profile=fortune.profile;
   return {
-    title:'이 풀이에서 알려 주는 내용',
-    description:'입력한 생일로 사주 글자를 계산하고, 옛 사주 풀이에서 어떤 뜻으로 읽는지 설명해요. 계산한 내용과 옛 풀이, 함께 쓰는 설명, 생활에서 해 볼 일은 따로 표시해요. 성격을 검사하거나 미래를 확인한 결과는 아니에요.',
-    reuseNotice:'같은 글자와 관계가 나오면 같은 설명을 써요. 여러 이야기를 함께 읽는 설명 중에는 저희가 작성한 공통 참고 해설도 있어요. 생활 제안도 확인된 같은 관계에는 같은 규칙으로 연결해요. 앞으로 일어날 일을 확인한 정보는 아니에요.',
+    title:'풀이 기준과 범위',
+    description:'입력한 생일로 계산한 사주 글자를 전통의 뜻으로 풀이해요. 계산 근거·전통 해석·참고 설명·생활 제안을 구분해 보여 드려요.',
+    reuseNotice:'같은 글자·관계에는 같은 설명과 제안 규칙을 써요. 두 주제를 연결한 설명과 생활 예시는 저희가 작성한 공통 참고 해설이에요.',
     calculated:[
       '태어난 해·달·날·시간의 글자와, 아직 정할 수 없는 부분의 후보와 이유',
       '나무·불·흙·쇠·물의 개수와 음양의 개수, 나를 나타내는 글자와 태어난 계절의 관계',
@@ -348,9 +348,9 @@ function easySectionCopy(chapters) {
   }
   return lines;
 }
-function adviceCopy(report,advice) {
+function adviceCopy(advice) {
   if(!advice?.length)return [];
-  const lines=['','선택에 도움이 되는 제안',report.adviceNotice];
+  const lines=['','선택에 도움이 되는 제안'];
   for(const item of advice)lines.push('',item.title,'이 제안을 연결한 이유: '+item.why,'해 볼 일: '+item.action,'함께 살펴볼 점: '+item.caution);
   return lines;
 }
@@ -363,14 +363,14 @@ function copyCategory(report,topic) {
   for(const current of topics){
     if(current==='monthly'){
       lines.push('',report.monthsIntro);
-      for(const month of report.months)lines.push('',month.title,month.summary,month.periodLabel,...easySectionCopy(month.chapters),...adviceCopy(report,month.advice));
+      for(const month of report.months)lines.push('',month.title,month.summary,month.periodLabel,...easySectionCopy(month.chapters),...adviceCopy(month.advice));
     }else{
       const section=report.sections.find(value=>value.id===current);
-      lines.push('',section.title,section.summary,...easySectionCopy(section.chapters),...adviceCopy(report,report.adviceByCategory[current]));
+      lines.push('',section.title,section.summary,...easySectionCopy(section.chapters),...adviceCopy(report.adviceByCategory[current]));
     }
   }
   lines.push('','사주 이름을 쉬운 말로',...report.glossary.map(value=>value.term+': '+value.meaning));
-  lines.push('',method.title,method.description,method.reuseNotice,'[이 상품에 포함된 계산 범위]',...method.calculated,'[계산하지 않은 범위]',...method.notCalculated,...method.warnings);
+  lines.push('',method.title,method.description,method.reuseNotice,report.adviceNotice,'[이 상품에 포함된 계산 범위]',...method.calculated,'[계산하지 않은 범위]',...method.notCalculated,...method.warnings);
   lines.push('','원래의 계산과 해석 전체');
   for(const current of topics){
     if(current==='monthly'){

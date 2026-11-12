@@ -72,7 +72,7 @@ test('common definitions, suggestions and authored combinations stay in labelled
     assert.ok(applied.text.includes(value.reading));
     assert.ok(!combined.interpretation.some(text => text.includes(value.reading)));
   }
-  assert.match(report.method.reuseNotice, /같은 글자와 관계가 나오면 같은 설명/);
+  assert.match(report.method.reuseNotice, /같은 글자·관계에는 같은 설명과 제안 규칙/);
   assert.match(report.method.reuseNotice, /저희가 작성한 공통 참고 해설/);
 });
 
@@ -207,7 +207,7 @@ test('all twelve months keep grounded service suggestions, including repeated sy
       }
     }
     assert.match(report.adviceNotice,/오쭈다가 쓴 생활 제안/);
-    assert.match(report.adviceNotice,/같은 관계에는 같은 제안 규칙/);
+    assert.match(report.method.reuseNotice,/같은 글자·관계에는 같은 설명과 제안 규칙/);
     assert.ok(report.months.at(-1).advice.length>=2,'December must not lose suggestions through a shared annual deduplication set');
   }
   assert.equal(observedCodes.size,10,'fixtures exercise all ten actual relationship types');
@@ -318,8 +318,8 @@ test('natal combined themes explain only two groups actually observed and disclo
     assert.deepEqual(chapter.referenceRules.map(value=>value.id),active.map(value=>`natal.deep-pair.${value.id}`));
     assert.deepEqual(chapter.interpretation,[],'the service-authored combination is not a traditional verdict');
     const text=chapter.easyParagraphs.join(' ');
-    assert.match(text,/저희가 쓴 참고 풀이/);
-    assert.match(text,/같은 조합에는 같은 설명 규칙/);
+    assert.match(chapter.reference.join(' '),/저희가 쓴 참고 풀이/);
+    assert.match(chapter.reference.join(' '),/같은 조합에는 같은 설명 규칙/);
     if(!active.length)sawNoPair=true;
     for(const pair of active){
       const applied=chapter.referenceRules.find(value=>value.id===`natal.deep-pair.${pair.id}`);
@@ -354,7 +354,7 @@ test('yearly work and money and every monthly life topic follow their actual ten
         assert.ok(chapter,`${prefix} is missing its ${lifeTopic} explanation`);
         assert.deepEqual(chapter.interpretation,[],'a life application remains visibly service-authored');
         const text=chapter.easyParagraphs.join(' ');
-        assert.match(text,/저희가 쓴 생활 풀이/);
+        assert.match(chapter.reference.join(' '),/저희가 쓴 생활 풀이/);
         const explanations=chapter.referenceRules.filter(value=>codes.some(code=>value.id===`${prefix}.life-topic.${lifeTopic}.${code}`));
         assert.deepEqual(explanations.map(value=>value.id),codes.map(code=>`${prefix}.life-topic.${lifeTopic}.${code}`),
           'one explanation per observed code; repeated positions share the actual rule');

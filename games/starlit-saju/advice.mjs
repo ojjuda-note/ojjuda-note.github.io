@@ -123,7 +123,7 @@ function pairAdvice(interactions,prefix,label) {
 
 export function attachAdvice(report,fortune) {
   const profile=fortune.profile;
-  report.adviceNotice='아래 내용은 계산된 글자와 관계를 살펴보고 오쭈다가 쓴 생활 제안이에요. 옛 원문이나 앞으로 일어날 일의 예고는 아니에요. 같은 관계에는 같은 제안 규칙을 쓰며, 내 상황에 맞는 것을 골라 볼 수 있어요. 십성 제안은 위쪽 글자와 아래쪽 대표 글자를 기준으로 연결했어요.';
+  report.adviceNotice='오쭈다가 쓴 생활 제안이에요. 내 상황에 맞는 것을 골라 보세요.';
   report.adviceByCategory={
     lifelong:[...natalGodAdvice(profile),...pairAdvice(profile.interactions,'natal','태어난 사주')],
     annual:[...transitGodAdvice(profile,fortune.annual,'annual',`${fortune.year}년`),...pairAdvice(fortune.annual.interactions,'annual',`${fortune.year}년 글자와 태어난 사주 사이`)],

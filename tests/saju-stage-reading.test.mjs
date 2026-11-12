@@ -32,9 +32,10 @@ test('stage meanings explain every confirmed natal position, with sourced metaph
     assert.ok(chapter.easyParagraphs.includes(rule.text));
     assert.ok(report.copyByCategory.lifelong.includes(rule.text));
   }
-  assert.match(chapter.easyParagraphs.join(' '), /어린 시절부터 노년까지를 순서대로 나눈 표가 아니/);
+  assert.match(chapter.reference.join(' '), /어린 시절부터 노년까지를 순서대로 나눈 표가 아니/);
   assert.match(chapter.reference.join(' '), /오쭈다가 만든 예시/);
-  assert.match(chapter.easyParagraphs.join(' '), /실제 병, 죽음, 수명이나 성공과 실패를 판정하지/);
+  assert.match(chapter.reference.join(' '), /실제 병, 죽음, 수명이나 성공과 실패를 판정하지/);
+  assert.match(chapter.easyParagraphs.join(' '), /실제 질병이나 죽음을 뜻하지/);
   for (const question of chapter.practice) {
     assert.ok(!chapter.interpretation.includes(question),'an authored exercise is not a traditional rule');
     assert.ok(report.copyByCategory.lifelong.includes(question));

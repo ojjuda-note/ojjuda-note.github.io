@@ -23,6 +23,7 @@ const POSITION_NAMES = { year:'태어난 해 자리', month:'태어난 달 자�
 const CYCLE_REFERENCE = '십이운성은 생겨나고, 자라고, 무르익고, 거두는 모습을 열두 이름으로 나타낸 옛 분류예요. 같은 이름의 기본 뜻은 누구에게나 같고, 실제 계산에서 나온 이름을 각 자리에 연결해 설명해요.';
 const SOURCE_REFERENCE = '《삼명통회》 권2의 열두 단계 설명을 쉬운 말로 옮겼어요. 원문도 생왕, 곧 생겨나고 왕성한 모습이라고 바로 좋다고 하거나, 사·절이라는 이름이라고 바로 나쁘다고 정하지 말라고 설명해요.';
 const QUESTION_REFERENCE = '생활 질문은 이 비유를 이해하도록 오쭈다가 만든 예시예요. 옛 문헌의 문장을 그대로 인용하거나 개인에게 일어날 일을 예측한 내용은 아니에요.';
+const STAGE_LIMIT_REFERENCE = '병·사·묘 같은 이름은 변화의 모습을 빗댄 말이에요. 이 이름으로 실제 병, 죽음, 수명이나 성공과 실패를 판정하지 않아요.';
 
 function makeStageChapter(report, fortune, { prefix, id, pillars, period }) {
   if (!pillars?.length) return null;
@@ -42,7 +43,7 @@ function makeStageChapter(report, fortune, { prefix, id, pillars, period }) {
   });
   const rules = entries.map(({ pillar, meaning, factId, position }) => ({
     id:`${factId}.meaning`, factIds:['natal.day-master', factId], origin:'traditional-symbolic', sourceUrl:STAGE_SOURCE_URL,
-    text:`${position} ${pillar.hangul}(${pillar.hanja})의 계산 결과: ${pillar.lifeStage.label}(${pillar.lifeStage.hanja}). 옛 문헌에 나오는 ${meaning.name}의 뜻은 이래요. ${meaning.meaning}`,
+    text:`${position} ${pillar.hangul}(${pillar.hanja}) · ${pillar.lifeStage.label}(${pillar.lifeStage.hanja}): ${meaning.meaning}`,
   }));
   const uniqueEntries = [...new Map(entries.map(entry => [entry.pillar.lifeStage.hanja, entry])).values()];
   const summary = prefix === 'natal'
@@ -50,21 +51,23 @@ function makeStageChapter(report, fortune, { prefix, id, pillars, period }) {
     : `${period}에 나온 ‘${entries[0].pillar.lifeStage.label}’이라는 이름의 뜻: ${entries[0].meaning.meaning}`;
   const master = fortune.profile.dayMaster;
   const interpretation = rules.map(rule => rule.text);
+  const positionReference = prefix === 'natal'
+    ? `나를 나타내는 기준 글자 ${master.hangul}(${master.hanja})과 각 자리의 아래쪽 글자를 비교한 결과예요. 여기서 해·달·날·시간은 태어난 사주의 자리 이름이에요. 어린 시절부터 노년까지를 순서대로 나눈 표가 아니에요.`
+    : `나를 나타내는 기준 글자 ${master.hangul}(${master.hanja})과 ${period}의 아래쪽 글자를 비교했어요. 같은 해나 달이어도 기준 글자가 달라지면 나오는 이름이 달라질 수 있어요.`;
   const easyParagraphs = [
-    CYCLE_REFERENCE,
+    ...(prefix === 'natal' ? ['십이운성은 자라고 거두는 모습을 빗댄 열두 단계예요.'] : []),
     prefix === 'natal'
-      ? `나를 나타내는 기준 글자 ${master.hangul}(${master.hanja})과 각 자리의 아래쪽 글자를 비교한 결과예요. 여기서 해·달·날·시간은 태어난 사주의 자리 이름이에요. 어린 시절부터 노년까지를 순서대로 나눈 표가 아니에요.`
-      : `나를 나타내는 기준 글자 ${master.hangul}(${master.hanja})과 ${period}의 아래쪽 글자를 비교했어요. 같은 해나 달이어도 기준 글자가 달라지면 나오는 이름이 달라질 수 있어요.`,
+      ? `내 기준 글자 ${master.hangul}(${master.hanja})과 각 자리의 아래쪽 글자를 비교했어요.`
+      : `내 기준 글자 ${master.hangul}(${master.hanja})과 ${period}의 아래쪽 글자를 비교했어요.`,
     ...interpretation,
-    SOURCE_REFERENCE,
-    '병·사·묘 같은 이름은 변화의 모습을 빗댄 말이에요. 이 이름으로 실제 병, 죽음, 수명이나 성공과 실패를 판정하지 않아요.',
-    QUESTION_REFERENCE,
+    ...(entries.some(entry => ['病','死','墓'].includes(entry.pillar.lifeStage.hanja))
+      ? ['병·사·묘는 변화의 비유이며 실제 질병이나 죽음을 뜻하지 않아요.'] : []),
   ];
   return {
     id, title:'자라고 쉬는 열두 단계의 뜻', summary, easyParagraphs, factIds,
     calculation, interpretation, rules, referenceRules:[],
-    reference:[CYCLE_REFERENCE, SOURCE_REFERENCE, QUESTION_REFERENCE, `원문을 확인한 곳: ${STAGE_SOURCE_URL}`],
-    practice:uniqueEntries.map(({ meaning }) => `${meaning.name}이라는 비유로 생각해 보기: ${meaning.question}`),
+    reference:[CYCLE_REFERENCE, positionReference, SOURCE_REFERENCE, STAGE_LIMIT_REFERENCE, QUESTION_REFERENCE, `원문을 확인한 곳: ${STAGE_SOURCE_URL}`],
+    practice:uniqueEntries.map(({ meaning }) => `${meaning.name}: ${meaning.question}`),
     paragraphs:[...calculation, ...interpretation], basis:calculation,
   };
 }

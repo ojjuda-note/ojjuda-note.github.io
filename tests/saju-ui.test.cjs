@@ -195,7 +195,7 @@ test('reader size and chapter navigation preserve the purchased reading without 
   const original=h.$('report-content').textContent;
   assert.equal(h.$('reading-controls').hidden,false);
   assert.match(h.$('current-reading-title').textContent,/평생운/);
-  assert.match(h.$('current-reading-note').textContent,/구매한 풀이.*0쭈/);
+  assert.match(h.$('current-reading-note').textContent,/다시 보기 0쭈/);
   const normal=doc.querySelector('.reading-size-control button[data-reading-size="normal"]');
   const large=doc.querySelector('.reading-size-control button[data-reading-size="large"]');
   assert.equal(normal.getAttribute('aria-pressed'),'true');
@@ -205,9 +205,17 @@ test('reader size and chapter navigation preserve the purchased reading without 
   assert.equal(normal.getAttribute('aria-pressed'),'false');
   assert.equal(h.$('report-content').textContent,original);
   const outline=doc.querySelector('.chapter-outline');
+  assert.equal(outline.open,false);
+  outline.querySelector('summary').click();
   assert.equal(outline.open,true);
   for (const link of [...outline.querySelectorAll('a'),...h.$('report-toc').querySelectorAll('a')]) {
-    assert.ok(h.$(link.hash.slice(1)),`navigation target exists: ${link.hash}`);
+    const target=h.$(link.hash.slice(1));
+    assert.ok(target,`navigation target exists: ${link.hash}`);
+    if(target.tagName==='DETAILS') {
+      assert.equal(target.open,false);
+      link.click();
+      assert.equal(target.open,true,'an explicit contents link reveals the requested information');
+    }
   }
   h.pickReport('annual',2027);
   assert.match(h.$('current-reading-title').textContent,/평생운/,'choosing a product does not relabel the current story');
@@ -269,6 +277,16 @@ test('each chapter leads with its title, clear subtitle and easy detail before c
   assert.ok(h.$('reading-guide-title'));assert.ok(h.$('reading-glossary'));
   for (const topic of ['lifelong','annual','monthly','all']) {
     if(topic!=='lifelong') {h.pickReport(topic,2026);h.$('open-product').click();await h.ready(topic,2026);}
+    const first=h.$('report-content').firstElementChild;
+    assert.equal(first.id,topic==='all'?'reading-all':topic==='monthly'?'reading-months':`reading-${topic}`,
+      'the requested reading comes before supporting instructions');
+    for(const id of ['reading-guide','reading-evidence','reading-method','reading-sources']) {
+      const details=h.$(id);
+      assert.equal(details.tagName,'DETAILS');
+      assert.equal(details.open,false,'supporting information starts collapsed');
+      details.querySelector('summary').click();
+      assert.equal(details.open,true,'all supporting information remains available on request');
+    }
     const chapters=topic==='all'?[...expected.sections.flatMap(section=>section.chapters),...expected.months.flatMap(month=>month.chapters)]:topic==='monthly'?expected.months.flatMap(month=>month.chapters):expected.sections.find(section=>section.id===topic).chapters;
     const articles=[...h.$('report-content').querySelectorAll('.report-chapter')];
     assert.equal(articles.length,chapters.length);
@@ -315,7 +333,9 @@ test('each chapter leads with its title, clear subtitle and easy detail before c
       assert.equal(card.querySelector('.advice-caution > span').textContent,item.caution);
     }
     if (topic==='monthly'||topic==='all') for (const month of expected.months) assert.equal(h.$(`reading-month-${month.month}`).querySelectorAll('.advice-card').length,month.advice.length);
-    for (const notice of h.$('report-content').querySelectorAll('.advice-notice')) assert.equal(notice.textContent,expected.adviceNotice);
+    const notices=h.$('report-content').querySelectorAll('.advice-notice');
+    assert.equal(notices.length,1,'a common advice notice is stated once, not once per month');
+    assert.equal(notices[0].textContent,expected.adviceNotice);
     assert.match(expected.adviceNotice,/오쭈다가 쓴 생활 제안/);
     const sources=getReadingSources(topic,2026);
     const renderedSources=[...h.$('reading-sources').querySelectorAll('.source-entry')];
@@ -418,7 +438,10 @@ test('the explicit thirty-ju full purchase opens all three readings and each can
   assert.equal(h.$('entry-year-field').hidden,false);
   assert.match(h.$('entry-price-value').textContent,/2026.*전체 풀이.*30쭈/);
   assert.match(h.$('open-story').textContent,/30쭈로.*전체 풀이/);
-  assert.match(h.$('entry-price-note').textContent,/전체는 30쭈.*각각은 10쭈.*이미 산 항목/);
+  for(const topic of ['lifelong','annual','monthly']) {
+    assert.equal(h.window.document.querySelector(`[data-entry-price="${topic}"]`).textContent,'10쭈');
+  }
+  assert.match(h.$('entry-price-note').textContent,/이미 산 항목.*중복 차감.*같은 출생 정보·항목·연도.*0쭈/);
   assert.equal(h.state.starts.length,0,'selecting the full product only checks ownership');
   h.submit();await h.ready('all',2026);
   assert.deepEqual(h.state.chargedAmounts,[30]);assert.equal(h.state.coins,0);

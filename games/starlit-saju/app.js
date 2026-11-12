@@ -299,7 +299,7 @@ function readBirth() {
 function birthSignature(input=readBirth()) { return JSON.stringify(input); }
 function hasBirth() { return ['birth-year','birth-month','birth-day'].every(id => $(id).value !== ''); }
 async function calculateBirth(input) {
-  enginePromise ||= import('./engine.mjs?v=20261113-saju-depth1').catch(error => { enginePromise=null; throw error; });
+  enginePromise ||= import('./engine.mjs?v=20261113-saju-brief1').catch(error => { enginePromise=null; throw error; });
   const {calculateSaju} = await enginePromise;
   return calculateSaju(input);
 }
@@ -394,9 +394,9 @@ document.querySelectorAll('.reading-size-control button').forEach(button=>button
 
 async function prepareDetailedReading(chart,target) {
   detailModulesPromise ||= Promise.all([
-    import('./fortune-data.mjs?v=20261113-saju-depth1'),
-    import('./readings.mjs?v=20261113-saju-depth1'),
-    import('./report-view.mjs?v=20261113-saju-depth1')
+    import('./fortune-data.mjs?v=20261113-saju-brief1'),
+    import('./readings.mjs?v=20261113-saju-brief1'),
+    import('./report-view.mjs?v=20261113-saju-brief1')
   ]).catch(error=>{detailModulesPromise=null;throw error;});
   const [dataModule,readingModule,viewModule]=await detailModulesPromise;
   const fortune=dataModule.analyzeFortune(chart,{year:target.topic==='lifelong'?koreanYear():target.year,now:new Date()});
@@ -413,11 +413,10 @@ function commitDetailedReading(chart,{fortune,reading,content,copyText,target}) 
   $('report-content').dataset.topic=target.topic;
   $('report-content').dataset.year=String(target.year);
   $('report-content').removeAttribute('aria-busy');
-  $('detailed-intro').textContent=target.topic==='all' ? `평생운과 ${target.year}년 올해운, 1~12월 월별운을 한자리에서 읽어요. 아래에서 원하는 풀이로 바로 갈 수 있어요.` : target.topic==='monthly' ? reading.monthsIntro : reading.sections.find(section=>section.id===target.topic)?.summary || reading.intro;
   $('current-report-link').href=target.topic==='monthly'?'#reading-months':`#reading-${target.topic}`;
   $('current-report-label').textContent=target.topic==='all'?'전체 풀이':target.topic==='monthly'?'12개월 풀이':targetLabel(target);
   $('current-reading-title').textContent=`${targetLabel(target)}${target.topic==='monthly'?' · 1~12월 전체':''}`;
-  $('current-reading-note').textContent=currentAccess?.status?.adminPreview?'관리자 미리보기 · 차감 없음':'구매한 풀이 · 이 풀이 다시 보기 0쭈';
+  $('current-reading-note').textContent=currentAccess?.status?.adminPreview?'관리자 미리보기 · 차감 없음':'다시 보기 0쭈';
   $('reading-controls').hidden=false;
   $('other-reading-options').open=false;
   $('report-toc').hidden=false;
@@ -552,7 +551,7 @@ function resetAfterAccountChange() {
 async function readyBilling() {
   if (billingPromise) return billingPromise;
   const task=(async()=>{
-    const {SajuPayment}=await import('./payment.js?v=20261113-saju-depth1');
+    const {SajuPayment}=await import('./payment.js?v=20261113-saju-brief1');
     billing ||= new SajuPayment({
       onBalance:()=>updateBillingStatus(),
       onAccountChange:()=>{
@@ -647,6 +646,13 @@ $('edit-birth').addEventListener('click',()=>{
 function toast(message){clearTimeout(toastTimer);$('status').textContent=message;$('status').classList.add('is-visible');toastTimer=setTimeout(()=>$('status').classList.remove('is-visible'),2600);}
 $('copy-reading').addEventListener('click',async()=>{
   if(reportBusy||!currentDetail||currentDetail.chart!==currentReading)return;
-  try{await navigator.clipboard.writeText(currentDetail.copyText);toast('현재 보고 있는 항목의 풀이와 계산 근거를 복사했어요.');}
+  try{await navigator.clipboard.writeText(currentDetail.copyText);toast('풀이와 계산 근거를 복사했어요.');}
   catch{toast('복사 권한을 확인해 주세요. 풀이를 직접 선택해 복사할 수도 있어요.');}
+});
+
+// An explicit contents link opens the requested supporting information.
+$('report-toc').addEventListener('click', event => {
+  const link=event.target.closest('a[href^="#"]');
+  const target=link && $(link.hash.slice(1));
+  if (target?.tagName === 'DETAILS') target.open=true;
 });
