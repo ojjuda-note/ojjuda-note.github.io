@@ -76,7 +76,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { kind: "홍보대사", date: "2026.07", title: "거제·수원·경주·고양", sub: "멤버 고향 도시 홍보대사", href: "https://www.newsen.com/news_view.php?uid=202607030947385710" }
     ],
     schedules: [
-      { title: "공식 스케줄", sub: "Mnet Plus", href: "https://artist.mnetplus.world/main/stg/rescene-official/schedule/2026/11" },
+      { title: "공식 활동 소식", sub: "RESCENE 공식 X", href: "https://x.com/RESCENEofficial" },
       { title: "더쇼 · 11.10", sub: "참여 안내", href: "https://artist.mnetplus.world/main/stg/rescene-official/surveys/6af01659da3bdb578b5182ae" }
     ],
     news: [
