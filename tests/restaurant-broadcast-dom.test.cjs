@@ -55,6 +55,7 @@ function fixture(query = '') {
     assert.equal(url.origin, window.location.origin);
     const filename = path.basename(url.pathname);
     const data = filename === 'restaurants.json' ? { restaurants: structuredClone(rows), updatedAt: '2026-11-11' } : JSON.parse(fs.readFileSync(path.join(directory, filename), 'utf8'));
+    if (filename === 'official-gyeongnam-slot44.json') data.restaurants = []; // Isolate fixture rows from real sidebar broadcast records.
     return { ok: true, json: async () => data };
   };
   window.L = {
