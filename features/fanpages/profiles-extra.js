@@ -27,6 +27,25 @@ for (const artist of window.OJJUDA_FAN_ARTISTS.filter((item) => item.basicProfil
   };
 }
 
+/* ENHYPEN: dates from BELIFT LAB's current six-member profile. */
+const enhypenProfile = window.OJJUDA_FAN_PROFILES.enhypen;
+if (enhypenProfile) {
+  enhypenProfile.expanded = true;
+  const birthdays = {
+    '정원': '2004.02.09', '제이': '2002.04.20', '제이크': '2002.11.15',
+    '성훈': '2002.12.08', '선우': '2003.06.24', '니키': '2005.12.09'
+  };
+  for (const member of enhypenProfile.members) {
+    member.birthday = birthdays[member.name] || null;
+    member.source = 'https://beliftlab.com/artist/profile/ENHYPEN';
+  }
+  enhypenProfile.records = [
+    { year: '2026', title: '6인조 공식 활동', detail: '정원·제이·제이크·성훈·선우·니키 · BELIFT LAB 공식 프로필', href: 'https://beliftlab.com/artist/profile/ENHYPEN' }
+  ];
+  enhypenProfile.sources.unshift({ label: 'BELIFT LAB 공식 멤버 프로필 · 생일', href: 'https://beliftlab.com/artist/profile/ENHYPEN' });
+  enhypenProfile.sources.push({ label: 'BELIFT LAB 공식 음반 목록', href: 'https://beliftlab.com/artist/discography/ENHYPEN' });
+}
+
 /* TXT: public birthdays and reference heights from official Japanese profiles. */
 const txtProfile = window.OJJUDA_FAN_PROFILES.txt;
 if (txtProfile) {
