@@ -889,6 +889,11 @@
       concept: '다채로운 개성과 무대로 빛나는 열 명의 팀워크.',
       official: 'https://www.ygfamily.com/', youtube: 'https://www.youtube.com/@TREASURE',
       photo: '240405 트레저 TTA Malaysia 1st Place.jpg', photoLabel: '2024년 단체', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
+      // Official notices rechecked 2026-11-12; other backlog changes remain pending.
+      appearances: [
+        {"date": "2026-11-14", "title": "MBC 쇼! 음악중심 출연", "sub": "15:20 KST 방송 일정 · YG 공식 달력 · 개별 무대·사전녹화·방청 안내는 별도 공지 확인", "href": "https://ygfamily.com/ko/artists/treasure/schedule"},
+        {"date": "2026-11-20", "title": "2026 MAMA AWARDS 출연", "sub": "공식 일정 18:00 JST/KST · 일본 교세라 돔 오사카 · 개별 무대 시각은 별도 안내 확인", "href": "https://ygfamily.com/ko/artists/treasure/schedule"}
+      ],
       accent: '#478dce', light: '#dff3ff', dark: '#28577e', bg: '#f1f9ff', shape: '◆'
     },
     {
@@ -898,6 +903,11 @@
       concept: '밝은 에너지로 소원을 전하는 NCT의 여섯 멤버 유닛.',
       official: 'https://www.smentertainment.com/', youtube: 'https://www.youtube.com/@NCTWISH',
       photo: '2026 NCT WISH promotion 01.jpg', photoLabel: '2026년 단체', photoYear: '2026', credit: 'numbuzin', license: 'CC BY 4.0',
+      // Official notices rechecked 2026-11-12; other backlog changes remain pending.
+      appearances: [
+        {"date": "2026-11-23", "title": "TV아사히 드림페스티벌 출연", "sub": "K아레나 요코하마 · 13:30 입장 / 15:00 개연 예정 JST/KST · 전일정 매진 · 개별 출연 시각 미공개", "href": "https://nct-jp.net/ja/news/detail.php?id=1135596"},
+        {"date": "2026-12-06", "title": "I SPY 일본 발매 이벤트 · 오사카", "sub": "오사카 근교 · 시간·상세 장소는 당첨자 추후 안내 · 시리얼 추첨 응모 11/15 23:59 JST까지 · 구매·응모 조건은 공식 공지 확인", "href": "https://www.nct-jp.net/news/detail.php?id=1136642"}
+      ],
       accent: '#87b340', light: '#ecffd9', dark: '#567535', bg: '#f7ffef', shape: '☆'
     },
     {
@@ -907,6 +917,14 @@
       concept: '서로 다른 개성이 하나의 팀으로 이어지는 아홉 멤버.',
       official: 'https://www.andteam-official.jp/', youtube: 'https://www.youtube.com/@andTEAM_official',
       photo: '&TEAM ATA promotion 02.jpg', photoLabel: 'ATA 활동', photoYear: '2026', credit: 'K-POPIT 케이팝잇', license: 'CC BY 4.0',
+      // Official notices rechecked 2026-11-12; other backlog changes remain pending.
+      appearances: [
+        {"date": "2026-11-18", "title": "Mark on You 홀 투어 · 오사카", "sub": "그랑큐브 오사카 · 17:00 입장 / 18:00 개연 JST/KST · 예매·변경 사항은 공식 공지 확인", "href": "https://www.andteam-official.jp/news/021ab1de6a61"},
+        {"date": "2026-11-18", "title": "JO·TAKI 후지TV ホンマでっか!?TV 출연", "sub": "21:00~21:54 JST/KST 방송 · JO·TAKI 출연", "href": "https://www.andteam-official.jp/news/a84de8968609"},
+        {"date": "2026-11-18", "endDate": "2026-11-19", "title": "JO·TAKI·MAKI TBS よるのブランチ 출연", "sub": "11/18 23:56~11/19 00:55 JST/KST 방송 · JO·TAKI·MAKI 출연", "href": "https://www.andteam-official.jp/news/2c290411ba85"},
+        {"date": "2026-11-19", "title": "Mark on You 홀 투어 · 오사카", "sub": "그랑큐브 오사카 · 17:00 입장 / 18:00 개연 JST/KST · 예매·변경 사항은 공식 공지 확인", "href": "https://www.andteam-official.jp/news/021ab1de6a61"},
+        {"date": "2026-11-27", "title": "Mark on You 홀 투어 · 히로시마", "sub": "히로시마 문화학원 HBG홀 · 17:30 입장 / 18:30 개연 JST/KST · 예매·변경 사항은 공식 공지 확인", "href": "https://www.andteam-official.jp/news/021ab1de6a61"}
+      ],
       accent: '#528b73', light: '#e0f5e9', dark: '#315b49', bg: '#f2fbf4', shape: '✷'
     }
   ];
