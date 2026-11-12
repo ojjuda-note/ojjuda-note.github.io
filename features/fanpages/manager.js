@@ -15,8 +15,12 @@
   function button(label, action) {
     const b=el('button',label); b.type='button'; b.addEventListener('click', action); return b;
   }
+  let labelNumber=0;
   function labelled(text,control) {
-    const label=el('label'); label.append(el('span',text),control); return label;
+    const label=el('label'), caption=el('span',text);
+    caption.id='fan-field-'+(++labelNumber);
+    control.setAttribute('aria-labelledby',caption.id);
+    label.append(caption,control); return label;
   }
   function select(options) {
     const input=el('select');
@@ -156,6 +160,9 @@
           if(many && !obj[definition[0].key]) invalid(definition[0].label+'을 입력해 주세요.');
           if(key==='videos' && !obj.file && !obj.id) invalid('영상 파일이나 YouTube 영상 ID를 입력해 주세요.');
           if(key==='photos' && !obj.image) invalid('사진 파일이나 주소를 입력해 주세요.');
+          if(key==='appearances' && !obj.date) invalid('시작일을 입력해 주세요.');
+          if(key==='appearances' && obj.endDate && obj.endDate<obj.date) invalid('종료일은 시작일 이후로 정해 주세요.');
+          if(['links','music','merch','appearances','schedules','news','campaigns','awards','records','sources'].includes(key) && !(obj.href || obj.url)) invalid('자료 주소를 입력해 주세요.');
           if(key==='identity' && (!obj.korean || !obj.name)) invalid('한글 이름과 표시 이름을 입력해 주세요.');
           return obj;
         });
@@ -167,7 +174,13 @@
         nav.disabled=true;
         try {
           const items=[]; for(const read of readers.values()) items.push(await read());
-          const value=many?items:items[0];
+          let value=items;
+          if(!many){
+            value={...expected};
+            for(const [field,next] of Object.entries(items[0])){
+              if(next!==values[field]) value[field]=next;
+            }
+          }
           await result(client.rpc('save_fanpage_section',{p_artist:artist,p_section:key,p_expected:expected,p_value:value}));
           location.reload();
         } finally { nav.disabled=false; }

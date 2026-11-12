@@ -81,11 +81,12 @@
       const original = seedArtists.get(id);
       const identity = sectionValue(id,'identity');
       for (const key of ['accent','light','dark','bg','shape','name','korean']) identity[key] ||= defaults[key] || id;
-      const a = {...identity,id,theme:{bg:identity.bg,night:identity.night},basicProfile:original?.basicProfile};
+      const edits = entries.get(id) || {};
+      const customTheme = !original || original.theme || ['bg','night'].some(k=>Object.hasOwn(edits.identity || {},k));
+      const a = {...identity,id,theme:customTheme ? {bg:identity.bg,night:identity.night} : null,basicProfile:original?.basicProfile};
       for (const key of ['links','photos','music','merch','appearances','schedules','news','campaigns']) a[key]=sectionValue(id,key);
       const p = sectionValue(id,'profile');
       for (const key of ['members','sources','awards','records']) p[key]=sectionValue(id,key);
-      const edits = entries.get(id) || {};
       a.members = Object.hasOwn(edits,'members') ? p.members.map(m=>m.name) : original?.members || p.members.map(m=>m.name);
       p.basic = seedProfiles[id]?.basic;
       p.expanded = seedProfiles[id]?.expanded || ['members','awards','records','profile','sources'].some(k=>Object.hasOwn(edits,k));
