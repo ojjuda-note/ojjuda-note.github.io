@@ -27,7 +27,9 @@
     };
     try {
       check();
-      const originalBackground = getComputedStyle(photo).backgroundImage;
+      // Export the original built-in photo even when the screen uses a smaller rendition.
+      const originalPhoto = photo.querySelector(':scope > img.park-card-background');
+      const originalBackground = originalPhoto ? `url("${originalPhoto.src}")` : getComputedStyle(photo).backgroundImage;
       const images = [...originalBackground.matchAll(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))\s*\)/g)];
       // Only the public built-in background belongs in the exported card.
       // Decode it first: html2canvas otherwise skips failed images silently.
