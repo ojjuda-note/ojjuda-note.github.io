@@ -1,0 +1,38 @@
+name: Park card type measurements
+on:
+  push:
+    branches: ['qa/park-type-sizing-20261113']
+permissions:
+  contents: read
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 3
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix tests ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+        working-directory: tests
+      - name: Install the Park handwriting font
+        run: |
+          mkdir -p ~/.local/share/fonts
+          curl -fsSL --retry 2 https://raw.githubusercontent.com/google/fonts/35e77c3854970a550d9894a85aba21420813a019/ofl/nanumpenscript/NanumPenScript-Regular.ttf -o ~/.local/share/fonts/NanumPenScript-Regular.ttf
+          fc-cache -f ~/.local/share/fonts
+          fc-match 'Nanum Pen Script'
+      - name: Measure the previous layout
+        run: |
+          git checkout 2cb085b20822c34f4289f7d0e50f5706aba0577f -- park/design.css note/preview.js
+          sed -i '/^ assert.ok(sample.size>=minimum,/d' tests/note-card-return-font-ui.test.cjs
+          node tests/note-card-return-font-ui.test.cjs
+      - name: Verify the corrected layout
+        if: always() && !cancelled()
+        run: |
+          git restore --source=HEAD --staged --worktree park/design.css note/preview.js tests/note-card-return-font-ui.test.cjs
+          node tests/note-card-return-font-ui.test.cjs
+          node tests/note-card-body-limit-ui.test.cjs
