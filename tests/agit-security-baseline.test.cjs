@@ -7,7 +7,7 @@ const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const pages = [
   'index.html', 'world.html', 'note/index.html',
-  'admin/index.html', 'admin/meeting/index.html', 'admin/rewards.html'
+  'admin/index.html', 'admin/rewards.html'
 ];
 const policy = '<meta http-equiv="Content-Security-Policy" content="object-src \'none\'; base-uri \'self\'">';
 

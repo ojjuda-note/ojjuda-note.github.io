@@ -320,7 +320,6 @@ test('every standalone return link points to its intended section', () => {
     assert.match(read(file),/section-back\.js/,file);
   }
   assert.match(read('park/glasses.html'),/href="\/park\/\?embedded=1"/);
-  assert.match(read('admin/meeting/index.html'),/href="\/world\.html\?admin=overview"/);
   assert.match(read('admin/rewards.html'),/href="\/world\.html\?admin=overview"/);
 });
 

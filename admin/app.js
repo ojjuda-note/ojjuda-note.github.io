@@ -15,7 +15,6 @@
   }
 
   function destination() {
-    if (new URLSearchParams(location.search).get('admin') === 'meeting') return new URL('/admin/meeting/', location.href).href;
     const allowed = new Set([
       'overview', 'visitors', 'connections', 'users', 'reports', 'feedback', 'errors', 'note-inquiries', 'note-users', 'words', 'note-actions',
       'settings', 'trash-all', 'trash-accounts', 'trash-cards', 'trash-messages', 'trash-other', 'note', 'referrals', 'activity', 'note-reports', 'photo-stages', 'messages', 'groups',

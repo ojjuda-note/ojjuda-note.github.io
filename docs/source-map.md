@@ -35,7 +35,6 @@
 | 회원 정지·영구정지 | `admin/` | `admin-ban` |
 | 계정 복구 | `shared/auth/` | `member-recovery` |
 | 오류 신고 | `shared/diagnostics/` | `feedback-codex` |
-| 관리자 AI 회의실 | `admin/meeting/`, `features/ai-meeting/` | `ai-meeting` |
 
 ## 유지하는 경계
 
