@@ -1,0 +1,841 @@
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js';
+import { TarotFX, TarotAudio } from './fx.js';
+import { TarotPayment } from './payment.js';
+
+const $ = (selector) => document.querySelector(selector);
+const $$ = (selector) => [...document.querySelectorAll(selector)];
+const app = $('#app');
+const arena = $('#arena');
+const plane = $('#cards-plane');
+const mediaMotion = matchMedia('(prefers-reduced-motion: reduce)');
+const state = {
+  phase: 'intro', topic: 'overall', drawn: [], kept: [], openOrder: [], discarded: new Set(), revealed: 0,
+  busy: false, sound: false, voice: false, reduced: mediaMotion.matches, epoch: 0, lastReading: -1,
+};
+const effects = new TarotFX({ canvas: $('#magic-canvas'), reducedMotion: state.reduced });
+const audio = new TarotAudio();
+const cards = [];
+const discardGhosts = new Map();
+let lastFocus = null;
+let toastTimeout;
+let oracleTimeout;
+let trailRaf = null;
+let voiceNoticeShown = false;
+let billingReady = false;
+const billing = new TarotPayment({
+  enabled: document.documentElement.dataset.billing === 'ojjuda',
+  onBalance: updatePaymentStatus,
+  onAccountChange: () => {
+    reset({ clearPaid: false });
+    billingReady = false;
+    $('#summon-button').disabled = true;
+    $('#payment-status').textContent = '로그인이 바뀌었어요. 새로고침 후 다시 이용해 주세요.';
+    $('#login-link').hidden = false;
+  }
+});
+
+function updatePaymentStatus() {
+  if (!billing.enabled) return;
+  const balance = Number.isInteger(billing.balance) ? `보유 ${billing.balance.toLocaleString('ko-KR')}쭈` : '';
+  $('#payment-status').textContent = state.phase === 'intro' ? balance : `이번 운세 결제 완료${balance ? ' · ' + balance : ''}`;
+}
+
+function icon(name) { return `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`; }
+function backArtwork(index) {
+  return `<svg class="back-art" viewBox="0 0 150 240" aria-hidden="true">
+    <defs><radialGradient id="back-glow-${index}"><stop stop-color="#aa7cc5" stop-opacity=".24"/><stop offset="1" stop-color="#20152c" stop-opacity="0"/></radialGradient></defs>
+    <rect x="3" y="3" width="144" height="234" rx="4"/><rect x="8" y="8" width="134" height="224" rx="3" opacity=".5"/>
+    <path d="M15 42V16h27M108 16h27v26M15 198v26h27M108 224h27v-26"/>
+    <path d="m15 17 15 15m105-15-15 15M15 223l15-15m105 15-15-15M25 15v10H15m110-10v10h10M25 225v-10H15m110 10v-10h10"/>
+    <ellipse cx="75" cy="120" rx="61" ry="95" fill="url(#back-glow-${index})" stroke="none"/>
+    <path d="M75 26c-23 18-48 40-48 94s25 76 48 94c23-18 48-40 48-94S98 44 75 26Z" opacity=".7"/>
+    <path d="M75 39c-16 14-38 37-38 81s22 67 38 81c16-14 38-37 38-81S91 53 75 39Z" opacity=".38"/>
+    <circle cx="75" cy="120" r="42"/><circle cx="75" cy="120" r="37" opacity=".6"/><circle cx="75" cy="120" r="45" stroke-dasharray="1 6"/>
+    <path d="m75 70 5 11-5 11-5-11Zm0 78 5 11-5 11-5-11ZM25 120l11-5 11 5-11 5Zm78 0 11-5 11 5-11 5Z"/>
+    <path d="M82 95a27 27 0 1 0 9 45 25 25 0 0 1-9-45Z" fill="#c6a16c" fill-opacity=".7"/>
+    <path d="m88 106 2.8 7.2L98 116l-7.2 2.8L88 126l-2.8-7.2L78 116l7.2-2.8Z" class="back-star"/>
+    <path d="m75 11 3 7-3 7-3-7Zm0 204 3 7-3 7-3-7ZM20 64l3 6-3 6-3-6Zm110 0 3 6-3 6-3-6ZM20 164l3 6-3 6-3-6Zm110 0 3 6-3 6-3-6Z" fill="currentColor"/>
+    <path d="M51 60h48M51 180h48M61 53h28M61 187h28" opacity=".55"/>
+    <circle cx="75" cy="51" r="1.5" fill="currentColor"/><circle cx="75" cy="189" r="1.5" fill="currentColor"/>
+    <path d="M21 100v40M129 100v40" opacity=".4"/><circle cx="20" cy="120" r="2"/><circle cx="130" cy="120" r="2"/>
+  </svg>`;
+}
+
+for (let index = 0; index < 5; index++) {
+  const wrap = document.createElement('div');
+  wrap.className = 'card-wrap';
+  wrap.style.setProperty('--float-delay', `${index * -.8}s`);
+  wrap.innerHTML = `<div class="card-pivot"><button class="card" type="button" disabled aria-label="${index + 1}번째 카드" data-index="${index}"><div class="card-turner"><div class="card-back">${backArtwork(index)}</div><div class="card-front" aria-hidden="true"><div class="front-art"></div><div class="front-shade"></div><div class="front-border"></div><span class="front-numeral"></span><div class="front-title"><strong></strong><span></span></div></div></div><span class="card-mark" aria-hidden="true">×</span></button><span class="card-label"></span></div>`;
+  plane.append(wrap);
+  const card = { wrap, button: wrap.querySelector('button'), turner: wrap.querySelector('.card-turner'), label: wrap.querySelector('.card-label'), pose: null, index };
+  card.button.insertAdjacentHTML('beforeend', `<span class="discard-tint" aria-hidden="true"></span><span class="discard-tag" aria-hidden="true"><b>${String(index + 1).padStart(2, '0')}번 · 버리는 중</b><small>별빛으로 사라지는 중</small></span>`);
+  card.button.insertAdjacentHTML('beforeend', '<span class="reveal-number" hidden aria-hidden="true"></span>');
+  card.button.addEventListener('click', () => onCard(index));
+  card.button.addEventListener('pointerenter', () => { if (!card.button.disabled && state.sound) audio.play('hover'); });
+  cards.push(card);
+}
+
+const duration = (ms) => state.reduced ? Math.min(150, ms) : ms;
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const poseTransform = (p) => `translate3d(calc(-50% + ${p.x}px),calc(-50% + ${p.y}px),${p.z || 0}px) rotateZ(${p.r || 0}deg) rotateY(${p.ry || 0}deg) scale(${p.s ?? 1})`;
+function locationFor(index, arrangement = 'five') {
+  const w = arena.clientWidth;
+  const cw = cards.find(card => !card.wrap.hidden)?.wrap.offsetWidth || 100;
+  if (arrangement === 'intro') {
+    const gap = Math.min(112, (w - cw - 48) / 4);
+    return { x: (index - 2) * gap, y: [19, -7, -17, -7, 19][index], r: (index - 2) * 8, s: 1 };
+  }
+  if (arrangement === 'three') {
+    const slot = state.kept.indexOf(index);
+    const gap = Math.min(cw + 48, (w - cw - 42) / 2);
+    return { x: (slot - 1) * gap, y: slot === 1 ? -7 : 5, r: (slot - 1) * 3, s: 1 };
+  }
+  const gap = Math.min(cw + 24, (w - cw - 34) / 4);
+  return { x: (index - 2) * gap, y: [5, 0, -4, 0, 5][index], r: (index - 2) * 1.2, s: 1 };
+}
+
+async function moveCard(card, pose, ms = 600, options = {}) {
+  const from = card.wrap.style.transform || poseTransform(pose);
+  const to = poseTransform(pose);
+  card.pose = pose;
+  card.wrap.style.transform = to;
+  if (!ms || state.reduced) return;
+  const animation = card.wrap.animate([{ transform: from, opacity: options.fromOpacity ?? 1 }, { transform: to, opacity: options.toOpacity ?? 1 }], { duration: ms, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'none' });
+  try { await animation.finished; } catch { /* A restart or resize can replace an animation. */ }
+}
+
+function layout(animate = false) {
+  const arrangement = state.phase === 'intro' ? 'intro' : state.kept.length ? 'three' : 'five';
+  cards.forEach(card => {
+    if (card.wrap.hidden || (state.kept.length && !state.kept.includes(card.index))) return;
+    moveCard(card, locationFor(card.index, arrangement), animate ? duration(650) : 0);
+    card.wrap.style.zIndex = String(['discard', 'discarding'].includes(state.phase) && state.discarded.has(card.index) ? 40 + card.index : 7 - Math.abs(card.index - 2));
+  });
+  discardGhosts.forEach((ghost, index) => { ghost.style.transform = poseTransform(locationFor(index, 'five')); });
+}
+
+function centerOf(card) {
+  const rect = card.button.getBoundingClientRect();
+  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+}
+function play(name) { if (state.sound) audio.play(name); }
+function setTitle(title, subtitle, eyebrow = 'THE MOONLIT ORACLE') {
+  $('#game-title').textContent = title;
+  $('#game-subtitle').textContent = subtitle;
+  $('#eyebrow').innerHTML = `<span></span>${eyebrow}<span></span>`;
+}
+function setPhase(phase) {
+  const wasBusy = state.busy;
+  state.phase = phase;
+  app.dataset.phase = phase;
+  const busy = ['summoning', 'discarding', 'revealing'].includes(phase);
+  state.busy = busy;
+  if (wasBusy && !busy) layout(false);
+  arena.setAttribute('aria-busy', String(busy));
+  const step = phase === 'summoning' ? 0 : ['discard', 'discarding'].includes(phase) ? 1 : ['reading', 'revealing', 'complete'].includes(phase) ? 2 : -1;
+  $$('#journey [data-step]').forEach((el, i) => {
+    el.classList.toggle('active', i === step);
+    el.classList.toggle('complete', i < step);
+    if (i === step) el.setAttribute('aria-current', 'step'); else el.removeAttribute('aria-current');
+  });
+}
+
+function showToast(message) {
+  clearTimeout(toastTimeout);
+  $('#toast').textContent = message;
+  $('#toast').classList.add('show');
+  toastTimeout = setTimeout(() => $('#toast').classList.remove('show'), 3000);
+}
+
+function setOracle(text, { title = '', tag = '마녀의 속삭임', keyword = '', speak = true } = {}) {
+  const textNode = $('#oracle-text');
+  textNode.textContent = text;
+  $('#dialogue-tag').textContent = tag;
+  $('#oracle-card-name').hidden = !title;
+  $('#oracle-card-name').textContent = title;
+  $('#oracle-keyword').hidden = !keyword;
+  $('#oracle-keyword').textContent = keyword ? `✧  ${keyword}` : '';
+  if (!state.reduced) textNode.animate([{ opacity: 0, transform: 'translateY(7px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 600, fill: 'none' });
+  $('#oracle').classList.add('speaking');
+  clearTimeout(oracleTimeout);
+  oracleTimeout = setTimeout(() => $('#oracle').classList.remove('speaking'), 2400);
+  if (speak && state.voice) speakText(`${title ? title + '. ' : ''}${text}`);
+}
+
+function speakText(text) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'ko-KR';
+  utterance.rate = .91;
+  utterance.pitch = .87;
+  utterance.volume = .85;
+  const voices = speechSynthesis.getVoices();
+  const ko = voices.filter(v => v.lang.startsWith('ko'));
+  if (ko.length) utterance.voice = ko.find(v => /female|yuna|sunhi|heami|여성/i.test(v.name)) || ko[0];
+  if (!ko.length && !voiceNoticeShown) {
+    showToast('기기의 기본 한국어 음성으로 읽어요. 음성이 없으면 글로 확인해 주세요.');
+    voiceNoticeShown = true;
+  }
+  utterance.onerror = () => { $('#oracle').classList.remove('speaking'); };
+  speechSynthesis.speak(utterance);
+}
+
+function randomDeck() {
+  const pool = [...DECK];
+  const randomValues = new Uint32Array(pool.length);
+  if (globalThis.crypto?.getRandomValues) crypto.getRandomValues(randomValues);
+  else randomValues.forEach((_, i) => { randomValues[i] = Math.floor(Math.random() * 4294967296); });
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor((randomValues[i] / 4294967296) * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, 5);
+}
+
+function applyArtwork(element, data) {
+  const { src, columns, rows, index } = data.art;
+  element.style.setProperty('--art-image', `url("${src}")`);
+  element.style.setProperty('--art-size', `${columns * 100}% ${rows * 100}%`);
+  element.style.setProperty('--art-x', `${columns > 1 ? index % columns * 100 / (columns - 1) : 0}%`);
+  element.style.setProperty('--art-y', `${rows > 1 ? Math.floor(index / columns) * 100 / (rows - 1) : 0}%`);
+}
+
+function setCardArtwork(card, data) {
+  applyArtwork(card.wrap, data);
+  card.wrap.style.setProperty('--card-color', data.color);
+  card.wrap.querySelector('.front-numeral').textContent = data.numeral;
+  card.wrap.querySelector('.front-title strong').textContent = data.name;
+  card.wrap.querySelector('.front-title span').textContent = data.english;
+}
+
+function followFlightTrails() {
+  if (trailRaf) cancelAnimationFrame(trailRaf);
+  if (state.reduced) return;
+  const tick = () => {
+    if (state.phase !== 'summoning') { trailRaf = null; return; }
+    cards.forEach((card, i) => {
+      const c = centerOf(card);
+      effects.trail(c.x, c.y + card.wrap.offsetHeight * .3, i % 2 ? '#c998ee' : '#e2c28b');
+    });
+    trailRaf = requestAnimationFrame(tick);
+  };
+  trailRaf = requestAnimationFrame(tick);
+}
+
+async function summon() {
+  if (state.phase !== 'intro' || state.busy || !billingReady) return;
+  const epoch = ++state.epoch;
+  state.busy = true;
+  $('#summon-button').disabled = true;
+  let receipt;
+  try {
+    receipt = await billing.start(state.topic);
+    if (epoch !== state.epoch) return;
+    if (receipt && (receipt.discarded?.length || receipt.openOrder?.length)) {
+      restorePaidReading(receipt);
+      return;
+    }
+    state.drawn = receipt ? receipt.drawn.map(id => DECK.find(card => card.id === id)) : randomDeck();
+    if (state.drawn.length !== 5 || state.drawn.some(card => !card) || new Set(state.drawn.map(card => card.id)).size !== 5) throw new Error('카드를 불러오지 못했어요. 다시 눌러 같은 운세를 확인해 주세요.');
+    if (receipt) state.topic = receipt.topic;
+  } catch (error) {
+    if (epoch !== state.epoch) return;
+    state.busy = false;
+    $('#summon-button').disabled = false;
+    $('#payment-status').textContent = error.message;
+    $('#login-link').hidden = !['not_signed_in', 'member_required', 'coins', 'wallet_unavailable'].includes(error.code);
+    $$('[data-topic]').forEach(button => { button.disabled = !!billing.record; });
+    return;
+  }
+  state.discarded.clear();
+  state.kept = [];
+  state.openOrder = [];
+  state.revealed = 0;
+  billing.save(state);
+  cards.forEach((card, i) => setCardArtwork(card, state.drawn[i]));
+  $('#intro-controls').hidden = true;
+  $('#play-controls').hidden = false;
+  $('#action-button').hidden = false;
+  $('#selection-count').textContent = '별빛이 당신의 카드를 찾고 있어요';
+  $('#action-button').disabled = true;
+  $('#action-button span').textContent = '카드를 소환하는 중';
+  $('#action-note').textContent = '마음속 질문에 잠시 집중해 보세요.';
+  $('#stage-caption').textContent = '별빛을 따라, 당신에게로';
+  setPhase('summoning');
+  updatePaymentStatus();
+  setTitle('별들이 당신에게로 모입니다', '흩어진 운명의 조각들이 하나의 이야기가 됩니다.', 'THE SUMMONING');
+  setOracle('눈을 감고 마음속 질문을 떠올려 보렴. 밤하늘을 건너온 다섯 장이 네 이야기를 품고 있단다.', { tag: '운명의 카드 소환' });
+  effects.setMood('dealing');
+  play('summon');
+  followFlightTrails();
+  const areaWidth = arena.clientWidth;
+  const arcX = Math.min(areaWidth * .34, 290);
+  const arcY = Math.min(100, arena.clientHeight * .4);
+  await Promise.all(cards.map(async (card, index) => {
+    if (state.reduced) return moveCard(card, locationFor(index), 0);
+    const initial = card.wrap.style.transform;
+    const keys = [{ transform: initial, offset: 0 }];
+    const phase = index / 5 * Math.PI * 2;
+    for (let step = 1; step <= 11; step++) {
+      const t = step / 12;
+      const angle = phase + t * Math.PI * 3.7;
+      keys.push({
+        transform: poseTransform({ x: Math.cos(angle) * arcX * (.7 + .3 * Math.sin(t * Math.PI)), y: Math.sin(angle) * arcY - 40 * Math.sin(t * Math.PI), r: Math.sin(angle) * 25 + t * 360, ry: Math.cos(angle) * 40, s: .77 + .24 * (Math.sin(angle) + 1) / 2 }),
+        offset: .1 + t * .72,
+      });
+    }
+    const final = locationFor(index);
+    keys.push({ transform: poseTransform({ ...final, y: final.y - 10, r: final.r + 360 }), offset: .94 });
+    keys.push({ transform: poseTransform({ ...final, r: final.r + 360 }), offset: 1 });
+    const animation = card.wrap.animate(keys, { duration: 3700 + index * 140, easing: 'linear', fill: 'forwards' });
+    try { await animation.finished; } catch { return; }
+    if (epoch !== state.epoch) return;
+    card.wrap.style.transform = poseTransform(final);
+    card.pose = final;
+    animation.cancel();
+    const c = centerOf(card);
+    effects.burst(c.x, c.y + card.wrap.offsetHeight * .4, { color: '#d6b988', power: .55, kind: 'land' });
+    play('deal');
+  }));
+  if (epoch !== state.epoch) return;
+  effects.setMood('idle');
+  setPhase('discard');
+  setTitle('버릴 카드 두 장을 고르세요', '고른 두 장은 사라지고, 남은 세 장으로 운세를 봅니다.', 'THE CHOICE');
+  setOracle('버리고 싶은 카드를 한 장씩 눌러 보렴. 누른 카드는 바로 앞으로 떠오른 뒤 별빛으로 사라진단다. 두 장을 버리고 나면, 네 곁에 남은 세 장의 이야기를 들려줄게.', { tag: '두 장을 하나씩 버리기' });
+  $('#stage-caption').textContent = '버릴 카드를 누르세요';
+  updateDiscardProgress();
+}
+
+function onCard(index) {
+  if (state.busy) return;
+  if (state.phase === 'discard') discardCard(index);
+  else if (['reading', 'complete'].includes(state.phase) && state.kept.includes(index)) {
+    const slot = state.openOrder.indexOf(index);
+    if (slot >= 0) showReading(slot);
+    else if (state.phase === 'reading') revealCard(index);
+  }
+}
+
+function updateDiscardProgress() {
+  const count = state.discarded.size;
+  const numbers = [...state.discarded].map(index => String(index + 1).padStart(2, '0'));
+  cards.forEach(card => {
+    const discarded = state.discarded.has(card.index);
+    card.button.disabled = discarded || state.busy;
+    card.button.removeAttribute('aria-pressed');
+    card.button.setAttribute('aria-label', `${card.index + 1}번 카드${discarded ? ', 버린 카드' : ', 누르면 바로 버리기'}`);
+    card.label.textContent = discarded ? '' : `${String(card.index + 1).padStart(2, '0')}번`;
+  });
+  $('#selection-count').innerHTML = `버린 카드 <strong>${count} <span>/ 2</span></strong>`;
+  $('#discard-preview').hidden = !count;
+  $('#discard-preview').innerHTML = count ? `<span class="discard-preview-title">버린 카드</span>${numbers.map(number => `<span class="discard-number">× <b>${number}번</b></span>`).join('')}<span class="discard-preview-note">${count < 2 ? '남은 카드 중 한 장을 더 누르세요' : '두 장을 모두 버렸어요'}</span>` : '';
+  $('#action-button').hidden = true;
+  $('#action-note').textContent = count ? '한 장을 더 버리면 세 장의 점괘가 시작돼요.' : '버릴 카드를 한 장씩 누르세요. 누르면 바로 사라져요.';
+  $('#stage-caption').textContent = count ? '남은 네 장 중 한 장을 더 버려주세요' : '버릴 카드를 누르면 바로 사라집니다';
+}
+
+function leaveDiscardGhost(card, pose) {
+  const ghost = document.createElement('div');
+  ghost.className = 'discard-slot';
+  ghost.setAttribute('aria-hidden', 'true');
+  ghost.innerHTML = `<span>×</span><b>${String(card.index + 1).padStart(2, '0')}번</b><small>버린 카드</small>`;
+  ghost.style.transform = poseTransform(pose);
+  plane.append(ghost);
+  discardGhosts.set(card.index, ghost);
+}
+
+async function discardCard(index) {
+  if (state.phase !== 'discard' || state.busy || state.discarded.size >= 2 || state.discarded.has(index)) return;
+  const epoch = state.epoch;
+  const card = cards[index];
+  const original = locationFor(index, 'five');
+  state.discarded.add(index);
+  billing.save(state);
+  setPhase('discarding');
+  effects.setMood('discard');
+  updateDiscardProgress();
+  $('#stage-caption').textContent = `${String(index + 1).padStart(2, '0')}번 카드가 별빛으로 사라집니다`;
+  card.wrap.style.zIndex = '60';
+  cards.forEach(item => {
+    item.button.classList.toggle('selected', item.index === index);
+    item.button.classList.toggle('not-selected', item.index !== index);
+  });
+  play('discard');
+  const focus = { x: 0, y: -24, r: 0, s: innerWidth <= 760 ? 1.18 : 1.12 };
+  const frames = state.reduced ? [
+    { transform: poseTransform(original), opacity: 1 },
+    { transform: poseTransform(original), opacity: 0 },
+  ] : [
+    { transform: poseTransform(original), opacity: 1, filter: 'brightness(1)' },
+    { transform: poseTransform(focus), opacity: 1, filter: 'brightness(1.18)', offset: .28 },
+    { transform: poseTransform(focus), opacity: 1, filter: 'brightness(1.8)', offset: .48 },
+    { transform: poseTransform({ ...focus, y: -150, r: state.discarded.size === 1 ? -100 : 100, s: .04 }), opacity: 0, filter: 'brightness(2.8)' },
+  ];
+  const animation = card.wrap.animate(frames, { duration: duration(1200), easing: 'cubic-bezier(.2,.65,.3,1)', fill: 'forwards' });
+  await sleep(duration(350));
+  if (epoch !== state.epoch) return;
+  const point = centerOf(card);
+  effects.burst(point.x, point.y, { kind: 'discard', color: '#ef9cbb', power: 1.25 });
+  try { await animation.finished; } catch { return; }
+  if (epoch !== state.epoch) return;
+  card.wrap.hidden = true;
+  animation.cancel();
+  leaveDiscardGhost(card, original);
+  cards.forEach(item => item.button.classList.remove('selected', 'not-selected'));
+  if (state.discarded.size < 2) {
+    setPhase('discard');
+    effects.setMood('idle');
+    setTitle('한 장 더 버려주세요', `${String(index + 1).padStart(2, '0')}번 카드를 버렸어요. 남은 네 장 중 한 장을 더 누르세요.`, 'THE CHOICE');
+    setOracle(`${index + 1}번 카드가 별빛으로 돌아갔구나. 이제 한 장만 더 눌러 보렴. 마지막 두 번째 카드가 사라지면 남은 세 장이 네 이야기를 시작할 거야.`, { tag: '한 장을 버렸어요 · 1 / 2' });
+    updateDiscardProgress();
+    cards.find(item => !state.discarded.has(item.index))?.button.focus({ preventScroll: true });
+    return;
+  }
+  state.kept = cards.map(item => item.index).filter(i => !state.discarded.has(i));
+  discardGhosts.forEach(ghost => ghost.remove());
+  discardGhosts.clear();
+  $('#discard-preview').hidden = true;
+  await Promise.all(state.kept.map(i => moveCard(cards[i], locationFor(i, 'three'), duration(800))));
+  if (epoch !== state.epoch) return;
+  effects.setMood('reading');
+  setPhase('reading');
+  setOracle('두 장을 잘 놓아주었구나. 이제 끌리는 카드부터 눌러 보렴. 네가 처음 여는 카드는 지금의 마음, 두 번째는 다가오는 흐름, 마지막은 나의 조언을 들려줄 거야. 순서는 네 마음이 정하는 거란다.', { tag: '여는 순서를 직접 골라 보세요' });
+  prepareNextReveal();
+  focusUnopenedCard();
+}
+
+function prepareNextReveal() {
+  const order = ['첫 번째', '두 번째', '세 번째'];
+  state.kept.forEach((index, physicalSlot) => {
+    const card = cards[index];
+    const slot = state.openOrder.indexOf(index);
+    const opened = slot >= 0;
+    card.button.disabled = false;
+    card.button.classList.toggle('can-reveal', !opened);
+    const badge = card.button.querySelector('.reveal-number');
+    badge.hidden = !opened;
+    if (opened) {
+      badge.textContent = String(slot + 1);
+      card.label.textContent = `${String(slot + 1).padStart(2, '0')} · ${POSITIONS[slot].label}`;
+      card.button.setAttribute('aria-label', `${order[slot]} 카드 ${state.drawn[index].name}, ${POSITIONS[slot].label} 설명 다시 읽기`);
+    } else {
+      card.label.textContent = '✧  선택해 열기';
+      card.button.setAttribute('aria-label', `${['왼쪽', '가운데', '오른쪽'][physicalSlot]} 카드, 누르면 ${order[state.revealed]}로 열기`);
+    }
+  });
+  $('#selection-count').innerHTML = `직접 고른 순서 <strong>${state.revealed} <span>/ 3</span></strong>`;
+  $('#reveal-order').hidden = false;
+  $$('#reveal-order li').forEach((item, slot) => {
+    const opened = slot < state.revealed;
+    item.classList.toggle('is-current', slot === state.revealed);
+    item.classList.toggle('is-opened', opened);
+    item.querySelector('small').textContent = opened ? state.drawn[state.openOrder[slot]].name : POSITIONS[slot].label;
+    if (slot === state.revealed) item.setAttribute('aria-current', 'step');
+    else item.removeAttribute('aria-current');
+  });
+  $('#action-button').hidden = state.revealed < 3;
+  $('#action-button').disabled = false;
+  $('#action-button span').textContent = '종합 점괘 보기';
+  $('#action-note').textContent = state.revealed < 3 ? '끌리는 카드를 누르세요. 누른 순서대로 점괘를 읽어요.' : '열린 카드를 누르면 각 카드의 설명을 다시 볼 수 있어요.';
+  if (state.revealed < 3) {
+    setTitle(state.revealed === 0 ? '먼저 열 카드를 골라주세요' : `${order[state.revealed]}로 열 카드를 골라주세요`, `${order[state.revealed]}로 고른 카드는 ‘${POSITIONS[state.revealed].label}’을 들려줍니다.`, 'YOUR CHOICE, YOUR STORY');
+    $('#stage-caption').textContent = state.revealed === 2 ? '마지막 카드를 눌러 마녀의 조언을 만나세요' : `남은 ${3 - state.revealed}장 중 끌리는 카드를 눌러주세요`;
+  }
+}
+
+function focusUnopenedCard() {
+  const index = state.kept.find(index => !state.openOrder.includes(index));
+  if (index !== undefined) cards[index].button.focus({ preventScroll: true });
+}
+
+function revealFlash(x, y, color) {
+  const flash = $('#screen-flash');
+  flash.style.setProperty('--flash-x', `${x}px`);
+  flash.style.setProperty('--flash-y', `${y}px`);
+  if (!state.reduced) flash.animate([{ opacity: 0 }, { opacity: .7, offset: .14 }, { opacity: .12, offset: .48 }, { opacity: 0 }], { duration: 1200, easing: 'ease-out' });
+  effects.burst(x, y, { kind: 'reveal', color, power: 1.3 });
+}
+
+async function revealCard(index) {
+  if (state.phase !== 'reading' || state.busy || state.revealed >= 3 || !state.kept.includes(index) || state.openOrder.includes(index)) return;
+  const epoch = state.epoch;
+  const slot = state.revealed;
+  const card = cards[index];
+  const data = state.drawn[card.index];
+  const reading = getReading(data, state.topic, slot);
+  setPhase('revealing');
+  // Reserve the chosen order before the artwork is visible, including across a reload.
+  state.openOrder.push(index);
+  billing.save(state);
+  $('#reading-open').disabled = true;
+  $('#action-button').disabled = true;
+  $('#action-button span').textContent = '마녀가 카드를 읽고 있어요';
+  state.kept.forEach(index => { cards[index].button.disabled = true; cards[index].button.classList.remove('can-reveal'); });
+  const pose = locationFor(card.index, 'three');
+  card.wrap.style.zIndex = '20';
+  play('reveal');
+  const revealPose = state.reduced ? pose : { ...pose, y: pose.y - (innerWidth < 760 ? 10 : 26), s: innerWidth < 760 ? 1.11 : 1.17, r: 0 };
+  moveCard(card, revealPose, duration(500));
+  await sleep(duration(220));
+  if (epoch !== state.epoch) return;
+  card.turner.classList.add('flipped');
+  await sleep(duration(420));
+  if (epoch !== state.epoch) return;
+  const c = centerOf(card);
+  revealFlash(c.x, c.y, data.color);
+  card.button.classList.add('revealed');
+  card.wrap.querySelector('.card-front').setAttribute('aria-hidden', 'false');
+  setTitle(`${POSITIONS[slot].label} · ${data.name}`, data.message, `${['I', 'II', 'III'][slot]} · THE REVELATION`);
+  $('#stage-caption').textContent = `${String(slot + 1).padStart(2, '0')}  ${data.english}  ✧  ${data.keyword}`;
+  setOracle(reading.summary || reading.text, { title: data.name, tag: `${slot + 1}번째 카드 · ${POSITIONS[slot].label}`, keyword: reading.keyword });
+  await sleep(duration(1200));
+  if (epoch !== state.epoch) return;
+  await moveCard(card, pose, duration(500));
+  if (epoch !== state.epoch) return;
+  state.revealed = state.openOrder.length;
+  billing.save(state);
+  setPhase(state.revealed === 3 ? 'complete' : 'reading');
+  prepareNextReveal();
+  if (state.revealed === 3) {
+    effects.setMood('reading');
+    $('#restart-small').hidden = false;
+    $('#stage-caption').textContent = '세 번의 계시가 모두 당신에게 도착했습니다';
+    play('complete');
+    buildResults();
+  }
+  if (innerWidth <= 760 && !state.reduced) $('#oracle').animate([{ boxShadow: '0 0 25px rgba(189,147,231,.3)' }, { boxShadow: '0 0 0 transparent' }], { duration: 1800 });
+  showReading(slot);
+}
+
+function renderReadingSections(container, sections, fallback = '', headingTag = 'h3') {
+  container.replaceChildren();
+  if (!Array.isArray(sections) || !sections.length) {
+    const paragraph = document.createElement('p');
+    paragraph.textContent = fallback;
+    container.append(paragraph);
+    return;
+  }
+  sections.forEach((part, index) => {
+    const section = document.createElement('section');
+    section.className = 'reading-part';
+    const heading = document.createElement(headingTag);
+    const number = document.createElement('span');
+    number.className = 'reading-part-number';
+    number.textContent = String(index + 1).padStart(2, '0');
+    heading.append(number, document.createTextNode(part.title));
+    section.append(heading);
+    String(part.body || '').split(/\n\s*\n/).filter(Boolean).forEach(text => {
+      const paragraph = document.createElement('p');
+      paragraph.textContent = text;
+      section.append(paragraph);
+    });
+    container.append(section);
+  });
+}
+
+function showReading(slot = state.lastReading) {
+  if (slot < 0 || slot >= state.revealed || state.busy) return;
+  const data = state.drawn[state.openOrder[slot]];
+  const reading = getReading(data, state.topic, slot);
+  state.lastReading = slot;
+  $('#reading-position').textContent = `${['첫 번째', '두 번째', '세 번째'][slot]} 카드 설명 · ${POSITIONS[slot].label}`;
+  $('#reading-title').textContent = data.name;
+  $('#reading-keyword').textContent = `✧ ${reading.keyword}`;
+  $('#reading-summary').textContent = reading.summary || data.message;
+  applyArtwork($('#reading-art'), data);
+  $('#reading-art').setAttribute('aria-label', `${data.name} 카드`);
+  renderReadingSections($('#reading-sections'), reading.sections, reading.text);
+  $('#reading-next span').textContent = state.revealed < 3 ? '다음 카드 고르기' : '종합 점괘 보기';
+  $('#reading-open').hidden = false;
+  $('#reading-open').disabled = false;
+  openDialog('reading-dialog');
+}
+
+function buildResults() {
+  const drawn = state.openOrder.map(index => state.drawn[index]);
+  const summary = getSummary(drawn, state.topic);
+  const topic = TOPICS.find(t => t.id === state.topic);
+  $('#result-date').textContent = `${new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' }).format(new Date())} · ${topic.label}`;
+  $('#result-title').textContent = '당신을 위한 종합 점괘';
+  $('#result-intro').textContent = summary.summary || '';
+  $('#summary-headline').textContent = summary.headline;
+  renderReadingSections($('#summary-text'), summary.sections, summary.text, 'h4');
+  $('#summary-ritual').textContent = summary.ritual;
+}
+
+function openDialog(id) {
+  const dialog = document.getElementById(id);
+  if (dialog.open) return;
+  lastFocus = document.activeElement;
+  dialog.showModal();
+  dialog.scrollTop = 0;
+  dialog.querySelector('.modal-close')?.focus();
+}
+function closeDialog(id) {
+  document.getElementById(id).close();
+}
+$$('dialog').forEach(dialog => {
+  dialog.addEventListener('close', () => { lastFocus?.focus?.(); });
+  dialog.addEventListener('click', event => {
+    if (event.target !== dialog) return;
+    const r = dialog.getBoundingClientRect();
+    if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) dialog.close();
+  });
+});
+$$('[data-close]').forEach(button => button.addEventListener('click', () => closeDialog(button.dataset.close)));
+$('#help-open').addEventListener('click', () => openDialog('help-dialog'));
+
+async function copyResult() {
+  if (state.revealed !== 3) return;
+  const drawn = state.openOrder.map(i => state.drawn[i]);
+  const summary = getSummary(drawn, state.topic);
+  const parts = ['오쭈다 · 달의 마녀 타로', '종합 점괘', $('#result-date').textContent, ''];
+  parts.push(summary.headline, summary.text, '', `오늘의 작은 의식: ${summary.ritual}`, '', '재미와 자기 성찰을 위한 카드 풀이입니다.');
+  const text = parts.join('\n');
+  try {
+    if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
+    await navigator.clipboard.writeText(text);
+    showToast('종합 점괘를 복사했어요.');
+  } catch {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.cssText = 'position:fixed;inset:25% 10% auto;width:80%;height:45%;z-index:101;background:#1b112a;color:#eee;padding:20px;border:1px solid #b99563;border-radius:8px';
+    textarea.setAttribute('aria-label', '복사할 종합 점괘');
+    $('#result-dialog').append(textarea);
+    textarea.focus();
+    textarea.select();
+    if (document.execCommand('copy')) {
+      textarea.remove();
+      showToast('종합 점괘를 복사했어요.');
+    } else {
+      showToast('선택된 해석을 길게 누르거나 Ctrl+C로 복사하세요.');
+      textarea.addEventListener('blur', () => textarea.remove(), { once: true });
+    }
+  }
+}
+
+function reset({ clearPaid = true } = {}) {
+  state.epoch++;
+  if (clearPaid && !billing.pending) billing.newReading();
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  if (trailRaf) cancelAnimationFrame(trailRaf);
+  trailRaf = null;
+  $$('dialog[open]').forEach(dialog => dialog.close());
+  state.discarded.clear();
+  discardGhosts.forEach(ghost => ghost.remove());
+  discardGhosts.clear();
+  state.kept = [];
+  state.openOrder = [];
+  state.drawn = [];
+  state.revealed = 0;
+  state.lastReading = -1;
+  setPhase('intro');
+  cards.forEach(card => {
+    card.wrap.getAnimations().forEach(a => a.cancel());
+    card.wrap.hidden = false;
+    card.wrap.style.opacity = '';
+    card.wrap.style.filter = '';
+    card.turner.classList.remove('flipped');
+    card.button.classList.remove('selected', 'not-selected', 'revealed', 'can-reveal');
+    card.button.disabled = true;
+    card.button.removeAttribute('aria-pressed');
+    card.button.setAttribute('aria-label', `${card.index + 1}번째 카드`);
+    card.wrap.querySelector('.card-front').setAttribute('aria-hidden', 'true');
+    card.label.textContent = '';
+    card.button.querySelector('.reveal-number').hidden = true;
+  });
+  $('#intro-controls').hidden = false;
+  $('#play-controls').hidden = true;
+  $('#restart-small').hidden = true;
+  $('#discard-preview').hidden = true;
+  $('#reveal-order').hidden = true;
+  $('#reading-open').hidden = true;
+  $('#summon-button').disabled = !billingReady;
+  $('#summon-button span').textContent = billing.enabled ? '10쭈로 운세 시작하기' : '운명의 카드 소환하기';
+  $$('[data-topic]').forEach(button => { button.disabled = false; });
+  $('#login-link').hidden = true;
+  updatePaymentStatus();
+  $('#game-title').innerHTML = '운명이 속삭이는 밤,<br><em>달의 마녀</em>를 만나다';
+  $('#game-subtitle').innerHTML = '다섯 장의 카드, 세 번의 계시.<br class="mobile-break"> 오늘, 당신에게 도착한 별들의 이야기.';
+  $('#eyebrow').innerHTML = '<span></span> THE MOONLIT ORACLE <span></span>';
+  $('#stage-caption').textContent = '당신을 찾아온 다섯 장의 운명';
+  setOracle('다시 찾아왔구나. 새로운 질문이 생겼다면 마음을 가만히 기울여 보렴. 별들의 이야기는 언제나 여기에 있단다.', { tag: '마녀의 초대' });
+  effects.setMood('idle');
+  layout(false);
+  $('#summon-button').focus({ preventScroll: true });
+  if (innerWidth <= 760) window.scrollTo({ top: 0, behavior: state.reduced ? 'instant' : 'smooth' });
+}
+
+$('#summon-button').addEventListener('click', summon);
+$('#action-button').addEventListener('click', () => {
+  if (state.phase === 'complete') openDialog('result-dialog');
+});
+$('#restart-small').addEventListener('click', reset);
+$('#restart-result').addEventListener('click', reset);
+$('#copy-result').addEventListener('click', copyResult);
+$('#reading-open').addEventListener('click', () => showReading());
+$('#reading-next').addEventListener('click', () => {
+  closeDialog('reading-dialog');
+  if (state.phase === 'complete') openDialog('result-dialog');
+  else if (state.phase === 'reading') focusUnopenedCard();
+});
+$$('[data-topic]').forEach(button => button.addEventListener('click', () => {
+  if (state.phase !== 'intro' || state.busy) return;
+  state.topic = button.dataset.topic;
+  $$('[data-topic]').forEach(b => { b.classList.toggle('active', b === button); b.setAttribute('aria-pressed', String(b === button)); });
+  const invitations = {
+    overall: '오늘 네 마음에 머무는 질문을 떠올려 보렴. 사소해 보여도 네게 소중한 이야기라면 충분하단다.',
+    love: '마음에 떠오르는 사람이 있니? 그 사람보다 먼저, 네 마음이 어떤 이야기를 하는지 들어 보자.',
+    money: '풍요의 모습은 저마다 다르지. 지금 네게 소중한 것이 무엇인지, 카드와 함께 살펴보렴.',
+    work: '가고 싶은 길과 망설여지는 한 걸음. 네 안에 잠든 가능성을 함께 찾아보자꾸나.',
+  };
+  setOracle(invitations[state.topic], { tag: '마녀의 초대' });
+  play('hover');
+}));
+
+$('#sound-toggle').addEventListener('click', async () => {
+  const next = !state.sound;
+  if (next) {
+    try {
+      const enabled = await audio.enable();
+      if (enabled === false) { showToast('이 브라우저에서는 효과음을 재생할 수 없어요.'); return; }
+    } catch { showToast('효과음을 켜지 못했어요. 다시 눌러 주세요.'); return; }
+  }
+  state.sound = next;
+  audio.setMuted(!next);
+  $('#sound-toggle').setAttribute('aria-pressed', String(next));
+  $('#sound-toggle').title = next ? '효과음 끄기' : '효과음 켜기';
+  $('#sound-toggle').innerHTML = `${icon(next ? 'sound' : 'muted')}<span>사운드 ${next ? 'ON' : 'OFF'}</span>`;
+  if (next) play('hover');
+});
+
+function applyMotionPreference(value) {
+  state.reduced = value;
+  document.body.classList.toggle('reduced-motion', value);
+  $('#motion-toggle').setAttribute('aria-pressed', String(value));
+  $('#motion-toggle').setAttribute('aria-label', value ? '풍부한 움직임 켜기' : '움직임 줄이기');
+  $('#motion-toggle').title = value ? '풍부한 움직임 켜기' : '움직임 줄이기';
+  effects.setReducedMotion(value);
+  if (value) cards.forEach(card => card.wrap.getAnimations().forEach(animation => {
+    try { animation.finish(); } catch { /* Already finished or cancelled. */ }
+  }));
+}
+$('#motion-toggle').addEventListener('click', () => {
+  applyMotionPreference(!state.reduced);
+  showToast(state.reduced ? '움직임을 줄였어요.' : '마법 연출을 켰어요.');
+});
+mediaMotion.addEventListener('change', event => applyMotionPreference(event.matches));
+
+$('#voice-toggle').addEventListener('click', () => {
+  if (!('speechSynthesis' in window)) { showToast('이 브라우저에서는 안내 음성을 지원하지 않아요.'); return; }
+  state.voice = !state.voice;
+  $('#voice-toggle').setAttribute('aria-pressed', String(state.voice));
+  $('#voice-toggle').setAttribute('aria-label', state.voice ? '마녀의 안내 음성 끄기' : '마녀의 안내 음성 켜기');
+  $('#voice-toggle').title = state.voice ? '안내 음성 끄기' : '안내 음성 켜기';
+  if (state.voice) speakText($('#oracle-text').textContent);
+  else speechSynthesis.cancel();
+});
+
+let resizeFrame;
+window.addEventListener('resize', () => {
+  cancelAnimationFrame(resizeFrame);
+  resizeFrame = requestAnimationFrame(() => { if (!state.busy) layout(false); });
+}, { passive: true });
+window.addEventListener('pagehide', () => {
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  if (state.sound) audio.setMuted(true);
+});
+window.addEventListener('pageshow', event => { if (event.persisted && state.sound) audio.setMuted(false); });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && 'speechSynthesis' in window) speechSynthesis.cancel();
+});
+applyMotionPreference(state.reduced);
+layout(false);
+$('#oracle-text').textContent = '서두르지 않아도 괜찮단다. 네 마음이 머무는 카드를 별들이 이미 알고 있으니까.';
+// Start image requests while the visitor chooses a topic; five cards share at most five atlases.
+for (const src of new Set(DECK.map(card => card.art.src))) {
+  const atlas = new Image();
+  atlas.src = src;
+}
+
+function restorePaidReading(receipt) {
+  const drawn = receipt.drawn?.map(id => DECK.find(card => card.id === id));
+  if (!drawn || drawn.length !== 5 || drawn.some(card => !card) || new Set(drawn.map(card => card.id)).size !== 5) throw new Error('저장된 카드를 불러오지 못했어요. 새로고침 후 다시 확인해 주세요.');
+  state.drawn = drawn;
+  state.topic = receipt.topic;
+  state.discarded = new Set(receipt.discarded);
+  state.openOrder = [...receipt.openOrder];
+  state.revealed = state.openOrder.length;
+  state.kept = state.discarded.size === 2 ? cards.map(card => card.index).filter(index => !state.discarded.has(index)) : [];
+  state.lastReading = state.revealed - 1;
+  $('#intro-controls').hidden = true;
+  $('#play-controls').hidden = false;
+  cards.forEach((card, index) => {
+    setCardArtwork(card, state.drawn[index]);
+    card.wrap.hidden = state.discarded.has(index);
+    const opened = state.openOrder.includes(index);
+    card.turner.classList.toggle('flipped', opened);
+    card.button.classList.toggle('revealed', opened);
+    card.wrap.querySelector('.card-front').setAttribute('aria-hidden', String(!opened));
+    if (card.wrap.hidden && !state.kept.length) leaveDiscardGhost(card, locationFor(index, 'five'));
+  });
+  if (state.kept.length) {
+    setPhase(state.revealed === 3 ? 'complete' : 'reading');
+    prepareNextReveal();
+    if (state.revealed === 3) {
+      buildResults();
+      setTitle('세 장의 이야기가 기다리고 있어요', '각 카드의 설명과 종합 점괘를 다시 읽어 보세요.', 'YOUR MOONLIT STORY');
+      $('#stage-caption').textContent = '열린 카드를 누르면 자세한 설명을 볼 수 있어요';
+      $('#restart-small').hidden = false;
+    }
+  } else {
+    setPhase('discard');
+    updateDiscardProgress();
+    setTitle(state.discarded.size ? '한 장 더 버려주세요' : '버릴 카드 두 장을 고르세요', '진행하던 운세를 이어갑니다.', 'WELCOME BACK');
+  }
+  if (state.revealed) {
+    const data = state.drawn[state.openOrder[state.lastReading]];
+    const reading = getReading(data, state.topic, state.lastReading);
+    setOracle(reading.summary, { title: data.name, tag: '다시 찾아온 카드 이야기', keyword: reading.keyword, speak: false });
+    $('#reading-open').hidden = false;
+    $('#reading-open').disabled = false;
+  } else setOracle('다시 왔구나. 이미 시작한 이야기를 그대로 이어가면 된단다. 마음이 머무는 카드를 천천히 골라 보렴.', { tag: '진행하던 운세 이어보기', speak: false });
+  effects.setMood(state.kept.length ? 'reading' : 'idle');
+  layout(false);
+  updatePaymentStatus();
+}
+
+async function initializeBilling() {
+  $('#summon-button').disabled = true;
+  $('#azit-back').hidden = !billing.enabled;
+  $('#summon-button span').textContent = billing.enabled ? '10쭈로 운세 시작하기' : '운명의 카드 소환하기';
+  $('#payment-status').textContent = billing.enabled ? '로그인과 쭈 잔액을 확인하고 있어요…' : '미리보기 · 실제 쭈는 차감되지 않아요';
+  try {
+    const result = await billing.init();
+    billingReady = true;
+    if (result.resume) restorePaidReading(result.resume);
+    else if (result.pending) {
+      state.topic = result.pending.topic;
+      $$('[data-topic]').forEach(button => {
+        button.disabled = true;
+        button.classList.toggle('active', button.dataset.topic === state.topic);
+        button.setAttribute('aria-pressed', String(button.dataset.topic === state.topic));
+      });
+      $('#summon-button span').textContent = '같은 운세 다시 확인하기';
+      $('#payment-status').textContent = '진행하던 요청을 이어서 확인해요. 같은 요청에는 한 번만 차감됩니다.';
+    }
+    else if (result.signedIn === false) {
+      $('#payment-status').textContent = '아지트에 로그인한 뒤 이용해 주세요.';
+      $('#login-link').hidden = false;
+    } else updatePaymentStatus();
+    $('#summon-button').disabled = result.signedIn === false;
+  } catch (error) {
+    billingReady = !!billing.user;
+    $('#summon-button').disabled = !billingReady;
+    $('#payment-status').textContent = error.message;
+    $$('[data-topic]').forEach(button => { button.disabled = !!billing.record; });
+    if (!billingReady) $('#login-link').hidden = false;
+  }
+}
+void initializeBilling();

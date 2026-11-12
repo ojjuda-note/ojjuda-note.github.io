@@ -253,6 +253,11 @@
           </button>`;
         }).join('')}</div>
       </section>
+      <a class="agit-tarot-banner" href="/games/moonlit-tarot/" aria-label="달의 마녀 타로 만나기, 1회 10쭈">
+        <span class="agit-tarot-shimmer" aria-hidden="true"></span>
+        <div class="agit-tarot-copy"><span class="agit-tarot-kicker">MOONLIT TAROT <i aria-hidden="true">✦</i> 전체 78장</span><h2>달의 마녀 타로</h2><p>마음이 끌리는 세 장,<br>오늘의 이야기를 펼쳐 보세요.</p><span class="agit-tarot-cta">마녀 만나러 가기 <span aria-hidden="true">→</span></span></div>
+        <div class="agit-tarot-price"><strong>1회 <b>10</b>쭈</strong><small>운세 시작 시 사용</small></div>
+      </a>
       <footer class="agit-footer"><span>오쭈다 아지트</span><button type="button" data-act="feedback-open">의견 보내기 <span aria-hidden="true">→</span></button></footer>
     </div>`;
   }

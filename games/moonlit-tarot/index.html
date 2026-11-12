@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ko" data-billing="ojjuda">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#100c1b">
+  <meta name="description" content="전체 78장의 타로, 직접 고르는 세 번의 계시. 달의 마녀 루나와 함께하는 오쭈다의 시네마틱 타로.">
+  <title>달의 마녀 타로 · 오쭈다</title>
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="./assets/scene.webp" as="image">
+  <link rel="preload" href="./assets/moon-serif.woff" as="font" type="font/woff" crossorigin>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./details.css">
+</head>
+<body>
+  <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2 14.8 9.2 22 12l-7.2 2.8L12 22l-2.8-7.2L2 12l7.2-2.8Z"/><path d="M19 2v4M17 4h4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.6 14.2A8.8 8.8 0 0 1 9.8 3.4 9 9 0 1 0 20.6 14.2Z"/><path d="m18 2 .8 2.2L21 5l-2.2.8L18 8l-.8-2.2L15 5l2.2-.8Z"/></symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24"><path d="m11 4-6 5H2v6h3l6 5ZM15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14"/></symbol>
+    <symbol id="i-muted" viewBox="0 0 24 24"><path d="m11 4-6 5H2v6h3l6 5ZM16 9l6 6m0-6-6 6"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.4 9a2.7 2.7 0 1 1 4.7 1.8c-1.1.8-2.1 1.1-2.1 3M12 17v.1"/></symbol>
+    <symbol id="i-motion" viewBox="0 0 24 24"><path d="M3 7h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 17h6a3 3 0 1 1-3 3"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.6 5.6 0 0 0-8 0l-.8.9-.8-.9a5.6 5.6 0 0 0-8 8L12 22l8.8-9.4a5.6 5.6 0 0 0 0-8Z"/></symbol>
+    <symbol id="i-gem" viewBox="0 0 24 24"><path d="m3 8 4-5h10l4 5-9 13ZM3 8h18M7 3l5 18 5-18"/></symbol>
+    <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m16 8-2.5 5.5L8 16l2.5-5.5Z"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V3H3v13h5"/></symbol>
+    <symbol id="i-voice" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div id="app" class="app" data-phase="intro">
+    <div class="scenery" aria-hidden="true">
+      <img class="scene-image" src="./assets/scene.webp" alt="" fetchpriority="high" draggable="false">
+      <div class="scene-shade"></div><div class="mist mist-one"></div><div class="mist mist-two"></div>
+      <div class="orb-aura"></div><div class="vignette"></div>
+    </div>
+    <canvas id="magic-canvas" aria-hidden="true"></canvas>
+    <div id="screen-flash" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="오쭈다 달의 마녀 타로 처음으로">
+        <span class="brand-emblem"><svg><use href="#i-moon"/></svg></span>
+        <span>오쭈다<span class="brand-sub">OJJUDA</span></span>
+      </a>
+      <a id="azit-back" class="azit-back" href="/world.html?tab=hub#agit-daily" hidden>← 아지트</a>
+      <span class="header-caption">A LITTLE MAGIC, JUST FOR YOU</span>
+      <nav class="utility-nav" aria-label="이용 설정">
+        <button id="sound-toggle" class="utility-btn sound-toggle" aria-pressed="false" title="효과음 켜기"><svg><use href="#i-muted"/></svg><span>사운드 OFF</span></button>
+        <button id="motion-toggle" class="utility-btn icon-only" aria-pressed="false" aria-label="움직임 줄이기" title="움직임 줄이기"><svg><use href="#i-motion"/></svg></button>
+        <button id="help-open" class="utility-btn icon-only" aria-label="이용 안내" title="이용 안내"><svg><use href="#i-help"/></svg></button>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="game-panel" aria-label="타로 카드 의식">
+        <div class="section-heading">
+          <p id="eyebrow" class="eyebrow"><span></span> THE MOONLIT ORACLE <span></span></p>
+          <h1 id="game-title">운명이 속삭이는 밤,<br><em>달의 마녀</em>를 만나다</h1>
+          <p id="game-subtitle" class="game-subtitle">다섯 장의 카드, 세 번의 계시.<br class="mobile-break"> 오늘, 당신에게 도착한 별들의 이야기.</p>
+        </div>
+
+        <ol id="journey" class="journey" aria-label="진행 단계">
+          <li data-step="summon"><span>01</span> 소환</li><li class="step-line" aria-hidden="true"></li>
+          <li data-step="discard"><span>02</span> 선택</li><li class="step-line" aria-hidden="true"></li>
+          <li data-step="reveal"><span>03</span> 계시</li>
+        </ol>
+
+        <div id="arena" class="arena">
+          <div class="ambient-halo" aria-hidden="true"></div>
+          <div class="ground-sigil" aria-hidden="true">
+            <svg viewBox="0 0 600 600" class="sigil-svg"><defs><radialGradient id="sigil-glow"><stop stop-color="#bc8cec" stop-opacity=".45"/><stop offset="1" stop-color="#bc8cec" stop-opacity="0"/></radialGradient></defs><circle cx="300" cy="300" r="290" fill="url(#sigil-glow)" stroke="none"/><g fill="none" stroke="currentColor"><circle cx="300" cy="300" r="270"/><circle cx="300" cy="300" r="256" stroke-dasharray="1 11" stroke-width="5"/><circle cx="300" cy="300" r="235"/><circle cx="300" cy="300" r="178"/><path d="M300 70 500 415H100ZM300 530 100 185H500Z"/><path d="m300 30 10 24-10 24-10-24Zm270 270-24 10-24-10 24-10ZM300 570l-10-24 10-24 10 24ZM30 300l24-10 24 10-24 10Z" fill="currentColor"/><circle cx="300" cy="300" r="90"/><path d="M300 210v180M210 300h180"/></g></svg>
+          </div>
+          <div id="cards-plane" class="cards-plane"></div>
+          <div id="stage-caption" class="stage-caption" aria-live="polite">당신을 찾아온 다섯 장의 운명</div>
+        </div>
+
+        <div id="intro-controls" class="intro-controls">
+          <p class="topic-label">어떤 이야기가 궁금한가요?</p>
+          <div id="topics" class="topics" role="group" aria-label="운세 주제">
+            <button class="topic active" data-topic="overall" aria-pressed="true"><svg><use href="#i-star"/></svg>오늘의 운세</button>
+            <button class="topic" data-topic="love" aria-pressed="false"><svg><use href="#i-heart"/></svg>연애운</button>
+            <button class="topic" data-topic="money" aria-pressed="false"><svg><use href="#i-gem"/></svg>금전운</button>
+            <button class="topic" data-topic="work" aria-pressed="false"><svg><use href="#i-compass"/></svg>일과 도전</button>
+          </div>
+          <p class="tarot-price"><strong>1회 10쭈</strong><span>세 장의 풀이와 종합 점괘</span></p>
+          <button id="summon-button" class="primary-button"><svg><use href="#i-star"/></svg><span>운명의 카드 소환하기</span><svg class="button-arrow"><use href="#i-arrow"/></svg></button>
+          <p id="payment-status" class="payment-status" role="status"></p>
+          <a id="login-link" class="login-link" href="/world.html?tab=hub" hidden>아지트에서 로그인·쭈 확인하기 →</a>
+          <p class="button-note">전체 78장 중 다섯 장이 당신을 찾아옵니다.</p>
+        </div>
+
+        <div id="play-controls" class="play-controls" hidden>
+          <p id="selection-count" class="selection-count">버릴 카드 <strong>0 <span>/ 2</span></strong></p>
+          <div id="discard-preview" class="discard-preview" hidden aria-live="polite"></div>
+          <ol id="reveal-order" class="reveal-order" hidden aria-label="내가 고른 카드 순서"><li><b>1</b><span>첫 번째<small>내 안의 기운</small></span></li><li><b>2</b><span>두 번째<small>다가오는 흐름</small></span></li><li><b>3</b><span>세 번째<small>마녀의 조언</small></span></li></ol>
+          <button id="action-button" class="primary-button" disabled><svg><use href="#i-star"/></svg><span>카드를 소환하는 중</span><svg class="button-arrow"><use href="#i-arrow"/></svg></button>
+          <p id="action-note" class="button-note">버릴 카드를 한 장씩 누르세요.</p>
+          <button id="restart-small" class="text-button" hidden><svg><use href="#i-reset"/></svg>처음부터 다시</button>
+        </div>
+      </section>
+
+      <aside id="oracle" class="oracle" aria-label="마녀 루나의 안내">
+        <div class="oracle-identity"><span class="oracle-line"></span><span class="witch-name">Luna</span><span class="oracle-line"></span></div>
+        <p class="witch-role">달의 마녀 · 당신의 밤을 읽는 이</p>
+        <div class="oracle-dialogue">
+          <div class="dialogue-topline"><span class="live-dot"></span><span id="dialogue-tag">마녀의 초대</span><button id="voice-toggle" class="voice-button" aria-pressed="false" aria-label="마녀의 안내 음성 켜기" title="안내 음성 켜기"><svg><use href="#i-voice"/></svg></button></div>
+          <h2 id="oracle-card-name" hidden></h2>
+          <p id="oracle-text">서두르지 않아도 좋아요.<br>당신의 마음이 머무는 카드를<br>별들이 이미 알고 있으니까요.</p>
+          <div id="oracle-keyword" class="oracle-keyword" hidden></div>
+          <button id="reading-open" class="reading-open" hidden><span>이 카드의 자세한 점괘 읽기</span><svg><use href="#i-arrow"/></svg></button>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="site-footer"><span><i></i> A MOMENT FOR YOURSELF</span><p>카드는 가능성을 비추는 작은 이야기예요. 선택의 주인공은 당신입니다.</p><span class="footer-no">VOL. 01 <span>✧</span> MOONLIGHT</span></footer>
+  </div>
+
+  <dialog id="help-dialog" class="modal help-modal" aria-labelledby="help-title">
+    <button class="modal-close" data-close="help-dialog" aria-label="이용 안내 닫기"><svg><use href="#i-close"/></svg></button>
+    <p class="eyebrow">YOUR LITTLE RITUAL</p><h2 id="help-title">마녀와 만나는 방법</h2>
+    <ol class="help-steps"><li><span>01</span><div><h3>마음속 질문을 떠올리세요</h3><p>오늘의 운세, 연애, 금전, 일 중 원하는 이야기를 선택하세요.</p></div></li><li><span>02</span><div><h3>두 장을 하나씩 버리세요</h3><p>카드를 누르면 바로 앞으로 떠오른 뒤 사라져요. 두 장을 버리면 남은 세 장이 자동으로 자리를 잡습니다.</p></div></li><li><span>03</span><div><h3>여는 순서를 직접 고르세요</h3><p>남은 세 장 중 끌리는 카드부터 누르세요. 처음 고른 카드는 내 마음, 두 번째는 다가오는 흐름, 마지막은 조언을 읽어요. 자세한 풀이를 읽은 뒤 다음 카드를 직접 고르고, 열린 카드를 누르면 설명을 다시 볼 수 있어요.</p></div></li></ol>
+    <p class="help-footnote">효과음과 안내 음성은 각각 켤 수 있어요. 기기에 한국어 음성이 있으면 마녀의 이야기를 들을 수 있습니다. 움직임이 부담스럽다면 상단의 바람 아이콘을 눌러 주세요.</p>
+    <button class="primary-button" data-close="help-dialog">마녀를 만나러 가기<svg><use href="#i-arrow"/></svg></button>
+  </dialog>
+
+  <dialog id="reading-dialog" class="modal reading-modal" aria-labelledby="reading-position reading-title">
+    <button class="modal-close" data-close="reading-dialog" aria-label="자세한 점괘 닫기"><svg><use href="#i-close"/></svg></button>
+    <p id="reading-position" class="eyebrow">LUNA'S READING</p>
+    <div class="reading-intro">
+      <div id="reading-art" class="result-card-art" role="img"></div>
+      <div><p class="small-kicker">마녀 루나가 읽어 주는 카드 이야기</p><h2 id="reading-title"></h2><p id="reading-keyword" class="reading-keyword"></p></div>
+    </div>
+    <div class="reading-summary-box"><span>먼저, 한눈에 읽기</span><p id="reading-summary"></p></div>
+    <div id="reading-sections" class="reading-sections"></div>
+    <div class="reading-dialog-actions"><button class="secondary-button" data-close="reading-dialog">카드로 돌아가기</button><button id="reading-next" class="primary-button"><span>다음 카드 고르기</span><svg><use href="#i-arrow"/></svg></button></div>
+  </dialog>
+
+  <dialog id="result-dialog" class="modal result-modal" aria-labelledby="result-title">
+    <button class="modal-close" data-close="result-dialog" aria-label="종합 해석 닫기"><svg><use href="#i-close"/></svg></button>
+    <div class="result-heading"><p id="result-eyebrow" class="eyebrow">LUNA'S FINAL READING</p><h2 id="result-title">당신을 위한 종합 점괘</h2><p id="result-date"></p></div>
+    <p id="result-intro" class="result-intro"></p>
+    <section class="summary-box"><span class="summary-star">✧</span><p class="small-kicker">마녀 루나의 마지막 속삭임</p><h3 id="summary-headline"></h3><div id="summary-text" class="reading-sections"></div><div class="ritual"><svg><use href="#i-moon"/></svg><div><span>오늘의 작은 의식</span><p id="summary-ritual"></p></div></div></section>
+    <div class="result-actions"><button id="copy-result" class="secondary-button"><svg><use href="#i-copy"/></svg>종합 점괘 복사하기</button><button id="restart-result" class="primary-button"><svg><use href="#i-reset"/></svg>새로운 운세 보기</button></div>
+    <p class="result-footnote">재미와 자기 성찰을 위한 카드 풀이입니다.</p>
+  </dialog>
+  <div id="toast" class="toast" role="status"></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
