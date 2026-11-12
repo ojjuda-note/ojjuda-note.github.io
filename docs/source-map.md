@@ -35,6 +35,7 @@
 | 회원 정지·영구정지 | `admin/` | `admin-ban` |
 | 계정 복구 | `shared/auth/` | `member-recovery` |
 | 오류 신고 | `shared/diagnostics/` | `feedback-codex` |
+| 타로·사주 구매내역 관리 | `admin/fortune-purchases.js`, `.css` | 관리자 전용 `admin_fortune_purchases`로 실제 결제 항목·사용 쭈 조회 |
 
 ## 유지하는 경계
 

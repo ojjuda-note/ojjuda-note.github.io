@@ -38,8 +38,8 @@
 <!-- 서버 연결 정보 (같은 폴더의 config.js). 없으면 체험 모드로 실행돼요 -->
 <script src="config.js?v=20261111-shared-member-auth1" defer></script>
 <link rel="stylesheet" href="/admin/navigation.css?v=20261111-admin-nav3">
-<script src="/admin/navigation.js?v=20261111-admin-nav3" defer></script>
-<script src="/admin/world-admin-loader.js?v=20261111-feature-detail1" defer></script>
+<script src="/admin/navigation.js?v=20261113-fortune-history1" defer></script>
+<script src="/admin/world-admin-loader.js?v=20261113-fortune-history1" defer></script>
 <link rel="stylesheet" href="/features/friends/friend-messages.css?v=20261106-source-folders1">
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261110-janggi-entry2">
@@ -381,7 +381,7 @@ function Ia(result,request){if(request.owner&&worldRewardCurrent(request)&&reque
  if(!current())return false;
  D.walletReady=true;D.walletLegacy=false;return true;
 }
-var l0=async(request=worldRewardRequest())=>request.owner&&worldRewardCurrent(request)?Ia(await ja("daily_checkin"),request):{ok:false,reason:"wallet_unavailable"};var Yr=(t,e,o)=>Kt(t,e,o).slice(t.length),adminAreas=[["account","계정"],["content","콘텐츠"],["trash","휴지통"],["support","신고·문의"],["payment","ZU"],["operations","운영"],["library","자료실"]],adminTabsByArea={account:[["overview","요약"],["visitors","방문 통계"],["users","가입자"],["suspended","정지 계정"],["referrals","추천인"]],content:[["cards","카드"],["messages","쪽지 관리"],["groups","그룹 관리"],["photo-stages","포토땅따먹기"],["risk","위험 신호"],["map","위치 지도"]],trash:[["trash-all","전체"],["trash-accounts","탈퇴 계정"],["trash-cards","삭제한 카드"],["trash-messages","삭제한 쪽지"],["trash-other","기타 보관"]],support:[["reports","신고"],["feedback","문의·의견"],["note-users","카드 이용 제한"]],payment:[["settings","무료 충전"],["users","사용자별 ZU"]],operations:[["notice","공지"],["spam","도배 방지"],["words","금칙어"],["connections","운영 연결"],["errors","오류"],["activity","작업 기록"]],library:[["assets","자료 모아보기"]]},adminAreaForTab=t=>t==="assets"?"library":t.startsWith("trash-")?"trash":["overview","visitors","users","suspended","referrals"].includes(t)?"account":["reports","note-reports","feedback","note-inquiries","note-users"].includes(t)?"support":["notice","spam","connections","errors","words","activity","note-actions"].includes(t)?"operations":t==="settings"?"payment":"content",Ku={guestbook:"방명록",chat:"동네 대화",user:"사람",media_comment:"사진 댓글",diary:"다이어리",intro:"소개글"},Xu={abuse:"욕설·비방",sexual:"음란·불쾌",spam:"스팸·광고",impersonation:"사칭",other:"기타"},Ju={bug:"고장",idea:"아이디어",other:"기타"},L={thumbs:{},tab:"cards",area:"content",noteTab:"cards",reportSource:"world",rst:"open",fst:"open",q:"",cache:{},loading:null},bt=()=>{};function h0(t){bt=t}
+var l0=async(request=worldRewardRequest())=>request.owner&&worldRewardCurrent(request)?Ia(await ja("daily_checkin"),request):{ok:false,reason:"wallet_unavailable"};var Yr=(t,e,o)=>Kt(t,e,o).slice(t.length),adminAreas=[["account","계정"],["content","콘텐츠"],["trash","휴지통"],["support","신고·문의"],["payment","ZU"],["operations","운영"],["library","자료실"]],adminTabsByArea={account:[["overview","요약"],["visitors","방문 통계"],["users","가입자"],["suspended","정지 계정"],["referrals","추천인"]],content:[["cards","카드"],["messages","쪽지 관리"],["groups","그룹 관리"],["photo-stages","포토땅따먹기"],["risk","위험 신호"],["map","위치 지도"]],trash:[["trash-all","전체"],["trash-accounts","탈퇴 계정"],["trash-cards","삭제한 카드"],["trash-messages","삭제한 쪽지"],["trash-other","기타 보관"]],support:[["reports","신고"],["feedback","문의·의견"],["note-users","카드 이용 제한"]],payment:[["settings","무료 충전"],["users","사용자별 ZU"],["fortune-purchases","타로·사주 구매내역"]],operations:[["notice","공지"],["spam","도배 방지"],["words","금칙어"],["connections","운영 연결"],["errors","오류"],["activity","작업 기록"]],library:[["assets","자료 모아보기"]]},adminAreaForTab=t=>t==="assets"?"library":t.startsWith("trash-")?"trash":["overview","visitors","users","suspended","referrals"].includes(t)?"account":["reports","note-reports","feedback","note-inquiries","note-users"].includes(t)?"support":["notice","spam","connections","errors","words","activity","note-actions"].includes(t)?"operations":["settings","fortune-purchases"].includes(t)?"payment":"content",Ku={guestbook:"방명록",chat:"동네 대화",user:"사람",media_comment:"사진 댓글",diary:"다이어리",intro:"소개글"},Xu={abuse:"욕설·비방",sexual:"음란·불쾌",spam:"스팸·광고",impersonation:"사칭",other:"기타"},Ju={bug:"고장",idea:"아이디어",other:"기타"},L={thumbs:{},tab:"cards",area:"content",noteTab:"cards",reportSource:"world",rst:"open",fst:"open",q:"",cache:{},loading:null},bt=()=>{};function h0(t){bt=t}
 // Remember only navigation, never authorization or administrator data.
 var adminRetiredTabs={archive:"trash-cards",withdrawn:"trash-accounts","note-archive":"trash-cards",trash:"trash-all",events:"cards","note-events":"cards",chats:"messages",posts:"cards","house-content":"cards",review:"cards",quiz:"overview"};
 adminTabsByArea.content.push(["rewards","상품권 등록"]);
@@ -481,7 +481,7 @@ function y0(){
  const scope=adminTabsByArea[L.area]||adminTabsByArea.account;
  if(!scope.some(([id])=>id===L.tab))L.tab=scope[0][0];
  ensureAdminMenuSummary();
- let t='<section class="head-row adm-header"><div class="adm-title-row"><span class="adm-eyebrow">오쭈다 운영센터</span><h2 class="h2">관리자 모드</h2><p class="adm-header-description">회원, 콘텐츠, 운영 현황을 편하게 살펴보고 관리하세요.</p></div><nav class="adm-site-links" aria-label="관리 도구">'+(adminIsHome()?'':'<button class="btn sm" type="button" data-act="adm-back">← 관리자 메인</button>')+(noteAdminActive()||L.tab==="activity"?'':'<button class="btn sm" data-act="adm-refresh">새로고침</button>')+'</nav></section>';
+ let t='<section class="head-row adm-header"><div class="adm-title-row"><span class="adm-eyebrow">오쭈다 운영센터</span><h2 class="h2">관리자 모드</h2><p class="adm-header-description">회원, 콘텐츠, 운영 현황을 편하게 살펴보고 관리하세요.</p></div><nav class="adm-site-links" aria-label="관리 도구">'+(adminIsHome()?'':'<button class="btn sm" type="button" data-act="adm-back">← 관리자 메인</button>')+(noteAdminActive()||["activity","fortune-purchases"].includes(L.tab)?'':'<button class="btn sm" data-act="adm-refresh">새로고침</button>')+'</nav></section>';
  t+=window.OjjudaAdminNavigation?.render({area:L.area,tab:L.tab,summary:L.cache.overview&&!L.cache.overview.error?L.cache.overview:adminMenuSummary.data})||
   (wr("adm-area",adminAreas,L.area).replace('class="seg"','class="seg adm-areas"')+wr("adm-tab",scope.filter(([id])=>id!=="rewards"),L.tab).replace('class="seg"','class="seg adm-tabs"'));
  if(noteAdminActive()){L.noteTab=adminNoteTab();return t+'<div class="world-note-admin" id="world-note-admin"></div>'}
@@ -492,6 +492,7 @@ function y0(){
  if(L.area==="content"&&L.tab==="rewards")return t+'<section class="adm-card"><h3>상품권 등록</h3><p>등록과 지급 내역은 전용 관리 화면에서 확인할 수 있어요.</p><a class="btn pri" href="/admin/rewards.html">상품권 등록 화면 열기</a></section>';
  if(L.area==="library"&&L.tab==="assets")return t+'<div id="world-admin-asset-library"></div>';
  if(L.area==="operations"&&L.tab==="activity")return t+'<div id="world-admin-activity"></div>';
+ if(L.area==="payment"&&L.tab==="fortune-purchases")return t+'<div id="world-admin-fortune-purchases"></div>';
 
  if(L.area==="trash")return t+'<div id="world-admin-trash"></div>';
  if(L.area==="content"&&L.tab==="messages")return t+'<div id="world-admin-messages"></div>';
@@ -2415,7 +2416,7 @@ function ensureWorldAdminAssets(){
  if(!loader||loader.ready||worldAdminLoading)return;
  worldAdminLoading=loader.load().then(()=>{if(g.tab==="admin"&&D.isAdmin)H();}).catch(()=>{
   if(g.tab!=="admin"||!D.isAdmin)return;
-  const host=document.querySelector('#world-admin-review,#world-note-admin,#world-admin-visitors,#world-admin-accounts,#world-admin-activity,#world-admin-messages,#world-admin-house-content,#world-admin-photo-stages,#world-admin-groups,#world-admin-asset-library,#world-connections,#world-operations');
+  const host=document.querySelector('#world-admin-review,#world-note-admin,#world-admin-visitors,#world-admin-accounts,#world-admin-activity,#world-admin-fortune-purchases,#world-admin-messages,#world-admin-house-content,#world-admin-photo-stages,#world-admin-groups,#world-admin-asset-library,#world-connections,#world-operations');
   if(host){host.textContent="관리 화면을 불러오지 못했어요. ";const retry=document.createElement('button');retry.type='button';retry.className='btn sm';retry.textContent='다시 시도';retry.onclick=()=>ensureWorldAdminAssets();host.append(retry);}
  }).finally(()=>{worldAdminLoading=null;});
 }
@@ -2468,7 +2469,7 @@ function adminCoinAction(record){
 }
 function mountAdminModule(){
  const eligible=g.tab==="admin"&&D.isAdmin&&D.user?.id;
- const name=eligible&&(L.area==="account"&&L.tab==="visitors"?"visitors":((L.area==="account"&&["users","suspended","withdrawn","referrals"].includes(L.tab))||(L.area==="payment"&&L.tab==="users"))?"accounts":L.area==="operations"&&L.tab==="activity"?"activity":L.area==="content"&&L.tab==="photo-stages"?"photo-stages":L.area==="content"&&L.tab==="messages"?"messages":L.area==="content"&&L.tab==="groups"?"groups":L.area==="library"&&L.tab==="assets"?"asset-library":L.area==="trash"?"trash":null);
+ const name=eligible&&(L.area==="account"&&L.tab==="visitors"?"visitors":((L.area==="account"&&["users","suspended","withdrawn","referrals"].includes(L.tab))||(L.area==="payment"&&L.tab==="users"))?"accounts":L.area==="operations"&&L.tab==="activity"?"activity":L.area==="payment"&&L.tab==="fortune-purchases"?"fortune-purchases":L.area==="content"&&L.tab==="photo-stages"?"photo-stages":L.area==="content"&&L.tab==="messages"?"messages":L.area==="content"&&L.tab==="groups"?"groups":L.area==="library"&&L.tab==="assets"?"asset-library":L.area==="trash"?"trash":null);
  const host=name&&z("#world-admin-"+name),key=name&&D.user.id+":"+L.area+":"+L.tab;
  if(host&&host===adminModuleHost)return;
  const previous=key===adminModuleKey&&!L.accountReset?adminModuleController?.getState?.():null;
@@ -2482,6 +2483,7 @@ function mountAdminModule(){
   if(name==="trash")adminModuleController=window.OjjudaAdminTrash?.mount({...opts,category:L.tab.replace("trash-",""),initialState:previous});
   if(name==="messages")adminModuleController=window.OjjudaAdminFriendMessages?.mount({...opts,initialState:previous});
   if(name==="activity")adminModuleController=window.OjjudaAdminActivity?.mount({...opts,initialSource:L.activitySource||"world",initialState:previous});
+  if(name==="fortune-purchases")adminModuleController=window.OjjudaAdminFortunePurchases?.mount({...opts,initialState:previous});
 
   if(name==="photo-stages")adminModuleController=window.OjjudaPhotoStageAdmin?.mount({...opts,initialState:previous});
    if(name==="groups")adminModuleController=window.OjjudaAdminGroups?.mount({...opts,initialState:previous});
