@@ -95,6 +95,7 @@ dialog{max-height:calc(100dvh - 24px);overflow:auto}
    Budget 40px + 34px + 46px explicitly, leaving 270px at 844x390. */
 @media(max-height:450px) and (orientation:landscape){
  .topbar{flex-basis:40px}
+ .topbar .arcade-return{min-height:38px}
  .game-hud{flex-basis:34px}
  .game-actions{flex-basis:46px;padding-block:2px}
 }
