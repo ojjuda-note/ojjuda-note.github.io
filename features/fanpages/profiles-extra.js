@@ -243,3 +243,16 @@ if (seventeenProfile) {
   seventeenProfile.sources.push({ label: 'PLEDIS · SEVENTEEN 공식 프로필', href: 'https://www.pledis.co.kr/artist/detail/seventeen/profile/' });
   seventeenProfile.sources.push({ label: '일본 공식 일정 · 11월 공연', href: 'https://www.seventeen-17.jp/posts/schedule' });
 }
+
+/* NCT DREAM: only official group-level milestones; unverified member data stays blank. */
+const nctdreamProfile = window.OJJUDA_FAN_PROFILES.nctdream;
+if (nctdreamProfile) {
+  nctdreamProfile.expanded = true;
+  nctdreamProfile.checkedAt = '2026.11.12';
+  nctdreamProfile.records = [
+    { year: '2026.11', title: '정규 6집 DREAM AFTER DREAM', detail: '2026.11.09 발매 · 타이틀 Boogie Woogie · 10곡', href: 'https://music.apple.com/us/album/dream-after-dream/6827483714' },
+    { year: '2026.11', title: '데뷔 10주년 일본 공연·방송', detail: '11.22 TV아사히 드림 페스티벌 · 12.09 FNS 가요제', href: 'https://nct-jp.net/en/news/detail.php?id=1135918' }
+  ];
+  nctdreamProfile.sources.unshift({ label: 'NCT 일본 공식 소식 · 음반·활동 일정', href: 'https://nct-jp.net/news/' });
+  nctdreamProfile.sources.push({ label: 'SM 공식 음반 유통 · DREAM AFTER DREAM', href: 'https://music.apple.com/us/album/dream-after-dream/6827483714' });
+}
