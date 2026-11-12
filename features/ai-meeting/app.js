@@ -146,8 +146,8 @@
       link.addEventListener('click', () => downloadAttachment(message.file_path));
       body.append(link);
     }
-    const action = taskBoard?.renderAction(message);
-    if (action) body.append(action);
+    const taskStatus = taskBoard?.renderBadge(message);
+    if (taskStatus) body.append(taskStatus);
     row.append(avatar, body);
     return row;
   }
@@ -188,9 +188,9 @@
     } finally { loading = false; }
   }
 
-  function refreshAll() {
+  function refreshAll(freshTasks = false) {
     if (!user) return;
-    return Promise.all([loadMessages(), taskBoard?.refresh()]);
+    return Promise.all([loadMessages(), taskBoard?.refresh({ fresh: freshTasks === true })]);
   }
 
   function stopSession(message) {
@@ -204,6 +204,10 @@
   }
 
   function friendlyError(code) {
+    if (code === 'task_submission_unconfirmed') return '작업 접수 결과를 아직 확인하지 못했어요. 같은 요청 다시 확인으로 중복 없이 확인할 수 있어요.';
+    if (code === 'task_request_too_long') return '수정·개선 지시는 2,000자 이내로 적어 주세요. 내용을 줄여 새 메시지로 보내면 자동 접수됩니다.';
+    if (code === 'task_request_needs_details') return '수정할 내용을 메시지에 직접 적어 주세요. 첨부파일 내용은 작업에 전달되지 않아요.';
+    if (code === 'executor_unavailable') return '작업 실행기 연결이 준비되지 않아 접수하지 못했어요. 연결 후 같은 요청을 다시 확인해 주세요.';
     if (code === 'ai_not_configured') return '서버의 AI 연결 설정이 아직 완료되지 않았어요.';
     if (code === 'rate_limited') return '요청이 많아요. 잠시 뒤 다시 시도해 주세요.';
     if (code === 'message_expired') return '오래된 메시지는 재요청할 수 없어요. 새 메시지로 보내 주세요.';
@@ -212,34 +216,52 @@
   }
 
   async function askAi(id) {
-    const { data, error } = await client.functions.invoke('ai-meeting', { body: { message_id: id } });
-    if (error || !data?.ok) {
+    const actorId = user?.id;
+    if (!actorId) return;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const { data, error } = await client.functions.invoke('ai-meeting', { body: { message_id: id } });
+      if (user?.id !== actorId) return;
+      if (!error && data?.ok) return;
       let payload = data;
       if (!payload && error?.context?.json) {
         try { payload = await error.context.json(); } catch { /* no details */ }
+      }
+      if (user?.id !== actorId) return;
+      if (payload?.error === 'task_submission_unconfirmed' && attempt === 0) {
+        workStep('접수 결과를 같은 요청으로 한 번 더 확인 중');
+        continue;
       }
       throw new Error(friendlyError(payload?.error));
     }
   }
 
   async function requestReply(id) {
+    const actorId = user?.id;
+    if (!actorId) return;
     ui.send.disabled = true;
     ui.send.textContent = 'AI 답변 기다리는 중…';
     workStep('AI 서버에 응답 요청 전달');
     try {
       await askAi(id);
+      if (user?.id !== actorId) return;
       workStep('AI 서버에서 답변 저장 확인');
       retryVisibility(null);
       tell('');
-      const refreshed = await loadMessages();
-      finishWork(true, refreshed ? 'AI 답변이 저장되고 대화 기록이 갱신됐습니다.' : 'AI 답변은 저장됐지만 화면 갱신은 확인하지 못했습니다.');
+      const refreshed = await refreshAll(true);
+      if (user?.id !== actorId) return;
+      finishWork(true, refreshed?.every(Boolean) ? 'AI 답변이 저장되고 대화·작업 기록이 갱신됐습니다.' : 'AI 답변은 저장됐지만 일부 화면 기록을 갱신하지 못했습니다.');
     } catch (error) {
+      if (user?.id !== actorId) return;
+      await refreshAll(true);
+      if (user?.id !== actorId) return;
       retryVisibility(id);
       tell(error.message || 'AI 응답을 확인하지 못했어요.');
       finishWork(false, error.message || 'AI 답변 처리에 실패했습니다.');
     } finally {
-      ui.send.disabled = false;
-      ui.send.textContent = '회의에 보내기 ↗';
+      if (user?.id === actorId) {
+        ui.send.disabled = false;
+        ui.send.textContent = '회의에 보내기 ↗';
+      }
     }
   }
 
