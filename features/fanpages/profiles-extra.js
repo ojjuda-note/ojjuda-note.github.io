@@ -243,3 +243,28 @@ if (seventeenProfile) {
   seventeenProfile.sources.push({ label: 'PLEDIS · SEVENTEEN 공식 프로필', href: 'https://www.pledis.co.kr/artist/detail/seventeen/profile/' });
   seventeenProfile.sources.push({ label: '일본 공식 일정 · 11월 공연', href: 'https://www.seventeen-17.jp/posts/schedule' });
 }
+
+/* ATEEZ: eight member birthdays from the official Japanese group profile. */
+const ateezProfile = window.OJJUDA_FAN_PROFILES.ateez;
+if (ateezProfile) {
+  ateezProfile.expanded = true;
+  ateezProfile.checkedAt = '2026.11.12';
+  const ateezBirthdays = {
+    '홍중': '1998.11.07', '성화': '1998.04.03', '윤호': '1999.03.23', '여상': '1999.06.15',
+    '산': '1999.07.10', '민기': '1999.08.09', '우영': '1999.11.26', '종호': '2000.10.12'
+  };
+  for (const member of ateezProfile.members) {
+    member.birthday = ateezBirthdays[member.name] || null;
+    member.source = 'https://ateez-official.jp/profiles';
+  }
+  ateezProfile.awards = [
+    { year: '2026.11', title: 'Korea Grand Music Awards Grand Record', detail: '2026.11.08 MUSIC DAY · Best Music·Best Stage도 수상', href: 'https://www.soompi.com/article/1885017wpp/winners-of-2026-korea-grand-music-awards-music-day' },
+    { year: '2026.09', title: 'The Fact Music Awards Icon of the Year', detail: '2026.09.19 수상 · Artist of the Year 포함', href: 'https://www.soompi.com/article/1871808wpp/winners-of-2026-the-fact-music-awards' }
+  ];
+  ateezProfile.records = [
+    { year: '2026', title: 'GOLDEN HOUR : Part.5 발매', detail: '2026.06.26 미니 14집 · 타이틀 BAD', href: 'https://ateez-official.jp/musics/20862' },
+    { year: '2027', title: 'ZERO TO ALL 월드투어 예정', detail: '인천 1.22~24·일본 2월·유럽 3~4월 공식 발표', href: 'https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814' }
+  ];
+  ateezProfile.sources.unshift({ label: 'ATEEZ 일본 공식 8인 프로필 · 생일', href: 'https://ateez-official.jp/profiles' });
+  ateezProfile.sources.push({ label: 'KQ 2027 ZERO TO ALL 투어 공식 발표', href: 'https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814' });
+}
