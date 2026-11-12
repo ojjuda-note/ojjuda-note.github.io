@@ -39,6 +39,7 @@ function fixtureBoot() {
   window.OjjudaAdminAccounts = { mount: options => mount('accounts', options) };
   window.OjjudaReviewInbox = { mount: options => mount('review', options) };
   window.OjjudaAdminActivity = { mount: options => mount('activity', options) };
+  window.OjjudaAdminFortunePurchases = { mount: options => mount('fortune-purchases', options) };
   window.OjjudaPhotoStageAdmin = { mount: options => mount('photo-stages', options) };
   window.OjjudaAdminFriendMessages = { mount: options => mount('messages', options) };
   window.OjjudaAdminAssetLibrary = { mount: options => mount('asset-library', options) };
@@ -268,6 +269,24 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     await page.locator('#adm-limit').fill('0');
     await page.locator('[data-act="adm-limit"]').click();
     assert.equal(await page.locator('#adm-limit').inputValue(), '0', 'zero daily charges stays zero after saving');
+    // Paid fortune records must be reachable from the visible member menu and own their host lifecycle.
+    await page.locator('[data-admin-folder="members"]').click();
+    await page.locator('.adm-menu-group[data-group="members"] .adm-menu-link[data-area="payment"][data-v="fortune-purchases"]').click();
+    await mounted('fortune-purchases');
+    assert.deepEqual(await current(), { area: 'payment', tab: 'fortune-purchases' });
+    assert.equal(await page.locator('#world-admin-fortune-purchases').getAttribute('data-fixture-module'), 'fortune-purchases');
+    assert.equal(await page.evaluate(() => fixture.options['fortune-purchases'].getAdminId()), 'synthetic-admin');
+    assert.equal(await page.evaluate(() => fixture.options['fortune-purchases'].isCurrent()), true);
+    assert.equal(await page.locator('.adm-navigation [aria-current="page"]').first().textContent(), '타로·사주 구매내역');
+    await assertRefreshPreservesHost('fortune-purchases');
+    await page.evaluate(() => { window.previousFortuneController = fixture.controllers['fortune-purchases']; });
+    await tab('settings');
+    assert.deepEqual(await current(), { area: 'payment', tab: 'settings' });
+    assert.equal(await page.evaluate(() => previousFortuneController.destroyed), true, 'leaving purchase history releases its controller');
+    assert.equal(await page.evaluate(() => fixture.options['fortune-purchases'].isCurrent()), false, 'detached purchase hosts cannot consume stale results');
+    await tab('fortune-purchases'); await mounted('fortune-purchases');
+    assert.deepEqual(await current(), { area: 'payment', tab: 'fortune-purchases' });
+    assert.equal(await page.evaluate(() => fixture.controllers['fortune-purchases'] !== previousFortuneController), true);
     await area('content');
     assert.deepEqual(await page.locator('.adm-menu-group[data-group="content"] .adm-menu-link').allTextContents(), ['카드','쪽지 관리','그룹 관리','포토땅따먹기','위치 지도','자료 모아보기']);
     await page.locator('[data-admin-folder="members"]').click();
@@ -283,6 +302,11 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.evaluate(() => fixture.options.trash.category), 'cards');
     assert.deepEqual(await page.locator('.adm-menu-group[data-group="system"] [data-area="trash"].adm-menu-link').allTextContents(),['휴지통 전체','삭제한 카드','삭제한 쪽지','기타 보관']);
     assert.equal(await page.locator('[data-act="adm-content-kind"]').count(), 0);
+
+    await page.goto('https://fixture.test/world.html?admin=fortune-purchases'); await loaded(); await mounted('fortune-purchases');
+    assert.deepEqual(await current(), { area: 'payment', tab: 'fortune-purchases' }, 'direct purchase history URLs resolve to the payment group');
+    assert.equal(await page.evaluate(() => fixture.options['fortune-purchases'].container.id), 'world-admin-fortune-purchases');
+    assert.equal(await page.locator('.adm-navigation [aria-current="page"]').first().textContent(), '타로·사주 구매내역');
 
     await page.goto('https://fixture.test/world.html?admin=note-actions'); await loaded(); await mounted('activity');
     assert.deepEqual(await current(), { area: 'operations', tab: 'activity' });
@@ -374,6 +398,6 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
       }
     }
     assert.deepEqual(errors, []);
-    console.log('PASS: five functional admin groups and unified content/notice routes, suspended-member shortcut, seven module refresh hosts, pending and draft navigation guards, legacy Note activity link and last archive page recovery.');
+    console.log('PASS: five functional admin groups and unified content/notice routes, suspended-member shortcut, fortune purchase menu and direct route, module refresh hosts, pending and draft navigation guards, legacy Note activity link and last archive page recovery.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
