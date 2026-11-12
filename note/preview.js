@@ -237,7 +237,7 @@ function banner(value) {
   $('#connection-status').hidden = !value;
 }
 function query() { return client.schema('ojjuda_note'); }
-// 익명 카드의 자동 이름: 카드 번호로 정해져서 같은 카드는 늘 같은 이름, 카드마다 다른 이름이에요 (같은 사람인지 알 수 없어요)
+// 대화 이름을 제공하지 않는 예전 응답과 이벤트 카드는 기존 자동 이름을 사용해요.
 // 기존 카드는 32×32 조합을 유지해 이미 보이던 이름이 바뀌지 않게 해요.
 const ANON_ALIAS_EXPANDED_AT = Date.parse('2026-09-28T03:00:00+09:00');
 const ANON_LEGACY_COUNT = 32;
@@ -690,9 +690,12 @@ function noteTagEdit() {   // 직접 쓴 태그를 우선하고, 다섯 자리�
   autoTagsNow = kept.filter(t => previousAuto.has(t));
   if (now.length > 5) tags.value = kept.join(', ');
 }
-function shownName(card) {   // 닉네임 카드는 닉네임, 익명 카드는 자동 이름
-  const nick = card.identity_mode === 'nickname' && card.display_name && card.display_name !== '익명' ? card.display_name : null;
-  if (nick) return { name: nick, icon: [...nick][0] || 'ㅇ' };
+function shownName(card) {
+  const name = card.display_name;
+  if (name && name !== '익명') {
+    const iconWord = card.identity_mode === 'anonymous' ? name.split(' ').at(-1) : name;
+    return { name, icon: [...iconWord][0] || 'ㅇ' };
+  }
   return card.id ? anonAlias(card.id, card.created_at) : { name: '익명', icon: 'ㅇ' };
 }
 
