@@ -82,6 +82,47 @@
   function scheduleReport() { if (hostVisible && !reporting) { reporting = true; queueMicrotask(reportState); } }
   new MutationObserver(scheduleReport).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['hidden', 'open'] });
 
+  // Touch and trackpads scroll natively. A mouse drag must not open the card on release.
+  let drag = null, suppressReplyClick = false;
+  replies.addEventListener('pointerdown', event => {
+    suppressReplyClick = false;
+    if (event.pointerType !== 'mouse' || event.button !== 0 || replies.scrollWidth <= replies.clientWidth) return;
+    drag = { id: event.pointerId, x: event.clientX, y: event.clientY, left: replies.scrollLeft };
+  });
+  replies.addEventListener('pointermove', event => {
+    if (drag?.id !== event.pointerId) return;
+    const dx = event.clientX - drag.x;
+    if (!suppressReplyClick) {
+      if (Math.abs(dx) < 6 || Math.abs(dx) < Math.abs(event.clientY - drag.y)) return;
+      replies.setPointerCapture(event.pointerId);
+      replies.classList.add('is-dragging');
+      suppressReplyClick = true;
+    }
+    event.preventDefault();
+    replies.scrollLeft = drag.left - dx;
+  });
+  function endReplyDrag() {
+    drag = null;
+    replies.classList.remove('is-dragging');
+  }
+  replies.addEventListener('pointerup', endReplyDrag);
+  replies.addEventListener('pointercancel', endReplyDrag);
+  replies.addEventListener('lostpointercapture', endReplyDrag);
+  replies.addEventListener('pointerleave', () => { if (!suppressReplyClick) endReplyDrag(); });
+  replies.addEventListener('dragstart', event => { if (drag) event.preventDefault(); });
+  replies.addEventListener('click', event => {
+    if (suppressReplyClick && event.detail) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      suppressReplyClick = false;
+    }
+  }, true);
+  replies.addEventListener('scroll', () => {
+    const next = replies.lastElementChild;
+    if (next?.hasAttribute('data-more-replies') && !next.disabled &&
+        replies.scrollWidth - replies.scrollLeft - replies.clientWidth < replies.clientWidth / 2) next.click();
+  }, { passive: true });
+
   document.addEventListener('click', event => {
     const link = event.target.closest?.('a[href]'); if (!link) return;
     const url = new URL(link.href, location.href);
