@@ -171,7 +171,6 @@ test('individual game progress and replay saves are isolated from admin preview'
     ['games/ttang/ttang-bridge.js','if(adminPreview()){'],
     ['games/tank/world-tank-game.js','admin_preview'],
     ['games/matgo/matgo-bridge.js','관리자 체험 중에는 승패가 저장되는 맞고'],
-    ['features/home/agit-hub.js','if(root.OjjudaAdminPreview?.isEnabled?.()===true)return false;'],
     ['shared/games/game-challenges.js','if (adminPreview() || !supported(game)']
   ];
   for(const [file,guard] of guarded)assert.ok(read(file).includes(guard),file+' has a preview guard');

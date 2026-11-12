@@ -82,8 +82,8 @@
   function safeState(settings) {
     const raw = settings && typeof settings.agitHub === 'object' && settings.agitHub || {};
     const stamps = Array.isArray(raw.stamps) ? raw.stamps.filter(d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)) : [];
-    const completed = raw.completed && typeof raw.completed === 'object' && !Array.isArray(raw.completed) ? raw.completed : {};
-    const guesses = raw.guesses && typeof raw.guesses === 'object' && !Array.isArray(raw.guesses) ? raw.guesses : {};
+    const completed = raw.completed && typeof raw.completed === 'object' && !Array.isArray(raw.completed) ? {...raw.completed} : {};
+    const guesses = raw.guesses && typeof raw.guesses === 'object' && !Array.isArray(raw.guesses) ? {...raw.guesses} : {};
     return {stamps: [...new Set(stamps)].sort().slice(-120), completed, guesses};
   }
   function mergeProgress(remote, local, date = kstDate()) {
@@ -117,7 +117,7 @@
     return count;
   }
   function save(settings, state, date) {
-    if(root.OjjudaAdminPreview?.isEnabled?.()===true)return false;
+    // Daily visits and missions count independently of the game preview mode.
     if (!settings || typeof settings !== 'object') return false;
     state.stamps = state.stamps.filter(d => d <= date).slice(-120);
     state.completed = Object.fromEntries(Object.entries(state.completed).filter(([d]) => d >= addDays(date, -35) && d <= date));

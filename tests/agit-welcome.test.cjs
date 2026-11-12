@@ -214,9 +214,9 @@ test('world entry wires both guest and member greeting and cache-busted CSS/JS',
     '/features/home/agit-welcome.js?v=',
     '/features/home/agit-welcome.css?v='
   ]) assert.ok(html.includes(fragment), fragment);
-  assert.match(html, /var Go="0\.60\.0-beta"/);
-  assert.equal(JSON.parse(fs.readFileSync(path.join(__dirname, '../version.json'), 'utf8')).version,
-    '0.60.0-beta');
+  const publishedVersion = JSON.parse(fs.readFileSync(path.join(__dirname, '../version.json'), 'utf8')).version;
+  assert.match(publishedVersion, /^\d+\.\d+\.\d+-beta$/);
+  assert.equal(html.match(/var Go="([^"]+)"/)?.[1], publishedVersion);
   assert.match(fs.readFileSync(path.join(__dirname, '../shared/games/world-game-rankings.js'), 'utf8'),
     /ojjuda:leaders-loaded/);
 });
