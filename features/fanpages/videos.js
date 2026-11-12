@@ -112,6 +112,11 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'IcwHopeT5gY', title: 'Beautiful Strangers', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2025.07.21' },
     { id: '80SH8Z_DOnY', title: 'Over The Moon', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2024.11.04' }
   ],
+  nctdream: [
+    { id: 'wG7pnZttup8', title: 'Boogie Woogie', kind: '뮤직비디오', source: 'SMTOWN · 2026.11.09' },
+    { id: 'LFbU0A1-IH8', title: 'The Sun', kind: '뮤직비디오', source: 'SMTOWN · 2026.10.20' },
+    { id: 'BrxjpUZs6KI', title: 'TV아사히 드림 페스티벌 2026 출연 인사', kind: '공식 인사 영상', source: 'TV아사히 드림 페스티벌' }
+  ],
   enhypen: [
     { id: 'h_EaeC1hTqo', title: 'Bloody Paradise', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.08.21' },
     { id: 'bDvtb6Pywes', title: 'Checkmate', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.09.11' },
