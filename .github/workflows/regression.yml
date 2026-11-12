@@ -54,6 +54,24 @@ jobs:
       - run: node tests/admin-ban-edge.test.cjs
       - run: node --test tests/agit-hub.test.cjs tests/agit-load-reliability.test.cjs
 
+  tarot:
+    name: Tarot daily limits, saved choices and payment retries
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Check daily readings and duplicate payment protection
+        run: |
+          node tests/tarot-payment-client.test.cjs
+          node tests/tarot-payment-db.test.cjs
+
   private_groups:
     name: Private group membership, media and schedules
     runs-on: ubuntu-latest

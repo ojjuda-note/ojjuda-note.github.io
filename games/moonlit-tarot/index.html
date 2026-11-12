@@ -4,13 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#100c1b">
-  <meta name="description" content="78장의 카드에서 만나는 나만의 이야기. 달의 마녀 루나와 함께 세 장을 펼치고, 지금의 마음과 앞으로의 흐름을 살펴보세요.">
+  <meta name="description" content="달빛 아래, 마녀가 당신을 기다려요. 달의 마녀 루나와 함께 세 장을 펼치고, 지금의 마음과 앞으로의 흐름을 살펴보세요.">
   <title>달의 마녀 타로 · 오쭈다</title>
   <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="./assets/scene.webp" as="image">
   <link rel="preload" href="./assets/moon-serif.woff" as="font" type="font/woff" crossorigin>
   <link rel="stylesheet" href="./style.css?v=20261112-tarot-words1">
-  <link rel="stylesheet" href="./details.css?v=20261112-moonlit-tarot3">
+  <link rel="stylesheet" href="./details.css?v=20261112-tarot-daily1">
+  <link rel="stylesheet" href="./revelation.css?v=20261112-tarot-daily1">
 </head>
 <body>
   <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -79,16 +80,17 @@
         <div id="intro-controls" class="intro-controls">
           <p class="topic-label">어떤 이야기가 궁금한가요?</p>
           <div id="topics" class="topics" role="group" aria-label="운세 주제">
-            <button class="topic active" data-topic="overall" aria-pressed="true"><svg><use href="#i-star"/></svg>오늘의 운세</button>
+            <button class="topic active" data-topic="overall" aria-pressed="true"><svg><use href="#i-star"/></svg>전체운세</button>
             <button class="topic" data-topic="love" aria-pressed="false"><svg><use href="#i-heart"/></svg>연애운</button>
             <button class="topic" data-topic="money" aria-pressed="false"><svg><use href="#i-gem"/></svg>금전운</button>
             <button class="topic" data-topic="work" aria-pressed="false"><svg><use href="#i-compass"/></svg>일과 도전</button>
           </div>
           <p class="tarot-price"><strong>1회 10쭈</strong><span>세 장의 풀이와 종합 점괘</span></p>
+          <p id="daily-limit-note" class="tarot-daily-note">분야별 하루 1회 · 한국시간 밤 12시에 새 운세</p>
           <button id="summon-button" class="primary-button"><svg><use href="#i-star"/></svg><span>마녀의 카드 불러오기</span><svg class="button-arrow"><use href="#i-arrow"/></svg></button>
           <p id="payment-status" class="payment-status" role="status"></p>
           <a id="login-link" class="login-link" href="/world.html?tab=hub" hidden>아지트에서 로그인·쭈 확인하기 →</a>
-          <p class="button-note">전체 78장 중 다섯 장이 당신을 찾아옵니다.</p>
+          <p class="button-note">달빛 아래, 마녀가 당신을 기다려요.</p>
         </div>
 
         <div id="play-controls" class="play-controls" hidden>
@@ -97,7 +99,7 @@
           <ol id="reveal-order" class="reveal-order" hidden aria-label="내가 고른 카드 순서"><li><b>1</b><span>첫 번째<small>지금의 마음</small></span></li><li><b>2</b><span>두 번째<small>다가오는 흐름</small></span></li><li><b>3</b><span>세 번째<small>마녀의 조언</small></span></li></ol>
           <button id="action-button" class="primary-button" disabled><svg><use href="#i-star"/></svg><span>카드가 날아오는 중</span><svg class="button-arrow"><use href="#i-arrow"/></svg></button>
           <p id="action-note" class="button-note">버릴 카드를 한 장씩 누르세요.</p>
-          <button id="restart-small" class="text-button" hidden><svg><use href="#i-reset"/></svg>처음부터 다시</button>
+          <button id="restart-small" class="text-button" hidden><svg><use href="#i-reset"/></svg>다른 운세 보기</button>
         </div>
       </section>
 
@@ -120,9 +122,10 @@
   <dialog id="help-dialog" class="modal help-modal" aria-labelledby="help-title">
     <button class="modal-close" data-close="help-dialog" aria-label="이용 안내 닫기"><svg><use href="#i-close"/></svg></button>
     <p class="eyebrow">YOUR LITTLE RITUAL</p><h2 id="help-title">마녀와 만나는 방법</h2>
-    <ol class="help-steps"><li><span>01</span><div><h3>마음속 질문을 떠올리세요</h3><p>오늘의 운세, 연애, 돈, 일 중 궁금한 이야기를 골라 주세요.</p></div></li><li><span>02</span><div><h3>두 장을 하나씩 버리세요</h3><p>버릴 카드를 한 장씩 누르세요. 확인 없이 바로 별빛 속으로 사라져요. 두 장을 버리면 남은 세 장이 자리를 잡아요.</p></div></li><li><span>03</span><div><h3>여는 순서를 직접 고르세요</h3><p>마음이 가는 카드부터 누르세요. 첫 번째는 지금의 마음, 두 번째는 다가오는 흐름, 마지막은 마녀의 조언을 보여줘요. 풀이를 읽고 다음 카드를 골라 주세요. 열린 카드를 다시 누르면 설명을 한 번 더 읽을 수 있어요.</p></div></li></ol>
+    <ol class="help-steps"><li><span>01</span><div><h3>마음속 질문을 떠올리세요</h3><p>전체운세, 연애운, 금전운, 일과 도전 중 궁금한 이야기를 골라 주세요.</p></div></li><li><span>02</span><div><h3>두 장을 하나씩 버리세요</h3><p>버릴 카드를 한 장씩 누르세요. 확인 없이 바로 별빛 속으로 사라져요. 두 장을 버리면 남은 세 장이 자리를 잡아요.</p></div></li><li><span>03</span><div><h3>여는 순서를 직접 고르세요</h3><p>마음이 가는 카드부터 누르세요. 첫 번째는 지금의 마음, 두 번째는 다가오는 흐름, 마지막은 마녀의 조언을 보여줘요. 풀이를 읽고 다음 카드를 골라 주세요. 열린 카드를 다시 누르면 설명을 한 번 더 읽을 수 있어요.</p></div></li></ol>
+    <p class="help-footnote">각 분야의 새 운세는 하루에 한 번, 10쭈로 볼 수 있어요. 오늘 본 운세는 추가 차감 없이 다시 열 수 있고, 한국시간 밤 12시부터 새 운세를 볼 수 있어요.</p>
     <p class="help-footnote">효과음과 마녀의 안내 음성은 따로 켤 수 있어요. 기기에서 한국어 읽기를 지원하면 이야기를 음성으로도 들을 수 있어요. 화면의 움직임을 줄이려면 위쪽의 바람 아이콘을 눌러 주세요.</p>
-    <button class="primary-button" data-close="help-dialog">마녀를 만나러 가기<svg><use href="#i-arrow"/></svg></button>
+    <button id="preview-revelation" class="primary-button" data-close="help-dialog">마녀의 마법 미리보기<svg><use href="#i-arrow"/></svg></button>
   </dialog>
 
   <dialog id="reading-dialog" class="modal reading-modal" aria-labelledby="reading-position reading-title">
@@ -137,15 +140,19 @@
     <div class="reading-dialog-actions"><button class="secondary-button" data-close="reading-dialog">카드로 돌아가기</button><button id="reading-next" class="primary-button"><span>다음 카드 고르기</span><svg><use href="#i-arrow"/></svg></button></div>
   </dialog>
 
-  <dialog id="result-dialog" class="modal result-modal" aria-labelledby="result-title">
+  <dialog id="result-dialog" class="modal result-modal" aria-labelledby="result-title" aria-describedby="result-one-line">
     <button class="modal-close" data-close="result-dialog" aria-label="종합 해석 닫기"><svg><use href="#i-close"/></svg></button>
     <div class="result-heading"><p id="result-eyebrow" class="eyebrow">LUNA'S FINAL READING</p><h2 id="result-title">당신을 위한 종합 점괘</h2><p id="result-date"></p></div>
+    <section class="result-takeaway" aria-labelledby="result-takeaway-label">
+      <h3 id="result-takeaway-label">한마디 정리</h3>
+      <p id="result-one-line"></p>
+    </section>
     <p id="result-intro" class="result-intro"></p>
     <section class="summary-box"><span class="summary-star">✧</span><p class="small-kicker">마녀 루나의 마지막 속삭임</p><h3 id="summary-headline"></h3><div id="summary-text" class="reading-sections"></div><div class="ritual"><svg><use href="#i-moon"/></svg><div><span>오늘의 작은 한 걸음</span><p id="summary-ritual"></p></div></div></section>
-    <div class="result-actions"><button id="copy-result" class="secondary-button"><svg><use href="#i-copy"/></svg>종합 점괘 복사하기</button><button id="restart-result" class="primary-button"><svg><use href="#i-reset"/></svg>새로운 운세 보기</button></div>
+    <div class="result-actions"><button id="copy-result" class="secondary-button"><svg><use href="#i-copy"/></svg>종합 점괘 복사하기</button><button id="restart-result" class="primary-button"><svg><use href="#i-reset"/></svg>다른 운세 보기</button></div>
     <p class="result-footnote">카드의 이야기를 참고하며, 내 마음을 돌아보는 시간이에요.</p>
   </dialog>
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="./app.js?v=20261112-tarot-words1"></script>
+  <script type="module" src="./app.js?v=20261112-tarot-daily1"></script>
 </body>
 </html>

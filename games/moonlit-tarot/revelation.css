@@ -1,0 +1,70 @@
+/* A single three-second scene; all effects remain anchored to the painted orb. */
+.revelation-dialog { position: fixed; inset: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; border-radius: 0; overflow: hidden; overscroll-behavior: contain; color: #fff1d9; background: #0c0715; outline: none; isolation: isolate; }
+.revelation-dialog:not([open]) { display: none; }
+.revelation-dialog::backdrop { background: #0c0715; }
+.revelation-world { position: absolute; inset: 0; transform-origin: var(--orb-x) var(--orb-y); }
+.revelation-art { position: absolute; display: block; max-width: none; min-height: 0; object-fit: fill; user-select: none; pointer-events: none; filter: saturate(1.12) brightness(.82); }
+.revelation-shade { position: absolute; inset: 0; background: linear-gradient(90deg, #0a0513b8, transparent 60%), linear-gradient(0deg, #0c0715 0%, transparent 27%, transparent 76%, #0c071536); }
+.revelation-magic { position: absolute; left: var(--orb-x); top: var(--orb-y); width: var(--orb-size); height: var(--orb-size); transform: translate(-50%, -50%); pointer-events: none; }
+.revelation-halo { position: absolute; inset: -130%; border-radius: 50%; background: radial-gradient(circle, #f0d4ff60 0%, #cb7fff33 16%, #a753d420 34%, transparent 65%); mix-blend-mode: screen; opacity: .3; }
+.revelation-core { position: absolute; inset: -2%; border-radius: 50%; background: radial-gradient(circle at 48% 59%, #fff5d9d9 0%, #e8c8ff99 7%, #c790ef50 24%, #b15df326 44%, transparent 65%); box-shadow: inset 0 0 27px #edd8ff55, 0 0 60px #c685ff36; mix-blend-mode: screen; opacity: .18; }
+.revelation-rays { position: absolute; inset: -95%; border-radius: 50%; background: repeating-conic-gradient(from 22deg, transparent 0deg 21deg, #e7c0ff12 22deg 24deg, transparent 26deg 51deg); -webkit-mask-image: radial-gradient(circle, transparent 13%, #000 24%, transparent 70%); mask-image: radial-gradient(circle, transparent 13%, #000 24%, transparent 70%); opacity: 0; }
+.revelation-sigil { position: absolute; width: 170%; height: 170%; inset: -35%; fill: none; stroke: #f4d7a2; stroke-width: .65; opacity: 0; filter: drop-shadow(0 0 5px #dda2ff80); }
+.revelation-sigil-inner { width: 150%; height: 150%; inset: -25%; stroke: #debcf3; stroke-width: .75; }
+.revelation-sparks { position: absolute; inset: 0; border-radius: 50%; }
+.revelation-sparks i { position: absolute; top: 50%; left: 50%; width: var(--spark-size); height: var(--spark-size); border-radius: 50%; background: #ffebc4; box-shadow: 0 0 7px 2px #d1a4ff; opacity: 0; transform: rotate(var(--spark-angle)) translateX(calc(var(--orb-size) * var(--spark-distance))); }
+.revelation-sparks i:nth-child(4n) { background: #d9b5ff; box-shadow: 0 0 12px 2px #b690ff; }
+.revelation-shockwave { position: absolute; inset: -8%; border: 1px solid #f9dfa980; border-radius: 50%; box-shadow: 0 0 20px #dcc2ff4d, inset 0 0 20px #ead4ff33; opacity: 0; }
+.revelation-bloom { position: absolute; inset: 0; z-index: 2; background: radial-gradient(ellipse at var(--orb-x) var(--orb-y), #fff7e8 0%, #e1c6ff 10%, #b78bce94 28%, #b0a0c039 55%, transparent 85%); pointer-events: none; opacity: 0; }
+.revelation-letterbox { position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(#08040b 0%, #08040b00 11%, transparent 89%, #08040b 100%); border-top: clamp(16px, 3.4vh, 40px) solid #08040b; border-bottom: clamp(16px, 3.4vh, 40px) solid #08040b; }
+.revelation-copy { position: absolute; z-index: 3; left: 8%; top: 42%; width: min(520px, 44%); transform: translateY(-30%); text-align: left; text-shadow: 0 3px 24px #080410, 0 1px 5px #080410; }
+.revelation-kicker { display: block; color: #dac18e; font-family: var(--sans, sans-serif); font-size: 12px; letter-spacing: .16em; margin-bottom: 20px; }
+.revelation-caption { margin: 0; font-family: var(--serif, serif); font-size: clamp(23px, 2.7vw, 38px); font-weight: 400; line-height: 1.65; color: #fff0d5; word-break: keep-all; overflow-wrap: anywhere; }
+.revelation-whisper { display: block; margin-top: 18px; color: #d3bfdc; font: 13px/1.8 var(--sans, sans-serif); word-break: keep-all; }
+.revelation-skip { position: absolute; z-index: 4; top: max(22px, env(safe-area-inset-top)); right: max(24px, env(safe-area-inset-right)); display: flex; align-items: center; gap: 13px; min-height: 44px; padding: 10px 16px; font: 12px/1.5 var(--sans, sans-serif); color: #eadced; border: 1px solid #c5a2df55; border-radius: 999px; background: #160e24b3; cursor: pointer; }
+.revelation-skip:hover { border-color: #edc58a; color: #fff1d0; background: #34223fcc; }
+.revelation-skip:focus-visible { outline: 2px solid #f1d9a2; outline-offset: 4px; }
+.revelation-dialog.is-running .revelation-world { animation: revelation-push 3s cubic-bezier(.14,.1,.38,1) both; }
+.revelation-dialog.is-running .revelation-halo { animation: revelation-charge 3s ease-in both; }
+.revelation-dialog.is-running .revelation-core { animation: revelation-core 3s ease-in both; }
+.revelation-dialog.is-running .revelation-rays { animation: revelation-rays 3s ease-out both; }
+.revelation-dialog.is-running .revelation-sigil-outer { animation: revelation-seal 2.5s cubic-bezier(.2,.2,.35,1) both; }
+.revelation-dialog.is-running .revelation-sigil-inner { animation: revelation-inner 2.7s cubic-bezier(.2,.2,.35,1) both; }
+.revelation-dialog.is-running .revelation-sparks i { animation: revelation-converge var(--spark-time) cubic-bezier(.65,.05,.88,.45) var(--spark-delay) both; }
+.revelation-dialog.is-running .revelation-shockwave { animation: revelation-release .65s cubic-bezier(.1,.5,.4,1) 2.35s both; }
+.revelation-dialog.is-running .revelation-bloom { animation: revelation-bloom .65s ease-out 2.35s both; }
+.revelation-dialog.is-running .revelation-copy { animation: revelation-copy .5s ease-out both; }
+.revelation-dialog[data-stage="receive"] .revelation-caption, .revelation-dialog[data-stage="reveal"] .revelation-caption { color: #fff5df; }
+.revelation-dialog.is-portrait .revelation-shade { background: linear-gradient(0deg, #0c0715 0%, #0c0715c7 12%, transparent 30%, transparent 78%, #0c07153d); }
+.revelation-dialog.is-portrait .revelation-copy { left: 22px; right: 22px; top: auto; bottom: max(40px, env(safe-area-inset-bottom)); width: auto; transform: none; text-align: center; }
+.revelation-dialog.is-portrait .revelation-kicker { margin-bottom: 10px; font-size: 10px; }
+.revelation-dialog.is-portrait .revelation-caption { font-size: clamp(20px, 4.9vw, 29px); line-height: 1.65; }
+.revelation-dialog.is-portrait .revelation-whisper { margin-top: 8px; font-size: 11px; }
+.revelation-dialog.is-portrait .revelation-skip { top: max(15px, env(safe-area-inset-top)); right: 15px; font-size: 11px; padding: 9px 13px; }
+.revelation-dialog.is-portrait .revelation-letterbox { border-width: 15px 0; }
+@media (max-height: 720px) {
+  .revelation-dialog.is-portrait .revelation-copy { bottom: max(24px, env(safe-area-inset-bottom)); }
+  .revelation-dialog.is-portrait .revelation-kicker,
+  .revelation-dialog.is-portrait .revelation-whisper { display: none; }
+  .revelation-dialog.is-portrait .revelation-caption { font-size: 19px; line-height: 1.5; }
+}
+.revelation-dialog.is-reduced .revelation-world,
+.revelation-dialog.is-reduced .revelation-copy,
+.revelation-dialog.is-reduced .revelation-magic * { animation: none !important; }
+.revelation-dialog.is-reduced .revelation-sparks,
+.revelation-dialog.is-reduced .revelation-rays,
+.revelation-dialog.is-reduced .revelation-sigil,
+.revelation-dialog.is-reduced .revelation-shockwave,
+.revelation-dialog.is-reduced .revelation-bloom { display: none; }
+.revelation-dialog.is-reduced .revelation-halo { opacity: .5; }
+.revelation-dialog.is-reduced .revelation-core { opacity: .35; }
+@keyframes revelation-push { from { transform: scale(1); } to { transform: scale(1.055); } }
+@keyframes revelation-charge { 0% { transform: scale(.7); opacity: .12; } 50% { opacity: .52; } 80% { transform: scale(1.1); opacity: .9; } 100% { transform: scale(1.4); opacity: 1; } }
+@keyframes revelation-core { 0% { transform: scale(.84); opacity: .12; } 50% { transform: scale(.97); opacity: .45; } 78% { transform: scale(1.04); opacity: .85; } 100% { transform: scale(1.16); opacity: 1; } }
+@keyframes revelation-rays { 0% { transform: rotate(-35deg) scale(.7); opacity: 0; } 35% { opacity: .7; } 100% { transform: rotate(22deg) scale(1.25); opacity: 1; } }
+@keyframes revelation-seal { 0% { transform: rotate(-37deg) scale(1.3); opacity: 0; } 28% { opacity: .25; } 75% { opacity: .65; } 100% { transform: rotate(38deg) scale(.97); opacity: .15; } }
+@keyframes revelation-inner { 0% { transform: rotate(35deg) scale(.65); opacity: 0; } 25% { opacity: .42; } 72% { opacity: .7; } 100% { transform: rotate(-65deg) scale(1.05); opacity: 0; } }
+@keyframes revelation-converge { 0% { transform: rotate(var(--spark-angle)) translateX(calc(var(--orb-size) * var(--spark-distance))) scale(.4); opacity: 0; } 18% { opacity: .85; } 82% { opacity: 1; } 100% { transform: rotate(calc(var(--spark-angle) + 42deg)) translateX(0) scale(.15); opacity: 0; } }
+@keyframes revelation-release { 0% { transform: scale(.6); opacity: 0; } 15% { opacity: .65; } 100% { transform: scale(3.4); opacity: 0; } }
+@keyframes revelation-bloom { 0% { opacity: 0; } 38% { opacity: .62; } 100% { opacity: .84; } }
+@keyframes revelation-copy { from { opacity: 0; margin-top: 8px; } to { opacity: 1; margin-top: 0; } }

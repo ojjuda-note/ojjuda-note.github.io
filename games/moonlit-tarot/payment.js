@@ -9,6 +9,9 @@ const messages = {
   coins: '쭈가 부족해요. 운세를 한 번 보려면 10쭈가 필요해요.',
   wallet_unavailable: '보유한 쭈를 확인하지 못했어요. 아지트로 돌아가 다시 열어 주세요.',
   request_conflict: '진행 중인 운세를 확인하지 못했어요. 아지트로 돌아가 다시 열어 주세요.',
+  progress_conflict: '다른 화면에 저장된 오늘의 점괘를 불러왔어요.',
+  progress_network: '선택을 저장하는 중 연결이 끊겼어요. 이어보기를 눌러 다시 확인해 주세요.',
+  progress_missing: '이전 점괘의 진행을 이어갈 수 없어요. 주제를 다시 골라 주세요.',
   storage_unavailable: '진행 상황을 저장할 수 없어 운세를 시작하지 않았어요. 브라우저에서 이 사이트의 데이터 저장을 허용해 주세요.',
   invalid: '운세를 불러오지 못했어요. 아지트로 돌아가 다시 열어 주세요.',
   network: '연결이 잠시 끊겼어요. 다시 누르면 시작하던 운세를 이어서 확인해요. 같은 운세로 쭈가 두 번 사용되지는 않아요.'
@@ -28,8 +31,21 @@ function script(src) {
   });
 }
 function indices(value, max) {
-  if (!Array.isArray(value) || value.length > max || new Set(value).size !== value.length || value.some(i => !Number.isInteger(i) || i < 0 || i > 4)) return [];
-  return value;
+  if (!Array.isArray(value) || value.length > max || new Set(value).size !== value.length || value.some(i => !Number.isInteger(i) || i < 0 || i > 4)) return null;
+  return [...value];
+}
+function progress(value) {
+  const discarded = indices(value.discarded, 2);
+  const openOrder = indices(value.open_order ?? value.openOrder, 3);
+  if (!discarded || !openOrder || (openOrder.length && discarded.length !== 2) || openOrder.some(i => discarded.includes(i))) throw problem('invalid');
+  return { discarded, openOrder };
+}
+function receipt(value) {
+  if (!value?.ok || !UUID.test(value.request_id) || !TOPICS.has(value.topic) || !/^\d{4}-\d{2}-\d{2}$/.test(value.reading_day || '') || !Number.isFinite(Date.parse(value.reset_at)) || !Array.isArray(value.drawn) || value.drawn.length !== 5 || new Set(value.drawn).size !== 5 || value.drawn.some(id => typeof id !== 'string')) throw problem('invalid');
+  return { ...value, ...progress(value) };
+}
+function sameProgress(a, b) {
+  return JSON.stringify(a.discarded) === JSON.stringify(b.discarded) && JSON.stringify(a.openOrder) === JSON.stringify(b.openOrder);
 }
 
 export class TarotPayment {
@@ -42,6 +58,11 @@ export class TarotPayment {
     this.record = null;
     this.pending = null;
     this.balance = null;
+    this.day = null;
+    this.resetAt = null;
+    this.readings = new Map();
+    this.todayRequest = null;
+    this.saveQueue = Promise.resolve();
   }
   get key() { return this.user ? `ojjuda.tarot.session.v1.${this.user}` : null; }
   read() {
@@ -61,6 +82,77 @@ export class TarotPayment {
     this.balance = value;
     this.onBalance(value);
   }
+  receiptFor(topic) {
+    if (!this.day || Date.now() >= Date.parse(this.resetAt)) return null;
+    return this.readings.get(topic) || null;
+  }
+  async rpc(name, args = {}) {
+    if (!this.client || !this.user) throw problem('not_signed_in');
+    const owner = this.user;
+    const { data, error } = await this.client.rpc(name, args);
+    if (owner !== this.user) throw problem('not_signed_in');
+    if (error) {
+      if (error.code === '42501' || /not_signed_in|JWT expired/i.test(error.message || '')) throw problem('not_signed_in');
+      throw problem();
+    }
+    return data;
+  }
+  async refreshToday() {
+    if (!this.enabled || !this.user) return null;
+    if (this.todayRequest) return this.todayRequest;
+    this.todayRequest = (async () => {
+      const data = await this.rpc('tarot_reading_today_v1');
+      if (!data?.ok) throw problem(data?.reason);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(data.reading_day || '') || !Number.isFinite(Date.parse(data.reset_at)) || !Array.isArray(data.readings)) throw problem('invalid');
+      const readings = data.readings.map(receipt);
+      if (readings.some(item => item.reading_day !== data.reading_day) || new Set(readings.map(item => item.topic)).size !== readings.length) throw problem('invalid');
+      this.day = data.reading_day;
+      this.resetAt = data.reset_at;
+      this.readings = new Map(readings.map(item => [item.topic, item]));
+      this.setBalance(data.coins);
+      return data;
+    })();
+    try { return await this.todayRequest; }
+    finally { this.todayRequest = null; }
+  }
+  adopt(value) {
+    const result = receipt(value);
+    // A purchase may cross midnight while the status request is in flight.
+    if (!this.day || result.reading_day > this.day) {
+      this.day = result.reading_day;
+      this.resetAt = result.reset_at;
+      this.readings.clear();
+    }
+    const record = {
+      owner: this.user, requestId: result.request_id, topic: result.topic,
+      readingDay: result.reading_day, resetAt: result.reset_at, paid: true, serverProgress: true,
+      discarded: [...result.discarded], openOrder: [...result.openOrder]
+    };
+    // A confirmed receipt is recoverable from the server even if storage fills later.
+    try { this.write(record); } catch { this.record = record; }
+    if (result.reading_day === this.day) this.readings.set(result.topic, result);
+    this.setBalance(result.coins);
+    return result;
+  }
+  async resume(value, draft) {
+    // Before the daily rule, a member could have bought this topic more than once.
+    // Keep today's chosen server receipt instead of retrying a legacy duplicate.
+    const canonical = value.reading_day === this.day ? this.readings.get(value.topic) : null;
+    let result = this.adopt(canonical && canonical.request_id !== value.request_id ? canonical : value);
+    // Preserve an interrupted save or progress from the pre-daily-limit client.
+    if (draft?.requestId === result.request_id && (draft.unsynced || !draft.serverProgress)) {
+      let saved;
+      try { saved = progress(draft); } catch { return result; }
+      if (saved.discarded.length || saved.openOrder.length) {
+        try { result = await this.save(saved); }
+        catch (error) {
+          if (!error.receipt) throw error;
+          result = { ...error.receipt, progressChanged: true };
+        }
+      }
+    }
+    return result;
+  }
   async init() {
     if (!this.enabled) return { preview: true };
     if (!window.OJJUDA_CONFIG) await script('/config.js?v=20261111-shared-member-auth1');
@@ -78,70 +170,125 @@ export class TarotPayment {
       this.user = owner;
       this.record = null;
       this.balance = null;
+      this.day = null;
+      this.resetAt = null;
+      this.readings.clear();
       this.onAccountChange();
     });
     if (!this.user) return { signedIn: false };
     this.record = this.read();
-    const wallet = await this.client.rpc('ju_shop_state');
-    if (!wallet.error) this.setBalance(wallet.data?.coins);
-    if (!this.record) return { signedIn: true };
-    const result = await this.request(this.record, true);
-    // An earlier purchase can still be in transit. Absence is not proof it failed.
-    if (result?.reason === 'not_found') return { signedIn: true, pending: this.record };
+    await this.refreshToday();
+    const draft = this.record;
+    if (!draft) return { signedIn: true };
+    // A known yesterday's reading must not replace today's topic chooser.
+    if (draft.paid && draft.readingDay !== this.day && !draft.unsynced) {
+      this.clearRecord();
+      return { signedIn: true };
+    }
+    const result = await this.request(draft, true);
+    // A missing receipt may still be in transit. Keep its UUID even across midnight.
+    if (result?.reason === 'not_found') return { signedIn: true, pending: draft };
     if (!result?.ok) throw problem(result?.reason);
-    this.setBalance(result.coins);
-    const discarded = indices(this.record.discarded, 2);
-    const opened = indices(this.record.openOrder, 3);
-    const openOrder = discarded.length === 2 && opened.every(i => !discarded.includes(i)) ? opened : [];
-    return { signedIn: true, resume: { ...result, discarded, openOrder } };
+    // Verify yesterday's uncertain payment, but do not try to save legacy choices
+    // into a duplicate receipt that was not selected for the daily archive.
+    const verified = receipt(result);
+    if (verified.reading_day < this.day) {
+      this.clearRecord();
+      this.setBalance(verified.coins);
+      return { signedIn: true };
+    }
+    const restored = await this.resume(verified, draft);
+    if (restored.reading_day !== this.day) {
+      this.clearRecord();
+      return { signedIn: true };
+    }
+    return { signedIn: true, resume: restored };
   }
-  async request(record, verifyOnly) {
-    if (!this.client || !this.user) throw problem('not_signed_in');
-    const owner = this.user;
-    const { data, error } = await this.client.rpc('tarot_reading_buy_v1', {
+  request(record, verifyOnly) {
+    return this.rpc('tarot_reading_buy_v1', {
       p_request_id: record.requestId, p_topic: record.topic, p_verify_only: verifyOnly
     });
-    if (owner !== this.user) throw problem('not_signed_in');
-    if (error) {
-      if (error.code === '42501' || /not_signed_in|JWT expired/i.test(error.message || '')) throw problem('not_signed_in');
-      throw problem();
-    }
-    return data;
   }
   async start(topic) {
     if (!this.enabled) return null;
     if (this.pending) return this.pending;
     if (!this.user) throw problem('not_signed_in');
     if (!TOPICS.has(topic)) throw problem('invalid');
-    const record = this.record || this.read() || {
-      owner: this.user, requestId: crypto.randomUUID(), topic, discarded: [], openOrder: []
-    };
-    // Persist the request BEFORE sending it. A retry always uses this same receipt ID.
-    this.write(record);
     this.pending = (async () => {
-      const result = await this.request(record, false);
+      await this.refreshToday();
+      const draft = this.record || this.read();
+      const uncertain = draft && (!draft.paid || draft.unsynced);
+      const previous = this.receiptFor(topic);
+      const record = uncertain ? draft : previous ? {
+        owner: this.user, requestId: previous.request_id, topic: previous.topic,
+        paid: true, readingDay: previous.reading_day, discarded: previous.discarded, openOrder: previous.openOrder
+      } : { owner: this.user, requestId: crypto.randomUUID(), topic, paid: false, discarded: [], openOrder: [] };
+      // Persist a new request BEFORE sending it, so retries can never buy twice.
+      if (!record.paid) this.write(record);
+      const result = await this.request(record, !!record.paid);
       if (!result?.ok) {
-        if (['coins', 'banned', 'member_required', 'wallet_unavailable', 'invalid'].includes(result?.reason)) this.newReading();
+        if (['coins', 'banned', 'member_required', 'wallet_unavailable', 'invalid'].includes(result?.reason)) this.clearRecord();
         if (Number.isInteger(result?.coins)) this.setBalance(result.coins);
         throw problem(result?.reason);
       }
-      this.setBalance(result.coins);
-      const discarded = indices(record.discarded, 2);
-      const opened = indices(record.openOrder, 3);
-      const openOrder = discarded.length === 2 && opened.every(i => !discarded.includes(i)) ? opened : [];
-      return { ...result, discarded, openOrder };
+      return this.resume(result, draft);
     })();
     try { return await this.pending; }
     finally { this.pending = null; }
   }
-  save({ discarded, openOrder }) {
-    if (!this.enabled || !this.record) return;
-    try { this.write({ ...this.record, discarded: [...discarded], openOrder: [...openOrder] }); }
-    catch { /* The paid receipt remains recoverable even if later storage fills. */ }
+  save(value) {
+    if (!this.enabled || !this.record) return Promise.resolve(null);
+    let next;
+    try { next = progress({ discarded: [...value.discarded], openOrder: [...value.openOrder] }); }
+    catch (error) { return Promise.reject(error); }
+    const owner = this.user;
+    const requestId = this.record.requestId;
+    const draft = { ...this.record, ...next, unsynced: true };
+    // Keep the exact user's choice locally until the server acknowledges it.
+    try { this.write(draft); } catch { this.record = draft; }
+    const task = this.saveQueue.catch(() => {}).then(async () => {
+      if (owner !== this.user) throw problem('not_signed_in');
+      let result;
+      try {
+        result = await this.rpc('tarot_reading_save_v1', {
+          p_request_id: requestId, p_discarded: next.discarded, p_open_order: next.openOrder
+        });
+      } catch (error) {
+        if (error.code === 'network') throw problem('progress_network');
+        throw error;
+      }
+      if (!result?.ok) {
+        if (result?.reason === 'not_found') {
+          // A pre-limit receipt may no longer be the canonical daily reading.
+          // Resolve the server's current choice before releasing the stale draft.
+          await this.refreshToday();
+          const canonical = this.readings.get(draft.topic);
+          this.clearRecord();
+          const error = problem(canonical ? 'progress_conflict' : 'progress_missing');
+          if (canonical) error.receipt = this.adopt(canonical);
+          throw error;
+        }
+        const error = problem(result?.reason);
+        if (result?.receipt) error.receipt = this.adopt(result.receipt);
+        throw error;
+      }
+      const saved = this.adopt(result);
+      if (!sameProgress(saved, next)) {
+        const error = problem('progress_conflict');
+        error.receipt = saved;
+        throw error;
+      }
+      return saved;
+    });
+    this.saveQueue = task;
+    return task;
+  }
+  clearRecord() {
+    try { if (this.key) localStorage.removeItem(this.key); } catch { /* Server receipts remain intact. */ }
+    this.record = null;
   }
   newReading() {
-    if (!this.enabled) return;
-    try { if (this.key) localStorage.removeItem(this.key); } catch { /* Keep an in-memory reset usable. */ }
-    this.record = null;
+    if (!this.enabled || this.pending || this.record?.unsynced || (this.record && !this.record.paid)) return;
+    this.clearRecord();
   }
 }
