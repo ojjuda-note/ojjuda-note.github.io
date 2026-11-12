@@ -95,7 +95,7 @@ test('Chacha Rush keeps the game-first popup and closes like other arcade games'
  assert.ok(overlay.querySelector('iframe[sandbox]'),'the external game remains sandboxed');
  assert.equal(overlay.querySelectorAll('a').length,0,'the game popup does not add distracting ranking tiles');
  assert.equal(window.document.querySelectorAll('.chacha-monthly-rank-link').length,0);
- assert.equal(window.document.activeElement?.getAttribute('aria-label'),'차차 러시 닫기');
+ assert.equal(window.document.activeElement?.textContent,'← 오쭈다 오락실');
  window.dispatchEvent(new window.KeyboardEvent('keydown',{key:'Escape',cancelable:true,bubbles:true}));
  assert.equal(window.document.querySelector('section[role="dialog"]'),null,'Escape closes the game');
  assert.equal(window.document.activeElement?.id,'origin','focus returns to the arcade card');

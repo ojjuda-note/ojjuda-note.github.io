@@ -140,7 +140,6 @@
       $('#starStart').onclick = () => enter();
       $('#starChapters').onclick = () => enter(true,true);
       $('#starGrowth').onclick = () => enter(true);
-      $('#starExit').onclick = () => post({type:'ojjuda-game-exit'});
       $('#starRetry').onclick = flush;
       $('#starRankingDetails').ontoggle = () => {
         if (!$('#starRankingDetails').open) return;

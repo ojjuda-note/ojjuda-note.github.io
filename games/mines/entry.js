@@ -118,7 +118,6 @@
         $('#minesEntry').hidden = true; $('#app').hidden = false;
         game.start(Number($('#minesLevel').value));
       };
-      $('#minesExit').onclick = requestExit;
       $('#minesRetry').onclick = flush;
       $('#minesRankingDetails').ontoggle = () => {
         if (!$('#minesRankingDetails').open) return;

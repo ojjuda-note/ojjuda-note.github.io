@@ -267,7 +267,7 @@
         }
       }, true);
       document.addEventListener('click', event => {
-        const button = event.target.closest?.('.ghead [data-g="close"],[data-bl="close"],[data-bd="close"],.tour-game-header button,.roulette-game-dialog>header button,.spot-game-header button,#matgo-overlay [aria-label="맞고 닫기"],#ttang-overlay [aria-label="월드땅따먹기 닫기"],#photo-ttang-overlay [aria-label="포토땅따먹기 닫기"]');
+        const button = event.target.closest?.('.ghead [data-g="close"],[data-bl="close"],[data-bd="close"],.tour-game-header button,.roulette-game-dialog>header button,.spot-game-header button,#matgo-overlay [aria-label="맞고 닫기"],#ttang-overlay [aria-label="월드땅따먹기 닫기"],#photo-ttang-overlay .arcade-return');
         if (button && options.playingGame?.()?.contains(button) && requestGameExit()) {
           event.preventDefault(); event.stopImmediatePropagation();
         }

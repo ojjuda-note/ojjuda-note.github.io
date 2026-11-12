@@ -91,7 +91,7 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   assert.equal(await frame.evaluate(()=>stage),1);
   await failedResult.getByRole('button',{name:'사진 목록',exact:true}).click();
   assert.deepEqual(await frame.evaluate(()=>Array.from(document.querySelectorAll('#grid .cell:not([disabled])'),cell=>LIST[Number(cell.dataset.i)].key)),['0','20','1'],'clearing the first photo unlocks the inserted photo and preserves access to the next original photo');
-  await page.getByRole('button',{name:'포토땅따먹기 닫기',exact:true}).click();assert.equal(await page.locator('#photo-ttang-overlay').count(),0);
+  await page.getByRole('button',{name:'← 오쭈다 오락실',exact:true}).click();assert.equal(await page.locator('#photo-ttang-overlay').count(),0);
   await multi.getByRole('button',{name:/^월드땅따먹기/}).click();
   const old=await(await page.locator('#ttang-overlay iframe').elementHandle()).contentFrame();await old.waitForSelector('#soloBtn');
   assert.equal(await old.title(),'오쭈다 월드땅따먹기');await old.locator('#soloBtn').tap();

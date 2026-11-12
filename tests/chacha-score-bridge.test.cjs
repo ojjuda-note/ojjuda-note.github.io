@@ -23,7 +23,7 @@ function fixture(t,{blockedStorage=false}={}){
     frame.contentWindow.postMessage=(data,targetOrigin)=>responses.push({data,targetOrigin});
   };
   const send=data=>w.dispatchEvent(new w.MessageEvent('message',{origin,source:frame.contentWindow,data:{channel:'ojjuda:chacha-rush',nonce,...data}}));
-  const close=()=>w.document.querySelector('[aria-label="차차 러시 닫기"]')?.click();
+  const close=()=>w.document.querySelector('.chacha-arcade-return')?.click();
   t.after(()=>{close();w.close();});
   open();
   return {w,calls,saved,responses,send,open,close,

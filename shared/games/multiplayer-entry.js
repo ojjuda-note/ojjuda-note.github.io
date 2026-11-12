@@ -7,8 +7,8 @@
   const visible = el => !!el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden';
   function toolbar(close) {
     const bar = document.createElement('header'); bar.className = 'mp-entry-bar';
-    const back = document.createElement('button'); back.type = 'button'; back.className = 'mp-entry-back';
-    back.textContent = '← 오락실'; back.onclick = close;
+    const back = document.createElement('button'); back.type = 'button'; back.className = 'mp-entry-back arcade-return';
+    back.textContent = '← 오쭈다 오락실'; back.onclick = close;
     const brand = document.createElement('span'); brand.textContent = '오쭈다 오락실';
     bar.append(back, brand); return bar;
   }
@@ -70,7 +70,7 @@
     // are removed, including standalone Matgo where the iframe never resizes.
     if (wasEntry && !active) window.dispatchEvent(new Event('resize'));
     if (embedded) parent.postMessage({type:'ojjuda:entry:view',active},location.origin);
-    else if (!document.querySelector('body > .mp-entry-bar')) document.body.prepend(toolbar(() => location.assign('/world.html')));
+    else if (!document.querySelector('body > .mp-entry-bar')) document.body.prepend(toolbar(() => location.assign('/world.html?tab=arcade')));
   }
   function update() {
     queued = false; scheduledFrame = 0;
