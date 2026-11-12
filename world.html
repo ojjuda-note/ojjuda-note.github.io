@@ -481,7 +481,7 @@ function y0(){
  const scope=adminTabsByArea[L.area]||adminTabsByArea.account;
  if(!scope.some(([id])=>id===L.tab))L.tab=scope[0][0];
  ensureAdminMenuSummary();
- let t='<section class="head-row adm-header"><div class="adm-title-row"><span class="adm-eyebrow">오쭈다 운영센터</span><h2 class="h2">관리자 모드</h2><p class="adm-header-description">회원, 콘텐츠, 운영 현황을 편하게 살펴보고 관리하세요.</p></div><nav class="adm-site-links" aria-label="관리 도구">'+(adminIsHome()?'':'<button class="btn sm" type="button" data-act="adm-back">← 관리자 메인</button>')+(noteAdminActive()||L.tab==="activity"?'':'<button class="btn sm" data-act="adm-refresh">새로고침</button>')+'<a class="btn sm" href="/admin/meeting/">AI 전략 회의실</a></nav></section>';
+ let t='<section class="head-row adm-header"><div class="adm-title-row"><span class="adm-eyebrow">오쭈다 운영센터</span><h2 class="h2">관리자 모드</h2><p class="adm-header-description">회원, 콘텐츠, 운영 현황을 편하게 살펴보고 관리하세요.</p></div><nav class="adm-site-links" aria-label="관리 도구">'+(adminIsHome()?'':'<button class="btn sm" type="button" data-act="adm-back">← 관리자 메인</button>')+(noteAdminActive()||L.tab==="activity"?'':'<button class="btn sm" data-act="adm-refresh">새로고침</button>')+'</nav></section>';
  t+=window.OjjudaAdminNavigation?.render({area:L.area,tab:L.tab,summary:L.cache.overview&&!L.cache.overview.error?L.cache.overview:adminMenuSummary.data})||
   (wr("adm-area",adminAreas,L.area).replace('class="seg"','class="seg adm-areas"')+wr("adm-tab",scope.filter(([id])=>id!=="rewards"),L.tab).replace('class="seg"','class="seg adm-tabs"'));
  if(noteAdminActive()){L.noteTab=adminNoteTab();return t+'<div class="world-note-admin" id="world-note-admin"></div>'}
