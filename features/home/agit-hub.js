@@ -258,6 +258,11 @@
         <div class="agit-tarot-copy"><span class="agit-tarot-kicker">MOONLIT TAROT <i aria-hidden="true">✦</i> 마녀의 초대</span><h2>달의 마녀 타로</h2><p>마음이 끌리는 세 장,<br>오늘의 이야기를 펼쳐 보세요.</p><span class="agit-tarot-cta">마녀 만나러 가기 <span aria-hidden="true">→</span></span></div>
         <div class="agit-tarot-price"><strong>1회 <b>10</b>쭈</strong><small>분야별 하루 1회</small></div>
       </a>
+      <a class="agit-saju-banner" href="/games/starlit-saju/" aria-label="별빛 사주팔자, 나의 사주 펼치기">
+        <span class="agit-saju-stars" aria-hidden="true"></span>
+        <div class="agit-saju-copy"><span class="agit-saju-kicker">STARLIT SAJU <i aria-hidden="true">✦</i> 별빛 서고</span><h2>별빛 사주팔자</h2><p>태어난 순간에 담긴 여덟 글자,<br>나만의 이야기를 만나보세요.</p><span class="agit-saju-cta">나의 사주 펼치기 <span aria-hidden="true">→</span></span></div>
+        <div class="agit-saju-art" aria-hidden="true"><span class="agit-saju-orbit"></span><span class="agit-saju-moon">☾</span><div class="agit-saju-scrolls"><span><small>YEAR</small><b>年</b><i>태어난 해</i></span><span><small>MONTH</small><b>月</b><i>태어난 달</i></span><span><small>DAY</small><b>日</b><i>태어난 날</i></span><span><small>HOUR</small><b>時</b><i>태어난 시</i></span></div></div>
+      </a>
       <footer class="agit-footer"><span>오쭈다 아지트</span><button type="button" data-act="feedback-open">의견 보내기 <span aria-hidden="true">→</span></button></footer>
     </div>`;
   }

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#100d1b">
+  <meta name="description" content="태어난 순간의 네 기둥과 여덟 글자. 별빛 서고에서 나만의 사주팔자와 오행의 이야기를 펼쳐 보세요.">
+  <title>별빛 사주팔자 · 오쭈다</title>
+  <link rel="icon" href="../moonlit-tarot/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="../moonlit-tarot/assets/moon-serif.woff" as="font" type="font/woff" crossorigin>
+  <link rel="stylesheet" href="./style.css?v=20261112-starlit-saju1">
+</head>
+<body>
+  <a class="skip-link" href="#birth-form">출생 정보 입력으로 바로가기</a>
+  <div class="night-sky" aria-hidden="true"><div class="sky-stars"></div><div class="sky-mist"></div><div class="sky-mist mist-two"></div></div>
+  <svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6Z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.6 14.2A8.8 8.8 0 0 1 9.8 3.4 9 9 0 1 0 20.6 14.2Z"/><path d="m18 2 .8 2.2L21 5l-2.2.8L18 8l-.8-2.2L15 5l2.2-.8Z"/></symbol>
+    <symbol id="i-motion" viewBox="0 0 24 24"><path d="M3 7h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 17h6a3 3 0 1 1-3 3"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 5c-3-2-7-2-10-1v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Zm0 0v15M5 8l4 1M5 12l4 1m6-4 4-1m-4 5 4-1"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.6 5.6 0 0 0-8 0l-.8.9-.8-.9a5.6 5.6 0 0 0-8 8L12 22l8.8-9.4a5.6 5.6 0 0 0 0-8Z"/></symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M20 3C11 2 2 7 5 15c8 6 15-1 15-12ZM3 22 15 10"/></symbol>
+    <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m16 8-2.5 5.5L8 16l2.5-5.5Z"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 12H4m6-6-6 6 6 6"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V3H3v13h5"/></symbol>
+  </defs></svg>
+
+  <header class="site-header">
+    <a class="brand" href="/world.html?tab=hub#agit-daily" aria-label="오쭈다 아지트로 돌아가기"><span class="brand-emblem"><svg><use href="#i-star"/></svg></span><span>오쭈다<small>OJJUDA</small></span></a>
+    <p class="header-caption">THE STARLIT ARCHIVE</p>
+    <nav class="header-nav" aria-label="이용 메뉴">
+      <a class="back-link" href="/world.html?tab=hub#agit-daily">← 아지트</a>
+      <button id="motion-toggle" class="motion-toggle" type="button" aria-label="움직임 줄이기" aria-pressed="false" title="움직임 줄이기"><svg><use href="#i-motion"/></svg></button>
+    </nav>
+  </header>
+
+  <main>
+    <div class="intro-grid" id="intro">
+      <section class="archive-intro" aria-labelledby="main-title">
+        <p class="eyebrow"><span></span> 별빛 서고 · 四柱八字 <span></span></p>
+        <h1 id="main-title">태어난 순간의 별빛,<br><em>당신의 이야기</em>를 펼치다</h1>
+        <p class="intro-description">네 개의 기둥, 여덟 글자에 담긴 나의 결.<br>별빛 아래 잠시 머물며 나를 알아가는 시간.</p>
+        <div class="celestial-stage" aria-hidden="true">
+          <div class="moon"></div><div class="stage-halo"></div>
+          <svg class="celestial-wheel" viewBox="0 0 600 600"><defs><radialGradient id="wheel-light"><stop stop-color="#c7a6df" stop-opacity=".10"/><stop offset="1" stop-color="#c7a6df" stop-opacity="0"/></radialGradient></defs><circle cx="300" cy="300" r="295" fill="url(#wheel-light)" stroke="none"/><g class="wheel-rings" fill="none" stroke="currentColor"><circle cx="300" cy="300" r="280"/><circle cx="300" cy="300" r="267" stroke-dasharray="1 12" stroke-width="3"/><circle cx="300" cy="300" r="245"/><circle cx="300" cy="300" r="203"/><circle cx="300" cy="300" r="170" stroke-dasharray="3 8"/><path d="M300 20v65m0 430v65M20 300h65m430 0h65M102 102l45 45m306 306 45 45M102 498l45-45m306-306 45-45"/><path d="M300 55 512 423H88ZM300 545 88 177h424Z" opacity=".55"/><ellipse cx="300" cy="300" rx="120" ry="245" transform="rotate(45 300 300)" opacity=".45"/><ellipse cx="300" cy="300" rx="120" ry="245" transform="rotate(-45 300 300)" opacity=".45"/></g><g class="wheel-script" fill="currentColor" text-anchor="middle"><text x="300" y="76">子</text><text x="420" y="109">丑</text><text x="501" y="191">寅</text><text x="532" y="310">卯</text><text x="501" y="429">辰</text><text x="420" y="512">巳</text><text x="300" y="544">午</text><text x="180" y="512">未</text><text x="98" y="429">申</text><text x="67" y="310">酉</text><text x="98" y="191">戌</text><text x="180" y="109">亥</text></g></svg>
+          <div class="archive-cards"><div class="archive-card" style="--i:0"><span class="card-star">✧</span><strong>年</strong><span class="card-divider"></span><small>태어난 해</small><span class="card-seal">根</span></div><div class="archive-card" style="--i:1"><span class="card-star">✧</span><strong>月</strong><span class="card-divider"></span><small>태어난 달</small><span class="card-seal">苗</span></div><div class="archive-card" style="--i:2"><span class="card-star">✧</span><strong>日</strong><span class="card-divider"></span><small>태어난 날</small><span class="card-seal">花</span></div><div class="archive-card" style="--i:3"><span class="card-star">✧</span><strong>時</strong><span class="card-divider"></span><small>태어난 시</small><span class="card-seal">實</span></div></div>
+          <span class="drifting-star star-one">✦</span><span class="drifting-star star-two">✧</span><span class="drifting-star star-three">✦</span>
+          <p class="stage-caption">木 · 火 · 土 · 金 · 水</p>
+        </div>
+        <p class="intro-footnote">당신이라는 우주를 읽는, 작은 의식</p>
+      </section>
+
+      <section class="birth-panel" aria-labelledby="form-title">
+        <div class="panel-ornament" aria-hidden="true">✧</div>
+        <p class="small-kicker">OPEN YOUR STORY</p>
+        <h2 id="form-title">별빛에 생일을 알려 주세요</h2>
+        <p class="panel-description">태어난 날과 시간으로 이야기가 시작돼요.</p>
+        <form id="birth-form">
+          <fieldset class="calendar-field"><legend>생일 기준</legend><div class="segmented"><label><input type="radio" name="calendar" value="solar" checked><span>양력</span></label><label><input type="radio" name="calendar" value="lunar"><span>음력</span></label></div><label id="leap-option" class="check-row leap-option" hidden><input id="leap-month" type="checkbox"><span>윤달에 태어났어요</span></label></fieldset>
+          <fieldset class="date-field"><legend>생년월일</legend><div class="date-inputs"><label><span class="field-label">년</span><input id="birth-year" type="number" inputmode="numeric" autocomplete="off" min="1900" max="2050" step="1" placeholder="예: 1990" required aria-describedby="date-help"></label><label><span class="field-label">월</span><select id="birth-month" required><option value="">월</option></select></label><label><span class="field-label">일</span><select id="birth-day" required><option value="">일</option></select></label></div><p id="date-help" class="field-hint">1900년 이후의 생일을 입력해 주세요.</p></fieldset>
+          <fieldset class="time-field"><legend>태어난 시간</legend><label class="check-row"><input id="time-unknown" type="checkbox" checked aria-controls="time-fields"><span>태어난 시간을 몰라요</span></label><div id="time-fields" class="time-inputs" hidden><label><span class="field-label">시</span><select id="birth-hour" disabled></select></label><span class="time-colon" aria-hidden="true">:</span><label><span class="field-label">분</span><select id="birth-minute" disabled></select></label></div><p id="time-help" class="field-hint">시간을 몰라도 기본 풀이를 볼 수 있어요.</p></fieldset>
+          <div id="form-error" class="form-error" role="alert" tabindex="-1" hidden></div>
+          <button id="open-story" class="primary-button" type="submit" disabled><svg><use href="#i-star"/></svg><span>나의 사주팔자 펼치기</span><svg><use href="#i-arrow"/></svg></button>
+          <p class="form-note">기본 풀이 무료 · 입력한 생일은 저장하지 않아요.</p>
+        </form>
+        <noscript><p class="form-error">사주를 펼치려면 브라우저에서 자바스크립트를 켜 주세요.</p></noscript>
+        <a class="tarot-link" href="../moonlit-tarot/"><svg><use href="#i-moon"/></svg><span>오늘의 이야기가 궁금하다면, 달의 마녀 타로</span><span aria-hidden="true">↗</span></a>
+      </section>
+    </div>
+
+    <section id="result" class="result" aria-labelledby="result-title" hidden>
+      <header class="result-heading"><p class="eyebrow"><span></span> YOUR EIGHT CHARACTERS <span></span></p><h2 id="result-title" tabindex="-1">별빛이 펼쳐 놓은<br><em>당신의 사주팔자</em></h2><p id="birth-summary" class="birth-summary"></p><p id="lunar-summary" class="lunar-summary"></p></header>
+      <div id="result-pillars" class="result-pillars" aria-label="나의 사주 네 기둥"></div>
+      <div id="result-warnings" class="result-warnings" hidden></div>
+      <div class="result-layout">
+        <section class="day-master-panel" aria-labelledby="day-master-title"><p class="small-kicker">나를 상징하는 일간</p><div class="day-master-heading"><span id="day-master-glyph" class="day-master-glyph" aria-hidden="true"></span><div><h3 id="day-master-title"></h3><p id="day-master-symbol"></p></div></div><p id="day-master-reading" class="day-master-reading"></p><p class="gentle-note">타고난 기질을 돌아보는 하나의 관점으로 읽어 주세요.</p></section>
+        <section class="elements-panel" aria-labelledby="elements-title"><div class="section-title"><h3 id="elements-title">다섯 기운의 빛깔</h3><span id="element-count"></span></div><div id="element-bars" class="element-bars"></div><p class="gentle-note">확인된 글자의 오행을 세었어요. 기운의 세기나 좋고 나쁨을 뜻하지 않아요.</p></section>
+      </div>
+      <div class="reading-sections"><section class="reading-section"><span class="reading-icon"><svg><use href="#i-leaf"/></svg></span><p class="small-kicker">01 · 나의 바탕</p><h3 id="nature-title"></h3><p id="nature-reading"></p></section><section class="reading-section"><span class="reading-icon"><svg><use href="#i-heart"/></svg></span><p class="small-kicker">02 · 인연의 결</p><h3 id="relationship-title"></h3><p id="relationship-reading"></p></section><section class="reading-section"><span class="reading-icon"><svg><use href="#i-compass"/></svg></span><p class="small-kicker">03 · 일과 생활</p><h3 id="work-title"></h3><p id="work-reading"></p></section></div>
+      <details class="conventions"><summary>사주를 읽는 기준과 시간 안내 <span aria-hidden="true">＋</span></summary><ul id="convention-list"></ul></details>
+      <div class="result-actions"><button id="edit-birth" class="primary-button" type="button"><svg><use href="#i-back"/></svg>생일 다시 입력하기</button><button id="copy-reading" class="secondary-button" type="button"><svg><use href="#i-copy"/></svg>풀이 복사하기</button><a class="secondary-button" href="../moonlit-tarot/"><svg><use href="#i-moon"/></svg>타로도 보러 가기</a></div>
+    </section>
+  </main>
+  <footer class="site-footer"><span class="footer-wordmark">THE STARLIT ARCHIVE <i>✧</i></span><p>전통 명리 해석을 바탕으로 나를 돌아보는 시간이에요.<br>앞으로의 이야기는 당신의 선택으로 써 내려가세요.</p><span class="footer-no">VOL. 02 · STARLIGHT</span></footer>
+  <div id="status" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./app.js?v=20261112-starlit-saju1"></script>
+</body>
+</html>

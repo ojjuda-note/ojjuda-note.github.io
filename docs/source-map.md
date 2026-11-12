@@ -6,6 +6,7 @@
 
 | 게임·기능 | 프런트 소스 | 서버 함수 |
 | --- | --- | --- |
+| 별빛 사주팔자 | `games/starlit-saju/` | 브라우저 내 한국 음력·절기 계산, 출생 정보 저장 없음 |
 | 바람의 궁수 | `games/forest-archer/` | `game-action` |
 | 나사 풀기 | `games/screw/` | `flat-drill-clear* (운영 보정 도구)` |
 | 맞고 | `games/matgo/` | `matgo` |

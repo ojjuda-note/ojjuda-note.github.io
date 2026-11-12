@@ -1,11 +1,12 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261112-tarot-daily1'
+ const revision='20261112-starlit-saju1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   tarot:'1.1.0',
+  saju:'1.0.0',
   group:'1.2.2',
   chacha_rush:'1.1.0',
   byeolcheonji:'1.0.5',
