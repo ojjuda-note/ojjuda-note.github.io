@@ -16,3 +16,14 @@ main{max-width:1380px;margin:0 auto;padding:55px 4.2% 62px}.intro-grid{display:g
 html[data-reduced-motion=true]{scroll-behavior:auto}html[data-reduced-motion=true] *,html[data-reduced-motion=true] *:before,html[data-reduced-motion=true] *:after{animation:none!important;transition:none!important}
 
 input[aria-invalid=true],select[aria-invalid=true]{border-color:#e9a98f;box-shadow:0 0 0 1px #e9a98f40}
+
+/* The large entrance windows share the banner reflection. The frame and
+   lettering sit above the light; reduced motion keeps a static reflection. */
+.archive-card{isolation:isolate;overflow:hidden}
+.archive-card>*{position:relative;z-index:2}
+.archive-card:before{z-index:1}
+.archive-card:after{inset:auto;top:-35%;left:-110%;width:108%;height:170%;z-index:0;background:linear-gradient(105deg,transparent 12%,#bad9ed33 24%,#e4d2ff59 36%,#fff2c2bf 47%,#fff9e6e0 52%,#f0cc8899 64%,transparent 88%);opacity:.45;transform:translateX(105%) skewX(-18deg);animation:archive-window-light 6s linear infinite;animation-delay:calc(var(--i) * .6s - 2.4s)}
+.archive-card strong{text-shadow:0 1px 5px #080811,0 0 23px #d4aa7238}
+@keyframes archive-window-light{0%{opacity:0;transform:translateX(0) skewX(-18deg)}10%,58%{opacity:.88}74%,100%{opacity:0;transform:translateX(220%) skewX(-18deg)}}
+html[data-reduced-motion=true] .archive-card:after{opacity:.35}
+@media(prefers-reduced-motion:reduce){html:not([data-reduced-motion=false]) .archive-card:after{opacity:.35}}
