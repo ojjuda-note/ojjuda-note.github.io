@@ -805,9 +805,59 @@
       id: 'ateez', name: 'ATEEZ', korean: '에이티즈', category: 'boy', fan: 'ATINY', agency: 'KQ Entertainment',
       members: ['홍중', '성화', '윤호', '여상', '산', '민기', '우영', '종호'],
       debut: '2018.10.24', debutWork: 'TREASURE EP.1 : All To Zero', songs: ['해적왕 (Pirate King)', 'Treasure'],
-      concept: '여덟 멤버가 함께 나아가는 모험과 항해.',
-      official: 'https://kqent.com/', youtube: 'https://www.youtube.com/@ATEEZofficial',
+      concept: '2018년 해적왕으로 데뷔한 8인조. GOLDEN HOUR 음반과 세계 투어로 활동 중.',
+      official: 'https://ateez.kqent.com/', youtube: 'https://www.youtube.com/@ATEEZofficial',
       photo: 'ATEEZ in August 2024 (cropped).jpg', photoLabel: '2024년 단체', photoYear: '2024', credit: 'pinkllamanade', license: 'CC BY-SA 2.0',
+      morePhotos: [
+        commonsPhoto('260228 ATEEZ Choi San @ Dolce & Gabbana FW 26.27 Show in Milan.jpg', '산 · 밀라노 패션위크', '2026', 'sublimitas viii · Flickr 원작 · Commons FlickreviewR 확인 · 크롭본', 'CC BY-SA 4.0')
+      ],
+      checkedAt: '2026.11.12',
+      music: [
+        { title: 'GOLDEN HOUR : Part.6', date: '2026.11.13', type: '미니 15집 · 11.13 14:00 발매 예정 · 타이틀 UP', songs: ['ANEMIA', 'DRIP', 'UP', 'FAITH', 'Hollow Victory'], href: 'https://ateez.kqent.com/en/contents/6ade0ef2ba711e7b9ec3e59c' },
+        { title: 'GOLDEN HOUR : Part.5', date: '2026.06.26', type: '미니 14집 · 타이틀 BAD', songs: ['BAD', 'MAMACITA', 'TOXIN', "Fallin'", 'Body'], href: 'https://ateez-official.jp/musics/20862' },
+        { title: 'GOLDEN HOUR : Part.4', date: '2026.02.06', type: '미니 13집 · 타이틀 Adrenaline', songs: ['Ghost', 'Adrenaline', 'NASA', 'On the Road', 'Choose'], href: 'https://music.apple.com/us/album/golden-hour-part-4-ep/1867153027' },
+        { title: 'TREASURE EP.1 : All To Zero', date: '2018.10.24', type: '데뷔 EP · 타이틀 해적왕', songs: ['해적왕 (Pirate King)', 'Treasure'], href: 'https://ateez-official.jp/musics/7674' }
+      ],
+      appearances: [
+        { date: '2026-11-13', title: 'GOLDEN HOUR : Part.6 발매', sub: '14:00 KST · KQ엔터테인먼트 · 타이틀 UP · 발매 예정', href: 'https://ateez.kqent.com/en/contents/6ade0ef2ba711e7b9ec3e59c' },
+        { date: '2026-11-13', title: 'KBS2 뮤직뱅크 사전녹화·생방송', sub: '서울 KBS 신관 공개홀 · 녹화 08:45 / 생방송 17:10 · 공식 참가 공지', href: 'https://ateez.kqent.com/surveys/6af41182a993a556cdd4e773' },
+        { date: '2026-11-14', title: 'MBC 쇼! 음악중심 사전녹화', sub: '서울 상암 MBC 신사옥 공개홀 · 05:30 · 공식 참가 공지', href: 'https://ateez.kqent.com/surveys/6af55eeab2aee70bd8ed5ff5' },
+        { date: '2027-01-22', title: 'ZERO TO ALL 인천 월드투어', sub: '19:00 · 인천 인스파이어 NAVER ARENA · KQ / NOL 예매', href: 'https://ateez.kqent.com/contents/6ae94a808d38027a8d6b8b65' },
+        { date: '2027-01-23', title: 'ZERO TO ALL 인천 월드투어', sub: '17:00 · 인천 인스파이어 NAVER ARENA · KQ / NOL 예매', href: 'https://ateez.kqent.com/contents/6ae94a808d38027a8d6b8b65' },
+        { date: '2027-01-24', title: 'ZERO TO ALL 인천 월드투어', sub: '16:00 · 인천 인스파이어 NAVER ARENA · KQ / NOL 예매', href: 'https://ateez.kqent.com/contents/6ae94a808d38027a8d6b8b65' },
+        { date: '2027-02-02', title: 'ZERO TO ALL 도쿄 공연', sub: '18:30 · 국립 요요기 경기장 제1체육관 · 일본 공식 예매', href: 'https://ateez-official.jp/contents/1123026' },
+        { date: '2027-02-03', title: 'ZERO TO ALL 도쿄 공연', sub: '18:30 · 국립 요요기 경기장 제1체육관 · 일본 공식 예매', href: 'https://ateez-official.jp/contents/1123026' },
+        { date: '2027-02-13', title: 'ZERO TO ALL 고베 공연', sub: '17:30 · GLION ARENA KOBE · 일본 공식 예매', href: 'https://ateez-official.jp/contents/1123026' },
+        { date: '2027-02-14', title: 'ZERO TO ALL 고베 공연', sub: '15:30 · GLION ARENA KOBE · 일본 공식 예매', href: 'https://ateez-official.jp/contents/1123026' },
+        { date: '2027-03-31', title: 'ZERO TO ALL 런던 공연', sub: '영국 런던 · KQ 공식 일정 · 공연장·시간 추후 공지', href: 'https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814' },
+        { date: '2027-04-04', title: 'ZERO TO ALL 리옹 공연', sub: '프랑스 리옹 · KQ 공식 일정 · 공연장·시간 추후 공지', href: 'https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814' },
+        { date: '2027-04-07', title: 'ZERO TO ALL 베를린 공연', sub: '독일 베를린 · KQ 공식 일정 · 공연장·시간 추후 공지', href: 'https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814' },
+        { date: '2027-04-10', title: 'ZERO TO ALL 크라쿠프 공연', sub: '폴란드 크라쿠프 · KQ 공식 일정 · 공연장·시간 추후 공지', href: 'https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814' },
+        { date: '2027-04-12', title: 'ZERO TO ALL 암스테르담 공연', sub: '네덜란드 암스테르담 · KQ 공식 일정 · 공연장·시간 추후 공지', href: 'https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814' },
+        { date: '2027-04-15', title: 'ZERO TO ALL 쾰른 공연', sub: '독일 쾰른 · KQ 공식 일정 · 공연장·시간 추후 공지', href: 'https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814' },
+        { date: '2027-04-17', title: 'ZERO TO ALL 앤트워프 공연', sub: '벨기에 앤트워프 · KQ 공식 일정 · 공연장·시간 추후 공지', href: 'https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814' },
+      ],
+      schedules: [
+        { title: 'ATEEZ 일본 공식 일정', sub: '방송·행사·음반·공연 일정', href: 'https://ateez-official.jp/vertical_calendar' },
+        { title: 'KQ 공식 일정·소식', sub: '한국 공개방송·공연·일정 변경', href: 'https://ateez.kqent.com/contents' }
+      ],
+      news: [
+        { date: '2026.11.12', tag: '영상', title: 'UP 공식 뮤직비디오 티저 2 공개', href: 'https://ateez.kqent.com/contents/6af51f7c6737d57ef90dd839' },
+        { date: '2026.11.11', tag: '방송', title: '11.13 뮤직뱅크·11.14 음악중심 출연 공지', href: 'https://ateez.kqent.com/surveys/6af41182a993a556cdd4e773' },
+        { date: '2026.11.08', tag: '수상', title: 'KGMA Grand Record·Best Music·Best Stage 3관왕', href: 'https://www.soompi.com/article/1885017wpp/winners-of-2026-korea-grand-music-awards-music-day' },
+        { date: '2026.11.03', tag: '공연', title: '2027 ZERO TO ALL 인천 3회 공연·예매 공지', href: 'https://ateez.kqent.com/contents/6ae94a808d38027a8d6b8b65' },
+        { date: '2026.10.25', tag: '컴백', title: '미니 15집 Part.6 트랙리스트 발표 · 11.13 정식 발매 예정', href: 'https://ateez.kqent.com/en/contents/6ade0ef2ba711e7b9ec3e59c' }
+      ],
+      merch: [
+        { title: 'GOLDEN HOUR : Part.6 공식 음반 3종 세트', sub: 'KQ TOKTOQ · 11.13 발매 · 예약 특전 11.12 23:59 종료 예정 · 재고 확인', href: 'https://ateez.kqent.com/shop/products/243' },
+        { title: 'GOLDEN HOUR : Part.6 일본 정식 수입반', sub: 'UNIVERSAL MUSIC JAPAN · A/DIARY/Z · 일본 11.18 발매 예정', href: 'https://www.universal-music.co.jp/ateez/news/2026-10-13/' },
+        { title: 'ATEEZ SPECIAL VOICE CARD', sub: 'WOWOW × CoDaMa 공식 음성 카드 · 8.04 출시 · 판매 상태 별도 확인', href: 'https://prtimes.jp/main/html/rd/p/000008858.000001355.html' }
+      ],
+      campaigns: [
+        { kind: '콜라보', date: '2026.09.15', title: 'ATEEZ × LINE FRIENDS MIGHTEEZ', sub: 'Rock The Stage 3차 팝업 · 시부야 9.18 개최 발표', href: 'https://prtimes.jp/main/html/rd/p/000000129.000040759.html' },
+        { kind: '홍보대사', date: '2026.08.27', title: '스튜디오 톰보이 × 우영', sub: '신세계인터내셔날 첫 글로벌 앰버서더 · 멤버 개인 활동', href: 'https://www.shinsegaegroupnewsroom.com/studio-tomboy-global-ambassador-ateez-wooyoung/' },
+        { kind: '콜라보', date: '2026.07.21', title: 'ATEEZ × WOWOW × CoDaMa', sub: '팬미팅 기념 NFC 음성 카드 공동 제작 · 8.04 출시', href: 'https://prtimes.jp/main/html/rd/p/000008858.000001355.html' }
+      ],
       accent: '#d7af68', light: '#4f422a', dark: '#fff2d5', bg: '#171e2c', night: true, shape: '✶'
     },
     {
