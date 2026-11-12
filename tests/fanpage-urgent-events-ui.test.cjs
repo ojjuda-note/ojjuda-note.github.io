@@ -46,6 +46,7 @@ const root=path.join(__dirname,'..'),out=path.join(__dirname,'artifacts/fanpage-
  for(const button of await page.locator('.content-reveal').all()){
   if(await button.getAttribute('aria-expanded')!=='true')await button.click();
  }
+ await page.evaluate(()=>document.fonts.ready);
  const sections=['profile','photos','videos','music','goods','news'];
  if(await page.locator('#collabs').count())sections.push('collabs');
  for(const width of [320,390,768]){
