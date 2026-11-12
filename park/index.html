@@ -230,14 +230,14 @@
                 <div class="note-photo-pages"><button class="button" id="photo-prev" type="button" aria-label="이전 사진 페이지">‹ 이전</button><label for="photo-page-jump">페이지 <select id="photo-page-jump" aria-label="사진 페이지 선택"></select></label><span id="photo-page-status" aria-live="polite"></span><button class="button" id="photo-next" type="button" aria-label="다음 사진 페이지">다음 ›</button></div>
               </div>
             </fieldset>
-            <div class="identity-row" hidden><span>표시 이름</span><label title="올리면 '수줍은 고래'처럼 이름이 자동으로 붙어요. 카드마다 이름이 달라요."><input type="radio" name="identity" value="anonymous" checked>익명 <small class="anon-auto">· 이름 자동</small></label><label class="disabled-choice" title="다음 단계에서 제공"><input type="radio" name="identity" value="nickname" disabled>닉네임</label></div>
+            <div class="identity-row" hidden><span>표시 이름</span><label title="올리면 '수줍은 고래'처럼 이름이 자동으로 붙어요. 같은 대화에서는 내 익명 이름이 유지돼요."><input type="radio" name="identity" value="anonymous" checked>익명 <small class="anon-auto">· 이름 자동</small></label><label class="disabled-choice" title="다음 단계에서 제공"><input type="radio" name="identity" value="nickname" disabled>닉네임</label></div>
             <div class="identity-row gender-row" hidden title="가입한 성별 또는 비공개만 선택할 수 있어요. 작성한 카드의 표시는 그대로 유지돼요."><span>성별 표시</span><label><input type="radio" name="gender" value="male" disabled>남</label><label><input type="radio" name="gender" value="female" disabled>여</label><label title="이름 앞 동그라미가 회색으로 보여요"><input type="radio" name="gender" value="private" checked>비공개</label></div>
           </div>
         </details>
 
         <section class="note-event-fields" id="note-event-fields" hidden><h3>이벤트 위치와 범위</h3><p id="event-location-status" role="status">지도를 누르거나 Tab으로 지도에 초점을 맞춘 뒤 방향키로 이동하고 아래 버튼으로 중심을 선택해 주세요. 지정한 위치와 범위는 다른 사람에게 보입니다.</p><div id="event-map" class="note-map"></div><button class="button" id="event-select-center" type="button">현재 지도 중심을 위치로 선택</button><div class="note-event-options"><label>반경 (1~30km)<input id="event-radius" type="number" inputmode="numeric" min="1" max="30" step="1" value="1"></label><label>시간 (1~24시간)<input id="event-hours" type="number" inputmode="numeric" min="1" max="24" step="1" value="1"></label></div><p id="event-price" class="ju-paid-price">1km × 1시간 = 100 ZU</p></section>
       </div>
-      <footer class="composer-footer"><span id="compose-message" role="status" aria-live="polite">로그인 확인 중</span><div class="compose-quick"><label class="quick-choice"><span class="quick-label">이름</span><select id="quick-identity" aria-label="표시 이름"><option value="anonymous">익명</option><option value="nickname">닉네임</option></select></label></div><button class="button primary" id="publish-card" type="button" disabled>등록하기</button></footer>
+      <footer class="composer-footer"><span id="compose-message" role="status" aria-live="polite">로그인 확인 중</span><div class="compose-quick"><label class="quick-choice"><span class="quick-label">이름</span><select id="quick-identity" aria-label="표시 이름" title="같은 대화에서는 내 익명 이름이 유지돼요."><option value="anonymous">익명</option><option value="nickname">닉네임</option></select></label></div><button class="button primary" id="publish-card" type="button" disabled>등록하기</button></footer>
     </section>
   </div>
   <script src="/config.js?v=20261111-shared-member-auth1" defer></script>
@@ -250,7 +250,7 @@
   <script src="/features/account/account-deletion.js?v=20261106-source-folders1" defer></script>
   <script src="/note/share-image.js?v=20261112-card-fast1" defer></script>
   <script src="/note/share-kakao.js?v=20261031-kakao-card-share1" defer></script>
-  <script src="/note/preview.js?v=20261112-card-fast1" defer></script>
+  <script src="/note/preview.js?v=20261112-thread-name1" defer></script>
   <script src="/note/pull-refresh.js?v=20261004-refresh1" defer></script>
   <script src="/note/navigation.js?v=20260929-my1" defer></script>
   <script src="/park/integration.js?v=20261112-reply-swipe1" defer></script>

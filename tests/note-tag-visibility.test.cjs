@@ -182,6 +182,43 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   const tagsRequest = new Query().select('tags').eq('kind','memo'); context.request=tagsRequest;
   const suggested = await vm.runInContext('filterSearchOnlyTags(request)',context).rows();
   assert.ok(suggested.every(row=>!row.tags.includes('19금')));
+  // Exercise the same public card projection used for nested replies and shared links.
+  await db.exec(`create role anon; create role authenticated;
+    create table auth.users(id uuid primary key);
+    insert into auth.users select distinct author_id from ojjuda_note.cards;`);
+  const threadMigration = fs.readdirSync(path.join(root,'supabase/migrations')).find(name => name.endsWith('_note_thread_aliases.sql'));
+  const before = await add([], {author:viewer,kind:'comment',parent:normalReply});
+  await db.exec(read(`supabase/migrations/${threadMigration}`));
+  vm.runInContext(source.slice(source.indexOf('const ANON_ALIAS_EXPANDED_AT'),source.indexOf('const GENDER_LOOK')),context);
+  vm.runInContext(source.slice(source.indexOf('function shownName('),source.indexOf('function dateLabel(')),context);
+  const publicCard = async id => (await db.query('select * from ojjuda_note.public_cards where id=$1',[id])).rows[0];
+  const rootCard = await publicCard(normal);
+  context.card = rootCard;
+  const originalName = vm.runInContext('anonAlias(card.id, card.created_at).name',context);
+  const visibleName = async id => {
+    context.card = await publicCard(id);
+    return vm.runInContext('shownName(card).name',context);
+  };
+  assert.equal(await visibleName(normal),originalName);
+  assert.equal(await visibleName(before),originalName,'backfilled nested reply keeps original author name');
+  const after = await add([], {author:viewer,kind:'comment',parent:normalReply});
+  assert.equal(await visibleName(after),originalName,'new nested reply keeps original author name');
+  const sibling = await add([], {author,kind:'comment',parent:after});
+  assert.equal(await visibleName(sibling),await visibleName(normalReply),'returning reply author keeps their own name');
+  const otherThreadReply = await add([], {author:viewer,kind:'comment',parent:only});
+  assert.equal(await visibleName(otherThreadReply),await visibleName(only));
+  const registry = (await db.query('select thread_id from ojjuda_note_internal.thread_aliases where author_id=$1',[viewer])).rows;
+  assert.ok([normal,only].every(id=>registry.some(row=>row.thread_id===id)),'separate entries for unrelated conversations');
+  await db.query('insert into public.profiles values ($1,$2)',[viewer,'테스트 닉네임']);
+  await db.query("update ojjuda_note.cards set identity_mode='nickname' where id=$1",[after]);
+  assert.equal(await visibleName(after),'테스트 닉네임');
+  assert.equal(await visibleName(before),originalName);
+  await db.query('insert into ojjuda_note_internal.card_moderation values ($1,true)',[normalReply]);
+  assert.equal(await publicCard(after),undefined,'hidden parent hides its descendants');
+  for (const role of ['anon','authenticated']) {
+    const privileges = await db.query("select has_table_privilege($1,'ojjuda_note_internal.thread_aliases','select') as can_read",[role]);
+    assert.equal(privileges.rows[0].can_read,false);
+  }
   await db.close();
   console.log('PASS: single-word tags, whitespace parsing, search-driven composer defaults, mixed tags, explicit search, pagination and existing moderation');
 })().catch(error=>{console.error(error);process.exitCode=1;});
