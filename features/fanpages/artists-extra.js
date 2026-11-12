@@ -823,9 +823,61 @@
       id: 'nctwish', name: 'NCT WISH', korean: '엔시티 위시', category: 'boy', fan: 'NCTzen', agency: 'SM Entertainment',
       members: ['시온', '리쿠', '유우시', '재희', '료', '사쿠야'],
       debut: '2024.02.21', debutWork: 'WISH', songs: ['WISH'],
+      checkedAt: '2026.11.12',
       concept: '밝은 에너지로 소원을 전하는 NCT의 여섯 멤버 유닛.',
-      official: 'https://www.smentertainment.com/', youtube: 'https://www.youtube.com/@NCTWISH',
+      official: 'https://www.nct-jp.net/', youtube: 'https://www.youtube.com/@NCTWISH',
       photo: '2026 NCT WISH promotion 01.jpg', photoLabel: '2026년 단체', photoYear: '2026', credit: 'numbuzin', license: 'CC BY 4.0',
+      morePhotos: [
+        commonsPhoto('2026 NCT WISH promotion 03.jpg', '2026년 그룹 화보', '2026', 'numbuzin', 'CC BY 4.0')
+      ],
+      music: [
+        { title: 'I SPY', date: '2026.10.12', type: '미니 4집 · 타이틀 I SPY',
+          songs: ['I SPY', 'We Own This Street', 'UPGRADE', 'Super Major', 'Hubble Time', '꿈결 (Like A Dream)'],
+          href: 'https://smtownandstore.com/product/nct-wish-the-4th-mini-album-i-spy-deluxe-book-ver/29341/category/53/display/1/' },
+        { title: 'Ode to Love', date: '2026.04.20', type: '한국 정규 1집 · 타이틀 Ode to Love',
+          songs: ['2.0 (TWO POINT O)', 'Ode to Love', 'Sticky', 'Feel The Beat', '여우비 (Crush)', 'Street (2AM)', 'Glow Up', 'Everglow', "Don't Say You Love Me", 'Voyage'],
+          href: 'https://www.youtube.com/watch?v=1o5O2YvV3HU' },
+        { title: 'WISHLIST', date: '2026.01.14', type: '일본 미니 1집 · 리드곡 Hello Mellow',
+          songs: ['Hello Mellow', 'ZONE', 'BUBBLE GUM', 'Dreamcatcher', 'SOMEDAY', 'Good Morning', 'poppop (Japanese Ver.)'],
+          href: 'https://avexnet.jp/news/1030412' },
+        { title: 'WISH', date: '2024.02.21', type: '한일 동시 데뷔 · WISH',
+          songs: ['WISH'], href: 'https://www.nct-jp.net/profile/' }
+      ],
+      appearances: [
+        { date: '2026-11-23', title: 'TV아사히 드림 페스티벌 2026', sub: '일본 K아레나 요코하마 · 15:00 개연 · TV아사히 주최', href: 'https://nct-jp.net/ja/news/detail.php?id=1135596' },
+        { date: '2026-12-06', title: 'I SPY 일본 발매 기념 팬 이벤트', sub: '오사카 근교 · 추첨 당첨자 대상 · 세부 장소·시간은 당첨자 개별 안내', href: 'https://www.nct-jp.net/news/detail.php?id=1136642' },
+        { date: '2027-01-15', title: 'INTO THE WISH : Face Our WISH 서울 1일차', sub: '서울 고척스카이돔 · 18:00 (KST) · 멜론티켓 공식 예매', href: 'https://weverse.io/nctwish/notice/40058' },
+        { date: '2027-01-16', title: 'INTO THE WISH : Face Our WISH 서울 2일차', sub: '서울 고척스카이돔 · 17:00 (KST) · 멜론티켓 공식 예매', href: 'https://weverse.io/nctwish/notice/40058' },
+        { date: '2027-02-26', title: 'INTO THE WISH 일본 도쿄 1일차', sub: '요요기 국립경기장 제1체육관 · 18:30 (JST)', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' },
+        { date: '2027-02-27', title: 'INTO THE WISH 일본 도쿄 2일차', sub: '요요기 국립경기장 제1체육관 · 17:00 (JST)', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' },
+        { date: '2027-02-28', title: 'INTO THE WISH 일본 도쿄 3일차', sub: '요요기 국립경기장 제1체육관 · 16:00 (JST)', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' },
+        { date: '2027-03-05', title: 'INTO THE WISH 일본 고베 1일차', sub: 'GLION ARENA KOBE · 18:30 (JST)', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' },
+        { date: '2027-03-06', title: 'INTO THE WISH 일본 고베 2일차', sub: 'GLION ARENA KOBE · 17:00 (JST)', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' },
+        { date: '2027-03-07', title: 'INTO THE WISH 일본 고베 3일차', sub: 'GLION ARENA KOBE · 16:00 (JST)', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' },
+        { date: '2027-03-13', title: 'INTO THE WISH 일본 후쿠오카 1일차', sub: '기타큐슈 메세 · 17:00 (JST)', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' },
+        { date: '2027-03-14', title: 'INTO THE WISH 일본 후쿠오카 2일차', sub: '기타큐슈 메세 · 16:00 (JST)', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' },
+        { date: '2027-03-21', title: 'INTO THE WISH 일본 아이치 1일차', sub: '포트메세 나고야 제1전시관 · 17:00 (JST)', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' },
+        { date: '2027-03-22', title: 'INTO THE WISH 일본 아이치 2일차', sub: '포트메세 나고야 제1전시관 · 16:00 (JST)', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' }
+      ],
+      schedules: [
+        { title: 'NCT 일본 공식 뉴스·공연 안내', sub: 'NCT WISH 일본 아레나 투어·팬 이벤트·변경 소식', href: 'https://www.nct-jp.net/news/' },
+        { title: 'NCT WISH 공식 공지', sub: 'Weverse · 한국 공연·팬 행사 및 예매', href: 'https://weverse.io/nctwish/notice' }
+      ],
+      news: [
+        { date: '2026.11.04', tag: '공연', title: '2027 일본 전국 아레나 투어 10회 · 선예매 11.16까지', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' },
+        { date: '2026.10.31', tag: '팬 행사', title: 'I SPY 일본 오사카 발매 행사 12.6 확정', href: 'https://www.nct-jp.net/news/detail.php?id=1136642' },
+        { date: '2026.10.12', tag: '음악', title: '미니 4집 I SPY 발매 · 6곡 수록', href: 'https://smtownandstore.com/product/nct-wish-the-4th-mini-album-i-spy-deluxe-book-ver/29341/category/53/display/1/' },
+        { date: '2026.09.08', tag: '광고', title: '넘버즈인 3번 로션 캠페인 모델 활동', href: 'https://www.seoul.co.kr/news/economy/2026/09/08/20260908500109' }
+      ],
+      merch: [
+        { title: 'I SPY 미니 4집 Deluxe Book Ver.', sub: 'SMTOWN &STORE · 포토북·포토카드 · 재고와 가격은 판매처 확인', href: 'https://smtownandstore.com/product/nct-wish-the-4th-mini-album-i-spy-deluxe-book-ver/29341/category/53/display/1/' },
+        { title: 'I SPY 일본 한정반·특전', sub: 'avex 공식 · 타워레코드·HMV·위버스 특전 안내 · 기간/대상 품목 확인', href: 'https://www.nct-jp.net/news/detail.php?id=1136642' },
+        { title: 'WISHLIST 일본 공식 음반', sub: 'avex trax · 한정 패키지·특전 · 재고 확인', href: 'https://avexnet.jp/release/1021226' }
+      ],
+      campaigns: [
+        { kind: '광고', date: '2026.09.08', title: '넘버즈인 × NCT WISH', sub: '브랜드 모델 · 3번 로션/세럼 화잘먹 캠페인', href: 'https://www.seoul.co.kr/news/economy/2026/09/08/20260908500109' },
+        { kind: '콜라보', date: '2026.03.19', title: 'WEGO 2026 SPRING × NCT WISH', sub: '일본 패션 브랜드 비주얼 모델·협업 상품·매장 캠페인', href: 'https://prtimes.jp/main/html/rd/p/000000155.000057274.html' }
+      ],
       accent: '#87b340', light: '#ecffd9', dark: '#567535', bg: '#f7ffef', shape: '☆'
     },
     {
