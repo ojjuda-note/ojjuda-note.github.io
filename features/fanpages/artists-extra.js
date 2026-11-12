@@ -752,7 +752,7 @@
       news: [
         { date: '2026.11.08', tag: '팬 행사', title: '12월 17·21일 일본 온라인 팬 이벤트 공지', href: 'https://enhypen-jp.weverse.io/news/cdaa6da839b4' },
         { date: '2026.11.06', tag: '공연', title: '11월 13~26일 BLOOD SAGA 일본 극장 상영·입장 선물 안내', href: 'https://enhypen-jp.weverse.io/news/78707bf51814' },
-        { date: '2026.10.26', tag: '음악', title: 'THE SIN : PARALLEL WORLD 발매 발표 · 디지털 11.20 / 실물 11.23', href: 'https://weverse.io/enhypen/notice/40374' }
+        { date: '2026.10.26', tag: '음악', title: 'THE SIN : PARALLEL WORLD 발매 발표 · 디지털 11.20 / 실물 11.23 · Weverse 로그인 필요할 수 있음', href: 'https://weverse.io/enhypen/notice/40374' }
       ],
       merch: [
         { title: 'THE SIN : PARALLEL WORLD 공식 예약 앨범', sub: '10.26 예약 시작 · 국내 실물 11.23 발매 예정 · 재고·특전은 공식 판매처 확인', href: 'https://www.universal-music.co.jp/enhypen/news/2026-10-26/' },
