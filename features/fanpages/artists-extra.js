@@ -829,13 +829,402 @@
       accent: '#87b340', light: '#ecffd9', dark: '#567535', bg: '#f7ffef', shape: '☆'
     },
     {
-      id: 'andteam', name: '&TEAM', korean: '앤팀', category: 'boy', fan: 'LUNÉ', agency: 'YX LABELS',
-      members: ['의주', '후마', '케이', '니콜라스', '유마', '조', '하루아', '타키', '마키'],
-      debut: '2022.12.07', debutWork: 'First Howling : ME', songs: ['Under the skin', 'Scent of you'],
-      concept: '서로 다른 개성이 하나의 팀으로 이어지는 아홉 멤버.',
-      official: 'https://www.andteam-official.jp/', youtube: 'https://www.youtube.com/@andTEAM_official',
-      photo: '&TEAM ATA promotion 02.jpg', photoLabel: 'ATA 활동', photoYear: '2026', credit: 'K-POPIT 케이팝잇', license: 'CC BY 4.0',
-      accent: '#528b73', light: '#e0f5e9', dark: '#315b49', bg: '#f2fbf4', shape: '✷'
+      "id": "andteam",
+      "name": "&TEAM",
+      "korean": "앤팀",
+      "category": "boy",
+      "fan": "LUNÉ",
+      "agency": "YX LABELS",
+      "members": [
+        "의주",
+        "후마",
+        "케이",
+        "니콜라스",
+        "유마",
+        "조",
+        "하루아",
+        "타키",
+        "마키"
+      ],
+      "debut": "2022.12.07",
+      "debutWork": "First Howling : ME",
+      "songs": [
+        "Under the skin",
+        "Scent of you"
+      ],
+      "checkedAt": "2026.11.12",
+      "concept": "다른 개성을 지닌 아홉 멤버가 음악과 무대로 하나가 되는 팀.",
+      "official": "https://www.andteam-official.jp/",
+      "youtube": "https://www.youtube.com/@andTEAM_official",
+      "photo": "&TEAM ATA promotion 02.jpg",
+      "photoLabel": "ATA 활동",
+      "photoYear": "2026",
+      "credit": "K-POPIT 케이팝잇",
+      "license": "CC BY 4.0",
+      morePhotos: [commonsPhoto('241002 &Team (1).jpg', '2024년 단체 사진', '2024', 'nacco', 'CC BY 3.0')],
+      "music": [
+        {
+          "title": "Fearless",
+          "date": "2026.10.10",
+          "type": "디지털 싱글",
+          "songs": [
+            "Fearless"
+          ],
+          "href": "https://www.andteam-official.jp/discography/674dcde69452"
+        },
+        {
+          "title": "Mark on Me",
+          "date": "2026.09.08",
+          "type": "한국 미니 2집 · 한국 발매일(일본 CD 09.21)",
+          "songs": [
+            "Mark on Me",
+            "Good Boy",
+            "Love Jang",
+            "Accelerate",
+            "Empty",
+            "Night to howl!"
+          ],
+          "href": "https://www.andteam-official.jp/discography/1affd625347f"
+        },
+        {
+          "title": "We on Fire",
+          "date": "2026.04.21",
+          "type": "일본 EP · 타이틀 We on Fire",
+          "songs": [
+            "We on Fire",
+            "Bewitched",
+            "ホットライン",
+            "桜色Yell",
+            "We on Fire (Korean ver.)",
+            "Bewitched (Korean ver.)"
+          ],
+          "href": "https://www.andteam-official.jp/discography/7f97d047e0d5"
+        },
+        {
+          "title": "Back to Life",
+          "date": "2025.10.28",
+          "type": "한국 미니 1집 · 타이틀 Back to Life",
+          "songs": [
+            "Back to Life",
+            "Lunatic",
+            "MISMATCH",
+            "Rush",
+            "Heartbreak Time Machine",
+            "Who am I"
+          ],
+          "href": "https://www.andteam-official.jp/discography/cpbxev"
+        },
+        {
+          "title": "First Howling : ME",
+          "date": "2022.12.07",
+          "type": "데뷔 EP · 타이틀 Under the skin",
+          "songs": [
+            "Under the skin",
+            "Scent of you",
+            "バズ恋 (BUZZ LOVE)",
+            "The Final Countdown (&TEAM ver.)"
+          ],
+          "href": "https://www.andteam-official.jp/news/owsyjh"
+        }
+      ],
+      "appearances": [
+        {
+          "date": "2026-11-18",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 오사카 그랑큐브 오사카 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-11-18",
+          "title": "JO·TAKI · 후지TV ホンマでっか!?TV 출연",
+          "sub": "후지TV · 21:00~21:54 일본 현지 방송",
+          "href": "https://www.andteam-official.jp/news/a84de8968609"
+        },
+        {
+          "date": "2026-11-18",
+          "title": "JO·TAKI·MAKI · TBS よるのブランチ 출연",
+          "sub": "TBS · 23:56~익일 00:55 일본 현지 방송",
+          "href": "https://www.andteam-official.jp/news/2c290411ba85"
+        },
+        {
+          "date": "2026-11-19",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 오사카 그랑큐브 오사카 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-11-27",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 히로시마 문화학원 HBG홀 · 18:30 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-12-10",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 후쿠오카 선팔레스 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-12-11",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 후쿠오카 선팔레스 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-12-15",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 이시카와 혼다노모리 호쿠덴홀 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-12-16",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 이시카와 혼다노모리 호쿠덴홀 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-12-19",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 에히메 마쓰야마 시민회관 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-12-20",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 에히메 마쓰야마 시민회관 · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-12-27",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 홋카이도 삿포로 문화예술극장 hitaru · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-05",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 구마모토성 홀 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-06",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 구마모토성 홀 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-10",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 미야기 센다이 선플라자홀 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-11",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 미야기 센다이 선플라자홀 · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-15",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 니가타 현민회관 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-16",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 니가타 현민회관 · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-19",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 오사카 그랑큐브 오사카 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-20",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 오사카 그랑큐브 오사카 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-22",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 오카야마 구라시키 시민회관 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-23",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 오카야마 구라시키 시민회관 · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-28",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 오키나와 컨벤션센터 극장동 · 18:30 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-02-03",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 효고 GLION ARENA KOBE · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-02-04",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 효고 GLION ARENA KOBE · 17:30 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-02-06",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 아이치 IG Arena · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-02-07",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 아이치 IG Arena · 16:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-02-13",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 가나가와 피아 아레나 MM · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-02-14",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 가나가와 피아 아레나 MM · 16:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-02-27",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 가가와 아나부키 아레나 · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-02-28",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 가가와 아나부키 아레나 · 16:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-03-20",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 후쿠오카 마린멧세 B관 · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-03-21",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 후쿠오카 마린멧세 B관 · 16:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-03-22",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 후쿠오카 마린멧세 B관 · 16:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-03-26",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 미야기 세키스이하임 슈퍼아레나 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-03-27",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 미야기 세키스이하임 슈퍼아레나 · 16:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        }
+      ],
+      "schedules": [
+        {
+          "title": "&TEAM 공식 일정",
+          "sub": "공연·방송 등 활동 달력 · 변경 여부 확인",
+          "href": "https://www.andteam-official.jp/schedule"
+        },
+        {
+          "title": "&TEAM 공식 티켓",
+          "sub": "투어·예매·변경·취소 공지",
+          "href": "https://www.andteam-official.jp/ticket"
+        }
+      ],
+      "news": [
+        {
+          "date": "2026.11.12",
+          "tag": "광고",
+          "title": "For us, 미쓰이 라라포트·아울렛 블랙프라이데이 TV 광고 음악 선정",
+          "href": "https://www.andteam-official.jp/news/48bd3c0789e7"
+        },
+        {
+          "date": "2026.11.12",
+          "tag": "굿즈",
+          "title": "&TEAM CAFE THE WOLF BUTLERS 상품 예약 판매 시작",
+          "href": "https://www.andteam-official.jp/news/56e8ec3cf6be"
+        },
+        {
+          "date": "2026.11.12",
+          "tag": "방송",
+          "title": "JO·TAKI·MAKI, 11월 18일 TBS よるのブランチ 출연 발표",
+          "href": "https://www.andteam-official.jp/news/2c290411ba85"
+        },
+        {
+          "date": "2026.11.12",
+          "tag": "방송",
+          "title": "JO·TAKI, 11월 18일 후지TV ホンマでっか!?TV 출연 발표",
+          "href": "https://www.andteam-official.jp/news/a84de8968609"
+        },
+        {
+          "date": "2026.11.06",
+          "tag": "공연",
+          "title": "2027년 Mark on You 아레나 투어 13회 공식 일정 공개",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        }
+      ],
+      "merch": [
+        {
+          "title": "&TEAM CAFE THE WOLF BUTLERS 공식 MD",
+          "sub": "배지·키링·엽서 등 · 예약 2026.11.12~2027.01.31(일본 현지) · 수량 한정·일본 내 배송",
+          "href": "https://www.andteam-official.jp/news/56e8ec3cf6be"
+        },
+        {
+          "title": "Mark on Me 공식 앨범·포토카드",
+          "sub": "일반반 2종·솔로반 9종 · 상품 구성·재고·판매 조건은 공식 안내 확인",
+          "href": "https://www.andteam-official.jp/discography/1affd625347f"
+        },
+        {
+          "title": "Mark on You 투어 공식 MD",
+          "sub": "응원봉 액세서리 등 · 실제 구매·재고는 공식 판매처 확인",
+          "href": "https://www.andteam-official.jp/news/2a6725a8861d"
+        },
+        {
+          "title": "&TEAM 공식 상품 목록",
+          "sub": "Weverse Shop · 앨범·응원봉·공식 MD · 재고·가격은 판매처 확인",
+          "href": "https://shop.weverse.io/ko/shop/USD/artists/75"
+        }
+      ],
+      "campaigns": [
+        {
+          "kind": "광고",
+          "date": "2026.11.12",
+          "title": "&TEAM 'For us' × 미쓰이 라라포트·아울렛 BLACK FRIDAY",
+          "sub": "일본 전국 TV CM 삽입곡 · 2026.11.29까지 순차 방영",
+          "href": "https://www.andteam-official.jp/news/48bd3c0789e7"
+        }
+      ],
+      "accent": "#528b73",
+      "light": "#e0f5e9",
+      "dark": "#315b49",
+      "bg": "#f2fbf4",
+      "shape": "✷"
     }
   ];
   window.OJJUDA_FAN_ARTISTS.push(...additionalArtists.map(artistFrom));
