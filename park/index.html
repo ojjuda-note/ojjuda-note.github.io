@@ -42,7 +42,7 @@
 <link rel="stylesheet" href="/shared/brand/brand-copy.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/features/wallet/paid-ui.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/app/world/world-design.css?v=20261106-source-folders1">
-<link rel="stylesheet" href="/park/design.css?v=20261112-reply-overlay1">
+<link rel="stylesheet" href="/park/design.css?v=20261112-reply-swipe1">
 <link rel="stylesheet" href="/app/world/world-themes.css?v=20261110-themes3">
 <script src="/app/world/world-themes.js?v=20261110-theme-copy1" defer></script>
 <meta property="og:type" content="website">
@@ -159,7 +159,7 @@
           <button class="back-button" type="button" data-show="feed"><svg><use href="#arrow"/></svg>카드로 돌아가기</button>
           <div class="detail-layout park-photo-cards">
             <div class="detail-card-slot" id="detail-card-slot"></div>
-            <div class="replies"><div class="reply-heading"><div><h2>답글 카드 <span id="reply-count">0</span></h2></div><button class="button primary" type="button" data-compose="reply"><svg><use href="#plus"/></svg>답글 쓰기</button></div><div id="reply-list" aria-live="polite"></div></div>
+            <div class="replies"><div class="reply-heading"><div><h2>답글 카드 <span id="reply-count">0</span></h2></div><button class="button primary" type="button" data-compose="reply"><svg><use href="#plus"/></svg>답글 쓰기</button></div><div id="reply-list" role="region" aria-label="최신순 답글 카드" aria-live="polite" tabindex="0" data-no-swipe></div></div>
           </div>
         </section>
         <section id="note-my-screen" class="note-my-screen my-hub" aria-labelledby="note-my-title" hidden>
@@ -250,9 +250,9 @@
   <script src="/features/account/account-deletion.js?v=20261106-source-folders1" defer></script>
   <script src="/note/share-image.js?v=20261031-card-image-share1" defer></script>
   <script src="/note/share-kakao.js?v=20261031-kakao-card-share1" defer></script>
-  <script src="/note/preview.js?v=20261112-park-speed1" defer></script>
+  <script src="/note/preview.js?v=20261112-reply-swipe1" defer></script>
   <script src="/note/pull-refresh.js?v=20261004-refresh1" defer></script>
   <script src="/note/navigation.js?v=20260929-my1" defer></script>
-  <script src="/park/integration.js?v=20261110-park-mission1" defer></script>
+  <script src="/park/integration.js?v=20261112-reply-swipe1" defer></script>
 </body>
 </html>
