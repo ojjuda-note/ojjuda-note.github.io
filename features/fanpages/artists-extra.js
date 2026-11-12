@@ -580,7 +580,7 @@
       merch: [
         {
           "title": "ARIRANG 공식 MD",
-          "sub": "Weverse · 공식 음반 기념 상품 · 재고는 판매처 확인",
+          "sub": "Weverse · 일부 공지 로그인 필요 · 재고는 판매처 확인",
           "href": "https://weverse.io/bts/notice/34135"
         },
         {
