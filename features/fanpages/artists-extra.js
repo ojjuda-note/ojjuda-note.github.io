@@ -675,7 +675,7 @@
       ],
       music: [
         { title: '7TH YEAR: 가시덤불에 잠시 바람이 멈췄을 때', date: '2026.04.13', type: '미니 8집 · 타이틀 하루에 하루만 더 (Stick With You)', songs: ['Bed of Thorns', '하루에 하루만 더 (Stick With You)', 'Take Me to Nirvana (feat. Vinida Weng)', 'So What', '21st Century Romance', '다음의 다음 (Dream of Mine)'], href: 'https://ibighit.com/ko/txt/discography/detail/7th_year' },
-        { title: '꿈의 장: STAR', date: '2019.03.04', type: '데뷔 미니앨범 · 타이틀 어느날 머리에서 뿔이 자랐다 (CROWN)', songs: ['어느날 머리에서 뿔이 자랐다 (CROWN)', 'Blue Orangeade'], href: 'https://ibighit.com/legacy/txt/the_dream_chapter-star-ko.html' }
+        { title: '꿈의 장: STAR', date: '2019.03.04', type: '데뷔 미니앨범 · 타이틀 어느날 머리에서 뿔이 자랐다 (CROWN)', songs: ['Blue Orangeade', '어느날 머리에서 뿔이 자랐다 (CROWN)', 'Our Summer', 'Cat & Dog', '별의 낮잠'], href: 'https://ibighit.com/legacy/txt/the_dream_chapter-star-ko.html' }
       ],
       appearances: [
         { date: '2026-11-13', title: 'STEAL THE WIND 서울 월드투어 첫날', sub: '19:00 · 서울 KSPO DOME · BIGHIT MUSIC·HYBE 주최 · 온라인 생중계', href: 'https://weverse.io/txt/notice/39106' },
@@ -683,12 +683,19 @@
         { date: '2026-11-15', title: 'STEAL THE WIND 서울 월드투어', sub: '17:00 · 서울 KSPO DOME · BIGHIT MUSIC·HYBE 주최 · 온라인 생중계', href: 'https://weverse.io/txt/notice/39106' },
         { date: '2026-11-16', title: '미니 9집 PERFECT STORM 정식 발매 예정', sub: '18:00 KST 음반·음원 발매 예정 · 세부 정보는 공식 공지 확인', href: 'https://weverse.io/txt/notice/40097' },
         { date: '2026-11-18', title: 'PERFECT STORM WITHMUU 팬사인회', sub: '21:00 KST · 당첨자 대상 · 응모 종료 · 장소·변경은 주최 측 확인', href: 'https://weverse.io/txt/notice/40680' },
-        { date: '2026-11-21', title: 'STEAL THE WIND 마카오 월드투어', sub: '마카오 GALAXY ARENA · 시간·예매는 공식 투어 페이지 확인', href: 'https://ibighit.com/en/txt/tour/' },
-        { date: '2026-11-22', title: 'STEAL THE WIND 마카오 월드투어', sub: '마카오 GALAXY ARENA · 시간·예매는 공식 투어 페이지 확인', href: 'https://ibighit.com/en/txt/tour/' },
+        { date: '2026-11-20', title: 'STEAL THE WIND 마카오 추가 공연', sub: '20:00 현지시간 · 마카오 GALAXY ARENA · BIGHIT MUSIC·HYBE·iMe 주최', href: 'https://weverse.io/txt/notice/39469' },
+        { date: '2026-11-21', title: 'STEAL THE WIND 마카오 월드투어', sub: '19:00 현지시간 · 마카오 GALAXY ARENA · BIGHIT MUSIC·HYBE·iMe 주최', href: 'https://www.galaxymacau.com/offers/entertainment/tomorrow-x-together-world-tour-macau-2026/' },
+        { date: '2026-11-22', title: 'STEAL THE WIND 마카오 월드투어', sub: '17:00 현지시간 · 마카오 GALAXY ARENA · BIGHIT MUSIC·HYBE·iMe 주최', href: 'https://www.galaxymacau.com/offers/entertainment/tomorrow-x-together-world-tour-macau-2026/' },
         { date: '2026-11-27', title: 'PERFECT STORM 오프라인 팬사인회', sub: '20:00 KST · Weverse 당첨자 대상 · 세부 장소는 당첨자 안내', href: 'https://weverse.io/txt/notice/40006' },
         { date: '2026-11-27', title: 'PERFECT STORM 영상통화 팬사인회', sub: '22:00 KST · Weverse 당첨자 대상 · 구매·응모 조건 공식 공지 참조', href: 'https://weverse.io/txt/notice/40006' },
-        { date: '2026-12-19', title: 'STEAL THE WIND 후쿠오카 월드투어', sub: '일본 후쿠오카 · 상세 공연장·시간은 공식 발표 확인', href: 'https://ibighit.com/en/txt/tour/' },
-        { date: '2026-12-20', title: 'STEAL THE WIND 후쿠오카 월드투어', sub: '일본 후쿠오카 · 상세 공연장·시간은 공식 발표 확인', href: 'https://ibighit.com/en/txt/tour/' }
+        { date: '2026-12-19', title: 'STEAL THE WIND 후쿠오카 월드투어', sub: '17:00 현지시간 · 일본 미즈호 PayPay 돔 후쿠오카 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' },
+        { date: '2026-12-20', title: 'STEAL THE WIND 후쿠오카 월드투어', sub: '16:00 현지시간 · 일본 미즈호 PayPay 돔 후쿠오카 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' },
+        { date: '2027-01-07', title: 'STEAL THE WIND 도쿄 월드투어', sub: '18:00 현지시간 · 일본 도쿄 돔 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' },
+        { date: '2027-01-08', title: 'STEAL THE WIND 도쿄 월드투어', sub: '18:00 현지시간 · 일본 도쿄 돔 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' },
+        { date: '2027-01-30', title: 'STEAL THE WIND 오사카 월드투어', sub: '17:00 현지시간 · 일본 교세라 돔 오사카 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' },
+        { date: '2027-01-31', title: 'STEAL THE WIND 오사카 월드투어', sub: '16:00 현지시간 · 일본 교세라 돔 오사카 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' },
+        { date: '2027-02-20', title: 'STEAL THE WIND 나고야 월드투어', sub: '17:00 현지시간 · 일본 반테린 돔 나고야 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' },
+        { date: '2027-02-21', title: 'STEAL THE WIND 나고야 월드투어', sub: '17:00 현지시간 · 일본 반테린 돔 나고야 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' }
       ],
       schedules: [
         { title: 'BIGHIT 공식 TXT 월드투어 일정', sub: 'STEAL THE WIND · 일정·장소·예매 변경 확인', href: 'https://ibighit.com/en/txt/tour/' },
