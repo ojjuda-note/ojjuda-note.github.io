@@ -787,9 +787,42 @@
       id: 'tws', name: 'TWS', korean: '투어스', category: 'boy', fan: '42 (SAI)', agency: 'PLEDIS Entertainment',
       members: ['신유', '도훈', '영재', '한진', '지훈', '경민'],
       debut: '2024.01.22', debutWork: 'Sparkling Blue', songs: ['첫 만남은 계획대로 되지 않아', 'Oh Mymy : 7s'],
-      concept: '소년 시절의 반짝임과 일상을 담은 여섯 멤버.',
+      concept: '언제나 함께라는 이름처럼 일상의 설렘을 노래하는 보이후드 팝 여섯 멤버.',
+      checkedAt: '2026.11.12',
       official: 'https://www.pledis.co.kr/artist/detail/TWS/profile/', youtube: 'https://www.youtube.com/@TWS_PLEDIS',
       photo: 'TWS at the 2024 Melon Music Awards.png', photoLabel: '멜론뮤직어워드', photoYear: '2024', credit: 'TenAsia', license: 'CC BY 3.0',
+      morePhotos: [
+        commonsPhoto('TWS at Music Bank 20240202.jpg', '뮤직뱅크 출근길 · 2024.02.02', '2024', 'tenasia (티비텐)', 'CC BY 3.0')
+      ],
+      music: [
+        { title: 'TO US', date: '2026.11.02', type: '싱글 2집 · 타이틀 내 이름을 불러줘 (Call My Name)', songs: ['WE UP', 'Call My Name (내 이름을 불러줘)', 'heavy'], href: 'https://music.apple.com/us/album/to-us-single/6818392534' },
+        { title: 'NO TRAGEDY', date: '2026.04.27', type: '미니 5집 · 타이틀 널 따라가 (You, You)', songs: ['너의 모든 가능성이 되어 줄게', '널 따라가 (You, You)', 'Why You So Bad?', 'Get It Now', 'Fire Escape', 'Back To Strangers'], href: 'https://pledis.co.kr/artist/detail/TWS/discography/' },
+        { title: 'Sparkling Blue', date: '2024.01.22', type: '데뷔 미니앨범 · 타이틀 첫 만남은 계획대로 되지 않아', songs: ['첫 만남은 계획대로 되지 않아', 'unplugged boy', 'first hooky', 'BFF', 'Oh Mymy : 7s'], href: 'https://music.apple.com/us/album/sparkling-blue/1723932647' }
+      ],
+      appearances: [
+        { date: '2026-11-13', title: 'TO US 위드뮤 1:1 영상통화 팬사인회', sub: '시간 추후 공지 · 당첨자 대상 · PLEDIS/위드뮤 주최 · 응모 종료', href: 'https://weverse.io/tws/notice/40394' },
+        { date: '2026-11-14', title: 'MMA 2026 Global Day 출연', sub: '서울 고척스카이돔 · 카카오엔터테인먼트 주최 · 정확한 출연 시각은 공식 안내 확인', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' },
+        { date: '2026-11-29', title: 'TO US 케이타운포유 1:1 영상통화 팬사인회', sub: '18:00 KST · 당첨자 대상 · PLEDIS/케이타운포유 · 응모 종료', href: 'https://weverse.io/tws/notice/40592' },
+        { date: '2026-12-09', title: 'TO US 뮤직플랜트 스페셜 팬사인회', sub: '19:00 KST · 서울(당첨자 별도 안내) · PLEDIS/뮤직플랜트 · 응모 종료', href: 'https://weverse.io/tws/notice/40651' },
+        { date: '2026-12-17', title: 'TO US 엠투유레코드 오프라인 팬사인회', sub: '20:30 KST · 서울(당첨자 별도 안내) · PLEDIS/엠투유레코드 · 응모 종료', href: 'https://weverse.io/tws/notice/40695' }
+      ],
+      schedules: [
+        { title: 'TWS Weverse 공식 행사·팬사인회 안내', sub: '일정 변경·취소 및 당첨자 공지 확인', href: 'https://weverse.io/tws/notice' },
+        { title: 'TWS 일본 공식 소식·일정', sub: '일본 활동 안내', href: 'https://tws-official.jp/' }
+      ],
+      news: [
+        { date: '2026.11.02', tag: '컴백', title: '싱글 2집 TO US 발매 · Call My Name 공개', href: 'https://music.apple.com/us/album/to-us-single/6818392534' },
+        { date: '2026.09.30', tag: '공연', title: '11월 14일 MMA 2026 출연 명단 공식 발표', href: 'https://newsroom.kakaoent.com/news/mma2026-brings-k-pops-biggest-names-to-stage/' },
+        { date: '2026.09.02', tag: '협업', title: '트윅스 국내 첫 브랜드 앰배서더 선정', href: 'https://www.segye.com/newsView/20260902506986' }
+      ],
+      merch: [
+        { title: 'TO US 싱글 2집 음반', sub: 'PLEDIS · 2026.11.02 정식 발매 · 버전·재고는 판매처 확인', href: 'https://weverse.io/tws/notice/40249' },
+        { title: 'TO US 공식 MD', sub: 'Weverse Shop · 2026.11.02 11:00 판매 시작 · 한정 수량, 재고 확인', href: 'https://shop.weverse.io/en/shop/MXN/artists/165/notices/14782' },
+        { title: "KYUNGMIN'S FAVORITE BOX", sub: 'Weverse Shop · 포토북·포토카드·키링 구성 · 재고 확인', href: 'https://shop.weverse.io/en/shop/MXN/artists/165/sales/68020' }
+      ],
+      campaigns: [
+        { kind: '브랜드 앰배서더', date: '2026.09.02', title: '트윅스(Twix) 한국 첫 브랜드 앰배서더', sub: '한국마즈 · 두 개니까, 트윅스 캠페인 · 9월 2일 발표', href: 'https://www.segye.com/newsView/20260902506986' }
+      ],
       accent: '#76a8d7', light: '#e0efff', dark: '#456a91', bg: '#f6fbff', shape: '✦'
     },
     {
