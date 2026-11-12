@@ -741,20 +741,20 @@
         { date: '2026-11-20', title: 'BLOOD SAGA 도쿄 팝업스토어 개막', sub: '11.20~12.02 · 도쿄 시부야구 제9SY 빌딩 1층 · 11:00~19:00 (JST) · 공식 MD·의상 전시', href: 'https://enhypen-jp.weverse.io/news/dd0bec9156a4' },
         { date: '2026-11-20', title: 'THE SIN : PARALLEL WORLD 디지털 싱글 발매 예정', sub: '14:00 한국시간 · 디지털 음원·미국 싱글 CD · 실물 발매일과 구분', href: 'https://weverse.io/enhypen/notice/40374' },
         { date: '2026-11-23', title: 'THE SIN : PARALLEL WORLD 실물 싱글 앨범 발매 예정', sub: '12:00 한국시간 · 스핀오프 싱글 실물 발매 · 변경은 공식 공지 확인', href: 'https://weverse.io/enhypen/notice/40374' },
-        { date: '2026-12-01', title: 'BLOOD SAGA 일본 투어 · 도쿄 1일차', sub: '도쿄돔 · 18:30 개연 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/cb268ca1962b' },
-        { date: '2026-12-02', title: 'BLOOD SAGA 일본 투어 · 도쿄 2일차', sub: '도쿄돔 · 16:00 개연 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/911292cae943' },
+        { date: '2026-12-01', title: 'BLOOD SAGA 일본 투어 · 도쿄 1일차', sub: '도쿄돔 · 18:30 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/cb268ca1962b' },
+        { date: '2026-12-02', title: 'BLOOD SAGA 일본 투어 · 도쿄 2일차', sub: '도쿄돔 · 16:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/911292cae943' },
         { date: '2026-12-13', title: '일본 도쿄 미트앤그리트 · 개별 사인회', sub: '도쿄 빅사이트 남3홀 · 응모 당첨자 대상 · 상세 시간 추후 공지', href: 'https://www.universal-music.co.jp/enhypen/news/2026-10-29/' },
         { date: '2026-12-17', title: 'PARALLEL WORLD 발매 기념 온라인 2샷 행사', sub: '20:30경 일본 현지시간 · 당첨자 대상 · WithLIVE · 시간 변경 가능', href: 'https://enhypen-jp.weverse.io/news/cdaa6da839b4' },
         { date: '2026-12-18', title: 'BLOOD SAGA 나고야 팝업스토어 개막', sub: '12.18~12.27 · 나고야 PARCO 남관 10층 · 10:00~20:00 (JST)', href: 'https://enhypen-jp.weverse.io/news/dd0bec9156a4' },
         { date: '2026-12-21', title: 'PARALLEL WORLD 발매 기념 온라인 2샷·토크 행사', sub: '20:30경 일본 현지시간 · 당첨자 대상 · WithLIVE · 시간 변경 가능', href: 'https://enhypen-jp.weverse.io/news/cdaa6da839b4' },
-        { date: '2026-12-26', title: 'BLOOD SAGA 일본 투어 · 나고야 1일차', sub: '반테린돔 나고야 · 17:00 개연 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/44ef1a8867ab' },
-        { date: '2026-12-27', title: 'BLOOD SAGA 일본 투어 · 나고야 2일차', sub: '반테린돔 나고야 · 16:00 개연 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/ca435a996f7d' },
+        { date: '2026-12-26', title: 'BLOOD SAGA 일본 투어 · 나고야 1일차', sub: '반테린돔 나고야 · 17:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/44ef1a8867ab' },
+        { date: '2026-12-27', title: 'BLOOD SAGA 일본 투어 · 나고야 2일차', sub: '반테린돔 나고야 · 16:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/ca435a996f7d' },
         { date: '2027-01-29', title: 'BLOOD SAGA 후쿠오카 팝업스토어 개막', sub: '01.29~02.07 · 후쿠오카 솔라리아플라자 1층 · 평일 11:00~20:00 / 주말 10:00~20:00 (JST)', href: 'https://enhypen-jp.weverse.io/news/dd0bec9156a4' },
-        { date: '2027-02-06', title: 'BLOOD SAGA 일본 투어 · 후쿠오카 1일차', sub: '미즈호 PayPay돔 후쿠오카 · 17:00 개연 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/1c542b061fc8' },
-        { date: '2027-02-07', title: 'BLOOD SAGA 일본 투어 · 후쿠오카 2일차', sub: '미즈호 PayPay돔 후쿠오카 · 16:00 개연 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/1c542b061fc8' },
+        { date: '2027-02-06', title: 'BLOOD SAGA 일본 투어 · 후쿠오카 1일차', sub: '미즈호 PayPay돔 후쿠오카 · 17:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/1c542b061fc8' },
+        { date: '2027-02-07', title: 'BLOOD SAGA 일본 투어 · 후쿠오카 2일차', sub: '미즈호 PayPay돔 후쿠오카 · 16:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/1c542b061fc8' },
         { date: '2027-02-11', title: 'BLOOD SAGA 오사카 팝업스토어 개막', sub: '02.11~02.21 · 오사카 시로구치 빌딩 1~2층 · 11:00~19:00 (JST)', href: 'https://enhypen-jp.weverse.io/news/dd0bec9156a4' },
-        { date: '2027-02-19', title: 'BLOOD SAGA 일본 투어 · 오사카 1일차', sub: '교세라돔 오사카 · 18:00 개연 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/16851d04963f' },
-        { date: '2027-02-20', title: 'BLOOD SAGA 일본 투어 · 오사카 2일차', sub: '교세라돔 오사카 · 16:00 개연 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/16851d04963f' }
+        { date: '2027-02-19', title: 'BLOOD SAGA 일본 투어 · 오사카 1일차', sub: '교세라돔 오사카 · 18:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/16851d04963f' },
+        { date: '2027-02-20', title: 'BLOOD SAGA 일본 투어 · 오사카 2일차', sub: '교세라돔 오사카 · 16:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/16851d04963f' }
       ],
       schedules: [
         { title: 'BELIFT LAB 공식 일정', sub: '공연·활동 달력 및 변경 안내', href: 'https://beliftlab.com/artist/schedule/ENHYPEN' },
@@ -765,7 +765,8 @@
         { date: '2026.11.08', tag: '팬 행사', title: '12월 17·21일 일본 온라인 팬 이벤트 공지', href: 'https://enhypen-jp.weverse.io/news/cdaa6da839b4' },
         { date: '2026.11.06', tag: '공연', title: '11월 13~26일 BLOOD SAGA 일본 극장 상영·입장 선물 안내', href: 'https://enhypen-jp.weverse.io/news/78707bf51814' },
         { date: '2026.11.04', tag: '공연', title: 'BLOOD SAGA 일본 4도시 투어 팝업스토어 일정·장소 발표', href: 'https://enhypen-jp.weverse.io/news/dd0bec9156a4' },
-        { date: '2026.10.26', tag: '음악', title: 'THE SIN : PARALLEL WORLD 발매 발표 · 디지털 11.20 / 실물 11.23 · Weverse 로그인 필요할 수 있음', href: 'https://weverse.io/enhypen/notice/40374' }        { date: '2026.10.19', tag: '굿즈', title: '공식 응원봉 Ver.2 리뉴얼 에디션 및 데코 세트 판매 안내', href: 'https://shop.weverse.io/ko/shop/USD/artists/10/notices/14588' },
+        { date: '2026.10.26', tag: '음악', title: 'THE SIN : PARALLEL WORLD 발매 발표 · 디지털 11.20 / 실물 11.23 · Weverse 로그인 필요할 수 있음', href: 'https://weverse.io/enhypen/notice/40374' },
+        { date: '2026.10.19', tag: '굿즈', title: '공식 응원봉 Ver.2 리뉴얼 에디션 및 데코 세트 판매 안내', href: 'https://shop.weverse.io/ko/shop/USD/artists/10/notices/14588' },
 
       ],
       merch: [
