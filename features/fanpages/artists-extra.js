@@ -608,6 +608,10 @@
       concept: '보컬·퍼포먼스·힙합 유닛이 함께 빚는 팀워크.',
       official: 'https://www.pledis.co.kr/', youtube: 'https://www.youtube.com/@pledis17',
       photo: 'Seventeen Carat Land 24.jpg', photoLabel: 'CARAT LAND', photoYear: '2024', credit: 'SEVENTEEN', license: 'CC BY 3.0',
+      morePhotos: [
+        commonsPhoto('Right Here tour Seventeen.jpg', 'RIGHT HERE 투어 · 2025', '2025', 'SEVENTEEN', 'CC BY 3.0'),
+        commonsPhoto('Seventeen Right Here Japan.png', 'RIGHT HERE 일본 공연 · 2024 · 크롭·선명도 보정', '2024', 'PLEDIS Entertainment', 'CC BY 3.0')
+      ],
       music: [
         { title: 'DREAMSCAPE (정한×조슈아 · JxJ)', date: '2026.10.19', type: '유닛 미니 1집 · 타이틀 12 o’clock',
           songs: ['Like you', '12 o’clock', 'Outside', 'One plus one', 'Not personal (JOSHUA Solo)', '컬러링 (JEONGHAN Solo)', 'No looking back'],
@@ -631,7 +635,11 @@
           href: 'https://www.seventeen-17.jp/posts/schedule/fwczng' },
         { date: '2026-12-05', title: '정한×조슈아 DREAMSCAPE · 온라인 개별 대화 행사',
           sub: '당첨자 대상 온라인 행사 · 시간은 당첨자 개별 안내 · 신규 응모 기간 종료',
-          href: 'https://www.seventeen-17.jp/posts/schedule/yaprrj' }
+          href: 'https://www.seventeen-17.jp/posts/schedule/yaprrj' },
+        { date: '2026-12-11', title: '정한×조슈아 JOURNEY INTO [DREAMING] · 마카오 공연',
+          sub: '갤럭시 아레나 · 20:00 (마카오 현지) · PLEDIS·HYBE 등 주최 · 11.12 일반예매', href: 'https://www.galaxymacau.com/zh-hant/offers/entertainment/jeonghan-x-joshua-journey-dreaming-macau/' },
+        { date: '2026-12-12', title: '정한×조슈아 JOURNEY INTO [DREAMING] · 마카오 공연',
+          sub: '갤럭시 아레나 · 19:00 (마카오 현지) · PLEDIS·HYBE 등 주최', href: 'https://www.galaxymacau.com/zh-hant/offers/entertainment/jeonghan-x-joshua-journey-dreaming-macau/' }
       ],
       schedules: [
         { title: 'SEVENTEEN 일본 공식 일정', sub: '방송·공연·발매 달력', href: 'https://www.seventeen-17.jp/posts/schedule' },

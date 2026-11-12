@@ -102,6 +102,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
   ],
   seventeen: [
     { id: 'hdwGWGSfABA', title: '정한×조슈아 (JxJ) · 12 o’clock', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.10.19' },
+    { id: 'Do9BOhk0u_w', title: '디노의 피철인 · 놀아보세 (prod. Hitchhiker)', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.08.03' },
+    { id: 'uh_DpK2xFiE', title: '디노의 피철인 · 미쳐 미쳐', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.07.22' },
+    { id: 'Zt_37l7NiJw', title: '디노의 피철인 · 아프지 않은 이별은 없다 (narr. 이문세)', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.07.15' },
     { id: 'pBpr9TnhhkE', title: 'V8 (디에잇×버논) · singasong', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.06.29' },
     { id: 'dZNPbNkKAss', title: '도겸×승관 (DxS) · Blue (Epilogue Ver.)', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.01.19' },
     { id: 'pS57UX6s-xw', title: 'THUNDER', kind: '뮤직비디오', source: 'SEVENTEEN / HYBE LABELS · 2025.05.26' },
