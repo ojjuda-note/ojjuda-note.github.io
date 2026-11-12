@@ -644,7 +644,14 @@ async function prepareCardPhotoEdit(cardId, run) {
 // 글쓰기 창 아래쪽의 이름·성별 빠른 선택 (꾸미기 · 추가 설정 안의 선택지와 서로 맞춰져요)
 function syncQuickChoices() {
   const nameBox = $('#quick-identity'), genderBox = $('#quick-gender'); if (!nameBox || !genderBox) return;
+  const card = kind === 'comment' ? cache.get(editingId || parentId) : null;
+  const replyAlias = editingId ? (card?.identity_mode === 'anonymous' && card.display_name) : card?.my_reply_alias;
+  const anonymous = $('input[name="identity"][value="anonymous"]');
+  if (replyAlias) anonymous.checked = true;
   const identity = $('input[name="identity"]:checked')?.value || 'anonymous';
+  const option = nameBox.querySelector('option[value="anonymous"]');
+  const label = replyAlias || '익명';
+  if (option.textContent !== label) option.textContent = label;
   const selected = $('input[name="gender"]:checked')?.value;
   const gender = selected === 'private' || selected === myGender ? selected : myGender;
   const choices = myGender === 'private' ? ['private'] : [myGender, 'private'];
@@ -661,7 +668,10 @@ function syncQuickChoices() {
   const nickname = $('input[name="identity"][value="nickname"]');
   nameBox.querySelector('option[value="nickname"]').disabled = !nickname || nickname.closest('label')?.classList.contains('disabled-choice');
   const disabled = busy || draftLoading || !session?.user;
-  nameBox.disabled = disabled; genderBox.disabled = disabled;
+  const resolvingReply = kind === 'comment' && replyDueChecking;
+  nameBox.disabled = disabled || !!replyAlias || resolvingReply;
+  if (nickname) nickname.disabled = nameBox.disabled || nickname.closest('label')?.classList.contains('disabled-choice');
+  genderBox.disabled = disabled;
   genderBox.closest('.quick-choice').hidden = !!editingId;   // 성별은 올릴 때 정해져서 수정할 때는 바꿀 수 없어요
 }
 function pickQuickChoice(group, value) {
