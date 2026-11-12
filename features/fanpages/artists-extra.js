@@ -807,7 +807,7 @@
         { date: '2026-12-17', title: 'TO US 엠투유레코드 오프라인 팬사인회', sub: '20:30 KST · 서울(당첨자 별도 안내) · PLEDIS/엠투유레코드 · 응모 종료', href: 'https://weverse.io/tws/notice/40695' }
       ],
       schedules: [
-        { title: 'TWS Weverse 공식 행사·팬사인회 안내', sub: '일정 변경·취소 및 당첨자 공지 확인', href: 'https://weverse.io/tws/notice' },
+        { title: 'TWS Weverse 공식 행사·팬사인회 안내', sub: '로그인 후 일정 변경·취소 및 당첨자 공지 확인', href: 'https://weverse.io/tws/notice' },
         { title: 'TWS 일본 공식 소식·일정', sub: '일본 활동 안내', href: 'https://tws-official.jp/' }
       ],
       news: [
@@ -816,7 +816,7 @@
         { date: '2026.09.02', tag: '협업', title: '트윅스 국내 첫 브랜드 앰배서더 선정', href: 'https://www.segye.com/newsView/20260902506986' }
       ],
       merch: [
-        { title: 'TO US 싱글 2집 음반', sub: 'PLEDIS · 2026.11.02 정식 발매 · 버전·재고는 판매처 확인', href: 'https://weverse.io/tws/notice/40249' },
+        { title: 'TO US 싱글 2집 음반', sub: 'PLEDIS · 2026.11.02 정식 발매 · 로그인 후 공지 확인 · 버전·재고는 판매처 확인', href: 'https://weverse.io/tws/notice/40249' },
         { title: 'TO US 공식 MD', sub: 'Weverse Shop · 2026.11.02 11:00 판매 시작 · 한정 수량, 재고 확인', href: 'https://shop.weverse.io/en/shop/MXN/artists/165/notices/14782' },
         { title: "KYUNGMIN'S FAVORITE BOX", sub: 'Weverse Shop · 포토북·포토카드·키링 구성 · 재고 확인', href: 'https://shop.weverse.io/en/shop/MXN/artists/165/sales/68020' }
       ],
