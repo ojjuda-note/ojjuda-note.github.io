@@ -3,7 +3,7 @@ const {chromium}=require('playwright');
 const {fixture,A}=require('./matgo-online-fixture.cjs');
 const root=path.join(__dirname,'..');
 (async()=>{
- const f=await fixture({basic:true,fresh:true}),{db,call}=f;
+ const f=await fixture({beginner:true,fresh:true}),{db,call}=f;
  const browser=await chromium.launch({headless:true,executablePath:process.env.MATGO_CHROMIUM,args:['--no-sandbox']});
  try{
   await call(A,{action:'status'});
@@ -31,9 +31,9 @@ const root=path.join(__dirname,'..');
   await ready();assert.equal(await page.locator('#matgo-stake').count(),0);
   assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
   assert.equal(await page.locator('#stakeRate').innerText(),'점당 2,000G');
-  assert.equal(await page.locator('#cpuLevel').innerText(),'조금 어려움','400,000G selects the middle tier');
+  assert.equal(await page.locator('#cpuLevel').innerText(),'조금 어려움','400,000G selects the harder tier');
   assert.equal(requests.some(r=>r.action==='stake'),false,'there is no consent request');
-  assert.equal(requests.find(r=>r.action==='start').rules_version,13);
+  assert.equal(requests.find(r=>r.action==='start').rules_version,14);
   fs.mkdirSync('/tmp/matgo-basic-proof',{recursive:true});await page.screenshot({path:'/tmp/matgo-basic-proof/middle.png'});
   const fits=await page.locator('.cpu-opponent').evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.height<55;});
   assert.equal(fits,true,'compact level display fits a 320px mobile screen');
@@ -52,11 +52,14 @@ const root=path.join(__dirname,'..');
   for(let i=0;i<3;i++){await end(400000);await page.reload();await page.locator('#matgo-start-play').click();await ready();}
   assert.equal(await page.locator('#cpuLevel').innerText(),'조금 어려움','consecutive losses do not alter the gold tier');
   await end(125000);await page.reload();await page.locator('#matgo-start-play').click();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
-  assert.equal(await page.locator('#cpuLevel').innerText(),'기본');
+  assert.equal(await page.locator('#cpuLevel').innerText(),'보통');
   await page.screenshot({path:'/tmp/matgo-basic-proof/basic.png'});
   await end(0);await page.reload();await page.locator('#matgo-start-play').click();await page.locator('#refill-gold').waitFor();
   assert.equal(await page.locator('#stakeRate').innerText(),'점당 100G');
   await page.locator('#refill-gold').tap();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),100);
+  assert.equal(await page.locator('#cpuLevel').innerText(),'아주 쉬움');
+  await end(5001);await page.reload();await page.locator('#matgo-start-play').click();await ready();
+  assert.equal(await page.locator('#cpuLevel').innerText(),'쉬움');
   await end(600000);await page.reload();await page.locator('#matgo-start-play').click();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),4000);
   assert.equal(await page.locator('#cpuLevel').innerText(),'아주 어려움');
   fs.mkdirSync('/tmp/matgo-basic-proof',{recursive:true});await page.screenshot({path:'/tmp/matgo-basic-proof/expert.png'});
@@ -64,9 +67,9 @@ const root=path.join(__dirname,'..');
   if(process.env.MATGO_STAKE_SCREENSHOT)await page.screenshot({path:process.env.MATGO_STAKE_SCREENSHOT});
   await page.locator('#menu').click();await page.locator('#rules').click();
   const help=await page.locator('.modal').innerText();
-  assert.match(help,/두 사람의 자동 판돈 중 낮은 금액/);assert.match(help,/20만G까지 기본/);assert.match(help,/50만G 초과부터 아주 어려움/);assert.doesNotMatch(help,/5연승|3연패|10만G부터 2단계/);assert.match(help,/10만G부터 점당 200G/);assert.match(help,/30만G부터 1,000G/);
+  assert.match(help,/두 사람의 자동 판돈 중 낮은 금액/);assert.match(help,/5,000G 이하에서 아주 쉬움/);assert.match(help,/50만G 초과부터 아주 어려움/);assert.doesNotMatch(help,/5연승|3연패|10만G부터 2단계/);assert.match(help,/10만G부터 점당 200G/);assert.match(help,/30만G부터 1,000G/);
   assert.deepEqual(errors,[]);
   await context.close();
-  console.log('PASS: mobile automatic stakes without consent, three gold tiers independent of win/loss streaks, refresh persistence, bankruptcy/refill and rules');
+  console.log('PASS: mobile automatic stakes without consent, five gold tiers independent of win/loss streaks, refresh persistence, bankruptcy/refill and rules');
  }finally{await browser.close();await f.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

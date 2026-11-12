@@ -3,6 +3,7 @@ const {PGlite}=require('@electric-sql/pglite');
 const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000000002',C='00000000-0000-4000-8000-000000000003',MINOR='00000000-0000-4000-8000-000000000004';
 async function fixture(fixtureOptions={}){
   if(fixtureOptions.takeover)fixtureOptions={...fixtureOptions,stakes:true};
+  if(fixtureOptions.beginner)fixtureOptions={...fixtureOptions,basic:true};
   if(fixtureOptions.basic)fixtureOptions={...fixtureOptions,adaptive:true};
   if(fixtureOptions.adaptive)fixtureOptions={...fixtureOptions,stakes:true,refill:true,fun:true};
   const db=new PGlite();
@@ -40,6 +41,11 @@ async function fixture(fixtureOptions={}){
   if(fixtureOptions.adaptive&&fixtureOptions.openingPpuk!==false){const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_opening_ppuk.sql'))),'utf8'));}
   if(fixtureOptions.basic){const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_basic_difficulty.sql'))),'utf8'));}
   {const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_twenty_second_turns.sql'))),'utf8'));}
+  if(fixtureOptions.beginner){
+    const dir=path.join(__dirname,'../supabase/migrations');
+    const file=fs.readdirSync(dir).find(n=>n.endsWith('_matgo_beginner_difficulty.sql'));
+    await db.exec(fs.readFileSync(path.join(dir,file),'utf8'));
+  }
   if(fixtureOptions.fresh){const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_abandon_unfinished_round.sql'))),'utf8'));}
   if(fixtureOptions.takeover){
     const dir=path.join(__dirname,'../supabase/migrations');

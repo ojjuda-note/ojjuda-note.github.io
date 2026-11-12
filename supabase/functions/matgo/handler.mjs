@@ -40,7 +40,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
       if (!['status', 'start', 'refill', 'settle', 'abandon', 'stake', 'tazza_start', 'vent'].includes(body.action)&&!onlineActions.has(body.action)) throw Error();
       if (body.action==='abandon'&&!uuid.test(body.round_id))throw Error();
       if (['tazza_start','vent'].includes(body.action) && !uuid.test(body.request_id)) throw Error();
-      if (body.action==='tazza_start' && (![9,10,11,12,13].includes(body.rules_version) || body.stakes_version!==1)) throw Error();
+      if (body.action==='tazza_start' && (![9,10,11,12,13,14].includes(body.rules_version) || body.stakes_version!==1)) throw Error();
       if (body.action==='vent' && (!uuid.test(body.reference_id) || !['gun','hammer','glove','bomb','lightning','table','burst','slash','tomato','bat'].includes(body.effect))) throw Error();
       if(onlineActions.has(body.action)){
         if(body.stakes_version!==undefined&&body.stakes_version!==1)throw Error();
@@ -49,7 +49,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
         if(body.action==='online_move'&&(!uuid.test(body.request_id)||!Number.isInteger(body.version)||body.version<0||!body.command||JSON.stringify(body.command).length>1024))throw Error();
         if(body.cursor!==undefined&&(!Number.isInteger(body.cursor)||body.cursor<0||body.cursor>10000))throw Error();
       }
-      if (body.action === 'settle' && (!uuid.test(body.round_id) || !Array.isArray(body.actions) || ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].includes(body.rules_version ?? 1))) throw Error();
+      if (body.action === 'settle' && (!uuid.test(body.round_id) || !Array.isArray(body.actions) || ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].includes(body.rules_version ?? 1))) throw Error();
       if (body.action === 'start' && body.stakes_version !== undefined && body.stakes_version !== 1) throw Error();
       if (body.action === 'stake' && (!Number.isInteger(body.rate) || ![200,500,2000,5000,10000,20000,50000,100000].includes(body.rate) || typeof body.accept !== 'boolean')) throw Error();
       if (body.action === 'refill' && (!uuid.test(body.request_id) || typeof body.paid !== 'boolean')) throw Error();
@@ -114,10 +114,10 @@ export function createHandler({ env, fetchImpl = fetch }) {
         if (snapshot.settled) return reply(snapshot);
         const ranked=snapshot.round.cpu_level!=null&&(snapshot.round.rules_version??11)<13;
         if ((ranked||snapshot.round.rules_version>=11||body.rules_version>=11) && body.rules_version!==(snapshot.round.rules_version??(ranked?11:10))) return reply({error:'client_update_required'},409);
-        if (snapshot.round.tazza_mode && ![9,10,11,12,13].includes(body.rules_version)) return reply({error:'client_update_required'},409);
-        if ((snapshot.round.rate ?? 100)>100 && ![6,7,8,9,10,11,12,13].includes(body.rules_version)) return reply({error:'client_update_required'},409);
+        if (snapshot.round.tazza_mode && ![9,10,11,12,13,14].includes(body.rules_version)) return reply({error:'client_update_required'},409);
+        if ((snapshot.round.rate ?? 100)>100 && ![6,7,8,9,10,11,12,13,14].includes(body.rules_version)) return reply({error:'client_update_required'},409);
         let verified;
-        try { verified = await ([11,12,13].includes(body.rules_version) ? verifyRound : body.rules_version === 10 ? verifyV10Round : body.rules_version === 9 ? verifyV9Round : body.rules_version === 8 ? verifyV8Round : body.rules_version === 7 ? verifyV7Round : [5,6].includes(body.rules_version) ? verifyV5Round : body.rules_version === 4 ? verifyV4Round : body.rules_version === 3 ? verifyV3Round : body.rules_version === 2 ? verifyV2Round : verifyLegacyRound)(snapshot.round, body.actions); }
+        try { verified = await ([11,12,13,14].includes(body.rules_version) ? verifyRound : body.rules_version === 10 ? verifyV10Round : body.rules_version === 9 ? verifyV9Round : body.rules_version === 8 ? verifyV8Round : body.rules_version === 7 ? verifyV7Round : [5,6].includes(body.rules_version) ? verifyV5Round : body.rules_version === 4 ? verifyV4Round : body.rules_version === 3 ? verifyV3Round : body.rules_version === 2 ? verifyV2Round : verifyLegacyRound)(snapshot.round, body.actions); }
         catch {
           // Rules/scoring stay v5. Already-open browsers can finish the old CPU
           // policy; replay the entire transcript rather than trusting a result.
@@ -127,10 +127,11 @@ export function createHandler({ env, fetchImpl = fetch }) {
         }
         return reply(await rpc(ranked?'ranked_settle':'settle', { p_round: body.round_id, p_gold: verified.gold, p_first: verified.first, p_carry: verified.carry, ...(ranked?{p_outcome:verified.outcome}:{}) }));
       }
-      if (['start','tazza_start'].includes(body.action) && body.rules_version!==13) {
+      if (['start','tazza_start'].includes(body.action) && body.rules_version!==14) {
         const state=await rpc('status');
-        // Let an already-open legacy round finish, but never create one after rollout.
-        if (state.cpu_level!=null && (!state.round || (state.round.cpu_level!=null&&body.rules_version!==(state.round.rules_version??11)) || (body.action==='tazza_start'?!state.round.tazza_mode:!!state.round.tazza_mode))) return reply({error:'client_update_required'},409);
+        // Accept the previous client until the DB starts issuing v14 rounds.
+        const activeVersion = state.cpu_rules_version ?? 13;
+        if (state.cpu_level!=null && body.rules_version!==activeVersion && (!state.round || (state.round.cpu_level!=null&&body.rules_version!==(state.round.rules_version??11)) || (body.action==='tazza_start'?!state.round.tazza_mode:!!state.round.tazza_mode))) return reply({error:'client_update_required'},409);
       }
       if (body.action === 'refill') return reply(await rpc('refill', { p_request: body.request_id, p_paid: body.paid }));
       if (body.action === 'tazza_start') return reply(await rpc('tazza',{p_request:body.request_id}));
@@ -145,7 +146,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
           await catchUp(online);state=await rpc('status');
         }
       }
-      if(body.action==='start'&&state.round?.tazza_mode&&![9,10,11,12,13].includes(body.rules_version))return reply({error:'client_update_required'},409);
+      if(body.action==='start'&&state.round?.tazza_mode&&![9,10,11,12,13,14].includes(body.rules_version))return reply({error:'client_update_required'},409);
       return reply(state);
     } catch (error) {
       const code = publicErrors.has(error.message) ? error.message : 'unavailable';
