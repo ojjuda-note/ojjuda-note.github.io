@@ -127,6 +127,26 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   await page.setViewportSize({width,height:850});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),width+': World fits');
   assert.ok(await frame.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),width+': Park fits');
+  const card=frame.locator('#feed-list .photo-card').first();
+  await card.scrollIntoViewIfNeeded();
+  const layout=await card.evaluate(element=>{
+   const box=node=>node.getBoundingClientRect();
+   const photo=box(element.querySelector('.photo')),quote=box(element.querySelector('.card-quote'));
+   const author=box(element.querySelector('.card-meta')),tags=box(element.querySelector('.card-tags'));
+   const controls=[...element.querySelectorAll('.card-actions button')];
+   return {
+    edgeToEdge:Math.abs(box(element).height-photo.height)<1,
+    contentClear:author.bottom<=quote.top&&quote.bottom<=tags.top&&tags.bottom<=photo.bottom-43,
+    buttons:controls.map(button=>{
+     const b=box(button),x=b.left+b.width/2,y=b.top+b.height/2;
+     return b.width>=44&&b.height>=44&&b.left>=photo.left&&b.right<=photo.right+1&&
+      (b.bottom<=quote.top||b.top>=tags.bottom)&&button.contains(document.elementFromPoint(x,y));
+    })
+   };
+  });
+  assert.equal(layout.edgeToEdge,true,width+': feed photo has no footer or outer border');
+  assert.equal(layout.contentClear,true,width+': author, quote and tags have their own space');
+  assert.deepEqual(layout.buttons,[true,true,true,true,true],width+': all five member controls have separate, reachable touch targets');
   assert.equal(await frame.locator('#note-announcement').count(),0,width+': Park uses the single World notice');
   assert.equal(await frame.locator('.mobile-top:visible,.side:visible,.bottomnav:visible,.write-fab:visible').count(),0,width+': no duplicate app chrome');
   assert.equal(await page.locator('.topbar .brand:visible,.side > .brand:visible').count(),1,width+': one World brand');

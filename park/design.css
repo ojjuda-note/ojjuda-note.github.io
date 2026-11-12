@@ -10,12 +10,12 @@ html.park-embedded .main{width:min(100%,1264px);padding:32px 32px 96px}
 
 .park-feed-title{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .park-feed-loading-status{grid-column:1/-1;margin:0;color:var(--accent-ink,#aa4771);font-size:14px;font-weight:700}
-.park-skeleton-card{min-width:0;overflow:hidden;border:1px solid var(--line,#f1dce5);border-radius:16px;background:var(--surface,#fff);box-shadow:0 4px 20px #2b463006}
+.park-skeleton-card{position:relative;min-width:0;overflow:hidden;border-radius:16px}
 .park-skeleton-photo{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:220px;aspect-ratio:1.08;background:linear-gradient(140deg,var(--accent-soft,#ffe5ee),#ffdbea 60%,#f6d5e6)}
 .park-skeleton-quote,.park-skeleton-meta span{display:block;border-radius:99px;background:#fff9;animation:park-skeleton-breathe 1.5s ease-in-out infinite alternate}
 .park-skeleton-quote{width:64%;height:16px}.park-skeleton-quote.short{width:45%}
-.park-skeleton-meta{display:flex;justify-content:space-between;align-items:center;gap:15px;height:60px;padding:18px}
-.park-skeleton-meta span{height:12px;width:48%;background:var(--accent-soft,#ffe5ee)}.park-skeleton-meta span:last-child{width:23%}
+.park-skeleton-meta{position:absolute;inset:14px 12px auto;display:flex;align-items:center;justify-content:space-between}
+.park-skeleton-meta span{height:9px;width:24%;background:#fff9}.park-skeleton-meta span:last-child{width:8%}
 @keyframes park-skeleton-breathe{to{opacity:.42}}
 @media(prefers-reduced-motion:reduce){.park-skeleton-quote,.park-skeleton-meta span{animation:none}}
 
@@ -145,3 +145,130 @@ html.park-embedded .main{width:min(100%,1264px);padding:32px 32px 96px}
 @media (max-width: 779px) {
   .shell > .col > .main:has(> #detail:not([hidden])) { padding: 4px 12px 16px; }
 }
+
+/* Feed cards keep their controls on the photo, with a clear band for the quote and tags. */
+#feed .feed-list .photo-card {
+  --top-tools: 44px;
+  --attachment: 0px;
+  display: block;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  isolation: isolate;
+}
+#feed .feed-list .photo-card:has(.card-manage) { --top-tools: 88px; }
+#feed .feed-list .photo-card:has(.has-card-photo) { --attachment: 46px; }
+#feed .feed-list .photo {
+  display: grid;
+  grid-template: minmax(min-content, 1fr) auto / minmax(0, 1fr);
+  align-items: center;
+  row-gap: 8px;
+  height: auto;
+  padding: 50px 14px 44px;
+}
+#feed .feed-list .note-event-card .photo { min-height: max(174px, 40cqw); }
+#feed .feed-list .card-quote { grid-row: 1; top: auto; }
+#feed .feed-list .card-tags {
+  position: static;
+  grid-row: 2;
+  justify-self: stretch;
+}
+#feed .feed-list .card-tags:empty { display: none; }
+#feed .feed-list .card-tags > span { border: 0; background: #141c27a8; }
+#feed .feed-list .card-photo-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, #101820c7, transparent 58px),
+              linear-gradient(to top, #101820bf, transparent 54px);
+}
+#feed .feed-list .card-meta {
+  position: absolute;
+  z-index: 2;
+  inset: 6px calc(14px + var(--top-tools) + var(--attachment)) auto 12px;
+  display: grid;
+  grid-template-columns: 23px auto minmax(0, 1fr);
+  align-items: center;
+  align-content: center;
+  gap: 0 5px;
+  min-height: 34px;
+  padding: 0 !important;
+  color: white;
+  text-shadow: 0 1px 3px #101820;
+  pointer-events: none;
+}
+#feed .feed-list .card-meta .avatar {
+  grid-area: 1 / 1 / span 2;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  font-size: 11px;
+}
+#feed .feed-list .card-meta > span:nth-child(2) { display: contents; }
+#feed .feed-list .card-meta strong {
+  grid-area: 1 / 2 / auto / -1;
+  font-size: 12px;
+  line-height: 1.4;
+}
+#feed .feed-list .card-meta small, #feed .feed-list .meta-tail {
+  color: inherit;
+  font-size: 10px;
+  line-height: 1.4;
+}
+#feed .feed-list .card-meta small { grid-area: 2 / 2; }
+#feed .feed-list .meta-tail {
+  grid-area: 2 / 3;
+  display: block;
+  max-width: none;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#feed .feed-list .card-actions {
+  position: absolute;
+  z-index: 3;
+  inset: 0 5px;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 0 !important;
+  border: 0;
+  background: transparent;
+  pointer-events: none;
+}
+#feed .feed-list .card-actions button {
+  display: inline-flex;
+  justify-content: center;
+  gap: 3px;
+  min-width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0 5px;
+  border: 0;
+  color: white;
+  background: transparent;
+  font-size: 12px;
+  text-shadow: 0 1px 3px #101820;
+  pointer-events: auto;
+}
+#feed .feed-list .card-actions svg { width: 17px; height: 17px; }
+#feed .feed-list .card-actions .action-label { display: none; }
+#feed .feed-list .card-actions .card-share { margin-left: auto; }
+#feed .feed-list .card-actions :is(.save, .card-manage) { position: absolute; top: 0; right: 0; }
+#feed .feed-list .card-actions .save { right: calc(var(--top-tools) - 44px); }
+#feed .feed-list .card-actions :is(.card-share, .card-manage) { font-size: 0; }
+#feed .feed-list .card-share::after { content: '↗'; font-size: 19px; line-height: 1; }
+#feed .feed-list .card-manage::after { content: '⋯'; font-size: 20px; line-height: 1; }
+#feed .feed-list .card-actions [aria-pressed="true"] svg { fill: currentColor; }
+#feed .feed-list .card-actions button:disabled { opacity: .8; }
+#feed .feed-list .card-actions button:hover:not(:disabled) { background: #10182060; border-radius: 10px; }
+#feed .feed-list :is(.photo-open, .card-actions button):focus-visible { outline: 2px solid white; outline-offset: -3px; }
+#feed .feed-list .card-photo-thumb {
+  --card-thumb-size: 42px;
+  top: 3px;
+  right: calc(6px + var(--top-tools));
+  bottom: auto;
+  border-width: 1px;
+}
+#feed .feed-list .note-event-badge { top: auto; bottom: 10px; left: 12px; border: 0; }
