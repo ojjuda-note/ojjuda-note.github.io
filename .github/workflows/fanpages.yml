@@ -42,3 +42,13 @@ jobs:
         run: npm --prefix tests ci --ignore-scripts
       - name: Check all fanpage controls and in-page navigation
         run: npm --prefix tests run test:fanpages
+      - name: Verify urgent fanpage schedules in mobile Chromium
+        run: node tests/fanpage-urgent-events-ui.test.cjs
+      - name: Save fanpage mobile verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fanpage-urgent-events-mobile
+          path: tests/artifacts/fanpage-urgent-events/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -790,6 +790,21 @@
       concept: '소년 시절의 반짝임과 일상을 담은 여섯 멤버.',
       official: 'https://www.pledis.co.kr/artist/detail/TWS/profile/', youtube: 'https://www.youtube.com/@TWS_PLEDIS',
       photo: 'TWS at the 2024 Melon Music Awards.png', photoLabel: '멜론뮤직어워드', photoYear: '2024', credit: 'TenAsia', license: 'CC BY 3.0',
+      // Official notices rechecked 2026-11-12; unverified backlog media stays pending.
+      appearances: [
+        {
+                "date": "2026-11-13",
+                "title": "TO US 위드뮤 1:1 영상통화 팬사인회",
+                "sub": "상세 시간 추후 안내 · 당첨자 대상 · 응모 종료 · PLEDIS/위드뮤 공식 공지",
+                "href": "https://weverse.io/tws/notice/40394"
+        },
+        {
+                "date": "2026-11-14",
+                "title": "MMA 2026 Global Day 출연",
+                "sub": "서울 고척스카이돔 · 카카오엔터테인먼트 · 개별 출연 시각은 공식 안내 확인",
+                "href": "https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/"
+        }
+],
       accent: '#76a8d7', light: '#e0efff', dark: '#456a91', bg: '#f6fbff', shape: '✦'
     },
     {
@@ -799,6 +814,41 @@
       concept: '성장을 노래하는 NCT의 여섯 멤버 유닛.',
       official: 'https://www.smentertainment.com/', youtube: 'https://www.youtube.com/@NCTDREAM',
       photo: 'NCT Dream at DREAM()SCAPE Press Conference.png', photoLabel: 'DREAM()SCAPE 기자회견 · 당시 사진', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
+      // Official notices rechecked 2026-11-12; unverified backlog media stays pending.
+      appearances: [
+        {"date":"2026-11-14","title":"MMA 2026 Global Day 출연","sub":"서울 고척스카이돔 · 카카오엔터테인먼트 · 개별 출연 시각은 공식 안내 확인","href":"https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/"},
+        {
+                "date": "2026-11-08",
+                "endDate": "2026-11-16",
+                "title": "WELCOME, DREAMERS 팝업 (11/8~11/16)",
+                "sub": "매일 12:00~20:00 KST · 서울 성동구 연무장7길16 · 방문·입장 안내는 공식 공지 확인",
+                "href": "https://weverse.io/nctdream/notice/40609"
+        },
+        {
+                "date": "2026-11-22",
+                "title": "TV아사히 드림페스티벌 헤드라이너 출연",
+                "sub": "K아레나 요코하마 · 전일정 매진(11/11 공식 공지) · 개별 출연 시각 미공개",
+                "href": "https://dreamfestival.jp/"
+        },
+        {
+                "date": "2026-12-07",
+                "title": "DREAM AFTER DREAM 일본 발매 이벤트 · 도쿄",
+                "sub": "도쿄 시내 · 시간·상세 장소는 당첨자 추후 안내 · 2차 응모 11/23 23:59 JST까지 · 조건은 공식 공지 확인",
+                "href": "https://www.nct-jp.net/news/detail.php?id=1137067"
+        },
+        {
+                "date": "2026-12-09",
+                "title": "2026 FNS 가요제 제2야 출연",
+                "sub": "후지TV 계열 · 전체 방송 18:30~21:54 JST/KST · 개별 출연 시각 미공개",
+                "href": "https://www.nct-jp.net/news/detail.php?id=1137066"
+        },
+        {
+                "date": "2026-12-27",
+                "title": "DREAM AFTER DREAM 일본 발매 이벤트 · 교토",
+                "sub": "교토 시내 · 시간·상세 장소는 당첨자 추후 안내 · 2차 응모 11/23 23:59 JST까지 · 조건은 공식 공지 확인",
+                "href": "https://www.nct-jp.net/news/detail.php?id=1137067"
+        }
+],
       accent: '#67b956', light: '#e6fbdc', dark: '#416e37', bg: '#f5fff1', shape: '☘'
     },
     {
@@ -808,6 +858,28 @@
       concept: '여덟 멤버가 함께 나아가는 모험과 항해.',
       official: 'https://kqent.com/', youtube: 'https://www.youtube.com/@ATEEZofficial',
       photo: 'ATEEZ in August 2024 (cropped).jpg', photoLabel: '2024년 단체', photoYear: '2024', credit: 'pinkllamanade', license: 'CC BY-SA 2.0',
+      // Official notices rechecked 2026-11-12; unverified backlog media stays pending.
+      appearances: [
+        {"date":"2026-11-14","title":"MMA 2026 Global Day 출연","sub":"서울 고척스카이돔 · 카카오엔터테인먼트 · 개별 출연 시각은 공식 안내 확인","href":"https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/"},
+        {
+                "date": "2026-11-13",
+                "title": "GOLDEN HOUR : Part.6 발매 예정",
+                "sub": "14:00 KST · 타이틀 UP · KQ 공식 발표",
+                "href": "https://ateez.kqent.com/en/contents/6ade0ef2ba711e7b9ec3e59c"
+        },
+        {
+                "date": "2026-11-13",
+                "title": "KBS2 뮤직뱅크 출연",
+                "sub": "사전녹화 08:45 / 생방송 17:10 KST · KBS 신관 공개홀 · 방청 신청 종료, 선정 참가자 대상 · 집합 안내는 공식 공지 확인",
+                "href": "https://ateez.kqent.com/surveys/6af41182a993a556cdd4e773"
+        },
+        {
+                "date": "2026-11-14",
+                "title": "MBC 쇼! 음악중심 사전녹화",
+                "sub": "05:30 KST · 상암 MBC 신사옥 공개홀 · 방청 신청 종료, 선정 참가자 대상 · 집합 안내는 공식 공지 확인",
+                "href": "https://ateez.kqent.com/surveys/6af55eeab2aee70bd8ed5ff5"
+        }
+],
       accent: '#d7af68', light: '#4f422a', dark: '#fff2d5', bg: '#171e2c', night: true, shape: '✶'
     },
     {
@@ -817,6 +889,11 @@
       concept: '다채로운 개성과 무대로 빛나는 열 명의 팀워크.',
       official: 'https://www.ygfamily.com/', youtube: 'https://www.youtube.com/@TREASURE',
       photo: '240405 트레저 TTA Malaysia 1st Place.jpg', photoLabel: '2024년 단체', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
+      // Official notices rechecked 2026-11-12; other backlog changes remain pending.
+      appearances: [
+        {"date": "2026-11-14", "title": "MBC 쇼! 음악중심 출연", "sub": "15:20 KST 방송 일정 · YG 공식 달력 · 개별 무대·사전녹화·방청 안내는 별도 공지 확인", "href": "https://ygfamily.com/ko/artists/treasure/schedule"},
+        {"date": "2026-11-20", "title": "2026 MAMA AWARDS 출연", "sub": "공식 일정 18:00 JST/KST · 일본 교세라 돔 오사카 · 개별 무대 시각은 별도 안내 확인", "href": "https://ygfamily.com/ko/artists/treasure/schedule"}
+      ],
       accent: '#478dce', light: '#dff3ff', dark: '#28577e', bg: '#f1f9ff', shape: '◆'
     },
     {
@@ -826,6 +903,11 @@
       concept: '밝은 에너지로 소원을 전하는 NCT의 여섯 멤버 유닛.',
       official: 'https://www.smentertainment.com/', youtube: 'https://www.youtube.com/@NCTWISH',
       photo: '2026 NCT WISH promotion 01.jpg', photoLabel: '2026년 단체', photoYear: '2026', credit: 'numbuzin', license: 'CC BY 4.0',
+      // Official notices rechecked 2026-11-12; other backlog changes remain pending.
+      appearances: [
+        {"date": "2026-11-23", "title": "TV아사히 드림페스티벌 출연", "sub": "K아레나 요코하마 · 13:30 입장 / 15:00 개연 예정 JST/KST · 전일정 매진 · 개별 출연 시각 미공개", "href": "https://nct-jp.net/ja/news/detail.php?id=1135596"},
+        {"date": "2026-12-06", "title": "I SPY 일본 발매 이벤트 · 오사카", "sub": "오사카 근교 · 시간·상세 장소는 당첨자 추후 안내 · 시리얼 추첨 응모 11/15 23:59 JST까지 · 구매·응모 조건은 공식 공지 확인", "href": "https://www.nct-jp.net/news/detail.php?id=1136642"}
+      ],
       accent: '#87b340', light: '#ecffd9', dark: '#567535', bg: '#f7ffef', shape: '☆'
     },
     {
@@ -835,6 +917,14 @@
       concept: '서로 다른 개성이 하나의 팀으로 이어지는 아홉 멤버.',
       official: 'https://www.andteam-official.jp/', youtube: 'https://www.youtube.com/@andTEAM_official',
       photo: '&TEAM ATA promotion 02.jpg', photoLabel: 'ATA 활동', photoYear: '2026', credit: 'K-POPIT 케이팝잇', license: 'CC BY 4.0',
+      // Official notices rechecked 2026-11-12; other backlog changes remain pending.
+      appearances: [
+        {"date": "2026-11-18", "title": "Mark on You 홀 투어 · 오사카", "sub": "그랑큐브 오사카 · 17:00 입장 / 18:00 개연 JST/KST · 예매·변경 사항은 공식 공지 확인", "href": "https://www.andteam-official.jp/news/021ab1de6a61"},
+        {"date": "2026-11-18", "title": "JO·TAKI 후지TV ホンマでっか!?TV 출연", "sub": "21:00~21:54 JST/KST 방송 · JO·TAKI 출연", "href": "https://www.andteam-official.jp/news/a84de8968609"},
+        {"date": "2026-11-18", "endDate": "2026-11-19", "title": "JO·TAKI·MAKI TBS よるのブランチ 출연", "sub": "11/18 23:56~11/19 00:55 JST/KST 방송 · JO·TAKI·MAKI 출연", "href": "https://www.andteam-official.jp/news/2c290411ba85"},
+        {"date": "2026-11-19", "title": "Mark on You 홀 투어 · 오사카", "sub": "그랑큐브 오사카 · 17:00 입장 / 18:00 개연 JST/KST · 예매·변경 사항은 공식 공지 확인", "href": "https://www.andteam-official.jp/news/021ab1de6a61"},
+        {"date": "2026-11-27", "title": "Mark on You 홀 투어 · 히로시마", "sub": "히로시마 문화학원 HBG홀 · 17:30 입장 / 18:30 개연 JST/KST · 예매·변경 사항은 공식 공지 확인", "href": "https://www.andteam-official.jp/news/021ab1de6a61"}
+      ],
       accent: '#528b73', light: '#e0f5e9', dark: '#315b49', bg: '#f2fbf4', shape: '✷'
     }
   ];
