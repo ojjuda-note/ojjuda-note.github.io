@@ -1,17 +1,18 @@
 /* Park has its own document, but shares the World design tokens and theme. */
+:root { --park-card-ratio: 4 / 3; --park-card-max-width: 600px; }
 html,body{background:var(--bg);color:var(--ink);font-family:var(--font-b)}
-html.park-embedded .main{width:min(100%,1264px);padding:32px 32px 96px}
+html.park-embedded .main{width:min(100%,1284px);padding:32px 32px 96px}
 
 .feed-layout{width:100%;max-width:none}.note-collection-tabs{gap:8px!important;margin:0 0 18px!important;padding:0 0 14px!important;border:0!important;border-bottom:1px solid var(--line)!important;background:none!important;border-radius:0!important}.note-collection-tabs button{border:0!important;border-radius:9px!important;font:500 13px var(--font-b)!important;min-height:40px!important;padding:9px 16px!important;background:transparent!important;color:var(--ink-2)!important}.note-collection-tabs button.selected{background:var(--accent-soft)!important;color:var(--accent-ink)!important;box-shadow:none!important;font-weight:700!important}
 .feed-sort-tabs.tabs{display:flex;justify-content:flex-end;gap:6px;margin:0 0 20px;width:auto;padding:0;border:0;background:none}.feed-sort-tabs.tabs button{flex:0 1 auto;border:1px solid transparent;border-radius:7px;background:none;color:var(--ink-2);padding:7px 14px;font-size:11px;box-shadow:none}.feed-sort-tabs.tabs button.selected{border-color:var(--line);background:var(--surface);color:var(--accent-ink)}
-.feed-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:start;gap:20px}.photo-card{border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:0 4px 20px #2b463006}.photo-card .photo{min-height:300px;min-height:max(300px,80cqw)}.card-meta{padding:14px 16px!important}.card-actions{border-top:1px solid var(--line);padding:10px 14px!important;background:var(--surface)}.photo-open:hover .photo{filter:none}.card-quote{letter-spacing:-.03em}.note-full-body{padding:15px 16px!important;color:var(--ink)!important}.detail{max-width:760px;margin:auto}.button,.icon-button,.composer button{font-family:var(--font-b);border-radius:9px}.button.primary,.composer .button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);box-shadow:none}.composer,.support-dialog,.nn-dialog{border:1px solid var(--line);border-radius:20px;background:var(--surface);box-shadow:0 24px 80px #182a2333}.composer-head{padding:14px 18px}.composer-head h2{font:600 18px var(--font-b)}.dialog-backdrop{background:#182a2359;backdrop-filter:blur(4px)}.composer-footer{background:var(--surface-2)}.photo-picker button{border-radius:8px}.screen-header h1,.page-heading h1{font-family:var(--font-b)}
-@media(max-width:1000px){.feed-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}}
-@media(max-width:600px){html.park-embedded .main{padding:20px 18px 90px}.feed-list{grid-template-columns:1fr;gap:20px}.feed-sort-tabs.tabs{justify-content:flex-start;gap:3px;flex-wrap:wrap}.feed-sort-tabs.tabs button{padding:7px 10px}.note-collection-tabs{gap:4px!important}.note-collection-tabs button{font-size:12px!important;padding:8px 12px!important}.photo-card{border-radius:15px}}
+.feed-list{display:grid;grid-template-columns:repeat(2,minmax(0,var(--park-card-max-width)));justify-content:center;align-items:start;gap:20px}.photo-card{border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:0 4px 20px #2b463006}.card-meta{padding:14px 16px!important}.card-actions{border-top:1px solid var(--line);padding:10px 14px!important;background:var(--surface)}.photo-open:hover .photo{filter:none}.card-quote{letter-spacing:-.03em}.note-full-body{padding:15px 16px!important;color:var(--ink)!important}.detail{max-width:760px;margin:auto}.button,.icon-button,.composer button{font-family:var(--font-b);border-radius:9px}.button.primary,.composer .button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);box-shadow:none}.composer,.support-dialog,.nn-dialog{border:1px solid var(--line);border-radius:20px;background:var(--surface);box-shadow:0 24px 80px #182a2333}.composer-head{padding:14px 18px}.composer-head h2{font:600 18px var(--font-b)}.dialog-backdrop{background:#182a2359;backdrop-filter:blur(4px)}.composer-footer{background:var(--surface-2)}.photo-picker button{border-radius:8px}.screen-header h1,.page-heading h1{font-family:var(--font-b)}
+@media(max-width:779px){.feed-list{grid-template-columns:minmax(0,var(--park-card-max-width))}}
+@media(max-width:600px){html.park-embedded .main{padding:20px 18px 90px}.feed-sort-tabs.tabs{justify-content:flex-start;gap:3px;flex-wrap:wrap}.feed-sort-tabs.tabs button{padding:7px 10px}.note-collection-tabs{gap:4px!important}.note-collection-tabs button{font-size:12px!important;padding:8px 12px!important}.photo-card{border-radius:15px}}
 
 .park-feed-title{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .park-feed-loading-status{grid-column:1/-1;margin:0;color:var(--accent-ink,#aa4771);font-size:14px;font-weight:700}
 .park-skeleton-card{position:relative;min-width:0;overflow:hidden;border-radius:16px}
-.park-skeleton-photo{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:220px;aspect-ratio:1.08;background:linear-gradient(140deg,var(--accent-soft,#ffe5ee),#ffdbea 60%,#f6d5e6)}
+.park-skeleton-photo{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;aspect-ratio:var(--park-card-ratio);background:linear-gradient(140deg,var(--accent-soft,#ffe5ee),#ffdbea 60%,#f6d5e6)}
 .park-skeleton-quote,.park-skeleton-meta span{display:block;border-radius:99px;background:#fff9;animation:park-skeleton-breathe 1.5s ease-in-out infinite alternate}
 .park-skeleton-quote{width:64%;height:16px}.park-skeleton-quote.short{width:45%}
 .park-skeleton-meta{position:absolute;inset:14px 12px auto;display:flex;align-items:center;justify-content:space-between}
@@ -25,7 +26,8 @@ html.park-embedded .main{width:min(100%,1264px);padding:32px 32px 96px}
   margin: 0 0 4px;
   padding: 0 4px;
 }
-.detail-screen .detail-layout { gap: 16px; }
+.detail-screen { max-width: var(--park-card-max-width); }
+.detail-screen .detail-layout { grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .detail-screen .replies {
   min-width: 0;
   margin: 0;
@@ -70,7 +72,8 @@ html.park-embedded .main{width:min(100%,1264px);padding:32px 32px 96px}
   min-width: 0;
   max-width: none;
 }
-@media (min-width: 780px) {
+@media (min-width: 1024px) {
+  .detail-screen { max-width: calc(var(--park-card-max-width) * 11 / 6 + 16px); }
   /* Four of the five reply-column units equal two thirds of the six-unit original. */
   .detail-screen .detail-layout { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
   .detail-screen .reply-card { flex-basis: 80%; }
@@ -98,20 +101,29 @@ html.park-embedded .main{width:min(100%,1264px);padding:32px 32px 96px}
 #main .park-photo-cards .note-full-body { grid-area: body; }
 #main .park-photo-cards .photo {
   display: grid;
-  grid-template: minmax(min-content, 1fr) auto / minmax(0, 1fr);
+  grid-template: minmax(0, 1fr) fit-content(45%) / minmax(0, 1fr);
   align-items: center;
   row-gap: 8px;
+  width: 100%;
   height: auto;
-  padding: 50px 14px 44px;
+  min-height: 0;
+  aspect-ratio: var(--park-card-ratio);
+  padding: 44px 12px;
 }
-#detail-card-slot .photo-card:not(.note-event-card) .photo { min-height: max(286px, 51.2cqw); }
-#reply-list .reply-card .photo { min-height: max(167px, 60cqw); }
-#main .park-photo-cards .note-event-card .photo { min-height: max(174px, 40cqw); }
-#main .park-photo-cards .card-quote { grid-row: 1; top: auto; }
+#main .park-photo-cards .card-quote {
+  grid-row: 1;
+  top: auto;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
 #main .park-photo-cards .card-tags {
   position: static;
   grid-row: 2;
   justify-self: stretch;
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
 }
 #main .park-photo-cards .card-tags:empty { display: none; }
 #main .park-photo-cards .card-tags > span { border: 0; background: #141c27a8; }
@@ -212,3 +224,10 @@ html.park-embedded .main{width:min(100%,1264px);padding:32px 32px 96px}
   border-width: 1px;
 }
 #main .park-photo-cards .note-event-badge { top: auto; bottom: 10px; left: 12px; border: 0; }
+
+.composer-body { container-type: inline-size; }
+.composer-body > .compose-photo {
+  --compose-photo-height: 75cqw;
+  height: auto;
+  aspect-ratio: var(--park-card-ratio);
+}

@@ -765,7 +765,8 @@ function fitPhotoQuote(photo, quote, tagRow, initialFontSize) {
     quote.style.fontSize = `${size}px`;
     if (!photoQuoteClipped(photo, quote, tagRow)) return;
   }
-  if (photoQuoteClipped(photo, quote, tagRow)) {
+  // Fixed-ratio faces use the full-text disclosure for overflow.
+  if (getComputedStyle(photo).aspectRatio === 'auto' && photoQuoteClipped(photo, quote, tagRow)) {
     photo.style.height = `${Math.ceil(Math.max(minimumHeight, quote.scrollHeight + (tagRow.childElementCount ? tagRow.offsetHeight * 2 + 80 : 70)))}px`;
   }
 }
