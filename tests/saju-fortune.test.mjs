@@ -61,6 +61,106 @@ test('reference table never adds an unknown hour or an uncertain ipchun year/mon
   assert.match(boundary.reference.notes.join(' '),/다시 합산하지/);
 });
 
+test('annual and twelve monthly references stay separate from the unchanged birth counts', () => {
+  const value = analyze();
+  assert.deepEqual(value.profile, analyze(birth, { year: 2027 }).profile);
+  assert.equal(value.profile.knownCharacterCount, 8);
+  assert.equal(value.profile.elements.reduce((sum, item) => sum + item.count, 0), 8);
+  assert.equal(value.profile.gods.length, 7);
+  for (const [index, period] of [value.annual, ...value.months].entries()) {
+    const reference = period.reference;
+    assert.equal(reference.scope, index === 0 ? 'annual' : 'monthly');
+    assert.deepEqual(reference.dayMaster, value.profile.dayMaster);
+    assert.equal(reference.pillars.length, 1);
+    const detail = reference.pillars[0];
+    assert.equal(detail.pillarKey, index === 0 ? 'annual' : `month.${index}`);
+    assert.equal(detail.pillarLabel, index === 0 ? '2026년 세운' : `2026년 ${index}월 월운`);
+    assert.equal(detail.hanja, period.hanja);
+    assert.equal(detail.hangul, period.hangul);
+    assert.equal(detail.hiddenStems[0].stem.hanja, period.branchMainStem.hanja);
+    assert.equal(detail.hiddenStems[0].god.code, period.branchGod.code);
+    assert.deepEqual(reference.source, value.profile.reference.source);
+    assert.ok(reference.notes.length > 0);
+  }
+});
+
+test('every day stem and all sixty annual/monthly pairs match official EightChar classifications', () => {
+  const names = {比肩:'비견',劫财:'겁재',食神:'식신',伤官:'상관',偏财:'편재',正财:'정재',七杀:'편관',正官:'정관',偏印:'편인',正印:'정인'};
+  const charts = Array.from({ length: 10 }, (_, index) => calculateSaju({
+    year: 1900, month: 1, day: index + 1, hour: 12, minute: 0,
+  }, { now: NOW }));
+  assert.equal(new Set(charts.map(chart => chart.dayMaster.hanja)).size, 10);
+  const annualPairs = new Map(charts.map(chart => [chart.dayMaster.hanja, new Set()]));
+  const monthlyPairs = new Map(charts.map(chart => [chart.dayMaster.hanja, new Set()]));
+  // Ten consecutive mid-month dates supply each possible natal day stem while
+  // keeping the target year/month pillar unchanged. Midnight/sect differences
+  // cannot affect these midday comparisons.
+  const byDayStem = (year, month) => new Map(Array.from({ length: 10 }, (_, index) => {
+    const official = Solar.fromYmdHms(year, month, 15 + index, 12, 0, 0).getLunar().getEightChar();
+    return [official.getDayGan(), official];
+  }));
+  const compare = (period, official, slot) => {
+    const detail = period.reference.pillars[0];
+    const context = `${slot} ${period.hanja}, natal day stem ${official.getDayGan()}`;
+    assert.equal(period.reference.dayMaster.hanja, official.getDayGan(), context);
+    assert.equal(period.hanja, official[`get${slot}`](), context);
+    assert.deepEqual(detail.hiddenStems.map(value => value.stem.hanja), official[`get${slot}HideGan`](), context);
+    assert.deepEqual(detail.hiddenStems.map(value => value.god.name), official[`get${slot}ShiShenZhi`]().map(value => names[value]), context);
+    assert.equal(detail.lifeStage.hanja, official[`get${slot}DiShi`](), context);
+    assert.equal(detail.nayin.hanja, official[`get${slot}NaYin`](), context);
+    assert.equal(detail.xun.hanja, official[`get${slot}Xun`](), context);
+    assert.equal(detail.xunKong.hanja, official[`get${slot}XunKong`](), context);
+    assert.deepEqual(detail.hiddenStems.map(value => value.order), Array.from({ length: detail.hiddenStems.length }, (_, index) => index + 1), context);
+    assert.equal(detail.hiddenStems.filter(value => value.isMain).length, 1, context);
+    assert.equal(period.stemGod.name, names[official[`get${slot}ShiShenGan`]()], context);
+    assert.equal(period.branchGod.name, names[official[`get${slot}ShiShenZhi`]()[0]], context);
+  };
+  for (let year = 1960; year < 2020; year++) {
+    const officialYear = byDayStem(year, 6);
+    // Five consecutive calendar years contain the full sixty monthly pairs.
+    const officialMonths = year < 1965 ? Array.from({ length: 12 }, (_, index) => byDayStem(year, index + 1)) : null;
+    for (const chart of charts) {
+      const value = analyze(chart, { year });
+      const dayStem = chart.dayMaster.hanja;
+      compare(value.annual, officialYear.get(dayStem), 'Year');
+      annualPairs.get(dayStem).add(value.annual.hanja);
+      if (officialMonths) {
+        for (const period of value.months) {
+          compare(period, officialMonths[period.month - 1].get(dayStem), 'Month');
+          monthlyPairs.get(dayStem).add(period.hanja);
+        }
+      }
+    }
+  }
+  for (const [dayStem, pairs] of annualPairs) assert.equal(pairs.size, 60, `${dayStem}: all annual pairs`);
+  for (const [dayStem, pairs] of monthlyPairs) assert.equal(pairs.size, 60, `${dayStem}: all monthly pairs`);
+});
+
+test('period references keep the confirmed day stem when birth time or a birth boundary is uncertain', () => {
+  const cases = [
+    [{ year: 2005, month: 12, day: 23, hour: null }, ['year', 'month', 'day']],
+    [{ year: 2024, month: 2, day: 4, hour: null }, ['day']],
+    [{ year: 2024, month: 2, day: 4, hour: 17, minute: 27 }, ['day', 'hour']],
+  ];
+  for (const [input, confirmedKeys] of cases) {
+    const chart = calculateSaju(input, { now: NOW });
+    const before = JSON.stringify(chart);
+    const value = analyze(chart);
+    assert.deepEqual(value.profile.reference.pillars.map(pillar => pillar.pillarKey), confirmedKeys);
+    assert.equal(value.profile.knownCharacterCount, confirmedKeys.length * 2);
+    assert.equal(value.profile.elements.reduce((sum, item) => sum + item.count, 0), confirmedKeys.length * 2);
+    assert.equal(value.profile.gods.length, confirmedKeys.length * 2 - 1);
+    for (const period of [value.annual, ...value.months]) {
+      assert.equal(period.reference.dayMaster.hanja, chart.dayMaster.hanja);
+      assert.equal(period.reference.pillars.length, 1);
+      for (const hidden of period.reference.pillars[0].hiddenStems) {
+        assert.deepEqual(hidden.god, getTenGod(chart.dayMaster, hidden.stem));
+      }
+    }
+    assert.equal(JSON.stringify(chart), before);
+  }
+});
+
 test('all ten gods use the day stem, five-element relation, and target stem parity', () => {
   assert.deepEqual([...('甲乙丙丁戊己庚辛壬癸')].map(value => getTenGod('甲', value).name), [
     '비견', '겁재', '식신', '상관', '편재', '정재', '편관', '정관', '편인', '정인',

@@ -54,6 +54,26 @@ function transitFacts(facts,prefix,transit) {
   }
   contains(facts,`${prefix}.god.branch`,transit.branchMainStem.hanja);
   interactionFacts(facts,prefix,transit.interactions);
+  const reference=transit.reference,source=reference.source;
+  contains(facts,`${prefix}.reference.source`,source.name,source.version,source.revision,source.url);
+  let hiddenCount=0;
+  for(const pillar of reference.pillars){
+    const itemPrefix=`${prefix}.reference.${pillar.pillarKey}`;
+    for(const hidden of pillar.hiddenStems){
+      hiddenCount++;
+      contains(facts,`${itemPrefix}.hidden.${hidden.order}`,pillar.pillarLabel,pillar.hanja,
+        hidden.stem.hanja,hidden.stem.hangul,hidden.stem.elementLabel,hidden.stem.yinYang,
+        hidden.god.name,hidden.god.hanja,hidden.isMain?'본기':`자료 순서 ${hidden.order}`);
+    }
+    contains(facts,`${itemPrefix}.life-stage`,pillar.hanja,pillar.lifeStage.label,pillar.lifeStage.hanja,
+      reference.dayMaster.hangul,reference.dayMaster.hanja);
+    contains(facts,`${itemPrefix}.nayin`,pillar.hanja,pillar.nayin.hanja);
+    contains(facts,`${itemPrefix}.xun`,pillar.xun.hanja,pillar.xun.hangul);
+    contains(facts,`${itemPrefix}.xun-kong`,pillar.xunKong.hanja,pillar.xunKong.hangul,'영향은 판정하지 않았어요');
+  }
+  assert.equal([...facts.values()].filter(value=>value.id.startsWith(`${prefix}.reference.`)&&value.kind==='hidden-stem').length,hiddenCount,
+    'every period must keep all hidden stems without truncation or duplication');
+  reference.notes.forEach((note,index)=>assert.equal(facts.get(`${prefix}.reference.note.${index}`).text,note));
 }
 function categoryChapters(report,topic) {
   return topic==='monthly'?report.months.flatMap(value=>value.chapters):report.sections.find(value=>value.id===topic).chapters;
@@ -94,7 +114,7 @@ for (const example of examples) {
       contains(facts,`${prefix}.xun`,pillar.xun.hanja,pillar.xun.hangul);
       contains(facts,`${prefix}.xun-kong`,pillar.xunKong.hanja,pillar.xunKong.hangul);
     }
-    assert.equal([...facts.values()].filter(value=>value.kind==='hidden-stem').length,hiddenCount);
+    assert.equal([...facts.values()].filter(value=>value.id.startsWith('natal.')&&value.kind==='hidden-stem').length,hiddenCount);
     profile.reference.notes.forEach((note,index)=>assert.equal(facts.get(`natal.reference.note.${index}`).text,note));
     const unknown=chart.pillars.filter(value=>value.uncertain);
     for (const pillar of unknown) {

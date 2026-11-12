@@ -4,6 +4,7 @@ import { calculateSaju } from '../games/starlit-saju/engine.mjs';
 import { analyzeFortune } from '../games/starlit-saju/fortune-data.mjs';
 import { buildDetailedReading } from '../games/starlit-saju/readings.mjs';
 import * as referenceText from '../games/starlit-saju/readings-data.mjs';
+import { getReadingSources } from '../games/starlit-saju/sources.mjs';
 
 const now = new Date('2026-11-13T00:00:00Z');
 const sample = { year: 2005, month: 12, day: 23, hour: 8, minute: 37 };
@@ -124,6 +125,7 @@ test('unknown pillars retain every candidate and never gain fabricated character
 test('category copies and advertised scope include only their selected periods and no birth date', () => {
   const first = reading(sample,2026), next = reading(sample,2027);
   assert.deepEqual(lifelong(first.report), lifelong(next.report));
+  assert.deepEqual(first.report.adviceByCategory.lifelong, next.report.adviceByCategory.lifelong);
   assert.equal(first.report.copyByCategory.lifelong, next.report.copyByCategory.lifelong);
   assert.doesNotMatch(first.report.methodByCategory.lifelong.calculated.join(' '), /세운|절기월/);
   assert.ok(next.report.methodByCategory.annual.calculated.some(text => text.includes('2027년') && text.includes('세운')));
@@ -138,6 +140,89 @@ test('category copies and advertised scope include only their selected periods a
     assert.doesNotMatch(text, /2005년 12월 23일|08:37|8시 37분/);
     assert.match(text, /\[공통 참고 설명\]/);
     assert.doesNotMatch(text, /\[적용한 전통 해석 규칙\]/);
+  }
+});
+
+test('all twelve months keep grounded service suggestions, including repeated symbols late in the year', () => {
+  const inputs=[sample,{year:2015,month:12,day:9,hour:11,minute:37},{year:2024,month:2,day:4,hour:null}];
+  const observedCodes=new Set();
+  let sawNoPair=false,sawBothKinds=false,sawSameGod=false;
+  for(const input of inputs){
+    const {fortune,report}=reading(input);
+    const facts=new Map(report.facts.map(value=>[value.id,value]));
+    const nativeCodes=[...new Set(fortune.profile.gods.map(value=>value.god.code))];
+    const natalCards=report.adviceByCategory.lifelong;
+    assert.deepEqual(natalCards.filter(value=>value.id.includes('.god.')).map(value=>value.id.split('.').at(-1)),nativeCodes,
+      'natal suggestions must cover every observed principal ten-god without substituting another name');
+    const contexts=[
+      {prefix:'natal',topic:'lifelong',source:fortune.profile,cards:natalCards},
+      {prefix:'annual',topic:'annual',source:fortune.annual,cards:report.adviceByCategory.annual},
+      ...report.months.map(month=>({prefix:`month.${month.month}`,topic:'monthly',source:fortune.months.find(value=>value.month===month.month),cards:month.advice})),
+    ];
+    for(const context of contexts){
+      const {prefix,topic,source,cards}=context;
+      const evidence=new Set(report.evidence[topic].groups.flatMap(value=>value.rows.map(row=>row.factId)));
+      assert.equal(new Set(cards.map(value=>value.id)).size,cards.length,'the same suggestion must not be duplicated inside one period');
+      if(prefix!=='natal'){
+        const codes=[...new Set([source.stemGod.code,source.branchGod.code])];
+        assert.deepEqual(cards.filter(value=>value.id.includes('.god.')).map(value=>value.id.split('.').at(-1)),codes,
+          'period suggestions must follow its two actual computed ten-gods');
+        assert.ok(cards.length>=2&&cards.length<=4,`${prefix} lost its practical suggestions`);
+        for(const code of codes)observedCodes.add(code);
+        if(codes.length===1)sawSameGod=true;
+        for(const position of ['stem','branch']){
+          const card=cards.find(value=>value.id===`${prefix}.advice.god.${source[position+'God'].code}`);
+          assert.ok(card.factIds.includes(`${prefix}.god.${position}`),'both positions remain linked when they share one god');
+        }
+      }
+      const connections=source.interactions.filter(value=>value.kind!=='branch-clash');
+      const clashes=source.interactions.filter(value=>value.kind==='branch-clash');
+      if(!source.interactions.length){
+        sawNoPair=true;
+        const card=cards.find(value=>value.id===`${prefix}.advice.no-pair`);
+        assert.ok(card?.factIds.includes(`${prefix}.interaction-count`));
+      }
+      if(connections.length&&clashes.length)sawBothKinds=true;
+      assert.equal(cards.some(value=>value.id===`${prefix}.advice.connect`),connections.length>0);
+      assert.equal(cards.some(value=>value.id===`${prefix}.advice.clash`),clashes.length>0);
+      source.interactions.forEach((value,index)=>{
+        const card=cards.find(item=>item.id===`${prefix}.advice.${value.kind==='branch-clash'?'clash':'connect'}`);
+        assert.ok(card.factIds.includes(`${prefix}.interaction.${index}`),'grouped advice must retain every actual pair as a reason');
+      });
+      for(const card of cards){
+        assert.equal(card.origin,'service-advice');
+        for(const field of ['title','why','action','caution']){
+          assert.ok(typeof card[field]==='string'&&card[field].trim(),`${card.id}: missing ${field}`);
+          assert.ok(report.copyByCategory[topic].includes(card[field]),`${card.id}: copied reading omitted ${field}`);
+        }
+        assert.ok(card.factIds.length>0,'a suggestion needs an observed condition');
+        for(const id of card.factIds){
+          assert.ok(facts.has(id)&&evidence.has(id),`${card.id}: invalid or out-of-product reason ${id}`);
+          assert.ok(id.startsWith('natal.')||id.startsWith(prefix+'.'),`${card.id}: borrowed another period's reason ${id}`);
+        }
+        assert.ok(!report.facts.some(value=>value.text.includes(card.action)),'service suggestions are not calculated data');
+        assert.ok(!chaptersOf(report).some(chapter=>chapter.interpretation.includes(card.action)),
+          'service suggestions must stay distinct from traditional interpretation');
+      }
+    }
+    assert.match(report.adviceNotice,/오쭈다가 쓴 생활 제안/);
+    assert.match(report.adviceNotice,/같은 관계에는 같은 제안 규칙/);
+    assert.ok(report.months.at(-1).advice.length>=2,'December must not lose suggestions through a shared annual deduplication set');
+  }
+  assert.equal(observedCodes.size,10,'fixtures exercise all ten actual relationship types');
+  assert.ok(sawNoPair&&sawBothKinds&&sawSameGod,'fixtures need absent, mixed and repeated relationships');
+});
+
+test('copied readings preserve the source purpose and limits for their purchased topic', () => {
+  for(const year of [2026,2027]){
+    const {report}=reading(sample,year);
+    for(const topic of ['lifelong','annual','monthly']){
+      for(const source of getReadingSources(topic,year)){
+        for(const field of ['title','publisher','usedFor','limitation','url']){
+          assert.ok(report.copyByCategory[topic].includes(source[field]),`${topic}: omitted source ${source.id}/${field}`);
+        }
+      }
+    }
   }
 });
 

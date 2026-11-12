@@ -109,6 +109,11 @@ function seasonParagraph(profile) {
   return '계절을 나누는 옛 달력 기준으로는 '+profile.season.label+'에 속해요. 나를 나타내는 글자는 '+day+', 이 계절의 대표는 '+ending(season)+' '+explanations[relation];
 }
 function chapter(title,summary,...easyParagraphs){return{title,summary,easyParagraphs};}
+function periodReference(reference) {
+  if(!reference)return [];
+  const total=reference.pillars.reduce((sum,value)=>sum+value.hiddenStems.length,0);
+  return ['이 시기의 아래쪽 글자에는 안쪽으로 연결된 글자 '+total+'개가 있어요. 각각을 나를 나타내는 글자와 비교한 이름과 옛 분류를 근거 표에 모두 담았어요. 이 별도 자료를 태어난 사주의 글자 개수에 더해 세지는 않았어요.'];
+}
 function lifelong(profile,chart) {
   const stem=STEMS[profile.dayMaster.hanja];
   const unknown=chart.pillars.filter(value=>value.uncertain||!value.hanja);
@@ -178,7 +183,8 @@ function annual(profile,fortune) {
       '태어난 때의 사주는 그대로 두고, '+label+'을 나타내는 두 글자를 나를 나타내는 글자와 비교해요. 한 해를 이렇게 읽는 풀이를 ‘세운’이라고 불러요.',
       a.stemGod.code===a.branchGod.code?'두 글자가 같은 이름인 '+wayParticle(a.stemGod.name)+' 읽혀요.':'위쪽의 사주 이름은 '+ending(a.stemGod.name)+' 아래쪽의 사주 이름은 '+ending(a.branchGod.name),
       '위쪽 글자는 이렇게 읽어요. '+GODS[a.stemGod.code].meaning+' 아래쪽 글자는 이렇게 읽어요. '+GODS[a.branchGod.code].meaning,
-      '이 풀이의 한 해는 1월 1일이 아니라 봄의 시작을 알리는 ‘입춘’에서 나눠요. '+a.start.label+'부터 '+a.end.label+' 바로 전까지의 이야기예요.'),
+      '이 풀이의 한 해는 1월 1일이 아니라 봄의 시작을 알리는 ‘입춘’에서 나눠요. '+a.start.label+'부터 '+a.end.label+' 바로 전까지의 이야기예요.',
+      ...periodReference(a.reference)),
     'annual-interactions':chapter('한 해의 글자와 내 사주가 만나는 모습',interactionSummary(a.interactions),...interactionParagraphs(a.interactions,label+'의 글자와 내 사주 사이')),
     'annual-relationships':chapter('친구·동료와 내 생각을 함께 살피기','친구·동료의 뜻은 태어난 사주 '+count(profile,'peer')+'곳, 이 해의 글자 '+transitCount(a,'peer')+'곳에 있어요',
       '사람들과의 관계에서는 내 의견을 어떻게 말하고, 다른 사람과 무엇을 함께 정할지 살펴봐요. 사주에서 이런 이야기를 읽는 이름들을 ‘비겁’이라고 불러요.',
@@ -202,7 +208,8 @@ function monthly(profile,month) {
     'month-stem':chapter('이번 달의 첫 번째 이야기','‘'+top.topic+'’의 뜻으로 읽어요',
       label+'을 나타내는 위쪽 글자를 나를 나타내는 글자와 비교하면, '+named('‘'+top.topic+'’')+' 이야기로 읽어요. 이 관계의 사주 이름은 '+ending(month.stemGod.name),
       '쉬운 말로는 '+top.meaning+' 예를 들어 '+top.example,
-      comparison(profile,month,month.stemGod.group,label)),
+      comparison(profile,month,month.stemGod.group,label),
+      ...periodReference(month.reference)),
     'month-branch':chapter('이번 달의 두 번째 이야기','‘'+bottom.topic+'’의 뜻으로 읽어요',
       '달의 아래쪽 글자에는 연결된 글자가 여러 개일 수 있어요. 그중 대표가 되는 글자를 골라 나를 나타내는 글자와 비교해요. 이번에는 '+named('‘'+bottom.topic+'’')+' 이야기로 읽으며, 이름은 '+ending(month.branchGod.name),
       '쉬운 말로는 '+bottom.meaning+' 예를 들어 '+bottom.example,
@@ -219,6 +226,7 @@ export const PLAIN_GUIDE = {
     '먼저 각 항목의 쉬운 풀이를 읽어 보세요. 어려운 사주 이름은 뜻을 먼저 설명하고, 원래 이름도 함께 알려 드려요.',
     '‘예를 들어’ 뒤의 내용은 뜻을 이해하기 위한 생활 예시예요. 내가 겪었거나 앞으로 꼭 겪을 일을 말하는 것은 아니에요.',
     '더 자세히 알고 싶으면 ‘이 풀이의 근거 보기’를 펼쳐 보세요. 계산한 글자와 전통 해석, 함께 쓰는 설명, 저희가 작성한 참고 설명을 구분해 놓았어요.',
+    '‘선택에 도움이 되는 제안’에는 이번에 나온 글자와 관계에 연결한 생활 방법을 적었어요. 왜 이 제안을 연결했는지 먼저 읽고, 내 상황에 맞는 것을 골라 보세요.',
   ],
 };
 export const PLAIN_GLOSSARY = [

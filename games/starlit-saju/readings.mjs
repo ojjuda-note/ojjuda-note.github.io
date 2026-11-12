@@ -1,8 +1,10 @@
 import {
   STEM_REFERENCE, GROUP_REFERENCE, GOD_REFERENCE, ELEMENT_RELATIONS,
   RELATION_REFERENCE, GROUP_PAIR_RULES, PRACTICE_SUGGESTIONS,
-} from './readings-data.mjs?v=20261113-saju-easy1';
-import { attachPlainLanguage } from './plain-language.mjs?v=20261113-saju-easy1';
+} from './readings-data.mjs?v=20261113-saju-reader1';
+import { attachPlainLanguage } from './plain-language.mjs?v=20261113-saju-reader1';
+import { attachAdvice } from './advice.mjs?v=20261113-saju-reader1';
+import { getReadingSources } from './sources.mjs?v=20261113-saju-reader1';
 
 const GROUP_KEYS = ['peer', 'expression', 'wealth', 'authority', 'resource'];
 const ELEMENT_KEYS = ['wood', 'fire', 'earth', 'metal', 'water'];
@@ -10,6 +12,7 @@ const PILLAR_LABELS = {year:'년주',month:'월주',day:'일주',hour:'시주'};
 const charLabel = value => `${value.hangul}(${value.hanja}) · ${value.elementLabel}(${value.elementHanja}) · ${value.yinYang}`;
 const groupEntries = (profile, group) => profile.gods.filter(value => value.god.group === group);
 const unique = values => [...new Set(values)];
+const referenceIds = reference => reference?.source ? [reference.source,...reference.entries,...reference.notes] : [];
 function particle(text, consonant, vowel) {
   const syllables = String(text).match(/[가-힣]/g);
   const last = syllables?.[syllables.length - 1];
@@ -87,7 +90,7 @@ function createFacts(chart, fortune) {
   }
 
   function transitFacts(transit, prefix, label) {
-    const result = {prefix,label,header:[],gods:[],characters:[],overlaps:[],interactions:[],notes:[]};
+    const result = {prefix,label,header:[],gods:[],characters:[],overlaps:[],interactions:[],notes:[],reference:{entries:[],notes:[]}};
     result.header.push(add(`${prefix}.pillar`,'transit-pillar',`${label} 간지`,`${label}의 간지: ${transit.hangul}(${transit.hanja}).`));
     result.header.push(add(`${prefix}.period`,'period',`${label} 적용 구간`,`${transit.start.label} ${transit.start.term}부터 ${transit.end.label} ${transit.end.term} 직전까지, 한국 표준시 기준이에요.`));
     if (transit.yearHanja) result.header.push(add(`${prefix}.term-year`,'term-year','해당 절기년',`${transit.solarTermYear}년 절기년 · 년주 ${transit.yearHangul}(${transit.yearHanja}).`));
@@ -101,6 +104,21 @@ function createFacts(chart, fortune) {
     transit.interactions.forEach((value,index)=>result.interactions.push(add(`${prefix}.interaction.${index}`,'interaction',`${value.birthPillarLabel}와 ${label}의 ${value.label}`,interactionFact(value))));
     result.interactionCount = add(`${prefix}.interaction-count`,'interaction-count',`${label} 합충 검사 결과`,`${particle(label,'과','와')} 확정된 원국 사이에는 천간합 ${transit.interactions.filter(value=>value.kind==='stem-combination').length}쌍, 지지육합 ${transit.interactions.filter(value=>value.kind==='branch-combination').length}쌍, 지지충 ${transit.interactions.filter(value=>value.kind==='branch-clash').length}쌍이 있어요.`);
     (transit.notes || []).forEach((text,index)=>result.notes.push(add(`${prefix}.note.${index}`,'calendar-note',`${label} 기준 안내`,text)));
+    if(transit.reference){
+      const reference=transit.reference,source=reference.source;
+      result.reference.source=add(`${prefix}.reference.source`,'reference-source',`${label} 분류 자료 출처`,`${source.name} ${source.version}, 고정 리비전 ${source.revision}. ${source.url}`);
+      for(const value of reference.pillars){
+        const itemPrefix=`${prefix}.reference.${value.pillarKey}`,itemLabel=`${value.pillarLabel} ${value.hangul}(${value.hanja})`;
+        for(const hidden of value.hiddenStems){
+          result.reference.entries.push(add(`${itemPrefix}.hidden.${hidden.order}`,'hidden-stem',`${value.pillarLabel} 지장간 ${hidden.order}`,`${itemLabel}의 지장간 ${hidden.isMain?'본기':`자료 순서 ${hidden.order}`}: ${charLabel(hidden.stem)}. 사용자 일간과의 십성 ${hidden.god.name}(${hidden.god.hanja}) · ${GROUP_REFERENCE[hidden.god.group].label}.`));
+        }
+        result.reference.entries.push(add(`${itemPrefix}.life-stage`,'life-stage',`${value.pillarLabel} 십이운성`,`${itemLabel}의 지지를 사용자 일간 ${profile.dayMaster.hangul}(${profile.dayMaster.hanja})과 비교한 십이운성: ${value.lifeStage.label}(${value.lifeStage.hanja}).`));
+        result.reference.entries.push(add(`${itemPrefix}.nayin`,'nayin',`${value.pillarLabel} 납음`,`${itemLabel}의 납음 원자료 명칭: ${value.nayin.hanja}.`));
+        result.reference.entries.push(add(`${itemPrefix}.xun`,'xun',`${value.pillarLabel} 순`,`${itemLabel}이 속한 순: ${value.xun.hangul}(${value.xun.hanja}).`));
+        result.reference.entries.push(add(`${itemPrefix}.xun-kong`,'xun-kong',`${value.pillarLabel} 공망`,`${itemLabel}의 순에서 빠지는 두 지지: ${value.xunKong.hangul}(${value.xunKong.hanja}). 해당 시기 간지의 분류이며 원국에 미치는 영향은 판정하지 않았어요.`));
+      }
+      reference.notes.forEach((text,index)=>result.reference.notes.push(add(`${prefix}.reference.note.${index}`,'reference-note',`${label} 원자료 설명`,text)));
+    }
     return result;
   }
   const annual = transitFacts(fortune.annual,'annual',`${fortune.year}년 세운`);
@@ -213,7 +231,7 @@ function annualChapters(fortune,registry) {
   const chapter=(...args)=>makeChapter(registry,...args);
   const forGroups=groups=>unique(groups.flatMap(group=>groupFactIds(p,group)));
   return [
-    chapter('annual-overview',`${fortune.year}년 세운 · 간지와 적용 시각`,'입춘 기준의 세운과 두 십성 관계를 확인해요.',[...t.header,...t.characters,...t.gods,...t.notes],[transitGodRule(p,a,'stem','annual'),transitGodRule(p,a,'branch','annual')],ref.take([`god:${a.stemGod.code}`,`god:${a.branchGod.code}`])),
+    chapter('annual-overview',`${fortune.year}년 세운 · 간지와 적용 시각`,'입춘 기준의 세운과 두 십성 관계를 확인해요.',[...t.header,...t.characters,...t.gods,...t.notes,...referenceIds(t.reference)],[transitGodRule(p,a,'stem','annual'),transitGodRule(p,a,'branch','annual')],ref.take([`god:${a.stemGod.code}`,`god:${a.branchGod.code}`])),
     chapter('annual-interactions','세운과 원국의 모든 합·충','년주·월주·일주·시주와 비교한 결과를 빠짐없이 보여줘요.',[t.interactionCount,...t.interactions],interactionRules(a.interactions,t.interactions,'annual'),ref.take(unique(a.interactions.map(value=>`relation:${value.kind}`)))),
     chapter('annual-relationships','관계의 관점 · 세운의 십성과 원국의 비겁','계산된 관계 분류를 인연의 주제와 연결해 설명해요.',[...t.gods,...forGroups(['peer']),'natal.pillar.day'],[rule('annual.relationship-lens',[...t.gods,...forGroups(['peer'])],`${fortune.year}년 세운의 천간은 ${a.stemGod.name}, 지지 본기는 ${a.branchGod.name}이며, 원국의 비겁은 ${groupEntries(p,'peer').length}곳이에요. ${a.stemGod.group==='peer'||a.branchGod.group==='peer'?'세운에도 비겁으로 분류되는 대상이 있어 자기 기준·동료의 관점을 해당 시기 글자와 연결해 읽어요.':'세운의 두 대상은 비겁이 아닌 다른 십성군으로 분류되어, 원국의 비겁과 시기 글자가 서로 다른 주제를 가리키는 구성으로 읽어요.'}`)],ref.take(['group:peer']),ref.practice(['peer'])),
     chapter('annual-work-money','일과 재물의 관점 · 식상·관성·재성의 실제 분류','세운과 원국에서 같은 주제가 어디에 나타나는지 설명해요.',[...t.gods,...forGroups(['expression','authority','wealth'])],['expression','authority','wealth'].map(group=>{
@@ -233,10 +251,10 @@ function monthlyReadings(fortune,registry) {
     const make=(...args)=>makeChapter(registry,...args);
     const stemGroups=groupFactIds(p,month.stemGod.group),branchGroups=groupFactIds(p,month.branchGod.group);
     const chapters=[
-      make('month-stem','월간 · 일간과 월의 천간이 맺는 관계','음양과 오행의 관계로 분류한 십성을 설명해요.',[...t.header,...t.notes,t.characters[0],t.gods[0],...stemGroups],[transitGodRule(p,month,'stem',prefix)],ref.take([`god:${month.stemGod.code}`,`group:${month.stemGod.group}`])),
+      make('month-stem','월간 · 일간과 월의 천간이 맺는 관계','음양과 오행의 관계로 분류한 십성을 설명해요.',[...t.header,...t.notes,t.characters[0],t.gods[0],...stemGroups,...referenceIds(t.reference)],[transitGodRule(p,month,'stem',prefix)],ref.take([`god:${month.stemGod.code}`,`group:${month.stemGod.group}`])),
       make('month-branch','월지 · 대표 천간으로 계산한 십성','월지의 본기를 사용한 계산 근거를 공개해요.',[t.characters[1],t.gods[1],...branchGroups],[transitGodRule(p,month,'branch',prefix)],ref.take([`god:${month.branchGod.code}`,`group:${month.branchGod.group}`])),
       make('month-interactions','원국과의 모든 합·충','이 월간지와 확정된 원국 사이의 관계 전체예요.',[t.interactionCount,...t.interactions],interactionRules(month.interactions,t.interactions,prefix),ref.take(unique(month.interactions.map(value=>`relation:${value.kind}`)))),
-      make('month-elements','원국과의 오행 겹침·차이','월의 두 글자를 실제 원국 오행 수와 비교해요.',[...t.overlaps,...registry.natal.elements],overlapRules(p,month,prefix),[],ref.practice([month.stemGod.group,month.branchGod.group])),
+      make('month-elements','원국과의 오행 겹침·차이','월의 두 글자를 실제 원국 오행 수와 비교해요.',[...t.overlaps,...registry.natal.elements],overlapRules(p,month,prefix)),
     ];
     return {
       month:month.month,year:fortune.year,title:`${month.month}월 · ${month.hangul}(${month.hanja})`,
@@ -261,10 +279,11 @@ function buildEvidence(fortune,registry) {
     ...(n.reference.source?[group('natal-reference','지장간·십이운성·납음·순과 공망 원자료',[n.reference.source,...n.reference.entries,...n.reference.notes])]:[]),
   ];
   const transitGroup=(t)=>group(`${t.prefix}-all`,`${t.label}의 전체 계산자료`,[...t.header,...t.characters,...t.gods,...t.overlaps,t.interactionCount,...t.interactions,...t.notes]);
+  const transitGroups=t=>[transitGroup(t),...(t.reference.source?[group(`${t.prefix}-reference`,`${t.label}의 안쪽 글자와 전통 분류 전체`,referenceIds(t.reference))]:[])];
   return {
     lifelong:{title:'평생운 풀이에 사용한 전체 계산자료',groups:natalGroups()},
-    annual:{title:`${fortune.year}년 연간 풀이에 사용한 전체 계산자료`,groups:[...natalGroups(),transitGroup(registry.annual)]},
-    monthly:{title:`${fortune.year}년 월별 풀이에 사용한 전체 계산자료`,groups:[...natalGroups(),...registry.months.map(transitGroup)]},
+    annual:{title:`${fortune.year}년 연간 풀이에 사용한 전체 계산자료`,groups:[...natalGroups(),...transitGroups(registry.annual)]},
+    monthly:{title:`${fortune.year}년 월별 풀이에 사용한 전체 계산자료`,groups:[...natalGroups(),...registry.months.flatMap(transitGroups)]},
   };
 }
 
@@ -273,7 +292,7 @@ function methodMetadata(fortune,topic='all') {
   return {
     title:'이 풀이에서 알려 주는 내용',
     description:'입력한 생일로 사주 글자를 계산하고, 옛 사주 풀이에서 어떤 뜻으로 읽는지 설명해요. 계산한 내용과 옛 풀이, 함께 쓰는 설명, 생활에서 해 볼 일은 따로 표시해요. 성격을 검사하거나 미래를 확인한 결과는 아니에요.',
-    reuseNotice:'같은 글자와 관계가 나오면 같은 설명을 써요. 여러 이야기를 함께 읽는 설명 중에는 저희가 작성한 공통 참고 해설도 있어요.',
+    reuseNotice:'같은 글자와 관계가 나오면 같은 설명을 써요. 여러 이야기를 함께 읽는 설명 중에는 저희가 작성한 공통 참고 해설도 있어요. 생활 제안도 확인된 같은 관계에는 같은 규칙으로 연결해요. 앞으로 일어날 일을 확인한 정보는 아니에요.',
     calculated:[
       '태어난 해·달·날·시간의 글자와, 아직 정할 수 없는 부분의 후보와 이유',
       '나무·불·흙·쇠·물의 개수와 음양의 개수, 나를 나타내는 글자와 태어난 계절의 관계',
@@ -283,6 +302,9 @@ function methodMetadata(fortune,topic='all') {
         :topic==='monthly'?[fortune.year+'년 12개월의 글자와 날짜, 내 사주와의 관계 전체(월운)']
         :topic==='all'?[fortune.year+'년 한 해와 12개월의 글자·날짜, 내 사주와의 관계 전체']:[]),
       '아래쪽 글자에 연결된 글자 전체(지장간)와 십이운성·납음·순·공망의 원래 자료',
+      ...(topic==='annual'?['올해 글자의 안쪽에 연결된 글자 전체와 나를 나타내는 글자와의 관계, 전통 분류의 원래 이름']
+        :topic==='monthly'?['12개월 각각의 안쪽에 연결된 글자 전체와 나를 나타내는 글자와의 관계, 전통 분류의 원래 이름']
+        :topic==='all'?['올해와 12개월 각각의 안쪽 글자 전체, 내 기준 글자와의 관계와 전통 분류']:[]),
       '태어난 사주에 두 가지 생활 이야기의 이름이 함께 나오는지 확인',
     ],
     notCalculated:[
@@ -297,6 +319,7 @@ function methodMetadata(fortune,topic='all') {
       ...(!profile.complete?['아직 정하지 못한 글자가 있어 확인된 '+profile.knownCharacterCount+'글자만 읽어요. 여기에 어떤 이름이 없다고 전체 사주에도 없다고 정하지 않아요.']:[]),
       '친구·표현·돈·약속·배움의 개수를 셀 때는 나를 나타내는 기준 글자 자체를 빼고 다른 자리만 세어요.',
       '아래쪽 글자는 대표가 되는 글자로 관계를 읽어요. 안쪽에 연결된 다른 글자들은 별도 자료에서 모두 보여 드려요.',
+      '별도 자료의 안쪽 글자를 기존 개수에 더해 세지 않아요. 전통 분류의 이름을 보여 주는 것과 그 이름이 삶에 영향을 준다고 판단하는 것은 달라요.',
       '글자 사이에 맞추는 짝이나 다른 방향의 짝이 있어도, 실제 사건이 일어난다는 뜻은 아니에요.',
       '현재 한국 시계인 한국 표준시(UTC+9)로 계산해요. 해외 출생이나 과거의 시계 차이는 따로 맞추지 않아요.',
       '글자마다 한 개씩 똑같이 세어요. 개수가 많다고 더 좋은 운이거나 더 뛰어난 능력이라는 뜻은 아니에요.',
@@ -322,15 +345,21 @@ function easySectionCopy(chapters) {
   }
   return lines;
 }
+function adviceCopy(report,advice) {
+  if(!advice?.length)return [];
+  const lines=['','선택에 도움이 되는 제안',report.adviceNotice];
+  for(const item of advice)lines.push('',item.title,'이 제안을 연결한 이유: '+item.why,'해 볼 일: '+item.action,'함께 살펴볼 점: '+item.caution);
+  return lines;
+}
 function copyCategory(report,topic) {
   const method=report.methodByCategory[topic];
   const lines=['오쭈다 · 별빛 사주팔자',topic==='lifelong'?'평생운 · 나의 사주와 생활 이야기':report.year+'년 '+(topic==='annual'?'올해운':'월별운'),'',report.guide.title,...report.guide.paragraphs];
   if(topic==='monthly'){
     lines.push('',report.monthsIntro);
-    for(const month of report.months)lines.push('',month.title,month.summary,month.periodLabel,...easySectionCopy(month.chapters));
+    for(const month of report.months)lines.push('',month.title,month.summary,month.periodLabel,...easySectionCopy(month.chapters),...adviceCopy(report,month.advice));
   }else{
     const section=report.sections.find(value=>value.id===topic);
-    lines.push('',section.title,section.summary,...easySectionCopy(section.chapters));
+    lines.push('',section.title,section.summary,...easySectionCopy(section.chapters),...adviceCopy(report,report.adviceByCategory[topic]));
   }
   lines.push('','사주 이름을 쉬운 말로',...report.glossary.map(value=>value.term+': '+value.meaning));
   lines.push('',method.title,method.description,method.reuseNotice,'[이 상품에 포함된 계산 범위]',...method.calculated,'[계산하지 않은 범위]',...method.notCalculated,...method.warnings);
@@ -346,6 +375,8 @@ function copyCategory(report,topic) {
   for(const group of evidence.groups){
     lines.push('',group.title,...group.rows.map(row=>row.label+': '+row.value),...group.notes);
   }
+  lines.push('','자료를 확인한 곳');
+  for(const source of getReadingSources(topic,report.year))lines.push('',source.title,'발행처: '+source.publisher,'이 자료를 쓴 곳: '+source.usedFor,'이 자료로 알 수 없는 것: '+source.limitation,source.url);
   return lines.join('\n');
 }
 
@@ -371,6 +402,7 @@ export function buildDetailedReading(chart,fortune) {
     evidence:buildEvidence(fortune,registry),
   };
   attachPlainLanguage(report,chart,fortune);
+  attachAdvice(report,fortune);
   report.copyByCategory=Object.fromEntries(['lifelong','annual','monthly'].map(topic=>[topic,copyCategory(report,topic)]));
   report.copyText=['lifelong','annual','monthly'].map(topic=>report.copyByCategory[topic]).join('\n\n');
   return report;

@@ -1,7 +1,7 @@
 // Keep the immutable vendor URL shared with engine.mjs to avoid downloading
 // the same astronomy library twice. The importing app versions this module.
 import { Solar } from './vendor/lunar-1.7.8.mjs?v=20261112-starlit-saju1';
-import { makeReference } from './reference-data.mjs?v=20261113-saju-easy1';
+import { makeReference, makeTransitReference } from './reference-data.mjs?v=20261113-saju-reader1';
 
 const HOUR = 3600000;
 const MIN_YEAR = 1900;
@@ -200,7 +200,7 @@ function springMoment(year) {
   return termMoment(Solar.fromYmd(year, 6, 15).getLunar().getJieQiTable()['立春'], '立春');
 }
 const within = (now, start, end) => now.getTime() >= Date.parse(start.iso) && now.getTime() < Date.parse(end.iso);
-function transitData(hanja, profile, label) {
+function transitData(hanja, profile, { label, key, scope }) {
   const value = pillarCharacters(hanja);
   const branchMainStem = mainStem(value.branch);
   return {
@@ -208,6 +208,7 @@ function transitData(hanja, profile, label) {
     stemGod: getTenGod(profile.dayMaster, value.stem),
     branchGod: getTenGod(profile.dayMaster, branchMainStem),
     interactions: transitInteractions(profile.knownPillars, value, label),
+    reference: makeTransitReference(profile, value, { label, key, scope }, stemCharacter, getTenGod),
   };
 }
 
@@ -228,7 +229,7 @@ export function analyzeFortune(chart, { year, now = new Date() } = {}) {
   const start = springMoment(selectedYear), end = springMoment(selectedYear + 1);
   const annual = {
     year: selectedYear,
-    ...transitData(Solar.fromYmdHms(selectedYear, 6, 15, 11, 0, 0).getLunar().getYearInGanZhiExact(), profile, `${selectedYear}년 세운`),
+    ...transitData(Solar.fromYmdHms(selectedYear, 6, 15, 11, 0, 0).getLunar().getYearInGanZhiExact(), profile, { label: `${selectedYear}년 세운`, key: 'annual', scope: 'annual' }),
     start, end, isCurrent: within(now, start, end),
     notes: ['세운은 1월 1일이 아니라 입춘 순간부터 다음 입춘 전까지 이어져요.'],
   };
@@ -244,7 +245,7 @@ export function analyzeFortune(chart, { year, now = new Date() } = {}) {
     const yearPair = pillarCharacters(lunar.getYearInGanZhiExact());
     months.push({
       year: selectedYear, month, key: `${selectedYear}-${pad(month)}`,
-      ...transitData(lunar.getMonthInGanZhiExact(), profile, `${selectedYear}년 ${month}월 월운`),
+      ...transitData(lunar.getMonthInGanZhiExact(), profile, { label: `${selectedYear}년 ${month}월 월운`, key: `month.${month}`, scope: 'monthly' }),
       yearHanja: yearPair.hanja, yearHangul: yearPair.hangul,
       solarTermYear: month === 1 ? selectedYear - 1 : selectedYear,
       start: periodStart, end: periodEnd, isCurrent: within(now, periodStart, periodEnd),

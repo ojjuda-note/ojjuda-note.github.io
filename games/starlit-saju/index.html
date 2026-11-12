@@ -8,8 +8,8 @@
   <title>별빛 사주팔자 · 오쭈다</title>
   <link rel="icon" href="../moonlit-tarot/assets/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="../moonlit-tarot/assets/moon-serif.woff" as="font" type="font/woff" crossorigin>
-  <link rel="stylesheet" href="./style.css?v=20261113-saju-easy1">
-  <link rel="stylesheet" href="./report.css?v=20261113-saju-easy1">
+  <link rel="stylesheet" href="./style.css?v=20261113-saju-reader1">
+  <link rel="stylesheet" href="./report.css?v=20261113-saju-reader1">
 </head>
 <body>
   <a class="skip-link" href="#birth-form">출생 정보 입력으로 바로가기</a>
@@ -93,13 +93,19 @@
         <section class="elements-panel" aria-labelledby="elements-title"><div class="section-title"><h3 id="elements-title">나무·불·흙·쇠·물</h3><span id="element-count"></span></div><div id="element-bars" class="element-bars"></div><p class="gentle-note">사주 글자를 나무·불·흙·쇠·물로 나누고 개수를 세었어요. 이를 ‘오행’이라고 해요. 운이 좋은지 나쁜지를 매긴 점수는 아니에요.</p></section>
       </div>
       </details>
-      <section id="detailed-reading" class="detailed-reading" aria-labelledby="detailed-title">
+      <section id="detailed-reading" class="detailed-reading" data-reading-size="normal" aria-labelledby="detailed-title">
         <header class="report-opening">
           <p class="small-kicker">THE BOOK OF YOUR LIFE</p>
           <h3 id="detailed-title" tabindex="-1">시간을 따라 읽는<br><em>나의 사주 이야기</em></h3>
           <p id="detailed-intro">타고난 성향과 삶의 주제, 한 해와 열두 달의 흐름을 차근차근 읽어 보세요.</p>
         </header>
-        <div class="report-purchase-panel">
+        <div id="reading-controls" class="reading-controls" hidden>
+          <div class="current-reading"><p class="current-reading-label">지금 읽는 풀이</p><p id="current-reading-title"></p><p id="current-reading-note"></p></div>
+          <div class="reading-size-control" role="group" aria-label="본문 글자 크기"><span aria-hidden="true">글자 크기</span><button type="button" data-reading-size="normal" aria-pressed="true" aria-controls="report-content">보통</button><button type="button" data-reading-size="large" aria-pressed="false" aria-controls="report-content">크게</button></div>
+        </div>
+        <details id="other-reading-options" class="other-reading-options">
+          <summary><span>다른 풀이 보기</span><small>풀이마다 10쭈 · 다시 보기 0쭈</small></summary>
+          <div class="report-purchase-panel">
           <fieldset class="product-picker" id="report-product-picker"><legend>다른 풀이 선택하기</legend><div class="product-options">
             <label><input type="radio" name="report-topic" value="lifelong" checked><span class="product-option"><strong>평생운 · 나의 바탕</strong><small>태어난 때의 사주 풀이</small><b data-report-price="lifelong">10쭈</b></span></label>
             <label><input type="radio" name="report-topic" value="annual"><span class="product-option"><strong>올해운</strong><small>선택한 한 해의 흐름</small><b data-report-price="annual">10쭈</b></span></label>
@@ -108,14 +114,16 @@
           <div id="report-year-field" class="report-toolbar" hidden><div class="year-control"><label for="fortune-year">운세를 볼 연도</label><select id="fortune-year" aria-describedby="fortune-year-help"></select></div><p id="fortune-year-help">다른 연도의 올해운·월별운은 각각 10쭈예요. 연도 선택만으로 차감되지 않아요.</p></div>
           <p id="product-offer" class="product-offer"></p>
           <button id="open-product" class="primary-button" type="button" disabled>선택한 풀이 펼치기</button>
-          <p class="product-purchase-note">위 항목과 연도를 확인한 뒤 버튼을 누르면 열려요. 구매한 항목의 다시 보기는 추가 차감이 없어요.</p>
-        </div>
+          <p class="product-purchase-note">항목이나 연도를 고르기만 해서는 차감되지 않아요. 위 버튼을 눌러 열어 주세요. 같은 출생 정보·항목·연도로 구매한 풀이의 다시 보기는 0쭈예요.</p>
+          </div>
+        </details>
         <div id="report-status" class="report-status" role="status" aria-live="polite"></div>
         <div id="report-error" class="report-error" role="alert" hidden><p id="report-error-text"></p><button id="retry-report" class="secondary-button" type="button">구매 내역 다시 확인하기</button></div>
         <nav id="report-toc" class="report-toc" aria-label="사주 상세 풀이 목차" hidden>
           <a id="current-report-link" href="#reading-lifelong"><small>01</small><span id="current-report-label">풀이 읽기</span></a>
           <a href="#reading-evidence"><small>02</small><span>풀이의 근거</span></a>
           <a href="#reading-method"><small>03</small><span>풀이 안내</span></a>
+          <a href="#reading-sources"><small>04</small><span>자료 출처</span></a>
         </nav>
         <div id="report-content"></div>
       </section>
@@ -125,6 +133,6 @@
   </main>
   <footer class="site-footer"><span class="footer-wordmark">THE STARLIT ARCHIVE <i>✧</i></span><p>사주의 옛 풀이 방법으로 나를 돌아보는 시간이에요.<br>앞으로의 이야기는 당신의 선택으로 써 내려가세요.</p><span class="footer-no">VOL. 02 · STARLIGHT</span></footer>
   <div id="status" class="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="./app.js?v=20261113-saju-easy1"></script>
+  <script type="module" src="./app.js?v=20261113-saju-reader1"></script>
 </body>
 </html>

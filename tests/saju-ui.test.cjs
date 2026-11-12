@@ -133,6 +133,8 @@ async function harness(options = {}) {
   function submit() { $('birth-form').dispatchEvent(new window.Event('submit', {bubbles:true,cancelable:true})); }
   async function ready(topic='lifelong',year=0) { await waitFor(() => !$('result').hidden && $('report-content').dataset.topic===topic && $('report-content').dataset.year===String(year), $('form-error').textContent || 'report missing'); }
   function pickReport(topic,year=2026) {
+    if (!$('other-reading-options').open) $('other-reading-options').querySelector('summary').click();
+    assert.equal($('other-reading-options').open,true,'open the other-reading options before choosing a product');
     const radio=window.document.querySelector(`input[name="report-topic"][value="${topic}"]`);
     radio.checked=true;change(radio);
     $('fortune-year').value=String(year);change($('fortune-year'));
@@ -166,15 +168,48 @@ test('only the selected monthly product is generated before its explicit ten-ju 
 
 test('choosing another product never charges or exposes it before the labelled open button', async t => {
   const h=await harness();t.after(h.close);h.fill();h.submit();await h.ready();
+  assert.equal(h.$('other-reading-options').open,false);
+  assert.match(h.$('other-reading-options').querySelector('summary').textContent,/다른 풀이 보기.*10쭈.*0쭈/);
   const previous=h.$('report-content').textContent;
   h.pickReport('annual',2026);await pause();
   assert.equal(h.state.starts.length,1);assert.equal(h.$('report-content').textContent,previous);
   assert.equal(h.$('reading-annual'),null);assert.match(h.$('open-product').textContent,/10쭈/);
   h.$('open-product').click();await h.ready('annual',2026);
+  assert.equal(h.$('other-reading-options').open,false,'finish the purchase with the reading in front');
   assert.equal(h.state.charges,2);assert.equal(h.$('reading-lifelong'),null);
   h.pickReport('lifelong');assert.match(h.$('open-product').textContent,/0쭈/);
   h.$('open-product').click();await h.ready();
   assert.equal(h.state.starts.length,3);assert.equal(h.state.charges,2);assert.equal(h.$('reading-annual'),null);
+});
+
+test('reader size and chapter navigation preserve the purchased reading without another payment', async t => {
+  const h=await harness();t.after(h.close);h.fill({hour:8,minute:37});h.submit();await h.ready();
+  const doc=h.window.document;
+  const original=h.$('report-content').textContent;
+  assert.equal(h.$('reading-controls').hidden,false);
+  assert.match(h.$('current-reading-title').textContent,/평생운/);
+  assert.match(h.$('current-reading-note').textContent,/구매한 풀이.*0쭈/);
+  const normal=doc.querySelector('.reading-size-control button[data-reading-size="normal"]');
+  const large=doc.querySelector('.reading-size-control button[data-reading-size="large"]');
+  assert.equal(normal.getAttribute('aria-pressed'),'true');
+  large.click();
+  assert.equal(h.$('detailed-reading').dataset.readingSize,'large');
+  assert.equal(large.getAttribute('aria-pressed'),'true');
+  assert.equal(normal.getAttribute('aria-pressed'),'false');
+  assert.equal(h.$('report-content').textContent,original);
+  const outline=doc.querySelector('.chapter-outline');
+  assert.equal(outline.open,true);
+  for (const link of [...outline.querySelectorAll('a'),...h.$('report-toc').querySelectorAll('a')]) {
+    assert.ok(h.$(link.hash.slice(1)),`navigation target exists: ${link.hash}`);
+  }
+  h.pickReport('annual',2027);
+  assert.match(h.$('current-reading-title').textContent,/평생운/,'choosing a product does not relabel the current story');
+  assert.equal(h.$('report-content').textContent,original);
+  normal.click();
+  assert.equal(h.$('detailed-reading').dataset.readingSize,'normal');
+  assert.equal(normal.getAttribute('aria-pressed'),'true');
+  assert.equal(h.state.starts.length,1);
+  assert.equal(h.state.charges,1);
 });
 
 test('a new annual year is a separate explicit purchase and changing the selection preserves old copy', async t => {
@@ -220,6 +255,7 @@ test('each chapter leads with its title, clear subtitle and easy detail before c
   h.fill({hour:8,minute:37});h.submit();await h.ready();
   const {analyzeFortune}=await import('../games/starlit-saju/fortune-data.mjs');
   const {buildDetailedReading}=await import('../games/starlit-saju/readings.mjs');
+  const {getReadingSources}=await import('../games/starlit-saju/sources.mjs');
   const fortune=analyzeFortune(h.state.starts[0].chart,{year:2026,now:new Date(fixedNow)});
   const expected=buildDetailedReading(h.state.starts[0].chart,fortune);
   assert.equal(h.window.document.querySelector('.birth-chart-details').open,false);
@@ -249,7 +285,42 @@ test('each chapter leads with its title, clear subtitle and easy detail before c
       details.querySelector('summary').click();
       assert.equal(details.open,true);
     }
-    assert.equal(h.$('reading-evidence').querySelectorAll('.evidence-row').length,expected.evidence[topic].groups.reduce((count,group)=>count+group.rows.length,0));
+    const expectedRows=expected.evidence[topic].groups.flatMap(group=>group.rows);
+    const evidenceRows=[...h.$('reading-evidence').querySelectorAll('.evidence-row')];
+    assert.equal(evidenceRows.length,expectedRows.length);
+    for (const [index,row] of expectedRows.entries()) {
+      assert.equal(evidenceRows[index].dataset.factId,row.factId);
+      assert.equal(evidenceRows[index].querySelector('dt').textContent,row.label);
+      assert.equal(evidenceRows[index].querySelector('dd').textContent,row.value);
+    }
+    const advice=topic==='monthly'?expected.months.flatMap(month=>month.advice):expected.adviceByCategory[topic];
+    const cards=[...h.$('report-content').querySelectorAll('.advice-card')];
+    assert.ok(advice.length>0);
+    assert.equal(cards.length,advice.length,'show every grounded suggestion without truncation');
+    for (const [index,item] of advice.entries()) {
+      const card=cards[index];
+      assert.equal(card.dataset.adviceId,item.id);
+      assert.equal(card.dataset.origin,'service-advice');
+      assert.equal(card.querySelector('h4').textContent,item.title);
+      assert.equal(card.querySelector('h4').nextElementSibling,card.querySelector('h5'));
+      assert.equal(card.querySelector('h5').textContent,item.why);
+      assert.equal(card.querySelector('.advice-action > span').textContent,item.action);
+      assert.equal(card.querySelector('.advice-caution > span').textContent,item.caution);
+    }
+    if (topic==='monthly') for (const month of expected.months) assert.equal(h.$(`reading-month-${month.month}`).querySelectorAll('.advice-card').length,month.advice.length);
+    for (const notice of h.$('report-content').querySelectorAll('.advice-notice')) assert.equal(notice.textContent,expected.adviceNotice);
+    assert.match(expected.adviceNotice,/오쭈다가 쓴 생활 제안/);
+    const sources=getReadingSources(topic,2026);
+    const renderedSources=[...h.$('reading-sources').querySelectorAll('.source-entry')];
+    assert.equal(renderedSources.length,sources.length);
+    for (const [index,source] of sources.entries()) {
+      const item=renderedSources[index];
+      assert.equal(item.dataset.sourceId,source.id);
+      assert.equal(item.querySelector('a').href,source.url);
+      assert.equal(item.querySelector('a').target,'_blank');
+      assert.equal(item.querySelector('.source-use').textContent,source.usedFor);
+      assert.equal(item.querySelector('.source-limitation').textContent,source.limitation);
+    }
   }
   assert.equal(h.state.starts.length,3,'only the three explicit product buttons open purchases');
   assert.equal(h.state.charges,0,'reading and expanding calculation evidence never creates a payment');

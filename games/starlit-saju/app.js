@@ -287,7 +287,7 @@ function readBirth() {
 function birthSignature(input=readBirth()) { return JSON.stringify(input); }
 function hasBirth() { return ['birth-year','birth-month','birth-day'].every(id => $(id).value !== ''); }
 async function calculateBirth(input) {
-  enginePromise ||= import('./engine.mjs?v=20261113-saju-easy1').catch(error => { enginePromise=null; throw error; });
+  enginePromise ||= import('./engine.mjs?v=20261113-saju-reader1').catch(error => { enginePromise=null; throw error; });
   const {calculateSaju} = await enginePromise;
   return calculateSaju(input);
 }
@@ -374,12 +374,17 @@ form.addEventListener('change',scheduleEntryCheck);
 $('retry-entry-status').addEventListener('click',()=>void refreshEntryQuote());
 document.querySelectorAll('input[name="report-topic"]').forEach(input=>input.addEventListener('change',updateProductOffer));
 $('fortune-year').addEventListener('change',updateProductOffer);
+document.querySelectorAll('.reading-size-control button').forEach(button=>button.addEventListener('click',()=>{
+  const size=button.dataset.readingSize;
+  $('detailed-reading').dataset.readingSize=size;
+  document.querySelectorAll('.reading-size-control button').forEach(choice=>choice.setAttribute('aria-pressed',String(choice===button)));
+}));
 
 async function prepareDetailedReading(chart,target) {
   detailModulesPromise ||= Promise.all([
-    import('./fortune-data.mjs?v=20261113-saju-easy1'),
-    import('./readings.mjs?v=20261113-saju-easy1'),
-    import('./report-view.mjs?v=20261113-saju-easy1')
+    import('./fortune-data.mjs?v=20261113-saju-reader1'),
+    import('./readings.mjs?v=20261113-saju-reader1'),
+    import('./report-view.mjs?v=20261113-saju-reader1')
   ]).catch(error=>{detailModulesPromise=null;throw error;});
   const [dataModule,readingModule,viewModule]=await detailModulesPromise;
   const fortune=dataModule.analyzeFortune(chart,{year:target.topic==='lifelong'?koreanYear():target.year,now:new Date()});
@@ -399,6 +404,10 @@ function commitDetailedReading(chart,{fortune,reading,content,copyText,target}) 
   $('detailed-intro').textContent=target.topic==='monthly' ? reading.monthsIntro : reading.sections.find(section=>section.id===target.topic)?.summary || reading.intro;
   $('current-report-link').href=target.topic==='monthly'?'#reading-months':`#reading-${target.topic}`;
   $('current-report-label').textContent=target.topic==='monthly'?'12개월 풀이':targetLabel(target);
+  $('current-reading-title').textContent=`${targetLabel(target)}${target.topic==='monthly'?' · 1~12월 전체':''}`;
+  $('current-reading-note').textContent=currentAccess?.status?.adminPreview?'관리자 미리보기 · 차감 없음':'구매한 풀이 · 이 풀이 다시 보기 0쭈';
+  $('reading-controls').hidden=false;
+  $('other-reading-options').open=false;
   $('report-toc').hidden=false;
   $('report-status').textContent=`현재 보는 풀이: ${targetLabel(target)}${target.topic==='monthly'?' · 1~12월 전체':''}`;
   $('report-status').classList.remove('is-loading');
@@ -515,6 +524,7 @@ function resetAfterAccountChange() {
   $('report-content').replaceChildren();
   $('report-content').removeAttribute('aria-busy');
   $('report-toc').hidden=true;$('report-error').hidden=true;$('entry-check-error').hidden=true;
+  $('reading-controls').hidden=true;$('other-reading-options').open=false;
   $('copy-reading').disabled=true;
   form.reset();
   form.querySelectorAll('fieldset').forEach(fieldset=>{fieldset.disabled=false;});
@@ -527,7 +537,7 @@ function resetAfterAccountChange() {
 async function readyBilling() {
   if (billingPromise) return billingPromise;
   const task=(async()=>{
-    const {SajuPayment}=await import('./payment.js?v=20261113-saju-easy1');
+    const {SajuPayment}=await import('./payment.js?v=20261113-saju-reader1');
     billing ||= new SajuPayment({
       onBalance:()=>updateBillingStatus(),
       onAccountChange:()=>{

@@ -52,3 +52,29 @@ export function makeReference(profile, readStem, readGod) {
     ],
   };
 }
+
+/** The year/month pair is classified against the confirmed BIRTH day stem.
+ * This does not replace a birth pillar or add hidden stems to existing counts. */
+export function makeTransitReference(profile, transit, { scope, key, label }, readStem, readGod) {
+  if (!['annual', 'monthly'].includes(scope)) throw new TypeError('Unknown period-reference scope.');
+  const reference = makeReference({
+    dayMaster: profile.dayMaster,
+    knownPillars: [{ ...transit, key, label }],
+  }, readStem, readGod);
+  return {
+    scope,
+    dayMaster: { ...profile.dayMaster },
+    source: reference.source,
+    pillars: reference.pillars,
+    notes: [
+      '이 표는 선택한 해나 달의 두 글자를 따로 살펴보는 자료예요. 태어난 때의 사주에 이 글자가 있다고 더하지 않아요.',
+      '안쪽에 연결된 글자(지장간)는 원래 자료의 목록과 순서를 모두 남겨요. 첫 글자만 대표 글자(본기)로 표시하며, 나머지 글자의 힘이나 비중을 임의로 정하지 않아요.',
+      '지장간의 십성과 십이운성은 태어난 날의 위쪽 글자(일간)를 기준으로 읽어요. 이 해나 달의 위쪽 글자를 나 대신 기준으로 삼지 않아요.',
+      '안쪽 글자들은 별도 참고 자료예요. 태어난 사주의 오행·음양 개수나 주요 십성 개수에 다시 더하지 않으며, 해·달의 대표 글자 풀이를 바꾸지 않아요.',
+      '십이운성의 병·사·묘 같은 이름은 옛 분류 이름이에요. 실제 질병·죽음·수명을 뜻한다고 읽지 않아요.',
+      '납음은 이 해나 달의 두 글자에 붙은 원래 이름이에요. 글자의 오행을 바꾸거나 새로운 오행 수로 더하지 않아요.',
+      '순·공망은 이 해나 달의 글자 조합이 속한 열 개짜리 묶음과 그 안에 없는 두 글자를 표시해요. 내 사주에 공망이 작용하는지나 어떤 사건이 생길지는 판단하지 않아요.',
+      ...(!profile.complete ? ['태어난 사주에서 확정하지 못한 글자는 채워 넣지 않았어요. 이 참고표에는 확인된 일간만 기준으로 사용했어요.'] : []),
+    ],
+  };
+}

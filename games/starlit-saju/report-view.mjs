@@ -1,3 +1,5 @@
+import {getReadingSources} from './sources.mjs?v=20261113-saju-reader1';
+
 function node(tag, className, text) {
   const value = document.createElement(tag);
   if (className) value.className = className;
@@ -53,6 +55,7 @@ function chapterView(chapter, index, sectionId, headingTag = 'h4') {
   article.setAttribute('aria-labelledby', id);
   const heading = node(headingTag, 'chapter-title');
   heading.id = id;
+  heading.tabIndex = -1;
   const number = node('span', 'chapter-number', String(index + 1).padStart(2, '0'));
   number.setAttribute('aria-hidden', 'true');
   heading.append(number, document.createTextNode(chapter.title));
@@ -83,6 +86,35 @@ function chapterView(chapter, index, sectionId, headingTag = 'h4') {
   return article;
 }
 
+function adviceView(advice, sectionId, notice) {
+  if (!advice?.length) return null;
+  const section=node('section','reading-advice');
+  section.id=`${sectionId}-advice`;
+  section.setAttribute('aria-labelledby',`${section.id}-title`);
+  const title=node('p','advice-section-title','선택에 도움이 되는 제안');
+  title.id=`${section.id}-title`;
+  title.tabIndex=-1;
+  section.append(title,node('p','advice-notice',notice));
+  for (const item of advice) {
+    const card=node('article','advice-card');
+    card.dataset.adviceId=item.id;
+    card.dataset.origin=item.origin;
+    const heading=node('h4','advice-title',item.title);
+    const reason=node('h5','advice-why',item.why);
+    card.append(heading,reason);
+    const prose=node('div','report-prose advice-prose');
+    for (const [label,text,className] of [['해 볼 일',item.action,'advice-action'],['함께 살펴볼 점',item.caution,'advice-caution']]) {
+      if (!text) continue;
+      const paragraph=node('p',className);
+      paragraph.append(node('strong','advice-label',label),node('span','',text));
+      prose.append(paragraph);
+    }
+    card.append(prose);
+    section.append(card);
+  }
+  return section;
+}
+
 function guideView(guide, glossary) {
   const section=node('section','reading-guide');
   section.setAttribute('aria-labelledby','reading-guide-title');
@@ -109,7 +141,7 @@ function guideView(guide, glossary) {
   return section;
 }
 
-function reportSection(section, number, fortune) {
+function reportSection(section, number, advice, adviceNotice) {
   const container = node('section', 'report-section');
   const sectionId = `reading-${section.id}`;
   container.id = sectionId;
@@ -126,7 +158,8 @@ function reportSection(section, number, fortune) {
   container.append(header);
   if (section.chapters.length > 3) {
     const outline = node('details', 'chapter-outline');
-    outline.append(node('summary', '', '이 이야기의 목차'));
+    outline.open=true;
+    outline.append(node('summary', '', '단원 바로가기'));
     const list = node('ol');
     section.chapters.forEach((chapter, index) => {
       const item = node('li');
@@ -135,14 +168,22 @@ function reportSection(section, number, fortune) {
       item.append(anchor);
       list.append(item);
     });
+    if (advice?.length) {
+      const item=node('li');
+      const anchor=node('a','','선택에 도움이 되는 제안');
+      anchor.href=`#${sectionId}-advice`;
+      item.append(anchor);list.append(item);
+    }
     outline.append(list);
     container.append(outline);
   }
   section.chapters.forEach((chapter, index) => container.append(chapterView(chapter, index, sectionId)));
+  const suggestions=adviceView(advice,sectionId,adviceNotice);
+  if (suggestions) container.append(suggestions);
   return container;
 }
 
-function monthView(month, calculated, open) {
+function monthView(month, calculated, open, adviceNotice) {
   const detail = node('details', 'month-reading' + (calculated?.isCurrent ? ' is-current' : ''));
   detail.id = `reading-month-${month.month}`;
   detail.open = open;
@@ -164,6 +205,8 @@ function monthView(month, calculated, open) {
   if (period) content.append(node('p', 'month-period', period));
   content.append(node('p', 'month-overview', month.summary));
   month.chapters.forEach((chapter, index) => content.append(chapterView(chapter, index, detail.id)));
+  const suggestions=adviceView(month.advice,detail.id,adviceNotice);
+  if (suggestions) content.append(suggestions);
   if (month.basis?.length || month.reference?.length) {
     const basis=node('details','month-calculation chapter-evidence');
     basis.append(node('summary','','이 달의 날짜와 글자 확인하기'));
@@ -238,6 +281,31 @@ function methodView(method) {
   return section;
 }
 
+function sourcesView(topic,year) {
+  const section=node('section','report-section sources-section');
+  section.id='reading-sources';
+  section.setAttribute('aria-labelledby','reading-sources-title');
+  const header=node('header','report-section-heading');
+  header.append(node('p','small-kicker','THE SOURCES BEHIND THE READING'));
+  const title=node('h3','','풀이에 참고한 자료');
+  title.id='reading-sources-title';title.tabIndex=-1;
+  header.append(title,node('p','section-summary','어떤 자료를 썼고, 어디까지 확인할 수 있는지 함께 적었어요. 자료 이름을 누르면 원래 페이지가 새 탭에서 열려요.'));
+  section.append(header);
+  for (const source of getReadingSources(topic,year)) {
+    const item=node('article','source-entry');
+    item.dataset.sourceId=source.id;
+    const heading=node('h4','source-title');
+    const link=node('a','',source.title);
+    link.href=source.url;link.target='_blank';link.rel='noopener noreferrer';
+    link.setAttribute('aria-label',`${source.title} · 새 탭에서 열기`);
+    const mark=node('span','source-link-mark','↗');mark.setAttribute('aria-hidden','true');
+    link.append(mark);heading.append(link);
+    item.append(heading,node('h5','source-use',source.usedFor),node('p','source-publisher',source.publisher),node('p','source-limitation',source.limitation));
+    section.append(item);
+  }
+  return section;
+}
+
 function monthSection(reading, fortune) {
   const section = node('section', 'report-section months-section');
   section.id = 'reading-months';
@@ -260,29 +328,36 @@ function monthSection(reading, fortune) {
   section.append(controls);
   const jumps = node('nav', 'month-jumps');
   jumps.setAttribute('aria-label', '월별 풀이 바로가기');
+  jumps.id='reading-month-navigation';
   const calculated = new Map(fortune.months.map(month => [month.month, month]));
   const currentMonth = fortune.months.find(month => month.isCurrent)?.month;
   const initiallyOpen = currentMonth || 1;
-  const details = reading.months.map(month => monthView(month, calculated.get(month.month), month.month === initiallyOpen));
+  const details = reading.months.map(month => monthView(month, calculated.get(month.month), month.month === initiallyOpen, reading.adviceNotice));
   for (const detail of details) {
     const month = Number(detail.id.replace('reading-month-', ''));
     const jump = node('button', 'month-jump' + (month === currentMonth ? ' is-current' : ''), `${month}월`);
     jump.type = 'button';
     jump.setAttribute('aria-controls', detail.id);
+    jump.setAttribute('aria-label',`${month}월 풀이 펼쳐 읽기${month===currentMonth?' · 지금의 흐름':''}`);
     jump.addEventListener('click', () => {
       detail.open = true;
+      updateExpand();
       const noMotion = document.documentElement.dataset.reducedMotion === 'true';
       detail.scrollIntoView({block:'start', behavior:noMotion ? 'instant' : 'smooth'});
       detail.querySelector('summary').focus({preventScroll:true});
     });
     jumps.append(jump);
   }
-  section.append(jumps, ...details);
+  section.append(node('p','month-navigation-label','원하는 달로 바로가기'),jumps, ...details);
   const updateExpand = () => {
     const allOpen = details.every(detail => detail.open);
     expand.textContent = allOpen ? '모두 접기' : '모두 펼치기';
     expand.setAttribute('aria-expanded', String(allOpen));
     expand.setAttribute('aria-label', allOpen ? '열두 달 풀이 모두 접기' : '열두 달 풀이 모두 펼치기');
+    [...jumps.children].forEach((jump,index)=>{
+      jump.setAttribute('aria-expanded',String(details[index].open));
+      jump.classList.toggle('is-open',details[index].open);
+    });
   };
   expand.setAttribute('aria-controls', details.map(detail => detail.id).join(' '));
   expand.addEventListener('click', () => {
@@ -313,8 +388,8 @@ export function renderDetailedReport(container, {reading, fortune, topic}) {
   else {
     const section=sections?.find(value=>value.id===topic);
     if (!section?.chapters?.length) throw new Error('선택한 풀이를 준비하지 못했어요.');
-    fragment.append(reportSection(section,topic==='lifelong'?'01':'02',fortune));
+    fragment.append(reportSection(section,topic==='lifelong'?'01':'02',reading.adviceByCategory?.[topic],reading.adviceNotice));
   }
-  fragment.append(evidenceView(reading.evidence[topic]),methodView(method));
+  fragment.append(evidenceView(reading.evidence[topic]),methodView(method),sourcesView(topic,fortune.year));
   container.replaceChildren(fragment);
 }
