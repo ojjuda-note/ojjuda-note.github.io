@@ -111,5 +111,11 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'jOnLqqDRfY4', title: '하루에 하루만 더 (Stick With You)', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2026.04.13' },
     { id: 'IcwHopeT5gY', title: 'Beautiful Strangers', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2025.07.21' },
     { id: '80SH8Z_DOnY', title: 'Over The Moon', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2024.11.04' }
+  ],
+  enhypen: [
+    { id: 'h_EaeC1hTqo', title: 'Bloody Paradise', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.08.21' },
+    { id: 'bDvtb6Pywes', title: 'Checkmate', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.09.11' },
+    { id: 'W-D8GSXg1W8', title: 'Bloody Paradise', kind: '퍼포먼스 뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.08.31' },
+    { id: 'R6e4tBWxIxE', title: 'Knife', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.01.16' }
   ]
 });
