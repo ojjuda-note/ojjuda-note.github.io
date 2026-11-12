@@ -117,5 +117,10 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'bDvtb6Pywes', title: 'Checkmate', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.09.11' },
     { id: 'W-D8GSXg1W8', title: 'Bloody Paradise', kind: '퍼포먼스 뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.08.31' },
     { id: 'R6e4tBWxIxE', title: 'Knife', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.01.16' }
+  ],
+  boynextdoor: [
+    { id: 'WI4__7z_dJw', title: 'ANIMAL', kind: '뮤직비디오', source: 'HYBE LABELS / KOZ · 2026.09.28' },
+    { id: 'm2uO4FD5csM', title: 'VIRAL', kind: '뮤직비디오', source: 'HYBE LABELS / KOZ · 2026.06.08' },
+    { id: 'TcAJfGaO6Xo', title: 'One and Only', kind: '뮤직비디오', source: 'HYBE LABELS / KOZ · 2023.05.25' }
   ]
 });
