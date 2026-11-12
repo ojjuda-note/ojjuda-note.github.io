@@ -791,7 +791,7 @@
       ],
       merch: [
         { title: 'RIIZE 2027 SEASON’S GREETINGS', sub: 'Weverse Shop 공식 예약 안내 · 2026.10.13 시작 · 품절·재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/151/notices/14559' },
-        { title: 'Sunburst 일본 싱글 3집', sub: '일본 공식 음반 · 2026.08.26 발매 · 구성·가격은 판매처 확인', href: 'https://riizeofficial.jp/discography/sunburst_normal/' }
+        { title: 'DICON D’FESTA THE ORIGIN · RIIZE', sub: 'Weverse Shop 공식 예약 · 2026.11.11 시작 · 특전·재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/151/notices/14906' }
       ],
       schedules: [
         { title: 'RIIZE 일본 공식 활동 공지', sub: '방송·공연·팬 이벤트 변경 및 취소 확인', href: 'https://riizeofficial.jp/news/' }
