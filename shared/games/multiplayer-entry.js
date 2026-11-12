@@ -2,7 +2,8 @@
 (() => {
   'use strict';
   const paths = new Set(['/games/roulette/index.html','/games/bang/index.html','/games/poker/index.html','/games/tank/index.html','/games/ojjuda-tour/index.html','/games/ttang.html','/games/matgo-online.html','/games/matgo.html']);
-  const game = paths.has(location.pathname), embedded = parent !== window, frames = new Map();
+  const entryPath = pathname => pathname.endsWith('/') ? pathname + 'index.html' : pathname;
+  const game = paths.has(entryPath(location.pathname)), embedded = parent !== window, frames = new Map();
   let queued = false, previous, observer = null, scheduledFrame = 0, disposed = false;
   const visible = el => !!el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden';
   function toolbar(close) {
@@ -37,7 +38,7 @@
     document.querySelectorAll('.tour-game-dialog iframe,.roulette-game-dialog iframe,#ttang-overlay iframe,#matgo-overlay iframe').forEach(frame => {
       if (frames.has(frame)) return;
       const url = new URL(frame.getAttribute('src'), location.href);
-      if (url.origin !== location.origin || !paths.has(url.pathname)) return;
+      if (url.origin !== location.origin || !paths.has(entryPath(url.pathname))) return;
       const host = frame.closest('.tour-game-dialog,.roulette-game-dialog,#ttang-overlay,#matgo-overlay');
       const original = host.querySelector('.tour-game-header button,#matgo-loading-bar button,header button');
       const bar = toolbar(() => {
@@ -64,7 +65,8 @@
   function report(force = false) {
     if (!document.body) return;
     const cards = [...document.querySelectorAll('.game-entry')]; cards.forEach(decorate);
-    const active = document.body.hasAttribute('data-mp-entry-pending') || cards.some(visible); if (!force && previous === active) return;
+    const standaloneGate = !embedded && document.querySelector('#app > .gate');
+    const active = document.body.hasAttribute('data-mp-entry-pending') || cards.some(visible) || !!(standaloneGate && visible(standaloneGate)); if (!force && previous === active) return;
     const wasEntry = previous; previous = active; document.body.dataset.mpEntry = String(active);
     // Games measure their boards while rendering. Refit after entrance styles
     // are removed, including standalone Matgo where the iframe never resizes.

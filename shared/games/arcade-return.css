@@ -42,6 +42,7 @@
   padding: 0;
   background: transparent;
 }
+#matgo-gate > a.arcade-return,
 #entry-dialog > .arcade-return,
 #board-curtain[data-entry="menu"] > .arcade-return {
   position: fixed;
