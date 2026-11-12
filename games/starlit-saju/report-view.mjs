@@ -1,0 +1,272 @@
+function node(tag, className, text) {
+  const value = document.createElement(tag);
+  if (className) value.className = className;
+  if (text != null) value.textContent = text;
+  return value;
+}
+
+function addParagraphs(parent, paragraphs, className = '') {
+  for (const text of paragraphs || []) {
+    if (typeof text === 'string' && text.trim()) parent.append(node('p', className, text));
+  }
+}
+
+function addBasis(parent, basis) {
+  if (!basis?.length) return;
+  const box = node('aside', 'reading-basis');
+  box.setAttribute('aria-label', '풀이의 단서');
+  box.append(node('span', 'basis-label', '풀이의 단서'));
+  addParagraphs(box, basis);
+  parent.append(box);
+}
+
+function addPractice(parent, practice) {
+  if (!practice?.length) return;
+  const box = node('div', 'reading-practice');
+  box.append(node('p', 'practice-label', '생활에 적용할 제안'));
+  const list = node('ul');
+  for (const text of practice) list.append(node('li', '', text));
+  box.append(list);
+  parent.append(box);
+}
+
+function addReadingBlock(parent, label, paragraphs, className) {
+  if (!paragraphs?.length) return;
+  const block=node('div', `report-prose ${className}`);
+  block.append(node('p','reading-kind',label));
+  addParagraphs(block,paragraphs);
+  parent.append(block);
+}
+
+function addReference(parent,reference) {
+  if (!reference?.length) return;
+  const block=node('aside','shared-reference');
+  block.setAttribute('aria-label','공통 참고 설명');
+  block.append(node('p','reading-kind','공통 참고 설명'));
+  addParagraphs(block,reference);
+  parent.append(block);
+}
+
+function chapterView(chapter, index, sectionId, headingTag = 'h4') {
+  const article = node('section', 'report-chapter');
+  const id = `${sectionId}-chapter-${index + 1}`;
+  article.setAttribute('aria-labelledby', id);
+  const heading = node(headingTag, 'chapter-title');
+  heading.id = id;
+  const number = node('span', 'chapter-number', String(index + 1).padStart(2, '0'));
+  number.setAttribute('aria-hidden', 'true');
+  heading.append(number, document.createTextNode(chapter.title));
+  article.append(heading);
+  if (Array.isArray(chapter.calculation) || Array.isArray(chapter.interpretation)) {
+    addReadingBlock(article,'계산에서 확인한 내용',chapter.calculation,'calculated-reading');
+    addReadingBlock(article,'적용한 해석 규칙',chapter.interpretation,'interpreted-reading');
+  } else {
+    const prose=node('div','report-prose');
+    addParagraphs(prose,chapter.paragraphs);
+    article.append(prose);
+    addBasis(article,chapter.basis);
+  }
+  addReference(article,chapter.reference);
+  addPractice(article, chapter.practice);
+  return article;
+}
+
+function reportSection(section, number, fortune) {
+  const container = node('section', 'report-section');
+  const sectionId = `reading-${section.id}`;
+  container.id = sectionId;
+  container.setAttribute('aria-labelledby', `${sectionId}-title`);
+  const header = node('header', 'report-section-heading');
+  const index = node('span', 'section-index', number);
+  index.setAttribute('aria-hidden', 'true');
+  header.append(index, node('p', 'small-kicker', section.kicker || (section.id === 'lifelong' ? 'THE ROOTS OF YOUR STORY' : 'THE YEAR AHEAD')));
+  const title = node('h3', '', section.title);
+  title.id = `${sectionId}-title`;
+  title.tabIndex = -1;
+  header.append(title);
+  if (section.id === 'annual' && fortune.annual?.hanja) {
+    header.append(node('p', 'annual-sign', `${fortune.annual.hanja} · ${fortune.annual.hangul}`));
+  }
+  header.append(node('p', 'section-summary', section.summary));
+  container.append(header);
+  if (section.chapters.length > 3) {
+    const outline = node('details', 'chapter-outline');
+    outline.append(node('summary', '', '이 이야기의 목차'));
+    const list = node('ol');
+    section.chapters.forEach((chapter, index) => {
+      const item = node('li');
+      const anchor = node('a', '', chapter.title);
+      anchor.href = `#${sectionId}-chapter-${index + 1}`;
+      item.append(anchor);
+      list.append(item);
+    });
+    outline.append(list);
+    container.append(outline);
+  }
+  section.chapters.forEach((chapter, index) => container.append(chapterView(chapter, index, sectionId)));
+  return container;
+}
+
+function monthView(month, calculated, open) {
+  const detail = node('details', 'month-reading' + (calculated?.isCurrent ? ' is-current' : ''));
+  detail.id = `reading-month-${month.month}`;
+  detail.open = open;
+  const summary = node('summary', 'month-heading');
+  summary.id = `month-title-${month.month}`;
+  const number = node('span', 'month-number', String(month.month).padStart(2, '0'));
+  number.setAttribute('aria-hidden', 'true');
+  const intro = node('span', 'month-heading-text');
+  const titleRow = node('span', 'month-heading-title');
+  titleRow.append(node('span', '', month.title));
+  if (calculated?.isCurrent) titleRow.append(node('span', 'current-month-tag', '지금의 흐름'));
+  intro.append(titleRow);
+  if (calculated?.hanja) intro.append(node('span', 'month-sign', `${calculated.hanja} · ${calculated.hangul}`));
+  const mark = node('span', 'month-toggle-symbol', '＋');
+  mark.setAttribute('aria-hidden', 'true');
+  summary.append(number, intro, mark);
+  detail.append(summary);
+  const content = node('div', 'month-content');
+  const period = month.periodLabel || (calculated?.start?.label && calculated?.end?.label ? `${calculated.start.label} ~ ${calculated.end.label}` : '');
+  if (period) content.append(node('p', 'month-period', period));
+  content.append(node('p', 'month-overview', month.summary));
+  month.chapters.forEach((chapter, index) => content.append(chapterView(chapter, index, detail.id)));
+  if (!Array.isArray(month.calculation)) addBasis(content, month.basis);
+  addReference(content, month.reference);
+  addPractice(content, month.practice);
+  detail.append(content);
+  detail.setAttribute('aria-labelledby', summary.id);
+  return detail;
+}
+
+function evidenceView(evidence) {
+  const section=node('section','report-section evidence-section');
+  section.id='reading-evidence';
+  section.setAttribute('aria-labelledby','reading-evidence-title');
+  const header=node('header','report-section-heading');
+  header.append(node('p','small-kicker','THE CALCULATED RECORD'));
+  const title=node('h3','',evidence.title||'계산한 근거 전체');
+  title.id='reading-evidence-title';title.tabIndex=-1;
+  header.append(title,node('p','section-summary','선택한 풀이에 사용한 계산 항목을 생략 없이 확인할 수 있어요. 항목을 펼쳐 글자와 관계를 살펴보세요.'));
+  section.append(header);
+  for (const [index,group] of evidence.groups.entries()) {
+    const detail=node('details','evidence-group');
+    detail.open=index===0;
+    const summary=node('summary','',group.title);
+    detail.append(summary);
+    const list=node('dl','evidence-rows');
+    for (const row of group.rows || []) {
+      const item=node('div','evidence-row');
+      if (row.factId) item.dataset.factId=row.factId;
+      item.append(node('dt','',row.label),node('dd','',row.value));
+      list.append(item);
+    }
+    detail.append(list);
+    const notes=node('div','evidence-notes');
+    addParagraphs(notes,group.notes);
+    detail.append(notes);
+    section.append(detail);
+  }
+  return section;
+}
+
+function methodView(method) {
+  const section=node('section','report-section method-section');
+  section.id='reading-method';
+  section.setAttribute('aria-labelledby','reading-method-title');
+  const header=node('header','report-section-heading');
+  header.append(node('p','small-kicker','HOW THIS READING IS MADE'));
+  const title=node('h3','',method.title||'이 풀이를 만드는 방법');
+  title.id='reading-method-title';title.tabIndex=-1;
+  header.append(title);
+  section.append(header);
+  addParagraphs(section,[method.description,method.reuseNotice],'method-description');
+  for (const [label,items] of [['계산에 포함한 항목',method.calculated],['계산하지 않은 항목',method.notCalculated],['해석할 때 확인할 점',method.warnings]]) {
+    if (!items?.length) continue;
+    const block=node('div','method-list');
+    block.append(node('h4','',label));
+    const list=node('ul');
+    items.forEach(text=>list.append(node('li','',text)));
+    block.append(list);section.append(block);
+  }
+  return section;
+}
+
+function monthSection(reading, fortune) {
+  const section = node('section', 'report-section months-section');
+  section.id = 'reading-months';
+  section.setAttribute('aria-labelledby', 'reading-months-title');
+  const header = node('header', 'report-section-heading');
+  const index = node('span', 'section-index', '03');
+  index.setAttribute('aria-hidden', 'true');
+  header.append(index, node('p', 'small-kicker', 'TWELVE CHAPTERS OF THE YEAR'));
+  const title = node('h3', '', `${fortune.year}년, 열두 달의 이야기`);
+  title.id = 'reading-months-title';
+  title.tabIndex = -1;
+  header.append(title, node('p', 'section-summary', '각 달의 천간·지지와 십성, 원국과의 모든 합·충, 오행의 겹침과 차이를 자세히 읽어 보세요.'));
+  section.append(header);
+  const controls = node('div', 'months-controls');
+  controls.append(node('p', 'months-note', reading.monthsIntro || '월별 흐름은 절기가 바뀌는 날을 기준으로 나누어요. 각 달을 펼치면 적용 기간을 볼 수 있어요.'));
+  const expand = node('button', 'secondary-button');
+  expand.id = 'toggle-all-months';
+  expand.type = 'button';
+  controls.append(expand);
+  section.append(controls);
+  const jumps = node('nav', 'month-jumps');
+  jumps.setAttribute('aria-label', '월별 풀이 바로가기');
+  const calculated = new Map(fortune.months.map(month => [month.month, month]));
+  const currentMonth = fortune.months.find(month => month.isCurrent)?.month;
+  const initiallyOpen = currentMonth || 1;
+  const details = reading.months.map(month => monthView(month, calculated.get(month.month), month.month === initiallyOpen));
+  for (const detail of details) {
+    const month = Number(detail.id.replace('reading-month-', ''));
+    const jump = node('button', 'month-jump' + (month === currentMonth ? ' is-current' : ''), `${month}월`);
+    jump.type = 'button';
+    jump.setAttribute('aria-controls', detail.id);
+    jump.addEventListener('click', () => {
+      detail.open = true;
+      const noMotion = document.documentElement.dataset.reducedMotion === 'true';
+      detail.scrollIntoView({block:'start', behavior:noMotion ? 'instant' : 'smooth'});
+      detail.querySelector('summary').focus({preventScroll:true});
+    });
+    jumps.append(jump);
+  }
+  section.append(jumps, ...details);
+  const updateExpand = () => {
+    const allOpen = details.every(detail => detail.open);
+    expand.textContent = allOpen ? '모두 접기' : '모두 펼치기';
+    expand.setAttribute('aria-expanded', String(allOpen));
+    expand.setAttribute('aria-label', allOpen ? '열두 달 풀이 모두 접기' : '열두 달 풀이 모두 펼치기');
+  };
+  expand.setAttribute('aria-controls', details.map(detail => detail.id).join(' '));
+  expand.addEventListener('click', () => {
+    const next = !details.every(detail => detail.open);
+    details.forEach(detail => { detail.open = next; });
+    updateExpand();
+  });
+  details.forEach(detail => detail.addEventListener('toggle', updateExpand));
+  updateExpand();
+  return section;
+}
+
+/** Render plain-text reading data atomically, preserving the prior view on error. */
+export function renderDetailedReport(container, {reading, fortune, topic}) {
+  const sections = reading?.sections;
+  const months = reading?.months;
+  const method = reading?.methodByCategory?.[topic] || reading?.method;
+  if (!['lifelong','annual','monthly'].includes(topic) || !method || !Array.isArray(reading.evidence?.[topic]?.groups)) {
+    throw new Error('선택한 풀이의 계산 근거를 준비하지 못했어요. 다시 불러와 주세요.');
+  }
+  if (topic==='monthly' && (!Array.isArray(months) || months.length!==12 || new Set(months.map(month=>month.month)).size!==12
+      || months.some(month=>!Number.isInteger(month.month)||month.month<1||month.month>12||!Array.isArray(month.chapters)))) {
+    throw new Error('월별 풀이를 모두 준비하지 못했어요. 다시 불러와 주세요.');
+  }
+  const fragment = document.createDocumentFragment();
+  if (topic==='monthly') fragment.append(monthSection({...reading,months:[...months].sort((a,b)=>a.month-b.month)},fortune));
+  else {
+    const section=sections?.find(value=>value.id===topic);
+    if (!section?.chapters?.length) throw new Error('선택한 풀이를 준비하지 못했어요.');
+    fragment.append(reportSection(section,topic==='lifelong'?'01':'02',fortune));
+  }
+  fragment.append(evidenceView(reading.evidence[topic]),methodView(method));
+  container.replaceChildren(fragment);
+}

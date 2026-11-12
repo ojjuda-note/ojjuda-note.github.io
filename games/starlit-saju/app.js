@@ -5,21 +5,71 @@ const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 let reducedMotion = reduceQuery.matches;
 let motionOverride = false;
 let enginePromise;
+let detailModulesPromise;
+let billingPromise;
+let billing;
+let billingInitialized = false;
+let billingSignedIn = false;
+let billingMode = false;
 let busy = false;
+let submitGeneration = 0;
 let currentReading = null;
+let currentDetail = null;
+let reportGeneration = 0;
+let reportBusy = false;
 let toastTimer;
 
 const STEM_READINGS = {
-  '甲': {name:'갑목',symbol:'곧게 자라는 큰 나무',intro:'갑목은 하늘을 향해 자라는 큰 나무를 상징해요. 자신의 기준을 세우고, 오래 지켜 가고 싶은 가치를 돌아보는 글자예요.',nature:['단단한 뿌리, 넓은 가지','무엇을 시작할 때 나만의 원칙이 힘이 되는지 살펴보세요. 성장을 서두르기보다 이미 쌓아 온 경험을 믿어 보는 것도 좋아요.'],relationship:['곁을 지키는 마음','도움을 주는 만큼 상대의 이야기를 듣는 자리도 남겨 두세요. 내가 생각하는 좋은 방법과 상대가 원하는 방법은 다를 수 있어요.'],work:['긴 호흡으로 자라는 일','한 번에 이루려는 큰 목표를 작은 단계로 나누어 보세요. 계획을 지키는 꾸준함과 필요할 때 방향을 바꾸는 유연함을 함께 떠올려 보세요.']},
-  '乙': {name:'을목',symbol:'바람과 함께 자라는 풀',intro:'을목은 부드럽게 뻗어 가는 풀과 덩굴을 상징해요. 주변과 어울리면서도 자신만의 방향을 찾아가는 모습을 떠올려 보세요.',nature:['유연함 안에 있는 힘','낯선 상황에 맞추느라 나의 바람을 뒤로 미루고 있지는 않나요? 유연하게 움직이되 지키고 싶은 한 가지는 분명히 적어 보세요.'],relationship:['다정함에도 경계가 필요해요','마음을 살피는 섬세함은 관계를 부드럽게 만들어요. 다만 모두를 만족시키려 애쓰기보다 가능한 일과 어려운 일을 차분히 나눠 보세요.'],work:['작은 연결에서 자라는 가능성','혼자 완벽한 답을 만들기보다 생각을 나누고 한 번 시도해 보세요. 작은 시도를 꾸준히 모으는 방식이 자신에게 맞는지 돌아보세요.']},
-  '丙': {name:'병화',symbol:'주변을 밝히는 햇살',intro:'병화는 넓은 곳을 환하게 비추는 태양을 상징해요. 드러내고 나누는 즐거움, 그리고 스스로 쉬는 시간을 함께 돌아보는 글자예요.',nature:['빛을 나누는 기쁨','좋아하는 일을 이야기할 때 어떤 마음이 드는지 살펴보세요. 밝게 보여야 한다는 부담은 내려놓고, 조용한 날의 나도 받아들여 주세요.'],relationship:['따뜻함을 전하는 속도','먼저 다가가는 마음에 상대의 속도도 함께 담아 보세요. 충분히 기다려 주는 태도 역시 따뜻함을 전하는 방법이에요.'],work:['열정이 오래 머무르도록','의욕이 생겼을 때 시작할 작은 일부터 정해 보세요. 쉬는 시간을 계획에 넣으면 처음의 열정을 오래 이어 가는 데 도움이 돼요.']},
-  '丁': {name:'정화',symbol:'어둠을 밝혀 주는 등불',intro:'정화는 가까운 곳을 따뜻하게 비추는 등불을 상징해요. 작은 차이를 알아보는 마음과 한 가지에 정성을 기울이는 모습을 떠올려 보세요.',nature:['조용하지만 선명한 빛','마음을 오래 붙잡는 관심사가 무엇인지 살펴보세요. 작은 감각과 생각을 적어 두면 나만의 취향을 더 또렷하게 알아갈 수 있어요.'],relationship:['나의 온기도 돌보기','상대를 챙기느라 내 마음이 지치지 않았는지 물어보세요. 배려를 주고받는 균형과 솔직하게 부탁하는 용기를 함께 생각해 보세요.'],work:['정성이 모여 만드는 깊이','잘하고 싶은 한 가지에 집중할 시간을 마련해 보세요. 세부를 다듬는 만큼 어디에서 마무리할지 정해 두는 것도 좋아요.']},
-  '戊': {name:'무토',symbol:'든든하게 서 있는 산',intro:'무토는 넓고 단단한 산을 상징해요. 흔들리는 순간에도 중심을 찾는 마음, 익숙한 틀을 조금 넓히는 여유를 돌아보는 글자예요.',nature:['나를 지탱하는 중심','안정감을 주는 일상의 습관을 찾아보세요. 늘 해 오던 방식이 편안하더라도, 지금의 나에게 맞는지 가끔 새롭게 살펴볼 수 있어요.'],relationship:['듣는 자리도 넉넉하게','책임지려는 마음이 앞설 때 상대가 바라는 도움을 먼저 물어보세요. 해결해 주기보다 곁에서 들어 주는 것으로 충분한 순간도 있어요.'],work:['튼튼한 기초 위의 변화','과정을 차근차근 정리하고 한 단계씩 확인해 보세요. 쌓아 온 방식을 존중하면서 새로운 방법도 작게 시험해 보는 여지를 두세요.']},
-  '己': {name:'기토',symbol:'생명을 품는 부드러운 대지',intro:'기토는 씨앗을 품고 돌보는 흙을 상징해요. 일상을 가꾸는 세심함과 가까운 사람을 보살피는 마음을 돌아보는 글자예요.',nature:['작은 돌봄이 쌓이는 곳','눈에 띄지 않는 수고 중 나에게 소중한 일을 찾아보세요. 누군가를 돌보듯 내 몸과 마음의 여유도 일상에 함께 남겨 주세요.'],relationship:['편안함을 나누는 사이','작은 관심이 상대에게 어떻게 전해지는지 물어보세요. 혼자 짐을 맡기보다 함께 나눌 수 있는 일을 구체적으로 이야기해 보세요.'],work:['꼼꼼함에 여백을 더하기','정리하고 가꾸는 일을 작은 순서로 만들어 보세요. 모두 완벽히 준비될 때까지 기다리기보다 충분한 지점에서 시작해도 괜찮아요.']},
-  '庚': {name:'경금',symbol:'형태를 잡는 단단한 쇠',intro:'경금은 단단한 금속을 상징해요. 기준을 분명히 세우고 불필요한 것을 덜어 내는 힘, 그 기준을 전하는 방식을 함께 돌아보세요.',nature:['선명한 기준의 힘','무엇이 중요하고 무엇을 내려놓아도 되는지 나눠 보세요. 결정을 내리는 힘에 다시 생각할 여유가 더해지면 선택이 한층 편안해질 수 있어요.'],relationship:['분명함에 부드러움을 담아','솔직한 말이 필요한 순간에도 상대의 감정을 먼저 살펴보세요. 말하려는 내용과 함께 어떤 방식으로 전할지도 생각해 보세요.'],work:['결단을 작은 실행으로','해야 할 일을 선명하게 정하고 바로 옮길 한 단계를 찾아보세요. 결과를 확인하며 방법을 고쳐 가는 과정도 계획의 일부로 남겨 두세요.']},
-  '辛': {name:'신금',symbol:'섬세하게 빛나는 보석',intro:'신금은 정교하게 다듬은 보석을 상징해요. 작은 차이를 알아보는 감각과 자신만의 기준을 소중히 여기는 마음을 떠올려 보세요.',nature:['나만의 빛을 알아보기','마음이 편안해지는 취향과 환경을 살펴보세요. 자신을 다듬는 일만큼 이미 가진 좋은 점을 인정하는 시간도 필요해요.'],relationship:['기대하는 마음을 말로','세심하게 알아주길 바라는 마음이 있다면 작은 말로 먼저 전해 보세요. 서로 다른 기준을 알아가는 과정 자체가 관계를 깊게 할 수 있어요.'],work:['완성도와 마침표 사이','중요한 부분에 정성을 쓰되 모든 부분을 같은 기준으로 다듬을 필요는 없어요. 끝내는 시간을 정하고 다음 경험에서 배울 여지를 남겨 보세요.']},
-  '壬': {name:'임수',symbol:'넓게 흐르는 큰 물',intro:'임수는 강과 바다처럼 넓게 흐르는 물을 상징해요. 새로운 것을 품는 넓은 시야와 여러 가능성 사이에서 방향을 찾는 마음을 돌아보세요.',nature:['흐름 속에서 찾는 방향','여러 생각이 떠오를 때 지금 가장 마음이 가는 하나를 골라 보세요. 열린 가능성에 작은 방향표가 더해지면 움직이기 편해질 수 있어요.'],relationship:['넓게 듣고 분명히 전하기','다른 관점을 받아들이면서도 나의 생각을 짧게 표현해 보세요. 가까운 관계에서는 솔직한 한마디가 긴 추측보다 도움이 될 때가 있어요.'],work:['가능성을 한 걸음으로','새로운 정보를 모은 뒤 직접 해 볼 작은 일을 정해 보세요. 탐색하는 시간과 실행하는 시간을 나누면 생각을 현실에 연결하기 쉬워져요.']},
-  '癸': {name:'계수',symbol:'조용히 스며드는 빗물',intro:'계수는 이슬과 빗물처럼 조용히 스며드는 물을 상징해요. 자세히 관찰하는 마음과 깊이 생각하는 시간을 돌아보는 글자예요.',nature:['작은 신호를 알아보는 마음','마음에 남는 장면과 생각을 짧게 기록해 보세요. 모든 신호의 의미를 찾으려 하기보다 지금 느끼는 감정부터 살펴봐도 괜찮아요.'],relationship:['작은 말로 여는 마음','상대의 마음을 오래 짐작하기보다 궁금한 점을 부드럽게 물어보세요. 나의 바람을 구체적으로 나누면 서로를 이해할 단서가 생겨요.'],work:['깊은 생각을 밖으로 꺼내기','충분히 살펴본 생각 중 하나를 짧은 메모나 작은 결과물로 만들어 보세요. 혼자 다듬는 시간과 의견을 듣는 시간을 번갈아 가져 보세요.']}
+  "甲": {
+    "name": "갑목",
+    "symbol": "곧게 자라는 큰 나무",
+    "intro": "갑목은 하늘을 향해 자라는 큰 나무를 상징해요. 자신의 기준을 세우고, 오래 지켜 가고 싶은 가치를 돌아보는 글자예요."
+  },
+  "乙": {
+    "name": "을목",
+    "symbol": "바람과 함께 자라는 풀",
+    "intro": "을목은 부드럽게 뻗어 가는 풀과 덩굴을 상징해요. 주변과 어울리면서도 자신만의 방향을 찾아가는 모습을 떠올려 보세요."
+  },
+  "丙": {
+    "name": "병화",
+    "symbol": "주변을 밝히는 햇살",
+    "intro": "병화는 넓은 곳을 환하게 비추는 태양을 상징해요. 드러내고 나누는 즐거움, 그리고 스스로 쉬는 시간을 함께 돌아보는 글자예요."
+  },
+  "丁": {
+    "name": "정화",
+    "symbol": "어둠을 밝혀 주는 등불",
+    "intro": "정화는 가까운 곳을 따뜻하게 비추는 등불을 상징해요. 작은 차이를 알아보는 마음과 한 가지에 정성을 기울이는 모습을 떠올려 보세요."
+  },
+  "戊": {
+    "name": "무토",
+    "symbol": "든든하게 서 있는 산",
+    "intro": "무토는 넓고 단단한 산을 상징해요. 흔들리는 순간에도 중심을 찾는 마음, 익숙한 틀을 조금 넓히는 여유를 돌아보는 글자예요."
+  },
+  "己": {
+    "name": "기토",
+    "symbol": "생명을 품는 부드러운 대지",
+    "intro": "기토는 씨앗을 품고 돌보는 흙을 상징해요. 일상을 가꾸는 세심함과 가까운 사람을 보살피는 마음을 돌아보는 글자예요."
+  },
+  "庚": {
+    "name": "경금",
+    "symbol": "형태를 잡는 단단한 쇠",
+    "intro": "경금은 단단한 금속을 상징해요. 기준을 분명히 세우고 불필요한 것을 덜어 내는 힘, 그 기준을 전하는 방식을 함께 돌아보세요."
+  },
+  "辛": {
+    "name": "신금",
+    "symbol": "섬세하게 빛나는 보석",
+    "intro": "신금은 정교하게 다듬은 보석을 상징해요. 작은 차이를 알아보는 감각과 자신만의 기준을 소중히 여기는 마음을 떠올려 보세요."
+  },
+  "壬": {
+    "name": "임수",
+    "symbol": "넓게 흐르는 큰 물",
+    "intro": "임수는 강과 바다처럼 넓게 흐르는 물을 상징해요. 새로운 것을 품는 넓은 시야와 여러 가능성 사이에서 방향을 찾는 마음을 돌아보세요."
+  },
+  "癸": {
+    "name": "계수",
+    "symbol": "조용히 스며드는 빗물",
+    "intro": "계수는 이슬과 빗물처럼 조용히 스며드는 물을 상징해요. 자세히 관찰하는 마음과 깊이 생각하는 시간을 돌아보는 글자예요."
+  }
 };
 
 function element(tag, className, text) {
@@ -94,7 +144,7 @@ function updateTime() {
   $('time-fields').hidden = unknown;
   $('birth-hour').disabled = unknown;
   $('birth-minute').disabled = unknown;
-  $('time-help').textContent = unknown ? '시간을 몰라도 기본 풀이를 볼 수 있어요.' : '한국 표준시로 입력해 주세요. 00시는 자정, 12시는 정오예요.';
+  $('time-help').textContent = unknown ? '시간을 몰라도 상세 풀이를 볼 수 있어요.' : '한국 표준시로 입력해 주세요. 00시는 자정, 12시는 정오예요.';
   clearError();
 }
 form.querySelectorAll('input[name="calendar"]').forEach(input => input.addEventListener('change', updateCalendar));
@@ -144,10 +194,6 @@ function renderReading(result) {
   $('day-master-title').textContent = `${reading.name} · ${stem.hanja}${{wood:'木',fire:'火',earth:'土',metal:'金',water:'水'}[stem.element]}`;
   $('day-master-symbol').textContent = reading.symbol;
   $('day-master-reading').textContent = reading.intro;
-  [['nature','nature'],['relationship','relationship'],['work','work']].forEach(([id,key]) => {
-    $(id+'-title').textContent = reading[key][0];
-    $(id+'-reading').textContent = reading[key][1];
-  });
   $('element-count').textContent = `확인된 ${result.knownCharacterCount}글자`;
   const rows = result.elements.map(item => {
     const row = element('div', 'element-row');
@@ -172,72 +218,392 @@ function renderReading(result) {
   window.scrollTo({top:0,behavior:reducedMotion ? 'instant' : 'smooth'});
 }
 
-form.addEventListener('submit', async event => {
-  event.preventDefault();
-  if (busy || !form.reportValidity()) return;
-  busy = true;
-  submit.disabled = true;
-  submit.querySelector('span').textContent = '별빛을 모으는 중…';
-  form.setAttribute('aria-busy', 'true');
-  clearError();
-  const input = {
-    year:Number($('birth-year').value), month:Number($('birth-month').value), day:Number($('birth-day').value),
+const TOPICS = Object.freeze({
+  lifelong:{label:'평생운',description:'원국을 바탕으로 성향과 삶의 주제를 읽어요.'},
+  annual:{label:'올해운',description:'선택한 한 해의 글자와 원국을 함께 읽어요.'},
+  monthly:{label:'월별운',description:'선택한 연도의 1~12월 전체 풀이를 포함해요.'}
+});
+let entryQuote = null;
+let entryQuoteError = false;
+let entryCheckPending = false;
+let entryCheckTimer;
+let quoteGeneration = 0;
+let currentAccess = null;
+
+function koreanYear(now = new Date()) {
+  return Number(new Intl.DateTimeFormat('en', {year:'numeric',timeZone:'Asia/Seoul'}).format(now));
+}
+function fillYears(select, birthYear = 1900, preferred = Number(select.value)) {
+  const nowYear = koreanYear();
+  const choices = [nowYear-1,nowYear,nowYear+1].filter(year => year >= birthYear && year >= 1900 && year <= 2050);
+  select.replaceChildren(...choices.map(year => {
+    const option = element('option','',`${year}년${year===nowYear?' · 올해':''}`);
+    option.value = String(year);
+    return option;
+  }));
+  select.value = String(choices.includes(preferred) ? preferred : choices.includes(nowYear) ? nowYear : choices[0]);
+}
+fillYears($('entry-year'));
+fillYears($('fortune-year'));
+function targetFrom(prefix) {
+  const topic = document.querySelector(`input[name="${prefix}-topic"]:checked`)?.value || 'lifelong';
+  const year = topic==='lifelong' ? 0 : Number($(prefix==='entry'?'entry-year':'fortune-year').value);
+  return {topic,year};
+}
+function targetLabel({topic,year}) {
+  return topic==='lifelong' ? '평생운' : `${year}년 ${topic==='annual'?'운세':'월별운'}`;
+}
+function sameTarget(left,right) { return left?.topic===right?.topic && left?.year===right?.year; }
+function owned(status,target) {
+  return Boolean(status?.adminPreview || status?.bundle_entitlement || status?.entitlements?.some(item => item.topic===target.topic && Number(item.year)===target.year));
+}
+function readBirth() {
+  return {
+    year:Number($('birth-year').value),month:Number($('birth-month').value),day:Number($('birth-day').value),
     calendar:form.querySelector('input[name="calendar"]:checked').value,
     leapMonth:$('leap-month').checked,
     hour:$('time-unknown').checked ? null : Number($('birth-hour').value),
     minute:$('time-unknown').checked ? 0 : Number($('birth-minute').value)
   };
-  form.querySelectorAll('fieldset').forEach(fieldset => { fieldset.disabled = true; });
-  try {
-    enginePromise ||= import('./engine.mjs?v=20261112-starlit-saju1').catch(error => { enginePromise = null; throw error; });
-    const {calculateSaju} = await enginePromise;
-    const result = calculateSaju(input);
-    currentReading = result;
-    renderReading(result);
-  } catch (error) {
-    $('form-error').textContent = error?.name === 'SajuInputError' ? error.message : '지금은 이야기를 펼치지 못했어요. 잠시 후 다시 눌러 주세요.';
-    if (error?.name === 'SajuInputError') markInvalidFields(error);
-    $('form-error').hidden = false;
-    $('form-error').focus({preventScroll:true});
-    $('form-error').scrollIntoView({block:'nearest',behavior:reducedMotion ? 'instant' : 'smooth'});
-  } finally {
-    busy = false;
-    submit.disabled = false;
-    submit.querySelector('span').textContent = '나의 사주팔자 펼치기';
-    form.querySelectorAll('fieldset').forEach(fieldset => { fieldset.disabled = false; });
-    form.removeAttribute('aria-busy');
-  }
-});
-// Keep the form inert until its handler is ready. Birth fields also have no
-// name attribute, so a failed script cannot put birth data into a GET request.
-submit.disabled = false;
-
-$('edit-birth').addEventListener('click', () => {
-  $('result').hidden = true;
-  $('intro').hidden = false;
-  document.querySelector('.skip-link').href = '#birth-form';
-  document.querySelector('.skip-link').textContent = '출생 정보 입력으로 바로가기';
-  clearError();
-  $('birth-year').focus({preventScroll:true});
-  form.scrollIntoView({block:'center',behavior:reducedMotion ? 'instant' : 'smooth'});
-});
-
-function toast(message) {
-  clearTimeout(toastTimer);
-  $('status').textContent = message;
-  $('status').classList.add('is-visible');
-  toastTimer = setTimeout(() => $('status').classList.remove('is-visible'), 2600);
 }
-
-$('copy-reading').addEventListener('click', async () => {
-  if (!currentReading) return;
-  const reading = STEM_READINGS[currentReading.dayMaster.hanja];
-  // Deliberately omit the entered birth date and time from the copied reading.
-  const lines = ['오쭈다 · 별빛 사주팔자','', ...currentReading.pillars.map(p => `${p.label}: ${p.hanja ? `${p.hanja} (${p.hangul})` : p.alternatives?.length ? `시간 확인 필요 (${p.alternatives.map(a => a.hangul).join(' / ')})` : '시간 미상'}`), '', `${reading.name} · ${reading.symbol}`, reading.intro, '', ...['nature','relationship','work'].flatMap(key => [reading[key][0],reading[key][1],'']), ...currentReading.warnings, '전통 명리 해석을 바탕으로 나를 돌아보는 시간이에요.'];
+function birthSignature(input=readBirth()) { return JSON.stringify(input); }
+function hasBirth() { return ['birth-year','birth-month','birth-day'].every(id => $(id).value !== ''); }
+async function calculateBirth(input) {
+  enginePromise ||= import('./engine.mjs?v=20261113-saju-topics1').catch(error => { enginePromise=null; throw error; });
+  const {calculateSaju} = await enginePromise;
+  return calculateSaju(input);
+}
+function validEntryQuote() {
+  return entryQuote && entryQuote.signature===birthSignature() && entryQuote.owner===billing?.user ? entryQuote : null;
+}
+function updateEntryOffer() {
+  const target = targetFrom('entry');
+  $('entry-year-field').hidden = target.topic==='lifelong';
+  const quote = validEntryQuote();
+  const preview = Boolean(billing?.adminPreview);
+  const purchased = owned(quote?.status,target);
+  document.querySelectorAll('[data-entry-price]').forEach(value => {
+    const topic = value.dataset.entryPrice;
+    const choice = {topic,year:topic==='lifelong'?0:Number($('entry-year').value)};
+    value.textContent = preview ? '차감 없음' : owned(quote?.status,choice) ? '구매 완료' : '10쭈';
+  });
+  $('entry-price-value').textContent = `${targetLabel(target)} · ${preview?'관리자 미리보기':purchased?'추가 차감 없음':'10쭈'}`;
+  if (busy) return;
+  submit.disabled = entryCheckPending || entryQuoteError;
+  submit.querySelector('span').textContent = entryCheckPending ? '구매 내역 확인 중…'
+    : preview ? `${targetLabel(target)} 미리보기` : purchased ? `${targetLabel(target)} 다시 보기 · 0쭈` : `10쭈로 ${targetLabel(target)} 펼치기`;
+}
+function updateProductOffer() {
+  const target = targetFrom('report');
+  $('report-year-field').hidden = target.topic==='lifelong';
+  const status = currentAccess?.chart===currentReading && currentAccess.owner===billing?.user ? currentAccess.status : null;
+  const purchased = owned(status,target);
+  const current = currentDetail && sameTarget(currentDetail,target);
+  document.querySelectorAll('[data-report-price]').forEach(value => {
+    const topic = value.dataset.reportPrice;
+    const choice = {topic,year:topic==='lifelong'?0:Number($('fortune-year').value)};
+    value.textContent = status?.adminPreview ? '차감 없음' : owned(status,choice) ? '구매 완료' : '10쭈';
+  });
+  $('product-offer').textContent = `${targetLabel(target)} · ${status?.adminPreview?'관리자 미리보기, 차감 없음':purchased?'구매한 풀이, 추가 차감 없음':status?'10쭈':'구매 내역 확인 필요'}`;
+  $('open-product').disabled = reportBusy || !status || Boolean(current);
+  if (!reportBusy) $('open-product').textContent = current ? '현재 보고 있는 풀이'
+    : status?.adminPreview ? `${targetLabel(target)} 미리보기` : purchased ? `${targetLabel(target)} 다시 보기 · 0쭈` : `10쭈로 ${targetLabel(target)} 펼치기`;
+  $('report-product-picker').disabled = reportBusy;
+  $('fortune-year').disabled = reportBusy;
+}
+function scheduleEntryCheck() {
+  clearTimeout(entryCheckTimer);
+  quoteGeneration++;
+  entryCheckPending=false;
+  entryQuoteError=false;
+  $('entry-check-error').hidden=true;
+  if (entryQuote?.signature!==birthSignature()) entryQuote=null;
+  fillYears($('entry-year'),validEntryQuote()?.chart.solar.year || Number($('birth-year').value)||1900);
+  updateEntryOffer();
+  if (!busy && !$('intro').hidden && billingSignedIn && hasBirth() && !validEntryQuote()) entryCheckTimer=setTimeout(()=>void refreshEntryQuote(),180);
+}
+async function refreshEntryQuote() {
+  clearTimeout(entryCheckTimer);
+  if (busy || $('intro').hidden || !hasBirth() || !billingSignedIn) { updateEntryOffer(); return; }
+  const generation=++quoteGeneration;
+  const input=readBirth(),signature=birthSignature(input);
+  entryCheckPending=true;
+  entryQuoteError=false;
+  $('entry-check-error').hidden=true;
+  updateEntryOffer();
   try {
-    await navigator.clipboard.writeText(lines.join('\n'));
-    toast('생년월일을 제외한 풀이를 복사했어요.');
-  } catch {
-    toast('복사 권한을 확인해 주세요. 풀이를 직접 선택해 복사할 수도 있어요.');
+    const chart=await calculateBirth(input);
+    const payment=await readyBilling();
+    if (generation!==quoteGeneration || busy || $('intro').hidden) return;
+    const status=await payment.status(chart);
+    if (generation!==quoteGeneration || busy || $('intro').hidden) return;
+    entryQuote={signature,chart,status,owner:payment.user};
+    fillYears($('entry-year'),chart.solar.year);
+  } catch (error) {
+    if (generation!==quoteGeneration || busy || $('intro').hidden) return;
+    entryQuote=null;
+    if (error?.name!=='SajuInputError') {
+      entryQuoteError=true;
+      $('entry-check-error-text').textContent='구매 내역을 확인하지 못했어요. 쭈는 차감되지 않았어요. 다시 확인해 주세요.';
+      $('entry-check-error').hidden=false;
+    }
+  } finally {
+    if (generation===quoteGeneration) { entryCheckPending=false; updateEntryOffer(); }
   }
+}
+form.addEventListener('input',scheduleEntryCheck);
+form.addEventListener('change',scheduleEntryCheck);
+$('retry-entry-status').addEventListener('click',()=>void refreshEntryQuote());
+document.querySelectorAll('input[name="report-topic"]').forEach(input=>input.addEventListener('change',updateProductOffer));
+$('fortune-year').addEventListener('change',updateProductOffer);
+
+async function prepareDetailedReading(chart,target) {
+  detailModulesPromise ||= Promise.all([
+    import('./fortune-data.mjs?v=20261113-saju-topics1'),
+    import('./readings.mjs?v=20261113-saju-topics1'),
+    import('./report-view.mjs?v=20261113-saju-topics1')
+  ]).catch(error=>{detailModulesPromise=null;throw error;});
+  const [dataModule,readingModule,viewModule]=await detailModulesPromise;
+  const fortune=dataModule.analyzeFortune(chart,{year:target.topic==='lifelong'?koreanYear():target.year,now:new Date()});
+  const reading=readingModule.buildDetailedReading(chart,fortune);
+  const copyText=reading.copyByCategory?.[target.topic];
+  if (typeof copyText!=='string' || !copyText.trim()) throw new Error('product_reading_incomplete');
+  const content=document.createElement('div');
+  viewModule.renderDetailedReport(content,{reading,fortune,topic:target.topic});
+  return {fortune,reading,content,copyText,target};
+}
+function commitDetailedReading(chart,{fortune,reading,content,copyText,target}) {
+  $('report-content').replaceChildren(...content.childNodes);
+  currentDetail={chart,topic:target.topic,year:target.year,reading,fortune,copyText};
+  $('report-content').dataset.topic=target.topic;
+  $('report-content').dataset.year=String(target.year);
+  $('report-content').removeAttribute('aria-busy');
+  $('detailed-intro').textContent=target.topic==='monthly' ? reading.monthsIntro : reading.sections.find(section=>section.id===target.topic)?.summary || reading.intro;
+  $('current-report-link').href=target.topic==='monthly'?'#reading-months':`#reading-${target.topic}`;
+  $('current-report-label').textContent=target.topic==='monthly'?'12개월 풀이':targetLabel(target);
+  $('report-toc').hidden=false;
+  $('report-status').textContent=`현재 보는 풀이: ${targetLabel(target)}${target.topic==='monthly'?' · 1~12월 전체':''}`;
+  $('report-status').classList.remove('is-loading');
+  $('copy-reading').disabled=false;
+  $('report-error').hidden=true;
+  updateProductOffer();
+}
+function recordReceipt(status,receipt,target) {
+  const next={...status,coins:receipt.coins??status.coins,entitlements:[...(status.entitlements||[])]};
+  if (receipt.adminPreview) next.adminPreview=true;
+  else if (receipt.legacy_bundle) next.bundle_entitlement=next.bundle_entitlement||{price:10};
+  else if (!next.entitlements.some(item=>sameTarget(item,target))) next.entitlements.push({...target,price:10,request_id:receipt.request_id});
+  return next;
+}
+function openInitialReport(chart,prepared,status,receipt,signature) {
+  currentReading=chart;
+  const access=recordReceipt(status,receipt,prepared.target);
+  currentAccess={chart,owner:billing.user,status:access};
+  entryQuote={signature,chart,owner:billing.user,status:access};
+  reportGeneration++;
+  reportBusy=false;
+  $('report-product-picker').querySelector(`input[value="${prepared.target.topic}"]`).checked=true;
+  fillYears($('fortune-year'),chart.solar.year,prepared.target.year||koreanYear());
+  renderReading(chart);
+  commitDetailedReading(chart,prepared);
+}
+async function refreshReportAccess() {
+  if (!currentReading || reportBusy) return;
+  const chart=currentReading,generation=++reportGeneration;
+  reportBusy=true;
+  $('retry-report').disabled=true;
+  updateProductOffer();
+  try {
+    const payment=await readyBilling();
+    const status=await payment.status(chart);
+    if (generation!==reportGeneration || currentReading!==chart || $('result').hidden) return;
+    currentAccess={chart,owner:payment.user,status};
+    $('report-error').hidden=true;
+  } catch {
+    if (generation!==reportGeneration || currentReading!==chart) return;
+    currentAccess=null;
+    $('report-error-text').textContent='구매 내역을 확인하지 못했어요. 지금 보고 있는 풀이는 유지되며, 새 차감은 하지 않아요.';
+    $('report-error').hidden=false;
+  } finally {
+    if (generation===reportGeneration && currentReading===chart) {
+      reportBusy=false;
+      $('retry-report').disabled=false;
+      updateProductOffer();
+    }
+  }
+}
+async function openSelectedProduct() {
+  if (reportBusy || !currentReading || !currentAccess) return;
+  const chart=currentReading,target=targetFrom('report');
+  if (sameTarget(currentDetail,target)) return;
+  const generation=++reportGeneration;
+  reportBusy=true;
+  $('copy-reading').disabled=true;
+  $('report-error').hidden=true;
+  $('report-status').textContent=`${targetLabel(target)}의 계산과 풀이를 준비하고 있어요…`;
+  $('report-status').classList.add('is-loading');
+  updateProductOffer();
+  $('open-product').textContent='선택한 풀이 준비 중…';
+  let inspected=false;
+  try {
+    const payment=await readyBilling();
+    const status=await payment.status(chart);
+    inspected=true;
+    if (generation!==reportGeneration || currentReading!==chart || $('result').hidden) return;
+    currentAccess={chart,owner:payment.user,status};
+    const prepared=await prepareDetailedReading(chart,target);
+    if (generation!==reportGeneration || currentReading!==chart || $('result').hidden) return;
+    $('open-product').textContent='선택한 항목의 이용 내역 확인 중…';
+    const receipt=await payment.start(chart,target);
+    if (generation!==reportGeneration || currentReading!==chart || $('result').hidden) return;
+    if (!receipt?.ok) throw new Error('payment_unverified');
+    currentAccess={chart,owner:payment.user,status:recordReceipt(status,receipt,target)};
+    commitDetailedReading(chart,prepared);
+    if (receipt.replayed) toast('구매한 항목을 추가 차감 없이 다시 펼쳤어요.');
+    $('detailed-title').focus({preventScroll:true});
+  } catch (error) {
+    if (generation!==reportGeneration || currentReading!==chart || $('result').hidden) return;
+    if (!inspected) currentAccess=null;
+    const message=error?.code&&/[가-힣]/.test(error.message||'')?error.message:'선택한 풀이를 열지 못했어요. 다시 시도해 주세요.';
+    $('report-error-text').textContent=`${message} 현재 보이는 ${targetLabel(currentDetail)}는 그대로 두었어요.`;
+    $('report-error').hidden=false;
+    $('report-status').textContent=`현재 보는 풀이: ${targetLabel(currentDetail)}`;
+  } finally {
+    if (generation===reportGeneration && currentReading===chart && !$('result').hidden) {
+      reportBusy=false;
+      $('copy-reading').disabled=!currentDetail;
+      $('report-status').classList.remove('is-loading');
+      updateProductOffer();
+    }
+  }
+}
+$('open-product').addEventListener('click',()=>void openSelectedProduct());
+$('retry-report').addEventListener('click',()=>void refreshReportAccess());
+
+function updateBillingStatus() {
+  $('login-link').hidden=billingSignedIn;
+  if (billing?.adminPreview) $('payment-status').textContent='관리자 미리보기 · 쭈 차감 없음';
+  else if (billingSignedIn) $('payment-status').textContent=Number.isFinite(billing.balance)?`보유 ${new Intl.NumberFormat('ko-KR').format(billing.balance)}쭈`:'보유 쭈를 확인하고 있어요.';
+  else $('payment-status').textContent='로그인 후 선택한 사주 풀이를 펼칠 수 있어요.';
+  updateEntryOffer();
+  if (currentReading) updateProductOffer();
+}
+function resetAfterAccountChange() {
+  submitGeneration++;reportGeneration++;quoteGeneration++;
+  clearTimeout(entryCheckTimer);
+  busy=false;reportBusy=false;entryCheckPending=false;entryQuoteError=false;
+  currentReading=null;currentDetail=null;currentAccess=null;entryQuote=null;
+  $('result').hidden=true;$('intro').hidden=false;
+  $('report-content').replaceChildren();
+  $('report-content').removeAttribute('aria-busy');
+  $('report-toc').hidden=true;$('report-error').hidden=true;$('entry-check-error').hidden=true;
+  $('copy-reading').disabled=true;
+  form.reset();
+  form.querySelectorAll('fieldset').forEach(fieldset=>{fieldset.disabled=false;});
+  form.removeAttribute('aria-busy');
+  document.querySelector('.skip-link').href='#birth-form';
+  document.querySelector('.skip-link').textContent='출생 정보 입력으로 바로가기';
+  fillYears($('entry-year'));
+  updateCalendar();updateTime();updateEntryOffer();
+}
+async function readyBilling() {
+  if (billingPromise) return billingPromise;
+  const task=(async()=>{
+    const {SajuPayment}=await import('./payment.js?v=20261113-saju-topics1');
+    billing ||= new SajuPayment({
+      onBalance:()=>updateBillingStatus(),
+      onAccountChange:()=>{
+        billingSignedIn=false;billingPromise=null;
+        if (billingInitialized) resetAfterAccountChange();
+        updateBillingStatus();
+        Promise.resolve().then(()=>readyBilling()).catch(()=>{$('payment-status').textContent='로그인 정보를 다시 확인해 주세요. 펼치기를 누르면 재시도해요.';});
+      },
+      onModeChange:({adminPreview})=>{
+        if (billingInitialized&&billingMode!==Boolean(adminPreview)) resetAfterAccountChange();
+        billingMode=Boolean(adminPreview);updateBillingStatus();
+      }
+    });
+    const state=await billing.init();
+    billingInitialized=true;billingSignedIn=state.signedIn===true;billingMode=Boolean(state.adminPreview);
+    updateBillingStatus();
+    scheduleEntryCheck();
+    return billing;
+  })();
+  billingPromise=task;
+  try{return await task;}catch(error){if(billingPromise===task)billingPromise=null;throw error;}
+}
+form.addEventListener('submit',async event=>{
+  event.preventDefault();
+  if (busy || !form.reportValidity()) return;
+  busy=true;
+  const generation=++submitGeneration;
+  quoteGeneration++;
+  clearTimeout(entryCheckTimer);
+  entryCheckPending=false;
+  const input=readBirth(),signature=birthSignature(input),target=targetFrom('entry');
+  submit.disabled=true;
+  submit.querySelector('span').textContent=`${targetLabel(target)} 준비 중…`;
+  form.setAttribute('aria-busy','true');
+  form.querySelectorAll('fieldset').forEach(fieldset=>{fieldset.disabled=true;});
+  clearError();
+  let inspected=false;
+  try {
+    const payment=await readyBilling();
+    if(generation!==submitGeneration)return;
+    if(!billingSignedIn&&!payment.adminPreview)throw Object.assign(new Error('사주를 펼치려면 먼저 아지트에서 로그인해 주세요.'),{code:'auth_required'});
+    const chart=await calculateBirth(input);
+    const status=await payment.status(chart);
+    inspected=true;
+    if(generation!==submitGeneration)return;
+    entryQuote={signature,chart,status,owner:payment.user};
+    entryQuoteError=false;$('entry-check-error').hidden=true;
+    const prepared=await prepareDetailedReading(chart,target);
+    if(generation!==submitGeneration)return;
+    submit.querySelector('span').textContent='선택한 항목의 이용 내역 확인 중…';
+    const receipt=await payment.start(chart,target);
+    if(generation!==submitGeneration)return;
+    if(!receipt?.ok)throw new Error('payment_unverified');
+    openInitialReport(chart,prepared,status,receipt,signature);
+    if(receipt.replayed)toast('구매한 항목을 추가 차감 없이 다시 펼쳤어요.');
+  } catch(error) {
+    if(generation!==submitGeneration)return;
+    if(!inspected&&billingSignedIn&&error?.name!=='SajuInputError'){
+      entryQuoteError=true;
+      $('entry-check-error-text').textContent='구매 내역을 확인하지 못했어요. 쭈는 차감되지 않았어요. 다시 확인한 뒤 선택한 풀이를 열어 주세요.';
+      $('entry-check-error').hidden=false;
+    }else{
+      $('form-error').textContent=error?.name==='SajuInputError'||(error?.code&&/[가-힣]/.test(error.message||''))?error.message:'지금은 풀이를 펼치지 못했어요. 잠시 후 다시 눌러 주세요.';
+      if(error?.name==='SajuInputError')markInvalidFields(error);
+      $('form-error').hidden=false;
+      $('form-error').focus({preventScroll:true});
+      $('form-error').scrollIntoView({block:'nearest',behavior:reducedMotion?'instant':'smooth'});
+    }
+  }finally{
+    if(generation===submitGeneration){
+      busy=false;
+      form.querySelectorAll('fieldset').forEach(fieldset=>{fieldset.disabled=false;});
+      form.removeAttribute('aria-busy');
+      updateBillingStatus();
+    }
+  }
+});
+// Enable only after the submission listener can prevent native GET requests.
+updateEntryOffer();
+$('payment-status').textContent='로그인과 보유 쭈를 확인하고 있어요.';
+void readyBilling().catch(()=>{$('payment-status').textContent='이용 정보를 확인하지 못했어요. 펼치기를 누르면 다시 확인해요.';$('login-link').hidden=false;});
+$('edit-birth').addEventListener('click',()=>{
+  reportGeneration++;
+  reportBusy=false;currentReading=null;currentDetail=null;currentAccess=null;
+  $('copy-reading').disabled=true;$('result').hidden=true;$('intro').hidden=false;
+  document.querySelector('.skip-link').href='#birth-form';
+  document.querySelector('.skip-link').textContent='출생 정보 입력으로 바로가기';
+  clearError();updateEntryOffer();scheduleEntryCheck();
+  $('birth-year').focus({preventScroll:true});
+  form.scrollIntoView({block:'center',behavior:reducedMotion?'instant':'smooth'});
+});
+function toast(message){clearTimeout(toastTimer);$('status').textContent=message;$('status').classList.add('is-visible');toastTimer=setTimeout(()=>$('status').classList.remove('is-visible'),2600);}
+$('copy-reading').addEventListener('click',async()=>{
+  if(reportBusy||!currentDetail||currentDetail.chart!==currentReading)return;
+  try{await navigator.clipboard.writeText(currentDetail.copyText);toast('현재 보고 있는 항목의 풀이와 계산 근거를 복사했어요.');}
+  catch{toast('복사 권한을 확인해 주세요. 풀이를 직접 선택해 복사할 수도 있어요.');}
 });
