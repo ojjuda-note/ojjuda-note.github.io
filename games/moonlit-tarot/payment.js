@@ -12,6 +12,7 @@ const messages = {
   progress_conflict: '다른 화면에 저장된 오늘의 점괘를 불러왔어요.',
   progress_network: '선택을 저장하는 중 연결이 끊겼어요. 이어보기를 눌러 다시 확인해 주세요.',
   progress_missing: '이전 점괘의 진행을 이어갈 수 없어요. 주제를 다시 골라 주세요.',
+  mode_changed: '이용 모드가 바뀌었어요. 확인한 뒤 다시 시작해 주세요.',
   storage_unavailable: '진행 상황을 저장할 수 없어 운세를 시작하지 않았어요. 브라우저에서 이 사이트의 데이터 저장을 허용해 주세요.',
   invalid: '운세를 불러오지 못했어요. 아지트로 돌아가 다시 열어 주세요.',
   network: '연결이 잠시 끊겼어요. 다시 누르면 시작하던 운세를 이어서 확인해요. 같은 운세로 쭈가 두 번 사용되지는 않아요.'
@@ -49,10 +50,11 @@ function sameProgress(a, b) {
 }
 
 export class TarotPayment {
-  constructor({ enabled = false, onBalance = () => {}, onAccountChange = () => {} } = {}) {
+  constructor({ enabled = false, onBalance = () => {}, onAccountChange = () => {}, onModeChange = () => {} } = {}) {
     this.enabled = enabled;
     this.onBalance = onBalance;
     this.onAccountChange = onAccountChange;
+    this.onModeChange = onModeChange;
     this.client = null;
     this.user = null;
     this.record = null;
@@ -63,8 +65,65 @@ export class TarotPayment {
     this.readings = new Map();
     this.todayRequest = null;
     this.saveQueue = Promise.resolve();
+    this.previewOwner = null;
+    this.previewEnabled = false;
+    this.modeVersion = 0;
+    this.previewBound = false;
+    this.modeRequest = null;
+    this.previewRun = false;
   }
   get key() { return this.user ? `ojjuda.tarot.session.v1.${this.user}` : null; }
+  get adminPreview() { return !!this.user && this.previewOwner === this.user && this.previewEnabled; }
+  setAdminMode(owner, enabled, notify = true) {
+    const previous = this.adminPreview;
+    this.previewOwner = owner;
+    this.previewEnabled = !!enabled && owner === this.user;
+    if (previous === this.adminPreview) return;
+    this.modeVersion++;
+    if (notify) this.onModeChange({ adminPreview: this.adminPreview });
+  }
+  async refreshAdminMode() {
+    if (!this.enabled || !this.client || !this.user) return false;
+    if (this.modeRequest) return this.modeRequest;
+    const preview = window.OjjudaAdminPreview;
+    if (!preview?.configure || !preview?.refresh) {
+      this.setAdminMode(null, false);
+      return false;
+    }
+    if (!this.previewBound) {
+      window.addEventListener('ojjuda:admin-preview', event => {
+        const value = event.detail;
+        // Verification briefly publishes ready:false. Keep the last confirmed
+        // display mode until it completes, so a recheck cannot cancel itself.
+        if (value?.ready !== true) return;
+        const allowed = value.owner === this.user && value.authorized === true
+          && value.enabled === true && preview.isAuthorized() && preview.isEnabled();
+        this.setAdminMode(value.owner, allowed);
+      });
+      this.previewBound = true;
+    }
+    const owner = this.user;
+    preview.configure(this.client);
+    const task = (async () => {
+      try { await preview.refresh(); }
+      catch (error) {
+        this.setAdminMode(null, false);
+        throw problem();
+      }
+      if (owner !== this.user) throw problem('not_signed_in');
+      // Another auth refresh may supersede this verification. Never proceed
+      // on the previously confirmed mode while that newer check is pending.
+      if (!preview.isReady()) throw problem('mode_changed');
+      return this.adminPreview;
+    })();
+    this.modeRequest = task;
+    try { return await task; }
+    finally { if (this.modeRequest === task) this.modeRequest = null; }
+  }
+  checkMode(owner, version) {
+    if (owner !== this.user) throw problem('not_signed_in');
+    if (version !== this.modeVersion) throw problem('mode_changed');
+  }
   read() {
     try {
       const data = JSON.parse(localStorage.getItem(this.key) || 'null');
@@ -83,7 +142,7 @@ export class TarotPayment {
     this.onBalance(value);
   }
   receiptFor(topic) {
-    if (!this.day || Date.now() >= Date.parse(this.resetAt)) return null;
+    if (this.adminPreview || !this.day || Date.now() >= Date.parse(this.resetAt)) return null;
     return this.readings.get(topic) || null;
   }
   async rpc(name, args = {}) {
@@ -98,7 +157,7 @@ export class TarotPayment {
     return data;
   }
   async refreshToday() {
-    if (!this.enabled || !this.user) return null;
+    if (!this.enabled || !this.user || this.adminPreview) return null;
     if (this.todayRequest) return this.todayRequest;
     this.todayRequest = (async () => {
       const data = await this.rpc('tarot_reading_today_v1');
@@ -167,6 +226,10 @@ export class TarotPayment {
     this.client.auth.onAuthStateChange((_event, next) => {
       const owner = next?.user?.id || null;
       if (owner === this.user) return;
+      this.setAdminMode(null, false, false);
+      this.modeVersion++;
+      this.modeRequest = null;
+      this.previewRun = false;
       this.user = owner;
       this.record = null;
       this.balance = null;
@@ -177,7 +240,11 @@ export class TarotPayment {
     });
     if (!this.user) return { signedIn: false };
     this.record = this.read();
+    await this.refreshAdminMode();
+    if (this.adminPreview) return { signedIn: true, preview: true, adminPreview: true };
+    const owner = this.user, version = this.modeVersion;
     await this.refreshToday();
+    this.checkMode(owner, version);
     const draft = this.record;
     if (!draft) return { signedIn: true };
     // A known yesterday's reading must not replace today's topic chooser.
@@ -186,6 +253,7 @@ export class TarotPayment {
       return { signedIn: true };
     }
     const result = await this.request(draft, true);
+    this.checkMode(owner, version);
     // A missing receipt may still be in transit. Keep its UUID even across midnight.
     if (result?.reason === 'not_found') return { signedIn: true, pending: draft };
     if (!result?.ok) throw problem(result?.reason);
@@ -198,6 +266,7 @@ export class TarotPayment {
       return { signedIn: true };
     }
     const restored = await this.resume(verified, draft);
+    this.checkMode(owner, version);
     if (restored.reading_day !== this.day) {
       this.clearRecord();
       return { signedIn: true };
@@ -214,8 +283,15 @@ export class TarotPayment {
     if (this.pending) return this.pending;
     if (!this.user) throw problem('not_signed_in');
     if (!TOPICS.has(topic)) throw problem('invalid');
+    const owner = this.user, version = this.modeVersion;
     this.pending = (async () => {
+      await this.refreshAdminMode();
+      // A click on the free preview must never turn into a paid request when
+      // the switch, account, or administrator permission changes meanwhile.
+      this.checkMode(owner, version);
+      if (this.adminPreview) { this.previewRun = true; return null; }
       await this.refreshToday();
+      this.checkMode(owner, version);
       const draft = this.record || this.read();
       const uncertain = draft && (!draft.paid || draft.unsynced);
       const previous = this.receiptFor(topic);
@@ -226,28 +302,36 @@ export class TarotPayment {
       // Persist a new request BEFORE sending it, so retries can never buy twice.
       if (!record.paid) this.write(record);
       const result = await this.request(record, !!record.paid);
+      // The original UUID remains in storage if the mode changed during a
+      // purchase. Turning preview off recovers that receipt without repaying.
+      this.checkMode(owner, version);
       if (!result?.ok) {
         if (['coins', 'banned', 'member_required', 'wallet_unavailable', 'invalid'].includes(result?.reason)) this.clearRecord();
         if (Number.isInteger(result?.coins)) this.setBalance(result.coins);
         throw problem(result?.reason);
       }
-      return this.resume(result, draft);
+      this.previewRun = false;
+      const restored = await this.resume(result, draft);
+      this.checkMode(owner, version);
+      return restored;
     })();
     try { return await this.pending; }
     finally { this.pending = null; }
   }
   save(value) {
-    if (!this.enabled || !this.record) return Promise.resolve(null);
+    if (!this.enabled || this.adminPreview || !this.record) return Promise.resolve(null);
+    if (this.previewRun) return Promise.reject(problem('mode_changed'));
     let next;
     try { next = progress({ discarded: [...value.discarded], openOrder: [...value.openOrder] }); }
     catch (error) { return Promise.reject(error); }
     const owner = this.user;
+    const version = this.modeVersion;
     const requestId = this.record.requestId;
     const draft = { ...this.record, ...next, unsynced: true };
     // Keep the exact user's choice locally until the server acknowledges it.
     try { this.write(draft); } catch { this.record = draft; }
     const task = this.saveQueue.catch(() => {}).then(async () => {
-      if (owner !== this.user) throw problem('not_signed_in');
+      this.checkMode(owner, version);
       let result;
       try {
         result = await this.rpc('tarot_reading_save_v1', {
@@ -257,11 +341,15 @@ export class TarotPayment {
         if (error.code === 'network') throw problem('progress_network');
         throw error;
       }
+      // Keep the unsynced paid draft if the preview switch changed while this
+      // save was in flight. Preview choices can never overwrite its progress.
+      this.checkMode(owner, version);
       if (!result?.ok) {
         if (result?.reason === 'not_found') {
           // A pre-limit receipt may no longer be the canonical daily reading.
           // Resolve the server's current choice before releasing the stale draft.
           await this.refreshToday();
+          this.checkMode(owner, version);
           const canonical = this.readings.get(draft.topic);
           this.clearRecord();
           const error = problem(canonical ? 'progress_conflict' : 'progress_missing');
@@ -288,7 +376,7 @@ export class TarotPayment {
     this.record = null;
   }
   newReading() {
-    if (!this.enabled || this.pending || this.record?.unsynced || (this.record && !this.record.paid)) return;
+    if (!this.enabled || this.adminPreview || this.pending || this.record?.unsynced || (this.record && !this.record.paid)) return;
     this.clearRecord();
   }
 }

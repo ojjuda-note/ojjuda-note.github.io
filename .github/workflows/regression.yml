@@ -55,7 +55,7 @@ jobs:
       - run: node --test tests/agit-hub.test.cjs tests/agit-load-reliability.test.cjs
 
   tarot:
-    name: Tarot daily limits, saved choices and payment retries
+    name: Tarot daily limits, admin preview and reading flow
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -67,10 +67,11 @@ jobs:
           node-version: '22'
       - name: Install locked test dependencies
         run: npm --prefix tests ci --ignore-scripts
-      - name: Check daily readings and duplicate payment protection
+      - name: Check daily readings, administrator preview and combined results
         run: |
           node tests/tarot-payment-client.test.cjs
           node tests/tarot-payment-db.test.cjs
+          node tests/tarot-ui.test.cjs
 
   private_groups:
     name: Private group membership, media and schedules
