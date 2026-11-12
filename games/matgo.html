@@ -45,17 +45,18 @@ body.matgo-locked>:not(#matgo-gate):not(#matgo-entry-loading){display:none!impor
 <link rel="stylesheet" href="/games/matgo/matgo-deck-tools.css?v=20261106-source-folders3">
 <link rel="stylesheet" href="/games/matgo/matgo-opponent.css?v=20261106-source-folders3">
 <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
-<script src="/shared/games/multiplayer-entry.js?v=20261107-game-lifecycle1" defer></script>
+<script src="/shared/games/multiplayer-entry.js?v=20261112-arcade-entry-return1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-results.css?v=20261109-unified-multiplayer-ui2">
 <script src="/shared/games/game-results.js?v=20261108-monthly-personal1"></script>
 <style>.modal>.card:has(> .game-result-card){padding:0;background:transparent;border:0;box-shadow:none;width:min(430px,100%);max-width:430px}</style>
+<link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
 </head>
 <body class="matgo-locked" data-mp-entry="true" data-mp-entry-pending>
 <section id="matgo-gate" aria-labelledby="matgo-gate-title" hidden>
 <h1 id="matgo-gate-title">🎴 맞고 · 만 19세 이상</h1>
 <p id="matgo-gate-message" role="status">회원 나이를 확인하고 있어요.</p>
 <button type="button" id="matgo-retry" hidden>다시 확인</button>
-<a href="../world.html?tab=arcade" target="_top">오락실로 돌아가기</a>
+<a class="arcade-return" href="../world.html?tab=arcade" target="_top">← 오쭈다 오락실</a>
 </section>
 <p id="matgo-entry-loading" role="status" style="padding:24px;text-align:center;color:#797487;font-size:13px">게임을 준비하고 있어요.</p>
 <div id="app"></div>
@@ -487,7 +488,7 @@ function mount(){
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판 예약 완료 · 지금 패는 그대로, 다음 판 시작 때 5쭈를 사용해요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261106-source-folders3&open='+Date.now());};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261112-arcade-entry-return1&open='+Date.now());};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html?tab=arcade';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();

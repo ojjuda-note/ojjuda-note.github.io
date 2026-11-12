@@ -44,13 +44,13 @@
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261110-janggi-entry2">
 <link rel="stylesheet" href="/games/janggi/replay.css?v=20261110-janggi-replay1">
-<script src="/shared/games/world-game-assets.js?v=20261112-matgo-gold-tiers" defer></script>
+<script src="/shared/games/world-game-assets.js?v=20261112-arcade-entry-return1" defer></script>
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
 <script src="/shared/games/game-challenges.js?v=20261110-admin-record-free1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-results.css?v=20261109-unified-multiplayer-ui2">
 <script src="/shared/games/game-results.js?v=20261109-unified-multiplayer-ui2" defer></script>
-<script src="/app/world/world-navigation.js?v=20261110-game-back-arcade1" defer></script>
+<script src="/app/world/world-navigation.js?v=20261112-arcade-entry-return1" defer></script>
 <script src="/app/world/world-pull-refresh.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/features/home/agit-hub.css?v=20261111-agit-audit12">
 <script src="/features/home/agit-hub.js?v=20261111-agit-audit11" defer></script>
@@ -193,7 +193,7 @@
 
 
 
-<script src="/games/matgo/matgo-bridge.js?v=20261112-matgo-gold-tiers" defer></script>
+<script src="/games/matgo/matgo-bridge.js?v=20261112-arcade-entry-return1" defer></script>
 <link rel="stylesheet" href="/features/arcade/arcade-rooms.css?v=20261106-source-folders1">
 <script src="/features/arcade/arcade-rooms.js?v=20261108-idle-poll1" defer></script>
 <link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1">
@@ -224,7 +224,7 @@
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
 <link rel="stylesheet" href="/shared/games/world-game-screen.css?v=20261106-source-folders1">
-<script src="/shared/games/multiplayer-entry.js?v=20261110-game-back-arcade1" defer></script>
+<script src="/shared/games/multiplayer-entry.js?v=20261112-arcade-entry-return1" defer></script>
 <link rel="stylesheet" href="/features/arcade/arcade-promotions.css?v=20261106-source-folders1">
 <script src="/features/arcade/arcade-promotions.js?v=20261108-chacha-rush1" defer></script>
 <style>
@@ -239,6 +239,7 @@
 @keyframes world-boot-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.world-boot-spinner{animation:none}}
 </style>
+<link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
 </head>
 <body class="world-redesign">
 <div id="app"><main class="world-boot-screen" role="status" aria-live="polite" aria-busy="true"><div class="world-boot-card"><span class="world-boot-mark" aria-hidden="true">✦</span><strong>오쭈다 아지트</strong><p>잠시만요, 아지트를 준비하고 있어요.</p><span class="world-boot-spinner" aria-hidden="true"></span><a class="world-boot-retry" href="">오래 걸리면 다시 불러오기</a></div></main></div>
@@ -1764,7 +1765,33 @@ if(R.id==="mole"&&o==="mole-grid"){
  if(!R.game&&window.OjjudaAdminPreview?.isEnabled?.()===true&&Number.isInteger(stage)&&stage>=1&&stage<=(window.OjjudaBreakoutGame?.levels||100)){R.breakoutStage=stage;_2();return;}
  if(!canChooseBreakoutStage(stage))return;
  R.breakoutStage=stage;_2();return;
-}if(R.id==="screw"&&o==="screw-drill"){void R.game?.useDrill?.();return}if(R.id==="screw"&&o==="screw-stage"){if(e.disabled||!R.ov.contains(e))return;const stage=Number(e.dataset.stage);if(R.screwStageMenu)void chooseScrewStageFromMenu(stage);else void chooseScrewStage(stage);return;}if(R.id==="screw"&&o==="screw-stage-page"){if(!e.disabled&&R.screwStageMenu)showScrewStages(R.screwMode,Number(e.dataset.page));return;}if(R.id==="screw"&&o==="screw-stages"){if(R.screwStageMenu&&R.screwWasRunning)returnFromScrewStages();else void openScrewStagesFromResult();return;}if(R.id==="screw"&&o==="screw-stage-back"){returnFromScrewStages();return;}if(R.id==="screw"&&o==="screw-result"){screwStageResult(R.score,R.game?.stageCleared?"success":"failure");return;}if(R.id==="screw"&&o==="screw-view"){if(R.game?.viewPicture?.()){ti("");R.ov.querySelector("#gctrl").innerHTML='<button class="btn" data-g="screw-result">결과 보기</button>';R.running=true;R.last=performance.now();sf();}return;}if(R.id==="screw"&&o==="screw-resume"){if(R.owner!==worldRewardOwner()||window.OjjudaGuestAccess?.canPlay()===false)return;if(R.game?.resume?.()){ti("");R.running=true;R.last=performance.now();sf();}return;}if(R.id==="screw"&&o==="screw-modes"){if(R.game&&R.score>0)void R.saveScore?.(R.score);R.saveScore=null;R.loadRequest=null;R.loading=false;R.running=false;cancelAnimationFrame(R.raf);R.game?.destroy?.();R.game=null;R.screwStageMenu=false;R.screwWasRunning=false;R.screwStage=undefined;R.ov.querySelector("#gctrl").innerHTML="";B2();return}if(R.id==="screw"&&o==="screw-start"){if(!["box","flat"].includes(e.dataset.mode))return;R.screwMode=e.dataset.mode;R.screwStage=undefined;R.screwStageMenu=false;R.screwWasRunning=false;void _2();return}if(R.id==="screw"&&o.startsWith("screw-zoom-")){if(t.detail&&e.dataset.touchZoom&&performance.now()-Number(e.dataset.touchZoom)<800){delete e.dataset.touchZoom;return}if(R.running&&R.game?.zoomControl)R.game.zoomControl(o.slice("screw-zoom-".length));return}o==="close"?requestArcadeClose():o==="sound"?(Vi(),e.innerHTML=R.id==="mole"&&window.OjjudaMoleGame?window.OjjudaMoleGame.soundIcon(Wr()):R.id==="runner"&&window.OjjudaRunnerGame?window.OjjudaRunnerGame.soundIcon(Wr()):Wr()):o==="start"?_2():o.startsWith("key:")&&R.running&&R.game&&R.game.onKey?R.game.onKey(o.slice(4)):o==="act"&&R.running&&R.game&&R.game.onAct&&R.game.onAct()}function ti(t){let e=R.ov.querySelector("#gscreen");e.innerHTML=t,e.style.display=t?"flex":"none"}function Ja(t){if(R){R.score=t;if(R.running&&t>0)void R.saveScore?.(t);}let e=R&&R.ov.querySelector("#gsc");e&&(e.textContent=`${t}${_r[R.id].unit}`)}function D2(){if(R.id==="runner"&&window.OjjudaRunnerGame){window.OjjudaRunnerGame.drawPreview(R.ctx);return;}if(R.id==="mole"&&window.OjjudaMoleGame){window.OjjudaMoleGame.drawPreview(R.ctx,R.moleGrid||3);return;}let t=R.ctx,e=_r[R.id];t.fillStyle=e.bg,t.fillRect(0,0,Z,he),t.font="120px sans-serif",t.textAlign="center",t.globalAlpha=.18,t.fillText(e.emoji,Z/2,he/2+40),t.globalAlpha=1}function breakoutControls(){return '<div class="breakout-touchpad" aria-label="판 조작 공간"><span aria-hidden="true">↔</span><span>여기서 좌우로 움직여요</span></div>';}
+}if(R.id==="screw"&&o==="screw-drill"){void R.game?.useDrill?.();return}if(R.id==="screw"&&o==="screw-stage"){if(e.disabled||!R.ov.contains(e))return;const stage=Number(e.dataset.stage);if(R.screwStageMenu)void chooseScrewStageFromMenu(stage);else void chooseScrewStage(stage);return;}if(R.id==="screw"&&o==="screw-stage-page"){if(!e.disabled&&R.screwStageMenu)showScrewStages(R.screwMode,Number(e.dataset.page));return;}if(R.id==="screw"&&o==="screw-stages"){if(R.screwStageMenu&&R.screwWasRunning)returnFromScrewStages();else void openScrewStagesFromResult();return;}if(R.id==="screw"&&o==="screw-stage-back"){returnFromScrewStages();return;}if(R.id==="screw"&&o==="screw-result"){screwStageResult(R.score,R.game?.stageCleared?"success":"failure");return;}if(R.id==="screw"&&o==="screw-view"){if(R.game?.viewPicture?.()){ti("");R.ov.querySelector("#gctrl").innerHTML='<button class="btn" data-g="screw-result">결과 보기</button>';R.running=true;R.last=performance.now();sf();}return;}if(R.id==="screw"&&o==="screw-resume"){if(R.owner!==worldRewardOwner()||window.OjjudaGuestAccess?.canPlay()===false)return;if(R.game?.resume?.()){ti("");R.running=true;R.last=performance.now();sf();}return;}if(R.id==="screw"&&o==="screw-modes"){if(R.game&&R.score>0)void R.saveScore?.(R.score);R.saveScore=null;R.loadRequest=null;R.loading=false;R.running=false;cancelAnimationFrame(R.raf);R.game?.destroy?.();R.game=null;R.screwStageMenu=false;R.screwWasRunning=false;R.screwStage=undefined;R.ov.querySelector("#gctrl").innerHTML="";B2();return}if(R.id==="screw"&&o==="screw-start"){if(!["box","flat"].includes(e.dataset.mode))return;R.screwMode=e.dataset.mode;R.screwStage=undefined;R.screwStageMenu=false;R.screwWasRunning=false;void _2();return}if(R.id==="screw"&&o.startsWith("screw-zoom-")){if(t.detail&&e.dataset.touchZoom&&performance.now()-Number(e.dataset.touchZoom)<800){delete e.dataset.touchZoom;return}if(R.running&&R.game?.zoomControl)R.game.zoomControl(o.slice("screw-zoom-".length));return}o==="close"?requestArcadeClose():o==="sound"?(Vi(),e.innerHTML=R.id==="mole"&&window.OjjudaMoleGame?window.OjjudaMoleGame.soundIcon(Wr()):R.id==="runner"&&window.OjjudaRunnerGame?window.OjjudaRunnerGame.soundIcon(Wr()):Wr()):o==="start"?_2():o.startsWith("key:")&&R.running&&R.game&&R.game.onKey?R.game.onKey(o.slice(4)):o==="act"&&R.running&&R.game&&R.game.onAct&&R.game.onAct()}function ti(markup){
+ const screen=R.ov.querySelector('#gscreen');
+ screen.innerHTML=markup;
+ screen.style.display=markup?'flex':'none';
+ const entry=screen.querySelector(':scope > .game-entry');
+ const nav=R.ov.querySelector(':scope > .canvas-entry-nav');
+ if(entry&&!nav){
+  // Keep the entrance control outside the runner's rotated play surface.
+  const back=R.ov.querySelector('.ghead [data-g="close"]');
+  const bar=document.createElement('nav');
+  bar.className='ghead canvas-entry-nav';
+  R.backSlot=document.createComment('game close control');
+  back.replaceWith(R.backSlot);
+  back.className='arcade-return';
+  back.textContent='← 오쭈다 오락실';
+  back.removeAttribute('aria-label');
+  bar.append(back);
+  R.ov.prepend(bar);
+ }else if(!entry&&nav){
+  const back=nav.querySelector('button');
+  back.className='gx';
+  back.textContent='✕';
+  back.setAttribute('aria-label','닫기');
+  R.backSlot.replaceWith(back);
+  nav.remove();
+ }
+}function Ja(t){if(R){R.score=t;if(R.running&&t>0)void R.saveScore?.(t);}let e=R&&R.ov.querySelector("#gsc");e&&(e.textContent=`${t}${_r[R.id].unit}`)}function D2(){if(R.id==="runner"&&window.OjjudaRunnerGame){window.OjjudaRunnerGame.drawPreview(R.ctx);return;}if(R.id==="mole"&&window.OjjudaMoleGame){window.OjjudaMoleGame.drawPreview(R.ctx,R.moleGrid||3);return;}let t=R.ctx,e=_r[R.id];t.fillStyle=e.bg,t.fillRect(0,0,Z,he),t.font="120px sans-serif",t.textAlign="center",t.globalAlpha=.18,t.fillText(e.emoji,Z/2,he/2+40),t.globalAlpha=1}function breakoutControls(){return '<div class="breakout-touchpad" aria-label="판 조작 공간"><span aria-hidden="true">↔</span><span>여기서 좌우로 움직여요</span></div>';}
 function canChooseBreakoutStage(stage){
  const current=R?.game?.stage,levels=window.OjjudaBreakoutGame?.levels||100;
  return R?.id==='breakout'&&!R.running&&!R.loading&&Number.isInteger(current)&&R.breakoutBaseStage===current&&Number.isInteger(stage)&&stage>=1&&stage<=levels&&(window.OjjudaAdminPreview?.isEnabled?.()===true||(Math.abs(stage-current)<=1&&(stage<=current||R.game.stageCleared===true)));
@@ -2813,9 +2840,9 @@ var mm={"member-info-open"(){if(!D.online||!D.user)return;if(!window.OjjudaMembe
 var worldPullRefresh=null;
 // Gameplay surfaces, separate from the arcade directory and game selection screens.
 const worldPlayingFrames = [
- ['.solitaire-game-dialog','#board'],
+ ['.solitaire-game-dialog','body:not(:has(#entry-dialog[open])) #board'],
  ['.mines-game-dialog','main#minesEntry[hidden]'], ['.saetbyeol-game-dialog','#starEntry[hidden]'],
- ['.archery-game-dialog','#gameCanvas'], ['.bang-game-dialog','.topbar.in-game'],
+ ['.archery-game-dialog','#gameCanvas[data-shots]:not([data-shots="0"]),#gameCanvas[data-mode="drawing"]'], ['.bang-game-dialog','.topbar.in-game'],
  ['.poker-game-dialog','.table-scene'], ['.roulette-game-dialog','#playSection:not([inert])'],
  ['.sacheonseong-game-dialog','#board button'], ['.spot-game-dialog','#board-curtain[hidden]'],
  ['.tour-game-dialog:not(.tank-game-dialog)','#game:not(.hidden) #boardbox'],
@@ -2918,7 +2945,7 @@ async function gm(t){
    if(document.getElementById("modal-root")?.innerHTML){closeWorldGameModal();return true}
    const gameDialog=document.querySelector('.tour-game-dialog[open],.roulette-game-dialog[open],.spot-game-dialog[open]');
    if(gameDialog){gameDialog.dispatchEvent(new Event('cancel',{cancelable:true}));return true;}
-   const gameClose=document.querySelector('#ttang-overlay button[aria-label="월드땅따먹기 닫기"],#photo-ttang-overlay button[aria-label="포토땅따먹기 닫기"],[data-bl="close"],[data-bd="close"],[data-g="close"]');
+   const gameClose=document.querySelector('#ttang-overlay button[aria-label="월드땅따먹기 닫기"],#photo-ttang-overlay button.arcade-return,[data-bl="close"],[data-bd="close"],[data-g="close"]');
    if(gameClose){gameClose.click();return true}
    if(g.tab==='place'&&g.place?.id==='arcade'&&window.OjjudaGameRankings?.back())return true;
    return false;
@@ -2993,7 +3020,7 @@ function openWorldGameLink(id,options={}){
  if(['janggi','chess'].includes(id))return vn(id);
  if(id==='matgo')return window.openMatgo?.();
  if(id==='screw_box'||id==='screw_flat')return Al('screw',{screwMode:id==='screw_flat'?'flat':'box'});
- if(['sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw','bang','tank','tour','ttang','poker','roulette','photo_ttang','archery','festival'].includes(id))return Al(id);
+ if(['sacheonseong','solitaire','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw','bang','tank','tour','ttang','poker','roulette','photo_ttang','archery','festival'].includes(id))return Al(id);
 }
 function my(){py();if(!worldEntryRouted){worldEntryRouted=true;const url=new URL(location.href),tab=url.searchParams.get("tab"),place=url.searchParams.get("place");sr.tab({tab:url.searchParams.getAll("game").length===1?"arcade":place==="park"||tab==="park"?"park":tab==="my"||tab==="settings"?"my":tab==="hub"?"hub":tab==="arcade"?"arcade":"hub"});let entry=url.searchParams.get("game");try{entry=window.OjjudaGameChallenges?.requestedGame?.()||entry}catch{}if(url.searchParams.getAll("game").length===1){
  const gameOptions=entry==="restaurants"&&url.searchParams.get("restaurantView")==="recommendations"?{openRecommendations:true}:undefined;
@@ -3038,8 +3065,9 @@ let chachaRushPortalPromise = null;
 const chachaRushPortal = {
  async open() {
   try {
-   chachaRushPortalPromise ??= import('/shared/games/chacha-rush-portal.js?v=20261111-game-score-save1').then(({installChachaRushPortal}) => installChachaRushPortal({
+   chachaRushPortalPromise ??= import('/shared/games/chacha-rush-portal.js?v=20261112-arcade-entry-return1').then(({installChachaRushPortal}) => installChachaRushPortal({
     currentOwner:()=>worldRewardOwner(),
+    onReturn:()=>{if(worldMainTab()!=='arcade')sr.tab({tab:'arcade'});history.replaceState(history.state,'',worldGameCloseUrl());},
     submitScore:score=>tf('chacha_rush',score),
     onSaved:owner=>window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner,game:'chacha_rush'}})),
     onNotice:message=>M(message)

@@ -326,6 +326,7 @@ function notifyArcade(type,data={}){if(window.parent!==window)window.parent.post
 function requestExit(){
   save();
   if(window.parent!==window){notifyArcade('ojjuda-game-exit-request');return;}
+  if(entryDialog.open){location.assign('/world.html?tab=arcade');return;}
   openDialog('<h2 class="dialog-title">오락실로 돌아갈까요?</h2><div class="dialog-buttons"><button data-close>게임 계속하기</button><button class="primary" id="leave-arcade">오락실로</button></div>');
   $('#leave-arcade').onclick=()=>location.assign('/world.html?tab=arcade');
 }

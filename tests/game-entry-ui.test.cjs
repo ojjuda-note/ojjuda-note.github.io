@@ -1,4 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
+const {label,checkCorner,checkSpot}=require('./arcade-return-checks.cjs');
 const root=path.resolve(__dirname,'..');let html=fs.readFileSync(path.join(root,'world.html'),'utf8');
 const boot=html.indexOf('j1(()=>H());gm(');assert(boot>0);
 html=html.slice(0,boot)+`window.entryTest={open:Al,link:openWorldGameLink,rank:openWorldBoardGame,arcade:()=>xf("arcade"),close:El,board:vn,billiards:xn,closeBoard:dt,current:()=>R,boardMe:()=>E.me,
@@ -16,6 +17,7 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  assert.ok(await screwCard.isVisible()&&await screwCard.isEnabled(),'the screw chooser is available in the arcade');
  await page.evaluate(()=>entryTest.link('screw'));
  const menu=page.locator('[data-entry-key="screw"]');await menu.waitFor();
+ await checkCorner(page.getByRole('button',{name:label,exact:true}));
  await menu.locator('.ge-icon svg').waitFor({state:'visible'});
  assert.equal(await menu.locator('.ge-title').innerText(),'나사 풀기');
  assert.deepEqual(await menu.locator('strong').allTextContents(),['박스형 시작','평면형 시작']);
@@ -23,11 +25,13 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  assert.ok(await menu.locator('[data-mode="box"]').isEnabled());
  assert.ok(await menu.locator('[data-mode="flat"]').isEnabled());
  assert.equal(await page.locator('.screw-zoom-nav').isVisible(),false);
- await page.evaluate(()=>entryTest.close());
+ await page.getByRole('button',{name:label,exact:true}).click();
+ assert.equal(await page.locator('#gov').count(),0);
  assert.equal(await page.evaluate(()=>performance.getEntriesByType('resource').some(r=>/screw3d\.js|screw-flat\.js/.test(r.name))),false,'opening the version chooser does not load an engine');
  let expected;
  for(const id of ['mole','runner','stacker','breakout']){
  await page.evaluate(id=>entryTest.open(id),id);await page.locator('#gov .game-entry').waitFor();
+ await checkCorner(page.getByRole('button',{name:label,exact:true}));
  const metrics=await page.locator('#gov .game-entry').evaluate(el=>({bg:getComputedStyle(el).backgroundColor,radius:getComputedStyle(el).borderRadius,title:getComputedStyle(el.querySelector('.ge-title')).fontSize,width:Math.round(el.getBoundingClientRect().width)}));
  if(id==='runner'){
   assert.equal(metrics.bg,'rgba(239, 255, 243, 0.93)','runner retains its ocean-themed entry');
@@ -43,6 +47,7 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  const openOpponent=async id=>{
   await page.evaluate(id=>id==='chess'||id==='janggi'?entryTest.board(id):entryTest.billiards(id),id);
   await page.locator('.ge-board-entry[data-entry-ready]').waitFor();
+  await checkCorner(page.getByRole('button',{name:label,exact:true}));
   await page.locator('[data-entry-mode=opponent]').click();
   await page.locator('[data-friend-id=online]').waitFor();
  };
@@ -85,7 +90,7 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  await page.waitForFunction(()=>window.invited);
  assert.deepEqual(await page.evaluate(()=>window.invited),{name:'game_invite',args:{p_kind:'chess',p_to:'online'}});
  await page.evaluate(()=>entryTest.closeBoard());
- assert.deepEqual(errors,[]);await page.close();
+ assert.deepEqual(errors,[]);await checkSpot(page);await page.close();
  }
  console.log('PASS: consistent entry cards at 320/390/1280px, public box and flat screw chooser, five direct board starts and opponent menus, live friend sorting, search, safe names and exact invite recipient');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

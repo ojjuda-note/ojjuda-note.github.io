@@ -5,7 +5,7 @@ const CHANNEL = 'ojjuda:chacha-rush';
 const MAX_SCORE = 1_999_999_999;
 const SESSION_LIFETIME_MS = 6 * 60 * 60 * 1000;
 
-export function installChachaRushPortal({ currentOwner, submitScore, onSaved, onNotice }) {
+export function installChachaRushPortal({ currentOwner, submitScore, onSaved, onNotice, onReturn }) {
   const sessions = new Map();
   let activeClose = null;
 
@@ -20,22 +20,21 @@ export function installChachaRushPortal({ currentOwner, submitScore, onSaved, on
     const overlay = document.createElement('section');
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-label', '차차 러시 게임');
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:block;background:#edf2e3;';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;background:#edf2e3;';
     // Other Ojjuda games use a full-screen entrance with a quiet corner close.
     // Keep this close outside the iframe so a failed game load can still exit.
     const close = document.createElement('button');
     close.type = 'button';
-    close.textContent = '×';
-    close.setAttribute('aria-label', '차차 러시 닫기');
-    close.style.cssText = 'position:absolute;top:max(7px,env(safe-area-inset-top));right:max(8px,env(safe-area-inset-right));z-index:2;display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid #e8e6e9;border-radius:14px;background:#fff;color:#777485;font:400 24px/1 system-ui,sans-serif;cursor:pointer;';
+    close.textContent = '← 오쭈다 오락실';
+    close.className = 'arcade-return chacha-arcade-return';
     const frame = document.createElement('iframe');
     frame.title = '차차 러시 3D 레이싱';
     frame.src = `${GAME_ORIGIN}/#${fragment}`;
-    frame.style.cssText = 'position:absolute;inset:0;display:block;width:100%;height:100%;border:0;background:#edf2e3;';
+    frame.style.cssText = 'display:block;flex:1;min-height:0;width:100%;border:0;background:#edf2e3;';
     frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-pointer-lock');
     frame.setAttribute('allow', 'autoplay; fullscreen');
     frame.setAttribute('referrerpolicy', 'no-referrer');
-    overlay.append(frame, close);
+    overlay.append(close, frame);
     const oldOverflow = document.body.style.overflow;
     const previousFocus = document.activeElement;
     let expiryTimer = null;
@@ -56,7 +55,7 @@ export function installChachaRushPortal({ currentOwner, submitScore, onSaved, on
       if (activeClose === closeGame) activeClose = null;
       if (previousFocus?.isConnected) previousFocus.focus?.({ preventScroll: true });
     };
-    close.addEventListener('click', closeGame);
+    close.addEventListener('click', () => { closeGame(); onReturn?.(); });
     activeClose = closeGame;
     document.body.style.overflow = 'hidden';
     document.body.append(overlay);
