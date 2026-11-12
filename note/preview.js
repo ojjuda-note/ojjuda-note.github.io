@@ -30,7 +30,7 @@ let eventPhotoPreparing = false, eventPhotoError = '', eventPhotoRun = 0;
 let eventHadPhoto = false, eventPhotoRemove = false, eventCurrentPhotoUrl = null;
 let eventMap = null;
 let composerMapFetchRun = 0, composerMapTimer = null;
-let feedPages = 0, backgroundLocating = false;
+let feedPages = 0, backgroundLocating = false, feedDeferred = false;
 function quietLocatedReload(tries = 0) {   // 허용된 위치가 늦게 도착해도 현재 첫 페이지를 갱신해요(근처 포함)
   if (!nearbyPosition || feedMode !== 'all' || feedTerm || feedPages > 1 || !detail.hidden) return;
   if (feedLoading) { if (tries < 20) setTimeout(() => quietLocatedReload(tries + 1), 300); return; }
@@ -107,29 +107,39 @@ async function photoActionFor(key, userId) {
   return window.confirm(`${title}을 10 ZU에 1개월 동안 사용할까요? 구매 기간에는 다른 카드에도 적용할 수 있어요.`)
     ? 'purchase_card_photo' : null;
 }
-// Keep the first row eager. Start the remaining public backgrounds as the reader
-// approaches them, including when the Park feed scrolls inside the World iframe.
-const feedBackgroundObserver = typeof IntersectionObserver === 'function'
-  ? new IntersectionObserver(entries => {
+function observeBackgrounds(options) {
+  return typeof IntersectionObserver === 'function'
+    ? new IntersectionObserver(entries => {
       for (const entry of entries) if (entry.isIntersecting) revealFeedBackground(entry.target);
-    }, { rootMargin: '600px 0px' }) : null;
+    }, options) : null;
+}
+const feedBackgroundObserver = observeBackgrounds({ rootMargin: '600px 0px' });
+const replyBackgroundObserver = observeBackgrounds({ root: replies, rootMargin: '0px 200px' });
+function backgroundObserver(photo) {
+  return photo.closest('.reply-card') ? replyBackgroundObserver : feedBackgroundObserver;
+}
 function revealFeedBackground(photo) {
   const key = photo.dataset.pendingBackground;
   if (!key) return;
-  feedBackgroundObserver.unobserve(photo);
+  backgroundObserver(photo)?.unobserve(photo);
   delete photo.dataset.pendingBackground;
   setPhotoBackground(photo, key);
 }
-function setPhotoBackground(element, value, defer = false) {
+function setPhotoBackground(element, value) {
   const key = photoAssetKey(value);
   element.classList.toggle('note-plain', !key);
   element.classList.remove('image-forest', 'image-lake');
-  if (defer && key && feedBackgroundObserver) {
-    element.dataset.pendingBackground = key;
-    feedBackgroundObserver.observe(element);
-    return;
+  if (key && element.dataset.imageSizes) {
+    const img = node('img', 'park-card-background');
+    img.alt = ''; img.draggable = false; img.decoding = 'async';
+    img.sizes = element.dataset.imageSizes;
+    img.addEventListener('error', () => img.removeAttribute('srcset'), { once: true });
+    img.srcset = [480, 800, 1200].map(width => `/note/assets/cards/${width}/${key}.webp ${width}w`).join(', ');
+    img.src = `/note/assets/${key}.jpg`;
+    element.prepend(img);
+  } else {
+    element.style.backgroundImage = key ? `url("/note/assets/${key}.jpg")` : '';
   }
-  element.style.backgroundImage = key ? `url("/note/assets/${key}.jpg")` : '';
 }
 async function loadEventBackground(element, card) {
   const position = positionIsFresh(nearbyPosition) ? nearbyPosition : null;
@@ -773,7 +783,7 @@ function fitPhotoQuote(photo, quote, tagRow, initialFontSize) {
 function refreshExpandedBodies() {
   for (const entry of quoteFitEntries) {
     if (!entry.photo.isConnected) {
-      if (entry.photo.dataset.pendingBackground) feedBackgroundObserver?.unobserve(entry.photo);
+      if (entry.photo.dataset.pendingBackground) backgroundObserver(entry.photo)?.unobserve(entry.photo);
       quoteFitEntries.delete(entry);
       continue;
     }
@@ -812,7 +822,19 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
   const photo = node('span', 'photo');
   if (card.kind === 'event') photo.dataset.protectPhoto = String(!card.is_mine);
   const hiddenEvent = card.kind === 'event' && card.body == null;
-  setPhotoBackground(photo, hiddenEvent ? null : visiblePhoto, deferBackground && card.kind !== 'event');
+  const key = hiddenEvent ? null : photoAssetKey(visiblePhoto);
+  if (key && card.kind !== 'event' && document.documentElement.hasAttribute('data-park-webp')) {
+    photo.dataset.imageSizes = compact ? '(max-width: 624px) 67vw, 400px'
+      : expanded ? '(max-width: 624px) 100vw, 600px'
+      : '(max-width: 624px) 100vw, (max-width: 779px) 600px, (max-width: 1268px) 50vw, 600px';
+  }
+  const observer = compact ? replyBackgroundObserver : feedBackgroundObserver;
+  if (key && deferBackground && card.kind !== 'event' && observer) {
+    photo.dataset.pendingBackground = key;
+    observer.observe(photo);
+  } else {
+    setPhotoBackground(photo, key);
+  }
   if (card.kind === 'event' && !hiddenEvent) void loadEventBackground(photo, card);
   applyVisualStyle(photo, style);
   const quote = node('span', 'card-quote');
@@ -999,6 +1021,7 @@ function filteredFeed() {
 }
 async function loadFeed(more = false, quiet = false) {
   if (!client || (more && feedLoading)) return false;
+  if (!more) feedDeferred = false;
   const searchContext = $('#feed-search-context');
   if (searchContext) {
     searchContext.hidden = !feedTerm || feedMode !== 'all';
@@ -1153,7 +1176,7 @@ async function positionIfAlreadyGranted() {
 }
 function consumeInitialCard() {
   if (initialParkCompose && authKnown && ready) { initialParkCompose = false; openComposer('memo'); }
-  if (!initialCardId || !authKnown || !ready) return;
+  if (!initialCardId || !authKnown) return;
   const id = initialCardId; initialCardId = null;
   if (validCardId(id)) openCard(id);
 }
@@ -1200,8 +1223,8 @@ async function loadReplies(id, version, more = false) {
     return;
   }
   if (!more) replies.replaceChildren();
-  for (const card of data || []) {
-    cache.set(card.id, card); replies.append(cardElement(card, true));
+  for (const [index, card] of (data || []).entries()) {
+    cache.set(card.id, card); replies.append(cardElement(card, true, false, more || index >= 2));
   }
   if (!more && !data?.length) state(replies, '아직 답글이 없어요.');
   if (data?.length) replyCursor = data.at(-1);
@@ -1214,6 +1237,7 @@ async function renderDetail() {
   if (!client || !stack.length) return;
   const id = stack.at(-1), version = ++detailRun;
   feed.hidden = true; detail.hidden = false;
+  banner('');
   $('.replies').hidden = false;
   state(slot, '카드를 불러오는 중이에요.'); state(replies, '답글을 불러오는 중이에요.');
   $('#detail [data-compose="reply"]').disabled = true;
@@ -1248,6 +1272,7 @@ async function renderDetail() {
     search.addEventListener('click', () => searchTagFn?.('19금')); slot.append(search);
     return;
   }
+  ready = true;
   cache.set(id, card);
   if(initialKeepId===id){
     initialKeepId=null;const url=new URL(location.href);url.searchParams.delete('keep');history.replaceState(history.state,'',url);
@@ -1282,21 +1307,25 @@ async function renderDetail() {
   }
 }
 function openCard(id) {
-  if (!validCardId(id) || !ready) return;
+  if (!validCardId(id) || !authKnown) return;
   const alreadyLinked = new URL(location.href).searchParams.get('card') === id;
   stack.push(id); updateCardUrl(id, !alreadyLinked); renderDetail();
 }
 function goBack() {
   if (history.state?.noteNavigation) { history.back(); return; }
   if (stack.length > 1) { stack.pop(); updateCardUrl(stack.at(-1)); renderDetail(); }
-  else showFeed();
+  else returnToFeed();
+}
+function returnToFeed(updateUrl = true) {
+  showFeed(updateUrl);
+  if (feedDeferred) void loadFeed();
 }
 window.addEventListener('popstate', () => {
   const id = new URL(location.href).searchParams.get('card');
   if (validCardId(id)) {
-    if (!ready) { initialCardId = id; return; }
+    if (!authKnown) { initialCardId = id; return; }
     stack.length = 0; stack.push(id); void renderDetail();
-  } else showFeed(false);
+  } else { initialCardId = null; returnToFeed(false); }
 });
 
 function canWrite() {
@@ -3358,7 +3387,7 @@ function receiveAuth(current) {
     noteState = null; noteStateRun++; reactionPending.clear(); message('');
     composerRun++; draftLoading = false; draftController?.setUser(current?.user?.id); setComposerInputs();
     notificationController?.close?.();
-    feedRun++; detailRun++; cache.clear(); stack.length = 0;
+    feedRun++; detailRun++; ready = false; feedDeferred = false; cache.clear(); stack.length = 0;
     slot.replaceChildren(); replies.replaceChildren(); state(list, '카드를 불러오는 중이에요.');
     closeManagement(true); backdrop.hidden = true; clearEventPhoto(); clearCardPhoto(); lockPage(false);
     text.value = ''; tags.value = ''; editingId = null; composerUserId = null;
@@ -3369,7 +3398,11 @@ function receiveAuth(current) {
   const epoch = identityEpoch;
   setTimeout(() => {
     if (epoch !== identityEpoch) return;
-    if (firstSession || changed) void loadFeed();
+    if (firstSession || changed) {
+      feedDeferred = validCardId(initialCardId);
+      if (feedDeferred) consumeInitialCard();
+      else void loadFeed();
+    }
     draftController?.setUser(current?.user?.id);
     loadWorldBalance(current?.user?.id); loadModerator(current?.user?.id); loadNoteState();
     if (changed || accountNickname === null) void loadAccountProfile(current?.user?.id);

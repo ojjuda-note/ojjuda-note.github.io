@@ -139,3 +139,54 @@ for (const member of [false, true]) {
     }
   });
 }
+
+test('a shared card starts before the feed and fetches reply backgrounds near the rail', async () => {
+  const id = '12345678-1234-4123-8123-000000000001';
+  const dom = new JSDOM(read('park/index.html'), {
+    url: 'https://fixture.test/park/?card=' + id, runScripts: 'outside-only', pretendToBeVisual: true
+  });
+  try {
+    const w = dom.window, doc = w.document, calls = [], watches = new Map();
+    w.scrollTo = () => {};
+    w.matchMedia = () => ({ matches: false });
+    doc.documentElement.setAttribute('data-park-webp', '');
+    w.IntersectionObserver = class {
+      constructor(callback, options) { this.root = options.root; this.callback = callback; }
+      observe(photo) { watches.set(photo, this); }
+      unobserve(photo) { watches.delete(photo); }
+    };
+    const parent = { id, kind: 'memo', body: '원글', tags: [], background_key: '10', created_at: '2026-11-12T00:00:00Z' };
+    const rows = Array.from({length: 30}, (_, i) => ({...parent, id: id.slice(0,-3) + String(i+2).padStart(3,'0'), kind: 'comment'}));
+    const replyQuery = { select(){return this;}, eq(){return this;}, not(){return this;}, order(){return this;},
+      limit(){calls.push('replies');return Promise.resolve({data: rows});} };
+    w.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
+    w.supabase = { createClient: () => ({
+      auth: { onAuthStateChange(){}, getSession: async () => ({ data:{session:null} }) },
+      schema: () => ({ from: () => replyQuery, rpc: async name => {
+        if(name==='get_card') {calls.push(name);return {data: parent};}
+        if(name==='list_cards') {calls.push(name);return {data:[parent]};}
+        return {data:[]};
+      } })
+    }) };
+    w.eval(read('note/preview.js'));
+    const settle = () => new Promise(resolve => w.setTimeout(resolve, 0));
+    await settle(); await settle();
+    assert.deepEqual(calls, ['get_card','replies']);
+    assert.equal(doc.querySelectorAll('#feed-list article').length, 0);
+    const photos = [...doc.querySelectorAll('#reply-list .photo')];
+    assert.equal(photos.length, 30);
+    assert.equal(photos.filter(p=>p.querySelector('img.park-card-background')).length, 2);
+    const observer = watches.get(photos[2]);
+    assert.equal(observer.root, doc.querySelector('#reply-list'));
+    observer.callback([{target: photos[2], isIntersecting:true}]);
+    const img = photos[2].querySelector('img.park-card-background');
+    assert.match(img.srcset,/480w, .*800w, .*1200w$/);
+    img.dispatchEvent(new w.Event('error'));
+    assert.equal(img.srcset,'');
+    assert.match(img.src,/\/10\.jpg$/);
+    doc.querySelector('.back-button').click();
+    await settle();
+    assert.deepEqual(calls, ['get_card','replies','list_cards']);
+    assert.equal(doc.querySelectorAll('#feed-list article').length, 1);
+  } finally { dom.window.close(); }
+});
