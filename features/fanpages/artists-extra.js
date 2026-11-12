@@ -787,24 +787,121 @@
       id: 'tws', name: 'TWS', korean: '투어스', category: 'boy', fan: '42 (SAI)', agency: 'PLEDIS Entertainment',
       members: ['신유', '도훈', '영재', '한진', '지훈', '경민'],
       debut: '2024.01.22', debutWork: 'Sparkling Blue', songs: ['첫 만남은 계획대로 되지 않아', 'Oh Mymy : 7s'],
-      concept: '소년 시절의 반짝임과 일상을 담은 여섯 멤버.',
-      official: 'https://www.pledis.co.kr/artist/detail/TWS/profile/', youtube: 'https://www.youtube.com/@TWS_PLEDIS',
+      concept: '언제나 함께라는 이름처럼 일상의 설렘을 노래하는 보이후드 팝 여섯 멤버.',
+      checkedAt: '2026.11.13',
+      official: 'https://tws-official.jp/profile/', youtube: 'https://www.youtube.com/@TWS_PLEDIS',
       photo: 'TWS at the 2024 Melon Music Awards.png', photoLabel: '멜론뮤직어워드', photoYear: '2024', credit: 'TenAsia', license: 'CC BY 3.0',
-      // Official notices rechecked 2026-11-12; unverified backlog media stays pending.
-      appearances: [
+      morePhotos: [
+        commonsPhoto('TWS at Music Bank 20240202.jpg', '뮤직뱅크 출근길 · 2024.02.02', '2024', 'tenasia (티비텐)', 'CC BY 3.0')
+      ],
+      music: [
         {
-                "date": "2026-11-13",
-                "title": "TO US 위드뮤 1:1 영상통화 팬사인회",
-                "sub": "상세 시간 추후 안내 · 당첨자 대상 · 응모 종료 · PLEDIS/위드뮤 공식 공지",
-                "href": "https://weverse.io/tws/notice/40394"
+          "title": "TO US",
+          "date": "2026.11.02",
+          "type": "싱글 2집 · 타이틀 내 이름을 불러줘 (Call My Name)",
+          "songs": [
+            "WE UP",
+            "Call My Name (내 이름을 불러줘)",
+            "heavy"
+          ],
+          "href": "https://music.apple.com/us/album/to-us-single/6818392534"
         },
         {
-                "date": "2026-11-14",
-                "title": "MMA 2026 Global Day 출연",
-                "sub": "서울 고척스카이돔 · 카카오엔터테인먼트 · 개별 출연 시각은 공식 안내 확인",
-                "href": "https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/"
+          "title": "NO TRAGEDY",
+          "date": "2026.04.27",
+          "type": "미니 5집 · 타이틀 You You",
+          "songs": [
+            "All the Possibilities",
+            "You You",
+            "Why You So Bad?",
+            "Get It Now",
+            "Fire Escape",
+            "Back To Strangers"
+          ],
+          "href": "https://music.apple.com/us/album/no-tragedy/1887723578"
+        },
+        {
+          "title": "Sparkling Blue",
+          "date": "2024.01.22",
+          "type": "데뷔 미니앨범 · 타이틀 첫 만남은 계획대로 되지 않아",
+          "songs": [
+            "첫 만남은 계획대로 되지 않아",
+            "unplugged boy",
+            "first hooky",
+            "BFF",
+            "Oh Mymy : 7s"
+          ],
+          "href": "https://music.apple.com/us/album/sparkling-blue/1723932647"
         }
-],
+      ],
+      appearances: [
+        {
+          "date": "2026-11-13",
+          "title": "TO US 위드뮤 1:1 영상통화 팬사인회",
+          "sub": "상세 시간 추후 안내 · 당첨자 대상 · 응모 종료 · PLEDIS/위드뮤 공식 공지",
+          "href": "https://weverse.io/tws/notice/40394"
+        },
+        {
+          "date": "2026-11-14",
+          "title": "MMA 2026 Global Day 출연",
+          "sub": "서울 고척스카이돔 · 카카오엔터테인먼트 · 개별 출연 시각은 공식 안내 확인",
+          "href": "https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/"
+        },
+        {
+          "date": "2026-11-29",
+          "title": "TO US 케이타운포유 1:1 영상통화 팬사인회",
+          "sub": "18:00 KST · 당첨자 대상 · PLEDIS/케이타운포유 · 응모 종료",
+          "href": "https://weverse.io/tws/notice/40592"
+        },
+        {
+          "date": "2026-12-09",
+          "title": "TO US 뮤직플랜트 스페셜 팬사인회",
+          "sub": "19:00 KST · 서울(당첨자 별도 안내) · PLEDIS/뮤직플랜트 · 응모 종료",
+          "href": "https://weverse.io/tws/notice/40651"
+        },
+        {
+          "date": "2026-12-17",
+          "title": "TO US 엠투유레코드 오프라인 팬사인회",
+          "sub": "20:30 KST · 서울(당첨자 별도 안내) · PLEDIS/엠투유레코드 · 응모 종료",
+          "href": "https://weverse.io/tws/notice/40695"
+        }
+      ],
+      schedules: [
+        { title: 'TWS Weverse 공식 행사·팬사인회 안내', sub: '로그인 후 일정 변경·취소 및 당첨자 공지 확인', href: 'https://weverse.io/tws/notice' },
+        { title: 'TWS 일본 공식 소식·일정', sub: '일본 활동 안내', href: 'https://tws-official.jp/' }
+      ],
+      news: [
+        {
+          "date": "2026.11.02",
+          "tag": "컴백",
+          "title": "싱글 2집 TO US 발매 · Call My Name 공개",
+          "href": "https://music.apple.com/us/album/to-us-single/6818392534"
+        },
+        {
+          "date": "2026.09.30",
+          "tag": "공연",
+          "title": "MMA 2026 출연 명단 공식 발표",
+          "href": "https://newsroom.kakaoent.com/news/mma2026-brings-k-pops-biggest-names-to-stage/"
+        }
+      ],
+      merch: [
+        {
+          "title": "TO US 싱글 2집 Beside Ver.",
+          "sub": "PLEDIS · 2026.11.02 정식 발매 · 로그인 후 공지 확인 · 버전·재고는 판매처 확인",
+          "href": "https://weverse.io/tws/notice/40249"
+        },
+        {
+          "title": "TO US 공식 MD",
+          "sub": "Weverse Shop · 2026.11.02 11:00 판매 시작 · 한정 수량, 재고 확인",
+          "href": "https://shop.weverse.io/en/shop/MXN/artists/165/notices/14782"
+        },
+        {
+          "title": "KYUNGMIN'S FAVORITE BOX",
+          "sub": "Weverse Shop · 포토북·포토카드·키링 구성 · 확인 시 품절, 재입고 여부는 판매처 확인",
+          "href": "https://shop.weverse.io/en/shop/MXN/artists/165/sales/68020"
+        }
+      ],
+      campaigns: [],
       accent: '#76a8d7', light: '#e0efff', dark: '#456a91', bg: '#f6fbff', shape: '✦'
     },
     {
@@ -814,85 +911,496 @@
       concept: '성장을 노래하는 NCT의 여섯 멤버 유닛.',
       official: 'https://www.smentertainment.com/', youtube: 'https://www.youtube.com/@NCTDREAM',
       photo: 'NCT Dream at DREAM()SCAPE Press Conference.png', photoLabel: 'DREAM()SCAPE 기자회견 · 당시 사진', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
-      // Official notices rechecked 2026-11-12; unverified backlog media stays pending.
-      appearances: [
-        {"date":"2026-11-14","title":"MMA 2026 Global Day 출연","sub":"서울 고척스카이돔 · 카카오엔터테인먼트 · 개별 출연 시각은 공식 안내 확인","href":"https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/"},
+      checkedAt: '2026.11.13',
+      music: [
         {
-                "date": "2026-11-08",
-                "endDate": "2026-11-16",
-                "title": "WELCOME, DREAMERS 팝업 (11/8~11/16)",
-                "sub": "매일 12:00~20:00 KST · 서울 성동구 연무장7길16 · 방문·입장 안내는 공식 공지 확인",
-                "href": "https://weverse.io/nctdream/notice/40609"
+          "title": "DREAM AFTER DREAM",
+          "date": "2026.11.09",
+          "type": "정규 6집 · 타이틀 Boogie Woogie",
+          "songs": [
+            "The Sun",
+            "Boogie Woogie",
+            "Dream After Dream",
+            "Skydive",
+            "Pressure",
+            "Watch U Watch Me",
+            "Cool for Me",
+            "Tumbler",
+            "Smile for U",
+            "This Is Your World"
+          ],
+          "href": "https://music.apple.com/us/album/dream-after-dream/6827483714"
         },
         {
-                "date": "2026-11-22",
-                "title": "TV아사히 드림페스티벌 헤드라이너 출연",
-                "sub": "K아레나 요코하마 · 전일정 매진(11/11 공식 공지) · 개별 출연 시각 미공개",
-                "href": "https://dreamfestival.jp/"
-        },
-        {
-                "date": "2026-12-07",
-                "title": "DREAM AFTER DREAM 일본 발매 이벤트 · 도쿄",
-                "sub": "도쿄 시내 · 시간·상세 장소는 당첨자 추후 안내 · 2차 응모 11/23 23:59 JST까지 · 조건은 공식 공지 확인",
-                "href": "https://www.nct-jp.net/news/detail.php?id=1137067"
-        },
-        {
-                "date": "2026-12-09",
-                "title": "2026 FNS 가요제 제2야 출연",
-                "sub": "후지TV 계열 · 전체 방송 18:30~21:54 JST/KST · 개별 출연 시각 미공개",
-                "href": "https://www.nct-jp.net/news/detail.php?id=1137066"
-        },
-        {
-                "date": "2026-12-27",
-                "title": "DREAM AFTER DREAM 일본 발매 이벤트 · 교토",
-                "sub": "교토 시내 · 시간·상세 장소는 당첨자 추후 안내 · 2차 응모 11/23 23:59 JST까지 · 조건은 공식 공지 확인",
-                "href": "https://www.nct-jp.net/news/detail.php?id=1137067"
+          "title": "Chewing Gum",
+          "date": "2016.08.27",
+          "type": "데뷔 디지털 싱글 · 유통사 표시 발매일",
+          "songs": [
+            "Chewing Gum",
+            "Chewing Gum (Chinese Version)"
+          ],
+          "href": "https://music.apple.com/us/album/chewing-gum-single/1147458439"
         }
-],
+      ],
+      appearances: [
+        {
+          "date": "2026-11-14",
+          "title": "MMA 2026 Global Day 출연",
+          "sub": "서울 고척스카이돔 · 카카오엔터테인먼트 · 개별 출연 시각은 공식 안내 확인",
+          "href": "https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/"
+        },
+        {
+          "date": "2026-11-08",
+          "endDate": "2026-11-16",
+          "title": "WELCOME, DREAMERS 팝업 (11/8~11/16)",
+          "sub": "매일 12:00~20:00 KST · 서울 성동구 연무장7길16 · 방문·입장 안내는 공식 공지 확인",
+          "href": "https://weverse.io/nctdream/notice/40609"
+        },
+        {
+          "date": "2026-11-22",
+          "title": "TV아사히 드림페스티벌 헤드라이너 출연",
+          "sub": "K아레나 요코하마 · 전일정 매진(11/11 공식 공지) · 개별 출연 시각 미공개",
+          "href": "https://dreamfestival.jp/"
+        },
+        {
+          "date": "2026-12-07",
+          "title": "DREAM AFTER DREAM 일본 발매 이벤트 · 도쿄",
+          "sub": "도쿄 시내 · 시간·상세 장소는 당첨자 추후 안내 · 2차 응모 11/23 23:59 JST까지 · 조건은 공식 공지 확인",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1137067"
+        },
+        {
+          "date": "2026-12-09",
+          "title": "2026 FNS 가요제 제2야 출연",
+          "sub": "후지TV 계열 · 전체 방송 18:30~21:54 JST/KST · 개별 출연 시각 미공개",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1137066"
+        },
+        {
+          "date": "2026-12-27",
+          "title": "DREAM AFTER DREAM 일본 발매 이벤트 · 교토",
+          "sub": "교토 시내 · 시간·상세 장소는 당첨자 추후 안내 · 2차 응모 11/23 23:59 JST까지 · 조건은 공식 공지 확인",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1137067"
+        }
+      ],
+      news: [
+        {
+          "date": "2026.11.09",
+          "tag": "컴백",
+          "title": "정규 6집 DREAM AFTER DREAM 발매 · 타이틀 Boogie Woogie",
+          "href": "https://nct-jp.net/news/detail.php?id=1137002"
+        },
+        {
+          "date": "2026.11.09",
+          "tag": "음원 이벤트",
+          "title": "LINE MUSIC · iTunes · Spotify 공식 발매 기념 캠페인",
+          "href": "https://nct-jp.net/news/detail.php?id=1137002"
+        },
+        {
+          "date": "2026.11.03",
+          "tag": "방송",
+          "title": "12.09 일본 FNS 가요제 제2야 생방송 출연 발표",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1137066"
+        },
+        {
+          "date": "2026.09.10",
+          "tag": "공연",
+          "title": "11.22 TV아사히 드림 페스티벌 출연 발표",
+          "href": "https://nct-jp.net/en/news/detail.php?id=1135918"
+        }
+      ],
+      merch: [
+        {
+          "title": "DREAM AFTER DREAM 정규 6집",
+          "sub": "Weverse Shop 공식 음반 · 기존 예약판매는 11/8 종료 · 현재 판매·재고는 판매처 확인",
+          "href": "https://shop.weverse.io/ko/shop/USD/artists/131/notices/14634"
+        },
+        {
+          "title": "DREAM AFTER DREAM 일본 한정 주얼케이스",
+          "sub": "mu-mo SHOP · 일본판 포토카드 · 추첨 응모 11.23까지",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1137067"
+        },
+        {
+          "title": "NCT DREAM 공식 굿즈",
+          "sub": "SMTOWN GLOBAL SHOP · 판매 여부·가격은 판매처에서 확인",
+          "href": "https://global.shop.smtown.com/collections/nct-dream"
+        }
+      ],
+      campaigns: [
+        {
+          "kind": "콜라보",
+          "date": "2026.11.09",
+          "title": "LINE MUSIC × NCT DREAM",
+          "sub": "Boogie Woogie 스트리밍 캠페인 · 일본 공식 발표 · 재생 11/15 23:59까지 · 신청 11/16~22 JST",
+          "href": "https://nct-jp.net/news/detail.php?id=1137003"
+        },
+        {
+          "kind": "콜라보",
+          "date": "2026.11.09",
+          "title": "iTunes × NCT DREAM",
+          "sub": "DREAM AFTER DREAM 다운로드 이벤트 · 일본 공식 발표 · 구매·신청 11/15 23:59까지 JST",
+          "href": "https://nct-jp.net/news/detail.php?id=1137004"
+        },
+        {
+          "kind": "콜라보",
+          "date": "2026.11.09",
+          "title": "Spotify × NCT DREAM",
+          "sub": "Boogie Woogie Canvas 공유 캠페인 · 일본 공식 발표 · 공유 11/15 23:59까지 · 신청 11/18까지 JST",
+          "href": "https://nct-jp.net/news/detail.php?id=1137005"
+        }
+      ],
       accent: '#67b956', light: '#e6fbdc', dark: '#416e37', bg: '#f5fff1', shape: '☘'
     },
     {
       id: 'ateez', name: 'ATEEZ', korean: '에이티즈', category: 'boy', fan: 'ATINY', agency: 'KQ Entertainment',
       members: ['홍중', '성화', '윤호', '여상', '산', '민기', '우영', '종호'],
       debut: '2018.10.24', debutWork: 'TREASURE EP.1 : All To Zero', songs: ['해적왕 (Pirate King)', 'Treasure'],
-      concept: '여덟 멤버가 함께 나아가는 모험과 항해.',
-      official: 'https://kqent.com/', youtube: 'https://www.youtube.com/@ATEEZofficial',
+      concept: '2018년 해적왕으로 데뷔한 8인조. GOLDEN HOUR 음반과 세계 투어로 활동 중.',
+      official: 'https://ateez.kqent.com/', youtube: 'https://www.youtube.com/@ATEEZofficial',
       photo: 'ATEEZ in August 2024 (cropped).jpg', photoLabel: '2024년 단체', photoYear: '2024', credit: 'pinkllamanade', license: 'CC BY-SA 2.0',
-      // Official notices rechecked 2026-11-12; unverified backlog media stays pending.
-      appearances: [
-        {"date":"2026-11-14","title":"MMA 2026 Global Day 출연","sub":"서울 고척스카이돔 · 카카오엔터테인먼트 · 개별 출연 시각은 공식 안내 확인","href":"https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/"},
+      morePhotos: [
+        commonsPhoto('260228 ATEEZ Choi San @ Dolce & Gabbana FW 26.27 Show in Milan.jpg', '산 · 밀라노 패션위크', '2026', 'sublimitas viii · Flickr 원작 · Commons FlickreviewR 확인 · 크롭본', 'CC BY-SA 4.0')
+      ],
+      checkedAt: '2026.11.13',
+      music: [
         {
-                "date": "2026-11-13",
-                "title": "GOLDEN HOUR : Part.6 발매 예정",
-                "sub": "14:00 KST · 타이틀 UP · KQ 공식 발표",
-                "href": "https://ateez.kqent.com/en/contents/6ade0ef2ba711e7b9ec3e59c"
+          "title": "GOLDEN HOUR : Part.6",
+          "date": "2026.11.13",
+          "type": "미니 15집 · 11.13 14:00 발매 예정 · 타이틀 UP",
+          "songs": [
+            "ANEMIA",
+            "DRIP",
+            "UP",
+            "FAITH",
+            "Hollow Victory"
+          ],
+          "href": "https://ateez.kqent.com/en/contents/6ade0ef2ba711e7b9ec3e59c"
         },
         {
-                "date": "2026-11-13",
-                "title": "KBS2 뮤직뱅크 출연",
-                "sub": "사전녹화 08:45 / 생방송 17:10 KST · KBS 신관 공개홀 · 방청 신청 종료, 선정 참가자 대상 · 집합 안내는 공식 공지 확인",
-                "href": "https://ateez.kqent.com/surveys/6af41182a993a556cdd4e773"
+          "title": "GOLDEN HOUR : Part.5",
+          "date": "2026.06.26",
+          "type": "미니 14집 · 타이틀 BAD",
+          "songs": [
+            "BAD",
+            "MAMACITA",
+            "TOXIN",
+            "Fallin'",
+            "Body"
+          ],
+          "href": "https://ateez-official.jp/musics/20862"
         },
         {
-                "date": "2026-11-14",
-                "title": "MBC 쇼! 음악중심 사전녹화",
-                "sub": "05:30 KST · 상암 MBC 신사옥 공개홀 · 방청 신청 종료, 선정 참가자 대상 · 집합 안내는 공식 공지 확인",
-                "href": "https://ateez.kqent.com/surveys/6af55eeab2aee70bd8ed5ff5"
+          "title": "GOLDEN HOUR : Part.4",
+          "date": "2026.02.06",
+          "type": "미니 13집 · 타이틀 Adrenaline",
+          "songs": [
+            "Ghost",
+            "Adrenaline",
+            "NASA",
+            "On the Road",
+            "Choose"
+          ],
+          "href": "https://music.apple.com/us/album/golden-hour-part-4-ep/1867153027"
+        },
+        {
+          "title": "TREASURE EP.1 : All To Zero",
+          "date": "2018.10.24",
+          "type": "데뷔 EP · 타이틀 해적왕",
+          "songs": [
+            "Intro : Long Journey",
+            "해적왕 (Pirate King)",
+            "Treasure",
+            "Twilight",
+            "Stay",
+            "My Way"
+          ],
+          "href": "https://ateez-official.jp/musics/7674"
         }
-],
+      ],
+      appearances: [
+        {
+          "date": "2026-11-14",
+          "title": "MMA 2026 Global Day 출연",
+          "sub": "서울 고척스카이돔 · 카카오엔터테인먼트 · 개별 출연 시각은 공식 안내 확인",
+          "href": "https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/"
+        },
+        {
+          "date": "2026-11-13",
+          "title": "GOLDEN HOUR : Part.6 발매 예정",
+          "sub": "14:00 KST · 타이틀 UP · KQ 공식 발표",
+          "href": "https://ateez.kqent.com/en/contents/6ade0ef2ba711e7b9ec3e59c"
+        },
+        {
+          "date": "2026-11-13",
+          "title": "KBS2 뮤직뱅크 출연",
+          "sub": "사전녹화 08:45 / 생방송 17:10 KST · KBS 신관 공개홀 · 방청 신청 종료, 선정 참가자 대상 · 집합 안내는 공식 공지 확인",
+          "href": "https://ateez.kqent.com/surveys/6af41182a993a556cdd4e773"
+        },
+        {
+          "date": "2026-11-14",
+          "title": "MBC 쇼! 음악중심 사전녹화",
+          "sub": "05:30 KST · 상암 MBC 신사옥 공개홀 · 방청 신청 종료, 선정 참가자 대상 · 집합 안내는 공식 공지 확인",
+          "href": "https://ateez.kqent.com/surveys/6af55eeab2aee70bd8ed5ff5"
+        },
+        {
+          "date": "2027-01-22",
+          "title": "ZERO TO ALL 인천 월드투어",
+          "sub": "19:00 · 인천 인스파이어 NAVER ARENA KST · 예매·변경은 공식 공지 확인",
+          "href": "https://ateez.kqent.com/contents/6ae94a808d38027a8d6b8b65"
+        },
+        {
+          "date": "2027-01-23",
+          "title": "ZERO TO ALL 인천 월드투어",
+          "sub": "17:00 · 인천 인스파이어 NAVER ARENA KST · 예매·변경은 공식 공지 확인",
+          "href": "https://ateez.kqent.com/contents/6ae94a808d38027a8d6b8b65"
+        },
+        {
+          "date": "2027-01-24",
+          "title": "ZERO TO ALL 인천 월드투어",
+          "sub": "16:00 · 인천 인스파이어 NAVER ARENA KST · 예매·변경은 공식 공지 확인",
+          "href": "https://ateez.kqent.com/contents/6ae94a808d38027a8d6b8b65"
+        },
+        {
+          "date": "2027-02-02",
+          "title": "ZERO TO ALL 도쿄 공연",
+          "sub": "18:30 · 국립 요요기 경기장 제1체육관 JST/KST · 예매·변경은 공식 공지 확인",
+          "href": "https://ateez-official.jp/contents/1123026"
+        },
+        {
+          "date": "2027-02-03",
+          "title": "ZERO TO ALL 도쿄 공연",
+          "sub": "18:30 · 국립 요요기 경기장 제1체육관 JST/KST · 예매·변경은 공식 공지 확인",
+          "href": "https://ateez-official.jp/contents/1123026"
+        },
+        {
+          "date": "2027-02-13",
+          "title": "ZERO TO ALL 고베 공연",
+          "sub": "17:30 · GLION ARENA KOBE JST/KST · 예매·변경은 공식 공지 확인",
+          "href": "https://ateez-official.jp/contents/1123026"
+        },
+        {
+          "date": "2027-02-14",
+          "title": "ZERO TO ALL 고베 공연",
+          "sub": "15:30 · GLION ARENA KOBE JST/KST · 예매·변경은 공식 공지 확인",
+          "href": "https://ateez-official.jp/contents/1123026"
+        },
+        {
+          "date": "2027-03-31",
+          "title": "ZERO TO ALL 런던 공연",
+          "sub": "영국 런던 · KQ 공식 일정 · 공연장·시간 추후 공지",
+          "href": "https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814"
+        },
+        {
+          "date": "2027-04-04",
+          "title": "ZERO TO ALL 리옹 공연",
+          "sub": "프랑스 리옹 · KQ 공식 일정 · 공연장·시간 추후 공지",
+          "href": "https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814"
+        },
+        {
+          "date": "2027-04-07",
+          "title": "ZERO TO ALL 베를린 공연",
+          "sub": "독일 베를린 · KQ 공식 일정 · 공연장·시간 추후 공지",
+          "href": "https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814"
+        },
+        {
+          "date": "2027-04-10",
+          "title": "ZERO TO ALL 크라쿠프 공연",
+          "sub": "폴란드 크라쿠프 · KQ 공식 일정 · 공연장·시간 추후 공지",
+          "href": "https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814"
+        },
+        {
+          "date": "2027-04-12",
+          "title": "ZERO TO ALL 암스테르담 공연",
+          "sub": "네덜란드 암스테르담 · KQ 공식 일정 · 공연장·시간 추후 공지",
+          "href": "https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814"
+        },
+        {
+          "date": "2027-04-15",
+          "title": "ZERO TO ALL 쾰른 공연",
+          "sub": "독일 쾰른 · KQ 공식 일정 · 공연장·시간 추후 공지",
+          "href": "https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814"
+        },
+        {
+          "date": "2027-04-17",
+          "title": "ZERO TO ALL 앤트워프 공연",
+          "sub": "벨기에 앤트워프 · KQ 공식 일정 · 공연장·시간 추후 공지",
+          "href": "https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814"
+        }
+      ],
+      schedules: [
+        { title: 'ATEEZ 일본 공식 일정', sub: '방송·행사·음반·공연 일정', href: 'https://ateez-official.jp/vertical_calendar' },
+        { title: 'KQ 공식 일정·소식', sub: '한국 공개방송·공연·일정 변경', href: 'https://ateez.kqent.com/contents' }
+      ],
+      news: [
+        {
+          "date": "2026.11.12",
+          "tag": "영상",
+          "title": "UP 공식 뮤직비디오 티저 2 공개",
+          "href": "https://ateez.kqent.com/contents/6af51f7c6737d57ef90dd839"
+        },
+        {
+          "date": "2026.11.11",
+          "tag": "방송",
+          "title": "11.13 뮤직뱅크 사전녹화·생방송 참가 공지",
+          "href": "https://ateez.kqent.com/surveys/6af41182a993a556cdd4e773"
+        },
+        {
+          "date": "2026.11.03",
+          "tag": "공연",
+          "title": "2027 ZERO TO ALL 인천 3회 공연·예매 공지",
+          "href": "https://ateez.kqent.com/contents/6ae94a808d38027a8d6b8b65"
+        },
+        {
+          "date": "2026.10.25",
+          "tag": "컴백",
+          "title": "미니 15집 Part.6 트랙리스트 발표 · 11.13 정식 발매 예정",
+          "href": "https://ateez.kqent.com/en/contents/6ade0ef2ba711e7b9ec3e59c"
+        }
+      ],
+      merch: [
+        {
+          "title": "GOLDEN HOUR : Part.6 공식 음반 3종 세트",
+          "sub": "KQ TOKTOQ 공식 음반 · 11/13 발매 예정 · 현재 판매 조건·재고는 판매처 확인",
+          "href": "https://ateez.kqent.com/shop/products/243"
+        },
+        {
+          "title": "GOLDEN HOUR : Part.6 일본 정식 수입반",
+          "sub": "UNIVERSAL MUSIC JAPAN · A/DIARY/Z · 일본 11.18 발매 예정",
+          "href": "https://www.universal-music.co.jp/ateez/news/2026-10-13/"
+        },
+        {
+          "title": "ATEEZ SPECIAL VOICE CARD",
+          "sub": "WOWOW × CoDaMa 공식 음성 카드 · 8.04 출시 · 판매 상태 별도 확인",
+          "href": "https://prtimes.jp/main/html/rd/p/000008858.000001355.html"
+        }
+      ],
+      campaigns: [
+        {
+          "kind": "콜라보",
+          "date": "2026.09.15",
+          "title": "ATEEZ × LINE FRIENDS MIGHTEEZ",
+          "sub": "Rock The Stage 3차 팝업 · 시부야 9/18~27 행사 종료 · 공식 협업 기록",
+          "href": "https://prtimes.jp/main/html/rd/p/000000129.000040759.html"
+        },
+        {
+          "kind": "홍보대사",
+          "date": "2026.08.27",
+          "title": "스튜디오 톰보이 × 우영",
+          "sub": "신세계인터내셔날 첫 글로벌 앰버서더 · 멤버 개인 활동",
+          "href": "https://www.shinsegaegroupnewsroom.com/studio-tomboy-global-ambassador-ateez-wooyoung/"
+        },
+        {
+          "kind": "콜라보",
+          "date": "2026.07.21",
+          "title": "ATEEZ × WOWOW × CoDaMa",
+          "sub": "팬미팅 기념 NFC 음성 카드 공동 제작 · 8.04 출시",
+          "href": "https://prtimes.jp/main/html/rd/p/000008858.000001355.html"
+        }
+      ],
       accent: '#d7af68', light: '#4f422a', dark: '#fff2d5', bg: '#171e2c', night: true, shape: '✶'
     },
     {
       id: 'treasure', name: 'TREASURE', korean: '트레저', category: 'boy', fan: 'TREASURE MAKER', agency: 'YG Entertainment',
       members: ['최현석', '지훈', '요시', '준규', '윤재혁', '아사히', '도영', '하루토', '박정우', '소정환'],
       debut: '2020.08.07', debutWork: 'THE FIRST STEP : CHAPTER ONE', songs: ['BOY', '들어와 (COME TO ME)'],
-      concept: '다채로운 개성과 무대로 빛나는 열 명의 팀워크.',
-      official: 'https://www.ygfamily.com/', youtube: 'https://www.youtube.com/@TREASURE',
+      concept: '2020년 8월 BOY로 데뷔한 YG의 10인조 그룹. 2026년 NEW WAV와 SHOCK에서 힙합 사운드를 선보였다.',
+      official: 'https://ygfamily.com/ko/artists/treasure/profile', youtube: 'https://www.youtube.com/@TREASURE',
+      checkedAt: '2026.11.13',
       photo: '240405 트레저 TTA Malaysia 1st Place.jpg', photoLabel: '2024년 단체', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
-      // Official notices rechecked 2026-11-12; other backlog changes remain pending.
+      morePhotos: [
+        commonsPhoto('230428 TREASURE(트레저) Yoshi ICN.jpg', '요시 · 인천공항', '2023', 'K-POPIT 케이팝잇 (TENASIA)', 'CC BY 3.0'),
+        commonsPhoto('230707 TREASURE(트레저) Junghwan(정환) ICN.jpg', '소정환 · 인천공항', '2023', 'K-POPIT 케이팝잇 (TENASIA)', 'CC BY 3.0')
+      ],
+      music: [
+        {
+          "title": "SHOCK",
+          "date": "2026.11.02",
+          "type": "디지털 싱글 · 타이틀 SHOCK",
+          "songs": [
+            "SHOCK"
+          ],
+          "href": "https://www.ygfamily.com/en/artists/treasure/discography/1676"
+        },
+        {
+          "title": "NEW WAV",
+          "date": "2026.06.01",
+          "type": "미니 4집 · 타이틀 IF I",
+          "songs": [
+            "IF I",
+            "ZOOM ZOOM",
+            "NALLY-NA (HYUNHAYO)",
+            "DANGER"
+          ],
+          "href": "https://www.ygfamily.com/en/artists/treasure/discography/1660"
+        },
+        {
+          "title": "LOVE PULSE",
+          "date": "2025.09.01",
+          "type": "미니 3집 · 타이틀 PARADISE",
+          "songs": [
+            "EVERYTHING",
+            "PARADISE",
+            "NOW FOREVER",
+            "BETTER THAN ME"
+          ],
+          "href": "https://ygfamily.com/en/artists/treasure/discography/1640"
+        }
+      ],
       appearances: [
-        {"date": "2026-11-14", "title": "MBC 쇼! 음악중심 출연", "sub": "15:20 KST 방송 일정 · YG 공식 달력 · 개별 무대·사전녹화·방청 안내는 별도 공지 확인", "href": "https://ygfamily.com/ko/artists/treasure/schedule"},
-        {"date": "2026-11-20", "title": "2026 MAMA AWARDS 출연", "sub": "공식 일정 18:00 JST/KST · 일본 교세라 돔 오사카 · 개별 무대 시각은 별도 안내 확인", "href": "https://ygfamily.com/ko/artists/treasure/schedule"}
+        {
+          "date": "2026-11-14",
+          "title": "MBC 쇼! 음악중심 출연",
+          "sub": "15:20 KST 방송 일정 · YG 공식 달력 · 개별 무대·사전녹화·방청 안내는 별도 공지 확인",
+          "href": "https://ygfamily.com/ko/artists/treasure/schedule"
+        },
+        {
+          "date": "2026-11-20",
+          "title": "2026 MAMA AWARDS 출연",
+          "sub": "공식 일정 18:00 JST/KST · 일본 교세라 돔 오사카 · 개별 무대 시각은 별도 안내 확인",
+          "href": "https://ygfamily.com/ko/artists/treasure/schedule"
+        }
+      ],
+      schedules: [
+        { title: 'YG 공식 TREASURE 일정', sub: '방송·시상식·공식 일정 변경 확인', href: 'https://ygfamily.com/ko/artists/treasure/schedule' },
+        { title: 'YG 공식 공연 안내', sub: 'TREASURE 콘서트·팬콘 공식 안내', href: 'https://www.ygfamily.com/en/artists/treasure/concert' }
+      ],
+      news: [
+        {
+          "date": "2026.11.02",
+          "tag": "컴백",
+          "title": "디지털 싱글 SHOCK 발매 · 공식 트랙·크레딧 공개",
+          "href": "https://www.ygfamily.com/en/artists/treasure/discography/1676"
+        },
+        {
+          "date": "2026.06.01",
+          "tag": "음악",
+          "title": "미니 4집 NEW WAV 발매 · IF I 포함 4곡",
+          "href": "https://www.ygfamily.com/en/artists/treasure/discography/1660"
+        }
+      ],
+      merch: [
+        {
+          "title": "SHOCK 공식 MD",
+          "sub": "YG SELECT · 포토카드 홀더·키링 등 · 판매·재고는 공식몰 확인 · 일부 품절, 현재 재고 확인",
+          "href": "https://www.ygselect.com/product/list.html?cate_no=1426"
+        },
+        {
+          "title": "TREASURE20FW 공식 의류",
+          "sub": "YG SELECT · 체크 셔츠 등 2026 가을·겨울 MD · 일부 품절, 현재 재고 확인",
+          "href": "https://www.ygselect.com/product/list.html?cate_no=1398"
+        },
+        {
+          "title": "TREASURE 6주년 공식 MD",
+          "sub": "YG SELECT · 기념 브릭 세트·굿즈 · 재고는 판매처 확인 · 일부 품절, 현재 재고 확인",
+          "href": "https://www.ygselect.com/product/list.html?cate_no=1410"
+        }
+      ],
+      campaigns: [
+        {
+          "kind": "콜라보",
+          "date": "2026.09.07",
+          "title": "Reebok × AZUL BY MOUSSY × TREASURE",
+          "sub": "일본 가을 컬렉션 비주얼 · 9.16 매장 발매",
+          "href": "https://prtimes.jp/main/html/rd/p/000001201.000014511.html"
+        }
       ],
       accent: '#478dce', light: '#dff3ff', dark: '#28577e', bg: '#f1f9ff', shape: '◆'
     },
@@ -900,32 +1408,608 @@
       id: 'nctwish', name: 'NCT WISH', korean: '엔시티 위시', category: 'boy', fan: 'NCTzen', agency: 'SM Entertainment',
       members: ['시온', '리쿠', '유우시', '재희', '료', '사쿠야'],
       debut: '2024.02.21', debutWork: 'WISH', songs: ['WISH'],
+      checkedAt: '2026.11.13',
       concept: '밝은 에너지로 소원을 전하는 NCT의 여섯 멤버 유닛.',
-      official: 'https://www.smentertainment.com/', youtube: 'https://www.youtube.com/@NCTWISH',
+      official: 'https://www.nct-jp.net/', youtube: 'https://www.youtube.com/@NCTWISH',
       photo: '2026 NCT WISH promotion 01.jpg', photoLabel: '2026년 단체', photoYear: '2026', credit: 'numbuzin', license: 'CC BY 4.0',
-      // Official notices rechecked 2026-11-12; other backlog changes remain pending.
+      morePhotos: [
+        commonsPhoto('2026 NCT WISH promotion 03.jpg', '넘버즈인 1주년 인사 영상 · 2026.02.26', '2026', 'numbuzin', 'CC BY 4.0')
+      ],
+      music: [
+        {
+          "title": "I SPY",
+          "date": "2026.10.12",
+          "type": "미니 4집 · 타이틀 I SPY",
+          "songs": [
+            "I SPY",
+            "We Own This Street",
+            "UPGRADE",
+            "Super Major",
+            "Hubble Time",
+            "꿈결 (Like A Dream)"
+          ],
+          "href": "https://en.smtownandstore.com/product/nct-wish-the-4th-mini-album-i-spy-disc-pack-ver/29342/category/646/display/1/"
+        },
+        {
+          "title": "Ode to Love",
+          "date": "2026.04.20",
+          "type": "한국 정규 1집 · 타이틀 Ode to Love",
+          "songs": [
+            "2.0 (TWO POINT O)",
+            "Ode to Love",
+            "Sticky",
+            "Feel The Beat",
+            "Crush",
+            "Street (2AM)",
+            "Glow Up",
+            "Everglow",
+            "Don't Say You Love Me",
+            "Voyage"
+          ],
+          "href": "https://music.apple.com/us/album/ode-to-love-the-1st-album/1891040424"
+        },
+        {
+          "title": "WISHLIST",
+          "date": "2026.01.14",
+          "type": "일본 미니 1집 · 리드곡 Hello Mellow",
+          "songs": [
+            "Hello Mellow",
+            "ZONE",
+            "BUBBLE GUM",
+            "Dreamcatcher",
+            "SOMEDAY",
+            "Good Morning",
+            "poppop (Japanese Ver.)"
+          ],
+          "href": "https://avexnet.jp/news/1030412"
+        },
+        {
+          "title": "WISH",
+          "date": "2024.02.28",
+          "type": "일본 데뷔 싱글",
+          "songs": [
+            "WISH (Japanese ver.)",
+            "Sail Away (Japanese ver.)"
+          ],
+          "href": "https://nct-jp.net/en/discography/detail.php?id=1020182"
+        }
+      ],
       appearances: [
-        {"date": "2026-11-23", "title": "TV아사히 드림페스티벌 출연", "sub": "K아레나 요코하마 · 13:30 입장 / 15:00 개연 예정 JST/KST · 전일정 매진 · 개별 출연 시각 미공개", "href": "https://nct-jp.net/ja/news/detail.php?id=1135596"},
-        {"date": "2026-12-06", "title": "I SPY 일본 발매 이벤트 · 오사카", "sub": "오사카 근교 · 시간·상세 장소는 당첨자 추후 안내 · 시리얼 추첨 응모 11/15 23:59 JST까지 · 구매·응모 조건은 공식 공지 확인", "href": "https://www.nct-jp.net/news/detail.php?id=1136642"}
+        {
+          "date": "2026-11-23",
+          "title": "TV아사히 드림페스티벌 출연",
+          "sub": "K아레나 요코하마 · 13:30 입장 / 15:00 개연 예정 JST/KST · 전일정 매진 · 개별 출연 시각 미공개",
+          "href": "https://nct-jp.net/ja/news/detail.php?id=1135596"
+        },
+        {
+          "date": "2026-12-06",
+          "title": "I SPY 일본 발매 이벤트 · 오사카",
+          "sub": "오사카 근교 · 시간·상세 장소는 당첨자 추후 안내 · 시리얼 추첨 응모 11/15 23:59 JST까지 · 구매·응모 조건은 공식 공지 확인",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1136642"
+        },
+        {
+          "date": "2027-01-15",
+          "title": "INTO THE WISH : Face Our WISH 서울 1일차",
+          "sub": "서울 고척스카이돔 · 18:00 (KST) · 멜론티켓 공식 예매",
+          "href": "https://weverse.io/nctwish/notice/40058"
+        },
+        {
+          "date": "2027-01-16",
+          "title": "INTO THE WISH : Face Our WISH 서울 2일차",
+          "sub": "서울 고척스카이돔 · 17:00 (KST) · 멜론티켓 공식 예매",
+          "href": "https://weverse.io/nctwish/notice/40058"
+        },
+        {
+          "date": "2027-02-26",
+          "title": "INTO THE WISH 일본 도쿄 1일차",
+          "sub": "요요기 국립경기장 제1체육관 · 18:30 (JST)",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1137082"
+        },
+        {
+          "date": "2027-02-27",
+          "title": "INTO THE WISH 일본 도쿄 2일차",
+          "sub": "요요기 국립경기장 제1체육관 · 17:00 (JST)",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1137082"
+        },
+        {
+          "date": "2027-02-28",
+          "title": "INTO THE WISH 일본 도쿄 3일차",
+          "sub": "요요기 국립경기장 제1체육관 · 16:00 (JST)",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1137082"
+        },
+        {
+          "date": "2027-03-05",
+          "title": "INTO THE WISH 일본 고베 1일차",
+          "sub": "GLION ARENA KOBE · 18:30 (JST)",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1137082"
+        },
+        {
+          "date": "2027-03-06",
+          "title": "INTO THE WISH 일본 고베 2일차",
+          "sub": "GLION ARENA KOBE · 17:00 (JST)",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1137082"
+        },
+        {
+          "date": "2027-03-07",
+          "title": "INTO THE WISH 일본 고베 3일차",
+          "sub": "GLION ARENA KOBE · 16:00 (JST)",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1137082"
+        },
+        {
+          "date": "2027-03-13",
+          "title": "INTO THE WISH 일본 후쿠오카 1일차",
+          "sub": "기타큐슈 메세 · 17:00 (JST)",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1137082"
+        },
+        {
+          "date": "2027-03-14",
+          "title": "INTO THE WISH 일본 후쿠오카 2일차",
+          "sub": "기타큐슈 메세 · 16:00 (JST)",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1137082"
+        },
+        {
+          "date": "2027-03-21",
+          "title": "INTO THE WISH 일본 아이치 1일차",
+          "sub": "포트메세 나고야 제1전시관 · 17:00 (JST)",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1137082"
+        },
+        {
+          "date": "2027-03-22",
+          "title": "INTO THE WISH 일본 아이치 2일차",
+          "sub": "포트메세 나고야 제1전시관 · 16:00 (JST)",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1137082"
+        }
+      ],
+      schedules: [
+        { title: 'NCT 일본 공식 뉴스·공연 안내', sub: 'NCT WISH 일본 아레나 투어·팬 이벤트·변경 소식', href: 'https://www.nct-jp.net/news/' },
+        { title: 'NCT WISH 공식 공지', sub: 'Weverse · 로그인·커뮤니티 가입 후 한국 공연·팬 행사 및 예매 확인', href: 'https://weverse.io/nctwish/notice' }
+      ],
+      news: [
+        {
+          "date": "2026.11.04",
+          "tag": "공연",
+          "title": "2027 일본 전국 아레나 투어 10회 · 선예매 11.16까지",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1137082"
+        },
+        {
+          "date": "2026.10.31",
+          "tag": "팬 행사",
+          "title": "I SPY 일본 오사카 발매 행사 12.6 확정",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1136642"
+        },
+        {
+          "date": "2026.10.12",
+          "tag": "음악",
+          "title": "미니 4집 I SPY 발매 · 6곡 수록",
+          "href": "https://smtownandstore.com/product/nct-wish-the-4th-mini-album-i-spy-deluxe-book-ver/29341/category/53/display/1/"
+        }
+      ],
+      merch: [
+        {
+          "title": "I SPY 미니 4집 Deluxe Book Ver.",
+          "sub": "SMTOWN &STORE · 포토북·포토카드 · 재고와 가격은 판매처 확인",
+          "href": "https://smtownandstore.com/product/nct-wish-the-4th-mini-album-i-spy-deluxe-book-ver/29341/category/53/display/1/"
+        },
+        {
+          "title": "I SPY 일본 한정반·특전",
+          "sub": "avex 공식 · 타워레코드·HMV·위버스 특전 안내 · 기간/대상 품목 확인",
+          "href": "https://www.nct-jp.net/news/detail.php?id=1136642"
+        },
+        {
+          "title": "WISHLIST 일본 공식 음반",
+          "sub": "avex trax · 한정 패키지·특전 · 재고 확인",
+          "href": "https://avexnet.jp/release/1021226"
+        }
+      ],
+      campaigns: [
+        {
+          "kind": "콜라보",
+          "date": "2026.03.19",
+          "title": "WEGO 2026 SPRING × NCT WISH",
+          "sub": "일본 패션 브랜드 비주얼 모델·협업 상품 · 3/16 발표, 3/19 캠페인 시작",
+          "href": "https://prtimes.jp/main/html/rd/p/000000155.000057274.html"
+        }
       ],
       accent: '#87b340', light: '#ecffd9', dark: '#567535', bg: '#f7ffef', shape: '☆'
     },
     {
-      id: 'andteam', name: '&TEAM', korean: '앤팀', category: 'boy', fan: 'LUNÉ', agency: 'YX LABELS',
-      members: ['의주', '후마', '케이', '니콜라스', '유마', '조', '하루아', '타키', '마키'],
-      debut: '2022.12.07', debutWork: 'First Howling : ME', songs: ['Under the skin', 'Scent of you'],
-      concept: '서로 다른 개성이 하나의 팀으로 이어지는 아홉 멤버.',
-      official: 'https://www.andteam-official.jp/', youtube: 'https://www.youtube.com/@andTEAM_official',
-      photo: '&TEAM ATA promotion 02.jpg', photoLabel: 'ATA 활동', photoYear: '2026', credit: 'K-POPIT 케이팝잇', license: 'CC BY 4.0',
-      // Official notices rechecked 2026-11-12; other backlog changes remain pending.
-      appearances: [
-        {"date": "2026-11-18", "title": "Mark on You 홀 투어 · 오사카", "sub": "그랑큐브 오사카 · 17:00 입장 / 18:00 개연 JST/KST · 예매·변경 사항은 공식 공지 확인", "href": "https://www.andteam-official.jp/news/021ab1de6a61"},
-        {"date": "2026-11-18", "title": "JO·TAKI 후지TV ホンマでっか!?TV 출연", "sub": "21:00~21:54 JST/KST 방송 · JO·TAKI 출연", "href": "https://www.andteam-official.jp/news/a84de8968609"},
-        {"date": "2026-11-18", "endDate": "2026-11-19", "title": "JO·TAKI·MAKI TBS よるのブランチ 출연", "sub": "11/18 23:56~11/19 00:55 JST/KST 방송 · JO·TAKI·MAKI 출연", "href": "https://www.andteam-official.jp/news/2c290411ba85"},
-        {"date": "2026-11-19", "title": "Mark on You 홀 투어 · 오사카", "sub": "그랑큐브 오사카 · 17:00 입장 / 18:00 개연 JST/KST · 예매·변경 사항은 공식 공지 확인", "href": "https://www.andteam-official.jp/news/021ab1de6a61"},
-        {"date": "2026-11-27", "title": "Mark on You 홀 투어 · 히로시마", "sub": "히로시마 문화학원 HBG홀 · 17:30 입장 / 18:30 개연 JST/KST · 예매·변경 사항은 공식 공지 확인", "href": "https://www.andteam-official.jp/news/021ab1de6a61"}
+      "id": "andteam",
+      "name": "&TEAM",
+      "korean": "앤팀",
+      "category": "boy",
+      "fan": "LUNÉ",
+      "agency": "YX LABELS",
+      "members": [
+        "의주",
+        "후마",
+        "케이",
+        "니콜라스",
+        "유마",
+        "조",
+        "하루아",
+        "타키",
+        "마키"
       ],
-      accent: '#528b73', light: '#e0f5e9', dark: '#315b49', bg: '#f2fbf4', shape: '✷'
+      "debut": "2022.12.07",
+      "debutWork": "First Howling : ME",
+      "songs": [
+        "Under the skin",
+        "Scent of you"
+      ],
+      "checkedAt": '2026.11.13',
+      "concept": "다른 개성을 지닌 아홉 멤버가 음악과 무대로 하나가 되는 팀.",
+      "official": "https://www.andteam-official.jp/",
+      "youtube": "https://www.youtube.com/@andTEAM_official",
+      "photo": "&TEAM ATA promotion 02.jpg",
+      "photoLabel": "ATA 활동",
+      "photoYear": "2026",
+      "credit": "K-POPIT 케이팝잇",
+      "license": "CC BY 4.0",
+      morePhotos: [commonsPhoto('241002 &Team (1).jpg', '2024년 단체 사진', '2024', 'nacco', 'CC BY 3.0')],
+      music: [
+        {
+          "title": "Fearless",
+          "date": "2026.10.10",
+          "type": "디지털 싱글",
+          "songs": [
+            "Fearless"
+          ],
+          "href": "https://www.andteam-official.jp/discography/674dcde69452"
+        },
+        {
+          "title": "Mark on Me",
+          "date": "2026.09.08",
+          "type": "한국 미니 2집 · 한국 발매일",
+          "songs": [
+            "Mark on Me",
+            "Good Boy",
+            "Love Jang",
+            "Accelerate",
+            "Empty",
+            "Night to howl!"
+          ],
+          "href": "https://www.andteam-official.jp/discography/1affd625347f"
+        },
+        {
+          "title": "We on Fire",
+          "date": "2026.04.21",
+          "type": "일본 EP · 타이틀 We on Fire",
+          "songs": [
+            "We on Fire",
+            "Bewitched",
+            "ホットライン",
+            "桜色Yell",
+            "We on Fire (Korean ver.)",
+            "Bewitched (Korean ver.)"
+          ],
+          "href": "https://www.andteam-official.jp/discography/7f97d047e0d5"
+        },
+        {
+          "title": "Back to Life",
+          "date": "2025.10.28",
+          "type": "한국 미니 1집 · 타이틀 Back to Life",
+          "songs": [
+            "Back to Life",
+            "Lunatic",
+            "MISMATCH",
+            "Rush",
+            "Heartbreak Time Machine",
+            "Who am I"
+          ],
+          "href": "https://www.andteam-official.jp/discography/cpbxev"
+        },
+        {
+          "title": "First Howling : ME",
+          "date": "2022.12.07",
+          "type": "데뷔 EP · 타이틀 Under the skin",
+          "songs": [
+            "Under the skin",
+            "Scent of you",
+            "バズ恋 (BUZZ LOVE)",
+            "The Final Countdown (&TEAM ver.)"
+          ],
+          "href": "https://www.andteam-official.jp/news/owsyjh"
+        }
+      ],
+      appearances: [
+        {
+          "date": "2026-11-18",
+          "title": "Mark on You 홀 투어 · 오사카",
+          "sub": "그랑큐브 오사카 · 17:00 입장 / 18:00 개연 JST/KST · 예매·변경 사항은 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-11-18",
+          "title": "JO·TAKI 후지TV ホンマでっか!?TV 출연",
+          "sub": "21:00~21:54 JST/KST 방송 · JO·TAKI 출연",
+          "href": "https://www.andteam-official.jp/news/a84de8968609"
+        },
+        {
+          "date": "2026-11-18",
+          "endDate": "2026-11-19",
+          "title": "JO·TAKI·MAKI TBS よるのブランチ 출연",
+          "sub": "11/18 23:56~11/19 00:55 JST/KST 방송 · JO·TAKI·MAKI 출연",
+          "href": "https://www.andteam-official.jp/news/2c290411ba85"
+        },
+        {
+          "date": "2026-11-19",
+          "title": "Mark on You 홀 투어 · 오사카",
+          "sub": "그랑큐브 오사카 · 17:00 입장 / 18:00 개연 JST/KST · 예매·변경 사항은 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-11-27",
+          "title": "Mark on You 홀 투어 · 히로시마",
+          "sub": "히로시마 문화학원 HBG홀 · 17:30 입장 / 18:30 개연 JST/KST · 예매·변경 사항은 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-12-10",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 후쿠오카 선팔레스 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-12-11",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 후쿠오카 선팔레스 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-12-15",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 이시카와 혼다노모리 호쿠덴홀 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-12-16",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 이시카와 혼다노모리 호쿠덴홀 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-12-19",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 에히메 마쓰야마 시민회관 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-12-20",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 에히메 마쓰야마 시민회관 · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-12-27",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 홋카이도 삿포로 문화예술극장 hitaru · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-05",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 구마모토성 홀 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-06",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 구마모토성 홀 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-10",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 미야기 센다이 선플라자홀 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-11",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 미야기 센다이 선플라자홀 · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-15",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 니가타 현민회관 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-16",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 니가타 현민회관 · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-19",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 오사카 그랑큐브 오사카 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-20",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 오사카 그랑큐브 오사카 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-22",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 오카야마 구라시키 시민회관 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-23",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 오카야마 구라시키 시민회관 · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-01-28",
+          "title": "&TEAM Mark on You · 홀 투어",
+          "sub": "일본 오키나와 컨벤션센터 극장동 · 18:30 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2027-02-03",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 효고 GLION ARENA KOBE · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-02-04",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 효고 GLION ARENA KOBE · 17:30 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-02-06",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 아이치 IG Arena · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-02-07",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 아이치 IG Arena · 16:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-02-13",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 가나가와 피아 아레나 MM · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-02-14",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 가나가와 피아 아레나 MM · 16:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-02-27",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 가가와 아나부키 아레나 · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-02-28",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 가가와 아나부키 아레나 · 16:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-03-20",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 후쿠오카 마린멧세 B관 · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-03-21",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 후쿠오카 마린멧세 B관 · 16:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-03-22",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 후쿠오카 마린멧세 B관 · 16:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-03-26",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 미야기 세키스이하임 슈퍼아레나 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        },
+        {
+          "date": "2027-03-27",
+          "title": "&TEAM Mark on You · 아레나 투어",
+          "sub": "일본 미야기 세키스이하임 슈퍼아레나 · 16:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        }
+      ],
+      "schedules": [
+        {
+          "title": "&TEAM 공식 일정",
+          "sub": "공연·방송 등 활동 달력 · 변경 여부 확인",
+          "href": "https://www.andteam-official.jp/schedule"
+        },
+        {
+          "title": "&TEAM 공식 티켓",
+          "sub": "투어·예매·변경·취소 공지",
+          "href": "https://www.andteam-official.jp/ticket"
+        }
+      ],
+      news: [
+        {
+          "date": "2026.11.12",
+          "tag": "광고",
+          "title": "For us, 미쓰이 라라포트·아울렛 블랙프라이데이 TV 광고 음악 선정",
+          "href": "https://www.andteam-official.jp/news/48bd3c0789e7"
+        },
+        {
+          "date": "2026.11.12",
+          "tag": "굿즈",
+          "title": "&TEAM CAFE THE WOLF BUTLERS 상품 예약 판매 시작",
+          "href": "https://www.andteam-official.jp/news/56e8ec3cf6be"
+        },
+        {
+          "date": "2026.11.12",
+          "tag": "방송",
+          "title": "JO·TAKI·MAKI, 11월 18일 TBS よるのブランチ 출연 발표",
+          "href": "https://www.andteam-official.jp/news/2c290411ba85"
+        },
+        {
+          "date": "2026.11.12",
+          "tag": "방송",
+          "title": "JO·TAKI, 11월 18일 후지TV ホンマでっか!?TV 출연 발표",
+          "href": "https://www.andteam-official.jp/news/a84de8968609"
+        },
+        {
+          "date": "2026.11.06",
+          "tag": "공연",
+          "title": "2027년 Mark on You 아레나 투어 13회 공식 일정 공개",
+          "href": "https://www.andteam-official.jp/news/dd0f71998bc8"
+        }
+      ],
+      merch: [
+        {
+          "title": "&TEAM CAFE THE WOLF BUTLERS 공식 MD",
+          "sub": "예약 11/12 12:00~2027/1/31 18:00 JST · 수량 한정·일본 내 배송 · 2027년 4월 중순 이후 순차 발송 예정",
+          "href": "https://www.andteam-official.jp/news/56e8ec3cf6be"
+        },
+        {
+          "title": "Mark on Me 공식 포토카드·키링 MD",
+          "sub": "2026.09.08 판매 개시 · 일본 내 배송 · 수량 한정·소진 가능 · 재고·판매 조건은 공식 안내 확인",
+          "href": "https://www.andteam-official.jp/news/5975b9ab0505"
+        },
+        {
+          "title": "Mark on You 투어 공식 MD",
+          "sub": "9/15~20 사전판매 종료 안내 · 현재 구매·재고 여부는 공식 판매처 확인",
+          "href": "https://www.andteam-official.jp/news/2a6725a8861d"
+        },
+        {
+          "title": "&TEAM 공식 상품 목록",
+          "sub": "Weverse Shop · 앨범·응원봉·공식 MD · 재고·가격은 판매처 확인",
+          "href": "https://shop.weverse.io/ko/shop/USD/artists/75"
+        }
+      ],
+      campaigns: [
+        {
+          "kind": "광고",
+          "date": "2026.11.12",
+          "title": "&TEAM 'For us' × 미쓰이 라라포트·아울렛 BLACK FRIDAY",
+          "sub": "일본 TV CM 삽입곡(일부 지역 제외) · 2026.11.29까지 순차 방영",
+          "href": "https://www.andteam-official.jp/news/48bd3c0789e7"
+        }
+      ],
+      "accent": "#528b73",
+      "light": "#e0f5e9",
+      "dark": "#315b49",
+      "bg": "#f2fbf4",
+      "shape": "✷"
     }
   ];
   window.OJJUDA_FAN_ARTISTS.push(...additionalArtists.map(artistFrom));

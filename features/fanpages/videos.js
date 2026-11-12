@@ -117,5 +117,40 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'bDvtb6Pywes', title: 'Checkmate', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.09.11' },
     { id: 'W-D8GSXg1W8', title: 'Bloody Paradise', kind: '퍼포먼스 뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.08.31' },
     { id: 'R6e4tBWxIxE', title: 'Knife', kind: '뮤직비디오', source: 'HYBE LABELS / BELIFT LAB · 2026.01.16' }
+  ],
+  tws: [
+    { id: '3MPUCncZBR0', title: '내 이름을 불러줘 (Call My Name)', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS' },
+    { id: 'OTxxIomLDGw', title: 'Call My Name MV Shoot Sketch', kind: '메이킹', source: 'TWS Official / PLEDIS' },
+    { id: '5U5qBHwDA_M', title: '널 따라가 (You, You)', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS' },
+    { id: 'tXvopPZFY8Y', title: 'TO US Highlight Medley', kind: '하이라이트 메들리', source: 'HYBE LABELS / PLEDIS' }
+  ],
+  nctdream: [
+    { id: 'wG7pnZttup8', title: 'Boogie Woogie', kind: '뮤직비디오', source: 'SMTOWN' },
+    { id: 'LFbU0A1-IH8', title: 'The Sun', kind: '뮤직비디오', source: 'SMTOWN' },
+    { id: 'BrxjpUZs6KI', title: 'TV아사히 드림 페스티벌 2026 출연 인사', kind: '공식 인사 영상', source: 'TV아사히 드림 페스티벌' }
+  ],
+  ateez: [
+    { id: 'iqQWCYMlMw0', title: 'DRIP', kind: '뮤직비디오', source: 'ATEEZ / KQ ENTERTAINMENT · 2026.10.23' },
+    { id: 'S1g5qrY5w3o', title: 'UP MV Teaser 2', kind: '뮤직비디오 티저', source: 'ATEEZ / KQ ENTERTAINMENT · 2026.11.12' },
+    { id: 'lYH1OEsyhaQ', title: 'UP MV Teaser 1', kind: '뮤직비디오 티저', source: 'ATEEZ / KQ ENTERTAINMENT · 2026.11.10' },
+    { id: 'vqkfEUqjl6Y', title: 'Adrenaline', kind: '뮤직비디오', source: 'ATEEZ / KQ ENTERTAINMENT · 2026.02.06' }
+  ],
+  treasure: [
+    { id: 'u_hpZueWI9g', title: 'SHOCK', kind: '뮤직비디오', source: 'TREASURE Official / YG' },
+    { id: 'QERKD90hG98', title: 'IF I', kind: '뮤직비디오', source: 'TREASURE Official / YG' },
+    { id: 'nSKPJ2UmnqU', title: 'ZOOM ZOOM', kind: '안무 영상', source: 'TREASURE Official / YG' },
+    { id: 'KcW1_wI6rsc', title: 'EVERYTHING', kind: '뮤직비디오', source: 'TREASURE Official / YG' }
+  ],
+  nctwish: [
+    { id: 'xIlFjHHUfI0', title: 'I SPY', kind: '뮤직비디오', source: 'SMTOWN' },
+    { id: '1o5O2YvV3HU', title: 'Ode to Love', kind: '뮤직비디오', source: 'SMTOWN' },
+    { id: '8s23tBtQciU', title: 'Hello Mellow', kind: '뮤직비디오', source: 'SMTOWN' },
+    { id: 'UulR1x4tvZE', title: 'Dreamcatcher', kind: '스페셜 비디오', source: 'SMTOWN' }
+  ],
+  andteam: [
+    {"id":"F-NcvXY8_vU","title":"Mark on Me","kind":"뮤직비디오","source":"HYBE LABELS / YX LABELS · 2026.09.08"},
+    {"id":"8hU6P7MmRyk","title":"We on Fire","kind":"뮤직비디오","source":"HYBE LABELS / YX LABELS · 2026.04.13"},
+    {"id":"KqE0P1qMtQg","title":"Back to Life","kind":"뮤직비디오","source":"HYBE LABELS / YX LABELS · 2025.10.27"},
+    {"id":"1fVsSx5ggQc","title":"For us · 라라포트 BLACK FRIDAY TV CM","kind":"광고 영상","source":"미쓰이 쇼핑파크 / &TEAM · 2026.11.09"}
   ]
 });

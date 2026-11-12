@@ -243,3 +243,142 @@ if (seventeenProfile) {
   seventeenProfile.sources.push({ label: 'PLEDIS · SEVENTEEN 공식 프로필', href: 'https://www.pledis.co.kr/artist/detail/seventeen/profile/' });
   seventeenProfile.sources.push({ label: '일본 공식 일정 · 11월 공연', href: 'https://www.seventeen-17.jp/posts/schedule' });
 }
+
+// Official source rechecked 2026-11-12.
+const twsProfile = window.OJJUDA_FAN_PROFILES.tws;
+if (twsProfile) {
+  twsProfile.expanded = true;
+  twsProfile.checkedAt = '2026.11.12';
+  twsProfile.records = [
+    { year: '2024.01', title: 'Sparkling Blue 데뷔', detail: '2024.01.22 데뷔 미니앨범 · 5곡', href: 'https://music.apple.com/us/album/sparkling-blue/1723932647' },
+    { year: '2026.11', title: 'TO US 두 번째 싱글', detail: '11월 2일 발매 · 3곡', href: 'https://music.apple.com/us/album/to-us-single/6818392534' }
+  ];
+  const twsBirthdays = {
+    '신유': '2003.11.07', '도훈': '2005.01.30', '영재': '2005.05.31',
+    '한진': '2006.01.05', '지훈': '2006.03.28', '경민': '2007.10.02'
+  };
+  for (const member of twsProfile.members) {
+    member.birthday = twsBirthdays[member.name] || null;
+    member.source = 'https://tws-official.jp/profile/';
+  }
+  twsProfile.sources.unshift({ label: 'TWS 일본 공식 그룹 소개', href: 'https://tws-official.jp/profile/' });
+  twsProfile.sources.push({ label: 'TWS 일본 공식 멤버 생일', href: 'https://tws-official.jp/profile/' });
+  twsProfile.sources.push({ label: 'Apple Music · TO US 음반', href: 'https://music.apple.com/us/album/to-us-single/6818392534' });
+}
+
+// Official source rechecked 2026-11-12.
+const nctdreamProfile = window.OJJUDA_FAN_PROFILES.nctdream;
+if (nctdreamProfile) {
+  nctdreamProfile.expanded = true;
+  nctdreamProfile.checkedAt = '2026.11.12';
+  nctdreamProfile.records = [
+    { year: '2026.11', title: '정규 6집 DREAM AFTER DREAM', detail: '2026.11.09 발매 · 타이틀 Boogie Woogie · 10곡', href: 'https://music.apple.com/us/album/dream-after-dream/6827483714' },
+    { year: '2026.11', title: '일본 공연 출연', detail: '11.22 TV아사히 드림 페스티벌 출연', href: 'https://nct-jp.net/en/news/detail.php?id=1135918' }
+  ];
+  nctdreamProfile.sources.unshift({ label: 'NCT 일본 공식 소식 · 음반·활동 일정', href: 'https://nct-jp.net/news/' });
+  nctdreamProfile.sources.push({ label: 'SM 공식 음반 유통 · DREAM AFTER DREAM', href: 'https://music.apple.com/us/album/dream-after-dream/6827483714' });
+}
+
+// Official source rechecked 2026-11-12.
+const ateezProfile = window.OJJUDA_FAN_PROFILES.ateez;
+if (ateezProfile) {
+  ateezProfile.expanded = true;
+  ateezProfile.checkedAt = '2026.11.12';
+  const ateezBirthdays = {
+    '홍중': '1998.11.07', '성화': '1998.04.03', '윤호': '1999.03.23', '여상': '1999.06.15',
+    '산': '1999.07.10', '민기': '1999.08.09', '우영': '1999.11.26', '종호': '2000.10.12'
+  };
+  for (const member of ateezProfile.members) {
+    member.birthday = ateezBirthdays[member.name] || null;
+    member.source = 'https://ateez-official.jp/profiles';
+  }
+  ateezProfile.awards = []; // Primary award announcement still unverified.
+  ateezProfile.records = [
+    { year: '2026', title: 'GOLDEN HOUR : Part.5 발매', detail: '2026.06.26 미니 14집 · 타이틀 BAD', href: 'https://ateez-official.jp/musics/20862' },
+    { year: '2027', title: 'ZERO TO ALL 월드투어 예정', detail: '인천 1.22~24·일본 2월·유럽 3~4월 공식 발표', href: 'https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814' }
+  ];
+  ateezProfile.sources.unshift({ label: 'ATEEZ 일본 공식 8인 프로필 · 생일', href: 'https://ateez-official.jp/profiles' });
+  ateezProfile.sources.push({ label: 'KQ 2027 ZERO TO ALL 투어 공식 발표', href: 'https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814' });
+}
+
+// Official source rechecked 2026-11-12.
+const treasureProfile = window.OJJUDA_FAN_PROFILES.treasure;
+if (treasureProfile) {
+  treasureProfile.checkedAt = '2026.11.12';
+  treasureProfile.expanded = true;
+  const birthdays = {
+    '최현석': '1999.04.21', '지훈': '2000.03.14', '요시': '2000.05.15',
+    '준규': '2000.09.09', '윤재혁': '2001.07.23', '아사히': '2001.08.20',
+    '도영': '2003.12.04', '하루토': '2004.04.05', '박정우': '2004.09.28',
+    '소정환': '2005.02.18'
+  };
+  for (const member of treasureProfile.members) {
+    member.birthday = birthdays[member.name] || null;
+    member.source = 'https://ygfamily.com/ko/artists/treasure/profile';
+  }
+  treasureProfile.awards = [
+    { year: '2023.01', title: '골든디스크 어워즈 베스트 그룹', detail: 'YG 공식 수상 이력', href: 'https://ygfamily.com/ko/artists/treasure/profile' },
+    { year: '2021.01', title: '서울가요대상 신인상', detail: '제30회 · YG 공식 수상 이력', href: 'https://ygfamily.com/ko/artists/treasure/profile' }
+  ];
+  treasureProfile.records = [
+    { year: '2020.08', title: 'THE FIRST STEP : CHAPTER ONE 데뷔', detail: '2020.08.07 · BOY', href: 'https://ygfamily.com/ko/artists/treasure/profile' },
+    { year: '2026.06', title: '4번째 미니앨범 NEW WAV', detail: '타이틀 IF I 포함 4곡', href: 'https://www.ygfamily.com/en/artists/treasure/discography/1660' }
+  ];
+  treasureProfile.sources.unshift({ label: 'YG 공식 프로필 · 멤버 생일·수상', href: 'https://ygfamily.com/ko/artists/treasure/profile' });
+  treasureProfile.sources.push({ label: 'YG 공식 최신 음반 정보', href: 'https://www.ygfamily.com/en/artists/treasure/discography' });
+}
+
+// Official source rechecked 2026-11-12.
+const nctwishProfile = window.OJJUDA_FAN_PROFILES.nctwish;
+if (nctwishProfile) {
+  nctwishProfile.expanded = true;
+  const nctwishBirthdays = {
+    '시온': '2002.05.11', '리쿠': '2003.06.28', '유우시': '2004.04.05',
+    '재희': '2005.06.21', '료': '2007.08.04', '사쿠야': '2007.11.18'
+  };
+  for (const member of nctwishProfile.members) {
+    member.birthday = nctwishBirthdays[member.name] || null;
+    member.source = 'https://world.kbs.co.kr/service/contents_view.htm?board_seq=450066&lang=j';
+  }
+  nctwishProfile.records = [
+    { year: '2026.10', title: '미니 4집 I SPY 발매', detail: '2026.10.12 정식 발매 · 총 6곡 · SM ENTERTAINMENT 공식 음반 정보', href: 'https://smtownandstore.com/product/nct-wish-the-4th-mini-album-i-spy-deluxe-book-ver/29341/category/53/display/1/' },
+    { year: '2026.11', title: '첫 일본 전국 아레나 투어 발표', detail: '2027.02~03 도쿄·고베·후쿠오카·아이치 10회 확정', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' }
+  ];
+  nctwishProfile.sources.unshift({ label: 'KBS WORLD 공식 아티스트 소개 · 멤버 생일 및 발매일', href: 'https://world.kbs.co.kr/service/contents_view.htm?board_seq=450066&lang=j' });
+  nctwishProfile.sources.unshift({ label: 'NCT 일본 공식 소개 · 데뷔 일자', href: 'https://www.nct-jp.net/profile/' });
+  nctwishProfile.sources.push({ label: 'SM 공식 4집 음반·트랙리스트', href: 'https://smtownandstore.com/product/nct-wish-the-4th-mini-album-i-spy-deluxe-book-ver/29341/category/53/display/1/' });
+}
+
+// Official source rechecked 2026-11-12.
+const andteamProfile = window.OJJUDA_FAN_PROFILES.andteam;
+if (andteamProfile) {
+  andteamProfile.checkedAt = '2026.11.12';
+  andteamProfile.expanded = true;
+  andteamProfile.records = [
+    { year: '2022.12', title: '일본 데뷔', detail: 'First Howling : ME · Under the skin', href: 'https://www.andteam-official.jp/news/owsyjh' },
+    { year: '2026–2027', title: 'Mark on You 일본 투어', detail: '홀·아레나 공연 · 변경은 공식 일정 확인', href: 'https://www.andteam-official.jp/news/dd0f71998bc8' }
+  ];
+  const officialMembers = {
+    '의주': ['2002.09.07', 'EJ'],
+    '후마': ['1998.06.29', 'FUMA'],
+    '케이': ['1997.10.21', 'K'],
+    '니콜라스': ['2002.07.09', 'NICHOLAS'],
+    '유마': ['2004.02.07', 'YUMA'],
+    '조': ['2004.07.08', 'JO'],
+    '하루아': ['2005.05.01', 'HARUA'],
+    '타키': ['2005.05.04', 'TAKI'],
+    '마키': ['2006.02.17', 'MAKI']
+  };
+  for (const member of andteamProfile.members) {
+    const official = officialMembers[member.name];
+    if (!official) continue;
+    member.birthday = official[0];
+    member.source = 'https://www.andteam-official.jp/profile/' + official[1];
+  }
+  andteamProfile.sources.unshift({ label: '&TEAM 일본 공식 멤버 프로필 · 생일', href: 'https://www.andteam-official.jp/profile' });
+  andteamProfile.sources.push({ label: '&TEAM 공식 2026 음반·곡 목록', href: 'https://www.andteam-official.jp/discography' });
+  andteamProfile.sources.push({ label: '2026–2027 Mark on You 공식 공연 일정', href: 'https://www.andteam-official.jp/news/021ab1de6a61' });
+}
+
+// All six pending artist profiles were rechecked against primary sources.
+for (const id of ['tws','nctdream','ateez','treasure','nctwish','andteam']) window.OJJUDA_FAN_PROFILES[id].checkedAt = '2026.11.13';
