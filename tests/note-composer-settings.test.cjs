@@ -136,6 +136,17 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     assert.deepEqual(styleChoices(), { font: 'round', size: 'normal', boxTransparency: 100 });
 
     close();
+    await run(`cache.set('00000000-0000-4000-8000-000000000003', {my_reply_alias:'활기찬 돌고래'});
+      openComposer('reply',null,'00000000-0000-4000-8000-000000000003')`);
+    assert.equal(choices().identity,'anonymous');
+    const nameBox = document.getElementById('quick-identity');
+    assert.equal(nameBox.selectedOptions[0].textContent,'활기찬 돌고래');
+    assert.equal(nameBox.disabled,true);
+    assert.equal(stored('account-a').identity,'nickname','the conversation alias does not overwrite new-card preferences');
+    close(); await open();
+    assert.equal(choices().identity,'nickname');
+    assert.equal(nameBox.disabled,false);
+    close();
     window.sessionStorage.setItem('ojjuda-note-local-composer-v1:account-a:event', JSON.stringify({
       savedAt: Date.now(), content: { kind: 'event', editingId: null, body: '이전 이벤트 글', tags: '', style: {},
         identity: 'anonymous', backgroundKey: '42', eventPosition: null, radius: '1', hours: '1' }
