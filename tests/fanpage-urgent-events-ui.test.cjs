@@ -42,7 +42,38 @@ const root=path.join(__dirname,'..'),out=path.join(__dirname,'artifacts/fanpage-
  const images=await page.locator('#photos img').evaluateAll(nodes=>nodes.map(n=>({src:n.currentSrc,loaded:n.complete&&n.naturalWidth>0})));
  assert.ok(images.length>0);assert.ok(images.every(i=>i.loaded),group+' original gallery image failed');
  await page.locator('#photos').screenshot({path:path.join(out,`${group}-photos.png`)});
- assert.deepEqual(errors,[]);report.push({group,cards,images,widths:[320,390,768],pageErrors:errors});await page.close();
+ // Inspect all newly curated sections, repeated reveal flows and safe outbound links.
+ for(const button of await page.locator('.content-reveal').all()){
+  if(await button.getAttribute('aria-expanded')!=='true')await button.click();
+ }
+ const sections=['profile','photos','videos','music','goods','news'];
+ if(await page.locator('#collabs').count())sections.push('collabs');
+ for(const width of [320,390,768]){
+  await page.setViewportSize({width,height:844});
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),group+' full-page overflow '+width);
+  for(const section of sections){
+   await page.locator('#'+section).scrollIntoViewIfNeeded();
+   await page.locator('#'+section).screenshot({path:path.join(out,`${group}-${width}-${section}.png`)});
+  }
+ }
+ const links=await page.locator('#artist-root a[target="_blank"]').evaluateAll(nodes=>nodes.map(n=>({href:n.href,rel:n.rel,text:n.textContent.trim()})));
+ for(const link of links){if(link.href==='https://fan.test/features/fanpages/artist.html?group='+group+'#')continue;assert.ok(link.href.startsWith('https://'));assert.match(link.rel,/noopener/)}
+ await page.setViewportSize({width:390,height:844});
+ for(const photo of await page.locator('[data-photo-index]').all()){
+  await photo.click();await page.waitForFunction(()=>{const i=document.querySelector('#photo-viewer-image');return i.complete&&i.naturalWidth>0});
+  assert.equal(await page.locator('#photo-viewer').getAttribute('open'),'');
+  assert.ok((await page.locator('#photo-viewer-source').getAttribute('href')).startsWith('https://'));
+  await page.locator('.photo-viewer-close').click();await page.waitForFunction(()=>!document.querySelector('#photo-viewer').open);
+ }
+ const videoLinks=[];
+ for(const video of await page.locator('[data-video-index]').all()){
+  await video.click();
+  const original=await page.locator('#video-viewer-original').getAttribute('href');
+  const embed=await page.locator('#video-viewer iframe').getAttribute('src');
+  assert.ok(embed.includes(new URL(original).searchParams.get('v')));videoLinks.push({original,embed});
+  await page.locator('.video-viewer-close').click();await page.waitForFunction(()=>document.querySelector('#video-viewer-player').childElementCount===0);
+ }
+ assert.deepEqual(errors,[]);report.push({group,cards,images,links,videoLinks,widths:[320,390,768],pageErrors:errors});await page.close();
  }
  fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));console.log('PASS: six groups, data-matched upcoming events, 320/390/768px layouts, safe links, original gallery images and no runtime errors.');
  }finally{await browser.close()}
