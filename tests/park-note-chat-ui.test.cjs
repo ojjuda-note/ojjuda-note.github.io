@@ -112,7 +112,12 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await frame.evaluate(()=>{feed.hidden=true;detail.hidden=false;document.querySelector('[data-compose="reply"]').hidden=false;});
  await page.locator('.park-compose-fab').waitFor({state:'hidden'});
  assert.equal(await frame.locator('[data-compose="reply"]').isVisible(),true);
- await frame.evaluate(()=>{detail.hidden=true;feed.hidden=false;});
+ await page.locator('.bottomnav [data-tab="my"]').click();
+ await page.locator('.my-hub').waitFor();
+ await page.locator('.bottomnav [data-tab="park"]').click();
+ await frame.locator('#feed').waitFor({state:'visible'});
+ assert.equal(await frame.locator('#detail').isVisible(),false,'leaving a card and returning opens the Park main feed');
+ assert.equal(await frame.locator('[data-sort="latest"]').getAttribute('aria-pressed'),'true');
  await page.locator('.park-compose-fab').waitFor({state:'visible'});
  // The World header/navigation remain fixed while the Park feed is the only page scroller.
  for(const width of [320,390,832,1280]){

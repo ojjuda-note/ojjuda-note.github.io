@@ -6,9 +6,9 @@ const {JSDOM} = require('jsdom');
 
 const source = fs.readFileSync(path.join(__dirname, '../park/world-park-notes.js'), 'utf8');
 
-function fixture() {
+function fixture(search = '') {
   const dom = new JSDOM('<!doctype html><html><body><div id="app"></div></body></html>', {
-    url: 'https://fixture.test/world.html', runScripts: 'outside-only'
+    url: 'https://fixture.test/world.html'+search, runScripts: 'outside-only'
   });
   const {window} = dom;
   const timers = new Map();
@@ -41,6 +41,10 @@ test('Park iframe survives a short visit to Arcade and returns without reloading
     f.render('park');
     const first = f.frame();
     assert.ok(first?.isConnected);
+    const calls = [];
+    first.contentWindow.OjjudaParkFull = {returnHome() {calls.push('home'); return true;}, navigate(action) {calls.push(action);}};
+    f.render('park');
+    assert.deepEqual(calls, [], 'a repaint preserves the current card');
     f.render('arcade');
     assert.equal(f.frame(), first);
     assert.equal(first.closest('[data-park-app]').hidden, true);
@@ -52,6 +56,11 @@ test('Park iframe survives a short visit to Arcade and returns without reloading
     assert.equal(first.closest('[data-park-app]').hidden, false);
     assert.equal(f.timers.size, 0, 'returning cancels retirement');
     assert.equal(f.window.document.querySelector('.topbar').textContent, 'park');
+    assert.deepEqual(calls, ['home']);
+    f.render('my'); f.app.open('saved');
+    assert.deepEqual(calls, ['home','home','saved'], 'an explicit shortcut still opens its target');
+    f.window.dispatchEvent(new f.window.PageTransitionEvent('pageshow', {persisted:true}));
+    assert.equal(calls.at(-1),'home','browser history restoration returns to the main feed');
   } finally {f.dom.window.close();}
 });
 
@@ -72,5 +81,18 @@ test('Park cache is retired after inactivity and never reused for another accoun
     f.render('park');
     assert.notEqual(f.frame(), second, 'account change destroys the previous account frame');
     assert.equal(second.isConnected, false);
+  } finally {f.dom.window.close();}
+});
+
+test('leaving a shared card before startup completes never reopens the old link', () => {
+  const f = fixture('?place=park&card=test-card&keep=memo&source=link');
+  try {
+    f.render('park');
+    const shared = f.frame();
+    assert.equal(new URL(shared.src).searchParams.get('card'),'test-card');
+    f.render('my'); f.render('park');
+    assert.notEqual(f.frame(),shared);
+    assert.equal(new URL(f.frame().src).searchParams.has('card'),false);
+    assert.equal(f.window.location.search,'?place=park&source=link');
   } finally {f.dom.window.close();}
 });

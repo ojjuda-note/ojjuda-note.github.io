@@ -7,7 +7,7 @@
     return `<details class="my-menu-group" data-my-group="park"><summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true">▤</span><span class="my-menu-copy"><span class="my-menu-title">공원 활동</span></span></summary><div class="my-menu-body park-menu-actions">${[['feed','공원 카드'],['saved','메모함'],['mine','내 카드'],['events','내 이벤트'],['event-new','이벤트 만들기'],['settings','회원정보'],['blocked','공원 차단 목록'],['glasses','스마트 글래스 미리보기']].map(([action,label])=>`<button type="button" class="btn" data-park-action="${action}">${label}</button>`).join('')}</div></details>`;
   }
   window.OjjudaParkNotes = {menuMarkup,install(app) {
-    let frame=null,panel=null,owner=null,routed=false,initial=true,pending=null,overlayOpen=false,cardOpen=false,stopFrameNavigation=()=>{};
+    let frame=null,panel=null,owner=null,routed=false,initial=window.performance?.getEntriesByType?.('navigation')[0]?.type!=='back_forward',pending=null,overlayOpen=false,cardOpen=false,stopFrameNavigation=()=>{};
     let cacheTimer=null,frameVisible=false;
     // Short menu visits should not parse the entire Park app again. Retire an
     // inactive iframe so its feed, scripts and connections do not live forever.
@@ -42,11 +42,19 @@
     function forget(){
       clearRetirement();stopGestures();frame=panel=null;owner=null;frameVisible=false;overlayOpen=cardOpen=false;
     }
-    function sync(){
+    function clearEntryOptions(){
+      const url=new URL(location.href);
+      const keys=['card','keep','compose','view'];
+      if(url.searchParams.get('place')!=='park'||!keys.some(key=>url.searchParams.has(key)))return;
+      for(const key of keys)url.searchParams.delete(key);
+      history.replaceState(history.state,'',url);
+    }
+    function sync(restored=false){
       const next=document.querySelector('[data-park-app]');
       document.documentElement.classList.toggle('world-park-active',active()&&!!next);
       if(!active()||!next){
         if(frame?.isConnected&&panel===next&&owner===app.userId()){
+          if(!panel.hidden){pending=null;clearEntryOptions();}
           panel.hidden=true;panel.setAttribute('aria-hidden','true');
           stopGestures();setVisible(false);
           if(cacheTimer===null)cacheTimer=setTimeout(retire,cacheLifetime);
@@ -55,15 +63,21 @@
         forget();return;
       }
       if(frame?.isConnected&&panel===next&&owner===app.userId()){
-        const wasHidden=panel.hidden;
+        const returning=panel.hidden||restored;
         clearRetirement();panel.hidden=false;panel.removeAttribute('aria-hidden');
-        if(wasHidden){stopGestures();stopFrameNavigation=app.onFrameReady?.(frame)||(()=>{});}
-        setVisible(true);syncFab();flush();return;
+        if(!returning||api()?.returnHome?.()){
+          if(returning){
+            overlayOpen=cardOpen=false;
+            stopGestures();stopFrameNavigation=app.onFrameReady?.(frame)||(()=>{});
+          }
+          setVisible(true);syncFab();flush();return;
+        }
+        // A cold frame, an open dialog or the glasses page needs a fresh cards document.
       }
       forget();
-      panel=next;owner=app.userId();overlayOpen=false;cardOpen=false;
+      panel=next;panel.hidden=false;panel.removeAttribute('aria-hidden');owner=app.userId();overlayOpen=false;cardOpen=false;
       const view=initial&&new URL(location.href).searchParams.get('view')==='glasses'?'glasses':'cards';
-      const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');url.searchParams.set('v','20261112-thread-name1');
+      const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');url.searchParams.set('v','20261112-park-home1');
       if(initial){const source=new URL(location.href);for(const key of ['card','keep','compose'])if(source.searchParams.has(key))url.searchParams.set(key,source.searchParams.get(key));initial=false;}
       frame=document.createElement('iframe');frame.title='공원 카드';frame.allow='geolocation; clipboard-write; web-share';frame.dataset.view=view;frame.src=url.pathname+url.search;
       frameVisible=true;
@@ -80,13 +94,14 @@
         notifyVisibility(true);cardOpen=api()?.cardOpen?.()===true;syncFab();flush();
       });
     }
+    addEventListener('pageshow',event=>{if(event.persisted&&active()){clearEntryOptions();sync(true);}});
     function canLeave(){if(!active())return true;try{return frame?.contentWindow.canCloseParkNote?.()!==false;}catch{return true;}}
     function close(){if(!active())return false;try{if(api()?.back?.())return true;}catch{}return false;}
     function open(action='feed'){
       if(!actions.has(action))return;
       pending=action;
       if(!active()){app.enter();return;}
-      if(frame?.dataset.view==='glasses'&&action!=='glasses'){loading(true);frame.src='/park/?embedded=1&v=20261112-thread-name1';return;}
+      if(frame?.dataset.view==='glasses'&&action!=='glasses'){loading(true);frame.src='/park/?embedded=1&v=20261112-park-home1';return;}
       flush();
     }
     function refreshBalance(){api()?.refreshBalance?.();}
