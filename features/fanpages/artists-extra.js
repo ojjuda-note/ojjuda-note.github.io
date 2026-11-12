@@ -840,8 +840,8 @@
         { title: 'WISHLIST', date: '2026.01.14', type: '일본 미니 1집 · 리드곡 Hello Mellow',
           songs: ['Hello Mellow', 'ZONE', 'BUBBLE GUM', 'Dreamcatcher', 'SOMEDAY', 'Good Morning', 'poppop (Japanese Ver.)'],
           href: 'https://avexnet.jp/news/1030412' },
-        { title: 'WISH', date: '2024.02.21', type: '한일 동시 데뷔 · WISH',
-          songs: ['WISH'], href: 'https://www.nct-jp.net/profile/' }
+        { title: 'WISH', date: '2024.02.28', type: '데뷔 싱글 정식 음원 발매 · 한일 동시 데뷔 무대 2024.02.21',
+          songs: ['WISH (Korean Ver.)', 'WISH (Japanese Ver.)', 'Sail Away (Korean Ver.)', 'Sail Away (Japanese Ver.)'], href: 'https://world.kbs.co.kr/service/contents_view.htm?board_seq=450066&lang=j' }
       ],
       appearances: [
         { date: '2026-11-23', title: 'TV아사히 드림 페스티벌 2026', sub: '일본 K아레나 요코하마 · 15:00 개연 · TV아사히 주최', href: 'https://nct-jp.net/ja/news/detail.php?id=1135596' },
