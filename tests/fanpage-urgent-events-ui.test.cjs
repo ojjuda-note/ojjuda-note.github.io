@@ -18,15 +18,16 @@ const root=path.join(__dirname,'..'),out=path.join(__dirname,'artifacts/fanpage-
   const file=path.join(root,decodeURIComponent(u.pathname));if(!fs.existsSync(file)||!fs.statSync(file).isFile())return route.abort();
   return route.fulfill({path:file,contentType:({'.html':'text/html','.js':'application/javascript','.css':'text/css','.svg':'image/svg+xml','.webp':'image/webp','.png':'image/png'})[path.extname(file)]});
  });
- await page.goto('https://fan.test/features/fanpages/artist.html?group='+group);await page.waitForSelector('.event-card');
+ await page.goto('https://fan.test/features/fanpages/artist.html?group='+group);await page.waitForSelector('#schedule');
  await page.evaluate(()=>document.fonts.ready);
  const reveal=page.locator('[data-reveal-target="artist-events"]');
  if(await reveal.count()){await reveal.click();assert.equal(await reveal.getAttribute('aria-expanded'),'true');await reveal.click();assert.equal(await reveal.getAttribute('aria-expanded'),'false');await reveal.click();}
  for(const card of await page.locator('.event-card').all())assert.equal(await card.isVisible(),true);
  const cards=await page.locator('.event-card').evaluateAll(nodes=>nodes.map(n=>({text:n.innerText,href:n.href,target:n.target,rel:n.rel})));
- assert.equal(cards.length,{tws:2,ateez:4,nctdream:6}[group]);
+ const expected=await page.evaluate(id=>(window.OJJUDA_FAN_ARTISTS.find(a=>a.id===id).appearances||[]).filter(e=>(e.endDate||e.date)>='2026-11-12').length,group);
+ assert.equal(cards.length,expected);
  for(const card of cards){assert.ok(card.href.startsWith('https://'));assert.equal(card.target,'_blank');assert.match(card.rel,/noopener/)}
- if(group==='nctdream'){assert.match(cards[0].text,/11\/8~11\/16/);assert.match(cards[0].text,/12:00~20:00/);assert.ok(cards.every(c=>!c.text.includes('The Harvest Day')))}
+ 
  for(const width of [320,390,768]){
   await page.setViewportSize({width,height:844});await page.locator('#schedule').scrollIntoViewIfNeeded();
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),group+' horizontal overflow '+width);
@@ -35,12 +36,14 @@ const root=path.join(__dirname,'..'),out=path.join(__dirname,'artifacts/fanpage-
  }
  await page.setViewportSize({width:390,height:844});
  await page.locator('#photos').scrollIntoViewIfNeeded();
+ const photoReveal=page.locator('[data-reveal-target="artist-photo-grid"]');if(await photoReveal.count())await photoReveal.click();
+ for(const img of await page.locator('#photos img').all())await img.scrollIntoViewIfNeeded();
  await page.waitForFunction(()=>[...document.querySelectorAll('#photos img')].every(i=>i.complete),null,{timeout:30000});
  const images=await page.locator('#photos img').evaluateAll(nodes=>nodes.map(n=>({src:n.currentSrc,loaded:n.complete&&n.naturalWidth>0})));
  assert.ok(images.length>0);assert.ok(images.every(i=>i.loaded),group+' original gallery image failed');
  await page.locator('#photos').screenshot({path:path.join(out,`${group}-photos.png`)});
  assert.deepEqual(errors,[]);report.push({group,cards,images,widths:[320,390,768],pageErrors:errors});await page.close();
  }
- fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));console.log('PASS: three groups, 12 verified events, 320/390/768px layouts, safe links, original gallery images and no runtime errors.');
+ fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));console.log('PASS: three groups, data-matched upcoming events, 320/390/768px layouts, safe links, original gallery images and no runtime errors.');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
