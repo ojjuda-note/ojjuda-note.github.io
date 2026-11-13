@@ -21,7 +21,7 @@ test('all twelve animal labels come from the calculated year branches', () => {
     assert.deepEqual(result, {
       status: 'confirmed', label: `${animal}띠`, animal,
       candidates: [{ animal, label: `${animal}띠`, hanja, hangul }],
-      basis: '입춘 기준', note: '사주 기준 · 입춘',
+      basis: '입춘 기준', note: '사주에서는 입춘부터 띠가 바뀌어요.',
     });
   }
 });

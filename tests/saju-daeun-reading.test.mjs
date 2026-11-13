@@ -183,13 +183,13 @@ test('before the first decade and after the displayed range do not invent a curr
   const before=build({year:2022,month:3,day:9,hour:21,minute:51});
   assert.equal(before.daeun.currentState,'before-start');
   assert.equal(before.reading.currentIndex,null);
-  assert.ok(before.reading.headline.startsWith('첫 흐름'));
+  assert.ok(before.reading.headline.startsWith('처음 살펴볼 시기'));
   assert.ok(before.reading.paragraphs.join(' ').includes(before.daeun.startLabel));
   const after=build({year:1900,month:1,day:1,hour:8,minute:0});
   assert.equal(after.daeun.currentState,'after-listed-periods');
   assert.equal(after.reading.currentIndex,null);
   assert.ok(after.reading.periods.every(period=>!period.isCurrent));
-  assert.match(after.reading.headline,/이전 시기/);
+  assert.match(after.reading.headline,/이전 기간/);
   assert.doesNotMatch(visible(after.reading),/수명|죽음|사망|살 수 없|죽게|생을 마치/);
 });
 

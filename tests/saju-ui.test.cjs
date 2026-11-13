@@ -557,7 +557,7 @@ test('copy and evidence contain only the opened product, with method and common 
   assert.match(h.$('report-content').textContent,/적용한 해석 규칙/);
   assert.match(h.$('report-content').textContent,/공통 참고 설명/);
   assert.match(h.$('reading-method').textContent,/계산하지 않은/);
-  assert.match(h.window.document.querySelector('.method-preview').textContent,/성별.*태어난 시간.*10년.*이름.*용신.*신살/);
+  assert.match(h.window.document.querySelector('.method-preview').textContent,/10년.*성별.*태어난 시간.*이름.*용신.*신살/);
 });
 
 test('each chapter leads with its title, clear subtitle and easy detail before complete expandable evidence', async t => {
@@ -1229,7 +1229,7 @@ test('zodiac preview follows the actual birth date before login and clears incom
   assert.equal(h.$('birth-zodiac').hidden,true);
   h.fill({year:1990,month:1,day:1});
   await waitFor(()=>!h.$('birth-zodiac').hidden);
-  assert.match(h.$('birth-zodiac').textContent,/뱀띠.*사주 기준 · 입춘/);
+  assert.match(h.$('birth-zodiac').textContent,/뱀띠.*사주에서는 입춘부터 띠가 바뀌어요/);
   h.fill({year:2024,month:2,day:4,hour:null});
   await waitFor(()=>h.$('birth-zodiac').textContent.includes('토끼띠 / 용띠'));
   assert.match(h.$('birth-zodiac').textContent,/태어난 시간을 알아야/);
@@ -1259,7 +1259,7 @@ test('zodiac labels appear in saved people, restore on selection, and accompany 
   h.submit();await h.ready();
   assert.match(h.$('result-zodiac').textContent,/뱀띠.*입춘/);
   h.$('copy-reading').click();await waitFor(()=>h.state.copies.length===1);
-  assert.match(h.state.copies[0],/뱀띠 · 사주 기준 · 입춘/);
+  assert.match(h.state.copies[0],/뱀띠 · 사주에서는 입춘부터 띠가 바뀌어요/);
   assert.equal(h.state.charges,1);
   h.changeAccount(PROFILE_USER_B);
   assert.equal(h.$('result-zodiac').hidden,true);assert.equal(h.$('result-zodiac').textContent,'');

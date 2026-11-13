@@ -116,13 +116,13 @@ test('unknown birth time, an unresolved solar-term boundary and missing gender n
 test('decade overview respects before-start and after-listed ranges instead of inventing a current period', () => {
   const before = attachReadingSummaryLines(build({year:2022, month:3, day:9, hour:21, minute:51}));
   assert.equal(before.daeun.currentState, 'before-start');
-  assert.ok(before.daeun.summaryLines[0].startsWith('첫 흐름'));
+  assert.ok(before.daeun.summaryLines[0].startsWith('처음 살펴볼 시기'));
   const firstWork = before.daeun.periods[0].topics.find(item => item.id.endsWith('.work'));
   assert.ok(firstWork.personalParagraphs[3].includes(before.daeun.summaryLines[1]));
   const after = attachReadingSummaryLines(build({year:1900, month:1, day:1, hour:8, minute:0}));
   assert.equal(after.daeun.currentState, 'after-listed-periods');
-  assert.match(after.daeun.summaryLines[0], /이전 시기/);
-  assert.match(after.daeun.summaryLines[1], /이번에 계산한 구간에 들어 있지 않아요/);
+  assert.match(after.daeun.summaryLines[0], /이전 기간/);
+  assert.match(after.daeun.summaryLines[1], /이번에 계산한 마지막 구간이 지난 뒤/);
   assert.ok(after.daeun.periods.every(period => !period.isCurrent));
 });
 

@@ -53,10 +53,10 @@ test('the personal summary keeps every original fact and detailed reading intact
 
 test('first reading answers personal patterns without raw terminology, invented outcomes or strength scores',()=>{
   const {report}=reading();
-  assert.match(report.reader.lifelong.headline,/바탕으로 읽혀요/);
+  assert.match(report.reader.lifelong.headline,/편이에요\./);
   assert.match(prose(report.reader.lifelong),/성향/);
-  assert.match(report.reader.annual.headline,/당신, 2026년에는 .+ 일이 우선입니다/);
-  assert.match(report.reader.annual.paragraphs[0],/^당신은 .+사람입니다\./);
+  assert.match(report.reader.annual.headline,/당신, 2026년에는 .+ 일을 먼저 챙겨 보세요\./);
+  assert.match(report.reader.annual.paragraphs[0],/^당신은 .+사람이에요\./);
   for(const overview of overviews(report))for(const text of paragraphs(overview)) {
     assert.doesNotMatch(text,/천간|(?<![가-힣])지지(?![가-힣])|십성|일간|원국|지장간|오행|납음|사주란|사주는|확정된 [0-9]+글자|위쪽 글자|아래쪽 글자/);
     assert.doesNotMatch(text,/반드시|무조건|당첨|합격한다|결혼한다|헤어지게|사망|수명|재물운 [0-9]+|확률|[0-9]+점|용신|신강|신약|대운/);
@@ -124,10 +124,10 @@ test('every year and month domain connects observed natal habits to the actual p
     assert.equal(connection.paragraphs.length,4);
     assert.equal(connection.reading,connection.paragraphs.join(' '),'short paragraphs preserve the complete connected explanation');
     assert.ok(connection.paragraphs.every(text=>text.length>20&&text.length<=320),'each connected paragraph remains readable');
-    assert.match(connection.paragraphs[0],/^당신은 .+사람입니다\./);
+    assert.match(connection.paragraphs[0],/^당신은 .+사람이에요\./);
     assert.ok(connection.paragraphs[1].startsWith(label+'에는 '));
     assert.match(connection.paragraphs[1],/세요\.$/);
-    assert.match(connection.paragraphs[2],/이 성향을 살릴 장면은 .+입니다\..+장점입니다\. 다만 .+\./);
+    assert.match(connection.paragraphs[2],/^예를 들어 .+ 떠올려 보세요\..+장점이에요\. 다만 .+수 있어요\.$/);
     assert.doesNotMatch(connection.reading,/타고난 바탕|흐름으로 읽|중심으로 읽혀요|반드시|무조건|보장|합격한다|수익이 생깁니다|사고가 납니다/);
     const card=overview.cards.find(value=>value.id.endsWith('-'+domain));
     assert.deepEqual(card.natalGodCodes,connection.natalCodes);
@@ -231,7 +231,7 @@ test('family, wellness, document, home and safety lenses disclose their real sco
   assert.match(card('safety'),/사고가 생길 시기·장소·종류를 예측한 내용은 아니며/);
   for(const key of ['parents','children','health','helpers','boundaries','contracts','space','safety']) {
     const item=report.reader.lifelong.cards.find(card=>card.id==='natal-'+key);
-    assert.match(item.paragraphs[0],/^당신은 .+사람입니다\./,'the subject starts with the observed personal behaviour');
+    assert.match(item.paragraphs[0],/^당신은 .+사람이에요\./,'the subject starts with the observed personal behaviour');
     assert.doesNotMatch(item.title,/살펴요|확인해요|세워요|알아봐요|나눠요|함께 봐요/,'a subject title gives a personal conclusion rather than a general instruction');
     assert.match(card(key),/가령.+해 볼게요/);
     assert.doesNotMatch(card(key),/아이를 갖게|자녀가 [0-9]|사고가 (나|생길 것이)|질병이 (오|생길 것이)|계약이 성사|[0-9]+일에 만나|[0-9]+월에 만나|특정 장기가|취약한 장기/);

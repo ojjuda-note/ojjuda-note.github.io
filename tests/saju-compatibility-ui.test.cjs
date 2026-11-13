@@ -717,8 +717,8 @@ test('purchased compatibility retains both zodiac labels in its result, card and
   assert.match(h.$('partner-result-zodiac').textContent,/바다님 · 원숭이띠.*입춘/);
   assert.match(h.$('compatibility-report').textContent,/두 사람의 띠/);
   h.$('compatibility-copy').click();await waitFor(()=>h.state.copies.length===1);
-  assert.match(h.state.copies[0],/하늘: 말띠 · 사주 기준 · 입춘/);
-  assert.match(h.state.copies[0],/바다: 원숭이띠 · 사주 기준 · 입춘/);
+  assert.match(h.state.copies[0],/하늘: 말띠 · 사주에서는 입춘부터 띠가 바뀌어요/);
+  assert.match(h.state.copies[0],/바다: 원숭이띠 · 사주에서는 입춘부터 띠가 바뀌어요/);
   assert.equal(h.state.charges,1);
   h.changeAccount(PROFILE_USER_B);
   for(const person of ['self','partner']) {
