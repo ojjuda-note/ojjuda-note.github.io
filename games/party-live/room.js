@@ -5,6 +5,7 @@
   const title = document.querySelector('header strong').textContent;
   const feature = window.PartyLiveGame;
   const descriptions = {
+    updown: '1부터 100 사이에 숨은 숫자를 찾아요. 차례대로 숫자를 고르고 UP·DOWN 힌트로 범위를 좁혀요.',
     fingers: '조건에 해당하면 손가락을 하나 접어요. 다섯 손가락을 먼저 접으면 걸려요.',
     imagevote: '질문에 가장 잘 어울리는 한 사람을 골라요. 모두 투표하면 가장 많이 지목된 사람을 공개해요.',
     bottle: '각자 자리를 고른 뒤 술병이 누구를 가리킬지 지켜보세요.',

@@ -1,0 +1,15 @@
+.updown-range {
+  display: grid; justify-items: center; gap: 3px;
+  margin: 16px 0; border: 1px solid #bacbb2; border-radius: 14px;
+  padding: 16px; color: #234737; background: #eef2e5;
+}
+.updown-range span { font-size: 14px; font-weight: 650; }
+.updown-range strong { font-size: clamp(34px,10vw,48px); line-height: 1.12; font-variant-numeric: tabular-nums; }
+.updown-hint { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; margin: 12px 0; }
+.updown-hint > span:first-child { flex-basis: 100%; }
+.updown-hint strong { color: #80501b; }
+.updown-hint[data-hint=down] strong { color: #365c73; }
+.updown-hint[data-hint=hit] strong { color: #285e46; }
+#updown-form label { margin-bottom: 6px; }
+.updown-entry { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; }
+.updown-entry input { margin: 0; }
