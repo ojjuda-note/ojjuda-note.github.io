@@ -12,7 +12,7 @@
     search:'기타 검색',social:'SNS·메신저',external:'외부 사이트',internal:'사이트 내부',campaign:'캠페인' });
   const featureLabels = Object.freeze({
     agit:'아지트',arcade:'오락실',park:'공원',settings:'설정',portal:'첫 화면',
-    group:'그룹',fanpages:'팬페이지',restaurants:'인증맛집',festival:'축제일정',tarot:'타로',saju:'사주',
+    group:'그룹',fanpages:'팬페이지',restaurants:'인증맛집',festival:'축제일정',tarot:'타로',saju:'사주',biorhythm:'바이오리듬',
     game_chacha_rush:'차차 러시',game_solitaire:'솔리테어',game_archery:'바람의 궁수',
     game_sacheonseong:'사천성',game_mines:'지뢰찾기',game_saetbyeol:'새별',
     game_mole:'두더지 잡기',game_runner:'달리기',game_stacker:'탑 쌓기',
@@ -75,11 +75,11 @@
     });
     card.append(list); return card;
   };
-  function fortuneTotals(data, today) {
+  function fortuneTotals(data, today, products = ['tarot', 'saju'], startKey = 'started_at') {
     // This optional data has its own validation. Older servers or one malformed
     // product report must not hide the existing site-wide statistics.
     const todayTime = /^\d{4}-\d{2}-\d{2}$/.test(today || '') ? Date.parse(today + 'T00:00:00Z') : NaN;
-    const started = typeof data?.started_at === 'string' ? Date.parse(data.started_at) : NaN;
+    const started = typeof data?.[startKey] === 'string' ? Date.parse(data[startKey]) : NaN;
     if (!Number.isFinite(todayTime) || !Number.isFinite(started) || !Array.isArray(data?.daily) || data.daily.length !== 30) return null;
     const startParts = new Intl.DateTimeFormat('en', {
       timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit'
@@ -88,31 +88,40 @@
     const safeCount = value => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
     if (startDay > today || new Date(todayTime).toISOString().slice(0, 10) !== today || !data.daily.every((row, i) => row
       && row.period === new Date(todayTime - (29 - i) * 86400000).toISOString().slice(0, 10)
-      && safeCount(row.tarot) && safeCount(row.saju)
-      && (row.period >= startDay || row.tarot === 0 && row.saju === 0))) return null;
-    const totals = { tarot: 0, saju: 0 };
-    for (const row of data.daily) { totals.tarot += row.tarot; totals.saju += row.saju; }
-    if (!safeCount(totals.tarot) || !safeCount(totals.saju)) return null;
+      && products.every(product => row.period < startDay
+        ? row[product] === (product === 'biorhythm' ? null : 0)
+        : safeCount(row[product])))) return null;
+    const totals = Object.fromEntries(products.map(product => [product, 0]));
+    for (const row of data.daily) if (row.period >= startDay) {
+      for (const product of products) totals[product] += row[product];
+    }
+    if (!products.every(product => safeCount(totals[product]))) return null;
     const startLabel = new Intl.DateTimeFormat('ko-KR', {
       timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric'
     }).format(new Date(started));
-    return { startLabel, rows: ['tarot', 'saju'].map(feature => ({ feature, uses: totals[feature] })) };
+    return { startLabel, rows: products.map(feature => ({ feature, uses: totals[feature] })) };
   }
   function featureChart(data) {
     const fortune = fortuneTotals(data.fortune_visits, data.today_date);
-    // Keep the existing top 12 and both products on one scale. Product totals
+    const biorhythm = fortuneTotals(data.fortune_visits, data.today_date, ['biorhythm'], 'biorhythm_started_at');
+    // Keep the existing top 12 and all products on one scale. Product totals
     // come only from their validated daily report, so a duplicate cannot add
     // a second row or double-count a visit.
-    const features = new Map(data.features.filter(row => !['tarot', 'saju'].includes(row.feature))
+    const features = new Map(data.features.filter(row => !['tarot', 'saju', 'biorhythm'].includes(row.feature))
       .map(row => [row.feature, { feature: row.feature, uses: Number(row.uses) }]));
     if (fortune) for (const row of fortune.rows) features.set(row.feature, row);
+    if (biorhythm) for (const row of biorhythm.rows) features.set(row.feature, row);
     const rows = [...features.values()].sort((a, b) => b.uses - a.uses
       || (a.feature < b.feature ? -1 : a.feature > b.feature ? 1 : 0));
     const card = horizontalChart('많이 선택한 기능', '최근 30일 · 브라우저당 기능별 하루 1회',
-      rows, 'uses', featureLabels, { showZeroRows: !!fortune });
+      rows, 'uses', featureLabels, { showZeroRows: !!fortune || !!biorhythm });
     card.dataset.chart = 'features';
-    card.append(el('p', fortune ? `타로·사주: ${fortune.startLabel}부터 집계 · 이전 방문 제외`
-      : '타로·사주 방문 집계를 아직 불러오지 못했어요. 새로고침해 주세요.', 'visitor-note visitor-feature-note'));
+    for (const [key, label, report] of [['fortune', '타로·사주', fortune], ['biorhythm', '바이오리듬', biorhythm]]) {
+      const note = el('p', report ? `${label}: ${report.startLabel}부터 집계 · 이전 방문 제외`
+        : `${label} 방문 집계를 아직 불러오지 못했어요. 새로고침해 주세요.`, 'visitor-note visitor-feature-note');
+      note.dataset.collection = key;
+      card.append(note);
+    }
     return card;
   }
   function renderInsights(host, data) {

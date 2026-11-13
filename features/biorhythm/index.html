@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f7f5f0">
   <title>오늘의 바이오리듬 · 오쭈다</title>
-  <meta name="description" content="생일로 그려 보는 신체·감정·지성의 세 가지 바이오리듬. 날짜별 그래프와 다양한 쉬운 설명, 계산 근거를 무료로 살펴보세요. 재미로 즐기는 콘텐츠입니다.">
+  <meta name="description" content="생일로 그려 보는 신체·감정·지성의 세 가지 바이오리듬. 5쭈로 같은 생일의 날짜별 그래프와 다양한 설명을 24시간 살펴보세요. 무료 샘플도 있어요.">
   <link rel="canonical" href="https://ojjuda.kr/features/biorhythm/">
   <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
   <meta property="og:type" content="website">
@@ -14,7 +14,8 @@
   <meta property="og:description" content="생일로 그려 보는 세 가지 리듬. 오늘의 흐름을 가볍게 읽어 보세요.">
   <meta property="og:url" content="https://ojjuda.kr/features/biorhythm/">
   <meta property="og:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
-  <link rel="stylesheet" href="./style.css?v=20261113-biorhythm1">
+  <link rel="stylesheet" href="./style.css?v=20261113-biorhythm-paid1">
+  <script src="/config.js?v=20261113-biorhythm-paid1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#rhythm-form">생일 입력으로 바로가기</a>
@@ -41,18 +42,23 @@
         <p class="intro-note">생일 기반의 재미용 계산이에요.<br>실제 건강·감정·능력을 측정하거나 예측하지 않아요.</p>
       </section>
       <section class="input-panel" aria-labelledby="input-title">
-        <div class="panel-topline"><span class="eyebrow">MY DAILY RHYTHM</span><span class="free-badge">무료</span></div>
+        <div class="panel-topline"><span class="eyebrow">MY DAILY RHYTHM</span><span class="free-badge">5쭈 · 24시간</span></div>
         <h2 id="input-title">나의 리듬 그려보기</h2>
         <p class="panel-description">생일과 살펴볼 날짜만 알려 주세요.</p>
         <form id="rhythm-form" novalidate>
           <label class="field" for="birth-date"><span>생년월일 <small>양력</small></span><input id="birth-date" type="date" min="1900-01-01" max="2100-12-31" required autocomplete="off" aria-describedby="birth-help form-error"></label>
           <p id="birth-help" class="field-help">태어난 연도를 포함해 입력해 주세요. 음력은 양력으로 바꿔 주세요.</p>
+          <div id="saved-birthdays"></div>
           <div class="field target-field"><span><label for="target-date">살펴볼 날짜</label><button id="input-today" class="text-button" type="button">오늘</button></span><input id="target-date" type="date" min="1900-01-01" max="2100-12-31" required aria-describedby="target-help form-error"></div>
           <p id="target-help" class="field-help">오늘은 한국시간을 기준으로 해요.</p>
           <p id="form-error" class="form-error" role="alert" hidden></p>
-          <button id="calculate-button" class="primary-button" type="submit" disabled>내 리듬 펼치기 <span aria-hidden="true">↗</span></button>
-          <div class="form-secondary"><button id="sample-button" class="text-button" type="button" disabled>샘플 먼저 보기</button><button id="clear-button" class="text-button muted" type="button" disabled>입력 지우기</button></div>
-          <p class="privacy-note"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="7" width="9" height="7" rx="2"/><path d="M5.5 7V4.5a2.5 2.5 0 0 1 5 0V7"/></svg>생일은 이 화면에서만 사용해요.<br>서버로 보내거나 기기에 저장하지 않아요.</p>
+          <div class="purchase-summary"><strong id="purchase-offer">5쭈 · 같은 생일로 결제 후 24시간 이용</strong><span id="wallet-balance"></span><p>생일마다 5쭈로 열고, 그 생일은 결제 후 24시간 동안 모든 날짜를 추가 차감 없이 봐요. 목록 선택만으로는 차감하지 않으며, 다시 조회해도 이용 시간은 늘어나지 않아요.</p></div>
+          <button id="calculate-button" class="primary-button" type="submit" disabled>5쭈로 내 리듬 펼치기</button>
+          <p id="payment-status" class="payment-status" role="status" aria-live="polite"></p>
+          <a id="login-link" class="login-link" href="/world.html?tab=hub">아지트에서 로그인·쭈 확인하기 →</a>
+          <div class="form-secondary"><button id="sample-button" class="text-button" type="button" disabled>무료 샘플 보기</button><button id="clear-button" class="text-button muted" type="button" disabled>입력 지우기</button></div>
+          <p class="sample-help">무료 샘플은 1990년 1월 1일 생일로만 보여요.</p>
+          <p class="privacy-note"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="7" width="9" height="7" rx="2"/><path d="M5.5 7V4.5a2.5 2.5 0 0 1 5 0V7"/></svg>입력한 생일은 이 브라우저의 회원별 목록에 저장돼요. 목록에서 언제든 지울 수 있어요.<br>생일 원문과 결과는 서버로 보내지 않고, 결제에는 회원별 생일 식별값만 사용해요.</p>
         </form>
         <noscript><p class="form-error">리듬을 계산하려면 브라우저의 자바스크립트를 켜 주세요.</p></noscript>
       </section>
@@ -63,6 +69,7 @@
         <div><p class="eyebrow">YOUR RHYTHM <span id="sample-badge" class="sample-badge" hidden>샘플 · 1990. 1. 1.생</span></p><h2 id="result-title" tabindex="-1">나의 리듬</h2><p id="result-subtitle"></p></div>
         <div class="date-navigation" role="group" aria-label="결과 날짜 이동"><button id="previous-day" type="button" aria-label="하루 전">←</button><button id="result-today" type="button">오늘</button><button id="next-day" type="button" aria-label="하루 뒤">→</button></div>
       </header>
+      <p id="access-note" class="access-note"></p>
       <div class="summary-panel"><span class="summary-symbol" aria-hidden="true">〰</span><div><h3 id="summary-title"></h3><p id="summary-body"></p></div></div>
       <p class="value-explainer">리듬값 <b>−100 ~ +100</b>은 계산한 곡선의 높이예요. 건강·능력 점수나 확률이 아니에요.</p>
       <div id="rhythm-cards" class="rhythm-cards"></div>
@@ -98,6 +105,7 @@
   </main>
   <footer class="site-footer wrap"><a href="/world.html?tab=hub">오쭈다 아지트 <span aria-hidden="true">↗</span></a><p>오늘의 속도는, 나답게.</p><a href="/sitemap.html">전체 메뉴</a></footer>
   <p id="status" class="status-message" role="status" aria-live="polite"></p>
-  <script type="module" src="./app.mjs?v=20261113-biorhythm1"></script>
+  <script src="/shared/analytics/site-usage.js?v=20261113-biorhythm-paid1"></script>
+  <script type="module" src="./app.mjs?v=20261113-biorhythm-paid1"></script>
 </body>
 </html>

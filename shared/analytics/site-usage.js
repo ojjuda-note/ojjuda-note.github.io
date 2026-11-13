@@ -7,10 +7,11 @@
     'mole','runner','stacker','breakout','spot','screw','bang','tank','tour','ttang',
     'janggi','chess','billiards','matgo','poker','roulette','photo_ttang']);
   const FEATURES = new Set(['agit','arcade','park','settings','portal','group','fanpages',
-    'restaurants','festival','tarot','saju','game_other',...[...GAMES].map(game => 'game_' + game)]);
+    'restaurants','festival','tarot','saju','biorhythm','game_other',...[...GAMES].map(game => 'game_' + game)]);
   const FORTUNE_PAGES = Object.freeze({
     '/games/moonlit-tarot':'tarot','/games/moonlit-tarot/':'tarot','/games/moonlit-tarot/index.html':'tarot',
-    '/games/starlit-saju':'saju','/games/starlit-saju/':'saju','/games/starlit-saju/index.html':'saju'
+    '/games/starlit-saju':'saju','/games/starlit-saju/':'saju','/games/starlit-saju/index.html':'saju',
+    '/features/biorhythm':'biorhythm','/features/biorhythm/':'biorhythm','/features/biorhythm/index.html':'biorhythm'
   });
   const DETAILS = new Set(['agit_stamp','agit_mission','agit_recommended_game','agit_group',
     'agit_festival','agit_restaurants','agit_fanpages','arcade_game_other',

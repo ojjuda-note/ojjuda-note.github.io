@@ -3,7 +3,7 @@
   'use strict';
   const PAGE_SIZE = 30;
   const MAX_OFFSET = 2147483647;
-  const PRODUCTS = { all: '전체', tarot: '타로', saju: '사주' };
+  const PRODUCTS = { all: '전체', tarot: '타로', saju: '사주', biorhythm: '바이오리듬' };
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const dateFormat = new Intl.DateTimeFormat('ko-KR', {
     timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit',
@@ -30,11 +30,15 @@
   const authError = error => ['42501', 'PGRST301', 'PGRST302'].includes(error?.code)
     || /admin_required|not_admin|not_signed_in|permission denied|jwt.*(?:expired|invalid)/i.test(error?.message || '');
   function validResponse(data) {
+    const hasBiorhythm = data && Object.hasOwn(data, 'biorhythm_count');
     return data && Array.isArray(data.items) && data.items.length <= PAGE_SIZE
       && ['total_count', 'total_ju', 'tarot_count', 'saju_count'].every(key => count(data[key]))
-      && data.tarot_count + data.saju_count === data.total_count && data.total_count >= data.items.length
+      && (!hasBiorhythm || count(data.biorhythm_count))
+      && data.tarot_count + data.saju_count + (hasBiorhythm ? data.biorhythm_count : 0) === data.total_count
+      && data.total_count >= data.items.length
       && data.items.every(row => row && UUID.test(row.request_id || '') && UUID.test(row.user_id || '')
-        && ['tarot', 'saju'].includes(row.product) && count(row.coins) && row.coins > 0
+        && ['tarot', 'saju', 'biorhythm'].includes(row.product) && count(row.coins) && row.coins > 0
+        && (row.product !== 'biorhythm' || hasBiorhythm && data.biorhythm_count > 0)
         && typeof row.created_at === 'string' && Number.isFinite(Date.parse(row.created_at))
         && (row.nickname === null || typeof row.nickname === 'string')
         && typeof row.topic_title === 'string'
@@ -78,10 +82,12 @@
       list.setAttribute('aria-busy', String(value));
     }
     function renderSummary(data) {
-      summary.replaceChildren(...[
+      const metrics = [
         ['결제 항목', number(data.total_count) + '건'], ['차감 합계', number(data.total_ju) + '쭈'],
         ['타로', number(data.tarot_count) + '건'], ['사주', number(data.saju_count) + '건']
-      ].map(([label, value]) => {
+      ];
+      if (Object.hasOwn(data, 'biorhythm_count')) metrics.push(['바이오리듬', number(data.biorhythm_count) + '건']);
+      summary.replaceChildren(...metrics.map(([label, value]) => {
         const item = el('div', 'afp-metric'); item.append(el('dt', '', label), el('dd', '', value)); return item;
       }));
     }
@@ -150,10 +156,10 @@
     if (!owner || typeof client?.rpc !== 'function') {
       clearAccess('관리자 계정만 구매내역을 볼 수 있어요.'); return api;
     }
-    const section = el('section', 'afp-history'); section.setAttribute('aria-label', '타로·사주 구매내역');
+    const section = el('section', 'afp-history'); section.setAttribute('aria-label', '운세·리듬 구매내역');
     const heading = el('div', 'afp-heading'), copy = el('div');
-    copy.append(el('h3', '', '타로·사주 구매내역'),
-      el('p', 'afp-help', '회원이 결제한 항목과 실제 차감한 쭈를 확인해요. 날짜와 시간은 한국시간(Asia/Seoul) 기준이에요.'));
+    copy.append(el('h3', '', '운세·리듬 구매내역'),
+      el('p', 'afp-help', '타로·사주·바이오리듬의 결제 항목과 실제 차감한 쭈를 확인해요. 바이오리듬 기본 이용료는 5쭈예요. 날짜와 시간은 한국시간(Asia/Seoul) 기준이에요.'));
     refreshButton = control('새로고침', () => { void refresh(); }); heading.append(copy, refreshButton);
     const form = el('form', 'afp-filters'); form.setAttribute('aria-label', '구매내역 조회 조건');
     const field = (label, input, className = '') => {

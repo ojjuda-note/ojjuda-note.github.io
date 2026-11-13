@@ -1,0 +1,57 @@
+name: Biorhythm access and visit records
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'features/biorhythm/**'
+      - 'features/home/agit-hub.js'
+      - 'shared/activity/member-navigation.js'
+      - 'shared/analytics/site-usage.js'
+      - 'config.js'
+      - 'admin/visitors.js'
+      - 'admin/fortune-purchases.js'
+      - 'supabase/migrations/*biorhythm*'
+      - 'tests/biorhythm-*'
+      - 'tests/package*.json'
+      - '.github/workflows/biorhythm.yml'
+  pull_request:
+    paths:
+      - 'features/biorhythm/**'
+      - 'features/home/agit-hub.js'
+      - 'shared/activity/member-navigation.js'
+      - 'shared/analytics/site-usage.js'
+      - 'config.js'
+      - 'admin/visitors.js'
+      - 'admin/fortune-purchases.js'
+      - 'supabase/migrations/*biorhythm*'
+      - 'tests/biorhythm-*'
+      - 'tests/package*.json'
+      - '.github/workflows/biorhythm.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: biorhythm-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  biorhythm:
+    name: Five-ju access, private inputs and visit records
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix tests ci --ignore-scripts
+      - name: Verify calculator, billing and collection
+        run: |
+          node --check features/biorhythm/app.mjs
+          node --experimental-vm-modules --test tests/biorhythm-*.test.*
+          node --test tests/member-navigation.test.cjs tests/fortune-visit-tracking.test.cjs tests/fortune-visit-graphs.test.cjs
+          node scripts/check-source-layout.mjs

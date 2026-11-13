@@ -17,7 +17,7 @@ function receipt(index = 0, extra = {}) {
 function page(args, total = 65) {
   const amount = Math.min(args.p_limit, Math.max(0, total - args.p_offset));
   return { data: { items: Array.from({ length: amount }, (_,i) => receipt(args.p_offset + i)),
-    total_count: total, total_ju: total * 30, tarot_count: total, saju_count: 0 } };
+    total_count: total, total_ju: total * 30, tarot_count: total, saju_count: 0, biorhythm_count: 0 } };
 }
 function fixture(t, { responder = args => page(args), actor = ADMIN, initialState = null } = {}) {
   const dom = new JSDOM('<!doctype html><main><div id="host"></div></main>', {
@@ -58,7 +58,7 @@ test('loads real receipt fields, full-filter totals and Korean payment time thro
   const f = fixture(t); await settled();
   assert.deepEqual(f.calls[0], { p_product: 'all', p_query: '', p_from: null, p_to: null, p_limit: 30, p_offset: 0 });
   assert.equal(f.qa('.afp-purchase').length, 30);
-  assert.deepEqual(f.qa('.afp-metric dd').map(x => x.textContent), ['65건', '1,950쭈', '65건', '0건']);
+  assert.deepEqual(f.qa('.afp-metric dd').map(x => x.textContent), ['65건', '1,950쭈', '65건', '0건', '0건']);
   assert.match(f.q('.afp-time').textContent, /2026.*11.*13.*08:59/);
   assert.equal(f.q('.afp-time').title, '한국시간 (Asia/Seoul)');
   assert.match(f.q('.afp-status').textContent, /65건 중 1–30건/);
@@ -141,7 +141,7 @@ test('empty results and network failures are distinguished; failed reload never 
   f.setResponder(args => page(args, 0));
   f.button('다시 불러오기').click(); await settled();
   assert.match(f.q('.afp-status').textContent, /조건에 맞는 구매내역이 없어요/);
-  assert.deepEqual(f.qa('.afp-metric dd').map(x => x.textContent), ['0건', '0쭈', '0건', '0건']);
+  assert.deepEqual(f.qa('.afp-metric dd').map(x => x.textContent), ['0건', '0쭈', '0건', '0건', '0건']);
   assert.equal(f.qa('.afp-pager button').length, 0);
 });
 
@@ -152,6 +152,60 @@ test('malformed receipts are an error instead of invented rows or a misleading z
   assert.equal(f.qa('.afp-purchase').length, 0);
   assert.equal(f.qa('.afp-metric').length, 0);
   assert.match(f.q('.afp-status').textContent, /불러오지 못했어요/);
+});
+
+test('biorhythm purchases preserve other products, add their own summary and show the actual 5-ju charge', async t => {
+  const bio = receipt(2, { product: 'biorhythm', topic: 'rhythm', topic_title: '오늘의 바이오리듬', coins: 5,
+    birth_date: 'private-biorhythm-birth', reading: 'private-biorhythm-reading' });
+  const f = fixture(t, { responder: args => ({ data: args.p_product === 'biorhythm'
+    ? { items: [bio], total_count: 1, total_ju: 5, tarot_count: 0, saju_count: 0, biorhythm_count: 1 }
+    : { items: [receipt(), receipt(1, { product: 'saju', topic_title: '사주 전체운세', year: 2027, coins: 10 }), bio],
+      total_count: 3, total_ju: 45, tarot_count: 1, saju_count: 1, biorhythm_count: 1 } }) });
+  await settled();
+  assert.equal(f.q('h3').textContent, '운세·리듬 구매내역');
+  assert.deepEqual(f.qa('select[name="product"] option').map(node => node.value), ['all', 'tarot', 'saju', 'biorhythm']);
+  assert.deepEqual(f.qa('.afp-metric dd').map(node => node.textContent), ['3건', '45쭈', '1건', '1건', '1건']);
+  assert.equal(f.q('.afp-badge.is-biorhythm').textContent, '바이오리듬');
+  const item = f.q('.afp-badge.is-biorhythm').closest('.afp-purchase');
+  assert.equal(item.querySelector('.afp-topic').textContent, '오늘의 바이오리듬');
+  assert.equal(item.querySelector('.afp-charge strong').textContent, '5쭈');
+  assert.equal(item.querySelector('.afp-year'), null);
+  assert.match(f.q('.afp-help').textContent, /바이오리듬.*5쭈/);
+  assert.doesNotMatch(f.host.textContent, /private-biorhythm-birth|private-biorhythm-reading/);
+  f.submit({ product: 'biorhythm', query: '  결제한 회원  ', from: '2026-11-01', to: '2026-11-13' });
+  await settled();
+  assert.deepEqual(f.calls.at(-1), { p_product: 'biorhythm', p_query: '결제한 회원', p_from: '2026-11-01', p_to: '2026-11-13', p_limit: 30, p_offset: 0 });
+  assert.equal(f.qa('.afp-purchase').length, 1);
+  assert.deepEqual(f.qa('.afp-metric dd').map(node => node.textContent), ['1건', '5쭈', '0건', '0건', '1건']);
+  const state = f.controller.getState(); f.remount(state); await settled();
+  assert.equal(f.q('[name="product"]').value, 'biorhythm');
+  assert.equal(f.calls.at(-1).p_product, 'biorhythm');
+});
+
+test('older purchase responses remain readable without inventing a biorhythm zero total', async t => {
+  const f = fixture(t, { responder: args => {
+    const response = page(args, 1); delete response.data.biorhythm_count; return response;
+  } });
+  await settled();
+  assert.equal(f.qa('.afp-purchase').length, 1);
+  assert.deepEqual(f.qa('.afp-metric dt').map(node => node.textContent), ['결제 항목', '차감 합계', '타로', '사주']);
+  assert.doesNotMatch(f.q('.afp-status').textContent, /불러오지 못/);
+});
+
+test('malformed biorhythm counts or unsupported receipts do not become valid history', async t => {
+  const bio = receipt(0, { product: 'biorhythm', topic: 'rhythm', topic_title: '오늘의 바이오리듬', coins: 5 });
+  for (const count of [-1, 0.5, '1', null, Number.MAX_SAFE_INTEGER + 1]) {
+    const f = fixture(t, { responder: () => ({ data: { items: [bio], total_count: 1, total_ju: 5,
+      tarot_count: 0, saju_count: 0, biorhythm_count: count } }) });
+    await settled();
+    assert.equal(f.qa('.afp-purchase,.afp-metric').length, 0);
+    assert.match(f.q('.afp-status').textContent, /불러오지 못/);
+  }
+  const unsupported = fixture(t, { responder: () => ({ data: { items: [bio], total_count: 1, total_ju: 5,
+    tarot_count: 1, saju_count: 0 } }) });
+  await settled();
+  assert.equal(unsupported.qa('.afp-purchase,.afp-metric').length, 0);
+  assert.match(unsupported.q('.afp-status').textContent, /불러오지 못/);
 });
 
 test('older pending responses cannot replace the newest query result', async t => {
