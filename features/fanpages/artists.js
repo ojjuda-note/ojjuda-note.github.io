@@ -192,7 +192,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { date: "2026-12-12", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 MUFG 스타디움(국립경기장) · 17:00 예정(JST)", href: "https://music-bank.jp/" }
     ],
     campaigns: [
-      { kind: "브랜드 홍보대사", date: "2026.09.09", title: "MARK & LONA · 카리나", sub: "2026 가을·겨울 컬렉션 공식 브랜드 앰배서더 활동", href: "https://aespa-official.jp/news/mark-lona-2026/" }
+      { kind: "홍보대사", date: "2026.09.09", title: "MARK & LONA · 카리나", sub: "2026 가을·겨울 컬렉션 공식 브랜드 앰배서더 활동", href: "https://aespa-official.jp/news/mark-lona-2026/" }
     ],
     schedules: [
       { title: "공식 일정", sub: "일본 공식 사이트", href: "https://aespa-official.jp/schedule/" },
