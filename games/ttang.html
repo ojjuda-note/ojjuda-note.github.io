@@ -2,8 +2,8 @@
 <script src="/shared/games/game-entry.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
 <script src="/shared/games/multiplayer-entry.js?v=20261112-arcade-entry-return1" defer></script>
-<link rel="stylesheet" href="/shared/games/game-results.css?v=20261109-unified-multiplayer-ui2">
-<script src="/shared/games/game-results.js?v=20261108-monthly-personal1"></script>
+<link rel="stylesheet" href="/shared/games/game-results.css?v=20261113-game-popup-order1">
+<script src="/shared/games/game-results.js?v=20261113-game-popup-order1"></script>
 <style>.overlay>.panel:has(> .game-result-card){padding:0;background:transparent;border:0;box-shadow:none;width:min(430px,100%);max-width:430px}</style>
 <style>#toast.life-lost{animation:ttang-life-lost .65s ease both}@keyframes ttang-life-lost{0%{translate:0 -5px;rotate:0deg}35%{translate:0 4px;rotate:-2deg}70%{rotate:2deg}100%{translate:0 0;rotate:0deg}}@media(prefers-reduced-motion:reduce){#toast.life-lost{animation:none}}</style>
 <link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
@@ -11,10 +11,13 @@
 function abandonRound(){if(mode==='net'){excludeRound();return;}if(mode==='solo'&&roundId&&!roundReported){roundEligible=false;roundReported=true;}}
 function sendResult(r){ if(roundReported||!roundEligible||!roundId)return;roundReported=true;const msg=Object.assign({type:'ojjuda:ttang:result',round:roundId},r);roundOutcome=msg; try{ if(window.parent!==window) window.parent.postMessage(msg,location.origin); }catch{} try{ window.OjjudaTtang&&window.OjjudaTtang.onResult&&window.OjjudaTtang.onResult(msg); }catch{} }
 function showEnd(){ sendResult({mode:'solo',win:false,best:+me.best.toFixed(1),kills:me.kills,seconds:Math.floor(world.time),score:Math.round(me.best*10)});
-  panel(window.OjjudaGameResults.markup({game:'ttang',outcome:'failure',key:roundId,metric:`최고 땅 ${me.best.toFixed(1)}% · ${Math.floor(world.time)}초`,actions:'<button id="again" data-game-result-play>다시 하기</button><button id="home">처음으로</button>'}),{again:()=>startSolo(),home:()=>toMenu()}); }
+  panel(window.OjjudaGameResults.markup({game:'ttang',outcome:'failure',key:roundId,metric:`최고 땅 ${me.best.toFixed(1)}% · ${Math.floor(world.time)}초`,actions:'<div class="game-result-navigation"><button id="home">나가기</button><button id="again" data-game-result-play title="새 판 시작">계속하기</button></div>'}),{again:()=>startSolo(),home:()=>toMenu()}); }
 function showNetEnd(a,b){ if(parent!==window)parent.postMessage({type:'ojjuda:ttang:network-end'},location.origin);const win=a===b?0:(a>b?1:-1);
   sendResult({mode:'duo',win:win>0,me:+(a/world.N*100).toFixed(1),friend:+(b/world.N*100).toFixed(1)});
-  panel(window.OjjudaGameResults.markup({game:'ttang',outcome:win>0?'success':win<0?'failure':'draw',key:roundId,metric:`내 땅 ${(a/world.N*100).toFixed(1)}% · 상대 ${(b/world.N*100).toFixed(1)}%`,actions:'<button id="home">처음으로</button>'}),{home:()=>{ Net.close(); toMenu(); }}); }
+  panel(window.OjjudaGameResults.markup({game:'ttang',outcome:win>0?'success':win<0?'failure':'draw',key:roundId,metric:`내 땅 ${(a/world.N*100).toFixed(1)}% · 상대 ${(b/world.N*100).toFixed(1)}%`,actions:'<div class="game-result-navigation"><button id="home">나가기</button><button id="again" data-game-result-play title="다음 대결 준비">계속하기</button></div>'}),{
+    home:()=>{ if(parent!==window)parent.postMessage({type:'ojjuda:ttang:close'},location.origin);else location.assign('/world.html?tab=arcade'); },
+    again:()=>{ toMenu(); document.querySelector('[data-entry-mode="opponent"]').click(); }
+  }); }
 function newRoundId(){if(typeof crypto.randomUUID==='function')return crypto.randomUUID();const b=crypto.getRandomValues(new Uint8Array(16));b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=[...b].map(n=>n.toString(16).padStart(2,'0')).join('');return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);}
 function startSolo(){ if(window.OjjudaGameResults?.canPlay?.()===false)return;abandonRound();Net.close();beginRound('solo'); $('menu').style.display='none'; closePanels(); newSolo('solo'); paused=false; $('pause').textContent='멈춤'; }
 function toMenu(){ abandonRound();if(parent!==window)parent.postMessage({type:'ojjuda:ttang:menu'},location.origin);if(friendInviteId){friendInvites()?.cancel(friendInviteId);friendInviteId=null;}Net.close(); closePanels(); newSolo('attract'); $('menu').style.display='flex'; }
@@ -22,8 +25,8 @@ function toMenu(){ abandonRound();if(parent!==window)parent.postMessage({type:'o
 };
 $('duoBtn').onclick=()=>{const invites=friendInvites();if(!invites?.available()){if(parent===window)return lobby();$('roomEntryStatus').textContent='친구 초대를 연결하지 못했어요. 잠시 후 다시 눌러 주세요.';return;}void invites.pick({kind:'ttang',prepare:async()=>{const code=Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');const ready=await hostRoom(code);if(!ready)throw Error('room_unavailable');return {code,cancel:()=>toMenu()};},onSent:id=>{friendInviteId=id;const status=document.querySelector('#wmsg');if(status)status.textContent='친구를 초대했어요. 친구가 받으면 바로 시작해요.';}});};
 $('snd').onclick=()=>{ sound=!sound; $('snd').textContent=sound?'소리':'무음'; $('snd').setAttribute('aria-pressed',String(sound)); };
-$('pause').onclick=()=>{ if(over||mode!=='solo') return; paused=!paused; $('pause').textContent=paused?'계속':'멈춤'; if(paused) panel(`<h2>잠깐 쉬는 중</h2><button class="big a" id="go">계속하기</button><button class="big g" id="home">처음으로</button>`,{go:()=>{ paused=false; $('pause').textContent='멈춤'; },home:()=>{ paused=false; toMenu(); }}); };
-$('quit').onclick=()=>{ if(mode==='attract') return; panel(`<h2>그만할까요?</h2><button class="big a" id="no">계속하기</button><button class="big g" id="yes">처음으로</button>`,{no:()=>{},yes:()=>toMenu()}); };
+$('pause').onclick=()=>{ if(over||mode!=='solo') return; paused=!paused; $('pause').textContent=paused?'계속':'멈춤'; if(paused) panel(`<h2>잠깐 쉬는 중</h2><div class="game-result-navigation"><button class="big g" id="home">나가기</button><button class="big a" id="go">계속하기</button></div>`,{go:()=>{ paused=false; $('pause').textContent='멈춤'; },home:()=>{ paused=false; toMenu(); }}); };
+$('quit').onclick=()=>{ if(mode==='attract') return; panel(`<h2>그만할까요?</h2><div class="game-result-navigation"><button class="big g" id="yes">나가기</button><button class="big a" id="no">계속하기</button></div>`,{no:()=>{},yes:()=>toMenu()}); };
 document.addEventListener('visibilitychange',()=>{ if(document.hidden&&mode==='solo'&&!paused&&!over) $('pause').click(); });
 function disposeTtang(){abandonRound();if(friendInviteId){friendInvites()?.cancel(friendInviteId);friendInviteId=null;}const closing=Net.close();mode='closed';paused=true;over=true;world=me=p2=null;joys.clear();document.querySelectorAll('.joy').forEach(e=>e.remove());return closing;}
 window.OjjudaTtang={ host:(code,options)=>/^[a-f0-9]{24}$/.test(code)?hostRoom(code,options):false,join:code=>/^[a-f0-9]{24}$/.test(code)?joinRoom(code):false,onResult:null,result:()=>roundOutcome,start:m=>m==='duo'?lobby():startSolo(), menu:()=>toMenu(),dispose:disposeTtang };
@@ -31,7 +34,7 @@ window.OjjudaTtang={ host:(code,options)=>/^[a-f0-9]{24}$/.test(code)?hostRoom(c
     if(mode==='net'&&role==='host'&&!over){ netAcc+=dt; if(netAcc>=.08){ netAcc=0; Net.send(snapshot()); }
       if(world.time>=endAt){ over=true; const s=snapshot(); const a=world.counts[me.id], b=world.counts[p2.id]; Net.send({t:'end',a,b,s}); showNetEnd(a,b); }
       if(now-Net.lastRx>10000&&!over&&!p2.bot)continueWithComputer(); }
-    if(mode==='solo'&&!over&&me.alive&&world.counts[me.id]/world.N>=.5){ over=true; sendResult({mode:'solo',win:true,best:+me.best.toFixed(1),kills:me.kills,seconds:Math.floor(world.time),score:Math.round(me.best*10)}); panel(window.OjjudaGameResults.markup({game:'ttang',outcome:'success',key:roundId,metric:`내 땅 ${me.best.toFixed(1)}% · ${Math.floor(world.time)}초`,actions:'<button id="again" data-game-result-play>다시 하기</button><button id="home">처음으로</button>'}),{again:()=>startSolo(),home:()=>toMenu()}); }
+    if(mode==='solo'&&!over&&me.alive&&world.counts[me.id]/world.N>=.5){ over=true; sendResult({mode:'solo',win:true,best:+me.best.toFixed(1),kills:me.kills,seconds:Math.floor(world.time),score:Math.round(me.best*10)}); panel(window.OjjudaGameResults.markup({game:'ttang',outcome:'success',key:roundId,metric:`내 땅 ${me.best.toFixed(1)}% · ${Math.floor(world.time)}초`,actions:'<div class="game-result-navigation"><button id="home">나가기</button><button id="again" data-game-result-play title="새 판 시작">계속하기</button></div>'}),{again:()=>startSolo(),home:()=>toMenu()}); }
   }
   if(world){ draw(paused?0:dt); if(now-lastHud>200){ lastHud=now; hud(); } }
   requestAnimationFrame(loop); }

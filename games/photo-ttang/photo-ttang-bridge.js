@@ -34,7 +34,7 @@
    const bar=document.createElement('header');bar.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 12px;flex:none;background:#1c1730;color:#fff;font-size:12px';
    const title=document.createElement('span');title.textContent='포토땅따먹기 · 솔로 · 19+';
    const done=document.createElement('button');done.type='button';done.className='arcade-return';done.textContent='← 오쭈다 오락실';done.onclick=close;
-   frame=document.createElement('iframe');frame.title='포토땅따먹기';frame.src='/games/photo-ttang.html?v=20261110-admin-game-preview1';frame.allow='vibrate; web-share; clipboard-write';frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
+   frame=document.createElement('iframe');frame.title='포토땅따먹기';frame.src='/games/photo-ttang.html?v=20261113-game-popup-order1';frame.allow='vibrate; web-share; clipboard-write';frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
    const rank=document.createElement('button');rank.type='button';rank.disabled=true;rank.textContent='이번 달 완료 사진 수로 순위 집계';rank.style.cssText='font:inherit;color:inherit;background:none;border:0';
    rankDispose=window.OjjudaPhotoRanking?.bind({frame,client,owner,authorized:()=>authorized()&&access.allowed(),status:rank});
    bar.append(done,title,rank);overlay.append(bar,frame);document.body.append(overlay);document.body.classList.add('gaming','photo-ttang-open');done.focus();

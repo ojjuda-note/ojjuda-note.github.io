@@ -2,6 +2,29 @@
 .game-result-card .game-result-encouragement{margin:7px 0 0;font-size:14px;line-height:1.5;color:#667467;white-space:pre-line}
 .game-result-card [hidden]{display:none!important}
 .game-result-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:22px;align-items:stretch}
+.game-result-navigation,
+.game-result-actions > .game-result-navigation {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-column: 1 / -1;
+  align-items: stretch;
+  gap: 8px;
+}
+.game-result-navigation > button { min-width: 0; }
+dialog.game-exit-dialog {
+  box-sizing: border-box;
+  width: min(360px, calc(100vw - 32px));
+  margin: auto;
+  padding: 22px;
+  border: 1px solid var(--line, #dfe4df);
+  border-radius: 16px;
+  background: var(--surface, #fff);
+  color: var(--ink, #223a30);
+}
+.game-exit-dialog::backdrop { background: rgba(17, 28, 23, .58); }
+.game-exit-dialog p { margin: 0 0 18px; white-space: pre-line; text-align: center; }
+.game-exit-dialog button { min-height: 44px; padding: 8px; border: 1px solid #cdd8cf; border-radius: 10px; background: #edf3ef; color: #223a30; font: inherit; cursor: pointer; }
+.game-exit-dialog [data-exit-stay] { background: var(--accent, #245a48); color: var(--on-accent, #fff); }
 .game-result-actions:empty{display:none}
 .game-result-actions>:only-child{grid-column:1/-1}
 .game-result-actions:has(>:nth-child(2):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}

@@ -1,16 +1,17 @@
 import {SUITS} from './engine.js?v=5';
 import {cardAsset,CARD_RATIO} from './cards.js?v=20261106-solitaire-images1';
 
-export function playWinAnimation(onComplete,{onRestart}={}){
+export function playWinAnimation(onComplete,{onRestart,onExit}={}){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches){onComplete();return ()=>{};}
   const layer=document.createElement('div');layer.className='win-celebration';
-  layer.innerHTML='<canvas aria-hidden="true"></canvas><div class="win-banner" role="status"><strong>멋지게 완성했어요!</strong><div class="win-actions"><button type="button" data-result>결과 보기</button>'+(onRestart?'<button type="button" data-restart>다시 시작</button>':'')+'</div></div>';
+  layer.innerHTML='<canvas aria-hidden="true"></canvas><div class="win-banner" role="status"><strong>멋지게 완성했어요!</strong><div class="win-actions"><button type="button" data-result>결과 보기</button><div class="win-navigation">'+(onExit?'<button type="button" data-exit>나가기</button>':'')+(onRestart?'<button type="button" data-restart>계속하기</button>':'')+'</div></div></div>';
   document.body.append(layer);
   let raf=0,timeout=0,done=false,particles=[],sprites=[],last=0,startedAt=0,elapsed=0,spawned=0;
   const stop=()=>{if(done)return;done=true;clearTimeout(timeout);cancelAnimationFrame(raf);layer.remove();document.removeEventListener('keydown',onKey);};
   const finish=(next=onComplete)=>{if(done)return;stop();next();};
-  const onKey=e=>{if(e.key==='Escape'||e.key==='Enter'){e.preventDefault();finish();}};
+  const onKey=e=>{if(e.key==='Escape'||(e.key==='Enter'&&!e.target.closest?.('button'))){e.preventDefault();finish();}};
   layer.querySelector('[data-result]').onclick=()=>finish();
+  const exit=layer.querySelector('[data-exit]');if(exit)exit.onclick=()=>finish(onExit);
   const restart=layer.querySelector('[data-restart]');if(restart)restart.onclick=()=>finish(onRestart);
   document.addEventListener('keydown',onKey);
   // Loading or drawing a card must never leave the game locked indefinitely.
