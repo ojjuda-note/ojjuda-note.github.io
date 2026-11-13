@@ -1,0 +1,17 @@
+name: Verify drinking games and card moderation
+on:
+  push:
+    branches: [release/drinks-prompts-stage]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - run: node scripts/check-source-layout.mjs
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node tests/staged-prompts.cjs
+      - run: node tests/staged-prompts-admin.cjs .
+      - run: node tests/staged-prompts-existing.cjs

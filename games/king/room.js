@@ -11,7 +11,7 @@ const key=(field)=>'oj.king.'+actor+'.'+field;
 function saveStandalone(code){if(!party)save(key('last'),code)}
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const control=(title,act,primary=false)=>party?.control(act)??'<button type="button" class="'+(primary?'action':'secondary')+'" data-do="'+act+'">'+title+'</button>';
-const prompts=['좋아하는 노래 한 소절을 흥얼거려 주세요.','옆 사람의 장점을 하나 말해 주세요.','오늘의 기분을 표정으로 보여 주세요.','영화 주인공처럼 자기소개해 주세요.','두 손으로 하트를 만들어 주세요.','5초 동안 로봇처럼 움직여 주세요.','이 모임의 이름을 지어 주세요.'];
+const prompts = window.DrinkingPrompts.list('king');
 let revealed=false;
 let draftNumber=1,draftSecond=null,draftMission='';
 function numberOptions(count,selected,exclude){
@@ -69,7 +69,8 @@ function render(s,force=false){
       content='<h1>왕의 미션을 정하세요</h1>'+card+'<form id="order"><label>첫 번째 번호<select name="number">'+numberOptions(count,draftNumber)+'</select></label>'+
         '<label>두 번째 번호 (선택)<select name="second">'+secondOptions(count)+'</select></label>'+
         '<label>미션<input name="mission" maxlength="80" required value="'+esc(draftMission)+'"></label>'+
-        control('다른 미션 추천','suggest')+'<div class="actions"><button class="action" type="submit">번호 주인공 공개</button></div></form>';
+        '<p><small>직접 쓴 내용은 관리자 검토 후 공용 목록에 등록될 수 있어요.</small></p>'+
+      control('다른 미션 추천','suggest')+'<div class="actions"><button class="action" type="submit">번호 주인공 공개</button></div></form>';
     }else{
       content='<h1>'+esc(s.players[s.king])+'님이 왕이에요</h1>'+card+'<p>왕이 번호와 미션을 고르고 있어요.</p>';
     }
@@ -122,7 +123,11 @@ view.addEventListener('submit',e=>{
     if(!mission||room?.phase!=='order'||room.me!==room.king)return;
     const order={round:room.round,mission,number};
     if(form.get('second'))order.second=Number(form.get('second'));
-    run(async()=>render(await api('order',room.code,order)));return;
+    run(async()=>{
+      const next=await api('order',room.code,order);
+      window.DrinkingPrompts.submit('king',mission);
+      render(next);
+    });return;
   }
   const title=String(form.get('title')||'').trim(),password=form.get('password');
   const code=String(form.get('code')||'').trim().toUpperCase();

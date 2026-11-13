@@ -1,13 +1,7 @@
 'use strict';
 (() => {
   const prompt = window.PartyPrompt;
-  const questions = [
-    '오늘 안경을 쓴 사람 접어!', '오늘 커피 마신 사람 접어!',
-    '알람을 두 번 이상 맞추는 사람 접어!', '오늘 운동화 신고 온 사람 접어!',
-    '휴대폰 배터리가 절반 이하인 사람 접어!', '집에 아직 안 읽은 책이 있는 사람 접어!',
-    '이번 주에 라면 먹은 사람 접어!', '여행 갈 때 짐을 전날 싸는 사람 접어!',
-    '오늘 고양이나 강아지 사진을 본 사람 접어!', '사진 찍을 때 늘 같은 포즈를 하는 사람 접어!'
-  ];
+  const questions = window.DrinkingPrompts.list('fingers');
   function scoreboard(s, ui) {
     const rows = s.players.map((name, seat) => {
       const count = s.game.fingers[seat];

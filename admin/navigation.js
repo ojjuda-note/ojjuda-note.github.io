@@ -13,6 +13,7 @@
     { id:'content', label:'콘텐츠 관리', items:[
       ['content','cards','카드'],['content','messages','쪽지 관리'],
       ['content','groups','그룹 관리'],['content','photo-stages','포토땅따먹기'],
+      ['content','drinking-prompts','술게임 질문·명령 검토'],
       ['content','map','위치 지도'],['library','assets','자료 모아보기'] ] },
     { id:'safety', label:'신고·안전', items:[
       ['support','reports','신고 처리'],['support','feedback','문의·의견'],
