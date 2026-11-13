@@ -1,13 +1,7 @@
 'use strict';
 (() => {
   const prompt = window.PartyPrompt;
-  const questions = [
-    '무인도에서도 제일 잘 살아남을 사람은?', '갑자기 여행을 떠나자고 할 사람은?',
-    '처음 만난 고양이와 금세 친해질 사람은?', '노래방에서 첫 곡을 부를 사람은?',
-    '맛집을 물어보면 바로 세 곳을 알려 줄 사람은?', '친구 생일에 깜짝 파티를 준비할 사람은?',
-    '영화 결말을 가장 먼저 알아챌 사람은?', '모두 길을 잃었을 때 나서서 길을 찾을 사람은?',
-    '휴대폰 사진첩에 음식 사진이 가장 많을 사람은?', '처음 해 본 보드게임에서 바로 이길 사람은?'
-  ];
+  const questions = window.DrinkingPrompts.list('imagevote');
   function view(s, ui) {
     const g = s.game;
     if (s.phase === 'prompt') {
