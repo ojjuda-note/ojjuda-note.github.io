@@ -253,14 +253,18 @@
           </button>`;
         }).join('')}</div>
       </section>
+      <a class="agit-biorhythm-banner" href="/features/biorhythm/" aria-label="오늘의 바이오리듬, 무료로 내 리듬 보러 가기">
+        <div class="agit-biorhythm-copy"><span class="agit-biorhythm-kicker">DAILY RHYTHM <span>무료 · 재미로 보기</span></span><h2>오늘의 바이오리듬</h2><p>생일로 그려 보는 오늘의 세 가지 리듬.</p><span class="agit-biorhythm-cta">내 리듬 보러 가기 <span aria-hidden="true">→</span></span></div>
+        <div class="agit-biorhythm-art" aria-hidden="true"><div class="agit-biorhythm-legend"><span>신체</span><span>감정</span><span>지성</span></div><svg viewBox="0 0 360 170" fill="none" focusable="false"><path d="M10 45H350M10 85H350M10 125H350" stroke="#dce9e1" stroke-width="1"/><path d="M180 14V155" stroke="#98b4a8" stroke-width="1.5" stroke-dasharray="4 6"/><path d="M10 85C42 28 72 22 105 85S168 148 200 85S264 22 296 85S330 132 350 113" stroke="#c86a65" stroke-width="3.5" stroke-linecap="round"/><path d="M10 123C45 145 79 119 112 72S181 27 217 69S292 145 350 95" stroke="#357e79" stroke-width="3.5" stroke-linecap="round"/><path d="M10 47C60 18 98 38 140 85S215 142 260 109S317 39 350 48" stroke="#8671b0" stroke-width="3.5" stroke-linecap="round"/><circle cx="180" cy="106" r="5" fill="#c86a65" stroke="#fffcf5" stroke-width="2"/><circle cx="180" cy="45" r="5" fill="#357e79" stroke="#fffcf5" stroke-width="2"/><circle cx="180" cy="117" r="5" fill="#8671b0" stroke="#fffcf5" stroke-width="2"/></svg><span class="agit-biorhythm-art-note">세 가지 리듬을 한눈에</span></div>
+      </a>
       <a class="agit-tarot-banner" href="/games/moonlit-tarot/" aria-label="달의 마녀 타로 만나기, 전체운세 30쭈, 나머지 분야 각각 10쭈, 결제 후 24시간 이용">
         <span class="agit-tarot-shimmer" aria-hidden="true"></span>
-        <div class="agit-tarot-copy"><span class="agit-tarot-kicker">MOONLIT TAROT <i aria-hidden="true">✦</i> 마녀의 초대</span><h2>달의 마녀 타로</h2><p>마음이 끌리는 세 장,<br>오늘의 이야기를 펼쳐 보세요.</p><span class="agit-tarot-cta">마녀 만나러 가기 <span aria-hidden="true">→</span></span></div>
+        <div class="agit-tarot-copy"><span class="agit-tarot-kicker">MOONLIT TAROT <i aria-hidden="true">✦</i> 마녀의 초대</span><h2>달의 마녀 타로</h2><p>세 장으로 펼치는 오늘의 이야기.</p><span class="agit-tarot-cta">마녀 만나러 가기 <span aria-hidden="true">→</span></span></div>
         <div class="agit-tarot-price"><strong>전체 <b>30</b>쭈</strong><small>다른 분야 각 10쭈</small><small>결제 후 24시간 이용</small></div>
       </a>
       <a class="agit-saju-banner" href="/games/starlit-saju/" aria-label="별빛 사주팔자, 전체 풀이 30쭈, 평생운·올해운·월별운 각각 10쭈">
         <span class="agit-saju-stars" aria-hidden="true"></span>
-        <div class="agit-saju-copy"><span class="agit-saju-kicker">STARLIT SAJU <i aria-hidden="true">✦</i> 별빛 서고</span><h2>별빛 사주팔자</h2><p>평생운부터 올해·월별운까지,<br>쉬운 설명으로 차근차근 읽어 보세요.</p><span class="agit-saju-cta">전체 30쭈 · 개별 10쭈 · 사주 펼치기 <span aria-hidden="true">→</span></span></div>
+        <div class="agit-saju-copy"><span class="agit-saju-kicker">STARLIT SAJU <i aria-hidden="true">✦</i> 별빛 서고</span><h2>별빛 사주팔자</h2><p>평생운·올해운·월별운을 쉽고 자세하게.</p><span class="agit-saju-cta">전체 30쭈 · 개별 10쭈 · 사주 펼치기 <span aria-hidden="true">→</span></span></div>
         <div class="agit-saju-art" aria-hidden="true"><span class="agit-saju-orbit"></span><span class="agit-saju-moon">☾</span><div class="agit-saju-scrolls"><span><small>YEAR</small><b>年</b><i>태어난 해</i></span><span><small>MONTH</small><b>月</b><i>태어난 달</i></span><span><small>DAY</small><b>日</b><i>태어난 날</i></span><span><small>HOUR</small><b>時</b><i>태어난 시</i></span></div></div>
       </a>
       <footer class="agit-footer"><span>오쭈다 아지트</span><button type="button" data-act="feedback-open">의견 보내기 <span aria-hidden="true">→</span></button></footer>
