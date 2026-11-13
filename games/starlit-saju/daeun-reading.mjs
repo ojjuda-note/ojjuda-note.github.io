@@ -2,7 +2,7 @@ import { makeProfile, getTenGod, interactionPairs } from './fortune-data.mjs?v=2
 import { GOD_CONTEXTS, PAIR_CONTEXTS } from './deeper-reading-data.mjs?v=20261113-saju-easy1';
 import { describePersonalPeriod } from './reader-summary.mjs?v=20261113-saju-easy1';
 import { buildDaeunSituations } from './daeun-situations.mjs?v=20261113-saju-easy1';
-import { readingScoreCopy } from './reading-score.mjs?v=20261114-saju-wind1';
+import { readingScoreCopy } from './reading-score.mjs?v=20261114-saju-wind2';
 
 // These are shared interpretations of computed relationships, not individual
 // predictions assembled from a birth-date hash. Every selected rule keeps its
