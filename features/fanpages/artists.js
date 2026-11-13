@@ -290,23 +290,43 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "FANS", icon: "✦", url: "https://app.fans/community/twice" }
     ],
     merch: [
+      { title: "NAYEON · NA-sty", sub: "2026.11.20 발매 · 카세트 2종 예약 · 포토카드 특전은 판매처 확인", href: "https://www.twicejapan.com/news/detail/2059" },
+      { title: "THIS IS FOR · 서울 피날레 라이브 LP", sub: "2026.10.16 발매 · 2LP · JYP JAPAN 공식 판매처", href: "https://jypj-store.com/collections/twice-official-goods/products/tw26-tff-0001" },
+      { title: "#BEST 2015-2025 · 한정 BOX", sub: "2026.12.16 발매 예정 · 수량·재고는 공식 판매처 확인", href: "https://jypj-store.com/collections/twice-official-goods/products/tw26-bes-0003" },
+      { title: "THIS IS FOR · MUFG STADIUM 라이브 Blu-ray/DVD", sub: "2026.12.02 발매 예정 · 일본 공식 디스코그래피", href: "https://www.twicejapan.com/discography/detail/92/" },
       { title: "TWICE OFFICIAL", sub: "공식 스토어 · FANS SHOP", href: "https://app.fans/shop/twice" },
       { title: "JYP FANS", sub: "커뮤니티", href: "https://app.fans/community/twice" }
     ],
     music: [
+      { title: "THIS IS FOR WORLD TOUR FINALE in SEOUL - LIVE", date: "2026.10.16", type: "서울 피날레 라이브 음반 · 26곡", songs: ["FOUR", "THIS IS FOR", "Strategy", "MAKE ME GO", "SET ME FREE"], href: "https://music.apple.com/us/album/this-is-for-world-tour-finale-in-seoul-live/6812503580" },
+      { title: "#BEST 2015-2025", date: "2026.08.26", type: "일본 베스트 앨범 · 4CD", songs: ["Like OOH-AHH", "CHEER UP", "TT", "Feel Special", "ME + YOU"], href: "https://www.twicejapan.com/discography/detail/91/" },
+      { title: "TEN: The Story Goes On", date: "2025.10.10", type: "데뷔 10주년 스페셜 앨범", songs: ["ME+YOU", "MEEEEEE", "FIX A DRINK", "CHESS"], href: "https://twice.jype.com/discography?AmSeq=1&PgIndex=1" },
       { title: "THIS IS FOR", date: "2025.07.11", type: "정규 4집", songs: ["THIS IS FOR", "FOUR", "OPTIONS", "MARS"], href: "https://twice.jype.com/discography/7lpxlcye" },
       { title: "STRATEGY", date: "2024.12.06", type: "미니 14집", songs: ["Strategy (feat. Megan Thee Stallion)", "Kiss My Troubles Away", "Sweetest Obsession"], href: "https://twice.jype.com/discography/1xokcjbo" },
       { title: "With YOU-th", date: "2024.02.23", type: "미니 13집", songs: ["ONE SPARK", "I GOT YOU"], href: "https://twice.jype.com/discography/jfzzhl4x" }
     ],
     appearances: [
+      { date: "2026-11-20", title: "나연 · NA-sty 싱글 발매", sub: "JYP · 한국 정식 발매일 (예약 공지와 구별)", href: "https://www.twicejapan.com/news/detail/2059" },
       { date: "2026-11-21", title: "2026 MAMA AWARDS", sub: "나연 솔로 출연 · 일본 오사카", href: "https://www.cj.net/jp/press-release/view/1132" },
-      { date: "2026-12-12", title: "뮤직뱅크 글로벌 페스티벌", sub: "MISAMO·나연 출연 · 도쿄", href: "https://music-bank.jp/" }
+      { date: "2026-12-12", title: "뮤직뱅크 글로벌 페스티벌", sub: "MISAMO·나연 출연 · 도쿄", href: "https://music-bank.jp/" },
+      { date: "2027-01-23", title: "나연 · NA-sty 발매 기념 밋앤그릿", sub: "일본 도쿄 · 추첨 당첨자 한정 · 상세 장소·시간 당첨자 별도 안내", href: "https://www.twicejapan.com/news/detail/2065" }
+    ],
+    campaigns: [
+      { kind: "콜라보", date: "2026.10.02", title: "TWICE LOVELYS × Cake.jp", sub: "공식 캐릭터 쿠키·금평당 선물 세트 · 예약 판매 시작", href: "https://www.twicejapan.com/news/detail/2045" },
+      { kind: "콜라보", date: "2026.03", title: "TWICE LOVELYS × 반다이", sub: "캐릭터 젤리·참·파우치 · 2026년 3월 출시", href: "https://wmg.jp/twice/news/90426" },
+      { kind: "콜라보", date: "2026.02", title: "TWICE LOVELYS × 산리오캐릭터즈", sub: "선스타 문구 데스크 굿즈 시리즈", href: "https://www.twicejapan.com/news/detail/1948" }
     ],
     schedules: [
+      { title: "공식 일정", sub: "JYP TWICE 활동 달력", href: "https://twice.jype.com/schedule" },
+      { title: "일본 공식 일정", sub: "TWICE JAPAN", href: "https://www.twicejapan.com/schedule/" },
       { title: "공식 커뮤니티", sub: "JYP FANS", href: "https://app.fans/community/twice" },
       { title: "공식 홈페이지", sub: "JYP", href: "https://twice.jype.com/" }
     ],
     news: [
+      { date: "11.10", tag: "공지", title: "나연 'NA-sty' 팬 이벤트 장소·응모 안내 정정", href: "https://www.twicejapan.com/news/detail/2065" },
+      { date: "11.06", tag: "음반", title: "나연 'NA-sty' 11.20 발매 · 카세트 2종 예약", href: "https://www.twicejapan.com/news/detail/2059" },
+      { date: "10.16", tag: "음악", title: "서울 투어 피날레 라이브 음원 발매", href: "https://www.twicejapan.com/news/detail/2050" },
+      { date: "10.09", tag: "굿즈", title: "도쿄 MUFG 스타디움 라이브 DVD/Blu-ray 12.02 발매 발표", href: "https://www.twicejapan.com/news/detail/2047" },
       { date: "2026", tag: "투어", title: "THIS IS FOR · TOUR CONTENT", href: "https://app.fans/community/twice/media/kdytkko38v" },
       { date: "공식", tag: "공지", title: "TWICE FANS 최신 소식", href: "https://app.fans/community/twice" }
     ]
