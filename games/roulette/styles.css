@@ -334,6 +334,8 @@ body[data-screen=game] .room{max-width:1000px;padding-top:27px}
 /* Results stay visible until the player acknowledges them. */
 .wheel-dialog{width:min(720px,calc(100vw - 24px),calc(100svh - 290px));overflow-y:auto}
 .confirm-result-button{display:block;width:100%;min-height:46px;margin:5px 0 0;border:1px solid #e4c993;border-radius:7px;background:linear-gradient(115deg,#dfc591,#bea16a);color:#183329;font-size:14px;font-weight:600;letter-spacing:.4px;box-shadow:inset 0 1px 0 #fff4,0 4px 12px #0003;touch-action:manipulation}
+#leaveResultButton{background:#233a32;color:#f4e5cc}
+.wheel-dialog .game-result-navigation:has(> [hidden]){display:none}
 .confirm-result-button:hover{filter:brightness(1.06)}
 .confirm-result-button:focus-visible{outline:2px solid #f7e5b9;outline-offset:3px}
 .confirm-result-button:disabled{opacity:.6;cursor:wait}

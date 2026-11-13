@@ -44,3 +44,5 @@ dialog{border:1px solid #cabb8f55;border-radius:16px;background:#f8f4e8;color:#2
 .solitaire-entry .ge-more p{word-break:keep-all}
 @media(max-height:690px){.solitaire-entry .entry-inner.game-entry{padding:18px 20px}.solitaire-entry .ge-icon{width:52px;height:52px;margin-bottom:10px}.solitaire-entry .ge-copy{margin:7px 0 12px}.solitaire-entry .ge-label{margin-top:12px}.solitaire-entry .entry-draw{margin-bottom:10px}}
 @media(max-width:370px){.solitaire-entry .entry-inner.game-entry{padding-left:18px;padding-right:18px}.solitaire-entry .entry-actions .ge-secondary{font-size:12px}}
+
+.win-navigation{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.win-navigation [data-exit]{background:#e5e6d9;color:#3e5242}

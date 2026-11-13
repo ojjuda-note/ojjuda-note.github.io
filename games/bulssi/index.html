@@ -110,6 +110,7 @@ body[data-world^="life"] #biomeMeter{border-color:var(--biome-edge);box-shadow:0
 #overlay.journal #ovText p{margin:1em 0;line-height:1.95;text-align:left;word-break:keep-all}
 #overlay.journal #ovText .journal-index{text-align:center;color:#b9f3d7;font:600 12px 'IBM Plex Sans KR',sans-serif;letter-spacing:.04em}
 #overlay.journal #ovText h2{text-align:center;font-size:25px}
+#ovBtns .round-navigation{flex:0 0 100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 #ovBtns{display:flex;gap:10px;margin-top:28px;flex-wrap:wrap;justify-content:center}
 .monthly-bulssi-link{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:8px 14px;border:1px solid #e3af76;border-radius:999px;color:#f8d3a0;background:#ff9d401c;text-decoration:none;font-size:13px;font-weight:700;pointer-events:auto}
 .monthly-bulssi-link:hover{background:#ff9d402f}.monthly-bulssi-link:focus-visible{outline:3px solid #ffb66d;outline-offset:3px}
@@ -169,7 +170,7 @@ body[data-world^="life"] #biomeMeter{border-color:var(--biome-edge);box-shadow:0
   </div>
 </section>
 <div id="overlay" role="dialog" aria-live="polite"><div id="ovText"></div><div id="ovBtns"></div><a class="monthly-bulssi-link monthly-bulssi-overlay" href="/features/arcade/monthly-ranking.html?game=saetbyeol" target="_blank" rel="noopener noreferrer">🏆 이번 달 순위 · 내 기록</a><div id="ovHint">눌러서 계속</div></div>
-<script src="./entry.js?v=20261112-arcade-entry-return1"></script>
+<script src="./entry.js?v=20261113-game-popup-order1"></script>
 <script src="./growth.js?v=20261013-sky2001"></script>
 <script src="./upgrade-branches.js?v=20261110-bulssi-life1"></script>
 <script src="./encounters.js?v=20261110-saetbyeol-worlds1"></script>
@@ -556,17 +557,35 @@ document.addEventListener('pointerdown',e=>{if(!e.target.closest('#settings')&&e
 let toastT=0;
 function toast(t,ms=2800){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),ms)}
 let ovTap=null;
-function overlay(html,{buttons=[],tap=null,hint=false}={}){
+function overlay(html,{buttons=[],continueWith=null,tap=null,hint=false}={}){
   $('#ovText').innerHTML=html;const b=$('#ovBtns');b.innerHTML='';
   for(const [label,fn,cls] of buttons){const e=document.createElement('button');e.textContent=label;if(cls)e.className=cls;e.onclick=ev=>{ev.stopPropagation();fn()};b.appendChild(e)}
+  if(continueWith){
+    const row=document.createElement('div');row.className='round-navigation';
+    const exit=document.createElement('button');exit.textContent='나가기';
+    exit.onclick=event=>{event.stopPropagation();window.OjjudaSaetbyeolEntry.requestExit();};
+    const next=document.createElement('button');next.textContent='계속하기';next.className='primary';
+    next.onclick=event=>{event.stopPropagation();continueWith();};
+    row.append(exit,next);b.append(row);
+  }
   ovTap=tap;$('#ovHint').style.display=hint?'block':'none';$('#overlay').classList.add('on');
-  const first=b.querySelector('button');if(first)setTimeout(()=>first.focus({preventScroll:true}),50);
+  const first=b.querySelector('.round-navigation .primary')||b.querySelector('button');if(first)setTimeout(()=>{if(first.isConnected)first.focus({preventScroll:true})},50);
 }
 function closeOv(){$('#overlay').classList.remove('on','catalog','journal');ovTap=null}
 $('#overlay').addEventListener('click',()=>{if(ovTap)ovTap()});
 $('.monthly-bulssi-overlay').addEventListener('click',event=>event.stopPropagation());
-addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&ovTap&&$('#overlay').classList.contains('on')){e.preventDefault();ovTap()}});
-function story(lines,done){let i=0;const step=()=>{i++;const html=lines.slice(0,i).map((l,k)=>`<p class="${k===i-1?'new':''}">${l}</p>`).join('');overlay(html,{tap:i<lines.length?step:()=>{closeOv();if(done)done()},hint:true});$('#ovText').scrollTop=$('#ovText').scrollHeight};step()}
+addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&ovTap&&!e.target.closest?.('button,a')&&$('#overlay').classList.contains('on')){e.preventDefault();ovTap()}});
+function story(lines,done,roundFinished=false){
+  let i=0;
+  const step=()=>{
+    i++;
+    const html=lines.slice(0,i).map((line,k)=>`<p class="${k===i-1?'new':''}">${line}</p>`).join('');
+    const next=i<lines.length?step:()=>{closeOv();done?.()};
+    overlay(html,{tap:next,hint:!roundFinished,continueWith:roundFinished?next:null});
+    $('#ovText').scrollTop=$('#ovText').scrollHeight;
+  };
+  step();
+}
 
 // ---------- run ----------
 function startRun(withBoss){
@@ -955,7 +974,7 @@ function endRun(){
   mode='end';refreshBiomeMeter();save();window.OjjudaSaetbyeolEntry.ended(R.id);const g=R.gain;
   let html=S.stage>=5?`<h2>오늘도 잘 자랐어</h2><p>${R.boss?'아직 준비가 되지 않았다면 잠시 쉬었다 다시 만나면 돼.':'작은 생명이 오늘도 조금 더 따뜻해졌어.'}</p><p class="num">이번에 모은 생명력 ${fmt(g.life)} · ${R.time.toFixed(1)}초의 여행</p>`:
     `<h2>식었다</h2><p>${R.boss?`아직 ${col().bossObj} 넘지 못했다.`:'불씨가 잠시 숨을 고른다.'}</p><p class="num">이번에 모은 빛 ${fmt(g.light)}`+(g.metal?`<br>금속 ${fmt(g.metal)}`:'')+(g.mass?`<br>질량 ${fmt(g.mass)}`:'')+`<br>${R.time.toFixed(1)}초 동안 타올랐다</p>`;
-  overlay(html,{buttons:[['별자리로 돌아가기',()=>{closeOv();selectDefault();setMode('hub')},'primary'],[S.stage>=5?'한 번 더 빛 모으기':'바로 다시 타오르기',()=>{closeOv();startRun(!!R.boss)}]]});
+  overlay(html,{buttons:[['별자리로 돌아가기',()=>{closeOv();selectDefault();setMode('hub')}]],continueWith:()=>{closeOv();startRun(!!R.boss)}});
 }
 function winBoss(){
   const wonRun=R,wonProgress=S;
@@ -965,7 +984,7 @@ function winBoss(){
   const s=S.stage;
   setTimeout(()=>{
     if(R!==wonRun||S!==wonProgress||mode!=='end'||S.stage!==s)return;
-    if(s<4||s>=5&&s<9){S.stage=s+1;S.maxStage=Math.max(S.maxStage,S.stage);save();st=stats();applyTheme();story(EVO[s],()=>{selectDefault();setMode('hub');toast(`${STAGES[S.stage].name}의 별자리가 열렸다`,3000)})}
+    if(s<4||s>=5&&s<9){S.stage=s+1;S.maxStage=Math.max(S.maxStage,S.stage);save();st=stats();applyTheme();story(EVO[s],()=>{selectDefault();setMode('hub');toast(`${STAGES[S.stage].name}의 별자리가 열렸다`,3000)},true)}
     else if(s===4){save();ending()}
     else{S.lifeEnded=true;save();showLifeFinale()}
   },900);
@@ -977,7 +996,7 @@ function ending(){
     ['되돌려준다',()=>story(['나는 힘을 내려놓았다.','흩어진 파편들이 천천히 모여 푸른 세계가 되었다.','그 곁에서, 작은 별 하나가 다시 아침을 연다.'],()=>finale('아침의 별'))]
   ]});
 }
-function finale(t){S.ended=true;S.maxStage=Math.max(S.maxStage,5);S.legacyEnding=t;save();overlay(`<h2>${t}</h2><p>별의 끝에서 새로운 차원문이 열렸어요.</p>`,{buttons:[['차원문으로',enterLife,'primary'],['별자리 보기',()=>{closeOv();setMode('hub')}]]})}
+function finale(t){S.ended=true;S.maxStage=Math.max(S.maxStage,5);S.legacyEnding=t;save();overlay(`<h2>${t}</h2><p>별의 끝에서 새로운 차원문이 열렸어요.</p>`,{buttons:[['별자리 보기',()=>{closeOv();setMode('hub')}]],continueWith:enterLife})}
 function enterLife(){
   if(S.stage!==4||!S.ended||R?.boostPending)return;
   S.stage=5;S.maxStage=Math.max(S.maxStage,5);S.lifeStarted=true;R=null;save();st=stats();applyTheme();closeOv();selectDefault();setMode('hub');
@@ -988,7 +1007,7 @@ function showLifeFinale(){
   const friend=LIFE.kinds[S.geneType]?.name||'작은 생명';
   const epilogue=LIFE.kinds[S.geneType]?.epilogue||'';
   overlay(`<h2>생명의 별</h2>${LIFE.finale.map(line=>`<p>${line}</p>`).join('')}<p>${epilogue}</p><p class="num">${friend}와 함께 1,200개 성장의 끝에 도착했어요.</p>`,{
-    buttons:[['성장 기록 보기',()=>{closeOv();setMode('hub')},'primary'],['다시 탐험하기',()=>{closeOv();startRun(false)}]]
+    buttons:[['성장 기록 보기',()=>{closeOv();setMode('hub')}]],continueWith:()=>{closeOv();startRun(false)}
   });
 }
 function resetGame(){if(R?.boostPending)return;if(DEMO){endDemo();return;}DEMO=null;const snd=S.sound;S=fresh();S.sound=snd;S.intro=true;save();st=stats();R=null;applyTheme();closeOv();selectDefault();setMode('hub')}
@@ -1327,7 +1346,7 @@ function drawRun(){
 let last=performance.now();
 function frame(t){
   const dt=Math.min(.05,(t-last)/1000);last=t;T+=dt;
-  if(mode==='run'&&!document.hidden)updateRun(dt);
+  if(mode==='run'&&!document.hidden&&!window.OjjudaSaetbyeolEntry.confirmingExit)updateRun(dt);
   else if(mode==='end'&&R){updateRewards(dt);for(const p of R.parts){p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt}R.parts=R.parts.filter(p=>p.life>0);for(const g of R.rings)g.life-=dt;R.rings=R.rings.filter(g=>g.life>0);R.flash=Math.max(0,R.flash-dt)}
   drawBg();
   if(mode==='hub')drawHub(dt);

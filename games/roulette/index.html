@@ -7,12 +7,12 @@
   <meta name="description" content="정교한 원판과 자연스러운 공의 움직임. 가상 골드로 즐기는 오쭈다 룰렛.">
   <title>룰렛 · 오쭈다 오락실</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23091d18'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23c7a364' stroke-width='3'/%3E%3Cpath d='M32 13v38M13 32h38M18 18l28 28M18 46l28-28' stroke='%23c7a364'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23c7a364'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=20261101-roulette-wins1">
+  <link rel="stylesheet" href="styles.css?v=20261113-game-popup-order1">
   <link rel="stylesheet" href="/shared/games/game-entry.css?v=20261109-unified-multiplayer-ui2">
   <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
   <script src="/shared/games/multiplayer-entry.js?v=20261112-arcade-entry-return1" defer></script>
-<link rel="stylesheet" href="/shared/games/game-results.css?v=20261109-unified-multiplayer-ui2">
-<script src="/shared/games/game-results.js?v=20261108-monthly-personal1"></script>
+<link rel="stylesheet" href="/shared/games/game-results.css?v=20261113-game-popup-order1">
+<script src="/shared/games/game-results.js?v=20261113-game-popup-order1"></script>
 <link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
 </head>
 <body data-screen="lobby">
@@ -123,8 +123,8 @@
       </div>
       <div class="wheel-footer"><div class="round-status" id="roundStatus" role="status" aria-live="polite"><span class="status-dot"></span><span id="statusText">공이 출발합니다</span></div></div>
     </section>
-    <div id="wheelOutcome" class="wheel-outcome" hidden aria-live="polite"><span id="wheelOutcomeNumber" class="result-number">0</span><div><strong id="wheelOutcomeTitle"></strong><span id="wheelOutcomeDetail">확인을 누르면 테이블로 돌아가요</span><span id="wheelComputerResult" class="computer-result" hidden></span></div></div>
-    <button id="confirmResultButton" class="confirm-result-button" hidden disabled>확인</button>
+    <div id="wheelOutcome" class="wheel-outcome" hidden aria-live="polite"><span id="wheelOutcomeNumber" class="result-number">0</span><div><strong id="wheelOutcomeTitle"></strong><span id="wheelOutcomeDetail"></span><span id="wheelComputerResult" class="computer-result" hidden></span></div></div>
+    <div class="game-result-navigation"><button id="leaveResultButton" class="confirm-result-button" hidden disabled>나가기</button><button id="confirmResultButton" class="confirm-result-button" hidden disabled>계속하기</button></div>
     <div class="spin-popup-footnote" id="wheelFootnote">0–36 <span>EUROPEAN ROULETTE</span> SINGLE ZERO</div>
   </dialog>
   <dialog id="historyDialog" class="help-dialog history-dialog" aria-labelledby="historyTitle" aria-describedby="historyHint">
@@ -158,6 +158,6 @@
     <p id="refillCoins" class="refill-coins">보유 0쭈</p><p id="refillMessage" class="refill-message" role="status"></p>
     <div class="refill-dialog-actions"><button id="cancelRefillButton" type="button">취소</button><button id="confirmRefillButton" type="button" disabled>충전</button></div>
   </dialog>
-  <script type="module" src="app.js?v=20261103-game-results1"></script>
+  <script type="module" src="app.js?v=20261113-game-popup-order1"></script>
 </body>
 </html>

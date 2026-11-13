@@ -115,7 +115,7 @@
     $('#sheet').classList.add('hidden'); $('#s2Title').textContent = '게임 결과';
     $('#s2Bust').innerHTML = ''; $('#s2Body').innerHTML = '';
     $('#sheet2').classList.add('result-view');
-    $('#s2Btns').innerHTML = window.OjjudaGameResults.markup({game:'tour',outcome:!winner?'draw':room.game.winner===room.seat?'success':'failure',key:`tour:${room.id}`,metric:`${rank}위 · 자산 ${fmt(me.bankrupt?0:assets(me))}`,actions:'<button type="button" data-marble-lobby>대기실</button>'});
+    $('#s2Btns').innerHTML = window.OjjudaGameResults.markup({game:'tour',outcome:!winner?'draw':room.game.winner===room.seat?'success':'failure',key:`tour:${room.id}`,metric:`${rank}위 · 자산 ${fmt(me.bankrupt?0:assets(me))}`,actions:'<button type="button" data-tour-exit>나가기</button><button type="button" data-marble-lobby title="대기실로">계속하기</button>'});
     $('#sheet2').classList.remove('hidden'); if(room.game.winner===room.seat)sfx('win');
   }
   async function accept(next,at=epoch) {
@@ -149,7 +149,7 @@
       if (room.status === 'finished') showResult();
       else if(room.game.players[room.seat]?.bankrupt&&eliminationKey!==room.id){
         eliminationKey=room.id;
-        eliminationPopup=window.OjjudaGameResults.show({game:'tour',outcome:'failure',key:`tour-out:${room.id}`,metric:'파산 · 관전으로 전환',dismissible:true,actions:[{label:'관전하기',onClick:()=>{eliminationPopup=null;}}]});
+        eliminationPopup=window.OjjudaGameResults.show({game:'tour',outcome:'failure',key:`tour-out:${room.id}`,metric:'파산 · 관전으로 전환',dismissible:true,actions:[{label:'나가기',onClick:()=>{$('#exitBtn').click();return false;}},{label:'계속하기',autofocus:true,onClick:()=>{eliminationPopup=null;}}]});
       }
     } catch(e) { if (e !== STALE) { G = JSON.parse(JSON.stringify(room.game)); render(); } }
     finally { if (at === epoch) { animating = false; controlsKey = ''; controls(); } }
@@ -226,10 +226,12 @@
     else if (button.dataset.marbleChoice !== undefined) { const choice = room.prompt.choices[+button.dataset.marbleChoice]; if (choice) void sendMove({type:'choose',value:choice.value}); }
   };
   const quit = $('#quitBtn').onclick;
-  $('#quitBtn').onclick = () => {
+  $('#quitBtn').onclick = async () => {
     if (!active()) return quit();
     if (busy || pending || room.status !== 'active' || spectating()) return;
-    if (confirm('기권하면 이번 게임에서 탈락하고 관전하게 돼요. 기권할까요?')) void mutate({action:'surrender',room_id:room.id,version:room.version});
+    const roomId=room.id,message='기권하면 이번 게임에서 탈락하고 관전하게 돼요. 기권할까요?';
+    const confirmed=await (window.OjjudaGameResults?.confirmExit?.(message,{exitLabel:'기권하고 관전'})??confirm(message));
+    if(confirmed&&room?.id===roomId&&room.status==='active'&&!spectating())void mutate({action:'surrender',room_id:room.id,version:room.version});
   };
   $('#s2Btns').addEventListener('click', event => { if (event.target.closest('[data-marble-lobby]') && room) { $('#sheet2').classList.add('hidden'); void mutate({action:'leave',room_id:room.id}); } });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && selected) void refresh(); });

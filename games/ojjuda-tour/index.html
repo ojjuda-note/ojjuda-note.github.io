@@ -179,6 +179,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
 .sheet-body td{padding:6px 2px;border-bottom:2px dashed #e3d6f5}
 .sheet-body td:last-child{text-align:right;font-family:"Black Han Sans",sans-serif}
 .sheet-btns{display:flex;gap:10px;padding:16px 18px 20px}
+.sheet-btns > .game-result-navigation{flex:1}
 .sheet-btns .btn{flex:1;padding:12px 8px;font-size:20px}
 .sheet-btns .btn.sec{background:#fff}
 .rank{list-style:none;padding:0;margin:4px 0 0}
@@ -312,8 +313,8 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
 <link rel="stylesheet" href="marble-online.css?v=20261012-marble-invite1">
 <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
 <script src="/shared/games/multiplayer-entry.js?v=20261112-arcade-entry-return1" defer></script>
-<link rel="stylesheet" href="/shared/games/game-results.css?v=20261109-unified-multiplayer-ui2">
-<script src="/shared/games/game-results.js?v=20261108-monthly-personal1"></script>
+<link rel="stylesheet" href="/shared/games/game-results.css?v=20261113-game-popup-order1">
+<script src="/shared/games/game-results.js?v=20261113-game-popup-order1"></script>
 <style>#sheet2.result-view>.sheet-card{padding:0;width:min(430px,calc(100vw - 24px));max-width:430px;background:transparent;border:0;box-shadow:none}#sheet2.result-view .sheet-head,#sheet2.result-view #s2Body{display:none}#sheet2.result-view #s2Btns{display:block;padding:0;margin:0}</style>
 <style>#sheet.result-view>.sheet-card{padding:0;width:min(430px,calc(100vw - 24px));max-width:430px;background:transparent;border:0;box-shadow:none}#sheet.result-view .sheet-head,#sheet.result-view #sBody{display:none}#sheet.result-view #sBtns{display:block;padding:0;margin:0}</style>
 <link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
@@ -1237,11 +1238,11 @@ function openSheet(title,body,btns,p,expr){
   $('#sBtns').classList.toggle('col',btns.length>2);
   $('#sBtns').innerHTML=btns.map((b,k)=>`<button class="btn${b.sec||(btns.length<=2&&k>0)?' sec':''}" data-k="${b.k}">${b.l}${b.sub?`<small>${b.sub}</small>`:''}</button>`).join('');
   $('#sheet').classList.toggle('result-view',title==='탈락');
-  if(title==='탈락')$('#sBtns').innerHTML=window.OjjudaGameResults.markup({game:'tour',outcome:'failure',key:`tour-out:${G?.runId||GEN}:${pid(p)}`,metric:'파산 · 관전으로 전환',actions:$('#sBtns').innerHTML});
-  $('#sheet').classList.remove('hidden');$('#sBtns button').focus();
+  if(title==='탈락')$('#sBtns').innerHTML=window.OjjudaGameResults.markup({game:'tour',outcome:'failure',key:`tour-out:${G?.runId||GEN}:${pid(p)}`,metric:'파산 · 관전으로 전환',actions:'<button data-tour-exit>나가기</button>'+$('#sBtns').innerHTML});
+  $('#sheet').classList.remove('hidden');$('#sBtns button[data-k]').focus();
   return new Promise(r=>{sheetResolve=r});
 }
-$('#sBtns').addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;sfx('click');$('#sheet').classList.add('hidden');const r=sheetResolve;sheetResolve=null;if(r)r(b.dataset.k)});
+$('#sBtns').addEventListener('click',e=>{if(e.target.closest('[data-tour-exit]')){$('#exitBtn').click();return;}const b=e.target.closest('button[data-k]');if(!b)return;sfx('click');$('#sheet').classList.add('hidden');const r=sheetResolve;sheetResolve=null;if(r)r(b.dataset.k)});
 const ask=(t,b,btns,p,ex)=>guard(openSheet(t,b,btns,p,ex));
 const OK=[{k:'ok',l:'좋아요!'}];
 function showInfo(i){
@@ -1479,7 +1480,7 @@ async function settle(p,to){
     // Elimination completes this turn, so it is safe to resume at this checkpoint.
     save();sfx('bust');render();setFace(p,'sad');
     if(p.human&&!window.MarbleOnline?.active()&&spectating())ojjudaPost({type:'ojjuda-game-finished',game:'ojjuda-tour',runId:G.runId});
-    if(p.human)await ask('탈락',`<p>${reason}</p><p>이번 게임에서 탈락했습니다.<br>이제 남은 참가자의 경기를 지켜볼 수 있어요.</p>`,[{k:'watch',l:alive().length>1?'관전하기':'결과 보기'}],p,'sad');
+    if(p.human)await ask('탈락',`<p>${reason}</p><p>이번 게임에서 탈락했습니다.<br>이제 남은 참가자의 경기를 지켜볼 수 있어요.</p>`,[{k:'watch',l:'계속하기',sub:alive().length>1?'관전하기':'결과 보기'}],p,'sad');
     else{say(`${p.name} 탈락!`);await wait(aiDelay())}
   }else if(sold.length){
     if(p.human)await ask('😵 급매',`<p>돈이 모자라 반값에 팔았어요.<br>${sold.join('<br>')}</p>`,OK,p,'sad');
@@ -1678,7 +1679,7 @@ function endScreen(winner,reason){
   $('#sheet').classList.add('hidden');R.pickSet=null;
   $('#s2Title').textContent='게임 결과';$('#s2Bust').innerHTML='';$('#s2Body').innerHTML='';
   $('#sheet2').classList.add('result-view');
-  $('#s2Btns').innerHTML=window.OjjudaGameResults.markup({game:'tour',outcome:reason==='중간 종료'?'complete':!winner?'draw':winner===me?'success':'failure',key:`tour:${G.runId}`,metric:me?`${result.myRank}위 · 자산 ${fmt(me.bankrupt?0:assets(me))}`:'게임 종료',extra:'<p id="tourRecordStatus" role="status"></p>',actions:'<button data-k="new" data-game-result-play>새 게임</button>'});
+  $('#s2Btns').innerHTML=window.OjjudaGameResults.markup({game:'tour',outcome:reason==='중간 종료'?'complete':!winner?'draw':winner===me?'success':'failure',key:`tour:${G.runId}`,metric:me?`${result.myRank}위 · 자산 ${fmt(me.bankrupt?0:assets(me))}`:'게임 종료',extra:'<p id="tourRecordStatus" role="status"></p>',actions:'<button data-tour-exit>나가기</button><button data-k="new" data-game-result-play title="새 게임">계속하기</button>'});
   $('#sheet2').classList.remove('hidden');
   window.tourSubmitResult?.(result);
   if(result.won)sfx('win');
@@ -1688,10 +1689,11 @@ $('#quitBtn').onclick=()=>{
   $('#sheet2').classList.remove('result-view');
   $('#s2Title').textContent='여기서 끝낼까요?';$('#s2Bust').innerHTML='';
   $('#s2Body').innerHTML='<p>지금 총자산으로 순위를 매겨요.</p>'+rankingHTML();
-  $('#s2Btns').innerHTML=`<button class="btn" data-k="end">끝내기</button><button class="btn sec" data-k="back">계속하기</button>`;
+  $('#s2Btns').innerHTML=`<div class="game-result-navigation"><button class="btn sec" data-k="end">끝내기</button><button class="btn" data-k="back">계속하기</button></div>`;
   $('#sheet2').classList.remove('hidden');
 };
 $('#s2Btns').addEventListener('click',e=>{
+  if(e.target.closest('[data-tour-exit]')){$('#exitBtn').click();return;}
   const b=e.target.closest('button[data-k]');if(!b)return;const k=b.dataset.k;sfx('click');
   if(k==='back'){$('#sheet2').classList.add('hidden');return}
   if(k==='end'){if(spectating())return;$('#sheet2').classList.add('hidden');endScreen([...alive()].sort((a,c)=>assets(c)-assets(a))[0],'중간 종료');return}
@@ -1704,6 +1706,6 @@ clearSave();
 renderSetup();
 </script>
 <script src="tour-entry.js?v=20261111-game-score-save1"></script>
-<script src="marble-online.js?v=20261103-game-results1"></script>
+<script src="marble-online.js?v=20261113-game-popup-order1"></script>
 </body>
 </html>
