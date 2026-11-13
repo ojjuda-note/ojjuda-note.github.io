@@ -303,7 +303,7 @@
       ],
       appearances: [
         { date: '2026-11-20', title: '2026 MAMA AWARDS Chapter 1 출연', sub: '일본 오사카 교세라 돔 · 18:00 시상식 · CJ ENM 주최', href: 'https://cjnews.cj.net/2026-mama-awards-a-to-z%EF%BD%9C%EC%B6%9C%EC%97%B0%EC%A7%84%EB%B6%80%ED%84%B0-%ED%8A%B9%EB%B3%84-%EB%AC%B4%EB%8C%80%EA%B9%8C%EC%A7%80-%ED%95%9C%EB%88%88%EC%97%90-%EB%AA%A8%EC%95%84%EB%B3%B4%EA%B8%B0/' },
-        { date: '2026-11-21', title: 'ANIMAX MUSIX 2026 DAY2 출연', sub: '일본 요코하마 아레나 · 13:00 입장 / 14:30 공연 · ANIMAX·도부철도', href: 'https://hearts2heartsofficial.jp/news/2026090802/' },
+        { date: '2026-11-21', title: 'ANIMAX MUSIX 2026 DAY2 출연', sub: '일본 요코하마 아레나 · 13:00 입장 / 14:30 공연 · 주최 NTT도코모·ANIMAX, 협찬 도부철도', href: 'https://hearts2heartsofficial.jp/news/2026090802/' },
         { date: '2026-11-22', title: '일본 첫 팬 이벤트 READY! S2U', sub: '도쿄 아리아케 아레나 · 18:00 시작 (17:00 입장)', href: 'https://hearts2heartsofficial.jp/news/2026081203/' },
         { date: '2026-11-23', title: '일본 첫 팬 이벤트 READY! S2U', sub: '도쿄 아리아케 아레나 · 16:00 시작 (15:00 입장)', href: 'https://hearts2heartsofficial.jp/news/2026081203/' },
         { date: '2026-11-28', title: 'Winter Special Live at UNIVERSAL STUDIOS JAPAN', sub: '오사카 USJ 그래머시 파크 · 11:00 시작 (09:45 입장) · 주최 USJ', href: 'https://hearts2heartsofficial.jp/news/20260925/' }
