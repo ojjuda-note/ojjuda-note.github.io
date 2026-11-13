@@ -125,7 +125,8 @@ if (babymonsterProfile) {
   babymonsterProfile.expanded = true;
   babymonsterProfile.records = [
     { year: '2024.04', title: '7인조 정식 데뷔', detail: '미니 1집 BABYMONS7ER · SHEESH', href: 'https://ygfamily.com/ko/artists/babymonster/profile' },
-    { year: '2026', title: '두 번째 월드투어', detail: '2026–27 춤 (CHOOM) · 아시아·오세아니아 공연', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' }
+    { year: '2026', title: '두 번째 월드투어', detail: '2026–27 춤 (CHOOM) · 아시아·오세아니아 공연', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
+    { year: '2027.04', title: '코첼라 무대 출연 예정', detail: '2026.11.11 YG 발표 · 2027.04.11·18 미국 인디오', href: 'https://ygfamily.com/en/news/report/7601' }
   ];
   const birthdays = {
     '루카': '2002.03.20',
