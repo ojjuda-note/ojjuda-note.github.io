@@ -1,4 +1,5 @@
 const ITEM_IDS=['temperament','complement','daily','harmony'];
+const SCORE_SUMMARY='두 사람의 성향과 함께 지내는 모습을 한눈에 살펴봐요.';
 const node=(tag,className,text)=>{
   const element=document.createElement(tag);
   if(className)element.className=className;
@@ -23,8 +24,6 @@ function checkedScore(score) {
   return score;
 }
 
-const coverageText=score=>`비교한 글자: 나 ${score.coverage.self}/8 · 상대 ${score.coverage.partner}/8. ${score.coverage.partial?'확인할 수 없는 글자는 빼고 계산했어요.':'두 사람의 여덟 글자를 모두 비교했어요.'}`;
-
 /** Create a local score panel; the caller retains the existing purchase gate. */
 export function createCompatibilityScoreboard(value) {
   const score=checkedScore(value);
@@ -46,8 +45,7 @@ export function createCompatibilityScoreboard(value) {
   points.dataset.scoreTotal=String(score.total);
   number.append(points,node('span','','점'),node('small','','/ 100'));
   total.append(number,node('p','compatibility-score-label',score.label),
-    node('p','compatibility-score-summary',score.summary),
-    node('p','compatibility-score-average','네 항목을 똑같이 반영한 평균이에요.'));
+    node('p','compatibility-score-summary',SCORE_SUMMARY));
   grid.append(total);
 
   const items=node('div','compatibility-score-items');
@@ -77,28 +75,15 @@ export function createCompatibilityScoreboard(value) {
   }
   grid.append(items);section.append(grid);
 
-  const notice=node('p','compatibility-score-notice',score.methodNotice);
+  const notice=node('p','compatibility-score-notice','풀이를 숫자로 정리한 참고 점수예요.');
   section.append(notice);
-  const details=node('details','compatibility-score-details');
-  details.append(node('summary','','점수를 계산한 방법'));
-  const body=node('div','compatibility-score-method');
-  body.append(node('p','',coverageText(score)),
-    node('p','',`네 항목의 점수를 더하고 4로 나눈 뒤 반올림했어요. 그 결과가 종합 ${score.total}점이에요. 각 항목은 25%씩 똑같이 반영해요.`));
-  const reasons=node('dl','compatibility-score-reasons');
-  for(const item of score.items) {
-    const row=node('div','');
-    row.dataset.factIds=item.factIds.join(' ');
-    row.append(node('dt','',`${item.label} · ${item.value}점`),node('dd','',item.reason));
-    reasons.append(row);
-  }
-  body.append(reasons);details.append(body);section.append(details);
   return section;
 }
 
 export function compatibilityScoreText(value) {
   const score=checkedScore(value);
-  const lines=['궁합 점수 · 100점 만점',`종합 궁합: ${score.total}점 · ${score.label}`,score.summary];
-  for(const item of score.items)lines.push(`${item.label}: ${item.value}점`,item.summary,item.reason);
-  lines.push('네 항목을 25%씩 똑같이 반영해 평균을 구하고, 반올림한 것이 종합 점수예요.',coverageText(score),score.methodNotice);
+  const lines=['궁합 점수 · 100점 만점',`종합 궁합: ${score.total}점 · ${score.label}`,SCORE_SUMMARY];
+  for(const item of score.items)lines.push(`${item.label}: ${item.value}점`,item.summary);
+  lines.push('풀이를 숫자로 정리한 참고 점수예요.');
   return lines.join('\n');
 }

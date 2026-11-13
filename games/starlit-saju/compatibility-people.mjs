@@ -1,6 +1,6 @@
-import { buildNatalReadingData, seasonRules } from './natal-reading-data.mjs?v=20261114-compatibility-people1';
+import { buildNatalReadingData, seasonRules } from './natal-reading-data.mjs?v=20261114-saju-wind1';
 import { buildPersonPortrait } from './person-portrait.mjs?v=20261113-saju-easy1';
-import { summaryLinesFrom } from './reading-summary-lines.mjs?v=20261114-compatibility-people1';
+import { summaryLinesFrom } from './reading-summary-lines.mjs?v=20261114-saju-wind1';
 
 // Reuse the general reading's natal portrait without calculating a forecast.
 // A person's words and evidence only depend on that person's confirmed chart.

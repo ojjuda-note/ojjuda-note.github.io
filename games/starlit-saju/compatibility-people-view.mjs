@@ -1,6 +1,5 @@
 const PERSON_KEYS=['self','partner'];
 const TOPIC_IDS=['decisions','relationships','work','pressure','adjustment'];
-const EVIDENCE_ID='compatibility-reading-evidence';
 
 function node(tag,className,text) {
   const element=document.createElement(tag);
@@ -48,14 +47,8 @@ function proseView(paragraphs,appendParagraphs) {
   return prose;
 }
 
-function evidenceLink(label,link) {
-  const anchor=link('이 풀이의 근거',EVIDENCE_ID,'reader-detail-link compatibility-evidence-link');
-  anchor.setAttribute('aria-label',`${label} 풀이의 근거 보기`);
-  return anchor;
-}
-
 /** Build only text nodes. The caller keeps the detached purchase-gated render. */
-export function createCompatibilityPeoplePages(value,{names=[],appendParagraphs,link}) {
+export function createCompatibilityPeoplePages(value,{names=[],appendParagraphs}) {
   const reading=checkedPeople(value),labels=compatibilityPersonLabels(names),pages=[];
   for(const topicId of ['overview',...TOPIC_IDS]) {
     const intro=topicId==='overview';
@@ -76,7 +69,6 @@ export function createCompatibilityPeoplePages(value,{names=[],appendParagraphs,
       article.append(name,summaryView(item.summaryLines));
       if(intro&&person.scopeNotice)article.append(node('p','reader-scope-note compatibility-person-scope',person.scopeNotice));
       article.append(proseView(item.paragraphs,appendParagraphs));
-      article.append(evidenceLink(`${labels[index]} · ${label}`,link));
       columns.append(article);
     }
     page.append(columns);pages.push({element:page,label,group:'A와 B · 같은 항목 비교'});
@@ -86,7 +78,7 @@ export function createCompatibilityPeoplePages(value,{names=[],appendParagraphs,
   const title=node('h4','compatibility-people-title',synthesis.title);title.id='compatibility-synthesis-title';
   page.setAttribute('aria-labelledby',title.id);
   page.append(title,node('p','compatibility-synthesis-people',labels.join(' × ')),summaryView(synthesis.summaryLines,'h5'),
-    proseView(synthesis.paragraphs,appendParagraphs),evidenceLink(synthesis.title,link));
+    proseView(synthesis.paragraphs,appendParagraphs));
   pages.push({element:page,label:synthesis.title,group:'두 사람의 궁합'});
   return pages;
 }
@@ -172,12 +164,9 @@ export function compatibilityPeopleText(value,names=[]) {
     lines.push(labels[index]+' · 성격과 특징',...person.summaryLines,...person.paragraphs);
     if(person.scopeNotice)lines.push(person.scopeNotice);
     for(const card of person.cards)lines.push('',labels[index]+' · '+card.label,...card.summaryLines,...card.paragraphs);
-    if(person.selectionNotice)lines.push(person.selectionNotice);
-    if(person.methodNotice)lines.push(person.methodNotice);
     lines.push('');
   }
   const synthesis=reading.synthesis;
   lines.push(synthesis.title,...synthesis.summaryLines,...synthesis.paragraphs);
-  if(synthesis.methodNotice)lines.push(synthesis.methodNotice);
   return lines.join('\n');
 }

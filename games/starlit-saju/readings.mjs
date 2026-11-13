@@ -8,11 +8,11 @@ import { attachDeeperReadings } from './deeper-reading.mjs?v=20261113-saju-easy1
 import { attachStageReadings } from './stage-reading.mjs?v=20261113-saju-easy1';
 import { attachReaderSummary } from './reader-summary.mjs?v=20261113-saju-easy1';
 import { attachReaderExtras } from './reader-extras.mjs?v=20261113-saju-easy1';
-import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261113-saju-easy1';
+import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261114-saju-wind1';
 import { buildPersonPortrait } from './person-portrait.mjs?v=20261113-saju-easy1';
-import { attachReadingSummaryLines } from './reading-summary-lines.mjs?v=20261114-compatibility-people1';
-import { buildNatalReadingData, seasonRules, charLabel, particle, relationOf, godPosition, interactionFact } from './natal-reading-data.mjs?v=20261114-compatibility-people1';
-import { getReadingSources } from './sources.mjs?v=20261113-saju-reader1';
+import { attachReadingSummaryLines } from './reading-summary-lines.mjs?v=20261114-saju-wind1';
+import { attachReadingScores, readingScoreCopy } from './reading-score.mjs?v=20261114-saju-wind1';
+import { buildNatalReadingData, seasonRules, charLabel, particle, relationOf, godPosition, interactionFact } from './natal-reading-data.mjs?v=20261114-saju-wind1';
 
 const GROUP_KEYS = ['peer', 'expression', 'wealth', 'authority', 'resource'];
 const groupEntries = (profile, group) => profile.gods.filter(value => value.god.group === group);
@@ -256,34 +256,16 @@ function methodMetadata(fortune,topic='all') {
     ],
   };
 }
-function sectionCopy(chapters) {
-  const lines=[];
-  for(const chapter of chapters){
-    lines.push('',chapter.title,chapter.summary,'[계산에서 확인한 내용]',...chapter.calculation);
-    if(chapter.interpretation.length)lines.push('[적용한 해석 규칙]',...chapter.interpretation);
-    if(chapter.reference.length)lines.push('[공통 참고 설명]',...chapter.reference);
-    if(chapter.practice.length)lines.push('[생활에 적용할 제안]',...chapter.practice);
-  }
-  return lines;
-}
-function easySectionCopy(chapters) {
-  const lines=[];
-  for(const chapter of chapters){
-    lines.push('',chapter.title,chapter.summary,...chapter.easyParagraphs);
-    if(chapter.practice.length)lines.push('[생활에서 해 볼 수 있는 일]',...chapter.practice);
-  }
-  return lines;
-}
 function adviceCopy(advice) {
   if(!advice?.length)return [];
   const lines=['','선택에 도움이 되는 제안'];
-  for(const item of advice)lines.push('',item.title,'이 제안을 한 이유: '+item.why,'해 볼 일: '+item.action,'함께 살펴볼 점: '+item.caution);
+  for(const item of advice)lines.push('',item.title,'해 볼 일: '+item.action,'함께 살펴볼 점: '+item.caution);
   return lines;
 }
-const summaryCopy = item => Array.isArray(item?.summaryLines) ? ['두 줄 요약',...item.summaryLines] : [];
-function readerCopy(overview) {
+const summaryCopy = item => [...(Array.isArray(item?.summaryLines) ? ['두 줄 요약',...item.summaryLines] : []),...readingScoreCopy(item)];
+function readerCopy(overview,periodLabel='') {
   if (!overview) return [];
-  const lines=['',overview.title,overview.headline,...summaryCopy(overview),...(overview.paragraphs||[])];
+  const lines=['',overview.title,overview.headline,...(periodLabel?[periodLabel]:[]),...summaryCopy(overview),...(overview.paragraphs||[])];
   for (const card of overview.cards||[]) {
     lines.push('',card.label,card.title,...summaryCopy(card),...card.paragraphs);
     if(card.scopeNotice) lines.push('풀이 범위: '+card.scopeNotice);
@@ -305,7 +287,6 @@ function readerExtrasCopy(extras) {
   return lines;
 }
 function copyCategory(report,topic) {
-  const method=report.methodByCategory[topic];
   const topics=topic==='all'?['lifelong','annual','monthly']:[topic];
   const title=topic==='all'?`전체 풀이 · 평생운과 ${report.year}년 올해운·월별운`:
     topic==='lifelong'?'평생운 · 나의 사주와 생활 이야기':report.year+'년 '+(topic==='annual'?'올해운':'월별운');
@@ -316,42 +297,21 @@ function copyCategory(report,topic) {
       const portrait=report.personPortrait;
       lines.push('',portrait.title,portrait.headline,...summaryCopy(portrait),...portrait.paragraphs);
       for(const card of portrait.cards)lines.push('',card.label,card.title,...summaryCopy(card),...card.paragraphs);
-      lines.push('','이 성격 풀이의 근거',portrait.methodNotice,portrait.selectionNotice||'',portrait.scopeNotice||'','항목별 상세 풀이');
+      if(portrait.scopeNotice)lines.push(portrait.scopeNotice);
+      lines.push('','항목별 상세 풀이');
     }
-    if(current==='monthly') for(const month of report.reader.months) lines.push(...readerCopy(month));
-    else lines.push(...readerCopy(report.reader[current]));
+    if(current==='monthly') for(const month of report.reader.months) {
+      const detail=report.months.find(value=>value.month===month.month);
+      lines.push(...readerCopy(month,detail?.periodLabel||''),...adviceCopy(detail?.advice));
+    }
+    else {
+      const periodLabel=current==='annual'?report.facts.find(fact=>fact.id==='annual.period')?.text||'':'';
+      lines.push(...readerCopy(report.reader[current],periodLabel),...adviceCopy(report.adviceByCategory[current]));
+    }
     if(current==='lifelong'&&report.daeun)lines.push('',copyDaeunReading(report.daeun));
     if(current==='lifelong') lines.push(...readerExtrasCopy(report.reader.symbols));
     if(current==='monthly') lines.push(...readerExtrasCopy(report.reader.timings));
   }
-  lines.push('','자세한 풀이');
-  for(const current of topics){
-    if(current==='monthly'){
-      lines.push('',report.monthsIntro);
-      for(const month of report.months)lines.push('',month.title,month.summary,month.periodLabel,...easySectionCopy(month.chapters),...adviceCopy(month.advice));
-    }else{
-      const section=report.sections.find(value=>value.id===current);
-      lines.push('',section.title,section.summary,...easySectionCopy(section.chapters),...adviceCopy(report.adviceByCategory[current]));
-    }
-  }
-  lines.push('',report.guide.title,...report.guide.paragraphs,'사주 이름을 쉬운 말로',...report.glossary.map(value=>value.term+': '+value.meaning));
-  lines.push('',method.title,method.description,method.reuseNotice,report.adviceNotice,'[이 상품에 포함된 계산 범위]',...method.calculated,'[계산하지 않은 범위]',...method.notCalculated,...method.warnings);
-  lines.push('','원래의 계산과 해석 전체');
-  for(const current of topics){
-    if(current==='monthly'){
-      for(const month of report.months)lines.push('',month.title,month.summary,month.periodLabel,...sectionCopy(month.chapters));
-    }else{
-      const section=report.sections.find(value=>value.id===current);
-      lines.push('',section.title,section.summary,...sectionCopy(section.chapters));
-    }
-  }
-  const evidence=report.evidence[topic];
-  lines.push('',evidence.title);
-  for(const group of evidence.groups){
-    lines.push('',group.title,...group.rows.map(row=>row.label+': '+row.value),...group.notes);
-  }
-  lines.push('','자료를 확인한 곳');
-  for(const source of getReadingSources(topic,report.year))lines.push('',source.title,'발행처: '+source.publisher,'이 자료를 쓴 곳: '+source.usedFor,'이 자료로 알 수 없는 것: '+source.limitation,source.url);
   return lines.join('\n');
 }
 
@@ -397,6 +357,7 @@ export function buildDetailedReading(chart,fortune,{daeun=null}={}) {
       :'확인한 사주 글자로 내 성격과 생활 모습을 읽어요. '+daeun.message;
   }
   attachReadingSummaryLines(report);
+  attachReadingScores(report,chart,fortune);
   report.copyByCategory=Object.fromEntries(['lifelong','annual','monthly','all'].map(topic=>[topic,copyCategory(report,topic)]));
   report.copyText=report.copyByCategory.all;
   return report;

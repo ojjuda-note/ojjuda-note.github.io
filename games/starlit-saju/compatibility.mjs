@@ -2,7 +2,7 @@ import { getTenGod, makeProfile, interactionPairs } from './fortune-data.mjs?v=2
 import { GOD_REFERENCE, RELATION_REFERENCE } from './readings-data.mjs?v=20261113-saju-easy1';
 import { zodiacFromChart } from './zodiac.mjs?v=20261113-saju-easy1';
 import { buildCompatibilityScore } from './compatibility-score.mjs?v=20261113-saju-easy1';
-import { buildCompatibilityPeople } from './compatibility-people.mjs?v=20261114-compatibility-people1';
+import { buildCompatibilityPeople } from './compatibility-people.mjs?v=20261114-saju-wind1';
 
 // A local comparison of two already-calculated charts. All cross-chart pillar
 // pairs are retained; the prose is a disclosed application of shared meanings.

@@ -1,7 +1,7 @@
 import { SajuPayment } from './payment.js?v=20261113-saju-lists1';
 import { SajuCompatibilityPayment, COMPATIBILITY_PRICE } from './compatibility-payment.mjs?v=20261113-compatibility20-1';
-import { compatibilityScoreText } from './compatibility-score-view.mjs?v=20261113-saju-easy1';
-import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261114-compatibility-people1';
+import { compatibilityScoreText } from './compatibility-score-view.mjs?v=20261114-saju-wind1';
+import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261114-saju-wind1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
 import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-easy1';
 
@@ -170,8 +170,8 @@ async function ready() {
 async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
-    import('./compatibility.mjs?v=20261114-compatibility-people1'),
-    import('./report-view.mjs?v=20261114-compatibility-people1'),
+    import('./compatibility.mjs?v=20261114-saju-wind1'),
+    import('./report-view.mjs?v=20261114-saju-wind1'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
 }
@@ -234,7 +234,6 @@ function copyText(reading,chart,partner,names) {
   if(reading.scopeNotice)lines.push(reading.scopeNotice);
   lines.push(...reading.paragraphs);
   for(const card of reading.cards)lines.push('',card.label,card.title,...card.paragraphs);
-  lines.push('','궁합 계산 근거',...reading.facts.map(fact=>fact.label+': '+fact.value),'',reading.methodNotice);
   return lines.join('\n');
 }
 function expiresLabel(access) {
@@ -297,7 +296,7 @@ $('compatibility-edit').addEventListener('click',()=>{
 $('compatibility-copy').addEventListener('click',async()=>{
   if(expireCurrent()){updateOffer();return;}
   if(!isCurrentActive()||busy)return;
-  try{await navigator.clipboard.writeText(current.copyText);$('compatibility-copy-status').textContent='A와 B의 성격, 종합 궁합과 전체 계산 근거를 복사했어요.';}
+  try{await navigator.clipboard.writeText(current.copyText);$('compatibility-copy-status').textContent='A와 B의 성격과 궁합 풀이를 복사했어요.';}
   catch{$('compatibility-copy-status').textContent='복사 권한을 확인해 주세요.';}
 });
 function refreshProfiles(){if(!busy)for(const picker of profilePickers)picker.refresh({preserveStatus:picker.statusElement.dataset.state==='error'});}
