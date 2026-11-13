@@ -1,8 +1,8 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261113-tarot-direct1';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261113-tarot-easy1';
 import { TarotFX, TarotAudio } from './fx.js';
 import { TarotPayment, getTarotPrice } from './payment.js?v=20261113-tarot-24h1';
 import { TarotRevelation } from './revelation.js?v=20261112-tarot-daily1';
-import { createPersonalReading } from './personal-reading-ui.js?v=20261113-tarot-direct1';
+import { createPersonalReading } from './personal-reading-ui.js?v=20261113-tarot-easy1';
 import { renderSectionSummary, installSummaryExpiryGuard } from './reading-summary-view.js?v=20261113-tarot-summary1';
 
 const $ = (selector) => document.querySelector(selector);
