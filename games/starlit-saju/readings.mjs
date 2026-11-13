@@ -8,8 +8,9 @@ import { attachDeeperReadings } from './deeper-reading.mjs?v=20261113-saju-brief
 import { attachStageReadings } from './stage-reading.mjs?v=20261113-saju-brief1';
 import { attachReaderSummary } from './reader-summary.mjs?v=20261113-saju-lists1';
 import { attachReaderExtras } from './reader-extras.mjs?v=20261113-saju-lists1';
-import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261113-saju-lists1';
+import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261113-saju-summary1';
 import { buildPersonPortrait } from './person-portrait.mjs?v=20261113-saju-portrait1';
+import { attachReadingSummaryLines } from './reading-summary-lines.mjs?v=20261113-saju-summary1';
 import { getReadingSources } from './sources.mjs?v=20261113-saju-reader1';
 
 const GROUP_KEYS = ['peer', 'expression', 'wealth', 'authority', 'resource'];
@@ -358,24 +359,25 @@ function adviceCopy(advice) {
   for(const item of advice)lines.push('',item.title,'이 제안을 연결한 이유: '+item.why,'해 볼 일: '+item.action,'함께 살펴볼 점: '+item.caution);
   return lines;
 }
+const summaryCopy = item => Array.isArray(item?.summaryLines) ? ['두 줄 요약',...item.summaryLines] : [];
 function readerCopy(overview) {
   if (!overview) return [];
-  const lines=['',overview.title,overview.headline,...(overview.paragraphs||[])];
+  const lines=['',overview.title,overview.headline,...summaryCopy(overview),...(overview.paragraphs||[])];
   for (const card of overview.cards||[]) {
-    lines.push('',card.label,card.title,...card.paragraphs);
+    lines.push('',card.label,card.title,...summaryCopy(card),...card.paragraphs);
     if(card.scopeNotice) lines.push('풀이 범위: '+card.scopeNotice);
   }
   return lines;
 }
 function readerExtrasCopy(extras) {
   if(!extras) return [];
-  const lines=['',extras.title,extras.headline,...(extras.paragraphs||[])];
+  const lines=['',extras.title,extras.headline,...summaryCopy(extras),...(extras.paragraphs||[])];
   for(const item of extras.items||[]) {
-    if(item.value!=null) lines.push('',item.label+': '+item.value,item.description);
+    if(item.value!=null) lines.push('',item.label+': '+item.value,...summaryCopy(item),item.description);
     else {
-      lines.push('',item.title,item.periodLabel,item.headline,...(item.paragraphs||[]));
+      lines.push('',item.title,item.periodLabel,item.headline,...summaryCopy(item),...(item.paragraphs||[]));
       for(const [key,label] of [['opportunities','기회'],['people','도움을 구할 사람'],['documents','문서와 계약'],['cautions','주의할 점']]) {
-        lines.push(label,...(item[key]||[]).map(value=>value.label+': '+value.text));
+        lines.push(label,...(item[key]||[]).flatMap(value=>[...summaryCopy(value),value.label+': '+value.text]));
       }
     }
   }
@@ -391,8 +393,8 @@ function copyCategory(report,topic) {
   for(const current of topics) {
     if(current==='lifelong'&&report.personPortrait) {
       const portrait=report.personPortrait;
-      lines.push('',portrait.title,portrait.headline,...portrait.paragraphs);
-      for(const card of portrait.cards)lines.push('',card.label,card.title,...card.paragraphs);
+      lines.push('',portrait.title,portrait.headline,...summaryCopy(portrait),...portrait.paragraphs);
+      for(const card of portrait.cards)lines.push('',card.label,card.title,...summaryCopy(card),...card.paragraphs);
       lines.push('','이 성격 풀이의 근거',portrait.methodNotice,portrait.selectionNotice||'',portrait.scopeNotice||'','항목별 상세 풀이');
     }
     if(current==='monthly') for(const month of report.reader.months) lines.push(...readerCopy(month));
@@ -473,6 +475,7 @@ export function buildDetailedReading(chart,fortune,{daeun=null}={}) {
       ?'태어난 사주의 성향을 읽고, 10년 단위의 흐름을 별도 항목으로 함께 살펴봐요.'
       :'확정된 원국의 구성과 관계를 읽어요. '+daeun.message;
   }
+  attachReadingSummaryLines(report);
   report.copyByCategory=Object.fromEntries(['lifelong','annual','monthly','all'].map(topic=>[topic,copyCategory(report,topic)]));
   report.copyText=report.copyByCategory.all;
   return report;

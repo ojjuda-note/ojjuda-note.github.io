@@ -10,6 +10,7 @@
   <link rel="preload" href="../moonlit-tarot/assets/moon-serif.woff?v=20261113-tarot-corpus1" as="font" type="font/woff" crossorigin>
   <link rel="stylesheet" href="./style.css?v=20261113-compatibility20-1">
   <link rel="stylesheet" href="./report.css?v=20261113-saju-zodiac1">
+  <link rel="stylesheet" href="./reading-summary.css?v=20261113-saju-summary1">
 </head>
 <body>
   <a class="skip-link" href="#birth-form">출생 정보 입력으로 바로가기</a>
@@ -76,7 +77,7 @@
           <p class="saju-price"><strong id="entry-price-value">평생운 · 10쭈</strong></p>
           <p id="entry-price-note" class="saju-price-note">출생 정보마다 항목별 10쭈 · 전체 30쭈. 같은 풀이·연도는 결제 후 24시간 다시 보기 0쭈, 만료 후 다시 결제해요. 전체는 이용 시간이 남은 항목을 빼고 차감해요.</p>
 
-          <details class="method-preview"><summary>풀이 범위·계산 기준</summary><p>같은 글자·관계에는 같은 설명을 쓰는 자동 풀이예요. 전통 해석과 생활 제안을 제공하며, 실제 미래를 확정하지 않아요.</p><p>평생운·전체에는 성별과 태어난 시간이 확인될 때 10년 단위의 흐름을 더해요. 이름은 풀이에서 부르는 이름이며 이름 자체의 길흉을 계산하지 않아요. 용신·신살의 종합 판단은 포함하지 않아요.</p><p>현재 한국 시간(UTC+9)을 기준으로 해요. 태어난 지역과 과거 시간 제도의 차이는 따로 반영하지 않아요.</p></details>
+          <details class="method-preview"><summary>풀이 범위·계산 기준</summary><p>각 항목은 핵심 풀이와 실천·주의할 점을 두 줄로 먼저 보여줘요. 이어서 자세한 설명과 계산 근거를 읽을 수 있어요.</p><p>같은 글자·관계에는 같은 설명을 쓰는 자동 풀이예요. 전통 해석과 생활 제안을 제공하며, 실제 미래를 확정하지 않아요.</p><p>평생운·전체에는 성별과 태어난 시간이 확인될 때 10년 단위의 흐름을 더해요. 이름은 풀이에서 부르는 이름이며 이름 자체의 길흉을 계산하지 않아요. 용신·신살의 종합 판단은 포함하지 않아요.</p><p>현재 한국 시간(UTC+9)을 기준으로 해요. 태어난 지역과 과거 시간 제도의 차이는 따로 반영하지 않아요.</p></details>
           <div id="entry-check-error" class="form-error" role="alert" hidden><p id="entry-check-error-text"></p><button id="retry-entry-status" class="secondary-button" type="button">구매 내역 다시 확인하기</button></div>
           <div id="form-error" class="form-error" role="alert" tabindex="-1" hidden></div>
           <button id="open-story" class="primary-button" type="submit" disabled><svg><use href="#i-star"/></svg><span>10쭈로 평생운 펼치기</span><svg><use href="#i-arrow"/></svg></button>
@@ -143,6 +144,6 @@
   <footer class="site-footer"><span class="footer-wordmark">THE STARLIT ARCHIVE <i>✧</i></span><p>앞으로의 이야기는 당신의 선택으로 써 내려가세요.</p><span class="footer-no">VOL. 02 · STARLIGHT</span></footer>
   <div id="status" class="toast" role="status" aria-live="polite"></div>
   <script src="/shared/analytics/site-usage.js?v=20261113-fortune-visits1"></script>
-  <script type="module" src="./app.js?v=20261113-saju-zodiac1"></script>
+  <script type="module" src="./app.js?v=20261113-saju-summary1"></script>
 </body>
 </html>

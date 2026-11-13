@@ -170,7 +170,7 @@ async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
     import('./compatibility.mjs?v=20261113-compatibility-summary1'),
-    import('./report-view.mjs?v=20261113-saju-lists1'),
+    import('./report-view.mjs?v=20261113-saju-summary1'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
 }

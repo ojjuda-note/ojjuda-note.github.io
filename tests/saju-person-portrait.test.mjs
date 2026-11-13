@@ -36,7 +36,11 @@ test('the opening portrait explains a person through several confirmed natal clu
   }
   const input={profile:fortune.profile,facts:report.facts,chapters:report.sections.find(section=>section.id==='lifelong').chapters};
   const before=structuredClone(input);
-  assert.deepEqual(buildPersonPortrait(input),portrait);
+  const {summaryLines,cards,...originalFields}=portrait;
+  const originalCards=cards.map(({summaryLines,...card})=>card);
+  assert.equal(summaryLines.length,2);
+  assert.ok(cards.every(card=>card.summaryLines.length===2));
+  assert.deepEqual(buildPersonPortrait(input),{...originalFields,cards:originalCards},'adding display summaries preserves every original portrait field');
   assert.deepEqual(input,before,'the original calculation and its evidence remain unchanged');
 });
 

@@ -224,11 +224,14 @@ test('only the selected monthly product is generated before its explicit ten-ju 
   const h=await harness({readingsGate,purchaseGate});t.after(h.close);
   h.fill({topic:'monthly'});h.submit();await pause();await pause();
   assert.equal(h.state.starts.length,0);assert.equal(h.$('result').hidden,true);
+  assert.equal(h.window.document.querySelector('.saju-two-line-summary'),null,'a summary is not a free preview of an unpaid reading');
   readingsGate.resolve();await waitFor(()=>h.state.starts.length===1);
   assert.equal(h.state.starts[0].topic,'monthly');assert.equal(h.state.starts[0].year,2026);
   assert.equal(h.$('result').hidden,true);
+  assert.equal(h.window.document.querySelector('.saju-two-line-summary'),null,'pending payment does not reveal generated summaries');
   purchaseGate.resolve();await h.ready('monthly',2026);
   assert.equal(h.state.charges,1);assert.equal(h.state.coins,20);
+  assert.ok(h.$('report-content').querySelectorAll('.saju-two-line-summary').length>0,'valid payment reveals summaries with the purchased body');
   assert.equal(h.$('report-content').querySelectorAll('.month-reading').length,12);
   assert.equal(h.$('reading-lifelong'),null);assert.equal(h.$('reading-annual'),null);
   assert.ok(h.$('report-content').textContent.length>=10000);
@@ -335,6 +338,7 @@ test('the personal reading leads and all longer explanations remain accessible o
   assert.ok(copy.indexOf(headline)<copy.indexOf('자세한 풀이'));
   assert.ok(copy.indexOf(headline)<copy.indexOf('사주 이름을 쉬운 말로'));
   for(const card of cards)for(const paragraph of card.querySelectorAll('.reader-prose>p'))assert.ok(copy.includes(paragraph.textContent));
+  for(const line of body.querySelectorAll('.saju-summary-line'))assert.ok(copy.includes(line.textContent),'the complete copied reading retains each summary unit as well as the full prose');
 });
 
 test('the personal portrait leads with every paragraph and connects its topics to complete evidence',async t=>{
@@ -507,7 +511,7 @@ test('the monthly overview preserves every calculated period, opportunity and ca
     assert.equal(article.open,true);assert.equal(doc.activeElement,heading);
     assert.equal(article.dataset.month,String(item.month));
     assert.deepEqual([...article.querySelectorAll('.reader-timing-content>.reader-prose>p')].map(p=>p.textContent),item.paragraphs);
-    assert.deepEqual([...article.querySelectorAll('.reader-timing-point')].map(point=>[point.querySelector('dt').textContent,point.querySelector('dd').textContent]),
+    assert.deepEqual([...article.querySelectorAll('.reader-timing-point')].map(point=>[point.querySelector('dt').textContent,[...point.querySelectorAll(':scope > dd')].map(part=>part.textContent).join('')]),
       [...item.cautions,...item.opportunities,...item.people,...item.documents].map(point=>[point.label,point.text]),
       'all detailed text remains present, with cautions before opportunities');
   }
@@ -704,6 +708,7 @@ test('account changes invalidate late payment receipts and erase the previous bi
   await waitFor(()=>h.state.starts.length===1);h.changeAccount('member-b');purchaseGate.resolve();await pause();await pause();
   assert.equal(h.$('result').hidden,true);assert.equal(h.$('birth-year').value,'');
   assert.equal(h.$('report-content').textContent,'');assert.equal(h.$('copy-reading').disabled,true);
+  assert.equal(h.window.document.querySelector('.saju-two-line-summary'),null,'account changes remove all previous summary content');
 });
 
 test('solar and lunar representations reopen the same purchased product without an extra charge', async t => {
@@ -907,6 +912,7 @@ test('copying and returning to a sleeping tab check expiry before showing or cop
     else h.window.dispatchEvent(new h.window.Event(resume));
     assert.equal(h.$('report-content').textContent,'');
     assert.equal(h.$('copy-reading').disabled,true);
+    assert.equal(h.window.document.querySelector('.saju-two-line-summary'),null,'expired summaries follow the same access gate as the full reading');
     assert.equal(h.state.copies.length,0);
     assert.deepEqual(h.state.chargedAmounts,[10]);
   }

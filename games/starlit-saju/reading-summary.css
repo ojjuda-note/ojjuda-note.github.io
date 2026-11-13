@@ -1,0 +1,10 @@
+/* Two complete meaning units; narrow screens and larger text may wrap freely. */
+.detailed-reading .saju-two-line-summary{display:block;min-width:0;max-width:100%;margin:14px 0 23px;padding:17px 20px;border-left:3px solid #c8aa76;border-radius:0 10px 10px 0;background:linear-gradient(110deg,#664b6530,#48314e18);color:#e6d9ec;overflow:visible;white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
+.detailed-reading .saju-two-line-summary>.saju-summary-line{display:block;margin:0;padding:0;font:400 var(--reading-font-size,17px)/1.85 var(--sans);letter-spacing:0;color:#e2d2e9;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;overflow:visible;text-overflow:clip;-webkit-line-clamp:unset}
+.detailed-reading .saju-two-line-summary>.saju-summary-line:first-child{font-weight:600;color:#efd8b1}
+.detailed-reading .saju-two-line-summary>.saju-summary-line+.saju-summary-line{margin-top:7px}
+.detailed-reading .reader-timing-point.saju-two-line-summary{padding:15px 17px;margin:10px 0 16px}
+.detailed-reading .saju-two-line-summary>.saju-summary-remainder{margin:10px 0 0;white-space:normal;font:400 var(--reading-font-size,17px)/1.85 var(--sans);color:#d5c4de;word-break:keep-all;overflow-wrap:anywhere}
+.detailed-reading .month-spotlight-card>.saju-two-line-summary{margin:12px 0 18px;padding:13px 15px}
+.detailed-reading .saju-summary-line:focus-visible{outline:2px solid #ecd099;outline-offset:4px;border-radius:3px}
+@media(max-width:600px){.detailed-reading .saju-two-line-summary{padding:14px 15px;margin:12px 0 20px}.detailed-reading .reader-timing-point.saju-two-line-summary{padding:13px 14px}}
