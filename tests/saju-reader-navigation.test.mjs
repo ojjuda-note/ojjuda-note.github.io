@@ -21,11 +21,11 @@ function visible(element) {
   }
   return true;
 }
-function mount(topic) {
+function mount(topic,{reading:report=reading,fortune:forecast=fortune}={}) {
   const dom=new JSDOM('<!doctype html><nav id="outside"></nav><div id="report-content"></div>',{url:'https://example.test/'});
   const doc=dom.window.document;globalThis.document=doc;
   dom.window.HTMLElement.prototype.scrollIntoView=function(){};
-  const host=doc.getElementById('report-content');renderDetailedReport(host,{reading,fortune,topic});
+  const host=doc.getElementById('report-content');renderDetailedReport(host,{reading:report,fortune:forecast,topic});
   const select=doc.getElementById('reading-page-select');
   const current=()=>host.querySelector('[data-reader-current]');
   const pick=id=>{select.value=id;assert.equal(select.value,id);select.dispatchEvent(new dom.window.Event('change',{bubbles:true}));};
@@ -175,6 +175,7 @@ test('the compact picker keeps every purchased paragraph while exposing only the
 test('portrait tables, outer contents and decade topics reveal their reading without evidence menus',()=>{
   const h=mount('all');
   try {
+    assert.equal(h.host.querySelector('.daeun-time-notice'),null,'a known birth time has no assumption notice');
     const first=h.host.querySelector('.portrait-card');assert.equal(visible(first),false);
     h.host.querySelector('.portrait-summary-table tbody a').click();
     assert.equal(h.current(),first);assert.ok(visible(first));
@@ -193,6 +194,31 @@ test('portrait tables, outer contents and decade topics reveal their reading wit
     assert.equal(h.current(),situation);assert.ok(visible(situation));
     assert.ok(visible(period.querySelector('.daeun-dates')),'period dates remain visible beside a selected decade topic');
     assert.equal([...period.querySelectorAll('.daeun-topic')].filter(visible).length,1);
+  } finally {h.close();}
+});
+
+test('an unknown-time decade stays reachable and keeps its six-AM notice beside every selected period and topic',()=>{
+  const unknownChart=calculateSaju({year:1990,month:5,day:17,hour:null},{now});
+  const forecast=analyzeFortune(unknownChart,{year:2026,now});
+  const report=buildDetailedReading(unknownChart,forecast,{daeun:analyzeDaeun(unknownChart,{gender:'female',now})});
+  const h=mount('lifelong',{reading:report,fortune:forecast});
+  try {
+    h.pick('reading-daeun');
+    const notice=h.host.querySelector('.daeun-time-notice');
+    assert.equal(notice.textContent,report.daeun.birthTimeNotice);
+    assert.ok(visible(notice));
+    assert.ok(notice.previousElementSibling.classList.contains('report-section-heading'),'the assumption is stated immediately below the decade heading');
+    h.doc.querySelector('#reading-daeun .daeun-nav a').click();
+    const period=h.current();
+    assert.ok(period.classList.contains('daeun-period'));assert.ok(visible(notice));
+    const topic=period.querySelector('.daeun-topic');
+    period.querySelector(`.reading-page-sections a[href="#${topic.id}"]`).click();
+    assert.equal(h.current(),topic);assert.ok(visible(topic));assert.ok(visible(notice));
+    assert.ok(visible(period.querySelector('.daeun-dates')));
+    assert.equal(h.host.querySelectorAll('.daeun-time-notice').length,1);
+    assert.equal(unknownChart.timeKnown,false);
+    assertNoEvidence(h);
+    h.pick('reading-summary');assert.equal(visible(notice),false,'the decade assumption does not relabel the natal reading');
   } finally {h.close();}
 });
 

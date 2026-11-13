@@ -80,12 +80,12 @@ test('Korean month-end calendar addition is not incorrectly done in UTC+8', () =
   assert.notEqual(result.startsAt, '1991-07-24T16:30:00+09:00');
 });
 
-test('missing gender, unknown time and a boundary minute never receive fabricated periods', () => {
+test('missing gender and a known boundary minute remain unavailable without substituting required inputs', () => {
   const cases = [
     [base, { gender: null }, 'gender-required'],
-    [birth({ year: 2005, month: 12, day: 23, hour: null }), {}, 'birth-time-required'],
+    [birth({ year: 2005, month: 12, day: 23, hour: null }), { gender: null }, 'gender-required'],
     [birth({ year: 2024, month: 2, day: 4, hour: 17, minute: 27 }), {}, 'solar-term-uncertain'],
-    [birth({ year: 2024, month: 2, day: 4, hour: null }), {}, 'birth-time-required'],
+    [birth({ year: 2024, month: 2, day: 4, hour: null }), { gender: null }, 'gender-required'],
   ];
   for (const [chart, options, reason] of cases) {
     const result = analyze(chart, options);
@@ -98,9 +98,69 @@ test('missing gender, unknown time and a boundary minute never receive fabricate
     assert.deepEqual(result.periods, []);
     assert.deepEqual(result.facts, []);
     assert.ok(result.message);
+    assert.equal(Object.hasOwn(result,'timeAssumed'),false,'an uncomputed decade does not claim to have used an assumed time');
   }
   const midnight = analyze(birth({ year: 2005, month: 12, day: 23, hour: 0 }));
   assert.equal(midnight.available, true, 'known midnight differs from unknown time');
+  assert.equal(Object.hasOwn(midnight,'timeAssumed'),false);
+});
+
+test('unknown time uses only the requested 06:00 decade clock, including both directions, term-boundary days and lunar birthdays', () => {
+  const inputs=[
+    {year:2005,month:12,day:23},
+    {year:1990,month:1,day:31},
+    {year:2024,month:2,day:4},
+    {year:2023,month:2,day:1,calendar:'lunar',leapMonth:true},
+  ];
+  for(const input of inputs)for(const gender of ['male','female']) {
+    const chart=birth({...input,hour:null}),before=structuredClone(chart),profile=makeProfile(chart);
+    const actual=analyze(chart,{gender}),atSix=analyze(birth({...input,hour:6,minute:0}),{gender});
+    assert.equal(actual.available,true);
+    assert.equal(actual.timeAssumed,true);
+    assert.deepEqual(actual.assumedBirthTime,{hour:6,minute:0,timezone:'Asia/Seoul'});
+    assert.equal(actual.birthTimeNotice,'태어난 시간을 몰라 대운은 오전 6시 00분을 기준으로 계산했어요.');
+    assert.ok(actual.birthAt.endsWith('T06:00:00+09:00'));
+    for(const key of ['direction','directionLabel','startAge','startsAt','startLabel','birthAt','referenceTerm','currentIndex','currentState'])assert.deepEqual(actual[key],atSix[key],`${JSON.stringify(input)} ${gender}: ${key}`);
+    assert.equal(actual.periods.length,9);
+    for(const [index,period]of actual.periods.entries()) {
+      const {interactions:ignored,...knownPeriod}=atSix.periods[index];
+      const {interactions,...unknownPeriod}=period;
+      assert.deepEqual(unknownPeriod,knownPeriod,'the explicit clock produces the same decade dates and sequence');
+      const expected=profile.knownPillars.flatMap(pillar=>interactionPairs(pillar,period,{
+        birthPillarKey:pillar.key,birthPillarLabel:pillar.label,
+        transitLabel:`${period.index}번째 대운`,otherPillarLabel:`${period.index}번째 대운`,
+      }));
+      assert.deepEqual(interactions,expected,'comparisons use only the original confirmed natal pillars');
+      assert.ok(interactions.every(value=>value.birthPillarKey!=='hour'));
+      assert.deepEqual(period.stemGod,getTenGod(profile.dayMaster,period.stem));
+      assert.deepEqual(period.branchGod,getTenGod(profile.dayMaster,period.branchMainStem));
+    }
+    for(const id of ['daeun.birth','daeun.direction','daeun.month','daeun.start'])assert.match(actual.facts.find(fact=>fact.id===id).label,/가정/);
+    assert.deepEqual(chart,before);
+    assert.equal(chart.timeKnown,false);assert.equal(chart.input.hour,null);assert.equal(chart.input.minute,0);
+    assert.equal(chart.pillars.find(pillar=>pillar.key==='hour').uncertain,true);
+    assert.equal(chart.pillars.find(pillar=>pillar.key==='hour').hanja,null);
+    assert.equal(Object.hasOwn(atSix,'timeAssumed'),false,'an explicitly entered 06:00 is not relabeled as an assumption');
+  }
+  const boundary=birth({year:2024,month:2,day:4,hour:null});
+  assert.deepEqual(makeProfile(boundary).knownPillars.map(pillar=>pillar.key),['day']);
+  assert.equal(analyze(boundary).direction,'reverse','the assumed Korean 06:00 precedes this Lichun');
+  assert.equal(analyze(boundary,{gender:'female'}).direction,'forward');
+});
+
+test('an assumed clock never accepts corrupt unknown inputs or a future 06:00',()=>{
+  const chart=birth({year:2005,month:12,day:23,hour:null});
+  for(const minute of [null,undefined,NaN,-1,1,60,'0']) {
+    const invalid=structuredClone(chart);invalid.input.minute=minute;
+    assert.throws(()=>analyze(invalid),error=>error instanceof DaeunInputError&&error.code==='chart');
+  }
+  for(const hour of [undefined,0,6,24,NaN,'']) {
+    const invalid=structuredClone(chart);invalid.input.hour=hour;
+    assert.throws(()=>analyze(invalid),error=>error instanceof DaeunInputError&&error.code==='chart');
+  }
+  const today=birth({year:2026,month:11,day:13,hour:null});
+  assert.throws(()=>analyze(today,{now:new Date('2026-11-13T05:59:59+09:00')}),error=>error instanceof DaeunInputError&&error.code==='future');
+  assert.equal(analyze(today,{now:new Date('2026-11-13T06:00:00+09:00')}).available,true);
 });
 
 test('current periods include the start and exclude the end, with contiguous ten-year boundaries', () => {

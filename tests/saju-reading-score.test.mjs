@@ -238,7 +238,19 @@ test('missing hours and unresolved solar-term boundaries are excluded from both 
       assert.ok(report.reader.lifelong.cards.find(item=>item.id==='natal-character').readingScore.available,'one confirmed day master has its own authored character cues');
       assert.equal(report.reader.annual.readingScore.available,true,'one confirmed natal pillar can still be compared with an actual period');
     }
-    assert.equal(report.daeun.readingScore.available,false);
+    if(input.hour===null) {
+      assert.equal(daeun.timeAssumed,true);assert.equal(report.daeun.available,true);
+      assert.equal(report.daeun.timeAssumed,true);
+      assert.equal(report.daeun.periods.length,9);
+      assert.ok(report.daeun.periods.every(period=>period.readingScore.available),'the six-AM periods use their actual authored reading cues');
+      assert.ok(report.daeun.facts.every(fact=>!/^daeun\.reading\.natal\.(?:pillar|god)\.hour(?:\.|$)/.test(fact.id)),'the assumed timing never creates confirmed natal hour facts');
+      const current=report.daeun.periods.find(period=>period.isCurrent);
+      if(current)assert.deepEqual(report.daeun.readingScore,current.readingScore);
+      else assert.equal(report.daeun.readingScore.available,false,'a future first period does not become the current decade');
+    } else {
+      assert.equal(report.daeun.available,false);
+      assert.equal(report.daeun.readingScore.available,false);
+    }
   }
 });
 

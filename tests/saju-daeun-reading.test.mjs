@@ -161,8 +161,8 @@ test('each decade connects the actual person to money, work, relationships and s
   }
 });
 
-test('missing required inputs never acquire a guessed decade, starting age or personal period story',()=>{
-  for (const [input,gender] of [[{...birth,hour:null},'male'],[birth,null],[{year:2024,month:2,day:4,hour:null},'female']]) {
+test('missing gender and a known boundary minute never acquire a guessed decade or personal period story',()=>{
+  for (const [input,gender] of [[{...birth,hour:null},null],[birth,null],[{year:2024,month:2,day:4,hour:17,minute:27},'female']]) {
     const {daeun,reading}=build(input,gender);
     assert.equal(daeun.available,false);
     assert.equal(reading.availability,false);
@@ -177,6 +177,52 @@ test('missing required inputs never acquire a guessed decade, starting age or pe
     assert.ok(!copy.includes('대운 계산 근거'));
     assert.ok(!copy.includes('재물과 돈 관리'));
   }
+});
+
+test('assumed 06:00 periods disclose their clock while personal reading facts keep the original unknown natal scope',()=>{
+  for(const input of [{...birth,hour:null},{year:2024,month:2,day:4,hour:null}])for(const gender of ['male','female']) {
+    const chart=calculateSaju(input,{now}),daeun=analyzeDaeun(chart,{gender,now}),before=[structuredClone(chart),structuredClone(daeun)];
+    const profile=makeProfile(chart),known=new Set(profile.knownPillars.map(pillar=>pillar.key));
+    const reading=buildDaeunReading(chart,daeun);
+    assert.equal(reading.available,true);assert.equal(reading.availability,true);
+    assert.equal(reading.timeAssumed,true);
+    assert.deepEqual(reading.assumedBirthTime,{hour:6,minute:0,timezone:'Asia/Seoul'});
+    assert.equal(reading.birthTimeNotice,daeun.birthTimeNotice);
+    assert.ok(copyDaeunReading(reading).includes(daeun.birthTimeNotice),'the assumption stays in user copies');
+    assert.equal(reading.periods.length,9);
+    for(const [index,period]of reading.periods.entries()) {
+      assert.equal(period.startsAt,daeun.periods[index].startsAt);
+      assert.equal(period.endsAt,daeun.periods[index].endsAt);
+      for(const topic of [...period.topics,...period.situations])assert.ok(topic.paragraphs.length>0);
+    }
+    for(const fact of reading.facts) {
+      const match=fact.id.match(/^daeun\.reading\.natal\.(?:god|pillar)\.(year|month|day|hour)(?:\.|$)/);
+      if(match)assert.ok(known.has(match[1]),'an assumed clock must not manufacture '+fact.id);
+    }
+    assert.deepEqual([chart,daeun],before);
+    assert.equal(chart.input.hour,null);assert.equal(chart.timeKnown,false);
+    reading.assumedBirthTime.hour=8;
+    assert.equal(daeun.assumedBirthTime.hour,6,'reading metadata does not alias the calculation');
+  }
+});
+
+test('an unknown natal chart cannot bypass the declared 06:00 calculation contract',()=>{
+  const chart=calculateSaju({...birth,hour:null},{now}),daeun=analyzeDaeun(chart,{gender:'male',now});
+  for(const corrupt of [
+    value=>{delete value.timeAssumed;},
+    value=>{value.timeAssumed=false;},
+    value=>{value.assumedBirthTime.hour=0;},
+    value=>{value.assumedBirthTime.minute=30;},
+    value=>{value.assumedBirthTime.timezone='UTC';},
+    value=>{value.birthTimeNotice='';},
+    value=>{value.birthAt=value.birthAt.replace('T06:00:00','T00:00:00');},
+  ]) {
+    const malformed=structuredClone(daeun);corrupt(malformed);
+    assert.throws(()=>buildDaeunReading(chart,malformed),/확인된 대운 계산/);
+  }
+  const knownChart=calculateSaju(birth,{now}),known=analyzeDaeun(knownChart,{gender:'male',now});
+  known.timeAssumed=true;known.assumedBirthTime={hour:6,minute:0,timezone:'Asia/Seoul'};known.birthTimeNotice=daeun.birthTimeNotice;
+  assert.throws(()=>buildDaeunReading(knownChart,known),/확인된 대운 계산/);
 });
 
 test('before the first decade and after the displayed range do not invent a current period or lifespan',()=>{
