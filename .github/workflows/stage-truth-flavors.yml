@@ -1,4 +1,4 @@
-name: Verify truth card flavors
+name: Check published truth card settings
 on:
   push:
     branches: [release/drinks-truth-flavors]
@@ -7,28 +7,30 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 7
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-      - name: Update the arcade cache revision
+      - name: Compare served game files with the tested build
         run: |
           python - <<'PY'
+          import time, urllib.request, hashlib, concurrent.futures
           from pathlib import Path
-          p=Path('world.html')
-          text=p.read_text()
-          old='/shared/games/world-game-assets.js?v=20261114-drink-prompts1'
-          assert text.count(old)==1
-          p.write_text(text.replace(old,'/shared/games/world-game-assets.js?v=20261114-truth-flavors1'))
+          files=['games/truth/index.html','games/drinking/local/index.html','games/drinking/local/app.js','games/party-live/truth.js','games/party-live/truth-settings.css','games/party-live/room.js']
+          def matches(path):
+              url='https://ojjuda.kr/'+path.removesuffix('index.html')+'?v=20261114-truth-flavors1&t='+str(time.time_ns())
+              try:
+                  req=urllib.request.Request(url,headers={'Cache-Control':'no-cache'})
+                  with urllib.request.urlopen(req,timeout=12) as res:
+                      return res.status==200 and res.read()==Path(path).read_bytes()
+              except OSError:
+                  return False
+          for attempt in range(28):
+              with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
+                  if all(pool.map(matches,files)):break
+              time.sleep(7)
+          else: raise SystemExit('Published files did not match')
           PY
-          node scripts/check-source-layout.mjs
-          node --check games/drinking/local/app.js
-          node --check games/party-live/truth.js
-      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
-      - run: node tests/staged-truth-flavors.cjs
-      - name: Record verified arcade revision
-        run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add world.html
-          git commit -m 'Verify the truth card flavor release'
+          git commit --allow-empty -m 'Confirmed truth settings on both live game pages'
           git push origin HEAD:refs/heads/release/drinks-truth-flavors
