@@ -281,16 +281,18 @@
       id: 'hearts2hearts', name: 'Hearts2Hearts', korean: '하츠투하츠', category: 'girl', fan: 'S2U', agency: 'SM Entertainment',
       members: ['지우', '카르멘', '유하', '스텔라', '주은', '에이나', '이안', '예온'],
       debut: '2025.02.24', debutWork: 'The Chase', songs: ['The Chase', 'Butterflies'],
+      checkedAt: '2026.11.13',
       concept: '서로 다른 마음을 이어 하나의 하모니를 만드는 여덟 멤버.',
       official: 'https://hearts2heartsofficial.jp/', youtube: 'https://www.youtube.com/@hearts2hearts.official',
       photo: '260221 HEARTS2HEARTS @ 2026 Fanmeeting HEARTS2HOUSE.jpg', photoLabel: 'HEARTS2HOUSE 팬미팅', photoYear: '2026', credit: 'sublimitas viii', license: 'CC BY-SA 4.0',
       morePhotos: [
         commonsPhoto('20260221 HEARTS2HEARTS @ 2026 Fanmeeting HEARTS2HOUSE.jpg', 'HEARTS2HOUSE 팬미팅 · 단체', '2026', 'sublimitas viii', 'CC BY-SA 4.0'),
-        commonsPhoto('20260827 HEARTS2HEARTS Ian @ K-World Dream Awards (1).jpg', 'K-World Dream Awards · 이안', '2026', 'sublimitas viii', 'CC BY-SA 4.0')
+        commonsPhoto('20260827 HEARTS2HEARTS Ian @ K-World Dream Awards (1).jpg', 'K-World Dream Awards · 이안', '2026', 'sublimitas viii', 'CC BY-SA 4.0'),
+        commonsPhoto('H2H HMA26.jpg', '2026 한터뮤직어워즈 단체', '2026', '티비텐 TV10', 'CC BY 4.0')
       ],
       music: [
         { title: 'Next Chapter', date: '2026.10.16', type: '스페셜 싱글 · Arena of Valor 10주년 협업', songs: ['Next Chapter'], href: 'https://music.apple.com/us/album/next-chapter-single/6821845774' },
-        { title: 'Candy Box Lover', date: '2026.10.11', type: '디지털 싱글', songs: ['Candy Box Lover'], href: 'https://music.apple.com/us/album/candy-box-lover-single/6819981721' },
+        { title: 'Candy Box Lover', date: '2026.10.11', type: '디지털 싱글 · 일본 애니메이션 「디저트 캐치! 티니핑」 엔딩곡', songs: ['Candy Box Lover'], href: 'https://hearts2heartsofficial.jp/news/20261010/' },
         { title: 'ICONIC HEART (Korean Ver.)', date: '2026.10.05', type: '디지털 싱글 · 일본 데뷔곡 한국어판', songs: ['ICONIC HEART (Korean Ver.)'], href: 'https://hearts2heartsofficial.jp/news/20261005/' },
         { title: 'Moonride', date: '2026.09.09', type: '디지털 싱글 · Kia 협업', songs: ['Moonride'], href: 'https://music.apple.com/us/album/moonride-single/6807315056' },
         { title: 'ICONIC HEART', date: '2026.08.12', type: '일본 데뷔 싱글 · CD 발매일 (음원 8.10)', songs: ['ICONIC HEART', 'Lemon Tang (Japanese Ver.)', 'RUDE! (Japanese Ver.)'], href: 'https://hearts2heartsofficial.jp/discography/iconic-heart_umstore/' },
@@ -301,12 +303,15 @@
       ],
       appearances: [
         { date: '2026-11-20', title: '2026 MAMA AWARDS Chapter 1 출연', sub: '일본 오사카 교세라 돔 · 18:00 시상식 · CJ ENM 주최', href: 'https://cjnews.cj.net/2026-mama-awards-a-to-z%EF%BD%9C%EC%B6%9C%EC%97%B0%EC%A7%84%EB%B6%80%ED%84%B0-%ED%8A%B9%EB%B3%84-%EB%AC%B4%EB%8C%80%EA%B9%8C%EC%A7%80-%ED%95%9C%EB%88%88%EC%97%90-%EB%AA%A8%EC%95%84%EB%B3%B4%EA%B8%B0/' },
+        { date: '2026-11-21', title: 'ANIMAX MUSIX 2026 DAY2 출연', sub: '일본 요코하마 아레나 · 13:00 입장 / 14:30 공연 · 주최 NTT도코모·ANIMAX, 협찬 도부철도', href: 'https://hearts2heartsofficial.jp/news/2026090802/' },
         { date: '2026-11-22', title: '일본 첫 팬 이벤트 READY! S2U', sub: '도쿄 아리아케 아레나 · 18:00 시작 (17:00 입장)', href: 'https://hearts2heartsofficial.jp/news/2026081203/' },
         { date: '2026-11-23', title: '일본 첫 팬 이벤트 READY! S2U', sub: '도쿄 아리아케 아레나 · 16:00 시작 (15:00 입장)', href: 'https://hearts2heartsofficial.jp/news/2026081203/' },
         { date: '2026-11-28', title: 'Winter Special Live at UNIVERSAL STUDIOS JAPAN', sub: '오사카 USJ 그래머시 파크 · 11:00 시작 (09:45 입장) · 주최 USJ', href: 'https://hearts2heartsofficial.jp/news/20260925/' }
       ],
       schedules: [{ title: '일본 공식 일정·공지', sub: '팬 이벤트·공연·발매·변경 확인', href: 'https://hearts2heartsofficial.jp/news/' }],
       news: [
+        { date: '2026.10.26', tag: '굿즈', title: 'ICONIC HEART 한국어판 공식 MD 예약 판매 안내 · 11.01 접수 종료', href: 'https://hearts2heartsofficial.jp/news/20261026/' },
+        { date: '2026.09.08', tag: '활동', title: '티니핑 애니메이션 엔딩곡 발표·11.21 ANIMAX MUSIX 출연 확정', href: 'https://hearts2heartsofficial.jp/news/2026090802/' },
         { date: '2026.11.06', tag: '굿즈', title: 'READY! S2U 공식 MD 공개 · 온라인 11.12 20:00 판매 시작', href: 'https://hearts2heartsofficial.jp/news/20261106/' },
         { date: '2026.11.02', tag: '굿즈', title: '공식 응원봉·미니 응원봉 키링 일본 판매 안내 (11.05 시작)', href: 'https://hearts2heartsofficial.jp/news/20261102/' },
         { date: '2026.10.16', tag: '음악', title: '게임 Arena of Valor 10주년 협업곡 Next Chapter 공개', href: 'https://music.apple.com/us/album/next-chapter-single/6821845774' },
@@ -315,12 +320,14 @@
         { date: '2026.08.12', tag: '공연', title: '11.22~23 일본 첫 팬 이벤트 READY! S2U 개최 발표', href: 'https://hearts2heartsofficial.jp/news/2026081203/' }
       ],
       merch: [
+        { title: 'ICONIC HEART (Korean Ver.) 공식 캐릭터 MD', sub: '파자마·인형 키링 등 · SMTOWN 일본 공식 스토어 예약 판매는 11.01 종료 · 출고 2027년 2~3월 예정', href: 'https://hearts2heartsofficial.jp/news/20261026/' },
         { title: 'READY! S2U 일본 팬 이벤트 공식 MD', sub: '아크릴 키링·파카·토트백 등 · 온라인 판매 11.12 20:00부터', href: 'https://hearts2heartsofficial.jp/news/20261106/' },
         { title: 'Hearts2Hearts 공식 응원봉·미니 키링', sub: 'SMTOWN 일본 공식 스토어 · 11.05 20:00(JST) 판매 시작 · 11.11 이후 주문은 공연 전 배송 미보장 · 재고 확인', href: 'https://hearts2heartsofficial.jp/news/20261102/' },
         { title: 'ICONIC HEART 일본 싱글 CD', sub: 'UNIVERSAL MUSIC STORE 한정판·초회판·통상판', href: 'https://hearts2heartsofficial.jp/discography/iconic-heart_umstore/' },
         { title: 'Lemon Tang 일본 공식 한정판', sub: 'Summer Kit 및 일본 전용판 · 가격·재고는 공식 판매처 확인', href: 'https://hearts2heartsofficial.jp/discography/lemon-tang_summer-kit/' }
       ],
       campaigns: [
+        { kind: '콜라보', date: '2026.09.08', title: '「디저트 캐치! 티니핑」 일본판 × Hearts2Hearts', sub: '일본 애니메이션 엔딩곡 Candy Box Lover · 10.11 정식 발매', href: 'https://hearts2heartsofficial.jp/news/2026090802/' },
         { kind: '콜라보', date: '2026.10.16', title: 'Arena of Valor × Hearts2Hearts', sub: '게임 10주년 특별 싱글 Next Chapter', href: 'https://www.youtube.com/watch?v=lu9GinsuyUQ' },
         { kind: '광고', date: '2026.09.21', title: '클라렌 × Hearts2Hearts', sub: '콘택트렌즈 브랜드 모델 · 리브랜딩 캠페인', href: 'https://www.sentv.co.kr/article/view/sentv202609210130' },
         { kind: '콜라보', date: '2026.09.09', title: 'Kia RV Black Edition × Moonride', sub: '기아 협업 디지털 싱글·프로모션', href: 'https://music.apple.com/us/album/moonride-single/6807315056' }
