@@ -6,7 +6,8 @@ const vm = require('node:vm');
 const { JSDOM } = require('jsdom');
 
 const world = fs.readFileSync(path.join(__dirname, '../world.html'), 'utf8');
-const rounds = world.slice(world.indexOf('async function _2(){'), world.indexOf('function z2('));
+const rounds = world.slice(world.indexOf('function arcadeResultNavigation('), world.indexOf('function focusBreakoutChoice('))
+  + world.slice(world.indexOf('async function _2(){'), world.indexOf('function z2('));
 const closeStart = world.indexOf('function El(){');
 const close = world.slice(closeStart, world.indexOf("window.addEventListener('pagehide'", closeStart));
 const routing = world.slice(world.indexOf('var bm=null;var worldEntryRouted=false;'), world.indexOf('// Member rooms use their own account'));
