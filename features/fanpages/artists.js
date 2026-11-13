@@ -454,7 +454,7 @@ window.OJJUDA_FAN_ARTISTS = [
       commonsPhoto('A2O LITE - RADA 0893.jpg', 'RADA · 포토', '2026', 'K-POPIT 케이팝잇', 'CC BY-SA 4.0'),
       commonsPhoto('A2O LITE - VORA 0892.jpg', 'VORA · 포토', '2026', 'K-POPIT 케이팝잇', 'CC BY-SA 4.0'),
       creditedPhoto("https://cdnimg.melon.co.kr/cm2/artistcrop/images/052/17/450/5217450_20261012172332_500.jpg", "NEON · 단체", "2026", "A2O Entertainment · Melon", "https://www.melon.com/artist/detail.htm?artistId=5217450"),
-      commonsPhoto('A2O LITE - OA 0900.jpg', 'OA · 포토 02', '2026', 'K-POPIT 케이팝잇'),
+      commonsPhoto('A2O LITE - OA 0900.jpg', 'OA · 포토 02', '2026', 'K-POPIT 케이팝잇', 'CC BY-SA 4.0'),
       commonsPhoto('A2O LITE - RADA 0894.jpg', 'RADA · 포토 02', '2026', 'K-POPIT 케이팝잇', 'CC BY-SA 4.0'),
       commonsPhoto('A2O LITE - RADA 0896.jpg', 'RADA · 포토 03', '2026', 'K-POPIT 케이팝잇', 'CC BY-SA 4.0'),
       commonsPhoto('A2O LITE - VORA 0895.jpg', 'VORA · 포토 02', '2026', 'K-POPIT 케이팝잇', 'CC BY-SA 4.0')
@@ -472,12 +472,17 @@ window.OJJUDA_FAN_ARTISTS = [
     music: [
       { title: "NEON", date: "2026.10.13", type: "데뷔 싱글", songs: ["NEON"], href: "https://www.melon.com/album/detail.htm?albumId=14644795" }
     ],
-    appearances: [],
+    appearances: [
+      { date: "2027-01-15", title: "D AWARDS 2027 in PARIS", sub: "DAY 1 · 프랑스 파리 Plenitude Arena · 공연 시각 추후 발표", href: "https://d-awards.world/" }
+    ],
     schedules: [
       { title: "Mnet Plus 공식", sub: "출연 일정·공지", href: "https://artist.mnetplus.world/main/stg/a2olite" },
       { title: "A2O 공식 링크", sub: "공식 채널 모음", href: "https://linktr.ee/a2o.lite" }
     ],
     news: [
+      { date: "10.29", tag: "차트", title: "NEON · 빌보드 Global 200 8위·Global Excl. U.S. 3위", href: "https://prtimes.jp/main/html/rd/p/000000009.000192898.html" },
+      { date: "10.28", tag: "행사", title: "D AWARDS 2027 파리 1월 15일 출연 확정", href: "https://d-awards.world/" },
+      { date: "10.23", tag: "수상", title: "NEON · 더쇼·쇼챔피언·엠카 3관왕", href: "https://prtimes.jp/main/html/rd/p/000000008.000192898.html" },
       { date: "10.14", tag: "기록", title: "NEON · 멜론 TOP100 1위", href: "https://en.yna.co.kr/view/AEN20261015001400315" },
       { date: "10.13", tag: "데뷔", title: "NEON 발매", href: "https://www.melon.com/album/detail.htm?albumId=14644795" }
     ]

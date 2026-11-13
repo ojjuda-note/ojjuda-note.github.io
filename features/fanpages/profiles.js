@@ -186,21 +186,27 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   a2olite: {
-    checkedAt: '2026.11.10',
+    checkedAt: '2026.11.13',
     debut: '2026.10.13', debutWork: 'NEON',
     agency: 'A2O Entertainment',
     concept: '아홉 멤버의 네온빛 Zalpha Pop.',
     awards: [
+      { year: '2026.10', title: '더쇼 첫 1위', detail: 'NEON · 2026.10.20', href: 'https://prtimes.jp/main/html/rd/p/000000005.000192898.html' },
+      { year: '2026.10', title: '엠카운트다운 1위', detail: 'NEON · 2026.10.22, 음악방송 3관왕', href: 'https://prtimes.jp/main/html/rd/p/000000008.000192898.html' },
       { year: '2026.10', title: '인기가요 1위', detail: 'NEON', href: 'https://m.programs.sbs.co.kr/programTemplate/amp/clip/mobile/22000638968' }
     ],
     records: [
+      { year: '2026.10', title: '빌보드 글로벌 차트 2개 부문 톱10', detail: 'NEON · Global 200 8위 / Global Excl. U.S. 3위 · 10.31 차트', href: 'https://prtimes.jp/main/html/rd/p/000000009.000192898.html' },
+      { year: '2026.10', title: '오리콘 주간 스트리밍 급상승 1위', detail: 'NEON · 2026.10.29 발표', href: 'https://prtimes.jp/main/html/rd/p/000000009.000192898.html' },
       { year: '2026.10', title: '멜론 TOP100 1위', detail: 'NEON · 데뷔 다음 날', href: 'https://en.yna.co.kr/view/AEN20261015001400315' }
     ],
     members: ['YOUNG', 'OA', 'AYUNE', 'AIJING', 'HIMEKI', 'RADA', 'XILI', 'VORA', 'MERCI'].map((name) => a2oMember(name, 'https://www.melon.com/artist/detail.htm?artistId=5217450')),
     sources: [
       { label: 'Melon 공식 유통 정보', href: 'https://www.melon.com/artist/detail.htm?artistId=5217450' },
       { label: 'A2O 공식', href: 'https://www.a2oentertainment.world/' },
-      { label: '멜론 1위 보도', href: 'https://en.yna.co.kr/view/AEN20261015001400315' }
+      { label: '멜론 1위 보도', href: 'https://en.yna.co.kr/view/AEN20261015001400315' },
+      { label: 'A2O 공식 발표 · 음악방송 3관왕', href: 'https://prtimes.jp/main/html/rd/p/000000008.000192898.html' },
+      { label: 'A2O 공식 발표 · 미국·일본 차트', href: 'https://prtimes.jp/main/html/rd/p/000000009.000192898.html' }
     ]
   },
   a2osoul: {
