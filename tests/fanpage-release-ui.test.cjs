@@ -2,14 +2,22 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
+const vm = require('node:vm');
 const { chromium } = require('playwright');
 const root = path.join(__dirname, '..');
 const out = path.join(__dirname, 'artifacts/fanpage-release');
 const live = process.env.FANPAGE_LIVE === 'true';
 const base = live ? 'https://ojjuda.kr' : 'https://fan.test';
-const group = 'rescene';
-const newIds = ['EEMdvAl21pQ', 'n-rmTxbsjq0', 'mTaMFwEQdH4'];
-const newFiles = ['RESCENE Woni 261103.jpg', 'RESCENE Liv 261103 (2).jpg', 'RESCENE Minami 261103.jpg', 'RESCENE May 261103.jpg', 'RESCENE Zena 261103 (1).jpg'];
+const group = process.env.FANPAGE_GROUP || 'rescene';
+assert.match(group, /^[a-z0-9]+$/);
+const context = vm.createContext({ window: {}, console });
+for (const file of ['artists.js', 'artists-extra.js', 'videos.js']) {
+  vm.runInContext(fs.readFileSync(path.join(root, 'features/fanpages', file), 'utf8'), context, { filename: file });
+}
+const expectedArtist = context.window.OJJUDA_FAN_ARTISTS.find(a => a.id === group);
+const expectedVideos = context.window.OJJUDA_FAN_VIDEOS[group] || [];
+assert.ok(expectedArtist, 'group must exist in the reviewed checkout');
+const photoFacts = photos => (photos || []).map(p => ({ href: p.href, label: p.label, credit: p.credit, license: p.license }));
 (async () => {
   fs.mkdirSync(out, { recursive: true });
   const report = { mode: live ? 'public-site' : 'PR-preview', group, checkedAt: new Date().toISOString(), screenshots: [], photos: [], videos: [] };
@@ -33,9 +41,9 @@ const newFiles = ['RESCENE Woni 261103.jpg', 'RESCENE Liv 261103 (2).jpg', 'RESC
     assert.equal(data.artists.length, 30);
     assert.equal(new Set(data.artists.map(a => a.id)).size, 30);
     assert.equal(new Set(data.artists.map(a => a.name)).size, 30);
-    for (const id of newIds) assert.ok(data.videos.some(v => v.id === id), `missing video ${id}`);
-    for (const file of newFiles) assert.ok(JSON.stringify(data.artist).includes(encodeURIComponent(file.replaceAll(' ', '_'))), `missing photo ${file}`);
-    assert.ok(data.artist.appearances.some(e => e.date === '2026-11-22' && e.href === 'https://www.makestar.com/product/21557'));
+    assert.equal(JSON.stringify(data.videos || []), JSON.stringify(expectedVideos), 'rendered video data must match checkout');
+    assert.equal(JSON.stringify(photoFacts(data.artist.photos)), JSON.stringify(photoFacts(expectedArtist.photos)), 'photo credits and original links must match checkout');
+    assert.equal(JSON.stringify(data.artist.appearances || []), JSON.stringify(expectedArtist.appearances || []), 'event data must match checkout');
     report.artistCount = data.artists.length;
     report.eventCount = data.artist.appearances.length;
     assert.equal(await page.locator('#video-viewer iframe').count(), 0, 'no eager iframe');
@@ -49,7 +57,7 @@ const newFiles = ['RESCENE Woni 261103.jpg', 'RESCENE Liv 261103 (2).jpg', 'RESC
     for (const img of await page.locator('#photos img').all()) await img.scrollIntoViewIfNeeded();
     await page.waitForFunction(() => [...document.querySelectorAll('#photos img')].every(i => i.complete && i.naturalWidth > 0), null, { timeout: 60000 });
     report.photos = await page.locator('#photos img').evaluateAll(ns => ns.map(i => ({ src: i.currentSrc, width: i.naturalWidth, height: i.naturalHeight })));
-    assert.ok(report.photos.length >= newFiles.length);
+    assert.equal(report.photos.length, (expectedArtist.photos || []).length);
     for (const width of [320, 390, 768]) {
       await page.setViewportSize({ width, height: 844 });
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `horizontal overflow ${width}`);
@@ -82,7 +90,7 @@ const newFiles = ['RESCENE Woni 261103.jpg', 'RESCENE Liv 261103 (2).jpg', 'RESC
     report.linkCount = links.length;
     if (live) {
       report.deployedFiles = [];
-      for (const file of ['artists.js', 'profiles.js', 'videos.js', 'artist.html', 'index.html']) {
+      for (const file of ['artists.js', 'artists-extra.js', 'profiles.js', 'profiles-extra.js', 'videos.js', 'artist.html', 'index.html']) {
         const response = await page.request.get(`${base}/features/fanpages/${file}`, { headers: { 'Cache-Control': 'no-cache' } });
         assert.equal(response.status(), 200);
         assert.equal(await response.text(), fs.readFileSync(path.join(root, 'features/fanpages', file), 'utf8'), `deployed source mismatch: ${file}`);
