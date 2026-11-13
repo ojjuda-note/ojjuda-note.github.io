@@ -1,11 +1,39 @@
 import { CARD_LIFE_THEMES } from './life-themes.js?v=20261113-tarot-life1';
-import { buildDomainGroup } from './domain-narration.js?v=20261113-tarot-context1';
-import { MAIN_CONTEXTS, getCardInterpretation, interpretCard, connectCards, withParticle } from './interpretation-engine.js?v=20261113-tarot-context1';
+import { buildDomainGroup } from './domain-narration.js?v=20261113-tarot-variety1';
+import { MAIN_CONTEXTS, getCardInterpretation, interpretCard, connectCards, withParticle } from './interpretation-engine.js?v=20261113-tarot-variety1';
 
 // Card meanings, concrete circumstances and the relationship between the
 // actual cards are kept distinct. The historical source remains available.
 const TOPIC_NAMES = Object.freeze({
   overall: '전체 운세', love: '연애와 관계', money: '돈과 생활', work: '일과 도전'
+});
+// These questions add a different reflection to each view. Detailed card
+// examples remain in the individual reading instead of being copied here.
+const REPORT_QUESTIONS = Object.freeze({
+  overall: {
+    problem: '여러 일이 한꺼번에 떠오른다면 가장 먼저 불편해진 장면을 골라 봐. 그때 생긴 요구와 나중에 스스로 더한 책임을 나누면 출발점이 보일 수 있어.',
+    past: '지나온 선택을 돌아볼 때는 당시 고를 수 있었던 길도 함께 떠올려 봐. 지금 아는 답으로 그때의 자신을 평가하기보다, 실제로 선택할 여지가 있었던 부분을 살피는 거야.',
+    future: '앞으로 새로운 역할을 맡게 된다면 시작 전과 한 번 해 본 뒤에 생각이 달라질 수 있어. 그 차이를 실패로만 보지 말고, 경험을 얻은 뒤 계획을 고칠 자리로 남겨 두렴.',
+    obstacle: '일정이 어긋나도 꼭 지킬 약속과 다른 날로 옮길 일을 미리 구분해 두면 좋아. 하루가 계획대로 되지 않았다고 남은 선택까지 포기할 필요는 없단다.'
+  },
+  love: {
+    problem: '마음에 걸린 장면에서 실제로 들은 말과 내가 기대했던 반응을 나누어 보렴. 두 사람이 다르게 이해한 약속이 있는지부터 살피면 이야기할 주제가 좁아질 수 있어.',
+    past: '지난 관계를 떠올린다면 좋았던 순간과 힘들었던 순간을 하나씩 골라 봐. 가까워지는 방식 중 다시 지키고 싶은 것과 다음에는 다르게 표현할 것을 나눌 수 있어.',
+    future: '예를 들어 만남이 잦아진 뒤에도 혼자 쉬는 시간을 편하게 말할 수 있는지 살펴볼 수 있어. 가까워지는 속도만큼 서로의 거절을 받아들이는 태도가 관계의 변화를 보여 줘.',
+    obstacle: '연락 간격이나 약속이 달라졌을 때는 그 변화부터 물어볼 수 있어. 상대의 설명을 들어도 원하는 관계의 조건이 맞지 않는다면, 설득을 계속하기보다 내 선택을 정할 필요가 있지.'
+  },
+  money: {
+    problem: '돈 때문에 마음이 급해진다면 지금 낼 비용과 앞으로 계속 나갈 비용을 구별해 보렴. 작은 결제가 여럿 겹친 것인지, 한 번의 큰 선택이 부담인지에 따라 살필 지점이 달라져.',
+    past: '예전 지출을 돌아볼 때는 금액뿐 아니라 당시 필요했던 쓰임을 함께 떠올려 봐. 지금도 잘 쓰는 것, 사정이 바뀌어 쓰지 않는 것, 처음부터 맞지 않았던 것은 서로 다른 경험이야.',
+    future: '가령 큰 지출을 준비하는 동안 필요한 생활비가 달라질 수도 있어. 처음 세운 금액을 무조건 지키는 것보다 남겨 둘 돈과 미룰 수 있는 구입을 다시 구분하는 편이 도움이 돼.',
+    obstacle: '예상하지 못한 비용이 생기면 언제까지 얼마가 필요한지부터 확인해 보렴. 급한 마음에 새 약속을 더하기 전에 취소·조정할 수 있는 항목과 문의할 곳을 구별할 수 있어.'
+  },
+  work: {
+    problem: '일이 막혔다면 내가 끝내지 못한 작업과 다른 사람의 결정이 필요한 부분을 나누어 보렴. 준비를 더해야 하는 문제인지, 담당이나 기준을 확인해야 하는 문제인지 구별하는 거야.',
+    past: '지난 일을 돌아볼 때 결과물 옆에 당시 맡았던 범위도 함께 놓아 봐. 내가 바꿀 수 있었던 작업 방식과 외부에서 바뀐 요구를 나누면 다음에 쓸 경험을 고르기 쉬워져.',
+    future: '예를 들어 새 역할을 맡은 뒤 첫 결과물을 보여 주면 처음 요청과 다른 기대를 알게 될 수도 있어. 그때 추가된 일을 모두 떠안기보다 범위와 확인할 순서를 다시 맞춰 볼 수 있지.',
+    obstacle: '요청이 늘어날 때는 기존 마감과 새 요청을 한꺼번에 보여 주고 우선순위를 확인할 수 있어. 맡을 수 있는 범위를 말하는 일은 일을 포기하는 것과 다르단다.'
+  }
 });
 const SUITS = Object.freeze({
   wands: { name: '완드', plain: '지팡이', object: '지팡이를' },
@@ -33,10 +61,6 @@ function unique(parts) {
     if (!key || seen.has(key)) return false;
     seen.add(key); return true;
   });
-}
-function firstSentence(text) {
-  const value = clean(text);
-  return value.match(/^.*?[.!?](?=\s|$)/)?.[0] || value;
 }
 function checkReadingInput({ card, topicId, index, position, foundation, guidance, detail }) {
   if (!card?.id || !card.name || !Object.hasOwn(TOPIC_NAMES, topicId)
@@ -89,9 +113,8 @@ export function narrateReading({ card, topicId, index, position, foundation, gui
   const paragraphs = [
     `${meaning} ${clean(foundation.symbol)}`,
     topicMeaning,
-    appliedMeaning,
+    positionMeaning,
     example,
-    action,
     clean(foundation.caution)
   ];
   return {
@@ -138,19 +161,22 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
   const names = cards.map((card, index) => fullName(card, readings[index]));
   const [problem, situation, solution] = readings;
   const context = MAIN_CONTEXTS[topicId];
+  const questions = REPORT_QUESTIONS[topicId];
   const topicName = TOPIC_NAMES[topicId];
   const firstTheme = problem.theme.split(' · ')[0];
   const secondTheme = situation.theme.split(' · ')[0];
+  const thirdTheme = solution.theme.split(' · ')[0];
   const ritual = solution.action;
   const link = (a, b) => connectCards({
     left: cards[a], right: cards[b], leftName: names[a], rightName: names[b],
-    leftTheme: readings[a].theme, rightTheme: readings[b].theme, context
+    leftTheme: readings[a].theme, rightTheme: readings[b].theme, context,
+    phase: a === 0 ? 'understand' : 'act'
   });
   const synthesisParagraphs = [link(0, 1), link(1, 2)];
   const problemSections = [
     section('problem-now', '지금 일어나는 문제', [
       `‘${names[0]}’ 카드가 비추는 문제의 실마리야. ${interpretCard(cards[0].id, 'problem', context)}`,
-      `그 바탕에 있는 마음은 ‘${innerMeaning}’로 읽을 수 있어. ‘${topicName}’에 가까이 가져와 보면 이런 모습이야. ${problem.topicMeaning}`
+      `그 바탕에 있는 마음은 ‘${innerMeaning}’로 읽을 수 있어. ${questions.problem}`
     ]),
     section('situation-now', '현재 상황', [
       `‘${names[1]}’ 카드로 지금의 조건을 읽어 볼게. ${interpretCard(cards[1].id, 'scene', context)}`,
@@ -173,27 +199,27 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
     ]),
     section('past-flow', '과거의 흐름', [
       `지나온 시간은 ‘${names[0]}’의 상징에 비추어 돌아볼 수 있어. ${problem.lifeTheme.past}`,
-      `이것을 ‘${topicName}’의 한 장면으로 옮겨 보면 이래. ${problem.example} 닮은 경험이 있었다면 그때 내 선택과 주변 조건이 각각 어떤 영향을 주었는지 나누어 생각해 보렴.`
+      questions.past
     ]),
     section('past-hardships', '지나온 고난', [
-      `‘${names[0]}’의 어려운 면은 지나온 부담을 돌아볼 단서가 돼. ${problem.foundationCaution}`,
-      `${problem.guidanceCaution} 비슷한 어려움을 겪은 적이 있다면, ${withParticle(context.burden, '이')} 어떻게 쌓였는지와 그때 도움을 받을 통로가 있었는지를 함께 돌아볼 수 있어.`
+      `‘${names[0]}’의 어려운 면은 지나온 부담을 돌아볼 단서가 돼. ${problem.guidanceCaution}`,
+      `닮은 어려움을 다시 만났을 때 시도할 방법이야. ${problem.action}`
     ]),
     section('past-achievements', '돌아볼 성취', [
       `같은 ‘${names[0]}’에서도 성취를 돌아볼 수 있어. ${problem.lifeTheme.achievement}`,
       `‘${topicName}’에서 그 성취를 찾아보려면 ${withParticle(context.known, '을')} 살펴보렴. 원하는 결과를 한 번에 얻었는지 외에도, 전에는 하지 못했던 선택이나 다음에 다시 쓸 방법이 생겼는지가 의미 있는 기준이 돼.`
     ]),
     section('present-luck', '현재 운과 과제', [
-      `‘${names[1]}’의 지금 흐름을 ‘${topicName}’에 적용하면 이렇게 읽을 수 있어. ${situation.topicMeaning}`,
-      `이 흐름에서 놓치지 말아야 할 점은 다음과 같아. ${situation.foundationCaution} ${withParticle(context.aim, '을')} 바라면서도 현재 감당할 조건을 함께 보는 거야.`
+      `‘${names[1]}’의 흐름을 활용할 때 살필 점이야. ${situation.guidanceCaution}`,
+      `지금의 조건에서 선택할 수 있는 실천도 있어. ${situation.action}`
     ]),
     section('future-change', '앞으로의 변화', [
       `‘${names[2]}’의 상징에는 이런 변화의 가능성이 있어. ${solution.lifeTheme.change}`,
-      `‘${topicName}’에서 그 변화를 적용할 장면을 떠올려 보자. ${solution.example} 실제로 비슷한 선택을 하게 된다면 지금의 조건과 맞는 부분을 골라 활용할 수 있어.`
+      questions.future
     ]),
     section('future-hardships', '앞으로의 고난과 대처', [
-      `‘${names[2]}’와 닮은 어려움에 대비할 때는 이 점이 중요해. ${solution.foundationCaution} ${solution.guidanceCaution}`,
-      `그럴 때 선택을 좁히는 방향은 이래. ${solution.positionMeaning} ${withParticle(context.boundary, '을')} 미리 정해 두면 부담이 커졌을 때 어디에서 멈추거나 도움을 청할지 판단하기 쉬워져.`
+      `‘${names[2]}’와 닮은 어려움에 대비할 때는 이 점이 중요해. ${solution.guidanceCaution}`,
+      questions.obstacle
     ])
   ];
   const groups = [
@@ -203,7 +229,7 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
   ];
   const synthesis = synthesisParagraphs.join('\n\n');
   const paragraphs = problemSections.slice(0, 3).map(item => item.paragraphs.join('\n\n'));
-  const oneLine = `${andWith(firstTheme)} ${objectOf(secondTheme)} 함께 살피고, ${firstSentence(ritual)}`;
+  const oneLine = `${andWith(firstTheme)} ${objectOf(secondTheme)} 함께 살피며, 다음 선택에서는 ${objectOf(thirdTheme)} 중심에 두는 조합이야.`;
   const detailSections = [
     { title: '함께 참고할 이야기', subtitle: base.oneLine, body: base.summary },
     ...(base.sections || []),

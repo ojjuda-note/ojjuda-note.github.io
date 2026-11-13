@@ -109,9 +109,23 @@ export function interpretCard(cardId, part, context) {
 
 // The relationship of two actual cards matters as well as their individual
 // meanings. This bridge is used once in the synthesis, not in all 50 topics.
-export function connectCards({ left, right, leftName, rightName, leftTheme, rightTheme, context }) {
+export function connectCards({ left, right, leftName, rightName, leftTheme, rightTheme, context, phase = 'act' }) {
   const a = getCardInterpretation(left.id).motion;
   const b = getCardInterpretation(right.id).motion;
+  const bridge = `‘${leftName}’의 ‘${leftTheme}’에서 ‘${rightName}’의 ‘${rightTheme}’으로 초점이 이어져.`;
+  if (phase === 'understand') {
+    const situation = {
+      advance: '앞에서 드러난 마음이 행동을 서두르게 하는지 살펴볼 수 있어. 움직였다는 사실과 필요한 방향으로 나아갔다는 사실을 구별할 때 현재 상황이 또렷해져.',
+      review: '처음에 느낀 문제를 다시 해석할 정보가 필요한 흐름이야. 이미 확인한 장면에 나중의 예상이 덧붙지는 않았는지 살피면 판단이 달라진 까닭을 알 수 있어.',
+      care: '문제를 감당하는 과정에서 마음과 여유를 얼마나 쓰고 있는지도 드러나. 겉으로 잘 이어지는 일이라도 그 과정을 지탱할 힘이 남아 있는지는 따로 살펴야 해.',
+      boundary: '처음의 바람을 현실의 기준에 맞춰 보는 흐름이야. 무엇을 원하는지와 어디까지 감당할 수 있는지가 같지 않다면 그 차이가 지금의 답답함을 설명할 수 있어.',
+      pause: '처음 드러난 문제가 지금의 멈춤과 어떻게 이어졌는지 돌아볼 수 있어. 쉬어야 해서 멈춘 것인지, 결정할 정보가 없어 기다리는 것인지 구별하면 다음 선택이 달라져.',
+      release: '이전 방식으로 계속하기 어렵다는 신호가 현재 상황의 중심에 놓여 있어. 아직 소중한 목적과 이미 맞지 않게 된 방법을 함께 놓고 구별해 볼 조합이야.',
+      connect: '혼자 품은 생각이 다른 조건이나 사람과 만나는 지점이 중요해져. 내 의지만으로 정할 수 있는 일과 상대의 동의가 있어야 하는 일이 나뉘는 흐름이야.',
+      complete: '처음의 고민 속에서도 이미 마무리한 부분이나 얻은 경험을 찾아볼 수 있어. 아직 남은 문제가 있다는 이유로 끝낸 일까지 처음부터 다시 할 필요가 있는지는 살펴보렴.'
+    };
+    return `${bridge} ${situation[b]}`;
+  }
   let connection;
   if (a === b) {
     const same = {
@@ -146,5 +160,5 @@ export function connectCards({ left, right, leftName, rightName, leftTheme, righ
     connection = next[b];
   }
   if (!connection) throw new Error('tarot_context_unknown_motion');
-  return `‘${leftName}’의 ‘${leftTheme}’에서 ‘${rightName}’의 ‘${rightTheme}’으로 초점이 이어져. ${connection}`;
+  return `${bridge} ${connection}`;
 }

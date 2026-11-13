@@ -30,7 +30,7 @@ for (const card of DECK.filter(card => card.arcana === 'minor')) {
       assert.ok(result.introduction.includes(result.displayName));
       assert.ok(!result.paragraphs.includes(result.introduction), 'the standalone introduction is not duplicated');
       assert.ok(result.text.startsWith(result.introduction));
-      for (const fact of [input.foundation.symbol, card.topics[topic], input.detail.example, input.detail.action, input.foundation.caution]) {
+      for (const fact of [input.foundation.symbol, card.topics[topic], input.detail.example, input.foundation.caution]) {
         assert.ok(result.text.includes(fact), `${card.id}/${topic}/${index} preserves an authored explanation`);
       }
       assert.equal(result.action, input.detail.action);
@@ -42,7 +42,9 @@ for (const card of DECK.filter(card => card.arcana === 'minor')) {
       assert.equal(result.reference, input.base.reference);
       assert.equal(result.lifeTheme, CARD_LIFE_THEMES[card.id]);
       assert.equal(result.positionMeaning, input.guidance.positions[index === 1 ? 0 : index]);
-      assert.ok(result.appliedMeaning.length > 60 && result.text.includes(result.appliedMeaning), 'the positional interpretation applies this card to the chosen situation');
+      assert.ok(result.text.includes(result.positionMeaning), 'the individual reading explains this position in the card itself');
+      assert.ok(result.appliedMeaning.length > 60 && !result.text.includes(result.appliedMeaning), 'the detailed situation application is reserved for the combined view');
+      assert.ok(!result.text.includes(result.action), 'the practical action is retained for the combined reading and full source, not copied into both views');
       assert.deepEqual(plain(result), plain(narrateReading(input)), 'same card/topic/position is deterministic');
     }
   }
@@ -80,11 +82,13 @@ for (const topicId of topics) {
   const timeline = summary.groups[1].sections;
   for (const reading of readings) assert.ok(timeline[0].paragraphs.join(' ').includes(reading.lifeTheme.strength));
   assert.ok(timeline[1].paragraphs.join(' ').includes(readings[0].lifeTheme.past));
-  assert.ok(timeline[2].paragraphs.join(' ').includes(readings[0].foundationCaution));
+  assert.ok(timeline[2].paragraphs.join(' ').includes(readings[0].guidanceCaution));
+  assert.ok(timeline[2].paragraphs.join(' ').includes(readings[0].action));
   assert.ok(timeline[3].paragraphs.join(' ').includes(readings[0].lifeTheme.achievement));
-  assert.ok(timeline[4].paragraphs.join(' ').includes(readings[1].topicMeaning));
+  assert.ok(timeline[4].paragraphs.join(' ').includes(readings[1].guidanceCaution));
+  assert.ok(timeline[4].paragraphs.join(' ').includes(readings[1].action));
   assert.ok(timeline[5].paragraphs.join(' ').includes(readings[2].lifeTheme.change));
-  assert.ok(timeline[6].paragraphs.join(' ').includes(readings[2].foundationCaution));
+  assert.ok(timeline[6].paragraphs.join(' ').includes(readings[2].guidanceCaution));
   assert.equal(summary.text.split(summary.ritual).length - 1, 1, 'full ritual is copied exactly once');
 
   for (let i = 0; i < 3; i++) {
@@ -97,9 +101,14 @@ for (const topicId of topics) {
   assert.ok(summary.text.includes(input.flowMeaning), "the second card's specific unfolding theme now participates in the reading");
   assert.ok(summary.synthesis.includes(readings[1].theme.split(' · ')[0]));
   assert.ok(summary.text.includes(input.direction));
-  assert.ok(summary.text.includes(readings[2].example));
-  for (const detail of [readings[0].example, readings[1].topicMeaning, readings[2].example, readings[0].lifeTheme.strength, readings[2].lifeTheme.change]) {
-    assert.equal(summary.text.split(detail).length - 1, 1, 'each detailed example or life explanation is used once instead of copied through several sections');
+  for (const reading of readings) {
+    for (const detail of [reading.example, reading.topicMeaning, reading.foundationCaution, reading.positionMeaning]) {
+      assert.ok(!summary.text.includes(detail), 'the individual card explanation is not copied into another tab');
+    }
+    assert.equal(summary.text.split(reading.action).length - 1, 1, 'each actual card action is offered once in the combined reading');
+  }
+  for (const detail of [readings[0].lifeTheme.strength, readings[2].lifeTheme.change]) {
+    assert.equal(summary.text.split(detail).length - 1, 1, 'each life explanation is used once instead of copied through several sections');
   }
   assert.equal(summary.summary, summary.synthesis);
   assert.equal(summary.ritual, cards[2].details[topicId].action);
@@ -107,7 +116,8 @@ for (const topicId of topics) {
   assert.ok(!summary.paragraphs.includes(summary.ritual));
   assert.ok(summary.oneLine.includes(readings[0].theme.split(' · ')[0]));
   assert.ok(summary.oneLine.includes(readings[1].theme.split(' · ')[0]));
-  assert.ok(summary.oneLine.includes(summary.ritual.split('.')[0]));
+  assert.ok(summary.oneLine.includes(readings[2].theme.split(' · ')[0]));
+  assert.ok(!summary.oneLine.includes(summary.ritual.split('.')[0]), 'the short overview does not repeat the closing action');
   assert.ok(summary.detailSections.some(section => section.body === base.summary));
   assert.deepEqual(plain(summary), plain(narrateSummary(input)));
   const reversedCards = [...cards].reverse();
@@ -126,7 +136,7 @@ for (const card of DECK) for (const topic of topics) for (let index = 0; index <
   assert.ok(reading.introduction.includes(card.name));
   assert.ok(reading.paragraphs.length >= 5);
   assert.ok(JSON.stringify(reading.detailSections).includes(reading.traditionalMeaning), 'the complete original interpretation remains accessible in source details');
-  assert.ok(reading.text.includes(reading.action));
+  assert.ok(reading.detailSections.flatMap(section => [section.title, section.subtitle, section.body]).join('\n').includes(reading.action.split('.')[0]), 'the original action remains accessible in full source details');
 }
 assert.deepEqual(plain(POSITIONS.map(position => position.label)), ['지금의 문제', '현재 상황', '해결 방법과 결과']);
 assert.equal(Object.keys(CARD_LIFE_THEMES).length, DECK.length);
@@ -149,8 +159,11 @@ assert.ok(actual.text.includes('소드 기사'));
 assert.ok(actual.text.includes('여사제'));
 assert.ok(actual.text.includes('펜타클 3'));
 assert.ok(!actual.paragraphs[2].includes('’야.'), 'numbered card names use particle-safe introductions');
+const advancing = getSummary(['fool', 'magician', 'chariot'], 'work');
+const bridgeSentences = advancing.synthesis.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
+assert.equal(new Set(bridgeSentences).size, bridgeSentences.length, 'two consecutive connections do not repeat the same advice even when all cards share one motion');
 
 assert.throws(() => narrateReading({}), /requires_authored_card_meanings/);
 assert.throws(() => narrateSummary({ cards: cards.slice(0, 2), readings: [], topicId: 'work' }), /requires_three_ordered_readings/);
 assert.throws(() => narrateSummary({ cards: [cards[0], cards[0], cards[2]], readings: [], topicId: 'work' }), /requires_three_ordered_readings/);
-console.log('PASS tarot narration: direct card meanings, different positional situations, connected actual-card themes, non-repeated examples, preserved full source explanations, three views and stable replay');
+console.log('PASS tarot narration: detailed card meanings, separate situation and action views, unique card connections, no copied examples or closing action, full source explanations and stable replay');
