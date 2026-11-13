@@ -1,0 +1,34 @@
+name: Verify truth card flavors
+on:
+  push:
+    branches: [release/drinks-truth-flavors]
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Update the arcade cache revision
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('world.html')
+          text=p.read_text()
+          old='/shared/games/world-game-assets.js?v=20261114-drink-prompts1'
+          assert text.count(old)==1
+          p.write_text(text.replace(old,'/shared/games/world-game-assets.js?v=20261114-truth-flavors1'))
+          PY
+          node scripts/check-source-layout.mjs
+          node --check games/drinking/local/app.js
+          node --check games/party-live/truth.js
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node tests/staged-truth-flavors.cjs
+      - name: Record verified arcade revision
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add world.html
+          git commit -m 'Verify the truth card flavor release'
+          git push origin HEAD:refs/heads/release/drinks-truth-flavors

@@ -68,7 +68,33 @@
     void Promise.resolve().then(()=>window.DrinkingPrompts.submit('truth',question,flavor)).catch(()=>{});
     return {saved};
   }
-  window.PartyTruthCards={deck:personalDeck,register};
+  function settingsForm(settings) {
+    function group(name,title,options,selected) {
+      return '<fieldset><legend>'+title+'</legend><div>'+options.map(([value,label])=>
+        '<label><input type="radio" name="'+name+'" value="'+value+'"'+(value===selected?' checked':'')+
+        '><span>'+label+'</span></label>').join('')+'</div></fieldset>';
+    }
+    return '<div class="truth-settings">'+
+      group('truth-mode','카드 구성',[['mild','순한맛만'],['spicy','빨간맛만'],['mixed','반반']],settings.mode)+
+      group('truth-visibility','고르기 전 카드 맛',[['hide','숨기기'],['show','보이기']],settings.showFlavor?'show':'hide')+'</div>';
+  }
+  function bindSettings(settings) {
+    const controls=$('.truth-settings');
+    if (!controls) return;
+    controls.onchange=event=>{
+      const input=event.target;
+      if (input.name==='truth-mode') settings.mode=input.value;
+      if (input.name==='truth-visibility') settings.showFlavor=input.value==='show';
+    };
+  }
+  function enabledFlavors(mode) {return flavors.includes(mode)?[mode]:flavors;}
+  function cardLabel(flavor) {
+    return Object.hasOwn(labels,flavor)?'<span class="truth-card-label '+flavor+'">'+labels[flavor]+'</span>':'';
+  }
+  function sideName(i,flavor) {
+    return (i===0?'왼쪽':'오른쪽')+' '+(Object.hasOwn(labels,flavor)?labels[flavor]+' ':'')+'카드 뒤집기';
+  }
+  window.PartyTruthCards={deck:personalDeck,register,settingsForm,bindSettings,enabledFlavors,cardLabel,sideName};
   if (document.documentElement.dataset.game!=='truth') return;
 
   let entry, activeRound, current;
@@ -76,7 +102,7 @@
     const target=s.code+'/'+s.round;
     if (target!==activeRound) {
       activeRound=target;
-      entry={flavor:'mild',question:'',expanded:false,message:'',busy:false};
+      entry={mode:'mixed',showFlavor:false,flavor:'mild',question:'',expanded:false,message:'',busy:false};
     }
     return entry;
   }
@@ -93,15 +119,18 @@
   function board(s,ui) {
     if (s.phase==='setup') {
       if (s.me!==0) return '<h1>방장이 카드를 준비하고 있어요</h1><p>내 차례에 카드 한 장을 골라 질문에 답해요.</p>';
-      return '<h1>진실게임을 시작할까요?</h1><p>순한맛과 빨간맛을 한 장씩 섞어요. 카드를 고를 때까지 어느 맛인지 알 수 없어요.</p>'+
+      return '<h1>진실게임을 시작할까요?</h1>'+settingsForm(formState(s))+
         '<button type="button" class="action" id="truth-begin">이 카드로 시작</button><p role="status" id="truth-start-message"></p>';
     }
     const mine=s.me===s.game.turn, name=ui.esc(s.players[s.game.turn]);
     if (s.phase==='pick') {
-      if (!mine) return '<h1>'+name+'님이 카드를 고르고 있어요</h1><p>카드를 고르면 질문이 공개돼요.</p>';
-      return '<h1>카드 한 장을 골라요</h1><p>순한맛 한 장, 빨간맛 한 장. 어떤 질문이 나올까요?</p><div class="truth-hand">'+
-        '<button type="button" data-truth-side="0" aria-label="왼쪽 카드 뒤집기"></button>'+
-        '<button type="button" data-truth-side="1" aria-label="오른쪽 카드 뒤집기"></button></div>';
+      const cards=[0,1].map(i=>{
+        const taste=s.game.cardFlavors?.[i];
+        const control=mine?'data-truth-side="'+i+'"':'disabled';
+        return '<button type="button" '+control+' aria-label="'+sideName(i,taste)+'">'+cardLabel(taste)+'</button>';
+      });
+      const heading=mine?'카드 한 장을 골라요':name+'님이 카드를 고르고 있어요';
+      return '<h1>'+heading+'</h1><div class="truth-hand">'+cards.join('')+'</div>';
     }
     const flavor=s.game.flavor==='spicy'?'spicy':'mild';
     return '<h1>'+name+'님의 질문</h1><div class="truth-face '+flavor+'"><span>'+labels[flavor]+'</span><strong>'+
@@ -160,6 +189,7 @@
     });
     const begin=$('#truth-begin');
     if (!begin) return;
+    bindSettings(e);
     begin.onclick=async()=>{
       begin.disabled=true;
       const msg=$('#truth-start-message');
@@ -170,10 +200,10 @@
         }
         if (!current || current.s.code!==s.code || current.s.round!==s.round || current.s.phase!=='setup') return;
         const latest=current.s, deck=roomDeck(latest.players.length);
-        const missing=flavors.find(f=>!deck[f].length && !latest.game.added?.[f]);
+        const missing=enabledFlavors(e.mode).find(f=>!deck[f].length && !latest.game.added?.[f]);
         if (missing) {msg.textContent=labels[missing]+' 질문을 한 장 이상 추가해 주세요.';return;}
         msg.textContent='';
-        await current.ui.send('truth_begin',{deck});
+        await current.ui.send('truth_begin',{deck,mode:e.mode,showFlavor:e.showFlavor});
       } finally {begin.disabled=false;}
     };
   }

@@ -22,7 +22,7 @@ const games=[
   ['stopwatch','감각 스톱워치','운과 감각','목표 시간에 멈추기','#c8d9ce',2,'첫 1초가 지나면 숫자가 사라져요. 목표 시간에 가장 가깝게 멈춘 사람이 이겨요.'],
   ['liar','라이어 찾기','추리와 대화','같은 단어, 한 명의 라이어','#d0c2e1',3,'한 명만 단어를 몰라요. 한 사람씩 힌트를 준 뒤, 각자 의심하는 사람에게 몰래 투표해요.'],
   ['king','왕게임','추리와 대화','왕의 미션은 몇 번에게?','#f0d790',2,'한 명은 왕, 나머지는 비밀 번호를 받아요. 왕이 한 명이나 두 명의 번호를 골라 미션을 내리면 주인공이 공개돼요.'],
-  ['truth','진실게임','추리와 대화','솔직한 질문 카드','#f0c6c4',2,'빨간맛 한 장, 순한맛 한 장. 내 차례에 뒤집힌 카드 한 장을 골라 질문에 답해요. 답하기 어려우면 패스해도 돼요.'],
+  ['truth','진실게임','추리와 대화','솔직한 질문 카드','#f0c6c4',2,'내 차례에 카드 한 장을 골라 질문에 답해요. 답하기 어려우면 패스해도 돼요.'],
   ['initial','초성 대결','순발력','5초 안에 단어 하나','#b8cfe1',2,'초성에 맞는 새 단어를 5초 안에 말해요. 시간이 다 되거나 틀리면 탈락해요. 마지막 한 명이 이겨요.'],
   ['minority','소수파 찾기','추리와 대화','우리의 선택은 몇 대 몇?','#bfd5bb',3,'두 선택지 중 하나를 각자 몰래 골라요. 모두 투표하면 어느 쪽이 소수파인지 공개돼요.'],
   ['mission','한 명만 다른 미션','추리와 대화','누구의 몸짓이 다를까?','#e5bdac',3,'한 명만 조금 다른 제시어를 받아요. 동시에 몸으로 표현한 뒤, 다른 미션을 받은 사람에게 몰래 투표해요.'],
@@ -43,6 +43,8 @@ function shuffled(items){const copy=[...items];for(let i=copy.length-1;i>0;i--){
 const bags=new Map();
 function draw(items){if(!bags.get(items)?.length)bags.set(items,shuffled(items));return bags.get(items).pop()}
 const truthDeck={mild:[],spicy:[]};
+const truthSettings={mode:'mixed',showFlavor:false};
+const truthTools=window.PartyTruthCards;
 const truthFlavorNames={mild:'순한맛',spicy:'빨간맛'};
 function refreshTruthDeck(){
   const next=window.PartyTruthCards.deck();
@@ -144,8 +146,9 @@ function intro(){const enough=players.length>=game.min;
   if(game.id==='bomb')return bombSetup();
   if(game.id==='stopwatch')return watchSetup();
   if(game.id==='truth'){
-    shell('<h2>'+game.short+'</h2><p>'+game.rule+'</p>'+actions(btn('게임 시작 · 한 대로','start'),
+    shell('<h2>'+game.short+'</h2><p>'+game.rule+'</p>'+truthTools.settingsForm(truthSettings)+actions(btn('게임 시작 · 한 대로','start'),
       btn('질문 카드 등록','truth-editor','quiet'))+'<p id="truth-start-message" role="status"></p>',true);
+    truthTools.bindSettings(truthSettings);
     return;
   }
   const needPlayers='<p>'+game.min+'명부터 함께할 수 있어요.</p>';
@@ -163,7 +166,7 @@ function route(){let id=location.hash.slice(1);if(id==='jenga'){
 function go(id){if(id===location.hash.slice(1))route();else location.hash=id}
 function end(title,desc,sound='result'){
   stopClock();round.phase='done';if(sound)fx.play(sound);
-  shell('<span class="turn-tag">라운드 결과</span><h2>'+esc(title)+'</h2><p>'+esc(desc)+'</p>'+actions(btn('한 판 더',game.id==='bomb'?'bomb-setup':'start'),btn('게임 목록','menu','quiet')),true)
+  shell('<span class="turn-tag">라운드 결과</span><h2>'+esc(title)+'</h2><p>'+esc(desc)+'</p>'+actions(btn('한 판 더',game.id==='bomb'?'bomb-setup':game.id==='truth'?'truth-setup':'start'),btn('게임 목록','menu','quiet')),true)
 }
 function clock(){
   stopClock();lastStamp=performance.now();
@@ -604,7 +607,8 @@ async function startTruthRound(r){
   if(round!==r)return;
   if(loaded){
     refreshTruthDeck();
-    const missing=Object.keys(truthDeck).find(flavor=>!truthDeck[flavor].length);
+    r.truthSettings={...truthSettings};
+    const missing=truthTools.enabledFlavors(r.truthSettings.mode).find(flavor=>!truthDeck[flavor].length);
     if(!missing)return dealTruth();
     cleanup();intro();openTruthEditor();
     $('#truth-flavor').value=missing;
@@ -631,13 +635,15 @@ $('#truth-form').onsubmit=e=>{
   truthMessage.textContent=result.saved?'이 기기의 질문에 추가했어요.':'이번 플레이에 사용할 질문으로 추가했어요.';
 };
 function dealTruth(){
-  round.truthCards=shuffled(['mild','spicy']);
+  const {mode,showFlavor}=round.truthSettings;
+  round.truthCards=mode==='mixed'?shuffled(['mild','spicy']):[mode,mode];
   round.phase='truth-pick';
-  const cards=round.truthCards.map((_,i)=>
-    '<button type="button" class="truth-back" data-action="truth-pick" data-value="'+i+
-    '" aria-label="'+(i===0?'왼쪽':'오른쪽')+' 카드 뒤집기">'+art('back')+'</button>').join('');
+  const cards=round.truthCards.map((flavor,i)=>{
+    const taste=showFlavor?flavor:null;
+    return '<button type="button" class="truth-back" data-action="truth-pick" data-value="'+i+
+      '" aria-label="'+truthTools.sideName(i,taste)+'">'+art('back')+truthTools.cardLabel(taste)+'</button>';
+  }).join('');
   shell(tag(round.turn)+'<h2 tabindex="-1" id="truth-title">카드 한 장을 골라요</h2>'+
-    '<p>빨간맛 한 장, 순한맛 한 장. 어떤 질문이 나올까요?</p>'+
     '<div class="truth-pair">'+cards+'</div>'+btn('질문 카드 등록','truth-editor','quiet'));
   $('#truth-title').focus({preventScroll:true});
 }
@@ -811,6 +817,7 @@ function handle(action,value){
     if(action==='start-bomb')return startBomb();
   }
   if(game?.id==='stopwatch'&&action==='watch-setup'&&r?.phase==='done'){cleanup();return watchSetup()}
+  if(game?.id==='truth'&&action==='truth-setup'&&r?.phase==='done'){cleanup();return intro()}
   if(game?.id==='truth'&&action==='truth-editor')return openTruthEditor();
   if(action==='menu')return go('menu');if(action==='people')return playerSettings();if(action==='start')return begin();if(!r)return;
   switch(action){
