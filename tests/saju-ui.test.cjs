@@ -342,6 +342,7 @@ test('the personal portrait leads with every paragraph and connects its topics t
     link.click();assert.equal(doc.activeElement,h.$(link.hash.slice(1)),'each row reaches its own detailed personality topic');
   }
   assert.equal(topics.parentElement,portrait);
+  assert.equal(topics.querySelector('.portrait-topic-group'),null,'the overview rows replace the duplicate five personality buttons');
   assert.equal(h.$('reading-lifelong').querySelectorAll('.reader-scope-note').length,1,'the unknown-time notice appears once');
   assert.equal(summary.querySelector('.reader-scope-note').textContent,reading.reader.scopeNotice);
   assert.equal(portrait.querySelectorAll('.portrait-card').length,5);
@@ -354,8 +355,8 @@ test('the personal portrait leads with every paragraph and connects its topics t
     assert.equal(card.dataset.origin,item.origin||expected.origin||'service-reference');
     assert.deepEqual(card.dataset.factIds.split(' '),item.factIds);
     const heading=card.querySelector('.portrait-card-label');
-    const link=topics.querySelector(`a[href="#${heading.id}"]`);
-    assert.ok(link,`the contents reach ${item.label}`);
+    const link=portraitTable.querySelector(`a[href="#${heading.id}"]`);
+    assert.ok(link,`the overview row reaches ${item.label}`);
     link.click();assert.equal(doc.activeElement,heading);
   }
   const previous=h.$('reading-personality-more');
@@ -371,6 +372,18 @@ test('the personal portrait leads with every paragraph and connects its topics t
     link.click();assert.equal(doc.activeElement,heading);
     if(card.closest('#reading-personality-more'))assert.equal(previous.open,true,'a topic link reveals a folded prior explanation');
   }
+  const storyParagraphs=[...h.$('reading-lifelong').querySelectorAll('.reader-prose>p')];
+  const splitParagraphs=storyParagraphs.filter(paragraph=>paragraph.querySelector('.reader-sentence-group'));
+  assert.ok(splitParagraphs.length>0,'long personal explanations gain visible sentence groups');
+  for(const paragraph of splitParagraphs) {
+    const groups=[...paragraph.querySelectorAll(':scope>span.reader-sentence-group')];
+    assert.ok(groups.length>1,'a long paragraph is divided into more than one readable group');
+    assert.ok(groups.every(group=>group.textContent.trim()),'visual breaks do not create empty groups');
+    assert.equal(groups.map(group=>group.textContent).join(''),paragraph.textContent,'sentence groups retain every character and its original order');
+  }
+  const shortParagraphs=storyParagraphs.filter(paragraph=>paragraph.textContent.length<100);
+  assert.ok(shortParagraphs.length>0);
+  for(const paragraph of shortParagraphs)assert.equal(paragraph.children.length,0,'short explanations retain their plain paragraph text');
   const evidence=h.$('reading-person-portrait-evidence');
   assert.equal(evidence.open,false,'provenance and calculation details start folded');
   assert.ok(evidence.textContent.includes(expected.methodNotice));
@@ -432,6 +445,23 @@ test('the monthly overview preserves every calculated period, opportunity and ca
   const reading=buildDetailedReading(h.state.starts[0].chart,fortune);
   const expected=[...reading.reader.timings.items].sort((a,b)=>a.month-b.month);
   const doc=h.window.document,section=h.$('reading-timings'),table=section.querySelector('table.timing-summary-table');
+  const navigation=section.querySelector('.reader-timing-navigation'),comparison=section.querySelector('details.timing-table-details');
+  assert.ok(comparison,'the twelve-month comparison has its own expandable section');
+  assert.equal(comparison.open,false,'the dense comparison starts folded behind the monthly shortcuts');
+  assert.equal(navigation.nextElementSibling,comparison,'monthly shortcuts come before the comparison');
+  assert.equal(comparison.nextElementSibling,section.querySelector('.reader-timing-list'),'detailed readings follow the folded comparison');
+  assert.equal(table.parentElement,comparison.querySelector(':scope>div.timing-table-body'));
+  const comparisonToggle=comparison.querySelector(':scope>summary.full-reading-toggle');
+  assert.ok(comparisonToggle.textContent.startsWith('열두 달 비교표'));
+  assert.equal(comparisonToggle.querySelector('small').textContent,'12개월');
+  const monthShortcut=navigation.querySelector('a'),shortcutTarget=h.$(monthShortcut.hash.slice(1));
+  shortcutTarget.closest('details').open=false;
+  monthShortcut.click();
+  assert.equal(shortcutTarget.closest('details').open,true);
+  assert.equal(doc.activeElement,shortcutTarget);
+  assert.equal(comparison.open,false,'a monthly shortcut reaches its reading without opening the comparison');
+  comparisonToggle.click();
+  assert.equal(comparison.open,true,'the reader explicitly opens the complete twelve-month comparison');
   assert.equal(table.caption.textContent,'월별 기회와 주의점 한눈에 보기');
   assert.deepEqual([...table.tHead.rows[0].cells].map(cell=>[cell.scope,cell.textContent]),
     [['col','월과 기간'],['col','살릴 기회'],['col','조심할 상황']]);
@@ -456,6 +486,7 @@ test('the monthly overview preserves every calculated period, opportunity and ca
       [...item.cautions,...item.opportunities,...item.people,...item.documents].map(point=>[point.label,point.text]),
       'all detailed text remains present, with cautions before opportunities');
   }
+  comparisonToggle.click();assert.equal(comparison.open,false,'the comparison can close again without removing any month');
   assert.equal(section.querySelectorAll('.reader-timing-card').length,12);
   assert.equal(h.$('report-content').querySelectorAll('.month-reading').length,12,'the table does not replace the original twelve monthly readings');
   assert.equal(h.$('report-content').querySelector('.portrait-summary-table'),null,'a monthly purchase reveals no lifelong portrait');

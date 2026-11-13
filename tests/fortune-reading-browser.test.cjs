@@ -10,7 +10,7 @@ const { chromium } = require('playwright');
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.woff': 'font/woff' };
 // Isolated rendering fixture. It uses production calculation and reading modules
 // with a published example date, and never loads authentication or billing code.
-const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"></head><body><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option></select><div id="report-content"></div></section></main><script type="module">
+const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"></head><body><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { analyzeFortune } from '/games/starlit-saju/fortune-data.mjs';
 import { buildDetailedReading } from '/games/starlit-saju/readings.mjs';
@@ -168,6 +168,19 @@ const server = http.createServer((request, response) => {
       assert.ok(ordered, topic + ': calculation details retain title, plain takeaway, then explanation');
       const readerOrdered = await saju.locator('.reader-card:visible').evaluateAll(cards => cards.length > 0 && cards.every(card => card.children[0].classList.contains('reader-card-label') && card.children[1].classList.contains('reader-card-title') && card.children[2].classList.contains('reader-prose') && [...card.children[2].querySelectorAll('p')].some(paragraph => paragraph.textContent.trim())));
       assert.ok(readerOrdered, topic + ': the visible reading shows its topic, plain title and explanation');
+      if (topic === 'lifelong') {
+        await saju.locator('#reading-summary').scrollIntoViewIfNeeded();
+        await saju.screenshot({ path: path.join(artifacts, 'saju-portrait-mobile.png') });
+      }
+      if (topic === 'monthly') {
+        const comparison = saju.locator('.timing-table-details');
+        await comparison.locator('summary').click();
+        assert.equal(await comparison.locator('tbody tr').count(), 12, 'all months remain available in the comparison');
+        assert.equal(await saju.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, 'expanded monthly comparison fits the mobile viewport');
+        await comparison.scrollIntoViewIfNeeded();
+        await saju.screenshot({ path: path.join(artifacts, 'saju-month-table-mobile.png') });
+        await comparison.locator('summary').click();
+      }
       await saju.locator('#reading-details').click();
       await saju.locator('.report-chapter:visible').first().waitFor({ state: 'visible' });
       await saju.locator('#reading-details').click();
