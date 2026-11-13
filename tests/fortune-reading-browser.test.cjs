@@ -118,17 +118,32 @@ const server = http.createServer((request, response) => {
     saju.on('response', response => { if (response.status() >= 400) failed.push([response.status(), response.url()]); });
     await saju.route('**/*', route => route.request().url().startsWith('http://127.0.0.1:') ? route.continue() : route.abort());
     await saju.goto(new URL('/__saju_fixture', url).href);
+    async function openSajuEvidence() {
+      const details = saju.locator('.reading-full-text').first();
+      const toggle = details.locator(':scope > summary');
+      const chapter = details.locator('.report-chapter').first();
+      assert.equal(await details.evaluate(element => element.open), false, 'calculation evidence starts collapsed');
+      await toggle.click();
+      await chapter.waitFor({ state: 'visible' });
+      await toggle.click();
+      await chapter.waitFor({ state: 'hidden' });
+      assert.equal(await details.evaluate(element => element.open), false, 'the evidence can be collapsed again');
+      await toggle.click();
+      await chapter.waitFor({ state: 'visible' });
+    }
     for (const topic of ['lifelong', 'annual', 'monthly']) {
       await saju.locator('#fixture-topic').selectOption(topic);
       await saju.locator('#report-content[data-ready="' + topic + '"]').waitFor();
       const ordered = await saju.locator('.report-chapter').evaluateAll(chapters => chapters.length > 0 && chapters.every(chapter => chapter.children[0].classList.contains('chapter-title') && chapter.children[1].classList.contains('chapter-summary') && chapter.children[2].classList.contains('easy-reading')));
       assert.ok(ordered, topic + ': title, plain takeaway, then explanation');
       assert.equal(await saju.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, topic + ': mobile report fits the viewport');
+      await openSajuEvidence();
       await saju.locator('.report-chapter:visible').first().scrollIntoViewIfNeeded();
       await saju.screenshot({ path: path.join(artifacts, 'saju-' + topic + '-mobile.png') });
     }
     await saju.setViewportSize({ width: 1280, height: 900 });
     await saju.locator('#fixture-topic').selectOption('lifelong');
+    await openSajuEvidence();
     await saju.locator('.report-chapter:visible').first().scrollIntoViewIfNeeded();
     await saju.screenshot({ path: path.join(artifacts, 'saju-lifelong-desktop.png') });
     assert.deepEqual(errors, []);
