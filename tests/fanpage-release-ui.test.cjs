@@ -5,8 +5,8 @@ const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const { chromium } = require('playwright');
 const root = path.join(__dirname, '..');
-const out = path.join(__dirname, 'artifacts/fanpage-release');
 const live = process.env.FANPAGE_LIVE === 'true';
+const out = path.join(__dirname, 'artifacts/fanpage-release', live ? 'public-site' : 'preview');
 const base = live ? 'https://ojjuda.kr' : 'https://fan.test';
 const group = process.env.FANPAGE_GROUP || 'rescene';
 assert.match(group, /^[a-z0-9]+$/);
@@ -20,7 +20,15 @@ assert.ok(expectedArtist, 'group must exist in the reviewed checkout');
 // Catalog cleaning fills absent fields and reorders properties; compare their facts.
 const facts = (rows, keys) => (rows || []).map(row => Object.fromEntries(keys.map(key => [key, row[key] == null ? '' : String(row[key])])));
 const videoFacts = rows => facts(rows, ['id', 'title', 'kind', 'source', 'file']);
-const photoFacts = rows => facts(rows, ['href', 'label', 'meta', 'credit', 'license', 'licenseUrl']);
+// The licensed photo mirror emits canonical CC URLs without a trailing slash.
+// Only that single optional slash is equivalent: author, version and license stay exact.
+const canonicalLicenseUrl = value => /^https:\/\/creativecommons\.org\/licenses\/(by|by-sa)\/(1\.0|2\.0|2\.5|3\.0|4\.0)\/?$/.test(value) ? value.replace(/\/$/, '') : value;
+const photoFacts = rows => facts(rows, ['href', 'label', 'meta', 'credit', 'license', 'licenseUrl']).map(row => ({ ...row, licenseUrl: canonicalLicenseUrl(row.licenseUrl) }));
+assert.equal(canonicalLicenseUrl('https://creativecommons.org/licenses/by/1.0/'), canonicalLicenseUrl('https://creativecommons.org/licenses/by/1.0'));
+for (const different of ['https://creativecommons.org/licenses/by/4.0/', 'https://creativecommons.org/licenses/by-sa/1.0/', 'http://creativecommons.org/licenses/by/1.0/', 'https://example.org/licenses/by/1.0/']) {
+  assert.notEqual(canonicalLicenseUrl('https://creativecommons.org/licenses/by/1.0/'), canonicalLicenseUrl(different));
+}
+assert.notDeepEqual(photoFacts([{ credit: 'A' }]), photoFacts([{ credit: 'B' }]));
 const eventFacts = rows => facts(rows, ['date', 'endDate', 'title', 'sub', 'href']);
 assert.deepEqual(videoFacts([{ id: 'abcdefghijk', title: 'Test' }]), videoFacts([{ title: 'Test', id: 'abcdefghijk', file: '' }]));
 assert.notDeepEqual(videoFacts([{ id: 'abcdefghijk' }]), videoFacts([{ id: '01234567890' }]));
