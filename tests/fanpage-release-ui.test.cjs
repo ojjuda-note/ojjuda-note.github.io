@@ -17,7 +17,13 @@ for (const file of ['artists.js', 'artists-extra.js', 'videos.js']) {
 const expectedArtist = context.window.OJJUDA_FAN_ARTISTS.find(a => a.id === group);
 const expectedVideos = context.window.OJJUDA_FAN_VIDEOS[group] || [];
 assert.ok(expectedArtist, 'group must exist in the reviewed checkout');
-const photoFacts = photos => (photos || []).map(p => ({ href: p.href, label: p.label, credit: p.credit, license: p.license }));
+// Catalog cleaning fills absent fields and reorders properties; compare their facts.
+const facts = (rows, keys) => (rows || []).map(row => Object.fromEntries(keys.map(key => [key, row[key] == null ? '' : String(row[key])])));
+const videoFacts = rows => facts(rows, ['id', 'title', 'kind', 'source', 'file']);
+const photoFacts = rows => facts(rows, ['href', 'label', 'meta', 'credit', 'license', 'licenseUrl']);
+const eventFacts = rows => facts(rows, ['date', 'endDate', 'title', 'sub', 'href']);
+assert.deepEqual(videoFacts([{ id: 'abcdefghijk', title: 'Test' }]), videoFacts([{ title: 'Test', id: 'abcdefghijk', file: '' }]));
+assert.notDeepEqual(videoFacts([{ id: 'abcdefghijk' }]), videoFacts([{ id: '01234567890' }]));
 (async () => {
   fs.mkdirSync(out, { recursive: true });
   const report = { mode: live ? 'public-site' : 'PR-preview', group, checkedAt: new Date().toISOString(), screenshots: [], photos: [], videos: [] };
@@ -37,13 +43,17 @@ const photoFacts = photos => (photos || []).map(p => ({ href: p.href, label: p.l
     await page.goto(`${base}/features/fanpages/artist.html?group=${group}`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#schedule');
     await page.evaluate(() => document.fonts.ready);
-    const data = await page.evaluate(id => ({ artists: window.OJJUDA_FAN_ARTISTS.map(a => ({ id: a.id, name: a.name })), artist: window.OJJUDA_FAN_ARTISTS.find(a => a.id === id), videos: window.OJJUDA_FAN_VIDEOS[id] }), group);
+    const data = await page.evaluate(id => {
+      // Raw catalog values are pre-HTML-escaping, with the exact rendered catalogue overrides.
+      const raw = window.OjjudaFanCatalog?.raw.get(id);
+      return { artists: window.OJJUDA_FAN_ARTISTS.map(a => ({ id: a.id, name: a.name })), artist: raw?.artist || window.OJJUDA_FAN_ARTISTS.find(a => a.id === id), videos: raw?.videos || window.OJJUDA_FAN_VIDEOS[id] };
+    }, group);
     assert.equal(data.artists.length, 30);
     assert.equal(new Set(data.artists.map(a => a.id)).size, 30);
     assert.equal(new Set(data.artists.map(a => a.name)).size, 30);
-    assert.equal(JSON.stringify(data.videos || []), JSON.stringify(expectedVideos), 'rendered video data must match checkout');
+    assert.equal(JSON.stringify(videoFacts(data.videos)), JSON.stringify(videoFacts(expectedVideos)), 'rendered video data must match checkout');
     assert.equal(JSON.stringify(photoFacts(data.artist.photos)), JSON.stringify(photoFacts(expectedArtist.photos)), 'photo credits and original links must match checkout');
-    assert.equal(JSON.stringify(data.artist.appearances || []), JSON.stringify(expectedArtist.appearances || []), 'event data must match checkout');
+    assert.equal(JSON.stringify(eventFacts(data.artist.appearances)), JSON.stringify(eventFacts(expectedArtist.appearances)), 'event data must match checkout');
     report.artistCount = data.artists.length;
     report.eventCount = data.artist.appearances.length;
     assert.equal(await page.locator('#video-viewer iframe').count(), 0, 'no eager iframe');
