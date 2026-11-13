@@ -1200,7 +1200,10 @@ function consumeInitialCard() {
 function updateCardUrl(id = null, push = false) {
   const url = new URL(location.href);
   if (id) url.searchParams.set('card', id); else url.searchParams.delete('card');
-  history[push ? 'pushState' : 'replaceState']({ noteNavigation: push }, '', url);
+  const state = push
+    ? { noteNavigation: true, previousCardId: new URL(location.href).searchParams.get('card') }
+    : { noteNavigation: false };
+  history[push ? 'pushState' : 'replaceState'](state, '', url);
 }
 
 function showFeed(updateUrl = true) {
@@ -1327,6 +1330,17 @@ function openCard(id) {
   if (!validCardId(id) || !authKnown) return;
   const alreadyLinked = new URL(location.href).searchParams.get('card') === id;
   stack.push(id); updateCardUrl(id, !alreadyLinked); renderDetail();
+}
+function returnToParentCard() {
+  const id = stack.at(-1);
+  const parent = cache.get(id)?.parent_id;
+  if (!validCardId(parent)) { goBack(); return; }
+  if (history.state?.previousCardId === parent) { history.back(); return; }
+
+  // Shared links and notifications can open a reply without visiting its parent.
+  stack.splice(0, stack.length, parent);
+  updateCardUrl(parent);
+  void renderDetail();
 }
 function goBack() {
   if (history.state?.noteNavigation) { history.back(); return; }
@@ -3329,7 +3343,7 @@ document.addEventListener('click', event => {
   const compose = event.target.closest('[data-compose]');
   if (compose) { openComposer(compose.dataset.compose, null, compose.dataset.replyTo); return; }
   const show = event.target.closest('[data-show="feed"]');
-  if (show) { show.classList.contains('back-button') ? goBack() : selectCollection('all'); return; }
+  if (show) { show.classList.contains('back-button') ? returnToParentCard() : selectCollection('all'); return; }
   if (event.target.closest('[data-more-feed]')) { loadFeed(true); return; }
   const retryFeed = event.target.closest('[data-retry-feed]');
   if (retryFeed) { retryFeed.remove(); loadFeed(retryFeed.dataset.retryFeed === 'more'); return; }
