@@ -138,6 +138,7 @@ const server = http.createServer((request, response) => {
       assert.ok(ordered, topic + ': title, plain takeaway, then explanation');
       assert.equal(await saju.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, topic + ': mobile report fits the viewport');
       await openSajuEvidence();
+      assert.equal(await saju.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, topic + ': expanded evidence fits the mobile viewport');
       await saju.locator('.report-chapter:visible').first().scrollIntoViewIfNeeded();
       await saju.screenshot({ path: path.join(artifacts, 'saju-' + topic + '-mobile.png') });
     }
