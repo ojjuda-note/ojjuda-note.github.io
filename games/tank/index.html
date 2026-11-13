@@ -139,8 +139,8 @@ body:not(.in-match) #controls{display:none}
 <link rel="stylesheet" href="./entry.css?v=20261018-tank8">
 <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
 <script src="/shared/games/multiplayer-entry.js?v=20261112-arcade-entry-return1" defer></script>
-<link rel="stylesheet" href="/shared/games/game-results.css?v=20261109-unified-multiplayer-ui2">
-<script src="/shared/games/game-results.js?v=20261108-monthly-personal1"></script>
+<link rel="stylesheet" href="/shared/games/game-results.css?v=20261113-game-popup-order1">
+<script src="/shared/games/game-results.js?v=20261113-game-popup-order1"></script>
 <style>#over .game-result-card{margin:auto}#over .game-result-card h2{margin:0;text-shadow:none}#tankResult{width:min(430px,100%)}#over .game-result-share-status{color:#697c6c;font-size:12px}#over .game-result-actions button{width:auto;min-width:0}</style>
 <link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
 </head>
@@ -208,7 +208,7 @@ body:not(.in-match) #controls{display:none}
 <div id="over" class="ov hidden" role="dialog" aria-modal="true" aria-label="탱크 게임 결과"><div id="tankResult">
   <h2 id="winTxt"></h2>
   <p id="winSub"></p>
-  <div class="row"><button id="bAgain" class="go" data-game-result-play>대기실로</button><button id="bMenu" class="go alt">오락실로</button></div>
+  <div class="row"><button id="bMenu" class="go alt">나가기</button><button id="bAgain" class="go" data-game-result-play>계속하기</button></div>
 </div>
 </div>
 <div id="picker" class="ov hidden">
@@ -221,7 +221,7 @@ function showTankResult(outcome,metric,key){
  const card=$('tankResult');
  for(const button of [$('bAgain'),$('bMenu')])button.className='';
  if(card.dataset.resultKey!==key){
-  window.OjjudaGameResults.decorate(card,{game:'tank',outcome,metric,key,actions:[$('bAgain'),$('bMenu')]});
+  window.OjjudaGameResults.decorate(card,{game:'tank',outcome,metric,key,actions:[$('bMenu'),$('bAgain')]});
   card.dataset.resultKey=key;
  }
  $('over').classList.remove('hidden');
@@ -995,6 +995,6 @@ function loop(ts){
 }
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261111-tank-entry1"></script>
+<script type="module" src="./online.mjs?v=20261113-game-popup-order1"></script>
 </body>
 </html>
