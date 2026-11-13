@@ -14,7 +14,7 @@ const pool = {
 };
 const adminRow = {id:82,kind:'truth',flavor:'mild',text:'관리자 원본 질문?',revision:3};
 const pages = [];
-const adminShell = '<!doctype html><html><body><main id="manage"></main><script src="/config.js"></script><script src="/admin/drinking-prompts.js"></script><script>OjjudaGetClient().then(client=>OjjudaAdminDrinkingPrompts.mount({container:document.getElementById("manage"),client,getAdminId:()=>'+JSON.stringify(actor)+',isCurrent:()=>true}));</script></body></html>';
+const adminShell = '<!doctype html><html lang="ko"><head><meta charset="utf-8"></head><body><main id="manage"></main><script src="/config.js"></script><script src="/admin/drinking-prompts.js"></script><script>OjjudaGetClient().then(client=>OjjudaAdminDrinkingPrompts.mount({container:document.getElementById("manage"),client,getAdminId:()=>'+JSON.stringify(actor)+',isCurrent:()=>true}));</script></body></html>';
 function deferred(){
   let resolve;
   const promise = new Promise(r=>{resolve=r});
@@ -78,7 +78,7 @@ async function pageFor(browser,cfg) {
   await page.exposeFunction('testRpc',mock.handler);
   await page.route(origin+'/**',async route=>{
     const pathname=new URL(route.request().url()).pathname;
-    const fulfill=(contentType,body,status=200)=>route.fulfill({contentType,body,status});
+    const fulfill=(type,body,status=200)=>route.fulfill({contentType:/^(text\/|application\/javascript)/.test(type)?type+'; charset=utf-8':type,body,status});
     if(pathname==='/config.js'){
       const auth={id:actor,is_anonymous:false};
       return fulfill('application/javascript',`(()=>{let user=${JSON.stringify(auth)};const listeners=[];
