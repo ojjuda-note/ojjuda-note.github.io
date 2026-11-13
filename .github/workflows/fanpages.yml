@@ -106,6 +106,15 @@ jobs:
       - name: Verify release data, mobile layouts, original photos and lazy video dialogs
         if: steps.scope.outputs.changed == 'true'
         run: node tests/fanpage-release-ui.test.cjs
+      - name: Verify the unchanged public site after verifier-only changes
+        if: steps.scope.outputs.changed == 'true' && github.event_name != 'workflow_run' && env.FANPAGE_LIVE != 'true'
+        shell: bash
+        run: |
+          # Verifier fixes can be checked live before merging when no fanpage data/UI changed.
+          # New data remains a preview until the existing Pages workflow publishes it.
+          if git diff --quiet HEAD^ HEAD -- features/fanpages && ! git diff --quiet HEAD^ HEAD -- tests/fanpage-release-ui.test.cjs .github/workflows/fanpages.yml; then
+            FANPAGE_LIVE=true node tests/fanpage-release-ui.test.cjs
+          fi
       - name: Save release screen evidence
         if: always() && steps.scope.outputs.changed == 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
