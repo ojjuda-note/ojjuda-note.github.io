@@ -404,7 +404,7 @@ async function testLocal(browser,mock,errors) {
     await adult.locator('[data-action=tooth]').first().waitFor();
     assert.equal(await adult.locator('[data-action=tooth]').count(),24);
     await adult.locator('[data-action=tooth]').first().click();
-    const exit = adult.getByRole('link',{name:'오쭈다 오락실로',exact:true});
+    const exit = adult.locator('header').getByRole('link',{name:'오쭈다 오락실로',exact:true});
     const arcadeUrl = origin+'/world.html?tab=arcade';
     assert.equal(await exit.count(),1);
     assert.equal(await exit.getAttribute('href'),'/world.html?tab=arcade');
@@ -416,7 +416,7 @@ async function testLocal(browser,mock,errors) {
       await adult.goto(origin+'/games/drinking/local/');
       await exit.waitFor();
       const box = await exit.boundingBox();
-      assert.ok(box.x>=0 && box.x+box.width<=width && box.y>=0 && box.y<160 && box.height>=44,'visible and tappable at '+width);
+      assert.ok(box && box.x>=0 && box.x+box.width<=width && box.y>=0 && box.y<160 && box.height>=44,'visible and tappable at '+width);
       assert.equal(await adult.getByRole('link',{name:'방식 선택'}).isVisible(),true);
       await exit.click();
       await adult.waitForURL(arcadeUrl);
