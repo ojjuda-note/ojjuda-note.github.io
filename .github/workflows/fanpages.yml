@@ -105,7 +105,13 @@ jobs:
           for file in features/fanpages/*.js; do node --check "$file"; done
       - name: Verify release data, mobile layouts, original photos and lazy video dialogs
         if: steps.scope.outputs.changed == 'true'
-        run: node tests/fanpage-release-ui.test.cjs
+        run: |
+          group="${FANPAGE_GROUP}"
+          # For per-artist PRs, check that artist's mobile layout, media and links.
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" && "${GITHUB_HEAD_REF}" =~ ^fanpages[/-]([a-z0-9]+)- ]]; then
+            group="${BASH_REMATCH[1]}"
+          fi
+          FANPAGE_GROUP="${group}" node tests/fanpage-release-ui.test.cjs
       - name: Save release screen evidence
         if: always() && steps.scope.outputs.changed == 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
