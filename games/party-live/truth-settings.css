@@ -1,0 +1,13 @@
+.truth-settings { width:min(100%,26rem); margin:18px auto; display:grid; gap:12px; text-align:left; }
+.truth-settings fieldset { margin:0; padding:0; min-inline-size:0; border:0; }
+.truth-settings legend { padding:0; margin-bottom:6px; font-size:.9rem; font-weight:700; color:#344b3d; }
+.truth-settings fieldset > div { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); gap:5px; }
+.truth-settings label { position:relative; display:block; margin:0; cursor:pointer; font:inherit; }
+.truth-settings label input { position:absolute; inset:0; width:100%; height:100%; margin:0; padding:0; opacity:0; cursor:pointer; }
+.truth-settings label span { display:grid; place-items:center; min-height:44px; border:1px solid #bdc6b8; border-radius:9px; background:#fffef8; font-weight:700; color:#425548; }
+.truth-settings input:checked + span { background:#2d4937; color:#fff; border-color:#2d4937; }
+.truth-settings input:focus-visible + span { outline:3px solid #377bac; outline-offset:2px; }
+.truth-back { position:relative; }
+.truth-card-label { position:absolute; z-index:1; left:50%; bottom:10%; transform:translateX(-50%); white-space:nowrap; border:1px solid currentColor; border-radius:20px; padding:5px 12px; line-height:1.25; font-size:1rem; font-weight:800; }
+.truth-card-label.mild { background:#e3edcf; color:#354c2e; }
+.truth-card-label.spicy { background:#f9d4c6; color:#782f27; }
