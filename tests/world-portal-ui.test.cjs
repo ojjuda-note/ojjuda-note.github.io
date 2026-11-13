@@ -6,6 +6,8 @@ const root = path.resolve(__dirname, '..');
 const origin = 'https://ojjuda.test';
 const cardId = '00000000-0000-4000-8000-000000000010';
 const copy = '오늘 하루 어땠나요? 괜찮았나요';
+const siteName = '오쭈다 아지트';
+const searchTitle = '오쭈다 아지트 | 게임·타로·사주·익명카드';
 
 (async () => {
   const browser = await chromium.launch({ headless: true,
@@ -51,7 +53,20 @@ const copy = '오늘 하루 어땠나요? 괜찮았나요';
       await page.locator('[data-close-dialog]').click();
       await page.locator('#account-actions:not([hidden])').waitFor();
       assert.equal((await page.locator('#front-title').innerText()).replace(/\s+/g, ' ').trim(), copy);
-      for (const selector of ['meta[name="description"]', 'meta[property="og:title"]', 'meta[property="og:description"]']) assert.ok((await page.locator(selector).getAttribute('content')).includes(copy));
+      assert.equal(await page.title(), searchTitle, 'the search title describes the current service while the visible greeting stays unchanged');
+      assert.equal(await page.locator('meta[property="og:site_name"]').getAttribute('content'), siteName);
+      for (const selector of ['meta[property="og:title"]', 'meta[name="twitter:title"]']) {
+        assert.equal(await page.locator(selector).getAttribute('content'), searchTitle);
+      }
+      const description = await page.locator('meta[name="description"]').getAttribute('content');
+      assert.ok(description.includes(siteName) && description.includes('타로·사주') && description.includes('익명카드'));
+      for (const selector of ['meta[property="og:description"]', 'meta[name="twitter:description"]']) {
+        assert.equal(await page.locator(selector).getAttribute('content'), description);
+      }
+      assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://ojjuda.kr/world.html');
+      for (const href of ['/guide.html', '/sitemap.html', '/features/guide/creator.html']) {
+        assert.ok(await page.locator(`a[href^="${href}"]`).count() >= 1, 'public entrance links to ' + href);
+      }
       assert.equal(await page.locator('[data-destination]').count(), 1, 'World entrance');
       assert.equal(await page.locator('[data-destination="world"]').count(), 1);
       assert.equal(await page.locator('[data-destination="note"]').count(), 0);
@@ -66,6 +81,9 @@ const copy = '오늘 하루 어땠나요? 괜찮았나요';
         '/games/screw/index.html', '/features/fanpages/index.html', '/groups/index.html'
       ]) {
         assert.equal(await page.locator(`main section a[href="${href}"]`).count(), 1, `sitemap keeps ${href}`);
+      }
+      for (const href of ['/guide.html', '/features/guide/creator.html']) {
+        assert.ok(await page.locator(`main a[href^="${href}"]`).count() >= 1, 'sitemap includes ' + href);
       }
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
     }

@@ -11,7 +11,7 @@ const world = read('world.html');
 const version = JSON.parse(read('version.json')).version;
 
 const sections = ['start', 'games', 'together', 'rankings', 'park', 'zu',
-  'settings', 'account', 'discover', 'faq'];
+  'settings', 'account', 'discover', 'fortune', 'fanpages', 'faq'];
 for (const id of sections) {
   assert.match(guide, new RegExp('href="#' + id + '"'), id + ' menu link');
   assert.match(guide, new RegExp('<section id="' + id + '"'), id + ' section');
@@ -29,8 +29,8 @@ for (const match of guide.matchAll(/<summary><img src="(\/assets\/design\/games\
 
 assert.match(rankings, /href:'\/\?auth=signup&next=world'/, 'guest rankings show direct signup');
 assert.match(rankings, /el\('a','회원가입','btn'\)/, 'signup link is named');
-assert.match(world, /world-game-rankings\.js\?v=20261109-signup-cta1/, 'new signup button JS is cache-busted');
-assert.match(world, /world-game-rankings\.css\?v=20261109-signup-cta1/, 'new signup CSS is cache-busted');
+assert.match(world, /world-game-rankings\.js\?v=[^"\s]+/, 'signup button JS remains cache-versioned');
+assert.match(world, /world-game-rankings\.css\?v=[^"\s]+/, 'signup CSS remains cache-versioned');
 assert.ok(world.includes('Go="' + version + '";'), 'world and portal version agree');
 
 for (const link of ['/groups/index.html', '/world.html?game=festival',
