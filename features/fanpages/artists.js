@@ -135,7 +135,7 @@ window.OJJUDA_FAN_ARTISTS = [
     ],
     campaigns: [
       { kind: "홍보대사", date: "2026.02.02", title: "메종 발렌티노 · 레이·리즈", sub: "공식 브랜드 앰배서더 임명 · 발렌티노 발표", href: "https://prtimes.jp/main/html/rd/p/000000257.000101366.html" },
-      { kind: "광고·음악", date: "2026.03.30", title: "App Store × IVE · Fashion", sub: "일본 App Store 캠페인 음악 · 레이 내레이션", href: "https://www.sonymusic.co.jp/artist/IVE/info/582822" }
+      { kind: "광고", date: "2026.03.30", title: "App Store × IVE · Fashion", sub: "일본 App Store 캠페인 음악 · 레이 내레이션", href: "https://www.sonymusic.co.jp/artist/IVE/info/582822" }
     ],
     schedules: [
       { title: "실시간 일정", sub: "blip", href: "https://blip.kr/artists/IVE/schedule?unitId=85" },
