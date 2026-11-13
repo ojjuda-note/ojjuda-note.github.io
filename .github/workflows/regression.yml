@@ -78,6 +78,7 @@ jobs:
           node tests/tarot-narration.test.cjs
           node tests/tarot-domains.test.cjs
           node tests/tarot-personal.test.cjs
+          node tests/tarot-summary.test.cjs
           node tests/tarot-guidance-quality.test.cjs
           node tests/tarot-payment-client.test.cjs
           node tests/tarot-payment-db.test.cjs

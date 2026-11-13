@@ -1,6 +1,7 @@
 import { CARD_LIFE_THEMES } from './life-themes.js?v=20261113-tarot-life1';
-import { buildDomainGroup } from './domain-narration.js?v=20261113-tarot-personal1';
+import { buildDomainGroup } from './domain-narration.js?v=20261113-tarot-summary1';
 import { MAIN_CONTEXTS, getCardInterpretation, interpretCard, connectCards, withParticle } from './interpretation-engine.js?v=20261113-tarot-variety1';
+import { splitSummarySentences, summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
 
 // Card meanings, concrete circumstances and the relationship between the
 // actual cards are kept distinct. The historical source remains available.
@@ -145,8 +146,13 @@ export function narrateReading({ card, topicId, index, position, foundation, gui
   };
 }
 
-function section(id, title, paragraphs) {
-  return { id, title, paragraphs: unique(paragraphs) };
+function section(id, title, paragraphs, summaryLines) {
+  return { id, title, paragraphs: unique(paragraphs), summaryLines };
+}
+function cardSummary(card, first, second = first) {
+  const lines = summaryLinesFrom(first, second);
+  lines[0] = `‘${card.name}’ 카드: ${lines[0]}`;
+  return lines;
 }
 
 /** Each view adds a different part of the reading instead of repeating examples. */
@@ -173,54 +179,65 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
     phase: a === 0 ? 'understand' : 'act'
   });
   const synthesisParagraphs = [link(0, 1), link(1, 2)];
+  const pairMeanings = synthesisParagraphs.map(paragraph => splitSummarySentences(paragraph).slice(1));
+  const synthesisSummary = summaryLinesFrom(pairMeanings[0].at(-1), pairMeanings[1].at(-1), pairMeanings.flat());
+  synthesisSummary[0] = `‘${cards[0].name}’ · ‘${cards[1].name}’: ${synthesisSummary[0]}`;
+  synthesisSummary[1] = `‘${cards[2].name}’ 카드: ${synthesisSummary[1]}`;
+  const problemMeaning = interpretCard(cards[0].id, 'problem', context);
+  const responseMeaning = interpretCard(cards[2].id, 'response', context);
+  const outcomeMeaning = interpretCard(cards[2].id, 'outcome', context);
+  const strengthsSummary = summaryLinesFrom(problem.lifeTheme.strength, solution.lifeTheme.strength,
+    [situation.lifeTheme.strength]);
+  strengthsSummary[0] = `‘${cards[0].name}’ 카드: ${strengthsSummary[0]}`;
+  strengthsSummary[1] = `‘${cards[2].name}’ 카드: ${strengthsSummary[1]}`;
   const problemSections = [
     section('problem-now', '지금 일어나는 문제', [
       `‘${names[0]}’ 카드가 비추는 문제의 실마리야. ${interpretCard(cards[0].id, 'problem', context)}`,
       `그 바탕에 있는 마음은 ‘${innerMeaning}’로 읽을 수 있어. ${questions.problem}`
-    ]),
+    ], cardSummary(cards[0], problemMeaning)),
     section('situation-now', '현재 상황', [
       `‘${names[1]}’ 카드로 지금의 조건을 읽어 볼게. ${interpretCard(cards[1].id, 'scene', context)}`,
       `이 카드에서 짚는 흐름은 ‘${flowMeaning}’에 가까워. ${withParticle(context.known, '을')} 기준으로 실제로 달라진 조건과 아직 예상에 머문 부분을 나누면, 어디에 힘을 써야 할지도 구체적으로 보일 수 있어.`
-    ]),
+    ], cardSummary(cards[1], situation.topicMeaning, situation.positionMeaning)),
     section('solution', '해결 방법', [
       `‘${names[2]}’ 카드의 해결 방식은 이래. ${interpretCard(cards[2].id, 'response', context)}`,
       `이 선택의 우선순위를 한 걸음 더 좁혀 보면 이렇게 읽혀. ${clean(direction)} ${withParticle(context.boundary, '을')} 함께 정해 두면 해 볼 수 있는 범위도 분명해져.`
-    ]),
+    ], cardSummary(cards[2], responseMeaning)),
     section('possible-outcome', '달라질 수 있는 결과', [
       `앞의 대처를 실제로 적용했을 때 ‘${names[2]}’에서 읽는 변화의 가능성이야. ${interpretCard(cards[2].id, 'outcome', context)}`,
       `결과는 ${context.sign}에 비추어 확인해 보렴. 기대와 달리 여전히 막힌다면 ${withParticle(context.unknown, '을')} 더 알아야 하는지, 정해 둔 방식이 지금의 조건과 맞는지를 다시 비교할 수 있어.`
-    ]),
-    section('together', '세 카드 종합', synthesisParagraphs)
+    ], cardSummary(cards[2], outcomeMeaning, `결과는 ${context.sign}에 비추어 확인해 보렴.`)),
+    section('together', '세 카드 종합', synthesisParagraphs, synthesisSummary)
   ];
   const timelineSections = [
     section('strengths', '기질과 강점', [
       `‘${names[0]}’에서 읽는 강점은 이래. ${problem.lifeTheme.strength} ‘${names[1]}’에는 또 다른 힘이 있어. ${situation.lifeTheme.strength}`,
       `‘${names[2]}’의 강점도 연결해 보자. ${solution.lifeTheme.strength} ${withParticle(context.resource, '을')} 쓸 때 어느 힘이 가장 잘 드러나는지 떠올려 보면, 익숙한 장점과 더 길러 볼 부분을 구별할 수 있어.`
-    ]),
+    ], strengthsSummary),
     section('past-flow', '과거의 흐름', [
       `지나온 시간은 ‘${names[0]}’의 상징에 비추어 돌아볼 수 있어. ${problem.lifeTheme.past}`,
       questions.past
-    ]),
+    ], cardSummary(cards[0], problem.lifeTheme.past)),
     section('past-hardships', '지나온 고난', [
       `‘${names[0]}’의 어려운 면은 지나온 부담을 돌아볼 단서가 돼. ${problem.guidanceCaution}`,
       `닮은 어려움을 다시 만났을 때 시도할 방법이야. ${problem.action}`
-    ]),
+    ], cardSummary(cards[0], problem.guidanceCaution, problem.action)),
     section('past-achievements', '돌아볼 성취', [
       `같은 ‘${names[0]}’에서도 성취를 돌아볼 수 있어. ${problem.lifeTheme.achievement}`,
       `‘${topicName}’에서 그 성취를 찾아보려면 ${withParticle(context.known, '을')} 살펴보렴. 원하는 결과를 한 번에 얻었는지 외에도, 전에는 하지 못했던 선택이나 다음에 다시 쓸 방법이 생겼는지가 의미 있는 기준이 돼.`
-    ]),
+    ], cardSummary(cards[0], problem.lifeTheme.achievement)),
     section('present-luck', '현재 운과 과제', [
       `‘${names[1]}’의 흐름을 활용할 때 살필 점이야. ${situation.guidanceCaution}`,
       `지금의 조건에서 선택할 수 있는 실천도 있어. ${situation.action}`
-    ]),
+    ], cardSummary(cards[1], situation.guidanceCaution, situation.action)),
     section('future-change', '앞으로의 변화', [
       `‘${names[2]}’의 상징에는 이런 변화의 가능성이 있어. ${solution.lifeTheme.change}`,
       questions.future
-    ]),
+    ], cardSummary(cards[2], solution.lifeTheme.change)),
     section('future-hardships', '앞으로의 고난과 대처', [
       `‘${names[2]}’와 닮은 어려움에 대비할 때는 이 점이 중요해. ${solution.guidanceCaution}`,
       questions.obstacle
-    ])
+    ], cardSummary(cards[2], solution.guidanceCaution, questions.obstacle))
   ];
   const groups = [
     { id: 'problem', label: '문제 해결', sections: problemSections },

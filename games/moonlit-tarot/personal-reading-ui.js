@@ -1,9 +1,10 @@
 import { listPersonalContexts } from './personal-contexts.js?v=20261113-tarot-personal1';
-import { buildPersonalReading, personalReadingCopyLines, PERSONAL_BASIS } from './personal-reading.js?v=20261113-tarot-personal1';
+import { buildPersonalReading, personalReadingCopyLines, PERSONAL_BASIS } from './personal-reading.js?v=20261113-tarot-summary1';
+import { appendSummaryLines } from './reading-summary-view.js?v=20261113-tarot-summary1';
 
 // This view only reinterprets the three already revealed cards. It does not
 // start a purchase, draw a card, change a receipt, or extend its expiry.
-export function createPersonalReading({ getSnapshot, canRead, renderSections, selectGroup }) {
+export function createPersonalReading({ getSnapshot, canRead, renderSections, renderText, selectGroup }) {
   const element = (tag, className, text) => {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -76,11 +77,13 @@ export function createPersonalReading({ getSnapshot, canRead, renderSections, se
   function renderComparison(target, data) {
     const details = element('details', 'personal-disclosure personal-comparison');
     details.id = 'personal-comparison';
-    details.append(element('summary', '', '두 선택 비교'));
+    const summary = element('summary', '', '두 선택 비교');
+    appendSummaryLines(summary, data.options.map(option => `${option.key.toUpperCase()}. ${option.label}`), { inline: true });
+    details.append(summary);
     const body = element('div', 'personal-disclosure-body');
     body.append(element('h4', 'personal-comparison-title', data.title));
     const basis = element('div', 'personal-comparison-basis');
-    renderSections(basis, [{ title: '카드가 짚어 주는 선택 기준', paragraphs: [data.basis] }], '', 'h4', currentCards.map(card => card.name));
+    renderSections(basis, [{ title: '카드가 짚어 주는 선택 기준', paragraphs: [data.basis], summaryLines: data.basisSummaryLines }], '', 'h4', currentCards.map(card => card.name));
     body.append(basis);
     const choices = element('div', 'personal-choice-grid');
     for (const option of data.options) {
@@ -89,11 +92,15 @@ export function createPersonalReading({ getSnapshot, canRead, renderSections, se
       const title = element('h4');
       title.append(element('span', 'personal-choice-letter', option.key.toUpperCase()), document.createTextNode(option.label));
       article.append(title);
+      appendSummaryLines(article, option.summaryLines);
+      const original = element('details', 'reading-summary-details');
+      original.append(element('summary', '', '자세히 읽기'));
       const list = element('dl');
       for (const [key, label] of [['gain', '기대할 수 있는 점'], ['burden', '감수할 부담'], ['prepare', '먼저 준비할 것']]) {
         list.append(element('dt', '', label), element('dd', '', option[key]));
       }
-      article.append(list);
+      original.append(list);
+      article.append(original);
       choices.append(article);
     }
     body.append(choices);
@@ -145,7 +152,9 @@ export function createPersonalReading({ getSnapshot, canRead, renderSections, se
     for (const question of report.followUps) {
       const details = element('details', 'personal-disclosure personal-followup');
       details.id = question.id;
-      details.append(element('summary', '', question.title));
+      const questionTitle = element('summary', '', question.title);
+      appendSummaryLines(questionTitle, question.summaryLines, { inline: true, setText: renderText, cardNames: currentCards.map(card => card.name) });
+      details.append(questionTitle);
       const answer = element('div', 'personal-disclosure-body personal-answer');
       renderSections(answer, [{ title: '이렇게 살펴보세요', paragraphs: question.paragraphs }], '', 'h4', currentCards.map(card => card.name));
       details.append(answer);

@@ -115,6 +115,15 @@ const server = http.createServer((request, response) => {
     const domainCategories = [['self', 5], ['timeline', 5], ['solutions', 5], ['love', 7], ['family', 4], ['career', 5], ['study', 5], ['money', 5], ['wellbeing', 4], ['opportunities', 5]];
     const captureCategories = new Set(['self', 'love', 'money', 'wellbeing']);
     const overflowState = () => page.evaluate(() => ({ document: document.documentElement.scrollWidth > innerWidth, modal: document.querySelector('#result-dialog').scrollWidth > document.querySelector('#result-dialog').clientWidth }));
+    async function inspectUnclippedSummaries(scope, label) {
+      const geometry = await scope.locator('.reading-summary-line:visible').evaluateAll(lines => lines.map(line => {
+        const style = getComputedStyle(line);
+        return { text: line.textContent.trim(), fits: line.scrollWidth <= line.clientWidth + 1 && line.scrollHeight <= line.clientHeight + 1,
+          wraps: style.whiteSpace !== 'nowrap', clamp: style.webkitLineClamp, overflow: style.textOverflow };
+      }));
+      assert.ok(geometry.length >= 2, label + ': both summary meaning units are visible');
+      assert.ok(geometry.every(line => line.text && line.fits && line.wraps && ['none', '', 'unset'].includes(line.clamp) && line.overflow !== 'ellipsis'), label + ': complete sentences wrap naturally without clipping or an ellipsis');
+    }
     async function inspectDomainCategories(viewport) {
       const panel = page.locator('#summary-panel-domains');
       const select = page.locator('#summary-domain-category');
@@ -134,7 +143,10 @@ const server = http.createServer((request, response) => {
         assert.deepEqual(numbers, Array.from({ length: count }, (_, index) => firstNumber + index), category + ': original topic numbers are retained');
         firstNumber += count;
         assert.equal(await panel.locator('.reading-part').count(), 50, 'all original topics remain in the DOM');
+        assert.equal(await visible.locator(':scope > .reading-two-line-summary > .reading-summary-line:visible').count(), count * 2, category + ': every topic starts with its own two-line summary');
+        assert.equal(await visible.locator('.reading-summary-full:visible').count(), 0, category + ': full explanations remain folded until requested');
         assert.ok(await visible.locator('.reading-card-name:visible').count() > 0, category + ': actual card names remain easy to find');
+        await inspectUnclippedSummaries(visible, category + ' ' + viewport);
         const overflow = await overflowState();
         assert.deepEqual(overflow, { document: false, modal: false }, category + ': the ' + viewport + ' reading fits');
         checks.push({ category, count, overflow });
@@ -155,6 +167,8 @@ const server = http.createServer((request, response) => {
       assert.equal(paragraphs.length, 3);
       for (let i = 0; i < 3; i++) assert.ok(paragraphs[i].includes(revealedNames[i]), 'personal guidance keeps the actual reveal order');
       assert.ok((await page.locator('#personal-card-connections').textContent()).length > 300);
+      assert.equal(await reading.locator('.personal-card-guides .reading-summary-line:visible, .personal-card-connections .reading-summary-line:visible').count(), 8, 'three roles and their connection each show two summary lines');
+      assert.equal(await reading.locator('.personal-card-guides .reading-summary-full:visible, .personal-card-connections .reading-summary-full:visible').count(), 0);
       assert.equal(await page.locator('#personal-basis').getAttribute('open'), null);
       assert.equal(await page.locator('#personal-followups details').count(), 3);
       await page.locator('#result-context-select').scrollIntoViewIfNeeded();
@@ -162,11 +176,24 @@ const server = http.createServer((request, response) => {
       await page.screenshot({ path: path.join(artifacts, `tarot-personal-${viewport}.png`) });
       await page.locator('#personal-comparison > summary').click();
       assert.equal(await page.locator('#personal-comparison .personal-choice:visible').count(), 2);
-      assert.equal(await page.locator('#personal-comparison dt:visible').count(), 6);
+      assert.equal(await page.locator('.personal-comparison-basis .reading-summary-line:visible').count(), 2, 'the card-based comparison criteria have their own overview');
+      assert.equal(await page.locator('.personal-choice > .reading-two-line-summary > .reading-summary-line:visible').count(), 4, 'both choices preview their gain and burden');
+      assert.equal(await page.locator('#personal-comparison dt:visible').count(), 0, 'each choice keeps its original detailed criteria folded');
+      await inspectUnclippedSummaries(page.locator('#personal-comparison'), 'comparison ' + viewport);
       await page.locator('#personal-comparison > summary').scrollIntoViewIfNeeded();
       assert.deepEqual(await overflowState(), { document: false, modal: false }, 'comparison ' + viewport + ': no horizontal overflow');
       await page.screenshot({ path: path.join(artifacts, `tarot-comparison-${viewport}.png`) });
+      for (const choice of await page.locator('#personal-comparison .personal-choice').all()) {
+        await choice.locator('.reading-summary-details > summary').click();
+        assert.equal(await choice.locator('dt:visible').count(), 3, 'expanding a choice shows gain, burden and preparation');
+      }
+      assert.equal(await page.locator('#personal-comparison dt:visible').count(), 6);
       const following = page.locator('#personal-followups details').first();
+      assert.equal(await following.getAttribute('open'), null);
+      assert.equal(await following.locator('summary .reading-summary-line:visible').count(), 2, 'a closed follow-up already previews its actual answer');
+      assert.equal(await following.locator('.personal-answer').isVisible(), false);
+      await following.locator('summary').scrollIntoViewIfNeeded();
+      await page.screenshot({ path: path.join(artifacts, `tarot-followup-summary-${viewport}.png`) });
       await following.locator('summary').click();
       await following.scrollIntoViewIfNeeded();
       assert.ok((await following.locator('.personal-answer').textContent()).length > 100);
@@ -186,8 +213,15 @@ const server = http.createServer((request, response) => {
       assert.equal(await page.locator(`#summary-tab-${group}`).getAttribute('aria-selected'), 'true');
       assert.equal(await panel.getAttribute('aria-labelledby'), `summary-tab-${group}`);
       assert.equal(await panel.locator('.reading-part').count(), expectedSections);
-      const sectionDetails = await panel.locator('.reading-part').evaluateAll(sections => sections.every(section => section.querySelector('h3')?.textContent.trim() && section.querySelectorAll('p').length >= 2 && !section.closest('details')));
-      assert.ok(sectionDetails, group + ': each section keeps a clear title and its full paragraphs');
+      const sectionDetails = await panel.locator('.reading-part').evaluateAll(sections => sections.every(section => {
+        const overview = section.querySelector(':scope > .reading-two-line-summary');
+        const details = section.querySelector(':scope > .reading-summary-details');
+        return section.querySelector('h3')?.textContent.trim() && overview?.querySelectorAll('.reading-summary-line').length === 2
+          && [...overview.children].every(line => line.textContent.trim()) && !overview.closest('details')
+          && details && !details.open && details.querySelector('summary')?.textContent === '자세히 읽기'
+          && details.querySelectorAll('.reading-summary-full p').length >= 2 && !section.closest('details');
+      }));
+      assert.ok(sectionDetails, group + ': every title and two-line overview precede the intact folded explanation');
       let categoryChecks;
       if (group === 'domains') {
         const basis = page.locator('#summary-domain-basis');
@@ -199,11 +233,25 @@ const server = http.createServer((request, response) => {
         await basis.locator('summary').click();
         categoryChecks = await inspectDomainCategories('mobile');
       } else assert.equal(await panel.locator('.reading-part:visible').count(), expectedSections, group + ': every main section stays visible');
+      const firstSection = panel.locator('.reading-part:visible').first();
+      const firstDetail = firstSection.locator(':scope > .reading-summary-details');
+      const originalText = await firstDetail.locator('.reading-summary-full').textContent();
+      assert.equal(await firstDetail.locator('.reading-summary-full').isVisible(), false);
+      await firstDetail.locator('summary').focus();
+      await firstDetail.locator('summary').press('Enter');
+      assert.equal(await firstDetail.locator('.reading-summary-full').isVisible(), true, group + ': keyboard Enter opens the original explanation');
+      assert.equal(await firstDetail.locator('.reading-summary-full').textContent(), originalText, group + ': expanding changes no original text');
+      if (group === 'problem') await page.screenshot({ path: path.join(artifacts, 'tarot-summary-expanded-mobile.png') });
+      await firstDetail.locator('summary').press('Space');
+      assert.equal(await firstDetail.locator('.reading-summary-full').isVisible(), false, group + ': keyboard Space folds the explanation again');
+      await inspectUnclippedSummaries(panel, group + ' mobile');
+      await firstSection.locator('.reading-two-line-summary').scrollIntoViewIfNeeded();
       const overflow = await overflowState();
       assert.deepEqual(overflow, { document: false, modal: false }, group + ': the mobile reading fits the viewport');
       tarotViews[group] = { sections: expectedSections, overflow };
       if (categoryChecks) tarotViews[group].mobileCategories = categoryChecks;
       await page.screenshot({ path: path.join(artifacts, group === 'problem' ? 'tarot-result-mobile.png' : `tarot-${group}-mobile.png`) });
+      if (group === 'problem') await page.screenshot({ path: path.join(artifacts, 'tarot-summary-mobile.png') });
     }
     assert.ok((await page.locator('#summary-ritual').textContent()).length > 20);
     await inspectPersonal('mobile');
@@ -213,9 +261,17 @@ const server = http.createServer((request, response) => {
       if (group === 'domains') tarotViews[group].desktopCategories = await inspectDomainCategories('desktop');
       const overflow = await overflowState();
       assert.deepEqual(overflow, { document: false, modal: false }, group + ': the desktop reading fits the viewport');
+      await inspectUnclippedSummaries(page.locator(`#summary-panel-${group}`), group + ' desktop');
       await page.screenshot({ path: path.join(artifacts, group === 'problem' ? 'tarot-result-desktop.png' : `tarot-${group}-desktop.png`) });
+      if (group === 'problem') await page.screenshot({ path: path.join(artifacts, 'tarot-summary-desktop.png') });
     }
     await inspectPersonal('desktop');
+    await page.setViewportSize({ width: 320, height: 844 });
+    await page.locator('#summary-tab-problem').click();
+    await inspectUnclippedSummaries(page.locator('#summary-panel-problem'), 'small phone');
+    assert.deepEqual(await overflowState(), { document: false, modal: false }, 'complete summary sentences fit a 320px phone without cropping');
+    await page.locator('#summary-panel-problem .reading-two-line-summary').first().scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(artifacts, 'tarot-summary-small-phone.png') });
     const saju = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', deviceScaleFactor: 1 });
     saju.on('pageerror', error => errors.push(error.message));
     saju.on('response', response => { if (response.status() >= 400) failed.push([response.status(), response.url()]); });
