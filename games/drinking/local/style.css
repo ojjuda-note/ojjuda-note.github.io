@@ -336,3 +336,12 @@ body { background: radial-gradient(ellipse at 45% 0, #fffdf6, #f6f4ec 70%); }
 .multi-room-entry:focus-visible { outline:3px solid #8c691f; outline-offset:3px; }
 
 .mode-back { display:inline-flex; align-items:center; min-height:44px; padding:0 6px; font-size:.88rem; font-weight:600; color:var(--dark); text-decoration:underline; text-underline-offset:.2em; }
+
+.arcade-nav { padding-bottom:8px; }
+.arcade-return {
+  display:inline-flex; min-height:44px; align-items:center; gap:8px; padding:0 13px;
+  border:1px solid #b8c5b7; border-radius:10px; background:#edf1e8; color:#254433;
+  font-size:.9rem; font-weight:700; text-decoration:none;
+}
+.arcade-return:hover { background:#e0e8d9; }
+.arcade-return:focus-visible { outline:2px solid #315b42; outline-offset:2px; }
