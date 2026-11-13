@@ -8,6 +8,7 @@ const { getCaseGuide } = load('case-guides.js');
 const { PERSONAL_CONTEXTS } = load('personal-contexts.js');
 const { buildPersonalReading, personalReadingCopyLines } = load('personal-reading.js');
 const { getConnectionProfile } = load('card-connections.js');
+const { directInterpretation, directAction, directCardAdvice } = load('reading-voice.js');
 const plain = value => JSON.parse(JSON.stringify(value));
 const content = line => line.replace(/^‘[^’]+’(?: · ‘[^’]+’)?(?: 카드)?: /u, '');
 const key = line => content(line).replace(/[\s\p{P}]/gu, '');
@@ -100,7 +101,7 @@ for (const context of PERSONAL_CONTEXTS) {
     const report = buildPersonalReading({ cards, topicId: context.topicId, contextId: context.id });
     for (const [index, section] of report.primary.entries()) {
       checkLines(section.summaryLines, `${context.id}/${cards[index].id}`);
-      assert.equal(section.summaryLines.map(content).join(' '), context.cards[cards[index].id],
+      assert.equal(section.summaryLines.map(content).join(' '), directCardAdvice(context.cards[cards[index].id]),
         'personal summary keeps the authored meaning and action, before the display introduction');
       assert.ok(section.summaryLines[0].includes(cards[index].name));
     }
@@ -109,8 +110,8 @@ for (const context of PERSONAL_CONTEXTS) {
       'the connection summary is tied to all three actual cards');
     checkLines(report.comparison.basisSummaryLines, `${context.id}/choice-basis`);
     const solution = getConnectionProfile(cards[2].id);
-    assert.equal(content(report.comparison.basisSummaryLines[0]), firstSentence(solution.support));
-    assert.equal(report.comparison.basisSummaryLines[1], firstSentence(solution.tension));
+    assert.equal(content(report.comparison.basisSummaryLines[0]), firstSentence(directInterpretation(solution.support)));
+    assert.equal(report.comparison.basisSummaryLines[1], firstSentence(directInterpretation(solution.tension)));
     for (const option of report.comparison.options) {
       checkLines(option.summaryLines, `${context.id}/choice-${option.key}`);
       assert.equal(option.summaryLines[0], firstSentence(option.gain));
@@ -118,8 +119,8 @@ for (const context of PERSONAL_CONTEXTS) {
     }
     for (const [index, question] of report.followUps.entries()) {
       checkLines(question.summaryLines, `${context.id}/${question.id}`);
-      assert.equal(question.summaryLines[0], firstSentence(context.followUps[index].paragraphs[0]));
-      assert.equal(question.summaryLines[1], firstSentence(context.followUps[index].paragraphs[1]),
+      assert.equal(question.summaryLines[0], firstSentence(directInterpretation(context.followUps[index].paragraphs[0])));
+      assert.equal(question.summaryLines[1], firstSentence(directAction(context.followUps[index].paragraphs[1])),
         'both authored answer paragraphs contribute, before the card reflection prompt');
     }
     const copied = personalReadingCopyLines(report).join('\n');

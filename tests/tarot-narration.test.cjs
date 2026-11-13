@@ -7,6 +7,7 @@ const { DECK, POSITIONS, getReading, getSummary } = load('readings.js');
 const { CARD_FOUNDATIONS } = load('card-foundations.js');
 const { CARD_LIFE_THEMES } = load('life-themes.js');
 const { CARD_INTERPRETATIONS } = load('interpretation-engine.js');
+const { directInterpretation, directAction } = load('reading-voice.js');
 const plain = value => JSON.parse(JSON.stringify(value));
 const topics = ['overall', 'love', 'money', 'work'];
 const cards = ['swords_knight', 'swords_two', 'pentacles_three'].map(id => DECK.find(card => card.id === id));
@@ -30,18 +31,18 @@ for (const card of DECK.filter(card => card.arcana === 'minor')) {
       assert.ok(result.introduction.includes(result.displayName));
       assert.ok(!result.paragraphs.includes(result.introduction), 'the standalone introduction is not duplicated');
       assert.ok(result.text.startsWith(result.introduction));
-      for (const fact of [input.foundation.symbol, card.topics[topic], input.detail.example, input.foundation.caution]) {
+      for (const fact of [input.foundation.symbol, directInterpretation(card.topics[topic]), input.detail.example, input.foundation.caution]) {
         assert.ok(result.text.includes(fact), `${card.id}/${topic}/${index} preserves an authored explanation`);
       }
-      assert.equal(result.action, input.detail.action);
+      assert.equal(result.action, directAction(input.detail.action), 'shown advice uses the actual authored action in the direct voice');
       assert.equal(result.summary, CARD_INTERPRETATIONS[card.id].meaning);
       assert.equal(result.traditionalMeaning, input.guidance.meaning, 'the original source interpretation is preserved separately');
       assert.equal(result.foundationTakeaway, input.foundation.takeaway);
       assert.doesNotMatch(result.text, /먼저 전통 타로 그림을 바탕으로 이 카드를 살펴보자|그 모습에 담긴 뜻을 조금 더 풀어보면 이래|그렇다면 무엇부터 해 보면 좋을까/);
       assert.equal(result.detailSections, input.base.sections);
       assert.equal(result.reference, input.base.reference);
-      assert.equal(result.lifeTheme, CARD_LIFE_THEMES[card.id]);
-      assert.equal(result.positionMeaning, input.guidance.positions[index === 1 ? 0 : index]);
+      assert.deepEqual(plain(result.lifeTheme), Object.fromEntries(Object.entries(CARD_LIFE_THEMES[card.id]).map(([field, value]) => [field, directInterpretation(value)])));
+      assert.equal(result.positionMeaning, directInterpretation(input.guidance.positions[index === 1 ? 0 : index]));
       assert.ok(result.text.includes(result.positionMeaning), 'the individual reading explains this position in the card itself');
       assert.ok(result.appliedMeaning.length > 60 && !result.text.includes(result.appliedMeaning), 'the detailed situation application is reserved for the combined view');
       assert.ok(!result.text.includes(result.action), 'the practical action is retained for the combined reading and full source, not copied into both views');
@@ -67,6 +68,7 @@ for (const topicId of topics) {
     ['problem', '문제 해결'], ['timeline', '과거·현재·미래'], ['domains', '분야별 풀이']
   ]);
   assert.equal(summary.groups[0].sections.length, 5);
+  assert.equal(summary.groups[0].sections.find(section => section.id === 'possible-outcome').title, '대처 뒤 확인할 변화');
   assert.equal(summary.groups[1].sections.length, 7);
   assert.equal(summary.groups[2].sections.length, 50);
   assert.equal(summary.sections.length, 62);
@@ -100,7 +102,7 @@ for (const topicId of topics) {
   assert.ok(summary.text.includes(input.innerMeaning));
   assert.ok(summary.text.includes(input.flowMeaning), "the second card's specific unfolding theme now participates in the reading");
   assert.ok(summary.synthesis.includes(readings[1].theme.split(' · ')[0]));
-  assert.ok(summary.text.includes(input.direction));
+  assert.ok(summary.text.includes(directAction(input.direction)));
   for (const reading of readings) {
     for (const detail of [reading.example, reading.topicMeaning, reading.foundationCaution, reading.positionMeaning]) {
       assert.ok(!summary.text.includes(detail), 'the individual card explanation is not copied into another tab');
@@ -111,7 +113,7 @@ for (const topicId of topics) {
     assert.equal(summary.text.split(detail).length - 1, 1, 'each life explanation is used once instead of copied through several sections');
   }
   assert.equal(summary.summary, summary.synthesis);
-  assert.equal(summary.ritual, cards[2].details[topicId].action);
+  assert.equal(summary.ritual, directAction(cards[2].details[topicId].action));
   assert.ok(!summary.paragraphs.includes(summary.synthesis));
   assert.ok(!summary.paragraphs.includes(summary.ritual));
   assert.ok(summary.oneLine.includes(readings[0].theme.split(' · ')[0]));
@@ -125,7 +127,7 @@ for (const topicId of topics) {
   const reversed = narrateSummary({ ...input, cards: reversedCards, readings: reversedReadings,
     innerMeaning: reversedCards[0].spread.inner, direction: reversedCards[2].spread.direction });
   assert.notEqual(reversed.text, summary.text, 'actual order changes the explanation and action');
-  assert.equal(reversed.ritual, reversedCards[2].details[topicId].action);
+  assert.equal(reversed.ritual, directAction(reversedCards[2].details[topicId].action));
 }
 
 // The integrated entry points must provide the same accessible structure for
@@ -136,7 +138,11 @@ for (const card of DECK) for (const topic of topics) for (let index = 0; index <
   assert.ok(reading.introduction.includes(card.name));
   assert.ok(reading.paragraphs.length >= 5);
   assert.ok(JSON.stringify(reading.detailSections).includes(reading.traditionalMeaning), 'the complete original interpretation remains accessible in source details');
-  assert.ok(reading.detailSections.flatMap(section => [section.title, section.subtitle, section.body]).join('\n').includes(reading.action.split('.')[0]), 'the original action remains accessible in full source details');
+  const sourcePractice = reading.detailSections.find(section => section.title === '생활 속 예시와 해 볼 일');
+  assert.ok(sourcePractice.body.startsWith(reading.example), 'the original hypothetical example remains in source details');
+  const sourceAction = [sourcePractice.subtitle, sourcePractice.body.slice(reading.example.length).trim()].filter(Boolean).join(' ');
+  assert.equal(reading.action, directAction(sourceAction), 'shown advice is derived from the complete action preserved in source details');
+  if (card.details) assert.equal(sourceAction, card.details[topic].action, 'the raw authored action is preserved byte-for-byte');
 }
 assert.deepEqual(plain(POSITIONS.map(position => position.label)), ['지금의 문제', '현재 상황', '해결 방법과 결과']);
 assert.equal(Object.keys(CARD_LIFE_THEMES).length, DECK.length);

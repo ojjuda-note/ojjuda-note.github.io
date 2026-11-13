@@ -1,5 +1,5 @@
 import { listPersonalContexts } from './personal-contexts.js?v=20261113-tarot-personal1';
-import { buildPersonalReading, personalReadingCopyLines, PERSONAL_BASIS } from './personal-reading.js?v=20261113-tarot-summary1';
+import { buildPersonalReading, personalReadingCopyLines, PERSONAL_BASIS } from './personal-reading.js?v=20261113-tarot-direct1';
 import { appendSummaryLines } from './reading-summary-view.js?v=20261113-tarot-summary1';
 
 // This view only reinterprets the three already revealed cards. It does not
@@ -96,7 +96,7 @@ export function createPersonalReading({ getSnapshot, canRead, renderSections, re
       const original = element('details', 'reading-summary-details');
       original.append(element('summary', '', '자세히 읽기'));
       const list = element('dl');
-      for (const [key, label] of [['gain', '기대할 수 있는 점'], ['burden', '감수할 부담'], ['prepare', '먼저 준비할 것']]) {
+      for (const [key, label] of [['gain', '이 선택의 장점'], ['burden', '감수할 부담'], ['prepare', '먼저 준비할 것']]) {
         list.append(element('dt', '', label), element('dd', '', option[key]));
       }
       original.append(list);

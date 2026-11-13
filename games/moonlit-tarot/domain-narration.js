@@ -1,5 +1,5 @@
-import { CARD_INTERPRETATIONS } from './interpretation-engine.js?v=20261113-tarot-variety1';
-import { CASE_GUIDES, getCaseGuide } from './case-guides.js?v=20261113-tarot-personal1';
+import { CARD_INTERPRETATIONS } from './interpretation-engine.js?v=20261113-tarot-direct1';
+import { CASE_GUIDES, getCaseGuide } from './case-guides.js?v=20261113-tarot-direct1';
 import { LIFE_TOPICS } from './topic-catalog-life.js?v=20261113-tarot-context1';
 import { RELATIONSHIP_TOPICS } from './topic-catalog-relations.js?v=20261113-tarot-context1';
 import { PRACTICAL_TOPICS } from './topic-catalog-practical.js?v=20261113-tarot-context1';
