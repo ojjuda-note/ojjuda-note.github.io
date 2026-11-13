@@ -277,7 +277,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.locator('#world-admin-fortune-purchases').getAttribute('data-fixture-module'), 'fortune-purchases');
     assert.equal(await page.evaluate(() => fixture.options['fortune-purchases'].getAdminId()), 'synthetic-admin');
     assert.equal(await page.evaluate(() => fixture.options['fortune-purchases'].isCurrent()), true);
-    assert.equal(await page.locator('.adm-navigation [aria-current="page"]').first().textContent(), '타로·사주 구매내역');
+    assert.equal(await page.locator('.adm-navigation [aria-current="page"]').first().textContent(), '운세·리듬 구매내역');
     await assertRefreshPreservesHost('fortune-purchases');
     await page.evaluate(() => { window.previousFortuneController = fixture.controllers['fortune-purchases']; });
     await tab('settings');
@@ -306,7 +306,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     await page.goto('https://fixture.test/world.html?admin=fortune-purchases'); await loaded(); await mounted('fortune-purchases');
     assert.deepEqual(await current(), { area: 'payment', tab: 'fortune-purchases' }, 'direct purchase history URLs resolve to the payment group');
     assert.equal(await page.evaluate(() => fixture.options['fortune-purchases'].container.id), 'world-admin-fortune-purchases');
-    assert.equal(await page.locator('.adm-navigation [aria-current="page"]').first().textContent(), '타로·사주 구매내역');
+    assert.equal(await page.locator('.adm-navigation [aria-current="page"]').first().textContent(), '운세·리듬 구매내역');
 
     await page.goto('https://fixture.test/world.html?admin=note-actions'); await loaded(); await mounted('activity');
     assert.deepEqual(await current(), { area: 'operations', tab: 'activity' });

@@ -32,6 +32,9 @@
     '/features/fanpages/': '팬페이지 목록',
     '/features/fanpages/index.html': '팬페이지 목록',
     '/features/fanpages/artist.html': '아티스트 팬페이지',
+    '/features/biorhythm': '바이오리듬',
+    '/features/biorhythm/': '바이오리듬',
+    '/features/biorhythm/index.html': '바이오리듬',
     '/photo-ttang.html': '포토땅따먹기'
   });
   const gameActions = new Set(['game-open', 'bd-open', 'bl-open', 'matgo-open', 'agit-play', 'agit-daily']);
@@ -47,6 +50,7 @@
   function route(url) {
     if (url.origin !== location.origin) return null;
     const pathname = url.pathname.replace(/\/{2,}/g, '/');
+    if (/^\/features\/biorhythm(?:\/|\/index\.html)?$/.test(pathname)) return page('feature:biorhythm', '바이오리듬');
     const standalone = pathname.match(/^\/games\/([^/]+)\//);
     if (standalone) {
       const directory = standalone[1];
@@ -117,6 +121,7 @@
 
   async function start() {
     if (document.readyState === 'loading') await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve, { once: true }));
+    if (window.OjjudaGetClient) await window.OjjudaGetClient();
     // Reuse the page's member session. A second default-key GoTrueClient
     // can race the main login client and produce duplicate-auth warnings.
     if (!window.ojjudaSupabase?.auth && !window.supabase?.createClient) {

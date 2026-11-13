@@ -10,6 +10,10 @@ const days = () => Array.from({ length: 30 }, (_, i) => ({
   period: new Date(Date.parse(TODAY + 'T00:00:00Z') - (29 - i) * 86400000).toISOString().slice(0, 10), tarot: 0, saju: 0
 }));
 function fortune(extra = {}) { return { started_at: '2026-11-11T15:00:00Z', daily: days(), ...extra }; }
+function biorhythmFortune(extra = {}) {
+  return fortune({ biorhythm_started_at: '2026-11-12T15:00:00Z',
+    daily: days().map(row => ({ ...row, biorhythm: row.period < TODAY ? null : 0 })), ...extra });
+}
 function statistics(value, features = [{ feature: 'arcade', uses: 2 }]) {
   return {
     started_at: '2026-11-01T00:00:00Z', today_date: TODAY, today: 8, month: 27, total: 27,
@@ -97,7 +101,7 @@ test('collection-start footnote uses the Korean date and valid zero totals remai
     assert.equal(chart.querySelector(`[data-feature="${feature}"] strong`).textContent, '0회');
     assert.equal(chart.querySelector(`[data-feature="${feature}"] .visitor-rank-fill`).style.width, '0%');
   }
-  assert.doesNotMatch(chart.textContent, /불러오지 못/);
+  assert.doesNotMatch(chart.querySelector('[data-collection="fortune"]').textContent, /불러오지 못/);
   assert.equal(f.qa('.is-uncollected,.visitor-fortune').length, 0);
 });
 
@@ -148,19 +152,76 @@ test('refresh updates the merged chart without duplicate rows or unrelated perso
   assert.equal(f.calls.filter(name => name === 'admin_site_usage_stats').length, 2);
 });
 
+test('biorhythm joins the same feature scale using its own collection start and no duplicate generic row', async t => {
+  const data = biorhythmFortune();
+  data.daily[28].tarot = 4; data.daily[29].saju = 1; data.daily[29].biorhythm = 3;
+  const f = fixture(t, data, { features: [{ feature: 'arcade', uses: 2 }, { feature: 'biorhythm', uses: 99 }] });
+  await settled();
+  const chart = f.q('[data-chart="features"]');
+  assert.equal(f.qa('.visitor-chart-card').length, 9, 'the added product does not create another chart');
+  assert.equal(f.qa('.visitor-chart-col').length, 61);
+  const rows = [...chart.querySelectorAll('.visitor-rank-row')];
+  assert.deepEqual(rows.map(row => row.dataset.feature), ['tarot', 'biorhythm', 'arcade', 'saju']);
+  assert.deepEqual(rows.map(row => row.querySelector('strong').textContent), ['4회', '3회', '2회', '1회']);
+  assert.equal(chart.querySelector('[data-feature="biorhythm"] .visitor-rank-fill').style.width, '75%');
+  assert.match(chart.querySelector('[data-feature="biorhythm"]').textContent, /바이오리듬/);
+  assert.match(chart.querySelector('[data-collection="fortune"]').textContent, /2026년 11월 12일/);
+  assert.match(chart.querySelector('[data-collection="biorhythm"]').textContent, /2026년 11월 13일.*이전 방문 제외/);
+  assert.doesNotMatch(chart.textContent, /불러오지 못/);
+});
+
+test('uncollected biorhythm dates stay uncollected and only a validated post-start zero is shown', async t => {
+  const data = biorhythmFortune();
+  assert.ok(data.daily.slice(0, 29).every(row => row.biorhythm === null));
+  const f = fixture(t, data, { features: [] }); await settled();
+  assert.equal(f.qa('[data-chart="features"] .visitor-rank-row').length, 3);
+  assert.equal(f.q('[data-feature="biorhythm"] strong').textContent, '0회');
+  assert.equal(f.q('[data-feature="biorhythm"] .visitor-rank-fill').style.width, '0%');
+  assert.match(f.q('[data-collection="biorhythm"]').textContent, /2026년 11월 13일/);
+  const older = fixture(t, fortune(), { features: [{ feature: 'arcade', uses: 2 }, { feature: 'biorhythm', uses: 99 }] });
+  await settled();
+  assert.equal(older.q('[data-feature="biorhythm"]'), null, 'a generic row cannot replace missing collection metadata');
+  assert.equal(older.q('[data-feature="tarot"] strong').textContent, '0회');
+  assert.equal(older.q('[data-feature="saju"] strong').textContent, '0회');
+  assert.match(older.q('[data-collection="biorhythm"]').textContent, /집계를 아직 불러오지 못/);
+});
+
+test('invalid biorhythm data never becomes a zero or removes valid tarot, saju and site counts', async t => {
+  const cases = [biorhythmFortune({ biorhythm_started_at: undefined }),
+    biorhythmFortune({ biorhythm_started_at: 'invalid' }),
+    biorhythmFortune({ biorhythm_started_at: '2026-11-13T15:00:00Z' })];
+  for (const value of [-1, 0.5, '3', null, undefined, Number.MAX_SAFE_INTEGER + 1]) {
+    const data = biorhythmFortune(); data.daily[29].biorhythm = value; cases.push(data);
+  }
+  const preStartZero = biorhythmFortune(); preStartZero.daily[0].biorhythm = 0; cases.push(preStartZero);
+  const preStartVisit = biorhythmFortune(); preStartVisit.daily[28].biorhythm = 2; cases.push(preStartVisit);
+  const overflow = biorhythmFortune({ biorhythm_started_at: '2026-10-01T00:00:00Z', daily: days().map(row => ({ ...row, biorhythm: 0 })) });
+  overflow.daily[28].biorhythm = Number.MAX_SAFE_INTEGER; overflow.daily[29].biorhythm = 1; cases.push(overflow);
+  for (const data of cases) {
+    data.daily[29].tarot = 7; data.daily[29].saju = 5;
+    const f = fixture(t, data); await settled();
+    assert.equal(f.qa('.visitor-chart-card').length, 9);
+    assert.equal(f.q('[data-feature="biorhythm"]'), null);
+    assert.equal(f.q('[data-feature="tarot"] strong').textContent, '7회');
+    assert.equal(f.q('[data-feature="saju"] strong').textContent, '5회');
+    assert.equal(f.q('[data-feature="arcade"] strong').textContent, '2회');
+    assert.match(f.q('[data-collection="biorhythm"]').textContent, /집계를 아직 불러오지 못/);
+  }
+});
+
 test('sign-out clears product data and discards an outstanding product statistics response', async t => {
-  const f = fixture(t, fortune(), { delayed: true }); await settled();
+  const f = fixture(t, biorhythmFortune(), { delayed: true }); await settled();
   assert.equal(f.pending.length, 1);
-  f.signOut(); f.pending[0]({ data: statistics(fortune()) }); await settled();
+  f.signOut(); f.pending[0]({ data: statistics(biorhythmFortune()) }); await settled();
   assert.equal(f.qa('.visitor-fortune,.visitor-chart-card').length, 0);
   assert.match(f.host.textContent, /관리자로 다시 로그인/);
 });
 
 test('another account or a destroyed view cannot receive the prior request results', async t => {
   for (const mode of ['actor', 'destroy']) {
-    const f = fixture(t, fortune(), { delayed: true }); await settled();
+    const f = fixture(t, biorhythmFortune(), { delayed: true }); await settled();
     if (mode === 'actor') f.changeActor(); else f.controller.destroy();
-    f.pending[0]({ data: statistics(fortune()) }); await settled();
+    f.pending[0]({ data: statistics(biorhythmFortune()) }); await settled();
     assert.equal(f.qa('.visitor-fortune,.visitor-chart-card').length, 0);
     if (mode === 'destroy') { assert.equal(f.unsubscribed, 1); assert.equal(f.host.textContent, ''); }
   }

@@ -253,8 +253,8 @@
           </button>`;
         }).join('')}</div>
       </section>
-      <a class="agit-biorhythm-banner" href="/features/biorhythm/" aria-label="오늘의 바이오리듬, 무료로 내 리듬 보러 가기">
-        <div class="agit-biorhythm-copy"><span class="agit-biorhythm-kicker">DAILY RHYTHM <span>무료 · 재미로 보기</span></span><h2>오늘의 바이오리듬</h2><p>생일로 그려 보는 오늘의 세 가지 리듬.</p><span class="agit-biorhythm-cta">내 리듬 보러 가기 <span aria-hidden="true">→</span></span></div>
+      <a class="agit-biorhythm-banner" href="/features/biorhythm/" aria-label="오늘의 바이오리듬, 5쭈, 같은 생일로 결제 후 24시간 이용">
+        <div class="agit-biorhythm-copy"><span class="agit-biorhythm-kicker">DAILY RHYTHM <span>5쭈 · 24시간</span></span><h2>오늘의 바이오리듬</h2><p>생일로 그려 보는 오늘의 세 가지 리듬.</p><span class="agit-biorhythm-cta">내 리듬 보러 가기 <span aria-hidden="true">→</span></span></div>
         <div class="agit-biorhythm-art" aria-hidden="true"><div class="agit-biorhythm-legend"><span>신체</span><span>감정</span><span>지성</span></div><svg viewBox="0 0 360 170" fill="none" focusable="false"><path d="M10 45H350M10 85H350M10 125H350" stroke="#dce9e1" stroke-width="1"/><path d="M180 14V155" stroke="#98b4a8" stroke-width="1.5" stroke-dasharray="4 6"/><path d="M10 85C42 28 72 22 105 85S168 148 200 85S264 22 296 85S330 132 350 113" stroke="#c86a65" stroke-width="3.5" stroke-linecap="round"/><path d="M10 123C45 145 79 119 112 72S181 27 217 69S292 145 350 95" stroke="#357e79" stroke-width="3.5" stroke-linecap="round"/><path d="M10 47C60 18 98 38 140 85S215 142 260 109S317 39 350 48" stroke="#8671b0" stroke-width="3.5" stroke-linecap="round"/><circle cx="180" cy="106" r="5" fill="#c86a65" stroke="#fffcf5" stroke-width="2"/><circle cx="180" cy="45" r="5" fill="#357e79" stroke="#fffcf5" stroke-width="2"/><circle cx="180" cy="117" r="5" fill="#8671b0" stroke="#fffcf5" stroke-width="2"/></svg><span class="agit-biorhythm-art-note">세 가지 리듬을 한눈에</span></div>
       </a>
       <a class="agit-tarot-banner" href="/games/moonlit-tarot/" aria-label="달의 마녀 타로 만나기, 전체운세 30쭈, 나머지 분야 각각 10쭈, 결제 후 24시간 이용">

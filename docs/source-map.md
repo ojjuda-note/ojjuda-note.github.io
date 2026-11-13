@@ -6,7 +6,7 @@
 
 | 게임·기능 | 프런트 소스 | 서버 함수 |
 | --- | --- | --- |
-| 오늘의 바이오리듬 | `features/biorhythm/` | 생일과 기준일로 브라우저에서 23·28·33일 곡선을 계산하는 무료 재미용 기능. 원본 출생 정보 서버 전송 없음 |
+| 오늘의 바이오리듬 | `features/biorhythm/` (`payment.mjs`, `saved-birthdays.mjs`) | 생일과 기준일로 브라우저에서 23·28·33일 곡선을 계산하는 재미용 기능. `biorhythm_buy_v1`·`biorhythm_status_v1`로 생년월일별 5쭈, 해당 결제 시점부터 24시간 재조회·날짜 이동 무료. 입력한 생일은 회원별로 이 기기의 목록에 저장하며 선택·삭제는 무차감. 이용권은 생일 해시로 확인하고 원본 출생 정보·계산 결과는 서버로 보내지 않음 |
 | 별빛 사주팔자 | `games/starlit-saju/` | 브라우저 내 원국·세운·월운 계산, `saju_reading_buy_v2` / `saju_reading_status_v2`로 평생운·연간운·월별운 각각 10쭈 이용 확인. 출생 정보 원문은 저장하지 않음 |
 | 바람의 궁수 | `games/forest-archer/` | `game-action` |
 | 나사 풀기 | `games/screw/` | `flat-drill-clear* (운영 보정 도구)` |
@@ -36,8 +36,8 @@
 | 회원 정지·영구정지 | `admin/` | `admin-ban` |
 | 계정 복구 | `shared/auth/` | `member-recovery` |
 | 오류 신고 | `shared/diagnostics/` | `feedback-codex` |
-| 타로·사주 구매내역 관리 | `admin/fortune-purchases.js`, `.css` | 관리자 전용 `admin_fortune_purchases`로 실제 결제 항목·사용 쭈 조회 |
-| 타로·사주 방문 집계 | `shared/analytics/site-usage.js`, `admin/visitors.js` | 실제 페이지 진입 시 `record_site_usage`, 관리자 `admin_site_usage_stats`의 `fortune_visits` 30일 합계를 ‘많이 선택한 기능’ 그래프에 함께 표시 |
+| 운세·리듬 구매내역 관리 | `admin/fortune-purchases.js`, `.css` | 관리자 전용 `admin_fortune_purchases`로 바이오리듬·타로·사주의 실제 결제 항목·사용 쭈 조회 |
+| 운세·리듬 방문 집계 | `shared/analytics/site-usage.js`, `admin/visitors.js` | 실제 페이지 진입 시 `record_site_usage`, 관리자 `admin_site_usage_stats`의 `fortune_visits` 30일 합계를 ‘많이 선택한 기능’ 그래프에 함께 표시. 바이오리듬 집계 시작일을 별도 보존 |
 
 ## 유지하는 경계
 

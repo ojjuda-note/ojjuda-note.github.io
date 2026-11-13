@@ -10,7 +10,7 @@
 .afp-filter-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px}
 .afp-filter-error{margin:0;color:#b4233d;font-size:13px;line-height:1.6}
 .afp-filter-error:empty{display:none}
-.afp-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0}
+.afp-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:0}
 .afp-summary:empty{display:none}
 .afp-metric{min-width:0;padding:16px;border:1px solid var(--line);border-radius:15px;background:var(--surface)}
 .afp-metric dt{margin-bottom:6px;color:var(--ink-2);font-size:12px}
@@ -24,6 +24,7 @@
 .afp-member-id{font-variant-numeric:tabular-nums}
 .afp-badge{padding:2px 9px;border-radius:99px;background:var(--accent-soft);font-size:11px;line-height:1.7;font-weight:700}
 .afp-badge.is-saju{background:color-mix(in srgb,#5e8c80 15%,var(--surface));color:var(--ink)}
+.afp-badge.is-biorhythm{background:color-mix(in srgb,#7854aa 12%,var(--surface));color:var(--ink)}
 .afp-charge{align-items:flex-end;text-align:right}
 .afp-charge strong{font-size:20px;line-height:1.4;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .afp-purchase-footer{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-2)}

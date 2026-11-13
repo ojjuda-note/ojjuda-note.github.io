@@ -78,6 +78,60 @@ test('only the six exact tarot/saju entry paths identify their service after ini
   }
 });
 
+test('all three direct biorhythm routes record their own feature without birthday or reading details', async t => {
+  for(const suffix of ['', '/', '/index.html']) {
+    const fixture=page(t,{path:'/features/biorhythm'+suffix+'?birth=PRIVATE-DOB&receipt=PRIVATE-RECEIPT#PRIVATE-RESULT'});
+    fixture.configure(); await settle();
+    assert.deepEqual(fixture.calls.map(call=>call.args.p_event),['visit','feature']);
+    assert.deepEqual(features(fixture.calls),['biorhythm']);
+    for(const call of fixture.calls)assert.deepEqual(Object.keys(call.args).sort(),['p_event','p_feature','p_source','p_visit_id']);
+    assert.doesNotMatch(JSON.stringify(fixture.calls),/PRIVATE|birth|receipt|result/i);
+  }
+});
+
+test('biorhythm visits deduplicate with other services but cancelled hub clicks do not become visits', async t => {
+  const storage=new Map(),calls=[];
+  for(const entry of ['/games/moonlit-tarot/','/features/biorhythm/','/features/biorhythm/index.html','/games/starlit-saju/']) {
+    const fixture=page(t,{path:entry,storage,calls});fixture.configure();await settle();
+  }
+  assert.equal(calls.filter(call=>call.args.p_event==='visit').length,1);
+  assert.deepEqual(features(calls),['tarot','biorhythm','saju']);
+  const hub=page(t,{path:'/world.html?tab=hub',html:'<a class="agit-biorhythm-banner" href="/features/biorhythm/">바이오리듬</a>'});
+  hub.w.document.addEventListener('click',event=>event.preventDefault());hub.configure();await settle();
+  const before=hub.calls.length;
+  hub.w.document.querySelector('a').click();await settle();
+  assert.equal(hub.calls.length,before);
+  for(const entry of ['/features/biorhythm-extra/','/features/biorhythm/extra.html','/archive/features/biorhythm/']) {
+    const fixture=page(t,{path:entry});fixture.configure();await settle();
+    assert.equal(features(fixture.calls).includes('biorhythm'),false);
+  }
+});
+
+test('biorhythm direct visits respect tracking opt-outs and administrator preview', async t => {
+  for(const mode of [{dnt:'1'},{gpc:true},{preview:true}]) {
+    const fixture=page(t,{path:'/features/biorhythm/',...mode});fixture.configure();await settle();
+    assert.equal(fixture.calls.length,0);assert.equal(fixture.storage.has(KEY),false);
+  }
+});
+
+test('the biorhythm page loads authentication and analytics before its paid application entry', () => {
+  const dom=new JSDOM(read('features/biorhythm/index.html'));
+  try {
+    const scripts=[...dom.window.document.querySelectorAll('script[src]')];
+    const app=scripts.find(script=>script.getAttribute('src').startsWith('./app.mjs?'));
+    const analytics=scripts.filter(script=>script.getAttribute('src').startsWith('/shared/analytics/site-usage.js?'));
+    const config=scripts.filter(script=>script.getAttribute('src').startsWith('/config.js?'));
+    assert.equal(analytics.length,1);assert.equal(config.length,1);
+    assert.ok(scripts.indexOf(analytics[0])<scripts.indexOf(app));
+    assert.ok(scripts.indexOf(config[0])<scripts.indexOf(app));
+    for(const script of [app,...analytics,...config])assert.match(script.src,/20261113-biorhythm-paid1/);
+    const source=read('features/biorhythm/app.mjs');
+    assert.ok(source.indexOf('await billing.init();')<source.indexOf('OjjudaSiteUsage?.configure'), 'analytics starts after the shared client is ready');
+    assert.match(source,/try \{ window\.OjjudaSiteUsage\?\.configure\(\{client:billing\.client\}\); \} catch \{\}/);
+    assert.doesNotMatch(source,/OjjudaSiteUsage[^;\n]*\btrack\(/);
+  } finally {dom.window.close();}
+});
+
 test('direct visits, repeated configuration, refreshes and service round trips share one daily visit', async t => {
   const storage = new Map(), calls = [];
   for (const entry of ['/games/moonlit-tarot/', '/games/moonlit-tarot/index.html',

@@ -41,9 +41,10 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
           arcade_details: [{ detail: 'arcade_game_mole', uses: 7 }, { detail: 'arcade_game_stacker', uses: 3 }],
           fortune_visits: {
             started_at: '2026-11-10T15:00:00Z',
+            biorhythm_started_at: '2026-11-10T15:00:00Z',
             daily: Array.from({ length: 30 }, (_, i) => ({
               period: new Date(Date.UTC(2026, 9, 13 + i)).toISOString().slice(0, 10),
-              tarot: i === 29 ? 5 : 0, saju: 0
+              tarot: i === 29 ? 5 : 0, saju: 0, biorhythm: i === 29 ? 2 : null
             }))
           }
         };
@@ -65,7 +66,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
         const dateScroll = grid.querySelector('.visitor-chart-scroll');
         const features = document.querySelector('[data-chart="features"]');
         const featureRows = [...features.querySelectorAll('.visitor-rank-row')];
-        const note = features.querySelector('.visitor-feature-note');
+        const notes = [...features.querySelectorAll('.visitor-feature-note')];
         return {
           viewport: innerWidth, rootWidth: document.documentElement.scrollWidth,
           charts: grid.children.length, columns: getComputedStyle(grid).gridTemplateColumns.split(' ').length,
@@ -80,24 +81,27 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
             fill: parseFloat(row.querySelector('.visitor-rank-fill').style.width),
             scroll: row.scrollWidth, client: row.clientWidth
           })),
-          note: { text: note.textContent, scroll: note.scrollWidth, client: note.clientWidth }
+          notes: notes.map(note => ({ collection: note.dataset.collection, text: note.textContent,
+            scroll: note.scrollWidth, client: note.clientWidth }))
         };
       });
       assert.equal(layout.charts, 9, `${width}px: all chart cards`);
       assert.equal(layout.totalCharts, 9, `${width}px: fortune visits share an existing chart`);
       assert.equal(layout.separateFortunePanels, 0, `${width}px: no separate fortune panel or date graphs`);
       assert.equal(layout.featureCharts, 1, `${width}px: a single merged feature chart`);
-      assert.equal(layout.featureRows.length, 14, `${width}px: the two service rows remain alongside all twelve existing features`);
-      assert.equal(new Set(layout.featureRows.map(row => row.feature)).size, 14);
+      assert.equal(layout.featureRows.length, 15, `${width}px: all three service rows remain alongside all twelve existing features`);
+      assert.equal(new Set(layout.featureRows.map(row => row.feature)).size, 15);
       assert.ok(layout.featureRows.every((row, index, rows) => index === 0 || rows[index - 1].count >= row.count),
         `${width}px: all features share descending order`);
       assert.ok(layout.featureRows.every(row => Math.abs(row.fill - row.count / 12 * 100) < 0.001),
         `${width}px: service and existing rows use the same bar scale`);
       assert.equal(layout.featureRows.find(row => row.feature === 'tarot').count, 5);
       assert.equal(layout.featureRows.find(row => row.feature === 'saju').count, 0);
+      assert.equal(layout.featureRows.find(row => row.feature === 'biorhythm').count, 2);
       assert.ok(layout.featureRows.every(row => row.scroll <= row.client + 1), `${width}px: all feature labels and values fit their rows`);
-      assert.match(layout.note.text, /타로·사주.*2026년 11월 11일/);
-      assert.ok(layout.note.scroll <= layout.note.client + 1, `${width}px: collection note wraps within the feature card`);
+      assert.match(layout.notes.find(note => note.collection === 'fortune').text, /타로·사주.*2026년 11월 11일/);
+      assert.match(layout.notes.find(note => note.collection === 'biorhythm').text, /바이오리듬.*2026년 11월 11일/);
+      assert.ok(layout.notes.every(note => note.scroll <= note.client + 1), `${width}px: separate collection notes wrap within the feature card`);
       assert.ok(layout.rootWidth <= layout.viewport + 1, `${width}px: no horizontal page overflow (${JSON.stringify(layout)})`);
       assert.equal(layout.columns, width > 760 ? 2 : 1, `${width}px: chart grid changes with viewport`);
       assert.ok(layout.chartWidth > 240, `${width}px: content remains readable`);
