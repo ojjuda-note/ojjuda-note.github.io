@@ -12,7 +12,7 @@
     search:'기타 검색',social:'SNS·메신저',external:'외부 사이트',internal:'사이트 내부',campaign:'캠페인' });
   const featureLabels = Object.freeze({
     agit:'아지트',arcade:'오락실',park:'공원',settings:'설정',portal:'첫 화면',
-    group:'그룹',fanpages:'팬페이지',restaurants:'인증맛집',festival:'축제일정',
+    group:'그룹',fanpages:'팬페이지',restaurants:'인증맛집',festival:'축제일정',tarot:'타로',saju:'사주',
     game_chacha_rush:'차차 러시',game_solitaire:'솔리테어',game_archery:'바람의 궁수',
     game_sacheonseong:'사천성',game_mines:'지뢰찾기',game_saetbyeol:'새별',
     game_mole:'두더지 잡기',game_runner:'달리기',game_stacker:'탑 쌓기',
@@ -29,7 +29,7 @@
   });
   const arcadeDetailLabels = Object.freeze(Object.fromEntries(Object.entries(featureLabels)
     .filter(([key]) => key.startsWith('game_')).map(([key,label]) => ['arcade_' + key,label])));
-  const chart = (title, subtitle, rows, kind, labels, options = {}) => {
+  const chart = (title, subtitle, rows, kind, labels) => {
     const card = el('section', undefined, 'visitor-chart-card');
     card.append(el('h4', title), el('p', subtitle, 'visitor-chart-subtitle'));
     const scroll = el('div', undefined, 'visitor-chart-scroll');
@@ -38,35 +38,34 @@
     const content = el('div', undefined, `visitor-chart-bars is-${kind}`);
     const max = Math.max(1, ...rows.map(row => Number(row.visits)));
     content.setAttribute('role','img');
-    content.setAttribute('aria-label', `${title}: ${rows.map((row,i) => `${labels[i]} ${row.uncollected ? '집계 전' : number(row.visits) + '회'}`).join(', ')}`);
+    content.setAttribute('aria-label', `${title}: ${rows.map((row,i) => `${labels[i]} ${number(row.visits)}회`).join(', ')}`);
     rows.forEach((row,i) => {
       const col = el('div', undefined, 'visitor-chart-col');
-      if (row.uncollected) col.classList.add('is-uncollected');
-      if (row.period) col.dataset.period = row.period;
-      const count = el('span', row.uncollected ? '—' : Number(row.visits) || options.showZero ? number(row.visits) : '', 'visitor-chart-value');
+      const count = el('span', Number(row.visits) ? number(row.visits) : '', 'visitor-chart-value');
       const track = el('div', undefined, 'visitor-chart-track');
       const bar = el('div', undefined, 'visitor-chart-fill');
       bar.style.height = `${100 * Number(row.visits) / max}%`;
-      track.title = `${labels[i]} · ${row.uncollected ? '집계 전' : number(row.visits) + '회'}`;
+      track.title = `${labels[i]} · ${number(row.visits)}회`;
       track.append(bar);
       const name = el('span', kind === 'weekday' || kind === 'date' && i % 3 === 0 || kind === 'hour' && i % 3 === 0 ? labels[i] : '', 'visitor-chart-label');
       col.append(count,track,name); content.append(col);
     });
     if (rows.every(row => Number(row.visits) === 0)) {
-      card.append(el('p', options.emptyText || '아직 집계된 기록이 없어요.', 'visitor-chart-empty'));
+      card.append(el('p', '아직 집계된 기록이 없어요.', 'visitor-chart-empty'));
     }
     scroll.append(content); card.append(scroll); return card;
   };
-  const horizontalChart = (title, subtitle, rows, key, labelMap) => {
+  const horizontalChart = (title, subtitle, rows, key, labelMap, options = {}) => {
     const card = el('section', undefined, 'visitor-chart-card');
     card.append(el('h4', title), el('p', subtitle, 'visitor-chart-subtitle'));
-    if (!rows.length || rows.every(row => Number(row[key]) === 0)) {
+    if (!rows.length || !options.showZeroRows && rows.every(row => Number(row[key]) === 0)) {
       card.append(el('p', '아직 집계된 기록이 없어요.', 'visitor-empty')); return card;
     }
     const list = el('div', undefined, 'visitor-rank-list');
     const max = Math.max(1,...rows.map(row => Number(row[key])));
     rows.forEach(row => {
       const item = el('div', undefined, 'visitor-rank-row');
+      if (row.feature) item.dataset.feature = row.feature;
       const top = el('div',undefined,'visitor-rank-top');
       top.append(el('span',labelMap[row.feature || row.source || row.detail] || '기타'),el('strong',`${number(row[key])}회`));
       const track = el('div',undefined,'visitor-rank-track');
@@ -76,19 +75,12 @@
     });
     card.append(list); return card;
   };
-  function fortuneVisits(data, today) {
-    const section = el('section', undefined, 'visitor-fortune');
-    section.setAttribute('aria-label', '타로·사주 방문');
-    section.append(el('h3', '타로·사주 방문'));
-    const unavailable = () => {
-      section.append(el('p', '타로·사주 방문 집계를 아직 불러오지 못했어요. 새로고침해 주세요.', 'visitor-status'));
-      return section;
-    };
+  function fortuneTotals(data, today) {
     // This optional data has its own validation. Older servers or one malformed
     // product report must not hide the existing site-wide statistics.
     const todayTime = /^\d{4}-\d{2}-\d{2}$/.test(today || '') ? Date.parse(today + 'T00:00:00Z') : NaN;
     const started = typeof data?.started_at === 'string' ? Date.parse(data.started_at) : NaN;
-    if (!Number.isFinite(todayTime) || !Number.isFinite(started) || !Array.isArray(data?.daily) || data.daily.length !== 30) return unavailable();
+    if (!Number.isFinite(todayTime) || !Number.isFinite(started) || !Array.isArray(data?.daily) || data.daily.length !== 30) return null;
     const startParts = new Intl.DateTimeFormat('en', {
       timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit'
     }).formatToParts(new Date(started));
@@ -97,27 +89,31 @@
     if (startDay > today || new Date(todayTime).toISOString().slice(0, 10) !== today || !data.daily.every((row, i) => row
       && row.period === new Date(todayTime - (29 - i) * 86400000).toISOString().slice(0, 10)
       && safeCount(row.tarot) && safeCount(row.saju)
-      && (row.period >= startDay || row.tarot === 0 && row.saju === 0))) return unavailable();
+      && (row.period >= startDay || row.tarot === 0 && row.saju === 0))) return null;
     const totals = { tarot: 0, saju: 0 };
     for (const row of data.daily) { totals.tarot += row.tarot; totals.saju += row.saju; }
-    if (!safeCount(totals.tarot) || !safeCount(totals.saju)) return unavailable();
+    if (!safeCount(totals.tarot) || !safeCount(totals.saju)) return null;
     const startLabel = new Intl.DateTimeFormat('ko-KR', {
       timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric'
     }).format(new Date(started));
-    section.append(el('p', '같은 브라우저의 방문은 상품별로 하루 1회만 집계해요. 날짜는 한국시간 기준이에요.', 'visitor-note'),
-      el('p', `${startLabel}부터 집계합니다. 집계 시작 전 방문은 포함되지 않습니다.`, 'visitor-note visitor-fortune-start'));
-    const summary = el('div', undefined, 'visitor-cards visitor-fortune-cards');
-    const grid = el('div', undefined, 'visitor-chart-grid visitor-fortune-grid');
-    for (const [key, label] of [['tarot', '타로'], ['saju', '사주']]) {
-      const card = el('div', undefined, 'visitor-card'); card.dataset.product = key;
-      card.append(el('span', `${label} · 최근 30일`), el('strong', `${number(totals[key])}회`),
-        el('small', `오늘 ${number(data.daily[29][key])}회`)); summary.append(card);
-      const rows = data.daily.map(row => ({ period: row.period, visits: row[key], uncollected: row.period < startDay }));
-      const graph = chart(`${label} 방문`, '최근 30일 · —는 집계 전 날짜 · 옆으로 넘겨 볼 수 있어요.', rows, 'date',
-        rows.map(row => row.period.slice(5).replace('-', '.')), { showZero: true, emptyText: '집계 시작 이후 방문이 아직 없어요.' });
-      graph.dataset.product = key; grid.append(graph);
-    }
-    section.append(summary, grid); return section;
+    return { startLabel, rows: ['tarot', 'saju'].map(feature => ({ feature, uses: totals[feature] })) };
+  }
+  function featureChart(data) {
+    const fortune = fortuneTotals(data.fortune_visits, data.today_date);
+    // Keep the existing top 12 and both products on one scale. Product totals
+    // come only from their validated daily report, so a duplicate cannot add
+    // a second row or double-count a visit.
+    const features = new Map(data.features.filter(row => !['tarot', 'saju'].includes(row.feature))
+      .map(row => [row.feature, { feature: row.feature, uses: Number(row.uses) }]));
+    if (fortune) for (const row of fortune.rows) features.set(row.feature, row);
+    const rows = [...features.values()].sort((a, b) => b.uses - a.uses
+      || (a.feature < b.feature ? -1 : a.feature > b.feature ? 1 : 0));
+    const card = horizontalChart('많이 선택한 기능', '최근 30일 · 브라우저당 기능별 하루 1회',
+      rows, 'uses', featureLabels, { showZeroRows: !!fortune });
+    card.dataset.chart = 'features';
+    card.append(el('p', fortune ? `타로·사주: ${fortune.startLabel}부터 집계 · 이전 방문 제외`
+      : '타로·사주 방문 집계를 아직 불러오지 못했어요. 새로고침해 주세요.', 'visitor-note visitor-feature-note'));
+    return card;
   }
   function renderInsights(host, data) {
     if (!data || !Number.isFinite(Date.parse(data.started_at)) || !/^\d{4}-\d{2}-\d{2}$/.test(data.today_date)
@@ -154,13 +150,12 @@
     host.append(summary);
     const start = new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'long',day:'numeric'}).format(new Date(data.started_at));
     host.append(el('p',`${start}부터 수집 · 실제 사람 수나 페이지 조회수와 다를 수 있어요.`, 'visitor-note'));
-    host.append(fortuneVisits(data.fortune_visits, data.today_date));
     const grid = el('div',undefined,'visitor-chart-grid');
     grid.append(
       chart('날짜별 방문','최근 30일 · 아래 그래프는 옆으로 넘길 수 있어요.',data.daily,'date',data.daily.map(row => row.period.slice(5).replace('-','.'))),
       chart('시간별 방문','오늘 · 0시부터 23시까지',data.hourly,'hour',data.hourly.map(row => `${row.hour}시`)),
       chart('요일별 방문','최근 30일 합계',data.weekday,'weekday',['월','화','수','목','금','토','일']),
-      horizontalChart('많이 선택한 기능','최근 30일 · 브라우저당 기능별 하루 1회',data.features,'uses',featureLabels),
+      featureChart(data),
       horizontalChart('유입 경로','최근 30일 · 방문 시 분류된 경로',data.sources,'visits',sourceLabels),
       horizontalChart('비회원 인기 게임','최근 30일 · 로그인하지 않은 브라우저당 하루 1회',data.guest_games,'uses',featureLabels),
       horizontalChart('비회원 인기 게시판','최근 30일 · 게시판 진입 선택 기준',data.guest_boards,'uses',guestBoardLabels),
