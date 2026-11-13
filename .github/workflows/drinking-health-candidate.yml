@@ -1,0 +1,39 @@
+name: Assemble reviewed drinking game fixes
+on:
+  push:
+    branches: [qa/drinking-health-20261114]
+    paths: ['.github/workflows/drinking-health-candidate.yml']
+permissions:
+  contents: write
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 12
+      - name: Build isolated review branch from checked product files
+        env:
+          SOURCE: cfbb9f7f0c1a2a79cabc64eafc098752507180b5
+          BASE_SHA: 8abd13d46670bda2a691644b5fb42cfa308dc989
+        run: |
+          set -euo pipefail
+          git switch --detach "$BASE_SHA"
+          git restore --source="$SOURCE" --worktree --staged -- game-release.json shared/games/world-game-assets.js games
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('world.html')
+          s=p.read_text()
+          old='/shared/games/world-game-assets.js?v=20261114-restaurants-c2s45-broadcast4'
+          assert s.count(old)==1
+          p.write_text(s.replace(old,'/shared/games/world-game-assets.js?v=20261114-party-recovery1'))
+          PY
+          test "$(git hash-object world.html)" = 'c5d2810382421ac544ef53c0a31c992bdf21716f'
+          git add world.html
+          git diff --cached --check
+          test "$(git diff --cached --name-only | wc -l)" = 20
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Fix drinking room recovery, prompt delivery and crocodile artwork'
+          git push origin HEAD:refs/heads/fix/drinking-room-recovery-20261114
