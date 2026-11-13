@@ -5,7 +5,7 @@
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
-  tarot:'1.9.2',
+  tarot:'1.9.3',
   saju:'2.6.3',
   group:'1.2.2',
   chacha_rush:'1.1.1',

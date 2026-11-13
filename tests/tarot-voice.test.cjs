@@ -11,17 +11,17 @@ const { CARD_INTERPRETATIONS } = load('interpretation-engine.js');
 const risk = '확인하지 않은 조건을 좋은 쪽으로 상상하면 실제 비용을 놓칠 수 있어.';
 const clearerRisk = directInterpretation(risk);
 assert.ok(clearerRisk.startsWith('확인하지 않은 조건을 좋은 쪽으로 상상하면 실제 비용을 '));
-assert.match(clearerRisk, /경고해\.$/u);
+assert.match(clearerRisk, /놓치기 쉬워\.$/u);
 assert.doesNotMatch(clearerRisk, /반드시|무조건|확정|성공한다|실패한다/u);
 
 const conditional = '각자 맡을 일을 확인한다면 반복하는 수고를 덜 수 있어.';
 const clearerConditional = directInterpretation(conditional);
 assert.ok(clearerConditional.startsWith('각자 맡을 일을 확인한다면 '));
-assert.match(clearerConditional, /목표야\.$/u);
-assert.doesNotMatch(clearerConditional, /덜어져|없어져|해결돼/u, 'a possible benefit is a target, not a promised result');
+assert.match(clearerConditional, /덜기 쉬워\.$/u);
+assert.doesNotMatch(clearerConditional, /덜어져|없어져|해결돼/u, 'a condition makes the action easier without promising the result');
 
 // Late discovery or less attention must never become an instruction to neglect a condition.
-assert.match(directInterpretation('확인하지 않으면 뒤늦게 알 수 있어.'), /뒤늦게 알게 되는 상황을 짚어/u);
+assert.match(directInterpretation('확인하지 않으면 뒤늦게 알 수 있어.'), /뒤늦게 알게 되기 쉬워/u);
 assert.doesNotMatch(directInterpretation('확인하지 않으면 뒤늦게 알 수 있어.'), /목표야/u);
 assert.doesNotMatch(directInterpretation('시작이 좋아 보이면 관리할 일까지는 덜 살필 수 있어.'), /덜 살펴봐|덜 살피는 게 목표야|덜 살피는 데 초점을/u);
 
@@ -56,12 +56,17 @@ assert.equal(directInterpretation(example), example);
 assert.equal(directAction(example), example);
 
 // Keep the subject and object: an experience remains an experience, not a new method.
-assert.equal(directInterpretation('친구의 경험이 도움이 될 수 있어.'), '친구의 경험이 도움이 된다는 해석이야.');
+assert.equal(directInterpretation('친구의 경험이 도움이 될 수 있어.'), '친구의 경험이 도움이 될 수 있어.');
 assert.equal(directInterpretation('잘했던 경험이 관심을 알아보는 단서가 될 수 있어.'),
-  '잘했던 경험이 관심을 알아보는 단서가 된다는 해석이야.');
+  '잘했던 경험이 관심을 알아보는 단서가 될 수 있어.');
+for (const text of [
+  '가족이니까 무조건 해야 한다는 생각이 선택의 여유를 줄일 수 있어.',
+  '현재 결과만 보고 시간이 필요한 과정까지 실패로 판단할 수 있어.',
+  '감당하기 어려운 부탁은 분명히 구별할 수 있어.'
+]) assert.equal(directInterpretation(text), text, 'a warning or a capability is not renamed as a method');
 const personal = directCardAdvice('생각만 하다가 질문할 시기를 놓칠 수 있어. 모르는 조건을 적고 담당자에게 확인할 수 있어.');
 assert.equal(splitSummarySentences(personal).length, 2);
-assert.match(personal, /놓치는 문제를 경고해\./u);
+assert.match(personal, /놓치기 쉬워\./u);
 assert.match(personal, /담당자에게 확인해\.$/u);
 
 function audit(texts, transform) {
@@ -88,8 +93,8 @@ const coverage = {
   problems: audit(Object.values(CARD_INTERPRETATIONS).map(rule => rule.problem), directInterpretation),
   outcomes: audit(Object.values(CARD_INTERPRETATIONS).map(rule => rule.outcome), directInterpretation)
 };
-assert.ok(coverage.insights.changed >= 1000, 'the change reaches the authored topic content, not just repeated introductions');
-assert.ok(coverage.personal.changed >= 250, 'the change also reaches the situation-specific card advice');
-assert.ok(coverage.outcomes.changed >= 40, 'conditional outcome directions become clear without a real-world guarantee');
+assert.equal(coverage.insights.total, 3900, 'all actual card/topic explanations are checked');
+assert.equal(coverage.personal.total, 1170, 'all situation-specific card explanations are checked');
+assert.equal(coverage.outcomes.total, 78, 'all card outcomes keep conditions and complete sentences');
 console.log('PASS tarot voice: interpreted meaning, actionable verbs, conditions, negatives, quotes and authored examples preserved');
 console.log(JSON.stringify(coverage));

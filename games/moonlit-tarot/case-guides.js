@@ -48,7 +48,7 @@ import { CASE_47 } from './case-guides/case-47.js?v=20261113-tarot-variety1';
 import { CASE_48 } from './case-guides/case-48.js?v=20261113-tarot-variety1';
 import { CASE_49 } from './case-guides/case-49.js?v=20261113-tarot-variety1';
 import { CASE_50 } from './case-guides/case-50.js?v=20261113-tarot-variety1';
-import { directInterpretation, directAction } from './reading-voice.js?v=20261113-tarot-direct1';
+import { directInterpretation, directAction } from './reading-voice.js?v=20261113-tarot-easy1';
 
 // Editorial applications of the existing card meanings, authored for each
 // card/topic pair. They are not new historical sources or verified predictions.
