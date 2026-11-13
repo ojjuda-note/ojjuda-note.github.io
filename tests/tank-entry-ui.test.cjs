@@ -123,6 +123,14 @@ window.tankEntryFixture={completed:[],coins:()=>$.coins};
    assert.notEqual((await service.call(actor,{action:'mine'})).room.id,previous,'reentry creates a different game');
    if(mode!=='online'){
     await frame.locator('#surrender').click();
+    const choice=frame.locator('dialog.game-exit-dialog[open]');
+    assert.deepEqual(await choice.getByRole('button').allTextContents(),['나가기','계속하기']);
+    const [leave,stay]=await Promise.all([choice.locator('[data-exit-leave]').boundingBox(),choice.locator('[data-exit-stay]').boundingBox()]);
+    assert.ok(leave.x+leave.width<=stay.x && Math.abs(leave.y-stay.y)<1,'exit is left of continue on the same row');
+    await choice.getByRole('button',{name:'계속하기',exact:true}).click();
+    await playing();
+    await frame.locator('#surrender').click();
+    await choice.getByRole('button',{name:'나가기',exact:true}).click();
     const start=frame.locator(mode==='local'?'#startLocal':'#startSolo');
     await start.waitFor({state:'visible'});await entry();
     await start.click();await playing();

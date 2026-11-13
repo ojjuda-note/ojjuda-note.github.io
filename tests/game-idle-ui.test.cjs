@@ -64,7 +64,7 @@ async function playing(target,label){
   assert.equal(await content.locator('#resumeMatch').isVisible(),false,'leaving does not offer the previous match again');
   await instrument(frame,'tank');await idle(frame,'tank fresh reentry');
   await content.locator('#startSolo').click();await playing(frame,'tank new play');
-  await content.locator('#surrender').click();await idle(frame,'tank returned entry');await tank.close();
+  await content.locator('#surrender').click();await content.locator('dialog.game-exit-dialog [data-exit-leave]').click();await idle(frame,'tank returned entry');await tank.close();
 
   const ttang=await context.newPage();await ttang.goto(origin+'/games/ttang.html');
   await instrument(ttang,'ttang');await idle(ttang,'ttang entry');
