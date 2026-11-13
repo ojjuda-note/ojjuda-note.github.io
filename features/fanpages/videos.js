@@ -10,6 +10,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: '9XttLI0oH0I', title: 'LOVE ATTACK', kind: '뮤직비디오', source: 'RESCENE / THE MUZE' }
   ],
   ive: [
+    { id: 'rsNhWkC4neE', title: 'Looks Can Kill', kind: '뮤직비디오', source: 'STARSHIP · 2026.10.19' },
+    { id: 'vL4y-ZuKzZs', title: 'Looks Can Kill', kind: '퍼포먼스 영상', source: 'IVE 공식 · 2026.10.21' },
+    { id: 'trlOTS4nKO4', title: 'LUCID DREAM', kind: '뮤직비디오', source: 'Sony Music Japan · 2026.05.25' },
     { id: '1Lmy7qwmSMc', title: 'BLACKHOLE', kind: '뮤직비디오', source: 'IVE / STARSHIP' },
     { id: '9qkpcLK422o', title: 'BANG BANG', kind: '뮤직비디오', source: 'IVE / STARSHIP' },
     { id: '6ZUIwj3FgUY', title: 'I AM', kind: '뮤직비디오', source: 'IVE / STARSHIP' },
