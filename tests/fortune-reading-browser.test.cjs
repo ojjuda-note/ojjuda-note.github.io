@@ -59,16 +59,23 @@ const server = http.createServer((request, response) => {
     await page.waitForFunction(() => document.querySelector('#app').dataset.phase === 'discard');
     await page.locator('.card[data-index="1"]').click();
     await page.waitForFunction(() => document.querySelector('#app').dataset.phase === 'reading');
-    for (const index of [2, 4, 3]) {
+    const roles = ['지금의 문제', '현재 상황', '해결 방법과 결과'];
+    for (const [slot, index] of [2, 4, 3].entries()) {
       await page.locator(`.card[data-index="${index}"]`).click();
       await page.locator('#reading-dialog[open]').waitFor();
-      const sections = await page.locator('#reading-sections h3').allTextContents();
-      assert.ok(sections.some(text => text.includes('그림에 담긴 뜻')));
-      assert.ok(sections.some(text => text.includes('예시')));
+      assert.ok((await page.locator('#reading-position').textContent()).endsWith(roles[slot]));
+      assert.ok((await page.locator('#reading-introduction').textContent()).length > 40);
+      assert.ok((await page.locator('#reading-title').textContent()).length > 0);
+      const paragraphs = await page.locator('#reading-sections > p').allTextContents();
+      assert.equal(paragraphs.length, 7, 'the complete conversational explanation is visible');
+      assert.ok(paragraphs.every(text => text.trim().length > 20));
+      assert.ok(paragraphs.join('').length >= 350, 'the individual reading remains detailed');
+      assert.equal(await page.locator('#reading-sections h3').count(), 0);
+      assert.ok(await page.locator('#reading-detail-sections .reading-part').count() > 0, 'original meanings and cautions remain available');
       assert.match(await page.locator('#reading-source-link').getAttribute('href'), /^https:\/\/en\.wikisource\.org\//);
       if (index === 2) {
         await page.screenshot({ path: path.join(artifacts, 'tarot-card-mobile.png') });
-        await page.locator('#reading-dialog .reading-source summary').click();
+        await page.locator('#reading-source-link').locator('xpath=ancestor::details[1]').locator('summary').click();
         await page.locator('#reading-source-link').scrollIntoViewIfNeeded();
         await page.screenshot({ path: path.join(artifacts, 'tarot-source-mobile.png') });
       }
@@ -77,13 +84,33 @@ const server = http.createServer((request, response) => {
     assert.equal(await page.locator('#reading-open span').textContent(), '종합 점괘 자세히 보기');
     await page.locator('#reading-open').click();
     await page.locator('#result-dialog[open]').waitFor({ timeout: 15000 });
-    assert.ok((await page.locator('#result-one-line').textContent()).length >= 24);
-    assert.ok((await page.locator('#result-intro').textContent()).length >= 110);
-    const overflow = await page.evaluate(() => ({ document: document.documentElement.scrollWidth > innerWidth, modal: document.querySelector('#result-dialog').scrollWidth > document.querySelector('#result-dialog').clientWidth }));
-    assert.deepEqual(overflow, { document: false, modal: false });
-    await page.screenshot({ path: path.join(artifacts, 'tarot-result-mobile.png') });
+    assert.equal(await page.locator('#summary-tab-problem').getAttribute('aria-selected'), 'true');
+    assert.equal(await page.locator('#summary-panel-timeline').isVisible(), false);
+    const tarotViews = {};
+    for (const [group, expectedSections] of [['problem', 5], ['timeline', 7], ['domains', 12]]) {
+      await page.locator(`#summary-tab-${group}`).click();
+      const panel = page.locator(`#summary-panel-${group}`);
+      await panel.waitFor({ state: 'visible' });
+      assert.equal(await page.locator(`#summary-tab-${group}`).getAttribute('aria-selected'), 'true');
+      assert.equal(await panel.getAttribute('aria-labelledby'), `summary-tab-${group}`);
+      assert.equal(await panel.locator('.reading-part').count(), expectedSections);
+      const sectionDetails = await panel.locator('.reading-part').evaluateAll(sections => sections.every(section => section.querySelector('h3')?.textContent.trim() && section.querySelectorAll('p').length >= 2 && !section.closest('details')));
+      assert.ok(sectionDetails, group + ': each section has a clear title and full visible paragraphs');
+      if (group === 'domains') {
+        const headings = await panel.locator('h3').allTextContents();
+        for (const domain of ['건강', '인연', '금전', '학업', '가족', '문서·계약', '악운', '천운', '직업', '운명', '행운', '궁합']) assert.ok(headings.some(title => title.includes(domain)), domain + ': a distinct domain heading is visible');
+      }
+      const overflow = await page.evaluate(() => ({ document: document.documentElement.scrollWidth > innerWidth, modal: document.querySelector('#result-dialog').scrollWidth > document.querySelector('#result-dialog').clientWidth }));
+      assert.deepEqual(overflow, { document: false, modal: false }, group + ': the mobile reading fits the viewport');
+      tarotViews[group] = { sections: expectedSections, overflow };
+      await page.screenshot({ path: path.join(artifacts, group === 'problem' ? 'tarot-result-mobile.png' : `tarot-${group}-mobile.png`) });
+    }
+    assert.ok((await page.locator('#summary-ritual').textContent()).length > 20);
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.screenshot({ path: path.join(artifacts, 'tarot-result-desktop.png') });
+    for (const group of ['problem', 'timeline', 'domains']) {
+      await page.locator(`#summary-tab-${group}`).click();
+      await page.screenshot({ path: path.join(artifacts, group === 'problem' ? 'tarot-result-desktop.png' : `tarot-${group}-desktop.png`) });
+    }
     const saju = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', deviceScaleFactor: 1 });
     saju.on('pageerror', error => errors.push(error.message));
     saju.on('response', response => { if (response.status() >= 400) failed.push([response.status(), response.url()]); });
@@ -104,6 +131,6 @@ const server = http.createServer((request, response) => {
     await saju.screenshot({ path: path.join(artifacts, 'saju-lifelong-desktop.png') });
     assert.deepEqual(errors, []);
     assert.deepEqual(failed, []);
-    console.log(JSON.stringify({ localPreviewOnly: true, sajuTopics: ['lifelong', 'annual', 'monthly'], viewport: '390×844 and 1280×900', originalOneLine: await page.locator('#result-one-line').textContent(), overflow, errors, failed }));
+    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly'], viewport: '390×844 and 1280×900', errors, failed }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => server.close());

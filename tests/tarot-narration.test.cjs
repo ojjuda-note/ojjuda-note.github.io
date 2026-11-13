@@ -5,6 +5,7 @@ const load = createTarotLoader();
 const { narrateReading, narrateSummary } = load('narration.js');
 const { DECK, POSITIONS, getReading, getSummary } = load('readings.js');
 const { CARD_FOUNDATIONS } = load('card-foundations.js');
+const { CARD_LIFE_THEMES } = load('life-themes.js');
 const plain = value => JSON.parse(JSON.stringify(value));
 const topics = ['overall', 'love', 'money', 'work'];
 const cards = ['swords_knight', 'swords_two', 'pentacles_three'].map(id => DECK.find(card => card.id === id));
@@ -28,7 +29,7 @@ for (const card of DECK.filter(card => card.arcana === 'minor')) {
       assert.ok(result.introduction.includes(result.displayName));
       assert.ok(!result.paragraphs.includes(result.introduction), 'the standalone introduction is not duplicated');
       assert.ok(result.text.startsWith(result.introduction));
-      for (const fact of [input.foundation.symbol, input.guidance.meaning, input.guidance.positions[index],
+      for (const fact of [input.foundation.symbol, input.guidance.meaning, input.guidance.positions[index === 1 ? 0 : index],
         card.topics[topic], input.detail.example, input.detail.action, input.foundation.caution]) {
         assert.ok(result.text.includes(fact), `${card.id}/${topic}/${index} preserves an authored explanation`);
       }
@@ -36,6 +37,9 @@ for (const card of DECK.filter(card => card.arcana === 'minor')) {
       assert.equal(result.summary, input.foundation.takeaway);
       assert.equal(result.detailSections, input.base.sections);
       assert.equal(result.reference, input.base.reference);
+      assert.equal(result.lifeTheme, CARD_LIFE_THEMES[card.id]);
+      assert.equal(result.positionMeaning, input.guidance.positions[index === 1 ? 0 : index]);
+      if (index === 2) assert.ok(result.text.includes(result.lifeTheme.change));
       assert.deepEqual(plain(result), plain(narrateReading(input)), 'same card/topic/position is deterministic');
     }
   }
@@ -54,6 +58,32 @@ for (const topicId of topics) {
   const summary = narrateSummary(input);
   assert.equal(summary.source, source, 'original record metadata is preserved without new counts');
   assert.equal(summary.paragraphs.length, 3);
+  assert.deepEqual(plain(summary.groups.map(group => [group.id, group.label])), [
+    ['problem', '문제 해결'], ['timeline', '과거·현재·미래'], ['domains', '분야별 풀이']
+  ]);
+  assert.equal(summary.groups[0].sections.length, 5);
+  assert.equal(summary.groups[1].sections.length, 7);
+  assert.equal(summary.groups[2].sections.length, 12);
+  assert.equal(summary.sections.length, 24);
+  for (const group of summary.groups) {
+    assert.equal(new Set(group.sections.map(section => section.id)).size, group.sections.length);
+    for (const section of group.sections) {
+      assert.ok(section.title);
+      assert.ok(section.paragraphs.length >= 2, `${group.id}/${section.id} is a developed explanation`);
+      assert.ok(section.paragraphs.every(paragraph => typeof paragraph === 'string' && paragraph.length >= 50));
+      assert.ok(!section.paragraphs.join(' ').includes(summary.ritual), 'full practical action is reserved for the single final ritual');
+    }
+  }
+  const timeline = summary.groups[1].sections;
+  for (const reading of readings) assert.ok(timeline[0].paragraphs.join(' ').includes(reading.lifeTheme.strength));
+  assert.ok(timeline[1].paragraphs.join(' ').includes(readings[0].lifeTheme.past));
+  assert.ok(timeline[2].paragraphs.join(' ').includes(readings[0].foundationCaution));
+  assert.ok(timeline[3].paragraphs.join(' ').includes(readings[0].lifeTheme.achievement));
+  assert.ok(timeline[4].paragraphs.join(' ').includes(readings[1].topicMeaning));
+  assert.ok(timeline[5].paragraphs.join(' ').includes(readings[2].lifeTheme.change));
+  assert.ok(timeline[6].paragraphs.join(' ').includes(readings[2].foundationCaution));
+  assert.equal(summary.text.split(summary.ritual).length - 1, 1, 'full ritual is copied exactly once');
+
   for (let i = 0; i < 3; i++) {
     assert.ok(summary.paragraphs[i].includes(cards[i].name));
     assert.ok(summary.paragraphs[i].includes(readings[i].meaning));
@@ -62,7 +92,7 @@ for (const topicId of topics) {
     assert.ok(summary.text.includes(cards[i].name));
   }
   assert.ok(summary.synthesis.includes(input.innerMeaning));
-  assert.ok(summary.synthesis.includes(input.flowMeaning));
+  assert.ok(summary.synthesis.includes(readings[1].theme.split(' · ')[0]));
   assert.ok(summary.synthesis.includes(input.direction));
   assert.ok(summary.synthesis.includes(readings[2].example));
   assert.equal(summary.summary, summary.synthesis);
@@ -91,6 +121,20 @@ for (const card of DECK) for (const topic of topics) for (let index = 0; index <
   assert.ok(reading.paragraphs.length >= 6);
   assert.ok(reading.text.includes(reading.action));
 }
+assert.deepEqual(plain(POSITIONS.map(position => position.label)), ['지금의 문제', '현재 상황', '해결 방법과 결과']);
+assert.equal(Object.keys(CARD_LIFE_THEMES).length, DECK.length);
+for (let index = 0; index < DECK.length; index++) for (const topic of topics) {
+  const ordered = [DECK[index], DECK[(index + 1) % DECK.length], DECK[(index + 2) % DECK.length]];
+  const report = getSummary(ordered, topic);
+  assert.equal(report.groups.length, 3);
+  assert.equal(report.groups[0].sections.length, 5);
+  assert.equal(report.groups[1].sections.length, 7);
+  assert.equal(report.groups[2].sections.length, 12);
+  assert.deepEqual(plain(report.source.cards), ordered.map(card => card.id));
+  for (const card of ordered) assert.ok(report.text.includes(card.name));
+  assert.equal(report.ritual, getReading(ordered[2], topic, 2).action);
+  assert.equal(report.text.split(report.ritual).length - 1, 1);
+}
 const actual = getSummary(['swords_knight', 'priestess', 'pentacles_three'], 'work');
 assert.equal(actual.summary, actual.synthesis);
 assert.equal(actual.ritual, getReading('pentacles_three', 'work', 2).action);
@@ -102,4 +146,4 @@ assert.ok(!actual.paragraphs[2].includes('’야.'), 'numbered card names use pa
 assert.throws(() => narrateReading({}), /requires_authored_card_meanings/);
 assert.throws(() => narrateSummary({ cards: cards.slice(0, 2), readings: [], topicId: 'work' }), /requires_three_ordered_readings/);
 assert.throws(() => narrateSummary({ cards: [cards[0], cards[0], cards[2]], readings: [], topicId: 'work' }), /requires_three_ordered_readings/);
-console.log('PASS tarot narration: plain names, ordered positions, all authored minor-card meanings, examples/actions, deterministic actual-card synthesis and retained source metadata');
+console.log('PASS tarot narration: all78cards, problem/current/solution roles, detailed problem/timeline/domain groups, actual-card evidence, conditional life themes, topic/order determinism and a single final action');

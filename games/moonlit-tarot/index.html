@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#100c1b">
-  <meta name="description" content="달빛 아래, 마녀가 당신을 기다려요. 달의 마녀 루나와 함께 세 장을 펼치고, 지금의 마음과 앞으로의 흐름을 살펴보세요.">
+  <meta name="description" content="달빛 아래, 마녀가 당신을 기다려요. 달의 마녀 루나와 함께 세 장을 펼치고, 지금의 문제와 해결의 실마리, 과거·현재·미래의 흐름을 살펴보세요.">
   <title>달의 마녀 타로 · 오쭈다</title>
   <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="./assets/scene.webp" as="image">
   <link rel="preload" href="./assets/moon-serif.woff?v=20261113-tarot-corpus1" as="font" type="font/woff" crossorigin>
   <link rel="stylesheet" href="./style.css?v=20261113-tarot-corpus1">
-  <link rel="stylesheet" href="./details.css?v=20261113-tarot-story1">
+  <link rel="stylesheet" href="./details.css?v=20261113-tarot-life1">
   <link rel="stylesheet" href="./revelation.css?v=20261112-tarot-daily1">
 </head>
 <body>
@@ -95,7 +95,7 @@
         <div id="play-controls" class="play-controls" hidden>
           <p id="selection-count" class="selection-count">버릴 카드 <strong>0 <span>/ 2</span></strong></p>
           <div id="discard-preview" class="discard-preview" hidden aria-live="polite"></div>
-          <ol id="reveal-order" class="reveal-order" hidden aria-label="내가 고른 카드 순서"><li><b>1</b><span>첫 번째<small>지금의 마음</small></span></li><li><b>2</b><span>두 번째<small>다가오는 흐름</small></span></li><li><b>3</b><span>세 번째<small>마녀의 조언</small></span></li></ol>
+          <ol id="reveal-order" class="reveal-order" hidden aria-label="내가 고른 카드 순서"><li><b>1</b><span>첫 번째<small>지금의 문제</small></span></li><li><b>2</b><span>두 번째<small>현재 상황</small></span></li><li><b>3</b><span>세 번째<small>해결 방법과 결과</small></span></li></ol>
           <button id="action-button" class="primary-button" disabled><svg><use href="#i-star"/></svg><span>카드가 날아오는 중</span><svg class="button-arrow"><use href="#i-arrow"/></svg></button>
           <button id="restart-small" class="text-button" hidden><svg><use href="#i-reset"/></svg><span>다른 주제 고르기</span></button>
         </div>
@@ -120,7 +120,7 @@
   <dialog id="help-dialog" class="modal help-modal" aria-labelledby="help-title">
     <button class="modal-close" data-close="help-dialog" aria-label="이용 안내 닫기"><svg><use href="#i-close"/></svg></button>
     <p class="eyebrow">YOUR LITTLE RITUAL</p><h2 id="help-title">마녀와 만나는 방법</h2>
-    <ol class="help-steps"><li><span>01</span><div><h3>궁금한 주제를 고르세요</h3></div></li><li><span>02</span><div><h3>두 장을 하나씩 버리세요</h3><p>누르면 바로 버려져요.</p></div></li><li><span>03</span><div><h3>원하는 순서로 세 장을 펼치세요</h3><p>마음 → 흐름 → 조언 순서예요. 열린 카드는 다시 볼 수 있어요.</p></div></li></ol>
+    <ol class="help-steps"><li><span>01</span><div><h3>궁금한 주제를 고르세요</h3></div></li><li><span>02</span><div><h3>두 장을 하나씩 버리세요</h3><p>누르면 바로 버려져요.</p></div></li><li><span>03</span><div><h3>원하는 순서로 세 장을 펼치세요</h3><p>문제 → 상황 → 해결 순서예요. 열린 카드는 다시 볼 수 있어요.</p></div></li></ol>
     <p id="help-usage-note" class="help-footnote">전체 30쭈 · 연애·금전·일과 도전 각 10쭈. 결제 후 24시간 동안 다시 보기는 무료이며, 만료 후에는 다시 결제해요.</p>
     <p class="help-footnote">카드·순서·주제에 맞춘 전통 해석이며 일부 본문은 공통으로 사용해요. 미래나 상대의 속마음을 알아낸 정보는 아니에요.</p>
     <details class="reading-source help-footnote"><summary>어떤 자료로 풀이했나요?</summary><p>오래된 타로 책에 나온 그림과 뜻을 참고해 쉬운 말로 썼어요. 같은 카드도 읽는 방법에 따라 뜻이 달라질 수 있어요. 여기서는 카드를 모두 똑바로 세운 뜻으로 읽어요. 왕·여왕·기사·시종은 누군가의 성별이나 나이를 맞히는 카드로 쓰지 않아요. 첫째·둘째·셋째 자리의 뜻과 생활 속 예시는 오쭈다에서 정하고 쓴 내용이에요.</p><p><a href="https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot" target="_blank" rel="noopener noreferrer">참고한 옛 타로 책 읽기 ↗</a></p></details>
@@ -146,10 +146,10 @@
   <dialog id="result-dialog" class="modal result-modal" aria-labelledby="result-title">
     <button class="modal-close" data-close="result-dialog" aria-label="종합 해석 닫기"><svg><use href="#i-close"/></svg></button>
     <div class="result-heading"><p id="result-eyebrow" class="eyebrow">LUNA'S FINAL READING</p><h2 id="result-title">당신을 위한 종합 점괘</h2><p id="result-date"></p></div>
-    <section class="summary-box" aria-label="세 장의 이야기">
+    <div id="summary-tabs" class="summary-tabs" role="tablist" aria-label="풀이 방식"></div>
+    <section class="summary-box" aria-label="종합 풀이">
       <span class="summary-star" aria-hidden="true">✧</span>
-      <div id="summary-text" class="reading-sections reading-narrative"></div>
-      <div id="summary-synthesis-section" class="reading-synthesis"><h3>세 장을 함께 읽으면</h3><p id="summary-synthesis"></p></div>
+      <div id="summary-text" class="reading-sections summary-sections"></div>
       <div class="ritual"><svg aria-hidden="true"><use href="#i-moon"/></svg><div><span>이렇게 해 보세요</span><p id="summary-ritual"></p></div></div>
     </section>
     <div class="result-actions"><button id="copy-result" class="secondary-button"><svg><use href="#i-copy"/></svg>종합 점괘 복사하기</button><button id="restart-result" class="primary-button"><svg><use href="#i-reset"/></svg><span>다른 주제 고르기</span></button></div>
@@ -158,6 +158,6 @@
   <div id="toast" class="toast" role="status"></div>
   <script src="/shared/games/admin-preview.js?v=20261111-shared-auth3"></script>
   <script src="/shared/analytics/site-usage.js?v=20261113-fortune-visits1"></script>
-  <script type="module" src="./app.js?v=20261113-tarot-story1"></script>
+  <script type="module" src="./app.js?v=20261113-tarot-life1"></script>
 </body>
 </html>

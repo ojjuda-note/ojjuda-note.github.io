@@ -1,4 +1,4 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261113-tarot-story1';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261113-tarot-life1';
 import { TarotFX, TarotAudio } from './fx.js';
 import { TarotPayment, getTarotPrice } from './payment.js?v=20261113-tarot-24h1';
 import { TarotRevelation } from './revelation.js?v=20261112-tarot-daily1';
@@ -651,6 +651,7 @@ function renderReadingSections(container, sections, fallback = '', headingTag = 
   sections.forEach((part, index) => {
     const section = document.createElement('section');
     section.className = 'reading-part';
+    if (part.id) section.dataset.sectionId = part.id;
     const heading = document.createElement(headingTag);
     const number = document.createElement('span');
     number.className = 'reading-part-number';
@@ -663,7 +664,7 @@ function renderReadingSections(container, sections, fallback = '', headingTag = 
       subtitle.textContent = part.subtitle;
       section.append(subtitle);
     }
-    String(part.body || '').split(/\n\s*\n/).filter(Boolean).forEach(text => {
+    narrativeParagraphs(part.paragraphs, part.body || '').forEach(text => {
       const paragraph = document.createElement('p');
       paragraph.textContent = text;
       section.append(paragraph);
@@ -725,6 +726,49 @@ function showOverallOracle(summary = getSummary(state.openOrder.map(index => sta
   $('#reading-open').disabled = false;
 }
 
+function summaryGroups(summary) {
+  return Array.isArray(summary.groups) && summary.groups.length
+    ? summary.groups
+    : [{ id: 'problem', label: '문제 해결', sections: summary.sections || [] }];
+}
+
+function selectSummaryGroup(id, focus = false) {
+  $$('#summary-tabs [role="tab"]').forEach(tab => {
+    const selected = tab.dataset.group === id;
+    tab.setAttribute('aria-selected', String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+    document.getElementById(tab.getAttribute('aria-controls')).hidden = !selected;
+    if (selected && focus) tab.focus();
+  });
+}
+
+function renderSummaryGroups(summary) {
+  const tabs = $('#summary-tabs');
+  const panels = $('#summary-text');
+  tabs.replaceChildren();
+  panels.replaceChildren();
+  const groups = summaryGroups(summary);
+  groups.forEach(group => {
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.id = `summary-tab-${group.id}`;
+    tab.dataset.group = group.id;
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-controls', `summary-panel-${group.id}`);
+    tab.textContent = group.label;
+    const panel = document.createElement('div');
+    panel.id = `summary-panel-${group.id}`;
+    panel.className = 'summary-panel';
+    panel.setAttribute('role', 'tabpanel');
+    panel.setAttribute('aria-labelledby', tab.id);
+    panel.tabIndex = 0;
+    renderReadingSections(panel, group.sections);
+    tabs.append(tab);
+    panels.append(panel);
+  });
+  selectSummaryGroup(groups.some(group => group.id === 'problem') ? 'problem' : groups[0].id);
+}
+
 function buildResults() {
   const drawn = state.openOrder.map(index => state.drawn[index]);
   const summary = getSummary(drawn, state.topic);
@@ -732,9 +776,7 @@ function buildResults() {
   const readingDate = !billing.adminPreview && billing.record?.readingDay ? new Date(`${billing.record.readingDay}T12:00:00+09:00`) : new Date();
   $('#result-date').textContent = `${new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' }).format(readingDate)} · ${topic.label}${billing.adminPreview ? ' · 관리자 모드' : ''}`;
   $('#result-title').textContent = '당신을 위한 종합 점괘';
-  renderReadingParagraphs($('#summary-text'), summary.paragraphs, summary.text);
-  $('#summary-synthesis').textContent = summary.synthesis || '';
-  $('#summary-synthesis-section').hidden = !summary.synthesis;
+  renderSummaryGroups(summary);
   $('#summary-ritual').textContent = summary.ritual;
   showOverallOracle(summary);
 }
@@ -796,8 +838,14 @@ async function copyResult() {
   const drawn = state.openOrder.map(i => state.drawn[i]);
   const summary = getSummary(drawn, state.topic);
   const parts = ['오쭈다 · 달의 마녀 타로', '종합 점괘', $('#result-date').textContent, ''];
-  narrativeParagraphs(summary.paragraphs, summary.text).forEach(paragraph => parts.push(paragraph, ''));
-  if (summary.synthesis) parts.push('세 장을 함께 읽으면', summary.synthesis, '');
+  summaryGroups(summary).forEach(group => {
+    parts.push(group.label, '');
+    group.sections.forEach(section => {
+      parts.push(section.title);
+      if (section.subtitle) parts.push(section.subtitle);
+      narrativeParagraphs(section.paragraphs, section.body || '').forEach(paragraph => parts.push(paragraph, ''));
+    });
+  });
   parts.push(`이렇게 해 보세요: ${summary.ritual}`, '', '타로의 전통 해석이에요. 미래를 확정하지 않아요.');
   const text = parts.join('\n');
   try {
@@ -860,7 +908,7 @@ function reset({ clearPaid = true } = {}) {
     card.label.textContent = '';
     card.button.querySelector('.reveal-number').hidden = true;
   });
-  ['reading-position', 'reading-introduction', 'reading-title', 'reading-name-guide', 'reading-sections', 'reading-detail-sections', 'reading-source-note-body', 'result-date', 'summary-text', 'summary-synthesis', 'summary-ritual'].forEach(id => { document.getElementById(id).replaceChildren(); });
+  ['reading-position', 'reading-introduction', 'reading-title', 'reading-name-guide', 'reading-sections', 'reading-detail-sections', 'reading-source-note-body', 'result-date', 'summary-tabs', 'summary-text', 'summary-ritual'].forEach(id => { document.getElementById(id).replaceChildren(); });
   $$('#reading-dialog details').forEach(detail => { detail.open = false; });
   $('#reading-card-detail').hidden = true;
   ['--art-image', '--art-size', '--art-x', '--art-y'].forEach(name => $('#reading-art').style.removeProperty(name));
@@ -902,6 +950,22 @@ $('#action-button').addEventListener('click', () => {
 $('#restart-small').addEventListener('click', reset);
 $('#restart-result').addEventListener('click', reset);
 $('#copy-result').addEventListener('click', copyResult);
+$('#summary-tabs').addEventListener('click', event => {
+  const tab = event.target.closest('[role="tab"]');
+  if (!tab || expireDisplayedReading()) return;
+  selectSummaryGroup(tab.dataset.group);
+});
+$('#summary-tabs').addEventListener('keydown', event => {
+  const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+  if (!keys.includes(event.key)) return;
+  const tabs = $$('#summary-tabs [role="tab"]');
+  const current = tabs.indexOf(event.target);
+  if (current < 0 || expireDisplayedReading()) return;
+  event.preventDefault();
+  const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
+    : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+  selectSummaryGroup(tabs[next].dataset.group, true);
+});
 $('#reading-open').addEventListener('click', () => {
   if (state.phase === 'complete') void showResultsWithRevelation();
   else showReading();

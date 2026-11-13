@@ -91,9 +91,6 @@
 .reading-part p + p { margin-top: 13px; }
 .reading-narrative > p { font-size: 16px; line-height: 2; }
 .reading-narrative > p + p { margin-top: 23px; }
-.reading-synthesis { margin-top: 28px; padding-top: 24px; border-top: 1px solid #bea0d126; text-align: left; }
-.summary-box .reading-synthesis h3 { margin: 0 0 14px; color: #edcea0; font-family: var(--sans); font-size: 17px; line-height: 1.7; text-align: left; }
-.reading-synthesis p { color: #e4d9ec; font-size: 16px; line-height: 2; word-break: keep-all; overflow-wrap: anywhere; }
 .reading-dialog-actions {
   display: flex; justify-content: center; gap: 12px; align-items: center;
   position: sticky; bottom: -38px; z-index: 6; margin: 27px -38px -38px; padding: 19px 38px;
@@ -140,7 +137,7 @@
   .reading-part h3, .reading-part h4, .summary-box .reading-part h4 { font-size: 15px; gap: 9px; }
   .reading-part p, .reading-sections > p { font-size: 15px; line-height: 2; word-break: normal; overflow-wrap: break-word; }
   .reading-narrative > p { font-size: 16px; }
-  .reading-synthesis p, .summary-box .ritual p { word-break: normal; overflow-wrap: break-word; }
+  .summary-box .ritual p { word-break: normal; overflow-wrap: break-word; }
   .reading-dialog-actions { bottom: -22px; margin: 24px -22px -22px; padding: 15px 16px; gap: 9px; }
   .reading-dialog-actions button { font-size: 11px; padding: 11px 7px; line-height: 1.6; }
   .reading-dialog-actions .primary-button { flex: 1.3; gap: 7px; }
@@ -226,3 +223,25 @@
 .reading-part .reading-part-subtitle{display:block;margin:0 0 14px;color:#f6dfb6;font-family:var(--serif);font-size:20px;font-weight:400;line-height:1.7;text-align:left;word-break:keep-all;overflow-wrap:anywhere}
 .reading-part>h3:not(.reading-part-subtitle),.reading-part>h4:not(.reading-part-subtitle){font-size:13px;color:#c9afd9;margin-bottom:10px}
 @media(max-width:600px){.reading-part .reading-part-subtitle{font-size:19px}.reading-part>h3:not(.reading-part-subtitle),.reading-part>h4:not(.reading-part-subtitle){font-size:13px}}
+
+/* Different views of the same three cards, with the full explanation visible. */
+.summary-tabs { display: flex; gap: 6px; padding: 5px; margin: 0 auto 28px; max-width: 680px; border: 1px solid #b597ce42; border-radius: 10px; background: #0d091780; }
+.summary-tabs button { flex: 1; min-width: 0; min-height: 48px; padding: 11px 16px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #c9b3d8; font: 14px/1.6 var(--sans); word-break: keep-all; overflow-wrap: anywhere; text-wrap: balance; }
+.summary-tabs button[aria-selected="true"] { border-color: #d5b77f88; background: #ba956b24; color: #f3ddae; }
+.summary-tabs button:hover { background: #b597ce1a; }
+.summary-tabs button:focus-visible, .summary-panel:focus-visible { outline: 2px solid #edc68e; outline-offset: 3px; }
+.summary-panel[hidden] { display: none; }
+.summary-sections .reading-part { padding: 27px 0; }
+.summary-sections .reading-part:first-child { padding-top: 0; }
+.summary-sections .reading-part:last-child { padding-bottom: 4px; }
+.summary-sections .reading-part > h3 { margin: 0 0 17px; color: #f0d4a6; font-family: var(--sans); font-size: 19px; line-height: 1.7; }
+.summary-sections .reading-part .reading-part-subtitle { margin: 0 0 16px; color: #d8c5e4; font-family: var(--sans); font-size: 16px; line-height: 1.8; }
+.summary-sections .reading-part p { font-size: 16px; line-height: 2; }
+.summary-sections .reading-part p + p { margin-top: 19px; }
+@media (max-width: 760px) {
+  .summary-tabs { gap: 4px; padding: 4px; margin-bottom: 24px; }
+  .summary-tabs button { padding: 10px 4px; font-size: 13px; }
+  .summary-sections .reading-part { padding: 24px 0; }
+  .summary-sections .reading-part > h3 { font-size: 18px; gap: 8px; }
+  .summary-sections .reading-part .reading-part-subtitle { font-size: 15px; }
+}

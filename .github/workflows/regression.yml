@@ -75,6 +75,8 @@ jobs:
         run: |
           node --test tests/saju-engine.test.mjs
           node tests/tarot-corpus.test.cjs
+          node tests/tarot-narration.test.cjs
+          node tests/tarot-domains.test.cjs
           node tests/tarot-payment-client.test.cjs
           node tests/tarot-payment-db.test.cjs
           node tests/tarot-ui.test.cjs
