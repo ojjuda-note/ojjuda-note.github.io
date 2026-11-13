@@ -403,7 +403,7 @@ window.OJJUDA_FAN_ARTISTS = [
     ],
     merch: [
       { title: "PAPARAZZI ARRIVE · CD 3종", sub: "MAKESTAR 공식 판매 · 실물 발매 2025.12.03 · 포토북·포토카드 포함", href: "https://www.makestar.com/product/14722" },
-      { title: "A2O MAY 음원·음반", sub: "Apple Music · 공식 발매 목록", href: "https://music.apple.com/us/artist/a2o-may/1791613998" },
+      { title: "A2O MAY 음원·음반", sub: "Apple Music · 공식 발매 목록", href: "https://music.apple.com/us/artist/a2o-may/1790290148" },
       { title: "A2O 공식", sub: "새 굿즈 공지", href: "https://www.a2oentertainment.world/" }
     ],
     music: [
