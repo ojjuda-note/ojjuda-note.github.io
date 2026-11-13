@@ -195,7 +195,7 @@
       merch: [
         { title: 'Strange Muse 공식 앨범', sub: 'JYP JAPAN · 포맷·재고·특전은 판매처에서 확인', href: 'https://jypj-store.com/collections/nmixx-music' },
         { title: 'NMIXX OFFICIAL LIGHT STICK VER.2', sub: 'JYP JAPAN · 공식 응원봉', href: 'https://jypj-store.com/collections/nmixx-official-goods' },
-        { title: 'Strange Muse 팝업 공식 포토카드', sub: 'MAKESTAR · 예약 판매 10.28~11.03 종료 · 11.12 발매 예정', href: 'https://www.makestar.com/product/21421' }
+        { title: 'Strange Muse 팝업 공식 포토카드', sub: 'MAKESTAR · 10.28~11.03 예약 판매 종료 · 11.12 발매 · 현재 판매 종료', href: 'https://www.makestar.com/product/21421' }
       ],
       schedules: [
         { title: 'JYP 공식 NMIXX 일정', sub: '공식 활동 달력', href: 'https://nmixx.jype.com/schedule' },
