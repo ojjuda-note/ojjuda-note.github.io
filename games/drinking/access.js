@@ -15,6 +15,7 @@
 
   function conceal(code = 'pending') {
     if (exposed) lastTitle = document.title;
+    for (const dialog of content.querySelectorAll('dialog[open]')) dialog.close();
     exposed = false; content.hidden = true; gate.hidden = false;
     document.title = '오쭈다';
     gate.dataset.state = code;
@@ -57,6 +58,7 @@
 
   async function start(ticket) {
     if (page.dataset.kind) document.documentElement.dataset.game = page.dataset.kind;
+    content.dataset.member = approvedUser;
     content.replaceChildren(page.content.cloneNode(true));
     const sources = Array.from(content.querySelectorAll('[data-module]'), node => node.dataset.module);
     content.querySelectorAll('[data-module]').forEach(node => node.remove());

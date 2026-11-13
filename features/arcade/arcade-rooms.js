@@ -3,7 +3,7 @@
   const games = { drinking: ['🍻', '술게임'], bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'], roulette: ['🎡', '룰렛'] };
   const drinkingKinds = new Set(['drinking','croc','liar','king','minority','mission','bottle','bomb','stopwatch','truth','initial','fingers','imagevote','updown']);
   const nativeGames = new Set(['bang','tank','tour','ttang','poker','roulette']);
-  const drinkingLink = (shortcut = false) => `<a class="btn pri" data-drinking-hub${shortcut ? ' data-drinking-shortcut' : ''} href="/games/drinking/">술게임 입장</a>`;
+  const drinkingLink = (shortcut = false) => `<a class="btn pri" data-drinking-hub${shortcut ? ' data-drinking-shortcut' : ''} href="/games/drinking/?mode=multi">술게임 입장</a>`;
   const ACTIVE_POLL_MS = 4000, IDLE_POLL_MS = 6000;
   const layouts = [['eheh', '상마상마'], ['hehe', '마상마상'], ['ehhe', '상마마상'], ['heeh', '마상상마']];
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);

@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#faf7ed">
   <title>오쭈다</title>
-  <link rel="stylesheet" href="hub.css?v=20261114-drinks-hub1">
+  <link rel="stylesheet" href="hub.css?v=20261114-drinks-local1">
   <link rel="stylesheet" href="/games/drinking/access.css?v=20261114-drinks-adult1">
   <script defer src="/config.js"></script>
   <script defer src="/games/matgo/matgo-access.js?v=20261114-drinks-adult1"></script>
-  <script defer src="/games/drinking/access.js?v=20261114-drinks-adult1"></script>
+  <script defer src="/games/drinking/access.js?v=20261114-drinks-local1"></script>
 </head>
 <body>
   <section id="access-screen" data-state="pending" aria-label="회원 확인">
@@ -19,10 +19,20 @@
     <a href="/world.html?tab=arcade">오쭈다로 돌아가기</a>
   </section>
   <div id="access-content" hidden></div>
-  <template id="access-page" data-title="술게임 멀티 · 오쭈다">
-  <header class="top"><a href="/world.html?tab=arcade">← 오쭈다</a></header>
+  <template id="access-page" data-title="술게임 · 오쭈다">
+  <header class="top"><a id="hub-back" href="/world.html?tab=arcade">← 오락실</a></header>
   <main>
-    <section id="welcome">
+    <section id="play-modes" hidden aria-labelledby="modes-title">
+      <div class="mode-intro">
+        <img src="/assets/design/games/drinking.svg?v=20261114-drinks-local1" alt="" width="120" height="84">
+        <h1 id="modes-title">술게임</h1>
+      </div>
+      <nav class="mode-options" aria-label="플레이 방식">
+        <a href="local/"><strong>한 대로 플레이</strong><span>휴대폰 한 대에 참가자 이름을 적고 함께 즐겨요.</span></a>
+        <a href="?mode=multi"><strong>멀티플레이</strong><span>각자 휴대폰으로 같은 방에 입장해요.</span></a>
+      </nav>
+    </section>
+    <section id="welcome" hidden>
       <h1>술게임 멀티</h1>
       <p class="intro">친구들과 방에 모여 13가지 게임을 골라 즐겨요.</p>
       <div id="account" class="panel" hidden><p id="account-message"></p><a id="login" href="/?auth=login&amp;next=world" target="_blank" rel="noopener" hidden>오쭈다 로그인</a><button id="retry" type="button" hidden>다시 연결</button></div>
@@ -40,7 +50,7 @@
             <label>방 코드<input name="code" id="room-code" required maxlength="6" autocapitalize="characters" spellcheck="false" autocomplete="off" placeholder="코드 6자리"></label>
             <label>방 비밀번호<input name="password" type="password" required minlength="4" maxlength="32" autocomplete="current-password" placeholder="방장이 정한 비밀번호"></label>
             <button type="submit">입장하기</button>
-            <a class="text-link" id="all-rooms" href="/games/drinking/" hidden>전체 방 보기</a>
+            <a class="text-link" id="all-rooms" href="?mode=multi" hidden>전체 방 보기</a>
           </form>
         </div>
         <section class="panel rooms" id="rooms" aria-labelledby="rooms-title">
@@ -67,7 +77,7 @@
     <p id="notice" role="status" aria-live="polite"></p>
     <noscript>술게임을 이용하려면 자바스크립트를 켜 주세요.</noscript>
   </main>
-    <span data-module="hub.js?v=20261114-drinks-hub1"></span>
+    <span data-module="hub.js?v=20261114-drinks-local1"></span>
   </template>
 </body>
 </html>
