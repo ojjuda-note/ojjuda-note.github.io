@@ -202,7 +202,7 @@
         { title: '인천 피날레 공식 예매', sub: 'NOL 티켓 · 변경·취소 규정 확인', href: 'https://nol.yanolja.com/ticket/products/26013946' }
       ],
       campaigns: [
-        { kind: '협업', date: '2026.10.16', title: '랜디스도넛 × NMIXX', sub: 'Strange Muse 기념 멤버 기획 한정 도넛 6종 · 11.30까지 · 매장별 운영·재고 확인', href: 'https://m.etnews.com/20261016000122' },
+        { kind: '콜라보', date: '2026.10.16', title: '랜디스도넛 × NMIXX', sub: 'Strange Muse 기념 멤버 기획 한정 도넛 6종 · 11.30까지 · 매장별 운영·재고 확인', href: 'https://m.etnews.com/20261016000122' },
         { kind: '광고', date: '2026.09.01', title: 'MAKE UP FOR EVER × NMIXX', sub: '아티스트 컬러글로우 립밤 공식 캠페인', href: 'https://prtimes.jp/main/html/rd/p/000000124.000019175.html' },
         { kind: '홍보대사', date: '2026.06.11', title: '주한영국대사관 Girls Can Dream', sub: '꿈꾸는 소녀에게 불가능은 없다 · 캠페인 홍보대사', href: 'https://www.bntnews.co.kr/article/view/bnt202606120142' }
       ],
