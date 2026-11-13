@@ -49,7 +49,7 @@ async function verifyCard(page, id, name) {
       'namwon-chunhyang-2026', 'yesan-apple-festival-2026', 'chungnam-drone-festa-2026',
       'jeongeup-gujeolcho-2026', 'muju-firefly-2026'
     ];
-    assert.equal(payload.events.length, 276, 'Live deployed count does not match merged main');
+    assert(payload.events.length >= 715, 'Deployed data missing latest 715 events');
     added.forEach(id => assert(ids.has(id), 'Missing new event in deployed JSON: ' + id));
     assert(ids.has('international-robot-contest-2026'));
     assert(!ids.has('international-robot-contest-2026-daegu'));
@@ -60,7 +60,14 @@ async function verifyCard(page, id, name) {
       'daejeon-fruit-industry-expo-2026', 'daejeon-creature-carelog-reptile-2026',
       'daejeon-forest-career-fair-2026'];
     newer.forEach(id => assert(ids.has(id), 'Missing November 7 addition in live JSON: ' + id));
-    console.log('PASS production JSON: 276 entries, previous eight and new eleven events, no duplicate robot');
+    const newest = ['paju-hope-sharing-art-festival-2026', 'seongnam-hip-festa-20261121',
+      'paju-municipal-gu-hospital-musical-20261120', 'pro-kovo-202627-20261117-ibk-red',
+      'pro-kovo-202627-20261120-hipass-ibk', 'pro-kovo-202627-20261125-ibk-hipass',
+      'pro-kovo-202627-20261128-red-ibk'];
+    newest.forEach(id => assert(ids.has(id), 'Missing November 14 update in live JSON: ' + id));
+    assert.equal(payload.events.find(e => e.id === 'hoengseong-hanwoo-2026')?.attendance?.count,
+      400163, 'Missing official 2026 Hoengseong attendance');
+    console.log('PASS production JSON: at least 715 entries, November 14 updates and official attendance');
 
     await page.goto(origin + '/games/festival-schedule/index.html?period=all&category=festival&view=list&q=익산',
       { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -75,6 +82,8 @@ async function verifyCard(page, id, name) {
 
     await page.locator('#search').fill('김제지평선축제');
     await verifyCard(page, 'gimje-horizon-2026', '김제지평선축제');
+    await page.locator('#search').fill('성남 HIP:FESTA');
+    await verifyCard(page, 'seongnam-hip-festa-20261121', '성남 HIP:FESTA');
     await page.screenshot({ path: path.join(snapshotDir, 'standalone.png'), fullPage: true });
     console.log('PASS standalone: three festival events actually displayed');
 
@@ -94,7 +103,13 @@ async function verifyCard(page, id, name) {
     await page.locator('[data-category="performance"]').click();
     await verifyCard(page, 'daejeon-pet-fair-2026', '대전펫페어');
     await page.locator('#search').fill('');
-    console.log('PASS new 2026 sports and exhibition cards and official-source details');
+    await page.locator('#search').fill('구내과병원');
+    await verifyCard(page, 'paju-municipal-gu-hospital-musical-20261120', '구내과병원');
+    await page.locator('#search').fill('IBK기업은행 vs 정관장');
+    await page.locator('[data-category="sports"]').click();
+    await verifyCard(page, 'pro-kovo-202627-20261117-ibk-red', 'IBK기업은행 vs 정관장');
+    await page.locator('#search').fill('');
+    console.log('PASS newly added festival, V-League, performance cards and official-source details');
 
     const arcade = await browser.newPage({ viewport: { width: 1440, height: 900 }, locale: 'ko-KR' });
     arcade.on('pageerror', error => jsErrors.push('world: ' + error.message));
@@ -109,6 +124,10 @@ async function verifyCard(page, id, name) {
     const festivalFrame = arcade.frameLocator('.festival-schedule-dialog[open] iframe');
     const arcadeCount = await festivalFrame.locator('[data-event-card]').count();
     assert(arcadeCount > 0, 'Arcade iframe did not render event cards');
+    await festivalFrame.locator('#period').selectOption('all');
+    await festivalFrame.locator('[data-category="festival"]').click();
+    await festivalFrame.locator('#search').fill('성남 HIP:FESTA');
+    await verifyCard(festivalFrame, 'seongnam-hip-festa-20261121', '성남 HIP:FESTA');
     await arcade.screenshot({ path: path.join(snapshotDir, 'world-game-festival.png'), fullPage: true });
     console.log('PASS world.html?game=festival: embedded page rendered ' + arcadeCount + ' cards');
     if(jsErrors.length) console.warn('Non-fatal browser console errors: ' + JSON.stringify(jsErrors.slice(0, 10)));
