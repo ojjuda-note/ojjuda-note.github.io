@@ -103,7 +103,7 @@ async function makePage(browser,mock,actor,errors){
   await page.exposeFunction('qaRpc',(name,args)=>mock.rpc(actor,name,args));
   await page.route(origin+'/**',async route=>{
     const pathname=new URL(route.request().url()).pathname;
-    if(pathname==='/world.html')return route.fulfill({contentType:'text/html',body:worldShell()});
+    if(pathname==='/world.html')return route.fulfill({contentType:'text/html; charset=utf-8',body:worldShell()});
     if(pathname==='/config.js'){
       const session=JSON.stringify({user:{id:actor,is_anonymous:false}});
       const body=`(() => {
@@ -112,11 +112,11 @@ async function makePage(browser,mock,actor,errors){
           rpc:(name,args)=>{const pending=window.qaRpc(name,args);pending.abortSignal=()=>pending;return pending;}};
         window.OjjudaGetClient=async()=>client;
       })();`;
-      return route.fulfill({contentType:'text/javascript',body});
+      return route.fulfill({contentType:'text/javascript; charset=utf-8',body});
     }
     const file=path.join(process.cwd(),pathname.slice(1),pathname.endsWith('/')?'index.html':'');
     if(!fs.existsSync(file)||!fs.statSync(file).isFile())return route.fulfill({status:404,body:'missing'});
-    const contentType={'.js':'text/javascript','.css':'text/css','.html':'text/html','.webp':'image/webp','.svg':'image/svg+xml','.png':'image/png','.wav':'audio/wav'}[path.extname(file)]||'application/octet-stream';
+    const contentType={'.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.html':'text/html; charset=utf-8','.webp':'image/webp','.svg':'image/svg+xml','.png':'image/png','.wav':'audio/wav'}[path.extname(file)]||'application/octet-stream';
     return route.fulfill({contentType,body:fs.readFileSync(file)});
   });
   return page;
