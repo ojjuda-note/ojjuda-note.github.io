@@ -1,0 +1,19 @@
+diff --git a/world.html b/world.html
+index 04d9b4e..68a9951 100644
+--- a/world.html
++++ b/world.html
+@@ -73 +73 @@
+-<script src="/shared/games/world-game-assets.js?v=20261113-liar-rooms1" defer></script>
++<script src="/shared/games/world-game-assets.js?v=20261113-king-rooms1" defer></script>
+@@ -224 +224 @@
+-<script src="/features/arcade/arcade-rooms.js?v=20261113-liar-rooms1" defer></script>
++<script src="/features/arcade/arcade-rooms.js?v=20261113-king-rooms1" defer></script>
+@@ -3282 +3282 @@ function syncWorldArcadeRooms(){
+-   if(kind==='croc'||kind==='liar'){
++   if(['croc','liar','king'].includes(kind)){
+@@ -3305 +3305 @@ function syncWorldArcadeRooms(){
+-   if(room.kind==='croc'||room.kind==='liar'){
++   if(['croc','liar','king'].includes(room.kind)){
+@@ -3338 +3338 @@ function syncWorldArcadeRooms(){
+-   if(room.kind==='croc'||room.kind==='liar'){location.assign('/games/'+room.kind+'/?room='+encodeURIComponent(room.code));return;}
++   if(['croc','liar','king'].includes(room.kind)){location.assign('/games/'+room.kind+'/?room='+encodeURIComponent(room.code));return;}

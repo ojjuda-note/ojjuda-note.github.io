@@ -1,0 +1,33 @@
+name: Verify and stage king multiplayer
+on:
+  push:
+    branches: [release/king-room-12-stage]
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Integrate verified room entry
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply --unidiff-zero --check .release/king-world.patch
+          git apply --unidiff-zero .release/king-world.patch
+          test "$(git hash-object world.html)" = '68a9951031d9a27dac4a37552f77e059a6bf8384'
+          node --check games/king/room.js
+          node --check features/arcade/arcade-rooms.js
+          node scripts/check-source-layout.mjs
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node tests/staged-king-mobile.cjs
+      - name: Stage verified king integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- world.html
+          git commit -m 'Connect verified king room entry points'
+          git push origin HEAD:refs/heads/release/king-room-12-stage
