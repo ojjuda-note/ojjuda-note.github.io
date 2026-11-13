@@ -281,7 +281,7 @@ window.OJJUDA_FAN_ARTISTS = [
       commonsPhoto('Twice in Seattle 2026 - TWICE (55045249274).jpg', '시애틀 투어 05', '2026', 'David Lee'),
       commonsPhoto('Twice in Seattle 2026 - TWICE (55045326100).jpg', '시애틀 투어 06', '2026', 'David Lee'),
       commonsPhoto('Twice in Seattle.jpg', '시애틀 공연 · 2026', '2026', 'David Lee'),
-      commonsPhoto('Twice This Is For World Tour in Vancouver, post-finale send off, January 9, 2026.jpg', '밴쿠버 투어 · 피날레', '2026', 'Yue')
+      commonsPhoto('Twice This Is For World Tour in Vancouver, post-finale send off, January 9, 2026.jpg', '밴쿠버 투어 · 피날레', '2026', 'Yue', 'CC BY-SA 4.0')
     ],
     links: [
       { label: "Instagram", icon: "◎", url: "https://www.instagram.com/twicetagram/" },
