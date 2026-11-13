@@ -343,12 +343,15 @@
       photo: 'KISS OF LIFE at Music Bank (4K) 20240705 02.png', photoLabel: '뮤직뱅크 출근길', photoYear: '2024', credit: '티비텐 TV10', license: 'CC BY 3.0',
       morePhotos: [
         commonsPhoto('28082026 Kiss of Life Newsis Hallyu Expo 1.png', '2026 뉴시스 한류엑스포 · 단체', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0'),
-        commonsPhoto('28082026 Belle Newsis Hallyu Expo 1.png', '벨 · 2026 한류엑스포', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0')
+        commonsPhoto('28082026 Belle Newsis Hallyu Expo 1.png', '벨 · 2026 한류엑스포', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0'),
+        commonsPhoto('05062026 KISS OF LIFE Airport Departure.png', '2026.06.05 인천공항 출국 · 단체', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0')
       ],
       music: [
         { title: 'SWEAT -JAPANESE EP-', date: '2026.09.16', type: '일본 미니 2집 · 타이틀 SWEAT (Japanese Ver.)', songs: ['SWEAT (Japanese Ver.)', 'Was It You', 'BREAK IT', 'Who is she (Japanese Ver.)', 'Igloo (Remix)', 'BREAK IT (English Ver.)'], href: 'https://prtimes.jp/main/html/rd/p/000005074.000019470.html' },
         { title: 'SWEAT', date: '2026.08.04', type: '싱글 · 타이틀 SWEAT', songs: ['SWEAT', 'WHAT!'], href: 'https://music.apple.com/us/album/sweat-single/6792701507' },
+        { title: 'BREAK IT', date: '2026.07.04', type: '디지털 싱글 · 디지몬 비트브레이크 엔딩곡', songs: ['BREAK IT'], href: 'https://music.apple.com/us/album/break-it-single/6781518153' },
         { title: 'Who is she', date: '2026.04.06', type: '싱글 · 타이틀 Who is she', songs: ['Who is she', "Don't mind me"], href: 'https://music.apple.com/us/album/who-is-she-single/1886385269' },
+        { title: 'TOKYO MISSION START', date: '2025.11.05', type: '일본 미니 1집 · 타이틀 Lucky', songs: ['Lucky', 'Sticky (Japanese Ver.)', 'Midas Touch (Japanese Ver.)', 'Shhh (Japanese Ver.)', 'Nobody Knows (Remix)', 'R.E.M (Remix)'], href: 'https://columbia.jp/artist-info/kissoflife/discography/COCP-42600.html' },
         { title: 'KISS OF LIFE', date: '2023.07.05', type: '데뷔 미니 1집 · 타이틀 쉿 (Shhh)', songs: ['쉿 (Shhh)', '안녕, 네버랜드', 'Sugarcoat (NATTY)', 'Countdown (BELLE)', 'Kitty Cat (JULIE)', 'Play Love Games (HANEUL)'], href: 'https://music.apple.com/us/album/kiss-of-life-ep/1694699906' }
       ],
       appearances: [
@@ -361,15 +364,20 @@
       news: [
         { date: '2026.10.23', tag: '시상식', title: '12.05 가오슝 AAA 공식 출연 명단 발표', href: 'https://www.asiaartistawards.com/en/news/3225' },
         { date: '2026.10.12', tag: '무대', title: 'THE FIRST TAKE에서 SWEAT 일본어 버전 라이브 공개', href: 'https://columbia.jp/artist-info/kissoflife/media/94488.html' },
+        { date: '2026.09.28', tag: '영상', title: 'THE FIRST TAKE에서 Sticky 라이브 공개', href: 'https://kissoflife.jp/page/media.html' },
+        { date: '2026.09.06', tag: '수상', title: '2026 SKA 본상·베스트 여자 그룹상 2관왕', href: 'https://www.soompi.com/article/1868372wpp/winners-of-2026-spotv-k-pop-awards' },
         { date: '2026.08.27', tag: '음반', title: '일본 미니 2집 SWEAT -JAPANESE EP- 발매 발표 · 9.16 발매', href: 'https://prtimes.jp/main/html/rd/p/000005074.000019470.html' },
-        { date: '2026.08.04', tag: '컴백', title: '싱글 SWEAT 발표 · 공식 MV 공개', href: 'https://www.youtube.com/watch?v=eTvUZymLyGY' }
+        { date: '2026.08.04', tag: '컴백', title: '싱글 SWEAT 발표 · 공식 MV 공개', href: 'https://www.youtube.com/watch?v=eTvUZymLyGY' },
+        { date: '2026.07.17', tag: '협업', title: '일본 SAISON CARD 팬 참여형 캠페인 발표 · 10.08 행사', href: 'https://kissoflife.jp/page/20260717.html' }
       ],
       merch: [
         { title: 'SWEAT -JAPANESE EP- TYPE-A·B', sub: '일본 컬럼비아 공식 CD·트레이딩카드 구성 · 재고는 판매처 확인', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' },
-        { title: 'SWEAT -JAPANESE EP- 통상판', sub: '일본 컬럼비아 공식 CD · 판매 여부·가격은 판매처 확인', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' }
+        { title: 'SWEAT -JAPANESE EP- 통상판', sub: '일본 컬럼비아 공식 CD · 판매 여부·가격은 판매처 확인', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' },
+        { title: 'KISS OF LIFE 일본 공식 MD', sub: '일본 공식 판매 2026.06.18 시작 · 현재 재고·가격은 판매처 확인', href: 'https://kissoflife.jp/page/20260618.html' }
       ],
       campaigns: [
-        { kind: '콜라보', date: '2026.07.04', title: 'DIGIMON BEATBREAK × BREAK IT', sub: '일본 TV 애니메이션 엔딩 테마 음원 협업', href: 'https://prtimes.jp/main/html/rd/p/000005074.000019470.html' }
+        { kind: '콜라보', date: '2026.07.04', title: 'DIGIMON BEATBREAK × BREAK IT', sub: '일본 TV 애니메이션 엔딩 테마 음원 협업', href: 'https://prtimes.jp/main/html/rd/p/000005074.000019470.html' },
+        { kind: '콜라보', date: '2026.07.17', title: 'SAISON CARD × KISS OF LIFE', sub: '팬 참여 이벤트·입회 포토카드 캠페인 · 2026.10.08 행사 종료', href: 'https://kissoflife.jp/page/20260717.html' }
       ],
       accent: '#b74472', light: '#ffe4ed', dark: '#68314e', bg: '#fff4f7', shape: '✿'
     },
