@@ -1,10 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
 import {calculateSaju} from '../games/starlit-saju/engine.mjs';
 import {analyzeFortune,interactionPairs} from '../games/starlit-saju/fortune-data.mjs';
 import {analyzeDaeun} from '../games/starlit-saju/daeun.mjs';
 import {buildDetailedReading} from '../games/starlit-saju/readings.mjs';
 import {attachReadingScores,readingScoreCopy} from '../games/starlit-saju/reading-score.mjs';
+import {READING_SCORE_RULES,READING_SCORE_PAIR_RULES,READING_SCORE_STEM_RULES} from '../games/starlit-saju/reading-score-rules.mjs';
 
 const now=new Date('2026-11-13T00:00:00Z');
 const birth={year:1990,month:5,day:17,hour:8,minute:37};
@@ -44,6 +47,57 @@ function observedPairs(score,fortune,daeun) {
   return periods.flatMap(period=>pillars.map(pillar=>[pillar,period]));
 }
 
+const rules=[...READING_SCORE_RULES,...READING_SCORE_PAIR_RULES,...READING_SCORE_STEM_RULES];
+const ruleMap=new Map(rules.map(rule=>[rule.id,rule]));
+const sourceKey=source=>[source.file,source.collection,source.code,source.field,source.anchor].join('|');
+const authoredTables=new Map();
+function authoredValue(source) {
+  const [name,...nested]=source.collection.split('.'),key=source.file+':'+name;
+  if(!authoredTables.has(key)) {
+    const file=new URL('../games/starlit-saju/'+source.file,import.meta.url);
+    const code=fs.readFileSync(file,'utf8'),declaration=code.indexOf('const '+name);
+    assert.ok(declaration>=0,key);
+    const literal=code.slice(code.indexOf('{',declaration)),end=/^\}(?:\);|;)/m.exec(literal);
+    assert.ok(end,key);
+    authoredTables.set(key,vm.runInNewContext('('+literal.slice(0,end.index+1)+')'));
+  }
+  const entry=nested.reduce((value,part)=>value[part],authoredTables.get(key))[source.code];
+  return source.field==='$'?entry:source.field.split('.').reduce((value,part)=>value[part],entry);
+}
+function ownText(item,report) {
+  // The current-decade heading explicitly summarizes its current listed period.
+  if(item===report.daeun)item=item.periods.find(period=>period.isCurrent)||item;
+  return [...(item.paragraphs||[]),item.text,item.description,item.headline,item.title].filter(value=>typeof value==='string').join('\n');
+}
+function actualGods(fortune,daeun) {
+  const values=new Map();
+  for(const entry of fortune.profile.gods)for(const prefix of ['natal','daeun.reading.natal'])values.set(prefix+'.god.'+entry.pillarKey+'.'+entry.position,entry.god);
+  for(const [prefix,value]of [['annual',fortune.annual],...fortune.months.map(value=>['month.'+value.month,value]),...daeun.periods.map(value=>['daeun.reading.period.'+value.index,value])]) {
+    for(const position of ['stem','branch'])values.set(prefix+'.god.'+position,value[position+'God']);
+  }
+  return values;
+}
+
+test('every fixed cue row has an exact existing authored source, a real relationship code and an explicit 0/1/2 weight',()=>{
+  assert.equal(ruleMap.size,rules.length,'rule IDs stay unique');
+  const codes=new Set(['companion','competitor','creator','critic','opportunist','manager','challenger','officer','explorer','scholar']);
+  for(const rule of rules) {
+    for(const axis of ['help','care'])assert.ok([0,1,2].includes(rule[axis]),rule.id);
+    if(rule.code)assert.ok(codes.has(rule.code),rule.id);
+    const sources=rule.source?[rule.source]:Object.values(rule.sources).flat();
+    assert.ok(sources.length,rule.id);
+    for(const source of sources) {
+      const authored=authoredValue(source);
+      assert.equal(typeof authored,'string',sourceKey(source));
+      assert.ok(source.anchor.trim()&&authored.includes(source.anchor),sourceKey(source));
+    }
+  }
+  for(const domain of ['relationships','work','money','learning','decisions','pressure','adjustment','opportunities','cautions','response','documents','people']) {
+    assert.deepEqual(new Set(READING_SCORE_RULES.filter(rule=>rule.domain===domain).map(rule=>rule.code)),codes,domain);
+  }
+  assert.equal(READING_SCORE_STEM_RULES.length,10);
+});
+
 test('every visible lifelong, yearly, monthly, decade and timing unit has an independent score or an explicit unavailable state',()=>{
   const {report}=fixture();
   const all=units(report),registry=new Set([...report.facts,...report.daeun.facts].map(fact=>fact.id));
@@ -67,40 +121,102 @@ test('every visible lifelong, yearly, monthly, decade and timing unit has an ind
   assert.ok(report.daeun.periods.every(period=>[period,...period.topics,...period.situations].every(item=>item.readingScore.available)));
 });
 
-test('all nonempty scores equal the actual confirmed-pair ratios, without ranking personalities or adding a base value',()=>{
+test('each score is exactly the independent ratio of actual matched cues, with no base or missing-cue contribution',()=>{
   for(const input of [birth,{year:1988,month:11,day:2,hour:15,minute:20}]) {
     const {fortune,daeun,report}=fixture(input);
+    const gods=actualGods(fortune,daeun);
     for(const item of units(report)) {
       const score=item.readingScore;
       if(!score.available)continue;
+      const calculation=score.calculation,text=ownText(item,report);
+      assert.equal(calculation.rule,'confirmed-reading-cues-v2');
+      assert.equal(calculation.cueCount,calculation.cues.length);
+      assert.ok(calculation.cueCount>0);
+      assert.equal(new Set(calculation.cues.map(cue=>cue.id)).size,calculation.cueCount);
+      for(const cue of calculation.cues) {
+        assert.ok([0,1,2].includes(cue.help)&&[0,1,2].includes(cue.care));
+        assert.ok(cue.help||cue.care,'an absent signal never occupies denominator space');
+        if(cue.kind==='interaction') {
+          assert.deepEqual([cue.help,cue.care],cue.interactionKind==='branch-clash'?[0,2]:[2,0]);
+          assert.equal(cue.factIds.length,1);
+          continue;
+        }
+        const selected=cue.ruleIds.map(id=>{assert.ok(ruleMap.has(id),id);return ruleMap.get(id);});
+        for(const axis of ['help','care']) {
+          const expectedSources=[],weights=[];
+          for(const rule of selected) {
+            const candidates=rule.source?[rule.source]:rule.sources[cue.kind==='ten-god'&&cue.scope!=='natal'?'period'+(axis==='help'?'Help':'Care'):axis];
+            const present=candidates.filter(source=>text.includes(source.anchor));
+            if(present.length&&rule[axis]){weights.push(rule[axis]);expectedSources.push(...present);}
+          }
+          assert.equal(cue[axis],weights.length?Math.max(...weights):0,cue.id+':'+axis);
+          assert.deepEqual(new Set(cue.sources[axis].map(sourceKey)),new Set(expectedSources.map(sourceKey)),cue.id+':'+axis);
+          assert.equal(new Set(cue.sources[axis].map(sourceKey)).size,cue.sources[axis].length,'same source is counted once');
+        }
+        if(cue.kind==='ten-god') {
+          assert.equal(cue.factIds.length,1);
+          assert.equal(gods.get(cue.factIds[0])?.code,cue.code,cue.id);
+          assert.ok(selected.every(rule=>rule.code===cue.code));
+        } else if(cue.kind==='god-pair') {
+          const observations=cue.factIds.map(id=>gods.get(id));
+          assert.ok(observations.every(Boolean));
+          assert.ok(new Set(observations.map(value=>value.code)).size>=2,'repeated positions of one code do not create a pair');
+          assert.deepEqual(new Set(observations.map(value=>value.group)),new Set(selected[0].groups));
+          assert.equal(cue.scope==='natal',selected[0].source.file==='person-portrait.mjs'||score.coverage.kind==='natal','the pair follows the reading source, not the other period');
+        } else {
+          assert.equal(cue.kind,'day-master');
+          assert.equal(cue.code,fortune.profile.dayMaster.hanja);
+        }
+      }
+      const help=calculation.cues.reduce((sum,cue)=>sum+cue.help,0),care=calculation.cues.reduce((sum,cue)=>sum+cue.care,0),denominator=2*calculation.cueCount;
+      assert.equal(calculation.tailwindNumerator,help);assert.equal(calculation.headwindNumerator,care);
+      assert.equal(calculation.tailwindDenominator,denominator);assert.equal(calculation.headwindDenominator,denominator);
+      assert.equal(score.tailwind.value,Math.round(100*help/denominator));
+      assert.equal(score.headwind.value,Math.round(100*care/denominator));
       const pairs=observedPairs(score,fortune,daeun);
       const matches=pairs.flatMap(([left,right])=>interactionPairs(left,right,{}));
       const stem=matches.filter(match=>match.kind==='stem-combination').length;
       const branch=matches.filter(match=>match.kind==='branch-combination').length;
       const clash=matches.filter(match=>match.kind==='branch-clash').length;
       assert.equal(score.coverage.comparisonCount,pairs.length);
-      assert.equal(score.tailwind.value,Math.round(100*(stem+branch)/(2*pairs.length)));
-      assert.equal(score.headwind.value,Math.round(100*clash/pairs.length));
-      assert.deepEqual([score.calculation.stemCombinations,score.calculation.branchCombinations,score.calculation.branchClashes],[stem,branch,clash]);
+      assert.deepEqual([calculation.stemCombinations,calculation.branchCombinations,calculation.branchClashes],[stem,branch,clash]);
+      assert.equal(calculation.cues.filter(cue=>cue.kind==='interaction').length,matches.length,'only an actual combination or clash creates an interaction cue');
     }
   }
 });
 
-test('a real reference chart distinguishes zero signals, simultaneous signals and a denominator that is not a 100-point split',()=>{
-  const {report}=fixture();
+test('the real no-combination chart uses its existing strengths and cautions without importing a different card weakness',()=>{
+  const {fortune,report}=fixture();
   const values=item=>[item.readingScore.tailwind.value,item.readingScore.headwind.value];
-  assert.deepEqual(values(report.reader.lifelong),[0,0]);
-  assert.deepEqual(values(report.reader.annual),[13,0]);
-  assert.deepEqual(values(report.reader.months[10]),[13,25]);
-  assert.deepEqual(values(report.reader.months[11]),[0,50]);
-  assert.match(report.reader.lifelong.readingScore.scopeNotice,/0점은 이 항목에서 해당 표시가 없다는 뜻/);
-  assert.equal(report.reader.months[10].readingScore.calculation.tailwindDenominator,8);
-  assert.equal(report.reader.months[10].readingScore.calculation.headwindDenominator,4);
+  assert.deepEqual(fortune.profile.interactions,[]);
+  const work=report.reader.lifelong.cards.find(item=>item.id==='natal-work');
+  assert.deepEqual(values(work),[83,0],'two concrete work strengths plus the actual positive work-pair sentence; no unrelated stress');
+  assert.deepEqual(work.readingScore.calculation.cues.map(cue=>[cue.help,cue.care]),[[2,0],[2,0],[1,0]]);
+  const relationships=report.reader.lifelong.cards.find(item=>item.id==='natal-relationships');
+  const challenger=relationships.readingScore.calculation.cues.find(cue=>cue.code==='challenger');
+  assert.deepEqual([challenger.help,challenger.care],[0,2],'taking on too many expectations is a caution, not a strength');
+  const pressure=report.personPortrait.cards.find(item=>item.id==='portrait-pressure');
+  assert.deepEqual(values(pressure),[0,75],'only the two directly described burden cues are present here');
+  assert.ok(report.personPortrait.readingScore.calculation.cues.some(cue=>cue.care&&cue.sources.care.some(source=>source.collection==='PAIRS'&&source.code==='wealth-resource')));
+  assert.ok(report.personPortrait.readingScore.calculation.cues.some(cue=>cue.kind==='day-master'&&cue.care&&cue.sources.care.some(source=>source.field==='reason')));
+  assert.ok(report.reader.lifelong.readingScore.tailwind.value>0);
+  assert.equal(report.reader.lifelong.readingScore.headwind.value,0,'this overview has strength wording but no caution wording');
+  assert.match(report.reader.lifelong.readingScore.scopeNotice,/순풍은 살릴 점, 역풍은 살필 점/);
+  for(const overview of [report.reader.annual,...report.reader.months])for(const card of overview.cards.filter(item=>['money','work','relationships','learning'].some(domain=>item.id.endsWith('-'+domain)))) {
+    const cues=card.readingScore.calculation.cues.filter(cue=>cue.kind==='ten-god');
+    assert.ok(cues.some(cue=>cue.scope==='natal'),card.id+' natal');
+    assert.ok(cues.some(cue=>cue.scope!=='natal'),card.id+' period');
+  }
+  for(const period of report.daeun.periods)for(const card of period.topics) {
+    const cues=card.readingScore.calculation.cues.filter(cue=>cue.kind==='ten-god');
+    assert.ok(cues.some(cue=>cue.scope==='natal'),card.id+' natal');
+    assert.ok(cues.some(cue=>cue.scope==='daeun.reading.period.'+period.index),card.id+' period');
+  }
 });
 
 test('missing hours and unresolved solar-term boundaries are excluded from both numerator and denominator',()=>{
   for(const input of [{...birth,hour:null},{year:2024,month:2,day:4,hour:null},{year:2024,month:2,day:4,hour:17,minute:27}]) {
-    const {fortune,daeun,report}=fixture(input);
+    const {fortune,daeun,report}=fixture(input),actual=actualGods(fortune,daeun);
     const known=fortune.profile.knownPillars.map(pillar=>pillar.key);
     for(const item of units(report)) {
       const score=item.readingScore;
@@ -109,17 +225,32 @@ test('missing hours and unresolved solar-term boundaries are excluded from both 
       if(!score.available)continue;
       const pairs=observedPairs(score,fortune,daeun);
       assert.equal(score.calculation.comparisonCount,pairs.length);
-      assert.equal(score.calculation.tailwindDenominator,2*pairs.length);
-      assert.equal(score.calculation.headwindDenominator,pairs.length);
+      assert.equal(score.calculation.tailwindDenominator,2*score.calculation.cues.length);
+      assert.equal(score.calculation.headwindDenominator,2*score.calculation.cues.length);
+      for(const cue of score.calculation.cues)if(cue.kind==='ten-god')assert.equal(actual.get(cue.factIds[0])?.code,cue.code);
+      for(const id of score.factIds) {
+        const match=id.match(/natal\.(?:god|pillar)\.(year|month|day|hour)/);
+        if(match)assert.ok(known.includes(match[1]),id);
+      }
     }
     assert.equal(report.reader.annual.readingScore.coverage.comparisonCount,known.length);
     if(known.length===1) {
-      assert.equal(report.reader.lifelong.readingScore.available,false);
-      assert.equal(report.reader.lifelong.readingScore.tailwind.value,null);
+      assert.ok(report.reader.lifelong.cards.find(item=>item.id==='natal-character').readingScore.available,'one confirmed day master has its own authored character cues');
       assert.equal(report.reader.annual.readingScore.available,true,'one confirmed natal pillar can still be compared with an actual period');
     }
     assert.equal(report.daeun.readingScore.available,false);
   }
+});
+
+test('confirmed relationships without a matching authored cue never turn into a filler number',()=>{
+  const {chart,fortune,report}=fixture(),modified=withoutScores(report);
+  const work=modified.reader.lifelong.cards.find(item=>item.id==='natal-work');
+  work.paragraphs=[];work.title='';work.headline='';
+  attachReadingScores(modified,chart,fortune);
+  assert.equal(work.readingScore.available,false);
+  assert.equal(work.readingScore.tailwind.value,null);assert.equal(work.readingScore.headwind.value,null);
+  assert.equal(work.readingScore.calculation,null);
+  assert.ok(work.godCodes.length>0,'the real input remains; only absent prose cues are not scored');
 });
 
 test('health, accident and symbol pages never gain invented probabilities, and decade overviews do not borrow another time',()=>{
