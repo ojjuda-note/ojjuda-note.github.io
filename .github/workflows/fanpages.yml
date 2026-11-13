@@ -105,7 +105,18 @@ jobs:
           for file in features/fanpages/*.js; do node --check "$file"; done
       - name: Verify release data, mobile layouts, original photos and lazy video dialogs
         if: steps.scope.outputs.changed == 'true'
-        run: node tests/fanpage-release-ui.test.cjs
+        shell: bash
+        run: |
+          # Pages may take a moment to propagate after a successful deployment.
+          # Recheck the whole live page; never suppress a persistent failure.
+          if [[ "$FANPAGE_LIVE" == 'true' ]]; then
+            for attempt in 1 2 3; do
+              if node tests/fanpage-release-ui.test.cjs; then exit 0; fi
+              if [[ "$attempt" != '3' ]]; then sleep 10; fi
+            done
+            exit 1
+          fi
+          node tests/fanpage-release-ui.test.cjs
       - name: Save release screen evidence
         if: always() && steps.scope.outputs.changed == 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
