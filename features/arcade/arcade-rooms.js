@@ -3,7 +3,7 @@
   const games = { drinking: ['🍻', '술게임'], bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'], roulette: ['🎡', '룰렛'] };
   const drinkingKinds = new Set(['drinking','croc','liar','king','minority','mission','bottle','bomb','stopwatch','truth','initial','fingers','imagevote','updown']);
   const nativeGames = new Set(['bang','tank','tour','ttang','poker','roulette']);
-  const drinkingLink = '<a class="btn pri" data-drinking-hub href="/games/drinking/">술게임 입장</a>';
+  const drinkingLink = (shortcut = false) => `<a class="btn pri" data-drinking-hub${shortcut ? ' data-drinking-shortcut' : ''} href="/games/drinking/">술게임 입장</a>`;
   const ACTIVE_POLL_MS = 4000, IDLE_POLL_MS = 6000;
   const layouts = [['eheh', '상마상마'], ['hehe', '마상마상'], ['ehhe', '상마마상'], ['heeh', '마상상마']];
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -21,7 +21,7 @@
     return errors[code] || '연결하지 못했어요. 잠시 후 다시 시도해 주세요.';
   }
   function shortcut(kind) {
-    if (drinkingKinds.has(kind)) return drinkingLink;
+    if (drinkingKinds.has(kind)) return window.OjjudaMatgoAccess?.visible(19) === true ? drinkingLink(true) : '';
     return `<button class="btn pri arcade-create-shortcut" data-arcade-action="create" data-kind="${escape(kind)}">방 제목을 정하고 공개 대전방 만들기</button>`;
   }
   function markup() { return '<section class="arcade-rooms" data-arcade-rooms aria-label="오락실 대전방"></section>'; }
@@ -31,6 +31,7 @@
     let rooms = [], mine = null, canMatgo = false, issue = '', signature = '', openedMatch = null, waitingRoom = null;
     let filter = '', query = '';
     const current = id => !disposed && id && options.getUserId() === id;
+    const drinkingAllowed = () => Boolean(current(owner) && options.matgoAllowed?.() === true);
     const paused = () => document.hidden || document.body.classList.contains('gaming') || document.body.classList.contains('matgo-open') || !!document.querySelector('#gov,#matgo-overlay,#ttang-overlay,.tour-game-dialog,.roulette-game-dialog,#bd-root');
     const needsUpdates = () => !disposed && owner && !paused() && (root?.isConnected || mine?.status === 'waiting' || mine?.status === 'playing');
     // Detect an opponent promptly; casual lobby browsing needs fewer server reads.
@@ -67,6 +68,25 @@
         ${room.is_host && !playing ? `<button class="arcade-cancel" data-arcade-action="cancel" data-room="${room.room_no}"${busy ? ' disabled' : ''}>대기 취소</button>` : ''}</div></article>`;
     }
     function render() {
+      const canDrink = drinkingAllowed();
+      if (!canDrink) document.querySelectorAll('[data-drinking-shortcut]').forEach(link => link.remove());
+      const form = document.getElementById('arcade-room-form');
+      if (form) {
+        const select = form.elements.kind;
+        const option = select.querySelector('option[value="drinking"]');
+        if (Boolean(option) !== canDrink) {
+          const wasSelected = select.value === 'drinking';
+          if (canDrink) {
+            const choice = new Option(games.drinking.join(' '), 'drinking');
+            select.add(choice, 0);
+          } else {
+            option.remove();
+            if (wasSelected) select.value = 'janggi';
+          }
+          form.querySelector('[data-create-drinking]').innerHTML = canDrink ? drinkingLink() : '';
+          if (wasSelected) select.onchange();
+        }
+      }
       if (!root?.isConnected) return;
       if (!root.querySelector('[data-room-filter]')) {
         root.innerHTML = `<div class="arcade-rooms-head"><div><h3>대전방</h3><p>함께할 상대를 찾아보세요.</p></div><button class="btn pri" data-arcade-action="create">＋ 방 만들기</button></div>
@@ -81,11 +101,11 @@
       if (!nextList) { nextList = document.createElement('div'); nextList.dataset.roomList = ''; root.append(nextList); }
       if (list !== nextList) { list = nextList; signature = ''; }
       const select = root.querySelector('[data-room-filter]');
-      const choices = Object.entries(games).filter(([kind]) => !['matgo','poker','roulette'].includes(kind) || canMatgo);
-      if (select.options.length !== choices.length + 1 || !select.querySelector('option[value="drinking"]')) {
+      const choices = Object.entries(games).filter(([kind]) => kind === 'drinking' ? canDrink : !['matgo','poker','roulette'].includes(kind) || canMatgo);
+      if (select.options.length !== choices.length + 1 || choices.some(([kind], i) => select.options[i + 1]?.value !== kind)) {
         select.innerHTML = '<option value="">모든 게임</option>' + choices.map(([kind, [, name]]) => `<option value="${kind}">${name}</option>`).join('');
-        if (!choices.some(([kind]) => kind === filter)) filter = '';
       }
+      if (filter && !choices.some(([kind]) => kind === filter)) filter = '';
       select.value = filter;
       const drinking = filter === 'drinking';
       root.querySelector('[data-room-search]').disabled = drinking;
@@ -99,7 +119,7 @@
       if (signature !== next) {
         const chat = list.closest('.plog'), atBottom = chat && chat.scrollHeight - chat.scrollTop - chat.clientHeight < 40;
         signature = next;
-        list.innerHTML = drinking ? drinkingLink : shown.length ? shown.map(card).join('')
+        list.innerHTML = drinking ? drinkingLink() : shown.length ? shown.map(card).join('')
           : `<p class="arcade-room-empty">${owner ? query || filter ? '조건에 맞는 방이 없어요.' : '아직 열린 방이 없어요.<br>첫 대전방을 만들어 보세요.' : '로그인하면 대전방을 만들고 참여할 수 있어요.'}</p>`;
         if (atBottom) chat.scrollTop = chat.scrollHeight;
       }
@@ -144,6 +164,7 @@
       const actor = options.getUserId();
       const changedOwner = actor !== owner;
       if (changedOwner) {
+        if (owner && document.getElementById('arcade-room-form')) options.closeModal();
         epoch++; owner = actor; rooms = []; mine = null; openedMatch = null; waitingRoom = null; issue = ''; signature = '';
         lastRead = null; canMatgo = options.matgoAllowed?.() === true; clearTimeout(timer); timer = null;
       }
@@ -184,13 +205,15 @@
       sync();
       if (drinkingKinds.has(kind)) kind = 'drinking';
       if (!owner) { options.notify(errors.not_signed_in); return; }
+      const canDrink = drinkingAllowed();
+      if (kind === 'drinking' && !canDrink) { options.notify(errors.adult_required); return; }
       if (mine && kind !== 'drinking') { options.goArcade(); options.closeModal(); options.notify(errors.room_in_progress); return; }
-      const allowed = Object.entries(games).filter(([id]) => !['matgo','poker','roulette'].includes(id) || canMatgo || options.matgoAllowed?.());
+      const allowed = Object.entries(games).filter(([id]) => id === 'drinking' ? canDrink : !['matgo','poker','roulette'].includes(id) || canMatgo || options.matgoAllowed?.());
       if (!allowed.some(([id]) => id === kind)) kind = allowed[0][0];
       const actor = owner, initial = games[kind][1] + ' 같이 한 판 해요';
       options.renderModal(`<div class="mhead"><h3>대전방 만들기</h3><button class="btn sm ghost" data-act="close">닫기</button></div>
         <form id="arcade-room-form" class="arcade-room-form"><label class="field">게임<select class="inp" name="kind">${allowed.map(([id, [emoji, name]]) => `<option value="${id}"${id === kind ? ' selected' : ''}>${emoji} ${name}</option>`).join('')}</select></label>
-        <div data-create-drinking hidden>${drinkingLink}</div>
+        <div data-create-drinking hidden>${canDrink ? drinkingLink() : ''}</div>
         <div data-create-fields><label class="field">방 제목<input class="inp" name="title" maxlength="40" required value="${escape(initial)}" autocomplete="off"></label>
         <div data-create-layout${kind === 'janggi' ? '' : ' hidden'}>${layoutSelect('eheh')}</div>
         <div data-create-capacity hidden><label class="field">최대 인원<select class="inp" name="capacity"></select></label></div>
@@ -271,6 +294,12 @@
       document.getElementById('arcade-join-form').onsubmit = event => { event.preventDefault(); void join(room, event.target.elements.layout.value); };
     }
     async function click(event) {
+      if (event.target.closest('[data-drinking-hub]') && !drinkingAllowed()) {
+        event.preventDefault();
+        sync();
+        options.notify(owner ? errors.adult_required : errors.not_signed_in);
+        return;
+      }
       const button = event.target.closest('[data-arcade-action]');
       if (!button || button.disabled || disposed) return;
       const action = button.dataset.arcadeAction;
@@ -295,13 +324,14 @@
     document.addEventListener('input', input);
     document.addEventListener('change', input);
     document.addEventListener('visibilitychange', activityChanged);
+    const stopAccessWatch = window.OjjudaMatgoAccess?.subscribe?.(sync);
     const observer = new MutationObserver(activityChanged);
     observer.observe(document.body, { childList: true, attributes: true, attributeFilter: ['class'] });
     const modalRoot = document.getElementById('modal-root');
     if (modalRoot) observer.observe(modalRoot, { childList: true });
     const refresh = () => poll(true);
     window.addEventListener('ojjuda:arcade-rooms-changed', refresh);
-    return { sync, openCreate, created, refresh, dispose() { disposed = true; epoch++; clearTimeout(timer); observer.disconnect(); document.removeEventListener('visibilitychange', activityChanged); document.removeEventListener('click', click); document.removeEventListener('input', input); document.removeEventListener('change', input); window.removeEventListener('ojjuda:arcade-rooms-changed', refresh); } };
+    return { sync, openCreate, created, refresh, dispose() { disposed = true; epoch++; clearTimeout(timer); stopAccessWatch?.(); observer.disconnect(); document.removeEventListener('visibilitychange', activityChanged); document.removeEventListener('click', click); document.removeEventListener('input', input); document.removeEventListener('change', input); window.removeEventListener('ojjuda:arcade-rooms-changed', refresh); } };
   }
   window.OjjudaArcadeRooms = { create, markup, feedMarkup, shortcut, message };
 })();
