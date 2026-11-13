@@ -60,7 +60,7 @@ async function until(test, message, timeout = 2600) {
     w.eval(fs.readFileSync(path.join(root, 'features/home/agit-hub.js'), 'utf8'));
     const panel = w.document.querySelector('#ppanel');
     panel.innerHTML = w.Df() + '<input id="pmsg">';
-    const adultIds = Object.keys(adultGames);
+    const adultIds = [...Object.keys(adultGames), 'drinking'];
     const buttonId = button => button.dataset.act === 'matgo-open' ? 'matgo' : button.dataset.v;
     const headings = host => [...host.querySelectorAll('h2')].map(heading => heading.textContent.trim());
     const adultSection = () => panel.querySelector('[data-arcade-adult]');
@@ -94,7 +94,7 @@ async function until(test, message, timeout = 2600) {
       const section = adultSection();
       assert.equal(section.getAttribute('aria-label'), '어른들 플레이');
       assert.notEqual(w.getComputedStyle(section).display, 'none');
-      assert.deepEqual([...section.querySelectorAll('.gbtn')].map(buttonId), adultIds, 'all four adult games keep their display order');
+      assert.deepEqual([...section.querySelectorAll('.gbtn')].map(buttonId), adultIds, 'adult games keep their display order');
       for (const id of adultIds) {
         const buttons = [...panel.querySelectorAll('.gbtn')].filter(button => buttonId(button) === id);
         assert.equal(buttons.length, 1, id + ' has exactly one menu entry');
@@ -102,7 +102,7 @@ async function until(test, message, timeout = 2600) {
         assert.match(buttons[0].getAttribute('aria-label'), /만 19세 이상/);
       }
     };
-    assert.deepEqual(['matgo', ...Object.entries(w._r).filter(([, game]) => game.age >= 19).map(([id]) => id)].sort(), [...adultIds].sort(), 'the adult section covers the real 19+ game catalog');
+    assert.deepEqual(['matgo', ...Object.entries(w._r).filter(([, game]) => game.age >= 19).map(([id]) => id)].sort(), Object.keys(adultGames).sort(), 'the adult section covers the ranked 19+ game catalog');
     const matgo = () => w.document.querySelector('[data-act="matgo-open"]');
     const photoVisible = () => { const button = panel.querySelector('[data-v="photo_ttang"]'); return !!button && w.getComputedStyle(button).display !== 'none'; };
     noAdultMenu();
