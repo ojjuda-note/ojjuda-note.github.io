@@ -8,10 +8,10 @@ import { attachDeeperReadings } from './deeper-reading.mjs?v=20261113-saju-easy1
 import { attachStageReadings } from './stage-reading.mjs?v=20261113-saju-easy1';
 import { attachReaderSummary } from './reader-summary.mjs?v=20261113-saju-easy1';
 import { attachReaderExtras } from './reader-extras.mjs?v=20261113-saju-easy1';
-import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261114-saju-wind1';
+import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261114-saju-wind2';
 import { buildPersonPortrait } from './person-portrait.mjs?v=20261113-saju-easy1';
 import { attachReadingSummaryLines } from './reading-summary-lines.mjs?v=20261114-saju-wind1';
-import { attachReadingScores, readingScoreCopy } from './reading-score.mjs?v=20261114-saju-wind1';
+import { attachReadingScores, readingScoreCopy } from './reading-score.mjs?v=20261114-saju-wind2';
 import { buildNatalReadingData, seasonRules, charLabel, particle, relationOf, godPosition, interactionFact } from './natal-reading-data.mjs?v=20261114-saju-wind1';
 
 const GROUP_KEYS = ['peer', 'expression', 'wealth', 'authority', 'resource'];

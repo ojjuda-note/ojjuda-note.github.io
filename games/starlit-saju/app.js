@@ -403,7 +403,7 @@ document.querySelectorAll('.reading-size-control button').forEach(button=>button
 async function prepareDetailedReading(chart,target,person=currentPerson||readPerson()) {
   detailModulesPromise ||= Promise.all([
     import('./fortune-data.mjs?v=20261113-saju-reader1'),
-    import('./readings.mjs?v=20261114-saju-wind1'),
+    import('./readings.mjs?v=20261114-saju-wind2'),
     import('./report-view.mjs?v=20261114-saju-wind1'),
     import('./daeun.mjs?v=20261113-saju-reader1'),
     zodiacModule()

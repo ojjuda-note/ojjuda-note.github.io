@@ -17,9 +17,18 @@ import { analyzeDaeun } from '/games/starlit-saju/daeun.mjs';
 import { buildDetailedReading } from '/games/starlit-saju/readings.mjs';
 import { renderDetailedReport } from '/games/starlit-saju/report-view.mjs';
 const now = new Date('2026-11-13T00:00:00Z');
-const chart = calculateSaju({year:2005,month:12,day:23,hour:8,minute:37},{now});
+const fixtureCase = new URLSearchParams(location.search).get('score-case') || 'standard';
+const births = {standard:{year:2005,month:12,day:23,hour:8,minute:37},'original-zero':{year:1990,month:5,day:17,hour:8,minute:37}};
+if (!Object.hasOwn(births,fixtureCase)) throw new Error('Unknown local score fixture');
+const chart = calculateSaju(births[fixtureCase],{now});
 const fortune = analyzeFortune(chart,{year:2026,now});
 const reading = buildDetailedReading(chart,fortune,{daeun:analyzeDaeun(chart,{gender:'female',now})});
+// Test-only model references let the browser compare rendered values with the
+// actual source reading. Nothing is added to the public app or result DOM.
+globalThis.__sajuScoreFixture = {key:fixtureCase,birth:births[fixtureCase],nativeInteractionCount:fortune.profile.interactions.length,
+  items:[{key:'portrait-overview',selector:'.portrait-intro',reading:reading.personPortrait},
+    {key:'portrait-decisions',selector:'.portrait-card[data-portrait-card="portrait-decisions"]',reading:reading.personPortrait.cards.find(item=>item.id==='portrait-decisions')},
+    {key:'lifelong-overview',selector:'#reading-lifelong-summary .reader-intro',reading:reading.reader.lifelong}]};
 const target = document.getElementById('report-content');
 const select = document.getElementById('fixture-topic');
 function show(){renderDetailedReport(target,{reading,fortune,topic:select.value});target.dataset.ready=select.value;}
@@ -287,7 +296,7 @@ const server = http.createServer((request, response) => {
       else await saju.locator('a[href="#'+id+'"]:visible').first().click();
       await saju.locator('[data-reader-current][id="'+id+'"]').waitFor({state:'visible'});
     }
-    const sajuScoreViews={};
+    const sajuScoreViews={},sajuScoreRegressions={};
     async function inspectSajuScores(label) {
       const panels=await saju.locator('[data-reader-current] .saju-reading-score:visible').evaluateAll(elements=>elements.map(panel=>{
         const box=panel.getBoundingClientRect();
@@ -460,6 +469,71 @@ const server = http.createServer((request, response) => {
     await selectReadingPage(await saju.locator('.portrait-card').first().getAttribute('id'));
     await saju.locator('.reading-pager').scrollIntoViewIfNeeded();
     await saju.screenshot({path:path.join(artifacts,'saju-lifelong-desktop.png')});
+    // This exact birth has no natal stem combinations, branch combinations or
+    // clashes. Its authored character/decision readings still contain strengths
+    // and cautions; the previous pair-only rule dropped all of those signals.
+    await saju.goto(new URL('/__saju_fixture?score-case=original-zero',url).href);
+    await saju.locator('#report-content[data-ready="lifelong"]').waitFor();
+    await saju.locator('#fixture-topic').selectOption('all');
+    await saju.locator('#report-content[data-ready="all"]').waitFor();
+    const regression=await saju.evaluate(()=>{
+      const fixture=globalThis.__sajuScoreFixture;
+      return {key:fixture.key,birth:fixture.birth,nativeInteractionCount:fixture.nativeInteractionCount,
+        items:fixture.items.map(({key,selector,reading})=>({key,selector,score:reading.readingScore,
+          title:reading.title,headline:reading.headline,paragraphs:reading.paragraphs,summaryLines:reading.summaryLines}))};
+    });
+    assert.equal(regression.key,'original-zero');
+    assert.deepEqual(regression.birth,{year:1990,month:5,day:17,hour:8,minute:37});
+    assert.equal(regression.nativeInteractionCount,0,'the regression keeps the original no-combination/no-clash chart');
+    for(const item of regression.items) {
+      assert.equal(item.score.status,'available',item.key+': this named fixture has confirmed reading contexts');
+      assert.equal(item.score.calculation.rule,'confirmed-reading-cues-v2',item.key+': the regression uses authored reading cues instead of pair counts alone');
+      assert.ok(item.paragraphs.length>0&&item.summaryLines.length===2,item.key+': the score belongs to an existing authored reading');
+      // The lifelong introduction states strengths but has no direct caution
+      // sentence. A zero headwind there is legitimate and must not be filled in.
+      const authoredAxes=item.key==='lifelong-overview'?['tailwind']:['tailwind','headwind'];
+      const authoredText=[...item.paragraphs,item.title,item.headline].filter(Boolean).join('\n');
+      for(const key of authoredAxes) {
+        const signal=key==='tailwind'?'help':'care';
+        const cues=item.score.calculation.cues.filter(cue=>cue[signal]>0);
+        assert.ok(cues.length>0&&cues.every(cue=>cue.sources[signal].length>0&&cue.sources[signal].every(source=>source.anchor&&authoredText.includes(source.anchor))),
+          item.key+' '+key+': actual sentences in this reading support each positive cue before requiring a nonzero score');
+        assert.ok(item.score.calculation[key+'Numerator']>0,
+          item.key+' '+key+': this fixture supplies an authored context independently of natal pairs');
+        assert.ok(item.score[key].value>0,
+          item.key+' '+key+': actual positive source contexts must not disappear into a zero result');
+      }
+    }
+    for(const [viewport,size] of [['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]]) {
+      await saju.setViewportSize(size);
+      for(const textSize of ['normal','large']) {
+        await saju.locator('#report-content').evaluate((report,value)=>{report.dataset.readingSize=value;},textSize);
+        const label='original-zero '+viewport+' '+textSize;
+        const values={};
+        for(const item of regression.items) {
+          const source=saju.locator(item.selector);
+          const pageId=await source.evaluate(element=>element.closest('[data-reader-page]').id);
+          await selectReadingPage(pageId);
+          await inspectSajuScores(label+' '+item.key);
+          const actual=await source.locator(':scope > .saju-reading-score .saju-wind-item').evaluateAll(rows=>rows.map(row=>({
+            key:row.dataset.wind,value:Number(row.querySelector('[role="meter"]').getAttribute('aria-valuenow')),
+            width:row.querySelector('.saju-wind-fill').style.width,text:row.textContent
+          })));
+          assert.deepEqual(actual.map(row=>[row.key,row.value,row.width]),['tailwind','headwind'].map(key=>[key,item.score[key].value,item.score[key].value+'%']),
+            label+' '+item.key+': displayed scores and bar widths come from the actual reading model');
+          assert.ok(actual.every(row=>row.text.includes(row.value+'점')),label+': positive scores remain explicit text');
+          const paragraphs=await source.locator(':scope > .reader-prose > p').allTextContents();
+          assert.deepEqual(paragraphs,item.paragraphs,label+' '+item.key+': the original strength and caution paragraphs remain intact');
+          values[item.key]=actual.map(row=>row.value);
+          if(item.key==='portrait-decisions'&&((viewport==='phone-small'&&textSize==='large')||(viewport==='desktop'&&textSize==='normal')))
+            await source.locator(':scope > .saju-reading-score').screenshot({path:path.join(artifacts,'saju-reading-scores-original-zero-'+viewport+'-'+textSize+'.png')});
+          if(item.key==='portrait-decisions'&&viewport==='desktop'&&textSize==='normal')
+            await source.screenshot({path:path.join(artifacts,'saju-reading-score-regression-context-desktop.png')});
+        }
+        assert.equal(await saju.locator('.source-entry,[data-fact-id],a[href*="-evidence"],#reading-evidence').count(),0,label+': score corrections do not restore evidence UI');
+        sajuScoreRegressions[label]=values;
+      }
+    }
     await saju.setViewportSize({width:390,height:844});
     await saju.goto(new URL('/__compatibility_fixture', url).href);
     await saju.locator('#report-content[data-ready="confirmed"]').waitFor();
@@ -650,6 +724,6 @@ const server = http.createServer((request, response) => {
     }
     assert.deepEqual(errors, []);
     assert.deepEqual(failed, []);
-    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuSummaryViews, sajuScoreViews, compatibilityPeople, compatibilityScores, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
+    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuSummaryViews, sajuScoreViews, sajuScoreRegressions, compatibilityPeople, compatibilityScores, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => server.close());
