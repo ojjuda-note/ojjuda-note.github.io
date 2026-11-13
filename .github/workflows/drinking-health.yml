@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [local, multiplayer, truth]
+        suite: [local, multiplayer, truth, matrix]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund

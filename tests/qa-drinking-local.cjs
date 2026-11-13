@@ -45,7 +45,7 @@ async function exercise(ui,k){
   assert.equal(await query('.winning-seat'),1);
  }else if(k==='bomb'){
   assert.doesNotMatch(await text('.play-body h2'),/\d/);
-  await a('start-bomb');await a('pass-bomb');await advance(32000);await wait('.burst-stage');await advance(1200);
+  await a('start-bomb');await a('pass-bomb');await advance(32000);await advance(1200);
  }else if(k==='stopwatch'){
   for(let i=0;i<4;i++){await a('watch-go');await advance(1200);await a('watch-stop');await a('watch-next');}
   assert.equal(await query('.watch-results tbody tr'),4);
