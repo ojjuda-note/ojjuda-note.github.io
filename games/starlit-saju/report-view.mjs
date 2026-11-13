@@ -893,6 +893,7 @@ function daeunView(reading) {
   title.id='reading-daeun-title';
   header.append(title);
   section.append(header);
+  if(reading.timeAssumed===true)section.append(node('p','reader-scope-note daeun-time-notice',reading.birthTimeNotice));
   if(!reading.available) {
     section.append(node('p','reader-scope-note',reading.message));
     return section;
@@ -1174,6 +1175,9 @@ function buildReadingPager(root,{reading,fortune,topic}) {
       }
       if(ancestor.classList.contains('daeun-period')) {
         const dates=ancestor.querySelector('.daeun-dates');if(dates)contexts.add(dates);
+      }
+      if(ancestor.classList.contains('reader-daeun')) {
+        const notice=ancestor.querySelector(':scope > .daeun-time-notice');if(notice)contexts.add(notice);
       }
       if(ancestor.classList.contains('month-reading')) {
         const dates=ancestor.querySelector('.month-period');if(dates)contexts.add(dates);
