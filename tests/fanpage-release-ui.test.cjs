@@ -20,10 +20,16 @@ assert.ok(expectedArtist, 'group must exist in the reviewed checkout');
 // Catalog cleaning fills absent fields and reorders properties; compare their facts.
 const facts = (rows, keys) => (rows || []).map(row => Object.fromEntries(keys.map(key => [key, row[key] == null ? '' : String(row[key])])));
 const videoFacts = rows => facts(rows, ['id', 'title', 'kind', 'source', 'file']);
-const photoFacts = rows => facts(rows, ['href', 'label', 'meta', 'credit', 'license', 'licenseUrl']);
+// Commons metadata may omit the trailing slash of an otherwise identical CC license URL.
+// Only normalize that harmless URL spelling; keep attribution, license and source exact.
+const photoFacts = rows => facts(rows, ['href', 'label', 'meta', 'credit', 'license', 'licenseUrl']).map(row => ({
+  ...row,
+  licenseUrl: row.licenseUrl.startsWith('https://creativecommons.org/licenses/') ? row.licenseUrl.replace(/\/+$/, '') : row.licenseUrl,
+}));
 const eventFacts = rows => facts(rows, ['date', 'endDate', 'title', 'sub', 'href']);
 assert.deepEqual(videoFacts([{ id: 'abcdefghijk', title: 'Test' }]), videoFacts([{ title: 'Test', id: 'abcdefghijk', file: '' }]));
 assert.notDeepEqual(videoFacts([{ id: 'abcdefghijk' }]), videoFacts([{ id: '01234567890' }]));
+assert.deepEqual(photoFacts([{ licenseUrl: 'https://creativecommons.org/licenses/by/1.0/' }]), photoFacts([{ licenseUrl: 'https://creativecommons.org/licenses/by/1.0' }]));
 (async () => {
   fs.mkdirSync(out, { recursive: true });
   const report = { mode: live ? 'public-site' : 'PR-preview', group, checkedAt: new Date().toISOString(), screenshots: [], photos: [], videos: [] };
