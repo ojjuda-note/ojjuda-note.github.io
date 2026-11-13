@@ -1,0 +1,36 @@
+{
+  "baseline": "2e02d1da78af6089c9805b190fad452346cf1ced",
+  "groups": [
+    "hearts2hearts",
+    "kissoflife",
+    "kiiikiii",
+    "stayc",
+    "seventeen",
+    "enhypen",
+    "riize",
+    "boynextdoor"
+  ],
+  "sourcePRs": [
+    913,
+    915,
+    919,
+    929,
+    939,
+    940,
+    947,
+    948,
+    951
+  ],
+  "nonTargetGroupsUnchanged": 22,
+  "mediaSourceRun": "43359109162",
+  "checkedAt": "2026-11-13",
+  "status": "PR candidate; full CI, mobile checks and deployment still required",
+  "withheld": [
+    "KiiiKiii New Era campaign: primary confirmation missing",
+    "STAYC TAT/Kimpton campaign: primary confirmation missing",
+    "SEVENTEEN November RIAJ certification: original notice not located",
+    "RIIZE DICON item: original sale notice unverified",
+    "BOYNEXTDOOR LG U+ campaign/news: primary confirmation missing",
+    "BOYNEXTDOOR Golden Disc award: original award record unverified"
+  ]
+}

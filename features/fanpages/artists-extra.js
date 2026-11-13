@@ -280,6 +280,7 @@
       music: [
         { title: 'Next Chapter', date: '2026.10.16', type: '스페셜 싱글 · Arena of Valor 10주년 협업', songs: ['Next Chapter'], href: 'https://music.apple.com/us/album/next-chapter-single/6821845774' },
         { title: 'Candy Box Lover', date: '2026.10.11', type: '디지털 싱글', songs: ['Candy Box Lover'], href: 'https://music.apple.com/us/album/candy-box-lover-single/6819981721' },
+        { title: 'ICONIC HEART (Korean Ver.)', date: '2026.10.05', type: '디지털 싱글 · 일본 데뷔곡 한국어판', songs: ['ICONIC HEART (Korean Ver.)'], href: 'https://hearts2heartsofficial.jp/news/20261005/' },
         { title: 'Moonride', date: '2026.09.09', type: '디지털 싱글 · Kia 협업', songs: ['Moonride'], href: 'https://music.apple.com/us/album/moonride-single/6807315056' },
         { title: 'ICONIC HEART', date: '2026.08.12', type: '일본 데뷔 싱글 · CD 발매일 (음원 8.10)', songs: ['ICONIC HEART', 'Lemon Tang (Japanese Ver.)', 'RUDE! (Japanese Ver.)'], href: 'https://hearts2heartsofficial.jp/discography/iconic-heart_umstore/' },
         { title: 'Lemon Tang', date: '2026.06.22', type: '미니 2집 · 타이틀 Lemon Tang', songs: ['Lemon Tang', '15-LOVE', '처음투성이 (Baby Steps)', 'heart emoji (♡)', 'Secret Recipe', 'RUDE!'], href: 'https://music.apple.com/us/album/lemon-tang-the-2nd-mini-album-ep/6779521284' },
@@ -288,6 +289,7 @@
         { title: 'The Chase', date: '2025.02.24', type: '데뷔 싱글', songs: ['The Chase', 'Butterflies'], href: 'https://www.youtube.com/watch?v=kxUA2wwYiME' }
       ],
       appearances: [
+        { date: '2026-11-20', title: '2026 MAMA AWARDS Chapter 1 출연', sub: '일본 오사카 교세라 돔 · 18:00 시상식 · CJ ENM 주최', href: 'https://cjnews.cj.net/2026-mama-awards-a-to-z%EF%BD%9C%EC%B6%9C%EC%97%B0%EC%A7%84%EB%B6%80%ED%84%B0-%ED%8A%B9%EB%B3%84-%EB%AC%B4%EB%8C%80%EA%B9%8C%EC%A7%80-%ED%95%9C%EB%88%88%EC%97%90-%EB%AA%A8%EC%95%84%EB%B3%B4%EA%B8%B0/' },
         { date: '2026-11-22', title: '일본 첫 팬 이벤트 READY! S2U', sub: '도쿄 아리아케 아레나 · 18:00 시작 (17:00 입장)', href: 'https://hearts2heartsofficial.jp/news/2026081203/' },
         { date: '2026-11-23', title: '일본 첫 팬 이벤트 READY! S2U', sub: '도쿄 아리아케 아레나 · 16:00 시작 (15:00 입장)', href: 'https://hearts2heartsofficial.jp/news/2026081203/' },
         { date: '2026-11-28', title: 'Winter Special Live at UNIVERSAL STUDIOS JAPAN', sub: '오사카 USJ 그래머시 파크 · 11:00 시작 (09:45 입장) · 주최 USJ', href: 'https://hearts2heartsofficial.jp/news/20260925/' }
@@ -295,12 +297,15 @@
       schedules: [{ title: '일본 공식 일정·공지', sub: '팬 이벤트·공연·발매·변경 확인', href: 'https://hearts2heartsofficial.jp/news/' }],
       news: [
         { date: '2026.11.06', tag: '굿즈', title: 'READY! S2U 공식 MD 공개 · 온라인 11.12 20:00 판매 시작', href: 'https://hearts2heartsofficial.jp/news/20261106/' },
+        { date: '2026.11.02', tag: '굿즈', title: '공식 응원봉·미니 응원봉 키링 일본 판매 안내 (11.05 시작)', href: 'https://hearts2heartsofficial.jp/news/20261102/' },
         { date: '2026.10.16', tag: '음악', title: '게임 Arena of Valor 10주년 협업곡 Next Chapter 공개', href: 'https://music.apple.com/us/album/next-chapter-single/6821845774' },
+        { date: '2026.11.10', tag: '공연', title: 'CJ ENM 공식 안내 · 11.20 MAMA AWARDS Chapter 1 출연', href: 'https://cjnews.cj.net/2026-mama-awards-a-to-z%EF%BD%9C%EC%B6%9C%EC%97%B0%EC%A7%84%EB%B6%80%ED%84%B0-%ED%8A%B9%EB%B3%84-%EB%AC%B4%EB%8C%80%EA%B9%8C%EC%A7%80-%ED%95%9C%EB%88%88%EC%97%90-%EB%AA%A8%EC%95%84%EB%B3%B4%EA%B8%B0/' },
         { date: '2026.09.25', tag: '공연', title: '11.28 유니버설 스튜디오 재팬 특별 공연 발표', href: 'https://hearts2heartsofficial.jp/news/20260925/' },
         { date: '2026.08.12', tag: '공연', title: '11.22~23 일본 첫 팬 이벤트 READY! S2U 개최 발표', href: 'https://hearts2heartsofficial.jp/news/2026081203/' }
       ],
       merch: [
         { title: 'READY! S2U 일본 팬 이벤트 공식 MD', sub: '아크릴 키링·파카·토트백 등 · 온라인 판매 11.12 20:00부터', href: 'https://hearts2heartsofficial.jp/news/20261106/' },
+        { title: 'Hearts2Hearts 공식 응원봉·미니 키링', sub: 'SMTOWN 일본 공식 스토어 · 11.05 20:00(JST) 판매 시작 · 11.11 이후 주문은 공연 전 배송 미보장 · 재고 확인', href: 'https://hearts2heartsofficial.jp/news/20261102/' },
         { title: 'ICONIC HEART 일본 싱글 CD', sub: 'UNIVERSAL MUSIC STORE 한정판·초회판·통상판', href: 'https://hearts2heartsofficial.jp/discography/iconic-heart_umstore/' },
         { title: 'Lemon Tang 일본 공식 한정판', sub: 'Summer Kit 및 일본 전용판 · 가격·재고는 공식 판매처 확인', href: 'https://hearts2heartsofficial.jp/discography/lemon-tang_summer-kit/' }
       ],
@@ -315,9 +320,39 @@
       id: 'kissoflife', name: 'KISS OF LIFE', korean: '키스오브라이프', category: 'girl', fan: 'KISSY', agency: 'S2 Entertainment',
       members: ['쥴리', '나띠', '벨', '하늘'],
       debut: '2023.07.05', debutWork: 'KISS OF LIFE', songs: ['쉿 (Shhh)', '안녕, 네버랜드'],
-      concept: '각자의 개성과 목소리로 완성하는 자유로운 무대.',
-      official: 'https://www.s2ent.co.kr/', youtube: 'https://www.youtube.com/@KISSOFLIFE_official',
+      concept: '쥴리·나띠·벨·하늘 네 멤버가 각자의 개성과 목소리로 펼치는 음악과 퍼포먼스.',
+      official: 'https://kissoflife.jp/', youtube: 'https://www.youtube.com/@KISSOFLIFE_official',
       photo: 'KISS OF LIFE at Music Bank (4K) 20240705 02.png', photoLabel: '뮤직뱅크 출근길', photoYear: '2024', credit: '티비텐 TV10', license: 'CC BY 3.0',
+      morePhotos: [
+        commonsPhoto('28082026 Kiss of Life Newsis Hallyu Expo 1.png', '2026 뉴시스 한류엑스포 · 단체', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0'),
+        commonsPhoto('28082026 Belle Newsis Hallyu Expo 1.png', '벨 · 2026 한류엑스포', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0')
+      ],
+      music: [
+        { title: 'SWEAT -JAPANESE EP-', date: '2026.09.16', type: '일본 미니 2집 · 타이틀 SWEAT (Japanese Ver.)', songs: ['SWEAT (Japanese Ver.)', 'Was It You', 'BREAK IT', 'Who is she (Japanese Ver.)', 'Igloo (Remix)', 'BREAK IT (English Ver.)'], href: 'https://prtimes.jp/main/html/rd/p/000005074.000019470.html' },
+        { title: 'SWEAT', date: '2026.08.04', type: '싱글 · 타이틀 SWEAT', songs: ['SWEAT', 'WHAT!'], href: 'https://music.apple.com/us/album/sweat-single/6792701507' },
+        { title: 'Who is she', date: '2026.04.06', type: '싱글 · 타이틀 Who is she', songs: ['Who is she', "Don't mind me"], href: 'https://music.apple.com/us/album/who-is-she-single/1886385269' },
+        { title: 'KISS OF LIFE', date: '2023.07.05', type: '데뷔 미니 1집 · 타이틀 쉿 (Shhh)', songs: ['쉿 (Shhh)', '안녕, 네버랜드', 'Sugarcoat (NATTY)', 'Countdown (BELLE)', 'Kitty Cat (JULIE)', 'Play Love Games (HANEUL)'], href: 'https://music.apple.com/us/album/kiss-of-life-ep/1694699906' }
+      ],
+      appearances: [
+        { date: '2026-12-05', title: '2026 Asia Artist Awards (AAA)', sub: '대만 가오슝 국가체육장 · 공식 12/5 출연진 · 현지 17:00 본 행사', href: 'https://www.asiaartistawards.com/en/news/3225' }
+      ],
+      schedules: [
+        { title: '일본 컬럼비아 공식 일정', sub: '방송·행사·활동 및 변경 공지', href: 'https://columbia.jp/artist-info/kissoflife/calendar/' },
+        { title: 'KISS OF LIFE 일본 공식 사이트', sub: '공식 소식 및 공연 안내', href: 'https://kissoflife.jp/' }
+      ],
+      news: [
+        { date: '2026.10.23', tag: '시상식', title: '12.05 가오슝 AAA 공식 출연 명단 발표', href: 'https://www.asiaartistawards.com/en/news/3225' },
+        { date: '2026.10.12', tag: '무대', title: 'THE FIRST TAKE에서 SWEAT 일본어 버전 라이브 공개', href: 'https://columbia.jp/artist-info/kissoflife/media/94488.html' },
+        { date: '2026.08.27', tag: '음반', title: '일본 미니 2집 SWEAT -JAPANESE EP- 발매 발표 · 9.16 발매', href: 'https://prtimes.jp/main/html/rd/p/000005074.000019470.html' },
+        { date: '2026.08.04', tag: '컴백', title: '싱글 SWEAT 발표 · 공식 MV 공개', href: 'https://www.youtube.com/watch?v=eTvUZymLyGY' }
+      ],
+      merch: [
+        { title: 'SWEAT -JAPANESE EP- TYPE-A·B', sub: '일본 컬럼비아 공식 CD·트레이딩카드 구성 · 재고는 판매처 확인', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' },
+        { title: 'SWEAT -JAPANESE EP- 통상판', sub: '일본 컬럼비아 공식 CD · 판매 여부·가격은 판매처 확인', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' }
+      ],
+      campaigns: [
+        { kind: '콜라보', date: '2026.07.04', title: 'DIGIMON BEATBREAK × BREAK IT', sub: '일본 TV 애니메이션 엔딩 테마 음원 협업', href: 'https://prtimes.jp/main/html/rd/p/000005074.000019470.html' }
+      ],
       accent: '#b74472', light: '#ffe4ed', dark: '#68314e', bg: '#fff4f7', shape: '✿'
     },
     {
@@ -327,6 +362,35 @@
       concept: '틀에 얽매이지 않는 감각과 자유로운 에너지.',
       official: 'https://www.starship-ent.com/musician/kiiikiii', youtube: 'https://www.youtube.com/@KiiiKiii_starship',
       photo: 'KiiiKiii in August 2026.png', photoLabel: '2026년 단체', photoYear: '2026', credit: 'K-POPIT 케이팝잇', license: 'CC BY 4.0',
+      music: [
+        { title: 'WhyKiiiKiii', date: '2026.08.10', type: '미니 3집 · 타이틀 Pop Off Pop Off', songs: ['Ever2Late!', 'Hey Hi', 'Pop Off Pop Off', 'SWEET SOUR', 'Candy Pink Magic Hole Flip Phone (나 어떡해)', 'Blue Hour'], href: 'https://starship-square.com/product/amenities-ver-kiiikiii-ep-whykiiikiii/2061/category/58/display/1/' },
+        { title: 'Delulu Pack', date: '2026.01.26', type: '미니 2집 · 타이틀 404 (New Era)', songs: ['Delulu', '404 (New Era)', 'UNDERDOGS', '멍냥 (MUNGNYANG)', 'Dizzy', 'To Me From Me (Prod. TABLO)'], href: 'https://music.apple.com/us/album/delulu-pack-ep/1866860579' },
+        { title: 'To Me From Me (Prod. TABLO)', date: '2025.11.04', type: '디지털 싱글', songs: ['To Me From Me (Prod. TABLO)'], href: 'https://music.apple.com/us/album/to-me-from-me-single/1848046045' },
+        { title: 'DANCING ALONE', date: '2025.08.06', type: '디지털 싱글', songs: ['DANCING ALONE', '딸기게임 (Strawberry Cheesegame)'], href: 'https://music.apple.com/us/album/dancing-alone-single/1830522219' },
+        { title: 'UNCUT GEM', date: '2025.03.24', type: '데뷔 미니 1집 · I DO ME / BTG 수록', songs: ['DEBUT SONG', 'GROUNDWORK', 'I DO ME', 'THERE THEY GO', 'BTG', '한 개뿐인 (ONE OFF)'], href: 'https://music.apple.com/us/album/uncut-gem-ep/1800872866' }
+      ],
+      appearances: [
+        { date: '2026-11-15', title: 'MMA2026 · Music Day', sub: '서울 고척스카이돔 · 11월 15일 · 카카오엔터테인먼트 발표', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' },
+        { date: '2026-11-21', title: '2026 MAMA AWARDS · CHAPTER 2', sub: '일본 오사카 교세라돔 · CJ ENM 공식 출연 발표', href: 'https://www.cj.net/jp/press-release/view/1132' }
+      ],
+      schedules: [
+        { title: '공식 활동·공지', sub: 'KiiiKiii 공식 사이트', href: 'https://kiiikiii.kr/' },
+        { title: 'MMA2026 안내', sub: '11.15 Music Day · 주최사 보도자료', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' },
+        { title: '2026 MAMA 출연 공지', sub: '11.21 CHAPTER 2 · 주최사', href: 'https://www.cj.net/jp/press-release/view/1132' }
+      ],
+      news: [
+        { date: '2026.10.15', tag: '공연', title: '2026 MAMA AWARDS 11.21 출연 확정', href: 'https://www.cj.net/jp/press-release/view/1132' },
+        { date: '2026.10.14', tag: '공연', title: 'MMA2026 Music Day 11.15 출연 확정', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' },
+        { date: '2026.08.10', tag: '앨범', title: '미니 3집 WhyKiiiKiii · Pop Off Pop Off 발매', href: 'https://www.starship-ent.com/musician/kiiikiii' }
+      ],
+      merch: [
+        { title: 'WhyKiiiKiii · AMENITIES ver.', sub: '스타쉽스퀘어 공식 앨범 · 재고는 판매처에서 확인', href: 'https://starship-square.com/product/amenities-ver-kiiikiii-ep-whykiiikiii/2061/category/58/display/1/' },
+        { title: 'Delulu Pack · Headphone ver.', sub: '스타쉽스퀘어 공식 앨범 · 재고는 판매처에서 확인', href: 'https://starship-square.com/product/headphone-ver-kiiikiii-the-2nd-ep-delulu-pack/1874/' },
+        { title: 'WhyKiiiKiii · SNAPSHOT 한정반', sub: '스타쉽스퀘어 · 예약판매 8.03~8.12 종료', href: 'https://starship-square.com/product/snapshot-ver-kiiikiii-ep-whykiiikiii-%ED%95%9C%EC%A0%95%EB%B0%98/2074/category/58/display/1/' }
+      ],
+      campaigns: [
+        { kind: '홍보대사', date: '2026.01.21', title: '서울시 2026 서울색·서울빛 홍보대사', sub: '모닝옐로우 · 서울시 공식 위촉', href: 'https://mediahub.seoul.go.kr/archives/2016856' },
+      ],
       accent: '#4c95c2', light: '#daf5ff', dark: '#315e7b', bg: '#f0fbff', shape: '✺'
     },
     {
@@ -373,7 +437,24 @@
       debut: '2020.11.12', debutWork: 'Star To A Young Culture', songs: ['SO BAD', 'LIKE THIS'],
       concept: '선명한 개성과 상큼한 멜로디를 담는 여섯 멤버.',
       official: 'https://www.highup-ent.com/', youtube: 'https://www.youtube.com/@STAYC',
-      photo: 'STAYC Metamorphic Showcase 240701.jpg', photoLabel: 'Metamorphic 쇼케이스', photoYear: '2024', credit: '티비텐 TV10', license: 'CC BY 3.0',
+      photo: 'STAYC Metamorphic Showcase 240701.jpg', photoLabel: 'Metamorphic 쇼케이스', photoYear: '2024', credit: 'K-POPIT 케이팝잇 · 원저작 티비텐 TV10', license: 'CC BY 3.0',
+      music: [
+        { title: '2:LOVE', date: '2026.06.16', type: '싱글 6집 · 타이틀 2 L0VE', songs: ['2 L0VE', 'WHERE YOU AT?', 'SORRY', 'BEAT MY LOVE'], href: 'https://www.highup-ent.com/stayc/2love/' },
+        { title: 'STAY ALIVE', date: '2026.02.11', type: '일본 정규 1집 · CD 17곡', songs: ["MWUAH", "I WANT IT (Japanese Ver.)", "BEBE (Japanese Ver.)", "POPPY", "Teddy Bear (Japanese Ver.)", "ASAP (Japanese Ver.)", "LIT", "STEREOTYPE (Japanese Ver.)", "Tell Me Now", "Satellite", "Lover, Killer", "Say My Name", "MEOW", "GPT (Japanese Ver.)", "Bubble (Japanese Ver.)", "Cheeky Icy Thang (Japanese Ver.)", "Stay WITH me (Japanese Ver.)"], href: 'https://store-annex.universal-music.co.jp/product/upch29482/' },
+        { title: 'I WANT IT', date: '2025.07.23', type: '스페셜 싱글 · 타이틀 I WANT IT', songs: ['I WANT IT', 'BOY', '반칙 (Honestly)'], href: 'https://www.highup-ent.com/stayc/i-want-it/' },
+        { title: 'Star To A Young Culture', date: '2020.11.12', type: '데뷔 싱글 · 타이틀 SO BAD', songs: ['SO BAD', 'LIKE THIS'], href: 'https://www.highup-ent.com/stayc/star-to-a-young-culture/' }
+      ],
+      news: [
+        { date: '2026.06.16', tag: '음악', title: '싱글 6집 2:LOVE 발매 · 타이틀 2 L0VE', href: 'https://www.highup-ent.com/stayc/2love/' },
+        { date: '2025.11.11', tag: '앨범', title: '일본 정규 1집 STAY ALIVE 상세 발표 · 2026.02.11 발매', href: 'https://www.universal-music.co.jp/stayc/news/2025-11-11/' },
+        { date: '공식', tag: '로그인', title: 'STAYC Weverse 공식 공지', href: 'https://weverse.io/stayc/notice' }
+      ],
+      merch: [
+        { title: 'STAYC 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/34' },
+        { title: 'STAY ALIVE 일본 정규 1집 CD', sub: 'UNIVERSAL MUSIC STORE · 통상반 · 스토어 한정 구매 특전 종료 · 재고는 판매처 확인', href: 'https://store-annex.universal-music.co.jp/product/upch29482/' }
+      ],
+      campaigns: [
+      ],
       accent: '#e4897b', light: '#ffe7df', dark: '#865366', bg: '#fff8f3', shape: '✾'
     },
     {
@@ -607,11 +688,18 @@
       checkedAt: '2026.11.12',
       concept: '보컬·퍼포먼스·힙합 유닛이 함께 빚는 팀워크.',
       official: 'https://www.pledis.co.kr/', youtube: 'https://www.youtube.com/@pledis17',
-      photo: 'Seventeen Carat Land 24.jpg', photoLabel: 'CARAT LAND', photoYear: '2024', credit: 'SEVENTEEN', license: 'CC BY 3.0',
+      photo: 'Seventeen Carat Land 24.jpg', photoLabel: 'CARAT LAND', photoYear: '2025', credit: 'SEVENTEEN', license: 'CC BY 3.0',
+      morePhotos: [
+        commonsPhoto('Right Here tour Seventeen.jpg', 'RIGHT HERE 투어 · 2025', '2025', 'Seventeen', 'CC BY 3.0'),
+        commonsPhoto('Seventeen Right Here Japan.png', 'RIGHT HERE 일본 공연 · 2024 · 크롭·선명도 보정', '2024', 'Pledis Entertainment', 'CC BY 3.0')
+      ],
       music: [
         { title: 'DREAMSCAPE (정한×조슈아 · JxJ)', date: '2026.10.19', type: '유닛 미니 1집 · 타이틀 12 o’clock',
           songs: ['Like you', '12 o’clock', 'Outside', 'One plus one', 'Not personal (JOSHUA Solo)', '컬러링 (JEONGHAN Solo)', 'No looking back'],
           href: 'https://www.pledis.co.kr/en/artist/detail/seventeen/discography/?albumType=ALL' },
+        { title: 'V8 (디에잇×버논)', date: '2026.06.29', type: '유닛 미니 1집 · 타이틀 singasong',
+          songs: ['Friend', 'BEAT', 'singasong', 'mia (Vernon Solo)', 'coloring', 'girlsnboys', '8DM (THE 8 Solo)', 'rat race'],
+          href: 'https://music.apple.com/us/album/v8/6780313409' },
         { title: 'HAPPY BURSTDAY', date: '2025.05.26', type: '정규 5집 · 타이틀 THUNDER',
           songs: ['HBD', 'THUNDER', 'Bad Influence (Prod. by Pharrell Williams)', 'Skyfall (THE 8 Solo)', 'Fortunate Change (JOSHUA Solo)', '99.9% (WONWOO Solo)', 'Raindrops (SEUNGKWAN Solo)', 'Damage (HOSHI Solo) (feat. Timbaland)', 'Shake It Off (MINGYU Solo)', 'Happy Virus (DK Solo)', 'Destiny (WOOZI Solo)', 'Shining Star (Vernon Solo)', 'Gemini (JUN Solo)', 'Trigger (DINO Solo)', 'Coincidence (JEONGHAN Solo)', 'Jungle (S.COUPS Solo)'],
           href: 'https://www.seventeen-17.jp/posts/discography/incaiv' },
@@ -626,12 +714,22 @@
         { date: '2026-11-22', title: '정한×조슈아 JOURNEY INTO [DREAMING] · 일본 공연',
           sub: '베루나 돔(사이타마) · 17:00 (일본 현지) · 공식 라이브뷰잉 별도 진행',
           href: 'https://www.seventeen-17.jp/posts/schedule/ztckpb' },
+        { date: '2026-11-22', title: '정한×조슈아 일본 돔 공연 · 영화관 생중계',
+          sub: '일본 전국 및 해외 일부 극장 · 17:00 (일본 현지) · 극장·예매는 공식 안내 확인',
+          href: 'https://www.seventeen-17.jp/posts/information/vzovft' },
+        { date: '2026-11-27', endDate: '2026-12-10', title: 'HYBE CINE FEST 2026 · SEVENTEEN 월드투어 공연 영상',
+          sub: '일본 전국 영화관 · 11월 27일~12월 10일 한정 상영 · 상영 시간은 극장별 확인',
+          href: 'https://www.seventeen-17.jp/posts/information/mcdmdc' },
         { date: '2026-12-02', title: '정한×조슈아 DREAMSCAPE · 프리미엄 사인회',
           sub: '도쿄 내 비공개 장소 · 당첨자 대상 · 상세 시간·장소는 당첨자 개별 안내',
           href: 'https://www.seventeen-17.jp/posts/schedule/fwczng' },
         { date: '2026-12-05', title: '정한×조슈아 DREAMSCAPE · 온라인 개별 대화 행사',
           sub: '당첨자 대상 온라인 행사 · 시간은 당첨자 개별 안내 · 신규 응모 기간 종료',
-          href: 'https://www.seventeen-17.jp/posts/schedule/yaprrj' }
+          href: 'https://www.seventeen-17.jp/posts/schedule/yaprrj' },
+        { date: '2026-12-11', title: '정한×조슈아 JOURNEY INTO [DREAMING] · 마카오 공연',
+          sub: '갤럭시 아레나 · 20:00 (마카오 현지) · PLEDIS·HYBE 등 주최 · 11.12 일반예매', href: 'https://www.galaxymacau.com/zh-hant/offers/entertainment/jeonghan-x-joshua-journey-dreaming-macau/' },
+        { date: '2026-12-12', title: '정한×조슈아 JOURNEY INTO [DREAMING] · 마카오 공연',
+          sub: '갤럭시 아레나 · 19:00 (마카오 현지) · PLEDIS·HYBE 등 주최', href: 'https://www.galaxymacau.com/zh-hant/offers/entertainment/jeonghan-x-joshua-journey-dreaming-macau/' }
       ],
       schedules: [
         { title: 'SEVENTEEN 일본 공식 일정', sub: '방송·공연·발매 달력', href: 'https://www.seventeen-17.jp/posts/schedule' },
@@ -643,11 +741,15 @@
         { date: '2026.10.19', tag: '음악', title: '정한×조슈아 유닛 JxJ 미니 1집 DREAMSCAPE 발매 · 로그인 후 확인', href: 'https://weverse.io/seventeen/notice/39436/' }
       ],
       merch: [
+        { title: '정한×조슈아 일본 공연 공식 팝업 스토어',
+          sub: '2026.11.06~11.23 · SHIBUYA TSUTAYA B1F · 공식 MD · 품목별 판매 시작일 상이 · 입장 예약 대상 시간은 공식 안내 확인',
+          href: 'https://www.seventeen-17.jp/posts/information/cbaizr' },
         { title: 'THE 8 생일 기념 공식 굿즈 ver.6', sub: '젓가락 세트 · 2026.11.06 예약 개시 · 재고·종료 여부는 위버스샵 확인', href: 'https://www.seventeen-17.jp/posts/information/mwgnvy' },
         { title: 'JxJ DREAMSCAPE 공식 MD', sub: '포토카드 홀더·키링·포스터·파우치 등 · 수량·재고는 위버스샵 확인', href: 'https://www.seventeen-17.jp/posts/information/kfxdkv' },
         { title: 'SEVENTEEN 공식 상품 목록', sub: 'Weverse Shop · 앨범·응원봉·공식 MD · 가격·재고 확인', href: 'https://shop.weverse.io/ko/shop/KRW/artists/7' }
       ],
       campaigns: [
+        { kind: '홍보대사', date: '2024.06.26', title: '유네스코 청년 친선대사', sub: 'UNESCO 첫 청년 친선대사로 임명 · Going Together 청년 지원 협력', href: 'https://www.unesco.org/en/articles/unesco-and-k-pop-group-seventeen-announce-1-million-grant-scheme-youth-well-being-and-creativity' },
         { kind: '콜라보', date: '2025.06.11', title: 'SEVENTEEN × sacai · Bad Influence 의상', sub: '뮤직비디오 협업 의상 제작 · 자선 경매 수익 UNESCO 기부 안내', href: 'https://www.billboard-japan.com/d_news/detail/150491/2' }
       ],
       accent: '#88a9d8', light: '#dfeeff', dark: '#466386', bg: '#f7faff', shape: '◇'
@@ -738,11 +840,23 @@
       ],
       appearances: [
         { date: '2026-11-13', title: 'BLOOD SAGA 월드투어 공연 영상 일본 극장 상영 시작', sub: '11.13~11.26 · 일본 전국 영화관 · 한정 입장 선물 안내 · 상영·예매는 공식 사이트 확인', href: 'https://enhypen-jp.weverse.io/news/78707bf51814' },
+        { date: '2026-11-20', endDate: '2026-12-02', title: 'BLOOD SAGA 도쿄 팝업스토어 개막', sub: '11.20~12.02 · 도쿄 시부야구 제9SY 빌딩 1층 · 11:00~19:00 (JST) · 입장 예약·판매 상태는 공식 공지 확인', href: 'https://enhypen-jp.weverse.io/news/dd0bec9156a4' },
         { date: '2026-11-20', title: 'THE SIN : PARALLEL WORLD 디지털 싱글 발매 예정', sub: '14:00 한국시간 · 디지털 음원·미국 싱글 CD · 실물 발매일과 구분', href: 'https://weverse.io/enhypen/notice/40374' },
         { date: '2026-11-23', title: 'THE SIN : PARALLEL WORLD 실물 싱글 앨범 발매 예정', sub: '12:00 한국시간 · 스핀오프 싱글 실물 발매 · 변경은 공식 공지 확인', href: 'https://weverse.io/enhypen/notice/40374' },
+        { date: '2026-12-01', title: 'BLOOD SAGA 일본 투어 · 도쿄 1일차', sub: '도쿄돔 · 18:30 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/cb268ca1962b' },
+        { date: '2026-12-02', title: 'BLOOD SAGA 일본 투어 · 도쿄 2일차', sub: '도쿄돔 · 16:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/911292cae943' },
         { date: '2026-12-13', title: '일본 도쿄 미트앤그리트 · 개별 사인회', sub: '도쿄 빅사이트 남3홀 · 응모 당첨자 대상 · 상세 시간 추후 공지', href: 'https://www.universal-music.co.jp/enhypen/news/2026-10-29/' },
         { date: '2026-12-17', title: 'PARALLEL WORLD 발매 기념 온라인 2샷 행사', sub: '20:30경 일본 현지시간 · 당첨자 대상 · WithLIVE · 시간 변경 가능', href: 'https://enhypen-jp.weverse.io/news/cdaa6da839b4' },
-        { date: '2026-12-21', title: 'PARALLEL WORLD 발매 기념 온라인 2샷·토크 행사', sub: '20:30경 일본 현지시간 · 당첨자 대상 · WithLIVE · 시간 변경 가능', href: 'https://enhypen-jp.weverse.io/news/cdaa6da839b4' }
+        { date: '2026-12-18', endDate: '2026-12-27', title: 'BLOOD SAGA 나고야 팝업스토어 개막', sub: '12.18~12.27 · 나고야 PARCO 남관 10층 · 10:00~20:00 (JST)', href: 'https://enhypen-jp.weverse.io/news/dd0bec9156a4' },
+        { date: '2026-12-21', title: 'PARALLEL WORLD 발매 기념 온라인 2샷·토크 행사', sub: '20:30경 일본 현지시간 · 당첨자 대상 · WithLIVE · 시간 변경 가능', href: 'https://enhypen-jp.weverse.io/news/cdaa6da839b4' },
+        { date: '2026-12-26', title: 'BLOOD SAGA 일본 투어 · 나고야 1일차', sub: '반테린돔 나고야 · 17:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/44ef1a8867ab' },
+        { date: '2026-12-27', title: 'BLOOD SAGA 일본 투어 · 나고야 2일차', sub: '반테린돔 나고야 · 16:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/ca435a996f7d' },
+        { date: '2027-01-29', endDate: '2027-02-07', title: 'BLOOD SAGA 후쿠오카 팝업스토어 개막', sub: '01.29~02.07 · 후쿠오카 솔라리아플라자 1층 · 평일 11:00~20:00 / 주말 10:00~20:00 (JST)', href: 'https://enhypen-jp.weverse.io/news/dd0bec9156a4' },
+        { date: '2027-02-06', title: 'BLOOD SAGA 일본 투어 · 후쿠오카 1일차', sub: '미즈호 PayPay돔 후쿠오카 · 17:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/1c542b061fc8' },
+        { date: '2027-02-07', title: 'BLOOD SAGA 일본 투어 · 후쿠오카 2일차', sub: '미즈호 PayPay돔 후쿠오카 · 16:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/1c542b061fc8' },
+        { date: '2027-02-11', endDate: '2027-02-21', title: 'BLOOD SAGA 오사카 팝업스토어 개막', sub: '02.11~02.21 · 오사카 시로구치 빌딩 1~2층 · 11:00~19:00 (JST)', href: 'https://enhypen-jp.weverse.io/news/dd0bec9156a4' },
+        { date: '2027-02-19', title: 'BLOOD SAGA 일본 투어 · 오사카 1일차', sub: '교세라돔 오사카 · 18:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/16851d04963f' },
+        { date: '2027-02-20', title: 'BLOOD SAGA 일본 투어 · 오사카 2일차', sub: '교세라돔 오사카 · 16:00 공연 시작 (JST) · 공식 투어·예매 안내', href: 'https://enhypen-jp.weverse.io/schedule/16851d04963f' }
       ],
       schedules: [
         { title: 'BELIFT LAB 공식 일정', sub: '공연·활동 달력 및 변경 안내', href: 'https://beliftlab.com/artist/schedule/ENHYPEN' },
@@ -752,9 +866,14 @@
       news: [
         { date: '2026.11.08', tag: '팬 행사', title: '12월 17·21일 일본 온라인 팬 이벤트 공지', href: 'https://enhypen-jp.weverse.io/news/cdaa6da839b4' },
         { date: '2026.11.06', tag: '공연', title: '11월 13~26일 BLOOD SAGA 일본 극장 상영·입장 선물 안내', href: 'https://enhypen-jp.weverse.io/news/78707bf51814' },
-        { date: '2026.10.26', tag: '음악', title: 'THE SIN : PARALLEL WORLD 발매 발표 · 디지털 11.20 / 실물 11.23 · Weverse 로그인 필요할 수 있음', href: 'https://weverse.io/enhypen/notice/40374' }
+        { date: '2026.11.04', tag: '공연', title: 'BLOOD SAGA 일본 4도시 투어 팝업스토어 일정·장소 발표', href: 'https://enhypen-jp.weverse.io/news/dd0bec9156a4' },
+        { date: '2026.10.26', tag: '음악', title: 'THE SIN : PARALLEL WORLD 발매 발표 · 디지털 11.20 / 실물 11.23 · Weverse 로그인 필요할 수 있음', href: 'https://weverse.io/enhypen/notice/40374' },
+        { date: '2026.10.19', tag: '굿즈', title: '공식 응원봉 Ver.2 리뉴얼 에디션 및 데코 세트 판매 안내', href: 'https://shop.weverse.io/ko/shop/USD/artists/10/notices/14588' },
+
       ],
       merch: [
+        { title: 'Official Light Stick Ver.2 (Renewal Edition)', sub: 'Weverse 공식 응원봉 · 10.19 18:00(KST) 판매 시작 · 수량 소진 시 종료 · 재고·가격 확인', href: 'https://shop.weverse.io/ko/shop/USD/artists/10/notices/14588' },
+        { title: 'BLOOD SAGA 일본 월드투어 공식 MD', sub: '공식 투어 상품 · 포토·피켓·아크릴 스탠드 · 재고는 판매처 확인', href: 'https://enhypen-jp.weverse.io/news/f1516fcdee64' },
         { title: 'THE SIN : PARALLEL WORLD 공식 예약 앨범', sub: '10.26 예약 시작 · 국내 실물 11.23 발매 예정 · 재고·특전은 공식 판매처 확인', href: 'https://www.universal-music.co.jp/enhypen/news/2026-10-26/' },
         { title: 'THE SIN : BLISS 미니 8집 공식 음반', sub: '2026.08.21 국내 발매 · TAKE 1~4 버전 · 판매 상태는 공식 판매처 확인', href: 'https://enhypen-jp.weverse.io/news/ec88f679213e' },
         { title: 'ENHYPEN 공식 앨범·굿즈 목록', sub: 'Weverse Shop · 응원봉·앨범·MD · 재고·가격은 판매처 확인', href: 'https://shop.weverse.io/ko/shop/KRW/artists/10' }
@@ -770,8 +889,31 @@
       members: ['쇼타로', '은석', '성찬', '원빈', '소희', '앤톤'],
       debut: '2023.09.04', debutWork: 'Get A Guitar', songs: ['Get A Guitar', 'Memories'],
       concept: '함께 성장하며 꿈을 실현해 가는 여섯 멤버.',
-      official: 'https://www.smentertainment.com/', youtube: 'https://www.youtube.com/@RIIZE_official',
+      checkedAt: '2026.11.12',
+      official: 'https://riizeofficial.jp/', youtube: 'https://www.youtube.com/@RIIZE_official',
       photo: 'Riize at the 2024 Melon Music Awards-2.png', photoLabel: '멜론뮤직어워드', photoYear: '2024', credit: 'TenAsia', license: 'CC BY 3.0',
+      music: [
+        { title: 'Insomnia', date: '2026.10.26', type: '디지털 싱글 · 공식 뮤직비디오', songs: ['Insomnia'], href: 'https://riizeofficial.jp/news/20261026/' },
+        { title: 'Sunburst', date: '2026.08.26', type: '일본 싱글 3집 · CD 발매', songs: ['Sunburst', 'Rise Over', 'KILL SHOT'], href: 'https://riizeofficial.jp/discography/sunburst_normal/' },
+        { title: 'II', date: '2026.06.15', type: '미니 2집 · 디지털 발매', songs: ['SOAR', 'Do your dance', 'D-D-Done', 'Overdrive', 'Like a Bomb', 'In a Loop'], href: 'https://riizeofficial.jp/discography/ii/' },
+        { title: 'Get A Guitar', date: '2023.09.04', type: '데뷔 싱글', songs: ['Get A Guitar', 'Memories'], href: 'https://www.youtube.com/watch?v=iUw3LPM7OBU' }
+      ],
+      appearances: [
+        { date: '2026-12-09', title: '2026 FNS 가요제 제2야 생방송', sub: '후지TV 계열 · 일본 현지 18:30~21:54 방송 · 출연 시간 미정', href: 'https://riizeofficial.jp/news/20261103/' },
+        { date: '2026-12-27', title: 'Sunburst 오프라인 팬 이벤트', sub: '일본 도쿄 · 추첨 당첨자 대상 · 상세 장소·시간 비공개', href: 'https://riizeofficial.jp/news/2026102302/' },
+        { date: '2026-12-27', title: 'Sunburst 프리미엄 그룹 사인회', sub: '일본 도쿄 · 당첨자 50명 · 2차 응모 11.15 23:59(JST) 종료 · 상세 시간 개별 안내', href: 'https://riizeofficial.jp/news/2026102303/' }
+      ],
+      news: [
+        { date: '2026.11.03', tag: '방송', title: '12월 9일 일본 FNS 가요제 제2야 생방송 출연 발표', href: 'https://riizeofficial.jp/news/20261103/' },
+        { date: '2026.10.26', tag: '음악', title: '디지털 싱글 Insomnia 발매 · 공식 뮤직비디오 공개', href: 'https://riizeofficial.jp/news/20261026/' },
+        { date: '2026.10.23', tag: '이벤트', title: '12월 27일 Sunburst 일본 오프라인 이벤트·사인회 발표', href: 'https://riizeofficial.jp/news/2026102303/' }
+      ],
+      merch: [
+        { title: 'RIIZE 2027 SEASON’S GREETINGS', sub: 'Weverse Shop 공식 예약 안내 · 2026.10.13 15:00(KST) 예약 시작 · 12.24부터 출고 예정 · 재고 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/151/notices/14559' },
+      ],
+      schedules: [
+        { title: 'RIIZE 일본 공식 활동 공지', sub: '방송·공연·팬 이벤트 변경 및 취소 확인', href: 'https://riizeofficial.jp/news/' }
+      ],
       accent: '#df8a52', light: '#ffe7d2', dark: '#855234', bg: '#fff8ef', shape: '☀'
     },
     {
@@ -779,8 +921,45 @@
       members: ['성호', '리우', '명재현', '태산', '이한', '운학'],
       debut: '2023.05.30', debutWork: 'WHO!', songs: ['돌아버리겠다 (But I Like You)', 'One and Only', 'Serenade'],
       concept: '일상의 이야기를 솔직하게 들려주는 여섯 멤버.',
+      checkedAt: '2026.11.12',
       official: 'https://kozofficial.com/artist/profile/BOYNEXTDOOR', youtube: 'https://www.youtube.com/@BOYNEXTDOOR_official',
       photo: '2026-01-16 BOYNEXTDOOR at Golden Disc Awards 05 (cropped).png', photoLabel: '골든디스크 시상식', photoYear: '2026', credit: '티비텐 TV10', license: 'CC BY 4.0',
+      morePhotos: [
+        commonsPhoto('BoyNextDoor at the 2024 Melon Music Awards.png', '2024 멜론뮤직어워드 단체', '2024', 'TenAsia', 'CC BY 3.0')
+      ],
+      music: [
+        { title: 'HOME: DELUXE', date: '2026.09.28', type: '정규 1집 리패키지 · 타이틀 ANIMAL · 디지털 13곡', songs: ['ANIMAL', 'CLICHE', '06070', 'VIRAL', 'ddok ddok ddok', 'ADIOS!', 'Upside Down', 'DIVE', 'Forever You', 'I Wonder', 'Count To Love (Korean Ver.)', '400 Years', 'Boom Boom Boom'], href: 'https://music.apple.com/us/album/home-deluxe/6806965442' },
+        { title: 'HOME', date: '2026.06.08', type: '정규 1집 · 타이틀 VIRAL · 마지막 트랙은 CD 전용', songs: ['06070', 'VIRAL', 'ddok ddok ddok', 'ADIOS!', 'Upside Down', 'DIVE', 'Forever You', 'I Wonder', 'I Wonder, Always (CD Only)'], href: 'https://www.kozofficial.com/artist/discography/BOYNEXTDOOR/32' },
+        { title: 'WHO!', date: '2023.05.30', type: '데뷔 싱글', songs: ['돌아버리겠다 (But I Like You)', 'One and Only', 'Serenade'], href: 'https://www.kozofficial.com/artist/discography/BOYNEXTDOOR/23' }
+      ],
+      appearances: [
+        { date: '2026-11-13', title: 'KNOCK ON Vol.2 · 밴쿠버', sub: '캐나다 Queen Elizabeth Theatre · 현지 19:30 · AEG 주최 · 공연장 공식 예매 안내', href: 'https://vancouvercivictheatres.com/events/boynextdoor-tour-knock-on-vol2-nov-13-2026/' },
+        { date: '2026-11-15', title: 'KNOCK ON Vol.2 · 시애틀', sub: '미국 시애틀 · 소속사 그룹 HYBE JAPAN 공식 투어 발표 · 현지 시간·예매 상세 확인', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
+        { date: '2026-11-17', title: 'KNOCK ON Vol.2 · 샌프란시스코', sub: '미국 샌프란시스코 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
+        { date: '2026-11-20', title: 'KNOCK ON Vol.2 · 로스앤젤레스', sub: '미국 로스앤젤레스 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
+        { date: '2026-11-24', title: 'KNOCK ON Vol.2 · 멕시코시티', sub: '멕시코 멕시코시티 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
+        { date: '2026-12-05', title: 'KNOCK ON Vol.2 · 자카르타', sub: '인도네시아 자카르타 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
+        { date: '2026-12-26', title: 'KNOCK ON Vol.2 · 쿠알라룸푸르', sub: '말레이시아 쿠알라룸푸르 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' }
+      ],
+      schedules: [
+        { title: 'BOYNEXTDOOR 일본 공식 일정', sub: '공식 사이트 · 방송·공연·발매 일정', href: 'https://boynextdoor-official.jp/Schedule' },
+        { title: 'BOYNEXTDOOR Weverse 공지', sub: '로그인·커뮤니티 가입 후 공연·행사 변경과 예매 정보 확인', href: 'https://weverse.io/boynextdoor/notice' }
+      ],
+      news: [
+        { date: '2026.11.01', tag: '굿즈', title: 'One and Only 후드 재판매 발표 · 11.02 예약 시작', href: 'https://boynextdoor-official.jp/news/1eaa7468d773' },
+        { date: '2026.10.27', tag: '굿즈', title: 'HYBE CINE FEST 2026 공식 상품 판매 안내', href: 'https://boynextdoor-official.jp/news/aa8fdc1e75ea' },
+        { date: '2026.09.07', tag: '음반', title: 'HOME: DELUXE 예약 시작 · 9.28 정식 발매', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/14247' },
+        { date: '2026.07.30', tag: '협업', title: '언더아머 글로벌 앰배서더 · COMMIT 캠페인 발표', href: 'https://www.erajaya.com/index.php/news/under-armour-tunjuk-boynextdoor-sebagai-global-brand-ambassadors' },
+      ],
+      merch: [
+        { title: 'HOME: DELUXE 공식 앨범', sub: 'Weverse Shop · 9.28 발매 · 9.07~9.27 예약·특전 기간 종료 · 현재 재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/14247' },
+        { title: 'One and Only 후드 재판매', sub: '공식 일본 판매 · 멤버십 가입자·일본 배송 한정 · 11.02부터 수량 소진 시 종료', href: 'https://boynextdoor-official.jp/news/1eaa7468d773' },
+        { title: 'HYBE CINE FEST 2026 공식 상품', sub: 'Weverse Global · 10.24~10.31 예약 종료 · 한국 등 일부 국가 판매 제한 · 상품별 출고일 확인', href: 'https://shop.weverse.io/ko/shop/USD/artists/112/notices/14790' },
+        { title: 'BOYNEXTDOOR 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/112' }
+      ],
+      campaigns: [
+        { kind: '홍보대사', date: '2026.07.30', title: 'Under Armour · 글로벌 브랜드 앰배서더', sub: '글로벌 COMMIT 캠페인 · 언더아머 공식 유통사 발표', href: 'https://www.erajaya.com/index.php/news/under-armour-tunjuk-boynextdoor-sebagai-global-brand-ambassadors' },
+      ],
       accent: '#478bc5', light: '#dfefff', dark: '#2d5678', bg: '#f3faff', shape: '✱'
     },
     {
