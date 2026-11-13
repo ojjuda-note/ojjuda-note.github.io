@@ -1,3 +1,6 @@
+import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
+import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-reader1';
+
 const $ = id => document.getElementById(id);
 const form = $('birth-form');
 const submit = $('open-story');
@@ -14,6 +17,7 @@ let billingMode = false;
 let busy = false;
 let submitGeneration = 0;
 let currentReading = null;
+let currentPerson = null;
 let currentDetail = null;
 let reportGeneration = 0;
 let reportBusy = false;
@@ -97,7 +101,6 @@ appendOptions($('birth-day'), 1, 31, '일');
 appendOptions($('birth-hour'), 0, 23, '시', true);
 appendOptions($('birth-minute'), 0, 59, '분', true);
 $('birth-year').max = String(Math.min(2050, Number(new Intl.DateTimeFormat('en', {year:'numeric',timeZone:'Asia/Seoul'}).format(new Date()))));
-
 function setMotion() {
   document.documentElement.dataset.reducedMotion = String(reducedMotion);
   $('motion-toggle').setAttribute('aria-pressed', String(reducedMotion));
@@ -155,6 +158,40 @@ form.addEventListener('input', clearError);
 updateCalendar();
 updateTime();
 
+const profileStore=new SajuSavedProfiles({getIdentity:()=>({userId:billingSignedIn?billing?.user:null,anonymous:billing?.anonymous===true})});
+const profilePicker=new SajuProfilePicker({
+  element:$('saved-profiles'),store:profileStore,
+  read:async()=>{
+    await readyBilling();
+    const person={...readPerson(),birth:readBirth()};
+    const signature=personSignature();
+    await calculateBirth(person.birth);
+    if(signature!==personSignature())throw new Error('입력한 정보가 바뀌었어요. 현재 내용을 다시 저장해 주세요.');
+    return person;
+  },
+  fill:profile=>fillPerson(profile),
+  clear:()=>fillPerson({name:'',gender:null,birth:{calendar:'solar',year:'',month:'',day:'',leapMonth:false,hour:null,minute:0}}),
+});
+
+function readPerson() {
+  return {name:$('person-name').value.trim().normalize('NFC'),gender:$('person-gender').value||null};
+}
+function personSignature() { return JSON.stringify({...readPerson(),birth:readBirth()}); }
+function fillPerson({name,gender,birth}) {
+  if (busy) return;
+  $('person-name').value=name;
+  $('person-gender').value=gender||'';
+  form.querySelector(`input[name="calendar"][value="${birth.calendar}"]`).checked=true;
+  for(const field of ['year','month','day']) $('birth-'+field).value=String(birth[field]);
+  updateCalendar();
+  $('leap-month').checked=birth.calendar==='lunar'&&birth.leapMonth;
+  $('time-unknown').checked=birth.hour===null;
+  $('birth-hour').value=birth.hour===null?'':String(birth.hour);
+  $('birth-minute').value=birth.hour===null?'':String(birth.minute);
+  updateTime();
+  scheduleEntryCheck();
+}
+
 function renderPillar(pillar, index) {
   const card = element('article', 'pillar-card' + (pillar.key === 'day' ? ' is-day' : ''));
   card.style.setProperty('--i', index);
@@ -199,6 +236,9 @@ function plainWarning(message) {
 }
 
 function renderReading(result) {
+  const name=currentPerson?.name;
+  $('result-title').replaceChildren(document.createTextNode(name?`${name}님의 `:'나의 '),element('em','','운세'));
+  $('detailed-title').textContent=name?`${name}님의 운세 풀이`:'나의 운세 풀이';
   $('result-pillars').replaceChildren(...result.pillars.map(renderPillar));
   $('birth-summary').textContent = `양력 ${result.solar.label} · ${result.timeLabel || (result.timeKnown ? '시간 입력' : '태어난 시간 모름')}`;
   $('lunar-summary').textContent = `음력 ${result.lunar.label}`;
@@ -333,12 +373,13 @@ function scheduleAccessExpiry() {
   },Math.max(1,Math.min(...remaining,2147483647)));
 }
 function readBirth() {
+  const timeValue=id=>$(id).value===''?NaN:Number($(id).value);
   return {
     year:Number($('birth-year').value),month:Number($('birth-month').value),day:Number($('birth-day').value),
     calendar:form.querySelector('input[name="calendar"]:checked').value,
     leapMonth:$('leap-month').checked,
-    hour:$('time-unknown').checked ? null : Number($('birth-hour').value),
-    minute:$('time-unknown').checked ? 0 : Number($('birth-minute').value)
+    hour:$('time-unknown').checked ? null : timeValue('birth-hour'),
+    minute:$('time-unknown').checked ? 0 : timeValue('birth-minute')
   };
 }
 function birthSignature(input=readBirth()) { return JSON.stringify(input); }
@@ -442,20 +483,24 @@ document.querySelectorAll('.reading-size-control button').forEach(button=>button
   document.querySelectorAll('.reading-size-control button').forEach(choice=>choice.setAttribute('aria-pressed',String(choice===button)));
 }));
 
-async function prepareDetailedReading(chart,target) {
+async function prepareDetailedReading(chart,target,person=currentPerson||readPerson()) {
   detailModulesPromise ||= Promise.all([
-    import('./fortune-data.mjs?v=20261113-saju-brief1'),
-    import('./readings.mjs?v=20261113-saju-brief1'),
-    import('./report-view.mjs?v=20261113-saju-brief1')
+    import('./fortune-data.mjs?v=20261113-saju-reader1'),
+    import('./readings.mjs?v=20261113-saju-reader1'),
+    import('./report-view.mjs?v=20261113-saju-reader1'),
+    import('./daeun.mjs?v=20261113-saju-reader1')
   ]).catch(error=>{detailModulesPromise=null;throw error;});
-  const [dataModule,readingModule,viewModule]=await detailModulesPromise;
-  const fortune=dataModule.analyzeFortune(chart,{year:target.topic==='lifelong'?koreanYear():target.year,now:new Date()});
-  const reading=readingModule.buildDetailedReading(chart,fortune);
-  const copyText=reading.copyByCategory?.[target.topic];
+  const [dataModule,readingModule,viewModule,daeunModule]=await detailModulesPromise;
+  const now=new Date();
+  const fortune=dataModule.analyzeFortune(chart,{year:target.topic==='lifelong'?koreanYear():target.year,now});
+  const daeun=['lifelong','all'].includes(target.topic)?daeunModule.analyzeDaeun(chart,{gender:person.gender,now}):null;
+  const reading=readingModule.buildDetailedReading(chart,fortune,{daeun});
+  const body=reading.copyByCategory?.[target.topic];
+  const copyText=typeof body==='string'?[person.name?`${person.name}님의 사주 풀이`:'나의 사주 풀이',body].join('\n\n'):body;
   if (typeof copyText!=='string' || !copyText.trim()) throw new Error('product_reading_incomplete');
   const content=document.createElement('div');
   viewModule.renderDetailedReport(content,{reading,fortune,topic:target.topic});
-  return {fortune,reading,content,copyText,target};
+  return {fortune,reading,content,copyText,target,person:{...person}};
 }
 function commitDetailedReading(chart,{fortune,reading,content,copyText,target},access) {
   if (!activeAccess(access)) throw Object.assign(new Error('이용 시간이 끝났어요. 표시된 금액을 확인한 뒤 다시 펼쳐 주세요.'),{code:'access_expired'});
@@ -467,8 +512,8 @@ function commitDetailedReading(chart,{fortune,reading,content,copyText,target},a
   $('report-content').dataset.topic=target.topic;
   $('report-content').dataset.year=String(target.year);
   $('report-content').removeAttribute('aria-busy');
-  $('current-report-link').href=target.topic==='monthly'?'#reading-months':`#reading-${target.topic}`;
-  $('current-report-label').textContent=target.topic==='all'?'전체 풀이':target.topic==='monthly'?'12개월 풀이':targetLabel(target);
+  $('current-report-link').href='#reading-summary';
+  $('current-report-label').textContent='핵심 운세';
   $('current-reading-title').textContent=`${targetLabel(target)}${target.topic==='monthly'?' · 1~12월 전체':''}`;
   const end=accessEndLabel(access);
   $('current-reading-note').textContent=access.adminPreview?'관리자 미리보기 · 차감 없음'
@@ -476,7 +521,7 @@ function commitDetailedReading(chart,{fortune,reading,content,copyText,target},a
   $('reading-controls').hidden=false;
   $('other-reading-options').open=false;
   $('report-toc').hidden=false;
-  $('report-status').textContent=`현재 보는 풀이: ${targetLabel(target)}${target.topic==='monthly'?' · 1~12월 전체':''}`;
+  $('report-status').textContent='';
   $('report-status').classList.remove('is-loading');
   $('copy-reading').disabled=false;
   $('report-error').hidden=true;
@@ -497,6 +542,7 @@ function recordReceipt(status,receipt,target) {
 }
 function openInitialReport(chart,prepared,status,receipt,signature) {
   currentReading=chart;
+  currentPerson=prepared.person;
   const access=recordReceipt(status,receipt,prepared.target);
   currentAccess={chart,owner:billing.user,status:access};
   entryQuote={signature,chart,owner:billing.user,status:access};
@@ -573,7 +619,7 @@ async function openSelectedProduct() {
     const message=error?.code&&/[가-힣]/.test(error.message||'')?error.message:'선택한 풀이를 열지 못했어요. 다시 시도해 주세요.';
     $('report-error-text').textContent=message;
     $('report-error').hidden=false;
-    if (currentDetail) $('report-status').textContent=`현재 보는 풀이: ${targetLabel(currentDetail)}`;
+    if (currentDetail) $('report-status').textContent='';
   } finally {
     if (generation===reportGeneration && currentReading===chart && !$('result').hidden) {
       reportBusy=false;
@@ -599,14 +645,17 @@ function resetAfterAccountChange() {
   clearTimeout(entryCheckTimer);
   clearTimeout(accessTimer);
   busy=false;reportBusy=false;entryCheckPending=false;entryQuoteError=false;
-  currentReading=null;currentDetail=null;currentAccess=null;entryQuote=null;
+  currentReading=null;currentPerson=null;currentDetail=null;currentAccess=null;entryQuote=null;
   $('result').hidden=true;$('intro').hidden=false;
+  $('result-title').textContent='나의 운세';$('detailed-title').textContent='나의 운세 풀이';
+  for(const id of ['birth-summary','lunar-summary','result-warnings','result-pillars','day-master-glyph','day-master-title','day-master-symbol','day-master-reading','element-count','element-bars','convention-list'])$(id).replaceChildren();
   $('report-content').replaceChildren();
   $('report-content').removeAttribute('aria-busy');
   $('report-toc').hidden=true;$('report-error').hidden=true;$('entry-check-error').hidden=true;
   $('reading-controls').hidden=true;$('other-reading-options').open=false;
   $('copy-reading').disabled=true;
   form.reset();
+  profilePicker.resetSelection();profilePicker.setDisabled(false);profilePicker.refresh();
   form.querySelectorAll('fieldset').forEach(fieldset=>{fieldset.disabled=false;});
   form.removeAttribute('aria-busy');
   document.querySelector('.skip-link').href='#birth-form';
@@ -640,6 +689,7 @@ async function readyBilling() {
     const state=await billing.init();
     recordFortuneVisit();
     billingInitialized=true;billingSignedIn=state.signedIn===true;billingMode=Boolean(state.adminPreview);
+    profilePicker.refresh();
     updateBillingStatus();
     scheduleEntryCheck();
     return billing;
@@ -656,31 +706,38 @@ form.addEventListener('submit',async event=>{
   quoteGeneration++;
   clearTimeout(entryCheckTimer);
   entryCheckPending=false;
-  const input=readBirth(),signature=birthSignature(input),target=targetFrom('entry');
+  const input=readBirth(),signature=birthSignature(input),person=readPerson(),personKey=personSignature(),target=targetFrom('entry');
+  const stillCurrent=()=>generation===submitGeneration&&personKey===personSignature();
   submit.disabled=true;
   submit.querySelector('span').textContent=`${targetLabel(target)} 준비 중…`;
   form.setAttribute('aria-busy','true');
   form.querySelectorAll('fieldset').forEach(fieldset=>{fieldset.disabled=true;});
+  profilePicker.setDisabled(true);
   clearError();
   let inspected=false;
   try {
     const payment=await readyBilling();
-    if(generation!==submitGeneration)return;
+    if(!stillCurrent())return;
     if(!billingSignedIn&&!payment.adminPreview)throw Object.assign(new Error('사주를 펼치려면 먼저 아지트에서 로그인해 주세요.'),{code:'auth_required'});
     const chart=await calculateBirth(input);
+    if(!stillCurrent())return;
+    const savedProfile=await profilePicker.saveCurrent();
+    const saveWarning=savedProfile?null:$('saved-profiles').querySelector('.profile-picker-status')?.textContent;
+    if(!stillCurrent())return;
     const status=await payment.status(chart);
     inspected=true;
-    if(generation!==submitGeneration)return;
+    if(!stillCurrent())return;
     entryQuote={signature,chart,status,owner:payment.user};
     entryQuoteError=false;$('entry-check-error').hidden=true;
-    const prepared=await prepareDetailedReading(chart,target);
-    if(generation!==submitGeneration)return;
+    const prepared=await prepareDetailedReading(chart,target,person);
+    if(!stillCurrent())return;
     submit.querySelector('span').textContent='선택한 항목의 이용 내역 확인 중…';
     const receipt=await payment.start(chart,{...target,expectedCharge:Math.min(clickedCharge,payable(status,target))});
-    if(generation!==submitGeneration)return;
+    if(!stillCurrent())return;
     if(!receipt?.ok)throw new Error('payment_unverified');
     openInitialReport(chart,prepared,status,receipt,signature);
-    if(receipt.replayed)toast('구매한 항목을 추가 차감 없이 다시 펼쳤어요.');
+    if(saveWarning)toast(saveWarning);
+    else if(receipt.replayed)toast('구매한 항목을 추가 차감 없이 다시 펼쳤어요.');
   } catch(error) {
     if(generation!==submitGeneration)return;
     if(!inspected&&billingSignedIn&&error?.name!=='SajuInputError'){
@@ -698,6 +755,7 @@ form.addEventListener('submit',async event=>{
     if(generation===submitGeneration){
       busy=false;
       form.querySelectorAll('fieldset').forEach(fieldset=>{fieldset.disabled=false;});
+      profilePicker.setDisabled(false);
       form.removeAttribute('aria-busy');
       updateBillingStatus();
     }
@@ -709,7 +767,7 @@ $('payment-status').textContent='로그인과 보유 쭈를 확인하고 있어�
 void readyBilling().catch(()=>{$('payment-status').textContent='이용 정보를 확인하지 못했어요. 펼치기를 누르면 다시 확인해요.';$('login-link').hidden=false;});
 $('edit-birth').addEventListener('click',()=>{
   reportGeneration++;
-  reportBusy=false;currentReading=null;currentDetail=null;currentAccess=null;
+  reportBusy=false;currentReading=null;currentPerson=null;currentDetail=null;currentAccess=null;
   $('report-content').replaceChildren();
   delete $('report-content').dataset.topic;
   delete $('report-content').dataset.year;
@@ -729,6 +787,7 @@ $('copy-reading').addEventListener('click',async()=>{
 });
 
 function resumeAccessCheck() {
+  if(!busy)profilePicker.refresh({preserveStatus:profilePicker.statusElement.dataset.state==='error'});
   expireCurrentReading();
   updateEntryOffer();
   if (currentReading) {
@@ -738,13 +797,22 @@ function resumeAccessCheck() {
 }
 window.addEventListener('focus',resumeAccessCheck);
 window.addEventListener('pageshow',resumeAccessCheck);
+window.addEventListener('storage',event=>{
+  if(!busy&&(event.key===null||event.key?.startsWith(SAVED_PROFILES_PREFIX)))profilePicker.refresh({preserveStatus:profilePicker.statusElement.dataset.state==='error'});
+});
 document.addEventListener('visibilitychange',()=>{
   if (document.visibilityState==='visible') resumeAccessCheck();
 });
 
-// An explicit contents link opens the requested supporting information.
-$('report-toc').addEventListener('click', event => {
+// Contents links reveal their requested section without exposing every chapter.
+function revealReadingTarget(event) {
   const link=event.target.closest('a[href^="#"]');
   const target=link && $(link.hash.slice(1));
-  if (target?.tagName === 'DETAILS') target.open=true;
-});
+  if (!target) return;
+  for (let parent=target;parent && parent!==$('result');parent=parent.parentElement) {
+    if (parent.tagName==='DETAILS') parent.open=true;
+  }
+  if (target.tagName==='SUMMARY') target.parentElement.open=true;
+}
+$('report-toc').addEventListener('click',revealReadingTarget);
+document.querySelector('.other-reading-link').addEventListener('click',revealReadingTarget);
