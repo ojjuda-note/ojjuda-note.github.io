@@ -6,6 +6,7 @@ const commonsPhoto = (file, label, year, author, license = 'CC BY 4.0') => {
   const stored = window.OJJUDA_FAN_LOCAL_PHOTOS?.[file];
   const actualLicense = stored?.license || license;
   const licenseUrl = {
+    'CC BY 1.0': 'https://creativecommons.org/licenses/by/1.0/',
     'CC BY 3.0': 'https://creativecommons.org/licenses/by/3.0/',
     'CC BY 4.0': 'https://creativecommons.org/licenses/by/4.0/',
     'CC BY-SA 2.0': 'https://creativecommons.org/licenses/by-sa/2.0/',
@@ -42,6 +43,11 @@ window.OJJUDA_FAN_ARTISTS = [
       commonsPhoto('Minami of RESCENE at Incheon Airport, 12 August 2026.png', '미나미 · 공항', '2026', 'K-POPIT 케이팝잇'),
       commonsPhoto('May of RESCENE at Incheon Airport, 12 August 2026.png', '메이 · 공항', '2026', 'K-POPIT 케이팝잇'),
       commonsPhoto('Zena of RESCENE at Incheon Airport, 12 August 2026.png', '제나 · 공항', '2026', 'K-POPIT 케이팝잇'),
+      commonsPhoto('RESCENE Woni 261103.jpg', 'PULSE 쇼케이스 · 원이', '2026', 'Runtorescene', 'CC BY 1.0'),
+      commonsPhoto('RESCENE Liv 261103 (2).jpg', 'PULSE 쇼케이스 · 리브', '2026', 'Runtorescene', 'CC BY 1.0'),
+      commonsPhoto('RESCENE Minami 261103.jpg', 'PULSE 쇼케이스 · 미나미', '2026', 'Runtorescene', 'CC BY 1.0'),
+      commonsPhoto('RESCENE May 261103.jpg', 'PULSE 쇼케이스 · 메이', '2026', 'Runtorescene', 'CC BY 1.0'),
+      commonsPhoto('RESCENE Zena 261103 (1).jpg', 'PULSE 쇼케이스 · 제나', '2026', 'Runtorescene', 'CC BY 1.0'),
       commonsPhoto('Rescene 250205.jpg', '2025 · 단체', '2025', '티비텐 TV10', 'CC BY 3.0'),
       commonsPhoto('240329 Rescene.jpg', '2024 · 데뷔 무대', '2024', '티비텐 TV10', 'CC BY 3.0')
     ],
@@ -64,6 +70,7 @@ window.OJJUDA_FAN_ARTISTS = [
     appearances: [
       { date: "2026-11-14", title: "MMA2026", sub: "서울 고척스카이돔 · 18:00", href: "https://into.melon.com/2026mma" },
       { date: "2026-11-20", title: "2026 MAMA AWARDS", sub: "일본 오사카 · CHAPTER 1", href: "https://www.cj.net/jp/press-release/view/1132" },
+      { date: "2026-11-22", title: "[PULSE] 메이크스타 팬사인회", sub: "대면 13:00 · 영상통화 별도 · 응모 마감", href: "https://www.makestar.com/product/21557" },
       { date: "2026-12-05", endDate: "2026-12-06", title: "AAA 2026", sub: "대만 가오슝 · 12.05~12.06", href: "https://asiaartistawards.com/news/detail/184791/all" },
       { date: "2026-12-13", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 국립경기장 · 17:00 예정", href: "https://music-bank.jp/" }
     ],
@@ -77,9 +84,10 @@ window.OJJUDA_FAN_ARTISTS = [
     ],
     schedules: [
       { title: "공식 활동 소식", sub: "RESCENE 공식 X", href: "https://x.com/RESCENEofficial" },
-      { title: "더쇼 · 11.10", sub: "참여 안내", href: "https://artist.mnetplus.world/main/stg/rescene-official/surveys/6af01659da3bdb578b5182ae" }
+      { title: "공식 스케줄", sub: "Mnet Plus · 최신 일정", href: "https://artist.mnetplus.world/main/stg/rescene-official/schedule/2026/11" }
     ],
     news: [
+      { date: "11.11", tag: "수상", title: "〈쇼챔피언〉 ‘With’ 1위", href: "https://www.soompi.com/article/1886056wpp/watch-rescene-takes-2nd-win-for-with-on-show-champion-performances-by-p1harmony-xlov-and-more" },
       { date: "11.10", tag: "방송", title: "〈더쇼〉 사전 녹화·생방송", href: "https://artist.mnetplus.world/main/stg/rescene-official/surveys/6af01659da3bdb578b5182ae" },
       { date: "11.03", tag: "앨범", title: "4th Mini Album [PULSE]", href: "https://artist.mnetplus.world/main/stg/rescene-official/contents/6acda1b99b432c2a150adc7a" },
       { date: "10.19", tag: "사진", title: "PULSE 콘셉트 포토 A", href: "https://artist.mnetplus.world/main/stg/rescene-official/contents/6ad5d55f71a55b46a7487eb5" }

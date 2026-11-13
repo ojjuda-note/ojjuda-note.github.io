@@ -1,6 +1,20 @@
 name: Fanpage button regressions
 
 on:
+  workflow_dispatch:
+    inputs:
+      live:
+        description: Verify the deployed public site against this checkout
+        type: boolean
+        default: false
+      group:
+        description: Artist key for release screen verification
+        type: string
+        default: rescene
+  workflow_run:
+    workflows: ['Publish lightweight Pages site']
+    types: [completed]
+    branches: [main]
   pull_request:
     paths:
       - 'features/fanpages/**'
@@ -23,11 +37,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: fanpages-${{ github.ref }}
+  group: fanpages-${{ github.ref }}-${{ github.event_name }}-${{ github.event.workflow_run.id || '' }}
   cancel-in-progress: true
 
 jobs:
   buttons:
+    if: github.event_name != 'workflow_run'
     name: Fanpage buttons and navigation
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -52,3 +67,50 @@ jobs:
           path: tests/artifacts/fanpage-urgent-events/
           if-no-files-found: ignore
           retention-days: 7
+  release-screen:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    name: Fanpage release screen and images
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      FANPAGE_LIVE: ${{ github.event_name == 'workflow_run' && 'true' || inputs.live || 'false' }}
+      FANPAGE_GROUP: ${{ inputs.group || 'rescene' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Limit post-deployment checks to fanpage changes
+        id: scope
+        shell: bash
+        run: |
+          if [[ '${{ github.event_name }}' != 'workflow_run' ]] || ! git diff --quiet HEAD^ HEAD -- features/fanpages .github/workflows/fanpages.yml tests/fanpage-release-ui.test.cjs; then
+            echo 'changed=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        if: steps.scope.outputs.changed == 'true'
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        if: steps.scope.outputs.changed == 'true'
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Check profiles, video IDs and JavaScript syntax
+        if: steps.scope.outputs.changed == 'true'
+        run: |
+          node features/fanpages/check-profiles.mjs
+          node features/fanpages/check-videos.mjs
+          for file in features/fanpages/*.js; do node --check "$file"; done
+      - name: Verify release data, mobile layouts, original photos and lazy video dialogs
+        if: steps.scope.outputs.changed == 'true'
+        run: node tests/fanpage-release-ui.test.cjs
+      - name: Save release screen evidence
+        if: always() && steps.scope.outputs.changed == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fanpage-release-screen
+          path: tests/artifacts/fanpage-release/
+          if-no-files-found: error
+          retention-days: 14

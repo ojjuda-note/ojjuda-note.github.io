@@ -1,6 +1,9 @@
 /* Official artist, label and broadcaster uploads. YouTube hosts all videos and thumbnails. */
 window.OJJUDA_FAN_VIDEOS = Object.freeze({
   rescene: [
+    { id: 'EEMdvAl21pQ', title: 'With · 쇼챔피언 11.11', kind: '음악방송 무대', source: 'MBC M / ALL THE K-POP · 2026.11.11' },
+    { id: 'n-rmTxbsjq0', title: '백화요란 (Inside Out) · 쇼챔피언 11.11', kind: '음악방송 무대', source: 'MBC M / ALL THE K-POP · 2026.11.11' },
+    { id: 'mTaMFwEQdH4', title: 'With · 쇼챔피언 1위 앙코르', kind: '음악방송 앙코르', source: 'MBC M / ALL THE K-POP · 2026.11.11' },
     { id: 'pey3E47eSc8', title: 'With', kind: '뮤직비디오', source: 'RESCENE / THE MUZE' },
     { id: 'qZlu2j2SiBA', title: 'Pretty Girl', kind: '스페셜 비디오', source: 'RESCENE / THE MUZE' },
     { id: 'rsZwrTNklos', title: 'Runaway', kind: '뮤직비디오', source: 'RESCENE / THE MUZE' },
