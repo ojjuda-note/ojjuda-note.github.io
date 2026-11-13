@@ -1,6 +1,7 @@
 import { makeProfile, getTenGod, interactionPairs } from './fortune-data.mjs?v=20261113-saju-reader1';
 import { GOD_CONTEXTS, PAIR_CONTEXTS } from './deeper-reading-data.mjs?v=20261113-saju-brief1';
-import { describePersonalPeriod } from './reader-summary.mjs?v=20261113-saju-portrait1';
+import { describePersonalPeriod } from './reader-summary.mjs?v=20261113-saju-lists1';
+import { buildDaeunSituations } from './daeun-situations.mjs?v=20261113-saju-lists1';
 
 // These are shared interpretations of computed relationships, not individual
 // predictions assembled from a birth-date hash. Every selected rule keeps its
@@ -122,7 +123,7 @@ const INTERACTIONS = {
     ordinary:'배울 기회를 고를 때는 지금 알고 싶은 질문과 연습할 방법을 함께 살펴보세요. 어려운 내용은 작은 부분부터 직접 해 보고 필요한 도움을 구하면 좋아요.',
   },
 };
-const METHOD_NOTICE = '각 구간의 실제 대운 기둥을 확정된 출생 사주와 비교한 참고 풀이예요. 같은 관계에는 같은 해석 규칙과 예시를 쓰며, 예시는 실제로 일어난 일이나 앞으로 생길 사건을 뜻하지 않아요. 구간마다 돈·일·관계·배움의 관점을 연결하되, 성공 여부·재산의 크기·결혼과 이별의 날짜·질병과 사고·수명은 예측하지 않아요. 표시한 날짜는 선택한 전통 계산법의 구간 경계이며 그때 사건이 생긴다는 뜻은 아니에요.';
+const METHOD_NOTICE = '각 구간의 실제 대운 기둥을 확정된 출생 사주와 비교한 참고 풀이예요. 같은 관계에는 같은 해석 규칙과 예시를 쓰며, 예시는 실제로 일어난 일이나 앞으로 생길 사건을 뜻하지 않아요. 구간마다 돈·일·관계·배움과 문서·사람 관계의 상황을 연결해요. 상황별 해석은 그 구간에서 확인한 두 관계 중 문서는 책임·재물, 사람 관계는 배움·협력의 주제를 먼저 설명하는 편집 규칙을 사용해요. 이는 관계의 세기나 길흉 점수를 새로 계산한 뜻이 아니에요. 앞 구간과 달라진 주제도 실제 계산을 비교하며, 성공 여부·재산의 크기·결혼과 이별의 날짜·질병과 사고·수명은 예측하지 않아요. 표시한 날짜는 선택한 전통 계산법의 구간 경계이며 그때 사건이 생긴다는 뜻은 아니에요.';
 
 const unique = values => [...new Set(values)];
 const pad = value => String(value).padStart(2,'0');
@@ -236,11 +237,10 @@ function interactionReading(period,topic) {
   if (period.interactions.some(value=>value.kind==='branch-clash')) values.push(INTERACTIONS[topic].clash);
   return values.length ? values.join(' ') : INTERACTIONS[topic].ordinary;
 }
-function makePeriod(profile,period,engineFacts,natal) {
+function makePeriod(profile,period,engineFacts,natal,previous=null) {
   const codes=unique([period.stemGod.code,period.branchGod.code]);
   const prefix='daeun.reading.period.'+period.index;
   const derived=periodFacts(profile,period);
-  const engine=engineFacts.filter(item=>period.factIds.includes(item.id));
   const sharedFactIds=unique([...period.factIds,'daeun.reading.natal.day-master',...derived.map(item=>item.id)]);
   const paired=pairKey(codes);
   const focus=codes.map(code=>FOCUS[code]).join(' · ');
@@ -250,6 +250,16 @@ function makePeriod(profile,period,engineFacts,natal) {
   ];
   if (paired&&PAIR_CONTEXTS[paired]) paragraphs.push('가상의 상황을 떠올려 볼게요. '+PAIR_CONTEXTS[paired].example);
   else paragraphs.push('작은 선택을 할 때도 내가 하려는 일과 지금 마련할 수 있는 준비를 함께 적어 보세요. 실제로 해 본 뒤 편했던 점과 막힌 점을 알아 두면 이 시기의 흐름을 생활에 맞게 활용하기 쉬워요.');
+  const previousFacts=previous?periodFacts(profile,previous).filter(item=>item.id.endsWith('.god.stem')||item.id.endsWith('.god.branch')):[];
+  const previousIds=previous?unique([...previous.factIds,...previousFacts.map(item=>item.id)]):[];
+  if(previous) {
+    const before=unique([previous.stemGod.code,previous.branchGod.code]);
+    const entering=codes.filter(code=>!before.includes(code)),continuing=codes.filter(code=>before.includes(code));
+    const change=entering.length
+      ? `앞 구간의 주제는 ${before.map(code=>FOCUS[code]).join(', ')}였고, 이번에는 ${entering.map(code=>FOCUS[code]).join(', ')}라는 주제가 새로 더해져요.`
+      : `앞 구간에 이어 ${codes.map(code=>FOCUS[code]).join(', ')}라는 주제가 계속 읽혀요. 같은 주제가 이어져도 나이와 실제로 맡은 일이 달라지는 만큼 적용할 장면을 다시 골라 보세요.`;
+    paragraphs.push(change+(entering.length&&continuing.length?` ${continuing.map(code=>FOCUS[code]).join(', ')}라는 주제는 이어지므로 익숙한 준비와 새로 익힐 준비를 함께 나누어 보면 좋아요.`:''));
+  }
   const topics=TOPICS.map(topic=>{
     const primary=VOICES[codes[0]][topic.id];
     const secondary=codes[1]?VOICES[codes[1]][topic.id]:null;
@@ -268,14 +278,19 @@ function makePeriod(profile,period,engineFacts,natal) {
       godCodes:[...codes],natalGodCodes:connection.codes,personalParagraphs:[...connection.paragraphs],origin:ORIGIN,
     };
   });
-  const allIds=unique([...sharedFactIds,...topics.flatMap(topic=>topic.factIds)]);
-  const allFacts=[...engine,...natal.filter(item=>allIds.includes(item.id)),...derived];
+  const situations=buildDaeunSituations({period,
+    natal:profile.gods.map(entry=>({code:entry.god.code,factId:'daeun.reading.natal.god.'+entry.pillarKey+'.'+entry.position})),
+    sharedFactIds,
+  });
+  const allIds=unique([...sharedFactIds,...previousIds,...topics.flatMap(topic=>topic.factIds),...situations.flatMap(item=>item.factIds)]);
+  const engine=engineFacts.filter(item=>allIds.includes(item.id));
+  const allFacts=[...engine,...natal.filter(item=>allIds.includes(item.id)),...derived,...previousFacts];
   return {
     id:'reading-daeun-period-'+period.index,index:period.index,title:period.ageLabel,
     subtitle,headline:subtitle,ageLabel:period.ageLabel,periodLabel:period.startLabel+'부터 '+period.endLabel+' 전까지',
     startsAt:period.startsAt,endsAt:period.endsAt,startLabel:period.startLabel,endLabel:period.endLabel,
     startAgeYears:period.startAgeYears,endAgeYears:period.endAgeYears,isCurrent:period.isCurrent,
-    hanja:period.hanja,hangul:period.hangul,paragraphs,topics,facts:allFacts,
+    hanja:period.hanja,hangul:period.hangul,paragraphs,topics,situations,facts:allFacts,
     factIds:allIds,godCodes:codes,origin:ORIGIN,
   };
 }
@@ -284,17 +299,17 @@ export function buildDaeunReading(chart,daeun) {
   const profile=makeProfile(chart);
   validate(chart,daeun,profile);
   const common={
-    id:'reading-daeun',title:'나이별 인생의 흐름',availability:daeun.available,available:daeun.available,
+    id:'reading-daeun',title:'대운 · 나이별 인생의 흐름',availability:daeun.available,available:daeun.available,
     reason:daeun.reason,message:daeun.message,origin:ORIGIN,
     method:clone(daeun.method),sources:clone(daeun.sources),methodNotice:METHOD_NOTICE,
     direction:daeun.direction,directionLabel:daeun.directionLabel,currentIndex:daeun.currentIndex,currentState:daeun.currentState,
   };
   if (!daeun.available) return {...common,headline:daeun.message,paragraphs:[],periods:[],facts:clone(daeun.facts),factIds:[]};
   const natal=natalFacts(profile);
-  const periods=daeun.periods.map(period=>makePeriod(profile,period,daeun.facts,natal));
+  const periods=daeun.periods.map((period,index)=>makePeriod(profile,period,daeun.facts,natal,daeun.periods[index-1]));
   const facts=[...clone(daeun.facts),...natal,...daeun.periods.flatMap(period=>periodFacts(profile,period))];
   const registry=factRegistry(facts);
-  for (const period of periods) for (const item of [period,...period.topics]) if (item.factIds.some(id=>!registry.has(id))) fail();
+  for (const period of periods) for (const item of [period,...period.topics,...period.situations]) if (item.factIds.some(id=>!registry.has(id))) fail();
   const current=periods.find(period=>period.isCurrent);
   const first=periods[0];
   const headline=daeun.currentState==='after-listed-periods'
@@ -313,7 +328,7 @@ export function copyDaeunReading(reading) {
   if (!reading.availability) return lines.join('\n');
   for (const period of reading.periods) {
     lines.push('',period.title,period.subtitle,period.periodLabel,...period.paragraphs);
-    for (const topic of period.topics) lines.push('',topic.label,topic.title,...topic.paragraphs);
+    for (const topic of [...period.topics,...(period.situations||[])]) lines.push('',topic.label,topic.title,...topic.paragraphs);
   }
   lines.push('','대운 계산 근거');
   for (const item of reading.facts) lines.push(item.label+': '+item.value);

@@ -53,19 +53,40 @@ async function harness(options={}) {
     user:PROFILE_USER_A,signedIn:true,adminPreview:false,coins:30,
     initCalls:0,parentInstances:[],pairInstances:[],statusCalls:[],starts:[],baseStarts:[],
     charges:0,chargedAmounts:[],receipts:new Map(),copies:[],nextRequest:1,fetches:[],
-    statusGate:null,purchaseGate:null,receiptGate:null,failStatus:0,moduleRequests:[],...options
+    statusGate:null,purchaseGate:null,receiptGate:null,failStatus:0,failInit:0,failAuth:false,identityGate:null,initGate:null,moduleRequests:[],...options
   };
   Object.defineProperty(window.navigator,'clipboard',{value:{writeText:async text=>state.copies.push(text)}});
   window.fetch=(...args)=>{state.fetches.push(args);throw new Error('Birth inputs and reading text must not be sent by the UI');};
   const chartKey=chart=>`${chart.solar.iso}|${chart.timeKnown?`${chart.input.hour}:${chart.input.minute}`:'unknown'}`;
   const pairKey=(chart,partner,owner=state.user)=>`${owner}|${[chartKey(chart),chartKey(partner)].sort().join('||')}`;
   class ParentPaymentStub {
-    constructor(callbacks={}) {this.callbacks=callbacks;Object.assign(this,callbacks);state.parentInstances.push(this);this.modeVersion=0;this.client={};this.ready=false;}
-    get user() {return state.signedIn?state.user:null;}
+    constructor(callbacks={}) {this.callbacks=callbacks;Object.assign(this,callbacks);state.parentInstances.push(this);this.modeVersion=0;this.client={};this.ready=false;this.identityReady=false;this.identityVersion=0;}
+    get user() {return state.signedIn||state.anonymous?state.user:null;}
     get balance() {return state.coins;}
     get adminPreview() {return state.adminPreview;}
-    get anonymous() {return false;}
-    async init() {state.initCalls++;this.ready=true;return {signedIn:state.signedIn,adminPreview:state.adminPreview};}
+    get anonymous() {return Boolean(state.anonymous);}
+    confirmIdentity() {
+      const owner=this.user,anonymous=this.anonymous,wasConfirmed=this.identityReady;
+      const changed=owner!==this.identityOwner||anonymous!==this.identityAnonymous;
+      if(wasConfirmed&&!changed)return;
+      this.identityReady=true;this.identityOwner=owner;this.identityAnonymous=anonymous;this.identityVersion++;this.ready=false;
+      if(wasConfirmed&&changed){this.modeVersion++;this.callbacks.onAccountChange?.();}
+      this.callbacks.onIdentityReady?.({user:owner,anonymous,signedIn:!!owner&&!anonymous});
+    }
+    async init() {
+      state.initCalls++;
+      if(state.identityGate)await state.identityGate.promise;
+      if(state.failAuth) {
+        const wasConfirmed=this.identityReady;this.identityReady=false;this.identityVersion++;this.ready=false;
+        if(wasConfirmed)this.callbacks.onAccountChange?.();
+        throw Object.assign(new Error('로그인 정보를 확인하지 못했어요.'),{code:'network'});
+      }
+      this.confirmIdentity();const identityVersion=this.identityVersion;
+      if(state.initGate)await state.initGate.promise;
+      if(identityVersion!==this.identityVersion)throw Object.assign(new Error('로그인한 계정이 바뀌었어요.'),{code:'account_changed'});
+      if(state.failInit>0){state.failInit--;throw Object.assign(new Error('보유 쭈를 확인하지 못했어요.'),{code:'network'});}
+      this.ready=true;return {signedIn:state.signedIn&&!this.anonymous,adminPreview:state.adminPreview};
+    }
     async refreshAdminMode() {return state.adminPreview;}
     check(owner) {if(!state.signedIn||owner!==state.user)throw Object.assign(new Error('로그인한 계정이 바뀌었어요.'),{code:'account_changed'});}
     setBalance(value) {state.coins=value;this.callbacks.onBalance?.(value);}
@@ -153,9 +174,10 @@ async function harness(options={}) {
   async function price(amount) {await waitFor(()=>state.statusCalls.length>0&&$('compatibility-open').dataset.expectedCharge===String(amount)&&!$('compatibility-open').disabled,`offer ${amount} did not settle`);}
   async function ready() {await waitFor(()=>!$('compatibility-result').hidden&&$('compatibility-report').querySelector('#compatibility-reading'),$('compatibility-error').textContent||'purchased compatibility missing');}
   function edit() {$('compatibility-edit').click();}
-  function changeAccount(user,signedIn=true) {
+  function changeAccount(user,signedIn=true,{anonymous=false}={}) {
     state.user=user;state.signedIn=signedIn;
-    for(const parent of state.parentInstances)parent.callbacks.onAccountChange?.();
+    state.anonymous=anonymous;
+    for(const parent of state.parentInstances)parent.confirmIdentity();
   }
   return {dom,window,state,$,fill,fillPerson,submit,price,ready,edit,change,changeAccount,advance,close:()=>dom.window.close()};
 }
@@ -359,6 +381,85 @@ test('a signed-out visitor sees the login state and cannot obtain or pay for a c
   assert.match(h.$('compatibility-error').textContent,/로그인/);
   assert.equal(h.state.starts.length,0);assert.equal(h.state.baseStarts.length,0);assert.equal(h.state.charges,0);
   assert.equal(h.$('compatibility-result').hidden,true);assert.equal(h.$('compatibility-report').textContent,'');
+});
+
+test('each compatibility input automatically saves independently and restores both complete profiles after reload without payment',async t=>{
+  const h=await harness();t.after(h.close);
+  const key='ojjuda-saju-profiles-v1:'+PROFILE_USER_A;
+  const first={name:'내 자동 저장',gender:'female',year:2023,month:2,day:10,calendar:'lunar',leap:true,hour:8,minute:37};
+  const second={...partnerBirth,name:'상대 자동 저장',gender:'male'};
+  const uses=(page,prefix)=>[...page.$(prefix+'-saved-profiles').querySelectorAll('.profile-picker-use')];
+  h.fillPerson('self',first);h.advance(599);
+  assert.equal(uses(h,'self').length,0);
+  h.advance(1);
+  for(const prefix of ['self','partner'])assert.equal(uses(h,prefix).length,1);
+  assert.equal(h.$('partner-name').value,'');assert.equal(h.$('partner-year').value,'','saving one input does not fill the other');
+  h.fillPerson('partner',second);h.advance(600);await h.price(10);
+  for(const prefix of ['self','partner'])assert.equal(uses(h,prefix).length,2);
+  const before=JSON.parse(h.window.localStorage.getItem(key)).profiles;
+  h.$('self-name').value='수정한 내 이름';h.change(h.$('self-name'));
+  h.$('partner-name').value='수정한 상대 이름';h.change(h.$('partner-name'));
+  h.window.dispatchEvent(new h.window.Event('pagehide'));
+  const after=JSON.parse(h.window.localStorage.getItem(key)).profiles;
+  assert.equal(after.length,2,'both pending edits update their existing rows');
+  for(const [name,expected] of [[first.name,'수정한 내 이름'],[second.name,'수정한 상대 이름']]) {
+    const original=before.find(profile=>profile.name===name),saved=after.find(profile=>profile.id===original.id);
+    assert.equal(saved.name,expected);assert.deepEqual(saved.birth,original.birth);assert.equal(saved.gender,original.gender);
+  }
+  await h.price(10);
+  const reloaded=await harness({initialStorage:{[key]:h.window.localStorage.getItem(key)}});t.after(reloaded.close);
+  uses(reloaded,'self').find(button=>button.textContent.includes('수정한 내 이름')).click();
+  uses(reloaded,'partner').find(button=>button.textContent.includes('수정한 상대 이름')).click();
+  assert.equal(reloaded.$('self-name').value,'수정한 내 이름');assert.equal(reloaded.$('self-gender').value,'female');
+  assert.equal(reloaded.$('self-calendar').value,'lunar');assert.equal(reloaded.$('self-leap-month').checked,true);
+  assert.deepEqual(['year','month','day','hour','minute'].map(field=>reloaded.$('self-'+field).value),['2023','2','10','8','37']);
+  assert.equal(reloaded.$('self-time-unknown').checked,false);
+  assert.equal(reloaded.$('partner-name').value,'수정한 상대 이름');assert.equal(reloaded.$('partner-gender').value,'male');
+  assert.deepEqual(['year','month','day','hour','minute'].map(field=>reloaded.$('partner-'+field).value),['1992','3','14','10','20']);
+  await reloaded.price(10);
+  for(const page of [h,reloaded]) {
+    assert.equal(page.state.starts.length,0);assert.equal(page.state.baseStarts.length,0);assert.equal(page.state.charges,0);
+    assert.equal(page.$('compatibility-result').hidden,true);assert.deepEqual(page.state.fetches,[]);
+  }
+});
+
+test('both compatibility inputs save with delayed identity and failed wallet while account changes cancel pending local edits',async t=>{
+  const identityGate=deferred(),h=await harness({identityGate,failInit:Infinity});t.after(h.close);
+  const key=owner=>'ojjuda-saju-profiles-v1:'+owner;
+  h.fill({...selfBirth,name:'내 정보',gender:'male'},{...partnerBirth,name:'상대 정보',gender:'female'});h.advance(600);
+  assert.equal(h.window.localStorage.getItem(key(PROFILE_USER_A)),null);
+  identityGate.resolve();await waitFor(()=>h.state.parentInstances[0].identityReady);
+  assert.equal(h.$('self-name').value,'내 정보');assert.equal(h.$('partner-name').value,'상대 정보');
+  h.advance(600);
+  for(const prefix of ['self','partner'])assert.equal(h.$(prefix+'-saved-profiles').querySelectorAll('.profile-picker-use').length,2);
+  assert.equal(h.state.parentInstances[0].ready,false);
+  const initCalls=h.state.initCalls;
+  h.$('self-name').value='잔액과 별도로 저장';h.change(h.$('self-name'));
+  h.$('self-saved-profiles').querySelector('.profile-picker-save').click();
+  await waitFor(()=>h.$('self-saved-profiles').querySelector('.profile-picker-status').dataset.state==='success');
+  assert.equal(h.state.initCalls,initCalls,'manual local save does not retry failed wallet initialization');
+  assert.ok(!h.state.moduleRequests.some(url=>/\/engine\.mjs/.test(url)),'saving alone does not import the fortune calculator');
+  const stored=h.window.localStorage.getItem(key(PROFILE_USER_A));
+  for(const prefix of ['self','partner']) {h.$(prefix+'-name').value='취소할 수정';h.change(h.$(prefix+'-name'));}
+  h.changeAccount(PROFILE_USER_B);
+  for(const prefix of ['self','partner']) {
+    assert.equal(h.$(prefix+'-name').value,'');assert.equal(h.$(prefix+'-year').value,'');
+    assert.equal(h.$(prefix+'-saved-profiles').querySelectorAll('.profile-picker-use').length,0);
+  }
+  h.changeAccount(PROFILE_USER_A);h.changeAccount(PROFILE_USER_B);h.advance(600);await pause();
+  assert.equal(h.window.localStorage.getItem(key(PROFILE_USER_A)),stored);
+  assert.equal(h.window.localStorage.getItem(key(PROFILE_USER_B)),null);
+  h.fill({...selfBirth,name:'다른 회원의 나'},{...otherBirth,name:'다른 회원의 상대'});h.advance(600);
+  const ownProfiles=JSON.parse(h.window.localStorage.getItem(key(PROFILE_USER_B))).profiles;
+  assert.deepEqual(ownProfiles.map(profile=>profile.name).sort(),['다른 회원의 나','다른 회원의 상대']);
+  h.$('partner-name').value='로그아웃 전 수정';h.change(h.$('partner-name'));
+  h.changeAccount(null,false);h.advance(600);await pause();
+  for(const prefix of ['self','partner']) {
+    assert.equal(h.$(prefix+'-name').value,'');assert.equal(h.$(prefix+'-year').value,'');
+    assert.equal(h.$(prefix+'-saved-profiles').querySelectorAll('.profile-picker-use').length,0);
+  }
+  assert.deepEqual(JSON.parse(h.window.localStorage.getItem(key(PROFILE_USER_B))).profiles,ownProfiles);
+  assert.equal(h.state.starts.length,0);assert.equal(h.state.baseStarts.length,0);assert.equal(h.state.charges,0);
 });
 
 test('both compatibility pickers share saved people and restore or swap the complete profiles without a purchase',async t=>{

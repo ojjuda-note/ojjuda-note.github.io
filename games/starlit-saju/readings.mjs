@@ -6,9 +6,9 @@ import { attachPlainLanguage } from './plain-language.mjs?v=20261113-saju-reader
 import { attachAdvice } from './advice.mjs?v=20261113-saju-brief1';
 import { attachDeeperReadings } from './deeper-reading.mjs?v=20261113-saju-brief1';
 import { attachStageReadings } from './stage-reading.mjs?v=20261113-saju-brief1';
-import { attachReaderSummary } from './reader-summary.mjs?v=20261113-saju-portrait1';
-import { attachReaderExtras } from './reader-extras.mjs?v=20261113-saju-portrait1';
-import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261113-saju-portrait1';
+import { attachReaderSummary } from './reader-summary.mjs?v=20261113-saju-lists1';
+import { attachReaderExtras } from './reader-extras.mjs?v=20261113-saju-lists1';
+import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261113-saju-lists1';
 import { buildPersonPortrait } from './person-portrait.mjs?v=20261113-saju-portrait1';
 import { getReadingSources } from './sources.mjs?v=20261113-saju-reader1';
 

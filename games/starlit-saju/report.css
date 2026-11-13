@@ -7,7 +7,10 @@
 .person-inputs input[type=text]{width:100%;min-width:0;height:47px;border:1px solid #c5a77640;background:#15111f;border-radius:5px;padding:8px 11px;font-size:13px;box-shadow:inset 0 2px 7px #0002}
 .profile-picker{margin:0 0 25px;padding:16px;border:1px solid #cfac7545;border-radius:8px;background:linear-gradient(130deg,#37244288,#15101e99)}
 .profile-picker-title{font:17px/1.6 var(--serif);color:#e7cda2}
-.profile-picker-note{font-size:11px;color:#baa8c6;margin:3px 0 12px}
+.profile-picker-note{font-size:12px;line-height:1.8;color:#baa8c6;margin:3px 0 12px}
+.profile-picker-empty{margin:0 0 10px;padding:12px;border:1px dashed #c6a66d45;border-radius:6px;background:#17101f40;color:#c8b4d4;font-size:13px;line-height:1.8;word-break:keep-all;overflow-wrap:anywhere}
+.profile-picker-count{display:inline-block;margin-left:8px;color:#ddbf91;font:12px/1.8 var(--sans)}
+.profile-picker-empty[hidden],.profile-picker-count[hidden]{display:none!important}
 .profile-picker-list{list-style:none;padding:0;margin:0;display:grid;gap:8px;max-height:240px;overflow-y:auto;scrollbar-color:#84647f #211528}
 .profile-picker-item{display:flex;align-items:stretch;border:1px solid #bba06c33;border-radius:6px;background:#170f2199;min-width:0}
 .profile-picker-item.is-selected{border-color:#e0bd7ea1;background:#49314877}
@@ -508,6 +511,34 @@
 .reader-prose p+p{margin-top:22px}
 .reader-sentence-group{display:block}
 .reader-sentence-group+.reader-sentence-group{margin-top:12px}
+.reading-pager{max-width:920px;min-width:0;margin:0 auto 20px;padding:18px 20px;border:1px solid #c5a36e55;border-radius:10px;background:linear-gradient(125deg,#3e2b478c,#191120d9);scroll-margin-top:90px}
+.reading-pager-label{display:block;margin-bottom:8px;color:#e4c89c;font-size:14px;line-height:1.8}
+.reading-page-select{display:block;width:100%;min-width:0;max-width:100%;min-height:48px;padding:10px 34px 10px 12px;border:1px solid #c5a36e66;border-radius:6px;background:#1b1324;color:#f0e4f5;font:var(--reading-font-size,17px)/1.6 var(--sans)}
+.reading-page-select option,.reading-page-select optgroup{background:#201729;color:#eee1f2}
+.reading-pager-controls{display:grid;grid-template-columns:72px minmax(0,1fr) 72px;align-items:center;gap:10px;margin-top:12px}
+.reading-pager-step{min-width:0;min-height:44px;padding:8px;border:1px solid #c5a36e44;border-radius:5px;background:#4c335333;color:#ecd0a4;font:14px/1.7 var(--sans)}
+.reading-pager-step:hover:not(:disabled){background:#7a5a5f30}
+.reading-pager-step:disabled{cursor:default;opacity:.4}
+.reading-page-position{margin:0;color:#c8b4d3;text-align:center;font-size:13px;line-height:1.8;word-break:keep-all;overflow-wrap:anywhere}
+.reading-page-select:focus-visible,.reading-pager-step:focus-visible,.reading-page-section-link:focus-visible{outline:2px solid #ecd099;outline-offset:3px}
+.reading-pager:focus{outline:0}
+.reading-page-sections{margin-top:22px;padding-top:18px;border-top:1px solid #bea06a30}
+.reading-page-sections ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0;padding:0;list-style:none}
+.reading-page-sections li{min-width:0}
+.reading-page-section-link{display:flex;align-items:center;min-height:44px;height:100%;padding:10px 12px;border:1px solid #c3a2733d;border-radius:6px;background:#4b33522b;color:#e8cfaa;font-size:16px;line-height:1.75;word-break:keep-all;overflow-wrap:anywhere}
+.reading-page-section-link:hover{background:#79536324}
+.reading-back-to-picker{margin-top:26px;padding-top:10px;border-top:1px solid #bea06a30}
+[data-reader-paged] [hidden]{display:none!important}
+[data-reader-paged] .reader-card[data-reader-current],[data-reader-paged] .portrait-card[data-reader-current]{padding-top:6px;border-top:0}
+[data-reader-paged] .report-section:not(.support-details){margin-top:0}
+[data-reader-paged] [data-reader-current]{scroll-margin-top:100px}
+@media(max-width:540px){
+  .reading-pager{padding:14px 12px;margin-bottom:16px;scroll-margin-top:85px}
+  .reading-pager-controls{grid-template-columns:62px minmax(0,1fr) 62px;gap:8px}
+  .reading-page-sections ul{grid-template-columns:1fr}
+  .reading-page-section-link{font-size:16px}
+  [data-reader-paged] [data-reader-current]{scroll-margin-top:87px}
+}
 .person-portrait{padding-top:1px}
 .portrait-headline{font-size:29px;line-height:1.65;max-width:23em;margin-bottom:22px}
 .portrait-intro .portrait-prose>p:first-child{color:#eee3f3}

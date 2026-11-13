@@ -28,7 +28,7 @@ function harness() {
   const server = {
     a, b, owner: a, anonymous: false, now: Date.parse('2026-11-12T12:00:00Z'),
     coins: new Map([[a, 50], [b, 50]]), receipts: new Map(), bundles: new Map(), allOrders: new Map(), ledger: new Map(), requests: [],
-    loseResponse: false, failStatus: false, beforeBuy: null, beforeToken: null, beforeAdmin: null, admins: new Set(), malformed: false,
+    loseResponse: false, failStatus: false, failSession: false, beforeSession: null, beforeStatus: null, beforeBuy: null, beforeToken: null, beforeAdmin: null, admins: new Set(), malformed: false,
     mutateAllReceipt: null, mutateReceipt: null, mutateStatus: null,
     advance(ms) { this.now += ms; for (const clock of clocks) { clock.wall += ms; clock.monotonic += ms; } },
     active(receipt) { return receipt && Date.parse(receipt.expires_at) > this.now; },
@@ -44,6 +44,7 @@ function harness() {
         return { data: this.admins.has(owner) };
       }
       if (name === 'saju_reading_status_v4') {
+        if (this.beforeStatus) await this.beforeStatus();
         if (this.failStatus) { this.failStatus = false; return { error: { message: 'network' } }; }
         const legacy = this.bundles.get(`${owner}:${args.p_chart_key}`);
         const result = {
@@ -111,7 +112,12 @@ function harness() {
     class PageDate extends Date { static now() { return clock.wall; } }
     const client = {
       auth: {
-        getSession: async () => ({ data: { session: server.owner ? { user: { id: server.owner, is_anonymous: server.anonymous } } : null } }),
+        getSession: async () => {
+          const session = server.owner ? { user: { id: server.owner, is_anonymous: server.anonymous } } : null;
+          if (server.beforeSession) await server.beforeSession();
+          if (server.failSession) { server.failSession=false; return { data: { session: null }, error: { message:'session unavailable' } }; }
+          return { data: { session } };
+        },
         getUser: async () => ({ data: { user: server.owner ? { id: server.owner } : null } }),
         onAuthStateChange: callback => { authListeners.push(callback); return { data: { subscription: { unsubscribe() {} } } }; }
       },
@@ -216,6 +222,64 @@ test('signed-out, anonymous, insufficient-balance, and initialization failures a
   assert.equal(server.coins.get(server.a), 9);
   server.coins.set(server.a, 10);
   assert.equal((await startQuoted(p.payment, birth(), annual)).coins, 0);
+});
+
+test('identity is available before the wallet and real owner changes notify cleanup before the new local identity', async () => {
+  const {server,page}=harness(),events=[],gate=deferred(),entered=deferred();
+  server.beforeAdmin=async()=>{entered.resolve();await gate.promise;};
+  const p=page({onAccountChange:()=>events.push(['account',p.payment.user,p.payment.anonymous]),
+    onIdentityReady:value=>events.push(['identity',value.user,value.anonymous])});
+  assert.equal(p.payment.identityReady,false);
+  const pending=p.payment.init();await entered.promise;
+  assert.equal(p.payment.identityReady,true);assert.equal(p.payment.user,server.a);
+  assert.equal(p.payment.ready,false);assert.equal(p.payment.balance,null);
+  assert.deepEqual(events,[['identity',server.a,false]],'the first confirmation does not reset a typed birth');
+  server.failStatus=true;gate.resolve();
+  await assert.rejects(pending,error=>error.code==='network');
+  assert.equal(p.payment.identityReady,true,'a wallet failure leaves confirmed local identity available');
+  assert.equal(p.payment.ready,false);
+  p.changeAccount(server.a);
+  assert.equal(events.length,1,'a repeated sign-in or token refresh for the same owner is not an account change');
+  p.changeAccount(server.b);
+  assert.deepEqual(events.slice(-2),[['account',server.b,false],['identity',server.b,false]]);
+  server.anonymous=true;p.changeAccount(server.b);
+  assert.deepEqual(events.slice(-2),[['account',server.b,true],['identity',server.b,true]]);
+  p.changeAccount(null);
+  assert.equal(p.payment.identityReady,true);assert.equal(p.payment.user,null);
+  assert.ok(server.requests.every(request=>!request.name.startsWith('saju_reading_buy')));
+});
+
+test('failed session reads revoke local identity and stale reads never restore an old account', async () => {
+  const {server,page}=harness(),events=[];
+  const p=page({onAccountChange:()=>events.push('changed'),onIdentityReady:({user})=>events.push(user)});
+  server.failStatus=true;await assert.rejects(p.payment.init(),error=>error.code==='network');
+  assert.equal(p.payment.identityReady,true);
+  server.failSession=true;await assert.rejects(p.payment.init(),error=>error.code==='network');
+  assert.equal(p.payment.identityReady,false);assert.equal(p.payment.user,null);
+  assert.equal(p.payment.ready,false);assert.equal(p.payment.balance,null);
+  assert.deepEqual(events,[server.a,'changed'],'an unverified session cannot keep the old local profile owner');
+  const gate=deferred(),entered=deferred();
+  server.beforeSession=async()=>{entered.resolve();await gate.promise;};
+  const pending=p.payment.init();await entered.promise;
+  p.changeAccount(server.b);gate.resolve();
+  await assert.rejects(pending,error=>error.code==='not_signed_in');
+  assert.equal(p.payment.identityReady,true);assert.equal(p.payment.user,server.b);
+  assert.equal(p.payment.ready,false);assert.equal(events.at(-1),server.b);
+  assert.ok(server.requests.every(request=>!request.name.startsWith('saju_reading_buy')));
+});
+
+test('a rapid account round trip invalidates the old wallet response even when the final owner is the same', async () => {
+  const {server,page}=harness(),p=page();
+  await p.payment.init();p.payment.ready=false;
+  const gate=deferred(),entered=deferred();
+  server.beforeStatus=async()=>{entered.resolve();await gate.promise;};
+  const pending=p.payment.init();await entered.promise;
+  p.changeAccount(server.b);p.changeAccount(server.a);gate.resolve();
+  await assert.rejects(pending,error=>error.code==='not_signed_in');
+  assert.equal(p.payment.user,server.a);assert.equal(p.payment.identityReady,true);
+  assert.equal(p.payment.ready,false);assert.equal(p.payment.balance,null);
+  assert.equal(p.payment.clock,null,'an old reply cannot reinstall the previous account clock');
+  assert.ok(server.requests.every(request=>!request.name.startsWith('saju_reading_buy')));
 });
 
 test('account changes invalidate a response before the old report is revealed', async () => {

@@ -1,7 +1,7 @@
-import { SajuPayment } from './payment.js?v=20261113-saju-24h1';
+import { SajuPayment } from './payment.js?v=20261113-saju-lists1';
 import { SajuCompatibilityPayment } from './compatibility-payment.mjs?v=20261113-saju-reader1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
-import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-reader1';
+import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-lists1';
 
 const $=id=>document.getElementById(id);
 const form=$('compatibility-form'),button=$('compatibility-open');
@@ -14,9 +14,13 @@ let modulesPromise,readyPromise,compatibility;
 
 const billing=new SajuPayment({
   onBalance:()=>updateOffer(),
+  onIdentityReady:()=>{for(const picker of profilePickers)picker.refresh();},
   onAccountChange:()=>{
-    generation++;quoteGeneration++;busy=false;quoteBusy=false;signedIn=!!billing.user&&!billing.anonymous;
+    generation++;quoteGeneration++;busy=false;quoteBusy=false;signedIn=false;readyPromise=null;
     resetView(true);updateOffer();
+    if(billing.identityReady)Promise.resolve().then(()=>ready()).catch(error=>{
+      initialized=true;$('compatibility-error').textContent=requestError(error);$('compatibility-error').hidden=false;updateOffer();
+    });
   },
   onModeChange:()=>{
     if(initialized){generation++;quoteGeneration++;busy=false;quoteBusy=false;resetView(true);}
@@ -34,17 +38,13 @@ for(const person of people) {
   options($(person+'-hour'),0,23,'시');options($(person+'-minute'),0,59,'분');
   $(person+'-year').max=String(Math.min(2050,Number(new Intl.DateTimeFormat('en',{year:'numeric',timeZone:'Asia/Seoul'}).format(new Date()))));
 }
-const profileStore=new SajuSavedProfiles({getIdentity:()=>({userId:signedIn?billing.user:null,anonymous:billing.anonymous===true})});
+const profileStore=new SajuSavedProfiles({getIdentity:()=>({userId:billing.identityReady?billing.user:null,anonymous:billing.anonymous===true})});
 const profilePickers=people.map((person,index)=>new SajuProfilePicker({
   element:$(person+'-saved-profiles'),store:profileStore,
-  read:async()=>{
-    await ready();
-    const value={...personNames()[index],birth:inputs()[index]};
-    const signature=JSON.stringify(value);
-    const [engine]=await modules();
-    engine.calculateSaju(value.birth);
-    if(signature!==JSON.stringify({...personNames()[index],birth:inputs()[index]}))throw new Error('입력한 정보가 바뀌었어요. 현재 내용을 다시 저장해 주세요.');
-    return value;
+  read:()=>({...personNames()[index],birth:inputs()[index]}),
+  autoSave:{
+    fields:['name','gender','year','month','day','calendar','hour','minute','leap-month','time-unknown'].map(field=>$(person+'-'+field)),
+    read:()=>({...personNames()[index],birth:inputs()[index]}),delay:600,
   },
   fill:profile=>fillPerson(person,profile),
   clear:()=>fillPerson(person,{name:'',gender:null,birth:{calendar:'solar',year:'',month:'',day:'',leapMonth:false,hour:null,minute:0}}),
@@ -140,7 +140,7 @@ async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
     import('./compatibility.mjs?v=20261113-saju-reader1'),
-    import('./report-view.mjs?v=20261113-saju-layout1'),
+    import('./report-view.mjs?v=20261113-saju-lists1'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
 }

@@ -114,13 +114,16 @@ async function fingerprint(value, owner) {
 }
 
 export class SajuPayment {
-  constructor({ onBalance = () => {}, onAccountChange = () => {}, onModeChange = () => {} } = {}) {
+  constructor({ onBalance = () => {}, onAccountChange = () => {}, onModeChange = () => {}, onIdentityReady = () => {} } = {}) {
     this.onBalance = onBalance;
     this.onAccountChange = onAccountChange;
     this.onModeChange = onModeChange;
+    this.onIdentityReady = onIdentityReady;
     this.client = null;
     this.user = null;
     this.anonymous = false;
+    this.identityReady = false;
+    this.identityVersion = 0;
     this.balance = null;
     this.ready = false;
     this.initializing = null;
@@ -148,6 +151,32 @@ export class SajuPayment {
     return Number.isFinite(expires) && Number.isFinite(now) ? Math.max(0, Math.min(ACCESS_MS, expires - now)) : 0;
   }
   isActive(access) { return this.remainingMs(access) > 0; }
+  setIdentity(session, confirmed = true) {
+    const owner = confirmed ? session?.user?.id || null : null;
+    const anonymous = confirmed && session?.user?.is_anonymous === true;
+    const wasConfirmed = this.identityReady;
+    const changed = owner !== this.user || anonymous !== this.anonymous;
+    if (confirmed && wasConfirmed && !changed) return;
+    this.identityVersion++;
+    if (changed || !confirmed) {
+      this.setMode(null, false, false);
+      this.modeVersion++;
+      this.modeRequest = null;
+      this.balance = null;
+      this.ready = false;
+      this.requests.clear();
+      this.clock = null;
+    }
+    this.user = owner;
+    this.anonymous = anonymous;
+    this.identityReady = confirmed;
+    if (wasConfirmed && (changed || !confirmed)) {
+      this.initializing = null;
+      // Cancel old inputs and pending local saves before exposing the new list.
+      this.onAccountChange();
+    }
+    if (confirmed) this.onIdentityReady({ user: owner, anonymous, signedIn: !!owner && !anonymous });
+  }
   setBalance(value) {
     if (!Number.isSafeInteger(value) || value < 0) return;
     this.balance = value;
@@ -167,7 +196,7 @@ export class SajuPayment {
   }
   async rpc(name, args = {}) {
     if (!this.client || !this.user) throw problem('not_signed_in');
-    const owner = this.user;
+    const owner = this.user, identityVersion = this.identityVersion;
     const started = { wall: Date.now(), monotonic: monotonicNow() };
     let response;
     try {
@@ -175,7 +204,7 @@ export class SajuPayment {
       response = await (typeof request.abortSignal === 'function' && typeof globalThis.AbortSignal?.timeout === 'function'
         ? request.abortSignal(AbortSignal.timeout(15000)) : request);
     } catch { throw problem(); }
-    if (owner !== this.user) throw problem('not_signed_in');
+    if (owner !== this.user || identityVersion !== this.identityVersion) throw problem('not_signed_in');
     if (response?.error) {
       if (response.error.code === '42501' || /not_signed_in|JWT expired/i.test(response.error.message || '')) throw problem('not_signed_in');
       throw problem();
@@ -227,39 +256,43 @@ export class SajuPayment {
       if (!config?.supabaseUrl || !config?.supabaseKey) throw problem();
       this.client = window.ojjudaSupabase || window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
       window.ojjudaSupabase = this.client;
-      if (!window.OjjudaAdminPreview) await script('/shared/games/admin-preview.js?v=20261111-shared-auth3');
-      const { data, error } = await this.client.auth.getSession();
-      if (error) throw problem();
-      this.user = data.session?.user?.id || null;
-      this.anonymous = data.session?.user?.is_anonymous === true;
       if (!this.authBound) {
         this.client.auth.onAuthStateChange((_event, next) => {
-          const owner = next?.user?.id || null;
-          const anonymous = next?.user?.is_anonymous === true;
-          if (owner === this.user && anonymous === this.anonymous) return;
-          this.setMode(null, false, false);
-          this.modeVersion++;
-          this.modeRequest = null;
-          this.user = owner;
-          this.anonymous = anonymous;
-          this.balance = null;
-          this.ready = false;
-          this.requests.clear();
-          this.clock = null;
-          this.onAccountChange();
+          this.setIdentity(next);
         });
         this.authBound = true;
       }
+      const beforeIdentity = this.identityVersion, hadIdentity = this.identityReady;
+      let response;
+      try { response = await this.client.auth.getSession(); }
+      catch {
+        if (beforeIdentity === this.identityVersion) this.setIdentity(null, false);
+        throw problem();
+      }
+      if (response?.error || !response?.data || !Object.hasOwn(response.data, 'session')) {
+        if (beforeIdentity === this.identityVersion) this.setIdentity(null, false);
+        throw problem();
+      }
+      const session = response.data.session;
+      if (beforeIdentity !== this.identityVersion) {
+        // An auth event is newer than this read. The first matching confirmation
+        // may continue, but an older account read must never restore its owner.
+        if (hadIdentity || !this.identityReady || (session?.user?.id || null) !== this.user
+          || (session?.user?.is_anonymous === true) !== this.anonymous) throw problem('not_signed_in');
+      } else this.setIdentity(session);
+      const identityVersion = this.identityVersion;
+      if (!window.OjjudaAdminPreview) await script('/shared/games/admin-preview.js?v=20261111-shared-auth3');
       if (this.user && !this.anonymous) {
         const owner = this.user;
         await this.refreshAdminMode();
-        if (owner !== this.user) throw problem('not_signed_in');
+        if (owner !== this.user || identityVersion !== this.identityVersion) throw problem('not_signed_in');
         if (!this.adminPreview) {
           const status = await this.rpc('saju_reading_status_v4', { p_chart_key: null });
           if (status?.ok !== true) throw problem(status?.ok === false ? status.reason : 'invalid');
           this.setBalance(status.coins);
         }
       }
+      if (!this.identityReady || identityVersion !== this.identityVersion) throw problem('not_signed_in');
       this.ready = true;
       return { signedIn: !!this.user && !this.anonymous, adminPreview: this.adminPreview };
     })();

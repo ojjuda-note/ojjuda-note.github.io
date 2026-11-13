@@ -4,7 +4,6 @@ import { calculateSaju } from '../games/starlit-saju/engine.mjs';
 import { analyzeFortune } from '../games/starlit-saju/fortune-data.mjs';
 import { buildDetailedReading } from '../games/starlit-saju/readings.mjs';
 import { attachReaderSummary, describePersonalPeriod } from '../games/starlit-saju/reader-summary.mjs';
-import { GOD_CONTEXTS } from '../games/starlit-saju/deeper-reading-data.mjs';
 
 const now=new Date('2026-11-13T00:00:00Z');
 const sample={year:1990,month:5,day:17,hour:8,minute:37};
@@ -82,8 +81,11 @@ test('year and month narratives use their own actual pair of relationships and p
       assert.ok(card.factIds.includes(`${prefix}.god.branch`));
       for(let index=0;index<transit.interactions.length;index++)assert.ok(card.factIds.includes(`${prefix}.interaction.${index}`));
       assert.ok(card.factIds.every(id=>id.startsWith('natal.')||id.startsWith(prefix+'.')));
-      if(card.id.endsWith('-cautions'))assert.ok(card.paragraphs.some(text=>text.includes(GOD_CONTEXTS[expected[0]].money.example)));
-      if(card.id.endsWith('-response'))assert.ok(card.paragraphs.some(text=>text.includes(GOD_CONTEXTS[expected[0]].work.example)));
+      for(const topic of ['opportunities','cautions','response'])if(card.id.endsWith('-'+topic)) {
+        assert.ok(card.situationRuleIds.includes(`situation.${topic}.${expected[0]}`),'the concrete situation follows the actual first period relationship');
+        if(expected[1])assert.ok(card.situationRuleIds.includes(`condition.${topic}.${expected[1]}`),'the second period relationship adds a condition');
+        assert.match(card.paragraphs[4],/^가령 .+가정해 볼게요/,'a dedicated hypothetical scene replaces the copied domain example');
+      }
     }
   }
   assert.deepEqual(report.reader.months.map(value=>value.month),[1,2,3,4,5,6,7,8,9,10,11,12]);

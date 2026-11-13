@@ -41,20 +41,27 @@ function fixture(options={}) {
   };
 }
 function harness(t,store,options={}) {
-  const dom=new JSDOM('<form><section id="profiles"></section></form>',{url:'https://ojjuda.kr/'});
+  const dom=new JSDOM('<form><input id="profile-input"><section id="profiles"></section></form>',{url:'https://ojjuda.kr/'});
   const element=dom.window.document.querySelector('#profiles');
+  const field=dom.window.document.querySelector('#profile-input');
   let current=input(),clears=0;
   const fills=[];
+  const {autoSave,...pickerOptions}=options;
   const picker=new SajuProfilePicker({
     element,store,read:()=>current,
     fill:profile=>{fills.push(profile);current=structuredClone(profile);},
     clear:()=>{clears++;current=input('');},
-    ...options,
+    autoSave:autoSave?{fields:[field],read:()=>current,delay:10,...(autoSave===true?{}:autoSave)}:null,
+    ...pickerOptions,
   });
   t.after(()=>{picker.destroy();dom.window.close();});
   return {
-    dom,element,picker,fills,
+    dom,element,picker,fills,field,
     current:value=>{current=value;},
+    edit:(value,type='input')=>{
+      current=value;
+      field.dispatchEvent(new dom.window.Event(type,{bubbles:true}));
+    },
     get clears(){return clears;},
     status:()=>element.querySelector('.profile-picker-status').textContent,
     button:selector=>element.querySelector(selector),
@@ -490,4 +497,262 @@ test('repeated clicks while a save is pending create just one profile',async t=>
   assert.ok(await pending);
   assert.equal(f.storage.writes.length,1);
   assert.equal(f.store.list().length,1);
+});
+
+const settleAutoSave=()=>new Promise(resolve=>setTimeout(resolve,35));
+
+test('real field edits automatically save the latest person, update one ID and restore the visible list',async t=>{
+  const f=fixture(),h=harness(t,f.store,{autoSave:true});
+  let submissions=0;
+  h.dom.window.document.querySelector('form').addEventListener('submit',event=>{event.preventDefault();submissions++;});
+  assert.equal(h.element.querySelector('.profile-picker-empty').hidden,false);
+  assert.match(h.element.querySelector('.profile-picker-note').textContent,/입력하면 자동 저장/);
+  h.edit(input('민'));
+  h.edit(input('민지'));
+  h.edit(input('김민지'),'change');
+  await settleAutoSave();
+  const saved=f.store.list()[0];
+  assert.equal(saved.name,'김민지');
+  assert.equal(f.storage.writes.length,1);
+  assert.equal(h.picker.selectedId,saved.id);
+  assert.equal(h.element.querySelector('.profile-picker-count').textContent,'1명');
+  assert.equal(h.element.querySelector('.profile-picker-empty').hidden,true);
+  assert.equal(h.element.querySelector('.profile-picker-name').textContent,'김민지');
+  assert.equal(h.status(),'자동으로 저장했어요.');
+  h.edit(input('김민지 수정',{hour:null,minute:0}));
+  await settleAutoSave();
+  assert.equal(f.store.list().length,1);
+  assert.equal(f.store.list()[0].id,saved.id);
+  assert.equal(f.store.list()[0].birth.hour,null);
+  assert.equal(f.storage.writes.length,2);
+  const restored=harness(t,f.store,{autoSave:true});
+  restored.button('.profile-picker-use').click();
+  assert.equal(restored.fills[0].name,'김민지 수정');
+  assert.deepEqual(restored.fills[0].birth,f.store.list()[0].birth);
+  await settleAutoSave();
+  assert.equal(f.storage.writes.length,2,'autofill is not an edit or a second save');
+  assert.equal(submissions,0,'local profile saving never submits the purchase form');
+});
+
+test('automatic saving waits for a complete birthday and rejects a completed impossible date',async t=>{
+  const f=fixture(),h=harness(t,f.store,{autoSave:true});
+  h.edit(input('',{month:NaN,day:NaN}));
+  await settleAutoSave();
+  assert.equal(f.storage.writes.length,0);
+  assert.equal(h.element.querySelector('[role=alert]'),null);
+  assert.match(h.status(),/생년월일을 모두 입력/);
+  h.edit(input('',{month:2,day:30}));
+  await settleAutoSave();
+  assert.equal(f.storage.writes.length,0);
+  assert.match(h.element.querySelector('[role=alert]').textContent,/생일과 태어난 시간을 다시 확인/);
+  h.edit({...input('',{hour:0,minute:0}),gender:null});
+  await settleAutoSave();
+  assert.equal(f.store.list()[0].name,'');
+  assert.equal(f.store.list()[0].gender,null);
+  assert.equal(f.store.list()[0].birth.hour,0,'midnight is not treated as an unknown time');
+  assert.equal(h.element.querySelector('[role=alert]'),null);
+});
+
+test('Korean composition waits for the finished name even if focus leaves during composition',async t=>{
+  const f=fixture(),h=harness(t,f.store,{autoSave:true});
+  h.field.dispatchEvent(new h.dom.window.CompositionEvent('compositionstart',{bubbles:true}));
+  h.edit(input('ㅁ'));
+  h.field.dispatchEvent(new h.dom.window.FocusEvent('focusout',{bubbles:true}));
+  await settleAutoSave();
+  assert.equal(f.storage.writes.length,0);
+  h.current(input('민지'));
+  h.field.dispatchEvent(new h.dom.window.CompositionEvent('compositionend',{bubbles:true,data:'민지'}));
+  await settleAutoSave();
+  assert.equal(f.storage.writes.length,1);
+  assert.equal(f.store.list()[0].name,'민지');
+});
+
+test('leaving an edited field or hiding the page synchronously flushes a valid pending profile',t=>{
+  for(const event of ['focusout','pagehide','visibilitychange']) {
+    const f=fixture(),h=harness(t,f.store,{autoSave:{delay:2000}});
+    h.edit(input(event));
+    assert.equal(f.storage.writes.length,0);
+    if(event==='focusout')h.field.dispatchEvent(new h.dom.window.FocusEvent(event,{bubbles:true}));
+    else if(event==='pagehide')h.dom.window.dispatchEvent(new h.dom.window.Event(event));
+    else {
+      Object.defineProperty(h.dom.window.document,'visibilityState',{configurable:true,value:'hidden'});
+      h.dom.window.document.dispatchEvent(new h.dom.window.Event(event));
+    }
+    assert.equal(f.store.list()[0].name,event,'no asynchronous work is required on page exit');
+    assert.equal(h.status(),'자동으로 저장했어요.');
+  }
+});
+
+test('input made before the first identity resolves survives harmless refreshes and saves after confirmation',async t=>{
+  const f=fixture();f.identity(null);
+  const h=harness(t,f.store,{autoSave:true});
+  h.edit(input('로그인 확인 중 입력'));
+  h.picker.refresh();
+  await settleAutoSave();
+  assert.equal(f.storage.reads.length,0);
+  assert.equal(f.storage.writes.length,0);
+  f.owner(MEMBER_A);
+  h.picker.refresh();
+  await settleAutoSave();
+  assert.equal(f.store.list()[0].name,'로그인 확인 중 입력');
+  assert.equal(h.element.querySelector('.profile-picker-name').textContent,'로그인 확인 중 입력');
+});
+
+test('initial identity confirmation and ordinary refreshes never save untouched inputs',async t=>{
+  const f=fixture();f.identity(null);
+  const h=harness(t,f.store,{autoSave:true});
+  f.owner(MEMBER_A);
+  h.picker.refresh();
+  h.dom.window.dispatchEvent(new h.dom.window.Event('focus'));
+  h.dom.window.dispatchEvent(new h.dom.window.Event('pageshow'));
+  h.picker.refresh();
+  await settleAutoSave();
+  assert.equal(f.storage.writes.length,0);
+});
+
+test('a queued automatic edit cannot cross a logout or an account switch',async t=>{
+  for(const logout of [false,true]) {
+    const f=fixture(),h=harness(t,f.store,{autoSave:true});
+    h.edit(input('이전 회원의 입력'));
+    if(logout)f.identity(null);else f.owner(MEMBER_B);
+    h.picker.refresh();
+    f.owner(MEMBER_B);
+    h.picker.refresh();
+    await settleAutoSave();
+    assert.equal(f.storage.writes.length,0);
+    assert.equal(h.element.querySelectorAll('.profile-picker-use').length,0);
+  }
+});
+
+test('reset, new person, selection and destruction cancel older automatic edits',async t=>{
+  for(const action of ['reset','new','select','destroy']) {
+    const f=fixture();
+    if(action==='select')f.store.save(input('이미 저장한 사람'));
+    const h=harness(t,f.store,{autoSave:true}),writes=f.storage.writes.length;
+    h.edit(input('취소할 입력'));
+    if(action==='reset')h.picker.resetSelection();
+    else if(action==='new')h.button('.profile-picker-new').click();
+    else if(action==='select')h.button('.profile-picker-use').click();
+    else h.picker.destroy();
+    await settleAutoSave();
+    assert.equal(f.storage.writes.length,writes,action);
+  }
+});
+
+test('deleting an edited person locally or through a peer cannot resurrect the remaining form values',async t=>{
+  for(const peerDeletion of [false,true]) {
+    const f=fixture();f.store.save(input('삭제 대상'));
+    const h=harness(t,f.store,{autoSave:true}),peer=harness(t,f.store,{autoSave:true});
+    h.button('.profile-picker-use').click();
+    h.edit(input('삭제 전에 고치던 이름'));
+    (peerDeletion?peer:h).button('.profile-picker-delete').click();
+    h.picker.refresh();
+    h.dom.window.dispatchEvent(new h.dom.window.Event('pagehide'));
+    await settleAutoSave();
+    assert.equal(f.store.list().length,0);
+    assert.equal(f.storage.writes.length,2,'one initial save and one removal only');
+    assert.equal(h.picker.selectedId,null);
+    assert.equal(h.element.querySelector('.profile-picker-empty').hidden,false);
+  }
+});
+
+test('blurring an edited field into a saved-list action keeps its button connected until the click',async t=>{
+  for(const pointerOnly of [false,true]) {
+    const f=fixture();f.store.save(input('삭제 대상'));
+    const h=harness(t,f.store,{autoSave:true});
+    h.button('.profile-picker-use').click();
+    h.edit(input('편집 중'));
+    const remove=h.button('.profile-picker-delete');
+    if(pointerOnly)remove.dispatchEvent(new h.dom.window.MouseEvent('pointerdown',{bubbles:true}));
+    h.field.dispatchEvent(new h.dom.window.FocusEvent('focusout',{bubbles:true,relatedTarget:pointerOnly?null:remove}));
+    await settleAutoSave();
+    assert.equal(remove.isConnected,true,'a blur save must not remove the pending click target');
+    assert.equal(f.storage.writes.length,1);
+    if(pointerOnly)h.dom.window.dispatchEvent(new h.dom.window.MouseEvent('pointerup',{bubbles:true}));
+    remove.click();
+    await settleAutoSave();
+    assert.equal(f.store.list().length,0);
+    assert.equal(f.storage.writes.length,2);
+  }
+});
+
+test('tabbing through picker actions without activating one still saves when focus leaves the picker',t=>{
+  const f=fixture(),h=harness(t,f.store,{autoSave:true});
+  h.edit(input('키보드 입력'));
+  const save=h.button('.profile-picker-save');
+  h.field.dispatchEvent(new h.dom.window.FocusEvent('focusout',{bubbles:true,relatedTarget:save}));
+  assert.equal(f.storage.writes.length,0);
+  save.dispatchEvent(new h.dom.window.FocusEvent('focusout',{bubbles:true,relatedTarget:h.field}));
+  assert.equal(f.store.list()[0].name,'키보드 입력');
+});
+
+test('an external edit is not overwritten by a queued save, even before a storage refresh arrives',async t=>{
+  for(const refresh of [false,true]) {
+    const f=fixture(),saved=f.store.save(input('기존 사람'));
+    const h=harness(t,f.store,{autoSave:true});
+    h.button('.profile-picker-use').click();
+    h.edit(input('이 화면에서 바꾼 이름'));
+    f.store.save(input('기존 사람',{hour:4}),{id:saved.id});
+    if(refresh)h.picker.refresh();
+    await settleAutoSave();
+    assert.equal(f.storage.writes.length,2);
+    assert.equal(f.store.list()[0].name,'기존 사람');
+    assert.equal(f.store.list()[0].birth.hour,4);
+    assert.match(h.status(),/바뀌었거나 삭제.*다시 골라/);
+    assert.equal(await h.picker.saveCurrent(),null,'manual save also requires reselecting the changed record');
+    assert.equal(f.storage.writes.length,2);
+    h.button('.profile-picker-use').click();
+    assert.equal(h.fills.at(-1).birth.hour,4);
+    h.edit(input('확인 후 바꾼 이름',{hour:4}));
+    await settleAutoSave();
+    assert.equal(f.store.list()[0].id,saved.id);
+    assert.equal(f.store.list()[0].name,'확인 후 바꾼 이름');
+    assert.equal(f.store.list()[0].birth.hour,4);
+  }
+});
+
+test('two pickers cannot silently overwrite a changed birth time for the same saved person',async t=>{
+  const f=fixture();f.store.save(input('같은 사람'));
+  const a=harness(t,f.store,{autoSave:true}),b=harness(t,f.store,{autoSave:true});
+  a.button('.profile-picker-use').click();b.button('.profile-picker-use').click();
+  a.edit(input('A에서 수정 중'));
+  b.edit(input('같은 사람',{hour:7}));
+  assert.ok(b.picker.flushAutoSave());
+  await settleAutoSave();
+  assert.equal(f.storage.writes.length,2);
+  assert.equal(f.store.list()[0].name,'같은 사람');
+  assert.equal(f.store.list()[0].birth.hour,7);
+  assert.match(a.status(),/바뀌었거나 삭제.*다시 골라/);
+});
+
+test('a storage failure is visible without replacing good data, and a later edit can retry',async t=>{
+  const f=fixture();f.store.save(input('원래 이름'));
+  const h=harness(t,f.store,{autoSave:true});
+  h.button('.profile-picker-use').click();
+  const setItem=f.storage.setItem;
+  f.storage.setItem=()=>{throw Object.assign(new Error('full'),{name:'QuotaExceededError'});};
+  h.edit(input('새 이름'));
+  await settleAutoSave();
+  assert.equal(f.store.list()[0].name,'원래 이름');
+  assert.match(h.status(),/저장 공간이 부족/);
+  assert.equal(h.element.querySelector('.profile-picker-status').dataset.state,'error');
+  f.storage.setItem=setItem;
+  h.edit(input('새 이름'));
+  await settleAutoSave();
+  assert.equal(f.store.list().length,1);
+  assert.equal(f.store.list()[0].name,'새 이름');
+  assert.equal(h.status(),'자동으로 저장했어요.');
+});
+
+test('a fresh edit during an older manual read supersedes it and is saved automatically afterward',async t=>{
+  const f=fixture();let resolve;
+  const pendingRead=new Promise(done=>{resolve=done;});
+  const h=harness(t,f.store,{autoSave:true,read:()=>pendingRead});
+  const pending=h.picker.saveCurrent();
+  h.edit(input('새로 입력한 사람'));
+  resolve(input('오래된 입력'));
+  assert.equal(await pending,null);
+  await settleAutoSave();
+  assert.equal(f.store.list().length,1);
+  assert.equal(f.store.list()[0].name,'새로 입력한 사람');
 });

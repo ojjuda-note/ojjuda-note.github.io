@@ -1,4 +1,5 @@
 import { GOD_CONTEXTS, PAIR_CONTEXTS } from './deeper-reading-data.mjs?v=20261113-saju-brief1';
+import { buildReaderSituation } from './reader-situations.mjs?v=20261113-saju-lists1';
 
 // A reading-first presentation of the existing meanings. These are shared,
 // service-authored interpretations, never a second calculation or event forecast.
@@ -427,9 +428,6 @@ export function describePersonalPeriod(profile,codes,domain,periodLabel='이 시
   return {reading:paragraphs.join(' '),natalCodes:parts.natalCodes,paragraphs};
 }
 
-function periodDomainConnection(profile,codes,domain,monthly) {
-  return describePersonalPeriod(profile,codes,domain,monthly?'이번 달':'이 해');
-}
 const INTERACTION_VOICES = {
   relationships:{connect:'서로 바라는 표현과 편한 거리를 말로 맞추는 모습과 연결돼요.',clash:'같은 상황을 다르게 받아들였다면 어떤 기대가 달랐는지 나누어 보는 관계예요.',both:'같이 이어 갈 약속과 서로 다르게 느끼는 부분을 구분해 보는 관계예요.'},
   work:{connect:'각자가 맡을 부분을 모아 함께 끝낼 결과를 정하는 모습과 연결돼요.',clash:'하고 싶은 방법과 실제로 가능한 조건을 비교하고 조정하는 모습과 연결돼요.',both:'함께 쓸 수 있는 방법은 이어 가고, 조건이 다른 부분은 새로 맞추는 모습과 연결돼요.'},
@@ -548,25 +546,16 @@ const FLOW_TOPICS = {
 function flowCard(registry,profile,key,{transit=null,prefix='natal',monthly=false}={}) {
   const config=FLOW_TOPICS[key];
   const codes=transit?unique([transit.stemGod.code,transit.branchGod.code]):selectNatalCodes(profile,'work',key==='cautions'?['authority','peer','wealth','expression','resource']:null);
-  const first=codes[0],second=codes[1],domain=key==='cautions'?'money':'work';
-  const connection=transit?periodDomainConnection(profile,codes,domain,monthly):null;
-  const natalCodes=connection?.natalCodes||codes,personal=PERSONAL_CONCLUSIONS[natalCodes[0]];
-  const relation=domainInteraction(transit?transit.interactions:profile.interactions,prefix,domain);
-  const example=key==='opportunities'?PATH_VOICES[first].jobScene:`상황을 하나 가정해 볼게요. ${GOD_CONTEXTS[first][domain].example}`;
-  const title=key==='cautions'?PERSONAL_DOMAIN_EFFECTS[natalCodes[0]][domain][1]:key==='opportunities'?`${personal.address}, ${PERIOD_APPLICATIONS[first][domain][1]}에 주목하세요`:
-    `${personal.address}, ${PERIOD_APPLICATIONS[first][domain][0]}`;
-  return card(registry,{id:`${prefix.replaceAll('.','-')}-${key}`,label:config.label,title,navGroup:config.navGroup,codes,natalCodes,
-    paragraphs:[connection?connection.paragraphs[0]:`당신은 ${personal[domain]}. ${PATH_VOICES[first][config.field]}`,
-      connection?PATH_VOICES[first][config.field]+(second?` ${firstSentence(PATH_VOICES[second][config.field])}`:''):
-        second?`함께 살필 다른 면도 있어요. ${PATH_VOICES[second][config.field]}`:DAILY_VOICES[first][domain].life,
-      (connection?`${connection.paragraphs[1]} `:'')+pairReading(codes,domain),
-      connection?.paragraphs[2],
-      relation?.reading,
-      example,
-      key==='cautions'?PATH_VOICES[first].response:connection?.paragraphs[3]||DAILY_VOICES[first][domain].use],
+  const domain=key==='cautions'?'money':'work',natalCodes=transit?selectNatalCodes(profile,domain):codes;
+  const interactions=transit?transit.interactions:profile.interactions;
+  const relation=domainInteraction(interactions,prefix,domain);
+  const situation=buildReaderSituation({topic:key,codes,natalCodes,interactions,periodLabel:transit?(monthly?'이번 달':'이 해'):'평소'});
+  const result=card(registry,{id:`${prefix.replaceAll('.','-')}-${key}`,label:config.label,title:situation.title,navGroup:config.navGroup,codes,natalCodes,
+    paragraphs:situation.paragraphs,
     factIds:['natal.day-master','natal.scope',...natalFacts(profile,codes),
       ...(transit?[`${prefix}.period`,...profile.gods.map(natalId),...transitFacts(transit,prefix,codes)]:[]),...(relation?.factIds||[])],
     chapterId:transit?(monthly?'month-interactions':'annual-interactions'):'natal-combined-themes'});
+  return {...result,situationRuleIds:situation.ruleIds};
 }
 function lifelongOverview(report,fortune,registry) {
   const profile=fortune.profile,voice=STEM_VOICES[profile.dayMaster.hanja];

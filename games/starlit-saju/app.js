@@ -1,5 +1,5 @@
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
-import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-reader1';
+import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-lists1';
 
 const $ = id => document.getElementById(id);
 const form = $('birth-form');
@@ -158,16 +158,15 @@ form.addEventListener('input', clearError);
 updateCalendar();
 updateTime();
 
-const profileStore=new SajuSavedProfiles({getIdentity:()=>({userId:billingSignedIn?billing?.user:null,anonymous:billing?.anonymous===true})});
+const profileStore=new SajuSavedProfiles({getIdentity:()=>({userId:billing?.identityReady?billing.user:null,anonymous:billing?.anonymous===true})});
+const readSavedPerson=()=>({...readPerson(),birth:readBirth()});
 const profilePicker=new SajuProfilePicker({
   element:$('saved-profiles'),store:profileStore,
-  read:async()=>{
-    await readyBilling();
-    const person={...readPerson(),birth:readBirth()};
-    const signature=personSignature();
-    await calculateBirth(person.birth);
-    if(signature!==personSignature())throw new Error('입력한 정보가 바뀌었어요. 현재 내용을 다시 저장해 주세요.');
-    return person;
+  read:readSavedPerson,
+  autoSave:{
+    fields:[...['person-name','person-gender','birth-year','birth-month','birth-day','birth-hour','birth-minute','time-unknown','leap-month'].map($),
+      ...form.querySelectorAll('input[name="calendar"]')],
+    read:readSavedPerson,delay:600,
   },
   fill:profile=>fillPerson(profile),
   clear:()=>fillPerson({name:'',gender:null,birth:{calendar:'solar',year:'',month:'',day:'',leapMonth:false,hour:null,minute:0}}),
@@ -486,8 +485,8 @@ document.querySelectorAll('.reading-size-control button').forEach(button=>button
 async function prepareDetailedReading(chart,target,person=currentPerson||readPerson()) {
   detailModulesPromise ||= Promise.all([
     import('./fortune-data.mjs?v=20261113-saju-reader1'),
-    import('./readings.mjs?v=20261113-saju-portrait1'),
-    import('./report-view.mjs?v=20261113-saju-layout1'),
+    import('./readings.mjs?v=20261113-saju-lists1'),
+    import('./report-view.mjs?v=20261113-saju-lists1'),
     import('./daeun.mjs?v=20261113-saju-reader1')
   ]).catch(error=>{detailModulesPromise=null;throw error;});
   const [dataModule,readingModule,viewModule,daeunModule]=await detailModulesPromise;
@@ -671,14 +670,15 @@ function recordFortuneVisit() {
 async function readyBilling() {
   if (billingPromise) return billingPromise;
   const task=(async()=>{
-    const {SajuPayment}=await import('./payment.js?v=20261113-saju-24h1');
+    const {SajuPayment}=await import('./payment.js?v=20261113-saju-lists1');
     billing ||= new SajuPayment({
       onBalance:()=>updateBillingStatus(),
+      onIdentityReady:()=>profilePicker.refresh(),
       onAccountChange:()=>{
         billingSignedIn=false;billingPromise=null;
-        if (billingInitialized) resetAfterAccountChange();
+        resetAfterAccountChange();
         updateBillingStatus();
-        Promise.resolve().then(()=>readyBilling()).catch(()=>{$('payment-status').textContent='로그인 정보를 다시 확인해 주세요. 펼치기를 누르면 재시도해요.';});
+        if (billing.identityReady) Promise.resolve().then(()=>readyBilling()).catch(()=>{$('payment-status').textContent='로그인 정보를 다시 확인해 주세요. 펼치기를 누르면 재시도해요.';});
       },
       onModeChange:({adminPreview})=>{
         if (billingInitialized&&billingMode!==Boolean(adminPreview)) resetAfterAccountChange();
