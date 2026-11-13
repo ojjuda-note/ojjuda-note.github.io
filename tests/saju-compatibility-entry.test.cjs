@@ -5,21 +5,15 @@ const path=require('node:path');
 const {JSDOM}=require('jsdom');
 const hub=require('../features/home/agit-hub.js');
 
-test('the main hub offers compatibility directly alongside personal saju with its separate twenty-ju price',t=>{
+test('the main hub links to personal saju and offers no separate compatibility entry',t=>{
   const dom=new JSDOM(hub.markup({}, {}, '2026-11-13'),{url:'https://ojjuda.kr/world.html?tab=hub'});
   t.after(()=>dom.window.close());
   const document=dom.window.document;
-  const pair=document.querySelector('a.agit-compatibility-banner');
   const personal=document.querySelector('a.agit-saju-banner');
-  assert.ok(pair,'visitors need a main-menu entry without first opening or purchasing personal saju');
-  assert.ok(personal,'the existing personal saju entry stays available');
-  assert.equal(pair.getAttribute('href'),'/games/starlit-saju/compatibility.html');
+  assert.ok(personal);
   assert.equal(personal.getAttribute('href'),'/games/starlit-saju/');
-  assert.equal(pair.closest('.agit-saju-banner'),null,'compatibility is a separate navigable entry');
-  assert.match(pair.textContent,/궁합/);
-  assert.match(pair.textContent,/20\s*쭈/);
-  assert.match(pair.getAttribute('aria-label'),/궁합.*20\s*쭈/);
-  assert.match(pair.textContent,/24\s*시간/);
+  assert.equal(document.querySelector('a[href*="compatibility"]'),null);
+  assert.doesNotMatch(document.body.textContent,/궁합/);
   assert.match(personal.textContent,/30\s*쭈/);
   assert.match(personal.textContent,/10\s*쭈/);
 });
