@@ -140,7 +140,7 @@ async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
     import('./compatibility.mjs?v=20261113-saju-reader1'),
-    import('./report-view.mjs?v=20261113-saju-portrait1'),
+    import('./report-view.mjs?v=20261113-saju-layout1'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
 }

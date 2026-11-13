@@ -8,9 +8,32 @@ function node(tag, className, text) {
 }
 
 function addParagraphs(parent, paragraphs, className = '') {
+  const isStory=parent.classList.contains('reader-prose')||parent.classList.contains('easy-reading');
   for (const text of paragraphs || []) {
-    if (typeof text === 'string' && text.trim()) parent.append(node('p', className, text));
+    if (typeof text !== 'string' || !text.trim()) continue;
+    const paragraph=node('p',className);
+    const parts=isStory?readingSentenceGroups(text):[text];
+    if(parts.length===1)paragraph.textContent=text;
+    else for(const part of parts)paragraph.append(node('span','reader-sentence-group',part));
+    parent.append(paragraph);
   }
+}
+
+// Keep every original character (including spaces) for copying and evidence.
+// Only long stories gain visual breaks at complete sentence boundaries.
+function readingSentenceGroups(text) {
+  if(text.length<180)return [text];
+  const parts=[];
+  let start=0,sentences=0;
+  for(const match of text.matchAll(/[.!?。！？…]+[”’"'」』)\]]*\s+/gu)) {
+    const end=match.index+match[0].length;
+    sentences++;
+    if((end-start<90&&sentences<3)||text.length-end<45)continue;
+    parts.push(text.slice(start,end));
+    start=end;sentences=0;
+  }
+  parts.push(text.slice(start));
+  return parts;
 }
 
 function addBasis(parent, basis) {
@@ -349,12 +372,9 @@ function personPortraitView(portrait, facts, original, visibleScopeNotice='') {
   intro.append(headline,portraitSummaryTable(portrait),prose);
   section.append(intro);
 
-  // One set of contents covers the new portrait and every existing life topic.
+  // The portrait table already links to all five personal stories. The contents
+  // below cover the remaining life topics without repeating those same buttons.
   const topics=original.querySelector('.reader-topic-nav');
-  const group=node('div','reader-topic-group portrait-topic-group');
-  group.append(node('p','reader-topic-group-label','나를 알아보기'));
-  const links=node('div','reader-topic-links');
-  group.append(links);topics.prepend(group);
   const cards=node('div','portrait-cards');
   for(const [index,item] of portrait.cards.entries()) {
     const card=node('article','portrait-card');
@@ -375,7 +395,6 @@ function personPortraitView(portrait, facts, original, visibleScopeNotice='') {
     evidenceLink.setAttribute('aria-label',`${item.label} 풀이의 근거 보기`);
     card.append(body,evidenceLink);
     cards.append(card);
-    links.append(readingLink(item.label,headingId,'reader-topic-link'));
   }
   section.append(topics,cards);
 
@@ -779,7 +798,13 @@ function timingsView(timings, reading, fortune) {
     else list.append(article);
   }
   nav.append(links);
-  body.append(timingSummaryTable(timings),nav,list);
+  const comparison=node('details','timing-table-details');
+  const comparisonToggle=node('summary','full-reading-toggle');
+  comparisonToggle.append(node('span','','열두 달 비교표'),node('small','','12개월'));
+  const comparisonBody=node('div','timing-table-body');
+  comparisonBody.append(timingSummaryTable(timings));
+  comparison.append(comparisonToggle,comparisonBody);
+  body.append(nav,comparison,list);
   return section;
 }
 
