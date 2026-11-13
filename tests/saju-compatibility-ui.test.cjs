@@ -14,11 +14,61 @@ const PROFILE_USER_B='00000000-0000-4000-8000-000000000002';
 const selfBirth={year:1990,month:5,day:17,hour:8,minute:37};
 const partnerBirth={year:1992,month:3,day:14,hour:10,minute:20};
 const otherBirth={year:1987,month:12,day:11,hour:22,minute:15};
+const SCORE_IDS=['temperament','complement','daily','harmony'];
 const pause=()=>new Promise(resolve=>setTimeout(resolve,5));
 function deferred() { let resolve;const promise=new Promise(done=>{resolve=done;});return {promise,resolve}; }
 async function waitFor(predicate,message='Compatibility UI did not settle') {
   const deadline=Date.now()+10000;
   while(!predicate()) { if(Date.now()>deadline)throw new Error(message);await pause(); }
+}
+function assertNoScoreboard(h) {
+  assert.equal(h.window.document.querySelector('.compatibility-scoreboard'),null,'an unavailable reading must not leave scores anywhere on the page');
+}
+function scoreSnapshot(h) {
+  const boards=h.window.document.querySelectorAll('.compatibility-scoreboard');
+  assert.equal(boards.length,1,'a paid pair has one score summary');
+  const board=boards[0],totalElement=board.querySelector('[data-score-total]');
+  assert.equal(board.closest('#compatibility-reading'),h.$('compatibility-reading'));
+  assert.equal(board.closest('[hidden]'),null,'the paid score summary is visible with its reading');
+  assert.ok(totalElement,'the total score is readable as text');
+  const total=Number(totalElement.textContent.match(/\d+/)?.[0]);
+  assert.ok(Number.isInteger(total)&&total>=0&&total<=100,'the displayed total is between zero and one hundred');
+  const rows=[...board.querySelectorAll('[data-score-item]')];
+  assert.deepEqual(rows.map(row=>row.dataset.scoreItem).sort(),[...SCORE_IDS].sort());
+  const items=SCORE_IDS.map(id=>{
+    const row=rows.find(row=>row.dataset.scoreItem===id),meter=row.querySelector('.compatibility-score-meter');
+    assert.ok(meter,`${id} has a score bar`);
+    assert.equal(meter.getAttribute('role'),'meter');
+    assert.equal(meter.getAttribute('aria-valuemin'),'0');assert.equal(meter.getAttribute('aria-valuemax'),'100');
+    assert.match(meter.getAttribute('aria-valuenow')||'',/^\d+$/,`${id} exposes its numeric value`);
+    const value=Number(meter.getAttribute('aria-valuenow'));
+    assert.ok(Number.isInteger(value)&&value>=0&&value<=100,`${id} is a bounded numeric score`);
+    const name=meter.getAttribute('aria-label')||(meter.getAttribute('aria-labelledby')||'').split(/\s+/).map(key=>h.$(key)?.textContent||'').join(' ');
+    assert.ok(name.trim(),`${id} is named for readers using assistive technology`);
+    assert.ok(row.textContent.includes(String(value)),`${id} is readable without relying on its bar length`);
+    const fill=meter.querySelector('.compatibility-score-fill');
+    assert.ok(fill,`${id} has a filled bar`);
+    assert.equal(fill.style.width,`${value}%`,`${id} bar length matches its accessible numeric value`);
+    return {id,value,width:fill.style.width};
+  });
+  return {total,items};
+}
+async function assertCalculatedScores(h) {
+  const {buildCompatibilityReading}=await import(pathToFileURL(path.join(appDir,'compatibility.mjs')).href);
+  const {chart,partner}=h.state.starts.at(-1),reading=buildCompatibilityReading(chart,partner),{score}=reading;
+  assert.ok(score,'the real pair calculation provides the score data');
+  const displayed=scoreSnapshot(h),board=h.window.document.querySelector('.compatibility-scoreboard');
+  assert.equal(displayed.total,score.total);
+  for(const value of [score.label,score.summary,score.methodNotice])assert.ok(board.textContent.includes(value),'the score explanation accompanies the numbers');
+  for(const [label,count] of [['나',score.coverage.self],['상대',score.coverage.partner]])assert.ok(board.textContent.includes(`${label} ${count}/8`),'the confirmed calculation scope is available with the scores');
+  for(const item of score.items) {
+    assert.equal(displayed.items.find(value=>value.id===item.id).value,item.value);
+    const row=board.querySelector(`[data-score-item="${item.id}"]`);
+    for(const value of [item.label,item.summary])assert.ok(row.textContent.includes(value),`${item.id} retains its label and short explanation`);
+    assert.ok(board.textContent.includes(item.reason),`${item.id} retains its full calculation explanation`);
+    for(const id of item.factIds)assert.ok(h.$('compatibility-report').querySelector(`[data-fact-id="${id}"]`),`${id} remains available in the full calculation evidence`);
+  }
+  return score;
 }
 
 // Only authentication and billing are replaced. These fixtures never contact a
@@ -194,22 +244,25 @@ test('the separate page checks a pair without requiring a saju purchase, chargin
   const h=await harness();t.after(h.close);
   assert.equal(h.$('compatibility-result').hidden,true);
   assert.equal(h.$('compatibility-report').textContent,'');
+  assertNoScoreboard(h);
   h.fill();await h.price(20);
   assert.ok(h.state.statusCalls.length>0);
   assert.equal(h.state.starts.length,0);assert.equal(h.state.baseStarts.length,0);
   assert.equal(h.state.coins,60);assert.equal(h.state.charges,0);
   assert.equal(h.$('compatibility-result').hidden,true);
   assert.equal(h.$('compatibility-report').textContent,'');
+  assertNoScoreboard(h);
   assert.match(h.$('compatibility-open').textContent,/20쭈/);
   assert.match(h.$('compatibility-price-note').textContent,/24시간/);
   assert.deepEqual(h.state.fetches,[]);
 });
 
-test('an explicit separate twenty-ju purchase opens the real pair reading once and waits for its receipt',async t=>{
+test('an explicit twenty-ju purchase reveals the real reading and accessible score bars only after its receipt',async t=>{
   const receiptGate=deferred(),h=await harness({receiptGate});t.after(h.close);
   h.fill();await h.price(20);h.submit();await waitFor(()=>h.state.starts.length===1);
   assert.equal(h.state.starts[0].expectedCharge,20);
   assert.equal(h.$('compatibility-result').hidden,true);assert.equal(h.$('compatibility-report').textContent,'');
+  assertNoScoreboard(h);
   h.submit();await pause();assert.equal(h.state.starts.length,1,'pending submissions cannot start another payment');
   receiptGate.resolve();await h.ready();
   assert.equal(h.state.charges,1);assert.equal(h.state.coins,40);assert.deepEqual(h.state.chargedAmounts,[20]);
@@ -217,18 +270,27 @@ test('an explicit separate twenty-ju purchase opens the real pair reading once a
   assert.ok(h.$('compatibility-report').textContent.length>3000);
   assert.equal(h.$('compatibility-report').querySelectorAll('.reader-card').length,6);
   assert.ok(h.$('compatibility-expiry').textContent.trim());
+  const score=await assertCalculatedScores(h);
   h.$('compatibility-copy').click();await waitFor(()=>h.state.copies.length===1);
   assert.match(h.state.copies[0],/궁합/);
   for(const paragraph of h.$('compatibility-report').querySelectorAll('.reader-prose > p'))assert.ok(h.state.copies[0].includes(paragraph.textContent),'copy includes every personal interpretation paragraph');
   assert.match(h.state.copies[0],/궁합 계산 근거/);
+  const copyLines=h.state.copies[0].split('\n');
+  assert.ok(copyLines.some(line=>line.includes('종합 궁합')&&line.includes(`${score.total}점`)),'copy associates the total with its score');
+  for(const value of [score.label,score.summary,score.methodNotice])assert.ok(h.state.copies[0].includes(value),'copy includes the score explanation and its limitations');
+  for(const item of score.items) {
+    assert.ok(copyLines.some(line=>line.includes(item.label)&&line.includes(`${item.value}점`)),`copy associates ${item.id} with its numeric score`);
+    for(const value of [item.summary,item.reason])assert.ok(h.state.copies[0].includes(value),`copy includes ${item.id} explanation`);
+  }
   assert.deepEqual(h.state.fetches,[]);
 });
 
 test('the same pair remains free within its original 24 hours even when the two input positions are swapped',async t=>{
   const h=await harness();t.after(h.close);h.fill();await h.price(20);h.submit();await h.ready();
   const original=[...h.state.receipts.values()][0],expiry=original.expires_at,firstKey=h.state.starts[0].key;
-  const firstBody=h.$('compatibility-report').textContent;
+  const firstBody=h.$('compatibility-report').textContent,firstScores=scoreSnapshot(h);
   h.edit();h.$('pair-swap').click();await h.price(0);
+  assertNoScoreboard(h);
   assert.equal(h.state.charges,1);assert.equal(h.state.starts.length,1,'swapping only checks entitlement');
   assert.match(h.$('compatibility-open').textContent,/0쭈/);
   h.submit();await h.ready();
@@ -238,6 +300,7 @@ test('the same pair remains free within its original 24 hours even when the two 
   assert.equal(h.state.charges,1);assert.equal(h.state.coins,40);
   assert.equal([...h.state.receipts.values()][0].expires_at,expiry);
   assert.notEqual(h.$('compatibility-report').textContent,firstBody,'the real directional interpretation follows the new positions');
+  assert.deepEqual(scoreSnapshot(h),firstScores,'swapping the same two people preserves their scores and bar lengths');
 });
 
 test('changing the partner hides the old reading and requires its own twenty-ju confirmation',async t=>{
@@ -245,10 +308,12 @@ test('changing the partner hides the old reading and requires its own twenty-ju 
   h.edit();h.fillPerson('partner',otherBirth);await h.price(20);
   assert.equal(h.state.charges,1);assert.equal(h.state.starts.length,1);
   assert.equal(h.$('compatibility-result').hidden,true);assert.equal(h.$('compatibility-report').textContent,'');
+  assertNoScoreboard(h);
   h.submit();await h.ready();
   assert.equal(h.state.charges,2);assert.equal(h.state.coins,20);assert.equal(h.state.receipts.size,2);
   assert.notEqual(h.state.starts[0].key,h.state.starts[1].key);
   assert.equal(h.state.starts[1].partner.solar.iso,'1987-12-11');
+  await assertCalculatedScores(h);
 });
 
 test('expiry removes the reading and copy access without automatically charging, then permits an explicit new purchase',async t=>{
@@ -256,11 +321,13 @@ test('expiry removes the reading and copy access without automatically charging,
   const expiry=[...h.state.receipts.values()][0].expires_at;
   h.advance(ACCESS_MS+1,{focus:true});await waitFor(()=>h.$('compatibility-result').hidden);
   assert.equal(h.$('compatibility-report').textContent,'');
+  assertNoScoreboard(h);
   assert.equal(h.state.charges,1);assert.equal(h.state.starts.length,1);
   const copies=h.state.copies.length;h.$('compatibility-copy').click();await pause();assert.equal(h.state.copies.length,copies);
   await h.price(20);h.submit();await h.ready();
   assert.deepEqual(h.state.chargedAmounts,[20,20]);
   assert.ok(Date.parse([...h.state.receipts.values()][0].expires_at)>Date.parse(expiry));
+  scoreSnapshot(h);
 });
 
 test('a stale zero-ju offer cannot silently become a twenty-ju purchase after expiry',async t=>{
@@ -313,6 +380,7 @@ test('exactly twenty ju opens compatibility once and nineteen ju never reveals o
   assert.deepEqual(short.state.chargedAmounts,[]);assert.equal(short.state.receipts.size,0);
   assert.equal(short.$('compatibility-result').hidden,true);
   assert.equal(short.$('compatibility-report').textContent,'');
+  assertNoScoreboard(short);
 });
 
 test('a historical ten-ju button offer cannot authorize a twenty-ju charge without a new confirmation',async t=>{
@@ -336,6 +404,7 @@ test('copying rechecks expiry even if the page expiry timer has not run',async t
   assert.equal(h.state.copies.length,0);assert.equal(h.state.charges,1);
   assert.equal(h.$('compatibility-result').hidden,true);
   assert.equal(h.$('compatibility-report').textContent,'');
+  assertNoScoreboard(h);
 });
 
 test('a receipt that arrives after its own deadline never reveals the pair reading',async t=>{
@@ -344,6 +413,7 @@ test('a receipt that arrives after its own deadline never reveals the pair readi
   h.advance(ACCESS_MS+1,{runTimers:false});receiptGate.resolve();
   await waitFor(()=>!h.$('compatibility-open').disabled);
   assert.equal(h.$('compatibility-result').hidden,true);assert.equal(h.$('compatibility-report').textContent,'');
+  assertNoScoreboard(h);
   assert.match(h.$('compatibility-error').textContent,/24시간|이용 시간|만료/);
   assert.equal(h.state.copies.length,0);assert.equal(h.state.charges,1);
 });
@@ -352,10 +422,12 @@ test('account changes erase both a current result and any late payment result fo
   const h=await harness();t.after(h.close);h.fill();await h.price(20);h.submit();await h.ready();
   h.changeAccount('00000000-0000-4000-8000-000000000002');await pause();
   assert.equal(h.$('compatibility-result').hidden,true);assert.equal(h.$('compatibility-report').textContent,'');
+  assertNoScoreboard(h);
   const receiptGate=deferred();h.state.receiptGate=receiptGate;h.fill();await h.price(20);h.submit();
   await waitFor(()=>h.state.starts.length===2);
   h.changeAccount('00000000-0000-4000-8000-000000000003');receiptGate.resolve();await pause();await pause();
   assert.equal(h.$('compatibility-result').hidden,true);assert.equal(h.$('compatibility-report').textContent,'');
+  assertNoScoreboard(h);
   assert.equal(h.state.copies.length,0);
 });
 
@@ -364,6 +436,7 @@ test('changed birth inputs invalidate a pending result and never purchase the ch
   h.fill();await h.price(20);h.submit();await waitFor(()=>h.state.charges===1);
   h.fillPerson('partner',otherBirth);receiptGate.resolve();await pause();await pause();
   assert.equal(h.$('compatibility-result').hidden,true);assert.equal(h.$('compatibility-report').textContent,'');
+  assertNoScoreboard(h);
   assert.equal(h.state.starts.length,1);assert.equal(h.state.charges,1);
   await h.price(20);h.state.receiptGate=null;h.submit();await h.ready();
   assert.equal(h.state.starts.length,2);assert.equal(h.state.starts[1].partner.solar.iso,'1987-12-11');
@@ -386,8 +459,11 @@ test('unknown birth times remain unknown in the actual pair reading, and reset n
   assert.equal(h.state.starts[0].chart.timeKnown,false);assert.equal(h.state.starts[0].partner.timeKnown,false);
   assert.match(h.$('compatibility-report').textContent,/태어난 시간/);
   assert.match(h.$('compatibility-report').textContent,/상대 사주/);
+  const score=await assertCalculatedScores(h);
+  assert.equal(score.coverage.partial,true,'a score for unknown times keeps its limited calculation scope');
   h.$('compatibility-clear').click();await pause();
   assert.equal(h.$('compatibility-result').hidden,true);assert.equal(h.$('compatibility-report').textContent,'');
+  assertNoScoreboard(h);
   assert.equal(h.state.starts.length,1);assert.equal(h.state.charges,1);assert.deepEqual(h.state.fetches,[]);
 });
 
@@ -445,6 +521,7 @@ test('a signed-out visitor sees the login state and cannot obtain or pay for a c
   assert.match(h.$('compatibility-error').textContent,/로그인/);
   assert.equal(h.state.starts.length,0);assert.equal(h.state.baseStarts.length,0);assert.equal(h.state.charges,0);
   assert.equal(h.$('compatibility-result').hidden,true);assert.equal(h.$('compatibility-report').textContent,'');
+  assertNoScoreboard(h);
 });
 
 test('each compatibility input automatically saves independently and restores both complete profiles after reload without payment',async t=>{
@@ -565,17 +642,19 @@ test('changing only both names and genders preserves the paid pair and its origi
   const h=await harness({user:PROFILE_USER_A});t.after(h.close);
   h.fill({...selfBirth,name:'처음 이름',gender:'male'},{...partnerBirth,name:'상대 이름',gender:'female'});
   await h.price(20);h.submit();await h.ready();
-  const firstKey=h.state.starts[0].key,expiry=[...h.state.receipts.values()][0].expires_at;
+  const firstKey=h.state.starts[0].key,expiry=[...h.state.receipts.values()][0].expires_at,firstScores=scoreSnapshot(h);
   assert.equal(h.$('self-saved-profiles').querySelectorAll('.profile-picker-use').length,2,'an explicit pair reading saves both entered people');
   h.edit();
   for(const [id,value] of [['self-name','수정한 이름'],['self-gender','female'],['partner-name','<img src=x onerror=alert(1)>'],['partner-gender','male']]) {
     h.$(id).value=value;h.change(h.$(id));
   }
   await h.price(0);assert.equal(h.state.starts.length,1,'profile edits only refresh the current offer');
+  assertNoScoreboard(h);
   h.submit();await h.ready();
   assert.equal(h.state.starts.length,2);assert.equal(h.state.starts[1].key,firstKey);assert.equal(h.state.starts[1].expectedCharge,0);
   assert.deepEqual(h.state.chargedAmounts,[20]);assert.equal(h.state.receipts.size,1);
   assert.equal([...h.state.receipts.values()][0].expires_at,expiry);
+  assert.deepEqual(scoreSnapshot(h),firstScores,'display names and genders cannot change these birth-chart comparison scores');
   for(const id of ['self-saved-profiles','partner-saved-profiles','compatibility-result'])assert.equal(h.$(id).querySelector('img,script,[onerror]'),null);
   assert.equal(h.state.baseStarts.length,0);assert.deepEqual(h.state.fetches,[]);
 });

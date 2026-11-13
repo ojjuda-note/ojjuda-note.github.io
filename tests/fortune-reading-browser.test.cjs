@@ -25,10 +25,11 @@ const select = document.getElementById('fixture-topic');
 function show(){renderDetailedReport(target,{reading,fortune,topic:select.value});target.dataset.ready=select.value;}
 select.addEventListener('change',show);show();
 </script></body></html>`;
-const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"></head><body><main><section class="result"><label for="fixture-pair">검사할 두 사람</label><select id="fixture-pair"><option value="confirmed">말띠와 양띠</option><option value="uncertain">입춘일 · 시간 모름</option></select><p id="fixture-zodiac" class="birth-summary"></p><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
+const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/compatibility.css"></head><body><main class="compatibility-main"><section class="result"><label for="fixture-pair">검사할 두 사람</label><select id="fixture-pair"><option value="confirmed">말띠와 양띠</option><option value="uncertain">입춘일 · 시간 모름</option></select><p id="fixture-zodiac" class="birth-summary"></p><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { buildCompatibilityReading } from '/games/starlit-saju/compatibility.mjs';
 import { renderCompatibilityReport } from '/games/starlit-saju/report-view.mjs';
+import { createCompatibilityScoreboard } from '/games/starlit-saju/compatibility-score-view.mjs';
 const now = new Date('2026-11-13T00:00:00Z');
 const partner = calculateSaju({year:1991,month:5,day:10,hour:9,minute:0},{now});
 const target = document.getElementById('report-content');
@@ -37,7 +38,9 @@ function show(){
   const birth = select.value === 'confirmed' ? {year:1990,month:5,day:10,hour:9,minute:0} : {year:2024,month:2,day:4,hour:null};
   const reading = buildCompatibilityReading(calculateSaju(birth,{now}),partner);
   document.getElementById('fixture-zodiac').textContent = reading.zodiac.self.label + ' · ' + reading.zodiac.partner.label + ' · 사주 기준 · 입춘';
-  renderCompatibilityReport(target,reading);target.dataset.ready=select.value;
+  renderCompatibilityReport(target,reading);
+  target.querySelector('#compatibility-reading > .report-section-heading').after(createCompatibilityScoreboard(reading.score));
+  target.dataset.ready=select.value;
 }
 select.addEventListener('change',show);show();
 </script></body></html>`;
@@ -299,8 +302,68 @@ const server = http.createServer((request, response) => {
     await saju.locator('#fixture-pair').selectOption('confirmed');
     await zodiacCard.scrollIntoViewIfNeeded();
     await saju.screenshot({path:path.join(artifacts,'saju-zodiac-compatibility-desktop.png')});
+    const compatibilityScores={};
+    for(const [viewport,size] of [['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]]) {
+      await saju.setViewportSize(size);
+      compatibilityScores[viewport]={};
+      for(const pair of ['confirmed','uncertain']) {
+        await saju.locator('#fixture-pair').selectOption(pair);
+        await saju.locator('#report-content[data-ready="'+pair+'"]').waitFor();
+        const scoreboard=saju.locator('section.compatibility-scoreboard');
+        await scoreboard.waitFor({state:'visible'});
+        assert.equal(await scoreboard.count(),1,'one score summary is rendered per pair');
+        assert.equal(await scoreboard.locator('article[data-score-item]').count(),4,'all four score components remain available');
+        assert.equal(await scoreboard.locator('.compatibility-score-meter[role="meter"]').count(),4,'each component has its own accessible meter');
+        const geometry=await scoreboard.evaluate(board=>{
+          const box=board.getBoundingClientRect();
+          const contained=(inner,outer)=>inner.left>=outer.left-1&&inner.right<=outer.right+1&&inner.top>=outer.top-1&&inner.bottom<=outer.bottom+1;
+          const total=board.querySelector('strong[data-score-total]');
+          const meters=Array.from(board.querySelectorAll('article[data-score-item]')).map(item=>{
+            const meter=item.querySelector('.compatibility-score-meter[role="meter"]'),fill=meter?.querySelector('.compatibility-score-fill');
+            if(!meter||!fill)return {valid:false};
+            const trackBox=meter.getBoundingClientRect(),fillBox=fill.getBoundingClientRect(),style=getComputedStyle(meter);
+            const value=Number(meter.getAttribute('aria-valuenow'));
+            const contentWidth=meter.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight);
+            return {value,min:Number(meter.getAttribute('aria-valuemin')),max:Number(meter.getAttribute('aria-valuemax')),
+              valid:Number.isInteger(value)&&value>=0&&value<=100,
+              visible:trackBox.width>0&&trackBox.height>0&&getComputedStyle(meter).visibility==='visible',
+              inside:contained(trackBox,item.getBoundingClientRect())&&contained(item.getBoundingClientRect(),box)&&contained(fillBox,trackBox),
+              fillMatches:Math.abs(fillBox.width-contentWidth*value/100)<=2};
+          });
+          const clippedAncestors=[];
+          for(let parent=board.parentElement;parent&&parent!==document.body;parent=parent.parentElement){
+            const style=getComputedStyle(parent),rect=parent.getBoundingClientRect();
+            if((/hidden|clip/.test(style.overflowX)&&(box.left<rect.left-1||box.right>rect.right+1))||
+              (/hidden|clip/.test(style.overflowY)&&(box.top<rect.top-1||box.bottom>rect.bottom+1)))clippedAncestors.push(parent.id||parent.className||parent.tagName);
+          }
+          return {total:Number(total?.textContent.trim()),meters,
+            followsHeading:board.previousElementSibling?.classList.contains('report-section-heading')===true,
+            totalVisible:!!total&&total.getBoundingClientRect().width>0&&contained(total.getBoundingClientRect(),box),
+            documentOverflow:document.documentElement.scrollWidth>innerWidth,
+            boardOverflow:board.scrollWidth>board.clientWidth+1||board.scrollHeight>board.clientHeight+1,
+            clippedAncestors,
+            insideViewport:box.left>=-1&&box.right<=innerWidth+1,
+            clippedText:Array.from(board.querySelectorAll('h2,h3,h4,h5,h6,p,strong,small,summary,dt,dd')).filter(element=>element.clientWidth>0&&element.scrollWidth>element.clientWidth+1).length};
+        });
+        const label=pair+' '+viewport;
+        assert.ok(geometry.followsHeading,label+': scores follow the report heading');
+        assert.ok(Number.isInteger(geometry.total)&&geometry.total>=0&&geometry.total<=100,label+': the total is an explicit 0–100 score');
+        assert.ok(geometry.totalVisible,label+': the total is visible inside its score summary');
+        assert.ok(geometry.meters.every(meter=>meter.valid&&meter.min===0&&meter.max===100&&meter.visible&&meter.inside&&meter.fillMatches),label+': all four bars fit and represent their exact values');
+        assert.equal(geometry.documentOverflow,false,label+': the page does not overflow horizontally');
+        assert.equal(geometry.boardOverflow,false,label+': no score content is clipped by its own container');
+        assert.deepEqual(geometry.clippedAncestors,[],label+': no report ancestor clips the score summary');
+        assert.ok(geometry.insideViewport,label+': the complete score summary fits the viewport width');
+        assert.equal(geometry.clippedText,0,label+': long labels and explanations remain readable');
+        const values={total:geometry.total,items:geometry.meters.map(meter=>meter.value)};
+        if(compatibilityScores['phone-small'][pair])assert.deepEqual(values,compatibilityScores['phone-small'][pair],label+': layout changes preserve every score');
+        compatibilityScores[viewport][pair]=values;
+        await scoreboard.scrollIntoViewIfNeeded();
+        await scoreboard.screenshot({path:path.join(artifacts,'saju-compatibility-scores-'+pair+'-'+viewport+'.png')});
+      }
+    }
     assert.deepEqual(errors, []);
     assert.deepEqual(failed, []);
-    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], viewport: '390×844 and 1280×900', errors, failed }));
+    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], compatibilityScores, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => server.close());
