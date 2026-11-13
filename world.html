@@ -70,7 +70,7 @@
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261110-janggi-entry2">
 <link rel="stylesheet" href="/games/janggi/replay.css?v=20261110-janggi-replay1">
-<script src="/shared/games/world-game-assets.js?v=20261114-drinks-adult1" defer></script>
+<script src="/shared/games/world-game-assets.js?v=20261114-drinks-local1" defer></script>
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
 <script src="/shared/games/game-challenges.js?v=20261110-admin-record-free1" defer></script>
@@ -221,7 +221,7 @@
 
 <script src="/games/matgo/matgo-bridge.js?v=20261113-game-popup-order1" defer></script>
 <link rel="stylesheet" href="/features/arcade/arcade-rooms.css?v=20261114-drinks-hub1">
-<script src="/features/arcade/arcade-rooms.js?v=20261114-drinks-adult1" defer></script>
+<script src="/features/arcade/arcade-rooms.js?v=20261114-drinks-local1" defer></script>
 <link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1">
 <script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/shared/brand/brand-copy.css?v=20261106-source-folders1">
@@ -3211,7 +3211,7 @@ function worldArcadeAdultAllowed(){
  return !!(D.online&&D.user?.id&&window.OjjudaMatgoAccess?.visible(19)===true);
 }
 function worldArcadeAdultMarkup(){
- return worldArcadeAdultAllowed()?`<section class="arcade-adult" data-arcade-adult aria-label="어른들 플레이"><header class="game-section-heading"><div><span class="world-eyebrow">ADULT PLAY</span><h2>어른들 플레이</h2></div><span>만 19세 이상</span></header><div class="gbtns" data-arcade-games="adult">${worldMatgoButton()}${worldPokerButton()}${worldRouletteButton()}${worldPhotoTtangButton()}<a class="gbtn" data-v="drinking" href="/games/drinking/" aria-label="술게임 · 만 19세 이상 · 최대 12명" style="text-decoration:none"><span class="ge" aria-hidden="true"><span style="font-size:34px">🍻</span></span><span class="game-name">술게임 <small>19+</small><small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 12명</small></span></a></div></section>`:"";
+ return worldArcadeAdultAllowed()?`<section class="arcade-adult" data-arcade-adult aria-label="어른들 플레이"><header class="game-section-heading"><div><span class="world-eyebrow">ADULT PLAY</span><h2>어른들 플레이</h2></div><span>만 19세 이상</span></header><div class="gbtns" data-arcade-games="adult">${worldMatgoButton()}${worldPokerButton()}${worldRouletteButton()}${worldPhotoTtangButton()}<a class="gbtn" data-v="drinking" href="/games/drinking/" aria-label="술게임 · 만 19세 이상 · 최대 12명" style="text-decoration:none"><span class="ge" aria-hidden="true"><img src="/assets/design/games/drinking.svg?v=20261114-drinks-local1" alt="" width="120" height="84" loading="lazy"></span><span class="game-name">술게임 <small>19+</small><small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 12명</small></span></a></div></section>`:"";
 }
 function syncWorldArcadeAdultGames(){
  if(g.tab!=="place"||g.place?.id!=="arcade")return;
