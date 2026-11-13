@@ -1,9 +1,9 @@
 (function () {
   'use strict';
-  const games = { bottle: ['🍾', '술병 나침반'], bomb: ['💣', '시간폭탄'], stopwatch: ['⏱️', '감각 스톱워치'], truth: ['🃏', '진실게임'], initial: ['🔤', '초성 대결'], minority: ['⚖️', '소수파 찾기'], mission: ['🎬', '한 명만 다른 미션'], king: ['👑', '왕게임'], liar: ['🎭', '라이어 찾기'], croc: ['🐊', '악어 이빨'], bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'], roulette: ['🎡', '룰렛'] };
-  const passwordGames=new Set(['croc','liar','king','minority','mission','bottle','bomb','stopwatch','truth','initial']);
-  const passwordGame=kind=>passwordGames.has(kind);
-  const nativeGames = new Set([...passwordGames,'bang','tank','tour','ttang','poker','roulette']);
+  const games = { drinking: ['🍻', '술게임'], bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'], roulette: ['🎡', '룰렛'] };
+  const drinkingKinds = new Set(['drinking','croc','liar','king','minority','mission','bottle','bomb','stopwatch','truth','initial','fingers','imagevote','updown']);
+  const nativeGames = new Set(['bang','tank','tour','ttang','poker','roulette']);
+  const drinkingLink = '<a class="btn pri" data-drinking-hub href="/games/drinking/">술게임 입장</a>';
   const ACTIVE_POLL_MS = 4000, IDLE_POLL_MS = 6000;
   const layouts = [['eheh', '상마상마'], ['hehe', '마상마상'], ['ehhe', '상마마상'], ['heeh', '마상상마']];
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -21,6 +21,7 @@
     return errors[code] || '연결하지 못했어요. 잠시 후 다시 시도해 주세요.';
   }
   function shortcut(kind) {
+    if (drinkingKinds.has(kind)) return drinkingLink;
     return `<button class="btn pri arcade-create-shortcut" data-arcade-action="create" data-kind="${escape(kind)}">방 제목을 정하고 공개 대전방 만들기</button>`;
   }
   function markup() { return '<section class="arcade-rooms" data-arcade-rooms aria-label="오락실 대전방"></section>'; }
@@ -57,10 +58,10 @@
       const [, name] = games[room.kind] || ['', '게임'];
       const artwork = /^(carom|pool)/.test(room.kind) ? 'carom4' : Object.hasOwn(games, room.kind) ? room.kind : 'tank';
       const playing = room.status === 'playing';
-      const action = room.is_member ? (playing ? (passwordGame(room.kind)?'이어하기':'새 게임') : room.native ? '대기실 열기' : '대기 중') : playing ? '대전 중' : '참여';
+      const action = room.is_member ? (playing ? '새 게임' : room.native ? '대기실 열기' : '대기 중') : playing ? '대전 중' : '참여';
       return `<article class="arcade-room-card${room.is_member ? ' mine' : ''}">
-        <div class="arcade-room-game">${passwordGame(room.kind) ? `<span aria-hidden="true">${games[room.kind][0]}</span>` : `<img src="/assets/design/games/${artwork}.svg" alt="" width="36" height="28">`}<b>${name}</b></div>
-        <div class="arcade-room-copy"><span class="arcade-room-number">방 #${escape(room.room_no)}${room.is_host ? ' · 내 방' : room.is_member ? ' · 참여한 방' : ''}</span><h4>${escape(room.title)}${passwordGame(room.kind)?' 🔒':''}</h4><p>${escape(room.host_name)} <span>· ${room.players}/${room.capacity}명</span></p></div>
+        <div class="arcade-room-game"><img src="/assets/design/games/${artwork}.svg" alt="" width="36" height="28"><b>${name}</b></div>
+        <div class="arcade-room-copy"><span class="arcade-room-number">방 #${escape(room.room_no)}${room.is_host ? ' · 내 방' : room.is_member ? ' · 참여한 방' : ''}</span><h4>${escape(room.title)}</h4><p>${escape(room.host_name)} <span>· ${room.players}/${room.capacity}명</span></p></div>
         <div class="arcade-room-actions"><span class="arcade-room-state${playing ? ' playing' : ''}">${playing ? '대전 중' : '상대 기다리는 중'}</span>
         <button class="btn sm${!playing || room.is_member ? ' pri' : ''}" data-arcade-action="join" data-room="${escape(room.room_no)}"${busy || (playing && !room.is_member) || (!playing && room.is_member && !room.native) || (!room.is_member && room.players>=room.capacity) ? ' disabled' : ''}>${action}</button>
         ${room.is_host && !playing ? `<button class="arcade-cancel" data-arcade-action="cancel" data-room="${room.room_no}"${busy ? ' disabled' : ''}>대기 취소</button>` : ''}</div></article>`;
@@ -81,22 +82,24 @@
       if (list !== nextList) { list = nextList; signature = ''; }
       const select = root.querySelector('[data-room-filter]');
       const choices = Object.entries(games).filter(([kind]) => !['matgo','poker','roulette'].includes(kind) || canMatgo);
-      if (select.options.length !== choices.length + 1) {
+      if (select.options.length !== choices.length + 1 || !select.querySelector('option[value="drinking"]')) {
         select.innerHTML = '<option value="">모든 게임</option>' + choices.map(([kind, [, name]]) => `<option value="${kind}">${name}</option>`).join('');
         if (!choices.some(([kind]) => kind === filter)) filter = '';
       }
       select.value = filter;
+      const drinking = filter === 'drinking';
+      root.querySelector('[data-room-search]').disabled = drinking;
       const warning = root.querySelector('[data-room-issue]');
       warning.hidden = !issue; warning.textContent = issue;
       const text = query.trim().replace(/^#/, '').toLocaleLowerCase();
       const shown = rooms.filter(r => (!filter || r.kind === filter) && (!text || String(r.room_no).toLowerCase().includes(text) || r.title.toLocaleLowerCase().includes(text)));
-      if (mine && !shown.some(r => r.room_no === mine.room_no)) shown.unshift(mine);
+      if (!drinking && mine && !shown.some(r => r.room_no === mine.room_no)) shown.unshift(mine);
       shown.sort((a, b) => String(a.room_no).localeCompare(String(b.room_no),undefined,{numeric:true}));
-      const next = JSON.stringify([shown, busy, owner]);
+      const next = JSON.stringify([shown, busy, owner, filter, Boolean(text)]);
       if (signature !== next) {
         const chat = list.closest('.plog'), atBottom = chat && chat.scrollHeight - chat.scrollTop - chat.clientHeight < 40;
         signature = next;
-        list.innerHTML = shown.length ? shown.map(card).join('')
+        list.innerHTML = drinking ? drinkingLink : shown.length ? shown.map(card).join('')
           : `<p class="arcade-room-empty">${owner ? query || filter ? '조건에 맞는 방이 없어요.' : '아직 열린 방이 없어요.<br>첫 대전방을 만들어 보세요.' : '로그인하면 대전방을 만들고 참여할 수 있어요.'}</p>`;
         if (atBottom) chat.scrollTop = chat.scrollHeight;
       }
@@ -122,7 +125,9 @@
         // A return/manual refresh supersedes this read. Applying it first could
         // open an old match and pause the fresh read queued below.
         if (!current(actor) || revision !== epoch || pollAgain) return;
-        rooms = [...(data.rooms || []),...extra]; mine = data.mine || extra.find(r=>r.is_member) || null; canMatgo = data.can_matgo === true; issue = '';
+        rooms = [...(data.rooms || []), ...extra].filter(room => !drinkingKinds.has(room.kind));
+        mine = data.mine && !drinkingKinds.has(data.mine.kind) ? data.mine : rooms.find(room => room.is_member) || null;
+        canMatgo = data.can_matgo === true; issue = '';
         lastRead = Date.now();
         if (mine?.status === 'waiting') waitingRoom = mine.room_no;
         else if (!mine) waitingRoom = null;
@@ -156,6 +161,7 @@
     function revealMine() { list?.querySelector('.arcade-room-card.mine')?.scrollIntoView({ block: 'nearest' }); }
     function created(room) {
       sync();
+      if (drinkingKinds.has(room?.kind)) return;
       if (!owner || !room?.is_host || !room.is_member || !Number.isSafeInteger(room.room_no) || !games[room.kind] || typeof room.title !== 'string' || room.status !== 'waiting') { void poll(true); return; }
       // The same-origin game sends the server's safe room card; joining still requires the RPC.
       epoch++; mine = room; waitingRoom = room.room_no; rooms = rooms.filter(r => r.room_no !== room.room_no); rooms.push(room);
@@ -174,31 +180,37 @@
         issue = ''; render(); return data.room;
       } finally { busy = false; render(); schedule(); }
     }
-    function openCreate(kind = 'janggi') {
+    function openCreate(kind = filter === 'drinking' ? 'drinking' : 'janggi') {
       sync();
+      if (drinkingKinds.has(kind)) kind = 'drinking';
       if (!owner) { options.notify(errors.not_signed_in); return; }
-      if (mine) { options.goArcade(); options.closeModal(); options.notify(errors.room_in_progress); return; }
+      if (mine && kind !== 'drinking') { options.goArcade(); options.closeModal(); options.notify(errors.room_in_progress); return; }
       const allowed = Object.entries(games).filter(([id]) => !['matgo','poker','roulette'].includes(id) || canMatgo || options.matgoAllowed?.());
       if (!allowed.some(([id]) => id === kind)) kind = allowed[0][0];
       const actor = owner, initial = games[kind][1] + ' 같이 한 판 해요';
       options.renderModal(`<div class="mhead"><h3>대전방 만들기</h3><button class="btn sm ghost" data-act="close">닫기</button></div>
         <form id="arcade-room-form" class="arcade-room-form"><label class="field">게임<select class="inp" name="kind">${allowed.map(([id, [emoji, name]]) => `<option value="${id}"${id === kind ? ' selected' : ''}>${emoji} ${name}</option>`).join('')}</select></label>
-        <label class="field">방 제목<input class="inp" name="title" maxlength="40" required value="${escape(initial)}" autocomplete="off"></label>
+        <div data-create-drinking hidden>${drinkingLink}</div>
+        <div data-create-fields><label class="field">방 제목<input class="inp" name="title" maxlength="40" required value="${escape(initial)}" autocomplete="off"></label>
         <div data-create-layout${kind === 'janggi' ? '' : ' hidden'}>${layoutSelect('eheh')}</div>
-        <label class="field" data-create-capacity hidden>최대 인원<select class="inp" name="capacity"></select></label>
-        <label class="field" data-create-password hidden>방 비밀번호<input class="inp" type="password" name="password" minlength="4" maxlength="32" autocomplete="new-password"></label>
+        <div data-create-capacity hidden><label class="field">최대 인원<select class="inp" name="capacity"></select></label></div>
         <p class="note">방번호는 자동으로 붙어요. 만든 방은 오락실 대전방 목록에 표시돼요.</p><p data-room-message role="status"></p>
-        <div class="mfoot"><button class="btn" type="button" data-act="close">취소</button><button class="btn pri" type="submit">방 만들고 기다리기</button></div></form>`, '대전방 만들기');
+        <div class="mfoot"><button class="btn" type="button" data-act="close">취소</button><button class="btn pri" type="submit">방 만들고 기다리기</button></div></div></form>`, '대전방 만들기');
       const form = document.getElementById('arcade-room-form');
-      let previousTitle = initial, request = null, lastParams = '';
+      let previousTitle = initial, configuredKind = '', request = null, lastParams = '';
       const chooseKind = () => {
         const value = form.elements.kind.value;
+        const drinking = value === 'drinking';
+        form.querySelector('[data-create-drinking]').hidden = !drinking;
+        form.querySelector('[data-create-fields]').hidden = drinking;
+        form.elements.title.required = !drinking;
+        form.querySelector('[data-room-message]').textContent = '';
+        if (drinking || value === configuredKind) return;
+        configuredKind = value;
         if (form.elements.title.value === previousTitle) form.elements.title.value = games[value][1] + ' 같이 한 판 해요';
         previousTitle = games[value][1] + ' 같이 한 판 해요';
         form.querySelector('[data-create-layout]').hidden = value !== 'janggi';
-        form.querySelector('[data-create-password]').hidden=!passwordGame(value);
-        form.elements.password.required=passwordGame(value); form.elements.password.value='';
-        const min=value==='bang'?4:['liar','king','minority','mission'].includes(value)?3:2,max=value==='bang'?7:(value==='tank'||passwordGame(value))?12:value==='tour'?8:['poker','roulette'].includes(value)?4:2;
+        const min=value==='bang'?4:2,max=value==='bang'?7:value==='tank'?12:value==='tour'?8:['poker','roulette'].includes(value)?4:2;
         form.querySelector('[data-create-capacity]').hidden=max===2;
         form.elements.capacity.innerHTML=Array.from({length:max-min+1},(_,i)=>`<option value="${i+min}"${i+min===Math.min(4,max)?' selected':''}>${i+min}명</option>`).join('');
       };
@@ -206,17 +218,18 @@
       form.onsubmit = async event => {
         event.preventDefault(); if (busy || !current(actor)) return;
         const title = form.elements.title.value.trim(), kind = form.elements.kind.value, layout = form.elements.layout.value;
+        if (kind === 'drinking') { form.querySelector('[data-drinking-hub]').click(); return; }
+        if (mine) { form.querySelector('[data-room-message]').textContent = errors.room_in_progress; return; }
         if (!title || [...title].length > 40) { form.querySelector('[data-room-message]').textContent = errors.invalid_title; return; }
         const capacity=Number(form.elements.capacity.value)||2;
-        const password=passwordGame(kind)?form.elements.password.value:undefined;
-        const fingerprint = JSON.stringify([kind, title, layout,capacity,password]);
+        const fingerprint = JSON.stringify([kind, title, layout,capacity]);
         if (fingerprint !== lastParams) { request = crypto.randomUUID(); lastParams = fingerprint; }
         const controls = [...form.querySelectorAll('input,select,button')]; controls.forEach(el => el.disabled = true);
         form.querySelector('[data-room-message]').textContent = '방을 만들고 있어요…';
         try {
           if(nativeGames.has(kind)){
             busy=true;render();options.goArcade();
-            await options.onCreateNative(kind,{title,capacity,request_id:request,...(passwordGame(kind)?{password}:{})});
+            await options.onCreateNative(kind,{title,capacity,request_id:request});
             if(!current(actor))return;
             options.closeModal();options.goArcade();void poll(true);return;
           }
@@ -228,7 +241,8 @@
         } catch (error) { if (current(actor) && form.isConnected) form.querySelector('[data-room-message]').textContent = message(error); }
         finally { busy=false;controls.forEach(el => el.disabled = false);render();schedule(); }
       };
-      form.elements.title.focus(); form.elements.title.select();
+      if (kind === 'drinking') form.querySelector('[data-drinking-hub]').focus();
+      else { form.elements.title.focus(); form.elements.title.select(); }
     }
     async function join(room, layout) {
       const actor = owner;
@@ -242,7 +256,7 @@
       } catch (error) { if (current(actor)) { options.notify(message(error)); void poll(true); } }
     }
     function chooseRoom(room) {
-      if (!passwordGame(room.kind) && room.is_member && room.status === 'playing') {
+      if (room.is_member && room.status === 'playing') {
         const actor = owner;
         if (busy || !current(actor) || typeof options.onFreshGame !== 'function') return;
         busy = true; epoch++; render();

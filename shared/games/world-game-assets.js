@@ -1,23 +1,24 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261114-updown1'
+ const revision='20261114-drinks-hub1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
-  croc:'1.0.0',
-  liar:'1.0.0',
-  king:'1.1.1',
-  minority:'1.0.0',
-  mission:'1.0.0',
-  bottle:'1.0.0',
-  bomb:'1.0.0',
-  stopwatch:'1.0.0',
-  truth:'1.0.0',
-  initial:'1.0.0',
-  fingers:'1.0.0',
-  imagevote:'1.0.0',
-  updown:'1.0.0',
+  croc:'1.1.0',
+  liar:'1.1.0',
+  king:'1.2.0',
+  minority:'1.1.0',
+  mission:'1.1.0',
+  bottle:'1.1.0',
+  bomb:'1.1.0',
+  stopwatch:'1.1.0',
+  truth:'1.1.0',
+  initial:'1.1.0',
+  fingers:'1.1.0',
+  imagevote:'1.1.0',
+  updown:'1.1.0',
+  drinking:'1.0.0',
   tarot:'1.9.3',
   saju:'2.6.3',
   group:'1.2.2',

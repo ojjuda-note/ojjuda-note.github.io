@@ -1,4 +1,5 @@
 'use strict';
+const party=window.DrinkingChild;
 const view=document.querySelector('#view'),notice=document.querySelector('#notice');
 const param=new URLSearchParams(location.search);
 const codeInput=(param.get('room')||'').toUpperCase();
@@ -7,11 +8,13 @@ function read(key){try{return sessionStorage.getItem(key)}catch{return null}}
 function save(key,value){try{sessionStorage.setItem(key,value)}catch{}}
 let client, actor, createRequest, createFingerprint;
 const key=(field)=>'oj.liar.'+actor+'.'+field;
+function saveStandalone(code){if(!party)save(key('last'),code)}
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const control=(title,act,primary=false)=>'<button type="button" class="'+(primary?'action':'secondary')+'" data-do="'+act+'">'+title+'</button>';
+const control=(title,act,primary=false)=>party?.control(act)??'<button type="button" class="'+(primary?'action':'secondary')+'" data-do="'+act+'">'+title+'</button>';
 let revealed=false;
 function entry(){
   room=null;clearTimeout(timer);revealed=false;
+  if(party)return party.missing();
   const create=mode==='create';
   view.innerHTML='<section class="card"><div class="inside"><h1>라이어 찾기</h1><p>한 사람만 제시어를 몰라요. 각자 힌트를 남긴 뒤 라이어에게 투표하세요.</p>'+
     '<div class="tabs"><button data-do="create-tab" aria-pressed="'+create+'">방 만들기</button><button data-do="join-tab" aria-pressed="'+!create+'">방 들어가기</button></div>'+
@@ -26,14 +29,14 @@ function render(s,force=false){
   if(!first&&(s.revision<room.revision||(!force&&s.revision===room.revision)))return;
   if(first||s.round!==room.round||s.phase!==room.phase)revealed=false;
   if(first){
-    save(key('last'),s.code);
+    saveStandalone(s.code);
     const url=new URL(location.href);url.searchParams.set('room',s.code);history.replaceState(null,'',url);
   }
   const draft=(!first&&s.phase==="hints"&&s.turn===s.me&&s.round===room.round)?view.querySelector('[name="hint"]')?.value:null;
-  room=s;activeCode=s.code;
+  party?.setPhase(s.phase);room=s;activeCode=s.code;
   const members='<ol class="members">'+s.players.map((n,i)=>'<li class="'+(i===s.me?'me':'')+'">'+esc(n)+(i===s.me?' (나)':'')+'</li>').join('')+'</ol>';
   const hints=s.hints.length?'<ol class="hints">'+s.hints.map((h,i)=>'<li><strong>'+esc(s.players[i])+'</strong> '+esc(h)+'</li>').join('')+'</ol>':'';
-  const heading='<div class="topline"><span>방 '+s.code+'</span><span>'+s.round+'번째 판 · '+s.players.length+'/'+s.capacity+'명</span></div>';
+  const heading='<div class="topline"><span>방 '+(party?.code||s.code)+'</span><span>'+s.round+'번째 판 · '+s.players.length+'/'+s.capacity+'명</span></div>';
   let content='';
   if(s.phase==='waiting'){
     content='<h1>'+esc(s.title)+'</h1><p>모두 모이면 시작해요. 초대 링크와 방 비밀번호를 친구에게 알려 주세요.</p>'+members+control('초대 링크 복사','copy',true);
@@ -77,7 +80,7 @@ async function sync(){
   const code=room.code;
   pendingPoll=true;
   try{const s=await api('state',code);if(room?.code===code){render(s);if(notice.dataset.network==='1'){notice.textContent='';notice.dataset.network='';}}}
-  catch(e){if(room?.code===code){notice.textContent=errorText(e);notice.dataset.network='1';if(['room_unavailable','not_room_member'].includes(e.code)){save(key('last'),'');entry();}}}
+  catch(e){if(room?.code===code){notice.textContent=errorText(e);notice.dataset.network='1';if(['room_unavailable','not_room_member'].includes(e.code)){saveStandalone('');entry();}}}
   finally{pendingPoll=false;later();}
 }
 async function run(task){
@@ -115,7 +118,7 @@ view.addEventListener('click',e=>{
     if(!navigator.clipboard)notice.textContent=location.href;
     return;
   }
-  if(act==='leave'){if((room.me===0||room.phase!=='waiting')&&!window.confirm('나가면 이 방이 모든 참가자에게서 닫혀요. 나갈까요?'))return;run(async()=>{await api('leave',room.code);save(key('last'),'');history.replaceState(null,'',location.pathname);activeCode='';entry()});return}
+  if(act==='leave'){if((room.me===0||room.phase!=='waiting')&&!window.confirm('나가면 이 방이 모든 참가자에게서 닫혀요. 나갈까요?'))return;run(async()=>{await api('leave',room.code);saveStandalone('');history.replaceState(null,'',location.pathname);activeCode='';entry()});return}
   if(act==='vote'||act==='again'){
     const current=room;
     run(async()=>render(await api(act,current.code,{round:current.round,target:act==='vote'?Number(b.dataset.slot):undefined})));
@@ -129,6 +132,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)cover();els
 window.addEventListener('pagehide',cover);
 window.addEventListener('pageshow',()=>{if(room)sync()});
 function signedOut(){
+ if(party)return party.signedOut();
  clearTimeout(timer);revealed=false;room=null;
  view.innerHTML='<section class="card"><div class="inside"><h1>라이어 찾기</h1><p>오쭈다에 로그인한 뒤 이 화면으로 돌아와 주세요.</p><a href="/?auth=login&amp;next=world" target="_blank" rel="noopener">오쭈다 로그인</a></div></section>';
 }
@@ -138,10 +142,11 @@ async function init(){
   const {data,error}=await client.auth.getSession();if(error)throw error;
   if(!data.session||data.session.user.is_anonymous){signedOut();return}
   actor=data.session.user.id;
+  if(party&&!(await party.connect(client)))return;
   const last=activeCode||read(key('last'));
   if(last){
    try{render(await api('state',last));later();return}catch(e){
-    if(e.code==='room_unavailable'){save(key('last'),'');notice.textContent=errorText(e);}
+    if(e.code==='room_unavailable'){saveStandalone('');notice.textContent=errorText(e);}
     else if(e.code!=='not_room_member')throw e;
    }
   }

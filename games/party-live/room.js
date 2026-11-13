@@ -1,6 +1,7 @@
 (() => {
   'use strict';
 
+  const party = window.DrinkingChild;
   const kind = document.documentElement.dataset.game;
   const title = document.querySelector('header strong').textContent;
   const feature = window.PartyLiveGame;
@@ -29,12 +30,13 @@
     {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]
   ));
   const control = (label, action, primary=false) =>
-    '<button type="button" class="' + (primary ? 'action' : 'secondary') + '" data-do="' + action + '">' + label + '</button>';
+    party?.control(action) ?? '<button type="button" class="' + (primary ? 'action' : 'secondary') + '" data-do="' + action + '">' + label + '</button>';
   const sessionKey = () => 'oj.' + kind + '.' + actor + '.last';
   function lastRoom() {
     try { return sessionStorage.getItem(sessionKey()); } catch { return ''; }
   }
   function remember(code) {
+    if (party) return;
     try { sessionStorage.setItem(sessionKey(), code); } catch {}
   }
   function unmount() {
@@ -43,6 +45,7 @@
   }
   function entry() {
     unmount(); room = null; clearTimeout(timer);
+    if (party) return party.missing();
     const create = mode === 'create';
     const seats = Array.from({length:11}, (_,i) => {
       const n = i+2;
@@ -75,11 +78,12 @@
       url.searchParams.set('room',s.code);
       history.replaceState(null,'',url);
     }
+    party?.setPhase(s.phase);
     room = s; activeCode = s.code;
     const ui = {esc, now:()=>performance.now()+serverOffset, send:(action,opts)=>send(s,action,opts)};
     const playing = s.phase !== 'waiting';
-    const replay = s.phase !== 'done' ? '' : s.me===0 ? control('한 판 더','again',true) : '<p>방장이 다음 판을 시작할 수 있어요.</p>';
-    view.innerHTML = '<section class="card"><div class="topline"><span>방 ' + esc(s.code) + '</span><span>' +
+    const replay = party || s.phase !== 'done' ? '' : s.me===0 ? control('한 판 더','again',true) : '<p>방장이 다음 판을 시작할 수 있어요.</p>';
+    view.innerHTML = '<section class="card"><div class="topline"><span>방 ' + esc(party?.code || s.code) + '</span><span>' +
       s.round + '번째 판 · ' + s.players.length + '/' + s.capacity + '명</span></div><div id="game">' +
       (playing ? feature.view(s,ui) : lobby(s)) + '</div><div class="actions">' + replay + control('방 나가기','leave') + '</div></section>';
     if (playing) { mounted = true; feature.mount?.(s,ui); }
@@ -220,6 +224,7 @@
     }
   });
   function signedOut() {
+    if (party) return party.signedOut();
     unmount();clearTimeout(timer);room=null;
     view.innerHTML='<section class="card"><h1>'+title+'</h1><p>오쭈다에 로그인한 뒤 이 화면으로 돌아와 주세요.</p>'+
       '<a href="/?auth=login&amp;next=world" target="_blank" rel="noopener">오쭈다 로그인</a></section>';
@@ -238,6 +243,7 @@
         if ((session?.user?.id||null)!==(actor||null)) location.reload();
       });
       if (!user||user.is_anonymous) { signedOut();return; }
+      if (party && !(await party.connect(client))) return;
       const last=activeCode||lastRoom();
       if (last) {
         try { render(await api('state',last));later();return; }
