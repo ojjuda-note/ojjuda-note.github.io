@@ -229,19 +229,23 @@
         { title: 'BATTER UP', date: '2023.11.27', type: '첫 디지털 싱글', songs: ['BATTER UP'], href: 'https://www.ygfamily.com/en/artists/babymonster/discography/1578' }
       ],
       appearances: [
-        { date: '2026-11-12', title: 'MTV JAPAN BABYMONSTER VideoSelects', sub: '일본 MTV · 23:00~24:00 (현지 시간) · 뮤직비디오 특집', href: 'https://www.sonymusic.co.jp/artist/BABYMONSTER/info/587656' },
         { date: '2026-11-14', title: 'CHOOM 월드투어 · 쿠알라룸푸르', sub: '말레이시아 Unifi Arena · 현지 17:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
         { date: '2026-11-18', title: 'MTV JAPAN BABYMONSTER VideoSelects 재방송', sub: '일본 MTV · 21:00~22:00 (현지 시간)', href: 'https://www.sonymusic.co.jp/artist/BABYMONSTER/info/587656' },
+        { date: '2026-11-20', title: '2026 MAMA AWARDS', sub: '일본 오사카 교세라 돔 · 공식 일정 18:00', href: 'https://ygfamily.com/ko/artists/babymonster/schedule' },
         { date: '2026-11-21', title: 'CHOOM 월드투어 · 타이베이', sub: '대만 Taipei Arena · 현지 19:30', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
         { date: '2026-11-22', title: 'CHOOM 월드투어 · 타이베이', sub: '대만 Taipei Arena · 현지 18:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
         { date: '2026-11-28', title: 'CHOOM 월드투어 · 싱가포르', sub: 'Singapore Indoor Stadium · 현지 18:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
         { date: '2026-11-29', title: 'CHOOM 월드투어 · 싱가포르 추가 공연', sub: 'Singapore Indoor Stadium · 현지 18:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
+        { date: '2026-12-02', title: '2026 FNS 가요제 제1야 · 첫 출연', sub: '후지TV 계열 방송 · 18:30~23:18 방송 시간(개별 출연 시간 미공개)', href: 'https://yg-babymonster-official.jp/news/media/2830/' },
         { date: '2026-12-08', title: 'CHOOM 월드투어 · 오클랜드', sub: '뉴질랜드 Spark Arena · 시간은 예매처 확인', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
         { date: '2026-12-11', title: 'CHOOM 월드투어 · 멜버른', sub: '호주 Rod Laver Arena · 시간은 예매처 확인', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
         { date: '2026-12-13', title: 'CHOOM 월드투어 · 시드니', sub: '호주 Afterpay Arena · 시간은 예매처 확인', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
+        { date: '2026-12-22', title: 'MTV JAPAN BEST ARTIST COLLECTION · BABYMONSTER', sub: '일본 MTV · 21:00~22:00 (현지 방송 시간)', href: 'https://yg-babymonster-official.jp/news/media/2834/' },
         { date: '2027-01-08', title: 'CHOOM 월드투어 · 홍콩', sub: 'AsiaWorld-Arena · 현지 20:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
         { date: '2027-01-09', title: 'CHOOM 월드투어 · 홍콩', sub: 'AsiaWorld-Arena · 현지 18:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
-        { date: '2027-01-10', title: 'CHOOM 월드투어 · 홍콩', sub: 'AsiaWorld-Arena · 현지 18:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' }
+        { date: '2027-01-10', title: 'CHOOM 월드투어 · 홍콩', sub: 'AsiaWorld-Arena · 현지 18:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
+        { date: '2027-04-11', title: '코첼라 밸리 뮤직 앤드 아츠 페스티벌', sub: '미국 캘리포니아 인디오 · 공연 시간 미공개', href: 'https://ygfamily.com/en/news/report/7601' },
+        { date: '2027-04-18', title: '코첼라 밸리 뮤직 앤드 아츠 페스티벌', sub: '미국 캘리포니아 인디오 · 공연 시간 미공개', href: 'https://ygfamily.com/en/news/report/7601' }
       ],
       schedules: [
         { title: 'YG 공식 월드투어 일정·예매', sub: '도시별 장소·현지 시간·변경사항', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
@@ -249,16 +253,23 @@
         { title: '일본 공식 미디어·일정', sub: '일본 방송·발매 일정', href: 'https://yg-babymonster-official.jp/schedule' }
       ],
       news: [
+        { date: '2026.11.13', tag: '방송', title: 'MTV JAPAN 12월 22일 BEST ARTIST COLLECTION 특집 방송 확정', href: 'https://yg-babymonster-official.jp/news/media/2834/' },
+        { date: '2026.11.11', tag: '공연', title: '2027년 코첼라 4월 11·18일 출연 확정 (YG 발표)', href: 'https://ygfamily.com/en/news/report/7601' },
+        { date: '2026.11.03', tag: '방송', title: '12월 2일 후지TV 2026 FNS 가요제 제1야 첫 출연 발표', href: 'https://yg-babymonster-official.jp/news/media/2830/' },
+        { date: '2026.10.28', tag: '발매', title: '12월 23일 일본 투어 실황 Blu-ray·라이브 CD·음원 발매 예고', href: 'https://yg-babymonster-official.jp/news/release/2820/' },
         { date: '2026.10.23', tag: '컴백', title: '디지털 싱글 DESERVE · 공식 MV 공개', href: 'https://www.sonymusic.co.jp/artist/BABYMONSTER/info/587905' },
         { date: '2026.10.15', tag: '방송', title: '11.12·11.18 일본 MTV 뮤직비디오 특집 방송 안내', href: 'https://www.sonymusic.co.jp/artist/BABYMONSTER/info/587656' },
         { date: '2026.09.25', tag: '협업', title: '루카·아사, 일본 패션 브랜드 SNIDEL 홍보대사 선정', href: 'https://prtimes.jp/main/html/rd/p/000004511.000018505.html' }
       ],
       merch: [
+        { title: 'CHOOM 일본 투어 실황 LIVE Blu-ray', sub: '12.23 발매 예정 · BLACK/WHITE 초회 한정판 및 일반판 · 구매·특전은 공식 안내 확인', href: 'https://yg-babymonster-official.jp/news/release/2820/' },
+        { title: 'CHOOM 일본 투어 LIVE ALBUM CD', sub: '12.23 발매 예정 · 라이브 23트랙 · 디지털 음원도 같은 날 발매 예정', href: 'https://yg-babymonster-official.jp/news/release/2820/' },
         { title: 'DESERVE 공식 MD 예약 판매', sub: 'YG SELECT · 11.06 11:00 시작 · 한정 수량, 품절 여부 판매처 확인', href: 'https://www.ygselect.com/article/event/12/657823/' },
         { title: '춤 (CHOOM) 공식 앨범', sub: 'YG SELECT · Crimson / Metallic / Prism 구성 · 재고는 판매처 확인', href: 'https://ygselect.com/product/babymonster-3rd-mini-album-%EC%B6%A4-choom-crimson-metallic-prism-ver/12957/' },
         { title: 'BABYMONSTER 공식 응원봉', sub: 'YG SELECT · 판매·재입고 상태는 판매처 확인', href: 'https://www.ygselect.com/product/babymonster-official-light-stick/10557/category/32/display/1/' }
       ],
       campaigns: [
+        { kind: '콜라보', date: '2026.09.16', title: 'BABYMONSTER × SESAME STREET', sub: '공식 협업 굿즈 · 9.17 1차, 10.16 2차 온라인 판매 시작', href: 'https://yg-babymonster-official.jp/news/goods/2734/' },
         { kind: '콜라보', date: '2026.08.30', title: 'adidas × Mercedes-AMG F1 · Orchard Ignition', sub: '싱가포르 adidas × F1 협업 행사에 초청 아티스트로 참여', href: 'https://cnalifestyle.channelnewsasia.com/entertainment/babymonster-adidas-orchard-ignition-singapore-2026-587441' },
         { kind: '홍보대사', date: '2026.09.24', title: '루카·아사 × SNIDEL', sub: '일본 패션 브랜드 홍보대사 · 브랜드 공식 발표', href: 'https://prtimes.jp/main/html/rd/p/000004511.000018505.html' },
         { kind: '광고', date: '2025.02.13', title: 'BANILA CO × BABYMONSTER', sub: '바닐라코 브랜드 모델·메이크업 캠페인 (2025년 발표)', href: 'https://www.wwdjapan.com/articles/2035672' }
