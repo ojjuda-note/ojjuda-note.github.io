@@ -1,5 +1,6 @@
 'use strict';
 
+const party = window.DrinkingChild;
 const kind = document.documentElement.dataset.game;
 const minority = kind === 'minority';
 const title = minority ? '소수파 찾기' : '한 명만 다른 미션';
@@ -19,18 +20,20 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, c => (
   {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]
 ));
 const control = (label, action, primary = false) =>
-  '<button type="button" class="' + (primary ? 'action' : 'secondary') + '" data-do="' + action + '">' + label + '</button>';
+  party?.control(action) ?? '<button type="button" class="' + (primary ? 'action' : 'secondary') + '" data-do="' + action + '">' + label + '</button>';
 const sessionKey = () => 'oj.' + kind + '.' + actor + '.last';
 function lastRoom() {
   try { return sessionStorage.getItem(sessionKey()); } catch { return ''; }
 }
 function remember(code) {
+  if (party) return;
   try { sessionStorage.setItem(sessionKey(), code); } catch {}
 }
 function entry() {
   room = null;
   revealed = false;
   clearTimeout(timer);
+  if (party) return party.missing();
   const create = mode === 'create';
   const seats = Array.from({length:10}, (_, i) => '<option value="' + (i+3) + '"' + (i === 1 ? ' selected' : '') + '>' + (i+3) + '명</option>').join('');
   view.innerHTML = '<section class="card"><h1>' + title + '</h1><p>' + description + '</p>' +
@@ -88,7 +91,7 @@ function roundView(s) {
         (s.voted ? '<p>모두 투표하면 결과가 공개돼요.</p>' : minority ? ballots(s.choices) : ballots(s.players, s.me));
     case 'done':
       return (minority ? resultForMinority(s) : resultForMission(s)) +
-        (host ? control('한 판 더', 'again', true) : '<p>방장이 다음 판을 시작할 수 있어요.</p>');
+        (party ? '' : host ? control('한 판 더', 'again', true) : '<p>방장이 다음 판을 시작할 수 있어요.</p>');
     default:
       return '<p>게임 상태를 확인하고 있어요…</p>';
   }
@@ -105,9 +108,10 @@ function render(s, force = false) {
     history.replaceState(null, '', url);
   }
   const focus = newPhase ? null : document.activeElement?.dataset;
+  party?.setPhase(s.phase);
   room = s;
   activeCode = s.code;
-  view.innerHTML = '<section class="card"><div class="topline"><span>방 ' + esc(s.code) + '</span><span>' + s.round +
+  view.innerHTML = '<section class="card"><div class="topline"><span>방 ' + esc(party?.code || s.code) + '</span><span>' + s.round +
     '번째 판 · ' + s.players.length + '/' + s.capacity + '명</span></div>' + roundView(s) +
     '<div class="actions">' + control('방 나가기', 'leave') + '</div></section>';
   if (focus?.do) {
@@ -241,6 +245,7 @@ window.addEventListener('pagehide', cover);
 window.addEventListener('pageshow', () => { if (room) sync(); });
 
 function signedOut() {
+  if (party) return party.signedOut();
   clearTimeout(timer); revealed = false; room = null;
   view.innerHTML = '<section class="card"><h1>' + title + '</h1><p>오쭈다에 로그인한 뒤 이 화면으로 돌아와 주세요.</p>' +
     '<a href="/?auth=login&amp;next=world" target="_blank" rel="noopener">오쭈다 로그인</a></section>';
@@ -261,6 +266,7 @@ async function init() {
       if ((session?.user?.id || null) !== (actor || null)) location.reload();
     });
     if (!user || user.is_anonymous) { signedOut(); return; }
+    if (party && !(await party.connect(client))) return;
     const last = activeCode || lastRoom();
     if (last) {
       try { render(await api('state', last)); later(); return; }
