@@ -6,6 +6,7 @@ const { narrateReading, narrateSummary } = load('narration.js');
 const { DECK, POSITIONS, getReading, getSummary } = load('readings.js');
 const { CARD_FOUNDATIONS } = load('card-foundations.js');
 const { CARD_LIFE_THEMES } = load('life-themes.js');
+const { CARD_INTERPRETATIONS } = load('interpretation-engine.js');
 const plain = value => JSON.parse(JSON.stringify(value));
 const topics = ['overall', 'love', 'money', 'work'];
 const cards = ['swords_knight', 'swords_two', 'pentacles_three'].map(id => DECK.find(card => card.id === id));
@@ -23,23 +24,25 @@ for (const card of DECK.filter(card => card.arcana === 'minor')) {
   for (const topic of topics) {
     for (let index = 0; index < 3; index++) {
       const { result, input } = readingFor(card, topic, index);
-      assert.ok(result.paragraphs.length >= 6 && result.paragraphs.length <= 8);
+      assert.ok(result.paragraphs.length >= 5 && result.paragraphs.length <= 7, 'each paragraph has information to add without seven repeated prefaces');
       assert.match(result.introduction, new RegExp(POSITIONS[index].label));
       assert.ok(result.introduction.includes(card.name), `${card.id} retains its canonical name`);
       assert.ok(result.introduction.includes(result.displayName));
       assert.ok(!result.paragraphs.includes(result.introduction), 'the standalone introduction is not duplicated');
       assert.ok(result.text.startsWith(result.introduction));
-      for (const fact of [input.foundation.symbol, input.guidance.meaning, input.guidance.positions[index === 1 ? 0 : index],
-        card.topics[topic], input.detail.example, input.detail.action, input.foundation.caution]) {
+      for (const fact of [input.foundation.symbol, card.topics[topic], input.detail.example, input.detail.action, input.foundation.caution]) {
         assert.ok(result.text.includes(fact), `${card.id}/${topic}/${index} preserves an authored explanation`);
       }
       assert.equal(result.action, input.detail.action);
-      assert.equal(result.summary, input.foundation.takeaway);
+      assert.equal(result.summary, CARD_INTERPRETATIONS[card.id].meaning);
+      assert.equal(result.traditionalMeaning, input.guidance.meaning, 'the original source interpretation is preserved separately');
+      assert.equal(result.foundationTakeaway, input.foundation.takeaway);
+      assert.doesNotMatch(result.text, /먼저 전통 타로 그림을 바탕으로 이 카드를 살펴보자|그 모습에 담긴 뜻을 조금 더 풀어보면 이래|그렇다면 무엇부터 해 보면 좋을까/);
       assert.equal(result.detailSections, input.base.sections);
       assert.equal(result.reference, input.base.reference);
       assert.equal(result.lifeTheme, CARD_LIFE_THEMES[card.id]);
       assert.equal(result.positionMeaning, input.guidance.positions[index === 1 ? 0 : index]);
-      if (index === 2) assert.ok(result.text.includes(result.lifeTheme.change));
+      assert.ok(result.appliedMeaning.length > 60 && result.text.includes(result.appliedMeaning), 'the positional interpretation applies this card to the chosen situation');
       assert.deepEqual(plain(result), plain(narrateReading(input)), 'same card/topic/position is deterministic');
     }
   }
@@ -86,15 +89,18 @@ for (const topicId of topics) {
 
   for (let i = 0; i < 3; i++) {
     assert.ok(summary.paragraphs[i].includes(cards[i].name));
-    assert.ok(summary.paragraphs[i].includes(readings[i].meaning));
-    assert.ok(summary.paragraphs[i].includes(readings[i].positionMeaning));
-    assert.ok(summary.paragraphs[i].includes(readings[i].topicMeaning));
+    assert.ok(summary.paragraphs[i].length > 150, 'each role has a developed application, beyond the card label');
+    assert.ok(summary.synthesis.includes(readings[i].theme), 'the synthesis explains how the actual card themes connect');
     assert.ok(summary.text.includes(cards[i].name));
   }
-  assert.ok(summary.synthesis.includes(input.innerMeaning));
+  assert.ok(summary.text.includes(input.innerMeaning));
+  assert.ok(summary.text.includes(input.flowMeaning), "the second card's specific unfolding theme now participates in the reading");
   assert.ok(summary.synthesis.includes(readings[1].theme.split(' · ')[0]));
-  assert.ok(summary.synthesis.includes(input.direction));
-  assert.ok(summary.synthesis.includes(readings[2].example));
+  assert.ok(summary.text.includes(input.direction));
+  assert.ok(summary.text.includes(readings[2].example));
+  for (const detail of [readings[0].example, readings[1].topicMeaning, readings[2].example, readings[0].lifeTheme.strength, readings[2].lifeTheme.change]) {
+    assert.equal(summary.text.split(detail).length - 1, 1, 'each detailed example or life explanation is used once instead of copied through several sections');
+  }
   assert.equal(summary.summary, summary.synthesis);
   assert.equal(summary.ritual, cards[2].details[topicId].action);
   assert.ok(!summary.paragraphs.includes(summary.synthesis));
@@ -118,7 +124,8 @@ for (const card of DECK) for (const topic of topics) for (let index = 0; index <
   const reading = getReading(card, topic, index);
   assert.ok(reading.introduction.includes(POSITIONS[index].label));
   assert.ok(reading.introduction.includes(card.name));
-  assert.ok(reading.paragraphs.length >= 6);
+  assert.ok(reading.paragraphs.length >= 5);
+  assert.ok(JSON.stringify(reading.detailSections).includes(reading.traditionalMeaning), 'the complete original interpretation remains accessible in source details');
   assert.ok(reading.text.includes(reading.action));
 }
 assert.deepEqual(plain(POSITIONS.map(position => position.label)), ['지금의 문제', '현재 상황', '해결 방법과 결과']);
@@ -146,4 +153,4 @@ assert.ok(!actual.paragraphs[2].includes('’야.'), 'numbered card names use pa
 assert.throws(() => narrateReading({}), /requires_authored_card_meanings/);
 assert.throws(() => narrateSummary({ cards: cards.slice(0, 2), readings: [], topicId: 'work' }), /requires_three_ordered_readings/);
 assert.throws(() => narrateSummary({ cards: [cards[0], cards[0], cards[2]], readings: [], topicId: 'work' }), /requires_three_ordered_readings/);
-console.log('PASS tarot narration: all78cards, problem/current/solution roles, detailed problem/timeline/domain groups, actual-card evidence, conditional life themes, topic/order determinism and a single final action');
+console.log('PASS tarot narration: direct card meanings, different positional situations, connected actual-card themes, non-repeated examples, preserved full source explanations, three views and stable replay');

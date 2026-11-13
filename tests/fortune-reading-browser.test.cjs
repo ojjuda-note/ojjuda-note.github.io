@@ -64,10 +64,10 @@ const server = http.createServer((request, response) => {
       await page.locator(`.card[data-index="${index}"]`).click();
       await page.locator('#reading-dialog[open]').waitFor();
       assert.ok((await page.locator('#reading-position').textContent()).endsWith(roles[slot]));
-      assert.ok((await page.locator('#reading-introduction').textContent()).length > 40);
+      assert.ok((await page.locator('#reading-introduction').textContent()).length > 20);
       assert.ok((await page.locator('#reading-title').textContent()).length > 0);
       const paragraphs = await page.locator('#reading-sections > p').allTextContents();
-      assert.ok(paragraphs.length >= 7, 'the complete explanation remains visible in shorter paragraphs');
+      assert.ok(paragraphs.length >= 5, 'card meaning, situation, example, action and caution remain readable without repeated introductions');
       assert.ok(paragraphs.every(text => text.trim().length > 20));
       assert.ok(paragraphs.join('').length >= 350, 'the individual reading remains detailed');
       assert.equal(await page.locator('#reading-sections h3').count(), 0);
