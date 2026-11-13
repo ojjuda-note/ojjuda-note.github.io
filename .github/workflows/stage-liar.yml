@@ -1,0 +1,26 @@
+name: Verify and stage liar multiplayer
+on:
+  push:
+    branches: [release/liar-room-12-stage]
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Integrate verified room entry
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply --unidiff-zero --check .release/liar-world.patch
+          git apply --unidiff-zero .release/liar-world.patch
+          node --check games/liar/room.js
+          node --check features/arcade/arcade-rooms.js
+          node scripts/check-source-layout.mjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- world.html
+          git commit -m 'Connect verified liar room entry points'
+          git push origin HEAD:refs/heads/release/liar-room-12-stage

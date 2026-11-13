@@ -1,0 +1,26 @@
+diff --git a/world.html b/world.html
+index 9cf286f..04d9b4e 100644
+--- a/world.html
++++ b/world.html
+@@ -73 +73 @@
+-<script src="/shared/games/world-game-assets.js?v=20261113-croc-rooms1" defer></script>
++<script src="/shared/games/world-game-assets.js?v=20261113-liar-rooms1" defer></script>
+@@ -224 +224 @@
+-<script src="/features/arcade/arcade-rooms.js?v=20261113-croc-rooms1" defer></script>
++<script src="/features/arcade/arcade-rooms.js?v=20261113-liar-rooms1" defer></script>
+@@ -3282,2 +3282,2 @@ function syncWorldArcadeRooms(){
+-   if(kind==='croc'){
+-    const {data,error}=await S.rpc('croc_multiplayer',{p_action:'create',p_options:params});
++   if(kind==='croc'||kind==='liar'){
++    const {data,error}=await S.rpc(kind+'_multiplayer',{p_action:'create',p_options:params});
+@@ -3285 +3285 @@ function syncWorldArcadeRooms(){
+-    if(D.online&&D.user?.id===owner&&data?.code)location.assign('/games/croc/?room='+encodeURIComponent(data.code));
++    if(D.online&&D.user?.id===owner&&data?.code)location.assign('/games/'+kind+'/?room='+encodeURIComponent(data.code));
+@@ -3305,2 +3305,2 @@ function syncWorldArcadeRooms(){
+-   if(room.kind==='croc'){
+-    const {error}=await S.rpc('croc_multiplayer',{p_action:'cancel',p_code:room.code});
++   if(room.kind==='croc'||room.kind==='liar'){
++    const {error}=await S.rpc(room.kind+'_multiplayer',{p_action:'cancel',p_code:room.code});
+@@ -3338 +3338 @@ function syncWorldArcadeRooms(){
+-   if(room.kind==='croc'){location.assign('/games/croc/?room='+encodeURIComponent(room.code));return;}
++   if(room.kind==='croc'||room.kind==='liar'){location.assign('/games/'+room.kind+'/?room='+encodeURIComponent(room.code));return;}
