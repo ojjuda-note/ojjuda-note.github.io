@@ -486,8 +486,8 @@ document.querySelectorAll('.reading-size-control button').forEach(button=>button
 async function prepareDetailedReading(chart,target,person=currentPerson||readPerson()) {
   detailModulesPromise ||= Promise.all([
     import('./fortune-data.mjs?v=20261113-saju-reader1'),
-    import('./readings.mjs?v=20261113-saju-reader1'),
-    import('./report-view.mjs?v=20261113-saju-reader1'),
+    import('./readings.mjs?v=20261113-saju-portrait1'),
+    import('./report-view.mjs?v=20261113-saju-portrait1'),
     import('./daeun.mjs?v=20261113-saju-reader1')
   ]).catch(error=>{detailModulesPromise=null;throw error;});
   const [dataModule,readingModule,viewModule,daeunModule]=await detailModulesPromise;

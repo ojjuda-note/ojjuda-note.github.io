@@ -249,16 +249,16 @@ const SEASON_VOICES = {
   resource:'여기에 배우거나 도움을 받으며 내 바탕을 채우는 성향도 이어져요.',
 };
 const PERIOD_HEADLINES = {
-  companion:{first:'내 기준을 세우고',last:'내 기준을 세우는'},
-  competitor:{first:'함께할 몫을 나누고',last:'함께할 몫을 나누는'},
-  creator:{first:'작은 결과를 꾸준히 만들고',last:'작은 결과를 꾸준히 만드는'},
-  critic:{first:'새로운 방법을 찾고',last:'새로운 방법을 찾는'},
-  opportunist:{first:'돈과 시간을 쓸 곳을 고르고',last:'돈과 시간을 쓸 곳을 고르는'},
-  manager:{first:'가진 것을 차근차근 챙기고',last:'가진 것을 차근차근 챙기는'},
-  challenger:{first:'어려운 일에 힘을 모으고',last:'어려운 일에 힘을 모으는'},
-  officer:{first:'맡은 일과 약속을 지키고',last:'맡은 일과 약속을 지키는'},
-  explorer:{first:'한 가지를 깊이 알아보고',last:'한 가지를 깊이 알아보는'},
-  scholar:{first:'배우고 도움을 받아들이고',last:'배우고 도움을 받아들이는'},
+  companion:{first:'내가 정할 몫을 나누고',last:'내가 정할 몫을 분명히 하는'},
+  competitor:{first:'서로의 수고를 나누고',last:'함께할 비용과 역할을 나누는'},
+  creator:{first:'작은 결과를 보여 주고',last:'작은 결과를 꾸준히 만드는'},
+  critic:{first:'불편한 방법을 고치고',last:'반복되는 불편을 하나씩 고치는'},
+  opportunist:{first:'새 계획의 준비를 확인하고',last:'돈과 시간을 쓸 곳을 고르는'},
+  manager:{first:'남은 일을 정리하고',last:'이미 맡은 일과 지출을 챙기는'},
+  challenger:{first:'급한 일의 순서를 정하고',last:'어려운 과제의 부담을 나누는'},
+  officer:{first:'약속한 범위를 확인하고',last:'맡은 역할과 마감을 분명히 하는'},
+  explorer:{first:'모르는 조건을 알아보고',last:'막힌 이유와 다른 방법을 찾는'},
+  scholar:{first:'필요한 도움을 구하고',last:'기초를 배우고 직접 해 보는'},
 };
 const DOMAINS = {
   relationships:{label:'연애와 인연',navGroup:'사랑과 가족',groups:['peer','expression','authority','resource','wealth'],chapter:'relationships',annual:'annual-relationships'},
@@ -266,11 +266,106 @@ const DOMAINS = {
   money:{label:'재물운',navGroup:'돈과 문서',groups:['wealth','peer','authority','expression','resource'],chapter:'resources',annual:'annual-money-detail'},
   learning:{label:'학업과 성장',navGroup:'일과 배움',groups:['resource','expression','authority','peer','wealth'],chapter:'learning-inner',annual:'annual-learning'},
 };
+// These short conclusions describe only the observed relationship used by the
+// card. The surrounding paragraphs keep its everyday examples and limitations.
+const PERSONAL_CONCLUSIONS={
+  companion:{address:'스스로 납득해야 움직이는 당신',
+    relationships:'가까워져도 자기 생활과 선택을 존중받아야 마음이 편한 사람입니다',work:'일의 방법을 직접 판단할 때 책임감 있게 움직이는 사람입니다',money:'남이 산 물건보다 내가 실제로 쓸 곳을 먼저 따지는 사람입니다',learning:'정답을 외우는 것보다 자기 말로 설명해야 이해했다고 느끼는 사람입니다',
+    advantage:'스스로 판단한 이유를 분명하게 설명하는 힘이 장점입니다',pressure:'내 방식만 옳다고 밀어붙이면 함께 정할 부분까지 혼자 결정하게 됩니다'},
+  competitor:{address:'서로의 수고와 몫을 살피는 당신',
+    relationships:'함께하는 즐거움만큼 서로의 수고가 공평한지도 중요하게 보는 사람입니다',work:'함께 힘을 모으면서도 자신이 맡은 역할을 인정받고 싶은 사람입니다',money:'함께 쓰는 돈에서는 누가 얼마를 내고 무엇을 받는지 분명해야 편한 사람입니다',learning:'다른 사람과 배우며 힘을 얻지만 자기 실력도 직접 확인하고 싶은 사람입니다',
+    advantage:'누가 무엇을 맡았는지 짚고 수고를 나누는 힘이 장점입니다',pressure:'남의 결과와 계속 비교하면 이미 해낸 일보다 억울한 몫만 눈에 들어옵니다'},
+  creator:{address:'작은 실천을 꾸준히 쌓는 당신',
+    relationships:'큰 약속 한 번보다 작은 관심과 행동으로 마음을 보여 주는 사람입니다',work:'생각을 오래 설명하기보다 직접 만들고 고치며 결과를 남기는 사람입니다',money:'좋아하는 일을 오래 이어 갈 재료와 시간을 챙기는 사람입니다',learning:'설명만 들을 때보다 직접 만들거나 풀어 볼 때 잘 익히는 사람입니다',
+    advantage:'작은 일이라도 끝내고 다음 결과로 이어 가는 힘이 장점입니다',pressure:'계속 더 해 주는 것만이 정성이라고 여기면 멈출 때와 내 몫을 놓칩니다'},
+  critic:{address:'불편한 점을 그냥 넘기지 않는 당신',
+    relationships:'마음에 걸린 일을 묻어 두기보다 솔직히 말하고 바꾸고 싶은 사람입니다',work:'익숙한 작업에서도 불필요한 단계를 찾아 더 나은 방법을 제안하는 사람입니다',money:'습관처럼 나가는 비용도 지금 필요한지 다시 따지는 사람입니다',learning:'설명을 그대로 외우기보다 왜 그런지 묻고 다른 풀이도 찾아보는 사람입니다',
+    advantage:'불편한 조건을 찾아 구체적으로 고치는 힘이 장점입니다',pressure:'고칠 점부터 빠르게 말하면 상대는 자신의 수고까지 부정당했다고 받아들입니다'},
+  opportunist:{address:'사람과 준비물을 연결하는 당신',
+    relationships:'함께할 계획을 세우고 시간과 준비를 맞출 때 적극적으로 움직이는 사람입니다',work:'필요한 사람과 도구를 찾아 하나의 계획으로 모으는 사람입니다',money:'여러 쓸 곳을 비교하면서 돈이 어떤 기회를 만드는지 살피는 사람입니다',learning:'지금 필요한 답을 찾기 위해 자료와 경험을 넓게 연결하는 사람입니다',
+    advantage:'흩어진 사람과 준비를 한 계획으로 묶는 힘이 장점입니다',pressure:'가능해 보이는 일을 모두 받아들이면 시간과 돈이 여러 곳에 묶입니다'},
+  manager:{address:'작은 약속과 준비를 챙기는 당신',
+    relationships:'한 번의 강한 표현보다 작은 약속이 계속 지켜질 때 믿음을 쌓는 사람입니다',work:'이미 맡은 일을 빠뜨리지 않고 순서대로 끝내는 사람입니다',money:'들어온 돈과 앞으로 나갈 돈을 나누어 알아야 마음이 놓이는 사람입니다',learning:'정한 분량을 반복해서 익히고 빠진 내용을 다시 확인하는 사람입니다',
+    advantage:'빠진 준비와 남은 일을 찾아 끝까지 챙기는 힘이 장점입니다',pressure:'계획을 지키는 데만 매달리면 이미 달라진 조건도 그대로 밀고 가게 됩니다'},
+  challenger:{address:'어려운 과제에 집중하는 당신',
+    relationships:'가까운 사람을 지키고 책임지려 하지만 기대까지 혼자 떠안기 쉬운 사람입니다',work:'어려운 일을 만나면 피하기보다 해결할 부분에 집중하는 사람입니다',money:'이미 책임진 지출을 먼저 생각하고 새 부담의 크기를 신경 쓰는 사람입니다',learning:'목표가 분명하고 해결할 과제가 있을 때 집중하는 사람입니다',
+    advantage:'어려운 부분을 피하지 않고 해결할 순서를 잡는 힘이 장점입니다',pressure:'급한 일을 모두 내 책임으로 받으면 도움을 구할 때를 놓칩니다'},
+  officer:{address:'약속과 책임을 중요하게 보는 당신',
+    relationships:'서로 정한 약속과 실제 행동이 맞아야 안심하는 사람입니다',work:'기대하는 기준과 맡은 역할이 분명할 때 꼼꼼히 해내는 사람입니다',money:'금액뿐 아니라 지킬 조건과 책임이 분명해야 돈을 쓰는 사람입니다',learning:'무엇을 알아야 하고 어떤 기준으로 확인할지 먼저 정하는 사람입니다',
+    advantage:'약속한 범위와 확인할 기준을 분명하게 만드는 힘이 장점입니다',pressure:'한 번 맡았다는 이유로 달라진 부탁까지 받아들이면 책임의 끝이 없어집니다'},
+  explorer:{address:'이유를 깊이 알아보는 당신',
+    relationships:'상대의 말만 듣고 결론 내리기보다 그런 생각을 한 이유까지 알고 싶은 사람입니다',work:'익숙한 답으로 끝내기보다 다른 방법과 숨은 원인을 찾아보는 사람입니다',money:'바로 결제하기보다 자료와 조건을 충분히 비교해야 안심하는 사람입니다',learning:'궁금해진 주제는 한 번의 설명으로 끝내지 않고 깊이 파고드는 사람입니다',
+    advantage:'겉에 보인 답 뒤의 이유와 다른 방법을 찾아내는 힘이 장점입니다',pressure:'더 확인할 것만 늘리면 이미 정할 수 있는 답도 뒤로 미룹니다'},
+  scholar:{address:'배우고 확인하며 움직이는 당신',
+    relationships:'혼자 짐작하기보다 이야기를 듣고 도움을 주고받으며 가까워지는 사람입니다',work:'모르는 부분을 확인하고 배운 뒤 차근차근 일을 익히는 사람입니다',money:'이해하지 못한 조건은 설명을 들은 뒤 돈을 쓰려는 사람입니다',learning:'기초를 순서대로 익히고 질문에 답을 얻을 때 마음이 놓이는 사람입니다',
+    advantage:'모르는 부분을 정확히 묻고 필요한 도움을 받아들이는 힘이 장점입니다',pressure:'설명을 받는 데만 머물면 내 판단으로 해 볼 기회를 뒤로 미룹니다'},
+};
+
+// Period instructions are tied to the actual two observed period codes. Scenes
+// are places to use a trait, not events claimed to be waiting in the future.
+const PERIOD_APPLICATIONS={
+  companion:{
+    relationships:['함께 보낼 시간과 각자 쓸 시간을 먼저 정하세요','만나는 횟수나 연락 방식을 서로 다르게 원하는 상황'],work:['내가 정할 일과 함께 정할 일을 먼저 나누세요','같은 일을 맡았지만 순서와 방법을 각자 정할 수 있는 작업'],money:['남의 선택을 따라 사기 전에 내 필요와 한도를 정하세요','주변의 추천과 내가 실제로 쓸 기능을 비교하는 구매'],learning:['자료를 덮고 내 말로 설명하는 시간을 먼저 잡으세요','답을 따라 본 뒤 혼자 같은 문제를 다시 풀어 보는 공부']},
+  competitor:{
+    relationships:['연락과 준비를 누가 맡는지 서로 확인하세요','예약·이동·연락의 수고를 다시 나누는 약속'],work:['일을 시작하기 전에 역할과 결과를 나눌 기준을 정하세요','여러 사람이 자료를 모아 한 번의 발표를 준비하는 작업'],money:['내 돈과 공동 비용을 구분하고 남는 돈의 처리까지 정하세요','여행비나 모임 비용을 여러 사람이 함께 내는 계획'],learning:['함께 배우는 시간과 혼자 확인할 시간을 나누세요','모임에서 해답을 나눈 뒤 자기 힘으로 다시 풀어 보는 공부']},
+  creator:{
+    relationships:['거창한 약속보다 계속 지킬 작은 표현부터 정하세요','안부를 묻거나 필요한 것을 챙기는 행동으로 마음을 전하는 관계'],work:['작게라도 끝내서 보여 줄 결과를 먼저 정하세요','초안을 만든 뒤 실제 반응을 보고 고치는 작업'],money:['계속 드는 재료비와 시간을 먼저 계산하세요','좋아하는 활동을 여러 번 이어 가는 데 필요한 비용을 정하는 계획'],learning:['한 가지를 직접 만들어 보거나 풀어 보는 데 시간을 쓰세요','배운 설명을 작은 결과물이나 연습 문제로 확인하는 공부']},
+  critic:{
+    relationships:['불편한 행동과 바라는 변화를 구체적으로 말하세요','같은 문제로 다투지 않도록 말하는 방식과 약속을 바꾸는 대화'],work:['불필요한 단계 하나를 골라 바꾸는 데 집중하세요','반복해서 시간이 드는 작업을 더 간단한 방법으로 고치는 일'],money:['반복되는 지출에서 줄이거나 바꿀 한 가지를 찾으세요','잘 쓰지 않는 구독이나 불필요한 비용을 다시 고르는 선택'],learning:['헷갈리는 이유를 질문하고 다른 풀이와 비교하세요','서로 다른 해답이 나온 이유를 조건별로 비교하는 공부']},
+  opportunist:{
+    relationships:['함께할 계획에 실제로 쓸 시간과 준비를 맞추세요','하고 싶은 활동은 많지만 함께 쓸 시간은 한정된 약속'],work:['새 일을 늘리기 전에 사람·도구·시간이 갖춰졌는지 확인하세요','여러 사람의 도움과 준비물을 모아 새 작업을 시작하는 일'],money:['쓸 곳을 넓히기 전에 총액과 남겨 둘 돈을 정하세요','여러 구매나 활동 가운데 지금 할 것을 고르는 선택'],learning:['지금 필요한 답을 하나 정하고 맞는 자료를 고르세요','책·강의·실습 가운데 당장 막힌 문제에 맞는 방법을 고르는 공부']},
+  manager:{
+    relationships:['지킬 수 있는 약속을 정하고 작은 변화도 알려 주세요','약속 시간과 연락 방법을 꾸준히 맞추는 관계'],work:['새 일을 받기 전에 남은 일과 마감부터 정리하세요','반복되는 업무에서 빠진 준비와 밀린 일을 확인하는 작업'],money:['고정 지출과 남은 돈을 나누어 확인하세요','들어올 돈에 앞서 이미 나가기로 한 비용을 점검하는 계획'],learning:['분량과 복습 날짜를 작게 나누어 지키세요','한 번에 많이 보기보다 같은 내용을 며칠에 걸쳐 다시 익히는 공부']},
+  challenger:{
+    relationships:['상대의 기대 중 내가 책임질 범위를 먼저 말하세요','가까운 사람의 부탁이 한꺼번에 겹치는 관계'],work:['급한 과제의 순서를 정하고 도움받을 일을 나누세요','짧은 기한에 여러 일을 끝내야 하는 작업'],money:['새 지출보다 이미 맡은 부담을 먼저 확인하세요','할부나 공동 비용을 남겨 둔 상태에서 새 비용을 정하는 선택'],learning:['급한 과제부터 좁혀 풀고 막힌 부분은 질문하세요','남은 시간 안에서 꼭 준비할 문제를 추리는 공부']},
+  officer:{
+    relationships:['서로 무엇을 약속했는지 같은 말로 확인하세요','한쪽은 당연하다고 생각한 기대를 실제 약속으로 맞추는 대화'],work:['완료 기준과 책임 범위를 시작 전에 확인하세요','언제 어떤 결과를 내면 일이 끝나는지 정하는 작업'],money:['금액·기간·변경 조건을 읽고 내 책임을 확인하세요','설명으로 들은 조건과 문서에 적힌 내용을 비교하는 선택'],learning:['평가 기준을 확인하고 필요한 부분부터 익히세요','어떤 내용을 어떤 방식으로 보여 줘야 하는지 확인하는 준비']},
+  explorer:{
+    relationships:['상대의 말을 혼자 해석하기 전에 이유를 물어보세요','짧은 말만 듣고 서로 다른 뜻으로 받아들인 상황'],work:['기존 방법이 막히는 이유를 하나씩 확인하세요','같은 오류가 생기는 조건을 나누어 원인을 찾는 작업'],money:['낯선 조건을 자료와 비교한 뒤 판단하세요','좋다는 설명과 실제 이용 조건이 같은지 확인하는 구매'],learning:['한 질문을 깊이 확인한 뒤 내 답을 남기세요','자료마다 다른 설명을 읽고 이유를 비교하는 공부']},
+  scholar:{
+    relationships:['필요한 도움을 구체적으로 말하고 상대의 답을 들으세요','해결책보다 이야기를 들어 줄 사람이 필요한 대화'],work:['모르는 절차를 묻고 배운 내용을 직접 해 보세요','처음 맡은 일을 설명받은 뒤 작은 부분부터 해 보는 작업'],money:['이해하지 못한 비용을 먼저 묻고 내 말로 정리하세요','낯선 이용료나 조건을 설명받아 비교하는 선택'],learning:['기초에서 막힌 한 가지를 묻고 다시 풀어 보세요','수업에서는 알았지만 혼자 설명할 때 막히는 내용을 확인하는 공부']},
+};
+
+const LIFE_LENS_CONCLUSIONS={
+  parents:{peer:'가족의 뜻을 들어도 마지막 선택은 직접 하고 싶은 사람입니다',expression:'가족에게도 마음을 말과 행동으로 전하는 사람입니다',wealth:'가족을 챙길 때 마음과 실제 준비를 함께 생각하는 사람입니다',authority:'가족의 기대를 내 책임으로 받아들이기 쉬운 사람입니다',resource:'가족의 조언에서 이유와 도움을 찾는 사람입니다'},
+  children:{peer:'아이에게도 자기 생각을 말할 자리를 주는 사람입니다',expression:'작은 행동을 알아보고 마음을 표현하는 돌봄에 잘 맞습니다',wealth:'해 주고 싶은 마음을 시간과 준비로 옮기는 사람입니다',authority:'함께 지킬 약속을 분명히 정하는 돌봄에 잘 맞습니다',resource:'아이의 질문과 막힌 곳을 듣고 도와주는 사람입니다'},
+  health:{peer:'스스로 하루의 속도를 정해야 편한 사람입니다',expression:'하나 더 완성하려다가 쉬는 시간을 미루기 쉬운 사람입니다',wealth:'일정의 빈칸을 새 계획으로 채우기 쉬운 사람입니다',authority:'끝내야 할 일이 남으면 쉬기 어려운 사람입니다',resource:'궁금한 것을 계속 찾느라 멈출 때를 놓치기 쉬운 사람입니다'},
+  helpers:{peer:'내 선택을 존중하고 판단을 돕는 사람이 잘 맞습니다',expression:'고칠 점을 구체적으로 알려 주는 사람이 잘 맞습니다',wealth:'필요한 준비를 함께 따져 주는 사람이 잘 맞습니다',authority:'해야 할 범위를 분명히 알려 주는 사람이 잘 맞습니다',resource:'질문을 듣고 이유를 설명해 주는 사람이 잘 맞습니다'},
+  boundaries:{peer:'내 선택을 대신 정하는 관계에서 답답함이 커집니다',expression:'솔직한 말을 비난으로 되돌리는 관계에 쉽게 지칩니다',wealth:'돈과 시간의 쓰임을 숨기는 관계에서 부담이 커집니다',authority:'부탁을 계속 내 의무로 늘리는 관계에서 과하게 떠안기 쉽습니다',resource:'질문과 확인을 막는 관계에서 내 판단을 놓치기 쉽습니다'},
+  contracts:{peer:'함께 동의할 때도 내 몫을 알아야 안심하는 사람입니다',expression:'불편한 조건을 그냥 넘기지 않고 고치고 싶은 사람입니다',wealth:'처음 금액보다 계속 낼 비용을 따지는 사람입니다',authority:'어디까지 책임지는지 분명해야 안심하는 사람입니다',resource:'모르는 조건을 스스로 설명할 수 있어야 동의하는 사람입니다'},
+  space:{peer:'내가 정할 수 있는 독립된 작업 자리가 잘 맞습니다',expression:'하던 작업을 바로 이어 갈 수 있는 책상이 잘 맞습니다',wealth:'가진 물건을 한눈에 확인하는 배치가 잘 맞습니다',authority:'물건의 자리와 함께 쓸 규칙이 분명해야 편합니다',resource:'집중할 자료와 쉬는 자리를 나누는 배치가 잘 맞습니다'},
+  safety:{peer:'내가 정한 방법에 집중하면 공동의 조건을 뒤로 미루기 쉽습니다',expression:'새 방법에 마음이 앞서면 준비가 같다고 짐작하기 쉽습니다',wealth:'계획을 촘촘히 잡으면 이동과 준비 시간을 놓치기 쉽습니다',authority:'마감을 맞추려 할수록 필요한 확인을 줄이기 쉽습니다',resource:'전에 이해한 방법을 새 상황에도 그대로 쓰려 하기 쉽습니다'},
+};
+
+// A useful trait and its repeated difficulty need the same everyday domain.
+// For example, making a work product is not substituted for showing affection.
+const PERSONAL_DOMAIN_EFFECTS={
+  companion:{
+    relationships:['내가 바라는 거리와 시간을 분명하게 말하는 힘이 장점입니다','상대의 사정을 듣기 전에 내 일정을 확정하면 한쪽만 맞추는 관계가 됩니다'],work:['방법을 고른 이유를 설명하고 맡은 부분을 직접 판단하는 힘이 장점입니다','다른 사람의 일까지 바뀌는 결정을 혼자 내리면 서로 다시 맞출 일이 생깁니다'],money:['실제로 쓸 곳과 내 한도를 구분해 고르는 힘이 장점입니다','내가 정할 돈만 생각하면 함께 내기로 한 비용을 빠뜨립니다'],learning:['내 말로 설명하며 이해가 빈 곳을 찾는 힘이 장점입니다','끝까지 혼자 알아내려 하면 필요한 질문까지 뒤로 미룹니다']},
+  competitor:{
+    relationships:['서로의 수고를 알아보고 나누는 힘이 장점입니다','연락 횟수만 비교하면 이동이나 준비에 들인 상대의 수고를 놓칩니다'],work:['역할과 기여를 구분하고 서로 도울 곳을 찾는 힘이 장점입니다','남의 성과와 계속 비교하면 함께 해결할 일에도 경쟁부터 앞섭니다'],money:['각자 낼 몫과 남은 돈의 처리를 미리 나누는 힘이 장점입니다','가까운 사이라는 이유로 기준을 미루면 돈을 쓴 뒤에도 서로 다른 몫을 기대합니다'],learning:['다른 사람의 풀이를 나누고 내 방법과 비교하는 힘이 장점입니다','남의 진도만 기준으로 삼으면 내가 다시 익힐 부분을 건너뜁니다']},
+  creator:{
+    relationships:['작은 관심과 표현을 꾸준히 이어 가는 정성이 장점입니다','계속 챙겨 주면서도 내가 바라는 것은 말하지 않으면 돌봄이 한쪽의 역할로 굳어집니다'],work:['작은 결과를 끝내고 다음 작업으로 이어 가는 힘이 장점입니다','조금만 더 고치자는 마음을 계속 따르면 끝낼 기준과 마감이 흐려집니다'],money:['활동을 오래 이어 갈 재료와 시간을 챙기는 힘이 장점입니다','필요해 보이는 준비물을 계속 더하면 작은 지출의 총액을 놓칩니다'],learning:['직접 풀거나 만들어 보며 이해를 확인하는 힘이 장점입니다','익숙한 순서만 반복하면 왜 맞고 틀렸는지 설명하는 부분을 놓칩니다']},
+  critic:{
+    relationships:['불편한 행동을 알아보고 바라는 변화를 말하는 힘이 장점입니다','고칠 점부터 빠르게 말하면 상대는 자신의 정성과 마음까지 부정당했다고 받아들입니다'],work:['반복되는 불편을 찾아 구체적으로 고치는 힘이 장점입니다','새 방법을 계속 제안하면서 이미 정한 완료 기준까지 바꾸면 작업의 끝이 멀어집니다'],money:['습관처럼 나가던 불필요한 비용을 찾아내는 힘이 장점입니다','불편한 비용을 없애는 데만 집중하면 다른 방법으로 바꾸는 데 드는 돈을 놓칩니다'],learning:['설명과 문제의 조건이 맞는지 따져 보는 힘이 장점입니다','기존 풀이를 바꾸는 데만 집중하면 문제에서 지켜야 할 기본 조건을 놓칩니다']},
+  opportunist:{
+    relationships:['함께할 계획에 사람과 준비를 모으는 힘이 장점입니다','하고 싶은 약속을 모두 잡으면 정작 함께 쓸 시간과 준비가 부족해집니다'],work:['필요한 사람과 도구를 한 계획으로 모으는 힘이 장점입니다','가능해 보이는 일을 모두 받으면 같은 사람과 시간이 여러 작업에 겹칩니다'],money:['쓸 곳마다 필요한 준비와 비용을 비교하는 힘이 장점입니다','좋아 보이는 선택을 모두 잡으면 남겨 둘 돈까지 여러 계획에 묶입니다'],learning:['막힌 문제에 맞는 자료와 경험을 찾는 힘이 장점입니다','좋다는 자료를 계속 늘리면 처음 풀려던 질문과 실제 연습 시간이 줄어듭니다']},
+  manager:{
+    relationships:['작은 약속과 반복되는 준비를 지키는 꾸준함이 장점입니다','처음 정한 방식만 지키려고 하면 상대의 달라진 사정을 받아들이기 어려워집니다'],work:['빠진 준비와 남은 일을 끝까지 챙기는 힘이 장점입니다','계획한 순서만 따르다 보면 실제 양이나 조건이 달라진 것을 놓칩니다'],money:['고정 지출과 남은 돈을 구분해 관리하는 힘이 장점입니다','기록한 숫자만 맞추면 더는 필요하지 않은 지출도 계속 이어집니다'],learning:['정한 분량을 반복하고 빠진 내용을 다시 확인하는 힘이 장점입니다','분량을 채웠다는 것만 확인하면 아직 이해하지 못한 부분도 지나칩니다']},
+  challenger:{
+    relationships:['어려운 부탁을 피하지 않고 해결할 일을 찾는 책임감이 장점입니다','모든 부탁을 내 책임으로 받아들이면 상대를 돕는 일과 내 생활의 경계가 사라집니다'],work:['급한 문제에서 해결할 순서를 잡는 집중력이 장점입니다','급하다는 이유로 모든 일을 혼자 받으면 도움을 구할 때를 놓칩니다'],money:['이미 맡은 비용과 새 부담을 함께 살피는 힘이 장점입니다','기존 부담을 정리하지 않고 새 몫을 받으면 생활에 남겨 둘 돈을 줄이게 됩니다'],learning:['분명한 목표를 정하고 어려운 과제에 집중하는 힘이 장점입니다','어려운 한 문제만 오래 붙들면 기본 문제를 확인할 시간을 놓칩니다']},
+  officer:{
+    relationships:['약속과 실제 행동을 맞추며 신뢰를 쌓는 힘이 장점입니다','한 번 정한 약속은 바꿀 수 없다고 여기면 달라진 사정을 의논하기 어려워집니다'],work:['완료 기준과 맡은 역할을 분명하게 만드는 힘이 장점입니다','한 번 맡았다는 이유로 추가 요청까지 받으면 책임의 끝이 없어집니다'],money:['금액 외에 기간과 책임을 꼼꼼히 확인하는 힘이 장점입니다','약속을 지켜야 한다는 생각이 앞서면 모르는 조건까지 이해한 것으로 받아들입니다'],learning:['필요한 기준을 확인하고 순서대로 준비하는 힘이 장점입니다','정해진 형식만 외우면 같은 내용을 다르게 묻는 문제에서 이유를 설명하기 어렵습니다']},
+  explorer:{
+    relationships:['상대가 그렇게 생각한 이유를 이해하려는 마음이 장점입니다','이유를 혼자 계속 짐작하면 상대에게 직접 물어볼 기회를 뒤로 미룹니다'],work:['겉에 보인 문제 뒤의 원인과 다른 방법을 찾아내는 힘이 장점입니다','가능한 원인만 늘리면 작은 시험으로 확인할 수 있는 것도 미루게 됩니다'],money:['설명과 실제 조건을 여러 자료로 비교하는 힘이 장점입니다','더 확인할 자료만 늘리면 이미 알아낸 중요한 조건도 결정에 쓰지 못합니다'],learning:['한 질문을 깊이 파고들며 설명의 차이를 찾는 힘이 장점입니다','새 자료를 계속 열어 보면 처음 알고 싶었던 질문이 흐려집니다']},
+  scholar:{
+    relationships:['이야기를 듣고 필요한 도움을 주고받는 태도가 장점입니다','상대의 조언을 그대로 따르는 데 머물면 내가 바라는 마음을 뒤로 미룹니다'],work:['모르는 절차를 정확히 묻고 배워서 익히는 힘이 장점입니다','설명을 받는 데만 머물면 직접 해 보며 익힐 경험이 쌓이지 않습니다'],money:['모르는 비용을 물어보고 이해한 뒤 정하는 태도가 장점입니다','다른 사람이 괜찮다고 한 설명만 믿으면 내 상황에서 낼 비용을 빠뜨립니다'],learning:['기초부터 익히고 작은 질문으로 빈 곳을 채우는 힘이 장점입니다','설명을 들었다는 이유로 다 알았다고 생각하면 혼자 풀어 볼 단계를 건너뜁니다']},
+};
+
 const ORIGIN='service-reference';
 const unique=values=>[...new Set(values)];
 const natalId=entry=>`natal.god.${entry.pillarKey}.${entry.position}`;
 const particle=(text,withFinal,withoutFinal)=>text+(((text.charCodeAt(text.length-1)-0xac00)%28)?withFinal:withoutFinal);
-const themeList=codes=>codes.map(code=>GOD_VOICES[code].focus).join(' · ');
 
 function checkedFacts(registry,ids) {
   const found=unique(ids);
@@ -299,18 +394,11 @@ function natalFacts(profile,codes) {
 function transitFacts(transit,prefix,codes) {
   return ['stem','branch'].filter(position=>codes.includes(transit[`${position}God`].code)).map(position=>`${prefix}.god.${position}`);
 }
-function overlapReading(profile,codes) {
-  const same=codes.filter(code=>profile.gods.some(entry=>entry.god.code===code));
-  const other=codes.filter(code=>!same.includes(code));
-  if(same.length&&other.length)return `타고난 바탕과 겹치는 ${themeList(same)}에, 이번에는 ${particle(themeList(other),'이','가')} 더해지는 흐름으로 읽어요.`;
-  if(same.length)return `이 주제는 타고난 바탕에도 이어져요. 평소 지닌 면을 이번 시기에 어떻게 펼칠지가 핵심으로 읽혀요.`;
-  return `타고난 바탕에 이번 시기의 주제를 더해 읽어요. 지금의 생활에서 어느 부분에 힘을 쓸지 정리하는 흐름이에요.`;
-}
-function card(registry,{id,label,title,paragraphs,factIds,chapterId,codes=[],navGroup='관계와 생활',scopeNotice=''}) {
-  return {id,label,title,paragraphs:paragraphs.filter(Boolean),factIds:checkedFacts(registry,factIds),origin:ORIGIN,chapterId,godCodes:[...codes],navGroup,scopeNotice};
+function card(registry,{id,label,title,paragraphs,factIds,chapterId,codes=[],natalCodes=null,navGroup='관계와 생활',scopeNotice=''}) {
+  return {id,label,title,paragraphs:paragraphs.filter(Boolean),factIds:checkedFacts(registry,factIds),origin:ORIGIN,chapterId,godCodes:[...codes],
+    ...(natalCodes?{natalGodCodes:[...natalCodes]}:{}),navGroup,scopeNotice};
 }
 const firstSentence=text=>text.slice(0,text.indexOf('.')+1);
-const joinThemes=values=>values.length<2?values[0]:`${particle(values[0],'과','와')} ${values[1]}`;
 function pairKey(codes) {
   const groups=unique(codes.map(code=>GOD_GROUP[code])).sort((a,b)=>GROUP_ORDER.indexOf(a)-GROUP_ORDER.indexOf(b));
   return groups.join('-');
@@ -318,15 +406,29 @@ function pairKey(codes) {
 function pairReading(codes,domain) {
   return codes.length>1?PAIR_VOICES[pairKey(codes)][domain]:DAILY_VOICES[codes[0]][domain].care;
 }
+function personalPeriodParts(profile,codes,domain,periodLabel) {
+  if(!Object.hasOwn(DOMAINS,domain)||!Array.isArray(profile?.gods)||!profile.gods.length||!Array.isArray(codes)||!codes.length||codes.length>2
+    ||codes.some(code=>!PERSONAL_CONCLUSIONS[code]||!PERIOD_APPLICATIONS[code]?.[domain])
+    ||profile.gods.some(entry=>!PERSONAL_CONCLUSIONS[entry?.god?.code]||GOD_GROUP[entry.god.code]!==entry.god.group)
+    ||typeof periodLabel!=='string'||!periodLabel.trim())throw new Error('확인된 성향과 시기로 개인 풀이를 다시 준비해 주세요.');
+  const natalCodes=selectNatalCodes(profile,domain),[first,second]=natalCodes,periodCodes=unique(codes);
+  const personal=PERSONAL_CONCLUSIONS[first],primary=PERIOD_APPLICATIONS[periodCodes[0]][domain],effects=PERSONAL_DOMAIN_EFFECTS[first][domain];
+  const conclusion=`당신은 ${personal[domain]}.`+(second?` 또한 ${PERSONAL_CONCLUSIONS[second][domain]}.`:'');
+  const focus=`${periodLabel}에는 ${primary[0]}.`+(periodCodes.length>1?` 또한 ${PERIOD_APPLICATIONS[periodCodes[1]][domain][0]}.`:'');
+  const application=`이 성향을 살릴 장면은 ${primary[1]}입니다. ${effects[0]}. 다만 ${effects[1]}.`;
+  const action=DAILY_VOICES[periodCodes[0]][domain].use;
+  return {natalCodes,conclusion,focus,application,action};
+}
+
+/** Connect confirmed natal habits to an actual period without forecasting an event. */
+export function describePersonalPeriod(profile,codes,domain,periodLabel='이 시기') {
+  const parts=personalPeriodParts(profile,codes,domain,periodLabel);
+  const paragraphs=[parts.conclusion,parts.focus,parts.application,parts.action];
+  return {reading:paragraphs.join(' '),natalCodes:parts.natalCodes,paragraphs};
+}
+
 function periodDomainConnection(profile,codes,domain,monthly) {
-  const same=codes.filter(code=>profile.gods.some(entry=>entry.god.code===code));
-  const other=codes.filter(code=>!same.includes(code));
-  const thread=code=>DAILY_VOICES[code][domain].thread;
-  const time=monthly?'이번 달':'이 해';
-  if(same.length&&other.length)return `${particle(thread(same[0]),'은','는')} 타고난 바탕에도 나타나요. ${time}에는 여기에 ${particle(thread(other[0]),'이','가')} 함께 이어져, 평소의 모습을 다른 면과 맞춰 보는 흐름으로 읽을 수 있어요.`;
-  if(same.length)return `${particle(joinThemes(same.map(thread)),'은','는')} 타고난 바탕과 ${time}의 풀이에 함께 나타나요. 이미 지닌 면을 어떤 생활 장면에서 펼칠지 생각해 볼 시기예요.`;
-  const natal=selectNatalCodes(profile,domain)[0];
-  return `타고난 바탕의 ${thread(natal)}에, ${time}에는 ${particle(joinThemes(codes.map(thread)),'이','가')} 이어지는 구성이에요. 평소의 선택에 이번 시기의 관점을 더해 보는 흐름으로 이해할 수 있어요.`;
+  return describePersonalPeriod(profile,codes,domain,monthly?'이번 달':'이 해');
 }
 const INTERACTION_VOICES = {
   relationships:{connect:'서로 바라는 표현과 편한 거리를 말로 맞추는 모습과 연결돼요.',clash:'같은 상황을 다르게 받아들였다면 어떤 기대가 달랐는지 나누어 보는 관계예요.',both:'같이 이어 갈 약속과 서로 다르게 느끼는 부분을 구분해 보는 관계예요.'},
@@ -345,24 +447,26 @@ function domainCard(registry,profile,domain,{transit=null,prefix='natal',monthly
   const config=DOMAINS[domain];
   const codes=transit?unique([transit.stemGod.code,transit.branchGod.code]):selectNatalCodes(profile,domain);
   if(!codes.length)throw new Error('확인된 관계로 핵심 풀이를 다시 준비해 주세요.');
-  const definitions=codes.map(code=>GOD_VOICES[code][domain]);
+  const connection=transit?personalPeriodParts(profile,codes,domain,monthly?'이번 달':'이 해'):null;
+  const natalCodes=connection?.natalCodes||codes;
+  const personal=PERSONAL_CONCLUSIONS[natalCodes[0]];
   const daily=DAILY_VOICES[codes[0]][domain];
   const relation=domainInteraction(transit?transit.interactions:profile.interactions,prefix,domain);
   const factIds=['natal.day-master','natal.scope',...natalFacts(profile,codes),
     ...(transit?[`${prefix}.period`,...profile.gods.map(natalId),...transitFacts(transit,prefix,codes)]:[]),...(relation?.factIds||[])];
-  const lead=transit?(monthly?'이번 달에는 ':'이 해에는 '):'';
   const paragraphs=[
-    lead+definitions[0].reading.replace(/^(돈에서는|일에서는|배움에서는)\s+/,''),
-    daily.life,
-    (codes.length>1?`또한 ${firstSentence(definitions[1].reading)} `:'')+pairReading(codes,domain),
-    transit?periodDomainConnection(profile,codes,domain,monthly):null,
+    connection?connection.conclusion:`당신은 ${personal[domain]}.`,
+    DAILY_VOICES[natalCodes[0]][domain].life,
+    (connection?`${connection.focus} `:codes.length>1?`다른 한편으로는 ${PERSONAL_CONCLUSIONS[codes[1]][domain]}. `:'')+pairReading(codes,domain),
+    connection?.application,
     relation?.reading,
     daily.example,
-    daily.use,
+    connection?.action||daily.use,
   ];
   return card(registry,{
-    id:`${prefix.replaceAll('.','-')}-${domain}`,label:config.label,title:definitions[0].title,navGroup:config.navGroup,
-    paragraphs,factIds,codes,
+    id:`${prefix.replaceAll('.','-')}-${domain}`,label:config.label,
+    title:transit?`${personal.address}, ${PERIOD_APPLICATIONS[codes[0]][domain][0]}`:personal[domain],navGroup:config.navGroup,
+    paragraphs,factIds,codes,natalCodes,
     chapterId:transit?(monthly?`month-${domain}-detail`:config.annual):config.chapter,
   });
 }
@@ -426,10 +530,10 @@ function lifeLensCard(registry,profile,key) {
   const codes=selectNatalCodes(profile,domain,lens.groups),first=codes[0],second=codes[1];
   const meaning=lens[GOD_GROUP[first]],daily=DAILY_VOICES[first][domain];
   const relation=domainInteraction(profile.interactions,'natal',domain);
-  return card(registry,{id:`natal-${key}`,label:lens.label,title:lens.title,navGroup:lens.navGroup,codes,
-    paragraphs:[meaning.meaning,
-      `본인의 바탕에는 ${particle(daily.thread,'이','가')} 나타나요. ${firstSentence(GOD_VOICES[first][domain].reading)}`,
-      (second?`한편 ${firstSentence(GOD_VOICES[second][domain].reading)} `:'')+pairReading(codes,domain),
+  return card(registry,{id:`natal-${key}`,label:lens.label,title:LIFE_LENS_CONCLUSIONS[key][GOD_GROUP[first]],navGroup:lens.navGroup,codes,
+    paragraphs:[`당신은 ${PERSONAL_CONCLUSIONS[first][domain]}. ${meaning.meaning}`,
+      daily.life,
+      (second?`다른 한편으로는 ${PERSONAL_CONCLUSIONS[second][domain]}. `:'')+pairReading(codes,domain),
       daily.care,
       relation?.reading,
       meaning.example,
@@ -445,17 +549,21 @@ function flowCard(registry,profile,key,{transit=null,prefix='natal',monthly=fals
   const config=FLOW_TOPICS[key];
   const codes=transit?unique([transit.stemGod.code,transit.branchGod.code]):selectNatalCodes(profile,'work',key==='cautions'?['authority','peer','wealth','expression','resource']:null);
   const first=codes[0],second=codes[1],domain=key==='cautions'?'money':'work';
+  const connection=transit?periodDomainConnection(profile,codes,domain,monthly):null;
+  const natalCodes=connection?.natalCodes||codes,personal=PERSONAL_CONCLUSIONS[natalCodes[0]];
   const relation=domainInteraction(transit?transit.interactions:profile.interactions,prefix,domain);
-  const lead=transit?(monthly?'이번 달의 흐름에서는 ':'이 해의 흐름에서는 '):'';
   const example=key==='opportunities'?PATH_VOICES[first].jobScene:`상황을 하나 가정해 볼게요. ${GOD_CONTEXTS[first][domain].example}`;
-  return card(registry,{id:`${prefix.replaceAll('.','-')}-${key}`,label:config.label,title:config.title,navGroup:config.navGroup,codes,
-    paragraphs:[lead+PATH_VOICES[first][config.field],
-      second?`함께 살필 다른 면도 있어요. ${PATH_VOICES[second][config.field]}`:DAILY_VOICES[first][domain].life,
-      pairReading(codes,domain),
-      transit?periodDomainConnection(profile,codes,domain,monthly):null,
+  const title=key==='cautions'?PERSONAL_DOMAIN_EFFECTS[natalCodes[0]][domain][1]:key==='opportunities'?`${personal.address}, ${PERIOD_APPLICATIONS[first][domain][1]}에 주목하세요`:
+    `${personal.address}, ${PERIOD_APPLICATIONS[first][domain][0]}`;
+  return card(registry,{id:`${prefix.replaceAll('.','-')}-${key}`,label:config.label,title,navGroup:config.navGroup,codes,natalCodes,
+    paragraphs:[connection?connection.paragraphs[0]:`당신은 ${personal[domain]}. ${PATH_VOICES[first][config.field]}`,
+      connection?PATH_VOICES[first][config.field]+(second?` ${firstSentence(PATH_VOICES[second][config.field])}`:''):
+        second?`함께 살필 다른 면도 있어요. ${PATH_VOICES[second][config.field]}`:DAILY_VOICES[first][domain].life,
+      (connection?`${connection.paragraphs[1]} `:'')+pairReading(codes,domain),
+      connection?.paragraphs[2],
       relation?.reading,
       example,
-      key==='cautions'?PATH_VOICES[first].response:DAILY_VOICES[first][domain].use],
+      key==='cautions'?PATH_VOICES[first].response:connection?.paragraphs[3]||DAILY_VOICES[first][domain].use],
     factIds:['natal.day-master','natal.scope',...natalFacts(profile,codes),
       ...(transit?[`${prefix}.period`,...profile.gods.map(natalId),...transitFacts(transit,prefix,codes)]:[]),...(relation?.factIds||[])],
     chapterId:transit?(monthly?'month-interactions':'annual-interactions'):'natal-combined-themes'});
@@ -478,11 +586,12 @@ function lifelongOverview(report,fortune,registry) {
 }
 function periodOverview(profile,transit,registry,{year,month=null}) {
   const monthly=month!==null,prefix=monthly?`month.${month}`:'annual';
-  const label=monthly?`${month}월`:`${year}년`,period=monthly?'달':'해';
+  const label=monthly?`${month}월`:`${year}년`;
   const codes=unique([transit.stemGod.code,transit.branchGod.code]);
-  const headline=(codes.length===1?PERIOD_HEADLINES[codes[0]].last
-    :`${PERIOD_HEADLINES[codes[0]].first} ${PERIOD_HEADLINES[codes[1]].last}`)+` ${period}로 읽혀요.`;
-  const paragraphs=[codes.map((code,index)=>index?GOD_VOICES[code].period.replace('중심으로 읽혀요','함께 읽혀요'):GOD_VOICES[code].period).join(' '),overlapReading(profile,codes)];
+  const connection=personalPeriodParts(profile,codes,'work',label);
+  const headline=`${PERSONAL_CONCLUSIONS[connection.natalCodes[0]].address}, ${label}에는 `+(codes.length===1?PERIOD_HEADLINES[codes[0]].last
+    :`${PERIOD_HEADLINES[codes[0]].first} ${PERIOD_HEADLINES[codes[1]].last}`)+' 일이 우선입니다.';
+  const paragraphs=[connection.conclusion,`${connection.focus} ${connection.application}`];
   const relation=interactionReading(transit.interactions,prefix);
   if(relation)paragraphs.push(relation.reading);
   const context={transit,prefix,monthly};

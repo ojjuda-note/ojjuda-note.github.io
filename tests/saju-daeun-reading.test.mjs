@@ -45,8 +45,8 @@ test('all actual ten-year periods receive complete personal topics without chang
     assert.deepEqual(period.topics.map(topic=>topic.label),['재물과 돈 관리','일과 진로','관계와 연애','공부와 성장']);
     for (const topic of period.topics) {
       assert.equal(topic.origin,'service-reference');
-      assert.equal(topic.paragraphs.length,5);
-      assert.equal(new Set(topic.paragraphs).size,5,'a topic cannot pad itself with repeated paragraphs');
+      assert.equal(topic.paragraphs.length,8);
+      assert.equal(new Set(topic.paragraphs).size,8,'a topic cannot pad itself with repeated paragraphs');
       assert.ok(topic.paragraphs.some(value=>value.startsWith('생활 속 상황을 가정해 볼게요.')));
       assert.ok(topic.paragraphs.every(value=>typeof value==='string'&&value.length>25));
       assert.ok(topic.title.length>8);
@@ -115,9 +115,10 @@ test('decade changes use their own rules and natal links, not one repeated lifel
   const periods=reading.periods;
   assert.ok(new Set(periods.map(period=>period.godCodes.join('|'))).size>4);
   assert.ok(new Set(periods.map(period=>period.subtitle)).size>4);
-  assert.ok(new Set(periods.map(period=>period.topics.map(topic=>topic.paragraphs[0]).join('|'))).size>4);
-  assert.ok(new Set(periods.map(period=>period.topics[0].paragraphs[1])).size>1,'the actual matching natal relationships affect the prose');
-  assert.ok(new Set(periods.map(period=>period.topics[0].paragraphs[2])).size>1,'the actual natal interactions affect the prose');
+  assert.equal(new Set(periods.map(period=>period.topics.map(topic=>topic.paragraphs[0]).join('|'))).size,1,'a different decade cannot invent a different natal personality');
+  assert.ok(new Set(periods.map(period=>period.topics.map(topic=>topic.paragraphs[1]).join('|'))).size>4,'the actual decade changes the period explanation');
+  assert.ok(new Set(periods.map(period=>period.topics[0].personalParagraphs.join(' '))).size>1,'the actual period is connected to the natal relationships');
+  assert.ok(new Set(periods.map(period=>period.topics[0].paragraphs[4])).size>1,'the actual natal interactions affect the prose');
   for (const period of periods) {
     assert.ok(period.topics.every(topic=>topic.id.startsWith('daeun.reading.period.'+period.index+'.')));
     assert.equal(period.topics.length,4,'only the relevant period domains are added, rather than duplicating all lifelong chapters');
@@ -134,6 +135,29 @@ test('the two traditional direction inputs receive their own actual periods and 
   for (const value of [forward,reverse]) {
     assert.equal(value.reading.direction,value.daeun.direction);
     assert.equal(value.reading.directionLabel,value.daeun.directionLabel);
+  }
+});
+
+test('each decade connects the actual person to money, work, relationships and study in distinct everyday terms',()=>{
+  for(const input of [birth,{year:1988,month:11,day:2,hour:15,minute:20}]) {
+    const {chart,reading}=build(input);
+    const profile=makeProfile(chart);
+    for(const period of reading.periods) {
+      const connections=period.topics.map(topic=>topic.personalParagraphs.join(' '));
+      assert.equal(new Set(connections).size,4,'one abstract personality paragraph must not fill all four life domains');
+      for(const topic of period.topics) {
+        assert.doesNotMatch(topic.personalParagraphs.join(' '),/익숙한 장점을 살리면서 같은 어려움|타고난 바탕에서는/);
+        assert.ok(topic.personalParagraphs.join(' ').includes('이 10년 동안'));
+        assert.equal(topic.paragraphs[0],topic.personalParagraphs[0],'start with the person before the period');
+        for(const paragraph of topic.personalParagraphs)assert.ok(topic.paragraphs.includes(paragraph));
+        assert.ok(topic.natalGodCodes.length>0);
+        for(const code of topic.natalGodCodes) {
+          const positions=profile.gods.filter(entry=>entry.god.code===code);
+          assert.ok(positions.length>0);
+          for(const entry of positions)assert.ok(topic.factIds.includes(`daeun.reading.natal.god.${entry.pillarKey}.${entry.position}`));
+        }
+      }
+    }
   }
 });
 

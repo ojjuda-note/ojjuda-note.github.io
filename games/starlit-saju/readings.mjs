@@ -6,9 +6,10 @@ import { attachPlainLanguage } from './plain-language.mjs?v=20261113-saju-reader
 import { attachAdvice } from './advice.mjs?v=20261113-saju-brief1';
 import { attachDeeperReadings } from './deeper-reading.mjs?v=20261113-saju-brief1';
 import { attachStageReadings } from './stage-reading.mjs?v=20261113-saju-brief1';
-import { attachReaderSummary } from './reader-summary.mjs?v=20261113-saju-reader1';
-import { attachReaderExtras } from './reader-extras.mjs?v=20261113-saju-reader1';
-import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261113-saju-reader1';
+import { attachReaderSummary } from './reader-summary.mjs?v=20261113-saju-portrait1';
+import { attachReaderExtras } from './reader-extras.mjs?v=20261113-saju-portrait1';
+import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261113-saju-portrait1';
+import { buildPersonPortrait } from './person-portrait.mjs?v=20261113-saju-portrait1';
 import { getReadingSources } from './sources.mjs?v=20261113-saju-reader1';
 
 const GROUP_KEYS = ['peer', 'expression', 'wealth', 'authority', 'resource'];
@@ -388,6 +389,12 @@ function copyCategory(report,topic) {
   const lines=['오쭈다 · 별빛 사주팔자',title];
   if(report.reader.scopeNotice) lines.push(report.reader.scopeNotice);
   for(const current of topics) {
+    if(current==='lifelong'&&report.personPortrait) {
+      const portrait=report.personPortrait;
+      lines.push('',portrait.title,portrait.headline,...portrait.paragraphs);
+      for(const card of portrait.cards)lines.push('',card.label,card.title,...card.paragraphs);
+      lines.push('','이 성격 풀이의 근거',portrait.methodNotice,portrait.selectionNotice||'',portrait.scopeNotice||'','항목별 상세 풀이');
+    }
     if(current==='monthly') for(const month of report.reader.months) lines.push(...readerCopy(month));
     else lines.push(...readerCopy(report.reader[current]));
     if(current==='lifelong'&&report.daeun)lines.push('',copyDaeunReading(report.daeun));
@@ -452,6 +459,7 @@ export function buildDetailedReading(chart,fortune,{daeun=null}={}) {
   attachStageReadings(report,fortune);
   attachReaderSummary(report,chart,fortune);
   attachReaderExtras(report,chart,fortune);
+  report.personPortrait=buildPersonPortrait({profile:fortune.profile,facts:report.facts,chapters:report.sections.find(section=>section.id==='lifelong').chapters});
   if(daeun) {
     report.daeun=buildDaeunReading(chart,daeun);
     report.daeunCalculation=daeun;

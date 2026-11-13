@@ -1,5 +1,6 @@
 import { makeProfile, getTenGod, interactionPairs } from './fortune-data.mjs?v=20261113-saju-reader1';
 import { GOD_CONTEXTS, PAIR_CONTEXTS } from './deeper-reading-data.mjs?v=20261113-saju-brief1';
+import { describePersonalPeriod } from './reader-summary.mjs?v=20261113-saju-portrait1';
 
 // These are shared interpretations of computed relationships, not individual
 // predictions assembled from a birth-date hash. Every selected rule keeps its
@@ -23,19 +24,6 @@ const FOCUS = {
   challenger:'어려운 과제에 집중하고 부담 나누기', officer:'약속과 역할을 분명히 하기',
   explorer:'깊이 알아보고 다른 관점 찾기', scholar:'배우고 도움받아 바탕 다지기',
 };
-const NATAL = {
-  companion:'내가 납득한 기준을 세우고 스스로 선택하려는 모습',
-  competitor:'여러 사람과 힘을 모으면서 내 몫도 지키려는 모습',
-  creator:'생각을 작은 결과로 만들고 꾸준히 이어 가려는 모습',
-  critic:'익숙한 방식의 불편함을 찾아 내 생각을 표현하려는 모습',
-  opportunist:'필요한 사람과 시간, 도구를 한 계획에 연결하려는 모습',
-  manager:'작은 약속과 반복되는 일을 빠짐없이 챙기려는 모습',
-  challenger:'어려운 과제가 분명해지면 힘을 모으고 책임지려는 모습',
-  officer:'무엇을 지켜야 하는지 알고 맡은 역할을 이어 가려는 모습',
-  explorer:'쉽게 답이 나오지 않는 일을 깊이 살펴보려는 모습',
-  scholar:'기초를 배우고 모르는 부분을 물으며 이해를 쌓으려는 모습',
-};
-
 // The first sentence gives the result for this actual relationship. Examples
 // come from the existing shared domain rules rather than fabricated events.
 const VOICES = {
@@ -235,16 +223,12 @@ function periodFacts(profile,period) {
   return facts;
 }
 function natalConnection(profile,codes,topic) {
-  const matching=profile.gods.filter(entry=>codes.includes(entry.god.code));
-  const chosen=matching.length ? matching : [
-    topic.preference.map(group=>profile.gods.find(entry=>entry.god.group===group)).find(Boolean),
-  ].filter(Boolean);
-  if (!chosen.length) fail();
-  const anchors=unique(chosen.map(entry=>entry.god.code)).map(code=>NATAL[code]);
-  const reading=matching.length
-    ? '타고난 성향에도 '+anchors.join('과 ')+'이 함께 읽혀요. 이 시기에는 익숙한 장점을 살리면서 같은 어려움이 반복되는 부분은 아래의 주의점과 함께 돌아보세요.'
-    : '타고난 바탕에서는 '+anchors[0]+'이 읽혀요. 이 시기에는 그 익숙한 방식에 '+FOCUS[codes[0]]+'를 함께 살펴보며, 지금 상황에 맞게 선택할 방법을 넓혀 보세요.';
-  return {reading,factIds:chosen.map(entry=>'daeun.reading.natal.god.'+entry.pillarKey+'.'+entry.position),codes:unique(chosen.map(entry=>entry.god.code))};
+  const connection=describePersonalPeriod(profile,codes,topic.id,'이 10년 동안');
+  if(!text(connection?.reading)||!Array.isArray(connection.paragraphs)||connection.paragraphs.length!==4||connection.paragraphs.some(value=>!text(value))
+    ||!Array.isArray(connection.natalCodes)||!connection.natalCodes.length
+    ||connection.natalCodes.some(code=>!profile.gods.some(entry=>entry.god.code===code)))fail();
+  const chosen=profile.gods.filter(entry=>connection.natalCodes.includes(entry.god.code));
+  return {reading:connection.reading,paragraphs:[...connection.paragraphs],factIds:chosen.map(entry=>'daeun.reading.natal.god.'+entry.pillarKey+'.'+entry.position),codes:[...connection.natalCodes]};
 }
 function interactionReading(period,topic) {
   const values=[];
@@ -260,7 +244,7 @@ function makePeriod(profile,period,engineFacts,natal) {
   const sharedFactIds=unique([...period.factIds,'daeun.reading.natal.day-master',...derived.map(item=>item.id)]);
   const paired=pairKey(codes);
   const focus=codes.map(code=>FOCUS[code]).join(' · ');
-  const subtitle='만 '+period.startAgeYears+'세부터는 '+focus+'에 힘을 써 볼 때예요.';
+  const subtitle='만 '+period.startAgeYears+'세부터는 '+focus+'에 집중할 시기입니다.';
   const paragraphs=[
     paired ? PAIR_OPENINGS[paired] : FOCUS[codes[0]]+'에 초점을 둘 만한 시기예요. 내가 하려는 일과 지금 마련할 수 있는 준비를 함께 놓고 구체적으로 선택해 보세요.',
   ];
@@ -273,14 +257,15 @@ function makePeriod(profile,period,engineFacts,natal) {
     const opening=primary.reading+(secondary?' 이와 함께 '+secondary.reading:'');
     const care=primary.care+(secondary&&secondary.care!==primary.care?' '+secondary.care:'');
     const paragraphs=[
-      opening,connection.reading,interactionReading(period,topic.id),
+      connection.paragraphs[0],opening,...connection.paragraphs.slice(1,3),interactionReading(period,topic.id),
       '생활 속 상황을 가정해 볼게요. '+GOD_CONTEXTS[codes[0]][topic.id].example,
+      connection.paragraphs[3],
       care+' '+topic.action,
     ];
     return {
       id:prefix+'.'+topic.id,label:topic.label,title:primary.title,
       paragraphs,factIds:unique([...sharedFactIds,...connection.factIds]),
-      godCodes:[...codes],natalGodCodes:connection.codes,origin:ORIGIN,
+      godCodes:[...codes],natalGodCodes:connection.codes,personalParagraphs:[...connection.paragraphs],origin:ORIGIN,
     };
   });
   const allIds=unique([...sharedFactIds,...topics.flatMap(topic=>topic.factIds)]);

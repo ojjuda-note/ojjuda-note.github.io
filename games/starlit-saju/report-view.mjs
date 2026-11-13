@@ -81,6 +81,56 @@ function readingLink(label, targetId, className = '') {
   return link;
 }
 
+function readingSummaryTable(captionText, columns, className) {
+  const table=node('table',`reading-summary-table ${className}`);
+  // Explicit roles preserve the native table relationships when small screens
+  // display each row as a card instead of squeezing several narrow columns.
+  table.setAttribute('role','table');
+  table.append(node('caption','reading-summary-caption',captionText));
+  const head=node('thead');head.setAttribute('role','rowgroup');
+  const headings=node('tr');headings.setAttribute('role','row');
+  for(const text of columns) {
+    const cell=node('th','',text);
+    cell.scope='col';cell.setAttribute('role','columnheader');
+    headings.append(cell);
+  }
+  head.append(headings);
+  const body=node('tbody');body.setAttribute('role','rowgroup');
+  table.append(head,body);
+  return {table,body};
+}
+
+function summaryCell(label,className='') {
+  const cell=node('td',className);cell.setAttribute('role','cell');
+  const mobileLabel=node('span','summary-cell-label',label);
+  mobileLabel.setAttribute('aria-hidden','true');
+  cell.append(mobileLabel);
+  return cell;
+}
+
+function summaryLink(label,targetId,accessibleLabel) {
+  const link=readingLink(label,targetId,'summary-row-link');
+  link.setAttribute('aria-label',accessibleLabel);
+  const arrow=node('span','summary-link-arrow','↓');arrow.setAttribute('aria-hidden','true');
+  link.append(arrow);
+  return link;
+}
+
+function portraitSummaryTable(portrait) {
+  const {table,body}=readingSummaryTable('한눈에 보는 나',['상황','내 모습'],'portrait-summary-table');
+  for(const [index,item] of portrait.cards.entries()) {
+    const row=node('tr');row.setAttribute('role','row');
+    row.dataset.portraitCard=item.id;
+    const label=node('th','summary-row-heading');
+    label.scope='row';label.setAttribute('role','rowheader');
+    label.append(summaryLink(item.label,`person-portrait-topic-${index+1}`,`${item.label} 자세한 풀이로 이동`));
+    const description=summaryCell('내 모습','summary-person-description');
+    description.append(node('p','summary-cell-text',item.title));
+    row.append(label,description);body.append(row);
+  }
+  return table;
+}
+
 function readerOverview(overview, sectionId, chapters=[], showLabel=false, fallbackEvidenceId=null, parentHeadingId=null) {
   if (!overview || typeof overview.headline!=='string' || !overview.headline.trim()
       || !Array.isArray(overview.cards) || !Array.isArray(overview.paragraphs)) {
@@ -273,14 +323,102 @@ function guideView(guide, glossary, adviceNotice) {
   return section;
 }
 
-function reportSection(section, advice, overview, period=null) {
+function personPortraitView(portrait, facts, original, visibleScopeNotice='') {
+  const validText=value=>typeof value==='string'&&value.trim();
+  if(!portrait||!validText(portrait.title)||!validText(portrait.headline)
+    ||!Array.isArray(portrait.paragraphs)||!portrait.paragraphs.length||portrait.paragraphs.some(value=>!validText(value))
+    ||!Array.isArray(portrait.cards)||!portrait.cards.length||!Array.isArray(portrait.factIds)||!Array.isArray(facts)
+    ||portrait.cards.some(card=>!validText(card.id)||!validText(card.label)||!validText(card.title)
+      ||!Array.isArray(card.paragraphs)||!card.paragraphs.length||card.paragraphs.some(value=>!validText(value))
+      ||!Array.isArray(card.factIds)||!card.factIds.length)) {
+    throw new Error('나의 성격 풀이를 준비하지 못했어요. 다시 불러와 주세요.');
+  }
+  const registry=new Map(facts.map(fact=>[fact.id,fact]));
+  const factIds=[...new Set([...portrait.factIds,...portrait.cards.flatMap(card=>card.factIds)])];
+  if(factIds.some(id=>!registry.has(id)))throw new Error('성격 풀이의 계산 근거를 확인하지 못했어요.');
+  const section=node('section','person-portrait reader-overview');
+  section.id='reading-person-portrait';
+  section.dataset.origin=portrait.origin||'service-reference';
+  section.dataset.factIds=factIds.join(' ');
+  section.setAttribute('aria-labelledby','person-portrait-headline');
+  const intro=node('header','reader-intro portrait-intro');
+  const headline=node('h4','reader-headline portrait-headline',portrait.headline);
+  headline.id='person-portrait-headline';headline.tabIndex=-1;
+  const prose=node('div','report-prose reader-prose portrait-prose');
+  addParagraphs(prose,portrait.paragraphs);
+  intro.append(headline,portraitSummaryTable(portrait),prose);
+  section.append(intro);
+
+  // One set of contents covers the new portrait and every existing life topic.
+  const topics=original.querySelector('.reader-topic-nav');
+  const group=node('div','reader-topic-group portrait-topic-group');
+  group.append(node('p','reader-topic-group-label','나를 알아보기'));
+  const links=node('div','reader-topic-links');
+  group.append(links);topics.prepend(group);
+  const cards=node('div','portrait-cards');
+  for(const [index,item] of portrait.cards.entries()) {
+    const card=node('article','portrait-card');
+    const headingId=`person-portrait-topic-${index+1}`;
+    card.setAttribute('aria-labelledby',headingId);
+    card.dataset.portraitCard=item.id;
+    card.dataset.origin=item.origin||portrait.origin||'service-reference';
+    card.dataset.factIds=item.factIds.join(' ');
+    const label=node('h4','portrait-card-label');
+    label.id=headingId;label.tabIndex=-1;
+    const number=node('span','portrait-card-number',String(index+1).padStart(2,'0'));
+    number.setAttribute('aria-hidden','true');
+    label.append(number,document.createTextNode(item.label));
+    card.append(label,node('h5','portrait-card-title',item.title));
+    const body=node('div','report-prose reader-prose portrait-prose');
+    addParagraphs(body,item.paragraphs);
+    const evidenceLink=readingLink('이 성격 풀이의 근거','reading-person-portrait-evidence','reader-detail-link');
+    evidenceLink.setAttribute('aria-label',`${item.label} 풀이의 근거 보기`);
+    card.append(body,evidenceLink);
+    cards.append(card);
+    links.append(readingLink(item.label,headingId,'reader-topic-link'));
+  }
+  section.append(topics,cards);
+
+  const evidence=node('details','portrait-evidence');
+  evidence.id='reading-person-portrait-evidence';evidence.tabIndex=-1;
+  evidence.append(node('summary','full-reading-toggle','이 성격 풀이의 근거'));
+  const evidenceBody=node('div','full-reading-body');
+  addParagraphs(evidenceBody,[portrait.methodNotice,portrait.selectionNotice,portrait.scopeNotice===visibleScopeNotice?'':portrait.scopeNotice],'method-description');
+  const rows=node('dl','evidence-rows');
+  for(const id of factIds) {
+    const fact=registry.get(id);
+    const row=node('div','portrait-evidence-row evidence-row');
+    row.dataset.factId=id;
+    row.append(node('dt','',fact.label),node('dd','',fact.text));
+    rows.append(row);
+  }
+  evidenceBody.append(rows,readingLink('전체 사주 계산과 자료 보기','reading-evidence','reader-detail-link'));
+  evidence.append(evidenceBody);section.append(evidence);
+
+  // Keep the prior explanations available, without repeating them before the
+  // new answer to "what kind of person am I?". Existing anchors still reveal it.
+  const extra=node('details','portrait-previous');
+  extra.id='reading-personality-more';
+  extra.append(node('summary','full-reading-toggle','성격·적성의 다른 풀이'));
+  const extraBody=node('div','portrait-previous-body');
+  extraBody.append(original.querySelector('.reader-intro'));
+  for(const id of ['natal-character','natal-aptitude','natal-life-path']) {
+    const card=original.querySelector(`[data-reader-card="${id}"]`);
+    if(card)extraBody.append(card);
+  }
+  extra.append(extraBody);
+  original.append(extra);
+  return section;
+}
+
+function reportSection(section, advice, overview, period=null, portrait=null, facts=[], scopeNotice='') {
   const container = node('section', 'report-section');
   const sectionId = `reading-${section.id}`;
   container.id = sectionId;
   container.tabIndex=-1;
   container.setAttribute('aria-labelledby', `${sectionId}-title`);
   const header = node('header', 'report-section-heading');
-  const title = node('h3', '', overview?.title || section.title);
+  const title = node('h3', '', portrait?.title || overview?.title || section.title);
   title.id = `${sectionId}-title`;
   title.tabIndex = -1;
   header.append(title);
@@ -293,7 +431,9 @@ function reportSection(section, advice, overview, period=null) {
     if (section.summary) originalIntro.append(node('p','report-prose',section.summary));
     body.prepend(originalIntro);
   });
-  container.append(readerOverview(overview,sectionId,section.chapters),full);
+  const original=readerOverview(overview,sectionId,section.chapters);
+  if(portrait)container.append(personPortraitView(portrait,facts,original,scopeNotice));
+  container.append(original,full);
   const suggestions=moreAdvice(advice,sectionId);
   if (suggestions) container.append(suggestions);
   return container;
@@ -553,6 +693,39 @@ function timingPoints(items, title) {
   return group;
 }
 
+function timingSummaryTable(timings) {
+  const items=[...timings.items].sort((a,b)=>a.month-b.month);
+  if(items.length!==12||new Set(items.map(item=>item.month)).size!==12
+    ||items.some(item=>!Number.isInteger(item.month)||item.month<1||item.month>12
+      ||typeof item.periodLabel!=='string'||!item.periodLabel.trim()
+      ||[item.opportunities,item.cautions].some(points=>!Array.isArray(points)
+        ||points.some(point=>typeof point.label!=='string'||!point.label.trim())))) {
+    throw new Error('월별 기회와 주의점의 계산 내용을 모두 준비하지 못했어요.');
+  }
+  const {table,body}=readingSummaryTable('월별 기회와 주의점 한눈에 보기',
+    ['월과 기간','살릴 기회','조심할 상황'],'timing-summary-table');
+  for(const item of items) {
+    const row=node('tr');row.setAttribute('role','row');row.dataset.month=String(item.month);
+    row.dataset.factIds=(item.factIds||[]).join(' ');
+    const month=node('th','summary-row-heading');month.scope='row';month.setAttribute('role','rowheader');
+    month.append(summaryLink(`${item.month}월`,`reading-timings-month-${item.month}`,`${item.month}월 기회와 주의점 자세히 읽기`),
+      node('p','summary-period',item.periodLabel));
+    row.append(month);
+    for(const [key,label] of [['opportunities','살릴 기회'],['cautions','조심할 상황']]) {
+      const cell=summaryCell(label,`summary-${key}`);
+      const list=node('ul','summary-points');
+      for(const point of item[key]) {
+        const text=node('li','summary-point',point.label);
+        if(point.topic)text.dataset.topic=point.topic;
+        list.append(text);
+      }
+      cell.append(list);row.append(cell);
+    }
+    body.append(row);
+  }
+  return table;
+}
+
 function timingsView(timings, reading, fortune) {
   const {section,body}=supplementSection('reading-timings',timings,'reader-timings');
   const nav=node('nav','reader-topic-nav reader-timing-navigation');
@@ -580,17 +753,18 @@ function timingsView(timings, reading, fortune) {
     if (item.periodLabel) heading.append(node('span','reader-timing-period',item.periodLabel));
     summary.append(heading);
     const content=node('div','reader-timing-content');
+    content.append(node('h5','reader-timing-kind','나의 성향과 이 시기의 주의점'));
     const prose=node('div','report-prose reader-prose');
     addParagraphs(prose,item.paragraphs);
     if (prose.childNodes.length) content.append(prose);
-    const opportunities=timingPoints(item.opportunities,'기회로 읽는 부분');
+    const opportunities=timingPoints(item.opportunities,'이 기간에 살릴 기회');
     const people=timingPoints(item.people,'도움을 구해 볼 사람');
     const documents=timingPoints(item.documents,'문서와 계약을 살필 때');
-    const cautions=timingPoints(item.cautions,'주의해서 볼 부분');
+    const cautions=timingPoints(item.cautions,'이 기간에 조심할 상황과 대처');
+    if (cautions) content.append(cautions);
     if (opportunities) content.append(opportunities);
     if (people) content.append(people);
     if (documents) content.append(documents);
-    if (cautions) content.append(cautions);
     const actionLinks=node('div','reader-inline-links');
     actionLinks.append(readingLink(`${item.month}월 운세 함께 읽기`,`month-title-${item.month}`,'reader-detail-link'));
     const chapterIndex=months.get(item.month)?.chapters.findIndex(chapter=>chapter.id===item.chapterId)??-1;
@@ -605,7 +779,7 @@ function timingsView(timings, reading, fortune) {
     else list.append(article);
   }
   nav.append(links);
-  body.append(nav,list);
+  body.append(timingSummaryTable(timings),nav,list);
   return section;
 }
 
@@ -798,7 +972,8 @@ export function renderDetailedReport(container, {reading, fortune, topic}) {
   for (const item of visibleTopics) {
     const section=sections?.find(value=>value.id===item);
     if (!section?.chapters?.length) throw new Error('선택한 풀이를 준비하지 못했어요.');
-    fragment.append(reportSection(section,reading.adviceByCategory?.[item],reading.reader?.[item],item==='annual'?fortune.annual:null));
+    fragment.append(reportSection(section,reading.adviceByCategory?.[item],reading.reader?.[item],item==='annual'?fortune.annual:null,
+      item==='lifelong'?reading.personPortrait:null,reading.facts,reading.reader?.scopeNotice));
     if(item==='lifelong'&&reading.daeun) {
       fragment.append(daeunView(reading.daeun));
       relatedTopics.push(['10년 단위 흐름','reading-daeun']);

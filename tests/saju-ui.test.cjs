@@ -312,6 +312,96 @@ test('the personal reading leads and all longer explanations remain accessible o
   for(const card of cards)for(const paragraph of card.querySelectorAll('.reader-prose>p'))assert.ok(copy.includes(paragraph.textContent));
 });
 
+test('the personal portrait leads with every paragraph and connects its topics to complete evidence',async t=>{
+  const h=await harness();t.after(h.close);h.fill();h.submit();await h.ready();
+  const {analyzeFortune}=await import('../games/starlit-saju/fortune-data.mjs');
+  const {buildDetailedReading}=await import('../games/starlit-saju/readings.mjs');
+  const fortune=analyzeFortune(h.state.starts[0].chart,{year:2026,now:new Date(fixedNow)});
+  const reading=buildDetailedReading(h.state.starts[0].chart,fortune),expected=reading.personPortrait;
+  const doc=h.window.document,portrait=h.$('reading-person-portrait'),summary=h.$('reading-summary'),topics=h.$('reading-topics');
+  assert.ok(expected,'the personal portrait must be built from the actual chart');
+  assert.equal(h.$('reading-lifelong-title').textContent,expected.title);
+  assert.equal(summary.parentElement,portrait,'the main summary opens the new personal conclusion');
+  assert.equal(summary.querySelector('.portrait-headline').textContent,expected.headline);
+  assert.deepEqual([...summary.querySelectorAll('.portrait-prose>p')].map(p=>p.textContent),expected.paragraphs);
+  const portraitTable=summary.querySelector('table.portrait-summary-table');
+  assert.equal(portraitTable.caption.textContent,'한눈에 보는 나');
+  assert.deepEqual([...portraitTable.tHead.rows[0].cells].map(cell=>[cell.scope,cell.textContent]),[['col','상황'],['col','내 모습']]);
+  assert.ok(summary.querySelector('.portrait-headline').compareDocumentPosition(portraitTable)&h.window.Node.DOCUMENT_POSITION_FOLLOWING,
+    'the personal conclusion precedes its overview table');
+  assert.ok(portraitTable.compareDocumentPosition(summary.querySelector('.portrait-prose'))&h.window.Node.DOCUMENT_POSITION_FOLLOWING,
+    'the overview table precedes every full introductory paragraph');
+  const portraitRows=[...portraitTable.tBodies[0].rows];
+  assert.equal(portraitRows.length,expected.cards.length);
+  for(const [index,row] of portraitRows.entries()) {
+    const item=expected.cards[index],link=row.querySelector('th a');
+    assert.equal(row.cells[0].scope,'row');
+    assert.equal(link.firstChild.textContent,item.label);
+    assert.equal(row.querySelector('.summary-cell-text').textContent,item.title);
+    assert.equal(link.hash,`#person-portrait-topic-${index+1}`);
+    link.click();assert.equal(doc.activeElement,h.$(link.hash.slice(1)),'each row reaches its own detailed personality topic');
+  }
+  assert.equal(topics.parentElement,portrait);
+  assert.equal(h.$('reading-lifelong').querySelectorAll('.reader-scope-note').length,1,'the unknown-time notice appears once');
+  assert.equal(summary.querySelector('.reader-scope-note').textContent,reading.reader.scopeNotice);
+  assert.equal(portrait.querySelectorAll('.portrait-card').length,5);
+  for(const item of expected.cards) {
+    const card=[...portrait.querySelectorAll('.portrait-card')].find(value=>value.dataset.portraitCard===item.id);
+    assert.ok(card,`the portrait keeps ${item.id}`);
+    assert.equal(card.querySelector('.portrait-card-label').lastChild.textContent,item.label);
+    assert.equal(card.querySelector('.portrait-card-title').textContent,item.title);
+    assert.deepEqual([...card.querySelectorAll('.portrait-prose>p')].map(p=>p.textContent),item.paragraphs);
+    assert.equal(card.dataset.origin,item.origin||expected.origin||'service-reference');
+    assert.deepEqual(card.dataset.factIds.split(' '),item.factIds);
+    const heading=card.querySelector('.portrait-card-label');
+    const link=topics.querySelector(`a[href="#${heading.id}"]`);
+    assert.ok(link,`the contents reach ${item.label}`);
+    link.click();assert.equal(doc.activeElement,heading);
+  }
+  const previous=h.$('reading-personality-more');
+  assert.equal(previous.open,false,'the previous three explanations do not repeat before the new portrait');
+  assert.deepEqual([...previous.querySelectorAll('.reader-card')].map(card=>card.dataset.readerCard),['natal-character','natal-aptitude','natal-life-path']);
+  assert.equal(h.$('reading-lifelong').querySelectorAll('.reader-card').length,reading.reader.lifelong.cards.length,'all prior personal topics remain available');
+  for(const item of reading.reader.lifelong.cards) {
+    const card=[...h.$('reading-lifelong').querySelectorAll('.reader-card')].find(value=>value.dataset.readerCard===item.id);
+    assert.deepEqual([...card.querySelectorAll('.reader-prose>p')].map(p=>p.textContent),item.paragraphs);
+    const heading=card.querySelector('.reader-card-label');
+    const link=topics.querySelector(`a[href="#${heading.id}"]`);
+    assert.ok(link,`the contents still reach ${item.label}`);
+    link.click();assert.equal(doc.activeElement,heading);
+    if(card.closest('#reading-personality-more'))assert.equal(previous.open,true,'a topic link reveals a folded prior explanation');
+  }
+  const evidence=h.$('reading-person-portrait-evidence');
+  assert.equal(evidence.open,false,'provenance and calculation details start folded');
+  assert.ok(evidence.textContent.includes(expected.methodNotice));
+  assert.ok(evidence.textContent.includes(expected.selectionNotice));
+  const factIds=[...new Set([...expected.factIds,...expected.cards.flatMap(card=>card.factIds)])];
+  const rows=[...evidence.querySelectorAll('.portrait-evidence-row')];
+  assert.deepEqual(rows.map(row=>row.dataset.factId),factIds);
+  for(const row of rows) {
+    const fact=reading.facts.find(value=>value.id===row.dataset.factId);
+    assert.ok(fact,'every statement is linked to a real calculation fact');
+    assert.equal(row.querySelector('dt').textContent,fact.label);
+    assert.equal(row.querySelector('dd').textContent,fact.text);
+  }
+  portrait.querySelector('.portrait-card .reader-detail-link').click();
+  assert.equal(evidence.open,true);assert.equal(doc.activeElement,evidence);
+  assert.equal(h.$('reading-evidence').open,false);
+  evidence.querySelector('.reader-detail-link').click();
+  assert.equal(h.$('reading-evidence').open,true,'the original full calculation registry is reachable');
+  for(const id of ['reading-summary','reading-topics']) {
+    h.$('report-toc').querySelector(`a[href="#${id}"]`).click();
+    await waitFor(()=>h.window.location.hash===`#${id}`,'the main contents should navigate to the personal reading');
+    assert.equal(h.$(id).tabIndex,-1,'the requested summary or contents is focusable in the browser');
+  }
+  assert.equal(h.state.starts.length,1);assert.equal(h.state.charges,1,'reading links never start a new purchase');
+  h.$('copy-reading').click();await waitFor(()=>h.state.copies.length===1);
+  const copy=h.state.copies[0];
+  assert.ok(copy.includes(expected.headline));
+  assert.ok(copy.indexOf(expected.headline)<copy.indexOf(reading.reader.lifelong.headline));
+  for(const paragraph of [...expected.paragraphs,...expected.cards.flatMap(card=>card.paragraphs)])assert.ok(copy.includes(paragraph));
+});
+
 test('monthly readers see the current and next actual flow before all twelve detailed months',async t=>{
   const h=await harness();t.after(h.close);h.fill({topic:'monthly'});h.submit();await h.ready('monthly',2026);
   const spotlight=h.$('reading-summary');
@@ -332,6 +422,44 @@ test('monthly readers see the current and next actual flow before all twelve det
   assert.equal(h.$('reading-month-12').open,true);
   assert.equal(h.window.document.activeElement.id,'month-title-12');
   assert.equal(h.state.charges,1);
+});
+
+test('the monthly overview preserves every calculated period, opportunity and caution and opens the correct details',async t=>{
+  const h=await harness();t.after(h.close);h.fill({topic:'monthly',hour:8,minute:37});h.submit();await h.ready('monthly',2026);
+  const {analyzeFortune}=await import('../games/starlit-saju/fortune-data.mjs');
+  const {buildDetailedReading}=await import('../games/starlit-saju/readings.mjs');
+  const fortune=analyzeFortune(h.state.starts[0].chart,{year:2026,now:new Date(fixedNow)});
+  const reading=buildDetailedReading(h.state.starts[0].chart,fortune);
+  const expected=[...reading.reader.timings.items].sort((a,b)=>a.month-b.month);
+  const doc=h.window.document,section=h.$('reading-timings'),table=section.querySelector('table.timing-summary-table');
+  assert.equal(table.caption.textContent,'월별 기회와 주의점 한눈에 보기');
+  assert.deepEqual([...table.tHead.rows[0].cells].map(cell=>[cell.scope,cell.textContent]),
+    [['col','월과 기간'],['col','살릴 기회'],['col','조심할 상황']]);
+  assert.ok(table.compareDocumentPosition(section.querySelector('.reader-timing-list'))&h.window.Node.DOCUMENT_POSITION_FOLLOWING);
+  const rows=[...table.tBodies[0].rows];
+  assert.equal(rows.length,12);
+  assert.deepEqual(rows.map(row=>Number(row.dataset.month)),expected.map(item=>item.month));
+  for(const [index,row] of rows.entries()) {
+    const item=expected[index],link=row.querySelector('th a');
+    assert.equal(row.cells[0].scope,'row');
+    assert.equal(link.firstChild.textContent,`${item.month}월`);
+    assert.equal(link.hash,`#reading-timings-month-${item.month}`);
+    assert.equal(row.querySelector('.summary-period').textContent,item.periodLabel,'the exact calculated time range stays visible');
+    assert.deepEqual([...row.querySelectorAll('.summary-opportunities li')].map(point=>point.textContent),item.opportunities.map(point=>point.label));
+    assert.deepEqual([...row.querySelectorAll('.summary-cautions li')].map(point=>point.textContent),item.cautions.map(point=>point.label));
+    const heading=h.$(link.hash.slice(1)),article=heading.closest('details');
+    article.open=false;link.click();
+    assert.equal(article.open,true);assert.equal(doc.activeElement,heading);
+    assert.equal(article.dataset.month,String(item.month));
+    assert.deepEqual([...article.querySelectorAll('.reader-timing-content>.reader-prose>p')].map(p=>p.textContent),item.paragraphs);
+    assert.deepEqual([...article.querySelectorAll('.reader-timing-point')].map(point=>[point.querySelector('dt').textContent,point.querySelector('dd').textContent]),
+      [...item.cautions,...item.opportunities,...item.people,...item.documents].map(point=>[point.label,point.text]),
+      'all detailed text remains present, with cautions before opportunities');
+  }
+  assert.equal(section.querySelectorAll('.reader-timing-card').length,12);
+  assert.equal(h.$('report-content').querySelectorAll('.month-reading').length,12,'the table does not replace the original twelve monthly readings');
+  assert.equal(h.$('report-content').querySelector('.portrait-summary-table'),null,'a monthly purchase reveals no lifelong portrait');
+  assert.equal(h.state.starts.length,1);assert.equal(h.state.charges,1,'table navigation never purchases a reading');
 });
 
 test('a new annual year is a separate explicit purchase and changing the selection preserves old copy', async t => {
@@ -569,6 +697,16 @@ test('the explicit thirty-ju full purchase opens all three readings and each can
     h.pickReport(topic,2026);
     assert.match(h.$('open-product').textContent,/0쭈/);
     h.$('open-product').click();await h.ready(topic,topic==='lifelong'?0:2026);
+    const includesPortrait=topic==='lifelong'||topic==='all';
+    assert.equal(h.$('report-content').querySelectorAll('.person-portrait').length,includesPortrait?1:0,'the personal portrait belongs only to lifelong and full readings');
+    assert.equal(h.$('report-content').querySelectorAll('.portrait-summary-table').length,includesPortrait?1:0);
+    assert.equal(h.$('report-content').querySelectorAll('.timing-summary-table').length,topic==='monthly'||topic==='all'?1:0,
+      'the monthly overview stays inside the opened monthly or full product');
+    if(includesPortrait) {
+      assert.equal(h.$('report-content').querySelectorAll('.portrait-card').length,5);
+      assert.equal(h.$('reading-summary').parentElement,h.$('reading-person-portrait'));
+      assert.equal(h.$('reading-topics').parentElement,h.$('reading-person-portrait'));
+    }
   }
   assert.deepEqual(h.state.chargedAmounts,[30]);assert.equal(h.state.coins,0);
 });

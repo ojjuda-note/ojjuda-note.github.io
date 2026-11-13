@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { calculateSaju } from '../games/starlit-saju/engine.mjs';
 import { analyzeFortune } from '../games/starlit-saju/fortune-data.mjs';
 import { buildDetailedReading } from '../games/starlit-saju/readings.mjs';
-import { attachReaderSummary } from '../games/starlit-saju/reader-summary.mjs';
+import { attachReaderSummary, describePersonalPeriod } from '../games/starlit-saju/reader-summary.mjs';
 import { GOD_CONTEXTS } from '../games/starlit-saju/deeper-reading-data.mjs';
 
 const now=new Date('2026-11-13T00:00:00Z');
@@ -56,7 +56,8 @@ test('first reading answers personal patterns without raw terminology, invented 
   const {report}=reading();
   assert.match(report.reader.lifelong.headline,/바탕으로 읽혀요/);
   assert.match(prose(report.reader.lifelong),/성향/);
-  assert.match(report.reader.annual.headline,/해로 읽혀요/);
+  assert.match(report.reader.annual.headline,/당신, 2026년에는 .+ 일이 우선입니다/);
+  assert.match(report.reader.annual.paragraphs[0],/^당신은 .+사람입니다\./);
   for(const overview of overviews(report))for(const text of paragraphs(overview)) {
     assert.doesNotMatch(text,/천간|(?<![가-힣])지지(?![가-힣])|십성|일간|원국|지장간|오행|납음|사주란|사주는|확정된 [0-9]+글자|위쪽 글자|아래쪽 글자/);
     assert.doesNotMatch(text,/반드시|무조건|당첨|합격한다|결혼한다|헤어지게|사망|수명|재물운 [0-9]+|확률|[0-9]+점|용신|신강|신약|대운/);
@@ -105,6 +106,75 @@ test('the same day master in another season keeps its shared meaning but changes
   assert.notDeepEqual(winter.report.reader.annual.paragraphs,spring.report.reader.annual.paragraphs,'actual natal overlap and interactions affect the period reading');
   assert.deepEqual(winter.report.reader.annual.godCodes,spring.report.reader.annual.godCodes);
   assert.notDeepEqual(winter.report.reader.annual.cards.map(card=>card.paragraphs),spring.report.reader.annual.cards.map(card=>card.paragraphs),'the same period symbols still connect to the actual different natal profile');
+});
+
+test('every year and month domain connects observed natal habits to the actual period with complete evidence',()=>{
+  const {fortune,report}=reading();
+  const periods=[{overview:report.reader.annual,transit:fortune.annual,prefix:'annual',label:'이 해'},
+    ...report.reader.months.map(overview=>({overview,transit:fortune.months.find(period=>period.month===overview.month),prefix:`month.${overview.month}`,label:'이번 달'}))];
+  const natalCodes=new Set(fortune.profile.gods.map(entry=>entry.god.code));
+  for(const {overview,transit,prefix,label} of periods)for(const domain of coreTopics) {
+    const periodCodes=[...new Set([transit.stemGod.code,transit.branchGod.code])];
+    const connection=describePersonalPeriod(fortune.profile,periodCodes,domain,label);
+    assert.ok(connection.natalCodes.length>=1&&connection.natalCodes.length<=2);
+    assert.equal(new Set(connection.natalCodes).size,connection.natalCodes.length);
+    assert.ok(connection.natalCodes.every(code=>natalCodes.has(code)),'no unobserved natal relationship can describe this person');
+    assert.equal(connection.paragraphs.length,4);
+    assert.equal(connection.reading,connection.paragraphs.join(' '),'short paragraphs preserve the complete connected explanation');
+    assert.ok(connection.paragraphs.every(text=>text.length>20&&text.length<=320),'each connected paragraph remains readable');
+    assert.match(connection.paragraphs[0],/^당신은 .+사람입니다\./);
+    assert.ok(connection.paragraphs[1].startsWith(label+'에는 '));
+    assert.match(connection.paragraphs[1],/세요\.$/);
+    assert.match(connection.paragraphs[2],/이 성향을 살릴 장면은 .+입니다\..+장점입니다\. 다만 .+\./);
+    assert.doesNotMatch(connection.reading,/타고난 바탕|흐름으로 읽|중심으로 읽혀요|반드시|무조건|보장|합격한다|수익이 생깁니다|사고가 납니다/);
+    const card=overview.cards.find(value=>value.id.endsWith('-'+domain));
+    assert.deepEqual(card.natalGodCodes,connection.natalCodes);
+    assert.equal(card.paragraphs[0],connection.paragraphs[0]);
+    assert.ok(card.paragraphs[2].includes(connection.paragraphs[1]));
+    assert.equal(card.paragraphs[3],connection.paragraphs[2]);
+    assert.equal(card.paragraphs.at(-1),connection.paragraphs[3]);
+    for(const code of connection.natalCodes)for(const entry of fortune.profile.gods.filter(entry=>entry.god.code===code)) {
+      assert.ok(card.factIds.includes(`natal.god.${entry.pillarKey}.${entry.position}`),'the used natal behaviour keeps its actual calculation fact');
+    }
+    for(const position of ['stem','branch'])assert.ok(card.factIds.includes(`${prefix}.god.${position}`),'both actual period relationships retain their evidence');
+    assert.ok(card.factIds.includes(`${prefix}.period`));
+  }
+});
+
+test('the same day master and period still give different personal conclusions in all four domains',()=>{
+  const winter=reading({year:1990,month:1,day:1,hour:9,minute:0});
+  const spring=reading({year:1990,month:3,day:2,hour:9,minute:0});
+  assert.equal(winter.chart.dayMaster.hanja,spring.chart.dayMaster.hanja);
+  const first=[winter.fortune.annual,...winter.fortune.months],second=[spring.fortune.annual,...spring.fortune.months];
+  for(const [index,transit] of first.entries()) {
+    const codes=[...new Set([transit.stemGod.code,transit.branchGod.code])];
+    assert.deepEqual(codes,[...new Set([second[index].stemGod.code,second[index].branchGod.code])]);
+    for(const domain of coreTopics) {
+      const a=describePersonalPeriod(winter.fortune.profile,codes,domain),b=describePersonalPeriod(spring.fortune.profile,codes,domain);
+      assert.notDeepEqual(a.natalCodes,b.natalCodes,`the fixture has different observed ${domain} traits`);
+      assert.notEqual(a.paragraphs[0],b.paragraphs[0],`${domain} explains the person's actual surrounding relationships`);
+      assert.notEqual(a.reading,b.reading,'a day-master template cannot stand in for the connected person');
+    }
+  }
+  const winterLearning=describePersonalPeriod(winter.fortune.profile,winter.report.reader.annual.godCodes,'learning');
+  const springLearning=describePersonalPeriod(spring.fortune.profile,spring.report.reader.annual.godCodes,'learning');
+  assert.equal(winterLearning.natalCodes[0],springLearning.natalCodes[0]);
+  assert.notEqual(winterLearning.natalCodes[1],springLearning.natalCodes[1],'a second actual trait matters even when the first shared meaning is the same');
+});
+
+test('the reusable period connector rejects missing evidence and never substitutes an uncertain natal relationship',()=>{
+  const ordinary=reading();
+  const limited=reading({year:2024,month:2,day:4,hour:null});
+  for(const domain of coreTopics) {
+    const connection=describePersonalPeriod(limited.fortune.profile,['explorer','scholar'],domain);
+    assert.deepEqual(connection.natalCodes,['companion']);
+    assert.match(connection.paragraphs[1],/^이 시기에는 /);
+  }
+  for(const codes of [[],['invented'],['companion','creator','officer']])assert.throws(()=>describePersonalPeriod(ordinary.fortune.profile,codes,'work'),/확인된 성향과 시기/);
+  assert.throws(()=>describePersonalPeriod({...ordinary.fortune.profile,gods:[]},['creator'],'work'),/확인된 성향과 시기/);
+  assert.throws(()=>describePersonalPeriod(ordinary.fortune.profile,['creator'],'unknown'),/확인된 성향과 시기/);
+  assert.throws(()=>describePersonalPeriod(ordinary.fortune.profile,['creator'],'__proto__'),/확인된 성향과 시기/);
+  assert.throws(()=>describePersonalPeriod(ordinary.fortune.profile,['creator'],'work',''),/확인된 성향과 시기/);
 });
 
 test('unknown birth time and seasonal-boundary candidates never gain fabricated personal evidence',()=>{
@@ -158,6 +228,9 @@ test('family, wellness, document, home and safety lenses disclose their real sco
   assert.match(card('space'),/집의 도면을 보고 방위를 판단한 내용은 아니며/);
   assert.match(card('safety'),/사고가 생길 시기·장소·종류를 예측한 내용은 아니며/);
   for(const key of ['parents','children','health','helpers','boundaries','contracts','space','safety']) {
+    const item=report.reader.lifelong.cards.find(card=>card.id==='natal-'+key);
+    assert.match(item.paragraphs[0],/^당신은 .+사람입니다\./,'the subject starts with the observed personal behaviour');
+    assert.doesNotMatch(item.title,/살펴요|확인해요|세워요|알아봐요|나눠요|함께 봐요/,'a subject title gives a personal conclusion rather than a general instruction');
     assert.match(card(key),/가령.+해 볼게요/);
     assert.doesNotMatch(card(key),/아이를 갖게|자녀가 [0-9]|사고가 (나|생길 것이)|질병이 (오|생길 것이)|계약이 성사|[0-9]+일에 만나|[0-9]+월에 만나|특정 장기가|취약한 장기/);
   }

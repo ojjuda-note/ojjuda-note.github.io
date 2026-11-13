@@ -1,4 +1,5 @@
 import { getReadingSources } from './sources.mjs?v=20261113-saju-reader1';
+import { describePersonalPeriod } from './reader-summary.mjs?v=20261113-saju-portrait1';
 
 // These are documented symbolic correspondences, not a computed useful element
 // or a promise of good luck. The day master's element is never chosen by count.
@@ -85,6 +86,19 @@ const TIMING = Object.freeze({
   },
 });
 
+const CAUTION_TITLES = Object.freeze({
+  companion:'남의 속도에 맞추다가 내 기준을 잃지 마세요',
+  competitor:'친분 때문에 돈과 책임을 먼저 떠안지 마세요',
+  creator:'도와주겠다는 약속을 늘리기 전에 남은 일을 보세요',
+  critic:'맞는 말이라도 상대를 몰아붙이는 표현은 피하세요',
+  opportunist:'새 제안을 받을 때 시간과 지출을 겹쳐 약속하지 마세요',
+  manager:'상황이 바뀌었는데 예전 계획만 고집하지 마세요',
+  challenger:'급하다는 이유로 모든 책임을 혼자 맡지 마세요',
+  officer:'지킬 수 없는 약속에는 가능한 범위를 먼저 말하세요',
+  explorer:'확인할 질문과 대답할 기한을 함께 정하세요',
+  scholar:'조언을 들은 뒤 마지막 선택은 직접 정하세요',
+});
+
 function checkedIds(report, ids) {
   const available=new Set(report.facts.map(value=>value.id));
   const values=[...new Set(ids)];
@@ -118,14 +132,15 @@ function timings(report, fortune) {
     const prefix=`month.${month.month}`;
     const codes=[...new Set([month.stemGod.code,month.branchGod.code])];
     if(codes.some(code=>!TIMING[code])) throw new Error('확인된 월별 관계로 시기 풀이를 다시 읽어 주세요.');
-    const matching=fortune.profile.gods.filter(entry=>codes.includes(entry.god.code));
+    const personal=describePersonalPeriod(fortune.profile,codes,'money','이 기간');
+    const matching=fortune.profile.gods.filter(entry=>personal.natalCodes.includes(entry.god.code));
     const factIds=checkedIds(report,[`${prefix}.period`,`${prefix}.god.stem`,`${prefix}.god.branch`,`${prefix}.interaction-count`,
       ...month.interactions.map((_,index)=>`${prefix}.interaction.${index}`),
       ...matching.map(entry=>`natal.god.${entry.pillarKey}.${entry.position}`)]);
     const opportunities=codes.map(code=>({label:TIMING[code].label,text:TIMING[code].opportunity,topic:'opportunity'}));
     const people=codes.map(code=>({label:'도움을 구해 볼 사람',text:TIMING[code].people,topic:'people'}));
     const documents=codes.map(code=>({label:'문서·계약을 살필 때',text:TIMING[code].document,topic:'document'}));
-    const cautions=codes.map(code=>({label:TIMING[code].label,text:TIMING[code].caution,topic:'caution'}));
+    const cautions=codes.map(code=>({label:CAUTION_TITLES[code],text:TIMING[code].caution,topic:'caution'}));
     const clash=month.interactions.some(value=>value.kind==='branch-clash');
     const combination=month.interactions.some(value=>value.kind!=='branch-clash');
     if(clash) cautions.push({label:'변경에 대비하기',text:'이번 달은 정한 계획을 끝까지 밀기보다 바뀐 상황에 맞춰 조정할 여지를 두는 편이 좋겠어요. 일정이나 약속이 달라지면 이동 시간, 맡은 일, 필요한 비용부터 다시 확인해 보세요.',topic:'change'});
@@ -134,14 +149,14 @@ function timings(report, fortune) {
       month:month.month,title:`${month.month}월 · ${codes.map(code=>TIMING[code].label).join(' · ')}`,
       periodLabel:`${month.start.label} ~ ${month.end.label} 직전 · 한국 시각`,
       headline:report.reader.months.find(value=>value.month===month.month)?.headline||'',
-      paragraphs:matching.length?[`타고난 성향과 이번 달 흐름에서 ${codes.filter(code=>matching.some(entry=>entry.god.code===code)).map(code=>TIMING[code].label).join(' · ')}의 흐름이 함께 드러나요. 익숙한 장점을 어디에 쓸지, 반복하던 어려움은 어떻게 줄일지 아래 내용을 연결해 보세요.`]:[],
+      paragraphs:[...personal.paragraphs],natalGodCodes:[...personal.natalCodes],
       opportunities,people,documents,cautions,factIds,
       chapterId:'month-interactions',godCodes:codes,origin:'service-reference',
     };
   });
   return {
     title:`${fortune.year}년 · 기회와 주의할 시기`,
-    headline:'달마다 살펴볼 기회, 도움을 구할 사람, 문서와 약속을 나눠 보세요.',
+    headline:'언제 무엇을 조심하고, 어떤 기회를 살릴지 확인하세요.',
     paragraphs:['시기는 선택을 돌아볼 참고예요. 만남·사고가 실제로 일어날 날짜나 계약 성공을 보장하는 날을 뜻하지 않아요.'],
     scope:'monthly',origin:'service-reference',items,
   };

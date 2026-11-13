@@ -74,6 +74,28 @@ test('new personal symbols and period guidance keep the existing product boundar
   }
 });
 
+test('every warning period explains the actual personal tendency and retains exact dates without predicting an event date',()=>{
+  const {fortune,report}=build();
+  for(const month of fortune.months) {
+    const item=report.reader.timings.items.find(value=>value.month===month.month);
+    assert.ok(item.paragraphs.length>0);
+    assert.doesNotMatch(item.paragraphs.join(' '),/익숙한 장점을 어디에 쓸지|사고가 발생|질병에 걸|계약이 성공|확률|\d+점/);
+    assert.ok(item.natalGodCodes.length>0);
+    for(const code of item.natalGodCodes) {
+      const entries=fortune.profile.gods.filter(entry=>entry.god.code===code);
+      assert.ok(entries.length>0);
+      for(const entry of entries)assert.ok(item.factIds.includes(`natal.god.${entry.pillarKey}.${entry.position}`));
+    }
+    for(const caution of item.cautions.filter(value=>value.topic==='caution')) {
+      assert.ok(caution.label.length>15,'the warning title must name an action or situation, not a technical category');
+      assert.ok(report.copyByCategory.monthly.includes(caution.label));
+    }
+    assert.ok(item.periodLabel.includes(month.start.label));
+    assert.ok(item.periodLabel.includes(month.end.label));
+    for(const paragraph of item.paragraphs)assert.ok(report.copyByCategory.monthly.includes(paragraph));
+  }
+});
+
 test('the symbolic reading stays identical across selected years while the timing follows its own year',()=>{
   const first=build(undefined,2026),next=build(undefined,2027);
   assert.deepEqual(first.report.reader.symbols,next.report.reader.symbols);
