@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#100d1b">
-  <meta name="description" content="두 사람의 출생 정보로 읽는 별빛 궁합. 궁합은 별도 10쭈이며 결제 후 24시간 동안 다시 볼 수 있어요.">
+  <meta name="description" content="두 사람의 출생 정보로 읽는 별빛 궁합. 궁합만 20쭈에 이용하고, 결제 후 24시간 동안 같은 두 사람의 풀이를 무료로 다시 보세요.">
   <title>두 사람의 별빛 궁합 · 오쭈다</title>
   <link rel="icon" href="../moonlit-tarot/assets/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="../moonlit-tarot/assets/moon-serif.woff?v=20261113-tarot-corpus1" as="font" type="font/woff" crossorigin>
-  <link rel="stylesheet" href="./style.css?v=20261113-saju-light3">
+  <link rel="stylesheet" href="./style.css?v=20261113-compatibility20-1">
   <link rel="stylesheet" href="./report.css?v=20261113-saju-zodiac1">
   <link rel="stylesheet" href="./compatibility.css?v=20261113-saju-reader1">
 </head>
@@ -38,6 +38,10 @@
   </header>
 
   <main class="compatibility-main">
+    <nav class="reading-service-nav" aria-label="사주와 궁합">
+      <a href="./"><strong>나의 사주 <span aria-hidden="true">↗</span></strong><span>개별 10쭈 · 전체 30쭈</span></a>
+      <a href="./compatibility.html" aria-current="page"><strong>두 사람의 궁합</strong><span>20쭈 · 결제 후 24시간 이용</span></a>
+    </nav>
     <section id="compatibility-entry" aria-labelledby="compatibility-heading">
       <header class="compatibility-intro"><p class="eyebrow">TWO STORIES, ONE CONSTELLATION</p><div class="pair-sigil" aria-hidden="true">✧</div><h1 id="compatibility-heading">서로의 별빛이<br><em>만나는 자리</em></h1><p>두 사람의 닮은 점과 다른 점,<br>마음을 전하고 함께 맞춰 갈 방법을 자세히 읽어요.</p></header>
       <form id="compatibility-form" autocomplete="off">
@@ -60,10 +64,10 @@
     </fieldset></div>
         <div class="pair-form-tools"><button id="pair-swap" class="partner-clear-button" type="button">나와 상대 바꾸기</button><button id="compatibility-clear" class="partner-clear-button" type="button">입력한 정보 지우기</button></div>
         <p class="field-hint pair-privacy">입력 정보는 이 기기에 저장돼요. 이름·성별·생일은 서버로 보내지 않아요.</p>
-        <div class="compatibility-purchase"><p class="saju-price"><strong id="compatibility-price">궁합 · 10쭈</strong></p><p id="compatibility-price-note" class="saju-price-note">궁합은 별도 10쭈예요. 같은 두 사람은 결제 후 24시간 동안 다시 보기 0쭈. 전체 사주 30쭈에는 포함되지 않아요.</p>
+        <div class="compatibility-purchase"><p class="saju-price"><strong id="compatibility-price">궁합 · 20쭈</strong></p><p id="compatibility-price-note" class="saju-price-note">궁합만 20쭈에 볼 수 있어요. 같은 두 사람은 결제 후 24시간 동안 다시 보기 0쭈. 전체 사주 30쭈에는 포함되지 않아요.</p>
           <p id="compatibility-wallet" class="payment-status" role="status"></p><a id="compatibility-login" class="login-link" href="/world.html?tab=hub#agit-daily" hidden>아지트에서 로그인·쭈 확인하기 →</a>
           <p id="compatibility-error" class="form-error" role="alert" tabindex="-1" hidden></p><p id="compatibility-status" class="field-hint" role="status"></p>
-          <button id="compatibility-open" class="primary-button" type="submit" data-expected-charge="10" disabled><svg><use href="#i-star"/></svg><span>10쭈로 궁합 펼치기</span><svg><use href="#i-arrow"/></svg></button>
+          <button id="compatibility-open" class="primary-button" type="submit" data-expected-charge="20" disabled><svg><use href="#i-star"/></svg><span>20쭈로 궁합 펼치기</span><svg><use href="#i-arrow"/></svg></button>
         </div>
         <details class="method-preview"><summary>궁합에 담은 내용</summary><p>두 사람의 확정된 출생 정보를 비교하고, 같은 전통 관계에는 같은 참고 설명을 연결해요. 닮은 점·다른 점과 구체적인 대화 예시를 제공하며, 궁합 점수나 결혼·이별 날짜는 만들지 않아요.</p><p>생일 또는 출생 시간이 달라지면 다른 쌍으로 구분해요. 이름·성별이나 두 사람의 입력 순서만 바꾸면 이용 시간이 유지돼요. 만료 뒤 다시 펼치기를 눌러야 새로 결제해요.</p><p>한국 표준시 기준이에요. 이름은 표시용이며 성별에 따라 관계 역할을 정하지 않아요. 저장한 성별은 별빛 사주의 평생운에서 10년 흐름을 계산할 때 사용해요.</p></details>
       </form>
@@ -77,5 +81,5 @@
   </main>
   <footer class="site-footer"><span class="footer-wordmark">THE STARLIT ARCHIVE <i>✧</i></span><p>함께하는 이야기는 두 사람의 선택으로 써 내려가세요.</p></footer>
   <script src="/shared/analytics/site-usage.js?v=20261113-fortune-visits1"></script>
-  <script type="module" src="./compatibility-app.mjs?v=20261113-saju-zodiac1"></script>
+  <script type="module" src="./compatibility-app.mjs?v=20261113-compatibility20-1"></script>
 </body></html>

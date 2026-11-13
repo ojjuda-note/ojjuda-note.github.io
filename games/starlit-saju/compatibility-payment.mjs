@@ -1,6 +1,8 @@
-// Compatibility is its own 10-ju product. Birth details stay in this page's
+// Compatibility is its own 20-ju product. Birth details stay in this page's
 // memory; only a member-specific, order-independent pair fingerprint is sent.
-const PRICE = 10;
+export const COMPATIBILITY_PRICE = 20;
+const PRICE = COMPATIBILITY_PRICE;
+const LEGACY_PRICE = 10;
 const ACCESS_MS = 24 * 60 * 60 * 1000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const HASH = /^[0-9a-f]{64}$/;
@@ -8,7 +10,7 @@ const MESSAGES = Object.freeze({
   not_signed_in: '아지트에 로그인한 뒤 궁합을 펼쳐 주세요.',
   member_required: '아지트 회원으로 로그인하면 궁합을 볼 수 있어요.',
   banned: '현재 계정으로는 궁합을 펼칠 수 없어요.',
-  coins: '쭈가 부족해요. 궁합을 새로 열려면 10쭈가 필요해요.',
+  coins: '쭈가 부족해요. 궁합을 새로 열려면 20쭈가 필요해요.',
   wallet_unavailable: '보유한 쭈를 확인하지 못했어요. 잠시 후 다시 눌러 주세요.',
   request_conflict: '궁합 이용 내역을 확인하지 못했어요. 새로고침한 뒤 다시 눌러 주세요.',
   receipt_unavailable: '궁합 구매 기록을 확인하지 못했어요. 잠시 후 다시 확인해 주세요.',
@@ -17,7 +19,7 @@ const MESSAGES = Object.freeze({
   account_changed: '로그인한 계정이 바뀌었어요. 새로고침한 뒤 다시 펼쳐 주세요.',
   busy: '먼저 펼치던 궁합을 확인하고 있어요. 잠시만 기다려 주세요.',
   access_expired: '궁합의 24시간 이용이 끝났어요. 이용료를 확인한 뒤 다시 펼쳐 주세요.',
-  price_changed: '궁합 이용 시간이 바뀌었어요. 표시된 이용료를 확인한 뒤 다시 눌러 주세요.',
+  price_changed: '궁합 이용료나 이용 시간이 바뀌었어요. 표시된 이용료를 확인한 뒤 다시 눌러 주세요.',
   not_found: '이 두 사람의 궁합 구매 내역을 찾지 못했어요. 이용료를 확인해 주세요.',
   network: '연결을 확인한 뒤 다시 눌러 주세요. 같은 결제의 재시도로 중복 차감하지 않아요.'
 });
@@ -82,9 +84,12 @@ function validBalance(value) { return Number.isSafeInteger(value) && value >= 0;
 
 function validateReceipt(receipt, pairKey, serverNow, expectedCharge = 0, requestId = null) {
   const paid = timestamp(receipt?.paid_at), expires = timestamp(receipt?.expires_at);
+  // Past 10-ju purchases keep their original receipt and expiry. Only a free
+  // replay may use that historical price; every new debit is the current price.
+  const validPrice = receipt?.price === PRICE || (receipt?.price === LEGACY_PRICE && receipt.charged === 0);
   if (receipt?.ok !== true || receipt.entitled !== true || !validMetadata(receipt)
       || receipt.product !== 'saju' || receipt.topic !== 'compatibility' || receipt.pair_key !== pairKey
-      || !HASH.test(pairKey || '') || !UUID.test(receipt.request_id || '') || receipt.price !== PRICE
+      || !HASH.test(pairKey || '') || !UUID.test(receipt.request_id || '') || !validPrice
       || !validBalance(receipt.coins) || ![0, PRICE].includes(receipt.charged)
       || receipt.charged > expectedCharge || typeof receipt.replayed !== 'boolean'
       || typeof receipt.entitlement_replayed !== 'boolean' || receipt.replayed !== (receipt.charged === 0)

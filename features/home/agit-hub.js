@@ -267,6 +267,10 @@
         <div class="agit-saju-copy"><span class="agit-saju-kicker">STARLIT SAJU <i aria-hidden="true">✦</i> 별빛 서고</span><h2>별빛 사주팔자</h2><p>평생운·올해운·월별운을 쉽고 자세하게.</p><span class="agit-saju-cta">전체 30쭈 · 개별 10쭈 · 사주 펼치기 <span aria-hidden="true">→</span></span></div>
         <div class="agit-saju-art" aria-hidden="true"><span class="agit-saju-orbit"></span><span class="agit-saju-moon">☾</span><div class="agit-saju-scrolls"><span><small>YEAR</small><b>年</b><i>태어난 해</i></span><span><small>MONTH</small><b>月</b><i>태어난 달</i></span><span><small>DAY</small><b>日</b><i>태어난 날</i></span><span><small>HOUR</small><b>時</b><i>태어난 시</i></span></div></div>
       </a>
+      <a class="agit-compatibility-banner" href="/games/starlit-saju/compatibility.html" aria-label="두 사람의 궁합, 별도 20쭈, 결제 후 24시간 다시 보기 0쭈">
+        <div class="agit-compatibility-copy"><span class="agit-compatibility-kicker">STARLIT COMPATIBILITY <i aria-hidden="true">✧</i> 두 사람의 이야기</span><h2>두 사람의 궁합</h2><p>서로의 닮은 점과 다른 점을 함께 읽어요.</p><span class="agit-compatibility-cta">궁합 20쭈 · 바로 보기 <span aria-hidden="true">→</span></span><small>같은 두 사람 · 결제 후 24시간 다시 보기 0쭈</small></div>
+        <svg class="agit-compatibility-art" viewBox="0 0 280 160" fill="none" aria-hidden="true" focusable="false"><circle cx="99" cy="80" r="59" stroke="#dab6d8" stroke-width="1.3"/><circle cx="181" cy="80" r="59" stroke="#e5c48d" stroke-width="1.3"/><circle cx="99" cy="80" r="50" stroke="#dab6d8" stroke-opacity=".3"/><circle cx="181" cy="80" r="50" stroke="#e5c48d" stroke-opacity=".3"/><path d="m140 52 6 22 17 6-17 6-6 22-6-22-17-6 17-6Z" fill="#f4deb3" fill-opacity=".8"/><text x="84" y="87" text-anchor="middle" fill="#e6cde8">나</text><text x="196" y="87" text-anchor="middle" fill="#f0ddbc">상대</text><circle cx="45" cy="33" r="2" fill="#e6cde8"/><circle cx="235" cy="125" r="2" fill="#f0ddbc"/></svg>
+      </a>
       <footer class="agit-footer"><span>오쭈다 아지트</span><button type="button" data-act="feedback-open">의견 보내기 <span aria-hidden="true">→</span></button></footer>
     </div>`;
   }
