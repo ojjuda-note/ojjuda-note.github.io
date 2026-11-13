@@ -2,6 +2,7 @@ import { getTenGod, makeProfile, interactionPairs } from './fortune-data.mjs?v=2
 import { GOD_REFERENCE, RELATION_REFERENCE } from './readings-data.mjs?v=20261113-saju-easy1';
 import { zodiacFromChart } from './zodiac.mjs?v=20261113-saju-easy1';
 import { buildCompatibilityScore } from './compatibility-score.mjs?v=20261113-saju-easy1';
+import { buildCompatibilityPeople } from './compatibility-people.mjs?v=20261114-compatibility-people1';
 
 // A local comparison of two already-calculated charts. All cross-chart pillar
 // pairs are retained; the prose is a disclosed application of shared meanings.
@@ -268,7 +269,7 @@ export function buildCompatibilityReading(chart,partnerChart) {
     :clashes?'같은 일을 다르게 받아들일 수 있는 관계로 풀이해요. 반응이 다르다고 마음이 적다고 판단하지는 마세요. 상대에게 무엇이 중요했는지 묻고, 서로 이해한 뜻을 확인해 보세요.'
     :connections?'각자 잘하는 점을 보태며 함께할 방법을 찾는 관계로 풀이해요. 서로 편하게 할 수 있는 일을 나눠 맡아 보세요. 작은 약속을 함께 지키며 두 사람의 장점을 살릴 수 있어요.'
     :'서로에게 어떤 도움을 바라는지, 함께 지키고 싶은 약속은 무엇인지 이야기해 보세요. 아래에서 잘 맞을 수 있는 점과 다르게 느낄 수 있는 점을 살펴볼게요. 가까이 지낼 때 생활을 함께 맞추는 방법도 알려드려요.';
-  return {
+  const reading={
     title:'두 사람의 궁합',headline:base.headline,paragraphs:[personalOpening,relationParagraph],
     cards:makeCards(base,interactions,profiles,facts,zodiac,zodiacRelation),facts,score,origin:ORIGIN,
     scopeNotice:scopeNotice(scopes),
@@ -276,4 +277,6 @@ export function buildCompatibilityReading(chart,partnerChart) {
     dayMasterRelation,interactions,comparisons,zodiac,zodiacRelation:zodiacRelation.kind,scope:{self:scopes[0],partner:scopes[1]},
     rules:Object.fromEntries(unique(interactions.map(match=>match.kind)).map(kind=>[kind,{...RELATION_REFERENCE[kind]}])),
   };
+  const additions=buildCompatibilityPeople({charts:{self:chart,partner:partnerChart},profiles,scopes:reading.scope,compatibility:reading});
+  return {...reading,people:additions.people,synthesis:additions.synthesis,facts:[...facts,...additions.facts]};
 }

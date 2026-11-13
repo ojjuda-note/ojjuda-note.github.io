@@ -1,5 +1,7 @@
 import {getReadingSources} from './sources.mjs?v=20261113-saju-reader1';
 import {applyReadingSummaryViews} from './reading-summary-view.mjs?v=20261113-saju-summary1';
+import {createCompatibilityScoreboard} from './compatibility-score-view.mjs?v=20261113-saju-easy1';
+import {createCompatibilityPeoplePages,createCompatibilityPager,compatibilityPersonLabels} from './compatibility-people-view.mjs?v=20261114-compatibility-people1';
 
 const readingPagers=new WeakMap();
 const pagerDocuments=new WeakSet();
@@ -964,7 +966,7 @@ function daeunView(reading) {
 }
 
 /** Render both people's interpretation and every comparison fact together. */
-export function renderCompatibilityReport(container, reading) {
+export function renderCompatibilityReport(container, reading, {names=[]}={}) {
   if (!reading || !Array.isArray(reading.facts) || !Array.isArray(reading.cards)) {
     throw new Error('궁합 풀이를 준비하지 못했어요. 다시 불러와 주세요.');
   }
@@ -979,6 +981,10 @@ export function renderCompatibilityReport(container, reading) {
   title.tabIndex=-1;
   header.append(title);
   section.append(header);
+  const pages=createCompatibilityPeoplePages(reading,{names,appendParagraphs:addParagraphs,link:readingLink});
+  section.append(...pages.map(page=>page.element));
+  const score=createCompatibilityScoreboard(reading.score);score.id='compatibility-scores';
+  section.append(score);pages.push({element:score,label:'궁합 점수',group:'두 사람의 궁합'});
   const overview=readerOverview({
     ...reading,
     origin:reading.origin||'service-reference',
@@ -986,6 +992,13 @@ export function renderCompatibilityReport(container, reading) {
   },sectionId,[],false,`${sectionId}-evidence`);
   if (reading.scopeNotice) overview.querySelector('.reader-intro').append(node('p','reader-scope-note',reading.scopeNotice));
   section.append(overview);
+  const intro=overview.querySelector('.reader-intro');intro.id='compatibility-reading-overview';
+  pages.push({element:intro,label:'비교의 핵심',group:'궁합 자세히 읽기'});
+  const cards=[...overview.querySelectorAll('.reader-card')];
+  cards.forEach((element,index)=>{
+    element.id=`compatibility-reading-card-${index+1}`;
+    pages.push({element,label:reading.cards[index].label,group:'궁합 자세히 읽기'});
+  });
   const details=node('details','reading-full-text compatibility-evidence');
   details.id=`${sectionId}-evidence`;
   details.tabIndex=-1;
@@ -993,6 +1006,12 @@ export function renderCompatibilityReport(container, reading) {
   summary.append(node('span','','궁합 계산 근거 펼쳐보기'),node('small','',`${reading.facts.length}개 항목`));
   const body=node('div','full-reading-body');
   if (reading.methodNotice) addParagraphs(body,[reading.methodNotice],'method-description');
+  const labels=compatibilityPersonLabels(names);
+  for(const [index,person] of reading.people.entries()) {
+    body.append(node('h4','compatibility-person-method-title',`${labels[index]} · 성격 풀이 안내`));
+    addParagraphs(body,[person.methodNotice,person.selectionNotice,person.scopeNotice],'method-description');
+  }
+  if(reading.synthesis.methodNotice)addParagraphs(body,[reading.synthesis.methodNotice],'method-description');
   const facts=node('dl','evidence-rows');
   for (const fact of reading.facts) {
     const row=node('div','evidence-row');
@@ -1004,6 +1023,10 @@ export function renderCompatibilityReport(container, reading) {
   body.append(facts);
   details.append(summary,body);
   section.append(details);
+  pages.push({element:details,label:'궁합 계산 근거',group:'근거와 안내',support:true});
+  const pager=createCompatibilityPager(section,pages);
+  section.dataset.readerPaged='true';readingPagers.set(section,pager);
+  watchReadingTargets(section.ownerDocument);
   container.replaceChildren(section);
 }
 

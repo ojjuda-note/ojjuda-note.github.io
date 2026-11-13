@@ -35,21 +35,27 @@ const lastParagraph = item => list(item.paragraphs).at(-1);
 const work = overview => list(overview.cards).find(item => item.id?.endsWith('-work'));
 const periodAction = period => list(period.topics).find(item => item.id?.endsWith('.work'))?.personalParagraphs?.[3];
 
+/** Select complete authored units without needing a whole reading/report. */
+export function summaryLinesFrom(lead, action, alternatives = []) {
+  const opening = units(lead), first = opening[0];
+  if (!first) fail();
+  const choices = units([action, opening.slice(1), alternatives]);
+  const second = choices.find(value => identity(value) !== identity(first));
+  if (!second) fail();
+  return [first, second];
+}
+
 /** Add two distinct source-authored units to each available visible reading. */
 export function attachReadingSummaryLines(report) {
   if (!report || typeof report !== 'object' || !report.reader) fail();
   const pending = [];
   function add(item, lead, action) {
     if (!item || typeof item !== 'object' || Array.isArray(item)) fail();
-    const opening = units(lead), first = opening[0];
-    if (!first) fail();
     // Prefer the explicit action. If it repeats the heading, use its next full
     // sentence, then another complete unit from this same item's own prose.
-    const choices = units([action, opening.slice(1), item.paragraphs, item.description,
-      item.title, item.headline, item.value]);
-    const second = choices.find(value => identity(value) !== identity(first));
-    if (!second) fail();
-    pending.push([item, [first, second]]);
+    const summaryLines = summaryLinesFrom(lead, action,
+      [item.paragraphs, item.description, item.title, item.headline, item.value]);
+    pending.push([item, summaryLines]);
   }
 
   const reader = report.reader;

@@ -35,10 +35,43 @@
 #compatibility-form>.method-preview{max-width:600px;margin:21px auto 0}
 #compatibility-form input:focus-visible,#compatibility-form select:focus-visible,#compatibility-form button:focus-visible{outline:2px solid #ecd099;outline-offset:3px}
 #compatibility-result{max-width:920px;padding:0;margin:auto}
+#compatibility-result-title,#compatibility-births{word-break:keep-all;overflow-wrap:anywhere}
 #compatibility-expiry{font-size:14px;line-height:1.8;color:#cdb9d8}
 #compatibility-report .compatibility-reading{margin-top:24px}
 #compatibility-copy-status{text-align:center;line-height:1.8}
 .compatibility-panel>.secondary-button{max-width:42rem;margin:19px auto 0;display:flex;width:fit-content}
+.compatibility-reading [data-compatibility-page][hidden],.compatibility-reading .reader-overview[hidden],.compatibility-reading .reader-cards[hidden],.compatibility-reading .reader-topic-nav[hidden]{display:none!important}
+.compatibility-reading-pager{margin-top:22px;margin-bottom:28px}
+.compatibility-people-page,.compatibility-synthesis{min-width:0;margin:24px 0 12px;scroll-margin-top:90px;word-break:keep-all;overflow-wrap:anywhere}
+.compatibility-people-title{margin:0 0 13px;color:#f0d9af;font:600 26px/1.6 var(--serif);letter-spacing:-.025em}
+.compatibility-reading-guide{max-width:44rem;margin:0 0 24px;font-size:var(--reading-font-size,16px);line-height:1.9;color:#cdbbd8}
+.compatibility-person-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:start;min-width:0}
+.compatibility-person-reading{--person-accent:#e3c195;min-width:0;padding:25px 24px;border:1px solid #c6a8ce42;border-top:3px solid var(--person-accent);border-radius:14px;background:linear-gradient(160deg,#322338ab,#191420)}
+.compatibility-person-reading[data-person-key=partner]{--person-accent:#abcfc9;background:linear-gradient(160deg,#23333680,#191420)}
+.compatibility-person-name{margin:0 0 18px;color:var(--person-accent);font:600 18px/1.7 var(--sans);overflow-wrap:anywhere}
+.compatibility-two-line-summary{display:grid;gap:12px;margin:0 0 25px;padding:0 0 22px;border-bottom:1px solid #c6a8ce35;min-width:0}
+.compatibility-summary-line{margin:0;color:#e3d2eb;font:400 var(--reading-font-size,16px)/1.9 var(--sans);white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
+.compatibility-summary-line:first-child{font:600 calc(var(--reading-font-size,16px) + 2px)/1.8 var(--serif);color:#f0e4f4;letter-spacing:-.015em}
+.compatibility-person-prose{min-width:0;max-width:100%}
+.compatibility-person-prose>p{margin:0}.compatibility-person-prose>p+p{margin-top:20px}
+.compatibility-person-reading>.compatibility-evidence-link{margin-top:22px}
+.compatibility-person-scope{margin:0 0 22px;font-size:calc(var(--reading-font-size,16px) - 1px);line-height:1.9;color:#d2c1dc}
+.compatibility-synthesis{max-width:44rem;margin-right:auto;margin-left:auto}
+.compatibility-synthesis-people{margin:0 0 21px;color:#cdbbd8;font-size:var(--reading-font-size,16px);line-height:1.8;overflow-wrap:anywhere}
+.compatibility-synthesis>.compatibility-two-line-summary{padding:20px 22px;border:1px solid #c6a8ce42;border-radius:12px;background:#33243b80}
+.compatibility-synthesis>.compatibility-evidence-link{margin-top:24px}
+.compatibility-person-method-title{margin:24px 0 9px;font-size:var(--reading-font-size,16px);line-height:1.8;color:#e6c89f;overflow-wrap:anywhere}
+.compatibility-reading [data-compatibility-page]:focus,.compatibility-reading [data-compatibility-page] h4:focus{outline:0}
+@media(max-width:760px){
+ .compatibility-person-columns{grid-template-columns:minmax(0,1fr);gap:22px}
+ .compatibility-person-reading{padding:23px 20px}
+ .compatibility-people-title{font-size:24px}
+ .compatibility-reading-pager{margin-top:18px;margin-bottom:24px}
+}
+@media(max-width:350px){
+ .compatibility-person-reading{padding:20px 16px}
+ .compatibility-synthesis>.compatibility-two-line-summary{padding:18px 16px}
+}
 .compatibility-scoreboard{margin:24px 0 32px;padding:28px;border:1px solid #c6a8ce55;border-radius:22px;background:linear-gradient(135deg,#35243d,#1c1729 72%);color:#ede3ef;min-width:0;box-shadow:0 16px 42px #00000018}
 .compatibility-score-heading{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px 18px;margin:0 0 26px}
 .compatibility-score-heading h4{margin:0;font:600 24px/1.5 var(--serif);color:#f0d9af;letter-spacing:-.025em}
