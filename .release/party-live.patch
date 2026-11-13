@@ -1,0 +1,16 @@
+diff --git a/world.html b/world.html
+index a4e7837..18e876c 100644
+--- a/world.html
++++ b/world.html
+@@ -73 +73 @@
+-<script src="/shared/games/world-game-assets.js?v=20261114-party-vote1" defer></script>
++<script src="/shared/games/world-game-assets.js?v=20261114-party-live1" defer></script>
+@@ -224 +224 @@
+-<script src="/features/arcade/arcade-rooms.js?v=20261114-party-vote1" defer></script>
++<script src="/features/arcade/arcade-rooms.js?v=20261114-party-live1" defer></script>
+@@ -3274 +3274,2 @@ function partyVoteRoom(kind){return kind==='minority'||kind==='mission'}
+-function passwordArcadeRoom(kind){return partyVoteRoom(kind)||['croc','liar','king'].includes(kind)}
++function partyLiveRoom(kind){return ['bottle','bomb','stopwatch','truth','initial'].includes(kind)}
++function passwordArcadeRoom(kind){return partyLiveRoom(kind)||partyVoteRoom(kind)||['croc','liar','king'].includes(kind)}
+@@ -3275,0 +3277 @@ function passwordRoomAction(kind,options){
++ if(partyLiveRoom(kind))return S.rpc('party_live_multiplayer',{p_kind:kind,...options});

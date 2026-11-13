@@ -1,8 +1,9 @@
 (function () {
   'use strict';
-  const games = { minority: ['⚖️', '소수파 찾기'], mission: ['🎬', '한 명만 다른 미션'], king: ['👑', '왕게임'], liar: ['🎭', '라이어 찾기'], croc: ['🐊', '악어 이빨'], bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'], roulette: ['🎡', '룰렛'] };
-  const passwordGame=kind=>['croc','liar','king','minority','mission'].includes(kind);
-  const nativeGames = new Set(['minority','mission','king','liar','croc','bang','tank','tour','ttang','poker','roulette']);
+  const games = { bottle: ['🍾', '술병 나침반'], bomb: ['💣', '시간폭탄'], stopwatch: ['⏱️', '감각 스톱워치'], truth: ['🃏', '진실게임'], initial: ['🔤', '초성 대결'], minority: ['⚖️', '소수파 찾기'], mission: ['🎬', '한 명만 다른 미션'], king: ['👑', '왕게임'], liar: ['🎭', '라이어 찾기'], croc: ['🐊', '악어 이빨'], bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'], roulette: ['🎡', '룰렛'] };
+  const passwordGames=new Set(['croc','liar','king','minority','mission','bottle','bomb','stopwatch','truth','initial']);
+  const passwordGame=kind=>passwordGames.has(kind);
+  const nativeGames = new Set([...passwordGames,'bang','tank','tour','ttang','poker','roulette']);
   const ACTIVE_POLL_MS = 4000, IDLE_POLL_MS = 6000;
   const layouts = [['eheh', '상마상마'], ['hehe', '마상마상'], ['ehhe', '상마마상'], ['heeh', '마상상마']];
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);

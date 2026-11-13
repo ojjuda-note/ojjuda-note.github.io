@@ -1,0 +1,49 @@
+.bottle-form { margin:18px 0; }
+.bottle-form fieldset { border:0;margin:0 0 14px;padding:0;min-width:0; }
+.bottle-form legend { font-weight:700;margin-bottom:6px; }
+.bottle-options { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px; }
+.bottle-options label { position:relative;margin:0;cursor:pointer; }
+.bottle-options input { position:absolute;width:1px;height:1px;opacity:0; }
+.bottle-options span {
+  min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:4px;border:1px solid #c3c9b8;border-radius:9px;background:#f4f3e9;
+}
+.bottle-options input:checked+span { background:#e4eddb;border-color:#506d4f;box-shadow:inset 0 0 0 1px #506d4f; }
+.bottle-options input:focus-visible+span { outline:3px solid #876c22; }
+.bottle-mini { width:22px;height:22px;border:2px solid #b99858;background:#37634b;border-radius:4px; }
+.bottle-mini.long,.bottle-mini.oval { width:30px;height:18px; }
+.bottle-mini.round,.bottle-mini.oval { border-radius:50%; }
+.bottle-form:has(input[value=vertical]:checked) .bottle-mini:is(.long,.oval) { transform:rotate(90deg); }
+.bottle-board {
+  position:relative;isolation:isolate;container-type:inline-size;
+  width:min(100%,var(--board-width));aspect-ratio:var(--ratio);margin:16px auto;
+  border-radius:16px;background:radial-gradient(ellipse at 45% 36%,#386c50,#173d2e 80%);
+  box-shadow:inset 0 0 0 4px #b99a58,inset 0 0 0 6px #e8d29c,0 3px 6px #44351e40;
+}
+.bottle-board.round,.bottle-board.oval { border-radius:50%; }
+.bottle-pointer {
+  position:absolute;inset:0;margin:auto;width:70%;height:70%;height:min(70%,70cqw);
+  object-fit:contain;transform-origin:50% 50%;pointer-events:none;filter:drop-shadow(2px 4px 3px #10251877);
+}
+.bottle-seat {
+  position:absolute;z-index:2;display:grid;place-items:center;transform:translate(-50%,-50%);
+  width:clamp(21px,8cqw,32px);height:clamp(21px,8cqw,32px);font-size:13px;font-weight:700;
+  background:#fff3d4;color:#423819;border:2px solid #bda570;border-radius:50%;pointer-events:none;
+}
+.bottle-seat.mine { border-color:#76bc89;box-shadow:0 0 0 2px #1e503a; }
+.bottle-seat.winner { background:#ffdb69;box-shadow:0 0 0 3px #fff3bf; }
+button.bottle-hit { position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:inherit;background:transparent;touch-action:manipulation;cursor:crosshair; }
+.bottle-hit:focus-visible::after { content:'+';position:absolute;left:var(--x,50%);top:var(--y,15%);transform:translate(-50%,-50%);border:1px dashed white;border-radius:50%;color:white;width:24px; }
+.bottle-center { position:fixed;z-index:3;top:50%;top:50dvh;left:50%;transform:translate(-50%,-50%);white-space:nowrap; }
+.bottle-players { padding:0;display:flex;flex-wrap:wrap;gap:6px 14px;list-style:none; }
+.bottle-players li { display:inline-flex;align-items:baseline;gap:4px;font-size:14px; }
+.bottle-players b { color:#446748; }
+.bottle-pointer { display:grid;place-items:center; }
+.bottle-glass {
+  position:relative;width:22%;height:100%;max-width:52px;
+  background:linear-gradient(90deg,#153929,#377b4d 15%,#8ac591 30%,#45945a 42%,#286a40 65%,#163b28 99%);
+  clip-path:polygon(31% 0,69% 0,69% 6%,64% 7%,64% 23%,69% 27%,86% 33%,98% 40%,99% 94%,94% 98%,83% 100%,17% 100%,6% 98%,1% 94%,2% 40%,14% 33%,31% 27%,36% 23%,36% 7%,31% 6%);
+}
+.bottle-glass::before { content:'';position:absolute;top:0;left:28%;width:44%;height:7%;background:repeating-linear-gradient(90deg,#8c966c 0 2px,#c7caa2 2px 4px); }
+.bottle-glass i { position:absolute;left:3%;right:3%;top:52%;height:24%;background:linear-gradient(90deg,#cec4a0,#fff5d7 32%,#e7dabb 72%,#b7ae88); }
+.bottle-glass i::after { content:'';position:absolute;inset:24% 32%;border-radius:50%;background:linear-gradient(140deg,#6c9164,#254c3a); }

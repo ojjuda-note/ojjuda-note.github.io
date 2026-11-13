@@ -1,0 +1,14 @@
+.truth-hand { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;max-width:340px;margin:18px auto; }
+.truth-hand button { position:relative;isolation:isolate;aspect-ratio:5/6;border:2px solid #ac8f52;border-radius:12px;background:repeating-linear-gradient(45deg,#173f3a 0 3px,#204740 3px 5px);box-shadow:0 3px 0 #9c926b; }
+.truth-hand button::before { content:'';position:absolute;inset:6px;border-radius:7px;border:1px solid #c4aa73; }
+.truth-hand button::after { content:'✦';display:grid;place-items:center;position:absolute;inset:20%;font-size:clamp(32px,12vw,52px);color:#e5c888; }
+.truth-face { border-radius:14px;padding:20px 15px;margin:16px 0;text-align:center; }
+.truth-face strong { font-size:20px;line-height:1.5;overflow-wrap:anywhere; }
+.truth-face span { display:block;font-size:14px;font-weight:700;margin-bottom:10px; }
+.truth-face.mild { background:#e7eedb;color:#314a32; }
+.truth-face.spicy { background:#f8dfd5;color:#752b20; }
+.truth-edit { padding-top:10px; }
+.truth-edit textarea { display:block;width:100%;min-height:84px;padding:10px;border:1px solid #a8b29e;border-radius:8px;font:inherit;font-size:16px; }
+.truth-edit select { white-space:nowrap;text-overflow:ellipsis; }
+.truth-edit summary { cursor:pointer;font-weight:700; }
+.truth-edit .actions { margin-top:10px; }
