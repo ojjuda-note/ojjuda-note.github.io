@@ -246,9 +246,9 @@ window.OJJUDA_FAN_ARTISTS = [
       { date: "2027-01-24", title: "일본 데뷔 4주년 Celebration Greeting · 도쿄", sub: "도쿄 시내 · 시간·세부 장소 미공개 · 구매자 추첨", href: "https://www.le-sserafim.jp/news/555c78286abe" }
     ],
     campaigns: [
-      { kind: "게임·음악 협업", date: "2026.09.10", title: "LE SSERAFIM × 오버워치", sub: "Made My Night 공식 MV 및 게임 컬래버레이션", href: "https://www.invenglobal.com/articles/25804/operation-rescue-le-sserafim-overwatch-collab-music-video-for-made-my-night-released" },
-      { kind: "광고·영상 협업", date: "2026.05.22", title: "BOOMPALA × Google Android", sub: "Google Android·Gemini 연계 공식 뮤직비디오 프로젝트", href: "https://www.billboard-japan.com/d_news/detail/161790/2" },
-      { kind: "멤버 협업", date: "2026.06.03", title: "사쿠라 × Couturier", sub: "펠리시모 뜨개질·DIY 브랜드 협업 · 공식 한정 상품", href: "https://www.le-sserafim.jp/news/28a632789865" }
+      { kind: "콜라보", date: "2026.09.10", title: "LE SSERAFIM × 오버워치", sub: "Made My Night 공식 MV 및 게임 컬래버레이션", href: "https://www.invenglobal.com/articles/25804/operation-rescue-le-sserafim-overwatch-collab-music-video-for-made-my-night-released" },
+      { kind: "콜라보", date: "2026.05.22", title: "BOOMPALA × Google Android", sub: "Google Android·Gemini 연계 공식 뮤직비디오 프로젝트", href: "https://www.billboard-japan.com/d_news/detail/161790/2" },
+      { kind: "콜라보", date: "2026.06.03", title: "사쿠라 × Couturier", sub: "펠리시모 뜨개질·DIY 브랜드 협업 · 공식 한정 상품", href: "https://www.le-sserafim.jp/news/28a632789865" }
     ],
     schedules: [
       { title: "일본 공식 일정", sub: "공연·방송·이벤트", href: "https://www.le-sserafim.jp/schedule" },
