@@ -2,11 +2,14 @@ import {
   STEM_REFERENCE, GROUP_REFERENCE, GOD_REFERENCE, ELEMENT_RELATIONS,
   RELATION_REFERENCE, GROUP_PAIR_RULES, PRACTICE_SUGGESTIONS,
 } from './readings-data.mjs?v=20261113-saju-brief1';
-import { attachPlainLanguage } from './plain-language.mjs?v=20261113-saju-brief1';
+import { attachPlainLanguage } from './plain-language.mjs?v=20261113-saju-reader1';
 import { attachAdvice } from './advice.mjs?v=20261113-saju-brief1';
 import { attachDeeperReadings } from './deeper-reading.mjs?v=20261113-saju-brief1';
 import { attachStageReadings } from './stage-reading.mjs?v=20261113-saju-brief1';
-import { getReadingSources } from './sources.mjs?v=20261113-saju-brief1';
+import { attachReaderSummary } from './reader-summary.mjs?v=20261113-saju-reader1';
+import { attachReaderExtras } from './reader-extras.mjs?v=20261113-saju-reader1';
+import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261113-saju-reader1';
+import { getReadingSources } from './sources.mjs?v=20261113-saju-reader1';
 
 const GROUP_KEYS = ['peer', 'expression', 'wealth', 'authority', 'resource'];
 const ELEMENT_KEYS = ['wood', 'fire', 'earth', 'metal', 'water'];
@@ -354,12 +357,44 @@ function adviceCopy(advice) {
   for(const item of advice)lines.push('',item.title,'이 제안을 연결한 이유: '+item.why,'해 볼 일: '+item.action,'함께 살펴볼 점: '+item.caution);
   return lines;
 }
+function readerCopy(overview) {
+  if (!overview) return [];
+  const lines=['',overview.title,overview.headline,...(overview.paragraphs||[])];
+  for (const card of overview.cards||[]) {
+    lines.push('',card.label,card.title,...card.paragraphs);
+    if(card.scopeNotice) lines.push('풀이 범위: '+card.scopeNotice);
+  }
+  return lines;
+}
+function readerExtrasCopy(extras) {
+  if(!extras) return [];
+  const lines=['',extras.title,extras.headline,...(extras.paragraphs||[])];
+  for(const item of extras.items||[]) {
+    if(item.value!=null) lines.push('',item.label+': '+item.value,item.description);
+    else {
+      lines.push('',item.title,item.periodLabel,item.headline,...(item.paragraphs||[]));
+      for(const [key,label] of [['opportunities','기회'],['people','도움을 구할 사람'],['documents','문서와 계약'],['cautions','주의할 점']]) {
+        lines.push(label,...(item[key]||[]).map(value=>value.label+': '+value.text));
+      }
+    }
+  }
+  return lines;
+}
 function copyCategory(report,topic) {
   const method=report.methodByCategory[topic];
   const topics=topic==='all'?['lifelong','annual','monthly']:[topic];
   const title=topic==='all'?`전체 풀이 · 평생운과 ${report.year}년 올해운·월별운`:
     topic==='lifelong'?'평생운 · 나의 사주와 생활 이야기':report.year+'년 '+(topic==='annual'?'올해운':'월별운');
-  const lines=['오쭈다 · 별빛 사주팔자',title,'',report.guide.title,...report.guide.paragraphs];
+  const lines=['오쭈다 · 별빛 사주팔자',title];
+  if(report.reader.scopeNotice) lines.push(report.reader.scopeNotice);
+  for(const current of topics) {
+    if(current==='monthly') for(const month of report.reader.months) lines.push(...readerCopy(month));
+    else lines.push(...readerCopy(report.reader[current]));
+    if(current==='lifelong'&&report.daeun)lines.push('',copyDaeunReading(report.daeun));
+    if(current==='lifelong') lines.push(...readerExtrasCopy(report.reader.symbols));
+    if(current==='monthly') lines.push(...readerExtrasCopy(report.reader.timings));
+  }
+  lines.push('','자세한 풀이');
   for(const current of topics){
     if(current==='monthly'){
       lines.push('',report.monthsIntro);
@@ -369,7 +404,7 @@ function copyCategory(report,topic) {
       lines.push('',section.title,section.summary,...easySectionCopy(section.chapters),...adviceCopy(report.adviceByCategory[current]));
     }
   }
-  lines.push('','사주 이름을 쉬운 말로',...report.glossary.map(value=>value.term+': '+value.meaning));
+  lines.push('',report.guide.title,...report.guide.paragraphs,'사주 이름을 쉬운 말로',...report.glossary.map(value=>value.term+': '+value.meaning));
   lines.push('',method.title,method.description,method.reuseNotice,report.adviceNotice,'[이 상품에 포함된 계산 범위]',...method.calculated,'[계산하지 않은 범위]',...method.notCalculated,...method.warnings);
   lines.push('','원래의 계산과 해석 전체');
   for(const current of topics){
@@ -393,7 +428,7 @@ function copyCategory(report,topic) {
 /** No external requests, randomness, user storage or fabricated chart entries.
  * Every calculated sentence is registered and linked from chapter.factIds.
  * Interpretation rules and shared references remain distinct in the result. */
-export function buildDetailedReading(chart,fortune) {
+export function buildDetailedReading(chart,fortune,{daeun=null}={}) {
   const profile=fortune?.profile;
   if(!profile?.dayMaster || !STEM_REFERENCE[profile.dayMaster.hanja] || chart?.dayMaster?.hanja!==profile.dayMaster.hanja
     || !Array.isArray(fortune.months) || fortune.months.length!==12 || new Set(fortune.months.map(value=>value.month)).size!==12
@@ -415,6 +450,21 @@ export function buildDetailedReading(chart,fortune) {
   attachAdvice(report,fortune);
   attachDeeperReadings(report,fortune);
   attachStageReadings(report,fortune);
+  attachReaderSummary(report,chart,fortune);
+  attachReaderExtras(report,chart,fortune);
+  if(daeun) {
+    report.daeun=buildDaeunReading(chart,daeun);
+    report.daeunCalculation=daeun;
+    const methods=[report.method,report.methodByCategory.lifelong,report.methodByCategory.all];
+    for(const method of methods) {
+      method.notCalculated=method.notCalculated.filter(text=>!text.startsWith('10년씩 나누어 보는'));
+      if(daeun.available)method.calculated.push('성별·출생 연간·절기 간격으로 계산한 10년 대운의 순서와 시작 시점, 각 구간과 타고난 사주의 관계');
+      else method.notCalculated.unshift(daeun.message);
+    }
+    report.sections.find(section=>section.id==='lifelong').summary=daeun.available
+      ?'태어난 사주의 성향을 읽고, 10년 단위의 흐름을 별도 항목으로 함께 살펴봐요.'
+      :'확정된 원국의 구성과 관계를 읽어요. '+daeun.message;
+  }
   report.copyByCategory=Object.fromEntries(['lifelong','annual','monthly','all'].map(topic=>[topic,copyCategory(report,topic)]));
   report.copyText=report.copyByCategory.all;
   return report;

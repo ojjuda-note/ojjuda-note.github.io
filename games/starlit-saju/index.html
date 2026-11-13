@@ -9,7 +9,7 @@
   <link rel="icon" href="../moonlit-tarot/assets/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="../moonlit-tarot/assets/moon-serif.woff?v=20261113-tarot-corpus1" as="font" type="font/woff" crossorigin>
   <link rel="stylesheet" href="./style.css?v=20261113-saju-light3">
-  <link rel="stylesheet" href="./report.css?v=20261113-saju-brief1">
+  <link rel="stylesheet" href="./report.css?v=20261113-saju-reader2">
 </head>
 <body>
   <a class="skip-link" href="#birth-form">출생 정보 입력으로 바로가기</a>
@@ -58,52 +58,56 @@
         <h2 id="form-title">별빛에 생일을 알려 주세요</h2>
 
         <form id="birth-form">
+          <div id="saved-profiles" class="saved-profiles" aria-label="저장된 사람"></div>
+          <fieldset class="person-field"><legend>누구의 이야기를 볼까요?</legend><div class="person-inputs"><label><span class="field-label">이름 · 선택</span><input id="person-name" type="text" maxlength="30" autocomplete="off" placeholder="이름 또는 별명"></label><label><span class="field-label">성별 · 선택</span><select id="person-gender" aria-describedby="gender-help"><option value="">선택 안 함</option><option value="male">남성</option><option value="female">여성</option></select></label></div><p id="gender-help" class="field-hint">성별은 평생운의 10년 흐름을 계산할 때 사용해요.</p></fieldset>
           <fieldset class="calendar-field"><legend>생일 기준</legend><div class="segmented"><label><input type="radio" name="calendar" value="solar" checked><span>양력</span></label><label><input type="radio" name="calendar" value="lunar"><span>음력</span></label></div><label id="leap-option" class="check-row leap-option" hidden><input id="leap-month" type="checkbox"><span>윤달에 태어났어요</span></label></fieldset>
           <fieldset class="date-field"><legend>생년월일</legend><div class="date-inputs"><label><span class="field-label">년</span><input id="birth-year" type="number" inputmode="numeric" autocomplete="off" min="1900" max="2050" step="1" placeholder="예: 1990" required aria-describedby="date-help"></label><label><span class="field-label">월</span><select id="birth-month" required><option value="">월</option></select></label><label><span class="field-label">일</span><select id="birth-day" required><option value="">일</option></select></label></div><p id="date-help" class="field-hint">1900년 이후의 생일을 입력해 주세요.</p></fieldset>
-          <fieldset class="time-field"><legend>태어난 시간</legend><label class="check-row"><input id="time-unknown" type="checkbox" checked aria-controls="time-fields"><span>태어난 시간을 몰라요</span></label><div id="time-fields" class="time-inputs" hidden><label><span class="field-label">시</span><select id="birth-hour" disabled></select></label><span class="time-colon" aria-hidden="true">:</span><label><span class="field-label">분</span><select id="birth-minute" disabled></select></label></div><p id="time-help" class="field-hint">시간을 몰라도 상세 풀이를 볼 수 있어요.</p></fieldset>
+          <fieldset class="time-field"><legend>태어난 시간</legend><label class="check-row"><input id="time-unknown" type="checkbox" checked aria-controls="time-fields"><span>태어난 시간을 몰라요</span></label><div id="time-fields" class="time-inputs" hidden><label><span class="field-label">시</span><select id="birth-hour" required disabled><option value="">시 선택</option></select></label><span class="time-colon" aria-hidden="true">:</span><label><span class="field-label">분</span><select id="birth-minute" required disabled><option value="">분 선택</option></select></label></div><p id="time-help" class="field-hint">시간을 몰라도 상세 풀이를 볼 수 있어요.</p></fieldset>
           <fieldset class="product-picker" id="entry-product-picker"><legend>읽고 싶은 풀이</legend><div class="product-options">
-            <label><input type="radio" name="entry-topic" value="lifelong" checked><span class="product-option"><strong>평생운 · 나의 바탕</strong><small>내 성향과 생활 이야기</small><b data-entry-price="lifelong">10쭈</b></span></label>
+            <label><input type="radio" name="entry-topic" value="lifelong" checked><span class="product-option"><strong>평생운 · 나의 바탕</strong><small>내 성향과 10년 흐름</small><b data-entry-price="lifelong">10쭈</b></span></label>
             <label><input type="radio" name="entry-topic" value="annual"><span class="product-option"><strong>올해운</strong><small>선택한 한 해의 흐름</small><b data-entry-price="annual">10쭈</b></span></label>
             <label><input type="radio" name="entry-topic" value="monthly"><span class="product-option"><strong>월별운</strong><small>1~12월 전체 포함</small><b data-entry-price="monthly">10쭈</b></span></label>
-            <label class="product-option-all"><input type="radio" name="entry-topic" value="all"><span class="product-option"><strong>전체 풀이</strong><small>평생운 + 올해운 + 12개월 월별운</small><b data-entry-price="all">30쭈</b></span></label>
+            <label class="product-option-all"><input type="radio" name="entry-topic" value="all"><span class="product-option"><strong>전체 풀이</strong><small>평생운 + 올해운 + 12개월 월별운 · 궁합 별도</small><b data-entry-price="all">30쭈</b></span></label>
           </div><div id="entry-year-field" class="year-control entry-year-control" hidden><label for="entry-year">운세를 볼 연도</label><select id="entry-year" aria-describedby="entry-price-note"></select></div></fieldset>
           <p class="saju-price"><strong id="entry-price-value">평생운 · 10쭈</strong></p>
           <p id="entry-price-note" class="saju-price-note">각 풀이 결제 후 24시간 동안 다시 보기 0쭈. 시간이 지나면 다시 결제해요. 전체는 이용 시간이 남은 항목을 빼고 차감해요.</p>
 
-          <details class="method-preview"><summary>풀이 범위·계산 기준</summary><p>같은 글자·관계에는 같은 설명을 쓰는 자동 풀이예요. 전통 해석과 생활 제안을 제공하며, 실제 미래를 확정하지 않아요.</p><p>대운(10년의 흐름)·용신(도움이 되는 기운)·신살(특별한 조합)의 해석은 포함하지 않아요.</p><p>현재 한국 시간(UTC+9)을 기준으로 해요. 태어난 지역과 과거 시간 제도의 차이는 따로 반영하지 않아요.</p></details>
+          <details class="method-preview"><summary>풀이 범위·계산 기준</summary><p>같은 글자·관계에는 같은 설명을 쓰는 자동 풀이예요. 전통 해석과 생활 제안을 제공하며, 실제 미래를 확정하지 않아요.</p><p>평생운·전체에는 성별과 태어난 시간이 확인될 때 10년 단위의 흐름을 더해요. 이름은 풀이에서 부르는 이름이며 이름 자체의 길흉을 계산하지 않아요. 용신·신살의 종합 판단은 포함하지 않아요.</p><p>현재 한국 시간(UTC+9)을 기준으로 해요. 태어난 지역과 과거 시간 제도의 차이는 따로 반영하지 않아요.</p></details>
           <div id="entry-check-error" class="form-error" role="alert" hidden><p id="entry-check-error-text"></p><button id="retry-entry-status" class="secondary-button" type="button">구매 내역 다시 확인하기</button></div>
           <div id="form-error" class="form-error" role="alert" tabindex="-1" hidden></div>
           <button id="open-story" class="primary-button" type="submit" disabled><svg><use href="#i-star"/></svg><span>10쭈로 평생운 펼치기</span><svg><use href="#i-arrow"/></svg></button>
           <p id="payment-status" class="payment-status" role="status"></p>
           <a id="login-link" class="login-link" href="/world.html?tab=hub#agit-daily" hidden>아지트에서 로그인·쭈 확인하기 →</a>
-          <p class="form-note">입력한 생일은 저장하지 않아요.</p>
+          <p class="form-note">입력 정보는 이 기기에 저장돼요. 이름·성별·생일은 서버로 보내지 않아요.</p>
         </form>
         <noscript><p class="form-error">사주를 펼치려면 브라우저에서 자바스크립트를 켜 주세요.</p></noscript>
+        <a class="tarot-link compatibility-entry" href="./compatibility.html"><svg><use href="#i-star"/></svg><span>두 사람의 궁합 · 별도 10쭈</span><span aria-hidden="true">↗</span></a>
         <a class="tarot-link" href="../moonlit-tarot/"><svg><use href="#i-moon"/></svg><span>오늘의 이야기가 궁금하다면, 달의 마녀 타로</span><span aria-hidden="true">↗</span></a>
       </section>
     </div>
 
     <section id="result" class="result" aria-labelledby="result-title" hidden>
-      <header class="result-heading"><p class="eyebrow"><span></span> YOUR EIGHT CHARACTERS <span></span></p><h2 id="result-title" tabindex="-1">별빛이 펼쳐 놓은<br><em>당신의 사주팔자</em></h2><p id="birth-summary" class="birth-summary"></p><p id="lunar-summary" class="lunar-summary"></p></header>
+      <header class="result-heading reading-result-heading"><h2 id="result-title" tabindex="-1">나의 <em>운세</em></h2><p id="birth-summary" class="birth-summary"></p></header>
 
-      <div id="result-warnings" class="result-warnings" hidden></div>
-      <details class="birth-chart-details"><summary>내 사주표와 다섯 가지 기운 보기</summary>
-      <div id="result-pillars" class="result-pillars" aria-label="태어난 해·달·날·시간의 사주 글자"></div>
-      <div class="result-layout">
-        <section class="day-master-panel" aria-labelledby="day-master-title"><p class="small-kicker">나를 나타내는 글자 · 일간</p><div class="day-master-heading"><span id="day-master-glyph" class="day-master-glyph" aria-hidden="true"></span><div><h3 id="day-master-title"></h3><p id="day-master-symbol"></p></div></div><p id="day-master-reading" class="day-master-reading"></p><p class="gentle-note">태어난 날의 위쪽 글자를 ‘일간’이라고 해요.</p></section>
-        <section class="elements-panel" aria-labelledby="elements-title"><div class="section-title"><h3 id="elements-title">나무·불·흙·쇠·물</h3><span id="element-count"></span></div><div id="element-bars" class="element-bars"></div><p class="gentle-note">오행(나무·불·흙·쇠·물)의 글자 수예요. 운의 점수는 아니에요.</p></section>
-      </div>
-      </details>
       <section id="detailed-reading" class="detailed-reading" data-reading-size="normal" aria-labelledby="detailed-title">
-        <header class="report-opening">
-          <p class="small-kicker">THE BOOK OF YOUR LIFE</p>
-          <h3 id="detailed-title" tabindex="-1">시간을 따라 읽는<br><em>나의 사주 이야기</em></h3>
-
-        </header>
+        <h3 id="detailed-title" class="reader-focus-title" tabindex="-1">나의 운세 풀이</h3>
         <div id="reading-controls" class="reading-controls" hidden>
-          <div class="current-reading"><p class="current-reading-label">지금 읽는 풀이</p><p id="current-reading-title"></p><p id="current-reading-note"></p></div>
-          <div class="reading-size-control" role="group" aria-label="본문 글자 크기"><span aria-hidden="true">글자 크기</span><button type="button" data-reading-size="normal" aria-pressed="true" aria-controls="report-content">보통</button><button type="button" data-reading-size="large" aria-pressed="false" aria-controls="report-content">크게</button></div>
+          <div class="current-reading"><p id="current-reading-title"></p><p id="current-reading-note"></p></div>
+          <div class="reading-tools"><a class="other-reading-link" href="#other-reading-options">다른 풀이</a><div class="reading-size-control" role="group" aria-label="본문 글자 크기"><span aria-hidden="true">글자 크기</span><button type="button" data-reading-size="normal" aria-pressed="true" aria-controls="report-content">보통</button><button type="button" data-reading-size="large" aria-pressed="false" aria-controls="report-content">크게</button></div></div>
         </div>
+        <div id="report-status" class="report-status" role="status" aria-live="polite"></div>
+        <div id="report-error" class="report-error" role="alert" hidden><p id="report-error-text"></p><button id="retry-report" class="secondary-button" type="button">구매 내역 다시 확인하기</button></div>
+        <nav id="report-toc" class="report-toc" aria-label="사주 상세 풀이 목차" hidden>
+          <a id="current-report-link" href="#reading-summary"><small>01</small><span id="current-report-label">핵심 운세</span></a>
+          <a href="#reading-topics"><small>02</small><span>항목별 풀이</span></a>
+          <a href="#reading-evidence"><small>03</small><span>풀이 근거</span></a>
+        </nav>
+        <div id="report-content"></div>
+        <section id="compatibility-section" class="compatibility-panel" aria-labelledby="compatibility-title" tabindex="-1">
+          <h3 id="compatibility-title">상대와의 궁합</h3>
+          <p class="field-hint">두 사람의 출생 정보로 서로 맞춰 갈 점을 자세히 읽어요. 궁합은 별도 10쭈이며 결제 후 24시간 동안 다시 볼 수 있어요.</p>
+          <a class="secondary-button" href="./compatibility.html">궁합 따로 보기 · 10쭈</a>
+        </section>
         <details id="other-reading-options" class="other-reading-options">
           <summary><span>다른 풀이 보기</span><small>전체 30쭈 · 각각 10쭈</small></summary>
           <div class="report-purchase-panel">
@@ -111,7 +115,7 @@
             <label><input type="radio" name="report-topic" value="lifelong" checked><span class="product-option"><strong>평생운 · 나의 바탕</strong><small>태어난 때의 사주 풀이</small><b data-report-price="lifelong">10쭈</b></span></label>
             <label><input type="radio" name="report-topic" value="annual"><span class="product-option"><strong>올해운</strong><small>선택한 한 해의 흐름</small><b data-report-price="annual">10쭈</b></span></label>
             <label><input type="radio" name="report-topic" value="monthly"><span class="product-option"><strong>월별운</strong><small>1~12월 전체 포함</small><b data-report-price="monthly">10쭈</b></span></label>
-            <label class="product-option-all"><input type="radio" name="report-topic" value="all"><span class="product-option"><strong>전체 풀이</strong><small>평생운 + 올해운 + 12개월 월별운</small><b data-report-price="all">30쭈</b></span></label>
+            <label class="product-option-all"><input type="radio" name="report-topic" value="all"><span class="product-option"><strong>전체 풀이</strong><small>평생운 + 올해운 + 12개월 월별운 · 궁합 별도</small><b data-report-price="all">30쭈</b></span></label>
           </div></fieldset>
           <div id="report-year-field" class="report-toolbar" hidden><div class="year-control"><label for="fortune-year">운세를 볼 연도</label><select id="fortune-year" aria-describedby="fortune-year-help"></select></div><p id="fortune-year-help">올해운·월별운에 적용돼요. 다른 연도는 새 상품이며, 평생운은 연도와 관계없어요.</p></div>
           <p id="product-offer" class="product-offer"></p>
@@ -119,16 +123,16 @@
           <p class="product-purchase-note">각 풀이 결제 후 24시간 동안 다시 보기 0쭈. 만료 후에는 펼치기 버튼을 눌러 다시 결제해요. 전체는 이용 시간이 남은 항목을 빼고 차감해요.</p>
           </div>
         </details>
-        <div id="report-status" class="report-status" role="status" aria-live="polite"></div>
-        <div id="report-error" class="report-error" role="alert" hidden><p id="report-error-text"></p><button id="retry-report" class="secondary-button" type="button">구매 내역 다시 확인하기</button></div>
-        <nav id="report-toc" class="report-toc" aria-label="사주 상세 풀이 목차" hidden>
-          <a id="current-report-link" href="#reading-lifelong"><small>01</small><span id="current-report-label">풀이 읽기</span></a>
-          <a href="#reading-evidence"><small>02</small><span>풀이의 근거</span></a>
-          <a href="#reading-method"><small>03</small><span>풀이 안내</span></a>
-          <a href="#reading-sources"><small>04</small><span>자료 출처</span></a>
-        </nav>
-        <div id="report-content"></div>
       </section>
+      <details class="birth-chart-details"><summary>내 사주표와 출생 정보 보기</summary>
+      <p id="lunar-summary" class="lunar-summary"></p>
+      <div id="result-warnings" class="result-warnings" hidden></div>
+      <div id="result-pillars" class="result-pillars" aria-label="태어난 해·달·날·시간의 사주 글자"></div>
+      <div class="result-layout">
+        <section class="day-master-panel" aria-labelledby="day-master-title"><p class="small-kicker">나를 나타내는 글자 · 일간</p><div class="day-master-heading"><span id="day-master-glyph" class="day-master-glyph" aria-hidden="true"></span><div><h3 id="day-master-title"></h3><p id="day-master-symbol"></p></div></div><p id="day-master-reading" class="day-master-reading"></p><p class="gentle-note">태어난 날의 위쪽 글자를 ‘일간’이라고 해요.</p></section>
+        <section class="elements-panel" aria-labelledby="elements-title"><div class="section-title"><h3 id="elements-title">나무·불·흙·쇠·물</h3><span id="element-count"></span></div><div id="element-bars" class="element-bars"></div><p class="gentle-note">오행(나무·불·흙·쇠·물)의 글자 수예요. 운의 점수는 아니에요.</p></section>
+      </div>
+      </details>
       <details class="conventions"><summary>계산과 시간의 자세한 기준 보기 <span aria-hidden="true">＋</span></summary><ul id="convention-list"></ul></details>
       <div class="result-actions"><button id="edit-birth" class="primary-button" type="button"><svg><use href="#i-back"/></svg>생일 다시 입력하기</button><button id="copy-reading" class="secondary-button" type="button" disabled><svg><use href="#i-copy"/></svg>현재 풀이 복사하기</button><a class="secondary-button" href="../moonlit-tarot/"><svg><use href="#i-moon"/></svg>타로도 보러 가기</a></div>
     </section>
@@ -136,6 +140,6 @@
   <footer class="site-footer"><span class="footer-wordmark">THE STARLIT ARCHIVE <i>✧</i></span><p>앞으로의 이야기는 당신의 선택으로 써 내려가세요.</p><span class="footer-no">VOL. 02 · STARLIGHT</span></footer>
   <div id="status" class="toast" role="status" aria-live="polite"></div>
   <script src="/shared/analytics/site-usage.js?v=20261113-fortune-visits1"></script>
-  <script type="module" src="./app.js?v=20261113-fortune-visits1"></script>
+  <script type="module" src="./app.js?v=20261113-saju-reader1"></script>
 </body>
 </html>

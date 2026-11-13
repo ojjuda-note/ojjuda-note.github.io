@@ -1,6 +1,12 @@
 name: Fanpage button regressions
 
 on:
+  workflow_dispatch:
+    inputs:
+      live:
+        description: Verify the deployed public site against this checkout
+        type: boolean
+        default: false
   pull_request:
     paths:
       - 'features/fanpages/**'
@@ -23,7 +29,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: fanpages-${{ github.ref }}
+  group: fanpages-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:
@@ -52,3 +58,33 @@ jobs:
           path: tests/artifacts/fanpage-urgent-events/
           if-no-files-found: ignore
           retention-days: 7
+  release-screen:
+    name: Fanpage release screen and images
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      FANPAGE_LIVE: ${{ inputs.live || 'false' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Check profiles, video IDs and JavaScript syntax
+        run: |
+          node features/fanpages/check-profiles.mjs
+          node features/fanpages/check-videos.mjs
+          for file in features/fanpages/*.js; do node --check "$file"; done
+      - name: Verify release data, mobile layouts, original photos and lazy video dialogs
+        run: node tests/fanpage-release-ui.test.cjs
+      - name: Save release screen evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fanpage-release-screen
+          path: tests/artifacts/fanpage-release/
+          if-no-files-found: error
+          retention-days: 14

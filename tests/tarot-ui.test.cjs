@@ -80,6 +80,11 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   await until(() => !window.document.querySelector('#summon-button').disabled);
   const $ = selector => window.document.querySelector(selector);
   const click = selector => $(selector).click();
+  const chooseCategory = value => {
+    const select = $('#summary-domain-category');
+    select.value = value;
+    select.dispatchEvent(new window.Event('change', { bubbles: true }));
+  };
   const closeReading = () => { if ($('#reading-dialog').open) $('#reading-dialog').close(); };
   const phase = name => $('#app').dataset.phase === name;
   const advanceTime = async (ms, { runTimers = true } = {}) => {
@@ -91,7 +96,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
     }
     await settle();
   };
-  return { dom, window, $, click, closeReading, phase, payment, receipt, advanceTime, revelations: () => revelations };
+  return { dom, window, $, click, chooseCategory, closeReading, phase, payment, receipt, advanceTime, revelations: () => revelations };
 }
 
 (async () => {
@@ -109,6 +114,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   assert.equal(completed.$('#oracle-text').textContent, expected, 'combined one-line reading appears after the revelation');
   assert.equal(completed.revelations(), 1, 'lower combined CTA uses the revelation before the full result');
   assert.equal(completed.$('#reading-dialog').open, false);
+  assert.equal(completed.$('.tarot-price span').textContent, '세 장의 풀이 · 종합 점괘 · 50가지 주제');
   assert.deepEqual(Array.from(completedSummary.groups, group => group.id), ['problem', 'timeline', 'domains']);
   assert.equal(completed.$('#summary-tab-problem').getAttribute('aria-selected'), 'true', 'the problem-solving view is the default');
   assert.equal(completed.$('#summary-panel-problem').hidden, false);
@@ -123,8 +129,10 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
     assert.equal(panel.getAttribute('aria-labelledby'), tab.id);
     const sections = [...panel.querySelectorAll('.reading-part')];
     assert.equal(sections.length, group.sections.length, 'every interpretation section is included');
+    if (group.id !== 'domains') assert.ok(sections.every(section => !section.hidden), 'the problem and timeline readings keep every section visible');
     group.sections.forEach((section, index) => {
       assert.ok(sections[index].querySelector('h3').textContent.endsWith(section.title));
+      if (section.number) assert.equal(Number(sections[index].querySelector('.reading-part-number').textContent), section.number);
       const paragraphs = [...sections[index].querySelectorAll('p')].map(node => node.textContent);
       assert.equal(paragraphs.join(''), Array.from(section.paragraphs).join(''), 'visual paragraph breaks preserve every original character and its order');
       assert.ok(paragraphs.length >= section.paragraphs.length);
@@ -148,9 +156,32 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   assert.equal(completed.window.document.activeElement.id, 'summary-tab-domains');
   assert.equal(completed.$('#summary-panel-domains').hidden, false);
   assert.equal(completed.$('#summary-tab-problem').tabIndex, -1);
-  const domainHeadings = [...completed.$('#summary-panel-domains').querySelectorAll('h3')].map(node => node.textContent);
-  assert.equal(domainHeadings.length, 12, 'all twelve requested life domains are included');
-  for (const domain of ['건강', '인연', '금전', '학업', '가족', '문서·계약', '악운', '천운', '직업', '운명', '행운', '궁합']) assert.ok(domainHeadings.some(title => title.includes(domain)), `the ${domain} reading has its own visible heading`);
+  const domainGroup = completedSummary.groups.find(group => group.id === 'domains');
+  const domainSections = [...completed.$('#summary-panel-domains').querySelectorAll('.reading-part')];
+  const domainSelect = completed.$('#summary-domain-category');
+  assert.equal(domainSections.length, 50, 'all fifty original readings stay in the DOM');
+  assert.deepEqual(domainSections.map(section => Number(section.querySelector('.reading-part-number').textContent)), Array.from({ length: 50 }, (_, index) => index + 1), 'topic numbers retain their original sequence');
+  assert.deepEqual(Array.from(domainGroup.categories, category => [category.id, category.count]), [['self', 5], ['timeline', 5], ['solutions', 5], ['love', 7], ['family', 4], ['career', 5], ['study', 5], ['money', 5], ['wellbeing', 4], ['opportunities', 5]]);
+  assert.equal(domainSelect.labels[0].textContent, '풀이 분야');
+  assert.equal(domainSelect.options.length, 10);
+  assert.equal(domainSelect.value, 'self');
+  assert.equal(completed.$('#summary-domain-total').textContent, '50개 풀이 · 10개 분야');
+  assert.equal(completed.$('#summary-domain-basis').open, false);
+  assert.equal(completed.$('#summary-domain-basis summary').textContent, '풀이 기준');
+  assert.equal(completed.$('#summary-domain-basis p').textContent, domainGroup.description);
+  const visitedTopics = new Set();
+  for (const category of domainGroup.categories) {
+    completed.chooseCategory(category.id);
+    assert.equal(domainSelect.value, category.id);
+    assert.equal(domainSelect.selectedOptions[0].textContent, `${category.label} · ${category.count}개`, 'the selected category and item count are clear');
+    const visible = domainSections.filter(section => !section.hidden);
+    assert.equal(visible.length, category.count);
+    assert.ok(visible.every(section => section.dataset.categoryId === category.id));
+    for (const section of visible) visitedTopics.add(section.dataset.sectionId);
+    assert.equal(completed.$('#summary-domain-sections').querySelectorAll('.reading-part').length, 50, 'changing categories hides other sections without removing their original text');
+  }
+  assert.equal(visitedTopics.size, 50, 'every topic can be reached through the ten categories');
+  completed.chooseCategory('money');
   completed.$('#summary-tab-domains').dispatchEvent(new completed.window.KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
   assert.equal(completed.window.document.activeElement.id, 'summary-tab-problem');
   completed.click('#summary-tab-domains');
@@ -167,15 +198,26 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   const expectedCopy = ['오쭈다 · 달의 마녀 타로', '종합 점괘', completed.$('#result-date').textContent, ''];
   for (const group of completedSummary.groups) {
     expectedCopy.push(group.label, '');
-    for (const section of group.sections) {
-      expectedCopy.push(section.title);
+    if (group.description) expectedCopy.push(group.description, '');
+    const appendExpected = section => {
+      expectedCopy.push(section.number ? `${section.number}. ${section.title}` : section.title);
       if (section.subtitle) expectedCopy.push(section.subtitle);
       for (const paragraph of section.paragraphs) expectedCopy.push(paragraph, '');
-    }
+    };
+    if (group.categories?.length) {
+      for (const category of group.categories) {
+        expectedCopy.push(category.label, '');
+        group.sections.filter(section => section.categoryId === category.id).forEach(appendExpected);
+      }
+    } else group.sections.forEach(appendExpected);
   }
   expectedCopy.push(`이렇게 해 보세요: ${completedSummary.ritual}`, '', '타로의 전통 해석이에요. 미래를 확정하지 않아요.');
   assert.equal(copiedResult, expectedCopy.join('\n'), 'copy includes all three groups in order, including inactive groups, and the common practical advice once');
   assert.equal(copiedResult.split(completedSummary.ritual).length - 1, 1);
+  assert.equal(copiedResult.split(domainGroup.description).length - 1, 1);
+  const copiedLines = copiedResult.split('\n');
+  for (const category of domainGroup.categories) assert.equal(copiedLines.filter(line => line === category.label).length, 1, 'each category heading is copied once');
+  for (const section of domainGroup.sections) assert.equal(copiedLines.filter(line => line === `${section.number}. ${section.title}`).length, 1, 'all fifty numbered topics are copied once regardless of the selected category');
   completed.$('#result-dialog').close();
   completed.click('.card[data-index="2"]');
   assert.equal(completed.$('#reading-dialog').open, true, 'opened cards retain their individual explanations');
@@ -212,6 +254,10 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   }
   completed.click('#reading-open');
   await until(() => completed.$('#result-dialog').open);
+  completed.payment.switchMode(true);
+  assert.equal(completed.phase('intro'), true);
+  assert.equal(completed.$('#summary-domain-category'), null, 'a mode change removes the category control and paid text');
+  assert.equal(completed.$('#summary-domain-basis'), null);
   completed.dom.window.close();
 
   // Extra reference notes follow the actual card and disappear on other cards.
@@ -288,6 +334,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   assert.equal(admin.$('#restart-result span').textContent, '새 운세 보기');
   admin.click('#restart-result');
   assert.equal(admin.phase('intro'), true);
+  assert.equal(admin.$('#summary-domain-category'), null, 'starting over clears the previous category selection');
   assert.equal(admin.payment.record, originalRecord);
   admin.click('#summon-button');
   await until(() => admin.phase('discard'));
@@ -324,6 +371,8 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   assert.equal(expires.$('#result-dialog').open, false);
   for (const id of ['summary-tabs', 'summary-text', 'summary-ritual']) assert.equal(expires.$(`#${id}`).textContent, '', 'expiry removes all reading groups, their tabs and the common advice');
   assert.equal(expires.$('#summary-text').childElementCount, 0);
+  assert.equal(expires.$('#summary-domain-category'), null);
+  assert.equal(expires.$('#summary-domain-basis'), null);
   assert.ok([...expires.window.document.querySelectorAll('.front-title strong')].every(node => node.textContent === ''));
   assert.equal(expires.payment.record, null);
   assert.equal(expires.payment.starts, 0, 'expiry never automatically purchases a new reading');
@@ -332,19 +381,22 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   expires.dom.window.close();
 
   // A suspended tab can miss its timer; direct card/result actions still expire.
-  for (const action of ['.card[data-index="2"]', '#reading-open', '#copy-result', '#summary-tab-timeline', '#summary-tab-domains']) {
+  for (const action of ['.card[data-index="2"]', '#reading-open', '#copy-result', '#summary-tab-timeline', '#summary-tab-domains', '#summary-domain-category']) {
     const suspended = await page();
-    if (action === '#copy-result' || action.startsWith('#summary-tab-')) {
+    if (action === '#copy-result' || action.startsWith('#summary-tab-') || action === '#summary-domain-category') {
       suspended.click('#reading-open');
       await until(() => suspended.$('#result-dialog').open);
+      if (action === '#summary-domain-category') suspended.click('#summary-tab-domains');
     }
     await suspended.advanceTime(86400000, { runTimers: false });
-    suspended.click(action);
+    if (action === '#summary-domain-category') suspended.chooseCategory('money');
+    else suspended.click(action);
     await until(() => suspended.phase('intro'));
     assert.equal(suspended.$('#reading-dialog').open, false);
     assert.equal(suspended.$('#result-dialog').open, false);
     assert.equal(suspended.$('#summary-tabs').childElementCount, 0);
     assert.equal(suspended.$('#summary-text').childElementCount, 0);
+    assert.equal(suspended.$('#summary-domain-category'), null);
     assert.equal(suspended.payment.starts, 0);
     suspended.dom.window.close();
   }
@@ -444,5 +496,5 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   await settle();
   assert.equal(freePreview.phase('discard'), true, 'administrator preview has no paid expiry');
   freePreview.dom.window.close();
-  console.log('PASS tarot UI: problem/timeline/domain tabs, detailed grouped readings and copy, card explanations, preview mode, rolling 24-hour expiry, suspended tabs, hung status, delayed clipboard and no automatic repurchase');
+  console.log('PASS tarot UI: fifty topics in ten categories, complete original copy, readable card explanations, tabs, preview mode, rolling 24-hour expiry, suspended changes, hung status, delayed clipboard and no automatic repurchase');
 })().catch(error => { console.error(error); process.exitCode = 1; });

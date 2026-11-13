@@ -9,6 +9,8 @@ const { JSDOM } = require('jsdom');
 const root = path.resolve(__dirname, '..');
 const appDir = path.join(root, 'games/starlit-saju');
 const fixedNow = '2026-11-13T03:00:00.000Z';
+const PROFILE_USER_A = '10000000-0000-4000-8000-000000000001';
+const PROFILE_USER_B = '10000000-0000-4000-8000-000000000002';
 const pause = () => new Promise(resolve => setTimeout(resolve, 5));
 function deferred() {
   let resolve;
@@ -27,6 +29,8 @@ async function harness(options = {}) {
   const html = await fs.readFile(path.join(appDir, 'index.html'), 'utf8');
   const dom = new JSDOM(html, {url:'https://ojjuda.kr/games/starlit-saju/', runScripts:'outside-only', pretendToBeVisual:true});
   const {window} = dom;
+  window.structuredClone=structuredClone;
+  for (const [key,value] of Object.entries(options.initialStorage || {})) window.localStorage.setItem(key,value);
   const NativeDate = window.Date;
   let nowMs=NativeDate.parse(fixedNow);
   window.Date = class FixedDate extends NativeDate {
@@ -51,7 +55,7 @@ async function harness(options = {}) {
   window.scrollTo = () => {};
   window.HTMLElement.prototype.scrollIntoView = function() {};
   const state = {
-    user:'member-a', signedIn:true, adminPreview:false, coins:30,
+    user:PROFILE_USER_A, signedIn:true, adminPreview:false, coins:30,
     starts:[], charges:0, chargedAmounts:[], nextRequest:1, initCalls:0, instances:[], receipts:new Map(), copies:[], statusCalls:[],
     failReadings:0, failStatus:0, legacyBundle:false, readingsGate:null, purchaseGate:null, moduleRequests:[],
     ...options
@@ -65,6 +69,7 @@ async function harness(options = {}) {
     get user() { return state.user; }
     get balance() { return state.coins; }
     get adminPreview() { return state.adminPreview; }
+    get anonymous() { return Boolean(state.anonymous); }
     remainingMs(access) { return access?.adminPreview?Infinity:Math.max(0,Date.parse(access?.expires_at)-nowMs)||0; }
     isActive(access) { return this.remainingMs(access)>0; }
     legacyAccess() { return {price:10,paid_at:fixedNow,expires_at:new Date(Date.parse(fixedNow)+86400000).toISOString()}; }
@@ -110,6 +115,7 @@ async function harness(options = {}) {
     }
   }
   const records = new Map();
+  let linkQueue=Promise.resolve();
   const resolve = (specifier, parent) => new URL(specifier, parent).href;
   async function record(identifier) {
     const file = fileURLToPath(identifier);
@@ -134,8 +140,14 @@ async function harness(options = {}) {
   }
   async function evaluate(identifier) {
     const entry = await record(identifier);
-    if (entry.module.status === 'unlinked') entry.link ||= entry.module.link(async (specifier, parent) => (await record(resolve(specifier, parent.identifier))).module);
-    if (entry.link) await entry.link;
+    // Browser imports coordinate a shared dependency graph. VM modules require
+    // us to serialize linking when independent imports also depend on each other.
+    const linked=linkQueue.then(async()=>{
+      if(entry.module.status==='unlinked')entry.link||=entry.module.link(async(specifier,parent)=>(await record(resolve(specifier,parent.identifier))).module);
+      if(entry.link)await entry.link;
+    });
+    linkQueue=linked.catch(()=>{});
+    await linked;
     if (entry.module.status === 'linked') entry.evaluation ||= entry.module.evaluate();
     if (entry.evaluation) await entry.evaluation;
     return entry.module;
@@ -145,7 +157,9 @@ async function harness(options = {}) {
   await pause();
   const $ = id => window.document.getElementById(id);
   const change = element => element.dispatchEvent(new window.Event('change', {bubbles:true}));
-  function fill({year=1990,month=5,day=17,hour=null,minute=0,calendar='solar',leap=false,topic='lifelong',fortuneYear=2026} = {}) {
+  function fill({year=1990,month=5,day=17,hour=null,minute=0,calendar='solar',leap=false,topic='lifelong',fortuneYear=2026,name='',gender=''} = {}) {
+    $('person-name').value=name; change($('person-name'));
+    $('person-gender').value=gender; change($('person-gender'));
     const radio = window.document.querySelector(`input[name="calendar"][value="${calendar}"]`);
     radio.checked = true;
     change(radio);
@@ -161,7 +175,10 @@ async function harness(options = {}) {
     $('entry-year').value=String(fortuneYear);change($('entry-year'));
   }
   function submit() { $('birth-form').dispatchEvent(new window.Event('submit', {bubbles:true,cancelable:true})); }
-  async function ready(topic='lifelong',year=0) { await waitFor(() => !$('result').hidden && $('report-content').dataset.topic===topic && $('report-content').dataset.year===String(year), $('form-error').textContent || 'report missing'); }
+  async function ready(topic='lifelong',year=0) {
+    try { await waitFor(() => !$('result').hidden && $('report-content').dataset.topic===topic && $('report-content').dataset.year===String(year),'report missing'); }
+    catch(error) { error.message+=` · ${$('form-error').textContent} · ${$('entry-check-error-text').textContent} · starts=${state.starts.length}`;throw error; }
+  }
   function pickReport(topic,year=2026) {
     if (!$('other-reading-options').open) $('other-reading-options').querySelector('summary').click();
     assert.equal($('other-reading-options').open,true,'open the other-reading options before choosing a product');
@@ -227,6 +244,12 @@ test('reader size and chapter navigation preserve the purchased reading without 
   assert.equal(large.getAttribute('aria-pressed'),'true');
   assert.equal(normal.getAttribute('aria-pressed'),'false');
   assert.equal(h.$('report-content').textContent,original);
+  const full=h.$('reading-lifelong-details');
+  assert.equal(full.open,false,'the original theory stays folded behind the personal reading');
+  const basisLink=doc.querySelector('.reader-card .reader-detail-link');
+  assert.ok(basisLink,'each personal interpretation can reveal its original explanation');
+  basisLink.click();
+  assert.equal(full.open,true);
   const outline=doc.querySelector('.chapter-outline');
   assert.equal(outline.open,false);
   outline.querySelector('summary').click();
@@ -247,6 +270,67 @@ test('reader size and chapter navigation preserve the purchased reading without 
   assert.equal(h.$('detailed-reading').dataset.readingSize,'normal');
   assert.equal(normal.getAttribute('aria-pressed'),'true');
   assert.equal(h.state.starts.length,1);
+  assert.equal(h.state.charges,1);
+});
+
+test('the personal reading leads and all longer explanations remain accessible on request',async t=>{
+  const h=await harness();t.after(h.close);h.fill({hour:8,minute:37});h.submit();await h.ready();
+  const doc=h.window.document,body=h.$('report-content');
+  assert.ok(h.$('reading-summary'));
+  assert.ok(h.$('reading-topics'));
+  assert.equal(doc.querySelector('.report-opening'),null,'there is no duplicate introductory banner before the reading');
+  assert.deepEqual([...h.$('report-toc').querySelectorAll('a')].map(link=>link.hash),['#reading-summary','#reading-topics','#reading-evidence']);
+  assert.ok(body.compareDocumentPosition(doc.querySelector('.birth-chart-details'))&h.window.Node.DOCUMENT_POSITION_FOLLOWING,
+    'the personal interpretation comes before the birth-chart explanation');
+  assert.ok(body.compareDocumentPosition(h.$('other-reading-options'))&h.window.Node.DOCUMENT_POSITION_FOLLOWING,
+    'the current reading comes before another purchase panel');
+  assert.equal(h.$('report-status').textContent,'');
+  const cards=[...body.querySelectorAll('.reader-card')];
+  assert.ok(cards.length>=16,'personal life topics have separate detailed sections');
+  assert.ok(body.querySelectorAll('.reader-topic-group').length>1,'many topics are grouped in the contents');
+  for(const card of cards) {
+    assert.ok(card.querySelector('.reader-card-label').textContent.trim());
+    assert.ok(card.querySelector('.reader-card-title').textContent.trim());
+    assert.ok(card.querySelectorAll('.reader-prose>p').length>=5,'each topic explains its meaning, concrete examples and how to act');
+    assert.equal(card.dataset.origin,'service-reference');
+    assert.ok(card.dataset.factIds.split(' ').every(id=>id.startsWith('natal.')),'lifelong never leaks a separately purchased period');
+    assert.doesNotMatch(card.textContent,/사주는 태어난|이를 .십성|아래쪽 대표 글자|위쪽 글자/);
+  }
+  assert.equal(h.$('reading-lifelong-details').open,false);
+  assert.equal(body.querySelectorAll('.report-chapter').length,13,'all previous detailed chapters are preserved');
+  assert.ok([...body.querySelectorAll('.report-chapter')].every(chapter=>chapter.closest('.reading-full-text')&&!chapter.closest('.reading-full-text').open));
+  cards.find(card=>card.querySelector('.reader-detail-link')).querySelector('.reader-detail-link').click();
+  assert.equal(h.$('reading-lifelong-details').open,true);
+  assert.ok(doc.activeElement.classList.contains('chapter-title'));
+  doc.querySelector('.other-reading-link').click();
+  assert.equal(h.$('other-reading-options').open,true);
+  assert.equal(h.state.charges,1,'reading navigation is never a purchase');
+  h.$('copy-reading').click();await waitFor(()=>h.state.copies.length===1);
+  const copy=h.state.copies[0],headline=body.querySelector('.reader-headline').textContent;
+  assert.ok(copy.indexOf(headline)<copy.indexOf('자세한 풀이'));
+  assert.ok(copy.indexOf(headline)<copy.indexOf('사주 이름을 쉬운 말로'));
+  for(const card of cards)for(const paragraph of card.querySelectorAll('.reader-prose>p'))assert.ok(copy.includes(paragraph.textContent));
+});
+
+test('monthly readers see the current and next actual flow before all twelve detailed months',async t=>{
+  const h=await harness();t.after(h.close);h.fill({topic:'monthly'});h.submit();await h.ready('monthly',2026);
+  const spotlight=h.$('reading-summary');
+  assert.ok(spotlight.classList.contains('months-spotlight'));
+  const links=[...spotlight.querySelectorAll('a')];
+  assert.deepEqual(links.map(link=>link.hash),['#month-title-11','#month-title-12']);
+  assert.equal(h.$('report-content').querySelector('.month-reading').id,'reading-month-11','the current detailed result appears before the other collapsed months');
+  assert.equal(h.$('reading-month-11').querySelector('.reader-headline'),null,'the month result heading is not repeated inside its open body');
+  for(const month of h.$('report-content').querySelectorAll('.month-reading')) {
+    assert.ok(month.querySelector(':scope>summary .month-headline').textContent.trim());
+    assert.equal(month.querySelector('.reading-full-text').open,false);
+  }
+  h.$('reading-month-11').open=false;
+  h.$('report-toc').querySelector('a[href="#reading-topics"]').click();
+  assert.equal(h.$('reading-month-11').open,true,'the topic navigation opens its current month automatically');
+  assert.equal(h.$('reading-month-11-details').open,false,'topic navigation does not unfold the calculation lesson');
+  links[1].click();
+  assert.equal(h.$('reading-month-12').open,true);
+  assert.equal(h.window.document.activeElement.id,'month-title-12');
   assert.equal(h.state.charges,1);
 });
 
@@ -285,7 +369,7 @@ test('copy and evidence contain only the opened product, with method and common 
   assert.match(h.$('report-content').textContent,/적용한 해석 규칙/);
   assert.match(h.$('report-content').textContent,/공통 참고 설명/);
   assert.match(h.$('reading-method').textContent,/계산하지 않은/);
-  assert.match(h.window.document.querySelector('.method-preview').textContent,/대운.*용신.*신살/);
+  assert.match(h.window.document.querySelector('.method-preview').textContent,/성별.*태어난 시간.*10년.*이름.*용신.*신살/);
 });
 
 test('each chapter leads with its title, clear subtitle and easy detail before complete expandable evidence', async t => {
@@ -310,11 +394,12 @@ test('each chapter leads with its title, clear subtitle and easy detail before c
       details.querySelector('summary').click();
       assert.equal(details.open,true,'all supporting information remains available on request');
     }
-    const chapters=topic==='all'?[...expected.sections.flatMap(section=>section.chapters),...expected.months.flatMap(month=>month.chapters)]:topic==='monthly'?expected.months.flatMap(month=>month.chapters):expected.sections.find(section=>section.id===topic).chapters;
+    const sections=topic==='all'?[...expected.sections,...expected.months.map(month=>({...month,id:`month-${month.month}`}))]:topic==='monthly'?expected.months.map(month=>({...month,id:`month-${month.month}`})):expected.sections.filter(section=>section.id===topic);
+    const chapters=sections.flatMap(section=>section.chapters.map((chapter,index)=>({chapter,headingId:`reading-${section.id}-chapter-${index+1}`})));
     const articles=[...h.$('report-content').querySelectorAll('.report-chapter')];
     assert.equal(articles.length,chapters.length);
-    for (const [index,chapter] of chapters.entries()) {
-      const article=articles[index];
+    for (const {chapter,headingId} of chapters) {
+      const article=h.$(headingId).closest('.report-chapter');
       const title=article.querySelector(':scope > h4.chapter-title');
       const subtitle=article.querySelector(':scope > h5.chapter-summary');
       const easy=article.querySelector(':scope > .easy-reading');
@@ -345,8 +430,9 @@ test('each chapter leads with its title, clear subtitle and easy detail before c
     const cards=[...h.$('report-content').querySelectorAll('.advice-card')];
     assert.ok(advice.length>0);
     assert.equal(cards.length,advice.length,'show every grounded suggestion without truncation');
-    for (const [index,item] of advice.entries()) {
-      const card=cards[index];
+    for (const item of advice) {
+      const card=cards.find(value=>value.dataset.adviceId===item.id);
+      assert.ok(card,'each month retains its own complete advice');
       assert.equal(card.dataset.adviceId,item.id);
       assert.equal(card.dataset.origin,'service-advice');
       assert.equal(card.querySelector('h4').textContent,item.title);
@@ -658,4 +744,156 @@ test('a paid previous year remains selectable across New Year for the rest of it
   h.changeAccount('member-b');h.fill({topic:'annual'});
   await waitFor(()=>h.state.statusCalls.length>previousChecks&&!h.$('open-story').disabled);
   assert.equal([...h.$('entry-year').options].some(option=>option.value==='2025'),false,'the next account cannot inherit an owned historical year');
+});
+
+test('saved people restore every birth field, render names as text, and allow edits and deletion without payment',async t=>{
+  const h=await harness({user:PROFILE_USER_A});t.after(h.close);
+  const host=h.$('saved-profiles'),uses=()=>[...host.querySelectorAll('.profile-picker-use')];
+  const save=async()=>{
+    host.querySelector('.profile-picker-save').click();
+    await waitFor(()=>host.querySelector('.profile-picker-status').dataset.state==='success'&&!host.querySelector('.profile-picker-save').disabled,'profile save did not settle');
+  };
+  h.fill({name:'한별',gender:'female',year:2023,month:2,day:10,calendar:'lunar',leap:true,hour:8,minute:37});
+  await save();assert.equal(uses().length,1);
+  assert.match(uses()[0].textContent,/한별.*여성.*음력.*윤달.*08:37/);
+  host.querySelector('.profile-picker-new').click();
+  assert.equal(h.$('person-name').value,'');assert.equal(h.$('birth-year').value,'');
+  assert.equal(host.querySelectorAll('.is-selected').length,0);
+  const markup='<img src=x onerror=alert(1)>';
+  h.fill({name:markup,gender:'male',year:1994,month:11,day:8,hour:null});
+  await save();assert.equal(uses().length,2);
+  assert.ok(uses().some(button=>button.textContent.includes(markup)));
+  assert.equal(host.querySelector('img,script,[onerror]'),null,'a stored name never becomes markup');
+  uses().find(button=>button.textContent.includes('한별')).click();
+  assert.equal(h.$('person-name').value,'한별');assert.equal(h.$('person-gender').value,'female');
+  assert.equal(h.window.document.querySelector('input[name="calendar"]:checked').value,'lunar');
+  assert.deepEqual(['birth-year','birth-month','birth-day','birth-hour','birth-minute'].map(id=>h.$(id).value),['2023','2','10','8','37']);
+  assert.equal(h.$('leap-month').checked,true);assert.equal(h.$('time-unknown').checked,false);
+  assert.equal(host.querySelectorAll('.is-selected').length,1);
+  h.$('person-name').value='한별 수정';h.change(h.$('person-name'));await save();
+  assert.equal(uses().length,2,'saving an edited selected person updates that record');
+  assert.ok(uses().some(button=>button.textContent.includes('한별 수정')));
+  uses().find(button=>button.textContent.includes(markup)).click();
+  assert.equal(h.$('time-unknown').checked,true);assert.equal(h.$('birth-hour').value,'');assert.equal(h.$('birth-minute').value,'');
+  assert.equal(h.$('leap-month').checked,false);assert.equal(h.window.document.querySelector('input[name="calendar"]:checked').value,'solar');
+  host.querySelector('.is-selected .profile-picker-delete').click();
+  assert.equal(uses().length,1);assert.equal(host.textContent.includes(markup),false);
+  assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);assert.equal(h.$('result').hidden,true);
+});
+
+test('saved people persist on reopening and remain isolated after account changes and sign-out',async t=>{
+  const original=await harness({user:PROFILE_USER_A});t.after(original.close);
+  original.fill({name:'내가 저장한 사람',gender:'male',hour:4,minute:12});
+  original.$('saved-profiles').querySelector('.profile-picker-save').click();
+  await waitFor(()=>original.$('saved-profiles').querySelectorAll('.profile-picker-use').length===1);
+  const storage=original.window.localStorage;
+  const initialStorage=Object.fromEntries(Array.from({length:storage.length},(_,index)=>{const key=storage.key(index);return [key,storage.getItem(key)];}));
+  const h=await harness({user:PROFILE_USER_A,initialStorage});t.after(h.close);
+  const host=h.$('saved-profiles');
+  assert.equal(host.querySelectorAll('.profile-picker-use').length,1);
+  host.querySelector('.profile-picker-use').click();
+  assert.equal(h.$('person-name').value,'내가 저장한 사람');assert.equal(h.$('birth-hour').value,'4');
+  h.changeAccount(PROFILE_USER_B);await pause();
+  assert.equal(host.querySelectorAll('.profile-picker-use').length,0);assert.equal(host.textContent.includes('내가 저장한 사람'),false);
+  assert.equal(h.$('person-name').value,'');assert.equal(h.$('person-gender').value,'');assert.equal(h.$('birth-year').value,'');
+  h.changeAccount(PROFILE_USER_A);await pause();
+  assert.equal(host.querySelectorAll('.profile-picker-use').length,1);
+  h.changeAccount(null,false);await pause();
+  assert.equal(host.querySelectorAll('.profile-picker-use').length,0);assert.equal(host.querySelector('.profile-picker-save').disabled,true);
+  assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);assert.equal(original.state.starts.length,0);
+});
+
+test('a device storage failure is visible and preserves the entered information without claiming a save or charging',async t=>{
+  const h=await harness({user:PROFILE_USER_A});t.after(h.close);
+  h.fill({name:'지워지면 안 되는 입력',gender:'female',hour:8,minute:37});
+  const host=h.$('saved-profiles');
+  h.window.Storage.prototype.setItem=function(){throw new h.window.DOMException('storage full','QuotaExceededError');};
+  host.querySelector('.profile-picker-save').click();
+  await waitFor(()=>host.querySelector('.profile-picker-status').dataset.state==='error');
+  const status=host.querySelector('.profile-picker-status');
+  assert.match(status.textContent,/저장 공간.*부족/);assert.equal(status.getAttribute('role'),'alert');
+  assert.doesNotMatch(status.textContent,/저장했어요/);assert.equal(host.querySelectorAll('.profile-picker-use').length,0);
+  assert.equal(h.$('person-name').value,'지워지면 안 되는 입력');assert.equal(h.$('person-gender').value,'female');
+  assert.equal(h.$('birth-hour').value,'8');assert.equal(h.$('birth-minute').value,'37');
+  assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);assert.equal(h.$('result').hidden,true);
+});
+
+test('name and gender edits reuse the original entitlement while the actual ten-year reading follows the selected gender',async t=>{
+  const h=await harness({user:PROFILE_USER_A});t.after(h.close);
+  h.fill({name:'민준',gender:'male',hour:8,minute:37});h.submit();await h.ready();
+  assert.equal(h.$('reading-daeun').querySelectorAll('[id^="reading-daeun-period-"]').length,9);
+  const firstDaeun=h.$('reading-daeun').textContent,receipt=[...h.state.receipts.values()][0],expiry=receipt.expires_at;
+  const firstBirth=JSON.stringify(h.state.starts[0].chart.input);
+  assert.equal(h.$('saved-profiles').querySelectorAll('.profile-picker-use').length,1,'opening a reading also saves its entered person');
+  h.$('edit-birth').click();
+  h.$('person-name').value='민준 이름 수정';h.change(h.$('person-name'));
+  h.$('person-gender').value='female';h.change(h.$('person-gender'));
+  await waitFor(()=>h.$('open-story').dataset.expectedCharge==='0'&&!h.$('open-story').disabled);
+  assert.equal(h.state.starts.length,1,'changing display details never purchases automatically');
+  h.submit();await h.ready();
+  assert.notEqual(h.$('reading-daeun').textContent,firstDaeun);
+  assert.equal(h.state.starts.at(-1).expectedCharge,0);assert.equal(h.state.charges,1);
+  assert.equal(JSON.stringify(h.state.starts.at(-1).chart.input),firstBirth);
+  assert.equal([...h.state.receipts.values()][0].expires_at,expiry);
+  h.$('edit-birth').click();h.$('person-name').value='<svg/onload=alert(1)>';h.change(h.$('person-name'));
+  await waitFor(()=>h.$('open-story').dataset.expectedCharge==='0'&&!h.$('open-story').disabled);
+  h.submit();await h.ready();assert.equal(h.state.charges,1);
+  assert.equal(h.$('birth-summary').querySelector('[onload],script'),null);
+  assert.equal(h.$('saved-profiles').querySelector('[onload],script'),null);
+  h.pickReport('all',2026);h.$('open-product').click();await h.ready('all',2026);
+  assert.equal(h.$('reading-daeun').querySelectorAll('[id^="reading-daeun-period-"]').length,9);
+  assert.deepEqual(h.state.chargedAmounts,[10,20],'the ten-year reading adds no fee to lifelong or full access');
+});
+
+test('a missing time or an uncertain solar-term minute never renders invented ten-year periods',async t=>{
+  for(const input of [
+    {name:'시간 모름',gender:'female',year:1990,month:5,day:17,hour:null},
+    {name:'절기 경계',gender:'male',year:2024,month:2,day:4,hour:17,minute:27},
+  ]) {
+    const h=await harness({user:PROFILE_USER_A});t.after(h.close);h.fill(input);h.submit();await h.ready();
+    assert.ok(h.$('reading-daeun'));
+    assert.equal(h.$('reading-daeun').querySelectorAll('[id^="reading-daeun-period-"]').length,0);
+    assert.match(h.$('reading-daeun').textContent,input.hour===null?/태어난 시간/:/절기/);
+    assert.equal(h.state.chargedAmounts[0],10);
+  }
+});
+
+test('unchecking the main unknown-time box leaves hour and minute unselected until both are explicitly entered',async t=>{
+  const h=await harness({user:PROFILE_USER_A});t.after(h.close);h.fill({gender:'male',hour:null});
+  for(const id of ['birth-hour','birth-minute']) {assert.equal(h.$(id).value,'');assert.equal(h.$(id).required,true);assert.equal(h.$(id).disabled,true);}
+  h.$('time-unknown').checked=false;h.change(h.$('time-unknown'));
+  assert.equal(h.$('birth-hour').value,'');assert.equal(h.$('birth-minute').value,'');
+  assert.equal(h.$('birth-form').checkValidity(),false);h.submit();await pause();assert.equal(h.state.starts.length,0);
+  h.$('birth-hour').value='0';h.change(h.$('birth-hour'));
+  assert.equal(h.$('birth-form').checkValidity(),false);h.submit();await pause();assert.equal(h.state.starts.length,0);
+  h.$('birth-minute').value='0';h.change(h.$('birth-minute'));
+  await waitFor(()=>!h.$('open-story').disabled);h.submit();await h.ready();
+  assert.equal(h.state.starts[0].chart.input.hour,0);assert.equal(h.state.starts[0].chart.input.minute,0);
+  assert.equal(h.state.starts[0].chart.timeKnown,true);assert.deepEqual(h.state.chargedAmounts,[10]);
+});
+
+test('returning to the saju tab refreshes people saved or deleted in another tab without purchasing',async t=>{
+  const h=await harness({user:PROFILE_USER_A});t.after(h.close);
+  const other=await harness({user:PROFILE_USER_A});t.after(other.close);
+  const host=h.$('saved-profiles'),otherHost=other.$('saved-profiles');
+  assert.equal(host.querySelectorAll('.profile-picker-use').length,0);
+  other.fill({name:'다른 탭에서 저장',gender:'female',year:1993,month:7,day:12,hour:9,minute:25});
+  otherHost.querySelector('.profile-picker-save').click();
+  await waitFor(()=>otherHost.querySelectorAll('.profile-picker-use').length===1);
+  const key='ojjuda-saju-profiles-v1:'+PROFILE_USER_A;
+  const saved=other.window.localStorage.getItem(key);assert.ok(saved);
+  h.window.localStorage.setItem(key,saved);
+  assert.equal(host.querySelectorAll('.profile-picker-use').length,0,'storage synchronization alone does not manipulate the existing DOM');
+  h.window.dispatchEvent(new h.window.Event('focus'));
+  await waitFor(()=>host.querySelectorAll('.profile-picker-use').length===1);
+  assert.match(host.querySelector('.profile-picker-use').textContent,/다른 탭에서 저장.*여성.*09:25/);
+  assert.equal(h.$('person-name').value,'');assert.equal(h.$('birth-year').value,'','refreshing the list does not fill or purchase a person automatically');
+  otherHost.querySelector('.profile-picker-delete').click();
+  const deleted=other.window.localStorage.getItem(key);
+  if(deleted===null)h.window.localStorage.removeItem(key);else h.window.localStorage.setItem(key,deleted);
+  assert.equal(host.querySelectorAll('.profile-picker-use').length,1);
+  h.window.dispatchEvent(new h.window.StorageEvent('storage',{key,oldValue:saved,newValue:deleted,storageArea:h.window.localStorage,url:other.window.location.href}));
+  await waitFor(()=>host.querySelectorAll('.profile-picker-use').length===0);
+  assert.equal(host.textContent.includes('다른 탭에서 저장'),false);
+  for(const tab of [h,other]) {assert.equal(tab.state.starts.length,0);assert.equal(tab.state.charges,0);assert.equal(tab.$('result').hidden,true);}
 });

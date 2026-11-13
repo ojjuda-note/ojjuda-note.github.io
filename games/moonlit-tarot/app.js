@@ -1,4 +1,4 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261113-tarot-life1';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261113-tarot-topics50-1';
 import { TarotFX, TarotAudio } from './fx.js';
 import { TarotPayment, getTarotPrice } from './payment.js?v=20261113-tarot-24h1';
 import { TarotRevelation } from './revelation.js?v=20261112-tarot-daily1';
@@ -58,7 +58,7 @@ function updatePaymentStatus() {
   const preview = billing.adminPreview;
   app.dataset.adminPreview = String(preview);
   $('.tarot-price strong').textContent = preview ? '관리자 모드' : `1회 ${getTarotPrice(state.topic)}쭈`;
-  $('.tarot-price span').textContent = preview ? '쭈 차감 없음 · 기록 미저장' : '세 장의 풀이와 종합 점괘';
+  $('.tarot-price span').textContent = preview ? '쭈 차감 없음 · 기록 미저장' : '세 장의 풀이 · 종합 점괘 · 50가지 주제';
   $('#daily-limit-note').textContent = preview ? '횟수 제한 없이 매번 새로운 카드로 시작해요.' : '결제 후 24시간 이용 · 만료 후 재결제';
   $('#help-usage-note').textContent = preview ? '쭈 차감·기록 저장 없이 횟수 제한 없이 이용해요. 일반 이용은 아지트에서 관리자 모드를 꺼 주세요.' : '전체 30쭈 · 연애·금전·일과 도전 각 10쭈. 결제 후 24시간 동안 다시 보기는 무료이며, 만료 후에는 다시 결제해요.';
   $('#restart-small span').textContent = preview ? '새 운세 보기' : '다른 주제 고르기';
@@ -650,10 +650,11 @@ function renderReadingSections(container, sections, fallback = '', headingTag = 
     const section = document.createElement('section');
     section.className = 'reading-part';
     if (part.id) section.dataset.sectionId = part.id;
+    if (part.categoryId) section.dataset.categoryId = part.categoryId;
     const heading = document.createElement(headingTag);
     const number = document.createElement('span');
     number.className = 'reading-part-number';
-    number.textContent = String(index + 1).padStart(2, '0');
+    number.textContent = String(part.number || index + 1).padStart(2, '0');
     heading.append(number, document.createTextNode(part.title));
     section.append(heading);
     if (part.subtitle) {
@@ -775,6 +776,61 @@ function selectSummaryGroup(id, focus = false) {
   });
 }
 
+function selectDomainCategory(panel, categoryId) {
+  const select = panel.querySelector('#summary-domain-category');
+  if (!select || ![...select.options].some(option => option.value === categoryId)) return;
+  select.value = categoryId;
+  panel.dataset.category = categoryId;
+  const visible = [];
+  panel.querySelectorAll('#summary-domain-sections > .reading-part').forEach(section => {
+    section.hidden = section.dataset.categoryId !== categoryId;
+    section.classList.remove('is-domain-first', 'is-domain-last');
+    if (!section.hidden) visible.push(section);
+  });
+  visible[0]?.classList.add('is-domain-first');
+  visible[visible.length - 1]?.classList.add('is-domain-last');
+}
+
+function renderDomainCategories(panel, group, cardNames) {
+  const controls = document.createElement('div');
+  controls.className = 'domain-controls';
+  const label = document.createElement('label');
+  label.htmlFor = 'summary-domain-category';
+  label.textContent = '풀이 분야';
+  const total = document.createElement('p');
+  total.id = 'summary-domain-total';
+  total.className = 'domain-total';
+  total.textContent = `${group.sections.length}개 풀이 · ${group.categories.length}개 분야`;
+  const select = document.createElement('select');
+  select.id = 'summary-domain-category';
+  select.setAttribute('aria-describedby', total.id);
+  group.categories.forEach(category => {
+    const option = document.createElement('option');
+    option.value = category.id;
+    option.textContent = `${category.label} · ${category.count}개`;
+    select.append(option);
+  });
+  controls.append(label, total, select);
+  panel.append(controls);
+  if (group.description) {
+    const basis = document.createElement('details');
+    basis.id = 'summary-domain-basis';
+    basis.className = 'reading-source domain-basis';
+    const title = document.createElement('summary');
+    title.textContent = '풀이 기준';
+    const description = document.createElement('p');
+    description.textContent = group.description;
+    basis.append(title, description);
+    panel.append(basis);
+  }
+  const sections = document.createElement('div');
+  sections.id = 'summary-domain-sections';
+  sections.className = 'domain-sections';
+  renderReadingSections(sections, group.sections, '', 'h3', cardNames);
+  panel.append(sections);
+  selectDomainCategory(panel, group.categories[0].id);
+}
+
 function renderSummaryGroups(summary, cardNames) {
   const tabs = $('#summary-tabs');
   const panels = $('#summary-text');
@@ -795,7 +851,8 @@ function renderSummaryGroups(summary, cardNames) {
     panel.setAttribute('role', 'tabpanel');
     panel.setAttribute('aria-labelledby', tab.id);
     panel.tabIndex = 0;
-    renderReadingSections(panel, group.sections, '', 'h3', cardNames);
+    if (group.id === 'domains' && group.categories?.length) renderDomainCategories(panel, group, cardNames);
+    else renderReadingSections(panel, group.sections, '', 'h3', cardNames);
     tabs.append(tab);
     panels.append(panel);
   });
@@ -873,11 +930,18 @@ async function copyResult() {
   const parts = ['오쭈다 · 달의 마녀 타로', '종합 점괘', $('#result-date').textContent, ''];
   summaryGroups(summary).forEach(group => {
     parts.push(group.label, '');
-    group.sections.forEach(section => {
-      parts.push(section.title);
+    if (group.description) parts.push(group.description, '');
+    const appendSection = section => {
+      parts.push(section.number ? `${section.number}. ${section.title}` : section.title);
       if (section.subtitle) parts.push(section.subtitle);
       narrativeParagraphs(section.paragraphs, section.body || '').forEach(paragraph => parts.push(paragraph, ''));
-    });
+    };
+    if (group.categories?.length) {
+      group.categories.forEach(category => {
+        parts.push(category.label, '');
+        group.sections.filter(section => section.categoryId === category.id).forEach(appendSection);
+      });
+    } else group.sections.forEach(appendSection);
   });
   parts.push(`이렇게 해 보세요: ${summary.ritual}`, '', '타로의 전통 해석이에요. 미래를 확정하지 않아요.');
   const text = parts.join('\n');
@@ -998,6 +1062,10 @@ $('#summary-tabs').addEventListener('keydown', event => {
   const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
     : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
   selectSummaryGroup(tabs[next].dataset.group, true);
+});
+$('#summary-text').addEventListener('change', event => {
+  if (event.target.id !== 'summary-domain-category' || expireDisplayedReading()) return;
+  selectDomainCategory($('#summary-panel-domains'), event.target.value);
 });
 $('#reading-open').addEventListener('click', () => {
   if (state.phase === 'complete') void showResultsWithRevelation();

@@ -105,7 +105,7 @@ export function getTenGod(dayStem, targetStem) {
   return { ...god, groupLabel: GROUP_LABELS[god.group], keywords: [...god.keywords], ...(god.aliases ? { aliases: [...god.aliases] } : {}) };
 }
 
-function interactionPairs(first, second, metadata) {
+export function interactionPairs(first, second, metadata) {
   const found = [];
   for (const relation of RELATIONS) {
     const left = first[relation.position], right = second[relation.position];
@@ -128,7 +128,7 @@ function transitInteractions(knownPillars, transit, label) {
   }));
 }
 
-function makeProfile(chart) {
+export function makeProfile(chart) {
   if (!chart || !Array.isArray(chart.pillars)) invalid('chart', '생년월일로 사주를 먼저 펼쳐 주세요.');
   const knownPillars = [];
   for (const key of ['year', 'month', 'day', 'hour']) {
@@ -257,7 +257,7 @@ export function analyzeFortune(chart, { year, now = new Date() } = {}) {
     notes.push(`지금은 소한 전이라 ${selectedYear - 1}년 12월의 절기월에 해당해요. ${selectedYear}년 1월 월운은 표시된 소한 시각부터 시작해요.`);
   }
   const limitations = [
-    '평생운은 확인된 원국의 장기적인 주제를 읽는 풀이예요. 나이별 10년 대운이나 특정 사건의 시점을 계산한 결과는 아니에요.',
+    '원국 풀이는 태어난 사주의 장기적인 성향을 읽어요. 10년 단위 대운은 별도 항목이며, 어느 쪽도 특정 사건이 생길 시점을 보증하지 않아요.',
     '십성은 일간과 다른 천간·지지 본기의 관계를 보여줘요. 일간 본인은 십성 개수에서 제외해요.',
     '주요 십성 집계는 지지 본기만 사용해요. 전체 지장간은 별도 참고표로 제공하며 신강신약·용신·격국을 종합 판정하지 않아요.',
     '합과 충은 글자 사이에 해당 짝이 있다는 뜻이에요. 합화의 성립이나 길흉·사건 발생을 단정하지 않아요.',
