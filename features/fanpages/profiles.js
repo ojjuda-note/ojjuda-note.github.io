@@ -4,12 +4,13 @@
 const a2oMember = (name, source) => ({ name, birthday: null, height: null, hometown: '', school: '', note: 'A2O', source });
 window.OJJUDA_FAN_PROFILES = {
   rescene: {
-    checkedAt: '2026.11.10',
+    checkedAt: '2026.11.13',
     debut: '2024.03.26', debutWork: 'Re:Scene · UhUh',
     agency: 'THE MUZE Entertainment',
     concept: '향기로 다시 떠오르는 장면, RESCENE.',
     heightSource: 'https://kpopdiscover.com/en/groups/rescene/',
     awards: [
+      { year: '2026.11', title: 'MBC M 쇼챔피언 1위', detail: 'With · 2026.11.11', href: 'https://www.xportsnews.com/article/2218400' },
       { year: '2026.07', title: 'SBS 인기가요 1위', detail: 'LOVE ATTACK', href: 'https://news.sbs.co.kr/english/endPagePrintPopup.do?news_id=N1008676108' },
       { year: '2026.07', title: 'MBC 쇼! 음악중심 1위', detail: 'Pretty Girl', href: 'https://news.sbs.co.kr/english/endPagePrintPopup.do?news_id=N1008676108' }
     ],
