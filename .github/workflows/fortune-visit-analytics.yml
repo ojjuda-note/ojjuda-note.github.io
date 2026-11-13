@@ -1,0 +1,69 @@
+name: Fortune visit analytics
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'shared/analytics/site-usage.js'
+      - 'games/moonlit-tarot/app.js'
+      - 'games/moonlit-tarot/index.html'
+      - 'games/starlit-saju/app.js'
+      - 'games/starlit-saju/index.html'
+      - 'admin/visitors*'
+      - 'admin/world-admin-loader.js'
+      - 'world.html'
+      - 'index.html'
+      - 'supabase/migrations/*fortune_visit_analytics*'
+      - 'tests/fortune-visit-*'
+      - 'tests/site-usage*'
+      - 'tests/package*.json'
+      - '.github/workflows/fortune-visit-analytics.yml'
+  pull_request:
+    paths:
+      - 'shared/analytics/site-usage.js'
+      - 'games/moonlit-tarot/app.js'
+      - 'games/moonlit-tarot/index.html'
+      - 'games/starlit-saju/app.js'
+      - 'games/starlit-saju/index.html'
+      - 'admin/visitors*'
+      - 'admin/world-admin-loader.js'
+      - 'world.html'
+      - 'index.html'
+      - 'supabase/migrations/*fortune_visit_analytics*'
+      - 'tests/fortune-visit-*'
+      - 'tests/site-usage*'
+      - 'tests/package*.json'
+      - '.github/workflows/fortune-visit-analytics.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fortune-visit-analytics-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fortune_visits:
+    name: Automatic fortune visits and private admin charts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix tests ci --ignore-scripts
+      - name: Check collection, privacy and chart data
+        run: |
+          node --check shared/analytics/site-usage.js
+          node --check admin/visitors.js
+          node --test tests/fortune-visit-*.test.cjs tests/site-usage*-db.test.cjs
+          node tests/site-usage-ui.test.cjs
+          node tests/inline-scripts.test.cjs
+          node scripts/check-source-layout.mjs
+      - name: Install browser
+        run: cd tests && npx playwright install --with-deps chromium
+      - name: Check visit charts on mobile and desktop
+        run: node tests/site-usage-responsive.test.cjs

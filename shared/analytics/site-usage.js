@@ -7,7 +7,11 @@
     'mole','runner','stacker','breakout','spot','screw','bang','tank','tour','ttang',
     'janggi','chess','billiards','matgo','poker','roulette','photo_ttang']);
   const FEATURES = new Set(['agit','arcade','park','settings','portal','group','fanpages',
-    'restaurants','festival','game_other',...[...GAMES].map(game => 'game_' + game)]);
+    'restaurants','festival','tarot','saju','game_other',...[...GAMES].map(game => 'game_' + game)]);
+  const FORTUNE_PAGES = Object.freeze({
+    '/games/moonlit-tarot':'tarot','/games/moonlit-tarot/':'tarot','/games/moonlit-tarot/index.html':'tarot',
+    '/games/starlit-saju':'saju','/games/starlit-saju/':'saju','/games/starlit-saju/index.html':'saju'
+  });
   const DETAILS = new Set(['agit_stamp','agit_mission','agit_recommended_game','agit_group',
     'agit_festival','agit_restaurants','agit_fanpages','arcade_game_other',
     ...[...GAMES].map(game => 'arcade_game_' + game)]);
@@ -99,6 +103,7 @@
     void flush();
   }
   function initialFeature() {
+    if (Object.hasOwn(FORTUNE_PAGES,location.pathname)) return FORTUNE_PAGES[location.pathname];
     const params = new URL(location.href).searchParams;
     if (!location.pathname.endsWith('/world.html')) return 'portal';
     const game = params.get('game');

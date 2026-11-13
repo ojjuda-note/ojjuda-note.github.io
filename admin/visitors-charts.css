@@ -25,6 +25,11 @@
 .visitor-rank-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#9d5579,#d289a8)}
 .visitor-empty{padding:28px 4px;font-size:13px;text-align:center;color:var(--muted,#637168)}
 .visitor-insights .visitor-chart-card:first-child{grid-column:1/-1}
+.visitor-fortune{margin-top:22px;padding-top:20px;border-top:1px solid var(--line,#deded7);min-width:0}
+.visitor-fortune-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+.visitor-fortune-grid .visitor-chart-card:first-child{grid-column:auto}
+.visitor-chart-col.is-uncollected .visitor-chart-track{background:repeating-linear-gradient(135deg,transparent,transparent 4px,color-mix(in srgb,var(--line,#deded7) 55%,transparent) 4px,color-mix(in srgb,var(--line,#deded7) 55%,transparent) 6px)}
+.visitor-chart-col.is-uncollected .visitor-chart-value{color:var(--muted,#637168)}
 .visitor-history summary:focus-visible,.visitor-chart-scroll:focus-visible{outline:2px solid var(--accent-ink,#a54f76);outline-offset:4px}
 @media(max-width:760px){.visitor-chart-grid{grid-template-columns:minmax(0,1fr);gap:12px}.visitor-chart-card{padding:15px 13px}.visitor-insights .visitor-chart-card:first-child{grid-column:auto}}
-@media(max-width:420px){.visitor-chart-bars.is-weekday{gap:6px}.visitor-chart-bars.is-weekday .visitor-chart-label{font-size:10px}.visitor-chart-bars.is-weekday .visitor-chart-value{font-size:10px}}
+@media(max-width:420px){.visitor-chart-bars.is-weekday{gap:6px}.visitor-chart-bars.is-weekday .visitor-chart-label{font-size:10px}.visitor-chart-bars.is-weekday .visitor-chart-value{font-size:10px}.visitor-fortune-cards{grid-template-columns:1fr}}
