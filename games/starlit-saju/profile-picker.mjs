@@ -3,6 +3,11 @@ import {SajuSavedProfileError} from './saved-profiles.mjs?v=20261113-saju-reader
 // Pickers share device-local lists. Automatic saves follow real input events;
 // choosing a person or refreshing a list never starts a purchase or a new save.
 const pickers=new WeakMap();
+let zodiacModulePromise;
+function zodiacModule() {
+  zodiacModulePromise ||= import('./zodiac.mjs?v=20261113-saju-zodiac1').catch(error=>{zodiacModulePromise=null;throw error;});
+  return zodiacModulePromise;
+}
 const genderLabel=gender=>gender==='male'?'남성':gender==='female'?'여성':'성별 미선택';
 const pad=value=>String(value).padStart(2,'0');
 const profileStamp=profile=>JSON.stringify([profile.name,profile.gender,profile.updatedAt,
@@ -40,6 +45,7 @@ export class SajuProfilePicker {
     this._selectedId=null;
     this._selectedStamp=null;
     this._revision=0;
+    this._zodiacEpoch=0;
     this._disabled=false;
     this._pending=false;
     this._destroyed=false;
@@ -251,6 +257,7 @@ export class SajuProfilePicker {
 
   refresh({preserveStatus=false}={}) {
     if(this._destroyed)return [];
+    const zodiacEpoch=++this._zodiacEpoch;
     this.listElement.replaceChildren();
     this.countElement.hidden=true;
     this.emptyElement.hidden=false;
@@ -291,6 +298,18 @@ export class SajuProfilePicker {
         if(profile.name)parts.push(dateLabel(profile.birth));
         parts.push(timeLabel(profile.birth));
         use.append(this._node('span','profile-picker-meta',parts.join(' · ')));
+        const zodiacLabel=this._node('span','profile-picker-zodiac');
+        zodiacLabel.hidden=true;
+        use.append(zodiacLabel);
+        // Loading a decorative birth label is independent of the local save.
+        // A later owner or refresh must never receive an earlier row's result.
+        void zodiacModule().then(({zodiacFromBirth})=>{
+          if(this._destroyed||zodiacEpoch!==this._zodiacEpoch||this.store.ownerId()!==owner||item.parentNode!==this.listElement)return;
+          const zodiac=zodiacFromBirth(profile.birth);
+          if(zodiac.status==='unavailable')return;
+          zodiacLabel.textContent=`${zodiac.label} · ${zodiac.note}`;
+          zodiacLabel.hidden=false;
+        }).catch(()=>{});
         use.addEventListener('click',()=>this._use(profile.id,owner));
         const remove=this._node('button','profile-picker-delete','삭제');
         remove.type='button';

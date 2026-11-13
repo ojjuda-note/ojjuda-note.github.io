@@ -9,7 +9,7 @@
   <link rel="icon" href="../moonlit-tarot/assets/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="../moonlit-tarot/assets/moon-serif.woff?v=20261113-tarot-corpus1" as="font" type="font/woff" crossorigin>
   <link rel="stylesheet" href="./style.css?v=20261113-saju-light3">
-  <link rel="stylesheet" href="./report.css?v=20261113-saju-lists1">
+  <link rel="stylesheet" href="./report.css?v=20261113-saju-zodiac1">
 </head>
 <body>
   <a class="skip-link" href="#birth-form">출생 정보 입력으로 바로가기</a>
@@ -61,7 +61,7 @@
           <div id="saved-profiles" class="saved-profiles" aria-label="저장된 사람"></div>
           <fieldset class="person-field"><legend>누구의 이야기를 볼까요?</legend><div class="person-inputs"><label><span class="field-label">이름 · 선택</span><input id="person-name" type="text" maxlength="30" autocomplete="off" placeholder="이름 또는 별명"></label><label><span class="field-label">성별 · 선택</span><select id="person-gender" aria-describedby="gender-help"><option value="">선택 안 함</option><option value="male">남성</option><option value="female">여성</option></select></label></div><p id="gender-help" class="field-hint">성별은 평생운의 10년 흐름을 계산할 때 사용해요.</p></fieldset>
           <fieldset class="calendar-field"><legend>생일 기준</legend><div class="segmented"><label><input type="radio" name="calendar" value="solar" checked><span>양력</span></label><label><input type="radio" name="calendar" value="lunar"><span>음력</span></label></div><label id="leap-option" class="check-row leap-option" hidden><input id="leap-month" type="checkbox"><span>윤달에 태어났어요</span></label></fieldset>
-          <fieldset class="date-field"><legend>생년월일</legend><div class="date-inputs"><label><span class="field-label">년</span><input id="birth-year" type="number" inputmode="numeric" autocomplete="off" min="1900" max="2050" step="1" placeholder="예: 1990" required aria-describedby="date-help"></label><label><span class="field-label">월</span><select id="birth-month" required><option value="">월</option></select></label><label><span class="field-label">일</span><select id="birth-day" required><option value="">일</option></select></label></div><p id="date-help" class="field-hint">1900년 이후의 생일을 입력해 주세요.</p></fieldset>
+          <fieldset class="date-field"><legend>생년월일</legend><div class="date-inputs"><label><span class="field-label">년</span><input id="birth-year" type="number" inputmode="numeric" autocomplete="off" min="1900" max="2050" step="1" placeholder="예: 1990" required aria-describedby="date-help"></label><label><span class="field-label">월</span><select id="birth-month" required><option value="">월</option></select></label><label><span class="field-label">일</span><select id="birth-day" required><option value="">일</option></select></label></div><p id="date-help" class="field-hint">1900년 이후의 생일을 입력해 주세요.</p><p id="birth-zodiac" class="zodiac-preview" role="status" aria-live="polite" hidden></p></fieldset>
           <fieldset class="time-field"><legend>태어난 시간</legend><label class="check-row"><input id="time-unknown" type="checkbox" checked aria-controls="time-fields"><span>태어난 시간을 몰라요</span></label><div id="time-fields" class="time-inputs" hidden><label><span class="field-label">시</span><select id="birth-hour" required disabled><option value="">시 선택</option></select></label><span class="time-colon" aria-hidden="true">:</span><label><span class="field-label">분</span><select id="birth-minute" required disabled><option value="">분 선택</option></select></label></div><p id="time-help" class="field-hint">시간을 몰라도 상세 풀이를 볼 수 있어요.</p></fieldset>
           <fieldset class="product-picker" id="entry-product-picker"><legend>읽고 싶은 풀이</legend><div class="product-options">
             <label><input type="radio" name="entry-topic" value="lifelong" checked><span class="product-option"><strong>평생운 · 나의 바탕</strong><small>내 성향과 대운 · 10년 흐름</small><b data-entry-price="lifelong">10쭈</b></span></label>
@@ -87,7 +87,7 @@
     </div>
 
     <section id="result" class="result" aria-labelledby="result-title" hidden>
-      <header class="result-heading reading-result-heading"><h2 id="result-title" tabindex="-1">나의 <em>운세</em></h2><p id="birth-summary" class="birth-summary"></p></header>
+      <header class="result-heading reading-result-heading"><h2 id="result-title" tabindex="-1">나의 <em>운세</em></h2><p id="birth-summary" class="birth-summary"></p><p id="result-zodiac" class="zodiac-preview zodiac-result" hidden></p></header>
 
       <section id="detailed-reading" class="detailed-reading" data-reading-size="normal" aria-labelledby="detailed-title">
         <h3 id="detailed-title" class="reader-focus-title" tabindex="-1">나의 운세 풀이</h3>
@@ -140,6 +140,6 @@
   <footer class="site-footer"><span class="footer-wordmark">THE STARLIT ARCHIVE <i>✧</i></span><p>앞으로의 이야기는 당신의 선택으로 써 내려가세요.</p><span class="footer-no">VOL. 02 · STARLIGHT</span></footer>
   <div id="status" class="toast" role="status" aria-live="polite"></div>
   <script src="/shared/analytics/site-usage.js?v=20261113-fortune-visits1"></script>
-  <script type="module" src="./app.js?v=20261113-saju-lists1"></script>
+  <script type="module" src="./app.js?v=20261113-saju-zodiac1"></script>
 </body>
 </html>

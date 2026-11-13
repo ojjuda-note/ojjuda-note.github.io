@@ -25,9 +25,26 @@ const select = document.getElementById('fixture-topic');
 function show(){renderDetailedReport(target,{reading,fortune,topic:select.value});target.dataset.ready=select.value;}
 select.addEventListener('change',show);show();
 </script></body></html>`;
+const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"></head><body><main><section class="result"><label for="fixture-pair">검사할 두 사람</label><select id="fixture-pair"><option value="confirmed">말띠와 양띠</option><option value="uncertain">입춘일 · 시간 모름</option></select><p id="fixture-zodiac" class="birth-summary"></p><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
+import { calculateSaju } from '/games/starlit-saju/engine.mjs';
+import { buildCompatibilityReading } from '/games/starlit-saju/compatibility.mjs';
+import { renderCompatibilityReport } from '/games/starlit-saju/report-view.mjs';
+const now = new Date('2026-11-13T00:00:00Z');
+const partner = calculateSaju({year:1991,month:5,day:10,hour:9,minute:0},{now});
+const target = document.getElementById('report-content');
+const select = document.getElementById('fixture-pair');
+function show(){
+  const birth = select.value === 'confirmed' ? {year:1990,month:5,day:10,hour:9,minute:0} : {year:2024,month:2,day:4,hour:null};
+  const reading = buildCompatibilityReading(calculateSaju(birth,{now}),partner);
+  document.getElementById('fixture-zodiac').textContent = reading.zodiac.self.label + ' · ' + reading.zodiac.partner.label + ' · 사주 기준 · 입춘';
+  renderCompatibilityReport(target,reading);target.dataset.ready=select.value;
+}
+select.addEventListener('change',show);show();
+</script></body></html>`;
 const server = http.createServer((request, response) => {
   let name = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
   if (name === '/__saju_fixture') { response.writeHead(200, { 'content-type': mime['.html'] }); response.end(sajuFixture); return; }
+  if (name === '/__compatibility_fixture') { response.writeHead(200, { 'content-type': mime['.html'] }); response.end(compatibilityFixture); return; }
   if (name.endsWith('/')) name += 'index.html';
   const file = path.resolve(repo, '.' + name);
   if (!file.startsWith(repo + path.sep) || !fs.existsSync(file)) { response.writeHead(404); response.end(); return; }
@@ -221,6 +238,28 @@ const server = http.createServer((request, response) => {
     await selectReadingPage(await saju.locator('.portrait-card').first().getAttribute('id'));
     await saju.locator('.reading-pager').scrollIntoViewIfNeeded();
     await saju.screenshot({path:path.join(artifacts,'saju-lifelong-desktop.png')});
+    await saju.setViewportSize({width:390,height:844});
+    await saju.goto(new URL('/__compatibility_fixture', url).href);
+    await saju.locator('#report-content[data-ready="confirmed"]').waitFor();
+    assert.match(await saju.locator('#fixture-zodiac').textContent(), /말띠.*양띠.*입춘/);
+    const zodiacCard=saju.locator('[data-reader-card="zodiac"]');
+    assert.equal(await zodiacCard.count(),1);
+    assert.match(await zodiacCard.textContent(), /말띠.*양띠/s);
+    assert.ok(await zodiacCard.locator('.reader-prose p').count()>=3);
+    await zodiacCard.scrollIntoViewIfNeeded();
+    assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'the two zodiac reading fits on mobile');
+    await saju.screenshot({path:path.join(artifacts,'saju-zodiac-compatibility-mobile.png')});
+    await saju.locator('#fixture-pair').selectOption('uncertain');
+    await saju.locator('#report-content[data-ready="uncertain"]').waitFor();
+    assert.match(await saju.locator('#fixture-zodiac').textContent(), /토끼띠 \/ 용띠/);
+    assert.match(await zodiacCard.textContent(), /토끼띠 \/ 용띠/);
+    await zodiacCard.scrollIntoViewIfNeeded();
+    assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'the two candidate labels wrap on mobile');
+    await saju.screenshot({path:path.join(artifacts,'saju-zodiac-boundary-mobile.png')});
+    await saju.setViewportSize({width:1280,height:900});
+    await saju.locator('#fixture-pair').selectOption('confirmed');
+    await zodiacCard.scrollIntoViewIfNeeded();
+    await saju.screenshot({path:path.join(artifacts,'saju-zodiac-compatibility-desktop.png')});
     assert.deepEqual(errors, []);
     assert.deepEqual(failed, []);
     console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], viewport: '390×844 and 1280×900', errors, failed }));

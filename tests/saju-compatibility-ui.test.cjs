@@ -133,9 +133,11 @@ async function harness(options={}) {
     }
   }
   const context=dom.getInternalVMContext(),records=new Map();
+  let linkQueue=Promise.resolve();
   async function record(identifier) {
     if(!records.has(identifier))records.set(identifier,(async()=>{
       const file=fileURLToPath(identifier),basename=path.basename(file);
+      if(basename==='zodiac.mjs'&&state.zodiacGate)await state.zodiacGate.promise;
       state.moduleRequests.push(identifier);
       let module;
       if(basename==='payment.js')module=new vm.SyntheticModule(['SajuPayment'],function(){this.setExport('SajuPayment',ParentPaymentStub);},{context,identifier});
@@ -150,8 +152,14 @@ async function harness(options={}) {
   }
   async function evaluate(identifier) {
     const entry=await record(identifier);
-    if(entry.module.status==='unlinked')entry.link||=entry.module.link(async(specifier,parent)=>(await record(new URL(specifier,parent.identifier).href)).module);
-    if(entry.link)await entry.link;
+    // Model the browser's shared dependency graph when previews and paid
+    // readings independently import the same local calendar module.
+    const linked=linkQueue.then(async()=>{
+      if(entry.module.status==='unlinked')entry.link||=entry.module.link(async(specifier,parent)=>(await record(new URL(specifier,parent.identifier).href)).module);
+      if(entry.link)await entry.link;
+    });
+    linkQueue=linked.catch(()=>{});
+    await linked;
     if(entry.module.status==='linked')entry.evaluation||=entry.module.evaluate();
     if(entry.evaluation)await entry.evaluation;
     return entry.module;
@@ -207,7 +215,7 @@ test('an explicit separate ten-ju purchase opens the real pair reading once and 
   assert.equal(h.state.charges,1);assert.equal(h.state.coins,20);assert.deepEqual(h.state.chargedAmounts,[10]);
   assert.equal(h.state.baseStarts.length,0);
   assert.ok(h.$('compatibility-report').textContent.length>3000);
-  assert.equal(h.$('compatibility-report').querySelectorAll('.reader-card').length,5);
+  assert.equal(h.$('compatibility-report').querySelectorAll('.reader-card').length,6);
   assert.ok(h.$('compatibility-expiry').textContent.trim());
   h.$('compatibility-copy').click();await waitFor(()=>h.state.copies.length===1);
   assert.match(h.state.copies[0],/궁합/);
@@ -438,7 +446,7 @@ test('both compatibility inputs save with delayed identity and failed wallet whi
   h.$('self-saved-profiles').querySelector('.profile-picker-save').click();
   await waitFor(()=>h.$('self-saved-profiles').querySelector('.profile-picker-status').dataset.state==='success');
   assert.equal(h.state.initCalls,initCalls,'manual local save does not retry failed wallet initialization');
-  assert.ok(!h.state.moduleRequests.some(url=>/\/engine\.mjs/.test(url)),'saving alone does not import the fortune calculator');
+  assert.ok(!h.state.moduleRequests.some(url=>/\/(compatibility|readings|fortune-data|daeun)\.mjs/.test(url)),'local zodiac previews do not load the paid pair reading or start a purchase');
   const stored=h.window.localStorage.getItem(key(PROFILE_USER_A));
   for(const prefix of ['self','partner']) {h.$(prefix+'-name').value='취소할 수정';h.change(h.$(prefix+'-name'));}
   h.changeAccount(PROFILE_USER_B);
@@ -544,4 +552,56 @@ test('returning to compatibility refreshes both lists after another tab saves or
     assert.equal(tab.state.starts.length,0);assert.equal(tab.state.baseStarts.length,0);assert.equal(tab.state.charges,0);
     assert.equal(tab.$('compatibility-result').hidden,true);assert.deepEqual(tab.state.fetches,[]);
   }
+});
+
+
+test('both zodiac previews follow separate births, swaps and resets without purchasing',async t=>{
+  const h=await harness({user:null,signedIn:false});t.after(h.close);
+  for(const person of ['self','partner'])assert.equal(h.$(person+'-zodiac').hidden,true);
+  h.fill({year:1990,month:1,day:1},{year:2024,month:2,day:4,hour:null});
+  await waitFor(()=>!h.$('self-zodiac').hidden&&!h.$('partner-zodiac').hidden);
+  assert.match(h.$('self-zodiac').textContent,/뱀띠.*입춘/);
+  assert.match(h.$('partner-zodiac').textContent,/토끼띠 \/ 용띠.*태어난 시간을 알아야/);
+  h.$('pair-swap').click();
+  await waitFor(()=>h.$('self-zodiac').textContent.includes('토끼띠 / 용띠')&&h.$('partner-zodiac').textContent.includes('뱀띠'));
+  h.fillPerson('partner',{year:2024,month:1,day:1,calendar:'lunar'});
+  await waitFor(()=>h.$('partner-zodiac').querySelector('strong')?.textContent==='용띠');
+  h.$('partner-day').value='';h.change(h.$('partner-day'));
+  assert.equal(h.$('partner-zodiac').hidden,true);assert.equal(h.$('partner-zodiac').textContent,'');
+  h.$('compatibility-clear').click();await pause();
+  for(const person of ['self','partner']) {
+    assert.equal(h.$(person+'-zodiac').hidden,true);assert.equal(h.$(person+'-zodiac').textContent,'');
+  }
+  assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);assert.deepEqual(h.state.fetches,[]);
+});
+
+test('purchased compatibility retains both zodiac labels in its result, card and copied text',async t=>{
+  const h=await harness();t.after(h.close);
+  h.fill({...selfBirth,name:'하늘'},{...partnerBirth,name:'바다'});await h.price(10);h.submit();await h.ready();
+  assert.match(h.$('self-result-zodiac').textContent,/하늘님 · 말띠.*입춘/);
+  assert.match(h.$('partner-result-zodiac').textContent,/바다님 · 원숭이띠.*입춘/);
+  assert.match(h.$('compatibility-report').textContent,/두 사람의 띠/);
+  h.$('compatibility-copy').click();await waitFor(()=>h.state.copies.length===1);
+  assert.match(h.state.copies[0],/하늘: 말띠 · 사주 기준 · 입춘/);
+  assert.match(h.state.copies[0],/바다: 원숭이띠 · 사주 기준 · 입춘/);
+  assert.equal(h.state.charges,1);
+  h.changeAccount(PROFILE_USER_B);
+  for(const person of ['self','partner']) {
+    assert.equal(h.$(person+'-result-zodiac').hidden,true);assert.equal(h.$(person+'-result-zodiac').textContent,'');
+    assert.equal(h.$(person+'-zodiac').hidden,true);assert.equal(h.$(person+'-zodiac').textContent,'');
+  }
+});
+
+test('late zodiac labels cannot survive a compatibility reset or account change and never delay local saving',async t=>{
+  const zodiacGate=deferred(),h=await harness({zodiacGate,failInit:Infinity});t.after(h.close);
+  h.fill({...selfBirth,name:'나 저장'},{...partnerBirth,name:'상대 저장'});h.advance(600);
+  await waitFor(()=>h.$('self-saved-profiles').querySelectorAll('.profile-picker-use').length===2);
+  assert.equal(h.$('self-zodiac').hidden,true);assert.equal(h.$('partner-zodiac').hidden,true);
+  h.$('compatibility-clear').click();h.changeAccount(PROFILE_USER_B);
+  zodiacGate.resolve();await waitFor(()=>h.state.moduleRequests.some(url=>/zodiac\.mjs/.test(url)));await pause();
+  for(const person of ['self','partner']) {
+    assert.equal(h.$(person+'-zodiac').hidden,true);assert.equal(h.$(person+'-zodiac').textContent,'');
+    assert.equal(h.$(person+'-saved-profiles').querySelectorAll('.profile-picker-zodiac').length,0);
+  }
+  assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);assert.deepEqual(h.state.fetches,[]);
 });

@@ -9,7 +9,7 @@
   <link rel="icon" href="../moonlit-tarot/assets/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="../moonlit-tarot/assets/moon-serif.woff?v=20261113-tarot-corpus1" as="font" type="font/woff" crossorigin>
   <link rel="stylesheet" href="./style.css?v=20261113-saju-light3">
-  <link rel="stylesheet" href="./report.css?v=20261113-saju-lists1">
+  <link rel="stylesheet" href="./report.css?v=20261113-saju-zodiac1">
   <link rel="stylesheet" href="./compatibility.css?v=20261113-saju-reader1">
 </head>
 <body>
@@ -46,6 +46,7 @@
       <div class="person-inputs"><label><span class="field-label">이름 · 선택</span><input id="self-name" type="text" maxlength="30" autocomplete="off" placeholder="이름 또는 별명"></label><label><span class="field-label">성별 · 선택</span><select id="self-gender"><option value="">선택 안 함</option><option value="male">남성</option><option value="female">여성</option></select></label></div>
       <div class="pair-calendar"><label for="self-calendar">생일 기준</label><select id="self-calendar"><option value="solar">양력</option><option value="lunar">음력</option></select><label id="self-leap-option" class="check-row" hidden><input id="self-leap-month" type="checkbox"><span>윤달</span></label></div>
       <div class="date-inputs"><label><span class="field-label">년</span><input id="self-year" type="number" inputmode="numeric" autocomplete="off" min="1900" max="2050" step="1" placeholder="예: 1990" required></label><label><span class="field-label">월</span><select id="self-month" required><option value="">월</option></select></label><label><span class="field-label">일</span><select id="self-day" required><option value="">일</option></select></label></div>
+      <p id="self-zodiac" class="zodiac-preview" role="status" aria-live="polite" hidden></p>
       <label class="check-row"><input id="self-time-unknown" type="checkbox" checked aria-controls="self-time-fields"><span>태어난 시간을 몰라요</span></label>
       <div id="self-time-fields" class="time-inputs" hidden><label><span class="field-label">시</span><select id="self-hour" required disabled><option value="">시 선택</option></select></label><span class="time-colon" aria-hidden="true">:</span><label><span class="field-label">분</span><select id="self-minute" required disabled><option value="">분 선택</option></select></label></div>
     </fieldset><fieldset class="compatibility-person"><legend>상대의 출생 정보</legend>
@@ -53,6 +54,7 @@
       <div class="person-inputs"><label><span class="field-label">이름 · 선택</span><input id="partner-name" type="text" maxlength="30" autocomplete="off" placeholder="이름 또는 별명"></label><label><span class="field-label">성별 · 선택</span><select id="partner-gender"><option value="">선택 안 함</option><option value="male">남성</option><option value="female">여성</option></select></label></div>
       <div class="pair-calendar"><label for="partner-calendar">생일 기준</label><select id="partner-calendar"><option value="solar">양력</option><option value="lunar">음력</option></select><label id="partner-leap-option" class="check-row" hidden><input id="partner-leap-month" type="checkbox"><span>윤달</span></label></div>
       <div class="date-inputs"><label><span class="field-label">년</span><input id="partner-year" type="number" inputmode="numeric" autocomplete="off" min="1900" max="2050" step="1" placeholder="예: 1992" required></label><label><span class="field-label">월</span><select id="partner-month" required><option value="">월</option></select></label><label><span class="field-label">일</span><select id="partner-day" required><option value="">일</option></select></label></div>
+      <p id="partner-zodiac" class="zodiac-preview" role="status" aria-live="polite" hidden></p>
       <label class="check-row"><input id="partner-time-unknown" type="checkbox" checked aria-controls="partner-time-fields"><span>태어난 시간을 몰라요</span></label>
       <div id="partner-time-fields" class="time-inputs" hidden><label><span class="field-label">시</span><select id="partner-hour" required disabled><option value="">시 선택</option></select></label><span class="time-colon" aria-hidden="true">:</span><label><span class="field-label">분</span><select id="partner-minute" required disabled><option value="">분 선택</option></select></label></div>
     </fieldset></div>
@@ -68,12 +70,12 @@
       <noscript><p class="form-error">궁합을 읽으려면 자바스크립트를 켜 주세요.</p></noscript>
     </section>
     <section id="compatibility-result" class="result" aria-labelledby="compatibility-result-title" hidden>
-      <header class="result-heading reading-result-heading"><h2 id="compatibility-result-title" tabindex="-1">두 사람의 <em>궁합</em></h2><p id="compatibility-births" class="birth-summary"></p><p id="compatibility-expiry" class="field-hint"></p></header>
+      <header class="result-heading reading-result-heading"><h2 id="compatibility-result-title" tabindex="-1">두 사람의 <em>궁합</em></h2><p id="compatibility-births" class="birth-summary"></p><div class="zodiac-pair"><p id="self-result-zodiac" class="zodiac-preview zodiac-result" hidden></p><p id="partner-result-zodiac" class="zodiac-preview zodiac-result" hidden></p></div><p id="compatibility-expiry" class="field-hint"></p></header>
       <div id="compatibility-detailed" class="detailed-reading" data-reading-size="normal"><div class="reading-tools"><a href="./" class="other-reading-link">나의 사주 보기</a><div class="reading-size-control" role="group" aria-label="본문 글자 크기"><span aria-hidden="true">글자 크기</span><button type="button" data-reading-size="normal" aria-pressed="true">보통</button><button type="button" data-reading-size="large" aria-pressed="false">크게</button></div></div><div id="compatibility-report"></div></div>
       <div class="result-actions"><button id="compatibility-edit" class="primary-button" type="button">출생 정보 다시 보기</button><button id="compatibility-copy" class="secondary-button" type="button" disabled>궁합과 근거 복사하기</button><a class="secondary-button" href="./">별빛 사주 보기</a></div><p id="compatibility-copy-status" class="field-hint" role="status"></p>
     </section>
   </main>
   <footer class="site-footer"><span class="footer-wordmark">THE STARLIT ARCHIVE <i>✧</i></span><p>함께하는 이야기는 두 사람의 선택으로 써 내려가세요.</p></footer>
   <script src="/shared/analytics/site-usage.js?v=20261113-fortune-visits1"></script>
-  <script type="module" src="./compatibility-app.mjs?v=20261113-saju-lists1"></script>
+  <script type="module" src="./compatibility-app.mjs?v=20261113-saju-zodiac1"></script>
 </body></html>

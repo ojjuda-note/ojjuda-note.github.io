@@ -1,5 +1,5 @@
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
-import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-lists1';
+import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-zodiac1';
 
 const $ = id => document.getElementById(id);
 const form = $('birth-form');
@@ -22,6 +22,31 @@ let currentDetail = null;
 let reportGeneration = 0;
 let reportBusy = false;
 let toastTimer;
+let zodiacModulePromise;
+let zodiacPreviewGeneration=0;
+
+function zodiacModule() {
+  zodiacModulePromise ||= import('./zodiac.mjs?v=20261113-saju-zodiac1').catch(error=>{zodiacModulePromise=null;throw error;});
+  return zodiacModulePromise;
+}
+function showZodiac(node,zodiac) {
+  node.replaceChildren();
+  node.hidden=!zodiac||zodiac.status==='unavailable';
+  if(node.hidden)return;
+  node.append(element('strong','',zodiac.label),element('small','',zodiac.note));
+}
+function updateZodiacPreview() {
+  const node=$('birth-zodiac'),generation=++zodiacPreviewGeneration;
+  showZodiac(node,null);
+  if(!hasBirth())return;
+  const input=readBirth(),signature=birthSignature(input);
+  // This optional local preview must never hold up saving or purchasing.
+  void zodiacModule().then(({zodiacFromBirth})=>{
+    if(generation!==zodiacPreviewGeneration||signature!==birthSignature())return;
+    const zodiac=zodiacFromBirth(input);
+    showZodiac(node,zodiac);
+  }).catch(()=>{});
+}
 
 const ELEMENT_WORDS = Object.freeze({wood:'나무',fire:'불',earth:'흙',metal:'쇠',water:'물'});
 
@@ -157,6 +182,7 @@ $('time-unknown').addEventListener('change', updateTime);
 form.addEventListener('input', clearError);
 updateCalendar();
 updateTime();
+updateZodiacPreview();
 
 const profileStore=new SajuSavedProfiles({getIdentity:()=>({userId:billing?.identityReady?billing.user:null,anonymous:billing?.anonymous===true})});
 const readSavedPerson=()=>({...readPerson(),birth:readBirth()});
@@ -234,12 +260,13 @@ function plainWarning(message) {
   return message;
 }
 
-function renderReading(result) {
+function renderReading(result,zodiac) {
   const name=currentPerson?.name;
   $('result-title').replaceChildren(document.createTextNode(name?`${name}님의 `:'나의 '),element('em','','운세'));
   $('detailed-title').textContent=name?`${name}님의 운세 풀이`:'나의 운세 풀이';
   $('result-pillars').replaceChildren(...result.pillars.map(renderPillar));
   $('birth-summary').textContent = `양력 ${result.solar.label} · ${result.timeLabel || (result.timeKnown ? '시간 입력' : '태어난 시간 모름')}`;
+  showZodiac($('result-zodiac'),zodiac);
   $('lunar-summary').textContent = `음력 ${result.lunar.label}`;
   const warningNodes = result.warnings.map(message => element('p', '', plainWarning(message)));
   $('result-warnings').replaceChildren(...warningNodes);
@@ -432,6 +459,7 @@ function updateProductOffer() {
   scheduleAccessExpiry();
 }
 function scheduleEntryCheck() {
+  updateZodiacPreview();
   clearTimeout(entryCheckTimer);
   quoteGeneration++;
   entryCheckPending=false;
@@ -487,19 +515,21 @@ async function prepareDetailedReading(chart,target,person=currentPerson||readPer
     import('./fortune-data.mjs?v=20261113-saju-reader1'),
     import('./readings.mjs?v=20261113-saju-lists1'),
     import('./report-view.mjs?v=20261113-saju-lists1'),
-    import('./daeun.mjs?v=20261113-saju-reader1')
+    import('./daeun.mjs?v=20261113-saju-reader1'),
+    zodiacModule()
   ]).catch(error=>{detailModulesPromise=null;throw error;});
-  const [dataModule,readingModule,viewModule,daeunModule]=await detailModulesPromise;
+  const [dataModule,readingModule,viewModule,daeunModule,zodiacData]=await detailModulesPromise;
   const now=new Date();
   const fortune=dataModule.analyzeFortune(chart,{year:target.topic==='lifelong'?koreanYear():target.year,now});
   const daeun=['lifelong','all'].includes(target.topic)?daeunModule.analyzeDaeun(chart,{gender:person.gender,now}):null;
   const reading=readingModule.buildDetailedReading(chart,fortune,{daeun});
+  const zodiac=zodiacData.zodiacFromChart(chart);
   const body=reading.copyByCategory?.[target.topic];
-  const copyText=typeof body==='string'?[person.name?`${person.name}님의 사주 풀이`:'나의 사주 풀이',body].join('\n\n'):body;
+  const copyText=typeof body==='string'?[person.name?`${person.name}님의 사주 풀이`:'나의 사주 풀이',`${zodiac.label} · ${zodiac.note}`,body].join('\n\n'):body;
   if (typeof copyText!=='string' || !copyText.trim()) throw new Error('product_reading_incomplete');
   const content=document.createElement('div');
   viewModule.renderDetailedReport(content,{reading,fortune,topic:target.topic});
-  return {fortune,reading,content,copyText,target,person:{...person}};
+  return {fortune,reading,content,copyText,target,person:{...person},zodiac};
 }
 function commitDetailedReading(chart,{fortune,reading,content,copyText,target},access) {
   if (!activeAccess(access)) throw Object.assign(new Error('이용 시간이 끝났어요. 표시된 금액을 확인한 뒤 다시 펼쳐 주세요.'),{code:'access_expired'});
@@ -549,7 +579,7 @@ function openInitialReport(chart,prepared,status,receipt,signature) {
   reportBusy=false;
   $('report-product-picker').querySelector(`input[value="${prepared.target.topic}"]`).checked=true;
   fillYears($('fortune-year'),chart.solar.year,prepared.target.year||koreanYear(),access);
-  renderReading(chart);
+  renderReading(chart,prepared.zodiac);
   commitDetailedReading(chart,prepared,receipt);
 }
 async function refreshReportAccess() {
@@ -647,6 +677,7 @@ function resetAfterAccountChange() {
   currentReading=null;currentPerson=null;currentDetail=null;currentAccess=null;entryQuote=null;
   $('result').hidden=true;$('intro').hidden=false;
   $('result-title').textContent='나의 운세';$('detailed-title').textContent='나의 운세 풀이';
+  showZodiac($('result-zodiac'),null);
   for(const id of ['birth-summary','lunar-summary','result-warnings','result-pillars','day-master-glyph','day-master-title','day-master-symbol','day-master-reading','element-count','element-bars','convention-list'])$(id).replaceChildren();
   $('report-content').replaceChildren();
   $('report-content').removeAttribute('aria-busy');
@@ -660,7 +691,7 @@ function resetAfterAccountChange() {
   document.querySelector('.skip-link').href='#birth-form';
   document.querySelector('.skip-link').textContent='출생 정보 입력으로 바로가기';
   fillYears($('entry-year'));
-  updateCalendar();updateTime();updateEntryOffer();
+  updateCalendar();updateTime();updateZodiacPreview();updateEntryOffer();
 }
 function recordFortuneVisit() {
   if (!billing?.client || billing.adminPreview) return;

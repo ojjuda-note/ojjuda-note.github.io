@@ -21,6 +21,12 @@ for(let offset=0;offset<60;offset++) {
   if(!byBranch.has(day.branch.hanja))byBranch.set(day.branch.hanja,value);
 }
 const dayMatches=(reading,kind)=>reading.interactions.filter(match=>match.selfPillarKey==='day'&&match.partnerPillarKey==='day'&&match.kind===kind);
+const zodiacCard=reading=>reading.cards.find(card=>card.id==='zodiac');
+const yearMatches=reading=>reading.interactions.filter(match=>match.selfPillarKey==='year'&&match.partnerPillarKey==='year'&&match.position==='branch');
+const byYearBranch=new Map(Array.from({length:12},(_,offset)=>{
+  const value=chart({year:1996+offset,month:6,day:15,hour:12,minute:0});
+  return [value.pillars.find(pillar=>pillar.key==='year').branch.hanja,value];
+}));
 
 test('two real charts retain all cross-pillar comparisons, exact facts and every source without mutating inputs',()=>{
   const first=chart(birthA),second=chart(birthB),before=[structuredClone(first),structuredClone(second)];
@@ -174,7 +180,7 @@ test('invalid, duplicated or unconfirmed day pillars fail instead of supplying g
 test('friendly stories contain concrete hypothetical examples and disclose shared interpretation without fate scores',()=>{
   for(const [first,second] of [[byStem.get('甲'),byStem.get('甲')],[byStem.get('甲'),byStem.get('丙')],[byStem.get('甲'),byStem.get('戊')],[byStem.get('戊'),byStem.get('甲')],[byBranch.get('子'),byBranch.get('午')]]) {
     const reading=buildCompatibilityReading(first,second),text=displayedText(reading);
-    assert.deepEqual(reading.cards.map(card=>card.id),['foundation','connection','differences','everyday','conversation']);
+    assert.deepEqual(reading.cards.map(card=>card.id),['foundation','zodiac','connection','differences','everyday','conversation']);
     assert.ok(reading.cards.slice(0,4).every(card=>card.paragraphs.some(paragraph=>paragraph.startsWith('예를 들어'))));
     assert.equal(new Set(reading.cards.flatMap(card=>card.paragraphs)).size,reading.cards.reduce((sum,card)=>sum+card.paragraphs.length,0),'a reading does not repeat its own paragraphs');
     assert.doesNotMatch(text,/반드시|무조건|운명적으로|결혼하게|이별하게|헤어지게|[0-9]+점|[0-9]+%|최고의 궁합|최악의 궁합/);
@@ -182,4 +188,108 @@ test('friendly stories contain concrete hypothetical examples and disclose share
     assert.match(reading.methodNotice,/실제 사건은 계산하지/);
     assert.equal(Object.hasOwn(reading,'score'),false);
   }
+});
+
+test('the zodiac card uses all twelve actual year branches and only their six combinations and six clashes',()=>{
+  assert.equal(byYearBranch.size,12);
+  for(const [kind,pairs] of [
+    ['combination',['子丑','寅亥','卯戌','辰酉','巳申','午未']],
+    ['clash',['子午','丑未','寅申','卯酉','辰戌','巳亥']],
+  ])for(const pair of pairs) {
+    const first=byYearBranch.get(pair[0]),second=byYearBranch.get(pair[1]);
+    const reading=buildCompatibilityReading(first,second),reverse=buildCompatibilityReading(second,first);
+    assert.equal(reading.zodiacRelation,kind,pair);
+    assert.equal(reverse.zodiacRelation,kind,pair+' reversed');
+    assert.deepEqual(reading.zodiac.self,reverse.zodiac.partner);
+    assert.deepEqual(reading.zodiac.partner,reverse.zodiac.self);
+    assert.equal(reading.zodiac.self.animal,first.pillars.find(pillar=>pillar.key==='year').branch.animal);
+    assert.equal(reading.zodiac.partner.animal,second.pillars.find(pillar=>pillar.key==='year').branch.animal);
+    assert.deepEqual(yearMatches(reading).map(match=>match.pairHanja),[pair]);
+    const card=zodiacCard(reading),text=card.paragraphs.join('\n');
+    assert.equal(card.label,'두 사람의 띠');
+    assert.ok(text.includes(reading.zodiac.self.label));
+    assert.ok(text.includes(reading.zodiac.partner.label));
+    assert.ok(card.paragraphs.some(paragraph=>paragraph.startsWith('예를 들어')));
+    assert.ok(['self.pillar.year','partner.pillar.year','self.zodiac','partner.zodiac','zodiac.comparison'].every(id=>card.factIds.includes(id)));
+    assert.deepEqual(card.factIds.filter(id=>id.startsWith('interaction.')),yearMatches(reading).map(match=>match.id));
+    const facts=new Map(reading.facts.map(fact=>[fact.id,fact]));
+    for(const id of card.factIds)assert.ok(facts.has(id),id);
+    assert.match(facts.get('self.zodiac').value,/입춘 기준/);
+    assert.match(facts.get('zodiac.comparison').value,new RegExp(pair));
+    assert.doesNotMatch(text,/천생연분|최고의 궁합|최악의 궁합|결혼하게|이별하게|헤어지게|[0-9]+점|[0-9]+%/);
+  }
+});
+
+test('same or otherwise unpaired zodiacs do not inherit a combination or clash from other pillar positions',()=>{
+  const rat=byYearBranch.get('子');
+  const same=buildCompatibilityReading(rat,chart({year:2008,month:9,day:18,hour:8,minute:0}));
+  assert.equal(same.zodiacRelation,'same');
+  assert.match(zodiacCard(same).paragraphs[0],/같은 쥐띠/);
+  assert.equal(yearMatches(same).length,0);
+  const unpaired=buildCompatibilityReading(rat,byYearBranch.get('寅'));
+  assert.equal(unpaired.zodiacRelation,'none');
+  assert.ok(unpaired.interactions.length>0,'other parts of the actual charts still have their own relationships');
+  assert.equal(yearMatches(unpaired).length,0);
+  assert.deepEqual(zodiacCard(unpaired).factIds.filter(id=>id.startsWith('interaction.')),[]);
+  assert.match(zodiacCard(unpaired).paragraphs[0],/직접 연결되는 짝에 해당하지 않아요/);
+  assert.doesNotMatch(zodiacCard(unpaired).title,/나쁜|최악|흉|불리|좋지 않/);
+});
+
+test('Ipchun uncertainty is shown as both zodiac candidates and never selected to invent a year pairing',()=>{
+  const confirmed=chart(birthA);
+  for(const input of [
+    {year:2024,month:2,day:4,hour:null},
+    {year:2024,month:2,day:4,hour:17,minute:27},
+  ]) {
+    const uncertain=chart(input),reading=buildCompatibilityReading(confirmed,uncertain);
+    assert.equal(reading.zodiac.self.label,'말띠');
+    assert.equal(reading.zodiac.partner.status,'uncertain');
+    assert.equal(reading.zodiac.partner.animal,null);
+    assert.deepEqual(reading.zodiac.partner.candidates.map(value=>value.label),['토끼띠','용띠']);
+    assert.equal(reading.zodiacRelation,'unconfirmed');
+    assert.deepEqual(yearMatches(reading),[]);
+    const card=zodiacCard(reading),text=card.paragraphs.join('\n');
+    assert.match(text,/상대 띠 후보: 토끼띠 \/ 용띠/);
+    assert.match(text,/육합·충은 확정하지 않았어요/);
+    assert.ok(card.factIds.includes('partner.excluded.year'));
+    assert.ok(!card.factIds.includes('partner.pillar.year'));
+    assert.ok(!card.factIds.some(id=>id.startsWith('interaction.')));
+    const facts=new Map(reading.facts.map(fact=>[fact.id,fact]));
+    for(const id of card.factIds)assert.ok(facts.has(id),id);
+    assert.match(facts.get('partner.zodiac').value,/후보 토끼띠 \/ 용띠/);
+    assert.match(facts.get('zodiac.comparison').value,/비교를 보류함/);
+    const reversed=buildCompatibilityReading(uncertain,confirmed);
+    assert.equal(reversed.zodiacRelation,'unconfirmed');
+    assert.deepEqual(reversed.zodiac.self,reading.zodiac.partner);
+  }
+});
+
+test('confirmed zodiacs follow actual Ipchun boundaries rather than the civil or lunar year number',()=>{
+  const before=chart({year:2024,month:2,day:4,hour:17,minute:26});
+  const after=chart({year:2024,month:2,day:4,hour:17,minute:28});
+  const reading=buildCompatibilityReading(before,after);
+  assert.equal(reading.zodiac.self.label,'토끼띠');
+  assert.equal(reading.zodiac.partner.label,'용띠');
+  assert.equal(reading.zodiacRelation,'none');
+  assert.ok(zodiacCard(reading).factIds.includes('self.pillar.year'));
+  assert.ok(zodiacCard(reading).factIds.includes('partner.pillar.year'));
+  const january=chart({year:1990,month:1,day:1,hour:12,minute:0});
+  const januaryReading=buildCompatibilityReading(january,chart(birthA));
+  assert.equal(januaryReading.zodiac.self.label,'뱀띠');
+  assert.equal(januaryReading.zodiac.partner.label,'말띠');
+  const lunar=chart({...after.lunar,calendar:'lunar',hour:17,minute:28});
+  assert.deepEqual(buildCompatibilityReading(before,lunar).zodiac,reading.zodiac);
+});
+
+test('an unavailable year displays a missing zodiac without changing the confirmed day comparison',()=>{
+  const missing=structuredClone(chart(birthA));
+  missing.pillars=missing.pillars.filter(pillar=>pillar.key!=='year');
+  const reading=buildCompatibilityReading(missing,chart(birthB));
+  assert.equal(reading.zodiac.self.status,'unavailable');
+  assert.equal(reading.zodiac.self.label,'띠 확인 필요');
+  assert.equal(reading.zodiacRelation,'unconfirmed');
+  assert.ok(zodiacCard(reading).factIds.includes('self.excluded.year'));
+  assert.ok(reading.comparisons.some(comparison=>comparison.id==='comparison.day.day'));
+  const facts=new Set(reading.facts.map(fact=>fact.id));
+  for(const card of reading.cards)for(const id of card.factIds)assert.ok(facts.has(id),id);
 });

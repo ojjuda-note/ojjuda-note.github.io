@@ -143,6 +143,7 @@ async function harness(options = {}) {
   async function record(identifier) {
     const file = fileURLToPath(identifier);
     if (!records.has(identifier)) {
+      if(path.basename(file)==='zodiac.mjs'&&state.zodiacGate)await state.zodiacGate.promise;
       if (path.basename(file) === 'readings.mjs') {
         if (state.failReadings > 0) { state.failReadings--; throw new Error('simulated reading module load failure'); }
         if (state.readingsGate) await state.readingsGate.promise;
@@ -1002,7 +1003,7 @@ test('delayed identity and wallet failure still allow local saving while rapid a
   host.querySelector('.profile-picker-save').click();
   await waitFor(()=>host.querySelector('.profile-picker-status').dataset.state==='success');
   assert.equal(h.state.initCalls,beforeInitCalls,'manual saving does not retry wallet or auth initialization');
-  assert.ok(!h.state.moduleRequests.some(url=>/\/engine\.mjs/.test(url)),'saving alone does not load the fortune calculator');
+  assert.ok(!h.state.moduleRequests.some(url=>/\/(readings|fortune-data|daeun)\.mjs/.test(url)),'the local zodiac preview does not load paid readings or start a purchase');
   const storedA=h.window.localStorage.getItem(key(PROFILE_USER_A));
   h.$('person-name').value='취소되어야 할 수정';h.change(h.$('person-name'));
   h.changeAccount(PROFILE_USER_B);
@@ -1214,4 +1215,62 @@ test('returning to the saju tab refreshes people saved or deleted in another tab
   await waitFor(()=>host.querySelectorAll('.profile-picker-use').length===0);
   assert.equal(host.textContent.includes('다른 탭에서 저장'),false);
   for(const tab of [h,other]) {assert.equal(tab.state.starts.length,0);assert.equal(tab.state.charges,0);assert.equal(tab.$('result').hidden,true);}
+});
+
+
+test('zodiac preview follows the actual birth date before login and clears incomplete or invalid inputs',async t=>{
+  const h=await harness({user:null,signedIn:false});t.after(h.close);
+  assert.equal(h.$('birth-zodiac').hidden,true);
+  h.fill({year:1990,month:1,day:1});
+  await waitFor(()=>!h.$('birth-zodiac').hidden);
+  assert.match(h.$('birth-zodiac').textContent,/뱀띠.*사주 기준 · 입춘/);
+  h.fill({year:2024,month:2,day:4,hour:null});
+  await waitFor(()=>h.$('birth-zodiac').textContent.includes('토끼띠 / 용띠'));
+  assert.match(h.$('birth-zodiac').textContent,/태어난 시간을 알아야/);
+  h.fill({year:2024,month:2,day:4,hour:20,minute:0});
+  await waitFor(()=>h.$('birth-zodiac').querySelector('strong')?.textContent==='용띠');
+  h.fill({year:2024,month:2,day:30});
+  assert.equal(h.$('birth-zodiac').hidden,true);await pause();
+  assert.equal(h.$('birth-zodiac').textContent,'');
+  h.fill({year:2024,month:1,day:1,calendar:'lunar'});
+  await waitFor(()=>h.$('birth-zodiac').querySelector('strong')?.textContent==='용띠');
+  h.$('birth-month').value='';h.change(h.$('birth-month'));
+  assert.equal(h.$('birth-zodiac').hidden,true);assert.equal(h.$('birth-zodiac').textContent,'');
+  assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);
+});
+
+test('zodiac labels appear in saved people, restore on selection, and accompany the result and copy',async t=>{
+  const h=await harness();t.after(h.close);
+  h.fill({year:1990,month:1,day:1,name:'연초 생일'});h.advance(600);
+  const host=h.$('saved-profiles');
+  await waitFor(()=>host.querySelector('.profile-picker-zodiac')?.textContent.includes('뱀띠'));
+  host.querySelector('.profile-picker-new').click();
+  assert.equal(h.$('birth-zodiac').hidden,true);
+  host.querySelector('.profile-picker-use').click();
+  await waitFor(()=>h.$('birth-zodiac').querySelector('strong')?.textContent==='뱀띠');
+  assert.equal(h.$('birth-year').value,'1990');assert.equal(h.$('birth-month').value,'1');
+  assert.equal(h.state.starts.length,0);
+  h.submit();await h.ready();
+  assert.match(h.$('result-zodiac').textContent,/뱀띠.*입춘/);
+  h.$('copy-reading').click();await waitFor(()=>h.state.copies.length===1);
+  assert.match(h.state.copies[0],/뱀띠 · 사주 기준 · 입춘/);
+  assert.equal(h.state.charges,1);
+  h.changeAccount(PROFILE_USER_B);
+  assert.equal(h.$('result-zodiac').hidden,true);assert.equal(h.$('result-zodiac').textContent,'');
+  assert.equal(h.$('birth-zodiac').hidden,true);assert.equal(h.$('birth-zodiac').textContent,'');
+  await waitFor(()=>h.state.instances[0].ready);await pause();
+});
+
+test('a delayed zodiac module never blocks saving or restores a cleared or previous-account preview',async t=>{
+  const zodiacGate=deferred(),h=await harness({zodiacGate,failInit:Infinity});t.after(h.close);
+  h.fill({year:1990,month:1,day:1,name:'먼저 저장'});h.advance(600);
+  const host=h.$('saved-profiles');
+  await waitFor(()=>host.querySelectorAll('.profile-picker-use').length===1);
+  assert.equal(h.$('birth-zodiac').hidden,true);
+  assert.equal(JSON.parse(h.window.localStorage.getItem('ojjuda-saju-profiles-v1:'+PROFILE_USER_A)).profiles[0].name,'먼저 저장');
+  host.querySelector('.profile-picker-new').click();h.changeAccount(PROFILE_USER_B);
+  zodiacGate.resolve();await waitFor(()=>h.state.moduleRequests.some(url=>/zodiac\.mjs/.test(url)));await pause();
+  assert.equal(h.$('birth-zodiac').hidden,true);assert.equal(h.$('birth-zodiac').textContent,'');
+  assert.equal(host.querySelectorAll('.profile-picker-zodiac').length,0);
+  assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);
 });

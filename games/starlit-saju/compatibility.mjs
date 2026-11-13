@@ -1,5 +1,6 @@
 import { getTenGod, makeProfile, interactionPairs } from './fortune-data.mjs?v=20261113-saju-reader1';
 import { GOD_REFERENCE, RELATION_REFERENCE } from './readings-data.mjs?v=20261113-saju-brief1';
+import { zodiacFromChart } from './zodiac.mjs?v=20261113-saju-zodiac1';
 
 // A local comparison of two already-calculated charts. All cross-chart pillar
 // pairs are retained; the prose is a disclosed application of shared meanings.
@@ -101,7 +102,15 @@ function relationLabel(god) {
 function interactionText(match) {
   return `내 ${match.selfPillarLabel} ${POSITION[match.position]} ${character(match.birthCharacter)} ↔ 상대 ${match.partnerPillarLabel} ${POSITION[match.position]} ${character(match.otherCharacter)}: ${match.label} ${match.pairHangul}(${match.pairHanja}).`;
 }
-function allFacts(profiles,scopes,relation,comparisons,interactions) {
+function compareZodiac(profiles,zodiac,interactions) {
+  const years=Object.fromEntries(['self','partner'].map(person=>[person,profiles[person].knownPillars.find(pillar=>pillar.key==='year')]));
+  const matches=interactions.filter(match=>match.selfPillarKey==='year'&&match.partnerPillarKey==='year'&&match.position==='branch');
+  const confirmed=years.self&&years.partner&&zodiac.self.status==='confirmed'&&zodiac.partner.status==='confirmed';
+  const kind=!confirmed?'unconfirmed':matches.some(match=>match.kind==='branch-combination')?'combination'
+    :matches.some(match=>match.kind==='branch-clash')?'clash':years.self.branch.hanja===years.partner.branch.hanja?'same':'none';
+  return {kind,matches};
+}
+function allFacts(profiles,scopes,relation,comparisons,interactions,zodiac,zodiacRelation) {
   const facts=[];
   const add=(id,label,value)=>{facts.push({id,label,value,origin:'calculation'});return id;};
   for(const person of ['self','partner']) {
@@ -110,6 +119,8 @@ function allFacts(profiles,scopes,relation,comparisons,interactions) {
     for(const pillar of profile.knownPillars)add(`${person}.pillar.${pillar.key}`,personPillar(person,pillar),`${pillar.hangul}(${pillar.hanja}) · ${POSITION.stem} ${character(pillar.stem)} · ${POSITION.branch} ${character(pillar.branch)}.`);
     for(const missing of scope.excludedPillars)add(`${person}.excluded.${missing.key}`,`${person==='self'?'내':'상대'} ${missing.label} 제외`,missing.reason);
     add(`${person}.day-master`,`${person==='self'?'내':'상대'} 일간`,`${character(profile.dayMaster)} · ${ELEMENTS[profile.dayMaster.element]}(${profile.dayMaster.elementHanja}) · ${profile.dayMaster.yinYang}.`);
+    const animal=zodiac[person];
+    add(`${person}.zodiac`,`${person==='self'?'내':'상대'} 띠`,`${animal.status==='uncertain'?'후보 ':''}${animal.label} · ${animal.basis}${animal.candidates.length?` · 년지 ${animal.candidates.map(character).join(' / ')}`:''}${animal.status==='confirmed'?'':` · ${animal.note}`}.`);
   }
   add('day-master.self-to-partner','내 기준에서 상대의 일간을 비교',`${character(profiles.self.dayMaster)} → ${character(profiles.partner.dayMaster)}: ${relationLabel(relation.self)}.`);
   add('day-master.partner-to-self','상대 기준에서 내 일간을 비교',`${character(profiles.partner.dayMaster)} → ${character(profiles.self.dayMaster)}: ${relationLabel(relation.partner)}.`);
@@ -121,12 +132,16 @@ function allFacts(profiles,scopes,relation,comparisons,interactions) {
   const selfDay=profiles.self.knownPillars.find(pillar=>pillar.key==='day'),partnerDay=profiles.partner.knownPillars.find(pillar=>pillar.key==='day');
   const dayMatches=interactions.filter(match=>match.selfPillarKey==='day'&&match.partnerPillarKey==='day'&&match.position==='branch');
   add('day-branches','두 사람의 일지 비교',`내 일지 ${character(selfDay.branch)} · 상대 일지 ${character(partnerDay.branch)}: ${dayMatches.length?dayMatches.map(match=>match.label).join('·'):selfDay.branch.hanja===partnerDay.branch.hanja?'같은 글자이며 비교한 육합·충에는 해당하지 않음':'비교한 육합·충에 해당하는 짝 없음'}.`);
+  const zodiacResult=zodiacRelation.kind==='unconfirmed'?'한쪽 이상의 띠가 확정되지 않아 년지끼리의 육합·충 비교를 보류함'
+    :zodiacRelation.matches.length?zodiacRelation.matches.map(match=>`${match.label} ${match.pairHangul}(${match.pairHanja})`).join(' · ')
+      :zodiacRelation.kind==='same'?'같은 띠이며 비교한 년지 육합·충에는 해당하지 않음':'비교한 년지 육합·충에 해당하는 짝 없음';
+  add('zodiac.comparison','태어난 해의 띠끼리 비교',`내 ${zodiac.self.label} · 상대 ${zodiac.partner.label}: ${zodiacResult}. 입춘 기준의 년지만 비교한 결과이며 사주 전체의 궁합 점수가 아니에요.`);
   add('comparison.scope','관계를 비교한 전체 범위',`확정된 내 ${profiles.self.knownPillars.length}개 기둥 × 상대 ${profiles.partner.knownPillars.length}개 기둥 = ${comparisons.length}개 기둥 쌍의 위·아래 글자를 모두 비교했어요.`);
   add('interaction.counts','확인한 합·충의 개수',`천간합 ${interactions.filter(match=>match.kind==='stem-combination').length}쌍 · 지지육합 ${interactions.filter(match=>match.kind==='branch-combination').length}쌍 · 지지충 ${interactions.filter(match=>match.kind==='branch-clash').length}쌍. 같은 짝도 나타난 위치를 각각 남겼으며, 이 개수는 궁합 점수가 아니에요.`);
   return facts;
 }
 
-function makeCards(base,relations,profiles,facts) {
+function makeCards(base,relations,profiles,facts,zodiac,zodiacRelation) {
   const registry=new Set(facts.map(fact=>fact.id));
   const common=['self.scope','partner.scope','self.day-master','partner.day-master','day-master.self-to-partner','day-master.partner-to-self'];
   const matches=relations.filter(match=>match.kind!=='branch-clash'),clashes=relations.filter(match=>match.kind==='branch-clash');
@@ -139,6 +154,45 @@ function makeCards(base,relations,profiles,facts) {
   };
   const cards=[card('foundation','서로의 기본 모습',base.title,[base.meaning,base.sides,base.example,base.adjustment,
     '한 번 이야기한 뒤에는 “내가 이해한 네 뜻은 이런데 맞아?”라고 되짚어 보세요. 내가 짐작한 마음과 상대가 직접 말한 마음을 나눠 들을 수 있어요.'],common)];
+  const zodiacIds=['self.zodiac','partner.zodiac','zodiac.comparison',...['self','partner'].map(person=>registry.has(`${person}.pillar.year`)?`${person}.pillar.year`:`${person}.excluded.year`),...zodiacRelation.matches.map(match=>match.id)];
+  const zodiacPair=`내 ${zodiac.self.label}와 상대 ${zodiac.partner.label}`;
+  const zodiacStories={
+    combination:{title:'함께할 일을 정하면 서로의 힘을 보태기 좋은 띠 조합이에요',paragraphs:[
+      `${zodiacPair}는 육합으로 이어지는 짝이에요. 띠 관계에서는 서로 다른 몫을 맞물려 함께하는 쪽으로 읽어요.`,
+      '처음부터 같은 방법을 고르기보다, 함께 이루고 싶은 일을 먼저 정해 보세요. 내가 편하게 맡을 일과 상대가 잘할 일을 나누면 각자의 장점을 함께 쓸 수 있어요.',
+      '예를 들어 둘이 모임을 준비한다고 해 볼게요. 한 사람은 참석할 사람들의 의견을 모으고, 다른 사람은 모인 의견에 맞춰 장소를 알아볼 수 있어요. 서로 맡은 일이 이어지도록 정하는 장면이에요.',
+      '“나는 의견을 모을게. 네가 장소를 찾아볼 수 있을까?”처럼 부탁할 범위를 말해 주세요. 같은 목표를 가졌더라도 어느 한쪽이 모든 일을 맡으면 함께하는 즐거움이 줄어들 수 있어요.',
+      '끝난 뒤에는 잘 맞았던 역할을 기억해 두세요. 다음에는 누가 무엇을 맡으면 편할지 이야기하고, 상대가 힘들었던 부분은 다시 나누면 돼요.',
+    ]},
+    clash:{title:'결정하는 속도와 우선순위의 차이를 먼저 맞춰 보세요',paragraphs:[
+      `${zodiacPair}는 충에 해당하는 짝이에요. 띠 관계에서는 서로 다른 방향을 조정하는 일이 중요하게 읽혀요.`,
+      '같은 제안을 들어도 한 사람은 빨리 정하고 싶고, 다른 사람은 조건을 더 살피고 싶을 수 있어요. 의견이 갈릴 때는 찬성과 반대부터 묻기보다 각자가 먼저 챙기려는 것을 들어 보세요.',
+      '예를 들어 함께 살 물건을 고른다고 해 볼게요. 한 사람은 지금 필요한 기능을, 다른 사람은 오래 쓸 수 있는지를 먼저 볼 수 있어요. 둘 중 하나만 옳다고 정하면 서로의 이유가 잘 들리지 않아요.',
+      '각자 포기하기 어려운 조건을 하나씩 말하고, 공통으로 맞출 수 있는 범위를 정해 보세요. 당장 결정하기 어렵다면 언제 다시 이야기할지 정해 두면 재촉하거나 피하는 상황을 줄일 수 있어요.',
+      '불편했던 순간에는 “왜 나와 달라?”보다 “이 선택에서 너는 무엇이 가장 중요해?”라고 물어보세요. 차이를 말로 확인하는 행동이 두 사람이 함께 정할 수 있는 선택지를 넓혀 줘요.',
+    ]},
+    same:{title:'같은 띠여도 각자가 편한 방식은 따로 들어 보세요',paragraphs:[
+      `두 사람은 같은 ${zodiac.self.label}예요. 이 년지끼리의 비교에서는 육합이나 충의 짝에 해당하지 않아요.`,
+      '익숙하게 느껴지는 점이 있더라도 좋아하는 것과 싫어하는 것까지 같다고 생각하지는 마세요. 같은 띠 안에서도 태어난 달·날·시간이 달라 두 사람의 다른 모습이 함께 나타날 수 있어요.',
+      '예를 들어 함께 쉬는 날을 보낸다고 해 볼게요. 나는 아무 계획 없이 쉬고 싶은데 상대는 작은 외출을 기대할 수 있어요. “나와 같겠지”라고 넘겼던 바람을 직접 물어보는 장면이에요.',
+      '먼저 각자 오늘 하고 싶은 일과 쉬고 싶은 시간을 말해 보세요. 함께할 시간 한 가지를 정하고 나머지는 각자의 선택으로 남겨 두는 방법도 있어요.',
+      '두 사람이 실제로 즐거웠던 일을 기준으로 다음 약속을 정해 보세요. 닮은 점은 함께 즐기고, 다른 점은 어느 한쪽이 참고 있다는 뜻인지 차분히 확인하면 돼요.',
+    ]},
+    none:{title:'띠의 짝보다 두 사람이 주고받는 도움을 살펴보세요',paragraphs:[
+      `${zodiacPair}는 이 계산에서 육합이나 충으로 직접 연결되는 짝에 해당하지 않아요. 이 사실만으로 궁합이 좋거나 나쁘다고 정하지는 않아요.`,
+      '두 사람이 잘 맞는 지점은 다른 사주 글자의 관계와 실제로 편했던 경험을 함께 살펴보세요. 띠 비교에서 특정한 짝이 없다는 이유로 서로의 장점까지 없다고 볼 필요는 없어요.',
+      '예를 들어 한 사람이 고민을 털어놓는다고 해 볼게요. 함께 해결책을 찾는 시간이 도움이 될 수도 있고, 조용히 들어 주는 시간이 더 편할 수도 있어요. 어떤 도움을 반기는지 알아보는 장면이에요.',
+      '“지금은 같이 방법을 찾을까, 이야기를 들어 줄까?”라고 먼저 물어보세요. 상대가 원하는 도움을 들은 뒤 내가 할 수 있는 범위에서 건네면 돼요.',
+      '도움을 주고받은 뒤에는 무엇이 편했고 무엇은 부담스러웠는지 짧게 나눠 보세요. 그런 경험이 쌓이면 두 사람에게 맞는 연락과 약속의 방식도 구체적으로 정할 수 있어요.',
+    ]},
+    unconfirmed:{title:['self','partner'].some(person=>zodiac[person].status==='uncertain')?'띠를 하나로 정할 수 없어 후보를 함께 보여드려요':'띠를 확인할 출생 정보가 더 필요해요',paragraphs:[
+      ['self','partner'].map(person=>`${person==='self'?'내':'상대'} 띠${zodiac[person].status==='uncertain'?' 후보':''}: ${zodiac[person].label}`).join(' · ')+'.',
+      ...['self','partner'].filter(person=>zodiac[person].status!=='confirmed').map(person=>`${person==='self'?'내':'상대'} 출생 정보는 ${zodiac[person].note}`),
+      '띠끼리의 육합·충은 확정하지 않았어요. 다른 단원에서는 두 사람의 확인된 달·날·시간 가운데 비교할 수 있는 내용으로 궁합을 이어서 보여드려요.',
+    ]},
+  };
+  const zodiacStory=zodiacStories[zodiacRelation.kind];
+  cards.push(card('zodiac','두 사람의 띠',zodiacStory.title,zodiacStory.paragraphs,zodiacIds));
   cards.push(card('connection','잘 맞을 수 있는 점',matches.length?'서로 다른 부분을 함께할 방법으로 이어 보세요':'함께할 방법은 두 사람의 기본 관계에서 찾아봐요',[
     matches.length?'두 사람은 서로 다른 장점을 한 가지 일에 보태는 쪽으로 관계를 풀어 갈 만해요. 방법이 조금 달라도 함께 이루고 싶은 것을 정하면 각자 잘하는 부분을 나눠 맡을 수 있어요.':'함께할 때는 취향이 얼마나 같은지보다 서로 어떤 도움을 주고받는지가 중요해요. 내가 편하게 해낼 수 있는 일과 상대가 잘하는 일을 구체적으로 알아보면 두 사람에게 맞는 역할을 찾을 수 있어요.',
     base.strength,
@@ -186,6 +240,7 @@ function makeCards(base,relations,profiles,facts) {
 /** Pure local comparison; callers own birth entry and any existing access gate. */
 export function buildCompatibilityReading(chart,partnerChart) {
   const profiles={self:checkedProfile(chart,'self'),partner:checkedProfile(partnerChart,'partner')};
+  const zodiac={self:zodiacFromChart(chart),partner:zodiacFromChart(partnerChart)};
   const scopes=[scopeFor(chart,profiles.self,'self'),scopeFor(partnerChart,profiles.partner,'partner')];
   const dayMasterRelation={self:getTenGod(profiles.self.dayMaster,profiles.partner.dayMaster),partner:getTenGod(profiles.partner.dayMaster,profiles.self.dayMaster)};
   const comparisons=[],interactions=[];
@@ -196,7 +251,8 @@ export function buildCompatibilityReading(chart,partnerChart) {
     comparisons.push({id:`comparison.${self.key}.${partner.key}`,self:{key:self.key,label:self.label,hanja:self.hanja,hangul:self.hangul},partner:{key:partner.key,label:partner.label,hanja:partner.hanja,hangul:partner.hangul},interactions:matches});
     interactions.push(...matches);
   }
-  const facts=allFacts(profiles,scopes,dayMasterRelation,comparisons,interactions);
+  const zodiacRelation=compareZodiac(profiles,zodiac,interactions);
+  const facts=allFacts(profiles,scopes,dayMasterRelation,comparisons,interactions,zodiac,zodiacRelation);
   const base=BASE_STORIES[dayMasterRelation.self.group];
   const selfTheme=STEM_THEMES[profiles.self.dayMaster.hanja],partnerTheme=STEM_THEMES[profiles.partner.dayMaster.hanja];
   const personalOpening=profiles.self.dayMaster.hanja===profiles.partner.dayMaster.hanja
@@ -209,10 +265,10 @@ export function buildCompatibilityReading(chart,partnerChart) {
     :'서로에게 기대하는 도움과 함께 지키고 싶은 약속을 나누어 보면 좋아요. 아래에서 두 사람이 가까워질 때 살릴 점, 다르게 느낄 수 있는 점, 일상을 맞추는 방법을 이어서 살펴볼게요.';
   return {
     title:'두 사람의 궁합',headline:base.headline,paragraphs:[personalOpening,relationParagraph],
-    cards:makeCards(base,interactions,profiles,facts),facts,origin:ORIGIN,
+    cards:makeCards(base,interactions,profiles,facts,zodiac,zodiacRelation),facts,origin:ORIGIN,
     scopeNotice:scopeNotice(scopes),
-    methodNotice:'확정된 두 사주의 일간 관계와 모든 기둥 사이의 천간합·지지육합·지지충을 비교했어요. 해석과 가상 예시는 계산 결과에 연결한 공통 참고 풀이이며, 같은 관계에는 같은 설명을 써요. 합화의 성립, 궁합 점수, 결혼·이별의 시기나 실제 사건은 계산하지 않아요. 합은 좋은 결과를 보장하지 않고, 충은 이별을 뜻하지 않아요.',
-    dayMasterRelation,interactions,comparisons,scope:{self:scopes[0],partner:scopes[1]},
+    methodNotice:'확정된 두 사주의 일간 관계와 모든 기둥 사이의 천간합·지지육합·지지충을 비교했어요. 띠는 입춘 기준 년지로 표시하고, 띠끼리는 년지의 육합·충만 따로 보여줘요. 해석과 가상 예시는 계산 결과에 연결한 공통 참고 풀이이며, 같은 관계에는 같은 설명을 써요. 합화의 성립, 궁합 점수, 결혼·이별의 시기나 실제 사건은 계산하지 않아요. 합은 좋은 결과를 보장하지 않고, 충은 이별을 뜻하지 않아요.',
+    dayMasterRelation,interactions,comparisons,zodiac,zodiacRelation:zodiacRelation.kind,scope:{self:scopes[0],partner:scopes[1]},
     rules:Object.fromEntries(unique(interactions.map(match=>match.kind)).map(kind=>[kind,{...RELATION_REFERENCE[kind]}])),
   };
 }

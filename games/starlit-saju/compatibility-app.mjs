@@ -1,7 +1,7 @@
 import { SajuPayment } from './payment.js?v=20261113-saju-lists1';
 import { SajuCompatibilityPayment } from './compatibility-payment.mjs?v=20261113-saju-reader1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
-import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-lists1';
+import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-zodiac1';
 
 const $=id=>document.getElementById(id);
 const form=$('compatibility-form'),button=$('compatibility-open');
@@ -11,6 +11,33 @@ let reducedMotion=motionQuery.matches, motionOverride=false;
 let initialized=false,signedIn=false,busy=false,quoteBusy=false;
 let generation=0,quoteGeneration=0,quote=null,current=null,quoteTimer,expiryTimer;
 let modulesPromise,readyPromise,compatibility;
+let zodiacModulePromise,zodiacPreviewGeneration=0;
+
+function zodiacModule() {
+  zodiacModulePromise ||= import('./zodiac.mjs?v=20261113-saju-zodiac1').catch(error=>{zodiacModulePromise=null;throw error;});
+  return zodiacModulePromise;
+}
+function showZodiac(node,zodiac,name='') {
+  node.replaceChildren();
+  node.hidden=!zodiac||zodiac.status==='unavailable';
+  if(node.hidden)return;
+  const label=document.createElement('strong'),note=document.createElement('small');
+  label.textContent=(name?name+' · ':'')+zodiac.label;note.textContent=zodiac.note;
+  node.append(label,note);
+}
+function updateZodiacPreviews() {
+  const generation=++zodiacPreviewGeneration,values=inputs();
+  for(const [index,person] of people.entries()) {
+    const node=$(person+'-zodiac');
+    showZodiac(node,null);
+    if(!['year','month','day'].every(field=>$(person+'-'+field).value!==''))continue;
+    const input=values[index],stamp=JSON.stringify(input);
+    void zodiacModule().then(({zodiacFromBirth})=>{
+      if(generation!==zodiacPreviewGeneration||stamp!==JSON.stringify(inputs()[index]))return;
+      showZodiac(node,zodiacFromBirth(input));
+    }).catch(()=>{});
+  }
+}
 
 const billing=new SajuPayment({
   onBalance:()=>updateOffer(),
@@ -69,6 +96,7 @@ function updateFields() {
     $(person+'-time-fields').hidden=unknown;
     $(person+'-hour').disabled=busy||unknown;$(person+'-minute').disabled=busy||unknown;
   }
+  updateZodiacPreviews();
 }
 function inputs() {
   const selectedTime=id=>$(id).value===''?NaN:Number($(id).value);
@@ -89,6 +117,7 @@ function clearResult() {
   current=null;$('compatibility-report').replaceChildren();$('compatibility-result').hidden=true;
   $('compatibility-result-title').textContent='두 사람의 궁합';
   $('compatibility-copy').disabled=true;$('compatibility-copy-status').textContent='';$('compatibility-births').textContent='';$('compatibility-expiry').textContent='';
+  for(const person of people)showZodiac($(person+'-result-zodiac'),null);
   $('compatibility-entry').hidden=false;
 }
 function resetView(clearInputs=false) {
@@ -139,7 +168,7 @@ async function ready() {
 async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
-    import('./compatibility.mjs?v=20261113-saju-reader1'),
+    import('./compatibility.mjs?v=20261113-saju-zodiac1'),
     import('./report-view.mjs?v=20261113-saju-lists1'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
@@ -191,7 +220,12 @@ $('pair-swap').addEventListener('click',()=>{
 $('compatibility-clear').addEventListener('click',()=>{generation++;quoteGeneration++;quoteBusy=false;resetView(true);updateOffer();});
 
 function copyText(reading,chart,partner,names) {
-  const lines=['오쭈다 · 별빛 궁합',`${names[0].name||'나'}: ${chart.solar.label} · ${chart.timeLabel}`,`${names[1].name||'상대'}: ${partner.solar.label} · ${partner.timeLabel}`,reading.title,reading.headline];
+  const lines=['오쭈다 · 별빛 궁합',`${names[0].name||'나'}: ${chart.solar.label} · ${chart.timeLabel}`,`${names[1].name||'상대'}: ${partner.solar.label} · ${partner.timeLabel}`];
+  for(const [index,person] of people.entries()) {
+    const zodiac=reading.zodiac?.[person];
+    if(zodiac)lines.push(`${names[index].name||(index?'상대':'나')}: ${zodiac.label} · ${zodiac.note}`);
+  }
+  lines.push(reading.title,reading.headline);
   if(reading.scopeNotice)lines.push(reading.scopeNotice);
   lines.push(...reading.paragraphs);
   for(const card of reading.cards)lines.push('',card.label,card.title,...card.paragraphs);
@@ -239,6 +273,7 @@ form.addEventListener('submit',async event=>{
     const labels=names.map((person,index)=>person.name?`${person.name}님`:index===0?'나':'상대');
     $('compatibility-result-title').textContent=names.some(person=>person.name)?`${labels.join(' · ')}의 궁합`:'두 사람의 궁합';
     $('compatibility-births').textContent=`${labels[0]} ${chart.solar.label} · ${chart.timeLabel} / ${labels[1]} ${partner.solar.label} · ${partner.timeLabel}`;
+    for(const [index,person] of people.entries())showZodiac($(person+'-result-zodiac'),reading.zodiac?.[person],labels[index]);
     $('compatibility-copy-status').textContent=saveWarning;
     $('compatibility-expiry').textContent=expiresLabel(receipt);
     $('compatibility-entry').hidden=true;$('compatibility-result').hidden=false;$('compatibility-copy').disabled=false;

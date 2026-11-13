@@ -818,3 +818,14 @@
 }
 
 .compatibility-panel > .secondary-button { margin-top: 1rem; }
+
+/* Birth-animal labels follow the same confirmed year pillar as the reading. */
+.zodiac-preview{display:flex;flex-wrap:wrap;align-items:baseline;gap:5px 12px;margin:12px 0 0;padding:11px 14px;border:1px solid #c3a16d45;border-radius:8px;background:#c3a16d0a;line-height:1.7;text-align:left;word-break:keep-all;overflow-wrap:anywhere;min-width:0}
+.zodiac-preview[hidden],.profile-picker-zodiac[hidden]{display:none}
+.zodiac-preview strong{font:600 16px/1.6 var(--serif);color:#efd6aa}
+.zodiac-preview small{font-size:12px;line-height:1.8;color:#c9b8d4}
+.zodiac-result{justify-content:center;width:fit-content;max-width:100%;margin:14px auto 0;text-align:center}
+.zodiac-pair{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 16px;min-width:0}
+.zodiac-pair .zodiac-result{margin:14px 0 0;max-width:100%}
+.profile-picker-zodiac{display:block;margin-top:5px;font-size:12px;line-height:1.7;color:#e7c994;word-break:keep-all;overflow-wrap:anywhere}
+@media(max-width:540px){.zodiac-preview{padding:10px 12px;gap:3px 10px}.zodiac-preview strong{font-size:15px}.zodiac-preview small,.profile-picker-zodiac{font-size:12px}.zodiac-pair{display:grid;grid-template-columns:minmax(0,1fr);gap:0}.zodiac-pair .zodiac-result{width:100%;box-sizing:border-box}}
