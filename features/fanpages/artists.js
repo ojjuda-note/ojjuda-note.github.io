@@ -313,7 +313,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { date: "2027-01-23", title: "나연 · NA-sty 발매 기념 밋앤그릿", sub: "일본 도쿄 · 추첨 당첨자 한정 · 상세 장소·시간 당첨자 별도 안내", href: "https://www.twicejapan.com/news/detail/2065" }
     ],
     campaigns: [
-      { kind: "브랜드 행사", date: "2026.10.28", title: "나연 × CHAGEE 필리핀", sub: "11.14 첫 플래그십 개점 기념 팬 행사 · 포토카드 구매 응모는 11.11 종료", href: "https://thelookout.com.ph/article/nayeon-of-twice-returns-to-manila-for-chagees-first-philippine-flagship-store-opening" },
+      { kind: "콜라보", date: "2026.10.28", title: "나연 × CHAGEE 필리핀", sub: "11.14 첫 플래그십 개점 기념 팬 행사 · 포토카드 구매 응모는 11.11 종료", href: "https://thelookout.com.ph/article/nayeon-of-twice-returns-to-manila-for-chagees-first-philippine-flagship-store-opening" },
       { kind: "콜라보", date: "2026.10.02", title: "TWICE LOVELYS × Cake.jp", sub: "공식 캐릭터 쿠키·금평당 선물 세트 · 예약 판매 시작", href: "https://www.twicejapan.com/news/detail/2045" },
       { kind: "콜라보", date: "2026.03", title: "TWICE LOVELYS × 반다이", sub: "캐릭터 젤리·참·파우치 · 2026년 3월 출시", href: "https://wmg.jp/twice/news/90426" },
       { kind: "콜라보", date: "2026.02", title: "TWICE LOVELYS × 산리오캐릭터즈", sub: "선스타 문구 데스크 굿즈 시리즈", href: "https://www.twicejapan.com/news/detail/1948" }
