@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="84" viewBox="0 0 120 84" fill="none">
+  <defs>
+    <linearGradient id="bottle" x1="32" y1="43" x2="58" y2="43" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#245947"/><stop offset=".38" stop-color="#488d68"/><stop offset="1" stop-color="#174b3d"/>
+    </linearGradient>
+    <linearGradient id="label" x1="33" y1="44" x2="57" y2="52" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff8da"/><stop offset="1" stop-color="#ebe2bd"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="61" cy="71" rx="39" ry="4" fill="#163c2d" opacity=".13"/>
+  <g transform="rotate(-12 45 53)">
+    <path d="M39 12h12v15c0 3 2 5 5 7 3 2 4 5 4 9v21c0 4-2 6-6 6H36c-4 0-6-2-6-6V43c0-4 1-7 4-9 3-2 5-4 5-7Z" fill="url(#bottle)" stroke="#245443" stroke-width="1.3"/>
+    <path d="M42 17v10c0 4-2 6-5 9-2 2-3 4-3 7" stroke="#a9d1a1" stroke-linecap="round" stroke-width="2.7" opacity=".78"/>
+    <rect x="37.5" y="9" width="15" height="7.2" rx="1.8" fill="#d6ad6a" stroke="#936d37"/>
+    <path d="M40 11v3m3-3v3m3-3v3m3-3v3" stroke="#f8df9f" stroke-linecap="round"/>
+    <path d="M30.9 44q14 2.5 28.2 0v14.8q-14 3.2-28.2 0Z" fill="url(#label)"/>
+    <circle cx="45" cy="52.6" r="4" fill="#c17658"/>
+    <path d="M34 65q7 1.7 17 1" stroke="#82b695" opacity=".6" stroke-linecap="round"/>
+  </g>
+  <g stroke-linejoin="round" stroke-width="1.2">
+    <path d="m65 49 16-7 16 7-16 8Z" fill="#fffae9" stroke="#907554"/>
+    <path d="m65 49 16 8v16l-16-8Z" fill="#e4cba5" stroke="#907554"/>
+    <path d="m81 57 16-8v16l-16 8Z" fill="#c6aa83" stroke="#907554"/>
+  </g>
+  <g fill="#544334">
+    <ellipse cx="75" cy="49" rx="2" ry="1.1"/><ellipse cx="86" cy="49" rx="2" ry="1.1"/>
+    <ellipse cx="69" cy="55" rx="1.6" ry="2" transform="rotate(-20 69 55)"/>
+    <ellipse cx="77" cy="66" rx="1.6" ry="2" transform="rotate(-20 77 66)"/>
+    <ellipse cx="73" cy="60.5" rx="1.6" ry="2" transform="rotate(-20 73 60.5)"/>
+  </g>
+  <ellipse cx="89" cy="61" rx="2.1" ry="2.6" transform="rotate(22 89 61)" fill="#97543f"/>
+</svg>
