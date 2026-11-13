@@ -24,6 +24,10 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'nFYwcndNuOY', title: 'Armageddon', kind: '뮤직비디오', source: 'aespa / SMTOWN' }
   ],
   lesserafim: [
+    { id: 'Y1Lah0BM0KQ', title: 'Made My Night', kind: '뮤직비디오 · 오버워치 협업', source: 'LE SSERAFIM / HYBE LABELS' },
+    { id: '27C4pfRsf9g', title: 'ICONIC BY MISTAKE', kind: '뮤직비디오 · 합동 프로젝트', source: 'LE SSERAFIM · ILLIT · KATSEYE / HYBE LABELS' },
+    { id: 'V1Lr-_AxeR8', title: 'BOOMPALA', kind: '뮤직비디오', source: 'LE SSERAFIM / HYBE LABELS' },
+    { id: 'a2grcJdfXmY', title: 'CELEBRATION', kind: '뮤직비디오', source: 'LE SSERAFIM / HYBE LABELS' },
     { id: 'TvVtYaqCni8', title: 'SPAGHETTI (feat. j-hope)', kind: '뮤직비디오', source: 'LE SSERAFIM / HYBE LABELS' },
     { id: 'bNKXxwOQYB8', title: 'EASY', kind: '뮤직비디오', source: 'LE SSERAFIM / HYBE LABELS' },
     { id: 'pyf8cbqyfPs', title: 'ANTIFRAGILE', kind: '뮤직비디오', source: 'LE SSERAFIM / HYBE LABELS' },
