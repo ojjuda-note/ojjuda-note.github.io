@@ -82,7 +82,7 @@ async function verifyCard(page, id, name) {
 
     await page.locator('#search').fill('김제지평선축제');
     await verifyCard(page, 'gimje-horizon-2026', '김제지평선축제');
-    await page.locator('#search').fill('성남 힙페스타');
+    await page.locator('#search').fill('성남 HIP:FESTA');
     await verifyCard(page, 'seongnam-hip-festa-20261121', '성남 HIP:FESTA');
     await page.screenshot({ path: path.join(snapshotDir, 'standalone.png'), fullPage: true });
     console.log('PASS standalone: three festival events actually displayed');
@@ -126,7 +126,7 @@ async function verifyCard(page, id, name) {
     assert(arcadeCount > 0, 'Arcade iframe did not render event cards');
     await festivalFrame.locator('#period').selectOption('all');
     await festivalFrame.locator('[data-category="festival"]').click();
-    await festivalFrame.locator('#search').fill('성남 힙페스타');
+    await festivalFrame.locator('#search').fill('성남 HIP:FESTA');
     await verifyCard(festivalFrame, 'seongnam-hip-festa-20261121', '성남 HIP:FESTA');
     await arcade.screenshot({ path: path.join(snapshotDir, 'world-game-festival.png'), fullPage: true });
     console.log('PASS world.html?game=festival: embedded page rendered ' + arcadeCount + ' cards');
