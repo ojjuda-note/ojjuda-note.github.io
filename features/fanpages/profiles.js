@@ -108,7 +108,7 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   twice: {
-    checkedAt: '2026.11.10',
+    checkedAt: '2026.11.13',
     debut: '2015.10.20', debutWork: 'The Story Begins · OOH-AHH하게',
     agency: 'JYP Entertainment',
     concept: 'SIXTEEN에서 출발한 아홉 멤버의 이야기.',
@@ -117,6 +117,7 @@ window.OJJUDA_FAN_PROFILES = {
       { year: '2016', title: 'MAMA 올해의 노래', detail: 'CHEER UP', href: 'https://mama.mnetplus.world/history/2016/winners' }
     ],
     records: [
+      { year: '2026', title: '일본 MUFG STADIUM 공연', detail: '해외 아티스트 최초 해당 공연장 공연 · TWICE 일본 공식 발표', href: 'https://www.twicejapan.com/news/detail/2047' },
       { year: '2024.03', title: '빌보드 200 1위', detail: 'With YOU-th', href: 'https://ca.billboard.com/charts/billboard-200/2024-03-09' },
       { year: '2023', title: '미국 스타디움 공연 매진', detail: 'SoFi · MetLife', href: 'https://ca.billboard.com/music/music-news/chaeyoung-talks-lil-fantasy-vol-1-solo-debut-twices-10th-anniversary-why-shes-hungrier-than-ever-musically-2674025078' }
     ],
@@ -133,6 +134,8 @@ window.OJJUDA_FAN_PROFILES = {
     ],
     sources: [
       { label: 'JYP 공식 프로필', href: 'https://twice.jype.com/profile' },
+      { label: 'Warner Music Japan · 멤버 공개 생일·혈액형', href: 'https://wmg.jp/twice/' },
+      { label: 'TWICE JAPAN · 최근 활동·음반', href: 'https://www.twicejapan.com/latest_news/' },
       { label: 'MAMA 수상', href: 'https://mama.mnetplus.world/history/2016/winners' },
       { label: '빌보드 차트', href: 'https://ca.billboard.com/charts/billboard-200/2024-03-09' }
     ]
