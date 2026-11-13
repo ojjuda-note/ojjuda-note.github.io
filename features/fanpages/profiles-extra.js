@@ -382,3 +382,98 @@ if (andteamProfile) {
 
 // All six pending artist profiles were rechecked against primary sources.
 for (const id of ['tws','nctdream','ateez','treasure','nctwish','andteam']) window.OJJUDA_FAN_PROFILES[id].checkedAt = '2026.11.13';
+
+/* KISS OF LIFE: verified 2026 music and official Japanese source; unknown personal data remain blank. */
+const kissOfLifeProfile = window.OJJUDA_FAN_PROFILES.kissoflife;
+if (kissOfLifeProfile) {
+  kissOfLifeProfile.records = [
+    { year: '2025.11', title: '일본 음반 데뷔', detail: 'TOKYO MISSION START · 일본 컬럼비아', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' },
+    { year: '2026.09', title: '일본 미니 2집 발매', detail: 'SWEAT -JAPANESE EP- · 6곡', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' }
+  ];
+  kissOfLifeProfile.sources.unshift({ label: '일본 컬럼비아 공식 발매·트랙리스트', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' });
+  kissOfLifeProfile.sources.push({ label: 'AAA 2026 공식 출연 명단', href: 'https://www.asiaartistawards.com/en/news/3225' });
+}
+
+
+
+/* KiiiKiii: only officially published group achievements; personal details remain unknown. */
+const kiiikiiiProfile = window.OJJUDA_FAN_PROFILES.kiiikiii;
+if (kiiikiiiProfile) {
+  kiiikiiiProfile.records = [
+    { year: '2025', title: '데뷔 첫해 신인상 7개', detail: '서울시 공식 발표 · 시상 내역 상세는 원문 확인', href: 'https://mediahub.seoul.go.kr/archives/2016856' },
+    { year: '2026.02', title: '404 (New Era) 멜론 TOP100 1위', detail: '카카오엔터테인먼트 발표 · 발매 16일 만에 1위', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' }
+  ];
+  kiiikiiiProfile.sources.unshift({ label: 'STARSHIP 공식 앨범·아티스트 프로필', href: 'https://www.starship-ent.com/musician/kiiikiii' });
+  kiiikiiiProfile.sources.push({ label: '서울시 홍보대사·수상 이력', href: 'https://mediahub.seoul.go.kr/archives/2016856' });
+  kiiikiiiProfile.sources.push({ label: '카카오엔터테인먼트 활동·차트', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' });
+}
+
+
+/* STAYC: birthdays are publicly provided by the agency; other personal fields stay blank. */
+const staycProfile = window.OJJUDA_FAN_PROFILES.stayc;
+if (staycProfile) {
+  staycProfile.expanded = true;
+  const birthdays = {
+    '수민': '2001.03.13',
+    '시은': '2001.08.01',
+    '아이사': '2002.01.23',
+    '세은': '2003.06.14',
+    '윤': '2004.04.14',
+    '재이': '2004.12.09'
+  };
+  for (const member of staycProfile.members) {
+    member.birthday = birthdays[member.name] || null;
+    member.source = 'https://www.highup-ent.com/en/stayc/';
+  }
+  staycProfile.sources.unshift({ label: '하이업엔터테인먼트 공식 멤버 소개·생일', href: 'https://www.highup-ent.com/en/stayc/' });
+  staycProfile.sources.push({ label: '공식 2:LOVE 음반·트랙리스트', href: 'https://www.highup-ent.com/stayc/2love/' });
+}
+
+
+/* RIIZE: birthdays verified from six official Japan member profiles. */
+const riizeProfile = window.OJJUDA_FAN_PROFILES.riize;
+if (riizeProfile) {
+  riizeProfile.expanded = true;
+  const officialBirthdays = {
+    '쇼타로': ['2000.11.25', 'shotaro'],
+    '은석': ['2001.03.19', 'eunseok'],
+    '성찬': ['2001.09.13', 'sungchan'],
+    '원빈': ['2002.03.02', 'wonbin'],
+    '소희': ['2003.11.21', 'sohee'],
+    '앤톤': ['2004.03.21', 'anton']
+  };
+  for (const member of riizeProfile.members) {
+    const info = officialBirthdays[member.name];
+    if (!info) continue;
+    member.birthday = info[0];
+    member.source = 'https://riizeofficial.jp/profile/' + info[1] + '/';
+  }
+  riizeProfile.records = [
+    { year: '2026.08', title: '일본 싱글 3집 Sunburst 발매', detail: '2026.08.26 CD 발매 · Sunburst/Rise Over/KILL SHOT', href: 'https://riizeofficial.jp/discography/sunburst_normal/' }
+  ];
+  riizeProfile.sources.unshift({ label: 'RIIZE 일본 공식 6인 프로필 · 생일', href: 'https://riizeofficial.jp/profile/' });
+  riizeProfile.sources.push({ label: 'RIIZE 일본 공식 음반 목록', href: 'https://riizeofficial.jp/discography/' });
+}
+
+
+/* BOYNEXTDOOR: member birth dates from KOZ's official group profile (2026-11-12). */
+const boynextdoorProfile = window.OJJUDA_FAN_PROFILES.boynextdoor;
+if (boynextdoorProfile) {
+  boynextdoorProfile.expanded = true;
+  const officialBirthdays = {
+    '성호': '2003.09.04', '리우': '2003.10.22', '명재현': '2003.12.04',
+    '태산': '2004.08.10', '이한': '2004.10.20', '운학': '2006.11.29'
+  };
+  for (const member of boynextdoorProfile.members) {
+    member.birthday = officialBirthdays[member.name] || null;
+    member.source = 'https://kozofficial.com/artist/profile/BOYNEXTDOOR';
+  }
+  boynextdoorProfile.sources.push(
+    { label: 'KOZ 공식 그룹 프로필 · 멤버 생일', href: 'https://kozofficial.com/artist/profile/BOYNEXTDOOR' },
+    { label: 'KOZ 공식 정규 1집 트랙리스트', href: 'https://www.kozofficial.com/artist/discography/BOYNEXTDOOR/32' },
+    { label: 'BOYNEXTDOOR 일본 공식 일정', href: 'https://boynextdoor-official.jp/Schedule' }
+  );
+}
+
+// Pending PR reconciliation: only the eight manually reviewed profiles.
+for (const id of ["hearts2hearts", "kissoflife", "kiiikiii", "stayc", "seventeen", "enhypen", "riize", "boynextdoor"]) window.OJJUDA_FAN_PROFILES[id].checkedAt = '2026.11.13';

@@ -81,7 +81,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
   ],
 
   hearts2hearts: [
+    { id: 'DK_dr_n2rM4', title: 'ICONIC HEART (Korean Ver.)', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" },
     { id: 'lu9GinsuyUQ', title: 'Next Chapter', kind: '뮤직비디오', source: 'Hearts2Hearts Official · 2026.10.16' },
+    { id: 'gNUMxMuxH20', title: 'Moonride', kind: '뮤직비디오', source: "Hearts2Hearts · 공식 채널" },
     { id: 'chl0R8C4NJ8', title: 'ICONIC HEART', kind: '뮤직비디오', source: 'SMTOWN · 2026.08.11' },
     { id: '1VqxWNwgf5Q', title: 'Lemon Tang', kind: '뮤직비디오', source: 'SMTOWN · 2026.06.22' },
     { id: 'F7sGJVUrkjQ', title: 'RUDE!', kind: '뮤직비디오', source: 'SMTOWN · 2026.02.20' },
@@ -108,6 +110,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
   ],
   seventeen: [
     { id: 'hdwGWGSfABA', title: '정한×조슈아 (JxJ) · 12 o’clock', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.10.19' },
+    { id: 'Do9BOhk0u_w', title: '디노의 피철인 · 놀아보세 (prod. Hitchhiker)', kind: '뮤직비디오', source: "HYBE LABELS · 공식 채널" },
+    { id: 'uh_DpK2xFiE', title: '디노의 피철인 · 미쳐 미쳐', kind: '뮤직비디오', source: "HYBE LABELS · 공식 채널" },
+    { id: 'Zt_37l7NiJw', title: '디노의 피철인 · 아프지 않은 이별은 없다 (narr. 이문세)', kind: '뮤직비디오', source: "HYBE LABELS · 공식 채널" },
     { id: 'pBpr9TnhhkE', title: 'V8 (디에잇×버논) · singasong', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.06.29' },
     { id: 'dZNPbNkKAss', title: '도겸×승관 (DxS) · Blue (Epilogue Ver.)', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.01.19' },
     { id: 'pS57UX6s-xw', title: 'THUNDER', kind: '뮤직비디오', source: 'SEVENTEEN / HYBE LABELS · 2025.05.26' },
@@ -158,5 +163,34 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     {"id":"8hU6P7MmRyk","title":"We on Fire","kind":"뮤직비디오","source":"HYBE LABELS / YX LABELS · 2026.04.13"},
     {"id":"KqE0P1qMtQg","title":"Back to Life","kind":"뮤직비디오","source":"HYBE LABELS / YX LABELS · 2025.10.27"},
     {"id":"1fVsSx5ggQc","title":"For us · 라라포트 BLACK FRIDAY TV CM","kind":"광고 영상","source":"미쓰이 쇼핑파크 / &TEAM · 2026.11.09"}
+  ],
+  kissoflife: [
+    { id: '6bIVPKhafSI', title: 'SWEAT (Japanese Ver.) / THE FIRST TAKE', kind: '라이브', source: "THE FIRST TAKE · 공식 채널" },
+    { id: 'dsGK0HZZx1k', title: 'SWEAT (Japanese Ver.)', kind: '뮤직비디오', source: "KISS OF LIFE · 공식 채널" },
+    { id: 'EJ2fIbl35Oc', title: 'WHAT!', kind: '스페셜 비디오', source: "KISS OF LIFE · 공식 채널" },
+    { id: 'eTvUZymLyGY', title: 'SWEAT', kind: '뮤직비디오', source: "KISS OF LIFE · 공식 채널" }
+  ],
+  kiiikiii: [
+    { id: 'UsbRoaH6y-Q', title: 'Pop Off Pop Off', kind: '뮤직비디오', source: "STARSHIP · 공식 채널" },
+    { id: 'hjcG58y_Fyc', title: 'Pop Off Pop Off', kind: '안무 영상', source: "KiiiKiii · 공식 채널" },
+    { id: 'zhHB4dZTChw', title: '404 (New Era)', kind: '뮤직비디오', source: "STARSHIP · 공식 채널" },
+    { id: 'hAEfi_SKTEU', title: 'I DO ME', kind: '뮤직비디오', source: "STARSHIP · 공식 채널" }
+  ],
+  stayc: [
+    { id: 'HgewvBTOJwU', title: '2 L0VE', kind: '뮤직비디오', source: "STAYC · 공식 채널" },
+    { id: 'GwLfMAQEY9s', title: '2 L0VE', kind: '안무 영상', source: "STAYC · 공식 채널" },
+    { id: 'udOf9JGMA7U', title: 'MWUAH', kind: '뮤직비디오', source: "STAYC Japan Official · 공식 채널" },
+    { id: 'W8ml4ryPwic', title: 'I WANT IT', kind: '뮤직비디오', source: "STAYC · 공식 채널" },
+    { id: 'z-xfGoabprU', title: 'BEBE', kind: '뮤직비디오', source: "STAYC · 공식 채널" }
+  ],
+  riize: [
+    { id: 'RgkoXU4BlOE', title: 'Insomnia', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" },
+    { id: '1ccDZDpPzEI', title: 'Sunburst · 일본 팬미팅', kind: '라이브 무대', source: "RIIZE · 공식 채널" },
+    { id: 'iUw3LPM7OBU', title: 'Get A Guitar', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" }
+  ],
+  boynextdoor: [
+    { id: 'WI4__7z_dJw', title: 'ANIMAL', kind: '뮤직비디오', source: "HYBE LABELS · 공식 채널" },
+    { id: 'm2uO4FD5csM', title: 'VIRAL', kind: '뮤직비디오', source: "HYBE LABELS · 공식 채널" },
+    { id: 'TcAJfGaO6Xo', title: 'One and Only', kind: '뮤직비디오', source: "HYBE LABELS · 공식 채널" }
   ]
 });

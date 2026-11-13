@@ -1,9 +1,17 @@
-/* Identify the one artist changed by the latest published commit.
-   Used only for read-only post-deployment fanpage verification. */
+/* Infer release-screen targets from the checked-out commit's actual data.
+   Default output keeps the legacy one-artist contract. --all verifies every
+   changed artist, or all artists when a shared verifier/UI changed alone. */
 import { execFileSync } from 'node:child_process';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
 
 const names = ['artists.js', 'artists-extra.js', 'profiles.js', 'profiles-extra.js', 'videos.js'];
+export function selectChangedGroups(previous, current, all = false) {
+  const changed = [...current].filter(([key, value]) => previous.get(key) !== value).map(([key]) => key);
+  if (all) return changed.length ? changed : [...current.keys()];
+  return changed.length === 1 ? changed : [];
+}
 function snapshot(ref) {
   const scripts = names.map(file => execFileSync('git', ['show', `${ref}:features/fanpages/${file}`], {
     encoding: 'utf8',
@@ -18,13 +26,14 @@ function snapshot(ref) {
     videos: w.OJJUDA_FAN_VIDEOS[artist.id] || []
   })]));
 }
-try {
-  const previous = snapshot('HEAD^');
-  const current = snapshot('HEAD');
-  const changed = [...current].filter(([key, value]) => previous.get(key) !== value).map(([key]) => key);
-  // More than one changed group: do not assume which group should be tested.
-  if (changed.length === 1) process.stdout.write(changed[0]);
-} catch (error) {
-  process.stderr.write(`Could not infer changed fanpage artist: ${error.message}\n`);
-  process.exitCode = 1;
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  try {
+    const unknown = process.argv.slice(2).filter(arg => arg !== '--all');
+    if (unknown.length) throw new Error(`Unknown argument: ${unknown.join(', ')}`);
+    const selected = selectChangedGroups(snapshot('HEAD^'), snapshot('HEAD'), process.argv.includes('--all'));
+    process.stdout.write(selected.join('\n'));
+  } catch (error) {
+    process.stderr.write(`Could not infer changed fanpage artists: ${error.message}\n`);
+    process.exitCode = 1;
+  }
 }

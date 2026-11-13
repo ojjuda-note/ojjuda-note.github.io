@@ -55,6 +55,8 @@ jobs:
           node-version: '22'
       - name: Install locked test dependencies
         run: npm --prefix tests ci --ignore-scripts
+      - name: Check release target selection
+        run: node --test tests/fanpage-changed-groups.test.cjs
       - name: Check all fanpage controls and in-page navigation
         run: npm --prefix tests run test:fanpages
       - name: Verify urgent fanpage schedules in mobile Chromium
@@ -102,26 +104,32 @@ jobs:
         run: |
           node features/fanpages/check-profiles.mjs
           node features/fanpages/check-videos.mjs
+          node --test tests/fanpage-changed-groups.test.cjs
           for file in features/fanpages/*.js; do node --check "$file"; done
       - name: Verify release data, mobile layouts, original photos and lazy video dialogs
         if: steps.scope.outputs.changed == 'true'
+        shell: bash
         run: |
-          group="${FANPAGE_GROUP}"
-          # Verify the PR's artist, not an unrelated default page.
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" && "${GITHUB_HEAD_REF}" =~ ^fanpages[/-]([a-z0-9]+)- ]]; then
-            group="${BASH_REMATCH[1]}"
-          elif [[ "${GITHUB_EVENT_NAME}" == "workflow_run" ]]; then
-            changed="$(node features/fanpages/changed-group.mjs || true)"
-            if [[ "${changed}" =~ ^[a-z0-9]+$ ]]; then
-              group="${changed}"
-            fi
+          if [[ "${GITHUB_EVENT_NAME}" == 'workflow_dispatch' ]]; then
+            groups="${FANPAGE_GROUP}"
+          else
+            # Actual data changes determine every target; branch names are not artist IDs.
+            # Shared-only UI/verifier changes exercise the entire catalogue.
+            groups="$(node features/fanpages/changed-group.mjs --all)"
           fi
-          FANPAGE_GROUP="${group}" node tests/fanpage-release-ui.test.cjs
+          test -n "$groups"
+          mode=preview
+          if [[ "${FANPAGE_LIVE}" == 'true' ]]; then mode=public-site; fi
+          while IFS= read -r group; do
+            [[ "$group" =~ ^[a-z0-9]+$ ]] || exit 1
+            FANPAGE_GROUP="$group" node tests/fanpage-release-ui.test.cjs
+            mkdir -p "tests/artifacts/fanpage-release/by-artist/$group"
+            cp -a "tests/artifacts/fanpage-release/$mode/." "tests/artifacts/fanpage-release/by-artist/$group/"
+          done <<< "$groups"
       - name: Verify the unchanged public site after verifier-only changes
         if: steps.scope.outputs.changed == 'true' && github.event_name != 'workflow_run' && env.FANPAGE_LIVE != 'true'
         shell: bash
         run: |
-          # Verifier fixes can be checked live before merging when no fanpage data/UI changed.
           # New data remains a preview until the existing Pages workflow publishes it.
           if git diff --quiet HEAD^ HEAD -- features/fanpages && ! git diff --quiet HEAD^ HEAD -- tests/fanpage-release-ui.test.cjs .github/workflows/fanpages.yml; then
             FANPAGE_LIVE=true node tests/fanpage-release-ui.test.cjs
