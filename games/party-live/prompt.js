@@ -13,6 +13,7 @@
       '<form id="pair-form"><label for="pair-question">' + options.label + '</label>' +
       '<textarea id="pair-question" rows="2" required maxlength="120">' +
       ui.esc(choose(options.questions)) + '</textarea>' +
+      '<p><small>직접 쓴 내용은 관리자 검토 후 공용 목록에 등록될 수 있어요.</small></p>'+
       '<div class="pair-prompt-actions"><button type="button" id="pair-suggest">' + options.another + '</button>' +
       '<button type="submit" class="action">' + options.submit + '</button></div></form>';
   }
@@ -34,7 +35,9 @@
         field.reportValidity();
         return;
       }
-      ui.send(action, {turn: s.game.turn, question});
+      ui.send(action, {turn: s.game.turn, question}).then(accepted => {
+        if (accepted) window.DrinkingPrompts.submit(action === 'finger_prompt' ? 'fingers' : 'imagevote',question);
+      });
     };
   }
 

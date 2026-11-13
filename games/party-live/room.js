@@ -102,7 +102,8 @@
     invalid_target:'화면에서 다시 골라 주세요.', invalid_settings:'테이블 모양과 방향을 골라 주세요.',
     invalid_seat:'테이블 안에서 병 가운데와 조금 떨어진 자리를 골라 주세요.',
     seat_taken:'다른 참가자의 자리와 겹쳐요. 조금 옆을 눌러 주세요.',
-    invalid_deck:'빨간맛과 순한맛에 질문을 한 장 이상 넣어 주세요.',
+    invalid_deck:'선택한 맛의 질문 목록을 확인해 주세요.',
+    invalid_mode:'카드 구성을 다시 골라 주세요.', invalid_visibility:'카드 맛을 보일지 숨길지 다시 골라 주세요.',
     invalid_score:'시간 기록을 확인해 주세요.', already_scored:'이미 기록을 제출했어요.',
     invalid_time:'선택할 수 있는 범위에서 시간을 골라 주세요.', stale_turn:'이미 차례가 바뀌었어요.'
   };

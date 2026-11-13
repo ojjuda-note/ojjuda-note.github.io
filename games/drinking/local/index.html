@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#faf7ed">
   <title>오쭈다</title>
-  <link rel="stylesheet" href="style.css?v=20261114-drinks-arcade-return1">
+  <link rel="stylesheet" href="style.css?v=20261114-drink-prompts1">
+  <link rel="stylesheet" href="/games/party-live/truth-settings.css?v=20261114-truth-flavors1">
   <link rel="stylesheet" href="/games/drinking/access.css?v=20261114-drinks-adult1">
   <script defer src="/config.js"></script>
   <script defer src="/games/matgo/matgo-access.js?v=20261114-drinks-adult1"></script>
@@ -21,12 +22,9 @@
   <div id="access-content" hidden></div>
   <template id="access-page" data-title="한 대로 플레이 · 오쭈다 술게임">
 <header class="mast"><div class="wrap mast-inner">
-  <a class="brand" href="#menu"><img class="brand-mark" src="art/joystick.webp" alt="" width="40" height="40">한 대로 플레이</a>
+  <a class="arcade-return" href="/world.html?tab=arcade"><span aria-hidden="true">←</span> 오쭈다 오락실로</a>
   <div class="header-actions"><a class="mode-back" href="../">방식 선택</a><button id="effects" class="icon-button" aria-label="소리와 진동 설정" title="소리와 진동 설정"></button></div>
 </div>
-  <nav class="wrap arcade-nav" aria-label="오락실 이동">
-    <a class="arcade-return" href="/world.html?tab=arcade"><span aria-hidden="true">←</span> 오쭈다 오락실로</a>
-  </nav>
 </header>
 <main id="app" class="wrap" tabindex="-1"></main>
 <dialog id="settings" aria-labelledby="settings-title"><form id="player-form">
@@ -37,27 +35,27 @@
   <button class="big-button" type="submit">설정 완료</button>
 </form></dialog>
 <dialog id="truth-editor" aria-labelledby="truth-editor-title">
-  <div class="dialog-head"><h2 id="truth-editor-title">질문 카드 등록·수정</h2><button class="icon-button" type="button" id="truth-close" aria-label="닫기">✕</button></div>
-  <p>등록하거나 수정한 카드는 이 브라우저에 저장돼요.</p>
+  <div class="dialog-head"><h2 id="truth-editor-title">질문 카드 등록</h2><button class="icon-button" type="button" id="truth-close" aria-label="닫기">✕</button></div>
+  <p>추가한 질문은 이 기기에서 바로 뽑을 수 있어요. 직접 쓴 내용은 관리자 검토 후 공용 목록에 등록될 수 있어요.</p>
   <form id="truth-form">
     <label for="truth-flavor">카드 맛</label>
     <select id="truth-flavor" class="field"><option value="mild">순한맛</option><option value="spicy">빨간맛</option></select>
     <label for="truth-question">질문</label>
     <textarea id="truth-question" class="field" rows="3" maxlength="240" required placeholder="카드를 뒤집으면 나올 질문을 적어 주세요."></textarea>
-    <button type="submit" id="truth-submit" class="big-button">카드 등록</button>
-    <div id="truth-edit-actions" hidden><button type="button" class="quiet" id="truth-cancel-edit">수정 취소</button>
-      <button type="button" class="quiet" id="truth-restore">원래대로</button></div>
+    <button type="submit" id="truth-submit" class="big-button">이 기기에 추가</button>
   </form>
   <p id="truth-message" role="status"></p>
-  <details><summary>기본 카드 수정</summary><ul id="truth-default-list"></ul></details>
-  <details><summary id="truth-count">내가 등록한 카드 (0장)</summary><ul id="truth-list"></ul></details>
 </dialog>
 <dialog id="feedback" aria-labelledby="fx-title"><div class="dialog-head"><h2 id="fx-title">소리와 진동</h2><button class="icon-button" id="fx-close" aria-label="닫기">✕</button></div>
 <label class="pref"><span>게임 효과음</span><input id="audio-check" type="checkbox"></label>
 <label class="pref"><span>게임 진동</span><input id="haptic-check" type="checkbox"></label>
 <p id="haptic-note"></p><button class="big-button" id="fx-test">효과 체험하기</button></dialog>
+    <span data-module="/games/drinking/round-prompts.js?v=20261114-drink-prompts1"></span>
+    <span data-module="/games/drinking/community-prompts.js?v=20261114-drink-prompts1"></span>
+    <span data-module="/games/drinking/prompt-submissions.js?v=20261114-drink-prompts1"></span>
     <span data-module="feedback.js?v=20261114-drinks-local1"></span>
-    <span data-module="app.js?v=20261114-drinks-local1"></span>
+    <span data-module="/games/party-live/truth.js?v=20261114-truth-flavors1"></span>
+    <span data-module="app.js?v=20261114-truth-flavors1"></span>
   </template>
 </body>
 </html>

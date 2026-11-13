@@ -1,0 +1,1800 @@
+-- Keep baseline spellings in the shared content catalog. This deny-list stores only fingerprints.
+create table ojjuda_arcade_internal.drinking_prompt_baseline (
+ fingerprint bytea primary key
+);
+create table ojjuda_arcade_internal.drinking_prompt_queue (
+ id integer generated always as identity primary key,
+ kind text not null check(kind in ('fingers','imagevote','king','truth')),
+ flavor text not null check((kind='truth' and flavor in ('mild','spicy')) or (kind<>'truth' and flavor='')),
+ body text not null, fingerprint bytea not null unique,
+ status text not null default 'pending' check(status in ('pending','approved','rejected')),
+ created_at timestamptz not null default now(), reviewed_at timestamptz
+);
+create index drinking_prompt_pending on ojjuda_arcade_internal.drinking_prompt_queue(id desc) where status='pending';
+create index drinking_prompt_approved on ojjuda_arcade_internal.drinking_prompt_queue(kind,flavor,id) where status='approved';
+alter table ojjuda_arcade_internal.drinking_prompt_baseline enable row level security;
+alter table ojjuda_arcade_internal.drinking_prompt_queue enable row level security;
+revoke all on ojjuda_arcade_internal.drinking_prompt_baseline,ojjuda_arcade_internal.drinking_prompt_queue from public,anon,authenticated;
+revoke all on sequence ojjuda_arcade_internal.drinking_prompt_queue_id_seq from public,anon,authenticated;
+
+-- Identity never depends on question wording or card position after the initial import.
+create table ojjuda_arcade_internal.drinking_truth_cards (
+ id integer generated always as identity primary key,
+ flavor text not null check(flavor in ('mild','spicy')), body text not null,
+ active boolean not null default true, revision integer not null default 1,
+ unique(flavor,body)
+);
+-- All spellings survive edits and archiving to keep the suggestion queue from resurrecting them.
+create table ojjuda_arcade_internal.drinking_truth_history (
+ fingerprint bytea primary key, card_id integer not null references ojjuda_arcade_internal.drinking_truth_cards(id)
+);
+alter table ojjuda_arcade_internal.drinking_truth_cards enable row level security;
+alter table ojjuda_arcade_internal.drinking_truth_history enable row level security;
+revoke all on ojjuda_arcade_internal.drinking_truth_cards,ojjuda_arcade_internal.drinking_truth_history from public,anon,authenticated;
+revoke all on sequence ojjuda_arcade_internal.drinking_truth_cards_id_seq from public,anon,authenticated;
+create index drinking_truth_active on ojjuda_arcade_internal.drinking_truth_cards(flavor,id) where active;
+
+create function ojjuda_arcade_internal.drinking_prompt_clean(wording text)
+returns text language sql immutable strict security invoker set search_path='' as $clean$
+ select btrim(regexp_replace(regexp_replace(normalize(wording,NFC),U&'[\200B-\200F\202A-\202E\2060-\206F\FEFF]','','g'),'[[:space:][:cntrl:]]+',' ','g'));
+$clean$;
+create function ojjuda_arcade_internal.drinking_prompt_fingerprint(game text,tier text,cleaned text)
+returns bytea language sql immutable strict security invoker set search_path='' as $hash$
+ select sha256(convert_to(game||chr(31)||tier||chr(31)||lower(cleaned),'UTF8'));
+$hash$;
+revoke all on function ojjuda_arcade_internal.drinking_prompt_clean(text),
+ ojjuda_arcade_internal.drinking_prompt_fingerprint(text,text,text) from public,anon,authenticated;
+
+insert into ojjuda_arcade_internal.drinking_prompt_baseline(fingerprint)
+select decode(value,'base64') from regexp_split_to_table($fingerprints$+5fumIQfVaWfNcqkwUa+I0timB96kkZbNvX/oz5WPss=
++5lsdZEd20gL4OPSc9HVbEUX3b5YJ1SwvxuAcadxRBU=
++AtZ0mC3rkDhMfQHUOqeU1CBroxcNZIJDxW6TC9aYno=
++DehAhe/Fjzs8JOkHt+7mxLUtLuIlkQZLuXUUC2oG+I=
++ExqSnOg2DwpnigFGwzwi5REoUsEGd1cwhoFb5v4db0=
++FdOoV5mZgy8C7ZTjHzpnZa6z8GN1zE8YNHSL86zi4g=
++NNKh/2LpB/eYREfSQNbtnPwF7Kjhu64Pz386fKvb3E=
++NV5ezx929iN6t82RaPV/KuG003iqXRw391ggW2/MuQ=
++OEiyjKNTaG2IIqq6G7K7GYC3ducVhViF+vhRTtmKGM=
++PYMKiu3S3uFEIskbamimuKXq6398pm1tGeh/2e4rcw=
++RgVGUh636hAIeB6IDa0MF3enRMUM7auzkNwtwoum/g=
++VVAAp9y5abRgyN84iTjeIv6n9PInwZeLKuRhawq4o8=
++WCeYmK+Ku6Jfne27GQrVv01V7CsNO6H43iIzi0JBOA=
++aNPSoK6ZYdWNJ3dBXD6kha0gGAnz7Mc28VurN/A2j0=
++bIM0cnA2tD/DKGJSugXAD3sio5mV3Y5cZUjO2y6KGE=
++dsZ2SS6GvyI3lk/m7OAkmfpiRFf+uvOYHR60jXXiCM=
++hg/8IrXLxhvryGDEWrVBEexdLRccAP1BBjJR7FXVlE=
++mcfX7FAJBog0SQlF+MHDEtrof2cWX5PCf0hg4ZfozI=
++p6XmOE9o2MlutZajXBZu2wrsvPSsgXhNXu117Aoqek=
++plytsfXor+KnFrW/fPTYklBzbLwhs9lirzbTSTE9dg=
++v2XXDJOCmCiURk5rTJGQevSHdrObG2RtemLjVSWVFE=
++z7K5qXDtDZE11aaPrSrhyApBvv42TaYv+A7cD0Y0NQ=
+/2flNRV/wvzyGgizAvS3Q+2cLVanXmPUFqC0EOH+wAk=
+/6EnkGHNr5fBN9i9M1p3IDiPTYsbA4h2rJ2PFP4o++w=
+/7bQCSp0lQzWsdR3+0ots/vHgyibo3ZOUC56kBJoN3w=
+/Cz44MATVEmL/SNsF0xUIoqUcMgCN+/v7688NwSKOOY=
+/HjVYeANopt8h97OwJsGlUN3lYVgIFflcGkRIrLQxcg=
+/L6nKqN6gdMMSIMVCqQGPhTU0T6E0oOS7Ybe45LremE=
+/LZXDZaY7kfG26Rzxnb05yN3MtCd6htxihziEY72tOk=
+/OxnHVf+SnwzFTLNTQrJCagVesxw26Eju+yTRxJ8mz0=
+/PDq5nyIB8jxfyTrAVRMssjzxh2YLCx7Sr1oxP4eKdc=
+/erBDe8gbAj3hq1zCKzMKQQe/XDFuSjWP1g19607OSU=
+/gt6gAdWjl5WB4UqWo0aaawBLKZvEJz0t695wzJgdAw=
+/jB/0bGXT12Z5Lja4Fzgxr8yObAcxyE+QuBGLWNvCCI=
+/kPIenF2VCT4QyrUIQiU+O7uc7e+86/G4rLDovTmsEk=
+/m5/8AxZuF/X8Gn+7MZv6RtMv09lxBfj8QCgasgNEss=
+/nbIyYdDx0RjGy1qoG5hbobU7DcjQSC9GrT2ndTeWqA=
+/rWVBJRJDAVCIcb4gxlHd02LycuTzhKZSjU9i4tiMLw=
+/uKSAPCLB6E0Kim+lqX3UfKom0dF2xL1Ld0fYzJ4jBk=
+/ur+CHjml8BspDlxPXUNEjeo+qyXFo5K8v8VIm7cIg0=
+0+dIzvLWqFbwoi0QbfKI8nZuk2Wni2sBj1IuEC97HC0=
+04WAmCOmEU929VeVcUWIcU16DQgbDSjJJQPgx9oap9Y=
+04cMmB32jIFtXpuqr7E3E1w4bp21Kk/2vQdDgi8pjf8=
+07OUn8/pxbTxh+Odzhb7E7ljWJTQPzmR1X64CpuvPuI=
+0Bg1uLDyaki99bftvOivrt91Xnl2JYsYRGP1Yu0d4bs=
+0C5Zvor2b/kqo7FZjOoX8otzvP7LaCg4/ixCyFGDutU=
+0F/W+e7cnk4nnpeaLXicSWTUucbgaPqO6Mp6SCwQwTY=
+0KmfGrGoGxOsUIQ3JAEbfPKUTUL3+IflOAwwrbcNHGs=
+0KuurRBP6wSLkAdwpEGbK+23ZHqHI6jRgtvAURasUjM=
+0LI+m/ZRzskF7QBkxD+jJ/34phGXv0WqhWqqEzOOT8w=
+0afvAV/izasVnryIhuOpIIrhRc8RwQB/fkMjjoUoyWA=
+0biGJXTUbIv9TQ2QJ27X+WmVgjpDeYnIqAnLVMO7oSg=
+0ddz3E5Y9s7JlcRSSIEDR4gE0986I+A2lWolcRwLOEg=
+0iUdHxgkOX86EWjUdr6W7xH6mPIKIjv3Ax6oN1vie3Q=
+0jo6a3NAyId0J080+Iphh3ZJDE0v3rhOEo7xtmtAB0k=
+0o6U6pBR1cSN3s4I8YQIthwc6plsUUPGya+Hz/Z+V0E=
+0q26xmhCFOKHPLcOPHxrPeJ/FrxbE75EyBeKTlCE0U8=
+0rI56BeX8P9r1GZatKEc+vpkpJVTtqp70hkeKowsIpM=
+0rcO+IcviBwrFbgDjJKu9fKn7FcAxB4Q29ij8ZAvpYQ=
+0s9RAAMW2T4iF21jGRxm2wG/+Rht+EaYOlIVybPcvtw=
+1328ST65b0sb3bFrohQ4OyxWB4eHYt44hC78cJI01Yo=
+18B1D/GIAZxF63WCYpvvE/z9pJ6tmwpjZZwo0R4UW+0=
+1CWt+SkPO8lQs3H86MS9+s0RmI6mUfHI9dNMJV+4wYA=
+1HkqabQvxvQsPd9HPtmvq08Fa6/9ftZ+7pIQBpNA2Hs=
+1MRhcg3izYVr/TlS+NxCMpJJwkQcrmy25AwjvuYbAW4=
+1g7465drtKb3pJebLAQjSy26cP6X74CME2YTZ4ZPwq8=
+1lRPtFl4hbGC2RB81igSlf3Mm4KpCFLNLkn2eoKp1hc=
+1vsQ2yxHroEOsALmCxq2sYrLS5gG5tf44PVt+WMhLGw=
+20u8YiU55A+R3NJCMwW7cxFQmQJ4A7VK3k6dfKuLu3M=
+21+5mKqO8oGLSMS/ZNOPOmHo/4PAEGktJ8V5311V2fs=
+23t1lUDeVglpUcWtBL4L2899J7ZM3ISaIWhAiy2AS9w=
+28qiM9Yl0kdCBI2z2yFseUPdXrmrrfqI62HHOB/Zz8Q=
+29dlaAyQukFIFzGJM7136riH2ji3YtVKPBizpIsgRX4=
+2CTMiBwUqRbOF4bnStiHo2OzWkYc8i9MCMIu1tLFPaY=
+2E/uPfY5N+fGP4+OUOcFgpNumpq7eL8Wr5yzIwE9Uw8=
+2Ge/2LTQ2ElP1cC8LWYef2fcFJnuOiklbPvDYUFj8Ys=
+2M7NyWJ8ywdKNBL3W5i0WAb83iHMBxiAxqV5vrauMPg=
+2MlP8FhfBFoeDKLozXrTN4BfqOyOiqmbKgg+dnT951A=
+2S/JQadt/fCUhUiXhXeo2j2YPuI+/9uI9Vp+EKccDAo=
+2TMEGXBRTW29FI8vMvPGx9jn5e3pPKegRhvluNJv3zs=
+2VLh30NxnBcM/zQxGjjvSulR2qStiaf2kA4SIQHKwXs=
+2ZHNp4UsN7h/bvFVERxRyJXF0afVoZ56rZ0ev6HOFeg=
+2j4pdc1qkq1TyVAXZkKjGl8nvxXTke02MvPZAww3Ia4=
+2jornFCjhQWLZSqTjOU0klSXzz/KxjQV2KYveQ7jFQI=
+2nt7Xhw8fHrT3SsAF3556m4ees2AwYisqcUcy1eHFok=
+2xL86ZAa4I+DYGFk5YglZZznuHlHC5wLJb/rjsSVgug=
+2ySH5ANlwL/vXbpxbF2DQ+sraVWiFgV2fa40ApWxOLI=
+3/p9EwUHgC+WQD16qZle59yzLmCxw27/SjQoyi604Bg=
+327Dqfkrr+PbhRW1VaGpgn77iWPpTo32qDQAS9IO+M0=
+3Bds2U+Avj2JAf+bn0+9vtbtqQPDl0XhE742P6SXrRA=
+3DhBLUayolesftLkNisRFdA2c5lhGn4KehOeHEyzEIU=
+3JPKhtkr1/+WCDJGiFQ2CxdsNZR6hrwxgwYJulAs+zs=
+3Ju0og0ETz45y0ULDqwya6djk63b67UHk3QP4ytfs1s=
+3MlW9JHxOUDCdlR3mOqqW0z/8fXf4AxKfz2gqjE39r4=
+3YDVfU5aH3wM1D2x8Bl/oZTbbUrDevfFLAQcLpck0zE=
+3eBpXnXI12ESohkjZVBwppegs7JMeuO35/D6k4yJiIM=
+3lFCzAm4tjUpuL1xE/7Q0nw1Lmut58qe0twmnG92K6M=
+3nqfPfSPNkhCuQR9kY9IJZlei8N5zPZSLXfAN8QOsKk=
+3tI5z63e4mcA80fX1dEfXMAd90dvbv67Angz1t9pZJo=
+3xeENuOnYriSm+keoCkjPYOmpSgDB+VPI4ybZn7knmU=
+3yzVF/Rt5wUu0C9SnaGFfQ70Nr0vPgiI81GJRoDFcSA=
+3z1p5uSRTzipmJz/FGkBomgCg6bVv5USTfdgxRVYf0U=
+3z3ZtwZ0dbC2P2Xxj5fYT2rci1EtonvRnnAvdC6P9Dc=
+448rN8NKJxYD1JYrJ5yaqiW0mO8E4MLS/xiwjbh/Ovg=
+45QkcCUMVJR/DLjcyqsab1XbIURdZchJZUkN0E/uOyY=
+46EBIahat0kLAYE3k4fAvYN9O6mEEJgPesLs1HIigok=
+4AjbpDSU5mfX4SskVzT6X9wGZS+CXq0NAdDfphMoI0c=
+4GwIGSl7AB3Ys4VzlaRNYsUQZRXVROxs0GDsJywEETE=
+4fxLkBR0MBLLRKkwLs0cXB1iEu2cDRjyaX7M4XGEOY4=
+4t3j/tJKe4pwkeYYzQVCvXTdCQeWGbxz49D9tCZPSww=
+4vLSFwPEMIhK7s2DbFMpTpW0bJw5fsNeSJAwvKOtGBI=
+4vQrQENOhhDsinBmdeKLsk2mzXYgtDIzCvzXF7rtCQY=
+4vRgWuMB5u8JMQAIqK5GmhPE3XcZUCKAh9u9rKHqOqc=
+51YA80q2oQILJdKjHc1AFjLPnyPC3eAaKJ5GPY17Sis=
+55rMmIP43PNkHsD8hIN+GjwT0jD76uJ7T82Z7vYFQ34=
+5L9iJj5bfiyJN5CFWhegvxaKRFWYjx6bd1HRrEwTRok=
+5V5hKf4VCOGXJ3mZYzSaYJWIP2gBUkuPjA94QuDq3h4=
+5XQWFNiiZ8gXJ1IkeQlqvR4G3PxeEs96kWiFgkGFxlc=
+5YFAugEiTaZuGmhmFGhIFEsgWLxviC3ne7ANibz4vbY=
+5anla9Hi/yebL0mAXm6Yj7Bvre4aIgOa+0GosEfZ1fw=
+5ihiIHL3f6OYAvNFwv3lKqfER3UvnrhUlNOLWsgtPJM=
+5t4i64AfxXpqVGneRuRhd/VKaU15DqpMbDrWp0DChPg=
+5yGVvCiwpvQTdyKWG+FQBwLlicaOaIvNcAfFB8WQTSY=
+6/ANQ8nBxdOxF3CfP2qOcHIIJeinf6opf2UnPzuUpDQ=
+60ETDaSgChTTGykou4XyDX3F4Mf0kH2evOtEW8xWGVw=
+6DFv34hbCFlcHDILRz2qU0IWEVeA5VtKA93MnEjoogI=
+6FbRJfXhotBf45OLs8map8QnS2/bm0hB22SyWd+PJQY=
+6I7kiqlGNd2sb9nkHbWznLvqbYAdT6O4ytb/epjeoFI=
+6U4SVBFTIa4DbQA+7NmxoIwR152OJ9jBm81vzYDRInc=
+6V5+h7d9lkvbZIXUB9Hu1X4XtmPYu40fsG28q9XMpas=
+6ZnNRgiFUoyMAfBTTWYnalAR1V8t2MTzQGbYavtxUg4=
+6a4o19lTmXBI4dF+JPpUCXbZ7wgn1VX1LfGhB3VgeXg=
+6dVMwP6f1iNOOZGPbtyqbvv+cvOKUQp/vl2Gtxvjtu8=
+6ep1onTgkOghGxbDsuBVKpUl68+gGC0JQOpcKTpuUJU=
+6ffGSOLzbSGmQFMUef9alSFuDxEN0FbdJqhZizHUIV4=
+6hrlL5TspZxIsgDNIa75Z+KvldUwkfLZKTHO9DQYsF0=
+6jS1t139Llluqih728gTMJfbr/BWIBEhnMKtfrruwL0=
+6uN8wxP+BxWRSjytkd5jz/IiONnELEDyreValG5Oipg=
+70xIFgYYMPvYxipHcx8Mjs5qXSCGMu750tC5JDROQLY=
+73rgwpJhbxmWRGaEnz2pYIby8gAUaOgY13FOSY8B8bI=
+753UXFB5NGRyC0pGUXJNLnjulAyqga7HIKN21ueIWmo=
+759hVQMbp91IGdmFJZ/OVk4thoXgHWw8YsG68reSLbg=
+75fkNoMSi4Wl76E/DVpAUzgqP/K2IF4lylwRPEj7e9g=
+7QvaVplHGDkSRO4Gc1Us1dLuqrmO6rFEr5j7wZFv/sI=
+7UVqTECQ0ti/DwP+o924OjQVlpFQazkTm0FN76Y60yk=
+7Vk5p4DWbX4DFskLs7lwMscVguf+V5cJWsMUTIwnQ5s=
+7XZP6dudIocuwMfsBCLvBRb7cWCtVKJmuX8F0FOOw4U=
+7fRaZtog+Oj97cERyDItoMJp0RxrTMYBch4Vzlzd8Lc=
+7iFdwDmXNnNfkB+9LmqLTE4kUadFhhIdsiFbRPB7nbk=
+7q8myTvD9Qsr13LXBLU8TBBSOoGTsu9Ss6f9FBoXn74=
+7r1t8O5VB/sSjmCWA1Pq3CArNkdw1dk5xFbtIJ9F9j4=
+7tnhPwAA3Z3jfKaSCmc3+8ldKjYO2+E01BjfEcsI8OI=
+7xP0JturFjaq2CDgQEzxuaEidMFopryM0JXVr31JJZQ=
+8/yYLXHvmmNJebm3TAwPwllVG0y7FJuHKQedkxL0y90=
+83tgvPqsVmFxC9Ia7mZ+T/RPImvrBFcd043+KoY3uXc=
+86PvmgewSJT50pqRNcFML6tEzEq3rL7+/pWcSVqegD4=
+8DbwwSGxvHZtFHe3dgLwYBsA4UInhIiaJixq8bOOou4=
+8GeqUfKNHiGWOlUlIFpCff534V9MOvs6D+jL5vuShEQ=
+8KynaXO3u48BmZy7CHSvnXOGZoU2qRNzhC1tPJwt0Oc=
+8UOcC/zX0SAzbP20RcLrACAS0/Jyw0U7GvgARi3X2xY=
+8USvEYxVU6f6dYRixwn0vbrZpqq9yZ4AFHkHeMUSr/w=
+8Wo0CkHxAAcH4mdLTPewSuYGB1dWdU392KUbh2gcQwg=
+8XVRKNeBS9/mRT+k6ZV6y97TGJ5Lx9WUkFa2/elo1hk=
+8irbtesUzRvL1mAIZh0hnNjN/RXPjnmDCrbMzGTEbRA=
+8rvjvAptCOY6OXKq3gtPaAla73QkTNcOZG9UZZYcG6U=
+8wgnnhncZHFqRk/svD5BSXFRUOluqFQ6WLOwLMynPDk=
+90Idjiuk3occyzkZxcjuCKKsjauclZUG+brEhBOOlkU=
+91fvyK0AyhfW7lRoZ4VQu/fIKIrC+iI9HgIrVF0I2bg=
+9261AVPqdTXrBqlIDdqDtQODUPN5sY3DjErZy0GUk7o=
+94fjW9UK2Op85DVaoQQ8pOxWuir83v+04pHAM7nAerY=
+99GNeAfUjEjkxG1211GEYji7/TrH3DH9wPu/xSKLZXo=
+9AWgWqgjtzY8sW3GgXJX2QAqftU6aJ/3AftrTfo2xwM=
+9BHaqIZLsj5vZgPgBRGBnVvYraNF1boyDipmWH2xonI=
+9E/9OUgBtvSky8dH5UjcuXGv/rcPeoiOITmBd823pJw=
+9EyCcEdjrxUQftdjWBarq1HFlmBJbk07fLKJQbJlh58=
+9J+INtpApkDfRJ22hkWsPua3h0SMiG08DgzgbB7NPs4=
+9RSU2RV5Wj11VFUR+DeFkIcxoTerNYj/H4DZ1cBoOIQ=
+9XBwN68aE4zLdjzr+OaCbF/VVSJYUbRyiTvAE7m4Feg=
+9pmF1xZD2SdUp1WfIfQY6troZlZRnZz56FYMY40c9FU=
+9rv4gFq2U3GF54eqSqV4p8JW4j1uyeRQku0Exprk9nY=
+9te/djhkIoIFv8dPrQnzjLfqhNA0bqogQfqh6UQd64Q=
+A3E2wwG0xKGKJ/wF4jMf1EJJ2TDuFpl6klghQNNeRoM=
+AFxWm4njTFauoOpTi42ZACYdyvq+qyUpusyfAVPRHFk=
+AUvtxzXj2sYdljjCozxRDBUgQenZPQ9JJTu7JUiqup0=
+AX6rDjHbgZN6gzcXvrRDi0O+tBUXMWZG8MGh8hshWpc=
+AXX9rmLUZG2Q/I8wc+CoswnoVXmJswfrzwPG7TLFjjs=
+AeRKwlf5UtDWdV21mkkrQ+Zhsr+S4Ixtcq2VrSkJYU4=
+AmQQ73yBFyGGNRhuxk55u7o1Xr+cgcBZ+RGyIy8yazs=
+AtD4TIZ86d/JvhrQRR8Txu3zbAZ8LZeyT8pGe76N+Es=
+AuA96zRlfhCE3MolMzTDK79oyhBWiwS8iHXgjdXYl9k=
+AwlAIKuONgEy4IRn7tSUjRdp6Osv95YdnBsSh3K7YPI=
+Azbp2oQ6jVp1gJgrfZpW5jcgSLY7/sfZJU67s8eaFqE=
+B7csKUeulGfIlJ5stHK6C2eyv+032Bd/wW9+TKLMfpQ=
+B7uakVE4wrXJPlZGksIF9/jxiAfjboizlKNa+bGrx74=
+B9O2sAQb28Vuwl6MolIHYJGHUDCo6+/fTEgNqR1PQLU=
+BAXsoCTYmYsN9BzLbPt9L70N6nklyWwSy6mOP99qA5A=
+BHwHsMfzIeXe1tG2xOrWvC4Jo/G+vPsmhs+z0uyX6rg=
+BKq8oIM0Z0dDEntsdu2UOuCI3JTL3xy8hgwmBWMgqKk=
+BPAbho9QeGfp+2gdU527YVa5Tkfk9OnAjJ4YqQWWtG4=
+BZ1U1oqrlflP5/fBebvVFooIr69v8Hcs+/0I7CUb/k0=
+Baf0j2tstOmRi1c4PsDcVWjUR0IFflf0sTXttUATvmU=
+BbHBseSvgMxUoBuYSKpAmxK0gHtnVqo9O6662FItmDE=
+BdKuQXIdYGQqrOH/DKib/DEq22ZMKn/xppyvQp4ZreY=
+BfvAcuapQY2JE3VSacXnjBEqMCrC7PAcJK0V/icfmHU=
+Bj4poxvbkzHf4r100CeFDNdNb5Lug02Yz8ALrLGMWtQ=
+BksId+PGHwNtWm2/cGni1s/JxwocQyB7o87bxh/guM8=
+BspF3uDCqoQwYQvcooOExAJYCCJsuKqJij5XYQn5L40=
+BxVttXCpAMLhpkHGVqeOGrLi3CTraf6c9xo0YlTIyB4=
+ByATdWp6+MHUYZFySlMBN3PE/Alj969FzkNSuqbtELY=
+C0FRATmnSj0OOKIYWJfjPOqN6qlucQpBQAMh/19OMCs=
+C17NiO/kEIZMpTuxThyEIqSKw87upzH/GVgxjmMLvC8=
+C7WkbLHBebdP1T3U7m8W41YlgcgSw5ZhcoeAHEe1Wvs=
+CImUJ7umBH57dWh7LXvLP/lC9SV3mNNQST/DAeGzT/o=
+CKGcrZbU53ScDaovcjj0O0LGILkxbNlRjhFnOFg8AwU=
+COCfC45+gBv2jP1DiGJkFrpMu610w6JIVUcGSaEtBTU=
+COSeWLZPpL/iwMR1qLqjsSwfNFWIJiwWqajzr8wBo90=
+CQB+BG//tkxOJ+ZvFZsMApxd8JZ4u8R6DkHjsdKVEv0=
+CR+S7T3DoGMzsys4RvC9PANHBmBsyeoPje2vqOsvl90=
+CSC005gwvLmtnYjSfjVG5fpx+VlyStSbcpR96dnQQWM=
+CjOeAMUJg8LCF28vcLGC9JJsjp8KyOFAxrXnjCXiwFQ=
+CmavyRa0DH0CJv+6aswbqqTVPlhL6Gh3/OJtcW/ruic=
+CocRLbq9Tbwxf0m98M39SjSSW7/lPUUHLJ+sEpIrAw4=
+CqIhymo3MuQvEOVhhzBAZ7dAjzzKoYzwwesIpee0X6E=
+CsOwP5oFlrh/a0FoQhZZKG8XpWr21xeonjO4ZZ1Z4WE=
+CzqO4eXdyAZP/FqyWfHzXnbFeLPGqTKDUGGYFrynh4E=
+D+EpkuMvARwsZZeTx3dVh+39/2YaEnF+cXmOe+8u/y0=
+D2vrlEJknGO8PLi1a7OKLdyNnFo6fg6KCUHnrwvpUVU=
+D3oubwQWgpuVQERYJvb25qnknHlLttVQgmwbwgEWxJU=
+DA84unXlRQIUqrE1OZrk35HgmrsUIEQZ1HInMMd1xJE=
+DJeYeJIC0l1T054kdDkl58A2uQUG3Rwhn7TKHb5hjhY=
+DMlGAubdrwOAfZ/yLkja+dvY4Dj0boae2hI/imHlfhU=
+DO9S8YwKHWUMxCn0bIYVjPji7oAkM31ChXFea5iAVso=
+DUzAaRrjH7D6rCmfSOCT9Xw3jotN+zhcOL6XpOqKVJQ=
+DZMlhm4TnFh0ROtS9TV0fraYmT+jFEzqSrAb9AWaTQg=
+DZjosT4HU6T4JhZCfPWSuYlHWQ486W1oL9EdGrG8TX0=
+Db3B0mcjq3/EEtM8E++Xf2PX9QsxGNJctzldUDTe6j0=
+DcbL2+3i3RFElQ3CyUy/UUBHCLn1BCtUO9wGww6fCGI=
+Dl3ORLuXSZ7R7l98MEPvAx9Ccpe1Hzu/r41VGfZcC3k=
+DpIdxjZCB0KVi5EYCrFXbemXC/ev1miRBumVXgVRo20=
+Dt4TRgr+nigZVt1sH8A2eTPlehzi6EFwpUqKkInzfq4=
+E/eLECtczAv+3gACgglydQhVWy0tvom+uHh4FOJVvGU=
+EAFCNtNidVdzVc++iLElBNqMRYWjXsOC3I/2uhZjq7s=
+EBo6SxQaUILm31B5OzadlzzMqYx600C6vouaHrX+GSA=
+ETHzJv8IctFiSPCs8RmCp/YgGrptcHQ7Gl9TXypz1S0=
+ETQlcrLWNwVCeHHSnuKc5gWXQvuMu8RifwvE2mGUuhE=
+EbIEJ1IEzZx+R8KqF+wbgyf/p+pyevQ/W3dBPeOgq94=
+EgwmBFYwxxGQMXDFnUaDIWNdIn9DQXtff5D+m6X49qw=
+Ehipbs05zAhFPuZaSNVgWiDau8oghN5oA7gkIWGYGT0=
+EsSlX1yLd2o2U7zSE+tAI6YIvsIksIQd8QKidfge8AA=
+EzISDeT1hH1XTYlDpVpxEgCiesA2ccFtZSuuY/V1F04=
+F+oam9B2dDTgT+zDrfyVwy8zP9DX+Q6rsVmDKTaBBDA=
+F4sdTGro2/8tdqbUPEx0rwY21m0jGlWw4aNj+YArI2I=
+F54QUqcYJm/iR8J2880MkQBUu16BWTyQRFf5jfAK+SQ=
+F7pFAWQ6dEjOBcG3+zYxBLoIH1bKT0Sl5JGU/QoLLC0=
+FDqJXmcOlJKBQfcXdD6ToiG9nPCU1Mw+lhbMFHvzClI=
+FIsyneka9SQ+8sTXOlttP2R1RkiYgpKIKyVFnQhfFyo=
+FL/JzYSIVHXB+INjYPfTP7KuOz2GIVdDRztm71PthPI=
+FMq6qW+o2Z84h73/Wv+Lucnh6sGWq4xEiylu6QutHf8=
+FVw7RbXaukiJfnq+nzgpbwe2Jsn3FhRE316LYFb4OnU=
+FgYBVNfElkRfZbH4w9yHVZ9Y+xj7/MRIsBrTMUtVlVI=
+Fl+Ml74mGV+lp23x4XaoA7yvqYB9CF0Pss1ljAXlGzc=
+FpY0lmlcnu9s7k2MvALHZLD6lYAmFrzOzPzcOAtm7g4=
+FrvqlxsryveF0KFS3UW5u5G/wftvMkmrD4JsjCauS88=
+FwpA61a526CJyzva6peXfspazcvJDPTlmjSTpW+fogg=
+FxL6qhRlelzigOimI92Gnr8jU5M8DJ8ZKzshy50OmQQ=
+FzceytDYKvK1jUDV73qFWRhBpENrrBTlcwNBZTWRFog=
+G2T1Da1cuJRvqtD0CU4dxZ8dAW0y7QaWkpsn2/u6uU4=
+G4hJhaKDapXa1H6J9MD6CMVQsc18BjtvON9I52DePDE=
+G4xNum7ujL+j1jhtDOxltJGwNf2SQ3Xp65sb9GuZABQ=
+G64ot1X6gXKlN4zmK5p30KmmCSEZep30ne28ekVBsjE=
+GB0S+0anfnVspmylBCNVUcpto72ptH8COXSTGRrPo4Q=
+GBgD251+5/Q34ihOz2rRe5HXoLgr53OlLj+QrNhXfhk=
+GNW6mgWcest8qo2IrrO/zpdARE+pF6lJ/i5kzul84FY=
+GWdKRC2mwDjw2LJWT4BkqWSDqeiHN1VK/0RN7iK0l1A=
+GjvhQGoFuwezMx4ubSfxjLuGAxZLdxbPwnsZbDNdJb0=
+GlLIxvPTh45qC0agScG8dFcYQLJ1rl2JlD2boCDtjy4=
+Gwh+dPRLYV/kX4rH13hT61bS0OEi4lUCPrA8Mqfy42U=
+H3yHxS23GsWTwUrDGiBGcvCeQNnnHVCchtYDnCiEWa0=
+H5gxSwSog4oT4XmrrnOraFWkZYbzT2lIvbtD/HGL74o=
+HBvu9ybCDmfzZqlM7SOQxa/5eXqHEcit0BOR7cyj4vA=
+HL8+Om5AndBfk3VQLM2DKcB3f15ISgxAE1WLddB4Xqw=
+HNOJFsj+2YGq6kvDsH66ycYXCM9pQbNU+JvCdUHCk+0=
+HR8+ty8KQGl5nYxGrYIev8ZaLhV6qGxtcBV9LSkE/0U=
+HYs7488knY1sUhT748R9FpFkU+QPfHZJel5PWuHGUnU=
+HaePMLHr02TXYOO4596Bi2WlyCx90UsYMP6JLcIlR/U=
+Hbv4frsEQsv9WAJZE2K96XTK/MxJmYPhuXIDO6MgQK8=
+HkNCxbaPEN+OPu09njHvsD0ZHA2qQTQAje0YWIkt/gY=
+HkzNB1x3HqZALrVAKX54TpbNsCI7hohnNgTHDODR34s=
+HmLkrZP7vigHmTJh4P43ZmZ/atf/qMoNUaO/N8phBUg=
+HrVH0+eGu8sj20QF1fgeyw3wPxkyWIwdPCQ91Ls2wsk=
+HuLkJJgqcC3AVP6W38n1KgmkZZ6zoOQpzxNHi6l4N5U=
+HuMoDVZmsZJvMXG0s4d0Ag2BhkadD3MyW6PL+UYfNis=
+HvAEFNiqeBeqyE8xNhxkGO9JgpDDy1lSaIFMLBZQdws=
+I4W/3KuVjM6Ol7Y2y3H7b3+DZl6V1V5jd77xC9TlO9g=
+I7fHLABMwZSQKvjMIce5Vwawhf/TCrVvq0rri+kFHow=
+IO1jpMAXV1y4TbpSY730DuFWHdpLQPX/xahl6LxuHHg=
+IY6OtovPlPZ/Hpzo5i74+GC/BzSlgGW7RACVJvb9Oso=
+IZS7CAIUsa9K+5zUrUPh/Nl/x44Msf6fc8umMOTX8qQ=
+IjrtANCacdthvKjv6DcCw73onxjNpzWuYdjVkuoh1yY=
+IsD2pWWn3b5RIpNMyMPvr0yN/ds19yCkevQZUAXnbSo=
+J/AlVGoTiOMh+OeooD52vMkTrqKZCXGnO5GkQiujIkM=
+J26XEgnldd0AJn0aYooPtb0/smkpXmgJf+szwCDdF30=
+J32NBrklnqxEhqEfFAaGqGOnuGzwCKnU8oQJOUHGFjo=
+JAwEadq2qu+2jMLWqMVMF0nTff067cYTzlRdb2NTIgw=
+JCHOKZlv9q20Sr7++5d9oD5a5S+dbXCDLeEhIT375M0=
+JP07sFQXUK1ZNCsCXERPi7LX8JPIHh1r8YsntFj3ZDY=
+JVf4EIkUrvDuxP4arIfLggUjpe1ah9Nnxhqs+xcWXsQ=
+JWQb92nYCqfKlaw6JWcvVWrTBHFjtqsogVMBgXdUu70=
+JX+QwPjYpEH971V+Ag2003EU/lYLwoayJoPh6r4Ja6I=
+JhvPq7BYry2ENskGDfRHqZZLg9ag8bmaypAGVDK/Dgk=
+JjBB2Hg8jvGNkr8VE2yTqj7hQ3KRmrk8wCJVDDN3gWE=
+JkOcce0cx2/bDylR6wp93KWpP72t3TQQY7U75Xe7kAM=
+JmyQfxRpTOe2m/z8nVDyjPrXsh3wXHmN/5tNp84ugWU=
+Jn/Q21yE6atyemu8/6kD1P0W5k+/DBBbNKTUsOAeKGk=
+JsqAcTZ5rDluGuL90JRYLN5n53tmEzGjW53lnAjrHdw=
+Jt5TyvgmMbyhMwgvZNdLBSotMUHl9JsmdkplDdUG+H0=
+JtlW2woSV/Vr3ybiEx1+qs2d+ngy4zfq/EepVFD0Lo0=
+KDLJ+hgqwXa9zmVmDfd+bQAYu3Nj7178+1qbbINqPiM=
+KKkAq98y7wtHEHaLinNpfdKkTJU5eZTHz3CUmKZ222U=
+KL2SdkbQ4KKUjqMdv5lCXG9dp1tyichAoYgB1v2K+V0=
+KNj1U4en07OSB4onhwtZfX9+GFxXTGyjWI+uS9wzxyw=
+KRk2XaHak5BjxAHwdrkRHZiU9hFjHQP2bhqdLNIWkBU=
+Kf6Wnuvk4BAypazfpla+ip1ZfoI/3WvsesLDECgWDNQ=
+Kg4ZwQOicvydb7z3ShnxXy5XJlpC6eIprhWfdWtwq/w=
+Kg5wdgtq/uMd/QIcl8H1WdkT9qX2KOkINUB+5PEaxwk=
+KrofxX7J6EXGehb4jIDO1E06L+s+IVLbWcnsY90X/Gk=
+KxcgHO0fWV357D/gOKMEIWq4icZIZD4ZEDe1f/6vTUo=
+L6qhJ0rdD0S5RtyTZbR9v+mdMlE/XSQNj1TBuTLHdss=
+L7J8p+lLUvR6wmx3fi+EJw61PwgOXrwVBtr/472DAPQ=
+L7qxtt14sLTIY3iVcxyGzmcqmiUHb6wf/GD4JrcwvjY=
+LAWn9AgYWnflSZWpi0eUgyJmR/XDiv1v7Q0yetrhO8k=
+LFMvmrk2VpfDPh3rV4HZtsCq4MrJGAkyJUQ3GDYELcw=
+LG2sBWrgxrxg4xWx6Cpr4wAS+cmAJk+rY7YXL5y5OhI=
+LHiOkqHTDaioie2BN/mZxZCoCCRSbEYj/Dl3FckdLHk=
+LItNa3n9VmMj7o3L7gMmzWm6yzNZ/Rhl5vmGbcKww7Q=
+LJUGG60dvXf5Q6G2y/I8W2q0b+LLtG9MJKiA7fFAXZk=
+LJzJKDg1rZ4NJq8aO+ZoIViTN7/HchwhZdVZSyd3VkY=
+LYwB4NoBiTlvCFfuZXMUi/hybIPHN/l4n5kRUjFEQzM=
+Lc2WtC24Y8/6hZmsFxDFP4Tn0DIYhT86djJM1B4nvGw=
+Ll2tUAMvhXghzwt1TEnWHsJGSShhDj148+BVmoIhVbo=
+LmjY6CU1eFrxhyU47v+esVl1fr2Dam52n5+sI5C8SAM=
+Lni1nuQWjeGJD/PUTOfByml5LOp8KdmL7j2SneuQujg=
+Lz6IGXUTuUw2eUMX7i5YGOeN7EGYwPJmaZnq5KA9ilI=
+M8Epw3O8fFt4EoRstZzUOemYrdTMU7Kv5+C/B8YmRpo=
+MA6D1H3S5Y10Vn+c4ZNSn1FyPEuDIA+VliAX/Ck8cGk=
+MCFvkzF15bGlwclGdQsXazZ+rPj6gcgb0zOunA2SFqA=
+MEobnrfSwLlQfvJucXuglYnFcgsk14VItDpieG7NVs8=
+MEv/OVGgekyrAu8tjKqaAShOgWJULsbqeJZTT3ye+Aw=
+MT+0v3A5KyibeFC60u/t/8duAM/4mjIEN8RFQ6OCbQs=
+MTU0Bgck/AWHGxbedoXr2SRBien83AkoqHo77eDsm4c=
+MW9UgIAzYVDavqXIIrnMFYIWe4Zxn3G3zvfzV9fMOas=
+MckHYzjR7wtaQ23EC74FLHR20N5yleycEPlBUQrJ1+A=
+MclLei+XVRTe5459AHenXmA6nrXG8Kr5i5dXVRjradw=
+MdjBHvo9z1I6sCWMSWYWuksdU+h/E7KPFzewPg/qIB4=
+MhTWar1+ldkKQHEgh4y07thpe2Q0blEKh1pXOuqZwrk=
+MlG8UqI12BnPQwpDFPhU5UqzAjpxtKWJftmwgVLKpfw=
+MqH+a4xSqTTHHnxcJ6D2SmUSc0PjbLSj9IAS+1Nc9nY=
+MrerjM5uDul92OyAVNfO3SdS813dsAqTlLFEqGL6sZk=
+MsBZcaKLXYg2jT6v2NVPHUe5nKt2M/m77pkB22CyfsI=
+MwzpSGndmv9W7fvjceOQKqrJUm20SVOy8L5Py/kpRLM=
+Mx8MlnnyqFm82y9jWEEgXEpmSFl7LIYV7a7X9MRJzgA=
+MyYmeXfRZeLO2sVHFNsCpe+Mrr3xOdbpsEge5GEIEjU=
+N4KAwbjhDuNsd8M54FRMyeCkpZdiJzj/rxBj1wPzt1c=
+N4zl3JoB4o2JoFbl+umrnl3HO1lCG6ZXZDBh/cdprsE=
+N6SRxXSQLJaIrMuLQAlpaLM0+CJBpH+A3u9WrUMVXFs=
+N9RZ+/k2AJ7x/zzYPvEVa9R+aHyKGhCKjYT3bIx1AhI=
+NHG2lB5dCnGSXdNKbQuLB3BwTQ27h43gyFwXWM/ftB0=
+NKSDXZLmydmasbTZ3qOEEamUJA3dP38B5Q4F4Sslsbc=
+NN78hnOSf2uhquMqL/yYBvAs+qmBTHp41sGwtAu840A=
+NNPHq43mcItYNhAlf9Kd1NmMXP+mM9AHHH8dEo+5qs4=
+NQWjD08QsMVBboPQZGZT/HgNUABnzKkLfVlmPTLgeu0=
+NTianJ0dhya3RVuJD0uTxw1gUx0zaniJJz2C4WCrviA=
+NfwJUAOIL8l0208kmFqQicHGOQi1HMW5gEIWlsL919I=
+Nm6Y5MvBM473iZ54ykjD7X68b48rWO7WJ5C1EiUz8ag=
+Np2OthruTsCGDU7NRIrrj2OnLf54KPS+OgPzO03hauI=
+NqxNB3MZWV+RspLiFhv5NOGJ/Re1gPkMa1VXxWf1+Cc=
+Ntag4lWRkWzgpF+8lpetk73DMklN3AwB3sI5jmodHUc=
+NzxXlZTWsTBu1fHTZO6aC+d+US/xIbCUk0NUJLrBfKc=
+O61tOK/SVPCJK6E+zs3D4HL3yk9e3BVPA2kLRibIlfw=
+O6jf7cuO6CBijTw4aQ1rMtf37UMibDBf6zuyNIc06W4=
+O9Bw1hVosXMFgMx3BxR1Pw0zlEzfXoydXFEO6B01rnk=
+O9a+QmXjl3wQf9N4Ftm6Vy9EuJlxAU0f6zZDP9Zx0vA=
+O9hv9KtC1jRD9yQkO59OqUbMGXJA33nEc2K/xbTcblA=
+OJ35lwTCbzRfSzRPPlxbYG3wjfe5lRRpdz8D0NJ5Uac=
+OMvv2HTLYPkgw4bJIjS4zm4PIKkYpv0qhI9rJb3hXRg=
+OOqOD371V1Q92G6uKNgiCAW/pwRgb7HedbkbHZ5Ryug=
+OXneb9TQS4ajgUX2Dqe4M4dGhbnktAFQbvvrEpNT5IM=
+OXud2rcMZECP/qeUNRbb8ElIHcEZp9KBoNNe+cAO6Ng=
+OY4vRDc/1nYxOhiexRrd8EpjSS/VIi4AOj7QU2qNP78=
+Or0eHOdPj+/QYTdQ8HCDQYzyIUyKLM+meVJlqNDBv9E=
+Ox1XUoT4f6W7ed6o1XRwOKFeg7oiZsj4hMIg/ndSZo4=
+P/Jk04+xFz4KU83KB9jozEjhVY5hfGbZlhJMLSWGuu4=
+P0kgc/6JuIkrwlm7s3m7/pveGjqC/N7kT2xubovMRyc=
+P1gGsieVPwU5AGMJXNR+LOZlG+AUuRTG/G7KLUO2kdY=
+P63+SvwFaf393Lo8ONrbjYcnHNk/kKcp684foZ/i0oI=
+PIrGjECwhU3middP9DcqWDTki+tvYibN3MV2zgQFOkc=
+PJFL+xwSiV0joQzhsOll+Gjn2yDhfneMp84ojUHQeEk=
+PKXYTPm5ATjb1g+Fjj4xKyxMrReKeXlLU7U/AcjhVi4=
+PPcZEI2Z78z4N2qVuqoxmXBk2ufTxSTcoxR3scCwiKU=
+PRoFI0u9Uv33Wk1Zd0yfVLRNRGMFTVHLg5vwri+fIxs=
+PUiMarkHtkYRlO3/xUPcX92RDl30wctjNL4XsYS84os=
+PVmq0+Wy5X7jstN2MbxG3N0EI1ghSgFsBNx9drqsXxo=
+PbVGhgAIPKXfSzZxZAMKRQCo3/VDy7SO03VdrXgoFPk=
+PcHhCaUV5UPdE4YHaI1cg59XJZMqCagoN6M8o2CQqnw=
+Pq+aw7hlv5FCPjdHF3ah7Q1PNpsUPvI/2acLyZNw26M=
+Pya4sJMwJCZ56pAatl4Yk3D+ns/2yozx+/0aHuzXNK8=
+Q+1kM1i4jJ6++GyQUTwXGSXd0j2dy+niGjcpmPM/+6s=
+Q5nt9Mn4B+bUkSli4UWZ7mUqGRWR+pIaJGIb13tagfw=
+Q9N0st1/g1fapy+kWo7SjscMhm285gUGZOlzXZxz6kM=
+QE9qUp7jk0RgmXHleM10zixhB1V0L4jH5vPHgD1b6Og=
+QIXQEhfkBhUE1U/ot3kzyQn3JyFKC9FhwZse8WmTEII=
+QNIw+3w8yeyf9KGt4sVgpjztMPC1Kns6IxUsmeOX9h0=
+QNoiIOmjpphDqIFxwkyxN8n4wB4WTMhVMhhMF13M7qY=
+QcYB1JvRTMEtr3tC17JMbQnjKCEP5zvb9+Txcs1OLr8=
+QcwZ02bAd+6LNk0fQhEsY55+lP6WcCDogmYAGZS8XpQ=
+Qn0vh/3mLWcVgxGwlx748NAkvezWUbcwt5jY3b67n64=
+Qnd+HLuCiDIEKIp3VZPNXuU0QqOJ0luxbdv1RvGrorQ=
+Qu6O2k/sXXhOtdoKwq2QAlIroA2C64XhbbHXXg6z900=
+QuBEmyvWyzJDql9AHyjnGXRiLfZsXVEltzKXXW4iVwA=
+R+yneSeM00CfRqkwEorTvHUD3QN9UKBoQkCOKjmjdi4=
+R9E33UqE7RTlpirNvCFOTHjuu2rhm7E2/LkXJN//QCA=
+R9K8trEfzRHXzhOu+kUPM6J3BGfGTAswrmAWPrtALk8=
+RHGlTcEHYmQg71qjS09V0nLkAPO6QXPCZ4NzxBK02Sw=
+RHwLfF4P2dydD2REZUzEJPRm/Dju/f6hHjH/p2czN1w=
+RJX5oCdMuIPtsjQ0VK8AwNAiI8B4WrTsDH4GWxn4XFo=
+RN7CogrOwT6YbBHDwZKUz4076VtERI7wDE/XgoNjQiI=
+RQDr4ZoaVnfnQK0F8WrRMRRpvbnHQoYTOI+akrgBKEg=
+RUrvP232wZVjM7wkjP6a6m51HDF/U/3jim11A8+3/YQ=
+RX0Ck/0wy7AsB22kgmD0M2UNiAyl4zZRA6BVcM7P8Hc=
+Rm2qC/2RNBEQMkSEyVMkCVV37K6sEUVd5sEfk5kTdEc=
+S0I4xBEHCbbsIhyanJ5w5vRrWreXS+4w93t27h4Rih4=
+S8y/t24ctPhWS2LwoghSfP3MwVud/CypPNyw1WSg7y8=
+SDndAkIeIzKSJgXp67bYnb12bTXEZfxt3wJtpI/vW9A=
+SLvFpBv9tFaAF0DkF8QaN9Of1LUOYClW893Ewa+KQwU=
+SPqP4pOFz9d6gXqnvI9jRKLRrqgpzWXuZTs7rMQ/uko=
+STslo9kLa84yFUQkCxcZdY8YJI6mT6xpmB3CMp+Qfto=
+Se6I1tcj9b2MgA94LcAYDNx6nMLmCpRBf4gpriSLq/A=
+Sedb7my0ovAg40y2qxI4HAUi47ACP0CF1sOPF0IOpgQ=
+Sl3OdlFlYoOlgbApZ2j6gOdxzpy3J6hxljqdc+Oq4bc=
+SmoS5Z1t3RqyUzbwrWONSvnci/EWup9V89ToLXVMDWY=
+SnXziM+vFOuQ2SIz020EYv06VDu8l+KkNH22IlW6ADM=
+SoWpBs0Cl6j/pIXZjjWH47/QJ+8C/l68ZQr32qAbGiM=
+Sr2+PLEkNBpJoR+yrD/npSp4Jteu4ex2rHhKt7BGTmk=
+SuTkFogbsvSw01tm7SxH+ZuEe2TFZ1m+HlwjzSVOr0U=
+SuU3ekblZkOTeSt0xFhC60rpOZkEihvD9Egk2hHrzNI=
+SwoQIzqbKX+sQ1MoOyJJY7P+jWQQzZADA2JU0DnCTWQ=
+T+qZ8xiMyC8kGQkfF09uxz1fAOClbidtMG0iDzzAG7M=
+T2JanQEghgqgAYnMs5hu5eLeG3P9rP33cy2SFC3t1M0=
+T4qxoKwhXeLODvzECIgkRARlcnCVQagm3DcJlG2acbQ=
+T4sSBdIObonnx0tAg1o1iKG7v4b6bTYbQ2MSa5kYOko=
+TAHOcKVRETwS+kEmGNDpGq32LIj9REmbsj95D97elaw=
+TIUh8H6EehLf/DTMHwNmyzObZui7nQLb1kVei8T9PVc=
+TN64+7UGUkjNmxNepsDlvSdXVtFImHnfI/tnEmK1Cvc=
+TO+1Md4ZSmFcWQdx6fzzcPgKKMJa9tdxd8Qw2GN4ASM=
+TOR3t3G1CAlAXpG8NOxiTLx/RWr/re6r4xuWvP0BX4s=
+TP82/Lq8hEvHU1yizCdKIdocZKxZoEtq8HyqQcufZ/g=
+TWyjGNodjkxQLJlhW+Ah3Cx2uKZvgsNQs2IJgWWA41M=
+TZYCUrXhF+0SUg1Ezr4ZT8PSY1SVQNeIgwGChwcrwsY=
+TfctxsvbM3AJZ6Zfoabku/i2BSGp6yDRXJaHy3cFyAg=
+ThhcHnPfPGdHt7VQJFnGoan1TR7vCut2AQZpg+cLGwE=
+U+o9cTtH4FnCR6XJlImxwnbMf6sx9WBFL0aWZIuCnTU=
+U1XfteQsbxdy/xun/ipAI8XFSa5/MxqMS/iB8/Zy8EA=
+U7lERbkum60dpQN3XRvMGPUXeadZCLH7yApLEZfdLuI=
+U8NWFWlu0Dd7MDHm6vQpxhkshVPA605He5RhStb2Wiw=
+UAGRUgeOqtVB+kP0B5XkDZAy1hXNqmSMZT1/kS6f7kM=
+UDxTeprw11UMbmNFePuipo5q5X5+uaBJOlP179ax8EY=
+UEa7MGzYmvnH8QLwMuuCzMV9wYYsIZzTvF4xeC7l8Ss=
+UFMA0hvgRRUpYcc2Xa7uwWtRVM3GroDTBgHz0zDlcBc=
+UFs615ng3KcHyHUtqXz4ia277n9/HFSKUjEVLfJHjeU=
+UIOPprqKJ9WAySWIt7mZfdBwEBDlXXrBmsD8MLYqHlU=
+UKySGi+RW/8xZztCfIHlG7fkc61Vx0MHtR6lT9SDNio=
+UMoa5jkUCn3ODTWIT5xo4j2RT1H6E5hKOnZNjXSnsGA=
+UPxAfEd9FwE2CWks/pt24yeQ8tWislGOJ2/hXscdobU=
+UWBx2q3duJwzvqER5icQRjLpDjQU93O80quwvsPsdwo=
+UYi2JhDeTYJzMs+mqgx/g/9c0r6KPvSlvJOSy5Ej55c=
+UbBq/9LCLkjUScF5SXiuY1H8rKjX+WdPZSIzwtHQ5BY=
+UdlpACVPSg+gFZmz6nN7RU+7WmSZgPxJLqVmK/jMjAw=
+UeKr+3JanuHTnv4m47QENr2QjCbLNOjURH47OMi3xuI=
+UeQltjbR/Ny4D+EW+B7b5qfiqkmQ4eD6cV3u0E66vaY=
+UiVNOKBu8KkcBudsGI4VdiECOwMfYGXgNDSVyuaRtUI=
+Un6WiMoMIVjDOVRIakrR3ssF+0hHjx7ozB/1qSIYIvU=
+UuzqhQSZhg2cDLG1GSr2mQB2Ia4O4r+9IS3QyUfQESg=
+UwaSmGABQs5ysaf7AzMqjYdXT+j8nPwl3zdUo6ZbWVo=
+Uwio/EnAOgCP/Xzh3KR3yyA9nefbFONpPKPcmpfrP8Y=
+V0ZlzpM5la2ZwLbipQ6ZTH9cKQS1nkUEHlulA8+AnJQ=
+V1BICyWBkR/0IDVpdHWm+lb1+aDJuFqgv3do4LV+q9I=
+VANnEShAsDFYZXAbSd9N/AAtGwojMvAZDCiBr2OgaSk=
+VDojAf8dqK5OMHAVhwrTrCZZUFJ35XHp1JB9oHMhMPw=
+VFutHl8MkgnSTLXcSzMseQgY5gsbEiWpcsckM7/xiCg=
+VIowqwISqtsM5dZVlial9db9O+YPIANml6FA5Pum3Wo=
+VRToKrAQ4NX0J3BclK6jVm+KK1vT2ue0oL+vsmqoIME=
+VXt6dHuTVY+dwzcpehStdccBSxHgpiJBQQ4cJ7NVgcU=
+Vm5TP7ZGJVD4Xya1+EFz6lDT3fbxgkaURIKNeIPRjk0=
+VmacAY6EyNae9LKNostiRtjzgt3xpMECkyrDWoO99J4=
+VnxlRGeYVHoB+RvfUcTH/AZqt2swKRDNdzwMWNxAN4M=
+Vw1P2l0vlI03V4yWcBIikXI8jU4Xo+Dw8B39p7vFmBY=
+VwAmVMKkzSNx0Fa/5XS2X7RTrAuBXiStpfk/02iB28c=
+W+rx4ficW8Je4a4+8M2GPR373l3Fx0A4UUHZ6Api8PA=
+W/emogh+N8VBYX+8rU0vFUYYlUjqqXpokon3nRYNwYg=
+W3kCwj4uhjXLQJRdujnkrQVYrQW0TXM5sdv6BZ1HtEw=
+W6hj/lwifbi0fRRz+otHSeRiFjCZ2usy6LD0nBPdpLY=
+W8uW235NZ/NFO9PJIU4B2HJaUa8sC1pTHQ7oBEalDds=
+WApAQcbbbmxDiwwVK6VKb50Jvm5J/r4yBMynUPp7ZoM=
+WEUnocPv5yKaUDuhbT2F1c7Z7LjtHkJvH6LPnbJ7hIY=
+WJV9t0v3lVnEeEr0OZatZNLw2tquhPOVb+S5X4QkWmw=
+WOp1VH3gO5+J88zfDOIYkn5legrSuoIFl+yCEEFNkHM=
+WSUHD5ntgbUfGQ9VyAoxj7HagSwQFjhtddHlnM7trtI=
+WTUo5qneutHp/k0zWX+DSqaqWWKyadendvCNVZaWs84=
+WUAwYkOYfRWjYXVBYeGhvm4GBJRW5vR5jAk8vJOxFuI=
+WVqNJpnDsEHMmU+YfYu/94DuHc1sWJLs/BTZk9Jp0cA=
+WiZ1epDKn5WuIfMh0h750HbM0OtASOgCrxTsmIwTmYY=
+WruwaRBo1kftIqOocY7HkdKtRpUn1oWJg9PTeNtiMY8=
+WtMreNQzyW86br1ZRKGRodyIaGimHRRx+q+WJtVuiDI=
+X/TpYVuUd9gXD7SaXxa2CS2f9Ql4ZdJh5iWDToHha+8=
+X4HpPrhChEX8jLbBtu4e/8uIA2kGMefIeGM8u7OesuQ=
+X99/vUVx+2gSNwFzacSAlSfzW7wDnL8UD0fdIVjvpPQ=
+XBcxHcpWhE2q+Y7ont5bV8Ad1zbsBkK8JPAVxtfwyq4=
+XD4KTDAiimS1Km0QPJnfE0/0EOOJ8z0Na/WuF2Mtov0=
+XHvKX6mvEBOMOvxAcr9Rfg6vF7RUveo3BcUB5S19Prk=
+XM7iI+T6s5Siq6LVIFmIXKUK6n9aBYbdUDKYp6HZlU4=
+XN1LcaKvJiS8B2o+n/4n9Ijs77kHAfOHC/BraFz9Gz8=
+XOOlE+9qeAQeejA8uZlmGICodonCHat7VqF+sWohhNg=
+XWWgFHNR8zJz/0nuP5J9DlFqzg7VXFWu3QQjLiRA8mU=
+XZqTT35/ilwishuseK4EMjKHAgpgqvciExxNB/JPcWQ=
+XcF7kLeeCPrMtWWvtD9E5BpNCADj9mB4tClZlCUJFjQ=
+XhnIU7nlsOhoYKWV5LK6XimOCcFxMvQGOsbgyCGwFzE=
+XsqmfiESKGBbxtVpQOSwHJW6hJzB83eZs51BWcHoKy0=
+XyalUWK74oYzjp6YAKHIrUlNBx/qoIw1+YUu4uzpU+w=
+XzXn9blrb2dWT7q7cHn9KJdySERP7rdNVeDtxPL1QtI=
+Y+1gu+n5XsHL08Z0taaxSAiAtajUc0JOQXc3GGNH92Y=
+YCPcqS5/C7EPUNr8HvaNYAinrSkSu+PzHPPuLgyafQo=
+YFeqMAw2ryIBuQYjTo2tsDBiUvGvXGLqaV80Rx7n6FA=
+YGUwthxecDiiOPed9OdoZISFcDhEtIm0KmgwRYY8dj4=
+YHlvWLFWnciqv0nCXAic8UEOaoZIWH+5u5ZDatyA0tI=
+YM9pdmQdMqH+WpOZ1LxNENrb81zlbBreXz7taXn5+HE=
+YQ03Gno5ZH820XJ4qCZX1+1qNBqA/LRtSzDQ4c7BMSo=
+YQub5Lxct1B5U5NUf8ClZtRbHqJGIHxamMj6cNxuq1U=
+YYqwFw08kU83tpFAkTm/8Hxp1/w26/xJ/TEyjAS44+I=
+YaCVwCSWJa63CW9kL0QV6EPPf2dZB6bqZV7AqAoVo2M=
+Ycli1pfw97iam+E/oLWw52umOmNo74hrEjwfqFnkBZE=
+YfhNTOO3rg5VqzvvogR3KQtZjDkfyX5eQdesffb35t0=
+YlLGN7w2bJBEsGeDDoieYofmaZk2lLHRDVG/oLKKrRo=
+YmD96bdzIZCw2WSpQsO2Ti+dNmPHM182LGqeKl703Ms=
+YnHXt1dyMhTxG5d280RcqgVFITMiUNBOLCyRyWZoK4E=
+Yp2LFc9/ISi8tEnRZImbnj/CI7A/tymDdKy+hYkqHWw=
+YvUk/CA3xHWsPyaLx5SzgFY/MS/7fiXiwO4+qGy0pXI=
+Z+YcQ8SDts6Yv/dsjiaHT6b3/HZuFpZGWTolcaDAiAk=
+Z31z/pseOJz0CxbvB1iAq16VzL8F+PgKGmemzU44kxk=
+Z6foyFsuxDnslJnpW1NGzJceDohKLNcL53VuH/vMND0=
+ZCsCzHx+QdHAFDcB/KGRSrc8uYxItPMvzD9GyEeJJVY=
+ZCzgZ9I1gW4b6mmLqTla3Hg24Sy21hk/RANcZ4scqdo=
+ZIM7DgYRb8SZV8AI1INoa4kHl0osgCjan420cfzrFOk=
+ZJFG8uDhnyryWuX4MID8dJxrJQyb82wTN/rFSo7UV5g=
+ZT8RYcIMRIHkUl810cSEysDTEBSQTT9css0AmHpqiS0=
+ZZYni/6adVky+Q4TH4WaII0VPQ6h9clMjukBDT8EPnI=
+ZgQjs7UfCti4oCLy7itAgj5zJ8Z2vLa8AwJ6a50B+YU=
+ZhzTEl+k3/DQdzzNiVpWr/Ev/L4XezAUyQyYOoozHxI=
+ZlxJD95zyJfijiwROEDnAkJbix6ftdpkxoKjLZZZ/QM=
+ZokpDGdfdFuBiBy/dH+BYBua07V6GE5SQ1Javrakm1w=
+ZsgIF1gLHuDw+hRX3Z3IXvdJI/WXeeNGTFWlVliiAnE=
+ZskVE3vwVXgs55kB6r4VNZSWEpapt9PA/0E50h1+UhM=
+a7FPy7R1GHSBBUq52OUR650J3U4mftGxx4BBP1XNgus=
+aAO98AOS5xYI+gbcZv3bmYn3YQ28bFzgKMxVi70j4+8=
+aEPczaPDjKlJOMTjUU3VF6UxipLtwOR22sCyUU71bXk=
+aIUFmIdAxf3Rytu8QIgaQEZwvkvF1gEJg9E6mR9cfh8=
+aQ/kAszb0vBnXdmaz9lA9qP+eVeeOuDr74pKaxShBlE=
+aWJfCu1dk4ljtR/k8TbFa7ltLKm50lFWKqq75WfSVh4=
+aaD5zncyuyxQycIfila3+PplU2Hsvgt9alksbdbEKqU=
+adGy1YQWCS2+q2JNj2p6yDYxiK40MEsOky9zRHsS6uY=
+admoaj3YMjRhemeAmSRuCbDqGHdF5cN3xjsXn1HdqWo=
+ahrn0ZSuYxzsQRg1vtBXn6tHW//o4A74djnbmX+3dro=
+akynuJOeOvXwyjM9TBXwiRdDKqib6GWL1L1FIcRwlRA=
+anv7oRHTpxLDJt28Kun0cJyANrHLTVLmzX1NDX1kk7k=
+asPGCKHOjfki8u9+wlpNTvRmEnyp9WRXX2m74Fjghv4=
+b14elhQC0pf7IkEybW283JUWC3eDhxS+j1uIPqhzatc=
+b91j29ZvLcwL0xegW+6cES3d+efhLM3AA/JwTfu0hx4=
+b9Cz45/Bpbtr7Y65QrIH/P+EZbtAxkqEifSi12p4z4o=
+bC32wvReeT3o2SzGOyP1iFZdUsibn+B1+Ebt/aohhh4=
+bF/dMhe8nI31OHNeRnK9HFA/THA2WhQDfX/USRvVwj4=
+bH1xF2zzr/Vp6qfOiei6XU65bIkeOiBmr++jnxJUm1Q=
+bI9MxbSDqrNS5HiV8Z+mVbcn3oy1SuSlq9NppQdUR5s=
+bIVjaZAtgPeqh0Z83ftp18twHE6HsfgpOwTLbaZxJbA=
+bKuRjE9j2bL4WItDtnZIklA2G/z94fMkNtby4MYnSIU=
+bT/Zli0rFVBsO2cgQ6ilUg5jgAOha0tMtgZ2cLSP6Vo=
+be5HSQdiNy5rEe1TVvIL4VZJeXhHg+1OEnkzAIW1n80=
+beay1SefYGjNJz55m2CH3ZDQCEx4taVxQWCsprCgQEo=
+bnjkxGRstcbsVXo70o7H1HAevz7b+/MyNekxKKFSySY=
+boblWXY89pGl7HHDFYWorLJ2WWRmfBmlnJXCyWQaEag=
+bsRWBy76eW8R5ggNtIL3nxEJJNuZrAIfJquq/tsqGmM=
+btUJpZ37bTEIZL9QGhx7xyZqSBlDNVsDbjpsBll4U+k=
+bz0fudLs2ADpvKkYYwyXZGdWtLJQ7nNhnH4rz5KkEzo=
+c1Cuk4ju+ROwj4AyuA+SqFnIugQ+whc95xHr2zWmfoE=
+c5BopBY0SHYRiTajLislsqdTFFGruTgO25rSsK7XbQU=
+c6v6HV8I03TsLuxqpdkU7Ne6h89HkHD7nTyQ2/kdq20=
+c9fC8vsZ3PNRGUV4SjoRJjEPSIdsm5NgL0HI6a6FbJY=
+cBXhqAt597njLT0CsLNCo/pXPQJijnS1F8yfMJv9hHI=
+chr1Yqur8gaa8cUc73f/fgUQ+WfZ3EgRCjGlyMZU1lo=
+cjRS3yefqtaVRbFsDbXgoA2sI7l6LE81m8QKKm3oj9E=
+clCaMACTGZLsh4+w87fmaBFv/BnWAjytMP1P2JoONAM=
+crJbKfvxRe7fREMrBZ5Q48DdZBmGLjepm/xEN0nnjfY=
+d/PXJtaDy25/V1DKKFdizETmQYkn/wzz5i8pY/DXe+s=
+d/RdiP4VOfpx6pxsN79ur1P4r5s4IBAvixLKyKbHsAk=
+d0Lg4KNC6s+jHGVruoKuW+JtfTPImjMgrlR65ysIE0g=
+d3OfvV8lPYEXPKeUCG+G1poryACUeLr9fc2NTwCIrF8=
+dD+1Q/wIfZ9jq3icu7qkkTumPqFQqUCfd/8ztlTzqSg=
+dFlpyl+zwdWglsjUwBT58uJsQmTCNCfy5NaFKXBqyTk=
+dVIDRYQqEyFO/vwoSy0Uk2OQtJiKBOhyhO1HqwzYy3c=
+dgdNzkHjEK7BuYsVGgyD6gjRd50KnTvIUJWw9afKei8=
+djp7YC8ZcN6xvO0zK2aNdPdpy3OsnmLL2kq2MIUP/ZQ=
+e+H8vb8snyEX+3MKehTBHaUcUW0UCLENmWigVfbw1aQ=
+e3kh3NwnboFIcTFtCUrXIFdKM8eZtSFIkT1y2pESh/k=
+e3s/GGQ1j+9ZVlMFGIqJ2ssO73zz0BP96PceLI4zIgQ=
+e4UZcKOrSIbK1TpVn+qj59haoxKXl/OMtggdk0HnmDE=
+eFGZDP8zTAZyECX0U3HcYe8qXfAFKQBrAtJYnTAfh3s=
+eGwHLVyscynYt5XwAs9hFaAVf7BRw8oc1eujGAyI61I=
+eI4Xl4z167vdpA+s9FRGuCFfl2ealgOoOgyje/oSv5E=
+eLTWrQgRKUscE8cn3cSsQDUskYRGmPS6ADz6ytBWk8I=
+eRLjcL7IbDZBstIJrMhAzu4xXB32MNVBx/H/vps7+MU=
+eUaBKTENzrFLY2Y+Bw6d1FQtM5DoqhMGE+HRdRg3pFs=
+ebhjkEW1p7eZINNcNERKRWh4IGS1e5qmRd+tVVtAtTQ=
+edQNH3xpfPJqbsJmKUe1JYBO0IEFfxewwI1dZr6nqjs=
+ediZNrdC9F6d4d8VZ2UV2VoPNllAbd0HxLFoBf7cTYI=
+efeEMDAetxK8VOm0G0yUlRxDX3SrunUfVJgYj9K0CPI=
+egQHvZzpikkjYLnhpvml4MpLMqAxl366vt88krQArp0=
+eqhcmUskeBU4nNewwXh1NYe3cvmucWf1FbC4fn3LI9c=
+esK108IegC1Hv074Wsd7imlEwkjln56huXIyI3T9lHQ=
+euHlJTk+TPButpjPChpclAuBna/gN1vNTKHChsDX9Gc=
+f+hqCYd2pFw3RZDlYHePItzXCXo8IV00bIh/qhSpy6E=
+f+z6rFC2p8hh1GtCRGdfkeFjIkGGlKFLRxNRxOpHBcs=
+f/rzmcg6RWvloiJEZ45yzgAT0UP22xm77bLTpoHJpdE=
+f1682x4DQBdt2fPEh2aJM9fkWDQ9BrbFbJM2WVwhY7I=
+f2A/y7kPuJKhvFazpwii7iGEaIZOMu511HjYn3gWyVk=
+f2yeDaqIfkp5bLrFzWNaUoDE9oGuR6bVeIiwEGFW0ys=
+f9qgYjJmDXB0SqJquXnDCBt6ymt0OZ+9tb8YHAxg95g=
+fAecw3pVNL4xC9+TzQkK7QtlyTs1oG06ZWhf0z+/NSo=
+fEI71lTFgDRUIAdGjzqa72Yrew0Mgebv4xu7KdXqG9s=
+fFLslJiVspHP1e48Nf1dDVEUudwcSXVjwaoU10KKGW8=
+fG/W87EJfQC0PAIAi80JiPj58CbTwe+M36JbKPLvyRc=
+fRb/1y1tKGHCY1Nb5ifVp0eAh4VhM4OS1morOT+jQnc=
+fTMRhJbU45Q1vobaH80R4tuSO7ljQGtxgMkST3YIO70=
+fZ7j6COc7yLYg7PCJ2fVl+tUwNqSpaZQvMWVNwB+9ko=
+fahdMEFmvM2VuC5VV3XjdnMjU94ScSG7fjmA/zT3554=
+fdXEC7sg3Hu0PQmZFVj9m1Q1sPnXSQt8DcvlCL7cUcM=
+fe+x5p/LwFdh2zAh+Z/uYyazC6tC1H4jE+9ZoXIro2Y=
+fpGPJddKYo0TC+eDv+OItWIBvIOeJAWqj7tYq2BKIrY=
+frnQK12LwdfMp96s27h2aEWyFvotYKCKiDcQBepiIOM=
+ftWBj7buJcj6WnAkBbQZO4JYid2ew4PpHj22W8N4qUM=
+ftrjYvYnCCcHDm/KCNaXQKCyCUwAAcIhJGN0Nv3RltQ=
+fxVxL7F7SGlG2q8CkXpb9aKvpBzeNFnTmE+SXLniqWA=
+gGEELLI847/AfnOUkcl83YZgLN0yW4DAtZtuQBttles=
+gGZQLLGaH0JrstmNmSyzNkrqDSxclKlvcUYShLUKw+8=
+gHiORvwivcwDona/9bhTvBKOMSueas+WngbYndMrdmk=
+gRSYRR7WnbqyVFiFFrIrQ4f6Kk80RBp5FKGE9oLYWls=
+gSTrp9vy4ty8rEG6NfMGcVRwq75LZn+FdHWh4dsD1oQ=
+gabQrkvFZ1Kcze+Ehl+MHVz5nVwVy+0EWBrFqLRE8To=
+gbXIU3U+IKraIJ+gCKL4sTEgkC/TrAnUOn3ucnTmlWY=
+gbZKZ/1Pl2dkmDYScfn4TLb2sFOjq7KUvY/InCvMjC0=
+gcMTX3bbujb3EpoF1x4BYbBrmy0/qW6083yNgf5Nu+4=
+ghee08F8WFK9dSApH3ASWPcMF7ZYxZEnR1rVUWRc9BE=
+gilKvLDgYgnMj8M9cJfGDXjkXwy5sC6GDb90pXxZQI0=
+gj2p9iJlAWdgkDgDc7Cl7iBdKMrXdoXDu88IcDVsLNA=
+gjoZkTU8IJRK1UTZQqwkczRCFJdaeFF7ZWbgq+YrUWM=
+gzfDAB3mbvRJUANXwRDFIEp1rQ0xQt6DLmi3lAzPCbw=
+h/+72Sv4holChWBorC9UbwxUaDKwCfl1eFNhTnY6IiE=
+h6vGSq+Pz7DMLv/9Eme6SpIw0pn4gwoQ+8xbHkOpBBs=
+hIVkyzicAKC3VJ6G+1Tqp7VSjHGhhU64I8JZEYRs060=
+hZqqs3P2bRy2USQ7D9+6mZ1VfhZwVzsI8l6NaYXVFW0=
+hdgzoEt64iMh801g53D6fVICq37uEch1+8cnxJ3pU3g=
+hn8hFpiS5Urdm/gSXhO+KuDTmHkxz9okOxQMaAOmysA=
+hpBWAYxyMwbVs2IUqBUzcRbLBXA2L1x0+lXV8t6r37o=
+hqRxYhW29pr7yIa1FFEPXO6/GQkpZ3CZpW3Io15YvLM=
+hqXe4ERZmGrHnYlteBGftjGowzmO1KABRVJdv6saCNY=
+hz8dRQolaY/uz8RGCZFt4DWaJqe3CxDiF90z534WGYY=
+i+Vm7N9VKjlZvDwRMY64qTJF7Xok8DJQcP7T4ezeVCg=
+i3iHH7ww8zs54/yJUGzfbNoombVbD2hVZu9oeK0QABo=
+iASMgiPRiuyhw4JxY6TNBKotqPf+mEB4F3hMeA/9XRc=
+iDPPaNiJydFi9cOMkOT7uGY4WGdjkQb/M+bgspGxo5U=
+iDzTal4yqRZgddfq+hyiMxJb5sdqNRtGJZ/eHNdqnTs=
+iF/1Il7w80DBccQuiNgCamlcfZAFRedsbV40AvIaRCE=
+iLAFiwmdrlXPwHwtIJSiKx6yY1R04AMBEklT8oFJZxU=
+iS1QyUung3sxfVw3XtlsA3WDOUVLhD+BbMeKtRMkE2k=
+ibbKh5frbd0A8G8mf6lZUhosFR/SZdizJjGvuKawViw=
+ij/hut+PvlN9gMAY0sa43ztz8eVttsVi8DrWCW29BzM=
+ilpHCrveL8w6Acv0n8HYNCmsbPwWL6bwVeQEvIrUe4A=
+inRRlSzb9JZuworY599YTdAc+oAbC8YmAkCeOh5D8cA=
+iqCLH+bV8j73Qksf76tqbbQYJoIs9kg4nbG8eaV/+nY=
+iussJ7ZpEhg07kmfOWFdBHnYi55df8bJj8bEPqrrjco=
+iwKgmNgTnbD3kcIuoMxLz71/u3ZF7Tt3Fql98lIlArQ=
+j0hqLndSa1oQGX6boUrgVszYC/chHZLdroOiOL2N9OE=
+jJ+e8KyfXaXaoeysukNHMLwCDPYaCNvmtyS1O8qzdXE=
+jP9Cu0HszGWoAZNv7WCsDUUQwrXyZAN1snINewYMCQ4=
+jPsSd55NMCJ9R3K33IZfcdUELZL4UdTswCSMNwAif7g=
+jQmdi/PG0/i5YnX0sUZK4XffZbt7VAR+VFeepsj1Mto=
+jVRc0g9DRt9FjllgJAW4YFCYwdV4G40eSCXrgybzFPM=
+jhgxIxHTcVv+PL5dbmZUSxdJ1vmTJ63IgribGXfRnQM=
+jiVBHpkfWA5wNukRcIydsdP/PFR+cZo2aBsgADkufdU=
+jkotNO2Q8GVzPsAa8conX1c+b5yN25PDSqzi4BpFTdE=
+jkqLxqT6aL3fxcubE9jJSQpYVuBSBNLODaWOWbp9CTI=
+jktuDAmE9Tut3lKcdeO2XqZswo3Aj4OWke5VKmUNAmw=
+jlHSr/xpqCjUoJ+g8uE9K4+61sTgzPW0oRqgR4pZ7xo=
+jugTFtDyTHmEXlrlv7BeODPOFIkl5kumC/yRm434xAI=
+jvxUmIi7KPP8yXIVzk0+8LiQuUQ6agoQfGOj6N9nzBo=
+jw4aBki3xsPHqVfkbohj4BG0T8ut2/2+6l0Qjmy0JBc=
+jwVgqXi+4ubj28GNd3QVKYOe9sEv9z9UQFhLK3D0YS0=
+jx5H++vs4QgD7Gm8nA7DTWP1NLD8HTR9vORXBxom6Xg=
+k//OEMCyFiYuWxICeRDw3qZ61qaFsEWxP1VE8cT3vnE=
+kB2FMmeCfGHgWFcGfCYAKl5FeiaGY+dAvwqLnEV7288=
+kC1LzE037MXDHm3K9nDn5HxG3XTVgV/MkiPKL5HGwQw=
+kC8aUS4BtQukAKKlMviA8P+4uQ07mNATjnLYpVbjwzk=
+kCzRCn/BFEc/1EiPzZZ5euXXK0as/FSFu+21ocuBmxQ=
+kJ0thxhNoVh0JHT/7WeKAXybaTPL1QdA+RFgZ5aK0dI=
+kJ3kNMlPjnXsbWxrQAQZYmwfe1IYd0RcY18ZLwXzbqw=
+kKnN5+pq41dDWGnS/yQoot9GOoub3bYOVUd91mdc1iw=
+kOC40BGWwLJGKyjf1hkAIbOvZLQ7B9y4Nz/cYc1GuOU=
+kX/jUgT9VSYAKiYQ5aP/LvNWMfyfer+xJWi7Jn/+YpM=
+kXNZu77PH04z3LqSkRzyvMXgs6NFfoWl6tXZePAELug=
+kbU4/kkwTJupq25G41JggKGtD+siGU517uLmf7uzK0Q=
+kgEdwvDajQYSUZX54SUqy9m7D7Dn8kUIKjnc7tzBQvI=
+kgKpgG2FwFCJx9oVHA4onVaONQYhj0s4MkloCTDw120=
+kik6ry2UuYMIIPV7dy/LeBsIs6BMGicWNKBAOClCzLQ=
+kiu6YVWlFYFDHmx4632dEtCA5gDiAWS7LHY1DMX0D8A=
+kphWgP3Z9YGzw1D7GafwYKEE14cfHAvZUHWQSzWpoDw=
+kq8MGAVgXBo2ansMnAvKGgy6nCF/N9F8Dijgh4NUWrQ=
+kqXTUGkDIPAkZZqIAJSbdnOgA4bcUaqxauiBAiNBVUI=
+kwqf0Fha2BOk37iOyB0h2UR24paFNPZJTTSPs2m39II=
+kzD5GEZ+6E2jvVND52Lu1OeYQE9KSvDqWNEJ6ueDVdE=
+l0WkaS+XkGlPzRGw2PoPFCytQI6XbO8E1emzMmq58tI=
+l2woSOPdPpHbZ8vSpzvTswo2JkitKxsnXHOLS/oC+z8=
+l63le0kR4FapF+Bt0WcXsshBnN5ATCMcEBO9qrUaan4=
+lD82siKw+gqx8tI2CvVkeRrOX2KpEAZEvllgr8x6BwI=
+lHgd5ISQA7fi9Y7RQjS0DMOwaim+12XaciIBidqX21A=
+lNdJE/SusZl03fyaZDTOx6IEB9IsGv3BrBGejui0rn0=
+lOrp3fQQHG0RB3Yu2cy4Xs2CKTWl05lfFGChuz7QACg=
+lVEqNhmm1A0+641sYAAAJ8wQZ29t5dyxNVWyMj6bVmo=
+lYA/UyUx69DTjPx3BwAoLxPB+zOMV9gug7Z4Y9coKpo=
+la6SLR8cye1II14GMDvEk5EiEUh5Uw1tcGySI/7jHCo=
+lhbAASBl8pzjDv1fosCV+NDCMGl9H5HcmRJvaRmBp6M=
+llRX+Bp37BX3iW4JcL6m2zHmrPfZMtDGx9ByroZUGGk=
+lqCdlE2QnEqqakhdic3Pg9v8aD/1HS6GadGTUxPw7oA=
+lrP7zubFkOU1YdUp7UmiQzaNAxFd3yA4aH0qrbXgyi4=
+m2abpKeBPBf3wCRTgNz9Fj10o4v/GMU1KFsdNiy6jfM=
+m2oBhrso9XQ5LsrnZLcbOWafONyz4HSVwjsY9Gkm7ac=
+m7yrqgxdISgT5apYCJg79TUiKMNOxXPIfpRyLBGnoLM=
+m9a4dJu66tQXnKTb4BxguQFk3RY3GgrnoxEgao4irD0=
+mBBlCc+U4fg1JrCwhAv+jdDaUPnsfBUJJMQnhKQ4TKM=
+mH6TvfHqTKHSrhEJWawU5s7xtOSXMQCaLRxhyJep7/c=
+mJeiJbn0Fltbsgdy8ziaLy/NDOqKuU0BG+gnvBWXVMg=
+mPHgm02Nf51ZedcpgtwdEuWXLByoaXr0Yw2Rg77g7W0=
+mTPUiHDjE4puYcoMEgHSnVT/5rxRX/2EhAYB+OAo8JQ=
+mTvUdLatLOlNwnJW+7RwXxVuw/Ut/SlJ3Uel7eXOcNI=
+mdQ5rVU1EsjSEHZIN5wX68PYaUyT6iBlD7yTrsxFFiw=
+mk9BWZiXEomJHjE7ANSjEt8DDbHJ+OOon2xpBLf2XGg=
+mqc59lBHR6hFKq6NbgHyh5tUtbFuaj4xvtT+ypEv0XM=
+muo47XZ3UhuXJKlMTBIezNEhBovgGZ7LPU3afLQpZqk=
+n6f8d24SyGIjaabBmdJwZzgcmwePLWAnvi2G4mnV4js=
+nGFIxpZ2K8W/ltgh2lYb65hDZhmdBgaLfQEOY9dGPaA=
+nOEhNag2QJp4cj9CAjzPl1biHbzLdLy7aHW2wcAguV0=
+nPKNTVNXLURMCI2OeroVHyQ1UHY6lquQ7Kx/qLaHV78=
+nhAks5o1Rg6ziRm/ec8vq03VIi7IBhUgKy+URHCVC1M=
+nhRa6p7obuTJzKqR3k4WFLHVtC0Yfw7Epu1GJkqmkrU=
+niF1dhnqx4oBNOzzFJvbf+I37Pj02CrU/PFOheK1YfM=
+nmGq2HlWTvsOGu+pdOuvW+JloqIuoCNKNMRXAfesSaY=
+nxFamJcp+8X/Om6B4hU29GPP5qhbSssLkjzHFXe4nCM=
+o1E9JixjXPK124bKryY7J72znEbtCmrAR0JpHjjBTDU=
+o3CN9SN1BQfiJKGctTiGIIKsdwArXvii7WeEC3Z7/aA=
+oOhz5hRtIfVL/Suee78M3z7yl8CH2gY72u03Ma3LXcY=
+oWFgwCvHG+oHg3X1z9UN51aXFs54xvA2hsnSX4j7BfE=
+oerjPQyw6rDfmvOP4hzsuDNIRWtXiCT4JRbpQ/XPIn8=
+ofE5Dt3jKSdvB++hdzehRlfsgqHKNY9cv1bH00U6hdE=
+ol+9SHBFhVo31/KNOCl/OzNvgpePikliHh9kbUEdrjI=
+omzWtZstnYgkaIqT280nQpYH798KiqGAzn19VMGo10s=
+op0MTBmv1A/Xkg721F27g7ttKtxtPzVpMLu0jGcUMhk=
+opL6k6rTZ06Q2WGJW7sALG8NsBKk+d7CrZftDeejKJI=
+owFFEEH3P6Aj4IA9fIl1P6AIIWHK1Fdiv63jiT7aOSw=
+p1MvQq9DSLcXuqGzwI66zpdoC2CpOUfmhLpHeyasaIk=
+p94sCSXb/OYOahiks96L+3af5WiWSiV3OGs7+X8WCdk=
+p9RWrNxNriq13QImL9Tz/+FfWPKvAz2M1VhErVj4Evg=
+pBpi1HfY2ybV53/sVL71P9kf6BygOZbAeWSF4xAgtG8=
+pFmsRkAMmk3it8mIelU9g77grPgiigoQZc8o6OB9vFo=
+pIAezerXUu5yehxa/llAUkJLEUxUGuHq6E3f81o0Jsc=
+pIb9r8mNlRPVRSW0Itpkoqi+FSVXsWSraaN2qHkKmRU=
+pK76LF02uoUeeoQF/lImZqAGmt7zRYN54u/A/rrQfgA=
+pVejS4V22baaVMEIuG0RqebHjldrvJoF6eShDxonIgA=
+pVoJrt3jatQR3Ti+epL95MlCKtEjGSfgrk1kATG6xDk=
+pWzCbkqIkqPTb4l3HlPU797LsqtwOlNwVVGk8nkD3Rk=
+pZyxu5qxptrc1GHPuBYaVwCGLgvPMg8CrTUBrAZtqso=
+pbrqx2uIMI8zDfbGWpAJC0zixF7RP+OvyBhtgMCSaW8=
+pjiwIfqp9pxxCegIHv/0bRifpHbrld3X8eHujeL+Ovc=
+pnM9Yqt50qMD3xJ75ctsIgMuIo/Vf9P2XmrD1YIXlIE=
+pnvpltRgpSOKpTqTk7Crhvl4jnex3UdukdQ/1deP8FQ=
+q1Qwe2bx1pcTDsk7bGd/8UfUdVMkRmOGvGPYfG/wmpU=
+q9neyji38ngmDBkJ1Bt7sneHzDtcsEmtRTCRFfmk+2c=
+qAUpYq846Vla5hUeDzxzp+6CQwJcwTbTU3wQSTXikiU=
+qEQF7LmG5goTxOeQUndcqOJgnP0vAENfr/jptbup3HM=
+qIQzF6RNTJo91INTyOGmkalXBgReY/FbjSNa5oz3XX4=
+qIrRsL11u/FONuO7ibdVVscecAHKKRHwXyJ9VTXt8rA=
+qJPj7OXN6pnimAuJT+Z4cyzO+VlutywXPqrM6qpLUTA=
+qV2Rr5J7pVr8lo3jEfARXJ8pPmkxu1g1SNueVazwiDg=
+qVqfKuH6xCXHJ/1HvOWBFTnxZb1DSPQRwZsm6bKGgV4=
+qZ7oN+rdTf9nRj5pjIBJHQUOlrgqaI9hPbA84ScyIRg=
+qe3rh/Zh8hqO7gHeKZd4KfccNjEzxFM1203z7ap99QI=
+qg/YR1JQHctbJveZ6LIaNap/BCZXsTh/97JiqfDh2R4=
+qlqXZ+ozwxBx70bhblJddB2T1NwaUQ5vhUIR3yHDCs0=
+qmo9B6K+o+5pR84HUucgGV61P59jh8IlQW4sxXEtgLI=
+qoIk2mB3NEoCtnqAbsuDw/GK2jmgIFqOlezOsSEJ+Fc=
+qq9qTzO/8bzfj564kiMxj5TKVl3jhQl1ba9mTlkEcBQ=
+qv//2UBX4OSNOyS0wuLGTvi+tMNX23RhyTl0hlDpkg0=
+r0pCHhYuMBVdg17itNffOhalcp8JFLkLFqvoAHbRt4Y=
+r35X0aBd3x91uZVEZFgJe6oIBsCaArnKzI5jsQ78pJE=
+rDVy/gF713GSxisvfLwRNC+ltOW6NzhT6JsrS/Ucuqk=
+rGFg/1uFYG/2MuLAN+R3Kf/z5OiETBZWYCiVK9KBbVk=
+rHBuZEQu3gBQ9ffJdULSvj6Tjago/x1AYXdGB0JoVMA=
+rPa+etvR7NrfE1VYTCOeRM4mU1eCVnOXJVDYHA7t52I=
+rWIZRLwmVMuxNOLnlc2lZuMSxxzWz1UZRyyAG3KgyVg=
+rcFAoZ/2Lu8VH9oAjXI4/cwJM3KhIhIRHJZKMpcZ7Ws=
+rcsDgwcGmvzpNnAiDoQLhl/lO7/n7k9OAQ4knyaGFy8=
+rdl8n+lQKTTv84VxKEIiCZGTmBSpi6mo2X/qA4wz+BI=
+rhfFx6QZopPONxiUvaP4+L12wdrdBJQLzn4FpXfOWD8=
+rhv9ZnIeEzpIInCqVnPTi8syMqKgnamr+h98kNjGyIE=
+rl1EnnC2wS5RoPoQvYdeS0lN7yqxxPWXLUUgRxBRGBs=
+rmfrH6IXuqUY6sjRjlaaVboUFzYfKUGa0k55dBKTBLM=
+rrTErpjFWDXEgi0li9xwn/mwOYP/bFJmU40FzjxcnKU=
+ruPnUVL2Qgzg7/zvgwIcQf99vo5/z0krPJA/MtGPzGo=
+rv2BGKYRhf3qgpmyqQ0l29ec5rt6f18nc0EvJZxleBI=
+rvQVsAZI/dUqj3PnujSb2JAy4mbkfBLJ4AjKOBgNw7M=
+s3BV60wY2bVhuLLkLbzh2ZHQKHXvYRcsrOfporXKH7c=
+s3Y/Zc7QtsJnu8FKDreb5rdOfAvHcpkr8RFP892bSKA=
+s3jSn9Frp37YLgudujy57XXancRYSyhdVZwupo/oY2U=
+s5kqCG2Pgp9uGlUjTP49aqZz8rr0xPYBShmFeMixRk0=
+s7q1jHwzGJRqaB1U+QYRwPaJQj4Mnj84FjQn4aNGCX0=
+sI9QAX96TE41KkHCie+AX6NOlItyTDIk9+cBysXy0l0=
+sME6KlfQle8iGDOULf2c9Lx6gtO4kf1WttD+BQEHfdM=
+sMrVktLT9IeWeLd7uM44xHWcwoVm5hUy/iub3Kj6ub0=
+sMx2+Hp5G8l7TPCwCA088/GJKX7jDcVPQHGRX4wTRpo=
+sMztiHDiH5OAL+HgRl6lRaXr69qN788y37FFBRgxY+U=
+sPWQ03+ZsnDzvDb9mw9ZAKxwx/9HFK4GUfWWoVvsTLg=
+sQiU4ranTNj9hVQZMngE/sOLXR1IiFIRi2yc3/5TbOc=
+sRpwiLg6KB6pm4lGzj5wT0qUZyog+NsMv5LcihBhWBI=
+sYDuU3m9t62+3FEaMebbaABbetGQs6WDbNgz23bTyx8=
+sbu0ZxDLmqbxgGKJzbsH/Fd3emjp2EuExldT+wYOzhk=
+sbu1beOdXHTbAqfKcPioxwK2zUDY/9wkRqiCIk9dfuw=
+scaZCmwEZXUHcey7cnGo0JV95TVDiHGGupDvb+qHR8o=
+scv8G+SV9YOQsbQoP3OtRwCYlN3sEKHasAq85HTggCs=
+seTNgbxow6vX4evtjmx97jdtHMepB89hjr9PfQgWwvE=
+sfW3g68Zl7CVB/lrBN/GkZF/Xzb2eATnwL6Vz9MVHUk=
+sigYFWui4mO5UcFi7fb4/hmIkDmW8yV0jzYXA6K3M5U=
+slm5bba86mVRFGq5JUPqDaSCxW0EXpG64hn/VivJcWE=
+sp6R8aL8+Dt96z3zbp6hxdX9ybF5OUr8uPdeJUii9ww=
+sxLOHJpqMSv7XLOe6ST+wDoZhwXJkC1yF1DkDfG+MMc=
+t/mBz88qXUtW2B97tFuTU3PT6fe0RcCbJKdfeBtlTXA=
+t1MwTYjROk9DOgcNZspxui2nj4ZSf5krAdx34M049xA=
+t5zFWGrjc8JZP49nO70NDWVMSQVkPCDnjUNOs1PfKco=
+t8U9zZ+D5MmeZAtSV91nBB4FydXHFZWgolmYWreMtr4=
+tEyMu7+1GF2EhH4R4yX5Hq1L3fMrhVrnpOc2FqDWzEI=
+tJMIskKbsNpXaOg/jlnFAifTUpu9AGROH0lmnOhAGAw=
+tSRWs0memXDOh6jHLP0P3pxavxSw7WLTH3b480X7p28=
+tbOB99FNfvlOr53zQ6i5kEVM0Qsnkb4rkG+0h0Ok4Rc=
+tgzVnFPv168ucxm0ce0pWV325+lM++rW/pICLBeaDwY=
+tip6g/FC1aLh2KYv9v96idaY4AofsaLePQohUf5LMVc=
+tk2FN/NScDqpLfYnWhizgpLcQdHHxWpeoqSU76UsvhE=
+tqO2n1ai0+fmYfjM99vO5kA6I7scaMK3bO4S59zCTQo=
+ttwg/mawvrmI2b11DhtHYHQ89DcX5/gjb6iaLT46Bzc=
+tzvUjyVtT1GyA+f2FX71+aE4Y8iDJsUdUaWyoQuLbiE=
+u2yrt/NTWSK4sx5ooxq9LLdocTjChN6qiT9es8dCM00=
+u5m4cyGdaRbKFIe4reYaLRzzCDJwx5U/k3vrDYEYyN8=
+u6coK33qua8PCmvb+VYaLJL/gHLaH97J78MYR64Tsno=
+u9RUvZFJEr62MUjWwUqEEwiWd5rLKwc6rtb5Ky6nt0U=
+uCmpTAZSZVTCLOrYVeeYNMB5MZTaaj26Jyxp1Cf5dh4=
+uDyGRoHYwK6n09Wk/xroZzRidySVn4YQJKlg7rV9vzw=
+uHTPxdXNJLKct/QYnqoxw8Etw/h/ekPMCaDuGeLd7+A=
+uKUr6NeOyb0HD8SfWq4nlhB8HAvRaorUToNoZy/+Nb4=
+uKvTt66uUSl3RIyLjI0heZoa8kvVqoVr27Knj6E7Gvk=
+uOhA9l3bvwRWa1PILDmCtkOztBQycHuchN1YgXbWsPc=
+uQch+KEQ1mpxeyqHxzoDwFEqd5q1Dl2k8yanjh6A2LE=
+uUy0YOzcG7ggEG7kIbNWGy5RQNKM/TT/mM7tVXK/VAs=
+uXsgY6OnkoNivA5r3pXGoF7RjCJdre2SxhaK4feqr74=
+uYCZjM8Wp4hoaKWHMxKVRgq/KUQ5Pa2W9M2RWpw8P8g=
+uZsObUo09ty/v/jQui/xSznsapkUfZKTETUwRtctnMQ=
+ubEEQCBgN9dHGwkVVPKgxuJtAEStyyt4/1MuzY9nBnU=
+uitT3YLZjTbbOHVGV2rtSxkfwhskLL2tYk5JCwL2tZQ=
+ul8j+Jkd8WDBTNCJUnfVbWH3kFNv6iWhi9T8dGhHvBA=
+uprllOlGwMv8CgOtxXqsiZd8v3cdVGac+F2KXQzQibk=
+uq1GcXXb3Dt3PPmm5HB27swnsr4gnyludstsccd/bnA=
+utP6CA7YXu8d/4Tv3QLLPZ2EIbG8AMaotweKxDyQErI=
+uurCfHQVg5jjFrlT8htpAE5Vwpvr8fbwC2w9R0Zujl8=
+uxr5Co4oFsypkP1d8nfJX2aZM815bafF4fc+sd5oNNU=
+uyiICjVxF3RAJpKArJ39UMuGEphdnQP5lpx7aw5VNLE=
+v4uUzuInM4TKznFn9o6RMw0E1HgXpkdkeor1OsGvOzw=
+v5e0SNwK2tQtVaa4JAr3l5GeaLBEZVc0DJ7Yn33w8yQ=
+vEWFFHttjlUV2aF9wK8cNkOxc9bArYMwcc4AIxoGiAs=
+vG5diGBNAUKH/E4qde5BqKmLqv1WDLd1lsofF/JVRXs=
+vLF9CjkHGjZOW9EVZ+i6QoP+1H+971gy6AcSaBtNzJE=
+vNzeS2XILKO6kFAN8uRMjq1nfgy1oeOsb0azse7v9UQ=
+vOCv3iwbCJM0lS2P1/MwY+GSHjgHbhx5gSQGrGTS+5I=
+vPQSXmE52zPi71wkLnxcmz/TcNvI9bqkT0Y30EvZRPk=
+vS6m1eR3+wxaAxB5ynJSoTgr17X0b8mPQoktcQCXFwk=
+vT+c9Ken8slMrDeoEnCdiUo5Al858cww0Lh1MZqmLmc=
+vY/gPxc/9XfxvApSEbbPS8gmd0wEFa9y4OLX1R3HAdg=
+vg6ssY62x244qRTIQZOjc+c9UN+/uUQDI9Tw51I+pEE=
+vgnH6K29BqFcVi5uJVjo+o9wwRN4G/kXoATvW40TUag=
+vjKbcoAJ4N20wSqIAy2gygnrG2BOtYO+Eh3Ar4ZLHq0=
+vn/FSmmImh4j9pKm2/e5qNP60Eon50jIXvUZH3lmOnw=
+vqeWKgYAM0uSreSFP3evB1WzqR76Y/LPNU243D4AZ28=
+w+8ollQ7NN9mQIlSLt2oodITNqBX8tXfiMRFoJf/sb0=
+w0de+6NVnpAsfAKMLq7rP2yHRIcN0NYwSkcd2zOcAIM=
+w2FtgN8vixkm0b/7NhO5FAaayFnyiMd32UxKtY4V13E=
+w380kFOQ0SNlJ5wTiqoJsn05jyFotcWheXtvFxb7+r0=
+wIp7+/lXVzHn7xwb0JZmWkHUL3/6DTjg+e72lCGf61k=
+wNBXSiDMFJXdFbCFjfN34Q4uShto5aB/yg9jBvLAzic=
+wSKnd1ukTxtZBpahppRRzcY4SiCw++9bWwg1zaArf08=
+wg7iSrRkg9K7stS8McSTlN9LsSmwa+OP8p1OogwHdJ8=
+wmcRUHwqrF0a/s9+XkY1D4y/SuDkVWaAwdBu3vmJDrw=
+wsSUr47SvbusRRNVM7N7c14/5iY4xPUfY7vNJRZzLR0=
+x+zUURcu3/6J14St4+6otZYbuPZMzjb6xgbBLHBKVpw=
+x0znbHZSSWp0xoqa4IzpAIeEcbLPslxffNiH9jLEFkM=
+x66fLJuNKwbAPf4DgJUOfpIDpTFzNbLgeO4pf+cehgI=
+x7R15NkjxpWNROuMSXWj7mJYmmVDzzY/IldKWT2wA9E=
+x83fbhZXY6+iyoWJH8yPcNqqzYuyYwa6TXDQPBSf4DE=
+x9ulbG22riWBe+sC3FMfqGTThOCxg0au90xHtAelOcg=
+xC72stHYzRrSjyIb8Z80oMoAgEulI5dQ3/Zp93CBlU8=
+xLBuHwlSISC8tz41w2Rp6yD3+alCigaZzm2pSH/YoLk=
+xNeI/BJMQL0V71K9k7OPenLhPGWzR5ko2xuF7atoH+M=
+xTjkHb59eEtRni7r0tr6PwhGSpC9manJmaI9I8ntUHg=
+xTnoYuAcygpfTP/uj33O/MZt2+nKR6FALCSBmJLcEBs=
+xWVDyB+wGUf/ZB6uyUqOc9ffwQuApJxLGaKV3v3OhwA=
+xZve0w/6xJXa8STJl+hRKg9nDDkNb2rDYDdDVze0SnE=
+xl172F4CND58iKH7rtL3P+P9KcqfdhLZJraNIPd2MGE=
+xla7UVOJ/vD7DOu5K165niYYz0cK4boAotNdI7HTkFk=
+xnJcgsJLsU/Pnjas6klQc+ldk+/bBbDEtwX7MdnBezA=
+xrcc4WjxVVaMAgk41Ncsl0CUske/6eXzhJE9RI5dHEo=
+xsna50dZ4m2Ft42b6eACoXQiPgsUJdASZMQ/XyPjT58=
+xwTJFbMLpYGjlLtVM2qs4wlN3jx40FbsK+pCES4y+Fw=
+y+KLG2IwKSceZkCCk6NsXCCit7PayfpjYweO+6R0wx4=
+y2WaY65kIickpiWrOgN3mXxdZWL464B9/8EBhYk5eEQ=
+y63Bx3pRyL0xR6853OVW/JPCnVNmSXQMlSkW7ymwLVY=
+y9w99l9pkK35AV+LTCn9+1px7vbx+Ad7ynAXq6VbXGM=
+yAWZ4f61FKY1pFxgauW9nZKe1uOMWvJ4vLXt3sGmzcc=
+yEsn6Ih03Ou4e1WZ5FgtNGx+OyOs6HER5Csz8kgbAw0=
+yFJ7axGPs2yQiwlIaGNRvbhIHFUK4bVgfAmm3JiRElo=
+yIf+kA7ccDOVZBBWEskXTNgPT6v6LQ6Csa0JKGo5zyY=
+yMBQEC3fyrX0UHUUJLI9bgfhE40xxJw36/1mM+IZOqM=
+yQb83oONDU/8uemlGw8c8y3ymHViSkKIddEzV4BMSTQ=
+yU93qERW2aAUtibMyxSTg00tOtM9GAG8yz9hnzI8jiI=
+yWm3nv1OQ7aSM8ZPPPOTSMhTUULbE0Aq2srlGZo9IZA=
+yejpA3tEx+Y/ALg44GV57WtUSFktu4rL4KY9OgoPWcM=
+yhssX9UeHtsPEEEWQy52Fh3Z3RRCxUHE9pUgK94JlJI=
+ylnYv/BCa+E84urO9XBfkgkXiqyBxrlf2xh1Em1Dgyk=
+ynCt+/FQte84+FDfLuDwjWvQ4RUZlpqSFZiz6u4cqLw=
+ynwzXnY5gPu2BjaunIPAm4C9BWlAiwyQPDWToqWd2rY=
+ysOvh/Op8ly1D12fEKx3e9SJDHQLdJGshjOnpDqetck=
+ysbyzqbwcaabsrnzI0EnUyCar/lSnzhTd3j+LNmStk8=
+ytk2MH6XyvTBpmSrRpTgV/iJBFw4wWeszsdrJIU4Wvs=
+yw8jYfzQf6QHaUNYT0lsP/1kxoIc0u5ZDaJo4WIk2lQ=
+z5keu9q79vx6E+iEZS9gLR3BhlPxT94UkFsnqluodWw=
+z5xccyW/AkT7lrjTkVU3y37zWBTHhXm/YqidMoqs9ao=
+z6Olt3LyBitVwxfKaqYrqvIMHArflMYljkc1VKoKCZw=
+z9ua1vf9WmNCzdYJXazQfm29OuFUeXTkfdbZqh5KsH0=
+zATL9WicYWTT+jLNAYmbG8UoeI6fnZdVjwo3gVhzTkc=
+zAzMouFRkuFnTV5VK+mKgYB1dzgonCZX+4Wz889Gqn0=
+zGcDjrGPLEELz41qkkzp16EsMCNqFpSl32dEjZbC9Ps=
+zGmWIZDf4gxameYtm7uk7vIU1mjcpQHgc1s+sy+qCAg=
+zHUtYq8asxgQc1/3q/v8Dwfbw6gCmwL1RZjJZvhgklI=
+zJO4hVnMA+oxwjYyyY4C12jNBQ0bJUfd4pazbxT71V0=
+zKeod/dtpayZyqR5td6XGj0zvXYTPir6g7M+gCyiK+s=
+zPiHaarHQX4jnO/ZVF+espWW4TEQKSmMxCeYg2Lj30Q=
+zRje1kXBvq2CMiSbDJXN7Icq33Dmu9FISatDHelC7xc=
+zgobmZXX8kHmq44SVm1c8uotLQmfACwCkLp6NpQZ1/A=
+zi66l8U9iebiRfPznkt0KejSDhHN+kVCUL+bEx9ogno=
+zi6gZuQfheAjY/Adw4pHvRdHBKYjecslcYrb8fSU43Q=
+zoOWyaBUt6p490GAsc3c5n7rV+eoPe7dUuUxTfh7t3I=
+zpGHPCRXRU05dGKu6+8CP+Idl0Czb2KM8mSjqVV2HD0=
+zsVyvb16VHFel8ITSM42OLfgH8935/D2AyxSxVOFTB8=
+ztnWDdCNU++K+F7A61ev7KM63qmi5VMyOFwPimLdtuQ=
+zv3Sr+FuJ1zcpzVlbohDB9We4iae0If0+pag4kvkiPU=
+zvMPzXuM6muIDeSnug5TzeBPXeEkG4ctiQKPOtkpd2A=
+zvhu24HvYHLnfiTxmdoYGkE5dBrHyIKsmwiv3HuJLw4=
+zzWvwxY88Mwc7icChvi7mHiR6EjGKFaePLaLSA/Vwig=
+zzlfyuOPJYlsyQUSWz2rqmFM1wu5lcBze/L2LomoYx4=$fingerprints$,E'\n') as tokens(value);
+
+insert into ojjuda_arcade_internal.drinking_truth_cards(flavor,body)
+ select tiers.flavor, ojjuda_arcade_internal.drinking_prompt_clean(q.body) from (values
+ ('mild','["요즘 생각만 해도 기분이 좋아지는 일은?",
+"하루 동안 다른 직업을 체험한다면?",
+"최근에 가장 크게 웃은 순간은?",
+"지금 이 자리에 어울리는 노래는?",
+"친구에게 들은 말 중 아직 기억나는 말은?",
+"몰래 연습해 보고 싶은 특기는?",
+"어릴 적 별명은 어떻게 생겼어요?",
+"나만 알고 싶은 음식 조합은?",
+"마지막으로 용기를 냈던 일은?",
+"딱 한 번 다시 가고 싶은 여행지는?",
+"올해 나에게 주고 싶은 선물은?",
+"오늘 처음 알게 된 사람에게 어떤 인상이고 싶어요?",
+"최근 산 것 중 가장 마음에 드는 건?",
+"약속 없는 주말에 제일 먼저 하는 일은?",
+"나를 이모티콘 하나로 표현한다면?",
+"친구와 꼭 함께 해 보고 싶은 일은?",
+"한 곡만 완벽하게 부를 수 있다면 어떤 곡?",
+"예전의 나에게 한마디 한다면?",
+"무대에 올라간다면 어떤 이름을 쓸래요?",
+"요즘 내가 푹 빠진 것은?",
+"다시 만나 고맙다고 말하고 싶은 사람은?",
+"남들은 의외라고 할 내 취향은?",
+"완벽한 하루에 꼭 들어가는 한 가지는?",
+"단 하루 동물로 산다면 무엇이 되고 싶어요?",
+"오늘 집을 나서기 직전에 뭘 한 번 더 확인했어요?",
+"요즘 제일 자주 쓰는 컵은 어떻게 생겼어요?",
+"창문을 열었을 때 어떤 소리가 들리면 반가워요?",
+"차나 커피를 마실 때 나도 모르게 하는 버릇이 있어요?",
+"남에게 하루 빌려줘도 바로 내 것인 줄 알 만한 물건은?",
+"신발장 속에서 제일 많이 걸어 본 신발은 어느 거예요?",
+"오늘 아침을 세 단어로 표현하면 뭐예요?",
+"집에서 유독 발길이 오래 머무는 자리는 어디예요?",
+"장을 보러 가면 목록에 없어도 담게 되는 건 뭐예요?",
+"이상하게 치우고 나면 뿌듯한 곳은 어디예요?",
+"버리기 아까워 아직 갖고 있는 빈 상자나 통이 있어요?",
+"가방에 넣어 다니다 누군가에게 요긴하게 빌려준 물건은?",
+"시간이 평소보다 빨리 간다고 느낄 때 뭘 하고 있어요?",
+"내 방에 들어온 사람이 제일 먼저 알아챌 취향은 뭐예요?",
+"하루의 시작을 알리는 나만의 소리가 있나요?",
+"야식을 먹기로 마음먹게 하는 결정적인 냄새는?",
+"늘 가는 길에서 최근 처음 눈에 들어온 건 뭐예요?",
+"알림을 받으면 유난히 반가운 앱이나 채팅방이 있어요?",
+"잘 때 베개나 이불을 어떻게 놓아야 편해요?",
+"오늘 날씨에 제목을 붙인다면 뭐라고 할래요?",
+"혼자 있을 때 괜히 소리 내서 해 보는 말이 있어요?",
+"지금 당장 십 분 쉰다면 어디에 앉고 싶어요?",
+"종일 휴대폰을 안 쓰고도 재미있게 보낸 날이 있었어요?",
+"시간을 아끼려고 시작했는데 오히려 푹 빠진 일은?",
+"집에 손님이 오면 제일 먼저 꺼내 놓는 게 뭐예요?",
+"산책 나갈 때 꼭 챙기는 것 하나는?",
+"아무도 안 시켰는데 매번 반듯하게 맞춰 놓는 물건이 있어요?",
+"귀찮을 줄 알았는데 해 보니 재밌던 집안일은?",
+"지금 손 닿는 데 있는 물건 중 가장 오래 쓴 건?",
+"하루가 끝났다고 느끼게 하는 작은 행동은 뭐예요?",
+"빵집 문을 열면 가장 먼저 어느 진열대로 가요?",
+"김밥 한 줄을 직접 만든다면 주인공으로 뭘 넣을래요?",
+"처음엔 못 먹었는데 지금은 찾아 먹는 음식이 있어요?",
+"남들이 사 먹는 걸 보고 따라 샀다가 반한 간식은?",
+"지금 메뉴를 하나 개발하면 이름을 뭐라고 지을래요?",
+"친구가 집에 왔는데 냉장고 속 재료로 뭘 만들어 줄 수 있어요?",
+"기다리는 동안 유독 냄새가 더 맛있는 음식은 뭐예요?",
+"음식의 첫 입과 마지막 입 중 어디에 더 신경 써요?",
+"내가 끓이는 라면에 꼭 들어가는 재료나 순서가 있어요?",
+"그릇 때문에 더 맛있게 느껴지는 음식이 있나요?",
+"한입 먹자마자 누군가 생각나는 음식과 그 사람은?",
+"과일 가게에서 잘 익은 걸 고르는 나만의 기준은?",
+"간식 하나로 어린 시절을 설명한다면 뭘 고를래요?",
+"토스트 한 장을 지금 내 취향대로 꾸민다면?",
+"카페에서 자리가 하나씩 비어 있다면 어떤 자리를 골라요?",
+"좋아하는 계절 한정 메뉴가 다시 나왔을 때 제일 먼저 누구에게 알려요?",
+"직접 키워서 딱 한 번 수확해 먹고 싶은 재료는?",
+"밖에서 먹을 때 더 맛있게 느껴지는 음식은 뭐예요?",
+"부엌에서 내 손에 제일 잘 맞는 도구는?",
+"오늘 모임에 디저트 하나를 보낸다면 뭘 주문할래요?",
+"누군가 해 준 요리 중 지금도 모양이 기억나는 건?",
+"학창 시절 급식에서 남들보다 먼저 찾던 반찬은?",
+"짜거나 탄 음식을 의외로 맛있게 살린 적이 있나요?",
+"낯선 메뉴판에서 뭘 시킬지 정하는 기준은 뭐예요?",
+"음식 이름만 듣고 상상한 맛과 가장 달랐던 건?",
+"시장 가판대에서 발걸음을 멈추게 하는 소리는?",
+"내가 먹어 본 것 중 식감이 가장 재미있던 건?",
+"선물로 받은 먹거리 중 포장까지 기억나는 게 있어요?",
+"취향이 다른 친구에게도 꼭 한입 권하고 싶은 음식은?",
+"한 계절의 맛을 병에 담는다면 어느 계절의 무슨 맛일까요?",
+"어릴 때 처음으로 혼자 사 먹은 게 기억나요?",
+"학교 가는 길에 늘 들르던 곳이 있었어요?",
+"소풍 전날 가방에 꼭 넣고 잤던 건 뭐예요?",
+"어릴 적 보물 상자에는 뭐가 들어 있었어요?",
+"예전 사진 한 장을 골라 그날로 가면 누구 옆에 서고 싶어요?",
+"어렸을 때는 엄청 커 보였는데 다시 보니 작았던 건?",
+"처음 끝까지 읽은 긴 책이 기억나요? 어디서 읽었어요?",
+"아직도 따라 할 수 있는 옛날 광고나 만화 대사가 있나요?",
+"어릴 때 혼자서 해내고 어른이 된 것 같았던 일은?",
+"낡았지만 고쳐서 다시 쓴 물건에 어떤 사연이 있어요?",
+"큰소리로 응원해 본 첫 경기는 어떤 경기였어요?",
+"어릴 때 믿고 있다가 나중에 웃었던 이야기가 있어요?",
+"학용품 하나만 다시 살 수 있다면 어떤 모양이 좋겠어요?",
+"놀이 규칙을 친구들과 마음대로 바꿔 본 기억이 있나요?",
+"학교 끝나고 집에 오면 제일 보고 싶던 프로그램은?",
+"첫 휴대폰에서 가장 신기했던 기능은 뭐였어요?",
+"어린 시절 명절을 떠올리면 어떤 소리가 먼저 들려요?",
+"졸업할 때 버리기 어려웠던 물건이 하나 있다면?",
+"오래전 살던 동네를 걸으면 발이 저절로 향할 곳은?",
+"실수로 잘못 탔다가 뜻밖에 좋은 곳을 본 적이 있어요?",
+"사진 없이도 머릿속에 선명한 풍경 하나를 말해 줄래요?",
+"누군가에게 처음으로 요리를 해 줬을 때 메뉴가 뭐였어요?",
+"내가 받은 상 중 이름이 제일 재미있었던 상은?",
+"가장 오래 알고 지낸 친구와 처음 친해진 계기는?",
+"가족이나 친구들끼리만 아는 장소의 별명이 있어요?",
+"어렸을 때의 내가 지금 방에 오면 뭘 보고 제일 신나 할까요?",
+"비 때문에 계획이 바뀌어서 오히려 기억에 남은 날이 있어요?",
+"오랫동안 연습하다 처음 성공한 동작이 뭐였어요?",
+"오래된 사진의 배경에서 발견한 뜻밖의 물건은?",
+"다시 찾아보고 싶은 옛날 장난감은 어떤 거예요?",
+"동네에 처음 온 사람과 한 시간 걸으면 어디를 보여 주겠어요?",
+"지하철을 잘못 내렸는데 시간이 넉넉하다면 제일 먼저 뭘 할래요?",
+"여행지에서 우연히 듣고 기억해 온 말이 있나요?",
+"길을 묻는 사람에게 위치를 설명할 때 어떤 건물을 기준으로 해요?",
+"평범한 골목인데 한 번 더 걷고 싶었던 건 왜였어요?",
+"여행 사진에서 다른 사람들은 잘 안 찍는데 나는 꼭 찍는 건?",
+"고속도로 휴게소에 들어서면 가장 먼저 향하는 곳은?",
+"숙소 방에 들어가서 창문을 여는 편이에요, 침대부터 보는 편이에요?",
+"오래 걸었는데도 힘든 줄 몰랐던 길은 어디였어요?",
+"여행 중 우연히 친절을 받았던 순간을 하나 떠올린다면?",
+"동네 지도에 별표 하나를 붙이면 어디에 붙일래요?",
+"멀리 가지 않아도 여행 온 기분이 드는 장소는?",
+"바다에 가면 물에 들어가기 전에 꼭 하는 일이 있어요?",
+"기차로 가 보고 싶은 곳을 하나 고른다면 어디예요?",
+"낯선 도시에서 반나절 지낼 때 가장 궁금한 건 뭐예요?",
+"여행 가방에서 빼면 짐이 줄지만 그래도 챙기는 건?",
+"구경만 해도 시간이 잘 가는 가게는 뭘 파는 곳이에요?",
+"풍경을 담아 엽서 한 장 만든다면 어디서 찍을래요?",
+"캠핑을 간다면 내가 맡고 싶은 일은 뭐예요?",
+"관광 안내문에 딱 한 문장 쓴다면 내 동네를 어떻게 소개하겠어요?",
+"같이 여행하면 덜 긴장되는 사람에게는 어떤 습관이 있어요?",
+"여행 중 하루만 현지 수업을 들으면 뭘 배우고 싶어요?",
+"낯선 거리를 다시 찾아갈 때 기억하는 표시는 뭐예요?",
+"제일 기억에 남는 기념품은 누가 어디서 고른 거예요?",
+"살면서 본 밤하늘 중 하나를 보여 줄 수 있다면 언제의 하늘이에요?",
+"겨울 풍경을 보러 갈 때 가장 기대되는 장면은?",
+"이름만 듣고 궁금해진 도시나 동네가 있어요?",
+"오래 돌아갔어도 좋았던 길에는 뭐가 있었어요?",
+"관광지에서 사람들이 잘 안 보는 부분인데 내 눈엔 띈 건?",
+"여행을 다녀온 다음 오래도록 그대로 두는 짐이나 흔적이 있어요?",
+"영화 속 조연 한 명에게 하루를 더 준다면 누구 이야기로 채우고 싶어요?",
+"어떤 소리만 들어도 장면이 떠오르는 영화가 있어요?",
+"요즘 노래를 처음 들을 때 가사와 악기 중 뭐가 먼저 귀에 들어와요?",
+"처음으로 내 돈 주고 본 공연은 어땠어요?",
+"책에 밑줄을 그을 때 어떤 문장에서 손이 멈춰요?",
+"노래방에서 누가 먼저 불러 주면 반가운 노래는?",
+"전시회 기념품 가게에서 실제 작품보다 오래 본 물건이 있어요?",
+"좋아하는 캐릭터에게 우리 동네를 소개한다면 어디로 데려갈래요?",
+"어느 영화의 배경음을 내 아침 준비 음악으로 쓰고 싶어요?",
+"누군가 추천해 줘서 기대 없이 봤다가 끝까지 본 작품은?",
+"새 앨범을 듣기 전 앨범 표지만 보고 상상한 적이 있어요?",
+"자막이 안 떠도 따라 말할 수 있는 대사가 있나요?",
+"소설 속에 딱 한 쪽짜리 내 장면이 생기면 뭘 하고 있을까요?",
+"박물관에서 안내문까지 전부 읽게 되는 종류의 전시물은?",
+"책 한 권을 빌려줄 때 표지 안에 어떤 메모를 끼워 주고 싶어요?",
+"마지막 장을 덮고 바로 앞장을 다시 본 책이 있어요?",
+"본편보다 기억에 남았던 예고편이나 오프닝이 있나요?",
+"내 취향이 아닌 줄 알았다가 뒤늦게 좋아진 장르는?",
+"직접 보니 화면으로 볼 때와 가장 느낌이 달랐던 공연은?",
+"친구가 나를 소재로 만화 한 컷을 그리면 어떤 장면이 나올까요?",
+"반주가 시작되면 어디 있든 알아맞힐 수 있는 곡은?",
+"이 자리에 있는 사람들과 작은 극장을 빌리면 뭘 상영할래요?",
+"전시를 본 뒤 한 작품의 제목을 바꿔 보고 싶었던 적이 있어요?",
+"혼자 흥얼거리다 가사를 마음대로 지어 부르는 부분이 있나요?",
+"좋아하는 작품을 스포일러 없이 세 단어로 소개하면?",
+"책이나 영화에서 배운 말을 실제 생활에서 써 본 적이 있어요?",
+"내 인생의 다큐멘터리 첫 장면에 어떤 소리를 넣고 싶어요?",
+"연주할 줄 몰라도 소리를 좋아해서 찾아 듣는 악기는?",
+"복잡한 이야기를 볼 때 인물 이름을 어떻게 기억해요?",
+"요즘 누군가와 보고 나서 오래 이야기하고 싶은 작품은?",
+"취미를 시작할 때 장비부터 알아봐요, 바로 해 봐요?",
+"어떤 일을 하면서 나도 모르게 콧노래를 부르나요?",
+"직접 만든 물건 중 엉성해도 마음에 드는 건?",
+"배운 것 중 뜻밖에 일상에서 쓸모가 있었던 기술은?",
+"스포츠를 구경할 때 점수판 말고 눈여겨보는 건 뭐예요?",
+"새로운 게임 규칙은 설명을 먼저 듣는 게 좋아요, 한 판 해 보는 게 좋아요?",
+"친구에게 삼 분 안에 가르쳐 줄 수 있는 요령은?",
+"처음 배울 때 손이 뜻대로 안 움직였던 일은 뭐예요?",
+"내가 빠져들면 주변 사람도 꼭 눈치채는 신호가 있어요?",
+"자주 하는 취미에 작은 도전을 하나 더한다면 뭐예요?",
+"팀으로 일할 때 내가 자주 맡게 되는 역할은?",
+"끝까지 맞혀 보고 싶어서 답을 안 본 문제나 퍼즐이 있었어요?",
+"공방에 가서 내 손 크기에 맞춰 만들고 싶은 물건은?",
+"이름은 몰라도 멀리서 알아보는 새나 나무가 있어요?",
+"집에서 키운 것 중 가장 빨리 자라서 놀란 건?",
+"아무 종이와 펜만 주면 어떤 낙서를 먼저 해요?",
+"게임에서 져도 재미있게 기억되는 판에는 무슨 일이 있었어요?",
+"운동을 하면서 기록 말고 좋아졌다고 느낀 점은?",
+"말없이 나란히 해도 좋을 것 같은 취미는?",
+"설명서만 봐도 조립할 자신 있는 물건이 있어요?",
+"무엇을 할 때 손이 눈보다 먼저 알아서 움직여요?",
+"사진을 찍을 때마다 자주 쓰는 구도가 있어요?",
+"경기에서 내 편이 아닌 선수에게도 박수 친 순간이 있었어요?",
+"배우고 싶은 취미를 딱 한 번 체험한다면 첫 작품은 뭘 만들래요?",
+"화분 하나를 선물받으면 이름을 어떻게 붙일래요?",
+"집에 남는 공간이 생기면 어떤 취미 도구부터 펼쳐 놓고 싶어요?",
+"다시 초보자가 되어 과정을 즐겨 보고 싶은 일이 있어요?",
+"최근에 직접 고쳐서 다시 쓰게 된 물건이 있나요?",
+"완성한 작품을 어디에 두었을 때 제일 뿌듯해요?",
+"내 실력은 평범해도 남들이 볼 때 유난히 즐거워 보이는 일은?",
+"처음 만난 사람과 금방 할 말이 생기는 주제는 뭐예요?",
+"친구 이름이 휴대폰에 뜨면 먼저 떠오르는 말투가 있어요?",
+"누군가 처음 내 이름을 정확히 불러 줬을 때 기분이 기억나요?",
+"오늘 모임에서 누구에게 어떤 도움을 받았어요?",
+"나는 주로 친구들에게 어떤 정보나 소식을 알려 주는 사람이에요?",
+"서로 취향은 다른데 잘 어울리는 친구와 뭘 하며 놀아요?",
+"초대받은 집에 간다면 작은 선물로 뭘 들고 가고 싶어요?",
+"단체 사진을 찍자고 먼저 말하는 편이에요, 마지막에 합류하는 편이에요?",
+"친구가 내 표정을 보고 바로 알아맞히는 기분은?",
+"칭찬 중에서 능력보다 내 태도를 알아준 말은 뭐였어요?",
+"친한 사람에게 고맙다는 뜻으로 자주 하는 행동은?",
+"무슨 이야기든 끝까지 들어주는 사람에게서 배운 점은?",
+"말이 없어도 편안했던 자리가 있다면 뭘 하고 있었어요?",
+"내가 아는 사람 중 길을 잘 찾는 사람은 어떻게 다녀요?",
+"누군가 친구가 되어 가고 있다고 처음 느낀 계기는?",
+"공동으로 무언가를 모으거나 만들면서 친해진 적이 있나요?",
+"잔잔하게 웃기는 사람과 크게 웃기는 사람, 나는 어느 쪽에 가까워요?",
+"모임 날짜 정할 때 내가 기꺼이 맡을 수 있는 일은?",
+"서로의 습관이 닮아 가는 걸 알아챈 적이 있어요?",
+"친구가 우울해 보일 때 내 방식대로 건네는 말이나 행동은?",
+"오래 보지 못한 사람을 만나면 가장 먼저 묻고 싶은 건?",
+"짝꿍을 고를 때 나와 달라서 오히려 좋은 점은 뭐예요?",
+"나를 잘 아는 사람이 메뉴를 대신 주문하면 뭘 시킬까요?",
+"모임을 끝내고 헤어질 때 꼭 하는 인사가 있어요?",
+"친구가 알려 준 지름길이나 생활 팁 중 지금도 쓰는 건?",
+"누군가에게 시간을 내 줘서 오히려 내가 기뻤던 적이 있어요?",
+"내가 자주 하는 말 중 가까운 사람이 따라 쓰게 된 말이 있나요?",
+"나보다 어린 사람에게 배워 보고 감탄한 일이 있어요?",
+"옆 사람과 같은 뜻밖의 공통점을 발견한다면 어떤 취향이면 좋겠어요?",
+"나만의 모임 전통을 만든다면 어떤 걸 매번 반복하고 싶어요?",
+"휴대폰에 남겨 둔 사진 중 작품성은 없지만 아끼는 건?",
+"길이나 건물 이름을 종종 헷갈린다면 나는 어떻게 외워요?",
+"결정을 빨리 내리는 것과 오래 고르는 것, 각각 어떤 일이 그래요?",
+"하루 중 가장 생각이 잘 정리되는 때가 언제예요?",
+"바쁜 날에도 이것만큼은 천천히 하고 싶다는 게 있어요?",
+"마음을 가라앉힐 때 손으로 만지작거리는 물건이 있어요?",
+"예정보다 일찍 끝난 날 집으로 가는 길에 어디를 들르고 싶어요?",
+"내일의 나를 위해 오늘 미리 해 두는 일이 있나요?",
+"별것 아닌데 내가 해내면 스스로 칭찬해 주는 일은?",
+"사진을 지울 때 유독 못 지우는 종류가 있어요?",
+"기다리는 시간이 길어지면 머릿속으로 무슨 놀이를 해요?",
+"마음에 드는 문구를 어디에 기록해 두는 편이에요?",
+"남의 설명을 듣다가 이해한 순간 내 얼굴에 어떤 표정이 나와요?",
+"내 방의 색깔 하나를 바꾼다면 어디를 무슨 색으로 할래요?",
+"마음이 복잡할 때 걷고 싶은 길은 어떤 길이에요?",
+"지금까지 해 본 일 중 생각보다 내 체질과 맞았던 건?",
+"새로 시작한 일을 계속하게 해 주는 작은 재미는 뭐예요?",
+"남들은 어려워하는데 나는 비교적 쉽게 구분하는 게 있어요?",
+"생각지 않게 시간이 생겼을 때 꼭 연락해 보는 사람이 있나요?",
+"나를 신나게 하는 한마디를 냉장고에 붙인다면 뭐라고 쓸래요?",
+"무언가를 기다리는 동안 오히려 기대가 커졌던 적이 있어요?",
+"집중할 때 내가 주위 사람들에게 부탁하고 싶은 게 있나요?",
+"새로운 장소가 익숙해지는 순간을 어떤 걸 보고 알아차려요?",
+"취향이 바뀐 걸 최근에 또렷하게 알아챈 순간은?",
+"나를 잘 모르는 사람에게 어떤 작은 장점을 소개해 주고 싶어요?",
+"다음 계절이 오기 전에 한 번은 해 보고 싶은 게 있어요?",
+"결정을 내린 뒤에 꼭 확인해 보는 사람이나 자료가 있나요?",
+"어떤 일에서 결과보다 준비하는 시간이 더 즐거웠어요?",
+"연습할 땐 잘되는데 누가 보면 유독 긴장되는 일이 있어요?",
+"나를 기다려 준 사람에게 지금 답할 수 있다면 어떤 말을 건넬래요?",
+"내 하루를 진열해 놓은 가게에 간다면 어떤 물건이 맨 앞에 있을까요?",
+"감정을 날씨로 알려 주는 창문이 있다면 지금 밖은 어떤 하늘일까요?",
+"우리 동네 길고양이가 내 별명을 지어 준다면 뭐라고 부를까요?",
+"장소 하나를 주머니에 넣고 다니다 펼칠 수 있다면 어디를 고를래요?",
+"우리 모임의 입장 음악을 만든다면 첫 소리는 어떤 소리일까요?",
+"꿈속 문 하나를 열 수 있다면 문 너머에 뭐가 있으면 좋겠어요?",
+"내 이름이 붙은 기차역이 생긴다면 근처에 어떤 볼거리가 있어야 할까요?",
+"작은 로봇에게 딱 한 가지 집안일을 가르친다면 어느 일부터예요?",
+"구름 모양을 주문할 수 있으면 오늘 하늘에 뭘 띄울래요?",
+"가상의 문구점 주인이라면 실제로 없는 물건을 뭘 들여놓을래요?",
+"무인도에서 라디오 방송을 시작하면 첫 코너를 뭐라고 할래요?",
+"내 그림자가 나 대신 딱 한 가지를 해 준다면 뭘 부탁할래요?",
+"내가 직접 지은 별자리 이름과 그 모양은 어떤 거예요?",
+"옷장 문 하나가 여행지로 이어진다면 어디에서 열리면 좋겠어요?",
+"시간을 병에 담아 한 시간 보관할 수 있다면 언제 열어 볼래요?",
+"골목마다 다른 향기가 난다면 우리 집 앞길은 무슨 향이면 좋겠어요?",
+"미래의 박물관에 지금의 물건 하나를 전시한다면 어떤 설명을 붙일래요?",
+"내일 딱 한 동물과 말을 나누면 어떤 질문을 먼저 해 볼래요?",
+"마법의 우체통으로 십 년 뒤에 부칠 엽서 첫 줄은?",
+"주인공이 내 신발인 동화를 쓴다면 어디에서 이야기가 시작될까요?",
+"지도에 없는 새 섬을 발견하면 섬 이름을 어떻게 지을래요?",
+"손바닥만 한 가게를 열 수 있다면 어떤 손님이 찾아오면 좋겠어요?",
+"한 번만 물건 속 기억을 읽을 수 있다면 무엇을 손에 들래요?",
+"내 하루 중 한 장면이 벽화가 된다면 어떤 색이 제일 많이 쓰일까요?",
+"이 모임에서 발명품 하나를 함께 만든다면 어떤 불편을 해결하고 싶어요?",
+"책장을 넘기면 냄새가 나는 책이라면 어느 장면에서 코를 가까이 댈래요?",
+"새 이모티콘을 만들어 딱 한 상황에 쓴다면 어떤 표정을 그릴래요?",
+"그림 속 풍경에 소리 하나를 더할 수 있다면 무슨 소리가 좋겠어요?",
+"어릴 적 상상 속 친구가 지금 찾아오면 뭘 같이 하고 싶어요?",
+"지도에 보이지 않는 축제가 하루 열린다면 사람들에게 무슨 단서를 줄래요?",
+"여기 있는 사람들과 하루 팀 유니폼을 입는다면 가슴에 뭘 새기고 싶어요?",
+"아무 날짜나 기념일로 만들 수 있다면 무엇을 기념하겠어요?",
+"딱 한 번 누군가의 작업 현장을 지켜볼 수 있다면 누구의 어떤 일이 궁금해요?",
+"미래의 내가 오늘 사진을 한 장만 갖고 싶어 한다면 뭘 찍어 줄래요?",
+"이름을 말하지 않고 내가 좋아하는 세 가지로 나를 소개해 볼래요?",
+"이번 주에 처음으로 보거나 들은 것 중 기억나는 건?",
+"올해가 가기 전에 한 번 더 인사하고 싶은 가게가 있어요?",
+"언젠가 내가 직접 지어서 불러 보고 싶은 이름은 뭐예요?",
+"잘 못해도 계속하고 싶다는 마음이 드는 일은?",
+"조만간 누군가를 데리고 다시 가고 싶은 전시나 행사가 있나요?",
+"방을 다시 꾸밀 때 가장 먼저 걸고 싶은 사진은?",
+"달력에 작은 동그라미를 쳐 두고 기다리는 날이 있다면?",
+"메뉴 세 개뿐인 가게를 연다면 자신 있는 메뉴 하나는 뭘까요?",
+"일주일 동안 동네 신문 기자가 되면 어떤 소식을 취재해 보고 싶어요?",
+"누군가에게 나만의 테마 산책을 안내한다면 제목을 뭐라고 붙일래요?",
+"휴일 하루를 선물로 받으면 그날만큼은 시간을 어떻게 쓰고 싶어요?",
+"작은 습관 하나를 새로 붙이려면 눈에 잘 띄는 어디에 표시할래요?",
+"시간이 날 때 정리해서 누구에게 보여 주고 싶은 자료가 있어요?",
+"내가 최근에 잘 골랐다고 생각하는 선택은 뭐예요?",
+"처음 먹어볼 음식을 시킬 때 떠올리는 믿을 만한 사람은?",
+"나중에 내 손으로 완성해서 오래 쓰고 싶은 물건은?",
+"내가 잘 아는 분야의 입문자에게 단 한 가지를 권하면 뭐예요?",
+"친구들이 하루 동안 내 동네 손님이 되면 점심 다음에 뭘 하고 싶어요?",
+"기회가 되면 관객보다 진행하는 쪽으로 참여해 보고 싶은 행사는?",
+"다음 달의 내게 한 장짜리 응원 쿠폰을 준다면 어떤 혜택을 넣을래요?",
+"다음에 모였을 때 함께 해 보고 싶은 간단한 놀이는?",
+"지금 이 시간을 나중에 떠올리게 할 작은 기념품을 고른다면?"]'::jsonb),
+ ('spicy','["좋아하는 사람한테 잘 보이려고 했던 가장 티 나는 행동은?",
+"관심 없는 척했는데 사실 답장을 기다렸던 적은?",
+"여기 있는 사람 중 첫인상과 지금 인상이 가장 다른 사람은? 어떻게 달라졌어요?",
+"질투가 났는데 아무렇지 않은 척했던 순간은?",
+"썸을 타다가 마음이 딱 식었던 한마디는?",
+"차마 보내지 못하고 지운 메시지, 첫마디가 뭐였어요?",
+"다시 연락하고 싶은 사람이 있다면 첫 메시지를 뭐라고 보낼래요?",
+"내가 했던 플러팅 중 지금 생각하면 제일 민망한 건?",
+"친구의 연애에 참견하고 싶었지만 꾹 참았던 순간은?",
+"데이트 중 들킨다면 가장 민망할 내 습관은?",
+"서운했는데 괜찮다고 말했던 적이 있어요? 그때 듣고 싶었던 말은?",
+"호감 있는 사람 앞에서 괜히 부풀려 말한 적이 있다면?",
+"친구에게 한 거짓말 중 지금은 웃으며 털어놓을 수 있는 건?",
+"고백받았던 말 중 아직도 기억나는 한마디는?",
+"좋아하는 사람의 SNS를 보다가 깜짝 놀란 순간은?",
+"두 사람이 동시에 고백한다면 마음을 정하게 할 한 가지는?",
+"짝사랑할 때 상대의 어떤 말에 혼자 의미를 붙였어요?",
+"좋아하는 사람 앞에서만 달라지는 말투가 있나요?",
+"친구에게 굳이 안 보여 주고 싶은 내 플러팅 멘트는?",
+"관심 있는 사람이 보라고 올렸던 게시물이 있나요?",
+"우연히 만난 척하려고 돌아간 길이 있어요?",
+"좋아하는 사람의 관심사를 아는 척했다가 들통난 적은?",
+"호감 있는 사람에게 답장을 쓰고 가장 많이 고친 부분은?",
+"첫눈에 반했을 때 먼저 눈에 들어온 건 뭐였어요?",
+"같이 걷다가 헤어지기 아쉬워서 쓴 핑계는?",
+"썸이라고 생각했는데 혼자 오해했다는 걸 언제 알았어요?",
+"관심을 숨기려다 오히려 너무 티 났던 순간은?",
+"소개받은 사람을 만나기 전 가장 먼저 궁금했던 건?",
+"다른 사람을 견제하느라 평소와 다르게 행동한 적은?",
+"좋아하는 사람 앞에서 제일 먼저 고치고 싶은 습관은?",
+"일부러 빌려주고 다음 약속을 잡았던 물건이 있어요?",
+"나를 좋아한다는 말을 듣고 뒤늦게 마음이 간 적은?",
+"짝사랑을 그만두게 한 현실적인 이유는?",
+"호감이 생겼을 때 누구에게 가장 먼저 들키나요?",
+"설레는 척했지만 아무 느낌도 없었던 이벤트는?",
+"상대가 자신을 좋아한다고 착각할 만한 행동을 한 적은?",
+"답장이 늦어도 기다렸던 사람과 그렇지 않았던 사람의 차이는?",
+"잠든 척하고 메시지 대화를 끝낸 이유는?",
+"보낸 메시지를 취소한 뒤 둘러댄 말은?",
+"이모티콘만 보내서 피하고 싶었던 질문은?",
+"단체 채팅에서 한 사람 반응만 기다렸던 적은?",
+"답장을 일부러 늦췄을 때 사실 뭘 하고 있었어요?",
+"상대의 말투가 변했다고 느낀 결정적인 단어는?",
+"전화를 받으려다 마음을 바꿨던 순간은?",
+"삭제하려다 아직 간직한 대화는 어떤 내용이에요?",
+"읽고도 답하지 않은 메시지 중 마음에 걸리는 건?",
+"보내기 전에 친구에게 검사를 맡겼던 메시지는?",
+"상대의 짧은 답장에 가장 크게 오해한 일은?",
+"내 휴대폰 자동 완성이 내 마음을 들킨다면 어떤 단어 때문일까요?",
+"단체방 알림을 몰래 꺼 둔 진짜 이유는?",
+"채팅창에 잘못 보냈다가 아찔했던 말은?",
+"다음 날 아침에 다시 보고 민망했던 내 마지막 메시지는?",
+"전화번호를 저장할 때 나만 알아보게 바꾼 이름은?",
+"무심코 누른 ‘좋아요’를 얼른 취소한 이유는?",
+"눈치채 주길 바라고 상태 메시지에 적은 말은?",
+"지금 연락이 오면 계획까지 바꿀 관계가 있나요?",
+"첫 데이트에서 집에 빨리 가고 싶어졌던 순간은?",
+"상대를 잘 보이게 하려다 내가 불편해졌던 선택은?",
+"데이트 비용을 두고 솔직히 서운했던 일은?",
+"이상적인 데이트라고 말했지만 사실 지루했던 코스는?",
+"상대가 정한 식당이 마음에 안 들 때 보통 어떻게 티 내요?",
+"소개팅을 마치고 친구에게 실제로 한 첫마디는?",
+"옷을 고르는 데 가장 오래 걸린 약속은 어떤 자리였어요?",
+"누구와 만나느냐에 따라 평소 취향을 숨긴 적은?",
+"처음 만난 사람이 내게 했던 질문 중 선을 넘었다고 느낀 건?",
+"고백받으면 기쁠 줄 알았는데 난감했던 이유는?",
+"다음에 보자는 말을 진심 없이 한 가장 최근 이유는?",
+"데이트에서 예상 밖으로 마음을 움직인 사소한 행동은?",
+"약속을 미룬 뒤 묘하게 안도했던 이유는?",
+"상대 집에 처음 갔을 때 몰래 눈여겨본 부분은?",
+"친구에게 소개하기 망설여진 사람은 어떤 점 때문이었어요?",
+"웃어넘겼지만 두 번째 데이트를 포기하게 한 농담은?",
+"연락처를 물어볼 기회가 있었는데 포기한 이유는?",
+"상대의 이름이 아닌 별명으로 부르고 싶어진 때는?",
+"무리해서 낸 계산을 나중에 후회한 적은?",
+"데이트인 줄 알았는데 다른 친구도 와서 어떤 기분이었어요?",
+"나보다 친구가 먼저 잘됐을 때 축하보다 먼저 든 생각은?",
+"친구 모임에서 내 자리가 사라진 것 같았던 순간은?",
+"둘만 아는 농담에서 나만 빠졌을 때 어떻게 행동했어요?",
+"부러움을 농담으로 감췄던 적은?",
+"친구가 다른 사람과 더 친해질 때 티 나는 내 행동은?",
+"친구의 좋은 소식을 남에게 먼저 듣고 서운했던 적은?",
+"친구의 연애 고민을 듣다 사실 속으로 하고 싶던 말은?",
+"아무렇지 않은 척했지만 초대받고 싶었던 자리는?",
+"경쟁자로 생각하지 않는 척했던 사람은 어떤 사이였어요?",
+"친구가 내 아이디어를 자기 것처럼 말했을 때 어떻게 했어요?",
+"내가 먼저 사과했지만 아직 억울한 일은?",
+"한 번쯤 입장을 바꿔 보고 싶은 친구 관계의 장면은?",
+"친구에게 도움을 주면서 속으로 대가를 기대했던 적은?",
+"이 자리에 처음 왔을 때 가장 눈치를 본 일은?",
+"좋은 사람으로 보이려고 내키지 않는데 맡았던 역할은?",
+"상대가 기억 못 하는 약속을 혼자 기억하고 있었던 적은?",
+"내 고민을 가볍게 넘긴 사람에게 진짜 듣고 싶었던 말은?",
+"친구 사이에 돈이 얽혀 마음이 달라졌던 때는?",
+"나를 빼고 찍은 단체 사진을 봤을 때 먼저 뭘 했어요?",
+"잘 지내는 친구에게 차마 묻지 못한 질문은?",
+"질투가 나도 절대 인정하고 싶지 않은 내 모습은?",
+"연인의 예전 사진을 지우길 바란 적이 있다면 왜였어요?",
+"상대가 누구와 있는지 알고 싶어 빙 돌려 물은 말은?",
+"연인이 친구에게 내 이야기를 어디까지 하면 불편해요?",
+"좋아하는 사람 때문에 나도 모르게 경쟁심이 생긴 취미는?",
+"나를 누구와 비교했을 때 가장 자존심이 상했어요?",
+"사랑받고 있다는 확인을 받으려고 던진 질문은?",
+"상대가 나 몰래 좋은 일을 준비했는데 먼저 의심한 적은?",
+"연인의 휴대폰 알림이 궁금했을 때 실제로 어떻게 했어요?",
+"말하지 않아도 알아줄 거라고 기대했다가 실망한 건?",
+"내가 질투한다고 오해받았을 때 사실은 어떤 마음이었어요?",
+"연애하면서 혼자만의 시간을 얻으려고 둘러댄 말은?",
+"연인에게 먼저 말하기 어려운 내 생활 습관은?",
+"호감 있는 사람이 내 친구를 칭찬했을 때 뭐라고 답했어요?",
+"상대가 불편해하지 않을까 봐 숨긴 칭찬이나 선물은?",
+"연인에게 보여 주는 나와 친구들 앞의 내가 가장 다른 점은?",
+"연락 빈도를 맞추느라 한쪽이 애쓴 관계에서는 내가 어느 쪽이었어요?",
+"다정한 행동을 받았는데 오히려 부담스러웠던 이유는?",
+"상대의 관심을 확인하려고 먼저 연락을 멈춰 본 결과는?",
+"사귀기 전에 분명히 정하고 싶었는데 넘겨버린 약속은?",
+"헤어질 때 했던 말 중 나중에야 뜻을 이해한 말은?",
+"헤어진 뒤 한동안 일부러 피했던 장소는?",
+"이미 끝난 관계인데 좋은 소식이 생겨 가장 먼저 떠오른 적은?",
+"이별을 앞두고 알아차렸지만 모르는 척한 신호는?",
+"미련이 남아 정리하지 못한 아주 사소한 물건은?",
+"지난 연애에서 상대에게 돌려주고 싶은 칭찬은?",
+"헤어진 사람의 안부를 공통 친구에게 물어본 이유는?",
+"다 끝났다고 말했지만 아직 마음이 흔들렸던 순간은?",
+"다시 만날 생각은 없어도 다시 듣고 싶은 말은?",
+"연애가 끝난 뒤에야 되찾은 내 모습은?",
+"상대에게 주려고 준비하고 끝내 못 전한 게 있어요?",
+"엉뚱한 사람에게 지난 연애의 서운함을 풀어 버린 적은?",
+"이별 후 아무렇지 않아 보이려고 시작해 본 일은?",
+"사과를 받고도 관계를 이어 가지 않은 건 왜였어요?",
+"예전 연애 이야기를 할 때 나도 모르게 줄이는 대목은?",
+"상대의 잘못이라고 여겼다가 내 몫을 인정한 일은?",
+"지금의 내가 예전 연애 첫날로 간다면 무슨 말을 먼저 할까요?",
+"헤어질 때 마지막 인사를 다시 쓸 수 있다면 뭐라고 쓸까요?",
+"감정은 끝났는데 습관만 남았다고 깨달은 순간은?",
+"했던 고백과 못 했던 고백 중 어느 쪽이 더 오래 생각나요?",
+"사진을 올리기 전에 가장 오래 손보는 부분은?",
+"게시물 반응이 적어서 조용히 내린 적이 있다면 어떤 게시물이었어요?",
+"남들 눈에는 멋져 보이지만 찍을 때 사실 힘들었던 사진은?",
+"온라인에서 보여 주는 모습과 쉬는 날 실제 모습은 얼마나 달라요?",
+"관심 없는 척하면서 검색창에 여러 번 쳐 본 말은?",
+"누군가 알아봐 주길 바라며 은근히 자랑했던 건?",
+"프로필 사진을 바꾼 진짜 계기가 된 일이 있나요?",
+"모임에서 멋을 부리지 않은 척하려고 가장 공들인 건?",
+"내가 가진 것 중 가격을 일부러 얼버무린 건?",
+"잘 모르는 작품을 본 척했다가 난감했던 적은?",
+"사람들이 나를 오해해도 내게 유리해서 바로잡지 않은 적은?",
+"내 실력보다 크게 받은 칭찬에 어떻게 대답했어요?",
+"누군가 내 말을 인용해 준다면 속으로 가장 뿌듯할 이야기는?",
+"남의 취향을 따라 샀다가 지금 서랍에 잠든 물건은?",
+"사진만 보면 즐거워 보이는데 실제로는 다퉜던 날이 있어요?",
+"친구가 나를 찍어 준 사진에서 제일 먼저 확인하는 건?",
+"약속에 늦은 진짜 이유를 바꿔 말한 적은?",
+"힘들다는 말을 바쁘다는 말로 바꾼 이유는?",
+"누군가 내 칭찬을 다른 사람에게 해 줬으면 했던 순간은?",
+"매력 있어 보이려고 처음 배워 본 기술은?",
+"거절이 어려워 수락하고 나서 제일 후회했던 부탁은?",
+"모임에서 의견을 바꾸게 한 건 설득이었어요, 눈치였어요?",
+"싸우기 싫어서 동의한 척했던 주제는?",
+"언성을 높인 진짜 이유가 그날의 사건 말고 다른 데 있었나요?",
+"상대가 먼저 풀어 주길 기다리다가 더 어색해진 일은?",
+"미안한 마음을 선물로 대신한 적이 있다면 어떤 마음이었어요?",
+"질문을 피해 화제를 바꿨는데 상대가 알아챈 순간은?",
+"네가 편한 대로 하라고 해 놓고 사실 정해 둔 답은?",
+"솔직히 내 편을 들어주기만 바라고 상담했던 일은?",
+"누군가의 사과를 받을 준비가 안 됐을 때 뭐라고 했어요?",
+"내가 틀린 걸 알고도 바로 인정하지 못한 이유는?",
+"오래 묵힌 불만이 엉뚱한 한마디에 튀어나왔던 때는?",
+"마음을 들키지 않으려고 유난히 차갑게 군 적은?",
+"잘못을 인정하기보다 해명부터 꺼낸 최근의 순간은?",
+"마지막 말을 꼭 내가 하고 싶었던 다툼은?",
+"안 괜찮다고 말할 기회가 다시 온다면 누구에게 말하고 싶어요?",
+"진짜 화난 이유를 말하기까지 가장 오래 걸렸던 건?",
+"누군가 먼저 연락하면 바로 풀릴 것 같은 서운함이 있나요?",
+"친구에게 나는 절대 안 그런다고 했다가 똑같이 한 일은?",
+"잘 보이려는 마음 때문에 솔직한 피드백을 못 준 적은?",
+"비싸다고 말하기 민망해서 다른 핑계를 댄 약속은?",
+"더치페이를 하고도 손해 본 기분이 들었던 상황은?",
+"선물의 가격을 몰래 찾아보고 어떤 생각이 들었어요?",
+"받고 싶은 선물을 힌트로 흘린 적이 있다면 어떻게 했어요?",
+"선물을 정성보다 가격으로 판단했다가 생각이 바뀐 적은?",
+"카드 명세서에서 남에게 가장 설명하기 어려운 항목은?",
+"함께 여행할 때 돈 쓰는 방식이 달라 마음 상한 일은?",
+"나를 위한 소비인데 선물 포장을 부탁한 적이 있다면 왜였어요?",
+"한턱낸 뒤 생각보다 뿌듯하지 않았던 이유는?",
+"세일이라며 합리화했지만 사실 꼭 사고 싶었던 건?",
+"빌려준 돈이나 물건을 돌려 달라는 말이 왜 어려웠어요?",
+"누가 샀다는 말을 듣고 나도 따라 산 물건은?",
+"친한 사람일수록 계산에 더 예민해지는 순간이 있나요?",
+"기대에 못 미쳤는데 좋아하는 척한 선물은 어떤 종류였어요?",
+"지갑 사정 때문에 솔직히 말하지 못한 계획은?",
+"돈으로 따질 수 없는데 자꾸 본전을 생각하게 된 경험은?",
+"충동구매를 가족이나 친구에게 들켰을 때 댄 핑계는?",
+"아끼는 물건을 빌려 달라는 부탁에 마음속으로 먼저 한 말은?",
+"누군가가 나를 위해 너무 많이 썼다고 느꼈던 때는?",
+"선물 받고 가장 먼저 든 생각이 부담이었던 이유는?",
+"칭찬받으려고 일부러 더 크게 맡은 일은?",
+"같이 한 일인데 내 공을 더 알아줬으면 했던 순간은?",
+"실수한 걸 들키기 전에 혼자 수습하려다가 더 꼬인 일은?",
+"일을 잘하는 척하려고 회의에서 썼던 말은?",
+"다른 사람의 성과를 보고 처음 든 솔직한 감정은?",
+"그만두고 싶은데 자존심 때문에 붙잡고 있었던 일은?",
+"바쁘게 보이려고 화면에 띄워 둔 건 뭐였어요?",
+"다 끝냈다고 말한 뒤 급히 마무리한 일은?",
+"나를 과소평가한 사람에게 보여 주고 싶은 결과는?",
+"결과보다 누구의 인정이 더 중요했던 적은?",
+"동료나 친구의 부탁을 못 본 척한 이유는?",
+"연락받기 싫은 날 써 본 가장 어설픈 변명은?",
+"할 줄 안다고 대답한 다음 급하게 배운 건?",
+"남들에게는 권했지만 정작 나는 무서워서 못 한 선택은?",
+"조별 활동에서 내가 제일 억울해했던 역할은?",
+"누군가 대신 결정해 줘서 속으로 편했던 순간은?",
+"경쟁에서 졌는데 관심 없었다고 말해 본 적은?",
+"실제로는 준비를 많이 했는데 운이 좋았다고만 한 이유는?",
+"성공담처럼 말했지만 사실 반쯤 실패였던 일은?",
+"내 기준을 낮추면 편해진다는 걸 알면서 못 놓는 건?",
+"내가 소문에 신경을 안 쓴다는 말은 얼마나 진심이에요?",
+"누가 나를 싫어한다는 사실을 알게 됐을 때 처음 한 행동은?",
+"나를 오해하는 사람에게 솔직히 바로잡고 싶은 한 가지는?",
+"좋은 사람인 척하느라 넘긴 내 경계선은 어디였어요?",
+"거짓말을 할 때 말투와 표정 중 어디에서 먼저 티가 나요?",
+"진짜 이유를 말하면 속 좁아 보일까 봐 삼킨 말은?",
+"누군가와 거리를 두기 시작할 때 나도 모르게 하는 행동은?",
+"혼자 생각하는 나의 매력과 남이 꼽는 매력은 어떻게 달라요?",
+"친해지고 싶지 않은 사람의 초대를 부드럽게 거절한 방법은?",
+"내가 무심코 한 말이 상처였다는 걸 언제 뒤늦게 알았어요?",
+"싫다고 말하지 못하고 일부러 바쁜 척한 적은?",
+"상대를 걱정한다는 말에 사실 내 욕심이 섞였던 때는?",
+"칭찬처럼 들렸지만 경쟁심에서 나온 내 말은?",
+"누군가 나를 너무 정확히 파악해서 당황했던 순간은?",
+"대화에서 늘 쿨하게 답하지만 다시 물어봐 주길 바라는 주제는?",
+"사람들이 당연하게 여겨서 이제는 그만하고 싶은 역할은?",
+"사실은 무서운데 대담하다고 오해받았던 일은?",
+"누군가 나를 잊은 것 같아 먼저 존재감을 드러낸 적은?",
+"어른스럽게 넘긴 것처럼 보였지만 집에서 속상했던 일은?",
+"나를 아는 사람 앞에서 유독 인정하기 어려운 단점은?",
+"외로워서 별 관심 없는 사람과 약속을 잡은 적이 있어요?",
+"내 편만 들어 주는 사람에게 오히려 실망한 적은?",
+"서운한 날 예전 메시지를 다시 읽고 마음이 풀린 적은?",
+"좋아하는 사람이 바라는 모습에 맞추다 놓친 내 취향은?",
+"상대와 거리를 좁히려고 지나치게 많이 털어놓은 이야기는?",
+"비밀로 해 달라고 말하면서 사실 조금은 알려지길 바란 일은?",
+"연락을 끊고 나서야 상대에게 기대한 게 뭔지 깨달은 적은?",
+"내가 보낸 신호 중 상대가 끝까지 눈치채지 못한 건?",
+"애정 표현을 받을 때 민망해서 다른 말로 넘긴 적은?",
+"그 사람의 어떤 버릇이 나중에는 오히려 그리웠어요?",
+"상대의 사소한 습관이 갑자기 거슬리기 시작한 계기는?",
+"마음이 식었다고 느끼고 가장 먼저 달라진 약속 습관은?",
+"갈등을 피하려고 관계의 이름을 애매하게 둔 적은?",
+"진심을 확인하고 싶어서 내뱉었던 가장 간접적인 말은?",
+"다시 볼 생각이 없었는데 만나 보고 생각이 바뀐 이유는?",
+"누군가의 호의를 호감으로 받아들이게 한 내 기대는 뭐였어요?",
+"한 번만 더 기회를 줬다면 확인하고 싶었던 건?",
+"친한 친구가 내 연애 상대를 마음에 안 들어 하면 어느 말이 제일 걸려요?",
+"약속을 잡을 때 상대 일정에만 맞추다가 뒤늦게 서운해진 적은?",
+"나 자신에게 솔직했다면 더 일찍 그만뒀을 관계는?",
+"여행 중 싸우고도 일정 때문에 계속 웃어야 했던 순간은?",
+"모임 끝나고 집에 오는 길에 제일 후회한 말은?",
+"자주 만나는 사이인데도 내 소식을 일부러 늦게 전한 이유는?",
+"친구에게 차마 말하지 못하고 혼자 검색한 고민은?",
+"축하 자리에서 내 이야기를 더 많이 해 버린 적은?",
+"위로받고 싶었는데 위로하는 쪽이 됐던 날은?",
+"누가 내 농담에 안 웃어서 한동안 신경 쓰였던 적은?",
+"팀을 고를 때 친분보다 실력을 택하고 마음에 남은 적은?",
+"가기 싫은 모임이 취소돼서 기뻤을 때 다른 사람에게 뭐라고 했어요?",
+"친구가 똑같은 고민을 반복할 때 내 속마음은 어땠어요?",
+"서로 통한다고 생각했는데 가치관 차이를 확 느낀 일은?",
+"좋은 의도로 끼어들었다가 발을 빼고 싶어졌던 대화는?",
+"다 같이 정한 벌칙인데 내 차례가 되자 억울했던 적은?",
+"먼저 떠난 자리에서 내 이야기가 나왔을까 궁금했던 이유는?",
+"편하다고 믿었던 친구 앞에서 오히려 조심하게 된 계기는?",
+"조언해 달라고 하고 정작 반대 의견에는 삐친 적은?",
+"함께 세운 계획에서 몰래 빠지고 싶어졌을 때 어떻게 했어요?",
+"정말 반가웠지만 서운한 마음 때문에 미적지근하게 맞이한 적은?",
+"친한 사람의 비밀을 지키느라 거짓말해야 했던 기분은 어땠어요?",
+"우정에 점수가 있다면 내가 감점당했을 것 같은 행동은?",
+"제일 최근에 ‘이건 내 흑역사다’ 싶었던 장면은?",
+"반응이 좋을 줄 알고 준비했는데 분위기가 조용해진 일은?",
+"유행을 아는 척했다가 바로 들킨 순간은?",
+"메뉴 이름을 잘못 읽었는데 자신 있게 밀고 나간 적은?",
+"노래 가사를 자신 있게 틀리고 어떻게 수습했어요?",
+"사람을 착각해서 반갑게 인사한 뒤 무슨 말을 덧붙였어요?",
+"친구가 내 예전 옷차림을 재현한다면 가장 먼저 숨기고 싶은 건?",
+"선물을 직접 만들었다가 결국 사서 준 적이 있나요?",
+"화낸 뒤 내가 상황을 잘못 이해했다는 걸 알았을 때 첫마디는?",
+"상대의 말을 잘 못 듣고 웃었는데 웃을 일이 아니었던 적은?",
+"빈틈없는 사람처럼 보이려다 가장 허술하게 들킨 일은?",
+"멋진 등장이라고 생각했는데 타이밍을 완전히 놓쳤던 적은?",
+"진지한 이야기를 하다가 배가 고파서 딴생각 난 적은?",
+"혼자 있을 때 하는 행동 중 다른 사람이 보면 놀랄 만한 건?",
+"친구 앞에서 한 자랑 때문에 원치 않는 시범을 보여 준 적은?",
+"좋은 분위기를 만들려다 너무 앞서간 이벤트는?",
+"사진 찍을 때 자연스러운 척 가장 많이 연습한 포즈는?",
+"귀여워 보이려다 도리어 민망해진 표현은?",
+"누군가 내 오타를 캡처해 뒀다면 가장 걱정되는 한마디는?",
+"내가 한 농담을 다음 날 따로 해명한 이유는?",
+"사과받고 싶은데 다시 꺼내기는 싫은 일은?",
+"나를 위해 포기했다고 말하면 오히려 불편한 건 뭐예요?",
+"고백과 사과 중 지금 내게 더 어려운 건 뭐고 왜 그래요?",
+"겉으로는 괜찮지만 만남에서 딱 한 번만 봐줄 수 있는 행동은?",
+"사람들이 여러 명 있는 자리에서 듣기 싫은 칭찬은?",
+"다른 사람의 연애 기준을 비웃었다가 내가 바꾼 기준은?",
+"내가 고르는 사람과 나를 고르는 사람 중 실제로 마음이 더 가는 쪽은?",
+"좋아하는 사람을 기다릴 때 스스로 정했던 마감선은?",
+"차라리 직접 물어봤다면 덜 힘들었을 오해는?",
+"서로의 비밀번호를 공유하자는 말에 가장 먼저 떠오르는 생각은?",
+"공개 연애를 망설이는 이유가 있다면 사람들 시선 말고 또 뭐가 있어요?",
+"이별을 예감했을 때 차마 취소하지 못했던 계획은?",
+"감정이 격할 때 나중을 위해 일부러 참는 한마디는?",
+"내가 받은 칭찬 중 아직 속으로만 반박하는 말은?",
+"단 하루만 남의 속마음을 알 수 있다면 어떤 말의 진심을 확인할래요?",
+"누군가 내 연애를 책으로 쓰면 빠뜨려 주길 바라는 장면은?",
+"지금의 나에게 예전의 내가 따진다면 가장 먼저 물을 질문은?",
+"잊었다고 생각했는데 뜻밖의 냄새나 노래 때문에 떠오른 사람은?",
+"누군가에게 큰 인상을 남기고 싶어서 의식적으로 한 선택은?",
+"마음에 남은 대화 하나에 답장을 다시 쓸 수 있다면 첫 문장은?"]'::jsonb)) tiers(flavor,questions) cross join lateral
+ jsonb_array_elements_text(tiers.questions) with ordinality q(body,ord) order by tiers.flavor,q.ord;
+
+insert into ojjuda_arcade_internal.drinking_truth_history(fingerprint,card_id)
+ select ojjuda_arcade_internal.drinking_prompt_fingerprint('truth',flavor,body),id from ojjuda_arcade_internal.drinking_truth_cards;
+
+create function ojjuda_arcade_internal.drinking_prompt_suggestions(p_action text,p_options jsonb default '{}')
+returns jsonb language plpgsql volatile security definer set search_path='' as $mod$
+declare
+ actor_id uuid:=auth.uid(); mod_kind text; mod_flavor text; body_in text; fingerprint_in bytea;
+ page_before int; review_id int; decision text; prior text; items jsonb; cursor_out int;
+ now_at timestamptz:=clock_timestamp(); query_text text;
+ card ojjuda_arcade_internal.drinking_truth_cards%rowtype; requested_revision int; old_card integer;
+begin
+ perform ojjuda_poker_internal.check_member(actor_id);
+ if p_action='pool' then
+  with approved as (
+   select kind,flavor,jsonb_agg(body order by id) as lines
+   from ojjuda_arcade_internal.drinking_prompt_queue where status='approved' and kind<>'truth' group by kind,flavor
+  )
+  select jsonb_build_object(
+   'fingers',coalesce((select lines from approved where kind='fingers'),'[]'),
+   'imagevote',coalesce((select lines from approved where kind='imagevote'),'[]'),
+   'king',coalesce((select lines from approved where kind='king'),'[]'),
+   'truthFull',true, 'truth',jsonb_build_object(
+    'mild',coalesce((select jsonb_agg(body order by id) from ojjuda_arcade_internal.drinking_truth_cards where active and flavor='mild'),'[]'),
+    'spicy',coalesce((select jsonb_agg(body order by id) from ojjuda_arcade_internal.drinking_truth_cards where active and flavor='spicy'),'[]')))
+  into items;
+  return items;
+ end if;
+ if p_action='submit' then
+  mod_kind:=p_options->>'kind'; mod_flavor:=coalesce(p_options->>'flavor','');
+  if mod_kind is null or mod_kind not in ('fingers','imagevote','king','truth') then raise exception 'invalid_kind'; end if;
+  if (mod_kind='truth' and mod_flavor not in ('mild','spicy')) or (mod_kind<>'truth' and mod_flavor<>'') then raise exception 'invalid_flavor'; end if;
+  if jsonb_typeof(p_options->'text') is distinct from 'string' or octet_length(p_options->>'text')>3000 then raise exception 'invalid_prompt'; end if;
+  -- Remove formatting controls, normalize Unicode composition and fold whitespace.
+  body_in:=ojjuda_arcade_internal.drinking_prompt_clean(p_options->>'text');
+  if char_length(body_in) not between 1 and (case mod_kind when 'king' then 80 when 'truth' then 240 else 120 end)
+  then raise exception 'invalid_prompt'; end if;
+  fingerprint_in:=ojjuda_arcade_internal.drinking_prompt_fingerprint(mod_kind,mod_flavor,body_in);
+  if exists(select 1 from ojjuda_arcade_internal.drinking_prompt_baseline where fingerprint=fingerprint_in)
+     or exists(select 1 from ojjuda_arcade_internal.drinking_truth_history where fingerprint=fingerprint_in)
+  then return jsonb_build_object('ok',true); end if;
+  -- The unique fingerprint makes concurrent submissions and retries one suggestion.
+  insert into ojjuda_arcade_internal.drinking_prompt_queue(kind,flavor,body,fingerprint)
+   values(mod_kind,mod_flavor,body_in,fingerprint_in) on conflict(fingerprint) do nothing;
+  return jsonb_build_object('ok',true);
+ end if;
+
+ if p_action is null or p_action not in ('admin_list','approve','reject','truth_list','truth_edit','truth_delete') then raise exception 'invalid_action'; end if;
+ if public.is_admin() is not true then raise exception 'not_admin' using errcode='42501'; end if;
+ if p_action in ('admin_list','truth_list') then
+  if p_options->>'before' is not null then
+   if (p_options->>'before') !~ '^[1-9][0-9]{0,9}$' or (p_options->>'before')::numeric>2147483647 then raise exception 'invalid_id'; end if;
+   page_before:=(p_options->>'before')::int;
+  end if;
+  if p_action='truth_list' then
+   mod_flavor:=nullif(p_options->>'flavor',''); query_text:=btrim(coalesce(p_options->>'q',''));
+   if mod_flavor is not null and mod_flavor not in ('mild','spicy') then raise exception 'invalid_flavor'; end if;
+   if char_length(query_text)>240 then raise exception 'invalid_prompt'; end if;
+   with page as (
+    select t.* from ojjuda_arcade_internal.drinking_truth_cards t where t.active and (page_before is null or t.id<page_before)
+     and (mod_flavor is null or t.flavor=mod_flavor) and strpos(lower(t.body),lower(query_text))>0
+    order by t.id desc limit 51
+   ), shown as (select * from page order by id desc limit 50)
+   select coalesce(jsonb_agg(jsonb_build_object('id',id,'kind','truth','flavor',flavor,'text',body,'revision',revision) order by id desc),'[]'),
+    case when (select count(*) from page)>50 then min(id) end into items,cursor_out from shown;
+   return jsonb_build_object('items',items,'next',cursor_out);
+  end if;
+  with page as (
+   select q.* from ojjuda_arcade_internal.drinking_prompt_queue q where q.status='pending' and (page_before is null or q.id<page_before)
+   order by q.id desc limit 51
+  ), shown as (select * from page order by id desc limit 50)
+  select coalesce(jsonb_agg(jsonb_build_object('id',id,'kind',kind,'flavor',nullif(flavor,''),'text',body,'createdAt',created_at) order by id desc),'[]'),
+   case when (select count(*) from page)>50 then min(id) end into items,cursor_out from shown;
+  return jsonb_build_object('items',items,'next',cursor_out);
+ end if;
+ if coalesce(p_options->>'id','') !~ '^[1-9][0-9]{0,9}$' or (p_options->>'id')::numeric>2147483647 then raise exception 'invalid_id'; end if;
+ review_id:=(p_options->>'id')::int;
+ -- Serialize catalog edits and approvals; readers take no application locks.
+ perform pg_advisory_xact_lock(24613,911);
+ if p_action in ('truth_edit','truth_delete') then
+  if coalesce(p_options->>'revision','') !~ '^[1-9][0-9]{0,8}$' then raise exception 'stale_revision'; end if;
+  requested_revision:=(p_options->>'revision')::int;
+  select * into card from ojjuda_arcade_internal.drinking_truth_cards where id=review_id for update;
+  if not found then raise exception 'invalid_id'; end if;
+  if p_action='truth_delete' and not card.active then return jsonb_build_object('ok',true); end if;
+  if not card.active then raise exception 'card_removed'; end if;
+  if p_action='truth_edit' then
+   mod_flavor:=p_options->>'flavor';
+   if mod_flavor is null or mod_flavor not in ('mild','spicy') then raise exception 'invalid_flavor'; end if;
+   if jsonb_typeof(p_options->'text') is distinct from 'string' or octet_length(p_options->>'text')>3000 then raise exception 'invalid_prompt'; end if;
+   body_in:=ojjuda_arcade_internal.drinking_prompt_clean(p_options->>'text');
+   if char_length(body_in) not between 1 and 240 then raise exception 'invalid_prompt'; end if;
+   if card.body=body_in and card.flavor=mod_flavor then return jsonb_build_object('ok',true); end if;
+  end if;
+  if requested_revision<>card.revision then raise exception 'stale_revision'; end if;
+  if p_action='truth_delete' then
+   update ojjuda_arcade_internal.drinking_truth_cards set active=false,revision=revision+1 where id=card.id;
+  else
+   fingerprint_in:=ojjuda_arcade_internal.drinking_prompt_fingerprint('truth',mod_flavor,body_in);
+   select card_id into old_card from ojjuda_arcade_internal.drinking_truth_history where fingerprint=fingerprint_in;
+   if old_card is not null and old_card<>card.id then raise exception 'duplicate_prompt'; end if;
+   insert into ojjuda_arcade_internal.drinking_truth_history values(fingerprint_in,card.id) on conflict do nothing;
+   update ojjuda_arcade_internal.drinking_truth_cards set flavor=mod_flavor,body=body_in,revision=revision+1 where id=card.id;
+  end if;
+  return jsonb_build_object('ok',true);
+ end if;
+ select status,kind,flavor,body,fingerprint into prior,mod_kind,mod_flavor,body_in,fingerprint_in
+  from ojjuda_arcade_internal.drinking_prompt_queue where id=review_id for update;
+ if not found then raise exception 'invalid_id'; end if;
+ decision:=case p_action when 'approve' then 'approved' else 'rejected' end;
+ if prior=decision then return jsonb_build_object('ok',true); end if;
+ if prior<>'pending' then raise exception 'review_closed'; end if;
+ if decision='approved' and mod_kind='truth' then
+  if exists(select 1 from ojjuda_arcade_internal.drinking_truth_history where fingerprint=fingerprint_in) then
+   raise exception 'duplicate_prompt';
+  end if;
+  insert into ojjuda_arcade_internal.drinking_truth_cards(flavor,body) values(mod_flavor,body_in) returning id into old_card;
+  insert into ojjuda_arcade_internal.drinking_truth_history values(fingerprint_in,old_card);
+ end if;
+ update ojjuda_arcade_internal.drinking_prompt_queue set status=decision,reviewed_at=now_at where id=review_id;
+ return jsonb_build_object('ok',true);
+end;
+$mod$;
+
+create function public.drinking_prompt_suggestions(p_action text,p_options jsonb default '{}')
+returns jsonb language sql security invoker set search_path='' as $$
+ select ojjuda_arcade_internal.drinking_prompt_suggestions(p_action,p_options);
+$$;
+revoke all on function public.drinking_prompt_suggestions(text,jsonb),ojjuda_arcade_internal.drinking_prompt_suggestions(text,jsonb)
+ from public,anon,authenticated;
+grant execute on function public.drinking_prompt_suggestions(text,jsonb),ojjuda_arcade_internal.drinking_prompt_suggestions(text,jsonb)
+ to authenticated;
+notify pgrst,'reload schema';
