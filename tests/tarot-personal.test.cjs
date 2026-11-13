@@ -4,6 +4,7 @@ const load = createTarotLoader();
 const { DECK } = load('readings.js');
 const { PERSONAL_CONTEXTS, listPersonalContexts, getPersonalContext } = load('personal-contexts.js');
 const { buildPersonalReading, personalReadingCopyLines, PERSONAL_BASIS } = load('personal-reading.js');
+const { directCardAdvice } = load('reading-voice.js');
 const plain = value => JSON.parse(JSON.stringify(value));
 const normalize = value => value.replace(/[\s\p{P}]/gu, '');
 
@@ -54,7 +55,7 @@ for (const context of PERSONAL_CONTEXTS) {
     assert.deepEqual(plain(report.cards), plain(cards.map(card => card.id)));
     assert.equal(report.primary.length, 3);
     for (const [index, card] of cards.entries()) {
-      assert.ok(report.primary[index].paragraphs.join(' ').includes(context.cards[card.id]));
+      assert.ok(report.primary[index].paragraphs.join(' ').includes(directCardAdvice(context.cards[card.id])), 'shown commentary preserves the actual situation and action in a direct voice');
       assert.ok(report.primary[index].paragraphs.join(' ').includes(card.name));
       assert.ok(report.followUps[index].paragraphs.at(-1).includes(card.name));
     }
@@ -85,6 +86,8 @@ for (const section of [...first.primary, first.connection, ...first.followUps]) 
 for (const option of first.comparison.options) {
   for (const field of ['label', 'gain', 'burden', 'prepare']) assert.ok(copied.includes(option[field]));
 }
+assert.ok(copied.includes('이 선택의 장점: '));
+assert.doesNotMatch(copied, /기대할 수 있는 점:/);
 assert.ok(copied.includes(PERSONAL_BASIS));
 assert.deepEqual(plain(personalReadingCopyLines(null)), []);
 console.log('PASS tarot personal reading: 15 situations × 78 cards, scoped choices, actual card order, 45 follow-ups and complete copy');

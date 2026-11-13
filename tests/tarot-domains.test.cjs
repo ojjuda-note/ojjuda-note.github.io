@@ -7,6 +7,7 @@ const { DECK, getReading, getSummary } = load('readings.js');
 const { CARD_PATTERNS } = load('spread-patterns.js');
 const { CARD_INTERPRETATIONS, CONTEXT_FIELDS, interpretCard, withParticle } = load('interpretation-engine.js');
 const { CASE_GUIDES, getCaseGuide } = load('case-guides.js');
+const { directInterpretation, directAction } = load('reading-voice.js');
 const plain = value => JSON.parse(JSON.stringify(value));
 const expectedTitles = [
   '나의 성향', '나의 강점', '반복하는 습관', '진짜 원하는 것', '삶의 방향·운명',
@@ -97,8 +98,8 @@ for (const topic of READING_TOPICS) {
     assert.equal(pair.length, 2);
     const guide = getCaseGuide(topic.id, card.id);
     assert.equal(guide.id, `${topic.id}:${card.id}`);
-    assert.equal(guide.insight, pair[0]);
-    assert.equal(guide.action, pair[1]);
+    assert.equal(guide.insight, directInterpretation(pair[0]), 'the shown insight keeps this actual card/topic meaning');
+    assert.equal(guide.action, directAction(pair[1]), 'the shown action keeps this actual card/topic instruction');
     for (const [text, seen, kind] of [[guide.insight, allInsights, 'insight'], [guide.action, allActions, 'action']]) {
       assert.ok(text.length >= (kind === 'action' ? 30 : 22), `${guide.id}: a complete, concrete ${kind}`);
       assert.doesNotMatch(text, /\{[^}]*\}|undefined|\[object Object\]/);

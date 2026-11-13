@@ -111,6 +111,11 @@ const server = http.createServer((request, response) => {
     await page.locator('#result-dialog[open]').waitFor({ timeout: 15000 });
     assert.equal(await page.locator('#summary-tab-problem').getAttribute('aria-selected'), 'true');
     assert.equal(await page.locator('#summary-panel-timeline').isVisible(), false);
+    const solutionSummary = page.locator('#summary-panel-problem [data-section-id="solution"] > .reading-two-line-summary');
+    assert.equal(await solutionSummary.locator('.reading-summary-line').count(), 2, 'the direct reading keeps two complete summary sentences');
+    assert.match(await solutionSummary.locator('.reading-summary-line').first().textContent(), /(?:봐|보렴|보자|해|하렴|둬|두렴|나눠|적어|골라|멈춰|줘|주렴|거야)[.!?]$/u, 'the solution summary gives a concrete action instead of an invitation to interpret it');
+    assert.equal((await page.locator('#summary-panel-problem [data-section-id="possible-outcome"] h3').textContent()).replace(/^\d+\s*/u, ''), '대처 뒤 확인할 변화', 'the outcome is presented as a change to check after acting');
+    assert.match(await page.locator('#summary-panel-problem [data-section-id="problem-now"] .reading-summary-full').textContent(), /카드가 짚는 핵심 문제야/, 'the full explanation states the reading directly');
     const tarotViews = {};
     const domainCategories = [['self', 5], ['timeline', 5], ['solutions', 5], ['love', 7], ['family', 4], ['career', 5], ['study', 5], ['money', 5], ['wellbeing', 4], ['opportunities', 5]];
     const captureCategories = new Set(['self', 'love', 'money', 'wellbeing']);
@@ -188,6 +193,7 @@ const server = http.createServer((request, response) => {
         assert.equal(await choice.locator('dt:visible').count(), 3, 'expanding a choice shows gain, burden and preparation');
       }
       assert.equal(await page.locator('#personal-comparison dt:visible').count(), 6);
+      assert.deepEqual(await page.locator('#personal-comparison dt:visible').allTextContents(), ['이 선택의 장점', '감수할 부담', '먼저 준비할 것', '이 선택의 장점', '감수할 부담', '먼저 준비할 것']);
       const following = page.locator('#personal-followups details').first();
       assert.equal(await following.getAttribute('open'), null);
       assert.equal(await following.locator('summary .reading-summary-line:visible').count(), 2, 'a closed follow-up already previews its actual answer');
