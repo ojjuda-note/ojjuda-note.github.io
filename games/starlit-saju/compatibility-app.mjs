@@ -1,5 +1,5 @@
 import { SajuPayment } from './payment.js?v=20261113-saju-lists1';
-import { SajuCompatibilityPayment } from './compatibility-payment.mjs?v=20261113-saju-reader1';
+import { SajuCompatibilityPayment, COMPATIBILITY_PRICE } from './compatibility-payment.mjs?v=20261113-compatibility20-1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
 import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-zodiac1';
 
@@ -141,13 +141,13 @@ function scheduleExpiry() {
 function updateOffer() {
   const offer=validQuote(),preview=!!billing.adminPreview;
   const active=Boolean(offer?.status?.entitlement&&compatibility?.isActive(offer.status.entitlement));
-  const charge=preview||active?0:10;
+  const charge=preview||active?0:COMPATIBILITY_PRICE;
   button.dataset.expectedCharge=String(charge);
-  $('compatibility-price').textContent=preview?'궁합 · 관리자 미리보기':active?'궁합 · 다시 보기 0쭈':'궁합 · 10쭈';
+  $('compatibility-price').textContent=preview?'궁합 · 관리자 미리보기':active?'궁합 · 다시 보기 0쭈':`궁합 · ${COMPATIBILITY_PRICE}쭈`;
   $('compatibility-wallet').textContent=preview?'관리자 미리보기 · 차감 없음':signedIn&&Number.isSafeInteger(billing.balance)?`보유 ${new Intl.NumberFormat('ko-KR').format(billing.balance)}쭈`:initialized?'로그인 후 두 사람의 궁합을 펼칠 수 있어요.':'로그인과 보유 쭈를 확인하고 있어요.';
   $('compatibility-login').hidden=signedIn||preview;
   button.disabled=busy||quoteBusy||!initialized;
-  button.querySelector('span').textContent=busy?'두 사람의 궁합을 준비하고 있어요…':quoteBusy?'이용 내역 확인 중…':preview?'궁합 미리보기':active?'궁합 다시 보기 · 0쭈':'10쭈로 궁합 펼치기';
+  button.querySelector('span').textContent=busy?'두 사람의 궁합을 준비하고 있어요…':quoteBusy?'이용 내역 확인 중…':preview?'궁합 미리보기':active?'궁합 다시 보기 · 0쭈':`${COMPATIBILITY_PRICE}쭈로 궁합 펼치기`;
   $('pair-swap').disabled=busy;$('compatibility-clear').disabled=busy;
   for(const picker of profilePickers)picker.setDisabled(busy);
   scheduleExpiry();
@@ -263,7 +263,7 @@ form.addEventListener('submit',async event=>{
     const status=await client.status(chart,partner);
     if(id!==generation||saved!==signature()||owner!==billing.user||mode!==billing.modeVersion)return;
     quote={signature:saved,owner,mode,chart,partner,status};
-    const required=billing.adminPreview||client.isActive(status.entitlement)?0:10;
+    const required=billing.adminPreview||client.isActive(status.entitlement)?0:COMPATIBILITY_PRICE;
     const receipt=await client.start(chart,partner,{expectedCharge:Math.min(clickedCharge,required)});
     if(id!==generation||saved!==signature()||owner!==billing.user||mode!==billing.modeVersion)return;
     if(!receipt?.ok||!client.isActive(receipt))throw new Error('이용 시간을 확인하지 못했어요. 표시된 금액을 확인하고 다시 펼쳐 주세요.');

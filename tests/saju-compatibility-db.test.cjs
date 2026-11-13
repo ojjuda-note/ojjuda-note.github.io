@@ -7,7 +7,7 @@ const {PGlite}=require('@electric-sql/pglite');
 
 // Synthetic members and fingerprints in an in-memory PostgreSQL engine only.
 // No live project, wallet, birth information, credentials or external calls.
-test('separate 10-ju compatibility access and administrator history',async t=>{
+test('separate 20-ju compatibility access preserves legacy purchases and administrator history',async t=>{
   const db=new PGlite();
   const dir=path.join(__dirname,'../supabase/migrations');
   const apply=name=>db.exec(fs.readFileSync(path.join(dir,name),'utf8'));
@@ -35,7 +35,7 @@ test('separate 10-ju compatibility access and administrator history',async t=>{
   });
   const status=async(pairKey=pair)=>(await db.query('select public.saju_compatibility_status_v1($1) as value',[pairKey])).rows[0].value;
   const buy=async(options={})=>{
-    const {id=randomUUID(),pairKey=pair,owner=sessionUser,expectedCharge=10,verify=false}=options;
+    const {id=randomUUID(),pairKey=pair,owner=sessionUser,expectedCharge=20,verify=false}=options;
     return (await db.query('select public.saju_compatibility_buy_v1($1::uuid,$2::text,$3::uuid,$4::integer,$5::boolean) as value',[id,pairKey,owner,expectedCharge,verify])).rows[0].value;
   };
   const oldBuy=async(topic='lifelong',year=topic==='lifelong'?0:2026)=>(await db.query('select public.saju_reading_buy_v4($1,$2,$3,$4,$5,10,false) as value',[randomUUID(),key('old-chart'),topic,year,sessionUser])).rows[0].value;
@@ -51,10 +51,10 @@ test('separate 10-ju compatibility access and administrator history',async t=>{
     const row=(await db.query("update ojjuda_saju_internal.compatibility_entitlements set purchased_at=clock_timestamp()-$1::double precision*interval '1 hour' where user_id=$2 and pair_key=$3 returning request_id,purchased_at",[hours,user,pairKey])).rows[0];
     await db.query("update ojjuda_note_internal.spend_requests set created_at=$2::timestamptz,result=result||jsonb_build_object('paid_at',$2::timestamptz,'expires_at',$2::timestamptz+interval '24 hours','server_now',$2::timestamptz) where request_id=$1",[row.request_id,row.purchased_at]);
   });
-  const assertReceipt=(value,charged)=>{
+  const assertReceipt=(value,charged,price=20)=>{
     assert.equal(value.ok,true);assert.equal(value.entitled,true);
     assert.equal(value.product,'saju');assert.equal(value.topic,'compatibility');
-    assert.equal(value.title,'사주 궁합');assert.equal(value.price,10);
+    assert.equal(value.title,'사주 궁합');assert.equal(value.price,price);
     assert.equal(value.access_version,1);assert.equal(value.entitlement_version,1);
     assert.equal(value.access_hours,24);assert.equal(value.charged,charged);
     assert.equal(value.replayed,charged===0);
@@ -108,6 +108,20 @@ test('separate 10-ju compatibility access and administrator history',async t=>{
     assert.equal(migration.length,1);
     await apply(migration[0]);
 
+    // Buy through the original live API before the price migration, so the
+    // preservation checks cover a genuine old receipt rather than a new fixture.
+    const legacyUser=await member({coins:70}),legacyId=randomUUID();
+    await login(legacyUser);
+    const legacyPurchase=await buy({id:legacyId,expectedCharge:10});
+    assertReceipt(legacyPurchase,10,10);
+    const legacyLedger=await ledger(legacyId);
+    const legacyEntitlement=await asOwner(async()=>(await db.query(
+      'select * from ojjuda_saju_internal.compatibility_entitlements where user_id=$1',[legacyUser])).rows[0]);
+    await db.exec('reset role');sessionUser=null;sessionRole=null;
+    const priceMigration=fs.readdirSync(dir).filter(name=>name.endsWith('_saju_compatibility_twenty_ju.sql'));
+    assert.equal(priceMigration.length,1);
+    await apply(priceMigration[0]);
+
     await t.test('private tables and helpers remain inaccessible while member-only wrappers have fixed search paths',async()=>{
       const functions=(await db.query(`select n.nspname,p.proname,p.prosecdef,p.proconfig,
         has_function_privilege('anon',p.oid,'EXECUTE') as anon,
@@ -137,6 +151,43 @@ test('separate 10-ju compatibility access and administrator history',async t=>{
       await assert.rejects(()=>db.query('select ojjuda_saju_internal.compatibility_receipt_v1($1,$2,999,clock_timestamp(),true,true,0)',[user,pair]),/permission denied/);
     });
 
+    await t.test('legacy 10-ju access stays free until its original deadline and its first renewal costs 20',async()=>{
+      await login(legacyUser);
+      assert.deepEqual(await ledger(legacyId),legacyLedger);
+      const untouched=await asOwner(async()=>(await db.query(
+        'select * from ojjuda_saju_internal.compatibility_entitlements where user_id=$1',[legacyUser])).rows[0]);
+      assert.deepEqual(untouched,legacyEntitlement);
+      const current=await status();assert.equal(current.price,20);
+      assertReceipt(current.entitlement,0,10);
+      assert.equal(current.entitlement.expires_at,legacyPurchase.expires_at);
+      for(const receipt of [await buy({id:legacyId,expectedCharge:10}),await buy({expectedCharge:0}),await buy({verify:true})]){
+        assertReceipt(receipt,0,10);
+        assert.equal(receipt.request_id,legacyId);
+        assert.equal(receipt.paid_at,legacyPurchase.paid_at);
+        assert.equal(receipt.expires_at,legacyPurchase.expires_at);
+      }
+      assert.deepEqual(await state(legacyUser),{coins:60,entitlements:1,requests:1,spent:10});
+      assert.deepEqual(await ledger(legacyId),legacyLedger);
+      await age(legacyUser,24);
+      const expiredLedger=await ledger(legacyId),expired=await state(legacyUser);
+      assert.equal((await status()).entitlement,null);
+      const stale=await buy({expectedCharge:10});
+      assert.equal(stale.reason,'price_changed');assert.equal(stale.required,20);
+      assert.equal((await buy({id:legacyId,expectedCharge:10})).reason,'access_expired');
+      assert.deepEqual(await state(legacyUser),expired);
+      const renewed=await buy();assertReceipt(renewed,20);
+      assert.notEqual(renewed.request_id,legacyId);
+      assert.deepEqual(await ledger(legacyId),expiredLedger);
+      assert.deepEqual(await state(legacyUser),{coins:40,entitlements:1,requests:2,spent:30});
+      const newPointer=await asOwner(async()=>(await db.query(
+        'select price from ojjuda_saju_internal.compatibility_entitlements where user_id=$1',[legacyUser])).rows[0]);
+      assert.equal(newPointer.price,20);
+      const admin=await member({admin:true});await login(admin);
+      const history=await adminHistory({query:legacyUser});
+      assert.equal(Number(history.total_count),2);assert.equal(Number(history.total_ju),30);
+      assert.deepEqual(history.items.map(item=>item.coins).sort((a,b)=>a-b),[10,20]);
+    });
+
     await t.test('every existing saju function remains unchanged and the three-topic bundle grants no compatibility',async()=>{
       const after=await asOwner(()=>db.query(`select p.oid::regprocedure::text as name,pg_get_functiondef(p.oid) as definition
         from pg_proc p join pg_namespace n on n.oid=p.pronamespace
@@ -148,38 +199,40 @@ test('separate 10-ju compatibility access and administrator history',async t=>{
       const oldRows=await asOwner(()=>db.query('select * from ojjuda_saju_internal.topic_entitlements where user_id=$1 order by topic',[user]));
       assert.equal((await status()).entitlement,null);
       assert.equal((await buy({expectedCharge:0})).reason,'price_changed');
-      assertReceipt(await buy(),10);
+      assertReceipt(await buy(),20);
       const nextRows=await asOwner(()=>db.query('select * from ojjuda_saju_internal.topic_entitlements where user_id=$1 order by topic',[user]));
       assert.deepEqual(nextRows.rows,oldRows.rows);
       const oldStatus=(await db.query('select public.saju_reading_status_v4($1) as value',[key('old-chart')])).rows[0].value;
       assert.deepEqual(oldStatus.prices,{lifelong:10,annual:10,monthly:10,all:30});
       assert.equal(oldStatus.entitlements.length,3);
-      assert.equal((await state(user)).coins,20);
+      assert.equal((await state(user)).coins,10);
     });
 
-    await t.test('first purchase costs ten, active replay costs zero and the deadline never moves',async()=>{
+    await t.test('first purchase costs twenty, active replay costs zero and the deadline never moves',async()=>{
       const user=await member({coins:30}),id=randomUUID();await login(user);
       const empty=await status(null);
-      assert.equal(empty.price,10);assert.equal(empty.pair_key,null);assert.equal(empty.entitlement,null);
-      const paid=await buy({id,pairKey:pair.toUpperCase()});assertReceipt(paid,10);
-      assert.equal(paid.pair_key,pair);assert.equal(paid.request_id,id);assert.equal(paid.coins,20);
+      assert.equal(empty.price,20);assert.equal(empty.pair_key,null);assert.equal(empty.entitlement,null);
+      const paid=await buy({id,pairKey:pair.toUpperCase()});assertReceipt(paid,20);
+      assert.equal(paid.pair_key,pair);assert.equal(paid.request_id,id);assert.equal(paid.coins,10);
       for(const receipt of [await buy({id}),await buy({expectedCharge:0}),await buy({verify:true})]){
         assertReceipt(receipt,0);assert.equal(receipt.request_id,id);
         assert.equal(receipt.paid_at,paid.paid_at);assert.equal(receipt.expires_at,paid.expires_at);
       }
       const current=await status();assertReceipt(current.entitlement,0);
       assert.equal(current.server_now,current.entitlement.server_now);
-      assert.deepEqual(await state(user),{coins:20,entitlements:1,requests:1,spent:10});
+      assert.deepEqual(await state(user),{coins:10,entitlements:1,requests:1,spent:20});
     });
 
     await t.test('both higher and lower stale displayed charges are rejected without a debit',async()=>{
       const user=await member({coins:30});await login(user);
       const before=await state(user);
       const increased=await buy({expectedCharge:0});
-      assert.equal(increased.reason,'price_changed');assert.equal(increased.required,10);
+      assert.equal(increased.reason,'price_changed');assert.equal(increased.required,20);
+      const oldPrice=await buy({expectedCharge:10});
+      assert.equal(oldPrice.reason,'price_changed');assert.equal(oldPrice.price,20);assert.equal(oldPrice.required,20);
       assert.deepEqual(await state(user),before);
-      assertReceipt(await buy(),10);
-      const paid=await state(user),decreased=await buy({expectedCharge:10});
+      assertReceipt(await buy(),20);
+      const paid=await state(user),decreased=await buy({expectedCharge:20});
       assert.equal(decreased.reason,'price_changed');assert.equal(decreased.required,0);
       assert.deepEqual(await state(user),paid);
       assertReceipt(await buy({expectedCharge:0}),0);
@@ -196,12 +249,12 @@ test('separate 10-ju compatibility access and administrator history',async t=>{
       assert.equal((await buy({expectedCharge:0})).reason,'price_changed');
       assert.equal((await buy({verify:true})).reason,'not_found');
       assert.deepEqual(await state(user),expired);
-      const nextId=randomUUID(),renewed=await buy({id:nextId});assertReceipt(renewed,10);
+      const nextId=randomUUID(),renewed=await buy({id:nextId});assertReceipt(renewed,20);
       assert.equal(renewed.request_id,nextId);
       assert.equal((await buy({id,expectedCharge:0})).reason,'access_expired');
       assertReceipt(await buy({id:nextId}),0);
       assert.deepEqual(await ledger(id),historical);
-      assert.deepEqual(await state(user),{coins:20,entitlements:1,requests:2,spent:20});
+      assert.deepEqual(await state(user),{coins:0,entitlements:1,requests:2,spent:40});
     });
 
     await t.test('verification and status work inside a read-only transaction and never create a request',async()=>{
@@ -227,9 +280,9 @@ test('separate 10-ju compatibility access and administrator history',async t=>{
       assert.equal((await status()).entitlement,null);
       assert.equal((await buy({id})).reason,'request_conflict');
       assert.equal((await buy({owner:first})).reason,'account_changed');
-      assertReceipt(await buy(),10);
+      assertReceipt(await buy(),20);
       assert.deepEqual(await state(first),firstState);
-      assert.deepEqual(await state(second),{coins:90,entitlements:1,requests:1,spent:10});
+      assert.deepEqual(await state(second),{coins:80,entitlements:1,requests:1,spent:20});
       const otherKind=randomUUID();
       await asOwner(()=>db.query("insert into ojjuda_note_internal.spend_requests(request_id,user_id,kind,coins,result) values($1,$2,'card_photo',7,'{}')",[otherKind,second]));
       assert.equal((await buy({id:otherKind,expectedCharge:0})).reason,'request_conflict');
@@ -237,11 +290,11 @@ test('separate 10-ju compatibility access and administrator history',async t=>{
 
     await t.test('a new request for the same pair never creates a duplicate debit, while another pair is separate',async()=>{
       const user=await member({coins:40});await login(user);
-      const paid=await buy();assertReceipt(paid,10);
+      const paid=await buy();assertReceipt(paid,20);
       assert.equal((await buy()).reason,'price_changed');
       assertReceipt(await buy({expectedCharge:0}),0);
-      assertReceipt(await buy({pairKey:otherPair}),10);
-      assert.deepEqual(await state(user),{coins:20,entitlements:2,requests:2,spent:20});
+      assertReceipt(await buy({pairKey:otherPair}),20);
+      assert.deepEqual(await state(user),{coins:0,entitlements:2,requests:2,spent:40});
       assert.equal((await status(pair)).entitlement.request_id,paid.request_id);
     });
 
@@ -266,16 +319,26 @@ test('separate 10-ju compatibility access and administrator history',async t=>{
     });
 
     await t.test('malformed inputs and insufficient coins leave the wallet and ledger untouched',async()=>{
-      const user=await member({coins:9});await login(user);const before=await state(user);
+      const user=await member({coins:19});await login(user);const before=await state(user);
       for(const options of [{id:null},{pairKey:null},{pairKey:''},{pairKey:'1990-01-01'},{pairKey:'g'.repeat(64)},{expectedCharge:null},{expectedCharge:1},{verify:null}])assert.equal((await buy(options)).reason,'invalid');
       assert.equal((await status('raw-date')).reason,'invalid');
-      const insufficient=await buy();assert.equal(insufficient.reason,'coins');assert.equal(insufficient.required,10);
+      const insufficient=await buy();assert.equal(insufficient.reason,'coins');assert.equal(insufficient.required,20);
       assert.deepEqual(await state(user),before);
     });
 
     await t.test('a mismatched ledger fails closed instead of granting or recharging a fabricated receipt',async()=>{
       const user=await member(),id=randomUUID();await login(user);await buy({id});
       await asOwner(()=>db.query("update ojjuda_note_internal.spend_requests set result=result||jsonb_build_object('pair_key',$2::text) where request_id=$1",[id,otherPair]));
+      const before=await state(user);
+      assert.equal((await status()).reason,'receipt_unavailable');
+      assert.equal((await buy({expectedCharge:0})).reason,'receipt_unavailable');
+      assert.equal((await buy({verify:true})).reason,'receipt_unavailable');
+      assert.deepEqual(await state(user),before);
+    });
+
+    await t.test('a price mismatch between the entitlement and its paid ledger fails closed',async()=>{
+      const user=await member();await login(user);await buy();
+      await asOwner(()=>db.query('update ojjuda_saju_internal.compatibility_entitlements set price=10 where user_id=$1',[user]));
       const before=await state(user);
       assert.equal((await status()).reason,'receipt_unavailable');
       assert.equal((await buy({expectedCharge:0})).reason,'receipt_unavailable');
@@ -314,15 +377,15 @@ test('separate 10-ju compatibility access and administrator history',async t=>{
       await assert.rejects(()=>adminHistory({query:user}),/admin_required/);
       await login(admin);
       const all=await adminHistory({query:user});
-      assert.equal(Number(all.total_count),5);assert.equal(Number(all.total_ju),50);
+      assert.equal(Number(all.total_count),5);assert.equal(Number(all.total_ju),60);
       assert.equal(Number(all.saju_count),4);assert.equal(Number(all.tarot_count),1);
       const item=all.items.find(value=>value.request_id===paid.request_id);
-      assert.equal(item.topic,'compatibility');assert.equal(item.topic_title,'궁합');assert.equal(item.year,null);assert.equal(item.coins,10);
+      assert.equal(item.topic,'compatibility');assert.equal(item.topic_title,'궁합');assert.equal(item.year,null);assert.equal(item.coins,20);
       for(const topic of ['annual','yearly'])assert.equal(all.items.find(value=>value.topic===topic).topic_title,'연간운');
       assert.equal(all.items.find(value=>value.topic==='annual').year,2026);
       assert.equal(all.items.find(value=>value.topic==='yearly').year,2025);
       assert.ok(all.items.every(value=>!Object.hasOwn(value,'pair_key')&&!Object.hasOwn(value,'result')&&!Object.hasOwn(value,'birth')));
-      const saju=await adminHistory({query:user,product:'saju'});assert.equal(Number(saju.total_count),4);assert.equal(Number(saju.total_ju),40);
+      const saju=await adminHistory({query:user,product:'saju'});assert.equal(Number(saju.total_count),4);assert.equal(Number(saju.total_ju),50);
       const tarot=await adminHistory({query:user,product:'tarot'});assert.equal(Number(tarot.total_count),1);
       assert.equal((await adminHistory({query:'compatibility AUDIT',limit:2,offset:1})).items.length,2);
       await assert.rejects(()=>adminHistory({product:'compatibility'}),/invalid_fortune_page/);

@@ -8,7 +8,7 @@
   <title>별빛 사주팔자 · 오쭈다</title>
   <link rel="icon" href="../moonlit-tarot/assets/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="../moonlit-tarot/assets/moon-serif.woff?v=20261113-tarot-corpus1" as="font" type="font/woff" crossorigin>
-  <link rel="stylesheet" href="./style.css?v=20261113-saju-light3">
+  <link rel="stylesheet" href="./style.css?v=20261113-compatibility20-1">
   <link rel="stylesheet" href="./report.css?v=20261113-saju-zodiac1">
 </head>
 <body>
@@ -37,6 +37,10 @@
   </header>
 
   <main>
+    <nav class="reading-service-nav" aria-label="사주와 궁합">
+      <a href="./" aria-current="page"><strong>나의 사주</strong><span>개별 10쭈 · 전체 30쭈</span></a>
+      <a href="./compatibility.html"><strong>두 사람의 궁합 <span aria-hidden="true">↗</span></strong><span>20쭈 · 결제 후 24시간 이용</span></a>
+    </nav>
     <div class="intro-grid" id="intro">
       <section class="archive-intro" aria-labelledby="main-title">
         <p class="eyebrow"><span></span> 별빛 서고 · 四柱八字 <span></span></p>
@@ -81,7 +85,6 @@
           <p class="form-note">입력 정보는 이 기기에 저장돼요. 이름·성별·생일은 서버로 보내지 않아요.</p>
         </form>
         <noscript><p class="form-error">사주를 펼치려면 브라우저에서 자바스크립트를 켜 주세요.</p></noscript>
-        <a class="tarot-link compatibility-entry" href="./compatibility.html"><svg><use href="#i-star"/></svg><span>두 사람의 궁합 · 별도 10쭈</span><span aria-hidden="true">↗</span></a>
         <a class="tarot-link" href="../moonlit-tarot/"><svg><use href="#i-moon"/></svg><span>오늘의 이야기가 궁금하다면, 달의 마녀 타로</span><span aria-hidden="true">↗</span></a>
       </section>
     </div>
@@ -105,8 +108,8 @@
         <div id="report-content"></div>
         <section id="compatibility-section" class="compatibility-panel" aria-labelledby="compatibility-title" tabindex="-1">
           <h3 id="compatibility-title">상대와의 궁합</h3>
-          <p class="field-hint">두 사람의 출생 정보로 서로 맞춰 갈 점을 자세히 읽어요. 궁합은 별도 10쭈이며 결제 후 24시간 동안 다시 볼 수 있어요.</p>
-          <a class="secondary-button" href="./compatibility.html">궁합 따로 보기 · 10쭈</a>
+          <p class="field-hint">두 사람의 출생 정보로 서로 맞춰 갈 점을 자세히 읽어요. 궁합은 별도 20쭈이며 결제 후 24시간 동안 다시 볼 수 있어요.</p>
+          <a class="secondary-button" href="./compatibility.html">궁합 따로 보기 · 20쭈</a>
         </section>
         <details id="other-reading-options" class="other-reading-options">
           <summary><span>다른 풀이 보기</span><small>전체 30쭈 · 각각 10쭈</small></summary>
