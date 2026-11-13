@@ -1,4 +1,4 @@
-import { narrateReading, narrateSummary } from './narration.js?v=20261113-tarot-direct1';
+import { narrateReading, narrateSummary } from './narration.js?v=20261113-tarot-easy1';
 import { getFortune, CORPUS_VERSION } from './fortune-corpus/index.js?v=20261113-tarot-corpus1';
 import { getSpreadPattern } from './spread-patterns.js?v=20261113-tarot-corpus1';
 import { CARD_FOUNDATIONS, CARD_SOURCE_NOTES, TAROT_REFERENCES, getCardNameGuide } from './card-foundations.js?v=20261113-tarot-corpus1';
@@ -801,7 +801,7 @@ export function getSummary(cards = [], topic = 'overall') {
   const flowCaution = SPREAD_CAUTIONS[flow.id] || (CARD_GUIDANCE[flow.id] || flow.guidance).caution;
   const adviceCaution = SPREAD_CAUTIONS[advice.id] || (CARD_GUIDANCE[advice.id] || advice.guidance).caution;
   const sections = [
-    readingSection('지금 살펴볼 일', flowCaution + `\n\n세 장을 함께 읽은 이 이야기는 ${innerMeaning}${objectParticle(innerMeaning)} 다루고 있어. 이어서 ${flowMeaning}${objectParticle(flowMeaning)} 살펴보렴. 이 두 가지가 네 생활에서 어떻게 이어지는지 생각해 보렴.`),
+    readingSection('지금 살펴볼 일', flowCaution + `\n\n첫 카드는 ‘${innerMeaning}’에 관해 이야기해. 다음 카드는 ‘${flowMeaning}’${objectParticle(flowMeaning)} 살펴보라고 말해. 두 가지가 네 생활에서 어떤 모습으로 나타나는지 하나씩 떠올려 봐.`),
     readingSection('선택할 때 기억할 것', `${direction}\n\n${adviceCaution}`)
   ];
   const base = {
