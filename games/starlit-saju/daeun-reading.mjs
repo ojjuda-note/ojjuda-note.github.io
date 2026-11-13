@@ -322,13 +322,15 @@ export function buildDaeunReading(chart,daeun) {
     startAge:clone(daeun.startAge),startsAt:daeun.startsAt,startLabel:daeun.startLabel};
 }
 
+const summaryCopy = item => Array.isArray(item?.summaryLines) ? ['두 줄 요약',...item.summaryLines] : [];
+
 export function copyDaeunReading(reading) {
   if (!reading||typeof reading.availability!=='boolean'||!Array.isArray(reading.periods)||!Array.isArray(reading.facts)) fail();
-  const lines=[reading.title,reading.headline,...reading.paragraphs];
+  const lines=[reading.title,reading.headline,...(reading.availability?summaryCopy(reading):[]),...reading.paragraphs];
   if (!reading.availability) return lines.join('\n');
   for (const period of reading.periods) {
-    lines.push('',period.title,period.subtitle,period.periodLabel,...period.paragraphs);
-    for (const topic of [...period.topics,...(period.situations||[])]) lines.push('',topic.label,topic.title,...topic.paragraphs);
+    lines.push('',period.title,period.subtitle,period.periodLabel,...summaryCopy(period),...period.paragraphs);
+    for (const topic of [...period.topics,...(period.situations||[])]) lines.push('',topic.label,topic.title,...summaryCopy(topic),...topic.paragraphs);
   }
   lines.push('','대운 계산 근거');
   for (const item of reading.facts) lines.push(item.label+': '+item.value);

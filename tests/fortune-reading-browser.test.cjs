@@ -10,7 +10,7 @@ const { chromium } = require('playwright');
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.woff': 'font/woff' };
 // Isolated rendering fixture. It uses production calculation and reading modules
 // with a published example date, and never loads authentication or billing code.
-const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"></head><body><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
+const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/reading-summary.css"></head><body><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { analyzeFortune } from '/games/starlit-saju/fortune-data.mjs';
 import { analyzeDaeun } from '/games/starlit-saju/daeun.mjs';
@@ -283,6 +283,29 @@ const server = http.createServer((request, response) => {
       else await saju.locator('a[href="#'+id+'"]:visible').first().click();
       await saju.locator('[data-reader-current][id="'+id+'"]').waitFor({state:'visible'});
     }
+    async function inspectSajuSummaries(label) {
+      const current=saju.locator('[data-reader-current]');
+      const groups=await current.locator('.saju-two-line-summary:visible').evaluateAll(elements=>elements.map(group=>({
+        role:group.getAttribute('role'),label:group.getAttribute('aria-label'),
+        lines:Array.from(group.querySelectorAll('.saju-summary-line')).map(line=>{
+          const style=getComputedStyle(line),rect=line.getBoundingClientRect();
+          let clipped=false;
+          for(let parent=line.parentElement;parent&&parent!==document.body;parent=parent.parentElement) {
+            const parentStyle=getComputedStyle(parent),box=parent.getBoundingClientRect();
+            if((/hidden|clip/.test(parentStyle.overflowX)&&(rect.left<box.left-1||rect.right>box.right+1))||
+              (/hidden|clip/.test(parentStyle.overflowY)&&(rect.top<box.top-1||rect.bottom>box.bottom+1)))clipped=true;
+          }
+          return {text:line.textContent.trim(),font:parseFloat(style.fontSize),visible:rect.width>0&&rect.height>0&&style.visibility==='visible',
+            fits:line.scrollWidth<=line.clientWidth+1&&line.scrollHeight<=line.clientHeight+1&&!clipped,
+            wraps:!['nowrap','pre'].includes(style.whiteSpace),clamp:style.webkitLineClamp,overflow:style.textOverflow};
+        })
+      })));
+      assert.ok(groups.length>0,label+': the selected item has visible summaries');
+      assert.ok(groups.every(group=>group.role==='group'&&group.label==='두 줄 요약'&&group.lines.length===2),label+': every summary retains exactly two authored units');
+      assert.ok(groups.every(group=>group.lines.every(line=>line.text&&line.visible&&line.fits&&line.wraps&&['none','','unset'].includes(line.clamp)&&line.overflow!=='ellipsis')),label+': complete summary units wrap without cropping, clamping or ellipses');
+      assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,label+': the selected reading fits the viewport');
+      return groups[0].lines[0].font;
+    }
     for (const topic of ['lifelong', 'annual', 'monthly', 'all']) {
       await saju.locator('#fixture-topic').selectOption(topic);
       await saju.locator('#report-content[data-ready="' + topic + '"]').waitFor();
@@ -308,7 +331,11 @@ const server = http.createServer((request, response) => {
       const cardId=await saju.locator(personal?'.portrait-card':topic==='monthly'?'[data-reader-current] .reader-card':'.reader-card').first().getAttribute('id');
       await selectReadingPage(cardId);
       const card=saju.locator('[data-reader-current]');
-      const readerOrdered=await card.evaluate(element=>element.children[0].matches('.portrait-card-label,.reader-card-label')&&element.children[1].matches('.portrait-card-title,.reader-card-title')&&element.children[2].classList.contains('reader-prose')&&element.children[2].querySelectorAll('p').length>=4);
+      const readerOrdered=await card.evaluate(element=>{
+        const label=element.querySelector('.portrait-card-label,.reader-card-label'),summary=element.querySelector(':scope > .saju-two-line-summary'),prose=element.querySelector(':scope > .reader-prose');
+        return label&&summary&&prose&&prose.querySelectorAll('p').length>=4&&
+          !!(label.compareDocumentPosition(summary)&Node.DOCUMENT_POSITION_FOLLOWING)&&!!(summary.compareDocumentPosition(prose)&Node.DOCUMENT_POSITION_FOLLOWING);
+      });
       assert.ok(readerOrdered,topic+': the selected unit retains topic, conclusion and all paragraphs');
       assert.equal(await saju.locator('.portrait-card:visible,.reader-card:visible').count(),1);
       await card.locator('.reader-detail-link:not(.reading-back-to-picker)').first().click();
@@ -330,6 +357,51 @@ const server = http.createServer((request, response) => {
         await saju.screenshot({path:path.join(artifacts,'saju-daeun-contracts-mobile.png')});
       }
     }
+    const sajuSummaryViews={};
+    await saju.locator('#fixture-topic').selectOption('all');
+    await saju.locator('#report-content[data-ready="all"]').waitFor();
+    const summaryTargets={
+      portrait:await saju.locator('.portrait-card').first().getAttribute('id'),
+      lifelong:await saju.locator('#reading-lifelong .reader-card').last().getAttribute('id'),
+      annual:await saju.locator('#reading-annual .reader-intro').getAttribute('id'),
+      spotlight:await saju.locator('.months-spotlight').getAttribute('id'),
+      monthCard:await saju.locator('#reading-month-11 .reader-card').first().getAttribute('id')
+    };
+    for(const [viewport,size] of [['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]]) {
+      await saju.setViewportSize(size);
+      let normalFont;
+      for(const textSize of ['normal','large']) {
+        await saju.locator('#report-content').evaluate((report,value)=>{report.dataset.readingSize=value;},textSize);
+        const label=viewport+' '+textSize,checked=[];
+        const inspect=async family=>{checked.push(family);return inspectSajuSummaries(label+' '+family);};
+        await selectReadingPage('reading-summary');
+        const font=await inspect('portrait intro');
+        if(textSize==='normal')normalFont=font;
+        else assert.ok(font>normalFont,label+': the large-text setting actually enlarges summary text');
+        await selectReadingPage(summaryTargets.portrait);await inspect('portrait card');
+        await saju.locator('.reading-pager').scrollIntoViewIfNeeded();
+        await saju.screenshot({path:path.join(artifacts,'saju-two-line-summaries-'+viewport+'-'+textSize+'.png')});
+        await selectReadingPage(summaryTargets.lifelong);await inspect('lifelong card');
+        await selectReadingPage(summaryTargets.annual);await inspect('annual intro');
+        await selectReadingPage(summaryTargets.spotlight);await inspect('month spotlight');
+        await selectReadingPage('reading-month-11');await inspect('month intro');
+        await selectReadingPage(summaryTargets.monthCard);await inspect('month card');
+        await selectReadingPage('reading-daeun');await inspect('decade intro');
+        const periodHeading=await saju.locator('.daeun-period.is-current .daeun-age').getAttribute('id');
+        await saju.locator('.daeun-nav a[href="#'+periodHeading+'"]').click();
+        await inspect('decade period');
+        const topicId=await saju.locator('[data-reader-current] .daeun-topic').first().getAttribute('id');
+        await selectReadingPage(topicId);await inspect('decade topic');
+        await selectReadingPage('reading-symbols');await inspect('symbols intro and items');
+        await selectReadingPage('reading-timings');await inspect('timing intro');
+        await saju.locator('.reader-timing-navigation a[href="#reading-timings-month-11"]').click();
+        await inspect('timing month');
+        const timingGroup=await saju.locator('[data-reader-current] .reader-timing-group').first().getAttribute('id');
+        await selectReadingPage(timingGroup);await inspect('timing points');
+        sajuSummaryViews[label]=checked;
+      }
+    }
+    await saju.locator('#report-content').evaluate(report=>{report.dataset.readingSize='normal';});
     await saju.setViewportSize({width:1280,height:900});
     await saju.locator('#fixture-topic').selectOption('lifelong');
     await saju.locator('#report-content[data-ready="lifelong"]').waitFor();
@@ -437,6 +509,6 @@ const server = http.createServer((request, response) => {
     }
     assert.deepEqual(errors, []);
     assert.deepEqual(failed, []);
-    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], compatibilityScores, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
+    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuSummaryViews, compatibilityScores, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => server.close());

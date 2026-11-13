@@ -1,4 +1,5 @@
 import {getReadingSources} from './sources.mjs?v=20261113-saju-reader1';
+import {applyReadingSummaryViews} from './reading-summary-view.mjs?v=20261113-saju-summary1';
 
 const readingPagers=new WeakMap();
 const pagerDocuments=new WeakSet();
@@ -1287,6 +1288,7 @@ export function renderDetailedReport(container, {reading, fortune, topic}) {
   if (topicsTarget) { topicsTarget.id='reading-topics';topicsTarget.tabIndex=-1; }
   addRelatedTopics(topicsTarget,relatedTopics);
   if (detailTarget) { detailTarget.id='reading-details';detailTarget.tabIndex=-1; }
+  applyReadingSummaryViews(fragment,reading);
   const pager=buildReadingPager(fragment,{reading,fortune,topic});
   container.replaceChildren(fragment);
   pager.mount(container);

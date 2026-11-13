@@ -37,6 +37,75 @@ function mount(topic) {
   const paragraphs=()=>[...host.querySelectorAll('p:not(.reading-page-position)')].map(node=>node.textContent);
   return {dom,doc,host,select,current,pick,outer,paragraphs,close:()=>dom.window.close()};
 }
+function assertSummary(h,element,expected) {
+  assert.ok(element,'the requested reading item remains present');
+  const group=element.matches('.saju-two-line-summary')?element:element.querySelector('.saju-two-line-summary');
+  assert.ok(group,`${element.id||element.className}: the requested item has a two-unit summary`);
+  assert.equal(group.getAttribute('role'),'group');
+  assert.equal(group.getAttribute('aria-label'),'두 줄 요약');
+  const lines=[...group.querySelectorAll('.saju-summary-line')];
+  assert.equal(lines.length,2,'headings and paragraphs may both carry a summary unit');
+  assert.deepEqual(lines.map(line=>line.textContent),expected);
+  const page=element.closest('[data-reader-page]');
+  assert.ok(page,'the item is reachable through the existing reading navigation');
+  if(h.current()!==page)h.outer(page.id);
+  assert.ok(visible(group),'requesting an item exposes both summary units without another disclosure');
+  assert.ok(lines.every(visible));
+  return group;
+}
+
+test('every reading family keeps two authored summary units before its complete body when requested',()=>{
+  const h=mount('all');
+  try {
+    const before=h.paragraphs(),checks=[];
+    const add=(element,source,selector=':scope > .reader-prose > p',paragraphs=source.paragraphs)=>checks.push({element,source,selector,paragraphs});
+    const overview=(id,source)=>{
+      add(h.doc.querySelector(`#${id} .reader-intro`),source);
+      for(const card of source.cards)add(h.host.querySelector(`[data-reader-card="${card.id}"]`),card);
+    };
+    overview('reading-lifelong-summary',reading.reader.lifelong);
+    overview('reading-annual-summary',reading.reader.annual);
+    for(const month of reading.reader.months)overview(`reading-month-${month.month}-summary`,month);
+    add(h.host.querySelector('.portrait-intro'),reading.personPortrait);
+    for(const card of reading.personPortrait.cards)add(h.host.querySelector(`.portrait-card[data-portrait-card="${card.id}"]`),card);
+    for(const card of h.host.querySelectorAll('.month-spotlight-card')) {
+      const month=Number(card.querySelector('a').hash.match(/(\d+)$/)[1]);
+      add(card,reading.reader.months.find(item=>item.month===month),null,null);
+    }
+    add(h.doc.querySelector('#reading-daeun > .reader-prose'),reading.daeun,':scope > p');
+    for(const period of reading.daeun.periods) {
+      add(h.host.querySelector(`[data-daeun-period="${period.id}"]`),period,'.daeun-period-body > .reader-prose > p');
+      for(const topic of [...period.topics,...(period.situations||[])])add(h.host.querySelector(`[data-daeun-topic="${topic.id}"]`),topic);
+    }
+    add(h.doc.querySelector('#reading-symbols .reader-intro'),reading.reader.symbols);
+    const symbols=[...h.host.querySelectorAll('.reader-symbol-item')];
+    assert.equal(symbols.length,reading.reader.symbols.items.length);
+    reading.reader.symbols.items.forEach((item,index)=>add(symbols[index],item,':scope > .reader-prose > p',[item.description]));
+    add(h.doc.querySelector('#reading-timings .reader-intro'),reading.reader.timings);
+    for(const item of reading.reader.timings.items) {
+      const article=h.host.querySelector(`.reader-timing-card[data-month="${item.month}"]`);
+      add(article,item,'.reader-timing-content > .reader-prose > p');
+      const points=[...article.querySelectorAll('.reader-timing-point')];
+      const expected=[...item.cautions,...item.opportunities,...item.people,...item.documents];
+      assert.equal(points.length,expected.length);
+      expected.forEach((point,index)=>{
+        add(points[index],point,null,null);
+        assert.equal([...points[index].querySelectorAll(':scope > dd')].map(part=>part.textContent).join(''),point.text,'the summary and remaining timing explanation retain every original character');
+      });
+    }
+    for(const {element,source,selector,paragraphs} of checks) {
+      const group=assertSummary(h,element,source.summaryLines);
+      if(!selector)continue;
+      const body=[...element.querySelectorAll(selector)].filter(paragraph=>!paragraph.closest('.saju-two-line-summary'));
+      assert.deepEqual(body.map(paragraph=>paragraph.textContent),paragraphs,'summary presentation preserves every original body paragraph');
+      assert.ok(body.length>0&&body.every(visible),'the requested full explanation is not collapsed behind its summary');
+      assert.ok(group.compareDocumentPosition(body[0])&h.dom.window.Node.DOCUMENT_POSITION_FOLLOWING,'the two summary units precede the full explanation');
+    }
+    assert.deepEqual(h.paragraphs(),before,'visiting summaries never rewrites or removes the purchased prose');
+    assert.equal(JSON.stringify(reading),originalReading,'rendering summaries leaves calculation and copied report data intact');
+    assert.ok(h.host.querySelectorAll('[data-fact-id]').length>0,'the original evidence remains available');
+  } finally {h.close();}
+});
 
 test('the compact picker keeps every purchased paragraph while exposing only the selected reading unit',()=>{
   for(const topic of ['lifelong','annual','monthly','all']) {
