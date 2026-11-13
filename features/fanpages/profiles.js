@@ -210,13 +210,14 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   a2osoul: {
-    checkedAt: '2026.11.11',
+    checkedAt: '2026.11.13',
     debut: '2026.10.13', debutWork: 'SUPERSTAR 선공개',
     agency: 'A2O Entertainment',
     concept: '15명의 NEW SYNTHWAVE.',
     awards: [],
     records: [
-      { year: '2026.11', title: '데뷔 EP 공개', detail: 'SUPERSTAR · 5곡', href: 'https://www.melon.com/album/detail.htm?albumId=14644792' }
+      { year: '2026.11', title: '데뷔 EP 공개', detail: 'SUPERSTAR · 5곡', href: 'https://www.melon.com/album/detail.htm?albumId=14644792' },
+      { year: '2026.10', title: 'SUPERSTAR 글로벌 차트 기록', detail: 'A2O 발표 기준 QQ Music 신곡 2위·MV 글로벌 4위, YouTube 인기 음악 18위', href: 'https://prtimes.jp/main/html/rd/p/000000007.000192898.html' }
     ],
     members: ['MOON', 'TAI', 'GAKU', 'SEE-ONE', 'SEOHA', 'SONO', 'LUCIEN', 'ZAI', 'AYDEN', 'ALURE', 'ZET', 'SORA', 'TEO', 'JUNE', 'HANSUNG'].map((name) => a2oMember(name, 'https://www.melon.com/artist/detail.htm?artistId=5217448')),
     sources: [
@@ -311,25 +312,23 @@ const supplementaryProfiles = {
   },
   a2osoul: {
     sources: [
-      { label: '멤버 생일·MBTI', href: 'https://tanjoubi.today/ja/group/20261013_A2OSOUL_3e68' },
-      { label: '멤버 성격 참고', href: 'https://kpopping.com/profiles/group/a2o-soul' }
+      { label: '멤버 생일 참고(비공식)', href: 'https://tanjoubi.today/ja/group/20261013_A2OSOUL_3e68' }
     ],
     members: {
-      'MOON': { mbti: 'INFP' },
-      'TAI': { birthday: '2011.08.09', mbti: 'INTJ' },
-      'GAKU': { birthday: '2009.09.04', mbti: 'ISFP' },
-      'SEE-ONE': { birthday: '2011.02.10', mbti: 'ENFP' },
+      'TAI': { birthday: '2011.08.09',  },
+      'GAKU': { birthday: '2009.09.04',  },
+      'SEE-ONE': { birthday: '2011.02.10',  },
       'SEOHA': { birthday: '2008.01.01' },
-      'SONO': { birthday: '2011.11.05', mbti: 'ENTP' },
+      'SONO': { birthday: '2011.11.05',  },
       'LUCIEN': { birthday: '2010.12.10' },
       'ZAI': { birthday: '2012.01.06' },
-      'AYDEN': { birthday: '2012.03.27', mbti: 'INFP' },
+      'AYDEN': { birthday: '2012.03.27',  },
       'ALURE': { birthday: '2011.07.08' },
-      'ZET': { birthday: '2012.06.21', mbti: 'ENFP' },
+      'ZET': { birthday: '2012.06.21',  },
       'SORA': { birthday: '2007.07.30' },
       'TEO': { birthday: '2009.07.30' },
       'JUNE': { birthday: '2009.11.09' },
-      'HANSUNG': { birthday: '2010.02.25', mbti: 'ENFP' }
+      'HANSUNG': { birthday: '2010.02.25',  }
     }
   }
 };
