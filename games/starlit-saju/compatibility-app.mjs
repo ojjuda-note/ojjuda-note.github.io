@@ -1,5 +1,6 @@
 import { SajuPayment } from './payment.js?v=20261113-saju-lists1';
 import { SajuCompatibilityPayment, COMPATIBILITY_PRICE } from './compatibility-payment.mjs?v=20261113-compatibility20-1';
+import { createCompatibilityScoreboard, compatibilityScoreText } from './compatibility-score-view.mjs?v=20261113-compatibility-score1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
 import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-zodiac1';
 
@@ -168,7 +169,7 @@ async function ready() {
 async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
-    import('./compatibility.mjs?v=20261113-saju-zodiac1'),
+    import('./compatibility.mjs?v=20261113-compatibility-score1'),
     import('./report-view.mjs?v=20261113-saju-lists1'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
@@ -226,6 +227,7 @@ function copyText(reading,chart,partner,names) {
     if(zodiac)lines.push(`${names[index].name||(index?'상대':'나')}: ${zodiac.label} · ${zodiac.note}`);
   }
   lines.push(reading.title,reading.headline);
+  lines.push('',compatibilityScoreText(reading.score),'');
   if(reading.scopeNotice)lines.push(reading.scopeNotice);
   lines.push(...reading.paragraphs);
   for(const card of reading.cards)lines.push('',card.label,card.title,...card.paragraphs);
@@ -258,6 +260,7 @@ form.addEventListener('submit',async event=>{
     const saveWarning=savedProfiles.some(profile=>!profile)?'풀이를 열었지만 일부 입력 정보를 이 기기에 저장하지 못했어요. 출생 정보 화면에서 확인해 주세요.':'';
     const reading=data.buildCompatibilityReading(chart,partner),content=document.createElement('div');
     view.renderCompatibilityReport(content,reading);
+    content.querySelector('#compatibility-reading > .report-section-heading').after(createCompatibilityScoreboard(reading.score));
     const text=copyText(reading,chart,partner,names);
     if(id!==generation||saved!==signature()||owner!==billing.user||mode!==billing.modeVersion)return;
     const status=await client.status(chart,partner);

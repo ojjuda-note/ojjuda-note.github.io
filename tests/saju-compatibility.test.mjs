@@ -108,6 +108,7 @@ test('identical input means the same actual characters, without invented perfect
   assert.deepEqual(sameLocations,[]);
   assert.match(reading.facts.find(fact=>fact.id==='day-branches').value,/같은 글자/);
   assert.doesNotMatch(displayedText(reading),/완벽한 궁합|최고의 궁합|100%|[0-9]+점/);
+  assert.notEqual(reading.score.total,100,'identical input does not imply perfect compatibility');
 });
 
 test('unknown time and an unknown time at an Ipchun boundary never enter guessed year, month or hour pillars',()=>{
@@ -177,7 +178,7 @@ test('invalid, duplicated or unconfirmed day pillars fail instead of supplying g
   assert.throws(()=>buildCompatibilityReading(duplicate,valid),error=>error.code==='self-chart');
 });
 
-test('friendly stories contain concrete hypothetical examples and disclose shared interpretation without fate scores',()=>{
+test('friendly stories retain concrete examples while the separate reference score discloses its limits',()=>{
   for(const [first,second] of [[byStem.get('甲'),byStem.get('甲')],[byStem.get('甲'),byStem.get('丙')],[byStem.get('甲'),byStem.get('戊')],[byStem.get('戊'),byStem.get('甲')],[byBranch.get('子'),byBranch.get('午')]]) {
     const reading=buildCompatibilityReading(first,second),text=displayedText(reading);
     assert.deepEqual(reading.cards.map(card=>card.id),['foundation','zodiac','connection','differences','everyday','conversation']);
@@ -186,7 +187,9 @@ test('friendly stories contain concrete hypothetical examples and disclose share
     assert.doesNotMatch(text,/반드시|무조건|운명적으로|결혼하게|이별하게|헤어지게|[0-9]+점|[0-9]+%|최고의 궁합|최악의 궁합/);
     assert.match(reading.methodNotice,/같은 관계에는 같은 설명/);
     assert.match(reading.methodNotice,/실제 사건은 계산하지/);
-    assert.equal(Object.hasOwn(reading,'score'),false);
+    assert.equal(reading.score.max,100);
+    assert.match(reading.score.methodNotice,/오쭈다 고정 규칙으로 비교한 참고 점수/);
+    assert.match(reading.score.methodNotice,/성공 확률이나 미래 예측은 아니/);
   }
 });
 

@@ -1,10 +1,12 @@
 import { getTenGod, makeProfile, interactionPairs } from './fortune-data.mjs?v=20261113-saju-reader1';
 import { GOD_REFERENCE, RELATION_REFERENCE } from './readings-data.mjs?v=20261113-saju-brief1';
 import { zodiacFromChart } from './zodiac.mjs?v=20261113-saju-zodiac1';
+import { buildCompatibilityScore } from './compatibility-score.mjs?v=20261113-compatibility-score1';
 
 // A local comparison of two already-calculated charts. All cross-chart pillar
 // pairs are retained; the prose is a disclosed application of shared meanings.
-// There is no ranking, event prediction, birth-time guess, request or storage.
+// The reference score uses disclosed product rules, not event predictions.
+// There is no birth-time guess, request or storage.
 const ORIGIN='service-reference';
 const PILLARS={year:'태어난 해',month:'태어난 달',day:'태어난 날',hour:'태어난 시간'};
 const ELEMENTS={wood:'나무',fire:'불',earth:'흙',metal:'쇠',water:'물'};
@@ -119,6 +121,7 @@ function allFacts(profiles,scopes,relation,comparisons,interactions,zodiac,zodia
     for(const pillar of profile.knownPillars)add(`${person}.pillar.${pillar.key}`,personPillar(person,pillar),`${pillar.hangul}(${pillar.hanja}) · ${POSITION.stem} ${character(pillar.stem)} · ${POSITION.branch} ${character(pillar.branch)}.`);
     for(const missing of scope.excludedPillars)add(`${person}.excluded.${missing.key}`,`${person==='self'?'내':'상대'} ${missing.label} 제외`,missing.reason);
     add(`${person}.day-master`,`${person==='self'?'내':'상대'} 일간`,`${character(profile.dayMaster)} · ${ELEMENTS[profile.dayMaster.element]}(${profile.dayMaster.elementHanja}) · ${profile.dayMaster.yinYang}.`);
+    add(`${person}.elements`,`${person==='self'?'내':'상대'} 확정 글자의 오행 분포`,`${profile.elements.map(element=>`${ELEMENTS[element.key]} ${element.count}개`).join(' · ')}. 전체 ${profile.knownCharacterCount}글자로 비중을 계산하며 미확정 글자는 포함하지 않았어요.`);
     const animal=zodiac[person];
     add(`${person}.zodiac`,`${person==='self'?'내':'상대'} 띠`,`${animal.status==='uncertain'?'후보 ':''}${animal.label} · ${animal.basis}${animal.candidates.length?` · 년지 ${animal.candidates.map(character).join(' / ')}`:''}${animal.status==='confirmed'?'':` · ${animal.note}`}.`);
   }
@@ -253,6 +256,8 @@ export function buildCompatibilityReading(chart,partnerChart) {
   }
   const zodiacRelation=compareZodiac(profiles,zodiac,interactions);
   const facts=allFacts(profiles,scopes,dayMasterRelation,comparisons,interactions,zodiac,zodiacRelation);
+  const {score,facts:scoreFacts}=buildCompatibilityScore({profiles,comparisons,interactions});
+  facts.push(...scoreFacts);
   const base=BASE_STORIES[dayMasterRelation.self.group];
   const selfTheme=STEM_THEMES[profiles.self.dayMaster.hanja],partnerTheme=STEM_THEMES[profiles.partner.dayMaster.hanja];
   const personalOpening=profiles.self.dayMaster.hanja===profiles.partner.dayMaster.hanja
@@ -265,9 +270,9 @@ export function buildCompatibilityReading(chart,partnerChart) {
     :'서로에게 기대하는 도움과 함께 지키고 싶은 약속을 나누어 보면 좋아요. 아래에서 두 사람이 가까워질 때 살릴 점, 다르게 느낄 수 있는 점, 일상을 맞추는 방법을 이어서 살펴볼게요.';
   return {
     title:'두 사람의 궁합',headline:base.headline,paragraphs:[personalOpening,relationParagraph],
-    cards:makeCards(base,interactions,profiles,facts,zodiac,zodiacRelation),facts,origin:ORIGIN,
+    cards:makeCards(base,interactions,profiles,facts,zodiac,zodiacRelation),facts,score,origin:ORIGIN,
     scopeNotice:scopeNotice(scopes),
-    methodNotice:'확정된 두 사주의 일간 관계와 모든 기둥 사이의 천간합·지지육합·지지충을 비교했어요. 띠는 입춘 기준 년지로 표시하고, 띠끼리는 년지의 육합·충만 따로 보여줘요. 해석과 가상 예시는 계산 결과에 연결한 공통 참고 풀이이며, 같은 관계에는 같은 설명을 써요. 합화의 성립, 궁합 점수, 결혼·이별의 시기나 실제 사건은 계산하지 않아요. 합은 좋은 결과를 보장하지 않고, 충은 이별을 뜻하지 않아요.',
+    methodNotice:'확정된 두 사주의 일간 관계와 모든 기둥 사이의 천간합·지지육합·지지충을 비교했어요. 띠는 입춘 기준 년지로 표시하고, 띠끼리는 년지의 육합·충만 따로 보여줘요. 해석과 가상 예시는 계산 결과에 연결한 공통 참고 풀이이며, 같은 관계에는 같은 설명을 써요. 점수는 오쭈다 고정 규칙으로 비교한 참고값이며 실제 관계의 성공 확률이 아니에요. 합화의 성립, 결혼·이별의 시기나 실제 사건은 계산하지 않아요. 합은 좋은 결과를 보장하지 않고, 충은 이별을 뜻하지 않아요.',
     dayMasterRelation,interactions,comparisons,zodiac,zodiacRelation:zodiacRelation.kind,scope:{self:scopes[0],partner:scopes[1]},
     rules:Object.fromEntries(unique(interactions.map(match=>match.kind)).map(kind=>[kind,{...RELATION_REFERENCE[kind]}])),
   };

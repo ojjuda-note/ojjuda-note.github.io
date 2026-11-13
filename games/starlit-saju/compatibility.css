@@ -39,6 +39,53 @@
 #compatibility-report .compatibility-reading{margin-top:24px}
 #compatibility-copy-status{text-align:center;line-height:1.8}
 .compatibility-panel>.secondary-button{max-width:42rem;margin:19px auto 0;display:flex;width:fit-content}
+.compatibility-scoreboard{margin:24px 0 32px;padding:28px;border:1px solid #c6a8ce55;border-radius:22px;background:linear-gradient(135deg,#35243d,#1c1729 72%);color:#ede3ef;min-width:0;box-shadow:0 16px 42px #00000018}
+.compatibility-score-heading{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px 18px;margin:0 0 26px}
+.compatibility-score-heading h4{margin:0;font:600 24px/1.5 var(--serif);color:#f0d9af;letter-spacing:-.025em}
+.compatibility-score-heading>p{margin:0;font-size:12px;line-height:1.7;color:#c5b4d1}
+.compatibility-score-grid{display:grid;grid-template-columns:minmax(170px,.75fr) minmax(0,1.45fr);gap:30px;min-width:0}
+.compatibility-score-total{padding:10px 28px 6px 0;border-right:1px solid #c6a8ce30;min-width:0}
+.compatibility-score-eyebrow{margin:0;font-size:14px;color:#dcc9e3;letter-spacing:.03em}
+.compatibility-score-number{display:flex;align-items:baseline;gap:7px;margin:8px 0 13px;white-space:nowrap;color:#f4d7a4;font-variant-numeric:tabular-nums}
+.compatibility-score-number strong{font:600 clamp(60px,6vw,78px)/1.1 var(--serif);letter-spacing:-.055em}
+.compatibility-score-number>span{font-size:20px}.compatibility-score-number small{margin-left:2px;font-size:15px;color:#c5b4d1}
+.compatibility-score-label{display:inline-block;margin:0 0 12px;padding:5px 10px;border:1px solid #d3ad7455;border-radius:7px;background:#d9b58212;font-size:14px;line-height:1.65;color:#f1d7ac}
+.compatibility-score-summary{margin:0;font-size:14px;line-height:1.85;color:#e0d0e7;word-break:keep-all;overflow-wrap:anywhere}
+.compatibility-score-average{margin:20px 0 0;font-size:12px;line-height:1.8;color:#c5b4d1;word-break:keep-all}
+.compatibility-score-items{display:grid;gap:22px;min-width:0}
+.compatibility-score-item{--score-start:#c7a3df;--score-end:#e4c7ef;min-width:0}
+.compatibility-score-item[data-score-item=complement]{--score-start:#89b8b5;--score-end:#c0ddd3}
+.compatibility-score-item[data-score-item=daily]{--score-start:#ca93ad;--score-end:#e9c0d4}
+.compatibility-score-item[data-score-item=harmony]{--score-start:#c6a675;--score-end:#efdab5}
+.compatibility-score-item-heading{display:flex;justify-content:space-between;align-items:baseline;gap:15px;margin-bottom:9px}
+.compatibility-score-item-heading h5{margin:0;font-size:15px;line-height:1.6;font-weight:600;color:#f0e3f4}
+.compatibility-score-item-value{flex-shrink:0;margin:0;font-size:16px;line-height:1.5;font-weight:700;color:var(--score-end);font-variant-numeric:tabular-nums}
+.compatibility-score-meter{height:12px;border-radius:6px;overflow:hidden;background:#ffffff12;box-shadow:inset 0 0 0 1px #ffffff0d}
+.compatibility-score-fill{display:block;height:100%;max-width:100%;border-radius:inherit;background:linear-gradient(90deg,var(--score-start),var(--score-end))}
+.compatibility-score-item-summary{margin:8px 0 0;font-size:14px;line-height:1.8;color:#cdbbd6;word-break:keep-all;overflow-wrap:anywhere}
+.compatibility-score-notice{margin:24px 0 0;padding-top:18px;border-top:1px solid #c6a8ce30;font-size:12px;line-height:1.9;color:#c5b4d1;word-break:keep-all;overflow-wrap:anywhere}
+.compatibility-score-details{margin-top:15px;border-top:1px solid #c6a8ce30;min-width:0}
+.compatibility-score-details>summary{padding:15px 0 0;font-size:14px;line-height:1.8;color:#e5cfa8;cursor:pointer}
+.compatibility-score-details>summary:focus-visible{outline:2px solid #ecd099;outline-offset:4px;border-radius:3px}
+.compatibility-score-method{padding-top:12px;font-size:14px;line-height:1.9;color:#d5c3df;word-break:keep-all;overflow-wrap:anywhere}
+.compatibility-score-method>p{margin:0 0 12px}
+.compatibility-score-reasons{margin:18px 0 0}.compatibility-score-reasons>div+div{margin-top:16px}
+.compatibility-score-reasons dt{font-weight:600;color:#ecd5ad}.compatibility-score-reasons dd{margin:5px 0 0}
+.detailed-reading[data-reading-size="large"] .compatibility-score-item-summary,.detailed-reading[data-reading-size="large"] .compatibility-score-summary,.detailed-reading[data-reading-size="large"] .compatibility-score-method{font-size:18px}
+.detailed-reading[data-reading-size="large"] .compatibility-score-item-heading h5,.detailed-reading[data-reading-size="large"] .compatibility-score-item-value{font-size:18px}
+.detailed-reading[data-reading-size="large"] .compatibility-score-notice,.detailed-reading[data-reading-size="large"] .compatibility-score-average{font-size:15px}
+@media(max-width:640px){
+ .compatibility-scoreboard{padding:23px 20px;border-radius:18px}
+ .compatibility-score-heading{gap:5px;margin-bottom:20px}
+ .compatibility-score-heading h4{font-size:22px}
+ .compatibility-score-grid{grid-template-columns:minmax(0,1fr);gap:24px}
+ .compatibility-score-total{padding:0 0 23px;border-right:0;border-bottom:1px solid #c6a8ce30;text-align:center}
+ .compatibility-score-number{justify-content:center;margin-top:10px}
+ .compatibility-score-number strong{font-size:68px}
+ .compatibility-score-summary{max-width:32em;margin:0 auto}
+ .compatibility-score-average{margin-top:12px}
+ .compatibility-score-items{gap:23px}
+}
 @media(max-width:760px){
  .compatibility-main{padding:24px 16px 50px}
  .compatibility-intro{margin-bottom:28px}

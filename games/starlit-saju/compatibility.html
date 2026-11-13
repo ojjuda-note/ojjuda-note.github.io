@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#100d1b">
-  <meta name="description" content="두 사람의 출생 정보로 읽는 별빛 궁합. 궁합만 20쭈에 이용하고, 결제 후 24시간 동안 같은 두 사람의 풀이를 무료로 다시 보세요.">
+  <meta name="description" content="두 사람의 출생 정보로 읽는 별빛 궁합. 종합 점수와 항목별 막대그래프, 자세한 풀이를 20쭈에 보고 같은 두 사람은 결제 후 24시간 무료로 다시 보세요.">
   <title>두 사람의 별빛 궁합 · 오쭈다</title>
   <link rel="icon" href="../moonlit-tarot/assets/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="../moonlit-tarot/assets/moon-serif.woff?v=20261113-tarot-corpus1" as="font" type="font/woff" crossorigin>
   <link rel="stylesheet" href="./style.css?v=20261113-compatibility20-1">
   <link rel="stylesheet" href="./report.css?v=20261113-saju-zodiac1">
-  <link rel="stylesheet" href="./compatibility.css?v=20261113-saju-reader1">
+  <link rel="stylesheet" href="./compatibility.css?v=20261113-compatibility-score1">
 </head>
 <body>
   <a class="skip-link" href="#compatibility-form">출생 정보 입력으로 바로가기</a>
@@ -43,7 +43,7 @@
       <a href="./compatibility.html" aria-current="page"><strong>두 사람의 궁합</strong><span>20쭈 · 결제 후 24시간 이용</span></a>
     </nav>
     <section id="compatibility-entry" aria-labelledby="compatibility-heading">
-      <header class="compatibility-intro"><p class="eyebrow">TWO STORIES, ONE CONSTELLATION</p><div class="pair-sigil" aria-hidden="true">✧</div><h1 id="compatibility-heading">서로의 별빛이<br><em>만나는 자리</em></h1><p>두 사람의 닮은 점과 다른 점,<br>마음을 전하고 함께 맞춰 갈 방법을 자세히 읽어요.</p></header>
+      <header class="compatibility-intro"><p class="eyebrow">TWO STORIES, ONE CONSTELLATION</p><div class="pair-sigil" aria-hidden="true">✧</div><h1 id="compatibility-heading">서로의 별빛이<br><em>만나는 자리</em></h1><p>두 사람의 궁합을 점수와 막대그래프로 살펴보고,<br>닮은 점과 다른 점을 자세한 풀이로 읽어요.</p></header>
       <form id="compatibility-form" autocomplete="off">
         <div class="compatibility-people"><fieldset class="compatibility-person"><legend>나의 출생 정보</legend>
       <div id="self-saved-profiles" class="saved-profiles" aria-label="나의 저장된 사람"></div>
@@ -69,7 +69,7 @@
           <p id="compatibility-error" class="form-error" role="alert" tabindex="-1" hidden></p><p id="compatibility-status" class="field-hint" role="status"></p>
           <button id="compatibility-open" class="primary-button" type="submit" data-expected-charge="20" disabled><svg><use href="#i-star"/></svg><span>20쭈로 궁합 펼치기</span><svg><use href="#i-arrow"/></svg></button>
         </div>
-        <details class="method-preview"><summary>궁합에 담은 내용</summary><p>두 사람의 확정된 출생 정보를 비교하고, 같은 전통 관계에는 같은 참고 설명을 연결해요. 닮은 점·다른 점과 구체적인 대화 예시를 제공하며, 궁합 점수나 결혼·이별 날짜는 만들지 않아요.</p><p>생일 또는 출생 시간이 달라지면 다른 쌍으로 구분해요. 이름·성별이나 두 사람의 입력 순서만 바꾸면 이용 시간이 유지돼요. 만료 뒤 다시 펼치기를 눌러야 새로 결제해요.</p><p>한국 표준시 기준이에요. 이름은 표시용이며 성별에 따라 관계 역할을 정하지 않아요. 저장한 성별은 별빛 사주의 평생운에서 10년 흐름을 계산할 때 사용해요.</p></details>
+        <details class="method-preview"><summary>궁합에 담은 내용</summary><p>두 사람의 확정된 출생 정보를 비교해 종합 점수와 기본 성향·서로의 보완·일상 호흡·관계 조화의 막대그래프를 보여줘요. 점수는 오쭈다의 고정 규칙으로 계산한 100점 만점의 참고 지표이며, 실제 관계의 성공 확률은 아니에요. 자세한 풀이와 대화 예시, 각 점수의 계산 기준도 함께 확인할 수 있어요.</p><p>생일 또는 출생 시간이 달라지면 다른 쌍으로 구분해요. 이름·성별이나 두 사람의 입력 순서만 바꾸면 이용 시간이 유지돼요. 만료 뒤 다시 펼치기를 눌러야 새로 결제해요.</p><p>한국 표준시 기준이에요. 이름은 표시용이며 성별에 따라 관계 역할을 정하지 않아요. 저장한 성별은 별빛 사주의 평생운에서 10년 흐름을 계산할 때 사용해요.</p></details>
       </form>
       <noscript><p class="form-error">궁합을 읽으려면 자바스크립트를 켜 주세요.</p></noscript>
     </section>
@@ -81,5 +81,5 @@
   </main>
   <footer class="site-footer"><span class="footer-wordmark">THE STARLIT ARCHIVE <i>✧</i></span><p>함께하는 이야기는 두 사람의 선택으로 써 내려가세요.</p></footer>
   <script src="/shared/analytics/site-usage.js?v=20261113-fortune-visits1"></script>
-  <script type="module" src="./compatibility-app.mjs?v=20261113-compatibility20-1"></script>
+  <script type="module" src="./compatibility-app.mjs?v=20261113-compatibility-score1"></script>
 </body></html>
