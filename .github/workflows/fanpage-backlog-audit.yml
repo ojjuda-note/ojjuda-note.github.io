@@ -1,0 +1,91 @@
+name: Fanpage backlog audit
+on:
+  push:
+    branches: ['audit/fanpage-backlog-20261113']
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Export reviewed sources and original PR evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, subprocess
+          out = pathlib.Path('audit-evidence'); out.mkdir()
+          def git(*args): return subprocess.check_output(['git', *args], text=True)
+          def api(path): return json.loads(subprocess.check_output(['gh', 'api', path], text=True))
+          repo = 'ojjuda-note/ojjuda-note.github.io'
+          refs = [913,915,919,929,939,940,947,948,951,955,963,968,974,976,977,992,996]
+          sha = git('rev-parse', 'HEAD').strip()
+          names = git('ls-tree','-r','--name-only','HEAD').splitlines()
+          def save(ref, name, destination):
+              p = destination / name; p.parent.mkdir(parents=True,exist_ok=True)
+              result = subprocess.run(['git','show',f'{ref}:{name}'],capture_output=True)
+              if result.returncode == 0: p.write_bytes(result.stdout)
+          keep = [p for p in names if p.endswith('AGENTS.md') or p.startswith('features/fanpages/') and p.endswith(('.js','.mjs','.html','.css','.json')) or p.startswith('tests/fanpage') or p.startswith('.github/workflows/') or p in ['tests/package.json','tests/package-lock.json','scripts/mirror-fanpage-commons.py','scripts/build-pages-site.mjs']]
+          for p in keep: save('HEAD',p,out/'current')
+          (out/'current-sha.txt').write_text(sha+'\n')
+          manifest=[]
+          for number in refs:
+              pr=api(f'repos/{repo}/pulls/{number}')
+              files=api(f'repos/{repo}/pulls/{number}/files?per_page=100')
+              dest=out/str(number); dest.mkdir()
+              compact={k:pr.get(k) for k in ['number','title','body','state','merged','mergeable','mergeable_state','updated_at','merged_at']}
+              compact['head']={'ref':pr['head']['ref'],'sha':pr['head']['sha']}
+              compact['base']={'ref':pr['base']['ref'],'sha':pr['base']['sha']}
+              compact['files']=[f['filename'] for f in files]
+              subprocess.run(['git','fetch','--no-tags','origin',f'pull/{number}/head'],check=True)
+              ancestor=git('merge-base','HEAD',pr['head']['sha']).strip()
+              compact['merge_base']=ancestor
+              for p in compact['files']:
+                  save(pr['head']['sha'],p,dest/'head')
+                  save(ancestor,p,dest/'ancestor')
+              (dest/'metadata.json').write_text(json.dumps(compact,ensure_ascii=False,indent=2))
+              (dest/'files.json').write_text(json.dumps(files,ensure_ascii=False,indent=2))
+              manifest.append(compact)
+              print(f"PR #{number}: {pr['state']}, merged={pr['merged']}, files={len(files)}")
+          (out/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2))
+          PY
+      - name: Check current profiles and videos
+        run: |
+          node features/fanpages/check-profiles.mjs
+          node features/fanpages/check-videos.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: fanpage-backlog-source-evidence
+          path: audit-evidence/
+          retention-days: 7
+          if-no-files-found: error
+  public-screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix tests ci --ignore-scripts
+      - name: Verify actual public RESCENE mobile screen and image attribution
+        env:
+          FANPAGE_LIVE: 'true'
+          FANPAGE_GROUP: rescene
+        run: node tests/fanpage-release-ui.test.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: fanpage-backlog-public-screen
+          path: tests/artifacts/fanpage-release/
+          retention-days: 7
+          if-no-files-found: error
