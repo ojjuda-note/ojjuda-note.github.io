@@ -1,8 +1,10 @@
-// Presentation scores from already-confirmed relationships. These ratios do
-// not rank ten gods, infer missing pillars, predict events or change the prose.
+import * as scoreRules from './reading-score-rules.mjs?v=20261114-saju-wind2';
+
+// Reference scores summarize confirmed cues used by the existing reading.
+// They do not infer missing inputs, predict events, or rewrite the narrative.
 const ORDER=['year','month','day','hour'];
 const NOTICE='풀이를 숫자로 정리한 참고 점수예요.';
-const ZERO_NOTICE='두 점수는 따로 봐요. 0점은 이 항목에서 해당 표시가 없다는 뜻이에요.';
+const SCOPE_NOTICE='순풍은 살릴 점, 역풍은 살필 점이에요. 두 점수는 따로 봐요.';
 const unique=values=>[...new Set(values)];
 const fail=()=>{throw new Error('확인된 풀이로 순풍·역풍 점수를 다시 준비해 주세요.');};
 const list=value=>Array.isArray(value)?value:fail();
@@ -39,6 +41,92 @@ function unavailable(reason,coverage,factIds=[]) {
     methodNotice:NOTICE,reason,scopeNotice:'',factIds:[...factIds],coverage,calculation:null};
 }
 
+const RULES=scoreRules.READING_SCORE_RULES;
+const PAIR_RULES=scoreRules.READING_SCORE_PAIR_RULES;
+const STEM_RULES=scoreRules.READING_SCORE_STEM_RULES;
+const DOMAINS=new Set(RULES.map(rule=>rule.domain));
+const sourceKey=source=>[source.file,source.collection,source.code,source.field,source.anchor].join('|');
+const uniqueSources=sources=>[...new Map(sources.map(source=>[sourceKey(source),source])).values()];
+const ruleValue=value=>Number.isInteger(value)&&value>=0&&value<=2?value:fail();
+function textOf(item) {
+  return [...(item.paragraphs||[]),item.text,item.description,item.headline,item.title]
+    .filter(value=>typeof value==='string').join('\n');
+}
+function domainOf(item) {
+  const suffix=typeof item.id==='string'?item.id.split(/[.-]/).at(-1):'';
+  return DOMAINS.has(suffix)?suffix:null;
+}
+function matchedSources(sources,text) {
+  return list(sources).filter(source=>{
+    if(!source||typeof source.anchor!=='string'||!source.anchor.trim())fail();
+    return text.includes(source.anchor);
+  });
+}
+function narrativeCues(item,context,pillarKeys) {
+  const {profile,kind,transits=[]}=context,decade=kind==='daeun',natal=kind==='natal';
+  const text=textOf(item),domain=domainOf(item),selected=new Set(pillarKeys),cues=[];
+  const declared=item.anchorCodes?.length?item.anchorCodes:item.natalGodCodes?.length?item.natalGodCodes:natal&&item.godCodes?.length?item.godCodes:null;
+  const natalEntries=profile.gods.filter(entry=>selected.has(entry.pillarKey)&&(!declared||declared.includes(entry.god.code)))
+    .map(entry=>({code:entry.god.code,group:entry.god.group,key:entry.pillarKey+'.'+entry.position,
+      factId:(decade?'daeun.reading.':'')+'natal.god.'+entry.pillarKey+'.'+entry.position}));
+  const addGod=(entry,scope,period=false)=>{
+    const matches=RULES.filter(rule=>rule.code===entry.code&&(!domain||rule.domain===domain)).map(rule=>{
+      const helpSources=matchedSources(rule.sources[period?'periodHelp':'help'],text);
+      const careSources=matchedSources(rule.sources[period?'periodCare':'care'],text);
+      return {rule,help:helpSources.length?ruleValue(rule.help):0,care:careSources.length?ruleValue(rule.care):0,helpSources,careSources};
+    }).filter(match=>match.help||match.care);
+    if(!matches.length)return;
+    // One observed position is one cue, even when the same sentence is listed
+    // under several domains. The strongest actually present point on each axis
+    // wins; there is no default, minimum, or contribution from an absent axis.
+    cues.push({id:scope+'.god.'+entry.key,kind:'ten-god',scope,code:entry.code,domain:domain||'overview',
+      help:Math.max(...matches.map(match=>match.help)),care:Math.max(...matches.map(match=>match.care)),
+      ruleIds:unique(matches.map(match=>match.rule.id)),factIds:[entry.factId],sources:{
+        help:uniqueSources(matches.filter(match=>match.help).flatMap(match=>match.helpSources)),
+        care:uniqueSources(matches.filter(match=>match.care).flatMap(match=>match.careSources))}});
+  };
+  for(const entry of natalEntries)addGod(entry,'natal');
+  const periodScopes=[];
+  for(const {value,prefix} of transits) {
+    const entries=[];
+    for(const position of ['stem','branch']) {
+      const god=value[position+'God'];
+      if(!god?.code)fail();
+      if(item.godCodes?.length&&!item.godCodes.includes(god.code))continue;
+      const entry={code:god.code,group:god.group,key:position,factId:prefix+'.god.'+position};
+      entries.push(entry);addGod(entry,prefix,true);
+    }
+    periodScopes.push({scope:prefix,entries});
+  }
+  // Domain cards use the actual period pair when a period is selected. Personal
+  // portrait bridges use natal anchors. Keep both scopes and their facts apart.
+  const seenPairs=new Set();
+  for(const rule of PAIR_RULES) {
+    if(domain&&rule.domain!==domain&&rule.domain!=='portrait')continue;
+    if(!rule.source?.anchor||!text.includes(rule.source.anchor))continue;
+    const scopes=!natal&&rule.source.file==='reader-summary.mjs'?periodScopes:[{scope:'natal',entries:natalEntries}];
+    for(const {scope,entries:observed} of scopes) {
+      const entries=observed.filter(entry=>rule.groups.includes(entry.group));
+      if(!rule.groups.every(group=>entries.some(entry=>entry.group===group)))continue;
+      if(new Set(entries.map(entry=>entry.code)).size<2)continue;
+      const key=scope+'|'+sourceKey(rule.source);if(seenPairs.has(key))continue;seenPairs.add(key);
+      const help=ruleValue(rule.help),care=ruleValue(rule.care);if(!help&&!care)continue;
+      cues.push({id:scope+'.'+rule.id,kind:'god-pair',scope,domain:rule.domain,help,care,ruleIds:[rule.id],
+        factIds:unique(entries.map(entry=>entry.factId)),sources:{help:help?[rule.source]:[],care:care?[rule.source]:[]}});
+    }
+  }
+  const stemMatches=STEM_RULES.filter(rule=>rule.stem===profile.dayMaster.hanja).map(rule=>{
+    const helpSources=matchedSources(rule.sources.help,text),careSources=matchedSources(rule.sources.care,text);
+    return {rule,help:helpSources.length?ruleValue(rule.help):0,care:careSources.length?ruleValue(rule.care):0,helpSources,careSources};
+  }).filter(match=>match.help||match.care);
+  if(stemMatches.length)cues.push({id:'natal.day-master',kind:'day-master',scope:'natal',code:profile.dayMaster.hanja,
+    help:Math.max(...stemMatches.map(match=>match.help)),care:Math.max(...stemMatches.map(match=>match.care)),
+    ruleIds:stemMatches.map(match=>match.rule.id),factIds:[(decade?'daeun.reading.':'')+'natal.day-master'],sources:{
+      help:uniqueSources(stemMatches.filter(match=>match.help).flatMap(match=>match.helpSources)),
+      care:uniqueSources(stemMatches.filter(match=>match.care).flatMap(match=>match.careSources))}});
+  return cues;
+}
+
 function scoreFor(item,context,{all=false,reason=''}={}) {
   const {profile,registry,kind,label,transits=[]}=context;
   const pillarKeys=relatedKeys(item,profile,all),selected=new Set(pillarKeys);
@@ -47,9 +135,8 @@ function scoreFor(item,context,{all=false,reason=''}={}) {
   const coverage={kind,label,knownCharacterCount:profile.knownCharacterCount,usedCharacterCount:pillarKeys.length*2,
     partial:!profile.complete,pillarKeys,comparisonCount};
   if(reason)return unavailable(reason,coverage);
-  if(!comparisonCount)return unavailable('서로 비교할 확정된 자리가 부족해 점수를 정하지 않았어요.',coverage);
+  const cues=narrativeCues(item,context,pillarKeys),sourceIds=[];
   let stemCombinations=0,branchCombinations=0,branchClashes=0;
-  const supportIds=[],cautionIds=[],sourceIds=[];
   const collect=(interactions,prefix,native=false)=>{
     const seen=new Set();
     interactions.forEach((relation,index)=>{
@@ -57,9 +144,10 @@ function scoreFor(item,context,{all=false,reason=''}={}) {
       if(!selected.has(relation.birthPillarKey)||(native&&!selected.has(relation.otherPillarKey)))return;
       const key=[relation.birthPillarKey,native?relation.otherPillarKey:'period',relation.kind].join(':');
       if(seen.has(key))fail();seen.add(key);
-      const id=prefix+'.interaction.'+index;
-      if(relation.kind==='branch-clash'){branchClashes++;cautionIds.push(id);}
-      else {supportIds.push(id);if(relation.kind==='stem-combination')stemCombinations++;else branchCombinations++;}
+      const id=prefix+'.interaction.'+index,clash=relation.kind==='branch-clash';
+      if(clash)branchClashes++;else if(relation.kind==='stem-combination')stemCombinations++;else branchCombinations++;
+      cues.push({id,kind:'interaction',scope:prefix,interactionKind:relation.kind,help:clash?0:2,care:clash?2:0,
+        ruleIds:[clash?'confirmed-clash':'confirmed-combination'],factIds:[id],sources:{help:[],care:[]}});
     });
   };
   if(natal) {
@@ -78,19 +166,24 @@ function scoreFor(item,context,{all=false,reason=''}={}) {
       collect(value.interactions,prefix);
     }
   }
-  const factIds=unique([...sourceIds,...supportIds,...cautionIds]);
-  if(factIds.some(id=>!registry.has(id))||stemCombinations>comparisonCount||branchCombinations>comparisonCount||branchClashes>comparisonCount)fail();
-  const tailwind=Math.round(100*(stemCombinations+branchCombinations)/(comparisonCount*2));
-  const headwind=Math.round(100*branchClashes/comparisonCount);
+  const factIds=unique([...sourceIds,...cues.flatMap(cue=>cue.factIds)]);
+  if(factIds.some(id=>!registry.has(id))||new Set(cues.map(cue=>cue.id)).size!==cues.length
+    ||stemCombinations>comparisonCount||branchCombinations>comparisonCount||branchClashes>comparisonCount)fail();
+  if(!cues.length)return unavailable('이 항목은 점수로 정리할 풀이가 충분하지 않아 점수를 표시하지 않았어요.',coverage,factIds);
+  const tailwindNumerator=cues.reduce((sum,cue)=>sum+cue.help,0),headwindNumerator=cues.reduce((sum,cue)=>sum+cue.care,0);
+  const denominator=2*cues.length;
+  const tailwind=Math.round(100*tailwindNumerator/denominator),headwind=Math.round(100*headwindNumerator/denominator);
+  coverage.cueCount=cues.length;
   return {version:1,status:'available',available:true,max:100,
-    tailwind:{label:'순풍',value:tailwind,summary:'함께 맞추고 이어 갈 부분을 정리한 점수예요.',reason:'',factIds:unique([...sourceIds,...supportIds])},
-    headwind:{label:'역풍',value:headwind,summary:'차이를 살피고 조정할 부분을 정리한 점수예요.',reason:'',factIds:unique([...sourceIds,...cautionIds])},
-    methodNotice:NOTICE,reason:'',scopeNotice:ZERO_NOTICE+(profile.complete?'':' 확인되지 않은 글자는 빼고 계산했어요.'),factIds,coverage,
-    calculation:{rule:'confirmed-pair-ratios-v1',stemCombinations,branchCombinations,branchClashes,comparisonCount,
-      tailwindNumerator:stemCombinations+branchCombinations,tailwindDenominator:comparisonCount*2,
-      headwindNumerator:branchClashes,headwindDenominator:comparisonCount,
-      tailwindFormula:'round(100 × (stemCombinations + branchCombinations) / (2 × comparisonCount))',
-      headwindFormula:'round(100 × branchClashes / comparisonCount)'}};
+    tailwind:{label:'순풍',value:tailwind,summary:'풀이에서 힘이 되는 점을 정리한 점수예요.',reason:'',
+      factIds:unique([...sourceIds,...cues.filter(cue=>cue.help).flatMap(cue=>cue.factIds)])},
+    headwind:{label:'역풍',value:headwind,summary:'풀이에서 살피고 조정할 점을 정리한 점수예요.',reason:'',
+      factIds:unique([...sourceIds,...cues.filter(cue=>cue.care).flatMap(cue=>cue.factIds)])},
+    methodNotice:NOTICE,reason:'',scopeNotice:SCOPE_NOTICE+(profile.complete?'':' 확인되지 않은 글자는 빼고 계산했어요.'),factIds,coverage,
+    calculation:{rule:'confirmed-reading-cues-v2',cues,cueCount:cues.length,stemCombinations,branchCombinations,branchClashes,comparisonCount,
+      tailwindNumerator,tailwindDenominator:denominator,headwindNumerator,headwindDenominator:denominator,
+      tailwindFormula:'round(100 × observed help weights / (2 × applicable cue count))',
+      headwindFormula:'round(100 × observed care weights / (2 × applicable cue count))'}};
 }
 
 /** Attach atomically after all visible readings exist, before creating copies. */
@@ -128,10 +221,11 @@ export function attachReadingScores(report,chart,fortune) {
     for(const month of list(timings.items)) {
       const context=monthContexts.get(month.month);
       add(month,context);
-      // These points are applications of the same confirmed monthly reading.
-      // Keep that scope instead of inventing another event-specific forecast.
+      // Each point uses its own prose with the already confirmed monthly facts.
+      // No event-specific forecast or new birth information is added.
       for(const key of ['opportunities','people','documents','cautions']) {
-        for(const point of list(month[key]))pending.push([point,scoreFor(month,context)]);
+        for(const point of list(month[key]))pending.push([point,scoreFor({...point,
+          godCodes:month.godCodes,natalGodCodes:month.natalGodCodes,factIds:month.factIds},context)]);
       }
     }
   }
@@ -148,7 +242,7 @@ export function attachReadingScores(report,chart,fortune) {
         for(const topic of [...list(period.topics),...list(period.situations||[])])add(topic,context);
       }
       const current=reading.periods.find(period=>period.isCurrent);
-      if(current)add(reading,contexts.get(current.index),{all:true});
+      if(current)pending.push([reading,scoreFor(current,contexts.get(current.index),{all:true})]);
       else add(reading,{...base,kind:'daeun',label:'현재 대운'},{reason:reading.currentState==='before-start'
         ?'첫 대운이 시작되기 전이라 현재 점수는 표시하지 않아요.'
         :'현재 시점은 계산한 대운 구간 밖이라 점수를 표시하지 않아요.'});
