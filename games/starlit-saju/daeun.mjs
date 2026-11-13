@@ -5,6 +5,8 @@ import { makeProfile, getTenGod, interactionPairs } from './fortune-data.mjs?v=2
 
 const HOUR = 3600000;
 const PERIOD_COUNT = 9;
+const ASSUMED_BIRTH_HOUR = 6;
+const ASSUMED_BIRTH_NOTICE = '태어난 시간을 몰라 대운은 오전 6시 00분을 기준으로 계산했어요.';
 const STEMS = [
   ['甲', '갑', 'wood'], ['乙', '을', 'wood'], ['丙', '병', 'fire'], ['丁', '정', 'fire'],
   ['戊', '무', 'earth'], ['己', '기', 'earth'], ['庚', '경', 'metal'], ['辛', '신', 'metal'],
@@ -114,7 +116,7 @@ function validateChart(chart, now) {
   if (date.getUTCFullYear() !== year || date.getUTCMonth() + 1 !== month || date.getUTCDate() !== day) invalid('chart', '양력 생일을 다시 확인해 주세요.');
   const { hour, minute } = chart.input;
   if (chart.timeKnown && (!Number.isInteger(hour) || hour < 0 || hour > 23 || !Number.isInteger(minute) || minute < 0 || minute > 59)) invalid('chart', '태어난 시간을 다시 확인해 주세요.');
-  if (!chart.timeKnown && hour !== null) invalid('chart', '출생시각 정보를 다시 확인해 주세요.');
+  if (!chart.timeKnown && (hour !== null || minute !== 0)) invalid('chart', '출생시각 정보를 다시 확인해 주세요.');
   const koreaNow = new Date(now.getTime() + 9 * HOUR);
   if (Date.UTC(year, month - 1, day, chart.timeKnown ? hour : 0, chart.timeKnown ? minute : 0) > koreaNow.getTime()) invalid('future', '미래의 생일로는 대운을 계산할 수 없어요.');
   let profile;
@@ -130,26 +132,37 @@ function unavailable(gender, reason, message) {
   };
 }
 
-/** Traditional 10-year periods from a confirmed calculateSaju result.
+/** Traditional 10-year periods from a calculateSaju result.
+ * An unknown birth time uses 06:00 KST only for decade order and start dates.
+ * Natal gods/interactions still use the original confirmed profile; neither the
+ * chart nor its unknown hour is changed. Known times retain their exact output.
  * `now` marks the current interval only. A display name is never read here. */
 export function analyzeDaeun(chart, { gender = null, now = new Date() } = {}) {
   if (!(now instanceof Date) || !Number.isFinite(now.getTime())) invalid('clock', '현재 날짜를 확인할 수 없어요. 기기 시간을 확인해 주세요.');
   if (gender !== null && gender !== 'male' && gender !== 'female') invalid('gender', '대운 계산에 사용할 성별을 다시 선택해 주세요.');
   const profile = validateChart(chart, now);
   if (gender === null) return unavailable(gender, 'gender-required', '성별을 선택하면 10년마다 바뀌는 흐름을 함께 볼 수 있어요.');
-  if (!chart.timeKnown) return unavailable(gender, 'birth-time-required', '태어난 시간을 알면 대운이 시작되는 시기와 10년 흐름을 볼 수 있어요.');
-  const year = profile.knownPillars.find(value => value.key === 'year');
-  const month = profile.knownPillars.find(value => value.key === 'month');
-  if (!year || !month) return unavailable(gender, 'solar-term-uncertain', '절기가 바뀌는 경계에 태어나 대운의 시작 시기와 순서를 확정할 수 없어요.');
-  const birth = Solar.fromYmdHms(chart.solar.year, chart.solar.month, chart.solar.day, chart.input.hour, chart.input.minute, 0);
+  const timeAssumed = !chart.timeKnown;
+  const knownYear = profile.knownPillars.find(value => value.key === 'year');
+  const knownMonth = profile.knownPillars.find(value => value.key === 'month');
+  if (!timeAssumed && (!knownYear || !knownMonth)) return unavailable(gender, 'solar-term-uncertain', '절기가 바뀌는 경계에 태어나 대운의 시작 시기와 순서를 확정할 수 없어요.');
+  const birthHour = timeAssumed ? ASSUMED_BIRTH_HOUR : chart.input.hour;
+  const birthMinute = timeAssumed ? 0 : chart.input.minute;
+  const birth = Solar.fromYmdHms(chart.solar.year, chart.solar.month, chart.solar.day, birthHour, birthMinute, 0);
+  if (timeAssumed && Date.parse(stamp(birth).iso) > now.getTime()) invalid('future', '대운 계산에 사용하는 오늘 오전 6시 00분이 아직 지나지 않았어요. 그 시각이 지난 뒤 다시 펼쳐 주세요.');
   const chinaBirth = birth.nextHour(-1);
   const lunar = chinaBirth.getLunar();
   const minuteEnd = Solar.fromYmdHms(chinaBirth.getYear(), chinaBirth.getMonth(), chinaBirth.getDay(), chinaBirth.getHour(), chinaBirth.getMinute(), 59).getLunar();
-  if (lunar.getYearInGanZhiExact() !== minuteEnd.getYearInGanZhiExact()
-      || lunar.getMonthInGanZhiExact() !== minuteEnd.getMonthInGanZhiExact()) return unavailable(gender, 'solar-term-uncertain', '입력한 분 안에 절기가 바뀌어 대운의 시작 시기와 순서를 확정할 수 없어요.');
+  if (!timeAssumed && (lunar.getYearInGanZhiExact() !== minuteEnd.getYearInGanZhiExact()
+      || lunar.getMonthInGanZhiExact() !== minuteEnd.getMonthInGanZhiExact())) return unavailable(gender, 'solar-term-uncertain', '입력한 분 안에 절기가 바뀌어 대운의 시작 시기와 순서를 확정할 수 없어요.');
+  // The explicitly assumed instant also resolves a term-boundary day for the
+  // decade clock. It never resolves the corresponding unknown natal pillars.
+  const year = timeAssumed ? pair(lunar.getYearInGanZhiExact()) : knownYear;
+  const month = timeAssumed ? pair(lunar.getMonthInGanZhiExact()) : knownMonth;
   // Only the term-derived YEAR and MONTH use UTC+8. Keep the original Korean
   // day stem and natal interactions, including births shortly after midnight.
-  if (year.hanja !== lunar.getYearInGanZhiExact() || month.hanja !== lunar.getMonthInGanZhiExact()) invalid('chart', '출생시각과 사주 글자가 맞지 않아요. 사주를 다시 펼쳐 주세요.');
+  if ((knownYear && knownYear.hanja !== lunar.getYearInGanZhiExact())
+      || (knownMonth && knownMonth.hanja !== lunar.getMonthInGanZhiExact())) invalid('chart', '출생시각과 사주 글자가 맞지 않아요. 사주를 다시 펼쳐 주세요.');
   const yun = lunar.getEightChar().getYun(gender === 'male' ? 1 : 0, 2);
   const forward = yun.isForward();
   const expectedForward = year.stem.yinYang === '양' ? gender === 'male' : gender === 'female';
@@ -164,11 +177,11 @@ export function analyzeDaeun(chart, { gender = null, now = new Date() } = {}) {
   const jie = forward ? lunar.getNextJie(false) : lunar.getPrevJie(false);
   const referenceTerm = { ...stamp(jie.getSolar().nextHour(1)), term: TERMS[jie.getName()] || jie.getName(), hanja: jie.getName() };
   const facts = [
-    fact('daeun.birth', '대운 계산의 출생시각', `${birthStamp.label} · 한국 표준시`),
-    fact('daeun.direction', '대운의 순서', `${year.hangul}년의 ${year.stem.hangul}(${year.stem.hanja})은 ${year.stem.yinYang} · ${gender === 'male' ? '남성' : '여성'} · ${directionLabel}`),
-    fact('daeun.month', '대운을 세는 출발 글자', `${month.hangul}(${month.hanja}) 월주`),
+    fact('daeun.birth', timeAssumed ? '대운 계산에 가정한 출생시각' : '대운 계산의 출생시각', `${birthStamp.label} · 한국 표준시`+(timeAssumed ? ' · 실제 출생시각 미확정' : '')),
+    fact('daeun.direction', timeAssumed ? '오전 6시 가정에 따른 대운의 순서' : '대운의 순서', `${year.hangul}년의 ${year.stem.hangul}(${year.stem.hanja})은 ${year.stem.yinYang} · ${gender === 'male' ? '남성' : '여성'} · ${directionLabel}`),
+    fact('daeun.month', timeAssumed ? '오전 6시 가정으로 대운을 세는 출발 글자' : '대운을 세는 출발 글자', `${month.hangul}(${month.hanja}) 월주`),
     fact('daeun.term', '시작 계산에 사용한 절기', `${referenceTerm.term} · ${referenceTerm.label} · 한국 표준시`),
-    fact('daeun.start', '첫 대운의 계산상 시작', `${start.label} · ${startAge.label} · 만 ${completedAge(birth, firstStart)}세`),
+    fact('daeun.start', timeAssumed ? '오전 6시 가정에 따른 첫 대운의 시작' : '첫 대운의 계산상 시작', `${start.label} · ${startAge.label} · 만 ${completedAge(birth, firstStart)}세`),
   ];
   const monthIndex = CYCLE.indexOf(month.hanja);
   const officialPairs = yun.getDaYun(PERIOD_COUNT + 1).slice(1).map(value => value.getGanZhi());
@@ -203,6 +216,7 @@ export function analyzeDaeun(chart, { gender = null, now = new Date() } = {}) {
   const currentState = currentIndex !== null ? 'active' : now.getTime() < Date.parse(start.iso) ? 'before-start' : 'after-listed-periods';
   return {
     available: true, reason: null, message: null, gender, direction, directionLabel,
+    ...(timeAssumed ? { timeAssumed: true, assumedBirthTime: { hour: ASSUMED_BIRTH_HOUR, minute: 0, timezone: 'Asia/Seoul' }, birthTimeNotice: ASSUMED_BIRTH_NOTICE } : {}),
     startAge, startsAt: start.iso, startLabel: start.label, birthAt: birthStamp.iso, referenceTerm,
     currentIndex, currentState, periods, facts, method: method(), sources: sources(),
   };

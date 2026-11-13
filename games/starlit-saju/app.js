@@ -119,7 +119,7 @@ function updateTime() {
   $('time-fields').hidden = unknown;
   $('birth-hour').disabled = unknown;
   $('birth-minute').disabled = unknown;
-  $('time-help').textContent = unknown ? '시간을 몰라도 상세 풀이를 볼 수 있어요.' : '한국 표준시로 입력해 주세요. 00시는 자정, 12시는 정오예요.';
+  $('time-help').textContent = unknown ? '시간을 모르면 대운은 오전 6시 00분을 기준으로 계산해요.' : '한국 표준시로 입력해 주세요. 00시는 자정, 12시는 정오예요.';
   clearError();
 }
 form.querySelectorAll('input[name="calendar"]').forEach(input => input.addEventListener('change', updateCalendar));
@@ -403,9 +403,9 @@ document.querySelectorAll('.reading-size-control button').forEach(button=>button
 async function prepareDetailedReading(chart,target,person=currentPerson||readPerson()) {
   detailModulesPromise ||= Promise.all([
     import('./fortune-data.mjs?v=20261113-saju-reader1'),
-    import('./readings.mjs?v=20261114-saju-wind2'),
-    import('./report-view.mjs?v=20261114-saju-wind1'),
-    import('./daeun.mjs?v=20261113-saju-reader1'),
+    import('./readings.mjs?v=20261114-saju-daeun6-1'),
+    import('./report-view.mjs?v=20261114-saju-daeun6-1'),
+    import('./daeun.mjs?v=20261114-saju-daeun6-1'),
     zodiacModule()
   ]).catch(error=>{detailModulesPromise=null;throw error;});
   const [dataModule,readingModule,viewModule,daeunModule,zodiacData]=await detailModulesPromise;

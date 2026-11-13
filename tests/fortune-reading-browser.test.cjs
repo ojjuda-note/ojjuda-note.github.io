@@ -18,7 +18,8 @@ import { buildDetailedReading } from '/games/starlit-saju/readings.mjs';
 import { renderDetailedReport } from '/games/starlit-saju/report-view.mjs';
 const now = new Date('2026-11-13T00:00:00Z');
 const fixtureCase = new URLSearchParams(location.search).get('score-case') || 'standard';
-const births = {standard:{year:2005,month:12,day:23,hour:8,minute:37},'original-zero':{year:1990,month:5,day:17,hour:8,minute:37}};
+const births = {standard:{year:2005,month:12,day:23,hour:8,minute:37},'original-zero':{year:1990,month:5,day:17,hour:8,minute:37},
+  'unknown-daeun':{year:1990,month:5,day:17,hour:null,minute:0}};
 if (!Object.hasOwn(births,fixtureCase)) throw new Error('Unknown local score fixture');
 const chart = calculateSaju(births[fixtureCase],{now});
 const fortune = analyzeFortune(chart,{year:2026,now});
@@ -26,6 +27,9 @@ const reading = buildDetailedReading(chart,fortune,{daeun:analyzeDaeun(chart,{ge
 // Test-only model references let the browser compare rendered values with the
 // actual source reading. Nothing is added to the public app or result DOM.
 globalThis.__sajuScoreFixture = {key:fixtureCase,birth:births[fixtureCase],nativeInteractionCount:fortune.profile.interactions.length,
+  daeun:{natalTimeKnown:chart.timeKnown,natalHour:chart.input.hour,available:reading.daeun.available,timeAssumed:reading.daeun.timeAssumed,
+    assumedBirthTime:reading.daeun.assumedBirthTime,notice:reading.daeun.birthTimeNotice,periodCount:reading.daeun.periods.length,
+    currentPeriodLabel:reading.daeun.periods.find(period=>period.isCurrent)?.periodLabel},
   items:[{key:'portrait-overview',selector:'.portrait-intro',reading:reading.personPortrait},
     {key:'portrait-decisions',selector:'.portrait-card[data-portrait-card="portrait-decisions"]',reading:reading.personPortrait.cards.find(item=>item.id==='portrait-decisions')},
     {key:'lifelong-overview',selector:'#reading-lifelong-summary .reader-intro',reading:reading.reader.lifelong}]};
@@ -296,7 +300,7 @@ const server = http.createServer((request, response) => {
       else await saju.locator('a[href="#'+id+'"]:visible').first().click();
       await saju.locator('[data-reader-current][id="'+id+'"]').waitFor({state:'visible'});
     }
-    const sajuScoreViews={},sajuScoreRegressions={};
+    const sajuScoreViews={},sajuScoreRegressions={},sajuDaeunAssumptionViews={};
     async function inspectSajuScores(label) {
       const panels=await saju.locator('[data-reader-current] .saju-reading-score:visible').evaluateAll(elements=>elements.map(panel=>{
         const box=panel.getBoundingClientRect();
@@ -534,6 +538,43 @@ const server = http.createServer((request, response) => {
         sajuScoreRegressions[label]=values;
       }
     }
+    await saju.goto(new URL('/__saju_fixture?score-case=unknown-daeun',url).href);
+    await saju.locator('#report-content[data-ready="lifelong"]').waitFor();
+    const assumedDaeun=await saju.evaluate(()=>globalThis.__sajuScoreFixture.daeun);
+    assert.equal(assumedDaeun.natalTimeKnown,false);assert.equal(assumedDaeun.natalHour,null);
+    assert.equal(assumedDaeun.available,true);assert.equal(assumedDaeun.timeAssumed,true);
+    assert.deepEqual(assumedDaeun.assumedBirthTime,{hour:6,minute:0,timezone:'Asia/Seoul'});
+    assert.equal(assumedDaeun.notice,'태어난 시간을 몰라 대운은 오전 6시 00분을 기준으로 계산했어요.');
+    assert.equal(assumedDaeun.periodCount,9);
+    assert.equal(await saju.locator('#reading-daeun .daeun-period').count(),9,'the unknown-time reading renders all nine explicitly assumed periods');
+    async function inspectDaeunAssumption(label) {
+      const notices=saju.locator('#reading-daeun .daeun-time-notice:visible');
+      assert.equal(await notices.count(),1,label+': the assumption is visible once in the current reading context');
+      assert.equal(await notices.textContent(),assumedDaeun.notice);
+      const geometry=await notices.evaluate(element=>{
+        const box=element.getBoundingClientRect(),style=getComputedStyle(element);
+        return {inside:box.left>=-1&&box.right<=innerWidth+1,
+          fits:element.scrollWidth<=element.clientWidth+1&&element.scrollHeight<=element.clientHeight+1,
+          unclipped:['none','','unset'].includes(style.webkitLineClamp)&&style.textOverflow!=='ellipsis'};
+      });
+      assert.ok(geometry.inside&&geometry.fits&&geometry.unclipped,label+': the complete 06:00 notice wraps without clipping');
+      assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,label+': the assumed-time reading fits the viewport');
+    }
+    for(const [viewport,size,textSize] of [['phone-small',{width:320,height:844},'large'],['desktop',{width:1280,height:900},'normal']]) {
+      const label='unknown daeun '+viewport+' '+textSize;
+      await saju.setViewportSize(size);
+      await saju.locator('#report-content').evaluate((report,value)=>{report.dataset.readingSize=value;},textSize);
+      await selectReadingPage('reading-daeun');await inspectDaeunAssumption(label+' intro');
+      const periodHeading=await saju.locator('.daeun-period.is-current .daeun-age').getAttribute('id');
+      await saju.locator('.daeun-nav a[href="#'+periodHeading+'"]').click();
+      await inspectDaeunAssumption(label+' period');await inspectSajuScores(label+' period');
+      assert.equal(await saju.locator('.daeun-dates:visible').textContent(),assumedDaeun.currentPeriodLabel,'visible dates come from the actual 06:00 calculation');
+      await saju.locator('#reading-daeun').screenshot({path:path.join(artifacts,'saju-daeun-assumed-six-'+viewport+'-'+textSize+'.png')});
+      const topicId=await saju.locator('[data-reader-current] .daeun-topic').first().getAttribute('id');
+      await selectReadingPage(topicId);await inspectDaeunAssumption(label+' topic');
+      assert.equal(await saju.locator('.source-entry,[data-fact-id],a[href*="-evidence"]').count(),0,label+': an assumption notice does not restore calculation evidence');
+      sajuDaeunAssumptionViews[viewport]={...assumedDaeun,textSize};
+    }
     await saju.setViewportSize({width:390,height:844});
     await saju.goto(new URL('/__compatibility_fixture', url).href);
     await saju.locator('#report-content[data-ready="confirmed"]').waitFor();
@@ -724,6 +765,6 @@ const server = http.createServer((request, response) => {
     }
     assert.deepEqual(errors, []);
     assert.deepEqual(failed, []);
-    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuSummaryViews, sajuScoreViews, sajuScoreRegressions, compatibilityPeople, compatibilityScores, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
+    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuSummaryViews, sajuScoreViews, sajuScoreRegressions, sajuDaeunAssumptionViews, compatibilityPeople, compatibilityScores, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => server.close());

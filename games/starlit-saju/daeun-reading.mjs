@@ -160,11 +160,14 @@ function validate(chart,daeun,profile) {
       || !Array.isArray(daeun.sources) || !daeun.method) fail();
   const ids=factRegistry(daeun.facts);
   if (!daeun.available) {
-    if (daeun.periods.length||!text(daeun.message)||!text(daeun.reason)) fail();
+    if (daeun.periods.length||!text(daeun.message)||!text(daeun.reason)||daeun.timeAssumed===true) fail();
     return;
   }
-  const birth=chart.solar.iso+'T'+pad(chart.input.hour)+':'+pad(chart.input.minute)+':00+09:00';
-  if (!chart.timeKnown || !profile.complete || daeun.birthAt!==birth
+  const timeAssumed=daeun.timeAssumed===true;
+  if (timeAssumed && (chart.timeKnown || daeun.assumedBirthTime?.hour!==6 || daeun.assumedBirthTime?.minute!==0
+      || daeun.assumedBirthTime?.timezone!=='Asia/Seoul' || !text(daeun.birthTimeNotice))) fail();
+  const birth=chart.solar.iso+'T'+pad(timeAssumed?6:chart.input.hour)+':'+pad(timeAssumed?0:chart.input.minute)+':00+09:00';
+  if ((!timeAssumed&&(!chart.timeKnown||!profile.complete)) || daeun.birthAt!==birth
       || !['male','female'].includes(daeun.gender) || !['forward','reverse'].includes(daeun.direction)
       || daeun.method.periodYears!==10 || daeun.periods.length!==daeun.method.periodCount
       || !daeun.periods.length || !Number.isFinite(stamp(daeun.startsAt))
@@ -304,6 +307,7 @@ export function buildDaeunReading(chart,daeun) {
     reason:daeun.reason,message:daeun.message,origin:ORIGIN,
     method:clone(daeun.method),sources:clone(daeun.sources),methodNotice:METHOD_NOTICE,
     direction:daeun.direction,directionLabel:daeun.directionLabel,currentIndex:daeun.currentIndex,currentState:daeun.currentState,
+    ...(daeun.timeAssumed===true?{timeAssumed:true,assumedBirthTime:clone(daeun.assumedBirthTime),birthTimeNotice:daeun.birthTimeNotice}:{}),
   };
   if (!daeun.available) return {...common,headline:daeun.message,paragraphs:[],periods:[],facts:clone(daeun.facts),factIds:[]};
   const natal=natalFacts(profile);
@@ -327,7 +331,9 @@ const summaryCopy = item => [...(Array.isArray(item?.summaryLines) ? ['두 줄 �
 
 export function copyDaeunReading(reading) {
   if (!reading||typeof reading.availability!=='boolean'||!Array.isArray(reading.periods)||!Array.isArray(reading.facts)) fail();
-  const lines=[reading.title,reading.headline,...(reading.availability?summaryCopy(reading):readingScoreCopy(reading)),...reading.paragraphs];
+  if (reading.timeAssumed===true&&!text(reading.birthTimeNotice)) fail();
+  const lines=[reading.title,...(reading.timeAssumed===true?[reading.birthTimeNotice]:[]),reading.headline,
+    ...(reading.availability?summaryCopy(reading):readingScoreCopy(reading)),...reading.paragraphs];
   if (!reading.availability) return lines.join('\n');
   for (const period of reading.periods) {
     lines.push('',period.title,period.subtitle,period.periodLabel,...summaryCopy(period),...period.paragraphs);

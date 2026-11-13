@@ -99,9 +99,9 @@ test('cards keep their selected result and actual advice, including personal dec
   }
 });
 
-test('unknown birth time, an unresolved solar-term boundary and missing gender never receive guessed decade summaries', () => {
-  for (const [input, gender] of [[{...birth, hour:null}, 'male'],
-    [{year:2024, month:2, day:4, hour:null}, 'female'], [birth, null]]) {
+test('missing gender and an unresolved known-minute boundary never receive decade summaries', () => {
+  for (const [input, gender] of [[{...birth, hour:null}, null],
+    [{year:2024, month:2, day:4, hour:17, minute:27}, 'female'], [birth, null]]) {
     const report = build(input, gender), original = structuredClone(report);
     attachReadingSummaryLines(report);
     assert.equal(report.daeun.available, false);
@@ -110,6 +110,21 @@ test('unknown birth time, an unresolved solar-term boundary and missing gender n
     assert.deepEqual(withoutSummaries(report), original);
     assert.ok(targets(report).every(item => item.summaryLines.length === 2));
     assert.equal(report.reader.scopeNotice, original.reader.scopeNotice);
+  }
+});
+
+test('six-AM decade summaries preserve the assumed-time notice and original unknown natal scope', () => {
+  for (const input of [{...birth, hour:null}, {year:2024, month:2, day:4, hour:null}]) {
+    const report=build(input), original=structuredClone(report);
+    attachReadingSummaryLines(report);
+    assert.equal(report.daeun.available,true);assert.equal(report.daeun.timeAssumed,true);
+    assert.equal(report.daeun.birthTimeNotice,original.daeun.birthTimeNotice);
+    assert.match(report.daeun.birthTimeNotice,/태어난 시간을 몰라.*오전 6시 00분/);
+    assert.equal(report.daeun.periods.length,9);
+    assert.ok(targets(report).every(item=>item.summaryLines.length===2));
+    assert.ok(report.daeun.facts.every(item=>!/^daeun\.reading\.natal\.(?:pillar|god)\.hour(?:\.|$)/.test(item.id)));
+    assert.deepEqual(withoutSummaries(report),original,'summary presentation preserves the full reading, scores and assumed-time disclosure');
+    assert.equal(report.reader.scopeNotice,original.reader.scopeNotice);
   }
 });
 
