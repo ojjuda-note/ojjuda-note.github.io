@@ -15,6 +15,7 @@ const selfBirth={year:1990,month:5,day:17,hour:8,minute:37};
 const partnerBirth={year:1992,month:3,day:14,hour:10,minute:20};
 const otherBirth={year:1987,month:12,day:11,hour:22,minute:15};
 const SCORE_IDS=['temperament','complement','daily','harmony'];
+const PEOPLE_TOPICS=['overview','decisions','relationships','work','pressure','adjustment'];
 const pause=()=>new Promise(resolve=>setTimeout(resolve,5));
 function deferred() { let resolve;const promise=new Promise(done=>{resolve=done;});return {promise,resolve}; }
 async function waitFor(predicate,message='Compatibility UI did not settle') {
@@ -23,8 +24,72 @@ async function waitFor(predicate,message='Compatibility UI did not settle') {
 }
 function assertNoScoreboard(h) {
   assert.equal(h.window.document.querySelector('.compatibility-scoreboard'),null,'an unavailable reading must not leave scores anywhere on the page');
+  assert.equal(h.window.document.querySelector('.compatibility-person-reading,#compatibility-synthesis,#compatibility-page-select'),null,'an unavailable reading must not leave either person, the synthesis or its navigation on the page');
+}
+function assertNoCompatibilityEvidence(h) {
+  assert.equal(h.$('compatibility-report').querySelector('#compatibility-reading-evidence,.compatibility-evidence-link,.compatibility-score-details,[data-fact-id],.source-entry,a[href*="-evidence"],a[href*="-chapter-"]'),null,'compatibility exposes no calculation tables, sources, formulas or evidence links');
+  assert.ok([...h.$('compatibility-page-select').options].every(option=>!/근거|계산|자료|출처/.test(option.textContent)),'the reading picker contains only the requested reading pages');
+}
+function selectCompatibilityPage(h,id) {
+  const picker=h.$('compatibility-page-select');
+  assert.ok(picker,'the paid compatibility has a reading picker');
+  assert.ok([...picker.options].some(option=>option.value===id),`${id} is available in the reading picker`);
+  picker.value=id;h.change(picker);
+  const page=h.$(id);
+  assert.ok(page,`${id} has a reading page`);
+  assert.equal(page.closest('[hidden]'),null,`${id} is revealed when selected`);
+  return page;
+}
+async function assertCalculatedPeople(h,names=['','']) {
+  const {buildCompatibilityReading}=await import(pathToFileURL(path.join(appDir,'compatibility.mjs')).href);
+  const {chart,partner}=h.state.starts.at(-1),reading=buildCompatibilityReading(chart,partner);
+  const pageIds=PEOPLE_TOPICS.map(topic=>`compatibility-people-${topic}`);
+  assert.deepEqual([...h.$('compatibility-page-select').options].slice(0,pageIds.length+2).map(option=>option.value),[...pageIds,'compatibility-synthesis','compatibility-scores'],'matching A/B topics come before the synthesis and scores');
+  for(const topic of PEOPLE_TOPICS) {
+    const page=selectCompatibilityPage(h,`compatibility-people-${topic}`);
+    const people=[...page.querySelectorAll('.compatibility-person-reading')];
+    assert.deepEqual(people.map(person=>person.dataset.personKey),['self','partner'],'every topic presents A before B');
+    assert.deepEqual(people.map(person=>person.dataset.personMarker),['A','B']);
+    for(const [index,person] of people.entries()) {
+      const expected=topic==='overview'?reading.people[index]:reading.people[index].cards.find(card=>card.topicId===topic);
+      assert.ok(expected,`${topic} comes from the real person reading`);
+      const marker=index===0?'A':'B';
+      assert.equal(person.querySelector('.compatibility-person-name').textContent,names[index]?`${marker} · ${names[index]}`:marker,'a display name never replaces the A/B identity');
+      const summary=person.querySelector('.compatibility-two-line-summary');
+      assert.equal(summary?.getAttribute('role'),'group');assert.equal(summary?.getAttribute('aria-label'),'두 줄 요약');
+      assert.deepEqual([...summary.querySelectorAll('.compatibility-summary-line')].map(line=>line.textContent),expected.summaryLines,`${marker} ${topic} retains both calculated summary units`);
+      for(const paragraph of expected.paragraphs)assert.ok(person.textContent.includes(paragraph),`${marker} ${topic} retains its full interpretation`);
+      assert.equal(person.querySelector('.compatibility-evidence-link'),null,`${marker} ${topic} keeps its interpretation without an evidence link`);
+    }
+  }
+  const synthesis=selectCompatibilityPage(h,'compatibility-synthesis');
+  assert.deepEqual([...synthesis.querySelectorAll('.compatibility-summary-line')].map(line=>line.textContent),reading.synthesis.summaryLines);
+  for(const paragraph of reading.synthesis.paragraphs)assert.ok(synthesis.textContent.includes(paragraph),'the combined explanation retains its full interpretation');
+  assertNoCompatibilityEvidence(h);
+  selectCompatibilityPage(h,'compatibility-people-overview');
+  h.$('compatibility-report').querySelector('[data-compatibility-step="next"]').click();
+  assert.equal(h.$('compatibility-page-select').value,'compatibility-people-decisions','next follows the same A/B topic order');
+  h.$('compatibility-report').querySelector('[data-compatibility-step="previous"]').click();
+  assert.equal(h.$('compatibility-page-select').value,'compatibility-people-overview');
+  return reading;
+}
+function assertCopiedPeople(text,reading,names=['','']) {
+  const labels=names.map((name,index)=>`${index===0?'A':'B'}${name?' · '+name:''}`);
+  const headings=reading.people.flatMap((person,index)=>[`${labels[index]} · 성격과 특징`,...person.cards.map(card=>`${labels[index]} · ${card.label}`)]);
+  headings.push(reading.synthesis.title);
+  let position=0;
+  for(const heading of headings) {
+    const found=text.indexOf(heading,position);
+    assert.ok(found>=position,'copy keeps A’s complete story, B’s complete story, then the combined explanation');
+    position=found+heading.length;
+  }
+  for(const person of reading.people)for(const item of [person,...person.cards]) {
+    for(const value of [...item.summaryLines,...item.paragraphs])assert.ok(text.includes(value),'copy preserves each person’s complete summaries and interpretation');
+  }
+  for(const value of [reading.synthesis.title,...reading.synthesis.summaryLines,...reading.synthesis.paragraphs])assert.ok(text.includes(value),'copy preserves the combined explanation');
 }
 function scoreSnapshot(h) {
+  selectCompatibilityPage(h,'compatibility-scores');
   const boards=h.window.document.querySelectorAll('.compatibility-scoreboard');
   assert.equal(boards.length,1,'a paid pair has one score summary');
   const board=boards[0],totalElement=board.querySelector('[data-score-total]');
@@ -59,15 +124,15 @@ async function assertCalculatedScores(h) {
   assert.ok(score,'the real pair calculation provides the score data');
   const displayed=scoreSnapshot(h),board=h.window.document.querySelector('.compatibility-scoreboard');
   assert.equal(displayed.total,score.total);
-  for(const value of [score.label,score.summary,score.methodNotice])assert.ok(board.textContent.includes(value),'the score explanation accompanies the numbers');
-  for(const [label,count] of [['나',score.coverage.self],['상대',score.coverage.partner]])assert.ok(board.textContent.includes(`${label} ${count}/8`),'the confirmed calculation scope is available with the scores');
+  assert.ok(board.textContent.includes(score.label),'the reference-score label accompanies the numbers');
+  assert.match(board.querySelector('.compatibility-score-summary').textContent,/성향.*함께 지내는/,'the visible summary explains the comparison without a calculation formula');
+  assert.match(board.querySelector('.compatibility-score-notice').textContent,/참고 점수/,'the numbers are described as reference scores');
   for(const item of score.items) {
     assert.equal(displayed.items.find(value=>value.id===item.id).value,item.value);
     const row=board.querySelector(`[data-score-item="${item.id}"]`);
     for(const value of [item.label,item.summary])assert.ok(row.textContent.includes(value),`${item.id} retains its label and short explanation`);
-    assert.ok(board.textContent.includes(item.reason),`${item.id} retains its full calculation explanation`);
-    for(const id of item.factIds)assert.ok(h.$('compatibility-report').querySelector(`[data-fact-id="${id}"]`),`${id} remains available in the full calculation evidence`);
   }
+  assertNoCompatibilityEvidence(h);
   return score;
 }
 
@@ -270,23 +335,30 @@ test('an explicit twenty-ju purchase reveals the real reading and accessible sco
   assert.ok(h.$('compatibility-report').textContent.length>3000);
   assert.equal(h.$('compatibility-report').querySelectorAll('.reader-card').length,6);
   assert.ok(h.$('compatibility-expiry').textContent.trim());
+  assert.equal(h.$('compatibility-page-select').value,'compatibility-people-overview','the purchased reading starts with both people’s character and traits');
+  const reading=await assertCalculatedPeople(h);
   const score=await assertCalculatedScores(h);
   h.$('compatibility-copy').click();await waitFor(()=>h.state.copies.length===1);
   assert.match(h.state.copies[0],/궁합/);
   for(const paragraph of h.$('compatibility-report').querySelectorAll('.reader-prose > p'))assert.ok(h.state.copies[0].includes(paragraph.textContent),'copy includes every personal interpretation paragraph');
-  assert.match(h.state.copies[0],/궁합 계산 근거/);
+  assert.doesNotMatch(h.state.copies[0],/궁합 계산 근거|점수를 계산한 방법/);
+  assertCopiedPeople(h.state.copies[0],reading);
   const copyLines=h.state.copies[0].split('\n');
   assert.ok(copyLines.some(line=>line.includes('종합 궁합')&&line.includes(`${score.total}점`)),'copy associates the total with its score');
-  for(const value of [score.label,score.summary,score.methodNotice])assert.ok(h.state.copies[0].includes(value),'copy includes the score explanation and its limitations');
+  for(const value of [score.label,h.$('compatibility-report').querySelector('.compatibility-score-summary').textContent])assert.ok(h.state.copies[0].includes(value),'copy includes the displayed score summary');
+  assert.equal(h.state.copies[0].includes(score.methodNotice),false,'copy omits the detailed scoring method');
   for(const item of score.items) {
     assert.ok(copyLines.some(line=>line.includes(item.label)&&line.includes(`${item.value}점`)),`copy associates ${item.id} with its numeric score`);
-    for(const value of [item.summary,item.reason])assert.ok(h.state.copies[0].includes(value),`copy includes ${item.id} explanation`);
+    assert.ok(h.state.copies[0].includes(item.summary),`copy includes ${item.id} summary`);
+    assert.equal(h.state.copies[0].includes(item.reason),false,`copy omits the ${item.id} calculation formula`);
   }
   assert.deepEqual(h.state.fetches,[]);
 });
 
 test('the same pair remains free within its original 24 hours even when the two input positions are swapped',async t=>{
-  const h=await harness();t.after(h.close);h.fill();await h.price(20);h.submit();await h.ready();
+  const names=['첫 번째 예시','두 번째 예시'];
+  const h=await harness();t.after(h.close);h.fill({...selfBirth,name:names[0]},{...partnerBirth,name:names[1]});await h.price(20);h.submit();await h.ready();
+  await assertCalculatedPeople(h,names);
   const original=[...h.state.receipts.values()][0],expiry=original.expires_at,firstKey=h.state.starts[0].key;
   const firstBody=h.$('compatibility-report').textContent,firstScores=scoreSnapshot(h);
   h.edit();h.$('pair-swap').click();await h.price(0);
@@ -300,6 +372,7 @@ test('the same pair remains free within its original 24 hours even when the two 
   assert.equal(h.state.charges,1);assert.equal(h.state.coins,40);
   assert.equal([...h.state.receipts.values()][0].expires_at,expiry);
   assert.notEqual(h.$('compatibility-report').textContent,firstBody,'the real directional interpretation follows the new positions');
+  await assertCalculatedPeople(h,[names[1],names[0]]);
   assert.deepEqual(scoreSnapshot(h),firstScores,'swapping the same two people preserves their scores and bar lengths');
 });
 
@@ -640,8 +713,9 @@ test('both compatibility pickers share saved people and restore or swap the comp
 
 test('changing only both names and genders preserves the paid pair and its original expiry',async t=>{
   const h=await harness({user:PROFILE_USER_A});t.after(h.close);
-  h.fill({...selfBirth,name:'처음 이름',gender:'male'},{...partnerBirth,name:'상대 이름',gender:'female'});
+  h.fill({...selfBirth,name:'같은 이름',gender:'male'},{...partnerBirth,name:'같은 이름',gender:'female'});
   await h.price(20);h.submit();await h.ready();
+  await assertCalculatedPeople(h,['같은 이름','같은 이름']);
   const firstKey=h.state.starts[0].key,expiry=[...h.state.receipts.values()][0].expires_at,firstScores=scoreSnapshot(h);
   assert.equal(h.$('self-saved-profiles').querySelectorAll('.profile-picker-use').length,2,'an explicit pair reading saves both entered people');
   h.edit();
@@ -654,8 +728,12 @@ test('changing only both names and genders preserves the paid pair and its origi
   assert.equal(h.state.starts.length,2);assert.equal(h.state.starts[1].key,firstKey);assert.equal(h.state.starts[1].expectedCharge,0);
   assert.deepEqual(h.state.chargedAmounts,[20]);assert.equal(h.state.receipts.size,1);
   assert.equal([...h.state.receipts.values()][0].expires_at,expiry);
+  const reading=await assertCalculatedPeople(h,['수정한 이름','<img src=x onerror=alert(1)>']);
   assert.deepEqual(scoreSnapshot(h),firstScores,'display names and genders cannot change these birth-chart comparison scores');
   for(const id of ['self-saved-profiles','partner-saved-profiles','compatibility-result'])assert.equal(h.$(id).querySelector('img,script,[onerror]'),null);
+  h.$('compatibility-copy').click();await waitFor(()=>h.state.copies.length===1);
+  assertCopiedPeople(h.state.copies[0],reading,['수정한 이름','<img src=x onerror=alert(1)>']);
+  assert.ok(h.state.copies[0].includes('A · 수정한 이름'));assert.ok(h.state.copies[0].includes('B · <img src=x onerror=alert(1)>'),'copy keeps the display name as plain text');
   assert.equal(h.state.baseStarts.length,0);assert.deepEqual(h.state.fetches,[]);
 });
 
@@ -713,12 +791,12 @@ test('both zodiac previews follow separate births, swaps and resets without purc
 test('purchased compatibility retains both zodiac labels in its result, card and copied text',async t=>{
   const h=await harness();t.after(h.close);
   h.fill({...selfBirth,name:'하늘'},{...partnerBirth,name:'바다'});await h.price(20);h.submit();await h.ready();
-  assert.match(h.$('self-result-zodiac').textContent,/하늘님 · 말띠.*입춘/);
-  assert.match(h.$('partner-result-zodiac').textContent,/바다님 · 원숭이띠.*입춘/);
+  assert.match(h.$('self-result-zodiac').textContent,/A · 하늘 · 말띠.*입춘/);
+  assert.match(h.$('partner-result-zodiac').textContent,/B · 바다 · 원숭이띠.*입춘/);
   assert.match(h.$('compatibility-report').textContent,/두 사람의 띠/);
   h.$('compatibility-copy').click();await waitFor(()=>h.state.copies.length===1);
-  assert.match(h.state.copies[0],/하늘: 말띠 · 사주에서는 입춘부터 띠가 바뀌어요/);
-  assert.match(h.state.copies[0],/바다: 원숭이띠 · 사주에서는 입춘부터 띠가 바뀌어요/);
+  assert.match(h.state.copies[0],/A · 하늘: 말띠 · 사주에서는 입춘부터 띠가 바뀌어요/);
+  assert.match(h.state.copies[0],/B · 바다: 원숭이띠 · 사주에서는 입춘부터 띠가 바뀌어요/);
   assert.equal(h.state.charges,1);
   h.changeAccount(PROFILE_USER_B);
   for(const person of ['self','partner']) {

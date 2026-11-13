@@ -197,7 +197,7 @@ test('unknown birth time and seasonal-boundary candidates never gain fabricated 
     const copy=value.copyByCategory[topic];
     assert.equal(copy.split('\n')[2],value.reader.scopeNotice,'the purchase copy presents its scope before the readings');
     assert.equal(copy.split(value.reader.scopeNotice).length-1,1,'the short common notice appears only once per product');
-    for(const warning of value.methodByCategory[topic].warnings)assert.ok(copy.includes(warning),'the original scope warnings remain available');
+    for(const warning of value.methodByCategory[topic].warnings)assert.ok(!copy.includes(warning),'the long calculation notes stay internal while the short scope notice remains visible');
   }
 });
 

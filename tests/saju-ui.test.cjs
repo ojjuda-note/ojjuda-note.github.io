@@ -24,6 +24,54 @@ async function waitFor(predicate, message = 'UI did not settle') {
     await pause();
   }
 }
+function assertNoReadingScores(h) {
+  assert.equal(h.window.document.querySelector('.saju-reading-score'),null,'an unavailable paid reading leaves no score or scoring notice on the page');
+}
+function assertNoCalculationUI(h) {
+  assert.equal(h.window.document.querySelector('.birth-chart-details,#conventions,#convention-list,#result-pillars,#element-bars,#reading-evidence,#reading-method,#reading-sources,#reading-guide,#reading-glossary,.report-chapter,.reading-full-text,.source-entry,[data-fact-id],a[href*="-evidence"],a[href*="-chapter-"]'),null,'the result omits calculation tables, source panels and evidence links');
+  const picker=h.$('reading-page-select');
+  if(picker)assert.ok([...picker.options].every(option=>!/근거|계산·해석|계산 단원|자료 출처/.test(option.textContent)));
+}
+function assertReadingScores(root) {
+  const panels=[...root.querySelectorAll('.saju-reading-score')];
+  assert.ok(panels.length>0,'the purchased reading declares its scores or why they are unavailable');
+  return panels.map(panel=>{
+    const meters=[...panel.querySelectorAll('.saju-wind-meter[role="meter"]')];
+    if(panel.dataset.readingScoreStatus==='unavailable') {
+      assert.equal(meters.length,0,'unsupported items do not invent a zero score');
+      assert.equal(panel.querySelector('.saju-wind-fill'),null);
+      assert.ok(panel.querySelector('.saju-reading-score-reason')?.textContent.trim());
+      return {status:'unavailable'};
+    }
+    assert.equal(panel.dataset.readingScoreStatus,'available');assert.equal(meters.length,2);
+    const values={status:'available'};
+    for(const [key,label] of [['tailwind','순풍'],['headwind','역풍']]) {
+      const row=panel.querySelector(`[data-wind="${key}"]`),meter=row.querySelector('.saju-wind-meter'),value=Number(meter.getAttribute('aria-valuenow'));
+      assert.ok(Number.isInteger(value)&&value>=0&&value<=100);
+      assert.equal(meter.getAttribute('aria-valuemin'),'0');assert.equal(meter.getAttribute('aria-valuemax'),'100');
+      assert.equal(meter.querySelector('.saju-wind-fill').style.width,`${value}%`);
+      assert.ok(row.textContent.includes(label)&&row.textContent.includes(`${value}점`),'each direction and score remain readable as text');
+      const name=meter.getAttribute('aria-label')||(meter.getAttribute('aria-labelledby')||'').split(/\s+/).map(id=>panel.ownerDocument.getElementById(id)?.textContent||'').join(' ');
+      assert.ok(name.includes(label),'the meter identifies which independent score it represents');
+      values[key]=value;
+    }
+    return values;
+  });
+}
+function assertReadingScoreCopy(copy,root) {
+  assert.doesNotMatch(copy,/사주 계산 근거|전체 계산 근거|계산·해석 자료|자료 출처|점수를 계산한 방법/);
+  for(const panel of root.querySelectorAll('.saju-reading-score')) {
+    if(panel.dataset.readingScoreStatus==='unavailable') {
+      assert.ok(copy.includes(panel.querySelector('.saju-reading-score-reason').textContent),'copy retains the reason a score is unavailable');
+      continue;
+    }
+    for(const [key,label] of [['tailwind','순풍'],['headwind','역풍']]) {
+      const meter=panel.querySelector(`[data-wind="${key}"] .saju-wind-meter`);
+      const value=meter.getAttribute('aria-valuenow');
+      assert.ok(new RegExp(label+'\\s*'+value+'(?:\\s*/\\s*100)?\\s*점').test(copy),`copy retains the independent ${label} score ${value}/100`);
+    }
+  }
+}
 
 async function harness(options = {}) {
   const html = await fs.readFile(path.join(appDir, 'index.html'), 'utf8');
@@ -225,20 +273,21 @@ test('only the selected monthly product is generated before its explicit ten-ju 
   h.fill({topic:'monthly'});h.submit();await pause();await pause();
   assert.equal(h.state.starts.length,0);assert.equal(h.$('result').hidden,true);
   assert.equal(h.window.document.querySelector('.saju-two-line-summary'),null,'a summary is not a free preview of an unpaid reading');
+  assertNoReadingScores(h);
   readingsGate.resolve();await waitFor(()=>h.state.starts.length===1);
   assert.equal(h.state.starts[0].topic,'monthly');assert.equal(h.state.starts[0].year,2026);
   assert.equal(h.$('result').hidden,true);
   assert.equal(h.window.document.querySelector('.saju-two-line-summary'),null,'pending payment does not reveal generated summaries');
+  assertNoReadingScores(h);
   purchaseGate.resolve();await h.ready('monthly',2026);
   assert.equal(h.state.charges,1);assert.equal(h.state.coins,20);
   assert.ok(h.$('report-content').querySelectorAll('.saju-two-line-summary').length>0,'valid payment reveals summaries with the purchased body');
+  assertReadingScores(h.$('report-content'));assertNoCalculationUI(h);
   assert.equal(h.$('report-content').querySelectorAll('.month-reading').length,12);
   assert.equal(h.$('reading-lifelong'),null);assert.equal(h.$('reading-annual'),null);
   assert.ok(h.$('report-content').textContent.length>=10000);
   assert.equal(h.$('reading-month-11').open,true);
-  assert.match(h.$('result-warnings').textContent,/태어난 시간을 몰라서.*두 글자는 비워/);
-  assert.match(h.$('result-warnings').textContent,/확인한 6글자.*나무·불·흙·쇠·물/);
-  assert.match(h.$('convention-list').textContent,/원래 안내: 태어난 시간을 모르므로 시주는 표시하지 않아요/);
+  assert.match(h.$('result-warnings').textContent,/태어난 시간을 몰라서.*확인할 수 있는 부분만 풀이/);
 });
 
 test('choosing another product never charges or exposes it before the labelled open button', async t => {
@@ -257,10 +306,11 @@ test('choosing another product never charges or exposes it before the labelled o
   assert.equal(h.state.starts.length,3);assert.equal(h.state.charges,2);assert.equal(h.$('reading-annual'),null);
 });
 
-test('reader size and chapter navigation preserve the purchased reading without another payment', async t => {
+test('reader size and item navigation preserve the purchased reading and scores without another payment', async t => {
   const h=await harness();t.after(h.close);h.fill({hour:8,minute:37});h.submit();await h.ready();
   const doc=h.window.document;
   const original=h.$('report-content').textContent;
+  const scores=assertReadingScores(h.$('report-content'));
   assert.equal(h.$('reading-controls').hidden,false);
   assert.match(h.$('current-reading-title').textContent,/평생운/);
   assert.match(h.$('current-reading-note').textContent,/다시 보기 0쭈/);
@@ -272,25 +322,14 @@ test('reader size and chapter navigation preserve the purchased reading without 
   assert.equal(large.getAttribute('aria-pressed'),'true');
   assert.equal(normal.getAttribute('aria-pressed'),'false');
   assert.equal(h.$('report-content').textContent,original);
-  const full=h.$('reading-lifelong-details');
-  assert.equal(full.open,false,'the original theory stays folded behind the personal reading');
-  const basisLink=doc.querySelector('.reader-card .reader-detail-link');
-  assert.ok(basisLink,'each personal interpretation can reveal its original explanation');
-  basisLink.click();
-  assert.equal(full.open,true);
-  const outline=doc.querySelector('.chapter-outline');
-  assert.equal(outline.open,false);
-  outline.querySelector('summary').click();
-  assert.equal(outline.open,true);
-  for (const link of [...outline.querySelectorAll('a'),...h.$('report-toc').querySelectorAll('a')]) {
-    const target=h.$(link.hash.slice(1));
-    assert.ok(target,`navigation target exists: ${link.hash}`);
-    if(target.tagName==='DETAILS') {
-      assert.equal(target.open,false);
-      link.click();
-      assert.equal(target.open,true,'an explicit contents link reveals the requested information');
-    }
-  }
+  assert.deepEqual(assertReadingScores(h.$('report-content')),scores,'larger text preserves every independent numeric score');
+  const picker=h.$('reading-page-select'),firstPage=picker.value,card=doc.querySelector('.portrait-card');
+  picker.value=card.id;h.change(picker);
+  assert.equal(h.$('report-content').querySelector('[data-reader-current]'),card);
+  assert.equal(card.closest('[hidden]'),null,'the requested personal item is revealed');
+  picker.value=firstPage;h.change(picker);
+  assertNoCalculationUI(h);
+  for(const link of h.$('report-toc').querySelectorAll('a'))assert.ok(h.$(link.hash.slice(1)),`navigation target exists: ${link.hash}`);
   h.pickReport('annual',2027);
   assert.match(h.$('current-reading-title').textContent,/평생운/,'choosing a product does not relabel the current story');
   assert.equal(h.$('report-content').textContent,original);
@@ -301,15 +340,14 @@ test('reader size and chapter navigation preserve the purchased reading without 
   assert.equal(h.state.charges,1);
 });
 
-test('the personal reading leads and all longer explanations remain accessible on request',async t=>{
+test('the personal reading keeps its complete body without calculation panels or evidence links',async t=>{
   const h=await harness();t.after(h.close);h.fill({hour:8,minute:37});h.submit();await h.ready();
   const doc=h.window.document,body=h.$('report-content');
   assert.ok(h.$('reading-summary'));
   assert.ok(h.$('reading-topics'));
   assert.equal(doc.querySelector('.report-opening'),null,'there is no duplicate introductory banner before the reading');
-  assert.deepEqual([...h.$('report-toc').querySelectorAll('a')].map(link=>link.hash),['#reading-summary','#reading-topics','#reading-evidence']);
-  assert.ok(body.compareDocumentPosition(doc.querySelector('.birth-chart-details'))&h.window.Node.DOCUMENT_POSITION_FOLLOWING,
-    'the personal interpretation comes before the birth-chart explanation');
+  assert.deepEqual([...h.$('report-toc').querySelectorAll('a')].map(link=>link.hash),['#reading-summary','#reading-topics']);
+  assertNoCalculationUI(h);
   assert.ok(body.compareDocumentPosition(h.$('other-reading-options'))&h.window.Node.DOCUMENT_POSITION_FOLLOWING,
     'the current reading comes before another purchase panel');
   assert.equal(h.$('report-status').textContent,'');
@@ -324,24 +362,19 @@ test('the personal reading leads and all longer explanations remain accessible o
     assert.ok(card.dataset.factIds.split(' ').every(id=>id.startsWith('natal.')),'lifelong never leaks a separately purchased period');
     assert.doesNotMatch(card.textContent,/사주는 태어난|이를 .십성|아래쪽 대표 글자|위쪽 글자/);
   }
-  assert.equal(h.$('reading-lifelong-details').open,false);
-  assert.equal(body.querySelectorAll('.report-chapter').length,13,'all previous detailed chapters are preserved');
-  assert.ok([...body.querySelectorAll('.report-chapter')].every(chapter=>chapter.closest('.reading-full-text')&&!chapter.closest('.reading-full-text').open));
-  cards.find(card=>card.querySelector('.reader-detail-link')).querySelector('.reader-detail-link').click();
-  assert.equal(h.$('reading-lifelong-details').open,true);
-  assert.ok(doc.activeElement.classList.contains('chapter-title'));
+  assertReadingScores(body);
   doc.querySelector('.other-reading-link').click();
   assert.equal(h.$('other-reading-options').open,true);
   assert.equal(h.state.charges,1,'reading navigation is never a purchase');
   h.$('copy-reading').click();await waitFor(()=>h.state.copies.length===1);
   const copy=h.state.copies[0],headline=body.querySelector('.reader-headline').textContent;
-  assert.ok(copy.indexOf(headline)<copy.indexOf('자세한 풀이'));
-  assert.ok(copy.indexOf(headline)<copy.indexOf('사주 이름을 쉬운 말로'));
+  assert.ok(copy.includes(headline));
+  assertReadingScoreCopy(copy,body);
   for(const card of cards)for(const paragraph of card.querySelectorAll('.reader-prose>p'))assert.ok(copy.includes(paragraph.textContent));
   for(const line of body.querySelectorAll('.saju-summary-line'))assert.ok(copy.includes(line.textContent),'the complete copied reading retains each summary unit as well as the full prose');
 });
 
-test('the personal portrait leads with every paragraph and connects its topics to complete evidence',async t=>{
+test('the personal portrait keeps every paragraph and topic while calculation evidence stays absent',async t=>{
   const h=await harness();t.after(h.close);h.fill();h.submit();await h.ready();
   const {analyzeFortune}=await import('../games/starlit-saju/fortune-data.mjs');
   const {buildDetailedReading}=await import('../games/starlit-saju/readings.mjs');
@@ -413,24 +446,8 @@ test('the personal portrait leads with every paragraph and connects its topics t
   const shortParagraphs=storyParagraphs.filter(paragraph=>paragraph.textContent.length<100);
   assert.ok(shortParagraphs.length>0);
   for(const paragraph of shortParagraphs)assert.equal(paragraph.children.length,0,'short explanations retain their plain paragraph text');
-  const evidence=h.$('reading-person-portrait-evidence');
-  assert.equal(evidence.open,false,'provenance and calculation details start folded');
-  assert.ok(evidence.textContent.includes(expected.methodNotice));
-  assert.ok(evidence.textContent.includes(expected.selectionNotice));
-  const factIds=[...new Set([...expected.factIds,...expected.cards.flatMap(card=>card.factIds)])];
-  const rows=[...evidence.querySelectorAll('.portrait-evidence-row')];
-  assert.deepEqual(rows.map(row=>row.dataset.factId),factIds);
-  for(const row of rows) {
-    const fact=reading.facts.find(value=>value.id===row.dataset.factId);
-    assert.ok(fact,'every statement is linked to a real calculation fact');
-    assert.equal(row.querySelector('dt').textContent,fact.label);
-    assert.equal(row.querySelector('dd').textContent,fact.text);
-  }
-  portrait.querySelector('.portrait-card .reader-detail-link').click();
-  assert.equal(evidence.open,true);assert.equal(doc.activeElement,evidence);
-  assert.equal(h.$('reading-evidence').open,false);
-  evidence.querySelector('.reader-detail-link').click();
-  assert.equal(h.$('reading-evidence').open,true,'the original full calculation registry is reachable');
+  assertNoCalculationUI(h);
+  assertReadingScores(portrait);
   for(const id of ['reading-summary','reading-topics']) {
     h.$('report-toc').querySelector(`a[href="#${id}"]`).click();
     await waitFor(()=>h.window.location.hash===`#${id}`,'the main contents should navigate to the personal reading');
@@ -442,6 +459,7 @@ test('the personal portrait leads with every paragraph and connects its topics t
   assert.ok(copy.includes(expected.headline));
   assert.ok(copy.indexOf(expected.headline)<copy.indexOf(reading.reader.lifelong.headline));
   for(const paragraph of [...expected.paragraphs,...expected.cards.flatMap(card=>card.paragraphs)])assert.ok(copy.includes(paragraph));
+  assertReadingScoreCopy(copy,h.$('report-content'));
 });
 
 test('monthly readers see the current and next actual flow before all twelve detailed months',async t=>{
@@ -454,12 +472,12 @@ test('monthly readers see the current and next actual flow before all twelve det
   assert.equal(h.$('reading-month-11').querySelector('.reader-headline'),null,'the month result heading is not repeated inside its open body');
   for(const month of h.$('report-content').querySelectorAll('.month-reading')) {
     assert.ok(month.querySelector(':scope>summary .month-headline').textContent.trim());
-    assert.equal(month.querySelector('.reading-full-text').open,false);
+    assert.equal(month.querySelector('.reading-full-text'),null);
   }
   h.$('reading-month-11').open=false;
   h.$('report-toc').querySelector('a[href="#reading-topics"]').click();
   assert.equal(h.$('reading-month-11').open,true,'the topic navigation opens its current month automatically');
-  assert.equal(h.$('reading-month-11-details').open,false,'topic navigation does not unfold the calculation lesson');
+  assert.equal(h.$('reading-month-11-details'),null,'calculation lessons are not part of the reading');
   links[1].click();
   assert.equal(h.$('reading-month-12').open,true);
   assert.equal(h.window.document.activeElement.id,'month-title-12');
@@ -511,7 +529,7 @@ test('the monthly overview preserves every calculated period, opportunity and ca
     assert.equal(article.open,true);assert.equal(doc.activeElement,heading);
     assert.equal(article.dataset.month,String(item.month));
     assert.deepEqual([...article.querySelectorAll('.reader-timing-content>.reader-prose>p')].map(p=>p.textContent),item.paragraphs);
-    assert.deepEqual([...article.querySelectorAll('.reader-timing-point')].map(point=>[point.querySelector('dt').textContent,[...point.querySelectorAll(':scope > dd')].map(part=>part.textContent).join('')]),
+    assert.deepEqual([...article.querySelectorAll('.reader-timing-point')].map(point=>[point.querySelector('dt').textContent,[...point.querySelectorAll(':scope > dd:not(.saju-reading-score)')].map(part=>part.textContent).join('')]),
       [...item.cautions,...item.opportunities,...item.people,...item.documents].map(point=>[point.label,point.text]),
       'all detailed text remains present, with cautions before opportunities');
   }
@@ -546,73 +564,34 @@ test('all twelve monthly chapters and their controls reuse the same product enti
   assert.equal(h.state.starts.length,1);assert.equal(h.state.charges,1);
 });
 
-test('copy and evidence contain only the opened product, with method and common explanations disclosed', async t => {
+test('copy contains only the opened reading and its scores without calculation evidence', async t => {
   const h=await harness();t.after(h.close);h.fill({hour:8,minute:37});h.submit();await h.ready();
   h.$('copy-reading').click();await waitFor(()=>h.state.copies.length===1);
   const copy=h.state.copies[0];
   assert.match(copy,/평생운/);assert.doesNotMatch(copy,/2026년 운세|2026년 12월|1990-05-17|1990년\s*5월\s*17일/);
-  assert.ok(h.$('reading-evidence'));assert.ok(h.$('reading-method'));
-  assert.ok(h.$('report-content').querySelectorAll('.evidence-row').length>10);
-  assert.match(h.$('report-content').textContent,/계산에서 확인한 내용/);
-  assert.match(h.$('report-content').textContent,/적용한 해석 규칙/);
-  assert.match(h.$('report-content').textContent,/공통 참고 설명/);
-  assert.match(h.$('reading-method').textContent,/계산하지 않은/);
-  assert.match(h.window.document.querySelector('.method-preview').textContent,/10년.*성별.*태어난 시간.*이름.*용신.*신살/);
+  assertNoCalculationUI(h);
+  assertReadingScores(h.$('report-content'));
+  assertReadingScoreCopy(copy,h.$('report-content'));
 });
 
-test('each chapter leads with its title, clear subtitle and easy detail before complete expandable evidence', async t => {
+test('every product keeps its personal interpretations and practical suggestions without calculation material', async t => {
   const h=await harness({adminPreview:true});t.after(h.close);
   h.fill({hour:8,minute:37});h.submit();await h.ready();
   const {analyzeFortune}=await import('../games/starlit-saju/fortune-data.mjs');
   const {buildDetailedReading}=await import('../games/starlit-saju/readings.mjs');
-  const {getReadingSources}=await import('../games/starlit-saju/sources.mjs');
   const fortune=analyzeFortune(h.state.starts[0].chart,{year:2026,now:new Date(fixedNow)});
   const expected=buildDetailedReading(h.state.starts[0].chart,fortune);
-  assert.equal(h.window.document.querySelector('.birth-chart-details').open,false);
-  assert.ok(h.$('reading-guide-title'));assert.ok(h.$('reading-glossary'));
   for (const topic of ['lifelong','annual','monthly','all']) {
     if(topic!=='lifelong') {h.pickReport(topic,2026);h.$('open-product').click();await h.ready(topic,2026);}
     const first=h.$('report-content').querySelector(':scope > :not(.reading-pager)');
-    assert.equal(first.id,topic==='all'?'reading-all':topic==='monthly'?'reading-months':`reading-${topic}`,
-      'the requested reading comes before supporting instructions');
-    for(const id of ['reading-guide','reading-evidence','reading-method','reading-sources']) {
-      const details=h.$(id);
-      assert.equal(details.tagName,'DETAILS');
-      assert.equal(details.open,false,'supporting information starts collapsed');
-      details.querySelector('summary').click();
-      assert.equal(details.open,true,'all supporting information remains available on request');
-    }
-    const sections=topic==='all'?[...expected.sections,...expected.months.map(month=>({...month,id:`month-${month.month}`}))]:topic==='monthly'?expected.months.map(month=>({...month,id:`month-${month.month}`})):expected.sections.filter(section=>section.id===topic);
-    const chapters=sections.flatMap(section=>section.chapters.map((chapter,index)=>({chapter,headingId:`reading-${section.id}-chapter-${index+1}`})));
-    const articles=[...h.$('report-content').querySelectorAll('.report-chapter')];
-    assert.equal(articles.length,chapters.length);
-    for (const {chapter,headingId} of chapters) {
-      const article=h.$(headingId).closest('.report-chapter');
-      const title=article.querySelector(':scope > h4.chapter-title');
-      const subtitle=article.querySelector(':scope > h5.chapter-summary');
-      const easy=article.querySelector(':scope > .easy-reading');
-      const details=article.querySelector(':scope > details.chapter-evidence');
-      assert.ok(title.textContent.includes(chapter.title));
-      assert.equal(subtitle.textContent,chapter.summary);
-      assert.equal(title.nextElementSibling,subtitle);
-      assert.equal(subtitle.nextElementSibling,easy);
-      assert.ok(chapter.easyParagraphs.length>0);
-      assert.deepEqual([...easy.children].map(p=>p.textContent),chapter.easyParagraphs);
-      assert.equal(details.open,false);
-      assert.ok([...article.children].indexOf(easy)<[...article.children].indexOf(details));
-      assert.deepEqual([...details.querySelectorAll('.calculated-reading > p:not(.reading-kind)')].map(p=>p.textContent),chapter.calculation);
-      assert.deepEqual([...details.querySelectorAll('.interpreted-reading > p:not(.reading-kind)')].map(p=>p.textContent),chapter.interpretation);
-      assert.deepEqual([...details.querySelectorAll('.shared-reference > p:not(.reading-kind)')].map(p=>p.textContent),chapter.reference);
-      details.querySelector('summary').click();
-      assert.equal(details.open,true);
-    }
-    const expectedRows=expected.evidence[topic].groups.flatMap(group=>group.rows);
-    const evidenceRows=[...h.$('reading-evidence').querySelectorAll('.evidence-row')];
-    assert.equal(evidenceRows.length,expectedRows.length);
-    for (const [index,row] of expectedRows.entries()) {
-      assert.equal(evidenceRows[index].dataset.factId,row.factId);
-      assert.equal(evidenceRows[index].querySelector('dt').textContent,row.label);
-      assert.equal(evidenceRows[index].querySelector('dd').textContent,row.value);
+    assert.equal(first.id,topic==='all'?'reading-all':topic==='monthly'?'reading-months':`reading-${topic}`,'the requested reading leads the product');
+    assertNoCalculationUI(h);assertReadingScores(h.$('report-content'));
+    const overviews=topic==='all'?[expected.reader.lifelong,expected.reader.annual,...expected.reader.months]:topic==='monthly'?expected.reader.months:[expected.reader[topic]];
+    for(const overview of overviews)for(const item of overview.cards) {
+      const card=h.$('report-content').querySelector(`[data-reader-card="${item.id}"]`);
+      assert.ok(card,'every actual personal interpretation remains available');
+      assert.deepEqual([...card.querySelectorAll(':scope > .reader-prose > p')].map(paragraph=>paragraph.textContent),item.paragraphs);
+      assert.deepEqual([...card.querySelectorAll('.saju-summary-line')].map(line=>line.textContent),item.summaryLines);
     }
     const advice=topic==='all'?[...expected.adviceByCategory.lifelong,...expected.adviceByCategory.annual,...expected.months.flatMap(month=>month.advice)]:topic==='monthly'?expected.months.flatMap(month=>month.advice):expected.adviceByCategory[topic];
     const cards=[...h.$('report-content').querySelectorAll('.advice-card')];
@@ -624,30 +603,17 @@ test('each chapter leads with its title, clear subtitle and easy detail before c
       assert.equal(card.dataset.adviceId,item.id);
       assert.equal(card.dataset.origin,'service-advice');
       assert.equal(card.querySelector('h4').textContent,item.title);
-      assert.equal(card.querySelector('h4').nextElementSibling,card.querySelector('h5'));
-      assert.equal(card.querySelector('h5').textContent,item.why);
+      assert.equal(card.querySelector('.advice-why,h5'),null,'the calculation rationale is not shown with the practical suggestion');
       assert.equal(card.querySelector('.advice-action > span').textContent,item.action);
       assert.equal(card.querySelector('.advice-caution > span').textContent,item.caution);
     }
     if (topic==='monthly'||topic==='all') for (const month of expected.months) assert.equal(h.$(`reading-month-${month.month}`).querySelectorAll('.advice-card').length,month.advice.length);
     const notices=h.$('report-content').querySelectorAll('.advice-notice');
-    assert.equal(notices.length,1,'a common advice notice is stated once, not once per month');
-    assert.equal(notices[0].textContent,expected.adviceNotice);
+    assert.equal(notices.length,0,'the removed source guide does not reappear beside the practical suggestions');
     assert.match(expected.adviceNotice,/오쭈다가 쓴 생활 제안/);
-    const sources=getReadingSources(topic,2026);
-    const renderedSources=[...h.$('reading-sources').querySelectorAll('.source-entry')];
-    assert.equal(renderedSources.length,sources.length);
-    for (const [index,source] of sources.entries()) {
-      const item=renderedSources[index];
-      assert.equal(item.dataset.sourceId,source.id);
-      assert.equal(item.querySelector('a').href,source.url);
-      assert.equal(item.querySelector('a').target,'_blank');
-      assert.equal(item.querySelector('.source-use').textContent,source.usedFor);
-      assert.equal(item.querySelector('.source-limitation').textContent,source.limitation);
-    }
   }
   assert.equal(h.state.starts.length,4,'only the four explicit product buttons open purchases');
-  assert.equal(h.state.charges,0,'reading and expanding calculation evidence never creates a payment');
+  assert.equal(h.state.charges,0,'verified preview and reading navigation never create a payment');
 });
 
 test('signed-out and anonymous sessions cannot purchase or reveal paid products', async t => {
@@ -697,6 +663,7 @@ test('a failed product ownership refresh preserves the paid report and retries w
 test('editing birth during a product transition discards the old request before payment', async t => {
   const h=await harness();t.after(h.close);h.fill();h.submit();await h.ready();
   h.pickReport('annual',2027);h.$('open-product').click();h.$('edit-birth').click();
+  assertNoReadingScores(h);
   h.fill({year:2001,month:4,day:9,hour:11,minute:20});h.submit();await h.ready();
   assert.match(h.$('birth-summary').textContent,/2001년 4월 9일/);
   assert.equal(h.state.starts.length,2);assert.ok(h.state.starts.every(value=>value.topic==='lifelong'));
@@ -709,6 +676,7 @@ test('account changes invalidate late payment receipts and erase the previous bi
   assert.equal(h.$('result').hidden,true);assert.equal(h.$('birth-year').value,'');
   assert.equal(h.$('report-content').textContent,'');assert.equal(h.$('copy-reading').disabled,true);
   assert.equal(h.window.document.querySelector('.saju-two-line-summary'),null,'account changes remove all previous summary content');
+  assertNoReadingScores(h);
 });
 
 test('solar and lunar representations reopen the same purchased product without an extra charge', async t => {
@@ -731,7 +699,7 @@ test('legacy bundle recovery and verified admin preview do not create new produc
 });
 
 test('the explicit thirty-ju full purchase opens all three readings and each can reopen free', async t => {
-  const h=await harness();t.after(h.close);h.fill({topic:'all'});
+  const h=await harness();t.after(h.close);h.fill({topic:'all',hour:8,minute:37,gender:'female'});
   await waitFor(()=>h.state.statusCalls.length>0&&!h.$('open-story').disabled);
   assert.equal(h.$('entry-year-field').hidden,false);
   assert.match(h.$('entry-price-value').textContent,/2026.*전체 풀이.*30쭈/);
@@ -751,9 +719,13 @@ test('the explicit thirty-ju full purchase opens all three readings and each can
   for (const link of [...h.$('reading-all').querySelectorAll('a'),...h.$('report-toc').querySelectorAll('a')]) assert.ok(h.$(link.hash.slice(1)));
   const ids=[...h.$('report-content').querySelectorAll('[id]')].map(item=>item.id);
   assert.equal(new Set(ids).size,ids.length,'the combined view has no duplicate section IDs');
+  const scores=assertReadingScores(h.$('report-content'));
+  assert.ok(scores.some(score=>score.status==='available'&&score.tailwind+score.headwind!==100),'the real fixture exercises independent values, not a complementary total');
+  assertNoCalculationUI(h);
   h.$('copy-reading').click();await waitFor(()=>h.state.copies.length===1);
   assert.match(h.state.copies[0],/평생운/);assert.match(h.state.copies[0],/2026년/);assert.match(h.state.copies[0],/12월/);
   assert.doesNotMatch(h.state.copies[0],/1990-05-17|1990년\s*5월\s*17일/);
+  assertReadingScoreCopy(h.state.copies[0],h.$('report-content'));
   for (const topic of ['lifelong','annual','monthly','all']) {
     h.pickReport(topic,2026);
     assert.match(h.$('open-product').textContent,/0쭈/);
@@ -768,6 +740,10 @@ test('the explicit thirty-ju full purchase opens all three readings and each can
       assert.equal(h.$('reading-summary').parentElement,h.$('reading-person-portrait'));
       assert.equal(h.$('reading-topics').parentElement,h.$('reading-person-portrait'));
     }
+    assertReadingScores(h.$('report-content'));assertNoCalculationUI(h);
+    const count=h.state.copies.length;
+    h.$('copy-reading').click();await waitFor(()=>h.state.copies.length===count+1);
+    assertReadingScoreCopy(h.state.copies.at(-1),h.$('report-content'));
   }
   assert.deepEqual(h.state.chargedAmounts,[30]);assert.equal(h.state.coins,0);
 });
@@ -814,6 +790,7 @@ test('an insufficient full-reading balance exposes no partial report or purchase
   await waitFor(()=>!h.$('form-error').hidden);
   assert.match(h.$('form-error').textContent,/30쭈/);
   assert.equal(h.$('result').hidden,true);assert.equal(h.state.coins,29);
+  assertNoReadingScores(h);
   assert.equal(h.state.charges,0);assert.equal(h.state.receipts.size,0);
   h.state.coins=30;h.submit();await h.ready('all',2026);
   assert.deepEqual(h.state.chargedAmounts,[30]);assert.equal(h.state.receipts.size,3);
@@ -830,7 +807,7 @@ test('the reading closes exactly 24 hours after payment and only a new explicit 
   assert.equal(h.$('report-content').textContent,'');
   assert.equal(h.$('copy-reading').disabled,true);
   assert.equal(h.$('reading-controls').hidden,true);
-  assert.equal(h.window.document.querySelector('.birth-chart-details').hidden,true);
+  assertNoReadingScores(h);assertNoCalculationUI(h);
   assert.equal(h.$('other-reading-options').open,true);
   assert.match(h.$('report-status').textContent,/24시간 이용이 끝났어요/);
   assert.match(h.$('open-product').textContent,/10쭈/);
@@ -838,7 +815,7 @@ test('the reading closes exactly 24 hours after payment and only a new explicit 
   h.$('open-product').click();await h.ready();
   assert.deepEqual(h.state.chargedAmounts,[10,10]);
   assert.equal(h.$('report-content').textContent,original,'repurchase does not invent a different natal reading');
-  assert.equal(h.window.document.querySelector('.birth-chart-details').hidden,false);
+  assertReadingScores(h.$('report-content'));assertNoCalculationUI(h);
   const renewed=[...h.state.receipts.values()][0];
   assert.notEqual(renewed.request_id,first.request_id);
   assert.equal(Date.parse(renewed.expires_at)-Date.parse(first.expires_at),86400000);
@@ -913,6 +890,7 @@ test('copying and returning to a sleeping tab check expiry before showing or cop
     assert.equal(h.$('report-content').textContent,'');
     assert.equal(h.$('copy-reading').disabled,true);
     assert.equal(h.window.document.querySelector('.saju-two-line-summary'),null,'expired summaries follow the same access gate as the full reading');
+    assertNoReadingScores(h);
     assert.equal(h.state.copies.length,0);
     assert.deepEqual(h.state.chargedAmounts,[10]);
   }
@@ -1178,6 +1156,9 @@ test('a missing time or an uncertain solar-term minute never renders invented te
     const h=await harness({user:PROFILE_USER_A});t.after(h.close);h.fill(input);h.submit();await h.ready();
     assert.ok(h.$('reading-daeun'));
     assert.equal(h.$('reading-daeun').querySelectorAll('[id^="reading-daeun-period-"]').length,0);
+    const score=h.$('reading-daeun').querySelector('.saju-reading-score');
+    assert.equal(score.dataset.readingScoreStatus,'unavailable');
+    assert.equal(score.querySelector('[role="meter"]'),null,'unconfirmed decade timing never becomes a numeric forecast');
     assert.match(h.$('reading-daeun').textContent,input.hour===null?/태어난 시간/:/절기/);
     assert.equal(h.state.chargedAmounts[0],10);
   }

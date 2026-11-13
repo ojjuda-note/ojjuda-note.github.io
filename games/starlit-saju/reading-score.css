@@ -1,0 +1,22 @@
+.saju-reading-score{margin:16px 0 26px;padding:17px 19px;border:1px solid #b49bc33d;border-radius:10px;background:linear-gradient(130deg,#33253d70,#1b1522b8);min-width:0;max-width:100%;color:#e4d8eb;word-break:keep-all;overflow-wrap:anywhere}
+.saju-reading-score-heading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 15px;margin:0 0 14px}
+.saju-reading-score-title{margin:0;color:#e7d0aa;font:600 var(--reading-font-size,16px)/1.7 var(--sans)}
+.saju-reading-score-scale{margin:0;color:#bdacc9;font-size:calc(var(--reading-font-size,16px) - 3px);line-height:1.7}
+.saju-wind-items{display:grid;gap:14px;min-width:0}
+.saju-wind-item{--wind-start:#85bab0;--wind-end:#badacf;min-width:0}
+.saju-wind-item[data-wind=headwind]{--wind-start:#bc9274;--wind-end:#e2bd95}
+.saju-wind-label-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:7px;min-width:0}
+.saju-wind-label{color:#d9cbe2;font-size:calc(var(--reading-font-size,16px) - 1px);line-height:1.8;min-width:0}
+.saju-wind-value{color:var(--wind-end);flex-shrink:0;font-size:var(--reading-font-size,16px);font-weight:700;line-height:1.8;font-variant-numeric:tabular-nums}
+.saju-wind-meter{height:9px;border-radius:6px;overflow:hidden;background:#ffffff12;box-shadow:inset 0 0 0 1px #ffffff0d}
+.saju-wind-fill{display:block;height:100%;max-width:100%;border-radius:inherit;background:linear-gradient(90deg,var(--wind-start),var(--wind-end))}
+.saju-reading-score-notice{margin:14px 0 0;color:#c4b3ce;font-size:calc(var(--reading-font-size,16px) - 3px);line-height:1.9}
+.saju-reading-score[data-reading-score-status=unavailable]{background:#221a2b50;border-style:dashed}
+.saju-reading-score-unavailable{margin:0 0 5px;font-size:calc(var(--reading-font-size,16px) - 1px);font-weight:600;line-height:1.8;color:#cfbad8}
+.saju-reading-score-reason{margin:0;font-size:calc(var(--reading-font-size,16px) - 1px);line-height:1.9;color:#c9b8d3}
+.reader-timing-point>dd.saju-reading-score{margin:14px 0 18px}
+.reader-timing-point>dd.saju-reading-score:before{content:none}
+.saju-reading-score p+p{margin-top:0}
+.saju-reading-score p.saju-reading-score-notice{margin-top:14px}
+@media(max-width:540px){.saju-reading-score{padding:15px 15px;margin-top:14px}.saju-wind-label-row{gap:10px}.saju-reading-score-heading{margin-bottom:12px}}
+@media(max-width:350px){.saju-reading-score{padding:14px 12px}.saju-wind-label{font-size:calc(var(--reading-font-size,16px) - 1px)}}

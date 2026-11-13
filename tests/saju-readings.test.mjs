@@ -139,7 +139,7 @@ test('category copies and advertised scope include only their selected periods a
   for (const text of Object.values(first.report.copyByCategory)) {
     assert.ok(!text.includes(first.chart.solar.iso));
     assert.doesNotMatch(text, /2005년 12월 23일|08:37|8시 37분/);
-    assert.match(text, /\[공통 참고 설명\]/);
+    assert.doesNotMatch(text, /\[공통 참고 설명\]/);
     assert.doesNotMatch(text, /\[적용한 전통 해석 규칙\]/);
   }
 });
@@ -194,7 +194,7 @@ test('all twelve months keep grounded service suggestions, including repeated sy
         assert.equal(card.origin,'service-advice');
         for(const field of ['title','why','action','caution']){
           assert.ok(typeof card[field]==='string'&&card[field].trim(),`${card.id}: missing ${field}`);
-          assert.ok(report.copyByCategory[topic].includes(card[field]),`${card.id}: copied reading omitted ${field}`);
+          assert.equal(report.copyByCategory[topic].includes(card[field]),field!=='why',`${card.id}: copy visibility differs for ${field}`);
         }
         assert.ok(card.factIds.length>0,'a suggestion needs an observed condition');
         for(const id of card.factIds){
@@ -214,20 +214,21 @@ test('all twelve months keep grounded service suggestions, including repeated sy
   assert.ok(sawNoPair&&sawBothKinds&&sawSameGod,'fixtures need absent, mixed and repeated relationships');
 });
 
-test('copied readings preserve the source purpose and limits for their purchased topic', () => {
+test('source records remain available internally but are not appended to purchased reading copies', () => {
   for(const year of [2026,2027]){
     const {report}=reading(sample,year);
     for(const topic of ['lifelong','annual','monthly']){
       for(const source of getReadingSources(topic,year)){
         for(const field of ['title','publisher','usedFor','limitation','url']){
-          assert.ok(report.copyByCategory[topic].includes(source[field]),`${topic}: omitted source ${source.id}/${field}`);
+          assert.ok(source[field],`${topic}: missing internal source ${source.id}/${field}`);
+          assert.ok(!report.copyByCategory[topic].includes(source[field]),`${topic}: exposed source ${source.id}/${field}`);
         }
       }
     }
   }
 });
 
-test('every purchased topic includes an easy explanation before its complete source appendix', () => {
+test('every purchased topic copies its visible personal explanation while keeping the old source appendix internal', () => {
   const { report } = reading();
   assert.ok(report.guide?.title);
   assert.ok(report.guide.paragraphs.every(text => typeof text === 'string' && text.trim()));
@@ -245,25 +246,19 @@ test('every purchased topic includes an easy explanation before its complete sou
       ? report.months.flatMap(month => month.chapters)
       : report.sections.find(section => section.id === topic).chapters;
     const text = report.copyByCategory[topic];
-    const appendix = text.indexOf(report.evidence[topic].title);
-    assert.ok(appendix > 0, 'complete source records still need their own appendix');
-    let previousChapter = 0;
+    assert.ok(!text.includes(report.evidence[topic].title),'the user removed the evidence appendix from copies');
     for (const chapter of chapters) {
       assert.ok(chapter.title && chapter.summary, `${topic}/${chapter.id}: a heading and its key point are required`);
       assert.ok(Array.isArray(chapter.easyParagraphs) && chapter.easyParagraphs.length > 0,
         `${topic}/${chapter.id}: the easy explanation is missing`);
-      const heading = text.indexOf(`${chapter.title}\n`, previousChapter);
-      const keyPoint = text.indexOf(chapter.summary, heading + chapter.title.length);
-      const detail = text.indexOf(chapter.easyParagraphs[0], keyPoint + chapter.summary.length);
-      assert.ok(heading >= previousChapter && keyPoint > heading && detail > keyPoint,
-        `${topic}/${chapter.id}: copy must read as heading, key point, then explanation`);
-      previousChapter = detail + chapter.easyParagraphs[0].length;
       for (const paragraph of chapter.easyParagraphs) {
         assert.ok(typeof paragraph === 'string' && paragraph.trim());
-        const index = text.indexOf(paragraph);
-        assert.ok(index >= 0 && index < appendix,
-          `${topic}/${chapter.id}: the copied reading must keep the easy explanation ahead of the appendix`);
       }
+    }
+    const overviews=topic==='monthly'?report.reader.months:[report.reader[topic]];
+    for(const overview of overviews)for(const item of [overview,...overview.cards]) {
+      assert.ok(text.includes(item.title));
+      for(const paragraph of item.paragraphs)assert.ok(text.includes(paragraph),`${topic}/${item.id||item.title}: visible prose was omitted`);
     }
   }
 });
@@ -382,9 +377,12 @@ test('yearly work and money and every monthly life topic follow their actual ten
           assert.ok(text.includes(pair.pairHanja),'the explanation keeps the actual pair, not just its count');
         });
         for(const factId of chapter.factIds)assert.ok(factId.startsWith('natal.')||factId.startsWith(prefix+'.'),`${prefix} borrowed another period's evidence`);
-        for(const paragraph of chapter.easyParagraphs){
+        const overview=topic==='annual'?report.reader.annual:report.reader.months.find(month=>month.month===source.month);
+        const visible=overview.cards.find(card=>card.id.endsWith('-'+lifeTopic));
+        assert.ok(visible,'the same life topic remains in the visible reader');
+        for(const paragraph of visible.paragraphs){
           assert.ok(report.copyByCategory[topic].includes(paragraph));
-          assert.ok(report.copyByCategory.all.includes(paragraph),'the complete copy must keep every new chapter');
+          assert.ok(report.copyByCategory.all.includes(paragraph),'the complete copy must keep every visible personal paragraph');
         }
       }
     }

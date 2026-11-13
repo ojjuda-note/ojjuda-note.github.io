@@ -48,61 +48,6 @@ function updateZodiacPreview() {
   }).catch(()=>{});
 }
 
-const ELEMENT_WORDS = Object.freeze({wood:'나무',fire:'불',earth:'흙',metal:'쇠',water:'물'});
-
-const STEM_READINGS = {
-  "甲": {
-    "name": "갑목",
-    "symbol": "곧게 자라는 큰 나무",
-    "intro": "갑목은 큰 나무에 빗댄 이름이에요. 나무가 뿌리를 내리듯, 내가 중요하게 생각하는 것을 지키는 모습을 떠올려요."
-  },
-  "乙": {
-    "name": "을목",
-    "symbol": "바람과 함께 자라는 풀",
-    "intro": "을목은 풀과 덩굴에 빗댄 이름이에요. 주변에 맞춰 자라는 풀처럼, 새로운 곳에서 방법을 바꾸며 자라는 모습을 떠올려요."
-  },
-  "丙": {
-    "name": "병화",
-    "symbol": "주변을 밝히는 햇살",
-    "intro": "병화는 태양에 빗댄 이름이에요. 햇빛을 널리 나누듯, 기쁨이나 생각을 다른 사람에게 전하는 모습을 떠올려요."
-  },
-  "丁": {
-    "name": "정화",
-    "symbol": "어둠을 밝혀 주는 등불",
-    "intro": "정화는 등불에 빗댄 이름이에요. 등불이 한곳을 밝히듯, 한 가지 일에 마음을 쏟는 모습을 떠올려요."
-  },
-  "戊": {
-    "name": "무토",
-    "symbol": "든든하게 서 있는 산",
-    "intro": "무토는 산에 빗댄 이름이에요. 산이 제자리를 지키듯, 힘든 일이 있어도 차분하게 버티는 모습을 떠올려요."
-  },
-  "己": {
-    "name": "기토",
-    "symbol": "씨앗을 기르는 부드러운 흙",
-    "intro": "기토는 씨앗을 기르는 흙에 빗댄 이름이에요. 필요한 것을 챙겨 주고, 작은 일도 꾸준히 돌보는 모습을 떠올려요."
-  },
-  "庚": {
-    "name": "경금",
-    "symbol": "형태를 잡는 단단한 쇠",
-    "intro": "경금은 단단한 쇠에 빗댄 이름이에요. 필요한 것과 그렇지 않은 것을 가리고, 해야 할 일을 분명하게 정하는 모습을 떠올려요."
-  },
-  "辛": {
-    "name": "신금",
-    "symbol": "곱게 다듬어 빛나는 보석",
-    "intro": "신금은 잘 다듬은 보석에 빗댄 이름이에요. 작은 차이를 살피며 하나씩 정성껏 다듬는 모습을 떠올려요."
-  },
-  "壬": {
-    "name": "임수",
-    "symbol": "넓게 흐르는 큰 물",
-    "intro": "임수는 강과 바다에 빗댄 이름이에요. 물이 길을 찾아 흐르듯, 여러 생각을 모아 새로운 길을 찾는 모습을 떠올려요."
-  },
-  "癸": {
-    "name": "계수",
-    "symbol": "조용히 스며드는 빗물",
-    "intro": "계수는 이슬과 비에 빗댄 이름이에요. 작은 물방울이 스며들듯, 자세히 살피고 생각을 차근차근 정리하는 모습을 떠올려요."
-  }
-};
-
 function element(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -217,39 +162,10 @@ function fillPerson({name,gender,birth}) {
   scheduleEntryCheck();
 }
 
-function renderPillar(pillar, index) {
-  const card = element('article', 'pillar-card' + (pillar.key === 'day' ? ' is-day' : ''));
-  card.style.setProperty('--i', index);
-  card.append(element('h3', 'pillar-label', {year:'태어난 해',month:'태어난 달',day:'태어난 날',hour:'태어난 시간'}[pillar.key]));
-  card.append(element('span', 'pillar-caption', pillar.label));
-  if (pillar.hanja && pillar.stem && pillar.branch) {
-    const glyphs = element('div', 'pillar-glyphs');
-    [pillar.stem, pillar.branch].forEach((part, partIndex) => {
-      const glyph = element('span', 'pillar-glyph', part.hanja);
-      glyph.style.setProperty('--element-color', part.color);
-      glyph.append(element('small', '', `${part.hangul} · ${partIndex ? '아래 글자' : '위 글자'}`));
-      glyphs.append(glyph);
-    });
-    card.append(glyphs, element('p', 'pillar-name', pillar.hangul));
-    card.append(element('p', 'pillar-elements', `${ELEMENT_WORDS[pillar.stem.element]} · ${ELEMENT_WORDS[pillar.branch.element]}`));
-  } else {
-    card.append(element('div', 'pillar-unknown', '✧'));
-    card.append(element('p', 'pillar-status', pillar.alternatives?.length ? '시간 확인 필요' : '시간 미상'));
-    if (pillar.alternatives?.length) {
-      const choices = element('div', 'pillar-alternatives');
-      pillar.alternatives.forEach(choice => choices.append(element('span', '', `${choice.hanja} ${choice.hangul}`)));
-      card.append(choices, element('p', 'pillar-empty-note', '계절을 나누는 시각 전인지 후인지에 따라 달라져요.'));
-    } else card.append(element('p', 'pillar-empty-note', '시간을 알면 펼칠 수 있어요.'));
-  }
-  return card;
-}
-
 function plainWarning(message) {
   if (message==='태어난 시간을 모르므로 시주는 표시하지 않아요.') {
-    return '태어난 시간을 몰라서, 시간에 해당하는 두 글자는 비워 두었어요.';
+    return '태어난 시간을 몰라서, 확인할 수 있는 부분만 풀이했어요.';
   }
-  const count=message.match(/^오행은 확정된 (\d+)글자만 세었어요\. 전체 사주의 오행 비율은 아니에요\.$/);
-  if (count) return `확인한 ${count[1]}글자만 나무·불·흙·쇠·물로 나누어 세었어요. 모르는 글자가 있어서 여덟 글자 전체의 모습과는 다를 수 있어요.`;
   if (message.startsWith('입력한 분 안에 절기가 바뀌어 ') || message.startsWith('이 날은 절기가 바뀌어 ')) {
     return message
       .replace('입력한 분 안에 절기가 바뀌어 ','입력한 1분 안에 계절을 나누는 기준 시각이 들어 있어 ')
@@ -264,36 +180,12 @@ function renderReading(result,zodiac) {
   const name=currentPerson?.name;
   $('result-title').replaceChildren(document.createTextNode(name?`${name}님의 `:'나의 '),element('em','','운세'));
   $('detailed-title').textContent=name?`${name}님의 운세 풀이`:'나의 운세 풀이';
-  $('result-pillars').replaceChildren(...result.pillars.map(renderPillar));
   $('birth-summary').textContent = `양력 ${result.solar.label} · ${result.timeLabel || (result.timeKnown ? '시간 입력' : '태어난 시간 모름')}`;
   showZodiac($('result-zodiac'),zodiac);
   $('lunar-summary').textContent = `음력 ${result.lunar.label}`;
-  const warningNodes = result.warnings.map(message => element('p', '', plainWarning(message)));
+  const warningNodes = result.warnings.filter(message=>!message.startsWith('오행은 확정된 ')).map(message => element('p', '', plainWarning(message)));
   $('result-warnings').replaceChildren(...warningNodes);
   $('result-warnings').hidden = warningNodes.length === 0;
-  const stem = result.dayMaster;
-  const reading = STEM_READINGS[stem.hanja];
-  $('day-master-glyph').textContent = stem.hanja;
-  $('day-master-glyph').style.setProperty('--element-color', stem.color);
-  $('day-master-title').textContent = `${reading.name} · ${ELEMENT_WORDS[stem.element]}`;
-  $('day-master-symbol').textContent = reading.symbol;
-  $('day-master-reading').textContent = reading.intro;
-  $('element-count').textContent = `확인된 ${result.knownCharacterCount}글자`;
-  const rows = result.elements.map(item => {
-    const row = element('div', 'element-row');
-    row.style.setProperty('--element-color', item.color);
-    const label = element('span', 'element-label');
-    label.append(element('b', '', item.hanja), document.createTextNode(ELEMENT_WORDS[item.key] || item.label));
-    const track = element('div', 'element-track');
-    track.setAttribute('aria-hidden', 'true');
-    const fill = element('div', 'element-fill');
-    fill.style.width = `${result.knownCharacterCount ? item.count / result.knownCharacterCount * 100 : 0}%`;
-    track.append(fill);
-    row.append(label, track, element('span', 'element-value', `${item.count}개`));
-    return row;
-  });
-  $('element-bars').replaceChildren(...rows);
-  $('convention-list').replaceChildren(...[...result.warnings.map(message=>`원래 안내: ${message}`),...result.conventions].map(message => element('li', '', message)));
   $('intro').hidden = true;
   $('result').hidden = false;
   document.querySelector('.skip-link').href = '#result-title';
@@ -375,8 +267,6 @@ function expireCurrentReading(force=false) {
   $('reading-controls').hidden=true;
   $('report-toc').hidden=true;
   $('copy-reading').disabled=true;
-  document.querySelector('.birth-chart-details').hidden=true;
-  document.querySelector('.conventions').hidden=true;
   $('result-warnings').hidden=true;
   $('other-reading-options').open=true;
   $('report-status').textContent='24시간 이용이 끝났어요. 다시 볼 풀이를 선택해 결제해 주세요.';
@@ -513,8 +403,8 @@ document.querySelectorAll('.reading-size-control button').forEach(button=>button
 async function prepareDetailedReading(chart,target,person=currentPerson||readPerson()) {
   detailModulesPromise ||= Promise.all([
     import('./fortune-data.mjs?v=20261113-saju-reader1'),
-    import('./readings.mjs?v=20261113-saju-easy1'),
-    import('./report-view.mjs?v=20261113-saju-easy1'),
+    import('./readings.mjs?v=20261114-saju-wind1'),
+    import('./report-view.mjs?v=20261114-saju-wind1'),
     import('./daeun.mjs?v=20261113-saju-reader1'),
     zodiacModule()
   ]).catch(error=>{detailModulesPromise=null;throw error;});
@@ -535,8 +425,6 @@ function commitDetailedReading(chart,{fortune,reading,content,copyText,target},a
   if (!activeAccess(access)) throw Object.assign(new Error('이용 시간이 끝났어요. 표시된 금액을 확인한 뒤 다시 펼쳐 주세요.'),{code:'access_expired'});
   $('report-content').replaceChildren(...content.childNodes);
   currentDetail={chart,topic:target.topic,year:target.year,reading,fortune,copyText,access};
-  document.querySelector('.birth-chart-details').hidden=false;
-  document.querySelector('.conventions').hidden=false;
   $('result-warnings').hidden=!$('result-warnings').childElementCount;
   $('report-content').dataset.topic=target.topic;
   $('report-content').dataset.year=String(target.year);
@@ -678,7 +566,7 @@ function resetAfterAccountChange() {
   $('result').hidden=true;$('intro').hidden=false;
   $('result-title').textContent='나의 운세';$('detailed-title').textContent='나의 운세 풀이';
   showZodiac($('result-zodiac'),null);
-  for(const id of ['birth-summary','lunar-summary','result-warnings','result-pillars','day-master-glyph','day-master-title','day-master-symbol','day-master-reading','element-count','element-bars','convention-list'])$(id).replaceChildren();
+  for(const id of ['birth-summary','lunar-summary','result-warnings'])$(id).replaceChildren();
   $('report-content').replaceChildren();
   $('report-content').removeAttribute('aria-busy');
   $('report-toc').hidden=true;$('report-error').hidden=true;$('entry-check-error').hidden=true;
@@ -813,7 +701,7 @@ function toast(message){clearTimeout(toastTimer);$('status').textContent=message
 $('copy-reading').addEventListener('click',async()=>{
   if (expireCurrentReading()) { updateProductOffer(); return; }
   if(reportBusy||!currentDetail||currentDetail.chart!==currentReading)return;
-  try{await navigator.clipboard.writeText(currentDetail.copyText);toast('풀이와 계산 근거를 복사했어요.');}
+  try{await navigator.clipboard.writeText(currentDetail.copyText);toast('풀이를 복사했어요.');}
   catch{toast('복사 권한을 확인해 주세요. 풀이를 직접 선택해 복사할 수도 있어요.');}
 });
 

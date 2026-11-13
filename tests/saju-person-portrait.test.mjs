@@ -36,8 +36,8 @@ test('the opening portrait explains a person through several confirmed natal clu
   }
   const input={profile:fortune.profile,facts:report.facts,chapters:report.sections.find(section=>section.id==='lifelong').chapters};
   const before=structuredClone(input);
-  const {summaryLines,cards,...originalFields}=portrait;
-  const originalCards=cards.map(({summaryLines,...card})=>card);
+  const {summaryLines,readingScore,cards,...originalFields}=portrait;
+  const originalCards=cards.map(({summaryLines,readingScore,...card})=>card);
   assert.equal(summaryLines.length,2);
   assert.ok(cards.every(card=>card.summaryLines.length===2));
   assert.deepEqual(buildPersonPortrait(input),{...originalFields,cards:originalCards},'adding display summaries preserves every original portrait field');
@@ -62,8 +62,8 @@ test('a different forecast year never changes the natal person, and personal tex
   }
   assert.ok(!first.report.copyByCategory.annual.includes(first.portrait.paragraphs[0]));
   assert.ok(!first.report.copyByCategory.monthly.includes(first.portrait.paragraphs[0]));
-  assert.ok(first.report.copyByCategory.lifelong.includes(first.portrait.methodNotice));
-  assert.ok(first.report.copyByCategory.lifelong.includes(first.portrait.selectionNotice));
+  assert.ok(!first.report.copyByCategory.lifelong.includes(first.portrait.methodNotice));
+  assert.ok(!first.report.copyByCategory.lifelong.includes(first.portrait.selectionNotice));
   if(first.portrait.scopeNotice)assert.ok(first.report.copyByCategory.lifelong.includes(first.portrait.scopeNotice));
 });
 

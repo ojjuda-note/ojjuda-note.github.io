@@ -2,6 +2,7 @@ import { makeProfile, getTenGod, interactionPairs } from './fortune-data.mjs?v=2
 import { GOD_CONTEXTS, PAIR_CONTEXTS } from './deeper-reading-data.mjs?v=20261113-saju-easy1';
 import { describePersonalPeriod } from './reader-summary.mjs?v=20261113-saju-easy1';
 import { buildDaeunSituations } from './daeun-situations.mjs?v=20261113-saju-easy1';
+import { readingScoreCopy } from './reading-score.mjs?v=20261114-saju-wind1';
 
 // These are shared interpretations of computed relationships, not individual
 // predictions assembled from a birth-date hash. Every selected rule keeps its
@@ -322,19 +323,15 @@ export function buildDaeunReading(chart,daeun) {
     startAge:clone(daeun.startAge),startsAt:daeun.startsAt,startLabel:daeun.startLabel};
 }
 
-const summaryCopy = item => Array.isArray(item?.summaryLines) ? ['두 줄 요약',...item.summaryLines] : [];
+const summaryCopy = item => [...(Array.isArray(item?.summaryLines) ? ['두 줄 요약',...item.summaryLines] : []),...readingScoreCopy(item)];
 
 export function copyDaeunReading(reading) {
   if (!reading||typeof reading.availability!=='boolean'||!Array.isArray(reading.periods)||!Array.isArray(reading.facts)) fail();
-  const lines=[reading.title,reading.headline,...(reading.availability?summaryCopy(reading):[]),...reading.paragraphs];
+  const lines=[reading.title,reading.headline,...(reading.availability?summaryCopy(reading):readingScoreCopy(reading)),...reading.paragraphs];
   if (!reading.availability) return lines.join('\n');
   for (const period of reading.periods) {
     lines.push('',period.title,period.subtitle,period.periodLabel,...summaryCopy(period),...period.paragraphs);
     for (const topic of [...period.topics,...(period.situations||[])]) lines.push('',topic.label,topic.title,...summaryCopy(topic),...topic.paragraphs);
   }
-  lines.push('','대운 계산 근거');
-  for (const item of reading.facts) lines.push(item.label+': '+item.value);
-  lines.push('',reading.methodNotice,reading.method.label,...(reading.method.notes||[]));
-  for (const source of reading.sources) lines.push('',source.title,source.publisher,source.url,source.usedFor,source.limitation);
   return lines.filter(value=>typeof value==='string').join('\n');
 }

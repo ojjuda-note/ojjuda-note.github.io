@@ -30,7 +30,7 @@ test('stage meanings explain every confirmed natal position, with sourced metaph
     assert.ok(rule.text.includes(STAGE_MEANINGS[pillar.lifeStage.hanja].meaning));
     assert.equal(rule.sourceUrl,STAGE_SOURCE_URL);
     assert.ok(chapter.easyParagraphs.includes(rule.text));
-    assert.ok(report.copyByCategory.lifelong.includes(rule.text));
+    assert.ok(!report.copyByCategory.lifelong.includes(rule.text),'the original stage classification is retained internally, not copied');
   }
   assert.match(chapter.reference.join(' '), /어린 시절부터 노년까지를 순서대로 나눈 표가 아니/);
   assert.match(chapter.reference.join(' '), /오쭈다가 만든 예시/);
@@ -38,7 +38,7 @@ test('stage meanings explain every confirmed natal position, with sourced metaph
   assert.match(chapter.easyParagraphs.join(' '), /실제 질병이나 죽음을 뜻하지/);
   for (const question of chapter.practice) {
     assert.ok(!chapter.interpretation.includes(question),'an authored exercise is not a traditional rule');
-    assert.ok(report.copyByCategory.lifelong.includes(question));
+    assert.ok(!report.copyByCategory.lifelong.includes(question),'the removed reference chapter does not reappear through its exercises');
   }
   const source=getReadingSources('lifelong').find(value=>value.id==='twelve-stage-meanings');
   assert.equal(source.url,STAGE_SOURCE_URL);
@@ -80,8 +80,8 @@ test('each period explains its own natal-day-based stage and retains the correct
     assert.ok(chapter.factIds.every(id=>id.startsWith('natal.')||id.startsWith(`${prefix}.`)));
     assert.ok(chapter.summary.includes(pillar.lifeStage.label));
     assert.ok(chapter.easyParagraphs.includes(chapter.rules[0].text));
-    assert.ok(report.copyByCategory[topic].includes(chapter.rules[0].text));
-    assert.ok(report.copyByCategory.all.includes(chapter.rules[0].text));
+    assert.ok(!report.copyByCategory[topic].includes(chapter.rules[0].text));
+    assert.ok(!report.copyByCategory.all.includes(chapter.rules[0].text));
   }
   assert.equal(stages.size,12,'one full set of monthly branches exercises every stage meaning');
   const next=reading(sample,2027);

@@ -87,14 +87,15 @@ test('the comparison with the previous decade cites both actual periods instead 
   }
 });
 
-test('the full copy includes every new situation and its source facts, while missing inputs never invent one',()=>{
+test('the full copy includes every new situation while keeping its source facts internal and missing periods uninvented',()=>{
   const {reading}=build(),copy=copyDaeunReading(reading);
   for(const period of reading.periods)for(const situation of period.situations) {
     assert.ok(copy.includes(situation.label));assert.ok(copy.includes(situation.title));
     for(const paragraph of situation.paragraphs)assert.ok(copy.includes(paragraph));
     for(const id of situation.factIds) {
       const entry=reading.facts.find(item=>item.id===id);
-      assert.ok(copy.includes(entry.label+': '+entry.value));
+      assert.ok(entry,'the situation remains linked to its actual source');
+      assert.ok(!copy.includes(entry.label+': '+entry.value));
     }
   }
   for(const [birth,gender] of [[{...births[0],hour:null},'female'],[births[0],null]]) {

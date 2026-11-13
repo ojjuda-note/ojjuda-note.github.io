@@ -1,6 +1,7 @@
 import { SajuPayment } from './payment.js?v=20261113-saju-lists1';
 import { SajuCompatibilityPayment, COMPATIBILITY_PRICE } from './compatibility-payment.mjs?v=20261113-compatibility20-1';
-import { createCompatibilityScoreboard, compatibilityScoreText } from './compatibility-score-view.mjs?v=20261113-saju-easy1';
+import { compatibilityScoreText } from './compatibility-score-view.mjs?v=20261114-saju-wind1';
+import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261114-saju-wind1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
 import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-easy1';
 
@@ -169,8 +170,8 @@ async function ready() {
 async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
-    import('./compatibility.mjs?v=20261113-saju-easy1'),
-    import('./report-view.mjs?v=20261113-saju-easy1'),
+    import('./compatibility.mjs?v=20261114-saju-wind1'),
+    import('./report-view.mjs?v=20261114-saju-wind1'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
 }
@@ -221,17 +222,18 @@ $('pair-swap').addEventListener('click',()=>{
 $('compatibility-clear').addEventListener('click',()=>{generation++;quoteGeneration++;quoteBusy=false;resetView(true);updateOffer();});
 
 function copyText(reading,chart,partner,names) {
-  const lines=['오쭈다 · 별빛 궁합',`${names[0].name||'나'}: ${chart.solar.label} · ${chart.timeLabel}`,`${names[1].name||'상대'}: ${partner.solar.label} · ${partner.timeLabel}`];
+  const labels=compatibilityPersonLabels(names);
+  const lines=['오쭈다 · 별빛 궁합',`${labels[0]}: ${chart.solar.label} · ${chart.timeLabel}`,`${labels[1]}: ${partner.solar.label} · ${partner.timeLabel}`];
   for(const [index,person] of people.entries()) {
     const zodiac=reading.zodiac?.[person];
-    if(zodiac)lines.push(`${names[index].name||(index?'상대':'나')}: ${zodiac.label} · ${zodiac.note}`);
+    if(zodiac)lines.push(`${labels[index]}: ${zodiac.label} · ${zodiac.note}`);
   }
-  lines.push(reading.title,reading.headline);
+  lines.push(reading.title,'',compatibilityPeopleText(reading,names));
   lines.push('',compatibilityScoreText(reading.score),'');
+  lines.push(reading.headline);
   if(reading.scopeNotice)lines.push(reading.scopeNotice);
   lines.push(...reading.paragraphs);
   for(const card of reading.cards)lines.push('',card.label,card.title,...card.paragraphs);
-  lines.push('','궁합 계산 근거',...reading.facts.map(fact=>fact.label+': '+fact.value),'',reading.methodNotice);
   return lines.join('\n');
 }
 function expiresLabel(access) {
@@ -259,8 +261,7 @@ form.addEventListener('submit',async event=>{
     }
     const saveWarning=savedProfiles.some(profile=>!profile)?'풀이를 열었지만 일부 입력 정보를 이 기기에 저장하지 못했어요. 출생 정보 화면에서 확인해 주세요.':'';
     const reading=data.buildCompatibilityReading(chart,partner),content=document.createElement('div');
-    view.renderCompatibilityReport(content,reading);
-    content.querySelector('#compatibility-reading > .report-section-heading').after(createCompatibilityScoreboard(reading.score));
+    view.renderCompatibilityReport(content,reading,{names});
     const text=copyText(reading,chart,partner,names);
     if(id!==generation||saved!==signature()||owner!==billing.user||mode!==billing.modeVersion)return;
     const status=await client.status(chart,partner);
@@ -273,8 +274,8 @@ form.addEventListener('submit',async event=>{
     current={owner,mode,signature:saved,chart,partner,reading,copyText:text,access:receipt};
     quote.status={...status,coins:receipt.coins,entitlement:receipt};
     $('compatibility-report').replaceChildren(...content.childNodes);
-    const labels=names.map((person,index)=>person.name?`${person.name}님`:index===0?'나':'상대');
-    $('compatibility-result-title').textContent=names.some(person=>person.name)?`${labels.join(' · ')}의 궁합`:'두 사람의 궁합';
+    const labels=compatibilityPersonLabels(names);
+    $('compatibility-result-title').textContent=names.some(person=>person.name)?`${labels.join(' × ')}의 궁합`:'두 사람의 궁합';
     $('compatibility-births').textContent=`${labels[0]} ${chart.solar.label} · ${chart.timeLabel} / ${labels[1]} ${partner.solar.label} · ${partner.timeLabel}`;
     for(const [index,person] of people.entries())showZodiac($(person+'-result-zodiac'),reading.zodiac?.[person],labels[index]);
     $('compatibility-copy-status').textContent=saveWarning;
@@ -295,7 +296,7 @@ $('compatibility-edit').addEventListener('click',()=>{
 $('compatibility-copy').addEventListener('click',async()=>{
   if(expireCurrent()){updateOffer();return;}
   if(!isCurrentActive()||busy)return;
-  try{await navigator.clipboard.writeText(current.copyText);$('compatibility-copy-status').textContent='궁합과 전체 계산 근거를 복사했어요.';}
+  try{await navigator.clipboard.writeText(current.copyText);$('compatibility-copy-status').textContent='A와 B의 성격과 궁합 풀이를 복사했어요.';}
   catch{$('compatibility-copy-status').textContent='복사 권한을 확인해 주세요.';}
 });
 function refreshProfiles(){if(!busy)for(const picker of profilePickers)picker.refresh({preserveStatus:picker.statusElement.dataset.state==='error'});}

@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./style.css?v=20261113-compatibility20-1">
   <link rel="stylesheet" href="./report.css?v=20261113-saju-zodiac1">
   <link rel="stylesheet" href="./reading-summary.css?v=20261113-saju-summary1">
+  <link rel="stylesheet" href="./reading-score.css?v=20261114-saju-wind1">
 </head>
 <body>
   <a class="skip-link" href="#birth-form">출생 정보 입력으로 바로가기</a>
@@ -77,7 +78,7 @@
           <p class="saju-price"><strong id="entry-price-value">평생운 · 10쭈</strong></p>
           <p id="entry-price-note" class="saju-price-note">출생 정보마다 항목별 10쭈 · 전체 30쭈. 같은 풀이·연도는 결제 후 24시간 다시 보기 0쭈, 만료 후 다시 결제해요. 전체는 이용 시간이 남은 항목을 빼고 차감해요.</p>
 
-          <details class="method-preview"><summary>풀이 범위·계산 기준</summary><p>각 항목의 핵심과 해볼 일을 두 줄로 먼저 읽어요. 아래에는 생활 속 예시와 자세한 풀이가 이어져요. 계산 근거도 따로 확인할 수 있어요.</p><p>입력한 생일로 사주를 계산하고, 같은 글자와 관계에는 같은 설명을 써요. 전통 풀이를 생활 속 모습으로 설명해 드려요. 앞으로 생길 일을 확정하는 내용은 아니에요.</p><p>10년 단위 운세를 보려면 성별과 태어난 시간이 필요해요. 계산에 필요한 정보가 확인되면 평생운·전체 풀이에 함께 보여드려요. 이름은 풀이에서 부를 때만 써요. 이름이 운에 미치는 영향이나 용신·신살의 종합 판단은 포함하지 않아요.</p><p>현재 한국 시간(UTC+9)으로 계산해요. 태어난 지역이나 과거에 사용한 시간 제도에 맞춰 시간을 고치지는 않아요.</p></details>
+          <details class="method-preview"><summary>사주에 담은 내용</summary><p>각 항목의 핵심과 해볼 일을 두 줄로 먼저 읽어요. 순풍은 힘이 되는 점, 역풍은 주의할 점을 점수와 막대로 보여드려요. 아래에는 생활 속 예시와 자세한 풀이가 이어져요.</p><p>점수는 풀이를 숫자로 정리한 참고값이에요. 두 점수는 각각 100점 기준으로 읽어요. 건강·안전이나 색·숫자·방향처럼 점수를 매기지 않는 항목은 말로 설명해 드려요.</p><p>10년 단위 운세를 보려면 성별과 태어난 시간이 필요해요. 필요한 정보가 확인되면 평생운·전체 풀이에 함께 보여드려요. 이름은 풀이에서 부를 때만 써요. 앞으로 생길 일을 확정하는 내용은 아니에요.</p><p>현재 한국 시간(UTC+9)으로 계산해요. 태어난 지역이나 과거에 사용한 시간 제도에 맞춰 시간을 고치지는 않아요.</p></details>
           <div id="entry-check-error" class="form-error" role="alert" hidden><p id="entry-check-error-text"></p><button id="retry-entry-status" class="secondary-button" type="button">구매 내역 다시 확인하기</button></div>
           <div id="form-error" class="form-error" role="alert" tabindex="-1" hidden></div>
           <button id="open-story" class="primary-button" type="submit" disabled><svg><use href="#i-star"/></svg><span>10쭈로 평생운 펼치기</span><svg><use href="#i-arrow"/></svg></button>
@@ -91,7 +92,8 @@
     </div>
 
     <section id="result" class="result" aria-labelledby="result-title" hidden>
-      <header class="result-heading reading-result-heading"><h2 id="result-title" tabindex="-1">나의 <em>운세</em></h2><p id="birth-summary" class="birth-summary"></p><p id="result-zodiac" class="zodiac-preview zodiac-result" hidden></p></header>
+      <header class="result-heading reading-result-heading"><h2 id="result-title" tabindex="-1">나의 <em>운세</em></h2><p id="birth-summary" class="birth-summary"></p><p id="lunar-summary" class="lunar-summary"></p><p id="result-zodiac" class="zodiac-preview zodiac-result" hidden></p></header>
+      <div id="result-warnings" class="result-warnings" hidden></div>
 
       <section id="detailed-reading" class="detailed-reading" data-reading-size="normal" aria-labelledby="detailed-title">
         <h3 id="detailed-title" class="reader-focus-title" tabindex="-1">나의 운세 풀이</h3>
@@ -104,7 +106,6 @@
         <nav id="report-toc" class="report-toc" aria-label="사주 상세 풀이 목차" hidden>
           <a id="current-report-link" href="#reading-summary"><small>01</small><span id="current-report-label">핵심 운세</span></a>
           <a href="#reading-topics"><small>02</small><span>항목별 풀이</span></a>
-          <a href="#reading-evidence"><small>03</small><span>풀이 근거</span></a>
         </nav>
         <div id="report-content"></div>
         <section id="compatibility-section" class="compatibility-panel" aria-labelledby="compatibility-title" tabindex="-1">
@@ -128,22 +129,12 @@
           </div>
         </details>
       </section>
-      <details class="birth-chart-details"><summary>내 사주표와 출생 정보 보기</summary>
-      <p id="lunar-summary" class="lunar-summary"></p>
-      <div id="result-warnings" class="result-warnings" hidden></div>
-      <div id="result-pillars" class="result-pillars" aria-label="태어난 해·달·날·시간의 사주 글자"></div>
-      <div class="result-layout">
-        <section class="day-master-panel" aria-labelledby="day-master-title"><p class="small-kicker">나를 나타내는 글자 · 일간</p><div class="day-master-heading"><span id="day-master-glyph" class="day-master-glyph" aria-hidden="true"></span><div><h3 id="day-master-title"></h3><p id="day-master-symbol"></p></div></div><p id="day-master-reading" class="day-master-reading"></p><p class="gentle-note">태어난 날의 위쪽 글자를 ‘일간’이라고 해요.</p></section>
-        <section class="elements-panel" aria-labelledby="elements-title"><div class="section-title"><h3 id="elements-title">나무·불·흙·쇠·물</h3><span id="element-count"></span></div><div id="element-bars" class="element-bars"></div><p class="gentle-note">오행(나무·불·흙·쇠·물)의 글자 수예요. 운의 점수는 아니에요.</p></section>
-      </div>
-      </details>
-      <details class="conventions"><summary>계산과 시간의 자세한 기준 보기 <span aria-hidden="true">＋</span></summary><ul id="convention-list"></ul></details>
       <div class="result-actions"><button id="edit-birth" class="primary-button" type="button"><svg><use href="#i-back"/></svg>생일 다시 입력하기</button><button id="copy-reading" class="secondary-button" type="button" disabled><svg><use href="#i-copy"/></svg>현재 풀이 복사하기</button><a class="secondary-button" href="../moonlit-tarot/"><svg><use href="#i-moon"/></svg>타로도 보러 가기</a></div>
     </section>
   </main>
   <footer class="site-footer"><span class="footer-wordmark">THE STARLIT ARCHIVE <i>✧</i></span><p>앞으로의 이야기는 당신의 선택으로 써 내려가세요.</p><span class="footer-no">VOL. 02 · STARLIGHT</span></footer>
   <div id="status" class="toast" role="status" aria-live="polite"></div>
   <script src="/shared/analytics/site-usage.js?v=20261113-fortune-visits1"></script>
-  <script type="module" src="./app.js?v=20261113-saju-easy1"></script>
+  <script type="module" src="./app.js?v=20261114-saju-wind1"></script>
 </body>
 </html>
