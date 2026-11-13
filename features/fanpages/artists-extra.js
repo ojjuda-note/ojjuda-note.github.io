@@ -365,6 +365,7 @@
         { date: '2026.10.23', tag: '시상식', title: '12.05 가오슝 AAA 공식 출연 명단 발표', href: 'https://www.asiaartistawards.com/en/news/3225' },
         { date: '2026.10.12', tag: '무대', title: 'THE FIRST TAKE에서 SWEAT 일본어 버전 라이브 공개', href: 'https://columbia.jp/artist-info/kissoflife/media/94488.html' },
         { date: '2026.09.28', tag: '영상', title: 'THE FIRST TAKE에서 Sticky 라이브 공개', href: 'https://kissoflife.jp/page/media.html' },
+        { date: '2026.09.06', tag: '수상', title: '2026 SKA 본상·베스트 여자 그룹상 2관왕', href: 'https://www.soompi.com/article/1868372wpp/winners-of-2026-spotv-k-pop-awards' },
         { date: '2026.08.27', tag: '음반', title: '일본 미니 2집 SWEAT -JAPANESE EP- 발매 발표 · 9.16 발매', href: 'https://prtimes.jp/main/html/rd/p/000005074.000019470.html' },
         { date: '2026.08.04', tag: '컴백', title: '싱글 SWEAT 발표 · 공식 MV 공개', href: 'https://www.youtube.com/watch?v=eTvUZymLyGY' },
         { date: '2026.07.17', tag: '협업', title: '일본 SAISON CARD 팬 참여형 캠페인 발표 · 10.08 행사', href: 'https://kissoflife.jp/page/20260717.html' }
