@@ -67,10 +67,12 @@ const server = http.createServer((request, response) => {
       assert.ok((await page.locator('#reading-introduction').textContent()).length > 40);
       assert.ok((await page.locator('#reading-title').textContent()).length > 0);
       const paragraphs = await page.locator('#reading-sections > p').allTextContents();
-      assert.equal(paragraphs.length, 7, 'the complete conversational explanation is visible');
+      assert.ok(paragraphs.length >= 7, 'the complete explanation remains visible in shorter paragraphs');
       assert.ok(paragraphs.every(text => text.trim().length > 20));
       assert.ok(paragraphs.join('').length >= 350, 'the individual reading remains detailed');
       assert.equal(await page.locator('#reading-sections h3').count(), 0);
+      const cardName = await page.locator('#reading-title').textContent();
+      assert.ok((await page.locator('#reading-introduction .reading-card-name').allTextContents()).some(text => text.includes(cardName)), 'the actual card name is subtly emphasized');
       assert.ok(await page.locator('#reading-detail-sections .reading-part').count() > 0, 'original meanings and cautions remain available');
       assert.match(await page.locator('#reading-source-link').getAttribute('href'), /^https:\/\/en\.wikisource\.org\//);
       if (index === 2) {

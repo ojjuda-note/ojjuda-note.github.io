@@ -91,6 +91,7 @@
 .reading-part p + p { margin-top: 13px; }
 .reading-narrative > p { font-size: 16px; line-height: 2; }
 .reading-narrative > p + p { margin-top: 23px; }
+.reading-card-name { color: #f4e6f8; font-weight: 600; }
 .reading-dialog-actions {
   display: flex; justify-content: center; gap: 12px; align-items: center;
   position: sticky; bottom: -38px; z-index: 6; margin: 27px -38px -38px; padding: 19px 38px;
@@ -108,6 +109,7 @@
 .result-card-heading .keyword { font-size: 12px; margin: 7px 0 10px; }
 .card-reading-summary { font-size: 14px; color: #e4d3ef; line-height: 1.9; word-break: keep-all; overflow-wrap: anywhere; }
 .result-modal .summary-box { padding: 30px 29px 25px; }
+.summary-sections, .result-modal .summary-box .ritual { max-width: 660px; margin-inline: auto; }
 .result-modal .summary-box > h3 { font-size: 25px; margin-bottom: 22px; }
 .summary-box .reading-part h4 { font-size: 16px; }
 .summary-box .ritual p { font-size: 16px; line-height: 2; word-break: keep-all; overflow-wrap: anywhere; }
@@ -142,7 +144,7 @@
   .reading-dialog-actions button { font-size: 11px; padding: 11px 7px; line-height: 1.6; }
   .reading-dialog-actions .primary-button { flex: 1.3; gap: 7px; }
   .reading-dialog-actions .primary-button svg { width: 14px; height: 14px; }
-  .result-modal { padding: 30px 17px 22px; max-width: calc(100% - 16px); }
+  .result-modal { padding: 30px 12px 22px; max-width: calc(100% - 16px); }
   .result-modal .result-card { padding: 20px 17px 22px; }
   .result-card-heading { grid-template-columns: 69px 1fr; gap: 16px; align-items: start; padding-bottom: 20px; }
   .result-card-heading .result-card-art { width: 64px; height: 99px; margin-top: 5px; }
@@ -150,7 +152,7 @@
   .result-card-heading .result-position { font-size: 10px; margin-bottom: 7px; }
   .result-card-heading .keyword { font-size: 11px; margin: 6px 0 8px; }
   .card-reading-summary { font-size: 13px; line-height: 1.85; }
-  .result-modal .summary-box { padding: 27px 17px 23px; }
+  .result-modal .summary-box { padding: 27px 12px 23px; }
   .result-modal .summary-box > h3 { font-size: 22px; }
   .reading-modal > .modal-close, .result-modal > .modal-close { margin: -10px -6px 0 0; }
 }
@@ -227,17 +229,18 @@
 /* Different views of the same three cards, with the full explanation visible. */
 .summary-tabs { display: flex; gap: 6px; padding: 5px; margin: 0 auto 28px; max-width: 680px; border: 1px solid #b597ce42; border-radius: 10px; background: #0d091780; }
 .summary-tabs button { flex: 1; min-width: 0; min-height: 48px; padding: 11px 16px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #c9b3d8; font: 14px/1.6 var(--sans); word-break: keep-all; overflow-wrap: anywhere; text-wrap: balance; }
+.summary-tabs button { transition-property: none !important; }
 .summary-tabs button[aria-selected="true"] { border-color: #d5b77f88; background: #ba956b24; color: #f3ddae; }
-.summary-tabs button:hover { background: #b597ce1a; }
+.summary-tabs button:not([aria-selected="true"]):hover { background: #b597ce1a; }
 .summary-tabs button:focus-visible, .summary-panel:focus-visible { outline: 2px solid #edc68e; outline-offset: 3px; }
 .summary-panel[hidden] { display: none; }
 .summary-sections .reading-part { padding: 27px 0; }
 .summary-sections .reading-part:first-child { padding-top: 0; }
 .summary-sections .reading-part:last-child { padding-bottom: 4px; }
-.summary-sections .reading-part > h3 { margin: 0 0 17px; color: #f0d4a6; font-family: var(--sans); font-size: 19px; line-height: 1.7; }
-.summary-sections .reading-part .reading-part-subtitle { margin: 0 0 16px; color: #d8c5e4; font-family: var(--sans); font-size: 16px; line-height: 1.8; }
+.summary-sections .reading-part > h3 { margin: 0 0 17px; color: #f0d4a6; font-family: var(--sans); font-size: 19px; font-weight: 600; line-height: 1.7; }
+.summary-sections .reading-part .reading-part-subtitle { margin: 0 0 18px; color: #d8c5e4; font-family: var(--sans); font-size: 15px; line-height: 1.8; }
 .summary-sections .reading-part p { font-size: 16px; line-height: 2; }
-.summary-sections .reading-part p + p { margin-top: 19px; }
+.summary-sections .reading-part p + p { margin-top: 24px; }
 @media (max-width: 760px) {
   .summary-tabs { gap: 4px; padding: 4px; margin-bottom: 24px; }
   .summary-tabs button { padding: 10px 4px; font-size: 13px; }

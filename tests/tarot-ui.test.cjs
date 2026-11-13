@@ -114,6 +114,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   assert.equal(completed.$('#summary-panel-problem').hidden, false);
   assert.equal(completed.$('#summary-panel-timeline').hidden, true);
   assert.equal(completed.$('#summary-panel-domains').hidden, true);
+  let dividedSections = 0;
   for (const group of completedSummary.groups) {
     const tab = completed.$(`#summary-tab-${group.id}`);
     const panel = completed.$(`#summary-panel-${group.id}`);
@@ -124,10 +125,17 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
     assert.equal(sections.length, group.sections.length, 'every interpretation section is included');
     group.sections.forEach((section, index) => {
       assert.ok(sections[index].querySelector('h3').textContent.endsWith(section.title));
-      assert.deepEqual([...sections[index].querySelectorAll('p')].map(node => node.textContent), Array.from(section.paragraphs), 'each titled section keeps all of its detailed paragraphs');
+      const paragraphs = [...sections[index].querySelectorAll('p')].map(node => node.textContent);
+      assert.equal(paragraphs.join(''), Array.from(section.paragraphs).join(''), 'visual paragraph breaks preserve every original character and its order');
+      assert.ok(paragraphs.length >= section.paragraphs.length);
+      if (paragraphs.length > section.paragraphs.length) dividedSections++;
       assert.equal(sections[index].closest('details'), null, 'the main interpretation is not hidden in expandable details');
     });
   }
+  assert.ok(dividedSections > 0, 'long section paragraphs are divided into shorter reading blocks');
+  const emphasizedCards = [...completed.$('#summary-text').querySelectorAll('.reading-card-name')];
+  assert.ok(emphasizedCards.length > 0);
+  assert.ok(emphasizedCards.every(node => completedCards.some(card => node.textContent.includes(card.name))), 'only the actual drawn card names receive emphasis');
   completed.click('#summary-tab-timeline');
   assert.equal(completed.$('#summary-panel-timeline').hidden, false, 'clicking the second tab opens the past, present and future reading');
   assert.equal(completed.$('#summary-panel-problem').hidden, true);
@@ -177,8 +185,9 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   assert.equal(completed.$('#reading-title').textContent, firstReading.displayName);
   assert.ok(completed.$('#reading-introduction').compareDocumentPosition(completed.$('#reading-art')) & completed.window.Node.DOCUMENT_POSITION_FOLLOWING, 'the position explanation comes before the actual card');
   const readingParagraphs = [...completed.window.document.querySelectorAll('#reading-sections > p')];
-  assert.ok(readingParagraphs.length >= 6, 'the conversational explanation keeps its full detail');
-  assert.deepEqual(readingParagraphs.map(node => node.textContent), Array.from(firstReading.paragraphs));
+  assert.ok(readingParagraphs.length >= firstReading.paragraphs.length, 'the conversational explanation keeps its full detail');
+  assert.equal(readingParagraphs.map(node => node.textContent).join(''), Array.from(firstReading.paragraphs).join(''), 'individual card paragraphs also preserve the original text exactly');
+  assert.ok(completed.$('#reading-introduction .reading-card-name').textContent.includes(firstReading.displayName));
   assert.ok(firstReading.example && completed.$('#reading-sections').textContent.includes(firstReading.example), 'the selected-topic example remains in the main explanation');
   assert.equal(completed.$('#reading-sections h3'), null, 'the main explanation flows in paragraphs without repeated section headings');
   assert.equal(completed.$('#reading-summary'), null, 'the individual reading has no duplicate one-line box');

@@ -640,12 +640,10 @@ async function revealCard(index) {
   showReading(slot);
 }
 
-function renderReadingSections(container, sections, fallback = '', headingTag = 'h3') {
+function renderReadingSections(container, sections, fallback = '', headingTag = 'h3', cardNames = []) {
   container.replaceChildren();
   if (!Array.isArray(sections) || !sections.length) {
-    const paragraph = document.createElement('p');
-    paragraph.textContent = fallback;
-    container.append(paragraph);
+    appendReadingParagraphs(container, [], fallback, cardNames);
     return;
   }
   sections.forEach((part, index) => {
@@ -664,11 +662,7 @@ function renderReadingSections(container, sections, fallback = '', headingTag = 
       subtitle.textContent = part.subtitle;
       section.append(subtitle);
     }
-    narrativeParagraphs(part.paragraphs, part.body || '').forEach(text => {
-      const paragraph = document.createElement('p');
-      paragraph.textContent = text;
-      section.append(paragraph);
-    });
+    appendReadingParagraphs(section, part.paragraphs, part.body || '', cardNames);
     container.append(section);
   });
 }
@@ -678,13 +672,51 @@ function narrativeParagraphs(paragraphs, fallback = '') {
   return content.filter(text => typeof text === 'string' && text.trim());
 }
 
-function renderReadingParagraphs(container, paragraphs, fallback = '') {
+function readableParagraphs(text) {
+  if (text.length < 160) return [text];
+  const parts = [];
+  let start = 0, sentences = 0;
+  for (const match of text.matchAll(/[.!?。！？…]+[”’"'」』)\]]*\s+/gu)) {
+    const end = match.index + match[0].length;
+    sentences++;
+    if ((end - start < 100 && sentences < 3) || text.length - end < 40) continue;
+    parts.push(text.slice(start, end));
+    start = end;
+    sentences = 0;
+  }
+  parts.push(text.slice(start));
+  return parts;
+}
+
+function setReadingText(container, text, cardNames = []) {
   container.replaceChildren();
+  let start = 0;
+  for (const match of text.matchAll(/‘([^’]+)’|“([^”]+)”/gu)) {
+    const name = match[1] || match[2];
+    if (!cardNames.some(cardName => name === cardName || name.endsWith(`(${cardName})`))) continue;
+    container.append(document.createTextNode(text.slice(start, match.index)));
+    const emphasis = document.createElement('strong');
+    emphasis.className = 'reading-card-name';
+    emphasis.textContent = match[0];
+    container.append(emphasis);
+    start = match.index + match[0].length;
+  }
+  container.append(document.createTextNode(text.slice(start)));
+}
+
+function appendReadingParagraphs(container, paragraphs, fallback = '', cardNames = []) {
   narrativeParagraphs(paragraphs, fallback).forEach(text => {
-    const paragraph = document.createElement('p');
-    paragraph.textContent = text;
-    container.append(paragraph);
+    readableParagraphs(text).forEach(part => {
+      const paragraph = document.createElement('p');
+      setReadingText(paragraph, part, cardNames);
+      container.append(paragraph);
+    });
   });
+}
+
+function renderReadingParagraphs(container, paragraphs, fallback = '', cardNames = []) {
+  container.replaceChildren();
+  appendReadingParagraphs(container, paragraphs, fallback, cardNames);
 }
 
 function showReading(slot = state.lastReading) {
@@ -693,7 +725,8 @@ function showReading(slot = state.lastReading) {
   const reading = getReading(data, state.topic, slot);
   state.lastReading = slot;
   $('#reading-position').textContent = `${['첫 번째', '두 번째', '세 번째'][slot]} 자리 · ${POSITIONS[slot].label}`;
-  $('#reading-introduction').textContent = reading.introduction || '';
+  const cardNames = [data.name, reading.displayName].filter(Boolean);
+  setReadingText($('#reading-introduction'), reading.introduction || '', cardNames);
   $('#reading-introduction').hidden = !reading.introduction;
   $('#reading-title').textContent = reading.displayName || data.name;
   $$('#reading-dialog details').forEach(detail => { detail.open = false; });
@@ -701,7 +734,7 @@ function showReading(slot = state.lastReading) {
   $('#reading-name-guide').textContent = reading.nameGuide || '';
   applyArtwork($('#reading-art'), data);
   $('#reading-art').setAttribute('aria-label', `${reading.displayName || data.name} 카드`);
-  renderReadingParagraphs($('#reading-sections'), reading.paragraphs, reading.text);
+  renderReadingParagraphs($('#reading-sections'), reading.paragraphs, reading.text, cardNames);
   const detailSections = reading.detailSections || reading.sections;
   $('#reading-card-detail').hidden = !detailSections?.length;
   renderReadingSections($('#reading-detail-sections'), detailSections);
@@ -742,7 +775,7 @@ function selectSummaryGroup(id, focus = false) {
   });
 }
 
-function renderSummaryGroups(summary) {
+function renderSummaryGroups(summary, cardNames) {
   const tabs = $('#summary-tabs');
   const panels = $('#summary-text');
   tabs.replaceChildren();
@@ -762,7 +795,7 @@ function renderSummaryGroups(summary) {
     panel.setAttribute('role', 'tabpanel');
     panel.setAttribute('aria-labelledby', tab.id);
     panel.tabIndex = 0;
-    renderReadingSections(panel, group.sections);
+    renderReadingSections(panel, group.sections, '', 'h3', cardNames);
     tabs.append(tab);
     panels.append(panel);
   });
@@ -776,7 +809,7 @@ function buildResults() {
   const readingDate = !billing.adminPreview && billing.record?.readingDay ? new Date(`${billing.record.readingDay}T12:00:00+09:00`) : new Date();
   $('#result-date').textContent = `${new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' }).format(readingDate)} · ${topic.label}${billing.adminPreview ? ' · 관리자 모드' : ''}`;
   $('#result-title').textContent = '당신을 위한 종합 점괘';
-  renderSummaryGroups(summary);
+  renderSummaryGroups(summary, drawn.map(card => card.name));
   $('#summary-ritual').textContent = summary.ritual;
   showOverallOracle(summary);
 }
