@@ -70,7 +70,7 @@
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261110-janggi-entry2">
 <link rel="stylesheet" href="/games/janggi/replay.css?v=20261110-janggi-replay1">
-<script src="/shared/games/world-game-assets.js?v=20261114-king-result1" defer></script>
+<script src="/shared/games/world-game-assets.js?v=20261114-party-vote1" defer></script>
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
 <script src="/shared/games/game-challenges.js?v=20261110-admin-record-free1" defer></script>
@@ -221,7 +221,7 @@
 
 <script src="/games/matgo/matgo-bridge.js?v=20261113-game-popup-order1" defer></script>
 <link rel="stylesheet" href="/features/arcade/arcade-rooms.css?v=20261106-source-folders1">
-<script src="/features/arcade/arcade-rooms.js?v=20261113-king-rooms1" defer></script>
+<script src="/features/arcade/arcade-rooms.js?v=20261114-party-vote1" defer></script>
 <link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1">
 <script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/shared/brand/brand-copy.css?v=20261106-source-folders1">
@@ -3270,6 +3270,11 @@ function syncWorldMemberEntry(){
 
 var worldArcadeRooms=null,worldArcadeMatch=null;
 function worldArcadeCaption(id){return id&&worldArcadeMatch?.match_id===id?`<span class="arcade-match-caption">방 #${worldArcadeMatch.room_no} · ${w(worldArcadeMatch.title)}</span>`:""}
+function partyVoteRoom(kind){return kind==='minority'||kind==='mission'}
+function passwordArcadeRoom(kind){return partyVoteRoom(kind)||['croc','liar','king'].includes(kind)}
+function passwordRoomAction(kind,options){
+ return partyVoteRoom(kind)?S.rpc('party_vote_multiplayer',{p_kind:kind,...options}):S.rpc(kind+'_multiplayer',options);
+}
 function syncWorldArcadeRooms(){
  if(!worldArcadeRooms&&window.OjjudaArcadeRooms&&S)worldArcadeRooms=window.OjjudaArcadeRooms.create({
   client:S,getUserId:()=>adminGamePreviewActive()?null:D.online?D.user?.id:null,matgoAllowed:()=>!adminGamePreviewActive()&&window.OjjudaMatgoAccess?.visible()===true,
@@ -3279,8 +3284,8 @@ function syncWorldArcadeRooms(){
   onCreateNative:async(kind,params)=>{
    if(adminGamePreviewActive())throw Error('admin_preview');
    const owner=D.user?.id;if(!D.online||!owner)throw Error('not_signed_in');
-   if(['croc','liar','king'].includes(kind)){
-    const {data,error}=await S.rpc(kind+'_multiplayer',{p_action:'create',p_options:params});
+   if(passwordArcadeRoom(kind)){
+    const {data,error}=await passwordRoomAction(kind,{p_action:'create',p_options:params});
     if(error)throw error;
     if(D.online&&D.user?.id===owner&&data?.code)location.assign('/games/'+kind+'/?room='+encodeURIComponent(data.code));
     return;
@@ -3302,8 +3307,8 @@ function syncWorldArcadeRooms(){
    if(D.user?.id!==owner)return;dt();Al(kind,{joinCode:data.room.code});
   },
   onCancelNative:async room=>{
-   if(['croc','liar','king'].includes(room.kind)){
-    const {error}=await S.rpc(room.kind+'_multiplayer',{p_action:'cancel',p_code:room.code});
+   if(passwordArcadeRoom(room.kind)){
+    const {error}=await passwordRoomAction(room.kind,{p_action:'cancel',p_code:room.code});
     if(error)throw error;return;
    }
    if(room.kind==='roulette'){
@@ -3335,7 +3340,7 @@ function syncWorldArcadeRooms(){
   onOpen:async(room,owner)=>{
    if(adminGamePreviewActive())throw Error('admin_preview');
    if(!D.online||D.user?.id!==owner)throw Error("not_signed_in");
-   if(['croc','liar','king'].includes(room.kind)){location.assign('/games/'+room.kind+'/?room='+encodeURIComponent(room.code));return;}
+   if(passwordArcadeRoom(room.kind)){location.assign('/games/'+room.kind+'/?room='+encodeURIComponent(room.code));return;}
    if(room.native){
     dt();
     if(room.kind==='ttang'){
