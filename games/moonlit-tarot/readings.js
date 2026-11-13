@@ -1,4 +1,4 @@
-import { narrateReading, narrateSummary } from './narration.js?v=20261113-tarot-life1';
+import { narrateReading, narrateSummary } from './narration.js?v=20261113-tarot-topics50-1';
 import { getFortune, CORPUS_VERSION } from './fortune-corpus/index.js?v=20261113-tarot-corpus1';
 import { getSpreadPattern } from './spread-patterns.js?v=20261113-tarot-corpus1';
 import { CARD_FOUNDATIONS, CARD_SOURCE_NOTES, TAROT_REFERENCES, getCardNameGuide } from './card-foundations.js?v=20261113-tarot-corpus1';
