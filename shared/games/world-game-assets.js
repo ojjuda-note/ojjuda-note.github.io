@@ -18,7 +18,7 @@
   fingers:'1.1.1',
   imagevote:'1.1.1',
   updown:'1.1.1',
-  drinking:'1.2.0',
+  drinking:'1.2.1',
   tarot:'1.9.3',
   saju:'2.7.0',
   group:'1.2.2',
