@@ -72,8 +72,8 @@ test('common definitions, suggestions and authored combinations stay in labelled
     assert.ok(applied.text.includes(value.reading));
     assert.ok(!combined.interpretation.some(text => text.includes(value.reading)));
   }
-  assert.match(report.method.reuseNotice, /같은 글자·관계에는 같은 설명과 제안 규칙/);
-  assert.match(report.method.reuseNotice, /저희가 작성한 공통 참고 해설/);
+  assert.match(report.method.reuseNotice, /같은 글자와 관계가 나오면 같은 설명을 써요/);
+  assert.match(report.method.reuseNotice, /오쭈다가 작성했어요.*같은 특징이 나온 풀이에 함께 쓰는 참고 설명/);
 });
 
 test('same day master in another season changes actual evidence and the applicable relation rule', () => {
@@ -207,7 +207,7 @@ test('all twelve months keep grounded service suggestions, including repeated sy
       }
     }
     assert.match(report.adviceNotice,/오쭈다가 쓴 생활 제안/);
-    assert.match(report.method.reuseNotice,/같은 글자·관계에는 같은 설명과 제안 규칙/);
+    assert.match(report.method.reuseNotice,/같은 글자와 관계가 나오면 같은 설명을 써요/);
     assert.ok(report.months.at(-1).advice.length>=2,'December must not lose suggestions through a shared annual deduplication set');
   }
   assert.equal(observedCodes.size,10,'fixtures exercise all ten actual relationship types');
@@ -273,11 +273,11 @@ test('plain pair summaries keep the exact connection and clash counts, including
   function sameCounts(chapter, pairs) {
     const clashes = pairs.filter(value => value.kind === 'branch-clash').length;
     const connections = pairs.length - clashes;
-    assert.ok(chapter.summary.includes(`서로 맞추는 짝 ${connections}쌍`), chapter.summary);
-    assert.ok(chapter.summary.includes(`서로 다른 방향의 짝 ${clashes}쌍`), chapter.summary);
+    assert.ok(chapter.summary.includes(`어울리는 조합(합) ${connections}쌍`), chapter.summary);
+    assert.ok(chapter.summary.includes(`차이가 부딪히는 조합(충) ${clashes}쌍`), chapter.summary);
     const detail = chapter.easyParagraphs.join(' ');
-    assert.ok(detail.includes(`서로 맞추는 짝은 ${connections}쌍`), detail);
-    assert.ok(detail.includes(`서로 다른 방향의 짝은 ${clashes}쌍`), detail);
+    assert.ok(detail.includes(`합은 ${connections}쌍`), detail);
+    assert.ok(detail.includes(`충은 ${clashes}쌍`), detail);
   }
   sameCounts(lifelong(report).chapters.find(chapter => chapter.id === 'natal-interactions'), fortune.profile.interactions);
   sameCounts(report.sections.find(section => section.id === 'annual').chapters.find(chapter => chapter.id === 'annual-interactions'), fortune.annual.interactions);

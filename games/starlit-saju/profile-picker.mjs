@@ -5,7 +5,7 @@ import {SajuSavedProfileError} from './saved-profiles.mjs?v=20261113-saju-reader
 const pickers=new WeakMap();
 let zodiacModulePromise;
 function zodiacModule() {
-  zodiacModulePromise ||= import('./zodiac.mjs?v=20261113-saju-zodiac1').catch(error=>{zodiacModulePromise=null;throw error;});
+  zodiacModulePromise ||= import('./zodiac.mjs?v=20261113-saju-easy1').catch(error=>{zodiacModulePromise=null;throw error;});
   return zodiacModulePromise;
 }
 const genderLabel=gender=>gender==='male'?'남성':gender==='female'?'여성':'성별 미선택';

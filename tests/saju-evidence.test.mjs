@@ -185,7 +185,7 @@ test('conditional service commentary and common advice remain distinct from calc
     assert.ok(!allCalculations.includes(text),'general life advice must stay outside calculation');
     assert.ok(!report.facts.some(value=>value.text.includes(text)),'a recommendation is not source data');
   }
-  assert.match(report.method.reuseNotice,/공통 참고 해설/);
+  assert.match(report.method.reuseNotice,/같은 특징이 나온 풀이에 함께 쓰는 참고 설명/);
   const limits=report.method.notCalculated.join(' ');
   assert.match(limits,/대운/);
   assert.match(limits,/용신/);

@@ -16,7 +16,7 @@ export function zodiacFromChart(chart) {
   if (confirmed) {
     return {
       status: 'confirmed', label: confirmed.label, animal: confirmed.animal,
-      candidates: [confirmed], basis: BASIS, note: '사주 기준 · 입춘',
+      candidates: [confirmed], basis: BASIS, note: '사주에서는 입춘부터 띠가 바뀌어요.',
     };
   }
 
@@ -27,10 +27,10 @@ export function zodiacFromChart(chart) {
   }
   if (candidates.length) {
     const note = chart.timeKnown === false
-      ? '입춘이 바뀌는 날이라 태어난 시간을 알아야 띠를 정할 수 있어요.'
+      ? '입춘이 드는 날에 태어났어요. 태어난 시간을 알아야 띠를 하나로 정할 수 있어요.'
       : chart.timeKnown === true
-        ? '입력한 분 안에 입춘이 바뀌어 띠를 하나로 정할 수 없어요.'
-        : '입춘이 바뀌는 시각이라 띠를 하나로 정할 수 없어요.';
+        ? '입력한 분 안에 입춘이 들어요. 분 단위 정보만으로는 두 띠 중 하나를 고를 수 없어요.'
+        : '태어난 때가 입춘 전인지 후인지 알 수 없어 띠를 하나로 정할 수 없어요.';
     return {
       status: 'uncertain', label: candidates.map(item => item.label).join(' / '),
       animal: null, candidates, basis: BASIS, note,

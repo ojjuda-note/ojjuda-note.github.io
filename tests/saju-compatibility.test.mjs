@@ -86,8 +86,8 @@ test('swapping the people reverses every real location and the directed day-mast
   const reversed=reverse.interactions.map(match=>[match.kind,match.partnerPillarKey,match.selfPillarKey,match.otherCharacter.hanja,match.birthCharacter.hanja].join(':')).sort();
   assert.deepEqual(normalized,reversed);
   assert.equal(forward.comparisons.length,reverse.comparisons.length);
-  assert.match(forward.cards[0].paragraphs[0],/^내 쪽에서는 생각을 밖으로/);
-  assert.match(reverse.cards[0].paragraphs[0],/^내 쪽에서는 배우고 도움을/);
+  assert.match(forward.cards[0].paragraphs[0],/^사주에서는 내가 생각이나 경험을 나누고, 상대가 도움을 얻는/);
+  assert.match(reverse.cards[0].paragraphs[0],/^사주에서는 내가 상대의 말에서 배우거나 도움을 얻는/);
 });
 
 test('individual stem meanings remain distinct even when the broad element relationship is the same',()=>{
@@ -95,8 +95,8 @@ test('individual stem meanings remain distinct even when the broad element relat
   const second=buildCompatibilityReading(byStem.get('乙'),byStem.get('丁'));
   assert.equal(first.dayMasterRelation.self.group,second.dayMasterRelation.self.group);
   assert.notEqual(first.paragraphs[0],second.paragraphs[0]);
-  assert.match(first.paragraphs[0],/방향을 정하고 꾸준히/);
-  assert.match(second.paragraphs[0],/상황에 맞춰 방법을 바꾸고/);
+  assert.match(first.paragraphs[0],/할 일을 정하면 꾸준히/);
+  assert.match(second.paragraphs[0],/상황에 맞게 방법을 바꾸고/);
 });
 
 test('identical input means the same actual characters, without invented perfect compatibility or self-clashes',()=>{
@@ -234,7 +234,7 @@ test('same or otherwise unpaired zodiacs do not inherit a combination or clash f
   assert.ok(unpaired.interactions.length>0,'other parts of the actual charts still have their own relationships');
   assert.equal(yearMatches(unpaired).length,0);
   assert.deepEqual(zodiacCard(unpaired).factIds.filter(id=>id.startsWith('interaction.')),[]);
-  assert.match(zodiacCard(unpaired).paragraphs[0],/직접 연결되는 짝에 해당하지 않아요/);
+  assert.match(zodiacCard(unpaired).paragraphs[0],/‘육합’이나 ‘충’에 해당하지 않아요/);
   assert.doesNotMatch(zodiacCard(unpaired).title,/나쁜|최악|흉|불리|좋지 않/);
 });
 

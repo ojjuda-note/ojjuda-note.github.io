@@ -1,5 +1,5 @@
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
-import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-zodiac1';
+import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-easy1';
 
 const $ = id => document.getElementById(id);
 const form = $('birth-form');
@@ -26,7 +26,7 @@ let zodiacModulePromise;
 let zodiacPreviewGeneration=0;
 
 function zodiacModule() {
-  zodiacModulePromise ||= import('./zodiac.mjs?v=20261113-saju-zodiac1').catch(error=>{zodiacModulePromise=null;throw error;});
+  zodiacModulePromise ||= import('./zodiac.mjs?v=20261113-saju-easy1').catch(error=>{zodiacModulePromise=null;throw error;});
   return zodiacModulePromise;
 }
 function showZodiac(node,zodiac) {
@@ -303,8 +303,8 @@ function renderReading(result,zodiac) {
 }
 
 const TOPICS = Object.freeze({
-  lifelong:{label:'평생운',description:'태어난 때의 사주로 나의 성향과 생활을 살펴봐요.'},
-  annual:{label:'올해운',description:'선택한 해의 글자와 내 사주를 함께 살펴봐요.'},
+  lifelong:{label:'평생운',description:'태어난 사주로 내 성격과 평소의 생활 모습을 읽어요.'},
+  annual:{label:'올해운',description:'내 사주와 선택한 해를 비교해 일·돈·관계에서 살펴볼 점을 읽어요.'},
   monthly:{label:'월별운',description:'선택한 연도의 1~12월 전체 풀이를 포함해요.'},
   all:{label:'전체 풀이',description:'평생운과 선택한 연도의 올해운·12개월 월별운을 모두 읽어요.'}
 });
@@ -513,8 +513,8 @@ document.querySelectorAll('.reading-size-control button').forEach(button=>button
 async function prepareDetailedReading(chart,target,person=currentPerson||readPerson()) {
   detailModulesPromise ||= Promise.all([
     import('./fortune-data.mjs?v=20261113-saju-reader1'),
-    import('./readings.mjs?v=20261113-saju-summary1'),
-    import('./report-view.mjs?v=20261113-saju-summary1'),
+    import('./readings.mjs?v=20261113-saju-easy1'),
+    import('./report-view.mjs?v=20261113-saju-easy1'),
     import('./daeun.mjs?v=20261113-saju-reader1'),
     zodiacModule()
   ]).catch(error=>{detailModulesPromise=null;throw error;});

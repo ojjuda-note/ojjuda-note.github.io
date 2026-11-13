@@ -1,8 +1,8 @@
 import { SajuPayment } from './payment.js?v=20261113-saju-lists1';
 import { SajuCompatibilityPayment, COMPATIBILITY_PRICE } from './compatibility-payment.mjs?v=20261113-compatibility20-1';
-import { createCompatibilityScoreboard, compatibilityScoreText } from './compatibility-score-view.mjs?v=20261113-compatibility-score1';
+import { createCompatibilityScoreboard, compatibilityScoreText } from './compatibility-score-view.mjs?v=20261113-saju-easy1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
-import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-zodiac1';
+import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-easy1';
 
 const $=id=>document.getElementById(id);
 const form=$('compatibility-form'),button=$('compatibility-open');
@@ -15,7 +15,7 @@ let modulesPromise,readyPromise,compatibility;
 let zodiacModulePromise,zodiacPreviewGeneration=0;
 
 function zodiacModule() {
-  zodiacModulePromise ||= import('./zodiac.mjs?v=20261113-saju-zodiac1').catch(error=>{zodiacModulePromise=null;throw error;});
+  zodiacModulePromise ||= import('./zodiac.mjs?v=20261113-saju-easy1').catch(error=>{zodiacModulePromise=null;throw error;});
   return zodiacModulePromise;
 }
 function showZodiac(node,zodiac,name='') {
@@ -169,8 +169,8 @@ async function ready() {
 async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
-    import('./compatibility.mjs?v=20261113-compatibility-summary1'),
-    import('./report-view.mjs?v=20261113-saju-summary1'),
+    import('./compatibility.mjs?v=20261113-saju-easy1'),
+    import('./report-view.mjs?v=20261113-saju-easy1'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
 }
