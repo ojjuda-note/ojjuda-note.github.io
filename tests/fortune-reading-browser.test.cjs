@@ -29,7 +29,6 @@ const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { buildCompatibilityReading } from '/games/starlit-saju/compatibility.mjs';
 import { renderCompatibilityReport } from '/games/starlit-saju/report-view.mjs';
-import { createCompatibilityScoreboard } from '/games/starlit-saju/compatibility-score-view.mjs';
 const now = new Date('2026-11-13T00:00:00Z');
 const partner = calculateSaju({year:1991,month:5,day:10,hour:9,minute:0},{now});
 const target = document.getElementById('report-content');
@@ -38,8 +37,7 @@ function show(){
   const birth = select.value === 'confirmed' ? {year:1990,month:5,day:10,hour:9,minute:0} : {year:2024,month:2,day:4,hour:null};
   const reading = buildCompatibilityReading(calculateSaju(birth,{now}),partner);
   document.getElementById('fixture-zodiac').textContent = reading.zodiac.self.label + ' · ' + reading.zodiac.partner.label + ' · 사주 기준 · 입춘';
-  renderCompatibilityReport(target,reading);
-  target.querySelector('#compatibility-reading > .report-section-heading').after(createCompatibilityScoreboard(reading.score));
+  renderCompatibilityReport(target,reading,{names:[{name:'길게 입력한 첫 번째 예시 이름'},{name:'길게 입력한 두 번째 예시 이름'}]});
   target.dataset.ready=select.value;
 }
 select.addEventListener('change',show);show();
@@ -417,11 +415,18 @@ const server = http.createServer((request, response) => {
     await saju.setViewportSize({width:390,height:844});
     await saju.goto(new URL('/__compatibility_fixture', url).href);
     await saju.locator('#report-content[data-ready="confirmed"]').waitFor();
+    async function selectCompatibilityPage(id) {
+      await saju.locator('#compatibility-page-select').selectOption(id);
+      await saju.locator('[data-compatibility-current][id="'+id+'"]').waitFor({state:'visible'});
+      assert.equal(await saju.locator('[data-compatibility-current]').count(),1,'compatibility shows one selected reading page');
+    }
+    assert.equal(await saju.locator('#compatibility-page-select').inputValue(),'compatibility-people-overview','compatibility starts with A and B’s character and traits');
     assert.match(await saju.locator('#fixture-zodiac').textContent(), /말띠.*양띠.*입춘/);
     const zodiacCard=saju.locator('[data-reader-card="zodiac"]');
     assert.equal(await zodiacCard.count(),1);
     assert.match(await zodiacCard.textContent(), /말띠.*양띠/s);
     assert.ok(await zodiacCard.locator('.reader-prose p').count()>=3);
+    await selectCompatibilityPage(await zodiacCard.getAttribute('id'));
     await zodiacCard.scrollIntoViewIfNeeded();
     assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'the two zodiac reading fits on mobile');
     await saju.screenshot({path:path.join(artifacts,'saju-zodiac-compatibility-mobile.png')});
@@ -429,13 +434,96 @@ const server = http.createServer((request, response) => {
     await saju.locator('#report-content[data-ready="uncertain"]').waitFor();
     assert.match(await saju.locator('#fixture-zodiac').textContent(), /토끼띠 \/ 용띠/);
     assert.match(await zodiacCard.textContent(), /토끼띠 \/ 용띠/);
+    await selectCompatibilityPage(await zodiacCard.getAttribute('id'));
     await zodiacCard.scrollIntoViewIfNeeded();
     assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'the two candidate labels wrap on mobile');
     await saju.screenshot({path:path.join(artifacts,'saju-zodiac-boundary-mobile.png')});
     await saju.setViewportSize({width:1280,height:900});
     await saju.locator('#fixture-pair').selectOption('confirmed');
+    await selectCompatibilityPage(await zodiacCard.getAttribute('id'));
     await zodiacCard.scrollIntoViewIfNeeded();
     await saju.screenshot({path:path.join(artifacts,'saju-zodiac-compatibility-desktop.png')});
+    async function inspectCompatibilityPeople(label,personCount) {
+      const current=saju.locator('[data-compatibility-current]');
+      const geometry=await current.evaluate(page=>{
+        const contained=(inner,outer)=>inner.left>=outer.left-1&&inner.right<=outer.right+1&&inner.top>=outer.top-1&&inner.bottom<=outer.bottom+1;
+        function fits(element) {
+          const rect=element.getBoundingClientRect(),style=getComputedStyle(element);
+          if(!rect.width||!rect.height||style.visibility==='hidden'||element.scrollWidth>element.clientWidth+1||element.scrollHeight>element.clientHeight+1)return false;
+          for(let parent=element.parentElement;parent&&parent!==document.body;parent=parent.parentElement) {
+            const box=parent.getBoundingClientRect(),parentStyle=getComputedStyle(parent);
+            if((/hidden|clip/.test(parentStyle.overflowX)&&(rect.left<box.left-1||rect.right>box.right+1))||
+              (/hidden|clip/.test(parentStyle.overflowY)&&(rect.top<box.top-1||rect.bottom>box.bottom+1)))return false;
+          }
+          return !['nowrap','pre'].includes(style.whiteSpace)&&style.textOverflow!=='ellipsis'&&['none','','unset'].includes(style.webkitLineClamp);
+        }
+        const box=page.getBoundingClientRect();
+        const people=Array.from(page.querySelectorAll('.compatibility-person-reading')).map(person=>{
+          const rect=person.getBoundingClientRect();
+          return {key:person.dataset.personKey,marker:person.dataset.personMarker,name:person.querySelector('.compatibility-person-name').textContent,
+            left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,inside:contained(rect,box)};
+        });
+        const groups=Array.from(page.querySelectorAll('.compatibility-two-line-summary')).map(group=>({role:group.getAttribute('role'),label:group.getAttribute('aria-label'),
+          lines:Array.from(group.querySelectorAll('.compatibility-summary-line')).map(line=>({text:line.textContent.trim(),fits:fits(line)}))}));
+        const prose=Array.from(page.querySelectorAll('.compatibility-person-prose p'));
+        return {people,groups,bodyFont:parseFloat(getComputedStyle(prose[0]).fontSize),summaryFont:parseFloat(getComputedStyle(page.querySelector('.compatibility-summary-line')).fontSize),
+          proseFits:prose.length>0&&prose.every(fits),labelsFit:Array.from(page.querySelectorAll('.compatibility-person-name,.compatibility-people-title')).every(fits),
+          horizontalOverflow:document.documentElement.scrollWidth>innerWidth||page.scrollWidth>page.clientWidth+1,
+          insideViewport:box.left>=-1&&box.right<=innerWidth+1};
+      });
+      assert.equal(geometry.people.length,personCount,label+': both people are present on a comparison page');
+      assert.equal(geometry.groups.length,personCount||1,label+': each person or synthesis has its own summary');
+      assert.ok(geometry.groups.every(group=>group.role==='group'&&group.label==='두 줄 요약'&&group.lines.length===2&&group.lines.every(line=>line.text&&line.fits)),label+': two complete summary units wrap without clipping');
+      assert.ok(geometry.proseFits&&geometry.labelsFit,label+': names, headings and full paragraphs remain readable');
+      assert.equal(geometry.horizontalOverflow,false,label+': the reading fits the available width');
+      assert.ok(geometry.insideViewport,label+': the complete reading card fits the viewport width');
+      if(personCount) {
+        assert.deepEqual(geometry.people.map(person=>person.key),['self','partner'],label+': A precedes B in reading order');
+        assert.deepEqual(geometry.people.map(person=>person.marker),['A','B']);
+        assert.deepEqual(geometry.people.map(person=>person.name),['A · 길게 입력한 첫 번째 예시 이름','B · 길게 입력한 두 번째 예시 이름']);
+        assert.ok(geometry.people.every(person=>person.inside),label+': both person cards stay inside the reading');
+        const [a,b]=geometry.people;
+        if((await saju.viewportSize()).width===1280)assert.ok(b.left>=a.right-1&&Math.abs(a.top-b.top)<=1,label+': desktop places the matching A/B items side by side');
+        else assert.ok(b.top>=a.bottom-1,label+': a phone stacks A above B');
+      }
+      return geometry;
+    }
+    const compatibilityPeople={};
+    for(const [viewport,size] of [['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]]) {
+      await saju.setViewportSize(size);
+      for(const textSize of ['normal','large']) {
+        await saju.locator('#fixture-pair').selectOption('confirmed');
+        await saju.locator('#report-content').evaluate((report,value)=>{report.dataset.readingSize=value;},textSize);
+        const topics=viewport==='phone-small'?['overview','decisions','relationships','work','pressure','adjustment']:['overview'];
+        const label=viewport+' '+textSize;
+        for(const topic of topics) {
+          await selectCompatibilityPage('compatibility-people-'+topic);
+          const geometry=await inspectCompatibilityPeople(label+' '+topic,2);
+          if(topic==='overview') {
+            compatibilityPeople[label]={topics,bodyFont:geometry.bodyFont,summaryFont:geometry.summaryFont};
+            if(textSize==='large') {
+              assert.ok(geometry.bodyFont>compatibilityPeople[viewport+' normal'].bodyFont,label+': the large setting increases the body text');
+              assert.ok(geometry.summaryFont>compatibilityPeople[viewport+' normal'].summaryFont,label+': the large setting increases the summary text');
+            }
+            if(viewport!=='phone')await saju.locator('[data-compatibility-current]').screenshot({path:path.join(artifacts,'saju-compatibility-people-'+viewport+'-'+textSize+'.png')});
+          }
+        }
+        await selectCompatibilityPage('compatibility-synthesis');
+        await inspectCompatibilityPeople(label+' synthesis',0);
+        if(viewport!=='phone'&&textSize==='normal')await saju.locator('[data-compatibility-current]').screenshot({path:path.join(artifacts,'saju-compatibility-synthesis-'+viewport+'.png')});
+        await saju.locator('#compatibility-synthesis .compatibility-evidence-link').click();
+        await saju.locator('#compatibility-reading-evidence[data-compatibility-current][open]').waitFor({state:'visible'});
+        await saju.locator('[data-compatibility-step="previous"]').click();
+        await saju.locator('#compatibility-synthesis[data-compatibility-current]').waitFor({state:'visible'});
+      }
+    }
+    await saju.setViewportSize({width:320,height:844});
+    await saju.locator('#fixture-pair').selectOption('uncertain');
+    await saju.locator('#report-content').evaluate(report=>{report.dataset.readingSize='large';});
+    await selectCompatibilityPage('compatibility-people-overview');
+    await inspectCompatibilityPeople('unknown birth time phone-small large',2);
+    await selectCompatibilityPage('compatibility-synthesis');
+    await inspectCompatibilityPeople('unknown birth time phone-small large synthesis',0);
     const compatibilityScores={};
     for(const [viewport,size] of [['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]]) {
       await saju.setViewportSize(size);
@@ -444,6 +532,7 @@ const server = http.createServer((request, response) => {
       for(const pair of ['confirmed','uncertain']) {
         await saju.locator('#fixture-pair').selectOption(pair);
         await saju.locator('#report-content[data-ready="'+pair+'"]').waitFor();
+        await selectCompatibilityPage('compatibility-scores');
         const scoreboard=saju.locator('section.compatibility-scoreboard');
         await scoreboard.waitFor({state:'visible'});
         assert.equal(await scoreboard.count(),1,'one score summary is rendered per pair');
@@ -482,7 +571,7 @@ const server = http.createServer((request, response) => {
               (/hidden|clip/.test(style.overflowY)&&(box.top<rect.top-1||box.bottom>rect.bottom+1)))clippedAncestors.push(parent.id||parent.className||parent.tagName);
           }
           return {total:Number(total?.textContent.trim()),meters,summaries,
-            followsHeading:board.previousElementSibling?.classList.contains('report-section-heading')===true,
+            selectedPage:board.hasAttribute('data-compatibility-current')&&document.getElementById('compatibility-page-select').value==='compatibility-scores',
             totalVisible:!!total&&total.getBoundingClientRect().width>0&&contained(total.getBoundingClientRect(),box),
             documentOverflow:document.documentElement.scrollWidth>innerWidth,
             boardOverflow:board.scrollWidth>board.clientWidth+1||board.scrollHeight>board.clientHeight+1,
@@ -491,7 +580,7 @@ const server = http.createServer((request, response) => {
             clippedText:Array.from(board.querySelectorAll('h2,h3,h4,h5,h6,p,strong,small,summary,dt,dd')).filter(element=>element.clientWidth>0&&element.scrollWidth>element.clientWidth+1).length};
         });
         const label=pair+' '+viewport;
-        assert.ok(geometry.followsHeading,label+': scores follow the report heading');
+        assert.ok(geometry.selectedPage,label+': scores remain available through the reading picker');
         assert.ok(Number.isInteger(geometry.total)&&geometry.total>=0&&geometry.total<=100,label+': the total is an explicit 0–100 score');
         assert.ok(geometry.totalVisible,label+': the total is visible inside its score summary');
         assert.ok(geometry.meters.every(meter=>meter.valid&&meter.min===0&&meter.max===100&&meter.visible&&meter.inside&&meter.fillMatches),label+': all four bars fit and represent their exact values');
@@ -515,6 +604,6 @@ const server = http.createServer((request, response) => {
     }
     assert.deepEqual(errors, []);
     assert.deepEqual(failed, []);
-    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuSummaryViews, compatibilityScores, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
+    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuSummaryViews, compatibilityPeople, compatibilityScores, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => server.close());
