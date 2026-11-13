@@ -59,6 +59,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: '2ytBjXgaueA', title: 'PAPARAZZI ARRIVE', kind: '퍼포먼스', source: 'A2O WORLD' }
   ],
   a2olite: [
+    { id: 'c7REvlMKFro', title: 'NEON · 더쇼 첫 1위 수상·앙코르 (10.20)', kind: '음악방송 앙코르', source: 'SBS Life / THE K-POP' },
+    { id: '1JCJhrtRnwk', title: 'NEON · 쇼챔피언 1위·앙코르 (10.21)', kind: '음악방송 앙코르', source: 'MBC M / ALL THE K-POP' },
+    { id: 'LPI3L50VOvM', title: 'NEON · 엠카운트다운 1위 앙코르 (10.22)', kind: '음악방송 앙코르', source: 'Mnet / M2' },
     { id: 'D968qfUZMUE', title: 'NEON', kind: '뮤직비디오', source: 'A2O WORLD' },
     { id: 'xaiNQDAx7Ag', title: 'NEON', kind: '스튜디오 퍼포먼스', source: 'STONE PERFORMANCE' },
     { id: 'pc1t3-1smUw', title: 'NEON + Dance Break', kind: '음악방송 무대', source: 'KBS WORLD' }
