@@ -410,6 +410,14 @@ for (const id of ['tws','nctdream','ateez','treasure','nctwish','andteam']) wind
 /* KISS OF LIFE: verified 2026 music and official Japanese source; unknown personal data remain blank. */
 const kissOfLifeProfile = window.OJJUDA_FAN_PROFILES.kissoflife;
 if (kissOfLifeProfile) {
+  kissOfLifeProfile.expanded = true;
+  kissOfLifeProfile.checkedAt = '2026.11.13';
+  const officialBirthdays = { '쥴리': '2000.03.29', '나띠': '2002.05.30', '벨': '2004.03.20', '하늘': '2005.05.25' };
+  for (const member of kissOfLifeProfile.members) {
+    member.birthday = officialBirthdays[member.name] || null;
+    member.source = 'https://s2ent.co.kr/34';
+  }
+  kissOfLifeProfile.sources.unshift({ label: 'S2엔터테인먼트 공식 멤버 생일', href: 'https://s2ent.co.kr/34' });
   kissOfLifeProfile.records = [
     { year: '2025.11', title: '일본 음반 데뷔', detail: 'TOKYO MISSION START · 일본 컬럼비아', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' },
     { year: '2026.09', title: '일본 미니 2집 발매', detail: 'SWEAT -JAPANESE EP- · 6곡', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' }
