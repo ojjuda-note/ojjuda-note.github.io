@@ -1,0 +1,10 @@
+.bomb-control { margin: 18px 0; }
+.bomb-setting { display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+.bomb-setting label { margin:0; }
+.bomb-control input { width:100%; height:44px; padding:0; accent-color:#376344; }
+.bomb-control output { color:#37523f; font-weight:750; font-variant-numeric:tabular-nums; }
+.bomb-launch { display:grid; place-items:center; margin:14px auto; width:min(100%,250px); }
+.bomb-launch > * { grid-area:1 / 1; }
+.bomb-launch img { width:100%; display:block; border-radius:18px; }
+.bomb-launch button { min-width:112px; box-shadow:0 2px 8px #34281d44; }
+.bomb-active { width:min(100%,160px); margin:12px auto; display:block; border-radius:14px; }

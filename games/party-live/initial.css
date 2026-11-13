@@ -1,0 +1,4 @@
+.initial-word { display:flex; align-items:center; justify-content:center; min-height:110px; margin:14px 0;
+  color:#244d68; background:#e5eff3; border:1px solid #bed0d8; border-radius:16px;
+  font-weight:800; font-size:clamp(36px,12vw,55px); letter-spacing:.09em; }
+.initial-time { font-weight:750; font-variant-numeric:tabular-nums; color:#355a6f; }
