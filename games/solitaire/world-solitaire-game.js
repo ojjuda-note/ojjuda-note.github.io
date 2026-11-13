@@ -12,7 +12,7 @@
       dialog.setAttribute('aria-label', '솔리테어');
       const frame = document.createElement('iframe');
       frame.title = '솔리테어';
-      frame.src = '/games/solitaire/index.html?v=20261112-arcade-entry-return1&owner=' + encodeURIComponent(owner || 'guest');
+      frame.src = '/games/solitaire/index.html?v=20261113-game-popup-order1&owner=' + encodeURIComponent(owner || 'guest');
       frame.allow = 'autoplay; fullscreen';
       dialog.append(frame);
       let guestFinished = false;
@@ -48,6 +48,7 @@
         if (event.origin !== location.origin || event.source !== frame.contentWindow || !authorized()) return;
         if (event.data?.source !== 'ojjuda-solitaire') return;
         if (event.data.type === 'ojjuda-game-result') void record(event.data);
+        if (event.data.type === 'ojjuda-game-exit') close();
         if (event.data.type === 'ojjuda-game-exit-request' && onExitRequest?.() !== true) close();
         if (event.data.type === 'ojjuda-game-finished' && !owner && !guestFinished) {
           guestFinished = true;

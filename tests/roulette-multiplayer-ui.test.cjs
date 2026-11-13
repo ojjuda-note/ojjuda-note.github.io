@@ -320,6 +320,19 @@ test('snapshot updates cannot use ZU or an older response to replace roulette go
  assert.equal(f.ui.state.balance,8400);assert.equal(f.ui.getRoom().id,r.id);
 });
 
+test('leaving a revealed result waits for one settlement before leaving the room',async t=>{
+ const f=await fixture(t),gate=deferred();f.gates.set('confirm',gate);
+ beginHistoryRound(f,'exit-round');f.w.testWheel.callbacks.onDone('exit-round');
+ const leave=f.w.document.getElementById('leaveResultButton');
+ assert.equal(leave.nextElementSibling.id,'confirmResultButton');
+ leave.click();leave.click();await tick();
+ assert.equal(f.calls.filter(call=>call.action==='confirm').length,1);
+ assert.equal(f.calls.some(call=>call.action==='leave'),false);
+ gate.resolve();await tick();await tick();await tick();
+ assert.equal(f.room(),null);assert.equal(f.calls.filter(call=>call.action==='leave').length,1);
+ assert.ok(f.sent.some(message=>message.type==='exit'));
+});
+
 test('an exit queued during confirmation is completed even when the tab becomes hidden',async t=>{
  const r=roomFixture({status:'spinning',round:1});r.me.ready=true;r.me.bets={n7:100};r.me.stake=100;r.spin={id:'spin-one',number:7,duration:20000,startedAt:Date.now()-20000,variation:.5,bets:{n7:100}};
  const f=await fixture(t,r),gate=deferred();f.gates.set('confirm',gate);

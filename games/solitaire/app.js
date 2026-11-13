@@ -2,7 +2,7 @@ import './rules.js?v=20261106-solitaire-ranking1';
 import {SUITS,red,copy,createGame,getPile,canMove,move,draw,isWon,canFinish,legalMoves,suggest,validateState,visibleWasteCount,restoreWastePackets} from './engine.js?v=20261106-solitaire-ranking1';
 import {cardFace,CARD_RATIO} from './cards.js?v=20261106-solitaire-images1';
 import {gestureSource,HOLD_DELAY} from './gestures.js?v=20261107-solitaire-hold250-1';
-import {playWinAnimation} from './celebration.js?v=20261106-solitaire-images1';
+import {playWinAnimation} from './celebration.js?v=20261113-game-popup-order1';
 import {overlappingTarget} from './drop-targets.js?v=20261106-solitaire-ranking1';
 import {createViewport} from './viewport.js?v=20261106-solitaire-ranking1';
 const $=s=>document.querySelector(s);
@@ -263,6 +263,7 @@ entryDialog.addEventListener('close',()=>{lastTick=Date.now();});
 function openDialog(html){
   const now=Date.now();if(started&&!isWon(state)&&!document.hidden&&!dialog.open&&!entryDialog.open&&!externalPaused)elapsed+=Math.max(0,now-lastTick);
   $('#dialog-content').innerHTML=html;lastTick=now;if(!dialog.open)dialog.showModal();
+  $('#dialog-content').querySelectorAll('[data-exit]').forEach(b=>b.onclick=leaveArcade);
   $('#dialog-content').querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>dialog.close());
 }
 dialog.addEventListener('close',()=>{lastTick=Date.now();});
@@ -286,7 +287,7 @@ function help(){
   if(locked)return;
   openDialog('<div class="dialog-icon">♣</div><div class="dialog-kicker">HOW TO PLAY</div><h2 class="dialog-title">한 장씩, 차근차근</h2><ol class="rules"><li>위쪽 미션칸 네 곳에 <strong>같은 무늬끼리 A부터 K까지</strong> 모으면 완성이에요.</li><li>아래 줄은 <strong>빨강·검정을 번갈아, 큰 숫자부터</strong> 놓아요. 순서가 맞는 카드 묶음도 함께 옮길 수 있어요.</li><li><strong>빈 줄에는 K</strong> 또는 K로 시작하는 묶음만 놓을 수 있어요.</li><li>왼쪽 더미를 누르면 <strong>초보는 1장, 보통은 3장</strong>씩 공개돼요. 다 뽑으면 <strong>↻</strong>로 다시 돌릴 수 있어요.</li><li><strong>바로 끌면 맨 위 한 장</strong>, <strong>0.25초 누른 뒤 끌면 연결된 묶음</strong>을 옮겨요. 중간 카드를 길게 누르면 그 카드부터 선택돼요.</li><li>카드를 <strong>두 번 터치하면 미션칸으로 자동 이동</strong>해요. 선택 후 목적지를 눌러 옮길 수도 있어요.</li><li>옮기는 카드가 목적지 카드에 닿으면 놓을 수 있어요. <strong>두 손가락으로 확대·축소와 화면 이동</strong>이 가능해요. 아래 % 버튼을 누르면 화면에 다시 맞춰요.</li></ol><div class="rules-example">♠ K &nbsp; <span class="r">♥ Q</span> &nbsp; ♣ J &nbsp; <span class="r">♦ 10</span></div><div class="dialog-buttons"><button class="primary" data-close>알겠어요</button></div>');
 }
-function pause(){if(locked||isWon(state))return;openDialog('<div class="dialog-icon">Ⅱ</div><div class="dialog-kicker">TAKE YOUR TIME</div><h2 class="dialog-title">잠깐 쉬어 가요</h2><p class="dialog-text">카드도 시간도 잠시 멈췄어요.<br>준비되면 이어서 즐겨 주세요.</p><div class="dialog-buttons"><button class="primary" data-close>게임 계속하기</button></div>');save();}
+function pause(){if(locked||isWon(state))return;openDialog('<div class="dialog-icon">Ⅱ</div><div class="dialog-kicker">TAKE YOUR TIME</div><h2 class="dialog-title">잠깐 쉬어 가요</h2><p class="dialog-text">카드도 시간도 잠시 멈췄어요.<br>준비되면 이어서 즐겨 주세요.</p><div class="dialog-buttons"><button data-exit>나가기</button><button class="primary" data-close>계속하기</button></div>');save();}
 function win(){
   const now=Date.now();
   if(started&&!document.hidden&&!dialog.open&&!entryDialog.open&&!externalPaused)elapsed+=Math.max(0,now-lastTick);
@@ -298,12 +299,12 @@ function win(){
   save();submitCompletion();
   winPlaying=true;locked=true;updateStats();
   const complete=()=>{if(!winPlaying)return;stopWinAnimation=null;winPlaying=false;locked=false;updateStats();showWinResult();};
-  try{const stop=playWinAnimation(complete,{onRestart:()=>{notifyArcade('ojjuda-game-finished');startNewGame();}});if(winPlaying)stopWinAnimation=stop;}
+  try{const stop=playWinAnimation(complete,{onExit:()=>{notifyArcade('ojjuda-game-finished');leaveArcade();},onRestart:()=>{notifyArcade('ojjuda-game-finished');startNewGame();}});if(winPlaying)stopWinAnimation=stop;}
   catch{complete();}
 }
 function showWinResult(){
   notifyArcade('ojjuda-game-finished');
-  openDialog(`<div class="dialog-icon">♛</div><div class="dialog-kicker">BEAUTIFULLY DONE</div><h2 class="dialog-title">멋지게 완성했어요!</h2><p class="dialog-text">52장의 카드가 모두 제자리를 찾았네요.</p><div class="win-stats"><div><small>시간</small><strong>${formatTime((completion?.seconds||Math.ceil(elapsed/1000))*1000)}</strong></div><div><small>이동</small><strong>${state.moves}</strong></div><div><small>난이도</small><strong>${state.drawCount===3?'보통':'초보'}</strong></div></div><a class="dialog-monthly-shortcut" href="/features/arcade/monthly-ranking.html?game=solitaire" target="_blank" rel="noopener noreferrer">🏆 이번 달 1~10위 · 내 순위</a><p id="ranking-status" class="dialog-text"></p><button id="retry-ranking" hidden>순위 저장 다시 시도</button><div class="dialog-buttons"><button data-close>카드 보기</button><button class="primary" id="play-again">다시 시작</button></div>`);
+  openDialog(`<div class="dialog-icon">♛</div><div class="dialog-kicker">BEAUTIFULLY DONE</div><h2 class="dialog-title">멋지게 완성했어요!</h2><p class="dialog-text">52장의 카드가 모두 제자리를 찾았네요.</p><div class="win-stats"><div><small>시간</small><strong>${formatTime((completion?.seconds||Math.ceil(elapsed/1000))*1000)}</strong></div><div><small>이동</small><strong>${state.moves}</strong></div><div><small>난이도</small><strong>${state.drawCount===3?'보통':'초보'}</strong></div></div><a class="dialog-monthly-shortcut" href="/features/arcade/monthly-ranking.html?game=solitaire" target="_blank" rel="noopener noreferrer">🏆 이번 달 1~10위 · 내 순위</a><p id="ranking-status" class="dialog-text"></p><button id="retry-ranking" hidden>순위 저장 다시 시도</button><div class="dialog-buttons"><button data-close>카드 보기</button></div><div class="dialog-buttons"><button data-exit>나가기</button><button class="primary" id="play-again">계속하기</button></div>`);
   updateRankingStatus();
   $('#retry-ranking').onclick=submitCompletion;
   $('#play-again').onclick=()=>startNewGame();
@@ -323,12 +324,16 @@ const view=createViewport({
 render();save();showEntry();
 
 function notifyArcade(type,data={}){if(window.parent!==window)window.parent.postMessage({source:'ojjuda-solitaire',type,...data},location.origin);}
+function leaveArcade(){
+  save();
+  if(window.parent!==window)notifyArcade('ojjuda-game-exit');
+  else location.assign('/world.html?tab=arcade');
+}
 function requestExit(){
   save();
   if(window.parent!==window){notifyArcade('ojjuda-game-exit-request');return;}
   if(entryDialog.open){location.assign('/world.html?tab=arcade');return;}
-  openDialog('<h2 class="dialog-title">오락실로 돌아갈까요?</h2><div class="dialog-buttons"><button data-close>게임 계속하기</button><button class="primary" id="leave-arcade">오락실로</button></div>');
-  $('#leave-arcade').onclick=()=>location.assign('/world.html?tab=arcade');
+  openDialog('<h2 class="dialog-title">오락실로 돌아갈까요?</h2><div class="dialog-buttons"><button data-exit>나가기</button><button class="primary" data-close>계속하기</button></div>');
 }
 $('#game-home').onclick=requestExit;
 window.OjjudaSolitaireControls={save,pause(){

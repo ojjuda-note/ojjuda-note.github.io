@@ -24,8 +24,8 @@
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
   <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
   <link rel="stylesheet" href="style.css?v=20261112-spot-motion30">
-  <link rel="stylesheet" href="/shared/games/game-results.css?v=20261109-unified-multiplayer-ui2">
-  <script src="/shared/games/game-results.js?v=20261108-monthly-personal1" defer></script>
+  <link rel="stylesheet" href="/shared/games/game-results.css?v=20261113-game-popup-order1">
+  <script src="/shared/games/game-results.js?v=20261113-game-popup-order1" defer></script>
   <script src="puzzles.js?v=20261003-hint1" defer></script>
   <script src="photo-puzzles.js?v=20261108-spot62-hard10" defer></script>
   <script src="masterpiece-puzzles.js?v=20261102-spot-visibility1" defer></script>
@@ -37,7 +37,7 @@
   <script src="vendor/supabase.js" defer></script>
   <script src="/shared/games/admin-preview.js?v=20261110-admin-preview1" defer></script>
   <script src="wallet.js?v=20261112-spot-motion30" defer></script>
-  <script src="app.js?v=20261112-spot-motion30" defer></script>
+  <script src="app.js?v=20261113-game-popup-order1" defer></script>
 <link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1">
 <script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/ju-coins/ju-coins.css?v=20261106-source-folders1">
@@ -110,10 +110,12 @@
       <button id="celebration-current" data-game-result-play type="button" class="end-picture-choice"><span>지금 그림</span><small></small></button>
       <button id="celebration-next" data-game-result-play type="button" class="end-picture-choice end-picture-next"><span>다음 그림</span><small></small></button>
     </div>
+    <div class="game-result-navigation" id="celebration-navigation"><a href="/world.html?tab=arcade" id="celebration-exit">나가기</a><button type="button" id="celebration-continue" data-game-result-play>계속하기</button></div>
   </dialog>
   <dialog id="spot-failure" class="spot-celebration" aria-label="틀린그림찾기 실패">
     <h2>실패</h2><p id="retry-count"></p>
     <div id="retry-level-choice" class="end-picture-choices" role="group" aria-label="다음에 풀 그림 선택" hidden><button id="retry-previous" data-game-result-play type="button" class="end-picture-choice"><span>이전 그림</span><small></small></button><button id="retry-current" data-game-result-play type="button" class="end-picture-choice"><span>지금 그림</span><small></small></button><button id="retry-next" data-game-result-play type="button" class="end-picture-choice end-picture-next"><span>다음 그림</span><small></small></button></div>
+    <div class="game-result-navigation" id="retry-navigation"><a href="/world.html?tab=arcade" id="retry-exit">나가기</a><button type="button" id="retry-continue" data-game-result-play>계속하기</button></div>
     <div id="retry-tools"><button id="retry-extend" type="button" class="soft-button ju-paid-action" hidden>30초 연장 · 1 ZU</button><p id="retry-status" role="status"></p></div>
   </dialog>
   <dialog class="auth-dialog" id="auth-dialog" aria-labelledby="auth-title"><div class="auth-heading"><h2 id="auth-title">오쭈다 로그인</h2><button id="close-auth" class="icon-button" aria-label="로그인 닫기">×</button></div><p>기존 오쭈다 계정의 ZU로 힌트와 시간 연장을 이용해요.</p><form id="login-form"><label for="email">이메일</label><input id="email" type="email" autocomplete="username" required><label for="password">비밀번호</label><input id="password" type="password" autocomplete="current-password" required><p id="auth-error" role="alert"></p><button class="primary-button" id="login-submit" type="submit">로그인</button></form><p class="auth-foot">로그인 없이도 기본 게임을 즐길 수 있어요.</p></dialog>
