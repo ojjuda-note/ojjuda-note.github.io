@@ -48,10 +48,11 @@ function render(s,force=false){
   if(s.phase==='waiting'){
     content='<h1>'+esc(s.title)+'</h1><p>모두 모이면 시작해요. 초대 링크와 방 비밀번호를 친구에게 알려 주세요.</p>'+members+control('초대 링크 복사','copy',true);
   }else if(s.phase==='done'){
-    const firstTarget=s.number+'번 '+esc(s.players[s.recipient])+'님';
-    const title=s.second==null?s.number+'번은 '+esc(s.players[s.recipient])+'님!':
-      firstTarget+' · '+s.second+'번 '+esc(s.players[s.secondRecipient])+'님';
-    content='<h1>'+title+'</h1><p>왕 '+esc(s.players[s.king])+'님의 미션</p><p class="mission">'+esc(s.mission)+'</p>'+
+    const recipients=[[s.number,s.recipient]];
+    if(s.second!=null)recipients.push([s.second,s.secondRecipient]);
+    const rows=recipients.map(([number,player])=>'<div><dt>카드 '+esc(number)+'번</dt><dd>'+esc(s.players[player])+'</dd></div>').join('');
+    content='<section class="king-order"><span class="king-order-label">왕의 명령 · '+esc(s.players[s.king])+'</span>'+
+      '<h1>'+esc(s.mission)+'</h1><dl class="king-recipients" aria-label="명령을 받은 사람">'+rows+'</dl></section>'+
       (s.me===0?control('한 판 더','again',true):'<p>방장이 다음 판을 시작할 수 있어요.</p>');
   }else{
     const role=s.card===0?'당신은 왕이에요.':'내 번호는 '+s.card+'번이에요.';
