@@ -7,6 +7,7 @@ const { DECK } = load('readings.js');
 const { CONNECTION_PROFILES } = load('connection-profiles.js');
 const { buildCardConnections, getConnectionProfile } = load('card-connections.js');
 const { CARD_INTERPRETATIONS } = load('interpretation-engine.js');
+const { splitSummarySentences } = load('reading-summary.js');
 const plain = value => JSON.parse(JSON.stringify(value));
 const card = id => DECK.find(value => value.id === id);
 const context = { concern: '서로 편하게 연락할 시간', boundary: '상대가 거절할 수 있는 여지' };
@@ -31,7 +32,8 @@ assert.throws(() => getConnectionProfile('__proto__'), /actual_card/u);
 const snapshot = JSON.stringify({ cards, context });
 const report = buildCardConnections({ cards, context });
 assert.equal(report.paragraphs.length, 3);
-assert.ok(report.paragraphs.every(text => text.length > 150), 'relationships have reasons and an application, not just labels');
+assert.ok(report.paragraphs.every(text => splitSummarySentences(text).length >= 3),
+  'each connection explains a reason and an application in complete sentences');
 assert.equal(JSON.stringify({ cards, context }), snapshot, 'the selected cards and context are unchanged');
 assert.deepEqual(plain(report), plain(buildCardConnections({ cards, context })), 'the same inputs produce the same reading');
 assert.deepEqual(plain(report.evidence.cards), cards.map(value => value.id));

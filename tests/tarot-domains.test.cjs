@@ -226,10 +226,11 @@ for (const topic of ['overall', 'love', 'money', 'work']) assert.deepEqual(plain
 const poisoned = baseCards.map((card, index) => ({ ...getReading(card, 'love', index), topicMeaning: 'UNRELATED_TOPIC_TEXT', example: 'UNRELATED_TOPIC_EXAMPLE', action: 'UNRELATED_TOPIC_ACTION' }));
 assert.deepEqual(plain(buildDomainGroup({ cards: baseCards, readings: poisoned })), plain(base));
 assert.match(base.description, /같은 세 장/);
-assert.match(base.description, /해석과 생활 제안/);
+assert.match(base.description, /카드의 기본 뜻/);
+assert.match(base.description, /생활 제안/);
 assert.match(base.description, /전통 자료는 여러 풀이에서 함께 참고/);
 assert.match(base.description, /가상 장면/);
-assert.match(base.description, /실제 과거나 미래·상대의 생각을 확인한 내용은 아니/);
+assert.match(base.description, /실제로 겪은 일이나 앞으로 생길 일, 상대의 속마음을 확인한 내용은 아니/);
 assert.doesNotMatch(JSON.stringify(base), /궁합\s*\d+\s*%|반드시 합격|무조건 수익|수명은|병이 낫/);
 const integrated = getSummary(baseCards, 'money');
 for (const category of READING_CATEGORIES) assert.ok(integrated.text.includes(category.label));

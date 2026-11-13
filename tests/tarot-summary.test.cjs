@@ -119,7 +119,8 @@ for (const context of PERSONAL_CONTEXTS) {
     }
     for (const [index, question] of report.followUps.entries()) {
       checkLines(question.summaryLines, `${context.id}/${question.id}`);
-      assert.equal(question.summaryLines[0], firstSentence(directInterpretation(context.followUps[index].paragraphs[0])));
+      assert.equal(question.summaryLines[0], firstSentence(context.followUps[index].paragraphs[0]),
+        'practical answers retain their authored meaning without a card-interpretation ending');
       assert.equal(question.summaryLines[1], firstSentence(directAction(context.followUps[index].paragraphs[1])),
         'both authored answer paragraphs contribute, before the card reflection prompt');
     }
