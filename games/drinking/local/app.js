@@ -60,10 +60,13 @@ function refreshTruthDeck(){
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 const paths={users:'<circle cx="9" cy="8" r="3"/><path d="M3 19v-2a6 6 0 0 1 12 0v2M16 6a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 4"/>',sound:'<path d="M3 9h4l5-4v14l-5-4H3zM15 9a4 4 0 0 1 0 6m3-9a8 8 0 0 1 0 12"/>',arrow:'<path d="M5 12h13m-5-5 5 5-5 5"/>',back:'<path d="m14 5-7 7 7 7"/>',random:'<path d="M3 6h3c5 0 7 12 12 12h3m-4-4 4 4-4 4M3 18h3c2 0 3-2 5-5m2-3c2-3 3-4 5-4h3m-4-4 4 4-4 4"/>',play:'<path d="m7 4 13 8-13 8z" fill="currentColor" stroke="none"/>'};
 function icon(key){return '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">'+paths[key]+'</svg>'}
+function artPath(id){
+  const directory=(id==='croc'||id==='croc-board')?'/games/croc/art/':'art/';
+  return directory+id+'.webp';
+}
 function art(id,cls=''){
   if(id==='stopwatch')return '<span class="game-art watch-art '+cls+'" aria-hidden="true">'+watchCase('0.00')+'</span>';
-  const directory=(id==='croc'||id==='croc-board')?'/games/croc/art/':'art/';
-  return '<img class="game-art '+cls+'" src="'+directory+id+'.webp" alt="" draggable="false" decoding="async">';
+  return '<img class="game-art '+cls+'" src="'+artPath(id)+'" alt="" draggable="false" decoding="async">';
 }
 function btn(label,action,cls='start',value=''){return '<button type="button" class="'+cls+'" data-action="'+action+'" data-value="'+esc(value)+'">'+esc(label)+'</button>'}
 function actions(...buttons){return '<div class="actions">'+buttons.join('')+'</div>'}
@@ -140,7 +143,7 @@ function renderMenu(){
   app.innerHTML='<section class="hero"><picture class="hero-art"><source media="(max-width: 720px)" srcset="art/hero-small.webp"><img src="art/hero.webp" width="1788" height="596" alt="" fetchpriority="high"></picture><div class="hero-copy"><h1>술게임</h1><p>한 대를 돌려가며 즐기는<br>게임 '+games.length+'가지</p><button class="hero-play" data-action="random">'+icon('random')+'랜덤 게임</button></div></section>'+roster+'<div class="catalog-head"><div class="section-title"><h2>게임 선택</h2><span class="num">'+String(count).padStart(2,'0')+'</span></div><div class="chips" aria-label="게임 분류">'+['전체','운과 감각','추리와 대화','순발력'].map(f=>'<button class="chip" data-action="filter" data-value="'+f+'" aria-pressed="'+(filter===f)+'">'+f+'</button>').join('')+'</div></div><section class="games" aria-label="게임 목록">'+cards().map(g=>'<button class="game-card" data-action="open" data-value="'+g.id+'"><span class="card-art" style="--pastel:'+g.color+'">'+art(g.id)+'<span class="card-num">'+g.num+'</span></span><span class="card-copy"><strong class="card-title">'+g.title+'</strong><span class="card-sub">'+g.short+icon('arrow')+'</span></span></button>').join('')+'</section><footer class="catalog-foot">오쭈다 술게임 · 테스트판</footer>';
 }
 function shell(body,scene=false){
-  app.innerHTML='<button class="menu-nav" data-action="menu">'+icon('back')+'게임 목록</button><article class="play-shell"><header class="round-head"><h1>'+art(game.id,'round-mark')+game.title+'</h1><span>'+players.length+'명 플레이</span></header>'+(scene?'<div class="stage-art" style="--pastel:'+game.color+';--scene:url(art/'+game.id+'.webp)">'+art(game.id)+'</div>':'')+'<div class="play-body">'+body+'</div></article>';
+  app.innerHTML='<button class="menu-nav" data-action="menu">'+icon('back')+'게임 목록</button><article class="play-shell"><header class="round-head"><h1>'+art(game.id,'round-mark')+game.title+'</h1><span>'+players.length+'명 플레이</span></header>'+(scene?'<div class="stage-art" style="--pastel:'+game.color+';--scene:url('+artPath(game.id)+')">'+art(game.id)+'</div>':'')+'<div class="play-body">'+body+'</div></article>';
 }
 function intro(){const enough=players.length>=game.min;
   if(game.id==='bomb')return bombSetup();
