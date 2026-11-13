@@ -506,8 +506,9 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Mnet Plus", icon: "✦", url: "https://artist.mnetplus.world/main/stg/a2osoul" }
     ],
     merch: [
-      { title: "SUPERSTAR", sub: "데뷔 EP · 앨범", href: "https://mnetplusmerch.com/product/a2o-soul-album-pre-order-event-ep-superstar-soul-ver-constellation-ver/1693/category/195/display/1/" },
+      { title: "SUPERSTAR", sub: "데뷔 EP · 사전예약 10/21~11/08 종료", href: "https://mnetplusmerch.com/product/a2o-soul-album-pre-order-event-ep-superstar-soul-ver-constellation-ver/1693/category/195/display/1/" },
       { title: "SUPERSTAR · CARABINER Ver.", sub: "공식 유통 실물 음반 · 뮤직아트 · 11/10 출시", href: "https://musicart.kr/shop/shopdetail.html?GfDT=bmp5W11M&branduid=3531929&current_category=014&mcode=000&scode=&search=&sort=regdate&type=P&xcode=014" },
+      { title: "SUPERSTAR · 무신사 특전", sub: "뮤직플랜트 공식 유통 음반 · 특전 11/15 23:59 종료 · 판매 상태는 링크 확인", href: "https://www.musinsa.com/products/7641862" },
       { title: "Mnet Plus", sub: "공식 팬 커뮤니티", href: "https://artist.mnetplus.world/main/stg/a2osoul" },
       { title: "SUPERSTAR · 영상통화 이벤트 Ⅱ", sub: "Mnet Plus Merch · 11.10 12:00~11.12 23:59(KST) 구매 응모·포토카드", href: "https://mnetplusmerch.co.kr/product/a2o-soul-group-video-call-event-ep-superstar-soul-ver-constellation-ve/1774/category/195/display/1/" }
     ],
