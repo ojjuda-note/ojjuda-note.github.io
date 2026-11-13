@@ -24,15 +24,15 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
       await page.addStyleTag({ content: read('admin/visitors-charts.css') });
       await page.addScriptTag({ content: read('admin/visitors.js') });
       await page.evaluate(() => {
-        const growthRows = ['stacker', 'mole'].flatMap(game => ['challenge', 'direct'].map(source =>
-          ({ game, source, visits: 1, starts: 1, completes: 1, shares: 0 })));
         const stats = {
           started_at: '2026-11-11T00:00:00Z', today_date: '2026-11-11', today: 9, month: 60, total: 60,
           daily: Array.from({ length: 30 }, (_, i) =>
             ({ period: new Date(Date.UTC(2026, 9, 13 + i)).toISOString().slice(0, 10), visits: (i * 17) % 13 })),
           hourly: Array.from({ length: 24 }, (_, hour) => ({ hour, visits: (hour * 3) % 11 })),
           weekday: Array.from({ length: 7 }, (_, i) => ({ day: i + 1, visits: i * 3 + 1 })),
-          features: [{ feature: 'arcade', uses: 12 }, { feature: 'game_stacker', uses: 8 }],
+          features: ['arcade', 'park', 'settings', 'portal', 'group', 'fanpages', 'restaurants',
+            'festival', 'game_stacker', 'game_mole', 'game_runner', 'game_photo_ttang']
+            .map((feature, index) => ({ feature, uses: 12 - index })),
           sources: ['direct', 'naver', 'google', 'search', 'social', 'external', 'internal', 'campaign']
             .map((source, i) => ({ source, visits: 10 - i })),
           guest_games: [{ feature: 'game_mole', uses: 7 }, { feature: 'game_stacker', uses: 5 }],
@@ -43,15 +43,17 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
             started_at: '2026-11-10T15:00:00Z',
             daily: Array.from({ length: 30 }, (_, i) => ({
               period: new Date(Date.UTC(2026, 9, 13 + i)).toISOString().slice(0, 10),
-              tarot: i === 29 ? 5 : 0, saju: i === 29 ? 3 : 0
+              tarot: i === 29 ? 5 : 0, saju: 0
             }))
           }
         };
         const legacy = { today: 5, month: 40, total: 130, started_at: '2026-10-27T00:00:00Z', daily: [], monthly: [] };
-        const growth = { started_at: '2026-11-01T00:00:00Z', today_date: '2026-11-11', today: growthRows, month: growthRows };
         const client = {
-          rpc: async name => ({ data: name === 'admin_guest_visit_stats' ? legacy
-            : name === 'admin_game_growth_stats' ? growth : stats }),
+          rpc: async name => {
+            if (name === 'admin_guest_visit_stats') return { data: legacy };
+            if (name === 'admin_site_usage_stats') return { data: stats };
+            throw new Error('Unexpected statistics RPC: ' + name);
+          },
           auth: { onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }) }
         };
         window.OjjudaAdminVisitors.mount({ container: document.querySelector('#host'), client, getAdminId: () => 'admin' });
@@ -61,32 +63,47 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
         const grid = document.querySelector('.visitor-insights > .visitor-chart-grid');
         const chart = grid.querySelector('.visitor-chart-card');
         const dateScroll = grid.querySelector('.visitor-chart-scroll');
-        const fortuneGrid = document.querySelector('.visitor-fortune-grid');
+        const features = document.querySelector('[data-chart="features"]');
+        const featureRows = [...features.querySelectorAll('.visitor-rank-row')];
+        const note = features.querySelector('.visitor-feature-note');
         return {
           viewport: innerWidth, rootWidth: document.documentElement.scrollWidth,
           charts: grid.children.length, columns: getComputedStyle(grid).gridTemplateColumns.split(' ').length,
           chartWidth: Math.round(chart.getBoundingClientRect().width),
           dateScrollWidth: dateScroll.scrollWidth, dateClientWidth: dateScroll.clientWidth,
           focusable: dateScroll.tabIndex === 0,
-          fortuneCharts: fortuneGrid.children.length,
-          fortuneColumns: getComputedStyle(fortuneGrid).gridTemplateColumns.split(' ').length,
-          fortuneScrolls: [...fortuneGrid.querySelectorAll('.visitor-chart-scroll')].map(node => ({
-            scroll: node.scrollWidth, client: node.clientWidth, focusable: node.tabIndex === 0
-          }))
+          totalCharts: document.querySelectorAll('.visitor-chart-card').length,
+          separateFortunePanels: document.querySelectorAll('.visitor-fortune,.visitor-fortune-grid,.visitor-fortune-cards').length,
+          featureCharts: document.querySelectorAll('[data-chart="features"]').length,
+          featureRows: featureRows.map(row => ({
+            feature: row.dataset.feature, count: Number(row.querySelector('strong').textContent.replace(/[^0-9]/g, '')),
+            fill: parseFloat(row.querySelector('.visitor-rank-fill').style.width),
+            scroll: row.scrollWidth, client: row.clientWidth
+          })),
+          note: { text: note.textContent, scroll: note.scrollWidth, client: note.clientWidth }
         };
       });
       assert.equal(layout.charts, 9, `${width}px: all chart cards`);
-      assert.equal(layout.fortuneCharts, 2, `${width}px: both product date graphs`);
-      assert.equal(layout.fortuneColumns, width > 760 ? 2 : 1, `${width}px: product graphs follow responsive columns`);
-      assert.ok(layout.fortuneScrolls.every(value => value.focusable), `${width}px: product graphs allow keyboard scrolling`);
+      assert.equal(layout.totalCharts, 9, `${width}px: fortune visits share an existing chart`);
+      assert.equal(layout.separateFortunePanels, 0, `${width}px: no separate fortune panel or date graphs`);
+      assert.equal(layout.featureCharts, 1, `${width}px: a single merged feature chart`);
+      assert.equal(layout.featureRows.length, 14, `${width}px: the two service rows remain alongside all twelve existing features`);
+      assert.equal(new Set(layout.featureRows.map(row => row.feature)).size, 14);
+      assert.ok(layout.featureRows.every((row, index, rows) => index === 0 || rows[index - 1].count >= row.count),
+        `${width}px: all features share descending order`);
+      assert.ok(layout.featureRows.every(row => Math.abs(row.fill - row.count / 12 * 100) < 0.001),
+        `${width}px: service and existing rows use the same bar scale`);
+      assert.equal(layout.featureRows.find(row => row.feature === 'tarot').count, 5);
+      assert.equal(layout.featureRows.find(row => row.feature === 'saju').count, 0);
+      assert.ok(layout.featureRows.every(row => row.scroll <= row.client + 1), `${width}px: all feature labels and values fit their rows`);
+      assert.match(layout.note.text, /타로·사주.*2026년 11월 11일/);
+      assert.ok(layout.note.scroll <= layout.note.client + 1, `${width}px: collection note wraps within the feature card`);
       assert.ok(layout.rootWidth <= layout.viewport + 1, `${width}px: no horizontal page overflow (${JSON.stringify(layout)})`);
       assert.equal(layout.columns, width > 760 ? 2 : 1, `${width}px: chart grid changes with viewport`);
       assert.ok(layout.chartWidth > 240, `${width}px: content remains readable`);
       assert.ok(layout.focusable, `${width}px: keyboard-scrollable detailed charts`);
       if (width === 360) assert.ok(layout.dateScrollWidth > layout.dateClientWidth,
         '360px: long date chart scrolls inside its own card');
-      if (width === 360) assert.ok(layout.fortuneScrolls.every(value => value.scroll > value.client),
-        '360px: product date graphs scroll inside their cards');
       if (process.env.SITE_USAGE_SCREENSHOT_DIR) {
         await page.screenshot({
           path: path.join(process.env.SITE_USAGE_SCREENSHOT_DIR, `site-usage-${width}.png`),

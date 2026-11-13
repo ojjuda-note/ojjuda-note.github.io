@@ -10,13 +10,13 @@ const days = () => Array.from({ length: 30 }, (_, i) => ({
   period: new Date(Date.parse(TODAY + 'T00:00:00Z') - (29 - i) * 86400000).toISOString().slice(0, 10), tarot: 0, saju: 0
 }));
 function fortune(extra = {}) { return { started_at: '2026-11-11T15:00:00Z', daily: days(), ...extra }; }
-function statistics(value) {
+function statistics(value, features = [{ feature: 'arcade', uses: 2 }]) {
   return {
     started_at: '2026-11-01T00:00:00Z', today_date: TODAY, today: 8, month: 27, total: 27,
     daily: days().map(row => ({ period: row.period, visits: 1 })),
     hourly: Array.from({ length: 24 }, (_, hour) => ({ hour, visits: 1 })),
     weekday: Array.from({ length: 7 }, (_, i) => ({ day: i + 1, visits: 1 })),
-    features: [{ feature: 'arcade', uses: 2 }],
+    features,
     sources: ['direct', 'naver', 'google', 'search', 'social', 'external', 'internal', 'campaign'].map(source => ({ source, visits: 1 })),
     guest_games: [], guest_boards: [], agit_details: [], arcade_details: [], fortune_visits: value
   };
@@ -24,10 +24,10 @@ function statistics(value) {
 const legacy = { today: 2, month: 3, total: 4, started_at: '2026-10-01T00:00:00Z', daily: [], monthly: [] };
 const tick = () => new Promise(resolve => setImmediate(resolve));
 async function settled() { await tick(); await tick(); }
-function fixture(t, value, { delayed = false } = {}) {
+function fixture(t, value, { delayed = false, features } = {}) {
   const dom = new JSDOM('<main id="host"></main>', { runScripts: 'outside-only', url: 'https://ojjuda.kr/world.html?admin=visitors' });
   const host = dom.window.document.getElementById('host'), calls = [], pending = [];
-  let actor = 'fixture-admin', stats = statistics(value), auth, unsubscribed = 0;
+  let actor = 'fixture-admin', stats = statistics(value, features), auth, unsubscribed = 0;
   const client = { rpc: async name => {
     calls.push(name);
     assert.ok(['admin_site_usage_stats', 'admin_guest_visit_stats'].includes(name));
@@ -40,47 +40,75 @@ function fixture(t, value, { delayed = false } = {}) {
   t.after(() => { controller.destroy(); dom.window.close(); });
   return { host, calls, pending, controller,
     q: selector => host.querySelector(selector), qa: selector => [...host.querySelectorAll(selector)],
-    set(value) { stats = statistics(value); },
+    set(value) { stats = statistics(value, features); },
     signOut() { actor = null; auth('SIGNED_OUT', null); },
     changeActor() { actor = 'another-admin'; }, get unsubscribed() { return unsubscribed; }
   };
 }
 
-test('adds distinct date charts, today counts and 30-day totals without replacing existing charts', async t => {
+test('merges the two 30-day visit totals into the existing feature chart using one descending scale', async t => {
   const data = fortune(); data.daily[28].tarot = 4; data.daily[28].saju = 1; data.daily[29].tarot = 3; data.daily[29].saju = 5;
   const f = fixture(t, data); await settled();
   assert.equal(f.qa('.visitor-insights > .visitor-chart-grid > .visitor-chart-card').length, 9);
-  assert.deepEqual(f.qa('.visitor-fortune-grid h4').map(node => node.textContent), ['타로 방문', '사주 방문']);
-  assert.equal(f.qa('.visitor-fortune-grid .visitor-chart-col').length, 60);
-  assert.equal(f.q('.visitor-fortune-cards [data-product="tarot"] strong').textContent, '7회');
-  assert.equal(f.q('.visitor-fortune-cards [data-product="tarot"] small').textContent, '오늘 3회');
-  assert.equal(f.q('.visitor-fortune-cards [data-product="saju"] strong').textContent, '6회');
-  assert.equal(f.q('.visitor-fortune-cards [data-product="saju"] small').textContent, '오늘 5회');
-  assert.match(f.q('.visitor-fortune').textContent, /상품별로 하루 1회/);
-  assert.match(f.q('.visitor-fortune').textContent, /한국시간/);
+  assert.equal(f.qa('.visitor-chart-card').length, 9, 'no additional fortune chart cards');
+  assert.equal(f.qa('.visitor-fortune,.visitor-fortune-grid,.visitor-fortune-cards').length, 0);
+  assert.equal(f.qa('.visitor-chart-col').length, 61, 'only the existing date/hour/weekday columns remain');
+  const chart = f.q('[data-chart="features"]');
+  assert.equal(chart.querySelector('h4').textContent, '많이 선택한 기능');
+  const rows = [...chart.querySelectorAll('.visitor-rank-row')];
+  assert.deepEqual(rows.map(row => row.dataset.feature), ['tarot', 'saju', 'arcade']);
+  assert.deepEqual(rows.map(row => row.querySelector('strong').textContent), ['7회', '6회', '2회']);
+  for (const [index, count] of [7, 6, 2].entries()) {
+    const width = parseFloat(rows[index].querySelector('.visitor-rank-fill').style.width);
+    assert.ok(Math.abs(width - count / 7 * 100) < 0.001, 'all features use the same maximum');
+  }
+  assert.match(chart.querySelector('.visitor-feature-note').textContent, /타로·사주.*2026년 11월 12일/);
   assert.equal(f.calls.filter(name => name === 'admin_site_usage_stats').length, 1);
 });
 
-test('collection start uses the Korean date; uncollected dates stay different from a measured zero', async t => {
+test('retains all twelve legacy features plus low-frequency and zero fortune rows without duplicates', async t => {
+  const keys = ['arcade', 'park', 'settings', 'portal', 'group', 'fanpages', 'restaurants', 'festival', 'game_stacker', 'game_mole', 'game_runner', 'agit'];
+  const features = keys.map((feature, index) => ({ feature, uses: 100 - index }));
+  const data = fortune(); data.daily[29].tarot = 1;
+  const f = fixture(t, data, { features: features.slice().reverse() }); await settled();
+  const rows = f.qa('[data-chart="features"] .visitor-rank-row');
+  assert.equal(rows.length, 14, 'fortune rows are appended before sorting and are not trimmed from the top twelve');
+  assert.deepEqual(rows.map(row => row.dataset.feature), [...keys, 'tarot', 'saju']);
+  assert.equal(new Set(rows.map(row => row.dataset.feature)).size, 14);
+  assert.equal(f.q('[data-feature="tarot"] strong').textContent, '1회');
+  assert.equal(f.q('[data-feature="saju"] strong').textContent, '0회');
+  assert.equal(f.q('[data-feature="tarot"] .visitor-rank-fill').style.width, '1%');
+  assert.equal(f.q('[data-feature="saju"] .visitor-rank-fill').style.width, '0%');
+  const duplicate = fixture(t, fortune(), { features: [{ feature: 'arcade', uses: 2 }, { feature: 'arcade', uses: 2 }] });
+  await settled();
+  assert.equal(duplicate.qa('[data-chart="features"] [data-feature="arcade"]').length, 1);
+  assert.equal(duplicate.q('[data-chart="features"] [data-feature="arcade"] strong').textContent, '2회', 'duplicate input rows are not added twice');
+  assert.equal(duplicate.qa('[data-chart="features"] .visitor-rank-row').length, 3);
+});
+
+test('collection-start footnote uses the Korean date and valid zero totals remain visible', async t => {
   const data = fortune({ started_at: '2026-11-12T15:00:00Z' });
-  const f = fixture(t, data); await settled();
-  const chart = f.q('.visitor-fortune-grid [data-product="tarot"]');
-  assert.match(f.q('.visitor-fortune-start').textContent, /2026년 11월 13일/);
-  assert.match(f.q('.visitor-fortune-start').textContent, /집계 시작 전 방문은 포함되지 않습니다/);
-  assert.equal(chart.querySelectorAll('.is-uncollected').length, 29);
-  assert.equal(chart.querySelector('[data-period="2026-11-12"] .visitor-chart-value').textContent, '—');
-  assert.equal(chart.querySelector('[data-period="2026-11-13"] .visitor-chart-value').textContent, '0');
-  assert.match(chart.querySelector('[role="img"]').getAttribute('aria-label'), /11\.12 집계 전.*11\.13 0회/);
-  assert.equal(chart.querySelector('.visitor-chart-scroll').tabIndex, 0);
-  assert.equal(f.q('.visitor-fortune-cards [data-product="tarot"] strong').textContent, '0회');
+  const f = fixture(t, data, { features: [] }); await settled();
+  const chart = f.q('[data-chart="features"]');
+  assert.match(chart.querySelector('.visitor-feature-note').textContent, /2026년 11월 13일/);
+  assert.match(chart.querySelector('.visitor-feature-note').textContent, /이전 방문 제외/);
+  assert.equal(chart.querySelectorAll('.visitor-rank-row').length, 2, 'an all-zero chart still shows both measured service totals');
+  for (const feature of ['tarot', 'saju']) {
+    assert.equal(chart.querySelector(`[data-feature="${feature}"] strong`).textContent, '0회');
+    assert.equal(chart.querySelector(`[data-feature="${feature}"] .visitor-rank-fill`).style.width, '0%');
+  }
+  assert.doesNotMatch(chart.textContent, /불러오지 못/);
+  assert.equal(f.qa('.is-uncollected,.visitor-fortune').length, 0);
 });
 
 test('an older server without the optional field keeps all existing graphs and reports no product totals', async t => {
   const f = fixture(t, undefined); f.set(undefined); await settled();
-  assert.equal(f.qa('.visitor-insights > .visitor-chart-grid > .visitor-chart-card').length, 9);
-  assert.equal(f.qa('.visitor-fortune-grid,.visitor-fortune-cards').length, 0);
-  assert.match(f.q('.visitor-fortune').textContent, /집계를 아직 불러오지 못했어요/);
-  assert.doesNotMatch(f.q('.visitor-fortune').textContent, /0회/);
+  assert.equal(f.qa('.visitor-chart-card').length, 9);
+  const chart = f.q('[data-chart="features"]');
+  assert.equal(chart.querySelectorAll('[data-feature="tarot"],[data-feature="saju"]').length, 0);
+  assert.equal(chart.querySelector('[data-feature="arcade"] strong').textContent, '2회');
+  assert.match(chart.querySelector('.visitor-feature-note').textContent, /집계를 아직 불러오지 못했어요/);
+  assert.doesNotMatch(chart.textContent, /0회/);
 });
 
 test('malformed product statistics are isolated from valid site graphs instead of becoming zero counts', async t => {
@@ -94,21 +122,27 @@ test('malformed product statistics are isolated from valid site graphs instead o
   const overflow = fortune({ started_at: '2026-10-01T00:00:00Z' }); overflow.daily[28].tarot = Number.MAX_SAFE_INTEGER; overflow.daily[29].tarot = 1; cases.push(overflow);
   for (const data of cases) {
     const f = fixture(t, data); await settled();
-    assert.equal(f.qa('.visitor-insights > .visitor-chart-grid > .visitor-chart-card').length, 9);
-    assert.equal(f.qa('.visitor-fortune-grid,.visitor-fortune-cards').length, 0);
-    assert.match(f.q('.visitor-fortune').textContent, /집계를 아직 불러오지 못했어요/);
+    assert.equal(f.qa('.visitor-chart-card').length, 9);
+    const chart = f.q('[data-chart="features"]');
+    assert.equal(chart.querySelectorAll('[data-feature="tarot"],[data-feature="saju"]').length, 0);
+    assert.equal(chart.querySelector('[data-feature="arcade"] strong').textContent, '2회');
+    assert.match(chart.querySelector('.visitor-feature-note').textContent, /집계를 아직 불러오지 못했어요/);
+    assert.doesNotMatch(chart.textContent, /0회/);
   }
 });
 
-test('refresh updates the two product graphs in place and does not display unrelated fields', async t => {
+test('refresh updates the merged chart without duplicate rows or unrelated personal fields', async t => {
   const f = fixture(t, fortune()); await settled();
   const updated = fortune(); updated.daily[29].saju = 9;
   updated.user_id = 'private-user-identifier'; updated.daily[29].nickname = '<img src=x onerror=alert(1)>';
   f.set(updated); await f.controller.refresh();
-  assert.equal(f.qa('.visitor-fortune').length, 1);
-  assert.equal(f.qa('.visitor-fortune-grid .visitor-chart-card').length, 2);
-  assert.equal(f.q('.visitor-fortune-cards [data-product="saju"] strong').textContent, '9회');
-  assert.equal(f.q('.visitor-fortune-cards [data-product="saju"] small').textContent, '오늘 9회');
+  assert.equal(f.qa('[data-chart="features"]').length, 1);
+  assert.equal(f.qa('[data-chart="features"] .visitor-rank-row').length, 3);
+  assert.deepEqual(f.qa('[data-chart="features"] .visitor-rank-row').map(row => row.dataset.feature), ['saju', 'arcade', 'tarot']);
+  assert.equal(f.q('[data-feature="saju"] strong').textContent, '9회');
+  assert.equal(f.q('[data-feature="tarot"] strong').textContent, '0회');
+  assert.equal(f.qa('.visitor-chart-card').length, 9);
+  assert.equal(f.qa('.visitor-fortune').length, 0);
   assert.doesNotMatch(f.host.textContent, /private-user-identifier|onerror/);
   assert.equal(f.qa('img,iframe').length, 0);
   assert.equal(f.calls.filter(name => name === 'admin_site_usage_stats').length, 2);
