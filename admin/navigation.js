@@ -9,7 +9,7 @@
       ['account','users','가입자 관리'],['account','suspended','정지 계정'],
       ['trash','trash-accounts','탈퇴 계정'],['account','referrals','추천인'],
       ['payment','users','사용자별 ZU'],['payment','fortune-purchases','운세·리듬 구매내역'],
-      ['payment','settings','무료 충전 설정'] ] },
+      ['payment','settings','첫 방문·무료 충전 설정'] ] },
     { id:'content', label:'콘텐츠 관리', items:[
       ['content','cards','카드'],['content','messages','쪽지 관리'],
       ['content','groups','그룹 관리'],['content','photo-stages','포토땅따먹기'],

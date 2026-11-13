@@ -156,3 +156,31 @@ test('group notifications identify the inviter and join only after acceptance',a
     }finally{f.close();}
   }
 });
+
+test('visit gifts need explicit confirmation even after mark-all; a repeated click sends one claim', async () => {
+  const f=fixture(), pending=deferred(), created='2026-11-13T03:00:00Z';
+  let read=false, claimed=false;
+  const item=()=>({id:'world:visit_gift',kind:'visit_gift',source:'world',created_at:created,
+    read_at:read?created:null,first_visit_ju:10000,launch_ju:10000,claimed});
+  f.respond(async name=>{
+    if(name==='app_notification_summary')return {data:{notifications:read?0:1,retention:0}};
+    if(name==='list_app_notifications')return {data:{items:[item()],unread_count:read?0:1,as_of:created}};
+    if(name==='list_retention_alerts')return {data:[]};
+    if(name==='mark_app_notifications_read'){read=true;return {data:1};}
+    if(name==='claim_visit_gift'){await pending.promise;claimed=true;return {data:{amount:20000,coins:20000,replayed:false}};}
+    throw Error(name);
+  });
+  try {
+    await f.boot();f.api.open();await settle();
+    const d=f.w.document;
+    const row=()=>d.querySelector('[data-notification-id="world:visit_gift"]');
+    assert.match(row().textContent,/첫 방문 선물 10,000쭈.*타로카드·사주·바이오리듬 오픈 기념 10,000쭈.*총 20,000쭈/);
+    d.querySelector('#note-notifications-read-all').click();await settle();
+    assert.equal(f.calls.some(c=>c.name==='claim_visit_gift'),false);
+    const confirm=row().querySelector('button');assert.equal(confirm.textContent,'확인');
+    confirm.click();confirm.click();await settle();
+    assert.equal(f.calls.filter(c=>c.name==='claim_visit_gift').length,1);
+    pending.resolve();await settle();
+    assert.match(row().textContent,/지급 완료/);assert.equal(row().querySelector('button'),null);
+  } finally {f.close();}
+});

@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  const COPY = Object.freeze({ group_invite: '그룹 초대가 도착했어요.', daily_update: '오쭈다에 변경된 내용이 있어요.', broadcast_update: '오쭈다에 새 소식이 있어요.', world_message: '친구에게 새 쪽지가 도착했어요.', reply: '내 카드에 새 답글이 달렸어요.', like: '내 카드에 좋아요가 도착했어요.', inquiry_reply: '내 문의에 답변이 도착했어요.', world_guestbook: '새 방명록이 도착했어요.', world_friend_request: '새 친구 신청이 도착했어요.', world_friend_accepted: '친구 신청이 수락됐어요.', world_comment: '내 사진·영상에 새 댓글이 달렸어요.' });
+  const COPY = Object.freeze({ visit_gift: '방문 선물', group_invite: '그룹 초대가 도착했어요.', daily_update: '오쭈다에 변경된 내용이 있어요.', broadcast_update: '오쭈다에 새 소식이 있어요.', world_message: '친구에게 새 쪽지가 도착했어요.', reply: '내 카드에 새 답글이 달렸어요.', like: '내 카드에 좋아요가 도착했어요.', inquiry_reply: '내 문의에 답변이 도착했어요.', world_guestbook: '새 방명록이 도착했어요.', world_friend_request: '새 친구 신청이 도착했어요.', world_friend_accepted: '친구 신청이 수락됐어요.', world_comment: '내 사진·영상에 새 댓글이 달렸어요.' });
   const el = (tag, text, cls) => { const item = document.createElement(tag); if (text !== undefined) item.textContent = text; if (cls) item.className = cls; return item; };
   const button = (text, action, cls = 'button') => { const item = el('button', text, cls); item.type = 'button'; item.addEventListener('click', action); return item; };
   const updateLines = (kind, summary) => (kind === 'daily_update' ? summary.split(' · ') : summary
@@ -56,7 +56,7 @@
   }
   let instance;
 
-  function install({ client, getUserId = () => null, onOpenCard, onOpenInquiry, onKeepCard, onOpenWorld, onOpenGroup = id => location.assign('/groups/#room=' + encodeURIComponent(id)) } = {}) {
+  function install({ client, getUserId = () => null, onOpenCard, onOpenInquiry, onKeepCard, onOpenWorld, onGiftClaimed, onOpenGroup = id => location.assign('/groups/#room=' + encodeURIComponent(id)) } = {}) {
     if (instance || !client?.schema || !client?.auth) return instance;
     let identity = getUserId() || null, identityRun = 0, viewRun = 0, listRun = 0, countRun = 0;
     let items = [], retentionItems = [], cursor = null, snapshotAt = null, hasMore = false;
@@ -157,6 +157,7 @@
     function rowFor(item) {
       const row = el('li', undefined, `nn-item${item.read_at ? '' : ' nn-unread'}`); row.dataset.notificationId = item.id;
       const retention = item.kind === 'retention';
+      const gift = item.kind === 'visit_gift';
       const update = ['daily_update','broadcast_update'].includes(item.kind)
         && typeof item.summary === 'string' && item.summary.length <= 200;
       const text = update ? updateCopy(item.kind, item.summary) : el('p', retention
@@ -165,6 +166,15 @@
       const meta = el('div', undefined, 'nn-meta'), source = el('span',item.source==='updates'?'오쭈다':item.kind==='group_invite'?'그룹':item.kind==='inquiry_reply'?'문의':item.source==='world'?(item.kind==='world_message'?'쪽지':'친구'):'익명카드','nn-source'), state = el('span', item.read_at ? '읽음' : '안 읽음');
       const time = el('time'); const created = new Date(item.created_at);
       if (Number.isFinite(created.getTime())) { time.dateTime = created.toISOString(); time.textContent = created.toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+      if (gift) {
+        source.textContent = '오쭈다 선물';
+        const parts = [];
+        if (item.first_visit_ju) parts.push('첫 방문 선물 ' + item.first_visit_ju.toLocaleString('ko-KR') + '쭈');
+        if (item.launch_ju) parts.push('타로카드·사주·바이오리듬 오픈 기념 ' + item.launch_ju.toLocaleString('ko-KR') + '쭈');
+        const amount = (item.first_visit_ju + item.launch_ju).toLocaleString('ko-KR');
+        text.textContent = parts.join(' + ') + (item.claimed ? '. 총 ' + amount + '쭈를 받았어요.' : '. 확인을 누르면 총 ' + amount + '쭈를 받아요.');
+        state.textContent = item.claimed ? '지급 완료' : '받기 전';
+      }
       meta.append(source, state, time);
       if (retention) {
         const due = new Date(item.archive_due_at);
@@ -172,6 +182,7 @@
         row.append(text, el('p', (item.body || '내용 없는 카드').slice(0, 100), 'nn-retention-preview'));
       } else row.append(text);
       const actions = el('div', undefined, 'nn-actions');
+      if (gift && !item.claimed) actions.append(button('확인', () => void claimGift(item)));
       if (item.kind === 'group_invite' && UUID.test(item.target_id || '')) {
         for (const [action, label] of [['accept','수락'],['decline','거절']]) {
           const control = button(label, () => void respondGroupInvite(item, action));
@@ -185,7 +196,7 @@
         const openButton = button(world ? ({guestbook:'방명록 보기',friends:'친구 보기',media:'사진·댓글 보기',message:'쪽지 읽기'}[item.target_type]||'보기') : item.kind === 'inquiry_reply' ? '답변 보기' : '카드 보기', () => void openItem(item)); openButton.dataset.notificationOpen = item.id; actions.append(openButton);
       }
       if (retention && typeof onKeepCard === 'function') actions.append(button('10 ZU로 영구보관', () => void keepCard(item)));
-      if (!item.read_at) { const readButton = button('읽음 표시', () => void (retention ? markRetentionRead(item) : markRead([item.id]))); readButton.dataset.notificationRead = item.id; actions.append(readButton); }
+      if (!gift && !item.read_at) { const readButton = button('읽음 표시', () => void (retention ? markRetentionRead(item) : markRead([item.id]))); readButton.dataset.notificationRead = item.id; actions.append(readButton); }
       row.append(meta, actions); return row;
     }
     function render() {
@@ -296,6 +307,25 @@
         : refreshed ? ids ? '읽음으로 표시했어요.' : '모두 읽음으로 표시했어요.'
           : '읽음 표시는 저장됐지만 목록을 다시 불러오지 못했어요. 다시 시도해 주세요.';
       if (!refreshed) { countRequest = null; void refreshCount(true); }
+    }
+    async function claimGift(item) {
+      if (saving || loading || !identity || identity !== userNow() || item.claimed || !items.includes(item)) return;
+      const user = identity, run = identityRun, view = viewRun;
+      saving = true; status.textContent = '선물을 받고 있어요.'; updateControls();
+      try {
+        const {data,error} = await client.rpc('claim_visit_gift', {p_member:user});
+        if (error || !Number.isSafeInteger(data?.amount) || data.amount <= 0) throw error || Error('invalid_receipt');
+        if (!current(run,user)) return;
+        announceRead(run,user); onGiftClaimed?.(user);
+        if (!currentView(run,user,view)) return;
+        item.claimed = true; item.read_at ||= new Date().toISOString();
+        saving = false; render(); await loadPage();
+        if (currentView(run,user,view)) status.textContent = data.replayed ? '이미 받은 선물이에요.' : data.amount.toLocaleString('ko-KR') + '쭈를 받았어요.';
+      } catch {
+        if (currentView(run,user,view)) status.textContent = '지급을 확인하지 못했어요. 다시 눌러 주세요.';
+      } finally {
+        if (currentView(run,user,view)) { saving = false; updateControls(); }
+      }
     }
     async function markRetentionRead(item) {
       if (saving || loading || !identity || layer.hidden || identity !== userNow() || !retentionItems.some(value => value.id === item.id)) return;

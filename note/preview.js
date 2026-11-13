@@ -3474,6 +3474,7 @@ window.OjjudaCharge?.install({ client, getUserId: () => session?.user?.id || nul
   onBalance: (coins, userId) => { if (session?.user?.id === userId) { balanceRun++; worldCoins = coins; updateAuth(); } } });
 window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.50-beta' });
 notificationController = window.OjjudaNoteNotifications?.install({
+  onGiftClaimed: userId => loadWorldBalance(userId),
   client, getUserId: () => session?.user?.id || null,
   onOpenCard: id => { window.OjjudaNoteNavigation?.leaveMy(); openCard(id); },
   onOpenWorld: (type,id) => {const url=new URL('/world.html',location.origin);url.searchParams.set('notice',type);url.searchParams.set('target',id);(parkEmbedded ? window.parent : window).location.assign(url.href);},
