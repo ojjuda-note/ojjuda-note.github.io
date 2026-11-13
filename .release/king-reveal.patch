@@ -1,0 +1,7 @@
+diff --git a/world.html b/world.html
+index 52fe81f..1b8a08d 100644
+--- a/world.html
++++ b/world.html
+@@ -73 +73 @@
+-<script src="/shared/games/world-game-assets.js?v=20261114-king-pair1" defer></script>
++<script src="/shared/games/world-game-assets.js?v=20261114-king-result1" defer></script>

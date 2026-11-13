@@ -5,3 +5,12 @@ header a{color:inherit;font-weight:750}.inside{padding:22px}.topline{margin-bott
 .ballots button{overflow-wrap:anywhere}.actions .secondary{margin-top:6px}.me{font-weight:700}
 
 .mission{overflow-wrap:anywhere;background:#fbf1d8;border-radius:10px;padding:14px;font-size:18px}.inside h1{overflow-wrap:anywhere}
+
+.king-order { margin:0 auto;width:min(100%,26rem);text-align:center; }
+.king-order-label { color:#745222;font-size:14px;font-weight:700;overflow-wrap:anywhere; }
+.king-order :is(h1,h2) { color:#263d32;font-size:clamp(24px,6vw,34px);line-height:1.35;margin:6px 0 20px;word-break:keep-all;overflow-wrap:anywhere; }
+.king-recipients { margin:0 0 20px;padding:0 14px;background:#f6f3e9;border:1px solid #dfdac9;border-radius:12px;text-align:left; }
+.king-recipients div { display:grid;grid-template-columns:auto minmax(0,1fr);align-items:baseline;gap:16px;padding:10px 0; }
+.king-recipients div+div { border-top:1px solid #dfdac9; }
+.king-recipients dt { color:#675b43;font-size:14px;white-space:nowrap; }
+.king-recipients dd { margin:0;color:#283c2f;text-align:right;font-weight:700;overflow-wrap:anywhere; }
