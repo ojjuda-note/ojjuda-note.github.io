@@ -237,7 +237,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { date: "2026-11-28", title: "PUREFLOW 투어 · 싱가포르", sub: "APEX@EXPO · 현지 17:00 · iMe Singapore 주최", href: "https://ticketmaster.sg/activity/detail/26sg_lsf" },
       { date: "2026-12-05", title: "PUREFLOW 투어 · 마닐라", sub: "SM Mall of Asia Arena · PULP Live World 주최 · 12.06 공연 취소, 12.05만 진행", href: "https://www.pulpliveworld.com/Shows/296" },
       { date: "2026-12-10", endDate: "2026-12-13", title: "VR FEST · INVITATION (1차 상영)", sub: "도쿄 109 시네마즈 프리미엄 신주쿠 · 회차는 극장 확인", href: "https://www.le-sserafim.jp/news/e5aa32400684" },
-      { date: "2026-12-13", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 국립경기장 · 17:00 예정", href: "https://music-bank.jp/" }
+      { date: "2026-12-13", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 국립경기장 · 17:00 예정", href: "https://music-bank.jp/" },
       { date: "2026-12-17", endDate: "2026-12-19", title: "VR FEST · INVITATION (2차 상영)", sub: "도쿄 109 시네마즈 프리미엄 신주쿠 · 회차는 극장 확인", href: "https://www.le-sserafim.jp/news/e5aa32400684" },
       { date: "2026-12-19", title: "PUREFLOW 투어 · 오사카 돔 (1일차)", sub: "교세라 돔 오사카 · 17:00 JST", href: "https://www.le-sserafim.jp/news/34281e5b5c57" },
       { date: "2026-12-20", title: "PUREFLOW 투어 · 오사카 돔 (2일차)", sub: "교세라 돔 오사카 · 16:00 JST", href: "https://www.le-sserafim.jp/news/34281e5b5c57" },
