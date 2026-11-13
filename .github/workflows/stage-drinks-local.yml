@@ -1,0 +1,38 @@
+name: Verify one-phone and multiplayer drinking games
+on:
+  push:
+    branches: [release/drinks-local-stage]
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Integrate verified room entry
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply --unidiff-zero --check .release/drinks-local.patch
+          git apply --unidiff-zero .release/drinks-local.patch
+          test "$(git hash-object world.html)" = 'b054a027ada0af74443dc448599286f59c0cf30f'
+          curl --fail --location --silent --show-error --retry 2 --max-time 45 'https://d2ol7oe51mr4n9.cloudfront.net/user_3IxANoqRL1uMNs5GRgxqpniGdas/19ed0a1e-1486-4366-a689-b4d66277245c.zip' -o "$RUNNER_TEMP/local-game.zip"
+          echo "50f44182fb8467b43e52a218880e5f23783a44f60838ccefde12eda717cbb655  $RUNNER_TEMP/local-game.zip" | sha256sum -c -
+          mkdir -p games/drinking/local
+          unzip -q "$RUNNER_TEMP/local-game.zip" -d games/drinking/local
+          for module in games/drinking/local/*.js games/drinking/*.js games/party-live/*.js; do node --check "$module"; done
+          node --check features/arcade/arcade-rooms.js
+          node scripts/check-source-layout.mjs
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node --test tests/arcade-rooms-polling.test.cjs tests/adult-menu-visibility.test.cjs tests/matgo-access.test.cjs tests/world-adult-resume.test.cjs
+      - run: node tests/staged-drinks-local.cjs
+      - name: Stage verified multiplayer integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- world.html games/drinking/local
+          git commit -m 'Verify and stage one-phone play and new arcade artwork'
+          git push origin HEAD:refs/heads/release/drinks-local-stage

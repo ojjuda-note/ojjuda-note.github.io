@@ -21,6 +21,13 @@
   const gameMin = kind => ['liar','king','minority','mission'].includes(kind) ? 3 : 2;
   const codePattern = /^[A-Z0-9]{6}$/;
   const params = new URL(location.href).searchParams;
+  if (!params.has('room') && !params.has('game') && params.get('mode') !== 'multi') {
+    byId('play-modes').hidden = false;
+    return;
+  }
+  byId('hub-back').href = '/games/drinking/';
+  byId('hub-back').textContent = '← 방식 선택';
+  byId('welcome').hidden = false;
   const inviteCode = (params.get('room') || '').trim().toUpperCase();
   const suggested = !inviteCode && gameById(params.get('game'));
   const notice = byId('notice'), message = byId('room-message'), list = byId('room-list');
@@ -164,7 +171,7 @@
       if(gen===generation && room?.code===code) {
         notice.textContent=explain(err);notice.dataset.network='1';
         if(['room_unavailable','not_room_member'].includes(err.message)){
-          history.replaceState(null,'','/games/drinking/');showEntry();void listRooms();
+          history.replaceState(null,'','/games/drinking/?mode=multi');showEntry();void listRooms();
         }
       }
     } finally {polling=false;schedule();}

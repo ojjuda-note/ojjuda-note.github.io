@@ -1,0 +1,13 @@
+diff --git a/world.html b/world.html
+index ac8a6d6..b054a02 100644
+--- a/world.html
++++ b/world.html
+@@ -73 +73 @@
+-<script src="/shared/games/world-game-assets.js?v=20261114-drinks-adult1" defer></script>
++<script src="/shared/games/world-game-assets.js?v=20261114-drinks-local1" defer></script>
+@@ -224 +224 @@
+-<script src="/features/arcade/arcade-rooms.js?v=20261114-drinks-adult1" defer></script>
++<script src="/features/arcade/arcade-rooms.js?v=20261114-drinks-local1" defer></script>
+@@ -3214 +3214 @@ function worldArcadeAdultMarkup(){
+- return worldArcadeAdultAllowed()?`<section class="arcade-adult" data-arcade-adult aria-label="어른들 플레이"><header class="game-section-heading"><div><span class="world-eyebrow">ADULT PLAY</span><h2>어른들 플레이</h2></div><span>만 19세 이상</span></header><div class="gbtns" data-arcade-games="adult">${worldMatgoButton()}${worldPokerButton()}${worldRouletteButton()}${worldPhotoTtangButton()}<a class="gbtn" data-v="drinking" href="/games/drinking/" aria-label="술게임 · 만 19세 이상 · 최대 12명" style="text-decoration:none"><span class="ge" aria-hidden="true"><span style="font-size:34px">🍻</span></span><span class="game-name">술게임 <small>19+</small><small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 12명</small></span></a></div></section>`:"";
++ return worldArcadeAdultAllowed()?`<section class="arcade-adult" data-arcade-adult aria-label="어른들 플레이"><header class="game-section-heading"><div><span class="world-eyebrow">ADULT PLAY</span><h2>어른들 플레이</h2></div><span>만 19세 이상</span></header><div class="gbtns" data-arcade-games="adult">${worldMatgoButton()}${worldPokerButton()}${worldRouletteButton()}${worldPhotoTtangButton()}<a class="gbtn" data-v="drinking" href="/games/drinking/" aria-label="술게임 · 만 19세 이상 · 최대 12명" style="text-decoration:none"><span class="ge" aria-hidden="true"><img src="/assets/design/games/drinking.svg?v=20261114-drinks-local1" alt="" width="120" height="84" loading="lazy"></span><span class="game-name">술게임 <small>19+</small><small style="display:block;font-size:10px;font-weight:400;opacity:.7">최대 12명</small></span></a></div></section>`:"";
