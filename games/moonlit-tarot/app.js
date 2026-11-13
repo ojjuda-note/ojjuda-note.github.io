@@ -1,8 +1,9 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261113-tarot-personal1';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261113-tarot-summary1';
 import { TarotFX, TarotAudio } from './fx.js';
 import { TarotPayment, getTarotPrice } from './payment.js?v=20261113-tarot-24h1';
 import { TarotRevelation } from './revelation.js?v=20261112-tarot-daily1';
-import { createPersonalReading } from './personal-reading-ui.js?v=20261113-tarot-personal1';
+import { createPersonalReading } from './personal-reading-ui.js?v=20261113-tarot-summary1';
+import { renderSectionSummary, installSummaryExpiryGuard } from './reading-summary-view.js?v=20261113-tarot-summary1';
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -666,7 +667,7 @@ function renderReadingSections(container, sections, fallback = '', headingTag = 
       subtitle.textContent = part.subtitle;
       section.append(subtitle);
     }
-    appendReadingParagraphs(section, part.paragraphs, part.body || '', cardNames);
+    renderSectionSummary(section, part, { appendParagraphs: appendReadingParagraphs, setText: setReadingText, cardNames });
     container.append(section);
   });
 }
@@ -1287,6 +1288,8 @@ personalReading = createPersonalReading({
   }),
   canRead: () => !expireDisplayedReading(),
   renderSections: renderReadingSections,
+  renderText: setReadingText,
   selectGroup: selectSummaryGroup
 });
+installSummaryExpiryGuard(expireDisplayedReading);
 void initializeBilling();
