@@ -11,11 +11,18 @@ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const control=(title,act,primary=false)=>'<button type="button" class="'+(primary?'action':'secondary')+'" data-do="'+act+'">'+title+'</button>';
 const prompts=['좋아하는 노래 한 소절을 흥얼거려 주세요.','옆 사람의 장점을 하나 말해 주세요.','오늘의 기분을 표정으로 보여 주세요.','영화 주인공처럼 자기소개해 주세요.','두 손으로 하트를 만들어 주세요.','5초 동안 로봇처럼 움직여 주세요.','이 모임의 이름을 지어 주세요.'];
 let revealed=false;
-let draftNumber=1,draftMission='';
+let draftNumber=1,draftSecond=null,draftMission='';
+function numberOptions(count,selected,exclude){
+  return Array.from({length:count},(_,i)=>i+1).filter(n=>n!==exclude)
+    .map(n=>'<option value="'+n+'"'+(n===selected?' selected':'')+'>'+n+'번</option>').join('');
+}
+function secondOptions(count){
+  return '<option value="">한 명에게만</option>'+numberOptions(count,draftSecond,draftNumber);
+}
 function entry(){
   room=null;clearTimeout(timer);revealed=false;
   const create=mode==='create';
-  view.innerHTML='<section class="card"><div class="inside"><h1>왕게임</h1><p>한 사람은 왕, 나머지는 비밀 번호를 받아요. 왕이 번호와 미션을 정하면 주인공이 공개돼요.</p>'+
+  view.innerHTML='<section class="card"><div class="inside"><h1>왕게임</h1><p>한 사람은 왕, 나머지는 비밀 번호를 받아요. 왕이 한 명이나 두 명의 번호를 골라 미션을 내리면 주인공이 공개돼요.</p>'+
     '<div class="tabs"><button data-do="create-tab" aria-pressed="'+create+'">방 만들기</button><button data-do="join-tab" aria-pressed="'+!create+'">방 들어가기</button></div>'+
     '<form id="entry">'+
     (create?'<label>방 제목<input name="title" required maxlength="40" value="왕게임 같이 한 판 해요"></label><label>참여 인원<select name="capacity">'+Array.from({length:10},(_,i)=>'<option value="'+(i+3)+'" '+(i===1?'selected':'')+'>'+(i+3)+'명</option>').join('')+'</select></label>':
@@ -27,7 +34,7 @@ function render(s,force=false){
   const first=!room||room.code!==s.code;
   if(!first&&(s.revision<room.revision||(!force&&s.revision===room.revision)))return;
   if(first||s.round!==room.round){
-    draftNumber=1;draftMission=prompts[Math.floor(Math.random()*prompts.length)];
+    draftNumber=1;draftSecond=null;draftMission=prompts[Math.floor(Math.random()*prompts.length)];
   }
   if(first||s.round!==room.round||s.phase!==room.phase)revealed=false;
   if(first){
@@ -41,7 +48,10 @@ function render(s,force=false){
   if(s.phase==='waiting'){
     content='<h1>'+esc(s.title)+'</h1><p>모두 모이면 시작해요. 초대 링크와 방 비밀번호를 친구에게 알려 주세요.</p>'+members+control('초대 링크 복사','copy',true);
   }else if(s.phase==='done'){
-    content='<h1>'+s.number+'번은 '+esc(s.players[s.recipient])+'님!</h1><p>왕 '+esc(s.players[s.king])+'님의 미션</p><p class="mission">'+esc(s.mission)+'</p>'+
+    const firstTarget=s.number+'번 '+esc(s.players[s.recipient])+'님';
+    const title=s.second==null?s.number+'번은 '+esc(s.players[s.recipient])+'님!':
+      firstTarget+' · '+s.second+'번 '+esc(s.players[s.secondRecipient])+'님';
+    content='<h1>'+title+'</h1><p>왕 '+esc(s.players[s.king])+'님의 미션</p><p class="mission">'+esc(s.mission)+'</p>'+
       (s.me===0?control('한 판 더','again',true):'<p>방장이 다음 판을 시작할 수 있어요.</p>');
   }else{
     const role=s.card===0?'당신은 왕이에요.':'내 번호는 '+s.card+'번이에요.';
@@ -51,8 +61,9 @@ function render(s,force=false){
       content='<h1>내 카드를 확인하세요</h1>'+card+'<p>카드 확인 '+s.readyCount+' / '+s.players.length+'명</p>'+
         (s.ready?'<p>다른 참가자의 확인을 기다려요.</p>':revealed?control('확인했어요','ready',true):'');
     }else if(s.me===s.king){
-      const numbers=Array.from({length:s.players.length-1},(_,i)=>'<option value="'+(i+1)+'" '+(i+1===draftNumber?'selected':'')+'>'+(i+1)+'번</option>').join('');
-      content='<h1>왕의 미션을 정하세요</h1>'+card+'<form id="order"><label>미션을 받을 번호<select name="number">'+numbers+'</select></label>'+
+      const count=s.players.length-1;
+      content='<h1>왕의 미션을 정하세요</h1>'+card+'<form id="order"><label>첫 번째 번호<select name="number">'+numberOptions(count,draftNumber)+'</select></label>'+
+        '<label>두 번째 번호 (선택)<select name="second">'+secondOptions(count)+'</select></label>'+
         '<label>미션<input name="mission" maxlength="80" required value="'+esc(draftMission)+'"></label>'+
         control('다른 미션 추천','suggest')+'<div class="actions"><button class="action" type="submit">번호 주인공 공개</button></div></form>';
     }else{
@@ -90,7 +101,14 @@ async function run(task){
 }
 view.addEventListener('input',e=>{
   if(e.target.name==='mission')draftMission=e.target.value;
-  if(e.target.name==='number')draftNumber=Number(e.target.value);
+});
+view.addEventListener('change',e=>{
+  if(e.target.name==='number'){
+    draftNumber=Number(e.target.value);
+    if(draftSecond===draftNumber)draftSecond=null;
+    e.target.form.elements.second.innerHTML=secondOptions(room.players.length-1);
+  }
+  if(e.target.name==='second')draftSecond=Number(e.target.value)||null;
 });
 view.addEventListener('submit',e=>{
   e.preventDefault();
@@ -98,7 +116,9 @@ view.addEventListener('submit',e=>{
   if(e.target.id==='order'){
     const mission=String(form.get('mission')||'').trim(),number=Number(form.get('number'));
     if(!mission||room?.phase!=='order'||room.me!==room.king)return;
-    run(async()=>render(await api('order',room.code,{round:room.round,mission,number})));return;
+    const order={round:room.round,mission,number};
+    if(form.get('second'))order.second=Number(form.get('second'));
+    run(async()=>render(await api('order',room.code,order)));return;
   }
   const title=String(form.get('title')||'').trim(),password=form.get('password');
   const code=String(form.get('code')||'').trim().toUpperCase();
