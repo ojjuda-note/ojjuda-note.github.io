@@ -15,6 +15,19 @@ jobs:
         suite: [local, multiplayer, truth, matrix]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Prepare the release cache revision
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('world.html')
+          s=p.read_text()
+          old='/shared/games/world-game-assets.js?v=20261114-restaurants-c2s45-broadcast4'
+          assert s.count(old)==1
+          p.write_text(s.replace(old,'/shared/games/world-game-assets.js?v=20261114-party-recovery1'))
+          PY
+          test "$(git hash-object world.html)" = 'c5d2810382421ac544ef53c0a31c992bdf21716f'
+          node tests/qa-drinking-queue.cjs games/drinking/prompt-submissions.js
+          node tests/qa-drinking-recovery.cjs games/drinking/child.js
       - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
       - run: node tests/qa-drinking-${{ matrix.suite }}.cjs
         env:

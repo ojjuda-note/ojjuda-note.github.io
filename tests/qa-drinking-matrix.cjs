@@ -131,6 +131,7 @@ function mockRoom() {
         await page.locator('#view h1').waitFor();
         assert.equal(await page.locator('#entry:visible').count(),0);
         assert.equal(await page.locator('[data-party-return]:visible').count(),page===host?1:0);
+        assert.equal(await page.locator('[data-party-leave]:visible').count(),page===host?0:1);
       }
       // A refresh must stay in the same child room without a second invitation/password.
       const currentUrl=guest.url();await guest.reload();await guest.locator('#view h1').waitFor();assert.equal(guest.url(),currentUrl);
