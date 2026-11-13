@@ -4,6 +4,7 @@ import { LIFE_TOPICS } from './topic-catalog-life.js?v=20261113-tarot-context1';
 import { RELATIONSHIP_TOPICS } from './topic-catalog-relations.js?v=20261113-tarot-context1';
 import { PRACTICAL_TOPICS } from './topic-catalog-practical.js?v=20261113-tarot-context1';
 import { WELLBEING_TOPICS } from './topic-catalog-wellbeing.js?v=20261113-tarot-context1';
+import { summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
 
 // Fifty editorial lenses on the same three cards, not extra draws or predictions.
 // Every card/topic pair has an authored application and action. The selected
@@ -48,6 +49,10 @@ export function buildDomainGroup({ cards, readings } = {}) {
       response: `${guides[2].insight} ${guides[2].action}`,
       outcome: situation.check
     };
+    const summaryLines = summaryLinesFrom(guides[0].insight, guides[2].action,
+      [guides[2].insight, guides[1].insight, guides[1].action]);
+    summaryLines[0] = `‘${cards[0].name}’ 카드: ${summaryLines[0]}`;
+    summaryLines[1] = `‘${cards[2].name}’ 카드: ${summaryLines[1]}`;
     return {
       id: topic.id,
       number: topic.number,
@@ -57,6 +62,7 @@ export function buildDomainGroup({ cards, readings } = {}) {
       example: situation.example,
       interpretation,
       guideIds: guides.map(guide => guide.id),
+      summaryLines,
       paragraphs: [
         situation.example,
         `‘${names[0]}’ 카드로 읽는 핵심: ${interpretation.cause}`,

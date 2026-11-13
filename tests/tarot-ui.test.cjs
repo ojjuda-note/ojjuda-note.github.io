@@ -43,6 +43,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   } } });
   const load = createTarotLoader(context);
   Object.assign(window, load('readings.js'));
+  Object.assign(window, load('reading-summary-view.js'));
   window.getTarotPrice = load('payment.js').getTarotPrice;
   window.createPersonalReading = load('personal-reading-ui.js').createPersonalReading;
   window.TarotFX = class { setMood() {} setReducedMotion() {} burst() {} trail() {} };
@@ -140,14 +141,29 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
     group.sections.forEach((section, index) => {
       assert.ok(sections[index].querySelector('h3').textContent.endsWith(section.title));
       if (section.number) assert.equal(Number(sections[index].querySelector('.reading-part-number').textContent), section.number);
-      const paragraphs = [...sections[index].querySelectorAll('p')].map(node => node.textContent);
+      const overview = sections[index].querySelector(':scope > .reading-two-line-summary');
+      assert.equal(overview.getAttribute('aria-label'), '두 줄 요약');
+      assert.deepEqual([...overview.querySelectorAll('.reading-summary-line')].map(node => node.textContent), Array.from(section.summaryLines), 'each visible overview uses the two selected meaning units, without changing conditions or card names');
+      assert.equal(overview.closest('details'), null, 'both summary lines are visible before expanding the original explanation');
+      const details = sections[index].querySelector(':scope > .reading-summary-details');
+      assert.equal(details.open, false, 'the detailed explanation starts folded');
+      assert.equal(details.querySelector('summary').textContent, '자세히 읽기');
+      const paragraphs = [...details.querySelectorAll('.reading-summary-full p')].map(node => node.textContent);
       assert.equal(paragraphs.join(''), Array.from(section.paragraphs).join(''), 'visual paragraph breaks preserve every original character and its order');
       assert.ok(paragraphs.length >= section.paragraphs.length);
       if (paragraphs.length > section.paragraphs.length) dividedSections++;
-      assert.equal(sections[index].closest('details'), null, 'the main interpretation is not hidden in expandable details');
+      if (section.subtitle) assert.equal(details.querySelector('.reading-part-subtitle').textContent, section.subtitle, 'the original subtitle stays with its full explanation');
+      assert.equal(sections[index].closest('details'), null, 'each section title and summary stay outside its disclosure');
     });
   }
   assert.ok(dividedSections > 0, 'long section paragraphs are divided into shorter reading blocks');
+  const firstFullReading = completed.$('#summary-panel-problem .reading-summary-details');
+  const fullReadingBefore = firstFullReading.querySelector('.reading-summary-full').textContent;
+  completed.click('#summary-panel-problem .reading-summary-details > summary');
+  assert.equal(firstFullReading.open, true, 'the native disclosure opens the full explanation');
+  assert.equal(firstFullReading.querySelector('.reading-summary-full').textContent, fullReadingBefore);
+  completed.click('#summary-panel-problem .reading-summary-details > summary');
+  assert.equal(firstFullReading.open, false);
   const emphasizedCards = [...completed.$('#summary-text').querySelectorAll('.reading-card-name')];
   assert.ok(emphasizedCards.length > 0);
   assert.ok(emphasizedCards.every(node => completedCards.some(card => node.textContent.includes(card.name))), 'only the actual drawn card names receive emphasis');
@@ -515,6 +531,13 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   const personalText = personal.$('#personal-reading').textContent;
   for (const section of report.primary) assert.ok(compact(personalText).includes(compact(section.paragraphs[0])), 'the selected situation uses the actual card in its revealed role');
   for (const paragraph of report.connection.paragraphs) assert.ok(compact(personalText).includes(compact(paragraph)));
+  const personalSections = [...personal.$('#personal-reading').querySelectorAll('.personal-card-guides > .reading-part, .personal-card-connections > .reading-part')];
+  for (const [index, section] of [...report.primary, report.connection].entries()) {
+    const node = personalSections[index];
+    assert.deepEqual([...node.querySelectorAll(':scope > .reading-two-line-summary > .reading-summary-line')].map(line => line.textContent), Array.from(section.summaryLines), 'personal roles and card connections have their own two-line overview');
+    assert.equal(node.querySelector(':scope > .reading-summary-details').open, false);
+    assert.equal([...node.querySelectorAll('.reading-summary-full p')].map(paragraph => paragraph.textContent).join(''), Array.from(section.paragraphs).join(''));
+  }
   assert.equal(personal.$('#personal-comparison').open, false);
   assert.equal(personal.$('#personal-followups').querySelectorAll('details').length, 3);
   assert.equal(personal.$('#personal-comparison').querySelectorAll('.personal-choice').length, 2);
@@ -524,6 +547,23 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   assert.match(personal.$('#personal-basis p').textContent, /공통 해석 규칙.*생활 제안/);
   personal.click('#personal-comparison > summary');
   assert.equal(personal.$('#personal-comparison').open, true);
+  assert.deepEqual([...personal.$('#personal-comparison > summary').querySelectorAll('.reading-summary-line')].map(line => line.textContent), Array.from(report.comparison.options, option => `${option.key.toUpperCase()}. ${option.label}`));
+  assert.deepEqual([...personal.$('.personal-comparison-basis').querySelectorAll('.reading-summary-line')].map(line => line.textContent), Array.from(report.comparison.basisSummaryLines));
+  for (const [index, option] of report.comparison.options.entries()) {
+    const node = personal.$('#personal-comparison').querySelectorAll('.personal-choice')[index];
+    assert.deepEqual([...node.querySelectorAll(':scope > .reading-two-line-summary > .reading-summary-line')].map(line => line.textContent), Array.from(option.summaryLines), 'each choice previews its own gain and burden');
+    const details = node.querySelector('.reading-summary-details');
+    assert.equal(details.open, false);
+    details.querySelector('summary').click();
+    assert.equal(details.open, true);
+    assert.deepEqual([...details.querySelectorAll('dd')].map(line => line.textContent), [option.gain, option.burden, option.prepare], 'expanding each choice preserves all three original criteria');
+    details.querySelector('summary').click();
+  }
+  for (const [index, question] of report.followUps.entries()) {
+    const node = personal.$('#personal-followups').querySelectorAll('details')[index];
+    assert.deepEqual([...node.querySelector('summary').querySelectorAll('.reading-summary-line')].map(line => line.textContent), Array.from(question.summaryLines), 'the folded question already shows both substantive answer lines');
+    assert.equal([...node.querySelectorAll('.personal-answer p')].map(paragraph => paragraph.textContent).join(''), Array.from(question.paragraphs).join(''), 'follow-up answers keep the full original detail');
+  }
   personal.click('#personal-followups details > summary');
   assert.equal(personal.$('#personal-followups details').open, true);
   let personalCopy = '';
@@ -582,6 +622,40 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   assert.equal(chosen.$('#personal-reading'), null);
   chosen.dom.window.close();
 
+  // Summary disclosures also guard the native default action if background timers were suspended.
+  for (const [selector, personalContext] of [
+    ['#summary-panel-problem .reading-summary-details > summary', false],
+    ['.personal-card-guides .reading-summary-details > summary', true],
+    ['.personal-choice .reading-summary-details > summary', true],
+    ['#personal-followups details > summary', true]
+  ]) {
+    for (const key of [null, 'Enter', ' ']) {
+      const guarded = await page();
+      guarded.click('#reading-open');
+      await until(() => guarded.$('#result-dialog').open);
+      if (personalContext) {
+        guarded.click('#summary-tab-personal');
+        guarded.chooseContext('love-crush');
+        if (selector.startsWith('.personal-choice')) guarded.click('#personal-comparison > summary');
+      }
+      const summary = guarded.$(selector);
+      const details = summary.parentElement;
+      assert.equal(details.open, false);
+      await guarded.advanceTime(86400000, { runTimers: false });
+      const event = key === null
+        ? new guarded.window.MouseEvent('click', { bubbles: true, cancelable: true })
+        : new guarded.window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      summary.dispatchEvent(event);
+      assert.equal(event.defaultPrevented, true, 'an expired disclosure cancels the browser action for ' + (key || 'click'));
+      assert.equal(details.open, false, 'even the detached expired detail is never opened');
+      assert.equal(guarded.phase('intro'), true);
+      assert.equal(guarded.$('#summary-text').childElementCount, 0);
+      assert.equal(guarded.$('#result-dialog').open, false);
+      assert.equal(guarded.payment.starts, 0, 'expanding an expired summary never purchases another reading');
+      guarded.dom.window.close();
+    }
+  }
+
   // A native disclosure click, keyboard activation or selector cannot reveal expired answers.
   for (const action of ['comparison', 'followup', 'criteria', 'selector', 'tab-keyboard']) {
     const guarded = await page();
@@ -611,5 +685,5 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   await settle();
   assert.equal(freePreview.phase('discard'), true, 'administrator preview has no paid expiry');
   freePreview.dom.window.close();
-  console.log('PASS tarot UI: original fifty topics, fifteen personal situations, comparison and follow-ups, full copy, scoped card reuse, four accessible tabs, rolling 24-hour expiry, suspended controls and no automatic repurchase');
+  console.log('PASS tarot UI: two-line summaries for every section, intact expandable originals and full copy, personal situations and choices, scoped card reuse, accessible tabs, rolling 24-hour expiry, suspended mouse/keyboard disclosures and no automatic repurchase');
 })().catch(error => { console.error(error); process.exitCode = 1; });
