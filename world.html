@@ -70,7 +70,7 @@
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261110-janggi-entry2">
 <link rel="stylesheet" href="/games/janggi/replay.css?v=20261110-janggi-replay1">
-<script src="/shared/games/world-game-assets.js?v=20261113-croc-rooms1" defer></script>
+<script src="/shared/games/world-game-assets.js?v=20261113-liar-rooms1" defer></script>
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
 <script src="/shared/games/game-challenges.js?v=20261110-admin-record-free1" defer></script>
@@ -221,7 +221,7 @@
 
 <script src="/games/matgo/matgo-bridge.js?v=20261113-game-popup-order1" defer></script>
 <link rel="stylesheet" href="/features/arcade/arcade-rooms.css?v=20261106-source-folders1">
-<script src="/features/arcade/arcade-rooms.js?v=20261113-croc-rooms1" defer></script>
+<script src="/features/arcade/arcade-rooms.js?v=20261113-liar-rooms1" defer></script>
 <link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1">
 <script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/shared/brand/brand-copy.css?v=20261106-source-folders1">
@@ -3279,10 +3279,10 @@ function syncWorldArcadeRooms(){
   onCreateNative:async(kind,params)=>{
    if(adminGamePreviewActive())throw Error('admin_preview');
    const owner=D.user?.id;if(!D.online||!owner)throw Error('not_signed_in');
-   if(kind==='croc'){
-    const {data,error}=await S.rpc('croc_multiplayer',{p_action:'create',p_options:params});
+   if(kind==='croc'||kind==='liar'){
+    const {data,error}=await S.rpc(kind+'_multiplayer',{p_action:'create',p_options:params});
     if(error)throw error;
-    if(D.online&&D.user?.id===owner&&data?.code)location.assign('/games/croc/?room='+encodeURIComponent(data.code));
+    if(D.online&&D.user?.id===owner&&data?.code)location.assign('/games/'+kind+'/?room='+encodeURIComponent(data.code));
     return;
    }
    if(kind==='roulette'){
@@ -3302,8 +3302,8 @@ function syncWorldArcadeRooms(){
    if(D.user?.id!==owner)return;dt();Al(kind,{joinCode:data.room.code});
   },
   onCancelNative:async room=>{
-   if(room.kind==='croc'){
-    const {error}=await S.rpc('croc_multiplayer',{p_action:'cancel',p_code:room.code});
+   if(room.kind==='croc'||room.kind==='liar'){
+    const {error}=await S.rpc(room.kind+'_multiplayer',{p_action:'cancel',p_code:room.code});
     if(error)throw error;return;
    }
    if(room.kind==='roulette'){
@@ -3335,7 +3335,7 @@ function syncWorldArcadeRooms(){
   onOpen:async(room,owner)=>{
    if(adminGamePreviewActive())throw Error('admin_preview');
    if(!D.online||D.user?.id!==owner)throw Error("not_signed_in");
-   if(room.kind==='croc'){location.assign('/games/croc/?room='+encodeURIComponent(room.code));return;}
+   if(room.kind==='croc'||room.kind==='liar'){location.assign('/games/'+room.kind+'/?room='+encodeURIComponent(room.code));return;}
    if(room.native){
     dt();
     if(room.kind==='ttang'){

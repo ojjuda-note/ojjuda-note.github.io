@@ -1,7 +1,8 @@
 (function () {
   'use strict';
-  const games = { croc: ['🐊', '악어 이빨'], bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'], roulette: ['🎡', '룰렛'] };
-  const nativeGames = new Set(['croc','bang','tank','tour','ttang','poker','roulette']);
+  const games = { liar: ['🎭', '라이어 찾기'], croc: ['🐊', '악어 이빨'], bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'], roulette: ['🎡', '룰렛'] };
+  const passwordGame=kind=>kind==='croc'||kind==='liar';
+  const nativeGames = new Set(['liar','croc','bang','tank','tour','ttang','poker','roulette']);
   const ACTIVE_POLL_MS = 4000, IDLE_POLL_MS = 6000;
   const layouts = [['eheh', '상마상마'], ['hehe', '마상마상'], ['ehhe', '상마마상'], ['heeh', '마상상마']];
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -55,10 +56,10 @@
       const [, name] = games[room.kind] || ['', '게임'];
       const artwork = /^(carom|pool)/.test(room.kind) ? 'carom4' : Object.hasOwn(games, room.kind) ? room.kind : 'tank';
       const playing = room.status === 'playing';
-      const action = room.is_member ? (playing ? (room.kind==='croc'?'이어하기':'새 게임') : room.native ? '대기실 열기' : '대기 중') : playing ? '대전 중' : '참여';
+      const action = room.is_member ? (playing ? (passwordGame(room.kind)?'이어하기':'새 게임') : room.native ? '대기실 열기' : '대기 중') : playing ? '대전 중' : '참여';
       return `<article class="arcade-room-card${room.is_member ? ' mine' : ''}">
-        <div class="arcade-room-game">${room.kind==='croc' ? '<span aria-hidden="true">🐊</span>' : `<img src="/assets/design/games/${artwork}.svg" alt="" width="36" height="28">`}<b>${name}</b></div>
-        <div class="arcade-room-copy"><span class="arcade-room-number">방 #${escape(room.room_no)}${room.is_host ? ' · 내 방' : room.is_member ? ' · 참여한 방' : ''}</span><h4>${escape(room.title)}${room.kind==='croc'?' 🔒':''}</h4><p>${escape(room.host_name)} <span>· ${room.players}/${room.capacity}명</span></p></div>
+        <div class="arcade-room-game">${passwordGame(room.kind) ? `<span aria-hidden="true">${games[room.kind][0]}</span>` : `<img src="/assets/design/games/${artwork}.svg" alt="" width="36" height="28">`}<b>${name}</b></div>
+        <div class="arcade-room-copy"><span class="arcade-room-number">방 #${escape(room.room_no)}${room.is_host ? ' · 내 방' : room.is_member ? ' · 참여한 방' : ''}</span><h4>${escape(room.title)}${passwordGame(room.kind)?' 🔒':''}</h4><p>${escape(room.host_name)} <span>· ${room.players}/${room.capacity}명</span></p></div>
         <div class="arcade-room-actions"><span class="arcade-room-state${playing ? ' playing' : ''}">${playing ? '대전 중' : '상대 기다리는 중'}</span>
         <button class="btn sm${!playing || room.is_member ? ' pri' : ''}" data-arcade-action="join" data-room="${escape(room.room_no)}"${busy || (playing && !room.is_member) || (!playing && room.is_member && !room.native) || (!room.is_member && room.players>=room.capacity) ? ' disabled' : ''}>${action}</button>
         ${room.is_host && !playing ? `<button class="arcade-cancel" data-arcade-action="cancel" data-room="${room.room_no}"${busy ? ' disabled' : ''}>대기 취소</button>` : ''}</div></article>`;
@@ -194,9 +195,9 @@
         if (form.elements.title.value === previousTitle) form.elements.title.value = games[value][1] + ' 같이 한 판 해요';
         previousTitle = games[value][1] + ' 같이 한 판 해요';
         form.querySelector('[data-create-layout]').hidden = value !== 'janggi';
-        form.querySelector('[data-create-password]').hidden=value!=='croc';
-        form.elements.password.required=value==='croc'; form.elements.password.value='';
-        const min=value==='bang'?4:2,max=value==='bang'?7:['tank','croc'].includes(value)?12:value==='tour'?8:['poker','roulette'].includes(value)?4:2;
+        form.querySelector('[data-create-password]').hidden=!passwordGame(value);
+        form.elements.password.required=passwordGame(value); form.elements.password.value='';
+        const min=value==='bang'?4:value==='liar'?3:2,max=value==='bang'?7:['tank','croc','liar'].includes(value)?12:value==='tour'?8:['poker','roulette'].includes(value)?4:2;
         form.querySelector('[data-create-capacity]').hidden=max===2;
         form.elements.capacity.innerHTML=Array.from({length:max-min+1},(_,i)=>`<option value="${i+min}"${i+min===Math.min(4,max)?' selected':''}>${i+min}명</option>`).join('');
       };
@@ -206,7 +207,7 @@
         const title = form.elements.title.value.trim(), kind = form.elements.kind.value, layout = form.elements.layout.value;
         if (!title || [...title].length > 40) { form.querySelector('[data-room-message]').textContent = errors.invalid_title; return; }
         const capacity=Number(form.elements.capacity.value)||2;
-        const password=kind==='croc'?form.elements.password.value:undefined;
+        const password=passwordGame(kind)?form.elements.password.value:undefined;
         const fingerprint = JSON.stringify([kind, title, layout,capacity,password]);
         if (fingerprint !== lastParams) { request = crypto.randomUUID(); lastParams = fingerprint; }
         const controls = [...form.querySelectorAll('input,select,button')]; controls.forEach(el => el.disabled = true);
@@ -214,7 +215,7 @@
         try {
           if(nativeGames.has(kind)){
             busy=true;render();options.goArcade();
-            await options.onCreateNative(kind,{title,capacity,request_id:request,...(kind==='croc'?{password}:{})});
+            await options.onCreateNative(kind,{title,capacity,request_id:request,...(passwordGame(kind)?{password}:{})});
             if(!current(actor))return;
             options.closeModal();options.goArcade();void poll(true);return;
           }
@@ -240,7 +241,7 @@
       } catch (error) { if (current(actor)) { options.notify(message(error)); void poll(true); } }
     }
     function chooseRoom(room) {
-      if (room.kind !== 'croc' && room.is_member && room.status === 'playing') {
+      if (!passwordGame(room.kind) && room.is_member && room.status === 'playing') {
         const actor = owner;
         if (busy || !current(actor) || typeof options.onFreshGame !== 'function') return;
         busy = true; epoch++; render();
