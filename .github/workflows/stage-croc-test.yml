@@ -1,0 +1,16 @@
+name: Check two mobile crocodile players
+on:
+  push:
+    branches: [release/croc-multiplayer-stage]
+permissions:
+  contents: read
+jobs:
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node tests/staged-native-croc.cjs
