@@ -19,6 +19,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'Y8JFxS1HlDo', title: 'LOVE DIVE', kind: '뮤직비디오', source: 'IVE / STARSHIP' }
   ],
   aespa: [
+    { id: 'inxzQt78lOk', title: 'KISS N TELL', kind: '뮤직비디오', source: 'SMTOWN · 2026.07.24' },
+    { id: '83C3TZ4Zm_o', title: 'LEMONADE', kind: '뮤직비디오', source: 'SMTOWN · 2026.05.29' },
+    { id: 'iTJSbJtS8MU', title: 'WDA (Whole Different Animal) (Feat. G-DRAGON)', kind: '뮤직비디오', source: 'SMTOWN · 2026.05.11' },
     { id: '5oQVTnq-UKk', title: 'Rich Man', kind: '뮤직비디오', source: 'aespa / SMTOWN' },
     { id: 'jWQx2f-CErU', title: 'Whiplash', kind: '뮤직비디오', source: 'aespa / SMTOWN' },
     { id: 'nFYwcndNuOY', title: 'Armageddon', kind: '뮤직비디오', source: 'aespa / SMTOWN' }
