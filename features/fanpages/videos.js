@@ -176,6 +176,7 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     {"id":"1fVsSx5ggQc","title":"For us · 라라포트 BLACK FRIDAY TV CM","kind":"광고 영상","source":"미쓰이 쇼핑파크 / &TEAM · 2026.11.09"}
   ],
   kissoflife: [
+    { id: 'nk9zx3gGqSc', title: 'Sticky / THE FIRST TAKE', kind: '라이브', source: 'THE FIRST TAKE · 공식 채널 · 2026.09.28' },
     { id: '6bIVPKhafSI', title: 'SWEAT (Japanese Ver.) / THE FIRST TAKE', kind: '라이브', source: "THE FIRST TAKE · 공식 채널" },
     { id: 'dsGK0HZZx1k', title: 'SWEAT (Japanese Ver.)', kind: '뮤직비디오', source: "KISS OF LIFE · 공식 채널" },
     { id: 'EJ2fIbl35Oc', title: 'WHAT!', kind: '스페셜 비디오', source: "KISS OF LIFE · 공식 채널" },
