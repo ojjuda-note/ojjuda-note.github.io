@@ -198,6 +198,7 @@ window.OJJUDA_FAN_ARTISTS = [
     image: "https://cloudfront-ap-northeast-1.images.arcpublishing.com/chosun/G5RDQNLDGE2WMMLGME3DAMLFHE.jpg", imageCredit: "조선 / SOURCE MUSIC", imageLink: "https://www.chosun.com/english/kpop-culture-en/2026/07/02/HEG2E7HZ3ZFPVE6TKQ7UKYDSEY/",
     photos: [
       { label: "Pureflow", meta: "2026 · PHOTO", image: "https://cloudfront-ap-northeast-1.images.arcpublishing.com/chosun/G5RDQNLDGE2WMMLGME3DAMLFHE.jpg", href: "https://www.chosun.com/english/kpop-culture-en/2026/07/02/HEG2E7HZ3ZFPVE6TKQ7UKYDSEY/", credit: "조선" },
+      commonsPhoto('Le Sserafim at 2026 Golden Disc awards.png', '골든디스크 · 단체', '2026', '티비텐 TV10', 'CC BY 4.0'),
       commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54795963237).jpg', '시애틀 투어 01', '2025', 'David Lee'),
       commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54795963367).jpg', '시애틀 투어 02', '2025', 'David Lee'),
       commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54795963372).jpg', '시애틀 투어 03', '2025', 'David Lee'),
@@ -216,23 +217,51 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Weverse", icon: "✦", url: "https://weverse.io/lesserafim" }
     ],
     merch: [
+      { title: "Made My Night 싱글 앨범", sub: "CHEMICAL NIGHT·컴팩트판 · 한국 9.11 발매·일본 10.09 발매 · 재고는 판매처 확인", href: "https://www.le-sserafim.jp/news/984d91860ac0" },
+      { title: "FIM'S Holiday Express 공식 MD", sub: "쿠션·키링·블랭킷 · 11.09부터 한정 예약 · 재고는 판매처 확인", href: "https://www.le-sserafim.jp/news/4fc666123c77" },
+      { title: "사쿠라 × Couturier 공식 협업 상품", sub: "DIY 키트·니트 MD · 3차 예약 11.27 18:00(JST)까지·수량 한정", href: "https://www.le-sserafim.jp/news/28a632789865" },
       { title: "Weverse Shop", sub: "공식 굿즈", href: "https://shop.weverse.io/en/shop/USD/artists/50/notices/13192" },
       { title: "LE SSERAFIM 공식 스토어", sub: "앨범·공식 굿즈", href: "https://shop.weverse.io/ko/shop/KRW/artists/50" }
     ],
     music: [
-      { title: "'PUREFLOW' pt.1", date: "2026.05.22", type: "정규 2집", songs: ["BOOMPALA", "CELEBRATION", "Creatures", "iffy iffy"], href: "https://sourcemusic.com/artist/discography/LE%20SSERAFIM/17" },
+      { title: "Made My Night", date: "2026.09.11", type: "싱글 2집", songs: ["Made My Night", "AEIOU"], href: "https://sourcemusic.com/artist/discography/LE%20SSERAFIM/19" },
+      { title: "ICONIC BY MISTAKE", date: "2026.06.12", type: "합동 디지털 싱글 · ILLIT·KATSEYE", songs: ["ICONIC BY MISTAKE"], href: "https://www.le-sserafim.jp/news/72e8fb13fd3d" },
+      { title: "'PUREFLOW' pt.1", date: "2026.05.22", type: "정규 2집", songs: ["Pureflow", "BOOMPALA", "CELEBRATION", "Creatures", "iffy iffy", "우리 어떻게 더 사귈 수 있을까 (Need Your Company)", "Sonder", "Saki (feat. Aliyah's Interlude)", "Irony", "Trust Exercise", "Liminal Space"], href: "https://sourcemusic.com/artist/discography/LE%20SSERAFIM/17" },
       { title: "SPAGHETTI", date: "2025.10.24", type: "싱글", songs: ["SPAGHETTI (feat. j-hope)", "Pearlies (My oyster is the world)"], href: "https://sourcemusic.com/artist/discography/LE%20SSERAFIM/16" },
       { title: "HOT", date: "2025.03.14", type: "미니 5집", songs: ["HOT", "Come Over", "Ash"], href: "https://sourcemusic.com/artist/discography/LE%20SSERAFIM/15" }
     ],
     appearances: [
+      { date: "2026-11-14", title: "PUREFLOW 투어 · 타이베이 (1일차)", sub: "대만 NTSU 아레나 · 현지 시간은 공식 판매처 확인", href: "https://weverse.io/lesserafim/notice/40760" },
+      { date: "2026-11-15", title: "PUREFLOW 투어 · 타이베이 (2일차)", sub: "대만 NTSU 아레나 · 현지 시간은 공식 판매처 확인", href: "https://weverse.io/lesserafim/notice/40760" },
       { date: "2026-11-21", title: "2026 MAMA AWARDS", sub: "일본 오사카 · CHAPTER 2", href: "https://www.cj.net/jp/press-release/view/1132" },
+      { date: "2026-11-28", title: "PUREFLOW 투어 · 싱가포르", sub: "APEX@EXPO · 현지 17:00 · iMe Singapore 주최", href: "https://ticketmaster.sg/activity/detail/26sg_lsf" },
+      { date: "2026-12-05", title: "PUREFLOW 투어 · 마닐라", sub: "SM Mall of Asia Arena · PULP Live World 주최 · 12.06 공연 취소, 12.05만 진행", href: "https://www.pulpliveworld.com/Shows/296" },
+      { date: "2026-12-10", endDate: "2026-12-13", title: "VR FEST · INVITATION (1차 상영)", sub: "도쿄 109 시네마즈 프리미엄 신주쿠 · 회차는 극장 확인", href: "https://www.le-sserafim.jp/news/e5aa32400684" },
       { date: "2026-12-13", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 국립경기장 · 17:00 예정", href: "https://music-bank.jp/" }
     ],
+      { date: "2026-12-17", endDate: "2026-12-19", title: "VR FEST · INVITATION (2차 상영)", sub: "도쿄 109 시네마즈 프리미엄 신주쿠 · 회차는 극장 확인", href: "https://www.le-sserafim.jp/news/e5aa32400684" },
+      { date: "2026-12-19", title: "PUREFLOW 투어 · 오사카 돔 (1일차)", sub: "교세라 돔 오사카 · 17:00 JST", href: "https://www.le-sserafim.jp/news/34281e5b5c57" },
+      { date: "2026-12-20", title: "PUREFLOW 투어 · 오사카 돔 (2일차)", sub: "교세라 돔 오사카 · 16:00 JST", href: "https://www.le-sserafim.jp/news/34281e5b5c57" },
+      { date: "2026-12-26", title: "COUNTDOWN JAPAN 26/27", sub: "지바 마쿠하리 멧세 · 르세라핌 12.26만 출연", href: "https://www.le-sserafim.jp/schedule/35ce4b06d4b8" },
+      { date: "2027-01-23", title: "일본 데뷔 4주년 Celebration Greeting · 오사카", sub: "오사카 시내 · 시간·세부 장소 미공개 · 구매자 추첨", href: "https://www.le-sserafim.jp/news/555c78286abe" },
+      { date: "2027-01-24", title: "일본 데뷔 4주년 Celebration Greeting · 도쿄", sub: "도쿄 시내 · 시간·세부 장소 미공개 · 구매자 추첨", href: "https://www.le-sserafim.jp/news/555c78286abe" }
+    ],
+    campaigns: [
+      { kind: "게임·음악 협업", date: "2026.09.10", title: "LE SSERAFIM × 오버워치", sub: "Made My Night 공식 MV 및 게임 컬래버레이션", href: "https://www.invenglobal.com/articles/25804/operation-rescue-le-sserafim-overwatch-collab-music-video-for-made-my-night-released" },
+      { kind: "광고·영상 협업", date: "2026.05.22", title: "BOOMPALA × Google Android", sub: "Google Android·Gemini 연계 공식 뮤직비디오 프로젝트", href: "https://www.billboard-japan.com/d_news/detail/161790/2" },
+      { kind: "멤버 협업", date: "2026.06.03", title: "사쿠라 × Couturier", sub: "펠리시모 뜨개질·DIY 브랜드 협업 · 공식 한정 상품", href: "https://www.le-sserafim.jp/news/28a632789865" }
+    ],
     schedules: [
+      { title: "일본 공식 일정", sub: "공연·방송·이벤트", href: "https://www.le-sserafim.jp/schedule" },
       { title: "공식 커뮤니티", sub: "Weverse", href: "https://weverse.io/lesserafim" },
       { title: "공식 채널", sub: "Linktree", href: "https://linktr.ee/lesserafim" }
     ],
     news: [
+      { date: "2026.11.13", tag: "이벤트", title: "2027.01.23~24 일본 데뷔 4주년 기념 이벤트 공지", href: "https://www.le-sserafim.jp/news/555c78286abe" },
+      { date: "2026.11.06", tag: "수상", title: "사쿠라 WIRED Innovation Awards 2026 수상", href: "https://www.le-sserafim.jp/news/8c78b9319fdd" },
+      { date: "2026.11.06", tag: "굿즈", title: "FIM'S Holiday Express 공식 MD 예약 안내", href: "https://www.le-sserafim.jp/news/4fc666123c77" },
+      { date: "2026.11.05", tag: "VR 공연", title: "VR FEST 2026 12월 상영 일정 발표", href: "https://www.le-sserafim.jp/news/e5aa32400684" },
+      { date: "2026.10.26", tag: "공연 변경", title: "마닐라 12.06 추가 공연 취소 · 12.05 공연 유지", href: "https://philstarlife.com/geeky/896437-le-sserafim-cancels-second-day-manila-concert-in-december" },
       { date: "2026", tag: "굿즈", title: "LE SSERAFIM Official Merch", href: "https://shop.weverse.io/en/shop/USD/artists/50/notices/13192" },
       { date: "공식", tag: "굿즈", title: "LE SSERAFIM 공식 굿즈 소식", href: "https://shop.weverse.io/ko/shop/KRW/artists/50/notices" }
     ]
