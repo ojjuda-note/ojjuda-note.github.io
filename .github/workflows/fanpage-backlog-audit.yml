@@ -8,25 +8,98 @@ concurrency:
   group: fanpage-backlog-audit
   cancel-in-progress: true
 jobs:
-  source-review:
+  prepare:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      sha: ${{ steps.prepare.outputs.sha }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
-          persist-credentials: false
+          persist-credentials: true
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
-      - name: Build candidate without publishing and query original media metadata
+      - name: Query official distributor tracklists
+        run: python3 scripts/audit-fanpage-albums.py
+      - name: Prepare reviewed data on a new branch only
+        id: prepare
+        shell: bash
         run: |
-          python3 scripts/audit-fanpage-recovery.py
-          python3 scripts/audit-fanpage-albums.py
+          python3 - <<'PY'
+          import json, pathlib, subprocess, tempfile, os, shutil
+          source=pathlib.Path('scripts/audit-fanpage-recovery.py').read_text()
+          old='before=data(ROOT);after=data(work)'
+          assert old in source
+          new="baseline=Path(tempfile.mkdtemp(prefix='fan-baseline-')); subprocess.run(['git','worktree','add','--detach',str(baseline),BASE],check=True); before=data(baseline);after=data(work)"
+          namespace={'__name__':'__main__'}
+          exec(compile(source.replace(old,new),'scripts/audit-fanpage-recovery.py','exec'),namespace)
+          work=namespace['work']; baseline=namespace['baseline']; out=namespace['OUT']; base=namespace['BASE']
+          subprocess.run(['python3','scripts/finalize-fanpage-recovery.py',str(work),str(out)],check=True)
+          before=namespace['data'](baseline);after=namespace['data'](work);groups=namespace['GROUPS']
+          for group in [a['id'] for a in before['OJJUDA_FAN_ARTISTS'] if a['id'] not in groups]:
+              for key in ['OJJUDA_FAN_PROFILES','OJJUDA_FAN_VIDEOS']: assert before[key].get(group)==after[key].get(group),(group,key)
+              assert next(a for a in before['OJJUDA_FAN_ARTISTS'] if a['id']==group)==next(a for a in after['OJJUDA_FAN_ARTISTS'] if a['id']==group),group
+          changed=subprocess.check_output(['git','-C',str(work),'diff','--name-only'],text=True).splitlines()
+          allowed=[f'features/fanpages/{p}' for p in ['artists-extra.js','profiles-extra.js','videos.js','check-videos.mjs','index.html','artist.html']]
+          assert set(changed)==set(allowed),changed
+          report={'baseline':base,'groups':groups,'sourcePRs':list(namespace['PRS']),'nonTargetGroupsUnchanged':22,'mediaSourceRun':'43359109162','checkedAt':'2026-11-13','status':'PR candidate; full CI, mobile checks and deployment still required','withheld':['KiiiKiii New Era campaign: primary confirmation missing','STAYC TAT/Kimpton campaign: primary confirmation missing','SEVENTEEN November RIAJ certification: original notice not located','RIIZE DICON item: original sale notice unverified','BOYNEXTDOOR LG U+ campaign/news: primary confirmation missing','BOYNEXTDOOR Golden Disc award: original award record unverified']}
+          records=work/'ops/fanpage-recovery-20261113.json';records.parent.mkdir(exist_ok=True);records.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+          for name in allowed:
+              for root,dest in [(work,out/'final'),(baseline,out/'baseline')]:
+                  target=dest/name;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(root/name,target)
+          (out/'final-data.json').write_text(json.dumps(after,ensure_ascii=False,indent=2))
+          (out/'baseline-data.json').write_text(json.dumps(before,ensure_ascii=False,indent=2))
+          branch='fanpages/recovery-eight-20261113'
+          exists=subprocess.check_output(['git','ls-remote','--heads','origin',f'refs/heads/{branch}'],text=True).strip()
+          assert not exists,'Recovery branch already exists: do not overwrite'
+          subprocess.run(['git','-C',str(work),'checkout','-b',branch],check=True)
+          subprocess.run(['git','-C',str(work),'config','user.name','github-actions[bot]'],check=True)
+          subprocess.run(['git','-C',str(work),'config','user.email','41898282+github-actions[bot]@users.noreply.github.com'],check=True)
+          subprocess.run(['git','-C',str(work),'add','--',*allowed,'ops/fanpage-recovery-20261113.json'],check=True)
+          subprocess.run(['git','-C',str(work),'commit','-m','팬페이지: 보류 8팀의 검증 자료 통합 및 출처·기간·사진 정정'],check=True)
+          sha=subprocess.check_output(['git','-C',str(work),'rev-parse','HEAD'],text=True).strip()
+          subprocess.run(['git','-C',str(work),'push','origin',f'HEAD:refs/heads/{branch}'],check=True)
+          (out/'recovery-commit.txt').write_text(sha+'\n')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:f.write('sha='+sha+'\n')
+          print('Recovery candidate branch:',branch,sha,'; main unchanged')
+          PY
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
           name: fanpage-recovery-source-review
           path: recovery-evidence/
+          retention-days: 7
+          if-no-files-found: error
+  mobile-preview:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        group: [hearts2hearts, kissoflife, kiiikiii, stayc, seventeen, enhypen, riize, boynextdoor]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix tests ci --ignore-scripts
+      - name: Verify mobile layout, original images and dialog lifecycle
+        env:
+          FANPAGE_GROUP: ${{ matrix.group }}
+        run: node tests/fanpage-release-ui.test.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: fanpage-recovery-preview-${{ matrix.group }}
+          path: tests/artifacts/fanpage-release/
           retention-days: 7
           if-no-files-found: error
