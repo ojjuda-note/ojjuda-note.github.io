@@ -305,6 +305,7 @@ const server = http.createServer((request, response) => {
     const compatibilityScores={};
     for(const [viewport,size] of [['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]]) {
       await saju.setViewportSize(size);
+      await saju.locator('#report-content').evaluate(report=>{report.dataset.readingSize='normal';});
       compatibilityScores[viewport]={};
       for(const pair of ['confirmed','uncertain']) {
         await saju.locator('#fixture-pair').selectOption(pair);
@@ -330,13 +331,23 @@ const server = http.createServer((request, response) => {
               inside:contained(trackBox,item.getBoundingClientRect())&&contained(item.getBoundingClientRect(),box)&&contained(fillBox,trackBox),
               fillMatches:Math.abs(fillBox.width-contentWidth*value/100)<=2};
           });
+          const summaries=Array.from(board.querySelectorAll('article[data-score-item]')).map(item=>{
+            const summary=item.querySelector('.compatibility-score-item-summary');
+            if(!summary)return {id:item.dataset.scoreItem,visible:false};
+            const rect=summary.getBoundingClientRect(),style=getComputedStyle(summary);
+            const contentHeight=rect.height-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom)-parseFloat(style.borderTopWidth)-parseFloat(style.borderBottomWidth);
+            return {id:item.dataset.scoreItem,height:contentHeight,lineHeight:parseFloat(style.lineHeight),
+              visible:rect.width>0&&rect.height>0&&style.visibility==='visible',
+              unclipped:summary.scrollWidth<=summary.clientWidth+1&&summary.scrollHeight<=summary.clientHeight+1&&
+                contained(rect,item.getBoundingClientRect())&&contained(rect,box)};
+          });
           const clippedAncestors=[];
           for(let parent=board.parentElement;parent&&parent!==document.body;parent=parent.parentElement){
             const style=getComputedStyle(parent),rect=parent.getBoundingClientRect();
             if((/hidden|clip/.test(style.overflowX)&&(box.left<rect.left-1||box.right>rect.right+1))||
               (/hidden|clip/.test(style.overflowY)&&(box.top<rect.top-1||box.bottom>rect.bottom+1)))clippedAncestors.push(parent.id||parent.className||parent.tagName);
           }
-          return {total:Number(total?.textContent.trim()),meters,
+          return {total:Number(total?.textContent.trim()),meters,summaries,
             followsHeading:board.previousElementSibling?.classList.contains('report-section-heading')===true,
             totalVisible:!!total&&total.getBoundingClientRect().width>0&&contained(total.getBoundingClientRect(),box),
             documentOverflow:document.documentElement.scrollWidth>innerWidth,
@@ -350,6 +361,12 @@ const server = http.createServer((request, response) => {
         assert.ok(Number.isInteger(geometry.total)&&geometry.total>=0&&geometry.total<=100,label+': the total is an explicit 0–100 score');
         assert.ok(geometry.totalVisible,label+': the total is visible inside its score summary');
         assert.ok(geometry.meters.every(meter=>meter.valid&&meter.min===0&&meter.max===100&&meter.visible&&meter.inside&&meter.fillMatches),label+': all four bars fit and represent their exact values');
+        assert.equal(geometry.summaries.length,4,label+': all four bars have a summary');
+        for(const summary of geometry.summaries) {
+          assert.ok(summary.visible,label+' '+summary.id+': the summary is visible at regular text size');
+          assert.ok(summary.lineHeight>0&&Math.abs(summary.height-2*summary.lineHeight)<=1,label+' '+summary.id+': the rendered summary occupies exactly two lines');
+          assert.ok(summary.unclipped,label+' '+summary.id+': both summary lines fit without clipping');
+        }
         assert.equal(geometry.documentOverflow,false,label+': the page does not overflow horizontally');
         assert.equal(geometry.boardOverflow,false,label+': no score content is clipped by its own container');
         assert.deepEqual(geometry.clippedAncestors,[],label+': no report ancestor clips the score summary');

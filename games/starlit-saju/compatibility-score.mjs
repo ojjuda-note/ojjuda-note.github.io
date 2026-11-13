@@ -65,26 +65,27 @@ export function buildCompatibilityScore({profiles,comparisons,interactions}) {
   });
   const items=[
     item('temperament','기본 성향',temperament,
-      sameElement?'서로 익숙하게 느낄 만한 기본 성향을 비교했어요.'
-        :generating?'생각과 도움을 주고받는 쪽의 연결을 살펴봤어요.'
-          :'서로 다른 기준과 역할을 맞춰 볼 부분을 비교했어요.',
+      sameElement?'닮은 성향으로 풀이해요.\n서로 다른 취향도 물어보세요.'
+        :generating?'도움을 주고받는 짝으로 봐요.\n필요한 도움을 물어보세요.'
+          :stemCombination?'다른 기준 속 연결도 보여요.\n맡을 일을 함께 정해 보세요.'
+            :'서로 다른 기준을 맞춰요.\n맡을 일을 함께 정해 보세요.',
       temperamentReason,['self.day-master','partner.day-master','day-master.self-to-partner','day-master.partner-to-self',
         ...dayMatches.filter(match=>match.kind==='stem-combination').map(match=>match.id)]),
     item('complement','서로의 보완',complement,
-      '확인된 오행 비중에서 서로 더해 볼 부분을 살펴봤어요.',
+      (ratios.some(value=>value>0)?'보완할 부분이 있어요.':'보완 점수는 기본값이에요.')+'\n잘하는 일을 나눠 보세요.',
       complementReason,['self.scope','partner.scope','self.elements','partner.elements']),
     item('daily','일상 호흡',daily,
-      dailyCombination?'함께 일상을 정할 때 연결해 볼 공통점을 살펴봤어요.'
-        :dailyClash?'생활 속 속도와 기준을 맞춰 볼 부분을 비교했어요.'
-          :sameBranch?'비슷하게 반응할 수 있는 생활의 기준을 비교했어요.'
-            :'직접 확인된 일지의 합·충이 없는 조합이에요.',
+      dailyCombination?'일상을 맞추는 짝으로 봐요.\n작은 약속부터 함께 정해요.'
+        :dailyClash?'생활의 차이를 살필 조합이에요.\n서로 편한 속도를 말해 보세요.'
+          :sameBranch?'비슷한 생활 기준으로 읽혀요.\n서로 다른 습관도 물어보세요.'
+            :'일상 호흡은 기본 점수예요.\n평소 생활 습관을 맞춰 보세요.',
       dailyReason,['day-branches','self.pillar.day','partner.pillar.day',
         ...dayMatches.filter(match=>match.position==='branch').map(match=>match.id)]),
     item('harmony','관계 조화',harmony,
-      branchClashes&&stemCombinations+branchCombinations?'서로 이어지는 짝과 맞춰 볼 차이를 모두 반영했어요.'
-        :branchClashes?'확인된 글자 사이에서 조율할 차이를 중심으로 비교했어요.'
-          :stemCombinations+branchCombinations?'확인된 글자 사이에서 이어지는 짝을 중심으로 비교했어요.'
-            :'직접 확인된 합·충이 없어 기본 비교값으로 표시했어요.',
+      branchClashes&&stemCombinations+branchCombinations?'통하는 점과 차이가 보여요.\n편한 점부터 이야기해요.'
+        :branchClashes?'서로 맞춰 볼 차이가 보여요.\n불편한 점을 차분히 말해요.'
+          :stemCombinations+branchCombinations?'서로 연결되는 점이 보여요.\n작은 일부터 힘을 모아 보세요.'
+            :'전체 비교는 기본 점수예요.\n생활 속 공통점을 찾아보세요.',
       harmonyReason,['comparison.scope','interaction.counts',...comparisons.map(value=>value.id),...interactions.map(value=>value.id)]),
   ];
   const total=rounded(items.reduce((sum,value)=>sum+value.value,0)/items.length);
