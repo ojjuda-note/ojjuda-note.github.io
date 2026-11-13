@@ -165,14 +165,20 @@ const server = http.createServer((request, response) => {
       await saju.locator('#fixture-topic').selectOption(topic);
       await saju.locator('#report-content[data-ready="' + topic + '"]').waitFor();
       const ordered = await saju.locator('.report-chapter').evaluateAll(chapters => chapters.length > 0 && chapters.every(chapter => chapter.children[0].classList.contains('chapter-title') && chapter.children[1].classList.contains('chapter-summary') && chapter.children[2].classList.contains('easy-reading')));
-      assert.ok(ordered, topic + ': title, plain takeaway, then explanation');
+      assert.ok(ordered, topic + ': calculation details retain title, plain takeaway, then explanation');
+      const readerOrdered = await saju.locator('.reader-card:visible').evaluateAll(cards => cards.length > 0 && cards.every(card => card.children[0].classList.contains('reader-card-label') && card.children[1].classList.contains('reader-card-title') && card.children[2].classList.contains('reader-prose') && [...card.children[2].querySelectorAll('p')].some(paragraph => paragraph.textContent.trim())));
+      assert.ok(readerOrdered, topic + ': the visible reading shows its topic, plain title and explanation');
+      await saju.locator('#reading-details').click();
+      await saju.locator('.report-chapter:visible').first().waitFor({ state: 'visible' });
+      await saju.locator('#reading-details').click();
       assert.equal(await saju.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, topic + ': mobile report fits the viewport');
-      await saju.locator('.report-chapter:visible').first().scrollIntoViewIfNeeded();
+      await saju.locator('.reader-card:visible').first().scrollIntoViewIfNeeded();
       await saju.screenshot({ path: path.join(artifacts, 'saju-' + topic + '-mobile.png') });
     }
     await saju.setViewportSize({ width: 1280, height: 900 });
     await saju.locator('#fixture-topic').selectOption('lifelong');
-    await saju.locator('.report-chapter:visible').first().scrollIntoViewIfNeeded();
+    await saju.locator('#report-content[data-ready="lifelong"]').waitFor();
+    await saju.locator('.reader-card:visible').first().scrollIntoViewIfNeeded();
     await saju.screenshot({ path: path.join(artifacts, 'saju-lifelong-desktop.png') });
     assert.deepEqual(errors, []);
     assert.deepEqual(failed, []);
