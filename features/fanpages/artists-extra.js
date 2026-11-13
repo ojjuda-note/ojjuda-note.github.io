@@ -327,7 +327,7 @@
         { title: 'Lemon Tang 일본 공식 한정판', sub: 'Summer Kit 및 일본 전용판 · 가격·재고는 공식 판매처 확인', href: 'https://hearts2heartsofficial.jp/discography/lemon-tang_summer-kit/' }
       ],
       campaigns: [
-        { kind: 'OST', date: '2026.09.08', title: '「디저트 캐치! 티니핑」 일본판 × Hearts2Hearts', sub: '일본 애니메이션 엔딩곡 Candy Box Lover · 10.11 정식 발매', href: 'https://hearts2heartsofficial.jp/news/2026090802/' },
+        { kind: '콜라보', date: '2026.09.08', title: '「디저트 캐치! 티니핑」 일본판 × Hearts2Hearts', sub: '일본 애니메이션 엔딩곡 Candy Box Lover · 10.11 정식 발매', href: 'https://hearts2heartsofficial.jp/news/2026090802/' },
         { kind: '콜라보', date: '2026.10.16', title: 'Arena of Valor × Hearts2Hearts', sub: '게임 10주년 특별 싱글 Next Chapter', href: 'https://www.youtube.com/watch?v=lu9GinsuyUQ' },
         { kind: '광고', date: '2026.09.21', title: '클라렌 × Hearts2Hearts', sub: '콘택트렌즈 브랜드 모델 · 리브랜딩 캠페인', href: 'https://www.sentv.co.kr/article/view/sentv202609210130' },
         { kind: '콜라보', date: '2026.09.09', title: 'Kia RV Black Edition × Moonride', sub: '기아 협업 디지털 싱글·프로모션', href: 'https://music.apple.com/us/album/moonride-single/6807315056' }
