@@ -110,6 +110,11 @@ jobs:
           # For per-artist PRs, check that artist's mobile layout, media and links.
           if [[ "${GITHUB_EVENT_NAME}" == "pull_request" && "${GITHUB_HEAD_REF}" =~ ^fanpages[/-]([a-z0-9]+)- ]]; then
             group="${BASH_REMATCH[1]}"
+          elif [[ "${GITHUB_EVENT_NAME}" == "workflow_run" ]]; then
+            changed="$(node features/fanpages/changed-group.mjs || true)"
+            if [[ "${changed}" =~ ^[a-z0-9]+$ ]]; then
+              group="${changed}"
+            fi
           fi
           FANPAGE_GROUP="${group}" node tests/fanpage-release-ui.test.cjs
       - name: Save release screen evidence
