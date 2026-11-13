@@ -1,7 +1,8 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261113-tarot-variety1';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261113-tarot-personal1';
 import { TarotFX, TarotAudio } from './fx.js';
 import { TarotPayment, getTarotPrice } from './payment.js?v=20261113-tarot-24h1';
 import { TarotRevelation } from './revelation.js?v=20261112-tarot-daily1';
+import { createPersonalReading } from './personal-reading-ui.js?v=20261113-tarot-personal1';
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -24,6 +25,7 @@ let trailRaf = null;
 let voiceNoticeShown = false;
 let billingReady = false;
 let readingExpiryTimer;
+let personalReading;
 const billing = new TarotPayment({
   enabled: document.documentElement.dataset.billing === 'ojjuda',
   onBalance: updatePaymentStatus,
@@ -53,6 +55,7 @@ function handleBillingModeChange() {
 }
 
 function updatePaymentStatus() {
+  personalReading?.syncTopic();
   $('#summon-button').dataset.replay = 'false';
   if (!billing.enabled) { $('.tarot-price strong').textContent = `1회 ${getTarotPrice(state.topic)}쭈`; return; }
   const preview = billing.adminPreview;
@@ -867,6 +870,7 @@ function buildResults() {
   $('#result-date').textContent = `${new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' }).format(readingDate)} · ${topic.label}${billing.adminPreview ? ' · 관리자 모드' : ''}`;
   $('#result-title').textContent = '당신을 위한 종합 점괘';
   renderSummaryGroups(summary, drawn.map(card => card.name));
+  if (personalReading?.mount({ cards: drawn, topicId: state.topic }) === false) return;
   $('#summary-ritual').textContent = summary.ritual;
   showOverallOracle(summary);
 }
@@ -943,6 +947,8 @@ async function copyResult() {
       });
     } else group.sections.forEach(appendSection);
   });
+  parts.push(...(personalReading?.copyLines() || []));
+  if (epoch !== state.epoch || expireDisplayedReading()) return;
   parts.push(`이렇게 해 보세요: ${summary.ritual}`, '', '타로의 전통 해석이에요. 미래를 확정하지 않아요.');
   const text = parts.join('\n');
   try {
@@ -970,6 +976,7 @@ async function copyResult() {
 }
 
 function reset({ clearPaid = true } = {}) {
+  personalReading?.reset();
   state.epoch++;
   resultPresentation = null;
   revelation.cancel();
@@ -1272,4 +1279,14 @@ async function initializeBilling() {
     if (!billingReady) $('#login-link').hidden = false;
   }
 }
+personalReading = createPersonalReading({
+  getSnapshot: () => ({
+    topicId: state.topic, phase: state.phase, busy: state.busy,
+    complete: state.phase === 'complete' && state.revealed === 3,
+    cards: state.openOrder.map(index => state.drawn[index])
+  }),
+  canRead: () => !expireDisplayedReading(),
+  renderSections: renderReadingSections,
+  selectGroup: selectSummaryGroup
+});
 void initializeBilling();

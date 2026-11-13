@@ -1,5 +1,5 @@
 import { CARD_LIFE_THEMES } from './life-themes.js?v=20261113-tarot-life1';
-import { buildDomainGroup } from './domain-narration.js?v=20261113-tarot-variety1';
+import { buildDomainGroup } from './domain-narration.js?v=20261113-tarot-personal1';
 import { MAIN_CONTEXTS, getCardInterpretation, interpretCard, connectCards, withParticle } from './interpretation-engine.js?v=20261113-tarot-variety1';
 
 // Card meanings, concrete circumstances and the relationship between the
