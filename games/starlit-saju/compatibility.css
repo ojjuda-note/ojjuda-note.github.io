@@ -62,7 +62,7 @@
 .compatibility-score-item-value{flex-shrink:0;margin:0;font-size:16px;line-height:1.5;font-weight:700;color:var(--score-end);font-variant-numeric:tabular-nums}
 .compatibility-score-meter{height:12px;border-radius:6px;overflow:hidden;background:#ffffff12;box-shadow:inset 0 0 0 1px #ffffff0d}
 .compatibility-score-fill{display:block;height:100%;max-width:100%;border-radius:inherit;background:linear-gradient(90deg,var(--score-start),var(--score-end))}
-.compatibility-score-item-summary{margin:8px 0 0;font-size:14px;line-height:1.8;color:#cdbbd6;word-break:keep-all;overflow-wrap:anywhere}
+.compatibility-score-item-summary{margin:8px 0 0;font-size:14px;line-height:1.8;color:#cdbbd6;white-space:pre-line;word-break:keep-all;overflow-wrap:anywhere}
 .compatibility-score-notice{margin:24px 0 0;padding-top:18px;border-top:1px solid #c6a8ce30;font-size:12px;line-height:1.9;color:#c5b4d1;word-break:keep-all;overflow-wrap:anywhere}
 .compatibility-score-details{margin-top:15px;border-top:1px solid #c6a8ce30;min-width:0}
 .compatibility-score-details>summary{padding:15px 0 0;font-size:14px;line-height:1.8;color:#e5cfa8;cursor:pointer}
