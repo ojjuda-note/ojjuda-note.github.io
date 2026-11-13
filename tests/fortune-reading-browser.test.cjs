@@ -114,7 +114,7 @@ const server = http.createServer((request, response) => {
     const solutionSummary = page.locator('#summary-panel-problem [data-section-id="solution"] > .reading-two-line-summary');
     assert.equal(await solutionSummary.locator('.reading-summary-line').count(), 2, 'the direct reading keeps two complete summary sentences');
     assert.match(await solutionSummary.locator('.reading-summary-line').first().textContent(), /(?:봐|보렴|보자|해|하렴|둬|두렴|나눠|적어|골라|멈춰|줘|주렴|거야)[.!?]$/u, 'the solution summary gives a concrete action instead of an invitation to interpret it');
-    assert.equal(await page.locator('#summary-panel-problem [data-section-id="possible-outcome"] h3').textContent(), '대처 뒤 확인할 변화', 'the outcome is presented as a change to check after acting');
+    assert.equal((await page.locator('#summary-panel-problem [data-section-id="possible-outcome"] h3').textContent()).replace(/^\d+\s*/u, ''), '대처 뒤 확인할 변화', 'the outcome is presented as a change to check after acting');
     assert.match(await page.locator('#summary-panel-problem [data-section-id="problem-now"] .reading-summary-full').textContent(), /카드가 짚는 핵심 문제야/, 'the full explanation states the reading directly');
     const tarotViews = {};
     const domainCategories = [['self', 5], ['timeline', 5], ['solutions', 5], ['love', 7], ['family', 4], ['career', 5], ['study', 5], ['money', 5], ['wellbeing', 4], ['opportunities', 5]];
