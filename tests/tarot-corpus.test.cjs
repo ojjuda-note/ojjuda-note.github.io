@@ -54,14 +54,14 @@ const base = ['fool', 'cups_two', 'hermit'];
 const baseResult = getSummary(base, 'love');
 assert.equal(baseResult.source.recordId, 'love:014');
 assert.equal(baseResult.source.version, CORPUS_VERSION);
-assert.equal(baseResult.oneLine, getFortune('love', '014').oneLine);
-assert.equal(baseResult.summary, getFortune('love', '014').body);
-assert.equal(baseResult.ritual, getFortune('love', '014').action);
+assert.ok(baseResult.paragraphs.every(paragraph => typeof paragraph === 'string' && paragraph.trim()));
+assert.equal(baseResult.summary, baseResult.synthesis);
+assert.equal(baseResult.ritual, getReading('hermit', 'love', 2).action, 'the advice follows the actual third card');
 assert.equal(baseResult.text, getSummary(base, 'love').text, 'reopening does not change the interpretation');
 assert.deepEqual(plain(baseResult), plain(getSummary(base.map(id => DECK.find(card => card.id === id)), { id: 'love' })));
 assert.notEqual(baseResult.source.recordId, getSummary(['cups_two', 'fool', 'hermit'], 'love').source.recordId, 'opening order changes the positional meaning');
 assert.notEqual(baseResult.oneLine, getSummary(['cups_two', 'fool', 'hermit'], 'love').oneLine);
-assert.equal(new Set(TOPICS.map(topic => getSummary(base, topic.id).summary)).size, 4, 'topics have separately authored core prose');
+assert.equal(new Set(TOPICS.map(topic => getSummary(base, topic.id).text)).size, 4, 'the chosen topic changes the concrete interpretation');
 
 // Cards sharing a broad pattern still contribute their own precise meaning;
 // the shared authored record is honestly identified as shared, not counted anew.
@@ -82,7 +82,8 @@ for (const topic of TOPICS) for (let position = 0; position < 3; position++) {
     alternatives.add(result.text);
     assert.ok(result.oneLine.length >= 24);
     assert.ok(result.text.length + result.ritual.length >= 350, 'whole readings retain useful detail');
-    assert.ok(!/첫 번째 카드|두 번째 카드|세 번째 카드/.test(result.text), 'overall result does not list three card explanations');
+    for (const id of spread) assert.ok(result.text.includes(DECK.find(card => card.id === id).name), 'the overall result explains the actual cards');
+    assert.ok(result.synthesis.length >= 100, 'the separate card explanations also connect into a whole reading');
   }
   assert.equal(alternatives.size, 76, `${topic.id} position ${position} retains each card's nuance`);
 }

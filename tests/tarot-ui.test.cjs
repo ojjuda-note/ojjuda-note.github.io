@@ -97,7 +97,9 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
 (async () => {
   // Reopening today's completed reading must point the lower panel at the whole spread.
   const completed = await page();
-  const expected = completed.window.getSummary(completed.receipt.openOrder.map(index => completed.window.DECK.find(card => card.id === completed.receipt.drawn[index])), 'love').oneLine;
+  const completedCards = completed.receipt.openOrder.map(index => completed.window.DECK.find(card => card.id === completed.receipt.drawn[index]));
+  const completedSummary = completed.window.getSummary(completedCards, 'love');
+  const expected = completedSummary.oneLine;
   assert.notEqual(completed.$('#oracle-text').textContent, expected, 'combined fortune stays hidden until the revelation');
   assert.equal(completed.$('#oracle-card-name').hidden, true);
   assert.equal(completed.$('#oracle-keyword').hidden, true);
@@ -107,18 +109,52 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   assert.equal(completed.$('#oracle-text').textContent, expected, 'combined one-line reading appears after the revelation');
   assert.equal(completed.revelations(), 1, 'lower combined CTA uses the revelation before the full result');
   assert.equal(completed.$('#reading-dialog').open, false);
+  assert.deepEqual([...completed.window.document.querySelectorAll('#summary-text > p')].map(node => node.textContent), Array.from(completedSummary.paragraphs), 'the summary narrates the actual cards in their selected order');
+  assert.equal(completed.$('#summary-synthesis').textContent, completedSummary.synthesis);
+  assert.equal(completed.$('#summary-ritual').textContent, completedSummary.ritual);
+  assert.equal(completed.$('.result-takeaway'), null, 'the full summary is not preceded by a duplicate takeaway box');
+  let copiedResult = '';
+  Object.defineProperty(completed.window.navigator, 'clipboard', { value: { async writeText(text) { copiedResult = text; } } });
+  completed.click('#copy-result');
+  await settle();
+  for (const paragraph of [...completedSummary.paragraphs, completedSummary.synthesis, completedSummary.ritual]) {
+    assert.equal(copiedResult.split(paragraph).length - 1, 1, 'copied results include every visible explanation and action exactly once');
+  }
+  assert.ok(copiedResult.includes('세 장을 함께 읽으면'));
+  assert.ok(copiedResult.includes('이렇게 해 보세요:'));
   completed.$('#result-dialog').close();
   completed.click('.card[data-index="2"]');
   assert.equal(completed.$('#reading-dialog').open, true, 'opened cards retain their individual explanations');
-  assert.equal(completed.$('#reading-title').textContent, '여사제');
-  for (const section of completed.window.document.querySelectorAll('#reading-sections .reading-part')) {
+  const firstReading = completed.window.getReading(completedCards[0], 'love', 0);
+  assert.equal(completed.$('#reading-position').textContent, '첫 번째 자리 · 지금의 마음');
+  assert.equal(completed.$('#reading-introduction').textContent, firstReading.introduction);
+  assert.equal(completed.$('#reading-title').textContent, firstReading.displayName);
+  assert.ok(completed.$('#reading-introduction').compareDocumentPosition(completed.$('#reading-art')) & completed.window.Node.DOCUMENT_POSITION_FOLLOWING, 'the position explanation comes before the actual card');
+  const readingParagraphs = [...completed.window.document.querySelectorAll('#reading-sections > p')];
+  assert.ok(readingParagraphs.length >= 6, 'the conversational explanation keeps its full detail');
+  assert.deepEqual(readingParagraphs.map(node => node.textContent), Array.from(firstReading.paragraphs));
+  assert.ok(firstReading.example && completed.$('#reading-sections').textContent.includes(firstReading.example), 'the selected-topic example remains in the main explanation');
+  assert.equal(completed.$('#reading-sections h3'), null, 'the main explanation flows in paragraphs without repeated section headings');
+  assert.equal(completed.$('#reading-summary'), null, 'the individual reading has no duplicate one-line box');
+  assert.equal(completed.$('#reading-card-detail').hidden, false);
+  assert.equal(completed.$('#reading-card-detail').open, false, 'card-specific reference details start collapsed');
+  const cardDetails = [...completed.window.document.querySelectorAll('#reading-detail-sections .reading-part')];
+  assert.ok(cardDetails.length > 0, 'the original card meanings and cautions remain available');
+  for (const section of cardDetails) {
     assert.equal(section.children[0].tagName, 'H3');
     assert.equal(section.children[1].tagName, 'H4');
     assert.ok(section.children[1].textContent.length > 0);
     assert.equal(section.children[2].tagName, 'P');
   }
   assert.equal(completed.$('#oracle-text').textContent, expected, 'individual modal does not replace the combined lower panel');
+  completed.$('#reading-card-detail').open = true;
   completed.closeReading();
+  for (const [index, role] of [[3, '다가오는 흐름'], [4, '마녀의 조언']]) {
+    completed.click(`.card[data-index="${index}"]`);
+    assert.ok(completed.$('#reading-position').textContent.endsWith(role), 'the original position roles stay intact');
+    assert.equal(completed.$('#reading-card-detail').open, false, 'changing cards closes the previous reference details');
+    completed.closeReading();
+  }
   completed.click('#reading-open');
   await until(() => completed.$('#result-dialog').open);
   completed.dom.window.close();
@@ -132,6 +168,8 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   assert.match(references.$('#reading-source-note-link').href, /Part_3$/);
   references.closeReading();
   references.click('.card[data-index="3"]');
+  const cupsReading = references.window.getReading(references.window.DECK.find(card => card.id === 'cups_six'), 'love', 1);
+  assert.equal(references.$('#reading-title').textContent, cupsReading.displayName, 'numbered cards use the plain Korean display name');
   assert.equal(references.$('#reading-name-help').hidden, false);
   assert.match(references.$('#reading-name-guide').textContent, /컵은 잔/);
   assert.match(references.$('#reading-source-note-body').textContent, /추억/);
@@ -229,8 +267,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   await expires.advanceTime(1);
   await until(() => expires.phase('intro'));
   assert.equal(expires.$('#result-dialog').open, false);
-  assert.equal(expires.$('#result-one-line').textContent, '');
-  assert.equal(expires.$('#summary-text').textContent, '');
+  for (const id of ['summary-text', 'summary-synthesis', 'summary-ritual']) assert.equal(expires.$(`#${id}`).textContent, '', 'expiry removes every part of the narrated result');
   assert.ok([...expires.window.document.querySelectorAll('.front-title strong')].every(node => node.textContent === ''));
   assert.equal(expires.payment.record, null);
   assert.equal(expires.payment.starts, 0, 'expiry never automatically purchases a new reading');
@@ -262,7 +299,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   returned.window.dispatchEvent(new returned.window.Event('pageshow'));
   await until(() => returned.phase('intro'));
   assert.equal(returned.$('#reading-dialog').open, false);
-  assert.equal(returned.$('#reading-sections').textContent, '');
+  for (const id of ['reading-introduction', 'reading-title', 'reading-sections', 'reading-detail-sections']) assert.equal(returned.$(`#${id}`).textContent, '', 'expiry also removes the position explanation and collapsed card details');
   returned.dom.window.close();
 
   // Another topic's earlier expiry must not close this topic's valid reading.
@@ -309,6 +346,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   await until(() => hungRefresh.phase('intro'));
   assert.equal(hungRefresh.$('#result-dialog').open, false, 'local expiry does not wait for the hanging RPC');
   assert.equal(hungRefresh.$('#summary-text').textContent, '');
+  assert.equal(hungRefresh.$('#summary-synthesis').textContent, '');
   assert.equal(hungRefresh.payment.starts, 0);
   releaseStatus();
   await settle();
@@ -336,6 +374,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   assert.equal(delayedCopy.$('#result-dialog').open, false);
   assert.equal(delayedCopy.$('#result-dialog').querySelectorAll('textarea').length, 0);
   assert.equal(delayedCopy.$('#summary-text').textContent, '');
+  assert.equal(delayedCopy.$('#summary-synthesis').textContent, '');
   assert.equal(delayedCopy.payment.starts, 0);
   delayedCopy.dom.window.close();
 
@@ -347,5 +386,5 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   await settle();
   assert.equal(freePreview.phase('discard'), true, 'administrator preview has no paid expiry');
   freePreview.dom.window.close();
-  console.log('PASS tarot UI: readings, preview mode, rolling 24-hour expiry, suspended tabs, hung status, delayed clipboard and no automatic repurchase');
+  console.log('PASS tarot UI: conversational card explanations and summary, copied narration, preview mode, rolling 24-hour expiry, suspended tabs, hung status, delayed clipboard and no automatic repurchase');
 })().catch(error => { console.error(error); process.exitCode = 1; });

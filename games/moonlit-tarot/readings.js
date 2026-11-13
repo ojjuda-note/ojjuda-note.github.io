@@ -1,3 +1,4 @@
+import { narrateReading, narrateSummary } from './narration.js?v=20261113-tarot-story1';
 import { getFortune, CORPUS_VERSION } from './fortune-corpus/index.js?v=20261113-tarot-corpus1';
 import { getSpreadPattern } from './spread-patterns.js?v=20261113-tarot-corpus1';
 import { CARD_FOUNDATIONS, CARD_SOURCE_NOTES, TAROT_REFERENCES, getCardNameGuide } from './card-foundations.js?v=20261113-tarot-corpus1';
@@ -692,7 +693,7 @@ export function getReading(card, topic = 'overall', position = 0) {
     practice,
     readingSection('조심할 점', `${foundation.caution}\n\n${guidance.caution} ${TOPIC_REMINDERS[topicId]}`)
   ];
-  return {
+  const base = {
     title: `${POSITIONS[index].label} · ${selected.name}`,
     keyword: foundation.theme,
     summary: guidance.summary,
@@ -703,6 +704,7 @@ export function getReading(card, topic = 'overall', position = 0) {
     sourceNote: CARD_SOURCE_NOTES[selected.id] ? { body: CARD_SOURCE_NOTES[selected.id], reference: TAROT_REFERENCES.minor } : null,
     whisper: index === 2 ? `“${CARD_STEPS[selected.id] || selected.step}.”` : POSITION_WHISPERS[index]
   };
+  return narrateReading({ card: selected, topicId, index, position: POSITIONS[index], foundation, guidance, detail, base });
 }
 
 // Card-specific nuances used in the whole-spread interpretation.
@@ -802,7 +804,7 @@ export function getSummary(cards = [], topic = 'overall') {
     readingSection('지금 살펴볼 일', flowCaution + `\n\n세 장을 함께 읽은 이 이야기는 ${innerMeaning}${objectParticle(innerMeaning)} 다루고 있어. 이어서 ${flowMeaning}${objectParticle(flowMeaning)} 살펴보렴. 이 두 가지가 네 생활에서 어떻게 이어지는지 생각해 보렴.`),
     readingSection('선택할 때 기억할 것', `${direction}\n\n${adviceCaution}`)
   ];
-  return {
+  const base = {
     oneLine: record.oneLine,
     headline: '세 장이 함께 비추는 길',
     summary: record.body,
@@ -811,4 +813,6 @@ export function getSummary(cards = [], topic = 'overall') {
     ritual: record.action,
     source: Object.freeze({ version: CORPUS_VERSION, recordId: record.id, pattern, cards: selected.map(card => card.id) })
   };
+  const readings = selected.map((card, index) => getReading(card, topicId, index));
+  return narrateSummary({ cards: selected, topicId, readings, innerMeaning, flowMeaning, direction, base });
 }

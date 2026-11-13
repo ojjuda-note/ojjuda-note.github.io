@@ -1,4 +1,4 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261113-tarot-corpus1';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261113-tarot-story1';
 import { TarotFX, TarotAudio } from './fx.js';
 import { TarotPayment, getTarotPrice } from './payment.js?v=20261113-tarot-24h1';
 import { TarotRevelation } from './revelation.js?v=20261112-tarot-daily1';
@@ -672,21 +672,38 @@ function renderReadingSections(container, sections, fallback = '', headingTag = 
   });
 }
 
+function narrativeParagraphs(paragraphs, fallback = '') {
+  const content = Array.isArray(paragraphs) && paragraphs.length ? paragraphs : String(fallback).split(/\n\s*\n/);
+  return content.filter(text => typeof text === 'string' && text.trim());
+}
+
+function renderReadingParagraphs(container, paragraphs, fallback = '') {
+  container.replaceChildren();
+  narrativeParagraphs(paragraphs, fallback).forEach(text => {
+    const paragraph = document.createElement('p');
+    paragraph.textContent = text;
+    container.append(paragraph);
+  });
+}
+
 function showReading(slot = state.lastReading) {
   if (expireDisplayedReading() || slot < 0 || slot >= state.revealed || state.busy) return;
   const data = state.drawn[state.openOrder[slot]];
   const reading = getReading(data, state.topic, slot);
   state.lastReading = slot;
-  $('#reading-position').textContent = `${['첫 번째', '두 번째', '세 번째'][slot]} 카드 설명 · ${POSITIONS[slot].label}`;
-  $('#reading-title').textContent = data.name;
-  $('#reading-keyword').textContent = `✧ ${reading.keyword}`;
-  $('#reading-summary').textContent = reading.summary || data.message;
+  $('#reading-position').textContent = `${['첫 번째', '두 번째', '세 번째'][slot]} 자리 · ${POSITIONS[slot].label}`;
+  $('#reading-introduction').textContent = reading.introduction || '';
+  $('#reading-introduction').hidden = !reading.introduction;
+  $('#reading-title').textContent = reading.displayName || data.name;
+  $$('#reading-dialog details').forEach(detail => { detail.open = false; });
   $('#reading-name-help').hidden = !reading.nameGuide;
-  $('#reading-name-help').open = false;
-  $('#reading-name-guide').textContent = reading.nameGuide;
+  $('#reading-name-guide').textContent = reading.nameGuide || '';
   applyArtwork($('#reading-art'), data);
-  $('#reading-art').setAttribute('aria-label', `${data.name} 카드`);
-  renderReadingSections($('#reading-sections'), reading.sections, reading.text);
+  $('#reading-art').setAttribute('aria-label', `${reading.displayName || data.name} 카드`);
+  renderReadingParagraphs($('#reading-sections'), reading.paragraphs, reading.text);
+  const detailSections = reading.detailSections || reading.sections;
+  $('#reading-card-detail').hidden = !detailSections?.length;
+  renderReadingSections($('#reading-detail-sections'), detailSections);
   $('#reading-source-link').href = reading.reference.url;
   $('#reading-source-link').textContent = `${reading.reference.label} ↗`;
   $('#reading-source-note').hidden = !reading.sourceNote;
@@ -715,10 +732,9 @@ function buildResults() {
   const readingDate = !billing.adminPreview && billing.record?.readingDay ? new Date(`${billing.record.readingDay}T12:00:00+09:00`) : new Date();
   $('#result-date').textContent = `${new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' }).format(readingDate)} · ${topic.label}${billing.adminPreview ? ' · 관리자 모드' : ''}`;
   $('#result-title').textContent = '당신을 위한 종합 점괘';
-  $('#result-one-line').textContent = summary.oneLine;
-  $('#result-intro').textContent = summary.summary || '';
-  $('#summary-headline').textContent = summary.headline;
-  renderReadingSections($('#summary-text'), summary.sections, summary.text, 'h4');
+  renderReadingParagraphs($('#summary-text'), summary.paragraphs, summary.text);
+  $('#summary-synthesis').textContent = summary.synthesis || '';
+  $('#summary-synthesis-section').hidden = !summary.synthesis;
   $('#summary-ritual').textContent = summary.ritual;
   showOverallOracle(summary);
 }
@@ -780,7 +796,9 @@ async function copyResult() {
   const drawn = state.openOrder.map(i => state.drawn[i]);
   const summary = getSummary(drawn, state.topic);
   const parts = ['오쭈다 · 달의 마녀 타로', '종합 점괘', $('#result-date').textContent, ''];
-  parts.push('한마디 정리', summary.oneLine, '', summary.headline, summary.text, '', `오늘 해 볼 일: ${summary.ritual}`, '', '타로의 전통 해석이에요. 미래를 확정하지 않아요.');
+  narrativeParagraphs(summary.paragraphs, summary.text).forEach(paragraph => parts.push(paragraph, ''));
+  if (summary.synthesis) parts.push('세 장을 함께 읽으면', summary.synthesis, '');
+  parts.push(`이렇게 해 보세요: ${summary.ritual}`, '', '타로의 전통 해석이에요. 미래를 확정하지 않아요.');
   const text = parts.join('\n');
   try {
     if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
@@ -842,7 +860,9 @@ function reset({ clearPaid = true } = {}) {
     card.label.textContent = '';
     card.button.querySelector('.reveal-number').hidden = true;
   });
-  ['reading-position', 'reading-title', 'reading-keyword', 'reading-summary', 'reading-name-guide', 'reading-sections', 'reading-source-note-body', 'result-date', 'result-one-line', 'result-intro', 'summary-headline', 'summary-text', 'summary-ritual'].forEach(id => { document.getElementById(id).replaceChildren(); });
+  ['reading-position', 'reading-introduction', 'reading-title', 'reading-name-guide', 'reading-sections', 'reading-detail-sections', 'reading-source-note-body', 'result-date', 'summary-text', 'summary-synthesis', 'summary-ritual'].forEach(id => { document.getElementById(id).replaceChildren(); });
+  $$('#reading-dialog details').forEach(detail => { detail.open = false; });
+  $('#reading-card-detail').hidden = true;
   ['--art-image', '--art-size', '--art-x', '--art-y'].forEach(name => $('#reading-art').style.removeProperty(name));
   $('#reading-art').removeAttribute('aria-label');
   $('#reading-source-link').removeAttribute('href');
