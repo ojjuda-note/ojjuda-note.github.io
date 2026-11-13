@@ -315,20 +315,20 @@ const supplementaryProfiles = {
       { label: '멤버 생일 참고(비공식)', href: 'https://tanjoubi.today/ja/group/20261013_A2OSOUL_3e68' }
     ],
     members: {
-      'TAI': { birthday: '2011.08.09',  },
-      'GAKU': { birthday: '2009.09.04',  },
-      'SEE-ONE': { birthday: '2011.02.10',  },
+      'TAI': { birthday: '2011.08.09' },
+      'GAKU': { birthday: '2009.09.04' },
+      'SEE-ONE': { birthday: '2011.02.10' },
       'SEOHA': { birthday: '2008.01.01' },
-      'SONO': { birthday: '2011.11.05',  },
+      'SONO': { birthday: '2011.11.05' },
       'LUCIEN': { birthday: '2010.12.10' },
       'ZAI': { birthday: '2012.01.06' },
-      'AYDEN': { birthday: '2012.03.27',  },
+      'AYDEN': { birthday: '2012.03.27' },
       'ALURE': { birthday: '2011.07.08' },
-      'ZET': { birthday: '2012.06.21',  },
+      'ZET': { birthday: '2012.06.21' },
       'SORA': { birthday: '2007.07.30' },
       'TEO': { birthday: '2009.07.30' },
       'JUNE': { birthday: '2009.11.09' },
-      'HANSUNG': { birthday: '2010.02.25',  }
+      'HANSUNG': { birthday: '2010.02.25' }
     }
   }
 };
