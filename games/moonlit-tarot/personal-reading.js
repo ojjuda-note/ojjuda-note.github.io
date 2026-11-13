@@ -25,7 +25,7 @@ export function buildPersonalReading({ cards, topicId, contextId } = {}) {
   const solution = getConnectionProfile(cards[2].id);
   const comparison = {
     title: context.comparison.title,
-    basis: `해결 자리에 놓인 ‘${names[2]}’을 선택의 기준으로 삼아 볼 수 있어. ${solution.support} ${solution.tension}`,
+    basis: `해결 자리에 놓인 ‘${names[2]}’ 카드를 선택의 기준으로 삼아 볼 수 있어. ${solution.support} ${solution.tension}`,
     options: ['a', 'b'].map(key => ({
       id: `personal-choice-${key}`, key, ...context.comparison[key]
     }))
