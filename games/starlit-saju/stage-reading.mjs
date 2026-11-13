@@ -20,8 +20,8 @@ export const STAGE_MEANINGS = Object.freeze({
 });
 
 const POSITION_NAMES = { year:'태어난 해 자리', month:'태어난 달 자리', day:'태어난 날 자리', hour:'태어난 시간 자리' };
-const CYCLE_REFERENCE = '십이운성은 생겨나고, 자라고, 무르익고, 거두는 모습을 열두 이름으로 나타낸 옛 분류예요. 같은 이름의 기본 뜻은 누구에게나 같고, 실제 계산에서 나온 이름을 각 자리에 연결해 설명해요.';
-const SOURCE_REFERENCE = '《삼명통회》 권2의 열두 단계 설명을 쉬운 말로 옮겼어요. 원문도 생왕, 곧 생겨나고 왕성한 모습이라고 바로 좋다고 하거나, 사·절이라는 이름이라고 바로 나쁘다고 정하지 말라고 설명해요.';
+const CYCLE_REFERENCE = '옛 사주에서는 생겨나고, 자라고, 무르익고, 거두는 모습을 열두 이름으로 나눴어요. 이를 십이운성이라고 해요. 같은 이름의 기본 뜻은 누구에게나 같아요. 여기서는 실제 계산에서 나온 이름을 각 자리에 연결해 설명해요.';
+const SOURCE_REFERENCE = '《삼명통회》 권2의 열두 단계 설명을 쉬운 말로 옮겼어요. 원문에서는 ‘생왕’처럼 잘 자라는 이름이어도 무조건 좋다고 정하지 말라고 해요. ‘사·절’처럼 끝을 떠올리게 하는 이름도 무조건 나쁘다고 보지 않아요.';
 const QUESTION_REFERENCE = '생활 질문은 이 비유를 이해하도록 오쭈다가 만든 예시예요. 옛 문헌의 문장을 그대로 인용하거나 개인에게 일어날 일을 예측한 내용은 아니에요.';
 const STAGE_LIMIT_REFERENCE = '병·사·묘 같은 이름은 변화의 모습을 빗댄 말이에요. 이 이름으로 실제 병, 죽음, 수명이나 성공과 실패를 판정하지 않아요.';
 
@@ -47,15 +47,15 @@ function makeStageChapter(report, fortune, { prefix, id, pillars, period }) {
   }));
   const uniqueEntries = [...new Map(entries.map(entry => [entry.pillar.lifeStage.hanja, entry])).values()];
   const summary = prefix === 'natal'
-    ? `확인된 ${entries.length}자리에서 ${uniqueEntries.map(entry => entry.pillar.lifeStage.label).join('·')}의 뜻을 읽어요`
-    : `${period}에 나온 ‘${entries[0].pillar.lifeStage.label}’이라는 이름의 뜻: ${entries[0].meaning.meaning}`;
+    ? `확인된 ${entries.length}자리에서 ${uniqueEntries.map(entry => entry.pillar.lifeStage.label).join('·')}의 뜻을 읽어요.`
+    : `${period}에는 ‘${entries[0].pillar.lifeStage.label}’이라는 이름이 나왔어요. ${entries[0].meaning.meaning}`;
   const master = fortune.profile.dayMaster;
   const interpretation = rules.map(rule => rule.text);
   const positionReference = prefix === 'natal'
-    ? `나를 나타내는 기준 글자 ${master.hangul}(${master.hanja})과 각 자리의 아래쪽 글자를 비교한 결과예요. 여기서 해·달·날·시간은 태어난 사주의 자리 이름이에요. 어린 시절부터 노년까지를 순서대로 나눈 표가 아니에요.`
-    : `나를 나타내는 기준 글자 ${master.hangul}(${master.hanja})과 ${period}의 아래쪽 글자를 비교했어요. 같은 해나 달이어도 기준 글자가 달라지면 나오는 이름이 달라질 수 있어요.`;
+    ? `나를 나타내는 ${master.hangul}(${master.hanja})과 각 자리의 아래쪽 글자를 비교했어요. 여기서 해·달·날·시간은 태어난 사주의 자리 이름이에요. 어린 시절부터 노년까지를 순서대로 나눈 표가 아니에요.`
+    : `나를 나타내는 ${master.hangul}(${master.hanja})과 ${period}의 아래쪽 글자를 비교했어요. 같은 해나 달이어도 나를 나타내는 글자가 다르면 결과의 이름도 달라질 수 있어요.`;
   const easyParagraphs = [
-    ...(prefix === 'natal' ? ['십이운성은 자라고 거두는 모습을 빗댄 열두 단계예요.'] : []),
+    ...(prefix === 'natal' ? ['자라고 거두는 모습을 빗대어 열두 단계의 이름을 붙였어요. 이 분류를 십이운성이라고 해요.'] : []),
     prefix === 'natal'
       ? `내 기준 글자 ${master.hangul}(${master.hanja})과 각 자리의 아래쪽 글자를 비교했어요.`
       : `내 기준 글자 ${master.hangul}(${master.hanja})과 ${period}의 아래쪽 글자를 비교했어요.`,

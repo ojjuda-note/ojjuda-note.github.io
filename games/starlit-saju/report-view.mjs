@@ -624,7 +624,7 @@ function monthSection(reading, fortune) {
   const title = node('h3', '', `${fortune.year}년, 열두 달의 이야기`);
   title.id = 'reading-months-title';
   title.tabIndex = -1;
-  header.append(title, node('p', 'section-summary', '한 달씩, 내게 어떤 흐름으로 읽히는지 살펴보세요.'));
+  header.append(title, node('p', 'section-summary', '한 달씩 골라 일·돈·관계에서 살펴볼 점을 읽어 보세요.'));
   section.append(header);
   const calculated = new Map(fortune.months.map(month => [month.month, month]));
   const currentMonth = fortune.months.find(month => month.isCurrent)?.month;
@@ -691,7 +691,7 @@ function allNavigation(year) {
   title.id='reading-all-title';title.tabIndex=-1;
   nav.append(title);
   const links=node('div','all-reading-links');
-  for (const [id,label,detail] of [['lifelong','평생운','나의 바탕과 생활 이야기'],['annual','올해운',`${year}년의 흐름`],['months','월별운',`${year}년 1~12월 전체`]]) {
+  for (const [id,label,detail] of [['lifelong','평생운','내 성격과 생활 이야기'],['annual','올해운',`${year}년의 흐름`],['months','월별운',`${year}년 1~12월 전체`]]) {
     const link=readingLink('',`reading-${id}`);
     link.append(node('strong','',label),node('span','',detail));links.append(link);
   }

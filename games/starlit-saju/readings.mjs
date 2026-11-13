@@ -1,15 +1,15 @@
 import {
   STEM_REFERENCE, GROUP_REFERENCE, GOD_REFERENCE, ELEMENT_RELATIONS,
   RELATION_REFERENCE, GROUP_PAIR_RULES, PRACTICE_SUGGESTIONS,
-} from './readings-data.mjs?v=20261113-saju-brief1';
-import { attachPlainLanguage } from './plain-language.mjs?v=20261113-saju-reader1';
-import { attachAdvice } from './advice.mjs?v=20261113-saju-brief1';
-import { attachDeeperReadings } from './deeper-reading.mjs?v=20261113-saju-brief1';
-import { attachStageReadings } from './stage-reading.mjs?v=20261113-saju-brief1';
-import { attachReaderSummary } from './reader-summary.mjs?v=20261113-saju-lists1';
-import { attachReaderExtras } from './reader-extras.mjs?v=20261113-saju-lists1';
-import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261113-saju-summary1';
-import { buildPersonPortrait } from './person-portrait.mjs?v=20261113-saju-portrait1';
+} from './readings-data.mjs?v=20261113-saju-easy1';
+import { attachPlainLanguage } from './plain-language.mjs?v=20261113-saju-easy1';
+import { attachAdvice } from './advice.mjs?v=20261113-saju-easy1';
+import { attachDeeperReadings } from './deeper-reading.mjs?v=20261113-saju-easy1';
+import { attachStageReadings } from './stage-reading.mjs?v=20261113-saju-easy1';
+import { attachReaderSummary } from './reader-summary.mjs?v=20261113-saju-easy1';
+import { attachReaderExtras } from './reader-extras.mjs?v=20261113-saju-easy1';
+import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261113-saju-easy1';
+import { buildPersonPortrait } from './person-portrait.mjs?v=20261113-saju-easy1';
 import { attachReadingSummaryLines } from './reading-summary-lines.mjs?v=20261113-saju-summary1';
 import { getReadingSources } from './sources.mjs?v=20261113-saju-reader1';
 
@@ -299,13 +299,13 @@ function methodMetadata(fortune,topic='all') {
   const profile=fortune.profile;
   return {
     title:'풀이 기준과 범위',
-    description:'입력한 생일로 계산한 사주 글자를 전통의 뜻으로 풀이해요. 계산 근거·전통 해석·참고 설명·생활 제안을 구분해 보여 드려요.',
-    reuseNotice:'같은 글자·관계에는 같은 설명과 제안 규칙을 써요. 두 주제를 연결한 설명과 생활 예시는 저희가 작성한 공통 참고 해설이에요.',
+    description:'입력한 생일로 사주 글자를 계산한 뒤, 전통적인 뜻에 따라 풀이해요. 계산한 내용과 그 내용을 해석한 설명은 나누어 보여드려요. 참고 설명과 생활에서 해볼 일도 함께 담았어요.',
+    reuseNotice:'같은 글자와 관계가 나오면 같은 설명을 써요. 여러 특징을 함께 설명한 문장과 생활 예시는 오쭈다가 작성했어요. 같은 특징이 나온 풀이에 함께 쓰는 참고 설명이에요.',
     calculated:[
       '태어난 해·달·날·시간의 글자와, 아직 정할 수 없는 부분의 후보와 이유',
       '나무·불·흙·쇠·물의 개수와 음양의 개수, 나를 나타내는 글자와 태어난 계절의 관계',
       '다른 글자를 친구·표현·돈·약속·배움의 이야기로 읽는 이름과 그 위치·개수',
-      '태어난 사주 안에서 서로 맞추거나 다른 방향인 글자의 모든 짝',
+      '태어난 사주에서 어울리거나 차이가 부딪히는 글자 조합 전체(합·충)',
       ...(topic==='annual'?[fortune.year+'년 한 해의 글자와 날짜, 내 사주와의 관계 전체(세운)']
         :topic==='monthly'?[fortune.year+'년 12개월의 글자와 날짜, 내 사주와의 관계 전체(월운)']
         :topic==='all'?[fortune.year+'년 한 해와 12개월의 글자·날짜, 내 사주와의 관계 전체']:[]),
@@ -313,10 +313,10 @@ function methodMetadata(fortune,topic='all') {
       ...(topic==='annual'?['올해 글자의 안쪽에 연결된 글자 전체와 나를 나타내는 글자와의 관계, 전통 분류의 원래 이름']
         :topic==='monthly'?['12개월 각각의 안쪽에 연결된 글자 전체와 나를 나타내는 글자와의 관계, 전통 분류의 원래 이름']
         :topic==='all'?['올해와 12개월 각각의 안쪽 글자 전체, 내 기준 글자와의 관계와 전통 분류']:[]),
-      '태어난 사주에 두 가지 생활 이야기의 이름이 함께 나오는지 확인',
+      '태어난 사주에 두 가지 특징을 나타내는 이름이 함께 있는지 확인',
     ],
     notCalculated:[
-      '10년씩 나누어 보는 큰 흐름과 시작 나이(대운), 어느 나이에 어떤 사건이 생기는지',
+      '10년씩 나누어 보는 운세와 시작 나이(대운), 나이에 따라 어떤 사건이 생기는지',
       '내 사주가 강한지 약한지, 어떤 기운이 이로운지에 대한 종합 판단(신강·신약·용신·희신·기신·격국)',
       '안쪽 글자마다 이름과 중요도를 더 자세히 정하거나 계절에 따라 힘을 다르게 매기는 것(중기·여기·통근·조후)',
       '짝을 이루는 글자가 다른 기운으로 바뀌는지와 그 밖의 조합·이름이 미치는 영향(합화·삼합·방합·형·파·해·원진·신살·공망)',
@@ -324,14 +324,14 @@ function methodMetadata(fortune,topic='all') {
       '태어난 지역에 맞춰 시간을 따로 고치거나, 옛날에 쓰던 시계 차이를 맞추는 것(태양시·과거 표준시·서머타임)',
     ],
     warnings:[
-      ...(!profile.complete?['아직 정하지 못한 글자가 있어 확인된 '+profile.knownCharacterCount+'글자만 읽어요. 여기에 어떤 이름이 없다고 전체 사주에도 없다고 정하지 않아요.']:[]),
+      ...(!profile.complete?['아직 정할 수 없는 글자가 있어 확인된 '+profile.knownCharacterCount+'글자만 읽어요. 확인한 부분에 어떤 이름이 없더라도, 아직 모르는 부분에는 있을 수 있어요.']:[]),
       '친구·표현·돈·약속·배움의 개수를 셀 때는 나를 나타내는 기준 글자 자체를 빼고 다른 자리만 세어요.',
       '아래쪽 글자는 대표가 되는 글자로 관계를 읽어요. 안쪽에 연결된 다른 글자들은 별도 자료에서 모두 보여 드려요.',
       '별도 자료의 안쪽 글자를 기존 개수에 더해 세지 않아요. 전통 분류의 이름을 보여 주는 것과 그 이름이 삶에 영향을 준다고 판단하는 것은 달라요.',
-      '글자 사이에 맞추는 짝이나 다른 방향의 짝이 있어도, 실제 사건이 일어난다는 뜻은 아니에요.',
+      '사주에 합이나 충이 있어도, 그 때문에 실제 사건이 일어난다는 뜻은 아니에요.',
       '현재 한국 시계인 한국 표준시(UTC+9)로 계산해요. 해외 출생이나 과거의 시계 차이는 따로 맞추지 않아요.',
       '글자마다 한 개씩 똑같이 세어요. 개수가 많다고 더 좋은 운이거나 더 뛰어난 능력이라는 뜻은 아니에요.',
-      ...(!profile.season?['계절을 나누는 경계의 어느 쪽인지 정하지 못해, 태어난 계절에 따른 풀이를 넣지 않았어요.']:[]),
+      ...(!profile.season?['계절이 바뀌는 시각 전후를 확인할 수 없어요. 그래서 태어난 계절에 따른 풀이는 넣지 않았어요.']:[]),
     ],
   };
 }
@@ -356,7 +356,7 @@ function easySectionCopy(chapters) {
 function adviceCopy(advice) {
   if(!advice?.length)return [];
   const lines=['','선택에 도움이 되는 제안'];
-  for(const item of advice)lines.push('',item.title,'이 제안을 연결한 이유: '+item.why,'해 볼 일: '+item.action,'함께 살펴볼 점: '+item.caution);
+  for(const item of advice)lines.push('',item.title,'이 제안을 한 이유: '+item.why,'해 볼 일: '+item.action,'함께 살펴볼 점: '+item.caution);
   return lines;
 }
 const summaryCopy = item => Array.isArray(item?.summaryLines) ? ['두 줄 요약',...item.summaryLines] : [];
@@ -468,12 +468,12 @@ export function buildDetailedReading(chart,fortune,{daeun=null}={}) {
     const methods=[report.method,report.methodByCategory.lifelong,report.methodByCategory.all];
     for(const method of methods) {
       method.notCalculated=method.notCalculated.filter(text=>!text.startsWith('10년씩 나누어 보는'));
-      if(daeun.available)method.calculated.push('성별·출생 연간·절기 간격으로 계산한 10년 대운의 순서와 시작 시점, 각 구간과 타고난 사주의 관계');
+      if(daeun.available)method.calculated.push('성별과 태어난 해의 글자, 절기까지의 시간으로 계산한 10년 운세(대운). 시작 시점과 순서, 각 기간과 내 사주의 관계');
       else method.notCalculated.unshift(daeun.message);
     }
     report.sections.find(section=>section.id==='lifelong').summary=daeun.available
-      ?'태어난 사주의 성향을 읽고, 10년 단위의 흐름을 별도 항목으로 함께 살펴봐요.'
-      :'확정된 원국의 구성과 관계를 읽어요. '+daeun.message;
+      ?'내 성격과 평소의 생활 모습을 읽어요. 10년 단위 운세는 따로 골라 볼 수 있어요.'
+      :'확인한 사주 글자로 내 성격과 생활 모습을 읽어요. '+daeun.message;
   }
   attachReadingSummaryLines(report);
   report.copyByCategory=Object.fromEntries(['lifelong','annual','monthly','all'].map(topic=>[topic,copyCategory(report,topic)]));

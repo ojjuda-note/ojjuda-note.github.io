@@ -42,6 +42,7 @@ const transitCount = (transit,group) => ['stemGod','branchGod'].filter(key=>tran
 const hasFinal = value => ((String(value).match(/[가-힣]/g)?.at(-1)?.charCodeAt(0)||0)-0xac00)%28!==0;
 const ending = value => value+(hasFinal(value)?'이에요.':'예요.');
 const topicParticle = value => value+(hasFinal(value)?'은':'는');
+const objectParticle = value => value+(hasFinal(value)?'을':'를');
 const wayParticle = value => value+(hasFinal(value)?'으로':'로');
 const named = value => value+(hasFinal(value)?'이라는':'라는');
 const location = entry => PILLARS[entry.pillarKey]+'의 '+(entry.position==='stem'
@@ -72,10 +73,10 @@ function comparison(profile,transit,group,label) {
     return (position==='stem'?'위쪽 글자':'아래쪽 대표')+'의 '+god.name+': '+GODS[god.code].meaning;
   }).join(' ');
   const natalDetails=entries(profile,group).map(value=>location(value)+'의 '+value.god.name).join(', ');
-  if(moving && own)return topicParticle('‘'+name+'’')+' 태어난 사주와 '+label+'에 모두 나와요. 태어난 사주의 이름과 자리: '+natalDetails+'. '+label+'의 이름과 뜻: '+movingDetails;
-  if(moving)return topicParticle('‘'+name+'’')+' 태어난 사주의 확인된 위쪽 글자와 아래쪽 대표 표에는 없고, '+label+'에 나와요. '+movingDetails;
-  if(own)return topicParticle('‘'+name+'’')+' 태어난 사주에 나와요. 확인한 이름과 자리: '+natalDetails+'. '+label+'의 두 글자에는 이 생활 묶음이 없어요.';
-  return '확인된 태어난 사주와 '+label+'의 두 글자에는 ‘'+name+'’로 읽는 이름이 없어요.';
+  if(moving && own)return '‘'+name+'’에 관한 이름이 태어난 사주와 '+label+'에 모두 있어요. 내 사주에서 확인한 글자와 관계는 다음과 같아요: '+natalDetails+'. '+label+'에는 다음과 같이 나와요. '+movingDetails;
+  if(moving)return '‘'+name+'’에 관한 이름이 '+label+'의 글자에 있어요. 태어난 사주에서 확인한 위쪽 글자와 아래쪽 대표 글자에는 이 이름이 없어요. '+movingDetails;
+  if(own)return '‘'+name+'’에 관한 이름이 태어난 사주에 있어요. 내 사주에서 확인한 글자와 관계는 다음과 같아요: '+natalDetails+'. '+label+'의 두 글자에는 이 이름이 없어요.';
+  return '확인한 글자에는 ‘'+name+'’에 관한 이름이 없어요. 태어난 사주와 '+label+'의 두 글자에서 확인한 결과예요.';
 }
 function interactionParagraphs(interactions,label) {
   const upper=interactions.filter(value=>value.kind==='stem-combination').length;
@@ -83,17 +84,17 @@ function interactionParagraphs(interactions,label) {
   const clash=interactions.filter(value=>value.kind==='branch-clash').length;
   const connect=upper+lower;
   const result=[
-    '합은 글자끼리 맞추는 짝, 충은 서로 다른 방향의 짝이에요.',
-    label+'에서 서로 맞추는 짝은 '+connect+'쌍, 서로 다른 방향의 짝은 '+clash+'쌍이에요. 맞추는 짝 중 위쪽 글자끼리는 '+upper+'쌍, 아래쪽 글자끼리는 '+lower+'쌍이에요.',
+    '사주에서는 서로 어울리는 글자 조합을 ‘합’, 차이가 부딪히는 조합을 ‘충’이라고 해요.',
+    label+'에서 합은 '+connect+'쌍, 충은 '+clash+'쌍이에요. 합을 나누어 보면 위쪽 글자끼리 '+upper+'쌍, 아래쪽 글자끼리 '+lower+'쌍이에요.',
   ];
   for(const value of interactions){
     const first=PILLARS[value.birthPillarKey]+'의 '+(value.position==='stem'?'위쪽 ':'아래쪽 ')+value.birthCharacter.hangul+'('+value.birthCharacter.hanja+')';
     const other=(PILLARS[value.otherPillarKey]||value.transitLabel||value.otherPillarLabel)+'의 '+(value.position==='stem'?'위쪽 ':'아래쪽 ')+value.otherCharacter.hangul+'('+value.otherCharacter.hanja+')';
     const meaning=value.kind==='stem-combination'
-      ?'위쪽 글자끼리 서로 맞추고 조율하는 뜻으로 읽는 짝이에요.'
+      ?'위쪽 글자끼리 어울리는 조합이에요. 서로 생각을 맞춰 가는 모습으로 풀이해요.'
       :value.kind==='branch-combination'
-        ?'아래쪽 글자끼리 연결되고 맞물리는 뜻으로 읽는 짝이에요.'
-        :'아래쪽 글자끼리 서로 다른 방향을 살피고 조정하는 뜻으로 읽는 짝이에요.';
+        ?'아래쪽 글자끼리 어울리는 조합이에요. 함께하는 일에서 서로 맞춰 가는 모습으로 풀이해요.'
+        :'아래쪽 글자끼리 차이가 부딪히는 조합이에요. 서로 다른 점을 알아보고 맞춰 갈 부분으로 풀이해요.';
     result.push(value.pairHangul+'('+value.pairHanja+') '+value.label+': '+first+' / '+other+'. '+meaning);
   }
   if(connect&&clash)result.push('생활 예시: 함께할 계획에서 뜻이 맞는 부분과 다시 의논할 부분을 나누어 적어 보세요.');
@@ -104,18 +105,18 @@ function interactionParagraphs(interactions,label) {
 }
 function interactionSummary(interactions) {
   const clash=interactions.filter(value=>value.kind==='branch-clash').length;
-  return '서로 맞추는 짝 '+(interactions.length-clash)+'쌍, 서로 다른 방향의 짝 '+clash+'쌍이에요';
+  return '어울리는 조합(합) '+(interactions.length-clash)+'쌍, 차이가 부딪히는 조합(충) '+clash+'쌍이에요';
 }
 function elementComparison(profile,transit,label) {
   const top=ELEMENTS[transit.stem.element],bottom=ELEMENTS[transit.branch.element];
   const upperCount=profile.elements.find(value=>value.key===transit.stem.element).count;
   const lowerCount=profile.elements.find(value=>value.key===transit.branch.element).count;
   return [
-    label+'의 글자가 내 사주에 있던 종류와 어떻게 겹치는지 살펴봐요.',
+    label+'의 글자와 내 사주를 비교해요. 나무·불·흙·쇠·물 중 어떤 종류가 함께 나오는지 확인해요.',
     top===bottom
       ? label+'의 위쪽과 아래쪽 글자는 모두 '+top+'에 속해요. 내 사주에서 확인된 '+top+' 글자는 '+upperCount+'개예요.'
       : label+'의 위쪽 글자는 '+top+', 아래쪽 글자는 '+bottom+'에 속해요. 내 사주에는 '+top+' '+upperCount+'개, '+bottom+' '+lowerCount+'개가 확인돼요.',
-    '두 표에 함께 있는 종류는 공통점, 새로 나타난 종류는 차이로 읽어요.',
+    '두 표에 같은 종류가 있으면 공통점이에요. '+label+'에만 나오는 종류가 있으면 내 사주와 다른 점으로 살펴봐요.',
   ];
 }
 function seasonParagraph(profile) {
@@ -123,11 +124,11 @@ function seasonParagraph(profile) {
   const day=ELEMENTS[profile.dayMaster.element],season=ELEMENTS[profile.season.element];
   const relation=(ELEMENT_ORDER.indexOf(profile.season.element)-ELEMENT_ORDER.indexOf(profile.dayMaster.element)+5)%5;
   const explanations=[
-    '두 쪽이 같은 종류라, 내 생각과 비슷한 사람을 살펴보는 뜻으로 읽어요.',
-    '옛 사주표에서는 나를 나타내는 쪽이 계절의 쪽을 돕는 짝이에요. 그래서 만들고 표현하는 일을 살펴보는 뜻으로 읽어요.',
-    '옛 사주표에서는 나를 나타내는 쪽이 계절의 쪽을 다루는 짝이에요. 그래서 돈과 물건을 쓰고 챙기는 일을 살펴보는 뜻으로 읽어요.',
-    '옛 사주표에서는 계절의 쪽이 나를 나타내는 쪽을 다루는 짝이에요. 그래서 약속과 맡은 일을 살펴보는 뜻으로 읽어요.',
-    '옛 사주표에서는 계절의 쪽이 나를 나타내는 쪽을 돕는 짝이에요. 그래서 배우고 도움을 받는 일을 살펴보는 뜻으로 읽어요.',
+    '내 글자와 계절의 대표 글자가 같은 종류예요. 내 생각을 지키는 모습과 비슷한 처지의 사람들과 지내는 모습으로 풀이해요.',
+    '전통 분류에서 '+topicParticle(day)+' '+objectParticle(season)+' 돕는 관계예요. 이를 무언가를 만들거나 생각을 표현하는 모습으로 풀이해요.',
+    '전통 분류에서 '+topicParticle(day)+' '+objectParticle(season)+' 다루는 관계예요. 이를 돈과 물건을 챙기고 쓰는 모습으로 풀이해요.',
+    '전통 분류에서 '+topicParticle(season)+' '+objectParticle(day)+' 다루는 관계예요. 이를 약속을 지키고 맡은 일을 하는 모습으로 풀이해요.',
+    '전통 분류에서 '+topicParticle(season)+' '+objectParticle(day)+' 돕는 관계예요. 이를 배우거나 다른 사람의 도움을 받는 모습으로 풀이해요.',
   ];
   return '계절을 나누는 옛 달력 기준으로는 '+profile.season.label+'에 속해요. 나를 나타내는 글자는 '+day+', 이 계절의 대표는 '+ending(season)+' '+explanations[relation];
 }
@@ -161,7 +162,7 @@ function lifelong(profile,chart) {
       '나를 나타내는 글자와 다른 글자의 관계에는 열 가지 이름이 있어요. 이를 ‘십성’이라고 해요. 이 관계를 보면 어떤 생활 이야기로 풀어 읽는지 알 수 있어요.',
       '이 이름을 생활 이야기 다섯 가지로 묶어 읽어요. 내 생각과 친구·동료, 만들고 표현하는 일, 돈과 물건을 챙기는 일, 약속과 맡은 일, 배우고 도움받는 일이에요.',
       '내 사주에서 각 이야기로 읽는 곳은 친구·동료 '+count(profile,'peer')+'곳, 만들고 표현하기 '+count(profile,'expression')+'곳, 돈과 물건 '+count(profile,'wealth')+'곳이에요. 약속과 맡은 일은 '+count(profile,'authority')+'곳, 배움과 도움은 '+count(profile,'resource')+'곳이에요.'),
-    'natal-interactions':chapter('서로 맞추는 부분과 다른 방향인 부분',interactionSummary(profile.interactions),...interactionParagraphs(profile.interactions,'태어난 때의 사주')),
+    'natal-interactions':chapter('어울리는 조합과 차이가 나는 조합',interactionSummary(profile.interactions),...interactionParagraphs(profile.interactions,'태어난 때의 사주')),
     relationships:chapter('내 생각과 사람들과의 관계',themeSummary(profile,['peer']),
       '이 항목은 내 생각을 지키는 일과, 비슷한 처지의 사람들과 함께하는 일을 읽어요. 이 두 가지를 살펴보는 사주 이름이 ‘비겁’이에요.',
       ...paragraphGroup(profile,'peer'),
@@ -233,14 +234,14 @@ function monthly(profile,month) {
       month.stemGod.code===month.branchGod.code
         ? '첫 번째 이야기와 같은 뜻이 두 자리에 나왔어요.'
         : comparison(profile,month,month.branchGod.group,label)),
-    'month-interactions':chapter('함께 맞출 점과 조정할 점',interactionSummary(month.interactions),...interactionParagraphs(month.interactions,label+'의 글자와 내 사주 사이')),
+    'month-interactions':chapter('잘 맞는 점과 서로 다른 점',interactionSummary(month.interactions),...interactionParagraphs(month.interactions,label+'의 글자와 내 사주 사이')),
     'month-elements':chapter('이번 달과 내 사주의 공통점·차이','이번 달의 위쪽은 '+ELEMENTS[month.stem.element]+', 아래쪽은 '+ELEMENTS[month.branch.element]+'에 속해요',...elementComparison(profile,month,label)),
   };
 }
 export const PLAIN_GUIDE = {
   title:'풀이 안내',
   paragraphs:[
-    '전통적인 뜻과 생활 예시로 읽는 풀이예요. 생활 예시는 오쭈다가 작성했으며, 미래의 일을 확정하지 않아요.',
+    '사주에 담긴 전통적인 뜻을 생활 속 모습으로 풀어 썼어요. 예시는 이해를 돕기 위해 오쭈다가 만든 이야기예요. 실제로 겪은 일이나 앞으로 생길 일을 말하는 것은 아니에요.',
   ],
 };
 export const PLAIN_GLOSSARY = [
@@ -257,15 +258,15 @@ export const PLAIN_GLOSSARY = [
   {term:'편재·정재',meaning:'편재는 돈과 물건의 여러 쓰임, 정재는 정해진 것을 차근차근 챙기기를 살펴보는 이름이에요.'},
   {term:'편관·정관',meaning:'편관은 어려운 일과 무거운 책임, 정관은 약속을 지키고 맡은 일을 해내기를 살펴보는 이름이에요.'},
   {term:'편인·정인',meaning:'편인은 궁금한 것을 깊이 알아보기, 정인은 기초부터 배우고 도움받기를 살펴보는 이름이에요.'},
-  {term:'합·충',meaning:'글자 사이에서 맞추는 짝은 합, 서로 다른 방향의 짝은 충이라고 불러요. 합이라고 무조건 좋거나, 충이라고 나쁜 일이 생기는 것은 아니에요.'},
-  {term:'천간합·지지육합·지지충',meaning:'위쪽 글자끼리 맞추는 짝은 천간합, 아래쪽 글자끼리 맞추는 여섯 종류의 짝은 지지육합이에요. 아래쪽 글자끼리 다른 방향인 짝은 지지충이에요.'},
+  {term:'합·충',meaning:'사주에서 서로 어울리는 글자 조합을 합, 차이가 부딪히는 조합을 충이라고 불러요. 합이라고 무조건 좋거나, 충이라고 나쁜 일이 생기는 것은 아니에요.'},
+  {term:'천간합·지지육합·지지충',meaning:'천간합은 위쪽 글자끼리 어울리는 조합이에요. 지지육합은 아래쪽 글자끼리 어울리는 여섯 가지 조합이에요. 지지충은 아래쪽 글자끼리 차이가 부딪히는 조합이에요.'},
   {term:'절기·절기월·입춘',meaning:'계절의 흐름을 나누는 옛 달력의 시점을 절기라고 해요. 절기로 나눈 한 달은 달력의 1일에 시작하지 않을 수 있어요. 입춘은 봄의 시작을 알리는 절기예요.'},
   {term:'간지·세운·월운',meaning:'간지는 옛 달력에서 해·달·날·시간을 적는 두 글자예요. 한 해의 글자로 읽는 풀이를 세운, 한 달의 글자로 읽는 풀이를 월운이라고 해요.'},
   {term:'지장간·본기',meaning:'아래쪽 글자 하나에 연결되는 다른 글자들을 지장간이라고 해요. 그중 대표가 되는 글자는 본기라고 불러요.'},
   {term:'십이운성',meaning:'자라고 쉬어 가는 모습에 빗댄 열두 단계의 이름이에요. 이름에 병이나 사가 있어도 실제 병이나 죽음이 생긴다는 뜻은 아니에요.'},
   {term:'납음',meaning:'옛 달력의 두 글자 조합마다 붙인 이름이에요. 여기서는 원래 자료의 이름을 그대로 보여 줘요.'},
   {term:'순·공망',meaning:'옛 달력의 글자 조합을 열 개씩 묶은 것을 순이라고 해요. 그 묶음에서 빠지는 두 글자를 공망이라고 불러요.'},
-  {term:'대운·용신·신살',meaning:'대운은 10년씩 나누어 읽는 큰 흐름이에요. 평생운·전체에서 성별과 출생시각을 확인해 계산해요. 용신은 사주의 균형을 읽을 때 중요하게 보는 기운, 신살은 특정한 글자 조합에 붙인 이름이며 이 두 항목은 종합 판정하지 않아요.'},
+  {term:'대운·용신·신살',meaning:'대운은 10년씩 나누어 보는 운세예요. 평생운·전체에서 성별과 출생시각을 확인해 계산해요. 용신은 사주의 균형을 읽을 때 중요하게 보는 기운, 신살은 특정한 글자 조합에 붙인 이름이며 이 두 항목은 종합 판정하지 않아요.'},
 ];
 function apply(chapters,copy) {
   for(const value of chapters){
