@@ -82,7 +82,7 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   lesserafim: {
-    checkedAt: '2026.11.10',
+    checkedAt: '2026.11.13',
     debut: '2022.05.02', debutWork: 'FEARLESS',
     agency: 'SOURCE MUSIC · HYBE',
     concept: 'IM FEARLESS, 두려움 없이 나아가는 다섯 멤버.',
@@ -91,6 +91,7 @@ window.OJJUDA_FAN_PROFILES = {
       { year: '2024', title: 'MTV VMAs PUSH 퍼포먼스상', detail: 'EASY', href: 'https://www.paramountpressexpress.com/mtv/releases/?view=110288-mtv-reveals-winners-for-2024-video-music-awards-vmas' }
     ],
     records: [
+      { year: '2026.11', title: '사쿠라 · WIRED Innovation Awards 2026', detail: '멤버 개인 수상 · 일본 WIRED 선정', href: 'https://www.le-sserafim.jp/news/8c78b9319fdd' },
       { year: '2024.03', title: '빌보드 200 8위', detail: 'EASY', href: 'https://ca.billboard.com/music/chart-beat/twice-le-sserafim-first-2-all-female-k-pop-groups-billboard-200-top-10-together-1235621542/' }
     ],
     members: [
