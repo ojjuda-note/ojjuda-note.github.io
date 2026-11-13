@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f5f0">
+  <title>오늘의 바이오리듬 · 오쭈다</title>
+  <meta name="description" content="생일로 그려 보는 신체·감정·지성의 세 가지 바이오리듬. 날짜별 그래프와 다양한 쉬운 설명, 계산 근거를 무료로 살펴보세요. 재미로 즐기는 콘텐츠입니다.">
+  <link rel="canonical" href="https://ojjuda.kr/features/biorhythm/">
+  <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="오쭈다 아지트">
+  <meta property="og:title" content="오늘의 바이오리듬 · 오쭈다">
+  <meta property="og:description" content="생일로 그려 보는 세 가지 리듬. 오늘의 흐름을 가볍게 읽어 보세요.">
+  <meta property="og:url" content="https://ojjuda.kr/features/biorhythm/">
+  <meta property="og:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
+  <link rel="stylesheet" href="./style.css?v=20261113-biorhythm1">
+</head>
+<body>
+  <a class="skip-link" href="#rhythm-form">생일 입력으로 바로가기</a>
+  <header class="site-header wrap">
+    <a class="brand" href="/world.html?tab=hub"><span class="brand-symbol" aria-hidden="true">오</span><span>오쭈다 <small>오늘의 바이오리듬</small></span></a>
+    <a class="back-link" href="/world.html?tab=hub"><span aria-hidden="true">←</span> 아지트로</a>
+  </header>
+  <main class="wrap">
+    <div class="intro-layout">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow"><span></span> 나를 알아가는 작은 재미</p>
+        <h1 id="page-title">오늘은 어떤<br><em>리듬</em>일까요?</h1>
+        <p class="intro-copy">생일로 그려 보는 신체·감정·지성의 곡선.<br>오늘의 느낌과 가볍게 비교해 보세요.</p>
+        <div class="hero-waves" aria-hidden="true">
+          <svg viewBox="0 0 540 140" fill="none">
+            <path d="M0 70H540" stroke="#dedbd3" stroke-dasharray="3 7"/>
+            <path d="M0 80C45 80 45 20 90 20S135 120 180 120S225 20 270 20S315 120 360 120S405 20 450 20S495 120 540 120" stroke="#c45b69" stroke-width="3"/>
+            <path d="M0 112C58 112 58 30 116 30S174 112 232 112S290 30 348 30S406 112 464 112S510 45 540 32" stroke="#278478" stroke-width="3"/>
+            <path d="M0 55C67 5 67 5 134 55S201 135 268 85S335 5 402 55S469 135 536 85" stroke="#8067b3" stroke-width="3"/>
+          </svg>
+          <span class="wave-dot dot-one"></span><span class="wave-dot dot-two"></span>
+        </div>
+        <div class="cycle-key"><span class="physical">신체 <b>23일</b></span><span class="emotional">감정 <b>28일</b></span><span class="intellectual">지성 <b>33일</b></span></div>
+        <p class="intro-note">생일 기반의 재미용 계산이에요.<br>실제 건강·감정·능력을 측정하거나 예측하지 않아요.</p>
+      </section>
+      <section class="input-panel" aria-labelledby="input-title">
+        <div class="panel-topline"><span class="eyebrow">MY DAILY RHYTHM</span><span class="free-badge">무료</span></div>
+        <h2 id="input-title">나의 리듬 그려보기</h2>
+        <p class="panel-description">생일과 살펴볼 날짜만 알려 주세요.</p>
+        <form id="rhythm-form" novalidate>
+          <label class="field" for="birth-date"><span>생년월일 <small>양력</small></span><input id="birth-date" type="date" min="1900-01-01" max="2100-12-31" required autocomplete="off" aria-describedby="birth-help form-error"></label>
+          <p id="birth-help" class="field-help">태어난 연도를 포함해 입력해 주세요. 음력은 양력으로 바꿔 주세요.</p>
+          <div class="field target-field"><span><label for="target-date">살펴볼 날짜</label><button id="input-today" class="text-button" type="button">오늘</button></span><input id="target-date" type="date" min="1900-01-01" max="2100-12-31" required aria-describedby="target-help form-error"></div>
+          <p id="target-help" class="field-help">오늘은 한국시간을 기준으로 해요.</p>
+          <p id="form-error" class="form-error" role="alert" hidden></p>
+          <button id="calculate-button" class="primary-button" type="submit" disabled>내 리듬 펼치기 <span aria-hidden="true">↗</span></button>
+          <div class="form-secondary"><button id="sample-button" class="text-button" type="button" disabled>샘플 먼저 보기</button><button id="clear-button" class="text-button muted" type="button" disabled>입력 지우기</button></div>
+          <p class="privacy-note"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="7" width="9" height="7" rx="2"/><path d="M5.5 7V4.5a2.5 2.5 0 0 1 5 0V7"/></svg>생일은 이 화면에서만 사용해요.<br>서버로 보내거나 기기에 저장하지 않아요.</p>
+        </form>
+        <noscript><p class="form-error">리듬을 계산하려면 브라우저의 자바스크립트를 켜 주세요.</p></noscript>
+      </section>
+    </div>
+
+    <section id="results" class="results" aria-labelledby="result-title" hidden>
+      <header class="result-header">
+        <div><p class="eyebrow">YOUR RHYTHM <span id="sample-badge" class="sample-badge" hidden>샘플 · 1990. 1. 1.생</span></p><h2 id="result-title" tabindex="-1">나의 리듬</h2><p id="result-subtitle"></p></div>
+        <div class="date-navigation" role="group" aria-label="결과 날짜 이동"><button id="previous-day" type="button" aria-label="하루 전">←</button><button id="result-today" type="button">오늘</button><button id="next-day" type="button" aria-label="하루 뒤">→</button></div>
+      </header>
+      <div class="summary-panel"><span class="summary-symbol" aria-hidden="true">〰</span><div><h3 id="summary-title"></h3><p id="summary-body"></p></div></div>
+      <p class="value-explainer">리듬값 <b>−100 ~ +100</b>은 계산한 곡선의 높이예요. 건강·능력 점수나 확률이 아니에요.</p>
+      <div id="rhythm-cards" class="rhythm-cards"></div>
+
+      <section class="chart-panel" aria-labelledby="chart-title">
+        <div class="section-heading"><div><p class="eyebrow">THE BIGGER PICTURE</p><h3 id="chart-title">곡선으로 보는 흐름</h3></div><span id="chart-dates" class="subtle-label"></span></div>
+        <div class="chart-legend" role="group" aria-label="그래프에 표시할 리듬">
+          <button type="button" data-cycle="physical" class="physical" aria-pressed="true"><span></span>신체 <small>실선</small></button>
+          <button type="button" data-cycle="emotional" class="emotional" aria-pressed="true"><span></span>감정 <small>긴 점선</small></button>
+          <button type="button" data-cycle="intellectual" class="intellectual" aria-pressed="true"><span></span>지성 <small>짧은 점선</small></button>
+        </div>
+        <div id="chart-holder" class="chart-holder"></div>
+        <p id="chart-help" class="field-help">그래프나 아래 막대를 움직여 날짜를 골라 보세요. 위의 리듬 이름을 누르면 선을 숨기거나 다시 볼 수 있어요.</p>
+        <label class="slider-label" for="chart-slider"><span>살펴볼 날짜</span><output id="slider-date" for="chart-slider"></output></label>
+        <input id="chart-slider" class="chart-slider" type="range" min="0" max="30" step="1" value="15" aria-describedby="chart-help">
+        <details class="table-details"><summary>날짜별 값을 표로 보기</summary><div class="table-scroll" tabindex="0" role="region" aria-label="날짜별 리듬값"><table><caption>곡선의 날짜별 계산값 · 표시용 반올림</caption><thead><tr><th scope="col">날짜</th><th scope="col">신체</th><th scope="col">감정</th><th scope="col">지성</th><th scope="col">풀이</th></tr></thead><tbody id="chart-table"></tbody></table></div></details>
+      </section>
+
+      <section class="suggestions-section" aria-labelledby="suggestions-title"><div class="section-heading"><div><p class="eyebrow">A LITTLE SOMETHING</p><h3 id="suggestions-title">일상에 더하는 작은 힌트</h3></div><span class="subtle-label">마음에 드는 것만 골라 보세요</span></div><div id="suggestion-cards" class="suggestion-cards"></div></section>
+      <aside class="reflection"><span aria-hidden="true">✳</span><div><p class="eyebrow">그래프 밖의 진짜 나</p><h3 id="reflection-question"></h3><p>지금의 느낌을 한 단어로 떠올려 보세요. 내 하루의 속도는 내가 정해요.</p></div></aside>
+      <details class="calculation-details"><summary>내 결과는 어떻게 계산했나요?</summary><div id="calculation-evidence"></div></details>
+      <div class="result-actions"><button id="copy-result" class="secondary-button" type="button">결과 복사</button><button id="edit-birth" class="text-button" type="button">다른 생일로 보기 ↑</button></div>
+      <div id="copy-fallback" class="copy-fallback" hidden><label for="copy-text">자동 복사가 어려워요. 아래 내용을 선택해서 복사해 주세요.</label><textarea id="copy-text" rows="6" readonly></textarea></div>
+      <p class="reuse-note">설명은 계산된 구간·흐름에 맞춰 준비한 공통 문장을 조합해요. 일상 제안과 질문은 가볍게 즐기는 창작 콘텐츠예요.</p>
+    </section>
+
+    <section id="guide" class="guide-section" aria-labelledby="guide-title">
+      <div class="section-heading"><div><p class="eyebrow">A SMALL GUIDE</p><h2 id="guide-title">처음이라면, 이렇게 읽어요</h2></div><span class="guide-flower" aria-hidden="true">✳</span></div>
+      <div class="guide-grid"><article><span class="step-number">01</span><h3>서로 다른 세 가지 주기</h3><p>신체는 23일, 감정은 28일, 지성은 33일 주기로 곡선을 그려요. 생일 기반 바이오리듬 이론에서 정한 가정이에요.</p></article><article><span class="step-number">02</span><h3>높이와 방향은 달라요</h3><p>리듬값은 선의 높이, 상승·하강은 움직이는 방향이에요. 지하에서 위층으로 올라가듯, 값이 낮아도 상승 중일 수 있어요.</p></article><article><span class="step-number">03</span><h3>0 근처도 자연스럽게</h3><p>기준선을 지나는 것은 반복되는 곡선의 한 장면이에요. 사고나 불행을 뜻하는 날로 해석하지 않아도 돼요.</p></article><article><span class="step-number">04</span><h3>내 느낌을 먼저 살펴요</h3><p>높은 날이 좋은 날, 낮은 날이 나쁜 날이라는 뜻은 아니에요. 결과와 내 느낌이 달라도 편하게 즐겨 주세요.</p></article></div>
+    </section>
+    <section class="faq-section" aria-labelledby="faq-title"><div class="section-heading"><div><p class="eyebrow">CURIOUS ABOUT RHYTHMS?</p><h2 id="faq-title">조금 더 궁금하다면</h2></div><span class="subtle-label">자주 묻는 질문</span></div><div id="faq-list" class="faq-list"></div></section>
+    <section class="science-note" aria-labelledby="science-title"><div><span class="eyebrow">알고 즐기면 더 편안해요</span><h2 id="science-title">재미와 과학은 구분해서</h2><p>생년월일부터 고정된 23·28·33일 주기로 사람의 상태를 예측한다는 주장은 과학적으로 뒷받침되지 않아요. 수면·각성과 관련된 실제 약 24시간의 일주기 리듬과도 구분돼요.</p><p>이곳의 결과는 자신을 가볍게 돌아보는 소재로 즐겨 주세요.</p></div><details><summary>계산법과 참고 자료</summary><p class="formula">리듬값 = sin(2π × 지난 날짜 수 ÷ 주기) × 100</p><p>태어난 날을 0일로 놓고 양력 날짜 차이를 계산해요. 생일과 살펴볼 날짜가 같으면 같은 결과가 나와요. 이름·성별·태어난 시간은 사용하지 않아요.</p><p>1900년 1월 1일~2100년 12월 31일을 지원해요. 윤일을 포함한 달력 날짜로 계산하며, 오늘의 기준은 한국시간이에요.</p><div id="source-links"></div></details></section>
+  </main>
+  <footer class="site-footer wrap"><a href="/world.html?tab=hub">오쭈다 아지트 <span aria-hidden="true">↗</span></a><p>오늘의 속도는, 나답게.</p><a href="/sitemap.html">전체 메뉴</a></footer>
+  <p id="status" class="status-message" role="status" aria-live="polite"></p>
+  <script type="module" src="./app.mjs?v=20261113-biorhythm1"></script>
+</body>
+</html>

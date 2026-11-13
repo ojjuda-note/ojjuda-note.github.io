@@ -6,6 +6,7 @@
 
 | 게임·기능 | 프런트 소스 | 서버 함수 |
 | --- | --- | --- |
+| 오늘의 바이오리듬 | `features/biorhythm/` | 생일과 기준일로 브라우저에서 23·28·33일 곡선을 계산하는 무료 재미용 기능. 원본 출생 정보 서버 전송 없음 |
 | 별빛 사주팔자 | `games/starlit-saju/` | 브라우저 내 원국·세운·월운 계산, `saju_reading_buy_v2` / `saju_reading_status_v2`로 평생운·연간운·월별운 각각 10쭈 이용 확인. 출생 정보 원문은 저장하지 않음 |
 | 바람의 궁수 | `games/forest-archer/` | `game-action` |
 | 나사 풀기 | `games/screw/` | `flat-drill-clear* (운영 보정 도구)` |
