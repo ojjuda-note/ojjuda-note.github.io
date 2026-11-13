@@ -32,5 +32,11 @@
     "RIIZE DICON item: original sale notice unverified",
     "BOYNEXTDOOR LG U+ campaign/news: primary confirmation missing",
     "BOYNEXTDOOR Golden Disc award: original award record unverified"
-  ]
+  ],
+  "resourceCorrections": [
+    "KiiiKiii album and release news: Apple official distribution, separate from merchandise",
+    "KISS OF LIFE schedule: Columbia live/events, not artist landing page",
+    "STAYC album: Universal detailed release notice, separate from store"
+  ],
+  "releaseTargetCorrection": "Infer all changed groups from data; shared-only changes verify all groups. Never interpret branch recovery as an artist."
 }

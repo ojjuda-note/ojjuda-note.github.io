@@ -338,7 +338,7 @@
       ],
       schedules: [
         { title: '일본 컬럼비아 공식 일정', sub: '방송·행사·활동 및 변경 공지', href: 'https://columbia.jp/artist-info/kissoflife/calendar/' },
-        { title: 'KISS OF LIFE 일본 공식 사이트', sub: '공식 소식 및 공연 안내', href: 'https://kissoflife.jp/' }
+        { title: '일본 공식 공연·행사', sub: '컬럼비아 공식 공연·발매 이벤트 안내', href: 'https://columbia.jp/artist-info/kissoflife/live/' }
       ],
       news: [
         { date: '2026.10.23', tag: '시상식', title: '12.05 가오슝 AAA 공식 출연 명단 발표', href: 'https://www.asiaartistawards.com/en/news/3225' },
@@ -363,7 +363,7 @@
       official: 'https://www.starship-ent.com/musician/kiiikiii', youtube: 'https://www.youtube.com/@KiiiKiii_starship',
       photo: 'KiiiKiii in August 2026.png', photoLabel: '2026년 단체', photoYear: '2026', credit: 'K-POPIT 케이팝잇', license: 'CC BY 4.0',
       music: [
-        { title: 'WhyKiiiKiii', date: '2026.08.10', type: '미니 3집 · 타이틀 Pop Off Pop Off', songs: ['Ever2Late!', 'Hey Hi', 'Pop Off Pop Off', 'SWEET SOUR', 'Candy Pink Magic Hole Flip Phone (나 어떡해)', 'Blue Hour'], href: 'https://starship-square.com/product/amenities-ver-kiiikiii-ep-whykiiikiii/2061/category/58/display/1/' },
+        { title: 'WhyKiiiKiii', date: '2026.08.10', type: '미니 3집 · 타이틀 Pop Off Pop Off', songs: ['Ever2Late!', 'Hey Hi', 'Pop Off Pop Off', 'SWEET SOUR', 'Candy Pink Magic Hole Flip Phone (나 어떡해)', 'Blue Hour'], href: 'https://music.apple.com/us/album/whykiiikiii-ep/6796609538' },
         { title: 'Delulu Pack', date: '2026.01.26', type: '미니 2집 · 타이틀 404 (New Era)', songs: ['Delulu', '404 (New Era)', 'UNDERDOGS', '멍냥 (MUNGNYANG)', 'Dizzy', 'To Me From Me (Prod. TABLO)'], href: 'https://music.apple.com/us/album/delulu-pack-ep/1866860579' },
         { title: 'To Me From Me (Prod. TABLO)', date: '2025.11.04', type: '디지털 싱글', songs: ['To Me From Me (Prod. TABLO)'], href: 'https://music.apple.com/us/album/to-me-from-me-single/1848046045' },
         { title: 'DANCING ALONE', date: '2025.08.06', type: '디지털 싱글', songs: ['DANCING ALONE', '딸기게임 (Strawberry Cheesegame)'], href: 'https://music.apple.com/us/album/dancing-alone-single/1830522219' },
@@ -381,7 +381,7 @@
       news: [
         { date: '2026.10.15', tag: '공연', title: '2026 MAMA AWARDS 11.21 출연 확정', href: 'https://www.cj.net/jp/press-release/view/1132' },
         { date: '2026.10.14', tag: '공연', title: 'MMA2026 Music Day 11.15 출연 확정', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' },
-        { date: '2026.08.10', tag: '앨범', title: '미니 3집 WhyKiiiKiii · Pop Off Pop Off 발매', href: 'https://www.starship-ent.com/musician/kiiikiii' }
+        { date: '2026.08.10', tag: '앨범', title: '미니 3집 WhyKiiiKiii · Pop Off Pop Off 발매', href: 'https://music.apple.com/us/album/whykiiikiii-ep/6796609538' }
       ],
       merch: [
         { title: 'WhyKiiiKiii · AMENITIES ver.', sub: '스타쉽스퀘어 공식 앨범 · 재고는 판매처에서 확인', href: 'https://starship-square.com/product/amenities-ver-kiiikiii-ep-whykiiikiii/2061/category/58/display/1/' },
@@ -440,7 +440,7 @@
       photo: 'STAYC Metamorphic Showcase 240701.jpg', photoLabel: 'Metamorphic 쇼케이스', photoYear: '2024', credit: 'K-POPIT 케이팝잇 · 원저작 티비텐 TV10', license: 'CC BY 3.0',
       music: [
         { title: '2:LOVE', date: '2026.06.16', type: '싱글 6집 · 타이틀 2 L0VE', songs: ['2 L0VE', 'WHERE YOU AT?', 'SORRY', 'BEAT MY LOVE'], href: 'https://www.highup-ent.com/stayc/2love/' },
-        { title: 'STAY ALIVE', date: '2026.02.11', type: '일본 정규 1집 · CD 17곡', songs: ["MWUAH", "I WANT IT (Japanese Ver.)", "BEBE (Japanese Ver.)", "POPPY", "Teddy Bear (Japanese Ver.)", "ASAP (Japanese Ver.)", "LIT", "STEREOTYPE (Japanese Ver.)", "Tell Me Now", "Satellite", "Lover, Killer", "Say My Name", "MEOW", "GPT (Japanese Ver.)", "Bubble (Japanese Ver.)", "Cheeky Icy Thang (Japanese Ver.)", "Stay WITH me (Japanese Ver.)"], href: 'https://store-annex.universal-music.co.jp/product/upch29482/' },
+        { title: 'STAY ALIVE', date: '2026.02.11', type: '일본 정규 1집 · CD 17곡', songs: ["MWUAH", "I WANT IT (Japanese Ver.)", "BEBE (Japanese Ver.)", "POPPY", "Teddy Bear (Japanese Ver.)", "ASAP (Japanese Ver.)", "LIT", "STEREOTYPE (Japanese Ver.)", "Tell Me Now", "Satellite", "Lover, Killer", "Say My Name", "MEOW", "GPT (Japanese Ver.)", "Bubble (Japanese Ver.)", "Cheeky Icy Thang (Japanese Ver.)", "Stay WITH me (Japanese Ver.)"], href: 'https://www.universal-music.co.jp/stayc/news/2025-11-11/' },
         { title: 'I WANT IT', date: '2025.07.23', type: '스페셜 싱글 · 타이틀 I WANT IT', songs: ['I WANT IT', 'BOY', '반칙 (Honestly)'], href: 'https://www.highup-ent.com/stayc/i-want-it/' },
         { title: 'Star To A Young Culture', date: '2020.11.12', type: '데뷔 싱글 · 타이틀 SO BAD', songs: ['SO BAD', 'LIKE THIS'], href: 'https://www.highup-ent.com/stayc/star-to-a-young-culture/' }
       ],
