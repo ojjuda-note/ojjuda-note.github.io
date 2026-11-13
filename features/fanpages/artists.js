@@ -95,10 +95,11 @@ window.OJJUDA_FAN_ARTISTS = [
   },
   {
     id: "ive", name: "IVE", korean: "아이브", fan: "DIVE", agency: "STARSHIP", members: ["안유진", "가을", "레이", "장원영", "리즈", "이서"],
-    accent: "#ab5b80", light: "#ffede9", dark: "#63354e", shape: "♡", status: "REVIVE+ · 2026",
+    accent: "#ab5b80", light: "#ffede9", dark: "#63354e", shape: "♡", status: "Looks Can Kill · 2026.10.26",
     image: "https://imagedelivery.net/l1Bzo8LRyoaogf5OFVsfnA/600802b6-5256-4afe-dfe1-ad4eab2b0600/public", imageCredit: "K-POPIT / IVE", imageLink: "https://k-popit.com/articles/2026092890542",
     photos: [
       { label: "IVE · Group", meta: "2026 · PHOTO", image: "https://imagedelivery.net/l1Bzo8LRyoaogf5OFVsfnA/600802b6-5256-4afe-dfe1-ad4eab2b0600/public", href: "https://k-popit.com/articles/2026092890542", credit: "K-POPIT" },
+      commonsPhoto('03102026 IVE YUJIN Airport Departure 6.jpg', '안유진 · 공항 출국', '2026.10.03', 'K-POPIT 케이팝잇', 'CC BY 4.0'),
       commonsPhoto('Ive in Seattle.jpg', '시애틀 공연', '2026', 'David Lee'),
       commonsPhoto('Ive at the 2026 Golden Disc Awards.png', '골든디스크 · 무대', '2026', '티비텐 TV10'),
       commonsPhoto('Ive at the 40th Golden Disc Awards, January 10, 2026 (2).png', '골든디스크 · 레드카펫', '2026', 'K-POPIT 케이팝잇'),
@@ -115,24 +116,35 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Berriz", icon: "✦", url: "https://link.berriz.in/web/main/IVE" }
     ],
     merch: [
+      { title: "Looks Can Kill · 음반", sub: "2026.10.26 발매 · 공식 IVE 스토어", href: "https://shop.ive-starship.com/" },
+      { title: "Looks Can Kill · 사인반", sub: "HERO COMICS ver. · 품절(공식 판매처 기준)", href: "https://shop.ive-starship.com/products/hero-comics-ver-ive-looks-can-kill-signed" },
       { title: "STARSHIP SQUARE", sub: "앨범·공식 굿즈", href: "https://www.starship-square.com/product/list.html?cate_no=57" },
       { title: "IVE OFFICIAL", sub: "소속사 아티스트", href: "https://www.starship-ent.com/musician/ive" }
     ],
     music: [
+      { title: "Looks Can Kill", date: "2026.10.26", type: "미니 5집 · 6곡", songs: ["Looks Can Kill", "Mirror Mirror", "SNAKESKIN", "CRUMBS", "Girls Girls Girls", "Glow Motion"], href: "https://music.apple.com/us/album/looks-can-kill-ep/6823675363" },
+      { title: "LUCID DREAM", date: "2026.05.27", type: "일본 미니 4집 · 6곡", songs: ["LUCID DREAM", "Fashion", "JIGSAW", "REBEL HEART -Japanese ver.-", "ATTITUDE -Japanese ver.-", "Thank U -Japanese ver.-"], href: "https://www.sonymusic.co.jp/artist/IVE/info/585343" },
       { title: "REVIVE+", date: "2026.02.23", type: "정규 2집", songs: ["BLACKHOLE", "BANG BANG", "Hush", "Fireworks"], href: "https://ive-official.jp/mob/news/diarKijiShw.php?id=303477&site=DIVE" },
       { title: "IVE SECRET", date: "2025.08.25", type: "미니 4집", songs: ["XOXZ", "Wild Bird", "Dear, My Feelings"], href: "https://shop.ive-starship.com/products/ive-secret" },
       { title: "IVE EMPATHY", date: "2025.02.03", type: "미니 3집", songs: ["REBEL HEART", "ATTITUDE", "FLU"], href: "https://shop.ive-starship.com/products/ive-empathy-ep-cd" }
     ],
     appearances: [
       { date: "2026-11-15", title: "MMA2026", sub: "서울 고척스카이돔 · 18:00", href: "https://into.melon.com/2026mma" },
-      { date: "2026-11-21", title: "2026 MAMA AWARDS", sub: "일본 오사카 · CHAPTER 2", href: "https://cjnews.cj.net/2026-mama-awards-a-to-z%EF%BD%9C%EC%B6%9C%EC%97%B0%EC%A7%84%EB%B6%80%ED%84%B0-%ED%8A%B9%EB%B3%84-%EB%AC%B4%EB%8C%80%EA%B9%8C%EC%A7%80-%ED%95%9C%EB%88%88%EC%97%90-%EB%AA%A8%EC%95%84%EB%B3%B4%EA%B8%B0/" },
-      { date: "2026-12-13", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 국립경기장 · 17:00 예정", href: "https://music-bank.jp/" }
+      { date: "2026-11-21", title: "2026 MAMA AWARDS", sub: "교세라 돔 오사카 · CHAPTER 2 · 15:00(JST)", href: "https://www.cj.net/jp/press-release/view/1133" },
+      { date: "2026-12-13", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 MUFG 스타디움(국립경기장) · IVE 출연 확정", href: "https://music-bank.jp/" }
+    ],
+    campaigns: [
+      { kind: "홍보대사", date: "2026.02.02", title: "메종 발렌티노 · 레이·리즈", sub: "공식 브랜드 앰배서더 임명 · 발렌티노 발표", href: "https://prtimes.jp/main/html/rd/p/000000257.000101366.html" },
+      { kind: "광고", date: "2026.03.30", title: "App Store × IVE · Fashion", sub: "일본 App Store 캠페인 음악 · 레이 내레이션", href: "https://www.sonymusic.co.jp/artist/IVE/info/582822" }
     ],
     schedules: [
       { title: "실시간 일정", sub: "blip", href: "https://blip.kr/artists/IVE/schedule?unitId=85" },
       { title: "공식 커뮤니티", sub: "Berriz", href: "https://link.berriz.in/web/main/IVE" }
     ],
     news: [
+      { date: "10.26", tag: "앨범", title: "미니 5집 〈Looks Can Kill〉 정식 발매", href: "https://www.starship-ent.com/musician/ive" },
+      { date: "10.16", tag: "행사", title: "IVE, 11월 21일 2026 MAMA AWARDS 출연 발표", href: "https://www.cj.net/jp/press-release/view/1133" },
+      { date: "05.27", tag: "앨범", title: "일본 미니 4집 〈LUCID DREAM〉 발매", href: "https://www.sonymusic.co.jp/artist/IVE/info/585343" },
       { date: "02.23", tag: "앨범", title: "IVE THE 2ND ALBUM REVIVE+", href: "https://ive-official.jp/mob/news/diarKijiShw.php?id=303477&site=DIVE" },
       { date: "공식", tag: "공지", title: "IVE 공식 커뮤니티", href: "https://link.berriz.in/web/main/IVE" }
     ]
