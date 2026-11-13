@@ -34,6 +34,10 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'qEW5IPfGLUI', title: 'EASY', kind: '안무 영상', source: 'LE SSERAFIM / HYBE LABELS' }
   ],
   twice: [
+    { id: '387tGAU9pNY', title: 'THIS IS FOR · TOKYO DOME LIVE', kind: '공식 공연 영상', source: 'TWICE JAPAN OFFICIAL · 2026.08.26' },
+    { id: 'h_5NFu_UmRA', title: 'THIS IS FOR · SEOUL FINALE Behind', kind: '메이킹', source: 'TWICE Official · 2026.08.13' },
+    { id: 'UPsCaaaqRe0', title: 'THIS IS FOR · SEOUL FINALE Playlist', kind: '공식 공연 플레이리스트', source: 'TWICE Official · 2026.07.13' },
+    { id: 'zqorlX_5oHQ', title: 'ME+YOU', kind: '뮤직비디오', source: 'TWICE / JYP · 2025.10.10' },
     { id: 'eHHQaoEW30Q', title: 'THIS IS FOR', kind: '뮤직비디오', source: 'TWICE / JYP' },
     { id: 'hTiiQhCkPtc', title: 'THIS IS FOR', kind: '안무 비하인드', source: 'TWICE Official' },
     { id: 'g2IDtpL1YkE', title: 'THIS IS FOR', kind: '콘셉트 티저', source: 'TWICE / JYP' }
