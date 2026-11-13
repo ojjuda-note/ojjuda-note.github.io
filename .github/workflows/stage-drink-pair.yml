@@ -1,0 +1,33 @@
+name: Verify drinking games 11 and 12
+on:
+  push:
+    branches: [release/drink-pair-stage]
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Integrate verified room entry
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply --unidiff-zero --check .release/drink-pair.patch
+          git apply --unidiff-zero .release/drink-pair.patch
+          test "$(git hash-object world.html)" = 'cdc8bcd283a4027519e2bea8c1a5320dc88d8315'
+          for module in games/party-live/*.js; do node --check "$module"; done
+          node --check features/arcade/arcade-rooms.js
+          node scripts/check-source-layout.mjs
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node tests/staged-drink-pair.cjs
+      - name: Stage verified multiplayer integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- world.html
+          git commit -m 'Update release cache for two drinking games'
+          git push origin HEAD:refs/heads/release/drink-pair-stage

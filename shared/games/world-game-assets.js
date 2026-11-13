@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261114-party-live1'
+ const revision='20261114-drink-pair1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -15,6 +15,8 @@
   stopwatch:'1.0.0',
   truth:'1.0.0',
   initial:'1.0.0',
+  fingers:'1.0.0',
+  imagevote:'1.0.0',
   tarot:'1.9.3',
   saju:'2.6.3',
   group:'1.2.2',

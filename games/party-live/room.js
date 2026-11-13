@@ -5,6 +5,8 @@
   const title = document.querySelector('header strong').textContent;
   const feature = window.PartyLiveGame;
   const descriptions = {
+    fingers: '조건에 해당하면 손가락을 하나 접어요. 다섯 손가락을 먼저 접으면 걸려요.',
+    imagevote: '질문에 가장 잘 어울리는 한 사람을 골라요. 모두 투표하면 가장 많이 지목된 사람을 공개해요.',
     bottle: '각자 자리를 고른 뒤 술병이 누구를 가리킬지 지켜보세요.',
     bomb: '내 차례에 주제에 맞는 말을 하고 폭탄을 다음 사람에게 넘기세요.',
     stopwatch: '시간이 숨겨지면 감으로 멈추세요. 목표 시간에 가장 가까운 사람이 이겨요.',
