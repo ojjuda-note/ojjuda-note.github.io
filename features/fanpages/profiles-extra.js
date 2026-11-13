@@ -418,6 +418,10 @@ if (kissOfLifeProfile) {
     member.source = 'https://s2ent.co.kr/34';
   }
   kissOfLifeProfile.sources.unshift({ label: 'S2엔터테인먼트 공식 멤버 생일', href: 'https://s2ent.co.kr/34' });
+  kissOfLifeProfile.awards = [
+    { year: '2026.09', title: '2026 SPOTV K-POP AWARDS 본상', detail: 'Artist of the Year (Bonsang) · 2026.09.06', href: 'https://www.soompi.com/article/1868372wpp/winners-of-2026-spotv-k-pop-awards' },
+    { year: '2026.09', title: '2026 SPOTV K-POP AWARDS 베스트 여자 그룹상', detail: 'Best Female Group · 2026.09.06', href: 'https://www.soompi.com/article/1868372wpp/winners-of-2026-spotv-k-pop-awards' }
+  ];
   kissOfLifeProfile.records = [
     { year: '2025.11', title: '일본 음반 데뷔', detail: 'TOKYO MISSION START · 일본 컬럼비아', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' },
     { year: '2026.09', title: '일본 미니 2집 발매', detail: 'SWEAT -JAPANESE EP- · 6곡', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' }
