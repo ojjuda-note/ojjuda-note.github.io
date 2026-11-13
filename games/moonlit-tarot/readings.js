@@ -1,4 +1,4 @@
-import { narrateReading, narrateSummary } from '';
+import { narrateReading, narrateSummary } from './narration.js?v=20261113-tarot-story1';
 import { getFortune, CORPUS_VERSION } from './fortune-corpus/index.js?v=20261113-tarot-corpus1';
 import { getSpreadPattern } from './spread-patterns.js?v=20261113-tarot-corpus1';
 import { CARD_FOUNDATIONS, CARD_SOURCE_NOTES, TAROT_REFERENCES, getCardNameGuide } from './card-foundations.js?v=20261113-tarot-corpus1';
@@ -246,30 +246,30 @@ export const TOPICS = [
 export const POSITIONS = [
   {
     "id": "inner",
-    ./narration.js?v=20261113-tarot-life1,
-    "label": "지금의 문제"
+    "label": "지금의 마음",
+    "subtitle": "지금 네 마음에 머무는 이야기"
   },
   {
     "id": "flow",
-    "subtitle": "마음에 걸리는 문제와 그 배경",
-    "label": "현재 상황"
+    "label": "다가오는 흐름",
+    "subtitle": "앞으로 눈여겨보면 좋을 일"
   },
   {
     "id": "advice",
-    "subtitle": "지금 살펴볼 조건과 주변 상황",
-    "label": "해결 방법과 결과"
+    "label": "마녀의 조언",
+    "subtitle": "오늘 해 볼 수 있는 작은 한 걸음"
   }
 ];
 
 const POSITION_INTROS = [
-  ""subtitle": "해 볼 수 있는 선택과 달라질 흐름"",
-  "첫 번째로 펼친 카드는 지금 마음에 걸리는 문제를 살펴보는 자리야.",
-  "두 번째로 펼친 카드는 그 문제와 관련된 현재 상황을 살펴보는 자리야."
+  "첫 번째로 펼친 카드는 지금 네 마음을 비추고 있어.",
+  "두 번째로 펼친 카드는 앞으로 어떤 일을 눈여겨보면 좋을지 들려준단다.",
+  "마지막으로 펼친 카드는 오늘 네가 해 볼 수 있는 작은 선택을 이야기해 줘."
 ];
 
 const POSITION_WHISPERS = [
-  "마지막으로 펼친 카드는 해결을 위해 해 볼 일과 그에 따라 달라질 수 있는 흐름을 살펴보는 자리야.",
-  "“지금 가장 마음에 걸리는 문제부터 하나씩 살펴보자.”",
+  "“지금 네 마음이 가만히 머무는 곳은 어디니?”",
+  "“아직 만나지 않은 내일에도 네가 고를 수 있는 길은 있단다.”",
   "“모든 걸 바꾸지 않아도 괜찮아. 오늘 한 걸음부터 시작해 보렴.”"
 ];
 
@@ -688,7 +688,7 @@ export function getReading(card, topic = 'overall', position = 0) {
   practice.body = [detail.example, practice.body].filter(Boolean).join('\n\n');
   const sections = [
     readingSection('그림에 담긴 뜻', foundation.symbol, foundation.takeaway),
-    readingSection('이 카드가 전하는 말', `${guidance.meaning}\n\n“지금 알 수 있는 것과 더 알아볼 것을 나누어 보렴.”`, guidance.summary),
+    readingSection('이 카드가 전하는 말', `${guidance.meaning}\n\n${POSITION_INTROS[index]} ${guidance.positions[index]}`, guidance.summary),
     readingSection('고른 주제에 관한 이야기', selected.topics[topicId]),
     practice,
     readingSection('조심할 점', `${foundation.caution}\n\n${guidance.caution} ${TOPIC_REMINDERS[topicId]}`)
