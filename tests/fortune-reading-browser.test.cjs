@@ -10,7 +10,7 @@ const { chromium } = require('playwright');
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.woff': 'font/woff' };
 // Isolated rendering fixture. It uses production calculation and reading modules
 // with a published example date, and never loads authentication or billing code.
-const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/reading-summary.css"></head><body><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
+const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/reading-summary.css"><link rel="stylesheet" href="/games/starlit-saju/reading-score.css"></head><body><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { analyzeFortune } from '/games/starlit-saju/fortune-data.mjs';
 import { analyzeDaeun } from '/games/starlit-saju/daeun.mjs';
@@ -287,6 +287,55 @@ const server = http.createServer((request, response) => {
       else await saju.locator('a[href="#'+id+'"]:visible').first().click();
       await saju.locator('[data-reader-current][id="'+id+'"]').waitFor({state:'visible'});
     }
+    const sajuScoreViews={};
+    async function inspectSajuScores(label) {
+      const panels=await saju.locator('[data-reader-current] .saju-reading-score:visible').evaluateAll(elements=>elements.map(panel=>{
+        const box=panel.getBoundingClientRect();
+        const contained=(inner,outer)=>inner.left>=outer.left-1&&inner.right<=outer.right+1&&inner.top>=outer.top-1&&inner.bottom<=outer.bottom+1;
+        const fits=element=>{
+          const rect=element.getBoundingClientRect();
+          if(element.scrollWidth>element.clientWidth+1||element.scrollHeight>element.clientHeight+1)return false;
+          for(let parent=element.parentElement;parent&&parent!==document.body;parent=parent.parentElement) {
+            const style=getComputedStyle(parent),bounds=parent.getBoundingClientRect();
+            if((/hidden|clip/.test(style.overflowX)&&(rect.left<bounds.left-1||rect.right>bounds.right+1))||
+              (/hidden|clip/.test(style.overflowY)&&(rect.top<bounds.top-1||rect.bottom>bounds.bottom+1)))return false;
+          }
+          return ['none','','unset'].includes(getComputedStyle(element).webkitLineClamp)&&getComputedStyle(element).textOverflow!=='ellipsis';
+        };
+        const rows=Array.from(panel.querySelectorAll('.saju-wind-item')).map(row=>{
+          const meter=row.querySelector('.saju-wind-meter'),fill=meter.querySelector('.saju-wind-fill'),style=getComputedStyle(meter);
+          const track=meter.getBoundingClientRect(),filled=fill.getBoundingClientRect(),value=Number(meter.getAttribute('aria-valuenow'));
+          const width=meter.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight);
+          const name=meter.getAttribute('aria-label')||(meter.getAttribute('aria-labelledby')||'').split(/\s+/).map(id=>document.getElementById(id)?.textContent||'').join(' ');
+          return {key:row.dataset.wind,name,role:meter.getAttribute('role'),value,min:Number(meter.getAttribute('aria-valuemin')),max:Number(meter.getAttribute('aria-valuemax')),
+            text:row.textContent,visible:track.width>0&&track.height>0,inside:contained(track,box)&&contained(filled,track),
+            exact:fill.style.width===value+'%'&&Math.abs(filled.width-width*value/100)<=2};
+        });
+        return {status:panel.dataset.readingScoreStatus,rows,meters:panel.querySelectorAll('[role="meter"]').length,
+          reason:panel.querySelector('.saju-reading-score-reason')?.textContent.trim(),
+          inside:box.left>=-1&&box.right<=innerWidth+1,
+          overflow:panel.scrollWidth>panel.clientWidth+1||panel.scrollHeight>panel.clientHeight+1,
+          textFits:Array.from(panel.querySelectorAll('p,.saju-wind-label,.saju-wind-value')).every(fits)};
+      }));
+      assert.ok(panels.length>0,label+': every selected reading declares its score or unavailable reason');
+      for(const panel of panels) {
+        assert.ok(panel.inside&&!panel.overflow&&panel.textFits,label+': complete score labels, numbers and notices fit without clipping');
+        if(panel.status==='unavailable') {
+          assert.equal(panel.meters,0,label+': unsupported items have no numeric meters');
+          assert.equal(panel.rows.length,0);assert.ok(panel.reason);
+          continue;
+        }
+        assert.equal(panel.status,'available');assert.equal(panel.meters,2);
+        assert.deepEqual(panel.rows.map(row=>row.key),['tailwind','headwind']);
+        for(const row of panel.rows) {
+          assert.ok(Number.isInteger(row.value)&&row.value>=0&&row.value<=100,label+': scores stay within their independent 0–100 scales');
+          assert.ok(row.role==='meter'&&row.min===0&&row.max===100&&row.visible&&row.inside&&row.exact,label+': each accessible bar represents its exact numeric score');
+          assert.ok(row.name.includes(row.key==='tailwind'?'순풍':'역풍')&&row.text.includes(row.value+'점'),label+': direction and score remain readable without color');
+        }
+      }
+      assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,label+': scores do not widen the page');
+      sajuScoreViews[label]={available:panels.filter(panel=>panel.status==='available').length,unavailable:panels.filter(panel=>panel.status==='unavailable').length};
+    }
     async function inspectSajuSummaries(label) {
       const current=saju.locator('[data-reader-current]');
       const groups=await current.locator('.saju-two-line-summary:visible').evaluateAll(elements=>elements.map(group=>({
@@ -308,16 +357,17 @@ const server = http.createServer((request, response) => {
       assert.ok(groups.every(group=>group.role==='group'&&group.label==='두 줄 요약'&&group.lines.length===2),label+': every summary retains exactly two authored units');
       assert.ok(groups.every(group=>group.lines.every(line=>line.text&&line.visible&&line.fits&&line.wraps&&['none','','unset'].includes(line.clamp)&&line.overflow!=='ellipsis')),label+': complete summary units wrap without cropping, clamping or ellipses');
       assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,label+': the selected reading fits the viewport');
+      await inspectSajuScores(label);
       return groups[0].lines[0].font;
     }
     for (const topic of ['lifelong', 'annual', 'monthly', 'all']) {
       await saju.locator('#fixture-topic').selectOption(topic);
       await saju.locator('#report-content[data-ready="' + topic + '"]').waitFor();
-      assert.ok(await saju.locator('#reading-page-select option').count()<=60,'the primary picker stays compact');
+      assert.ok(await saju.locator('#reading-page-select option').evaluateAll(options=>options.filter(option=>option.closest('optgroup')?.label!=='생활 제안').length)<=60,'the primary picker stays compact and keeps practical suggestions separately');
       assert.equal(await saju.locator('[data-reader-current]').count(),1,'one reading unit is selected');
       const defaultPage=await saju.locator('[data-reader-current]').getAttribute('id');
-      const ordered=await saju.locator('.report-chapter').evaluateAll(chapters=>chapters.length>0&&chapters.every(chapter=>chapter.children[0].classList.contains('chapter-title')&&chapter.children[1].classList.contains('chapter-summary')&&chapter.children[2].classList.contains('easy-reading')));
-      assert.ok(ordered,topic+': all original calculation chapters remain in their original order');
+      assert.equal(await saju.locator('.report-chapter,.reading-full-text,.source-entry,[data-fact-id],a[href*="-evidence"],a[href*="-chapter-"]').count(),0,topic+': calculation material and evidence links are absent');
+      assert.ok(await saju.locator('#reading-page-select option').evaluateAll(options=>options.every(option=>!/근거|계산·해석|계산 단원|자료 출처/.test(option.textContent))),topic+': the picker has no evidence menus');
       if(topic==='lifelong') await saju.screenshot({path:path.join(artifacts,'saju-portrait-mobile.png')});
       if(topic==='monthly') {
         await selectReadingPage('reading-timings');
@@ -342,10 +392,7 @@ const server = http.createServer((request, response) => {
       });
       assert.ok(readerOrdered,topic+': the selected unit retains topic, conclusion and all paragraphs');
       assert.equal(await saju.locator('.portrait-card:visible,.reader-card:visible').count(),1);
-      await card.locator('.reader-detail-link:not(.reading-back-to-picker)').first().click();
-      await saju.locator('[data-reader-current]').waitFor({state:'visible'});
-      await saju.locator('.reading-pager-step').first().click();
-      assert.equal(await saju.locator('[data-reader-current]').getAttribute('id'),cardId);
+      await inspectSajuScores(topic+' paid reading');
       assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,topic+': the selected mobile reading fits');
       await saju.locator('.reading-pager').scrollIntoViewIfNeeded();
       await saju.screenshot({path:path.join(artifacts,'saju-'+topic+'-mobile.png')});
@@ -383,6 +430,7 @@ const server = http.createServer((request, response) => {
         if(textSize==='normal')normalFont=font;
         else assert.ok(font>normalFont,label+': the large-text setting actually enlarges summary text');
         await selectReadingPage(summaryTargets.portrait);await inspect('portrait card');
+        await saju.locator('[data-reader-current] .saju-reading-score').first().screenshot({path:path.join(artifacts,'saju-reading-scores-'+viewport+'-'+textSize+'.png')});
         await saju.locator('.reading-pager').scrollIntoViewIfNeeded();
         await saju.screenshot({path:path.join(artifacts,'saju-two-line-summaries-'+viewport+'-'+textSize+'.png')});
         await selectReadingPage(summaryTargets.lifelong);await inspect('lifelong card');
@@ -511,10 +559,8 @@ const server = http.createServer((request, response) => {
         await selectCompatibilityPage('compatibility-synthesis');
         await inspectCompatibilityPeople(label+' synthesis',0);
         if(viewport!=='phone'&&textSize==='normal')await saju.locator('[data-compatibility-current]').screenshot({path:path.join(artifacts,'saju-compatibility-synthesis-'+viewport+'.png')});
-        await saju.locator('#compatibility-synthesis .compatibility-evidence-link').click();
-        await saju.locator('#compatibility-reading-evidence[data-compatibility-current][open]').waitFor({state:'visible'});
-        await saju.locator('[data-compatibility-step="previous"]').click();
-        await saju.locator('#compatibility-synthesis[data-compatibility-current]').waitFor({state:'visible'});
+        assert.equal(await saju.locator('#compatibility-reading-evidence,.compatibility-evidence-link,.compatibility-score-details,[data-fact-id],a[href*="-evidence"]').count(),0,label+': compatibility has no calculation material or evidence links');
+        assert.ok(await saju.locator('#compatibility-page-select option').evaluateAll(options=>options.every(option=>!/근거|계산|자료|출처/.test(option.textContent))),label+': compatibility has no evidence menus');
       }
     }
     await saju.setViewportSize({width:320,height:844});
@@ -604,6 +650,6 @@ const server = http.createServer((request, response) => {
     }
     assert.deepEqual(errors, []);
     assert.deepEqual(failed, []);
-    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuSummaryViews, compatibilityPeople, compatibilityScores, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
+    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuSummaryViews, sajuScoreViews, compatibilityPeople, compatibilityScores, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => server.close());

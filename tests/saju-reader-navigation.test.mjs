@@ -53,6 +53,45 @@ function assertSummary(h,element,expected) {
   assert.ok(lines.every(visible));
   return group;
 }
+function assertNoEvidence(h) {
+  assert.equal(h.host.querySelector('#reading-evidence,#reading-method,#reading-sources,#reading-guide,#reading-glossary,.report-chapter,.reading-full-text,.source-entry,[data-fact-id],a[href*="-evidence"],a[href*="-chapter-"]'),null,'the report contains no calculation tables, source panels or evidence links');
+  assert.ok([...h.select.options].every(option=>!/근거|계산·해석|계산 단원|자료 출처/.test(option.textContent)),'the picker contains reading items without evidence menus');
+}
+function assertReadingScore(h,summary,expected) {
+  assert.ok(expected,'every summarized item declares its scoring availability');
+  const point=summary.classList.contains('reader-timing-point');
+  const panel=point?summary.querySelector(':scope > .saju-reading-score'):summary.nextElementSibling;
+  assert.ok(panel?.classList.contains('saju-reading-score'),'each item keeps its own score immediately after the two summary units');
+  assert.equal(panel.dataset.readingScoreStatus,expected.status);
+  assert.ok(visible(panel),'the selected item reveals its score or unavailable notice');
+  assert.equal(panel.querySelector('details,[data-fact-id]'),null,'score formulas and calculation evidence are not exposed');
+  if(point) {
+    assert.equal(panel.tagName,'DD','timing points retain their definition-list structure');
+    assert.equal(summary.querySelectorAll(':scope > .saju-summary-line')[1].nextElementSibling,panel);
+  }
+  const meters=[...panel.querySelectorAll('.saju-wind-meter[role="meter"]')];
+  if(expected.status==='unavailable') {
+    assert.equal(expected.available,false);
+    assert.equal(meters.length,0,'unsupported readings never show invented zero scores');
+    assert.equal(panel.querySelector('.saju-wind-fill'),null);
+    assert.ok(panel.textContent.includes(expected.reason),'the unavailable reason remains readable');
+    assert.doesNotMatch(panel.textContent,/(?:순풍|역풍)\s*\d+\s*점/);
+    return;
+  }
+  assert.equal(expected.available,true);assert.equal(meters.length,2);
+  const rows=[...panel.querySelectorAll('.saju-wind-item')];
+  assert.deepEqual(rows.map(row=>row.dataset.wind),['tailwind','headwind']);
+  for(const row of rows) {
+    const value=expected[row.dataset.wind],meter=row.querySelector('.saju-wind-meter');
+    assert.ok(Number.isInteger(value.value)&&value.value>=0&&value.value<=100);
+    assert.equal(meter.getAttribute('aria-valuemin'),'0');assert.equal(meter.getAttribute('aria-valuemax'),'100');
+    assert.equal(meter.getAttribute('aria-valuenow'),String(value.value));
+    assert.equal(meter.querySelector('.saju-wind-fill').style.width,`${value.value}%`,'each bar uses its own 0–100 score without normalizing the pair');
+    const name=meter.getAttribute('aria-label')||(meter.getAttribute('aria-labelledby')||'').split(/\s+/).map(id=>h.doc.getElementById(id)?.textContent||'').join(' ');
+    assert.ok(name.includes(value.label),'each meter has the correct accessible name');
+    assert.ok(row.textContent.includes(value.label)&&row.textContent.includes(`${value.value}점`),'the number and direction are readable without color');
+  }
+}
 
 test('every reading family keeps two authored summary units before its complete body when requested',()=>{
   const h=mount('all');
@@ -90,11 +129,12 @@ test('every reading family keeps two authored summary units before its complete 
       assert.equal(points.length,expected.length);
       expected.forEach((point,index)=>{
         add(points[index],point,null,null);
-        assert.equal([...points[index].querySelectorAll(':scope > dd')].map(part=>part.textContent).join(''),point.text,'the summary and remaining timing explanation retain every original character');
+        assert.equal([...points[index].querySelectorAll(':scope > dd:not(.saju-reading-score)')].map(part=>part.textContent).join(''),point.text,'the summary and remaining timing explanation retain every original character');
       });
     }
     for(const {element,source,selector,paragraphs} of checks) {
       const group=assertSummary(h,element,source.summaryLines);
+      assertReadingScore(h,group,source.readingScore);
       if(!selector)continue;
       const body=[...element.querySelectorAll(selector)].filter(paragraph=>!paragraph.closest('.saju-two-line-summary'));
       assert.deepEqual(body.map(paragraph=>paragraph.textContent),paragraphs,'summary presentation preserves every original body paragraph');
@@ -103,7 +143,9 @@ test('every reading family keeps two authored summary units before its complete 
     }
     assert.deepEqual(h.paragraphs(),before,'visiting summaries never rewrites or removes the purchased prose');
     assert.equal(JSON.stringify(reading),originalReading,'rendering summaries leaves calculation and copied report data intact');
-    assert.ok(h.host.querySelectorAll('[data-fact-id]').length>0,'the original evidence remains available');
+    assertNoEvidence(h);
+    assert.ok(checks.some(({source})=>source.readingScore.available),'supported interpretation items retain their two independent scores');
+    assert.ok(checks.some(({source})=>!source.readingScore.available),'unsupported interpretation items retain an unavailable explanation');
   } finally {h.close();}
 });
 
@@ -113,9 +155,10 @@ test('the compact picker keeps every purchased paragraph while exposing only the
     try {
       const before=h.paragraphs();
       assert.equal(h.host.firstElementChild.className,'reading-pager');
+      assertNoEvidence(h);
       assert.ok(visible(h.current()));
       assert.equal(h.current().id,topic==='monthly'?'reading-month-11':'reading-summary');
-      assert.ok(h.select.options.length<=60,'month and decade details do not create an enormous primary list');
+      assert.ok([...h.select.options].filter(option=>option.closest('optgroup')?.label!=='생활 제안').length<=60,'month and decade details keep the primary reading list compact while existing practical suggestions remain reachable');
       for(const option of [...h.select.options]) {
         h.pick(option.value);assert.ok(visible(h.current()),option.textContent);
         assert.equal(h.host.querySelectorAll('[data-reader-current]').length,1);
@@ -129,17 +172,15 @@ test('the compact picker keeps every purchased paragraph while exposing only the
   }
 });
 
-test('portrait tables, outer contents, parent IDs and decade details reveal their hidden destination',()=>{
+test('portrait tables, outer contents and decade topics reveal their reading without evidence menus',()=>{
   const h=mount('all');
   try {
     const first=h.host.querySelector('.portrait-card');assert.equal(visible(first),false);
     h.host.querySelector('.portrait-summary-table tbody a').click();
     assert.equal(h.current(),first);assert.ok(visible(first));
     assert.equal([...h.host.querySelectorAll('.portrait-card,.reader-card')].filter(visible).length,1);
-    first.querySelector('.reader-detail-link').click();
-    assert.equal(h.current().id,'reading-person-portrait-evidence');assert.ok(visible(h.current()));
-    h.host.querySelector('.reading-pager-step').click();assert.equal(h.current(),first);
-    for(const id of ['reading-topics','reading-evidence','reading-lifelong','reading-annual','reading-months','reading-summary']) {
+    assertNoEvidence(h);
+    for(const id of ['reading-topics','reading-lifelong','reading-annual','reading-months','reading-summary']) {
       h.outer(id);assert.ok(visible(h.doc.getElementById(id)),id);assert.ok(visible(h.current()));
       assert.equal(h.doc.activeElement,h.doc.getElementById(id));
     }
@@ -155,7 +196,7 @@ test('portrait tables, outer contents, parent IDs and decade details reveal thei
   } finally {h.close();}
 });
 
-test('a chosen month opens one inner topic, its evidence and every comparison-table destination',()=>{
+test('a chosen month opens one inner topic and every comparison-table destination without evidence',()=>{
   const h=mount('monthly');
   try {
     const before=h.paragraphs();h.pick('reading-month-12');
@@ -164,10 +205,7 @@ test('a chosen month opens one inner topic, its evidence and every comparison-ta
     assert.equal(h.current(),card);assert.ok(visible(card));
     assert.ok(visible(month.querySelector('.month-period')));
     assert.equal([...h.host.querySelectorAll('.reader-card')].filter(visible).length,1);
-    card.querySelector('.reader-detail-link').click();
-    assert.ok(h.current().classList.contains('report-chapter'));assert.ok(visible(h.current()));
-    assert.equal([...h.host.querySelectorAll('.report-chapter')].filter(visible).length,1);
-    h.host.querySelector('.reading-pager-step').click();assert.equal(h.current(),card);
+    assertNoEvidence(h);
     h.pick('reading-timings');
     const timing=h.current();
     assert.equal([...timing.querySelectorAll('.reader-timing-navigation a')].filter(visible).length,12);

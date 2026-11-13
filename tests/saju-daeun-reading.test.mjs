@@ -206,7 +206,7 @@ test('readings lead with personal results and examples while shared-rule and sco
   }
 });
 
-test('copy includes every period, full personal prose, all calculation facts, method notes and sources',()=>{
+test('copy includes every period and full personal prose while calculation facts, method notes and sources stay internal',()=>{
   const {reading}=build();
   const copy=copyDaeunReading(reading);
   assert.ok(copy.length>25000);
@@ -220,16 +220,16 @@ test('copy includes every period, full personal prose, all calculation facts, me
       for (const paragraph of topic.paragraphs) assert.ok(copy.includes(paragraph));
     }
   }
-  for (const item of reading.facts) assert.ok(copy.includes(item.label+': '+item.value));
-  for (const note of reading.method.notes) assert.ok(copy.includes(note));
+  for (const item of reading.facts) assert.ok(!copy.includes(item.label+': '+item.value));
+  for (const note of reading.method.notes) assert.ok(!copy.includes(note));
   for (const source of reading.sources) {
-    assert.ok(copy.includes(source.title));
-    assert.ok(copy.includes(source.publisher));
-    assert.ok(copy.includes(source.url));
-    assert.ok(copy.includes(source.usedFor));
-    assert.ok(copy.includes(source.limitation));
+    assert.ok(!copy.includes(source.title));
+    assert.ok(!copy.includes(source.publisher));
+    assert.ok(!copy.includes(source.url));
+    assert.ok(!copy.includes(source.usedFor));
+    assert.ok(!copy.includes(source.limitation));
   }
-  assert.ok(copy.includes(reading.methodNotice));
+  assert.ok(!copy.includes(reading.methodNotice));
 });
 
 test('corrupted or mismatched calculation data fails instead of filling missing facts with generic stories',()=>{

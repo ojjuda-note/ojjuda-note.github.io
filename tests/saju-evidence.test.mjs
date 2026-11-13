@@ -133,7 +133,7 @@ for (const example of examples) {
       assert.deepEqual([...visible].sort(),expected.sort(),`${topic} evidence must contain its complete computed source set`);
       for (const row of rows) {
         assert.equal(row.value,facts.get(row.factId).text,'renderable evidence must preserve the registered source value');
-        assert.ok(report.copyByCategory[topic].includes(row.value),`${topic} copy text omitted ${row.factId}`);
+        assert.ok(!report.copyByCategory[topic].includes(row.label+': '+row.value),`${topic} copy exposed the internal evidence row ${row.factId}`);
       }
       const chapters=categoryChapters(report,topic);
       for (const chapter of chapters) {
@@ -232,9 +232,9 @@ test('full hidden-stem chapters explain each original character, order and ten-g
         assert.ok(!chapter.interpretation.includes(rule.text),'a life example is not an original classification');
       }
       for(const factId of chapter.factIds)assert.ok(factId.startsWith('natal.')||factId.startsWith(prefix+'.'),'a hidden-stem chapter cannot borrow another month');
-      for(const paragraph of chapter.easyParagraphs){
-        assert.ok(report.copyByCategory[topic].includes(paragraph));
-        assert.ok(report.copyByCategory.all.includes(paragraph));
+      for(const rule of chapter.rules){
+        assert.ok(!report.copyByCategory[topic].includes(rule.text),'hidden-character classification stays internal');
+        assert.ok(!report.copyByCategory.all.includes(rule.text));
       }
     }
     const principal=report.facts.filter(value=>value.id.startsWith('natal.god.'));

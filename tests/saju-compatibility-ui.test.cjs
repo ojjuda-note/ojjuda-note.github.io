@@ -26,6 +26,10 @@ function assertNoScoreboard(h) {
   assert.equal(h.window.document.querySelector('.compatibility-scoreboard'),null,'an unavailable reading must not leave scores anywhere on the page');
   assert.equal(h.window.document.querySelector('.compatibility-person-reading,#compatibility-synthesis,#compatibility-page-select'),null,'an unavailable reading must not leave either person, the synthesis or its navigation on the page');
 }
+function assertNoCompatibilityEvidence(h) {
+  assert.equal(h.$('compatibility-report').querySelector('#compatibility-reading-evidence,.compatibility-evidence-link,.compatibility-score-details,[data-fact-id],.source-entry,a[href*="-evidence"],a[href*="-chapter-"]'),null,'compatibility exposes no calculation tables, sources, formulas or evidence links');
+  assert.ok([...h.$('compatibility-page-select').options].every(option=>!/근거|계산|자료|출처/.test(option.textContent)),'the reading picker contains only the requested reading pages');
+}
 function selectCompatibilityPage(h,id) {
   const picker=h.$('compatibility-page-select');
   assert.ok(picker,'the paid compatibility has a reading picker');
@@ -55,20 +59,13 @@ async function assertCalculatedPeople(h,names=['','']) {
       assert.equal(summary?.getAttribute('role'),'group');assert.equal(summary?.getAttribute('aria-label'),'두 줄 요약');
       assert.deepEqual([...summary.querySelectorAll('.compatibility-summary-line')].map(line=>line.textContent),expected.summaryLines,`${marker} ${topic} retains both calculated summary units`);
       for(const paragraph of expected.paragraphs)assert.ok(person.textContent.includes(paragraph),`${marker} ${topic} retains its full interpretation`);
-      assert.ok(person.querySelector('.compatibility-evidence-link[href="#compatibility-reading-evidence"]'),`${marker} ${topic} links to its calculation evidence`);
-      for(const id of expected.factIds)assert.ok(h.$('compatibility-report').querySelector(`[data-fact-id="${id}"]`),`${marker} ${topic} evidence ${id} is retained`);
+      assert.equal(person.querySelector('.compatibility-evidence-link'),null,`${marker} ${topic} keeps its interpretation without an evidence link`);
     }
   }
   const synthesis=selectCompatibilityPage(h,'compatibility-synthesis');
   assert.deepEqual([...synthesis.querySelectorAll('.compatibility-summary-line')].map(line=>line.textContent),reading.synthesis.summaryLines);
   for(const paragraph of reading.synthesis.paragraphs)assert.ok(synthesis.textContent.includes(paragraph),'the combined explanation retains its full interpretation');
-  const link=synthesis.querySelector('.compatibility-evidence-link[href="#compatibility-reading-evidence"]');
-  assert.ok(link,'the combined explanation links to its calculation evidence');
-  link.click();
-  assert.equal(h.$('compatibility-reading-evidence').closest('[hidden]'),null,'an evidence link reveals the hidden evidence page');
-  assert.equal(h.$('compatibility-reading-evidence').open,true,'linked calculation evidence is expanded');
-  h.$('compatibility-report').querySelector('[data-compatibility-step="previous"]').click();
-  assert.equal(h.$('compatibility-page-select').value,'compatibility-synthesis','returning from the evidence restores the last reading');
+  assertNoCompatibilityEvidence(h);
   selectCompatibilityPage(h,'compatibility-people-overview');
   h.$('compatibility-report').querySelector('[data-compatibility-step="next"]').click();
   assert.equal(h.$('compatibility-page-select').value,'compatibility-people-decisions','next follows the same A/B topic order');
@@ -127,15 +124,15 @@ async function assertCalculatedScores(h) {
   assert.ok(score,'the real pair calculation provides the score data');
   const displayed=scoreSnapshot(h),board=h.window.document.querySelector('.compatibility-scoreboard');
   assert.equal(displayed.total,score.total);
-  for(const value of [score.label,score.summary,score.methodNotice])assert.ok(board.textContent.includes(value),'the score explanation accompanies the numbers');
-  for(const [label,count] of [['나',score.coverage.self],['상대',score.coverage.partner]])assert.ok(board.textContent.includes(`${label} ${count}/8`),'the confirmed calculation scope is available with the scores');
+  assert.ok(board.textContent.includes(score.label),'the reference-score label accompanies the numbers');
+  assert.match(board.querySelector('.compatibility-score-summary').textContent,/성향.*함께 지내는/,'the visible summary explains the comparison without a calculation formula');
+  assert.match(board.querySelector('.compatibility-score-notice').textContent,/참고 점수/,'the numbers are described as reference scores');
   for(const item of score.items) {
     assert.equal(displayed.items.find(value=>value.id===item.id).value,item.value);
     const row=board.querySelector(`[data-score-item="${item.id}"]`);
     for(const value of [item.label,item.summary])assert.ok(row.textContent.includes(value),`${item.id} retains its label and short explanation`);
-    assert.ok(board.textContent.includes(item.reason),`${item.id} retains its full calculation explanation`);
-    for(const id of item.factIds)assert.ok(h.$('compatibility-report').querySelector(`[data-fact-id="${id}"]`),`${id} remains available in the full calculation evidence`);
   }
+  assertNoCompatibilityEvidence(h);
   return score;
 }
 
@@ -344,14 +341,16 @@ test('an explicit twenty-ju purchase reveals the real reading and accessible sco
   h.$('compatibility-copy').click();await waitFor(()=>h.state.copies.length===1);
   assert.match(h.state.copies[0],/궁합/);
   for(const paragraph of h.$('compatibility-report').querySelectorAll('.reader-prose > p'))assert.ok(h.state.copies[0].includes(paragraph.textContent),'copy includes every personal interpretation paragraph');
-  assert.match(h.state.copies[0],/궁합 계산 근거/);
+  assert.doesNotMatch(h.state.copies[0],/궁합 계산 근거|점수를 계산한 방법/);
   assertCopiedPeople(h.state.copies[0],reading);
   const copyLines=h.state.copies[0].split('\n');
   assert.ok(copyLines.some(line=>line.includes('종합 궁합')&&line.includes(`${score.total}점`)),'copy associates the total with its score');
-  for(const value of [score.label,score.summary,score.methodNotice])assert.ok(h.state.copies[0].includes(value),'copy includes the score explanation and its limitations');
+  for(const value of [score.label,h.$('compatibility-report').querySelector('.compatibility-score-summary').textContent])assert.ok(h.state.copies[0].includes(value),'copy includes the displayed score summary');
+  assert.equal(h.state.copies[0].includes(score.methodNotice),false,'copy omits the detailed scoring method');
   for(const item of score.items) {
     assert.ok(copyLines.some(line=>line.includes(item.label)&&line.includes(`${item.value}점`)),`copy associates ${item.id} with its numeric score`);
-    for(const value of [item.summary,item.reason])assert.ok(h.state.copies[0].includes(value),`copy includes ${item.id} explanation`);
+    assert.ok(h.state.copies[0].includes(item.summary),`copy includes ${item.id} summary`);
+    assert.equal(h.state.copies[0].includes(item.reason),false,`copy omits the ${item.id} calculation formula`);
   }
   assert.deepEqual(h.state.fetches,[]);
 });
