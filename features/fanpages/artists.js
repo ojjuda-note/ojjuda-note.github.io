@@ -402,12 +402,31 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "A2O 공식", icon: "✦", url: "https://www.a2oentertainment.world/" }
     ],
     merch: [
-      { title: "A2O MAY 앨범", sub: "Melon · 음반", href: "https://www.melon.com/artist/detail.htm?artistId=4531270" },
+      { title: "PAPARAZZI ARRIVE · CD 3종", sub: "MAKESTAR 공식 판매 · 실물 발매 2025.12.03 · 포토북·포토카드 포함", href: "https://www.makestar.com/product/14722" },
+      { title: "A2O MAY 음원·음반", sub: "Apple Music · 공식 발매 목록", href: "https://music.apple.com/us/artist/a2o-may/1791613998" },
       { title: "A2O 공식", sub: "새 굿즈 공지", href: "https://www.a2oentertainment.world/" }
     ],
     music: [
-      { title: "BAD HABITS TONITE", date: "2026.10.18", type: "싱글", songs: ["BAD HABITS TONITE", "I Follow", "BAD HABITS TONITE (Chinese Ver.)", "I Follow (Chinese Ver.)"], href: "https://www.melon.com/album/detail.htm?albumId=14801672" },
-      { title: "Love Got Me Ooh", date: "2026.07.17", type: "싱글", songs: ["Love Got Me Ooh"], href: "https://orcd.co/A2OMAY_Love_Got_Me_Ooh" },
+      { title: "BAD HABITS TONITE", date: "2026.10.18", type: "EP · 4곡", songs: ["BAD HABITS TONITE", "I Follow", "BAD HABITS TONITE (Chinese Ver.)", "I Follow (Chinese Ver.)"], href: "https://music.apple.com/us/album/bad-habits-tonite-ep/6822765669" },
+      { title: "Love Got Me Ooh", date: "2026.07.17", type: "EP · 4곡", songs: ["Love Got Me Ooh", "Rain On My Parade", "Love Got Me Ooh (Chinese Ver.)", "Rain On My Parade (Chinese Ver.)"], href: "https://music.apple.com/us/album/love-got-me-ooh-ep/6788713890" },
+      { title: "PAPARAZZI ARRIVE", date: "2025.10.24", type: "첫 EP · 14곡", songs: [
+        "PAPARAZZI ARRIVE (English Ver.)",
+        "B.B.B (Bigger Badder Better) [feat. A2O LTG] (English Ver.)",
+        "BOSS (English Ver.)",
+        "Under My Skin (A2O) (English Ver.)",
+        "PAPARAZZI ARRIVE (Chinese Ver.)",
+        "B.B.B (Bigger Badder Better) [feat. A2O LTG] (Chinese Ver.)",
+        "BOSS (Chinese Ver.)",
+        "Under My Skin (A2O) (Chinese Ver.)",
+        "SWEAT (MICHE & KAT) (English Edit)",
+        "SWEAT (MICHE & KAT) (Spanish Edit)",
+        "MELODY (CHENYU & SHIJIE & QUCHANG)",
+        "Someone You Loved",
+        "Black Sheep",
+        "Trip"
+      ], href: "https://music.apple.com/us/album/paparazzi-arrive/1843467024" },
+      { title: "B.B.B (Bigger Badder Better) (feat. A2O LTG)", date: "2025.08.15", type: "디지털 싱글 · 2곡", songs: ["B.B.B (Bigger Badder Better) [feat. A2O LTG] (English Ver.)", "B.B.B (Bigger Badder Better) [feat. A2O LTG] (Chinese Ver.)"], href: "https://music.apple.com/us/album/b-b-b-bigger-badder-better-feat-a2o-ltg-single/1832034060" },
+      { title: "BOSS", date: "2025.04.25", type: "디지털 싱글 · 2곡", songs: ["BOSS (English Version)", "BOSS (Chinese Version)"], href: "https://music.apple.com/us/album/boss-single/1808057841" },
       { title: "Under My Skin (A2O)", date: "2024.12.20", type: "데뷔 싱글", songs: ["Under My Skin (A2O) [English Ver.]", "Under My Skin (A2O) [Chinese Ver.]"], href: "https://music.apple.com/us/album/under-my-skin-a2o-single/1791613999" }
     ],
     appearances: [],
