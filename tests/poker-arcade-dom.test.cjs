@@ -3,13 +3,27 @@ const {JSDOM}=require('jsdom'),{fixture}=require('./poker-online-fixture.cjs'),{
 const root=path.join(__dirname,'..');
 (async()=>{
  const f=await fixture(),worlds=[],frames=[];
+ // Run the deployed general-feed SQL, not an alias to the retired public RPC.
+ // This poker-only fixture has no Bang/Roulette tables; their providers are empty.
+ await f.db.exec(`create schema ojjuda_bang_internal;create schema ojjuda_roulette_internal;
+ create function ojjuda_bang_internal.arcade_rooms() returns jsonb language sql as $select '{"rooms":[]}'::jsonb$;
+ create function ojjuda_roulette_internal.arcade_rooms() returns jsonb language sql as $select '{"rooms":[]}'::jsonb$;
+ grant usage on schema ojjuda_bang_internal,ojjuda_roulette_internal to authenticated;`);
+ const migrationDir=path.join(root,'supabase/migrations');
+ const generalFeedMigration=fs.readdirSync(migrationDir).find(name=>name.endsWith('_shared_drinking_room_and_game_handoff.sql'));
+ assert.ok(generalFeedMigration,'general arcade feed migration exists');
+ const generalFeedSql=fs.readFileSync(path.join(migrationDir,generalFeedMigration),'utf8').match(/create function public\.arcade_general_extra_rooms\(\)[\s\S]*?grant execute on function public\.arcade_general_extra_rooms\(\) to authenticated;/)?.[0];
+ assert.ok(generalFeedSql,'load the actual general-feed function and grants');
+ await f.db.exec(generalFeedSql);
+ assert.equal((await f.db.query("select has_function_privilege('anon','public.arcade_general_extra_rooms()','EXECUTE') allowed")).rows[0].allowed,false,'anonymous users cannot read the feed');
+
  function world(actor,adult=true){
   const dom=new JSDOM('<div data-arcade-rooms></div><div id="modal-root"></div><div id="ranks"></div>',{url:'https://ojjuda.kr/world.html',runScripts:'outside-only',pretendToBeVisual:true});worlds.push(dom);
   const w=dom.window,opened=[],notices=[];w.ResizeObserver=class{observe(){}disconnect(){}};w.matchMedia=()=>({matches:true,addEventListener(){}});
   w.__actor=actor;w.__adult=adult;w.__open=(kind,options)=>opened.push({kind,options});w.__notice=s=>notices.push(s);
   w.__client={rpc:async(name,args)=>{
    if(name==='arcade_room_service')return {data:{ok:true,rooms:[],mine:null,can_matgo:adult}};
-   if(name==='arcade_extra_rooms')return {data:await f.publicRpc(actor,name)};
+   if(name==='arcade_general_extra_rooms')return {data:await f.publicRpc(actor,name)};
    if(name==='community_game_monthly_leaders'){const result={};for(const game of args.p_games)result[game]=(await f.publicRpc(actor,'community_game_monthly_ranking',[game]))[0]||null;return {data:result};}
    throw Error(name);
   },functions:{invoke:async(name,{body})=>{assert.equal(name,'poker');const data=await f.call(actor,body);return {data,error:data.error?{context:{json:async()=>data}}:null};}}};
@@ -29,6 +43,7 @@ const root=path.join(__dirname,'..');
   b.click('[data-arcade-action=join]');await until(()=>b.opened.length===1,'world room join route');assert.equal(b.opened[0].options.joinCode,code);
   const guest=await screen(f,f.users[1],{joinCode:code});frames.push(guest);await until(()=>guest.last?.room?.names.length===2,'room entry joins correct poker table');
   await a.refresh();assert.match(a.find('.arcade-room-card').textContent,/2\/4명/);
+  assert.deepEqual((await f.publicRpc(f.users[4],'arcade_general_extra_rooms')).rooms,[],'the real SQL feed excludes poker for minors');
   await minor.refresh();assert.equal(minor.find('.arcade-room-card'),null);minor.click('[data-arcade-action=create]');assert.equal(minor.find('option[value=poker]'),null,'minors cannot select poker');
   for(const actor of [f.users[0],f.users[1]]){const r=(await f.call(actor,{action:'mine'})).room;await f.call(actor,{action:'leave',room_id:r.id,version:r.version,request_id:crypto.randomUUID()});}
   await b.refresh();assert.equal(b.find('.arcade-room-card'),null,'room disappears after the members leave');
