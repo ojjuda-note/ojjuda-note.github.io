@@ -162,7 +162,8 @@ window.OJJUDA_FAN_ARTISTS = [
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (5).png', '미장센 · 포토월 05', '2026', '티비텐 TV10'),
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (7).png', '미장센 · 포토월 07', '2026', '티비텐 TV10'),
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (6).png', '미장센 · 포토월 06', '2026', '티비텐 TV10'),
-      commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (8).png', '미장센 · 포토월 08', '2026', '티비텐 TV10')
+      commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (8).png', '미장센 · 포토월 08', '2026', '티비텐 TV10'),
+      commonsPhoto('03112026 Aespa NingNing Airport Departure 11.png', '닝닝 · 김포공항 (11.03)', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0')
     ],
     links: [
       { label: "Instagram", icon: "◎", url: "https://www.instagram.com/aespa_official/" },
@@ -172,23 +173,36 @@ window.OJJUDA_FAN_ARTISTS = [
     ],
     merch: [
       { title: "Weverse Shop", sub: "공식 굿즈", href: "https://shop.weverse.io/ko/shop/KRW/artists/133" },
-      { title: "SMTOWN SHOP", sub: "앨범·MD", href: "https://global.shop.smtown.com/collections/aespa" }
+      { title: "SMTOWN SHOP", sub: "앨범·MD", href: "https://global.shop.smtown.com/collections/aespa" },
+      { title: "2027 시즌그리팅 Kit", sub: "공식 예약 상품 · Weverse Shop", href: "https://shop.weverse.io/en/shop/USD/artists/133/sales/69859" },
+      { title: "2027 시즌그리팅 Set", sub: "공식 예약 상품 · Weverse Shop", href: "https://shop.weverse.io/en/shop/USD/artists/133/sales/69861" },
+      { title: "KISS N TELL", sub: "일본 미니 1집 · 공식 CD 안내", href: "https://aespa-official.jp/discography/kissntell/" }
     ],
     music: [
-      { title: "LEMONADE", date: "2026.05.29", type: "정규 2집", songs: ["LEMONADE", "WDA (Whole Different Animal)", "SHAKIN‘", "Camouflage"], href: "https://aespa-official.jp/discography/lemonade/" },
+      { title: "KISS N TELL", date: "2026.07.24", type: "일본 미니 1집", songs: ["KISS N TELL", "Orbit Pop", "Fangirl", "ATTITUDE", "Done with Rules", "In Halo"], href: "https://aespa-official.jp/discography/kissntell/" },
+      { title: "LEMONADE", date: "2026.05.29", type: "정규 2집", songs: ["WDA (Whole Different Animal) (Feat. G-DRAGON)", "LEMONADE", "SHAKIN‘", "Can‘t Help Myself", "Camouflage", "Bite", "Switchblade (Feat. Ty Dolla $ign)", "Roll", "My Plan", "’Til We Die"], href: "https://aespa-official.jp/discography/lemonade/" },
       { title: "Rich Man", date: "2025.09.05", type: "미니 6집", songs: ["Rich Man", "Drift", "Bubble", "To The Girls"], href: "https://aespa-official.jp/discography/richman/" },
       { title: "Whiplash", date: "2024.10.21", type: "미니 5집", songs: ["Whiplash", "Kill It", "Flights, Not Feelings"], href: "https://aespa-official.jp/discography/whiplash/" }
     ],
     appearances: [
-      { date: "2026-11-14", title: "MMA2026", sub: "서울 고척스카이돔 · 18:00", href: "https://into.melon.com/2026mma" },
-      { date: "2026-12-12", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 국립경기장 · 17:00 예정", href: "https://music-bank.jp/" }
+      { date: "2026-11-14", title: "MMA2026 · 글로벌 데이", sub: "서울 고척스카이돔 · 18:00 · 주최 카카오엔터테인먼트", href: "https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/" },
+      { date: "2026-11-28", title: "2026 aespa FAN MEETING · 1회", sub: "고려대학교 화정체육관 · 18:00(KST) · 멜론티켓", href: "https://weverse.io/aespa/notice/40306" },
+      { date: "2026-11-29", title: "2026 aespa FAN MEETING · 2회", sub: "고려대학교 화정체육관 · 16:00(KST) · 온라인 생중계 동시 진행", href: "https://weverse.io/aespa/notice/40306" },
+      { date: "2026-12-09", title: "2026 FNS 가요제 · 제2야", sub: "후지TV · 18:30~21:54(JST) 생방송 출연", href: "https://aespa-official.jp/news/fns02/" },
+      { date: "2026-12-12", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 MUFG 스타디움(국립경기장) · 17:00 예정(JST)", href: "https://music-bank.jp/" }
+    ],
+    campaigns: [
+      { kind: "브랜드 홍보대사", date: "2026.09.09", title: "MARK & LONA · 카리나", sub: "2026 가을·겨울 컬렉션 공식 브랜드 앰배서더 활동", href: "https://aespa-official.jp/news/mark-lona-2026/" }
     ],
     schedules: [
-      { title: "공식 공지", sub: "Weverse", href: "https://weverse.io/aespa/highlight" },
-      { title: "팬 커뮤니티", sub: "Weverse", href: "https://weverse.io/aespa/feed" }
+      { title: "공식 일정", sub: "일본 공식 사이트", href: "https://aespa-official.jp/schedule/" },
+      { title: "공식 뉴스", sub: "일본 공식 사이트", href: "https://aespa-official.jp/news/" },
+      { title: "공식 공지", sub: "Weverse", href: "https://weverse.io/aespa/notice" }
     ],
     news: [
-      { date: "2026", tag: "팬미팅", title: "MY 보고싶다 ae가 · 공지", href: "https://weverse.io/aespa/notice/40306" },
+      { date: "11.10", tag: "팬미팅", title: "11월 29일 팬미팅 온라인 생중계·시청권 안내", href: "https://aespa-official.jp/news/fanmeeting2026-streaming/" },
+      { date: "11.03", tag: "방송", title: "12월 9일 후지TV FNS 가요제 출연 발표", href: "https://aespa-official.jp/news/fns02/" },
+      { date: "07.24", tag: "음악", title: "일본 미니 1집 〈KISS N TELL〉 발매", href: "https://aespa-official.jp/news/kissntell-release/" },
       { date: "2026", tag: "굿즈", title: "aesParty 공식 MD 안내", href: "https://weverse.io/aespa/notice/38335" }
     ]
   },
