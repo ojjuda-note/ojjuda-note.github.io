@@ -2,8 +2,8 @@
 <link rel="stylesheet" href="/games/matgo/matgo-opponent.css?v=20261106-source-folders3">
 <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
 <script src="/shared/games/multiplayer-entry.js?v=20261112-arcade-entry-return1" defer></script>
-<link rel="stylesheet" href="/shared/games/game-results.css?v=20261109-unified-multiplayer-ui2">
-<script src="/shared/games/game-results.js?v=20261108-monthly-personal1"></script>
+<link rel="stylesheet" href="/shared/games/game-results.css?v=20261113-game-popup-order1">
+<script src="/shared/games/game-results.js?v=20261113-game-popup-order1"></script>
 <style>.modal>.card:has(> .game-result-card){padding:0;background:transparent;border:0;box-shadow:none;width:min(430px,100%);max-width:430px}</style>
 <link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
 </head>
@@ -11,7 +11,7 @@
 import {createVentControls} from "./matgo/matgo-deck-tools.mjs?v=20261106-source-folders3";
 import {CARDS,isPi,piVal,score,Game,soloTierLabel,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo/matgo-engine.mjs?v=20261112-matgo-gold-tiers";
 import {floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt} from "./matgo/matgo-view.mjs?v=20261106-source-folders3";
-import {createWallet} from "./matgo/matgo-wallet.mjs?v=20261112-matgo-gold-tiers";
+import {createWallet} from "./matgo/matgo-wallet.mjs?v=20261113-game-popup-order1";
 import {createFlightArt} from "./matgo/matgo-flight-art.mjs?v=20261106-source-folders3";
 (async () => {
 'use strict';
@@ -19,7 +19,7 @@ import {createFlightArt} from "./matgo/matgo-flight-art.mjs?v=20261106-source-fo
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판 예약 완료 · 지금 패는 그대로, 다음 판 시작 때 5쭈를 사용해요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261112-arcade-entry-return1&open='+Date.now());};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261113-game-popup-order1&open='+Date.now());};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html?tab=arcade';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();
@@ -27,7 +27,7 @@ import {createFlightArt} from "./matgo/matgo-flight-art.mjs?v=20261106-source-fo
       &&[receipt.before_gold,receipt.after_gold,receipt.net].every(Number.isSafeInteger)
       &&receipt.before_gold>=0&&receipt.after_gold>=0&&receipt.net===receipt.after_gold-receipt.before_gold?receipt.net:null;
     game.bank[ME]=state.gold;currentRound=null;pendingResult=null;render();
-    const actions=`<button id="next">${state.gold<1000?'골드 충전':'다음 판'}</button><button id="result-exit">나가기</button>`;
+    const actions=`<button id="result-exit">나가기</button><button id="next">${state.gold<1000?'골드 충전':'계속하기'}</button>`;
     const handlers={next:()=>state.gold<1000?showRefill():startRound(),'result-exit':()=>$('#exit').click()};
     if(type==='nagari'){
       const bonus=settledDelta;
