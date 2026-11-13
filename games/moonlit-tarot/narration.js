@@ -1,5 +1,5 @@
 import { CARD_LIFE_THEMES } from './life-themes.js?v=20261113-tarot-life1';
-import { buildDomainGroup } from './domain-narration.js?v=20261113-tarot-life1';
+import { buildDomainGroup } from './domain-narration.js?v=20261113-tarot-topics50-1';
 
 // Conversational presentation of the existing authored card explanations.
 // This does not draw cards, invent personal events, or add fortune records.
@@ -225,7 +225,20 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, directi
     ...(base.sections || []),
     { title: '원문에 담긴 생활 제안', subtitle: '', body: base.ritual }
   ];
-  const text = [...groups.map(group => [group.label, ...group.sections.map(item => [item.title, ...item.paragraphs].join('\n\n'))].join('\n\n')),
+  const text = [...groups.map(group => {
+    const parts = [group.label];
+    if (group.description) parts.push(group.description);
+    let previousCategory;
+    for (const item of group.sections) {
+      if (item.categoryId && item.categoryId !== previousCategory) {
+        const category = group.categories?.find(category => category.id === item.categoryId);
+        if (category) parts.push(category.label);
+        previousCategory = item.categoryId;
+      }
+      parts.push([item.title, item.subtitle, ...item.paragraphs].filter(Boolean).join('\n\n'));
+    }
+    return parts.join('\n\n');
+  }),
     `오늘 해 볼 일\n${ritual}`].join('\n\n');
   return {
     ...base,

@@ -63,8 +63,8 @@ for (const topicId of topics) {
   ]);
   assert.equal(summary.groups[0].sections.length, 5);
   assert.equal(summary.groups[1].sections.length, 7);
-  assert.equal(summary.groups[2].sections.length, 12);
-  assert.equal(summary.sections.length, 24);
+  assert.equal(summary.groups[2].sections.length, 50);
+  assert.equal(summary.sections.length, 62);
   for (const group of summary.groups) {
     assert.equal(new Set(group.sections.map(section => section.id)).size, group.sections.length);
     for (const section of group.sections) {
@@ -129,7 +129,7 @@ for (let index = 0; index < DECK.length; index++) for (const topic of topics) {
   assert.equal(report.groups.length, 3);
   assert.equal(report.groups[0].sections.length, 5);
   assert.equal(report.groups[1].sections.length, 7);
-  assert.equal(report.groups[2].sections.length, 12);
+  assert.equal(report.groups[2].sections.length, 50);
   assert.deepEqual(plain(report.source.cards), ordered.map(card => card.id));
   for (const card of ordered) assert.ok(report.text.includes(card.name));
   assert.equal(report.ritual, getReading(ordered[2], topic, 2).action);

@@ -89,7 +89,39 @@ const server = http.createServer((request, response) => {
     assert.equal(await page.locator('#summary-tab-problem').getAttribute('aria-selected'), 'true');
     assert.equal(await page.locator('#summary-panel-timeline').isVisible(), false);
     const tarotViews = {};
-    for (const [group, expectedSections] of [['problem', 5], ['timeline', 7], ['domains', 12]]) {
+    const domainCategories = [['self', 5], ['timeline', 5], ['solutions', 5], ['love', 7], ['family', 4], ['career', 5], ['study', 5], ['money', 5], ['wellbeing', 4], ['opportunities', 5]];
+    const captureCategories = new Set(['self', 'love', 'money', 'wellbeing']);
+    const overflowState = () => page.evaluate(() => ({ document: document.documentElement.scrollWidth > innerWidth, modal: document.querySelector('#result-dialog').scrollWidth > document.querySelector('#result-dialog').clientWidth }));
+    async function inspectDomainCategories(viewport) {
+      const panel = page.locator('#summary-panel-domains');
+      const select = page.locator('#summary-domain-category');
+      assert.equal(await select.locator('option').count(), 10);
+      assert.equal(await page.locator('label[for="summary-domain-category"]').textContent(), '풀이 분야');
+      assert.equal(await page.locator('#summary-domain-total').textContent(), '50개 풀이 · 10개 분야');
+      const checks = [];
+      let firstNumber = 1;
+      for (const [category, count] of domainCategories) {
+        await select.selectOption(category);
+        assert.equal(await select.inputValue(), category);
+        assert.ok((await select.locator('option:checked').textContent()).endsWith(` · ${count}개`));
+        const visible = panel.locator('.reading-part:visible');
+        assert.equal(await visible.count(), count, category + ': only the chosen category is visible');
+        assert.ok((await visible.evaluateAll(sections => sections.map(section => section.dataset.categoryId))).every(id => id === category));
+        const numbers = (await visible.locator('.reading-part-number').allTextContents()).map(Number);
+        assert.deepEqual(numbers, Array.from({ length: count }, (_, index) => firstNumber + index), category + ': original topic numbers are retained');
+        firstNumber += count;
+        assert.equal(await panel.locator('.reading-part').count(), 50, 'all original topics remain in the DOM');
+        assert.ok(await visible.locator('.reading-card-name:visible').count() > 0, category + ': actual card names remain easy to find');
+        const overflow = await overflowState();
+        assert.deepEqual(overflow, { document: false, modal: false }, category + ': the ' + viewport + ' reading fits');
+        checks.push({ category, count, overflow });
+        if (captureCategories.has(category)) await page.screenshot({ path: path.join(artifacts, `tarot-domains-${category}-${viewport}.png`) });
+      }
+      assert.equal(firstNumber, 51, 'all fifty topics were reached through the native selector');
+      await select.selectOption('self');
+      return checks;
+    }
+    for (const [group, expectedSections] of [['problem', 5], ['timeline', 7], ['domains', 50]]) {
       await page.locator(`#summary-tab-${group}`).click();
       const panel = page.locator(`#summary-panel-${group}`);
       await panel.waitFor({ state: 'visible' });
@@ -97,20 +129,31 @@ const server = http.createServer((request, response) => {
       assert.equal(await panel.getAttribute('aria-labelledby'), `summary-tab-${group}`);
       assert.equal(await panel.locator('.reading-part').count(), expectedSections);
       const sectionDetails = await panel.locator('.reading-part').evaluateAll(sections => sections.every(section => section.querySelector('h3')?.textContent.trim() && section.querySelectorAll('p').length >= 2 && !section.closest('details')));
-      assert.ok(sectionDetails, group + ': each section has a clear title and full visible paragraphs');
+      assert.ok(sectionDetails, group + ': each section keeps a clear title and its full paragraphs');
+      let categoryChecks;
       if (group === 'domains') {
-        const headings = await panel.locator('h3').allTextContents();
-        for (const domain of ['건강', '인연', '금전', '학업', '가족', '문서·계약', '악운', '천운', '직업', '운명', '행운', '궁합']) assert.ok(headings.some(title => title.includes(domain)), domain + ': a distinct domain heading is visible');
-      }
-      const overflow = await page.evaluate(() => ({ document: document.documentElement.scrollWidth > innerWidth, modal: document.querySelector('#result-dialog').scrollWidth > document.querySelector('#result-dialog').clientWidth }));
+        const basis = page.locator('#summary-domain-basis');
+        assert.equal(await basis.getAttribute('open'), null);
+        assert.equal(await basis.locator('summary').textContent(), '풀이 기준');
+        assert.ok((await basis.locator('p').textContent()).includes('같은 세 장'));
+        await basis.locator('summary').click();
+        assert.equal(await basis.locator('p').isVisible(), true);
+        await basis.locator('summary').click();
+        categoryChecks = await inspectDomainCategories('mobile');
+      } else assert.equal(await panel.locator('.reading-part:visible').count(), expectedSections, group + ': every main section stays visible');
+      const overflow = await overflowState();
       assert.deepEqual(overflow, { document: false, modal: false }, group + ': the mobile reading fits the viewport');
       tarotViews[group] = { sections: expectedSections, overflow };
+      if (categoryChecks) tarotViews[group].mobileCategories = categoryChecks;
       await page.screenshot({ path: path.join(artifacts, group === 'problem' ? 'tarot-result-mobile.png' : `tarot-${group}-mobile.png`) });
     }
     assert.ok((await page.locator('#summary-ritual').textContent()).length > 20);
     await page.setViewportSize({ width: 1280, height: 900 });
     for (const group of ['problem', 'timeline', 'domains']) {
       await page.locator(`#summary-tab-${group}`).click();
+      if (group === 'domains') tarotViews[group].desktopCategories = await inspectDomainCategories('desktop');
+      const overflow = await overflowState();
+      assert.deepEqual(overflow, { document: false, modal: false }, group + ': the desktop reading fits the viewport');
       await page.screenshot({ path: path.join(artifacts, group === 'problem' ? 'tarot-result-desktop.png' : `tarot-${group}-desktop.png`) });
     }
     const saju = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', deviceScaleFactor: 1 });
