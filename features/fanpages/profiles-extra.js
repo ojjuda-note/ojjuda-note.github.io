@@ -98,10 +98,12 @@ const nmixxProfile = window.OJJUDA_FAN_PROFILES.nmixx;
 if (nmixxProfile) {
   nmixxProfile.expanded = true;
   nmixxProfile.awards = [
-    { year: '2026.09', title: '더팩트 뮤직 어워즈 대상', detail: 'Sound of the Year · 2026.09.19', href: 'https://www.soompi.com/article/1871808wpp/winners-of-2026-the-fact-music-awards' }
+    { year: '2026.09', title: '더팩트 뮤직 어워즈 대상', detail: 'Sound of the Year · 2026.09.19', href: 'https://www.soompi.com/article/1871808wpp/winners-of-2026-the-fact-music-awards' },
+    { year: '2026.10', title: '대한민국 대중문화예술상 장관 표창', detail: '2026.10.29 제17회 시상식 · 문화체육관광부 장관 표창', href: 'https://recruit.jype.com/ko/news/61' }
   ];
   nmixxProfile.records = [
-    { year: '2026', title: '첫 월드투어 진행', detail: 'EPISODE 1: ZERO FRONTIER · 유럽·아시아 투어', href: 'https://recruit.jype.com/ko/news/60' }
+    { year: '2026', title: '첫 월드투어 진행', detail: 'EPISODE 1: ZERO FRONTIER · 유럽·아시아 투어', href: 'https://recruit.jype.com/ko/news/60' },
+    { year: '2026.10', title: '월드투어 피날레 3회 전석 매진 발표', detail: '10.28 JYP 발표 기준 · 인천 11.27~29 공연', href: 'https://recruit.jype.com/ko/news/60' }
   ];
   const birthdays = {
     '릴리': '2002.10.17',
@@ -117,6 +119,7 @@ if (nmixxProfile) {
   }
   nmixxProfile.sources.unshift({ label: 'JYP 공식 멤버 프로필·생일', href: 'https://nmixx.jype.com/profile' });
   nmixxProfile.sources.push({ label: '2026 TMA 수상', href: 'https://www.soompi.com/article/1871808wpp/winners-of-2026-the-fact-music-awards' });
+  nmixxProfile.sources.push({ label: 'JYP · 2026 대중문화예술상 장관 표창', href: 'https://recruit.jype.com/ko/news/61' });
 }
 
 /* BABYMONSTER: YG-published birthdays and seven-member debut; private details stay blank. */
