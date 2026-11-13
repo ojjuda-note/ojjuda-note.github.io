@@ -1,21 +1,22 @@
-import { CONNECTION_PROFILES, getConnectionProfile as lookupConnectionProfile } from './connection-profiles.js?v=20261113-tarot-personal1';
+import { CONNECTION_PROFILES, getConnectionProfile as lookupConnectionProfile } from './connection-profiles.js?v=20261113-tarot-easy1';
 
 // These are editorial ways to connect existing meanings, not a second draw or
 // an asserted traditional rule for every possible three-card combination.
 const emphasis = Object.freeze({
-  choice: '직접 고를 수 있는 부분', practice: '말을 실제 행동으로 옮기는 과정',
-  clarity: '아는 것과 짐작한 것을 구별하는 일', support: '혼자 감당하지 않을 방법',
-  limits: '지킬 범위와 맡을 책임', pause: '잠시 멈춰 다시 볼 여유',
-  review: '이미 한 선택과 실제 결과를 돌아보는 일', acceptance: '달라진 현실을 인정하는 과정'
+  choice: '스스로 고르는 일', practice: '직접 해 보는 일',
+  clarity: '사실을 확인하는 일', support: '도움을 나누는 일',
+  limits: '맡을 일을 정하는 일', pause: '잠시 쉬어 가는 일',
+  review: '지난 결과를 돌아보는 일', acceptance: '달라진 현실을 받아들이는 일'
 });
 
 function quoted(value, particles = '') {
   const text = String(value).trim();
+  // Mark actual card names; everyday phrases read naturally without quotation marks.
   if (!particles) return `‘${text}’`;
   const [withFinal, withoutFinal] = particles.split('/');
   const code = text.codePointAt(text.length - 1);
   const hasFinal = code >= 0xac00 && code <= 0xd7a3 && (code - 0xac00) % 28 !== 0;
-  return `‘${text}’${hasFinal ? withFinal : withoutFinal}`;
+  return `${text}${hasFinal ? withFinal : withoutFinal}`;
 }
 
 export function getConnectionProfile(cardId) {
@@ -33,32 +34,32 @@ function pairReason(left, right) {
 
 function supportText(left, right, reason, concern) {
   if (reason === 'mutual-support') {
-    return `${quoted(right.offer, '은/는')} ${quoted(left.excess, '을/를')} 조절하는 기준이고, ${quoted(left.offer, '은/는')} ${quoted(right.excess, '을/를')} 돌아보는 기준이야. ${quoted(concern, '을/를')} 판단할 때 한 카드의 장점만 밀지 말고, 두 기준을 함께 적용해.`;
+    return `${quoted(left.offer, '과/와')} ${quoted(right.offer, '을/를')} 함께 쓰라는 뜻이야. ${quoted(concern, '을/를')} 생각하며 두 방법을 차례로 써 봐. ${left.route} 그다음에는 ${right.route}`;
   }
   if (reason === 'right-supports-left') {
-    return `${quoted(right.offer, '은/는')} ${quoted(left.excess, '을/를')} 조절하는 기준이야. ${quoted(concern, '을/를')} 두고 움직인다면, 처음 마음만으로 결정하지 말고 ${quoted(right.route, '을/를')} 따라 행동해.`;
+    return `${quoted(left.excess, '을/를')} 줄이려면 ${quoted(right.offer, '이/가')} 필요해. ${quoted(concern, '을/를')} 살펴볼 때 이렇게 해 봐. ${right.route}`;
   }
   if (reason === 'left-supports-right') {
-    return `${quoted(left.offer, '은/는')} ${quoted(right.excess, '을/를')} 돌아보는 기준이야. ${quoted(concern, '을/를')} 판단할 때 지금 눈에 들어온 일만 따라가지 말고, ${quoted(left.route)}에 맞춰 먼저 할 일을 정해.`;
+    return `${quoted(right.excess, '을/를')} 줄이려면 ${quoted(left.offer, '이/가')} 필요해. ${quoted(concern, '을/를')} 살펴볼 때는 이 방법부터 써 봐. ${left.route}`;
   }
   if (reason === 'shared-emphasis') {
-    return `두 카드의 공통 핵심은 ${quoted(emphasis[left.give], '이야/야')}. ${quoted(concern, '을/를')} 살필 때 첫째 카드로 문제의 시작점을 짚고, 둘째 카드로 지금 이어지는 모습과 달라진 조건을 구분해.`;
+    return `두 카드 모두 ${quoted(emphasis[left.give], '을/를')} 중요하게 봐. ${quoted(concern, '을/를')} 돌아보며 처음과 지금이 어떻게 다른지 살펴봐. 첫째 카드는 문제가 시작된 이유를, 둘째 카드는 지금 살필 점을 알려 줘.`;
   }
   if (reason === 'different-pace') {
-    return `한쪽은 실행을, 다른 쪽은 멈춰서 확인하는 시간을 강조해. ${quoted(concern, '을/를')} 한꺼번에 결정하지 말고, 바로 실행할 작은 일과 확인이 끝날 때까지 보류할 일을 따로 정해.`;
+    return `한 카드는 움직이라고 하고, 다른 카드는 잠깐 멈춰 보라고 해. ${quoted(concern, '을/를')} 차근차근 살펴봐. 바로 해도 되는 작은 일과 더 알아본 뒤 할 일을 나눠.`;
   }
-  return `두 카드의 핵심은 서로 달라. ${quoted(concern, '을/를')} 다룰 때 먼저 ${quoted(left.route, '을/를')} 따르고, 그 과정에서 ${quoted(right.offer, '을/를')} 어디에 적용할지 정해.`;
+  return `두 카드는 서로 다른 부분을 짚어 줘. ${quoted(concern, '을/를')} 살필 때 두 방법을 차례로 써 봐. ${left.route} 그다음에는 ${right.route} ${quoted(left.offer, '과/와')} ${quoted(right.offer, '을/를')} 차례로 살리라는 뜻이야.`;
 }
 
 function tensionText(left, right, reason, boundary) {
-  const opening = `첫째 카드의 뜻만 따르면 ${quoted(left.excess, '을/를')}, 둘째 카드의 뜻만 따르면 ${quoted(right.excess, '을/를')} 경계해야 해.`;
+  const opening = `첫째 카드에서 조심할 점은 ${quoted(left.excess, '이야/야')}. 둘째 카드에서는 ${quoted(right.excess, '을/를')} 주의해.`;
   if (reason === 'shared-emphasis') {
-    return `${opening} 비슷한 방향을 강조하는 두 장이라고 해서 그 방법을 더 많이 써야 한다는 뜻은 아니야. 같은 힘을 지나치게 쓰지 않도록 ${quoted(boundary, '을/를')} 행동의 한계로 정해.`;
+    return `${opening} 비슷한 뜻의 카드가 나와도 한 방법만 고집하지 마. ${quoted(boundary, '을/를')} 지킬 수 있는 만큼만 해.`;
   }
   if (reason === 'different-pace') {
-    return `${opening} 빨리 해치우려는 마음과 더 기다리려는 마음이 번갈아 커진다면, 기다리는 이유와 지금 할 일을 따로 적어. ${quoted(boundary, '을/를')} 지키는 범위에서 작은 행동부터 시작해.`;
+    return `${opening} 서두르고 싶다가도 더 기다리고 싶다면, 기다리는 이유부터 적어 봐. ${quoted(boundary, '을/를')} 지키면서 지금 할 수 있는 일 하나를 정해.`;
   }
-  return `${opening} 서로 도움이 되는 뜻이라도 한 카드의 장점이 다른 카드의 주의점을 저절로 없애 주지는 않아. ${quoted(boundary, '을/를')} 실제로 지키는지 확인하고, 도움이 된 행동과 부담을 키운 행동을 구분해.`;
+  return `${opening} 해 본 뒤에는 무엇이 도움이 됐고 무엇이 부담이었는지 살펴봐. ${quoted(boundary, '을/를')} 지키기 어렵다면 방법을 고쳐.`;
 }
 
 function responseText(left, right, last, names, concern, boundary) {
@@ -67,15 +68,15 @@ function responseText(left, right, last, names, concern, boundary) {
   if (last.give === right.need) supports.push(1);
   let response;
   if (supports.length === 2) {
-    response = `앞의 두 장에서 짚은 ${quoted(left.excess, '과/와')} ${quoted(right.excess, '을/를')} 함께 조절하는 방법이야. 두 문제를 한꺼번에 해결하려 하지 말고 ${emphasis[last.give]}부터 챙겨.`;
+    response = `이 방법은 앞의 두 카드가 짚은 어려움에 모두 도움이 돼. 한꺼번에 해결하려고 애쓰기보다 ${emphasis[last.give]}부터 시작해.`;
   } else if (supports.length === 1) {
     const index = supports[0], other = index === 0 ? right : left, supported = index === 0 ? left : right;
-    response = `이 방법은 ${quoted(names[index])}의 주의점인 ${quoted(supported.excess, '을/를')} 다루는 데 먼저 써야 해. 다른 카드가 보탠 ${quoted(other.offer, '도/도')} 함께 살리고, 한쪽 문제를 고치느라 다른 장점을 버리지 마.`;
+    response = `특히 ${quoted(names[index])}에서 짚은 ${quoted(supported.excess, '을/를')} 줄이는 데 써 봐. 다른 카드의 장점인 ${quoted(other.offer, '도/도')} 함께 살려.`;
   } else {
-    response = `앞에서 본 ${quoted(left.offer, '과/와')} ${quoted(right.offer, '을/를')} 실제로 어떻게 쓸지 정하는 기준이야. 둘 중 하나를 버리지 말고 먼저 할 일과 그다음 할 일을 정해.`;
+    response = `이 방법으로 앞의 두 카드가 말한 장점을 실제 행동에 옮겨 봐. 먼저 할 일과 그다음 할 일을 하나씩 정하면 돼.`;
   }
   return {
-    paragraph: `셋째 ${quoted(names[2])}의 역할은 ${quoted(last.offer, '을/를')} 보태는 거야. 해결 방법은 ${quoted(last.route, '이야/야')}. ${response} ${quoted(concern, '을/를')} 다룰 첫 행동 하나를 정해. 실행 전에는 그 행동이 ${quoted(boundary, '을/를')} 지키는지 확인해.`,
+    paragraph: `셋째 ${quoted(names[2])}에서 필요한 것은 ${quoted(last.offer, '이야/야')}. ${last.route} ${response} 시작하기 전에는 ${quoted(boundary, '을/를')} 지킬 수 있는지 확인해.`,
     supports
   };
 }
@@ -100,7 +101,7 @@ export function buildCardConnections({ cards, context, names } = {}) {
   const third = responseText(left, right, last, displayNames, context.concern, context.boundary);
   return {
     paragraphs: [
-      `첫째 ${quoted(displayNames[0])}의 핵심은 ${quoted(left.offer, '이야/야')}. 둘째 ${quoted(displayNames[1])}에서 강조하는 점은 ${quoted(right.offer, '이야/야')}. ${supportText(left, right, reason, context.concern)}`,
+      `첫째 ${quoted(displayNames[0])} 카드는 ${quoted(left.offer, '을/를')} 강조해. 둘째 ${quoted(displayNames[1])} 카드는 ${quoted(right.offer, '을/를')} 중요하게 봐. ${supportText(left, right, reason, context.concern)}`,
       tensionText(left, right, reason, context.boundary),
       third.paragraph
     ],

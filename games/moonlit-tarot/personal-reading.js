@@ -1,11 +1,11 @@
-import { getPersonalContext } from './personal-contexts.js?v=20261113-tarot-personal1';
-import { buildCardConnections, getConnectionProfile } from './card-connections.js?v=20261113-tarot-direct1';
-import { getReading } from './readings.js?v=20261113-tarot-direct1';
+import { getPersonalContext } from './personal-contexts.js?v=20261113-tarot-easy1';
+import { buildCardConnections, getConnectionProfile } from './card-connections.js?v=20261113-tarot-easy1';
+import { getReading } from './readings.js?v=20261113-tarot-easy1';
 import { splitSummarySentences, summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
-import { directInterpretation, directAction, directCardAdvice } from './reading-voice.js?v=20261113-tarot-direct1';
+import { directInterpretation, directAction, directCardAdvice } from './reading-voice.js?v=20261113-tarot-easy1';
 
 export const PERSONAL_BASIS = '뽑은 세 장의 뜻을 고른 상황에 적용한 풀이예요. 카드 연결에는 공통 해석 규칙을 쓰며, 선택 비교와 이어지는 답변은 상황별 생활 제안이에요.';
-const roles = ['지금의 문제', '현재 상황의 핵심', '해결을 위한 행동'];
+const roles = ['지금의 문제', '지금 상황', '이렇게 해 봐'];
 const piece = (id, title, paragraphs, summaryLines) => ({ id, title, paragraphs, summaryLines });
 function cardSummary(card, first, second = first) {
   const lines = summaryLinesFrom(first, second);
@@ -26,7 +26,7 @@ export function buildPersonalReading({ cards, topicId, contextId } = {}) {
   });
   const primary = cards.map((card, index) => {
     const advice = directCardAdvice(context.cards[card.id]);
-    return piece(`personal-role-${index}`, roles[index], [`‘${names[index]}’ 카드의 핵심이야. ${advice}`],
+    return piece(`personal-role-${index}`, roles[index], [`‘${names[index]}’ 카드가 전하는 말이야. ${advice}`],
       cardSummary(card, advice));
   });
   const connected = buildCardConnections({ cards, context, names });
@@ -44,19 +44,20 @@ export function buildPersonalReading({ cards, topicId, contextId } = {}) {
   const tension = directInterpretation(solution.tension);
   const comparison = {
     title: context.comparison.title,
-    basis: `선택의 기준은 해결 자리에 놓인 ‘${names[2]}’ 카드야. ${support} ${tension}`,
+    basis: `해결 방법은 ‘${names[2]}’ 카드에서 찾아보자. ${support} ${tension}`,
     basisSummaryLines: cardSummary(cards[2], support, tension),
     options: ['a', 'b'].map(key => {
       const option = context.comparison[key];
-      const gain = directInterpretation(option.gain);
-      const burden = directInterpretation(option.burden);
+      // These are practical tradeoffs, not claims made by the drawn card.
+      const gain = option.gain;
+      const burden = option.burden;
       const prepare = directAction(option.prepare);
       return { id: `personal-choice-${key}`, key, ...option, gain, burden, prepare,
         summaryLines: summaryLinesFrom(gain, burden, [prepare]) };
     })
   };
   const followUps = context.followUps.map((item, index) => {
-    const paragraphs = [directInterpretation(item.paragraphs[0]), directAction(item.paragraphs[1])];
+    const paragraphs = [item.paragraphs[0], directAction(item.paragraphs[1])];
     return piece(`personal-question-${item.id}`, item.question, [
       ...paragraphs,
       `‘${names[index]}’ 카드가 묻는 질문이야. ${getConnectionProfile(cards[index].id).question}`

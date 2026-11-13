@@ -1,5 +1,5 @@
-import { CARD_INTERPRETATIONS } from './interpretation-engine.js?v=20261113-tarot-direct1';
-import { CASE_GUIDES, getCaseGuide } from './case-guides.js?v=20261113-tarot-direct1';
+import { CARD_INTERPRETATIONS } from './interpretation-engine.js?v=20261113-tarot-easy1';
+import { CASE_GUIDES, getCaseGuide } from './case-guides.js?v=20261113-tarot-easy1';
 import { LIFE_TOPICS } from './topic-catalog-life.js?v=20261113-tarot-context1';
 import { RELATIONSHIP_TOPICS } from './topic-catalog-relations.js?v=20261113-tarot-context1';
 import { PRACTICAL_TOPICS } from './topic-catalog-practical.js?v=20261113-tarot-context1';
@@ -65,16 +65,16 @@ export function buildDomainGroup({ cards, readings } = {}) {
       summaryLines,
       paragraphs: [
         situation.example,
-        `‘${names[0]}’ 카드로 읽는 핵심: ${interpretation.cause}`,
-        `‘${names[1]}’ 카드가 비추는 상황: ${interpretation.scene}`,
-        `‘${names[2]}’의 대처와 흐름: ${interpretation.response} ${interpretation.outcome}`
+        `‘${names[0]}’ 카드가 짚는 핵심이야. ${interpretation.cause}`,
+        `‘${names[1]}’ 카드로 현재 상황을 살펴보자. ${interpretation.scene}`,
+        `‘${names[2]}’ 카드가 권하는 행동이야. ${interpretation.response} ${interpretation.outcome}`
       ]
     };
   });
   return {
     id: 'domains',
     label: '분야별 풀이',
-    description: '같은 세 장의 뜻을 각 주제에 적용한 해석과 생활 제안이에요. 카드와 주제별로 해설을 작성했으며, 카드의 기본 뜻과 전통 자료는 여러 풀이에서 함께 참고해요. 사례는 이해를 돕는 가상 장면이며 실제 과거나 미래·상대의 생각을 확인한 내용은 아니에요.',
+    description: '같은 세 장을 주제별로 풀었어요. 카드의 기본 뜻과 전통 자료는 여러 풀이에서 함께 참고해요. 생활 제안과 가상 장면도 예시로 담았어요. 예시는 실제로 겪은 일이나 앞으로 생길 일, 상대의 속마음을 확인한 내용은 아니에요.',
     categories: READING_CATEGORIES,
     sections
   };
