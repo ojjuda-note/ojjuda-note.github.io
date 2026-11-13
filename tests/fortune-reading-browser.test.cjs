@@ -78,6 +78,7 @@ const server = http.createServer((request, response) => {
     await page.locator('.card[data-index="1"]').click();
     await page.waitForFunction(() => document.querySelector('#app').dataset.phase === 'reading');
     const roles = ['지금의 문제', '현재 상황', '해결 방법과 결과'];
+    const revealedNames = [];
     for (const [slot, index] of [2, 4, 3].entries()) {
       await page.locator(`.card[data-index="${index}"]`).click();
       await page.locator('#reading-dialog[open]').waitFor();
@@ -90,6 +91,7 @@ const server = http.createServer((request, response) => {
       assert.ok(paragraphs.join('').length >= 350, 'the individual reading remains detailed');
       assert.equal(await page.locator('#reading-sections h3').count(), 0);
       const cardName = await page.locator('#reading-title').textContent();
+      revealedNames.push(cardName);
       assert.ok((await page.locator('#reading-introduction .reading-card-name').allTextContents()).some(text => text.includes(cardName)), 'the actual card name is subtly emphasized');
       assert.ok(await page.locator('#reading-detail-sections .reading-part').count() > 0, 'original meanings and cautions remain available');
       assert.match(await page.locator('#reading-source-link').getAttribute('href'), /^https:\/\/en\.wikisource\.org\//);
@@ -139,6 +141,41 @@ const server = http.createServer((request, response) => {
       await select.selectOption('self');
       return checks;
     }
+    async function inspectPersonal(viewport) {
+      await page.locator('#summary-tab-personal').click();
+      const panel = page.locator('#summary-panel-personal');
+      await panel.waitFor({ state: 'visible' });
+      assert.equal(await page.locator('#result-context-select option').count(), 4, 'the money topic has three scoped situations');
+      await page.locator('#result-context-select').selectOption('money-spending');
+      const reading = page.locator('#personal-reading');
+      const paragraphs = await reading.locator('.personal-card-guides .reading-part').allTextContents();
+      assert.equal(paragraphs.length, 3);
+      for (let i = 0; i < 3; i++) assert.ok(paragraphs[i].includes(revealedNames[i]), 'personal guidance keeps the actual reveal order');
+      assert.ok((await page.locator('#personal-card-connections').textContent()).length > 300);
+      assert.equal(await page.locator('#personal-basis').getAttribute('open'), null);
+      assert.equal(await page.locator('#personal-followups details').count(), 3);
+      await page.locator('#result-context-select').scrollIntoViewIfNeeded();
+      assert.deepEqual(await overflowState(), { document: false, modal: false }, 'personal ' + viewport + ': no horizontal overflow');
+      await page.screenshot({ path: path.join(artifacts, `tarot-personal-${viewport}.png`) });
+      await page.locator('#personal-comparison > summary').click();
+      assert.equal(await page.locator('#personal-comparison .personal-choice:visible').count(), 2);
+      assert.equal(await page.locator('#personal-comparison dt:visible').count(), 6);
+      await page.locator('#personal-comparison > summary').scrollIntoViewIfNeeded();
+      assert.deepEqual(await overflowState(), { document: false, modal: false }, 'comparison ' + viewport + ': no horizontal overflow');
+      await page.screenshot({ path: path.join(artifacts, `tarot-comparison-${viewport}.png`) });
+      const following = page.locator('#personal-followups details').first();
+      await following.locator('summary').click();
+      await following.scrollIntoViewIfNeeded();
+      assert.ok((await following.locator('.personal-answer').textContent()).length > 100);
+      assert.deepEqual(await overflowState(), { document: false, modal: false }, 'follow-up ' + viewport + ': no horizontal overflow');
+      await page.screenshot({ path: path.join(artifacts, `tarot-followup-${viewport}.png`) });
+      const firstText = await reading.textContent();
+      await page.locator('#result-context-select').selectOption('money-saving');
+      assert.notEqual(await reading.textContent(), firstText, 'changing situations changes the substantive guidance');
+      await page.locator('#result-context-select').selectOption('money-agreement');
+      assert.notEqual(await reading.textContent(), firstText);
+      tarotViews.personal = { situations: 3, revealedNames, mobile: true, desktop: viewport === 'desktop' };
+    }
     for (const [group, expectedSections] of [['problem', 5], ['timeline', 7], ['domains', 50]]) {
       await page.locator(`#summary-tab-${group}`).click();
       const panel = page.locator(`#summary-panel-${group}`);
@@ -166,6 +203,7 @@ const server = http.createServer((request, response) => {
       await page.screenshot({ path: path.join(artifacts, group === 'problem' ? 'tarot-result-mobile.png' : `tarot-${group}-mobile.png`) });
     }
     assert.ok((await page.locator('#summary-ritual').textContent()).length > 20);
+    await inspectPersonal('mobile');
     await page.setViewportSize({ width: 1280, height: 900 });
     for (const group of ['problem', 'timeline', 'domains']) {
       await page.locator(`#summary-tab-${group}`).click();
@@ -174,6 +212,7 @@ const server = http.createServer((request, response) => {
       assert.deepEqual(overflow, { document: false, modal: false }, group + ': the desktop reading fits the viewport');
       await page.screenshot({ path: path.join(artifacts, group === 'problem' ? 'tarot-result-desktop.png' : `tarot-${group}-desktop.png`) });
     }
+    await inspectPersonal('desktop');
     const saju = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', deviceScaleFactor: 1 });
     saju.on('pageerror', error => errors.push(error.message));
     saju.on('response', response => { if (response.status() >= 400) failed.push([response.status(), response.url()]); });

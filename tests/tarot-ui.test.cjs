@@ -41,8 +41,10 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
     values.forEach((_, i) => { values[i] = (i * 2654435761 + shuffle * 2000000000) >>> 0; });
     return values;
   } } });
-  Object.assign(window, createTarotLoader(context)('readings.js'));
-  window.getTarotPrice = createTarotLoader(context)('payment.js').getTarotPrice;
+  const load = createTarotLoader(context);
+  Object.assign(window, load('readings.js'));
+  window.getTarotPrice = load('payment.js').getTarotPrice;
+  window.createPersonalReading = load('personal-reading-ui.js').createPersonalReading;
   window.TarotFX = class { setMood() {} setReducedMotion() {} burst() {} trail() {} };
   window.TarotAudio = class { play() {} setMuted() {} };
   const receipt = {
@@ -85,6 +87,11 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
     select.value = value;
     select.dispatchEvent(new window.Event('change', { bubbles: true }));
   };
+  const chooseContext = (value, id = 'result-context-select') => {
+    const select = $('#' + id);
+    select.value = value;
+    select.dispatchEvent(new window.Event('change', { bubbles: true }));
+  };
   const closeReading = () => { if ($('#reading-dialog').open) $('#reading-dialog').close(); };
   const phase = name => $('#app').dataset.phase === name;
   const advanceTime = async (ms, { runTimers = true } = {}) => {
@@ -96,7 +103,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
     }
     await settle();
   };
-  return { dom, window, $, click, chooseCategory, closeReading, phase, payment, receipt, advanceTime, revelations: () => revelations };
+  return { dom, window, $, click, chooseCategory, chooseContext, closeReading, phase, payment, receipt, advanceTime, load, revelations: () => revelations };
 }
 
 (async () => {
@@ -153,7 +160,9 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   assert.equal(completed.window.document.activeElement.id, 'summary-tab-problem');
   assert.equal(completed.$('#summary-panel-problem').hidden, false, 'arrow keys move focus and select the matching panel');
   completed.$('#summary-tab-problem').dispatchEvent(new completed.window.KeyboardEvent('keydown', { key: 'End', bubbles: true }));
-  assert.equal(completed.window.document.activeElement.id, 'summary-tab-domains');
+  assert.equal(completed.window.document.activeElement.id, 'summary-tab-personal');
+  assert.equal(completed.$('#summary-panel-personal').hidden, false);
+  completed.click('#summary-tab-domains');
   assert.equal(completed.$('#summary-panel-domains').hidden, false);
   assert.equal(completed.$('#summary-tab-problem').tabIndex, -1);
   const domainGroup = completedSummary.groups.find(group => group.id === 'domains');
@@ -488,6 +497,112 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   assert.equal(delayedCopy.payment.starts, 0);
   delayedCopy.dom.window.close();
 
+  // Situation controls reuse the exact paid cards without a purchase, save, or expiry change.
+  const personal = await page();
+  personal.click('#reading-open');
+  await until(() => personal.$('#result-dialog').open);
+  personal.click('#summary-tab-personal');
+  assert.equal(personal.$('#summary-panel-personal').hidden, false);
+  assert.equal(personal.$('#result-context-select').options.length, 6, 'the love purchase offers its five situations and a placeholder');
+  assert.equal(personal.$('#personal-reading'), null, 'an optional situation is never silently invented');
+  const purchaseBefore = JSON.stringify(personal.payment.record);
+  const receiptBefore = JSON.stringify(personal.receipt);
+  const savesBefore = personal.payment.saves;
+  const actualCards = personal.receipt.openOrder.map(index => personal.window.DECK.find(card => card.id === personal.receipt.drawn[index]));
+  personal.chooseContext('love-crush');
+  const report = personal.load('personal-reading.js').buildPersonalReading({ cards: actualCards, topicId: 'love', contextId: 'love-crush' });
+  const compact = value => value.replace(/\s/g, '');
+  const personalText = personal.$('#personal-reading').textContent;
+  for (const section of report.primary) assert.ok(compact(personalText).includes(compact(section.paragraphs[0])), 'the selected situation uses the actual card in its revealed role');
+  for (const paragraph of report.connection.paragraphs) assert.ok(compact(personalText).includes(compact(paragraph)));
+  assert.equal(personal.$('#personal-comparison').open, false);
+  assert.equal(personal.$('#personal-followups').querySelectorAll('details').length, 3);
+  assert.equal(personal.$('#personal-comparison').querySelectorAll('.personal-choice').length, 2);
+  assert.equal(personal.$('#personal-comparison').querySelectorAll('dt').length, 6);
+  assert.ok([...personal.$('#personal-followups').querySelectorAll('details')].every(node => !node.open));
+  assert.equal(personal.$('#personal-basis').open, false);
+  assert.match(personal.$('#personal-basis p').textContent, /공통 해석 규칙.*생활 제안/);
+  personal.click('#personal-comparison > summary');
+  assert.equal(personal.$('#personal-comparison').open, true);
+  personal.click('#personal-followups details > summary');
+  assert.equal(personal.$('#personal-followups details').open, true);
+  let personalCopy = '';
+  Object.defineProperty(personal.window.navigator, 'clipboard', { value: { async writeText(text) { personalCopy = text; } } });
+  personal.click('#copy-result');
+  await settle();
+  for (const line of personal.load('personal-reading.js').personalReadingCopyLines(report).filter(Boolean)) assert.ok(personalCopy.includes(line), 'copy retains choices and all folded answers');
+  personal.chooseContext('love-distance');
+  assert.equal(personal.$('#result-context-select').value, 'love-distance');
+  assert.notEqual(personal.$('#personal-reading').textContent, personalText);
+  assert.equal(personal.$('#personal-comparison').open, false, 'a new situation starts with its own closed choices');
+  assert.equal(personal.payment.starts, 0);
+  assert.equal(personal.payment.saves, savesBefore);
+  assert.equal(JSON.stringify(personal.payment.record), purchaseBefore);
+  assert.equal(JSON.stringify(personal.receipt), receiptBefore, 'card order and original expiry remain intact');
+  const forged = personal.window.document.createElement('option');
+  forged.value = 'money-saving';
+  personal.$('#result-context-select').append(forged);
+  personal.chooseContext('money-saving');
+  assert.equal(personal.$('#personal-reading'), null, 'a context from another paid topic is rejected');
+  personal.chooseContext('love-dating');
+  personal.payment.options.onAccountChange();
+  assert.equal(personal.phase('intro'), true);
+  assert.equal(personal.$('#personal-reading'), null);
+  assert.equal(personal.$('#intro-context-select').value, '');
+  assert.equal(personal.$('#summary-tabs').textContent, '');
+  personal.dom.window.close();
+
+  // Selection before a fresh draw is optional, scoped, and actually survives the draw.
+  const chosen = await page({ admin: true });
+  assert.equal(chosen.$('#intro-context-select').options.length, 16);
+  chosen.chooseContext('love-crush', 'intro-context-select');
+  assert.equal(chosen.$('#intro-context-select').value, 'love-crush');
+  chosen.click('[data-topic="love"]');
+  assert.equal(chosen.$('#intro-context-select').value, '', 'changing the paid topic clears the earlier context');
+  assert.equal(chosen.$('#intro-context-select').options.length, 6);
+  chosen.chooseContext('love-reunion', 'intro-context-select');
+  chosen.click('#summon-button');
+  await until(() => chosen.phase('discard'));
+  chosen.click('.card[data-index="0"]');
+  await until(() => chosen.phase('discard'));
+  chosen.click('.card[data-index="1"]');
+  await until(() => chosen.phase('reading'));
+  for (const index of [2, 4, 3]) {
+    chosen.click(`.card[data-index="${index}"]`);
+    await until(() => chosen.$('#reading-dialog').open);
+    chosen.closeReading();
+  }
+  chosen.click('#reading-open');
+  await until(() => chosen.$('#result-dialog').open);
+  assert.equal(chosen.$('#summary-tab-personal').getAttribute('aria-selected'), 'true');
+  assert.equal(chosen.$('#result-context-select').value, 'love-reunion');
+  assert.ok(chosen.$('#personal-reading').textContent.length > 1000);
+  chosen.click('#restart-result');
+  assert.equal(chosen.$('#intro-context-select').value, '');
+  assert.equal(chosen.$('#personal-reading'), null);
+  chosen.dom.window.close();
+
+  // A native disclosure click, keyboard activation or selector cannot reveal expired answers.
+  for (const action of ['comparison', 'followup', 'criteria', 'selector', 'tab-keyboard']) {
+    const guarded = await page();
+    guarded.click('#reading-open');
+    await until(() => guarded.$('#result-dialog').open);
+    guarded.click('#summary-tab-personal');
+    guarded.chooseContext('love-crush');
+    await guarded.advanceTime(86400000, { runTimers: false });
+    if (action === 'comparison') guarded.click('#personal-comparison > summary');
+    if (action === 'followup') guarded.click('#personal-followups details > summary');
+    if (action === 'criteria') guarded.click('#personal-basis > summary');
+    if (action === 'selector') guarded.chooseContext('love-distance');
+    if (action === 'tab-keyboard') guarded.$('#summary-tab-personal').dispatchEvent(new guarded.window.KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    await until(() => guarded.phase('intro'));
+    assert.equal(guarded.$('#personal-reading'), null, action);
+    assert.equal(guarded.$('#result-dialog').open, false, action);
+    assert.equal(guarded.$('#intro-context-select').value, '', action);
+    assert.equal(guarded.payment.starts, 0, action + ': no automatic repurchase');
+    guarded.dom.window.close();
+  }
+
   const freePreview = await page({ admin: true });
   freePreview.click('#summon-button');
   await until(() => freePreview.phase('discard'));
@@ -496,5 +611,5 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   await settle();
   assert.equal(freePreview.phase('discard'), true, 'administrator preview has no paid expiry');
   freePreview.dom.window.close();
-  console.log('PASS tarot UI: fifty topics in ten categories, complete original copy, readable card explanations, tabs, preview mode, rolling 24-hour expiry, suspended changes, hung status, delayed clipboard and no automatic repurchase');
+  console.log('PASS tarot UI: original fifty topics, fifteen personal situations, comparison and follow-ups, full copy, scoped card reuse, four accessible tabs, rolling 24-hour expiry, suspended controls and no automatic repurchase');
 })().catch(error => { console.error(error); process.exitCode = 1; });
