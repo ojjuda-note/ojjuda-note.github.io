@@ -1,0 +1,21 @@
+name: Drinking games health check
+on:
+  push:
+    branches: [qa/drinking-health-20261114]
+permissions:
+  contents: read
+jobs:
+  browser:
+    name: ${{ matrix.suite }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [local, multiplayer, truth]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node tests/qa-drinking-${{ matrix.suite }}.cjs
+        env:
+          BROWSER_PATH: /usr/bin/google-chrome
