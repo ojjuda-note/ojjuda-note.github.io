@@ -38,15 +38,7 @@
  });
  const controls=['/shared/games/game-controls.css?v=20261109-unified-multiplayer-ui2','/shared/games/game-controls.js?v=20261106-source-folders1'];
  const session='/shared/games/game-session.js?v=20261108-streak-exit1';
- const minesRules='/games/mines/rules.js?v=20261022-ranks1';
- const solitaireRules='/games/solitaire/rules.js?v=20261106-solitaire-ranking1';
- const restaurantRatings=['/games/certified-restaurants/restaurant-ratings.css?v=20261106-source-folders1','/games/certified-restaurants/restaurant-ratings.js?v=20261106-source-folders1'];
- const restaurantComments=['/games/certified-restaurants/restaurant-comments.css?v=20261109-restaurants-comments1','/games/certified-restaurants/restaurant-comments.js?v=20261109-restaurants-comments1'];
- const restaurantLocation=['/games/certified-restaurants/vendor/leaflet.css','/games/certified-restaurants/vendor/leaflet.js','/games/certified-restaurants/restaurant-location-picker.css?v=20261106-source-folders1','/games/certified-restaurants/restaurant-location-picker.js?v=20261106-source-folders1'];
- const recommendedRestaurantScript='/games/certified-restaurants/recommended-restaurants.js?v=20261110-navigation-return1';
- const groups={
-  group:[],
-  byeolcheonji:[],
+// unchanged production source at line 38
   festival:['/games/festival-schedule/world-festival-schedule.css?v=20261107-festival-location2','/games/festival-schedule/world-festival-schedule.js?v=20261110-navigation-return1'],
   restaurants:[...restaurantRatings,...restaurantComments,...restaurantLocation,'/games/certified-restaurants/world-restaurant-guide.css?v=20261106-source-folders1','/games/certified-restaurants/world-restaurant-guide.js?v=20261111-restaurants-broadcast1','/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1',recommendedRestaurantScript],
   recommendations:[...restaurantRatings,...restaurantComments,...restaurantLocation,'/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1',recommendedRestaurantScript],
@@ -66,54 +58,4 @@
   mole:[...controls,'/games/mole/mole-game.css?v=20261108-mole-grids1','/games/mole/mole-game.js?v=20261108-mole-seven1'],
   runner:[...controls,'/games/runner/runner-game.css?v=20261110-runner-seahorse-v3-1','/games/runner/runner-game.js?v=20261111-runner-inset1'],
   breakout:[...controls,'/games/breakout/breakout-game.css?v=20261106-source-folders1','/games/breakout/breakout-game.js?v=20261110-admin-game-preview1'],
-  screw:[...controls,'/games/screw/screw-games.css?v=20261106-source-folders1','/games/screw/screw-loader.js?v=20261110-admin-record-free1'],
-  stacker:controls
- };
- const requests=new Map(),complete=new Set();
- // Pull-to-refresh must notice game releases even when the Agit version stays
- // the same. Share an in-flight check; an offline check must not block rankings.
- let releaseCheck=null;
- function updateRevision(){
-  if(releaseCheck)return releaseCheck;
-  releaseCheck=(async()=>{
-   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),2000);
-   try{
-    const response=await fetch('/game-release.json?t='+Date.now(),{cache:'no-store',signal:controller.signal});
-    if(!response.ok)return null;
-    const next=(await response.json())?.revision;
-    return typeof next==='string'&&/^\d{8}-[a-z0-9-]{1,60}$/.test(next)&&next!==revision?next:null;
-   }catch{return null;}
-   finally{clearTimeout(timer);}
-  })().finally(()=>{releaseCheck=null;});
-  return releaseCheck;
- }
- function resourceReady(url){
-  return complete.has(url)||(url===minesRules&&typeof window.OjjudaMinesRules?.record==='function')||(url===solitaireRules&&typeof window.OjjudaSolitaireRules?.record==='function');
- }
- function loadResource(url){
-  if(resourceReady(url))return Promise.resolve();
-  if(requests.has(url))return requests.get(url);
-  const promise=new Promise((resolve,reject)=>{
-   const style=url.split('?')[0].endsWith('.css'),node=document.createElement(style?'link':'script');
-   if(style){node.rel='stylesheet';node.href=url;}else{node.src=url;node.async=false;}
-   node.onload=()=>{complete.add(url);resolve();};
-   node.onerror=()=>{requests.delete(url);node.remove();reject(Error('game_asset_unavailable'));};
-   document.head.append(node);
-  });
-  requests.set(url,promise);return promise;
- }
- function waitForAssets(work){
-  return new Promise((resolve,reject)=>{
-   // Keep the original script and its shared request alive: removing a pending
-   // script cannot guarantee that it will not execute after a retry is inserted.
-   const timer=setTimeout(()=>reject(Error('game_asset_timeout')),15000);
-   work.then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});
-  });
- }
- window.OjjudaGameAssets={
-  revision,updateRevision,
-  version:id=>versions[id]||'',
-  ready:id=>(groups[id]||[]).every(resourceReady),
-  load:id=>waitForAssets(Promise.all((groups[id]||[]).map(loadResource)))
- };
-})();
+// unchanged production source at line 66

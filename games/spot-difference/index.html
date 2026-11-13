@@ -1,26 +1,4 @@
-<!doctype html>
-<html lang="ko" data-viewport-page="spot">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-  <meta name="theme-color" content="#425bea">
-  <meta name="description" content="쭈다의 일상, 귀여운 동화와 고양이·강아지 사진, 도시와 사계절 산, 세계 명화 152장과 움직이는 장면 30장. 보통부터 조금 어려움·어려움·매우 어려움 순서로 다른 곳을 찾고 확대해서 비교해 보세요.">
-  <title>쭈다 틀린그림 찾기</title>
-<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261022-agit-logo2">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="오쭈다 아지트">
-<meta property="og:url" content="https://ojjuda.kr/games/spot-difference/index.html">
-<meta property="og:title" content="쭈다 틀린그림 찾기">
-<meta property="og:description" content="가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.">
-<meta property="og:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
-<meta property="og:image:type" content="image/png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="쭈다 틀린그림 찾기">
-<meta name="twitter:description" content="가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.">
-<meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
+// unchanged production source at line 1
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
   <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
   <link rel="stylesheet" href="style.css?v=20261112-spot-motion30">
@@ -29,11 +7,7 @@
   <script src="puzzles.js?v=20261003-hint1" defer></script>
   <script src="photo-puzzles.js?v=20261108-spot62-hard10" defer></script>
   <script src="masterpiece-puzzles.js?v=20261102-spot-visibility1" defer></script>
-  <script src="fairytale-pets-puzzles.js?v=20261108-spot-scarf-hit-region2" defer></script>
-  <script src="motion/scenes.js?v=20261112-spot-motion30" defer></script>
-  <script src="motion/render.js?v=20261112-spot-motion-tuning1" defer></script>
-  <script src="motion/native.js?v=20261112-spot-motion30" defer></script>
-  <script src="game-core.js?v=20261112-spot-motion30" defer></script>
+// unchanged production source at line 29
   <script src="vendor/supabase.js" defer></script>
   <script src="/shared/games/admin-preview.js?v=20261110-admin-preview1" defer></script>
   <script src="wallet.js?v=20261112-spot-motion30" defer></script>
@@ -41,72 +15,7 @@
 <link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1">
 <script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/ju-coins/ju-coins.css?v=20261106-source-folders1">
-<link rel="stylesheet" href="/features/wallet/paid-ui.css?v=20261106-source-folders1">
-<link rel="stylesheet" href="/shared/games/game-entry.css?v=20261109-unified-multiplayer-ui2">
-<script src="/shared/games/game-entry.js?v=20261106-source-folders1" defer></script>
-<link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
-</head>
-<body>
-  <header class="topbar">
-    <a id="game-home" class="brand" href="/world.html?tab=arcade" aria-label="오쭈다 오락실로 가기"><span class="brand-icon" aria-hidden="true">⌂</span><span>오락실</span></a>
-    <span class="collection"><strong id="solved-total">0</strong> / <span id="stage-total">152</span> 완료</span>
-  </header>
-  <main>
-    <div class="game-heading">
-    <section class="game-top" aria-labelledby="scene-title">
-      <div class="scene-info"><span class="eyebrow" id="stage-label">그림 01 / 152</span><h1 id="scene-title">쭈다의 일상 속, 다른 곳 여섯 개</h1><p id="scene-instructions">1분 안에 여섯 곳을 찾아보세요. 찾은 곳은 붉은 원으로 표시돼요.</p></div>
-      <div class="score" aria-label="찾은 정답"><strong id="found-count">0</strong><span>/ <span id="found-total">6</span> <small>찾았어요</small></span><div class="dots" id="dots" aria-hidden="true"></div></div>
-    </section>
-    <section class="round-status" aria-label="게임 상태"><div class="hearts" id="hearts" role="img" aria-label="남은 하트 3개">♥ ♥ ♥</div><span class="rule-copy">오답이면 하트 −1</span><div class="wallet"><span id="wallet-balance">계정 연결 중</span><button id="hint" class="soft-button ju-paid-action">힌트 · 1 ZU</button><details id="wallet-menu" class="wallet-menu"><summary aria-label="게임 메뉴" title="게임 메뉴">⋯</summary><div class="wallet-menu-panel">
-      <button id="reveal-answers" class="text-button admin-button" aria-pressed="false" hidden>정답 보기</button>
-      <button id="reset" class="text-button" aria-label="이 문제 다시 풀기">다시 풀기</button><button id="continue" class="text-button">다음 문제</button>
-      <nav class="stage-nav" aria-label="문제 이동"><div class="stage-select"><button id="prev" class="icon-button" aria-label="이전 문제">‹</button><label for="stage-picker" class="sr-only">문제 선택</label><select id="stage-picker"></select><button id="next" class="icon-button" aria-label="다음 문제">›</button></div></nav>
-      <details class="found-list" id="found-details" hidden><summary>찾은 곳 확인하기 <span id="found-summary"></span></summary><ol id="answers"></ol></details>
-      <button id="wallet-login" class="text-button">로그인</button><button id="wallet-refresh" class="text-button" hidden>잔액 확인</button><button id="wallet-logout" class="text-button" hidden>로그아웃</button>
-      <p class="menu-note">힌트나 시간 연장을 써도 점수가 순위에 반영돼요.</p>
-      <p class="menu-note" id="storage-note">한 그림을 완료하면 다음 그림이 열려요. 완료한 그림은 다시 고를 수 있어요.</p>
-    </div></details></div></section>
-    <p class="wallet-note" id="wallet-note">힌트 1개 1 ZU · 30초 연장 1 ZU</p>
-    </div>
-    <div id="load-error" class="error" role="alert" hidden>그림을 불러오지 못했어요. <button id="retry">다시 불러오기</button></div>
-    <div class="board-shell" id="board-shell"><div class="board-curtain" id="board-curtain" data-entry="menu"><a id="spot-entry-return" class="arcade-return" href="/world.html?tab=arcade">← 오쭈다 오락실</a><div class="game-entry"><div class="ge-icon" aria-hidden="true">🔎</div><span class="ge-kicker" id="gate-eyebrow">오쭈다 오락실</span><h2 id="gate-title" class="ge-title">틀린그림찾기</h2><p id="gate-copy" class="ge-copy">두 그림에서 다른 곳을 찾아보세요.<br>난이도순으로 진행하며, 다시 열면 마지막 그림에서 새 판을 시작해요.</p><button id="start" class="primary-button ge-primary" disabled>그림 불러오는 중</button><button id="motion-entry" type="button" class="ge-secondary">움직이는 그림 30장</button><span class="ge-hint" id="gate-entry-hint">하트 3개 · 60초 도전</span></div></div>
-    <section class="pair" aria-label="비교할 두 그림">
-      <figure class="picture-card"><figcaption><span><b>A</b> 첫 번째 그림</span><span class="picture-status">자세히 살펴보세요</span></figcaption><div class="picture" data-side="original" tabindex="0" role="application" aria-label="첫 번째 그림. 다른 곳을 누르세요. 키보드는 방향키로 이동하고 Enter로 선택합니다."><img id="original" src="assets/01-original.webp" width="1536" height="1024" alt="첫 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></figure>
-      <figure class="picture-card"><figcaption><span><b>B</b> 두 번째 그림</span><span class="picture-status" id="difference-status">여섯 곳이 달라요</span></figcaption><div class="picture" data-side="difference" tabindex="0" role="application" aria-label="두 번째 그림. 다른 곳을 누르세요. 키보드는 방향키로 이동하고 Enter로 선택합니다."><img id="difference" src="assets/01-original.webp" width="1536" height="1024" alt="두 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></figure>
-    </section></div>
-    <div class="picture-timer time-dock" aria-label="그림 아래 남은 시간"><div class="time-progress" role="progressbar" aria-label="남은 시간" aria-valuemin="0" aria-valuemax="60" aria-valuenow="60"><div class="time-fill"></div></div><div class="clock"><span class="clock-icon" aria-hidden="true">⏰</span><strong id="time-left">60</strong><small>초</small></div><button id="extend" class="soft-button extend-button ju-paid-action" hidden><span class="extend-title">시간 연장하기</span><small>+1분 · 1 ZU</small></button></div>
-    <section class="playbar" aria-label="게임 도구">
-      <div class="message" id="message" role="status" aria-live="polite">시작을 누르면 1분이 흘러요.</div>
-      <div class="actions"><button type="button" id="motion-pause" class="soft-button" hidden>움직임 멈춤</button><button id="zoom" class="soft-button"><span aria-hidden="true">⌕</span> 크게 보기</button></div>
-    </section>
-    <p id="artwork-credit" class="artwork-credit" hidden></p>
-    <section class="hint-panel" id="hint-panel" hidden aria-label="힌트"><div><span class="eyebrow">찾기 도움</span><p id="hint-text"></p></div><button id="hide-hint" class="icon-button" aria-label="힌트 닫기">×</button></section>
-    <section id="answer-review" class="found-list answer-review" hidden aria-label="전체 정답"><div class="answer-review-heading"><div><span class="eyebrow">관리자 정답 보기</span><h2 id="answer-count">다른 곳 6개</h2><p>확인 중에는 시간이 멈추고 ZU가 차감되지 않아요.</p></div><button id="close-answers" class="soft-button">정답 닫기</button></div><ol id="review-answers"></ol></section>
-  </main>
-  <dialog id="zoom-dialog" aria-labelledby="zoom-title">
-    <div class="zoom-header"><div><h2 id="zoom-title">크게 비교하기</h2><p>두 손가락으로 확대하면 두 사진이 함께 커져요. 밀어서 같은 위치를 비교하세요.</p></div></div>
-    <div class="zoom-pair"><section class="zoom-column"><h3>A<span class="zoom-picture-name"> · 첫 번째 그림</span></h3><div class="zoom-scroll" id="zoom-scroll-a"><div class="picture zoom-picture" data-side="original" tabindex="0" role="application" aria-label="확대한 첫 번째 그림"><img id="zoom-original" width="1536" height="1024" alt="확대한 첫 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></div></section><section class="zoom-column"><h3>B<span class="zoom-picture-name"> · 두 번째 그림</span></h3><div class="zoom-scroll" id="zoom-scroll-b"><div class="picture zoom-picture" data-side="difference" tabindex="0" role="application" aria-label="확대한 두 번째 그림"><img id="zoom-difference" width="1536" height="1024" alt="확대한 두 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></div></section></div>
-    <div class="picture-timer time-dock zoom-picture-timer" aria-label="확대 그림 아래 남은 시간"><div class="time-progress" role="progressbar" aria-label="남은 시간" aria-valuemin="0" aria-valuemax="60" aria-valuenow="60"><div class="time-fill"></div></div><div class="clock"><span class="clock-icon" aria-hidden="true">⏰</span><strong id="zoom-time-left">60</strong><small>초</small></div><button id="zoom-extend" class="soft-button extend-button ju-paid-action" hidden><span class="extend-title">시간 연장하기</span><small>+1분 · 1 ZU</small></button></div>
-    <div class="zoom-tools" id="zoom-tools">
-      <div id="zoom-status" role="status" aria-live="polite">0 / 6 찾았어요</div>
-      <div class="zoom-time-dock zoom-toolbar">
-        <div class="zoom-vitals"><span class="hearts" id="zoom-hearts" role="img" aria-label="남은 하트 3개">♥ ♥ ♥</span></div>
-        <button id="zoom-hint" class="soft-button ju-paid-action">힌트 · 1 ZU</button>
-        <a id="zoom-home" class="soft-button spot-home" href="/world.html?tab=arcade" aria-label="오쭈다 오락실로 가기"><span aria-hidden="true">⌂</span>오락실</a>
-        <button id="zoom-more" class="icon-button" aria-label="확대 설정" aria-expanded="false" aria-controls="zoom-settings">⋯</button>
-        <button id="close-zoom" class="icon-button" aria-label="확대 닫기">×</button>
-      </div>
-    </div>
-    <div id="zoom-settings" class="zoom-controls"><button type="button" id="zoom-motion-pause" class="soft-button" hidden>움직임 멈춤</button><label for="zoom-level">확대 배율</label><select id="zoom-level"><option value="1">1단계</option><option value="1.5">2단계</option><option value="2">3단계</option></select><button id="zoom-reveal-answers" class="soft-button admin-button" aria-pressed="false" hidden>정답 보기</button></div>
-  </dialog>
-  <dialog id="celebration" class="spot-celebration" aria-labelledby="celebration-title" aria-describedby="celebration-copy">
-    <div id="celebration-confetti" class="celebration-confetti" aria-hidden="true"></div>
-    <div class="celebration-medal" aria-hidden="true"><span>★</span><b id="celebration-count">6 / 6</b></div>
-    <p class="celebration-eyebrow">참 잘했어요!</p>
-    <h2 id="celebration-title">축하해요! 모두 찾았어요!</h2>
-    <p id="celebration-copy">이전 그림·지금 그림·다음 그림 중 골라 이어서 즐겨보세요.</p>
-    <div class="end-picture-choices" role="group" aria-label="다음에 풀 그림 선택">
-      <button id="celebration-previous" data-game-result-play type="button" class="end-picture-choice"><span>이전 그림</span><small></small></button>
+// unchanged production source at line 41
       <button id="celebration-current" data-game-result-play type="button" class="end-picture-choice"><span>지금 그림</span><small></small></button>
       <button id="celebration-next" data-game-result-play type="button" class="end-picture-choice end-picture-next"><span>다음 그림</span><small></small></button>
     </div>
