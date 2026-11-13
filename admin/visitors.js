@@ -29,7 +29,7 @@
   });
   const arcadeDetailLabels = Object.freeze(Object.fromEntries(Object.entries(featureLabels)
     .filter(([key]) => key.startsWith('game_')).map(([key,label]) => ['arcade_' + key,label])));
-  const chart = (title, subtitle, rows, kind, labels) => {
+  const chart = (title, subtitle, rows, kind, labels, options = {}) => {
     const card = el('section', undefined, 'visitor-chart-card');
     card.append(el('h4', title), el('p', subtitle, 'visitor-chart-subtitle'));
     const scroll = el('div', undefined, 'visitor-chart-scroll');
@@ -38,20 +38,22 @@
     const content = el('div', undefined, `visitor-chart-bars is-${kind}`);
     const max = Math.max(1, ...rows.map(row => Number(row.visits)));
     content.setAttribute('role','img');
-    content.setAttribute('aria-label', `${title}: ${rows.map((row,i) => `${labels[i]} ${number(row.visits)}회`).join(', ')}`);
+    content.setAttribute('aria-label', `${title}: ${rows.map((row,i) => `${labels[i]} ${row.uncollected ? '집계 전' : number(row.visits) + '회'}`).join(', ')}`);
     rows.forEach((row,i) => {
       const col = el('div', undefined, 'visitor-chart-col');
-      const count = el('span', Number(row.visits) ? number(row.visits) : '', 'visitor-chart-value');
+      if (row.uncollected) col.classList.add('is-uncollected');
+      if (row.period) col.dataset.period = row.period;
+      const count = el('span', row.uncollected ? '—' : Number(row.visits) || options.showZero ? number(row.visits) : '', 'visitor-chart-value');
       const track = el('div', undefined, 'visitor-chart-track');
       const bar = el('div', undefined, 'visitor-chart-fill');
       bar.style.height = `${100 * Number(row.visits) / max}%`;
-      track.title = `${labels[i]} · ${number(row.visits)}회`;
+      track.title = `${labels[i]} · ${row.uncollected ? '집계 전' : number(row.visits) + '회'}`;
       track.append(bar);
       const name = el('span', kind === 'weekday' || kind === 'date' && i % 3 === 0 || kind === 'hour' && i % 3 === 0 ? labels[i] : '', 'visitor-chart-label');
       col.append(count,track,name); content.append(col);
     });
     if (rows.every(row => Number(row.visits) === 0)) {
-      card.append(el('p', '아직 집계된 기록이 없어요.', 'visitor-chart-empty'));
+      card.append(el('p', options.emptyText || '아직 집계된 기록이 없어요.', 'visitor-chart-empty'));
     }
     scroll.append(content); card.append(scroll); return card;
   };
@@ -74,6 +76,49 @@
     });
     card.append(list); return card;
   };
+  function fortuneVisits(data, today) {
+    const section = el('section', undefined, 'visitor-fortune');
+    section.setAttribute('aria-label', '타로·사주 방문');
+    section.append(el('h3', '타로·사주 방문'));
+    const unavailable = () => {
+      section.append(el('p', '타로·사주 방문 집계를 아직 불러오지 못했어요. 새로고침해 주세요.', 'visitor-status'));
+      return section;
+    };
+    // This optional data has its own validation. Older servers or one malformed
+    // product report must not hide the existing site-wide statistics.
+    const todayTime = /^\d{4}-\d{2}-\d{2}$/.test(today || '') ? Date.parse(today + 'T00:00:00Z') : NaN;
+    const started = typeof data?.started_at === 'string' ? Date.parse(data.started_at) : NaN;
+    if (!Number.isFinite(todayTime) || !Number.isFinite(started) || !Array.isArray(data?.daily) || data.daily.length !== 30) return unavailable();
+    const startParts = new Intl.DateTimeFormat('en', {
+      timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(new Date(started));
+    const startDay = ['year', 'month', 'day'].map(type => startParts.find(part => part.type === type).value).join('-');
+    const safeCount = value => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+    if (startDay > today || new Date(todayTime).toISOString().slice(0, 10) !== today || !data.daily.every((row, i) => row
+      && row.period === new Date(todayTime - (29 - i) * 86400000).toISOString().slice(0, 10)
+      && safeCount(row.tarot) && safeCount(row.saju)
+      && (row.period >= startDay || row.tarot === 0 && row.saju === 0))) return unavailable();
+    const totals = { tarot: 0, saju: 0 };
+    for (const row of data.daily) { totals.tarot += row.tarot; totals.saju += row.saju; }
+    if (!safeCount(totals.tarot) || !safeCount(totals.saju)) return unavailable();
+    const startLabel = new Intl.DateTimeFormat('ko-KR', {
+      timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric'
+    }).format(new Date(started));
+    section.append(el('p', '같은 브라우저의 방문은 상품별로 하루 1회만 집계해요. 날짜는 한국시간 기준이에요.', 'visitor-note'),
+      el('p', `${startLabel}부터 집계합니다. 집계 시작 전 방문은 포함되지 않습니다.`, 'visitor-note visitor-fortune-start'));
+    const summary = el('div', undefined, 'visitor-cards visitor-fortune-cards');
+    const grid = el('div', undefined, 'visitor-chart-grid visitor-fortune-grid');
+    for (const [key, label] of [['tarot', '타로'], ['saju', '사주']]) {
+      const card = el('div', undefined, 'visitor-card'); card.dataset.product = key;
+      card.append(el('span', `${label} · 최근 30일`), el('strong', `${number(totals[key])}회`),
+        el('small', `오늘 ${number(data.daily[29][key])}회`)); summary.append(card);
+      const rows = data.daily.map(row => ({ period: row.period, visits: row[key], uncollected: row.period < startDay }));
+      const graph = chart(`${label} 방문`, '최근 30일 · —는 집계 전 날짜 · 옆으로 넘겨 볼 수 있어요.', rows, 'date',
+        rows.map(row => row.period.slice(5).replace('-', '.')), { showZero: true, emptyText: '집계 시작 이후 방문이 아직 없어요.' });
+      graph.dataset.product = key; grid.append(graph);
+    }
+    section.append(summary, grid); return section;
+  }
   function renderInsights(host, data) {
     if (!data || !Number.isFinite(Date.parse(data.started_at)) || !/^\d{4}-\d{2}-\d{2}$/.test(data.today_date)
       || !['today','month','total'].every(key => validCount(data[key]))
@@ -109,6 +154,7 @@
     host.append(summary);
     const start = new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'long',day:'numeric'}).format(new Date(data.started_at));
     host.append(el('p',`${start}부터 수집 · 실제 사람 수나 페이지 조회수와 다를 수 있어요.`, 'visitor-note'));
+    host.append(fortuneVisits(data.fortune_visits, data.today_date));
     const grid = el('div',undefined,'visitor-chart-grid');
     grid.append(
       chart('날짜별 방문','최근 30일 · 아래 그래프는 옆으로 넘길 수 있어요.',data.daily,'date',data.daily.map(row => row.period.slice(5).replace('-','.'))),

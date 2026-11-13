@@ -614,6 +614,11 @@ function resetAfterAccountChange() {
   fillYears($('entry-year'));
   updateCalendar();updateTime();updateEntryOffer();
 }
+function recordFortuneVisit() {
+  if (!billing?.client || billing.adminPreview) return;
+  try { window.OjjudaSiteUsage?.configure({client:billing.client}); } catch {} // Statistics never block a reading.
+}
+
 async function readyBilling() {
   if (billingPromise) return billingPromise;
   const task=(async()=>{
@@ -629,9 +634,11 @@ async function readyBilling() {
       onModeChange:({adminPreview})=>{
         if (billingInitialized&&billingMode!==Boolean(adminPreview)) resetAfterAccountChange();
         billingMode=Boolean(adminPreview);updateBillingStatus();
+        if (billingInitialized&&!billingMode) recordFortuneVisit();
       }
     });
     const state=await billing.init();
+    recordFortuneVisit();
     billingInitialized=true;billingSignedIn=state.signedIn===true;billingMode=Boolean(state.adminPreview);
     updateBillingStatus();
     scheduleEntryCheck();

@@ -36,6 +36,7 @@
 | 계정 복구 | `shared/auth/` | `member-recovery` |
 | 오류 신고 | `shared/diagnostics/` | `feedback-codex` |
 | 타로·사주 구매내역 관리 | `admin/fortune-purchases.js`, `.css` | 관리자 전용 `admin_fortune_purchases`로 실제 결제 항목·사용 쭈 조회 |
+| 타로·사주 방문 그래프 | `shared/analytics/site-usage.js`, `admin/visitors.js` | 실제 페이지 진입 시 `record_site_usage`, 관리자 `admin_site_usage_stats`의 `fortune_visits`로 상품별 30일 방문 집계 |
 
 ## 유지하는 경계
 

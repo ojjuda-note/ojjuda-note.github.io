@@ -38,7 +38,14 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
           guest_games: [{ feature: 'game_mole', uses: 7 }, { feature: 'game_stacker', uses: 5 }],
           guest_boards: [{ feature: 'park', uses: 12 }, { feature: 'fanpages', uses: 4 }],
           agit_details: [{ detail: 'agit_stamp', uses: 8 }, { detail: 'agit_group', uses: 4 }],
-          arcade_details: [{ detail: 'arcade_game_mole', uses: 7 }, { detail: 'arcade_game_stacker', uses: 3 }]
+          arcade_details: [{ detail: 'arcade_game_mole', uses: 7 }, { detail: 'arcade_game_stacker', uses: 3 }],
+          fortune_visits: {
+            started_at: '2026-11-10T15:00:00Z',
+            daily: Array.from({ length: 30 }, (_, i) => ({
+              period: new Date(Date.UTC(2026, 9, 13 + i)).toISOString().slice(0, 10),
+              tarot: i === 29 ? 5 : 0, saju: i === 29 ? 3 : 0
+            }))
+          }
         };
         const legacy = { today: 5, month: 40, total: 130, started_at: '2026-10-27T00:00:00Z', daily: [], monthly: [] };
         const growth = { started_at: '2026-11-01T00:00:00Z', today_date: '2026-11-11', today: growthRows, month: growthRows };
@@ -51,24 +58,35 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
       });
       await page.locator('.visitor-chart-card').last().waitFor();
       const layout = await page.evaluate(() => {
-        const chart = document.querySelector('.visitor-chart-card');
-        const grid = document.querySelector('.visitor-chart-grid');
-        const dateScroll = document.querySelector('.visitor-chart-scroll');
+        const grid = document.querySelector('.visitor-insights > .visitor-chart-grid');
+        const chart = grid.querySelector('.visitor-chart-card');
+        const dateScroll = grid.querySelector('.visitor-chart-scroll');
+        const fortuneGrid = document.querySelector('.visitor-fortune-grid');
         return {
           viewport: innerWidth, rootWidth: document.documentElement.scrollWidth,
           charts: grid.children.length, columns: getComputedStyle(grid).gridTemplateColumns.split(' ').length,
           chartWidth: Math.round(chart.getBoundingClientRect().width),
           dateScrollWidth: dateScroll.scrollWidth, dateClientWidth: dateScroll.clientWidth,
-          focusable: dateScroll.tabIndex === 0
+          focusable: dateScroll.tabIndex === 0,
+          fortuneCharts: fortuneGrid.children.length,
+          fortuneColumns: getComputedStyle(fortuneGrid).gridTemplateColumns.split(' ').length,
+          fortuneScrolls: [...fortuneGrid.querySelectorAll('.visitor-chart-scroll')].map(node => ({
+            scroll: node.scrollWidth, client: node.clientWidth, focusable: node.tabIndex === 0
+          }))
         };
       });
       assert.equal(layout.charts, 9, `${width}px: all chart cards`);
+      assert.equal(layout.fortuneCharts, 2, `${width}px: both product date graphs`);
+      assert.equal(layout.fortuneColumns, width > 760 ? 2 : 1, `${width}px: product graphs follow responsive columns`);
+      assert.ok(layout.fortuneScrolls.every(value => value.focusable), `${width}px: product graphs allow keyboard scrolling`);
       assert.ok(layout.rootWidth <= layout.viewport + 1, `${width}px: no horizontal page overflow (${JSON.stringify(layout)})`);
       assert.equal(layout.columns, width > 760 ? 2 : 1, `${width}px: chart grid changes with viewport`);
       assert.ok(layout.chartWidth > 240, `${width}px: content remains readable`);
       assert.ok(layout.focusable, `${width}px: keyboard-scrollable detailed charts`);
       if (width === 360) assert.ok(layout.dateScrollWidth > layout.dateClientWidth,
         '360px: long date chart scrolls inside its own card');
+      if (width === 360) assert.ok(layout.fortuneScrolls.every(value => value.scroll > value.client),
+        '360px: product date graphs scroll inside their cards');
       if (process.env.SITE_USAGE_SCREENSHOT_DIR) {
         await page.screenshot({
           path: path.join(process.env.SITE_USAGE_SCREENSHOT_DIR, `site-usage-${width}.png`),

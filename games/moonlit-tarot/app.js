@@ -38,13 +38,18 @@ const billing = new TarotPayment({
   }
 });
 
+function recordFortuneVisit() {
+  if (!billing.client || billing.adminPreview) return;
+  try { window.OjjudaSiteUsage?.configure({ client: billing.client }); } catch {} // Statistics never block a reading.
+}
+
 function handleBillingModeChange() {
   clearTimeout(readingExpiryTimer);
   if (!billingReady) { updatePaymentStatus(); return; }
   // A mode change must never carry preview cards into a paid reading.
   reset({ clearPaid: false });
   showToast(billing.adminPreview ? '관리자 모드예요. 매번 새로운 운세를 볼 수 있어요.' : '관리자 모드가 꺼졌어요. 오늘의 운세를 확인해 주세요.');
-  if (!billing.adminPreview) void refreshReadingAvailability({ verifyMode: false });
+  if (!billing.adminPreview) { recordFortuneVisit(); void refreshReadingAvailability({ verifyMode: false }); }
 }
 
 function updatePaymentStatus() {
@@ -1039,6 +1044,7 @@ async function initializeBilling() {
   $('#payment-status').textContent = billing.enabled ? '로그인 상태와 보유한 쭈를 확인하고 있어요…' : '미리보기 · 실제 쭈는 차감되지 않아요';
   try {
     const result = await billing.init();
+    recordFortuneVisit();
     billingReady = true;
     if (result.resume) {
       restorePaidReading(result.resume);
