@@ -137,7 +137,7 @@
   .reading-intro .small-kicker { font-size: 10px; line-height: 1.7; }
   .reading-part { padding: 22px 0 20px; }
   .reading-part h3, .reading-part h4, .summary-box .reading-part h4 { font-size: 15px; gap: 9px; }
-  .reading-part p, .reading-sections > p { font-size: 15px; line-height: 2; word-break: normal; overflow-wrap: break-word; }
+  .reading-part p, .reading-sections > p { font-size: 15px; line-height: 2; word-break: keep-all; overflow-wrap: anywhere; }
   .reading-narrative > p { font-size: 16px; }
   .summary-box .ritual p { word-break: normal; overflow-wrap: break-word; }
   .reading-dialog-actions { bottom: -22px; margin: 24px -22px -22px; padding: 15px 16px; gap: 9px; }
