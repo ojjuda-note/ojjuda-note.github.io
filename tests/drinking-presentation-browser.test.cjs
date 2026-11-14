@@ -15,6 +15,7 @@ const {browserSession, dismissGuide, origin} = require('./helpers/drinking-brows
 const kinds = ['croc','bottle','bomb','stopwatch','liar','king','truth','initial','minority','mission','fingers','imagevote','updown'];
 const viewports = [{width:390,height:844},{width:375,height:667},{width:1366,height:900},{width:844,height:390}];
 const artifacts = path.join(__dirname,'artifacts/drinking-presentation');
+const glassAsset = '/games/drinking/assets/result-glass-v2.webp';
 const launchOptions = {headless:true,...(process.env.OJJUDA_CHROMIUM_PATH ? {executablePath:process.env.OJJUDA_CHROMIUM_PATH} : {})};
 
 async function screenshot(page, name) {
@@ -24,6 +25,59 @@ async function screenshot(page, name) {
 
 async function painted(page) {
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+}
+
+async function expectGlassImage(result) {
+  await result.locator('[data-drinking-glass][data-glass-ready="true"]').waitFor({state:'visible'});
+  const images=result.locator('image[data-drinking-glass-image]');
+  assert.equal(await images.count(),1,'the result uses one static glass image');
+  const image=await images.evaluate(async element=>{
+    const source=new URL(element.getAttribute('href'),document.baseURI);
+    const decoded=new Image();decoded.src=source.href;await decoded.decode();
+    const box=element.getBoundingClientRect();
+    return {path:source.pathname,origin:source.origin,complete:decoded.complete,
+      width:decoded.naturalWidth,height:decoded.naturalHeight,
+      visibleWidth:box.width,visibleHeight:box.height,
+      decorative:!!element.closest('[aria-hidden="true"]')};
+  });
+  assert.equal(image.path,glassAsset,'the glass comes from the approved static asset');
+  assert.equal(image.origin,origin,'the asset is loaded from the game origin');
+  assert.ok(image.complete&&image.width>0&&image.height>0,'the actual glass image decodes successfully');
+  assert.ok(image.visibleWidth>0&&image.visibleHeight>0,'the decoded glass is visible');
+  assert.ok(image.decorative,'decorative artwork does not duplicate the result announcement');
+}
+
+async function liquidGeometry(page) {
+  return page.locator('[data-drinking-liquid]').evaluate(element=>{
+    const css=getComputedStyle(element),matrix=new DOMMatrix(css.transform),bounds=element.getBBox();
+    const owner=element.parentElement.closest('[clip-path]');
+    const clipId=owner?.getAttribute('clip-path')?.match(/^url\(#(.+)\)$/)?.[1];
+    const clip=clipId&&document.getElementById(clipId)?.querySelector('path');
+    const clipBounds=clip?.getBBox();
+    return {y:matrix.f,opacity:Number(css.opacity),liquidTop:bounds.y+matrix.f,
+      clipBottom:clipBounds ? clipBounds.y+clipBounds.height : null,
+      fixedClip:!!owner&&owner!==element};
+  });
+}
+
+async function glassMoment(page, progress) {
+  await page.locator('[data-drinking-glass][data-glass-ready="true"]').waitFor({state:'visible'});
+  const timing=await page.locator('[data-drinking-glass]').evaluate((art,progress)=>{
+    const liquid=art.querySelector('[data-drinking-liquid]');
+    const drain=liquid?.getAnimations().find(item=>item.animationName==='dp-empty');
+    if(!drain)return null;
+    const timing=drain.effect.getTiming();
+    const delay=Number(timing.delay),duration=Number(timing.duration);
+    // All glass layers share one clock. This makes full/mid/empty review images
+    // show a coherent frame instead of a paused drink in a still-moving vessel.
+    for(const animation of art.getAnimations({subtree:true})){
+      animation.pause();animation.currentTime=delay+duration*progress;
+    }
+    return {delay,duration};
+  },progress);
+  assert.ok(timing&&timing.duration>0,'the liquid has a real browser animation');
+  await painted(page);
+  return liquidGeometry(page);
 }
 
 async function expectViewport(page, label, {dialog = false, local = false} = {}) {
@@ -64,14 +118,22 @@ async function expectViewport(page, label, {dialog = false, local = false} = {})
     });
     const box=area?.getBoundingClientRect();
     const copy=dialog&&area?.querySelector('.dp-result-copy')?.getBoundingClientRect();
-    const artOverlaps=copy ? [...area.querySelectorAll('.dp-glass-art,.dp-glass-vessel')].flatMap(art=>{
+    // The photographed glass has transparent pixels outside the cropped SVG
+    // viewBox. Its inner g's bounds include those pixels; only the clipped SVG
+    // viewport can paint over the copy. Keep that clip contract explicit.
+    const artAreas=copy ? [...area.querySelectorAll('.dp-glass-art')] : [];
+    const unclippedArt=artAreas.filter(art=>{
+      const css=getComputedStyle(art);
+      return !/^(hidden|clip)$/.test(css.overflowX)||!/^(hidden|clip)$/.test(css.overflowY);
+    }).map(art=>art.getAttribute('class'));
+    const artOverlaps=artAreas.flatMap(art=>{
       const r=art.getBoundingClientRect();
       const separate=r.right<=copy.left+2||r.left>=copy.right-2||r.bottom<=copy.top+2||r.top>=copy.bottom-2;
       return separate ? [] : [{art:art.getAttribute('class'),bottom:Math.round(r.bottom),copyTop:Math.round(copy.top),
         left:Math.round(r.left),right:Math.round(r.right),copyLeft:Math.round(copy.left),copyRight:Math.round(copy.right)}];
-    }) : [];
+    });
     return {width:w,height:h,documentWidth:document.documentElement.scrollWidth,documentHeight:document.documentElement.scrollHeight,
-      controls:controls.length,clipped,artOverlaps,area:box&&{x:box.x,y:box.y,right:box.right,bottom:box.bottom},
+      controls:controls.length,clipped,unclippedArt,artOverlaps,area:box&&{x:box.x,y:box.y,right:box.right,bottom:box.bottom},
       playing:document.body.classList.contains('dp-playing')};
   },{dialog,local});
   try {
@@ -80,6 +142,7 @@ async function expectViewport(page, label, {dialog = false, local = false} = {})
     assert.ok(measurement.documentWidth<=measurement.width+2,label+' must not scroll horizontally: '+JSON.stringify(measurement));
     assert.ok(measurement.documentHeight<=measurement.height+2,label+' fits one browser viewport: '+JSON.stringify(measurement));
     assert.deepEqual(measurement.clipped,[],label+' controls fit without document or clipped-container scrolling');
+    assert.deepEqual(measurement.unclippedArt,[],label+' keeps all glass artwork inside its measured viewport');
     assert.deepEqual(measurement.artOverlaps,[],label+' glass artwork does not overlap the result text');
     assert.ok(measurement.area&&measurement.area.x>=-1&&measurement.area.y>=-1&&measurement.area.right<=measurement.width+1&&measurement.area.bottom<=measurement.height+1,label+' play area fits the viewport');
   } catch(error) {
@@ -243,35 +306,41 @@ test('browser focus, Escape, auth conceal and an actually draining glass remain 
   await f.page.evaluate(text=>window.DrinkingPresentation.update({phase:'done',roundKey:'round-1',
     result:{key:'result-1',title:'이번 판 결과',body:'술잔이 비워지는 애니메이션',names:[text,...Array.from({length:11},(_,i)=>'참가자 '+(i+2))]}}),malicious);
   const result=f.page.locator('[data-drinking-dialog="result"]');await result.waitFor({state:'visible'});
-  assert.equal(await result.locator('img').count(),0);
+  await expectGlassImage(result);
+  assert.equal(await result.locator('img').count(),0,'result strings cannot create HTML images');
+  assert.equal(await result.locator('[onerror],[onload],script').count(),0,'untrusted strings cannot insert active HTML');
   assert.equal(await f.page.evaluate(()=>window.__injected),undefined);
   assert.ok((await result.textContent()).includes(malicious));
-  const liquid=f.page.locator('[data-drinking-liquid]');
-  const animation=await liquid.evaluate(element=>{
-    const drain=element.getAnimations().find(item=>item.animationName==='dp-empty');
-    if(!drain)return null;
-    const timing=drain.effect.getTiming();drain.pause();drain.currentTime=Number(timing.delay);
-    return {delay:Number(timing.delay),duration:Number(timing.duration)};
+  await allSizes(f.page,'result-12-names',{dialog:true});
+  await result.locator('[data-drinking-close]').first().click();
+
+  // Art review uses normal game copy, separate from the adversarial HTML case.
+  await f.page.evaluate(()=>{
+    window.DrinkingPresentation.update({phase:'ready',roundKey:'round-2',result:null});
+    window.DrinkingPresentation.update({phase:'done',roundKey:'round-2',result:{
+      key:'result-2',title:'민지님 당첨!',body:'악어를 깨운 사람은 민지님이에요.',names:['민지']
+    }});
   });
-  assert.ok(animation&&animation.duration>0,'the liquid has a real browser animation');
+  await result.waitFor({state:'visible'});
+  const full=await glassMoment(f.page,0);
+  await expectGlassImage(result);
   // Keep the liquid full while the panel and its backdrop finish appearing;
   // screenshots must show the settled, opaque UI rather than a fade-in frame.
   await result.evaluate(panel=>Promise.all([
     ...panel.getAnimations(),...panel.parentElement.getAnimations()
   ].map(animation=>animation.finished.catch(()=>{}))));
-  const full=await liquid.evaluate(element=>new DOMMatrix(getComputedStyle(element).transform).d);
   await expectViewport(f.page,'result-glass-full',{dialog:true});
   await screenshot(f.page,'result-glass-full');
-  await liquid.evaluate((element,timing)=>{
-    const drain=element.getAnimations().find(item=>item.animationName==='dp-empty');
-    drain.currentTime=timing.delay+timing.duration;
-  },animation);
-  await painted(f.page);
-  const empty=await liquid.evaluate(element=>({scale:new DOMMatrix(getComputedStyle(element).transform).d,opacity:Number(getComputedStyle(element).opacity)}));
-  assert.ok(full>.95&&empty.scale<full*.05&&empty.opacity<.05,'the visible liquid actually empties');
+  const middle=await glassMoment(f.page,.5);
+  assert.ok(full.fixedClip&&full.clipBottom!==null,'the liquid drains through a fixed glass-shaped clip');
+  assert.ok(middle.y>full.y+1&&middle.liquidTop<middle.clipBottom&&middle.opacity>.1,'a visible intermediate waterline moves downward');
+  await expectViewport(f.page,'result-glass-mid',{dialog:true});
+  await screenshot(f.page,'result-glass-mid');
+  const empty=await glassMoment(f.page,1);
+  assert.ok(Math.abs(full.y)<1&&empty.y>middle.y&&empty.liquidTop>=empty.clipBottom&&empty.opacity<.05,'the visible liquid exits the glass and becomes transparent');
   await expectViewport(f.page,'result-glass-empty',{dialog:true});
   await screenshot(f.page,'result-glass-empty');
-  await allSizes(f.page,'result-12-names',{dialog:true});
+  await allSizes(f.page,'result-art',{dialog:true});
   await f.page.evaluate(()=>{
     window.OjjudaDrinkingAccessReady=false;
     document.dispatchEvent(new CustomEvent('ojjuda:drinking-access',{detail:{allowed:false}}));
@@ -291,12 +360,74 @@ test('browser focus, Escape, auth conceal and an actually draining glass remain 
   });
   const reducedResult=reduced.page.locator('[data-drinking-dialog="result"]');
   await reducedResult.waitFor({state:'visible'});
-  const motion=await reducedResult.evaluate(panel=>({
-    active:panel.getAnimations({subtree:true}).filter(animation=>animation.playState==='running').length,
-    liquidHeight:panel.querySelector('[data-drinking-liquid]').getBoundingClientRect().height
-  }));
-  assert.equal(motion.active,0,'reduced-motion avoids running effects');
-  assert.ok(motion.liquidHeight<1,'reduced-motion shows the completed empty-glass state');
+  await expectGlassImage(reducedResult);
+  const active=await reducedResult.evaluate(panel=>panel.getAnimations({subtree:true}).filter(animation=>animation.playState==='running').length);
+  const reducedLiquid=await liquidGeometry(reduced.page);
+  assert.equal(active,0,'reduced-motion avoids running effects');
+  assert.ok(reducedLiquid.liquidTop>=reducedLiquid.clipBottom&&reducedLiquid.opacity<.05,'reduced-motion shows the completed empty-glass state');
   await reducedResult.locator('[data-drinking-close]').first().click();
   assert.deepEqual(reduced.errors,[]);
+
+  const unavailable=await browserSession(browser,{actor:'presentation-member',rpc:()=>({})});
+  await unavailable.context.route('**/games/drinking/assets/result-glass-v2.webp*',route=>route.abort());
+  await unavailable.page.goto(origin+'/tests/drinking-presentation-frame.html');
+  await unavailable.page.waitForFunction(()=>!!window.DrinkingPresentation);
+  await unavailable.page.evaluate(()=>{
+    window.DrinkingPresentation.enter('croc');
+    window.DrinkingPresentation.update({phase:'done',roundKey:'unavailable-1',result:{
+      key:'unavailable-1',title:'민지님 당첨!',body:'악어를 깨운 사람은 민지님이에요.'
+    }});
+  });
+  const fallback=unavailable.page.locator('[data-drinking-dialog="result"]');
+  await fallback.waitFor({state:'visible'});
+  const failedArt=fallback.locator('[data-drinking-glass][data-glass-ready="error"]');
+  await failedArt.waitFor({state:'attached'});
+  assert.equal(await failedArt.isVisible(),false,'a failed image does not leave an unfinished artwork area');
+  assert.ok((await fallback.textContent()).includes('민지님 당첨!'),'the confirmed result survives an image failure');
+  await allSizes(unavailable.page,'result-art-unavailable',{dialog:true});
+  await fallback.locator('[data-drinking-primary]').click();
+  await fallback.waitFor({state:'hidden'});
+  assert.equal(await unavailable.page.locator('#access-content > [inert]').count(),0,'a missing image never locks the game');
+  assert.deepEqual(unavailable.errors,[]);
+});
+
+test('a long native king result opens after consent and stays readable on every viewport', {timeout:60000}, async t => {
+  const browser=await chromium.launch(launchOptions);t.after(()=>browser.close());
+  const players=['도윤','민지','준호','서연','지우','수빈','시우','하윤','예준','나은','민재','유진'];
+  const mission='지목된 두 사람은 서로의 첫인상을 한 문장씩 말하고, 오늘 처음 알게 된 매력을 하나씩 이야기해 주세요. 부담스러운 내용은 편하게 넘겨도 돼요.';
+  assert.ok(mission.length<=80,'the long review fixture remains a valid mission');
+  let state={code:'KING01',revision:1,players,me:1,capacity:12,title:'함께하는 술자리',
+    round:1,phase:'response',king:0,card:1,number:1,recipient:1,second:2,secondRecipient:2,
+    mission,accepted:[2],declined:null};
+  const f=await browserSession(browser,{actor:'king-presentation-member',rpc:(name,args)=>{
+    assert.equal(name,'king_multiplayer');
+    assert.equal(args.p_code,state.code);
+    if(args.p_action==='accept'){
+      assert.equal(args.p_options.round,1);
+      state={...state,revision:state.revision+1,phase:'done',accepted:[1,2]};
+    } else assert.equal(args.p_action,'state','presentation never submits an unrelated action');
+    return structuredClone(state);
+  }});
+  await f.page.goto(origin+'/games/king/?room=KING01');
+  await dismissGuide(f.page);
+  assert.equal(await f.page.locator('[data-drinking-dialog="result"]').count(),0,'a pending consent is not a completed result');
+  await f.page.locator('[data-do="accept"]').click();
+  const result=f.page.locator('[data-drinking-dialog="result"]');
+  await result.waitFor({state:'visible'});
+  await expectGlassImage(result);
+  const text=await result.textContent();
+  assert.ok(text.includes('왕의 명령이 정해졌어요'));
+  assert.ok(text.includes(mission)&&text.includes('민지')&&text.includes('준호'),'the complete mission and both recipients remain visible as text');
+  assert.ok(text.includes('두 사람 모두 동의했어요'),'the result preserves the actual consent outcome');
+  await allSizes(f.page,'native-king-long-result',{dialog:true});
+  await screenshot(f.page,'native-king-long-result-390x844');
+  await f.page.setViewportSize({width:844,height:390});
+  await expectViewport(f.page,'native-king-long-result-landscape',{dialog:true});
+  await screenshot(f.page,'native-king-long-result-844x390');
+  const writes=f.calls.filter(call=>call.name==='king_multiplayer'&&call.args.p_action!=='state').length;
+  await result.locator('[data-drinking-close]').first().click();
+  await result.waitFor({state:'hidden'});
+  assert.equal(f.calls.filter(call=>call.name==='king_multiplayer'&&call.args.p_action!=='state').length,writes,'closing the artwork does not alter the king game');
+  assert.equal(state.phase,'done');
+  assert.deepEqual(f.errors,[]);
 });

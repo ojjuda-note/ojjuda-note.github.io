@@ -105,8 +105,15 @@ test('result text and participant names are inert text, and timed play closes au
   assert.equal(f.isOpen('guide'),false,'instructions do not block an already running timer');
   f.dp.update({phase:'done',roundKey:'bomb:1',result:{key:'bomb:1',title:attack,body:attack,names:[attack]}});await delay();
   assert.ok(f.isOpen('result'));
-  assert.ok(f.dialog('result').textContent.includes(attack));
-  assert.equal(f.dialog('result').querySelector('img'),null);
+  for(const selector of ['.dp-dialog-title','.dp-result-description','.dp-result-names li'])
+    assert.equal(f.dialog('result').querySelector(selector).textContent,attack,'untrusted result text is preserved literally');
+  const artwork=[...f.dialog('result').querySelectorAll('image[data-drinking-glass-image]')];
+  assert.equal(artwork.length,1,'only the static glass asset is rendered as an image');
+  const source=new URL(artwork[0].getAttribute('href'),f.w.location.href);
+  assert.equal(source.pathname,'/games/drinking/assets/result-glass-v2.webp');
+  assert.equal(source.origin,f.w.location.origin);
+  assert.equal(f.dialog('result').querySelector('img'),null,'participant text cannot become an HTML image');
+  assert.equal(f.dialog('result').querySelector('[onerror],[onload],script'),null,'result strings cannot insert active HTML');
   assert.equal(f.w.__injected,undefined);
   f.dp.update({phase:'active',roundKey:'bomb:2',urgent:true,result:null});await delay();
   assert.equal(f.isOpen('result'),false);

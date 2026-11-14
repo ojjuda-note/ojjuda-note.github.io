@@ -6,6 +6,7 @@
   const kinds = new Set(['croc', 'bottle', 'bomb', 'stopwatch', 'liar', 'king', 'truth', 'initial', 'minority', 'mission', 'fingers', 'imagevote', 'updown']);
   const seenResults = new Set();
   const focusable = 'button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+  const glassAsset = '/games/drinking/assets/result-glass-v2.webp?v=20261114-result-glass2';
   let active = null;
   let host = null;
   let overlay = null;
@@ -15,6 +16,7 @@
   let previousFocus = null;
   let inertNodes = [];
   let figureId = 0;
+  let glassPreload = null;
   let accessAllowed = window.OjjudaDrinkingAccessReady === true;
   let pageSuspended = false;
 
@@ -172,6 +174,10 @@
     dismiss.dataset.drinkingClose = '';
     dismiss.setAttribute('aria-label', type === 'guide' ? '게임 방법 닫기' : '결과 닫기');
     dismiss.addEventListener('click', () => close());
+    if (type === 'result') {
+      const gameTitle = window.DrinkingGameGuides?.[active.kind]?.title;
+      header.append(node('p', 'dp-result-eyebrow', gameTitle ? `${gameTitle} · 라운드 결과` : '라운드 결과'));
+    }
     header.append(heading, dismiss);
     panel.append(header);
     overlay.replaceChildren(panel);
@@ -223,41 +229,44 @@
     const art = node('figure', 'dp-celebration');
     art.setAttribute('aria-hidden', 'true');
     art.dataset.drinkingGlass = '';
+    art.dataset.glassReady = 'false';
     const id = `dp-glass-${++figureId}`;
     // Static artwork only. Player names and result copy are never parsed as HTML.
-    art.innerHTML = `<span class="dp-halo"></span><span class="dp-burst-ring"></span>
-      <svg class="dp-glass-art" viewBox="0 0 260 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+    // Both the photo and liquid use the photo's original coordinates, so the
+    // moving surface stays inside the fixed bowl at every responsive size.
+    art.innerHTML = `<span class="dp-stage-glow"></span><span class="dp-floor-shadow"></span>
+      <svg class="dp-glass-art" viewBox="160 130 950 1000" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
         <defs>
-          <linearGradient id="${id}-liquid" x1="90" y1="90" x2="170" y2="230" gradientUnits="userSpaceOnUse"><stop stop-color="#ffe6a2"/><stop offset=".42" stop-color="#e7ad3e"/><stop offset="1" stop-color="#bf7529"/></linearGradient>
-          <linearGradient id="${id}-glass" x1="66" y1="64" x2="195" y2="221" gradientUnits="userSpaceOnUse"><stop stop-color="#fffdf0" stop-opacity=".82"/><stop offset=".42" stop-color="#fffdf0" stop-opacity=".04"/><stop offset="1" stop-color="#fffdf0" stop-opacity=".34"/></linearGradient>
-          <clipPath id="${id}-clip"><path d="M70 59H190L174 218Q130 237 86 218Z"/></clipPath>
+          <linearGradient id="${id}-liquid" x1="265" y1="600" x2="985" y2="600" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#54290e" stop-opacity=".72"/><stop offset=".17" stop-color="#b36b26" stop-opacity=".65"/><stop offset=".46" stop-color="#d5a253" stop-opacity=".58"/><stop offset=".78" stop-color="#a66c27" stop-opacity=".67"/><stop offset="1" stop-color="#4e280f" stop-opacity=".72"/>
+          </linearGradient>
+          <linearGradient id="${id}-depth" x1="620" y1="440" x2="620" y2="900" gradientUnits="userSpaceOnUse"><stop stop-color="#3c210e" stop-opacity="0"/><stop offset="1" stop-color="#321b0b" stop-opacity=".32"/></linearGradient>
+          <linearGradient id="${id}-surface" x1="280" y1="424" x2="970" y2="466" gradientUnits="userSpaceOnUse"><stop stop-color="#e9c280" stop-opacity=".22"/><stop offset=".48" stop-color="#edcf95" stop-opacity=".4"/><stop offset="1" stop-color="#a96f2d" stop-opacity=".27"/></linearGradient>
+          <clipPath id="${id}-clip"><path d="M282 273H963L984 814Q627 905 265 814Z"/></clipPath>
         </defs>
-        <ellipse class="dp-glass-shadow" cx="130" cy="252" rx="66" ry="10" fill="#0e2c25" opacity=".22"/>
         <g class="dp-glass-vessel">
-          <path d="M65 55H195L177 223Q130 244 83 223Z" fill="url(#${id}-glass)" stroke="#fff4cc" stroke-width="3"/>
           <g clip-path="url(#${id}-clip)">
             <g class="dp-liquid" data-drinking-liquid="">
-              <path d="M61 104Q94 91 130 102T200 103V243H61Z" fill="url(#${id}-liquid)"/>
-              <path class="dp-liquid-wave" d="M61 104Q94 91 130 102T200 103" stroke="#fff0b3" stroke-width="5" stroke-linecap="round"/>
-              <circle cx="105" cy="184" r="4" fill="#fff1bc" opacity=".6"/><circle cx="154" cy="159" r="3" fill="#fff1bc" opacity=".65"/><circle cx="127" cy="133" r="2" fill="#fff1bc" opacity=".75"/>
+              <path d="M250 443H1005V970H250Z" fill="url(#${id}-liquid)"/>
+              <path d="M250 443H1005V970H250Z" fill="url(#${id}-depth)"/>
+              <g class="dp-liquid-wave">
+                <ellipse cx="627" cy="443" rx="349" ry="37" fill="url(#${id}-surface)"/>
+                <path d="M282 441C337 487 913 488 973 442" stroke="#f3d59a" stroke-opacity=".35" stroke-width="2"/>
+                <path d="M304 433C419 405 820 405 949 434" stroke="#ffe5b4" stroke-opacity=".2" stroke-width="1.5"/>
+              </g>
             </g>
           </g>
-          <path d="M78 72L93 212M181 73L167 212" stroke="white" stroke-opacity=".48" stroke-width="4" stroke-linecap="round"/>
-          <path d="M85 222Q130 241 175 222" stroke="#fff6d6" stroke-width="7" stroke-linecap="round"/>
-          <ellipse cx="130" cy="55" rx="65" ry="10" fill="#f5ecc4" fill-opacity=".13" stroke="#fff4cc" stroke-width="3"/>
-          <path d="M78 52Q130 39 182 52" stroke="white" stroke-opacity=".85" stroke-width="2" stroke-linecap="round"/>
-          <path class="dp-glass-gleam" d="M107 62L88 219" stroke="white" stroke-opacity=".6" stroke-width="8"/>
+          <image class="dp-glass-reflections" data-drinking-glass-image="" x="0" y="0" width="1254" height="1254"/>
+          <path class="dp-glass-sheen" d="M302 323C288 474 292 665 303 789" stroke="#fff1d8" stroke-opacity=".4" stroke-width="5" stroke-linecap="round"/>
         </g>
       </svg>`;
-    for (let index = 0; index < 18; index++) {
-      const spark = node('i', 'dp-spark');
-      const angle = index * Math.PI * 2 / 18;
-      spark.style.setProperty('--dp-x', `${Math.round(Math.cos(angle) * (94 + index % 3 * 13))}px`);
-      spark.style.setProperty('--dp-y', `${Math.round(Math.sin(angle) * (89 + index % 4 * 12))}px`);
-      spark.style.setProperty('--dp-delay', `${260 + index % 5 * 70}ms`);
-      spark.style.setProperty('--dp-turn', `${index * 31}deg`);
-      art.append(spark);
-    }
+    const photo = art.querySelector('[data-drinking-glass-image]');
+    // A slow or failed artwork request must never delay the result or controls.
+    // Start the reveal only after the real glass has loaded, keeping the bare
+    // liquid layer hidden while the image is in flight.
+    photo.addEventListener('load', () => { art.dataset.glassReady = 'true'; }, { once: true });
+    photo.addEventListener('error', () => { art.dataset.glassReady = 'error'; }, { once: true });
+    photo.setAttribute('href', glassAsset);
     return art;
   }
 
@@ -291,6 +300,11 @@
   function flush() {
     layout();
     if (!accessible()) return;
+    if (!glassPreload) {
+      glassPreload = new Image();
+      glassPreload.decoding = 'async';
+      glassPreload.src = glassAsset;
+    }
     if (active.pendingResult && !active.urgent) {
       const result = active.pendingResult;
       if (!seenResults.has(result.identity)) showResult(result);
