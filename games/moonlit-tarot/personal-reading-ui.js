@@ -1,5 +1,5 @@
-import { listPersonalContexts } from './personal-contexts.js?v=20261114-tarot-copy1';
-import { buildPersonalReading, personalReadingCopyLines, PERSONAL_BASIS } from './personal-reading.js?v=20261114-tarot-copy1';
+import { listPersonalContexts } from './personal-contexts.js?v=20261114-tarot-review2';
+import { buildPersonalReading, personalReadingCopyLines, PERSONAL_BASIS } from './personal-reading.js?v=20261114-tarot-review2';
 import { appendSummaryLines } from './reading-summary-view.js?v=20261113-tarot-summary1';
 
 // This view only reinterprets the three already revealed cards. It does not

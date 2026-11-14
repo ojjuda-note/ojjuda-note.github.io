@@ -1,4 +1,4 @@
-import { narrateReading, narrateSummary } from './narration.js?v=20261114-tarot-copy1';
+import { narrateReading, narrateSummary } from './narration.js?v=20261114-tarot-review2';
 import { getFortune, CORPUS_VERSION } from './fortune-corpus/index.js?v=20261114-tarot-copy1';
 import { getSpreadPattern } from './spread-patterns.js?v=20261113-tarot-corpus1';
 import { CARD_FOUNDATIONS, CARD_SOURCE_NOTES, TAROT_REFERENCES, getCardNameGuide } from './card-foundations.js?v=20261114-tarot-copy1';
@@ -640,23 +640,25 @@ const TOPIC_DETAILS = {
 };
 
 function resolveCard(card) {
-  if (typeof card === 'number') return DECK[card] ?? DECK[0];
-  if (typeof card === 'string') return DECK.find(item => item.id === card) ?? DECK[0];
-  return card && typeof card === 'object' && card.id
-    ? DECK.find(item => item.id === card.id) ?? DECK[0]
-    : DECK[0];
+  const id = typeof card === 'string' ? card : card?.id;
+  const selected = Number.isInteger(card) ? DECK[card] : DECK.find(item => item.id === id);
+  if (!selected) throw new Error('tarot_reading_requires_actual_card');
+  return selected;
 }
 
 function resolveTopic(topic) {
   const id = typeof topic === 'object' && topic ? topic.id : topic;
-  return typeof id === 'string' && TOPICS.some(item => item.id === id) ? id : 'overall';
+  if (typeof id !== 'string' || !TOPICS.some(item => item.id === id)) {
+    throw new Error('tarot_reading_requires_known_topic');
+  }
+  return id;
 }
 
 function resolvePosition(position) {
-  if (Number.isInteger(position)) return Math.max(0, Math.min(2, position));
   const id = typeof position === 'object' && position ? position.id : position;
-  const index = POSITIONS.findIndex(item => item.id === id);
-  return index < 0 ? 0 : index;
+  const index = Number.isInteger(position) ? position : POSITIONS.findIndex(item => item.id === id);
+  if (index < 0 || index > 2) throw new Error('tarot_reading_requires_known_position');
+  return index;
 }
 
 function sectionsToText(summary, sections) {

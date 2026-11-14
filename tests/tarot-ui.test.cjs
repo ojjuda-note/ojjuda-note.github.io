@@ -14,7 +14,7 @@ async function until(predicate) {
   assert.ok(predicate(), 'tarot UI did not finish the expected transition');
 }
 
-async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12', drawn = ['fool', 'magician', 'priestess', 'empress', 'emperor'], pendingTopic = null, initError = false } = {}) {
+async function page({ admin = false, topic = 'love', opened = [2, 3, 4], paidDay = '2026-11-12', drawn = ['fool', 'magician', 'priestess', 'empress', 'emperor'], pendingTopic = null, initError = false } = {}) {
   const dom = new JSDOM(read('index.html'), { url: 'https://ojjuda.kr/games/moonlit-tarot/', runScripts: 'outside-only', pretendToBeVisual: true });
   const { window } = dom;
   const context = dom.getInternalVMContext();
@@ -49,7 +49,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   window.TarotFX = class { setMood() {} setReducedMotion() {} burst() {} trail() {} };
   window.TarotAudio = class { play() {} setMuted() {} };
   const receipt = {
-    topic: 'love', reading_day: paidDay, request_id: 'paid-original',
+    topic, reading_day: paidDay, request_id: 'paid-original',
     reset_at: new Date(clock + 86400000).toISOString(), drawn, discarded: [0, 1], openOrder: opened
   };
   let payment, revelations = 0;
@@ -107,6 +107,23 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   return { dom, window, $, click, chooseCategory, chooseContext, closeReading, phase, payment, receipt, advanceTime, load, revelations: () => revelations };
 }
 
+function assertSummaryDetails(view, summary) {
+  const details = view.$('#summary-detail');
+  assert.ok(details, 'the selected source interpretation is available in the result DOM');
+  assert.equal(view.window.document.querySelectorAll('#summary-detail').length, 1);
+  assert.equal(details, view.$('#summary-panel-problem').lastElementChild, 'the original interpretation follows the existing problem sections');
+  assert.equal(details.querySelector('summary').textContent, '함께 읽는 종합 해석');
+  const sections = [...details.querySelectorAll('#summary-detail-sections > .reading-part')];
+  assert.equal(sections.length, summary.detailSections.length);
+  for (const [index, source] of summary.detailSections.entries()) {
+    assert.ok(sections[index].querySelector('h3').textContent.endsWith(source.title));
+    if (source.subtitle) assert.equal(sections[index].querySelector('.reading-part-subtitle').textContent, source.subtitle);
+    const expected = Array.isArray(source.paragraphs) && source.paragraphs.length ? source.paragraphs : source.body.split(/\n\s*\n/);
+    assert.equal([...sections[index].querySelectorAll('p')].map(node => node.textContent).join(''), expected.join(''), 'the selected original, cautions and practical advice retain every character');
+  }
+  return details;
+}
+
 (async () => {
   // Reopening today's completed reading must point the lower panel at the whole spread.
   const completed = await page();
@@ -135,7 +152,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
     assert.equal(tab.textContent, group.label);
     assert.equal(tab.getAttribute('aria-controls'), panel.id);
     assert.equal(panel.getAttribute('aria-labelledby'), tab.id);
-    const sections = [...panel.querySelectorAll('.reading-part')];
+    const sections = [...panel.querySelectorAll(group.id === 'domains' ? '#summary-domain-sections > .reading-part' : ':scope > .reading-part')];
     assert.equal(sections.length, group.sections.length, 'every interpretation section is included');
     if (group.id !== 'domains') assert.ok(sections.every(section => !section.hidden), 'the problem and timeline readings keep every section visible');
     group.sections.forEach((section, index) => {
@@ -156,6 +173,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
       assert.equal(sections[index].closest('details'), null, 'each section title and summary stay outside its disclosure');
     });
   }
+  assert.equal(assertSummaryDetails(completed, completedSummary).open, false, 'the additional interpretation starts folded');
   assert.ok(dividedSections > 0, 'long section paragraphs are divided into shorter reading blocks');
   const firstFullReading = completed.$('#summary-panel-problem .reading-summary-details');
   const fullReadingBefore = firstFullReading.querySelector('.reading-summary-full').textContent;
@@ -235,11 +253,19 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
         group.sections.filter(section => section.categoryId === category.id).forEach(appendExpected);
       }
     } else group.sections.forEach(appendExpected);
+    if (group.id === 'problem') {
+      expectedCopy.push('함께 읽는 종합 해석', '');
+      for (const section of completedSummary.detailSections) {
+        expectedCopy.push(section.title);
+        if (section.subtitle) expectedCopy.push(section.subtitle);
+        for (const paragraph of section.body.split(/\n\s*\n/)) expectedCopy.push(paragraph, '');
+      }
+    }
   }
   assert.equal(completed.$('#summary-ritual').closest('.ritual').hidden, true, 'the topic-specific action already in the solution is not repeated below the reading');
   if (!completedSummary.ritualInReading) expectedCopy.push(`이렇게 해 보세요: ${completedSummary.ritual}`, '');
   expectedCopy.push('타로의 전통 해석이에요. 미래를 확정하지 않아요.');
-  assert.equal(copiedResult, expectedCopy.join('\n'), 'copy includes all three groups in order, including inactive groups, and the common practical advice once');
+  assert.equal(copiedResult, expectedCopy.join('\n'), 'copy includes all three groups and the selected original interpretation in reading order, even when folded or inactive');
   assert.equal(copiedResult.split(completedSummary.ritual).length - 1, 1);
   assert.equal(copiedResult.split(domainGroup.description).length - 1, 1);
   const copiedLines = copiedResult.split('\n');
@@ -285,7 +311,47 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   assert.equal(completed.phase('intro'), true);
   assert.equal(completed.$('#summary-domain-category'), null, 'a mode change removes the category control and paid text');
   assert.equal(completed.$('#summary-domain-basis'), null);
+  assert.equal(completed.$('#summary-detail'), null, 'a mode change also clears the additional paid interpretation');
   completed.dom.window.close();
+
+  // This selected money source used to exist only in the model, never in the DOM or copy.
+  const money = await page({ topic: 'money', drawn: ['magician', 'empress', 'fool', 'justice', 'pentacles_king'] });
+  const moneyCards = money.receipt.openOrder.map(index => money.window.DECK.find(card => card.id === money.receipt.drawn[index]));
+  const moneySummary = money.window.getSummary(moneyCards, 'money');
+  const moneySource = money.load('fortune-corpus/index.js').getFortune('money', '022');
+  assert.equal(moneySummary.source.recordId, moneySource.id);
+  money.click('#reading-open');
+  await until(() => money.$('#result-dialog').open);
+  const moneyDetails = assertSummaryDetails(money, moneySummary);
+  assert.equal(moneyDetails.open, false);
+  for (const text of [moneySource.body, moneySource.action]) assert.equal(moneyDetails.textContent.split(text).length - 1, 1, 'the selected corpus body and action are displayed once');
+  money.click('#summary-detail > summary');
+  assert.equal(moneyDetails.open, true);
+  money.click('#summary-tab-timeline');
+  money.click('#summary-tab-problem');
+  assert.equal(assertSummaryDetails(money, moneySummary), moneyDetails, 'tab changes retain the same complete source without appending another copy');
+  money.click('#summary-detail > summary');
+  money.click('#summary-tab-personal');
+  money.chooseContext('money-spending');
+  let moneyCopy = '';
+  Object.defineProperty(money.window.navigator, 'clipboard', { value: { async writeText(text) { moneyCopy = text; } } });
+  money.click('#copy-result');
+  await settle();
+  for (const text of [moneySource.body, moneySource.action]) assert.equal(moneyCopy.split(text).length - 1, 1, 'copy includes the selected corpus body and action once while its tab and disclosure are closed');
+  for (const section of moneySummary.detailSections) assert.ok(moneyCopy.includes(section.body), 'copy includes the complete additional cautions and advice');
+  assert.equal(money.payment.starts, 0, 'reading and copying the source never starts a purchase');
+  const moneyReceipt = JSON.stringify(money.receipt);
+  money.click('#restart-result');
+  assert.equal(money.$('#summary-detail'), null, 'leaving the reading clears its source');
+  money.click('#summon-button');
+  await until(() => money.$('#result-dialog').open);
+  assert.equal(assertSummaryDetails(money, moneySummary).open, false, 'replaying the same paid draw recreates one closed, complete source disclosure');
+  assert.equal(JSON.stringify(money.receipt), moneyReceipt, 'replay preserves the actual cards, order and original expiry');
+  moneyCopy = '';
+  money.click('#copy-result');
+  await settle();
+  for (const text of [moneySource.body, moneySource.action]) assert.equal(moneyCopy.split(text).length - 1, 1, 'replayed source text remains complete and appears once in copy');
+  money.dom.window.close();
 
   // Extra reference notes follow the actual card and disappear on other cards.
   const references = await page({ drawn: ['magician', 'empress', 'star', 'cups_six', 'fool'] });
@@ -400,6 +466,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   assert.equal(expires.$('#summary-text').childElementCount, 0);
   assert.equal(expires.$('#summary-domain-category'), null);
   assert.equal(expires.$('#summary-domain-basis'), null);
+  assert.equal(expires.$('#summary-detail'), null, 'expiry removes the source interpretation as well as the main reading');
   assert.ok([...expires.window.document.querySelectorAll('.front-title strong')].every(node => node.textContent === ''));
   assert.equal(expires.payment.record, null);
   assert.equal(expires.payment.starts, 0, 'expiry never automatically purchases a new reading');
@@ -627,6 +694,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   // Summary disclosures also guard the native default action if background timers were suspended.
   for (const [selector, personalContext] of [
     ['#summary-panel-problem .reading-summary-details > summary', false],
+    ['#summary-detail > summary', false],
     ['.personal-card-guides .reading-summary-details > summary', true],
     ['.personal-choice .reading-summary-details > summary', true],
     ['#personal-followups details > summary', true]

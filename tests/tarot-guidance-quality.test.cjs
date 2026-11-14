@@ -6,7 +6,7 @@ const load = createTarotLoader();
 const { DECK } = load('readings.js');
 const { CONNECTION_PROFILES } = load('connection-profiles.js');
 const { buildCardConnections, getConnectionProfile } = load('card-connections.js');
-const { CARD_INTERPRETATIONS } = load('interpretation-engine.js');
+const { CARD_INTERPRETATIONS, getCardInterpretation } = load('interpretation-engine.js');
 const { CARD_PERSON_STORIES, getPersonStory } = load('person-stories.js');
 const { PERSON_PAIR_READINGS } = load('person-pair-readings.js');
 const { buildPersonNarrative } = load('person-narrative.js');
@@ -68,11 +68,13 @@ for (const [index, value] of cards.entries()) {
   assert.ok(combined.includes(value.name));
   assert.deepEqual(plain(report.evidence.lenses[index]), { cardId: value.id, offer: profile.offer, excess: profile.excess, route: profile.route },
     'the original relationship lenses remain available as evidence');
-  assert.ok(combined.includes(index === 1 ? story.defense : story.longing),
-    'the body uses each actual card’s desire or defensive response, not only its abstract label');
+  assert.ok(combined.includes(splitSummarySentences(story.overall)[0]),
+    'the body applies every actual card through its selected topic, not only its abstract label');
+  assert.ok(report.paragraphs[index].includes(splitSummarySentences(getCardInterpretation(value.id).meaning)[0]),
+    'the card meaning comes before personal cautions');
   if (index === 2) {
-    assert.ok(report.paragraphs[2].includes(story.overall) && report.paragraphs[2].includes(story.cost),
-      'the next choice preserves the selected topic and the personal risk');
+    assert.ok(report.paragraphs[2].includes(story.overall),
+      'the next choice preserves the complete selected-topic explanation and its own caution');
     assert.ok(!report.paragraphs[2].includes(story.turning), 'an unselected generic action is not inserted into the personal ending');
   }
   for (const field of ['support', 'tension', 'question']) assert.ok(!combined.includes(profile[field]), 'comparison and follow-up sentences are not copied into the connection');
@@ -88,7 +90,13 @@ const sameNames = ['첫 카드', '둘째 카드', '셋째 카드'];
 const sameMotionA = buildCardConnections({ cards, context, names: sameNames });
 const sameMotionB = buildCardConnections({ cards: [card('magician'), ...cards.slice(1)], context, names: sameNames });
 assert.notDeepEqual(plain(sameMotionA.paragraphs), plain(sameMotionB.paragraphs));
-assert.ok(sameMotionB.paragraphs.join(' ').includes(getPersonStory('magician').longing));
+assert.ok(sameMotionB.paragraphs.join(' ').includes(splitSummarySentences(getPersonStory('magician').overall)[0]));
+assert.notEqual(sameMotionA.paragraphs[1], sameMotionB.paragraphs[1],
+  'changing the first card changes the actual pair explanation despite identical display names');
+assert.notEqual(sameMotionA.choiceLink, sameMotionB.choiceLink,
+  'changing the first card changes why the third card becomes the next criterion');
+assert.notEqual(sameMotionA.overview, sameMotionB.overview,
+  'the concise conclusion is not a summary of only the first card');
 
 // Exercise every identity in every position; stable display names prevent a
 // changed name or metadata from being mistaken for different interpretation.
@@ -99,7 +107,7 @@ for (let position = 0; position < 3; position++) {
     const chosen = [...cards]; chosen[position] = candidate;
     const reading = buildCardConnections({ cards: chosen, context, names: sameNames });
     const body = reading.paragraphs.join(' '), story = getPersonStory(candidate.id);
-    const rolePassage = position === 1 ? story.defense : story.longing;
+    const rolePassage = splitSummarySentences(story.overall)[0];
     assert.ok(body.includes(rolePassage), `${candidate.id}: identity affects the personal meaning in position ${position}`);
     assert.ok(!bodies.has(body), `${candidate.id}: the complete prose differs from ${bodies.get(body)} with fixed names`);
     bodies.set(body, candidate.id);
@@ -151,6 +159,20 @@ assert.ok(!affection.paragraphs[1].includes(PERSON_PAIR_READINGS['devil:pentacle
   'a spending-specific conflict is never inserted into a relationship reading');
 assert.ok(!spending.paragraphs.join(' ').includes('두 카드의 장점은 서로 부족한 부분을 채워 줘'),
   'matching advice categories never imply two harmful defensive habits should reinforce each other');
+const spendingContext = getPersonalContext('money', 'money-spending');
+const specificSpending = buildPersonNarrative({ cards: spendingCards, context: spendingContext, names: sameNames });
+for (const field of ['longing', 'defense', 'cost']) {
+  assert.ok(!specificSpending.paragraphs.join(' ').includes(getPersonStory('temperance')[field]),
+    `a purchasing question never acquires the common relationship ${field}`);
+}
+const [purchaseInsight, purchaseAction] = splitSummarySentences(spendingContext.cards.temperance);
+assert.ok(specificSpending.paragraphs[2].includes(purchaseInsight), 'the third card explains the current purchasing choice');
+assert.ok(specificSpending.overview.endsWith(purchaseAction), 'the complete third-card action concludes the situation overview');
+assert.ok(specificSpending.summaryLines[1].endsWith(purchaseAction), 'the preview keeps the same full action, including its conditions');
+assert.ok(specificSpending.choiceLink.includes(getConnectionProfile('devil').offer)
+  && specificSpending.choiceLink.includes(getConnectionProfile('pentacles_four').offer)
+  && specificSpending.choiceLink.includes(getConnectionProfile('temperance').offer),
+  'the third choice responds to the meanings of both actual earlier cards');
 const contrasting = buildPersonNarrative({ cards: ['swords_knight', 'swords_two', 'pentacles_three'].map(card), topicId: 'work' });
 assert.ok(contrasting.paragraphs[1].includes(PERSON_PAIR_READINGS['swords_knight:swords_two']));
 assert.ok(contrasting.paragraphs[2].includes(getPersonStory('pentacles_three').work),
@@ -159,13 +181,51 @@ assert.ok(!contrasting.paragraphs[2].includes(getPersonStory('pentacles_three').
   'the main story does not insert a second instruction before the topic-specific solution');
 const unpaired = buildPersonNarrative({ cards: ['fool', 'justice', 'pentacles_king'].map(card), topicId: 'money' });
 assert.equal(unpaired.evidence.authoredPair, false);
-assert.ok(unpaired.paragraphs[1].includes(getPersonStory('justice').cost),
-  'a pair without a special passage retains the second actual card’s personal difficulty');
+assert.ok(unpaired.pairReading.includes(getConnectionProfile('fool').offer)
+  && unpaired.pairReading.includes(getConnectionProfile('justice').offer),
+  'a pair without a special passage compares both actual meanings');
+assert.ok(!unpaired.pairReading.includes(getPersonStory('justice').cost),
+  'the second card’s generic cost is not presented as a two-card interpretation');
 assert.doesNotMatch(unpaired.paragraphs.join(' '), /두 카드의 장점은 서로 부족한 부분을 채워 줘|두 번째 카드가 짚는 부담까지 함께 읽어야|처음 카드가 보여 준 바람만으로는 지금의 마음을 다 설명할 수 없어/u,
   'fallback prose does not invent compatibility or repeat instructions about how to read the cards');
 assert.ok(unpaired.paragraphs[2].includes(getPersonStory('pentacles_king').money));
 assert.ok(!unpaired.paragraphs[2].includes(getPersonStory('pentacles_king').turning),
   'the money reading never borrows a generic instruction about delegating work');
+assert.ok(unpaired.overview.startsWith(splitSummarySentences(unpaired.pairReading)[0]));
+assert.ok(unpaired.overview.endsWith(splitSummarySentences(getPersonStory('pentacles_king').money)[0]),
+  'the main conclusion ends in the actual third card and selected topic, without borrowing another situation’s action');
+const conditionalClosing = '조건을 직접 확인했다면 감당할 수 있는 금액 안에서 결정하렴. 아직 모르는 비용은 담당자에게 물어봐.';
+const withClosing = buildPersonNarrative({ cards: ['fool', 'justice', 'pentacles_king'].map(card),
+  topicId: 'money', closingAction: conditionalClosing });
+assert.ok(withClosing.overview.endsWith(splitSummarySentences(conditionalClosing)[0]),
+  'a supplied actual action ends the overview without dropping its condition');
+assert.deepEqual(plain(withClosing.summaryLines), plain(unpaired.summaryLines),
+  'the overview action does not replace the separate meaning-and-solution summary lines');
+assert.deepEqual(plain(withClosing.paragraphs), plain(unpaired.paragraphs),
+  'the main overview can use its actual action without repeating another whole instruction in the story');
+
+const unpairedChangedFirst = buildPersonNarrative({ cards: ['moon', 'justice', 'pentacles_king'].map(card), topicId: 'money', names: sameNames });
+const unpairedFixedNames = buildPersonNarrative({ cards: ['fool', 'justice', 'pentacles_king'].map(card), topicId: 'money', names: sameNames });
+assert.notEqual(unpairedChangedFirst.pairReading, unpairedFixedNames.pairReading,
+  'fallback pair meaning changes when the first real identity changes with fixed labels');
+assert.notEqual(unpairedChangedFirst.paragraphs[2], unpairedFixedNames.paragraphs[2],
+  'the third paragraph explains a changed relationship to the earlier cards');
+for (const value of [unpairedChangedFirst, unpairedFixedNames]) {
+  assert.ok(value.paragraphs[2].includes(getPersonStory('pentacles_king').money),
+    'a changed connection does not replace the actual third-card topic meaning');
+}
+
+const positiveCards = ['sun', 'cups_two', 'world'].map(card);
+const positive = buildPersonNarrative({ cards: positiveCards, topicId: 'love', names: sameNames });
+for (const [index, value] of positiveCards.entries()) {
+  const core = splitSummarySentences(getCardInterpretation(value.id).meaning)[0];
+  const topic = splitSummarySentences(getPersonStory(value.id).love)[0];
+  assert.ok(positive.paragraphs[index].includes(core) && positive.paragraphs[index].includes(topic),
+    `${value.id}: the positive core and actual love meaning are retained`);
+  assert.ok(positive.paragraphs[index].indexOf(core) < positive.paragraphs[index].indexOf(topic));
+  assert.ok(!positive.paragraphs.join(' ').includes(getPersonStory(value.id).cost),
+    `${value.id}: the shared defensive cost is not automatically attached`);
+}
 assert.notDeepEqual(plain(contrasting.paragraphs), plain(buildPersonNarrative({
   cards: ['swords_two', 'swords_knight', 'pentacles_three'].map(card), topicId: 'work'
 }).paragraphs), 'reversing the first two cards changes their story rather than only their captions');

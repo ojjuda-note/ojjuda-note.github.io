@@ -3,6 +3,7 @@ const path = require('node:path');
 const http = require('node:http');
 const assert = require('node:assert/strict');
 const repo = path.resolve(__dirname, '..');
+const tarotOnly = process.argv.includes('--tarot-only');
 const artifacts = path.join(__dirname, 'artifacts', 'fortune-readings');
 fs.mkdirSync(artifacts, { recursive: true });
 const { chromium } = require('playwright');
@@ -39,11 +40,11 @@ globalThis.__entryFixture={businessSubmits:0};
 form.addEventListener('submit',event=>{event.preventDefault();globalThis.__entryFixture.businessSubmits++;});
 form.dataset.fixtureReady='true';
 </script>`;
-const sajuEntryFixture = fs.readFileSync(path.join(repo,'games/starlit-saju/index.html'),'utf8')
+const sajuEntryFixture = tarotOnly ? '' : fs.readFileSync(path.join(repo,'games/starlit-saju/index.html'),'utf8')
   .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'')
   .replace('<head>','<head><base href="/games/starlit-saju/">')
   .replace('</body>',entryFixtureScript+'</body>');
-const compatibilityEntryFixture = fs.readFileSync(path.join(repo,'games/starlit-saju/compatibility.html'),'utf8')
+const compatibilityEntryFixture = tarotOnly ? '' : fs.readFileSync(path.join(repo,'games/starlit-saju/compatibility.html'),'utf8')
   .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'')
   .replace('<head>','<head><base href="/games/starlit-saju/">')
   .replace('</body>',entryFixtureScript+'</body>');
@@ -177,11 +178,46 @@ const server = http.createServer((request, response) => {
     assert.notEqual(solutionLines[0], solutionLines[1], 'the action does not merely repeat the explanation');
     assert.equal(await page.locator('#summary-panel-problem > .reading-part').first().getAttribute('data-section-id'), 'together', 'the person’s combined story comes before the action sections');
     assert.equal((await page.locator('#summary-panel-problem [data-section-id="possible-outcome"] h3').textContent()).replace(/^\d+\s*/u, ''), '실천한 뒤 살펴볼 변화', 'the outcome is presented as a change to check after acting');
-    assert.match(await page.locator('#summary-panel-problem [data-section-id="problem-now"] .reading-summary-full').textContent(), /카드가 짚는 핵심 문제야/, 'the full explanation states the reading directly');
+    const selectedSource = await page.evaluate(async () => {
+      const { DECK, getReading, getSummary } = await import('/games/moonlit-tarot/readings.js');
+      const { getFortune } = await import('/games/moonlit-tarot/fortune-corpus/index.js');
+      const cards = [2, 4, 3].map(index => {
+        const name = document.querySelector(`.card[data-index="${index}"] .front-title strong`).textContent;
+        return DECK.find(card => card.name === name);
+      });
+      const summary = getSummary(cards, 'money');
+      return { record: getFortune('money', summary.source.pattern), sections: summary.detailSections,
+        firstCardMeaning: getReading(cards[0], 'money', 0).meaning,
+        groupOriginals: Object.fromEntries(summary.groups.map(group =>
+          [group.id, group.sections.map(section => section.paragraphs.join(''))])) };
+    });
+    assert.ok((await page.locator('#summary-panel-problem [data-section-id="problem-now"] .reading-summary-full').textContent()).includes(selectedSource.firstCardMeaning), 'the full explanation preserves the actual first card meaning');
     const tarotViews = {};
     const domainCategories = [['self', 5], ['timeline', 5], ['solutions', 5], ['love', 7], ['family', 4], ['career', 5], ['study', 5], ['money', 5], ['wellbeing', 4], ['opportunities', 5]];
     const captureCategories = new Set(['self', 'love', 'money', 'wellbeing']);
     const overflowState = () => page.evaluate(() => ({ document: document.documentElement.scrollWidth > innerWidth, modal: document.querySelector('#result-dialog').scrollWidth > document.querySelector('#result-dialog').clientWidth }));
+    async function inspectSummaryDetails(viewport) {
+      const details = page.locator('#summary-detail');
+      assert.equal(await details.count(), 1, 'tab and viewport changes never append duplicate source interpretations');
+      assert.equal(await details.locator('summary').textContent(), '함께 읽는 종합 해석');
+      assert.equal(await details.getAttribute('open'), null);
+      const sections = details.locator('#summary-detail-sections > .reading-part');
+      assert.equal(await sections.count(), selectedSource.sections.length);
+      for (const [index, source] of selectedSource.sections.entries()) {
+        assert.ok((await sections.nth(index).locator('h3').textContent()).endsWith(source.title));
+        if (source.subtitle) assert.equal(await sections.nth(index).locator('.reading-part-subtitle').textContent(), source.subtitle);
+        const paragraphs = await sections.nth(index).locator('p').allTextContents();
+        assert.equal(paragraphs.join(''), source.body.split(/\n\s*\n/).join(''), 'all selected source text and cautions survive visual paragraph breaks');
+      }
+      for (const text of [selectedSource.record.body, selectedSource.record.action]) assert.equal((await details.textContent()).split(text).length - 1, 1, 'the actual corpus body and practical advice appear once');
+      await details.locator('summary').focus();
+      await details.locator('summary').press('Enter');
+      assert.equal(await details.locator('#summary-detail-sections').isVisible(), true, 'keyboard activation opens the full selected interpretation');
+      assert.deepEqual(await overflowState(), { document: false, modal: false }, viewport + ': the complete source interpretation wraps without horizontal overflow');
+      await page.screenshot({ path: path.join(artifacts, `tarot-source-interpretation-${viewport}.png`) });
+      await details.locator('summary').press('Space');
+      assert.equal(await details.locator('#summary-detail-sections').isVisible(), false);
+    }
     async function inspectUnclippedSummaries(scope, label) {
       const geometry = await scope.locator('.reading-summary-line:visible').evaluateAll(lines => lines.map(line => {
         const style = getComputedStyle(line);
@@ -280,16 +316,19 @@ const server = http.createServer((request, response) => {
       await panel.waitFor({ state: 'visible' });
       assert.equal(await page.locator(`#summary-tab-${group}`).getAttribute('aria-selected'), 'true');
       assert.equal(await panel.getAttribute('aria-labelledby'), `summary-tab-${group}`);
-      assert.equal(await panel.locator('.reading-part').count(), expectedSections);
-      const sectionDetails = await panel.locator('.reading-part').evaluateAll(sections => sections.every(section => {
+      const mainSections = panel.locator(group === 'domains' ? '#summary-domain-sections > .reading-part' : ':scope > .reading-part');
+      assert.equal(await mainSections.count(), expectedSections);
+      const sectionDetails = await mainSections.evaluateAll((sections, originals) => sections.every((section, index) => {
         const overview = section.querySelector(':scope > .reading-two-line-summary');
         const details = section.querySelector(':scope > .reading-summary-details');
+        const paragraphs = [...(details?.querySelectorAll('.reading-summary-full p') || [])];
         return section.querySelector('h3')?.textContent.trim() && overview?.querySelectorAll('.reading-summary-line').length === 2
           && [...overview.children].every(line => line.textContent.trim()) && !overview.closest('details')
           && details && !details.open && details.querySelector('summary')?.textContent === '자세히 읽기'
-          && details.querySelectorAll('.reading-summary-full p').length >= 2 && !section.closest('details');
-      }));
-      assert.ok(sectionDetails, group + ': every title and two-line overview precede the intact folded explanation');
+          && paragraphs.length >= 1 && paragraphs.map(paragraph => paragraph.textContent).join('') === originals[index]
+          && !section.closest('details');
+      }), selectedSource.groupOriginals[group]);
+      assert.ok(sectionDetails, group + ': every title and two-line overview precede the complete selected explanation, without forcing extra paragraphs');
       let categoryChecks;
       if (group === 'domains') {
         const basis = page.locator('#summary-domain-basis');
@@ -312,6 +351,7 @@ const server = http.createServer((request, response) => {
       if (group === 'problem') await page.screenshot({ path: path.join(artifacts, 'tarot-summary-expanded-mobile.png') });
       await firstDetail.locator('summary').press('Space');
       assert.equal(await firstDetail.locator('.reading-summary-full').isVisible(), false, group + ': keyboard Space folds the explanation again');
+      if (group === 'problem') await inspectSummaryDetails('mobile');
       await inspectUnclippedSummaries(panel, group + ' mobile');
       await firstSection.locator('.reading-two-line-summary').scrollIntoViewIfNeeded();
       const overflow = await overflowState();
@@ -330,6 +370,7 @@ const server = http.createServer((request, response) => {
       const overflow = await overflowState();
       assert.deepEqual(overflow, { document: false, modal: false }, group + ': the desktop reading fits the viewport');
       await inspectUnclippedSummaries(page.locator(`#summary-panel-${group}`), group + ' desktop');
+      if (group === 'problem') await inspectSummaryDetails('desktop');
       await page.screenshot({ path: path.join(artifacts, group === 'problem' ? 'tarot-result-desktop.png' : `tarot-${group}-desktop.png`) });
       if (group === 'problem') await page.screenshot({ path: path.join(artifacts, 'tarot-summary-desktop.png') });
     }
@@ -340,6 +381,26 @@ const server = http.createServer((request, response) => {
     assert.deepEqual(await overflowState(), { document: false, modal: false }, 'complete summary sentences fit a 320px phone without cropping');
     await page.locator('#summary-panel-problem .reading-two-line-summary').first().scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(artifacts, 'tarot-summary-small-phone.png') });
+    await inspectSummaryDetails('small-phone');
+    await page.locator('#summary-tab-timeline').click();
+    await page.evaluate(() => {
+      globalThis.__tarotCopiedReading = '';
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+        async writeText(text) { globalThis.__tarotCopiedReading = text; }
+      } });
+    });
+    await page.locator('#copy-result').click();
+    await page.waitForFunction(() => globalThis.__tarotCopiedReading.length > 0);
+    const copiedTarot = await page.evaluate(() => globalThis.__tarotCopiedReading);
+    for (const source of selectedSource.sections) assert.ok(copiedTarot.includes(source.body), 'copy includes all source interpretations even while their panel and disclosure are closed');
+    for (const text of [selectedSource.record.body, selectedSource.record.action]) assert.equal(copiedTarot.split(text).length - 1, 1, 'the selected corpus body and advice are copied exactly once');
+    tarotViews.sourceInterpretation = { record: selectedSource.record.id, sections: selectedSource.sections.length, completeCopy: true, widths: [320, 390, 1280] };
+    if (tarotOnly) {
+      assert.deepEqual(errors, []);
+      assert.deepEqual(failed, []);
+      console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, errors, failed }));
+      return;
+    }
     const saju = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', deviceScaleFactor: 1 });
     saju.on('pageerror', error => errors.push(error.message));
     saju.on('response', response => { if (response.status() >= 400) failed.push([response.status(), response.url()]); });

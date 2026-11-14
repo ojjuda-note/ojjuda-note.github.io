@@ -1,5 +1,5 @@
-import { CONNECTION_PROFILES, getConnectionProfile as lookupConnectionProfile } from './connection-profiles.js?v=20261114-tarot-copy1';
-import { buildPersonNarrative } from './person-narrative.js?v=20261114-tarot-copy1';
+import { CONNECTION_PROFILES, getConnectionProfile as lookupConnectionProfile } from './connection-profiles.js?v=20261114-tarot-review2';
+import { buildPersonNarrative } from './person-narrative.js?v=20261114-tarot-review2';
 
 // The same actual-card relationship reader serves the main and situation views.
 export function getConnectionProfile(cardId) {

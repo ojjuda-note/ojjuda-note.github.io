@@ -1,8 +1,8 @@
-import { MAJOR_RULES } from './card-rules-major.js?v=20261114-tarot-copy1';
-import { WANDS_RULES } from './card-rules-wands.js?v=20261114-tarot-copy1';
-import { CUPS_RULES } from './card-rules-cups.js?v=20261114-tarot-copy1';
-import { SWORDS_RULES } from './card-rules-swords.js?v=20261114-tarot-copy1';
-import { PENTACLES_RULES } from './card-rules-pentacles.js?v=20261114-tarot-copy1';
+import { MAJOR_RULES } from './card-rules-major.js?v=20261114-tarot-review2';
+import { WANDS_RULES } from './card-rules-wands.js?v=20261114-tarot-review2';
+import { CUPS_RULES } from './card-rules-cups.js?v=20261114-tarot-review2';
+import { SWORDS_RULES } from './card-rules-swords.js?v=20261114-tarot-review2';
+import { PENTACLES_RULES } from './card-rules-pentacles.js?v=20261114-tarot-review2';
 import { directInterpretation, directAction } from './reading-voice.js?v=20261113-tarot-easy1';
 
 // Card-specific editorial applications of the existing, cited card meanings.
@@ -24,7 +24,7 @@ export const MAIN_CONTEXTS = Object.freeze({
     known: '지난주 일정과 끝낸 일',
     unknown: '꼭 할 일과 미뤄도 될 일',
     resource: '익숙한 방법과 주변의 도움',
-    burden: '혼자 맡은 일과 모자란 휴식',
+    burden: '혼자 맡은 일과 휴식 부족에서 오는 부담',
     boundary: '하루에 맡을 일과 쉬는 시간',
     habit: '급할수록 여러 일을 벌이는 습관',
     small: '오늘 꼭 할 일 하나를 골라 끝내기',
@@ -63,7 +63,7 @@ export const MAIN_CONTEXTS = Object.freeze({
     known: '요청받은 내용과 마감, 끝낸 작업',
     unknown: '결정할 사람과 각자가 맡을 일',
     resource: '익숙한 도구와 동료의 강점',
-    burden: '담당자 없이 늘어나는 요청과 마감',
+    burden: '담당자 없이 늘어나는 요청과 촉박한 마감의 부담',
     boundary: '내가 맡을 일과 가능한 시간',
     habit: '준비와 부탁에 매달려 실제 작업을 미루는 습관',
     small: '확인받을 부분을 담은 초안 하나 만들기',
