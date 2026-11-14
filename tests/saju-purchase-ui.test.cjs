@@ -31,8 +31,9 @@ test('a detail module failure charges nothing and keeps the birth input for retr
 });
 
 test('failed read-only ownership checks block payment and their retry itself never charges', async t => {
-  const h=await harness({failStatus:1});t.after(h.close);h.fill();h.submit();
+  const h=await harness({failStatus:1});t.after(h.close);h.fill();await h.flow.next();
   await waitFor(()=>!h.$('entry-check-error').hidden);
+  await h.submit();
   assert.equal(h.state.starts.length,0);assert.equal(h.$('open-story').disabled,true);
   h.$('retry-entry-status').click();await waitFor(()=>!h.$('open-story').disabled);
   assert.equal(h.state.starts.length,0);assert.equal(h.$('entry-check-error').hidden,true);

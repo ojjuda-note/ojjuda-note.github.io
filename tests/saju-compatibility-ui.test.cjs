@@ -1038,3 +1038,14 @@ test('the compatibility tab in saved readings can only reopen a matching, unexpi
   assert.equal(h.$('compatibility-open').disabled,true);
   await h.submit();assert.equal(h.state.starts.length,1);assert.equal(h.state.charges,0);
 });
+
+test('saved pairs can retry an initial wallet failure without reloading or paying',async t=>{
+  const h=await harness({entrySearch:'?reading=saved',failInit:1});t.after(h.close);
+  h.fill();await h.flow.next();await h.flow.next();
+  assert.match(h.$('compatibility-price').textContent,/불러오지 못/);
+  assert.equal(h.$('compatibility-login').hidden,true);
+  assert.equal(h.$('pair-ticket-retry').hidden,false);
+  h.$('pair-ticket-retry').click();
+  await waitFor(()=>h.$('compatibility-price').textContent.includes('이용권이 없어요'));
+  assert.equal(h.$('pair-ticket-retry').hidden,true);assert.equal(h.state.starts.length,0);
+});

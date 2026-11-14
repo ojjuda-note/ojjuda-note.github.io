@@ -38,3 +38,27 @@ test('the free return path only opens an active ticket and cannot charge after e
   assert.equal(h.state.starts.length,1);
   assert.equal(h.state.charges,0);
 });
+
+test('saved readings distinguish failed lookup from sign-out and reopen an active reading on the page',async t=>{
+  const purchase=await harness();t.after(purchase.close);
+  purchase.fill({topic:'annual'});await purchase.submit();await purchase.ready('annual',2026);
+  const storage=purchase.window.localStorage;
+  const initialStorage=Object.fromEntries(Object.keys(storage).map(key=>[key,storage.getItem(key)]));
+  const h=await harness({entrySearch:'?reading=saved',initialStorage,failInit:1,failStatus:1,receipts:new Map(purchase.state.receipts)});t.after(h.close);
+  const list=h.$('ticket-list');
+  h.$('saved-profiles').querySelector('.profile-picker-use').click();
+  await waitFor(()=>h.$('birth-form').dataset.flowStep==='1');
+  assert.match(list.textContent,/불러오지 못/);assert.doesNotMatch(list.textContent,/없어요|로그인/);
+  assert.equal(h.$('login-link').hidden,true);
+  list.querySelector('button').click();
+  await waitFor(()=>h.state.statusCalls.length===1 && list.textContent.includes('다시 확인하기'));
+  list.querySelector('button').click();
+  await waitFor(()=>list.textContent.includes('2026년 운세 다시 보기'));
+  assert.equal(h.state.starts.length,0);
+  list.querySelector('button').click();await h.ready('annual',2026);
+  assert.equal(h.state.charges,0);assert.equal(h.state.starts.length,1);
+  const guest=await harness({entrySearch:'?reading=saved',signedIn:false});t.after(guest.close);
+  guest.fill();await guest.flow.next();
+  assert.match(guest.$('ticket-list').querySelector('a').textContent,/로그인/);
+  assert.doesNotMatch(guest.$('ticket-list').textContent,/없어요/);
+});

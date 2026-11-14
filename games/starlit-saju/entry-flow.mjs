@@ -76,7 +76,7 @@ export function attachEntryFlow(form) {
     }
     if(next){next.hidden=index===panels.length-1;next.disabled=Boolean(pending)||busy();next.textContent=pending?'확인 중…':next.dataset.flowNextLabel||'다음';}
     if(back){back.hidden=index===0;back.disabled=Boolean(pending)||busy();}
-    if(submit)submit.hidden=index!==panels.length-1;
+    if(submit)submit.hidden=index!==panels.length-1 || form.dataset.ticketActions==='true';
     for(const edit of form.querySelectorAll('.flow-review-edit'))edit.disabled=Boolean(pending)||busy();
   }
   function show(step,{focus=true}={}) {
@@ -175,7 +175,7 @@ export function attachEntryFlow(form) {
   form.addEventListener('input',edited);form.addEventListener('change',edited);
   form.addEventListener('reset',()=>{sequence++;pending=null;validated.clear();win.queueMicrotask(()=>reset());});
   const observer=new win.MutationObserver(()=>render());observer.observe(form,{attributes:true,attributeFilter:['aria-busy']});
-  const controller={reset,refresh:()=>{
+  const controller={advance,reset,refresh:()=>{
     sequence++;pending=null;
     // A/B swaps may reuse only birth inputs already validated in this journey.
     const known=new Set(validated.values());
