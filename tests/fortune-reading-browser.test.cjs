@@ -558,7 +558,7 @@ const server = http.createServer((request, response) => {
     }
     async function fillEntry(prefix,{name,gender='female',year,month,day}) {
       const identity=prefix==='birth'?'person':prefix;
-      const optional=saju.locator('[data-flow-step]:visible .optional-person');
+      const optional=saju.locator('.optional-person').filter({has:saju.locator('#'+identity+'-name')});
       if(!await optional.evaluate(node=>node.open))await optional.locator('summary').click();
       await saju.locator('#'+identity+'-name').fill(name);
       await saju.locator('#'+identity+'-gender').selectOption(gender);
