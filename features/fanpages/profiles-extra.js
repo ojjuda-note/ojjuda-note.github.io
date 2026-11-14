@@ -77,6 +77,10 @@ if (txtProfile) {
 const idleProfile = window.OJJUDA_FAN_PROFILES.idle;
 if (idleProfile) {
   idleProfile.expanded = true;
+  idleProfile.awards = [
+    { year: '2026.02', title: 'Mono 음악방송 3관왕', detail: '2.05 M COUNTDOWN · 2.06 MUSIC BANK · 2.08 인기가요 1위', href: 'https://i-dle.cubeent.co.jp/news/2639/' },
+    { year: '2025.11', title: 'MAMA AWARDS FANS’ CHOICE', detail: '2025 MAMA AWARDS 팬스 초이스 수상 · 큐브 공식 보도', href: 'https://i-dle.cubeent.co.jp/news/2588/' }
+  ];
   idleProfile.records = [
     { year: '2025', title: 'i-dle로 활동명 변경', detail: '데뷔 7주년 이후 다섯 멤버의 팀 이름으로 활동', href: 'https://i-dle.cubeent.co.jp/profile/' },
     { year: '2026', title: '네 번째 월드투어 Syncopation', detail: '2026.02.21 서울 KSPO DOME 개막 · 아시아·오세아니아 공연', href: 'https://i-dle.cubeent.co.jp/news/2588/' }
@@ -91,6 +95,7 @@ if (idleProfile) {
   }
   idleProfile.sources.unshift({ label: '큐브 일본 공식 프로필 · 생일', href: 'https://i-dle.cubeent.co.jp/profile/' });
   idleProfile.sources.push({ label: '큐브 일본 공식 2026 월드투어 발표', href: 'https://i-dle.cubeent.co.jp/news/2588/' });
+  idleProfile.sources.push({ label: '큐브 일본 공식 Mono 음악방송 3관왕', href: 'https://i-dle.cubeent.co.jp/news/2639/' });
 }
 
 /* NMIXX: only publicly documented dates are filled. Unknown personal facts remain blank. */

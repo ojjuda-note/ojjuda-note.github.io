@@ -109,6 +109,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'uw4OYow_v7Y', title: 'BLACKPINK 10th Anniversary MEET & GREET', kind: '기념 영상', source: 'BLACKPINK Official · 2026.08.17' }
   ],
   idle: [
+    { id: 'FkEiAKgAF2c', title: "MINNIE · to the moon :)", kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.10.23' },
+    { id: '7mDDM0eBWR0', title: 'SOYEON · 퇴사할게여 (Narr. 기안84)', kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.09.07' },
     { id: 'FFjDEkZg-54', title: 'Gimme Dat Love', kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.07.06' },
     { id: 'bUMLC9lCgHo', title: 'Crow', kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.06.14 공개' },
     { id: 'w6FzChNkVrY', title: 'Crow', kind: '퍼포먼스', source: 'i-dle Official / CUBE · 2026.06.17' },
