@@ -19,6 +19,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'Y8JFxS1HlDo', title: 'LOVE DIVE', kind: '뮤직비디오', source: 'IVE / STARSHIP' }
   ],
   aespa: [
+    { id: 'inxzQt78lOk', title: 'KISS N TELL', kind: '뮤직비디오', source: 'SMTOWN · 2026.07.24' },
+    { id: '83C3TZ4Zm_o', title: 'LEMONADE', kind: '뮤직비디오', source: 'SMTOWN · 2026.05.29' },
+    { id: 'iTJSbJtS8MU', title: 'WDA (Whole Different Animal) (Feat. G-DRAGON)', kind: '뮤직비디오', source: 'SMTOWN · 2026.05.11' },
     { id: '5oQVTnq-UKk', title: 'Rich Man', kind: '뮤직비디오', source: 'aespa / SMTOWN' },
     { id: 'jWQx2f-CErU', title: 'Whiplash', kind: '뮤직비디오', source: 'aespa / SMTOWN' },
     { id: 'nFYwcndNuOY', title: 'Armageddon', kind: '뮤직비디오', source: 'aespa / SMTOWN' }
@@ -67,6 +70,7 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'pc1t3-1smUw', title: 'NEON + Dance Break', kind: '음악방송 무대', source: 'KBS WORLD' }
   ],
   a2osoul: [
+    { id: '23dgxvhaxnw', title: 'Dancing in the Dark · Fanchant Guide', kind: '공식 응원법', source: 'A2O SOUL / A2O WORLD' },
     { id: 'JPJokqIoIJI', title: 'Dancing in the Dark', kind: '뮤직비디오', source: 'A2O WORLD' },
     { id: 'B5Aa4gnnt9I', title: 'SUPERSTAR', kind: '인피니트 뮤직비디오', source: 'A2O WORLD' },
     { id: 'IAURqrShEUQ', title: 'SUPERSTAR', kind: '뮤직비디오', source: 'A2O WORLD' },
@@ -106,20 +110,28 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: '2GJfWMYCWY0', title: 'GO', kind: '뮤직비디오', source: 'BLACKPINK / YG Entertainment · 2026.02.27' },
     { id: 'CgCVZdcKcqY', title: '뛰어 (JUMP)', kind: '뮤직비디오', source: 'BLACKPINK / YG Entertainment · 2025.07.11' },
     { id: 'k--lCrP69hg', title: 'BLACKPINK 10TH ANNIVERSARY', kind: '기념 영상', source: 'BLACKPINK Official · 2026.08.07' },
-    { id: 'uw4OYow_v7Y', title: 'BLACKPINK 10th Anniversary MEET & GREET', kind: '기념 영상', source: 'BLACKPINK Official · 2026.08.17' }
+    { id: 'uw4OYow_v7Y', title: 'BLACKPINK 10th Anniversary MEET & GREET', kind: '기념 영상', source: 'BLACKPINK Official · 2026.08.17' },
+    { id: 'w1ayRv8j5yk', title: 'DEADLINE JACKET MAKING FILM', kind: '메이킹', source: 'BLACKPINK Official · 2026.03.13' },
+    { id: '0LLFprdOHqo', title: 'GO M/V Behind the Scenes', kind: '메이킹', source: 'BLACKPINK Official · 2026.03.09' }
   ],
   idle: [
+    { id: 'FkEiAKgAF2c', title: "MINNIE · to the moon :)", kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.10.23' },
+    { id: '7mDDM0eBWR0', title: 'SOYEON · 퇴사할게여 (Narr. 기안84)', kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.09.07' },
     { id: 'FFjDEkZg-54', title: 'Gimme Dat Love', kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.07.06' },
     { id: 'bUMLC9lCgHo', title: 'Crow', kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.06.14 공개' },
     { id: 'w6FzChNkVrY', title: 'Crow', kind: '퍼포먼스', source: 'i-dle Official / CUBE · 2026.06.17' },
     { id: 'DYgE3SGPEqk', title: 'Mono (Feat. skaiwater)', kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.01.27' }
   ],
   bts: [
+    { id: 'NewzQeL_uH8', title: 'ARIRANG · 가오슝·자카르타 일본 영화관 생중계 예고편', kind: '공식 예고편', source: 'BTS JAPAN OFFICIAL · 2026.11.11 공식 안내' },
+    { id: 'qUzSrkIuP0U', title: 'BTS · 2026 FIFA 월드컵 결승 하프타임 공연', kind: '공식 무대', source: 'FIFA 공식 YouTube · 2026.07.21 공개' },
     { id: 'b4iVv91Z6lY', title: 'SWIM', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.03.20' },
     { id: '_gyultVTesk', title: '2.0', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.04.01' },
     { id: 'diBO0gMuTXo', title: 'Hooligan', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.04.08' }
   ],
   seventeen: [
+    { id: 'FEyF183bBWc', title: '도겸×정한 · 정답 없는 여행 NO-CLUE TRIP 하이라이트 예고', kind: '예고편', source: 'SEVENTEEN 공식 YouTube · 2026.11.12' },
+    { id: 'ttCHjgJRAWY', title: '정한×조슈아 (JxJ) · One plus one 인천 공연', kind: '공식 무대', source: 'SEVENTEEN 공식 YouTube · 2026.11.11' },
     { id: 'hdwGWGSfABA', title: '정한×조슈아 (JxJ) · 12 o’clock', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.10.19' },
     { id: 'Do9BOhk0u_w', title: '디노의 피철인 · 놀아보세 (prod. Hitchhiker)', kind: '뮤직비디오', source: "HYBE LABELS · 공식 채널" },
     { id: 'uh_DpK2xFiE', title: '디노의 피철인 · 미쳐 미쳐', kind: '뮤직비디오', source: "HYBE LABELS · 공식 채널" },
@@ -128,6 +140,11 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'dZNPbNkKAss', title: '도겸×승관 (DxS) · Blue (Epilogue Ver.)', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.01.19' },
     { id: 'pS57UX6s-xw', title: 'THUNDER', kind: '뮤직비디오', source: 'SEVENTEEN / HYBE LABELS · 2025.05.26' },
     { id: 'skso_fkQcg0', title: 'Bad Influence (Prod. by Pharrell Williams)', kind: '뮤직비디오', source: 'SEVENTEEN / HYBE LABELS · 2025.06.11' }
+  ],
+  straykids: [
+    { id: 'YXOJopiDElc', title: 'SUIATSU · 도쿄돔 무대', kind: '공식 공연 영상', source: 'Stray Kids Japan Official / Sony Music · 2026.11.13' },
+    { id: 'BZ4UzthYTss', title: 'This & That', kind: '뮤직비디오', source: 'Stray Kids / JYP Entertainment · 2026.08.07' },
+    { id: 'Q7IFjVUUb_E', title: 'RUN IT', kind: '뮤직비디오', source: 'Stray Kids / JYP Entertainment · 2026.06.24' }
   ],
   txt: [
     { id: 'jOnLqqDRfY4', title: '하루에 하루만 더 (Stick With You)', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2026.04.13' },
@@ -177,10 +194,10 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
   ],
   kissoflife: [
     { id: 'nk9zx3gGqSc', title: 'Sticky / THE FIRST TAKE', kind: '라이브', source: 'THE FIRST TAKE · 공식 채널 · 2026.09.28' },
-    { id: '6bIVPKhafSI', title: 'SWEAT (Japanese Ver.) / THE FIRST TAKE', kind: '라이브', source: "THE FIRST TAKE · 공식 채널" },
-    { id: 'dsGK0HZZx1k', title: 'SWEAT (Japanese Ver.)', kind: '뮤직비디오', source: "KISS OF LIFE · 공식 채널" },
-    { id: 'EJ2fIbl35Oc', title: 'WHAT!', kind: '스페셜 비디오', source: "KISS OF LIFE · 공식 채널" },
-    { id: 'eTvUZymLyGY', title: 'SWEAT', kind: '뮤직비디오', source: "KISS OF LIFE · 공식 채널" }
+    { id: '6bIVPKhafSI', title: 'SWEAT (Japanese Ver.) / THE FIRST TAKE', kind: '라이브', source: "THE FIRST TAKE · 2026.10.12" },
+    { id: 'dsGK0HZZx1k', title: 'SWEAT (Japanese Ver.)', kind: '뮤직비디오', source: "KISS OF LIFE Official · 2026.09.15" },
+    { id: 'EJ2fIbl35Oc', title: 'WHAT!', kind: '스페셜 비디오', source: "KISS OF LIFE Official · 2026.08.19" },
+    { id: 'eTvUZymLyGY', title: 'SWEAT', kind: '뮤직비디오', source: "KISS OF LIFE Official · 2026.08.04" }
   ],
   kiiikiii: [
     { id: 'UsbRoaH6y-Q', title: 'Pop Off Pop Off', kind: '뮤직비디오', source: "STARSHIP · 공식 채널" },
@@ -189,15 +206,19 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'hAEfi_SKTEU', title: 'I DO ME', kind: '뮤직비디오', source: "STARSHIP · 공식 채널" }
   ],
   stayc: [
-    { id: 'HgewvBTOJwU', title: '2 L0VE', kind: '뮤직비디오', source: "STAYC · 공식 채널" },
-    { id: 'GwLfMAQEY9s', title: '2 L0VE', kind: '안무 영상', source: "STAYC · 공식 채널" },
-    { id: 'udOf9JGMA7U', title: 'MWUAH', kind: '뮤직비디오', source: "STAYC Japan Official · 공식 채널" },
-    { id: 'W8ml4ryPwic', title: 'I WANT IT', kind: '뮤직비디오', source: "STAYC · 공식 채널" },
-    { id: 'z-xfGoabprU', title: 'BEBE', kind: '뮤직비디오', source: "STAYC · 공식 채널" }
+    { id: 'HgewvBTOJwU', title: '2 L0VE', kind: '뮤직비디오', source: "STAYC Official · 2026.06.16" },
+    { id: 'GwLfMAQEY9s', title: '2 L0VE', kind: '안무 영상', source: "STAYC Official · 2026.06.16" },
+    { id: 'udOf9JGMA7U', title: 'MWUAH', kind: '뮤직비디오', source: "STAYC Japan Official · 2026.02.10" },
+    { id: 'W8ml4ryPwic', title: 'I WANT IT', kind: '뮤직비디오', source: "STAYC Official · 2025.07.21" },
+    { id: 'z-xfGoabprU', title: 'BEBE', kind: '뮤직비디오', source: "STAYC Official · 2025.03.18" }
   ],
   riize: [
     { id: 'RgkoXU4BlOE', title: 'Insomnia', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" },
     { id: '1ccDZDpPzEI', title: 'Sunburst · 일본 팬미팅', kind: '라이브 무대', source: "RIIZE · 공식 채널" },
+    { id: 'HDGCTtuW-Yo', title: 'Do your dance', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" },
+    { id: 'yfKBI5l81-A', title: 'All of You', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" },
+    { id: '4zn9p1dfxwY', title: 'All of You · TOKYO DOME', kind: '라이브 무대', source: "RIIZE · 공식 채널" },
+    { id: 'hE2bPb0wPGk', title: 'Flashlight · TOKYO DOME', kind: '라이브 무대', source: "RIIZE · 공식 채널" },
     { id: 'iUw3LPM7OBU', title: 'Get A Guitar', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" }
   ],
   boynextdoor: [

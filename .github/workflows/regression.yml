@@ -466,6 +466,13 @@ jobs:
           node tests/world-game-back-ui.test.cjs
       - name: Check purchased coupon messages and recipient privacy
         run: node --test tests/reward-coupon-ui.test.cjs
+      - name: Verify exact regression source identity
+        run: |
+          git rev-parse HEAD
+          git diff --exit-code HEAD -- tests/package.json tests/admin-fortune-purchases.test.cjs
+          git hash-object tests/package.json tests/admin-fortune-purchases.test.cjs
+          git status --short -- tests/run.cjs
+          node -p "require('./tests/package.json').scripts['test:unit']"
       - name: Check account, card, administrator and RPC regressions
         run: npm --prefix tests run test:unit
       - name: Check monthly top ten, personal positions and Korea-time reset

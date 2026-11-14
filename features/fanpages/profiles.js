@@ -57,7 +57,7 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   aespa: {
-    checkedAt: '2026.11.10',
+    checkedAt: '2026.11.13',
     debut: '2020.11.17', debutWork: 'Black Mamba',
     agency: 'SM Entertainment',
     concept: '현실과 가상 세계를 잇는 aespa.',
@@ -70,13 +70,13 @@ window.OJJUDA_FAN_PROFILES = {
       { year: '2024', title: 'MAMA 6관왕', detail: 'Supernova · Armageddon 외', href: 'https://cjenm.com/en/news/2024-mama-awards-wrap-up-historic-run-with-iconic-performances-and-milestone-moments/' }
     ],
     members: [
-      { name: '카리나', birthday: '2000.04.11', height: '168', hometown: '경기 성남', school: '고졸 검정고시 · 합격', note: '리더', source: 'https://smtown-official.jp/artist_corporate/' },
-      { name: '지젤', birthday: '2000.10.30', height: '164', hometown: '일본 도쿄', school: '세이신 국제학교 · 졸업', note: '래퍼', source: 'https://smtown-official.jp/artist_corporate/' },
-      { name: '윈터', birthday: '2001.01.01', height: '165', hometown: '경남 양산', school: '고졸 검정고시 · 합격', note: '보컬', source: 'https://smtown-official.jp/artist_corporate/' },
-      { name: '닝닝', birthday: '2002.10.23', height: '161', hometown: '중국 하얼빈', school: '', note: '보컬 · 막내', source: 'https://smtown-official.jp/artist_corporate/' }
+      { name: '카리나', birthday: '2000.04.11', height: '168', hometown: '경기 성남', school: '고졸 검정고시 · 합격', note: '리더', source: 'https://aespa-official.jp/profile/' },
+      { name: '지젤', birthday: '2000.10.30', height: '164', hometown: '일본 도쿄', school: '세이신 국제학교 · 졸업', note: '래퍼', source: 'https://aespa-official.jp/profile/' },
+      { name: '윈터', birthday: '2001.01.01', height: '165', hometown: '경남 양산', school: '고졸 검정고시 · 합격', note: '보컬', source: 'https://aespa-official.jp/profile/' },
+      { name: '닝닝', birthday: '2002.10.23', height: '161', hometown: '중국 하얼빈', school: '', note: '보컬 · 막내', source: 'https://aespa-official.jp/profile/' }
     ],
     sources: [
-      { label: 'SM 공식 생일', href: 'https://smtown-official.jp/artist_corporate/' },
+      { label: 'aespa 일본 공식 생일', href: 'https://aespa-official.jp/profile/' },
       { label: 'MAMA 기록', href: 'https://mama.mnetplus.world/history/2024/winners' },
       { label: '한국대중음악상', href: 'https://koreanmusicawards.com/project/aespa-supernova/' }
     ]
