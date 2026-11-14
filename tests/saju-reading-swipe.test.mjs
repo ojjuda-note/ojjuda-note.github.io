@@ -5,7 +5,7 @@ import {attachReadingSwipe} from '../games/starlit-saju/reading-swipe.mjs';
 
 const {JSDOM}=createRequire(import.meta.url)('jsdom');
 
-function reader(t,{index=1,attribute='data-reader-current'}={}) {
+function reader(t,{index=1,attribute='data-reader-current',motion=null}={}) {
   const dom=new JSDOM('<!doctype html><main><div id="reader"><nav class="reading-pager"><button id="previous">이전</button><button id="next">다음</button></nav><article id="first"><p>처음 읽는 설명입니다.</p></article><article id="second"><p>현재 읽는 설명입니다.</p></article><article id="last"><p>마지막 설명입니다.</p></article></div></main>',{url:'https://example.test/'});
   const {document:doc}=dom.window,container=doc.getElementById('reader');
   const previous=doc.getElementById('previous'),next=doc.getElementById('next');
@@ -23,7 +23,7 @@ function reader(t,{index=1,attribute='data-reader-current'}={}) {
   previous.addEventListener('click',()=>{calls.push('previous');show(index-1);});
   next.addEventListener('click',()=>{calls.push('next');show(index+1);});
   show(index);
-  let dispose=attachReadingSwipe(container,{previous,next});
+  let dispose=attachReadingSwipe(container,{previous,next,motion});
   t.after(()=>{dispose();dom.window.close();});
   function pointer(type,options={}) {
     const {target=pages[index].querySelector('p'),pointerId=1,pointerType='touch',isPrimary=true,timeStamp=100,...mouse}=options;
@@ -38,7 +38,7 @@ function reader(t,{index=1,attribute='data-reader-current'}={}) {
     return move;
   }
   return {dom,doc,container,previous,next,pages,calls,show,pointer,drag,current:()=>pages[index],index:()=>index,
-    dispose:()=>dispose(),reattach:()=>{dispose=attachReadingSwipe(container,{previous,next});}};
+    dispose:()=>dispose(),reattach:()=>{dispose=attachReadingSwipe(container,{previous,next,motion});}};
 }
 
 test('touch, mouse and pen horizontal drags reuse the existing page steps once',t=>{
@@ -85,6 +85,27 @@ test('form controls, links, disclosure headings and editable content keep their 
   }
   const h=reader(t);h.drag({target:h.container.querySelector('.reading-pager')});
   assert.deepEqual(h.calls,[],'the picker area itself is not a swipe surface');
+});
+
+test('pressing page controls, including a double click, preserves the active slide until navigation prepares its replacement',t=>{
+  let visualOffset=84;const prepared=[];
+  const motion={cancel(){visualOffset=0;},prepare(){prepared.push(visualOffset);visualOffset=0;},dispose(){}};
+  const h=reader(t,{index:0,motion}),target=h.doc.createElement('span');
+  target.textContent='다음 항목';h.next.append(target);
+  // Prepare runs before the fixture changes its page; its next animation starts
+  // after the button's existing navigation handler, as in the real pager.
+  h.next.addEventListener('click',()=>motion.prepare(),true);
+  h.next.addEventListener('click',()=>{visualOffset=116;});
+  for(const detail of [1,2]) {
+    const before=visualOffset;
+    h.pointer('pointerdown',{target,pointerType:'mouse',timeStamp:detail*100});
+    target.dispatchEvent(new h.dom.window.MouseEvent('mousedown',{bubbles:true,cancelable:true,button:0,buttons:1,detail}));
+    assert.equal(visualOffset,before,'a control press must not erase the previous slide before prepare reads its position');
+    h.pointer('pointerup',{target,pointerType:'mouse',timeStamp:detail*100+40});
+    target.dispatchEvent(new h.dom.window.MouseEvent('click',{bubbles:true,cancelable:true,button:0,detail}));
+  }
+  assert.deepEqual(prepared,[84,116],'both single and double clicks prepare from the ongoing visual position');
+  assert.deepEqual(h.calls,['next','next']);assert.equal(h.index(),2,'two deliberate clicks advance exactly two pages');
 });
 
 test('secondary buttons, modified gestures and nonprimary pointers do not navigate',t=>{
