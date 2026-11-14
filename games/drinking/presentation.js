@@ -238,10 +238,10 @@
       <svg class="dp-glass-art" viewBox="160 130 950 1000" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
         <defs>
           <linearGradient id="${id}-liquid" x1="265" y1="600" x2="985" y2="600" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#54290e" stop-opacity=".96"/><stop offset=".17" stop-color="#b36b26" stop-opacity=".9"/><stop offset=".46" stop-color="#d5a253" stop-opacity=".82"/><stop offset=".78" stop-color="#a66c27" stop-opacity=".92"/><stop offset="1" stop-color="#4e280f" stop-opacity=".98"/>
+            <stop stop-color="#54290e" stop-opacity=".72"/><stop offset=".17" stop-color="#b36b26" stop-opacity=".65"/><stop offset=".46" stop-color="#d5a253" stop-opacity=".58"/><stop offset=".78" stop-color="#a66c27" stop-opacity=".67"/><stop offset="1" stop-color="#4e280f" stop-opacity=".72"/>
           </linearGradient>
-          <linearGradient id="${id}-depth" x1="620" y1="440" x2="620" y2="900" gradientUnits="userSpaceOnUse"><stop stop-color="#3c210e" stop-opacity="0"/><stop offset="1" stop-color="#321b0b" stop-opacity=".45"/></linearGradient>
-          <linearGradient id="${id}-surface" x1="280" y1="424" x2="970" y2="466" gradientUnits="userSpaceOnUse"><stop stop-color="#e9c280" stop-opacity=".36"/><stop offset=".48" stop-color="#edcf95" stop-opacity=".67"/><stop offset="1" stop-color="#a96f2d" stop-opacity=".42"/></linearGradient>
+          <linearGradient id="${id}-depth" x1="620" y1="440" x2="620" y2="900" gradientUnits="userSpaceOnUse"><stop stop-color="#3c210e" stop-opacity="0"/><stop offset="1" stop-color="#321b0b" stop-opacity=".32"/></linearGradient>
+          <linearGradient id="${id}-surface" x1="280" y1="424" x2="970" y2="466" gradientUnits="userSpaceOnUse"><stop stop-color="#e9c280" stop-opacity=".22"/><stop offset=".48" stop-color="#edcf95" stop-opacity=".4"/><stop offset="1" stop-color="#a96f2d" stop-opacity=".27"/></linearGradient>
           <clipPath id="${id}-clip"><path d="M282 273H963L984 814Q627 905 265 814Z"/></clipPath>
         </defs>
         <g class="dp-glass-vessel">
