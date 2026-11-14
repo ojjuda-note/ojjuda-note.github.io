@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261114-drinks-afterdark1'
+ const revision='20261114-tarot-person1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -19,7 +19,7 @@
   imagevote:'1.4.1',
   updown:'1.2.1',
   drinking:'1.6.1',
-  tarot:'1.9.3',
+  tarot:'1.9.4',
   saju:'2.8.0',
   group:'1.2.2',
   chacha_rush:'1.1.1',

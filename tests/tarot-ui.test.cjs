@@ -236,7 +236,9 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
       }
     } else group.sections.forEach(appendExpected);
   }
-  expectedCopy.push(`이렇게 해 보세요: ${completedSummary.ritual}`, '', '타로의 전통 해석이에요. 미래를 확정하지 않아요.');
+  assert.equal(completed.$('#summary-ritual').closest('.ritual').hidden, true, 'the topic-specific action already in the solution is not repeated below the reading');
+  if (!completedSummary.ritualInReading) expectedCopy.push(`이렇게 해 보세요: ${completedSummary.ritual}`, '');
+  expectedCopy.push('타로의 전통 해석이에요. 미래를 확정하지 않아요.');
   assert.equal(copiedResult, expectedCopy.join('\n'), 'copy includes all three groups in order, including inactive groups, and the common practical advice once');
   assert.equal(copiedResult.split(completedSummary.ritual).length - 1, 1);
   assert.equal(copiedResult.split(domainGroup.description).length - 1, 1);
@@ -532,7 +534,7 @@ async function page({ admin = false, opened = [2, 3, 4], paidDay = '2026-11-12',
   for (const section of report.primary) assert.ok(compact(personalText).includes(compact(section.paragraphs[0])), 'the selected situation uses the actual card in its revealed role');
   for (const paragraph of report.connection.paragraphs) assert.ok(compact(personalText).includes(compact(paragraph)));
   const personalSections = [...personal.$('#personal-reading').querySelectorAll('.personal-card-guides > .reading-part, .personal-card-connections > .reading-part')];
-  for (const [index, section] of [...report.primary, report.connection].entries()) {
+  for (const [index, section] of [report.connection, ...report.primary].entries()) {
     const node = personalSections[index];
     assert.deepEqual([...node.querySelectorAll(':scope > .reading-two-line-summary > .reading-summary-line')].map(line => line.textContent), Array.from(section.summaryLines), 'personal roles and card connections have their own two-line overview');
     assert.equal(node.querySelector(':scope > .reading-summary-details').open, false);

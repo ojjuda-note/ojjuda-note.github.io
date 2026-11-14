@@ -1,8 +1,8 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261113-tarot-easy1';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261114-tarot-person1';
 import { TarotFX, TarotAudio } from './fx.js';
 import { TarotPayment, getTarotPrice } from './payment.js?v=20261113-tarot-24h1';
 import { TarotRevelation } from './revelation.js?v=20261112-tarot-daily1';
-import { createPersonalReading } from './personal-reading-ui.js?v=20261113-tarot-easy1';
+import { createPersonalReading } from './personal-reading-ui.js?v=20261114-tarot-person1';
 import { renderSectionSummary, installSummaryExpiryGuard } from './reading-summary-view.js?v=20261113-tarot-summary1';
 
 const $ = (selector) => document.querySelector(selector);
@@ -873,6 +873,7 @@ function buildResults() {
   renderSummaryGroups(summary, drawn.map(card => card.name));
   if (personalReading?.mount({ cards: drawn, topicId: state.topic }) === false) return;
   $('#summary-ritual').textContent = summary.ritual;
+  $('#summary-ritual').closest('.ritual').hidden = !!summary.ritualInReading;
   showOverallOracle(summary);
 }
 
@@ -950,7 +951,8 @@ async function copyResult() {
   });
   parts.push(...(personalReading?.copyLines() || []));
   if (epoch !== state.epoch || expireDisplayedReading()) return;
-  parts.push(`이렇게 해 보세요: ${summary.ritual}`, '', '타로의 전통 해석이에요. 미래를 확정하지 않아요.');
+  if (!summary.ritualInReading) parts.push(`이렇게 해 보세요: ${summary.ritual}`, '');
+  parts.push('타로의 전통 해석이에요. 미래를 확정하지 않아요.');
   const text = parts.join('\n');
   try {
     if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
