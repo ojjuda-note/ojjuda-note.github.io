@@ -115,6 +115,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'DYgE3SGPEqk', title: 'Mono (Feat. skaiwater)', kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.01.27' }
   ],
   bts: [
+    { id: 'NewzQeL_uH8', title: 'ARIRANG · 가오슝·자카르타 일본 영화관 생중계 예고편', kind: '공식 예고편', source: 'BANGTANTV · BTS 일본 공식 안내 · 2026.11.11' },
+    { id: 'qUzSrkIuP0U', title: 'BTS · 2026 FIFA 월드컵 결승 하프타임 공연', kind: '공식 무대', source: 'FIFA 공식 YouTube · 2026.07.21 공개' },
     { id: 'b4iVv91Z6lY', title: 'SWIM', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.03.20' },
     { id: '_gyultVTesk', title: '2.0', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.04.01' },
     { id: 'diBO0gMuTXo', title: 'Hooligan', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.04.08' }
