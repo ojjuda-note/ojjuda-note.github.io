@@ -332,7 +332,19 @@ if (twsProfile) {
 const nctdreamProfile = window.OJJUDA_FAN_PROFILES.nctdream;
 if (nctdreamProfile) {
   nctdreamProfile.expanded = true;
-  nctdreamProfile.checkedAt = '2026.11.12';
+  nctdreamProfile.checkedAt = '2026.11.14';
+  // SMTOWN OFFICIAL JAPAN publishes these six current members' birthdays.
+  const officialBirthdays = {
+    '런쥔': '2000.03.23', '제노': '2000.04.23', '해찬': '2000.06.06',
+    '재민': '2000.08.13', '천러': '2001.11.22', '지성': '2002.02.05'
+  };
+  for (const member of nctdreamProfile.members) {
+    if (Object.hasOwn(officialBirthdays, member.name)) {
+      member.birthday = officialBirthdays[member.name];
+      member.source = 'https://smtown-official.jp/pickup/';
+    }
+  }
+  nctdreamProfile.sources.push({ label: 'SMTOWN 일본 공식 6인 멤버 생일', href: 'https://smtown-official.jp/pickup/' });
   nctdreamProfile.records = [
     { year: '2026.11', title: '정규 6집 DREAM AFTER DREAM', detail: '2026.11.09 발매 · 타이틀 Boogie Woogie · 10곡', href: 'https://music.apple.com/us/album/dream-after-dream/6827483714' },
     { year: '2026.11', title: '일본 공연 출연', detail: '11.22 TV아사히 드림 페스티벌 출연', href: 'https://nct-jp.net/en/news/detail.php?id=1135918' }
