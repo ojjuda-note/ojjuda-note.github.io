@@ -495,9 +495,9 @@
         commonsPhoto('06072026 I-DLE SHOWCASE 1.png', 'We made 발매 쇼케이스 · 크롭 사진', '2026', 'K-POPIT 케이팝잇 · Wikimedia Commons에서 세로 6% 크롭', 'CC BY 4.0')
       ],
       music: [
-        { title: 'Mono (Feat. skaiwater)', date: '2026.01.27', type: '디지털 싱글', songs: ['Mono (Feat. skaiwater)'], href: 'https://i-dle.cubeent.co.jp/discography/2612/' },
-        { title: 'HIDE AND SEEK', date: '2026.04.22', type: '일본 디지털 싱글 · TV 애니메이션 오프닝', songs: ['HIDE AND SEEK'], href: 'https://i-dle.cubeent.co.jp/discography/2803/' },
         { title: 'We made', date: '2026.07.06', type: '미니 9집 · 타이틀 Gimme Dat Love', songs: ['Mono (Feat. skaiwater)', 'Gimme Dat Love', 'Morning', 'Crow', 'Love Is Pain'], href: 'https://i-dle.cubeent.co.jp/discography/2929/' },
+        { title: 'HIDE AND SEEK', date: '2026.04.22', type: '일본 디지털 싱글 · TV 애니메이션 오프닝', songs: ['HIDE AND SEEK'], href: 'https://i-dle.cubeent.co.jp/discography/2803/' },
+        { title: 'Mono (Feat. skaiwater)', date: '2026.01.27', type: '디지털 싱글', songs: ['Mono (Feat. skaiwater)'], href: 'https://i-dle.cubeent.co.jp/discography/2612/' },
         { title: 'i-dle', date: '2025.10.03', type: '일본 미니 1집 · 타이틀 どうしよっかな', songs: ['どうしよっかな', 'Invincible', '愛せなかった世界へ永遠にじゃあね', '傷つくのは嫌いだから', 'Queencard (Japanese ver.)'], href: 'https://i-dle.cubeent.co.jp/discography/2530/' },
         { title: 'We are', date: '2025.05.19', type: '미니 8집 · 타이틀 Good Thing', songs: ['Good Thing', 'Girlfriend', 'Love Tease', 'Chain', 'Unstoppable', 'If You Want'], href: 'https://i-dle.cubeent.co.jp/discography/2324/' },
         { title: 'I am', date: '2018.05.02', type: '데뷔 미니 1집 · 타이틀 LATATA', songs: ['LATATA', '달라($$$)', 'MAZE', "DON'T TEXT ME", '알고 싶어 (What’s in your house?)', '들어줘요 (Hear me)'], href: 'https://i-dle.cubeent.co.jp/discography/329/' }
@@ -522,7 +522,7 @@
         { title: 'We made 일본 공식 수입반', sub: 'UNIVERSAL MUSIC · Mono/Crow/POCAALBUM 버전 · 재고·특전은 판매처 확인', href: 'https://www.universal-music.co.jp/i-dle/news/2026-06-17-2/' }
       ],
       campaigns: [
-        { kind: '팬 캠페인', date: '2026.03.24', title: 'i-dle × LINE 일본 공식 계정 · i-BINGO', sub: '일본 공식 계정 개설 기념 빙고·응모 이벤트 · 당시 진행, 현재 참여 가능 여부 미확인', href: 'https://i-dle.cubeent.co.jp/news/2682/' },
+        { kind: '콜라보', date: '2026.03.24', title: 'i-dle × LINE 일본 공식 계정 · i-BINGO', sub: '일본 공식 계정 개설 기념 빙고·응모 이벤트 · 당시 진행, 현재 참여 가능 여부 미확인', href: 'https://i-dle.cubeent.co.jp/news/2682/' },
         { kind: '광고', date: '2026.05.05', title: '패밀리마트 × i-dle', sub: '2026.05.05~11 일본 점포 FamiMa TV·매장 안내 방송 · 기간 종료', href: 'https://i-dle.cubeent.co.jp/news/2772/' }
       ],
       accent: '#9567d1', light: '#ebdeff', dark: '#594077', bg: '#faf5ff', shape: '✦'
