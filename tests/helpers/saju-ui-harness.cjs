@@ -23,6 +23,48 @@ async function waitFor(predicate, message = 'UI did not settle') {
     await pause();
   }
 }
+function entryFlowDriver(form,window) {
+  const current=()=>form.querySelector('[data-flow-step="'+form.dataset.flowStep+'"]');
+  const control=selector=>[...form.querySelectorAll(selector)].find(element=>!element.closest('[hidden]'));
+  async function next() {
+    const button=control('[data-flow-next]');
+    assert.ok(button,'the current input stage has a next button');
+    assert.equal(button.disabled,false,'the next action is available before validation');
+    button.click();
+    await waitFor(()=>form.dataset.flowBusy!=='true','input-stage validation did not settle');
+    return Number(form.dataset.flowStep);
+  }
+  function back() {const button=control('[data-flow-back]');assert.ok(button,'the current input stage has a back button');button.click();}
+  async function confirm() {
+    const stages=form.querySelectorAll('[data-flow-step]').length;
+    for(let count=0;count<stages-1;count++) {
+      if(Number(form.dataset.flowStep)===stages-1)break;
+      const before=form.dataset.flowStep;await next();
+      if(form.dataset.flowStep===before)return false;
+    }
+    assert.equal(Number(form.dataset.flowStep),stages-1,'the explicit purchase starts on the final confirmation stage');
+    form.dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true}));
+    return true;
+  }
+  return {current,next,back,confirm};
+}
+function selectReadingItem(select,id) {
+  const doc=select.ownerDocument,nav=doc.getElementById(select.id+'-navigator');
+  assert.ok(nav,'the reading has visible field and item navigation');
+  const item=nav.querySelector('[data-reading-target="'+id+'"]');
+  assert.ok(item,id+' is reachable from the item list');
+  const domain=nav.querySelector('.reading-domain-button[data-reading-domain="'+item.dataset.readingDomain+'"]');
+  assert.ok(domain&&!domain.hidden,'the requested field is available');
+  if(domain.getAttribute('aria-pressed')!=='true')domain.click();
+  const picker=nav.querySelector('.reading-item-picker');
+  if(!picker.open)picker.querySelector('summary').click();
+  assert.equal(item.closest('[hidden]'),null,'the requested item is shown inside its selected field');
+  item.click();
+  assert.equal(select.value,id,'visible navigation and the selected reading agree');
+  assert.equal(item.getAttribute('aria-current'),'page');
+  assert.equal(picker.open,false,'choosing an item closes the list to show the reading');
+  return doc.getElementById(id);
+}
 function assertNoReadingScores(h) {
   assert.equal(h.window.document.querySelector('.saju-reading-score'),null,'an unavailable paid reading leaves no score or scoring notice on the page');
 }
@@ -245,7 +287,8 @@ async function harness(options = {}) {
     product.checked=true;change(product);
     $('entry-year').value=String(fortuneYear);change($('entry-year'));
   }
-  function submit() { $('birth-form').dispatchEvent(new window.Event('submit', {bubbles:true,cancelable:true})); }
+  const flow=entryFlowDriver($('birth-form'),window);
+  function submit() {return flow.confirm();}
   async function ready(topic='lifelong',year=0) {
     try { await waitFor(() => !$('result').hidden && $('report-content').dataset.topic===topic && $('report-content').dataset.year===String(year),'report missing'); }
     catch(error) { error.message+=` · ${$('form-error').textContent} · ${$('entry-check-error-text').textContent} · starts=${state.starts.length}`;throw error; }
@@ -282,7 +325,7 @@ async function harness(options = {}) {
     state.copies.length=0;state.receipts.clear();
     dom.window.close();
   }
-  return {dom,window,state,$,fill,submit,ready,change,pickReport,changeAccount,advance,close};
+  return {dom,window,state,$,fill,submit,ready,change,pickReport,changeAccount,advance,flow,close};
 }
 
-module.exports = {harness, fixedNow, PROFILE_USER_A, PROFILE_USER_B, pause, deferred, waitFor, assertNoReadingScores, assertNoCalculationUI, assertReadingScores, assertReadingScoreCopy};
+module.exports = {harness, fixedNow, PROFILE_USER_A, PROFILE_USER_B, pause, deferred, waitFor, entryFlowDriver, selectReadingItem, assertNoReadingScores, assertNoCalculationUI, assertReadingScores, assertReadingScoreCopy};
