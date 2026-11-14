@@ -1,8 +1,9 @@
-import { getTenGod, makeProfile, interactionPairs } from './fortune-data.mjs?v=20261113-saju-reader1';
-import { GOD_REFERENCE, RELATION_REFERENCE } from './readings-data.mjs?v=20261113-saju-easy1';
-import { zodiacFromChart } from './zodiac.mjs?v=20261113-saju-easy1';
-import { buildCompatibilityScore } from './compatibility-score.mjs?v=20261113-saju-easy1';
-import { buildCompatibilityPeople } from './compatibility-people.mjs?v=20261114-saju-wind1';
+import { getTenGod, makeProfile, interactionPairs } from './fortune-data.mjs?v=20261114-saju-depth1';
+import { GOD_REFERENCE, RELATION_REFERENCE } from './readings-data.mjs?v=20261114-saju-depth1';
+import { zodiacFromChart } from './zodiac.mjs?v=20261114-saju-depth1';
+import { buildCompatibilityScore } from './compatibility-score.mjs?v=20261114-saju-depth1';
+import { buildCompatibilityPeople } from './compatibility-people.mjs?v=20261114-saju-depth1';
+import { attachCompatibilityDetails } from './compatibility-detail-stories.mjs?v=20261114-saju-depth1';
 
 // A local comparison of two already-calculated charts. All cross-chart pillar
 // pairs are retained; the prose is a disclosed application of shared meanings.
@@ -278,5 +279,5 @@ export function buildCompatibilityReading(chart,partnerChart) {
     rules:Object.fromEntries(unique(interactions.map(match=>match.kind)).map(kind=>[kind,{...RELATION_REFERENCE[kind]}])),
   };
   const additions=buildCompatibilityPeople({charts:{self:chart,partner:partnerChart},profiles,scopes:reading.scope,compatibility:reading});
-  return {...reading,people:additions.people,synthesis:additions.synthesis,facts:[...facts,...additions.facts]};
+  return attachCompatibilityDetails({...reading,people:additions.people,synthesis:additions.synthesis,facts:[...facts,...additions.facts]});
 }

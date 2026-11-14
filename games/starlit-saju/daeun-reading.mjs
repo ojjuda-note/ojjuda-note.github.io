@@ -1,8 +1,10 @@
-import { makeProfile, getTenGod, interactionPairs } from './fortune-data.mjs?v=20261113-saju-reader1';
-import { GOD_CONTEXTS, PAIR_CONTEXTS } from './deeper-reading-data.mjs?v=20261113-saju-easy1';
-import { describePersonalPeriod } from './reader-summary.mjs?v=20261113-saju-easy1';
-import { buildDaeunSituations } from './daeun-situations.mjs?v=20261113-saju-easy1';
-import { readingScoreCopy } from './reading-score.mjs?v=20261114-saju-wind2';
+import { makeProfile, getTenGod, interactionPairs } from './fortune-data.mjs?v=20261114-saju-depth1';
+import { GOD_CONTEXTS, PAIR_CONTEXTS } from './deeper-reading-data.mjs?v=20261114-saju-depth1';
+import { describePersonalPeriod } from './reader-summary.mjs?v=20261114-saju-depth1';
+import { buildDaeunSituations } from './daeun-situations.mjs?v=20261114-saju-depth1';
+import { readingScoreCopy } from './reading-score.mjs?v=20261114-saju-depth1';
+import { detailContent, domainConversation } from './general-detail-scenes.mjs?v=20261114-saju-depth1';
+import { readingDetailText } from './reading-detail.mjs?v=20261114-saju-depth1';
 
 // These are shared interpretations of computed relationships, not individual
 // predictions assembled from a birth-date hash. Every selected rule keeps its
@@ -241,6 +243,29 @@ function interactionReading(period,topic) {
   if (period.interactions.some(value=>value.kind==='branch-clash')) values.push(INTERACTIONS[topic].clash);
   return values.length ? values.join(' ') : INTERACTIONS[topic].ordinary;
 }
+function situationDetails(item,period) {
+  const hasOther=item.godCodes.length>1;
+  if(item.paragraphs.length!==(hasOther?7:6))fail();
+  const [opening,natal]=item.paragraphs;
+  const offset=hasOther?1:0;
+  const other=hasOther?item.paragraphs[2]:null;
+  const [example,interaction,boundary,action]=item.paragraphs.slice(2+offset);
+  const documents=item.id.endsWith('.documents');
+  const followUp=documents
+    ? period.startAgeYears<18
+      ? '가상 대화로는 “준비물은 내가 챙길게. 발표 내용을 바꾸려면 둘 다 확인한 뒤 정하자.”라고 말해 볼 수 있어요. 학교나 모임에서 하는 작은 약속도 맡은 일과 함께 정할 일을 나누어 두면, 도와주려다 책임이 뒤섞이는 것을 줄이기 좋아요.'
+      : '가상 대화로는 “처음 정한 내용은 여기까지이고, 새로 요청한 일은 시간과 비용을 다시 맞추고 싶어요.”라고 말해 볼 수 있어요. 바뀐 조건을 모두 같은 내용으로 이해했는지 되짚어 보세요. 좋다는 대답만 받는 것보다 무엇에 동의했는지 확인하는 연습이에요.'
+    : '도움을 받은 뒤의 모습도 살펴보세요. 가상 대화로는 “네 설명 덕분에 비교할 점을 알았어. 이 부분은 내가 해 보고, 막히는 곳만 다시 물어볼게.”라고 말할 수 있어요. 고마운 마음을 전하면서도 내가 이어서 할 선택과 행동을 남겨 두는 방법이에요.';
+  return {...item,...detailContent([
+    [documents?'이 구간의 약속에서 살필 점':'이 구간에 살펴볼 사람과 도움',[opening]],
+    ['평소 내 성향과 연결되는 부분',[natal,other]],
+    ['생활에 적용한 가상 장면',[example]],
+    ['서로 조건을 맞추는 방법',[interaction]],
+    ['받아들이기 전에 확인할 부분',[boundary]],
+    [documents?'약속을 분명히 하는 대화':'도움을 받은 뒤 이어 갈 일',[followUp]],
+    ['지금 해 볼 한 가지',[action]],
+  ])};
+}
 function makePeriod(profile,period,engineFacts,natal,previous=null) {
   const codes=unique([period.stemGod.code,period.branchGod.code]);
   const prefix='daeun.reading.period.'+period.index;
@@ -270,22 +295,26 @@ function makePeriod(profile,period,engineFacts,natal,previous=null) {
     const connection=natalConnection(profile,codes,topic);
     const opening=primary.reading+(secondary?' 또 하나 살펴볼 점이 있어요. '+secondary.reading:'');
     const care=primary.care+(secondary&&secondary.care!==primary.care?' '+secondary.care:'');
-    const paragraphs=[
-      connection.paragraphs[0],opening,...connection.paragraphs.slice(1,3),interactionReading(period,topic.id),
-      '생활 속 상황을 가정해 볼게요. '+GOD_CONTEXTS[codes[0]][topic.id].example,
-      connection.paragraphs[3],
-      care+' '+topic.action,
-    ];
+    const details=detailContent([
+      ['평소 내 모습',[connection.paragraphs[0]]],
+      ['이번 10년 동안 살펴볼 주제',[opening,connection.paragraphs[1]]],
+      ['내 성향을 이 시기에 써 보면',[connection.paragraphs[2]]],
+      ['주변과 조건을 맞추는 방법',[interactionReading(period,topic.id)]],
+      ['생활 속 가상 장면',['생활 속 상황을 가정해 볼게요. '+GOD_CONTEXTS[codes[0]][topic.id].example]],
+      ['일상에서 해 볼 대화',[domainConversation(codes[0],topic.id)]],
+      ['먼저 해 볼 한 가지',[connection.paragraphs[3]]],
+      ['부담을 줄이며 이어 가려면',[care+' '+topic.action]],
+    ]);
     return {
       id:prefix+'.'+topic.id,label:topic.label,title:primary.title,
-      paragraphs,factIds:unique([...sharedFactIds,...connection.factIds]),
+      ...details,factIds:unique([...sharedFactIds,...connection.factIds]),
       godCodes:[...codes],natalGodCodes:connection.codes,personalParagraphs:[...connection.paragraphs],origin:ORIGIN,
     };
   });
   const situations=buildDaeunSituations({period,
     natal:profile.gods.map(entry=>({code:entry.god.code,factId:'daeun.reading.natal.god.'+entry.pillarKey+'.'+entry.position})),
     sharedFactIds,
-  });
+  }).map(item=>situationDetails(item,period));
   const allIds=unique([...sharedFactIds,...previousIds,...topics.flatMap(topic=>topic.factIds),...situations.flatMap(item=>item.factIds)]);
   const engine=engineFacts.filter(item=>allIds.includes(item.id));
   const allFacts=[...engine,...natal.filter(item=>allIds.includes(item.id)),...derived,...previousFacts];
@@ -294,7 +323,8 @@ function makePeriod(profile,period,engineFacts,natal,previous=null) {
     subtitle,headline:subtitle,ageLabel:period.ageLabel,periodLabel:period.startLabel+'부터 '+period.endLabel+' 전까지',
     startsAt:period.startsAt,endsAt:period.endsAt,startLabel:period.startLabel,endLabel:period.endLabel,
     startAgeYears:period.startAgeYears,endAgeYears:period.endAgeYears,isCurrent:period.isCurrent,
-    hanja:period.hanja,hangul:period.hangul,paragraphs,topics,situations,facts:allFacts,
+    hanja:period.hanja,hangul:period.hangul,
+    ...detailContent([['이번 구간의 생활 주제',[paragraphs[0]]],['생활에 적용해 보기',[paragraphs[1]]],['앞 구간에서 달라진 점',paragraphs.slice(2)]]),topics,situations,facts:allFacts,
     factIds:allIds,godCodes:codes,origin:ORIGIN,
   };
 }
@@ -323,7 +353,13 @@ export function buildDaeunReading(chart,daeun) {
   const paragraphs=daeun.currentState==='after-listed-periods'
     ? ['현재 시점은 이번에 계산한 마지막 구간이 지난 뒤예요. 아래에는 실제로 계산한 기간의 돈·일·관계·배움에 관한 풀이를 남겨 두었어요. 이후 기간을 임의로 이어서 풀이하지는 않아요.']
     : [current ? current.startLabel+'부터 '+current.endLabel+' 전까지가 현재 구간이에요. 아래에서 이 기간의 돈·일·관계·배움과 조심할 점을 하나씩 읽어 보세요.' : '첫 구간은 '+first.startLabel+'에 시작해 '+first.endLabel+' 전까지 이어져요. 평소의 성향을 이 기간의 일과 관계에 어떻게 써 볼지 분야별로 설명했어요.'];
-  return {...common,headline,paragraphs,periods,facts,factIds:unique(facts.map(item=>item.id)),
+  const selected=daeun.currentState==='after-listed-periods'?null:(current||first);
+  const details=detailContent([
+    [current?'지금 살펴볼 구간':selected?'처음 시작되는 구간':'계산한 기간의 범위',paragraphs],
+    [current?'현재 구간의 생활 주제':'첫 구간에서 살펴볼 생활 주제',selected?[selected.paragraphs[0]]:[]],
+    ['생활에 적용해 보는 예',selected?[selected.paragraphs[1]]:[]],
+  ]);
+  return {...common,headline,...details,periods,facts,factIds:unique(facts.map(item=>item.id)),
     startAge:clone(daeun.startAge),startsAt:daeun.startsAt,startLabel:daeun.startLabel};
 }
 
@@ -333,11 +369,11 @@ export function copyDaeunReading(reading) {
   if (!reading||typeof reading.availability!=='boolean'||!Array.isArray(reading.periods)||!Array.isArray(reading.facts)) fail();
   if (reading.timeAssumed===true&&!text(reading.birthTimeNotice)) fail();
   const lines=[reading.title,...(reading.timeAssumed===true?[reading.birthTimeNotice]:[]),reading.headline,
-    ...(reading.availability?summaryCopy(reading):readingScoreCopy(reading)),...reading.paragraphs];
+    ...(reading.availability?summaryCopy(reading):readingScoreCopy(reading)),...readingDetailText(reading)];
   if (!reading.availability) return lines.join('\n');
   for (const period of reading.periods) {
-    lines.push('',period.title,period.subtitle,period.periodLabel,...summaryCopy(period),...period.paragraphs);
-    for (const topic of [...period.topics,...(period.situations||[])]) lines.push('',topic.label,topic.title,...summaryCopy(topic),...topic.paragraphs);
+    lines.push('',period.title,period.subtitle,period.periodLabel,...summaryCopy(period),...readingDetailText(period));
+    for (const topic of [...period.topics,...(period.situations||[])]) lines.push('',topic.label,topic.title,...summaryCopy(topic),...readingDetailText(topic));
   }
   return lines.filter(value=>typeof value==='string').join('\n');
 }

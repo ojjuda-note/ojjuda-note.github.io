@@ -1,8 +1,9 @@
 import {getReadingSources} from './sources.mjs?v=20261113-saju-reader1';
 import {applyReadingSummaryViews} from './reading-summary-view.mjs?v=20261113-saju-summary1';
 import {applyReadingScoreViews} from './reading-score-view.mjs?v=20261114-saju-wind1';
-import {createCompatibilityScoreboard} from './compatibility-score-view.mjs?v=20261114-saju-wind1';
-import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261114-saju-flow1';
+import {createCompatibilityScoreboard,createCompatibilityScoreDetails} from './compatibility-score-view.mjs?v=20261114-saju-depth1';
+import {appendReadingDetail} from './reading-detail.mjs?v=20261114-saju-depth1';
+import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261114-saju-depth1';
 import {createReadingNavigator} from './reading-navigator.mjs?v=20261114-saju-flow1';
 import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
 import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
@@ -213,7 +214,7 @@ function readerOverview(overview, sectionId, chapters=[], showLabel=false, fallb
     intro.append(headline);
   }
   const prose=node('div','report-prose reader-prose');
-  addParagraphs(prose,overview.paragraphs);
+  appendReadingDetail(prose,overview,addParagraphs);
   intro.append(prose);
   section.append(intro);
   const topicNav=node('nav','reader-topic-nav');
@@ -233,7 +234,7 @@ function readerOverview(overview, sectionId, chapters=[], showLabel=false, fallb
     const title=node('h5','reader-card-title',item.title);
     card.append(label,title);
     const body=node('div','report-prose reader-prose');
-    addParagraphs(body,item.paragraphs);
+    appendReadingDetail(body,item,addParagraphs);
     card.append(body);
     const chapterIndex=chapters.findIndex(chapter=>chapter.id===item.chapterId);
     const evidenceId=chapterIndex>=0?`${sectionId}-chapter-${chapterIndex+1}`:fallbackEvidenceId;
@@ -407,7 +408,7 @@ function personPortraitView(portrait, facts, original, visibleScopeNotice='') {
   const headline=node('h4','reader-headline portrait-headline',portrait.headline);
   headline.id='person-portrait-headline';headline.tabIndex=-1;
   const prose=node('div','report-prose reader-prose portrait-prose');
-  addParagraphs(prose,portrait.paragraphs);
+  appendReadingDetail(prose,portrait,addParagraphs);
   intro.append(headline,portraitSummaryTable(portrait),prose);
   section.append(intro);
 
@@ -429,7 +430,7 @@ function personPortraitView(portrait, facts, original, visibleScopeNotice='') {
     label.append(number,document.createTextNode(item.label));
     card.append(label,node('h5','portrait-card-title',item.title));
     const body=node('div','report-prose reader-prose portrait-prose');
-    addParagraphs(body,item.paragraphs);
+    appendReadingDetail(body,item,addParagraphs);
     const evidenceLink=readingLink('이 성격 풀이의 근거','reading-person-portrait-evidence','reader-detail-link');
     evidenceLink.setAttribute('aria-label',`${item.label} 풀이의 근거 보기`);
     card.append(body,evidenceLink);
@@ -730,7 +731,7 @@ function supplementSection(id, reading, className) {
   const intro=node('div','reader-intro');
   intro.append(node('h4','reader-headline',reading.headline));
   const prose=node('div','report-prose reader-prose');
-  addParagraphs(prose,reading.paragraphs);
+  appendReadingDetail(prose,reading,addParagraphs);
   intro.append(prose);
   body.append(intro);
   section.append(header,body);
@@ -814,7 +815,7 @@ function timingsView(timings, reading, fortune) {
     const content=node('div','reader-timing-content');
     content.append(node('h5','reader-timing-kind','나의 성향과 이 시기의 주의점'));
     const prose=node('div','report-prose reader-prose');
-    addParagraphs(prose,item.paragraphs);
+    appendReadingDetail(prose,item,addParagraphs);
     if (prose.childNodes.length) content.append(prose);
     const opportunities=timingPoints(item.opportunities,'이 기간에 살릴 기회');
     const people=timingPoints(item.people,'도움을 구해 볼 사람');
@@ -855,7 +856,7 @@ function symbolsView(symbols) {
     const article=node('article','reader-symbol-item');
     article.append(node('h4','reader-card-label',item.label),node('h5','reader-card-title',item.value));
     const prose=node('div','report-prose reader-prose');
-    addParagraphs(prose,[item.description]);
+    appendReadingDetail(prose,item.paragraphs?.length?item:{...item,paragraphs:[item.description]},addParagraphs);
     article.append(prose);
     list.append(article);
   }
@@ -909,7 +910,7 @@ function daeunView(reading) {
   }
   const intro=node('div','report-prose reader-prose');
   intro.append(node('h4','reader-headline',reading.headline));
-  addParagraphs(intro,reading.paragraphs);
+  appendReadingDetail(intro,reading,addParagraphs);
   section.append(intro);
   const nav=node('nav','reader-topic-links daeun-nav');
   nav.setAttribute('aria-label','10년 흐름 바로가기');
@@ -931,7 +932,7 @@ function daeunView(reading) {
     const body=node('div','daeun-period-body');
     body.append(node('p','daeun-dates',period.periodLabel));
     const prose=node('div','report-prose reader-prose');
-    addParagraphs(prose,period.paragraphs);
+    appendReadingDetail(prose,period,addParagraphs);
     body.append(prose);
     for(const topic of [...period.topics,...(period.situations||[])]) {
       const article=node('article','daeun-topic');
@@ -940,7 +941,7 @@ function daeunView(reading) {
       article.dataset.factIds=topic.factIds.join(' ');
       article.append(node('h5','reader-card-label',topic.label),node('h6','reader-card-title',topic.title));
       const paragraphs=node('div','report-prose reader-prose');
-      addParagraphs(paragraphs,topic.paragraphs);
+      appendReadingDetail(paragraphs,topic,addParagraphs);
       article.append(paragraphs);
       body.append(article);
     }
@@ -1002,6 +1003,8 @@ export function renderCompatibilityReport(container, reading, {names=[]}={}) {
   if(synthesis)synthesis.element.querySelector('.compatibility-two-line-summary').after(score);
   else section.append(score);
   pages.push({element:score,label:'궁합 점수',group:'두 사람의 궁합'});
+  const scoreDetails=createCompatibilityScoreDetails(reading.score,{appendParagraphs:addParagraphs});
+  section.append(...scoreDetails.map(page=>page.element));pages.push(...scoreDetails);
   const overview=readerOverview({
     ...reading,
     origin:reading.origin||'service-reference',
@@ -1296,30 +1299,6 @@ function removeReadingReferenceViews(root) {
   }
 }
 
-// Keep each authored summary and score in view; the complete original prose
-// remains available immediately below them without adding another reading page.
-function collapseReadingBodies(root) {
-  const scopes='.reader-card,.portrait-card,.reader-intro,.portrait-intro,.daeun-topic,.daeun-period-body,.reader-timing-content,.reader-symbol-item';
-  const usedIds=new Set();
-  for(const element of root.querySelectorAll(scopes)) {
-    if(!element.querySelector(':scope > .saju-two-line-summary'))continue;
-    const bodies=[...element.children].filter(child=>child.classList.contains('report-prose'));
-    if(!bodies.length)continue;
-    const details=node('details','reading-body-details');
-    const toggle=node('summary','reading-body-toggle','자세한 풀이 읽기');
-    const parent=element.parentElement;
-    const anchor=element.id||element.getAttribute('aria-labelledby')
-      ||element.querySelector(':scope > [id],:scope > .saju-two-line-summary > [id]')?.id
-      ||parent.id||parent.getAttribute('aria-labelledby')
-      ||`${element.closest('[id]')?.id||'reading'}-${[...parent.children].indexOf(element)}`;
-    let key=anchor,suffix=1;while(usedIds.has(key))key=`${anchor}-${++suffix}`;usedIds.add(key);
-    toggle.id=`${key}-body-toggle`;
-    const content=node('div','reading-body-content');content.id=`${key}-body-content`;
-    toggle.setAttribute('aria-controls',content.id);
-    bodies[0].before(details);details.append(toggle,content);content.append(...bodies);
-  }
-}
-
 /** Render plain-text reading data atomically, preserving the prior view on error. */
 export function renderDetailedReport(container, {reading, fortune, topic}) {
   const sections = reading?.sections;
@@ -1368,7 +1347,6 @@ export function renderDetailedReport(container, {reading, fortune, topic}) {
   removeReadingReferenceViews(fragment);
   applyReadingSummaryViews(fragment,reading);
   applyReadingScoreViews(fragment,reading);
-  collapseReadingBodies(fragment);
   const pager=buildReadingPager(fragment,{reading,fortune,topic});
   container.replaceChildren(fragment);
   pager.mount(container);

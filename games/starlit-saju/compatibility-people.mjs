@@ -1,6 +1,6 @@
-import { buildNatalReadingData, seasonRules } from './natal-reading-data.mjs?v=20261114-saju-wind1';
-import { buildPersonPortrait } from './person-portrait.mjs?v=20261113-saju-easy1';
-import { summaryLinesFrom } from './reading-summary-lines.mjs?v=20261114-saju-wind1';
+import { buildNatalReadingData, seasonRules } from './natal-reading-data.mjs?v=20261114-saju-depth1';
+import { buildPersonPortrait } from './person-portrait.mjs?v=20261114-saju-depth1';
+import { summaryLinesFrom } from './reading-summary-lines.mjs?v=20261114-saju-depth1';
 
 // Reuse the general reading's natal portrait without calculating a forecast.
 // A person's words and evidence only depend on that person's confirmed chart.
@@ -8,6 +8,8 @@ const ORIGIN='service-reference';
 const TOPICS={decisions:'결정하는 방식',relationships:'사람을 대하는 모습',work:'일하는 모습',pressure:'힘들 때 반응',adjustment:'오해받기 쉬운 모습'};
 const unique=values=>[...new Set(values)];
 const fail=()=>{throw new Error('두 사람의 성향과 연결된 근거를 확인하지 못했어요.');};
+const copySections=source=>(source.detailSections||[{title:'자세히 읽어보세요',paragraphs:source.paragraphs}])
+  .map(section=>({title:section.title,paragraphs:[...section.paragraphs]}));
 
 // Short, third-person versions of the existing portrait's ten-god meanings.
 // These are authored reference clauses, not another classification or score.
@@ -49,7 +51,7 @@ function personFrom(chart,profile,scope,key) {
     const topicId=card.id.replace('portrait-','');
     if(!TOPICS[topicId])fail();
     return {...card,id:`person-${key}-${topicId}`,topicId,label:TOPICS[topicId],
-      paragraphs:[...card.paragraphs],godCodes:[...card.godCodes],ruleIds:[...card.ruleIds],
+      paragraphs:[...card.paragraphs],detailSections:copySections(card),godCodes:[...card.godCodes],ruleIds:[...card.ruleIds],
       sourceId:card.id,sourceFactIds:[...card.factIds],factIds:[...card.factIds.map(link),methodId],
       summaryLines:summaryLinesFrom(card.title,card.paragraphs.at(-1),card.paragraphs)};
   });
@@ -58,7 +60,7 @@ function personFrom(chart,profile,scope,key) {
     ?`${marker}는 ${scope.excludedPillars.map(pillar=>pillar.label).join('·')}의 글자를 확정할 수 없어요. 이 부분을 채워 넣지 않고, 확인된 ${scope.knownCharacterCount}글자로 성향을 풀이했어요.`:'';
   const person={id:`compatibility-person-${key}`,key,marker,title:`${marker}의 성격과 특징`,headline,
     summaryLines:summaryLinesFrom(headline,cards[0].paragraphs.at(-1),portrait.paragraphs),
-    paragraphs:[...portrait.paragraphs],cards,origin:ORIGIN,
+    paragraphs:[...portrait.paragraphs],detailSections:copySections(portrait),cards,origin:ORIGIN,
     factIds:unique([...portrait.factIds.map(link),link('natal.scope'),link('natal.season'),link('natal.interaction-count'),
       ...native.natal.pillars.map(link),...ruleFacts.map(fact=>fact.id),methodId]),
     anchorCodes:[...portrait.anchorCodes],godCodes:[...portrait.godCodes],ruleIds:[...portrait.ruleIds],
@@ -121,8 +123,11 @@ function synthesisFrom(people,compatibility) {
         :'함께하고 싶은 일과 각자 편한 방법을 구체적으로 이야기해 보세요.';
   add('agreement',agreement+' 마지막에는 두 사람 모두 해 볼 수 있는 작은 약속을 하나 정하세요. 며칠 해 본 뒤 편했던 점과 어려웠던 점을 다시 이야기하면 돼요.',topicIds([...decisions,...relationships]));
   const methodNotice='각자의 실제 사주에서 고른 성향과 두 사람의 계산된 관계를 이어 쓴 공통 참고 풀이예요. 관계와 결정 방식은 각 개인 항목에서 먼저 설명한 성향을 짚었으며, 강약 순위를 매긴 것은 아니에요. 같은 단서에는 같은 설명을 써요. 주말 약속은 이해를 돕는 가상 장면이고, 실제 성격 검사나 미래 예측이 아니에요.';
+  const sectionTitles={strength:'함께할 때 살릴 장점',relationships:'마음을 주고받는 방식',
+    differences:'함께 결정하는 방식',example:'생활 속 가상 예시',adjustment:'A와 B가 해볼 방법',agreement:'함께 지킬 작은 약속'};
   return {synthesis:{id:'compatibility-synthesis',title:'두 사람의 종합 궁합',headline,
     summaryLines:summaryLinesFrom(headline,agreement),paragraphs:parts.map(part=>part.text),
+    detailSections:parts.map(part=>({title:sectionTitles[part.id],paragraphs:[part.text],factIds:[...part.factIds]})),
     paragraphFactIds:parts.map(part=>[...part.factIds]),paragraphIds:parts.map(part=>part.id),
     factIds:unique(parts.flatMap(part=>part.factIds)),origin:ORIGIN,methodNotice,
     comparison:{samePortrait,sameLeadingDecision:sameDecision,sameLeadingRelationship:sameRelation}},

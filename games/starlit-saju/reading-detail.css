@@ -1,0 +1,21 @@
+/* Full explanations remain visible in the selected reading item. */
+body.saju-flow .reader-prose.reading-body-content{padding-top:0;margin-top:22px}
+body.saju-flow .reading-body-heading{margin:28px 0 10px;padding:2px 0 2px 11px;border-left:3px solid var(--primary);color:var(--primary);font:750 var(--reading-font-size,18px)/1.65 var(--sans);letter-spacing:-.02em;word-break:keep-all;overflow-wrap:anywhere}
+body.saju-flow .reading-body-heading:first-child{margin-top:0}
+body.saju-flow .reader-prose.reading-body-content>p{margin:0 0 17px}
+body.saju-flow .reader-prose.reading-body-content>p:last-child{margin-bottom:0}
+body.saju-flow .compatibility-person-prose.reading-body-content{padding-top:20px;border-top:1px solid var(--border)}
+body.saju-flow .compatibility-person-jumps{display:flex;gap:9px;margin:0 0 18px}
+body.saju-flow .compatibility-person-jumps>a{display:flex;align-items:center;justify-content:center;flex:1;min-height:44px;padding:9px 12px;border:1px solid var(--control-border);border-radius:8px;background:var(--surface);color:var(--primary);font-size:15px;font-weight:650;line-height:1.6;text-decoration:none}
+body.saju-flow .compatibility-person-jumps>a:hover{background:var(--primary-soft)}
+body.saju-flow .compatibility-score-detail-link{display:inline-flex;align-items:center;min-height:44px;margin:5px 0 0;padding:7px 0;color:var(--primary);font-size:15px;font-weight:650;line-height:1.6;text-underline-offset:3px;word-break:keep-all;overflow-wrap:anywhere}
+body.saju-flow .compatibility-score-detail{padding:22px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+body.saju-flow .compatibility-detail-score-value{display:inline-block;margin:0 0 18px;padding:5px 11px;border-radius:8px;background:var(--primary-soft);color:var(--primary);font-size:20px;font-weight:750;line-height:1.5}
+body.saju-flow .compatibility-score-detail>.compatibility-two-line-summary{margin:0 0 24px}
+body.saju-flow .compatibility-score-detail .reading-body-content{margin-top:0}
+@media(max-width:600px){
+  body.saju-flow .compatibility-score-detail{padding:18px 14px}
+  body.saju-flow .reading-body-heading{margin-top:24px}
+  body.saju-flow .compatibility-person-jumps{gap:7px}
+  body.saju-flow .compatibility-person-jumps>a{padding:8px;font-size:14px}
+}
