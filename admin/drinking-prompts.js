@@ -200,14 +200,16 @@
       for(const row of items.values()){
         const game=games[row.kind],item=el('article','ap-card');
         item.dataset.id=row.id;
-        const label=page==='queue'?game.name+' '+game.field:game.second?game.name:game.field;
-        item.append(el('strong','',label+(row.kind==='truth'?' · '+flavors[row.flavor]:'')));
         if(editing===row.id&&page==='catalog'){item.append(editor(row));cards.push(item);continue;}
         const actions=el('div','ap-actions');
         if(game.second){
           const pair=el('dl','drink-admin-pair');
           pair.append(el('dt','',game.field),el('dd','',row.text),el('dt','',game.second),el('dd','',row.second));item.append(pair);
-        }else item.append(el('p','note',row.text));
+        }else item.append(el('strong','',row.text));
+        const details=[];
+        if(page==='queue')details.push(game.name);
+        if(row.kind==='truth')details.push(flavors[row.flavor]);
+        if(details.length)item.append(el('p','note',details.join(' · ')));
         item.append(actions);
         if(page==='queue'){
           actions.append(button('등록',()=>change('approve',{id:row.id}),true),button('반려',()=>change('reject',{id:row.id})));
