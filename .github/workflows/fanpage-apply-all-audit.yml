@@ -4,63 +4,54 @@ on:
     branches: ['fanpages/apply-all-20261114']
     paths: ['.github/workflows/fanpage-apply-all-audit.yml']
 permissions:
-  contents: read
+  contents: write
   pull-requests: read
   actions: read
 jobs:
-  audit:
+  integrate:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
-          persist-credentials: false
-      - name: Collect exact PR deltas and baseline files
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          python3 - <<'PY'
-          import json, os, pathlib, subprocess, urllib.request, zipfile
-          root=pathlib.Path('.'); out=pathlib.Path('/tmp/fanpage-audit'); out.mkdir()
-          api='https://api.github.com/repos/ojjuda-note/ojjuda-note.github.io'
-          def get(path):
-              req=urllib.request.Request(api+path,headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'})
-              with urllib.request.urlopen(req) as r: return json.load(r)
-          def git(*args): return subprocess.check_output(['git',*args],text=True)
-          prs=[913,915,919,929,939,940,947,948,951,999,1017,1019,1033,1034,1035,1037,1040,1043,1045,1046,1051,1053]
-          main=get('/git/ref/heads/main')['object']['sha']
-          subprocess.run(['git','fetch','origin','main'],check=True)
-          manifest={'main':main,'prs':[]}
-          allowed={'features/fanpages/artists.js','features/fanpages/artists-extra.js','features/fanpages/profiles.js','features/fanpages/profiles-extra.js','features/fanpages/videos.js','features/fanpages/check-videos.mjs','features/fanpages/index.html','features/fanpages/artist.html'}
-          for n in prs:
-              p=get('/pulls/'+str(n)); ref='refs/remotes/pending/'+str(n)
-              subprocess.run(['git','fetch','origin','refs/pull/'+str(n)+'/head:'+ref],check=True,stdout=subprocess.DEVNULL)
-              head=git('rev-parse',ref).strip(); base=git('merge-base',main,head).strip()
-              paths=git('diff','--name-only',base,head).splitlines()
-              d=out/str(n); d.mkdir(); (d/'patch.diff').write_text(git('diff',base,head),encoding='utf-8')
-              for kind,sha in [('base',base),('head',head)]:
-                  for path in paths:
-                      if path.startswith('features/fanpages/'):
-                          target=d/kind/path; target.parent.mkdir(parents=True,exist_ok=True)
-                          target.write_bytes(subprocess.check_output(['git','show',sha+':'+path]))
-              item={'number':n,'state':p['state'],'merged':p['merged'],'mergeable':p['mergeable'],'head':head,'base':base,'branch':p['head']['ref'],'title':p['title'],'body':p['body'],'paths':paths,'outside':sorted(set(paths)-allowed)}
-              manifest['prs'].append(item)
-              print(json.dumps({k:item[k] for k in ('number','state','merged','mergeable','paths','outside')},ensure_ascii=False))
-          (out/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
-          checks=get('/commits/'+main+'/check-runs?per_page=100'); (out/'main-checks.json').write_text(json.dumps(checks),encoding='utf-8')
-          for c in checks.get('check_runs',[]): print('BASELINE CHECK',c['name'],c['status'],c['conclusion'],c['id'])
-          # Only tracked public source; no credentials, .git, caches or local files.
-          with zipfile.ZipFile(out/'baseline-source.zip','w',zipfile.ZIP_DEFLATED) as z:
-              for path in git('ls-tree','-r','--name-only',main).splitlines():
-                  if pathlib.PurePosixPath(path).suffix in {'.js','.mjs','.cjs','.html','.css','.json','.md','.yml','.yaml','.sql'} and not path.startswith(('assets/','design/')):
-                      blob=subprocess.check_output(['git','show',main+':'+path])
-                      if len(blob)<4000000: z.writestr(path,blob)
-          print('AUDIT_MAIN',main)
-          PY
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        if: always()
+          ref: fanpages/apply-all-20261114
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          name: fanpage-pending-audit
-          path: /tmp/fanpage-audit
+          node-version: '22'
+      - name: Preserve concurrent main changes and integrate pinned fanpage deltas
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          git merge --no-edit origin/main
+          python3 scripts/fanpage-pending-integration.py
+          node features/fanpages/check-profiles.mjs
+          node features/fanpages/check-videos.mjs
+          for f in features/fanpages/artists.js features/fanpages/artists-extra.js features/fanpages/profiles.js features/fanpages/profiles-extra.js features/fanpages/videos.js; do node --check "$f"; done
+          node scripts/check-source-layout.mjs
+          git diff --check
+          git add features/fanpages/artists.js features/fanpages/artists-extra.js features/fanpages/profiles.js features/fanpages/profiles-extra.js features/fanpages/videos.js features/fanpages/check-videos.mjs features/fanpages/artist.html features/fanpages/index.html tests/admin-menu-groups.test.cjs tests/admin-navigation-ui.test.cjs
+          git commit -m 'feat(fanpages): integrate reviewed pending updates without reverting newer corrections'
+          git push origin HEAD:fanpages/apply-all-20261114
+      - name: Install locked dependencies and browser
+        run: |
+          npm --prefix tests ci --ignore-scripts
+          cd tests && npx playwright install --with-deps chromium
+      - name: Run focused fanpage and baseline blocker checks
+        run: |
+          node tests/admin-menu-groups.test.cjs
+          node tests/admin-navigation-ui.test.cjs
+          node tests/multiplayer-ranking-bridges.test.cjs
+          node --test tests/admin-fortune-purchases*.test.cjs
+          npm --prefix tests run test:fanpages
+          npm --prefix tests run test:poker
+      - name: Save integration evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fanpage-integration-evidence
+          path: |
+            /tmp/fanpage-integration-report.json
+            tests/artifacts/
           retention-days: 7
