@@ -54,6 +54,14 @@ for (const topicId of ['overall', 'love', 'money', 'work']) {
       checkLines(section.summaryLines, `${topicId}/${start}/${section.id}`);
       sectionCount++;
     }
+    const problemSections = report.groups.find(group => group.id === 'problem').sections;
+    const problemSummaryLines = problemSections.flatMap(section => section.summaryLines);
+    assert.equal(new Set(problemSummaryLines.map(key)).size, 10,
+      `${topicId}/${start}: all ten visible story summaries add a distinct sentence, even without card names`);
+    for (const section of problemSections) {
+      for (const line of section.summaryLines) assert.ok(section.paragraphs.join(' ').includes(content(line)),
+        `${topicId}/${start}/${section.id}: the complete summary sentence remains in its expanded explanation`);
+    }
     const byId = Object.fromEntries(report.groups.slice(0, 2).flatMap(group => group.sections).map(section => [section.id, section]));
     for (const [id, index] of [
       ['problem-now', 0], ['situation-now', 1], ['solution', 2], ['possible-outcome', 2],
@@ -80,10 +88,11 @@ for (const topicId of ['overall', 'love', 'money', 'work']) {
       'current situation comes from the actual card/topic personal meaning, not a hypothetical scene');
     assert.equal(content(byId['situation-now'].summaryLines[1]), people[1].defense,
       'the second line explains this person’s response to pressure');
-    assert.equal(content(byId['problem-now'].summaryLines[0]), firstSentence(people[0][topicId]));
+    assert.equal(content(byId['problem-now'].summaryLines[0]), people[0].longing,
+      'the problem summary explains the personal motive without repeating the whole-story topic preview');
     assert.equal(content(byId['problem-now'].summaryLines[1]), people[0].cost);
-    assert.equal(content(byId.solution.summaryLines[0]), firstSentence(people[2][topicId]),
-      'the solution summary starts with the actual card in the selected topic');
+    assert.equal(content(byId.solution.summaryLines[0]), people[2].longing,
+      'the solution summary explains the desired change without repeating the whole-story topic preview');
     assert.equal(content(byId.solution.summaryLines[1]), firstSentence(readings[2].action),
       'the second line preserves a complete sentence from this topic’s original action');
     assert.ok(byId.solution.paragraphs.join(' ').includes(readings[2].action),

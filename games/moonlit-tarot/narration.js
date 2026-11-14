@@ -182,15 +182,15 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
     section('problem-now', '지금 일어나는 문제', [
       `‘${names[0]}’ 카드가 짚는 핵심 문제야. ${firstPerson[topicId]} ${firstPerson.defense}`,
       `${firstPerson.longing} ${firstPerson.cost}`
-    ], cardSummary(cards[0], firstPerson[topicId], firstPerson.cost)),
+    ], cardSummary(cards[0], firstPerson.longing, firstPerson.cost)),
     section('situation-now', '지금 상황과 속마음', [
       `지금의 ‘${names[1]}’에서는 이런 네 모습이 읽혀. ${currentPerson[topicId]}`,
       `${currentPerson.longing} ${currentPerson.defense} ${currentPerson.cost}`
     ], cardSummary(cards[1], currentPerson[topicId], currentPerson.defense)),
     section('solution', '네가 바꿀 수 있는 선택', [
-      `‘${names[2]}’ 카드가 이번 선택에서 짚는 마음이야. ${nextPerson[topicId]} ${nextPerson.cost}`,
+      `‘${names[2]}’ 카드가 이번 선택에서 짚는 마음이야. ${nextPerson[topicId]} ${nextPerson.longing} ${nextPerson.cost}`,
       `이 마음을 이해했다면 이렇게 해 봐. ${solution.action}`
-    ], cardSummary(cards[2], nextPerson[topicId], solution.action)),
+    ], cardSummary(cards[2], nextPerson.longing, solution.action)),
     section('possible-outcome', '대처 뒤 확인할 변화', [
       `‘${names[2]}’ 카드로 앞으로 달라질 수 있는 부분을 읽어 보자. ${solution.lifeTheme.change}`,
       `이 카드가 보여 주는 장점은 이래. ${nextPerson.portrait} 다만 이 점까지 함께 기억해. ${nextPerson.cost}`
