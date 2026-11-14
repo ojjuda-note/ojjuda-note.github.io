@@ -461,6 +461,10 @@ if (staycProfile) {
     member.birthday = birthdays[member.name] || null;
     member.source = 'https://www.highup-ent.com/en/stayc/';
   }
+  staycProfile.records = [
+    { year: '2026.08–10', title: 'STAY CLOSER · 8도시 팬콘 투어', detail: '서울 8/22~23 개막 · 마닐라·마카오·타이베이·퍼스·멜버른·시드니·홍콩(10/24 추가 공연)까지', href: 'https://stayc.lnk.to/tour' }
+  ];
+  staycProfile.sources.push({ label: 'STAY CLOSER 공식 투어 일정 · 홍콩 추가 공연', href: 'https://stayc.lnk.to/tour' });
   staycProfile.sources.unshift({ label: '하이업엔터테인먼트 공식 멤버 소개·생일', href: 'https://www.highup-ent.com/en/stayc/' });
   staycProfile.sources.push({ label: '공식 2:LOVE 음반·트랙리스트', href: 'https://www.highup-ent.com/stayc/2love/' });
 }
@@ -513,3 +517,6 @@ if (boynextdoorProfile) {
 
 // Pending PR reconciliation: only the eight manually reviewed profiles.
 for (const id of ["hearts2hearts", "kissoflife", "kiiikiii", "stayc", "seventeen", "enhypen", "riize", "boynextdoor"]) window.OJJUDA_FAN_PROFILES[id].checkedAt = '2026.11.13';
+
+// STAYC was reviewed again against official sources for the current slot.
+window.OJJUDA_FAN_PROFILES.stayc.checkedAt = '2026.11.14';
