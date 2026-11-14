@@ -5,7 +5,7 @@ const {randomUUID} = require('node:crypto');
 const test = require('node:test');
 const {fixture} = require('./drinking-room-fixture.cjs');
 
-const kinds = ['croc','bottle','bomb','stopwatch','liar','king','truth','initial','minority','mission','fingers','imagevote','updown'];
+const kinds = ['croc','bottle','bomb','stopwatch','liar','king','truth','initial','minority','mission','fingers','imagevote','updown','secretcount'];
 const roomTables = ['drinking_rooms','croc_rooms','liar_rooms','king_rooms','party_vote_rooms'];
 
 test('drinking rooms retain consistent state through overlapping account requests', {timeout: 120_000}, async t => {
@@ -61,7 +61,7 @@ test('drinking rooms retain consistent state through overlapping account request
     assert.equal((await db.query('select count(*)::int n from ojjuda_arcade_internal.drinking_rooms')).rows[0].n, 1);
   });
 
-  await t.test('all 13 games preserve the same 12 accounts across start, retry and return', async () => {
+  await t.test('all 14 games preserve the same 12 accounts across start, retry and return', async () => {
     await reset();
     let parent = await sharedRoom();
     const originalPlayers = parent.players;

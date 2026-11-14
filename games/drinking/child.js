@@ -18,7 +18,7 @@
   const code = (params.get('party') || '').toUpperCase();
   const child = (params.get('room') || '').toUpperCase();
   const kind = location.pathname.split('/')[2];
-  const kinds = new Set(['croc','bottle','bomb','stopwatch','liar','king','truth','initial','minority','mission','fingers','imagevote','updown']);
+  const kinds = new Set(['croc','bottle','bomb','stopwatch','liar','king','truth','initial','minority','mission','fingers','imagevote','updown','secretcount']);
   const valid = value => typeof value === 'string' && /^[A-Z0-9]{6}$/.test(value);
   const hub = '/games/drinking/';
   const roomList = hub + '?mode=multi';

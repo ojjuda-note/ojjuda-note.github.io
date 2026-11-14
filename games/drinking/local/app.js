@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const memberStore='oj.party.'+document.getElementById('access-content').dataset.member+'.';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-party-question-menu1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-secretcount1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -30,7 +30,8 @@ const games=[
   ['mission','한 명만 다른 미션','추리와 대화','비슷한 제시어, 다른 몸짓','#e5bdac',3,'한 명만 다른 제시어를 받아요. 말이나 소품 없이 동시에 몸짓으로 표현하고, 다른 동작을 한 사람을 찾아 투표해요. 다른 사람에게 닿지 않고 혼자 흉내 내세요.'],
   ['fingers','손병호 게임','추리와 대화','해당하면 손가락 하나 접기','#e1bd95',2,'다섯 손가락을 펴고 시작해요. 조건에 해당하면 하나씩 접어요. 다섯 개를 먼저 접으면 걸려요. 답하기 싫은 조건은 패스해도 돼요.'],
   ['imagevote','이미지 게임','추리와 대화','이 질문에 딱 맞는 사람은?','#b9c9e4',2,'질문을 읽고 가장 잘 어울리는 사람에게 몰래 한 표를 주세요. 모두 투표하면 가장 많이 지목된 사람이 공개돼요.'],
-  ['updown','업앤다운','운과 감각','숫자를 부르면, 업 또는 다운!','#c9d8ea',2,'1부터 100 사이에 숨은 숫자를 돌아가며 맞혀요. 업이면 더 큰 수, 다운이면 더 작은 수예요. 정확히 맞힌 사람이 이겨요.']
+  ['updown','업앤다운','운과 감각','숫자를 부르면, 업 또는 다운!','#c9d8ea',2,'1부터 100 사이에 숨은 숫자를 돌아가며 맞혀요. 업이면 더 큰 수, 다운이면 더 작은 수예요. 정확히 맞힌 사람이 이겨요.'],
+  ['secretcount','시크릿 카운트','운과 감각','비밀 숫자에서 버튼을 누르면 당첨','#ccd9ce',2,'한 차례에 버튼을 한 번에서 세 번 누르고 다음 사람에게 넘겨요.']
 ].map(([id,title,category,short,color,min,rule],i)=>({id,title,category,short,color,min,rule,num:String(i+1).padStart(2,'0')}));
 const pageIntroductions={
   liar:{
@@ -111,6 +112,7 @@ function artPath(id){
   return directory+id+'.webp';
 }
 function art(id,cls=''){
+  if(id==='secretcount')return '<span class="game-art sc-emblem '+cls+'" aria-hidden="true"></span>';
   if(id==='stopwatch')return '<span class="game-art watch-art '+cls+'" aria-hidden="true">'+watchCase('0.00')+'</span>';
   return '<img class="game-art '+cls+'" src="'+artPath(id)+'" alt="" draggable="false" decoding="async">';
 }
@@ -224,7 +226,7 @@ function renderMenu(){
 }
 function shell(body,scene=false){
   navigation(true);
-  app.innerHTML='<article class="play-shell"><header class="round-head"><h1>'+art(game.id,'round-mark')+game.title+'</h1><span>'+players.length+'명 플레이</span></header>'+(scene?'<div class="stage-art" style="--pastel:'+game.color+';--scene:url('+artPath(game.id)+')">'+art(game.id)+'</div>':'')+'<div class="play-body">'+body+'</div></article>';
+  app.innerHTML='<article class="play-shell"><header class="round-head"><h1>'+art(game.id,'round-mark')+game.title+'</h1><span>'+players.length+'명 플레이</span></header>'+(scene&&game.id!=='secretcount'?'<div class="stage-art" style="--pastel:'+game.color+';--scene:url('+artPath(game.id)+')">'+art(game.id)+'</div>':'')+'<div class="play-body">'+body+'</div></article>';
   window.DrinkingGameScreen?.local(game.id,round,app);
 }
 function pageIntro(copy,enough){
@@ -256,6 +258,7 @@ function intro(){const enough=players.length>=game.min;
       '<div class="bottle-meta">2~12명 · 한 대로 함께</div>',true);
     return;
   }
+  if(game.id==='secretcount')return secretSetup();
   if(game.id==='bomb')return bombSetup();
   if(game.id==='stopwatch')return watchSetup();
   if(game.id==='truth'){
@@ -290,6 +293,32 @@ function end(title,desc,sound='result'){
   stopClock();round.phase='done';if(sound)fx.play(sound);
   shell('<span class="turn-tag">라운드 결과</span><h2>'+esc(title)+'</h2><p>'+esc(desc)+'</p>'+actions(btn('한 판 더',game.id==='bomb'?'bomb-setup':game.id==='truth'?'truth-setup':'start'),btn('게임 목록','menu','quiet')),true)
 }
+function secretSetup(){
+  cleanup();
+  const ui=window.SecretCountControls,n=players.length;
+  shell(ui.setup(n));
+  ui.bindSetup(app,n,target=>{
+    const {min,max}=ui.limits(n);
+    round={phase:'press',turn:0,total:0,used:0,target:target??(min+rand(max-min+1))};
+    secretPlay();
+  });
+}
+function secretPlay(){
+  const r=round;
+  shell(window.SecretCountControls.controls(true,r.used));
+  const press=app.querySelector('[data-sc-press]'),pass=app.querySelector('[data-sc-pass]');
+  press.onclick=()=>{
+    if(round!==r||r.phase!=='press'||r.used>=3)return;
+    r.total++;r.used++;fx.play('tap');
+    if(r.total===r.target)return end(players[r.turn]+'님 당첨!','비밀 숫자는 '+r.target+'였어요.');
+    press.disabled=r.used===3;pass.disabled=false;
+  };
+  pass.onclick=()=>{
+    if(round!==r||r.phase!=='press'||!r.used)return;
+    r.used=0;r.turn=(r.turn+1)%players.length;fx.play('turn');
+    secretPlay();
+  };
+}
 function clock(){
   stopClock();lastStamp=performance.now();
   timer=setInterval(()=>{
@@ -304,6 +333,7 @@ function timed(ms,onLimit,beat=0,onBeat=null){
   Object.assign(round,{remain:ms,onLimit,beat,lastBeat:Math.ceil(ms/beat),onBeat});clock()
 }
 async function begin(){
+  if(game.id==='secretcount')return secretSetup();
   if(players.length<game.min)return go('participants');
   cleanup();round={turn:0,phase:'play'};fx.play(game.id==='croc'?'tooth':'deal');const r=round;
   if(manualGames.has(game.id)){

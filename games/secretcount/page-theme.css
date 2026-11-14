@@ -1,0 +1,33 @@
+.sc-setup,.sc-controls { margin:auto; width:min(100%,22rem); display:grid; justify-items:center; gap:clamp(12px,3vh,26px); text-align:center }
+.sc-setup h2 { margin:0; font-weight:750 }
+.sc-setup fieldset { border:0; padding:0; margin:0; display:flex; gap:8px }
+.sc-setup legend,.sc-reader { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip-path:inset(50%) }
+.sc-setup fieldset label { position:relative; display:block; padding:10px 18px; border-radius:10px; border:1px solid #98988f; cursor:pointer }
+.sc-setup fieldset input { position:absolute; opacity:0; width:1px; height:1px }
+.sc-setup fieldset label:has(:checked) { background:#324844; color:white; border-color:#324844 }
+.sc-setup fieldset label:focus-within { outline:3px solid #0084a0; outline-offset:2px }
+.sc-field:not([hidden]) { display:grid; gap:5px }
+.sc-field input { min-height:44px; padding:8px; border:1px solid #868a83; border-radius:7px; font:inherit; text-align:center }
+.sc-setup button,.sc-pass { min-height:44px; padding:10px 24px; border-radius:12px; border:1px solid #566460; background:#263a36; color:#fff; font:inherit; font-weight:700; cursor:pointer }
+.sc-controls { align-content:center; perspective:700px; padding:10px 0 }
+.sc-machine,.sc-emblem { position:relative; display:grid; place-items:center; aspect-ratio:1; width:min(54vw,31dvh,230px); border-radius:24%; background:linear-gradient(140deg,#c6c9bf,#717b74 42%,#414f4c 78%,#788078); box-shadow:inset 0 2px 2px #fff9,inset 0 -5px 3px #202d2a,0 10px 15px #18272530; isolation:isolate }
+.sc-machine::before,.sc-emblem::before { content:''; position:absolute; inset:12%; border-radius:50%; background:linear-gradient(155deg,#313a39,#c4c6bb 60%,#444f4a); box-shadow:0 2px 0 #ffffff69 }
+.sc-machine [data-sc-press],.sc-emblem::after { appearance:none; position:absolute; inset:17%; width:66%; height:66%; padding:0; margin:0; border-radius:50%; border:0; background:radial-gradient(ellipse at 34% 24%,#ff9980,#e44537 35%,#b22222 72%,#8c1b1d); box-shadow:inset 0 3px 3px #ffd6afab,inset 0 -5px 4px #7d161f,0 5px 0 #611e24,0 8px 9px #271a19b3; cursor:pointer; z-index:1 }
+.sc-machine [data-sc-press]:enabled:active { transform:translateY(3px); filter:brightness(.9) }
+.sc-machine [data-sc-press]:focus-visible,.sc-pass:focus-visible { outline:3px solid #0084a0; outline-offset:5px }
+.sc-machine [data-sc-press]:disabled { opacity:1; cursor:default }
+.sc-pass:disabled { opacity:.48; cursor:default }
+.sc-lid { position:absolute; inset:1%; border-radius:24%; background:repeating-linear-gradient(45deg,#43534f 0 6px,#3c4b47 6px 12px); border:3px solid #83938a; box-shadow:inset 0 2px 3px #cad0bf55,inset 0 -5px 6px #192823; transform:perspective(600px) rotateX(100deg); transform-origin:50% 0; pointer-events:none; z-index:2 }
+.sc-closed .sc-lid { transform:none }
+.sc-lid::after { content:''; position:absolute; left:34%; right:34%; bottom:11%; height:4%; background:#b9c2b6; border-radius:5px }
+.sc-emblem { width:56%; max-width:7rem; margin:auto }
+.sc-emblem::after { content:'' }
+.round-head .sc-emblem { width:1.5rem }
+body[data-dp-kind=secretcount][data-dp-phase=press] :is(.round-head,.topline,#view .actions,.stage-art) { display:none }
+body[data-dp-kind=secretcount][data-dp-phase=press] :is(.play-body,#game) { display:grid; place-content:center; justify-items:center; min-height:0; flex:1 }
+@media(prefers-reduced-motion:no-preference){.sc-lid{transition:transform .2s ease}}
+body.dp-playing[data-dp-kind=secretcount][data-dp-phase=press] #access-content > header,
+body.dp-playing[data-dp-kind=secretcount][data-dp-phase=press] #access-content > .dp-help,
+body.dp-playing[data-dp-kind=secretcount][data-dp-phase=press] #app .round-head,
+body.dp-playing[data-dp-kind=secretcount][data-dp-phase=press] #view .card > :is(.topline,.actions) { display:none }
+.sc-controls .sc-pass { color:#fff; background:#263a36 }
