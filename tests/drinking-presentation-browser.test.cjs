@@ -14,6 +14,8 @@ const {browserSession, dismissGuide, origin} = require('./helpers/drinking-brows
 
 const kinds = ['croc','bottle','bomb','stopwatch','liar','king','truth','initial','minority','mission','fingers','imagevote','updown'];
 const viewports = [{width:390,height:844},{width:375,height:667},{width:1366,height:900},{width:844,height:390}];
+const largerViewports = [{width:720,height:740},{width:768,height:1024},{width:1024,height:768},{width:1600,height:900}];
+const gameViewports = [...viewports,...largerViewports];
 const artifacts = path.join(__dirname,'artifacts/drinking-presentation');
 const glassAsset = '/games/drinking/assets/result-glass-v2.webp';
 const launchOptions = {headless:true,...(process.env.OJJUDA_CHROMIUM_PATH ? {executablePath:process.env.OJJUDA_CHROMIUM_PATH} : {})};
@@ -25,6 +27,74 @@ async function screenshot(page, name) {
 
 async function painted(page) {
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+}
+
+async function settledGame(page) {
+  await page.evaluate(async()=>{
+    await document.fonts.ready;
+    await Promise.all([...document.querySelectorAll('#app img,#view img')].map(image=>image.decode().catch(()=>{})));
+  });
+  await painted(page);
+  // Readiness is only a synchronization signal. Assertions below measure
+  // visible text, controls and artwork rather than the implementation's scale.
+  await page.waitForFunction(()=>!!document.querySelector('[data-dp-fitted="true"]'));
+  await painted(page);
+}
+
+async function expectContentLayout(page,label,{local=false}={}) {
+  const layout=await page.evaluate(local=>{
+    const pane=local ? document.querySelector('#app .play-body') :
+      document.querySelector('#view #game, #view > .card > .inside')||document.querySelector('#view > .card');
+    const frame=document.querySelector(local ? '#app .play-shell' : '#view > .card');
+    if(!pane||!frame)return null;
+    const area=pane.getBoundingClientRect(),card=frame.getBoundingClientRect();
+    const visible=element=>{
+      if(element.closest('[hidden]'))return false;
+      for(let parent=element;parent&&parent!==pane;parent=parent.parentElement){
+        const css=getComputedStyle(parent);
+        if(css.display==='none'||css.visibility==='hidden'||Number(css.opacity)===0)return false;
+        if(parent.tagName==='DETAILS'&&!parent.open&&
+          !parent.querySelector(':scope > summary')?.contains(element))return false;
+      }
+      return true;
+    };
+    const boxes=[];
+    function add(rect,element){
+      let top=Math.max(area.top,rect.top),bottom=Math.min(area.bottom,rect.bottom);
+      let left=Math.max(area.left,rect.left),right=Math.min(area.right,rect.right);
+      // A participant list can legitimately scroll internally. Count only its
+      // painted portion, not hidden lines beyond the scroll container.
+      for(let parent=element.parentElement;parent&&parent!==pane;parent=parent.parentElement){
+        const css=getComputedStyle(parent),clip=parent.getBoundingClientRect();
+        if(/(auto|scroll|hidden|clip)/.test(css.overflowY)){top=Math.max(top,clip.top);bottom=Math.min(bottom,clip.bottom);}
+        if(/(auto|scroll|hidden|clip)/.test(css.overflowX)){left=Math.max(left,clip.left);right=Math.min(right,clip.right);}
+      }
+      if(right>left&&bottom>top)boxes.push({top,bottom,left,right});
+    }
+    // Range boxes measure actual letters. A full-height empty flex child or a
+    // stretched heading cannot make sparse, top-aligned content pass.
+    const text=document.createTreeWalker(pane,NodeFilter.SHOW_TEXT);
+    for(let node=text.nextNode();node;node=text.nextNode()){
+      const element=node.parentElement;
+      if(!node.textContent.trim()||!visible(element)||element.closest('script,style,[aria-hidden="true"]'))continue;
+      const range=document.createRange();range.selectNodeContents(node);
+      for(const rect of range.getClientRects())add(rect,element);
+    }
+    const visual='button,input:not([type="hidden"]),select,textarea,img,svg,.croc-toy,.watch-case,.bottle-dial,.bottle-board,.truth-pair,.truth-hand,.private-card,.role,.mission-card,.mini-art,.bomb-active,.bomb-launch,.initial-word,.updown-range';
+    for(const element of pane.querySelectorAll(visual))if(visible(element))add(element.getBoundingClientRect(),element);
+    const top=Math.min(...boxes.map(box=>box.top)),bottom=Math.max(...boxes.map(box=>box.bottom));
+    return {viewportWidth:innerWidth,viewportHeight:innerHeight,cardWidth:card.width,
+      paneTop:area.top,paneHeight:area.height,contentTop:top,contentBottom:bottom,
+      contentHeight:bottom-top,center:(top+bottom-2*area.top)/(2*area.height),pieces:boxes.length};
+  },local);
+  try{
+    assert.ok(layout&&layout.pieces>0,label+' contains visible game content');
+    assert.ok(layout.cardWidth>=layout.viewportWidth*.9,label+' uses the available screen width: '+JSON.stringify(layout));
+    assert.ok(layout.center>=.30&&layout.center<=.70,label+' distributes actual game content within the pane: '+JSON.stringify(layout));
+  }catch(error){
+    await screenshot(page,'failure-content-'+label.replace(/[^a-z0-9-]/gi,'-'));
+    throw error;
+  }
 }
 
 async function expectGlassImage(result) {
@@ -83,12 +153,12 @@ async function glassMoment(page, progress) {
 async function expectViewport(page, label, {dialog = false, local = false} = {}) {
   if(dialog)await page.locator('[data-drinking-dialog]').evaluate(panel=>
     Promise.all(panel.getAnimations().map(animation=>animation.finished.catch(()=>{}))));
-  await painted(page);
+  if(dialog)await painted(page);else await settledGame(page);
   const measurement = await page.evaluate(({dialog,local}) => {
     const w=innerWidth,h=innerHeight;
     const area=dialog ? document.querySelector('[data-drinking-dialog]') : document.getElementById('access-content');
     const selectors=dialog ? '[data-drinking-close]' :
-      (local ? '#app button,#app input,#app select,#app textarea,#app summary,[data-drinking-help]' : '#view button,#view input,#view select,#view textarea,#view summary,[data-drinking-help]');
+      (local ? '#app button,#app input,#app select,#app textarea,#app summary,#local-back,[data-drinking-help]' : '#view button,#view input,#view select,#view textarea,#view summary,#access-content > header .drinks-home,[data-drinking-help]');
     const controls=[...new Set([...document.querySelectorAll(selectors)].map(el =>
       el.matches('input[type="radio"],input[type="checkbox"]')&&Number(getComputedStyle(el).opacity)===0 ? el.labels?.[0]||el : el
     ))].filter(el => {
@@ -151,15 +221,19 @@ async function expectViewport(page, label, {dialog = false, local = false} = {})
   }
 }
 
-async function allSizes(page,label,options) {
-  for(const viewport of viewports) {
+async function allSizes(page,label,options={}) {
+  for(const viewport of options.dialog ? viewports : gameViewports) {
     await page.setViewportSize(viewport);
-    await expectViewport(page,label+'-'+viewport.width+'x'+viewport.height,options);
+    const size=viewport.width+'x'+viewport.height;
+    await expectViewport(page,label+'-'+size,options);
+    if(!options.dialog&&viewport.width>=700&&viewport.height>=650)await expectContentLayout(page,label+'-'+size,options);
+    if(options.capture?.includes(size))await screenshot(page,label+'-'+size);
   }
   await page.setViewportSize(viewports[0]);
+  if(options.dialog)await painted(page);else await settledGame(page);
 }
 
-test('13 native games and 13 local games fit actual viewports with 12 participants', {timeout:240000}, async t => {
+test('13 native games and 13 local games fill actual viewports and return to the right menu', {timeout:240000}, async t => {
   const db=await fixture();let browser;
   t.after(async()=>{await browser?.close();await db.close();});
   browser=await chromium.launch(launchOptions);
@@ -178,8 +252,28 @@ test('13 native games and 13 local games fit actual viewports with 12 participan
         await expectViewport(online.page,'native-'+kind+'-guide',{dialog:true});
         await dismissGuide(online.page);
         await online.page.locator('#view .card').waitFor({state:'visible'});
-        await allSizes(online.page,'native-'+kind);
+        const back=online.page.locator('#access-content > header .drinks-home');
+        assert.equal(await back.count(),1,'each shared game has one primary return link');
+        const destination=new URL(await back.getAttribute('href'),origin);
+        assert.equal(destination.pathname,'/games/drinking/');
+        assert.equal(destination.searchParams.get('resume'),parent.code,'the shared room remains available from the drinking menu');
+        await allSizes(online.page,'native-'+kind,{capture:kind==='croc'?['768x1024','1600x900']:[]});
         if(['croc','king','fingers','truth'].includes(kind))await screenshot(online.page,'native-'+kind+'-390x844');
+        if(kind==='truth') {
+          // Expanding this editor changes content without resizing the pane.
+          // The input and submit action must remain visible after refitting.
+          await online.page.setViewportSize({width:1024,height:768});
+          await settledGame(online.page);
+          await online.page.locator('#truth-editor > summary').click();
+          await online.page.locator('#truth-question').fill('새 화면 크기에서도 남아 있어야 하는 질문');
+          await expectViewport(online.page,'native-truth-editor-open-1024x768');
+          await expectContentLayout(online.page,'native-truth-editor-open-1024x768');
+          await screenshot(online.page,'native-truth-editor-open-1024x768');
+          await online.page.locator('#truth-editor > summary').click();
+          await expectViewport(online.page,'native-truth-editor-closed-1024x768');
+          assert.equal(await online.page.locator('#truth-question').inputValue(),'새 화면 크기에서도 남아 있어야 하는 질문','refitting preserves an unsent question draft');
+          await online.page.setViewportSize(viewports[0]);
+        }
         if(kind==='croc') {
           // Finish a real SQL round. Neither the overlay nor its close button
           // is allowed to invent a game result or submit a next-round action.
@@ -218,6 +312,15 @@ test('13 native games and 13 local games fit actual viewports with 12 participan
           assert.equal(await result.count(),0);
           const recovered=await db.publicRpc(db.users[0],'croc_multiplayer',['state',parent.child,{}]);
           assert.equal(recovered.revision,state.revision,'dismissing a result and reconnecting do not mutate the game');
+          await back.click();
+          const resume=online.page.locator('#resume-drinks');
+          await resume.waitFor({state:'visible'});
+          const resumed=new URL(await resume.getAttribute('href'),online.page.url());
+          assert.equal(resumed.pathname,'/games/drinking/');
+          assert.equal(resumed.searchParams.get('room'),parent.code,'the main page offers the same shared room');
+          assert.equal(await online.page.locator('body.dp-playing').count(),0);
+          assert.equal(await online.page.locator('[data-drinking-dialog]').count(),0);
+          assert.equal((await db.publicRpc(db.users[0],'croc_multiplayer',['state',parent.child,{}])).revision,state.revision,'returning to the menu does not reset the room');
         }
       } finally {
         parent=await room('state',parent.code);
@@ -236,13 +339,20 @@ test('13 native games and 13 local games fit actual viewports with 12 participan
   await local.page.locator('.game-card').first().waitFor({state:'visible'});
   assert.equal(await local.page.locator('body.dp-playing').count(),0,'the local game menu keeps its original layout');
   assert.equal(await local.page.locator('[data-drinking-dialog]').count(),0);
+  assert.equal(await local.page.locator('#local-back').getAttribute('href'),'/world.html?tab=arcade');
+  assert.equal((await local.page.locator('[data-local-back-label]').textContent()).trim(),'오락실로');
+  assert.equal(await local.page.locator('.mode-back').isVisible(),true);
   for(const kind of kinds) {
     await t.test('local '+kind,async()=>{
       await local.page.locator('[data-action="open"][data-value="'+kind+'"]').click();
       await local.page.locator('[data-drinking-dialog="guide"]').waitFor({state:'visible'});
       await expectViewport(local.page,'local-'+kind+'-guide',{dialog:true});
       await dismissGuide(local.page);
-      await allSizes(local.page,'local-'+kind+'-entry',{local:true});
+      assert.equal(await local.page.locator('#local-back').getAttribute('href'),'#menu');
+      assert.equal((await local.page.locator('[data-local-back-label]').textContent()).trim(),'술게임으로');
+      assert.equal(await local.page.locator('.menu-nav').count(),0,'the top link is the single game-menu navigation');
+      assert.equal(await local.page.locator('.mode-back').isVisible(),false);
+      await allSizes(local.page,'local-'+kind+'-entry',{local:true,capture:kind==='croc'?['720x740','768x1024','1600x900']:[]});
       if(kind==='bomb')await local.page.locator('[data-action="confirm-bomb-time"]').click();
       else await local.page.locator('[data-action="start"]').click();
       await local.page.waitForFunction(()=>!document.querySelector('#app [data-action="start"]'));
@@ -265,10 +375,14 @@ test('13 native games and 13 local games fit actual viewports with 12 participan
         await local.page.locator('#updown-value').waitFor({state:'visible'});
         assert.equal(await result.count(),0,'native next-round behavior is still controlled by the local game');
       }
-      await local.page.locator('.menu-nav').click();
+      await local.page.locator('#local-back').click();
       await local.page.locator('.game-card').first().waitFor({state:'visible'});
       assert.equal(await local.page.locator('body.dp-playing').count(),0);
       assert.equal(await local.page.locator('[data-drinking-dialog]').count(),0);
+      assert.equal(await local.page.locator('#local-back').getAttribute('href'),'/world.html?tab=arcade');
+      assert.equal((await local.page.locator('[data-local-back-label]').textContent()).trim(),'오락실로');
+      assert.equal(await local.page.locator('.mode-back').isVisible(),true);
+      assert.equal(await local.page.evaluate(()=>document.activeElement?.dataset.value),kind,'returning keeps keyboard focus on the game just played');
     });
     // Recover the menu after a failed geometry subtest so the remaining games
     // still receive their own meaningful measurements and failure screenshots.
@@ -278,7 +392,72 @@ test('13 native games and 13 local games fit actual viewports with 12 participan
     }
   }
   assert.deepEqual(errors,[]);
-  t.diagnostic('13 native and 13 local game entries, four viewport sizes, real 12-player SQL state, and actual native/local completion paths.');
+  t.diagnostic('13 native and 13 local game entries, eight game viewport sizes, four dialog sizes, real 12-player SQL state, content placement, primary navigation and native/local completion paths.');
+});
+
+test('actual crocodile, stopwatch and bottle play surfaces grow with the available screen', {timeout:90000}, async t => {
+  const browser=await chromium.launch(launchOptions);t.after(()=>browser.close());
+  const f=await browserSession(browser,{actor:'responsive-local-member',rpc:()=>({}),localPlayers:['하나','둘','셋','넷']});
+  const compact={width:375,height:667};
+  const playSpace=()=>f.page.locator('.play-body').evaluate(pane=>{
+    const css=getComputedStyle(pane);
+    return {width:pane.clientWidth-parseFloat(css.paddingLeft)-parseFloat(css.paddingRight),
+      height:pane.clientHeight-parseFloat(css.paddingTop)-parseFloat(css.paddingBottom)};
+  });
+  for(const [kind,selector] of [['croc','.croc-toy'],['stopwatch','.watch-board .watch-case'],['bottle','.bottle-dial']]){
+    await t.test(kind+' actual play surface',async()=>{
+      await f.page.setViewportSize(compact);
+      await f.page.goto(origin+'/games/drinking/local/#'+kind);
+      await dismissGuide(f.page);
+      await f.page.locator('[data-action="start"]').click();
+      if(kind==='stopwatch')await f.page.locator('[data-action="watch-go"]').click();
+      if(kind==='bottle'){
+        await f.page.locator('[data-action="set-bottle-table"]').click();
+        for(const [x,y] of [[.16,.5],[.5,.16],[.84,.5],[.5,.84]]){
+          await settledGame(f.page);
+          const surface=f.page.locator('.seat-surface'),box=await surface.boundingBox();
+          assert.ok(box,'the bottle table accepts a real participant position');
+          await surface.click({position:{x:box.width*x,y:box.height*y}});
+        }
+        await f.page.locator('[data-action="spin"]').click();
+      }
+      await expectViewport(f.page,'local-'+kind+'-active-375x667',{local:true});
+      const baseline=await f.page.locator(selector).boundingBox();
+      const compactSpace=await playSpace();
+      assert.ok(baseline&&baseline.width>0&&baseline.height>0);
+      assert.ok(compactSpace.width>0&&compactSpace.height>0);
+      for(const viewport of largerViewports){
+        const size=viewport.width+'x'+viewport.height,label='local-'+kind+'-active-'+size;
+        await f.page.setViewportSize(viewport);
+        await expectViewport(f.page,label,{local:true});
+        await expectContentLayout(f.page,label,{local:true});
+        const enlarged=await f.page.locator(selector).boundingBox();
+        const availableSpace=await playSpace();
+        // The board shares extra room with larger text and controls. A screen
+        // that adds only a little height must not demand a larger percentage
+        // increase than that space can support. Substantial extra room keeps
+        // the 12% minimum, while a fixed-size board still fails modest growth.
+        const spaceGain=Math.max(0,Math.min(availableSpace.width/compactSpace.width,availableSpace.height/compactSpace.height)-1);
+        const requiredRatio=1+Math.min(.12,spaceGain*.75);
+        try{
+          assert.ok(enlarged&&enlarged.width>=baseline.width*requiredRatio&&enlarged.height>=baseline.height*requiredRatio,
+            label+' enlarges the actual artwork and hit surface: '+JSON.stringify({compact:baseline,larger:enlarged,compactSpace,availableSpace,requiredRatio}));
+        }catch(error){await screenshot(f.page,'failure-growth-'+label);throw error;}
+        if(viewport.width===768||viewport.width===1600)await screenshot(f.page,label);
+      }
+      if(kind==='stopwatch')assert.equal(await f.page.locator('[data-action="watch-stop"]').isVisible(),true,'resizing keeps the same stopwatch running');
+      if(kind==='bottle'){
+        assert.equal((await f.page.locator('#bottle-title').textContent()).trim(),'병이 돌고 있어요','resizing does not brake or restart the bottle');
+        assert.equal(await f.page.locator('.bottle-dial .seat').count(),4,'all selected places survive resizing');
+      }
+      await f.page.locator('#local-back').click();
+      await f.page.locator('.game-card').first().waitFor({state:'visible'});
+      assert.equal(await f.page.locator('[data-drinking-dialog]').count(),0);
+    });
+  }
+  assert.deepEqual(f.errors,[]);
+  assert.deepEqual(f.calls.filter(call=>(call.name.endsWith('_multiplayer')||call.name==='drinking_room')&&
+    !['state','mine'].includes(call.args.p_action)),[],'layout changes do not submit game actions');
 });
 
 test('browser focus, Escape, auth conceal and an actually draining glass remain usable', {timeout:60000}, async t => {
@@ -410,6 +589,10 @@ test('a long native king result opens after consent and stays readable on every 
   }});
   await f.page.goto(origin+'/games/king/?room=KING01');
   await dismissGuide(f.page);
+  const destination=new URL(await f.page.locator('#access-content > header .drinks-home').getAttribute('href'),origin);
+  assert.equal(destination.pathname,'/games/drinking/');
+  assert.equal(destination.searchParams.get('resume'),'KING01','a direct room keeps its resumable game code');
+  assert.equal(destination.searchParams.get('gameFrom'),'king','a direct room keeps its game type');
   assert.equal(await f.page.locator('[data-drinking-dialog="result"]').count(),0,'a pending consent is not a completed result');
   await f.page.locator('[data-do="accept"]').click();
   const result=f.page.locator('[data-drinking-dialog="result"]');

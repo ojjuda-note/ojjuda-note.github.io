@@ -183,6 +183,54 @@ test('local bottle capture handlers ignore help contents and backdrop clicks whi
   assert.deepEqual(f.errors,[]);
 });
 
+test('the local primary back link restores the game menu and cancels a running stopwatch', async t => {
+  const pendingFrames=new Set(),cancelledFrames=new Set();
+  const f=await screen({url:'/games/drinking/local/#menu',prepare(w){
+    w.scrollTo=()=>{};
+    w.localStorage.setItem('oj.party.member-a.players',JSON.stringify(['하나','둘']));
+    const request=w.requestAnimationFrame,cancel=w.cancelAnimationFrame;
+    w.requestAnimationFrame=callback=>{
+      const id=request(time=>{pendingFrames.delete(id);callback(time);});
+      pendingFrames.add(id);return id;
+    };
+    w.cancelAnimationFrame=id=>{pendingFrames.delete(id);cancelledFrames.add(id);cancel(id);};
+  }});
+  t.after(()=>f.close());
+  await until(()=>f.find('.game-card'),'local game menu');
+  assert.equal(f.find('#local-back').getAttribute('href'),'/world.html?tab=arcade');
+  assert.equal(f.find('[data-local-back-label]').textContent,'오락실로');
+  assert.equal(f.find('.mode-back').hidden,false);
+
+  f.click('[data-action="open"][data-value="stopwatch"]');await f.advance(0);
+  await until(()=>f.find('[data-drinking-dialog="guide"]'),'stopwatch instructions');
+  f.click('[data-drinking-dialog="guide"] [data-drinking-close]');
+  assert.equal(f.find('#local-back').getAttribute('href'),'#menu');
+  assert.equal(f.find('[data-local-back-label]').textContent,'술게임으로');
+  assert.equal(f.find('.mode-back').hidden,true);
+  assert.equal(f.find('.menu-nav'),null,'the page does not repeat the game-menu link');
+  f.click('[data-action="start"]');f.click('[data-action="watch-go"]');await f.advance(64);
+  assert.ok(f.find('[data-action="watch-stop"]'),'the stopwatch is running before leaving');
+  const runningFrames=[...pendingFrames];
+  assert.ok(runningFrames.length>0,'the active game has scheduled animation work');
+
+  // Click the actual anchor, including its hashchange cleanup path.
+  f.find('#local-back').click();await f.advance(0);
+  await until(()=>f.find('.game-card'),'returned game menu');
+  assert.equal(f.w.location.hash,'#menu');
+  assert.ok(runningFrames.every(id=>cancelledFrames.has(id)),'leaving cancels the running game frames');
+  assert.equal(pendingFrames.size,0);
+  assert.equal(f.find('#local-back').getAttribute('href'),'/world.html?tab=arcade');
+  assert.equal(f.find('[data-local-back-label]').textContent,'오락실로');
+  assert.equal(f.find('.mode-back').hidden,false);
+  assert.equal(f.w.document.activeElement.dataset.value,'stopwatch','keyboard focus returns to the selected game card');
+  assert.equal(f.w.document.body.classList.contains('dp-playing'),false);
+  await f.advance(5000);
+  assert.ok(f.find('.game-card'));
+  assert.equal(f.find('#watch-reading'),null);
+  assert.equal(f.find('[data-drinking-dialog]'),null,'the departed round cannot show an old popup');
+  assert.deepEqual(f.errors,[]);
+});
+
 test('a guide queued while approved modules load opens when the gate exposes content', async t => {
   const f=await presentation({concealed:true});t.after(()=>f.close());
   f.dp.enter('liar');await delay();

@@ -5,6 +5,8 @@ body.dp-playing {
   --dp-gold: #e7c779;
   --dp-top: max(8px, env(safe-area-inset-top));
   --dp-bottom: max(8px, env(safe-area-inset-bottom));
+  --dp-fit-scale: 1;
+  --dp-gutter: clamp(8px, 1.2vw, 20px);
   height: 100vh;
   height: 100dvh;
   min-height: 0;
@@ -22,21 +24,22 @@ body.dp-playing #access-content:not([hidden]) {
 }
 body.dp-playing #access-content > header {
   flex: 0 0 auto;
-  width: min(100%, 880px);
+  width: 100%;
+  max-width: none;
   min-height: 52px;
   margin: 0 auto;
-  padding: 4px 68px 4px 16px;
+  padding: 4px max(68px, env(safe-area-inset-right)) 4px max(12px, var(--dp-gutter), env(safe-area-inset-left));
   box-sizing: border-box;
 }
 body.dp-playing #access-content > main {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  width: min(100%, 780px);
-  max-width: 780px;
+  width: 100%;
+  max-width: none;
   min-height: 0;
   margin: 0 auto;
-  padding: 8px 12px;
+  padding: var(--dp-gutter);
   box-sizing: border-box;
 }
 body.dp-playing #view {
@@ -134,24 +137,25 @@ body.dp-playing[data-dp-kind="bottle"] .bottle-form fieldset { margin-bottom: 10
 /* Keep navigation and sound settings available in a compact local header. */
 body.dp-playing[data-dp-mode="local"] .mast-inner { width: 100%; height: 44px; margin: 0; }
 body.dp-playing[data-dp-mode="local"] .header-actions { gap: 6px; }
+body.dp-playing[data-dp-mode="local"] .header-actions .mode-back[hidden] { display: none; }
 body.dp-playing[data-dp-mode="local"] #access-content > .wrap {
   display: flex;
   flex-direction: column;
-  width: min(100%, 900px);
-  max-width: 900px;
+  width: 100%;
+  max-width: none;
   min-height: 0;
   height: auto;
   margin: 0 auto;
-  padding: 8px 12px;
+  padding: var(--dp-gutter);
   box-sizing: border-box;
 }
 body.dp-playing[data-dp-mode="local"] #app { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
-body.dp-playing[data-dp-mode="local"] .menu-nav { align-self: flex-start; flex: 0 0 auto; min-height: 44px; margin: 0 60px 6px 0; }
-body.dp-playing[data-dp-mode="local"] .play-shell { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; margin: 0; overflow: hidden; }
+body.dp-playing[data-dp-mode="local"] .play-shell { flex: 1 1 auto; display: flex; flex-direction: column; width: 100%; max-width: none; min-height: 0; margin: 0; overflow: hidden; }
 body.dp-playing[data-dp-mode="local"] .round-head { flex: 0 0 auto; padding: 9px 14px; gap: 8px; }
-body.dp-playing[data-dp-mode="local"] .round-head h1 { font-size: clamp(19px, 3.7vw, 24px); }
-body.dp-playing[data-dp-mode="local"] .round-head > span { font-size: 14px; }
-body.dp-playing[data-dp-mode="local"] .stage-art { flex: 0 0 auto; height: clamp(65px, 13dvh, 110px); min-height: 0; }
+body.dp-playing[data-dp-mode="local"] .round-head h1 { font-size: clamp(20px, 2.6vw, 32px); }
+body.dp-playing[data-dp-mode="local"] .round-head > span { font-size: clamp(14px, 1.6vw, 18px); }
+body.dp-playing[data-dp-mode="local"] .round-mark { width: clamp(32px, 3.6vw, 48px); height: clamp(32px, 3.6vw, 48px); flex: none; }
+body.dp-playing[data-dp-mode="local"] .stage-art { flex: 0 0 auto; height: clamp(90px, 20dvh, 260px); min-height: 0; }
 body.dp-playing[data-dp-mode="local"] .play-body {
   flex: 1 1 auto;
   min-height: 0;
@@ -188,12 +192,261 @@ body.dp-playing[data-dp-mode="local"] .bottle-dial.vertical:is(.table-long, .tab
 body.dp-playing[data-dp-mode="local"] .king-order h2 { margin: 6px 0 12px; }
 body.dp-playing[data-dp-mode="local"] .king-recipients dl { margin-bottom: 12px; }
 
+/* Size the content itself to the available pane. The presentation controller
+   measures these ordinary CSS dimensions; controls and text keep their real
+   hit areas and can still scroll when the viewport is too small. */
+body.dp-playing :where(.play-body, #game, #view > .card > .inside, #view > .card:not(:has(> #game, > .inside))) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  font-size: calc(16px * var(--dp-fit-scale));
+  text-align: center;
+}
+body.dp-playing :where(.play-body, #game, #view > .card > .inside, #view > .card:not(:has(> #game, > .inside))) > * {
+  flex-shrink: 0;
+  min-width: 0;
+  max-width: 100%;
+}
+body.dp-playing #view h1,
+body.dp-playing[data-dp-mode="local"] .play-body h2 {
+  width: 100%;
+  font-size: calc(clamp(22px, 3vw, 28px) * var(--dp-fit-scale));
+  line-height: 1.3;
+  margin: calc(6px * var(--dp-fit-scale)) 0 calc(9px * var(--dp-fit-scale));
+}
+body.dp-playing #view h2 { font-size: calc(19px * var(--dp-fit-scale)); }
+body.dp-playing #view p,
+body.dp-playing[data-dp-mode="local"] .play-body p {
+  font-size: calc(16px * var(--dp-fit-scale));
+  line-height: 1.5;
+  margin-top: calc(6px * var(--dp-fit-scale));
+  margin-bottom: calc(10px * var(--dp-fit-scale));
+}
+body.dp-playing :is(#game, #view > .card > .inside, #view > .card:not(:has(> #game, > .inside))) > p,
+body.dp-playing[data-dp-mode="local"] .play-body > p { width: min(100%, calc(650px * var(--dp-fit-scale))); }
+body.dp-playing #view :is(.topline, .actions) { width: 100%; }
+body.dp-playing #view .topline { align-self: stretch; }
+body.dp-playing #view .topline,
+body.dp-playing #view .topline span,
+body.dp-playing[data-dp-mode="local"] .turn-tag { font-size: calc(14px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .turn-tag { padding: calc(5px * var(--dp-fit-scale)) calc(11px * var(--dp-fit-scale)); }
+body.dp-playing #view .actions,
+body.dp-playing[data-dp-mode="local"] .play-body .actions {
+  justify-content: center;
+  gap: calc(8px * var(--dp-fit-scale));
+  margin-top: calc(10px * var(--dp-fit-scale));
+}
+body.dp-playing #view :is(.action, .secondary, .ballots button, .tabs button, #game > button, .watch-target button, .bomb-setting button, .bomb-launch button, .mission-card > button),
+body.dp-playing[data-dp-mode="local"] .play-body :is(.start, .quiet, .choice) {
+  min-height: calc(44px * var(--dp-fit-scale));
+  padding: calc(10px * var(--dp-fit-scale)) calc(17px * var(--dp-fit-scale));
+  font-size: calc(16px * var(--dp-fit-scale));
+  line-height: 1.3;
+}
+body.dp-playing #view :is(form, .tabs, .ballots) { width: min(100%, calc(560px * var(--dp-fit-scale))); }
+body.dp-playing #view form,
+body.dp-playing #view :is(.members, .hints, .breakdown),
+body.dp-playing #view label { text-align: left; }
+body.dp-playing #view label,
+body.dp-playing[data-dp-mode="local"] .play-body label { font-size: calc(14px * var(--dp-fit-scale)); }
+body.dp-playing #view :is(input:not([type="range"]):not([type="checkbox"]):not([type="radio"]), select, textarea),
+body.dp-playing[data-dp-mode="local"] .play-body .field {
+  padding: calc(9px * var(--dp-fit-scale)) calc(10px * var(--dp-fit-scale));
+  font-size: calc(16px * var(--dp-fit-scale));
+  line-height: 1.4;
+}
+body.dp-playing #view :is(.members, .pair-scores) { width: 100%; }
+body.dp-playing #view .members li,
+body.dp-playing #view .pair-scores li { font-size: calc(14px * var(--dp-fit-scale)); }
+body.dp-playing #view :is(.hints, .breakdown, .bottle-players) { max-height: min(30dvh, calc(210px * var(--dp-fit-scale))); }
+body.dp-playing #view :is(.role, .mission, .mission-card) {
+  width: min(100%, calc(500px * var(--dp-fit-scale)));
+  min-height: calc(100px * var(--dp-fit-scale));
+  display: grid;
+  place-content: center;
+  padding: calc(20px * var(--dp-fit-scale));
+  margin: calc(10px * var(--dp-fit-scale)) auto;
+}
+body.dp-playing #view .secret { font-size: calc(24px * var(--dp-fit-scale)); }
+body.dp-playing #view .inside:has(:is(#hint, .ballots, #order)) .role { min-height: 0; padding: calc(12px * var(--dp-fit-scale)); }
+body.dp-playing #view .king-order,
+body.dp-playing[data-dp-mode="local"] .king-order { width: min(100%, calc(540px * var(--dp-fit-scale))); }
+body.dp-playing #view .king-order :is(h1, h2) { font-size: calc(28px * var(--dp-fit-scale)); }
+body.dp-playing #view .king-recipients,
+body.dp-playing[data-dp-mode="local"] .king-recipients { font-size: calc(16px * var(--dp-fit-scale)); }
+body.dp-playing #view .king-recipients dt,
+body.dp-playing[data-dp-mode="local"] .king-recipients dt { font-size: calc(14px * var(--dp-fit-scale)); }
+
+body.dp-playing[data-dp-kind="croc"] .croc-toy { width: min(100%, calc(min(420px, 41dvh) * var(--dp-fit-scale))); }
+body.dp-playing[data-dp-kind="croc"] .tooth { font-size: calc(clamp(10px, 2.9vw, 13px) * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-kind="bomb"] .bomb-launch { width: min(100%, calc(min(260px, 30dvh) * var(--dp-fit-scale))); }
+body.dp-playing[data-dp-kind="bomb"] .bomb-active { width: min(100%, calc(min(220px, 30dvh) * var(--dp-fit-scale))); }
+body.dp-playing[data-dp-mode="local"] .play-body .mini-art { width: min(100%, calc(220px * var(--dp-fit-scale))); height: calc(220px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-kind="stopwatch"] .watch-board {
+  width: min(100%, calc(400px * var(--dp-fit-scale)));
+  height: calc(240px * var(--dp-fit-scale));
+  margin: calc(10px * var(--dp-fit-scale)) auto;
+}
+body.dp-playing[data-dp-kind="stopwatch"] .watch-board .watch-case { width: calc(170px * var(--dp-fit-scale)); margin-top: calc(10px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-kind="stopwatch"] .watch-board .watch-lcd { font-size: calc(34px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-kind="bottle"] :is(.bottle-board, .bottle-dial) {
+  width: min(100%, calc(var(--board-width) * var(--dp-fit-scale)), calc(42dvh * var(--ratio, 1) * var(--dp-fit-scale)));
+  margin: calc(10px * var(--dp-fit-scale)) auto;
+}
+body.dp-playing[data-dp-mode="local"] .bottle-dial.vertical:is(.table-long, .table-oval) { width: min(100%, calc(var(--board-width) * var(--dp-fit-scale)), calc(25dvh * var(--dp-fit-scale))); }
+body.dp-playing[data-dp-mode="local"] .bottle-dial .seat { width: clamp(28px, 10cqw, calc(44px * var(--dp-fit-scale))); height: clamp(28px, 10cqw, calc(44px * var(--dp-fit-scale))); font-size: calc(15px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .bottle-seats { gap: calc(6px * var(--dp-fit-scale)) calc(12px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .bottle-seats li { gap: calc(5px * var(--dp-fit-scale)); font-size: calc(13px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .bottle-seats b { min-width: calc(22px * var(--dp-fit-scale)); line-height: calc(22px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .bottle-seats button { min-height: calc(36px * var(--dp-fit-scale)); }
+body.dp-playing #view .bottle-players li { font-size: calc(14px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] #spin-status { width: 100%; }
+body.dp-playing[data-dp-mode="local"] #spin-status button:is([data-action="spin"], [data-action="brake"]),
+body.dp-playing #view .bottle-center {
+  position: static;
+  left: auto;
+  top: auto;
+  translate: none;
+  transform: none;
+  width: auto;
+  min-width: min(100%, calc(160px * var(--dp-fit-scale)));
+  max-width: 100%;
+  white-space: normal;
+  justify-self: center;
+}
+body.dp-playing[data-dp-kind="bottle"] .bottle-glass { max-width: calc(52px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-kind="bottle"] .bottle-seat { width: clamp(21px, 8cqw, calc(32px * var(--dp-fit-scale))); height: clamp(21px, 8cqw, calc(32px * var(--dp-fit-scale))); font-size: calc(13px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-kind="truth"] :is(.truth-hand, .truth-pair) {
+  width: min(100%, calc(380px * var(--dp-fit-scale)));
+  max-width: none;
+  gap: calc(12px * var(--dp-fit-scale));
+  margin: calc(10px * var(--dp-fit-scale)) auto;
+}
+body.dp-playing[data-dp-kind="truth"] :is(.truth-face, .truth-front) {
+  width: min(100%, calc(500px * var(--dp-fit-scale)));
+  min-height: calc(190px * var(--dp-fit-scale));
+  display: grid;
+  align-content: center;
+  padding: calc(18px * var(--dp-fit-scale));
+  margin: calc(10px * var(--dp-fit-scale)) auto;
+}
+body.dp-playing[data-dp-kind="truth"] .truth-face strong,
+body.dp-playing[data-dp-mode="local"] .truth-front p { font-size: calc(22px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-kind="truth"] :is(.truth-face span, .truth-card-label) { font-size: calc(14px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-kind="truth"] .truth-hand button::after { font-size: calc(52px * var(--dp-fit-scale)); }
+body.dp-playing :is(.play-body, #game) .truth-settings { width: min(100%, calc(500px * var(--dp-fit-scale))); gap: calc(10px * var(--dp-fit-scale)); }
+body.dp-playing :is(.play-body, #game) .truth-settings legend { font-size: calc(14px * var(--dp-fit-scale)); }
+body.dp-playing :is(.play-body, #game) .truth-settings label { margin: 0; }
+body.dp-playing :is(.play-body, #game) .truth-settings label span { min-height: calc(44px * var(--dp-fit-scale)); font-size: calc(15px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .private-card { width: min(100%, calc(270px * var(--dp-fit-scale))); max-width: none; padding: calc(10px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .private-card .secret-art { height: calc(min(150px, 18dvh) * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .private-card.hidden-face { padding: 0; }
+body.dp-playing[data-dp-mode="local"] .private-card.hidden-face .secret-art { height: calc(min(195px, 24dvh) * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .private-card strong { font-size: calc(23px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .private-card.hidden-face strong { font-size: calc(15px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-kind="initial"] .initial-word { width: min(100%, calc(600px * var(--dp-fit-scale))); min-height: calc(120px * var(--dp-fit-scale)); font-size: calc(52px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"][data-dp-kind="initial"][data-dp-phase="initial-live"] .play-body > h2 { font-size: calc(50px * var(--dp-fit-scale)); letter-spacing: .08em; }
+body.dp-playing[data-dp-mode="local"] .countdown { font-size: calc(64px * var(--dp-fit-scale)); line-height: 1.2; font-variant-numeric: tabular-nums; }
+body.dp-playing[data-dp-kind="updown"] .updown-range { width: min(100%, calc(540px * var(--dp-fit-scale))); padding: calc(18px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-kind="updown"] .updown-range strong { font-size: calc(42px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .updown-form label strong { font-size: calc(28px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] :is(.party-prompt, .fold-players, .party-scores, .bottle-setup) { width: min(100%, calc(560px * var(--dp-fit-scale))); max-width: none; }
+body.dp-playing[data-dp-mode="local"] .fold-players label { min-height: calc(46px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .party-scores li { font-size: calc(14px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .play-body > .options { display: grid; width: min(100%, calc(660px * var(--dp-fit-scale))); grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(130px * var(--dp-fit-scale))), 1fr)); gap: calc(9px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"][data-dp-kind="minority"] .play-body > .options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+body.dp-playing[data-dp-mode="local"] .play-body :is(.watch-config, .bomb-timer) { width: min(100%, calc(460px * var(--dp-fit-scale))); max-width: none; }
+body.dp-playing[data-dp-mode="local"] .watch-step output,
+body.dp-playing #view .watch-target output { font-size: calc(28px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .watch-step button { width: calc(44px * var(--dp-fit-scale)); min-height: calc(44px * var(--dp-fit-scale)); font-size: calc(22px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .play-body :is(.table-options, .direction-options) label > span { min-height: calc(44px * var(--dp-fit-scale)); font-size: calc(14px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .play-body .table-options label > span { min-height: calc(76px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .table-mini { width: calc(30px * var(--dp-fit-scale)); height: calc(30px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .table-mini:is(.long, .oval) { width: calc(46px * var(--dp-fit-scale)); height: calc(26px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .play-body :is(.watch-limits, .bomb-timer-limits) { font-size: calc(13px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .play-body .bomb-timer #bomb-window { font-size: calc(15px * var(--dp-fit-scale)); }
+body.dp-playing[data-dp-mode="local"] .play-body :is(.watch-config, .bomb-timer) input[type="range"] { height: calc(38px * var(--dp-fit-scale)); }
+body.dp-playing #view .bomb-control { width: min(100%, calc(560px * var(--dp-fit-scale))); }
+body.dp-playing #view :is(#watch-target, #bomb-base) { width: min(100%, calc(500px * var(--dp-fit-scale))); }
+
+/* Entry artwork shares the screen with the explanation and start action. */
+body.dp-playing[data-dp-mode="local"][data-dp-phase="intro"] .stage-art { height: clamp(150px, 38dvh, 520px); }
+body.dp-playing[data-dp-mode="local"][data-dp-phase="intro"] .play-shell:has(:is(.truth-settings, .bomb-timer, .watch-config)) .stage-art { height: clamp(76px, 15dvh, 180px); }
+
+@media (min-width: 900px) and (min-aspect-ratio: 6/5) {
+  body.dp-playing[data-dp-mode="local"] .play-shell:has(> .stage-art) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  body.dp-playing[data-dp-mode="local"] .play-shell:has(> .stage-art) > .round-head { grid-column: 1 / -1; }
+  body.dp-playing[data-dp-mode="local"][data-dp-phase] .play-shell:has(> .stage-art) > .stage-art { grid-column: 1; grid-row: 2; height: 100%; min-height: 0; }
+  body.dp-playing[data-dp-mode="local"] .play-shell:has(> .stage-art) > .play-body { grid-column: 2; grid-row: 2; padding: clamp(20px, 3vw, 48px); }
+}
+@media (min-width: 900px) and (min-aspect-ratio: 6/5), (min-width: 600px) and (max-height: 480px) {
+  body.dp-playing[data-dp-mode="local"] .play-body:has(> :is(.watch-board, .croc-toy, .private-card, .truth-pair, .countdown, .mini-art, .options, .bottle-dial)) {
+    --dp-copy-column: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) repeat(6, auto) minmax(0, 1fr);
+    align-content: safe center;
+    align-items: center;
+    column-gap: clamp(20px, 4vw, 64px);
+    row-gap: 8px;
+    padding: clamp(16px, 2.5vw, 40px);
+  }
+  body.dp-playing[data-dp-mode="local"] .play-body:has(> :is(.watch-board, .croc-toy, .private-card, .truth-pair, .countdown, .mini-art, .bottle-dial)) > * { grid-column: 2; margin-top: 0; margin-bottom: 8px; }
+  body.dp-playing[data-dp-mode="local"] .play-body > :is(.watch-board, .croc-toy, .private-card, .truth-pair, .countdown, .mini-art, .bottle-dial) { grid-column: 1; grid-row: 1 / -1; justify-self: center; align-self: center; }
+  body.dp-playing[data-dp-mode="local"] .play-body:has(> .options) { --dp-copy-column: 1; }
+  body.dp-playing[data-dp-mode="local"] .play-body:has(> .options) > :not(.options) { grid-column: 1; }
+  body.dp-playing[data-dp-mode="local"] .play-body > .options { grid-column: 2; grid-row: 1 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
+  body.dp-playing[data-dp-mode="local"] .play-body > .turn-tag { justify-self: center; }
+  body.dp-playing[data-dp-mode="local"][data-dp-kind="minority"] .play-body > .options { grid-template-columns: 1fr; }
+  body.dp-playing #view #game:has(> :is(.watch-board, .bomb-launch, .bomb-active, .bottle-board, .truth-hand, .initial-word, .updown-range)),
+  body.dp-playing #view .inside:has(> .croc-toy) {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) repeat(6, auto) minmax(0, 1fr);
+    align-content: safe center;
+    align-items: center;
+    column-gap: clamp(20px, 4vw, 64px);
+    row-gap: 8px;
+    text-align: center;
+  }
+  body.dp-playing #view #game:has(> :is(.watch-board, .bomb-launch, .bomb-active, .bottle-board, .truth-hand, .initial-word, .updown-range)) > *,
+  body.dp-playing #view .inside:has(> .croc-toy) > * { grid-column: 2; }
+  body.dp-playing #view #game > :is(.watch-board, .bomb-launch, .bomb-active, .bottle-board, .truth-hand, .initial-word, .updown-range) { grid-column: 1; grid-row: 1 / -1; justify-self: center; }
+  body.dp-playing #view .inside:has(> .croc-toy) { grid-template-rows: auto minmax(0, 1fr) repeat(6, auto) minmax(0, 1fr); }
+  body.dp-playing #view .inside:has(> .croc-toy) > .topline { grid-column: 1 / -1; grid-row: 1; }
+  body.dp-playing #view .inside > .croc-toy { grid-column: 1; grid-row: 2 / -1; justify-self: center; }
+  /* Symmetric flexible rows center the copy independently of a tall board. */
+  body.dp-playing[data-dp-mode="local"] .play-body:has(> :is(.watch-board, .croc-toy, .private-card, .truth-pair, .countdown, .mini-art, .options, .bottle-dial))::before,
+  body.dp-playing[data-dp-mode="local"] .play-body:has(> :is(.watch-board, .croc-toy, .private-card, .truth-pair, .countdown, .mini-art, .options, .bottle-dial))::after,
+  body.dp-playing #view #game:has(> :is(.watch-board, .bomb-launch, .bomb-active, .bottle-board, .truth-hand, .initial-word, .updown-range))::before,
+  body.dp-playing #view #game:has(> :is(.watch-board, .bomb-launch, .bomb-active, .bottle-board, .truth-hand, .initial-word, .updown-range))::after,
+  body.dp-playing #view .inside:has(> .croc-toy)::before,
+  body.dp-playing #view .inside:has(> .croc-toy)::after {
+    content: "";
+    grid-column: var(--dp-copy-column, 2);
+    grid-row: 1;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+  body.dp-playing[data-dp-mode="local"] .play-body:has(> :is(.watch-board, .croc-toy, .private-card, .truth-pair, .countdown, .mini-art, .options, .bottle-dial))::after,
+  body.dp-playing #view #game:has(> :is(.watch-board, .bomb-launch, .bomb-active, .bottle-board, .truth-hand, .initial-word, .updown-range))::after,
+  body.dp-playing #view .inside:has(> .croc-toy)::after { grid-row: -2; }
+  body.dp-playing #view .inside:has(> .croc-toy)::before { grid-row: 2; }
+  body.dp-playing #view .ballots { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 /* The stable help control is outside the native renderer's replaceable view. */
 .dp-help {
   position: fixed;
   z-index: 30;
   top: max(6px, env(safe-area-inset-top));
-  right: max(12px, env(safe-area-inset-right), calc((100vw - 880px) / 2));
+  right: max(12px, env(safe-area-inset-right));
   display: grid;
   place-items: center;
   width: 42px;
@@ -348,7 +601,7 @@ body.dp-playing[data-dp-mode="local"] .king-recipients dl { margin-bottom: 12px;
   body.dp-playing #view .pair-scores .pair-fingers { display: none; }
   body.dp-playing[data-dp-mode="local"] .stage-art { height: 60px; }
   body.dp-playing[data-dp-mode="local"] .round-head { padding-top: 7px; padding-bottom: 7px; }
-  body.dp-playing[data-dp-mode="local"] .play-body h2 { font-size: 22px; }
+  body.dp-playing[data-dp-mode="local"] .play-body h2 { font-size: calc(22px * var(--dp-fit-scale)); }
   .dp-dialog .dp-dialog-header { padding-top: 15px; }
   .dp-dialog .dp-guide-goal { margin-bottom: 14px; }
   .dp-guide-steps { gap: 10px; }
@@ -359,6 +612,20 @@ body.dp-playing[data-dp-mode="local"] .king-recipients dl { margin-bottom: 12px;
   body.dp-playing #access-content > header { min-height: 44px; padding-top: 0; padding-bottom: 0; }
   body.dp-playing #access-content > main { padding-top: 4px; padding-bottom: 4px; }
   body.dp-playing #view .members { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  body.dp-playing #view #game:has(> .watch-target) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    grid-template-rows: repeat(4, auto);
+    align-content: safe center;
+    align-items: center;
+    gap: 4px 20px;
+  }
+  body.dp-playing #view #game:has(> .watch-target) > h1 { grid-column: 1; grid-row: 2; margin: 0; }
+  body.dp-playing #view #game:has(> .watch-target) > p { grid-column: 1; grid-row: 3; margin: 0; }
+  body.dp-playing #view #game:has(> .watch-target) > label { grid-column: 2; grid-row: 1; margin: 0; text-align: center; }
+  body.dp-playing #view #game > .watch-target { grid-column: 2; grid-row: 2; margin: 0; }
+  body.dp-playing #view #game > #watch-target { grid-column: 2; grid-row: 3; height: 32px; padding: 0; margin: 0; }
+  body.dp-playing #view #game > #watch-begin { grid-column: 2; grid-row: 4; justify-self: center; margin: 0; }
   body.dp-playing #view #bottle-table { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto auto; gap: 8px 16px; margin: 6px 0; }
   body.dp-playing #view #bottle-table > fieldset { margin: 0; }
   body.dp-playing #view #bottle-table > fieldset:first-child { grid-column: 1; grid-row: 1 / 3; }
@@ -369,9 +636,6 @@ body.dp-playing[data-dp-mode="local"] .king-recipients dl { margin-bottom: 12px;
   body.dp-playing #view #game:has(> .bomb-control) > p { grid-column: 1; grid-row: 2; }
   body.dp-playing #view #game > .bomb-control { grid-column: 2; grid-row: 1 / 3; margin: 0; }
   body.dp-playing #view #game > #bomb-configure { grid-column: 2; grid-row: 3; }
-  body.dp-playing[data-dp-mode="local"] #app { position: relative; }
-  body.dp-playing[data-dp-mode="local"] .menu-nav { position: absolute; z-index: 2; top: 6px; left: 24px; min-height: 44px; margin: 0; }
-  body.dp-playing[data-dp-mode="local"] .round-head { padding-left: 134px; }
   body.dp-playing[data-dp-mode="local"] .stage-art { display: none; }
   body.dp-playing[data-dp-mode="local"] .play-body { padding-top: 8px; padding-bottom: 8px; }
   body.dp-playing[data-dp-mode="local"] .play-body :is(.watch-config, .bomb-timer) { margin: 6px auto; }
@@ -385,21 +649,23 @@ body.dp-playing[data-dp-mode="local"] .king-recipients dl { margin-bottom: 12px;
   body.dp-playing[data-dp-mode="local"] .play-body:has(> :is(.watch-board, .croc-toy, .private-card, .truth-pair, .countdown, .mini-art, .options, .bottle-dial)) {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-content: start;
+    align-content: safe center;
     align-items: center;
     column-gap: 18px;
     row-gap: 4px;
   }
   body.dp-playing[data-dp-mode="local"] .play-body:has(> :is(.watch-board, .croc-toy, .private-card, .truth-pair, .countdown, .mini-art, .bottle-dial)) > * { grid-column: 2; margin-top: 0; margin-bottom: 4px; }
-  body.dp-playing[data-dp-mode="local"] .play-body > :is(.watch-board, .croc-toy, .private-card, .truth-pair, .countdown, .mini-art, .bottle-dial) { grid-column: 1 !important; grid-row: 1 / span 6; align-self: center; }
-  body.dp-playing[data-dp-mode="local"] .play-body > .croc-toy { width: min(100%, 49dvh); }
-  body.dp-playing[data-dp-mode="local"] .play-body > .watch-board { height: 150px; }
-  body.dp-playing[data-dp-mode="local"] .play-body > .private-card { width: min(100%, 190px); }
-  body.dp-playing[data-dp-mode="local"] .play-body > .truth-pair { max-width: 220px; }
-  body.dp-playing[data-dp-mode="local"] .play-body > .bottle-dial { width: min(100%, var(--board-width), 54dvh); }
-  body.dp-playing[data-dp-mode="local"] .play-body > .bottle-dial.vertical:is(.table-long, .table-oval) { width: min(100%, var(--board-width), 33dvh); }
+  body.dp-playing[data-dp-mode="local"] .play-body > :is(.watch-board, .croc-toy, .private-card, .truth-pair, .countdown, .mini-art, .bottle-dial) { grid-column: 1 !important; grid-row: 1 / -1; align-self: center; }
+  body.dp-playing[data-dp-mode="local"] .play-body > .croc-toy { width: min(100%, calc(49dvh * var(--dp-fit-scale))); }
+  body.dp-playing[data-dp-mode="local"] .play-body > .watch-board { height: calc(170px * var(--dp-fit-scale)); }
+  body.dp-playing[data-dp-mode="local"] .play-body > .watch-board .watch-case { width: calc(116px * var(--dp-fit-scale)); }
+  body.dp-playing[data-dp-mode="local"] .play-body > .watch-board .watch-lcd { font-size: calc(26px * var(--dp-fit-scale)); }
+  body.dp-playing[data-dp-mode="local"] .play-body > .private-card { width: min(100%, calc(190px * var(--dp-fit-scale))); }
+  body.dp-playing[data-dp-mode="local"] .play-body > .truth-pair { max-width: min(100%, calc(260px * var(--dp-fit-scale))); }
+  body.dp-playing[data-dp-mode="local"] .play-body > .bottle-dial { width: min(100%, calc(var(--board-width) * var(--dp-fit-scale)), calc(54dvh * var(--dp-fit-scale))); }
+  body.dp-playing[data-dp-mode="local"] .play-body > .bottle-dial.vertical:is(.table-long, .table-oval) { width: min(100%, calc(var(--board-width) * var(--dp-fit-scale)), calc(33dvh * var(--dp-fit-scale))); }
   body.dp-playing[data-dp-mode="local"] .play-body:has(> .options) > :not(.options) { grid-column: 1; }
-  body.dp-playing[data-dp-mode="local"] .play-body > .options { grid-column: 2 !important; grid-row: 1 / span 6; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; gap: 6px; }
+  body.dp-playing[data-dp-mode="local"] .play-body > .options { grid-column: 2 !important; grid-row: 1 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; gap: 6px; }
   body.dp-playing[data-dp-mode="local"][data-dp-kind="minority"] .play-body > .options { grid-template-columns: 1fr; }
   body.dp-playing[data-dp-mode="local"] .play-body:has(> #party-prompt) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); column-gap: 18px; align-content: start; }
   body.dp-playing[data-dp-mode="local"] .play-body:has(> #party-prompt) > :not(#party-prompt) { grid-column: 1; }

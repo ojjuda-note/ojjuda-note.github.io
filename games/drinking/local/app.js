@@ -154,8 +154,16 @@ function cleanup(){
   if(round?.bottleFrame!=null)cancelAnimationFrame(round.bottleFrame);
   round=null;
 }
+function navigation(inGame){
+  const back=$('#local-back');
+  back.href=inGame?'#menu':'/world.html?tab=arcade';
+  back.dataset.drinkingBack=inGame?'games':'arcade';
+  back.querySelector('[data-local-back-label]').textContent=inGame?'술게임으로':'오락실로';
+  $('.mode-back').hidden=inGame;
+}
 function renderMenu(){
   window.DrinkingPresentation?.leave();
+  navigation(false);
   const preview=players.slice(0,3).map(esc).join(' · ')+(players.length>3?' 외 '+(players.length-3)+'명':'');
   const roster='<section class="main-roster" aria-label="함께할 참가자"><div><h2>참가자 <b>'+players.length+'명</b></h2>'+
     '<p>'+preview+'</p></div>'+btn('참가자 설정','people','quiet')+'</section>';
@@ -163,7 +171,8 @@ function renderMenu(){
   app.innerHTML='<section class="hero"><picture class="hero-art"><source media="(max-width: 720px)" srcset="art/hero-small.webp"><img src="art/hero.webp" width="1788" height="596" alt="" fetchpriority="high"></picture><div class="hero-copy"><h1>술게임</h1><p>한 대를 돌려가며 즐기는<br>게임 '+games.length+'가지</p><button class="hero-play" data-action="random">'+icon('random')+'랜덤 게임</button></div></section>'+roster+'<div class="catalog-head"><div class="section-title"><h2>게임 선택</h2><span class="num">'+String(count).padStart(2,'0')+'</span></div><div class="chips" aria-label="게임 분류">'+['전체','운과 감각','추리와 대화','순발력'].map(f=>'<button class="chip" data-action="filter" data-value="'+f+'" aria-pressed="'+(filter===f)+'">'+f+'</button>').join('')+'</div></div><section class="games" aria-label="게임 목록">'+cards().map(g=>'<button class="game-card" data-action="open" data-value="'+g.id+'"><span class="card-art" style="--pastel:'+g.color+'">'+art(g.id)+'<span class="card-num">'+g.num+'</span></span><span class="card-copy"><strong class="card-title">'+g.title+'</strong><span class="card-sub">'+g.short+icon('arrow')+'</span></span></button>').join('')+'</section><footer class="catalog-foot">오쭈다 술게임 · 테스트판</footer>';
 }
 function shell(body,scene=false){
-  app.innerHTML='<button class="menu-nav" data-action="menu">'+icon('back')+'게임 목록</button><article class="play-shell"><header class="round-head"><h1>'+art(game.id,'round-mark')+game.title+'</h1><span>'+players.length+'명 플레이</span></header>'+(scene?'<div class="stage-art" style="--pastel:'+game.color+';--scene:url('+artPath(game.id)+')">'+art(game.id)+'</div>':'')+'<div class="play-body">'+body+'</div></article>';
+  navigation(true);
+  app.innerHTML='<article class="play-shell"><header class="round-head"><h1>'+art(game.id,'round-mark')+game.title+'</h1><span>'+players.length+'명 플레이</span></header>'+(scene?'<div class="stage-art" style="--pastel:'+game.color+';--scene:url('+artPath(game.id)+')">'+art(game.id)+'</div>':'')+'<div class="play-body">'+body+'</div></article>';
   window.DrinkingGameScreen?.local(game.id,round,app);
 }
 function intro(){const enough=players.length>=game.min;
@@ -956,6 +965,11 @@ function handle(action,value){
 document.addEventListener('click',event=>{
   if(round?.phase==='spinning'&&!event.target.closest('button,a,input,label,dialog,[data-drinking-overlay]'))brakeBottle();
 },true);
+$('#local-back').addEventListener('click',event=>{
+  if(!game||event.button||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+  event.preventDefault();
+  handle('menu');
+});
 app.addEventListener('click',e=>{
   const b=e.target.closest('button[data-action]');
   if(b&&!b.disabled)handle(b.dataset.action,b.dataset.value);
