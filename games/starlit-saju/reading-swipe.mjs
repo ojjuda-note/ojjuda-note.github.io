@@ -88,6 +88,13 @@ export function attachReadingSwipe(container,{previous,next}) {
   function cancel(event) {
     if(gesture&&event.pointerId===gesture.id)reset();
   }
+  function lostCapture(event) {
+    if(!gesture||event.pointerId!==gesture.id)return;
+    // Touch implicitly captures its paragraph first. Transferring capture to
+    // this container emits a bubbling loss from that previous target.
+    if(event.target!==container&&container.hasPointerCapture?.(gesture.id))return;
+    reset();
+  }
   function leave(event) {
     if(gesture?.type==='mouse'&&!gesture.captured&&event.pointerId===gesture.id)reset();
   }
@@ -104,7 +111,7 @@ export function attachReadingSwipe(container,{previous,next}) {
     }
   }
   const listeners=[['pointerdown',down],['pointermove',move],['pointerup',up],
-    ['pointercancel',cancel],['lostpointercapture',cancel],['pointerleave',leave],
+    ['pointercancel',cancel],['lostpointercapture',lostCapture],['pointerleave',leave],
     ['mousedown',mouseDown],['selectstart',selectStart],['click',click],
     ['contextmenu',reset],['dragstart',reset]];
   for(const [name,handler] of listeners)container.addEventListener(name,handler,{capture:true,passive:false});
