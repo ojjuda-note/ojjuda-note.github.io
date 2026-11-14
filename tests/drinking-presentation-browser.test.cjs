@@ -379,6 +379,68 @@ test('13 native games and 13 local games fill actual viewports and return to the
       await local.page.waitForFunction(()=>!document.querySelector('#app [data-action="start"]'));
       if(themedGames.has(kind))await expectGameTheme(local.page,kind);
       await allSizes(local.page,'local-'+kind+(kind==='bottle'?'-setup':'-play'),{local:true,capture:themedGames.has(kind)?themeCaptures(kind):[]});
+      if(kind==='fingers'){
+        const contrast=await local.page.locator('[data-finger-random]').evaluate(button=>{
+          function luminance(cssColor){
+            const components=cssColor.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>v/255);
+            const [r,g,b]=components.map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);
+            return .2126*r+.7152*g+.0722*b;
+          }
+          const style=getComputedStyle(button),text=luminance(style.color),background=luminance(style.backgroundColor);
+          return (Math.max(text,background)+.05)/(Math.min(text,background)+.05);
+        });
+        assert.ok(contrast>=4.5,'the recommendation label is readable against its button: '+contrast);
+      }
+      if(kind==='imagevote'){
+        const page=local.page;
+        await page.locator('[data-action="question-menu"]').click();
+        const picker=page.locator('.party-question-dialog[open]');
+        await picker.locator('[data-question] option').first().waitFor({state:'attached'});
+        for(const size of gameViewports){
+          await page.setViewportSize(size);
+          for(const mode of ['list','write']){
+            await picker.locator('[data-mode="'+mode+'"]').click();
+            if(mode==='write')await picker.locator('textarea').fill('어떤 여행을 좋아하세요?');
+            const confirm=picker.locator('[type=submit]');
+            await confirm.scrollIntoViewIfNeeded();
+            const layout=await picker.evaluate(dialog=>{
+              const box=dialog.getBoundingClientRect();
+              const r=dialog.querySelector('[type=submit]').getBoundingClientRect();
+              return {inside:box.left>=0&&box.right<=innerWidth+1&&box.top>=0&&box.bottom<=innerHeight+1,
+                clipped:dialog.scrollWidth>dialog.clientWidth+1,submitVisible:r.top>=box.top-1&&r.bottom<=box.bottom+1};
+            });
+            assert.deepEqual(layout,{inside:true,clipped:false,submitVisible:true},JSON.stringify({size,mode,layout}));
+          }
+        }
+        await page.setViewportSize(viewports[0]);
+        await screenshot(page,'local-imagevote-question-editor-390x844');
+        await picker.locator('[data-mode="list"]').click();
+        const samples=await picker.evaluate(async dialog=>{
+          const another=dialog.querySelector('[data-another]'),write=dialog.querySelector('[data-mode="write"]');
+          const list=dialog.querySelector('[data-mode="list"]'),recommend=[],editor=[];
+          async function measure(button){
+            const start=performance.now();
+            button.click();
+            await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+            return Math.round(performance.now()-start);
+          }
+          for(let i=0;i<15;i++){
+            recommend.push(await measure(another));
+            editor.push(await measure(write));
+            list.click();
+          }
+          const median=values=>values.sort((a,b)=>a-b)[Math.floor(values.length/2)];
+          return {samplesPerAction:15,recommendMedianMs:median(recommend),writeMedianMs:median(editor)};
+        });
+        t.diagnostic('Local Chromium input-to-next-presented-frame, fixture catalog already loaded: '+JSON.stringify(samples));
+        await local.context.setOffline(true);
+        await picker.waitFor({state:'hidden'});
+        await local.context.setOffline(false);
+        await page.locator('[data-action="question-menu"]').waitFor({state:'visible'});
+        await page.locator('[data-action="question-menu"]').click();
+        await picker.waitFor({state:'visible'});
+        await picker.locator('[data-close]').click();
+      }
       if(['truth','liar'].includes(kind))await screenshot(local.page,'local-'+kind+'-390x844');
       if(kind==='updown') {
         for(let attempt=0;attempt<7&&await local.page.locator('#updown-value').count();attempt++) {

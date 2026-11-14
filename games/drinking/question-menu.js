@@ -13,7 +13,8 @@
   const format=value=>Array.isArray(value)?value.join(' / '):value;
   function button(kind){return '<button type="button" class="question-menu-open" data-question-menu>기존 '+labels[kind]+' 선택 · 직접 입력</button>';}
   function open({kind,load,apply,flavors,initial='',pair=false}){
-    if(document.querySelector('.party-question-dialog[open]'))return;
+    const content=document.getElementById('access-content');
+    if(!content || content.hidden || !window.OjjudaDrinkingAccessReady || content.querySelector('.party-question-dialog[open]'))return;
     for(const previous of document.querySelectorAll('.party-question-dialog:not([open])'))previous.remove();
     const dialog=document.createElement('dialog'),label=labels[kind],paired=kind==='minority';
     dialog.className='party-question-dialog';dialog.setAttribute('aria-labelledby','question-menu-title');
@@ -24,26 +25,34 @@
       '<div data-panel="list"><label>주제<select data-category></select></label><label>'+label+' 선택<select data-question></select></label><p data-selected></p><button type="button" data-another>다른 문구 추천</button><button type="button" data-retry hidden>다시 불러오기</button></div>'+
       '<div data-panel="write"><label>'+(paired?'첫 번째 선택지':label)+'<textarea maxlength="'+max+'" rows="2"></textarea></label>'+(paired?'<label>두 번째 선택지<textarea maxlength="80" rows="2"></textarea></label>':'')+'<label data-write-level>내 문구 수위<select><option value="mild">순한맛</option><option value="spicy">빨간맛</option></select></label></div>'+
       '<p role="status"></p><button type="submit" class="action">'+(paired?'이 선택지로 투표':kind==='truth'?'이 질문으로 시작':'사용하기')+'</button></form>';
-    document.body.append(dialog);const find=s=>dialog.querySelector(s),form=find('form'),cat=find('[data-category]'),selection=find('[data-question]'),flavor=find('[data-prompt-flavor]'),status=find('[role="status"]'),confirm=find('[type="submit"]'),fields=[...dialog.querySelectorAll('textarea')];
-    const levels=new Map();
+    content.append(dialog);const find=s=>dialog.querySelector(s),form=find('form'),cat=find('[data-category]'),selection=find('[data-question]'),flavor=find('[data-prompt-flavor]'),status=find('[role="status"]'),confirm=find('[type="submit"]'),fields=[...dialog.querySelectorAll('textarea')];
+    const levels=new Map(),catalogRequests=new Map();
+    function loadOnce(flavor){
+      if(!catalogRequests.has(flavor)){
+        const request=Promise.resolve().then(()=>load(flavor,pair));
+        catalogRequests.set(flavor,request);
+      }
+      return catalogRequests.get(flavor);
+    }
     const level=line=>levels.get(line)||tastes.level(kind,line);
-    let writeFlavor=flavor.value==='mixed'?'mild':flavor.value;
+    let applying=false;
+    const writeLevel=find('[data-write-level] select');
     let mode='list',groups=new Map(),items=[],rows=[],version=0,loading=false;
     const value=()=>mode==='list'?rows[Number(selection.value)]:paired?fields.map(f=>f.value.trim()):fields[0].value.trim();
-    function validate(){const v=value(),parts=Array.isArray(v)?v:[v];confirm.disabled=parts.some(p=>!p||p.length>max)||(paired&&parts[0]?.toLowerCase()===parts[1]?.toLowerCase());}
+    function validate(){const v=value(),parts=Array.isArray(v)?v:[v];confirm.disabled=applying||parts.some(p=>!p||p.length>max)||(paired&&parts[0]?.toLowerCase()===parts[1]?.toLowerCase());}
     function select(){find('[data-another]').hidden=rows.length<2;const line=rows[Number(selection.value)];find('[data-selected]').textContent=line?tastes.names[level(line)]+' · '+format(line):'';validate();}
     function refreshList(){rows=cat.value==='전체'?items:groups.get(cat.value)||[];selection.replaceChildren(...rows.map((line,index)=>new Option(format(line),String(index))));
       const pick=tastes.recommend(kind,rows,undefined,flavor.value,level);if(pick!==undefined)selection.value=String(rows.indexOf(pick));select();}
     function sync(){find('[data-write-level]').hidden=flavor.value!=='mixed';for(const b of dialog.querySelectorAll('[data-mode]'))b.setAttribute('aria-pressed',String(b.dataset.mode===mode));for(const p of dialog.querySelectorAll('[data-panel]'))p.hidden=p.dataset.panel!==mode;
-      status.textContent=mode==='write'?'':loading?'불러오는 중…':items.length?'':'고를 문구가 없어요. 직접 입력할 수 있어요.';find('[data-retry]').hidden=loading||items.length>0;validate();}
+      status.textContent=applying?'적용 중…':mode==='write'?'':loading?'불러오는 중…':items.length?'':'고를 문구가 없어요. 직접 입력할 수 있어요.';find('[data-retry]').hidden=loading||items.length>0;validate();}
     async function populate(){const id=++version;loading=true;items=[];groups=new Map();refreshList();sync();let result;
       try{
         if(kind==='truth'){
           const allowed=flavor.value==='mixed'?['mild','spicy']:[flavor.value];
-          const lists=await Promise.all(allowed.map(f=>load(f,pair)));
+          const lists=await Promise.all(allowed.map(loadOnce));
           if(id!==version||!dialog.open)return;
           levels.clear();lists.forEach((list,i)=>list.forEach(v=>levels.set(v,allowed[i])));result=lists.flat();
-        }else result=await load(null,pair);
+        }else result=await loadOnce(null);
       }catch{result=[];}
       if(id!==version||!dialog.open)return;
       items=(result||[]).filter(v=>paired?Array.isArray(v)&&v.length===2&&v.every(t=>typeof t==='string'):typeof v==='string');
@@ -55,9 +64,37 @@
     if(!paired)fields[0].value=initial;else if(Array.isArray(initial))fields.forEach((f,i)=>f.value=initial[i]||'');
     for(const f of fields)f.oninput=validate;
     find('[data-another]').onclick=()=>{const pick=tastes.recommend(kind,rows,value(),flavor.value,level);if(pick!==undefined)selection.value=String(rows.indexOf(pick));select();};
-    cat.onchange=refreshList;selection.onchange=select;flavor.onchange=()=>{tastes.set(kind,flavor.value);void populate();};find('[data-write-level] select').onchange=e=>{writeFlavor=e.target.value;};find('[data-retry]').onclick=populate;
+    cat.onchange=refreshList;selection.onchange=select;flavor.onchange=()=>{tastes.set(kind,flavor.value);void populate();};find('[data-retry]').onclick=()=>{catalogRequests.clear();void populate();};
     find('[data-close]').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{version++;dialog.remove();},{once:true});
-    form.onsubmit=async event=>{event.preventDefault();if(confirm.disabled)return;confirm.disabled=true;const selected=value();try{const chosenFlavor=mode==='write'?(flavor.value==='mixed'?writeFlavor:flavor.value):level(selected);const ok=await apply(selected,mode==='write',chosenFlavor);if(ok!==false){if(mode==='write')tastes.tag(kind,selected,chosenFlavor);dialog.close();}else{status.textContent='현재 차례와 질문을 다시 확인해 주세요.';validate();}}catch{status.textContent='적용하지 못했어요. 다시 시도해 주세요.';validate();}};
+    dialog.addEventListener('cancel',event=>{if(applying)event.preventDefault();});
+    form.onsubmit=async event=>{
+      event.preventDefault();
+      if(applying||confirm.disabled||!dialog.open||content.hidden||!window.OjjudaDrinkingAccessReady)return;
+      const selected=value(),manual=mode==='write';
+      const chosenFlavor=manual?(flavor.value==='mixed'?writeLevel.value:flavor.value):level(selected);
+      applying=true;
+      const controls=Array.from(form.elements).filter(control=>!control.disabled);
+      for(const control of controls)control.disabled=true;
+      form.setAttribute('aria-busy','true');
+      status.textContent='적용 중…';
+      try{
+        const ok=await apply(selected,manual,chosenFlavor);
+        if(!dialog.open)return;
+        if(ok!==false){
+          if(manual)tastes.tag(kind,selected,chosenFlavor);
+          dialog.close();
+        }else status.textContent='현재 차례와 질문을 다시 확인해 주세요.';
+      }catch{
+        status.textContent='적용하지 못했어요. 다시 시도해 주세요.';
+      }finally{
+        applying=false;
+        if(dialog.open){
+          for(const control of controls)control.disabled=false;
+          form.removeAttribute('aria-busy');
+          validate();
+        }
+      }
+    };
     dialog.showModal();void populate();
   }
   async function catalog(kind,flavor,pair=false){
