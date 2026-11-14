@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="./flow-design.css?v=20261114-saju-flow1">
   <link rel="stylesheet" href="./reading-detail.css?v=20261114-saju-correction1">
   <link rel="stylesheet" href="./almanac.css?v=20261115-saju-reading-map1">
-  <link rel="stylesheet" href="./directory.css?v=20261115-saju-directory1">
+  <link rel="stylesheet" href="./directory.css?v=20261115-saju-menus1">
 </head>
 <body class="saju-readable saju-flow saju-edition saju-directory">
   <a class="skip-link" href="#catalog-title">풀이 목록으로 바로가기</a>
@@ -57,7 +57,8 @@
       <a class="catalog-saved" href="?reading=saved"><svg aria-hidden="true"><use href="#i-book"/></svg><span>내 풀이 다시 보기</span><span class="row-arrow" aria-hidden="true">›</span></a>
     </section>
     <div class="entry-shell" id="intro" hidden>
-      <header class="session-heading"><h1 id="session-name">나의 사주</h1></header>
+      <header class="session-heading"><h1 id="session-name">나의 사주</h1>
+        <nav class="saved-reading-nav" aria-label="다시 볼 풀이" hidden><a href="./?reading=saved" aria-current="page">내 사주</a><a href="./compatibility.html?reading=saved">두 사람의 궁합</a></nav></header>
 
       <section class="birth-panel" aria-label="나의 사주">
         <form id="birth-form" data-entry-flow="general">
@@ -150,6 +151,6 @@
   </main>
   <div id="status" class="toast" role="status" aria-live="polite"></div>
   <script src="/shared/analytics/site-usage.js?v=20261113-fortune-visits1"></script>
-  <script type="module" src="./app.js?v=20261115-saju-directory1"></script>
+  <script type="module" src="./app.js?v=20261115-saju-menus1"></script>
 </body>
 </html>

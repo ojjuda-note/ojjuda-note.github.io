@@ -1,4 +1,4 @@
-import {openCatalogChoice, showTickets} from './service-directory.mjs?v=20261115-saju-directory1';
+import {openCatalogChoice, showTickets} from './service-directory.mjs?v=20261115-saju-menus1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
 import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-copy1';
 import { attachEntryFlow } from './entry-flow.mjs?v=20261114-saju-almanac1';
@@ -485,7 +485,7 @@ async function prepareDetailedReading(chart,target,person=currentPerson||readPer
   detailModulesPromise ||= Promise.all([
     import('./fortune-data.mjs?v=20261114-saju-correction1'),
     import('./readings.mjs?v=20261114-saju-final-review2'),
-    import('./report-view.mjs?v=20261115-saju-directory1'),
+    import('./report-view.mjs?v=20261115-saju-menus1'),
     import('./daeun.mjs?v=20261114-saju-correction1'),
     zodiacModule()
   ]).catch(error=>{detailModulesPromise=null;throw error;});
