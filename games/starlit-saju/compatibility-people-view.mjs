@@ -1,7 +1,7 @@
 import {appendReadingDetail,readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
 import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
 import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
-import {createReadingNavigator} from './reading-navigator.mjs?v=20261114-saju-flow1';
+import {createReadingNavigator} from './reading-navigator.mjs?v=20261114-saju-almanac1';
 
 const PERSON_KEYS=['self','partner'];
 const TOPIC_IDS=['decisions','relationships','work','pressure','adjustment'];
@@ -125,8 +125,8 @@ export function createCompatibilityPager(section,pages) {
   const position=node('p','reading-page-position');position.id='compatibility-page-position';
   position.setAttribute('role','status');position.setAttribute('aria-live','polite');
   const next=node('button','reading-pager-step','다음');next.type='button';next.dataset.compatibilityStep='next';
-  controls.append(previous,position,next);navigation.append(label,select,picker.element,controls,
-    node('p','reading-swipe-hint','본문을 왼쪽으로 밀면 다음, 오른쪽으로 밀면 이전 항목으로 넘어가요.'));
+  controls.append(previous,position,next);
+  navigation.append(label,select,picker.element,controls);
   select.setAttribute('aria-describedby',position.id);
   picker.toggle.setAttribute('aria-describedby',position.id);
 
