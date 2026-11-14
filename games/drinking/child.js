@@ -1,6 +1,25 @@
 (() => {
   'use strict';
   const params = new URLSearchParams(location.search);
+  // Only for read-only requests while opening a room. A delayed response to a
+  // move, a vote or a room creation must never cause the action to be replayed.
+  async function readRoom(request) {
+    for (let attempt=0;;attempt++) {
+      try { return await request(); }
+      catch(error) {
+        const reason=String(error?.code||error?.message||'');
+        const transient=error instanceof TypeError || /network|failed to fetch|load failed|timeout|timed out|abort|offline/i.test(reason);
+        if(!transient)throw error;
+        if(!navigator.onLine) {
+          await new Promise(resolve=>window.addEventListener('online',resolve,{once:true}));
+        } else {
+          if(attempt>=3)throw error;
+          await new Promise(resolve=>setTimeout(resolve,1000*2**attempt));
+        }
+      }
+    }
+  }
+  window.DrinkingConnection={readRoom};
   // Direct invitations use a native game room without a shared lobby.
   window.DrinkingStandaloneExit = {
     confirm(s) {
@@ -125,10 +144,10 @@
   }
   function schedule() {
     clearTimeout(timer);
-    if (!away && !navigating && parent && !document.hidden) timer = setTimeout(refresh, 1600);
+    if (!away && !navigating && parent && navigator.onLine && !document.hidden) timer = setTimeout(refresh, 1600);
   }
   function refresh() {
-    if (!client || away || navigating || returning || document.hidden) return;
+    if (!client || away || navigating || returning || !navigator.onLine || document.hidden) return;
     if (pending) return pending;
     clearTimeout(timer);
     pending = rpc('state').then(matched => {
@@ -144,7 +163,7 @@
     client = authClient;
     if (!valid(code) || !kinds.has(kind)) return go(hub);
     if (!valid(child)) return go(lobby);
-    const matched = await rpc('state');
+    const matched = await readRoom(()=>rpc('state'));
     schedule();
     return matched;
   }
@@ -204,6 +223,7 @@
     else void refresh();
   });
   window.addEventListener('focus', () => { if (parent) void refresh(); });
+  window.addEventListener('drinking-reconnected', () => { if (parent) void refresh(); });
   window.addEventListener('pagehide', () => { away = true; clearTimeout(timer); });
   window.addEventListener('pageshow', e => {
     away = false;

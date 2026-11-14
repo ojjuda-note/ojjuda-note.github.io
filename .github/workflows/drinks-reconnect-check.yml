@@ -1,0 +1,39 @@
+name: Verify multiplayer connection recovery
+on:
+  push:
+    branches: [release/drinks-reconnect-main-20261114]
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Check the updated admin entry
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          entry=Path('world.html')
+          src=entry.read_text()
+          old='world-game-assets.js?v=20261114-drinks-afterdark1'
+          assert src.count(old)==1
+          entry.write_text(src.replace(old,'world-game-assets.js?v=20261114-drinks-reconnect1'))
+          PY
+          test "$(git hash-object world.html)" = c9a9e9114c11d90e9c4ef37d606ff64c0aed0956
+          node scripts/check-source-layout.mjs
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: |
+          node tests/qa-recovery.cjs games/drinking/child.js
+          node tests/qa-local.cjs
+          node tests/qa-truth.cjs
+          node tests/qa-hub.cjs
+        env:
+          BROWSER_PATH: /usr/bin/google-chrome
+      - name: Record verified admin entry
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add world.html
+          git commit -m 'Verify multiplayer reconnect release loader'
+          git push origin HEAD:refs/heads/release/drinks-reconnect-main-20261114

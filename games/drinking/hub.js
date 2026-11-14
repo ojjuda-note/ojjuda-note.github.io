@@ -173,10 +173,10 @@
 
   function schedule() {
     clearTimeout(pollTimer);
-    if(room&&!document.hidden&&!navigating) pollTimer=setTimeout(sync,1250);
+    if(room&&navigator.onLine&&!document.hidden&&!navigating) pollTimer=setTimeout(sync,1250);
   }
   async function sync() {
-    if (!room || busy || polling || document.hidden || navigating) return;
+    if (!room || busy || polling || !navigator.onLine || document.hidden || navigating) return;
     const code=room.code, gen=generation; polling=true;
     try {
       const next=await rpc('state',code);
@@ -257,9 +257,12 @@
     catch{notice.textContent=link;}
   };
   byId('refresh').onclick=listRooms;
-  byId('retry').onclick=()=>location.reload();
+  byId('retry').onclick=()=>void open();
 
+  let opening=false;
   async function open() {
+    if(opening||navigating||!navigator.onLine||document.hidden)return;
+    opening=true;clearTimeout(pollTimer);
     authScreen('회원 정보를 확인하고 있어요.');
     try {
       client=await window.OjjudaGetClient();
@@ -288,12 +291,17 @@
       showEntry();
       if(inviteCode)notice.textContent='방 코드 6자리를 다시 확인해 주세요.';
       void listRooms();
-    } catch(err) {authScreen(explain(err),err.message==='not_signed_in',true);}
+    } catch(err) {
+      authScreen(explain(err),err.message==='not_signed_in',true);
+      if(navigator.onLine&&!document.hidden&&err.message!=='not_signed_in')pollTimer=setTimeout(open,4000);
+    } finally {opening=false;}
   }
 
   window.addEventListener('pageshow',e=>{if(e.persisted)location.reload();});
   window.addEventListener('pagehide',()=>clearTimeout(pollTimer));
-  window.addEventListener('online',()=>{if(room)void sync();else if(actor)void listRooms();});
+  window.addEventListener('drinking-reconnected',()=>{
+    if(room)void sync();else if(!byId('account').hidden)void open();else if(actor)void listRooms();
+  });
   document.addEventListener('visibilitychange',()=>{
     if(document.hidden)clearTimeout(pollTimer);
     else if(room)void sync();

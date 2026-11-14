@@ -125,10 +125,10 @@
   }
   function later() {
     clearTimeout(timer);
-    if (room && !document.hidden) timer=setTimeout(sync,room.phase==='done'?2000:room.phase==='waiting'?1100:700);
+    if (room && navigator.onLine && !document.hidden) timer=setTimeout(sync,room.phase==='done'?2000:room.phase==='waiting'?1100:700);
   }
   async function sync() {
-    if (!room || busy || polling || document.hidden) { later(); return; }
+    if (!room || busy || polling || !navigator.onLine || document.hidden) { later(); return; }
     const code=room.code;
     polling=true;
     try {
@@ -231,9 +231,11 @@
       '<a href="/?auth=login&amp;next=world" target="_blank" rel="noopener">오쭈다 로그인</a></section>';
   }
   async function checkAccount() {
-    if (!client) return;
-    const {data}=await client.auth.getSession();
-    if ((data.session?.user?.id||null)!==(actor||null)) location.reload();
+    if (!client || !navigator.onLine || document.hidden) return;
+    try {
+      const {data,error}=await client.auth.getSession();
+      if (!error && data && (data.session?.user?.id || null)!==(actor || null)) location.reload();
+    } catch { /* The access check retries when the network is available. */ }
   }
   async function init() {
     try {
@@ -247,7 +249,7 @@
       if (party && !(await party.connect(client))) return;
       const last=activeCode||lastRoom();
       if (last) {
-        try { render(await api('state',last));later();return; }
+        try { render(await window.DrinkingConnection.readRoom(()=>api('state',last)));later();return; }
         catch (err) {
           if (err.code==='room_unavailable') { remember('');notice.textContent=err.message; }
           else if (err.code!=='not_room_member') throw err;
@@ -262,6 +264,7 @@
   document.addEventListener('visibilitychange',()=>{if (document.hidden) clearTimeout(timer);else if(room)void sync();});
   window.addEventListener('pagehide',()=>clearTimeout(timer));
   window.addEventListener('pageshow',()=>{if(room)void sync();});
+  window.addEventListener('drinking-reconnected',()=>{ if(room)void sync(); });
   window.addEventListener('focus',checkAccount);
   init();
 })();

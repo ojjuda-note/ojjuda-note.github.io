@@ -145,10 +145,10 @@ async function api(action, code = '', options = {}) {
 }
 function later() {
   clearTimeout(timer);
-  if (room && !document.hidden) timer = setTimeout(sync, 1100);
+  if (room && navigator.onLine && !document.hidden) timer = setTimeout(sync, 1100);
 }
 async function sync() {
-  if (!room || busy || polling || document.hidden) { later(); return; }
+  if (!room || busy || polling || !navigator.onLine || document.hidden) { later(); return; }
   const code = room.code;
   polling = true;
   try {
@@ -251,9 +251,11 @@ function signedOut() {
     '<a href="/?auth=login&amp;next=world" target="_blank" rel="noopener">오쭈다 로그인</a></section>';
 }
 async function checkAccount() {
-  if (!client) return;
-  const {data} = await client.auth.getSession();
-  if ((data.session?.user?.id || null) !== (actor || null)) location.reload();
+  if (!client || !navigator.onLine || document.hidden) return;
+  try {
+    const {data,error}=await client.auth.getSession();
+    if (!error && data && (data.session?.user?.id || null)!==(actor || null)) location.reload();
+  } catch { /* The access check retries when the network is available. */ }
 }
 async function init() {
   try {
@@ -269,7 +271,7 @@ async function init() {
     if (party && !(await party.connect(client))) return;
     const last = activeCode || lastRoom();
     if (last) {
-      try { render(await api('state', last)); later(); return; }
+      try { render(await window.DrinkingConnection.readRoom(()=>api('state',last))); later(); return; }
       catch (err) {
         if (err.code === 'room_unavailable') { remember(''); notice.textContent = err.message; }
         else if (err.code !== 'not_room_member') throw err;
@@ -281,5 +283,6 @@ async function init() {
     view.innerHTML = control('다시 연결', 'retry');
   }
 }
+window.addEventListener('drinking-reconnected',()=>{ if(room)void sync(); });
 window.addEventListener('focus', checkAccount);
 init();

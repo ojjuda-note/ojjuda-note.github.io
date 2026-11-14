@@ -11,7 +11,8 @@
     underage:'이 페이지는 만 19세부터 이용할 수 있어요.',
     unavailable:'회원 정보를 확인할 수 없어요. 연결 상태를 확인한 뒤 다시 시도해 주세요.'};
   let access, ready, approvedUser, authenticatedUser, exposed = false, running = false;
-  let checkId = 0, timer, lastTitle, checking = false, failedModule = false;
+  let checkId = 0, timer, lastTitle, checking = false, retryDelay = 1500;
+  let sources, loading, nextModule = 0;
 
   function conceal(code = 'pending') {
     if (exposed) lastTitle = document.title;
@@ -27,9 +28,12 @@
 
   function invalidate(code) {
     ++checkId;checking = false;conceal(code);
-    // Existing game clients hold their own timers and the previous member's room.
-    // A new document drops those together before a different member can enter.
-    if (running) location.reload();
+    if (code === 'unavailable') {
+      if (navigator.onLine && !document.hidden) {
+        timer = setTimeout(verify,retryDelay);
+        retryDelay = Math.min(10000,retryDelay*2);
+      }
+    } else if (running) location.reload();
   }
 
   async function prepare() {
@@ -57,28 +61,30 @@
   }
 
   async function start(ticket) {
-    if (page.dataset.kind) document.documentElement.dataset.game = page.dataset.kind;
-    content.dataset.member = approvedUser;
-    content.replaceChildren(page.content.cloneNode(true));
-    const sources = Array.from(content.querySelectorAll('[data-module]'), node => node.dataset.module);
-    content.querySelectorAll('[data-module]').forEach(node => node.remove());
-    running = true;
-    for (const src of sources) {
-      if (ticket !== checkId || document.hidden || !navigator.onLine) {
-        location.reload();return false;
-      }
-      await new Promise((resolve,reject) => {
+    if (!running) {
+      if (page.dataset.kind) document.documentElement.dataset.game = page.dataset.kind;
+      content.dataset.member = approvedUser;
+      content.replaceChildren(page.content.cloneNode(true));
+      sources = Array.from(content.querySelectorAll('[data-module]'), node => node.dataset.module);
+      content.querySelectorAll('[data-module]').forEach(node => node.remove());
+      running = true;
+    }
+    while (nextModule < sources.length) {
+      if (ticket !== checkId || document.hidden || !navigator.onLine) return false;
+      if (!loading) loading = new Promise((resolve,reject) => {
         const script = document.createElement('script');
-        script.async = false; script.src = src;
-        script.onload = resolve; script.onerror = () => reject(Error('module_failure'));
+        script.async = false; script.src = sources[nextModule];
+        script.onload = () => { nextModule++; resolve(); };
+        script.onerror = () => { script.remove();reject(Error('module_failure')); };
         document.head.append(script);
-      });
+      }).finally(() => { loading = null; });
+      await loading;
     }
     return true;
   }
 
   async function verify() {
-    if (checking || document.hidden || failedModule) return;
+    if (checking || document.hidden) return;
     clearTimeout(timer);
     if (!navigator.onLine) { invalidate('unavailable');return; }
     const ticket = ++checkId;
@@ -93,16 +99,17 @@
           (authenticatedUser !== undefined && authenticatedUser !== identity.userId)) throw Error('identity_mismatch');
       if (approvedUser && approvedUser !== identity.userId) { invalidate('pending');return; }
       authenticatedUser = approvedUser = identity.userId;
-      if (!running && !await start(ticket)) return;
+      const resuming = running && nextModule === sources.length && !exposed;
+      if (!await start(ticket)) return;
       if (ticket !== checkId || document.hidden || !navigator.onLine) return;
       document.title = lastTitle || page.dataset.title;
       gate.hidden = true; content.hidden = false; exposed = true;
+      retryDelay = 1500;
+      if (resuming) window.dispatchEvent(new Event('drinking-reconnected'));
       timer = setTimeout(verify,55000);
     } catch (err) {
       if (ticket === checkId) {
-        // Leave partially-loaded game modules concealed; retry in a clean document.
-        failedModule = running;
-        conceal(Object.hasOwn(titles,err?.code) ? err.code : 'unavailable');
+        invalidate(Object.hasOwn(titles,err?.code) ? err.code : 'unavailable');
       }
     } finally { if (ticket === checkId) checking = false; }
   }
@@ -117,6 +124,6 @@
   window.addEventListener('offline',() => invalidate('unavailable'));
   window.addEventListener('online',() => { if (!document.hidden) void verify(); });
   window.addEventListener('focus',() => { if (!exposed && !document.hidden) void verify(); });
-  retry.onclick=()=> { if (running) location.reload();else void verify(); };
+  retry.onclick=()=> { retryDelay=1500;void verify(); };
   verify();
 })();

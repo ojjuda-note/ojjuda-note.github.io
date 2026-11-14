@@ -90,9 +90,9 @@ async function api(action,code='',options={}){
  return data;
 }
 function errorText(e){return e.message||'연결을 확인해 주세요.';}
-function later(){clearTimeout(timer);if(room&&!document.hidden)timer=setTimeout(sync,1100)}
+function later(){clearTimeout(timer);if (room && navigator.onLine && !document.hidden) timer=setTimeout(sync,1100)}
 async function sync(){
-  if(!room||busy||pendingPoll||document.hidden){later();return}
+  if(!room||busy||pendingPoll||!navigator.onLine || document.hidden){later();return}
   const code=room.code;
   pendingPoll=true;
   try{const s=await api('state',code);if(room?.code===code){render(s);if(notice.dataset.network==='1'){notice.textContent='';notice.dataset.network='';}}}
@@ -159,7 +159,7 @@ async function init(){
   if(party&&!(await party.connect(client)))return;
   const last=activeCode||read(key('last'));
   if(last){
-   try{render(await api('state',last));later();return}catch(e){
+   try{render(await window.DrinkingConnection.readRoom(()=>api('state',last)));later();return}catch(e){
     if(e.code==='room_unavailable'){saveStandalone('');notice.textContent=errorText(e);}
     else if(e.code!=='not_room_member')throw e;
    }
@@ -168,11 +168,14 @@ async function init(){
  }catch(e){notice.textContent=errorText(e);view.innerHTML='<button class="secondary" data-do="retry">다시 연결</button>';}
 }
 view.addEventListener('click',event=>{if(event.target.closest('[data-do="retry"]'))location.reload()});
-async function checkAccount(){
- if(!client)return;
- const {data}=await client.auth.getSession();
- if((data.session?.user?.id||null)!==(actor||null))location.reload();
+async function checkAccount() {
+  if (!client || !navigator.onLine || document.hidden) return;
+  try {
+    const {data,error}=await client.auth.getSession();
+    if (!error && data && (data.session?.user?.id || null)!==(actor || null)) location.reload();
+  } catch { /* The access check retries when the network is available. */ }
 }
+window.addEventListener('drinking-reconnected',()=>{ if(room)void sync(); });
 window.addEventListener('focus',()=>void checkAccount());
 init().then(()=>client?.auth.onAuthStateChange((_event,session)=>{
  if((session?.user?.id||null)!==(actor||null))location.reload();
