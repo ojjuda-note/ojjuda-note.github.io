@@ -1,0 +1,35 @@
+name: Verify arcade loader for drinking content release
+on:
+  push:
+    branches: [release/drinks-admin-world-20261114]
+permissions:
+  contents: write
+jobs:
+  cache:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Update and record verified loader revision
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('world.html')
+          s=p.read_text()
+          changes={
+           'admin/navigation.js?v=20261114-drink-prompts1':'admin/navigation.js?v=20261114-drinks-content1',
+           'admin/world-admin-loader.js?v=20261114-drink-prompts1':'admin/world-admin-loader.js?v=20261114-drinks-content1',
+           'world-game-assets.js?v=20261114-drinks-host1':'world-game-assets.js?v=20261114-drinks-content1',
+           '["drinking-prompts","술게임 질문·명령 검토"]':'["drinking-prompts","술게임 질문·단어 관리"]',
+          }
+          for old,new in changes.items():
+           assert s.count(old)==1, old
+           s=s.replace(old,new)
+          p.write_text(s)
+          PY
+          test "$(git hash-object world.html)" = 'ea68f2ea1c431fabb6bcf8b267126e15e4a3504b'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add world.html
+          git commit -m 'Verify the drinking content manager loader'
+          git push origin HEAD:refs/heads/release/drinks-admin-world-20261114
