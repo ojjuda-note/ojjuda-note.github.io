@@ -121,7 +121,7 @@ function render(s,force=false){
         '<label>두 번째 번호 (선택)<select name="second">'+secondOptions(count)+'</select></label>'+
         '<label>미션<input name="mission" maxlength="80" required value="'+esc(draftMission)+'"></label>'+
         '<p><small>직접 적은 미션은 관리자 검토 후 다른 참가자에게도 추천될 수 있어요.</small></p>'+
-      control('다른 미션 추천','suggest')+'<div class="actions"><button class="action" type="submit">명령 내리기</button></div></form>';
+      control('미션 선택 · 직접 입력','suggest')+'<div class="actions"><button class="action" type="submit">명령 내리기</button></div></form>';
     }else{
       content='<h1 class="suite-heading">'+esc(s.players[s.king])+'님이 왕이에요</h1>'+card+'<p class="suite-hint">왕이 번호와 미션을 고르고 있어요.</p>';
     }
@@ -240,7 +240,14 @@ view.addEventListener('click',e=>{
     return;
   }
   if(act==='leave'){if(!window.DrinkingStandaloneExit.confirm(room))return;run(async()=>{await api('leave',room.code, window.DrinkingStandaloneExit.options(room));saveStandalone('');history.replaceState(null,'',location.pathname);activeCode='';entry()});return}
-  if(act==='suggest'){void suggestMission();return;}
+  if(act==='suggest'){
+    const {code,round}=room,recipient=draftSecond,menu=window.DrinkingQuestionMenu;
+    menu.open({kind:'king',initial:draftMission,load:()=>menu.catalog('king',null,recipient!=null),apply:(value,manual)=>{
+      const field=view.querySelector('#order [name="mission"]');
+      if(room?.code!==code||room.round!==round||room.phase!=='order'||room.me!==room.king||draftSecond!==recipient||!field)return false;
+      missionEdit++;missionCustom=manual;draftMission=field.value=value;field.setCustomValidity('');
+    }});return;
+  }
   if(act==='ready'||act==='again'){
     const current=room;
     run(async()=>{const updated=await api(act,current.code,{round:current.round});revealed=false;render(updated,true)});

@@ -315,3 +315,19 @@ test('one-device fingers uses topic menus and keeps an independent custom draft 
   const next=ui.find('[data-finger-choice]');next.value=bank[2];next.dispatchEvent(new ui.w.Event('change'));
   ui.submit('#party-prompt');assert.equal(ui.find('.play-body h2').textContent,bank[2]);
 });
+
+test('sentence menus filter mild and spicy, alternate mixed recommendations and preserve the written question',async t=>{
+  const items=['누가 산책을 좋아할까요?','친구와 캠핑을 간 사람은?','첫 키스의 기억은?','연인과 스킨십을 먼저 제안할 사람은?'];
+  const ui=await screen({url:'/games/drinking/local/#imagevote',prepare(w){w.scrollTo=()=>{};w.matchMedia=()=>({matches:false,addEventListener(){}});w.HTMLElement.prototype.scrollIntoView=()=>{};},rpc(name){return name==='drinking_content'?{banks:{imagevote:items}}:{ok:true};}});t.after(()=>ui.close());
+  ui.click('[data-action="start"]');ui.click('[data-action="question-menu"]');
+  const menu=()=>ui.find('.party-question-dialog[open]'),selector=menu().querySelector('[data-question]'),flavor=menu().querySelector('[data-prompt-flavor]');
+  const change=el=>el.dispatchEvent(new ui.w.Event('change',{bubbles:true}));
+  await until(()=>selector.options.length===4);
+  const before=menu().querySelector('[data-selected]').textContent.split(' · ')[0];menu().querySelector('[data-another]').click();
+  assert.notEqual(menu().querySelector('[data-selected]').textContent.split(' · ')[0],before);
+  flavor.value='mild';change(flavor);await until(()=>selector.options.length===2);assert.deepEqual([...selector.options].map(o=>o.text),items.slice(0,2));
+  flavor.value='spicy';change(flavor);await until(()=>selector.options.length===2);assert.deepEqual([...selector.options].map(o=>o.text),items.slice(2));
+  menu().querySelector('[data-mode="write"]').click();const field=menu().querySelector('textarea');field.value='선물로 받고 싶은 것은?';field.dispatchEvent(new ui.w.Event('input'));
+  menu().querySelector('[data-mode="list"]').click();menu().querySelector('[data-mode="write"]').click();assert.equal(field.value,'선물로 받고 싶은 것은?');
+  ui.submit('.party-question-dialog form');assert.equal(ui.find('#party-question').value,field.value);
+});

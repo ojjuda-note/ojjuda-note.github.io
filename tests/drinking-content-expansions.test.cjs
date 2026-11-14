@@ -336,6 +336,11 @@ test('king: 300 appended missions preserve existing orders and work with two-pla
       const suggested = ui.find('#order [name="mission"]').value;
       assert.ok(extraSet.has(suggested));
       ui.click('[data-do="suggest"]');
+      await until(()=>ui.find('.party-question-dialog [data-question]')?.options.length,'existing two-person missions');
+      const menu=ui.find('.party-question-dialog [data-question]');
+      const pick=[...menu.options].find(o=>extraSet.has(o.textContent)&&o.textContent!==suggested);
+      assert.ok(pick);menu.value=pick.value;menu.dispatchEvent(new ui.w.Event('change'));
+      ui.submit('.party-question-dialog form');
       await until(() => ui.find('#order [name="mission"]')?.value !== suggested, 'another king two-player recommendation');
       const selected = ui.find('#order [name="mission"]').value;
       assert.ok(extraSet.has(selected));
@@ -1522,6 +1527,11 @@ test('imagevote: 300 appended questions preserve an unfinished private ballot an
       await until(() => owner.find('#pair-question')?.value, 'a new image round recommends a question');
       const previous = owner.find('#pair-question').value;
       owner.click('#pair-suggest');
+      await until(()=>owner.find('.party-question-dialog [data-question]')?.options.length,'image question catalog');
+      const menu=owner.find('.party-question-dialog [data-question]');
+      const pick=[...menu.options].find(o=>extraSet.has(o.textContent)&&o.textContent!==previous&&!seenQuestions.has(o.textContent));
+      assert.ok(pick);menu.value=pick.value;menu.dispatchEvent(new owner.w.Event('change'));
+      owner.submit('.party-question-dialog form');
       await until(() => owner.find('#pair-question')?.value !== previous, 'another image question recommendation');
       const question = owner.find('#pair-question').value;
       assert.ok(extraSet.has(question), 'the actual recommendation comes from the 300 additional questions');

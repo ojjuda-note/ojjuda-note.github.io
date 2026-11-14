@@ -55,7 +55,7 @@
     if (loads.has(kind)) return loads.get(kind);
     const request = (async () => {
       try {
-        const result = await invoke('drinking_content','pool',{kinds:[kind],round_mix:kind!=='fingers'});
+        const result = await invoke('drinking_content','pool',{kinds:[kind],round_mix:!['fingers','king','truth','imagevote','minority'].includes(kind)});
         const bank = result?.banks?.[kind];
         if (!validBank(kind,bank)) return false;
         if (JSON.stringify(bank) !== JSON.stringify(banks.get(kind))) banks.set(kind,bank);
@@ -80,6 +80,7 @@
         return '';
       }
       const choices=kind==='king'?kingChoices(bank,pair):bank;
+      if(['king','imagevote'].includes(kind)&&window.PartyPromptFlavors)return window.PartyPromptFlavors.recommend(kind,choices,previous)||'';
       const other=choices.filter(item=>item!==previous);
       const items=other.length?other:choices;
       return items[Math.floor(Math.random()*items.length)] || '';
