@@ -66,6 +66,7 @@ const fortune = analyzeFortune(chart,{year:2026,now});
 const reading = buildDetailedReading(chart,fortune,{daeun:analyzeDaeun(chart,{gender:'female',now})});
 // Test-only model references let the browser compare rendered values with the
 // actual source reading. Nothing is added to the public app or result DOM.
+globalThis.__sajuReadingFixture=reading;
 globalThis.__sajuScoreFixture = {key:fixtureCase,birth:births[fixtureCase],nativeInteractionCount:fortune.profile.interactions.length,
   daeun:{natalTimeKnown:chart.timeKnown,natalHour:chart.input.hour,available:reading.daeun.available,timeAssumed:reading.daeun.timeAssumed,
     assumedBirthTime:reading.daeun.assumedBirthTime,notice:reading.daeun.birthTimeNotice,periodCount:reading.daeun.periods.length,
@@ -751,7 +752,7 @@ const server = http.createServer((request, response) => {
       assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,label+': scores do not widen the page');
       sajuScoreViews[label]={available:panels.filter(panel=>panel.status==='available').length,unavailable:panels.filter(panel=>panel.status==='unavailable').length};
     }
-    async function inspectSajuSummaries(label) {
+    async function inspectSajuSummaries(label,{score=true}={}) {
       const current=saju.locator('[data-reader-current]');
       const groups=await current.locator('.saju-two-line-summary:visible').evaluateAll(elements=>elements.map(group=>({
         role:group.getAttribute('role'),label:group.getAttribute('aria-label'),
@@ -772,7 +773,7 @@ const server = http.createServer((request, response) => {
       assert.ok(groups.every(group=>group.role==='group'&&group.label==='두 줄 요약'&&group.lines.length===2),label+': every summary retains exactly two authored units');
       assert.ok(groups.every(group=>group.lines.every(line=>line.text&&line.visible&&line.fits&&line.wraps&&['none','','unset'].includes(line.clamp)&&line.overflow!=='ellipsis')),label+': complete summary units wrap without cropping, clamping or ellipses');
       assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,label+': the selected reading fits the viewport');
-      await inspectSajuScores(label);
+      if(score)await inspectSajuScores(label);
       return groups[0].lines[0].font;
     }
     for (const topic of ['lifelong', 'annual', 'monthly', 'all']) {
@@ -889,6 +890,67 @@ const server = http.createServer((request, response) => {
         await selectReadingPage(timingGroup);await inspect('timing points');
         sajuSummaryViews[label]=checked;
       }
+    }
+    const sajuSupplementViews={};
+    const supplementaryTargets=[
+      ['natal-hidden','reading-natal-supplement-hidden'],['natal-stages','reading-natal-supplement-stages'],
+      ['annual-hidden','reading-annual-supplement-hidden'],['month-stages','reading-month-11-supplement-stages'],
+    ];
+    for(const [viewport,size,textSize] of [
+      ['phone-small',{width:320,height:844},'large'],['desktop',{width:1280,height:900},'normal'],
+    ]) {
+      await saju.setViewportSize(size);
+      await saju.locator('#report-content').evaluate((report,value)=>{report.dataset.readingSize=value;},textSize);
+      const checked=[];
+      for(const [kind,id] of supplementaryTargets) {
+        if(kind==='month-stages') {
+          await selectReadingPage('reading-month-11');
+          const link=saju.locator('[data-reader-current] .reading-page-sections a[href="#'+id+'"]');
+          assert.equal(await link.count(),1,'the month overview retains a visible route to its additional explanation');
+          await link.click();
+        } else await selectReadingPage(id);
+        const current=saju.locator('[data-reader-current]');
+        assert.equal(await current.getAttribute('id'),id);
+        await assertCurrentExplanation(saju,'data-reader-current',{requireBody:true});
+        await inspectSajuSummaries('supplement '+viewport+' '+kind,{score:false});
+        const content=await current.evaluate(element=>{
+          const reading=globalThis.__sajuReadingFixture,supplements=reading.reader.supplements;
+          const item=[...supplements.lifelong,...supplements.annual,...supplements.months.flatMap(month=>month.cards)]
+            .find(card=>card.id===element.dataset.readingSupplement);
+          const copy=[item.label,'추가 해설',...item.summaryLines,
+            ...item.detailSections.flatMap(section=>[section.title,...section.paragraphs]),item.scopeNotice].join('\n');
+          return {actual:[...element.querySelectorAll(':scope > .reader-prose > p')].map(p=>p.textContent),expected:item.paragraphs,
+            headings:[...element.querySelectorAll('.reading-body-heading')].map(heading=>heading.textContent),
+            expectedHeadings:item.detailSections.map(section=>section.title),scope:element.querySelector(':scope > .reader-scope-note')?.textContent,
+            expectedScope:item.scopeNotice,copied:reading.copyByCategory.all.includes(copy)};
+        });
+        assert.deepEqual(content.actual,content.expected,id+': every source-authored paragraph is immediately present');
+        assert.deepEqual(content.headings,content.expectedHeadings,id+': the explanation order is preserved');
+        assert.equal(content.scope,content.expectedScope);assert.equal(content.copied,true,id+': copied text matches the visible reading');
+        assert.equal(await current.locator('.saju-reading-score,[role="meter"]').count(),0,
+          id+': classifications do not acquire invented numerical scores');
+        await inspectReadableSurface('supplement '+viewport+' '+kind,{text:readingText+',.reader-scope-note',
+          body:'.reader-prose p',minimumBody:textSize==='large'?21:18,controls:'.reading-pager button,.reading-item-toggle'});
+        assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,id+': supplementary prose fits the viewport');
+        if(kind.startsWith('natal'))await current.screenshot({path:path.join(artifacts,'saju-supplement-'+kind+'-'+viewport+'.png')});
+        checked.push(kind);
+      }
+      let scopeNotices=0;
+      if(viewport==='phone-small') {
+        const scopes=await saju.evaluate(()=>globalThis.__sajuReadingFixture.reader.lifelong.cards
+          .filter(item=>item.scopeNotice).map(item=>({id:document.querySelector('[data-reader-card="'+item.id+'"]').id,text:item.scopeNotice})));
+        assert.equal(scopes.length,8,'all original life-topic scope notices are exercised');
+        for(const scope of scopes) {
+          await selectReadingPage(scope.id);
+          const note=saju.locator('[data-reader-current] > .reader-scope-note');
+          assert.equal(await note.isVisible(),true,scope.id+': its scope appears beside the selected explanation');
+          assert.equal(await note.textContent(),scope.text);
+          assert.equal(await saju.evaluate(text=>globalThis.__sajuReadingFixture.copyByCategory.lifelong.includes(text),scope.text),true);
+          scopeNotices++;
+        }
+        await inspectReadableSurface('life-topic scope notices phone-small',{text:'.reader-scope-note'});
+      }
+      sajuSupplementViews[viewport]={readings:checked,scopeNotices};
     }
     await saju.locator('#report-content').evaluate(report=>{report.dataset.readingSize='normal';});
     await saju.setViewportSize({width:1280,height:900});
@@ -1538,6 +1600,6 @@ const server = http.createServer((request, response) => {
     }
     assert.deepEqual(errors, []);
     assert.deepEqual(failed, []);
-    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuEntryViews, compatibilityEntryViews, sajuFlowViews, sajuReadableViews, sajuNavigation, sajuSummaryViews, sajuScoreViews, sajuScoreRegressions, sajuDaeunAssumptionViews, compatibilityPeople, compatibilityScores, sajuSwipeViews, sajuMotionViews, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
+    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuEntryViews, compatibilityEntryViews, sajuFlowViews, sajuReadableViews, sajuNavigation, sajuSummaryViews, sajuSupplementViews, sajuScoreViews, sajuScoreRegressions, sajuDaeunAssumptionViews, compatibilityPeople, compatibilityScores, sajuSwipeViews, sajuMotionViews, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => server.close());

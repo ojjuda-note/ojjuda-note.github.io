@@ -134,9 +134,20 @@ test('every year and month domain connects observed natal habits to the actual p
     assert.doesNotMatch(connection.reading,/타고난 바탕|흐름으로 읽|중심으로 읽혀요|반드시|무조건|보장|합격한다|수익이 생깁니다|사고가 납니다/);
     const card=overview.cards.find(value=>value.id.endsWith('-'+domain));
     assert.deepEqual(card.natalGodCodes,connection.natalCodes);
-    assert.equal(card.paragraphs[0],connection.paragraphs[0]);
-    const positions=connection.paragraphs.map(text=>card.paragraphs.findIndex(paragraph=>paragraph.includes(text)));
-    assert.ok(positions.every((position,index)=>position>=0&&(index===0||position>positions[index-1])),'the personal pattern, period meaning, example and response stay connected in order');
+    if(prefix==='annual') {
+      assert.equal(card.paragraphs[0],connection.paragraphs[0]);
+      const positions=connection.paragraphs.map(text=>card.paragraphs.findIndex(paragraph=>paragraph.includes(text)));
+      assert.ok(positions.every((position,index)=>position>=0&&(index===0||position>positions[index-1])),'the personal pattern, period meaning, example and response stay connected in order');
+    } else {
+      assert.ok(card.paragraphs[0].includes(connection.paragraphs[1]),'a month leads with its own actual task');
+      assert.ok(!card.paragraphs.includes(connection.paragraphs[0]),'the same lifelong introduction is not repeated in all twelve months');
+      const application=card.detailSections.find(section=>section.title==='내 성향을 이달에 적용하면').paragraphs.join(' ');
+      assert.ok(application.includes(connection.paragraphs[2].split(' 예를 들어 ')[0]),'the first natal strength is still tied to the monthly scene');
+      assert.ok(application.includes(connection.paragraphs[2].slice(connection.paragraphs[2].indexOf('다만 '))),'the complete original conditional caution and response remain');
+      const secondary=connection.paragraphs[0].split(' 한편으로는 ')[1];
+      if(secondary)assert.ok(application.includes(secondary),'a second observed strength or caution cannot become an invented advantage');
+      assert.equal(card.paragraphs.at(-1),connection.paragraphs[3],'the concrete next step is retained');
+    }
     for(const code of connection.natalCodes)for(const entry of fortune.profile.gods.filter(entry=>entry.god.code===code)) {
       assert.ok(card.factIds.includes(`natal.god.${entry.pillarKey}.${entry.position}`),'the used natal behaviour keeps its actual calculation fact');
     }

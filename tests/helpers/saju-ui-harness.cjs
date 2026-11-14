@@ -306,24 +306,38 @@ async function harness(options = {}) {
     state.anonymous=anonymous;
     for (const instance of state.instances) instance.confirmIdentity();
   }
-  let closed=false;
+  let closing=null;
   function close() {
-    if(closed)return;
-    closed=true;
-    // Closing jsdom removes DOM listeners and native timers, but our fake clock
-    // and VM module graph can still retain the app's last full paid report.
-    // End the test identity first, without scheduling another billing init.
-    state.user=null;state.signedIn=false;state.adminPreview=false;
-    for(const instance of state.instances) {
-      instance.identityReady=false;instance.identityVersion++;
-      instance.callbacks.onAccountChange?.();
-      instance.callbacks={};
-    }
-    for(const id of timers.keys())nativeClearTimeout(id);
-    timers.clear();records.clear();
-    state.instances.length=0;state.starts.length=0;state.statusCalls.length=0;
-    state.copies.length=0;state.receipts.clear();
-    dom.window.close();
+    if(closing)return closing;
+    closing=(async()=>{
+      // Closing jsdom removes DOM listeners and native timers, but our fake clock
+      // and VM module graph can still retain the app's last full paid report.
+      // End the test identity first, without scheduling another billing init.
+      state.user=null;state.signedIn=false;state.adminPreview=false;
+      for(const instance of state.instances) {
+        instance.identityReady=false;instance.identityVersion++;
+        instance.callbacks.onAccountChange?.();
+        instance.callbacks={};
+      }
+      // A rapid account change can already have queued a dynamic payment import.
+      // Drain the actual module/link/evaluation work before destroying document,
+      // including imports appended by a continuation. Its caller still receives
+      // every original rejection; teardown only observes when the work settles.
+      for(;;) {
+        const queued=linkQueue,count=records.size;
+        const entries=await Promise.allSettled([...records.values()]);
+        await Promise.allSettled([queued,...entries.filter(entry=>entry.status==='fulfilled')
+          .flatMap(entry=>[entry.value.link,entry.value.evaluation]).filter(Boolean)]);
+        await new Promise(resolve=>setImmediate(resolve));
+        if(queued===linkQueue&&count===records.size)break;
+      }
+      for(const id of timers.keys())nativeClearTimeout(id);
+      timers.clear();records.clear();
+      state.instances.length=0;state.starts.length=0;state.statusCalls.length=0;
+      state.copies.length=0;state.receipts.clear();
+      dom.window.close();
+    })();
+    return closing;
   }
   return {dom,window,state,$,fill,submit,ready,change,pickReport,changeAccount,advance,flow,close};
 }

@@ -212,6 +212,13 @@ function transitData(hanja, profile, { label, key, scope }) {
   };
 }
 
+// Reuse the same relationship rules when a displayed month belongs to the
+// previous solar-term year. Its already calculated year pillar is the input;
+// this does not substitute a civil calendar year or infer missing natal data.
+export function makeTransitContext(hanja, profile, metadata) {
+  return transitData(hanja, profile, metadata);
+}
+
 /** Analysis facts for traditional symbolic readings, not a future predictor.
  * No gender, name, external requests, storage, fortune scores or ten-year
  * Da-Yun cycle is needed or inferred. Input is calculateSaju's result. */

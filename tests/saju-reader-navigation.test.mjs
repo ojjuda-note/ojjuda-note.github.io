@@ -193,6 +193,78 @@ test('the compact picker keeps every purchased paragraph while exposing only the
   }
 });
 
+test('personal supplementary explanations remain behind the main topics and keep their full copy without evidence or invented scores',()=>{
+  const h=mount('all');
+  try {
+    const before=h.paragraphs();
+    const supplements=reading.reader.supplements;
+    const contexts=[
+      {source:supplements.lifelong,scope:h.doc.getElementById('reading-lifelong'),last:reading.reader.lifelong.cards.at(-1)},
+      {source:supplements.annual,scope:h.doc.getElementById('reading-annual'),last:reading.reader.annual.cards.at(-1)},
+      ...supplements.months.map(month=>({source:month.cards,scope:h.doc.getElementById(`reading-month-${month.month}`),
+        last:reading.reader.months.find(value=>value.month===month.month).cards.at(-1)})),
+    ];
+    for(const {source,scope,last} of contexts) {
+      const main=scope.querySelector(`[data-reader-card="${last.id}"]`);
+      const pickPage=element=>{
+        if(scope.classList.contains('month-reading')) {
+          h.pick(scope.id);
+          const link=scope.querySelector(`.reading-page-sections a[href="#${element.id}"]`);
+          assert.ok(link,`${element.id}: the month overview links to its additional explanation`);
+          link.click();
+        } else h.pick(element.id);
+      };
+      for(const item of source) {
+        const element=scope.querySelector(`[data-reading-supplement="${item.id}"]`);
+        assert.ok(element,`${item.id}: a useful explanation cannot disappear with its calculation chapter`);
+        assert.ok(main.compareDocumentPosition(element)&h.dom.window.Node.DOCUMENT_POSITION_FOLLOWING,
+          'the main personal topics remain before optional additional explanations');
+        pickPage(element);
+        assert.equal(h.current(),element);assertCurrentBody(element);
+        assertSummary(h,element,item.summaryLines);
+        assert.deepEqual([...element.querySelectorAll(':scope > .reader-prose > p')].map(p=>p.textContent),item.paragraphs);
+        assert.deepEqual([...element.querySelectorAll('.reading-body-heading')].map(p=>p.textContent),item.detailSections.map(section=>section.title));
+        const notice=element.querySelector(':scope > .reader-scope-note');
+        assert.equal(notice.textContent,item.scopeNotice);assert.ok(visible(notice));
+        assert.equal(element.querySelector('.saju-reading-score,[role="meter"]'),null,
+          'the source classification is not converted into an unsupported score');
+        assert.equal(element.querySelector(':scope > .reader-label').textContent,'추가 해설');
+        assert.equal(h.host.querySelectorAll('[data-reader-current]').length,1);
+        let cursor=0;
+        for(const text of [item.label,'추가 해설',...item.summaryLines,...item.detailSections.flatMap(section=>[section.title,...section.paragraphs]),item.scopeNotice]) {
+          const index=reading.copyByCategory.all.indexOf(text,cursor);
+          assert.ok(index>=cursor,`${item.id}: visible text is missing or reordered in the copy`);cursor=index+text.length;
+        }
+      }
+      pickPage(main);
+      h.host.querySelectorAll('.reading-pager-step')[1].click();
+      assert.equal(h.current().dataset.readingSupplement,source[0].id,
+        'the next-reading action reaches additional interpretation after the main topics');
+    }
+    assertNoEvidence(h);
+    assert.deepEqual(h.paragraphs(),before,'visiting added explanations does not rewrite any purchased paragraph');
+  } finally {h.close();}
+});
+
+test('all eight existing life-topic scope notices are visible with their selected body and retained in copies',()=>{
+  const h=mount('lifelong');
+  try {
+    const scoped=reading.reader.lifelong.cards.filter(item=>item.scopeNotice);
+    assert.equal(scoped.length,8,'the requested family, health and life-situation boundaries are all covered');
+    for(const item of scoped) {
+      const element=h.host.querySelector(`[data-reader-card="${item.id}"]`);
+      h.pick(element.id);
+      const notice=element.querySelector(':scope > .reader-scope-note');
+      assert.ok(notice,`${item.id}: a scope note must not disappear when calculation records are hidden`);
+      assert.equal(notice.textContent,item.scopeNotice);assert.ok(visible(notice));
+      assert.ok(reading.copyByCategory.lifelong.includes(item.scopeNotice));
+      assert.ok(reading.copyByCategory.all.includes(item.scopeNotice));
+      assert.equal(notice.closest('.reading-full-text,.support-details,.chapter-evidence'),null);
+    }
+    assertNoEvidence(h);
+  } finally {h.close();}
+});
+
 test('portrait tables, outer contents and decade topics reveal their reading without evidence menus',()=>{
   const h=mount('all');
   try {

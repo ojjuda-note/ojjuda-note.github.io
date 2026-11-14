@@ -1,7 +1,7 @@
 // Share the pinned astronomy dependency and natal helpers with the main reader.
 // This module does not save names, change the chart or call payment services.
 import { Solar } from './vendor/lunar-1.7.8.mjs?v=20261112-starlit-saju1';
-import { makeProfile, getTenGod, interactionPairs } from './fortune-data.mjs?v=20261113-saju-reader1';
+import { makeProfile, getTenGod, interactionPairs } from './fortune-data.mjs?v=20261114-saju-correction1';
 
 const HOUR = 3600000;
 const PERIOD_COUNT = 9;

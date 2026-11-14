@@ -1,6 +1,7 @@
 import { GOD_CONTEXTS, PAIR_CONTEXTS } from './deeper-reading-data.mjs?v=20261114-saju-depth1';
 import { buildReaderSituation } from './reader-situations.mjs?v=20261114-saju-copy1';
 import { detailContent, domainConversation, lensPractice, aptitudePractice } from './general-detail-scenes.mjs?v=20261114-saju-copy1';
+import { describeNatalContext } from './natal-context.mjs?v=20261114-saju-correction1';
 
 // A reading-first presentation of the existing meanings. These are shared,
 // service-authored interpretations, never a second calculation or event forecast.
@@ -275,7 +276,7 @@ const PERSONAL_CONCLUSIONS={
     relationships:'가까운 사이에서도 자기 시간과 선택을 존중받고 싶은 사람이에요',work:'일하는 방법을 직접 정할 때 책임감을 느끼는 사람이에요',money:'남이 무엇을 샀는지보다 자기가 어디에 쓸지 먼저 생각하는 사람이에요',learning:'정답을 외우기보다 자기 말로 설명해야 이해했다고 느끼는 사람이에요',
     advantage:'왜 그렇게 정했는지 자기 생각을 분명히 설명하는 것이 장점이에요',pressure:'내 방법만 옳다고 밀어붙이면 함께 정할 일까지 혼자 결정할 수 있어요'},
   competitor:{address:'서로의 수고와 몫을 살피는 당신',
-    relationships:'함께 즐기는 것만큼 서로 공평하게 애쓰는지도 중요하게 보는 사람이에요',work:'동료와 힘을 모으고 자기 수고도 인정받고 싶은 사람이에요',money:'함께 쓰는 돈은 누가 얼마를 내는지 분명해야 편한 사람이에요',learning:'함께 배우며 힘을 얻고, 혼자서도 할 수 있는지 확인하고 싶은 사람이에요',
+    relationships:'함께 즐기는 것만큼 서로 공평하게 애쓰는지도 중요하게 보는 사람이에요',work:'동료와 힘을 모으고 자기 수고도 인정받고 싶은 사람이에요',money:'함께 쓸 돈을 누가 얼마씩 내는지 분명해야 마음이 편한 사람이에요',learning:'함께 배우며 힘을 얻고, 혼자서도 할 수 있는지 확인하고 싶은 사람이에요',
     advantage:'누가 무엇을 할지 정하고 일을 나누는 것이 장점이에요',pressure:'남의 결과와 계속 비교하면 이미 해낸 일보다 나만 더 애쓴 일이 먼저 보일 수 있어요'},
   creator:{address:'작은 실천을 꾸준히 쌓는 당신',
     relationships:'큰 약속 한 번보다 작은 관심과 행동으로 마음을 보여 주는 사람이에요',work:'말로 오래 설명하기보다 직접 만들고 고치며 결과를 보여 주는 사람이에요',money:'좋아하는 일을 계속할 재료와 시간을 챙기는 사람이에요',learning:'설명만 들을 때보다 직접 만들거나 풀어 볼 때 잘 익히는 사람이에요',
@@ -296,7 +297,7 @@ const PERSONAL_CONCLUSIONS={
     relationships:'약속한 말과 실제 행동이 같아야 안심하는 사람이에요',work:'무엇을 어디까지 맡았는지 분명할 때 꼼꼼히 해내는 사람이에요',money:'가격과 이용 조건, 자기가 책임질 일을 알아야 돈을 쓰는 사람이에요',learning:'무엇을 배워야 하는지, 얼마나 익혔는지 어떻게 확인할지 먼저 정하는 사람이에요',
     advantage:'맡은 일과 끝났다고 볼 기준을 분명히 정하는 것이 장점이에요',pressure:'한 번 맡았다고 새 부탁까지 계속 받으면 할 일이 끝없이 늘어날 수 있어요'},
   explorer:{address:'이유를 깊이 알아보는 당신',
-    relationships:'상대가 무슨 말을 했는지뿐 아니라 왜 그렇게 생각했는지도 알고 싶은 사람이에요',work:'늘 쓰던 답에 머무르지 않고 다른 방법과 원인을 찾아보는 사람이에요',money:'바로 사기보다 여러 자료와 조건을 비교해야 안심하는 사람이에요',learning:'궁금한 주제는 한 번 듣고 끝내지 않고 더 깊이 알아보는 사람이에요',
+    relationships:'상대가 무슨 말을 했는지뿐 아니라 왜 그렇게 생각했는지도 알고 싶은 사람이에요',work:'늘 쓰던 답에 머무르지 않고 다른 방법과 원인을 찾아보는 사람이에요',money:'바로 사기보다 여러 자료와 조건을 비교해야 안심하는 사람이에요',learning:'궁금한 주제를 한 번 듣고 끝내지 않고 더 깊이 알아보는 사람이에요',
     advantage:'답을 외우는 데서 그치지 않고 이유와 다른 방법을 찾는 것이 장점이에요',pressure:'확인할 것만 계속 늘리면 이미 정할 수 있는 일도 미룰 수 있어요'},
   scholar:{address:'배우고 확인하며 움직이는 당신',
     relationships:'혼자 짐작하기보다 이야기를 듣고 서로 도우며 가까워지는 사람이에요',work:'모르는 것을 물어보고 배운 뒤 하나씩 일을 익히는 사람이에요',money:'이해하지 못한 조건은 설명을 듣고 나서 돈을 쓰려는 사람이에요',learning:'기초부터 순서대로 배우고 궁금한 답을 얻으면 마음이 놓이는 사람이에요',
@@ -429,6 +430,18 @@ export function describePersonalPeriod(profile,codes,domain,periodLabel='이 시
   return {reading:paragraphs.join(' '),natalCodes:parts.natalCodes,paragraphs};
 }
 
+// A month starts with the actual month's task. Its natal strengths are applied
+// to that task here, instead of repeating the whole lifelong introduction.
+function monthlyApplication(connection,codes,domain,{overview=false}={}) {
+  const [first,second]=connection.natalCodes,primary=PERIOD_APPLICATIONS[codes[0]][domain];
+  const strengths=PERSONAL_DOMAIN_EFFECTS[first][domain][0]+'.'
+    +(second?' 한편으로는 '+PERSONAL_CONCLUSIONS[second][domain]+'.':'');
+  const context=overview
+    ?`이번 달에 ${codes.map(code=>GOD_VOICES[code].focus).join(' · ')}의 주제를 내 생활에 적용할 때는`
+    :`${primary[1]}에서는`;
+  return `${context} ${strengths} 다만 ${PERSONAL_DOMAIN_EFFECTS[first][domain][1]}.`;
+}
+
 const INTERACTION_VOICES = {
   relationships:{connect:'서로 원하는 표현과 편한 연락 간격을 이야기하며 맞춰 보세요.',clash:'같은 일을 다르게 받아들였다면 각자 무엇을 기대했는지 말해 보세요.',both:'함께 지킬 약속은 이어 가고, 다르게 느끼는 부분은 따로 이야기해 보세요.'},
   work:{connect:'각자가 맡은 일을 모았을 때 무엇을 완성할지 함께 정해 보세요.',clash:'하고 싶은 방법으로 지금 일을 해낼 수 있는지 살펴보세요. 어려운 부분은 시간이나 준비를 바꿀 수 있는지 이야기해 보세요.',both:'잘 맞는 방법은 계속 쓰고, 조건이 다른 부분은 다시 의논해 보세요.'},
@@ -457,8 +470,13 @@ function domainCard(registry,profile,domain,{transit=null,prefix='natal',monthly
   const combined=(connection?`${connection.focus} `:codes.length>1?`다른 한편으로는 ${PERSONAL_CONCLUSIONS[codes[1]][domain]}. `:'')+paired;
   const care=unique(codes.map(code=>DAILY_VOICES[code][domain].care)).join(' ');
   const details=detailContent([
-    [transit?'평소 내 모습':'내가 중요하게 여기는 것',[connection?connection.conclusion:`당신은 ${personal[domain]}.`,DAILY_VOICES[natalCodes[0]][domain].life]],
-    [transit?'이번 시기에 연결되는 모습':'함께 드러나는 또 다른 성향',[combined,connection?.application]],
+    ...(monthly?[
+      ['이번 달에 먼저 살필 일',[combined]],
+      ['내 성향을 이달에 적용하면',[monthlyApplication(connection,codes,domain)]],
+    ]:[
+      [transit?'평소 내 모습':'내가 중요하게 여기는 것',[connection?connection.conclusion:`당신은 ${personal[domain]}.`,DAILY_VOICES[natalCodes[0]][domain].life]],
+      [transit?'이번 시기에 연결되는 모습':'함께 드러나는 또 다른 성향',[combined,connection?.application]],
+    ]),
     ['잘하려다 놓치기 쉬운 점',[care]],
     ['사람과 조건을 맞추는 방법',[relation?.reading]],
     ['생활 속 장면으로 이해하기',[daily.example]],
@@ -597,6 +615,28 @@ function lifelongOverview(report,fortune,registry) {
     lifeLensCard(registry,profile,'helpers'),lifeLensCard(registry,profile,'boundaries'),lifeLensCard(registry,profile,'health'),
     lifeLensCard(registry,profile,'space'),lifeLensCard(registry,profile,'safety'),
     flowCard(registry,profile,'cautions'),flowCard(registry,profile,'response')];
+  const extraDomains={parents:'relationships',children:'relationships',helpers:'learning',boundaries:'relationships',
+    contracts:'money',health:'work',space:'work',safety:'work',cautions:'money',response:'work'};
+  const usedConnections=new Set(cards.flatMap(item=>item.paragraphs));
+  for(const item of cards) {
+    if(!item.godCodes?.length)continue;
+    const key=item.id.slice('natal-'.length),domain=Object.hasOwn(DOMAINS,key)?key:extraDomains[key]||'work';
+    const context=describeNatalContext(profile,{codes:item.godCodes,domain});
+    checkedFacts(registry,context.factIds);
+    const extra=context.additionalCode;
+    const paragraph=!extra?null:LIFE_LENSES[key]?LIFE_LENSES[key][GOD_GROUP[extra]].meaning
+      :Object.hasOwn(DOMAINS,key)?DAILY_VOICES[extra][domain].life
+      :key==='aptitude'?PATH_VOICES[extra].ability:key==='life-path'?PATH_VOICES[extra].long
+      :key==='career-examples'?PATH_VOICES[extra].ability:null;
+    if(paragraph&&!usedConnections.has(paragraph)&&!item.paragraphs.some(text=>text.includes(paragraph))) {
+      const groups=item.detailSections.map(section=>[section.title,section.paragraphs]);
+      const index=groups.findIndex(([title])=>/장면|가정|예시/.test(title));
+      groups.splice(index<0?groups.length-1:index,0,['함께 드러나는 면을 이 항목에 적용하면',[paragraph]]);
+      Object.assign(item,detailContent(groups));
+      usedConnections.add(paragraph);
+      item.natalContext=context;
+    }
+  }
   const relation=interactionReading(profile.interactions,'natal');
   const work=selectNatalCodes(profile,'work')[0],money=selectNatalCodes(profile,'money')[0];
   const paragraphs=[`일에서는 ${particle(DAILY_VOICES[work].work.thread,'을','를')} 중요하게 여기고, 돈에서는 ${particle(DAILY_VOICES[money].money.thread,'을','를')} 살피는 모습이에요.`,season?.reading,relation?.reading].filter(Boolean);
@@ -611,14 +651,16 @@ function periodOverview(profile,transit,registry,{year,month=null}) {
   const connection=personalPeriodParts(profile,codes,'work',label);
   const headline=`${PERSONAL_CONCLUSIONS[connection.natalCodes[0]].address}, ${label}에는 `+(codes.length===1?PERIOD_HEADLINES[codes[0]].last
     :`${PERIOD_HEADLINES[codes[0]].first} ${PERIOD_HEADLINES[codes[1]].last}`)+' 일을 먼저 챙겨 보세요.';
-  const paragraphs=[connection.conclusion,`${connection.focus} ${connection.application}`];
+  const paragraphs=monthly?[connection.focus,monthlyApplication(connection,codes,'work',{overview:true})]
+    :[connection.conclusion,`${connection.focus} ${connection.application}`];
   const relation=interactionReading(transit.interactions,prefix);
   if(relation)paragraphs.push(relation.reading);
   const context={transit,prefix,monthly};
   const cards=[...Object.keys(DOMAINS).map(domain=>domainCard(registry,profile,domain,context)),
     ...Object.keys(FLOW_TOPICS).map(key=>flowCard(registry,profile,key,context))];
   return {title:`${label} ${monthly?'월별운':'올해운'} 핵심`,headline,
-    ...detailContent([['평소 내 모습',[paragraphs[0]]],['이번 시기에 적용해 보기',[paragraphs[1]]],['주변과 맞춰 갈 부분',paragraphs.slice(2)]]),cards,origin:ORIGIN,
+    ...detailContent([[monthly?'이번 달에 먼저 살필 일':'평소 내 모습',[paragraphs[0]]],
+      [monthly?'내 성향에 맞게 활용하기':'이번 시기에 적용해 보기',[paragraphs[1]]],['주변과 맞춰 갈 부분',paragraphs.slice(2)]]),cards,origin:ORIGIN,
     ...(monthly?{month}:{year}),godCodes:codes,
     factIds:checkedFacts(registry,['natal.day-master','natal.scope',`${prefix}.pillar`,`${prefix}.period`,
       ...profile.gods.map(natalId),...transitFacts(transit,prefix,codes),...cards.flatMap(value=>value.factIds),...(relation?.factIds||[])])};

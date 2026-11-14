@@ -179,8 +179,8 @@ async function ready() {
 async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
-    import('./compatibility.mjs?v=20261114-saju-copy1'),
-    import('./report-view.mjs?v=20261114-saju-copy1'),
+    import('./compatibility.mjs?v=20261114-saju-correction1'),
+    import('./report-view.mjs?v=20261114-saju-correction1'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
 }

@@ -1,4 +1,5 @@
 /* Full explanations remain visible in the selected reading item. */
+body.saju-flow .reader-personal-supplement{min-width:0;padding:6px 0 30px;word-break:keep-all;overflow-wrap:anywhere}
 body.saju-flow .reader-prose.reading-body-content{padding-top:0;margin-top:22px}
 body.saju-flow .reading-body-heading{margin:28px 0 10px;padding:2px 0 2px 11px;border-left:3px solid var(--primary);color:var(--primary);font:750 var(--reading-font-size,18px)/1.65 var(--sans);letter-spacing:-.02em;word-break:keep-all;overflow-wrap:anywhere}
 body.saju-flow .reading-body-heading:first-child{margin-top:0}
