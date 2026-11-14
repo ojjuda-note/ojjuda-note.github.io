@@ -217,7 +217,7 @@ async function harness(options={}) {
     async status(chart,partner) {
       const owner=state.user,key=pairKey(chart,partner,owner),gate=state.statusGate;
       state.statusCalls.push({chart,partner,owner,key});
-      if(state.failStatus>0) {state.failStatus--;throw Object.assign(new Error('궁합 구매 내역을 확인하지 못했어요.'),{code:'network'});}
+      if(state.failStatus>0) {state.failStatus--;throw Object.assign(new Error('궁합 구매 내역을 확인하지 못했어요.'),{code:state.statusErrorCode||'network'});}
       const found=state.receipts.get(key);
       const result={ok:true,price:20,coins:state.coins,entitlement:this.isActive(found)?found:null,adminPreview:state.adminPreview,server_now:new Date(nowMs).toISOString()};
       if(gate)await gate.promise;
@@ -387,6 +387,60 @@ test('changing the partner hides the old reading and requires its own twenty-ju 
   assert.notEqual(h.state.starts[0].key,h.state.starts[1].key);
   assert.equal(h.state.starts[1].partner.solar.iso,'1987-12-11');
   await assertCalculatedScores(h);
+});
+
+test('a temporary connection failure preserves the paid page and free quote only until the original expiry',async t=>{
+  const h=await harness();t.after(h.close);
+  h.fill();await h.price(20);h.submit();await h.ready();
+  selectCompatibilityPage(h,'compatibility-people-work');
+  const content=h.$('compatibility-report').firstElementChild,expiry=h.$('compatibility-expiry').textContent;
+  h.state.failStatus=1;h.window.dispatchEvent(new h.window.Event('focus'));
+  await waitFor(()=>!h.$('compatibility-open').disabled&&/연결이 잠시 끊겼어요/.test(h.$('compatibility-copy-status').textContent));
+  assert.equal(h.$('compatibility-result').hidden,false);
+  assert.equal(h.$('compatibility-report').firstElementChild,content,'a background retry must not replace the page being read');
+  assert.equal(h.$('compatibility-page-select').value,'compatibility-people-work');
+  assert.equal(h.$('compatibility-copy').disabled,false);
+  assert.equal(h.$('compatibility-open').dataset.expectedCharge,'0');
+  assert.match(h.$('compatibility-copy-status').textContent,/출생 정보 다시 보기/,'the visible result explains how to retry');
+  assert.equal(h.$('compatibility-expiry').textContent,expiry);
+  assert.equal(h.state.charges,1);
+
+  h.window.dispatchEvent(new h.window.Event('focus'));
+  await waitFor(()=>!h.$('compatibility-open').disabled&&h.$('compatibility-copy-status').textContent==='');
+  assert.equal(h.$('compatibility-report').firstElementChild,content);
+  h.state.failStatus=1;h.edit();
+  await waitFor(()=>!h.$('compatibility-open').disabled&&!h.$('compatibility-error').hidden);
+  assert.equal(h.$('compatibility-result').hidden,true);
+  assertNoScoreboard(h);
+  assert.equal(h.$('compatibility-open').dataset.expectedCharge,'0','an unexpired quote stays free even before reopening the reading');
+  assert.match(h.$('compatibility-error').textContent,/연결을 확인한 뒤 다시 펼쳐/);
+  h.submit();await h.ready();
+  assert.equal(h.state.starts.at(-1).expectedCharge,0);assert.equal(h.state.charges,1);
+  assert.equal(h.$('compatibility-expiry').textContent,expiry);
+
+  h.state.failStatus=1;h.window.dispatchEvent(new h.window.Event('focus'));
+  await waitFor(()=>!h.$('compatibility-open').disabled&&/연결이 잠시 끊겼어요/.test(h.$('compatibility-copy-status').textContent));
+  h.$('compatibility-copy').click();await waitFor(()=>h.state.copies.length===1);
+  h.advance(ACCESS_MS+1);
+  assert.equal(h.$('compatibility-result').hidden,true);assertNoScoreboard(h);
+  assert.equal(h.$('compatibility-copy').disabled,true);
+  assert.equal(h.$('compatibility-open').dataset.expectedCharge,'20');
+  h.$('compatibility-copy').click();await pause();assert.equal(h.state.copies.length,1);
+  assert.equal(h.state.charges,1,'preserving an offline result never extends or renews its entitlement');
+  h.submit();await h.ready();assert.equal(h.state.starts.at(-1).expectedCharge,20);assert.equal(h.state.charges,2);
+});
+
+test('authentication and invalid status failures still remove a previously paid compatibility reading',async t=>{
+  for(const code of ['not_signed_in','invalid']) {
+    const h=await harness({statusErrorCode:code});t.after(h.close);
+    h.fill();await h.price(20);h.submit();await h.ready();
+    h.state.failStatus=1;h.window.dispatchEvent(new h.window.Event('focus'));
+    await waitFor(()=>!h.$('compatibility-open').disabled&&!h.$('compatibility-error').hidden);
+    assert.equal(h.$('compatibility-result').hidden,true,code);assertNoScoreboard(h);
+    assert.equal(h.$('compatibility-copy').disabled,true,code);
+    assert.equal(h.$('compatibility-open').dataset.expectedCharge,'20',code);
+    assert.equal(h.state.charges,1);
+  }
 });
 
 test('expiry removes the reading and copy access without automatically charging, then permits an explicit new purchase',async t=>{
@@ -587,6 +641,38 @@ test('swapping people preserves unselected or partly entered times and their unk
   h.submit();await pause();assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);
 });
 
+test('returning at the Korean new year refreshes both birth-year limits without purchasing',async t=>{
+  const h=await harness();t.after(h.close);
+  const boundary=Date.parse('2026-12-31T15:00:00.000Z');
+  h.advance(boundary-Date.parse(fixedNow)-1,{runTimers:false});
+  h.window.dispatchEvent(new h.window.Event('focus'));
+  for(const person of ['self','partner'])assert.equal(h.$(person+'-year').max,'2026');
+  h.advance(1,{runTimers:false});
+  h.window.dispatchEvent(new h.window.Event('pageshow'));
+  for(const person of ['self','partner'])assert.equal(h.$(person+'-year').max,'2027');
+  assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);
+});
+
+test('a new-year input refreshes validation while future birthdays still cannot start a purchase',async t=>{
+  const h=await harness();t.after(h.close);
+  h.fill({year:2027,month:1,day:2,hour:null},partnerBirth);
+  assert.equal(h.$('compatibility-form').checkValidity(),false);
+  h.advance(Date.parse('2026-12-31T15:00:00.000Z')-Date.parse(fixedNow),{runTimers:false});
+  h.submit();
+  await waitFor(()=>!h.$('compatibility-open').disabled&&!h.$('compatibility-error').hidden);
+  for(const person of ['self','partner'])assert.equal(h.$(person+'-year').max,'2027');
+  assert.match(h.$('compatibility-error').textContent,/미래/);
+  assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);
+  // Stay on the same page through another year boundary, without a resume event.
+  h.advance(Date.parse('2027-12-31T15:00:00.000Z')-Date.parse('2026-12-31T15:00:00.000Z'),{runTimers:false});
+  h.$('self-year').value='2028';h.change(h.$('self-year'));
+  for(const person of ['self','partner'])assert.equal(h.$(person+'-year').max,'2028');
+  h.$('self-day').value='1';h.change(h.$('self-day'));
+  await h.price(20);h.submit();await h.ready();
+  assert.equal(h.state.starts[0].chart.solar.iso,'2028-01-01');
+  assert.equal(h.state.charges,1);
+});
+
 test('a signed-out visitor sees the login state and cannot obtain or pay for a compatibility reading',async t=>{
   const h=await harness({user:null,signedIn:false});t.after(h.close);
   h.fill();assert.equal(h.$('compatibility-login').hidden,false);h.submit();
@@ -709,6 +795,29 @@ test('both compatibility pickers share saved people and restore or swap the comp
     assert.equal(h.$(`${prefix}-saved-profiles`).querySelectorAll('.profile-picker-use').length,0);
     assert.equal(h.$(`${prefix}-name`).value,'');assert.equal(h.$(`${prefix}-gender`).value,'');assert.equal(h.$(`${prefix}-year`).value,'');
   }
+});
+
+test('deleting saved people follows the next or previous row without taking focus from birth inputs',async t=>{
+  const h=await harness();t.after(h.close);
+  const host=h.$('self-saved-profiles'),rows=()=>[...host.querySelectorAll('.profile-picker-item')];
+  for(let index=0;index<4;index++) {
+    host.querySelector('.profile-picker-new').click();
+    h.fillPerson('self',{...selfBirth,year:1990+index,name:`저장 ${index+1}`});
+    h.advance(600);
+  }
+  assert.equal(rows().length,4);
+  const ids=rows().map(row=>row.dataset.profileId);
+  let remove=rows()[1].querySelector('.profile-picker-delete');remove.focus();remove.click();
+  assert.equal(h.window.document.activeElement.closest('.profile-picker-item')?.dataset.profileId,ids[2],'deleting a middle row moves to its next person');
+  remove=rows().at(-1).querySelector('.profile-picker-delete');remove.focus();remove.click();
+  assert.equal(h.window.document.activeElement.closest('.profile-picker-item')?.dataset.profileId,ids[2],'deleting the last row moves to its previous person');
+  h.$('partner-year').focus();rows()[0].querySelector('.profile-picker-delete').click();
+  assert.equal(h.window.document.activeElement,h.$('partner-year'),'a delete started outside the list does not steal focus');
+  remove=rows()[0].querySelector('.profile-picker-delete');remove.focus();remove.click();
+  assert.equal(h.window.document.activeElement,host.querySelector('.profile-picker-new'),'the empty list leads to entering a new person');
+  assert.equal(rows().length,0);
+  assert.equal(h.$('partner-saved-profiles').querySelectorAll('.profile-picker-item').length,0);
+  assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);
 });
 
 test('changing only both names and genders preserves the paid pair and its original expiry',async t=>{
