@@ -993,11 +993,12 @@
       members: ['신유', '도훈', '영재', '한진', '지훈', '경민'],
       debut: '2024.01.22', debutWork: 'Sparkling Blue', songs: ['첫 만남은 계획대로 되지 않아', 'Oh Mymy : 7s'],
       concept: '언제나 함께라는 이름처럼 일상의 설렘을 노래하는 보이후드 팝 여섯 멤버.',
-      checkedAt: '2026.11.13',
+      checkedAt: '2026.11.14',
       official: 'https://tws-official.jp/profile/', youtube: 'https://www.youtube.com/@TWS_PLEDIS',
       photo: 'TWS at the 2024 Melon Music Awards.png', photoLabel: '멜론뮤직어워드', photoYear: '2024', credit: 'TenAsia', license: 'CC BY 3.0',
       morePhotos: [
-        commonsPhoto('TWS at Music Bank 20240202.jpg', '뮤직뱅크 출근길 · 2024.02.02', '2024', 'tenasia (티비텐)', 'CC BY 3.0')
+        commonsPhoto('TWS at Music Bank 20240202.jpg', '뮤직뱅크 출근길 · 2024.02.02', '2024', 'tenasia (티비텐)', 'CC BY 3.0'),
+        commonsPhoto('TWS 250929.jpg', '단체 활동 · 2025.09.29', '2025', 'TV10', 'CC BY 3.0')
       ],
       music: [
         {
@@ -1040,12 +1041,6 @@
         }
       ],
       appearances: [
-        {
-          "date": "2026-11-13",
-          "title": "TO US 위드뮤 1:1 영상통화 팬사인회",
-          "sub": "상세 시간 추후 안내 · 당첨자 대상 · 응모 종료 · PLEDIS/위드뮤 공식 공지",
-          "href": "https://weverse.io/tws/notice/40394"
-        },
         {
           "date": "2026-11-14",
           "title": "MMA 2026 Global Day 출연",
@@ -1090,6 +1085,11 @@
         }
       ],
       merch: [
+        {
+          "title": "신유 B-DAY FANTASY MOBILE 4차 예약",
+          "sub": "Weverse Shop · 2026.11.09 13:00~11.16 23:59 KST 예약 · 2027.02.10부터 발송 예정 · 조기 품절 가능",
+          "href": "https://shop.weverse.io/ko/shop/USD/artists/165/notices/14893"
+        },
         {
           "title": "TO US 싱글 2집 Beside Ver.",
           "sub": "PLEDIS · 2026.11.02 정식 발매 · 로그인 후 공지 확인 · 버전·재고는 판매처 확인",
