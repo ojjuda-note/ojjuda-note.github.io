@@ -1,6 +1,6 @@
 import { PLAIN_GOD_EXPLANATIONS } from './plain-language.mjs?v=20261114-saju-copy1';
 import { GOD_CONTEXTS } from './deeper-reading-data.mjs?v=20261114-saju-depth1';
-import { STAGE_MEANINGS } from './stage-reading.mjs?v=20261114-saju-copy1';
+import { STAGE_MEANINGS } from './stage-reading.mjs?v=20261114-saju-final-review2';
 import { readingDetailText } from './reading-detail.mjs?v=20261114-saju-depth1';
 import { summaryLinesFrom } from './reading-summary-lines.mjs?v=20261114-saju-depth1';
 

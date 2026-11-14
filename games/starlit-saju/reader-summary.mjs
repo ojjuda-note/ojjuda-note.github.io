@@ -252,16 +252,16 @@ const SEASON_VOICES = {
   resource:'여기에 배우거나 도움을 받으며 내 바탕을 채우는 성향도 이어져요.',
 };
 const PERIOD_HEADLINES = {
-  companion:{first:'내가 정할 몫을 나누고',last:'내가 정할 몫을 분명히 하는'},
-  competitor:{first:'서로의 수고를 나누고',last:'함께할 비용과 역할을 나누는'},
-  creator:{first:'작은 결과를 보여 주고',last:'작은 결과를 꾸준히 만드는'},
-  critic:{first:'불편한 방법을 고치고',last:'반복되는 불편을 하나씩 고치는'},
-  opportunist:{first:'새 계획의 준비를 확인하고',last:'돈과 시간을 쓸 곳을 고르는'},
-  manager:{first:'남은 일을 정리하고',last:'이미 맡은 일과 지출을 챙기는'},
-  challenger:{first:'급한 일의 순서를 정하고',last:'어려운 과제의 부담을 나누는'},
-  officer:{first:'약속한 범위를 확인하고',last:'맡은 역할과 마감을 분명히 하는'},
-  explorer:{first:'모르는 조건을 알아보고',last:'막힌 이유와 다른 방법을 찾는'},
-  scholar:{first:'필요한 도움을 구하고',last:'기초를 배우고 직접 해 보는'},
+  companion:{first:'내가 정할 몫을 나누세요',last:'내가 정할 몫을 분명히 하는'},
+  competitor:{first:'서로의 수고를 나누세요',last:'함께할 비용과 역할을 나누는'},
+  creator:{first:'작은 결과를 보여 주세요',last:'작은 결과를 꾸준히 만드는'},
+  critic:{first:'불편한 방법을 고쳐 보세요',last:'반복되는 불편을 하나씩 고치는'},
+  opportunist:{first:'새 계획에 필요한 준비를 확인하세요',last:'돈과 시간을 쓸 곳을 고르는'},
+  manager:{first:'남은 일을 정리하세요',last:'이미 맡은 일과 지출을 챙기는'},
+  challenger:{first:'급한 일의 순서를 정하세요',last:'어려운 과제의 부담을 나누는'},
+  officer:{first:'약속한 범위를 확인하세요',last:'맡은 역할과 마감을 분명히 하는'},
+  explorer:{first:'모르는 조건을 알아보세요',last:'막힌 이유와 다른 방법을 찾는'},
+  scholar:{first:'필요한 도움을 구하세요',last:'기초를 배우고 직접 해 보는'},
 };
 const DOMAINS = {
   relationships:{label:'연애와 인연',navGroup:'사랑과 가족',groups:['peer','expression','authority','resource','wealth'],chapter:'relationships',annual:'annual-relationships'},
@@ -437,9 +437,9 @@ function monthlyApplication(connection,codes,domain,{overview=false}={}) {
   const strengths=PERSONAL_DOMAIN_EFFECTS[first][domain][0]+'.'
     +(second?' 한편으로는 '+PERSONAL_CONCLUSIONS[second][domain]+'.':'');
   const context=overview
-    ?`이번 달에 ${codes.map(code=>GOD_VOICES[code].focus).join(' · ')}의 주제를 내 생활에 적용할 때는`
-    :`${primary[1]}에서는`;
-  return `${context} ${strengths} 다만 ${PERSONAL_DOMAIN_EFFECTS[first][domain][1]}.`;
+    ?`이번 달에는 ${particle(codes.map(code=>GOD_VOICES[code].focus).join(' · '),'을','를')} 중심으로 생활을 살펴보세요.`
+    :`이번 달에는 ${primary[1]}에 힘을 써 보세요.`;
+  return `${context} 이때 ${strengths} 다만 ${PERSONAL_DOMAIN_EFFECTS[first][domain][1]}.`;
 }
 
 const INTERACTION_VOICES = {
@@ -649,8 +649,9 @@ function periodOverview(profile,transit,registry,{year,month=null}) {
   const label=monthly?`${month}월`:`${year}년`;
   const codes=unique([transit.stemGod.code,transit.branchGod.code]);
   const connection=personalPeriodParts(profile,codes,'work',label);
-  const headline=`${PERSONAL_CONCLUSIONS[connection.natalCodes[0]].address}, ${label}에는 `+(codes.length===1?PERIOD_HEADLINES[codes[0]].last
-    :`${PERIOD_HEADLINES[codes[0]].first} ${PERIOD_HEADLINES[codes[1]].last}`)+' 일을 먼저 챙겨 보세요.';
+  const focus=codes.length===1?`${PERIOD_HEADLINES[codes[0]].last} 일을 먼저 챙겨 보세요.`
+    :`${PERIOD_HEADLINES[codes[0]].first}. ${PERIOD_HEADLINES[codes[1]].last} 일도 함께 챙기세요.`;
+  const headline=`${PERSONAL_CONCLUSIONS[connection.natalCodes[0]].address}, ${label}에는 ${focus}`;
   const paragraphs=monthly?[connection.focus,monthlyApplication(connection,codes,'work',{overview:true})]
     :[connection.conclusion,`${connection.focus} ${connection.application}`];
   const relation=interactionReading(transit.interactions,prefix);
