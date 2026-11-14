@@ -414,6 +414,25 @@ test('13 native games and 13 local games fill actual viewports and return to the
         }
         await page.setViewportSize(viewports[0]);
         await screenshot(page,'local-imagevote-question-editor-390x844');
+        await picker.locator('[data-mode="list"]').click();
+        const samples=await picker.evaluate(async dialog=>{
+          const another=dialog.querySelector('[data-another]'),write=dialog.querySelector('[data-mode="write"]');
+          const list=dialog.querySelector('[data-mode="list"]'),recommend=[],editor=[];
+          async function measure(button){
+            const start=performance.now();
+            button.click();
+            await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+            return Math.round(performance.now()-start);
+          }
+          for(let i=0;i<15;i++){
+            recommend.push(await measure(another));
+            editor.push(await measure(write));
+            list.click();
+          }
+          const median=values=>values.sort((a,b)=>a-b)[Math.floor(values.length/2)];
+          return {samplesPerAction:15,recommendMedianMs:median(recommend),writeMedianMs:median(editor)};
+        });
+        t.diagnostic('Local Chromium input-to-next-presented-frame, fixture catalog already loaded: '+JSON.stringify(samples));
         await local.context.setOffline(true);
         await picker.waitFor({state:'hidden'});
         await local.context.setOffline(false);
