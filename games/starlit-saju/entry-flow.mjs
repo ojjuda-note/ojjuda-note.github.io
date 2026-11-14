@@ -92,6 +92,8 @@ export function attachEntryFlow(form) {
     const error=panel.querySelector('[data-flow-error]');
     if(error){error.textContent=message;error.hidden=false;}
     if(field) {
+      const disclosure=field.closest('details');
+      if(disclosure)disclosure.open=true;
       marked.add(field);field.setAttribute('aria-invalid','true');
       if(error)field.setAttribute('aria-describedby',[field.getAttribute('aria-describedby'),error.id].filter(Boolean).join(' '));
       field.focus({preventScroll:true});

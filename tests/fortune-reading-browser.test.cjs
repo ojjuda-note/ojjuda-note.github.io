@@ -50,7 +50,7 @@ const compatibilityEntryFixture = tarotOnly ? '' : fs.readFileSync(path.join(rep
   .replace('</body>',entryFixtureScript+'</body>');
 // Isolated rendering fixture. It uses production calculation and reading modules
 // with a published example date, and never loads authentication or billing code.
-const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/reading-summary.css"><link rel="stylesheet" href="/games/starlit-saju/reading-score.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"><link rel="stylesheet" href="/games/starlit-saju/reading-detail.css"></head><body class="saju-readable saju-flow"><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
+const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/reading-summary.css"><link rel="stylesheet" href="/games/starlit-saju/reading-score.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"><link rel="stylesheet" href="/games/starlit-saju/reading-detail.css"><link rel="stylesheet" href="/games/starlit-saju/almanac.css"></head><body class="saju-readable saju-flow saju-edition"><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { analyzeFortune } from '/games/starlit-saju/fortune-data.mjs';
 import { analyzeDaeun } from '/games/starlit-saju/daeun.mjs';
@@ -83,7 +83,7 @@ function show(){
 }
 select.addEventListener('change',show);show();
 </script></body></html>`;
-const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/compatibility.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"><link rel="stylesheet" href="/games/starlit-saju/reading-detail.css"></head><body class="saju-readable saju-flow"><main class="compatibility-main"><section class="result"><label for="fixture-pair">검사할 두 사람</label><select id="fixture-pair"><option value="confirmed">말띠와 양띠</option><option value="uncertain">입춘일 · 시간 모름</option></select><p id="fixture-zodiac" class="birth-summary"></p><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
+const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/compatibility.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"><link rel="stylesheet" href="/games/starlit-saju/reading-detail.css"><link rel="stylesheet" href="/games/starlit-saju/almanac.css"></head><body class="saju-readable saju-flow saju-edition"><main class="compatibility-main"><section class="result"><label for="fixture-pair">검사할 두 사람</label><select id="fixture-pair"><option value="confirmed">말띠와 양띠</option><option value="uncertain">입춘일 · 시간 모름</option></select><p id="fixture-zodiac" class="birth-summary"></p><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { buildCompatibilityReading } from '/games/starlit-saju/compatibility.mjs';
 import { renderCompatibilityReport } from '/games/starlit-saju/report-view.mjs';
@@ -558,6 +558,8 @@ const server = http.createServer((request, response) => {
     }
     async function fillEntry(prefix,{name,gender='female',year,month,day}) {
       const identity=prefix==='birth'?'person':prefix;
+      const optional=saju.locator('.optional-person').filter({has:saju.locator('#'+identity+'-name')});
+      if(!await optional.evaluate(node=>node.open))await optional.locator('summary').click();
       await saju.locator('#'+identity+'-name').fill(name);
       await saju.locator('#'+identity+'-gender').selectOption(gender);
       await saju.locator('#'+prefix+'-year').fill(String(year));
@@ -582,6 +584,10 @@ const server = http.createServer((request, response) => {
       assert.ok(date&&date.y>=0&&date.y+date.height<=size.height,'general '+viewport+': the birth date is reachable in the first viewport');
       assert.equal(await saju.locator('#entry-product-picker').isVisible(),false,'product choices wait until the information stage is complete');
       assert.equal(await saju.locator('#open-story').isVisible(),false,'the purchase action is not mixed into the birth-input stage');
+      const optional=form.locator('.optional-person');
+      assert.equal(await optional.evaluate(node=>node.open),false,'optional identity starts folded');
+      await entryScreens('general',viewport,'information');
+      await optional.locator('summary').click();
       const geometry=await form.evaluate(form=>{
         const shown=element=>element.getBoundingClientRect().width>0&&element.getBoundingClientRect().height>0;
         const fonts=selector=>Array.from(form.querySelectorAll(selector)).filter(shown).map(element=>({id:element.id||element.className,size:parseFloat(getComputedStyle(element).fontSize)}));
@@ -599,7 +605,6 @@ const server = http.createServer((request, response) => {
       sajuEntryViews[viewport]=geometry;
       await inspectReadableSurface('general entry '+viewport,{text:entryText,controls:entryControls,placeholders:true});
       assert.equal(await form.locator('.person-inputs .field-label:visible,.date-inputs .field-label:visible').count(),5,'name, gender, year, month and day have visible labels');
-      await entryScreens('general',viewport,'information');
       if(viewport==='phone-small')await saju.locator('.birth-panel').screenshot({path:path.join(artifacts,'saju-entry-phone-small.png')});
       await fillEntry('birth',{name:'예시 이름',year:1990,month:2,day:31});
       await nextFlow(form,0,'invalid February date '+viewport);
@@ -1507,19 +1512,13 @@ const server = http.createServer((request, response) => {
             assert.equal(await current.getAttribute('id'),first,label+': an existing selected passage is not a swipe');
             await swipe.evaluate(()=>getSelection().removeAllRanges());
           }
-          swipeStage='hint layout';
+          swipeStage='paging controls';
           await pager.evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));
-          const hint=await pager.locator('.reading-swipe-hint').evaluate(element=>{
-            const rect=element.getBoundingClientRect(),style=getComputedStyle(element);
-            return {text:element.textContent,font:parseFloat(style.fontSize),fits:element.scrollWidth<=element.clientWidth+1&&element.scrollHeight<=element.clientHeight+1,
-              inside:rect.left>=-1&&rect.right<=innerWidth+1,wraps:!['nowrap','pre'].includes(style.whiteSpace),
-              touchAction:getComputedStyle(element.closest('.reading-swipe-enabled')).touchAction};
-          });
-          assert.ok(hint.text.includes('왼쪽')&&hint.text.includes('오른쪽')&&hint.fits&&hint.inside&&hint.wraps,label+': directions remain readable without clipping');
-          assert.ok(hint.font>=13,label+': swipe directions remain readable');
-          assert.ok(hint.touchAction.includes('pan-y')&&hint.touchAction.includes('pinch-zoom'),label+': native vertical scrolling and zoom remain available');
+          const touchAction=await pager.evaluate(element=>getComputedStyle(element.closest('.reading-swipe-enabled')).touchAction);
+          assert.equal(await pager.locator('.reading-swipe-hint').count(),0,'page controls work without extra gesture instructions');
+          assert.ok(touchAction.includes('pan-y')&&touchAction.includes('pinch-zoom'),label+': native vertical scrolling and zoom remain available');
           assert.equal(await swipe.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,label+': swipe UI fits the viewport');
-          sajuSwipeViews[label]={first,second,leftSteps:1,rightSteps:1,bounded:true,verticalScroll,hint};
+          sajuSwipeViews[label]={first,second,leftSteps:1,rightSteps:1,bounded:true,verticalScroll,touchAction};
           if(viewport!=='phone')await swipe.screenshot({path:path.join(artifacts,'saju-swipe-'+kind+'-'+viewport+'-'+textSize+'.png')});
           if(viewport==='phone-small')await pager.screenshot({path:path.join(artifacts,'saju-swipe-pager-'+kind+'-'+viewport+'-'+textSize+'.png')});
         } catch(error) {
