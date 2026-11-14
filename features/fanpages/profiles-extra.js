@@ -455,7 +455,11 @@ if (andteamProfile) {
 }
 
 // All six pending artist profiles were rechecked against primary sources.
-for (const id of ['tws','nctdream','ateez','treasure','nctwish','andteam']) window.OJJUDA_FAN_PROFILES[id].checkedAt = '2026.11.13';
+for (const id of ['tws','nctdream','ateez','treasure','nctwish','andteam']) {
+  const profile = window.OJJUDA_FAN_PROFILES[id];
+  // Preserve any later profile check already recorded above.
+  if (profile.checkedAt < '2026.11.13') profile.checkedAt = '2026.11.13';
+}
 
 /* KISS OF LIFE: verified 2026 music and official Japanese source; unknown personal data remain blank. */
 const kissOfLifeProfile = window.OJJUDA_FAN_PROFILES.kissoflife;
@@ -570,7 +574,11 @@ if (boynextdoorProfile) {
 }
 
 // Pending PR reconciliation: only the eight manually reviewed profiles.
-for (const id of ["hearts2hearts", "kissoflife", "kiiikiii", "stayc", "seventeen", "enhypen", "riize", "boynextdoor"]) window.OJJUDA_FAN_PROFILES[id].checkedAt = '2026.11.13';
+for (const id of ["hearts2hearts", "kissoflife", "kiiikiii", "stayc", "seventeen", "enhypen", "riize", "boynextdoor"]) {
+  const profile = window.OJJUDA_FAN_PROFILES[id];
+  // Preserve any later profile check already recorded above.
+  if (profile.checkedAt < '2026.11.13') profile.checkedAt = '2026.11.13';
+}
 
 // STAYC was reviewed again against official sources for the current slot.
 window.OJJUDA_FAN_PROFILES.stayc.checkedAt = '2026.11.14';
