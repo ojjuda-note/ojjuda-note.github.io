@@ -947,7 +947,7 @@
       members: ['성호', '리우', '명재현', '태산', '이한', '운학'],
       debut: '2023.05.30', debutWork: 'WHO!', songs: ['돌아버리겠다 (But I Like You)', 'One and Only', 'Serenade'],
       concept: '일상의 이야기를 솔직하게 들려주는 여섯 멤버.',
-      checkedAt: '2026.11.12',
+      checkedAt: '2026.11.14',
       official: 'https://kozofficial.com/artist/profile/BOYNEXTDOOR', youtube: 'https://www.youtube.com/@BOYNEXTDOOR_official',
       photo: '2026-01-16 BOYNEXTDOOR at Golden Disc Awards 05 (cropped).png', photoLabel: '골든디스크 시상식', photoYear: '2026', credit: '티비텐 TV10', license: 'CC BY 4.0',
       morePhotos: [
@@ -959,11 +959,10 @@
         { title: 'WHO!', date: '2023.05.30', type: '데뷔 싱글', songs: ['돌아버리겠다 (But I Like You)', 'One and Only', 'Serenade'], href: 'https://www.kozofficial.com/artist/discography/BOYNEXTDOOR/23' }
       ],
       appearances: [
-        { date: '2026-11-13', title: 'KNOCK ON Vol.2 · 밴쿠버', sub: '캐나다 Queen Elizabeth Theatre · 현지 19:30 · AEG 주최 · 공연장 공식 예매 안내', href: 'https://vancouvercivictheatres.com/events/boynextdoor-tour-knock-on-vol2-nov-13-2026/' },
-        { date: '2026-11-15', title: 'KNOCK ON Vol.2 · 시애틀', sub: '미국 시애틀 · 소속사 그룹 HYBE JAPAN 공식 투어 발표 · 현지 시간·예매 상세 확인', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
-        { date: '2026-11-17', title: 'KNOCK ON Vol.2 · 샌프란시스코', sub: '미국 샌프란시스코 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
-        { date: '2026-11-20', title: 'KNOCK ON Vol.2 · 로스앤젤레스', sub: '미국 로스앤젤레스 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
-        { date: '2026-11-24', title: 'KNOCK ON Vol.2 · 멕시코시티', sub: '멕시코 멕시코시티 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
+        { date: '2026-11-15', title: 'KNOCK ON Vol.2 · 시애틀', sub: '미국 시애틀 Showbox SoDo · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
+        { date: '2026-11-17', title: 'KNOCK ON Vol.2 · 샌프란시스코', sub: '미국 샌프란시스코 The Warfield · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
+        { date: '2026-11-20', title: 'KNOCK ON Vol.2 · 로스앤젤레스', sub: '미국 로스앤젤레스 Peacock Theater · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
+        { date: '2026-11-24', title: 'KNOCK ON Vol.2 · 멕시코시티', sub: '멕시코시티 Arena Ciudad de México · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
         { date: '2026-12-05', title: 'KNOCK ON Vol.2 · 자카르타', sub: '인도네시아 자카르타 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
         { date: '2026-12-26', title: 'KNOCK ON Vol.2 · 쿠알라룸푸르', sub: '말레이시아 쿠알라룸푸르 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' }
       ],
@@ -978,12 +977,14 @@
         { date: '2026.07.30', tag: '협업', title: '언더아머 글로벌 앰배서더 · COMMIT 캠페인 발표', href: 'https://www.erajaya.com/index.php/news/under-armour-tunjuk-boynextdoor-sebagai-global-brand-ambassadors' },
       ],
       merch: [
+        { title: 'KNOCK ON Vol.2 투어 공식 MD', sub: 'Weverse Global · 7.09 18:00 KST부터 수량 소진 시까지 예약판매 · 응원봉 키링·포토카드·BOYNEXTDOOR X ASSC 상품 등 · 가격·재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/13681' },
         { title: 'HOME: DELUXE 공식 앨범', sub: 'Weverse Shop · 9.28 발매 · 9.07~9.27 예약·특전 기간 종료 · 현재 재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/14247' },
         { title: 'One and Only 후드 재판매', sub: '공식 일본 판매 · 멤버십 가입자·일본 배송 한정 · 11.02부터 수량 소진 시 종료', href: 'https://boynextdoor-official.jp/news/1eaa7468d773' },
         { title: 'HYBE CINE FEST 2026 공식 상품', sub: 'Weverse Global · 10.24~10.31 예약 종료 · 한국 등 일부 국가 판매 제한 · 상품별 출고일 확인', href: 'https://shop.weverse.io/ko/shop/USD/artists/112/notices/14790' },
         { title: 'BOYNEXTDOOR 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/112' }
       ],
       campaigns: [
+        { kind: '콜라보', date: '2026.07.09', title: 'Anti Social Social Club(ASSC) × BOYNEXTDOOR', sub: 'KNOCK ON Vol.2 공식 투어 MD 협업 · Weverse Global 공식 판매 안내 · 판매·재고는 상품별 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/13681' },
         { kind: '홍보대사', date: '2026.07.30', title: 'Under Armour · 글로벌 브랜드 앰배서더', sub: '글로벌 COMMIT 캠페인 · 언더아머 공식 유통사 발표', href: 'https://www.erajaya.com/index.php/news/under-armour-tunjuk-boynextdoor-sebagai-global-brand-ambassadors' },
       ],
       accent: '#478bc5', light: '#dfefff', dark: '#2d5678', bg: '#f3faff', shape: '✱'
