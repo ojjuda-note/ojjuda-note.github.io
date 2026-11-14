@@ -7,7 +7,7 @@
   <title>오쭈다</title>
   <link rel="stylesheet" href="style.css?v=20261114-drink-prompts1">
   <link rel="stylesheet" href="/games/party-live/truth-settings.css?v=20261114-truth-flavors1">
-  <link rel="stylesheet" href="/games/drinking/presentation.css?v=20261114-result-glass2">
+  <link rel="stylesheet" href="/games/drinking/presentation.css?v=20261114-drinking-fit1">
   <link rel="stylesheet" href="/games/drinking/access.css?v=20261114-drinks-afterdark1">
   <script defer src="/config.js"></script>
   <script defer src="/games/matgo/matgo-access.js?v=20261114-drinks-adult1"></script>
@@ -23,7 +23,7 @@
   <div id="access-content" hidden></div>
   <template id="access-page" data-title="한 대로 플레이 · 오쭈다 술게임">
 <header class="mast"><div class="wrap mast-inner">
-  <a class="arcade-return" href="/world.html?tab=arcade"><span aria-hidden="true">←</span> 오쭈다 오락실로</a>
+  <a id="local-back" class="arcade-return" href="/world.html?tab=arcade" data-drinking-back="arcade"><span aria-hidden="true">←</span><span data-local-back-label>오락실로</span></a>
   <div class="header-actions"><a class="mode-back" href="../">방식 선택</a><button id="effects" class="icon-button" aria-label="소리와 진동 설정" title="소리와 진동 설정"></button></div>
 </div>
 </header>
@@ -52,13 +52,13 @@
 <label class="pref"><span>게임 진동</span><input id="haptic-check" type="checkbox"></label>
 <p id="haptic-note"></p><button class="big-button" id="fx-test">효과 체험하기</button></dialog>
     <span data-module="/games/drinking/game-guides.js?v=20261114-drinking-screen1"></span>
-    <span data-module="/games/drinking/presentation.js?v=20261114-result-glass2"></span>
+    <span data-module="/games/drinking/presentation.js?v=20261114-drinking-fit1"></span>
     <span data-module="/games/drinking/game-screen.js?v=20261114-drinking-screen1"></span>
     <span data-module="/games/drinking/community-prompts.js?v=20261114-drinking-wording1"></span>
     <span data-module="/games/drinking/prompt-submissions.js?v=20261114-drinking-rebuild1"></span>
     <span data-module="feedback.js?v=20261114-drinks-local1"></span>
     <span data-module="/games/party-live/truth.js?v=20261114-drinking-wording1"></span>
-    <span data-module="app.js?v=20261114-drinking-screen1"></span>
+    <span data-module="app.js?v=20261114-drinking-fit1"></span>
   </template>
 </body>
 </html>

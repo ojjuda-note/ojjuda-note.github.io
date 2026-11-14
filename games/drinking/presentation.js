@@ -17,6 +17,10 @@
   let inertNodes = [];
   let figureId = 0;
   let glassPreload = null;
+  let fitRoot = null;
+  let fitObserver = null;
+  let fitFrame = 0;
+  let fitBox = null;
   let accessAllowed = window.OjjudaDrinkingAccessReady === true;
   let pageSuspended = false;
 
@@ -30,6 +34,106 @@
   function accessible() {
     return !!active && !!host?.isConnected && !host.hidden &&
       accessAllowed && window.OjjudaDrinkingAccessReady === true && !document.hidden && !pageSuspended;
+  }
+
+  function playArea() {
+    if (!host || !active) return null;
+    return active.local ? host.querySelector('.play-body') :
+      host.querySelector('#view #game, #view > .card > .inside') || host.querySelector('#view > .card');
+  }
+
+  function clearFit() {
+    if (fitFrame) cancelAnimationFrame(fitFrame);
+    fitFrame = 0;
+    fitObserver?.disconnect();
+    fitObserver = null;
+    if (fitRoot) {
+      for (const property of ['--dp-fit-scale', '--dp-play-width', '--dp-play-height']) fitRoot.style.removeProperty(property);
+      delete fitRoot.dataset.dpFitted;
+    }
+    fitRoot = null;
+    fitBox = null;
+  }
+
+  function fitsPlayArea(root) {
+    const area = root.getBoundingClientRect();
+    const css = getComputedStyle(root);
+    const top = area.top + parseFloat(css.paddingTop || 0);
+    const bottom = area.bottom - parseFloat(css.paddingBottom || 0);
+    const left = area.left + parseFloat(css.paddingLeft || 0);
+    const right = area.right - parseFloat(css.paddingRight || 0);
+    if (root.scrollWidth > root.clientWidth + 2 || root.scrollHeight > root.clientHeight + 2) return false;
+    const elements = new Set([...root.children, ...root.querySelectorAll('button,input,select,textarea,summary')]);
+    for (const element of elements) {
+      if (element.closest('[hidden]')) continue;
+      let concealed = false;
+      for (let parent = element.parentElement; parent && parent !== root; parent = parent.parentElement) {
+        if (parent.tagName === 'DETAILS' && !parent.open && !parent.querySelector(':scope > summary')?.contains(element)) {
+          concealed = true;
+          break;
+        }
+      }
+      if (concealed) continue;
+      const style = getComputedStyle(element);
+      if (style.display === 'none' || style.visibility === 'hidden') continue;
+      const rect = element.getBoundingClientRect();
+      if (!rect.width || !rect.height) continue;
+      if (rect.top < top - 2 || rect.bottom > bottom + 2 || rect.left < left - 2 || rect.right > right + 2) return false;
+    }
+    return true;
+  }
+
+  function fitPlayArea() {
+    fitFrame = 0;
+    if (!accessible()) return;
+    const root = playArea();
+    if (!root) return;
+    if (root !== fitRoot) {
+      clearFit();
+      fitRoot = root;
+      if (typeof ResizeObserver === 'function') {
+        fitObserver = new ResizeObserver(entries => {
+          const entry = entries.find(item => item.target === fitRoot);
+          if (!entry) return;
+          const box = Array.isArray(entry.borderBoxSize) ? entry.borderBoxSize[0] : entry.borderBoxSize;
+          const width = box?.inlineSize ?? entry.contentRect.width;
+          const height = box?.blockSize ?? entry.contentRect.height;
+          if (!fitBox || Math.abs(width - fitBox.width) > 1 || Math.abs(height - fitBox.height) > 1) requestFit();
+        });
+        fitObserver.observe(root, {box: 'border-box'});
+      }
+    }
+    const area = root.getBoundingClientRect();
+    if (area.width < 1 || area.height < 1) return;
+    fitBox = {width: area.width, height: area.height};
+    root.style.setProperty('--dp-play-width', `${Math.floor(area.width)}px`);
+    root.style.setProperty('--dp-play-height', `${Math.floor(area.height)}px`);
+    const applyScale = scale => root.style.setProperty('--dp-fit-scale', String(scale));
+    // Enlarge the actual text, controls and board, never a transformed picture
+    // of the page. Dense/short screens keep the readable base size and scroll
+    // fallback instead of shrinking controls or hiding the remaining content.
+    applyScale(1);
+    let lower = 1;
+    if (fitsPlayArea(root)) {
+      let upper = 1.75;
+      applyScale(upper);
+      if (fitsPlayArea(root)) lower = upper;
+      else for (let step = 0; step < 5; step++) {
+        const candidate = (lower + upper) / 2;
+        applyScale(candidate);
+        if (fitsPlayArea(root)) lower = candidate;
+        else upper = candidate;
+      }
+    }
+    applyScale(Math.floor(lower * 100) / 100);
+    root.dataset.dpFitted = 'true';
+  }
+
+  function requestFit() {
+    if (!accessible()) return;
+    const root = playArea();
+    if (root) root.dataset.dpFitted = 'false';
+    if (!fitFrame) fitFrame = requestAnimationFrame(fitPlayArea);
   }
 
   function layout() {
@@ -48,6 +152,7 @@
       }
     }
     if (helpButton) helpButton.hidden = !enabled;
+    if (enabled) requestFit();
   }
 
   function mount() {
@@ -55,10 +160,15 @@
     if (!content) return false;
     if (host !== content) {
       close(false);
+      clearFit();
+      host?.removeEventListener('load', requestFit, true);
+      host?.removeEventListener('toggle', requestFit, true);
       observer?.disconnect();
       overlay?.remove();
       helpButton?.remove();
       host = content;
+      host.addEventListener('load', requestFit, true);
+      host.addEventListener('toggle', requestFit, true);
       observer = new MutationObserver(() => {
         if (!accessible()) close(false);
         flush();
@@ -364,6 +474,9 @@
 
   function leave() {
     close(false);
+    clearFit();
+    host?.removeEventListener('load', requestFit, true);
+    host?.removeEventListener('toggle', requestFit, true);
     active = null;
     layout();
     observer?.disconnect();
@@ -395,5 +508,8 @@
     pageSuspended = false;
     if (active && mount()) flush();
   });
+  window.addEventListener('resize', requestFit, {passive: true});
+  window.visualViewport?.addEventListener('resize', requestFit, {passive: true});
+  document.fonts?.ready.then(requestFit);
   window.DrinkingPresentation = Object.freeze({ enter, update, help, leave });
 })();
