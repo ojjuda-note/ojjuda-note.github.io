@@ -14,8 +14,9 @@
   <link rel="stylesheet" href="./flow-design.css?v=20261114-saju-flow1">
   <link rel="stylesheet" href="./reading-detail.css?v=20261114-saju-correction1">
   <link rel="stylesheet" href="./almanac.css?v=20261115-saju-reading-map1">
+  <link rel="stylesheet" href="./directory.css?v=20261115-saju-directory1">
 </head>
-<body class="saju-readable saju-flow saju-edition">
+<body class="saju-readable saju-flow saju-edition saju-directory">
   <a class="skip-link" href="#compatibility-form">출생 정보 입력으로 바로가기</a>
   <svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
     <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6Z"/></symbol>
@@ -32,18 +33,12 @@
 
   <header class="site-header">
     <a class="brand" href="/world.html?tab=hub#agit-daily"><svg aria-hidden="true"><use href="#i-back"/></svg>오쭈다 아지트</a>
+    <a class="site-directory-link" href="./">풀이 목록</a>
     <button id="motion-toggle" class="motion-toggle" type="button" aria-label="움직임 줄이기" aria-pressed="false" title="움직임 줄이기"><svg aria-hidden="true"><use href="#i-motion"/></svg></button>
   </header>
 
   <main class="compatibility-main">
-    <header class="saju-mast">
-      <div class="mast-art" aria-hidden="true"><i class="moon-disc"></i><i class="sky-ring"></i><i class="sky-ridge"></i></div>
-      <h1>별빛 사주</h1>
-      <nav class="reading-service-nav" aria-label="사주와 궁합">
-        <a href="./"><strong>나의 사주</strong><span>10쭈부터</span></a>
-        <a href="./compatibility.html" aria-current="page"><strong>궁합</strong><span>20쭈</span></a>
-      </nav>
-    </header>
+    <header class="session-heading"><h1 id="session-name">두 사람의 궁합</h1></header>
     <section id="compatibility-entry" class="entry-shell" aria-label="두 사람의 궁합">
       <form id="compatibility-form" autocomplete="off" class="birth-panel" data-entry-flow="compatibility">
         <nav class="entry-progress" aria-label="궁합 입력 순서"><button type="button" data-flow-go="0" aria-current="step"><span>1</span> 나</button><button type="button" data-flow-go="1" disabled><span>2</span> 상대</button><button type="button" data-flow-go="2" disabled><span>3</span> 확인</button></nav>
@@ -94,11 +89,11 @@
       <noscript><p class="form-error">궁합을 읽으려면 자바스크립트를 켜 주세요.</p></noscript>
     </section>
     <section id="compatibility-result" class="result" aria-labelledby="compatibility-result-title" hidden>
-      <header class="result-heading reading-result-heading"><h2 id="compatibility-result-title" tabindex="-1">두 사람의 <em>궁합</em></h2></header>
-      <div id="compatibility-detailed" class="detailed-reading" data-reading-size="normal"><div id="compatibility-report"></div><details class="reader-settings"><summary>글자 크기 · 이용 정보</summary><div class="reading-tools"><a href="./" class="other-reading-link">나의 사주 보기</a><div class="reading-size-control" role="group" aria-label="본문 글자 크기"><span aria-hidden="true">글자 크기</span><button type="button" data-reading-size="normal" aria-pressed="true">보통</button><button type="button" data-reading-size="large" aria-pressed="false">크게</button></div></div><details class="reading-birth-info"><summary>두 사람의 출생 정보</summary><p id="compatibility-births" class="birth-summary"></p><div class="zodiac-pair"><p id="self-result-zodiac" class="zodiac-preview zodiac-result" hidden></p><p id="partner-result-zodiac" class="zodiac-preview zodiac-result" hidden></p></div></details><p id="compatibility-expiry" class="field-hint"></p></details></div>
+      <header class="result-heading reading-result-heading"><h2 id="compatibility-result-title" tabindex="-1">두 사람의 <em>궁합</em></h2><div class="reading-size-control" role="group" aria-label="본문 글자 크기"><span aria-hidden="true">글자 크기</span><button type="button" data-reading-size="normal" aria-pressed="true">보통</button><button type="button" data-reading-size="large" aria-pressed="false">크게</button></div></header>
+      <div id="compatibility-detailed" class="detailed-reading" data-reading-size="normal"><div id="compatibility-report"></div><details class="reader-settings"><summary>출생 정보 · 이용 시간</summary><div class="reading-tools"><a href="./" class="other-reading-link">나의 사주 보기</a></div><details class="reading-birth-info"><summary>두 사람의 출생 정보</summary><p id="compatibility-births" class="birth-summary"></p><div class="zodiac-pair"><p id="self-result-zodiac" class="zodiac-preview zodiac-result" hidden></p><p id="partner-result-zodiac" class="zodiac-preview zodiac-result" hidden></p></div></details><p id="compatibility-expiry" class="field-hint"></p></details></div>
       <div class="result-actions"><button id="compatibility-edit" class="primary-button" type="button">출생 정보 다시 보기</button><button id="compatibility-copy" class="secondary-button" type="button" disabled>성격·궁합 풀이 복사하기</button></div><p id="compatibility-copy-status" class="field-hint" role="status"></p>
     </section>
   </main>
   <script src="/shared/analytics/site-usage.js?v=20261113-fortune-visits1"></script>
-  <script type="module" src="./compatibility-app.mjs?v=20261115-saju-reading-map1"></script>
+  <script type="module" src="./compatibility-app.mjs?v=20261115-saju-directory1"></script>
 </body></html>

@@ -1,10 +1,10 @@
-import {personalReadingMap,pairReadingMap,connectReadingMap} from './reading-map.mjs?v=20261115-saju-reading-map1';
+import {personalReadingMap,pairReadingMap,connectReadingMap,indexPages} from './reading-map.mjs?v=20261115-saju-directory1';
 import {getReadingSources} from './sources.mjs?v=20261113-saju-reader1';
 import {applyReadingSummaryViews} from './reading-summary-view.mjs?v=20261113-saju-summary1';
 import {applyReadingScoreViews} from './reading-score-view.mjs?v=20261114-saju-copy1';
 import {createCompatibilityScoreboard,createCompatibilityScoreDetails} from './compatibility-score-view.mjs?v=20261114-saju-copy1';
 import {appendReadingDetail} from './reading-detail.mjs?v=20261114-saju-depth1';
-import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261115-saju-reading-map1';
+import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261115-saju-directory1';
 import {createReadingNavigator} from './reading-navigator.mjs?v=20261114-saju-almanac1';
 import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
 import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
@@ -1324,7 +1324,9 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   const initial=topic==='monthly'?defaults.get(months):defaults.get(lifelong||annual)||readable[0];
   show(initial);
   return {mount(container) {
-    mapView=connectReadingMap(container,personalReadingMap(container,reading,fortune,topic,initial));
+    const map=personalReadingMap(container,reading,fortune,topic,initial);
+    indexPages(map,pages.filter(page=>page.inMenu),page=>page.menuGroup);
+    mapView=connectReadingMap(container,map);
     host=container;container.dataset.readerPaged='true';
     motion=createReadingMotion(container,{getCurrentPage:()=>current?.element});
     attachReadingSwipe(container,{previous,next,motion});

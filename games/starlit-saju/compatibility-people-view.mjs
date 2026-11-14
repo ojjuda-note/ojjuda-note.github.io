@@ -1,4 +1,4 @@
-import {connectReadingMap} from './reading-map.mjs?v=20261115-saju-reading-map1';
+import {connectReadingMap,indexPages} from './reading-map.mjs?v=20261115-saju-directory1';
 import {appendReadingDetail,readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
 import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
 import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
@@ -176,6 +176,7 @@ export function createCompatibilityPager(section,pages,map) {
   next.addEventListener('click',()=>show(readable[readable.indexOf(current)+1],{move:true}));
   section.querySelector(':scope > .report-section-heading').after(navigation);
   show(readable.find(page=>page.element.id==='compatibility-synthesis')||readable[0]);
+  indexPages(map,pages,page=>page.group);
   mapView=connectReadingMap(section,map);
   motion=createReadingMotion(section,{getCurrentPage:()=>current?.element});
   attachReadingSwipe(section,{previous,next,motion});

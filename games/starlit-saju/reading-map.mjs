@@ -88,6 +88,34 @@ export function pairReadingMap(reading) {
     topics,detail:'compatibility-synthesis'});
 }
 
+// Use the same available pages as the reader's navigation, including its purchase scope.
+function addFullIndex(map, groups) {
+  const index = element('details', 'map-index');
+  index.append(element('summary', '', '전체 목차'));
+  for (const [label, pages] of groups) {
+    const group = element('details', 'map-index-group');
+    group.append(element('summary', '', label));
+    const list = element('ul');
+    for (const page of pages) {
+      const item = element('li');
+      item.append(link(page.label, page.element.id, ''));
+      list.append(item);
+    }
+    group.append(list);
+    index.append(group);
+  }
+  map.append(index);
+}
+export function indexPages(map, pages, groupName) {
+  const groups = new Map();
+  for (const page of pages) {
+    const label = groupName(page);
+    if (!groups.has(label)) groups.set(label, []);
+    groups.get(label).push(page);
+  }
+  addFullIndex(map, groups);
+}
+
 // The overview and the detailed reader are mutually exclusive reading views.
 export function connectReadingMap(host, map) {
   const back = element('button','map-return','요약과 주제 목록');
