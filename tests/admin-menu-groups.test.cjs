@@ -18,7 +18,7 @@ const actual=nav.GROUPS.flatMap(group=>group.items.map(([area,tab])=>`${area}:${
 assert.equal(new Set(actual).size,actual.length,'no duplicate functional locations');
 for(const [area,tabs] of Object.entries({
   account:['overview','visitors','users','suspended','referrals'],
-  content:['cards','messages','groups','photo-stages','risk','map'],
+  content:['cards','messages','groups','photo-stages','drinking-prompts','risk','map'],
   trash:['trash-all','trash-accounts','trash-cards','trash-messages','trash-other'],
   support:['reports','feedback','note-users'],
   payment:['settings','users'],

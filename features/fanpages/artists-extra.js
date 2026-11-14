@@ -1116,7 +1116,7 @@
       concept: '성장을 노래하는 NCT의 여섯 멤버 유닛.',
       official: 'https://www.smentertainment.com/', youtube: 'https://www.youtube.com/@NCTDREAM',
       photo: 'NCT Dream at DREAM()SCAPE Press Conference.png', photoLabel: 'DREAM()SCAPE 기자회견 · 당시 사진', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
-      checkedAt: '2026.11.13',
+      checkedAt: '2026.11.14',
       music: [
         {
           "title": "DREAM AFTER DREAM",
@@ -1149,10 +1149,16 @@
       ],
       appearances: [
         {
-          "date": "2026-11-14",
-          "title": "MMA 2026 Global Day 출연",
-          "sub": "서울 고척스카이돔 · 카카오엔터테인먼트 · 개별 출연 시각은 공식 안내 확인",
-          "href": "https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/"
+          "date": "2026-11-15",
+          "title": "SBS 인기가요 Boogie Woogie 사전녹화 · 03:20 KST",
+          "sub": "등촌동 SBS 공개홀 · 11/15 방송분 · 팬클럽 현장 참여 신청은 11/13 종료 · 사전녹화만 출연",
+          "href": "https://weverse.io/nctdream/notice/40986"
+        },
+        {
+          "date": "2026-11-15",
+          "title": "SBS 인기가요 Boogie Woogie 녹화 · 09:25 KST",
+          "sub": "등촌동 SBS 공개홀 · 11/22 방송분 · 팬클럽 현장 참여 신청은 11/13 종료 · 11/15 출연과 구분",
+          "href": "https://weverse.io/nctdream/notice/40989"
         },
         {
           "date": "2026-11-08",
@@ -1187,6 +1193,18 @@
         }
       ],
       news: [
+        {
+          "date": "2026.11.13",
+          "tag": "로그인",
+          "title": "11/15 03:20 SBS 인기가요 Boogie Woogie 사전녹화·당일 방송 공지",
+          "href": "https://weverse.io/nctdream/notice/40986"
+        },
+        {
+          "date": "2026.11.13",
+          "tag": "로그인",
+          "title": "11/15 09:25 SBS 인기가요 Boogie Woogie 녹화·11/22 방송 공지",
+          "href": "https://weverse.io/nctdream/notice/40989"
+        },
         {
           "date": "2026.11.09",
           "tag": "컴백",
