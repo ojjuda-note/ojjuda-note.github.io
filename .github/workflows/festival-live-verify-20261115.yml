@@ -1,0 +1,75 @@
+name: Live festival schedule verification (temporary)
+on:
+  push:
+    branches:
+      - automation/verify-festival-live-20261115
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check deployed data with retries
+        run: |
+          node <<'NODE'
+          const target = ['k-geosang-trailrun-20261121','namhae-runtrip-fall-fun-20261121','game-culture-festival-playk-2026','gcf-valorant-esports-final-20261121'];
+          (async () => {
+            for(let attempt=1;attempt<=42;attempt++) {
+              try {
+                const url='https://ojjuda.kr/games/festival-schedule/events.json?verify='+Date.now();
+                const res=await fetch(url, {headers:{'Cache-Control':'no-cache'}});
+                if(!res.ok) throw new Error('HTTP '+res.status);
+                const body=await res.json();
+                const ids=new Set(body.events.map(e=>e.id));
+                const missing=target.filter(id=>!ids.has(id));
+                console.log('attempt',attempt,'events',body.events.length,'missing',missing.join(','));
+                if(!missing.length && body.events.length>=721){console.log('DEPLOYED_DATA_721_CONFIRMED');return;}
+              } catch(e) {console.log('attempt',attempt,'fetch_error',e.message)}
+              await new Promise(resolve=>setTimeout(resolve,10000));
+            }
+            throw Error('Production events.json did not yet contain all 4 events');
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          NODE
+      - name: Install headless browser
+        run: |
+          npm install --no-save --no-package-lock --ignore-scripts playwright@1.57.0
+          npx playwright install chromium
+      - name: Check two real site entries and cards
+        run: |
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1366,height:900}});
+            page.on('pageerror',error=>console.log('PAGE_ERROR',error.message));
+            for(const [section,term,id] of [['sports','K-거상','k-geosang-trailrun-20261121'],['sports','런트립 남해','namhae-runtrip-fall-fun-20261121'],['sports','GCF 이스포츠','gcf-valorant-esports-final-20261121'],['festival','게임문화축제','game-culture-festival-playk-2026']]){
+              await page.goto('https://ojjuda.kr/games/festival-schedule/index.html?view=list&category='+section+'&period=upcoming&q='+encodeURIComponent(term)+'&proof='+Date.now(),{waitUntil:'domcontentloaded',timeout:45000});
+              await page.locator('[data-event-card="'+id+'"]').waitFor({state:'visible',timeout:25000});
+              const card=await page.locator('[data-event-card="'+id+'"]').innerText();
+              if(!card.includes(term.split(' ')[0]))throw Error('Card title mismatch '+id);
+              console.log('CARD_VISIBLE',section,id,card.replace(/\s+/g,' ').slice(0,170));
+            }
+            await page.goto('https://ojjuda.kr/world.html?game=festival',{waitUntil:'domcontentloaded',timeout:45000});
+            await page.waitForTimeout(3500);
+            const arcade=page.locator('[data-v="festival"]');
+            const count=await arcade.count();
+            console.log('ARCADE_FESTIVAL_BUTTONS',count);
+            const frames=page.locator('iframe[src*="festival-schedule"]');
+            console.log('ARCADE_EMBEDDED_IFRAMES_BEFORE',await frames.count());
+            if(await frames.count()===0 && count>0) {
+              await arcade.first().click({timeout:12000});
+              await page.waitForTimeout(3500);
+            }
+            const framecount=await frames.count();
+            console.log('ARCADE_EMBEDDED_IFRAMES_AFTER',framecount);
+            if(framecount===0)throw Error('Arcade page does not show festival iframe; requires further manual investigation');
+            const frame=page.frameLocator('iframe[src*="festival-schedule"]').first();
+            await frame.locator('#search').fill('K-거상');
+            await frame.locator('[data-event-card="k-geosang-trailrun-20261121"]').waitFor({state:'visible',timeout:25000});
+            console.log('ARCADE_CARD_VISIBLE k-geosang-trailrun-20261121');
+            await browser.close();
+          })().catch(e=>{console.error(e.stack||e);process.exit(1)});
+          NODE
