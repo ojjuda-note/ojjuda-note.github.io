@@ -10,14 +10,14 @@
       (value === selected ? ' checked' : '') + '><span>' + preview + title + '</span></label>';
   }
   function tableSetup(g, host) {
-    if (!host) return '<h1>테이블을 고르고 있어요</h1><p>방장이 테이블을 고르면 각자 앉은 자리를 표시해요.</p>';
+    if (!host) return '<h1 class="bottle-heading">테이블을 고르고 있어요</h1><p class="bottle-hint">방장이 고르면 각자 앉은 자리를 표시해요.</p>';
     const shapes = Object.entries(tables).map(([id,[title]]) => option('shape', id, title, g.shape,
       '<i aria-hidden="true" class="bottle-mini ' + id + '"></i>')).join('');
-    return '<h1>어떤 테이블에 앉았나요?</h1><form id="bottle-table" class="bottle-form">' +
+    return '<h1 class="bottle-heading">테이블을 골라 주세요</h1><p class="bottle-hint">모양과 방향을 고른 뒤 자리를 정해요.</p><form id="bottle-table" class="bottle-form bottle-table-setup">' +
       '<fieldset><legend>테이블 모양</legend><div class="bottle-options">' + shapes + '</div></fieldset>' +
       '<fieldset><legend>테이블 방향</legend><div class="bottle-options">' +
       option('direction','horizontal','가로',g.direction) + option('direction','vertical','세로',g.direction) +
-      '</div></fieldset><button type="submit" class="action">자리 선택하기</button></form>';
+      '</div></fieldset><button type="submit" class="action">자리 정하기</button></form>';
   }
   function ratioOf(g) {
     const ratio = tables[g.shape][1];
@@ -34,27 +34,27 @@
       '" style="left:' + Number(point.x) + '%;top:' + Number(point.y) + '%" title="' + ui.esc(s.players[i]) + '">' + (i+1) + '</span>' : '').join('');
     let title, hint, mainButton = '';
     if (seating) {
-      title = complete ? '자리가 모두 정해졌어요' : '내 자리를 눌러 주세요';
-      hint = '테이블을 눌러 내 자리를 놓거나 옮겨요.';
+      title = complete ? '모두 자리를 정했어요' : '내 자리를 정해 주세요';
+      hint = complete ? (host ? '준비됐다면 술병을 돌려 주세요.' : '방장이 술병을 돌리면 시작해요.') : '테이블을 눌러 내 자리를 정하거나 옮겨요.';
       if (complete && host) mainButton = '<button type="button" class="action bottle-center" data-game-action="spin">술병 돌리기</button>';
     } else if (s.phase === 'spinning') {
       title = '병이 돌고 있어요';
-      hint = host ? '원하는 순간에 터치하세요.' : '방장이 멈추면 병이 서서히 느려져요.';
-      if (host) mainButton = '<button type="button" class="action bottle-center" data-game-action="brake">터치해서 멈추기</button>';
+      hint = host ? '화면을 터치하면 서서히 멈춰요.' : '방장이 누르면 병이 서서히 멈춰요.';
+      if (host) mainButton = '<button type="button" class="action bottle-center" data-game-action="brake">멈추기</button>';
     } else if (s.phase === 'braking') {
-      title = '서서히 멈추는 중…'; hint = '병 입구가 향하는 자리를 지켜보세요.';
+      title = '서서히 멈추는 중…'; hint = '병 입구가 어느 자리를 가리킬지 지켜봐요.';
     } else {
-      title = ui.esc(s.players[g.winner]) + '님 당첨!'; hint = '병 입구가 '+(g.winner+1)+'번 자리를 가리켰어요. 오늘은 이 자리로 시선이 쏠리네요.';
+      title = ui.esc(s.players[g.winner]) + '님 당첨!'; hint = '병 입구가 '+(g.winner+1)+'번 자리를 가리켰어요.';
     }
     const escape = ui.esc;
     const roster = s.players.map((player,i) => '<li><b>'+ (i+1) +'</b> '+escape(player)+
-      (i === s.me ? ' (나)' : '') + (seating && !g.positions[i] ? ' · 선택 중' : '') +'</li>').join('');
-    return '<h1>' + title + '</h1><p>' + hint + '</p>' +
+      (i === s.me ? ' (나)' : '') + (seating && !g.positions[i] ? ' · 자리 선택 중' : '') +'</li>').join('');
+    return '<h1 class="bottle-heading">' + title + '</h1><p class="bottle-hint">' + hint + '</p>' +
       '<div class="bottle-board ' + g.shape + '" style="--ratio:' + ratio + ';--board-width:' + width + 'px">' +
       '<div class="bottle-pointer" aria-hidden="true"><div class="bottle-glass"><i></i></div></div>' +
       (seating ? '<button type="button" class="bottle-hit" aria-label="내 자리 놓기. 방향키로 위치를 정하고 엔터를 누르세요."></button>' : '') +
       markers + '</div>' + mainButton + '<ul class="bottle-players" aria-label="참가자 자리">' + roster + '</ul>' +
-      (seating && host ? '<button type="button" data-game-action="change_table">테이블 다시 선택</button>' : '');
+      (seating && host ? '<button type="button" class="bottle-table-reset" data-game-action="change_table">테이블 다시 고르기</button>' : '');
   }
   function angleAt(g, now) {
     if (g.phase === 'done') return g.finalDeg;
