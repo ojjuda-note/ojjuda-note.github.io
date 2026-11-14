@@ -5,6 +5,7 @@ import { analyzeFortune } from '../games/starlit-saju/fortune-data.mjs';
 import { analyzeDaeun } from '../games/starlit-saju/daeun.mjs';
 import { buildDetailedReading } from '../games/starlit-saju/readings.mjs';
 import { attachReadingSummaryLines } from '../games/starlit-saju/reading-summary-lines.mjs';
+import { describePersonalPeriod } from '../games/starlit-saju/reader-summary.mjs';
 
 const now = new Date('2026-11-13T00:00:00Z');
 const birth = {year:1990, month:5, day:17, hour:8, minute:37};
@@ -73,6 +74,7 @@ test('every visible reading gets two source-authored units while all original da
 
 test('cards keep their selected result and actual advice, including personal decade actions', () => {
   const report = attachReadingSummaryLines(build());
+  const profile=analyzeFortune(calculateSaju(birth,{now}),{year:2026,now}).profile;
   const overviews = [report.reader.lifelong, report.reader.annual, ...report.reader.months];
   for (const item of [...overviews.flatMap(overview => overview.cards), ...report.personPortrait.cards]) {
     assert.ok(item.title.startsWith(item.summaryLines[0]));
@@ -91,7 +93,11 @@ test('cards keep their selected result and actual advice, including personal dec
   }
   for (const item of report.reader.timings.items) {
     assert.ok(item.headline.startsWith(item.summaryLines[0]));
-    assert.ok(item.paragraphs[3].includes(item.summaryLines[1]));
+    const action=describePersonalPeriod(profile,item.godCodes,'money','이 기간').paragraphs[3];
+    const application=item.detailSections.find(section=>section.title==='이번 달에 적용할 방법');
+    assert.deepEqual(application.paragraphs,[action],'added preparation examples preserve the original personal action');
+    assert.equal(item.paragraphs.at(-1),action,'the complete period reading still ends with its original practical response');
+    assert.ok(action.includes(item.summaryLines[1]),'the second summary unit comes from that same personal response');
     for (const key of timingKeys) for (const point of item[key]) {
       assert.ok(point.label.startsWith(point.summaryLines[0]));
       assert.ok(point.text.includes(point.summaryLines[1]));

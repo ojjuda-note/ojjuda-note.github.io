@@ -49,7 +49,7 @@ const compatibilityEntryFixture = fs.readFileSync(path.join(repo,'games/starlit-
   .replace('</body>',entryFixtureScript+'</body>');
 // Isolated rendering fixture. It uses production calculation and reading modules
 // with a published example date, and never loads authentication or billing code.
-const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/reading-summary.css"><link rel="stylesheet" href="/games/starlit-saju/reading-score.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"></head><body class="saju-readable saju-flow"><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
+const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/reading-summary.css"><link rel="stylesheet" href="/games/starlit-saju/reading-score.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"><link rel="stylesheet" href="/games/starlit-saju/reading-detail.css"></head><body class="saju-readable saju-flow"><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { analyzeFortune } from '/games/starlit-saju/fortune-data.mjs';
 import { analyzeDaeun } from '/games/starlit-saju/daeun.mjs';
@@ -81,7 +81,7 @@ function show(){
 }
 select.addEventListener('change',show);show();
 </script></body></html>`;
-const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/compatibility.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"></head><body class="saju-readable saju-flow"><main class="compatibility-main"><section class="result"><label for="fixture-pair">검사할 두 사람</label><select id="fixture-pair"><option value="confirmed">말띠와 양띠</option><option value="uncertain">입춘일 · 시간 모름</option></select><p id="fixture-zodiac" class="birth-summary"></p><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
+const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/compatibility.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"><link rel="stylesheet" href="/games/starlit-saju/reading-detail.css"></head><body class="saju-readable saju-flow"><main class="compatibility-main"><section class="result"><label for="fixture-pair">검사할 두 사람</label><select id="fixture-pair"><option value="confirmed">말띠와 양띠</option><option value="uncertain">입춘일 · 시간 모름</option></select><p id="fixture-zodiac" class="birth-summary"></p><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { buildCompatibilityReading } from '/games/starlit-saju/compatibility.mjs';
 import { renderCompatibilityReport } from '/games/starlit-saju/report-view.mjs';
@@ -92,6 +92,7 @@ const select = document.getElementById('fixture-pair');
 function show(){
   const birth = select.value === 'confirmed' ? {year:1990,month:5,day:10,hour:9,minute:0} : {year:2024,month:2,day:4,hour:null};
   const reading = buildCompatibilityReading(calculateSaju(birth,{now}),partner);
+  globalThis.__compatibilityReadingFixture=reading;
   document.getElementById('fixture-zodiac').textContent = reading.zodiac.self.label + ' · ' + reading.zodiac.partner.label + ' · 사주 기준 · 입춘';
   const content=document.createElement('div');
   renderCompatibilityReport(content,reading,{names:[{name:'길게 입력한 첫 번째 예시 이름'},{name:'길게 입력한 두 번째 예시 이름'}]});
@@ -416,8 +417,8 @@ const server = http.createServer((request, response) => {
     }
     const entryText='h1,h2,.intro-description,.compatibility-intro>p,.entry-benefits li,.entry-steps li,.form-step-title,.field-label,fieldset legend,.field-hint,.form-note,.saju-price-note,.saju-price strong,.product-option strong,.product-option small,.product-option b,.check-row span,.reading-service-nav strong,.reading-service-nav>a>span,.method-preview summary,button:not(:disabled),.back-link,.segmented span,.pair-calendar>label,.pair-privacy,.entry-heading>p,.flow-step-note,.flow-privacy,.flow-review-person h3,.flow-review dt,.flow-review dd,.flow-confirm-title';
     const entryControls='button,input[type=text],input[type=number],select,.check-row,.segmented label,.product-options>label,.reading-service-nav>a,.header-nav .back-link';
-    const readingText='.reading-domain-button,.reading-current-caption,.reading-current-title,.reading-item-count,.reading-item-action,.reading-body-toggle,.reading-pager-label,.reading-page-position,.reading-swipe-hint,.reader-label,.reader-headline,.reader-card-title,.reader-prose p,.saju-summary-line,.saju-reading-score-title,.saju-reading-score-scale,.saju-wind-label,.saju-wind-value,.saju-reading-score-notice,.saju-reading-score-unavailable,.saju-reading-score-reason,.daeun-age,.daeun-dates,.daeun-time-notice,.daeun-sequence-note,.reading-summary-table th,.reading-summary-table td';
-    const compatibilityText='.reading-domain-button,.reading-current-caption,.reading-current-title,.reading-item-count,.reading-item-action,.reading-body-toggle,.reading-pager-label,.reading-page-position,.reading-swipe-hint,.compatibility-people-title,.compatibility-person-name,.compatibility-summary-line,.compatibility-person-prose p,.compatibility-person-scope,.compatibility-synthesis-people,.compatibility-score-heading h4,.compatibility-score-heading>p,.compatibility-score-eyebrow,.compatibility-score-number strong,.compatibility-score-number>span,.compatibility-score-number small,.compatibility-score-label,.compatibility-score-summary,.compatibility-score-item-heading h5,.compatibility-score-item-value,.compatibility-score-item-summary,.compatibility-score-notice';
+    const readingText='.reading-domain-button,.reading-current-caption,.reading-current-title,.reading-item-count,.reading-item-action,.reading-body-heading,.reading-pager-label,.reading-page-position,.reading-swipe-hint,.reader-label,.reader-headline,.reader-card-title,.reader-prose p,.saju-summary-line,.saju-reading-score-title,.saju-reading-score-scale,.saju-wind-label,.saju-wind-value,.saju-reading-score-notice,.saju-reading-score-unavailable,.saju-reading-score-reason,.daeun-age,.daeun-dates,.daeun-time-notice,.daeun-sequence-note,.reading-summary-table th,.reading-summary-table td';
+    const compatibilityText='.reading-domain-button,.reading-current-caption,.reading-current-title,.reading-item-count,.reading-item-action,.reading-body-heading,.reading-pager-label,.reading-page-position,.reading-swipe-hint,.compatibility-people-title,.compatibility-person-name,.compatibility-summary-line,.compatibility-person-prose p,.compatibility-score-detail .reader-prose p,.compatibility-detail-score-value,.compatibility-score-detail-link,.compatibility-person-jumps a,.compatibility-person-scope,.compatibility-synthesis-people,.compatibility-score-heading h4,.compatibility-score-heading>p,.compatibility-score-eyebrow,.compatibility-score-number strong,.compatibility-score-number>span,.compatibility-score-number small,.compatibility-score-label,.compatibility-score-summary,.compatibility-score-item-heading h5,.compatibility-score-item-value,.compatibility-score-item-summary,.compatibility-score-notice';
     const sajuFlowViews={};
     const entrySizes=[['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]];
     async function assertFlowStage(form,expected,label) {
@@ -576,12 +577,29 @@ const server = http.createServer((request, response) => {
       assert.equal(await item.getAttribute('aria-current'),'page');
       assert.equal(await list.getAttribute('open'),null,'choosing an item returns the screen to its reading');
       assert.equal(await field.getAttribute('aria-pressed'),'true');
+      await assertCurrentExplanation(page,pickerId==='reading-page-select'?'data-reader-current':'data-compatibility-current');
     }
-    async function expandReadingBodies(page,currentAttribute) {
+    async function assertCurrentExplanation(page,currentAttribute,{requireBody=false}={}) {
       const current=page.locator('['+currentAttribute+']');
-      const toggles=current.locator('details.reading-body-details:not([open]) > summary:visible');
-      while(await toggles.count())await toggles.first().click();
+      assert.equal(await current.count(),1,'exactly one reading is selected');
+      const state=await current.evaluate(element=>{
+        const paragraphs=[...element.querySelectorAll('.reader-prose > p,.compatibility-person-prose > p')]
+          .filter(paragraph=>!paragraph.closest('[hidden]'));
+        const shown=paragraph=>{
+          const box=paragraph.getBoundingClientRect(),style=getComputedStyle(paragraph);
+          if(box.width<=0||box.height<=0||style.display==='none'||style.visibility==='hidden')return false;
+          for(let parent=paragraph.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS'&&!parent.open)return false;
+          return true;
+        };
+        return {id:element.id,bodyDisclosures:element.querySelectorAll('details.reading-body-details').length,
+          paragraphs:paragraphs.length,hiddenParagraphs:paragraphs.filter(paragraph=>!shown(paragraph)).map(paragraph=>paragraph.textContent.slice(0,50))};
+      });
+      assert.equal(state.bodyDisclosures,0,state.id+': the full explanation does not need a second click');
+      assert.deepEqual(state.hiddenParagraphs,[],state.id+': selecting an item exposes its body immediately');
+      if(requireBody)assert.ok(state.paragraphs>0,state.id+': the body contains the authored explanation');
+      return state;
     }
+    await assertCurrentExplanation(saju,'data-reader-current',{requireBody:true});
     async function inspectReadingControls(label,pickerId,currentAttribute) {
       const picker=saju.locator('#'+pickerId),current=saju.locator('['+currentAttribute+']'),nav=saju.locator('#'+pickerId+'-navigator');
       assert.equal(await picker.isVisible(),false,'the long native picker is replaced by visible fields and an item list');
@@ -605,6 +623,7 @@ const server = http.createServer((request, response) => {
       for(let step=0;step<2;step++) {
         const before=await current.getAttribute('id');await next.press('Enter');
         assert.notEqual(await current.getAttribute('id'),before);
+        await assertCurrentExplanation(saju,currentAttribute);
         assert.equal(await next.evaluate(element=>element===document.activeElement),true,label+': repeated next presses retain focus');
       }
       await previous.focus();await previous.press('Enter');await previous.press('Enter');
@@ -620,6 +639,7 @@ const server = http.createServer((request, response) => {
       if(await saju.locator('.reading-item-button[data-reading-target="'+id+'"]').count())await selectVisibleReading(saju,'reading-page-select',id);
       else await saju.locator('a[href="#'+id+'"]:visible').first().click();
       await saju.locator('[data-reader-current][id="'+id+'"]').waitFor({state:'visible'});
+      await assertCurrentExplanation(saju,'data-reader-current');
     }
     const sajuScoreViews={},sajuScoreRegressions={},sajuDaeunAssumptionViews={};
     async function inspectSajuScores(label) {
@@ -721,12 +741,12 @@ const server = http.createServer((request, response) => {
       await selectReadingPage(cardId);
       const card=saju.locator('[data-reader-current]');
       const readerOrdered=await card.evaluate(element=>{
-        const label=element.querySelector('.portrait-card-label,.reader-card-label'),summary=element.querySelector(':scope > .saju-two-line-summary'),prose=element.querySelector(':scope > .reading-body-details .reader-prose');
+        const label=element.querySelector('.portrait-card-label,.reader-card-label'),summary=element.querySelector(':scope > .saju-two-line-summary'),prose=element.querySelector(':scope > .reader-prose');
         return label&&summary&&prose&&prose.querySelectorAll('p').length>=4&&
           !!(label.compareDocumentPosition(summary)&Node.DOCUMENT_POSITION_FOLLOWING)&&!!(summary.compareDocumentPosition(prose)&Node.DOCUMENT_POSITION_FOLLOWING);
       });
       assert.ok(readerOrdered,topic+': the selected unit retains topic, conclusion and all paragraphs');
-      assert.equal(await card.locator(':scope > .reading-body-details').getAttribute('open'),null,topic+': the longer prose starts folded below the visible summary and scores');
+      await assertCurrentExplanation(saju,'data-reader-current',{requireBody:true});
       assert.equal(await card.locator(':scope > .saju-two-line-summary').isVisible(),true);
       assert.equal(await saju.locator('.portrait-card:visible,.reader-card:visible').count(),1);
       await inspectSajuScores(topic+' paid reading');
@@ -775,8 +795,9 @@ const server = http.createServer((request, response) => {
           await saju.screenshot({path:path.join(artifacts,'saju-flow-general-'+viewport+'-'+textSize+'-items.png')});
           await saju.locator('.reading-item-toggle').click();
         }
-        await expandReadingBodies(saju,'data-reader-current');
+        await assertCurrentExplanation(saju,'data-reader-current');
         await inspectReadableSurface('general reading '+label,{text:readingText,body:'.reader-prose p',minimumBody:textSize==='large'?21:18,controls:'.reading-pager select,.reading-pager button,.reading-page-section-link'});
+        if(viewport!=='phone'&&textSize==='normal')await saju.locator('[data-reader-current]').screenshot({path:path.join(artifacts,'saju-depth-general-'+viewport+'.png')});
         await saju.locator('[data-reader-current] .saju-reading-score').first().screenshot({path:path.join(artifacts,'saju-reading-scores-'+viewport+'-'+textSize+'.png')});
         await saju.locator('.reading-pager').scrollIntoViewIfNeeded();
         await saju.screenshot({path:path.join(artifacts,'saju-two-line-summaries-'+viewport+'-'+textSize+'.png')});
@@ -786,6 +807,7 @@ const server = http.createServer((request, response) => {
         await selectReadingPage(summaryTargets.spotlight);await inspect('month spotlight');
         await selectReadingPage('reading-month-11');await inspect('month intro');
         await selectReadingPage(summaryTargets.monthCard);await inspect('month card');
+        if(viewport!=='phone'&&textSize==='normal')await saju.locator('[data-reader-current]').screenshot({path:path.join(artifacts,'saju-depth-month-'+viewport+'.png')});
         await selectReadingPage('reading-timings');
         const comparison=saju.locator('.timing-table-details');
         if(await comparison.getAttribute('open')===null)await comparison.locator('summary').click();
@@ -797,6 +819,7 @@ const server = http.createServer((request, response) => {
         await inspect('decade period');
         const topicId=await saju.locator('[data-reader-current] .daeun-topic').first().getAttribute('id');
         await selectReadingPage(topicId);await inspect('decade topic');
+        if(viewport!=='phone'&&textSize==='normal')await saju.locator('[data-reader-current]').screenshot({path:path.join(artifacts,'saju-depth-decade-'+viewport+'.png')});
         await selectReadingPage('reading-symbols');await inspect('symbols intro and items');
         await selectReadingPage('reading-timings');await inspect('timing intro');
         await saju.locator('.reader-timing-navigation a[href="#reading-timings-month-11"]').click();
@@ -866,7 +889,7 @@ const server = http.createServer((request, response) => {
           assert.deepEqual(actual.map(row=>[row.key,row.value,row.width]),['tailwind','headwind'].map(key=>[key,item.score[key].value,item.score[key].value+'%']),
             label+' '+item.key+': displayed scores and bar widths come from the actual reading model');
           assert.ok(actual.every(row=>row.text.includes(row.value+'점')),label+': positive scores remain explicit text');
-          const paragraphs=await source.locator(':scope > .reading-body-details > .reading-body-content > .reader-prose > p').allTextContents();
+          const paragraphs=await source.locator(':scope > .reader-prose > p').allTextContents();
           assert.deepEqual(paragraphs,item.paragraphs,label+' '+item.key+': the original strength and caution paragraphs remain intact');
           values[item.key]=actual.map(row=>row.value);
           if(item.key==='portrait-decisions'&&((viewport==='phone-small'&&textSize==='large')||(viewport==='desktop'&&textSize==='normal')))
@@ -954,7 +977,7 @@ const server = http.createServer((request, response) => {
     await zodiacCard.scrollIntoViewIfNeeded();
     await saju.screenshot({path:path.join(artifacts,'saju-zodiac-compatibility-desktop.png')});
     async function inspectCompatibilityPeople(label,personCount) {
-      await expandReadingBodies(saju,'data-compatibility-current');
+      await assertCurrentExplanation(saju,'data-compatibility-current');
       const current=saju.locator('[data-compatibility-current]');
       const geometry=await current.evaluate(page=>{
         const contained=(inner,outer)=>inner.left>=outer.left-1&&inner.right<=outer.right+1&&inner.top>=outer.top-1&&inner.bottom<=outer.bottom+1;
@@ -1010,7 +1033,15 @@ const server = http.createServer((request, response) => {
         for(const topic of topics) {
           await selectCompatibilityPage('compatibility-people-'+topic);
           if(topic==='overview') {
-            assert.equal(await saju.locator('[data-compatibility-current] details.reading-body-details:not([open])').count(),2,'A and B initially show their own short summaries before the optional full text');
+            await assertCurrentExplanation(saju,'data-compatibility-current',{requireBody:true});
+            const jumps=saju.locator('[data-compatibility-current] .compatibility-person-jumps a');
+            assert.equal(await jumps.count(),2,'both complete personal stories have a direct jump');
+            for(const index of [1,0]) {
+              const link=jumps.nth(index),href=await link.getAttribute('href');await link.click();
+              assert.equal(await saju.locator('[data-compatibility-current]').getAttribute('id'),'compatibility-people-overview');
+              assert.equal(await saju.locator(href).evaluate(element=>element===document.activeElement),true,'an A/B jump focuses that person without changing the item');
+              await assertCurrentExplanation(saju,'data-compatibility-current',{requireBody:true});
+            }
             if(viewport!=='phone') {
               await saju.locator('.reading-pager').evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));
               await saju.screenshot({path:path.join(artifacts,'saju-flow-compatibility-'+viewport+'-'+textSize+'-people-summary.png')});
@@ -1022,13 +1053,14 @@ const server = http.createServer((request, response) => {
           }
           const geometry=await inspectCompatibilityPeople(label+' '+topic,2);
           if(topic==='overview') {
-            await inspectReadableSurface('compatibility people '+label,{text:compatibilityText,body:'.compatibility-person-prose p',minimumBody:textSize==='large'?21:18,controls:'.reading-pager select,.reading-pager button'});
+            await inspectReadableSurface('compatibility people '+label,{text:compatibilityText,body:'.compatibility-person-prose p',minimumBody:textSize==='large'?21:18,controls:'.reading-pager select,.reading-pager button,.compatibility-person-jumps a'});
             compatibilityPeople[label]={topics,bodyFont:geometry.bodyFont,summaryFont:geometry.summaryFont};
             if(textSize==='large') {
               assert.ok(geometry.bodyFont>compatibilityPeople[viewport+' normal'].bodyFont,label+': the large setting increases the body text');
               assert.ok(geometry.summaryFont>compatibilityPeople[viewport+' normal'].summaryFont,label+': the large setting increases the summary text');
             }
             if(viewport!=='phone')await saju.locator('[data-compatibility-current]').screenshot({path:path.join(artifacts,'saju-compatibility-people-'+viewport+'-'+textSize+'.png')});
+            if(viewport!=='phone'&&textSize==='normal')await saju.locator('[data-compatibility-current]').screenshot({path:path.join(artifacts,'saju-depth-people-'+viewport+'.png')});
             if(viewport!=='phone') {
               await saju.locator('.reading-pager').evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));
               await saju.screenshot({path:path.join(artifacts,'saju-readable-compatibility-'+viewport+'-'+textSize+'.png')});
@@ -1130,6 +1162,24 @@ const server = http.createServer((request, response) => {
         await inspectReadableSurface('compatibility scores '+label+' normal',{text:compatibilityText,body:'.compatibility-score-summary,.compatibility-score-item-summary',minimumBody:18});
         await scoreboard.scrollIntoViewIfNeeded();
         await scoreboard.screenshot({path:path.join(artifacts,'saju-compatibility-scores-'+pair+'-'+viewport+'.png')});
+        const scoreStories=await saju.evaluate(()=>globalThis.__compatibilityReadingFixture.score.items.map(item=>({id:item.id,value:item.value,summaryLines:item.summaryLines,paragraphs:item.paragraphs,headings:item.detailSections.map(section=>section.title)})));
+        for(const item of scoreStories) {
+          await scoreboard.locator('[data-score-item="'+item.id+'"] .compatibility-score-detail-link').click();
+          const detail=saju.locator('[data-compatibility-current]');
+          assert.equal(await detail.getAttribute('id'),'compatibility-score-detail-'+item.id,'a score bar links to its own complete reading');
+          await assertCurrentExplanation(saju,'data-compatibility-current',{requireBody:true});
+          assert.deepEqual(await detail.locator('.reader-prose > p').allTextContents(),item.paragraphs,'the score story preserves every calculated-input explanation');
+          assert.deepEqual(await detail.locator('.reading-body-heading').allTextContents(),item.headings,'the complete score story has its authored headings');
+          assert.deepEqual(await detail.locator('.compatibility-summary-line').allTextContents(),item.summaryLines,'the score story keeps both summary units above its full prose');
+          assert.equal(await detail.locator('.compatibility-detail-score-value').textContent(),item.value+'점 / 100점');
+          assert.equal(await detail.locator('[role="meter"]').count(),0,'score details retain the one original four-bar overview');
+          if(item.id==='temperament') {
+            await inspectReadableSurface('compatibility score detail '+label,{text:compatibilityText,body:'.compatibility-score-detail .reader-prose p',minimumBody:18,controls:'.compatibility-score-detail-link:visible'});
+            if(pair==='confirmed'&&viewport!=='phone')await detail.screenshot({path:path.join(artifacts,'saju-depth-score-'+viewport+'.png')});
+          }
+          await detail.locator('a[href="#compatibility-scores"]').click();
+          assert.equal(await saju.locator('[data-compatibility-current]').getAttribute('id'),'compatibility-scores');
+        }
         if(pair==='confirmed') {
           await saju.locator('#report-content').evaluate(report=>{report.dataset.readingSize='large';});
           await inspectReadableSurface('compatibility scores '+label+' large',{text:compatibilityText,body:'.compatibility-score-summary,.compatibility-score-item-summary',minimumBody:21});
@@ -1187,7 +1237,7 @@ const server = http.createServer((request, response) => {
           // Start on actual paragraph glyphs, so PC dragging is verified over
           // reading text rather than only over blank card padding.
           async function paragraphPoints(direction) {
-            await expandReadingBodies(swipe,currentAttribute);
+            await assertCurrentExplanation(swipe,currentAttribute);
             const paragraph=current.locator('.reader-prose p:visible').first();
             await paragraph.evaluate(element=>element.scrollIntoView({block:'center',behavior:'instant'}));
             return paragraph.evaluate((element,direction)=>{
@@ -1223,8 +1273,10 @@ const server = http.createServer((request, response) => {
           let points=await paragraphPoints(-1);await gesture(points.from,points.to);
           assert.equal(await current.getAttribute('id'),second,label+': a left drag over text advances exactly one reading');
           assert.equal(await picker.inputValue(),second,label+': the picker follows the drag');
+          await assertCurrentExplanation(swipe,currentAttribute,{requireBody:true});
           swipeStage='right text drag';points=await paragraphPoints(1);await gesture(points.from,points.to);
           assert.equal(await current.getAttribute('id'),first,label+': a right drag returns to the prior reading');
+          await assertCurrentExplanation(swipe,currentAttribute,{requireBody:true});
           swipeStage='first page boundary';points=await paragraphPoints(1);await gesture(points.from,points.to);
           assert.equal(await current.getAttribute('id'),first,label+': the first reading does not wrap');
 
@@ -1331,10 +1383,10 @@ const server = http.createServer((request, response) => {
             assert.equal(outgoing.hidden,'true');assert.equal(outgoing.inert,true);assert.equal(outgoing.duplicateIds,0);
             assert.equal(value.overflow,false,label+': moving content never widens the document');
             assert.ok(value.animations.some(a=>a.state==='running'&&a.duration>=150&&a.duration<=500),label+': an eased transition is actually running');
-            await settled();return value;
+            await settled();await assertCurrentExplanation(slide,currentAttribute);return value;
           }
           async function points(direction,distance=120) {
-            await expandReadingBodies(slide,currentAttribute);
+            await assertCurrentExplanation(slide,currentAttribute);
             const paragraph=current.locator('.reader-prose p:visible').first();
             await paragraph.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
             return paragraph.evaluate((el,{direction,distance})=>{

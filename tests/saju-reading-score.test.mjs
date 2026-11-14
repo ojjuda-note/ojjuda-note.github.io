@@ -190,8 +190,16 @@ test('the real no-combination chart uses its existing strengths and cautions wit
   const values=item=>[item.readingScore.tailwind.value,item.readingScore.headwind.value];
   assert.deepEqual(fortune.profile.interactions,[]);
   const work=report.reader.lifelong.cards.find(item=>item.id==='natal-work');
-  assert.deepEqual(values(work),[83,0],'two concrete work strengths plus the actual positive work-pair sentence; no unrelated stress');
-  assert.deepEqual(work.readingScore.calculation.cues.map(cue=>[cue.help,cue.care]),[[2,0],[2,0],[1,0]]);
+  assert.deepEqual(values(work),[83,50],'two concrete work strengths, their own work cautions and the positive work-pair sentence use the unchanged cue formula');
+  assert.deepEqual(work.readingScore.calculation.cues.map(cue=>[cue.help,cue.care]),[[2,1],[2,2],[1,0]]);
+  for(const cue of work.readingScore.calculation.cues.filter(cue=>cue.care>0)) {
+    assert.deepEqual(cue.factIds,fortune.profile.gods.filter(entry=>entry.god.code===cue.code).map(entry=>`natal.god.${entry.pillarKey}.${entry.position}`));
+    assert.ok(cue.sources.care.length>0,'a nonzero headwind has its own authored caution');
+    for(const source of cue.sources.care) {
+      assert.equal(source.collection,'DAILY_VOICES');assert.equal(source.field,'work.care');
+      assert.ok(work.paragraphs.some(paragraph=>paragraph.includes(authoredValue(source))),'only the caution actually present in this work explanation can affect its headwind');
+    }
+  }
   const relationships=report.reader.lifelong.cards.find(item=>item.id==='natal-relationships');
   const challenger=relationships.readingScore.calculation.cues.find(cue=>cue.code==='challenger');
   assert.deepEqual([challenger.help,challenger.care],[0,2],'taking on too many expectations is a caution, not a strength');
