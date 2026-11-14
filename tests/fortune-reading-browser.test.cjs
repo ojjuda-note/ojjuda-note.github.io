@@ -79,7 +79,9 @@ const select = document.getElementById('fixture-topic');
 function show(){
   const content=document.createElement('div');
   renderDetailedReport(content,{reading,fortune,topic:select.value});
-  target.replaceChildren(content);target.dataset.ready=select.value;
+  target.replaceChildren(content);
+  if(!new URLSearchParams(location.search).has('map'))target.querySelector('.map-deep-link').click();
+  target.dataset.ready=select.value;
 }
 select.addEventListener('change',show);show();
 </script></body></html>`;
@@ -99,6 +101,7 @@ function show(){
   const content=document.createElement('div');
   renderCompatibilityReport(content,reading,{names:[{name:'길게 입력한 첫 번째 예시 이름'},{name:'길게 입력한 두 번째 예시 이름'}]});
   target.replaceChildren(...content.childNodes);
+  if(!new URLSearchParams(location.search).has('map'))target.querySelector('.map-deep-link').click();
   target.dataset.ready=select.value;
 }
 select.addEventListener('change',show);show();
@@ -685,6 +688,28 @@ const server = http.createServer((request, response) => {
       document.getElementById('compatibility-status').textContent='입력한 정보를 확인해 주세요.';document.getElementById('compatibility-open').disabled=false;
     });
     await inspectReadableSurface('compatibility entry feedback',{text:'#compatibility-error,#compatibility-status,#compatibility-open'});
+    await saju.setViewportSize({width:390,height:844});
+    for(const [kind,urlPath] of [['general','/__saju_fixture'],['pair','/__compatibility_fixture']]) {
+      await saju.goto(new URL(urlPath+'?map=1',url).href);
+      const overview=saju.locator('.reading-map');
+      const topics=overview.locator('.map-topic');
+      assert.equal(await topics.count(),4);
+      assert.equal(await saju.locator('.reading-pager:visible').count(),0,'overview shows the reading before controls');
+      assert.ok((await overview.locator('.map-lead').innerText()).trim());
+      for(const width of [320,390,1280]) {
+        await saju.setViewportSize({width,height:844});
+        await inspectReadableSurface(kind+' overview '+width,{text:'.map-title,.map-lead,.map-action p,.map-topic strong,.map-preview',controls:'.map-topic,.map-deep-link'});
+        await saju.screenshot({path:path.join(artifacts,'reading-map-'+kind+'-'+width+'.png'),fullPage:true});
+      }
+      for(const item of await topics.all()){
+        const id=(await item.getAttribute('href')).slice(1);
+        await item.click();
+        assert.equal(await overview.isVisible(),false);
+        assert.equal(await saju.locator('[id="'+id+'"]').isVisible(),true,id+' is directly readable');
+        await saju.locator('.map-return').click();
+        assert.equal(await overview.isVisible(),true);
+      }
+    }
     await saju.setViewportSize({width:390,height:844});
     await saju.goto(new URL('/__saju_fixture', url).href);
     assert.equal(await saju.locator('#report-content > [data-reader-paged="true"]').count(),1,'the prepared report keeps its mounted pager host when attached after purchase');
