@@ -77,6 +77,7 @@ jobs:
           tests/drinking-content-rebuild.test.cjs
           tests/drinking-content-catalogs.test.cjs
           tests/drinking-truth-content-rebuild.test.cjs
+          tests/drinking-content-expansions.test.cjs
           tests/drinking-room-browser.test.cjs
       - name: Verify game release and access boundaries
         run: node --test --test-concurrency=1 tests/game-release-refresh.test.cjs tests/game-assets-loading.test.cjs tests/matgo-access.test.cjs

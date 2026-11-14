@@ -9,10 +9,10 @@
     fingers: {name:'손병호 게임', field:'조건'},
     imagevote: {name:'이미지 게임', field:'질문'},
     truth: {name:'진실게임', field:'질문', limit:240},
-    initial: {name:'초성 대결', field:'초성 두 글자', limit:2}
+    initial: {name:'초성 대결', field:'두 글자 단어 또는 초성', limit:2}
   };
   const flavors = {mild:'순한맛', spicy:'빨간맛'};
-  const initials = /^[ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ]{2}$/u;
+  const initials = /^(?:[ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ]{2}|[가-힣]{2})$/u;
 
   function el(tag, classes='', text) {
     const node=document.createElement(tag);
@@ -159,7 +159,7 @@
       const second=game.second?el('input','inp'):null,flavor=kind==='truth'?flavorSelect():null;
       body.name='text';body.value=row?.text??'';body.maxLength=game.limit||120;body.required=true;
       if(body.tagName==='TEXTAREA')body.rows=2;
-      if(kind==='initial')body.placeholder='예: ㄱㅅ';
+      if(kind==='initial')body.placeholder='예: 사과 또는 ㅅㄱ';
       edit.append(field(game.field,body));
       if(second){
         second.name='second';second.value=row?.second??'';second.maxLength=120;second.required=true;
@@ -181,7 +181,7 @@
         if(!current()||busy||denied)return;
         const opts={kind,text:normalize(body.value)};
         if(!opts.text)body.setCustomValidity(game.field+' 내용을 입력해 주세요.');
-        if(kind==='initial'&&!initials.test(opts.text))body.setCustomValidity('한글 초성 두 글자를 입력해 주세요. 예: ㄱㅅ');
+        if(kind==='initial'&&!initials.test(opts.text))body.setCustomValidity('한글 두 글자 단어 또는 초성을 입력해 주세요. 예: 사과, ㅅㄱ');
         if(second){
           opts.second=normalize(second.value);
           if(!opts.second||opts.text.toLowerCase()===opts.second.toLowerCase())second.setCustomValidity('서로 다른 두 항목을 입력해 주세요.');

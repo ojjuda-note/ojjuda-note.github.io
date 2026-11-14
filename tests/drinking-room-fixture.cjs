@@ -44,8 +44,14 @@ const rebuildMigrationNames = [
   '20261114061106_drinking_truth_catalog_epoch.sql'
 ];
 
-async function fixture({beforeRebuild = false} = {}) {
-  const migrationNames = beforeRebuild ? baseMigrationNames : [...baseMigrationNames, ...rebuildMigrationNames];
+const expansionMigrationNames = fs.readdirSync(migrationDir)
+  .filter(name => /^\d+_drinking_expand_[a-z]+_300\.sql$/.test(name)).sort();
+
+async function fixture({beforeRebuild = false, beforeExpansion = false} = {}) {
+  const migrationNames = beforeRebuild ? baseMigrationNames : [
+    ...baseMigrationNames, ...rebuildMigrationNames,
+    ...(beforeExpansion ? [] : expansionMigrationNames)
+  ];
   const db = new PGlite({extensions: {pgcrypto}});
   try {
     await db.exec(`

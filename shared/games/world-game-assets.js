@@ -1,24 +1,24 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261114-saju-flow1'
+ const revision='20261114-drinking-plus3001'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   croc:'1.2.2',
-  liar:'1.4.3',
-  king:'1.5.3',
-  minority:'1.4.3',
-  mission:'1.4.3',
+  liar:'1.4.4',
+  king:'1.5.4',
+  minority:'1.4.4',
+  mission:'1.4.4',
   bottle:'1.2.2',
-  bomb:'1.4.3',
+  bomb:'1.4.4',
   stopwatch:'1.2.2',
-  truth:'1.5.3',
-  initial:'1.3.3',
-  fingers:'1.4.3',
-  imagevote:'1.4.3',
+  truth:'1.5.4',
+  initial:'1.3.4',
+  fingers:'1.4.4',
+  imagevote:'1.4.4',
   updown:'1.2.2',
-  drinking:'1.6.3',
+  drinking:'1.6.4',
   tarot:'1.9.4',
   saju:'2.9.0',
   group:'1.2.2',
