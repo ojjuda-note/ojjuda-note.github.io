@@ -960,3 +960,9 @@ body.dp-playing #view > .card > .table-heading ~ .actions { margin-bottom:var(--
 body.dp-playing #view > .card > .table-heading ~ #game { padding-block:12px; }
 body.dp-playing :is(#view,#app) .table-host { font-weight:750; color:var(--suite-accent,inherit); }
 body.dp-playing[data-dp-kind="secretcount"][data-dp-phase="press"] .table-heading { display:none; }
+@media (orientation:landscape) and (max-height:480px) {
+  /* The navigation bar already carries the game title on a short phone. */
+  body.dp-playing[data-dp-mode="online"] #view > .card > .table-heading { display:none; }
+  body.dp-playing[data-dp-mode="online"] #view > .card > .table-heading ~ #game { padding-block:0; }
+  body.dp-playing[data-dp-mode="online"] #view > .card > .table-heading ~ .actions { margin-block:3px; }
+}
