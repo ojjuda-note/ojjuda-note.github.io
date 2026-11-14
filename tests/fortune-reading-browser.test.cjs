@@ -995,22 +995,25 @@ const server = http.createServer((request, response) => {
           const first=await current.getAttribute('id');
           const settled=()=>slide.waitForFunction(()=>!document.querySelector('.reading-slide-outgoing,.reading-slide-incoming,.reading-slide-dragging')
             &&![...document.querySelectorAll('[data-reader-current],[data-compatibility-current]')].some(el=>el.style.transform&&el.style.transform!=='none'),null,{timeout:2500});
-          async function frame() {
-            return slide.evaluate(attribute=>{
-              const current=document.querySelector('['+attribute+']');
-              const frames=[...document.querySelectorAll('.reading-slide-incoming,.reading-slide-outgoing')].map(el=>({
-                incoming:el.classList.contains('reading-slide-incoming'),outgoing:el.classList.contains('reading-slide-outgoing'),
-                x:new DOMMatrixReadOnly(getComputedStyle(el).transform).m41,
-                hidden:el.getAttribute('aria-hidden'),inert:el.inert,duplicateIds:el.classList.contains('reading-slide-outgoing')?el.querySelectorAll('[id]').length:0
-              }));
-              return {current:current?.id,frames,overflow:document.documentElement.scrollWidth>innerWidth,
-                livePages:document.querySelectorAll('['+attribute+']').length,
-                animations:document.getAnimations().filter(a=>a.effect?.target?.closest('#report-content')).map(a=>({state:a.playState,duration:a.effect.getComputedTiming().duration}))};
-            },currentAttribute);
+          function readMotionFrame({attribute,waitForProgress=false}) {
+            const current=document.querySelector('['+attribute+']');
+            const frames=[...document.querySelectorAll('.reading-slide-incoming,.reading-slide-outgoing')].map(el=>({
+              incoming:el.classList.contains('reading-slide-incoming'),outgoing:el.classList.contains('reading-slide-outgoing'),
+              x:new DOMMatrixReadOnly(getComputedStyle(el).transform).m41,
+              hidden:el.getAttribute('aria-hidden'),inert:el.inert,duplicateIds:el.classList.contains('reading-slide-outgoing')?el.querySelectorAll('[id]').length:0
+            }));
+            const animations=document.getAnimations().filter(a=>a.effect?.target?.closest('#report-content'))
+              .map(a=>({state:a.playState,currentTime:a.currentTime,pending:a.pending,duration:a.effect.getComputedTiming().duration}));
+            if(waitForProgress&&(animations.length<2||!animations.every(a=>a.state==='running'&&!a.pending&&a.currentTime>0&&a.currentTime<a.duration)))return false;
+            return {current:current?.id,frames,overflow:document.documentElement.scrollWidth>innerWidth,
+              livePages:document.querySelectorAll('['+attribute+']').length,animations};
           }
+          const frame=()=>slide.evaluate(readMotionFrame,{attribute:currentAttribute});
           async function inspectSlide(direction) {
-            await slide.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
-            const value=await frame();
+            // Observe a real advancing animation frame, preserving that exact
+            // snapshot instead of assuming a fixed number of rAFs starts WAAPI.
+            const snapshot=await slide.waitForFunction(readMotionFrame,{attribute:currentAttribute,waitForProgress:true},{timeout:2500});
+            const value=await snapshot.jsonValue();await snapshot.dispose();
             assert.equal(value.livePages,1,label+': visual copies are not additional live readings');
             const incoming=value.frames.find(item=>item.incoming),outgoing=value.frames.find(item=>item.outgoing);
             assert.ok(incoming&&outgoing,label+': both readings participate in the horizontal transition');
