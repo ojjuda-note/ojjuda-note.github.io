@@ -1,8 +1,8 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261114-tarot-person1';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261114-tarot-copy1';
 import { TarotFX, TarotAudio } from './fx.js';
-import { TarotPayment, getTarotPrice } from './payment.js?v=20261113-tarot-24h1';
-import { TarotRevelation } from './revelation.js?v=20261112-tarot-daily1';
-import { createPersonalReading } from './personal-reading-ui.js?v=20261114-tarot-person1';
+import { TarotPayment, getTarotPrice } from './payment.js?v=20261114-tarot-copy1';
+import { TarotRevelation } from './revelation.js?v=20261114-tarot-copy1';
+import { createPersonalReading } from './personal-reading-ui.js?v=20261114-tarot-copy1';
 import { renderSectionSummary, installSummaryExpiryGuard } from './reading-summary-view.js?v=20261113-tarot-summary1';
 
 const $ = (selector) => document.querySelector(selector);
@@ -36,7 +36,7 @@ const billing = new TarotPayment({
     billingReady = false;
     clearTimeout(readingExpiryTimer);
     $('#summon-button').disabled = true;
-    $('#payment-status').textContent = '로그인이 바뀌었어요. 새로고침 후 다시 이용해 주세요.';
+    $('#payment-status').textContent = '로그인 계정이 바뀌었어요. 새로고침 후 다시 이용해 주세요.';
     $('#login-link').hidden = false;
   }
 });
@@ -64,7 +64,7 @@ function updatePaymentStatus() {
   $('.tarot-price strong').textContent = preview ? '관리자 모드' : `1회 ${getTarotPrice(state.topic)}쭈`;
   $('.tarot-price span').textContent = preview ? '쭈 차감 없음 · 기록 미저장' : '세 장의 풀이 · 종합 점괘 · 50가지 주제';
   $('#daily-limit-note').textContent = preview ? '횟수 제한 없이 매번 새로운 카드로 시작해요.' : '결제 후 24시간 이용 · 만료 후 재결제';
-  $('#help-usage-note').textContent = preview ? '쭈 차감·기록 저장 없이 횟수 제한 없이 이용해요. 일반 이용은 아지트에서 관리자 모드를 꺼 주세요.' : '전체 30쭈 · 연애·금전·일과 도전 각 10쭈. 결제 후 24시간 동안 다시 보기는 무료이며, 만료 후에는 다시 결제해요.';
+  $('#help-usage-note').textContent = preview ? '관리자 모드에서는 쭈를 차감하거나 기록을 저장하지 않아요. 일반 이용으로 돌아가려면 아지트에서 관리자 모드를 꺼 주세요.' : '전체 30쭈 · 연애·금전·일과 도전 각 10쭈. 결제 후 24시간 동안 다시 보기는 무료이며, 만료 후에는 다시 결제해요.';
   $('#restart-small span').textContent = preview ? '새 운세 보기' : '다른 주제 고르기';
   $('#restart-result span').textContent = preview ? '새 운세 보기' : '다른 주제 고르기';
   if (preview) {
@@ -87,7 +87,7 @@ function updatePaymentStatus() {
   $('#summon-button').dataset.replay = String(!unfinished && !!previous);
   $('#summon-button span').textContent = unfinished ? '진행하던 운세 이어보기' : previous ? (previous.openOrder.length === 3 ? '점괘 다시 보기' : '점괘 이어보기') : `${getTarotPrice(state.topic)}쭈로 운세 시작하기`;
   const expires = previous ? new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(previous.reset_at)) : '';
-  $('#payment-status').textContent = unfinished ? '시작하던 운세를 이어서 확인해요.' : previous ? `${expires}까지 다시 보기 무료${balance ? ' · ' + balance : ''}` : balance;
+  $('#payment-status').textContent = unfinished ? '진행하던 운세를 이어서 확인해 주세요.' : previous ? `${expires}까지 다시 보기 무료${balance ? ' · ' + balance : ''}` : balance;
   $$('[data-topic]').forEach(button => {
     button.disabled = !!unfinished || state.busy;
     button.dataset.readToday = String(!!billing.receiptFor(button.dataset.topic));
@@ -375,7 +375,7 @@ async function summon() {
       return;
     }
     state.drawn = receipt ? receipt.drawn.map(id => DECK.find(card => card.id === id)) : randomDeck();
-    if (state.drawn.length !== 5 || state.drawn.some(card => !card) || new Set(state.drawn.map(card => card.id)).size !== 5) throw new Error('카드를 불러오지 못했어요. 다시 눌러 같은 운세를 확인해 주세요.');
+    if (state.drawn.length !== 5 || state.drawn.some(card => !card) || new Set(state.drawn.map(card => card.id)).size !== 5) throw new Error('카드를 불러오지 못했어요. 시작 버튼을 다시 눌러 같은 운세를 이어서 확인해 주세요.');
     if (receipt) state.topic = receipt.topic;
   } catch (error) {
     if (epoch !== state.epoch || expireDisplayedReading()) return;
@@ -523,7 +523,7 @@ async function discardCard(index) {
   if (state.discarded.size < 2) {
     setPhase('discard');
     effects.setMood('idle');
-    setTitle('한 장 더 버려주세요', '', 'THE CHOICE');
+    setTitle('한 장 더 버려 주세요', '', 'THE CHOICE');
     setOracle('남길 카드에 마음을 기울여 보렴.', { tag: '마녀의 속삭임' });
     updateDiscardProgress();
     cards.find(item => !state.discarded.has(item.index))?.button.focus({ preventScroll: true });
@@ -758,7 +758,7 @@ function showReading(slot = state.lastReading) {
 }
 
 function showOverallOracle(summary = getSummary(state.openOrder.map(index => state.drawn[index]), state.topic)) {
-  setOracle(state.summaryReady ? summary.oneLine : '세 장의 이야기를 함께 살펴보렴.', { tag: state.summaryReady ? '종합 점괘 · 한마디 정리' : '종합 점괘', speak: false });
+  setOracle(state.summaryReady ? summary.oneLine : '이제 세 장에 담긴 이야기를 하나로 이어 줄게.', { tag: state.summaryReady ? '종합 점괘 · 핵심 풀이' : '종합 점괘', speak: false });
   $('#reading-open span').textContent = '종합 점괘 자세히 보기';
   $('#reading-open').hidden = false;
   $('#reading-open').disabled = false;
@@ -1094,7 +1094,7 @@ $$('[data-topic]').forEach(button => button.addEventListener('click', () => {
     overall: '오늘 마음에 남은 일을 하나 떠올려 봐.',
     love: '지금 네 마음을 함께 살펴보자.',
     money: '돈에 관해 마음에 걸리는 일을 떠올려 보렴.',
-    work: '지금 가진 힘과 필요한 도움을 살펴보자.',
+    work: '지금 살릴 강점과 필요한 도움을 짚어 보자.',
   };
   setOracle(invitations[state.topic], { tag: '마녀의 초대' });
   updatePaymentStatus();
@@ -1217,7 +1217,7 @@ function restorePaidReading(receipt) {
   } else {
     setPhase('discard');
     updateDiscardProgress();
-    setTitle(state.discarded.size ? '한 장 더 버려주세요' : '버릴 카드 두 장을 고르세요', '누르면 바로 버려져요.', 'WELCOME BACK');
+    setTitle(state.discarded.size ? '한 장 더 버려 주세요' : '버릴 카드 두 장을 고르세요', '누르면 바로 버려져요.', 'WELCOME BACK');
   }
   if (state.revealed > 0 && state.revealed < 3) {
     const data = state.drawn[state.openOrder[state.lastReading]];
@@ -1226,7 +1226,7 @@ function restorePaidReading(receipt) {
     $('#reading-open').hidden = false;
     $('#reading-open').disabled = false;
     $('#reading-open span').textContent = '이 카드의 이야기 자세히 읽기';
-  } else if (!state.revealed) setOracle('아까의 이야기를 이어가 보자.', { tag: '이어보기', speak: false });
+  } else if (!state.revealed) setOracle('아까의 이야기를 이어 가자.', { tag: '이어보기', speak: false });
   effects.setMood(state.kept.length ? 'reading' : 'idle');
   layout(false);
   updatePaymentStatus();
@@ -1254,7 +1254,7 @@ async function initializeBilling() {
       });
       updatePaymentStatus();
       $('#summon-button span').textContent = '같은 운세 다시 확인하기';
-      $('#payment-status').textContent = '시작하던 운세를 이어서 확인해요. 같은 운세의 이용 금액은 한 번만 사용돼요.';
+      $('#payment-status').textContent = '진행하던 운세를 이어서 확인해 주세요. 같은 운세의 이용 금액은 한 번만 차감돼요.';
     }
     else if (result.signedIn === false) {
       $('#payment-status').textContent = '아지트에 로그인한 뒤 이용해 주세요.';

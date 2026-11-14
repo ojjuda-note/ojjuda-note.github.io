@@ -1,8 +1,8 @@
-import { MAJOR_RULES } from './card-rules-major.js?v=20261113-tarot-easy1';
-import { WANDS_RULES } from './card-rules-wands.js?v=20261113-tarot-easy1';
-import { CUPS_RULES } from './card-rules-cups.js?v=20261113-tarot-easy1';
-import { SWORDS_RULES } from './card-rules-swords.js?v=20261113-tarot-easy1';
-import { PENTACLES_RULES } from './card-rules-pentacles.js?v=20261113-tarot-easy1';
+import { MAJOR_RULES } from './card-rules-major.js?v=20261114-tarot-copy1';
+import { WANDS_RULES } from './card-rules-wands.js?v=20261114-tarot-copy1';
+import { CUPS_RULES } from './card-rules-cups.js?v=20261114-tarot-copy1';
+import { SWORDS_RULES } from './card-rules-swords.js?v=20261114-tarot-copy1';
+import { PENTACLES_RULES } from './card-rules-pentacles.js?v=20261114-tarot-copy1';
 import { directInterpretation, directAction } from './reading-voice.js?v=20261113-tarot-easy1';
 
 // Card-specific editorial applications of the existing, cited card meanings.
@@ -23,7 +23,7 @@ export const MAIN_CONTEXTS = Object.freeze({
     aim: '일과 휴식의 균형',
     known: '지난주 일정과 끝낸 일',
     unknown: '꼭 할 일과 미뤄도 될 일',
-    resource: '익숙한 방법과 도와줄 사람',
+    resource: '익숙한 방법과 주변의 도움',
     burden: '혼자 맡은 일과 모자란 휴식',
     boundary: '하루에 맡을 일과 쉬는 시간',
     habit: '급할수록 여러 일을 벌이는 습관',
@@ -116,7 +116,7 @@ export function interpretCard(cardId, part, context) {
 export function connectCards({ left, right, leftName, rightName, leftTheme, rightTheme, context, phase = 'act' }) {
   const a = getCardInterpretation(left.id).motion;
   const b = getCardInterpretation(right.id).motion;
-  const bridge = `‘${leftName}’에서는 ${withParticle(`‘${leftTheme}’`, '을')} 보여 줘. 이어 나온 ‘${rightName}’에서는 ${withParticle(`‘${rightTheme}’`, '을')} 강조해.`;
+  const bridge = `‘${leftName}’ 카드는 ${withParticle(`‘${leftTheme}’`, '을')} 짚고, 이어 나온 ‘${rightName}’ 카드는 ${withParticle(`‘${rightTheme}’`, '을')} 강조해.`;
   if (phase === 'understand') {
     const situation = {
       advance: '하고 싶은 마음이 앞서 일을 서두르는지 살펴봐. 새로 벌인 일보다 끝까지 해낸 일이 얼마나 되는지 보는 거야.',
@@ -149,16 +149,16 @@ export function connectCards({ left, right, leftName, rightName, leftTheme, righ
   } else if (['pause', 'review'].includes(a) && b === 'advance') {
     connection = `생각한 내용을 작은 행동으로 확인할 차례야. ‘${context.small}’부터 해 보고, 실제로 어땠는지 살핀 뒤 계속할지 정해.`;
   } else if (a === 'release' && ['care', 'connect'].includes(b)) {
-    connection = `그만둘 것을 정했다면 이제 도움받을 방법을 찾아. ${withParticle(context.burden, '을')} 혼자 버티지 말고, ${withParticle(context.resource, '을')} 활용해 부담을 나눠.`;
+    connection = `그만둘 것을 정했다면 이제 도움받을 방법을 찾아. ${withParticle(context.burden, '을')} 혼자 떠안지 말고, ${withParticle(context.resource, '을')} 활용해 부담을 나눠.`;
   } else {
     const next = {
       advance: `다음에는 작은 일 하나를 직접 해 봐. ‘${context.small}’부터 시작하고, 그 과정에서 ${withParticle(context.unknown, '을')} 확인해.`,
       review: `지금은 무엇을 알고 무엇을 모르는지 나눌 때야. ${withParticle(context.known, '을')} 적고, 아직 답이 없는 부분은 따로 남겨 둬.`,
-      care: `계속하려면 쉴 여유부터 만들어야 해. ${withParticle(context.burden, '을')} 덜 방법을 찾고, ${withParticle(context.aim, '을')} 서두르지 마.`,
+      care: `계속하려면 쉴 여유부터 만들어야 해. ${withParticle(context.burden, '을')} 줄일 방법을 찾고, ‘${context.aim}’에 맞춰 속도를 조절해.`,
       boundary: `어디까지 할 수 있는지 분명히 말해. ${withParticle(context.boundary, '을')} 먼저 정하고, 그 선을 넘는 부탁은 거절해도 돼.`,
       pause: `잠깐 멈춰서 부담을 줄일 차례야. ${context.burden} 중 줄일 것을 고르고, 다시 결정할 날짜를 정해.`,
       release: `같은 행동으로 무엇을 잃는지 살펴봐. ${withParticle(context.habit, '을')} 반복할 때 쓰는 시간과 돈을 적고, 그중 멈출 행동 하나를 골라.`,
-      connect: `필요한 도움과 각자 맡을 일을 말로 맞춰. ${withParticle(context.resource, '을')} 함께 쓴다면 누가 무엇을 할지도 정해.`,
+      connect: `필요한 도움과 각자 맡을 일을 분명히 말해. ${withParticle(context.resource, '을')} 활용할 방법을 찾고, 함께할 일은 누가 무엇을 맡을지 정해.`,
       complete: `지금은 해낸 일을 정리할 차례야. ${withParticle(context.sign, '을')} 살펴보고, 남은 일에만 다음 순서를 매겨.`
     };
     connection = next[b];

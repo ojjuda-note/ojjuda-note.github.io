@@ -1,5 +1,5 @@
-import { listPersonalContexts } from './personal-contexts.js?v=20261114-tarot-person1';
-import { buildPersonalReading, personalReadingCopyLines, PERSONAL_BASIS } from './personal-reading.js?v=20261114-tarot-person1';
+import { listPersonalContexts } from './personal-contexts.js?v=20261114-tarot-copy1';
+import { buildPersonalReading, personalReadingCopyLines, PERSONAL_BASIS } from './personal-reading.js?v=20261114-tarot-copy1';
 import { appendSummaryLines } from './reading-summary-view.js?v=20261113-tarot-summary1';
 
 // This view only reinterprets the three already revealed cards. It does not
@@ -127,7 +127,7 @@ export function createPersonalReading({ getSnapshot, canRead, renderSections, re
     picker.append(label, select);
     panel.append(picker);
     if (!report) {
-      panel.append(element('p', 'personal-empty', '고민과 가까운 상황을 고르면 세 장의 연결과 두 선택을 함께 살펴볼 수 있어요.'));
+      panel.append(element('p', 'personal-empty', '지금 고민에 맞는 상황을 골라 주세요. 세 장을 연결한 풀이와 두 선택의 장단점을 함께 보여 드려요.'));
       return;
     }
     const criteria = element('details', 'reading-source personal-basis');
@@ -155,7 +155,7 @@ export function createPersonalReading({ getSnapshot, canRead, renderSections, re
       appendSummaryLines(questionTitle, question.summaryLines, { inline: true, setText: renderText, cardNames: currentCards.map(card => card.name) });
       details.append(questionTitle);
       const answer = element('div', 'personal-disclosure-body personal-answer');
-      renderSections(answer, [{ title: '이렇게 살펴보세요', paragraphs: question.paragraphs }], '', 'h4', currentCards.map(card => card.name));
+      renderSections(answer, [{ title: '이렇게 풀어 보세요', paragraphs: question.paragraphs }], '', 'h4', currentCards.map(card => card.name));
       details.append(answer);
       following.append(details);
     }

@@ -1,8 +1,8 @@
-import { CARD_LIFE_THEMES } from './life-themes.js?v=20261113-tarot-life1';
-import { buildDomainGroup } from './domain-narration.js?v=20261113-tarot-easy1';
-import { getCardInterpretation } from './interpretation-engine.js?v=20261113-tarot-easy1';
-import { getPersonStory } from './person-stories.js?v=20261114-tarot-person1';
-import { buildPersonNarrative } from './person-narrative.js?v=20261114-tarot-person1';
+import { CARD_LIFE_THEMES } from './life-themes.js?v=20261114-tarot-copy1';
+import { buildDomainGroup } from './domain-narration.js?v=20261114-tarot-copy1';
+import { getCardInterpretation } from './interpretation-engine.js?v=20261114-tarot-copy1';
+import { getPersonStory } from './person-stories.js?v=20261114-tarot-copy1';
+import { buildPersonNarrative } from './person-narrative.js?v=20261114-tarot-copy1';
 import { splitSummarySentences, summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
 import { directInterpretation, directAction } from './reading-voice.js?v=20261113-tarot-easy1';
 
@@ -103,7 +103,7 @@ export function narrateReading({ card, topicId, index, position, foundation, gui
   const { displayName, explanation } = naming(card);
   const rule = getCardInterpretation(card.id);
   const person = getPersonStory(card.id);
-  const introduction = `${['첫 번째', '두 번째', '세 번째'][index]} 카드는 ‘${displayName}’${hasFinalConsonant(displayName) ? '이야' : '야'}. 여기서는 ${position.label}에 관한 이야기야. ${explanation}`.trim();
+  const introduction = `${['첫 번째', '두 번째', '세 번째'][index]} 카드는 ‘${displayName}’${hasFinalConsonant(displayName) ? '이야' : '야'}. ‘${position.label}’에 관한 풀이를 들려줄게. ${explanation}`.trim();
   const meaning = rule.meaning;
   const positionMeaning = directInterpretation(clean(guidance.positions[index === 1 ? 0 : index]));
   const lifeTheme = Object.fromEntries(Object.entries(CARD_LIFE_THEMES[card.id]).map(([key, text]) =>
@@ -184,16 +184,16 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
       `${firstPerson.longing} ${firstPerson.cost}`
     ], cardSummary(cards[0], firstPerson.longing, firstPerson.cost)),
     section('situation-now', '지금 상황과 속마음', [
-      `지금의 ‘${names[1]}’에서는 이런 네 모습이 읽혀. ${currentPerson[topicId]}`,
+      `‘${names[1]}’ 카드가 비추는 지금의 네 모습이야. ${currentPerson[topicId]}`,
       `${currentPerson.longing} ${currentPerson.defense} ${currentPerson.cost}`
     ], cardSummary(cards[1], currentPerson[topicId], currentPerson.defense)),
-    section('solution', '네가 바꿀 수 있는 선택', [
-      `‘${names[2]}’ 카드가 이번 선택에서 짚는 마음이야. ${nextPerson[topicId]} ${nextPerson.longing} ${nextPerson.cost}`,
-      `이 마음을 이해했다면 이렇게 해 봐. ${solution.action}`
+    section('solution', '지금 선택할 해결 방법', [
+      `‘${names[2]}’ 카드가 짚는 선택의 기준이야. ${nextPerson[topicId]} ${nextPerson.longing} ${nextPerson.cost}`,
+      `이제 이 마음을 행동으로 옮겨 보렴. ${solution.action}`
     ], cardSummary(cards[2], nextPerson.longing, solution.action)),
-    section('possible-outcome', '대처 뒤 확인할 변화', [
-      `‘${names[2]}’ 카드로 앞으로 달라질 수 있는 부분을 읽어 보자. ${solution.lifeTheme.change}`,
-      `이 카드가 보여 주는 장점은 이래. ${nextPerson.portrait} 다만 이 점까지 함께 기억해. ${nextPerson.cost}`
+    section('possible-outcome', '실천한 뒤 살펴볼 변화', [
+      `‘${names[2]}’ 카드가 짚는 변화의 핵심이야. ${solution.lifeTheme.change}`,
+      `이때 살릴 강점도 함께 기억하렴. ${nextPerson.portrait} 함께 조심할 점도 있어. ${nextPerson.cost}`
     ], cardSummary(cards[2], solution.lifeTheme.change, nextPerson.cost))
   ];
   const strengthsSummary = summaryLinesFrom(firstPerson.portrait, nextPerson.portrait, [currentPerson.portrait]);
@@ -202,8 +202,8 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
   const timelineSections = [
     section('strengths', '나의 성향과 강점', [
       `‘${names[0]}’에 비친 네 모습이야. ${firstPerson.portrait}`,
-      `‘${names[1]}’에서는 이 마음이 드러나. ${currentPerson.portrait}`,
-      `‘${names[2]}’ 카드는 네가 살릴 수 있는 이런 면을 보여 줘. ${nextPerson.portrait}`
+      `‘${names[1]}’ 카드에는 이런 마음이 담겨 있어. ${currentPerson.portrait}`,
+      `‘${names[2]}’ 카드는 네가 살려야 할 강점을 보여 줘. ${nextPerson.portrait}`
     ], strengthsSummary),
     section('past-flow', '과거의 흐름', [
       `‘${names[0]}’ 카드로 지난 선택을 돌아보자. ${problem.lifeTheme.past}`,
@@ -214,7 +214,7 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
       `비슷한 일로 다시 힘들 때는 이렇게 해 봐. ${problem.action}`
     ], cardSummary(cards[0], firstPerson.cost, problem.action)),
     section('past-achievements', '내가 해낸 일', [
-      `‘${names[0]}’ 카드로 돌아볼 만한 성취야. ${problem.lifeTheme.achievement}`,
+      `‘${names[0]}’ 카드는 이런 성취에 주목해. ${problem.lifeTheme.achievement}`,
       practice.achievement
     ], cardSummary(cards[0], problem.lifeTheme.achievement)),
     section('present-luck', '지금 드러나는 나의 모습', [
@@ -222,11 +222,11 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
       `이 마음이 부담으로 커질 때는 이렇게 해 봐. ${situation.action}`
     ], cardSummary(cards[1], currentPerson[topicId], situation.action)),
     section('future-change', '앞으로의 변화', [
-      `‘${names[2]}’에서 읽는 변화의 방향이야. ${solution.lifeTheme.change}`,
-      `그 변화를 선택할 때 네가 원하는 것도 함께 살펴봐. ${nextPerson[topicId]}`
+      `‘${names[2]}’ 카드가 전하는 변화의 메시지야. ${solution.lifeTheme.change}`,
+      `변화를 준비하며 네가 원하는 것도 분명히 해 두렴. ${nextPerson[topicId]}`
     ], cardSummary(cards[2], solution.lifeTheme.change)),
     section('future-hardships', '앞으로 조심할 일과 대처', [
-      `‘${names[2]}’에서 장점과 함께 읽어야 할 부담이야. ${nextPerson.cost} ${solution.guidanceCaution}`,
+      `‘${names[2]}’ 카드가 짚는 주의점이야. ${nextPerson.cost} ${solution.guidanceCaution}`,
       questions.obstacle
     ], cardSummary(cards[2], nextPerson.cost, questions.obstacle))
   ];

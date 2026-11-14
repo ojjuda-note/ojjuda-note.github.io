@@ -1,6 +1,6 @@
-import { getPersonStory } from './person-stories.js?v=20261114-tarot-person1';
-import { PERSON_PAIR_READINGS } from './person-pair-readings.js?v=20261114-tarot-person1';
-import { getConnectionProfile } from './connection-profiles.js?v=20261113-tarot-easy1';
+import { getPersonStory } from './person-stories.js?v=20261114-tarot-copy1';
+import { PERSON_PAIR_READINGS } from './person-pair-readings.js?v=20261114-tarot-copy1';
+import { getConnectionProfile } from './connection-profiles.js?v=20261114-tarot-copy1';
 import { splitSummarySentences, summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
 
 const TOPICS = ['overall', 'love', 'money', 'work'];
@@ -75,9 +75,9 @@ export function buildPersonNarrative({ cards, topicId = 'overall', context, name
   const hasPair = [`${cards[0].id}:${cards[1].id}`, `${cards[0].id}:${cards[1].id}:${actualTopic}`]
     .some(key => Object.hasOwn(PERSON_PAIR_READINGS, key));
   const paragraphs = [
-    `첫 번째 ‘${labels[0]}’ 카드에서 네가 이 일에 마음을 쓰는 이유를 읽어 볼게. ${left.longing} ${opening} ${left.cost} ${concern}`.trim(),
+    `첫 번째 ‘${labels[0]}’ 카드에서 네가 이 일에 마음을 쓰는 이유를 짚어 줄게. ${left.longing} ${opening} ${left.cost} ${concern}`.trim(),
     `두 번째 ‘${labels[1]}’ 카드는 지금 마음을 지키는 방식을 보여 줘. ${right.longing} ${right.defense} ${presentMeaning} ${pair}`,
-    `세 번째 ‘${labels[2]}’ 카드는 다음 선택에서 짚어야 할 마음을 보여 줘. ${lastMeaning} ${last.longing} ${last.cost} ${limit}`.replace(/ {2,}/g, ' ').trim()
+    `세 번째 ‘${labels[2]}’ 카드에서 다음 선택의 기준을 짚어 줄게. ${lastMeaning} ${last.longing} ${last.cost} ${limit}`.replace(/ {2,}/g, ' ').trim()
   ];
   const summaryLines = summaryLinesFrom(hasPair ? pair : opening, lastAction || lastMeaning);
   summaryLines[0] = hasPair ? `‘${cards[0].name}’ · ‘${cards[1].name}’: ${summaryLines[0]}`

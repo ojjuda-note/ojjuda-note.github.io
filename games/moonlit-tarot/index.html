@@ -122,11 +122,11 @@
   <dialog id="help-dialog" class="modal help-modal" aria-labelledby="help-title">
     <button class="modal-close" data-close="help-dialog" aria-label="이용 안내 닫기"><svg><use href="#i-close"/></svg></button>
     <p class="eyebrow">YOUR LITTLE RITUAL</p><h2 id="help-title">마녀와 만나는 방법</h2>
-    <ol class="help-steps"><li><span>01</span><div><h3>궁금한 주제를 고르세요</h3></div></li><li><span>02</span><div><h3>두 장을 하나씩 버리세요</h3><p>누르면 바로 버려져요.</p></div></li><li><span>03</span><div><h3>원하는 순서로 세 장을 펼치세요</h3><p>문제 → 상황 → 해결 순서예요. 열린 카드는 다시 볼 수 있어요.</p></div></li></ol>
+    <ol class="help-steps"><li><span>01</span><div><h3>궁금한 주제를 고르세요</h3></div></li><li><span>02</span><div><h3>두 장을 하나씩 버리세요</h3><p>누르면 바로 버려져요.</p></div></li><li><span>03</span><div><h3>원하는 순서로 세 장을 펼치세요</h3><p>처음 연 카드는 문제, 두 번째는 현재 상황, 세 번째는 해결 방법을 짚어 줘요. 열린 카드를 누르면 풀이를 다시 볼 수 있어요.</p></div></li></ol>
     <p id="help-usage-note" class="help-footnote">전체 30쭈 · 연애·금전·일과 도전 각 10쭈. 결제 후 24시간 동안 다시 보기는 무료이며, 만료 후에는 다시 결제해요.</p>
-    <p class="help-footnote">카드·순서·주제에 맞춘 전통 해석이며 일부 본문은 공통으로 사용해요. 미래나 상대의 속마음을 알아낸 정보는 아니에요.</p>
-    <details class="reading-source help-footnote"><summary>어떤 자료로 풀이했나요?</summary><p>오래된 타로 책에 나온 그림과 뜻을 참고해 쉬운 말로 썼어요. 같은 카드도 읽는 방법에 따라 뜻이 달라질 수 있어요. 여기서는 카드를 모두 똑바로 세운 뜻으로 읽어요. 왕·여왕·기사·시종은 누군가의 성별이나 나이를 맞히는 카드로 쓰지 않아요. 첫째·둘째·셋째 자리의 뜻과 생활 속 예시는 오쭈다에서 정하고 쓴 내용이에요.</p><p><a href="https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot" target="_blank" rel="noopener noreferrer">참고한 옛 타로 책 읽기 ↗</a></p></details>
-    <p class="help-footnote">효과음·음성은 따로 켤 수 있어요. 음성은 기기 지원 시 이용할 수 있고, 바람 버튼은 움직임을 줄여요.</p>
+    <p class="help-footnote">뽑은 카드와 펼친 순서, 고른 주제에 맞춰 전통 해석을 풀어 드려요. 일부 본문은 여러 풀이에서 함께 사용해요. 미래나 상대의 속마음을 알아낸 정보는 아니에요.</p>
+    <details class="reading-source help-footnote"><summary>어떤 자료로 풀이했나요?</summary><p>오래된 타로 책에 나온 그림과 뜻을 참고해 쉬운 말로 썼어요. 같은 카드도 읽는 방법에 따라 뜻이 달라질 수 있어요. 여기서는 모든 카드를 정방향, 즉 똑바로 세웠을 때의 뜻으로 읽어요. 왕·여왕·기사·시종은 누군가의 성별이나 나이를 맞히는 카드로 쓰지 않아요. 세 자리의 역할과 생활 속 예시는 오쭈다에서 구성했어요.</p><p><a href="https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot" target="_blank" rel="noopener noreferrer">참고한 옛 타로 책 읽기 ↗</a></p></details>
+    <p class="help-footnote">효과음과 안내 음성은 각각 켜고 끌 수 있어요. 안내 음성은 지원하는 기기에서 제공하며, 바람 모양 버튼을 누르면 화면의 움직임이 줄어들어요.</p>
     <button id="preview-revelation" class="primary-button" data-close="help-dialog">마녀의 마법 미리보기<svg><use href="#i-arrow"/></svg></button>
   </dialog>
 
@@ -141,7 +141,7 @@
     <div id="reading-sections" class="reading-sections reading-narrative"></div>
     <details id="reading-card-detail" class="reading-source" hidden><summary>카드의 뜻과 주의점 더 보기</summary><div id="reading-detail-sections" class="reading-sections"></div></details>
     <details id="reading-name-help" class="reading-name-help" hidden><summary>카드 이름 더 알아보기</summary><p id="reading-name-guide"></p></details>
-    <details class="reading-source"><summary>이 설명은 어떻게 만들었나요?</summary><p>옛 타로 그림에 담긴 뜻을 오쭈다에서 쉬운 말로 썼어요. 생활 속 이야기는 뜻을 이해하기 위한 예시예요. 당신에게 실제로 있었던 일이나 앞으로 생길 일을 알아낸 것은 아니에요.</p><p><a id="reading-source-link" target="_blank" rel="noopener noreferrer">참고한 옛 타로 책 읽기 ↗</a></p><div id="reading-source-note" hidden><h3>다르게 읽는 풀이도 있어요</h3><p id="reading-source-note-body"></p><p><a id="reading-source-note-link" target="_blank" rel="noopener noreferrer">다른 풀이가 나온 부분 읽기 ↗</a></p></div></details>
+    <details class="reading-source"><summary>이 설명은 어떻게 만들었나요?</summary><p>옛 타로 그림에 담긴 뜻을 오쭈다에서 쉬운 말로 썼어요. 생활 속 이야기는 카드의 뜻을 쉽게 이해하도록 만든 예시예요. 당신에게 실제로 있었던 일이나 앞으로 생길 일을 알아낸 것은 아니에요.</p><p><a id="reading-source-link" target="_blank" rel="noopener noreferrer">참고한 옛 타로 책 읽기 ↗</a></p><div id="reading-source-note" hidden><h3>다르게 읽는 풀이도 있어요</h3><p id="reading-source-note-body"></p><p><a id="reading-source-note-link" target="_blank" rel="noopener noreferrer">다른 풀이가 나온 부분 읽기 ↗</a></p></div></details>
     <div class="reading-dialog-actions"><button class="secondary-button" data-close="reading-dialog">카드로 돌아가기</button><button id="reading-next" class="primary-button"><span>다음 카드 고르기</span><svg><use href="#i-arrow"/></svg></button></div>
   </dialog>
 
@@ -160,6 +160,6 @@
   <div id="toast" class="toast" role="status"></div>
   <script src="/shared/games/admin-preview.js?v=20261111-shared-auth3"></script>
   <script src="/shared/analytics/site-usage.js?v=20261113-fortune-visits1"></script>
-  <script type="module" src="./app.js?v=20261114-tarot-person1"></script>
+  <script type="module" src="./app.js?v=20261114-tarot-copy1"></script>
 </body>
 </html>

@@ -76,7 +76,7 @@ for (const topicId of topics) {
   assert.equal(summary.groups[0].sections[0].id, 'together', 'the whole personal story comes before individual actions');
   assert.equal(summary.groups[0].sections[0].paragraphs.join('\n\n'), summary.synthesis);
   assert.equal(summary.groups[0].sections.length, 5);
-  assert.equal(summary.groups[0].sections.find(section => section.id === 'possible-outcome').title, '대처 뒤 확인할 변화');
+  assert.equal(summary.groups[0].sections.find(section => section.id === 'possible-outcome').title, '실천한 뒤 살펴볼 변화');
   assert.equal(summary.groups[1].sections.length, 7);
   assert.equal(summary.groups[2].sections.length, 50);
   assert.equal(summary.sections.length, 62);

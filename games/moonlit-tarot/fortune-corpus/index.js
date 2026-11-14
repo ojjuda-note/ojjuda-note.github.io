@@ -1,12 +1,12 @@
-import { OVERALL_FORTUNES } from './overall.js?v=20261113-tarot-corpus1';
-import { LOVE_FORTUNES } from './love.js?v=20261113-tarot-corpus1';
-import { MONEY_FORTUNES } from './money.js?v=20261113-tarot-corpus1';
-import { WORK_FORTUNES_A } from './work-a.js?v=20261113-tarot-corpus1';
-import { WORK_FORTUNES_B } from './work-b.js?v=20261113-tarot-corpus1';
-import { WORK_FORTUNES_C1 } from './work-c1.js?v=20261113-tarot-corpus1';
-import { WORK_FORTUNES_C2 } from './work-c2.js?v=20261113-tarot-corpus1';
+import { OVERALL_FORTUNES } from './overall.js?v=20261114-tarot-copy1';
+import { LOVE_FORTUNES } from './love.js?v=20261114-tarot-copy1';
+import { MONEY_FORTUNES } from './money.js?v=20261114-tarot-copy1';
+import { WORK_FORTUNES_A } from './work-a.js?v=20261114-tarot-copy1';
+import { WORK_FORTUNES_B } from './work-b.js?v=20261114-tarot-copy1';
+import { WORK_FORTUNES_C1 } from './work-c1.js?v=20261114-tarot-copy1';
+import { WORK_FORTUNES_C2 } from './work-c2.js?v=20261114-tarot-copy1';
 
-export const CORPUS_VERSION = '20261113-corpus1';
+export const CORPUS_VERSION = '20261114-corpus-copy1';
 
 // These are literal, separately written records. Do not replace missing rows
 // with generic text or count string combinations as authored records.

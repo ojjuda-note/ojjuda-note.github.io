@@ -12,44 +12,44 @@
     {
       "file": "overall.js",
       "records": 640,
-      "bytes": 374698,
-      "sha256": "8b5cb4381da94d835b5ad9b02864d882310bff93c12d3dc88839709edab2df61"
+      "bytes": 374661,
+      "sha256": "3cd10bd00a280b6bb9dfba83b67cc15b431673c6c1be3dcd0d77f360abf6b7fd"
     },
     {
       "file": "love.js",
       "records": 640,
-      "bytes": 366973,
-      "sha256": "527e0263d8c78ccc7e63019d667f8fc8d0daa09f8b1329bcafd90ddd579772cf"
+      "bytes": 365144,
+      "sha256": "6b47fd3cb1d4ed2f133b190a58a247bbbc6044274ce7f0e4166cda8dc9594dd3"
     },
     {
       "file": "money.js",
       "records": 640,
-      "bytes": 373769,
-      "sha256": "4562edf5ec72e910d54f60f592f81ba77243d7dffbf49ef419ceacdf8a8996f3"
+      "bytes": 373228,
+      "sha256": "a8037dd0e20b9018a78a461dc4ad4192ef562208f59889774cb255fafc5679a0"
     },
     {
       "file": "work-a.js",
       "records": 192,
-      "bytes": 109834,
-      "sha256": "e658f7a42a3a8c84efb55cd47d717179d06e14222c6447f3fe11d0a93a4678c4"
+      "bytes": 109858,
+      "sha256": "e4087155708e3b130f699c3b3644258c629c763f7a30a7eb31570044d1a31b0a"
     },
     {
       "file": "work-b.js",
       "records": 192,
-      "bytes": 111497,
-      "sha256": "a7da8547299d2ec4e4d037700a870b5fbe7fa0717083d0daee170cde231882cd"
+      "bytes": 111128,
+      "sha256": "1341c8c4ae1e12f12da2e874da2e13a85342ff0c20e26dd6d96d00e1dff960cf"
     },
     {
       "file": "work-c1.js",
       "records": 128,
-      "bytes": 78988,
-      "sha256": "b67572ecf01850cf1ab0e467e26af15dc1c9576a38a325e54c0fcefea602d64f"
+      "bytes": 78972,
+      "sha256": "e67c6d279eb5ea893108952e15ce1d8f582fa9d1d25b812ae10023807077db23"
     },
     {
       "file": "work-c2.js",
       "records": 128,
-      "bytes": 76431,
-      "sha256": "9a54e3897fe1c8f102cef678f092055ef9e6666ecf1bbdab831222ecd55b22c3"
+      "bytes": 76191,
+      "sha256": "bc87526fd7310f2db4397686c44fe09623e105e17e01a627e43af5b685dfd68d"
     }
   ],
   "ranges": {
@@ -58,8 +58,8 @@
       "max": 48
     },
     "body": {
-      "min": 124,
-      "max": 170
+      "min": 120,
+      "max": 176
     },
     "action": {
       "min": 39,
@@ -76,11 +76,6 @@
   "similarityMethod": "NFC letters/numbers, character trigrams, Sørensen–Dice; review threshold 0.68",
   "nearDuplicates": [],
   "closestPairs": [
-    {
-      "a": "money:003",
-      "b": "money:203",
-      "similarity": 0.2328
-    },
     {
       "a": "overall:160",
       "b": "overall:761",
@@ -102,24 +97,19 @@
       "similarity": 0.2085
     },
     {
+      "a": "love:803",
+      "b": "love:851",
+      "similarity": 0.2079
+    },
+    {
       "a": "overall:332",
       "b": "love:332",
-      "similarity": 0.2066
+      "similarity": 0.2075
     },
     {
       "a": "money:652",
       "b": "money:952",
       "similarity": 0.2066
-    },
-    {
-      "a": "work:850",
-      "b": "work:900",
-      "similarity": 0.2051
-    },
-    {
-      "a": "love:803",
-      "b": "love:851",
-      "similarity": 0.2049
     },
     {
       "a": "work:240",
@@ -132,9 +122,19 @@
       "similarity": 0.2029
     },
     {
+      "a": "work:850",
+      "b": "work:900",
+      "similarity": 0.2011
+    },
+    {
       "a": "overall:107",
       "b": "work:107",
-      "similarity": 0.199
+      "similarity": 0.2
+    },
+    {
+      "a": "love:236",
+      "b": "love:636",
+      "similarity": 0.1991
     }
   ],
   "limitation": "Literal rows, text duplication and length checks do not prove semantic originality or predictive validity."

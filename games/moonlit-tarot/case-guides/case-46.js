@@ -1,9 +1,8 @@
-// Editorial applications of the existing card meanings; not additional predictions.
 export const CASE_46 = Object.freeze({
   "topicId": "good-fortune",
   "prompt": "좋아 보인다는 느낌을 넘어 실제로 참여할 수 있는 조건이 갖춰졌는지 확인해 보렴.",
   "example": "동네 게시판에서 관심 있던 체험 수업을 발견했지만, 시간과 준비물을 아직 읽어 보지 않은 상황을 떠올려 봐.",
-  "check": "좋은 일이 오기를 기다리는 상태에서 벗어나, 내 관심과 조건에 맞는 기회 하나를 실제로 검토하거나 경험했는지 살펴봐.",
+  "check": "네 관심과 생활에 맞는 기회 하나를 직접 알아보거나 경험해 보렴. 좋은 일을 기다리는 마음을 작은 행동으로 이어 가는 거야.",
   "cards": {
     "fool": [
       "낯선 작은 기회를 가볍게 경험하는 태도가 새로운 관심을 만나게 할 수 있어.",

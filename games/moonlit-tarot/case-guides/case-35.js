@@ -1,9 +1,8 @@
-// Editorial applications of the existing card meanings; not additional predictions.
 export const CASE_35 = Object.freeze({
   "topicId": "major-career-choice",
-  "prompt": "전공의 이름을 가리고 수업과 과제만 보아도 같은 선택을 하고 싶은지 물어보렴.",
+  "prompt": "전공 이름을 가려도 수업과 과제를 보고 같은 선택을 하고 싶은지 물어보렴.",
   "example": "가령 익숙한 학과의 이름은 안심되지만, 다른 학과의 과제 예시를 볼 때 더 많은 질문이 생기는 상황을 떠올려 봐.",
-  "check": "선택한 이유를 평판이 아니라 직접 살핀 수업 내용과 생활 조건으로 설명할 수 있는지 확인해 봐.",
+  "check": "선택한 이유를 평판보다 직접 살핀 수업과 생활 조건으로 설명해 보렴.",
   "cards": {
     "fool": [
       "처음 들어 보는 분야라는 이유만으로 닫아 두면 새 관심을 발견할 기회를 놓칠 수 있어.",

@@ -1,9 +1,9 @@
-import { CARD_INTERPRETATIONS } from './interpretation-engine.js?v=20261113-tarot-easy1';
-import { CASE_GUIDES, getCaseGuide } from './case-guides.js?v=20261113-tarot-easy1';
-import { LIFE_TOPICS } from './topic-catalog-life.js?v=20261113-tarot-context1';
-import { RELATIONSHIP_TOPICS } from './topic-catalog-relations.js?v=20261113-tarot-context1';
-import { PRACTICAL_TOPICS } from './topic-catalog-practical.js?v=20261113-tarot-context1';
-import { WELLBEING_TOPICS } from './topic-catalog-wellbeing.js?v=20261113-tarot-context1';
+import { CARD_INTERPRETATIONS } from './interpretation-engine.js?v=20261114-tarot-copy1';
+import { CASE_GUIDES, getCaseGuide } from './case-guides.js?v=20261114-tarot-copy1';
+import { LIFE_TOPICS } from './topic-catalog-life.js?v=20261114-tarot-copy1';
+import { RELATIONSHIP_TOPICS } from './topic-catalog-relations.js?v=20261114-tarot-copy1';
+import { PRACTICAL_TOPICS } from './topic-catalog-practical.js?v=20261114-tarot-copy1';
+import { WELLBEING_TOPICS } from './topic-catalog-wellbeing.js?v=20261114-tarot-copy1';
 import { summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
 
 // Fifty editorial lenses on the same three cards, not extra draws or predictions.
@@ -66,7 +66,7 @@ export function buildDomainGroup({ cards, readings } = {}) {
       paragraphs: [
         situation.example,
         `‘${names[0]}’ 카드가 짚는 핵심이야. ${interpretation.cause}`,
-        `‘${names[1]}’ 카드로 현재 상황을 살펴보자. ${interpretation.scene}`,
+        `‘${names[1]}’ 카드가 보여 주는 현재 상황이야. ${interpretation.scene}`,
         `‘${names[2]}’ 카드가 권하는 행동이야. ${interpretation.response} ${interpretation.outcome}`
       ]
     };
@@ -74,7 +74,7 @@ export function buildDomainGroup({ cards, readings } = {}) {
   return {
     id: 'domains',
     label: '분야별 풀이',
-    description: '같은 세 장을 주제별로 풀었어요. 카드의 기본 뜻과 전통 자료는 여러 풀이에서 함께 참고해요. 생활 제안과 가상 장면도 예시로 담았어요. 예시는 실제로 겪은 일이나 앞으로 생길 일, 상대의 속마음을 확인한 내용은 아니에요.',
+    description: '같은 세 장을 50가지 주제로 풀었어요. 카드의 기본 뜻과 전통 자료는 여러 풀이에서 함께 참고하며, 이해를 돕는 가상 장면과 생활 제안을 담았어요. 예시는 실제로 겪은 일이나 앞으로 생길 일, 상대의 속마음을 확인한 내용은 아니에요.',
     categories: READING_CATEGORIES,
     sections
   };

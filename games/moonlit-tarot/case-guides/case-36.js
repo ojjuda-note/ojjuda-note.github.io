@@ -1,9 +1,8 @@
-// Editorial applications of the existing card meanings; not additional predictions.
 export const CASE_36 = Object.freeze({
   "topicId": "new-learning",
   "prompt": "시작을 위해 꼭 필요한 준비와 시작을 미루게 만드는 준비를 구별해 보렴.",
   "example": "가령 그림을 배우고 싶어 좋은 펜을 고르다가 며칠이 지났지만, 종이에 선을 그어 본 시간은 없는 상황을 떠올려 봐.",
-  "check": "연습을 마친 뒤 새로 생긴 질문과 혼자 다시 할 수 있는 동작이 무엇인지 살펴봐.",
+  "check": "연습을 마친 뒤 새로 궁금해진 것과 혼자 다시 해낼 동작을 하나씩 짚어 보렴.",
   "cards": {
     "fool": [
       "처음부터 잘하려는 준비를 내려놓으면 서툰 첫 경험에서 재미를 찾을 수 있어.",
