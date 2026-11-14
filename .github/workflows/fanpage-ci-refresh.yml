@@ -1,0 +1,64 @@
+name: Refresh fanpage PR test provenance
+on:
+  push:
+    branches: ['fanpages/ci-source-audit-20261114']
+    paths: ['.github/workflows/fanpage-ci-refresh.yml']
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fanpages/apply-all-20261114
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Merge reviewed main without overwriting concurrent fanpage work
+        run: |
+          test "$(git rev-parse HEAD)" = '22c6905a40c269003ab8094a1bf9d48719f01fa2'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = '210dd9a832a3598ef67ef40cde58027a438a1a7c'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git merge --no-ff --no-commit origin/main
+      - name: Add source provenance without changing or skipping any assertion
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('.github/workflows/regression.yml');s=p.read_text()
+          anchor='      - name: Check account, card, administrator and RPC regressions\n'
+          assert s.count(anchor)==1
+          extra='''      - name: Verify exact regression source identity
+            run: |
+              git rev-parse HEAD
+              git diff --exit-code HEAD -- tests/package.json tests/admin-fortune-purchases.test.cjs
+              git hash-object tests/package.json tests/admin-fortune-purchases.test.cjs
+              git status --short -- tests/run.cjs
+              node -p "require('./tests/package.json').scripts['test:unit']"
+          '''
+          # Dedent the Python literal to the workflow's existing step indentation.
+          extra='\n'.join(line[4:] if line.startswith('          ') else line for line in extra.splitlines())+'\n'
+          # Build the step explicitly to avoid indentation changes to existing jobs.
+          extra=('      - name: Verify exact regression source identity\n'
+                 '        run: |\n'
+                 '          git rev-parse HEAD\n'
+                 '          git diff --exit-code HEAD -- tests/package.json tests/admin-fortune-purchases.test.cjs\n'
+                 '          git hash-object tests/package.json tests/admin-fortune-purchases.test.cjs\n'
+                 '          git status --short -- tests/run.cjs\n'
+                 '          node -p "require(\'./tests/package.json\').scripts[\'test:unit\']"\n')
+          s=s.replace(anchor,extra+anchor)
+          p.write_text(s)
+          PY
+          node features/fanpages/check-profiles.mjs
+          node features/fanpages/check-videos.mjs
+          node scripts/check-source-layout.mjs
+          git diff --check
+          git add .github/workflows/regression.yml
+          git commit -m 'ci(fanpages): sync main and record immutable regression source identity'
+          # Ordinary fast-forward only. A concurrent branch write rejects this push.
+          git push origin HEAD:fanpages/apply-all-20261114
+          git log -1 --format='REFRESHED_PR_HEAD=%H'
