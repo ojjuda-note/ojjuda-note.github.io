@@ -950,7 +950,17 @@ const server = http.createServer((request, response) => {
         }
         await inspectReadableSurface('life-topic scope notices phone-small',{text:'.reader-scope-note'});
       }
-      sajuSupplementViews[viewport]={readings:checked,scopeNotices};
+      const coverage=saju.locator('#reading-coverage');
+      assert.equal(await coverage.isVisible(),true,'interpretation scope stays visible outside the removed calculation panels');
+      const scopeText=await coverage.innerText();
+      const expectedScope=await saju.evaluate(()=>globalThis.__sajuReadingFixture.readingScope.paragraphs);
+      for(const paragraph of expectedScope) {
+        assert.ok(scopeText.includes(paragraph));
+        assert.equal(await saju.evaluate(text=>globalThis.__sajuReadingFixture.copyByCategory.all.includes(text),paragraph),true);
+      }
+      await inspectReadableSurface('general scope '+viewport,{text:'.reading-coverage p'});
+      await coverage.screenshot({path:path.join(artifacts,'saju-reading-scope-'+viewport+'.png')});
+      sajuSupplementViews[viewport]={readings:checked,scopeNotices,readingCoverage:true};
     }
     await saju.locator('#report-content').evaluate(report=>{report.dataset.readingSize='normal';});
     await saju.setViewportSize({width:1280,height:900});
@@ -1193,6 +1203,13 @@ const server = http.createServer((request, response) => {
         await selectCompatibilityPage('compatibility-synthesis');
         await inspectCompatibilityPeople(label+' synthesis',0);
         await inspectReadableSurface('compatibility synthesis '+label,{text:compatibilityText,body:'.compatibility-person-prose p',minimumBody:textSize==='large'?21:18});
+        const coverage=saju.locator('#compatibility-reading-coverage');
+        assert.equal(await coverage.isVisible(),true,label+': moving between people and synthesis keeps the interpretation scope');
+        const expectedScope=await saju.evaluate(()=>globalThis.__compatibilityReadingFixture.readingScope.paragraphs);
+        const scopeText=await coverage.innerText();
+        for(const paragraph of expectedScope)assert.ok(scopeText.includes(paragraph));
+        await inspectReadableSurface('compatibility scope '+label,{text:'.reading-coverage p'});
+        if(viewport!=='phone'&&textSize==='normal')await coverage.screenshot({path:path.join(artifacts,'saju-compatibility-scope-'+viewport+'.png')});
         if(viewport!=='phone'&&textSize==='normal')await saju.locator('[data-compatibility-current]').screenshot({path:path.join(artifacts,'saju-compatibility-synthesis-'+viewport+'.png')});
         assert.equal(await saju.locator('#compatibility-reading-evidence,.compatibility-evidence-link,.compatibility-score-details,[data-fact-id],a[href*="-evidence"]').count(),0,label+': compatibility has no calculation material or evidence links');
         assert.ok(await saju.locator('#compatibility-page-select option').evaluateAll(options=>options.every(option=>!/근거|계산|자료|출처/.test(option.textContent))),label+': compatibility has no evidence menus');

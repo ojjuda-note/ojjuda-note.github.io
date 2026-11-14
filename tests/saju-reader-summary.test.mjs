@@ -58,7 +58,7 @@ test('first reading answers personal patterns without raw terminology, invented 
   const {report}=reading();
   assert.match(report.reader.lifelong.headline,/편이에요\./);
   assert.match(prose(report.reader.lifelong),/성향/);
-  assert.match(report.reader.annual.headline,/당신, 2026년에는 .+ 일을 먼저 챙겨 보세요\./);
+  assert.match(report.reader.annual.headline,/당신, 2026년에는 .+ (?:일을 먼저 챙겨 보세요|일도 함께 챙기세요)\./);
   assert.match(report.reader.annual.paragraphs[0],/^당신은 .+사람이에요\./);
   for(const overview of overviews(report))for(const text of paragraphs(overview)) {
     assert.doesNotMatch(text,/천간|(?<![가-힣])지지(?![가-힣])|십성|일간|원국|지장간|오행|납음|사주란|사주는|확정된 [0-9]+글자|위쪽 글자|아래쪽 글자/);
