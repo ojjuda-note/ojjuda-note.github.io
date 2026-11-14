@@ -354,7 +354,7 @@ export class SajuProfilePicker {
       this._selectedStamp=profileStamp(profile);
       this._revision++;
       this._selection();
-      this._status('저장한 정보를 입력했어요.');
+      this._status('저장한 정보를 입력칸에 불러왔어요.');
     } catch(error) {
       this.refresh({preserveStatus:true});
       this._status(messageOf(error),'error');

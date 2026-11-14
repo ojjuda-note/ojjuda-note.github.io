@@ -1,6 +1,6 @@
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
-import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-qa1';
-import { attachEntryFlow } from './entry-flow.mjs?v=20261114-saju-flow1';
+import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-copy1';
+import { attachEntryFlow } from './entry-flow.mjs?v=20261114-saju-copy1';
 
 const $ = id => document.getElementById(id);
 const form = $('birth-form');
@@ -452,8 +452,8 @@ function scheduleReadingRefresh({retryChanged=true}={}) {
 async function prepareDetailedReading(chart,target,person=currentPerson||readPerson()) {
   detailModulesPromise ||= Promise.all([
     import('./fortune-data.mjs?v=20261113-saju-reader1'),
-    import('./readings.mjs?v=20261114-saju-depth1'),
-    import('./report-view.mjs?v=20261114-saju-depth1'),
+    import('./readings.mjs?v=20261114-saju-copy1'),
+    import('./report-view.mjs?v=20261114-saju-copy1'),
     import('./daeun.mjs?v=20261114-saju-qa1'),
     zodiacModule()
   ]).catch(error=>{detailModulesPromise=null;throw error;});

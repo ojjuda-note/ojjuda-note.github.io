@@ -102,9 +102,9 @@ export function attachEntryFlow(form) {
     if(!field.validity.valueMissing)return '입력한 생년월일과 시간을 확인해 주세요.';
     if(field.id.endsWith('-year'))return '태어난 연도를 입력해 주세요.';
     if(field.id.endsWith('-month'))return '태어난 월을 선택해 주세요.';
-    if(field.id.endsWith('-day'))return '태어난 일을 선택해 주세요.';
-    if(field.id.endsWith('-hour'))return '태어난 시를 선택해 주세요.';
-    if(field.id.endsWith('-minute'))return '태어난 분을 선택해 주세요.';
+    if(field.id.endsWith('-day'))return '태어난 날짜를 선택해 주세요.';
+    if(field.id.endsWith('-hour'))return '태어난 시간을 선택해 주세요.';
+    if(field.id.endsWith('-minute'))return '태어난 시각의 분을 선택해 주세요.';
     return '빈 항목을 먼저 입력해 주세요.';
   }
   function updateYearLimits() {
