@@ -3,7 +3,7 @@ const { createTarotLoader } = require('./tarot-module-fixture.cjs');
 const load = createTarotLoader();
 const { splitSummarySentences, summaryLinesFrom } = load('reading-summary.js');
 const { DECK, getReading, getSummary } = load('readings.js');
-const { MAIN_CONTEXTS, interpretCard } = load('interpretation-engine.js');
+const { getPersonStory } = load('person-stories.js');
 const { getCaseGuide } = load('case-guides.js');
 const { PERSONAL_CONTEXTS } = load('personal-contexts.js');
 const { buildPersonalReading, personalReadingCopyLines } = load('personal-reading.js');
@@ -54,6 +54,14 @@ for (const topicId of ['overall', 'love', 'money', 'work']) {
       checkLines(section.summaryLines, `${topicId}/${start}/${section.id}`);
       sectionCount++;
     }
+    const problemSections = report.groups.find(group => group.id === 'problem').sections;
+    const problemSummaryLines = problemSections.flatMap(section => section.summaryLines);
+    assert.equal(new Set(problemSummaryLines.map(key)).size, 10,
+      `${topicId}/${start}: all ten visible story summaries add a distinct sentence, even without card names`);
+    for (const section of problemSections) {
+      for (const line of section.summaryLines) assert.ok(section.paragraphs.join(' ').includes(content(line)),
+        `${topicId}/${start}/${section.id}: the complete summary sentence remains in its expanded explanation`);
+    }
     const byId = Object.fromEntries(report.groups.slice(0, 2).flatMap(group => group.sections).map(section => [section.id, section]));
     for (const [id, index] of [
       ['problem-now', 0], ['situation-now', 1], ['solution', 2], ['possible-outcome', 2],
@@ -67,13 +75,31 @@ for (const topicId of ['overall', 'love', 'money', 'work']) {
       ['past-achievements', readings[0].lifeTheme.achievement],
       ['future-change', readings[2].lifeTheme.change]
     ]) assert.equal(byId[id].summaryLines.map(content).join(' '), source, `${id}: no invented biography or unconditional future`);
-    const outcome = interpretCard(cards[2].id, 'outcome', MAIN_CONTEXTS[topicId]);
-    assert.equal(content(byId['possible-outcome'].summaryLines[0]), outcome,
-      'the action required for a possible result remains in the same sentence');
+    const people = cards.map(card => getPersonStory(card.id));
+    assert.equal(content(byId['possible-outcome'].summaryLines[0]), firstSentence(readings[2].lifeTheme.change),
+      'the conditional change sentence is kept whole rather than rewritten as a guaranteed result');
+    assert.equal(content(byId['possible-outcome'].summaryLines[1]), people[2].cost,
+      'the possible change is paired with the actual third card risk');
+    assert.ok(byId['possible-outcome'].paragraphs.join(' ').includes(readings[2].lifeTheme.change),
+      'the full conditional change passage remains available beyond its summary');
     assert.equal(content(byId['past-hardships'].summaryLines[1]), firstSentence(readings[0].action));
     assert.equal(content(byId['present-luck'].summaryLines[1]), firstSentence(readings[1].action));
-    assert.ok(readings[1].topicMeaning.includes(content(byId['situation-now'].summaryLines[0])),
-      'current situation comes from the actual card/topic meaning, not a hypothetical scene');
+    assert.equal(content(byId['situation-now'].summaryLines[0]), firstSentence(people[1][topicId]),
+      'current situation comes from the actual card/topic personal meaning, not a hypothetical scene');
+    assert.equal(content(byId['situation-now'].summaryLines[1]), people[1].defense,
+      'the second line explains this person’s response to pressure');
+    assert.equal(content(byId['problem-now'].summaryLines[0]), people[0].longing,
+      'the problem summary explains the personal motive without repeating the whole-story topic preview');
+    assert.equal(content(byId['problem-now'].summaryLines[1]), people[0].cost);
+    assert.equal(content(byId.solution.summaryLines[0]), people[2].longing,
+      'the solution summary explains the desired change without repeating the whole-story topic preview');
+    assert.equal(content(byId.solution.summaryLines[1]), firstSentence(readings[2].action),
+      'the second line preserves a complete sentence from this topic’s original action');
+    assert.ok(byId.solution.paragraphs.join(' ').includes(readings[2].action),
+      'a two-line preview never removes the rest of the original action');
+    assert.equal(report.ritualInReading, true);
+    assert.equal(report.text.split(readings[2].action).length - 1, 1,
+      'full copy includes the solution action once, without a duplicate closing instruction');
 
     for (const section of report.groups.find(group => group.id === 'domains').sections) {
       const insight = getCaseGuide(section.id, cards[0].id).insight;
@@ -101,13 +127,24 @@ for (const context of PERSONAL_CONTEXTS) {
     const report = buildPersonalReading({ cards, topicId: context.topicId, contextId: context.id });
     for (const [index, section] of report.primary.entries()) {
       checkLines(section.summaryLines, `${context.id}/${cards[index].id}`);
-      assert.equal(section.summaryLines.map(content).join(' '), directCardAdvice(context.cards[cards[index].id]),
-        'personal summary keeps the authored meaning and action, before the display introduction');
+      const person = getPersonStory(cards[index].id);
+      const advice = splitSummarySentences(directCardAdvice(context.cards[cards[index].id]));
+      const portrait = index === 0 ? person.portrait : index === 1 ? `${person.longing} ${person.defense}` : advice[0];
+      assert.equal(content(section.summaryLines[0]), firstSentence(portrait),
+        'personal summary starts with the actual card’s role-specific personal meaning');
+      assert.equal(content(section.summaryLines[1]), index === 2 ? advice[1] : advice[0],
+        'the next-choice summary uses its actual situation/action pair; other roles keep their complete situation insight');
+      for (const sentence of advice) assert.ok(section.paragraphs.join(' ').includes(sentence),
+        'both original situation and action sentences remain available in full');
       assert.ok(section.summaryLines[0].includes(cards[index].name));
     }
     checkLines(report.connection.summaryLines, `${context.id}/connection`);
-    for (const card of cards) assert.ok(report.connection.summaryLines.join(' ').includes(card.name),
-      'the connection summary is tied to all three actual cards');
+    for (const card of [cards[0], cards[2]]) assert.ok(report.connection.summaryLines.join(' ').includes(card.name),
+      'summary names identify the actual card supplying each complete sentence');
+    for (const card of cards) assert.ok(report.connection.paragraphs.join(' ').includes(card.name),
+      'the developed story always explains all three cards, including the middle card');
+    assert.equal(content(report.connection.summaryLines[1]), splitSummarySentences(context.cards[cards[2].id]).at(-1),
+      'the final summary uses the actual situation action instead of an action from another topic');
     checkLines(report.comparison.basisSummaryLines, `${context.id}/choice-basis`);
     const solution = getConnectionProfile(cards[2].id);
     assert.equal(content(report.comparison.basisSummaryLines[0]), firstSentence(directInterpretation(solution.support)));
