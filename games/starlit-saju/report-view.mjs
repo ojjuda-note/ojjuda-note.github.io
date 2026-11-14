@@ -3,8 +3,8 @@ import {applyReadingSummaryViews} from './reading-summary-view.mjs?v=20261113-sa
 import {applyReadingScoreViews} from './reading-score-view.mjs?v=20261114-saju-copy1';
 import {createCompatibilityScoreboard,createCompatibilityScoreDetails} from './compatibility-score-view.mjs?v=20261114-saju-copy1';
 import {appendReadingDetail} from './reading-detail.mjs?v=20261114-saju-depth1';
-import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261114-saju-depth1';
-import {createReadingNavigator} from './reading-navigator.mjs?v=20261114-saju-flow1';
+import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261114-saju-home1';
+import {createReadingNavigator} from './reading-navigator.mjs?v=20261114-saju-home1';
 import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
 import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
 
@@ -1011,9 +1011,9 @@ function daeunView(reading) {
 }
 
 function readingScopeView(scope,id) {
-  const section=node('aside','reader-scope-note reading-coverage');
+  const section=node('details','scope-disclosure reading-coverage');
   section.id=id;
-  const title=node('p','reader-card-label',scope.title);title.id=`${id}-title`;
+  const title=node('summary','','풀이 안내');title.id=`${id}-title`;
   section.setAttribute('aria-labelledby',title.id);
   section.append(title);
   addParagraphs(section,scope.paragraphs);
@@ -1062,7 +1062,7 @@ export function renderCompatibilityReport(container, reading, {names=[]}={}) {
     pages.push({element,label:reading.cards[index].label,group:'궁합 자세히 읽기'});
   });
   const pager=createCompatibilityPager(section,pages);
-  if(reading.readingScope)section.append(readingScopeView(reading.readingScope,'compatibility-reading-coverage'));
+  if(reading.readingScope)pager.footer.before(readingScopeView(reading.readingScope,'compatibility-reading-coverage'));
   section.dataset.readerPaged='true';readingPagers.set(section,pager);
   watchReadingTargets(section.ownerDocument);
   container.replaceChildren(section);
@@ -1222,18 +1222,12 @@ function buildReadingPager(root,{reading,fortune,topic}) {
     groupForPage:page=>String(page.menuGroup||page.group).replace(/^평생운\s*·\s*/,'')
       .replace(/^\d+년 올해운\s*·\s*/,'').replace(/^\d+년 월별운$/,'월 선택')});
   label.hidden=true;
-  const controls=node('div','reading-pager-controls');
+  const controls=node('div','reading-pager-controls reading-pager-actions');
   const previous=node('button','reading-pager-step','이전');previous.type='button';
   const position=node('p','reading-page-position');position.id='reading-page-position';position.setAttribute('role','status');position.setAttribute('aria-live','polite');
   const next=node('button','reading-pager-step','다음');next.type='button';
-  controls.append(previous,position,next);navigation.append(label,select,picker.element,controls,
-    node('p','reading-swipe-hint','본문을 왼쪽으로 밀면 다음, 오른쪽으로 밀면 이전 항목으로 넘어가요.'));
+  controls.append(previous,position,next);navigation.append(label,select,picker.element);
   picker.toggle.setAttribute('aria-describedby',position.id);
-  const back=readingLink('다른 분야 고르기','reading-pager','reader-detail-link reading-back-to-picker');
-  back.addEventListener('click',event=>{
-    if(event.button||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
-    picker.focus({open:true});
-  });
 
   const managed=new Set();
   for(const page of pages) {
@@ -1247,6 +1241,14 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   for(const element of root.children)managed.add(element);
   const originallyHidden=new Set([...managed].filter(element=>element.hidden));
   for(const element of managed)element.dataset.readerBranch='';
+  // Only original reading branches participate in page visibility. The rail,
+  // common disclosure and footer remain available beside every selected page.
+  const layout=node('div','reading-layout'),canvas=node('div','reading-canvas');
+  const footer=node('footer','reading-footer');
+  footer.append(controls,node('p','reading-swipe-hint homepage-sr-only','본문을 왼쪽으로 밀면 다음, 오른쪽으로 밀면 이전 항목으로 넘어가요.'));
+  canvas.append(...root.childNodes);
+  if(reading.readingScope)canvas.append(readingScopeView(reading.readingScope,'reading-coverage'));
+  canvas.append(footer);layout.append(navigation,canvas);root.append(layout);
   const readable=pages.filter(page=>page.kind==='reading');
   function show(page,{move=false}={}) {
     if(!page)return false;
@@ -1294,9 +1296,9 @@ function buildReadingPager(root,{reading,fortune,topic}) {
     previous.textContent=supporting?'풀이로':'이전';
     previous.disabled=supporting?!lastReading:index<=0;
     next.disabled=supporting||index===readable.length-1;
-    position.textContent=supporting?page.label:`${page.group} · ${siblings.indexOf(page)+1} / ${siblings.length}`;
+    position.textContent=supporting?page.label:`${siblings.indexOf(page)+1} / ${siblings.length}`;
+    position.setAttribute('aria-label',supporting?page.label:`${page.group} · ${position.textContent}`);
     select.setAttribute('aria-describedby',position.id);
-    page.element.append(back);
     if(move) {
       // Keep the picker or step button focused for consecutive keyboard choices.
       // Links into the reading still focus their destination in readingLink().
@@ -1307,7 +1309,7 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   }
   function pageFor(target) {
     if(navigation.contains(target))return null;
-    for(let element=target;element&&element!==host;element=element.parentElement) {
+    for(let element=target;element&&element!==host&&element!==canvas;element=element.parentElement) {
       if(pageByNode.has(element))return pageByNode.get(element);
       if(defaults.has(element))return defaults.get(element);
       const contained=pages.find(page=>element.contains(page.element));
@@ -1318,13 +1320,12 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   select.addEventListener('change',()=>show(pages.find(page=>page.id===select.value),{move:true}));
   previous.addEventListener('click',()=>show(current.kind==='reading'?readable[readable.indexOf(current)-1]:lastReading,{move:true}));
   next.addEventListener('click',()=>show(readable[readable.indexOf(current)+1],{move:true}));
-  root.prepend(navigation);
   const initial=topic==='monthly'?defaults.get(months):defaults.get(lifelong||annual)||readable[0];
   show(initial);
   return {mount(container) {
     host=container;container.dataset.readerPaged='true';
-    motion=createReadingMotion(container,{getCurrentPage:()=>current?.element});
-    attachReadingSwipe(container,{previous,next,motion});
+    motion=createReadingMotion(canvas,{getCurrentPage:()=>current?.element});
+    attachReadingSwipe(canvas,{previous,next,motion});
     readingPagers.set(container,{reveal:target=>{
       if(!show(pageFor(target)))return false;
       for(let element=target;element&&element!==container;element=element.parentElement) {
@@ -1398,7 +1399,6 @@ export function renderDetailedReport(container, {reading, fortune, topic}) {
   applyReadingSummaryViews(fragment,reading);
   applyReadingScoreViews(fragment,reading);
   const pager=buildReadingPager(fragment,{reading,fortune,topic});
-  if(reading.readingScope)fragment.append(readingScopeView(reading.readingScope,'reading-coverage'));
   container.replaceChildren(fragment);
   pager.mount(container);
 }

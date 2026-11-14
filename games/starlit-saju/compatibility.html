@@ -1,9 +1,7 @@
-<!doctype html>
-<html lang="ko">
-<head>
+<!DOCTYPE html><html lang="ko"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#f6f3ee">
+  <meta name="theme-color" content="#f7f4ec">
   <meta name="description" content="두 사람의 출생 정보로 읽는 별빛 궁합. 종합 점수와 항목별 막대그래프, 자세한 풀이를 20쭈에 보고 같은 두 사람은 결제 후 24시간 무료로 다시 보세요.">
   <title>두 사람의 별빛 궁합 · 오쭈다</title>
   <link rel="icon" href="../moonlit-tarot/assets/favicon.svg" type="image/svg+xml">
@@ -13,95 +11,86 @@
   <link rel="stylesheet" href="./readable-design.css?v=20261114-saju-readable1">
   <link rel="stylesheet" href="./flow-design.css?v=20261114-saju-flow1">
   <link rel="stylesheet" href="./reading-detail.css?v=20261114-saju-correction1">
-</head>
-<body class="saju-readable saju-flow">
-  <a class="skip-link" href="#compatibility-form">출생 정보 입력으로 바로가기</a>
-  <div class="night-sky" aria-hidden="true"><div class="sky-stars"></div><div class="sky-mist"></div><div class="sky-mist mist-two"></div></div>
+<link rel="stylesheet" href="./homepage.css?v=20261114-saju-home1"></head>
+<body class="saju-readable saju-flow saju-site">
+  <a class="skip-link" href="#compatibility-heading">사주 시작으로 바로가기</a>
+
   <svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
-    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6Z"/></symbol>
-    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
-    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.6 14.2A8.8 8.8 0 0 1 9.8 3.4 9 9 0 1 0 20.6 14.2Z"/><path d="m18 2 .8 2.2L21 5l-2.2.8L18 8l-.8-2.2L15 5l2.2-.8Z"/></symbol>
-    <symbol id="i-motion" viewBox="0 0 24 24"><path d="M3 7h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 17h6a3 3 0 1 1-3 3"/></symbol>
-    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 5c-3-2-7-2-10-1v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Zm0 0v15M5 8l4 1M5 12l4 1m6-4 4-1m-4 5 4-1"/></symbol>
-    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.6 5.6 0 0 0-8 0l-.8.9-.8-.9a5.6 5.6 0 0 0-8 8L12 22l8.8-9.4a5.6 5.6 0 0 0 0-8Z"/></symbol>
-    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M20 3C11 2 2 7 5 15c8 6 15-1 15-12ZM3 22 15 10"/></symbol>
-    <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m16 8-2.5 5.5L8 16l2.5-5.5Z"/></symbol>
-    <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 12H4m6-6-6 6 6 6"/></symbol>
-    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V3H3v13h5"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6Z"></path></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"></path></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.6 14.2A8.8 8.8 0 0 1 9.8 3.4 9 9 0 1 0 20.6 14.2Z"></path><path d="m18 2 .8 2.2L21 5l-2.2.8L18 8l-.8-2.2L15 5l2.2-.8Z"></path></symbol>
+    <symbol id="i-motion" viewBox="0 0 24 24"><path d="M3 7h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 17h6a3 3 0 1 1-3 3"></path></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 5c-3-2-7-2-10-1v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Zm0 0v15M5 8l4 1M5 12l4 1m6-4 4-1m-4 5 4-1"></path></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.6 5.6 0 0 0-8 0l-.8.9-.8-.9a5.6 5.6 0 0 0-8 8L12 22l8.8-9.4a5.6 5.6 0 0 0 0-8Z"></path></symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M20 3C11 2 2 7 5 15c8 6 15-1 15-12ZM3 22 15 10"></path></symbol>
+    <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="m16 8-2.5 5.5L8 16l2.5-5.5Z"></path></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 12H4m6-6-6 6 6 6"></path></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2"></rect><path d="M16 8V3H3v13h5"></path></symbol>
   </defs></svg>
 
-  <header class="site-header">
-    <a class="brand" href="/world.html?tab=hub#agit-daily" aria-label="오쭈다 아지트로 돌아가기"><span class="brand-emblem"><svg><use href="#i-star"/></svg></span><span>오쭈다<small>OJJUDA</small></span></a>
-    <p class="header-caption">별빛 사주 · 나를 알아보는 시간</p>
-    <nav class="header-nav" aria-label="이용 메뉴">
-      <a class="back-link" href="/world.html?tab=hub#agit-daily">← 아지트</a>
-      <button id="motion-toggle" class="motion-toggle" type="button" aria-label="움직임 줄이기" aria-pressed="false" title="움직임 줄이기"><svg><use href="#i-motion"/></svg></button>
-    </nav>
-  </header>
+  <header class="site-header"><a class="brand site-brand" href="./" aria-label="별빛 사주 홈"><span class="brand-emblem" aria-hidden="true"><svg><use href="#i-moon"></use></svg></span><span>별빛 사주</span></a><nav class="site-nav" aria-label="사주 메뉴"><a href="./">사주</a><a href="./compatibility.html" aria-current="page">궁합</a><a class="site-return" href="/world.html?tab=hub#agit-daily">오쭈다 <span aria-hidden="true">↗</span></a></nav></header>
 
   <main class="compatibility-main">
-    <nav class="reading-service-nav" aria-label="사주와 궁합">
-      <a href="./"><strong>나의 사주</strong><span>10쭈부터</span></a>
-      <a href="./compatibility.html" aria-current="page"><strong>궁합</strong><span>20쭈</span></a>
-    </nav>
-    <section id="compatibility-entry" class="entry-shell" aria-labelledby="compatibility-heading">
-      <header class="entry-heading"><h1 id="compatibility-heading">두 사람의 궁합</h1><p>두 사람의 출생 정보를 입력하면 성격과 궁합을 함께 볼 수 있어요.</p></header>
-      <form id="compatibility-form" autocomplete="off" class="birth-panel" data-entry-flow="compatibility">
-        <nav class="entry-progress" aria-label="궁합 입력 순서"><button type="button" data-flow-go="0" aria-current="step"><span>1</span> A 정보</button><button type="button" data-flow-go="1" disabled><span>2</span> B 정보</button><button type="button" data-flow-go="2" disabled><span>3</span> 확인</button></nav>
+
+    <section id="compatibility-entry" class="entry-shell site-intro" aria-labelledby="compatibility-heading"><section class="site-landing" aria-labelledby="compatibility-heading"><div class="home-hero"><div class="home-copy"><p class="home-kicker">별빛 사주</p><h1 class="home-title" id="compatibility-heading">우리 사이,<br>더 깊이 알아가는 시간</h1><p class="home-description">닮은 마음과 다른 모습을 함께 읽어요.</p></div><div class="home-art" aria-hidden="true"><svg viewBox="0 0 360 300" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="180" cy="150" r="112" class="home-orbit-fill"></circle><circle cx="180" cy="150" r="111" class="home-orbit"></circle><circle cx="180" cy="150" r="87" class="home-orbit home-orbit-inner"></circle><path d="M68 150h224M180 38v224M101 71l158 158M101 229 259 71" class="home-orbit-guides"></path><path d="M213 92a63 63 0 1 0 0 116 70 70 0 0 1 0-116Z" class="home-moon"></path><circle cx="238" cy="93" r="6" class="home-star-dot"></circle><path d="m279 132 3 8 8 3-8 3-3 8-3-8-8-3 8-3Zm-176 68 2 6 6 2-6 2-2 6-2-6-6-2 6-2Z" class="home-star"></path><path d="M132 278h96" class="home-orbit"></path><circle cx="180" cy="278" r="3" class="home-star-dot"></circle></svg></div></div><div class="home-services"><button type="button" class="home-service home-service-primary" data-start-reading=""><span class="home-service-top"><svg aria-hidden="true"><use href="#i-heart"></use></svg><span class="home-service-price">20쭈</span></span><strong class="home-service-title">두 사람의 궁합</strong><span class="home-service-topics">각자의 성격 · 함께할 때의 모습</span><span class="home-service-action">두 사람 입력하기 <svg aria-hidden="true"><use href="#i-arrow"></use></svg></span></button><a class="home-service home-service-compatibility" href="./#start"><span class="home-service-top"><svg aria-hidden="true"><use href="#i-book"></use></svg><span class="home-service-price">10쭈부터</span></span><strong class="home-service-title">나의 사주</strong><span class="home-service-topics">성격 · 관계 · 일 · 돈 · 대운</span><span class="home-service-action">내 사주 보기 <svg aria-hidden="true"><use href="#i-arrow"></use></svg></span></a></div></section>
+
+      <div class="site-entry-panel" hidden=""><button type="button" class="entry-home-back" data-home-back="">← 처음으로</button><form id="compatibility-form" autocomplete="off" class="birth-panel" data-entry-flow="compatibility">
+        <nav class="entry-progress" aria-label="궁합 입력 순서"><button type="button" data-flow-go="0" aria-current="step"><span>1</span> A 정보</button><button type="button" data-flow-go="1" disabled=""><span>2</span> B 정보</button><button type="button" data-flow-go="2" disabled=""><span>3</span> 확인</button></nav>
         <section class="flow-step" data-flow-step="0" data-flow-person="self" aria-labelledby="self-step-title">
-          <h2 id="self-step-title" class="flow-step-heading" tabindex="-1">A · 나의 출생 정보</h2>
-          <p class="flow-step-note">시간을 몰라도 볼 수 있어요.</p>
-          <p id="compatibility-form-flow-error-0" class="flow-error form-error" data-flow-error role="alert" tabindex="-1" hidden></p>
+          <h2 id="self-step-title" class="flow-step-heading" tabindex="-1">첫 번째 사람</h2>
+
+          <p id="compatibility-form-flow-error-0" class="flow-error form-error" data-flow-error="" role="alert" tabindex="-1" hidden=""></p>
           <fieldset class="compatibility-person"><legend class="flow-sr-only">A · 나의 출생 정보</legend>
-      <details class="saved-people-disclosure"><summary>저장한 사람 불러오기</summary><div id="self-saved-profiles" class="saved-profiles" aria-label="나의 저장된 사람"></div></details>
-      <div class="date-inputs"><label><span class="field-label">년</span><input id="self-year" type="number" inputmode="numeric" autocomplete="off" min="1900" max="2050" step="1" placeholder="예: 1990" required></label><label><span class="field-label">월</span><select id="self-month" required><option value="">월</option></select></label><label><span class="field-label">일</span><select id="self-day" required><option value="">일</option></select></label></div>
-      <div class="pair-calendar"><label for="self-calendar">생일 기준</label><select id="self-calendar"><option value="solar">양력</option><option value="lunar">음력</option></select><label id="self-leap-option" class="check-row" hidden><input id="self-leap-month" type="checkbox"><span>윤달</span></label></div>
+      <details class="saved-people-disclosure"><summary>저장한 사람</summary><div id="self-saved-profiles" class="saved-profiles" aria-label="나의 저장된 사람"></div></details>
+      <div class="date-inputs"><label><span class="field-label">년</span><input id="self-year" type="number" inputmode="numeric" autocomplete="off" min="1900" max="2050" step="1" placeholder="예: 1990" required=""></label><label><span class="field-label">월</span><select id="self-month" required=""><option value="">월</option></select></label><label><span class="field-label">일</span><select id="self-day" required=""><option value="">일</option></select></label></div>
+      <div class="pair-calendar"><label for="self-calendar">생일 기준</label><select id="self-calendar"><option value="solar">양력</option><option value="lunar">음력</option></select><label id="self-leap-option" class="check-row" hidden=""><input id="self-leap-month" type="checkbox"><span>윤달</span></label></div>
       <div class="person-inputs"><label><span class="field-label">이름 · 선택</span><input id="self-name" type="text" maxlength="30" autocomplete="off" placeholder="이름 또는 별명"></label><label><span class="field-label">성별 · 선택</span><select id="self-gender"><option value="">선택 안 함</option><option value="male">남성</option><option value="female">여성</option></select></label></div>
-      <p id="self-zodiac" class="zodiac-preview" role="status" aria-live="polite" hidden></p>
-      <label class="check-row"><input id="self-time-unknown" type="checkbox" checked aria-controls="self-time-fields"><span>태어난 시간을 몰라요</span></label>
-      <div id="self-time-fields" class="time-inputs" hidden><label><span class="field-label">시</span><select id="self-hour" required disabled><option value="">시 선택</option></select></label><span class="time-colon" aria-hidden="true">:</span><label><span class="field-label">분</span><select id="self-minute" required disabled><option value="">분 선택</option></select></label></div>
+      <p id="self-zodiac" class="zodiac-preview" role="status" aria-live="polite" hidden=""></p>
+      <label class="check-row"><input id="self-time-unknown" type="checkbox" checked="" aria-controls="self-time-fields" aria-label="태어난 시간을 몰라요"><span>시간 모름</span></label>
+      <div id="self-time-fields" class="time-inputs" hidden=""><label><span class="field-label">시</span><select id="self-hour" required="" disabled=""><option value="">시 선택</option></select></label><span class="time-colon" aria-hidden="true">:</span><label><span class="field-label">분</span><select id="self-minute" required="" disabled=""><option value="">분 선택</option></select></label></div>
     </fieldset>
         </section>
-        <section class="flow-step" data-flow-step="1" data-flow-person="partner" aria-labelledby="partner-step-title" hidden>
-          <h2 id="partner-step-title" class="flow-step-heading" tabindex="-1">B · 상대의 출생 정보</h2>
-          <p class="flow-step-note">시간을 몰라도 볼 수 있어요.</p>
-          <p id="compatibility-form-flow-error-1" class="flow-error form-error" data-flow-error role="alert" tabindex="-1" hidden></p>
+        <section class="flow-step" data-flow-step="1" data-flow-person="partner" aria-labelledby="partner-step-title" hidden="">
+          <h2 id="partner-step-title" class="flow-step-heading" tabindex="-1">두 번째 사람</h2>
+
+          <p id="compatibility-form-flow-error-1" class="flow-error form-error" data-flow-error="" role="alert" tabindex="-1" hidden=""></p>
           <fieldset class="compatibility-person"><legend class="flow-sr-only">B · 상대의 출생 정보</legend>
-      <details class="saved-people-disclosure"><summary>저장한 사람 불러오기</summary><div id="partner-saved-profiles" class="saved-profiles" aria-label="상대의 저장된 사람"></div></details>
-      <div class="date-inputs"><label><span class="field-label">년</span><input id="partner-year" type="number" inputmode="numeric" autocomplete="off" min="1900" max="2050" step="1" placeholder="예: 1992" required></label><label><span class="field-label">월</span><select id="partner-month" required><option value="">월</option></select></label><label><span class="field-label">일</span><select id="partner-day" required><option value="">일</option></select></label></div>
-      <div class="pair-calendar"><label for="partner-calendar">생일 기준</label><select id="partner-calendar"><option value="solar">양력</option><option value="lunar">음력</option></select><label id="partner-leap-option" class="check-row" hidden><input id="partner-leap-month" type="checkbox"><span>윤달</span></label></div>
+      <details class="saved-people-disclosure"><summary>저장한 사람</summary><div id="partner-saved-profiles" class="saved-profiles" aria-label="상대의 저장된 사람"></div></details>
+      <div class="date-inputs"><label><span class="field-label">년</span><input id="partner-year" type="number" inputmode="numeric" autocomplete="off" min="1900" max="2050" step="1" placeholder="예: 1992" required=""></label><label><span class="field-label">월</span><select id="partner-month" required=""><option value="">월</option></select></label><label><span class="field-label">일</span><select id="partner-day" required=""><option value="">일</option></select></label></div>
+      <div class="pair-calendar"><label for="partner-calendar">생일 기준</label><select id="partner-calendar"><option value="solar">양력</option><option value="lunar">음력</option></select><label id="partner-leap-option" class="check-row" hidden=""><input id="partner-leap-month" type="checkbox"><span>윤달</span></label></div>
       <div class="person-inputs"><label><span class="field-label">이름 · 선택</span><input id="partner-name" type="text" maxlength="30" autocomplete="off" placeholder="이름 또는 별명"></label><label><span class="field-label">성별 · 선택</span><select id="partner-gender"><option value="">선택 안 함</option><option value="male">남성</option><option value="female">여성</option></select></label></div>
-      <p id="partner-zodiac" class="zodiac-preview" role="status" aria-live="polite" hidden></p>
-      <label class="check-row"><input id="partner-time-unknown" type="checkbox" checked aria-controls="partner-time-fields"><span>태어난 시간을 몰라요</span></label>
-      <div id="partner-time-fields" class="time-inputs" hidden><label><span class="field-label">시</span><select id="partner-hour" required disabled><option value="">시 선택</option></select></label><span class="time-colon" aria-hidden="true">:</span><label><span class="field-label">분</span><select id="partner-minute" required disabled><option value="">분 선택</option></select></label></div>
+      <p id="partner-zodiac" class="zodiac-preview" role="status" aria-live="polite" hidden=""></p>
+      <label class="check-row"><input id="partner-time-unknown" type="checkbox" checked="" aria-controls="partner-time-fields" aria-label="태어난 시간을 몰라요"><span>시간 모름</span></label>
+      <div id="partner-time-fields" class="time-inputs" hidden=""><label><span class="field-label">시</span><select id="partner-hour" required="" disabled=""><option value="">시 선택</option></select></label><span class="time-colon" aria-hidden="true">:</span><label><span class="field-label">분</span><select id="partner-minute" required="" disabled=""><option value="">분 선택</option></select></label></div>
     </fieldset>
         </section>
-        <section class="flow-step" data-flow-step="2" aria-labelledby="pair-confirm-title" hidden>
-          <h2 id="pair-confirm-title" class="flow-step-heading" tabindex="-1">두 사람을 확인해 주세요</h2>
-          <p class="flow-step-note">정보가 맞으면 아래에서 궁합을 펼치세요.</p>
-          <p id="compatibility-form-flow-error-2" class="flow-error form-error" data-flow-error role="alert" tabindex="-1" hidden></p>
-          <div class="flow-review" data-flow-review aria-label="입력한 두 사람의 정보"></div>
+        <section class="flow-step" data-flow-step="2" aria-labelledby="pair-confirm-title" hidden="">
+          <h2 id="pair-confirm-title" class="flow-step-heading" tabindex="-1">두 사람의 정보가 맞나요?</h2>
+
+          <p id="compatibility-form-flow-error-2" class="flow-error form-error" data-flow-error="" role="alert" tabindex="-1" hidden=""></p>
+          <div class="flow-review" data-flow-review="" aria-label="입력한 두 사람의 정보"></div>
         <div class="pair-form-tools"><button id="pair-swap" class="partner-clear-button" type="button">A와 B 바꾸기</button><button id="compatibility-clear" class="partner-clear-button" type="button">입력한 정보 지우기</button></div>
-        <div class="compatibility-purchase purchase-summary"><h3 class="flow-confirm-title">이번에 볼 풀이</h3><p class="saju-price"><strong id="compatibility-price">궁합 · 20쭈</strong></p><p id="compatibility-price-note" class="saju-price-note">궁합만 20쭈에 볼 수 있어요. 같은 두 사람은 결제 후 24시간 동안 다시 보기 0쭈. 전체 사주 30쭈에는 포함되지 않아요.</p>
-          <p id="compatibility-wallet" class="payment-status" role="status"></p><a id="compatibility-login" class="login-link" href="/world.html?tab=hub#agit-daily" hidden>아지트에서 로그인·쭈 확인하기 →</a>
+        <div class="compatibility-purchase purchase-summary"><h3 class="flow-confirm-title flow-sr-only">이번에 볼 풀이</h3><p class="saju-price"><strong id="compatibility-price">궁합 · 20쭈</strong></p><p id="compatibility-price-note" class="saju-price-note">같은 두 사람은 결제 후 24시간 다시 보기 0쭈</p>
+          <p id="compatibility-wallet" class="payment-status" role="status"></p><a id="compatibility-login" class="login-link" href="/world.html?tab=hub#agit-daily" hidden="">아지트에서 로그인·쭈 확인하기 →</a>
           <p id="compatibility-status" class="field-hint" role="status"></p>
 
         </div>
-        <details class="method-preview"><summary>궁합에 담은 내용</summary><p>두 사람의 출생 정보로 종합 궁합과 각자의 성격·특징을 살펴봐요. 생각을 정하는 모습, 대인관계, 일을 대하는 모습, 힘들 때의 모습과 서로 편하게 지낼 방법을 같은 항목끼리 비교할 수 있어요. 각 항목은 두 줄 요약 뒤에 A와 B 각각의 자세한 설명, 가상 예시와 실천 방법이 바로 이어져요.</p><p>처음에는 두 사람의 종합 궁합을 보여드려요. 닮은 점과 다른 점, 서로 맞춰 갈 방법을 살펴보고 종합 점수와 네 가지 항목의 막대그래프도 확인해요. 각 점수 아래의 ‘설명 읽기’를 누르면 두 사람의 모습과 그 항목에 맞는 가상 대화, 함께 해 볼 방법이 나와요. 위쪽의 ‘종합’, ‘A·B 성격’, ‘점수’, ‘자세히’에서 분야를 고르고, 항목 목록에서 읽고 싶은 내용을 선택하세요. 이전·다음 버튼을 누르거나 본문을 좌우로 밀어 넘길 수도 있어요. 점수는 오쭈다가 정한 규칙으로 계산한 100점 만점의 참고값이에요. 실제로 잘 지낼 확률을 뜻하지는 않아요.</p><p>생일이나 태어난 시간을 바꾸면 새로운 두 사람의 궁합으로 계산해요. 이름·성별이나 입력 순서만 바꾸면 남은 이용 시간은 그대로예요. 24시간이 지난 뒤 다시 펼치기를 눌러야 새로 결제돼요.</p><p>개인의 기운이 강한지 약한지, 서로에게 어떤 기운이 이로운지를 정밀하게 판정하거나 결혼·이별의 시기를 정하는 내용은 포함하지 않아요.</p><p>같은 특징에는 공통 설명을 사용해요. 점수는 서로 잘 지낼 확률이나 관계의 결과를 뜻하지 않아요.</p><p>현재 한국 시간으로 계산해요. 이름은 풀이에서 부를 때만 쓰고, 성별로 두 사람의 역할을 정하지 않아요. 저장한 성별은 일반 사주의 10년 운세를 계산할 때 사용해요.</p></details>
+        <details class="method-preview"><summary>이용 안내</summary><p>궁합 20쭈에는 두 사람 각각의 성격, 종합 궁합과 항목별 점수가 포함돼요. 전체 사주 30쭈와는 별도예요.</p><p>같은 두 사람은 결제 후 24시간 다시 보기 0쭈예요. 이름·성별·입력 순서를 바꿔도 이용 시간은 유지돼요. 생일·출생시각을 바꾸면 새 궁합이며, 만료 후 다시 펼칠 때만 결제해요.</p><p>개인의 기운이 강한지 약한지, 서로에게 어떤 기운이 이로운지를 정밀하게 판정하거나 결혼·이별의 시기를 정하는 내용은 포함하지 않아요.</p><p>같은 특징에는 공통 설명을 사용해요. 점수는 서로 잘 지낼 확률이나 관계의 결과를 뜻하지 않아요.</p><p>한국 시간으로 계산해요. 이름은 부를 때만 사용하고, 성별로 두 사람의 역할을 정하지 않아요.</p></details>
         </section>
-        <p id="compatibility-error" class="form-error" role="alert" tabindex="-1" hidden></p>
-        <div class="flow-actions"><button class="flow-back" type="button" data-flow-back hidden>이전</button><button class="primary-button flow-next" type="button" data-flow-next data-flow-next-label="다음 →" disabled>다음 →</button><button id="compatibility-open" class="primary-button" type="submit" data-expected-charge="20" disabled hidden><svg><use href="#i-star"/></svg><span>20쭈로 궁합 펼치기</span><svg><use href="#i-arrow"/></svg></button></div>
-        <p class="flow-privacy">입력 정보는 이 기기에 저장돼요. 이름·성별·생일은 서버로 보내지 않아요.</p>
-      </form>
+        <p id="compatibility-error" class="form-error" role="alert" tabindex="-1" hidden=""></p>
+        <div class="flow-actions"><button class="flow-back" type="button" data-flow-back="" hidden="">이전</button><button class="primary-button flow-next" type="button" data-flow-next="" data-flow-next-label="다음 →" disabled="">다음 →</button><button id="compatibility-open" class="primary-button" type="submit" data-expected-charge="20" disabled="" hidden=""><svg><use href="#i-star"></use></svg><span>20쭈로 궁합 펼치기</span><svg><use href="#i-arrow"></use></svg></button></div>
+        <p class="flow-privacy">출생 정보는 이 기기에만 저장돼요.</p>
+      </form></div>
       <noscript><p class="form-error">궁합을 읽으려면 자바스크립트를 켜 주세요.</p></noscript>
     </section>
-    <section id="compatibility-result" class="result" aria-labelledby="compatibility-result-title" hidden>
-      <header class="result-heading reading-result-heading"><h2 id="compatibility-result-title" tabindex="-1">두 사람의 <em>궁합</em></h2><p id="compatibility-births" class="birth-summary"></p><div class="zodiac-pair"><p id="self-result-zodiac" class="zodiac-preview zodiac-result" hidden></p><p id="partner-result-zodiac" class="zodiac-preview zodiac-result" hidden></p></div><p id="compatibility-expiry" class="field-hint"></p></header>
-      <div id="compatibility-detailed" class="detailed-reading" data-reading-size="normal"><div class="reading-tools"><a href="./" class="other-reading-link">나의 사주 보기</a><div class="reading-size-control" role="group" aria-label="본문 글자 크기"><span aria-hidden="true">글자 크기</span><button type="button" data-reading-size="normal" aria-pressed="true">보통</button><button type="button" data-reading-size="large" aria-pressed="false">크게</button></div></div><div id="compatibility-report"></div></div>
-      <div class="result-actions"><button id="compatibility-edit" class="primary-button" type="button">출생 정보 다시 보기</button><button id="compatibility-copy" class="secondary-button" type="button" disabled>성격·궁합 풀이 복사하기</button><a class="secondary-button" href="./">별빛 사주 보기</a></div><p id="compatibility-copy-status" class="field-hint" role="status"></p>
+    <section id="compatibility-result" class="result" aria-labelledby="compatibility-result-title" hidden="">
+      <header class="result-heading reading-result-heading"><div class="result-person"><h2 id="compatibility-result-title" tabindex="-1">두 사람의 <em>궁합</em></h2><p id="compatibility-births" class="birth-summary"></p><div class="zodiac-pair"><p id="self-result-zodiac" class="zodiac-preview zodiac-result" hidden=""></p><p id="partner-result-zodiac" class="zodiac-preview zodiac-result" hidden=""></p></div></div><details class="result-utility"><summary>보기 설정 <span aria-hidden="true">＋</span></summary><div class="result-utility-body"><div class="reading-tools"><div class="reading-size-control" role="group" aria-label="본문 글자 크기"><span aria-hidden="true">글자 크기</span><button type="button" data-reading-size="normal" aria-pressed="true">보통</button><button type="button" data-reading-size="large" aria-pressed="false">크게</button></div></div><p id="compatibility-expiry" class="field-hint"></p><div class="result-actions"><button id="compatibility-edit" class="secondary-button" type="button">출생 정보 수정</button><button id="compatibility-copy" class="secondary-button" type="button" disabled="">풀이 복사</button></div></div></details></header>
+      <div id="compatibility-detailed" class="detailed-reading" data-reading-size="normal"><div id="compatibility-report"></div></div>
+      <p id="compatibility-copy-status" class="field-hint" role="status"></p>
     </section>
   </main>
-  <footer class="site-footer"><span class="footer-wordmark">별빛 사주</span><p>함께하는 이야기는 두 사람의 선택으로 써 내려가세요.</p></footer>
+  <footer class="site-footer"><span class="footer-wordmark">별빛 사주 <span>· 오쭈다</span></span><nav class="footer-links" aria-label="사이트 메뉴"><a href="/world.html?tab=hub#agit-daily">오쭈다</a><details class="site-settings"><summary>화면 설정</summary><button id="motion-toggle" class="motion-toggle" type="button" aria-label="움직임 줄이기" aria-pressed="false"><svg aria-hidden="true"><use href="#i-motion"></use></svg><span data-motion-label="">움직임 줄이기</span></button></details></nav></footer>
   <script src="/shared/analytics/site-usage.js?v=20261113-fortune-visits1"></script>
-  <script type="module" src="./compatibility-app.mjs?v=20261114-saju-final-review2"></script>
+  <script type="module" src="./compatibility-app.mjs?v=20261114-saju-home1"></script>
+
 </body></html>

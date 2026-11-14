@@ -3,14 +3,16 @@ import {readingScopeText} from './reading-scope.mjs?v=20261114-saju-final-review
 import { SajuPayment } from './payment.js?v=20261113-saju-lists1';
 import { SajuCompatibilityPayment, COMPATIBILITY_PRICE } from './compatibility-payment.mjs?v=20261113-compatibility20-1';
 import { compatibilityScoreText } from './compatibility-score-view.mjs?v=20261114-saju-copy1';
-import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261114-saju-depth1';
+import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261114-saju-home1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
 import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-copy1';
 import { attachEntryFlow } from './entry-flow.mjs?v=20261114-saju-copy1';
+import { attachSajuHomepage } from './site-shell.mjs?v=20261114-saju-home1';
 
 const $=id=>document.getElementById(id);
 const form=$('compatibility-form'),button=$('compatibility-open');
 const entryFlow=attachEntryFlow(form);
+const siteHomepage=attachSajuHomepage(form,{flow:entryFlow});
 const people=['self','partner'];
 const motionQuery=window.matchMedia('(prefers-reduced-motion: reduce)');
 let reducedMotion=motionQuery.matches, motionOverride=false;
@@ -51,13 +53,13 @@ const billing=new SajuPayment({
   onIdentityReady:()=>{for(const picker of profilePickers)picker.refresh();},
   onAccountChange:()=>{
     generation++;quoteGeneration++;busy=false;quoteBusy=false;signedIn=false;readyPromise=null;
-    resetView(true);updateOffer();
+    resetView(true);entryFlow.reset();siteHomepage.home({focus:false});updateOffer();
     if(billing.identityReady)Promise.resolve().then(()=>ready()).catch(error=>{
       initialized=true;$('compatibility-error').textContent=requestError(error);$('compatibility-error').hidden=false;updateOffer();
     });
   },
   onModeChange:()=>{
-    if(initialized){generation++;quoteGeneration++;busy=false;quoteBusy=false;resetView(true);}
+    if(initialized){generation++;quoteGeneration++;busy=false;quoteBusy=false;resetView(true);entryFlow.reset();siteHomepage.home({focus:false});}
     updateOffer();
   },
 });
@@ -181,7 +183,7 @@ async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
     import('./compatibility.mjs?v=20261114-saju-final-review2'),
-    import('./report-view.mjs?v=20261114-saju-final-review2'),
+    import('./report-view.mjs?v=20261114-saju-home1'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
 }
@@ -313,7 +315,7 @@ form.addEventListener('submit',async event=>{
   }
 });
 $('compatibility-edit').addEventListener('click',()=>{
-  generation++;clearResult();updateOffer();void refreshQuote();entryFlow.reset();$('self-year').focus({preventScroll:true});
+  generation++;clearResult();updateOffer();void refreshQuote();entryFlow.reset();siteHomepage.start({focus:false});$('self-year').focus({preventScroll:true});
   form.scrollIntoView({block:'start',behavior:reducedMotion?'instant':'smooth'});
 });
 $('compatibility-copy').addEventListener('click',async()=>{
@@ -327,7 +329,14 @@ function resume(){updateBirthYearLimit();refreshProfiles();expireCurrent();updat
 window.addEventListener('focus',resume);window.addEventListener('pageshow',resume);
 window.addEventListener('storage',event=>{if(event.key===null||event.key?.startsWith(SAVED_PROFILES_PREFIX))refreshProfiles();});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')resume();});
-function setMotion(){document.documentElement.dataset.reducedMotion=String(reducedMotion);$('motion-toggle').setAttribute('aria-pressed',String(reducedMotion));$('motion-toggle').setAttribute('aria-label',reducedMotion?'움직임 다시 켜기':'움직임 줄이기');}
+function setMotion(){
+  document.documentElement.dataset.reducedMotion=String(reducedMotion);
+  $('motion-toggle').setAttribute('aria-pressed',String(reducedMotion));
+  const label=reducedMotion?'움직임 다시 켜기':'움직임 줄이기';
+  $('motion-toggle').setAttribute('aria-label',label);
+  const text=$('motion-toggle').querySelector('[data-motion-label]');
+  if(text)text.textContent=label;
+}
 $('motion-toggle').addEventListener('click',()=>{motionOverride=true;reducedMotion=!reducedMotion;setMotion();});
 motionQuery.addEventListener?.('change',event=>{if(!motionOverride){reducedMotion=event.matches;setMotion();}});setMotion();
 for(const button of document.querySelectorAll('[data-reading-size] button,button[data-reading-size]')) {

@@ -1,7 +1,7 @@
 import {appendReadingDetail,readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
 import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
 import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
-import {createReadingNavigator} from './reading-navigator.mjs?v=20261114-saju-flow1';
+import {createReadingNavigator} from './reading-navigator.mjs?v=20261114-saju-home1';
 
 const PERSON_KEYS=['self','partner'];
 const TOPIC_IDS=['decisions','relationships','work','pressure','adjustment'];
@@ -62,7 +62,7 @@ export function createCompatibilityPeoplePages(value,{names=[],appendParagraphs}
     page.id=`compatibility-people-${topicId}`;page.dataset.compatibilityTopic=topicId;
     const title=node('h4','compatibility-people-title',label);title.id=`${page.id}-title`;
     page.setAttribute('aria-labelledby',title.id);page.append(title);
-    if(intro)page.append(node('p','compatibility-reading-guide','같은 항목에서 A와 B의 모습을 비교해 보세요. 각자의 성향과 생활 예시, 서로 편하게 지낼 방법을 이어서 읽을 수 있어요.'));
+    if(intro)page.append(node('p','compatibility-reading-guide homepage-sr-only','같은 항목에서 A와 B의 모습을 비교해 보세요. 각자의 성향과 생활 예시, 서로 편하게 지낼 방법을 이어서 읽을 수 있어요.'));
     const jumps=node('nav','compatibility-person-jumps');jumps.setAttribute('aria-label','A와 B의 자세한 설명');
     for(const [index,person] of reading.people.entries()) {
       const item=intro?person:person.cards.find(card=>card.topicId===topicId);
@@ -115,18 +115,18 @@ export function createCompatibilityPager(section,pages) {
   }
   const domainForPage=page=>page.element.id==='compatibility-synthesis'?'synthesis'
     :page.element.id.startsWith('compatibility-score')?'scores'
-    :page.element.classList.contains('compatibility-people-page')?'people':'details';
+    :page.element.classList.contains('compatibility-people-page')?'people':'synthesis';
   const picker=createReadingNavigator({select,pages,domainForPage,
-    domains:[{id:'synthesis',label:'종합'},{id:'people',label:'A·B 성격'},{id:'scores',label:'점수'},{id:'details',label:'자세히'}],
-    groupForPage:page=>({synthesis:'두 사람의 종합',people:'같은 항목으로 비교',scores:'점수와 막대',details:'항목별 궁합'})[domainForPage(page)]});
+    domains:[{id:'synthesis',label:'종합'},{id:'people',label:'A·B 성격'},{id:'scores',label:'점수'}],
+    groupForPage:page=>page.element.id==='compatibility-synthesis'?'두 사람의 종합'
+      :({people:'같은 항목으로 비교',scores:'점수와 막대',synthesis:'항목별 궁합'})[domainForPage(page)]});
   label.hidden=true;
-  const controls=node('div','reading-pager-controls');
+  const controls=node('div','reading-pager-controls reading-pager-actions');
   const previous=node('button','reading-pager-step','이전');previous.type='button';previous.dataset.compatibilityStep='previous';
   const position=node('p','reading-page-position');position.id='compatibility-page-position';
   position.setAttribute('role','status');position.setAttribute('aria-live','polite');
   const next=node('button','reading-pager-step','다음');next.type='button';next.dataset.compatibilityStep='next';
-  controls.append(previous,position,next);navigation.append(label,select,picker.element,controls,
-    node('p','reading-swipe-hint','본문을 왼쪽으로 밀면 다음, 오른쪽으로 밀면 이전 항목으로 넘어가요.'));
+  controls.append(previous,position,next);navigation.append(label,select,picker.element);
   select.setAttribute('aria-describedby',position.id);
   picker.toggle.setAttribute('aria-describedby',position.id);
 
@@ -138,12 +138,11 @@ export function createCompatibilityPager(section,pages) {
       element=element.parentElement;managed.add(element);
     }
   }
-  const back=node('a','reader-detail-link reading-back-to-picker','다른 내용 고르기');back.href=`#${navigation.id}`;
-  back.addEventListener('click',event=>{
-    if(event.button||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
-    event.preventDefault();picker.focus({open:true});
-    navigation.scrollIntoView({block:'start',behavior:document.documentElement.dataset.reducedMotion==='true'?'instant':'smooth'});
-  });
+  const layout=node('div','reading-layout'),canvas=node('div','reading-canvas');
+  const footer=node('footer','reading-footer');
+  footer.append(controls,node('p','reading-swipe-hint homepage-sr-only','본문을 왼쪽으로 밀면 다음, 오른쪽으로 밀면 이전 항목으로 넘어가요.'));
+  canvas.append(...section.childNodes);canvas.append(footer);
+  layout.append(navigation,canvas);section.append(layout);
   const readable=pages.filter(page=>!page.support);let current,lastReading,motion=null;
   function show(page,{move=false}={}) {
     if(!page)return false;
@@ -160,8 +159,8 @@ export function createCompatibilityPager(section,pages) {
     const index=readable.indexOf(page);
     previous.textContent=page.support?'풀이로':'이전';previous.disabled=page.support?!lastReading:index===0;
     next.disabled=page.support||index===readable.length-1;
-    position.textContent=page.support?page.label:`${index+1} / ${readable.length} · ${page.label}`;
-    page.element.append(back);
+    position.textContent=page.support?page.label:`${index+1} / ${readable.length}`;
+    position.setAttribute('aria-label',page.support?page.label:`${position.textContent} · ${page.label}`);
     if(move) {
       // Keep focus on the control so arrows and repeated steps keep working.
       navigation.scrollIntoView({block:'start',behavior:transition||document.documentElement.dataset.reducedMotion==='true'?'instant':'smooth'});
@@ -172,11 +171,10 @@ export function createCompatibilityPager(section,pages) {
   select.addEventListener('change',()=>show(pages.find(page=>page.element.id===select.value),{move:true}));
   previous.addEventListener('click',()=>show(current.support?lastReading:readable[readable.indexOf(current)-1],{move:true}));
   next.addEventListener('click',()=>show(readable[readable.indexOf(current)+1],{move:true}));
-  section.querySelector(':scope > .report-section-heading').after(navigation);
   show(readable.find(page=>page.element.id==='compatibility-synthesis')||readable[0]);
-  motion=createReadingMotion(section,{getCurrentPage:()=>current?.element});
-  attachReadingSwipe(section,{previous,next,motion});
-  return {reveal(target) {
+  motion=createReadingMotion(canvas,{getCurrentPage:()=>current?.element});
+  attachReadingSwipe(canvas,{previous,next,motion});
+  return {canvas,footer,reveal(target) {
     if(navigation.contains(target))return false;
     let page;
     for(let element=target;element&&element!==section;element=element.parentElement) {

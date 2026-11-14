@@ -1,10 +1,12 @@
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
 import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-copy1';
 import { attachEntryFlow } from './entry-flow.mjs?v=20261114-saju-copy1';
+import { attachSajuHomepage } from './site-shell.mjs?v=20261114-saju-home1';
 
 const $ = id => document.getElementById(id);
 const form = $('birth-form');
 const entryFlow = attachEntryFlow(form);
+const siteHomepage = attachSajuHomepage(form,{flow:entryFlow});
 const submit = $('open-story');
 const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 let reducedMotion = reduceQuery.matches;
@@ -82,6 +84,8 @@ function setMotion() {
   const label = reducedMotion ? '움직임 다시 켜기' : '움직임 줄이기';
   $('motion-toggle').setAttribute('aria-label', label);
   $('motion-toggle').title = label;
+  const text=$('motion-toggle').querySelector('[data-motion-label]');
+  if(text)text.textContent=label;
 }
 setMotion();
 $('motion-toggle').addEventListener('click', () => {
@@ -453,7 +457,7 @@ async function prepareDetailedReading(chart,target,person=currentPerson||readPer
   detailModulesPromise ||= Promise.all([
     import('./fortune-data.mjs?v=20261114-saju-correction1'),
     import('./readings.mjs?v=20261114-saju-final-review2'),
-    import('./report-view.mjs?v=20261114-saju-final-review2'),
+    import('./report-view.mjs?v=20261114-saju-home1'),
     import('./daeun.mjs?v=20261114-saju-correction1'),
     zodiacModule()
   ]).catch(error=>{detailModulesPromise=null;throw error;});
@@ -490,7 +494,7 @@ function commitDetailedReading(chart,{fortune,reading,content,copyText,target,ti
     : `${target.topic==='all'?'각 항목 결제 후 24시간 · 가장 빠른 만료: ':''}${end} · 다시 보기 0쭈`;
   $('reading-controls').hidden=false;
   $('other-reading-options').open=false;
-  $('report-toc').hidden=false;
+  $('report-toc').hidden=true;
   $('report-status').textContent='';
   $('report-status').classList.remove('is-loading');
   $('copy-reading').disabled=false;
@@ -613,7 +617,9 @@ async function openSelectedProduct() {
     currentAccess={chart,owner:payment.user,status:recordReceipt(status,receipt,target)};
     commitDetailedReading(chart,prepared,receipt);
     if (receipt.replayed) toast('구매한 항목을 추가 차감 없이 다시 펼쳤어요.');
-    $('detailed-title').focus({preventScroll:true});
+    const openedPage=$('report-content').querySelector('[data-reader-current]');
+    (openedPage||$('detailed-title')).focus({preventScroll:true});
+    ($('report-content').querySelector('.reading-layout')||$('detailed-reading')).scrollIntoView({block:'start',behavior:reducedMotion?'instant':'smooth'});
   } catch (error) {
     if (generation!==reportGeneration || currentReading!==chart || $('result').hidden) return;
     if (!inspected) currentAccess=null;
@@ -667,6 +673,8 @@ function resetAfterAccountChange() {
   document.querySelector('.skip-link').textContent='출생 정보 입력으로 바로가기';
   fillYears($('entry-year'));
   updateCalendar();updateTime();updateZodiacPreview();updateEntryOffer();
+  entryFlow.reset();
+  siteHomepage.home({focus:false});
 }
 function recordFortuneVisit() {
   if (!billing?.client || billing.adminPreview) return;
@@ -784,6 +792,7 @@ $('edit-birth').addEventListener('click',()=>{
   document.querySelector('.skip-link').textContent='출생 정보 입력으로 바로가기';
   clearError();updateEntryOffer();scheduleEntryCheck();
   entryFlow.reset();
+  siteHomepage.start({focus:false});
   $('birth-year').focus({preventScroll:true});
   form.scrollIntoView({block:'start',behavior:reducedMotion?'instant':'smooth'});
 });
