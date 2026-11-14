@@ -833,8 +833,141 @@ const server = http.createServer((request, response) => {
         await scoreboard.screenshot({path:path.join(artifacts,'saju-compatibility-scores-'+pair+'-'+viewport+'.png')});
       }
     }
+    const sajuSwipeViews={};
+    for(const [kind,fixture,pickerId,currentAttribute] of [
+      ['general','/__saju_fixture','reading-page-select','data-reader-current'],
+      ['compatibility','/__compatibility_fixture','compatibility-page-select','data-compatibility-current']
+    ]) {
+      for(const [viewport,size,textSize,input] of [
+        ['phone-small',{width:320,height:844},'large','touch'],
+        ['phone',{width:390,height:844},'normal','touch'],
+        ['desktop',{width:1280,height:900},'normal','mouse']
+      ]) {
+        const swipe=await browser.newPage({viewport:size,reducedMotion:'reduce',deviceScaleFactor:1,hasTouch:input==='touch'});
+        const cdp=input==='touch'?await swipe.context().newCDPSession(swipe):null;
+        const label=kind+' '+viewport+' '+textSize+' '+input;let swipeStage='initializing';
+        try {
+          swipe.on('pageerror',error=>errors.push(error.message));
+          swipe.on('response',response=>{if(response.status()>=400)failed.push([response.status(),response.url()]);});
+          await swipe.route('**/*',route=>route.request().url().startsWith('http://127.0.0.1:')?route.continue():route.abort());
+          await swipe.goto(new URL(fixture,url).href);
+          await swipe.locator('#report-content[data-ready]').waitFor();
+          await swipe.locator('#report-content').evaluate((element,value)=>{element.dataset.readingSize=value;},textSize);
+          await swipe.evaluate(attribute=>{
+            globalThis.__sajuSwipeTrace=[];
+            const record=event=>{
+              const host=document.querySelector('.reading-swipe-enabled');
+              const trace=globalThis.__sajuSwipeTrace;
+              trace.push({type:event.type,target:event.target.id||event.target.tagName,pointer:event.pointerId,
+                x:event.clientX,y:event.clientY,button:event.button,buttons:event.buttons,primary:event.isPrimary,time:Math.round(event.timeStamp),
+                captured:host?.hasPointerCapture(event.pointerId||0),dragging:host?.classList.contains('reading-swipe-dragging'),
+                selected:document.querySelector('['+attribute+']')?.id,selection:getSelection()?.toString().length||0});
+              if(trace.length>80)trace.shift();
+            };
+            for(const name of ['pointerdown','pointermove','pointerup','pointercancel','gotpointercapture','lostpointercapture'])document.addEventListener(name,record,true);
+          },currentAttribute);
+          const picker=swipe.locator('#'+pickerId),current=swipe.locator('['+currentAttribute+']'),pager=swipe.locator('.reading-pager');
+          const first=await current.getAttribute('id');
+          const controls=pager.locator('.reading-pager-step');
+          await controls.last().click();
+          const second=await current.getAttribute('id');
+          await controls.first().click();assert.equal(await current.getAttribute('id'),first);
+
+          // Start on actual paragraph glyphs, so PC dragging is verified over
+          // reading text rather than only over blank card padding.
+          async function paragraphPoints(direction) {
+            const paragraph=current.locator('.reader-prose p:visible').first();
+            await paragraph.evaluate(element=>element.scrollIntoView({block:'center',behavior:'instant'}));
+            return paragraph.evaluate((element,direction)=>{
+              const walker=document.createTreeWalker(element,NodeFilter.SHOW_TEXT);
+              let text,rect;
+              while((text=walker.nextNode())) {
+                if(!text.textContent.trim())continue;
+                const range=document.createRange();range.selectNodeContents(text);
+                rect=Array.from(range.getClientRects()).find(box=>box.width>110&&box.top>=0&&box.bottom<=innerHeight);
+                if(rect)break;
+              }
+              if(!rect)throw new Error('No visible paragraph line wide enough for a real drag');
+              const distance=Math.min(140,rect.width-12),left=rect.left+6,right=left+distance,y=rect.top+rect.height/2;
+              return direction<0?{from:{x:right,y},to:{x:left,y}}:{from:{x:left,y},to:{x:right,y}};
+            },direction);
+          }
+          async function gesture(from,to) {
+            await swipe.evaluate(()=>{globalThis.__sajuSwipeTrace=[];});
+            if(cdp) {
+              const point=(x,y)=>({x,y,id:1,radiusX:2,radiusY:2,force:1});
+              await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point(from.x,from.y)]});
+              for(let step=1;step<=8;step++) {
+                await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[point(from.x+(to.x-from.x)*step/8,from.y+(to.y-from.y)*step/8)]});
+              }
+              await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+            } else {
+              await swipe.mouse.move(from.x,from.y);await swipe.mouse.down();
+              await swipe.mouse.move(to.x,to.y,{steps:8});await swipe.mouse.up();
+            }
+            await swipe.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+          }
+          swipeStage='left text drag';
+          let points=await paragraphPoints(-1);await gesture(points.from,points.to);
+          assert.equal(await current.getAttribute('id'),second,label+': a left drag over text advances exactly one reading');
+          assert.equal(await picker.inputValue(),second,label+': the picker follows the drag');
+          swipeStage='right text drag';points=await paragraphPoints(1);await gesture(points.from,points.to);
+          assert.equal(await current.getAttribute('id'),first,label+': a right drag returns to the prior reading');
+          swipeStage='first page boundary';points=await paragraphPoints(1);await gesture(points.from,points.to);
+          assert.equal(await current.getAttribute('id'),first,label+': the first reading does not wrap');
+
+          let verticalScroll=null;
+          if(cdp) {
+            swipeStage='native vertical scroll';
+            points=await paragraphPoints(-1);
+            const from={x:points.from.x,y:Math.max(230,points.from.y)},to={x:points.from.x+3,y:Math.max(230,points.from.y)-160};
+            const before=await swipe.evaluate(()=>scrollY);await gesture(from,to);
+            await swipe.waitForFunction(before=>scrollY>before+40,before);
+            verticalScroll=(await swipe.evaluate(()=>scrollY))-before;
+            assert.equal(await current.getAttribute('id'),first,label+': vertical touch scrolling does not turn the page');
+            await swipe.evaluate(async()=>{
+              let last=scrollY,stable=0;const deadline=performance.now()+1200;
+              while(stable<3&&performance.now()<deadline) {
+                await new Promise(requestAnimationFrame);
+                stable=Math.abs(scrollY-last)<1?stable+1:0;last=scrollY;
+              }
+            });
+          } else {
+            swipeStage='existing text selection';
+            // A user's existing selection remains usable instead of becoming a
+            // page turn. The selection itself is created only in this fixture.
+            await current.locator('.reader-prose p:visible').first().evaluate(element=>{
+              const range=document.createRange();range.selectNodeContents(element);
+              getSelection().removeAllRanges();getSelection().addRange(range);
+            });
+            points=await paragraphPoints(-1);await gesture(points.from,points.to);
+            assert.equal(await current.getAttribute('id'),first,label+': an existing selected passage is not a swipe');
+            await swipe.evaluate(()=>getSelection().removeAllRanges());
+          }
+          swipeStage='hint layout';
+          await pager.evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));
+          const hint=await pager.locator('.reading-swipe-hint').evaluate(element=>{
+            const rect=element.getBoundingClientRect(),style=getComputedStyle(element);
+            return {text:element.textContent,font:parseFloat(style.fontSize),fits:element.scrollWidth<=element.clientWidth+1&&element.scrollHeight<=element.clientHeight+1,
+              inside:rect.left>=-1&&rect.right<=innerWidth+1,wraps:!['nowrap','pre'].includes(style.whiteSpace),
+              touchAction:getComputedStyle(element.closest('.reading-swipe-enabled')).touchAction};
+          });
+          assert.ok(hint.text.includes('왼쪽')&&hint.text.includes('오른쪽')&&hint.fits&&hint.inside&&hint.wraps,label+': directions remain readable without clipping');
+          assert.ok(hint.font>=13,label+': swipe directions remain readable');
+          assert.ok(hint.touchAction.includes('pan-y')&&hint.touchAction.includes('pinch-zoom'),label+': native vertical scrolling and zoom remain available');
+          assert.equal(await swipe.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,label+': swipe UI fits the viewport');
+          sajuSwipeViews[label]={first,second,leftSteps:1,rightSteps:1,bounded:true,verticalScroll,hint};
+          if(viewport!=='phone')await swipe.screenshot({path:path.join(artifacts,'saju-swipe-'+kind+'-'+viewport+'-'+textSize+'.png')});
+          if(viewport==='phone-small')await pager.screenshot({path:path.join(artifacts,'saju-swipe-pager-'+kind+'-'+viewport+'-'+textSize+'.png')});
+        } catch(error) {
+          console.error(JSON.stringify({swipeFailure:label,stage:swipeStage,events:await swipe.evaluate(()=>globalThis.__sajuSwipeTrace||[]).catch(()=>[])}));
+          await swipe.screenshot({path:path.join(artifacts,'saju-swipe-failure-'+kind+'-'+viewport+'.png')}).catch(()=>{});
+          throw error;
+        } finally {if(cdp)await cdp.detach();await swipe.close();}
+      }
+    }
     assert.deepEqual(errors, []);
     assert.deepEqual(failed, []);
-    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuEntryViews, sajuNavigation, sajuSummaryViews, sajuScoreViews, sajuScoreRegressions, sajuDaeunAssumptionViews, compatibilityPeople, compatibilityScores, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
+    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuEntryViews, sajuNavigation, sajuSummaryViews, sajuScoreViews, sajuScoreRegressions, sajuDaeunAssumptionViews, compatibilityPeople, compatibilityScores, sajuSwipeViews, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => server.close());

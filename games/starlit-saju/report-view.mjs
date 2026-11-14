@@ -2,7 +2,8 @@ import {getReadingSources} from './sources.mjs?v=20261113-saju-reader1';
 import {applyReadingSummaryViews} from './reading-summary-view.mjs?v=20261113-saju-summary1';
 import {applyReadingScoreViews} from './reading-score-view.mjs?v=20261114-saju-wind1';
 import {createCompatibilityScoreboard} from './compatibility-score-view.mjs?v=20261114-saju-wind1';
-import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261114-saju-qa1';
+import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261114-saju-swipe1';
+import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-swipe1';
 
 const readingPagers=new WeakMap();
 const pagerDocuments=new WeakSet();
@@ -1157,7 +1158,8 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   const previous=node('button','reading-pager-step','이전');previous.type='button';
   const position=node('p','reading-page-position');position.id='reading-page-position';position.setAttribute('role','status');position.setAttribute('aria-live','polite');
   const next=node('button','reading-pager-step','다음');next.type='button';
-  controls.append(previous,position,next);navigation.append(label,select,controls);
+  controls.append(previous,position,next);navigation.append(label,select,controls,
+    node('p','reading-swipe-hint','본문을 왼쪽으로 밀면 다음, 오른쪽으로 밀면 이전 항목으로 넘어가요.'));
   const back=readingLink('다른 분야 고르기','reading-pager','reader-detail-link reading-back-to-picker');
 
   const managed=new Set();
@@ -1243,6 +1245,7 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   show(initial);
   return {mount(container) {
     host=container;container.dataset.readerPaged='true';
+    attachReadingSwipe(container,{previous,next});
     readingPagers.set(container,{reveal:target=>{
       if(!show(pageFor(target)))return false;
       for(let element=target;element&&element!==container;element=element.parentElement) {
