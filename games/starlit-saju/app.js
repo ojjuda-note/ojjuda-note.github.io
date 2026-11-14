@@ -451,7 +451,7 @@ async function prepareDetailedReading(chart,target,person=currentPerson||readPer
     import('./fortune-data.mjs?v=20261113-saju-reader1'),
     import('./readings.mjs?v=20261114-saju-daeun6-1'),
     import('./report-view.mjs?v=20261114-saju-qa1'),
-    import('./daeun.mjs?v=20261114-saju-daeun6-1'),
+    import('./daeun.mjs?v=20261114-saju-qa1'),
     zodiacModule()
   ]).catch(error=>{detailModulesPromise=null;throw error;});
   const [dataModule,readingModule,viewModule,daeunModule,zodiacData]=await detailModulesPromise;
