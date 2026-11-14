@@ -575,12 +575,14 @@
           "sub": "가오슝 국립경기장 · Live Nation · 19:00 (현지)",
           "href": "https://tixcraft.com/activity/detail/26_btskns"
         },
+        {"date":"2026-11-21","title":"BTS WORLD TOUR ARIRANG · 가오슝 일본 영화관 생중계","sub":"일본 전국 영화관 · 현지 상영 시간·예매처는 공식 안내 확인","href":"https://bts-official.jp/news/7c1afecf3d0c"},
         {
           "date": "2026-11-22",
           "title": "BTS WORLD TOUR ARIRANG · 가오슝",
           "sub": "가오슝 국립경기장 · Live Nation · 19:00 (현지)",
           "href": "https://tixcraft.com/activity/detail/26_btskns"
         },
+        {"date":"2026-11-28","title":"BTS ARIRANG 도쿄돔 공연·특별편 일본 방송","sub":"TBS 채널 1 · 공연 20:00, 특별편 21:50(일본 시간) · 편성 변경은 TBS 확인","href":"https://www.tbs.co.jp/tbs-ch/information/2026_1026_1100.html"},
         {
           "date": "2026-12-03",
           "title": "BTS WORLD TOUR ARIRANG · 방콕",
@@ -653,8 +655,6 @@
           "sub": "겔로라 붕 카르노 주경기장 · Live Nation · 현지 공연 시각은 예매처 확인",
           "href": "https://btsworldtourofficial.com/"
         },
-        {"date":"2026-11-21","title":"BTS WORLD TOUR ARIRANG · 가오슝 일본 영화관 생중계","sub":"일본 전국 영화관 · 현지 상영 시간·예매처는 공식 안내 확인","href":"https://bts-official.jp/news/7c1afecf3d0c"},
-        {"date":"2026-11-28","title":"BTS ARIRANG 도쿄돔 공연·특별편 일본 방송","sub":"TBS 채널 1 · 공연 20:00, 특별편 21:50(일본 시간) · 편성 변경은 TBS 확인","href":"https://www.tbs.co.jp/tbs-ch/information/2026_1026_1100.html"},
         {"date":"2026-12-30","title":"BTS ARIRANG 자카르타 공연 일본 영화관 생중계","sub":"일본 전국 영화관 · 12/29 자카르타 공연과 구분 · 상영 12/30 일본 현지","href":"https://bts-official.jp/news/7c1afecf3d0c"},
         {"date":"2027-02-12","title":"BTS WORLD TOUR ARIRANG · 멜버른","sub":"멜버른 · 마블 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
         {"date":"2027-02-13","title":"BTS WORLD TOUR ARIRANG · 멜버른","sub":"멜버른 · 마블 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
