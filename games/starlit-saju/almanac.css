@@ -96,7 +96,7 @@ body.saju-edition .entry-progress {
 body.saju-edition .entry-progress button,
 body.saju-edition .entry-progress button[aria-current=step],
 body.saju-edition .entry-progress button:disabled {
-  flex: none; min-height: 44px; padding: 0; border: 0; border-radius: 0; background: none;
+  flex: none; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 0; background: none;
 }
 body.saju-edition .entry-progress button > span:first-child {
   width: 20px; height: 20px; border: 1px solid var(--control-border); background: transparent;
