@@ -746,8 +746,8 @@ async function readyBilling() {
       }
     });
     const state=await billing.init();
-    if (billingPromise!==task) throw new Error('account_changed');
     recordFortuneVisit();
+    if (billingPromise!==task) throw new Error('account_changed');
     billingInitialized=true;billingSignedIn=state.signedIn===true;billingMode=Boolean(state.adminPreview);
     profilePicker.refresh();
     updateBillingStatus();
