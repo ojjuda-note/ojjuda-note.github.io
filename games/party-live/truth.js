@@ -112,7 +112,7 @@
         return '<button type="button" '+control+' aria-label="'+sideName(i,taste)+'">'+cardLabel(taste)+'</button>';
       });
       const heading=mine?'카드 한 장을 골라요':name+'님이 카드를 고르고 있어요';
-      return '<h1 class="suite-heading">'+heading+'</h1><div class="truth-hand">'+cards.join('')+'</div>';
+      return '<h1 class="suite-heading">'+heading+'</h1><div class="truth-hand">'+cards.join('')+'</div>'+(mine?window.DrinkingQuestionMenu.button('truth'):'');
     }
     const flavor=s.game.flavor==='spicy'?'spicy':'mild';
     return '<h1 class="suite-heading">'+name+'님의 차례예요</h1><div class="truth-face '+flavor+'"><span>'+labels[flavor]+'</span><strong>'+
@@ -165,6 +165,16 @@
           if (ok && $('#truth-question').value.trim()===text) $('#truth-question').value='';
         }
       }
+    };
+    const choose=document.querySelector('[data-question-menu]');
+    if(choose)choose.onclick=()=>{
+      const menu=window.DrinkingQuestionMenu;
+      menu.open({kind:'truth',flavors:enabledFlavors(s.game.mode),load:flavor=>menu.catalog('truth',flavor),apply:async(question,manual,flavor)=>{
+        const live=current?.s;if(!live||live.code!==s.code||live.round!==s.round||live.phase!=='pick'||live.game.turn!==s.game.turn||live.me!==live.game.turn)return false;
+        const ok=await current.ui.send('truth_pick',{turn:live.game.turn,question,flavor});
+        if(ok&&manual)window.DrinkingPrompts.submit('truth',question,flavor);
+        return ok;
+      }});
     };
     document.querySelectorAll('[data-truth-side]').forEach(button=>{
       button.onclick=()=>ui.send('truth_pick',{turn:s.game.turn,side:Number(button.dataset.truthSide)});

@@ -216,3 +216,22 @@ test('drinking rooms retain consistent state through overlapping account request
     assert.deepEqual(await room(users[0], 'mine'), {room: null});
   });
 });
+
+test('explicit truth and minority choices are shared, turn-scoped, and cannot change a ballot after voting',async t=>{
+  const f=await fixture();t.after(()=>f.close());const [a,b,c]=f.users;
+  const act=(who,kind,action,code,opts)=>f.publicRpc(who,kind==='truth'?'party_live_multiplayer':'party_vote_multiplayer',[kind,action,code,opts||{}]);
+  async function create(kind){let r=await act(a,kind,'create','',{title:'질문 선택',password:'abcd',capacity:3,request_id:randomUUID()});for(const who of [b,c])r=await act(who,kind,'join',r.code,{password:'abcd'});return act(a,kind,'state',r.code);}
+  let r=await create('minority');const opt={round:r.round,revision:r.revision,choices:['첫 번째','두 번째']};
+  await assert.rejects(act(b,'minority','minority_question',r.code,opt),/host_only/);
+  const old=r.choices;r=await act(a,'minority','minority_question',r.code,opt);assert.deepEqual(r.choices,opt.choices);
+  await assert.rejects(act(b,'minority','vote',r.code,{round:r.round,target:1,choices:old}),/choices_changed/);
+  await assert.rejects(act(b,'minority','vote',r.code,{round:r.round,target:1}),/choices_changed/);
+  r=await act(b,'minority','vote',r.code,{round:r.round,target:1,choices:r.choices});
+  await assert.rejects(act(a,'minority','minority_question',r.code,{...opt,revision:r.revision}),/vote_started/);
+  r=await create('truth');const move=(who,action,opts)=>act(who,'truth',action,r.code,{round:r.round,revision:r.revision,turn:r.game.turn,request_id:randomUUID(),...opts});
+  r=await move(a,'truth_begin',{mode:'mild',deck:{mild:['기존 질문'],spicy:[]},catalog_revision:'20261114-drinking-rebuild1'});
+  await assert.rejects(move(b,'truth_pick',{flavor:'mild',question:'누구의 차례?'}),/not_your_turn/);
+  await assert.rejects(move(a,'truth_pick',{flavor:'spicy',question:'수위 확인'}),/invalid_flavor/);
+  r=await move(a,'truth_pick',{flavor:'mild',question:'어떤 노래를 좋아해요?'});assert.equal(r.game.question,'어떤 노래를 좋아해요?');
+  assert.equal((await act(c,'truth','state',r.code)).game.question,r.game.question);
+});

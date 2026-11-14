@@ -37,6 +37,10 @@ async function screen({url = '/games/drinking/?mode=multi', actor = 'member-a', 
     url: pageUrl.href, runScripts: 'outside-only', pretendToBeVisual: true, virtualConsole
   });
   const w = dom.window;
+  if(!w.HTMLDialogElement.prototype.showModal){
+    w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+    w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
+  }
   await tick();
   let now = 100000, hidden = false, online = true, serial = 0, closed = false;
   let currentActor = actor, identityError = null;
@@ -125,6 +129,9 @@ async function screen({url = '/games/drinking/?mode=multi', actor = 'member-a', 
     const sources = scripts || [...content.querySelectorAll('[data-module]')].map(node => node.dataset.module);
     content.querySelectorAll('[data-module]').forEach(node => node.remove());
     if (!sources.some(src => src.includes('connection.js'))) evaluate('/games/drinking/connection.js');
+    if(scripts&&sources.some(src=>/party-live|party-vote|\/king\//.test(src))){
+      evaluate('/games/drinking/prompt-flavors.js');evaluate('/games/drinking/question-menu.js');
+    }
     for (const src of sources) evaluate(src);
   }
   async function advance(duration) {

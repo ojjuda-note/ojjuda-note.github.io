@@ -18,7 +18,7 @@
       '<textarea id="pair-question" rows="2" required maxlength="120">' +
       ui.esc(draftFor(s).value) + '</textarea>' +
       '<p><small>직접 쓴 내용은 관리자 검토 후 공용 목록에 등록될 수 있어요.</small></p>'+
-      '<div class="pair-prompt-actions"><button type="button" id="pair-suggest">' + options.another + '</button>' +
+      '<div class="pair-prompt-actions"><button type="button" id="pair-suggest">' + (kind==='imagevote'?'질문 선택 · 직접 입력':options.another) + '</button>' +
       '<button type="submit" class="action">' + options.submit + '</button></div></form>';
   }
 
@@ -45,7 +45,14 @@
       current.value=field.value;
       field.setCustomValidity('');
     };
-    form.querySelector('#pair-suggest').onclick=suggest;
+    form.querySelector('#pair-suggest').onclick=()=>{
+      const menu=window.DrinkingQuestionMenu;
+      if(kind!=='imagevote')return suggest();
+      return menu.open({kind,initial:current.value,load:()=>menu.catalog(kind),apply:value=>{
+        const input=document.getElementById('pair-question');if(draft!==current||!input)return false;
+        current.edit++;current.value=input.value=value;input.setCustomValidity('');
+      }});
+    };
     if (!current.started) {current.started=true;void suggest();}
     form.onsubmit = event => {
       event.preventDefault();

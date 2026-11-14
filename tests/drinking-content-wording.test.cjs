@@ -148,9 +148,14 @@ async function showCorrectedKing(f,live,word,t){
   if(pair){
     const second=ui.find('#order [name="second"]');second.value='2';
     second.dispatchEvent(new ui.w.Event('change',{bubbles:true}));
-    await until(()=>ui.find('#order [name="mission"]')?.value===word,'corrected two-person recommendation');
+    await until(()=>ui.find('#order [name="mission"]')?.value.startsWith('둘이 '),'two-person recommendation');
   }
-  assert.equal(ui.find('#order [name="mission"]').value,word,'submit the automatically recommended corrected mission without replacing the input');
+  ui.click('[data-do="suggest"]');
+  await until(()=>[...(ui.find('.party-question-dialog [data-question]')?.options||[])].some(option=>option.textContent===word),'the corrected mission is in the active catalog');
+  const picker=ui.find('.party-question-dialog [data-question]');
+  picker.value=[...picker.options].find(option=>option.textContent===word).value;picker.dispatchEvent(new ui.w.Event('change'));
+  ui.submit('.party-question-dialog form');
+  assert.equal(ui.find('#order [name="mission"]').value,word,'the selected corrected mission is used verbatim');
   ui.submit('#order');
   await until(()=>ui.find('.king-order h1')?.textContent===word,'corrected king mission reaches the server');
   for(const screen of uis){await screen.wake();await until(()=>screen.find('.king-order h1')?.textContent===word,'same corrected mission on every screen');assert.deepEqual(screen.errors,[]);}
@@ -177,7 +182,8 @@ async function showCorrectedLive(f,kind,entry,t){
     await until(()=>uis[0].find('[data-truth-side="0"]'),'truth card ready');
     uis[0].click('[data-truth-side="0"]');
   }else{
-    await until(()=>uis[0].find('[data-finger-choice]')?.value===entry,'the current pool automatically recommends the corrected condition');
+    await until(()=>[...(uis[0].find('[data-finger-choice]')?.options||[])].some(o=>o.value===entry),'the corrected condition is available');
+    const selected=uis[0].find('[data-finger-choice]');selected.value=entry;selected.dispatchEvent(new uis[0].w.Event('change'));
     uis[0].submit('#pair-form');
   }
   const selector=kind==='truth'?'.truth-face strong':'#game h1',expected=kind==='truth'?entry.body:entry;

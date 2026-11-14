@@ -97,7 +97,7 @@ function roundView(s) {
     case 'vote':
       return '<h1 class="suite-heading">' + (s.voted ? '투표를 마쳤어요' : minority ? '어느 쪽을 고를까요?' : '누가 다른 미션을 받았을까요?') + '</h1>' +
         '<p class="suite-hint">투표 ' + s.voteCount + ' / ' + s.players.length + '명</p>' +
-        (s.voted ? '<p class="suite-hint">모두 투표하면 결과가 공개돼요.</p>' : minority ? ballots(s.choices) : ballots(s.players, s.me));
+        (s.voted ? '<p class="suite-hint">모두 투표하면 결과가 공개돼요.</p>' : minority ? ballots(s.choices) : ballots(s.players, s.me))+(minority&&host&&!s.voteCount?window.DrinkingQuestionMenu.button('minority'):'');
     case 'done':
       return (minority ? resultForMinority(s) : resultForMission(s)) +
         (party ? '' : host ? control('한 판 더', 'again', true) : '<p>방장이 다음 판을 시작할 수 있어요.</p>');
@@ -126,6 +126,14 @@ function render(s, force = false) {
   view.innerHTML = '<section class="card"><div class="topline"><span>방 ' + esc(party?.code || s.code) + '</span><span>' + s.round +
     '번째 판 · ' + s.players.length + '/' + s.capacity + '명</span></div>' + roundView(s) +
     '<div class="actions">' + control('방 나가기', 'leave') + '</div></section>';
+  const choose=view.querySelector('[data-question-menu]');
+  if(choose)choose.onclick=()=>{
+    const menu=window.DrinkingQuestionMenu;
+    menu.open({kind:'minority',initial:s.choices,load:()=>menu.catalog('minority'),apply:async choices=>{
+      if(!connection.active()||busy||room?.code!==s.code||room.round!==s.round||room.phase!=='vote'||room.voteCount||room.me!==0)return false;
+      const next=await api('minority_question',s.code,{round:s.round,revision:room.revision,choices});render(next,true);return true;
+    }});
+  };
   if (focus?.do) {
     const buttons = view.querySelectorAll('button[data-do]');
     Array.from(buttons).find(b => b.dataset.do === focus.do && b.dataset.slot === focus.slot)?.focus({preventScroll:true});
@@ -139,6 +147,7 @@ const messages = {
   room_full:'이미 게임이 시작됐거나 자리가 없어요.', room_in_progress:'참여 중인 방에서 먼저 나와 주세요.',
   join_rate_limit:'비밀번호를 여러 번 틀렸어요. 1분 뒤 다시 입력해 주세요.', wrong_password:'방 비밀번호가 맞지 않아요.',
   invalid_password:'비밀번호는 4~32자, 한글은 24자까지 가능해요.', invalid_title:'방 제목과 참여 인원을 확인해 주세요.',
+  vote_started:'이미 투표가 시작됐어요.',choices_changed:'선택지가 바뀌었어요. 다시 확인해 주세요.',invalid_choices:'서로 다른 두 선택지를 1~80자로 입력해 주세요.',
   stale_round:'새 판이 시작됐어요.', invalid_game:'이 게임의 방 코드를 확인해 주세요.',
   invalid_target:'화면에 표시된 선택지 중 하나를 골라 주세요.', invalid_vote:'화면에 표시된 선택지 중 하나를 골라 주세요.',
   already_voted:'이미 투표했어요.', vote_closed:'이미 투표가 마감됐어요.',
@@ -260,7 +269,7 @@ view.addEventListener('click', event => {
   }
   if (['ready','start_vote','vote','again'].includes(action)) {
     const options = {round:current.round};
-    if (action === 'vote') options.target = Number(button.dataset.slot);
+    if (action === 'vote'){options.target=Number(button.dataset.slot);if(minority)options.choices=current.choices;}
     run(async () => {
       const state = await api(action, current.code, options);
       revealed = false;
