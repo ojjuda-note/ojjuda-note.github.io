@@ -1,0 +1,28 @@
+name: Verify arcade loader for drinking host release
+on:
+  push:
+    branches: [release/drinks-world-cache-20261114]
+permissions:
+  contents: write
+jobs:
+  cache:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Update and record verified loader revision
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('world.html')
+          source=p.read_text()
+          old='world-game-assets.js?v=20261114-saju-daeun6-1'
+          assert source.count(old)==1
+          p.write_text(source.replace(old,'world-game-assets.js?v=20261114-drinks-host1'))
+          PY
+          test "$(git hash-object world.html)" = '30ddb2dfd8ae5c5e9b9bb89aac0f6e71b755831f'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add world.html
+          git commit -m 'Verify the updated multiplayer arcade loader'
+          git push origin HEAD:refs/heads/release/drinks-world-cache-20261114
