@@ -10,10 +10,10 @@
     fingers: '조건에 해당하면 손가락을 하나 접어요. 다섯 손가락을 먼저 접으면 걸려요.',
     imagevote: '질문에 가장 잘 어울리는 한 사람을 골라요. 모두 투표하면 가장 많이 지목된 사람을 공개해요.',
     bottle: '각자 자리를 고른 뒤 술병이 누구를 가리킬지 지켜보세요.',
-    bomb: '내 차례에 주제에 맞는 말을 하고 폭탄을 다음 사람에게 넘기세요.',
+    bomb: '주제에 맞는 답을 하나 말하고 바로 넘겨요. 이미 나온 답은 안 돼요. 터질 때 폭탄을 들고 있던 사람이 걸려요.',
     stopwatch: '시간이 숨겨지면 감으로 멈추세요. 목표 시간에 가장 가까운 사람이 이겨요.',
-    truth: '내 차례에 카드 하나를 뒤집어 순한맛 또는 빨간맛 질문에 답해요.',
-    initial: '내 차례에 초성에 맞는 단어를 말하세요. 5초가 지나면 탈락해요.'
+    truth: '차례가 오면 카드 한 장을 골라 모두 앞에서 솔직하게 답해요. 답하기 어려우면 패스해도 돼요.',
+    initial: '초성에 맞는 두 글자 단어를 5초 안에 말해요. 시간이 다 되거나 틀리면 탈락하고, 마지막 한 명이 이겨요.'
   };
   const view = document.querySelector('#view');
   const notice = document.querySelector('#notice');
@@ -73,7 +73,7 @@
   }
   function entry() {
     unmount(); room = null; clearTimeout(timer);
-    if (party) return party.missing();
+    if(party){window.DrinkingPresentation?.leave();return party.missing();}
     const create = mode === 'create';
     const seats = Array.from({length:11}, (_,i) => {
       const n = i+2;
@@ -89,6 +89,7 @@
       '<label>방 비밀번호<input name="password" autocomplete="' + (create?'new-password':'current-password') + '" type="password" required minlength="4" maxlength="32" placeholder="' +
       (create ? '4자 이상으로 정해 주세요' : '방장이 정한 비밀번호') + '"></label>' +
       '<button class="action" type="submit">' + (create ? '방 만들기' : '입장하기') + '</button></form></section>';
+    window.DrinkingGameScreen?.native(kind,null,view);
   }
   function lobby(s) {
     return '<h1>' + esc(s.title) + '</h1><p>모두 모이면 시작해요. 초대 링크와 비밀번호를 친구에게 알려 주세요.</p>' +
@@ -143,6 +144,7 @@
           field.setSelectionRange(previousFocus.start, previousFocus.end, previousFocus.direction);
       }
     }
+    window.DrinkingGameScreen?.native(kind,s,view);
   }
   const messages = {
     not_signed_in:'오쭈다 로그인이 필요해요.', banned:'지금은 대전방을 이용할 수 없어요.',

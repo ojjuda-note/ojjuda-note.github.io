@@ -196,6 +196,7 @@ test('liar hints retain focus, selection and Korean composition across same-turn
   const f = await screen({url:'/games/liar/?room=LIAR01',rpc:() => state});
   t.after(() => f.close());
   await until(() => f.find('[name="hint"]'), 'hint field');
+  f.click('[data-drinking-dialog="guide"] [data-drinking-close]');
   const first = f.find('[name="hint"]');
   first.value='내가 적던 한글 힌트'; first.focus(); first.setSelectionRange(3,7);
   first.dispatchEvent(new f.w.CompositionEvent('compositionstart',{bubbles:true,data:'힌'}));

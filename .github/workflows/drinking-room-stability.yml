@@ -22,7 +22,9 @@ on:
       - 'supabase/migrations/*drinking*'
       - 'supabase/migrations/*party*'
       - 'tests/drinking-*'
-      - 'tests/helpers/drinking-ui-fixture.cjs'
+      - 'tests/helpers/drinking-*.cjs'
+      - 'scripts/build-drinking-polish.mjs'
+      - 'scripts/lib/drinking-catalogs.mjs'
       - '.github/workflows/drinking-room-stability.yml'
   pull_request:
     paths:
@@ -45,7 +47,9 @@ on:
       - 'supabase/migrations/*drinking*'
       - 'supabase/migrations/*party*'
       - 'tests/drinking-*'
-      - 'tests/helpers/drinking-ui-fixture.cjs'
+      - 'tests/helpers/drinking-*.cjs'
+      - 'scripts/build-drinking-polish.mjs'
+      - 'scripts/lib/drinking-catalogs.mjs'
       - '.github/workflows/drinking-room-stability.yml'
 permissions:
   contents: read
@@ -78,7 +82,18 @@ jobs:
           tests/drinking-content-catalogs.test.cjs
           tests/drinking-truth-content-rebuild.test.cjs
           tests/drinking-content-expansions.test.cjs
+          tests/drinking-content-wording.test.cjs
+          tests/drinking-presentation.test.cjs
           tests/drinking-room-browser.test.cjs
+          tests/drinking-presentation-browser.test.cjs
+      - name: Save drinking game viewport and animation screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: drinking-game-presentation
+          path: tests/artifacts/drinking-presentation
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Verify game release and access boundaries
         run: node --test --test-concurrency=1 tests/game-release-refresh.test.cjs tests/game-assets-loading.test.cjs tests/matgo-access.test.cjs
       - run: node scripts/check-source-layout.mjs

@@ -50,7 +50,11 @@ for (const topicId of ['overall', 'love', 'money', 'work']) {
     const cards = [DECK[start], DECK[(start + 19) % 78], DECK[(start + 43) % 78]];
     const report = getSummary(cards, topicId);
     const readings = cards.map((card, index) => getReading(card, topicId, index));
-    assert.equal(report.sections.length, 62);
+    assert.deepEqual(plain(report.groups.map(group => group.id)), ['cards', 'problem', 'timeline', 'domains']);
+    const labels = ['카드 소개', '나의 이야기', '과거·현재·미래', '분야별 풀이'];
+    assert.deepEqual(report.text.split(/\n+/).filter(line => labels.includes(line)), labels,
+      'full-copy group headings follow the visible order with card introductions first');
+    assert.equal(report.sections.length, 65);
     for (const section of report.sections) {
       checkLines(section.summaryLines, `${topicId}/${start}/${section.id}`);
       sectionCount++;
@@ -63,12 +67,22 @@ for (const topicId of ['overall', 'love', 'money', 'work']) {
       for (const line of section.summaryLines) assert.ok(section.paragraphs.join(' ').includes(content(line)),
         `${topicId}/${start}/${section.id}: the complete summary sentence remains in its expanded explanation`);
     }
-    const byId = Object.fromEntries(report.groups.slice(0, 2).flatMap(group => group.sections).map(section => [section.id, section]));
-    for (const [id, index] of [
-      ['problem-now', 0], ['situation-now', 1], ['solution', 2], ['possible-outcome', 2],
-      ['past-flow', 0], ['past-hardships', 0], ['past-achievements', 0],
-      ['present-luck', 1], ['future-change', 2], ['future-hardships', 2]
-    ]) assert.ok(byId[id].summaryLines[0].includes(cards[index].name), `${id}: actual card stays visible`);
+    const byId = Object.fromEntries(report.groups.filter(group => ['problem', 'timeline'].includes(group.id))
+      .flatMap(group => group.sections).map(section => [section.id, section]));
+    const personal = report.groups.filter(group => group.id !== 'cards').flatMap(group => group.sections)
+      .flatMap(section => section.paragraphs).join('\n\n');
+    const introductions = report.groups.find(group => group.id === 'cards').sections;
+    for (const [index, intro] of introductions.entries()) {
+      assert.equal(intro.cardId, cards[index].id);
+      assert.equal(intro.summaryLines[0], firstSentence(readings[index].meaning), 'the card introduction keeps the actual symbolic meaning');
+      assert.equal(intro.summaryLines[1], firstSentence(readings[index].positionMeaning), 'the introduction explains the actual ordered role');
+    }
+    for (const section of Object.values(byId)) {
+      const visible = [section.title, ...section.summaryLines, ...section.paragraphs].join(' ');
+      assert.doesNotMatch(visible, /이 카드|카드(?:가|는|의|로|를|에서)|카드야|이 그림/u,
+        `${section.id}: the personal account does not teach card meanings`);
+      for (const card of cards) assert.ok(!visible.includes(`‘${card.name}’`));
+    }
 
     // Past and future keep both authored sentences, including any condition.
     for (const [id, source] of [
@@ -86,30 +100,29 @@ for (const topicId of ['overall', 'love', 'money', 'work']) {
       'the full original conditional change passage remains available in the future section');
     assert.equal(content(byId['past-hardships'].summaryLines[1]), firstSentence(readings[0].action));
     assert.equal(content(byId['present-luck'].summaryLines[1]), firstSentence(readings[1].action));
-    assert.equal(content(byId['situation-now'].summaryLines[0]), firstSentence(readings[1].meaning),
-      'the current card keeps its core meaning rather than a presumed defensive habit');
-    assert.equal(content(byId['situation-now'].summaryLines[1]), splitSummarySentences(people[1][topicId]).at(-1),
-      'the second line belongs to the selected topic');
-    assert.equal(content(byId['problem-now'].summaryLines[0]), firstSentence(readings[0].meaning),
-      'a positive card keeps its core meaning even in the first position');
-    assert.equal(content(byId['problem-now'].summaryLines[1]), splitSummarySentences(people[0][topicId]).at(-1));
-    assert.equal(content(byId.solution.summaryLines[0]), firstSentence(readings[2].meaning),
-      'the solution is grounded in the actual third card meaning');
+    assert.equal(content(byId['situation-now'].summaryLines[0]), firstSentence(people[1][topicId]),
+      'the current account preserves the actual selected topic');
+    assert.equal(content(byId['situation-now'].summaryLines[1]), firstSentence(readings[1].personalPositionMeaning),
+      'the second line identifies the authored current conditions');
+    assert.equal(content(byId['problem-now'].summaryLines[0]), firstSentence(people[0][topicId]),
+      'a positive card keeps its personal topic interpretation in the first position');
+    assert.equal(content(byId['problem-now'].summaryLines[1]), firstSentence(readings[0].personalPositionMeaning));
+    assert.equal(content(byId.solution.summaryLines[0]), firstSentence(people[2][topicId]),
+      'the solution is grounded in the actual third card and selected topic');
     assert.equal(content(byId.solution.summaryLines[1]), firstSentence(readings[2].action),
       'the second line preserves a complete sentence from this topic’s original action');
     assert.ok(byId.solution.paragraphs.join(' ').includes(readings[2].action),
       'a two-line preview never removes the rest of the original action');
     assert.equal(report.ritualInReading, true);
-    assert.equal(report.text.split(readings[2].action).length - 1, 1,
-      'full copy includes the solution action once, without a duplicate closing instruction');
+    assert.equal(personal.split(readings[2].action).length - 1, 1,
+      'the personal account includes the solution action once, without a duplicate closing instruction');
 
     for (const section of report.groups.find(group => group.id === 'domains').sections) {
       const insight = getCaseGuide(section.id, cards[0].id).insight;
       const action = getCaseGuide(section.id, cards[2].id).action;
       assert.equal(content(section.summaryLines[0]), firstSentence(insight), 'domain keeps the first card insight');
       assert.equal(content(section.summaryLines[1]), firstSentence(action), 'domain keeps the third card action');
-      assert.ok(section.summaryLines[0].includes(cards[0].name));
-      assert.ok(section.summaryLines[1].includes(cards[2].name));
+      assert.ok(!section.summaryLines.some(line => /‘[^’]+’ 카드:/.test(line)), 'domain summaries explain the person directly');
       assert.ok(!section.summaryLines.some(line => content(line) === firstSentence(section.example)),
         'a fictional example is not presented as the summary');
       assert.ok(section.paragraphs.join(' ').includes(insight) && section.paragraphs.join(' ').includes(action),
@@ -129,21 +142,23 @@ for (const context of PERSONAL_CONTEXTS) {
     const report = buildPersonalReading({ cards, topicId: context.topicId, contextId: context.id });
     for (const [index, section] of report.primary.entries()) {
       checkLines(section.summaryLines, `${context.id}/${cards[index].id}`);
-      const person = getPersonStory(cards[index].id);
       const advice = splitSummarySentences(directCardAdvice(context.cards[cards[index].id]));
-      assert.equal(content(section.summaryLines[0]), firstSentence(CARD_INTERPRETATIONS[cards[index].id].meaning),
-        'personal summary starts with the actual card meaning');
+      assert.equal(content(section.summaryLines[0]), advice[0],
+        'personal summary starts with the actual card-specific situation insight');
       assert.equal(content(section.summaryLines[1]), advice[1],
         'the action belongs to the exact selected situation, with its condition intact');
       for (const sentence of advice) assert.ok(section.paragraphs.join(' ').includes(sentence),
         'both original situation and action sentences remain available in full');
-      assert.ok(section.summaryLines[0].includes(cards[index].name));
+      assert.equal(section.paragraphs[0], advice[0], 'the full personal insight is not preceded by a symbolic card definition');
     }
     checkLines(report.connection.summaryLines, `${context.id}/connection`);
-    for (const card of [cards[0], cards[2]]) assert.ok(report.connection.summaryLines.join(' ').includes(card.name),
-      'summary names identify the actual card supplying each complete sentence');
-    for (const card of cards) assert.ok(report.connection.paragraphs.join(' ').includes(card.name),
-      'the developed story always explains all three cards, including the middle card');
+    for (const card of cards) assert.ok(report.connection.paragraphs.join(' ').includes(firstSentence(context.cards[card.id])),
+      'the developed story applies all three actual cards, including the middle card, without a name-only substitution');
+    for (const section of [...report.primary, report.connection]) {
+      const visible = [section.title, ...section.summaryLines, ...section.paragraphs].join(' ');
+      assert.doesNotMatch(visible, /이 카드|카드(?:가|는|의|로|를|에서)|카드야/u);
+      for (const card of cards) assert.ok(!visible.includes(`‘${card.name}’`));
+    }
     assert.equal(content(report.connection.summaryLines[1]), splitSummarySentences(context.cards[cards[2].id]).at(-1),
       'the final summary uses the actual situation action instead of an action from another topic');
     checkLines(report.comparison.basisSummaryLines, `${context.id}/choice-basis`);

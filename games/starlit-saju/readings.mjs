@@ -1,4 +1,5 @@
 import {readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
+import {READING_SCOPES,readingScopeText} from './reading-scope.mjs?v=20261114-saju-final-review2';
 import {
   STEM_REFERENCE, GROUP_REFERENCE, GOD_REFERENCE,
   RELATION_REFERENCE, GROUP_PAIR_RULES, PRACTICE_SUGGESTIONS,
@@ -6,13 +7,15 @@ import {
 import { attachPlainLanguage } from './plain-language.mjs?v=20261114-saju-copy1';
 import { attachAdvice } from './advice.mjs?v=20261114-saju-copy1';
 import { attachDeeperReadings } from './deeper-reading.mjs?v=20261114-saju-copy1';
-import { attachStageReadings } from './stage-reading.mjs?v=20261114-saju-copy1';
-import { attachReaderSummary } from './reader-summary.mjs?v=20261114-saju-copy1';
-import { attachReaderExtras } from './reader-extras.mjs?v=20261114-saju-copy1';
-import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261114-saju-copy1';
-import { buildPersonPortrait } from './person-portrait.mjs?v=20261114-saju-copy1';
+import { attachStageReadings } from './stage-reading.mjs?v=20261114-saju-final-review2';
+import { attachReaderSummary } from './reader-summary.mjs?v=20261114-saju-final-review2';
+import { attachReaderExtras } from './reader-extras.mjs?v=20261114-saju-final-review2';
+import { attachReaderSupplements, copyReaderSupplements } from './reader-supplements.mjs?v=20261114-saju-final-review2';
+import { attachPeriodContexts } from './reading-period-context.mjs?v=20261114-saju-correction1';
+import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261114-saju-final-review2';
+import { buildPersonPortrait } from './person-portrait.mjs?v=20261114-saju-correction1';
 import { attachReadingSummaryLines } from './reading-summary-lines.mjs?v=20261114-saju-wind1';
-import { attachReadingScores, readingScoreCopy } from './reading-score.mjs?v=20261114-saju-copy1';
+import { attachReadingScores, readingScoreCopy } from './reading-score.mjs?v=20261114-saju-correction1';
 import { buildNatalReadingData, seasonRules, charLabel, particle, relationOf, godPosition, interactionFact } from './natal-reading-data.mjs?v=20261114-saju-wind1';
 
 const GROUP_KEYS = ['peer', 'expression', 'wealth', 'authority', 'resource'];
@@ -294,6 +297,7 @@ function copyCategory(report,topic) {
     topic==='lifelong'?'평생운 · 나의 사주와 생활 이야기':report.year+'년 '+(topic==='annual'?'올해운':'월별운');
   const lines=['오쭈다 · 별빛 사주팔자',title];
   if(report.reader.scopeNotice) lines.push(report.reader.scopeNotice);
+  lines.push(...readingScopeText(report.readingScope));
   for(const current of topics) {
     if(current==='lifelong'&&report.personPortrait) {
       const portrait=report.personPortrait;
@@ -304,11 +308,11 @@ function copyCategory(report,topic) {
     }
     if(current==='monthly') for(const month of report.reader.months) {
       const detail=report.months.find(value=>value.month===month.month);
-      lines.push(...readerCopy(month,detail?.periodLabel||''),...adviceCopy(detail?.advice));
+      lines.push(...readerCopy(month,detail?.periodLabel||''),...adviceCopy(detail?.advice),...copyReaderSupplements(report,current,{month:month.month}));
     }
     else {
       const periodLabel=current==='annual'?report.facts.find(fact=>fact.id==='annual.period')?.text||'':'';
-      lines.push(...readerCopy(report.reader[current],periodLabel),...adviceCopy(report.adviceByCategory[current]));
+      lines.push(...readerCopy(report.reader[current],periodLabel),...adviceCopy(report.adviceByCategory[current]),...copyReaderSupplements(report,current));
     }
     if(current==='lifelong'&&report.daeun)lines.push('',copyDaeunReading(report.daeun));
     if(current==='lifelong') lines.push(...readerExtrasCopy(report.reader.symbols));
@@ -329,7 +333,7 @@ export function buildDetailedReading(chart,fortune,{daeun=null}={}) {
   const report={
     year:fortune.year,title:`${STEM_REFERENCE[profile.dayMaster.hanja].name} 원국과 ${fortune.year}년의 계산·해설`,
     intro:`확정된 ${profile.knownCharacterCount}글자와 실제로 계산한 관계만 풀이의 근거로 사용해요. 계산된 자료와 그 위에 적용한 해석 규칙은 서로 구분해서 읽어 주세요.`,
-    method:methodMetadata(fortune),facts:registry.facts,
+    method:methodMetadata(fortune),facts:registry.facts,readingScope:READING_SCOPES.saju,
     methodByCategory:Object.fromEntries(['lifelong','annual','monthly','all'].map(topic=>[topic,methodMetadata(fortune,topic)])),
     sections:[
       {id:'lifelong',title:'평생운 · 원국의 장기 주제',kicker:'NATAL CHART',summary:'확정된 원국의 구성과 관계를 읽어요. 나이별 대운이나 정해진 사건의 순서를 계산한 내용은 아니에요.',chapters:lifelongChapters(chart,fortune,registry)},
@@ -344,6 +348,7 @@ export function buildDetailedReading(chart,fortune,{daeun=null}={}) {
   attachStageReadings(report,fortune);
   attachReaderSummary(report,chart,fortune);
   attachReaderExtras(report,chart,fortune);
+  attachReaderSupplements(report,fortune);
   report.personPortrait=buildPersonPortrait({profile:fortune.profile,facts:report.facts,chapters:report.sections.find(section=>section.id==='lifelong').chapters});
   if(daeun) {
     report.daeun=buildDaeunReading(chart,daeun);
@@ -358,6 +363,7 @@ export function buildDetailedReading(chart,fortune,{daeun=null}={}) {
       ?'내 성격과 평소의 생활 모습을 읽어요. 10년 단위 운세는 따로 골라 볼 수 있어요.'
       :'확인한 사주 글자로 내 성격과 생활 모습을 읽어요. '+daeun.message;
   }
+  attachPeriodContexts(report,fortune);
   attachReadingSummaryLines(report);
   attachReadingScores(report,chart,fortune);
   report.copyByCategory=Object.fromEntries(['lifelong','annual','monthly','all'].map(topic=>[topic,copyCategory(report,topic)]));

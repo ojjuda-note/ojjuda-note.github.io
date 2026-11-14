@@ -1,19 +1,14 @@
-import { getPersonalContext } from './personal-contexts.js?v=20261114-tarot-review2';
-import { buildCardConnections } from './card-connections.js?v=20261114-tarot-review2';
-import { getCardInterpretation } from './interpretation-engine.js?v=20261114-tarot-review2';
-import { getReading } from './readings.js?v=20261114-tarot-review2';
+import { getPersonalContext } from './personal-contexts.js?v=20261114-tarot-card-intro1';
+import { buildCardConnections } from './card-connections.js?v=20261114-tarot-card-intro1';
+import { PERSONAL_READING_BASIS } from './person-narrative.js?v=20261114-tarot-card-intro1';
+import { getReading } from './readings.js?v=20261114-tarot-card-first1';
 import { splitSummarySentences, summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
 import { directAction, directCardAdvice } from './reading-voice.js?v=20261113-tarot-easy1';
-import { getPersonStory } from './person-stories.js?v=20261114-tarot-review2';
+import { getPersonStory } from './person-stories.js?v=20261114-tarot-card-intro1';
 
-export const PERSONAL_BASIS = '고른 상황과 뽑은 세 장을 연결해 성향과 마음을 풀이해요. 실제 과거나 상대의 속마음을 확인한 결과는 아니에요. 카드 연결에는 공통 해석 규칙을 적용하고, 선택 비교와 이어지는 답변에는 생활 제안을 담았어요.';
+export const PERSONAL_BASIS = PERSONAL_READING_BASIS;
 const roles = ['지금 문제를 대하는 나', '지금 상황과 속마음', '이번에 바꿀 선택'];
 const piece = (id, title, paragraphs, summaryLines) => ({ id, title, paragraphs, summaryLines });
-function cardSummary(card, first, second = first) {
-  const lines = summaryLinesFrom(first, second);
-  lines[0] = `‘${card.name}’ 카드: ${lines[0]}`;
-  return lines;
-}
 
 export function buildPersonalReading({ cards, topicId, contextId } = {}) {
   const context = getPersonalContext(topicId, contextId);
@@ -29,11 +24,10 @@ export function buildPersonalReading({ cards, topicId, contextId } = {}) {
   const primary = cards.map((card, index) => {
     const advice = directCardAdvice(context.cards[card.id]);
     const [insight, ...actions] = splitSummarySentences(advice);
-    const meaning = getCardInterpretation(card.id).meaning;
     return piece(`personal-role-${index}`, roles[index], [
-      `‘${names[index]}’에 비친 네 이야기야. ${meaning} ${insight}`,
+      insight,
       actions.join(' ')
-    ], cardSummary(card, meaning, actions.join(' ')));
+    ], summaryLinesFrom(insight, actions.join(' ')));
   });
   const connected = buildCardConnections({ cards, context, names });
   const connection = piece('personal-connection', '이 고민에 담긴 너의 마음',
@@ -42,8 +36,8 @@ export function buildPersonalReading({ cards, topicId, contextId } = {}) {
   const [support, tension] = splitSummarySentences(solution);
   const comparison = {
     title: context.comparison.title,
-    basis: `‘${names[2]}’ 카드로 살펴볼 선택의 기준이야. ${support} ${tension}`,
-    basisSummaryLines: cardSummary(cards[2], support, tension),
+    basis: solution,
+    basisSummaryLines: summaryLinesFrom(support, tension),
     options: ['a', 'b'].map(key => {
       const option = context.comparison[key];
       // These are practical tradeoffs, not claims made by the drawn card.
@@ -83,6 +77,5 @@ export function personalReadingCopyLines(report) {
     lines.push(question.title, '');
     for (const paragraph of question.paragraphs) lines.push(paragraph, '');
   }
-  lines.push(report.basis, '');
   return lines;
 }

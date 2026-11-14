@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Drinking presentation isolation fixture</title>
+  <style>html,body{margin:0}</style>
+  <link rel="stylesheet" href="/games/drinking/presentation.css">
+  <script>window.OjjudaDrinkingAccessReady = true;</script>
+  <script defer src="/games/drinking/game-guides.js"></script>
+  <script defer src="/games/drinking/presentation.js"></script>
+</head>
+<body>
+  <section id="access-screen" hidden>회원 확인</section>
+  <div id="access-content" data-member="presentation-member">
+    <header><a href="#outside">술게임</a><strong>악어 이빨</strong></header>
+    <main><div id="view"><section class="card">
+      <h1>검사 중인 게임</h1>
+      <button id="game-control" type="button">게임 조작</button>
+      <input id="draft" aria-label="작성 중인 힌트" value="남겨 둔 힌트">
+      <button id="next-round" type="button">다음 판</button>
+    </section></div></main>
+  </div>
+</body>
+</html>

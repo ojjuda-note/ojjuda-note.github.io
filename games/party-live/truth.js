@@ -11,7 +11,8 @@
     question.trim().length>0 && question.length<=240;
 
   const baseline = window.DrinkingPromptCatalog;
-  const baseText = new Set([...baseline.mild,...baseline.spicy]);
+  // Old official copies stay stored but must not rejoin the personal deck.
+  const baseText = new Set([...baseline.mild,...baseline.spicy,...(baseline.retiredTruth||[])]);
 
   function personalDeck(official=window.DrinkingPrompts.truth()) {
     const deck = {mild:new Set(official.mild),spicy:new Set(official.spicy)};
@@ -57,7 +58,7 @@
     }
     return '<div class="truth-settings">'+
       group('truth-mode','카드 구성',[['mild','순한맛만'],['spicy','빨간맛만'],['mixed','반반']],settings.mode)+
-      group('truth-visibility','고르기 전 카드 맛',[['hide','숨기기'],['show','보이기']],settings.showFlavor?'show':'hide')+'</div>';
+      group('truth-visibility','카드의 맛 미리 보기',[['hide','숨기기'],['show','보이기']],settings.showFlavor?'show':'hide')+'</div>';
   }
   function bindSettings(settings) {
     const controls=$('.truth-settings');
@@ -90,10 +91,10 @@
   function form(s,ui) {
     const e=formState(s);
     return '<details id="truth-editor" class="truth-edit"'+(e.expanded?' open':'')+'><summary>질문 카드 등록</summary>'+
-      '<form id="truth-form"><label>카드 맛<select id="truth-flavor"><option value="mild">순한맛</option>'+
+      '<form id="truth-form"><label>질문 수위<select id="truth-flavor"><option value="mild">순한맛</option>'+
       '<option value="spicy"'+(e.flavor==='spicy'?' selected':'')+'>빨간맛</option></select></label>'+
       '<label>질문<textarea id="truth-question" rows="3" maxlength="240" required>'+ui.esc(e.question)+'</textarea></label>'+
-      '<p><small>직접 쓴 내용은 관리자 검토 후 공용 목록에 등록될 수 있어요.</small></p>'+
+      '<p><small>직접 적은 질문은 관리자 검토 후 다른 참가자에게도 추천될 수 있어요.</small></p>'+
       '<button type="submit" id="truth-submit"'+(e.busy?' disabled':'')+'>이 방에 추가</button></form>'+
       '<p role="status" id="truth-message">'+ui.esc(e.message)+'</p></details>';
   }
@@ -101,7 +102,7 @@
     if (s.phase==='setup') {
       if (s.me!==0) return '<h1>방장이 카드를 준비하고 있어요</h1><p>내 차례에 카드 한 장을 골라 질문에 답해요.</p>';
       return '<h1>진실게임을 시작할까요?</h1>'+settingsForm(formState(s))+
-        '<button type="button" class="action" id="truth-begin">이 카드로 시작</button><p role="status" id="truth-start-message"></p>';
+        '<button type="button" class="action" id="truth-begin">이 설정으로 시작</button><p role="status" id="truth-start-message"></p>';
     }
     const mine=s.me===s.game.turn, name=ui.esc(s.players[s.game.turn]);
     if (s.phase==='pick') {

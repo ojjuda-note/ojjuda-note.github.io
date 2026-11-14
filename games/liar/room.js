@@ -29,14 +29,15 @@ view.addEventListener('compositionend',()=>{
 });
 function entry(){
   room=null;clearTimeout(timer);revealed=false;
-  if(party)return party.missing();
+  if(party){window.DrinkingPresentation?.leave();return party.missing();}
   const create=mode==='create';
-  view.innerHTML='<section class="card"><div class="inside"><h1>라이어 찾기</h1><p>한 사람만 제시어를 몰라요. 정답과 초성은 숨기고, 장소·느낌·상황으로 한 줄씩 설명한 뒤 라이어에게 투표하세요.</p>'+
+  view.innerHTML='<section class="card"><div class="inside"><h1>라이어 찾기</h1><p>한 사람만 제시어를 몰라요. 정답과 초성은 빼고 차례대로 힌트를 남겨요. 모두 끝나면 라이어로 의심되는 사람에게 투표해요.</p>'+
     '<div class="tabs"><button data-do="create-tab" aria-pressed="'+create+'">방 만들기</button><button data-do="join-tab" aria-pressed="'+!create+'">방 들어가기</button></div>'+
     '<form id="entry">'+
     (create?'<label>방 제목<input name="title" required maxlength="40" value="라이어 찾기 같이 한 판 해요"></label><label>참여 인원<select name="capacity">'+Array.from({length:10},(_,i)=>'<option value="'+(i+3)+'" '+(i===1?'selected':'')+'>'+(i+3)+'명</option>').join('')+'</select></label>':
     '<label>방 코드<input name="code" required maxlength="6" minlength="6" autocapitalize="characters" spellcheck="false" value="'+esc(activeCode)+'"></label>')+
     '<label>방 비밀번호<input type="password" name="password" minlength="4" maxlength="32" required placeholder="'+(create?'4자 이상으로 정해 주세요':'방장이 정한 비밀번호')+'"></label><button class="action" type="submit">'+(create?'방 만들기':'입장하기')+'</button></form></div></section>';
+  window.DrinkingGameScreen?.native('liar',null,view);
 }
 
 function render(s,force=false){
@@ -80,7 +81,7 @@ function render(s,force=false){
     if(s.phase==='hints'){
       const mine=s.me===s.turn;
       content='<h1>'+(mine?'내 힌트를 남겨 주세요':esc(s.players[s.turn])+'님이 힌트를 남길 차례예요')+'</h1>'+card+hints+
-        (mine?'<form id="hint"><label>정답·초성을 빼고 장소, 느낌, 상황으로 힌트 한 줄<input name="hint" required maxlength="80" autocomplete="off"></label><button class="action" type="submit">힌트 보내기</button></form>':'<p>모두 한 번씩 힌트를 남기면 투표해요.</p>');
+        (mine?'<form id="hint"><label>정답과 초성은 빼고 힌트를 한 줄로 써 주세요.<input name="hint" required maxlength="80" autocomplete="off"></label><button class="action" type="submit">힌트 보내기</button></form>':'<p>모두 한 번씩 힌트를 남기면 투표해요.</p>');
     }else{
       content='<h1>'+(s.voted?'다른 참가자의 투표를 기다려요':'누가 라이어일까요?')+'</h1>'+card+hints+
         '<p>투표 '+s.voteCount+' / '+s.players.length+'명</p>'+
@@ -91,6 +92,7 @@ function render(s,force=false){
   const field=view.querySelector('[name="hint"]');
   if(field&&draft!=null)field.value=draft;
   if(field&&focus){field.focus({preventScroll:true});field.setSelectionRange(focus.start,focus.end,focus.direction);}
+  window.DrinkingGameScreen?.native('liar',s,view);
 }
 const messages={
  not_signed_in:'오쭈다 로그인이 필요해요.', banned:'지금은 대전방을 이용할 수 없어요.',

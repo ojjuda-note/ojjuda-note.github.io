@@ -1,26 +1,26 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261114-tarot-review2'
+ const revision='20261114-tarot-card-first1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
-  croc:'1.2.2',
-  liar:'1.4.4',
-  king:'1.5.4',
-  minority:'1.4.4',
-  mission:'1.4.4',
-  bottle:'1.2.2',
-  bomb:'1.4.4',
-  stopwatch:'1.2.2',
-  truth:'1.5.4',
-  initial:'1.3.4',
-  fingers:'1.4.4',
-  imagevote:'1.4.4',
-  updown:'1.2.2',
-  drinking:'1.6.4',
-  tarot:'1.9.6',
-  saju:'2.10.1',
+  croc:'1.3.0',
+  liar:'1.5.0',
+  king:'1.6.0',
+  minority:'1.5.0',
+  mission:'1.5.0',
+  bottle:'1.3.0',
+  bomb:'1.5.0',
+  stopwatch:'1.3.0',
+  truth:'1.6.0',
+  initial:'1.4.0',
+  fingers:'1.5.0',
+  imagevote:'1.5.0',
+  updown:'1.3.0',
+  drinking:'1.7.0',
+  tarot:'1.10.1',
+  saju:'2.11.1',
   group:'1.2.2',
   chacha_rush:'1.1.1',
   byeolcheonji:'1.0.5',

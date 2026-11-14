@@ -2,13 +2,18 @@ const assert = require('node:assert/strict');
 const { createTarotLoader } = require('./tarot-module-fixture.cjs');
 
 const load = createTarotLoader();
-const { buildDomainGroup, READING_TOPICS, READING_CATEGORIES } = load('domain-narration.js');
+const { buildDomainGroup, READING_TOPICS, READING_CATEGORIES, DOMAIN_READING_BASIS } = load('domain-narration.js');
 const { DECK, getReading, getSummary } = load('readings.js');
 const { CARD_PATTERNS } = load('spread-patterns.js');
 const { CARD_INTERPRETATIONS, CONTEXT_FIELDS, interpretCard, withParticle } = load('interpretation-engine.js');
 const { CASE_GUIDES, getCaseGuide } = load('case-guides.js');
 const { directInterpretation, directAction } = load('reading-voice.js');
+const { CARD_LIFE_THEMES } = load('life-themes.js');
 const plain = value => JSON.parse(JSON.stringify(value));
+function assertPersonalProse(text, label) {
+  assert.doesNotMatch(text, /카드|타로|아르카나|정방향|역방향|이 그림|그림 속|상징하|상징으로|(?:면|성향|습관|경험|강점|태도|힘|바람|마음)(?:을|를) (?:비춰|짚어 줘)/, `${label}: card explanations belong in the card introduction`);
+  for (const card of DECK) assert.ok(!text.includes(`‘${card.name}’`), `${label}: no quoted card-name prefix`);
+}
 const expectedTitles = [
   '나의 성향', '나의 강점', '반복하는 습관', '진짜 원하는 것', '삶의 방향·운명',
   '과거의 영향', '과거의 고난', '과거의 성취', '현재의 흐름', '앞으로의 변화',
@@ -36,6 +41,7 @@ for (const [id, count] of expectedCategories) {
 for (const topic of READING_TOPICS) {
   assert.match(topic.id, /^[a-z][a-z0-9-]+$/);
   assert.ok(topic.subtitle && topic.context);
+  assertPersonalProse(`${topic.title} ${topic.subtitle}`, topic.id);
   for (const key of CONTEXT_FIELDS) assert.ok(typeof topic.context[key] === 'string' && topic.context[key].length > 3, `${topic.id}: concrete ${key}`);
   assert.match(topic.context.scene, /때$/);
   assert.match(topic.context.small, /하기$/);
@@ -88,6 +94,7 @@ for (const topic of READING_TOPICS) {
   assert.ok(Object.isFrozen(entry.cards));
   for (const field of ['prompt', 'example', 'check']) {
     assert.ok(typeof entry[field] === 'string' && entry[field].length > 20, `${topic.id}: a complete ${field}`);
+    assertPersonalProse(entry[field], `${topic.id}/${field}`);
     assert.ok(!allTopicCopy.has(normalize(entry[field])), `${topic.id}: the ${field} adds a new situation rather than a repeated instruction`);
     allTopicCopy.add(normalize(entry[field]));
   }
@@ -102,6 +109,7 @@ for (const topic of READING_TOPICS) {
     assert.equal(guide.action, directAction(pair[1]), 'the shown action keeps this actual card/topic instruction');
     for (const [text, seen, kind] of [[guide.insight, allInsights, 'insight'], [guide.action, allActions, 'action']]) {
       assert.ok(text.length >= (kind === 'action' ? 30 : 22), `${guide.id}: a complete, concrete ${kind}`);
+      assertPersonalProse(text, `${guide.id}/${kind}`);
       assert.doesNotMatch(text, /\{[^}]*\}|undefined|\[object Object\]/);
       const key = normalize(text);
       assert.ok(!seen.has(key), `${guide.id}: repeated ${kind} from ${seen.get(key)}`);
@@ -113,6 +121,11 @@ for (const topic of READING_TOPICS) {
 }
 assert.equal(allInsights.size, 3900);
 assert.equal(allActions.size, 3900);
+assert.deepEqual(Object.keys(CARD_LIFE_THEMES).sort(), plain(DECK.map(card => card.id).sort()));
+for (const [id, theme] of Object.entries(CARD_LIFE_THEMES)) {
+  for (const [role, text] of Object.entries(theme)) assertPersonalProse(text, `${id}/life-${role}`);
+  assert.match(theme.past, /다면[,\s]/, `${id}: past experiences remain conditional rather than a claimed biography`);
+}
 for (const key of allInsights.keys()) assert.ok(!allActions.has(key), 'an action is not reused as another card or topic insight');
 for (const card of DECK) for (const [index, kind] of [[0, 'insight'], [1, 'action']]) {
   const acrossTopics = READING_TOPICS.map(topic => CASE_GUIDES[topic.id].cards[card.id][index]);
@@ -137,10 +150,13 @@ base.sections.forEach((section, index) => {
   assert.equal(section.title, expectedTitles[index]);
   assert.equal(section.number, index + 1);
   assert.equal(section.categoryId, READING_TOPICS[index].category);
-  assert.equal(section.paragraphs.length, 4, 'a clearly hypothetical example precedes the three actual card perspectives');
+  assert.equal(section.paragraphs.length, 4, 'a hypothetical example leads into the personal problem, current circumstances and response');
   assert.equal(section.paragraphs[0], section.example);
   assert.ok(section.paragraphs.every(text => typeof text === 'string' && text.length > 45));
-  for (let position = 0; position < 3; position++) assert.ok(section.paragraphs[position + 1].includes(baseCards[position].name));
+  assertPersonalProse([section.title, section.subtitle, ...section.summaryLines, ...section.paragraphs].join('\n'), section.id);
+  assert.equal(section.summaryLines.length, 2);
+  assert.ok(getCaseGuide(section.id, baseCards[0].id).insight.startsWith(section.summaryLines[0]), `${section.id}: the summary keeps the actual selected insight, including its condition`);
+  assert.ok(getCaseGuide(section.id, baseCards[2].id).action.startsWith(section.summaryLines[1]), `${section.id}: the summary keeps the actual selected action`);
   for (const key of ['cause', 'scene', 'response', 'outcome']) assert.ok(section.paragraphs.join(' ').includes(section.interpretation[key]));
   assert.doesNotMatch(section.paragraphs.join(' '), /\{[a-z]+|undefined|\[object Object\]/);
   assert.deepEqual(plain(section.guideIds), baseCards.map(card => `${section.id}:${card.id}`));
@@ -187,7 +203,7 @@ const unchangedFirstTwo = ['emperor', 'justice'].map(deckCard);
 const foolResult = getSummary([...unchangedFirstTwo, deckCard('fool')], 'money');
 const magicianResult = getSummary([...unchangedFirstTwo, deckCard('magician')], 'money');
 assert.equal(foolResult.source.recordId, magicianResult.source.recordId, 'the unchanged shared historical reference is not relabelled as new authored fortunes');
-assert.notEqual(foolResult.groups[0].sections.find(section => section.id === 'solution').paragraphs.join(' '), magicianResult.groups[0].sections.find(section => section.id === 'solution').paragraphs.join(' '));
+assert.notEqual(foolResult.groups.find(group => group.id === 'problem').sections.find(section => section.id === 'solution').paragraphs.join(' '), magicianResult.groups.find(group => group.id === 'problem').sections.find(section => section.id === 'solution').paragraphs.join(' '));
 const spend = base.sections.find(section => section.title === '지출 습관');
 const contract = base.sections.find(section => section.title === '문서·계약을 앞둔 고민');
 for (const key of ['cause', 'scene', 'response', 'outcome']) assert.notEqual(spend.interpretation[key], contract.interpretation[key], key + ': spending and contracts have different circumstances');
@@ -213,7 +229,7 @@ for (let position = 0; position < 3; position++) {
     cards.splice(position, 0, card);
     const result = groupFor(cards);
     for (const section of result.sections) {
-      assert.ok(section.paragraphs[position + 1].includes(card.name));
+      assertPersonalProse([...section.summaryLines, ...section.paragraphs].join('\n'), `${section.id}/${card.id}/${field}`);
       const guide = getCaseGuide(section.id, card.id);
       assert.ok(section.interpretation[field].includes(guide.insight), `${guide.id}: the actual card's application is used in this role`);
       if (position > 0) assert.ok(section.interpretation[field].includes(guide.action), `${guide.id}: this role uses the actual authored action`);
@@ -225,12 +241,15 @@ for (let position = 0; position < 3; position++) {
 for (const topic of ['overall', 'love', 'money', 'work']) assert.deepEqual(plain(groupFor(baseCards, topic)), plain(base));
 const poisoned = baseCards.map((card, index) => ({ ...getReading(card, 'love', index), topicMeaning: 'UNRELATED_TOPIC_TEXT', example: 'UNRELATED_TOPIC_EXAMPLE', action: 'UNRELATED_TOPIC_ACTION' }));
 assert.deepEqual(plain(buildDomainGroup({ cards: baseCards, readings: poisoned })), plain(base));
-assert.match(base.description, /같은 세 장/);
-assert.match(base.description, /카드의 기본 뜻/);
-assert.match(base.description, /생활 제안/);
-assert.match(base.description, /전통 자료는 여러 풀이에서 함께 참고/);
-assert.match(base.description, /가상 장면/);
-assert.match(base.description, /실제로 겪은 일이나 앞으로 생길 일, 상대의 속마음을 확인한 내용은 아니/);
+assertPersonalProse(base.description, 'domain navigation description');
+assert.match(base.description, /궁금한 분야.*골라/);
+assert.match(DOMAIN_READING_BASIS, /같은 세 장/);
+assert.match(DOMAIN_READING_BASIS, /카드의 기본 뜻/);
+assert.match(DOMAIN_READING_BASIS, /생활 제안/);
+assert.match(DOMAIN_READING_BASIS, /전통 자료는 여러 풀이에서 함께 참고/);
+assert.match(DOMAIN_READING_BASIS, /가상 장면/);
+assert.match(DOMAIN_READING_BASIS, /실제로 겪은 일이나 앞으로 생길 일, 상대의 속마음을 확인한 내용은 아니/);
+assert.ok(!JSON.stringify(base).includes(DOMAIN_READING_BASIS), 'the reading basis is exported separately from the personal domain view');
 assert.doesNotMatch(JSON.stringify(base), /궁합\s*\d+\s*%|반드시 합격|무조건 수익|수명은|병이 낫/);
 const integrated = getSummary(baseCards, 'money');
 for (const category of READING_CATEGORIES) assert.ok(integrated.text.includes(category.label));
