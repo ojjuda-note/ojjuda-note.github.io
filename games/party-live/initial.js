@@ -16,7 +16,7 @@
     const start = '<button type="button" id="initial-start" class="action">5초 시작</button>';
     switch (s.phase) {
       case 'ready':
-        return '<h1>' + whose + '</h1><p>초성에 맞는 새 단어를 말해요. 이 초성에서 이미 나온 단어는 다시 쓸 수 없어요.</p>' +
+        return '<h1>' + whose + '</h1><p>초성에 맞는 새 단어를 말해요. 연애나 스킨십에서 떠오르는 단어도 좋아요. 이미 나온 단어는 빼 주세요.</p>' +
           '<div class="initial-word" aria-label="초성">' + ui.esc(g.initial) + '</div><p>남은 사람 ' + g.alive.length + '명</p>' +
           (mine ? start : '');
       case 'active':

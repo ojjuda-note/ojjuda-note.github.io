@@ -18,12 +18,12 @@ const CROC_TOOTH_COUNT=jawCount*2;
 const games=[
   ['croc','악어 이빨','운과 감각','아픈 이빨은 딱 하나','#b7dab0',2,CROC_TOOTH_COUNT+'개의 이빨 중 하나를 골라 돌아가며 눌러요. 아픈 이빨을 건드리면 악어 입이 닫혀요.'],
   ['bottle','술병 나침반','운과 감각','병 끝이 가리키는 사람','#b7d9d7',2,'2~12명이 함께해요. 테이블 모양과 방향을 고르고 각자 자리를 정해요. 돌아가는 병을 터치하면 10~20초 동안 서서히 멈춰요. 가끔은 잠깐 멈췄다가 한 칸이나 두 칸 뒤로 아주 천천히 돌아가요.'],
-  ['bomb','시간폭탄','운과 감각','터지기 전에 넘겨요','#f5bba7',2,'주제에 맞는 단어를 말한 뒤 폰을 넘겨요. 폭탄이 터지면 그때 화면에 표시된 사람이 당첨이에요.'],
+  ['bomb','시간폭탄','운과 감각','터지기 전에 넘겨요','#f5bba7',2,'‘키스 직전에 하면 깨는 말’처럼 주제에 맞는 답을 하고 폰을 넘겨요. 폭탄이 터지면 그때 화면에 표시된 사람이 당첨이에요.'],
   ['stopwatch','감각 스톱워치','운과 감각','목표 시간에 멈추기','#c8d9ce',2,'첫 1초가 지나면 숫자가 사라져요. 목표 시간에 가장 가깝게 멈춘 사람이 이겨요.'],
-  ['liar','라이어 찾기','추리와 대화','같은 단어, 한 명의 라이어','#d0c2e1',3,'한 명만 단어를 몰라요. 한 사람씩 힌트를 준 뒤, 각자 의심하는 사람에게 몰래 투표해요.'],
-  ['king','왕게임','추리와 대화','왕의 미션은 몇 번에게?','#f0d790',2,'한 명은 왕, 나머지는 비밀 번호를 받아요. 왕이 한 명이나 두 명의 번호를 골라 미션을 내리면 주인공이 공개돼요.'],
+  ['liar','라이어 찾기','추리와 대화','첫 키스, 들키지 말고 설명하기','#d0c2e1',3,'한 명만 단어를 몰라요. 한 사람씩 힌트를 준 뒤, 각자 의심하는 사람에게 몰래 투표해요.'],
+  ['king','왕게임','추리와 대화','두 번호가 뽑히면 스킨십 미션','#f0d790',2,'한 명은 왕, 나머지는 비밀 번호를 받아요. 왕이 한 명이나 두 명에게 미션을 내려요. 두 사람 미션은 각자 동의하고 시작해요. 거절한 사람은 술 한 모금이에요.'],
   ['truth','진실게임','추리와 대화','솔직한 질문 카드','#f0c6c4',2,'내 차례에 카드 한 장을 골라 질문에 답해요. 답하기 어려우면 패스해도 돼요.'],
-  ['initial','초성 대결','순발력','5초 안에 단어 하나','#b8cfe1',2,'초성에 맞는 새 단어를 5초 안에 말해요. 시간이 다 되거나 틀리면 탈락해요. 마지막 한 명이 이겨요.'],
+  ['initial','초성 대결','순발력','ㅋㅅ, 5초 안에 떠오르는 말','#b8cfe1',2,'초성에 맞는 새 단어를 5초 안에 말해요. 시간이 다 되거나 틀리면 탈락해요. 마지막 한 명이 이겨요.'],
   ['minority','소수파 찾기','추리와 대화','우리의 선택은 몇 대 몇?','#bfd5bb',3,'두 선택지 중 하나를 각자 몰래 골라요. 모두 투표하면 어느 쪽이 소수파인지 공개돼요.'],
   ['mission','한 명만 다른 미션','추리와 대화','누구의 몸짓이 다를까?','#e5bdac',3,'한 명만 조금 다른 제시어를 받아요. 동시에 몸으로 표현한 뒤, 다른 미션을 받은 사람에게 몰래 투표해요.'],
   ['fingers','손병호 게임','추리와 대화','해당하면 손가락 하나 접기','#e1bd95',2,'모두 손가락 다섯 개를 펴요. 돌아가며 조건을 하나씩 말하고, 해당하는 사람은 손가락을 접어요. 먼저 다 접은 사람이 걸려요.'],
@@ -116,15 +116,16 @@ async function loadRoundBank(r){
   shell('<h2>'+message+'</h2>'+actions(btn('다시 시도',kind==='bomb'?'start-bomb':'start'),btn('게임 목록','menu','quiet')));
   return false;
 }
-function bindLocalSuggestion(r,field,button){
-  button.hidden=!r.bank.length;
+function bindLocalSuggestion(r,field,button,choices=()=>r.bank){
+  button.hidden=!choices().length;
   if(r.bank.length)return;
   let edited=false;
   field.addEventListener('input',()=>{edited=true;},{once:true});
   r.bankReady.then(()=>{
-    if(round!==r||!field.isConnected||!r.bank.length)return;
+    const available=choices();
+    if(round!==r||!field.isConnected||!available.length)return;
     button.hidden=false;
-    if(!edited&&!field.value)field.value=draw(r.bank);
+    if(!edited&&!field.value)field.value=draw(available);
   });
 }
 async function startBomb(){
@@ -479,7 +480,7 @@ function animateBottle(now){
     const seat=r.winningSeat;
     $('.bottle-dial [data-seat="'+seat+'"]').classList.add('winning-seat');
     $('#bottle-title').textContent=players[seat]+'님 당첨!';
-    $('#bottle-hint').textContent='병 입구가 '+(seat+1)+'번 자리를 가리켰어요.';
+    $('#bottle-hint').textContent='병 입구가 '+(seat+1)+'번 자리를 가리켰어요. 오늘은 이 자리로 시선이 쏠리네요.';
     $('#spin-status').innerHTML=actions(btn('다시 돌리기','spin'),btn('자리 옮기기','edit-seats','quiet'),btn('게임 목록','menu','quiet'));
     fx.play('stop');
     return;
@@ -573,7 +574,7 @@ function nextWatch(){
   const winners=ordered.filter(p=>p.error===ordered[0].error);
   const rows=ordered.map(p=>'<tr><th scope="row">'+name(p.i)+'</th><td>'+(p.score/100).toFixed(2)+'초</td><td>'+(p.error/100).toFixed(2)+'초</td></tr>').join('');
   shell('<span class="turn-tag">라운드 결과</span><h2>'+winners.map(p=>name(p.i)).join(' · ')+(winners.length>1?' 공동 1등!':' 1등!')+'</h2>'+
-    '<p>목표 '+(r.target/100).toFixed(1)+'초</p><table class="watch-results"><thead><tr><th>참가자</th><th>기록</th><th>목표와 차이</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+    '<p>이 감이면 고백 타이밍도 놓치지 않겠는데요?</p><p>목표 '+(r.target/100).toFixed(1)+'초</p><table class="watch-results"><thead><tr><th>참가자</th><th>기록</th><th>목표와 차이</th></tr></thead><tbody>'+rows+'</tbody></table>'+
     actions(btn('한 판 더','watch-setup'),btn('게임 목록','menu','quiet')));
 }
 function privateScreen(title,description,face,button){
@@ -588,7 +589,7 @@ function deal(){
 }
 function afterDeal(){const r=round;r.revealed=false;
   if(game.id==='king'){
-    r.phase='king';r.number=1;r.second=null;r.prompt=draw(r.bank);return king();
+    r.phase='king';r.number=1;r.second=null;r.prompt=draw(prompts.kingChoices(r.bank,false));return king();
   }
   r.phase='talk';
   shell('<h2>'+(game.id==='liar'?'한 사람씩 힌트를 말해요':'하나, 둘, 셋! 동시에 표현해요')+'</h2><p>'+(game.id==='liar'?'정답을 직접 말하지 말고 한마디씩 설명하세요. 누가 단어를 모르는지 찾아봐요.':'말없이 몸으로 자신이 본 미션을 표현하세요. 누가 다른 동작을 했나요?')+'</p>'+actions(btn('비밀 투표 시작','start-vote')),true)
@@ -604,13 +605,21 @@ function king(){
     '<label for="king-mission">왕의 미션</label><p><input class="field" id="king-mission" maxlength="80" value="'+esc(r.prompt)+'"></p>'+
     '<p><small>직접 쓴 내용은 관리자 검토 후 공용 목록에 등록될 수 있어요.</small></p>'+
       actions(btn('번호 주인공 공개','royal'),btn('다른 미션','new-prompt','quiet')),true);
-  bindLocalSuggestion(r,$('#king-mission'),app.querySelector('[data-action="new-prompt"]'));
+  const field=$('#king-mission'),suggest=app.querySelector('[data-action="new-prompt"]');
+  const choices=()=>prompts.kingChoices(r.bank,r.second!=null);
+  bindLocalSuggestion(r,field,suggest,choices);
+  field.oninput=()=>{r.custom=true;field.setCustomValidity('');};
+  function switchRecipients(second){
+    if(r.second===second)return;
+    r.second=second;suggest.hidden=!choices().length;
+    if(!r.custom)field.value=r.prompt=draw(choices());
+  }
   $('#king-number').onchange=e=>{
     r.number=Number(e.target.value);
-    if(r.second===r.number)r.second=null;
+    if(r.second===r.number)switchRecipients(null);
     if(count>1)$('#king-second').innerHTML=secondOptions();
   };
-  if(count>1)$('#king-second').onchange=e=>{r.second=Number(e.target.value)||null};
+  if(count>1)$('#king-second').onchange=e=>switchRecipients(Number(e.target.value)||null);
 }
 function revealKingOrder(){
   const r=round;
@@ -621,12 +630,23 @@ function revealKingOrder(){
     input.oninput=()=>input.setCustomValidity('');return;
   }
   window.DrinkingPrompts.submit('king',mission);
-  const numbers=r.second==null?[r.number]:[r.number,r.second];
+  r.prompt=mission;r.answers={};
+  r.phase=r.second==null?'done':'king-answer';fx.play('king');
+  kingResult();
+}
+function kingResult(){
+  const r=round,numbers=r.second==null?[r.number]:[r.number,r.second];
   const recipients=numbers.map(n=>'<div><dt>카드 '+n+'번</dt><dd>'+name(r.roles.indexOf(n))+'</dd></div>').join('');
-  r.phase='done';fx.play('king');
+  const next=numbers.find(n=>!r.answers[n]);
+  let footer=actions(btn('한 판 더','start'),btn('게임 목록','menu','quiet'));
+  if(r.phase==='king-answer'){
+    footer='<p>'+name(r.roles.indexOf(next))+'님, 이 미션을 할까요?</p>'+
+      actions(btn('동의','king-yes', 'start',next),btn('거절 · 술 한 모금','king-no','quiet',next));
+  }else if(r.declined!=null){
+    footer='<p>'+name(r.roles.indexOf(r.declined))+'님은 술 한 모금. 이번 미션은 끝이에요.</p>'+footer;
+  }else if(r.second!=null)footer='<p>두 사람 모두 동의했어요. 미션을 진행하세요.</p>'+footer;
   shell('<section class="king-order"><span class="king-order-label">왕의 명령</span>'+
-    '<h2>'+esc(mission)+'</h2><dl class="king-recipients" aria-label="명령을 받은 사람">'+recipients+'</dl></section>'+
-    actions(btn('한 판 더','start'),btn('게임 목록','menu','quiet')),true);
+    '<h2>'+esc(r.prompt)+'</h2><dl class="king-recipients" aria-label="명령을 받은 사람">'+recipients+'</dl></section>'+footer,true);
 }
 const truthEditor=$('#truth-editor'),truthMessage=$('#truth-message');
 async function startTruthRound(r){
@@ -693,7 +713,7 @@ function revealTruth(value){
 }
 function initialReady(){
   const r=round;r.phase='initial-ready';const turn=r.alive[r.turn];
-  shell(tag(turn)+'<h2>준비되면 시작하세요</h2><p>초성 <b>'+esc(r.initial)+'</b> · 남은 사람 '+r.alive.length+'명<br>이 초성으로 이미 말한 단어는 다시 쓸 수 없어요.</p>'+actions(btn('5초 시작','initial-go')),true)
+  shell(tag(turn)+'<h2>준비되면 시작하세요</h2><p>초성 <b>'+esc(r.initial)+'</b> · 남은 사람 '+r.alive.length+'명<br>연애나 스킨십에서 떠오르는 단어도 좋아요. 이미 나온 단어는 빼 주세요.</p>'+actions(btn('5초 시작','initial-go')),true)
 }
 function initialGo(){
   const r=round;r.phase='initial-live';shell(tag(r.alive[r.turn])+'<h2>'+esc(r.initial)+'</h2><p>새 단어를 소리 내어 말해요.</p><div class="countdown" id="seconds">5</div>'+actions(btn('말했어요','word-ok'),btn('중복·오답','word-out','quiet')));
@@ -725,7 +745,7 @@ function upDown(lastGuess){
       field.setAttribute('aria-invalid','true');field.focus();return;
     }
     r.guesses++;
-    if(guess===r.answer)return end(players[r.turn]+'님 정답!','숨은 숫자는 '+guess+'! '+r.guesses+'번 만에 맞혔어요.');
+    if(guess===r.answer)return end(players[r.turn]+'님 정답!','숨은 숫자는 '+guess+'! '+r.guesses+'번 만에 맞혔어요. 숫자 읽는 눈치로 썸 신호도 맞히겠는데요?');
     if(guess<r.answer)r.low=guess+1;else r.high=guess-1;
     r.turn=(r.turn+1)%players.length;fx.play('turn');upDown(guess);
   };
@@ -866,7 +886,7 @@ function handle(action,value){
     case 'ack-bite':
       if(r.phase!=='bite')return;
       fx.quiet();
-      return end(players[r.turn]+' 당첨!','아픈 '+(r.trap+1)+'번 이빨을 눌렀어요.',null);
+      return end(players[r.turn]+' 당첨!','아픈 '+(r.trap+1)+'번 이빨을 눌렀어요. 들켰네요. 썸 탈 때도 이렇게 티 나요?',null);
     case 'set-bottle-table':return setBottleTable();
     case 'change-table':
       if(r.phase==='seating')return chooseBottleTable();
@@ -909,8 +929,16 @@ function handle(action,value){
       if(r.voteKind==='imagevote')r.counts[target]++;else r.votes.push(target);
       r.revealed=false;r.pos++;fx.play('vote');return r.pos===players.length?votesDone():vote();
     }
-    case 'new-prompt':r.prompt=draw(r.bank);fx.play('flip');return king();
+    case 'new-prompt':r.custom=false;r.prompt=draw(prompts.kingChoices(r.bank,r.second!=null));fx.play('flip');return king();
     case 'royal':return revealKingOrder();
+    case 'king-yes':case 'king-no':{
+      const n=Number(value);
+      if(r.phase!=='king-answer'||n!==[r.number,r.second].find(i=>!r.answers[i]))return;
+      r.answers[n]=action==='king-yes';
+      if(action==='king-no'){r.declined=n;r.phase='done';}
+      else if(r.answers[r.number]&&r.answers[r.second])r.phase='done';
+      return kingResult();
+    }
     case 'truth-pick':return revealTruth(value);
     case 'truth-next':case 'truth-pass':
       if(r.phase!=='truth-answer')return;

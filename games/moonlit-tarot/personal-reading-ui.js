@@ -1,5 +1,5 @@
-import { listPersonalContexts } from './personal-contexts.js?v=20261113-tarot-easy1';
-import { buildPersonalReading, personalReadingCopyLines, PERSONAL_BASIS } from './personal-reading.js?v=20261113-tarot-easy1';
+import { listPersonalContexts } from './personal-contexts.js?v=20261114-tarot-person1';
+import { buildPersonalReading, personalReadingCopyLines, PERSONAL_BASIS } from './personal-reading.js?v=20261114-tarot-person1';
 import { appendSummaryLines } from './reading-summary-view.js?v=20261113-tarot-summary1';
 
 // This view only reinterprets the three already revealed cards. It does not
@@ -132,19 +132,18 @@ export function createPersonalReading({ getSnapshot, canRead, renderSections, re
     }
     const criteria = element('details', 'reading-source personal-basis');
     criteria.id = 'personal-basis';
-    criteria.append(element('summary', '', '풀이 기준'), element('p', '', PERSONAL_BASIS));
+    criteria.append(element('summary', '', '풀이 기준과 상황 예시'), element('p', '', PERSONAL_BASIS), element('p', 'personal-example', report.example));
     panel.append(criteria);
     const reading = element('div', 'personal-reading');
     reading.id = 'personal-reading';
     reading.append(element('h3', 'personal-main-question', report.question));
-    reading.append(element('p', 'personal-example', report.example));
-    const sections = element('div', 'personal-card-guides');
-    renderSections(sections, report.primary, '', 'h3', currentCards.map(card => card.name));
-    reading.append(sections);
     const links = element('div', 'personal-card-connections');
     links.id = 'personal-card-connections';
     renderSections(links, [report.connection], '', 'h3', currentCards.map(card => card.name));
     reading.append(links);
+    const sections = element('div', 'personal-card-guides');
+    renderSections(sections, report.primary, '', 'h3', currentCards.map(card => card.name));
+    reading.append(sections);
     renderComparison(reading, report.comparison);
     const following = element('section', 'personal-followups');
     following.id = 'personal-followups';

@@ -33,7 +33,7 @@
     const rows = ordered.map(row => '<tr><th scope="row">' + ui.esc(row.name) + '</th><td>' + seconds(row.score) +
       '초</td><td>' + seconds(row.error) + '초</td></tr>').join('');
     return '<h1>' + winners.map(row => ui.esc(row.name)).join(' · ') + (winners.length > 1 ? ' 공동 1등!' : ' 1등!') +
-      '</h1><p>목표 ' + (s.game.target/10).toFixed(1) + '초</p><table class="watch-results">' +
+      '</h1><p>이 감이면 고백 타이밍도 놓치지 않겠는데요?</p><p>목표 ' + (s.game.target/10).toFixed(1) + '초</p><table class="watch-results">' +
       '<thead><tr><th>참가자</th><th>기록</th><th>목표와 차이</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
   function view(s,ui) {

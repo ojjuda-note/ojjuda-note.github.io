@@ -22,17 +22,29 @@
   const codePattern = /^[A-Z0-9]{6}$/;
   const params = new URL(location.href).searchParams;
   if (!params.has('room') && !params.has('game') && params.get('mode') !== 'multi') {
+    const code=(params.get('resume')||'').toUpperCase(), direct=params.get('gameFrom');
+    if(codePattern.test(code)&&(!direct||gameById(direct))){
+      const resume=byId('resume-drinks');
+      resume.href=direct?'/games/'+direct+'/?room='+code:'?room='+code;
+      resume.hidden=false;
+    }
     byId('play-modes').hidden = false;
     return;
   }
   byId('hub-back').href = '/games/drinking/';
-  byId('hub-back').textContent = '← 방식 선택';
+  byId('hub-back').textContent = '← 술게임 메인';
+  byId('hub-back').classList.add('drinks-home');
+  byId('hub-back').closest('header').classList.add('drinks-room-header');
   byId('welcome').hidden = false;
   const inviteCode = (params.get('room') || '').trim().toUpperCase();
   const suggested = !inviteCode && gameById(params.get('game'));
   const notice = byId('notice'), message = byId('room-message'), list = byId('room-list');
   let client, actor, room, pollTimer, polling = false, busy = false, navigating = false, subscribed = false;
   let generation = 0, lastMutation, listSequence = 0;
+  byId('hub-back').addEventListener('click',event=>{
+    if(event.button||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+    navigating=true;generation++;clearTimeout(pollTimer);
+  });
   const messages = {
     not_signed_in:'오쭈다에 로그인해 주세요.', banned:'현재 이 계정으로 대전방을 이용할 수 없어요.',
     wrong_password:'방 비밀번호가 맞지 않아요.', invalid_password:'비밀번호를 4~32자로 입력해 주세요.',
@@ -86,10 +98,12 @@
   }
 
   function render(next) {
+    if(navigating)return;
     if (!next || !codePattern.test(next.code) || !Array.isArray(next.players)) throw Error('invalid_room');
     if (room && room.code===next.code && room.revision>=next.revision) return;
     const promoted=room?.code===next.code && room.me>0 && next.me===0;
     room=next; listSequence++; byId('welcome').hidden=true; byId('lobby').hidden=false;
+    byId('hub-back').href='/games/drinking/?resume='+room.code;
     const url=new URL('/games/drinking/',location.origin);
     url.searchParams.set('room',room.code); history.replaceState(null,'',url);
     if (room.phase==='playing' && gameById(room.kind) && codePattern.test(room.child)) {
@@ -114,6 +128,7 @@
   }
 
   function showEntry(invite='') {
+    byId('hub-back').href='/games/drinking/';
     room=null; clearTimeout(pollTimer); document.title='술게임 멀티 · 오쭈다';
     byId('lobby').hidden=true; byId('welcome').hidden=false; byId('account').hidden=true; byId('entry').hidden=false;
     byId('create-form').hidden=!!invite; byId('rooms').hidden=!!invite; byId('all-rooms').hidden=!invite;

@@ -12,14 +12,14 @@ function saveStandalone(code){if(!party)save(key('last'),code)}
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const control=(title,act,primary=false)=>party?.control(act)??'<button type="button" class="'+(primary?'action':'secondary')+'" data-do="'+act+'">'+title+'</button>';
 const recommend=window.DrinkingPrompts.recommendations('king');
-let missionStarted=false, missionEdit=0;
+let missionStarted=false, missionEdit=0,missionCustom=false;
 async function suggestMission(){
   const key=room.code+'/'+room.round, edit=++missionEdit;
-  const text=await recommend(key,draftMission.trim());
+  const text=await recommend(key,draftMission.trim(),draftSecond!=null);
   const field=view.querySelector('#order [name="mission"]');
   if(!room||room.code+'/'+room.round!==key||edit!==missionEdit||!field)return;
-  if(text)field.value=draftMission=text;
-  else field.placeholder='추천할 미션이 없어요. 직접 적어 주세요.';
+  missionCustom=false;field.value=draftMission=text;
+  if(!text)field.placeholder='추천할 미션이 없어요. 직접 적어 주세요.';
 }
 let revealed=false;
 let draftNumber=1,draftSecond=null,draftMission='';
@@ -46,7 +46,7 @@ function render(s,force=false){
   const first=!room||room.code!==s.code;
   if(!first&&(s.revision<room.revision||(!force&&s.revision===room.revision)))return;
   if(first||s.round!==room.round){
-    draftNumber=1;draftSecond=null;draftMission='';missionStarted=false;missionEdit++;
+    draftNumber=1;draftSecond=null;draftMission='';missionStarted=false;missionCustom=false;missionEdit++;
   }
   if(first||s.round!==room.round||s.phase!==room.phase)revealed=false;
   if(first){
@@ -59,13 +59,24 @@ function render(s,force=false){
   let content='';
   if(s.phase==='waiting'){
     content='<h1>'+esc(s.title)+'</h1><p>모두 모이면 시작해요. 초대 링크와 방 비밀번호를 친구에게 알려 주세요.</p>'+members+control('초대 링크 복사','copy',true);
-  }else if(s.phase==='done'){
+  }else if(s.phase==='done'||s.phase==='response'){
     const recipients=[[s.number,s.recipient]];
     if(s.second!=null)recipients.push([s.second,s.secondRecipient]);
     const rows=recipients.map(([number,player])=>'<div><dt>카드 '+esc(number)+'번</dt><dd>'+esc(s.players[player])+'</dd></div>').join('');
     content='<section class="king-order"><span class="king-order-label">왕의 명령 · '+esc(s.players[s.king])+'</span>'+
-      '<h1>'+esc(s.mission)+'</h1><dl class="king-recipients" aria-label="명령을 받은 사람">'+rows+'</dl></section>'+
-      (party?'':s.me===0?control('한 판 더','again',true):'<p>방장이 다음 판을 시작할 수 있어요.</p>');
+      '<h1>'+esc(s.mission)+'</h1><dl class="king-recipients" aria-label="명령을 받은 사람">'+rows+'</dl></section>';
+    if(s.phase==='response'){
+      if(!recipients.some(([,p])=>p===s.me))content+='<p>두 사람이 각자 휴대폰에서 선택하고 있어요.</p>';
+      else {
+        const accepted=s.accepted.includes(s.card);
+        content+='<p>'+(accepted?'동의했어요. 상대의 선택을 기다려요.':'이 미션을 할까요?')+'</p><div class="actions">'+
+          (accepted?'':control('동의','accept',true))+control('거절 · 술 한 모금','decline')+'</div>';
+      }
+    }else{
+      if(s.declined!=null)content+='<p>'+esc(s.players[s.declined])+'님은 술 한 모금. 이번 미션은 끝이에요.</p>';
+      else if(s.accepted?.length===2)content+='<p>두 사람 모두 동의했어요. 미션을 진행하세요.</p>';
+      content+=party?'':s.me===0?control('한 판 더','again',true):'<p>방장이 다음 판을 시작할 수 있어요.</p>';
+    }
   }else{
     const role=s.card===0?'당신은 왕이에요.':'내 번호는 '+s.card+'번이에요.';
     const card='<section class="role">'+control(revealed?'내 카드 가리기':'내 카드 보기','reveal')+
@@ -116,15 +127,15 @@ async function run(task){
   finally{busy=false;later()}
 }
 view.addEventListener('input',e=>{
-  if(e.target.name==='mission'){missionEdit++;draftMission=e.target.value;}
+  if(e.target.name==='mission'){missionCustom=true;missionEdit++;draftMission=e.target.value;}
 });
 view.addEventListener('change',e=>{
   if(e.target.name==='number'){
     draftNumber=Number(e.target.value);
-    if(draftSecond===draftNumber)draftSecond=null;
+    if(draftSecond===draftNumber){draftSecond=null;if(!missionCustom)void suggestMission();}
     e.target.form.elements.second.innerHTML=secondOptions(room.players.length-1);
   }
-  if(e.target.name==='second')draftSecond=Number(e.target.value)||null;
+  if(e.target.name==='second'){draftSecond=Number(e.target.value)||null;if(!missionCustom)void suggestMission();}
 });
 view.addEventListener('submit',e=>{
   e.preventDefault();
@@ -156,6 +167,10 @@ view.addEventListener('click',e=>{
   const act=b.dataset.do;
   if(act==='create-tab'||act==='join-tab'){mode=act==='create-tab'?'create':'join';notice.textContent='';entry();return}
   if(!room)return;
+  if(act==='accept'||act==='decline'){
+    if(room.phase==='response')run(async()=>render(await api(act,room.code,{round:room.round})));
+    return;
+  }
   if(act==='reveal'){revealed=!revealed;render(room,true);return}
   if(act==='copy'){
     navigator.clipboard?.writeText(location.href).then(()=>{notice.textContent='초대 링크를 복사했어요.'},()=>{notice.textContent=location.href});

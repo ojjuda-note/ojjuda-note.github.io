@@ -15,8 +15,6 @@
     },
     options(s) { return {round:s.round, waiting:s.phase==='waiting', host:s.me===0}; }
   };
-  if (!params.has('party')) return;
-
   const code = (params.get('party') || '').toUpperCase();
   const child = (params.get('room') || '').toUpperCase();
   const kind = location.pathname.split('/')[2];
@@ -26,6 +24,27 @@
   const roomList = hub + '?mode=multi';
   const lobby = valid(code) ? hub + '?room=' + code : hub;
   const header = document.querySelector('header a');
+  const mainLink = params.has('party') ? document.createElement('a') : header;
+  mainLink.className = 'drinks-home';
+  mainLink.textContent = '← 술게임 메인';
+  function mainDestination() {
+    if (valid(code)) return hub+'?resume='+code;
+    const direct = (new URLSearchParams(location.search).get('room') || '').toUpperCase();
+    return valid(direct) && kinds.has(kind) ? hub+'?resume='+direct+'&gameFrom='+kind : hub;
+  }
+  mainLink.href = mainDestination();
+  if(mainLink!==header)header.before(mainLink);
+  header.parentElement.classList.add('drinks-room-header');
+  mainLink.addEventListener('click', e => {
+    if (e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    mainLink.href = mainDestination();
+    if (params.has('party')) {
+      navigating = true;
+      clearTimeout(timer);
+    }
+  });
+  if (!params.has('party')) return;
+
   const view = document.getElementById('view');
   const status = document.createElement('p');
   status.setAttribute('role', 'status');

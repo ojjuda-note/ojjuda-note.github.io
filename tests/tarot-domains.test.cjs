@@ -187,7 +187,7 @@ const unchangedFirstTwo = ['emperor', 'justice'].map(deckCard);
 const foolResult = getSummary([...unchangedFirstTwo, deckCard('fool')], 'money');
 const magicianResult = getSummary([...unchangedFirstTwo, deckCard('magician')], 'money');
 assert.equal(foolResult.source.recordId, magicianResult.source.recordId, 'the unchanged shared historical reference is not relabelled as new authored fortunes');
-assert.notEqual(foolResult.groups[0].sections[2].paragraphs.join(' '), magicianResult.groups[0].sections[2].paragraphs.join(' '));
+assert.notEqual(foolResult.groups[0].sections.find(section => section.id === 'solution').paragraphs.join(' '), magicianResult.groups[0].sections.find(section => section.id === 'solution').paragraphs.join(' '));
 const spend = base.sections.find(section => section.title === '지출 습관');
 const contract = base.sections.find(section => section.title === '문서·계약을 앞둔 고민');
 for (const key of ['cause', 'scene', 'response', 'outcome']) assert.notEqual(spend.interpretation[key], contract.interpretation[key], key + ': spending and contracts have different circumstances');
