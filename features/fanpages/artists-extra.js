@@ -784,9 +784,46 @@
       id: 'straykids', name: 'Stray Kids', korean: '스트레이 키즈', category: 'boy', fan: 'STAY', agency: 'JYP Entertainment',
       members: ['방찬', '리노', '창빈', '현진', '한', '필릭스', '승민', '아이엔'],
       debut: '2018.03.25', debutWork: 'I am NOT', songs: ['District 9', 'Mirror'],
-      concept: '직접 만드는 음악과 에너지 넘치는 퍼포먼스.',
+      concept: '3RACHA를 중심으로 직접 만드는 음악과 에너지 넘치는 퍼포먼스.',
+      checkedAt: '2026.11.14',
       official: 'https://straykids.jype.com/', youtube: 'https://www.youtube.com/@StrayKids',
       photo: 'Stray Kids at the 40th Golden Disc Awards, January 10, 2026 (1).png', photoLabel: '골든디스크 시상식', photoYear: '2026', credit: 'K-POPIT 케이팝잇', license: 'CC BY 4.0',
+      morePhotos: [
+        commonsPhoto('Hyunjin of Stray Kids at the 40th Golden Disc Awards, January 10, 2026 (1).png', '현진 · 골든디스크 레드카펫', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0'),
+        commonsPhoto('Han of Stray Kids at the 40th Golden Disc Awards, January 10, 2026 (1).png', '한 · 골든디스크 레드카펫', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0')
+      ],
+      music: [
+        { title: 'SUIATSU', date: '2026.11.09', type: '일본 미니 4집 타이틀곡 선공개 디지털 싱글 · 음반 발매 11.25', songs: ['SUIATSU'], href: 'https://straykids.jype.com/discography/ls6uuw6p' },
+        { title: 'THIS & THAT', date: '2026.08.07', type: '정식 앨범 · 타이틀 This & That', songs: ['RUN IT', 'This & That', 'After You', 'FARMING', 'I Do', 'Way Out', '그날', 'This & That (Festival Version)'], href: 'https://straykids.jype.com/discography/hmzf0t9l' },
+        { title: '별, 빛 (STAY)', date: '2026.03.25', type: '데뷔 8주년 디지털 싱글', songs: ['별, 빛 (STAY)'], href: 'https://straykids.jype.com/discography/9kd9aglq' },
+        { title: 'I am NOT', date: '2018.03.25', type: '데뷔 미니앨범 · 타이틀 District 9', songs: ['District 9', 'Mirror'], href: 'https://straykids.jype.com/discography/vuykzg89' }
+      ],
+      appearances: [
+        { date: '2026-11-25', title: '일본 미니 4집 SUIATSU CD 정식 발매', sub: '일본 소니뮤직 · 타이틀곡 11.09 선공개, CD 11.25 발매 · 판매처별 특전 확인', href: 'https://www.sonymusic.co.jp/artist/StrayKids/info/588572' },
+        { date: '2026-12-20', title: 'SUIATSU 구매자 한정 팬 이벤트 · 도쿄', sub: '벨사르 시부야 가든 B1F · 당첨자 대상 하이터치·사인회 · 시간은 당첨자 안내 · 응모 11.24~12.13 JST', href: 'https://www.straykidsjapan.com/suiatsu/' },
+        { date: '2027-01-30', title: 'SUIATSU 구매자 한정 팬 이벤트 · 오사카', sub: '인텍스 오사카 5호관 · 당첨자 대상 하이터치·사인회 · 시간은 당첨자 안내 · 응모 11.24~12.13 JST', href: 'https://www.straykidsjapan.com/suiatsu/' },
+        { date: '2027-04-24', title: 'RUN IT JAPAN 일본 스타디움 투어', sub: '17:30 JST · 요코하마 닛산 스타디움 · Sony Music 공식 발표 · W회원 선예매 11.16까지', href: 'https://www.sonymusic.co.jp/artist/StrayKids/info/588400' },
+        { date: '2027-04-25', title: 'RUN IT JAPAN 일본 스타디움 투어', sub: '17:00 JST · 요코하마 닛산 스타디움 · Sony Music 공식 발표', href: 'https://www.sonymusic.co.jp/artist/StrayKids/info/588400' },
+        { date: '2027-05-04', title: 'RUN IT JAPAN 일본 스타디움 투어', sub: '17:00 JST · 오사카 얀마 스타디움 나가이 · Sony Music 공식 발표', href: 'https://www.sonymusic.co.jp/artist/StrayKids/info/588400' },
+        { date: '2027-05-05', title: 'RUN IT JAPAN 일본 스타디움 투어', sub: '16:30 JST · 오사카 얀마 스타디움 나가이 · Sony Music 공식 발표', href: 'https://www.sonymusic.co.jp/artist/StrayKids/info/588400' }
+      ],
+      schedules: [
+        { title: 'JYP 공식 Stray Kids 일정', sub: '공식 월별 활동 달력 · 변동 및 취소 확인', href: 'https://straykids.jype.com/schedule' },
+        { title: 'RUN IT JAPAN 공식 투어 일정·예매', sub: '일본 2027년 스타디움 4회 · 공식 공지에서 조건 확인', href: 'https://www.straykidsjapan.com/runitjapan/' }
+      ],
+      news: [
+        { date: '2026.11.13', tag: '영상', title: 'SUIATSU 도쿄돔 무대 영상 공식 공개', href: 'https://www.sonymusic.co.jp/artist/StrayKids/info/588572' },
+        { date: '2026.11.09', tag: '공연', title: 'RUN IT JAPAN 2027 요코하마·오사카 스타디움 4회 확정', href: 'https://www.sonymusic.co.jp/artist/StrayKids/info/588400' },
+        { date: '2026.11.09', tag: '컴백', title: 'SUIATSU 선공개 음원 발매 · 일본 미니 4집 CD는 11.25 예정', href: 'https://straykids.jype.com/discography/ls6uuw6p' }
+      ],
+      merch: [
+        { title: 'SUIATSU 일본 미니 4집 공식 앨범·포토카드', sub: '11.25 CD 발매 예정 · 초회판 A/B·일반판·멤버판, 판매처별 특전 및 재고 확인', href: 'https://www.straykidsjapan.com/suiatsu/' },
+        { title: 'SUIATSU 구매자 한정 팬 이벤트 응모권', sub: '대상 앨범 동봉 시리얼 · 응모 11.24 10:00~12.13 23:59 JST · 당첨·품절 조건 확인', href: 'https://www.straykidsjapan.com/suiatsu/' },
+        { title: 'Stray Kids 공식 상품 목록', sub: 'FANS SHOP · 음반·공식 MD · 가격·재고는 판매처 확인', href: 'https://app.fans/shop/straykids' }
+      ],
+      campaigns: [
+        { kind: '콜라보', date: '2026.10.08', title: 'RUN IT JAPAN × TENJIN', sub: '후쿠오카 서일본철도 역 패널·래핑 버스 · 일부 행사 종료, 버스 운행 및 8역 패널은 11.30까지 예정', href: 'https://ssl.sme.co.jp/artist/StrayKids/info/587469' }
+      ],
       accent: '#ee686b', light: '#4b252d', dark: '#fff1f2', bg: '#191117', night: true, shape: '⚡'
     },
     {
