@@ -1,14 +1,14 @@
 /* Loaded inside the verified adult game shell. Only an accepted suggestion joins the shared pool. */
 (() => {
   'use strict';
-  const catalog = window.DrinkingPromptCatalog;
-  const kinds = ['king','fingers','imagevote'];
-  const lists = Object.fromEntries(kinds.map(kind => [kind, [...(catalog[kind] || [])]]));
+  const kinds = new Set(['bomb','liar','minority','mission','initial','king','fingers','imagevote','truth']);
+  const banks = new Map();
+  const loads = new Map();
   const owner = document.getElementById('access-content').dataset.member;
   const queuePrefix = 'oj.party.suggestions.' + owner + '.';
   const canonical = value => value.normalize('NFKC').trim().replace(/\s+/gu,' ').toLowerCase();
   const queued = new Map();
-  let activeDeck, loading, sending, retryTimer;
+  let sending, retryTimer;
   const invalidSubmissions = new Set(['invalid_prompt','invalid_kind','invalid_flavor']);
 
   function put(item) {
@@ -29,29 +29,56 @@
       }
     }
   } catch {}
-  async function invoke(action, options) {
+  async function invoke(name, action, options) {
     const client = await window.OjjudaGetClient();
     const {data:auth,error:authError} = await client.auth.getSession();
     if (authError || !owner || auth?.session?.user?.id !== owner) throw Error('member_changed');
-    const {data,error} = await client.rpc('drinking_prompt_suggestions',{p_action:action,p_options:options});
+    const {data,error} = await client.rpc(name,{p_action:action,p_options:options});
     if (error) throw error;
     return data;
   }
-  function refresh() {
-    if (loading) return loading;
-    loading = (async () => {
+  const textItem = item => typeof item === 'string' && item.trim().length > 0;
+  function validBank(kind, bank) {
+    if (kind === 'truth') {
+      return ['mild','spicy'].every(flavor => Array.isArray(bank?.[flavor]) && bank[flavor].every(textItem));
+    }
+    if (!Array.isArray(bank)) return false;
+    if (kind === 'minority' || kind === 'mission') {
+      return bank.every(pair => Array.isArray(pair) && pair.length === 2 && pair.every(textItem));
+    }
+    return bank.every(textItem);
+  }
+  // Reuse an unchanged array so local shuffle bags survive a new round. Replace it on edits
+  // so a round that already holds the old array can finish without changing its questions.
+  function refresh(kind) {
+    if (!kinds.has(kind)) return Promise.resolve(false);
+    if (loads.has(kind)) return loads.get(kind);
+    const request = (async () => {
       try {
-        const pool = await invoke('pool',{});
-        if (pool?.truthFull !== true || !['mild','spicy'].every(k => Array.isArray(pool.truth?.[k]))) return false;
-        for (const kind of kinds) {
-          const merged = new Set([...(catalog[kind] || []),...(pool[kind] || [])]);
-          lists[kind].splice(0,lists[kind].length,...merged);
-        }
-        activeDeck = {mild:[...pool.truth.mild],spicy:[...pool.truth.spicy]};
+        const result = await invoke('drinking_content','pool',{kinds:[kind]});
+        const bank = result?.banks?.[kind];
+        if (!validBank(kind,bank)) return false;
+        if (JSON.stringify(bank) !== JSON.stringify(banks.get(kind))) banks.set(kind,bank);
         return true;
       } catch { return false; }
-    })().finally(() => { loading = null; });
-    return loading;
+    })().finally(() => loads.delete(kind));
+    loads.set(kind,request);
+    return request;
+  }
+  function recommendations(kind) {
+    let round, snapshot;
+    return async (roundKey, previous) => {
+      if (round !== roundKey) {round=roundKey;snapshot=null;}
+      if (!snapshot) snapshot=refresh(kind).then(ok=>ok?banks.get(kind):null);
+      const request=snapshot, bank=await request;
+      if (!bank) {
+        if (snapshot===request) snapshot=null;
+        return '';
+      }
+      const other=bank.filter(item=>item!==previous);
+      const items=other.length?other:bank;
+      return items[Math.floor(Math.random()*items.length)] || '';
+    };
   }
   async function flush() {
     if (sending || !queued.size || !navigator.onLine) return;
@@ -60,7 +87,7 @@
     try {
       for (const [key,item] of queued) {
         try {
-          const saved = await invoke('submit',item);
+          const saved = await invoke('drinking_prompt_suggestions','submit',item);
           if (!saved?.ok) break;
         } catch (error) {
           // This server rejection applies only to this entry. Connection and account errors can be retried.
@@ -78,21 +105,20 @@
   function submit(kind,text,flavor) {
     if (typeof text !== 'string' || !text.trim()) return;
     const bank = kind === 'truth'
-      ? [...(catalog[flavor] || []),...(activeDeck?.[flavor] || [])] : lists[kind];
-    if (!bank || bank.some(entry => canonical(entry) === canonical(text))) return;
+      ? banks.get('truth')?.[flavor] : banks.get(kind);
+    if (bank?.some(entry => canonical(entry) === canonical(text))) return;
     const key=put({kind,text,flavor});
     if (!key) return;
     try { localStorage.setItem(key,JSON.stringify(queued.get(key))); } catch {}
     void flush();
   }
-  window.addEventListener('online', () => { void flush();void refresh(); });
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) { void flush();void refresh(); }
-  });
+  window.addEventListener('online',flush);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) void flush(); });
   window.DrinkingPrompts = {
-    list:kind => lists[kind],
-    truth:() => ({mild:[...(activeDeck?.mild || [])],spicy:[...(activeDeck?.spicy || [])]}),
-    ready:refresh(),refresh,submit
+    managed:kind => kinds.has(kind),
+    list:kind => banks.get(kind) || [],
+    truth:() => banks.get('truth') || {mild:[],spicy:[]},
+    refresh,recommendations,submit
   };
   void flush();
 })();

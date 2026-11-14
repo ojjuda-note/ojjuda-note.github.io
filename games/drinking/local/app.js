@@ -30,18 +30,12 @@ const games=[
   ['imagevote','이미지 게임','추리와 대화','이 질문에 딱 맞는 사람은?','#b9c9e4',2,'질문을 읽고 가장 잘 어울리는 사람에게 몰래 한 표를 주세요. 모두 투표하면 가장 많이 지목된 사람이 공개돼요.'],
   ['updown','업앤다운','운과 감각','숫자를 부르면, 업 또는 다운!','#c9d8ea',2,'1부터 100 사이에 숨은 숫자를 돌아가며 맞혀요. 업이면 더 큰 수, 다운이면 더 작은 수예요. 정확히 맞힌 사람이 이겨요.']
 ].map(([id,title,category,short,color,min,rule],i)=>({id,title,category,short,color,min,rule,num:String(i+1).padStart(2,'0')}));
-const fingerPrompts = window.DrinkingPrompts.list('fingers');
-const imagePrompts = window.DrinkingPrompts.list('imagevote');
-const topics = window.DrinkingPromptCatalog.bomb;
-const words = window.DrinkingPromptCatalog.liar;
-const missions = window.DrinkingPromptCatalog.mission;
-const dilemmas = window.DrinkingPromptCatalog.minority;
-const initials=['ㅅㄱ','ㄱㅅ','ㅂㅅ','ㅅㅈ','ㄱㅈ','ㄷㅅ','ㅈㅅ','ㅎㅅ','ㅅㅂ','ㅊㅅ','ㅂㄱ','ㄱㅁ','ㅅㅁ','ㅈㄱ'];
-const kingPrompts = window.DrinkingPrompts.list('king');
+const prompts=window.DrinkingPrompts;
+const manualGames=new Set(['king','fingers','imagevote']);
 function rand(n){return Math.floor(Math.random()*n)}
 function shuffled(items){const copy=[...items];for(let i=copy.length-1;i>0;i--){const j=rand(i+1);[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}
-const bags=new Map();
-function draw(items){if(!bags.get(items)?.length)bags.set(items,shuffled(items));return bags.get(items).pop()}
+const bags=new WeakMap();
+function draw(items){if(!items.length)return '';if(!bags.get(items)?.length)bags.set(items,shuffled(items));return bags.get(items).pop()}
 const truthDeck={mild:[],spicy:[]};
 const truthSettings={mode:'mixed',showFlavor:false};
 const truthTools=window.PartyTruthCards;
@@ -112,14 +106,27 @@ function readyBomb(random){
     actions(btn('시간 다시 선택','bomb-setup','quiet')));
   app.querySelector('[data-action="start-bomb"]').focus({preventScroll:true});
 }
-function startBomb(){
+async function loadRoundBank(r){
+  const kind=game.id;
+  const loaded=await prompts.refresh(kind);
+  if(round!==r)return false;
+  r.bank=loaded?prompts.list(kind):[];
+  if(r.bank.length||manualGames.has(kind))return true;
+  const message=loaded?'아직 등록된 내용이 없어요.':'내용을 불러오지 못했어요. 연결을 확인해 주세요.';
+  shell('<h2>'+message+'</h2>'+actions(btn('다시 시도',kind==='bomb'?'start-bomb':'start'),btn('게임 목록','menu','quiet')));
+  return false;
+}
+async function startBomb(){
   const r=round;
   if(r?.phase!=='bomb-ready')return;
+  const button=app.querySelector('[data-action="start-bomb"]');
+  if(button){button.disabled=true;button.textContent='주제 불러오는 중…';}
+  if(!await loadRoundBank(r))return;
   r.phase='play';
   const base=r.randomTime?bombMinSeconds+rand(bombLimit(players.length)-bombMinSeconds+1):bombSeconds;
   const [first,last]=bombWindow(base);
   const seconds=first+rand(last-first+1);
-  r.topic=draw(topics);fx.play('deal');bomb();
+  r.topic=draw(r.bank);fx.play('deal');bomb();
   timed(seconds*1000,bombBurst,850,()=>fx.play('tick'));
 }
 function bombBurst(){
@@ -184,9 +191,14 @@ function clock(){
 function timed(ms,onLimit,beat=0,onBeat=null){
   Object.assign(round,{remain:ms,onLimit,beat,lastBeat:Math.ceil(ms/beat),onBeat});clock()
 }
-function begin(){
+async function begin(){
   if(players.length<game.min)return go('participants');
   cleanup();round={turn:0,phase:'play'};fx.play(game.id==='croc'?'tooth':'deal');const r=round;
+  if(prompts.managed(game.id)&&game.id!=='truth'){
+    const button=app.querySelector('[data-action="start"]');
+    if(button){button.disabled=true;button.textContent='불러오는 중…';}
+    if(!await loadRoundBank(r))return;
+  }
   switch(game.id){
     case 'croc':r.trap=rand(CROC_TOOTH_COUNT);r.pressed=new Set();return croc();
     case 'bottle':return chooseBottleTable();
@@ -201,10 +213,10 @@ function begin(){
     case 'updown':
       r.answer=1+rand(100);r.low=1;r.high=100;r.guesses=0;
       return upDown();
-    case 'initial':r.alive=players.map((_,i)=>i);r.initial=draw(initials);return initialReady();
-    case 'minority':r.pair=draw(dilemmas);return startVotes('minority');
-    case 'liar':r.secret=rand(players.length);r.word=draw(words);break;
-    case 'mission':r.secret=rand(players.length);r.pair=draw(missions);break;
+    case 'initial':r.alive=players.map((_,i)=>i);r.initial=draw(r.bank);return initialReady();
+    case 'minority':r.pair=draw(r.bank);return startVotes('minority');
+    case 'liar':r.secret=rand(players.length);r.word=draw(r.bank);break;
+    case 'mission':r.secret=rand(players.length);r.pair=draw(r.bank);break;
     case 'king':r.roles=shuffled(players.map((_,i)=>i));r.king=r.roles.indexOf(0);break;
   }
   r.phase='deal';r.pos=0;r.revealed=false;deal();
@@ -462,7 +474,7 @@ function animateBottle(now){
   r.lastTick=tick;
   r.bottleFrame=requestAnimationFrame(animateBottle);
 }
-function bomb(){const r=round;shell(tag(r.turn)+'<h2>'+r.topic+'</h2>'+art('bomb','mini-art pulse')+'<p>주제에 맞는 단어를 하나 말하세요.</p>'+actions(btn('말했어요 · 다음 사람','pass-bomb')))}
+function bomb(){const r=round;shell(tag(r.turn)+'<h2>'+esc(r.topic)+'</h2>'+art('bomb','mini-art pulse')+'<p>주제에 맞는 단어를 하나 말하세요.</p>'+actions(btn('말했어요 · 다음 사람','pass-bomb')))}
 let watchTenths=50;
 function watchCase(reading,live=false){
   return '<span class="watch-case"><span class="watch-crown"></span><span class="watch-bezel">'+
@@ -561,7 +573,7 @@ function deal(){
 }
 function afterDeal(){const r=round;r.revealed=false;
   if(game.id==='king'){
-    r.phase='king';r.number=1;r.second=null;r.prompt=draw(kingPrompts);return king();
+    r.phase='king';r.number=1;r.second=null;r.prompt=draw(r.bank);return king();
   }
   r.phase='talk';
   shell('<h2>'+(game.id==='liar'?'한 사람씩 힌트를 말해요':'하나, 둘, 셋! 동시에 표현해요')+'</h2><p>'+(game.id==='liar'?'정답을 직접 말하지 말고 한마디씩 설명하세요. 누가 단어를 모르는지 찾아봐요.':'말없이 몸으로 자신이 본 미션을 표현하세요. 누가 다른 동작을 했나요?')+'</p>'+actions(btn('비밀 투표 시작','start-vote')),true)
@@ -576,7 +588,7 @@ function king(){
     '<label for="king-number">첫 번째 번호</label><p><select class="field" id="king-number">'+options(r.number)+'</select></p>'+second+
     '<label for="king-mission">왕의 미션</label><p><input class="field" id="king-mission" maxlength="80" value="'+esc(r.prompt)+'"></p>'+
     '<p><small>직접 쓴 내용은 관리자 검토 후 공용 목록에 등록될 수 있어요.</small></p>'+
-      actions(btn('번호 주인공 공개','royal'),btn('다른 미션','new-prompt','quiet')),true);
+      actions(btn('번호 주인공 공개','royal'),r.bank.length?btn('다른 미션','new-prompt','quiet'):''),true);
   $('#king-number').onchange=e=>{
     r.number=Number(e.target.value);
     if(r.second===r.number)r.second=null;
@@ -606,7 +618,7 @@ async function startTruthRound(r){
   if(button)button.disabled=true;
   if(message)message.textContent='질문을 불러오는 중이에요…';
   let loaded=false;
-  try{loaded=await window.DrinkingPrompts.refresh()}catch{}
+  try{loaded=await prompts.refresh('truth')}catch{}
   if(round!==r)return;
   if(loaded){
     refreshTruthDeck();
@@ -664,15 +676,15 @@ function revealTruth(value){
 }
 function initialReady(){
   const r=round;r.phase='initial-ready';const turn=r.alive[r.turn];
-  shell(tag(turn)+'<h2>준비되면 시작하세요</h2><p>초성 <b>'+r.initial+'</b> · 남은 사람 '+r.alive.length+'명<br>이 초성으로 이미 말한 단어는 다시 쓸 수 없어요.</p>'+actions(btn('5초 시작','initial-go')),true)
+  shell(tag(turn)+'<h2>준비되면 시작하세요</h2><p>초성 <b>'+esc(r.initial)+'</b> · 남은 사람 '+r.alive.length+'명<br>이 초성으로 이미 말한 단어는 다시 쓸 수 없어요.</p>'+actions(btn('5초 시작','initial-go')),true)
 }
 function initialGo(){
-  const r=round;r.phase='initial-live';shell(tag(r.alive[r.turn])+'<h2>'+r.initial+'</h2><p>새 단어를 소리 내어 말해요.</p><div class="countdown" id="seconds">5</div>'+actions(btn('말했어요','word-ok'),btn('중복·오답','word-out','quiet')));
+  const r=round;r.phase='initial-live';shell(tag(r.alive[r.turn])+'<h2>'+esc(r.initial)+'</h2><p>새 단어를 소리 내어 말해요.</p><div class="countdown" id="seconds">5</div>'+actions(btn('말했어요','word-ok'),btn('중복·오답','word-out','quiet')));
   fx.play('count');timed(5000,()=>initialOut('시간 초과'),1000,b=>{$('#seconds').textContent=b;fx.play('count')})
 }
 function initialOut(reason){
   stopClock();const r=round,who=r.alive.splice(r.turn,1)[0];if(r.alive.length===1)return end(players[r.alive[0]]+'님 승리!',players[who]+'님이 '+reason+'로 탈락했어요.');
-  r.turn%=r.alive.length;r.initial=draw(initials);r.phase='intermission';fx.play('snap');
+  r.turn%=r.alive.length;r.initial=draw(r.bank);r.phase='intermission';fx.play('snap');
   shell('<span class="turn-tag">'+esc(reason)+'</span><h2>'+name(who)+'님 탈락</h2><p>새 초성으로 이어갑니다. '+r.alive.length+'명이 남았어요.</p>'+actions(btn('다음 차례','initial-ready')))
 }
 function upDown(lastGuess){
@@ -703,13 +715,12 @@ function upDown(lastGuess){
 }
 function partyPrompt(){
   const r=round,fingers=game.id==='fingers';
-  const deck=fingers?fingerPrompts:imagePrompts;
   r.phase='party-prompt';
   shell((fingers?tag(r.turn):'')+'<h2>'+(fingers?'어떤 사람이 접을까요?':'어떤 사람을 찾을까요?')+'</h2>'+
     '<form class="party-prompt" id="party-prompt"><label for="party-question">'+(fingers?'접을 조건':'지목할 질문')+'</label>'+
-    '<textarea class="field" id="party-question" rows="2" maxlength="120" required>'+esc(draw(deck))+'</textarea>'+
+    '<textarea class="field" id="party-question" rows="2" maxlength="120" required>'+esc(draw(r.bank))+'</textarea>'+
     '<p><small>직접 쓴 내용은 관리자 검토 후 공용 목록에 등록될 수 있어요.</small></p>'+
-      '<div class="actions">'+btn(fingers?'다른 조건':'다른 질문','party-suggest','quiet')+
+      '<div class="actions">'+(r.bank.length?btn(fingers?'다른 조건':'다른 질문','party-suggest','quiet'):'')+
     '<button class="start" type="submit">'+(fingers?'이 조건으로 접기':'비밀 투표 시작')+'</button></div></form>'+
     (fingers?fingerScoreboard():''));
   const field=$('#party-question');
@@ -869,7 +880,7 @@ function handle(action,value){
     case 'party-suggest':
       if(r.phase==='party-prompt'){
         const field=$('#party-question');
-        field.value=draw(game.id==='fingers'?fingerPrompts:imagePrompts);field.setCustomValidity('');fx.play('flip');
+        field.value=draw(r.bank);field.setCustomValidity('');fx.play('flip');
       }
       return;
     case 'open-vote':if(r.phase!=='vote'||r.revealed)return;r.revealed=true;fx.play('flip');return vote();
@@ -880,7 +891,7 @@ function handle(action,value){
       if(r.voteKind==='imagevote')r.counts[target]++;else r.votes.push(target);
       r.revealed=false;r.pos++;fx.play('vote');return r.pos===players.length?votesDone():vote();
     }
-    case 'new-prompt':r.prompt=draw(kingPrompts);fx.play('flip');return king();
+    case 'new-prompt':r.prompt=draw(r.bank);fx.play('flip');return king();
     case 'royal':return revealKingOrder();
     case 'truth-pick':return revealTruth(value);
     case 'truth-next':case 'truth-pass':

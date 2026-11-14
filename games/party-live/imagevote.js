@@ -1,13 +1,12 @@
 'use strict';
 (() => {
   const prompt = window.PartyPrompt;
-  const questions = window.DrinkingPrompts.list('imagevote');
   function view(s, ui) {
     const g = s.game;
     if (s.phase === 'prompt') {
       return prompt.form(s, ui, {
         heading:'어떤 사람을 찾아볼까요?', preparing:'질문을 정하고 있어요', label:'질문을 골라 보거나 직접 써 주세요.',
-        another:'다른 질문', submit:'투표 시작', questions
+        another:'다른 질문', submit:'투표 시작'
       });
     }
     if (s.phase === 'vote') {
@@ -30,7 +29,7 @@
     }
   }
   function mount(s, ui) {
-    if (s.phase === 'prompt') prompt.bind(s, ui, 'image_prompt', questions);
+    if (s.phase === 'prompt') prompt.bind(s, ui, 'image_prompt');
     if (s.phase === 'vote' && !s.game.mine) {
       document.querySelectorAll('#game [data-seat]').forEach(button => {
         button.onclick = () => ui.send('image_vote', {turn:s.game.turn, target:Number(button.dataset.seat)});

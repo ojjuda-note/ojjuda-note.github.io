@@ -1,6 +1,16 @@
-.drink-admin-filter,.drink-admin-edit{display:grid;gap:10px;align-items:end;margin:12px 0}
-.drink-admin-filter{grid-template-columns:minmax(120px,1fr) minmax(92px,auto) auto}
-.drink-admin-filter[hidden]{display:none}
-.drink-admin-filter .field,.drink-admin-edit .field{display:grid;min-width:0;gap:4px}
-.drink-admin-edit textarea{width:100%;resize:vertical}
-@media(max-width:550px){.drink-admin-filter{grid-template-columns:minmax(0,1fr) auto}.drink-admin-filter label:first-child{grid-column:1/-1}}
+.drink-admin [hidden],.drink-admin .field[hidden]{display:none}
+.drink-admin-filter,.drink-admin-edit,.drink-admin-toolbar{display:grid;gap:10px;align-items:end;margin:12px 0}
+.drink-admin-toolbar,.drink-admin-filter{grid-template-columns:minmax(120px,1fr) auto}
+.drink-admin-filter.has-flavor{grid-template-columns:minmax(120px,1fr) minmax(92px,auto) auto}
+.drink-admin button[aria-pressed=true]{background:var(--accent-soft,var(--surface-2));border-color:var(--accent);font-weight:700}
+.drink-admin .field{display:grid;min-width:0;gap:4px}
+.drink-admin .inp{box-sizing:border-box;width:100%;min-width:0}
+.drink-admin-edit textarea{resize:vertical}
+.drink-admin .ap-card{min-width:0;overflow-wrap:anywhere}
+.drink-admin-pair{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin:.5rem 0}
+.drink-admin-pair dt{font-weight:600}
+.drink-admin-pair dd{min-width:0;margin:0}
+@media(max-width:550px){
+  .drink-admin-filter.has-flavor{grid-template-columns:minmax(0,1fr) auto}
+  .drink-admin-filter.has-flavor label:first-child{grid-column:1/-1}
+}
