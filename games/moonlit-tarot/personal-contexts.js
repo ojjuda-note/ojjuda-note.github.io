@@ -1,5 +1,5 @@
 import { LOVE_CRUSH } from './personal-contexts/love-crush.js?v=20261114-tarot-copy1';
-import { LOVE_FLIRTING } from './personal-contexts/love-flirting.js?v=20261114-tarot-copy1';
+import { LOVE_FLIRTING } from './personal-contexts/love-flirting.js?v=20261114-tarot-review2';
 import { LOVE_DATING } from './personal-contexts/love-dating.js?v=20261114-tarot-copy1';
 import { LOVE_DISTANCE } from './personal-contexts/love-distance.js?v=20261114-tarot-copy1';
 import { LOVE_REUNION } from './personal-contexts/love-reunion.js?v=20261114-tarot-copy1';

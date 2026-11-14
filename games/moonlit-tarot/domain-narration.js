@@ -1,4 +1,4 @@
-import { CARD_INTERPRETATIONS } from './interpretation-engine.js?v=20261114-tarot-copy1';
+import { CARD_INTERPRETATIONS } from './interpretation-engine.js?v=20261114-tarot-review2';
 import { CASE_GUIDES, getCaseGuide } from './case-guides.js?v=20261114-tarot-copy1';
 import { LIFE_TOPICS } from './topic-catalog-life.js?v=20261114-tarot-copy1';
 import { RELATIONSHIP_TOPICS } from './topic-catalog-relations.js?v=20261114-tarot-copy1';

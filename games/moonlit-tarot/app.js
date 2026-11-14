@@ -1,8 +1,8 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261114-tarot-copy1';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261114-tarot-review2';
 import { TarotFX, TarotAudio } from './fx.js';
 import { TarotPayment, getTarotPrice } from './payment.js?v=20261114-tarot-copy1';
 import { TarotRevelation } from './revelation.js?v=20261114-tarot-copy1';
-import { createPersonalReading } from './personal-reading-ui.js?v=20261114-tarot-copy1';
+import { createPersonalReading } from './personal-reading-ui.js?v=20261114-tarot-review2';
 import { renderSectionSummary, installSummaryExpiryGuard } from './reading-summary-view.js?v=20261113-tarot-summary1';
 
 const $ = (selector) => document.querySelector(selector);
@@ -835,6 +835,23 @@ function renderDomainCategories(panel, group, cardNames) {
   selectDomainCategory(panel, group.categories[0].id);
 }
 
+const SUMMARY_DETAIL_TITLE = '함께 읽는 종합 해석';
+
+function renderSummaryDetails(panel, sections, cardNames) {
+  if (!Array.isArray(sections) || !sections.length) return;
+  const details = document.createElement('details');
+  details.id = 'summary-detail';
+  details.className = 'reading-source';
+  const title = document.createElement('summary');
+  title.textContent = SUMMARY_DETAIL_TITLE;
+  const content = document.createElement('div');
+  content.id = 'summary-detail-sections';
+  content.className = 'reading-sections';
+  renderReadingSections(content, sections, '', 'h3', cardNames);
+  details.append(title, content);
+  panel.append(details);
+}
+
 function renderSummaryGroups(summary, cardNames) {
   const tabs = $('#summary-tabs');
   const panels = $('#summary-text');
@@ -857,6 +874,7 @@ function renderSummaryGroups(summary, cardNames) {
     panel.tabIndex = 0;
     if (group.id === 'domains' && group.categories?.length) renderDomainCategories(panel, group, cardNames);
     else renderReadingSections(panel, group.sections, '', 'h3', cardNames);
+    if (group.id === 'problem') renderSummaryDetails(panel, summary.detailSections, cardNames);
     tabs.append(tab);
     panels.append(panel);
   });
@@ -934,20 +952,24 @@ async function copyResult() {
   const drawn = state.openOrder.map(i => state.drawn[i]);
   const summary = getSummary(drawn, state.topic);
   const parts = ['오쭈다 · 달의 마녀 타로', '종합 점괘', $('#result-date').textContent, ''];
+  const appendSection = section => {
+    parts.push(section.number ? `${section.number}. ${section.title}` : section.title);
+    if (section.subtitle) parts.push(section.subtitle);
+    narrativeParagraphs(section.paragraphs, section.body || '').forEach(paragraph => parts.push(paragraph, ''));
+  };
   summaryGroups(summary).forEach(group => {
     parts.push(group.label, '');
     if (group.description) parts.push(group.description, '');
-    const appendSection = section => {
-      parts.push(section.number ? `${section.number}. ${section.title}` : section.title);
-      if (section.subtitle) parts.push(section.subtitle);
-      narrativeParagraphs(section.paragraphs, section.body || '').forEach(paragraph => parts.push(paragraph, ''));
-    };
     if (group.categories?.length) {
       group.categories.forEach(category => {
         parts.push(category.label, '');
         group.sections.filter(section => section.categoryId === category.id).forEach(appendSection);
       });
     } else group.sections.forEach(appendSection);
+    if (group.id === 'problem' && Array.isArray(summary.detailSections) && summary.detailSections.length) {
+      parts.push(SUMMARY_DETAIL_TITLE, '');
+      summary.detailSections.forEach(appendSection);
+    }
   });
   parts.push(...(personalReading?.copyLines() || []));
   if (epoch !== state.epoch || expireDisplayedReading()) return;

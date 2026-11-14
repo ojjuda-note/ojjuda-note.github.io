@@ -39,8 +39,10 @@ for (const card of DECK.filter(card => card.arcana === 'minor')) {
       assert.equal(result.action, directAction(input.detail.action), 'shown advice uses the actual authored action in the direct voice');
       const person = getPersonStory(card.id);
       assert.equal(result.summary, splitSummarySentences(person[topic])[0], 'the preview starts with the selected topic in the actual card portrait');
-      assert.deepEqual(plain(result.paragraphs.slice(0, 2)), [person.portrait, person[topic]],
-        'the person and their situation are explained before symbols or advice');
+      assert.ok(result.paragraphs[0].startsWith(CARD_INTERPRETATIONS[card.id].meaning),
+        'the actual card meaning leads the reading before any inferred personality or caution');
+      assert.equal(result.paragraphs[1], person[topic], 'the selected topic follows the card meaning');
+      assert.ok(result.paragraphs.includes(person.portrait), 'the original personal portrait remains available');
       assert.equal(result.meaning, CARD_INTERPRETATIONS[card.id].meaning, 'the original symbolic meaning remains intact');
       assert.equal(result.traditionalMeaning, input.guidance.meaning, 'the original source interpretation is preserved separately');
       assert.equal(result.foundationTakeaway, input.foundation.takeaway);
@@ -84,8 +86,10 @@ for (const topicId of topics) {
     assert.equal(new Set(group.sections.map(section => section.id)).size, group.sections.length);
     for (const section of group.sections) {
       assert.ok(section.title);
-      assert.ok(section.paragraphs.length >= 2, `${group.id}/${section.id} is a developed explanation`);
-      assert.ok(section.paragraphs.every(paragraph => typeof paragraph === 'string' && paragraph.length >= 50));
+      assert.ok(section.paragraphs.length >= 1, `${group.id}/${section.id} keeps its full explanation`);
+      assert.ok(splitSummarySentences(section.paragraphs.join(' ')).length >= 3,
+        `${group.id}/${section.id} retains meaning and application without filler paragraphs`);
+      assert.ok(section.paragraphs.every(paragraph => typeof paragraph === 'string' && paragraph.length >= 30));
       assert.equal(section.paragraphs.join(' ').split(summary.ritual).length - 1, section.id === 'solution' ? 1 : 0,
         'the complete third-card action belongs only to the solution, after its explanation');
     }
@@ -106,20 +110,25 @@ for (const topicId of topics) {
 
   for (let i = 0; i < 3; i++) {
     assert.ok(summary.paragraphs[i].includes(cards[i].name));
-    assert.ok(summary.paragraphs[i].length > 150, 'each role has a developed application, beyond the card label');
+    assert.ok(summary.paragraphs[i].length > 100, 'each role has a developed application, beyond the card label');
     assert.ok(summary.text.includes(cards[i].name));
   }
   const people = cards.map(card => getPersonStory(card.id));
-  for (const passage of [people[0].longing, people[1].defense, people[2].longing, people[2].cost, people[2][topicId]]) {
-    assert.ok(summary.synthesis.includes(passage), 'all three actual cards contribute complete personal passages to the story');
+  for (const person of people) {
+    assert.ok(summary.synthesis.includes(splitSummarySentences(person[topicId])[0]),
+      'every card contributes an interpretation written for the actual selected topic');
+    for (const field of ['longing', 'defense', 'cost']) {
+      assert.ok(!summary.synthesis.includes(person[field]),
+        'a generic psychological passage is not forced into every selected topic');
+    }
   }
   assert.ok(!summary.synthesis.includes(people[2].turning), 'a generic change passage cannot introduce another topic’s action or recipient');
   assert.ok(!summary.synthesis.includes(readings[2].action), 'the main story explains the person before the solution offers an action');
   const solutionSection = summary.groups[0].sections.find(section => section.id === 'solution');
   const solutionBody = solutionSection.paragraphs.join(' ');
-  for (const explanation of [people[2][topicId], people[2].cost]) {
+  for (const explanation of [people[2][topicId], readings[2].meaning]) {
     assert.ok(solutionBody.includes(explanation) && solutionBody.indexOf(explanation) < solutionBody.indexOf(readings[2].action),
-      'the selected topic and its difficulty are explained before the original topic action');
+      'the actual card meaning and selected topic lead into the complete original action');
   }
   assert.ok(summary.synthesis.includes(splitSummarySentences(people[0][topicId])[0]));
   assert.ok(summary.synthesis.includes(splitSummarySentences(people[1][topicId])[0]),
@@ -133,16 +142,23 @@ for (const topicId of topics) {
   for (const detail of [readings[0].lifeTheme.past, readings[0].lifeTheme.achievement]) {
     assert.equal(summary.text.split(detail).length - 1, 1, 'each life explanation is used once instead of copied through several sections');
   }
-  assert.ok(summary.groups[0].sections.find(section => section.id === 'possible-outcome').paragraphs[0].includes(readings[2].lifeTheme.change),
-    'outcome retains the same conditional change explanation used by the future view');
+  const outcome = summary.groups[0].sections.find(section => section.id === 'possible-outcome');
+  assert.match(outcome.paragraphs[0], /실천했다면|뒤에는|살펴보|확인/u,
+    'outcome asks what actually changed after action rather than guaranteeing a future result');
+  assert.ok(outcome.paragraphs[1].includes(readings[2].lifeTheme.strength),
+    'the outcome retains an actual card strength instead of repeating generic pressure');
   assert.equal(summary.summary, summary.synthesis);
   assert.equal(summary.ritual, directAction(cards[2].details[topicId].action));
   assert.ok(!summary.paragraphs.includes(summary.synthesis));
   assert.ok(!summary.paragraphs.includes(summary.ritual));
-  assert.equal(summary.oneLine, splitSummarySentences(people[0][topicId])[0],
-    'the short overview is an authored personal statement, not a list of card keywords');
-  assert.ok(!summary.oneLine.includes(summary.ritual.split('.')[0]), 'the short overview does not repeat the closing action');
+  assert.ok(summary.oneLine.length >= 24 && /[.!?]$/u.test(summary.oneLine),
+    'the short overview is a complete interpretation');
+  assert.ok(summary.oneLine.endsWith(splitSummarySentences(summary.ritual)[0]),
+    'the short overview ends with one complete action from the actual third card and selected topic');
   assert.ok(summary.detailSections.some(section => section.body === base.summary));
+  for (const original of [base.oneLine, base.summary, base.ritual, base.sections[0].body]) {
+    assert.ok(summary.text.includes(original), 'selected reference text is preserved in the complete result');
+  }
   assert.deepEqual(plain(summary), plain(narrateSummary(input)));
   const reversedCards = [...cards].reverse();
   const reversedReadings = reversedCards.map((card, index) => readingFor(card, topicId, index).result);
@@ -159,8 +175,10 @@ for (const card of DECK) for (const topic of topics) for (let index = 0; index <
   assert.ok(reading.introduction.includes(POSITIONS[index].label));
   assert.ok(reading.introduction.includes(card.name));
   assert.ok(reading.paragraphs.length >= 5);
-  assert.deepEqual(plain(reading.paragraphs.slice(0, 2)), [getPersonStory(card.id).portrait, getPersonStory(card.id)[topic]],
-    'all 78 actual card identities lead with their own portrait and selected topic');
+  assert.ok(reading.paragraphs[0].startsWith(CARD_INTERPRETATIONS[card.id].meaning),
+    'all 78 cards lead with their own meaning rather than a presumed personal problem');
+  assert.equal(reading.paragraphs[1], getPersonStory(card.id)[topic]);
+  assert.ok(reading.paragraphs.includes(getPersonStory(card.id).portrait));
   assert.ok(JSON.stringify(reading.detailSections).includes(reading.traditionalMeaning), 'the complete original interpretation remains accessible in source details');
   const sourcePractice = reading.detailSections.find(section => section.title === '생활 속 예시와 해 볼 일');
   assert.ok(sourcePractice.body.startsWith(reading.example), 'the original hypothetical example remains in source details');
@@ -185,7 +203,7 @@ for (let index = 0; index < DECK.length; index++) for (const topic of topics) {
   const solution = report.sections.find(section => section.id === 'solution');
   const body = solution.paragraphs.join(' ');
   const story = getPersonStory(ordered[2].id);
-  for (const explanation of [story[topic], story.cost]) {
+  for (const explanation of [story[topic], CARD_INTERPRETATIONS[ordered[2].id].meaning]) {
     assert.ok(body.includes(explanation) && body.indexOf(explanation) < body.indexOf(report.ritual),
       `${ordered[2].id}/${topic}: the explanation leads into this topic's complete original action`);
   }

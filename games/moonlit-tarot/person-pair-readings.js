@@ -1,5 +1,5 @@
 // A few especially clear, ordered contrasts get their own editorial explanation.
-// Other pairs use both actual card portraits and the documented give/need lenses.
+// Other pairs compare both actual card meanings through the documented give/need lenses.
 // These are readings of symbols, never claims about unreported events.
 export const PERSON_PAIR_READINGS = Object.freeze({
   'devil:pentacles_four:money': '이 조합은 돈을 쓰며 답답함을 풀고 싶은 마음과 남은 돈이 줄어들까 두려운 마음을 함께 짚어. 산 뒤에는 더 움켜쥐고 답답해지면 다시 사고 싶어져서, 어느 쪽에서도 만족이 오래가지 않는 조합이야.',
@@ -17,7 +17,7 @@ export const PERSON_PAIR_READINGS = Object.freeze({
   'fool:emperor': '직접 부딪치며 알아가고 싶은 마음과 이번에는 빈틈없이 책임지고 싶은 마음이 함께 드러나. 자유롭게 시작하는 마음을 지키면서도 어디까지 감당할지는 분명히 해야 편해지는 조합이야.',
   'emperor:fool': '정해 놓은 순서를 지키던 너에게 이번에는 익숙한 역할 밖으로 나가고 싶은 마음이 생겨. 계획을 벗어나는 선택을 곧바로 무책임하다고 여기면, 네가 원해서 고를 자리가 없어져.',
   'lovers:devil': '함께하고 싶어서 고른 일이 이제는 잃을까 두려워 놓지 못하는 일이 되는지를 짚는 조합이야. 좋아하는 마음이 큰 것과, 싫은 순간에도 계속 동의해야 하는 것은 다른 일이야.',
-  'devil:lovers': '놓기 어려운 마음속에서도 내가 무엇을 원해서 이 선택을 했는지 다시 묻게 돼. 상대의 반응이나 익숙함에 끌려가기보다, 지금도 네 뜻으로 선택하는지가 중요해지는 조합이야.',
+  'devil:lovers': '놓기 어려운 마음속에서도 네가 무엇을 원해서 이 선택을 했는지 다시 묻게 돼. 상대의 반응이나 익숙함에 끌려가기보다, 지금도 네 뜻으로 선택하는지가 중요해지는 조합이야.',
   'moon:priestess': '마음에 걸리는 작은 신호는 많은데 그것을 설명할 말은 아직 부족한 조합이야. 알아챈 느낌을 소중히 여기는 마음과, 모르는 부분까지 혼자 해석하려는 마음을 구별해야 해.',
   'priestess:moon': '말하지 않고 지켜보던 시간이 길어지면서, 빈자리를 걱정이 채우는 조합이야. 섬세하게 느끼는 능력이 너를 돕지만, 느낌만으로 상대의 마음이나 결말까지 알게 되는 건 아니야.',
   'tower:star': '이전처럼 확신하기는 어렵지만 다시 바라고 싶은 마음은 남아 있는 조합이야. 바로 원래 모습으로 돌아가야 한다는 부담을 내려놓을 때, 지금도 소중한 것을 더 솔직히 고를 수 있어.',
