@@ -105,10 +105,18 @@ test('cancelled gestures and lost capture cannot complete a page change',t=>{
   for(const cancellation of ['pointercancel','lostpointercapture']) {
     const h=reader(t),target=h.current().querySelector('p');
     h.pointer('pointerdown',{target});h.pointer('pointermove',{target,clientX:100,timeStamp:140});
-    h.pointer(cancellation,{target,clientX:100,timeStamp:150});h.pointer('pointerup',{target,clientX:100,timeStamp:180});
+    h.pointer(cancellation,{target:cancellation==='lostpointercapture'?h.container:target,clientX:100,timeStamp:150});h.pointer('pointerup',{target,clientX:100,timeStamp:180});
     assert.deepEqual(h.calls,[],cancellation);
     h.drag();assert.deepEqual(h.calls,['next'],'a later deliberate drag still works');
   }
+  const transferred=reader(t),text=transferred.current().querySelector('p');
+  transferred.pointer('pointerdown',{target:text});transferred.pointer('pointermove',{target:text,clientX:165,timeStamp:130});
+  assert.equal(transferred.container.hasPointerCapture(1),true,'the reading now owns pending capture');
+  transferred.pointer('lostpointercapture',{target:text,clientX:165,timeStamp:140});
+  transferred.pointer('gotpointercapture',{target:transferred.container,clientX:165,timeStamp:141});
+  transferred.pointer('pointermove',{target:transferred.container,clientX:100,timeStamp:160});
+  transferred.pointer('pointerup',{target:transferred.container,clientX:100,timeStamp:180});
+  assert.deepEqual(transferred.calls,['next'],'transfer from implicit text capture to the reader does not cancel a touch swipe');
 });
 
 test('window blur and hiding the tab cancel a claimed drag without breaking later gestures',t=>{

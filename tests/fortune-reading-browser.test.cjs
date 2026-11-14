@@ -845,6 +845,7 @@ const server = http.createServer((request, response) => {
       ]) {
         const swipe=await browser.newPage({viewport:size,reducedMotion:'reduce',deviceScaleFactor:1,hasTouch:input==='touch'});
         const cdp=input==='touch'?await swipe.context().newCDPSession(swipe):null;
+        const label=kind+' '+viewport+' '+textSize+' '+input;let swipeStage='initializing';
         try {
           swipe.on('pageerror',error=>errors.push(error.message));
           swipe.on('response',response=>{if(response.status()>=400)failed.push([response.status(),response.url()]);});
@@ -852,6 +853,19 @@ const server = http.createServer((request, response) => {
           await swipe.goto(new URL(fixture,url).href);
           await swipe.locator('#report-content[data-ready]').waitFor();
           await swipe.locator('#report-content').evaluate((element,value)=>{element.dataset.readingSize=value;},textSize);
+          await swipe.evaluate(attribute=>{
+            globalThis.__sajuSwipeTrace=[];
+            const record=event=>{
+              const host=document.querySelector('.reading-swipe-enabled');
+              const trace=globalThis.__sajuSwipeTrace;
+              trace.push({type:event.type,target:event.target.id||event.target.tagName,pointer:event.pointerId,
+                x:event.clientX,y:event.clientY,button:event.button,buttons:event.buttons,primary:event.isPrimary,time:Math.round(event.timeStamp),
+                captured:host?.hasPointerCapture(event.pointerId||0),dragging:host?.classList.contains('reading-swipe-dragging'),
+                selected:document.querySelector('['+attribute+']')?.id,selection:getSelection()?.toString().length||0});
+              if(trace.length>80)trace.shift();
+            };
+            for(const name of ['pointerdown','pointermove','pointerup','pointercancel','gotpointercapture','lostpointercapture'])document.addEventListener(name,record,true);
+          },currentAttribute);
           const picker=swipe.locator('#'+pickerId),current=swipe.locator('['+currentAttribute+']'),pager=swipe.locator('.reading-pager');
           const first=await current.getAttribute('id');
           const controls=pager.locator('.reading-pager-step');
@@ -879,6 +893,7 @@ const server = http.createServer((request, response) => {
             },direction);
           }
           async function gesture(from,to) {
+            await swipe.evaluate(()=>{globalThis.__sajuSwipeTrace=[];});
             if(cdp) {
               const point=(x,y)=>({x,y,id:1,radiusX:2,radiusY:2,force:1});
               await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point(from.x,from.y)]});
@@ -892,17 +907,18 @@ const server = http.createServer((request, response) => {
             }
             await swipe.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
           }
-          const label=kind+' '+viewport+' '+textSize+' '+input;
+          swipeStage='left text drag';
           let points=await paragraphPoints(-1);await gesture(points.from,points.to);
           assert.equal(await current.getAttribute('id'),second,label+': a left drag over text advances exactly one reading');
           assert.equal(await picker.inputValue(),second,label+': the picker follows the drag');
-          points=await paragraphPoints(1);await gesture(points.from,points.to);
+          swipeStage='right text drag';points=await paragraphPoints(1);await gesture(points.from,points.to);
           assert.equal(await current.getAttribute('id'),first,label+': a right drag returns to the prior reading');
-          points=await paragraphPoints(1);await gesture(points.from,points.to);
+          swipeStage='first page boundary';points=await paragraphPoints(1);await gesture(points.from,points.to);
           assert.equal(await current.getAttribute('id'),first,label+': the first reading does not wrap');
 
           let verticalScroll=null;
           if(cdp) {
+            swipeStage='native vertical scroll';
             points=await paragraphPoints(-1);
             const from={x:points.from.x,y:Math.max(230,points.from.y)},to={x:points.from.x+3,y:Math.max(230,points.from.y)-160};
             const before=await swipe.evaluate(()=>scrollY);await gesture(from,to);
@@ -917,6 +933,7 @@ const server = http.createServer((request, response) => {
               }
             });
           } else {
+            swipeStage='existing text selection';
             // A user's existing selection remains usable instead of becoming a
             // page turn. The selection itself is created only in this fixture.
             await current.locator('.reader-prose p:visible').first().evaluate(element=>{
@@ -927,6 +944,7 @@ const server = http.createServer((request, response) => {
             assert.equal(await current.getAttribute('id'),first,label+': an existing selected passage is not a swipe');
             await swipe.evaluate(()=>getSelection().removeAllRanges());
           }
+          swipeStage='hint layout';
           await pager.evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));
           const hint=await pager.locator('.reading-swipe-hint').evaluate(element=>{
             const rect=element.getBoundingClientRect(),style=getComputedStyle(element);
@@ -940,6 +958,11 @@ const server = http.createServer((request, response) => {
           assert.equal(await swipe.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,label+': swipe UI fits the viewport');
           sajuSwipeViews[label]={first,second,leftSteps:1,rightSteps:1,bounded:true,verticalScroll,hint};
           if(viewport!=='phone')await swipe.screenshot({path:path.join(artifacts,'saju-swipe-'+kind+'-'+viewport+'-'+textSize+'.png')});
+          if(viewport==='phone-small')await pager.screenshot({path:path.join(artifacts,'saju-swipe-pager-'+kind+'-'+viewport+'-'+textSize+'.png')});
+        } catch(error) {
+          console.error(JSON.stringify({swipeFailure:label,stage:swipeStage,events:await swipe.evaluate(()=>globalThis.__sajuSwipeTrace||[]).catch(()=>[])}));
+          await swipe.screenshot({path:path.join(artifacts,'saju-swipe-failure-'+kind+'-'+viewport+'.png')}).catch(()=>{});
+          throw error;
         } finally {if(cdp)await cdp.detach();await swipe.close();}
       }
     }
