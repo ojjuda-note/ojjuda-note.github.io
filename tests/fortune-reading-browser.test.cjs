@@ -346,7 +346,7 @@ const server = http.createServer((request, response) => {
             const opacity=Number(parentStyle.opacity);foreground[3]*=opacity;background[3]*=opacity;
           }
           foreground=over(foreground,[255,255,255,1]);background=over(background,[255,255,255,1]);
-          const content=pseudo?element.getAttribute('placeholder'):element.textContent;
+          const content=pseudo==='::placeholder'?element.getAttribute('placeholder'):pseudo?style.content:element.textContent;
           return {target:(element.id||element.className||element.tagName)+(pseudo||''),
             text:String(content??'').trim().slice(0,70),
             contrast:ratio(foreground,background),font:parseFloat(style.fontSize),images,
@@ -355,6 +355,10 @@ const server = http.createServer((request, response) => {
         const nodes=[...document.querySelectorAll(text)].filter(element=>shown(element)&&element.textContent.trim()&&!element.closest(':disabled'));
         const samples=nodes.map(element=>sample(element));
         if(placeholders)for(const element of document.querySelectorAll('input[placeholder]'))if(shown(element)&&!element.value&&!element.disabled)samples.push(sample(element,'::placeholder'));
+        for(const element of document.querySelectorAll('.daeun-period-summary'))if(shown(element)) {
+          const style=getComputedStyle(element,'::after');
+          if(!['none','normal','""',''].includes(style.content)&&style.display!=='none'&&style.visibility!=='hidden')samples.push(sample(element,'::after'));
+        }
         const prose=body?[...document.querySelectorAll(body)].filter(shown).map(element=>({target:element.className,font:parseFloat(getComputedStyle(element).fontSize)})):[];
         const targets=controls?[...document.querySelectorAll(controls)].filter(shown).map(element=>{const box=element.getBoundingClientRect();return {target:element.id||element.className,height:box.height,width:box.width};}):[];
         return {samples: samples.length,minimumContrast:Math.min(...samples.map(item=>item.contrast)),
