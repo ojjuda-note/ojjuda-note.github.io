@@ -293,7 +293,7 @@ export function attachPlainLanguage(report,chart,fortune) {
     month.summary='이번 달에 읽는 뜻: '+topicNames(source).join(' / ')+'.';
     apply(month.chapters,monthly(fortune.profile,source));
   }
-  report.monthsIntro='사주의 한 달은 달력의 1일과 다를 수 있어요. 각 달의 시작·끝 날짜를 기준으로 읽어 주세요.';
+  report.monthsIntro='사주에서 한 달이 시작되는 날은 매월 1일과 다를 수 있어요. 각 달의 시작·끝 날짜를 기준으로 읽어 주세요.';
   if(fortune.notes.length>1)report.monthsIntro+=' '+fortune.notes.slice(1).join(' ');
   return report;
 }

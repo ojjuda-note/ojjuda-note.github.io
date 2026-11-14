@@ -67,7 +67,7 @@ export function createCompatibilityScoreboard(value) {
     meter.setAttribute('aria-describedby',summaryId);
     meter.setAttribute('aria-valuemin','0');meter.setAttribute('aria-valuemax','100');
     meter.setAttribute('aria-valuenow',String(item.value));
-    meter.setAttribute('aria-valuetext',`100점 만점 중 ${item.value}점`);
+    meter.setAttribute('aria-valuetext',`100점 만점에 ${item.value}점`);
     const fill=node('span','compatibility-score-fill');
     fill.style.width=`${item.value}%`;fill.setAttribute('aria-hidden','true');
     meter.append(fill);

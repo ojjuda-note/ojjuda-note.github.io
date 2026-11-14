@@ -1,4 +1,4 @@
-import * as scoreRules from './reading-score-rules.mjs?v=20261114-saju-wind2';
+import * as scoreRules from './reading-score-rules.mjs?v=20261114-saju-copy1';
 
 // Reference scores summarize confirmed cues used by the existing reading.
 // They do not infer missing inputs, predict events, or rewrite the narrative.

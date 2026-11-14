@@ -42,7 +42,7 @@ export function createReadingScore(value,{tagName='section'}={}) {
     const meter=node('div','saju-wind-meter');
     meter.setAttribute('role','meter');meter.setAttribute('aria-labelledby',name.id);
     meter.setAttribute('aria-valuemin','0');meter.setAttribute('aria-valuemax','100');
-    meter.setAttribute('aria-valuenow',String(item.value));meter.setAttribute('aria-valuetext',`100점 만점 중 ${item.value}점`);
+    meter.setAttribute('aria-valuenow',String(item.value));meter.setAttribute('aria-valuetext',`100점 만점에 ${item.value}점`);
     meter.setAttribute('aria-describedby',`${id}-notice`);
     const fill=node('span','saju-wind-fill');fill.style.width=`${item.value}%`;fill.setAttribute('aria-hidden','true');meter.append(fill);
     row.append(top,meter);items.append(row);
