@@ -311,7 +311,13 @@ const server = http.createServer((request, response) => {
       const geometry=await saju.locator('#birth-form').evaluate(form=>{
         const shown=element=>element.getBoundingClientRect().width>0&&element.getBoundingClientRect().height>0;
         const fonts=selector=>Array.from(form.querySelectorAll(selector)).filter(shown).map(element=>({id:element.id||element.className,size:parseFloat(getComputedStyle(element).fontSize)}));
+        const gender=form.querySelector('#person-gender'),style=getComputedStyle(gender);
+        const measure=document.createElement('canvas').getContext('2d');
+        measure.font=style.fontWeight+' '+style.fontSize+' '+style.fontFamily;
+        const selectedText=gender.selectedOptions[0].textContent;
         return {inputs:fonts('input[type=number],input[type=text],select'),notices:fonts('.field-hint,.form-note'),
+          gender:{label:selectedText,textWidth:measure.measureText(selectedText).width,
+            availableWidth:gender.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-16},
           checks:Array.from(form.querySelectorAll('.check-row')).filter(shown).map(element=>element.getBoundingClientRect().height),
           overflow:document.documentElement.scrollWidth>innerWidth||form.scrollWidth>form.clientWidth+1};
       });
@@ -319,6 +325,7 @@ const server = http.createServer((request, response) => {
       assert.ok(geometry.notices.length>=4&&geometry.notices.every(field=>field.size>=13),viewport+': birth assumptions and privacy notes remain at least 13px');
       assert.ok(geometry.checks.length>0&&geometry.checks.every(height=>height>=44),viewport+': unknown-time controls have a 44px touch target');
       assert.equal(geometry.overflow,false,viewport+': larger entry text keeps the form within the viewport');
+      assert.ok(geometry.gender.textWidth<=geometry.gender.availableWidth,viewport+': the default gender label fits beside the native select arrow');
       sajuEntryViews[viewport]=geometry;
       if(viewport==='phone-small')await saju.locator('.birth-panel').screenshot({path:path.join(artifacts,'saju-entry-phone-small.png')});
     }
