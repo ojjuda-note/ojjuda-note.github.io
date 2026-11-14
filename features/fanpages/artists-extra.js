@@ -915,13 +915,20 @@
       members: ['쇼타로', '은석', '성찬', '원빈', '소희', '앤톤'],
       debut: '2023.09.04', debutWork: 'Get A Guitar', songs: ['Get A Guitar', 'Memories'],
       concept: '함께 성장하며 꿈을 실현해 가는 여섯 멤버.',
-      checkedAt: '2026.11.12',
+      checkedAt: '2026.11.14',
       official: 'https://riizeofficial.jp/', youtube: 'https://www.youtube.com/@RIIZE_official',
       photo: 'Riize at the 2024 Melon Music Awards-2.png', photoLabel: '멜론뮤직어워드', photoYear: '2024', credit: 'TenAsia', license: 'CC BY 3.0',
+      morePhotos: [
+        commonsPhoto('Shotaro of Riize at the 2024 Melon Music Awards.png', '쇼타로 · 2024 MMA', '2024', 'TenAsia', 'CC BY 3.0'),
+        commonsPhoto('Wonbin of Riize at the 2024 Melon Music Awards.png', '원빈 · 2024 MMA', '2024', 'TenAsia', 'CC BY 3.0')
+      ],
       music: [
         { title: 'Insomnia', date: '2026.10.26', type: '디지털 싱글 · 공식 뮤직비디오', songs: ['Insomnia'], href: 'https://riizeofficial.jp/news/20261026/' },
         { title: 'Sunburst', date: '2026.08.26', type: '일본 싱글 3집 · CD 발매', songs: ['Sunburst', 'Rise Over', 'KILL SHOT'], href: 'https://riizeofficial.jp/discography/sunburst_normal/' },
         { title: 'II', date: '2026.06.15', type: '미니 2집 · 디지털 발매', songs: ['SOAR', 'Do your dance', 'D-D-Done', 'Overdrive', 'Like a Bomb', 'In a Loop'], href: 'https://riizeofficial.jp/discography/ii/' },
+        { title: 'All of You', date: '2026.02.18', type: '일본 싱글 2집 · CD 발매', songs: ['All of You', 'Flashlight'], href: 'https://riizeofficial.jp/discography/allofyou_normal/' },
+        { title: 'Fame', date: '2025.11.24', type: '싱글 2집 · 디지털 발매', songs: ['Something’s in the Water', 'Fame', 'Sticky Like'], href: 'https://riizeofficial.jp/discography/fame-digital/' },
+        { title: 'ODYSSEY', date: '2025.05.19', type: '정규 1집 · 디지털 발매 · 타이틀 Fly Up', songs: ['Odyssey', 'Bag Bad Back', '잉걸 (Ember to Solar)', 'Fly Up', 'Show Me Love', 'Passage', 'Midnight Mirage', '모든 하루의 끝 (The End of the Day)', 'Inside My Love', 'Another Life'], href: 'https://riizeofficial.jp/discography/odyssey-digital/' },
         { title: 'Get A Guitar', date: '2023.09.04', type: '데뷔 싱글', songs: ['Get A Guitar', 'Memories'], href: 'https://www.youtube.com/watch?v=iUw3LPM7OBU' }
       ],
       appearances: [
@@ -932,10 +939,15 @@
       news: [
         { date: '2026.11.03', tag: '방송', title: '12월 9일 일본 FNS 가요제 제2야 생방송 출연 발표', href: 'https://riizeofficial.jp/news/20261103/' },
         { date: '2026.10.26', tag: '음악', title: '디지털 싱글 Insomnia 발매 · 공식 뮤직비디오 공개', href: 'https://riizeofficial.jp/news/20261026/' },
-        { date: '2026.10.23', tag: '이벤트', title: '12월 27일 Sunburst 일본 오프라인 이벤트·사인회 발표', href: 'https://riizeofficial.jp/news/2026102303/' }
+        { date: '2026.10.23', tag: '이벤트', title: '12월 27일 Sunburst 일본 오프라인 이벤트·사인회 발표', href: 'https://riizeofficial.jp/news/2026102303/' },
+        { date: '2026.10.14', tag: '시상식', title: 'MMA2026 11월 14일 글로벌 데이 무대 참여 공식 발표', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' }
       ],
       merch: [
+        { title: '2026 RIIZING LOUD · TOKYO DOME 영상 작품', sub: '2026.05.27 DVD·Blu-ray 발매 · 구성·판매 여부는 공식 안내 확인', href: 'https://riizeofficial.jp/news/20260327/' },
         { title: 'RIIZE 2027 SEASON’S GREETINGS', sub: 'Weverse Shop 공식 예약 안내 · 2026.10.13 15:00(KST) 예약 시작 · 12.24부터 출고 예정 · 재고 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/151/notices/14559' },
+      ],
+      campaigns: [
+        { kind: '홍보대사', date: '2026.01.06', title: '삼성전자 × RIIZE · 글로벌 브랜드 앰배서더', sub: 'CES 2026 더 퍼스트룩·갤럭시 워치8·스마트싱스 공동 캠페인 · 공식 보도일', href: 'https://news.samsung.com/kr/삼성전자-ces-2026서-라이즈와-함께-일상-속-ai-경험-확산' }
       ],
       schedules: [
         { title: 'RIIZE 일본 공식 활동 공지', sub: '방송·공연·팬 이벤트 변경 및 취소 확인', href: 'https://riizeofficial.jp/news/' }
