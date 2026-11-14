@@ -1,0 +1,25 @@
+name: Verify drinking room host succession
+on:
+  push:
+    branches: [release/drinks-host-handoff-20261114]
+permissions:
+  contents: read
+jobs:
+  browser:
+    name: ${{ matrix.suite }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [local, multiplayer, truth, matrix, host]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - run: |
+          node scripts/check-source-layout.mjs
+          node tests/qa-host-recovery.cjs games/drinking/child.js
+          node tests/qa-host-queue.cjs games/drinking/prompt-submissions.js
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node tests/qa-${{ matrix.suite }}.cjs
+        env:
+          BROWSER_PATH: /usr/bin/google-chrome
