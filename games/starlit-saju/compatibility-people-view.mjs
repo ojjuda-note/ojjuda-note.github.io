@@ -1,3 +1,5 @@
+import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-swipe1';
+
 const PERSON_KEYS=['self','partner'];
 const TOPIC_IDS=['decisions','relationships','work','pressure','adjustment'];
 
@@ -106,7 +108,8 @@ export function createCompatibilityPager(section,pages) {
   const position=node('p','reading-page-position');position.id='compatibility-page-position';
   position.setAttribute('role','status');position.setAttribute('aria-live','polite');
   const next=node('button','reading-pager-step','다음');next.type='button';next.dataset.compatibilityStep='next';
-  controls.append(previous,position,next);navigation.append(label,select,controls);
+  controls.append(previous,position,next);navigation.append(label,select,controls,
+    node('p','reading-swipe-hint','본문을 왼쪽으로 밀면 다음, 오른쪽으로 밀면 이전 항목으로 넘어가요.'));
   select.setAttribute('aria-describedby',position.id);
 
   const managed=new Set();
@@ -148,6 +151,7 @@ export function createCompatibilityPager(section,pages) {
   next.addEventListener('click',()=>show(readable[readable.indexOf(current)+1],{move:true}));
   section.querySelector(':scope > .report-section-heading').after(navigation);
   show(readable[0]);
+  attachReadingSwipe(section,{previous,next});
   return {reveal(target) {
     if(navigation.contains(target))return false;
     const page=pages.find(page=>page.element===target||page.element.contains(target));
