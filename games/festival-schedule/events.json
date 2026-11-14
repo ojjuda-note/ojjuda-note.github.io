@@ -21644,6 +21644,144 @@
         "부산"
       ],
       "status": "scheduled"
+    },
+    {
+      "id": "k-geosang-trailrun-20261121",
+      "title": "2026 K-거상 트레일 러닝 대회",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "트레일러닝",
+      "start": "2026-11-21",
+      "end": "2026-11-21",
+      "region": "경남",
+      "city": "의령군",
+      "venue": "의령여자중학교",
+      "address": "경남 의령군 가례면 의병로 67",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "경남 의령군에서 열리는 27km·19km·5km 트레일러닝 대회입니다. 27km·19km 코스만 기록 측정을 하며 공식 접수 정원은 700명입니다.",
+      "scheduleNote": "2026-11-21(토) 08:30 출발(공식 대회요강 기준). 참가 접수는 11월 15일까지 선착순 700명.",
+      "priceNote": "선수 참가비: 27km 60,000원, 19km 55,000원, 5km 25,000원. 일반 관람료는 공식 안내 확인.",
+      "accessNote": "일반 관람과 참가 신청은 별개입니다. 관람 가능 여부·현장 입장 조건은 주최 측 확인.",
+      "sourceUrl": "https://kpioneertrailrun.co.kr/ko/sub1_2.html",
+      "sourceName": "K-거상 트레일 러닝 대회 공식 조직위원회",
+      "sourceCheckedAt": "2026-11-15",
+      "verificationSources": [
+        "https://kpioneertrailrun.co.kr/ko/sub1_4.html"
+      ],
+      "tags": [
+        "트레일러닝",
+        "의령",
+        "생활체육",
+        "장거리",
+        "동호인"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "namhae-runtrip-fall-fun-20261121",
+      "title": "2026 런트립 남해! FALL & FUN",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "러닝",
+      "start": "2026-11-21",
+      "end": "2026-11-21",
+      "region": "경남",
+      "city": "남해군",
+      "venue": "삼동공설운동장",
+      "address": "경남 남해군 삼동면 독일로 182",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "남해군체육회 주최·KNN 주관 가을 비경쟁·비기록 단일 러닝 행사입니다. 삼동공설운동장에서 내산저수지까지 왕복 약 10km(실측 약 10.7km)를 달립니다.",
+      "scheduleNote": "2026-11-21(토) 12:00부터 접수, 14:00 출발. 참가 정원 500명, 공식 기록칩 미제공.",
+      "priceNote": "선수 참가비 40,000원. 일반 관람료는 공식 안내 확인.",
+      "accessNote": "선착순 500명 참가 신청 행사입니다. 일반 현장 관람 가능 여부·입장 조건은 주최 측 공식 확인 필요.",
+      "sourceUrl": "https://namhaerun.com/guide/mainpoints.php?gubun=mainpoints",
+      "sourceName": "2026 런트립 남해 공식 대회요강(남해군체육회·KNN)",
+      "sourceCheckedAt": "2026-11-15",
+      "verificationSources": [
+        "https://namhaerun.com/guide/map.php?gubun=map"
+      ],
+      "tags": [
+        "러닝",
+        "남해",
+        "생활체육",
+        "10km",
+        "동호인"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "game-culture-festival-playk-2026",
+      "title": "2026 게임문화축제 PLAY K",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-11-19",
+      "end": "2026-11-22",
+      "region": "부산",
+      "city": "해운대구",
+      "venue": "벡스코 제2전시장",
+      "address": "부산 해운대구 APEC로 55",
+      "lat": 35.1703,
+      "lng": 129.1339,
+      "geoApprox": true,
+      "summary": "문화체육관광부·한국콘텐츠진흥원이 지스타 2026 기간 개최하는 게임문화축제입니다. K-게임 체험, 전통문화 미션, 게임 음악을 국악으로 재해석한 공연, 이스포츠 뷰잉파티를 선보입니다.",
+      "scheduleNote": "2026-11-19(목)~11-22(일). 행사별 세부 시간은 게임문화축제 공식 공지 확인.",
+      "priceNote": "지스타 2026 입장권 구매자는 게임문화축제 추가 비용 없음. 지스타 입장권 구매는 별도로 필요합니다.",
+      "accessNote": "지스타 2026 입장권을 구매한 관람객 대상. 축제 입장권이 단독으로 무료인 것은 아닙니다.",
+      "sourceUrl": "https://welcon.kocca.kr/ko/info/business/1959169",
+      "sourceName": "한국콘텐츠진흥원 공식 보도자료",
+      "sourceCheckedAt": "2026-11-15",
+      "verificationSources": [
+        "https://www.kgcf.kr/"
+      ],
+      "tags": [
+        "게임문화축제",
+        "지스타",
+        "국악공연",
+        "K-게임",
+        "부산"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "gcf-valorant-esports-final-20261121",
+      "title": "2026 GCF 이스포츠 리그 발로란트 본선",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "이스포츠",
+      "start": "2026-11-21",
+      "end": "2026-11-21",
+      "region": "부산",
+      "city": "해운대구",
+      "venue": "T1 베이스캠프 해운대점 아레나",
+      "address": "",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "2026 게임문화축제 연계 아마추어 이스포츠 대회 발로란트 부문 본선입니다. 11월 14일 온라인 예선 통과 팀이 5대5로 맞붙으며 총상금은 500만 원입니다. 별도의 벡스코 뷰잉파티가 열립니다.",
+      "scheduleNote": "2026-11-21(토) 본선. 경기 시작 시각·대진은 주최 측 후속 공지 확인.",
+      "priceNote": "선수 참가비·본선 현장 관람료 공식 안내 확인. 총상금 500만 원은 참가비나 관람료가 아닙니다.",
+      "accessNote": "만 15세 이상 5인 1팀 참가 모집. T1 아레나 일반 관람 가능 여부 미확인. 벡스코 축제관 뷰잉파티는 지스타 입장권 구매 조건 확인.",
+      "sourceUrl": "https://welcon.kocca.kr/ko/info/business/1959169",
+      "sourceName": "한국콘텐츠진흥원 공식 보도자료",
+      "sourceCheckedAt": "2026-11-15",
+      "verificationSources": [
+        "https://www.kgcf.kr/"
+      ],
+      "tags": [
+        "이스포츠",
+        "발로란트",
+        "아마추어",
+        "게임문화축제",
+        "부산"
+      ],
+      "status": "scheduled"
     }
   ]
 }
