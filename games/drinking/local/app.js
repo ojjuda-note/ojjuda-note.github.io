@@ -18,7 +18,7 @@ const CROC_TOOTH_COUNT=jawCount*2;
 const games=[
   ['croc','악어 이빨','운과 감각','아픈 이빨은 딱 하나','#b7dab0',2,CROC_TOOTH_COUNT+'개의 이빨 중 하나를 골라 돌아가며 눌러요. 아픈 이빨을 건드리면 악어 입이 닫혀요.'],
   ['bottle','술병 나침반','운과 감각','병 끝이 가리키는 사람','#b7d9d7',2,'2~12명이 함께해요. 테이블 모양과 방향을 고르고 각자 자리를 정해요. 돌아가는 병을 터치하면 10~20초 동안 서서히 멈춰요. 가끔은 잠깐 멈췄다가 한 칸이나 두 칸 뒤로 아주 천천히 돌아가요.'],
-  ['bomb','시간폭탄','운과 감각','터지기 전에 넘겨요','#f5bba7',2,'‘키스 직전에 하면 깨는 말’처럼 주제에 맞는 답을 하고 폰을 넘겨요. 폭탄이 터지면 그때 화면에 표시된 사람이 당첨이에요.'],
+  ['bomb','시간폭탄','순발력','터지기 전에 넘겨요','#f5bba7',2,'나라 이름, 음식 이름처럼 주제에 맞는 답을 바로 말하고 폰을 넘겨요. 이미 나온 답은 다시 말할 수 없어요. 폭탄이 터지면 그때 화면에 표시된 사람이 당첨이에요.'],
   ['stopwatch','감각 스톱워치','운과 감각','목표 시간에 멈추기','#c8d9ce',2,'첫 1초가 지나면 숫자가 사라져요. 목표 시간에 가장 가깝게 멈춘 사람이 이겨요.'],
   ['liar','라이어 찾기','추리와 대화','첫 키스, 들키지 말고 설명하기','#d0c2e1',3,'한 명만 단어를 몰라요. 한 사람씩 힌트를 준 뒤, 각자 의심하는 사람에게 몰래 투표해요.'],
   ['king','왕게임','추리와 대화','고백부터 둘만의 스킨십까지','#f0d790',2,'한 명은 왕, 나머지는 비밀 번호를 받아요. 왕이 한 명이나 두 명에게 미션을 내려요. 두 사람 미션은 각자 동의하고 시작해요. 원하지 않는 미션은 벌칙 없이 패스해요.'],
@@ -490,7 +490,7 @@ function animateBottle(now){
   r.lastTick=tick;
   r.bottleFrame=requestAnimationFrame(animateBottle);
 }
-function bomb(){const r=round;shell(tag(r.turn)+'<h2>'+esc(r.topic)+'</h2>'+art('bomb','mini-art pulse')+'<p>이미 나온 답을 빼고 단어나 짧은 말을 하나 하세요. 대사는 상상해서 만들어도 돼요.</p>'+actions(btn('말했어요 · 다음 사람','pass-bomb')))}
+function bomb(){const r=round;shell(tag(r.turn)+'<h2>'+esc(r.topic)+'</h2>'+art('bomb','mini-art pulse')+'<p>주제에 맞는 답을 하나 말하고 바로 넘기세요. 이미 나온 답은 안 돼요.</p>'+actions(btn('말했어요 · 다음 사람','pass-bomb')))}
 let watchTenths=50;
 function watchCase(reading,live=false){
   return '<span class="watch-case"><span class="watch-crown"></span><span class="watch-bezel">'+

@@ -214,7 +214,7 @@ test('truth replaces its catalog without resurrecting legacy decks or changing a
     assert.equal(ui.find('[name="truth-mode"]:checked').value, 'spicy');
     assert.equal(ui.find('#truth-flavor').value, 'spicy');
     assert.equal(await ui.w.DrinkingPrompts.refresh('truth'), true);
-    assert.deepEqual(sortedDeck(plain(ui.w.DrinkingPromptCatalog)), sortedDeck(official));
+    assert.deepEqual(sortedDeck(plain(ui.w.DrinkingPrompts.truth())), sortedDeck(official));
     const personal = plain(ui.w.PartyTruthCards.deck());
     assert.deepEqual(sortedDeck(personal), sortedDeck({mild: official.mild, spicy: [...official.spicy, currentCard]}));
     for (const forbidden of [oldCard, oldEdit, foreignCard]) assert.equal(personal.spicy.includes(forbidden), false);
