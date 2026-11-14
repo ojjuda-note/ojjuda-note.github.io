@@ -59,7 +59,7 @@ function render(s){
   }
   const mine=s.turn===s.me;
   const code='<div class="topline"><strong class="code">'+(party?.code||s.code)+'</strong><span>방 코드</span></div>';
-  const members='<ol class="members">'+s.players.map((n,i)=>'<li class="'+(i===s.me?'me':'')+'">'+(i+1)+'. '+esc(n)+(i===s.me?' (나)':'')+'</li>').join('')+'</ol>';
+  const members='<ol class="members">'+s.players.map((n,i)=>'<li class="'+(i===s.me?'me':'')+'">'+(i+1)+'. '+esc(n)+(i===0?' · 방장':'')+(i===s.me?' (나)':'')+'</li>').join('')+'</ol>';
   let content;
   if(s.phase==='waiting'){
     content=code+'<h1>참가자를 기다려요</h1><p>현재 '+s.players.length+' / '+s.capacity+'명 · 모두 모이면 시작해요.</p>'+members+
@@ -82,7 +82,7 @@ const messages={
  not_room_member:'방 비밀번호를 입력해 주세요.', room_unavailable:'방이 닫혔거나 시간이 만료됐어요.',
  room_full:'이미 게임을 시작했거나 자리가 없어요.', room_in_progress:'참여 중인 악어 방에서 먼저 나와 주세요.',
  join_rate_limit:'비밀번호를 여러 번 틀렸어요. 1분 뒤 다시 입력해 주세요.', wrong_password:'방 비밀번호가 맞지 않아요.', invalid_password:'비밀번호는 4~32자, 한글은 24자까지 가능해요.',
- stale_turn:'차례가 바뀌었어요. 게임판을 확인해 주세요.'
+ stale_round:'방 상태가 바뀌었어요. 화면을 확인하고 다시 눌러 주세요.',stale_turn:'차례가 바뀌었어요. 게임판을 확인해 주세요.'
 };
 async function api(action,code='',options={}){
  const {data,error}=await client.rpc('croc_multiplayer',{p_action:action,p_code:code,p_options:options}).abortSignal(AbortSignal.timeout(12000));
@@ -129,7 +129,7 @@ view.addEventListener('click',e=>{
     if(!navigator.clipboard)notice.textContent=location.href;
     return;
   }
-  if(act==='leave'){if((room.me===0||room.phase!=='waiting')&&!window.confirm('나가면 이 방이 모든 참가자에게서 닫혀요. 나갈까요?'))return;run(async()=>{await api('leave',room.code);saveStandalone('');history.replaceState(null,'',location.pathname);activeCode='';entry()});return}
+  if(act==='leave'){if(!window.DrinkingStandaloneExit.confirm(room))return;run(async()=>{await api('leave',room.code, window.DrinkingStandaloneExit.options(room));saveStandalone('');history.replaceState(null,'',location.pathname);activeCode='';entry()});return}
   if(act==='again'||b.dataset.action==='tooth'){
     const path=act==='again'?'again':'tooth',code=room.code;
     run(async()=>{try{render(await api(path,code,{tooth:Number(b.dataset.value),revision:room.revision}))}

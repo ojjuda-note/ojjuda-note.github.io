@@ -9,6 +9,7 @@
   const canonical = value => value.normalize('NFKC').trim().replace(/\s+/gu,' ').toLowerCase();
   const queued = new Map();
   let activeDeck, loading, sending, retryTimer;
+  const invalidSubmissions = new Set(['invalid_prompt','invalid_kind','invalid_flavor']);
 
   function put(item) {
     const {kind, text, flavor} = item;
@@ -58,8 +59,13 @@
     clearTimeout(retryTimer);
     try {
       for (const [key,item] of queued) {
-        const saved = await invoke('submit',item);
-        if (!saved?.ok) break;
+        try {
+          const saved = await invoke('submit',item);
+          if (!saved?.ok) break;
+        } catch (error) {
+          // This server rejection applies only to this entry. Connection and account errors can be retried.
+          if (!invalidSubmissions.has(error?.message)) throw error;
+        }
         queued.delete(key);
         try { localStorage.removeItem(key); } catch {}
       }

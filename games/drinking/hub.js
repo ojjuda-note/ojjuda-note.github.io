@@ -88,6 +88,7 @@
   function render(next) {
     if (!next || !codePattern.test(next.code) || !Array.isArray(next.players)) throw Error('invalid_room');
     if (room && room.code===next.code && room.revision>=next.revision) return;
+    const promoted=room?.code===next.code && room.me>0 && next.me===0;
     room=next; listSequence++; byId('welcome').hidden=true; byId('lobby').hidden=false;
     const url=new URL('/games/drinking/',location.origin);
     url.searchParams.set('room',room.code); history.replaceState(null,'',url);
@@ -106,6 +107,7 @@
     }));
     const selected=gameById(room.kind);
     let line=selected?'선택한 게임 · '+selected.name:(room.me===0?'하고 싶은 게임을 골라 주세요.':'방장이 게임을 고르고 있어요.');
+    if (promoted) line='새 방장이 되었어요. '+line;
     if (selected && room.players.length<gameMin(room.kind)) line+=' · '+gameMin(room.kind)+'명부터 시작할 수 있어요.';
     byId('selected-game').textContent=line;
     updateActions(); schedule();
@@ -190,8 +192,12 @@
       if(action!=='join')opts.request_id=operationId(action,code,options);
       const next=await rpc(action,code,opts);
       if(gen!==generation)return;
+      if (action==='leave') {
+        if(next?.left!==true)throw Error('invalid_leave');
+        navigating=true;clearTimeout(pollTimer);
+        location.replace('/games/drinking/?mode=multi');return;
+      }
       lastMutation=null;
-      if (action==='leave') { location.replace('/games/drinking/');return; }
       render(next);
       byId('create-form').elements.password.value='';byId('join-form').elements.password.value='';
       if(action==='create' && suggested && next.me===0 && !next.kind && !navigating) {
@@ -221,8 +227,12 @@
       void mutate('start',{kind:room.kind,revision:room.revision});
   };
   byId('leave').onclick=()=>{
-    if(!room)return;
-    if(room.me===0 && !confirm('나가면 모두의 방이 닫혀요. 나갈까요?'))return;
+    if(!room || busy || navigating)return;
+    if(room.me===0){
+      const prompt=room.players.length===1?'마지막 참가자예요. 나가면 방이 닫혀요. 나갈까요?':
+        '술게임방에서 나갈까요? 남은 참가자 중 한 명이 무작위로 새 방장이 돼요.';
+      if(!confirm(prompt))return;
+    }
     void mutate('leave',{revision:room.revision});
   };
   byId('invite').onclick=async()=>{
