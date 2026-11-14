@@ -1,5 +1,5 @@
 import { getReadingSources } from './sources.mjs?v=20261113-saju-reader1';
-import { describePersonalPeriod } from './reader-summary.mjs?v=20261114-saju-correction1';
+import { describePersonalPeriod } from './reader-summary.mjs?v=20261114-saju-final-review2';
 
 // These are documented symbolic correspondences, not a computed useful element
 // or a promise of good luck. The day master's element is never chosen by count.

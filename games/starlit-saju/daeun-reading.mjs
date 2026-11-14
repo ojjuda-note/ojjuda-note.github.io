@@ -1,6 +1,6 @@
 import { makeProfile, getTenGod, interactionPairs } from './fortune-data.mjs?v=20261114-saju-correction1';
 import { GOD_CONTEXTS, PAIR_CONTEXTS } from './deeper-reading-data.mjs?v=20261114-saju-depth1';
-import { describePersonalPeriod } from './reader-summary.mjs?v=20261114-saju-correction1';
+import { describePersonalPeriod } from './reader-summary.mjs?v=20261114-saju-final-review2';
 import { buildDaeunSituations } from './daeun-situations.mjs?v=20261114-saju-copy1';
 import { readingScoreCopy } from './reading-score.mjs?v=20261114-saju-correction1';
 import { detailContent, domainConversation } from './general-detail-scenes.mjs?v=20261114-saju-copy1';

@@ -1010,6 +1010,16 @@ function daeunView(reading) {
   return section;
 }
 
+function readingScopeView(scope,id) {
+  const section=node('aside','reader-scope-note reading-coverage');
+  section.id=id;
+  const title=node('p','reader-card-label',scope.title);title.id=`${id}-title`;
+  section.setAttribute('aria-labelledby',title.id);
+  section.append(title);
+  addParagraphs(section,scope.paragraphs);
+  return section;
+}
+
 /** Render both people's interpretation and every comparison fact together. */
 export function renderCompatibilityReport(container, reading, {names=[]}={}) {
   if (!reading || !Array.isArray(reading.facts) || !Array.isArray(reading.cards)) {
@@ -1052,6 +1062,7 @@ export function renderCompatibilityReport(container, reading, {names=[]}={}) {
     pages.push({element,label:reading.cards[index].label,group:'궁합 자세히 읽기'});
   });
   const pager=createCompatibilityPager(section,pages);
+  if(reading.readingScope)section.append(readingScopeView(reading.readingScope,'compatibility-reading-coverage'));
   section.dataset.readerPaged='true';readingPagers.set(section,pager);
   watchReadingTargets(section.ownerDocument);
   container.replaceChildren(section);
@@ -1387,6 +1398,7 @@ export function renderDetailedReport(container, {reading, fortune, topic}) {
   applyReadingSummaryViews(fragment,reading);
   applyReadingScoreViews(fragment,reading);
   const pager=buildReadingPager(fragment,{reading,fortune,topic});
+  if(reading.readingScope)fragment.append(readingScopeView(reading.readingScope,'reading-coverage'));
   container.replaceChildren(fragment);
   pager.mount(container);
 }

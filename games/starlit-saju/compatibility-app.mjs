@@ -1,4 +1,5 @@
 import {readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
+import {readingScopeText} from './reading-scope.mjs?v=20261114-saju-final-review2';
 import { SajuPayment } from './payment.js?v=20261113-saju-lists1';
 import { SajuCompatibilityPayment, COMPATIBILITY_PRICE } from './compatibility-payment.mjs?v=20261113-compatibility20-1';
 import { compatibilityScoreText } from './compatibility-score-view.mjs?v=20261114-saju-copy1';
@@ -179,8 +180,8 @@ async function ready() {
 async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
-    import('./compatibility.mjs?v=20261114-saju-correction1'),
-    import('./report-view.mjs?v=20261114-saju-correction1'),
+    import('./compatibility.mjs?v=20261114-saju-final-review2'),
+    import('./report-view.mjs?v=20261114-saju-final-review2'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
 }
@@ -248,7 +249,7 @@ function copyText(reading,chart,partner,names) {
     const zodiac=reading.zodiac?.[person];
     if(zodiac)lines.push(`${labels[index]}: ${zodiac.label} · ${zodiac.note}`);
   }
-  lines.push(reading.title,'',compatibilityPeopleText(reading,names));
+  lines.push(reading.title,...readingScopeText(reading.readingScope),'',compatibilityPeopleText(reading,names));
   lines.push('',compatibilityScoreText(reading.score),'');
   lines.push(reading.headline);
   if(reading.scopeNotice)lines.push(reading.scopeNotice);

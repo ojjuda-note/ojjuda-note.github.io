@@ -175,12 +175,19 @@ test('the compact picker keeps every purchased paragraph while exposing only the
       const before=h.paragraphs();
       assert.equal(h.host.firstElementChild.className,'reading-pager');
       assertNoEvidence(h);
+      const coverage=h.host.querySelector('#reading-coverage');
+      assert.ok(visible(coverage),'product scope stays visible when calculation panels are removed');
+      for(const paragraph of reading.readingScope.paragraphs) {
+        assert.ok(coverage.textContent.includes(paragraph));
+        assert.ok(reading.copyByCategory[topic].includes(paragraph),'the copy preserves the same scope');
+      }
       assert.ok(visible(h.current()));
       assertCurrentBody(h.current());
       assert.equal(h.current().id,topic==='monthly'?'reading-month-11':'reading-summary');
       assert.ok([...h.select.options].filter(option=>option.closest('optgroup')?.label!=='생활 제안').length<=60,'month and decade details keep the primary reading list compact while existing practical suggestions remain reachable');
       for(const option of [...h.select.options]) {
         h.pick(option.value);assert.ok(visible(h.current()),option.textContent);
+        assert.ok(visible(coverage),'moving to another topic cannot hide the scope');
         assert.equal(h.host.querySelectorAll('[data-reader-current]').length,1);
         assertCurrentBody(h.current());
       }
