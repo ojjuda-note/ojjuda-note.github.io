@@ -288,7 +288,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.deepEqual(await current(), { area: 'payment', tab: 'fortune-purchases' });
     assert.equal(await page.evaluate(() => fixture.controllers['fortune-purchases'] !== previousFortuneController), true);
     await area('content');
-    assert.deepEqual(await page.locator('.adm-menu-group[data-group="content"] .adm-menu-link').allTextContents(), ['카드','쪽지 관리','그룹 관리','포토땅따먹기','위치 지도','자료 모아보기']);
+    assert.deepEqual(await page.locator('.adm-menu-group[data-group="content"] .adm-menu-link').allTextContents(), ['카드','쪽지 관리','그룹 관리','포토땅따먹기','술게임 질문·단어 관리','위치 지도','자료 모아보기']);
     await page.locator('[data-admin-folder="members"]').click();
     assert.equal(await page.getByRole('link',{name:'상품권 등록'}).getAttribute('href'),'/admin/rewards.html');
     await tab('messages'); await assertRefreshPreservesHost('messages');
