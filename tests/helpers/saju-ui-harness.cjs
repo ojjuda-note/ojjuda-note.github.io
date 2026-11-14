@@ -116,7 +116,7 @@ function assertReadingScoreCopy(copy,root) {
 
 async function harness(options = {}) {
   const html = await fs.readFile(path.join(appDir, 'index.html'), 'utf8');
-  const dom = new JSDOM(html, {url:'https://ojjuda.kr/games/starlit-saju/', runScripts:'outside-only', pretendToBeVisual:true});
+  const dom = new JSDOM(html, {url:'https://ojjuda.kr/games/starlit-saju/'+(options.entrySearch ?? '?reading=lifelong'), runScripts:'outside-only', pretendToBeVisual:true});
   const {window} = dom;
   window.structuredClone=structuredClone;
   for (const [key,value] of Object.entries(options.initialStorage || {})) window.localStorage.setItem(key,value);

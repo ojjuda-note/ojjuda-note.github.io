@@ -14,7 +14,9 @@ const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; cha
 // visibility normally initialized by the app. Validation stays in production.
 const entryFixtureScript = `<script type="module">
 import {attachEntryFlow} from '/games/starlit-saju/entry-flow.mjs';
+import {openCatalogChoice} from '/games/starlit-saju/service-directory.mjs';
 const form=document.querySelector('form[data-entry-flow]');
+if(document.getElementById('saju-catalog')) openCatalogChoice(document);
 for(const prefix of ['birth','self','partner']) {
   if(!document.getElementById(prefix+'-year'))continue;
   for(const [field,start,end,suffix] of [['month',1,12,'월'],['day',1,31,'일'],['hour',0,23,'시'],['minute',0,59,'분']]) {
@@ -50,7 +52,7 @@ const compatibilityEntryFixture = tarotOnly ? '' : fs.readFileSync(path.join(rep
   .replace('</body>',entryFixtureScript+'</body>');
 // Isolated rendering fixture. It uses production calculation and reading modules
 // with a published example date, and never loads authentication or billing code.
-const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/reading-summary.css"><link rel="stylesheet" href="/games/starlit-saju/reading-score.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"><link rel="stylesheet" href="/games/starlit-saju/reading-detail.css"><link rel="stylesheet" href="/games/starlit-saju/almanac.css"></head><body class="saju-readable saju-flow saju-edition"><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
+const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/reading-summary.css"><link rel="stylesheet" href="/games/starlit-saju/reading-score.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"><link rel="stylesheet" href="/games/starlit-saju/reading-detail.css"><link rel="stylesheet" href="/games/starlit-saju/almanac.css"><link rel="stylesheet" href="/games/starlit-saju/directory.css"></head><body class="saju-readable saju-flow saju-edition saju-directory"><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { analyzeFortune } from '/games/starlit-saju/fortune-data.mjs';
 import { analyzeDaeun } from '/games/starlit-saju/daeun.mjs';
@@ -85,7 +87,7 @@ function show(){
 }
 select.addEventListener('change',show);show();
 </script></body></html>`;
-const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/compatibility.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"><link rel="stylesheet" href="/games/starlit-saju/reading-detail.css"><link rel="stylesheet" href="/games/starlit-saju/almanac.css"></head><body class="saju-readable saju-flow saju-edition"><main class="compatibility-main"><section class="result"><label for="fixture-pair">검사할 두 사람</label><select id="fixture-pair"><option value="confirmed">말띠와 양띠</option><option value="uncertain">입춘일 · 시간 모름</option></select><p id="fixture-zodiac" class="birth-summary"></p><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
+const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/compatibility.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"><link rel="stylesheet" href="/games/starlit-saju/reading-detail.css"><link rel="stylesheet" href="/games/starlit-saju/almanac.css"><link rel="stylesheet" href="/games/starlit-saju/directory.css"></head><body class="saju-readable saju-flow saju-edition saju-directory"><main class="compatibility-main"><section class="result"><label for="fixture-pair">검사할 두 사람</label><select id="fixture-pair"><option value="confirmed">말띠와 양띠</option><option value="uncertain">입춘일 · 시간 모름</option></select><p id="fixture-zodiac" class="birth-summary"></p><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { buildCompatibilityReading } from '/games/starlit-saju/compatibility.mjs';
 import { renderCompatibilityReport } from '/games/starlit-saju/report-view.mjs';
@@ -580,7 +582,16 @@ const server = http.createServer((request, response) => {
     }
     for(const [viewport,size] of entrySizes) {
       await saju.setViewportSize(size);await saju.goto(new URL('/__saju_entry_fixture',url).href);
+      const catalog=saju.locator('#saju-catalog');
+      await catalog.waitFor();
+      assert.equal(await saju.locator('#birth-year').isVisible(),false);
+      assert.equal(await catalog.locator('.catalog-list a').count(),5);
+      await inspectReadableSurface('service catalog '+viewport,{text:'.catalog-cover h1,.catalog-index h2,.catalog-caption strong,.catalog-caption small,.catalog-price,.catalog-saved',controls:'.catalog-row,.catalog-saved'});
+      await saju.screenshot({path:path.join(artifacts,'saju-directory-'+viewport+'.png'),fullPage:true});
+      await saju.route('**/games/starlit-saju/?reading=*',route=>route.fulfill({contentType:'text/html',body:sajuEntryFixture}));
+      await catalog.locator('a[href="?reading=annual"]').click();
       const form=saju.locator('#birth-form');await form.locator('[data-flow-step="0"]').waitFor();
+      assert.equal(await form.locator('[name="entry-topic"]:checked').inputValue(),'annual');
       await form.and(saju.locator('[data-fixture-ready="true"]')).waitFor();
       await assertFlowStage(form,0,'general '+viewport);
       const date=await saju.locator('#birth-year').boundingBox();
@@ -624,6 +635,8 @@ const server = http.createServer((request, response) => {
       assert.ok(await saju.locator('#birth-month').evaluate(element=>parseFloat(getComputedStyle(element).outlineWidth)>=2));
       await saju.locator('#birth-year').press('Enter');
       await assertFlowStage(form,1,'general Enter '+viewport);
+      assert.equal(await saju.locator('#entry-product-picker').isVisible(),false);
+      await saju.locator('#change-product > summary').click();
       assert.equal(await saju.locator('#entry-product-picker').isVisible(),true);
       assert.equal(await saju.locator('#birth-year').isVisible(),false);
       const review=form.locator('[data-flow-review]:visible');

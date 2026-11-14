@@ -1,9 +1,11 @@
+import {openCatalogChoice, showTickets} from './service-directory.mjs?v=20261115-saju-directory1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
 import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-copy1';
 import { attachEntryFlow } from './entry-flow.mjs?v=20261114-saju-almanac1';
 
 const $ = id => document.getElementById(id);
 const form = $('birth-form');
+const directory = openCatalogChoice(document);
 const entryFlow = attachEntryFlow(form);
 const submit = $('open-story');
 const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -316,10 +318,36 @@ async function calculateBirth(input) {
 function validEntryQuote() {
   return entryQuote && entryQuote.signature===birthSignature() && entryQuote.owner===billing?.user ? entryQuote : null;
 }
+function entryTickets(quote) {
+  if (!quote) return [];
+  const status = quote.status;
+  const years = [...$('entry-year').options].map(option => Number(option.value));
+  const candidates = [{topic:'lifelong', year:0}];
+  for (const year of years) {
+    for (const topic of ['annual','monthly','all']) candidates.push({topic, year});
+  }
+  return candidates.filter(choice => owned(status,choice)).map(choice => ({...choice, label:targetLabel(choice)}));
+}
+function chooseEntryTarget(choice) {
+  form.querySelector('input[name="entry-topic"][value="'+choice.topic+'"]').checked = true;
+  if (choice.year) $('entry-year').value = String(choice.year);
+}
 function updateEntryOffer() {
-  const target = targetFrom('entry');
-  $('entry-year-field').hidden = target.topic==='lifelong';
   const quote = validEntryQuote();
+  let target = targetFrom('entry');
+  if (directory.saved) {
+    const choices = entryTickets(quote);
+    if (choices.length && !choices.some(choice => sameTarget(choice,target))) {
+      chooseEntryTarget(choices[0]);
+      target = targetFrom('entry');
+    }
+    showTickets($('ticket-list'), {choices,current:target,pending:entryCheckPending || (!quote && !entryQuoteError && hasBirth()),
+      error:entryQuoteError,signedIn:billingSignedIn,busy,select:choice=>{chooseEntryTarget(choice);updateEntryOffer();}});
+  }
+  $('change-product').hidden = directory.saved;
+  $('choice-name').textContent = TOPICS[target.topic].label;
+  $('session-name').textContent = directory.saved ? '내 풀이 다시 보기' : TOPICS[target.topic].label;
+  $('entry-year-field').hidden = directory.saved || target.topic==='lifelong';
   const preview = Boolean(billing?.adminPreview);
   const purchased = owned(quote?.status,target);
   document.querySelectorAll('[data-entry-price]').forEach(value => {
@@ -328,12 +356,16 @@ function updateEntryOffer() {
     value.textContent = preview ? '차감 없음' : owned(quote?.status,choice) ? '이용 가능' : priceLabel(quote?.status,choice);
   });
   $('entry-price-value').textContent = `${targetLabel(target)} · ${preview?'관리자 미리보기':purchased?'추가 차감 없음':priceLabel(quote?.status,target)}`;
-  submit.dataset.expectedCharge=String(preview?0:payable(quote?.status,target));
+  submit.dataset.expectedCharge=String(directory.saved || preview ? 0 : payable(quote?.status,target));
+  if (directory.saved) {
+    $('entry-price-value').textContent = purchased ? '다시 보기 · 0쭈' : '';
+    $('entry-price-note').textContent = '결제한 시각부터 24시간 안에 다시 보는 풀이는 0쭈예요.';
+  }
   scheduleAccessExpiry();
   if (busy) return;
-  submit.disabled = entryCheckPending || entryQuoteError;
+  submit.disabled = entryCheckPending || entryQuoteError || (directory.saved && !purchased);
   submit.querySelector('span').textContent = entryCheckPending ? '구매 내역 확인 중…'
-    : preview ? `${targetLabel(target)} 미리보기` : purchased ? `${targetLabel(target)} 다시 보기 · 0쭈` : `${priceLabel(quote?.status,target)}로 ${targetLabel(target)} 펼치기`;
+    : directory.saved && !purchased ? '다시 볼 이용권 없음' : preview ? `${targetLabel(target)} 미리보기` : purchased ? `${targetLabel(target)} 다시 보기 · 0쭈` : `${priceLabel(quote?.status,target)}로 ${targetLabel(target)} 펼치기`;
 }
 function updateProductOffer() {
   expireCurrentReading();
@@ -453,7 +485,7 @@ async function prepareDetailedReading(chart,target,person=currentPerson||readPer
   detailModulesPromise ||= Promise.all([
     import('./fortune-data.mjs?v=20261114-saju-correction1'),
     import('./readings.mjs?v=20261114-saju-final-review2'),
-    import('./report-view.mjs?v=20261115-saju-reading-map1'),
+    import('./report-view.mjs?v=20261115-saju-directory1'),
     import('./daeun.mjs?v=20261114-saju-correction1'),
     zodiacModule()
   ]).catch(error=>{detailModulesPromise=null;throw error;});
@@ -660,11 +692,10 @@ function resetAfterAccountChange() {
   $('reading-controls').hidden=true;$('other-reading-options').open=false;
   $('copy-reading').disabled=true;
   form.reset();
+  openCatalogChoice(document);
   profilePicker.resetSelection();profilePicker.setDisabled(false);profilePicker.refresh();
   form.querySelectorAll('fieldset').forEach(fieldset=>{fieldset.disabled=false;});
   form.removeAttribute('aria-busy');
-  document.querySelector('.skip-link').href='#birth-form';
-  document.querySelector('.skip-link').textContent='출생 정보 입력으로 바로가기';
   fillYears($('entry-year'));
   updateCalendar();updateTime();updateZodiacPreview();updateEntryOffer();
 }
@@ -706,7 +737,7 @@ async function readyBilling() {
 form.addEventListener('submit',async event=>{
   event.preventDefault();
   updateBirthYearLimit();
-  if (busy || !form.reportValidity()) return;
+  if (busy || !directory.entering || (directory.saved && !owned(validEntryQuote()?.status,targetFrom('entry'))) || !form.reportValidity()) return;
   const clickedCharge=Number(submit.dataset.expectedCharge);
   busy=true;
   const generation=++submitGeneration;
@@ -736,6 +767,7 @@ form.addEventListener('submit',async event=>{
     if(!stillCurrent())return;
     entryQuote={signature,chart,status,owner:payment.user};
     entryQuoteError=false;$('entry-check-error').hidden=true;
+    if (directory.saved && !owned(status,target)) throw Object.assign(new Error('이용 시간이 끝났어요. 풀이 목록에서 다시 선택해 주세요.'),{code:'access_expired'});
     const prepared=await prepareDetailedReading(chart,target,person);
     if(!stillCurrent())return;
     submit.querySelector('span').textContent='선택한 항목의 이용 내역 확인 중…';
