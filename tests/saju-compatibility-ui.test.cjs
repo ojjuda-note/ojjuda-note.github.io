@@ -412,10 +412,16 @@ test('an explicit twenty-ju purchase reveals the real reading and accessible sco
   assert.equal(h.$('compatibility-page-select').value,'compatibility-synthesis','the purchased reading starts with the combined explanation and its score');
   const reading=await assertCalculatedPeople(h);
   const score=await assertCalculatedScores(h);
+  const coverage=h.$('compatibility-report').querySelector('#compatibility-reading-coverage');
+  assert.ok(coverage&&!coverage.closest('[hidden]'),'compatibility scope is visible after a verified receipt');
   h.$('compatibility-copy').click();await waitFor(()=>h.state.copies.length===1);
   assert.match(h.state.copies[0],/궁합/);
   for(const paragraph of h.$('compatibility-report').querySelectorAll('.reader-prose > p'))assert.ok(h.state.copies[0].includes(paragraph.textContent),'copy includes every personal interpretation paragraph');
   assert.doesNotMatch(h.state.copies[0],/궁합 계산 근거|점수를 계산한 방법/);
+  for(const paragraph of reading.readingScope.paragraphs) {
+    assert.ok(coverage.textContent.includes(paragraph));
+    assert.ok(h.state.copies[0].includes(paragraph),'the copy retains scope without restoring calculation evidence');
+  }
   assertCopiedPeople(h.state.copies[0],reading);
   const copyLines=h.state.copies[0].split('\n');
   assert.ok(copyLines.some(line=>line.includes('종합 궁합')&&line.includes(`${score.total}점`)),'copy associates the total with its score');

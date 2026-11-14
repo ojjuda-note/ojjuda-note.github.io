@@ -2,8 +2,9 @@ import { getTenGod, makeProfile, interactionPairs } from './fortune-data.mjs?v=2
 import { GOD_REFERENCE, RELATION_REFERENCE } from './readings-data.mjs?v=20261114-saju-depth1';
 import { zodiacFromChart } from './zodiac.mjs?v=20261114-saju-depth1';
 import { buildCompatibilityScore } from './compatibility-score.mjs?v=20261114-saju-copy1';
-import { buildCompatibilityPeople } from './compatibility-people.mjs?v=20261114-saju-correction1';
-import { attachCompatibilityDetails } from './compatibility-detail-stories.mjs?v=20261114-saju-correction1';
+import { buildCompatibilityPeople } from './compatibility-people.mjs?v=20261114-saju-final-review2';
+import { attachCompatibilityDetails } from './compatibility-detail-stories.mjs?v=20261114-saju-final-review2';
+import { READING_SCOPES } from './reading-scope.mjs?v=20261114-saju-final-review2';
 
 // A local comparison of two already-calculated charts. All cross-chart pillar
 // pairs are retained; the prose is a disclosed application of shared meanings.
@@ -273,7 +274,7 @@ export function buildCompatibilityReading(chart,partnerChart) {
   const reading={
     title:'두 사람의 궁합',headline:base.headline,paragraphs:[personalOpening,relationParagraph],
     cards:makeCards(base,interactions,profiles,facts,zodiac,zodiacRelation),facts,score,origin:ORIGIN,
-    scopeNotice:scopeNotice(scopes),
+    scopeNotice:scopeNotice(scopes),readingScope:READING_SCOPES.compatibility,
     methodNotice:'확인할 수 있는 두 사람의 사주 글자를 모두 비교했어요. 나를 나타내는 글자끼리의 관계(일간 관계)와, 해·달·날·시간의 글자 사이에 있는 천간합·지지육합·지지충을 확인했어요. 띠는 입춘을 기준으로 태어난 해의 아래 글자(년지)에서 가져와요. 띠 항목에는 년지끼리의 육합·충만 따로 보여드려요. 설명과 가상 예시는 계산 결과에 연결한 공통 참고 풀이예요. 같은 관계에는 같은 설명을 써요. 점수는 오쭈다 고정 규칙으로 비교한 참고값이에요. 실제 관계의 성공 확률이 아니에요. 합화가 성립하는지는 계산하지 않아요. 결혼·이별의 시기 같은 실제 사건은 계산하지 않아요. 합이 있다고 좋은 결과를 보장하지 않으며, 충이 있다고 이별한다는 뜻도 아니에요.',
     dayMasterRelation,interactions,comparisons,zodiac,zodiacRelation:zodiacRelation.kind,scope:{self:scopes[0],partner:scopes[1]},
     rules:Object.fromEntries(unique(interactions.map(match=>match.kind)).map(kind=>[kind,{...RELATION_REFERENCE[kind]}])),
