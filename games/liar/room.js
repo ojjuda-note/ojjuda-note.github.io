@@ -31,7 +31,7 @@ function entry(){
   room=null;clearTimeout(timer);revealed=false;
   if(party){window.DrinkingPresentation?.leave();return party.missing();}
   const create=mode==='create';
-  view.innerHTML='<section class="card"><div class="inside"><h1>라이어 찾기</h1><p>한 사람만 제시어를 몰라요. 정답과 초성은 빼고 차례대로 힌트를 남겨요. 모두 끝나면 라이어로 의심되는 사람에게 투표해요.</p>'+
+  view.innerHTML='<section class="card"><div class="inside"><h1 class="suite-heading">라이어 찾기</h1><p class="suite-hint">한 사람만 제시어를 몰라요. 힌트를 한 줄씩 쓰고, 의심되는 사람에게 몰래 투표해요.</p>'+
     '<div class="tabs"><button data-do="create-tab" aria-pressed="'+create+'">방 만들기</button><button data-do="join-tab" aria-pressed="'+!create+'">방 들어가기</button></div>'+
     '<form id="entry">'+
     (create?'<label>방 제목<input name="title" required maxlength="40" value="라이어 찾기 같이 한 판 해요"></label><label>참여 인원<select name="capacity">'+Array.from({length:10},(_,i)=>'<option value="'+(i+3)+'" '+(i===1?'selected':'')+'>'+(i+3)+'명</option>').join('')+'</select></label>':
@@ -69,22 +69,22 @@ function render(s,force=false){
   const heading='<div class="topline"><span>방 '+(party?.code||s.code)+'</span><span>'+s.round+'번째 판 · '+s.players.length+'/'+s.capacity+'명</span></div>';
   let content='';
   if(s.phase==='waiting'){
-    content='<h1>'+esc(s.title)+'</h1><p>모두 모이면 시작해요. 초대 링크와 방 비밀번호를 친구에게 알려 주세요.</p>'+members+control('초대 링크 복사','copy',true);
+    content='<h1 class="suite-heading">'+esc(s.title)+'</h1><p class="suite-hint">모두 모이면 시작해요. 초대 링크와 방 비밀번호를 친구에게 알려 주세요.</p>'+members+control('초대 링크 복사','copy',true);
   }else if(s.phase==='done'){
     const high=Math.max(...s.totals),leaders=s.totals.flatMap((v,i)=>v===high?[i]:[]);
-    const title=leaders.length>1?'최다 득표가 동점이에요':leaders[0]===s.liar?'라이어를 찾았어요!':'라이어가 정체를 숨겼어요!';
-    content='<h1>'+title+'</h1><p>라이어는 <strong>'+esc(s.players[s.liar])+'</strong> · 제시어는 <strong>'+esc(s.word)+'</strong></p><ol class="members">'+
+    const title=leaders.length>1?'투표가 동점으로 끝났어요':leaders[0]===s.liar?'라이어를 찾았어요!':'라이어가 정체를 숨겼어요!';
+    content='<h1 class="suite-heading">'+title+'</h1><p class="suite-hint">라이어는 <strong>'+esc(s.players[s.liar])+'</strong> · 제시어는 <strong>'+esc(s.word)+'</strong></p><ol class="members">'+
       s.players.map((n,i)=>'<li>'+esc(n)+' · '+s.totals[i]+'표</li>').join('')+'</ol>'+hints+(s.me===0?control('한 판 더','again',true):'');
   }else{
     const role=revealed?'<p class="secret">'+(s.role==='liar'?'당신은 라이어예요.':'제시어 · '+esc(s.word))+'</p>':'';
     const card='<section class="role">'+control(revealed?'내 카드 가리기':'내 카드 보기','reveal')+role+'</section>';
     if(s.phase==='hints'){
       const mine=s.me===s.turn;
-      content='<h1>'+(mine?'내 힌트를 남겨 주세요':esc(s.players[s.turn])+'님이 힌트를 남길 차례예요')+'</h1>'+card+hints+
-        (mine?'<form id="hint"><label>정답과 초성은 빼고 힌트를 한 줄로 써 주세요.<input name="hint" required maxlength="80" autocomplete="off"></label><button class="action" type="submit">힌트 보내기</button></form>':'<p>모두 한 번씩 힌트를 남기면 투표해요.</p>');
+      content='<h1 class="suite-heading">'+(mine?'힌트를 한 줄로 적어 주세요':esc(s.players[s.turn])+'님 차례예요')+'</h1>'+card+hints+
+        (mine?'<form id="hint"><label>정답과 초성을 빼고 적어 주세요.<input name="hint" required maxlength="80" autocomplete="off"></label><button class="action" type="submit">힌트 보내기</button></form>':'<p class="suite-hint">힌트가 모두 모이면 비밀 투표를 시작해요.</p>');
     }else{
-      content='<h1>'+(s.voted?'다른 참가자의 투표를 기다려요':'누가 라이어일까요?')+'</h1>'+card+hints+
-        '<p>투표 '+s.voteCount+' / '+s.players.length+'명</p>'+
+      content='<h1 class="suite-heading">'+(s.voted?'투표를 마쳤어요':'누가 라이어일까요?')+'</h1>'+card+hints+
+        '<p class="suite-hint">투표 완료 '+s.voteCount+' / '+s.players.length+'명</p>'+
         (s.voted?'':'<div class="ballots">'+s.players.map((n,i)=>i===s.me?'':'<button class="secondary" data-do="vote" data-slot="'+i+'">'+esc(n)+'</button>').join('')+'</div>');
     }
   }

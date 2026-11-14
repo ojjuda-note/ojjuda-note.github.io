@@ -1,0 +1,38 @@
+/* Forest voting cards; private choices and result calculations stay unchanged. */
+body.dp-playing[data-dp-kind="minority"] {
+  --suite-bg: radial-gradient(ellipse at 28% 18%, #24493d, #132c27 58%, #0b1b19);
+  --suite-surface: linear-gradient(140deg, #254337, #172d28 78%);
+  --suite-subtle: #153128;
+  --suite-ink: #eff6e9;
+  --suite-muted: #b8cebf;
+  --suite-accent: #bce4b0;
+  --suite-accent-ink: #203b2b;
+  --suite-line: #b1d3bb3d;
+}
+body.dp-playing[data-dp-kind="minority"] .stage-art { background: radial-gradient(ellipse at 48% 58%, #688961, #3b5c47 52%, #213b31); }
+body.dp-playing[data-dp-kind="minority"] .stage-art::before { inset: 0; background: radial-gradient(ellipse at 50% 15%, #e9f4bc25, transparent 65%); filter: none; }
+body.dp-playing[data-dp-kind="minority"] .stage-art .game-art {
+  mask-image: radial-gradient(ellipse at 50% 52%, #000 42%, #000e 68%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 52%, #000 42%, #000e 68%, transparent 100%);
+}
+body.dp-playing[data-dp-kind="minority"] .private-card { background: linear-gradient(150deg, #31523e, #19352e); border-color: #a4caac70; box-shadow: inset 0 1px #e8f9d61a, 0 10px 28px #06141055; }
+body.dp-playing[data-dp-kind="minority"] .private-card.hidden-face { background: repeating-linear-gradient(135deg, #1b352b 0 8px, #233d32 8px 9px); border-color: #a4caac70; }
+body.dp-playing[data-dp-kind="minority"] .private-card .secret-art { background-color: #16332a; box-shadow: inset 0 0 0 1px #d5e7b926; }
+body.dp-playing[data-dp-kind="minority"] .private-card strong { background: transparent; color: #e3f1d4; }
+body.dp-playing[data-dp-kind="minority"] #app .options .choice,
+body.dp-playing[data-dp-kind="minority"] #view .ballots button { background: linear-gradient(150deg, #2b4b3b, #1b382e); border-color: #a4c7a66b; color: #e6f3df; box-shadow: inset 0 1px #e7f8dc12, 0 5px 16px #071a142b; }
+body.dp-playing[data-dp-kind="minority"] #app .options .choice:nth-child(2),
+body.dp-playing[data-dp-kind="minority"] #view .ballots button:nth-child(2) { background: linear-gradient(150deg, #3c4934, #283b2d); border-color: #c5cc986b; }
+body.dp-playing[data-dp-kind="minority"] #app .options .choice.selected { background: #c2e4ae; border-color: #d5efc3; color: #233e29; }
+body.dp-playing[data-dp-kind="minority"] .results-line,
+body.dp-playing[data-dp-kind="minority"] #view .breakdown li { background: #1b382d; color: #c7dccd; box-shadow: inset 0 0 0 1px #b4d7b539; }
+body.dp-playing[data-dp-kind="minority"] .results-line strong,
+body.dp-playing[data-dp-kind="minority"] #view .breakdown strong { color: #d5f0cd; }
+body.dp-playing[data-dp-kind="minority"] .results-line + .results-line strong,
+body.dp-playing[data-dp-kind="minority"] #view .breakdown li:nth-child(2) strong { color: #e0e9b9; }
+body.dp-playing[data-dp-kind="minority"] #view .breakdown span { color: #bfd3c7; }
+body.dp-playing[data-dp-kind="minority"][data-dp-phase="done"] :is(#app, #view) :is(.play-body > h2, .suite-heading) { color: #d5ecc0; }
+@media (hover: hover) {
+  body.dp-playing[data-dp-kind="minority"] #app .options .choice:not(:disabled):hover,
+  body.dp-playing[data-dp-kind="minority"] #view .ballots button:not(:disabled):hover { background: #3b5841; border-color: #d0e4b9; }
+}

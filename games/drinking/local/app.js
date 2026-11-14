@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const memberStore='oj.party.'+document.getElementById('access-content').dataset.member+'.';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-bottle-design1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-drinking-suite1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -32,6 +32,56 @@ const games=[
   ['imagevote','이미지 게임','추리와 대화','이 질문에 딱 맞는 사람은?','#b9c9e4',2,'질문을 읽고 가장 잘 어울리는 사람에게 몰래 한 표를 주세요. 모두 투표하면 가장 많이 지목된 사람이 공개돼요.'],
   ['updown','업앤다운','운과 감각','숫자를 부르면, 업 또는 다운!','#c9d8ea',2,'1부터 100 사이에 숨은 숫자를 돌아가며 맞혀요. 업이면 더 큰 수, 다운이면 더 작은 수예요. 정확히 맞힌 사람이 이겨요.']
 ].map(([id,title,category,short,color,min,rule],i)=>({id,title,category,short,color,min,rule,num:String(i+1).padStart(2,'0')}));
+const pageIntroductions={
+  liar:{
+    heading:['힌트 속에 숨은','한 사람을 찾아요.'],
+    description:['한 명만 제시어를 몰라요.','힌트를 듣고 라이어를 골라 보세요.'],
+    steps:[['내 카드','혼자 확인해요'],['힌트 주기','정답은 비밀로'],['비밀 투표','한 명을 골라요']],
+    button:'카드 받고 시작하기'
+  },
+  king:{
+    heading:['오늘의 왕은','누구일까요?'],
+    description:['왕이 번호와 미션을 골라요.','둘이 하는 미션은 함께 동의해요.'],
+    steps:[['카드 확인','역할은 비밀로'],['왕의 선택','번호와 미션 선택'],['미션 공개','함께 확인해요']],
+    button:'왕과 번호 뽑기'
+  },
+  initial:{
+    heading:['두 글자 초성,','5초면 충분해요.'],
+    description:['초성에 맞는 두 글자 단어를 말해요.','중복·오답·시간 초과는 탈락해요.'],
+    steps:[['초성 확인','두 글자 단어'],['5초 도전','말하고 누르기'],['살아남기','마지막 한 명 승리']],
+    button:'초성 대결 시작'
+  },
+  minority:{
+    heading:['우리의 선택은','몇 대 몇일까요?'],
+    description:['둘 중 하나를 몰래 골라요.','더 적게 선택된 쪽이 소수파예요.'],
+    steps:[['선택지 보기','둘 중 하나'],['비밀 투표','마음 가는 쪽으로'],['함께 공개','표수를 확인해요']],
+    button:'비밀 투표 시작'
+  },
+  mission:{
+    heading:['같은 듯 다른 몸짓,','한 명을 찾아요.'],
+    description:['한 명만 다른 제시어를 받아요.','동시에 몸짓을 한 뒤 그 사람을 찾아요.'],
+    steps:[['제시어 보기','혼자 확인해요'],['동시에 몸짓','말없이 표현해요'],['비밀 투표','다른 한 명 찾기']],
+    button:'제시어 받고 시작하기'
+  },
+  fingers:{
+    heading:['해당하면 접어요.','다섯 개면 당첨!'],
+    description:['‘목걸이 한 사람 접어!’','해당하면 손가락 하나를 접어요.'],
+    steps:[['조건 정하기','추천 또는 직접'],['하나 접기','해당하면 선택'],['기록 확인','다 접으면 당첨']],
+    button:'손가락 다섯 개로 시작'
+  },
+  imagevote:{
+    heading:['이 질문에','딱 맞는 사람은?'],
+    description:['질문을 읽고 한 사람에게 투표해요.','가장 많이 지목된 사람을 공개해요.'],
+    steps:[['질문 정하기','추천 또는 직접'],['한 명 선택','몰래 한 표'],['결과 공개','함께 확인해요']],
+    button:'질문 고르고 시작하기'
+  },
+  updown:{
+    heading:['범위를 좁혀서,','숫자를 맞혀요.'],
+    description:['업·다운 힌트를 따라 범위를 좁혀요.','1~100 사이의 정답을 먼저 맞혀 보세요.'],
+    steps:[['숫자 입력','남은 범위 안에'],['업·다운','힌트를 따라요'],['정답 도전','먼저 맞혀요']],
+    button:'숫자 맞히기 시작'
+  }
+};
 const prompts=window.DrinkingPrompts;
 const manualGames=new Set(['king','fingers','imagevote']);
 function rand(n){return Math.floor(Math.random()*n)}
@@ -91,21 +141,21 @@ function updateBombTimer(value){
 }
 function bombSetup(){
   const limit=bombLimit(players.length);
-  shell('<h2>시간폭탄 타이머</h2><p>'+game.rule+'</p>'+
+  shell('<h2><span class="suite-kicker">03 · 순발력</span>생각은 짧게,<br>대답은 빠르게.</h2><p>나라·음식 이름을 하나 말하고 넘겨요.<br>폭탄이 터질 때 차례인 사람이 당첨!</p>'+
     '<div class="bomb-timer"><div class="bomb-timer-head"><label for="bomb-seconds">기준 시간 <strong id="bomb-base"></strong></label>'+
     '<button type="button" class="quiet" data-action="random-bomb-time" aria-label="타이머 랜덤 선택">랜덤</button></div>'+
     '<input id="bomb-seconds" type="range" min="'+bombMinSeconds+'" max="'+limit+'" step="1" value="'+bombSeconds+'" aria-describedby="bomb-window"'+(limit===bombMinSeconds?' disabled':'')+'>'+
     '<div class="bomb-timer-limits"><span>'+timeLabel(bombMinSeconds)+'</span><span>'+players.length+'명 · 최대 '+timeLabel(limit)+'</span></div>'+
     '<p id="bomb-window" aria-live="polite"></p></div>'+
-    actions(btn('시간 선택 완료','confirm-bomb-time')),true);
+    actions(btn('이 시간으로 준비하기','confirm-bomb-time')),true);
   updateBombTimer(bombSeconds);
   $('#bomb-seconds').oninput=e=>updateBombTimer(Number(e.target.value));
 }
 function readyBomb(random){
   round={phase:'bomb-ready',turn:0,randomTime:random};
   const label=random?'랜덤 타이머':timeLabel(bombSeconds)+' 타이머';
-  shell('<h2>'+label+'</h2><div class="bomb-launch">'+art('bomb')+btn('시작','start-bomb')+'</div>'+
-    actions(btn('시간 다시 선택','bomb-setup','quiet')));
+  shell('<h2>'+label+'</h2><div class="bomb-launch">'+art('bomb')+btn('폭탄 시작','start-bomb')+'</div>'+
+    actions(btn('시간 다시 정하기','bomb-setup','quiet')));
   app.querySelector('[data-action="start-bomb"]').focus({preventScroll:true});
 }
 async function loadRoundBank(r){
@@ -177,6 +227,14 @@ function shell(body,scene=false){
   app.innerHTML='<article class="play-shell"><header class="round-head"><h1>'+art(game.id,'round-mark')+game.title+'</h1><span>'+players.length+'명 플레이</span></header>'+(scene?'<div class="stage-art" style="--pastel:'+game.color+';--scene:url('+artPath(game.id)+')">'+art(game.id)+'</div>':'')+'<div class="play-body">'+body+'</div></article>';
   window.DrinkingGameScreen?.local(game.id,round,app);
 }
+function pageIntro(copy,enough){
+  shell('<h2><span class="suite-kicker">'+game.num+' · '+esc(game.category)+'</span>'+copy.heading.map(esc).join('<br>')+'</h2>'+
+    '<p>'+copy.description.map(esc).join('<br>')+'</p>'+
+    '<ol class="suite-rules" aria-label="게임 순서">'+copy.steps.map(([title,description],i)=>
+      '<li><span aria-hidden="true">0'+(i+1)+'</span><strong>'+esc(title)+'</strong><small>'+esc(description)+'</small></li>').join('')+'</ol>'+
+    actions(enough?btn(copy.button,'start'):'<a class="quiet" href="#participants">참가자 설정하기</a>')+
+    '<div class="suite-meta">'+(enough?game.min+'~12명 · 한 대로 함께':game.min+'명부터 함께할 수 있어요.')+'</div>',true);
+}
 function intro(){const enough=players.length>=game.min;
   if(game.id==='croc'){
     const steps=[['차례대로','휴대폰을 돌려가며'],['하나씩','남은 이빨을 눌러요'],['딱!','입이 닫히면 당첨']];
@@ -201,11 +259,12 @@ function intro(){const enough=players.length>=game.min;
   if(game.id==='bomb')return bombSetup();
   if(game.id==='stopwatch')return watchSetup();
   if(game.id==='truth'){
-    shell('<h2>'+game.short+'</h2><p>'+game.rule+'</p>'+truthTools.settingsForm(truthSettings)+actions(btn('게임 시작 · 한 대로','start'),
+    shell('<h2><span class="suite-kicker">07 · 추리와 대화</span>오늘은 조금 더<br>솔직하게.</h2><p>돌아가며 카드 한 장을 골라요.<br>답하기 어려우면 패스해도 돼요.</p>'+truthTools.settingsForm(truthSettings)+actions(btn('질문 카드 고르기','start'),
       btn('질문 카드 등록','truth-editor','quiet'))+'<p id="truth-start-message" role="status"></p>',true);
     truthTools.bindSettings(truthSettings);
     return;
   }
+  if(pageIntroductions[game.id])return pageIntro(pageIntroductions[game.id],enough);
   const needPlayers='<p>'+game.min+'명부터 함께할 수 있어요.</p>';
   const rosterLink='<a class="quiet" href="#participants">메인에서 참가자 설정</a>';
   const local=enough?btn('게임 시작 · 한 대로','start'):rosterLink;
@@ -548,14 +607,14 @@ function setWatchTarget(tenths){
   $('#watch-minus').disabled=tenths===50;$('#watch-plus').disabled=tenths===100;
 }
 function watchSetup(){
-  shell('<h2>몇 초에 멈출까요?</h2><p>'+game.rule+'</p>'+
+  shell('<h2><span class="suite-kicker">04 · 운과 감각</span>숫자가 사라지면,<br>감각으로 멈춰요.</h2><p>1초 뒤 숫자가 가려져요.<br>목표 시간에 가장 가깝게 멈춰 보세요.</p>'+
     '<div class="watch-config"><label for="watch-target">목표 시간</label>'+
     '<div class="watch-step"><button id="watch-minus" type="button" aria-label="0.1초 줄이기">−</button>'+
     '<output id="watch-setting" for="watch-target"></output>'+
     '<button id="watch-plus" type="button" aria-label="0.1초 늘리기">＋</button></div>'+
     '<input id="watch-target" type="range" min="5.0" max="10.0" step="0.1" value="'+(watchTenths/10).toFixed(1)+'">'+
     '<div class="watch-limits"><span>5.0초</span><span>10.0초</span></div></div>'+
-    actions(btn('게임 시작 · 한 대로','start')));
+    actions(btn('이 시간으로 시작하기','start')));
   setWatchTarget(watchTenths);
   $('#watch-minus').onclick=()=>setWatchTarget(watchTenths-1);
   $('#watch-plus').onclick=()=>setWatchTarget(watchTenths+1);
@@ -616,7 +675,7 @@ function nextWatch(){
   const winners=ordered.filter(p=>p.error===ordered[0].error);
   const rows=ordered.map(p=>'<tr><th scope="row">'+name(p.i)+'</th><td>'+(p.score/100).toFixed(2)+'초</td><td>'+(p.error/100).toFixed(2)+'초</td></tr>').join('');
   shell('<span class="turn-tag">라운드 결과</span><h2>'+winners.map(p=>name(p.i)).join(' · ')+(winners.length>1?' 공동 1등!':' 1등!')+'</h2>'+
-    '<p>이 감이면 고백 타이밍도 놓치지 않겠는데요?</p><p>목표 '+(r.target/100).toFixed(1)+'초</p><table class="watch-results"><thead><tr><th>참가자</th><th>기록</th><th>목표와 차이</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+    '<p>목표 시간에 가장 가깝게 멈췄어요.</p><p>목표 '+(r.target/100).toFixed(1)+'초</p><table class="watch-results"><thead><tr><th>참가자</th><th>기록</th><th>목표와 차이</th></tr></thead><tbody>'+rows+'</tbody></table>'+
     actions(btn('한 판 더','watch-setup'),btn('게임 목록','menu','quiet')));
 }
 function privateScreen(title,description,face,button){
@@ -788,7 +847,7 @@ function upDown(lastGuess){
       field.setAttribute('aria-invalid','true');field.focus();return;
     }
     r.guesses++;
-    if(guess===r.answer)return end(players[r.turn]+'님 정답!','숨은 숫자는 '+guess+'! '+r.guesses+'번 만에 맞혔어요. 숫자 읽는 눈치로 썸 신호도 맞히겠는데요?');
+    if(guess===r.answer)return end(players[r.turn]+'님 정답!','숨은 숫자는 '+guess+'! '+r.guesses+'번 만에 맞혔어요.');
     if(guess<r.answer)r.low=guess+1;else r.high=guess-1;
     r.turn=(r.turn+1)%players.length;fx.play('turn');upDown(guess);
   };

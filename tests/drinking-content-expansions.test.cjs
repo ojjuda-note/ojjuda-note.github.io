@@ -1343,7 +1343,7 @@ test('fingers: 300 appended conditions preserve partial private responses and ea
       async function privateResponses(submitted) {
         for (const ui of uis) {
           await ui.wake();
-          await until(() => ui.find('.pair-status')?.textContent === `응답 ${submitted} / 3명`, 'all fingers screens receive the response count');
+          await until(() => ui.find('.pair-status')?.textContent === `선택 완료 ${submitted} / 3명`, 'all fingers screens receive the response count');
           assert.equal(ui.find('#game h1').textContent, question);
           assert.deepEqual(scoresOn(ui), remaining, 'scores cannot reveal another person\'s partial answer');
         }
@@ -1534,11 +1534,11 @@ test('imagevote: 300 appended questions preserve an unfinished private ballot an
       async function pending(submitted) {
         for (const [seat, ui] of uis.entries()) {
           await ui.wake();
-          await until(() => ui.find('.pair-status')?.textContent === `투표 ${submitted} / 3명`, 'each image screen receives the ballot count');
+          await until(() => ui.find('.pair-status')?.textContent === `투표 완료 ${submitted} / 3명`, 'each image screen receives the ballot count');
           assert.equal(ui.find('#game h1').textContent, question);
           assert.equal(ui.find('[data-result]'), null);
           assert.equal(ui.find('.pair-scores'), null);
-          assert.equal(ui.find('.pair-caption').textContent, '질문에 가장 잘 어울리는 한 사람을 골라요.');
+          assert.equal(ui.find('.pair-caption').textContent, '가장 잘 어울리는 사람에게 몰래 투표해요.');
           assert.equal(ui.find(`[data-seat="${seat}"]`), null, 'three-person choices omit the current voter');
           assert.equal(ui.w.document.querySelectorAll('#game [data-seat]').length, seat < submitted ? 0 : 2);
         }
