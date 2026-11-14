@@ -731,6 +731,7 @@
 .month-spotlight-card .reader-detail-link{margin-top:9px}
 @media(max-width:600px){.months-spotlight{scroll-margin-top:87px}.month-spotlight-cards{grid-template-columns:1fr}.month-spotlight-card{padding:18px 16px}.month-spotlight-headline{font-size:19px}}
 .reader-scope-note{margin-top:16px;font-size:13px;line-height:1.8;color:#c5b2ce;word-break:keep-all;overflow-wrap:anywhere}
+.reader-scope-note.daeun-time-notice{font-size:var(--reading-font-size,17px)}
 
 /* Extra subjects keep the same reading rhythm as the personal stories. */
 .reader-supplement-content{max-width:42rem;margin:0 auto;min-width:0}

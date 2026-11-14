@@ -363,6 +363,8 @@ export class SajuProfilePicker {
 
   _remove(id,owner) {
     if(this._disabled||this._pending||this._destroyed)return;
+    const restoreFocus=this.listElement.contains(this.element.ownerDocument.activeElement);
+    const index=[...this.listElement.children].findIndex(item=>item.dataset.profileId===id);
     try {
       this._cancelAutoSave();
       this.store.remove(id,{expectedOwner:owner});
@@ -373,6 +375,12 @@ export class SajuProfilePicker {
     } catch(error) {
       this.refresh({preserveStatus:true});
       this._status(messageOf(error),'error');
+    } finally {
+      if(restoreFocus&&!this._destroyed&&this._owner===owner) {
+        const rows=[...this.listElement.children];
+        const row=rows.find(item=>item.dataset.profileId===id)||rows[Math.min(index,rows.length-1)];
+        (row?.querySelector('.profile-picker-use')||this.newButton).focus({preventScroll:true});
+      }
     }
   }
 

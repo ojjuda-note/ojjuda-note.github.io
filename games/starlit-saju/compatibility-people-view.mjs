@@ -138,7 +138,7 @@ export function createCompatibilityPager(section,pages) {
     position.textContent=page.support?page.label:`${index+1} / ${readable.length} · ${page.label}`;
     page.element.append(back);
     if(move) {
-      page.focus.focus({preventScroll:true});
+      // Keep focus on the control so arrows and repeated steps keep working.
       navigation.scrollIntoView({block:'start',behavior:document.documentElement.dataset.reducedMotion==='true'?'instant':'smooth'});
     }
     return true;

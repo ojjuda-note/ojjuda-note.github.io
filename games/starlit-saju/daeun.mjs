@@ -148,8 +148,9 @@ export function analyzeDaeun(chart, { gender = null, now = new Date() } = {}) {
   if (!timeAssumed && (!knownYear || !knownMonth)) return unavailable(gender, 'solar-term-uncertain', '절기가 바뀌는 경계에 태어나 대운의 시작 시기와 순서를 확정할 수 없어요.');
   const birthHour = timeAssumed ? ASSUMED_BIRTH_HOUR : chart.input.hour;
   const birthMinute = timeAssumed ? 0 : chart.input.minute;
+  // The assumed clock is a calculation convention, not a claimed birth time.
+  // validateChart already rejects an actual future date or known birth time.
   const birth = Solar.fromYmdHms(chart.solar.year, chart.solar.month, chart.solar.day, birthHour, birthMinute, 0);
-  if (timeAssumed && Date.parse(stamp(birth).iso) > now.getTime()) invalid('future', '대운 계산에 사용하는 오늘 오전 6시 00분이 아직 지나지 않았어요. 그 시각이 지난 뒤 다시 펼쳐 주세요.');
   const chinaBirth = birth.nextHour(-1);
   const lunar = chinaBirth.getLunar();
   const minuteEnd = Solar.fromYmdHms(chinaBirth.getYear(), chinaBirth.getMonth(), chinaBirth.getDay(), chinaBirth.getHour(), chinaBirth.getMinute(), 59).getLunar();

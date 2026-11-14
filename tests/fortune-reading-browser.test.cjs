@@ -8,6 +8,10 @@ fs.mkdirSync(artifacts, { recursive: true });
 const { chromium } = require('playwright');
 
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.woff': 'font/woff' };
+// The real entry markup and styles, with account and billing scripts omitted.
+const sajuEntryFixture = fs.readFileSync(path.join(repo,'games/starlit-saju/index.html'),'utf8')
+  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'')
+  .replace('<head>','<head><base href="/games/starlit-saju/">');
 // Isolated rendering fixture. It uses production calculation and reading modules
 // with a published example date, and never loads authentication or billing code.
 const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/reading-summary.css"><link rel="stylesheet" href="/games/starlit-saju/reading-score.css"></head><body><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
@@ -35,7 +39,11 @@ globalThis.__sajuScoreFixture = {key:fixtureCase,birth:births[fixtureCase],nativ
     {key:'lifelong-overview',selector:'#reading-lifelong-summary .reader-intro',reading:reading.reader.lifelong}]};
 const target = document.getElementById('report-content');
 const select = document.getElementById('fixture-topic');
-function show(){renderDetailedReport(target,{reading,fortune,topic:select.value});target.dataset.ready=select.value;}
+function show(){
+  const content=document.createElement('div');
+  renderDetailedReport(content,{reading,fortune,topic:select.value});
+  target.replaceChildren(content);target.dataset.ready=select.value;
+}
 select.addEventListener('change',show);show();
 </script></body></html>`;
 const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/compatibility.css"></head><body><main class="compatibility-main"><section class="result"><label for="fixture-pair">검사할 두 사람</label><select id="fixture-pair"><option value="confirmed">말띠와 양띠</option><option value="uncertain">입춘일 · 시간 모름</option></select><p id="fixture-zodiac" class="birth-summary"></p><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
@@ -50,13 +58,16 @@ function show(){
   const birth = select.value === 'confirmed' ? {year:1990,month:5,day:10,hour:9,minute:0} : {year:2024,month:2,day:4,hour:null};
   const reading = buildCompatibilityReading(calculateSaju(birth,{now}),partner);
   document.getElementById('fixture-zodiac').textContent = reading.zodiac.self.label + ' · ' + reading.zodiac.partner.label + ' · 사주 기준 · 입춘';
-  renderCompatibilityReport(target,reading,{names:[{name:'길게 입력한 첫 번째 예시 이름'},{name:'길게 입력한 두 번째 예시 이름'}]});
+  const content=document.createElement('div');
+  renderCompatibilityReport(content,reading,{names:[{name:'길게 입력한 첫 번째 예시 이름'},{name:'길게 입력한 두 번째 예시 이름'}]});
+  target.replaceChildren(...content.childNodes);
   target.dataset.ready=select.value;
 }
 select.addEventListener('change',show);show();
 </script></body></html>`;
 const server = http.createServer((request, response) => {
   let name = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
+  if (name === '/__saju_entry_fixture') { response.writeHead(200, { 'content-type': mime['.html'] }); response.end(sajuEntryFixture); return; }
   if (name === '/__saju_fixture') { response.writeHead(200, { 'content-type': mime['.html'] }); response.end(sajuFixture); return; }
   if (name === '/__compatibility_fixture') { response.writeHead(200, { 'content-type': mime['.html'] }); response.end(compatibilityFixture); return; }
   if (name.endsWith('/')) name += 'index.html';
@@ -293,7 +304,62 @@ const server = http.createServer((request, response) => {
     saju.on('pageerror', error => errors.push(error.message));
     saju.on('response', response => { if (response.status() >= 400) failed.push([response.status(), response.url()]); });
     await saju.route('**/*', route => route.request().url().startsWith('http://127.0.0.1:') ? route.continue() : route.abort());
+    const sajuEntryViews={},sajuNavigation={};
+    await saju.goto(new URL('/__saju_entry_fixture',url).href);
+    for(const [viewport,size] of [['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]]) {
+      await saju.setViewportSize(size);
+      const geometry=await saju.locator('#birth-form').evaluate(form=>{
+        const shown=element=>element.getBoundingClientRect().width>0&&element.getBoundingClientRect().height>0;
+        const fonts=selector=>Array.from(form.querySelectorAll(selector)).filter(shown).map(element=>({id:element.id||element.className,size:parseFloat(getComputedStyle(element).fontSize)}));
+        const gender=form.querySelector('#person-gender'),style=getComputedStyle(gender);
+        const measure=document.createElement('canvas').getContext('2d');
+        measure.font=style.fontWeight+' '+style.fontSize+' '+style.fontFamily;
+        const selectedText=gender.selectedOptions[0].textContent;
+        return {inputs:fonts('input[type=number],input[type=text],select'),notices:fonts('.field-hint,.form-note'),
+          gender:{label:selectedText,textWidth:measure.measureText(selectedText).width,
+            availableWidth:gender.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-16},
+          checks:Array.from(form.querySelectorAll('.check-row')).filter(shown).map(element=>element.getBoundingClientRect().height),
+          overflow:document.documentElement.scrollWidth>innerWidth||form.scrollWidth>form.clientWidth+1};
+      });
+      assert.ok(geometry.inputs.length>=5&&geometry.inputs.every(field=>field.size>=16),viewport+': birth inputs remain at least 16px');
+      assert.ok(geometry.notices.length>=4&&geometry.notices.every(field=>field.size>=13),viewport+': birth assumptions and privacy notes remain at least 13px');
+      assert.ok(geometry.checks.length>0&&geometry.checks.every(height=>height>=44),viewport+': unknown-time controls have a 44px touch target');
+      assert.equal(geometry.overflow,false,viewport+': larger entry text keeps the form within the viewport');
+      assert.ok(geometry.gender.textWidth<=geometry.gender.availableWidth,viewport+': the default gender label fits beside the native select arrow');
+      sajuEntryViews[viewport]=geometry;
+      if(viewport==='phone-small')await saju.locator('.birth-panel').screenshot({path:path.join(artifacts,'saju-entry-phone-small.png')});
+    }
+    await saju.setViewportSize({width:390,height:844});
     await saju.goto(new URL('/__saju_fixture', url).href);
+    assert.equal(await saju.locator('#report-content > [data-reader-paged="true"]').count(),1,'the prepared report keeps its mounted pager host when attached after purchase');
+    async function inspectReadingControls(label,pickerId,currentAttribute) {
+      const picker=saju.locator('#'+pickerId),current=saju.locator('['+currentAttribute+']');
+      const options=await picker.locator('option').evaluateAll(nodes=>nodes.map(node=>node.value));
+      await picker.selectOption(options[0]);await picker.focus();
+      for(const id of options.slice(1,3)) {
+        await picker.press('ArrowDown');
+        assert.equal(await picker.inputValue(),id,label+': consecutive arrow keys select consecutive entries');
+        assert.equal(await current.getAttribute('id'),id);
+        assert.equal(await picker.evaluate(element=>element===document.activeElement),true,label+': the picker retains keyboard focus');
+      }
+      const controls=picker.locator('..').locator('.reading-pager-step'),previous=controls.first(),next=controls.last();
+      const start=await current.getAttribute('id');
+      await next.focus();
+      for(let step=0;step<2;step++) {
+        const before=await current.getAttribute('id');await next.press('Enter');
+        assert.notEqual(await current.getAttribute('id'),before);
+        assert.equal(await next.evaluate(element=>element===document.activeElement),true,label+': repeated next presses keep focus on the button');
+      }
+      await previous.focus();await previous.press('Enter');await previous.press('Enter');
+      assert.equal(await current.getAttribute('id'),start);
+      assert.equal(await previous.evaluate(element=>element===document.activeElement),true,label+': repeated previous presses keep focus on the button');
+      const sizes=await picker.locator('..').locator('select,button').evaluateAll(nodes=>nodes.map(element=>element.getBoundingClientRect().height));
+      assert.ok(sizes.every(height=>height>=44),label+': pager controls remain large enough to tap');
+      assert.ok(await previous.evaluate(element=>parseFloat(getComputedStyle(element).outlineWidth)>=2),label+': the focused control keeps a visible outline');
+      sajuNavigation[label]={arrowChoices:2,nextSteps:2,previousSteps:2,minimumControlHeight:Math.min(...sizes)};
+      await picker.selectOption(options[0]);
+    }
+    await inspectReadingControls('general','reading-page-select','data-reader-current');
     async function selectReadingPage(id) {
       const picker=saju.locator('#reading-page-select');
       if(await picker.locator('option[value="'+id+'"]').count()) await picker.selectOption(id);
@@ -555,9 +621,12 @@ const server = http.createServer((request, response) => {
         const box=element.getBoundingClientRect(),style=getComputedStyle(element);
         return {inside:box.left>=-1&&box.right<=innerWidth+1,
           fits:element.scrollWidth<=element.clientWidth+1&&element.scrollHeight<=element.clientHeight+1,
+          font:parseFloat(style.fontSize),
+          readingFont:parseFloat(getComputedStyle(document.getElementById('report-content')).getPropertyValue('--reading-font-size')),
           unclipped:['none','','unset'].includes(style.webkitLineClamp)&&style.textOverflow!=='ellipsis'};
       });
       assert.ok(geometry.inside&&geometry.fits&&geometry.unclipped,label+': the complete 06:00 notice wraps without clipping');
+      assert.equal(geometry.font,geometry.readingFont,label+': the birth-time assumption follows the selected reading text size');
       assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,label+': the assumed-time reading fits the viewport');
     }
     for(const [viewport,size,textSize] of [['phone-small',{width:320,height:844},'large'],['desktop',{width:1280,height:900},'normal']]) {
@@ -578,6 +647,7 @@ const server = http.createServer((request, response) => {
     await saju.setViewportSize({width:390,height:844});
     await saju.goto(new URL('/__compatibility_fixture', url).href);
     await saju.locator('#report-content[data-ready="confirmed"]').waitFor();
+    await inspectReadingControls('compatibility','compatibility-page-select','data-compatibility-current');
     async function selectCompatibilityPage(id) {
       await saju.locator('#compatibility-page-select').selectOption(id);
       await saju.locator('[data-compatibility-current][id="'+id+'"]').waitFor({state:'visible'});
@@ -765,6 +835,6 @@ const server = http.createServer((request, response) => {
     }
     assert.deepEqual(errors, []);
     assert.deepEqual(failed, []);
-    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuSummaryViews, sajuScoreViews, sajuScoreRegressions, sajuDaeunAssumptionViews, compatibilityPeople, compatibilityScores, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
+    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuEntryViews, sajuNavigation, sajuSummaryViews, sajuScoreViews, sajuScoreRegressions, sajuDaeunAssumptionViews, compatibilityPeople, compatibilityScores, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => server.close());
