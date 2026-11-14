@@ -22,6 +22,7 @@ on:
       - 'supabase/migrations/*drinking*'
       - 'supabase/migrations/*party*'
       - 'tests/drinking-*'
+      - 'tests/helpers/drinking-ui-fixture.cjs'
       - '.github/workflows/drinking-room-stability.yml'
   pull_request:
     paths:
@@ -44,6 +45,7 @@ on:
       - 'supabase/migrations/*drinking*'
       - 'supabase/migrations/*party*'
       - 'tests/drinking-*'
+      - 'tests/helpers/drinking-ui-fixture.cjs'
       - '.github/workflows/drinking-room-stability.yml'
 permissions:
   contents: read

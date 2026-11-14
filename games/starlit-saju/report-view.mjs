@@ -2,8 +2,9 @@ import {getReadingSources} from './sources.mjs?v=20261113-saju-reader1';
 import {applyReadingSummaryViews} from './reading-summary-view.mjs?v=20261113-saju-summary1';
 import {applyReadingScoreViews} from './reading-score-view.mjs?v=20261114-saju-wind1';
 import {createCompatibilityScoreboard} from './compatibility-score-view.mjs?v=20261114-saju-wind1';
-import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261114-saju-swipe1';
-import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-swipe1';
+import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261114-saju-slide1';
+import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
+import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
 
 const readingPagers=new WeakMap();
 const pagerDocuments=new WeakSet();
@@ -1021,7 +1022,7 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   const pages=[],pageByNode=new Map(),defaults=new Map();
   const find=id=>root.querySelector(`[id="${id}"]`);
   const all=(scope,selector)=>[...(scope?.querySelectorAll(selector)||[])];
-  let serial=0,host=root,current=null,lastReading=null;
+  let serial=0,host=root,current=null,lastReading=null,motion=null;
   function add(element,label,group,options={}) {
     if(!element)return null;
     if(pageByNode.has(element))return pageByNode.get(element);
@@ -1177,6 +1178,9 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   const readable=pages.filter(page=>page.kind==='reading');
   function show(page,{move=false}={}) {
     if(!page)return false;
+    let transition=null;
+    if(move&&current&&current!==page)transition=motion?.prepare(Math.sign(pages.indexOf(page)-pages.indexOf(current)));
+    else motion?.cancel();
     const contexts=new Set();
     for(let ancestor=page.element;ancestor&&ancestor!==host;ancestor=ancestor.parentElement) {
       if(ancestor.tagName==='DETAILS') {
@@ -1223,8 +1227,9 @@ function buildReadingPager(root,{reading,fortune,topic}) {
     if(move) {
       // Keep the picker or step button focused for consecutive keyboard choices.
       // Links into the reading still focus their destination in readingLink().
-      navigation.scrollIntoView({block:'start',behavior:document.documentElement.dataset.reducedMotion==='true'?'instant':'smooth'});
+      navigation.scrollIntoView({block:'start',behavior:transition||document.documentElement.dataset.reducedMotion==='true'?'instant':'smooth'});
     }
+    motion?.finish(transition,page.element);
     return true;
   }
   function pageFor(target) {
@@ -1245,7 +1250,8 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   show(initial);
   return {mount(container) {
     host=container;container.dataset.readerPaged='true';
-    attachReadingSwipe(container,{previous,next});
+    motion=createReadingMotion(container,{getCurrentPage:()=>current?.element});
+    attachReadingSwipe(container,{previous,next,motion});
     readingPagers.set(container,{reveal:target=>{
       if(!show(pageFor(target)))return false;
       for(let element=target;element&&element!==container;element=element.parentElement) {

@@ -523,6 +523,10 @@
 .reading-swipe-hint{margin:10px 0 0;color:#c8b4d3;font-size:13px;line-height:1.8;word-break:keep-all;overflow-wrap:anywhere}
 .reading-swipe-enabled{touch-action:pan-y pinch-zoom}
 .reading-swipe-dragging,.reading-swipe-dragging *{user-select:none;-webkit-user-select:none}
+.reading-motion-enabled{position:relative;overflow-x:clip}
+.reading-motion-enabled[data-reading-motion]{overflow:clip}
+.reading-slide-dragging,.reading-slide-incoming{will-change:transform}
+.reading-slide-outgoing{z-index:1;pointer-events:none!important;overflow:hidden;contain:paint}
 .reading-page-select:focus-visible,.reading-pager-step:focus-visible,.reading-page-section-link:focus-visible{outline:2px solid #ecd099;outline-offset:3px}
 .reading-pager:focus{outline:0}
 .reading-page-sections{margin-top:22px;padding-top:18px;border-top:1px solid #bea06a30}

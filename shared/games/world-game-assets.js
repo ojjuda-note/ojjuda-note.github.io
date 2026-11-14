@@ -20,7 +20,7 @@
   updown:'1.2.2',
   drinking:'1.6.2',
   tarot:'1.9.4',
-  saju:'2.8.0',
+  saju:'2.8.1',
   group:'1.2.2',
   chacha_rush:'1.1.1',
   byeolcheonji:'1.0.5',

@@ -1,4 +1,5 @@
-import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-swipe1';
+import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
+import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
 
 const PERSON_KEYS=['self','partner'];
 const TOPIC_IDS=['decisions','relationships','work','pressure','adjustment'];
@@ -126,9 +127,12 @@ export function createCompatibilityPager(section,pages) {
     event.preventDefault();select.focus({preventScroll:true});
     navigation.scrollIntoView({block:'start',behavior:document.documentElement.dataset.reducedMotion==='true'?'instant':'smooth'});
   });
-  const readable=pages.filter(page=>!page.support);let current,lastReading;
+  const readable=pages.filter(page=>!page.support);let current,lastReading,motion=null;
   function show(page,{move=false}={}) {
     if(!page)return false;
+    let transition=null;
+    if(move&&current&&current!==page)transition=motion?.prepare(Math.sign(pages.indexOf(page)-pages.indexOf(current)));
+    else motion?.cancel();
     for(const element of managed)element.hidden=!(element===page.element||element.contains(page.element)||page.element.contains(element));
     if(current)current.element.removeAttribute('data-compatibility-current');
     current=page;page.element.dataset.compatibilityCurrent='true';
@@ -142,8 +146,9 @@ export function createCompatibilityPager(section,pages) {
     page.element.append(back);
     if(move) {
       // Keep focus on the control so arrows and repeated steps keep working.
-      navigation.scrollIntoView({block:'start',behavior:document.documentElement.dataset.reducedMotion==='true'?'instant':'smooth'});
+      navigation.scrollIntoView({block:'start',behavior:transition||document.documentElement.dataset.reducedMotion==='true'?'instant':'smooth'});
     }
+    motion?.finish(transition,page.element);
     return true;
   }
   select.addEventListener('change',()=>show(pages.find(page=>page.element.id===select.value),{move:true}));
@@ -151,7 +156,8 @@ export function createCompatibilityPager(section,pages) {
   next.addEventListener('click',()=>show(readable[readable.indexOf(current)+1],{move:true}));
   section.querySelector(':scope > .report-section-heading').after(navigation);
   show(readable[0]);
-  attachReadingSwipe(section,{previous,next});
+  motion=createReadingMotion(section,{getCurrentPage:()=>current?.element});
+  attachReadingSwipe(section,{previous,next,motion});
   return {reveal(target) {
     if(navigation.contains(target))return false;
     const page=pages.find(page=>page.element===target||page.element.contains(target));
