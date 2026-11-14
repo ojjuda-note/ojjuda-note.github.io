@@ -61,7 +61,7 @@ export function createCompatibilityPeoplePages(value,{names=[],appendParagraphs}
     page.id=`compatibility-people-${topicId}`;page.dataset.compatibilityTopic=topicId;
     const title=node('h4','compatibility-people-title',label);title.id=`${page.id}-title`;
     page.setAttribute('aria-labelledby',title.id);page.append(title);
-    if(intro)page.append(node('p','compatibility-reading-guide','같은 항목에서 두 사람의 모습을 먼저 읽어 보세요. 다음 항목으로 넘기면 종합 궁합과 점수까지 이어져요.'));
+    if(intro)page.append(node('p','compatibility-reading-guide','같은 항목에서 A와 B의 모습을 비교해 보세요. 더 궁금하면 각자의 자세한 풀이를 펼쳐 읽어요.'));
     const columns=node('div','compatibility-person-columns');
     for(const [index,person] of reading.people.entries()) {
       const item=intro?person:person.cards.find(card=>card.topicId===topicId);
