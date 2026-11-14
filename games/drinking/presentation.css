@@ -612,6 +612,20 @@ body.dp-playing[data-dp-mode="local"][data-dp-phase="intro"] .play-shell:has(:is
   body.dp-playing #access-content > header { min-height: 44px; padding-top: 0; padding-bottom: 0; }
   body.dp-playing #access-content > main { padding-top: 4px; padding-bottom: 4px; }
   body.dp-playing #view .members { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  body.dp-playing #view #game:has(> .watch-target) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    grid-template-rows: repeat(4, auto);
+    align-content: safe center;
+    align-items: center;
+    gap: 4px 20px;
+  }
+  body.dp-playing #view #game:has(> .watch-target) > h1 { grid-column: 1; grid-row: 2; margin: 0; }
+  body.dp-playing #view #game:has(> .watch-target) > p { grid-column: 1; grid-row: 3; margin: 0; }
+  body.dp-playing #view #game:has(> .watch-target) > label { grid-column: 2; grid-row: 1; margin: 0; text-align: center; }
+  body.dp-playing #view #game > .watch-target { grid-column: 2; grid-row: 2; margin: 0; }
+  body.dp-playing #view #game > #watch-target { grid-column: 2; grid-row: 3; height: 32px; padding: 0; margin: 0; }
+  body.dp-playing #view #game > #watch-begin { grid-column: 2; grid-row: 4; justify-self: center; margin: 0; }
   body.dp-playing #view #bottle-table { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto auto; gap: 8px 16px; margin: 6px 0; }
   body.dp-playing #view #bottle-table > fieldset { margin: 0; }
   body.dp-playing #view #bottle-table > fieldset:first-child { grid-column: 1; grid-row: 1 / 3; }

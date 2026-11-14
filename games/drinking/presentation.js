@@ -62,7 +62,7 @@
     const bottom = area.bottom - parseFloat(css.paddingBottom || 0);
     const left = area.left + parseFloat(css.paddingLeft || 0);
     const right = area.right - parseFloat(css.paddingRight || 0);
-    if (root.scrollWidth > root.clientWidth + 2 || root.scrollHeight > root.clientHeight + 2) return false;
+    if (root.scrollWidth > root.clientWidth + 1 || root.scrollHeight > root.clientHeight + 1) return false;
     const elements = new Set([...root.children, ...root.querySelectorAll('button,input,select,textarea,summary')]);
     for (const element of elements) {
       if (element.closest('[hidden]')) continue;
@@ -78,7 +78,7 @@
       if (style.display === 'none' || style.visibility === 'hidden') continue;
       const rect = element.getBoundingClientRect();
       if (!rect.width || !rect.height) continue;
-      if (rect.top < top - 2 || rect.bottom > bottom + 2 || rect.left < left - 2 || rect.right > right + 2) return false;
+      if (rect.top < top - 0.5 || rect.bottom > bottom + 0.5 || rect.left < left - 0.5 || rect.right > right + 0.5) return false;
     }
     return true;
   }

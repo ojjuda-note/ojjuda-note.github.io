@@ -315,7 +315,7 @@ test('13 native games and 13 local games fill actual viewports and return to the
           await back.click();
           const resume=online.page.locator('#resume-drinks');
           await resume.waitFor({state:'visible'});
-          const resumed=new URL(await resume.getAttribute('href'),origin);
+          const resumed=new URL(await resume.getAttribute('href'),online.page.url());
           assert.equal(resumed.pathname,'/games/drinking/');
           assert.equal(resumed.searchParams.get('room'),parent.code,'the main page offers the same shared room');
           assert.equal(await online.page.locator('body.dp-playing').count(),0);
