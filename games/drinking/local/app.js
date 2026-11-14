@@ -40,8 +40,8 @@ const truthDeck={mild:[],spicy:[]};
 const truthSettings={mode:'mixed',showFlavor:false};
 const truthTools=window.PartyTruthCards;
 const truthFlavorNames={mild:'순한맛',spicy:'빨간맛'};
-function refreshTruthDeck(){
-  const next=window.PartyTruthCards.deck();
+function refreshTruthDeck(official){
+  const next=window.PartyTruthCards.deck(official);
   for(const flavor of Object.keys(truthDeck)){
     const deck=truthDeck[flavor],current=new Set(deck),available=new Set(next[flavor]);
     const added=next[flavor].filter(q=>!current.has(q));
@@ -111,10 +111,21 @@ async function loadRoundBank(r){
   const loaded=await prompts.refresh(kind);
   if(round!==r)return false;
   r.bank=loaded?prompts.list(kind):[];
-  if(r.bank.length||manualGames.has(kind))return true;
+  if(r.bank.length)return true;
   const message=loaded?'아직 등록된 내용이 없어요.':'내용을 불러오지 못했어요. 연결을 확인해 주세요.';
   shell('<h2>'+message+'</h2>'+actions(btn('다시 시도',kind==='bomb'?'start-bomb':'start'),btn('게임 목록','menu','quiet')));
   return false;
+}
+function bindLocalSuggestion(r,field,button){
+  button.hidden=!r.bank.length;
+  if(r.bank.length)return;
+  let edited=false;
+  field.addEventListener('input',()=>{edited=true;},{once:true});
+  r.bankReady.then(()=>{
+    if(round!==r||!field.isConnected||!r.bank.length)return;
+    button.hidden=false;
+    if(!edited&&!field.value)field.value=draw(r.bank);
+  });
 }
 async function startBomb(){
   const r=round;
@@ -194,7 +205,11 @@ function timed(ms,onLimit,beat=0,onBeat=null){
 async function begin(){
   if(players.length<game.min)return go('participants');
   cleanup();round={turn:0,phase:'play'};fx.play(game.id==='croc'?'tooth':'deal');const r=round;
-  if(prompts.managed(game.id)&&game.id!=='truth'){
+  if(manualGames.has(game.id)){
+    const kind=game.id;
+    r.bank=[];
+    r.bankReady=prompts.refresh(kind).then(loaded=>{if(round===r&&loaded)r.bank=prompts.list(kind);});
+  }else if(prompts.managed(game.id)&&game.id!=='truth'){
     const button=app.querySelector('[data-action="start"]');
     if(button){button.disabled=true;button.textContent='불러오는 중…';}
     if(!await loadRoundBank(r))return;
@@ -588,7 +603,8 @@ function king(){
     '<label for="king-number">첫 번째 번호</label><p><select class="field" id="king-number">'+options(r.number)+'</select></p>'+second+
     '<label for="king-mission">왕의 미션</label><p><input class="field" id="king-mission" maxlength="80" value="'+esc(r.prompt)+'"></p>'+
     '<p><small>직접 쓴 내용은 관리자 검토 후 공용 목록에 등록될 수 있어요.</small></p>'+
-      actions(btn('번호 주인공 공개','royal'),r.bank.length?btn('다른 미션','new-prompt','quiet'):''),true);
+      actions(btn('번호 주인공 공개','royal'),btn('다른 미션','new-prompt','quiet')),true);
+  bindLocalSuggestion(r,$('#king-mission'),app.querySelector('[data-action="new-prompt"]'));
   $('#king-number').onchange=e=>{
     r.number=Number(e.target.value);
     if(r.second===r.number)r.second=null;
@@ -620,11 +636,12 @@ async function startTruthRound(r){
   let loaded=false;
   try{loaded=await prompts.refresh('truth')}catch{}
   if(round!==r)return;
+  r.official=loaded?prompts.truth():{mild:[],spicy:[]};
+  refreshTruthDeck(r.official);
+  r.truthSettings={...truthSettings};
+  const missing=truthTools.enabledFlavors(r.truthSettings.mode).find(flavor=>!truthDeck[flavor].length);
+  if(!missing)return dealTruth();
   if(loaded){
-    refreshTruthDeck();
-    r.truthSettings={...truthSettings};
-    const missing=truthTools.enabledFlavors(r.truthSettings.mode).find(flavor=>!truthDeck[flavor].length);
-    if(!missing)return dealTruth();
     cleanup();intro();openTruthEditor();
     $('#truth-flavor').value=missing;
     truthMessage.textContent=truthFlavorNames[missing]+' 질문을 한 장 이상 추가해 주세요.';
@@ -645,7 +662,7 @@ $('#truth-form').onsubmit=e=>{
   if(result.error||result.known){
     truthMessage.textContent=result.error||'이미 있는 질문이에요.';input.focus();return;
   }
-  if(round&&game?.id==='truth')refreshTruthDeck();
+  if(round&&game?.id==='truth')refreshTruthDeck(round.official);
   input.value='';input.focus();
   truthMessage.textContent=result.saved?'이 기기의 질문에 추가했어요.':'이번 플레이에 사용할 질문으로 추가했어요.';
 };
@@ -720,10 +737,11 @@ function partyPrompt(){
     '<form class="party-prompt" id="party-prompt"><label for="party-question">'+(fingers?'접을 조건':'지목할 질문')+'</label>'+
     '<textarea class="field" id="party-question" rows="2" maxlength="120" required>'+esc(draw(r.bank))+'</textarea>'+
     '<p><small>직접 쓴 내용은 관리자 검토 후 공용 목록에 등록될 수 있어요.</small></p>'+
-      '<div class="actions">'+(r.bank.length?btn(fingers?'다른 조건':'다른 질문','party-suggest','quiet'):'')+
+      '<div class="actions">'+btn(fingers?'다른 조건':'다른 질문','party-suggest','quiet')+
     '<button class="start" type="submit">'+(fingers?'이 조건으로 접기':'비밀 투표 시작')+'</button></div></form>'+
     (fingers?fingerScoreboard():''));
   const field=$('#party-question');
+  bindLocalSuggestion(r,field,app.querySelector('[data-action="party-suggest"]'));
   field.oninput=()=>field.setCustomValidity('');
   $('#party-prompt').onsubmit=event=>{
     event.preventDefault();
