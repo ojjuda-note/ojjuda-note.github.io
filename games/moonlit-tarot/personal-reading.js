@@ -1,10 +1,10 @@
-import { getPersonalContext } from './personal-contexts.js?v=20261114-tarot-review2';
-import { buildCardConnections } from './card-connections.js?v=20261114-tarot-review2';
+import { getPersonalContext } from './personal-contexts.js?v=20261114-tarot-review3';
+import { buildCardConnections } from './card-connections.js?v=20261114-tarot-review3';
 import { getCardInterpretation } from './interpretation-engine.js?v=20261114-tarot-review2';
-import { getReading } from './readings.js?v=20261114-tarot-review2';
+import { getReading } from './readings.js?v=20261114-tarot-review3';
 import { splitSummarySentences, summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
 import { directAction, directCardAdvice } from './reading-voice.js?v=20261113-tarot-easy1';
-import { getPersonStory } from './person-stories.js?v=20261114-tarot-review2';
+import { getPersonStory } from './person-stories.js?v=20261114-tarot-review3';
 
 export const PERSONAL_BASIS = '고른 상황과 뽑은 세 장을 연결해 성향과 마음을 풀이해요. 실제 과거나 상대의 속마음을 확인한 결과는 아니에요. 카드 연결에는 공통 해석 규칙을 적용하고, 선택 비교와 이어지는 답변에는 생활 제안을 담았어요.';
 const roles = ['지금 문제를 대하는 나', '지금 상황과 속마음', '이번에 바꿀 선택'];

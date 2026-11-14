@@ -4,6 +4,8 @@ const load = createTarotLoader();
 const { DECK } = load('readings.js');
 const { PERSONAL_CONTEXTS, listPersonalContexts, getPersonalContext } = load('personal-contexts.js');
 const { buildPersonalReading, personalReadingCopyLines, PERSONAL_BASIS } = load('personal-reading.js');
+const { buildPersonNarrative } = load('person-narrative.js');
+const { PERSON_PAIR_READINGS } = load('person-pair-readings.js');
 const { directCardAdvice, directAction } = load('reading-voice.js');
 const { getPersonStory } = load('person-stories.js');
 const { getCardInterpretation } = load('interpretation-engine.js');
@@ -129,6 +131,87 @@ for (const [index, card] of positiveCards.entries()) {
 const flirting = buildPersonalReading({ cards: ['lovers', 'devil', 'justice'].map(cardById), topicId: 'love', contextId: 'love-flirting' });
 assert.doesNotMatch(personalReadingCopyLines(flirting).join('\n'), /네가 네가/u);
 
+// These real spreads previously inserted an unreported relationship conflict
+// into studying or purchasing, including the collapsed connection preview.
+for (const sample of [
+  { contextId: 'overall-study', ids: ['cups_queen', 'swords_queen', 'magician'],
+    symbol: /감정을 세심하게 알아주는 태도와 조건을 분명히 판단하는 힘/u,
+    unrelated: /상대가 왜 그랬는지|같은 행동을 계속 허용/u },
+  { contextId: 'money-spending', ids: ['strength', 'emperor', 'pentacles_ace'],
+    symbol: /감정을 차분히 다루는 힘에 분명한 기준과 책임/u,
+    unrelated: /참아 주다가|상대는 네가 그동안 힘들었다는 사실/u },
+  { contextId: 'money-spending', ids: ['wands_ten', 'empress', 'pentacles_two'],
+    symbol: /쌓인 책임을 살핀 뒤 생활을 편안하게 돌볼 여유/u,
+    unrelated: /일을 잘해 주는 사람으로만|돌봄을 받고 싶은 마음은 전해지지/u }
+]) {
+  const context = getPersonalContext('overall', sample.contextId);
+  const sampleCards = sample.ids.map(cardById);
+  const report = buildPersonalReading({ cards: sampleCards, topicId: context.topicId, contextId: context.id });
+  const copy = personalReadingCopyLines(report).join('\n');
+  assert.match(report.connection.paragraphs[1], sample.symbol, context.id + ': ordered card symbols remain in the full reading');
+  assert.match(report.connection.summaryLines[0], sample.symbol, context.id + ': preview preserves that interpretation');
+  assert.doesNotMatch(copy, sample.unrelated, context.id + ': no unrelated personal history is invented');
+  assert.doesNotMatch(report.connection.summaryLines.join(' '), sample.unrelated);
+  const lastAction = splitSummarySentences(context.cards[sampleCards[2].id]).slice(1).join(' ');
+  assert.ok(report.connection.paragraphs[2].includes(lastAction), 'correcting a pair keeps the complete selected-situation action');
+}
+
+// A purchase cycle is meaningful only for the selected spending situation.
+// Both actual orders must stay out of saving, agreements, other situations,
+// and a general money reading where no purchasing question was selected.
+for (const ids of [['devil', 'pentacles_four'], ['pentacles_four', 'devil']]) {
+  const pairCards = [...ids, 'temperance'].map(cardById);
+  const spendingKey = `${ids.join(':')}:money-spending`;
+  const spendingPassage = PERSON_PAIR_READINGS[spendingKey];
+  assert.ok(spendingPassage, 'the authored purchase interpretation is retained in both orders');
+  for (const context of PERSONAL_CONTEXTS) {
+    const narrative = buildPersonNarrative({ cards: pairCards, topicId: context.topicId, context });
+    const report = buildPersonalReading({ cards: pairCards, topicId: context.topicId, contextId: context.id });
+    if (context.id === 'money-spending') {
+      assert.equal(narrative.pairReading, spendingPassage);
+      assert.equal(narrative.evidence.authoredPairKey, spendingKey);
+      assert.equal(narrative.evidence.authoredPairScope, 'context');
+      assert.ok(report.connection.paragraphs[1].includes(spendingPassage));
+      assert.ok(report.connection.summaryLines[0].endsWith(splitSummarySentences(spendingPassage)[0]));
+    } else {
+      assert.equal(narrative.evidence.authoredPair, false, context.id + ': no broader purchase passage is selected');
+      assert.equal(narrative.evidence.authoredPairScope, 'common');
+      assert.ok(!report.connection.paragraphs.join(' ').includes(spendingPassage));
+      assert.doesNotMatch(narrative.pairReading, /구매|물건|소비|사고 싶은/u,
+        context.id + ': the shared symbolic comparison does not assume a purchase');
+      assert.ok(report.connection.paragraphs[1].includes(splitSummarySentences(context.cards[ids[1]])[0]),
+        context.id + ': its own saving, agreement or other situation insight remains present');
+      assert.ok(report.connection.summaryLines[0].endsWith(splitSummarySentences(narrative.pairReading)[0]));
+    }
+  }
+  for (const topicId of ['overall', 'love', 'money', 'work']) {
+    const narrative = buildPersonNarrative({ cards: pairCards, topicId });
+    assert.equal(narrative.evidence.authoredPair, false, topicId + ': a topic alone does not select the purchase story');
+    assert.doesNotMatch(narrative.pairReading, /구매|물건|소비|사고 싶은/u);
+  }
+  const fromOverall = buildPersonalReading({ cards: pairCards, topicId: 'overall', contextId: 'money-spending' });
+  assert.ok(fromOverall.connection.paragraphs[1].includes(spendingPassage),
+    'the all-topics selector still uses the exact spending situation');
+}
+
+// Unscoped authored interpretations remain available across all situations;
+// the scope fix must not silently replace them or collapse ordered pairs.
+for (const [key, passage] of Object.entries(PERSON_PAIR_READINGS).filter(([key]) => key.split(':').length === 2)) {
+  const ids = key.split(':');
+  const pairCards = [...ids.map(cardById), DECK.find(card => !ids.includes(card.id))];
+  for (const context of PERSONAL_CONTEXTS) {
+    const narrative = buildPersonNarrative({ cards: pairCards, topicId: context.topicId, context });
+    assert.equal(narrative.pairReading, passage);
+    assert.equal(narrative.evidence.authoredPairKey, key);
+    assert.equal(narrative.evidence.authoredPairScope, 'general');
+    assert.ok(narrative.paragraphs[1].includes(passage));
+  }
+  const reverseKey = [...ids].reverse().join(':');
+  if (Object.hasOwn(PERSON_PAIR_READINGS, reverseKey)) {
+    assert.notEqual(passage, PERSON_PAIR_READINGS[reverseKey], 'reversing actual cards preserves its different interpretation');
+  }
+}
+
 const cards = ['swords_knight', 'cups_six', 'pentacles_eight'].map(id => DECK.find(card => card.id === id));
 const first = buildPersonalReading({ cards, topicId: 'love', contextId: 'love-crush' });
 const other = buildPersonalReading({ cards, topicId: 'love', contextId: 'love-distance' });
@@ -160,4 +243,4 @@ assert.ok(copied.includes('이 선택의 장점: '));
 assert.doesNotMatch(copied, /기대할 수 있는 점:/);
 assert.ok(copied.includes(PERSONAL_BASIS));
 assert.deepEqual(plain(personalReadingCopyLines(null)), []);
-console.log('PASS tarot personal reading: 15 situations × 78 actual portraits, complete situation/action sentences, actual card order, 45 follow-ups and story-first full copy');
+console.log('PASS tarot personal reading: 15 situations × 78 actual portraits, situation-scoped ordered pairs, complete situation/action sentences, actual card order, 45 follow-ups and story-first full copy');
