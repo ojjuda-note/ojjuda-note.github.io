@@ -21,7 +21,7 @@
     videos: ['영상', true, [title,field('kind','분류'),field('source','채널·출처'),field('id','YouTube 영상 ID','youtube'),field('file','영상 파일','video')]],
     music: ['앨범·노래', true, [title,field('type','음반 종류'),date,field('songs','수록곡 (한 줄에 한 곡)','lines'),href]],
     merch: ['굿즈', true, [title,sub,href]],
-    appearances: ['출연 예정', true, [title,field('date','시작일','date'),field('endDate','종료일','date'),sub,href]],
+    appearances: ['출연 예정', true, [title,field('date','시작일','date'),field('endDate','종료일','date'),field('timeZone','현지 시간대 (선택, 예: America/Los_Angeles)'),sub,href]],
     schedules: ['공식 일정', true, [title,sub,href]],
     news: ['소식', true, [title,date,field('tag','분류'),href]],
     campaigns: ['콜라보·광고', true, [title,field('kind','분류'),date,sub,href]],

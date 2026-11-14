@@ -561,8 +561,17 @@ function renderFanCatalog() {
       <time datetime="${album.date.replaceAll('.', '-')}">${album.date}</time>
       <ol class="album-tracks">${album.songs.map((song, n) => `<li><span>${String(n + 1).padStart(2, '0')}</span><strong>${song}</strong></li>`).join('')}</ol>
     </article>`).join('');
-    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
-    const events = (artist.appearances || []).filter((event) => (event.endDate || event.date) >= today).sort((a, b) => a.date.localeCompare(b.date));
+    const now = new Date();
+    const today = now.toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
+    const events = (artist.appearances || []).filter((event) => {
+      let localToday = today;
+      // Dates stay venue-local; date-only events expire after that local day.
+      if (event.timeZone) {
+        try { localToday = now.toLocaleDateString('sv-SE', { timeZone: event.timeZone }); }
+        catch { /* Invalid manager input must not break the artist page. */ }
+      }
+      return (event.endDate || event.date) >= localToday;
+    }).sort((a, b) => a.date.localeCompare(b.date));
     const eventCards = events.map((event) => `<a class="event-card" href="${event.href}" target="_blank" rel="noopener noreferrer">
       <time datetime="${event.date}"><strong>${event.date.slice(5).replace('-', '.')}</strong><small>${event.date.slice(0, 4)}</small></time>
       <span class="event-card-info"><strong>${event.title}</strong><small>${event.sub}</small></span><span class="event-arrow" aria-hidden="true">↗</span>

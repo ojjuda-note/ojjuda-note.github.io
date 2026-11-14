@@ -84,6 +84,7 @@ for (const artist of artists) {
   for (const event of artist.appearances) {
     validDate(event.date, isoDateRegex, `${artist.id}: event`);
     if (event.endDate) validDate(event.endDate, isoDateRegex, `${artist.id}: event end`);
+    if (event.timeZone) assert.doesNotThrow(() => new Intl.DateTimeFormat('en', { timeZone: event.timeZone }), `${artist.id}: invalid event time zone`);
     assert.ok(event.title && event.sub && event.href.startsWith('https://'), `${artist.id}: incomplete event`);
   }
   for (const campaign of artist.campaigns || []) {
