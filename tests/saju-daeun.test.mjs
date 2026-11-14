@@ -148,7 +148,7 @@ test('unknown time uses only the requested 06:00 decade clock, including both di
   assert.equal(analyze(boundary,{gender:'female'}).direction,'forward');
 });
 
-test('an assumed clock never accepts corrupt unknown inputs or a future 06:00',()=>{
+test('an assumed clock accepts today before 06:00 but never corrupt or actual future births',()=>{
   const chart=birth({year:2005,month:12,day:23,hour:null});
   for(const minute of [null,undefined,NaN,-1,1,60,'0']) {
     const invalid=structuredClone(chart);invalid.input.minute=minute;
@@ -159,8 +159,18 @@ test('an assumed clock never accepts corrupt unknown inputs or a future 06:00',(
     assert.throws(()=>analyze(invalid),error=>error instanceof DaeunInputError&&error.code==='chart');
   }
   const today=birth({year:2026,month:11,day:13,hour:null});
-  assert.throws(()=>analyze(today,{now:new Date('2026-11-13T05:59:59+09:00')}),error=>error instanceof DaeunInputError&&error.code==='future');
-  assert.equal(analyze(today,{now:new Date('2026-11-13T06:00:00+09:00')}).available,true);
+  const original=structuredClone(today),beforeSix=new Date('2026-11-13T05:59:59+09:00');
+  const assumed=analyze(today,{now:beforeSix});
+  assert.equal(assumed.available,true);assert.equal(assumed.timeAssumed,true);
+  assert.equal(assumed.birthAt,'2026-11-13T06:00:00+09:00');
+  assert.deepEqual(assumed.assumedBirthTime,{hour:6,minute:0,timezone:'Asia/Seoul'});
+  assert.deepEqual(today,original);assert.equal(today.timeKnown,false);assert.equal(today.input.hour,null);
+  assert.equal(today.pillars.find(pillar=>pillar.key==='hour').hanja,null);
+  assert.deepEqual(assumed,analyze(today,{now:new Date('2026-11-13T06:00:00+09:00')}));
+  const tomorrow=calculateSaju({year:2026,month:11,day:14,hour:null},{now:new Date('2026-11-14T12:00:00+09:00')});
+  assert.throws(()=>analyze(tomorrow,{now:beforeSix}),error=>error instanceof DaeunInputError&&error.code==='future');
+  const knownSix=birth({year:2026,month:11,day:13,hour:6,minute:0});
+  assert.throws(()=>analyze(knownSix,{now:beforeSix}),error=>error instanceof DaeunInputError&&error.code==='future');
 });
 
 test('current periods include the start and exclude the end, with contiguous ten-year boundaries', () => {
