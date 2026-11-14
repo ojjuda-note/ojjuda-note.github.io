@@ -198,6 +198,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
   riize: [
     { id: 'RgkoXU4BlOE', title: 'Insomnia', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" },
     { id: '1ccDZDpPzEI', title: 'Sunburst · 일본 팬미팅', kind: '라이브 무대', source: "RIIZE · 공식 채널" },
+    { id: 'HDGCTtuW-Yo', title: 'Do your dance', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" },
+    { id: 'yfKBI5l81-A', title: 'All of You', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" },
+    { id: '4zn9p1dfxwY', title: 'All of You · TOKYO DOME', kind: '라이브 무대', source: "RIIZE · 공식 채널" },
     { id: 'iUw3LPM7OBU', title: 'Get A Guitar', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" }
   ],
   boynextdoor: [
