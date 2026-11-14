@@ -6,6 +6,7 @@ const { narrateReading, narrateSummary } = load('narration.js');
 const { DECK, POSITIONS, getReading, getSummary } = load('readings.js');
 const { CARD_FOUNDATIONS } = load('card-foundations.js');
 const { CARD_LIFE_THEMES } = load('life-themes.js');
+const { FORTUNE_ROWS, getFortune } = load('fortune-corpus/index.js');
 const { CARD_INTERPRETATIONS } = load('interpretation-engine.js');
 const { getPersonStory } = load('person-stories.js');
 const { splitSummarySentences } = load('reading-summary.js');
@@ -15,6 +16,33 @@ const topics = ['overall', 'love', 'money', 'work'];
 const cards = ['swords_knight', 'swords_two', 'pentacles_three'].map(id => DECK.find(card => card.id === id));
 const groupText = group => group.sections.flatMap(section => section.paragraphs).join('\n\n');
 const personalText = report => report.groups.filter(group => group.id !== 'cards').map(groupText).join('\n\n');
+
+function assertReaderNarrative(text, label) {
+  const prose = text.replace(/‘[^’]*’|“[^”]*”|"[^"]*"/gu, '');
+  assert.doesNotMatch(prose, /(?:^|[^가-힣])(?:너(?:에게|한테)?(?:는|의|를|와|도|만|부터|라면|라도)?|네가|네게)(?=[^가-힣]|$)/u,
+    `${label}: the reader speaks about their own life instead of being addressed as you`);
+  assert.doesNotMatch(prose, /(?:렴|려무나|단다|거야|이야|겠구나|구나|있어|없어|같아|싶어|괜찮아|해 봐|살펴봐)(?:[.!?](?=\s|$)|$)/u,
+    `${label}: complete source sentences use the reader's declarative voice`);
+  assert.doesNotMatch(prose, /모는다|말아 (?:준다|본다)|수 있을 수|않지 않|내가 내가|나는 나는|나를 나를/u,
+    `${label}: changing perspective must not introduce a malformed verb, double possibility or duplicate subject`);
+}
+
+// Audit the actual authored fields, including records that a small sample of
+// three-card draws would not select. A numeral must not become a possessive.
+let authoredVoiceFields = 0;
+for (const [topic, rows] of Object.entries(FORTUNE_ROWS)) for (const [id, ...fields] of rows) {
+  for (const [index, text] of fields.entries()) {
+    assertReaderNarrative(text, `${topic}:${id}:${index}`);
+    authoredVoiceFields++;
+  }
+}
+for (const [cardId, themes] of Object.entries(CARD_LIFE_THEMES)) for (const [field, text] of Object.entries(themes)) {
+  assertReaderNarrative(text, `${cardId}:${field}`);
+  authoredVoiceFields++;
+}
+assert.equal(authoredVoiceFields, 7992, 'all 2,560 original records and the 78 complete life-theme sets are checked');
+assert.ok(getFortune('money', '246').action.includes('다음 확인일을 네 칸으로'),
+  'the four fields of a contact log remain four fields, not the reader’s fields');
 
 function checkCardIntroductions(report, selected, readings) {
   const group = report.groups.find(group => group.id === 'cards');
@@ -103,12 +131,14 @@ for (const topicId of topics) {
   const base = { oneLine: '공통 원문의 한마디', summary: '공통 원문의 본문', sections: [{ title: '기존 근거', body: '보존할 내용' }], ritual: '공통 원문의 제안', source };
   const input = { cards, topicId, readings, innerMeaning: cards[0].spread.inner, flowMeaning: cards[1].spread.opening, direction: cards[2].spread.direction, base };
   const summary = narrateSummary(input);
+  assert.equal(summary.headline, '지금 나에게 필요한 이야기');
   assert.equal(summary.source, source, 'original record metadata is preserved without new counts');
   assert.equal(summary.paragraphs.length, 3);
   assert.deepEqual(plain(summary.groups.map(group => [group.id, group.label])), [
     ['cards', '카드 소개'], ['problem', '나의 이야기'], ['timeline', '과거·현재·미래'], ['domains', '분야별 풀이']
   ]);
   assert.equal(summary.groups[1].sections[0].id, 'together', 'the whole personal story comes before individual actions');
+  assert.equal(summary.groups[1].sections[0].title, '지금 나에게 필요한 이야기');
   assert.equal(summary.groups[1].sections[0].paragraphs.join('\n\n'), summary.synthesis);
   assert.equal(summary.groups[1].sections.length, 5);
   assert.equal(summary.groups[1].sections.find(section => section.id === 'possible-outcome').title, '실천한 뒤 살펴볼 변화');
@@ -239,8 +269,11 @@ for (const card of DECK) for (const topic of topics) for (let index = 0; index <
   assert.doesNotMatch(reading.personalCaution, /카드|강한 그림/u,
     'personal caution keeps the practical boundary without teaching a card symbol');
   assert.equal(splitSummarySentences(reading.personalPositionMeaning).length, splitSummarySentences(reading.positionMeaning).length,
-    'adapting the reading-position wording does not drop a condition or complete sentence');
-  assert.doesNotMatch(reading.personalPositionMeaning, /이 자리|(?:보는|살피는|확인하는|구분하는|필요한|중요한|비교하는|짚는) 자리야/u,
+    'the personal role preserves every condition and complete authored sentence');
+  assert.equal(reading.personalPositionMeaning, reading.positionMeaning,
+    'the authored position passage itself is the personal narrative; no runtime pronoun conversion changes it');
+  assertReaderNarrative(reading.personalPositionMeaning, `${card.id}/${topic}/${index}:position`);
+  assert.doesNotMatch(reading.personalPositionMeaning, /이 자리|(?:보는|살피는|확인하는|구분하는|필요한|중요한|비교하는|짚는) 자리(?:이다|다|야)/u,
     'the personal application states what to consider instead of explaining the spread layout');
 }
 for (const card of DECK) for (const topic of topics) {

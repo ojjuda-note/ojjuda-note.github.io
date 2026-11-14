@@ -8,7 +8,7 @@ export class TarotRevelation {
   constructor() {
     this.dialog = document.createElement('dialog');
     this.dialog.className = 'revelation-dialog';
-    this.dialog.setAttribute('aria-label', '마녀가 수정구에서 당신의 이야기를 읽고 있어요');
+    this.dialog.setAttribute('aria-label', '수정구에서 나의 이야기가 펼쳐지는 중');
     this.dialog.innerHTML = `
       <div class="revelation-world" aria-hidden="true">
         <img class="revelation-art" src="./assets/scene.webp" alt="" draggable="false">
@@ -126,7 +126,7 @@ export class TarotRevelation {
     if (!reduced) cue('gather');
     this._later(() => {
       this.dialog.dataset.stage = 'receive';
-      this.caption.textContent = '당신의 이야기가 빛나기 시작해요';
+      this.caption.textContent = '나의 이야기가 펼쳐진다';
       this.whisper.textContent = '이제 세 장이 전하는 메시지를 들려드릴게요.';
     }, reduced ? 120 : 1450);
     if (!reduced) this._later(() => {

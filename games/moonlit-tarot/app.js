@@ -1,8 +1,8 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261114-tarot-card-first1';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261114-tarot-first-person1';
 import { TarotFX, TarotAudio } from './fx.js';
 import { TarotPayment, getTarotPrice } from './payment.js?v=20261114-tarot-copy1';
-import { TarotRevelation } from './revelation.js?v=20261114-tarot-copy1';
-import { createPersonalReading } from './personal-reading-ui.js?v=20261114-tarot-card-first1';
+import { TarotRevelation } from './revelation.js?v=20261114-tarot-first-person1';
+import { createPersonalReading } from './personal-reading-ui.js?v=20261114-tarot-first-person1';
 import { renderSectionSummary, installSummaryExpiryGuard } from './reading-summary-view.js?v=20261113-tarot-summary1';
 
 const $ = (selector) => document.querySelector(selector);
@@ -758,7 +758,7 @@ function showReading(slot = state.lastReading) {
 }
 
 function showOverallOracle(summary = getSummary(state.openOrder.map(index => state.drawn[index]), state.topic)) {
-  setOracle(state.summaryReady ? summary.oneLine : '이제 세 장에 담긴 이야기를 하나로 이어 줄게.', { tag: state.summaryReady ? '종합 점괘 · 핵심 풀이' : '종합 점괘', speak: false });
+  setOracle(state.summaryReady ? summary.oneLine : '세 장에 담긴 나의 이야기를 함께 살펴본다.', { tag: state.summaryReady ? '종합 점괘 · 핵심 풀이' : '종합 점괘', speak: false });
   $('#reading-open span').textContent = '종합 점괘 자세히 보기';
   $('#reading-open').hidden = false;
   $('#reading-open').disabled = false;
@@ -960,7 +960,7 @@ function buildResults() {
   const topic = TOPICS.find(t => t.id === state.topic);
   const readingDate = !billing.adminPreview && billing.record?.readingDay ? new Date(`${billing.record.readingDay}T12:00:00+09:00`) : new Date();
   $('#result-date').textContent = `${new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' }).format(readingDate)} · ${topic.label}${billing.adminPreview ? ' · 관리자 모드' : ''}`;
-  $('#result-title').textContent = '당신을 위한 종합 점괘';
+  $('#result-title').textContent = '나를 위한 종합 점괘';
   renderSummaryGroups(summary, drawn.map(card => card.name));
   if (personalReading?.mount({ cards: drawn, topicId: state.topic }) === false) return;
   $('#summary-ritual').textContent = summary.ritual;
@@ -1210,7 +1210,7 @@ $$('[data-topic]').forEach(button => button.addEventListener('click', () => {
   $$('[data-topic]').forEach(b => { b.classList.toggle('active', b === button); b.setAttribute('aria-pressed', String(b === button)); });
   const invitations = {
     overall: '오늘 마음에 남은 일을 하나 떠올려 봐.',
-    love: '지금 네 마음을 함께 살펴보자.',
+    love: '지금 내 마음을 차분히 살펴본다.',
     money: '돈에 관해 마음에 걸리는 일을 떠올려 보렴.',
     work: '지금 살릴 강점과 필요한 도움을 짚어 보자.',
   };

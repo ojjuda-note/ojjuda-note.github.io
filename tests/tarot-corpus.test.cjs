@@ -26,6 +26,11 @@ const ids = DECK.map(card => card.id);
 assert.equal(new Set(ids).size, 78);
 assert.deepEqual(Object.keys(CARD_PATTERNS).sort(), Array.from(ids).sort());
 assert.deepEqual(Object.keys(CARD_FOUNDATIONS).sort(), Array.from(ids).sort());
+// First-person copy must preserve the number four in the traditional artwork.
+assert.match(CARD_FOUNDATIONS.magician.symbol, /네 가지 무늬의 도구/u);
+assert.match(CARD_FOUNDATIONS.world.symbol, /네 모서리의 형상/u);
+assert.match(CARD_FOUNDATIONS.wands_four.symbol, /네 개의 지팡이/u);
+assert.match(getReading('wands_four', 'overall', 0).reference.label, /네 가지 무늬/u);
 
 // Every content key must be reachable with three real distinct cards. Checking
 // all 456,456 ordered draws also catches an accidentally unused theme or slot.

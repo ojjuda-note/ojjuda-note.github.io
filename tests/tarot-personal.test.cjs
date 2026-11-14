@@ -16,9 +16,16 @@ const normalize = value => value.replace(/[\s\p{P}]/gu, '');
 const assertPersonalText = (text, label) => assert.doesNotMatch(text,
   /카드|타로|(?:완드|소드|펜타클)\s*(?:\d|에이스|시종|기사|여왕|왕)|조합(?:이야|이에요|은)/u,
   label + ': only personal experience, circumstances and choices are shown');
+const assertSelfVoice = (text, label) => {
+  const prose = text.replace(/“[^”]*”|‘[^’]*’|「[^」]*」|『[^』]*』|"[^"\n]*"/gu, '');
+  assert.doesNotMatch(prose, /(?<![가-힣])(?:너(?:에게(?:는|도)?|한테|를|는|도|만(?:의)?|와|의|로|희가)?|네(?:가|게(?:는|도)?)?)(?![가-힣])/u,
+    label + ': the reader speaks in the first person');
+  for (const sentence of splitSummarySentences(prose)) assert.match(sentence, /다[.!?]$/u,
+    label + ': narrative and action remain complete declarative sentences');
+};
 
 assert.equal(PERSONAL_BASIS, PERSONAL_READING_BASIS, 'the original basis remains exported for the card introduction');
-assert.match(PERSONAL_BASIS, /실제 과거나 상대의 속마음을 확인한 결과는 아니에요/u);
+assert.match(PERSONAL_BASIS, /실제 과거나 상대의 속마음을 확인한 결과는 아니다/u);
 
 assert.equal(PERSONAL_CONTEXTS.length, 15);
 assert.equal(new Set(PERSONAL_CONTEXTS.map(item => item.id)).size, 15);
@@ -73,6 +80,7 @@ for (const context of PERSONAL_CONTEXTS) {
       const meaning = getCardInterpretation(card.id).meaning;
       const [insight, ...actions] = splitSummarySentences(directCardAdvice(context.cards[card.id]));
       assert.equal(section.paragraphs.length, 2, 'personal situation and action have separate paragraphs');
+      section.paragraphs.forEach(text => assertSelfVoice(text, `${context.id}/${card.id}`));
       assert.equal(section.paragraphs[0], insight, 'the complete situation insight starts immediately without a card explanation');
       assert.equal(section.summaryLines[0], insight, 'the preview uses the personal insight rather than a card definition');
       assert.equal(getReading(card, context.topicId, index).meaning, meaning,
@@ -89,6 +97,13 @@ for (const context of PERSONAL_CONTEXTS) {
         'follow-ups keep their complete situation advice without appending an unrelated generic card question');
     }
     assert.equal(report.connection.paragraphs.length, 3);
+    report.connection.paragraphs.forEach(text => assertSelfVoice(text, context.id + ' connection'));
+    report.connection.summaryLines.forEach(text => assertSelfVoice(text, context.id + ' preview'));
+    assertSelfVoice(report.comparison.basis, context.id + ' comparison');
+    for (const option of report.comparison.options) for (const field of ['gain', 'burden', 'prepare']) {
+      assertSelfVoice(option[field], context.id + '/' + field);
+    }
+    for (const question of report.followUps) question.paragraphs.forEach(text => assertSelfVoice(text, context.id + ' answer'));
     const last = cards[2], lastPerson = getPersonStory(last.id);
     const [lastInsight, lastAction] = splitSummarySentences(context.cards[last.id]);
     const ending = report.connection.paragraphs[2];
@@ -120,6 +135,14 @@ for (const context of PERSONAL_CONTEXTS) {
 }
 assert.equal(authored.size, 1170);
 assert.equal(questions.size, 45);
+assert.equal(getPersonalContext('overall', 'overall-study').followUps[1].question,
+  '이 분야가 나에게 맞는지 모르겠어요.', 'the reader’s own question retains its natural spoken voice');
+const reunion = getPersonalContext('love', 'love-reunion');
+assert.ok(reunion.followUps[0].paragraphs[1].includes('“괜찮다면 짧게 이야기하고 싶어. 원하지 않으면 답하지 않아도 괜찮아”'),
+  'quoted speech is preserved rather than converted into narration');
+assert.match(reunion.followUps[0].paragraphs[0], /연락하지 말라고 했거나 거절했다면 그대로 존중해야 한다/u);
+assert.match(reunion.followUps[0].paragraphs[1], /답이 없으면 추가 메시지를 보내거나 찾아가지 않고/u,
+  'first-person narration preserves refusal and no-response boundaries');
 
 // A money question must not acquire an invented relationship conflict from
 // the common Temperance portrait, comparison lens, or follow-up question.
@@ -159,7 +182,7 @@ for (const sample of [
     symbol: /감정을 차분히 다루면서도 꼭 지킬 기준과 책임/u,
     unrelated: /참아 주다가|상대는 네가 그동안 힘들었다는 사실/u },
   { contextId: 'money-spending', ids: ['wands_ten', 'empress', 'pentacles_two'],
-    symbol: /끝까지 책임지려는 마음과 네 생활도 편안하게 돌보고 싶은 마음/u,
+    symbol: /끝까지 책임지려는 마음과 내 생활도 편안하게 돌보고 싶은 마음/u,
     unrelated: /일을 잘해 주는 사람으로만|돌봄을 받고 싶은 마음은 전해지지/u }
 ]) {
   const context = getPersonalContext('overall', sample.contextId);

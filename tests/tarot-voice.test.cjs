@@ -76,7 +76,7 @@ function audit(texts, transform) {
     assert.equal(transform(revised), revised, 'the same reading never accumulates another frame');
     assert.equal(splitSummarySentences(revised).length, splitSummarySentences(text).length,
       'clarity changes no sentence boundary or two-line summary unit');
-    assert.doesNotMatch(revised, /바람이 있는 마음|선택의 확인할 근거|알아보는 살펴볼 단서|undefined|\[object Object\]/u);
+    assert.doesNotMatch(revised, /바람이 있는 마음|선택의 확인할 근거|알아보는 살펴볼 단서|지(?:는)? 말아 (?:본다|준다)|같지(?:는)? 않는다|늦지(?:는)? 않는다|수 있을 수|undefined|\[object Object\]/u);
     changed += revised !== text;
     before += (text.match(/수(?:도)? 있어/gu) || []).length;
     after += (revised.match(/수(?:도)? 있어/gu) || []).length;

@@ -148,6 +148,12 @@ function assertSummaryDetails(view, summary) {
   assert.equal(completed.$('#summary-panel-problem').hidden, true);
   assert.equal(completed.$('#summary-panel-timeline').hidden, true);
   assert.equal(completed.$('#summary-panel-domains').hidden, true);
+  assert.equal(completed.$('#result-title').textContent, '나를 위한 종합 점괘');
+  const personalStory = completed.$('#summary-panel-problem');
+  assert.ok(personalStory.querySelector('[data-section-id="together"] h3').textContent.includes('지금 나에게 필요한 이야기'));
+  const storyVoice = personalStory.textContent.replace(/[‘“][^’”]*[’”]/gu, '');
+  assert.doesNotMatch(storyVoice, /(?<![가-힣])(?:너에게|너는|너를|네가|네게|당신)|(?:보렴|하렴|거야|있어)[.!?]/u,
+    'the personal-story heading, summaries and expanded body use one first-person perspective');
   let dividedSections = 0;
   for (const group of completedSummary.groups) {
     const tab = completed.$(`#summary-tab-${group.id}`);

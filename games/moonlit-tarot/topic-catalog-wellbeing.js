@@ -5,7 +5,7 @@ export const WELLBEING_TOPICS = [
     "id": "everyday-burdens",
     "category": "wellbeing",
     "title": "생활 속 부담",
-    "subtitle": "눈에 잘 띄지 않는 수고는 어디에 쌓이고 있을까?",
+    "subtitle": "눈에 잘 띄지 않는 수고가 어디에 쌓이는지 살펴본다.",
     "context": {
       "focus": "잘 보이지 않는 집안일과 미리 기억할 일",
       "scene": "하루 종일 택배와 공과금과 집안 정리를 챙겼는데 끝낸 일이 없는 것처럼 느낄 때",
@@ -25,7 +25,7 @@ export const WELLBEING_TOPICS = [
     "id": "stress-reactions",
     "category": "wellbeing",
     "title": "스트레스에 대한 반응",
-    "subtitle": "마음이 힘들어질 때 나는 어떻게 반응할까?",
+    "subtitle": "마음이 힘들어질 때 내가 어떻게 반응하는지 돌아본다.",
     "context": {
       "focus": "부담이 커질 때 먼저 나타나는 반응",
       "scene": "회의와 알림이 겹치는 날 짧은 메시지에도 급하게 날카로운 답장을 쓰려 할 때",
@@ -45,7 +45,7 @@ export const WELLBEING_TOPICS = [
     "id": "rest-and-recovery",
     "category": "wellbeing",
     "title": "휴식과 회복",
-    "subtitle": "나에게 쉬는 느낌을 주는 시간은 어떤 모습일까?",
+    "subtitle": "나에게 쉬는 느낌을 주는 시간이 어떤 모습인지 살펴본다.",
     "context": {
       "focus": "실제로 쉰 느낌을 주는 시간의 조건",
       "scene": "쉬는 날에 밀린 집안일과 휴대전화 화면만 보다가 저녁에 더 지친 듯할 때",
@@ -65,9 +65,9 @@ export const WELLBEING_TOPICS = [
     "id": "life-balance",
     "category": "wellbeing",
     "title": "생활의 균형",
-    "subtitle": "중요한 여러 몫 사이에 어떤 조정이 필요할까?",
+    "subtitle": "중요한 여러 몫 사이에 어떤 조정이 필요한지 살펴본다.",
     "context": {
-      "focus": "일과 가족, 네 시간에 나눠 쓸 하루",
+      "focus": "일과 가족, 내 시간에 나눠 쓸 하루",
       "scene": "야근과 가족 약속과 배우고 싶은 수업이 같은 주에 겹쳐 내 시간이 사라질 때",
       "aim": "중요한 일에 실제 시간을 쓰는 일주일",
       "known": "최근 일주일에 일과 돌봄과 개인 활동에 쓴 시간",
@@ -85,11 +85,11 @@ export const WELLBEING_TOPICS = [
     "id": "good-fortune",
     "category": "opportunities",
     "title": "행운",
-    "subtitle": "지금 알아보고 살려 볼 작은 기회는 무엇일까?",
+    "subtitle": "지금 알아보고 살려 볼 작은 기회를 찾아본다.",
     "context": {
       "focus": "알아보고 시도할 수 있는 작은 기회",
       "scene": "동네 게시판에서 관심 있던 짧은 체험 수업의 모집 안내를 발견할 때",
-      "aim": "네 관심과 생활에 맞는 기회를 직접 알아보는 시도",
+      "aim": "내 관심과 생활에 맞는 기회를 직접 알아보는 시도",
       "known": "안내된 일정과 참여 조건과 실제 남은 자리",
       "unknown": "안내만으로 알기 어려운 실제 수업 내용과 추가 준비물",
       "resource": "참여할 수 있는 시간과 운영자에게 물어볼 연락처",
@@ -105,7 +105,7 @@ export const WELLBEING_TOPICS = [
     "id": "unexpected-help",
     "category": "opportunities",
     "title": "천운·귀인",
-    "subtitle": "도움이 필요할 때 누구와 어떤 연결을 만들까?",
+    "subtitle": "도움이 필요할 때 누구와 어떤 연결을 만들지 살펴본다.",
     "context": {
       "focus": "도움이 필요한 부분을 상대에게 전할 구체적인 질문",
       "scene": "신청서를 작성하다 안내만으로 이해하기 어려운 항목에서 멈출 때",
@@ -125,7 +125,7 @@ export const WELLBEING_TOPICS = [
     "id": "cautions-and-risks",
     "category": "opportunities",
     "title": "악운·주의점",
-    "subtitle": "지금 조심하면 줄일 수 있는 부담은 무엇일까?",
+    "subtitle": "지금 조심하면 줄일 수 있는 부담을 살펴본다.",
     "context": {
       "focus": "서두르는 준비에서 놓치기 쉬운 확인 사항",
       "scene": "처음 가는 장소의 모임에 급히 출발하려는데 주소와 준비물을 아직 확인하지 않았을 때",
@@ -145,7 +145,7 @@ export const WELLBEING_TOPICS = [
     "id": "prepare-for-difficulties",
     "category": "opportunities",
     "title": "앞으로의 고난에 대비하기",
-    "subtitle": "어려움이 생긴다면 무엇을 준비해 둘 수 있을까?",
+    "subtitle": "어려움이 생긴다면 무엇을 준비해 둘 수 있는지 살펴본다.",
     "context": {
       "focus": "일이 막혔을 때 바로 쓸 최소한의 준비",
       "scene": "제출 마감을 앞두고 쓰던 노트북이 멈추면 어떻게 할지 대비책을 세울 때",
@@ -165,7 +165,7 @@ export const WELLBEING_TOPICS = [
     "id": "act-or-wait",
     "category": "opportunities",
     "title": "움직일 때와 기다릴 때",
-    "subtitle": "지금 할 일과 더 확인한 뒤 할 일은 무엇일까?",
+    "subtitle": "지금 할 일과 더 확인한 뒤 할 일을 나누어 본다.",
     "context": {
       "focus": "지금 할 준비와 답을 들은 뒤 결정할 일",
       "scene": "공동 작업의 시작 날짜는 다가오는데 맡을 범위에 대한 답변을 기다릴 때",

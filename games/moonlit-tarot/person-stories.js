@@ -1,8 +1,8 @@
-import { MAJOR_PERSON_STORIES } from './person-stories-major.js?v=20261114-tarot-card-intro1';
-import { WANDS_PERSON_STORIES } from './person-stories-wands.js?v=20261114-tarot-card-intro1';
-import { CUPS_PERSON_STORIES } from './person-stories-cups.js?v=20261114-tarot-card-intro1';
-import { SWORDS_PERSON_STORIES } from './person-stories-swords.js?v=20261114-tarot-card-intro1';
-import { PENTACLES_PERSON_STORIES } from './person-stories-pentacles.js?v=20261114-tarot-card-intro1';
+import { MAJOR_PERSON_STORIES } from './person-stories-major.js?v=20261114-tarot-first-person1';
+import { WANDS_PERSON_STORIES } from './person-stories-wands.js?v=20261114-tarot-first-person1';
+import { CUPS_PERSON_STORIES } from './person-stories-cups.js?v=20261114-tarot-first-person1';
+import { SWORDS_PERSON_STORIES } from './person-stories-swords.js?v=20261114-tarot-first-person1';
+import { PENTACLES_PERSON_STORIES } from './person-stories-pentacles.js?v=20261114-tarot-first-person1';
 
 // Authored readings of the actual cards. These describe a symbolic portrait;
 // they do not establish the reader's history, personality or future as fact.

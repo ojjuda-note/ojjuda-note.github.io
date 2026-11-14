@@ -1,10 +1,10 @@
-import { getPersonalContext } from './personal-contexts.js?v=20261114-tarot-card-intro1';
-import { buildCardConnections } from './card-connections.js?v=20261114-tarot-card-intro1';
-import { PERSONAL_READING_BASIS } from './person-narrative.js?v=20261114-tarot-card-intro1';
-import { getReading } from './readings.js?v=20261114-tarot-card-first1';
+import { getPersonalContext } from './personal-contexts.js?v=20261114-tarot-first-person1';
+import { buildCardConnections } from './card-connections.js?v=20261114-tarot-first-person1';
+import { PERSONAL_READING_BASIS } from './person-narrative.js?v=20261114-tarot-first-person1';
+import { getReading } from './readings.js?v=20261114-tarot-first-person1';
 import { splitSummarySentences, summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
 import { directAction, directCardAdvice } from './reading-voice.js?v=20261113-tarot-easy1';
-import { getPersonStory } from './person-stories.js?v=20261114-tarot-card-intro1';
+import { getPersonStory } from './person-stories.js?v=20261114-tarot-first-person1';
 
 export const PERSONAL_BASIS = PERSONAL_READING_BASIS;
 const roles = ['지금 문제를 대하는 나', '지금 상황과 속마음', '이번에 바꿀 선택'];
@@ -30,7 +30,7 @@ export function buildPersonalReading({ cards, topicId, contextId } = {}) {
     ], summaryLinesFrom(insight, actions.join(' ')));
   });
   const connected = buildCardConnections({ cards, context, names });
-  const connection = piece('personal-connection', '이 고민에 담긴 너의 마음',
+  const connection = piece('personal-connection', '이 고민에 담긴 내 마음',
     connected.paragraphs, connected.summaryLines);
   const solution = getPersonStory(cards[2].id)[context.topicId];
   const [support, tension] = splitSummarySentences(solution);

@@ -177,6 +177,11 @@ const server = http.createServer((request, response) => {
     assert.equal(await page.locator('#summary-panel-problem').isVisible(), false);
     assert.equal(await page.locator('#summary-panel-timeline').isVisible(), false);
     await page.locator('#summary-tab-problem').click();
+    assert.equal(await page.locator('#result-title').textContent(), '나를 위한 종합 점괘');
+    assert.ok((await page.locator('#summary-panel-problem [data-section-id="together"] h3').textContent()).includes('지금 나에게 필요한 이야기'));
+    const storyVoice = (await page.locator('#summary-panel-problem').textContent()).replace(/[‘“][^’”]*[’”]/gu, '');
+    assert.doesNotMatch(storyVoice, /(?<![가-힣])(?:너에게|너는|너를|네가|네게|당신)|(?:보렴|하렴|거야|있어)[.!?]/u,
+      'the personal-story screen keeps its first-person perspective from heading to full explanation');
     await page.locator('#summary-tab-problem').press('ArrowLeft');
     assert.equal(await page.locator('#summary-tab-cards').getAttribute('aria-selected'), 'true', 'Left from the personal story selects the first introduction tab');
     assert.equal(await page.locator('#summary-tab-cards').evaluate(tab => tab === document.activeElement), true);

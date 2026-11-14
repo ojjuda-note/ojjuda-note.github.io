@@ -1,9 +1,9 @@
-import { CARD_INTERPRETATIONS } from './interpretation-engine.js?v=20261114-tarot-review2';
-import { CASE_GUIDES, getCaseGuide } from './case-guides.js?v=20261114-tarot-card-intro1';
-import { LIFE_TOPICS } from './topic-catalog-life.js?v=20261114-tarot-copy1';
-import { RELATIONSHIP_TOPICS } from './topic-catalog-relations.js?v=20261114-tarot-copy1';
-import { PRACTICAL_TOPICS } from './topic-catalog-practical.js?v=20261114-tarot-copy1';
-import { WELLBEING_TOPICS } from './topic-catalog-wellbeing.js?v=20261114-tarot-copy1';
+import { CARD_INTERPRETATIONS } from './interpretation-engine.js?v=20261114-tarot-first-person1';
+import { CASE_GUIDES, getCaseGuide } from './case-guides.js?v=20261114-tarot-first-person1';
+import { LIFE_TOPICS } from './topic-catalog-life.js?v=20261114-tarot-first-person1';
+import { RELATIONSHIP_TOPICS } from './topic-catalog-relations.js?v=20261114-tarot-first-person1';
+import { PRACTICAL_TOPICS } from './topic-catalog-practical.js?v=20261114-tarot-first-person1';
+import { WELLBEING_TOPICS } from './topic-catalog-wellbeing.js?v=20261114-tarot-first-person1';
 import { summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
 
 // Fifty editorial lenses on the same three cards, not extra draws or predictions.
@@ -26,7 +26,7 @@ export const READING_CATEGORIES = Object.freeze([
   { id: 'opportunities', label: '행운·도움·주의할 흐름', count: 5 }
 ]);
 
-export const DOMAIN_READING_BASIS = '같은 세 장을 50가지 주제로 풀었어요. 카드의 기본 뜻과 전통 자료는 여러 풀이에서 함께 참고하며, 이해를 돕는 가상 장면과 생활 제안을 담았어요. 예시는 실제로 겪은 일이나 앞으로 생길 일, 상대의 속마음을 확인한 내용은 아니에요.';
+export const DOMAIN_READING_BASIS = '같은 세 장을 50가지 주제로 풀이한다. 카드의 기본 뜻과 전통 자료는 여러 풀이에서 함께 참고하며, 이해를 돕는 가상 장면과 생활 제안을 담고 있다. 예시는 실제로 겪은 일이나 앞으로 생길 일, 상대의 속마음을 확인한 내용은 아니다.';
 
 /** Independent of the initially selected topic: each domain has its own prose. */
 export function buildDomainGroup({ cards, readings } = {}) {
@@ -68,7 +68,7 @@ export function buildDomainGroup({ cards, readings } = {}) {
   return {
     id: 'domains',
     label: '분야별 풀이',
-    description: '지금 궁금한 분야를 골라 네 상황과 연결해 읽어 봐.',
+    description: '지금 궁금한 분야를 골라 내 상황과 연결해 읽어 본다.',
     categories: READING_CATEGORIES,
     sections
   };

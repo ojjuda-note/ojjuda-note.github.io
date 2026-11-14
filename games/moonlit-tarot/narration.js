@@ -1,8 +1,8 @@
-import { CARD_LIFE_THEMES } from './life-themes.js?v=20261114-tarot-card-intro1';
-import { buildDomainGroup, DOMAIN_READING_BASIS } from './domain-narration.js?v=20261114-tarot-card-intro1';
-import { getCardInterpretation, interpretCard, MAIN_CONTEXTS } from './interpretation-engine.js?v=20261114-tarot-review2';
-import { getPersonStory } from './person-stories.js?v=20261114-tarot-card-intro1';
-import { buildPersonNarrative, PERSONAL_READING_BASIS } from './person-narrative.js?v=20261114-tarot-card-intro1';
+import { CARD_LIFE_THEMES } from './life-themes.js?v=20261114-tarot-first-person1';
+import { buildDomainGroup, DOMAIN_READING_BASIS } from './domain-narration.js?v=20261114-tarot-first-person1';
+import { getCardInterpretation, interpretCard, MAIN_CONTEXTS } from './interpretation-engine.js?v=20261114-tarot-first-person1';
+import { getPersonStory } from './person-stories.js?v=20261114-tarot-first-person1';
+import { buildPersonNarrative, PERSONAL_READING_BASIS } from './person-narrative.js?v=20261114-tarot-first-person1';
 import { splitSummarySentences, summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
 import { directInterpretation, directAction } from './reading-voice.js?v=20261113-tarot-easy1';
 
@@ -15,31 +15,31 @@ const TOPIC_NAMES = Object.freeze({
 // examples remain in the individual reading instead of being copied here.
 const REPORT_QUESTIONS = Object.freeze({
   overall: {
-    obstacle: '일정이 어긋나면 꼭 지킬 약속과 다른 날로 옮길 일을 나눠. 하루 계획을 못 지켰다고 남은 일까지 포기할 필요는 없어.'
+    obstacle: '일정이 어긋나면 꼭 지킬 약속과 다른 날로 옮길 일을 나눈다. 하루 계획을 못 지켰다고 남은 일까지 포기할 필요는 없다.'
   },
   love: {
-    obstacle: '연락 간격이나 약속이 달라졌다면 이유를 직접 물어봐. 서로 원하는 관계가 다르다면 계속 설득하려 하지 마. 그 차이를 받아들이고 관계를 이어 갈지 결정해.'
+    obstacle: '연락 간격이나 약속이 달라졌다면 이유를 직접 물어본다. 서로 원하는 관계가 다르다면 계속 설득하려 하지 않는다. 그 차이를 받아들이고 관계를 이어 갈지 결정한다.'
   },
   money: {
-    obstacle: '갑자기 돈이 필요해지면 언제까지 얼마를 내야 하는지 확인해. 새로 결제하기 전에 취소하거나 금액을 줄일 수 있는 지출부터 찾아봐. 확인이 필요하면 담당자에게 직접 물어봐.'
+    obstacle: '갑자기 돈이 필요해지면 언제까지 얼마를 내야 하는지 확인한다. 새로 결제하기 전에 취소하거나 금액을 줄일 수 있는 지출부터 찾아본다. 확인이 필요하면 담당자에게 직접 물어본다.'
   },
   work: {
-    obstacle: '새 요청이 들어오면 이미 맡은 일과 마감을 함께 알려 줘. 무엇을 먼저 끝낼지 확인하고 필요한 시간을 분명히 말해.'
+    obstacle: '새 요청이 들어오면 이미 맡은 일과 마감을 함께 알려 준다. 무엇을 먼저 끝낼지 확인하고 필요한 시간을 분명히 말한다.'
   }
 });
 // Complete sentences avoid joining several long context phrases into one claim.
 const REPORT_PRACTICE = Object.freeze({
   overall: {
-    achievement: '지난 일주일에 끝낸 일을 살펴봐. 큰 결과만 찾을 필요는 없어. 전에는 못 했던 선택을 했거나 다음에도 쓸 방법을 익혔다면 그것도 성취야.'
+    achievement: '지난 일주일에 끝낸 일을 살펴본다. 큰 결과만 찾을 필요는 없다. 전에는 못 했던 선택을 했거나 다음에도 쓸 방법을 익혔다면 그것도 나의 성취이다.'
   },
   love: {
-    achievement: '서로 나눈 말과 지킨 약속을 떠올려 봐. 마음을 솔직히 말했거나 불편한 부탁을 거절한 경험도 돌아볼 만한 성취야.'
+    achievement: '서로 나눈 말과 지킨 약속을 떠올려 본다. 마음을 솔직히 말했거나 불편한 부탁을 거절한 경험도 돌아볼 만한 나의 성취이다.'
   },
   money: {
-    achievement: '최근 결제 내역과 매달 나가는 돈을 살펴봐. 필요 없는 결제를 줄였거나 사고 싶은 물건을 미룬 경험이 있는지 찾아봐. 꼭 큰돈을 모아야만 성취인 건 아니야.'
+    achievement: '최근 결제 내역과 매달 나가는 돈을 살펴본다. 필요 없는 결제를 줄였거나 사고 싶은 물건을 미룬 경험이 있는지 찾아본다. 꼭 큰돈을 모아야만 성취인 것은 아니다.'
   },
   work: {
-    achievement: '요청받은 일과 실제로 끝낸 일을 비교해 봐. 결과가 완벽하지 않아도 새로 익힌 방법이 있는지 살펴봐. 다음 작업에 다시 쓸 수 있는 경험도 성취야.'
+    achievement: '요청받은 일과 실제로 끝낸 일을 비교해 본다. 결과가 완벽하지 않아도 새로 익힌 방법이 있는지 살펴본다. 다음 작업에 다시 쓸 수 있는 경험도 나의 성취이다.'
   }
 });
 const SUITS = Object.freeze({
@@ -83,11 +83,11 @@ function naming(card) {
   const displayName = rank ? `${suit.object} 든 ${rank}`
     : NUMBERS[card.rank] ? `${suit.plain} ${NUMBERS[card.rank]}`
       : card.name.replace(suit.name, suit.plain);
-  const rankNote = card.rank === 'ace' ? '에이스는 그 무늬의 첫 카드를 부르는 이름이야.'
-    : card.rank === 'page' ? '시종은 곁에서 돕는 사람을 가리키는 이름이야.' : '';
+  const rankNote = card.rank === 'ace' ? '에이스는 그 무늬의 첫 카드를 부르는 이름이다.'
+    : card.rank === 'page' ? '시종은 곁에서 돕는 사람을 가리키는 이름이다.' : '';
   const explanation = unique([
-    displayName === card.name ? '' : `원래 이름은 ‘${card.name}’${hasFinalConsonant(card.name) ? '이야' : '야'}.`,
-    suit.name === suit.plain ? '' : `${suit.name}${hasFinalConsonant(suit.name) ? '은' : '는'} ${suit.plain}${hasFinalConsonant(suit.plain) ? '을' : '를'} 뜻해.`,
+    displayName === card.name ? '' : `원래 이름은 ‘${card.name}’이다.`,
+    suit.name === suit.plain ? '' : `${suit.name}${hasFinalConsonant(suit.name) ? '은' : '는'} ${suit.plain}${hasFinalConsonant(suit.plain) ? '을' : '를'} 뜻한다.`,
     rankNote
   ]).join(' ');
   return { displayName, explanation };
@@ -97,42 +97,13 @@ function fullName(card, reading) {
   return display === card.name ? display : `${display}(${card.name})`;
 }
 
-// The original position passage remains in the card introduction. These
-// explicit editorial changes only address its reference to a reading position;
-// the person's circumstances, conditions and actions stay complete.
-function personalPosition(text) {
-  const replacements = [
-    ['지금 네 안에는 해 보고 싶은 마음과 망설임이 함께 있다는 뜻이야.', '지금 네 안에서는 해 보고 싶은 마음과 망설임이 함께 움직여.'],
-    ['지금 네 마음에는 혼자 다 해내기보다 함께 잘하고 싶은 바람이 있다는 뜻이야.', '지금 네 마음은 혼자 다 해내기보다 함께 잘하는 쪽으로 향해.'],
-    ['이 자리는 막연히 끝을 예고하기보다 지금 확인된 마무리가 생활의 무엇을 바꾸는지 짚어 줘.', '막연히 끝을 걱정하기보다, 지금 확인된 마무리가 네 생활에서 무엇을 바꾸는지 살펴보렴.'],
-    ['이 자리는 빠른 결과보다 지금 이용할 수 있는 도움과 다시 이어 갈 여유에 주목해.', '빠른 결과만 바라기보다 지금 이용할 수 있는 도움과 다시 이어 갈 여유를 살펴보렴.'],
-    ['이 자리는 지난 일에 대한 평가가 실제로 무엇을 바꾸는지, 네가 답하고 책임질 부분은 무엇인지 짚어 줘.', '지난 일에 대한 평가가 실제로 무엇을 바꾸는지, 네가 답하고 책임질 부분은 무엇인지 살펴보렴.'],
-    ['이 자리는 결과가 이미 정해진 상태보다 관심을 실제 경험으로 옮길 여건에 주목해.', '결과를 미리 정하기보다 관심을 실제 경험으로 옮길 여건부터 살펴보렴.'],
-    ['이 자리의 핵심이란다.', '지금 살펴볼 핵심이란다.'],
-    ['이 자리의 핵심이야.', '지금 살펴볼 핵심이야.'],
-    ['이 자리의 중심이야.', '지금 중요한 부분이야.'],
-    ['여유가 필요한 자리야.', '여유가 필요해.'],
-    ['중요한 자리야.', '지금 중요해.'],
-    ['알아보는 자리야.', '알아보렴.'],
-    ['받아들이는 자리야.', '받아들여 보렴.'],
-    ['확인하는 자리야.', '확인해 보렴.'],
-    ['구분하는 자리야.', '구분해 보렴.'],
-    ['비교하는 자리야.', '비교해 보렴.'],
-    ['드러내는 자리야.', '드러내 보렴.'],
-    ['살피는 자리야.', '살펴보렴.'],
-    ['짚는 자리야.', '짚어 보렴.'],
-    ['보는 자리야.', '살펴보렴.']
-  ];
-  return replacements.reduce((value, [original, personal]) => value.replaceAll(original, personal), text);
-}
-
 /** Explain the actual card directly, without seven repeated introductions. */
 export function narrateReading({ card, topicId, index, position, foundation, guidance, detail, base }) {
   checkReadingInput({ card, topicId, index, position, foundation, guidance, detail });
   const { displayName, explanation } = naming(card);
   const rule = getCardInterpretation(card.id);
   const person = getPersonStory(card.id);
-  const introduction = `${['첫 번째', '두 번째', '세 번째'][index]} 카드는 ‘${displayName}’${hasFinalConsonant(displayName) ? '이야' : '야'}. ‘${position.label}’에 관한 풀이를 들려줄게. ${explanation}`.trim();
+  const introduction = `${['첫 번째', '두 번째', '세 번째'][index]} 카드는 ‘${displayName}’이다. ‘${position.label}’에 관한 해석이다. ${explanation}`.trim();
   const meaning = rule.meaning;
   const positionMeaning = directInterpretation(clean(guidance.positions[index]));
   const lifeTheme = Object.fromEntries(Object.entries(CARD_LIFE_THEMES[card.id]).map(([key, text]) =>
@@ -166,7 +137,7 @@ export function narrateReading({ card, topicId, index, position, foundation, gui
     foundationTakeaway: clean(foundation.takeaway),
     symbol: clean(foundation.symbol),
     positionMeaning,
-    personalPositionMeaning: personalPosition(positionMeaning),
+    personalPositionMeaning: positionMeaning,
     appliedMeaning,
     positionLabel: position.label,
     roleIndex: index,
@@ -219,10 +190,10 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
   const context = MAIN_CONTEXTS[topicId];
   const outcome = interpretCard(cards[2].id, 'outcome', context);
   const cautions = readings.map(reading => reading.personalCaution || reading.guidanceCaution);
-  const positionMeanings = readings.map(reading => reading.personalPositionMeaning || personalPosition(reading.positionMeaning));
+  const positionMeanings = readings.map(reading => reading.personalPositionMeaning || reading.positionMeaning);
   const ritual = solution.action;
   const problemSections = [
-    section('together', '지금 너에게 이어지는 이야기', story.paragraphs,
+    section('together', '지금 나에게 필요한 이야기', story.paragraphs,
       summaryLinesFrom(story.pairReading, story.choiceLink)),
     section('problem-now', '지금 고민의 핵심', [
       firstPerson[topicId],
@@ -237,8 +208,8 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
       solution.action
     ], summaryLinesFrom(nextPerson[topicId], solution.action)),
     section('possible-outcome', '실천한 뒤 살펴볼 변화', [
-      `앞에서 정한 일을 실천했다면 이 점을 확인하렴. ${outcome}`,
-      `이어 갈 때 도움이 되는 힘도 기억해 둬. ${solution.lifeTheme.strength}`
+      `앞에서 정한 일을 실천했다면 다음 변화를 확인한다. ${outcome}`,
+      `이어 갈 때 도움이 되는 나의 강점도 기억해 둔다. ${solution.lifeTheme.strength}`
     ], summaryLinesFrom(outcome, solution.lifeTheme.strength))
   ];
   const strengthsSummary = summaryLinesFrom(firstPerson.portrait, nextPerson.portrait, [currentPerson.portrait]);
@@ -250,11 +221,11 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
     ], strengthsSummary),
     section('past-flow', '과거의 흐름', [
       problem.lifeTheme.past,
-      `그 경험에서 다시 살릴 수 있는 힘도 있어. ${problem.lifeTheme.strength}`
+      `그 경험에서 다시 살릴 수 있는 힘도 있다. ${problem.lifeTheme.strength}`
     ], summaryLinesFrom(problem.lifeTheme.past, problem.lifeTheme.past)),
     section('past-hardships', '반복해서 힘들어지는 이유', [
       cautions[0],
-      `비슷한 일로 다시 힘들 때는 이렇게 해 봐. ${problem.action}`
+      `비슷한 일로 다시 힘들 때는 다음 방법을 써 본다. ${problem.action}`
     ], summaryLinesFrom(cautions[0], problem.action)),
     section('past-achievements', '내가 해낸 일', [
       problem.lifeTheme.achievement,
@@ -262,7 +233,7 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
     ], summaryLinesFrom(problem.lifeTheme.achievement, problem.lifeTheme.achievement)),
     section('present-luck', '지금 드러나는 나의 모습', [
       `${situation.lifeTheme.strength} ${cautions[1]}`,
-      `지금 실천할 일도 짚어 줄게. ${situation.action}`
+      `지금 실천할 일도 정해 본다. ${situation.action}`
     ], summaryLinesFrom(situation.lifeTheme.strength, situation.action)),
     section('future-change', '앞으로의 변화', [
       solution.lifeTheme.change
@@ -275,10 +246,10 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
   const groups = [
     {
       id: 'cards', label: '카드 소개',
-      description: '이번에 펼친 세 장의 이름과 그림, 전통적인 뜻을 살펴보자.',
+      description: '이번에 펼친 세 장의 이름과 그림, 전통적인 뜻을 확인한다.',
       sections: cards.map((card, index) => cardIntroduction(card, readings[index], index)),
       detailSections: base.sections || [],
-      basisParagraphs: [DOMAIN_READING_BASIS, PERSONAL_READING_BASIS, '타로의 전통 해석이에요. 미래를 확정하지 않아요.']
+      basisParagraphs: [DOMAIN_READING_BASIS, PERSONAL_READING_BASIS, '타로의 전통 해석이다. 미래를 확정하지 않는다.']
     },
     { id: 'problem', label: '나의 이야기', sections: problemSections },
     { id: 'timeline', label: '과거·현재·미래', sections: timelineSections },
@@ -321,7 +292,7 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
   })].join('\n\n');
   return {
     ...base,
-    headline: '지금 너에게 이어지는 이야기',
+    headline: '지금 나에게 필요한 이야기',
     groups,
     sections: groups.flatMap(group => group.sections),
     paragraphs,
