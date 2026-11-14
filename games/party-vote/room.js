@@ -6,7 +6,7 @@ const minority = kind === 'minority';
 const title = minority ? '소수파 찾기' : '한 명만 다른 미션';
 const description = minority
   ? '두 선택지 중 하나를 몰래 골라요. 모두 투표하면 결과가 공개돼요. 고른 사람이 적은 쪽이 소수파예요.'
-  : '한 명만 다른 제시어를 받아요. 말이나 소품 없이 동시에 몸짓으로 표현하고, 다른 동작을 한 사람을 찾아 투표해요. 다른 사람에게 닿지 않고 혼자 흉내 내세요.';
+  : '한 명만 다른 제시어를 받아요. 말이나 소품 없이 동시에 몸짓으로 표현하고, 다른 동작을 한 사람에게 몰래 투표해요. 서로 닿지 않고 혼자 흉내 내요.';
 const view = document.querySelector('#view');
 const notice = document.querySelector('#notice');
 const roomCode = (new URLSearchParams(location.search).get('room') || '').toUpperCase();
@@ -68,17 +68,17 @@ function resultForMinority(s) {
   else if (left && right) heading = '소수파는 ‘' + esc(s.choices[left < right ? 0 : 1]) + '’!';
   const counts = groups.map((group, i) => '<li><strong>' + esc(s.choices[i]) + ' · ' + group.length +
     '표</strong><span>' + (group.length ? group.map(esc).join(', ') : '선택한 사람 없음') + '</span></li>').join('');
-  return '<h1>' + heading + '</h1><ul class="breakdown">' + counts + '</ul>';
+  return '<h1 class="suite-heading">' + heading + '</h1><ul class="breakdown">' + counts + '</ul>';
 }
 function resultForMission(s) {
   const high = Math.max(...s.totals);
   const leaders = s.players.filter((_, i) => s.totals[i] === high);
-  const heading = leaders.length > 1 ? '최다 득표가 동점이에요' :
+  const heading = leaders.length > 1 ? '투표가 동점으로 끝났어요' :
     s.totals[s.odd] === high ? '다른 미션을 받은 사람을 찾았어요!' : '정체를 숨겼어요!';
-  return '<h1>' + heading + '</h1><p>다른 미션을 받은 사람은 <strong>' + esc(s.players[s.odd]) + '</strong>님이에요.</p>' +
+  return '<h1 class="suite-heading">' + heading + '</h1><p class="suite-hint">다른 미션을 받은 사람은 <strong>' + esc(s.players[s.odd]) + '</strong>님이에요.</p>' +
     '<ul class="breakdown"><li>공통 제시어 <strong>' + esc(s.choices[0]) + '</strong></li>' +
     '<li>다른 제시어 <strong>' + esc(s.choices[1]) + '</strong></li></ul>' +
-    '<p>최다 득표 · ' + leaders.map(esc).join(', ') + ' (' + high + '표)</p>';
+    '<p class="suite-hint">최다 득표 · ' + leaders.map(esc).join(', ') + ' (' + high + '표)</p>';
 }
 function roundView(s) {
   const host = s.me === 0;
@@ -88,16 +88,16 @@ function roundView(s) {
         '<ol class="members">' + s.players.map((name, i) => '<li' + (i === s.me ? ' class="me"' : '') + '>' +
         esc(name) + (i === 0 ? ' · 방장' : '') + (i === s.me ? ' (나)' : '') + '</li>').join('') + '</ol>' + control('초대 링크 복사', 'copy', true);
     case 'cards':
-      return '<h1>내 제시어를 확인하세요</h1><div class="mission-card">' + control(revealed ? '제시어 가리기' : '내 제시어 보기', 'reveal') +
-        (revealed ? '<p class="secret">' + esc(s.word) + '</p>' : '') + '</div><p>확인 ' + s.readyCount + ' / ' + s.players.length + '명</p>' +
-        (s.ready ? '<p>다른 참가자가 확인하고 있어요.</p>' : revealed ? control('확인했어요', 'ready', true) : '');
+      return '<h1 class="suite-heading">내 제시어를 확인해 주세요</h1><div class="mission-card">' + control(revealed ? '제시어 가리기' : '내 제시어 보기', 'reveal') +
+        (revealed ? '<p class="secret">' + esc(s.word) + '</p>' : '') + '</div><p class="suite-hint">확인 ' + s.readyCount + ' / ' + s.players.length + '명</p>' +
+        (s.ready ? '<p class="suite-hint">다른 참가자가 확인하고 있어요.</p>' : revealed ? control('확인했어요', 'ready', true) : '');
     case 'act':
-      return '<h1>하나, 둘, 셋! 동시에 흉내 내요</h1><p>말이나 소품 없이 혼자 표현해 주세요. 다른 사람에게 닿지 않아요.</p>' +
-        (host ? control('몸짓을 마쳤어요 · 투표 시작', 'start_vote', true) : '<p>몸짓을 마치면 방장이 투표를 시작해요.</p>');
+      return '<h1 class="suite-heading">하나, 둘, 셋! 동시에 흉내 내요</h1><p class="suite-hint">말이나 소품 없이 혼자 표현해 주세요. 다른 사람에게 닿지 않아요.</p>' +
+        (host ? control('몸짓을 마쳤어요 · 투표 시작', 'start_vote', true) : '<p class="suite-hint">몸짓을 마치면 방장이 투표를 시작해요.</p>');
     case 'vote':
-      return '<h1>' + (s.voted ? '투표를 마쳤어요' : minority ? '어느 쪽을 고를까요?' : '누가 다른 미션을 받았을까요?') + '</h1>' +
-        '<p>투표 ' + s.voteCount + ' / ' + s.players.length + '명</p>' +
-        (s.voted ? '<p>모두 투표하면 결과가 공개돼요.</p>' : minority ? ballots(s.choices) : ballots(s.players, s.me));
+      return '<h1 class="suite-heading">' + (s.voted ? '투표를 마쳤어요' : minority ? '어느 쪽을 고를까요?' : '누가 다른 미션을 받았을까요?') + '</h1>' +
+        '<p class="suite-hint">투표 ' + s.voteCount + ' / ' + s.players.length + '명</p>' +
+        (s.voted ? '<p class="suite-hint">모두 투표하면 결과가 공개돼요.</p>' : minority ? ballots(s.choices) : ballots(s.players, s.me));
     case 'done':
       return (minority ? resultForMinority(s) : resultForMission(s)) +
         (party ? '' : host ? control('한 판 더', 'again', true) : '<p>방장이 다음 판을 시작할 수 있어요.</p>');

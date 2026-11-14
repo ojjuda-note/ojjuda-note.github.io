@@ -1,0 +1,49 @@
+/* Precision dial finishes only; clock geometry and hidden readings stay intact. */
+body.dp-playing[data-dp-kind="stopwatch"] {
+  --suite-bg: radial-gradient(ellipse at 30% 18%, #20374d, #101c2c 58%, #09121e);
+  --suite-surface: linear-gradient(140deg, #1d3042, #111f31 78%);
+  --suite-subtle: #122334;
+  --suite-ink: #edf4f8;
+  --suite-muted: #b1c5d5;
+  --suite-accent: #a5e1ee;
+  --suite-accent-ink: #14303d;
+  --suite-line: #aacede35;
+}
+body.dp-playing[data-dp-kind="stopwatch"] :is(.watch-art, .watch-board) {
+  background: linear-gradient(#a1def00a 1px, transparent 1px), linear-gradient(90deg, #a1def00a 1px, transparent 1px), radial-gradient(ellipse at 30% 15%, #36556b, #142c42 72%);
+  background-size: 24px 24px, 24px 24px, auto;
+  border-color: #8db4ca52;
+  box-shadow: inset 0 1px #e1f7ff15, 0 12px 32px #050d1845;
+}
+body.dp-playing[data-dp-kind="stopwatch"] .watch-case {
+  background: linear-gradient(128deg, #e9f1f8 4%, #788d9e 22%, #f1faff 40%, #a7bacb 63%, #536c80 84%, #ccdce7 96%);
+  box-shadow: inset 0 0 0 1px #a4bdcf, 1px 3px 1px #4b6477, 4px 8px 16px #06172680;
+}
+body.dp-playing[data-dp-kind="stopwatch"] .watch-crown {
+  background: repeating-linear-gradient(90deg, #657e93 0 8%, #ccdde8 9% 17%);
+  border-color: #91aabd;
+}
+body.dp-playing[data-dp-kind="stopwatch"] .watch-bezel {
+  background: radial-gradient(ellipse at 35% 22%, #2b4b61, #102437 72%);
+  border-color: #7493a7;
+}
+body.dp-playing[data-dp-kind="stopwatch"] .watch-scale { background: repeating-conic-gradient(#bce9fa 0deg 1.6deg, transparent 1.6deg 12deg); }
+body.dp-playing[data-dp-kind="stopwatch"] .watch-lcd {
+  background: linear-gradient(150deg, #b6d3d7, #e0f2ef);
+  color: #183d48;
+  box-shadow: inset 0 2px 5px #082b3d70, 0 1px #efffff42;
+  text-shadow: 0 1px #efffff66;
+}
+body.dp-playing[data-dp-kind="stopwatch"] .watch-pin { background: linear-gradient(140deg, #d3e4ed, #7895aa); }
+body.dp-playing[data-dp-kind="stopwatch"] :is(.watch-config label, #view label[for="watch-target"]) { color: #c8dbe8; }
+body.dp-playing[data-dp-kind="stopwatch"] :is(.watch-step output, .watch-target output) { color: #c3f1f6; }
+body.dp-playing[data-dp-kind="stopwatch"] .watch-limits { color: #9fb8cb; }
+body.dp-playing[data-dp-kind="stopwatch"] :is(.watch-step button, .watch-target button) { border-color: #9bbed255; background: #203b4e; color: #d8f3fa; }
+body.dp-playing[data-dp-kind="stopwatch"] .watch-results { color: #e4eef4; }
+body.dp-playing[data-dp-kind="stopwatch"] .watch-results :is(th, td) { border-color: #98bad02c; }
+body.dp-playing[data-dp-kind="stopwatch"] .watch-results thead { color: #a6d4e3; }
+body.dp-playing[data-dp-kind="stopwatch"] .watch-results tbody th { color: #cfedf6; }
+body.dp-playing[data-dp-kind="stopwatch"] .stage-art,
+body.dp-playing[data-dp-kind="stopwatch"] .stage-art::before { background: radial-gradient(ellipse at 45% 30%, #38556d, #142a40 75%); }
+body.dp-playing[data-dp-kind="stopwatch"][data-dp-phase="intro"] .play-body h2 { font-weight: 850; letter-spacing: -.06em; }
+body.dp-playing[data-dp-kind="stopwatch"][data-dp-phase="done"] :is(.suite-heading, .play-body > h2) { color: #b8eaf4; }

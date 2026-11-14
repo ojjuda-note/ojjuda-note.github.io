@@ -1,0 +1,35 @@
+/* Warm teal scorekeeping; checked controls, finger markers and counts keep their behavior. */
+body.dp-playing[data-dp-kind="fingers"] {
+  --suite-bg: radial-gradient(ellipse at 28% 18%, #294d49, #182e31 58%, #101d22);
+  --suite-surface: linear-gradient(140deg, #294440, #1c3033 78%);
+  --suite-subtle: #1a3434;
+  --suite-ink: #f4f1e4;
+  --suite-muted: #bacfc7;
+  --suite-accent: #b9dfce;
+  --suite-accent-ink: #23443c;
+  --suite-line: #afd1c33d;
+}
+body.dp-playing[data-dp-kind="fingers"] .stage-art { background: radial-gradient(ellipse at 48% 58%, #789989, #446b63 52%, #284641); }
+body.dp-playing[data-dp-kind="fingers"] .stage-art::before { inset: 0; background: radial-gradient(ellipse at 50% 14%, #fff0c329, transparent 65%); filter: none; }
+body.dp-playing[data-dp-kind="fingers"] .stage-art .game-art {
+  mask-image: radial-gradient(ellipse at 50% 52%, #000 42%, #000e 68%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 52%, #000 42%, #000e 68%, transparent 100%);
+}
+body.dp-playing[data-dp-kind="fingers"] .party-prompt label { color: #dfebe0; }
+body.dp-playing[data-dp-kind="fingers"] :is(#app, #view) :is(#party-question, #pair-question) { background: #192f30; border-color: #a9c9bd66; color: #f3f1e6; box-shadow: inset 0 1px 3px #071a202b; }
+body.dp-playing[data-dp-kind="fingers"] .party-scores li,
+body.dp-playing[data-dp-kind="fingers"] #view .pair-scores li { background: #203b38; border-color: #9fbfb54a; color: #e5eee4; box-shadow: inset 0 1px #e9f4df09; }
+body.dp-playing[data-dp-kind="fingers"] .party-scores b,
+body.dp-playing[data-dp-kind="fingers"] #view .pair-scores b { color: #c9ead4; }
+body.dp-playing[data-dp-kind="fingers"] #view .pair-fingers i { background: transparent; border-color: #8da9a0; }
+body.dp-playing[data-dp-kind="fingers"] #view .pair-fingers .open { background: #c5e5cc; border-color: #dbefd6; box-shadow: inset 0 1px #fff9; }
+body.dp-playing[data-dp-kind="fingers"] #view :is(.pair-caption, .pair-status) { color: #bad6c8; }
+body.dp-playing[data-dp-kind="fingers"] #view .pair-choices [data-fold="no"] { background: #263d3c; border-color: #9bbeb252; color: #e0ebe4; box-shadow: none; }
+body.dp-playing[data-dp-kind="fingers"] .fold-players label { background: #253e3a; border-color: #a1c2b65e; color: #e7eee4; }
+body.dp-playing[data-dp-kind="fingers"] .fold-players small { color: #bcd1c4; }
+body.dp-playing[data-dp-kind="fingers"] .fold-players input { accent-color: #295e50; }
+body.dp-playing[data-dp-kind="fingers"] .fold-players label:has(:checked) { background: #d6e7d4; border-color: #e8f2db; color: #24483d; box-shadow: inset 0 0 0 1px #f7fbe53d; }
+body.dp-playing[data-dp-kind="fingers"] .fold-players label:has(:checked) small { color: #365a4c; }
+body.dp-playing[data-dp-kind="fingers"] .fold-players label:focus-within { border-color: #e3efd2; }
+body.dp-playing[data-dp-kind="fingers"][data-dp-phase="fold"] #app .play-body > h2,
+body.dp-playing[data-dp-kind="fingers"][data-dp-phase="answer"] #view .suite-heading { color: #eef3d8; }

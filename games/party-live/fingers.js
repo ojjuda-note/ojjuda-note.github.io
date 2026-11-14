@@ -19,16 +19,16 @@
         another:'다른 조건', submit:'조건 공개'
       });
     } else if (s.phase === 'answer') {
-      body = '<p class="pair-caption">' + ui.esc(s.players[g.current]) + '님의 조건</p><h1>' + ui.esc(g.question) + '</h1>' +
-        (g.mine ? '<p data-submitted>선택했어요. 다른 사람들의 선택을 기다려 주세요.</p>' :
-          '<p>조건에 해당하면 하나 접어 주세요.</p><div class="pair-choices"><button type="button" class="action" data-fold="yes">하나 접기</button>' +
+      body = '<p class="pair-caption suite-hint">' + ui.esc(s.players[g.current]) + '님의 조건</p><h1 class="suite-heading">' + ui.esc(g.question) + '</h1>' +
+        (g.mine ? '<p class="suite-hint" data-submitted>선택을 마쳤어요. 다른 사람의 답을 기다려요.</p>' :
+          '<p class="suite-hint">조건에 해당하면 하나 접어 주세요.</p><div class="pair-choices"><button type="button" class="action" data-fold="yes">하나 접기</button>' +
           '<button type="button" data-fold="no">안 접기 · 패스</button></div>') +
-        '<p class="pair-status">응답 ' + g.submitted + ' / ' + s.players.length + '명</p>';
+        '<p class="pair-status suite-hint">선택 완료 ' + g.submitted + ' / ' + s.players.length + '명</p>';
     } else if (s.phase === 'done') {
-      body = '<h1 data-result>' + prompt.names(s, ui, g.losers) + (g.losers.length > 1 ? ' 함께 걸렸어요!' : ' 걸렸어요!') +
-        '</h1><p>손가락 다섯 개를 모두 접었어요.</p>';
+      body = '<h1 class="suite-heading" data-result>' + prompt.names(s, ui, g.losers) + (g.losers.length > 1 ? ' 함께 걸렸어요!' : ' 걸렸어요!') +
+        '</h1><p class="suite-hint">손가락 다섯 개를 모두 접었어요.</p>';
     }
-    return body + (s.phase==='done'?'':'<p>답하기 싫은 조건은 패스해도 돼요.</p>') + scoreboard(s, ui);
+    return body + (s.phase==='done'?'':'<p class="suite-hint">답하기 싫은 조건은 패스해도 돼요.</p>') + scoreboard(s, ui);
   }
   function mount(s, ui) {
     if (s.phase === 'prompt') prompt.bind(s, ui, 'finger_prompt');

@@ -1,0 +1,45 @@
+/* Quiet plum finishes; private information is still controlled by the game. */
+body.dp-playing[data-dp-kind="liar"] {
+  --suite-bg: radial-gradient(ellipse at 28% 20%, #352638, #1d1724 58%, #100e17);
+  --suite-surface: linear-gradient(140deg, #2d2337, #1d1829 78%);
+  --suite-subtle: #211a2d;
+  --suite-ink: #f4ede8;
+  --suite-muted: #c4b5d0;
+  --suite-accent: #d1b7e6;
+  --suite-accent-ink: #30213e;
+  --suite-line: #cfb8e436;
+}
+body.dp-playing[data-dp-kind="liar"] .stage-art { background: radial-gradient(ellipse at 48% 60%, #65516d, #352a44 52%, #231d32); }
+body.dp-playing[data-dp-kind="liar"] .stage-art::before { inset: 0; background: radial-gradient(ellipse at 50% 15%, #e6ccf325, transparent 64%); filter: none; }
+body.dp-playing[data-dp-kind="liar"] .stage-art .game-art {
+  mask-image: radial-gradient(ellipse at 50% 52%, #000 42%, #000e 68%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 52%, #000 42%, #000e 68%, transparent 100%);
+}
+body.dp-playing[data-dp-kind="liar"] .private-card,
+body.dp-playing[data-dp-kind="liar"] #view .role {
+  background: linear-gradient(150deg, #41304f, #261f35);
+  border-color: #b99bc66b;
+  box-shadow: inset 0 0 0 1px #d0b4de32, 0 10px 28px #09071155;
+}
+body.dp-playing[data-dp-kind="liar"] .private-card.hidden-face {
+  background: repeating-linear-gradient(135deg, #251d32 0 8px, #2b223b 8px 9px);
+  border-color: #a88bbb70;
+}
+body.dp-playing[data-dp-kind="liar"] .private-card .secret-art { background-color: #2b213a; box-shadow: inset 0 0 0 1px #e2d0ec22; }
+body.dp-playing[data-dp-kind="liar"] .private-card.hidden-face .secret-art { background-color: #241d31; }
+body.dp-playing[data-dp-kind="liar"] .private-card strong { color: #f1e8f7; background: transparent; }
+body.dp-playing[data-dp-kind="liar"] .private-card.hidden-face strong { color: #c6afd7; }
+body.dp-playing[data-dp-kind="liar"] #view .role:has(.secret) { box-shadow: inset 0 0 0 1px #dbbced8c, 0 10px 28px #09071155; }
+body.dp-playing[data-dp-kind="liar"] #view .role .secret { color: #f2defd; font-weight: 750; }
+body.dp-playing[data-dp-kind="liar"] #view .hints { color: #c9bad6; }
+body.dp-playing[data-dp-kind="liar"] #view .hints li::marker { color: #bb9dd1; font-weight: 750; }
+body.dp-playing[data-dp-kind="liar"] #view .hints strong { color: #eee1f5; }
+body.dp-playing[data-dp-kind="liar"] #view .hints li + li { box-shadow: 0 -1px #c6b0df14; }
+body.dp-playing[data-dp-kind="liar"] .options .choice,
+body.dp-playing[data-dp-kind="liar"] #view .ballots button { background: #30253d; border-color: #b394cc4d; color: #ecdef5; box-shadow: inset 0 1px #e9d2ff0b; }
+body.dp-playing[data-dp-kind="liar"] .options .selected { background: #5a406c; border-color: #d4b3e9; color: #fff2ff; }
+body.dp-playing[data-dp-kind="liar"] .results-line { background: #33273e; color: #eee3f4; box-shadow: inset 0 0 0 1px #c7a7d739; }
+body.dp-playing[data-dp-kind="liar"][data-dp-phase="done"] :is(.suite-heading, .play-body > h2) { color: #e5c7f7; }
+@media (hover: hover) {
+  body.dp-playing[data-dp-kind="liar"] :is(.options .choice, #view .ballots button):not(:disabled):hover { background: #453153; border-color: #d0acd8; }
+}

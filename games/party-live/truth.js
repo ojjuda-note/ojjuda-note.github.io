@@ -57,8 +57,8 @@
         '><span>'+label+'</span></label>').join('')+'</div></fieldset>';
     }
     return '<div class="truth-settings">'+
-      group('truth-mode','카드 구성',[['mild','순한맛만'],['spicy','빨간맛만'],['mixed','반반']],settings.mode)+
-      group('truth-visibility','카드의 맛 미리 보기',[['hide','숨기기'],['show','보이기']],settings.showFlavor?'show':'hide')+'</div>';
+      group('truth-mode','질문 수위',[['mild','순한맛만'],['spicy','빨간맛만'],['mixed','반반']],settings.mode)+
+      group('truth-visibility','카드에 수위 표시',[['hide','숨기기'],['show','보이기']],settings.showFlavor?'show':'hide')+'</div>';
   }
   function bindSettings(settings) {
     const controls=$('.truth-settings');
@@ -100,9 +100,9 @@
   }
   function board(s,ui) {
     if (s.phase==='setup') {
-      if (s.me!==0) return '<h1>방장이 카드를 준비하고 있어요</h1><p>내 차례에 카드 한 장을 골라 질문에 답해요.</p>';
-      return '<h1>진실게임을 시작할까요?</h1>'+settingsForm(formState(s))+
-        '<button type="button" class="action" id="truth-begin">이 설정으로 시작</button><p role="status" id="truth-start-message"></p>';
+      if (s.me!==0) return '<h1 class="suite-heading">방장이 질문을 준비하고 있어요</h1><p class="suite-hint">내 차례에 카드를 골라 모두 앞에서 답해요.</p>';
+      return '<h1 class="suite-heading">오늘은 조금 더, 솔직하게.</h1>'+settingsForm(formState(s))+
+        '<button type="button" class="action" id="truth-begin">이 설정으로 시작</button><p class="suite-hint" role="status" id="truth-start-message"></p>';
     }
     const mine=s.me===s.game.turn, name=ui.esc(s.players[s.game.turn]);
     if (s.phase==='pick') {
@@ -112,16 +112,16 @@
         return '<button type="button" '+control+' aria-label="'+sideName(i,taste)+'">'+cardLabel(taste)+'</button>';
       });
       const heading=mine?'카드 한 장을 골라요':name+'님이 카드를 고르고 있어요';
-      return '<h1>'+heading+'</h1><div class="truth-hand">'+cards.join('')+'</div>';
+      return '<h1 class="suite-heading">'+heading+'</h1><div class="truth-hand">'+cards.join('')+'</div>';
     }
     const flavor=s.game.flavor==='spicy'?'spicy':'mild';
-    return '<h1>'+name+'님의 질문</h1><div class="truth-face '+flavor+'"><span>'+labels[flavor]+'</span><strong>'+
+    return '<h1 class="suite-heading">'+name+'님의 차례예요</h1><div class="truth-face '+flavor+'"><span>'+labels[flavor]+'</span><strong>'+
       ui.esc(s.game.question)+'</strong></div>'+(mine?'<div class="actions">'+
       '<button type="button" class="action" data-truth-next="truth_answer">답했어요</button>'+
-      '<button type="button" data-truth-next="truth_pass">패스</button></div>':'<p>답하거나 패스하면 다음 차례로 넘어가요.</p>');
+      '<button type="button" data-truth-next="truth_pass">패스</button></div>':'<p class="suite-hint">답하거나 패스하면 다음 차례로 넘어가요.</p>');
   }
   function view(s,ui) {
-    if (s.phase==='done') return '<h1>모두 한 번씩 마쳤어요!</h1><p>다음 판에는 어떤 질문이 나올까요?</p>';
+    if (s.phase==='done') return '<h1 class="suite-heading">모두 한 번씩 마쳤어요!</h1><p class="suite-hint">다음 판에는 어떤 질문이 나올까요?</p>';
     return board(s,ui)+form(s,ui);
   }
   function roomDeck(s,official) {

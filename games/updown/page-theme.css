@@ -1,0 +1,38 @@
+/* Cobalt number board; guesses, range limits and directional labels stay unchanged. */
+body.dp-playing[data-dp-kind="updown"] {
+  --suite-bg: radial-gradient(ellipse at 28% 18%, #29436d, #172a48 58%, #101b31);
+  --suite-surface: linear-gradient(140deg, #2b3f60, #1c2c47 78%);
+  --suite-subtle: #20324d;
+  --suite-ink: #f4f0e7;
+  --suite-muted: #bac9dd;
+  --suite-accent: #edc580;
+  --suite-accent-ink: #3b3023;
+  --suite-line: #b4c3dc3d;
+}
+body.dp-playing[data-dp-kind="updown"] .stage-art { background: radial-gradient(ellipse at 48% 58%, #71849c, #405c7e 52%, #253c5c); }
+body.dp-playing[data-dp-kind="updown"] .stage-art::before { inset: 0; background: radial-gradient(ellipse at 50% 14%, #ffe1a62b, transparent 65%); filter: none; }
+body.dp-playing[data-dp-kind="updown"] .stage-art .game-art {
+  mask-image: radial-gradient(ellipse at 50% 52%, #000 42%, #000e 68%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 52%, #000 42%, #000e 68%, transparent 100%);
+}
+body.dp-playing[data-dp-kind="updown"] .updown-range {
+  background: radial-gradient(ellipse at 50% 0, #385579, #233958 78%);
+  border-color: #adbed566;
+  color: #d7e0eb;
+  box-shadow: inset 0 1px #eff5ff1a, 0 12px 28px #09132547;
+}
+body.dp-playing[data-dp-kind="updown"] .updown-range span { color: #becde0; }
+body.dp-playing[data-dp-kind="updown"] .updown-range strong { color: #f5dfa9; text-shadow: 0 0 25px #efc87d17; }
+body.dp-playing[data-dp-kind="updown"] :is(#app, #view) #updown-form label { color: #c8d5e6; }
+body.dp-playing[data-dp-kind="updown"] #app #updown-range { background: linear-gradient(90deg, #c7d6f00a, transparent); box-shadow: inset 0 -1px #b6c7dc3b; }
+body.dp-playing[data-dp-kind="updown"] #app #updown-range strong { color: #f5dfa9; }
+body.dp-playing[data-dp-kind="updown"] :is(#app, #view) :is(#updown-value, #updown-guess) { background: #192c47; border-color: #afc3df73; color: #f7f1e6; box-shadow: inset 0 1px 4px #0711243b; }
+body.dp-playing[data-dp-kind="updown"] #view .updown-hint { color: #c3d0e3; }
+body.dp-playing[data-dp-kind="updown"] #view .updown-hint b { color: #f2eee3; }
+body.dp-playing[data-dp-kind="updown"] #app .updown-hint.higher,
+body.dp-playing[data-dp-kind="updown"] #view .updown-hint[data-hint="up"] strong { color: #f1c37d; }
+body.dp-playing[data-dp-kind="updown"] #app .updown-hint.lower,
+body.dp-playing[data-dp-kind="updown"] #view .updown-hint[data-hint="down"] strong { color: #a7dee9; }
+body.dp-playing[data-dp-kind="updown"] #view .updown-hint[data-hint="hit"] strong { color: #c3e4bd; }
+body.dp-playing[data-dp-kind="updown"] #app #updown-error { color: #f1b5a5; }
+body.dp-playing[data-dp-kind="updown"] #app #updown-value[aria-invalid="true"] { border-color: #edb0a3; box-shadow: inset 0 0 0 1px #edb0a3; }

@@ -49,7 +49,7 @@ function entry(){
   room=null;clearTimeout(timer);revealed=false;
   if(party){window.DrinkingPresentation?.leave();return party.missing();}
   const create=mode==='create';
-  view.innerHTML='<section class="card"><div class="inside"><h1>왕게임</h1><p>왕을 뽑고 나머지는 번호 카드를 받아요. 왕이 한두 개 번호를 골라 미션을 내리면, 그 번호를 가진 사람이 공개돼요.</p>'+
+  view.innerHTML='<section class="card"><div class="inside"><h1 class="suite-heading">왕게임</h1><p class="suite-hint">왕을 뽑고 나머지는 번호 카드를 받아요. 왕이 번호 한두 개를 골라 미션을 내리면, 그 번호를 가진 사람이 공개돼요.</p>'+
     '<div class="tabs"><button data-do="create-tab" aria-pressed="'+create+'">방 만들기</button><button data-do="join-tab" aria-pressed="'+!create+'">방 들어가기</button></div>'+
     '<form id="entry">'+
     (create?'<label>방 제목<input name="title" required maxlength="40" value="왕게임 같이 한 판 해요"></label><label>참여 인원<select name="capacity">'+Array.from({length:10},(_,i)=>'<option value="'+(i+3)+'" '+(i===1?'selected':'')+'>'+(i+3)+'명</option>').join('')+'</select></label>':
@@ -88,42 +88,42 @@ function render(s,force=false){
   const heading='<div class="topline"><span>방 '+(party?.code||s.code)+'</span><span>'+s.round+'번째 판 · '+s.players.length+'/'+s.capacity+'명</span></div>';
   let content='';
   if(s.phase==='waiting'){
-    content='<h1>'+esc(s.title)+'</h1><p>모두 모이면 시작해요. 초대 링크와 방 비밀번호를 친구에게 알려 주세요.</p>'+members+control('초대 링크 복사','copy',true);
+    content='<h1 class="suite-heading">'+esc(s.title)+'</h1><p class="suite-hint">모두 모이면 시작해요. 초대 링크와 방 비밀번호를 친구에게 알려 주세요.</p>'+members+control('초대 링크 복사','copy',true);
   }else if(s.phase==='done'||s.phase==='response'){
     const recipients=[[s.number,s.recipient]];
     if(s.second!=null)recipients.push([s.second,s.secondRecipient]);
     const rows=recipients.map(([number,player])=>'<div><dt>카드 '+esc(number)+'번</dt><dd>'+esc(s.players[player])+'</dd></div>').join('');
     content='<section class="king-order"><span class="king-order-label">왕의 명령 · '+esc(s.players[s.king])+'</span>'+
-      '<h1>'+esc(s.mission)+'</h1><dl class="king-recipients" aria-label="명령을 받은 사람">'+rows+'</dl></section>';
+      '<h1 class="suite-heading">'+esc(s.mission)+'</h1><dl class="king-recipients" aria-label="명령을 받은 사람">'+rows+'</dl></section>';
     if(s.phase==='response'){
-      if(!recipients.some(([,p])=>p===s.me))content+='<p>두 사람이 각자 휴대폰에서 선택하고 있어요.</p>';
+      if(!recipients.some(([,p])=>p===s.me))content+='<p class="suite-hint">두 사람이 각자 휴대폰에서 선택하고 있어요.</p>';
       else {
         const accepted=s.accepted.includes(s.card);
-        content+='<p>'+(accepted?'동의했어요. 상대의 선택을 기다려요.':'이 미션을 할까요?')+'</p><div class="actions">'+
+        content+='<p class="suite-hint">'+(accepted?'동의했어요. 상대의 선택을 기다려요.':'이 미션을 할까요?')+'</p><div class="actions">'+
           (accepted?'':control('동의','accept',true))+control('패스','decline')+'</div>';
       }
     }else{
-      if(s.declined!=null)content+='<p>이번 미션은 패스했어요. 벌칙 없이 다음 판으로 넘어가요.</p>';
-      else if(s.accepted?.length===2)content+='<p>두 사람 모두 동의했어요. 진행 중에도 언제든 멈출 수 있어요.</p>';
-      else content+='<p>답하거나 하기 어려운 미션은 이유를 말하지 않고 패스해도 돼요.</p>';
-      content+=party?'':s.me===0?control('한 판 더','again',true):'<p>방장이 다음 판을 시작할 수 있어요.</p>';
+      if(s.declined!=null)content+='<p class="suite-hint">이번 미션은 패스했어요. 벌칙 없이 다음 판으로 넘어가요.</p>';
+      else if(s.accepted?.length===2)content+='<p class="suite-hint">두 사람 모두 동의했어요. 진행 중에도 언제든 멈출 수 있어요.</p>';
+      else content+='<p class="suite-hint">답하거나 하기 어려운 미션은 이유를 말하지 않고 패스해도 돼요.</p>';
+      content+=party?'':s.me===0?control('한 판 더','again',true):'<p class="suite-hint">방장이 다음 판을 시작할 수 있어요.</p>';
     }
   }else{
     const role=s.card===0?'이번 판의 왕이에요!':'내 번호는 '+s.card+'번이에요.';
     const card='<section class="role">'+control(revealed?'내 카드 가리기':'내 카드 보기','reveal')+
       (revealed?'<p class="secret">'+role+'</p>':'')+'</section>';
     if(s.phase==='cards'){
-      content='<h1>내 카드를 확인하세요</h1>'+card+'<p>카드 확인 '+s.readyCount+' / '+s.players.length+'명</p>'+
-        (s.ready?'<p>다른 참가자의 확인을 기다려요.</p>':revealed?control('확인했어요','ready',true):'');
+      content='<h1 class="suite-heading">내 카드를 확인해 주세요</h1>'+card+'<p class="suite-hint">카드 확인 '+s.readyCount+' / '+s.players.length+'명</p>'+
+        (s.ready?'<p class="suite-hint">다른 참가자의 확인을 기다려요.</p>':revealed?control('확인했어요','ready',true):'');
     }else if(s.me===s.king){
       const count=s.players.length-1;
-      content='<h1>왕의 미션을 정하세요</h1>'+card+'<form id="order"><label>첫 번째 번호<select name="number">'+numberOptions(count,draftNumber)+'</select></label>'+
+      content='<h1 class="suite-heading">번호와 미션을 골라 주세요</h1>'+card+'<form id="order"><label>첫 번째 번호<select name="number">'+numberOptions(count,draftNumber)+'</select></label>'+
         '<label>두 번째 번호 (선택)<select name="second">'+secondOptions(count)+'</select></label>'+
         '<label>미션<input name="mission" maxlength="80" required value="'+esc(draftMission)+'"></label>'+
         '<p><small>직접 적은 미션은 관리자 검토 후 다른 참가자에게도 추천될 수 있어요.</small></p>'+
       control('다른 미션 추천','suggest')+'<div class="actions"><button class="action" type="submit">명령 내리기</button></div></form>';
     }else{
-      content='<h1>'+esc(s.players[s.king])+'님이 왕이에요</h1>'+card+'<p>왕이 번호와 미션을 고르고 있어요.</p>';
+      content='<h1 class="suite-heading">'+esc(s.players[s.king])+'님이 왕이에요</h1>'+card+'<p class="suite-hint">왕이 번호와 미션을 고르고 있어요.</p>';
     }
   }
   view.innerHTML='<section class="card"><div class="inside">'+heading+content+'<div class="actions">'+control('방 나가기','leave')+'</div></div></section>';

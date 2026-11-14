@@ -16,8 +16,11 @@ const kinds = ['croc','bottle','bomb','stopwatch','liar','king','truth','initial
 const viewports = [{width:390,height:844},{width:375,height:667},{width:1366,height:900},{width:844,height:390}];
 const largerViewports = [{width:720,height:740},{width:768,height:1024},{width:1024,height:768},{width:1600,height:900}];
 const gameViewports = [...viewports,...largerViewports];
-const themedGames = new Set(['croc','bottle']);
+const themedGames = new Set(kinds);
 const themeReviewSizes = ['390x844','844x390','720x740','768x1024','1600x900'];
+const suiteReviewSizes = ['390x844','1600x900'];
+const themeCaptures = kind => ['croc','bottle'].includes(kind) ? themeReviewSizes :
+  ['bomb','truth'].includes(kind) ? ['390x844','844x390','1600x900'] : suiteReviewSizes;
 const artifacts = path.join(__dirname,'artifacts/drinking-presentation');
 const glassAsset = '/games/drinking/assets/result-glass-v2.webp';
 const launchOptions = {headless:true,...(process.env.OJJUDA_CHROMIUM_PATH ? {executablePath:process.env.OJJUDA_CHROMIUM_PATH} : {})};
@@ -44,10 +47,12 @@ async function settledGame(page) {
 }
 
 async function expectGameTheme(page,kind) {
-  const themed=await page.evaluate(kind=>[...document.styleSheets].some(sheet=>sheet.href&&
-    new URL(sheet.href,document.baseURI).pathname==='/games/'+kind+'/page-theme.css'&&
-    !sheet.disabled&&matchMedia(sheet.media.mediaText||'all').matches&&sheet.cssRules.length>0),kind);
-  assert.ok(themed,'the entered '+kind+' game loads its page theme');
+  const themePaths=['/games/'+kind+'/page-theme.css'];
+  if(!['croc','bottle'].includes(kind))themePaths.push('/games/drinking/suite-theme.css');
+  const themed=await page.evaluate(paths=>paths.every(path=>[...document.styleSheets].some(sheet=>sheet.href&&
+    new URL(sheet.href,document.baseURI).pathname===path&&
+    !sheet.disabled&&matchMedia(sheet.media.mediaText||'all').matches&&sheet.cssRules.length>0)),themePaths);
+  assert.ok(themed,'the entered '+kind+' game loads all required themes: '+themePaths.join(', '));
   const arcadeLinks=await page.locator('#access-content a:visible').evaluateAll(links=>links.filter(link=>{
     const url=new URL(link.href,document.baseURI);
     return /오락실로/.test(link.textContent)||(url.pathname==='/world.html'&&url.searchParams.get('tab')==='arcade');
@@ -272,7 +277,7 @@ test('13 native games and 13 local games fill actual viewports and return to the
         assert.equal(destination.pathname,'/games/drinking/');
         assert.equal(destination.searchParams.get('resume'),parent.code,'the shared room remains available from the drinking menu');
         if(themedGames.has(kind))await expectGameTheme(online.page,kind);
-        await allSizes(online.page,'native-'+kind,{capture:themedGames.has(kind)?themeReviewSizes:[]});
+        await allSizes(online.page,'native-'+kind,{capture:themedGames.has(kind)?themeCaptures(kind):[]});
         if(['king','fingers','truth'].includes(kind))await screenshot(online.page,'native-'+kind+'-390x844');
         if(kind==='truth') {
           // Expanding this editor changes content without resizing the pane.
@@ -368,12 +373,12 @@ test('13 native games and 13 local games fill actual viewports and return to the
       assert.equal(await local.page.locator('.menu-nav').count(),0,'the top link is the single game-menu navigation');
       assert.equal(await local.page.locator('.mode-back').isVisible(),false);
       if(themedGames.has(kind))await expectGameTheme(local.page,kind);
-      await allSizes(local.page,'local-'+kind+'-entry',{local:true,capture:themedGames.has(kind)?themeReviewSizes:[]});
+      await allSizes(local.page,'local-'+kind+'-entry',{local:true,capture:themedGames.has(kind)?themeCaptures(kind):[]});
       if(kind==='bomb')await local.page.locator('[data-action="confirm-bomb-time"]').click();
       else await local.page.locator('[data-action="start"]').click();
       await local.page.waitForFunction(()=>!document.querySelector('#app [data-action="start"]'));
       if(themedGames.has(kind))await expectGameTheme(local.page,kind);
-      await allSizes(local.page,'local-'+kind+(kind==='bottle'?'-setup':'-play'),{local:true,capture:themedGames.has(kind)?themeReviewSizes:[]});
+      await allSizes(local.page,'local-'+kind+(kind==='bottle'?'-setup':'-play'),{local:true,capture:themedGames.has(kind)?themeCaptures(kind):[]});
       if(['truth','liar'].includes(kind))await screenshot(local.page,'local-'+kind+'-390x844');
       if(kind==='updown') {
         for(let attempt=0;attempt<7&&await local.page.locator('#updown-value').count();attempt++) {
