@@ -20,7 +20,7 @@ const themedGames = new Set(kinds);
 const themeReviewSizes = ['390x844','844x390','720x740','768x1024','1600x900'];
 const suiteReviewSizes = ['390x844','1600x900'];
 const themeCaptures = kind => ['croc','bottle'].includes(kind) ? themeReviewSizes :
-  kind==='bomb' ? ['390x844','844x390','1600x900'] : suiteReviewSizes;
+  ['bomb','truth'].includes(kind) ? ['390x844','844x390','1600x900'] : suiteReviewSizes;
 const artifacts = path.join(__dirname,'artifacts/drinking-presentation');
 const glassAsset = '/games/drinking/assets/result-glass-v2.webp';
 const launchOptions = {headless:true,...(process.env.OJJUDA_CHROMIUM_PATH ? {executablePath:process.env.OJJUDA_CHROMIUM_PATH} : {})};

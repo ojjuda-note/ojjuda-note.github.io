@@ -46,3 +46,11 @@ body.dp-playing[data-dp-kind="truth"] #truth-editor :is(button, input, select, t
 @media (max-width: 520px) and (max-height: 740px) {
   body.dp-playing[data-dp-kind="truth"][data-dp-phase="intro"] .play-shell:has(.truth-settings) > .stage-art { height: 60px; }
 }
+@media (max-height: 480px) and (min-width: 600px) {
+  body.dp-playing[data-dp-mode="local"][data-dp-kind="truth"][data-dp-phase="intro"] .play-body:has(> .truth-settings) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); grid-template-rows: auto auto auto; align-content: safe center; gap: 8px 24px; }
+  body.dp-playing[data-dp-mode="local"][data-dp-kind="truth"][data-dp-phase="intro"] .play-body > h2 { grid-column: 1; grid-row: 1; margin: 0; }
+  body.dp-playing[data-dp-mode="local"][data-dp-kind="truth"][data-dp-phase="intro"] .play-body > p:not(#truth-start-message) { grid-column: 1; grid-row: 2; margin: 0; }
+  body.dp-playing[data-dp-mode="local"][data-dp-kind="truth"][data-dp-phase="intro"] .play-body > .truth-settings { grid-column: 2; grid-row: 1; margin: 0; }
+  body.dp-playing[data-dp-mode="local"][data-dp-kind="truth"][data-dp-phase="intro"] .play-body > .actions { grid-column: 2; grid-row: 2; margin: 0; }
+  body.dp-playing[data-dp-mode="local"][data-dp-kind="truth"][data-dp-phase="intro"] .play-body > #truth-start-message { grid-column: 1 / -1; grid-row: 3; margin: 0; }
+}
