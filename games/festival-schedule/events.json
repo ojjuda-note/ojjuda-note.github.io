@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-14",
+  "updatedAt": "2026-11-15",
   "events": [
     {
       "id": "gongju-gunbam-2026",
@@ -21562,6 +21562,77 @@
         "여자부",
         "정규리그"
       ]
+    },
+    {
+      "id": "changwon-tongil-marathon-20261115",
+      "title": "제26회 창원통일마라톤대회",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "마라톤",
+      "start": "2026-11-15",
+      "end": "2026-11-15",
+      "region": "경남",
+      "city": "창원시",
+      "venue": "창원종합운동장 보조경기장",
+      "address": "경남 창원시 성산구 원이대로 450",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "한반도 평화와 통일을 주제로 창원에서 열리는 5km 생활체육 마라톤입니다. 5km는 기록 측정을 하지 않는 코스입니다.",
+      "scheduleNote": "2026-11-15(일) 09:00 집결, 09:30 5km 출발. 대회 전체 일정 08:40~11:00, 코스 제한시간 1시간.",
+      "priceNote": "선수 참가비: 일반 25,000원, 초등학생 이하 10,000원. 일반 관람료는 공식 안내 확인.",
+      "accessNote": "대회 홈페이지에서 2026-09-14 10:00부터 선착순 3,000명 참가 접수 안내. 참가와 일반 관람 조건은 별개이며, 입장·관람 가능 여부는 주최 측 확인.",
+      "sourceUrl": "https://www.tongilmarathon.kr/ko/sub1_1.html",
+      "sourceName": "제26회 창원통일마라톤대회 공식 조직위원회",
+      "sourceCheckedAt": "2026-11-15",
+      "verificationSources": [
+        "https://www.tongilmarathon.kr/ko/sub1_7.html"
+      ],
+      "tags": [
+        "마라톤",
+        "5km",
+        "생활체육",
+        "경남",
+        "동호인"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "giverun-busan-20261121",
+      "title": "GIVE RUN 2026 부산",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "마라톤",
+      "start": "2026-11-21",
+      "end": "2026-11-21",
+      "region": "부산",
+      "city": "강서구",
+      "venue": "부산 대저생태공원",
+      "address": "부산광역시 강서구 공항로 1246 (대저생태공원 관리사무소 기준)",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "2026 부산 기브런으로 10km와 5km 달리기 코스를 운영하는 기부 마라톤입니다.",
+      "scheduleNote": "2026-11-21(토) 09:00 출발. 코스 10km·5km, 전 참가자 기록칩 제공. 실제 집결 위치는 공식 코스 안내 확인.",
+      "priceNote": "참가비는 주최 측 공식 대회요강 확인. 관람료는 별도로 안내되지 않았으며 무료라고 추정하지 않습니다.",
+      "accessNote": "참가 신청은 2026-09-16 11:00부터 4,000명 선착순. 환불 신청 마감 2026-10-30 17:00. 일반 관람·입장 가능 여부는 주최 측 공식 안내 확인.",
+      "sourceUrl": "https://giverun.kr/home/main.ubs",
+      "sourceName": "GIVE RUN 2026 부산 공식 대회 홈페이지",
+      "sourceCheckedAt": "2026-11-15",
+      "verificationSources": [
+        "https://giverun.kr/home/introduce/location/pageView.ubs",
+        "https://giverun.kr/home/introduce/attention/pageView.ubs"
+      ],
+      "tags": [
+        "마라톤",
+        "러닝",
+        "기부",
+        "생활체육",
+        "부산"
+      ],
+      "status": "scheduled"
     }
   ]
 }
