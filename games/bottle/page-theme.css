@@ -163,6 +163,9 @@ body.dp-playing[data-dp-kind="bottle"] .dp-dialog--guide .dp-primary { backgroun
   body.dp-playing[data-dp-kind="bottle"] .bottle-rules :is(strong, small) { grid-column: 2; }
 }
 @media (max-height: 480px) and (min-width: 600px) {
+  /* Shared label margins must not add a second gap around each option row. */
+  body.dp-playing[data-dp-kind="bottle"] #view .bottle-table-setup .bottle-options label { margin: 0; }
+  body.dp-playing[data-dp-kind="bottle"] #view #bottle-table.bottle-table-setup { margin: 4px 0; }
   body.dp-playing[data-dp-kind="bottle"][data-dp-phase="intro"] .play-body {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
