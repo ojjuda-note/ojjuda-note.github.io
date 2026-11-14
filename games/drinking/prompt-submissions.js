@@ -55,7 +55,7 @@
     if (loads.has(kind)) return loads.get(kind);
     const request = (async () => {
       try {
-        const result = await invoke('drinking_content','pool',{kinds:[kind],round_mix:true});
+        const result = await invoke('drinking_content','pool',{kinds:[kind],round_mix:kind!=='fingers'});
         const bank = result?.banks?.[kind];
         if (!validBank(kind,bank)) return false;
         if (JSON.stringify(bank) !== JSON.stringify(banks.get(kind))) banks.set(kind,bank);
@@ -123,6 +123,7 @@
     managed:kind => kinds.has(kind),
     list:kind => banks.get(kind) || [],
     truth:() => banks.get('truth') || {mild:[],spicy:[]},
+    fingerBank:async()=>await refresh('fingers') ? banks.get('fingers') : [],
     refresh,recommendations,kingChoices,submit
   };
   void flush();

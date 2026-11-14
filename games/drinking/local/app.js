@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const memberStore='oj.party.'+document.getElementById('access-content').dataset.member+'.';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-drinking-suite1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-fingers-menu1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -66,7 +66,7 @@ const pageIntroductions={
   fingers:{
     heading:['해당하면 접어요.','다섯 개면 당첨!'],
     description:['‘목걸이 한 사람 접어!’','해당하면 손가락 하나를 접어요.'],
-    steps:[['조건 정하기','추천 또는 직접'],['하나 접기','해당하면 선택'],['기록 확인','다 접으면 당첨']],
+    steps:[['조건 정하기','목록 또는 직접 입력'],['하나 접기','해당하면 선택'],['기록 확인','다 접으면 당첨']],
     button:'손가락 다섯 개로 시작'
   },
   imagevote:{
@@ -83,7 +83,7 @@ const pageIntroductions={
   }
 };
 const prompts=window.DrinkingPrompts;
-const manualGames=new Set(['king','fingers','imagevote']);
+const manualGames=new Set(['king','imagevote']);
 function rand(n){return Math.floor(Math.random()*n)}
 function shuffled(items){const copy=[...items];for(let i=copy.length-1;i>0;i--){const j=rand(i+1);[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}
 const bags=new WeakMap();
@@ -310,7 +310,7 @@ async function begin(){
     const kind=game.id;
     r.bank=[];
     r.bankReady=prompts.refresh(kind).then(loaded=>{if(round===r&&loaded)r.bank=prompts.list(kind);});
-  }else if(prompts.managed(game.id)&&game.id!=='truth'){
+  }else if(prompts.managed(game.id)&&game.id!=='truth'&&game.id!=='fingers'){
     const button=app.querySelector('[data-action="start"]');
     if(button){button.disabled=true;button.textContent='불러오는 중…';}
     if(!await loadRoundBank(r))return;
@@ -324,7 +324,7 @@ async function begin(){
     case 'truth':return startTruthRound(r);
     case 'fingers':
       r.fingers=players.map(()=>5);
-      return partyPrompt();
+      return fingerPrompt();
     case 'imagevote':return partyPrompt();
     case 'updown':
       r.answer=1+rand(100);r.low=1;r.high=100;r.guesses=0;
@@ -852,43 +852,49 @@ function upDown(lastGuess){
     r.turn=(r.turn+1)%players.length;fx.play('turn');upDown(guess);
   };
 }
-function partyPrompt(){
-  const r=round,fingers=game.id==='fingers';
+function fingerPrompt(){
+  const r=round,turn=r.turn,picker=window.FingerConditions;
   r.phase='party-prompt';
-  shell((fingers?tag(r.turn):'')+'<h2>'+(fingers?'접을 조건을 정해 주세요':'어떤 사람을 찾을까요?')+'</h2>'+
-    '<form class="party-prompt" id="party-prompt"><label for="party-question">'+(fingers?'접을 조건':'지목할 질문')+'</label>'+
+  shell(tag(turn)+'<h2>접을 지시를 정해 주세요</h2><form class="party-prompt" id="party-prompt">'+picker.markup()+
+    '<button class="start" type="submit" disabled>이 지시로 시작</button></form>'+fingerScoreboard());
+  picker.mount($('#party-prompt'),picker.draft(),()=>prompts.fingerBank(),(prompt,manual)=>{
+    if(round!==r||r.phase!=='party-prompt'||r.turn!==turn)return;
+    if(manual)prompts.submit('fingers',prompt);
+    r.prompt=prompt;fx.play('deal');showFold(r,prompt);
+  });
+}
+function showFold(r,prompt){
+  r.phase='fold';
+  shell(tag(r.turn)+'<h2>'+esc(prompt)+'</h2><p>조건에 해당해서 접겠다는 사람만 골라 주세요. 패스한 사람은 고르지 않아요.</p>'+
+    '<form id="fold-form"><fieldset class="fold-players" aria-label="손가락을 접을 사람">'+
+    players.map((_,i)=>'<label><input type="checkbox" value="'+i+'"><span>'+name(i)+'</span><small>'+r.fingers[i]+'개</small></label>').join('')+
+    '</fieldset><button class="start" type="submit">선택 완료</button></form>');
+  $('#fold-form').onsubmit=e=>{
+    e.preventDefault();
+    if(round!==r||r.phase!=='fold')return;
+    const checked=e.currentTarget.querySelectorAll('input:checked');
+    for(const box of checked)r.fingers[Number(box.value)]--;
+    const losers=players.filter((_,i)=>r.fingers[i]===0);
+    if(losers.length)return end(losers.join(' · ')+(losers.length>1?' 함께 걸렸어요!':'님이 걸렸어요!'),'다섯 손가락을 모두 접었어요.');
+    r.turn=(r.turn+1)%players.length;
+    fx.play('turn');fingerPrompt();
+  };
+}
+function partyPrompt(){
+  const r=round;
+  r.phase='party-prompt';
+  shell('<h2>어떤 사람을 찾을까요?</h2><form class="party-prompt" id="party-prompt"><label for="party-question">지목할 질문</label>'+
     '<textarea class="field" id="party-question" rows="2" maxlength="120" required>'+esc(draw(r.bank))+'</textarea>'+
     '<p><small>직접 적은 내용은 관리자 검토 후 다른 참가자에게도 추천될 수 있어요.</small></p>'+
-      '<div class="actions">'+btn(fingers?'다른 조건':'다른 질문','party-suggest','quiet')+
-    '<button class="start" type="submit">'+(fingers?'이 조건으로 접기':'비밀 투표 시작')+'</button></div></form>'+
-    (fingers?fingerScoreboard():''));
+    '<div class="actions">'+btn('다른 질문','party-suggest','quiet')+'<button class="start" type="submit">비밀 투표 시작</button></div></form>');
   const field=$('#party-question');
   bindLocalSuggestion(r,field,app.querySelector('[data-action="party-suggest"]'));
   field.oninput=()=>field.setCustomValidity('');
   $('#party-prompt').onsubmit=event=>{
-    event.preventDefault();
-    if(round!==r||r.phase!=='party-prompt')return;
+    event.preventDefault();if(round!==r||r.phase!=='party-prompt')return;
     const prompt=field.value.trim();
-    if(!prompt||prompt.length>120){field.setCustomValidity('1~120자로 적어 주세요.');field.reportValidity();return}
-    window.DrinkingPrompts.submit(game.id,prompt);
-    r.prompt=prompt;
-    fx.play('deal');
-    if(!fingers)return startVotes('imagevote');
-    r.phase='fold';
-    shell(tag(r.turn)+'<h2>'+esc(prompt)+'</h2><p>조건에 해당해서 접겠다는 사람만 골라 주세요. 패스한 사람은 고르지 않아요.</p>'+
-      '<form id="fold-form"><fieldset class="fold-players" aria-label="손가락을 접을 사람">'+
-      players.map((_,i)=>'<label><input type="checkbox" value="'+i+'"><span>'+name(i)+'</span><small>'+r.fingers[i]+'개</small></label>').join('')+
-      '</fieldset><button class="start" type="submit">선택 완료</button></form>');
-    $('#fold-form').onsubmit=e=>{
-      e.preventDefault();
-      if(round!==r||r.phase!=='fold')return;
-      const checked=e.currentTarget.querySelectorAll('input:checked');
-      for(const box of checked)r.fingers[Number(box.value)]--;
-      const losers=players.filter((_,i)=>r.fingers[i]===0);
-      if(losers.length)return end(losers.join(' · ')+(losers.length>1?' 함께 걸렸어요!':'님이 걸렸어요!'),'다섯 손가락을 모두 접었어요.');
-      r.turn=(r.turn+1)%players.length;
-      fx.play('turn');partyPrompt();
-    };
+    if(!prompt||prompt.length>120){field.setCustomValidity('1~120자로 적어 주세요.');field.reportValidity();return;}
+    prompts.submit('imagevote',prompt);r.prompt=prompt;fx.play('deal');startVotes('imagevote');
   };
 }
 function fingerScoreboard(){

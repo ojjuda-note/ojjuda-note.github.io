@@ -283,3 +283,35 @@ test('twelve isolated pages share one actual SQL room through joins, outage, upd
   assert.ok(windows.every(f=>f.errors.length===0));
   t.diagnostic(`12 independent DOM/session realms, real ${db.migrations.length}-migration PostgreSQL fixture, overlapping member requests; PGlite serializes its single connection, so this is not a production load benchmark.`);
 });
+
+test('one-device fingers uses topic menus and keeps an independent custom draft through a failed catalog load',async t=>{
+  const bank=['목걸이 한 사람 접어','흰 티 입은 사람 접어','소개팅한 사람 접어','아침에 일찍 일어난 사람 접어'];
+  let available=false;
+  const ui=await screen({url:'/games/drinking/local/#fingers',
+    prepare(w){w.scrollTo=()=>{};w.matchMedia=()=>({matches:false,addEventListener(){}});w.HTMLElement.prototype.scrollIntoView=()=>{};},
+    rpc(name,args){
+      if(name==='drinking_content'){
+        assert.equal(args.p_options.round_mix,false);
+        if(!available)throw Error('offline');
+        return {banks:{fingers:bank}};
+      }
+      return {ok:true};
+    }});t.after(()=>ui.close());
+  ui.click('[data-action="start"]');
+  await until(()=>ui.find('[data-finger-retry]')?.hidden===false,'retry list');
+  ui.click('[data-finger-mode="write"]');
+  const field=ui.find('[data-finger-panel="write"] textarea');
+  field.value='   ';field.dispatchEvent(new ui.w.Event('input',{bubbles:true}));
+  assert.equal(ui.find('#party-prompt [type="submit"]').disabled,true);
+  field.value='오늘 산책한 사람 접어';field.dispatchEvent(new ui.w.Event('input',{bubbles:true}));
+  ui.click('[data-finger-mode="list"]');available=true;ui.click('[data-finger-retry]');
+  const topic=ui.find('[data-finger-topic]'),choice=ui.find('[data-finger-choice]');
+  await until(()=>choice.options.length===bank.length,'all current instructions');
+  topic.value='옷·액세서리';topic.dispatchEvent(new ui.w.Event('change'));
+  assert.deepEqual([...choice.options].map(o=>o.value),bank.slice(0,2));
+  ui.click('[data-finger-mode="write"]');assert.equal(field.value,'오늘 산책한 사람 접어');
+  ui.submit('#party-prompt');assert.equal(ui.find('.play-body h2').textContent,field.value);
+  ui.submit('#fold-form');await until(()=>ui.find('[data-finger-choice]')?.options.length===bank.length,'next turn');
+  const next=ui.find('[data-finger-choice]');next.value=bank[2];next.dispatchEvent(new ui.w.Event('change'));
+  ui.submit('#party-prompt');assert.equal(ui.find('.play-body h2').textContent,bank[2]);
+});
