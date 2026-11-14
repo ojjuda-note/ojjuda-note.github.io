@@ -450,7 +450,7 @@ async function prepareDetailedReading(chart,target,person=currentPerson||readPer
   detailModulesPromise ||= Promise.all([
     import('./fortune-data.mjs?v=20261113-saju-reader1'),
     import('./readings.mjs?v=20261114-saju-daeun6-1'),
-    import('./report-view.mjs?v=20261114-saju-swipe1'),
+    import('./report-view.mjs?v=20261114-saju-slide1'),
     import('./daeun.mjs?v=20261114-saju-qa1'),
     zodiacModule()
   ]).catch(error=>{detailModulesPromise=null;throw error;});
