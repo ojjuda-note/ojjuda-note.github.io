@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - automation/verify-festival-live-20261115
+  pull_request:
 jobs:
   browser:
     runs-on: ubuntu-latest
