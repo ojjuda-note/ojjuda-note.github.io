@@ -1,17 +1,30 @@
+/* Shared drinking-game surfaces with the red switch as the focal point. */
+body.dp-playing[data-dp-kind="secretcount"] {
+  --suite-bg: radial-gradient(ellipse at 28% 18%, #2c4545, #1a2e31 58%, #112125);
+  --suite-surface: linear-gradient(142deg, #2b4141, #1b2c30 78%);
+  --suite-subtle: #1a2f31;
+  --suite-ink: #f6f1e5;
+  --suite-muted: #bfcdc6;
+  --suite-accent: #e6ca94;
+  --suite-accent-ink: #352e21;
+  --suite-line: #aec4ba44;
+}
 .sc-setup,.sc-controls { margin:auto; width:min(100%,22rem); display:grid; justify-items:center; gap:clamp(12px,3vh,26px); text-align:center }
-.sc-setup h2 { margin:0; font-weight:750 }
+.sc-setup h2 { margin:0; color:var(--suite-ink); font-size:clamp(1.4rem,3.3vw,2rem); letter-spacing:-.045em }
+.sc-setup-art.sc-emblem { width:clamp(45px,9dvh,90px); margin:0 auto }
+.sc-setup .sc-range { margin:0; color:var(--suite-muted) }
 .sc-setup fieldset { border:0; padding:0; margin:0; display:flex; gap:8px }
 .sc-setup legend,.sc-reader { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip-path:inset(50%) }
-.sc-setup fieldset label { position:relative; display:block; padding:10px 18px; border-radius:10px; border:1px solid #98988f; cursor:pointer }
+.sc-setup fieldset label { position:relative; display:block; padding:10px 18px; border-radius:10px; border:1px solid var(--suite-line); background:var(--suite-subtle); color:var(--suite-ink); font-weight:700; cursor:pointer }
 .sc-setup fieldset input { position:absolute; opacity:0; width:1px; height:1px }
-.sc-setup fieldset label:has(:checked) { background:#324844; color:white; border-color:#324844 }
+.sc-setup fieldset label:has(:checked) { background:var(--suite-accent); color:var(--suite-accent-ink); border-color:var(--suite-accent) }
 .sc-setup fieldset label:focus-within { outline:3px solid #0084a0; outline-offset:2px }
-.sc-field:not([hidden]) { display:grid; width:min(100%,19rem); text-align:left }
+.sc-field:not([hidden]) { display:grid; width:min(100%,19rem); box-sizing:border-box; padding:10px 16px; border:1px solid var(--suite-line); border-radius:12px; background:var(--suite-subtle); text-align:left }
 .sc-range-head,.sc-range-ends { display:flex; align-items:baseline; justify-content:space-between }
-.sc-range-head output { font-size:1.45rem; font-weight:750; font-variant-numeric:tabular-nums; color:#274d42 }
-.sc-range-ends { color:#4c5a54; font-size:.85rem; font-variant-numeric:tabular-nums }
-.sc-field input[type=range] { width:100%; min-height:44px; margin:0; padding:0; accent-color:#386c5d; cursor:pointer }
-.sc-turn { margin:0 0 min(7dvh,3.3rem); max-width:100%; font-weight:750; font-size:clamp(1.05rem,3.7vw,1.4rem); line-height:1.25; color:#263e38; overflow-wrap:anywhere }
+.sc-range-head output { font-size:1.45rem; font-weight:750; font-variant-numeric:tabular-nums; color:var(--suite-accent) }
+.sc-range-ends { color:var(--suite-muted); font-size:.85rem; font-variant-numeric:tabular-nums }
+.sc-field input[type=range] { width:100%; min-height:44px; margin:0; padding:0; accent-color:var(--suite-accent); cursor:pointer }
+.sc-controls .sc-turn { margin:0 0 min(6dvh,3rem); padding:6px 14px; border-radius:999px; border:1px solid var(--suite-line); background:var(--suite-subtle); max-width:100%; font-weight:750; font-size:clamp(1.05rem,3.7vw,1.4rem); line-height:1.25; color:var(--suite-accent); overflow-wrap:anywhere }
 .sc-setup button,.sc-pass { min-height:44px; padding:10px 24px; border-radius:12px; border:1px solid #566460; background:#263a36; color:#fff; font:inherit; font-weight:700; cursor:pointer }
 .sc-controls { align-content:center; perspective:700px; padding:10px 0 }
 .sc-machine,.sc-emblem { position:relative; display:grid; place-items:center; aspect-ratio:1; width:min(54vw,31dvh,230px); border-radius:24%; background:linear-gradient(140deg,#c6c9bf,#717b74 42%,#414f4c 78%,#788078); box-shadow:inset 0 2px 2px #fff9,inset 0 -5px 3px #202d2a,0 10px 15px #18272530; isolation:isolate }
@@ -34,4 +47,5 @@ body.dp-playing[data-dp-kind=secretcount][data-dp-phase=press] #access-content >
 body.dp-playing[data-dp-kind=secretcount][data-dp-phase=press] #access-content > .dp-help,
 body.dp-playing[data-dp-kind=secretcount][data-dp-phase=press] #app .round-head,
 body.dp-playing[data-dp-kind=secretcount][data-dp-phase=press] #view .card > :is(.topline,.actions) { display:none }
-.sc-controls .sc-pass { color:#fff; background:#263a36 }
+.sc-controls .sc-pass { min-width:9rem; color:var(--suite-accent-ink); background:var(--suite-accent); border-color:var(--suite-accent); box-shadow:inset 0 1px #fff5 }
+@media(max-height:480px){ .sc-setup { gap:6px } .sc-setup-art.sc-emblem { display:none } .sc-controls .sc-turn { margin-bottom:12px } }

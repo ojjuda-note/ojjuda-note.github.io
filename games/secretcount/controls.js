@@ -4,7 +4,7 @@
   function setup(players) {
     const {min,max}=limits(players);
     const initial=Math.round((min+max)/2);
-    return '<form class="sc-setup"><h2>비밀 숫자 정하기</h2><fieldset><legend>정하는 방법</legend>' +
+    return '<form class="sc-setup"><span class="sc-emblem sc-setup-art" aria-hidden="true"></span><h2>비밀 숫자 정하기</h2><fieldset><legend>정하는 방법</legend>' +
       '<label><input type="radio" name="method" value="random" checked>랜덤</label>' +
       '<label><input type="radio" name="method" value="manual">직접 정하기</label></fieldset>' +
       '<p class="sc-range">목표 범위 '+min+'~'+max+'</p>' +
@@ -58,7 +58,7 @@
     return until;
   }
   function controls(mine, used, seat, escapedName) {
-    return '<div class="sc-controls"><p class="sc-turn" role="status">'+(seat+1)+'번 · '+escapedName+'님 차례</p><div class="sc-machine'+(mine?'':' sc-closed')+'">' +
+    return '<div class="sc-controls"><p class="turn-tag sc-turn" role="status">'+(seat+1)+'번 · '+escapedName+'님 차례</p><div class="sc-machine'+(mine?'':' sc-closed')+'">' +
       '<button type="button" data-sc-press aria-label="비밀 버튼 누르기"'+(mine&&used>=3?' data-sc-held':'')+(!mine||used>=3?' disabled':'')+'></button>' +
       '<span class="sc-lid" aria-hidden="true"></span></div>' +
       (mine?'<button class="sc-pass" type="button" data-sc-pass'+(used===0?' disabled':'')+'>턴 넘기기</button>':

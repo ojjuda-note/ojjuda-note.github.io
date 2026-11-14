@@ -660,9 +660,11 @@ test('the secret count button has a private total and a closed lid for the waiti
     await dismissGuide(p);
     const form=p.locator('.sc-setup');
     await form.locator('label').filter({hasText:'직접 정하기'}).click();
+    assert.equal(await p.locator('body').evaluate(el=>getComputedStyle(el).getPropertyValue('--suite-accent').trim()),'#e6ca94');
     const slider=form.getByRole('slider',{name:'비밀 숫자'});
     await slider.press('End');assert.equal(await form.locator('output').innerText(),'36');
     await slider.press('Home');assert.equal(await form.locator('output').innerText(),'5');
+    await screenshot(p,'secretcount-slider-'+(multi?'multi':'local'));
     await form.locator('[type=submit]').click();
     const hit=p.locator('[data-sc-press]'),pass=p.locator('[data-sc-pass]');
     await hit.waitFor({state:'visible'});
