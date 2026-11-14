@@ -71,7 +71,7 @@ async function check(browser,kind,errors) {
     if(c!==code)throw Error('unexpected room');
     if(a==='state') {
       if(seat<0)return {data:null,error:{message:'not_room_member'}};
-      return ok({code,capacity:4,players,me:seat,phase:'waiting',kind,title:'방장 인계',game:{},round,revision,serverMs:Date.now()});
+      return ok({code,capacity:4,players,me:seat,phase:'waiting',kind,title:'방장 인계',hints:[],game:{},round,revision,serverMs:Date.now()});
     }
     if(a==='leave'){
       assert.deepEqual(opts,{round,waiting:true,host:true});assert.equal(seat,0);
