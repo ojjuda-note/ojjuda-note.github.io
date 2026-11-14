@@ -111,7 +111,7 @@
     }
     if(s.phase==='spinning' && s.me===0){
       backgroundBrake=e=>{
-        if (!e.target.closest('button,a,input,select,textarea,label,dialog')) ui.send('brake');
+        if (!e.target.closest('button,a,input,select,textarea,label,dialog,[data-drinking-overlay]')) ui.send('brake');
       };
       document.addEventListener('click',backgroundBrake);
     }

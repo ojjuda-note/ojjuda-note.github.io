@@ -47,7 +47,7 @@ function secondOptions(count){
 }
 function entry(){
   room=null;clearTimeout(timer);revealed=false;
-  if(party)return party.missing();
+  if(party){window.DrinkingPresentation?.leave();return party.missing();}
   const create=mode==='create';
   view.innerHTML='<section class="card"><div class="inside"><h1>왕게임</h1><p>왕을 뽑고 나머지는 번호 카드를 받아요. 왕이 한두 개 번호를 골라 미션을 내리면, 그 번호를 가진 사람이 공개돼요.</p>'+
     '<div class="tabs"><button data-do="create-tab" aria-pressed="'+create+'">방 만들기</button><button data-do="join-tab" aria-pressed="'+!create+'">방 들어가기</button></div>'+
@@ -55,6 +55,7 @@ function entry(){
     (create?'<label>방 제목<input name="title" required maxlength="40" value="왕게임 같이 한 판 해요"></label><label>참여 인원<select name="capacity">'+Array.from({length:10},(_,i)=>'<option value="'+(i+3)+'" '+(i===1?'selected':'')+'>'+(i+3)+'명</option>').join('')+'</select></label>':
     '<label>방 코드<input name="code" required maxlength="6" minlength="6" autocapitalize="characters" spellcheck="false" value="'+esc(activeCode)+'"></label>')+
     '<label>방 비밀번호<input type="password" name="password" minlength="4" maxlength="32" required placeholder="'+(create?'4자 이상으로 정해 주세요':'방장이 정한 비밀번호')+'"></label><button class="action" type="submit">'+(create?'방 만들기':'입장하기')+'</button></form></div></section>';
+  window.DrinkingGameScreen?.native('king',null,view);
 }
 
 function render(s,force=false){
@@ -135,6 +136,7 @@ function render(s,force=false){
   }
   if(!missionStarted&&s.phase==='order'&&s.me===s.king){missionStarted=true;void suggestMission();}
 
+  window.DrinkingGameScreen?.native('king',s,view);
 }
 const messages={
  not_signed_in:'오쭈다 로그인이 필요해요.', banned:'지금은 대전방을 이용할 수 없어요.',

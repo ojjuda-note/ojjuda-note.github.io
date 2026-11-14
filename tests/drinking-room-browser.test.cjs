@@ -4,53 +4,10 @@
 // browser DOM and PostgreSQL game functions are real; Auth and HTTP transport
 // are deliberately isolated from production accounts and services.
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
 const test = require('node:test');
 const {chromium} = require('playwright');
 const {fixture} = require('./drinking-room-fixture.cjs');
-const {rpcArgs, root} = require('./helpers/drinking-ui-fixture.cjs');
-
-const origin = 'https://drinking-fixture.test';
-const mime = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8',
-  '.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.json':'application/json'};
-
-function configSource(actor) {
-  return `(() => {
-    const actor = ${JSON.stringify(actor)};
-    const user = {id: actor, is_anonymous: false};
-    const listeners = new Set();
-    const client = {
-      auth: {
-        getSession: async () => ({data:{session:{user}},error:null}),
-        getUser: async () => navigator.onLine
-          ? ({data:{user},error:null})
-          : ({data:{user:null},error:{name:'AuthRetryableFetchError',status:0}}),
-        onAuthStateChange(listener) {
-          listeners.add(listener);
-          return {data:{subscription:{unsubscribe:()=>listeners.delete(listener)}}};
-        }
-      },
-      rpc(name,args) {
-        let request;
-        function execute(signal) {
-          if (request) return request;
-          request = new Promise((resolve,reject) => {
-            if (!navigator.onLine) {resolve({data:null,error:{message:'Failed to fetch'}});return;}
-            const cancel = () => reject(new DOMException('Aborted','AbortError'));
-            if (signal?.aborted) {cancel();return;}
-            signal?.addEventListener('abort',cancel,{once:true});
-            window.__fixtureRpc({name,args:args||{}}).then(resolve,reject)
-              .finally(()=>signal?.removeEventListener('abort',cancel));
-          });
-          return request;
-        }
-        return {abortSignal:execute,then:(yes,no)=>execute().then(yes,no)};
-      }
-    };
-    window.OjjudaGetClient = async () => client;
-  })();`;
-}
+const {browserSession, dismissGuide, origin} = require('./helpers/drinking-browser-fixture.cjs');
 
 test('three Chromium sessions keep one SQL room through reconnection, a game and host handoff', {timeout:120000}, async t => {
   const db=await fixture();
@@ -60,34 +17,11 @@ test('three Chromium sessions keep one SQL room through reconnection, a game and
     ...(process.env.OJJUDA_CHROMIUM_PATH ? {executablePath:process.env.OJJUDA_CHROMIUM_PATH} : {})});
   const sessions=[], errors=[];
   async function open(actor) {
-    const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
-    const calls=[];
-    await context.exposeBinding('__fixtureRpc',async(_source,{name,args})=>{
-      calls.push({name,args});
-      if(name==='get_my_member_identity')return {data:{age:25,locked:true},error:null};
-      try{return {data:await db.publicRpc(actor,name,rpcArgs(name,args)),error:null};}
-      catch(error){return {data:null,error:{message:error.message}};}
-    });
-    await context.route('**/*',async route=>{
-      const url=new URL(route.request().url());
-      if(url.origin!==origin){await route.abort();return;}
-      if(url.pathname==='/config.js'){
-        await route.fulfill({status:200,contentType:mime['.js'],body:configSource(actor)});return;
-      }
-      const relative=url.pathname.endsWith('/')?url.pathname+'index.html':url.pathname;
-      const filename=path.resolve(root,'.'+relative);
-      if(!filename.startsWith(root+path.sep)){await route.fulfill({status:403,body:''});return;}
-      if(!fs.existsSync(filename)||!fs.statSync(filename).isFile()){
-        await route.fulfill({status:204,body:''});return;
-      }
-      await route.fulfill({status:200,contentType:mime[path.extname(filename)]||'application/octet-stream',body:fs.readFileSync(filename)});
-    });
-    const page=await context.newPage();
-    page.on('pageerror',error=>errors.push(error.message));
-    page.on('dialog',dialog=>dialog.accept());
+    const value=await browserSession(browser,{db,actor,errors});
+    const {page}=value;
     await page.goto(origin+'/games/drinking/?mode=multi');
     await page.locator('#entry').waitFor({state:'visible'});
-    const value={context,page,actor,calls};sessions.push(value);return value;
+    sessions.push(value);return value;
   }
   const [host,first,second]=await Promise.all(db.users.slice(0,3).map(open));
   await host.page.locator('#create-form [name="title"]').fill('브라우저 연결 검사');
@@ -125,6 +59,7 @@ test('three Chromium sessions keep one SQL room through reconnection, a game and
   await host.page.locator('#start').click();
   await Promise.all(sessions.map(s=>s.page.waitForURL(url=>url.pathname==='/games/liar/'&&url.searchParams.get('party')===code)));
   await Promise.all(sessions.map(s=>s.page.locator('#access-content [data-do="reveal"]').waitFor({state:'visible'})));
+  await Promise.all(sessions.map(s=>dismissGuide(s.page)));
   await Promise.all(sessions.map(s=>s.page.locator('[data-do="reveal"]').click()));
   const secrets=await Promise.all(sessions.map(s=>s.page.locator('#view .secret').textContent()));
   assert.equal(secrets.filter(text=>text.includes('당신은 라이어')).length,1,'the server gives exactly one session the liar role');

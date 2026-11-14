@@ -78,7 +78,9 @@
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'secondary';
-    button.textContent = '술게임방 ' + code + ' · 초대 링크 복사';
+    button.textContent = '초대 링크 복사';
+    button.title = '술게임방 ' + code + ' · 초대 링크 복사';
+    button.setAttribute('aria-label', button.title);
     button.addEventListener('click', async () => {
       const url = new URL(lobby, location.origin).href;
       try {

@@ -155,6 +155,7 @@ function cleanup(){
   round=null;
 }
 function renderMenu(){
+  window.DrinkingPresentation?.leave();
   const preview=players.slice(0,3).map(esc).join(' · ')+(players.length>3?' 외 '+(players.length-3)+'명':'');
   const roster='<section class="main-roster" aria-label="함께할 참가자"><div><h2>참가자 <b>'+players.length+'명</b></h2>'+
     '<p>'+preview+'</p></div>'+btn('참가자 설정','people','quiet')+'</section>';
@@ -163,6 +164,7 @@ function renderMenu(){
 }
 function shell(body,scene=false){
   app.innerHTML='<button class="menu-nav" data-action="menu">'+icon('back')+'게임 목록</button><article class="play-shell"><header class="round-head"><h1>'+art(game.id,'round-mark')+game.title+'</h1><span>'+players.length+'명 플레이</span></header>'+(scene?'<div class="stage-art" style="--pastel:'+game.color+';--scene:url('+artPath(game.id)+')">'+art(game.id)+'</div>':'')+'<div class="play-body">'+body+'</div></article>';
+  window.DrinkingGameScreen?.local(game.id,round,app);
 }
 function intro(){const enough=players.length>=game.min;
   if(game.id==='bomb')return bombSetup();
@@ -483,6 +485,7 @@ function animateBottle(now){
     $('#bottle-hint').textContent='병 입구가 '+(seat+1)+'번 자리를 가리켰어요. 오늘은 이 자리로 시선이 쏠리네요.';
     $('#spin-status').innerHTML=actions(btn('다시 돌리기','spin'),btn('자리 옮기기','edit-seats','quiet'),btn('게임 목록','menu','quiet'));
     fx.play('stop');
+    window.DrinkingGameScreen?.local(game.id,r,app);
     return;
   }
   const tick=Math.floor(r.angle/180);
@@ -721,7 +724,7 @@ function initialGo(){
   fx.play('count');timed(5000,()=>initialOut('시간 초과'),1000,b=>{$('#seconds').textContent=b;fx.play('count')})
 }
 function initialOut(reason){
-  stopClock();const r=round,who=r.alive.splice(r.turn,1)[0];if(r.alive.length===1)return end(players[r.alive[0]]+'님 승리!',players[who]+'님이 '+reason+'로 탈락했어요.');
+  stopClock();const r=round,who=r.alive.splice(r.turn,1)[0];if(r.alive.length===1)return end(players[r.alive[0]]+'님 승리!',players[who]+'님이 탈락했어요. ('+reason+')');
   r.turn%=r.alive.length;r.initial=draw(r.bank);r.phase='intermission';fx.play('snap');
   shell('<span class="turn-tag">'+esc(reason)+'</span><h2>'+name(who)+'님 탈락</h2><p>새 초성으로 이어갑니다. '+r.alive.length+'명이 남았어요.</p>'+actions(btn('다음 차례','initial-ready')))
 }
@@ -951,7 +954,7 @@ function handle(action,value){
   }
 }
 document.addEventListener('click',event=>{
-  if(round?.phase==='spinning'&&!event.target.closest('button,a,input,label,dialog'))brakeBottle();
+  if(round?.phase==='spinning'&&!event.target.closest('button,a,input,label,dialog,[data-drinking-overlay]'))brakeBottle();
 },true);
 app.addEventListener('click',e=>{
   const b=e.target.closest('button[data-action]');

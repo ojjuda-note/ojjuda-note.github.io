@@ -53,7 +53,7 @@ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const control=(title,act,primary=false)=>party?.control(act)??'<button type="button" class="'+(primary?'action':'secondary')+'" data-do="'+act+'">'+title+'</button>';
 function entry(){
   room=null;clearTimeout(timer);fx.quiet();
-  if(party)return party.missing();
+  if(party){window.DrinkingPresentation?.leave();return party.missing();}
   const create=mode==='create';
   view.innerHTML='<section class="card"><img class="hero" src="./art/croc.webp" alt=""><div class="inside"><h1>악어 이빨</h1><p>각자 휴대폰으로 같은 방에 모여 이빨을 하나씩 눌러요.</p>'+
     '<div class="tabs"><button data-do="create-tab" aria-pressed="'+create+'">방 만들기</button><button data-do="join-tab" aria-pressed="'+!create+'">방 들어가기</button></div>'+
@@ -61,8 +61,18 @@ function entry(){
     (create?'<label>방 제목<input name="title" required maxlength="40" value="악어 이빨 같이 한 판 해요"></label><label>참여 인원<select name="capacity">'+Array.from({length:11},(_,i)=>'<option value="'+(i+2)+'" '+(i===2?'selected':'')+'>'+(i+2)+'명</option>').join('')+'</select></label>':
     '<label>방 코드<input name="code" required maxlength="6" minlength="6" autocapitalize="characters" spellcheck="false" value="'+esc(activeCode)+'"></label>')+
     '<label>방 비밀번호<input type="password" name="password" minlength="4" maxlength="32" required placeholder="'+(create?'4자 이상으로 정해 주세요':'방장이 정한 비밀번호')+'"></label><button class="action" type="submit">'+(create?'방 만들기':'입장하기')+'</button></form></div></section>';
+  window.DrinkingGameScreen?.native('croc',null,view);
 }
 function roomId(s){return s.code+'/'+s.round}
+function acknowledgeBite(){
+  if(room?.phase!=='done'||room.me!==room.loser)return;
+  save(key('ack'),roomId(room));fx.quiet();
+  view.querySelector('[data-do="ack"]')?.remove();
+}
+document.addEventListener('ojjuda:drinking-result-dismissed',event=>{
+  const detail=event.detail;
+  if(detail?.kind==='croc'&&!detail.local&&room&&detail.roundKey==='room/croc/'+roomId(room))acknowledgeBite();
+});
 function render(s){
   if(!connection.active())return;
   if(!s||!/^[A-Z0-9]{6}$/.test(s.code)||!Number.isInteger(s.revision)||!Array.isArray(s.players)||
@@ -97,6 +107,7 @@ function render(s){
   view.innerHTML='<section class="card"><div class="inside">'+content+'</div></section>';
   if(focus)Array.from(view.querySelectorAll('button')).find(button=>!button.disabled&&
    button.dataset.action===focus.action&&button.dataset.value===focus.value&&button.dataset.do===focus.do)?.focus({preventScroll:true});
+  window.DrinkingGameScreen?.native('croc',s,view);
 }
 const messages={
  not_signed_in:'오쭈다 로그인이 필요해요.', banned:'지금은 대전방을 이용할 수 없어요.',
@@ -167,7 +178,7 @@ view.addEventListener('click',e=>{
   const act=b.dataset.do;
   if(act==='create-tab'||act==='join-tab'){mode=act==='create-tab'?'create':'join';notice.textContent='';entry();return}
   if(!room)return;
-  if(act==='ack'){save(key('ack'),roomId(room));fx.quiet();b.remove();return}
+  if(act==='ack'){acknowledgeBite();return}
   if(act==='copy'){
     navigator.clipboard?.writeText(location.href).then(()=>{notice.textContent='초대 링크를 복사했어요.'},()=>{notice.textContent=location.href});
     if(!navigator.clipboard)notice.textContent=location.href;
