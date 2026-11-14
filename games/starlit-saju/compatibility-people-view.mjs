@@ -1,4 +1,4 @@
-import {connectReadingMap,indexPages} from './reading-map.mjs?v=20261115-saju-directory1';
+import {connectReadingMap,indexPages} from './reading-map.mjs?v=20261115-saju-menus1';
 import {appendReadingDetail,readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
 import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
 import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';

@@ -724,6 +724,26 @@ const server = http.createServer((request, response) => {
       }
     }
     await saju.setViewportSize({width:390,height:844});
+    await saju.goto(new URL('/__saju_fixture?map=1',url).href);
+    await saju.locator('#fixture-topic').selectOption('all');
+    const topicMap=saju.locator('.reading-map');
+    const dates=topicMap.getByRole('link',{name:'월별 적용 기간',exact:true});
+    await dates.click();
+    assert.equal(await saju.locator('#reading-month-periods dd:visible').count(),12);
+    await saju.locator('.map-return').click();
+    await topicMap.locator('.map-index > summary').click();
+    const monthIndex=topicMap.locator('.map-index-group').filter({has:saju.getByText('월별 세부 풀이',{exact:true})});
+    await monthIndex.locator('summary').click();
+    await monthIndex.getByLabel('월 선택').selectOption('reading-month-4');
+    await monthIndex.getByRole('link',{name:'재물운',exact:true}).click();
+    assert.ok(await saju.locator('[data-reader-current][data-reader-card="month-4-money"]').isVisible());
+    await saju.locator('.map-return').click();
+    const ageIndex=topicMap.locator('.map-index-group').filter({has:saju.getByText('10년 대운 세부 풀이',{exact:true})});
+    await ageIndex.locator('summary').click();
+    await ageIndex.getByLabel('나이 구간').selectOption({index:1});
+    const ageId=await ageIndex.getByLabel('나이 구간').inputValue();
+    await ageIndex.getByRole('link',{name:/문서/}).click();
+    assert.ok(await saju.locator('[id="'+ageId+'"] [data-reader-current]').isVisible());
     await saju.goto(new URL('/__saju_fixture', url).href);
     assert.equal(await saju.locator('#report-content > [data-reader-paged="true"]').count(),1,'the prepared report keeps its mounted pager host when attached after purchase');
     async function selectVisibleReading(page,pickerId,id,{keyboard=false}={}) {

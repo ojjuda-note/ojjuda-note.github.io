@@ -12,6 +12,7 @@ export function openCatalogChoice(doc) {
   const skip = doc.querySelector('.skip-link');
   skip.href = entering ? '#form-title' : '#catalog-title';
   skip.textContent = entering ? '출생 정보 입력으로 바로가기' : '풀이 목록으로 바로가기';
+  doc.querySelector('.saved-reading-nav').hidden = !saved;
   if (radio) radio.checked = true;
   form.querySelector('.saved-people-disclosure').open = saved;
   if (saved) {
