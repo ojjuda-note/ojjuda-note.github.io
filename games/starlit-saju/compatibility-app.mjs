@@ -1,9 +1,9 @@
 import { SajuPayment } from './payment.js?v=20261113-saju-lists1';
 import { SajuCompatibilityPayment, COMPATIBILITY_PRICE } from './compatibility-payment.mjs?v=20261113-compatibility20-1';
 import { compatibilityScoreText } from './compatibility-score-view.mjs?v=20261114-saju-wind1';
-import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261114-saju-wind1';
+import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261114-saju-qa1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
-import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-easy1';
+import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-qa1';
 
 const $=id=>document.getElementById(id);
 const form=$('compatibility-form'),button=$('compatibility-open');
@@ -14,6 +14,7 @@ let initialized=false,signedIn=false,busy=false,quoteBusy=false;
 let generation=0,quoteGeneration=0,quote=null,current=null,quoteTimer,expiryTimer;
 let modulesPromise,readyPromise,compatibility;
 let zodiacModulePromise,zodiacPreviewGeneration=0;
+const NETWORK_READING_NOTICE='연결이 잠시 끊겼어요. 남은 이용 시간 동안 이 풀이를 계속 읽을 수 있어요. 다시 확인하려면 연결 후 ‘출생 정보 다시 보기’를 눌러 주세요.';
 
 function zodiacModule() {
   zodiacModulePromise ||= import('./zodiac.mjs?v=20261113-saju-easy1').catch(error=>{zodiacModulePromise=null;throw error;});
@@ -65,8 +66,12 @@ function options(select,start,end,suffix) {
 for(const person of people) {
   options($(person+'-month'),1,12,'월');options($(person+'-day'),1,31,'일');
   options($(person+'-hour'),0,23,'시');options($(person+'-minute'),0,59,'분');
-  $(person+'-year').max=String(Math.min(2050,Number(new Intl.DateTimeFormat('en',{year:'numeric',timeZone:'Asia/Seoul'}).format(new Date()))));
 }
+function updateBirthYearLimit() {
+  const max=String(Math.min(2050,Number(new Intl.DateTimeFormat('en',{year:'numeric',timeZone:'Asia/Seoul'}).format(new Date()))));
+  for(const person of people)$(person+'-year').max=max;
+}
+updateBirthYearLimit();
 const profileStore=new SajuSavedProfiles({getIdentity:()=>({userId:billing.identityReady?billing.user:null,anonymous:billing.anonymous===true})});
 const profilePickers=people.map((person,index)=>new SajuProfilePicker({
   element:$(person+'-saved-profiles'),store:profileStore,
@@ -171,7 +176,7 @@ async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
     import('./compatibility.mjs?v=20261114-saju-wind1'),
-    import('./report-view.mjs?v=20261114-saju-daeun6-1'),
+    import('./report-view.mjs?v=20261114-saju-qa1'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
 }
@@ -191,14 +196,24 @@ async function refreshQuote() {
     quote={signature:saved,owner,mode:billing.modeVersion,chart,partner,status};
     expireCurrent();
     $('compatibility-error').hidden=true;
+    if($('compatibility-copy-status').textContent===NETWORK_READING_NOTICE)$('compatibility-copy-status').textContent='';
   }catch(error){
     if(id!==quoteGeneration||saved!==signature()||owner!==billing.user)return;
-    quote=null;
-    if(current)clearResult();
-    if(error?.name!=='SajuInputError'){$('compatibility-error').textContent=requestError(error);$('compatibility-error').hidden=false;}
+    const keepReading=error?.code==='network'&&isCurrentActive();
+    const keepQuote=error?.code==='network'&&compatibility?.isActive(validQuote()?.status?.entitlement);
+    if(!keepQuote)quote=null;
+    if(current&&!keepReading)clearResult();
+    if(keepReading) {
+      $('compatibility-error').hidden=true;
+      $('compatibility-copy-status').textContent=NETWORK_READING_NOTICE;
+    }else if(error?.name!=='SajuInputError'){
+      $('compatibility-error').textContent=requestError(error)+(keepQuote?' 남은 이용 시간은 그대로예요. 연결을 확인한 뒤 다시 펼쳐 주세요.':'');
+      $('compatibility-error').hidden=false;
+    }
   }finally{if(id===quoteGeneration){quoteBusy=false;updateOffer();}}
 }
 function changed() {
+  updateBirthYearLimit();
   generation++;quoteGeneration++;clearTimeout(quoteTimer);busy=false;quoteBusy=false;quote=null;clearResult();
   form.removeAttribute('aria-busy');form.querySelectorAll('fieldset').forEach(fieldset=>fieldset.disabled=false);
   $('compatibility-status').textContent='';$('compatibility-error').hidden=true;updateFields();updateOffer();
@@ -243,6 +258,7 @@ function expiresLabel(access) {
 }
 form.addEventListener('submit',async event=>{
   event.preventDefault();
+  updateBirthYearLimit();
   if(busy||!form.reportValidity())return;
   const clickedCharge=Number(button.dataset.expectedCharge),saved=signature(),values=inputs(),names=personNames();
   const id=++generation;quoteGeneration++;clearTimeout(quoteTimer);quoteBusy=false;busy=true;
@@ -300,7 +316,7 @@ $('compatibility-copy').addEventListener('click',async()=>{
   catch{$('compatibility-copy-status').textContent='복사 권한을 확인해 주세요.';}
 });
 function refreshProfiles(){if(!busy)for(const picker of profilePickers)picker.refresh({preserveStatus:picker.statusElement.dataset.state==='error'});}
-function resume(){refreshProfiles();expireCurrent();updateOffer();if(!busy)void refreshQuote();}
+function resume(){updateBirthYearLimit();refreshProfiles();expireCurrent();updateOffer();if(!busy)void refreshQuote();}
 window.addEventListener('focus',resume);window.addEventListener('pageshow',resume);
 window.addEventListener('storage',event=>{if(event.key===null||event.key?.startsWith(SAVED_PROFILES_PREFIX))refreshProfiles();});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')resume();});

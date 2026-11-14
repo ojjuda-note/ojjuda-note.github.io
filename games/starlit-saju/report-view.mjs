@@ -2,7 +2,7 @@ import {getReadingSources} from './sources.mjs?v=20261113-saju-reader1';
 import {applyReadingSummaryViews} from './reading-summary-view.mjs?v=20261113-saju-summary1';
 import {applyReadingScoreViews} from './reading-score-view.mjs?v=20261114-saju-wind1';
 import {createCompatibilityScoreboard} from './compatibility-score-view.mjs?v=20261114-saju-wind1';
-import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261114-saju-wind1';
+import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261114-saju-qa1';
 
 const readingPagers=new WeakMap();
 const pagerDocuments=new WeakSet();
@@ -10,6 +10,12 @@ const pagerDocuments=new WeakSet();
 function revealPagedTarget(target) {
   const container=target?.closest('[data-reader-paged]');
   return container?readingPagers.get(container)?.reveal(target):false;
+}
+
+export function restoreReadingPage(container,pageId) {
+  if(typeof pageId!=='string'||!pageId)return false;
+  const target=[...container.querySelectorAll('[data-reader-page]')].find(element=>element.id===pageId);
+  return target?Boolean(revealPagedTarget(target)):false;
 }
 
 function watchReadingTargets(doc) {
@@ -909,6 +915,7 @@ function daeunView(reading) {
     const targetId=period.id+'-title';
     nav.append(readingLink(period.ageLabel+(period.isCurrent?' · 지금':''),targetId,'reader-topic-link'));
     const details=node('details','daeun-period');
+    details.id=period.id;
     details.dataset.daeunPeriod=period.id;
     details.dataset.factIds=period.factIds.join(' ');
     details.classList.toggle('is-current',period.isCurrent);
@@ -925,6 +932,7 @@ function daeunView(reading) {
     body.append(prose);
     for(const topic of [...period.topics,...(period.situations||[])]) {
       const article=node('article','daeun-topic');
+      article.id=topic.id;
       article.dataset.daeunTopic=topic.id;
       article.dataset.factIds=topic.factIds.join(' ');
       article.append(node('h5','reader-card-label',topic.label),node('h6','reader-card-title',topic.title));
@@ -1211,7 +1219,8 @@ function buildReadingPager(root,{reading,fortune,topic}) {
     select.setAttribute('aria-describedby',position.id);
     page.element.append(back);
     if(move) {
-      page.focus.focus({preventScroll:true});
+      // Keep the picker or step button focused for consecutive keyboard choices.
+      // Links into the reading still focus their destination in readingLink().
       navigation.scrollIntoView({block:'start',behavior:document.documentElement.dataset.reducedMotion==='true'?'instant':'smooth'});
     }
     return true;

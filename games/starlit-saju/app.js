@@ -1,5 +1,5 @@
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
-import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-easy1';
+import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-qa1';
 
 const $ = id => document.getElementById(id);
 const form = $('birth-form');
@@ -70,7 +70,10 @@ appendOptions($('birth-month'), 1, 12, '월');
 appendOptions($('birth-day'), 1, 31, '일');
 appendOptions($('birth-hour'), 0, 23, '시', true);
 appendOptions($('birth-minute'), 0, 59, '분', true);
-$('birth-year').max = String(Math.min(2050, Number(new Intl.DateTimeFormat('en', {year:'numeric',timeZone:'Asia/Seoul'}).format(new Date()))));
+function updateBirthYearLimit() {
+  $('birth-year').max = String(Math.min(2050,koreanYear()));
+}
+updateBirthYearLimit();
 function setMotion() {
   document.documentElement.dataset.reducedMotion = String(reducedMotion);
   $('motion-toggle').setAttribute('aria-pressed', String(reducedMotion));
@@ -207,6 +210,7 @@ let entryCheckTimer;
 let quoteGeneration = 0;
 let currentAccess = null;
 let accessTimer;
+let readingRefreshTimer;
 
 function koreanYear(now = new Date()) {
   return Number(new Intl.DateTimeFormat('en', {year:'numeric',timeZone:'Asia/Seoul'}).format(now));
@@ -259,6 +263,7 @@ function accessEndLabel(access) {
 }
 function expireCurrentReading(force=false) {
   if (!currentDetail || (!force && activeAccess(currentDetail.access))) return false;
+  clearTimeout(readingRefreshTimer);
   currentDetail=null;
   $('report-content').replaceChildren();
   delete $('report-content').dataset.topic;
@@ -349,6 +354,7 @@ function updateProductOffer() {
   scheduleAccessExpiry();
 }
 function scheduleEntryCheck() {
+  updateBirthYearLimit();
   updateZodiacPreview();
   clearTimeout(entryCheckTimer);
   quoteGeneration++;
@@ -400,11 +406,51 @@ document.querySelectorAll('.reading-size-control button').forEach(button=>button
   document.querySelectorAll('.reading-size-control button').forEach(choice=>choice.setAttribute('aria-pressed',String(choice===button)));
 }));
 
+function readingTimeState({topic,fortune,reading},now=new Date()) {
+  const time=now.getTime(),year=koreanYear(now),state=[];
+  const inside=(start,end)=>time>=Date.parse(start)&&time<Date.parse(end);
+  if (['annual','all'].includes(topic)) state.push(
+    inside(fortune.annual.start.iso,fortune.annual.end.iso),
+    year===fortune.year&&time<Date.parse(fortune.annual.start.iso));
+  if (['monthly','all'].includes(topic)) state.push(
+    fortune.months.find(month=>inside(month.start.iso,month.end.iso))?.month??null,
+    year===fortune.year&&time<Date.parse(fortune.months[0].start.iso));
+  const daeun=reading.daeun;
+  if (['lifelong','all'].includes(topic)&&daeun?.available) state.push(
+    daeun.periods.find(period=>inside(period.startsAt,period.endsAt))?.index??null,
+    time<Date.parse(daeun.startsAt));
+  return JSON.stringify(state);
+}
+function scheduleReadingRefresh({retryChanged=true}={}) {
+  clearTimeout(readingRefreshTimer);
+  const detail=currentDetail;
+  if (!detail||reportBusy||$('result').hidden||document.visibilityState!=='visible'||!activeAccess(detail.access)) return;
+  const now=Date.now(),dates=[];
+  if (['annual','all'].includes(detail.topic)) dates.push(detail.fortune.annual.start.iso,detail.fortune.annual.end.iso);
+  if (['monthly','all'].includes(detail.topic)) for (const month of detail.fortune.months) dates.push(month.start.iso,month.end.iso);
+  if (['lifelong','all'].includes(detail.topic)&&detail.reading.daeun?.available) {
+    for (const period of detail.reading.daeun.periods) dates.push(period.startsAt,period.endsAt);
+  }
+  const boundaries=dates.map(Date.parse);
+  if (['annual','monthly','all'].includes(detail.topic)) boundaries.push(Date.UTC(koreanYear()+1,0,1)-9*3600000);
+  const expires=now+billing.remainingMs(detail.access);
+  const changed=retryChanged&&detail.timeState!==readingTimeState(detail);
+  const next=changed?now:Math.min(...boundaries.filter(time=>time>now&&time<expires));
+  if (!Number.isFinite(next)) return;
+  // Wake at an actual displayed boundary, not on a polling interval. Hidden
+  // pages check again on resume, and an expired receipt never reopens itself.
+  readingRefreshTimer=setTimeout(()=>{
+    if (detail!==currentDetail||reportBusy||document.visibilityState!=='visible') return;
+    if (detail.timeState!==readingTimeState(detail)) void refreshReportAccess();
+    else scheduleReadingRefresh();
+  },Math.max(1,Math.min(next-now,2147483647)));
+}
+
 async function prepareDetailedReading(chart,target,person=currentPerson||readPerson()) {
   detailModulesPromise ||= Promise.all([
     import('./fortune-data.mjs?v=20261113-saju-reader1'),
     import('./readings.mjs?v=20261114-saju-daeun6-1'),
-    import('./report-view.mjs?v=20261114-saju-daeun6-1'),
+    import('./report-view.mjs?v=20261114-saju-qa1'),
     import('./daeun.mjs?v=20261114-saju-daeun6-1'),
     zodiacModule()
   ]).catch(error=>{detailModulesPromise=null;throw error;});
@@ -419,12 +465,16 @@ async function prepareDetailedReading(chart,target,person=currentPerson||readPer
   if (typeof copyText!=='string' || !copyText.trim()) throw new Error('product_reading_incomplete');
   const content=document.createElement('div');
   viewModule.renderDetailedReport(content,{reading,fortune,topic:target.topic});
-  return {fortune,reading,content,copyText,target,person:{...person},zodiac};
+  return {fortune,reading,content,copyText,target,person:{...person},zodiac,
+    timeState:readingTimeState({...target,fortune,reading},now),
+    restorePage:pageId=>viewModule.restoreReadingPage(content,pageId)};
 }
-function commitDetailedReading(chart,{fortune,reading,content,copyText,target},access) {
+function commitDetailedReading(chart,{fortune,reading,content,copyText,target,timeState},access) {
   if (!activeAccess(access)) throw Object.assign(new Error('이용 시간이 끝났어요. 표시된 금액을 확인한 뒤 다시 펼쳐 주세요.'),{code:'access_expired'});
-  $('report-content').replaceChildren(...content.childNodes);
-  currentDetail={chart,topic:target.topic,year:target.year,reading,fortune,copyText,access};
+  // The prepared host owns the pager registration used by in-reading links.
+  // Move it intact so decade, month and detail links can reveal their pages.
+  $('report-content').replaceChildren(content);
+  currentDetail={chart,topic:target.topic,year:target.year,reading,fortune,copyText,access,timeState};
   $('result-warnings').hidden=!$('result-warnings').childElementCount;
   $('report-content').dataset.topic=target.topic;
   $('report-content').dataset.year=String(target.year);
@@ -443,6 +493,32 @@ function commitDetailedReading(chart,{fortune,reading,content,copyText,target},a
   $('copy-reading').disabled=false;
   $('report-error').hidden=true;
   updateProductOffer();
+  scheduleReadingRefresh();
+}
+
+async function refreshReadingTime(chart,generation) {
+  const detail=currentDetail;
+  if (!detail||!activeAccess(detail.access)||detail.timeState===readingTimeState(detail)) return;
+  // Refresh only what is already open. A product/year merely selected in the
+  // purchase controls is never prepared or bought by a clock update.
+  const prepared=await prepareDetailedReading(chart,{topic:detail.topic,year:detail.year});
+  if (generation!==reportGeneration||currentReading!==chart||currentDetail!==detail||$('result').hidden) return;
+  if (!activeAccess(detail.access)) { expireCurrentReading(); return; }
+  const host=$('report-content'),focused=document.activeElement;
+  const hadFocus=host.contains(focused),focusId=hadFocus?focused.id:'';
+  const step=hadFocus?[...host.querySelectorAll('.reading-pager-step')].indexOf(focused):-1;
+  const optionsOpen=$('other-reading-options').open;
+  const scroll={left:window.scrollX,top:window.scrollY,behavior:'instant'};
+  prepared.restorePage(host.querySelector('.reading-page-select')?.value);
+  commitDetailedReading(chart,prepared,detail.access);
+  $('other-reading-options').open=optionsOpen;
+  if (hadFocus) {
+    const replacement=(focusId&&document.getElementById(focusId))
+      ||(step>=0&&host.querySelectorAll('.reading-pager-step')[step])
+      ||host.querySelector('[data-reader-current]');
+    replacement?.focus({preventScroll:true});
+  }
+  window.scrollTo(scroll);
 }
 function recordReceipt(status,receipt,target) {
   const next={...status,coins:receipt.coins??status.coins,entitlements:[...(status.entitlements||[])]};
@@ -473,7 +549,9 @@ function openInitialReport(chart,prepared,status,receipt,signature) {
 async function refreshReportAccess() {
   if (!currentReading || reportBusy) return;
   const chart=currentReading,generation=++reportGeneration;
+  clearTimeout(readingRefreshTimer);
   reportBusy=true;
+  let refreshed=false;
   $('retry-report').disabled=true;
   updateProductOffer();
   try {
@@ -483,6 +561,9 @@ async function refreshReportAccess() {
     currentAccess={chart,owner:payment.user,status};
     fillYears($('fortune-year'),chart.solar.year,Number($('fortune-year').value),status);
     if (currentDetail && !owned(status,currentDetail)) expireCurrentReading(true);
+    await refreshReadingTime(chart,generation);
+    if (generation!==reportGeneration || currentReading!==chart || $('result').hidden) return;
+    refreshed=true;
     $('report-error').hidden=true;
   } catch {
     if (generation!==reportGeneration || currentReading!==chart) return;
@@ -495,6 +576,7 @@ async function refreshReportAccess() {
       reportBusy=false;
       $('retry-report').disabled=false;
       updateProductOffer();
+      scheduleReadingRefresh({retryChanged:refreshed});
     }
   }
 }
@@ -543,6 +625,7 @@ async function openSelectedProduct() {
       $('copy-reading').disabled=!currentDetail;
       $('report-status').classList.remove('is-loading');
       updateProductOffer();
+      scheduleReadingRefresh();
     }
   }
 }
@@ -561,6 +644,7 @@ function resetAfterAccountChange() {
   submitGeneration++;reportGeneration++;quoteGeneration++;
   clearTimeout(entryCheckTimer);
   clearTimeout(accessTimer);
+  clearTimeout(readingRefreshTimer);
   busy=false;reportBusy=false;entryCheckPending=false;entryQuoteError=false;
   currentReading=null;currentPerson=null;currentDetail=null;currentAccess=null;entryQuote=null;
   $('result').hidden=true;$('intro').hidden=false;
@@ -618,6 +702,7 @@ async function readyBilling() {
 }
 form.addEventListener('submit',async event=>{
   event.preventDefault();
+  updateBirthYearLimit();
   if (busy || !form.reportValidity()) return;
   const clickedCharge=Number(submit.dataset.expectedCharge);
   busy=true;
@@ -686,6 +771,7 @@ $('payment-status').textContent='로그인과 보유 쭈를 확인하고 있어�
 void readyBilling().catch(()=>{$('payment-status').textContent='이용 정보를 확인하지 못했어요. 펼치기를 누르면 다시 확인해요.';$('login-link').hidden=false;});
 $('edit-birth').addEventListener('click',()=>{
   reportGeneration++;
+  clearTimeout(readingRefreshTimer);
   reportBusy=false;currentReading=null;currentPerson=null;currentDetail=null;currentAccess=null;
   $('report-content').replaceChildren();
   delete $('report-content').dataset.topic;
@@ -706,6 +792,7 @@ $('copy-reading').addEventListener('click',async()=>{
 });
 
 function resumeAccessCheck() {
+  updateBirthYearLimit();
   if(!busy)profilePicker.refresh({preserveStatus:profilePicker.statusElement.dataset.state==='error'});
   expireCurrentReading();
   updateEntryOffer();
@@ -721,6 +808,7 @@ window.addEventListener('storage',event=>{
 });
 document.addEventListener('visibilitychange',()=>{
   if (document.visibilityState==='visible') resumeAccessCheck();
+  else clearTimeout(readingRefreshTimer);
 });
 
 // Contents links reveal their requested section without exposing every chapter.
