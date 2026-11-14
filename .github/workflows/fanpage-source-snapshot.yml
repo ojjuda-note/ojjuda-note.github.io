@@ -1,0 +1,44 @@
+name: Fanpage source identity snapshot
+on:
+  push:
+    branches: ['fanpages/ci-source-audit-20261114']
+    paths: ['.github/workflows/fanpage-source-snapshot.yml']
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: '22c6905a40c269003ab8094a1bf9d48719f01fa2'
+          persist-credentials: false
+      - name: Snapshot immutable head and the original PR merge tree
+        run: |
+          mkdir -p /tmp/fanpage-source-identity
+          git fetch --depth=1 origin 96e01e09bc22f53ae38ed9fc42d3bdef54021eb7
+          python3 - <<'PY'
+          import pathlib, subprocess, hashlib, json
+          out=pathlib.Path('/tmp/fanpage-source-identity')
+          for ref in ['22c6905a40c269003ab8094a1bf9d48719f01fa2','96e01e09bc22f53ae38ed9fc42d3bdef54021eb7']:
+              print('COMMIT',ref)
+              for name in ['tests/admin-fortune-purchases.test.cjs','tests/run.cjs','tests/package.json']:
+                  p=subprocess.run(['git','show',ref+':'+name],capture_output=True)
+                  if p.returncode:
+                      print('ABSENT',name);continue
+                  data=p.stdout;text=data.decode();target=out/ref/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(data)
+                  blob=subprocess.check_output(['git','rev-parse',ref+':'+name],text=True).strip()
+                  print('SOURCE',name,'BLOB',blob,'SHA256',hashlib.sha256(data).hexdigest())
+                  if name.endswith('package.json'):
+                      scripts=json.loads(text)['scripts'];print('TEST_SCRIPT',scripts.get('test'));print('UNIT_SCRIPT',scripts.get('test:unit'))
+                  else:
+                      for n,line in enumerate(text.splitlines(),1):
+                          if n<=140: print(str(n)+': '+line)
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: fanpage-source-identity
+          path: /tmp/fanpage-source-identity
+          retention-days: 3
