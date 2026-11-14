@@ -1,7 +1,6 @@
 'use strict';
 (() => {
   const prompt = window.PartyPrompt;
-  const questions = window.DrinkingPrompts.list('fingers');
   function scoreboard(s, ui) {
     const rows = s.players.map((name, seat) => {
       const count = s.game.fingers[seat];
@@ -17,7 +16,7 @@
     if (s.phase === 'prompt') {
       body = prompt.form(s, ui, {
         heading:'어떤 사람이 접을까요?', preparing:'조건을 정하고 있어요', label:'조건을 골라 보거나 직접 써 주세요.',
-        another:'다른 조건', submit:'조건 공개', questions
+        another:'다른 조건', submit:'조건 공개'
       });
     } else if (s.phase === 'answer') {
       body = '<p class="pair-caption">' + ui.esc(s.players[g.current]) + '님의 조건</p><h1>' + ui.esc(g.question) + '</h1>' +
@@ -32,7 +31,7 @@
     return body + scoreboard(s, ui);
   }
   function mount(s, ui) {
-    if (s.phase === 'prompt') prompt.bind(s, ui, 'finger_prompt', questions);
+    if (s.phase === 'prompt') prompt.bind(s, ui, 'finger_prompt');
     if (s.phase === 'answer' && !s.game.mine) {
       document.querySelectorAll('#game [data-fold]').forEach(button => {
         button.onclick = () => ui.send('finger_answer', {turn:s.game.turn, fold:button.dataset.fold === 'yes'});
