@@ -140,12 +140,12 @@ function assertSummaryDetails(view, summary) {
   assert.equal(completed.revelations(), 1, 'lower combined CTA uses the revelation before the full result');
   assert.equal(completed.$('#reading-dialog').open, false);
   assert.equal(completed.$('.tarot-price span').textContent, '세 장의 풀이 · 종합 점괘 · 50가지 주제');
-  assert.deepEqual(Array.from(completedSummary.groups, group => group.id), ['problem', 'cards', 'timeline', 'domains']);
+  assert.deepEqual(Array.from(completedSummary.groups, group => group.id), ['cards', 'problem', 'timeline', 'domains']);
   assert.deepEqual([...completed.$('#summary-tabs').children].map(tab => tab.textContent),
-    ['나의 이야기', '카드 소개', '과거·현재·미래', '분야별 풀이', '내 상황'], 'card introductions sit immediately next to the personal story');
-  assert.equal(completed.$('#summary-tab-problem').getAttribute('aria-selected'), 'true', 'the problem-solving view is the default');
-  assert.equal(completed.$('#summary-panel-problem').hidden, false);
-  assert.equal(completed.$('#summary-panel-cards').hidden, true);
+    ['카드 소개', '나의 이야기', '과거·현재·미래', '분야별 풀이', '내 상황'], 'card introductions are first, followed immediately by the personal story');
+  assert.equal(completed.$('#summary-tab-cards').getAttribute('aria-selected'), 'true', 'card introductions are the initial view');
+  assert.equal(completed.$('#summary-panel-cards').hidden, false);
+  assert.equal(completed.$('#summary-panel-problem').hidden, true);
   assert.equal(completed.$('#summary-panel-timeline').hidden, true);
   assert.equal(completed.$('#summary-panel-domains').hidden, true);
   let dividedSections = 0;
@@ -180,6 +180,7 @@ function assertSummaryDetails(view, summary) {
   }
   assert.equal(assertSummaryDetails(completed, completedSummary).open, false, 'the additional interpretation starts folded');
   assert.ok(dividedSections > 0, 'long section paragraphs are divided into shorter reading blocks');
+  completed.click('#summary-tab-problem');
   const firstFullReading = completed.$('#summary-panel-problem .reading-summary-details');
   const fullReadingBefore = firstFullReading.querySelector('.reading-summary-full').textContent;
   completed.click('#summary-panel-problem .reading-summary-details > summary');
@@ -215,8 +216,15 @@ function assertSummaryDetails(view, summary) {
   assert.equal(completed.$('#summary-tab-timeline').getAttribute('aria-selected'), 'true');
   completed.$('#summary-tab-timeline').focus();
   completed.$('#summary-tab-timeline').dispatchEvent(new completed.window.KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+  assert.equal(completed.window.document.activeElement.id, 'summary-tab-problem');
+  assert.equal(completed.$('#summary-panel-problem').hidden, false, 'Left follows the visible order back to the personal story');
+  completed.$('#summary-tab-problem').dispatchEvent(new completed.window.KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
   assert.equal(completed.window.document.activeElement.id, 'summary-tab-cards');
-  assert.equal(completed.$('#summary-panel-cards').hidden, false, 'arrow keys reach the new adjacent introduction tab');
+  assert.equal(completed.$('#summary-panel-cards').hidden, false, 'Left from the personal story reaches the first introduction tab');
+  completed.$('#summary-tab-cards').dispatchEvent(new completed.window.KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+  assert.equal(completed.window.document.activeElement.id, 'summary-tab-personal');
+  assert.equal(completed.$('#summary-panel-personal').hidden, false, 'Left from the first tab wraps to the final tab');
+  completed.click('#summary-tab-problem');
   completed.$('#summary-tab-problem').dispatchEvent(new completed.window.KeyboardEvent('keydown', { key: 'End', bubbles: true }));
   assert.equal(completed.window.document.activeElement.id, 'summary-tab-personal');
   assert.equal(completed.$('#summary-panel-personal').hidden, false);
@@ -249,7 +257,8 @@ function assertSummaryDetails(view, summary) {
   assert.equal(visitedTopics.size, 50, 'every topic can be reached through the ten categories');
   completed.chooseCategory('money');
   completed.$('#summary-tab-domains').dispatchEvent(new completed.window.KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
-  assert.equal(completed.window.document.activeElement.id, 'summary-tab-problem');
+  assert.equal(completed.window.document.activeElement.id, 'summary-tab-cards');
+  assert.equal(completed.$('#summary-panel-cards').hidden, false, 'Home always selects the first introduction tab');
   completed.click('#summary-tab-domains');
   assert.equal(completed.$('#summary-panel-domains').hidden, false, 'the domain view also responds to an actual click');
   assert.equal(completed.payment.starts, 0, 'switching reading views never starts another purchase');
@@ -262,8 +271,10 @@ function assertSummaryDetails(view, summary) {
   completed.click('#copy-result');
   await settle();
   const copyStart = copiedResult.indexOf('\n카드 소개\n');
-  const copyEnd = copiedResult.indexOf('\n과거·현재·미래\n');
-  assert.ok(copyStart > copiedResult.indexOf('\n나의 이야기\n') && copyEnd > copyStart,
+  const copyEnd = copiedResult.indexOf('\n나의 이야기\n');
+  const copiedGroupOrder = ['카드 소개', '나의 이야기', '과거·현재·미래', '분야별 풀이']
+    .map(label => copiedResult.indexOf(`\n${label}\n`));
+  assert.ok(copiedGroupOrder.every((position, index) => position >= 0 && (index === 0 || position > copiedGroupOrder[index - 1])),
     'copy keeps the same order and gives card explanations their own section');
   const copiedCards = copiedResult.slice(copyStart, copyEnd);
   const copiedPersonal = copiedResult.slice(0, copyStart) + copiedResult.slice(copyEnd);
@@ -329,6 +340,8 @@ function assertSummaryDetails(view, summary) {
   }
   completed.click('#reading-open');
   await until(() => completed.$('#result-dialog').open);
+  assert.equal(completed.$('#summary-tab-cards').getAttribute('aria-selected'), 'true', 'reopening resets a previously selected domain tab to card introductions');
+  assert.equal(completed.$('#summary-panel-cards').hidden, false);
   completed.payment.switchMode(true);
   assert.equal(completed.phase('intro'), true);
   assert.equal(completed.$('#summary-domain-category'), null, 'a mode change removes the category control and paid text');
@@ -664,6 +677,10 @@ function assertSummaryDetails(view, summary) {
   personal.click('#copy-result');
   await settle();
   for (const line of personal.load('personal-reading.js').personalReadingCopyLines(report).filter(Boolean)) assert.ok(personalCopy.includes(line), 'copy retains choices and all folded answers');
+  const personalCopyOrder = ['\n카드 소개\n', '\n나의 이야기\n', '\n과거·현재·미래\n', '\n분야별 풀이\n', '\n내 상황 · ']
+    .map(heading => personalCopy.indexOf(heading));
+  assert.ok(personalCopyOrder.every((position, index) => position >= 0 && (index === 0 || position > personalCopyOrder[index - 1])),
+    'copy starts with card introductions and ends with the preserved selected situation');
   personal.chooseContext('love-distance');
   assert.equal(personal.$('#result-context-select').value, 'love-distance');
   assert.notEqual(personal.$('#personal-reading').textContent, personalText);
@@ -707,9 +724,19 @@ function assertSummaryDetails(view, summary) {
   }
   chosen.click('#reading-open');
   await until(() => chosen.$('#result-dialog').open);
-  assert.equal(chosen.$('#summary-tab-personal').getAttribute('aria-selected'), 'true');
+  assert.equal(chosen.$('#summary-tab-cards').getAttribute('aria-selected'), 'true', 'a previously chosen situation does not override the first introduction tab');
+  assert.equal(chosen.$('#summary-panel-cards').hidden, false);
+  assert.equal(chosen.$('#summary-panel-personal').hidden, true);
   assert.equal(chosen.$('#result-context-select').value, 'love-reunion');
   assert.ok(chosen.$('#personal-reading').textContent.length > 1000);
+  chosen.click('#summary-tab-personal');
+  assert.equal(chosen.$('#summary-panel-personal').hidden, false, 'the preserved situation remains available when selected');
+  chosen.$('#result-dialog').close();
+  chosen.click('#reading-open');
+  await until(() => chosen.$('#result-dialog').open);
+  assert.equal(chosen.$('#summary-tab-cards').getAttribute('aria-selected'), 'true', 'reopening a chosen situation also starts with card introductions');
+  assert.equal(chosen.$('#result-context-select').value, 'love-reunion');
+  assert.ok(chosen.$('#personal-reading').textContent.length > 1000, 'reopening changes the selected view without clearing the existing situation');
   chosen.click('#restart-result');
   assert.equal(chosen.$('#intro-context-select').value, '');
   assert.equal(chosen.$('#personal-reading'), null);
@@ -731,7 +758,7 @@ function assertSummaryDetails(view, summary) {
         guarded.click('#summary-tab-personal');
         guarded.chooseContext('love-crush');
         if (selector.startsWith('.personal-choice')) guarded.click('#personal-comparison > summary');
-      }
+      } else guarded.click('#summary-tab-problem');
       const summary = guarded.$(selector);
       const details = summary.parentElement;
       assert.equal(details.open, false);

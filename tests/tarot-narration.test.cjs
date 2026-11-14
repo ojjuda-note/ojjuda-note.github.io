@@ -106,13 +106,13 @@ for (const topicId of topics) {
   assert.equal(summary.source, source, 'original record metadata is preserved without new counts');
   assert.equal(summary.paragraphs.length, 3);
   assert.deepEqual(plain(summary.groups.map(group => [group.id, group.label])), [
-    ['problem', '나의 이야기'], ['cards', '카드 소개'], ['timeline', '과거·현재·미래'], ['domains', '분야별 풀이']
+    ['cards', '카드 소개'], ['problem', '나의 이야기'], ['timeline', '과거·현재·미래'], ['domains', '분야별 풀이']
   ]);
-  assert.equal(summary.groups[0].sections[0].id, 'together', 'the whole personal story comes before individual actions');
-  assert.equal(summary.groups[0].sections[0].paragraphs.join('\n\n'), summary.synthesis);
-  assert.equal(summary.groups[0].sections.length, 5);
-  assert.equal(summary.groups[0].sections.find(section => section.id === 'possible-outcome').title, '실천한 뒤 살펴볼 변화');
-  assert.equal(summary.groups[1].sections.length, 3);
+  assert.equal(summary.groups[1].sections[0].id, 'together', 'the whole personal story comes before individual actions');
+  assert.equal(summary.groups[1].sections[0].paragraphs.join('\n\n'), summary.synthesis);
+  assert.equal(summary.groups[1].sections.length, 5);
+  assert.equal(summary.groups[1].sections.find(section => section.id === 'possible-outcome').title, '실천한 뒤 살펴볼 변화');
+  assert.equal(summary.groups[0].sections.length, 3);
   assert.equal(summary.groups[2].sections.length, 7);
   assert.equal(summary.groups[3].sections.length, 50);
   assert.equal(summary.sections.length, 65);
@@ -160,7 +160,7 @@ for (const topicId of topics) {
   }
   assert.ok(!summary.synthesis.includes(people[2].turning), 'a generic change passage cannot introduce another topic’s action or recipient');
   assert.ok(!summary.synthesis.includes(readings[2].action), 'the main story explains the person before the solution offers an action');
-  const solutionSection = summary.groups[0].sections.find(section => section.id === 'solution');
+  const solutionSection = summary.groups[1].sections.find(section => section.id === 'solution');
   const solutionBody = solutionSection.paragraphs.join(' ');
   for (const explanation of [people[2][topicId]]) {
     assert.ok(solutionBody.includes(explanation) && solutionBody.indexOf(explanation) < solutionBody.indexOf(readings[2].action),
@@ -177,7 +177,7 @@ for (const topicId of topics) {
     assert.equal(personal.split(reading.action).length - 1, 1, 'each actual card action is offered once across the personal tabs');
   }
   for (const [index, id] of [[0, 'problem-now'], [1, 'situation-now']]) {
-    const roleSection = summary.groups[0].sections.find(section => section.id === id);
+    const roleSection = summary.groups[1].sections.find(section => section.id === id);
     assert.ok(roleSection.paragraphs.includes(readings[index].personalPositionMeaning),
       'the corresponding problem or current-situation lens remains complete as personal prose');
     assert.equal(personal.split(readings[index].personalPositionMeaning).length - 1, 1,
@@ -188,7 +188,7 @@ for (const topicId of topics) {
   for (const detail of [readings[0].lifeTheme.past, readings[0].lifeTheme.achievement]) {
     assert.equal(personal.split(detail).length - 1, 1, 'each life explanation is used once instead of copied through several personal sections');
   }
-  const outcome = summary.groups[0].sections.find(section => section.id === 'possible-outcome');
+  const outcome = summary.groups[1].sections.find(section => section.id === 'possible-outcome');
   assert.match(outcome.paragraphs[0], /실천했다면|뒤에는|살펴보|확인/u,
     'outcome asks what actually changed after action rather than guaranteeing a future result');
   assert.ok(outcome.paragraphs[1].includes(readings[2].lifeTheme.strength),
@@ -203,7 +203,7 @@ for (const topicId of topics) {
     'the short overview ends with one complete action from the actual third card and selected topic');
   assert.ok(summary.detailSections.some(section => section.body === base.summary));
   assert.equal(summary.detailSections.length, 2, 'the personal corpus and its action remain in the personal area');
-  assert.deepEqual(plain(summary.groups[1].detailSections), plain(base.sections), 'card-specific combination explanations move to card introductions');
+  assert.deepEqual(plain(summary.groups[0].detailSections), plain(base.sections), 'card-specific combination explanations move to card introductions');
   for (const original of [base.oneLine, base.summary, base.ritual, base.sections[0].body]) {
     assert.ok(summary.text.includes(original), 'selected reference text is preserved in the complete result');
   }
@@ -264,8 +264,8 @@ for (let index = 0; index < DECK.length; index++) for (const topic of topics) {
   const ordered = [DECK[index], DECK[(index + 1) % DECK.length], DECK[(index + 2) % DECK.length]];
   const report = getSummary(ordered, topic);
   assert.equal(report.groups.length, 4);
-  assert.equal(report.groups[0].sections.length, 5);
-  assert.equal(report.groups[1].sections.length, 3);
+  assert.equal(report.groups[0].sections.length, 3);
+  assert.equal(report.groups[1].sections.length, 5);
   assert.equal(report.groups[2].sections.length, 7);
   assert.equal(report.groups[3].sections.length, 50);
   const readings = ordered.map((card, position) => getReading(card, topic, position));

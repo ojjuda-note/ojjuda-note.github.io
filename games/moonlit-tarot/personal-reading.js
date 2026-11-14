@@ -1,7 +1,7 @@
 import { getPersonalContext } from './personal-contexts.js?v=20261114-tarot-card-intro1';
 import { buildCardConnections } from './card-connections.js?v=20261114-tarot-card-intro1';
 import { PERSONAL_READING_BASIS } from './person-narrative.js?v=20261114-tarot-card-intro1';
-import { getReading } from './readings.js?v=20261114-tarot-card-intro1';
+import { getReading } from './readings.js?v=20261114-tarot-card-first1';
 import { splitSummarySentences, summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
 import { directAction, directCardAdvice } from './reading-voice.js?v=20261113-tarot-easy1';
 import { getPersonStory } from './person-stories.js?v=20261114-tarot-card-intro1';

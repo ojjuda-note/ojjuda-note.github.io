@@ -170,10 +170,22 @@ const server = http.createServer((request, response) => {
     assert.equal(await page.locator('#reading-open span').textContent(), '종합 점괘 자세히 보기');
     await page.locator('#reading-open').click();
     await page.locator('#result-dialog[open]').waitFor({ timeout: 15000 });
-    assert.equal(await page.locator('#summary-tab-problem').getAttribute('aria-selected'), 'true');
+    assert.equal(await page.locator('#summary-tab-cards').getAttribute('aria-selected'), 'true');
     assert.deepEqual(await page.locator('#summary-tabs [role="tab"]').allTextContents(),
-      ['나의 이야기', '카드 소개', '과거·현재·미래', '분야별 풀이', '내 상황']);
+      ['카드 소개', '나의 이야기', '과거·현재·미래', '분야별 풀이', '내 상황']);
+    assert.equal(await page.locator('#summary-panel-cards').isVisible(), true);
+    assert.equal(await page.locator('#summary-panel-problem').isVisible(), false);
     assert.equal(await page.locator('#summary-panel-timeline').isVisible(), false);
+    await page.locator('#summary-tab-problem').click();
+    await page.locator('#summary-tab-problem').press('ArrowLeft');
+    assert.equal(await page.locator('#summary-tab-cards').getAttribute('aria-selected'), 'true', 'Left from the personal story selects the first introduction tab');
+    assert.equal(await page.locator('#summary-tab-cards').evaluate(tab => tab === document.activeElement), true);
+    await page.locator('#summary-tab-cards').press('ArrowLeft');
+    assert.equal(await page.locator('#summary-tab-personal').getAttribute('aria-selected'), 'true', 'Left from the first tab wraps to the final situation tab');
+    await page.locator('#summary-tab-personal').press('Home');
+    assert.equal(await page.locator('#summary-tab-cards').getAttribute('aria-selected'), 'true', 'Home selects the first introduction tab');
+    assert.equal(await page.locator('#summary-tab-cards').evaluate(tab => tab === document.activeElement), true);
+    await page.locator('#summary-tab-problem').click();
     const solutionSummary = page.locator('#summary-panel-problem [data-section-id="solution"] > .reading-two-line-summary');
     assert.equal(await solutionSummary.locator('.reading-summary-line').count(), 2, 'the direct reading keeps two complete summary sentences');
     const solutionLines = await solutionSummary.locator('.reading-summary-line').allTextContents();
@@ -320,7 +332,7 @@ const server = http.createServer((request, response) => {
       assert.notEqual(await reading.textContent(), firstText);
       tarotViews.personal = { situations: 3, revealedNames, mobile: true, desktop: viewport === 'desktop' };
     }
-    for (const [group, expectedSections] of [['problem', 5], ['cards', 3], ['timeline', 7], ['domains', 50]]) {
+    for (const [group, expectedSections] of [['cards', 3], ['problem', 5], ['timeline', 7], ['domains', 50]]) {
       await page.locator(`#summary-tab-${group}`).click();
       const panel = page.locator(`#summary-panel-${group}`);
       await panel.waitFor({ state: 'visible' });
@@ -381,7 +393,7 @@ const server = http.createServer((request, response) => {
     assert.ok((await page.locator('#summary-ritual').textContent()).length > 20);
     await inspectPersonal('mobile');
     await page.setViewportSize({ width: 1280, height: 900 });
-    for (const group of ['problem', 'cards', 'timeline', 'domains']) {
+    for (const group of ['cards', 'problem', 'timeline', 'domains']) {
       await page.locator(`#summary-tab-${group}`).click();
       if (group === 'domains') tarotViews[group].desktopCategories = await inspectDomainCategories('desktop');
       const overflow = await overflowState();
@@ -396,11 +408,11 @@ const server = http.createServer((request, response) => {
     await page.locator('#summary-tab-cards').click();
     await inspectUnclippedSummaries(page.locator('#summary-panel-cards'), 'card introductions on a small phone');
     const adjacentTabs = await page.locator('#summary-tabs').evaluate(tabs => {
-      const a = tabs.querySelector('#summary-tab-problem').getBoundingClientRect();
-      const b = tabs.querySelector('#summary-tab-cards').getBoundingClientRect();
+      const a = tabs.querySelector('#summary-tab-cards').getBoundingClientRect();
+      const b = tabs.querySelector('#summary-tab-problem').getBoundingClientRect();
       return Math.abs(a.top - b.top) < 2 && b.left >= a.right;
     });
-    assert.ok(adjacentTabs, 'the card introduction tab remains beside the personal story on a 320px screen');
+    assert.ok(adjacentTabs, 'card introductions remain first, beside the personal story on a 320px screen');
     assert.deepEqual(await overflowState(), { document: false, modal: false });
     await page.screenshot({ path: path.join(artifacts, 'tarot-cards-small-phone.png') });
     await page.locator('#summary-tab-problem').click();
@@ -420,13 +432,23 @@ const server = http.createServer((request, response) => {
     await page.waitForFunction(() => globalThis.__tarotCopiedReading.length > 0);
     const copiedTarot = await page.evaluate(() => globalThis.__tarotCopiedReading);
     const introStart = copiedTarot.indexOf('\n카드 소개\n');
-    const introEnd = copiedTarot.indexOf('\n과거·현재·미래\n');
+    const introEnd = copiedTarot.indexOf('\n나의 이야기\n');
     assert.ok(introStart >= 0 && introEnd > introStart);
+    const copiedGroupOrder = ['\n카드 소개\n', '\n나의 이야기\n', '\n과거·현재·미래\n', '\n분야별 풀이\n', '\n내 상황 · ']
+      .map(heading => copiedTarot.indexOf(heading));
+    assert.ok(copiedGroupOrder.every((position, index) => position >= 0 && (index === 0 || position > copiedGroupOrder[index - 1])),
+      'copy follows the visible tab order and keeps the selected situation last');
     assert.ok(copiedTarot.slice(introStart, introEnd).includes(selectedSource.firstCardMeaning));
     assert.doesNotMatch(copiedTarot.slice(0, introStart) + copiedTarot.slice(introEnd), tarotExplanation,
       'the clipboard keeps card explanations in their introduction section');
     for (const source of selectedSource.sections) assert.ok(copiedTarot.includes(source.body), 'copy includes all source interpretations even while their panel and disclosure are closed');
     for (const text of [selectedSource.record.body, selectedSource.record.action]) assert.equal(copiedTarot.split(text).length - 1, 1, 'the selected corpus body and advice are copied exactly once');
+    await page.locator('#result-dialog .modal-close').click();
+    await page.locator('#reading-open').click();
+    await page.locator('#result-dialog[open]').waitFor({ timeout: 15000 });
+    assert.equal(await page.locator('#summary-tab-cards').getAttribute('aria-selected'), 'true', 'reopening resets the view to card introductions');
+    assert.equal(await page.locator('#summary-panel-cards').isVisible(), true);
+    assert.equal(await page.locator('#result-context-select').inputValue(), 'money-agreement', 'reopening preserves the selected situation');
     tarotViews.sourceInterpretation = { record: selectedSource.record.id, sections: selectedSource.sections.length, completeCopy: true, widths: [320, 390, 1280] };
     if (tarotOnly) {
       assert.deepEqual(errors, []);

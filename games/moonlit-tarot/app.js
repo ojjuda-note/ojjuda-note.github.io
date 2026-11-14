@@ -1,8 +1,8 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261114-tarot-card-intro1';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261114-tarot-card-first1';
 import { TarotFX, TarotAudio } from './fx.js';
 import { TarotPayment, getTarotPrice } from './payment.js?v=20261114-tarot-copy1';
 import { TarotRevelation } from './revelation.js?v=20261114-tarot-copy1';
-import { createPersonalReading } from './personal-reading-ui.js?v=20261114-tarot-card-intro1';
+import { createPersonalReading } from './personal-reading-ui.js?v=20261114-tarot-card-first1';
 import { renderSectionSummary, installSummaryExpiryGuard } from './reading-summary-view.js?v=20261113-tarot-summary1';
 
 const $ = (selector) => document.querySelector(selector);
@@ -951,7 +951,7 @@ function renderSummaryGroups(summary, cardNames) {
     tabs.append(tab);
     panels.append(panel);
   });
-  selectSummaryGroup(groups.some(group => group.id === 'problem') ? 'problem' : groups[0].id);
+  selectSummaryGroup(groups[0].id);
 }
 
 function buildResults() {
@@ -1015,6 +1015,7 @@ async function showResultsWithRevelation() {
   if (ready && state.phase === 'complete' && state.revealed === 3) {
     state.summaryReady = true;
     showOverallOracle();
+    selectSummaryGroup('cards');
     openDialog('result-dialog');
   }
 }
@@ -1407,8 +1408,7 @@ personalReading = createPersonalReading({
   }),
   canRead: () => !expireDisplayedReading(),
   renderSections: renderReadingSections,
-  renderText: setReadingText,
-  selectGroup: selectSummaryGroup
+  renderText: setReadingText
 });
 installSummaryExpiryGuard(expireDisplayedReading);
 void initializeBilling();

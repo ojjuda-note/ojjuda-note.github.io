@@ -273,7 +273,6 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
     ], summaryLinesFrom(cautions[2], questions.obstacle))
   ];
   const groups = [
-    { id: 'problem', label: '나의 이야기', sections: problemSections },
     {
       id: 'cards', label: '카드 소개',
       description: '이번에 펼친 세 장의 이름과 그림, 전통적인 뜻을 살펴보자.',
@@ -281,6 +280,7 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
       detailSections: base.sections || [],
       basisParagraphs: [DOMAIN_READING_BASIS, PERSONAL_READING_BASIS, '타로의 전통 해석이에요. 미래를 확정하지 않아요.']
     },
+    { id: 'problem', label: '나의 이야기', sections: problemSections },
     { id: 'timeline', label: '과거·현재·미래', sections: timelineSections },
     buildDomainGroup({ cards, readings })
   ];

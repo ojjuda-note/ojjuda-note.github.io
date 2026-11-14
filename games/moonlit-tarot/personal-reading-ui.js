@@ -1,10 +1,10 @@
 import { listPersonalContexts } from './personal-contexts.js?v=20261114-tarot-card-intro1';
-import { buildPersonalReading, personalReadingCopyLines } from './personal-reading.js?v=20261114-tarot-card-intro1';
+import { buildPersonalReading, personalReadingCopyLines } from './personal-reading.js?v=20261114-tarot-card-first1';
 import { appendSummaryLines } from './reading-summary-view.js?v=20261113-tarot-summary1';
 
 // This view only reinterprets the three already revealed cards. It does not
 // start a purchase, draw a card, change a receipt, or extend its expiry.
-export function createPersonalReading({ getSnapshot, canRead, renderSections, renderText, selectGroup }) {
+export function createPersonalReading({ getSnapshot, canRead, renderSections, renderText }) {
   const element = (tag, className, text) => {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -205,7 +205,6 @@ export function createPersonalReading({ getSnapshot, canRead, renderSections, re
       panels.append(panel);
       tabs.classList.add('has-personal-reading');
       renderPanel();
-      if (selectedId) selectGroup('personal');
       return true;
     },
     copyLines() {

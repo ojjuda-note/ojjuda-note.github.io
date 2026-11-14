@@ -50,6 +50,10 @@ for (const topicId of ['overall', 'love', 'money', 'work']) {
     const cards = [DECK[start], DECK[(start + 19) % 78], DECK[(start + 43) % 78]];
     const report = getSummary(cards, topicId);
     const readings = cards.map((card, index) => getReading(card, topicId, index));
+    assert.deepEqual(plain(report.groups.map(group => group.id)), ['cards', 'problem', 'timeline', 'domains']);
+    const labels = ['카드 소개', '나의 이야기', '과거·현재·미래', '분야별 풀이'];
+    assert.deepEqual(report.text.split(/\n+/).filter(line => labels.includes(line)), labels,
+      'full-copy group headings follow the visible order with card introductions first');
     assert.equal(report.sections.length, 65);
     for (const section of report.sections) {
       checkLines(section.summaryLines, `${topicId}/${start}/${section.id}`);
