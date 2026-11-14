@@ -1,6 +1,20 @@
 (() => {
   'use strict';
   const params = new URLSearchParams(location.search);
+  // Direct invitations use a native game room without a shared lobby.
+  window.DrinkingStandaloneExit = {
+    confirm(s) {
+      const playing = s.phase !== 'waiting' && s.phase !== 'done';
+      if (s.me === 0 && s.players.length > 1) {
+        const prompt = playing ? '이번 판을 끝내고 방에서 나갈까요?' : '방에서 나갈까요?';
+        return window.confirm(prompt + ' 남은 사람 중 한 명이 무작위로 방장을 맡고 같은 방에서 기다려요.');
+      }
+      if (s.me === 0) return window.confirm('마지막 참가자예요. 나가면 방이 닫혀요. 나갈까요?');
+      if (s.phase !== 'waiting') return window.confirm('나가면 이 방이 모든 참가자에게서 닫혀요. 나갈까요?');
+      return true;
+    },
+    options(s) { return {round:s.round, waiting:s.phase==='waiting', host:s.me===0}; }
+  };
   if (!params.has('party')) return;
 
   const code = (params.get('party') || '').toUpperCase();

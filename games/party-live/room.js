@@ -65,7 +65,7 @@
   function lobby(s) {
     return '<h1>' + esc(s.title) + '</h1><p>모두 모이면 시작해요. 초대 링크와 비밀번호를 친구에게 알려 주세요.</p>' +
       '<ol class="members">' + s.players.map((player,i) => '<li' + (i===s.me?' class="me"':'') + '>' +
-        esc(player) + (i===s.me?' (나)':'') + '</li>').join('') + '</ol>' + control('초대 링크 복사','copy',true);
+        esc(player) + (i===0?' · 방장':'') + (i===s.me?' (나)':'') + '</li>').join('') + '</ol>' + control('초대 링크 복사','copy',true);
   }
   function render(s) {
     const first = !room || room.code !== s.code;
@@ -216,9 +216,9 @@
     if (action==='again') { void send(room,action);return; }
     if (action==='leave') {
       const current=room;
-      if ((current.me===0||current.phase!=='waiting')&&!window.confirm('나가면 이 방이 모든 참가자에게서 닫혀요. 나갈까요?')) return;
+      if (!window.DrinkingStandaloneExit.confirm(current)) return;
       run(async()=>{
-        await api('leave',current.code);
+        await api('leave',current.code, window.DrinkingStandaloneExit.options(current));
         remember('');history.replaceState(null,'',location.pathname);
         activeCode='';mode='create';entry();
       });

@@ -34,7 +34,7 @@ function render(s,force=false){
   }
   const draft=(!first&&s.phase==="hints"&&s.turn===s.me&&s.round===room.round)?view.querySelector('[name="hint"]')?.value:null;
   party?.setPhase(s.phase);room=s;activeCode=s.code;
-  const members='<ol class="members">'+s.players.map((n,i)=>'<li class="'+(i===s.me?'me':'')+'">'+esc(n)+(i===s.me?' (나)':'')+'</li>').join('')+'</ol>';
+  const members='<ol class="members">'+s.players.map((n,i)=>'<li class="'+(i===s.me?'me':'')+'">'+esc(n)+(i===0?' · 방장':'')+(i===s.me?' (나)':'')+'</li>').join('')+'</ol>';
   const hints=s.hints.length?'<ol class="hints">'+s.hints.map((h,i)=>'<li><strong>'+esc(s.players[i])+'</strong> '+esc(h)+'</li>').join('')+'</ol>':'';
   const heading='<div class="topline"><span>방 '+(party?.code||s.code)+'</span><span>'+s.round+'번째 판 · '+s.players.length+'/'+s.capacity+'명</span></div>';
   let content='';
@@ -118,7 +118,7 @@ view.addEventListener('click',e=>{
     if(!navigator.clipboard)notice.textContent=location.href;
     return;
   }
-  if(act==='leave'){if((room.me===0||room.phase!=='waiting')&&!window.confirm('나가면 이 방이 모든 참가자에게서 닫혀요. 나갈까요?'))return;run(async()=>{await api('leave',room.code);saveStandalone('');history.replaceState(null,'',location.pathname);activeCode='';entry()});return}
+  if(act==='leave'){if(!window.DrinkingStandaloneExit.confirm(room))return;run(async()=>{await api('leave',room.code, window.DrinkingStandaloneExit.options(room));saveStandalone('');history.replaceState(null,'',location.pathname);activeCode='';entry()});return}
   if(act==='vote'||act==='again'){
     const current=room;
     run(async()=>render(await api(act,current.code,{round:current.round,target:act==='vote'?Number(b.dataset.slot):undefined})));

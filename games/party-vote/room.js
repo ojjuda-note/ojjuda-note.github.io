@@ -77,7 +77,7 @@ function roundView(s) {
     case 'waiting':
       return '<h1>' + esc(s.title) + '</h1><p>모두 모이면 시작해요. 초대 링크와 비밀번호를 친구에게 알려 주세요.</p>' +
         '<ol class="members">' + s.players.map((name, i) => '<li' + (i === s.me ? ' class="me"' : '') + '>' +
-        esc(name) + (i === s.me ? ' (나)' : '') + '</li>').join('') + '</ol>' + control('초대 링크 복사', 'copy', true);
+        esc(name) + (i === 0 ? ' · 방장' : '') + (i === s.me ? ' (나)' : '') + '</li>').join('') + '</ol>' + control('초대 링크 복사', 'copy', true);
     case 'cards':
       return '<h1>내 제시어를 확인하세요</h1><div class="mission-card">' + control(revealed ? '제시어 가리기' : '내 제시어 보기', 'reveal') +
         (revealed ? '<p class="secret">' + esc(s.word) + '</p>' : '') + '</div><p>확인 ' + s.readyCount + ' / ' + s.players.length + '명</p>' +
@@ -218,9 +218,9 @@ view.addEventListener('click', event => {
   }
   const current = room;
   if (action === 'leave') {
-    if ((current.me === 0 || current.phase !== 'waiting') && !window.confirm('나가면 이 방이 모든 참가자에게서 닫혀요. 나갈까요?')) return;
+    if (!window.DrinkingStandaloneExit.confirm(current)) return;
     run(async () => {
-      await api('leave', current.code);
+      await api('leave', current.code, window.DrinkingStandaloneExit.options(current));
       remember(''); history.replaceState(null, '', location.pathname);
       activeCode = ''; mode = 'create'; entry();
     });
