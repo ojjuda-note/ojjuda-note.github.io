@@ -510,10 +510,10 @@
         { title: '큐브 일본 공식 소식', sub: '일정·방송 공지 원문', href: 'https://i-dle.cubeent.co.jp/news/' }
       ],
       news: [
-        { date: '2026.10.23', tag: '솔로 활동', title: '민니 디지털 EP i love you to the moon and back 발매', href: 'https://i-dle.cubeent.co.jp/discography/' },
-        { date: '2026.10.20', tag: '굿즈', title: '소연 첫 정규 앨범 일본 수입반 특전 안내', href: 'https://i-dle.cubeent.co.jp/news/3044/' },
         { date: '2026.11.02', tag: '방송', title: '소연, 11.13·11.16 일본 라디오 K TRACKS 출연 안내', href: 'https://i-dle.cubeent.co.jp/news/' },
         { date: '2026.10.28', tag: '인터뷰', title: '소연 Rolling Stone JAPAN 인터뷰 소개', href: 'https://i-dle.cubeent.co.jp/news/' },
+        { date: '2026.10.23', tag: '솔로 활동', title: '민니 디지털 EP i love you to the moon and back 발매', href: 'https://i-dle.cubeent.co.jp/discography/' },
+        { date: '2026.10.20', tag: '굿즈', title: '소연 첫 정규 앨범 일본 수입반 특전 안내', href: 'https://i-dle.cubeent.co.jp/news/3044/' },
         { date: '2026.06.17', tag: '음반', title: '미니 9집 We made 발매·일본 공식 수입반 안내', href: 'https://i-dle.cubeent.co.jp/news/2858/' }
       ],
       merch: [
