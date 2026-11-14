@@ -486,18 +486,23 @@
     {
       id: 'idle', name: 'i-dle', korean: '아이들', category: 'girl', fan: 'NEVERLAND', agency: 'CUBE Entertainment',
       members: ['미연', '민니', '소연', '우기', '슈화'],
+      checkedAt: '2026.11.14',
       debut: '2018.05.02', debutWork: 'I am', songs: ['LATATA', '달라($$$)', 'MAZE', "DON'T TEXT ME", '알고 싶어 (What’s in your house?)', '들어줘요 (Hear me)'],
       concept: '2018년 LATATA로 데뷔한 다섯 멤버의 셀프 프로듀싱 그룹. 2025년부터 i-dle이라는 이름으로 활동.',
       official: 'https://i-dle.cubeent.co.jp/profile/', youtube: 'https://www.youtube.com/@official_i_dle',
       photo: '(G)I-DLE Airport Departure 2024.png', photoLabel: '2024년 공항 단체', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
+      morePhotos: [
+        commonsPhoto('06072026 I-DLE SHOWCASE 1.png', 'We made 발매 쇼케이스 · 크롭 사진', '2026', 'K-POPIT 케이팝잇 · Wikimedia Commons에서 세로 6% 크롭', 'CC BY 4.0')
+      ],
       music: [
+        { title: 'Mono (Feat. skaiwater)', date: '2026.01.27', type: '디지털 싱글', songs: ['Mono (Feat. skaiwater)'], href: 'https://i-dle.cubeent.co.jp/discography/2612/' },
+        { title: 'HIDE AND SEEK', date: '2026.04.22', type: '일본 디지털 싱글 · TV 애니메이션 오프닝', songs: ['HIDE AND SEEK'], href: 'https://i-dle.cubeent.co.jp/discography/2803/' },
         { title: 'We made', date: '2026.07.06', type: '미니 9집 · 타이틀 Gimme Dat Love', songs: ['Mono (Feat. skaiwater)', 'Gimme Dat Love', 'Morning', 'Crow', 'Love Is Pain'], href: 'https://i-dle.cubeent.co.jp/discography/2929/' },
         { title: 'i-dle', date: '2025.10.03', type: '일본 미니 1집 · 타이틀 どうしよっかな', songs: ['どうしよっかな', 'Invincible', '愛せなかった世界へ永遠にじゃあね', '傷つくのは嫌いだから', 'Queencard (Japanese ver.)'], href: 'https://i-dle.cubeent.co.jp/discography/2530/' },
         { title: 'We are', date: '2025.05.19', type: '미니 8집 · 타이틀 Good Thing', songs: ['Good Thing', 'Girlfriend', 'Love Tease', 'Chain', 'Unstoppable', 'If You Want'], href: 'https://i-dle.cubeent.co.jp/discography/2324/' },
         { title: 'I am', date: '2018.05.02', type: '데뷔 미니 1집 · 타이틀 LATATA', songs: ['LATATA', '달라($$$)', 'MAZE', "DON'T TEXT ME", '알고 싶어 (What’s in your house?)', '들어줘요 (Hear me)'], href: 'https://i-dle.cubeent.co.jp/discography/329/' }
       ],
       appearances: [
-        { date: '2026-11-13', title: '소연 · 일본 라디오 K TRACKS', sub: '닛폰방송 · 21:30~21:50 (일본 현지) · 방송사 주관', href: 'https://i-dle.cubeent.co.jp/news/' },
         { date: '2026-11-16', title: '소연 · 일본 라디오 K TRACKS', sub: '시코쿠방송 · 23:40~24:00 (일본 현지) · 방송사 주관', href: 'https://i-dle.cubeent.co.jp/news/' }
       ],
       schedules: [
@@ -505,15 +510,19 @@
         { title: '큐브 일본 공식 소식', sub: '일정·방송 공지 원문', href: 'https://i-dle.cubeent.co.jp/news/' }
       ],
       news: [
+        { date: '2026.10.23', tag: '솔로 활동', title: '민니 디지털 EP i love you to the moon and back 발매', href: 'https://i-dle.cubeent.co.jp/discography/' },
+        { date: '2026.10.20', tag: '굿즈', title: '소연 첫 정규 앨범 일본 수입반 특전 안내', href: 'https://i-dle.cubeent.co.jp/news/3044/' },
         { date: '2026.11.02', tag: '방송', title: '소연, 11.13·11.16 일본 라디오 K TRACKS 출연 안내', href: 'https://i-dle.cubeent.co.jp/news/' },
         { date: '2026.10.28', tag: '인터뷰', title: '소연 Rolling Stone JAPAN 인터뷰 소개', href: 'https://i-dle.cubeent.co.jp/news/' },
         { date: '2026.06.17', tag: '음반', title: '미니 9집 We made 발매·일본 공식 수입반 안내', href: 'https://i-dle.cubeent.co.jp/news/2858/' }
       ],
       merch: [
+        { title: '소연 What a Wonderful Life 공식 수입 음반', sub: '2026.10.28 일본 발매 · Home/Island/Temple 등 버전 및 구매 특전은 공식 공지 확인 · 재고 미확인', href: 'https://i-dle.cubeent.co.jp/news/3044/' },
         { title: 'We made 공식 앨범', sub: 'Weverse Shop · Mono/Crow 버전·포토카드 구성 · 재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/113/notices/13359' },
         { title: 'We made 일본 공식 수입반', sub: 'UNIVERSAL MUSIC · Mono/Crow/POCAALBUM 버전 · 재고·특전은 판매처 확인', href: 'https://www.universal-music.co.jp/i-dle/news/2026-06-17-2/' }
       ],
       campaigns: [
+        { kind: '팬 캠페인', date: '2026.03.24', title: 'i-dle × LINE 일본 공식 계정 · i-BINGO', sub: '일본 공식 계정 개설 기념 빙고·응모 이벤트 · 당시 진행, 현재 참여 가능 여부 미확인', href: 'https://i-dle.cubeent.co.jp/news/2682/' },
         { kind: '광고', date: '2026.05.05', title: '패밀리마트 × i-dle', sub: '2026.05.05~11 일본 점포 FamiMa TV·매장 안내 방송 · 기간 종료', href: 'https://i-dle.cubeent.co.jp/news/2772/' }
       ],
       accent: '#9567d1', light: '#ebdeff', dark: '#594077', bg: '#faf5ff', shape: '✦'
