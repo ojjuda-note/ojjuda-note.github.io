@@ -236,6 +236,7 @@
       if (lastMutation?.fingerprint!==fingerprint) lastMutation={fingerprint,id:crypto.randomUUID()};
       options.request_id=lastMutation.id;
       const next=await api(action,snapshot.code,options);
+      if(next.phase==='done'&&feature.beforeResult)await feature.beforeResult();
       lastMutation=null;
       if (room?.code===snapshot.code) render(next);
     });

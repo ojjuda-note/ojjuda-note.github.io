@@ -659,26 +659,36 @@ test('the secret count button has a private total and a closed lid for the waiti
     await p.goto(origin+(multi?'/games/secretcount/?room=SC1234':'/games/drinking/local/#secretcount'));
     await dismissGuide(p);
     const form=p.locator('.sc-setup');
-    await form.locator('label').filter({hasText:'직접 입력'}).click();
-    await form.locator('[name=target]').fill('5');
+    await form.locator('label').filter({hasText:'직접 정하기'}).click();
+    assert.equal(await p.locator('body').evaluate(el=>getComputedStyle(el).getPropertyValue('--suite-accent').trim()),'#e6ca94');
+    const selected=form.locator('fieldset label:has(:checked)');
+    assert.deepEqual(await selected.evaluate(el=>[getComputedStyle(el).color,getComputedStyle(el).backgroundColor]),['rgb(53, 46, 33)','rgb(230, 202, 148)']);
+    const slider=form.getByRole('slider',{name:'비밀 숫자'});
+    await slider.press('End');assert.equal(await form.locator('output').innerText(),'36');
+    await slider.press('Home');assert.equal(await form.locator('output').innerText(),'5');
+    await screenshot(p,'secretcount-slider-'+(multi?'multi':'local'));
     await form.locator('[type=submit]').click();
     const hit=p.locator('[data-sc-press]'),pass=p.locator('[data-sc-pass]');
     await hit.waitFor({state:'visible'});
     await p.waitForFunction(()=>document.body.dataset.dpPhase==='press');
     for(const viewport of [viewports[0],viewports[1],viewports[3],viewports[2]]){
       await p.setViewportSize(viewport);await painted(p);
-      for(const control of [hit,pass]){
+      for(const control of [hit,pass,p.locator('.sc-turn')]){
         const r=await control.boundingBox();
-        assert.ok(r&&r.width>=44&&r.height>=36&&r.x>=-1&&r.y>=-1&&r.x+r.width<=viewport.width+1&&r.y+r.height<=viewport.height+1,'buttons fit '+JSON.stringify({multi,viewport,r}));
+        assert.ok(r&&r.width>=44&&r.height>=(control===hit||control===pass?36:18)&&r.x>=-1&&r.y>=-1&&r.x+r.width<=viewport.width+1&&r.y+r.height<=viewport.height+1,'buttons fit '+JSON.stringify({multi,viewport,r}));
       }
-      assert.equal((await p.locator('#access-content').innerText()).trim(),'턴 넘기기');
+      assert.equal((await p.locator('#access-content').innerText()).trim().replace(/\s+/g,' '),'1번 · 가님 차례 턴 넘기기');
     }
     await p.setViewportSize(viewports[0]);
     for(let i=0;i<3;i++)await hit.click();
     assert.equal(await hit.isDisabled(),true);
-    assert.equal((await p.locator('#access-content').innerText()).trim(),'턴 넘기기');
+    assert.equal((await p.locator('#access-content').innerText()).trim().replace(/\s+/g,' '),'1번 · 가님 차례 턴 넘기기');
+    await p.waitForFunction(()=>getComputedStyle(document.querySelector('[data-sc-press]')).transform!=='none');
+    await p.waitForFunction(()=>!document.querySelector('[data-sc-press]').classList.contains('sc-pressed'));
+    assert.notEqual(await hit.evaluate(el=>getComputedStyle(el).transform),'none','the third press stays visibly depressed until pass');
     await screenshot(p,'secretcount-open-'+(multi?'multi':'local'));
     await pass.click();
+    await p.getByText('2번 · 나님 차례',{exact:true}).waitFor({state:'visible'});
     if(multi){
       await p.locator('.sc-closed').waitFor();
       assert.equal(await hit.isDisabled(),true);assert.equal(await pass.count(),0);

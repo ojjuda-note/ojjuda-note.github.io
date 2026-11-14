@@ -45,9 +45,9 @@
     count:[[0,860,800,.08,'triangle']], result:[[0,523,523,.10,'triangle'],[.11,659,659,.12,'triangle'],[.24,784,784,.22,'triangle']]
   };
   const buzz={tap:9,deal:14,turn:[14,28,14],tooth:18,snap:[70,32,95],spin:8,stop:[32,28,52],tick:12,boom:[130,55,180],flip:14,king:[28,30,28,30,68],truth:18,vote:14,count:14,result:[24,36,44]};
-  function play(id){
+  function play(id,pulse=buzz[id]||8){
     if(document.hidden)return;
-    if(prefs.vibration)vibrate(buzz[id]||8);
+    if(prefs.vibration)vibrate(pulse);
     if(id==='tooth'||id==='snap'){
       if(prefs.sound)playRecording(buttonClick);
       return;
