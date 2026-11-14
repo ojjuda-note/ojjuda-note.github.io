@@ -1,0 +1,53 @@
+name: Fanpage CI source diagnosis
+on:
+  push:
+    branches: ['fanpages/ci-source-audit-20261114']
+    paths: ['.github/workflows/fanpage-ci-source-audit.yml']
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: '22c6905a40c269003ab8094a1bf9d48719f01fa2'
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Identify exact source used by the failed regression
+        run: |
+          mkdir -p /tmp/fanpage-ci-source
+          git rev-parse HEAD
+          git status --short
+          python3 - <<'PY'
+          import pathlib, hashlib, json, subprocess
+          out=pathlib.Path('/tmp/fanpage-ci-source')
+          paths=['tests/admin-fortune-purchases.test.cjs','tests/run.cjs','tests/package.json','admin/fortune-purchases.js','.github/workflows/regression.yml']
+          for name in paths:
+              p=pathlib.Path(name)
+              print('SOURCE',name,'EXISTS',p.exists())
+              if not p.exists(): continue
+              data=p.read_bytes(); print('SHA256',hashlib.sha256(data).hexdigest(),'GIT_BLOB',subprocess.check_output(['git','hash-object',name],text=True).strip())
+              target=out/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(data)
+              if name=='tests/package.json':
+                  scripts=json.loads(data)['scripts'];print('NPM_TEST',scripts.get('test'));print('NPM_TEST_UNIT',scripts.get('test:unit'))
+              elif name in paths[:2]:
+                  for n,line in enumerate(data.decode().splitlines(),1):
+                      if n<=140: print(f'{name}:{n}: {line}')
+          PY
+      - name: Install the repository locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Run purchase tests against their actual source
+        run: node --test tests/admin-fortune-purchases.test.cjs
+      - name: Run the unchanged unit suite
+        run: npm --prefix tests run test:unit
+      - name: Preserve source diagnosis
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fanpage-ci-exact-source
+          path: /tmp/fanpage-ci-source
+          retention-days: 3
