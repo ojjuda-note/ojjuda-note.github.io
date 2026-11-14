@@ -1,5 +1,5 @@
-import { listPersonalContexts } from './personal-contexts.js?v=20261114-tarot-review3';
-import { buildPersonalReading, personalReadingCopyLines, PERSONAL_BASIS } from './personal-reading.js?v=20261114-tarot-review3';
+import { listPersonalContexts } from './personal-contexts.js?v=20261114-tarot-card-intro1';
+import { buildPersonalReading, personalReadingCopyLines } from './personal-reading.js?v=20261114-tarot-card-intro1';
 import { appendSummaryLines } from './reading-summary-view.js?v=20261113-tarot-summary1';
 
 // This view only reinterprets the three already revealed cards. It does not
@@ -83,7 +83,7 @@ export function createPersonalReading({ getSnapshot, canRead, renderSections, re
     const body = element('div', 'personal-disclosure-body');
     body.append(element('h4', 'personal-comparison-title', data.title));
     const basis = element('div', 'personal-comparison-basis');
-    renderSections(basis, [{ title: '카드가 짚어 주는 선택 기준', paragraphs: [data.basis], summaryLines: data.basisSummaryLines }], '', 'h4', currentCards.map(card => card.name));
+    renderSections(basis, [{ title: '이번 선택에서 살펴볼 기준', paragraphs: [data.basis], summaryLines: data.basisSummaryLines }], '', 'h4', []);
     body.append(basis);
     const choices = element('div', 'personal-choice-grid');
     for (const option of data.options) {
@@ -127,22 +127,22 @@ export function createPersonalReading({ getSnapshot, canRead, renderSections, re
     picker.append(label, select);
     panel.append(picker);
     if (!report) {
-      panel.append(element('p', 'personal-empty', '지금 고민에 맞는 상황을 골라 주세요. 세 장을 연결한 풀이와 두 선택의 장단점을 함께 보여 드려요.'));
+      panel.append(element('p', 'personal-empty', '지금 고민에 맞는 상황을 골라 주세요. 상황에 맞는 풀이와 두 선택의 장단점을 함께 보여 드려요.'));
       return;
     }
     const criteria = element('details', 'reading-source personal-basis');
     criteria.id = 'personal-basis';
-    criteria.append(element('summary', '', '풀이 기준과 상황 예시'), element('p', '', PERSONAL_BASIS), element('p', 'personal-example', report.example));
+    criteria.append(element('summary', '', '상황 예시로 살펴보기'), element('p', 'personal-example', report.example));
     panel.append(criteria);
     const reading = element('div', 'personal-reading');
     reading.id = 'personal-reading';
     reading.append(element('h3', 'personal-main-question', report.question));
     const links = element('div', 'personal-card-connections');
     links.id = 'personal-card-connections';
-    renderSections(links, [report.connection], '', 'h3', currentCards.map(card => card.name));
+    renderSections(links, [report.connection], '', 'h3', []);
     reading.append(links);
     const sections = element('div', 'personal-card-guides');
-    renderSections(sections, report.primary, '', 'h3', currentCards.map(card => card.name));
+    renderSections(sections, report.primary, '', 'h3', []);
     reading.append(sections);
     renderComparison(reading, report.comparison);
     const following = element('section', 'personal-followups');
@@ -152,10 +152,10 @@ export function createPersonalReading({ getSnapshot, canRead, renderSections, re
       const details = element('details', 'personal-disclosure personal-followup');
       details.id = question.id;
       const questionTitle = element('summary', '', question.title);
-      appendSummaryLines(questionTitle, question.summaryLines, { inline: true, setText: renderText, cardNames: currentCards.map(card => card.name) });
+      appendSummaryLines(questionTitle, question.summaryLines, { inline: true, setText: renderText });
       details.append(questionTitle);
       const answer = element('div', 'personal-disclosure-body personal-answer');
-      renderSections(answer, [{ title: '이렇게 풀어 보세요', paragraphs: question.paragraphs }], '', 'h4', currentCards.map(card => card.name));
+      renderSections(answer, [{ title: '이렇게 풀어 보세요', paragraphs: question.paragraphs }], '', 'h4', []);
       details.append(answer);
       following.append(details);
     }

@@ -13,6 +13,12 @@ const { buildPersonNarrative } = load('person-narrative.js');
 const { PERSONAL_CONTEXTS, getPersonalContext } = load('personal-contexts.js');
 const { splitSummarySentences } = load('reading-summary.js');
 const plain = value => JSON.parse(JSON.stringify(value));
+const visiblePersonalText = value => [
+  ...value.paragraphs, ...value.summaryLines, value.overview, value.pairReading, value.choiceLink
+].join(' ');
+const assertPersonalText = (text, label) => assert.doesNotMatch(text,
+  /카드|타로|(?:완드|소드|펜타클)\s*(?:\d|에이스|시종|기사|여왕|왕)|조합(?:이야|이에요|은)/u,
+  label + ': personal text contains no card-name or definition framing');
 const card = id => DECK.find(value => value.id === id);
 const context = { concern: '서로 편하게 연락할 시간', boundary: '상대가 거절할 수 있는 여지' };
 const cards = [card('fool'), card('emperor'), card('temperance')];
@@ -68,6 +74,7 @@ for (const [field, count] of Object.entries(storySentenceCounts)) {
     assert.match(story[field], /[.!?]$/u);
     assert.doesNotMatch(story[field], /[{}]|undefined|\[object Object\]|반드시\s*(성공|재회|합격)|확률\s*\d+%/u,
       `${value.id}/${field}: no unresolved slots or invented guarantees`);
+    assertPersonalText(story[field], `${value.id}/${field}`);
   }
 }
 assert.throws(() => getPersonStory('made-up'), /actual_card/u);
@@ -76,8 +83,9 @@ assert.throws(() => getPersonStory('__proto__'), /actual_card/u);
 const snapshot = JSON.stringify({ cards, context });
 const report = buildCardConnections({ cards, context });
 assert.equal(report.paragraphs.length, 3);
-assert.ok(report.paragraphs.every(text => splitSummarySentences(text).length >= 3),
-  'each connection explains a reason and an application in complete sentences');
+assert.ok(report.paragraphs.every(text => splitSummarySentences(text).length >= 1),
+  'each personal role remains a complete passage after definitions move to the card introduction');
+assertPersonalText(visiblePersonalText(report), 'connected reading');
 assert.equal(JSON.stringify({ cards, context }), snapshot, 'the selected cards and context are unchanged');
 assert.deepEqual(plain(report), plain(buildCardConnections({ cards, context })), 'the same inputs produce the same reading');
 assert.deepEqual(plain(report.evidence.cards), cards.map(value => value.id));
@@ -86,13 +94,16 @@ const combined = report.paragraphs.join(' ');
 for (const [index, value] of cards.entries()) {
   const profile = getConnectionProfile(value.id);
   const story = getPersonStory(value.id);
-  assert.ok(combined.includes(value.name));
+  assert.equal(report.evidence.cards[index], value.id, 'actual identities stay in the evidence');
   assert.deepEqual(plain(report.evidence.lenses[index]), { cardId: value.id, offer: profile.offer, excess: profile.excess, route: profile.route },
     'the original relationship lenses remain available as evidence');
   assert.ok(combined.includes(splitSummarySentences(story.overall)[0]),
     'the body applies every actual card through its selected topic, not only its abstract label');
-  assert.ok(report.paragraphs[index].includes(splitSummarySentences(getCardInterpretation(value.id).meaning)[0]),
-    'the card meaning comes before personal cautions');
+  assert.ok(!report.paragraphs[index].includes(splitSummarySentences(getCardInterpretation(value.id).meaning)[0]),
+    'the card definition does not precede the personal story');
+  assert.equal(getReading(value, 'overall', index).meaning, getCardInterpretation(value.id).meaning,
+    'the original definition remains in reading data for the dedicated card introduction');
+  assert.deepEqual(plain(report.stories[index]), plain(story), 'complete actual-card personal source remains in the data');
   if (index === 2) {
     assert.ok(report.paragraphs[2].includes(story.overall),
       'the next choice preserves the complete selected-topic explanation and its own caution');
@@ -110,6 +121,9 @@ assert.equal(CARD_INTERPRETATIONS.fool.motion, CARD_INTERPRETATIONS.magician.mot
 const sameNames = ['첫 카드', '둘째 카드', '셋째 카드'];
 const sameMotionA = buildCardConnections({ cards, context, names: sameNames });
 const sameMotionB = buildCardConnections({ cards: [card('magician'), ...cards.slice(1)], context, names: sameNames });
+assert.equal(visiblePersonalText(sameMotionA), visiblePersonalText(report),
+  'changing display names cannot change or leak into the personal story');
+for (const name of sameNames) assert.ok(!visiblePersonalText(sameMotionA).includes(name));
 assert.notDeepEqual(plain(sameMotionA.paragraphs), plain(sameMotionB.paragraphs));
 assert.ok(sameMotionB.paragraphs.join(' ').includes(splitSummarySentences(getPersonStory('magician').overall)[0]));
 assert.notEqual(sameMotionA.paragraphs[1], sameMotionB.paragraphs[1],
@@ -128,12 +142,25 @@ for (let position = 0; position < 3; position++) {
     const chosen = [...cards]; chosen[position] = candidate;
     const reading = buildCardConnections({ cards: chosen, context, names: sameNames });
     const body = reading.paragraphs.join(' '), story = getPersonStory(candidate.id);
+    assertPersonalText(visiblePersonalText(reading), `${candidate.id}/${position}`);
     const rolePassage = splitSummarySentences(story.overall)[0];
     assert.ok(body.includes(rolePassage), `${candidate.id}: identity affects the personal meaning in position ${position}`);
     assert.ok(!bodies.has(body), `${candidate.id}: the complete prose differs from ${bodies.get(body)} with fixed names`);
     bodies.set(body, candidate.id);
   }
   assert.equal(bodies.size, 76);
+}
+
+for (let start = 0; start < DECK.length; start++) {
+  const chosen = [DECK[start], DECK[(start + 19) % 78], DECK[(start + 43) % 78]];
+  for (const topicId of ['overall', 'love', 'money', 'work']) {
+    const reading = buildPersonNarrative({ cards: chosen, topicId, names: sameNames });
+    assertPersonalText(visiblePersonalText(reading), `${chosen[0].id}/${topicId}`);
+    assert.deepEqual(plain(reading.evidence.cards), plain(chosen.map(value => value.id)));
+    assert.equal(reading.evidence.topicId, topicId);
+    assert.ok(reading.paragraphs[2].includes(getPersonStory(chosen[2].id)[topicId]),
+      'every ending retains the complete third-card topic application without a card-definition prefix');
+  }
 }
 
 // Actual situation passages must change even if labels, concern text and
@@ -244,9 +271,9 @@ const positive = buildPersonNarrative({ cards: positiveCards, topicId: 'love', n
 for (const [index, value] of positiveCards.entries()) {
   const core = splitSummarySentences(getCardInterpretation(value.id).meaning)[0];
   const topic = splitSummarySentences(getPersonStory(value.id).love)[0];
-  assert.ok(positive.paragraphs[index].includes(core) && positive.paragraphs[index].includes(topic),
-    `${value.id}: the positive core and actual love meaning are retained`);
-  assert.ok(positive.paragraphs[index].indexOf(core) < positive.paragraphs[index].indexOf(topic));
+  assert.ok(positive.paragraphs[index].includes(topic),
+    `${value.id}: the positive personal love passage remains available`);
+  assert.ok(!positive.paragraphs[index].includes(core), `${value.id}: its definition has a separate introduction view`);
   assert.ok(!positive.paragraphs.join(' ').includes(getPersonStory(value.id).cost),
     `${value.id}: the shared defensive cost is not automatically attached`);
 }

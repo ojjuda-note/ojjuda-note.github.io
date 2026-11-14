@@ -1,10 +1,11 @@
-import { getPersonStory } from './person-stories.js?v=20261114-tarot-review3';
-import { PERSON_PAIR_READINGS } from './person-pair-readings.js?v=20261114-tarot-review3';
+import { getPersonStory } from './person-stories.js?v=20261114-tarot-card-intro1';
+import { PERSON_PAIR_READINGS } from './person-pair-readings.js?v=20261114-tarot-card-intro1';
 import { getConnectionProfile } from './connection-profiles.js?v=20261114-tarot-review2';
-import { getCardInterpretation, withParticle } from './interpretation-engine.js?v=20261114-tarot-review2';
+import { withParticle } from './interpretation-engine.js?v=20261114-tarot-review2';
 import { splitSummarySentences, summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
 
 const TOPICS = ['overall', 'love', 'money', 'work'];
+export const PERSONAL_READING_BASIS = '고른 상황과 뽑은 세 장을 연결해 성향과 마음을 풀이해요. 실제 과거나 상대의 속마음을 확인한 결과는 아니에요. 카드 연결에는 공통 해석 규칙을 적용하고, 선택 비교와 이어지는 답변에는 생활 제안을 담았어요.';
 const first = text => splitSummarySentences(text)[0];
 const SITUATION_BOUNDARIES = Object.freeze({
   'overall-family': '챙김을 받는 사람의 뜻을 묻고, 돌보는 네가 쉴 시간도 함께 남겨 둬.',
@@ -33,30 +34,30 @@ function pairReason(left, right) {
   return 'different-emphasis';
 }
 
-const phrase = (value, particle) => withParticle(`‘${value}’`, particle);
+const phrase = (value, particle) => withParticle(value, particle);
 
 // These are editorial comparisons of the actual meanings, not additional
 // traditional combinations. A give/need match suggests a question to examine;
 // it never proves that two habits are compatible or guarantees an outcome.
 function commonPair(left, right, reason) {
-  const leftOffer = phrase(left.offer, '과');
+  const leftOffer = `${left.offer}, 그리고`;
   const rightOffer = phrase(right.offer, '을');
   if (reason === 'different-pace') {
-    return `${leftOffer} ${phrase(right.offer, '은')} 서로 다른 속도를 짚어. 바로 움직일 부분과 더 살필 부분을 나눠야 두 태도를 무리 없이 쓸 수 있어.`;
+    return `너는 ${leftOffer} ${rightOffer} 모두 살리고 싶어 해. 바로 움직일 부분과 더 살필 부분을 나누면, 어느 한쪽을 억지로 누르지 않고 결정할 수 있어.`;
   }
   if (reason === 'shared-emphasis') {
-    return `${leftOffer} ${rightOffer} 함께 살리는 조합이야. 두 태도에 힘을 모으되, 선택에 필요한 다른 조건도 함께 살펴보렴.`;
+    return `네가 힘을 쓰는 방식에는 ${leftOffer} ${phrase(right.offer, '이')} 함께 있어. 익숙한 두 장점을 살리되, 선택에 필요한 다른 조건도 함께 살펴보렴.`;
   }
   if (reason === 'right-supports-left') {
-    return `${phrase(left.offer, '을')} 살릴 때 ${phrase(right.offer, '이')} 확인할 기준을 더해 줘. ${phrase(left.excess, '이')} 나타나는지 살피는 데 그 기준을 써 보렴.`;
+    return `너에게는 ${phrase(left.offer, '을')} 살리면서 ${rightOffer} 함께 챙기는 일이 중요해. ${phrase(left.excess, '이')} 나타난다면 두 장점을 고르게 쓰고 있는지 돌아보렴.`;
   }
   if (reason === 'left-supports-right') {
-    return `${phrase(right.offer, '을')} 살리려면 처음의 ${phrase(left.offer, '을')} 함께 기억해야 해. ${phrase(right.excess, '이')} 나타날 때 무엇을 다시 살필지 알려 주는 조합이야.`;
+    return `지금은 ${right.offer}뿐 아니라 ${left.offer}도 함께 필요해. ${phrase(right.excess, '이')} 나타난다면 네가 원래 중요하게 여긴 것부터 다시 살펴보렴.`;
   }
   if (reason === 'mutual-support') {
-    return `${leftOffer} ${rightOffer} 함께 살펴야 하는 조합이야. 두 태도를 모두 쓰되, 하나를 지키려고 다른 하나를 무리하게 밀어붙이지는 마.`;
+    return `너에게는 ${leftOffer} ${rightOffer} 함께 쓰는 균형이 중요해. 두 장점을 모두 쓰되, 하나를 지키려고 다른 하나를 무리하게 밀어붙이지는 마.`;
   }
-  return `${leftOffer} ${rightOffer} 함께 놓고 선택을 살펴보는 조합이야. 마음을 쓰는 이유와 지금 확인할 조건이 다를 수 있으니, 한 가지 기준만으로 결론을 정하지 마.`;
+  return `네가 바라는 모습에는 ${leftOffer} ${phrase(right.offer, '이')} 함께 담겨 있어. 마음이 끌리는 이유와 지금 확인할 조건이 다를 수 있으니, 한 가지 기준만으로 결론을 정하지 마.`;
 }
 
 function pairReading(cards, profiles, topicId, reason, contextId) {
@@ -76,13 +77,13 @@ function pairReading(cards, profiles, topicId, reason, contextId) {
 
 function connectChoice(profiles) {
   const [left, right, last] = profiles;
-  const opening = `${phrase(left.offer, '과')} ${phrase(right.offer, '을')} 함께 살핀 뒤`;
+  const opening = `네가 ${left.offer}, 그리고 ${phrase(right.offer, '을')} 함께 중요하게 여긴다면, 이번에는 ${last.offer}에 집중해 보렴.`;
   const supported = [left, right].filter(profile => last.give === profile.need);
   if (supported.length) {
-    const excesses = supported.map(profile => `‘${profile.excess}’`).join(' 또는 ');
-    return `${opening}, ${phrase(last.offer, '을')} 다음 선택의 기준으로 삼는 거야. ${withParticle(excesses, '이')} 나타나는지 살피면서 그 기준을 써 보렴.`;
+    const excesses = supported.map(profile => profile.excess).join(' 또는 ');
+    return `${opening} ${withParticle(excesses, '이')} 이어진다면 그 부분을 먼저 살피면서 움직이렴.`;
   }
-  return `${opening}, 이번에는 ${phrase(last.offer, '을')} 살려 다음 행동을 정하는 거야.`;
+  return opening;
 }
 
 /** Person-centred prose from the actual ordered cards and the chosen situation.
@@ -103,7 +104,6 @@ export function buildPersonNarrative({ cards, topicId = 'overall', context, name
     throw new Error('tarot_person_narrative_requires_three_names');
   }
   const [left, right, last] = stories;
-  const coreMeanings = cards.map(card => getCardInterpretation(card.id).meaning);
   const situation = context?.cards?.[cards[0].id];
   const opening = situation ? first(situation) : first(left[actualTopic]);
   const present = context?.cards?.[cards[1].id];
@@ -120,14 +120,12 @@ export function buildPersonNarrative({ cards, topicId = 'overall', context, name
   const lastAction = lastSentences.length > 1 ? lastSentences.slice(1).join(' ') : '';
   const choiceLink = connectChoice(profiles);
   const paragraphs = [
-    `첫 번째 ‘${labels[0]}’ 카드의 뜻부터 짚어 줄게. ${first(coreMeanings[0])} ${opening} ${concern}`.trim(),
-    `두 번째 ‘${labels[1]}’ 카드를 함께 보면 지금의 선택이 더 분명해져. ${first(coreMeanings[1])} ${presentMeaning} ${pair}`,
-    `세 번째 ‘${labels[2]}’ 카드가 짚는 다음 선택이야. ${first(coreMeanings[2])} ${lastMeaning} ${choiceLink} ${lastAction} ${limit}`.replace(/ {2,}/g, ' ').trim()
+    `${opening} ${concern}`.trim(),
+    `${presentMeaning} ${pair}`,
+    `${lastMeaning} ${choiceLink} ${lastAction} ${limit}`.replace(/ {2,}/g, ' ').trim()
   ];
   const conclusion = lastAction || first(lastMeaning);
   const summaryLines = summaryLinesFrom(pair, conclusion);
-  summaryLines[0] = `‘${cards[0].name}’ · ‘${cards[1].name}’: ${summaryLines[0]}`;
-  summaryLines[1] = `‘${cards[2].name}’ 카드: ${summaryLines[1]}`;
   const overview = `${first(pair)} ${lastAction || first(closingAction) || conclusion}`;
   const supports = [0, 1].filter(index => profiles[2].give === profiles[index].need);
   return {

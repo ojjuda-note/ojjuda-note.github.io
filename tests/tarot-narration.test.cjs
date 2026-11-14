@@ -13,6 +13,39 @@ const { directInterpretation, directAction } = load('reading-voice.js');
 const plain = value => JSON.parse(JSON.stringify(value));
 const topics = ['overall', 'love', 'money', 'work'];
 const cards = ['swords_knight', 'swords_two', 'pentacles_three'].map(id => DECK.find(card => card.id === id));
+const groupText = group => group.sections.flatMap(section => section.paragraphs).join('\n\n');
+const personalText = report => report.groups.filter(group => group.id !== 'cards').map(groupText).join('\n\n');
+
+function checkCardIntroductions(report, selected, readings) {
+  const group = report.groups.find(group => group.id === 'cards');
+  assert.equal(group.sections.length, 3);
+  assert.ok(group.basisParagraphs.length >= 3, 'shared interpretation rules and scope remain available with the card explanations');
+  for (const basis of group.basisParagraphs) assert.ok(report.text.includes(basis));
+  for (const [index, reading] of readings.entries()) {
+    const intro = group.sections[index];
+    assert.equal(intro.id, `card-intro-${index}`);
+    assert.equal(intro.cardId, selected[index].id);
+    assert.equal(intro.roleIndex, index);
+    assert.ok(intro.title.includes(selected[index].name));
+    for (const paragraph of [reading.introduction, ...reading.paragraphs]) {
+      assert.ok(intro.paragraphs.includes(paragraph), 'card introduction preserves each complete original explanation');
+      assert.ok(report.text.includes(paragraph), 'full copy includes the relocated explanation');
+    }
+    assert.deepEqual(plain(intro.detailSections), plain(reading.detailSections));
+    assert.deepEqual(plain(intro.reference), plain(reading.reference));
+    assert.equal(intro.nameGuide, reading.nameGuide || '');
+    assert.deepEqual(plain(intro.sourceNote), plain(reading.sourceNote || null));
+    for (const detail of intro.detailSections) for (const field of ['title', 'subtitle', 'body']) {
+      if (detail[field]) assert.ok(report.text.includes(detail[field]), 'the original meaning, role, topic, example, action and cautions survive full copy');
+    }
+    if (intro.nameGuide) assert.ok(report.text.includes(intro.nameGuide));
+    assert.ok(report.text.includes(intro.reference.label) && report.text.includes(intro.reference.url));
+    if (intro.sourceNote) {
+      assert.ok(report.text.includes(intro.sourceNote.body));
+      assert.ok(report.text.includes(intro.sourceNote.reference.url));
+    }
+  }
+}
 
 function readingFor(card, topicId, index) {
   const base = { title: `${POSITIONS[index].label} · ${card.name}`, sections: [
@@ -73,43 +106,46 @@ for (const topicId of topics) {
   assert.equal(summary.source, source, 'original record metadata is preserved without new counts');
   assert.equal(summary.paragraphs.length, 3);
   assert.deepEqual(plain(summary.groups.map(group => [group.id, group.label])), [
-    ['problem', '나의 이야기'], ['timeline', '과거·현재·미래'], ['domains', '분야별 풀이']
+    ['problem', '나의 이야기'], ['cards', '카드 소개'], ['timeline', '과거·현재·미래'], ['domains', '분야별 풀이']
   ]);
   assert.equal(summary.groups[0].sections[0].id, 'together', 'the whole personal story comes before individual actions');
   assert.equal(summary.groups[0].sections[0].paragraphs.join('\n\n'), summary.synthesis);
   assert.equal(summary.groups[0].sections.length, 5);
   assert.equal(summary.groups[0].sections.find(section => section.id === 'possible-outcome').title, '실천한 뒤 살펴볼 변화');
-  assert.equal(summary.groups[1].sections.length, 7);
-  assert.equal(summary.groups[2].sections.length, 50);
-  assert.equal(summary.sections.length, 62);
+  assert.equal(summary.groups[1].sections.length, 3);
+  assert.equal(summary.groups[2].sections.length, 7);
+  assert.equal(summary.groups[3].sections.length, 50);
+  assert.equal(summary.sections.length, 65);
+  checkCardIntroductions(summary, cards, readings);
+  const personal = personalText(summary);
   for (const group of summary.groups) {
     assert.equal(new Set(group.sections.map(section => section.id)).size, group.sections.length);
     for (const section of group.sections) {
       assert.ok(section.title);
       assert.ok(section.paragraphs.length >= 1, `${group.id}/${section.id} keeps its full explanation`);
-      assert.ok(splitSummarySentences(section.paragraphs.join(' ')).length >= 3,
-        `${group.id}/${section.id} retains meaning and application without filler paragraphs`);
+      assert.ok(splitSummarySentences(section.paragraphs.join(' ')).length >= 2,
+        `${group.id}/${section.id} retains complete authored meaning without a filler card introduction`);
       assert.ok(section.paragraphs.every(paragraph => typeof paragraph === 'string' && paragraph.length >= 30));
       assert.equal(section.paragraphs.join(' ').split(summary.ritual).length - 1, section.id === 'solution' ? 1 : 0,
         'the complete third-card action belongs only to the solution, after its explanation');
     }
   }
-  const timeline = summary.groups[1].sections;
+  const timeline = summary.groups[2].sections;
   for (const card of cards) assert.ok(timeline[0].paragraphs.join(' ').includes(getPersonStory(card.id).portrait),
     'the strength section explains each actual person portrait instead of asking the reader to discover a strength');
   assert.ok(timeline[1].paragraphs.join(' ').includes(readings[0].lifeTheme.past));
-  assert.ok(timeline[2].paragraphs.join(' ').includes(readings[0].guidanceCaution));
+  assert.ok(timeline[2].paragraphs.join(' ').includes(readings[0].personalCaution));
   assert.ok(timeline[2].paragraphs.join(' ').includes(readings[0].action));
   assert.ok(timeline[3].paragraphs.join(' ').includes(readings[0].lifeTheme.achievement));
-  assert.ok(timeline[4].paragraphs.join(' ').includes(readings[1].guidanceCaution));
+  assert.ok(timeline[4].paragraphs.join(' ').includes(readings[1].personalCaution));
   assert.ok(timeline[4].paragraphs.join(' ').includes(readings[1].action));
   assert.ok(timeline[5].paragraphs.join(' ').includes(readings[2].lifeTheme.change));
-  assert.ok(timeline[6].paragraphs.join(' ').includes(readings[2].guidanceCaution));
+  assert.ok(timeline[6].paragraphs.join(' ').includes(readings[2].personalCaution));
   assert.equal(summary.ritualInReading, true, 'the UI and copy know the action is already inside the reading');
-  assert.equal(summary.text.split(summary.ritual).length - 1, 1, 'the complete action is copied once without an extra closing ritual');
+  assert.equal(personal.split(summary.ritual).length - 1, 1, 'the personal account offers the complete action once without an extra closing ritual');
 
   for (let i = 0; i < 3; i++) {
-    assert.ok(summary.paragraphs[i].includes(cards[i].name));
+    assert.ok(!summary.paragraphs[i].includes(cards[i].name), 'personal applications do not introduce card names');
     assert.ok(summary.paragraphs[i].length > 100, 'each role has a developed application, beyond the card label');
     assert.ok(summary.text.includes(cards[i].name));
   }
@@ -126,30 +162,31 @@ for (const topicId of topics) {
   assert.ok(!summary.synthesis.includes(readings[2].action), 'the main story explains the person before the solution offers an action');
   const solutionSection = summary.groups[0].sections.find(section => section.id === 'solution');
   const solutionBody = solutionSection.paragraphs.join(' ');
-  for (const explanation of [people[2][topicId], readings[2].meaning]) {
+  for (const explanation of [people[2][topicId]]) {
     assert.ok(solutionBody.includes(explanation) && solutionBody.indexOf(explanation) < solutionBody.indexOf(readings[2].action),
-      'the actual card meaning and selected topic lead into the complete original action');
+      'the actual selected topic leads into the complete original action');
   }
+  assert.ok(!solutionBody.includes(readings[2].meaning), 'the symbolic definition belongs in card introductions');
   assert.ok(summary.synthesis.includes(splitSummarySentences(people[0][topicId])[0]));
   assert.ok(summary.synthesis.includes(splitSummarySentences(people[1][topicId])[0]),
     'the first two cards are read through this topic rather than a shared motion-only bridge');
   for (const reading of readings) {
     for (const detail of [reading.example, reading.topicMeaning, reading.foundationCaution]) {
-      assert.ok(!summary.text.includes(detail), 'the individual card explanation is not copied into another tab');
+      assert.ok(!personal.includes(detail), 'individual card explanations remain outside the personal tabs');
     }
-    assert.equal(summary.text.split(reading.action).length - 1, 1, 'each actual card action is offered once in the combined reading');
+    assert.equal(personal.split(reading.action).length - 1, 1, 'each actual card action is offered once across the personal tabs');
   }
   for (const [index, id] of [[0, 'problem-now'], [1, 'situation-now']]) {
     const roleSection = summary.groups[0].sections.find(section => section.id === id);
-    assert.ok(roleSection.paragraphs.includes(readings[index].positionMeaning),
-      'the corresponding problem or current-situation lens remains complete in its combined section');
-    assert.equal(summary.text.split(readings[index].positionMeaning).length - 1, 1,
-      'the complete first and second position lenses are available once in the full copy source');
+    assert.ok(roleSection.paragraphs.includes(readings[index].personalPositionMeaning),
+      'the corresponding problem or current-situation lens remains complete as personal prose');
+    assert.equal(personal.split(readings[index].personalPositionMeaning).length - 1, 1,
+      'the complete first and second position lenses are available once in the personal account');
   }
-  assert.ok(!summary.text.includes(readings[2].positionMeaning),
+  assert.ok(!personal.includes(readings[2].positionMeaning),
     'preserving the first two role lenses does not add a second generic instruction before the selected third-card action');
   for (const detail of [readings[0].lifeTheme.past, readings[0].lifeTheme.achievement]) {
-    assert.equal(summary.text.split(detail).length - 1, 1, 'each life explanation is used once instead of copied through several sections');
+    assert.equal(personal.split(detail).length - 1, 1, 'each life explanation is used once instead of copied through several personal sections');
   }
   const outcome = summary.groups[0].sections.find(section => section.id === 'possible-outcome');
   assert.match(outcome.paragraphs[0], /실천했다면|뒤에는|살펴보|확인/u,
@@ -165,6 +202,8 @@ for (const topicId of topics) {
   assert.ok(summary.oneLine.endsWith(splitSummarySentences(summary.ritual)[0]),
     'the short overview ends with one complete action from the actual third card and selected topic');
   assert.ok(summary.detailSections.some(section => section.body === base.summary));
+  assert.equal(summary.detailSections.length, 2, 'the personal corpus and its action remain in the personal area');
+  assert.deepEqual(plain(summary.groups[1].detailSections), plain(base.sections), 'card-specific combination explanations move to card introductions');
   for (const original of [base.oneLine, base.summary, base.ritual, base.sections[0].body]) {
     assert.ok(summary.text.includes(original), 'selected reference text is preserved in the complete result');
   }
@@ -197,6 +236,12 @@ for (const card of DECK) for (const topic of topics) for (let index = 0; index <
   const sourceAction = [sourcePractice.subtitle, sourcePractice.body.slice(reading.example.length).trim()].filter(Boolean).join(' ');
   assert.equal(reading.action, directAction(sourceAction), 'shown advice is derived from the complete action preserved in source details');
   if (card.details) assert.equal(sourceAction, card.details[topic].action, 'the raw authored action is preserved byte-for-byte');
+  assert.doesNotMatch(reading.personalCaution, /카드|강한 그림/u,
+    'personal caution keeps the practical boundary without teaching a card symbol');
+  assert.equal(splitSummarySentences(reading.personalPositionMeaning).length, splitSummarySentences(reading.positionMeaning).length,
+    'adapting the reading-position wording does not drop a condition or complete sentence');
+  assert.doesNotMatch(reading.personalPositionMeaning, /이 자리|(?:보는|살피는|확인하는|구분하는|필요한|중요한|비교하는|짚는) 자리야/u,
+    'the personal application states what to consider instead of explaining the spread layout');
 }
 for (const card of DECK) for (const topic of topics) {
   const first = getReading(card, topic, 0), second = getReading(card, topic, 1);
@@ -204,6 +249,8 @@ for (const card of DECK) for (const topic of topics) {
     `${card.id}/${topic}: the current situation is not the first position with a changed heading`);
   assert.notDeepEqual(plain(first.paragraphs), plain(second.paragraphs),
     `${card.id}/${topic}: the substantive card body changes with the actual role`);
+  assert.notEqual(first.personalPositionMeaning, second.personalPositionMeaning,
+    `${card.id}/${topic}: personal wording still distinguishes the concern from the present conditions`);
   for (const field of ['meaning', 'traditionalMeaning', 'symbol', 'topicMeaning', 'example', 'action', 'caution']) {
     assert.equal(first[field], second[field], `${card.id}/${topic}: changing role preserves the actual card, topic and authored guidance`);
   }
@@ -216,25 +263,38 @@ assert.equal(Object.keys(CARD_LIFE_THEMES).length, DECK.length);
 for (let index = 0; index < DECK.length; index++) for (const topic of topics) {
   const ordered = [DECK[index], DECK[(index + 1) % DECK.length], DECK[(index + 2) % DECK.length]];
   const report = getSummary(ordered, topic);
-  assert.equal(report.groups.length, 3);
+  assert.equal(report.groups.length, 4);
   assert.equal(report.groups[0].sections.length, 5);
-  assert.equal(report.groups[1].sections.length, 7);
-  assert.equal(report.groups[2].sections.length, 50);
+  assert.equal(report.groups[1].sections.length, 3);
+  assert.equal(report.groups[2].sections.length, 7);
+  assert.equal(report.groups[3].sections.length, 50);
+  const readings = ordered.map((card, position) => getReading(card, topic, position));
+  checkCardIntroductions(report, ordered, readings);
+  const personal = personalText(report);
   assert.deepEqual(plain(report.source.cards), ordered.map(card => card.id));
   for (const card of ordered) assert.ok(report.text.includes(card.name));
   assert.equal(report.ritual, getReading(ordered[2], topic, 2).action);
   assert.equal(report.ritualInReading, true);
-  assert.equal(report.text.split(report.ritual).length - 1, 1);
+  assert.equal(personal.split(report.ritual).length - 1, 1);
+  const visiblePersonal = [report.headline, report.oneLine, report.synthesis,
+    ...report.groups.filter(group => group.id !== 'cards').flatMap(group => [group.label, group.description || '',
+      ...group.sections.flatMap(section => [section.title, section.subtitle || '', ...section.summaryLines, ...section.paragraphs])]),
+    ...report.detailSections.flatMap(section => [section.title, section.subtitle || '', section.body || ''])].join('\n');
+  const explanation = visiblePersonal.match(/이 카드|카드(?:가|는|의|로|를|에서|에 비친|에 담긴)|카드야|이 그림|전통 (?:타로|해석)|(?:^|\s)이 자리(?:의|는|에서)|(?:살피는|확인하는|구분하는) 자리야/u);
+  assert.equal(explanation?.[0], undefined,
+    `${topic}/${index}: all personal titles, summaries, paragraphs and extra details stay about the person`);
+  for (const card of ordered) assert.ok(!visiblePersonal.includes(`‘${card.name}’`), 'card names are collected in introductions');
+  for (const reading of readings) assert.ok(!personal.includes(reading.meaning), 'symbolic card definitions are relocated, not interleaved with personal advice');
   for (const [position, id] of [[0, 'problem-now'], [1, 'situation-now']]) {
-    const roleMeaning = getReading(ordered[position], topic, position).positionMeaning;
+    const roleMeaning = getReading(ordered[position], topic, position).personalPositionMeaning;
     assert.ok(report.sections.find(section => section.id === id).paragraphs.includes(roleMeaning));
-    assert.equal(report.text.split(roleMeaning).length - 1, 1,
-      `${ordered[position].id}/${topic}: the complete role text survives into the combined rendering and copy source`);
+    assert.equal(personal.split(roleMeaning).length - 1, 1,
+      `${ordered[position].id}/${topic}: the complete role text survives once in the personal rendering and copy source`);
   }
   const solution = report.sections.find(section => section.id === 'solution');
   const body = solution.paragraphs.join(' ');
   const story = getPersonStory(ordered[2].id);
-  for (const explanation of [story[topic], CARD_INTERPRETATIONS[ordered[2].id].meaning]) {
+  for (const explanation of [story[topic]]) {
     assert.ok(body.includes(explanation) && body.indexOf(explanation) < body.indexOf(report.ritual),
       `${ordered[2].id}/${topic}: the explanation leads into this topic's complete original action`);
   }
@@ -254,4 +314,4 @@ assert.equal(new Set(bridgeSentences).size, bridgeSentences.length, 'two consecu
 assert.throws(() => narrateReading({}), /requires_authored_card_meanings/);
 assert.throws(() => narrateSummary({ cards: cards.slice(0, 2), readings: [], topicId: 'work' }), /requires_three_ordered_readings/);
 assert.throws(() => narrateSummary({ cards: [cards[0], cards[0], cards[2]], readings: [], topicId: 'work' }), /requires_three_ordered_readings/);
-console.log('PASS tarot narration: 78 personal portraits, topic-specific stories before advice, 62 sections, complete source examples and actions, conditional life readings and stable replay');
+console.log('PASS tarot narration: 78 cards, 65 sections, separate card introductions and personal stories, complete source details and conditional actions, stable ordered replay');

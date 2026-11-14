@@ -1,8 +1,8 @@
-import { CARD_LIFE_THEMES } from './life-themes.js?v=20261114-tarot-copy1';
-import { buildDomainGroup } from './domain-narration.js?v=20261114-tarot-review2';
+import { CARD_LIFE_THEMES } from './life-themes.js?v=20261114-tarot-card-intro1';
+import { buildDomainGroup, DOMAIN_READING_BASIS } from './domain-narration.js?v=20261114-tarot-card-intro1';
 import { getCardInterpretation, interpretCard, MAIN_CONTEXTS } from './interpretation-engine.js?v=20261114-tarot-review2';
-import { getPersonStory } from './person-stories.js?v=20261114-tarot-review3';
-import { buildPersonNarrative } from './person-narrative.js?v=20261114-tarot-review3';
+import { getPersonStory } from './person-stories.js?v=20261114-tarot-card-intro1';
+import { buildPersonNarrative, PERSONAL_READING_BASIS } from './person-narrative.js?v=20261114-tarot-card-intro1';
 import { splitSummarySentences, summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
 import { directInterpretation, directAction } from './reading-voice.js?v=20261113-tarot-easy1';
 
@@ -97,6 +97,35 @@ function fullName(card, reading) {
   return display === card.name ? display : `${display}(${card.name})`;
 }
 
+// The original position passage remains in the card introduction. These
+// explicit editorial changes only address its reference to a reading position;
+// the person's circumstances, conditions and actions stay complete.
+function personalPosition(text) {
+  const replacements = [
+    ['지금 네 안에는 해 보고 싶은 마음과 망설임이 함께 있다는 뜻이야.', '지금 네 안에서는 해 보고 싶은 마음과 망설임이 함께 움직여.'],
+    ['지금 네 마음에는 혼자 다 해내기보다 함께 잘하고 싶은 바람이 있다는 뜻이야.', '지금 네 마음은 혼자 다 해내기보다 함께 잘하는 쪽으로 향해.'],
+    ['이 자리는 막연히 끝을 예고하기보다 지금 확인된 마무리가 생활의 무엇을 바꾸는지 짚어 줘.', '막연히 끝을 걱정하기보다, 지금 확인된 마무리가 네 생활에서 무엇을 바꾸는지 살펴보렴.'],
+    ['이 자리는 빠른 결과보다 지금 이용할 수 있는 도움과 다시 이어 갈 여유에 주목해.', '빠른 결과만 바라기보다 지금 이용할 수 있는 도움과 다시 이어 갈 여유를 살펴보렴.'],
+    ['이 자리는 지난 일에 대한 평가가 실제로 무엇을 바꾸는지, 네가 답하고 책임질 부분은 무엇인지 짚어 줘.', '지난 일에 대한 평가가 실제로 무엇을 바꾸는지, 네가 답하고 책임질 부분은 무엇인지 살펴보렴.'],
+    ['이 자리는 결과가 이미 정해진 상태보다 관심을 실제 경험으로 옮길 여건에 주목해.', '결과를 미리 정하기보다 관심을 실제 경험으로 옮길 여건부터 살펴보렴.'],
+    ['이 자리의 핵심이란다.', '지금 살펴볼 핵심이란다.'],
+    ['이 자리의 핵심이야.', '지금 살펴볼 핵심이야.'],
+    ['이 자리의 중심이야.', '지금 중요한 부분이야.'],
+    ['여유가 필요한 자리야.', '여유가 필요해.'],
+    ['중요한 자리야.', '지금 중요해.'],
+    ['알아보는 자리야.', '알아보렴.'],
+    ['받아들이는 자리야.', '받아들여 보렴.'],
+    ['확인하는 자리야.', '확인해 보렴.'],
+    ['구분하는 자리야.', '구분해 보렴.'],
+    ['비교하는 자리야.', '비교해 보렴.'],
+    ['드러내는 자리야.', '드러내 보렴.'],
+    ['살피는 자리야.', '살펴보렴.'],
+    ['짚는 자리야.', '짚어 보렴.'],
+    ['보는 자리야.', '살펴보렴.']
+  ];
+  return replacements.reduce((value, [original, personal]) => value.replaceAll(original, personal), text);
+}
+
 /** Explain the actual card directly, without seven repeated introductions. */
 export function narrateReading({ card, topicId, index, position, foundation, guidance, detail, base }) {
   checkReadingInput({ card, topicId, index, position, foundation, guidance, detail });
@@ -137,6 +166,7 @@ export function narrateReading({ card, topicId, index, position, foundation, gui
     foundationTakeaway: clean(foundation.takeaway),
     symbol: clean(foundation.symbol),
     positionMeaning,
+    personalPositionMeaning: personalPosition(positionMeaning),
     appliedMeaning,
     positionLabel: position.label,
     roleIndex: index,
@@ -146,6 +176,7 @@ export function narrateReading({ card, topicId, index, position, foundation, gui
     caution,
     foundationCaution: clean(foundation.caution),
     guidanceCaution,
+    personalCaution: directInterpretation(base.personalCaution || guidanceCaution),
     lifeTheme,
     personStory: person,
     theme: clean(foundation.theme)
@@ -155,10 +186,19 @@ export function narrateReading({ card, topicId, index, position, foundation, gui
 function section(id, title, paragraphs, summaryLines) {
   return { id, title, paragraphs: unique(paragraphs), summaryLines };
 }
-function cardSummary(card, first, second = first) {
-  const lines = summaryLinesFrom(first, second);
-  lines[0] = `‘${card.name}’ 카드: ${lines[0]}`;
-  return lines;
+function cardIntroduction(card, reading, index) {
+  return {
+    ...section(`card-intro-${index}`, `${['첫 번째', '두 번째', '세 번째'][index]} 카드 · ${fullName(card, reading)}`,
+      [reading.introduction, ...reading.paragraphs], summaryLinesFrom(reading.meaning, reading.positionMeaning)),
+    cardId: card.id,
+    roleIndex: index,
+    displayName: reading.displayName,
+    originalName: card.name,
+    nameGuide: reading.nameGuide || '',
+    detailSections: reading.detailSections || [],
+    reference: reading.reference,
+    sourceNote: reading.sourceNote || null
+  };
 }
 
 /** Each view adds a different part of the reading instead of repeating examples. */
@@ -178,65 +218,69 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
   const [firstPerson, currentPerson, nextPerson] = story.stories;
   const context = MAIN_CONTEXTS[topicId];
   const outcome = interpretCard(cards[2].id, 'outcome', context);
-  const firstConcern = splitSummarySentences(firstPerson[topicId]).at(-1);
-  const currentConcern = splitSummarySentences(currentPerson[topicId]).at(-1);
+  const cautions = readings.map(reading => reading.personalCaution || reading.guidanceCaution);
+  const positionMeanings = readings.map(reading => reading.personalPositionMeaning || personalPosition(reading.positionMeaning));
   const ritual = solution.action;
   const problemSections = [
-    section('together', '카드에 비친 너의 이야기', story.paragraphs, story.summaryLines),
+    section('together', '지금 너에게 이어지는 이야기', story.paragraphs,
+      summaryLinesFrom(story.pairReading, story.choiceLink)),
     section('problem-now', '지금 고민의 핵심', [
-      `‘${names[0]}’ 카드의 뜻부터 짚어 볼게. ${problem.meaning}`,
-      `이 뜻을 ${TOPIC_NAMES[topicId]}에 연결하면 네가 중요하게 여기는 부분이 보여. ${firstPerson[topicId]}`,
-      problem.positionMeaning
-    ], cardSummary(cards[0], problem.meaning, firstConcern)),
+      firstPerson[topicId],
+      positionMeanings[0]
+    ], summaryLinesFrom(firstPerson[topicId], positionMeanings[0])),
     section('situation-now', '지금 상황과 속마음', [
-      `‘${names[1]}’ 카드가 비추는 현재 상황이야. ${situation.meaning}`,
-      `지금의 고민에서는 이 부분을 살펴보렴. ${currentPerson[topicId]}`,
-      situation.positionMeaning
-    ], cardSummary(cards[1], situation.meaning, currentConcern)),
+      currentPerson[topicId],
+      positionMeanings[1]
+    ], summaryLinesFrom(currentPerson[topicId], positionMeanings[1])),
     section('solution', '지금 선택할 해결 방법', [
-      `‘${names[2]}’ 카드가 짚는 선택의 기준이야. ${solution.meaning} ${nextPerson[topicId]}`,
-      `이제 이 마음을 행동으로 옮겨 보렴. ${solution.action}`
-    ], cardSummary(cards[2], solution.meaning, solution.action)),
+      nextPerson[topicId],
+      solution.action
+    ], summaryLinesFrom(nextPerson[topicId], solution.action)),
     section('possible-outcome', '실천한 뒤 살펴볼 변화', [
-      `‘${names[2]}’ 카드의 조언을 실천했다면 이 점을 확인하렴. ${outcome}`,
+      `앞에서 정한 일을 실천했다면 이 점을 확인하렴. ${outcome}`,
       `이어 갈 때 도움이 되는 힘도 기억해 둬. ${solution.lifeTheme.strength}`
-    ], cardSummary(cards[2], outcome, solution.lifeTheme.strength))
+    ], summaryLinesFrom(outcome, solution.lifeTheme.strength))
   ];
   const strengthsSummary = summaryLinesFrom(firstPerson.portrait, nextPerson.portrait, [currentPerson.portrait]);
-  strengthsSummary[0] = `‘${cards[0].name}’ 카드: ${strengthsSummary[0]}`;
-  strengthsSummary[1] = `‘${cards[2].name}’ 카드: ${strengthsSummary[1]}`;
   const timelineSections = [
     section('strengths', '나의 성향과 강점', [
-      `‘${names[0]}’에 비친 네 모습이야. ${firstPerson.portrait}`,
-      `‘${names[1]}’ 카드에는 이런 마음이 담겨 있어. ${currentPerson.portrait}`,
-      `‘${names[2]}’ 카드는 네가 살려야 할 강점을 보여 줘. ${nextPerson.portrait}`
+      firstPerson.portrait,
+      currentPerson.portrait,
+      nextPerson.portrait
     ], strengthsSummary),
     section('past-flow', '과거의 흐름', [
-      `‘${names[0]}’ 카드로 지난 선택을 돌아보자. ${problem.lifeTheme.past}`,
+      problem.lifeTheme.past,
       `그 경험에서 다시 살릴 수 있는 힘도 있어. ${problem.lifeTheme.strength}`
-    ], cardSummary(cards[0], problem.lifeTheme.past)),
+    ], summaryLinesFrom(problem.lifeTheme.past, problem.lifeTheme.past)),
     section('past-hardships', '반복해서 힘들어지는 이유', [
-      `‘${names[0]}’ 카드에서 함께 살펴볼 주의점이야. ${problem.guidanceCaution}`,
+      cautions[0],
       `비슷한 일로 다시 힘들 때는 이렇게 해 봐. ${problem.action}`
-    ], cardSummary(cards[0], problem.guidanceCaution, problem.action)),
+    ], summaryLinesFrom(cautions[0], problem.action)),
     section('past-achievements', '내가 해낸 일', [
-      `‘${names[0]}’ 카드는 이런 성취에 주목해. ${problem.lifeTheme.achievement}`,
+      problem.lifeTheme.achievement,
       practice.achievement
-    ], cardSummary(cards[0], problem.lifeTheme.achievement)),
+    ], summaryLinesFrom(problem.lifeTheme.achievement, problem.lifeTheme.achievement)),
     section('present-luck', '지금 드러나는 나의 모습', [
-      `‘${names[1]}’ 카드에서 지금 활용할 힘과 주의점을 함께 살펴보자. ${situation.lifeTheme.strength} ${situation.guidanceCaution}`,
+      `${situation.lifeTheme.strength} ${cautions[1]}`,
       `지금 실천할 일도 짚어 줄게. ${situation.action}`
-    ], cardSummary(cards[1], situation.lifeTheme.strength, situation.action)),
+    ], summaryLinesFrom(situation.lifeTheme.strength, situation.action)),
     section('future-change', '앞으로의 변화', [
-      `‘${names[2]}’ 카드가 전하는 변화의 메시지야. ${solution.lifeTheme.change}`
-    ], cardSummary(cards[2], solution.lifeTheme.change)),
+      solution.lifeTheme.change
+    ], summaryLinesFrom(solution.lifeTheme.change, solution.lifeTheme.change)),
     section('future-hardships', '앞으로 조심할 일과 대처', [
-      `‘${names[2]}’ 카드가 짚는 주의점이야. ${solution.guidanceCaution}`,
+      cautions[2],
       questions.obstacle
-    ], cardSummary(cards[2], solution.guidanceCaution, questions.obstacle))
+    ], summaryLinesFrom(cautions[2], questions.obstacle))
   ];
   const groups = [
     { id: 'problem', label: '나의 이야기', sections: problemSections },
+    {
+      id: 'cards', label: '카드 소개',
+      description: '이번에 펼친 세 장의 이름과 그림, 전통적인 뜻을 살펴보자.',
+      sections: cards.map((card, index) => cardIntroduction(card, readings[index], index)),
+      detailSections: base.sections || [],
+      basisParagraphs: [DOMAIN_READING_BASIS, PERSONAL_READING_BASIS, '타로의 전통 해석이에요. 미래를 확정하지 않아요.']
+    },
     { id: 'timeline', label: '과거·현재·미래', sections: timelineSections },
     buildDomainGroup({ cards, readings })
   ];
@@ -246,8 +290,7 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
   const oneLine = story.overview;
   const detailSections = [
     { title: '함께 참고할 이야기', subtitle: base.oneLine, body: base.summary },
-    ...(base.sections || []),
-    { title: '원문에 담긴 생활 제안', subtitle: '', body: base.ritual }
+    { title: '생활에서 실천할 일', subtitle: '', body: base.ritual }
   ];
   const text = [...groups.map(group => {
     const parts = [group.label];
@@ -260,7 +303,16 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
         previousCategory = item.categoryId;
       }
       parts.push([item.title, item.subtitle, ...item.paragraphs].filter(Boolean).join('\n\n'));
+      if (item.nameGuide) parts.push('이름에 담긴 뜻', item.nameGuide);
+      if (item.detailSections?.length) parts.push('카드의 자세한 뜻', ...item.detailSections.map(detail =>
+        [detail.title, detail.subtitle, detail.body].filter(Boolean).join('\n\n')));
+      if (item.sourceNote) parts.push('옛 해석과 이곳의 풀이', item.sourceNote.body,
+        item.sourceNote.reference.label, item.sourceNote.reference.url);
+      if (item.reference) parts.push('참고한 자료', item.reference.label, item.reference.url);
     }
+    if (group.detailSections?.length) parts.push('세 장을 함께 살펴보기', ...group.detailSections.map(item =>
+      [item.title, item.subtitle, item.body].filter(Boolean).join('\n\n')));
+    if (group.basisParagraphs?.length) parts.push('풀이 방식', ...group.basisParagraphs);
     if (group.id === 'problem') {
       parts.push('함께 읽는 종합 해석', ...detailSections.map(item =>
         [item.title, item.subtitle, item.body].filter(Boolean).join('\n\n')));
@@ -269,7 +321,7 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
   })].join('\n\n');
   return {
     ...base,
-    headline: '카드에 비친 너의 이야기',
+    headline: '지금 너에게 이어지는 이야기',
     groups,
     sections: groups.flatMap(group => group.sections),
     paragraphs,

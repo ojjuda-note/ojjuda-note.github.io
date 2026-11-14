@@ -1,5 +1,5 @@
-import { narrateReading, narrateSummary } from './narration.js?v=20261114-tarot-review3';
-import { getFortune, CORPUS_VERSION } from './fortune-corpus/index.js?v=20261114-tarot-copy1';
+import { narrateReading, narrateSummary } from './narration.js?v=20261114-tarot-card-intro1';
+import { getFortune, CORPUS_VERSION } from './fortune-corpus/index.js?v=20261114-tarot-card-intro1';
 import { getSpreadPattern } from './spread-patterns.js?v=20261113-tarot-corpus1';
 import { CARD_FOUNDATIONS, CARD_SOURCE_NOTES, TAROT_REFERENCES, getCardNameGuide } from './card-foundations.js?v=20261114-tarot-copy1';
 import { EXTRA_CARDS_A } from './deck-pack-a.js?v=20261114-tarot-review3';
@@ -704,6 +704,7 @@ export function getReading(card, topic = 'overall', position = 0) {
     text: sectionsToText(guidance.summary, sections),
     reference: TAROT_REFERENCES[selected.arcana === 'major' ? 'major' : 'minor'],
     sourceNote: CARD_SOURCE_NOTES[selected.id] ? { body: CARD_SOURCE_NOTES[selected.id], reference: TAROT_REFERENCES.minor } : null,
+    personalCaution: SPREAD_CAUTIONS[selected.id] || guidance.caution,
     whisper: index === 2 ? `“${CARD_STEPS[selected.id] || selected.step}.”` : POSITION_WHISPERS[index]
   };
   return narrateReading({ card: selected, topicId, index, position: POSITIONS[index], foundation, guidance, detail, base });
@@ -781,6 +782,7 @@ const SPREAD_CAUTIONS = {
   swords_three: '아팠던 감정을 가볍게 넘기지 않되, 그 아픔만으로 상대의 의도까지 정하지는 마렴. 어떤 말과 행동이 상처였는지 구체적으로 살펴보고 필요한 도움을 청해도 좋아.',
   swords_seven: '빠진 설명을 상상으로 채우면 의심만 커질 수 있어. 직접 확인할 것은 묻고, 네 쪽에서도 함께 알아야 할 약속을 숨기고 있지는 않은지 돌아보렴.',
   swords_nine: '걱정이 크게 느껴져도 예상한 일이 모두 사실이 되는 것은 아니야. 반복되는 생각을 글이나 말로 꺼내고, 오늘 확인할 수 있는 작은 부분부터 살펴보렴.',
+  swords_ten: '지친 순간에 나쁜 미래가 정해졌다고 여기거나 큰 결정을 서두를 필요는 없어. 실제 상황을 살피고 도움을 받으며 네가 감당할 속도로 정리해도 괜찮아.',
   pentacles_five: '지금의 부족함을 네 가치 전체와 같게 여기지는 마렴. 당장 필요한 것을 구체적으로 나누고 실제로 닿을 수 있는 도움부터 확인해 봐. 혼자 참는 시간만 늘릴 필요는 없어.',
   pentacles_ten: '오래 이어 온 방식이라도 누군가만 참고 있다면 돌아볼 필요가 있어. 공동의 기대와 각자가 바라는 생활을 같은 무게로 이야기하고 수고도 나누어 보렴.'
 };
