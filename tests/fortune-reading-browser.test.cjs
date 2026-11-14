@@ -12,9 +12,12 @@ const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; cha
 const sajuEntryFixture = fs.readFileSync(path.join(repo,'games/starlit-saju/index.html'),'utf8')
   .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'')
   .replace('<head>','<head><base href="/games/starlit-saju/">');
+const compatibilityEntryFixture = fs.readFileSync(path.join(repo,'games/starlit-saju/compatibility.html'),'utf8')
+  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'')
+  .replace('<head>','<head><base href="/games/starlit-saju/">');
 // Isolated rendering fixture. It uses production calculation and reading modules
 // with a published example date, and never loads authentication or billing code.
-const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/reading-summary.css"><link rel="stylesheet" href="/games/starlit-saju/reading-score.css"></head><body><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
+const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/reading-summary.css"><link rel="stylesheet" href="/games/starlit-saju/reading-score.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"></head><body class="saju-readable"><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { analyzeFortune } from '/games/starlit-saju/fortune-data.mjs';
 import { analyzeDaeun } from '/games/starlit-saju/daeun.mjs';
@@ -46,7 +49,7 @@ function show(){
 }
 select.addEventListener('change',show);show();
 </script></body></html>`;
-const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/compatibility.css"></head><body><main class="compatibility-main"><section class="result"><label for="fixture-pair">검사할 두 사람</label><select id="fixture-pair"><option value="confirmed">말띠와 양띠</option><option value="uncertain">입춘일 · 시간 모름</option></select><p id="fixture-zodiac" class="birth-summary"></p><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
+const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/compatibility.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"></head><body class="saju-readable"><main class="compatibility-main"><section class="result"><label for="fixture-pair">검사할 두 사람</label><select id="fixture-pair"><option value="confirmed">말띠와 양띠</option><option value="uncertain">입춘일 · 시간 모름</option></select><p id="fixture-zodiac" class="birth-summary"></p><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { buildCompatibilityReading } from '/games/starlit-saju/compatibility.mjs';
 import { renderCompatibilityReport } from '/games/starlit-saju/report-view.mjs';
@@ -68,6 +71,7 @@ select.addEventListener('change',show);show();
 const server = http.createServer((request, response) => {
   let name = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
   if (name === '/__saju_entry_fixture') { response.writeHead(200, { 'content-type': mime['.html'] }); response.end(sajuEntryFixture); return; }
+  if (name === '/__compatibility_entry_fixture') { response.writeHead(200, { 'content-type': mime['.html'] }); response.end(compatibilityEntryFixture); return; }
   if (name === '/__saju_fixture') { response.writeHead(200, { 'content-type': mime['.html'] }); response.end(sajuFixture); return; }
   if (name === '/__compatibility_fixture') { response.writeHead(200, { 'content-type': mime['.html'] }); response.end(compatibilityFixture); return; }
   if (name.endsWith('/')) name += 'index.html';
@@ -307,7 +311,81 @@ const server = http.createServer((request, response) => {
     saju.on('pageerror', error => errors.push(error.message));
     saju.on('response', response => { if (response.status() >= 400) failed.push([response.status(), response.url()]); });
     await saju.route('**/*', route => route.request().url().startsWith('http://127.0.0.1:') ? route.continue() : route.abort());
-    const sajuEntryViews={},sajuNavigation={};
+    const sajuEntryViews={},compatibilityEntryViews={},sajuNavigation={},sajuReadableViews={};
+    async function inspectReadableSurface(label,{text,body='',minimumBody=18,controls='',placeholders=false}={}) {
+      const view=await saju.evaluate(({text,body,minimumBody,controls,placeholders})=>{
+        const canvas=document.createElement('canvas');canvas.width=canvas.height=1;
+        const context=canvas.getContext('2d',{willReadFrequently:true});
+        const rgba=value=>{
+          context.clearRect(0,0,1,1);context.fillStyle=value;context.fillRect(0,0,1,1);
+          const values=[...context.getImageData(0,0,1,1).data];values[3]/=255;return values;
+        };
+        const over=(front,back)=>{
+          const alpha=front[3]+back[3]*(1-front[3]);
+          if(alpha===0)return [0,0,0,0];
+          return [...front.slice(0,3).map((value,index)=>(value*front[3]+back[index]*back[3]*(1-front[3]))/alpha),alpha];
+        };
+        const luminance=color=>color.slice(0,3).map(value=>value/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4)
+          .reduce((sum,value,index)=>sum+value*[.2126,.7152,.0722][index],0);
+        const ratio=(a,b)=>{const values=[luminance(a),luminance(b)].sort((a,b)=>b-a);return (values[0]+.05)/(values[1]+.05);};
+        const shown=element=>{
+          const rect=element.getBoundingClientRect(),style=getComputedStyle(element);
+          return rect.width>1&&rect.height>1&&!element.closest('[hidden],.reading-slide-outgoing')&&style.visibility!=='hidden'&&style.display!=='none';
+        };
+        function sample(element,pseudo=null) {
+          const style=getComputedStyle(element,pseudo),images=[];
+          let foreground=rgba(style.color),background=[0,0,0,0];
+          if(pseudo)foreground[3]*=Number(style.opacity);
+          // Compare a text pixel with its adjacent background through each
+          // ancestor's paint group. This resolves transparent surfaces and
+          // group opacity together; a visible gradient is never guessed.
+          for(let parent=element;parent;parent=parent.parentElement) {
+            const parentStyle=getComputedStyle(parent),color=rgba(parentStyle.backgroundColor);
+            if(background[3]<.999&&parentStyle.backgroundImage!=='none')images.push(parent.id||parent.className||parent.tagName);
+            foreground=over(foreground,color);background=over(background,color);
+            const opacity=Number(parentStyle.opacity);foreground[3]*=opacity;background[3]*=opacity;
+          }
+          foreground=over(foreground,[255,255,255,1]);background=over(background,[255,255,255,1]);
+          const content=pseudo==='::placeholder'?element.getAttribute('placeholder'):pseudo?style.content:element.textContent;
+          return {target:(element.id||element.className||element.tagName)+(pseudo||''),
+            text:String(content??'').trim().slice(0,70),
+            contrast:ratio(foreground,background),font:parseFloat(style.fontSize),images,
+            lineClamp:style.webkitLineClamp,textOverflow:style.textOverflow,overflow:element.clientWidth>0&&element.scrollWidth>element.clientWidth+1.5};
+        }
+        const nodes=[...document.querySelectorAll(text)].filter(element=>shown(element)&&element.textContent.trim()&&!element.closest(':disabled'));
+        const samples=nodes.map(element=>sample(element));
+        if(placeholders)for(const element of document.querySelectorAll('input[placeholder]'))if(shown(element)&&!element.value&&!element.disabled)samples.push(sample(element,'::placeholder'));
+        for(const element of document.querySelectorAll('.daeun-period-summary'))if(shown(element)) {
+          const style=getComputedStyle(element,'::after');
+          if(!['none','normal','""',''].includes(style.content)&&style.display!=='none'&&style.visibility!=='hidden')samples.push(sample(element,'::after'));
+        }
+        const prose=body?[...document.querySelectorAll(body)].filter(shown).map(element=>({target:element.className,font:parseFloat(getComputedStyle(element).fontSize)})):[];
+        const targets=controls?[...document.querySelectorAll(controls)].filter(shown).map(element=>{const box=element.getBoundingClientRect();return {target:element.id||element.className,height:box.height,width:box.width};}):[];
+        return {samples: samples.length,minimumContrast:Math.min(...samples.map(item=>item.contrast)),
+          contrastFailures:samples.filter(item=>item.contrast<4.5),unresolvedBackgrounds:samples.filter(item=>item.images.length),
+          smallText:samples.filter(item=>item.font<14),clippedText:samples.filter(item=>item.overflow||item.textOverflow==='ellipsis'||!['none','','unset'].includes(item.lineClamp)),
+          prose,smallProse:prose.filter(item=>item.font<minimumBody),smallTargets:targets.filter(item=>item.height<43.9||item.width<43.9),
+          minimumTargetHeight:targets.length?Math.min(...targets.map(item=>item.height)):null,
+          horizontalOverflow:document.documentElement.scrollWidth>innerWidth,
+          inputs:[...document.querySelectorAll('input[type=text],input[type=number],select')].filter(shown).map(element=>({id:element.id,font:parseFloat(getComputedStyle(element).fontSize),scheme:getComputedStyle(element).colorScheme}))};
+      },{text,body,minimumBody,controls,placeholders});
+      assert.ok(view.samples>0,label+': representative text is visible');
+      assert.deepEqual(view.unresolvedBackgrounds,[],label+': contrast uses the actual solid surfaces behind text');
+      assert.deepEqual(view.contrastFailures,[],label+': text contrast is at least 4.5:1');
+      assert.deepEqual(view.smallText,[],label+': labels and explanatory text are at least 14px');
+      assert.deepEqual(view.clippedText,[],label+': complete text remains visible without clamping or horizontal clipping');
+      if(body)assert.ok(view.prose.length>0,label+': the full reading body remains present');
+      assert.deepEqual(view.smallProse,[],label+': reading text follows the normal/large size');
+      assert.deepEqual(view.smallTargets,[],label+': actionable controls have at least a 44px touch target');
+      assert.equal(view.horizontalOverflow,false,label+': the redesigned page stays inside the viewport');
+      assert.ok(view.inputs.every(input=>input.font>=16&&input.scheme==='light'),label+': readable input text and native menus use the light surface');
+      sajuReadableViews[label]={samples:view.samples,minimumContrast:view.minimumContrast,minimumBodyFont:view.prose.length?Math.min(...view.prose.map(item=>item.font)):null,minimumTargetHeight:view.minimumTargetHeight};
+      return view;
+    }
+    const entryText='h1,h2,.intro-description,.compatibility-intro>p,.entry-benefits li,.entry-steps li,.form-step-title,.field-label,fieldset legend,.field-hint,.form-note,.saju-price-note,.saju-price strong,.product-option strong,.product-option small,.product-option b,.check-row span,.reading-service-nav strong,.reading-service-nav>a>span,.method-preview summary,button:not(:disabled),.back-link,.segmented span,.pair-calendar>label,.pair-privacy';
+    const entryControls='button,input[type=text],input[type=number],select,.check-row,.segmented label,.product-options>label,.reading-service-nav>a,.header-nav .back-link';
+    const readingText='.reading-pager-label,.reading-page-position,.reading-swipe-hint,.reader-label,.reader-headline,.reader-card-title,.reader-prose p,.saju-summary-line,.saju-reading-score-title,.saju-reading-score-scale,.saju-wind-label,.saju-wind-value,.saju-reading-score-notice,.saju-reading-score-unavailable,.saju-reading-score-reason,.daeun-age,.daeun-dates,.daeun-time-notice,.daeun-sequence-note,.reading-summary-table th,.reading-summary-table td';
+    const compatibilityText='.reading-pager-label,.reading-page-position,.reading-swipe-hint,.compatibility-people-title,.compatibility-person-name,.compatibility-summary-line,.compatibility-person-prose p,.compatibility-person-scope,.compatibility-synthesis-people,.compatibility-score-heading h4,.compatibility-score-heading>p,.compatibility-score-eyebrow,.compatibility-score-number strong,.compatibility-score-number>span,.compatibility-score-number small,.compatibility-score-label,.compatibility-score-summary,.compatibility-score-item-heading h5,.compatibility-score-item-value,.compatibility-score-item-summary,.compatibility-score-notice';
     await saju.goto(new URL('/__saju_entry_fixture',url).href);
     for(const [viewport,size] of [['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]]) {
       await saju.setViewportSize(size);
@@ -330,8 +408,59 @@ const server = http.createServer((request, response) => {
       assert.equal(geometry.overflow,false,viewport+': larger entry text keeps the form within the viewport');
       assert.ok(geometry.gender.textWidth<=geometry.gender.availableWidth,viewport+': the default gender label fits beside the native select arrow');
       sajuEntryViews[viewport]=geometry;
+      await inspectReadableSurface('general entry '+viewport,{text:entryText,controls:entryControls,placeholders:true});
+      const visibleLabels=await saju.locator('#birth-form .person-inputs .field-label,#birth-form .date-inputs .field-label').evaluateAll(nodes=>nodes.filter(node=>{
+        const box=node.getBoundingClientRect();return box.width>1&&box.height>1;
+      }).length);
+      assert.equal(visibleLabels,5,viewport+': name, gender, year, month and day have visible labels');
       if(viewport==='phone-small')await saju.locator('.birth-panel').screenshot({path:path.join(artifacts,'saju-entry-phone-small.png')});
+      if(viewport!=='phone') {
+        await saju.evaluate(()=>window.scrollTo(0,0));
+        await saju.screenshot({path:path.join(artifacts,'saju-readable-entry-general-'+viewport+'-top.png')});
+        await saju.screenshot({path:path.join(artifacts,'saju-readable-entry-general-'+viewport+'.png'),fullPage:true});
+      }
     }
+    const selectedProduct=saju.locator('input[name="entry-topic"][value="annual"]');
+    await selectedProduct.focus();await selectedProduct.press('Space');
+    assert.equal(await selectedProduct.isChecked(),true,'a keyboard choice selects the requested reading');
+    const optionStyles=await saju.locator('#entry-product-picker .product-option').evaluateAll(options=>options.slice(0,2).map(option=>{
+      const style=getComputedStyle(option);return [style.backgroundColor,style.backgroundImage,style.borderColor,style.borderWidth,style.boxShadow];
+    }));
+    assert.notDeepEqual(optionStyles[0],optionStyles[1],'the selected product has a visible boundary or surface distinct from another choice');
+    await saju.locator('#birth-year').focus();await saju.locator('#birth-year').press('Tab');
+    assert.equal(await saju.evaluate(()=>document.activeElement?.id),'birth-month','birth fields keep their keyboard reading order');
+    assert.ok(await saju.locator('#birth-month').evaluate(element=>parseFloat(getComputedStyle(element).outlineWidth)>=2),'the focused birth field has a visible outline');
+    await saju.evaluate(()=>{
+      const error=document.getElementById('form-error');error.textContent='입력한 생년월일을 확인해 주세요.';error.hidden=false;
+      document.getElementById('payment-status').textContent='선택한 풀이와 금액을 확인해 주세요.';
+      document.getElementById('open-story').disabled=false;
+    });
+    await inspectReadableSurface('general entry feedback',{text:'#form-error,#payment-status,#open-story'});
+    await saju.goto(new URL('/__compatibility_entry_fixture',url).href);
+    for(const [viewport,size] of [['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]]) {
+      await saju.setViewportSize(size);
+      const view=await inspectReadableSurface('compatibility entry '+viewport,{text:entryText,controls:entryControls,placeholders:true});
+      const geometry=await saju.locator('.compatibility-person').evaluateAll(people=>people.map(person=>{
+        const box=person.getBoundingClientRect();return {left:box.left,right:box.right,top:box.top,bottom:box.bottom};
+      }));
+      assert.equal(geometry.length,2,'the compatibility form keeps both A and B');
+      assert.ok(geometry.every(person=>person.left>=-1&&person.right<=size.width+1),'both birth forms fit the screen');
+      if(viewport==='desktop')assert.ok(geometry[1].left>=geometry[0].right-1,'desktop aligns A/B input forms beside each other');
+      else assert.ok(geometry[1].top>=geometry[0].bottom-1,'phone input keeps A then B in a single reading order');
+      assert.equal(await saju.locator('#compatibility-price').textContent(),'궁합 · 20쭈','the redesign preserves the separate compatibility price');
+      compatibilityEntryViews[viewport]={minimumContrast:view.minimumContrast,inputs:view.inputs.length,geometry};
+      if(viewport!=='phone') {
+        await saju.evaluate(()=>window.scrollTo(0,0));
+        await saju.screenshot({path:path.join(artifacts,'saju-readable-entry-compatibility-'+viewport+'-top.png')});
+        await saju.screenshot({path:path.join(artifacts,'saju-readable-entry-compatibility-'+viewport+'.png'),fullPage:true});
+      }
+    }
+    await saju.evaluate(()=>{
+      const error=document.getElementById('compatibility-error');error.textContent='두 사람의 생년월일을 확인해 주세요.';error.hidden=false;
+      document.getElementById('compatibility-status').textContent='입력한 정보를 확인해 주세요.';
+      document.getElementById('compatibility-open').disabled=false;
+    });
+    await inspectReadableSurface('compatibility entry feedback',{text:'#compatibility-error,#compatibility-status,#compatibility-open'});
     await saju.setViewportSize({width:390,height:844});
     await saju.goto(new URL('/__saju_fixture', url).href);
     assert.equal(await saju.locator('#report-content > [data-reader-paged="true"]').count(),1,'the prepared report keeps its mounted pager host when attached after purchase');
@@ -458,6 +587,7 @@ const server = http.createServer((request, response) => {
         await comparison.locator('summary').click();
         assert.equal(await comparison.locator('tbody tr').count(),12);
         assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+        await inspectReadableSurface('monthly comparison phone',{text:'.timing-table-details summary,.timing-table-details th,.timing-table-details td'});
         await comparison.scrollIntoViewIfNeeded();
         await saju.screenshot({path:path.join(artifacts,'saju-month-table-mobile.png')});
         await comparison.locator('summary').click();
@@ -512,14 +642,21 @@ const server = http.createServer((request, response) => {
         if(textSize==='normal')normalFont=font;
         else assert.ok(font>normalFont,label+': the large-text setting actually enlarges summary text');
         await selectReadingPage(summaryTargets.portrait);await inspect('portrait card');
+        await inspectReadableSurface('general reading '+label,{text:readingText,body:'.reader-prose p',minimumBody:textSize==='large'?21:18,controls:'.reading-pager select,.reading-pager button,.reading-page-section-link'});
         await saju.locator('[data-reader-current] .saju-reading-score').first().screenshot({path:path.join(artifacts,'saju-reading-scores-'+viewport+'-'+textSize+'.png')});
         await saju.locator('.reading-pager').scrollIntoViewIfNeeded();
         await saju.screenshot({path:path.join(artifacts,'saju-two-line-summaries-'+viewport+'-'+textSize+'.png')});
+        if(viewport!=='phone')await saju.screenshot({path:path.join(artifacts,'saju-readable-general-'+viewport+'-'+textSize+'.png')});
         await selectReadingPage(summaryTargets.lifelong);await inspect('lifelong card');
         await selectReadingPage(summaryTargets.annual);await inspect('annual intro');
         await selectReadingPage(summaryTargets.spotlight);await inspect('month spotlight');
         await selectReadingPage('reading-month-11');await inspect('month intro');
         await selectReadingPage(summaryTargets.monthCard);await inspect('month card');
+        await selectReadingPage('reading-timings');
+        const comparison=saju.locator('.timing-table-details');
+        if(await comparison.getAttribute('open')===null)await comparison.locator('summary').click();
+        await inspectReadableSurface('monthly table '+label,{text:'.timing-table-details summary,.timing-table-details th,.timing-table-details td'});
+        await comparison.locator('summary').click();
         await selectReadingPage('reading-daeun');await inspect('decade intro');
         const periodHeading=await saju.locator('.daeun-period.is-current .daeun-age').getAttribute('id');
         await saju.locator('.daeun-nav a[href="#'+periodHeading+'"]').click();
@@ -641,7 +778,10 @@ const server = http.createServer((request, response) => {
       await saju.locator('.daeun-nav a[href="#'+periodHeading+'"]').click();
       await inspectDaeunAssumption(label+' period');await inspectSajuScores(label+' period');
       assert.equal(await saju.locator('.daeun-dates:visible').textContent(),assumedDaeun.currentPeriodLabel,'visible dates come from the actual 06:00 calculation');
+      await inspectReadableSurface('daeun '+viewport+' '+textSize,{text:readingText,controls:'.reading-pager select,.reading-pager button,.daeun-nav a'});
       await saju.locator('#reading-daeun').screenshot({path:path.join(artifacts,'saju-daeun-assumed-six-'+viewport+'-'+textSize+'.png')});
+      await saju.locator('.reading-pager').evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));
+      await saju.screenshot({path:path.join(artifacts,'saju-readable-daeun-'+viewport+'-'+textSize+'.png')});
       const topicId=await saju.locator('[data-reader-current] .daeun-topic').first().getAttribute('id');
       await selectReadingPage(topicId);await inspectDaeunAssumption(label+' topic');
       assert.equal(await saju.locator('.source-entry,[data-fact-id],a[href*="-evidence"]').count(),0,label+': an assumption notice does not restore calculation evidence');
@@ -736,16 +876,22 @@ const server = http.createServer((request, response) => {
           await selectCompatibilityPage('compatibility-people-'+topic);
           const geometry=await inspectCompatibilityPeople(label+' '+topic,2);
           if(topic==='overview') {
+            await inspectReadableSurface('compatibility people '+label,{text:compatibilityText,body:'.compatibility-person-prose p',minimumBody:textSize==='large'?21:18,controls:'.reading-pager select,.reading-pager button'});
             compatibilityPeople[label]={topics,bodyFont:geometry.bodyFont,summaryFont:geometry.summaryFont};
             if(textSize==='large') {
               assert.ok(geometry.bodyFont>compatibilityPeople[viewport+' normal'].bodyFont,label+': the large setting increases the body text');
               assert.ok(geometry.summaryFont>compatibilityPeople[viewport+' normal'].summaryFont,label+': the large setting increases the summary text');
             }
             if(viewport!=='phone')await saju.locator('[data-compatibility-current]').screenshot({path:path.join(artifacts,'saju-compatibility-people-'+viewport+'-'+textSize+'.png')});
+            if(viewport!=='phone') {
+              await saju.locator('.reading-pager').evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));
+              await saju.screenshot({path:path.join(artifacts,'saju-readable-compatibility-'+viewport+'-'+textSize+'.png')});
+            }
           }
         }
         await selectCompatibilityPage('compatibility-synthesis');
         await inspectCompatibilityPeople(label+' synthesis',0);
+        await inspectReadableSurface('compatibility synthesis '+label,{text:compatibilityText,body:'.compatibility-person-prose p',minimumBody:textSize==='large'?21:18});
         if(viewport!=='phone'&&textSize==='normal')await saju.locator('[data-compatibility-current]').screenshot({path:path.join(artifacts,'saju-compatibility-synthesis-'+viewport+'.png')});
         assert.equal(await saju.locator('#compatibility-reading-evidence,.compatibility-evidence-link,.compatibility-score-details,[data-fact-id],a[href*="-evidence"]').count(),0,label+': compatibility has no calculation material or evidence links');
         assert.ok(await saju.locator('#compatibility-page-select option').evaluateAll(options=>options.every(option=>!/근거|계산|자료|출처/.test(option.textContent))),label+': compatibility has no evidence menus');
@@ -794,8 +940,10 @@ const server = http.createServer((request, response) => {
             const rect=summary.getBoundingClientRect(),style=getComputedStyle(summary);
             const contentHeight=rect.height-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom)-parseFloat(style.borderTopWidth)-parseFloat(style.borderBottomWidth);
             return {id:item.dataset.scoreItem,height:contentHeight,lineHeight:parseFloat(style.lineHeight),
+              meaningUnits:summary.textContent.trim().split(/\n+/).map(line=>line.trim()).filter(Boolean),
               visible:rect.width>0&&rect.height>0&&style.visibility==='visible',
               unclipped:summary.scrollWidth<=summary.clientWidth+1&&summary.scrollHeight<=summary.clientHeight+1&&
+                style.textOverflow!=='ellipsis'&&['none','','unset'].includes(style.webkitLineClamp)&&
                 contained(rect,item.getBoundingClientRect())&&contained(rect,box)};
           });
           const clippedAncestors=[];
@@ -821,7 +969,8 @@ const server = http.createServer((request, response) => {
         assert.equal(geometry.summaries.length,4,label+': all four bars have a summary');
         for(const summary of geometry.summaries) {
           assert.ok(summary.visible,label+' '+summary.id+': the summary is visible at regular text size');
-          assert.ok(summary.lineHeight>0&&Math.abs(summary.height-2*summary.lineHeight)<=1,label+' '+summary.id+': the rendered summary occupies exactly two lines');
+          assert.equal(summary.meaningUnits.length,2,label+' '+summary.id+': the summary keeps its two complete meaning units');
+          assert.ok(summary.lineHeight>0&&summary.height>=2*summary.lineHeight-1,label+' '+summary.id+': the two summary units can wrap naturally at a readable size');
           assert.ok(summary.unclipped,label+' '+summary.id+': both summary lines fit without clipping');
         }
         assert.equal(geometry.documentOverflow,false,label+': the page does not overflow horizontally');
@@ -832,8 +981,21 @@ const server = http.createServer((request, response) => {
         const values={total:geometry.total,items:geometry.meters.map(meter=>meter.value)};
         if(compatibilityScores['phone-small'][pair])assert.deepEqual(values,compatibilityScores['phone-small'][pair],label+': layout changes preserve every score');
         compatibilityScores[viewport][pair]=values;
+        await inspectReadableSurface('compatibility scores '+label+' normal',{text:compatibilityText,body:'.compatibility-score-summary,.compatibility-score-item-summary',minimumBody:18});
         await scoreboard.scrollIntoViewIfNeeded();
         await scoreboard.screenshot({path:path.join(artifacts,'saju-compatibility-scores-'+pair+'-'+viewport+'.png')});
+        if(pair==='confirmed') {
+          await saju.locator('#report-content').evaluate(report=>{report.dataset.readingSize='large';});
+          await inspectReadableSurface('compatibility scores '+label+' large',{text:compatibilityText,body:'.compatibility-score-summary,.compatibility-score-item-summary',minimumBody:21});
+          const enlargedSummaries=await scoreboard.locator('.compatibility-score-item-summary').evaluateAll(nodes=>nodes.map(node=>{
+            const style=getComputedStyle(node);
+            return {units:node.textContent.trim().split(/\n+/).map(line=>line.trim()).filter(Boolean).length,
+              complete:node.scrollWidth<=node.clientWidth+1&&node.scrollHeight<=node.clientHeight+1&&style.textOverflow!=='ellipsis'&&['none','','unset'].includes(style.webkitLineClamp)};
+          }));
+          assert.ok(enlargedSummaries.every(summary=>summary.units===2&&summary.complete),label+': large text preserves both complete score summary units');
+          if(viewport!=='phone')await scoreboard.screenshot({path:path.join(artifacts,'saju-readable-compatibility-scores-'+viewport+'-large.png')});
+          await saju.locator('#report-content').evaluate(report=>{report.dataset.readingSize='normal';});
+        }
       }
     }
     const sajuSwipeViews={};
@@ -1115,6 +1277,6 @@ const server = http.createServer((request, response) => {
     }
     assert.deepEqual(errors, []);
     assert.deepEqual(failed, []);
-    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuEntryViews, sajuNavigation, sajuSummaryViews, sajuScoreViews, sajuScoreRegressions, sajuDaeunAssumptionViews, compatibilityPeople, compatibilityScores, sajuSwipeViews, sajuMotionViews, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
+    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuEntryViews, compatibilityEntryViews, sajuReadableViews, sajuNavigation, sajuSummaryViews, sajuScoreViews, sajuScoreRegressions, sajuDaeunAssumptionViews, compatibilityPeople, compatibilityScores, sajuSwipeViews, sajuMotionViews, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => server.close());
