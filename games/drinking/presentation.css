@@ -951,9 +951,9 @@ body.dp-playing[data-dp-mode="local"][data-dp-phase="intro"] .play-shell:has(:is
 /* One table header, board and result hierarchy for both ways to play. */
 body.dp-playing .table-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; flex:0 0 auto;
   padding:8px 14px; color:var(--suite-ink,inherit); background:var(--suite-subtle,transparent); border-bottom:1px solid var(--suite-line,#86978155); }
-body.dp-playing :is(#view,#app) .table-heading h1 { display:flex; align-items:center; gap:10px; margin:0;
+body.dp-playing :is(#view,#app) .table-heading h1 { width:auto; display:flex; align-items:center; gap:10px; margin:0;
   font-size:clamp(20px,2.6vw,32px); line-height:1.2; font-weight:780; }
-body.dp-playing .table-heading > span { font-size:clamp(14px,1.6vw,18px); white-space:nowrap; }
+body.dp-playing .table-heading > span { flex:none; font-size:clamp(14px,1.6vw,18px); white-space:nowrap; }
 body.dp-playing #view > .card:has(> .table-heading) { padding:0; }
 body.dp-playing #view > .card > .table-heading ~ :is(#game,.actions) { margin-inline:var(--dp-gutter); }
 body.dp-playing #view > .card > .table-heading ~ .actions { margin-bottom:var(--dp-gutter); }

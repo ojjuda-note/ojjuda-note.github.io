@@ -45,7 +45,8 @@
     const ui=window.DrinkingTableView;
     if(ui && card && state && phase!=='waiting'){
       const pane=card.querySelector(':scope > .inside') || card;
-      let board=pane.querySelector(':scope > #game');
+      let board=pane===card?pane.querySelector(':scope > #game'):pane;
+      if(pane!==card)pane.id='game';
       if(!board){
         const focus=pane.contains(document.activeElement)?document.activeElement:null;
         board=document.createElement('div');

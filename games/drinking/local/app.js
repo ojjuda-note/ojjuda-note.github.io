@@ -211,13 +211,11 @@ function markLocalHost(){
   const seats=players.map((_,i)=>(i+1)%players.length);
   const next=seats.find(i=>candidates.includes(i))??seats[0];
   r.nextHost=players[next];
+  try{localStorage.setItem(memberStore+'players',JSON.stringify([r.nextHost,...players.filter(n=>n!==r.nextHost)]));}catch{}
   window.DrinkingTableView?.result(app.querySelector('.play-body'),r.nextHost);
 }
 function cleanup(){
-  if(round?.nextHost){
-    players=[round.nextHost,...players.filter(p=>p!==round.nextHost)];
-    try{localStorage.setItem(memberStore+'players',JSON.stringify(players));}catch{}
-  }
+  if(round?.nextHost)players=[round.nextHost,...players.filter(p=>p!==round.nextHost)];
   stopClock();fx.quiet();
   if(round?.watchFrame!=null)cancelAnimationFrame(round.watchFrame);
   if(round?.bottleFrame!=null)cancelAnimationFrame(round.bottleFrame);
@@ -562,7 +560,7 @@ function spin(){
     const k=players.indexOf(r.nextHost);
     r.positions=[r.positions[k],...r.positions.filter((_,i)=>i!==k)];
     players=[r.nextHost,...players.filter(n=>n!==r.nextHost)];
-    try{localStorage.setItem(memberStore+'players',JSON.stringify(players));}catch{}
+    r.seatHistory=[];
     delete r.nextHost;
   }
   r.phase='spinning';showBottle();
