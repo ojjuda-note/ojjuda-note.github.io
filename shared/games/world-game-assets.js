@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261115-saju-reading-map1'
+ const revision='20261115-bottle-design1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -10,7 +10,7 @@
   king:'1.6.2',
   minority:'1.5.2',
   mission:'1.5.2',
-  bottle:'1.3.2',
+  bottle:'1.3.3',
   bomb:'1.5.2',
   stopwatch:'1.3.2',
   truth:'1.6.2',
@@ -18,7 +18,7 @@
   fingers:'1.5.2',
   imagevote:'1.5.2',
   updown:'1.3.2',
-  drinking:'1.7.3',
+  drinking:'1.7.4',
   tarot:'1.10.2',
   saju:'2.13.0',
   group:'1.2.2',

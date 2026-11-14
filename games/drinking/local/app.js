@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const memberStore='oj.party.'+document.getElementById('access-content').dataset.member+'.';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261114-croc-design1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-bottle-design1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -186,6 +186,16 @@ function intro(){const enough=players.length>=game.min;
         '<li><span aria-hidden="true">0'+(i+1)+'</span><strong>'+title+'</strong><small>'+description+'</small></li>').join('')+'</ol>'+
       actions(enough?btn('게임 시작하기','start'):'<a class="quiet" href="#participants">참가자 설정하기</a>')+
       '<div class="croc-meta">2~12명 · 한 대로 함께</div>',true);
+    return;
+  }
+  if(game.id==='bottle'){
+    const steps=[['자리 표시','앉은 곳을 표시'],['돌리기','버튼을 눌러요'],['멈추기','돌아갈 때 터치']];
+    shell('<div class="bottle-kicker">02 · 운과 감각</div><h2>병 끝이 가리키는<br>오늘의 주인공.</h2>'+
+      '<p>돌아가는 병을 터치해 멈춰요.<br>병 입구가 가리키는 사람이 당첨!</p>'+
+      '<ol class="bottle-rules" aria-label="게임 순서">'+steps.map(([title,description],i)=>
+        '<li><span aria-hidden="true">0'+(i+1)+'</span><strong>'+title+'</strong><small>'+description+'</small></li>').join('')+'</ol>'+
+      actions(enough?btn('자리 정하고 시작하기','start'):'<a class="quiet" href="#participants">참가자 설정하기</a>')+
+      '<div class="bottle-meta">2~12명 · 한 대로 함께</div>',true);
     return;
   }
   if(game.id==='bomb')return bombSetup();
@@ -409,7 +419,7 @@ function showBottle(){
   const roster=players.map((name,i)=>'<li>'+(picking?'<button data-action="edit-player" data-value="'+i+'" aria-pressed="'+(i===r.activePlayer)+'" aria-label="'+esc(name)+(r.positions[i]?' 자리 옮기기':' 자리 놓기')+'">':'')+
     '<b>'+(i+1)+'</b>'+esc(name)+(picking?'</button>':'')+'</li>').join('');
   const heading=picking?(complete?'자리를 확인해 주세요':esc(players[r.activePlayer])+'님의 자리는 어디인가요?'):'술병을 돌려 보세요';
-  const hint=picking?(complete?'자리 표시를 끌어 옮기거나, 이름을 고른 뒤 새 위치를 누르세요.':'테이블에서 앉은 곳을 누르세요. 이름을 고르면 그 사람부터 놓을 수 있어요.'):'병이 돌 때 화면을 터치하면 서서히 멈춰요.';
+  const hint=picking?(complete?'자리를 끌어 옮길 수 있어요. 준비되면 술병을 돌려요.':'테이블에서 앉은 곳을 누르세요. 다른 이름을 골라 자리를 정할 수도 있어요.'):'화면을 터치하면 병이 서서히 멈춰요.';
   const controls=picking?actions(complete?btn('술병 돌리기','spin'):'',r.seatHistory.length?btn('한 번 되돌리기','undo-seat','quiet'):'',btn('테이블 다시 선택','change-table','quiet')):'';
   const ratio=bottleTables[r.table].ratio,vertical=r.direction==='vertical';
   const size=ratio===1?340:vertical?490/ratio:490;
@@ -511,7 +521,7 @@ function animateBottle(now){
     const seat=r.winningSeat;
     $('.bottle-dial [data-seat="'+seat+'"]').classList.add('winning-seat');
     $('#bottle-title').textContent=players[seat]+'님 당첨!';
-    $('#bottle-hint').textContent='병 입구가 '+(seat+1)+'번 자리를 가리켰어요. 오늘은 이 자리로 시선이 쏠리네요.';
+    $('#bottle-hint').textContent='병 입구가 '+(seat+1)+'번 자리를 가리켰어요.';
     $('#spin-status').innerHTML=actions(btn('다시 돌리기','spin'),btn('자리 옮기기','edit-seats','quiet'),btn('게임 목록','menu','quiet'));
     fx.play('stop');
     window.DrinkingGameScreen?.local(game.id,r,app);
