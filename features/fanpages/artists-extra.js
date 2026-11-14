@@ -388,6 +388,9 @@
       concept: '틀에 얽매이지 않는 감각과 자유로운 에너지.',
       official: 'https://www.starship-ent.com/musician/kiiikiii', youtube: 'https://www.youtube.com/@KiiiKiii_starship',
       photo: 'KiiiKiii in August 2026.png', photoLabel: '2026년 단체', photoYear: '2026', credit: 'K-POPIT 케이팝잇', license: 'CC BY 4.0',
+      morePhotos: [
+        commonsPhoto('Kiiikiii 250326.jpg', '데뷔 활동 · SBS 라디오', '2025', 'SBS Radio 에라오 · Commons 편집 Orangesclub', 'CC BY 3.0')
+      ],
       music: [
         { title: 'WhyKiiiKiii', date: '2026.08.10', type: '미니 3집 · 타이틀 Pop Off Pop Off', songs: ['Ever2Late!', 'Hey Hi', 'Pop Off Pop Off', 'SWEET SOUR', 'Candy Pink Magic Hole Flip Phone (나 어떡해)', 'Blue Hour'], href: 'https://music.apple.com/us/album/whykiiikiii-ep/6796609538' },
         { title: 'Delulu Pack', date: '2026.01.26', type: '미니 2집 · 타이틀 404 (New Era)', songs: ['Delulu', '404 (New Era)', 'UNDERDOGS', '멍냥 (MUNGNYANG)', 'Dizzy', 'To Me From Me (Prod. TABLO)'], href: 'https://music.apple.com/us/album/delulu-pack-ep/1866860579' },
@@ -407,7 +410,9 @@
       news: [
         { date: '2026.10.15', tag: '공연', title: '2026 MAMA AWARDS 11.21 출연 확정', href: 'https://www.cj.net/jp/press-release/view/1132' },
         { date: '2026.10.14', tag: '공연', title: 'MMA2026 Music Day 11.15 출연 확정', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' },
-        { date: '2026.08.10', tag: '앨범', title: '미니 3집 WhyKiiiKiii · Pop Off Pop Off 발매', href: 'https://music.apple.com/us/album/whykiiikiii-ep/6796609538' }
+        { date: '2026.08.10', tag: '앨범', title: '미니 3집 WhyKiiiKiii · Pop Off Pop Off 발매', href: 'https://music.apple.com/us/album/whykiiikiii-ep/6796609538' },
+        { date: '2026.06.17', tag: '협업', title: 'GS25 × 키키 · 딸기·망고 젤라또바 2종 출시 발표', href: 'https://www.yna.co.kr/view/AKR20260617027900030' },
+        { date: '2026.04.27', tag: '광고', title: 'PANDORA × 키키 · Be Your Lucky Charm 화보 공개', href: 'https://www.marieclairekorea.com/fashion/2026/04/pandora/' }
       ],
       merch: [
         { title: 'WhyKiiiKiii · AMENITIES ver.', sub: '스타쉽스퀘어 공식 앨범 · 재고는 판매처에서 확인', href: 'https://starship-square.com/product/amenities-ver-kiiikiii-ep-whykiiikiii/2061/category/58/display/1/' },
@@ -415,7 +420,10 @@
         { title: 'WhyKiiiKiii · SNAPSHOT 한정반', sub: '스타쉽스퀘어 · 예약판매 8.03~8.12 종료', href: 'https://starship-square.com/product/snapshot-ver-kiiikiii-ep-whykiiikiii-%ED%95%9C%EC%A0%95%EB%B0%98/2074/category/58/display/1/' }
       ],
       campaigns: [
+        { kind: '콜라보', date: '2026.06.17', title: 'GS25 × KiiiKiii 젤라또바', sub: '키키픽 딸기·망고 젤라또바 2종 출시 발표 · 현재 판매·재고는 점포별 확인', href: 'https://www.yna.co.kr/view/AKR20260617027900030' },
+        { kind: '광고', date: '2026.04.27', title: 'PANDORA × KiiiKiii', sub: 'Be Your Lucky Charm · 마리끌레르 5월호 주얼리 화보', href: 'https://www.marieclairekorea.com/fashion/2026/04/pandora/' },
         { kind: '홍보대사', date: '2026.01.21', title: '서울시 2026 서울색·서울빛 홍보대사', sub: '모닝옐로우 · 서울시 공식 위촉', href: 'https://mediahub.seoul.go.kr/archives/2016856' },
+        { kind: '광고', date: '2026.01.13', title: 'WEGO 2026 SPRING 비주얼 모델', sub: '일본 의류 매장 비주얼 · 1.16 1차, 2.13 2차 · 안내방송 3.12 종료 · 증정품 종료·재고는 매장 확인', href: 'https://prtimes.jp/main/html/rd/p/000000144.000057274.html' }
       ],
       accent: '#4c95c2', light: '#daf5ff', dark: '#315e7b', bg: '#f0fbff', shape: '✺'
     },
