@@ -23,10 +23,30 @@ async function waitFor(predicate, message = 'UI did not settle') {
     await pause();
   }
 }
+function homepageDriver(form,window) {
+  const entry=form.closest('#intro,#compatibility-entry');
+  const landing=entry?.querySelector('.site-landing'),panel=entry?.querySelector('.site-entry-panel');
+  assert.ok(landing&&panel,'the homepage separates its service introduction from birth entry');
+  function start() {
+    if(!panel.hidden)return;
+    const button=landing.querySelector('[data-start-reading]');
+    assert.ok(button&&!button.disabled,'the homepage has an available start action');
+    button.click();
+    assert.equal(landing.hidden,true);assert.equal(panel.hidden,false);
+  }
+  function back() {
+    const button=panel.querySelector('[data-home-back]');
+    assert.ok(button,'entry has a return-home action');button.click();
+    assert.equal(landing.hidden,false);assert.equal(panel.hidden,true);
+  }
+  return {landing,panel,start,back};
+}
 function entryFlowDriver(form,window) {
+  const home=homepageDriver(form,window);
   const current=()=>form.querySelector('[data-flow-step="'+form.dataset.flowStep+'"]');
   const control=selector=>[...form.querySelectorAll(selector)].find(element=>!element.closest('[hidden]'));
   async function next() {
+    home.start();
     const button=control('[data-flow-next]');
     assert.ok(button,'the current input stage has a next button');
     assert.equal(button.disabled,false,'the next action is available before validation');
@@ -36,6 +56,7 @@ function entryFlowDriver(form,window) {
   }
   function back() {const button=control('[data-flow-back]');assert.ok(button,'the current input stage has a back button');button.click();}
   async function confirm() {
+    home.start();
     const stages=form.querySelectorAll('[data-flow-step]').length;
     for(let count=0;count<stages-1;count++) {
       if(Number(form.dataset.flowStep)===stages-1)break;
@@ -46,7 +67,7 @@ function entryFlowDriver(form,window) {
     form.dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true}));
     return true;
   }
-  return {current,next,back,confirm};
+  return {current,next,back,confirm,home};
 }
 function selectReadingItem(select,id) {
   const doc=select.ownerDocument,nav=doc.getElementById(select.id+'-navigator');
@@ -62,7 +83,8 @@ function selectReadingItem(select,id) {
   item.click();
   assert.equal(select.value,id,'visible navigation and the selected reading agree');
   assert.equal(item.getAttribute('aria-current'),'page');
-  assert.equal(picker.open,false,'choosing an item closes the list to show the reading');
+  const desktop=doc.defaultView?.matchMedia?.('(min-width: 960px)').matches===true;
+  assert.equal(picker.open,desktop,'the desktop contents stay available while the mobile contents close after a choice');
   return doc.getElementById(id);
 }
 function assertNoReadingScores(h) {
@@ -140,7 +162,9 @@ async function harness(options = {}) {
     }
     if(focus)window.dispatchEvent(new window.Event('focus'));
   }
-  window.matchMedia = () => ({matches:true, addEventListener(){}, removeEventListener(){}});
+  const viewportWidth=Number(options.viewportWidth||390);
+  Object.defineProperty(window,'innerWidth',{value:viewportWidth,writable:true});
+  window.matchMedia = query => ({matches:/prefers-reduced-motion/.test(query)||(/min-width:\s*960px/.test(query)&&viewportWidth>=960),addEventListener(){},removeEventListener(){}});
   window.scrollTo = () => {};
   window.HTMLElement.prototype.scrollIntoView = function() {};
   const state = {
@@ -271,6 +295,7 @@ async function harness(options = {}) {
   const $ = id => window.document.getElementById(id);
   const change = element => element.dispatchEvent(new window.Event('change', {bubbles:true}));
   function fill({year=1990,month=5,day=17,hour=null,minute=0,calendar='solar',leap=false,topic='lifelong',fortuneYear=2026,name='',gender=''} = {}) {
+    flow.home.start();
     $('person-name').value=name; change($('person-name'));
     $('person-gender').value=gender; change($('person-gender'));
     const radio = window.document.querySelector(`input[name="calendar"][value="${calendar}"]`);
@@ -339,7 +364,7 @@ async function harness(options = {}) {
     })();
     return closing;
   }
-  return {dom,window,state,$,fill,submit,ready,change,pickReport,changeAccount,advance,flow,close};
+  return {dom,window,state,$,fill,submit,ready,change,pickReport,changeAccount,advance,flow,home:flow.home,close};
 }
 
-module.exports = {harness, fixedNow, PROFILE_USER_A, PROFILE_USER_B, pause, deferred, waitFor, entryFlowDriver, selectReadingItem, assertNoReadingScores, assertNoCalculationUI, assertReadingScores, assertReadingScoreCopy};
+module.exports = {harness, fixedNow, PROFILE_USER_A, PROFILE_USER_B, pause, deferred, waitFor, homepageDriver, entryFlowDriver, selectReadingItem, assertNoReadingScores, assertNoCalculationUI, assertReadingScores, assertReadingScoreCopy};
