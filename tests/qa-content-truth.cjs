@@ -27,7 +27,7 @@ function mutation(kind) {
 }
 function makeMock({admin=false,member='adult',seat=0,kind='truth'}={}) {
   const records=[],errors=[],delayed=deferred(),gate=deferred(),rooms=new Map();
-  const model={row:{...adminRow},queue:[{id:21,kind:'king',flavor:'',text:'새 왕게임 명령을 등록해 주세요.'}],failKind:null,submissions:'fail',agePending:false,member};
+  const model={banks:structuredClone(pool),row:{...adminRow},queue:[{id:21,kind:'king',flavor:'',text:'새 왕게임 명령을 등록해 주세요.'}],failKind:null,submissions:'fail',agePending:false,member};
   const success=data=>({data,error:null}),fail=message=>({data:null,error:{message}});
   function actions(action) {return records.filter(r=>r.name==='drinking_prompt_suggestions'&&r.opts.p_action===action);}
   async function handler(name,opts={}) {
@@ -38,7 +38,7 @@ function makeMock({admin=false,member='adult',seat=0,kind='truth'}={}) {
     }
     if(name==='is_admin')return success(admin);
     if(model.member!=='adult'){errors.push('Before adult grant: '+name);return fail('adult_required');}
-    if(name==='drinking_content'&&opts.p_action==='pool') return success({banks:Object.fromEntries((opts.p_options.kinds).map(k=>[k,pool[k]]))});
+    if(name==='drinking_content'&&opts.p_action==='pool') return success({banks:Object.fromEntries((opts.p_options.kinds).map(k=>[k,model.banks[k]]))});
     if(name==='drinking_prompt_suggestions'){
       const a=opts.p_action,o=opts.p_options||{};
       if(a==='submit') {
@@ -70,7 +70,12 @@ function makeMock({admin=false,member='adult',seat=0,kind='truth'}={}) {
     }
     errors.push('Unexpected RPC '+name); return fail('unexpected_rpc');
   }
-  return {handler,model,records,errors,actions,delayed,gate};
+  function nextRound(kind) {
+    const s=rooms.get(kind);
+    assert.ok(s,'room should be open');
+    Object.assign(s,mutation(kind),{round:s.round+1,revision:s.revision+1});
+  }
+  return {handler,model,records,errors,actions,delayed,gate,nextRound};
 }
 async function pageFor(browser,cfg) {
   const mock=makeMock(cfg),context=await browser.newContext({viewport:{width:350,height:740},isMobile:true,hasTouch:true});
@@ -202,6 +207,43 @@ async function multiAcceptance(browser){
   guest.m.delayed.resolve();
   console.log('Multiplayer custom prompts start immediately, host uses own and published truth questions.');
 }
+async function checkedRoomUpdates(browser){
+  const changes={king:'새 왕국의 축제 이름을 붙여 주세요.',fingers:'오늘 줄무늬 양말을 신은 사람',imagevote:'우리 중 우표 박물관장이 될 사람은?'};
+  for(const [kind,revised] of Object.entries(changes)){
+    const {p,m,context}=await pageFor(browser,{});
+    try{
+      await p.goto(origin+'/games/'+kind+'/?room='+code);
+      const form=p.locator(kind==='king'?'#order':'#pair-form');
+      const sel=kind==='king'?'#order [name=mission]':'#pair-question';
+      const waitText=text=>p.waitForFunction(([s,v])=>document.querySelector(s)?.value===v,[sel,text]);
+      await waitText(pool[kind][0]);
+      m.model.banks[kind]=[revised];
+      await form.locator('[type=submit]').click();
+      await p.getByRole('heading',{name:pool[kind][0],exact:true}).waitFor();
+      m.nextRound(kind);
+      await waitText(revised);
+      await form.locator('[type=submit]').click();
+      await p.getByRole('heading',{name:revised,exact:true}).waitFor();
+      assert.ok(!m.actions('submit').length,'published texts should not reenter moderation');
+    }finally{await context.close();}
+  }
+  const {p,m,context}=await pageFor(browser,{});
+  try{
+    await p.goto(origin+'/games/truth/?room='+code);
+    await p.locator('#truth-begin').click();
+    await p.locator('.truth-hand').waitFor();
+    const deck=()=>m.records.filter(r=>r.opts.p_action==='truth_begin').at(-1).opts.p_options.deck;
+    assert.deepEqual(deck(),pool.truth);
+    const revised={mild:['겨울에 다시 가고 싶은 곳은?'],spicy:['기억 속에 남은 겨울 약속은?']};
+    m.model.banks.truth=revised;
+    assert.deepEqual(deck(),pool.truth,'published edits preserve active server round deck');
+    m.nextRound('truth');
+    await p.locator('#truth-begin').click();
+    await p.locator('.truth-hand').waitFor();
+    assert.deepEqual(deck(),revised,'next multiplayer round sends the replacement deck');
+  }finally{await context.close();}
+  console.log('Multiplayer edits and deletions visible in the next round in king, fingers, imagevote, and truth.');
+}
 async function settingsAcceptance(browser){
   const labels={mild:'순한맛',spicy:'빨간맛'};
   for(const mode of ['mixed','mild','spicy']){
@@ -247,7 +289,7 @@ async function settingsAcceptance(browser){
   const browser=await chromium.launch({executablePath:process.env.BROWSER_PATH||'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
   try{
     await settingsAcceptance(browser);
-    await localAcceptance(browser);await truthAcceptance(browser);await multiAcceptance(browser);
+    await localAcceptance(browser);await truthAcceptance(browser);await multiAcceptance(browser);await checkedRoomUpdates(browser);
     for(const [,m] of pages)assert.deepEqual(m.errors,[]);
   }catch(error){
     for(const [,m,p] of pages)console.log(p.url(),p.isClosed()?'':(await p.locator('body').innerText().catch(()=>'' )).slice(0,420),m.errors, m.records.slice(-5).map(r=>[r.name,r.opts.p_action]));

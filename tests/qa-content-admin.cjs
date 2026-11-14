@@ -85,7 +85,7 @@ async function main(){
   await choose('initial');await button('새 항목 추가').click();
   const n=await count('add');await editor.locator('[name=text]').fill('가나');await button('저장',editor).click();assert.equal(await count('add'),n);
   await editor.locator('[name=text]').fill('ㅈㅁ');await button('저장',editor).click();await row('ㅈㅁ').waitFor();
-  await choose('truth');await p.getByLabel('질문 맛 필터',{exact:true}).selectOption('spicy');await button('검색').click();
+  await choose('truth');await p.getByLabel(/^질문 맛 필터/).selectOption('spicy');await button('검색').click();
   await p.waitForFunction(()=>qa.calls.some(([,a,o])=>a==='list'&&o.kind==='truth'&&o.flavor==='spicy'));
   await button('새 항목 추가').click();await editor.locator('[name=flavor]').selectOption('spicy');
   await editor.locator('[name=text]').fill('관리자가 만든 새 카드?');await button('저장',editor).click();
