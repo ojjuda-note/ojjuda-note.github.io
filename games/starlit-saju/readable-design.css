@@ -279,7 +279,8 @@ body.saju-readable .month-heading:hover{background:var(--primary-soft)}
 body.saju-readable .month-number{font:750 25px/1.4 var(--sans);color:var(--primary)}
 body.saju-readable .month-toggle-symbol,body.saju-readable .months-period-info>summary::before{color:var(--primary)}
 body.saju-readable :is(.month-headline,.month-overview,.month-spotlight-headline,.reader-timing-headline){color:var(--ink);font:700 22px/1.7 var(--sans);letter-spacing:-.025em}
-body.saju-readable :is(.month-period,.month-sign,.months-note,.months-period-info .months-note,.reader-timing-period,.daeun-dates,.daeun-period-summary::after){color:var(--text-muted);font-size:14px;line-height:1.85}
+body.saju-readable :is(.month-period,.month-sign,.months-note,.months-period-info .months-note,.reader-timing-period,.daeun-dates){color:var(--text-muted);font-size:14px;line-height:1.85}
+body.saju-readable .daeun-period-summary::after{color:var(--text-muted);font-size:14px;line-height:1.85}
 body.saju-readable .current-month-tag,body.saju-readable .daeun-current{border:1px solid #c7b3dc;border-radius:6px;background:var(--surface);color:var(--primary);font-size:14px;font-weight:700;line-height:1.7;padding:3px 9px}
 body.saju-readable .month-content{border-top-color:var(--border);padding:6px 22px 23px}
 body.saju-readable .month-content .reader-headline{font-size:25px;color:var(--ink)}
