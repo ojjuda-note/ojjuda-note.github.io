@@ -20,7 +20,7 @@
     const g = s.game;
     if (s.phase === 'done') {
       return '<h1 data-result>' + ui.esc(s.players[g.winner]) + '님이 맞혔어요!</h1>' +
-        '<div class="updown-range"><span>정답</span><strong>' + g.answer + '</strong></div>' + lastGuess(s, ui);
+        '<div class="updown-range"><span>정답</span><strong>' + g.answer + '</strong></div><p>숫자 읽는 눈치로 썸 신호도 맞히겠는데요?</p>' + lastGuess(s, ui);
     }
     const mine = s.me === g.current;
     const heading = mine ? '내 차례예요' : ui.esc(s.players[g.current]) + '님 차례예요';

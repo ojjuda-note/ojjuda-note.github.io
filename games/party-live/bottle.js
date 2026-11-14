@@ -44,7 +44,7 @@
     } else if (s.phase === 'braking') {
       title = '서서히 멈추는 중…'; hint = '병 입구가 향하는 자리를 지켜보세요.';
     } else {
-      title = ui.esc(s.players[g.winner]) + '님 당첨!'; hint = '병 입구가 '+(g.winner+1)+'번 자리를 가리켰어요.';
+      title = ui.esc(s.players[g.winner]) + '님 당첨!'; hint = '병 입구가 '+(g.winner+1)+'번 자리를 가리켰어요. 오늘은 이 자리로 시선이 쏠리네요.';
     }
     const escape = ui.esc;
     const roster = s.players.map((player,i) => '<li><b>'+ (i+1) +'</b> '+escape(player)+
