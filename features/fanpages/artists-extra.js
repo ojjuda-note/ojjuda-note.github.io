@@ -1090,7 +1090,7 @@
         { title: 'WHO!', date: '2023.05.30', type: '데뷔 싱글', songs: ['돌아버리겠다 (But I Like You)', 'One and Only', 'Serenade'], href: 'https://www.kozofficial.com/artist/discography/BOYNEXTDOOR/23' }
       ],
       appearances: [
-        { date: '2026-11-15', title: 'KNOCK ON Vol.2 · 시애틀', sub: '미국 시애틀 Showbox SoDo · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
+        { date: '2026-11-15', timeZone: 'America/Los_Angeles', title: 'KNOCK ON Vol.2 · 시애틀', sub: '미국 시애틀 Showbox SoDo · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
         { date: '2026-11-17', title: 'KNOCK ON Vol.2 · 샌프란시스코', sub: '미국 샌프란시스코 The Warfield · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
         { date: '2026-11-20', title: 'KNOCK ON Vol.2 · 로스앤젤레스', sub: '미국 로스앤젤레스 Peacock Theater · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
         { date: '2026-11-24', title: 'KNOCK ON Vol.2 · 멕시코시티', sub: '멕시코시티 Arena Ciudad de México · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
