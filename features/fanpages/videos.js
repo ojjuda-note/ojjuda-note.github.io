@@ -95,12 +95,6 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'o9V8HrgJgIg', title: 'WE GO UP', kind: '퍼포먼스', source: 'BABYMONSTER Official' }
   ],
 
-  kissoflife: [
-    { id: '6bIVPKhafSI', title: 'SWEAT (Japanese Ver.) / THE FIRST TAKE', kind: '라이브', source: 'THE FIRST TAKE · 2026.10.12' },
-    { id: 'dsGK0HZZx1k', title: 'SWEAT (Japanese Ver.)', kind: '뮤직비디오', source: 'KISS OF LIFE Official · 2026.09.15' },
-    { id: 'EJ2fIbl35Oc', title: 'WHAT!', kind: '스페셜 비디오', source: 'KISS OF LIFE Official · 2026.08.19' },
-    { id: 'eTvUZymLyGY', title: 'SWEAT', kind: '뮤직비디오', source: 'KISS OF LIFE Official · 2026.08.04' }
-  ],
   hearts2hearts: [
     { id: 'DK_dr_n2rM4', title: 'ICONIC HEART (Korean Ver.)', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" },
     { id: 'lu9GinsuyUQ', title: 'Next Chapter', kind: '뮤직비디오', source: 'Hearts2Hearts Official · 2026.10.16' },
@@ -111,13 +105,6 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'Ur7aK4FvK-U', title: 'FOCUS', kind: '뮤직비디오', source: 'SMTOWN · 2025.10.20' },
     { id: 'ufwB9Uja_wM', title: 'Pretty Please', kind: '뮤직비디오', source: 'SMTOWN · 2025' },
     { id: 'kxUA2wwYiME', title: 'The Chase', kind: '뮤직비디오', source: 'SMTOWN · 2025.02.24' }
-  ],
-  stayc: [
-    { id: 'HgewvBTOJwU', title: '2 L0VE', kind: '뮤직비디오', source: 'STAYC Official · 2026.06.16' },
-    { id: 'GwLfMAQEY9s', title: '2 L0VE', kind: '안무 영상', source: 'STAYC Official · 2026.06.16' },
-    { id: 'udOf9JGMA7U', title: 'MWUAH', kind: '뮤직비디오', source: 'STAYC Japan Official · 2026.02.10' },
-    { id: 'W8ml4ryPwic', title: 'I WANT IT', kind: '뮤직비디오', source: 'STAYC Official · 2025.07.21' },
-    { id: 'z-xfGoabprU', title: 'BEBE', kind: '뮤직비디오', source: 'STAYC Official · 2025.03.18' }
   ],
   blackpink: [
     { id: '2GJfWMYCWY0', title: 'GO', kind: '뮤직비디오', source: 'BLACKPINK / YG Entertainment · 2026.02.27' },
@@ -207,10 +194,10 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
   ],
   kissoflife: [
     { id: 'nk9zx3gGqSc', title: 'Sticky / THE FIRST TAKE', kind: '라이브', source: 'THE FIRST TAKE · 공식 채널 · 2026.09.28' },
-    { id: '6bIVPKhafSI', title: 'SWEAT (Japanese Ver.) / THE FIRST TAKE', kind: '라이브', source: "THE FIRST TAKE · 공식 채널" },
-    { id: 'dsGK0HZZx1k', title: 'SWEAT (Japanese Ver.)', kind: '뮤직비디오', source: "KISS OF LIFE · 공식 채널" },
-    { id: 'EJ2fIbl35Oc', title: 'WHAT!', kind: '스페셜 비디오', source: "KISS OF LIFE · 공식 채널" },
-    { id: 'eTvUZymLyGY', title: 'SWEAT', kind: '뮤직비디오', source: "KISS OF LIFE · 공식 채널" }
+    { id: '6bIVPKhafSI', title: 'SWEAT (Japanese Ver.) / THE FIRST TAKE', kind: '라이브', source: "THE FIRST TAKE · 2026.10.12" },
+    { id: 'dsGK0HZZx1k', title: 'SWEAT (Japanese Ver.)', kind: '뮤직비디오', source: "KISS OF LIFE Official · 2026.09.15" },
+    { id: 'EJ2fIbl35Oc', title: 'WHAT!', kind: '스페셜 비디오', source: "KISS OF LIFE Official · 2026.08.19" },
+    { id: 'eTvUZymLyGY', title: 'SWEAT', kind: '뮤직비디오', source: "KISS OF LIFE Official · 2026.08.04" }
   ],
   kiiikiii: [
     { id: 'UsbRoaH6y-Q', title: 'Pop Off Pop Off', kind: '뮤직비디오', source: "STARSHIP · 공식 채널" },
@@ -219,11 +206,11 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'hAEfi_SKTEU', title: 'I DO ME', kind: '뮤직비디오', source: "STARSHIP · 공식 채널" }
   ],
   stayc: [
-    { id: 'HgewvBTOJwU', title: '2 L0VE', kind: '뮤직비디오', source: "STAYC · 공식 채널" },
-    { id: 'GwLfMAQEY9s', title: '2 L0VE', kind: '안무 영상', source: "STAYC · 공식 채널" },
-    { id: 'udOf9JGMA7U', title: 'MWUAH', kind: '뮤직비디오', source: "STAYC Japan Official · 공식 채널" },
-    { id: 'W8ml4ryPwic', title: 'I WANT IT', kind: '뮤직비디오', source: "STAYC · 공식 채널" },
-    { id: 'z-xfGoabprU', title: 'BEBE', kind: '뮤직비디오', source: "STAYC · 공식 채널" }
+    { id: 'HgewvBTOJwU', title: '2 L0VE', kind: '뮤직비디오', source: "STAYC Official · 2026.06.16" },
+    { id: 'GwLfMAQEY9s', title: '2 L0VE', kind: '안무 영상', source: "STAYC Official · 2026.06.16" },
+    { id: 'udOf9JGMA7U', title: 'MWUAH', kind: '뮤직비디오', source: "STAYC Japan Official · 2026.02.10" },
+    { id: 'W8ml4ryPwic', title: 'I WANT IT', kind: '뮤직비디오', source: "STAYC Official · 2025.07.21" },
+    { id: 'z-xfGoabprU', title: 'BEBE', kind: '뮤직비디오', source: "STAYC Official · 2025.03.18" }
   ],
   riize: [
     { id: 'RgkoXU4BlOE', title: 'Insomnia', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" },
