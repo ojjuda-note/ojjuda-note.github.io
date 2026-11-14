@@ -1,5 +1,5 @@
 import { getReadingSources } from './sources.mjs?v=20261113-saju-reader1';
-import { describePersonalPeriod } from './reader-summary.mjs?v=20261113-saju-easy1';
+import { describePersonalPeriod } from './reader-summary.mjs?v=20261114-saju-depth1';
 
 // These are documented symbolic correspondences, not a computed useful element
 // or a promise of good luck. The day master's element is never chosen by count.
@@ -99,6 +99,26 @@ const CAUTION_TITLES = Object.freeze({
   scholar:'조언을 들은 뒤 마지막 선택은 직접 정하세요',
 });
 
+// Small, explicitly hypothetical applications of the same selected monthly
+// relations. These supplement the guidance below without inventing an event.
+const TIMING_PRACTICE = Object.freeze({
+  companion:'가령 동료와 같은 작업을 준비한다고 해 볼게요. 조언을 듣기 전에 내가 원하는 결과를 한 줄로 적고, 다른 방법을 들은 뒤 바꿀 부분만 표시해 보세요. 상대가 빨리 끝냈다는 이유만으로 내 계획 전체를 바꾸지는 않아도 돼요.',
+  competitor:'가령 둘이 모임을 준비한다고 해 볼게요. 예약을 맡은 사람과 안내를 맡은 사람이 각자 끝낸 내용을 알려 주는 때를 정해 보세요. 한쪽 일이 늘었다면 추가된 일을 함께 펼쳐 놓고, 이미 맡은 몫을 다시 나누는 연습을 할 수 있어요.',
+  creator:'가령 짧은 안내 글을 만든다고 해 볼게요. 이번에 보여 줄 것은 제목과 핵심 내용까지라고 정하고, 그 부분을 먼저 완성해 보세요. 새 아이디어가 떠올라도 지금 만든 것을 계속 고치기보다 다음에 해 볼 목록에 따로 남겨 둘 수 있어요.',
+  critic:'가령 준비물을 자주 빠뜨리는 과정 하나를 고친다고 해 볼게요. 확인하는 순서를 한 군데만 바꾸고 전보다 덜 빠뜨리는지 직접 살펴보세요. 방법이 맞지 않으면 그 부분을 다시 고치면 돼요. 제안이 받아들여지는 것과 내 생각 전체를 인정받는 것을 묶지 않는 연습이에요.',
+  opportunist:'가령 같은 날에 하고 싶은 활동이 두 개 생겼다고 해 볼게요. 각각 이동하고 준비하는 시간까지 나란히 적고, 실제로 가능한 한 가지부터 골라 보세요. 다른 활동에는 관심을 보였다는 말과 참여하겠다는 답을 구분해서 전하면 약속이 겹치는 일을 줄이기 좋아요.',
+  manager:'가령 한 주 동안 반복하는 일을 정리한다고 해 볼게요. 처음 예상한 시간과 실제로 걸린 시간을 한 번씩 적어 보세요. 차이가 큰 단계부터 순서를 바꾸고, 이미 잘 이어지는 일까지 한꺼번에 손보지는 않아도 돼요.',
+  challenger:'가령 여러 사람이 기다리는 준비를 맡았다고 해 볼게요. 오늘 꼭 끝낼 부분을 표시하고, 막힌 단계는 혼자 더 붙들기 전에 진행한 곳까지 보여 주세요. “여기까지 했고 이 부분에 도움이 필요해”라고 말하면 막연한 부담을 나눌 일로 바꿔 볼 수 있어요.',
+  officer:'가령 모임의 안내문을 맡았다고 해 볼게요. 완성했다고 볼 기준을 먼저 확인한 뒤 초안을 보여 주고 빠진 항목을 물어보세요. 이미 정한 기준을 채웠다면, 다른 사람의 반응이 걱정된다는 이유만으로 할 일을 계속 더하지 않는 연습도 필요해요.',
+  explorer:'가령 같은 도구의 사용법을 설명한 자료 두 개가 다르다고 해 볼게요. 어느 조건에서 설명이 달라지는지 질문 하나를 정해 확인해 보세요. 그 답을 찾았다면 작은 범위에서 써 보고, 새 자료를 더 읽어야 하는지는 그다음에 정해도 돼요.',
+  scholar:'가령 처음 하는 작업을 설명받았다고 해 볼게요. 안내를 잠깐 덮고 첫 단계만 직접 해 본 뒤, 멈춘 곳을 질문으로 바꿔 보세요. 설명을 처음부터 다시 부탁하기보다 어디까지 이해했는지 함께 말하면 필요한 도움을 찾기 쉬워요.',
+});
+
+function detailContent(groups) {
+  const detailSections=groups.map(([title,paragraphs])=>({title,paragraphs:[...paragraphs]}));
+  return {detailSections,paragraphs:detailSections.flatMap(section=>section.paragraphs)};
+}
+
 function checkedIds(report, ids) {
   const available=new Set(report.facts.map(value=>value.id));
   const values=[...new Set(ids)];
@@ -110,18 +130,31 @@ function symbols(report, fortune) {
   const day=fortune.profile.dayMaster, value=SYMBOLS[day.element];
   if(!value) throw new Error('확인된 속성으로 상징을 다시 읽어 주세요.');
   const sources=getReadingSources('lifelong',fortune.year).filter(source=>['traditional-colors-directions','hetu-numbers'].includes(source.id));
+  const items=[
+    {label:'색',value:value.color,description:value.scene,
+      example:`가령 새 기록장의 표지를 고른다고 해 볼게요. ${value.color} 표지나 작은 표시를 골라 내가 자주 찾는 공책을 구별해 둘 수 있어요. 이미 쓰는 물건에는 같은 색의 작은 메모지만 붙여도 돼요.`,
+      choice:'직접 보았을 때 글씨가 잘 읽히는지, 주변 물건과 어울리는지 살펴보세요. 마음에 드는 색을 넓게 써도 되고 작은 부분에만 남겨도 돼요. 내 취향과 쓰기 편한 정도를 함께 생각하면 좋아요.'},
+    {label:'숫자',value:value.numbers.join(' · '),description:'마음에 드는 수를 골라 공책의 표시나 개인 소품에 활용할 수 있어요.',
+      example:`가령 공책 여러 권을 나만의 표시로 구별한다고 해 볼게요. ${value.numbers[0]} 또는 ${value.numbers[1]} 중 마음에 드는 숫자를 작게 적고, 옆에 공책의 쓰임도 함께 써 두면 찾기 편해요.`,
+      choice:'숫자는 내가 기억하기 쉽고 다른 표시와 헷갈리지 않는 것으로 골라 보세요. 필요한 물건의 개수나 할 일의 양은 실제 쓰임에 맞춰 정하면 돼요. 이 숫자에 맞추려고 생활 계획까지 바꿀 필요는 없어요.'},
+    {label:'방향',value:value.direction,description:value.direction==='중앙'?'중앙을 나만의 상징으로 참고할 수 있어요. 실제 방의 가운데는 오가기 편하게 비워 두고, 수납은 쓰는 물건 가까이에 두세요.':'방향은 나만의 상징으로 참고할 수 있어요. 침대·책상은 출입문, 창문, 빛과 통로를 함께 살펴 배치해 보세요.',
+      example:value.direction==='중앙'
+        ?'가령 방의 배치를 종이에 그려 본다고 해 볼게요. 종이의 중앙에 작은 표시를 하고, 내가 자주 오가는 길과 물건을 꺼내는 자리를 함께 그려 보세요. 상징은 그림에 남기고 실제 공간은 쓰기 편하게 살필 수 있어요.'
+        :`가령 방의 배치를 종이에 그려 본다고 해 볼게요. ${value.direction} 쪽에 작은 표시를 하고, 지금 쓰는 책상과 수납 위치도 함께 그려 보세요. 표시를 남기는 것만으로도 나만의 상징으로 활용할 수 있어요.`,
+      choice:'배치를 바꿔 보고 싶다면 자주 쓰는 물건을 쉽게 꺼낼 수 있는지, 문을 여닫고 오가는 길이 편한지 먼저 보세요. 옮기기 전에 물건의 크기와 놓을 공간을 확인하면 다시 옮기는 수고를 줄일 수 있어요.'},
+  ].map(({example,choice,...item})=>({...item,...detailContent([
+    ['이 상징을 활용한다면',[item.description]],['생활 속 가상 예시',[example]],['고를 때 함께 살필 점',[choice]],
+  ])}));
   return {
     title:'색·숫자·방향',
     headline:`사주에서 나를 나타내는 ${value.name}에 옛사람들이 붙인 상징이에요.`,
-    paragraphs:[
-      `이 사주에서 나를 나타내는 글자는 ‘${value.name}’에 속해요. 옛 대응표의 ‘${value.name}’ 항목에 적힌 색은 ${value.color}, 숫자는 ${value.numbers.join('·')}, 방향은 ${value.direction}이에요.`,
-      '마음에 드는 색이나 나만의 표시를 고를 때 참고할 수 있어요. 행운을 보장하는 색·번호나 집의 좋은 자리를 따로 계산한 결과는 아니에요.',
-    ],
-    items:[
-      {label:'색',value:value.color,description:value.scene},
-      {label:'숫자',value:value.numbers.join(' · '),description:'마음에 드는 수를 골라 공책의 표시나 개인 소품에 활용할 수 있어요.'},
-      {label:'방향',value:value.direction,description:value.direction==='중앙'?'중앙을 나만의 상징으로 참고할 수 있어요. 실제 방의 가운데는 오가기 편하게 비워 두고, 수납은 쓰는 물건 가까이에 두세요.':'방향은 나만의 상징으로 참고할 수 있어요. 침대·책상은 출입문, 창문, 빛과 통로를 함께 살펴 배치해 보세요.'},
-    ],
+    ...detailContent([
+      ['나에게 연결된 상징',[`이 사주에서 나를 나타내는 글자는 ‘${value.name}’에 속해요. 옛 대응표의 ‘${value.name}’ 항목에 적힌 색은 ${value.color}, 숫자는 ${value.numbers.join('·')}, 방향은 ${value.direction}이에요.`]],
+      ['생활에서 가볍게 참고해 보세요',[
+        '마음에 드는 색이나 나만의 표시를 고를 때 참고할 수 있어요. 행운을 보장하는 색·번호나 집의 좋은 자리를 따로 계산한 결과는 아니에요.',
+        '이번에는 색·숫자·방향 중 마음에 드는 것 하나만 골라 이미 쓰는 물건에 작은 표시로 남겨 보세요. 며칠 써 보며 찾기 쉽고 마음에 드는지 살펴본 뒤, 계속 사용할지는 내 취향에 맞게 정하면 돼요.',
+      ]],
+    ]),items,
     origin:'service-reference',element:day.element,
     factIds:checkedIds(report,['natal.day-master']),sources,
   };
@@ -149,7 +182,12 @@ function timings(report, fortune) {
       month:month.month,title:`${month.month}월 · ${codes.map(code=>TIMING[code].label).join(' · ')}`,
       periodLabel:`${month.start.label} ~ ${month.end.label} 직전 · 한국 시각`,
       headline:report.reader.months.find(value=>value.month===month.month)?.headline||'',
-      paragraphs:[...personal.paragraphs],natalGodCodes:[...personal.natalCodes],
+      ...detailContent([
+        ['평소의 나와 이번 달',[...personal.paragraphs.slice(0,2)]],
+        ['생활에서 떠올려 볼 장면',[personal.paragraphs[2]]],
+        ...codes.map(code=>[TIMING[code].label+' · 준비 연습',[TIMING_PRACTICE[code]]]),
+        ['이번 달에 적용할 방법',[personal.paragraphs[3]]],
+      ]),natalGodCodes:[...personal.natalCodes],
       opportunities,people,documents,cautions,factIds,
       chapterId:'month-interactions',godCodes:codes,origin:'service-reference',
     };
@@ -157,7 +195,10 @@ function timings(report, fortune) {
   return {
     title:`${fortune.year}년 · 기회와 주의할 시기`,
     headline:'달마다 해 볼 일과 미리 살필 점을 읽어 보세요.',
-    paragraphs:['각 달의 풀이는 무엇을 할지 생각할 때 참고하는 설명이에요. 만남이나 사고가 일어날 날짜를 알려 주는 것은 아니에요. 계약이 꼭 잘되는 날을 정한 것도 아니에요.'],
+    ...detailContent([
+      ['이 안내로 살펴볼 것',['각 달의 풀이는 무엇을 할지 생각할 때 참고하는 설명이에요. 만남이나 사고가 일어날 날짜를 알려 주는 것은 아니에요. 계약이 꼭 잘되는 날을 정한 것도 아니에요.']],
+      ['내 계획에 연결하는 순서',['먼저 실제로 준비하고 있는 일 하나를 떠올리고, 해당 기간의 설명과 가상 예시를 읽어 보세요. 여러 주제가 함께 보이면 내 상황에 닿는 것부터 한 가지 골라 작게 적용해 보세요. 해 본 뒤 편했던 점과 더 준비할 점을 적으면 다음 계획을 세울 때 참고할 수 있어요.']],
+    ]),
     scope:'monthly',origin:'service-reference',items,
   };
 }

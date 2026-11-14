@@ -41,6 +41,22 @@ function selectCompatibilityPage(h,id) {
   assert.equal(page.closest('[hidden]'),null,`${id} is revealed when selected`);
   return page;
 }
+function assertCompleteExplanation(element,item,label) {
+  const prose=element.matches('.reader-prose,.compatibility-person-prose')?element:element.querySelector('.reader-prose,.compatibility-person-prose');
+  assert.ok(prose,`${label} has its own complete explanation`);
+  const paragraphs=[...prose.querySelectorAll(':scope > p')];
+  assert.deepEqual(paragraphs.map(paragraph=>paragraph.textContent),item.paragraphs,`${label} retains every paragraph in its authored order`);
+  assert.equal(prose.closest('details.reading-body-details'),null,`${label} does not hide the body behind its summary`);
+  assert.ok(paragraphs.length>0&&paragraphs.every(paragraph=>{
+    if(paragraph.closest('[hidden]'))return false;
+    for(let ancestor=paragraph.parentElement;ancestor;ancestor=ancestor.parentElement)if(ancestor.tagName==='DETAILS'&&!ancestor.open)return false;
+    return true;
+  }),`${label} is fully readable as soon as its item is selected`);
+  if(item.detailSections) {
+    assert.deepEqual([...prose.querySelectorAll(':scope > .reading-body-heading')].map(heading=>heading.textContent),item.detailSections.map(section=>section.title),`${label} has meaningful headings for its full explanation`);
+    assert.deepEqual(item.detailSections.flatMap(section=>section.paragraphs),item.paragraphs);
+  }
+}
 async function assertCalculatedPeople(h,names=['','']) {
   const {buildCompatibilityReading}=await import(pathToFileURL(path.join(appDir,'compatibility.mjs')).href);
   const {chart,partner}=h.state.starts.at(-1),reading=buildCompatibilityReading(chart,partner);
@@ -51,6 +67,14 @@ async function assertCalculatedPeople(h,names=['','']) {
     const people=[...page.querySelectorAll('.compatibility-person-reading')];
     assert.deepEqual(people.map(person=>person.dataset.personKey),['self','partner'],'every topic presents A before B');
     assert.deepEqual(people.map(person=>person.dataset.personMarker),['A','B']);
+    const jumps=[...page.querySelectorAll('.compatibility-person-jumps a')];
+    assert.equal(jumps.length,2,'a long comparison offers direct A/B movement');
+    for(const [index,link] of jumps.entries()) {
+      const heading=people[index].querySelector('.compatibility-person-name');
+      assert.equal(link.hash,'#'+heading.id);link.click();
+      assert.equal(h.$('compatibility-report').querySelector('[data-compatibility-current]'),page,'moving between A and B stays in the same topic');
+      assert.equal(h.window.document.activeElement,heading,'the chosen person’s heading receives focus');
+    }
     for(const [index,person] of people.entries()) {
       const expected=topic==='overview'?reading.people[index]:reading.people[index].cards.find(card=>card.topicId===topic);
       assert.ok(expected,`${topic} comes from the real person reading`);
@@ -59,17 +83,18 @@ async function assertCalculatedPeople(h,names=['','']) {
       const summary=person.querySelector('.compatibility-two-line-summary');
       assert.equal(summary?.getAttribute('role'),'group');assert.equal(summary?.getAttribute('aria-label'),'두 줄 요약');
       assert.deepEqual([...summary.querySelectorAll('.compatibility-summary-line')].map(line=>line.textContent),expected.summaryLines,`${marker} ${topic} retains both calculated summary units`);
-      for(const paragraph of expected.paragraphs)assert.ok(person.textContent.includes(paragraph),`${marker} ${topic} retains its full interpretation`);
+      assertCompleteExplanation(person,expected,`${marker} ${topic}`);
       assert.equal(person.querySelector('.compatibility-evidence-link'),null,`${marker} ${topic} keeps its interpretation without an evidence link`);
     }
   }
   const synthesis=selectCompatibilityPage(h,'compatibility-synthesis');
   assert.deepEqual([...synthesis.querySelectorAll('.compatibility-summary-line')].map(line=>line.textContent),reading.synthesis.summaryLines);
-  for(const paragraph of reading.synthesis.paragraphs)assert.ok(synthesis.textContent.includes(paragraph),'the combined explanation retains its full interpretation');
+  assertCompleteExplanation(synthesis,reading.synthesis,'the combined explanation');
   assertNoCompatibilityEvidence(h);
   selectCompatibilityPage(h,'compatibility-people-overview');
   h.$('compatibility-report').querySelector('[data-compatibility-step="next"]').click();
   assert.equal(h.$('compatibility-page-select').value,'compatibility-people-decisions','next follows the same A/B topic order');
+  [...h.$('compatibility-people-decisions').querySelectorAll('.compatibility-person-reading')].forEach((element,index)=>assertCompleteExplanation(element,reading.people[index].cards.find(card=>card.topicId==='decisions'),'next immediately exposes each person’s decision story'));
   h.$('compatibility-report').querySelector('[data-compatibility-step="previous"]').click();
   assert.equal(h.$('compatibility-page-select').value,'compatibility-people-overview');
   return reading;
@@ -132,6 +157,18 @@ async function assertCalculatedScores(h) {
     assert.equal(displayed.items.find(value=>value.id===item.id).value,item.value);
     const row=board.querySelector(`[data-score-item="${item.id}"]`);
     for(const value of [item.label,item.summary])assert.ok(row.textContent.includes(value),`${item.id} retains its label and short explanation`);
+    const link=row.querySelector('.compatibility-score-detail-link');
+    assert.equal(link?.hash,`#compatibility-score-detail-${item.id}`,`${item.id} connects its score to its own full explanation`);
+    link.click();
+    const detail=h.$(link.hash.slice(1));
+    assert.equal(h.$('compatibility-report').querySelector('[data-compatibility-current]'),detail,'the score link selects exactly its corresponding reading');
+    assert.equal(h.$('compatibility-report').querySelectorAll('[data-compatibility-current]').length,1);
+    assertCompleteExplanation(detail,item,item.id);
+    assert.deepEqual([...detail.querySelectorAll('.compatibility-summary-line')].map(line=>line.textContent),item.summaryLines);
+    assert.equal(detail.querySelector('.compatibility-detail-score-value').textContent,`${item.value}점 / 100점`);
+    assert.equal(detail.querySelector('[role="meter"]'),null,'each detail preserves the one original four-bar scoreboard');
+    detail.querySelector('a[href="#compatibility-scores"]').click();
+    assert.equal(h.$('compatibility-report').querySelector('[data-compatibility-current]'),board);
   }
   assertNoCompatibilityEvidence(h);
   return score;
@@ -369,7 +406,7 @@ test('an explicit twenty-ju purchase reveals the real reading and accessible sco
   receiptGate.resolve();await h.ready();
   assert.equal(h.state.charges,1);assert.equal(h.state.coins,40);assert.deepEqual(h.state.chargedAmounts,[20]);
   assert.equal(h.state.baseStarts.length,0);
-  assert.ok(h.$('compatibility-report').textContent.length>3000);
+  assert.equal(h.$('compatibility-report').querySelector('details.reading-body-details'),null,'paid explanations are immediately readable after selecting an item');
   assert.equal(h.$('compatibility-report').querySelectorAll('.reader-card').length,6);
   assert.ok(h.$('compatibility-expiry').textContent.trim());
   assert.equal(h.$('compatibility-page-select').value,'compatibility-synthesis','the purchased reading starts with the combined explanation and its score');
@@ -387,6 +424,7 @@ test('an explicit twenty-ju purchase reveals the real reading and accessible sco
   for(const item of score.items) {
     assert.ok(copyLines.some(line=>line.includes(item.label)&&line.includes(`${item.value}점`)),`copy associates ${item.id} with its numeric score`);
     assert.ok(h.state.copies[0].includes(item.summary),`copy includes ${item.id} summary`);
+    for(const value of [...item.paragraphs,...item.detailSections.map(section=>section.title)])assert.ok(h.state.copies[0].includes(value),`copy includes ${item.id} complete explanation and headings`);
     assert.equal(h.state.copies[0].includes(item.reason),false,`copy omits the ${item.id} calculation formula`);
   }
   assert.deepEqual(h.state.fetches,[]);

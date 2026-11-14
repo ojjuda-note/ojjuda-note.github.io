@@ -45,8 +45,10 @@ test('all actual ten-year periods receive complete personal topics without chang
     assert.deepEqual(period.topics.map(topic=>topic.label),['재물과 돈 관리','일과 진로','관계와 연애','공부와 성장']);
     for (const topic of period.topics) {
       assert.equal(topic.origin,'service-reference');
-      assert.equal(topic.paragraphs.length,8);
-      assert.equal(new Set(topic.paragraphs).size,8,'a topic cannot pad itself with repeated paragraphs');
+      assert.ok(topic.paragraphs.length>=8,'all original personal and period explanations remain complete');
+      assert.equal(new Set(topic.paragraphs).size,topic.paragraphs.length,'a topic cannot pad itself with repeated paragraphs');
+      assert.ok(topic.detailSections.length>1,'the person, period, example and practical response are distinguishable');
+      assert.deepEqual(topic.detailSections.flatMap(section=>section.paragraphs),topic.paragraphs);
       assert.ok(topic.paragraphs.some(value=>value.startsWith('생활 속 상황을 가정해 볼게요.')));
       assert.ok(topic.paragraphs.every(value=>typeof value==='string'&&value.length>25));
       assert.ok(topic.title.length>8);

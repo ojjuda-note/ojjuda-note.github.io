@@ -31,6 +31,7 @@ test('each person reuses the actual general natal portrait, five topic stories a
     const original=general.personPortrait;
     assert.equal(person.headline,original.headline.replace(/^당신은 /,person.marker+'는 '));
     assert.deepEqual(person.paragraphs,original.paragraphs);
+    assert.deepEqual(person.detailSections,original.detailSections,'A/B keeps the same structured explanation as the person’s general reading');
     assert.deepEqual(person.godCodes,original.godCodes);
     assert.deepEqual(person.anchorCodes,original.anchorCodes);
     assert.deepEqual(person.ruleIds,original.ruleIds);
@@ -46,6 +47,7 @@ test('each person reuses the actual general natal portrait, five topic stories a
       const source=original.cards[cardIndex];
       assert.equal(card.title,source.title);
       assert.deepEqual(card.paragraphs,source.paragraphs);
+      assert.deepEqual(card.detailSections,source.detailSections);
       assert.deepEqual(card.summaryLines,source.summaryLines);
       assert.equal(card.summaryLines[0],card.title);
       assert.deepEqual(card.godCodes,source.godCodes);
@@ -148,6 +150,8 @@ test('all new facts are namespaced and every visible block and synthesis paragra
       assert.equal(block.summaryLines.length,2);
       assert.ok(block.summaryLines.every(line=>typeof line==='string'&&line.trim()));
       assert.notEqual(...block.summaryLines);
+      assert.ok(block.detailSections.length>1);
+      assert.deepEqual(block.detailSections.flatMap(section=>section.paragraphs),block.paragraphs,'the two-line summary accompanies the complete structured explanation');
       for(const id of block.factIds) {
         assert.ok(registry.has(id),id);
         assert.ok(id.startsWith(`person.${person.key}.`),id);
@@ -161,6 +165,7 @@ test('all new facts are namespaced and every visible block and synthesis paragra
   const synthesis=reading.synthesis;
   assert.deepEqual(synthesis.paragraphIds,['strength','relationships','differences','example','adjustment','agreement']);
   assert.equal(synthesis.paragraphs.length,synthesis.paragraphFactIds.length);
+  assert.deepEqual(synthesis.detailSections.flatMap(section=>section.paragraphs),synthesis.paragraphs);
   assert.equal(synthesis.summaryLines[0],synthesis.headline);
   for(const ids of synthesis.paragraphFactIds) {
     assert.ok(ids.some(id=>id.startsWith('person.self.')));

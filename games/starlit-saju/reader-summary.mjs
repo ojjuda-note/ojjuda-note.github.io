@@ -1,5 +1,6 @@
-import { GOD_CONTEXTS, PAIR_CONTEXTS } from './deeper-reading-data.mjs?v=20261113-saju-easy1';
-import { buildReaderSituation } from './reader-situations.mjs?v=20261113-saju-easy1';
+import { GOD_CONTEXTS, PAIR_CONTEXTS } from './deeper-reading-data.mjs?v=20261114-saju-depth1';
+import { buildReaderSituation } from './reader-situations.mjs?v=20261114-saju-depth1';
+import { detailContent, domainConversation, lensPractice, aptitudePractice } from './general-detail-scenes.mjs?v=20261114-saju-depth1';
 
 // A reading-first presentation of the existing meanings. These are shared,
 // service-authored interpretations, never a second calculation or event forecast.
@@ -395,8 +396,8 @@ function natalFacts(profile,codes) {
 function transitFacts(transit,prefix,codes) {
   return ['stem','branch'].filter(position=>codes.includes(transit[`${position}God`].code)).map(position=>`${prefix}.god.${position}`);
 }
-function card(registry,{id,label,title,paragraphs,factIds,chapterId,codes=[],natalCodes=null,navGroup='관계와 생활',scopeNotice=''}) {
-  return {id,label,title,paragraphs:paragraphs.filter(Boolean),factIds:checkedFacts(registry,factIds),origin:ORIGIN,chapterId,godCodes:[...codes],
+function card(registry,{id,label,title,paragraphs,detailSections,factIds,chapterId,codes=[],natalCodes=null,navGroup='관계와 생활',scopeNotice=''}) {
+  return {id,label,title,paragraphs:paragraphs.filter(Boolean),...(detailSections?{detailSections}:{}),factIds:checkedFacts(registry,factIds),origin:ORIGIN,chapterId,godCodes:[...codes],
     ...(natalCodes?{natalGodCodes:[...natalCodes]}:{}),navGroup,scopeNotice};
 }
 const firstSentence=text=>text.slice(0,text.indexOf('.')+1);
@@ -452,19 +453,22 @@ function domainCard(registry,profile,domain,{transit=null,prefix='natal',monthly
   const relation=domainInteraction(transit?transit.interactions:profile.interactions,prefix,domain);
   const factIds=['natal.day-master','natal.scope',...natalFacts(profile,codes),
     ...(transit?[`${prefix}.period`,...profile.gods.map(natalId),...transitFacts(transit,prefix,codes)]:[]),...(relation?.factIds||[])];
-  const paragraphs=[
-    connection?connection.conclusion:`당신은 ${personal[domain]}.`,
-    DAILY_VOICES[natalCodes[0]][domain].life,
-    (connection?`${connection.focus} `:codes.length>1?`다른 한편으로는 ${PERSONAL_CONCLUSIONS[codes[1]][domain]}. `:'')+pairReading(codes,domain),
-    connection?.application,
-    relation?.reading,
-    daily.example,
-    connection?.action||daily.use,
-  ];
+  const paired=codes.length>1?pairReading(codes,domain):'';
+  const combined=(connection?`${connection.focus} `:codes.length>1?`다른 한편으로는 ${PERSONAL_CONCLUSIONS[codes[1]][domain]}. `:'')+paired;
+  const care=unique(codes.map(code=>DAILY_VOICES[code][domain].care)).join(' ');
+  const details=detailContent([
+    [transit?'평소 내 모습':'내가 중요하게 여기는 것',[connection?connection.conclusion:`당신은 ${personal[domain]}.`,DAILY_VOICES[natalCodes[0]][domain].life]],
+    [transit?'이번 시기에 연결되는 모습':'함께 드러나는 또 다른 성향',[combined,connection?.application]],
+    ['잘하려다 놓치기 쉬운 점',[care]],
+    ['사람과 조건을 맞추는 방법',[relation?.reading]],
+    ['생활 속 장면으로 이해하기',[daily.example]],
+    ['일상에서 해 볼 대화',[domainConversation(codes[0],domain)]],
+    ['먼저 해 볼 한 가지',[connection?.action||daily.use]],
+  ]);
   return card(registry,{
     id:`${prefix.replaceAll('.','-')}-${domain}`,label:config.label,
     title:transit?`${personal.address}, ${PERIOD_APPLICATIONS[codes[0]][domain][0]}`:personal[domain],navGroup:config.navGroup,
-    paragraphs,factIds,codes,natalCodes,
+    ...details,factIds,codes,natalCodes,
     chapterId:transit?(monthly?`month-${domain}-detail`:config.annual):config.chapter,
   });
 }
@@ -476,7 +480,14 @@ function characterCard(registry,profile,season) {
   const stem=profile.dayMaster.hanja,voice=STEM_VOICES[stem],detail=STEM_DETAILS[stem];
   const relation=interactionReading(profile.interactions,'natal');
   return card(registry,{id:'natal-character',label:'성격과 타고난 속성',navGroup:'나의 바탕',title:firstSentence(detail.life),
-    paragraphs:[voice.reading,detail.life,season?.reading,detail.care,relation?.reading,detail.example,detail.use],
+    ...detailContent([
+      ['평소 내 모습',[voice.reading,detail.life]],
+      ['주변 조건과 어울리는 모습',[season?.reading]],
+      ['부담이 커지는 때',[detail.care,relation?.reading]],
+      ['생활에서 보일 수 있는 장면',[detail.example]],
+      ['내 생활에 비춰 보기',['비슷한 일을 혼자 했을 때와 다른 사람과 함께했을 때를 떠올려 보세요. 어느 쪽에서 편했고 무엇을 맞추느라 힘들었는지 나누어 적으면, 같은 성향도 어떤 조건에서 편하게 쓰이는지 살펴볼 수 있어요.']],
+      ['먼저 해 볼 한 가지',[detail.use]],
+    ]),
     factIds:['natal.day-master','natal.scope',...(season?.factIds||[]),...(relation?.factIds||[])],chapterId:'day-season'});
 }
 const APTITUDE_TITLES={
@@ -490,12 +501,13 @@ function aptitudeCard(registry,profile) {
   const codes=selectNatalCodes(profile,'work',['expression','resource','authority','peer','wealth']);
   const first=codes[0],second=codes[1];
   return card(registry,{id:'natal-aptitude',label:'적성과 재능을 살리는 방법',navGroup:'나의 바탕',title:APTITUDE_TITLES[first],codes,
-    paragraphs:[PATH_VOICES[first].ability,
-      second?`이와 함께 ${PATH_VOICES[second].ability}`:DAILY_VOICES[first].learning.life,
-      pairReading(codes,'work'),
-      '작은 작업을 직접 해 보면서 내게 맞는지 살펴보세요. 빨리 끝냈는지뿐 아니라 어떤 단계가 편했는지, 어디에서 설명이 더 필요했는지도 적어 보세요. 나에게 맞는 일하는 방법을 알아보기 좋아요.',
-      `생활 속 상황을 가정해 볼게요. ${GOD_CONTEXTS[first].learning.example}`,
-      DAILY_VOICES[first].learning.use],
+    ...detailContent([
+      ['써 볼 만한 강점',[PATH_VOICES[first].ability,second?`이와 함께 ${PATH_VOICES[second].ability}`:DAILY_VOICES[first].learning.life]],
+      ['강점을 함께 쓸 때 살필 점',[pairReading(codes,'work'),second?DAILY_VOICES[first].work.care:null]],
+      ['작게 경험하며 확인하기',['작은 작업을 직접 해 보면서 내게 맞는지 살펴보세요. 빨리 끝냈는지뿐 아니라 어떤 단계가 편했는지, 어디에서 설명이 더 필요했는지도 적어 보세요. 나에게 맞는 일하는 방법을 알아보기 좋아요.',aptitudePractice(first)]],
+      ['배움에 적용한 가상 장면',[`생활 속 상황을 가정해 볼게요. ${GOD_CONTEXTS[first].learning.example}`]],
+      ['경험한 뒤 이어 갈 일',[DAILY_VOICES[first].learning.use]],
+    ]),
     factIds:['natal.day-master','natal.scope',...natalFacts(profile,codes)],chapterId:'work'});
 }
 function pathCard(registry,profile,season) {
@@ -503,24 +515,27 @@ function pathCard(registry,profile,season) {
   const relation=domainInteraction(profile.interactions,'natal','work');
   const pair=PAIR_CONTEXTS[pairKey(codes)];
   return card(registry,{id:'natal-life-path',label:'평생 이어 갈 인생의 흐름',navGroup:'나의 바탕',title:`${particle(GOD_VOICES[first].focus,'을','를')} 일과 생활에 써 보세요`,codes,
-    paragraphs:[PATH_VOICES[first].long,
-      second?`한편으로는 ${PATH_VOICES[second].long}`:DAILY_VOICES[first].work.life,
-      pairReading(codes,'work'),
-      season?.reading,
-      relation?.reading,
-      `가상의 상황을 떠올려 볼게요. ${pair?.example||GOD_CONTEXTS[first].work.example}`,
-      `${PATH_VOICES[first].response} 이 성향은 여러 선택을 돌아볼 때 참고할 수 있어요. 특정 나이에 어떤 사건이 생긴다고 정한 내용은 아니에요.`],
+    ...detailContent([
+      ['여러 선택에서 이어지는 성향',[PATH_VOICES[first].long,second?`한편으로는 ${PATH_VOICES[second].long}`:DAILY_VOICES[first].work.life]],
+      ['두 성향을 함께 쓰는 방법',[pairReading(codes,'work'),season?.reading]],
+      ['부담이 커질 때 살필 점',[second?DAILY_VOICES[first].work.care:null,relation?.reading]],
+      ['생활의 선택에 적용해 보면',[`가상의 상황을 떠올려 볼게요. ${pair?.example||GOD_CONTEXTS[first].work.example}`]],
+      ['지난 선택에서 다음 방법 찾기',['예전에 비슷한 일을 골랐을 때 오래 이어 간 이유와 중간에 멈춘 이유를 하나씩 떠올려 보세요. 마음에 들었던 일의 이름보다 실제로 편했던 역할과 어려웠던 조건을 적으면, 다음 선택에서 이어 갈 것과 바꿀 것을 나누기 쉬워요.']],
+      ['앞으로의 선택에 써 볼 방법',[`${PATH_VOICES[first].response} 이 성향은 여러 선택을 돌아볼 때 참고할 수 있어요. 특정 나이에 어떤 사건이 생긴다고 정한 내용은 아니에요.`]],
+    ]),
     factIds:['natal.day-master','natal.scope',...natalFacts(profile,codes),...(season?.factIds||[]),...(relation?.factIds||[])],chapterId:'natal-combined-themes'});
 }
 function careerCard(registry,profile) {
   const codes=selectNatalCodes(profile,'work'),first=codes[0],second=codes[1];
   return card(registry,{id:'natal-career-examples',label:'어울리는 직업과 일하는 방식',navGroup:'일과 배움',title:`${PATH_VOICES[first].jobs.split(', ').slice(0,2).join('·')} 같은 일을 살펴보세요`,codes,
-    paragraphs:[`일에서는 ${particle(DAILY_VOICES[first].work.thread,'을','를')} 중요하게 여기는 모습이에요. 무엇을 직접 정할 수 있고 매일 어떤 일을 하는지 살펴보세요. 내게 맞는 일을 고르기 쉬워요.`,
-      `구체적인 직업 예시로는 ${particle(PATH_VOICES[first].jobs,'을','를')} 들 수 있어요. 같은 이름의 직업이어도 실제 하는 일과 조건은 다를 수 있어요. 구체적인 업무 내용을 함께 살펴보세요.`,
-      second?`다른 한 면은 ${particle(DAILY_VOICES[second].work.thread,'이에요','예요')}. 이런 성향을 써 볼 직업으로는 ${PATH_VOICES[second].jobs}도 있어요.`:DAILY_VOICES[first].work.life,
-      pairReading(codes,'work'),
-      PATH_VOICES[first].jobScene,
-      `${PATH_VOICES[first].response} 필요한 배움과 실제 경험을 확인하며 비교해 보세요. 이 직업들은 전통 풀이에서 설명한 성향을 써 볼 수 있는 예예요. 적성 검사를 했거나 취업의 성공을 예측한 결과는 아니에요.`],
+    ...detailContent([
+      ['직업을 고를 때 중요한 조건',[`일에서는 ${particle(DAILY_VOICES[first].work.thread,'을','를')} 중요하게 여기는 모습이에요. 무엇을 직접 정할 수 있고 매일 어떤 일을 하는지 살펴보세요. 내게 맞는 일을 고르기 쉬워요.`]],
+      ['이 성향을 써 볼 직업의 예',[`구체적인 직업 예시로는 ${particle(PATH_VOICES[first].jobs,'을','를')} 들 수 있어요. 같은 이름의 직업이어도 실제 하는 일과 조건은 다를 수 있어요. 구체적인 업무 내용을 함께 살펴보세요.`,second?`다른 한 면은 ${particle(DAILY_VOICES[second].work.thread,'이에요','예요')}. 이런 성향을 써 볼 직업으로는 ${PATH_VOICES[second].jobs}도 있어요.`:DAILY_VOICES[first].work.life]],
+      ['잘 맞는 일을 찾으며 조심할 점',[pairReading(codes,'work'),second?DAILY_VOICES[first].work.care:null]],
+      ['실제 업무를 가정해 보면',[PATH_VOICES[first].jobScene]],
+      ['업무 설명에서 확인할 질문',['관심 가는 일의 설명을 하나 골라 하루에 가장 자주 하는 작업, 혼자 정할 수 있는 범위, 다른 사람과 확인할 때를 찾아보세요. “이 일을 잘하면 매일 무엇을 끝내게 되나요?”라고 물어보는 가상 대화도 도움이 돼요. 직업의 이름과 실제 하루가 내게 비슷하게 느껴지는지 살펴보는 거예요.']],
+      ['작은 경험으로 비교하기',[`${PATH_VOICES[first].response} 필요한 배움과 실제 경험을 확인하며 비교해 보세요. 이 직업들은 전통 풀이에서 설명한 성향을 써 볼 수 있는 예예요. 적성 검사를 했거나 취업의 성공을 예측한 결과는 아니에요.`]],
+    ]),
     factIds:['natal.day-master','natal.scope',...natalFacts(profile,codes)],chapterId:'work'});
 }
 function lifeLensCard(registry,profile,key) {
@@ -529,19 +544,25 @@ function lifeLensCard(registry,profile,key) {
   const meaning=lens[GOD_GROUP[first]],daily=DAILY_VOICES[first][domain];
   const relation=domainInteraction(profile.interactions,'natal',domain);
   return card(registry,{id:`natal-${key}`,label:lens.label,title:LIFE_LENS_CONCLUSIONS[key][GOD_GROUP[first]],navGroup:lens.navGroup,codes,
-    paragraphs:[`당신은 ${PERSONAL_CONCLUSIONS[first][domain]}. ${meaning.meaning}`,
-      daily.life,
-      (second?`다른 한편으로는 ${PERSONAL_CONCLUSIONS[second][domain]}. `:'')+pairReading(codes,domain),
-      daily.care,
-      relation?.reading,
-      meaning.example,
-      lens.use],
+    ...detailContent([
+      ['이 항목에서 드러나는 내 모습',[`당신은 ${PERSONAL_CONCLUSIONS[first][domain]}. ${meaning.meaning}`,daily.life]],
+      ['함께 드러나는 또 다른 면',[second?`다른 한편으로는 ${PERSONAL_CONCLUSIONS[second][domain]}. ${pairReading(codes,domain)}`:null]],
+      ['부담이 커지기 전에 살필 점',[daily.care,relation?.reading]],
+      ['생활 속 장면으로 이해하기',[meaning.example]],
+      ['이 항목에서 직접 해 볼 연습',[lensPractice(key)]],
+      ['먼저 챙길 한 가지',[lens.use]],
+    ]),
     factIds:['natal.day-master','natal.scope',...natalFacts(profile,codes),...(relation?.factIds||[])],chapterId:lens.chapter,scopeNotice:lens.scope});
 }
 const FLOW_TOPICS = {
   opportunities:{label:'기회가 되는 흐름',field:'chance',navGroup:'시기의 흐름',title:'기회가 될 장면을 구체적으로 살펴요'},
   cautions:{label:'조심할 점',field:'care',navGroup:'관계와 생활',title:'같은 성향에서도 놓치기 쉬운 조건이 있어요'},
   response:{label:'어떻게 행동하고 대처할까',field:'response',navGroup:'관계와 생활',title:'지금 할 수 있는 한 단계로 바꿔 봐요'},
+};
+const FLOW_FOLLOW_UPS={
+  opportunities:'작게 시도한 뒤에는 기대했던 점과 직접 확인한 점을 나누어 보세요. 새로운 사람을 알게 된 것, 실제 작업이 진행된 것, 아직 준비가 필요한 것은 서로 다른 결과예요. 해 본 내용에 맞춰 다음 범위를 정하면 좋은 느낌만으로 약속이 늘어나는 것을 줄이기 좋아요.',
+  cautions:'마음이 급해지는 장면이 있다면 실제로 바뀐 조건이 무엇인지 한 가지부터 적어 보세요. 대답을 서둘러 달라는 요청과 지금 결정하지 않으면 달라지는 일이 같은지 확인하는 거예요. 무엇을 모르는지 말할 수 있으면 필요한 질문도 구체적으로 정할 수 있어요.',
+  response:'한 가지를 해 본 뒤에는 문제가 완전히 사라졌는지만 보지 말고, 전보다 말하기 쉬워졌는지와 내 부담이 줄었는지도 살펴보세요. 도움이 됐다면 그 방법을 이어 가고, 여전히 막힌다면 시간·역할·도움 중 무엇을 바꿔야 할지 하나씩 고르면 돼요.',
 };
 function flowCard(registry,profile,key,{transit=null,prefix='natal',monthly=false}={}) {
   const config=FLOW_TOPICS[key];
@@ -550,8 +571,17 @@ function flowCard(registry,profile,key,{transit=null,prefix='natal',monthly=fals
   const interactions=transit?transit.interactions:profile.interactions;
   const relation=domainInteraction(interactions,prefix,domain);
   const situation=buildReaderSituation({topic:key,codes,natalCodes,interactions,periodLabel:transit?(monthly?'이번 달':'이 해'):'평소'});
+  const [opening,natal,condition,boundary,example,action]=situation.paragraphs;
   const result=card(registry,{id:`${prefix.replaceAll('.','-')}-${key}`,label:config.label,title:situation.title,navGroup:config.navGroup,codes,natalCodes,
-    paragraphs:situation.paragraphs,
+    ...detailContent([
+      [transit?'이번 시기에 먼저 살필 일':'평소 이런 장면을 살펴보세요',[opening]],
+      ['내 성향과 연결해서 보면',[natal]],
+      ['잘 풀리려면 필요한 조건',[condition]],
+      ['무리하지 않기 위해 볼 부분',[boundary]],
+      ['생활 속 가상 장면',[example]],
+      ['해 본 뒤 다시 살필 점',[FLOW_FOLLOW_UPS[key]]],
+      ['지금 해 볼 한 단계',[action]],
+    ]),
     factIds:['natal.day-master','natal.scope',...natalFacts(profile,codes),
       ...(transit?[`${prefix}.period`,...profile.gods.map(natalId),...transitFacts(transit,prefix,codes)]:[]),...(relation?.factIds||[])],
     chapterId:transit?(monthly?'month-interactions':'annual-interactions'):'natal-combined-themes'});
@@ -570,7 +600,8 @@ function lifelongOverview(report,fortune,registry) {
   const relation=interactionReading(profile.interactions,'natal');
   const work=selectNatalCodes(profile,'work')[0],money=selectNatalCodes(profile,'money')[0];
   const paragraphs=[`일에서는 ${particle(DAILY_VOICES[work].work.thread,'을','를')} 중요하게 여기고, 돈에서는 ${particle(DAILY_VOICES[money].money.thread,'을','를')} 살피는 모습이에요.`,season?.reading,relation?.reading].filter(Boolean);
-  return {title:'타고난 운 · 나의 바탕',headline:voice.headline,paragraphs,cards,origin:ORIGIN,
+  return {title:'타고난 운 · 나의 바탕',headline:voice.headline,
+    ...detailContent([['일과 돈에서 보이는 내 모습',[paragraphs[0]]],['생활과 관계에서 함께 살필 점',paragraphs.slice(1)]]),cards,origin:ORIGIN,
     factIds:checkedFacts(registry,['natal.day-master','natal.scope',...(season?.factIds||[]),...cards.flatMap(value=>value.factIds),...(relation?.factIds||[])])};
 }
 function periodOverview(profile,transit,registry,{year,month=null}) {
@@ -586,7 +617,8 @@ function periodOverview(profile,transit,registry,{year,month=null}) {
   const context={transit,prefix,monthly};
   const cards=[...Object.keys(DOMAINS).map(domain=>domainCard(registry,profile,domain,context)),
     ...Object.keys(FLOW_TOPICS).map(key=>flowCard(registry,profile,key,context))];
-  return {title:`${label} ${monthly?'월별운':'올해운'} 핵심`,headline,paragraphs,cards,origin:ORIGIN,
+  return {title:`${label} ${monthly?'월별운':'올해운'} 핵심`,headline,
+    ...detailContent([['평소 내 모습',[paragraphs[0]]],['이번 시기에 적용해 보기',[paragraphs[1]]],['주변과 맞춰 갈 부분',paragraphs.slice(2)]]),cards,origin:ORIGIN,
     ...(monthly?{month}:{year}),godCodes:codes,
     factIds:checkedFacts(registry,['natal.day-master','natal.scope',`${prefix}.pillar`,`${prefix}.period`,
       ...profile.gods.map(natalId),...transitFacts(transit,prefix,codes),...cards.flatMap(value=>value.factIds),...(relation?.factIds||[])])};

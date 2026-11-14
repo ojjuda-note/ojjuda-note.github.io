@@ -30,7 +30,7 @@ test('the personal summary keeps every original fact and detailed reading intact
   for(const overview of overviews(report)) {
     assert.equal(overview.origin,'service-reference');
     assert.ok(overview.headline.length>12);
-    assert.ok(overview.paragraphs.length>0&&overview.paragraphs.length<=3);
+    assert.ok(overview.paragraphs.length>0);
     assert.equal(new Set(overview.cards.map(card=>card.id)).size,overview.cards.length);
     for(const topic of coreTopics)assert.ok(overview.cards.some(card=>card.id.endsWith('-'+topic)),topic);
     for(const block of [overview,...overview.cards]) {
@@ -39,9 +39,12 @@ test('the personal summary keeps every original fact and detailed reading intact
       assert.equal(new Set(block.factIds).size,block.factIds.length);
       for(const id of block.factIds)assert.ok(facts.has(id),`summary cannot use an uncomputed fact: ${id}`);
       assert.ok(block.paragraphs.every(text=>typeof text==='string'&&text.trim()));
+      assert.ok(block.detailSections.length>1,'the complete story has distinct reading sections');
+      assert.ok(block.detailSections.every(section=>section.title.trim()&&section.paragraphs.length>0));
+      assert.deepEqual(block.detailSections.flatMap(section=>section.paragraphs),block.paragraphs,'the full explanation is preserved in its section order');
     }
     for(const card of overview.cards) {
-      assert.ok(card.paragraphs.length>=5&&card.paragraphs.length<=7,`${card.id} should have connected short paragraphs`);
+      assert.ok(card.paragraphs.length>=5,`${card.id} retains its complete connected explanation`);
       assert.equal(new Set(card.paragraphs).size,card.paragraphs.length,`${card.id} must not pad its length with duplicate paragraphs`);
       assert.ok(typeof card.navGroup==='string'&&card.navGroup.trim());
       const example=card.paragraphs.findIndex(text=>/가령|가정해 볼게요|가상의 상황/.test(text));
@@ -84,7 +87,7 @@ test('year and month narratives use their own actual pair of relationships and p
       for(const topic of ['opportunities','cautions','response'])if(card.id.endsWith('-'+topic)) {
         assert.ok(card.situationRuleIds.includes(`situation.${topic}.${expected[0]}`),'the concrete situation follows the actual first period relationship');
         if(expected[1])assert.ok(card.situationRuleIds.includes(`condition.${topic}.${expected[1]}`),'the second period relationship adds a condition');
-        assert.match(card.paragraphs[4],/^가령 .+가정해 볼게요/,'a dedicated hypothetical scene replaces the copied domain example');
+        assert.ok(card.paragraphs.some(paragraph=>/^가령 .+가정해 볼게요/.test(paragraph)),'a dedicated hypothetical scene replaces the copied domain example');
       }
     }
   }
@@ -132,9 +135,8 @@ test('every year and month domain connects observed natal habits to the actual p
     const card=overview.cards.find(value=>value.id.endsWith('-'+domain));
     assert.deepEqual(card.natalGodCodes,connection.natalCodes);
     assert.equal(card.paragraphs[0],connection.paragraphs[0]);
-    assert.ok(card.paragraphs[2].includes(connection.paragraphs[1]));
-    assert.equal(card.paragraphs[3],connection.paragraphs[2]);
-    assert.equal(card.paragraphs.at(-1),connection.paragraphs[3]);
+    const positions=connection.paragraphs.map(text=>card.paragraphs.findIndex(paragraph=>paragraph.includes(text)));
+    assert.ok(positions.every((position,index)=>position>=0&&(index===0||position>positions[index-1])),'the personal pattern, period meaning, example and response stay connected in order');
     for(const code of connection.natalCodes)for(const entry of fortune.profile.gods.filter(entry=>entry.god.code===code)) {
       assert.ok(card.factIds.includes(`natal.god.${entry.pillarKey}.${entry.position}`),'the used natal behaviour keeps its actual calculation fact');
     }
@@ -244,14 +246,14 @@ test('multiple real birth inputs retain complete narratives while varying the ac
   for(const {fortune,report} of results) {
     const actual=new Set(fortune.profile.gods.map(entry=>entry.god.code));
     for(const card of report.reader.lifelong.cards) {
-      assert.ok(card.paragraphs.length>=5&&card.paragraphs.length<=7,card.id);
+      assert.ok(card.paragraphs.length>=5,card.id);
       assert.ok(card.godCodes.every(code=>actual.has(code)));
     }
     for(const overview of overviews(report))for(const card of overview.cards)assert.ok(card.paragraphs.every(text=>!text.includes('undefined')&&!text.includes('[object')));
   }
   const bodies=results.map(({report})=>prose(report.reader.lifelong));
   assert.equal(new Set(bodies).size,inputs.length);
-  const scenes=results.map(({report})=>report.reader.lifelong.cards.find(card=>card.id==='natal-career-examples').paragraphs[4]);
+  const scenes=results.map(({report})=>report.reader.lifelong.cards.find(card=>card.id==='natal-career-examples').paragraphs.filter(paragraph=>/가령|예를 들어|가정해 볼게요/.test(paragraph)).join(' '));
   assert.ok(new Set(scenes).size>=3,'career examples follow different actual tendencies');
 });
 

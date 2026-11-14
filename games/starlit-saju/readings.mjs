@@ -1,3 +1,4 @@
+import {readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
 import {
   STEM_REFERENCE, GROUP_REFERENCE, GOD_REFERENCE,
   RELATION_REFERENCE, GROUP_PAIR_RULES, PRACTICE_SUGGESTIONS,
@@ -6,10 +7,10 @@ import { attachPlainLanguage } from './plain-language.mjs?v=20261113-saju-easy1'
 import { attachAdvice } from './advice.mjs?v=20261113-saju-easy1';
 import { attachDeeperReadings } from './deeper-reading.mjs?v=20261113-saju-easy1';
 import { attachStageReadings } from './stage-reading.mjs?v=20261113-saju-easy1';
-import { attachReaderSummary } from './reader-summary.mjs?v=20261113-saju-easy1';
-import { attachReaderExtras } from './reader-extras.mjs?v=20261113-saju-easy1';
-import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261114-saju-daeun6-1';
-import { buildPersonPortrait } from './person-portrait.mjs?v=20261113-saju-easy1';
+import { attachReaderSummary } from './reader-summary.mjs?v=20261114-saju-depth1';
+import { attachReaderExtras } from './reader-extras.mjs?v=20261114-saju-depth1';
+import { buildDaeunReading, copyDaeunReading } from './daeun-reading.mjs?v=20261114-saju-depth1';
+import { buildPersonPortrait } from './person-portrait.mjs?v=20261114-saju-depth1';
 import { attachReadingSummaryLines } from './reading-summary-lines.mjs?v=20261114-saju-wind1';
 import { attachReadingScores, readingScoreCopy } from './reading-score.mjs?v=20261114-saju-wind2';
 import { buildNatalReadingData, seasonRules, charLabel, particle, relationOf, godPosition, interactionFact } from './natal-reading-data.mjs?v=20261114-saju-wind1';
@@ -265,20 +266,21 @@ function adviceCopy(advice) {
 const summaryCopy = item => [...(Array.isArray(item?.summaryLines) ? ['두 줄 요약',...item.summaryLines] : []),...readingScoreCopy(item)];
 function readerCopy(overview,periodLabel='') {
   if (!overview) return [];
-  const lines=['',overview.title,overview.headline,...(periodLabel?[periodLabel]:[]),...summaryCopy(overview),...(overview.paragraphs||[])];
+  const lines=['',overview.title,overview.headline,...(periodLabel?[periodLabel]:[]),...summaryCopy(overview),...readingDetailText(overview)];
   for (const card of overview.cards||[]) {
-    lines.push('',card.label,card.title,...summaryCopy(card),...card.paragraphs);
+    lines.push('',card.label,card.title,...summaryCopy(card),...readingDetailText(card));
     if(card.scopeNotice) lines.push('풀이 범위: '+card.scopeNotice);
   }
   return lines;
 }
 function readerExtrasCopy(extras) {
   if(!extras) return [];
-  const lines=['',extras.title,extras.headline,...summaryCopy(extras),...(extras.paragraphs||[])];
+  const lines=['',extras.title,extras.headline,...summaryCopy(extras),...readingDetailText(extras)];
   for(const item of extras.items||[]) {
-    if(item.value!=null) lines.push('',item.label+': '+item.value,...summaryCopy(item),item.description);
+    if(item.value!=null) lines.push('',item.label+': '+item.value,...summaryCopy(item),
+      ...readingDetailText(item.paragraphs?.length?item:{...item,paragraphs:[item.description]}));
     else {
-      lines.push('',item.title,item.periodLabel,item.headline,...summaryCopy(item),...(item.paragraphs||[]));
+      lines.push('',item.title,item.periodLabel,item.headline,...summaryCopy(item),...readingDetailText(item));
       for(const [key,label] of [['opportunities','기회'],['people','도움을 구할 사람'],['documents','문서와 계약'],['cautions','주의할 점']]) {
         lines.push(label,...(item[key]||[]).flatMap(value=>[...summaryCopy(value),value.label+': '+value.text]));
       }
@@ -295,8 +297,8 @@ function copyCategory(report,topic) {
   for(const current of topics) {
     if(current==='lifelong'&&report.personPortrait) {
       const portrait=report.personPortrait;
-      lines.push('',portrait.title,portrait.headline,...summaryCopy(portrait),...portrait.paragraphs);
-      for(const card of portrait.cards)lines.push('',card.label,card.title,...summaryCopy(card),...card.paragraphs);
+      lines.push('',portrait.title,portrait.headline,...summaryCopy(portrait),...readingDetailText(portrait));
+      for(const card of portrait.cards)lines.push('',card.label,card.title,...summaryCopy(card),...readingDetailText(card));
       if(portrait.scopeNotice)lines.push(portrait.scopeNotice);
       lines.push('','항목별 상세 풀이');
     }

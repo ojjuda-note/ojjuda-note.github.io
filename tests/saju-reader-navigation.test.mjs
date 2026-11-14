@@ -23,6 +23,14 @@ function visible(element) {
   }
   return true;
 }
+function assertCurrentBody(element) {
+  assert.ok(visible(element),'the selected reading is visible');
+  assert.equal(element.querySelector('details.reading-body-details'),null,'a selected explanation never needs a second disclosure');
+  const owner=element.matches('[data-compatibility-current]')?'[data-compatibility-page]':'[data-reader-page]';
+  const paragraphs=[...element.querySelectorAll('.reader-prose > p,.compatibility-person-prose > p')]
+    .filter(paragraph=>paragraph.closest(owner)===element);
+  assert.ok(paragraphs.every(visible),'all paragraphs owned by the current reading are immediately readable');
+}
 function mount(topic,{reading:report=reading,fortune:forecast=fortune}={}) {
   const dom=new JSDOM('<!doctype html><nav id="outside"></nav><div id="report-content"></div>',{url:'https://example.test/'});
   const doc=dom.window.document;globalThis.document=doc;
@@ -97,11 +105,11 @@ function assertReadingScore(h,summary,expected) {
   }
 }
 
-test('every reading family keeps two authored summary units before its complete body when requested',()=>{
+test('every reading family exposes two summary units and its complete body without a second click',()=>{
   const h=mount('all');
   try {
     const before=h.paragraphs(),checks=[];
-    const add=(element,source,selector=':scope > .reader-prose > p,:scope > .reading-body-details > .reading-body-content > .reader-prose > p',paragraphs=source.paragraphs)=>checks.push({element,source,selector,paragraphs});
+    const add=(element,source,selector=':scope > .reader-prose > p',paragraphs=source.paragraphs)=>checks.push({element,source,selector,paragraphs});
     const overview=(id,source)=>{
       add(h.doc.querySelector(`#${id} .reader-intro`),source);
       for(const card of source.cards)add(h.host.querySelector(`[data-reader-card="${card.id}"]`),card);
@@ -117,17 +125,17 @@ test('every reading family keeps two authored summary units before its complete 
     }
     add(h.doc.querySelector('#reading-daeun > .reader-prose'),reading.daeun,':scope > p');
     for(const period of reading.daeun.periods) {
-      add(h.host.querySelector(`[data-daeun-period="${period.id}"]`),period,'.daeun-period-body > .reader-prose > p,.daeun-period-body > .reading-body-details > .reading-body-content > .reader-prose > p');
+      add(h.host.querySelector(`[data-daeun-period="${period.id}"]`),period,'.daeun-period-body > .reader-prose > p');
       for(const topic of [...period.topics,...(period.situations||[])])add(h.host.querySelector(`[data-daeun-topic="${topic.id}"]`),topic);
     }
     add(h.doc.querySelector('#reading-symbols .reader-intro'),reading.reader.symbols);
     const symbols=[...h.host.querySelectorAll('.reader-symbol-item')];
     assert.equal(symbols.length,reading.reader.symbols.items.length);
-    reading.reader.symbols.items.forEach((item,index)=>add(symbols[index],item,':scope > .reader-prose > p,:scope > .reading-body-details > .reading-body-content > .reader-prose > p',[item.description]));
+    reading.reader.symbols.items.forEach((item,index)=>add(symbols[index],item,':scope > .reader-prose > p',item.paragraphs||[item.description]));
     add(h.doc.querySelector('#reading-timings .reader-intro'),reading.reader.timings);
     for(const item of reading.reader.timings.items) {
       const article=h.host.querySelector(`.reader-timing-card[data-month="${item.month}"]`);
-      add(article,item,'.reader-timing-content > .reader-prose > p,.reader-timing-content > .reading-body-details > .reading-body-content > .reader-prose > p');
+      add(article,item,'.reader-timing-content > .reader-prose > p');
       const points=[...article.querySelectorAll('.reader-timing-point')];
       const expected=[...item.cautions,...item.opportunities,...item.people,...item.documents];
       assert.equal(points.length,expected.length);
@@ -142,11 +150,14 @@ test('every reading family keeps two authored summary units before its complete 
       if(!selector)continue;
       const body=[...element.querySelectorAll(selector)].filter(paragraph=>!paragraph.closest('.saju-two-line-summary'));
       assert.deepEqual(body.map(paragraph=>paragraph.textContent),paragraphs,'summary presentation preserves every original body paragraph');
-      for(const details of new Set(body.map(paragraph=>paragraph.closest('.reading-body-details')).filter(Boolean))) {
-        assert.equal(details.open,false,'the full prose starts folded while its summary and scores stay visible');
-        details.querySelector('summary').click();
+      assert.ok(body.length>0&&body.every(visible),'selecting the item immediately reveals every authored paragraph');
+      assert.ok(body.every(paragraph=>!paragraph.closest('details.reading-body-details')),'the summary cannot replace the purchased full explanation');
+      if(source.detailSections) {
+        const prose=body[0].parentElement;
+        assert.deepEqual([...prose.querySelectorAll(':scope > .reading-body-heading')].map(heading=>heading.textContent),source.detailSections.map(section=>section.title),'meaningful section headings retain their authored order');
+        assert.deepEqual(body.map(paragraph=>Number(paragraph.dataset.readingDetailSection)),source.detailSections.flatMap((section,index)=>section.paragraphs.map(()=>index)),'every paragraph stays attached to its own explanation heading');
+        assert.deepEqual(source.detailSections.flatMap(section=>section.paragraphs),paragraphs);
       }
-      assert.ok(body.length>0&&body.every(visible),'opening the full explanation reveals every original paragraph');
       assert.ok(group.compareDocumentPosition(body[0])&h.dom.window.Node.DOCUMENT_POSITION_FOLLOWING,'the two summary units precede the full explanation');
     }
     assert.deepEqual(h.paragraphs(),before,'visiting summaries never rewrites or removes the purchased prose');
@@ -165,11 +176,13 @@ test('the compact picker keeps every purchased paragraph while exposing only the
       assert.equal(h.host.firstElementChild.className,'reading-pager');
       assertNoEvidence(h);
       assert.ok(visible(h.current()));
+      assertCurrentBody(h.current());
       assert.equal(h.current().id,topic==='monthly'?'reading-month-11':'reading-summary');
       assert.ok([...h.select.options].filter(option=>option.closest('optgroup')?.label!=='생활 제안').length<=60,'month and decade details keep the primary reading list compact while existing practical suggestions remain reachable');
       for(const option of [...h.select.options]) {
         h.pick(option.value);assert.ok(visible(h.current()),option.textContent);
         assert.equal(h.host.querySelectorAll('[data-reader-current]').length,1);
+        assertCurrentBody(h.current());
       }
       assert.deepEqual(h.paragraphs(),before,'navigation neither rewrites nor removes the original prose');
       assert.equal(Boolean(h.doc.getElementById('reading-lifelong')),['lifelong','all'].includes(topic));
@@ -260,11 +273,13 @@ test('general and compatibility controls retain focus for consecutive choices wh
     const check=(pickerId,currentSelector)=>{
       const select=h.doc.getElementById(pickerId),options=[...select.options];
       const current=()=>h.host.querySelector(currentSelector);
+      assertCurrentBody(current());
       const toggle=h.doc.getElementById(pickerId+'-toggle');
       assert.equal(select.hidden,true,'visible field and item buttons replace the long select');
       for(const option of options.slice(1,3)) {
         selectReadingItem(select,option.value);
         assert.equal(current().id,option.value);assert.ok(visible(current()));
+        assertCurrentBody(current());
         assert.equal(h.doc.activeElement,toggle,'choosing an item leaves focus on the visible collapsed list');
       }
       const [previous,next]=select.parentElement.querySelectorAll('.reading-pager-step');
@@ -272,6 +287,7 @@ test('general and compatibility controls retain focus for consecutive choices wh
       next.focus();
       for(let count=0;count<2;count++) {
         const before=current().id;next.click();assert.notEqual(current().id,before);
+        assertCurrentBody(current());
         assert.equal(h.doc.activeElement,next,'the next button supports repeated keyboard activation');
       }
       previous.focus();previous.click();previous.click();

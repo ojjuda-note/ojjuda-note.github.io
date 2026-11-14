@@ -1,3 +1,5 @@
+import {appendReadingDetail,readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
+
 const ITEM_IDS=['temperament','complement','daily','harmony'];
 const SCORE_SUMMARY='두 사람의 성향과 함께 지내는 모습을 한눈에 살펴봐요.';
 const node=(tag,className,text)=>{
@@ -71,7 +73,13 @@ export function createCompatibilityScoreboard(value) {
     meter.append(fill);
     const summary=node('p','compatibility-score-item-summary',item.summary);
     summary.id=summaryId;
-    row.append(top,meter,summary);items.append(row);
+    row.append(top,meter,summary);
+    if(item.paragraphs?.length) {
+      const link=node('a','compatibility-score-detail-link','이 항목의 설명 읽기 →');
+      link.href=`#compatibility-score-detail-${item.id}`;
+      link.setAttribute('aria-label',`${item.label} 자세한 풀이 읽기`);row.append(link);
+    }
+    items.append(row);
   }
   grid.append(items);section.append(grid);
 
@@ -80,10 +88,37 @@ export function createCompatibilityScoreboard(value) {
   return section;
 }
 
+/** Each score has its own complete story, reached from its bar or item list. */
+export function createCompatibilityScoreDetails(value,{appendParagraphs}={}) {
+  const score=checkedScore(value),pages=[];
+  const append=appendParagraphs||((parent,paragraphs)=>{
+    for(const text of paragraphs)parent.append(node('p','',text));
+  });
+  for(const item of score.items) {
+    if(!item.paragraphs?.length)continue;
+    const section=node('section','compatibility-score-detail');
+    section.id=`compatibility-score-detail-${item.id}`;
+    const title=node('h4','compatibility-people-title',item.label);
+    title.id=section.id+'-title';section.setAttribute('aria-labelledby',title.id);
+    const value=node('p','compatibility-detail-score-value',`${item.value}점 / 100점`);
+    const summary=node('div','compatibility-two-line-summary');
+    const lines=Array.isArray(item.summaryLines)&&item.summaryLines.length===2?item.summaryLines:[item.summary];
+    summary.setAttribute('role','group');summary.setAttribute('aria-label',lines.length===2?'두 줄 요약':'항목 요약');
+    lines.forEach(line=>summary.append(node('p','compatibility-summary-line',line)));
+    const prose=node('div','report-prose reader-prose');
+    appendReadingDetail(prose,item,append);
+    const back=node('a','compatibility-score-detail-link','전체 점수와 막대그래프 보기 →');
+    back.href='#compatibility-scores';
+    section.append(title,value,summary,prose,back);
+    pages.push({element:section,label:`${item.label} 풀이`,group:'점수별 풀이'});
+  }
+  return pages;
+}
+
 export function compatibilityScoreText(value) {
   const score=checkedScore(value);
   const lines=['궁합 점수 · 100점 만점',`종합 궁합: ${score.total}점 · ${score.label}`,SCORE_SUMMARY];
-  for(const item of score.items)lines.push(`${item.label}: ${item.value}점`,item.summary);
+  for(const item of score.items)lines.push(`${item.label}: ${item.value}점`,item.summary,...readingDetailText(item));
   lines.push('풀이를 숫자로 정리한 참고 점수예요.');
   return lines.join('\n');
 }

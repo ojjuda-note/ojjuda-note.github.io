@@ -1,3 +1,4 @@
+import {appendReadingDetail,readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
 import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
 import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
 import {createReadingNavigator} from './reading-navigator.mjs?v=20261114-saju-flow1';
@@ -45,9 +46,9 @@ function summaryView(lines,headingTag='h6') {
   return summary;
 }
 
-function proseView(paragraphs,appendParagraphs) {
+function proseView(item,appendParagraphs) {
   const prose=node('div','report-prose reader-prose compatibility-person-prose');
-  appendParagraphs(prose,paragraphs);
+  appendReadingDetail(prose,item,appendParagraphs);
   return prose;
 }
 
@@ -61,24 +62,25 @@ export function createCompatibilityPeoplePages(value,{names=[],appendParagraphs}
     page.id=`compatibility-people-${topicId}`;page.dataset.compatibilityTopic=topicId;
     const title=node('h4','compatibility-people-title',label);title.id=`${page.id}-title`;
     page.setAttribute('aria-labelledby',title.id);page.append(title);
-    if(intro)page.append(node('p','compatibility-reading-guide','같은 항목에서 A와 B의 모습을 비교해 보세요. 더 궁금하면 각자의 자세한 풀이를 펼쳐 읽어요.'));
+    if(intro)page.append(node('p','compatibility-reading-guide','같은 항목에서 A와 B의 모습을 비교해 보세요. 각자의 성향과 생활 예시, 서로 편하게 지낼 방법을 이어서 읽을 수 있어요.'));
+    const jumps=node('nav','compatibility-person-jumps');jumps.setAttribute('aria-label','A와 B의 자세한 설명');
+    for(const [index,person] of reading.people.entries()) {
+      const item=intro?person:person.cards.find(card=>card.topicId===topicId);
+      const link=node('a','',`${index===0?'A':'B'}의 설명 보기 ↓`);link.href=`#${item.id}-name`;jumps.append(link);
+    }
+    page.append(jumps);
     const columns=node('div','compatibility-person-columns');
     for(const [index,person] of reading.people.entries()) {
       const item=intro?person:person.cards.find(card=>card.topicId===topicId);
       const article=node('article','compatibility-person-reading');
       article.id=item.id;article.dataset.personKey=person.key;article.dataset.personMarker=index===0?'A':'B';
       article.dataset.origin=item.origin;article.dataset.factIds=item.factIds.join(' ');
-      const name=node('h5','compatibility-person-name',labels[index]);name.id=`${item.id}-name`;
+      const name=node('h5','compatibility-person-name',labels[index]);name.id=`${item.id}-name`;name.tabIndex=-1;
       article.setAttribute('aria-labelledby',name.id);
       article.append(name,summaryView(item.summaryLines));
-      const details=node('details','reading-body-details compatibility-person-details');
-      const toggle=node('summary','reading-body-toggle',`${index===0?'A':'B'} 자세히 읽기`);
-      toggle.id=`${item.id}-detail-toggle`;
-      const content=node('div','reading-body-content');content.id=`${item.id}-detail-content`;
-      toggle.setAttribute('aria-controls',content.id);
-      if(intro&&person.scopeNotice)content.append(node('p','reader-scope-note compatibility-person-scope',person.scopeNotice));
-      content.append(proseView(item.paragraphs,appendParagraphs));
-      details.append(toggle,content);article.append(details);
+      if(intro&&person.scopeNotice)article.append(node('p','reader-scope-note compatibility-person-scope',person.scopeNotice));
+      const content=proseView(item,appendParagraphs);content.id=`${item.id}-detail-content`;
+      article.append(content);
       columns.append(article);
     }
     page.append(columns);pages.push({element:page,label,group:'A와 B · 같은 항목 비교'});
@@ -88,7 +90,7 @@ export function createCompatibilityPeoplePages(value,{names=[],appendParagraphs}
   const title=node('h4','compatibility-people-title',synthesis.title);title.id='compatibility-synthesis-title';
   page.setAttribute('aria-labelledby',title.id);
   page.append(title,node('p','compatibility-synthesis-people',labels.join(' × ')),summaryView(synthesis.summaryLines,'h5'),
-    proseView(synthesis.paragraphs,appendParagraphs));
+    proseView(synthesis,appendParagraphs));
   pages.push({element:page,label:synthesis.title,group:'두 사람의 궁합'});
   return pages;
 }
@@ -112,7 +114,7 @@ export function createCompatibilityPager(section,pages) {
     const option=node('option','',page.label);option.value=page.element.id;groups.get(page.group).append(option);
   }
   const domainForPage=page=>page.element.id==='compatibility-synthesis'?'synthesis'
-    :page.element.id==='compatibility-scores'?'scores'
+    :page.element.id.startsWith('compatibility-score')?'scores'
     :page.element.classList.contains('compatibility-people-page')?'people':'details';
   const picker=createReadingNavigator({select,pages,domainForPage,
     domains:[{id:'synthesis',label:'종합'},{id:'people',label:'A·B 성격'},{id:'scores',label:'점수'},{id:'details',label:'자세히'}],
@@ -190,12 +192,12 @@ export function createCompatibilityPager(section,pages) {
 export function compatibilityPeopleText(value,names=[]) {
   const reading=checkedPeople(value),labels=compatibilityPersonLabels(names),lines=[];
   for(const [index,person] of reading.people.entries()) {
-    lines.push(labels[index]+' · 성격과 특징',...person.summaryLines,...person.paragraphs);
+    lines.push(labels[index]+' · 성격과 특징',...person.summaryLines,...readingDetailText(person));
     if(person.scopeNotice)lines.push(person.scopeNotice);
-    for(const card of person.cards)lines.push('',labels[index]+' · '+card.label,...card.summaryLines,...card.paragraphs);
+    for(const card of person.cards)lines.push('',labels[index]+' · '+card.label,...card.summaryLines,...readingDetailText(card));
     lines.push('');
   }
   const synthesis=reading.synthesis;
-  lines.push(synthesis.title,...synthesis.summaryLines,...synthesis.paragraphs);
+  lines.push(synthesis.title,...synthesis.summaryLines,...readingDetailText(synthesis));
   return lines.join('\n');
 }

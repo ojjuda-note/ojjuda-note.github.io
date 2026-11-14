@@ -1,4 +1,5 @@
-import { getTenGod } from './fortune-data.mjs?v=20261113-saju-reader1';
+import { getTenGod } from './fortune-data.mjs?v=20261114-saju-depth1';
+import { detailContent, portraitConversation } from './general-detail-scenes.mjs?v=20261114-saju-depth1';
 
 // A plain-language portrait assembled from confirmed natal facts. The component
 // meanings and the everyday examples are authored reference material. They are
@@ -402,9 +403,17 @@ function checked(registry,ids) {
   return values;
 }
 function card(registry,{id,label,title,paragraphs,factIds,codes,chapterId,ruleIds=[]}) {
-  if(typeof title!=='string'||!title.trim()||paragraphs.length<4||paragraphs.length>5||paragraphs.some(text=>typeof text!=='string'||!text.trim()))fail();
+  if(typeof title!=='string'||!title.trim()||paragraphs.length<4||paragraphs.some(text=>typeof text!=='string'||!text.trim()))fail();
   return {id,label,title,paragraphs,factIds:checked(registry,factIds),godCodes:[...codes],origin:ORIGIN,navGroup:'나는 어떤 사람일까',chapterId,ruleIds};
 }
+
+const CARD_DETAIL_GROUPS={
+  'portrait-decisions':[['선택할 때 먼저 보는 것',[0,1]],['결정이 어려워지는 때',[2]],['생활에서 보일 수 있는 모습',[3]],['이렇게 말해 볼 수 있어요',[4]],['다음 선택에서 해 볼 일',[5]]],
+  'portrait-relationships':[['사람에게 마음을 여는 방식',[0,1]],['내 마음과 다르게 전해지는 때',[2]],['생활에서 보일 수 있는 모습',[3]],['서로 편해지는 대화',[4]],['관계에서 먼저 해 볼 일',[5]]],
+  'portrait-work':[['일을 맡았을 때의 강점',[0,1]],['잘하려다 부담이 커지는 때',[2]],['일하는 장면으로 보면',[3]],['역할을 맞추는 대화',[4]],['다음 일에서 해 볼 방법',[5]]],
+  'portrait-pressure':[['부담을 느낄 때의 반응',[0,1]],['이런 상황을 떠올려 보세요',[2]],['주변에서 다르게 볼 수 있는 점',[3]],['무리하지 않고 말하는 방법',[4]],['부담을 나누는 첫 행동',[5]]],
+  'portrait-adjustment':[['내 뜻과 다르게 보이는 부분',[0,1]],['오해가 생길 수 있는 장면',[2]],['마음을 가다듬는 방법',[3]],['내 뜻을 전하는 대화',[4]],['다음 대화에서 해 볼 일',[5]]],
+};
 
 export function buildPersonPortrait(input) {
   const registry=validate(input),{profile,chapters}=input;
@@ -436,26 +445,27 @@ export function buildPersonPortrait(input) {
   const cards=[
     card(registry,{id:'portrait-decisions',label:'결정할 때 드러나는 나',title:TOPIC_VOICES[anchors[0]].titles[0],
       paragraphs:[first.decision+' '+first.why,second?second.decision+' '+second.why:stem.manner,
-        stem.edge,scene('decisions',anchors),core.adjust],
+        stem.edge,scene('decisions',anchors),portraitConversation('decisions',anchors[0]),core.adjust],
       factIds:coreIds,codes:anchors,chapterId:'day-season',ruleIds:['portrait.pair.'+core.key]}),
     card(registry,{id:'portrait-relationships',label:'사람을 대할 때 드러나는 나',title:TOPIC_VOICES[relationCodes[0]].titles[1],
       paragraphs:[relationFirst.relationship,relationSecond?relationSecond.relationship:relationFirst.why,
-        relationFirst.misread+(relations?' '+relations.text:''),scene('relationships',relationCodes),topicAction(relationCodes,'relationAction')],
+        relationFirst.misread+(relations?' '+relations.text:''),scene('relationships',relationCodes),portraitConversation('relationships',relationCodes[0]),topicAction(relationCodes,'relationAction')],
       factIds:[...relationIds,...(relations?.factIds||[])],codes:relationCodes,chapterId:'relationships',ruleIds:['portrait.pair.'+relationPair.key]}),
     card(registry,{id:'portrait-work',label:'일을 맡았을 때 드러나는 나',title:TOPIC_VOICES[workCodes[0]].titles[2],
       paragraphs:[workFirst.work,workSecond?workSecond.work:stem.reason,
         workFirst.stress+' '+(workSecond?workSecond.misread:workFirst.misread),
-        scene('work',workCodes),topicAction(workCodes,'workAction')],
+        scene('work',workCodes),portraitConversation('work',workCodes[0]),topicAction(workCodes,'workAction')],
       factIds:workIds,codes:workCodes,chapterId:'work',ruleIds:['portrait.pair.'+workPair.key]}),
     card(registry,{id:'portrait-pressure',label:'잘하다가도 힘들어지는 이유',title:TOPIC_VOICES[stressCodes[0]].titles[3],
       paragraphs:[stressFirst.stress,stressSecond?stressSecond.stress:stressFirst.why,
         scene('pressure',stressCodes),stressFirst.misread+(stressSecond?' '+stressSecond.misread:''),
+        portraitConversation('pressure',stressCodes[0]),
         stressFirst.action+(stressSecond?' '+stressSecond.action:'')],
       factIds:['natal.day-master','natal.scope',...idsFor(profile,stressCodes)],codes:stressCodes,chapterId:'natal-combined-themes',ruleIds:['portrait.pair.'+stressPair.key]}),
     card(registry,{id:'portrait-adjustment',label:'내 마음과 다르게 보이는 모습',title:TOPIC_VOICES[adjustmentCodes[0]].titles[4],
       paragraphs:[adjustFirst.brief+' '+adjustFirst.misread,
         adjustSecond?adjustSecond.brief+' '+adjustSecond.misread:stem.edge,
-        scene('adjustment',adjustmentCodes),stem.reset,topicAction(adjustmentCodes,'explainAction')],
+        scene('adjustment',adjustmentCodes),stem.reset,portraitConversation('adjustment',adjustmentCodes[0]),topicAction(adjustmentCodes,'explainAction')],
       factIds:['natal.day-master','natal.scope',...idsFor(profile,adjustmentCodes)],codes:adjustmentCodes,chapterId:'natal-combined-themes',ruleIds:['portrait.pair.'+adjustPair.key]}),
   ];
   const usedCodes=unique([...anchors,...cards.flatMap(value=>value.godCodes)]);
@@ -468,9 +478,11 @@ export function buildPersonPortrait(input) {
     target.godCodes.push(...omittedCodes);
     target.factIds=checked(registry,[...target.factIds,...idsFor(profile,omittedCodes)]);
   }
+  for(const item of cards)Object.assign(item,detailContent(CARD_DETAIL_GROUPS[item.id].map(([title,indexes])=>[title,indexes.map(index=>item.paragraphs[index])])));
   const factIds=checked(registry,[...coreIds,...(season?.factIds||[]),...cards.flatMap(value=>value.factIds)]);
   return {
-    id:'person-portrait',title:'나는 어떤 사람일까',headline:'당신은 '+core.headline+'이에요.',paragraphs:portraitParagraphs,cards,
+    id:'person-portrait',title:'나는 어떤 사람일까',headline:'당신은 '+core.headline+'이에요.',
+    ...detailContent([['나를 이해하는 첫 모습',portraitParagraphs.slice(0,2)],['평소 행동에 드러나는 성향',portraitParagraphs.slice(2)]]),cards,
     origin:ORIGIN,factIds,facts:factIds.map(id=>({...registry.get(id)})),
     anchorCodes:[...anchors],godCodes:unique(entries.map(entry=>entry.god.code)),
     methodNotice:'확정된 원국의 일간·십성, 이미 계산한 계절 관계와 합충에 공통 전통 의미를 연결한 설명이에요. 생활 장면과 두 성향을 이어 쓴 문장은 오쭈다가 작성한 공통 참고 해설이며, 실제 경험이나 성격 검사 결과가 아니에요. 같은 단서에는 같은 설명을 쓰고, 함께 확인된 다른 단서에 따라 문단을 조합해요. 글자 개수로 강약이나 대표 성격을 정하지 않아요.',
