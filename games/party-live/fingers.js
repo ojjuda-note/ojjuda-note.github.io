@@ -22,13 +22,13 @@
       body = '<p class="pair-caption">' + ui.esc(s.players[g.current]) + '님의 조건</p><h1>' + ui.esc(g.question) + '</h1>' +
         (g.mine ? '<p data-submitted>응답했어요. 모두 답하면 손가락 수가 바뀌어요.</p>' :
           '<p>나도 해당하나요?</p><div class="pair-choices"><button type="button" class="action" data-fold="yes">하나 접기</button>' +
-          '<button type="button" data-fold="no">그대로</button></div>') +
+          '<button type="button" data-fold="no">해당 없음 · 패스</button></div>') +
         '<p class="pair-status">응답 ' + g.submitted + ' / ' + s.players.length + '명</p>';
     } else if (s.phase === 'done') {
       body = '<h1 data-result>' + prompt.names(s, ui, g.losers) + (g.losers.length > 1 ? ' 함께 당첨!' : ' 당첨!') +
         '</h1><p>손가락 다섯 개를 모두 접었어요.</p>';
     }
-    return body + scoreboard(s, ui);
+    return body + (s.phase==='done'?'':'<p>경험 조건은 성인이 된 뒤를 기준으로 해요. 공개하기 싫으면 접지 않고 패스해도 돼요.</p>') + scoreboard(s, ui);
   }
   function mount(s, ui) {
     if (s.phase === 'prompt') prompt.bind(s, ui, 'finger_prompt');

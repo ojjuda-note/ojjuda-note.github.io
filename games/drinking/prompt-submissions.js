@@ -5,7 +5,7 @@
   const banks = new Map();
   const loads = new Map();
   const owner = document.getElementById('access-content').dataset.member;
-  const queuePrefix = 'oj.party.suggestions.' + owner + '.';
+  const queuePrefix = 'oj.party.suggestions.v2.' + owner + '.';
   const canonical = value => value.normalize('NFKC').trim().replace(/\s+/gu,' ').toLowerCase();
   const queued = new Map();
   let sending, retryTimer;

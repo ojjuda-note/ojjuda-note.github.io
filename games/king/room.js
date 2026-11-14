@@ -99,11 +99,12 @@ function render(s,force=false){
       else {
         const accepted=s.accepted.includes(s.card);
         content+='<p>'+(accepted?'동의했어요. 상대의 선택을 기다려요.':'이 미션을 할까요?')+'</p><div class="actions">'+
-          (accepted?'':control('동의','accept',true))+control('거절 · 술 한 모금','decline')+'</div>';
+          (accepted?'':control('동의','accept',true))+control('패스','decline')+'</div>';
       }
     }else{
-      if(s.declined!=null)content+='<p>'+esc(s.players[s.declined])+'님은 술 한 모금. 이번 미션은 끝이에요.</p>';
-      else if(s.accepted?.length===2)content+='<p>두 사람 모두 동의했어요. 미션을 진행하세요.</p>';
+      if(s.declined!=null)content+='<p>이번 미션은 패스했어요. 벌칙 없이 다음 판으로 넘어가요.</p>';
+      else if(s.accepted?.length===2)content+='<p>두 사람 모두 동의했어요. 진행 중에도 언제든 멈출 수 있어요.</p>';
+      else content+='<p>답하거나 하기 어려운 미션은 이유를 말하지 않고 패스해도 돼요.</p>';
       content+=party?'':s.me===0?control('한 판 더','again',true):'<p>방장이 다음 판을 시작할 수 있어요.</p>';
     }
   }else{

@@ -21,13 +21,13 @@ const games=[
   ['bomb','시간폭탄','운과 감각','터지기 전에 넘겨요','#f5bba7',2,'‘키스 직전에 하면 깨는 말’처럼 주제에 맞는 답을 하고 폰을 넘겨요. 폭탄이 터지면 그때 화면에 표시된 사람이 당첨이에요.'],
   ['stopwatch','감각 스톱워치','운과 감각','목표 시간에 멈추기','#c8d9ce',2,'첫 1초가 지나면 숫자가 사라져요. 목표 시간에 가장 가깝게 멈춘 사람이 이겨요.'],
   ['liar','라이어 찾기','추리와 대화','첫 키스, 들키지 말고 설명하기','#d0c2e1',3,'한 명만 단어를 몰라요. 한 사람씩 힌트를 준 뒤, 각자 의심하는 사람에게 몰래 투표해요.'],
-  ['king','왕게임','추리와 대화','두 번호가 뽑히면 스킨십 미션','#f0d790',2,'한 명은 왕, 나머지는 비밀 번호를 받아요. 왕이 한 명이나 두 명에게 미션을 내려요. 두 사람 미션은 각자 동의하고 시작해요. 거절한 사람은 술 한 모금이에요.'],
+  ['king','왕게임','추리와 대화','고백부터 둘만의 스킨십까지','#f0d790',2,'한 명은 왕, 나머지는 비밀 번호를 받아요. 왕이 한 명이나 두 명에게 미션을 내려요. 두 사람 미션은 각자 동의하고 시작해요. 원하지 않는 미션은 벌칙 없이 패스해요.'],
   ['truth','진실게임','추리와 대화','솔직한 질문 카드','#f0c6c4',2,'내 차례에 카드 한 장을 골라 질문에 답해요. 답하기 어려우면 패스해도 돼요.'],
-  ['initial','초성 대결','순발력','ㅋㅅ, 5초 안에 떠오르는 말','#b8cfe1',2,'초성에 맞는 새 단어를 5초 안에 말해요. 시간이 다 되거나 틀리면 탈락해요. 마지막 한 명이 이겨요.'],
+  ['initial','초성 대결','순발력','두 글자 단어를 5초 안에','#b8cfe1',2,'초성 두 개에 맞는 새 두 글자 단어를 5초 안에 말해요. 연애·성인 주제도 좋아요. 시간이 다 되거나 틀리면 탈락하고 마지막 한 명이 이겨요.'],
   ['minority','소수파 찾기','추리와 대화','우리의 선택은 몇 대 몇?','#bfd5bb',3,'두 선택지 중 하나를 각자 몰래 골라요. 모두 투표하면 어느 쪽이 소수파인지 공개돼요.'],
-  ['mission','한 명만 다른 미션','추리와 대화','누구의 몸짓이 다를까?','#e5bdac',3,'한 명만 조금 다른 제시어를 받아요. 동시에 몸으로 표현한 뒤, 다른 미션을 받은 사람에게 몰래 투표해요.'],
-  ['fingers','손병호 게임','추리와 대화','해당하면 손가락 하나 접기','#e1bd95',2,'모두 손가락 다섯 개를 펴요. 돌아가며 조건을 하나씩 말하고, 해당하는 사람은 손가락을 접어요. 먼저 다 접은 사람이 걸려요.'],
-  ['imagevote','이미지 게임','추리와 대화','이 질문에 딱 맞는 사람은?','#b9c9e4',2,'질문을 읽고 가장 잘 어울리는 사람에게 몰래 한 표를 주세요. 모두 투표하면 가장 많이 지목된 사람이 공개돼요.'],
+  ['mission','한 명만 다른 미션','추리와 대화','비슷한 연애 장면, 다른 몸짓','#e5bdac',3,'한 명만 조금 다른 제시어를 받아요. 말·소품·실제 접촉 없이 각자 혼자 몸짓으로 표현한 뒤, 다른 동작을 한 사람에게 몰래 투표해요.'],
+  ['fingers','손병호 게임','추리와 대화','해당하면 손가락 하나 접기','#e1bd95',2,'성인이 된 뒤의 경험을 기준으로 해요. 조건에 해당하면 스스로 손가락을 접고, 공개하기 싫으면 패스해도 돼요. 다섯 개를 먼저 접은 사람이 걸려요.'],
+  ['imagevote','이미지 게임','추리와 대화','이 질문에 딱 맞는 사람은?','#b9c9e4',2,'상상 속 성인 연애 상황에 가장 어울리는 사람에게 몰래 한 표를 주세요. 모두 투표하면 가장 많이 지목된 사람이 공개돼요.'],
   ['updown','업앤다운','운과 감각','숫자를 부르면, 업 또는 다운!','#c9d8ea',2,'1부터 100 사이에 숨은 숫자를 돌아가며 맞혀요. 업이면 더 큰 수, 다운이면 더 작은 수예요. 정확히 맞힌 사람이 이겨요.']
 ].map(([id,title,category,short,color,min,rule],i)=>({id,title,category,short,color,min,rule,num:String(i+1).padStart(2,'0')}));
 const prompts=window.DrinkingPrompts;
@@ -37,7 +37,7 @@ function shuffled(items){const copy=[...items];for(let i=copy.length-1;i>0;i--){
 const bags=new WeakMap();
 function draw(items){if(!items.length)return '';if(!bags.get(items)?.length)bags.set(items,shuffled(items));return bags.get(items).pop()}
 const truthDeck={mild:[],spicy:[]};
-const truthSettings={mode:'mixed',showFlavor:false};
+const truthSettings={mode:'spicy',showFlavor:false};
 const truthTools=window.PartyTruthCards;
 const truthFlavorNames={mild:'순한맛',spicy:'빨간맛'};
 function refreshTruthDeck(official){
@@ -490,7 +490,7 @@ function animateBottle(now){
   r.lastTick=tick;
   r.bottleFrame=requestAnimationFrame(animateBottle);
 }
-function bomb(){const r=round;shell(tag(r.turn)+'<h2>'+esc(r.topic)+'</h2>'+art('bomb','mini-art pulse')+'<p>주제에 맞는 단어를 하나 말하세요.</p>'+actions(btn('말했어요 · 다음 사람','pass-bomb')))}
+function bomb(){const r=round;shell(tag(r.turn)+'<h2>'+esc(r.topic)+'</h2>'+art('bomb','mini-art pulse')+'<p>이미 나온 답을 빼고 단어나 짧은 말을 하나 하세요. 대사는 상상해서 만들어도 돼요.</p>'+actions(btn('말했어요 · 다음 사람','pass-bomb')))}
 let watchTenths=50;
 function watchCase(reading,live=false){
   return '<span class="watch-case"><span class="watch-crown"></span><span class="watch-bezel">'+
@@ -592,7 +592,7 @@ function afterDeal(){const r=round;r.revealed=false;
     r.phase='king';r.number=1;r.second=null;r.prompt=draw(prompts.kingChoices(r.bank,false));return king();
   }
   r.phase='talk';
-  shell('<h2>'+(game.id==='liar'?'한 사람씩 힌트를 말해요':'하나, 둘, 셋! 동시에 표현해요')+'</h2><p>'+(game.id==='liar'?'정답을 직접 말하지 말고 한마디씩 설명하세요. 누가 단어를 모르는지 찾아봐요.':'말없이 몸으로 자신이 본 미션을 표현하세요. 누가 다른 동작을 했나요?')+'</p>'+actions(btn('비밀 투표 시작','start-vote')),true)
+  shell('<h2>'+(game.id==='liar'?'한 사람씩 힌트를 말해요':'하나, 둘, 셋! 동시에 표현해요')+'</h2><p>'+(game.id==='liar'?'정답과 초성은 숨기고, 장소·느낌·상황으로 한마디씩 설명하세요. 누가 단어를 모르는지 찾아봐요.':'말·소품·실제 접촉 없이 각자 혼자 몸짓만으로 표현하세요. 누가 다른 동작을 했나요?')+'</p>'+actions(btn('비밀 투표 시작','start-vote')),true)
 }
 function king(){
   const r=round,count=players.length-1;
@@ -641,10 +641,11 @@ function kingResult(){
   let footer=actions(btn('한 판 더','start'),btn('게임 목록','menu','quiet'));
   if(r.phase==='king-answer'){
     footer='<p>'+name(r.roles.indexOf(next))+'님, 이 미션을 할까요?</p>'+
-      actions(btn('동의','king-yes', 'start',next),btn('거절 · 술 한 모금','king-no','quiet',next));
+      actions(btn('동의','king-yes', 'start',next),btn('패스','king-no','quiet',next));
   }else if(r.declined!=null){
-    footer='<p>'+name(r.roles.indexOf(r.declined))+'님은 술 한 모금. 이번 미션은 끝이에요.</p>'+footer;
-  }else if(r.second!=null)footer='<p>두 사람 모두 동의했어요. 미션을 진행하세요.</p>'+footer;
+    footer='<p>이번 미션은 패스했어요. 벌칙 없이 다음 판으로 넘어가요.</p>'+footer;
+  }else if(r.second!=null)footer='<p>두 사람 모두 동의했어요. 진행 중에도 언제든 멈출 수 있어요.</p>'+footer;
+  else footer='<p>답하거나 하기 어려운 미션은 이유를 말하지 않고 패스해도 돼요.</p>'+footer;
   shell('<section class="king-order"><span class="king-order-label">왕의 명령</span>'+
     '<h2>'+esc(r.prompt)+'</h2><dl class="king-recipients" aria-label="명령을 받은 사람">'+recipients+'</dl></section>'+footer,true);
 }
@@ -713,7 +714,7 @@ function revealTruth(value){
 }
 function initialReady(){
   const r=round;r.phase='initial-ready';const turn=r.alive[r.turn];
-  shell(tag(turn)+'<h2>준비되면 시작하세요</h2><p>초성 <b>'+esc(r.initial)+'</b> · 남은 사람 '+r.alive.length+'명<br>연애나 스킨십에서 떠오르는 단어도 좋아요. 이미 나온 단어는 빼 주세요.</p>'+actions(btn('5초 시작','initial-go')),true)
+  shell(tag(turn)+'<h2>준비되면 시작하세요</h2><p>초성 <b>'+esc(r.initial)+'</b> · 남은 사람 '+r.alive.length+'명<br>초성 두 개에 맞는 새 두 글자 단어를 말해요. 연애·성인 주제도 좋아요. 이번 초성에서 이미 나온 단어는 빼 주세요.</p>'+actions(btn('5초 시작','initial-go')),true)
 }
 function initialGo(){
   const r=round;r.phase='initial-live';shell(tag(r.alive[r.turn])+'<h2>'+esc(r.initial)+'</h2><p>새 단어를 소리 내어 말해요.</p><div class="countdown" id="seconds">5</div>'+actions(btn('말했어요','word-ok'),btn('중복·오답','word-out','quiet')));
@@ -773,7 +774,7 @@ function partyPrompt(){
     fx.play('deal');
     if(!fingers)return startVotes('imagevote');
     r.phase='fold';
-    shell(tag(r.turn)+'<h2>'+esc(prompt)+'</h2><p>해당하는 사람을 모두 골라 주세요. 아무도 없으면 그대로 넘어가요.</p>'+
+    shell(tag(r.turn)+'<h2>'+esc(prompt)+'</h2><p>성인이 된 뒤의 경험이에요. 본인이 접겠다고 한 사람만 골라 주세요. 패스한 사람은 접지 않고 넘어가요.</p>'+
       '<form id="fold-form"><fieldset class="fold-players" aria-label="손가락을 접을 사람">'+
       players.map((_,i)=>'<label><input type="checkbox" value="'+i+'"><span>'+name(i)+'</span><small>'+r.fingers[i]+'개</small></label>').join('')+
       '</fieldset><button class="start" type="submit">선택 완료</button></form>');

@@ -1,24 +1,24 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261114-drinks-stability1'
+ const revision='20261114-drinking-rebuild1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   croc:'1.2.2',
-  liar:'1.4.2',
-  king:'1.5.2',
-  minority:'1.4.2',
-  mission:'1.4.2',
+  liar:'1.4.3',
+  king:'1.5.3',
+  minority:'1.4.3',
+  mission:'1.4.3',
   bottle:'1.2.2',
-  bomb:'1.4.2',
+  bomb:'1.4.3',
   stopwatch:'1.2.2',
-  truth:'1.5.2',
-  initial:'1.3.2',
-  fingers:'1.4.2',
-  imagevote:'1.4.2',
+  truth:'1.5.3',
+  initial:'1.3.3',
+  fingers:'1.4.3',
+  imagevote:'1.4.3',
   updown:'1.2.2',
-  drinking:'1.6.2',
+  drinking:'1.6.3',
   tarot:'1.9.4',
   saju:'2.8.1',
   group:'1.2.2',

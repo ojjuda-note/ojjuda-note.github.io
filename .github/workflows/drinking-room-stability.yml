@@ -68,7 +68,16 @@ jobs:
         working-directory: tests
         run: npx playwright install --with-deps chromium
       - name: Verify room consistency and network recovery
-        run: node --test --test-concurrency=1 tests/drinking-connection.test.cjs tests/drinking-access.test.cjs tests/drinking-room-db.test.cjs tests/drinking-room-ui.test.cjs tests/drinking-room-browser.test.cjs
+        run: >-
+          node --test --test-concurrency=1
+          tests/drinking-connection.test.cjs
+          tests/drinking-access.test.cjs
+          tests/drinking-room-db.test.cjs
+          tests/drinking-room-ui.test.cjs
+          tests/drinking-content-rebuild.test.cjs
+          tests/drinking-content-catalogs.test.cjs
+          tests/drinking-truth-content-rebuild.test.cjs
+          tests/drinking-room-browser.test.cjs
       - name: Verify game release and access boundaries
-        run: node --test tests/game-release-refresh.test.cjs tests/game-assets-loading.test.cjs tests/matgo-access.test.cjs
+        run: node --test --test-concurrency=1 tests/game-release-refresh.test.cjs tests/game-assets-loading.test.cjs tests/matgo-access.test.cjs
       - run: node scripts/check-source-layout.mjs

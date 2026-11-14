@@ -280,5 +280,5 @@ test('twelve isolated pages share one actual SQL room through joins, outage, upd
   assert.equal(new Set(snapshots.map(s=>s.revision)).size,1);
   assert.equal(new Set(snapshots.map(s=>s.players.join('|'))).size,1);
   assert.ok(windows.every(f=>f.errors.length===0));
-  t.diagnostic('12 independent DOM/session realms, real 18-migration PostgreSQL fixture, overlapping member requests; PGlite serializes its single connection, so this is not a production load benchmark.');
+  t.diagnostic(`12 independent DOM/session realms, real ${db.migrations.length}-migration PostgreSQL fixture, overlapping member requests; PGlite serializes its single connection, so this is not a production load benchmark.`);
 });

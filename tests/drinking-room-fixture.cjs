@@ -11,7 +11,7 @@ const names = Object.freeze(users.map((_, i) => `참가자 ${i + 1}`));
 const migrationDir = path.join(__dirname, '../supabase/migrations');
 // Preserve the applied dependency order: king_pair_orders has an earlier live
 // migration version than its repository filename. All game SQL runs unchanged.
-const migrationNames = [
+const baseMigrationNames = [
   '20261113115500_croc_multiplayer.sql',
   '20261113143000_liar_multiplayer.sql',
   '20261113144500_king_multiplayer.sql',
@@ -31,8 +31,21 @@ const migrationNames = [
   '20261114034457_drinking_managed_game_draws.sql',
   '20261114051146_drinking_adult_party_rounds_and_king_responses.sql'
 ];
+const rebuildMigrationNames = [
+  '20261114061001_drinking_rebuild_liar.sql',
+  '20261114061002_drinking_rebuild_king.sql',
+  '20261114061003_drinking_rebuild_minority.sql',
+  '20261114061004_drinking_rebuild_mission.sql',
+  '20261114061005_drinking_rebuild_bomb.sql',
+  '20261114061006_drinking_rebuild_truth.sql',
+  '20261114061007_drinking_rebuild_fingers.sql',
+  '20261114061008_drinking_rebuild_imagevote.sql',
+  '20261114061009_drinking_rebuild_initial.sql',
+  '20261114061106_drinking_truth_catalog_epoch.sql'
+];
 
-async function fixture() {
+async function fixture({beforeRebuild = false} = {}) {
+  const migrationNames = beforeRebuild ? baseMigrationNames : [...baseMigrationNames, ...rebuildMigrationNames];
   const db = new PGlite({extensions: {pgcrypto}});
   try {
     await db.exec(`
