@@ -966,8 +966,149 @@ const server = http.createServer((request, response) => {
         } finally {if(cdp)await cdp.detach();await swipe.close();}
       }
     }
+    const sajuMotionViews={};
+    for(const [kind,fixture,currentAttribute,fixturePicker,alternate] of [
+      ['general','/__saju_fixture','data-reader-current','fixture-topic','annual'],
+      ['compatibility','/__compatibility_fixture','data-compatibility-current','fixture-pair','uncertain']
+    ]) {
+      for(const [viewport,size,input,textSize] of [
+        ['phone-small',{width:320,height:844},'touch','large'],
+        ['desktop',{width:1280,height:900},'mouse','normal']
+      ]) {
+        const record=input==='touch';
+        const context=await browser.newContext({viewport:size,reducedMotion:'no-preference',deviceScaleFactor:1,hasTouch:input==='touch',
+          ...(record?{recordVideo:{dir:path.join(artifacts,'motion-recordings'),size}}:{})});
+        const slide=await context.newPage(),video=record?slide.video():null;
+        const cdp=input==='touch'?await context.newCDPSession(slide):null;
+        const label=kind+' '+viewport+' '+input;let motionStage='initializing';
+        try {
+          slide.on('pageerror',error=>errors.push(error.message));
+          slide.on('response',response=>{if(response.status()>=400)failed.push([response.status(),response.url()]);});
+          await slide.route('**/*',route=>route.request().url().startsWith('http://127.0.0.1:')?route.continue():route.abort());
+          await slide.goto(new URL(fixture,url).href);
+          await slide.locator('#report-content[data-ready]').waitFor();
+          await slide.evaluate(textSize=>{document.documentElement.dataset.reducedMotion='false';document.getElementById('report-content').dataset.readingSize=textSize;},textSize);
+          const current=slide.locator('['+currentAttribute+']'),pager=slide.locator('.reading-pager'),steps=pager.locator('.reading-pager-step');
+          const first=await current.getAttribute('id');
+          const settled=()=>slide.waitForFunction(()=>!document.querySelector('.reading-slide-outgoing,.reading-slide-incoming,.reading-slide-dragging')
+            &&![...document.querySelectorAll('[data-reader-current],[data-compatibility-current]')].some(el=>el.style.transform&&el.style.transform!=='none'),null,{timeout:2500});
+          async function frame() {
+            return slide.evaluate(attribute=>{
+              const current=document.querySelector('['+attribute+']');
+              const frames=[...document.querySelectorAll('.reading-slide-incoming,.reading-slide-outgoing')].map(el=>({
+                incoming:el.classList.contains('reading-slide-incoming'),outgoing:el.classList.contains('reading-slide-outgoing'),
+                x:new DOMMatrixReadOnly(getComputedStyle(el).transform).m41,
+                hidden:el.getAttribute('aria-hidden'),inert:el.inert,duplicateIds:el.classList.contains('reading-slide-outgoing')?el.querySelectorAll('[id]').length:0
+              }));
+              return {current:current?.id,frames,overflow:document.documentElement.scrollWidth>innerWidth,
+                livePages:document.querySelectorAll('['+attribute+']').length,
+                animations:document.getAnimations().filter(a=>a.effect?.target?.closest('#report-content')).map(a=>({state:a.playState,duration:a.effect.getComputedTiming().duration}))};
+            },currentAttribute);
+          }
+          async function inspectSlide(direction) {
+            await slide.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+            const value=await frame();
+            assert.equal(value.livePages,1,label+': visual copies are not additional live readings');
+            const incoming=value.frames.find(item=>item.incoming),outgoing=value.frames.find(item=>item.outgoing);
+            assert.ok(incoming&&outgoing,label+': both readings participate in the horizontal transition');
+            assert.ok(direction>0?incoming.x>0.5:incoming.x<-.5,label+': the new reading enters from the correct side');
+            assert.ok(direction>0?outgoing.x<-.5:outgoing.x>.5,label+': the previous reading exits toward the gesture');
+            assert.equal(outgoing.hidden,'true');assert.equal(outgoing.inert,true);assert.equal(outgoing.duplicateIds,0);
+            assert.equal(value.overflow,false,label+': moving content never widens the document');
+            assert.ok(value.animations.some(a=>a.state==='running'&&a.duration>=150&&a.duration<=500),label+': an eased transition is actually running');
+            await settled();return value;
+          }
+          async function points(direction,distance=120) {
+            const paragraph=current.locator('.reader-prose p:visible').first();
+            await paragraph.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
+            return paragraph.evaluate((el,{direction,distance})=>{
+              const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let text,rect;
+              while((text=walker.nextNode())) {
+                if(!text.textContent.trim())continue;
+                const range=document.createRange();range.selectNodeContents(text);
+                rect=[...range.getClientRects()].find(box=>box.width>110&&box.top>=0&&box.bottom<=innerHeight);if(rect)break;
+              }
+              if(!rect)throw new Error('No visible line for motion gesture');
+              const travel=Math.min(distance,rect.width-12),left=rect.left+6,right=left+travel,y=rect.top+rect.height/2;
+              return direction<0?{from:{x:right,y},to:{x:left,y}}:{from:{x:left,y},to:{x:right,y}};
+            },{direction,distance});
+          }
+          async function begin(from,to) {
+            if(cdp) {
+              const point=(x,y)=>({x,y,id:1,radiusX:2,radiusY:2,force:1});
+              await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point(from.x,from.y)]});
+              for(let n=1;n<=6;n++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[point(from.x+(to.x-from.x)*n/6,from.y+(to.y-from.y)*n/6)]});
+            } else {await slide.mouse.move(from.x,from.y);await slide.mouse.down();await slide.mouse.move(to.x,to.y,{steps:6});}
+          }
+          async function release() {
+            if(cdp)await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});else await slide.mouse.up();
+          }
+
+          motionStage='drag follows pointer';
+          let gesturePath=await points(-1),before=await current.evaluate(el=>el.getBoundingClientRect().left);
+          await begin(gesturePath.from,gesturePath.to);
+          const offset=(await current.evaluate(el=>el.getBoundingClientRect().left))-before;
+          assert.ok(offset<-20&&offset>=-150,label+': the live reading follows the pressed pointer before release');
+          assert.equal(await current.getAttribute('id'),first,label+': dragging alone has not changed the item');
+          assert.equal(await slide.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,label+': dragging remains inside the screen');
+          if(record)await slide.screenshot({path:path.join(artifacts,'saju-slide-drag-'+kind+'-phone-small.png')});
+          await release();
+          const second=await current.getAttribute('id');assert.notEqual(second,first,label+': release commits one new item');
+          const left=await inspectSlide(1);
+
+          motionStage='reverse slide';gesturePath=await points(1);await begin(gesturePath.from,gesturePath.to);await release();
+          assert.equal(await current.getAttribute('id'),first);const right=await inspectSlide(-1);
+          motionStage='short and boundary return';
+          for(const [direction,distance] of [[-1,30],[1,110]]) {
+            gesturePath=await points(direction,distance);await begin(gesturePath.from,gesturePath.to);await release();await settled();
+            assert.equal(await current.getAttribute('id'),first,label+': a short or unavailable turn returns to the same reading');
+          }
+          motionStage='previous and next controls';
+          await steps.last().click();assert.equal(await current.getAttribute('id'),second);await inspectSlide(1);
+          assert.equal(await slide.evaluate(()=>document.activeElement?.textContent),'다음',label+': the next control retains focus');
+          await steps.last().click();await settled();
+          await steps.first().click();assert.equal(await current.getAttribute('id'),second);await inspectSlide(-1);
+          assert.equal(await slide.evaluate(()=>document.activeElement?.textContent),'이전',label+': the previous control retains focus');
+          await steps.first().click();assert.equal(await current.getAttribute('id'),first);await settled();
+
+          if(input==='mouse') {
+            motionStage='rapid direction change';
+            await steps.last().click();await steps.first().click();await settled();
+            assert.equal(await current.getAttribute('id'),first,label+': rapid control input has no stale final page');
+            motionStage='reduced motion and expiry cleanup';
+            await steps.last().click();
+            await slide.evaluate(()=>{document.documentElement.dataset.reducedMotion='true';});await settled();
+            assert.equal(await current.getAttribute('id'),second);
+            await steps.first().click();assert.equal(await current.getAttribute('id'),first);
+            assert.equal((await frame()).frames.length,0,label+': reduced motion has no moving copies');
+            await slide.evaluate(()=>{document.documentElement.dataset.reducedMotion='false';});
+            await steps.last().click();
+            await slide.evaluate(()=>{document.getElementById('report-content').hidden=true;});await settled();
+            await slide.evaluate(()=>{document.getElementById('report-content').hidden=false;});
+            assert.equal(await current.getAttribute('id'),second,label+': hiding an expiring result never changes its selected item');
+            await steps.first().click();
+            await slide.evaluate(()=>{globalThis.__oldMotionHost=document.querySelector('.reading-swipe-enabled');});
+            await slide.locator('#'+fixturePicker).selectOption(alternate);
+            await slide.waitForFunction(()=>!globalThis.__oldMotionHost.querySelector('.reading-slide-outgoing,.reading-slide-incoming,.reading-slide-dragging'));
+            assert.equal((await frame()).frames.length,0,label+': replacing the report leaves no former personal reading visible');
+          }
+          sajuMotionViews[label]={first,second,dragOffset:offset,left,right,settled:true,reducedAndRemovalChecked:input==='mouse'};
+        } catch(error) {
+          console.error(JSON.stringify({motionFailure:label,stage:motionStage,state:await slide.evaluate(()=>({
+            current:document.querySelector('[data-reader-current],[data-compatibility-current]')?.id,
+            copies:document.querySelectorAll('.reading-slide-outgoing').length,
+            moving:[...document.querySelectorAll('.reading-slide-incoming,.reading-slide-dragging')].map(el=>({id:el.id,transform:getComputedStyle(el).transform})),
+            animations:document.getAnimations().map(a=>({state:a.playState,time:a.currentTime,duration:a.effect?.getComputedTiming().duration}))
+          })).catch(()=>null)}));
+          await slide.screenshot({path:path.join(artifacts,'saju-slide-failure-'+kind+'-'+viewport+'.png')}).catch(()=>{});throw error;
+        } finally {
+          if(cdp)await cdp.detach();await context.close();
+          if(video)fs.renameSync(await video.path(),path.join(artifacts,'saju-slide-'+kind+'-preview.webm'));
+        }
+      }
+    }
     assert.deepEqual(errors, []);
     assert.deepEqual(failed, []);
-    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuEntryViews, sajuNavigation, sajuSummaryViews, sajuScoreViews, sajuScoreRegressions, sajuDaeunAssumptionViews, compatibilityPeople, compatibilityScores, sajuSwipeViews, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
+    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuEntryViews, sajuNavigation, sajuSummaryViews, sajuScoreViews, sajuScoreRegressions, sajuDaeunAssumptionViews, compatibilityPeople, compatibilityScores, sajuSwipeViews, sajuMotionViews, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => server.close());
