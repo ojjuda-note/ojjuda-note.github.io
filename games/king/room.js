@@ -11,7 +11,16 @@ const key=(field)=>'oj.king.'+actor+'.'+field;
 function saveStandalone(code){if(!party)save(key('last'),code)}
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const control=(title,act,primary=false)=>party?.control(act)??'<button type="button" class="'+(primary?'action':'secondary')+'" data-do="'+act+'">'+title+'</button>';
-const prompts = window.DrinkingPrompts.list('king');
+const recommend=window.DrinkingPrompts.recommendations('king');
+let missionStarted=false, missionEdit=0;
+async function suggestMission(){
+  const key=room.code+'/'+room.round, edit=++missionEdit;
+  const text=await recommend(key,draftMission.trim());
+  const field=view.querySelector('#order [name="mission"]');
+  if(!room||room.code+'/'+room.round!==key||edit!==missionEdit||!field)return;
+  if(text)field.value=draftMission=text;
+  else field.placeholder='추천할 미션이 없어요. 직접 적어 주세요.';
+}
 let revealed=false;
 let draftNumber=1,draftSecond=null,draftMission='';
 function numberOptions(count,selected,exclude){
@@ -37,7 +46,7 @@ function render(s,force=false){
   const first=!room||room.code!==s.code;
   if(!first&&(s.revision<room.revision||(!force&&s.revision===room.revision)))return;
   if(first||s.round!==room.round){
-    draftNumber=1;draftSecond=null;draftMission=prompts[Math.floor(Math.random()*prompts.length)];
+    draftNumber=1;draftSecond=null;draftMission='';missionStarted=false;missionEdit++;
   }
   if(first||s.round!==room.round||s.phase!==room.phase)revealed=false;
   if(first){
@@ -76,6 +85,8 @@ function render(s,force=false){
     }
   }
   view.innerHTML='<section class="card"><div class="inside">'+heading+content+'<div class="actions">'+control('방 나가기','leave')+'</div></div></section>';
+  if(!missionStarted&&s.phase==='order'&&s.me===s.king){missionStarted=true;void suggestMission();}
+
 }
 const messages={
  not_signed_in:'오쭈다 로그인이 필요해요.', banned:'지금은 대전방을 이용할 수 없어요.',
@@ -105,7 +116,7 @@ async function run(task){
   finally{busy=false;later()}
 }
 view.addEventListener('input',e=>{
-  if(e.target.name==='mission')draftMission=e.target.value;
+  if(e.target.name==='mission'){missionEdit++;draftMission=e.target.value;}
 });
 view.addEventListener('change',e=>{
   if(e.target.name==='number'){
@@ -152,10 +163,7 @@ view.addEventListener('click',e=>{
     return;
   }
   if(act==='leave'){if(!window.DrinkingStandaloneExit.confirm(room))return;run(async()=>{await api('leave',room.code, window.DrinkingStandaloneExit.options(room));saveStandalone('');history.replaceState(null,'',location.pathname);activeCode='';entry()});return}
-  if(act==='suggest'){
-    const other=prompts.filter(p=>p!==draftMission);
-    draftMission=other[Math.floor(Math.random()*other.length)];render(room,true);return;
-  }
+  if(act==='suggest'){void suggestMission();return;}
   if(act==='ready'||act==='again'){
     const current=room;
     run(async()=>{const updated=await api(act,current.code,{round:current.round});revealed=false;render(updated,true)});

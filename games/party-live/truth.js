@@ -13,8 +13,7 @@
   const baseText = new Set([...baseline.mild,...baseline.spicy]);
   const legacyDefaults = [...baseline.mild.slice(0,24),...baseline.spicy.slice(0,16)];
 
-  function personalDeck() {
-    const official = window.DrinkingPrompts.truth();
+  function personalDeck(official=window.DrinkingPrompts.truth()) {
     const deck = {mild:new Set(official.mild),spicy:new Set(official.spicy)};
     const canon = new Set([...official.mild,...official.spicy]);
     function add(flavor,question) {
@@ -142,11 +141,14 @@
     if (s.phase==='done') return '<h1>모두 한 번씩 마쳤어요!</h1><p>다음 판에는 어떤 질문이 나올까요?</p>';
     return board(s,ui)+form(s,ui);
   }
-  function roomDeck(count) {
-    const deck=personalDeck();
+  function roomDeck(s,official) {
+    const deck=personalDeck(official);
     for (const flavor of flavors) {
       const cards=deck[flavor];
-      if (cards.length<=2048) continue;
+      // Leave space for questions already added from other phones, plus this round's turns.
+      const limit=Math.max(0,2048-(s.game.added?.[flavor] || 0)-s.players.length);
+      if (cards.length<=limit) continue;
+      const count=Math.min(s.players.length,limit);
       // Each player draws once. A sample without replacement draws fairly from the whole catalog.
       for (let i=0;i<count;i++) {
         const j=i+Math.floor(Math.random()*(cards.length-i));
@@ -195,13 +197,14 @@
       const msg=$('#truth-start-message');
       try {
         msg.textContent='질문을 불러오는 중이에요…';
-        if (!await window.DrinkingPrompts.refresh()) {
-          msg.textContent='질문을 불러오지 못했어요. 연결을 확인하고 다시 시작해 주세요.';return;
-        }
+        const loaded=await window.DrinkingPrompts.refresh('truth');
         if (!current || current.s.code!==s.code || current.s.round!==s.round || current.s.phase!=='setup') return;
-        const latest=current.s, deck=roomDeck(latest.players.length);
+        const latest=current.s, deck=roomDeck(latest,loaded?window.DrinkingPrompts.truth():{mild:[],spicy:[]});
         const missing=enabledFlavors(e.mode).find(f=>!deck[f].length && !latest.game.added?.[f]);
-        if (missing) {msg.textContent=labels[missing]+' 질문을 한 장 이상 추가해 주세요.';return;}
+        if (missing) {
+          msg.textContent=loaded?labels[missing]+' 질문을 한 장 이상 추가해 주세요.':'질문을 불러오지 못했어요. 직접 추가하거나 다시 시작해 주세요.';
+          return;
+        }
         msg.textContent='';
         await current.ui.send('truth_begin',{deck,mode:e.mode,showFlavor:e.showFlavor});
       } finally {begin.disabled=false;}
