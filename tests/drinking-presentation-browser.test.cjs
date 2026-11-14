@@ -16,6 +16,7 @@ const kinds = ['croc','bottle','bomb','stopwatch','liar','king','truth','initial
 const viewports = [{width:390,height:844},{width:375,height:667},{width:1366,height:900},{width:844,height:390}];
 const largerViewports = [{width:720,height:740},{width:768,height:1024},{width:1024,height:768},{width:1600,height:900}];
 const gameViewports = [...viewports,...largerViewports];
+const crocReviewSizes = ['390x844','720x740','768x1024','1600x900'];
 const artifacts = path.join(__dirname,'artifacts/drinking-presentation');
 const glassAsset = '/games/drinking/assets/result-glass-v2.webp';
 const launchOptions = {headless:true,...(process.env.OJJUDA_CHROMIUM_PATH ? {executablePath:process.env.OJJUDA_CHROMIUM_PATH} : {})};
@@ -39,6 +40,18 @@ async function settledGame(page) {
   // visible text, controls and artwork rather than the implementation's scale.
   await page.waitForFunction(()=>!!document.querySelector('[data-dp-fitted="true"]'));
   await painted(page);
+}
+
+async function expectCrocPage(page) {
+  const themed=await page.evaluate(()=>[...document.styleSheets].some(sheet=>sheet.href&&
+    new URL(sheet.href,document.baseURI).pathname==='/games/croc/page-theme.css'&&
+    !sheet.disabled&&matchMedia(sheet.media.mediaText||'all').matches&&sheet.cssRules.length>0));
+  assert.ok(themed,'the entered crocodile game loads its page theme');
+  const arcadeLinks=await page.locator('#access-content a:visible').evaluateAll(links=>links.filter(link=>{
+    const url=new URL(link.href,document.baseURI);
+    return /오락실로/.test(link.textContent)||(url.pathname==='/world.html'&&url.searchParams.get('tab')==='arcade');
+  }).map(link=>({label:link.textContent.trim(),href:link.getAttribute('href')})));
+  assert.deepEqual(arcadeLinks,[],'an entered crocodile game returns to the drinking menu');
 }
 
 async function expectContentLayout(page,label,{local=false}={}) {
@@ -257,8 +270,9 @@ test('13 native games and 13 local games fill actual viewports and return to the
         const destination=new URL(await back.getAttribute('href'),origin);
         assert.equal(destination.pathname,'/games/drinking/');
         assert.equal(destination.searchParams.get('resume'),parent.code,'the shared room remains available from the drinking menu');
-        await allSizes(online.page,'native-'+kind,{capture:kind==='croc'?['768x1024','1600x900']:[]});
-        if(['croc','king','fingers','truth'].includes(kind))await screenshot(online.page,'native-'+kind+'-390x844');
+        if(kind==='croc')await expectCrocPage(online.page);
+        await allSizes(online.page,'native-'+kind,{capture:kind==='croc'?crocReviewSizes:[]});
+        if(['king','fingers','truth'].includes(kind))await screenshot(online.page,'native-'+kind+'-390x844');
         if(kind==='truth') {
           // Expanding this editor changes content without resizing the pane.
           // The input and submit action must remain visible after refitting.
@@ -352,11 +366,13 @@ test('13 native games and 13 local games fill actual viewports and return to the
       assert.equal((await local.page.locator('[data-local-back-label]').textContent()).trim(),'술게임으로');
       assert.equal(await local.page.locator('.menu-nav').count(),0,'the top link is the single game-menu navigation');
       assert.equal(await local.page.locator('.mode-back').isVisible(),false);
-      await allSizes(local.page,'local-'+kind+'-entry',{local:true,capture:kind==='croc'?['720x740','768x1024','1600x900']:[]});
+      if(kind==='croc')await expectCrocPage(local.page);
+      await allSizes(local.page,'local-'+kind+'-entry',{local:true,capture:kind==='croc'?crocReviewSizes:[]});
       if(kind==='bomb')await local.page.locator('[data-action="confirm-bomb-time"]').click();
       else await local.page.locator('[data-action="start"]').click();
       await local.page.waitForFunction(()=>!document.querySelector('#app [data-action="start"]'));
-      await allSizes(local.page,'local-'+kind+'-play',{local:true});
+      if(kind==='croc')await expectCrocPage(local.page);
+      await allSizes(local.page,'local-'+kind+'-play',{local:true,capture:kind==='croc'?crocReviewSizes:[]});
       if(['bottle','truth','liar'].includes(kind))await screenshot(local.page,'local-'+kind+'-390x844');
       if(kind==='updown') {
         for(let attempt=0;attempt<7&&await local.page.locator('#updown-value').count();attempt++) {

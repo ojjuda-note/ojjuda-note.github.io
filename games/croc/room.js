@@ -55,7 +55,7 @@ function entry(){
   room=null;clearTimeout(timer);fx.quiet();
   if(party){window.DrinkingPresentation?.leave();return party.missing();}
   const create=mode==='create';
-  view.innerHTML='<section class="card"><img class="hero" src="./art/croc.webp" alt=""><div class="inside"><h1>악어 이빨</h1><p>각자 휴대폰으로 같은 방에 모여 이빨을 하나씩 눌러요.</p>'+
+  view.innerHTML='<section class="card"><img class="hero" src="./art/croc.webp" alt=""><div class="inside"><div class="croc-kicker">01 · 운과 감각</div><h1>악어 이빨</h1><p>이빨 24개, 아픈 이빨은 딱 하나.<br>각자 휴대폰으로 같은 방에 모여 도전해요.</p>'+
     '<div class="tabs"><button data-do="create-tab" aria-pressed="'+create+'">방 만들기</button><button data-do="join-tab" aria-pressed="'+!create+'">방 들어가기</button></div>'+
     '<form id="entry">'+
     (create?'<label>방 제목<input name="title" required maxlength="40" value="악어 이빨 같이 한 판 해요"></label><label>참여 인원<select name="capacity">'+Array.from({length:11},(_,i)=>'<option value="'+(i+2)+'" '+(i===2?'selected':'')+'>'+(i+2)+'명</option>').join('')+'</select></label>':
@@ -97,7 +97,7 @@ function render(s){
     const lost=s.phase==='done';
     const biteId=roomId(s),ack=read(key('ack'))===biteId;
     let title=lost?esc(s.players[s.loser])+'님 당첨!':mine?'내 차례예요':esc(s.players[s.turn])+'님 차례';
-    let hint=lost?'아픈 이빨은 '+(s.trap+1)+'번이었어요. 들켰네요. 썸 탈 때도 이렇게 티 나요?':'남은 이빨 '+(24-s.pressed.length)+'개 · '+(mine?'이빨 하나를 골라 주세요.':'다른 참가자가 고르고 있어요.');
+    let hint=lost?'아픈 이빨은 '+(s.trap+1)+'번이었어요. 다음 판에는 피해 볼까요?':'남은 이빨 '+(24-s.pressed.length)+'개 · '+(mine?'아직 누르지 않은 이빨을 골라요.':'친구가 이빨을 고르고 있어요.');
     const controls=lost?'<div class="actions">'+(s.me===s.loser&&!ack?control('확인','ack',true):'')+(s.me===0?control('한 판 더','again',true):'')+control('방 나가기','leave')+'</div>':'<div class="actions">'+control('방 나가기','leave')+'</div>';
     content='<div class="topline"><span>방 '+(party?.code||s.code)+'</span><span>'+s.round+'번째 판 · '+s.players.length+'명</span></div><h1>'+title+'</h1><p aria-live="polite">'+hint+'</p>'+controls+board(s,!lost&&mine)+members;
     if(old&&s.round===old.round&&s.pressed.length>old.pressed.length)fx.play('tooth');

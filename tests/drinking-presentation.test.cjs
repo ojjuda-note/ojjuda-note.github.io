@@ -185,9 +185,14 @@ test('local bottle capture handlers ignore help contents and backdrop clicks whi
 
 test('the local primary back link restores the game menu and cancels a running stopwatch', async t => {
   const pendingFrames=new Set(),cancelledFrames=new Set();
+  const release=JSON.parse(fs.readFileSync(path.join(root,'game-release.json'),'utf8'));
   const f=await screen({url:'/games/drinking/local/#menu',prepare(w){
     w.scrollTo=()=>{};
     w.localStorage.setItem('oj.party.member-a.players',JSON.stringify(['하나','둘']));
+    w.fetch=async url=>{
+      assert.equal(new URL(url,w.location.href).pathname,'/game-release.json');
+      return {ok:true,json:async()=>release};
+    };
     const request=w.requestAnimationFrame,cancel=w.cancelAnimationFrame;
     w.requestAnimationFrame=callback=>{
       const id=request(time=>{pendingFrames.delete(id);callback(time);});
@@ -201,8 +206,13 @@ test('the local primary back link restores the game menu and cancels a running s
   assert.equal(f.find('[data-local-back-label]').textContent,'오락실로');
   assert.equal(f.find('.mode-back').hidden,false);
 
-  f.click('[data-action="open"][data-value="stopwatch"]');await f.advance(0);
-  await until(()=>f.find('[data-drinking-dialog="guide"]'),'stopwatch instructions');
+  f.click('[data-action="open"][data-value="stopwatch"]');
+  await until(async()=>{
+    // The release response settles before go() queues the real hashchange.
+    // Drain zero-delay work as well as promises while waiting for game entry.
+    await f.advance(0);
+    return f.find('[data-drinking-dialog="guide"]');
+  },'stopwatch instructions');
   f.click('[data-drinking-dialog="guide"] [data-drinking-close]');
   assert.equal(f.find('#local-back').getAttribute('href'),'#menu');
   assert.equal(f.find('[data-local-back-label]').textContent,'술게임으로');

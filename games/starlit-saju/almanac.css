@@ -1,0 +1,214 @@
+/* Two views of the same almanac inside the Ojjuda hub. */
+html:has(body.saju-edition) { background: #f7f5ef; }
+body.saju-edition {
+  --page: #f7f5ef;
+  --surface: #fffefa;
+  --surface-soft: #f4f1e8;
+  --ink: #1e3333;
+  --text-muted: #576361;
+  --primary: #244c49;
+  --primary-hover: #163c39;
+  --primary-soft: #e9f0e9;
+  --border: #d4d7cc;
+  --control-border: #84918b;
+  --title-face: "Nanum Myeongjo", "Noto Serif KR", "Noto Serif CJK KR", "AppleMyungjo", Batang, serif;
+  --sheet: 760px;
+  background: var(--page);
+}
+body.saju-edition [hidden] { display: none !important; }
+.saju-edition .visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+body.saju-edition .site-header {
+  max-width: 1032px; min-height: 58px; margin: auto; padding: 5px 24px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+body.saju-edition .brand {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
+  color: var(--ink); font: 650 15px/1.4 var(--sans);
+}
+body.saju-edition .brand svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+body.saju-edition .motion-toggle { border: 0; border-radius: 50%; background: none; }
+body.saju-edition main, body.saju-edition .compatibility-main {
+  max-width: 1032px; margin: 0 auto; padding: 0 24px 48px;
+}
+.saju-edition .saju-mast {
+  position: relative; isolation: isolate; overflow: hidden;
+  padding: 24px 38px 0; border-radius: 16px 16px 3px 3px;
+  background: #203c3c; color: #fff8e8;
+}
+body.saju-edition .saju-mast h1 {
+  color: #fff8e8; max-width: none; margin: 0 0 16px;
+  font: 600 clamp(32px,4.5vw,50px)/1.35 var(--title-face); letter-spacing: -.065em; text-align: left;
+}
+.saju-edition .mast-art {
+  position: absolute; z-index: -1; overflow: hidden; inset: 0 0 0 auto; width: 48%;
+  background: radial-gradient(circle at 12% 22%,#afb89f 1px,transparent 1.6px),
+    radial-gradient(circle at 35% 74%,#abbfae 1px,transparent 1.6px),
+    radial-gradient(circle at 78% 16%,#e8d9a8 1px,transparent 1.6px),
+    radial-gradient(circle at 84% 40%,#a9bfae 1px,transparent 1.6px);
+}
+.mast-art i { position: absolute; display: block; }
+.mast-art .moon-disc {
+  right: 27%; top: 16%; width: clamp(40px,6vw,77px); aspect-ratio: 1; border-radius: 50%;
+  background: #e3cf99; box-shadow: inset -9px -3px 18px #c0a979;
+}
+.mast-art .sky-ring {
+  width: 74%; aspect-ratio: 1.8; right: 3%; top: 19%; transform: rotate(-24deg);
+  border: 1px solid #a3b69b65; border-radius: 50%;
+}
+.mast-art .sky-ridge {
+  bottom: -19%; left: 13%; width: 120%; height: 70%; border-radius: 50% 45% 0 0;
+  background: #355351; border-top: 1px solid #94a68a6e; transform: rotate(-8deg);
+}
+.mast-art .sky-ridge::after {
+  content: ""; position: absolute; inset: 30% 0 -60% -16%; border-radius: 50% 55% 0 0;
+  transform: rotate(12deg); border-top: 1px solid #8b9b8070; background: #294643;
+}
+body.saju-edition .reading-service-nav {
+  display: flex; justify-content: flex-start; width: fit-content; max-width: 100%;
+  gap: 22px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent;
+}
+body.saju-edition .reading-service-nav > a,
+body.saju-edition .reading-service-nav > a:hover,
+body.saju-edition .reading-service-nav > a[aria-current=page] {
+  position: relative; flex: none; gap: 6px; padding: 6px 0 11px; background: #203c3c;
+  color: #dce5d9; box-shadow: none; border: 0; border-radius: 0;
+}
+body.saju-edition .reading-service-nav > a[aria-current=page] { color: #fff8e8; }
+.saju-edition .reading-service-nav a[aria-current]::after {
+  content: ""; position: absolute; inset: auto 0 0; height: 3px; background: #e5cc91;
+}
+body.saju-edition .reading-service-nav a strong { color: inherit; font-size: 16px; }
+body.saju-edition .reading-service-nav a[aria-current=page] strong { color: #fff8e8; }
+body.saju-edition .reading-service-nav a > span { color: #e0dcc9; font-size: 14px; }
+body.saju-edition .entry-shell, body.saju-edition .result, body.saju-edition #compatibility-result {
+  max-width: var(--sheet); margin: 26px auto 0;
+}
+body.saju-edition .birth-panel {
+  margin: 0; padding: clamp(18px,4vw,40px); background: var(--surface); border: 1px solid var(--border);
+  border-radius: 3px 3px 16px 16px; box-shadow: 0 4px 16px #263d3506;
+}
+body.saju-edition .entry-progress {
+  margin: 0 0 16px; padding: 0; gap: 18px; justify-content: flex-start; border: 0;
+}
+body.saju-edition .entry-progress button,
+body.saju-edition .entry-progress button[aria-current=step],
+body.saju-edition .entry-progress button:disabled {
+  flex: none; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 0; background: none;
+}
+body.saju-edition .entry-progress button > span:first-child {
+  width: 20px; height: 20px; border: 1px solid var(--control-border); background: transparent;
+}
+body.saju-edition .entry-progress button[aria-current=step] > span:first-child { background: var(--primary); border-color: var(--primary); color: white; }
+body.saju-edition .flow-step { display: flow-root; }
+body.saju-edition .birth-panel .flow-step-heading {
+  margin: 0 0 12px; color: var(--ink); font: 650 clamp(24px,3vw,31px)/1.5 var(--title-face);
+}
+body.saju-edition .saved-people-disclosure { margin: 0 0 12px; padding: 0; background: none; border: 0; }
+body.saju-edition .saved-people-disclosure > summary {
+  justify-content: flex-start; gap: 8px; min-height: 44px; padding: 0; font-size: 14px;
+}
+body.saju-edition .saved-people-disclosure > summary::after { font-size: 17px; }
+.saju-edition .stored-note { padding: 0 12px 10px; }
+body.saju-edition form[data-entry-flow] .calendar-field,
+body.saju-edition form[data-entry-flow] .time-field,
+body.saju-edition form[data-entry-flow] .pair-calendar { margin: 10px 0; }
+body.saju-edition form[data-entry-flow] .segmented { display: inline-grid; grid-template-columns: 1fr 1fr; min-width: 160px; }
+body.saju-edition form[data-entry-flow] .pair-calendar { grid-template-columns: auto minmax(90px,160px); justify-content: start; }
+body.saju-edition form[data-entry-flow] .time-field legend { margin-bottom: 0; }
+body.saju-edition .optional-person { border-top: 1px solid var(--border); margin: 12px 0 0; }
+body.saju-edition .optional-person > summary {
+  display: flex; align-items: center; gap: 8px; min-height: 48px; color: var(--ink); font-weight: 650; cursor: pointer; list-style: none;
+}
+.optional-person summary::-webkit-details-marker { display: none; }
+.optional-person summary small { font: 400 14px var(--sans); color: var(--text-muted); }
+.optional-person summary::after { content: "+"; margin-left: auto; color: var(--primary); font-size: 20px; }
+.optional-person[open] summary::after { content: "−"; }
+body.saju-edition .flow-actions { position: static; margin-top: 8px; padding: 10px 0 0; border: 0; background: transparent; }
+body.saju-edition form[data-entry-flow] .product-options,
+body.saju-edition .report-purchase-panel .product-options {
+  display: grid; grid-template-columns: 1fr; gap: 6px;
+}
+body.saju-edition :is(form[data-entry-flow],.report-purchase-panel) .product-options .product-option {
+  display: grid; grid-template-columns: minmax(0,1fr) auto; grid-template-rows: auto auto;
+  align-items: center; min-height: 64px; padding: 9px 15px; gap: 0 12px; border: 1px solid var(--control-border);
+  border-radius: 8px; background: var(--surface); color: var(--ink);
+}
+body.saju-edition :is(form[data-entry-flow],.report-purchase-panel) .product-options input:checked + .product-option {
+  border-color: var(--primary); box-shadow: inset 3px 0 var(--primary); background: var(--primary-soft);
+}
+body.saju-edition .product-options .product-option small { grid-row: 2; color: var(--text-muted); }
+body.saju-edition :is(form[data-entry-flow],.report-purchase-panel) .product-options .product-option b {
+  grid-column: 2; grid-row: 1 / 3; align-self: center; margin: 0; padding: 0;
+  border: 0; background: none; color: var(--primary); font-size: 16px;
+}
+body.saju-edition .flow-review { padding: 12px 16px; background: var(--surface-soft); }
+body.saju-edition .flow-review dl { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+body.saju-edition .flow-review dl > div { display: flex; align-items: baseline; gap: 6px; }
+body.saju-edition .reading-result-heading { padding: 0 0 12px; border-bottom: 1px solid var(--border); text-align: left; }
+body.saju-edition .reading-result-heading h2 { color: var(--ink); font-family: var(--title-face); }
+body.saju-edition .reading-domain-nav { gap: 3px; border-bottom: 1px solid var(--border); }
+body.saju-edition .reading-domain-button,
+body.saju-edition .reading-domain-button[aria-pressed=true] {
+  border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: var(--surface); color: var(--text-muted);
+}
+body.saju-edition .reading-domain-button[aria-pressed=true] { border-bottom-color: var(--primary); color: var(--primary); }
+body.saju-edition .reading-item-toggle { min-height: 48px; }
+body.saju-edition .reading-current-title, body.saju-edition .reading-item-action { grid-row: 1; }
+body.saju-edition :is(#report-content,#compatibility-report) {
+  padding: clamp(12px,3vw,32px); border-radius: 3px 3px 12px 12px; background: var(--surface);
+}
+body.saju-edition :is(.reader-card-title,.reading-body-heading,.reader-headline) { font-family: var(--title-face); }
+body.saju-edition .result-actions { border-top: 1px solid var(--border); padding-top: 18px; }
+body.saju-edition .result-actions button { flex: 1; }
+body.saju-edition .saju-mast :focus-visible { outline-color: #f6d796; outline-offset: -3px; }
+@media (min-width:760px) {
+  body.saju-edition .flow-step[data-flow-person] { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; align-items: start; }
+  body.saju-edition .flow-step[data-flow-person] > * { grid-column: 1 / -1; }
+  body.saju-edition .flow-step > .calendar-field { grid-column: 1; }
+  body.saju-edition .flow-step > .time-field { grid-column: 2; }
+}
+@media (max-width:600px) {
+  body.saju-edition .site-header { min-height: 48px; padding: 2px 16px; }
+  body.saju-edition main, body.saju-edition .compatibility-main { padding: 0 12px 28px; }
+  .saju-edition .saju-mast { padding: 18px 16px 0; border-radius: 12px 12px 3px 3px; }
+  body.saju-edition .saju-mast h1 { margin-bottom: 9px; }
+  .saju-edition .mast-art { top: -5%; bottom: 42%; width: 46%; }
+  body.saju-edition .reading-service-nav { gap: 12px; }
+  body.saju-edition .reading-service-nav > a { flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-start; }
+  body.saju-edition .reading-service-nav > a { gap: 5px; }
+  body.saju-edition .reading-service-nav a strong { font-size: 15px; }
+  body.saju-edition .entry-shell, body.saju-edition .result, body.saju-edition #compatibility-result { margin-top: 12px; }
+  body.saju-edition .birth-panel { padding: 14px 16px 18px; }
+  body.saju-edition .entry-progress { gap: 14px; margin-bottom: 8px; }
+  body.saju-edition .entry-progress button { gap: 5px; }
+}
+body.saju-edition .reading-birth-info {
+  margin: 4px 0 0; text-align: left; color: var(--text-muted);
+}
+body.saju-edition .reading-birth-info > summary {
+  display: list-item; width: fit-content; max-width: 100%; min-height: 44px;
+  padding: 9px 0; font-size: 15px; color: var(--primary); cursor: pointer;
+}
+body.saju-edition .reading-birth-info :is(.birth-summary,.lunar-summary,.zodiac-preview) { text-align: left; }
+body.saju-edition .result .reading-controls { padding: 10px 0; background: transparent; border: 0; }
+body.saju-edition .result .report-toc { display: inline-flex; gap: 14px; margin: 0 0 8px; }
+body.saju-edition .result .report-toc a { min-height: 44px; padding: 6px 0; border: 0; background: none; color: var(--primary); }
+body.saju-edition .reading-result-heading h2 { font-size: clamp(26px,4vw,36px); }
+@media (min-width:760px) {
+  body.saju-edition .result:not([hidden]) { max-width: 984px; }
+  body.saju-edition .detailed-reading [data-reader-paged=true] {
+    display: grid; grid-template-columns: minmax(172px, 23%) minmax(0, 1fr);
+    align-items: start; column-gap: 26px;
+  }
+  body.saju-edition [data-reader-paged=true] > * { grid-column: 2; min-width: 0; }
+  body.saju-edition [data-reader-paged=true] > .reading-pager {
+    position: sticky; top: 12px; grid-column: 1; grid-row: 1 / span 16;
+    max-height: calc(100vh - 24px); overflow-y: auto; padding: 0 8px 8px 0;
+  }
+  body.saju-edition .reading-domain-nav { display: grid; grid-template-columns: 1fr 1fr; }
+  body.saju-edition .reading-pager-controls { grid-template-columns: 44px minmax(0,1fr) 44px; }
+  body.saju-edition .reading-item-list { grid-template-columns: 1fr; }
+}

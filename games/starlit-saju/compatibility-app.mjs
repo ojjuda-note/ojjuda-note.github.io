@@ -3,10 +3,10 @@ import {readingScopeText} from './reading-scope.mjs?v=20261114-saju-final-review
 import { SajuPayment } from './payment.js?v=20261113-saju-lists1';
 import { SajuCompatibilityPayment, COMPATIBILITY_PRICE } from './compatibility-payment.mjs?v=20261113-compatibility20-1';
 import { compatibilityScoreText } from './compatibility-score-view.mjs?v=20261114-saju-copy1';
-import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261114-saju-depth1';
+import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261114-saju-almanac1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
 import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-copy1';
-import { attachEntryFlow } from './entry-flow.mjs?v=20261114-saju-copy1';
+import { attachEntryFlow } from './entry-flow.mjs?v=20261114-saju-almanac1';
 
 const $=id=>document.getElementById(id);
 const form=$('compatibility-form'),button=$('compatibility-open');
@@ -181,7 +181,7 @@ async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
     import('./compatibility.mjs?v=20261114-saju-final-review2'),
-    import('./report-view.mjs?v=20261114-saju-final-review2'),
+    import('./report-view.mjs?v=20261114-saju-almanac1'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
 }

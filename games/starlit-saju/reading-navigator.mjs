@@ -15,9 +15,7 @@ export function createReadingNavigator({select,pages,domains,domainForPage,group
   const picker=make('details','reading-item-picker');picker.id=`${select.id}-items`;
   const toggle=make('summary','reading-item-toggle');toggle.id=`${select.id}-toggle`;
   const currentTitle=make('strong','reading-current-title');
-  const count=make('span','reading-item-count');
-  toggle.append(make('span','reading-current-caption','지금 읽는 항목'),currentTitle,count,
-    make('span','reading-item-action','항목 목록'));
+  toggle.append(currentTitle,make('span','reading-item-action','목차'));
   const list=make('div','reading-item-groups');list.id=`${select.id}-list`;
   toggle.setAttribute('aria-controls',list.id);
   picker.append(toggle,list);root.append(domainNav,picker);
@@ -103,7 +101,6 @@ export function createReadingNavigator({select,pages,domains,domainForPage,group
       button.setAttribute('aria-pressed',String(id===activeDomain));
     }
     currentTitle.textContent=selected.label;
-    count.textContent=`${[...items.values()].filter(item=>item.domain===activeDomain).length}개 항목`;
     root.dataset.readingDomain=activeDomain;
   }
   return {element:root,toggle,sync,focus({open=false}={}) {

@@ -1,11 +1,11 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261114-drinking-fit1'
+ const revision='20261114-saju-almanac1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
-  croc:'1.3.2',
+  croc:'1.3.3',
   liar:'1.5.2',
   king:'1.6.2',
   minority:'1.5.2',
@@ -18,9 +18,9 @@
   fingers:'1.5.2',
   imagevote:'1.5.2',
   updown:'1.3.2',
-  drinking:'1.7.2',
+  drinking:'1.7.3',
   tarot:'1.10.2',
-  saju:'2.11.1',
+  saju:'2.12.0',
   group:'1.2.2',
   chacha_rush:'1.1.1',
   byeolcheonji:'1.0.5',

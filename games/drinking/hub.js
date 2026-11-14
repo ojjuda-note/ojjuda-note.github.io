@@ -21,6 +21,21 @@
   const gameMin = kind => ['liar','king','minority','mission'].includes(kind) ? 3 : 2;
   const codePattern = /^[A-Z0-9]{6}$/;
   const params = new URL(location.href).searchParams;
+  const localPlay = byId('local-play');
+  let openingLocal = false;
+  localPlay?.addEventListener('click', async event => {
+    if (event.defaultPrevented || event.button || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    if (openingLocal) return;
+    openingLocal = true;
+    const source = location.href;
+    try {
+      const revision = new URL(localPlay.href).searchParams.get('v');
+      if (!await window.OjjudaDrinkingEntry?.navigateLocal('menu', revision) && location.href === source &&
+          !document.querySelector('.play-shell, dialog[open]'))
+        location.assign(localPlay.href);
+    } finally { openingLocal = false; }
+  });
   if (!params.has('room') && !params.has('game') && params.get('mode') !== 'multi') {
     const code=(params.get('resume')||'').toUpperCase(), direct=params.get('gameFrom');
     if(codePattern.test(code)&&(!direct||gameById(direct))){
