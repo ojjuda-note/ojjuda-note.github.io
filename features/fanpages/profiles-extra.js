@@ -235,12 +235,13 @@ if (btsProfile) {
    Other personal data are unpublished or unverified and remain blank. */
 const seventeenProfile = window.OJJUDA_FAN_PROFILES.seventeen;
 if (seventeenProfile) {
-  seventeenProfile.checkedAt = '2026.11.12';
+  seventeenProfile.checkedAt = '2026.11.14';
   seventeenProfile.expanded = true;
   seventeenProfile.records = [
     { year: '2015.05', title: '17 CARAT로 데뷔', detail: '13명 · 보컬/힙합/퍼포먼스 3유닛 · 직접 제작에 참여', href: 'https://www.pledis.co.kr/artist/detail/seventeen/profile/' },
     { year: '2025.05', title: '정규 5집 HAPPY BURSTDAY', detail: '타이틀 THUNDER · 단체곡 3곡과 멤버 솔로 13곡', href: 'https://www.seventeen-17.jp/posts/discography/incaiv' },
-    { year: '2026.10', title: '정한×조슈아 JxJ 유닛 DREAMSCAPE', detail: '타이틀 12 o’clock · 미니 1집 7곡', href: 'https://www.pledis.co.kr/en/artist/detail/seventeen/discography/?albumType=ALL' }
+    { year: '2026.10', title: '정한×조슈아 JxJ 유닛 DREAMSCAPE', detail: '타이틀 12 o’clock · 미니 1집 7곡', href: 'https://www.pledis.co.kr/en/artist/detail/seventeen/discography/?albumType=ALL' },
+    { year: '2026.10', title: 'JxJ DREAMSCAPE · 일본 골드 인증', detail: '10월도 일본 레코드협회 골드 디스크(누적 10만 장 이상 출하) · 11/11 공식 발표', href: 'https://www.seventeen-17.jp/posts/information/hheyrw' }
   ];
   const officialBirthdays = {
     '에스쿱스': ['1995.08.08', 'scoups'],
@@ -513,3 +514,5 @@ if (boynextdoorProfile) {
 
 // Pending PR reconciliation: only the eight manually reviewed profiles.
 for (const id of ["hearts2hearts", "kissoflife", "kiiikiii", "stayc", "seventeen", "enhypen", "riize", "boynextdoor"]) window.OJJUDA_FAN_PROFILES[id].checkedAt = '2026.11.13';
+// SEVENTEEN reviewed in n=48 without modifying other groups.
+window.OJJUDA_FAN_PROFILES.seventeen.checkedAt = '2026.11.14';
