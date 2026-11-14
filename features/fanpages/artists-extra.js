@@ -523,8 +523,10 @@
       members: ['RM', '진', '슈가', '제이홉', '지민', '뷔', '정국'],
       debut: '2013.06.13', debutWork: '2 COOL 4 SKOOL', songs: ['No More Dream', 'We Are Bulletproof Pt.2'],
       concept: '음악과 이야기를 통해 전 세계 아미와 연결되는 일곱 멤버.',
+      checkedAt: '2026.11.14',
       official: 'https://ibighit.com/ko/bts/profile/', youtube: 'https://www.youtube.com/@BTS',
       photo: 'BTS during a White House press conference May 31, 2022 (cropped).jpg', photoLabel: '백악관 기자회견', photoYear: '2022', credit: 'The White House', license: 'Public domain',
+      morePhotos: [commonsPhoto('BTS Arirang World Tour in Paris (17 July 2026) - stadium view.jpg', 'ARIRANG 파리 공연장 전경 · 원본 그대로', '2026', 'Chiyako92', 'CC BY-SA 4.0')],
       music: [
         {
           "title": "ARIRANG",
@@ -573,12 +575,14 @@
           "sub": "가오슝 국립경기장 · Live Nation · 19:00 (현지)",
           "href": "https://tixcraft.com/activity/detail/26_btskns"
         },
+        {"date":"2026-11-21","title":"BTS WORLD TOUR ARIRANG · 가오슝 일본 영화관 생중계","sub":"일본 전국 영화관 · 현지 상영 시간·예매처는 공식 안내 확인","href":"https://bts-official.jp/news/7c1afecf3d0c"},
         {
           "date": "2026-11-22",
           "title": "BTS WORLD TOUR ARIRANG · 가오슝",
           "sub": "가오슝 국립경기장 · Live Nation · 19:00 (현지)",
           "href": "https://tixcraft.com/activity/detail/26_btskns"
         },
+        {"date":"2026-11-28","title":"BTS ARIRANG 도쿄돔 공연·특별편 일본 방송","sub":"TBS 채널 1 · 공연 20:00, 특별편 21:50(일본 시간) · 편성 변경은 TBS 확인","href":"https://www.tbs.co.jp/tbs-ch/information/2026_1026_1100.html"},
         {
           "date": "2026-12-03",
           "title": "BTS WORLD TOUR ARIRANG · 방콕",
@@ -650,9 +654,23 @@
           "title": "BTS WORLD TOUR ARIRANG · 자카르타",
           "sub": "겔로라 붕 카르노 주경기장 · Live Nation · 현지 공연 시각은 예매처 확인",
           "href": "https://btsworldtourofficial.com/"
-        }
+        },
+        {"date":"2026-12-30","title":"BTS ARIRANG 자카르타 공연 일본 영화관 생중계","sub":"일본 전국 영화관 · 12/29 자카르타 공연과 구분 · 상영 12/30 일본 현지","href":"https://bts-official.jp/news/7c1afecf3d0c"},
+        {"date":"2027-02-12","title":"BTS WORLD TOUR ARIRANG · 멜버른","sub":"멜버른 · 마블 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-02-13","title":"BTS WORLD TOUR ARIRANG · 멜버른","sub":"멜버른 · 마블 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-02-20","title":"BTS WORLD TOUR ARIRANG · 시드니","sub":"시드니 · 아코르 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-02-21","title":"BTS WORLD TOUR ARIRANG · 시드니","sub":"시드니 · 아코르 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-03-04","title":"BTS WORLD TOUR ARIRANG · 홍콩","sub":"홍콩 · 카이탁 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-03-06","title":"BTS WORLD TOUR ARIRANG · 홍콩","sub":"홍콩 · 카이탁 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-03-07","title":"BTS WORLD TOUR ARIRANG · 홍콩","sub":"홍콩 · 카이탁 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-03-13","title":"BTS WORLD TOUR ARIRANG · 불라칸","sub":"불라칸 · 필리핀 스포츠 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-03-14","title":"BTS WORLD TOUR ARIRANG · 불라칸","sub":"불라칸 · 필리핀 스포츠 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-03-16","title":"BTS WORLD TOUR ARIRANG · 불라칸","sub":"불라칸 · 필리핀 스포츠 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"}
       ],
       news: [
+        {"date":"2026.11.11","tag":"공연","title":"가오슝·자카르타 공연 일본 영화관 생중계 예고편 및 관객 특전 발표","href":"https://bts-official.jp/news/7c1afecf3d0c"},
+        {"date":"2026.11.09","tag":"굿즈","title":"ARIRANG 런던 공연 영상 패키지 일반·멤버판 공식 발매 안내","href":"https://bts-official.jp/news/d75ca5ab6dd5"},
+        {"date":"2026.10.26","tag":"방송","title":"11월 28일 TBS 도쿄돔 공연과 특별편 일본 CS 방송 안내","href":"https://www.tbs.co.jp/tbs-ch/information/2026_1026_1100.html"},
         {
           "date": "2026.07.18",
           "tag": "기록",
@@ -685,6 +703,9 @@
         }
       ],
       merch: [
+        {"title":"ARIRANG IN LONDON 공연 영상 패키지 · 일반판/멤버판","sub":"Weverse Global 2차 예약 11/11 13:00~11/30 23:59(KST) · 12/18 발매·출고 예정 · 재고는 판매처 확인","href":"https://shop.weverse.io/en/shop/USD/artists/2/notices/14935"},
+        {"title":"ARIRANG IN JAPAN 도쿄돔 공연 디지털 코드","sub":"BTS 일본 공식 · 10/2 예약 시작 · 12/23 발매 예정 · 재고·배송 확인","href":"https://bts-official.jp/news/104e97bc96b7"},
+        {"title":"BTS × BE@RBRICK 100%·400%·1000%","sub":"Weverse 공식 협업 MD · 10/7~10/14 예약 종료 · 2027/4/13 출고 예정 · 가격·재고 미단정","href":"https://shop.weverse.io/ko/shop/USD/artists/2/notices/14525"},
         {
           "title": "ARIRANG 공식 MD",
           "sub": "Weverse · 일부 공지 로그인 필요 · 재고는 판매처 확인",
@@ -697,6 +718,7 @@
         }
       ],
       campaigns: [
+        {"kind":"콜라보","date":"2026.10.07","title":"BTS × BE@RBRICK 공식 피규어 협업","sub":"공식 BE@RBRICK 100%·400%·1000% · 10/7~10/14 예약 판매 종료","href":"https://shop.weverse.io/ko/shop/USD/artists/2/notices/14525"},
         {
           "kind": "콜라보",
           "date": "2026.03",
