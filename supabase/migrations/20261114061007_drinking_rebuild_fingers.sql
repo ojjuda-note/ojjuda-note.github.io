@@ -1,0 +1,80 @@
+-- Replace the fingers catalog completely. Current room snapshots remain untouched.
+begin;
+select pg_advisory_xact_lock(24613,911);
+-- Submissions do not take the catalog advisory lock. Keep the hash snapshot
+-- and the queue deletion together while those inserts wait for this commit.
+lock table ojjuda_arcade_internal.drinking_prompt_queue in share row exclusive mode;
+insert into ojjuda_arcade_internal.drinking_prompt_baseline(fingerprint)
+select fingerprint from ojjuda_arcade_internal.drinking_prompt_queue where kind='fingers' on conflict do nothing;
+delete from ojjuda_arcade_internal.drinking_prompts where kind='fingers';
+delete from ojjuda_arcade_internal.drinking_content_items where kind='fingers';
+delete from ojjuda_arcade_internal.drinking_prompt_queue where kind='fingers';
+insert into ojjuda_arcade_internal.drinking_content_items(kind,body,second,party_pick)
+select 'fingers',entry#>>'{}',null,true
+from jsonb_array_elements($cards$[
+  "소개팅 전에 상대의 SNS를 찾아본 사람",
+  "소개팅 사진을 실제보다 잘 나온 것으로 골라 올린 사람",
+  "소개팅에서 마음에 들지 않았는데도 다음 만남을 약속한 사람",
+  "친구와 같은 사람에게 동시에 호감을 가진 적이 있는 사람",
+  "좋아하는 사람과 우연히 만난 척 동선을 맞춰본 사람",
+  "관심 있는 사람의 답장을 기다리며 채팅방을 여러 번 연 사람",
+  "호감이 있어도 일부러 답장을 늦춰본 사람",
+  "관심 없는 사람에게 외로워서 먼저 연락해본 사람",
+  "처음 만난 날 서로 원해서 키스한 적이 있는 사람",
+  "사귀기로 하기 전에 키스한 적이 있는 사람",
+  "키스하고 싶어도 말하지 못하고 헤어진 적이 있는 사람",
+  "키스한 뒤 오히려 마음이 식은 적이 있는 사람",
+  "친구라고 생각했던 사람과 키스한 적이 있는 사람",
+  "키스가 좋았는데 아무렇지 않은 척한 적이 있는 사람",
+  "스킨십을 먼저 제안해본 사람",
+  "연인과 스킨십하고 싶어서 만날 핑계를 만든 사람",
+  "원나잇 경험을 가까운 친구에게도 숨긴 사람",
+  "가벼운 만남이 진지한 연애로 바뀐 적이 있는 사람",
+  "가벼운 관계라 말했지만 혼자 더 좋아한 적이 있는 사람",
+  "서로 가볍게 만나기로 하고도 질투한 적이 있는 사람",
+  "성적 궁합 때문에 관계를 계속한 적이 있는 사람",
+  "성적 궁합이 아쉬웠지만 괜찮은 척한 적이 있는 사람",
+  "연인에게 아직 말하지 않은 성적 취향이 있는 사람",
+  "연인과 성관계를 원하는 빈도를 솔직히 대화한 적이 있는 사람",
+  "연인의 집에서 하룻밤을 보낸 적이 있는 사람",
+  "연인을 집에 부르기 전에 민망한 물건을 숨긴 사람",
+  "연인과 동거해본 사람",
+  "동거 중인데 주변에는 따로 산다고 말한 적이 있는 사람",
+  "연인이 자고 가길 바라며 다음 날 일정이 없다고 말한 사람",
+  "연인에게 빌려준 옷을 돌려받지 않은 사람",
+  "연인과 함께 자다가 혼자 자고 싶다고 느낀 사람",
+  "여행에서 연인의 생활 습관에 놀란 적이 있는 사람",
+  "헤어진 뒤 전 애인의 SNS를 찾아본 사람",
+  "전 애인의 연락처를 지웠다가 다시 저장한 사람",
+  "전 애인의 사진을 아직 개인적으로 보관하는 사람",
+  "재회할 마음은 없는데 전 애인에게 안부를 물은 사람",
+  "헤어지자고 먼저 말하고 뒤늦게 붙잡아본 사람",
+  "전 애인과 다시 만나본 사람",
+  "전 애인에게 보여주고 싶어 근황 사진을 올린 사람",
+  "현재 연인 앞에서 전 애인 이름을 잘못 부른 사람",
+  "연애 중 다른 사람에게 설렌 적이 있는 사람",
+  "연인이 있다는 말을 일부러 늦게 한 적이 있는 사람",
+  "질투하면서 질투 아니라고 말한 적이 있는 사람",
+  "연인의 과거를 물어보고 답을 들은 뒤 후회한 사람",
+  "연인에게 알리지 않은 연애 관련 지출이 있는 사람",
+  "연인의 친구에게 잘 보이려고 평소와 다르게 행동한 사람",
+  "헤어질 생각을 숨긴 채 데이트한 적이 있는 사람",
+  "연애 경험을 실제보다 많거나 적게 말한 사람",
+  "친구의 연애 상담을 듣다가 그 친구에게 끌린 사람",
+  "친구에게 소개할 사람이 내 취향이라 망설인 사람",
+  "상대의 향 때문에 마음이 흔들린 적이 있는 사람",
+  "상대의 목소리 때문에 통화를 더 오래 한 사람",
+  "잘 보이려고 관심 없던 취미를 아는 척한 사람",
+  "호감 있는 사람 앞에서 일부러 윙크해본 사람",
+  "내 말이 플러팅이었다고 상대에게 나중에 직접 설명해본 사람",
+  "상대에게 원해지는 느낌 때문에 관계를 이어간 사람",
+  "성인용품점을 직접 방문한 적이 있는 사람",
+  "성인용품을 샀다는 사실을 주변에 숨긴 사람",
+  "연인을 만나려고 평소와 다른 속옷을 골라 입은 사람",
+  "커플 속옷을 맞춰본 사람",
+  "연인에게 대담한 옷이나 소품을 선물한 사람",
+  "연애 관련 검색 기록을 보고 혼자 민망했던 사람",
+  "연인에게 보낼 애정 표현을 잘못된 채팅방에 보낸 사람",
+  "새벽에 보낸 연애 문자를 아침에 후회한 사람"
+]$cards$::jsonb) entry;
+commit;

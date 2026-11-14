@@ -4,14 +4,14 @@
   const labels = {mild:'순한맛',spicy:'빨간맛'};
   const flavors = Object.keys(labels);
   const member = $('#access-content').dataset.member;
-  const prefix = 'oj.party.' + member + '.truth.';
+  const prefix = 'oj.party.' + member + '.truth.v2.';
+  const catalogRevision = '20261114-drinking-rebuild1';
   const memory = {mild:new Set(),spicy:new Set()};
   const valid = (flavor,question) => Object.hasOwn(labels,flavor) && typeof question==='string' &&
     question.trim().length>0 && question.length<=240;
 
   const baseline = window.DrinkingPromptCatalog;
   const baseText = new Set([...baseline.mild,...baseline.spicy]);
-  const legacyDefaults = [...baseline.mild.slice(0,24),...baseline.spicy.slice(0,16)];
 
   function personalDeck(official=window.DrinkingPrompts.truth()) {
     const deck = {mild:new Set(official.mild),spicy:new Set(official.spicy)};
@@ -26,28 +26,10 @@
       for (let i=0;i<localStorage.length;i++) {
         const key=localStorage.key(i);
         if (!key?.startsWith(prefix)) continue;
-        const match=/^(card|base)\.(mild|spicy)\.([\s\S]+)$/.exec(key.slice(prefix.length));
+        const match=/^card\.(mild|spicy)\.([\s\S]+)$/.exec(key.slice(prefix.length));
         if (!match) continue;
-        const [,type,flavor,text]=match;
-        if (type==='card') add(flavor,text);
-        else if (official[flavor].includes(text)) {
-          let edit;
-          try { edit=JSON.parse(localStorage.getItem(key)); } catch { continue; }
-          add(edit?.flavor,edit?.question);
-        }
-      }
-      // Old room edits had numeric preset indexes and were only available in multiplayer.
-      if (document.documentElement.dataset.game==='truth') {
-        const saved=JSON.parse(localStorage.getItem('oj.party.live.truth.edits.v1'));
-        if (Array.isArray(saved)) for (const row of saved) {
-          if (!Array.isArray(row) || typeof row[0]!=='string') continue;
-          const [key,edit]=row;
-          if (key.startsWith('c')) add(edit?.flavor,edit?.question);
-          else if (/^b\d+$/.test(key)) {
-            const i=Number(key.slice(1));
-            if (official[i<24?'mild':'spicy'].includes(legacyDefaults[i])) add(edit?.flavor,edit?.question);
-          }
-        }
+        const [,flavor,text]=match;
+        add(flavor,text);
       }
     } catch { /* Browser storage may be unavailable. The current session still works. */ }
     for (const flavor of flavors) for (const text of memory[flavor]) add(flavor,text);
@@ -101,7 +83,7 @@
     const target=s.code+'/'+s.round;
     if (target!==activeRound) {
       activeRound=target;
-      entry={mode:'mixed',showFlavor:false,flavor:'mild',question:'',expanded:false,message:'',busy:false};
+      entry={mode:'spicy',showFlavor:false,flavor:'spicy',question:'',expanded:false,message:'',busy:false};
     }
     return entry;
   }
@@ -206,7 +188,7 @@
           return;
         }
         msg.textContent='';
-        await current.ui.send('truth_begin',{deck,mode:e.mode,showFlavor:e.showFlavor});
+        await current.ui.send('truth_begin',{deck,mode:e.mode,showFlavor:e.showFlavor,catalog_revision:catalogRevision});
       } finally {begin.disabled=false;}
     };
   }

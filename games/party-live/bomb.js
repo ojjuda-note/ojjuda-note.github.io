@@ -9,7 +9,7 @@
     const max = 30 + (s.capacity - 4) * 5;
     switch (s.phase) {
       case 'setup':
-        if (!host) return '<h1>방장이 타이머를 고르고 있어요</h1><p>폭탄을 받으면 주제에 맞는 단어를 말하고 다음 사람에게 넘겨 주세요.</p>';
+        if (!host) return '<h1>방장이 타이머를 고르고 있어요</h1><p>주제에 맞는 단어나 짧은 말을 하고 넘겨요. 대사는 상상해서 만들어도 돼요.</p>';
         return '<h1>시간폭탄 타이머</h1><p>기준 시간을 정하거나 랜덤을 고르세요.</p>' +
           '<div class="bomb-control"><div class="bomb-setting"><label for="bomb-base">기준 시간 <output id="bomb-value" for="bomb-base">' +
           secondsLabel(g.baseSeconds) + '</output></label><button type="button" id="bomb-random">랜덤</button></div>' +
@@ -23,7 +23,7 @@
           (host ? '<button type="button" data-game-action="adjust">시간 다시 선택</button>' : '<p>방장이 폭탄을 시작하면 게임이 열려요.</p>');
       case 'active':
         return '<h1>' + ui.esc(g.topic) + '</h1><img class="bomb-active" src="' + bombArt + '" alt="">' +
-          (g.holder === s.me ? '<p>내 차례예요. 주제에 맞는 단어를 하나 말해 주세요.</p><button type="button" class="action" id="bomb-pass">말했어요 · 다음 사람</button>' :
+          (g.holder === s.me ? '<p>내 차례예요. 이미 나온 답을 빼고 단어나 짧은 말을 하나 하세요. 대사는 상상해도 돼요.</p><button type="button" class="action" id="bomb-pass">말했어요 · 다음 사람</button>' :
             '<p>' + ui.esc(s.players[g.holder]) + '님이 폭탄을 들고 있어요.</p>');
       case 'done':
         return '<h1>펑! ' + ui.esc(s.players[g.loser]) + '님 당첨!</h1><p>폭탄이 터지는 순간 폭탄을 들고 있었어요.</p>';
