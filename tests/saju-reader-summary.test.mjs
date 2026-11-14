@@ -130,7 +130,7 @@ test('every year and month domain connects observed natal habits to the actual p
     assert.match(connection.paragraphs[0],/^당신은 .+사람이에요\./);
     assert.ok(connection.paragraphs[1].startsWith(label+'에는 '));
     assert.match(connection.paragraphs[1],/세요\.$/);
-    assert.match(connection.paragraphs[2],/^예를 들어 .+ 떠올려 보세요\..+장점이에요\. 다만 .+수 있어요\.$/);
+    assert.match(connection.paragraphs[2],/^.+장점이에요\. 예를 들어 .+ 떠올려 보세요\. 다만 .+수 있어요\. .+세요\.$/);
     assert.doesNotMatch(connection.reading,/타고난 바탕|흐름으로 읽|중심으로 읽혀요|반드시|무조건|보장|합격한다|수익이 생깁니다|사고가 납니다/);
     const card=overview.cards.find(value=>value.id.endsWith('-'+domain));
     assert.deepEqual(card.natalGodCodes,connection.natalCodes);
