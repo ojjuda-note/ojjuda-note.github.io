@@ -563,7 +563,7 @@
         }
       ],
       appearances: [
-{
+        {
           "date": "2026-11-19",
           "title": "BTS WORLD TOUR ARIRANG · 가오슝",
           "sub": "가오슝 국립경기장 · Live Nation · 19:00 (현지)",
