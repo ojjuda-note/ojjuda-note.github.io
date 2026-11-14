@@ -1195,13 +1195,13 @@
       news: [
         {
           "date": "2026.11.13",
-          "tag": "방송",
+          "tag": "로그인",
           "title": "11/15 03:20 SBS 인기가요 Boogie Woogie 사전녹화·당일 방송 공지",
           "href": "https://weverse.io/nctdream/notice/40986"
         },
         {
           "date": "2026.11.13",
-          "tag": "방송",
+          "tag": "로그인",
           "title": "11/15 09:25 SBS 인기가요 Boogie Woogie 녹화·11/22 방송 공지",
           "href": "https://weverse.io/nctdream/notice/40989"
         },
