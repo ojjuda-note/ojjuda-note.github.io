@@ -27,6 +27,32 @@ for (const artist of window.OJJUDA_FAN_ARTISTS.filter((item) => item.basicProfil
   };
 }
 
+
+/* Stray Kids: JYP-published member birth dates; unknown personal facts stay blank. */
+const strayKidsProfile = window.OJJUDA_FAN_PROFILES.straykids;
+if (strayKidsProfile) {
+  strayKidsProfile.expanded = true;
+  strayKidsProfile.checkedAt = '2026.11.14';
+  const birthdays = {
+    '방찬': '1997.10.03', '리노': '1998.10.25', '창빈': '1999.08.11',
+    '현진': '2000.03.20', '한': '2000.09.14', '필릭스': '2000.09.15',
+    '승민': '2000.09.22', '아이엔': '2001.02.08'
+  };
+  for (const member of strayKidsProfile.members) {
+    member.birthday = birthdays[member.name] || null;
+    member.source = 'https://straykids.jype.com/profile';
+  }
+  strayKidsProfile.awards = [
+    { year: '2026.01', title: '제40회 골든디스크 어워즈 음반 대상', detail: 'KARMA · 2026.01.10 타이베이 개최', href: 'https://www.soompi.com/article/1811420wpp/winners-of-40th-golden-disc-awards' },
+    { year: '2026.03', title: '제40회 일본 골드 디스크 대상 4관왕', detail: 'Hollow 아시아 앨범 오브 더 이어 등 4개 부문', href: 'https://www.koreaherald.com/article/10692784' }
+  ];
+  strayKidsProfile.records = [
+    { year: '2026.11', title: 'RUN IT 일본 투어 총 52만 관객', detail: '2026년 11월 6~8일 도쿄돔 포함 일본 4개 지역 10회 공연 완료 · JYP 공식 자료', href: 'https://straykids.jype.com/discography/ls6uuw6p' }
+  ];
+  strayKidsProfile.sources.unshift({ label: 'JYP 공식 멤버 프로필 · 생일', href: 'https://straykids.jype.com/profile' });
+  strayKidsProfile.sources.push({ label: 'JYP 공식 최신 발매·공연 기록', href: 'https://straykids.jype.com/discography/ls6uuw6p' });
+}
+
 /* ENHYPEN: dates from BELIFT LAB's current six-member profile. */
 const enhypenProfile = window.OJJUDA_FAN_PROFILES.enhypen;
 if (enhypenProfile) {
