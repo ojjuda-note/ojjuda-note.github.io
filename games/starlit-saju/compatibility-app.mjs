@@ -1,12 +1,12 @@
 import {readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
 import {readingScopeText} from './reading-scope.mjs?v=20261114-saju-final-review2';
-import { SajuPayment } from './payment.js?v=20261113-saju-lists1';
+import { SajuPayment } from './payment.js?v=20261115-saju-reopen1';
 import { SajuCompatibilityPayment, COMPATIBILITY_PRICE } from './compatibility-payment.mjs?v=20261113-compatibility20-1';
 import { compatibilityScoreText } from './compatibility-score-view.mjs?v=20261114-saju-copy1';
 import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261115-saju-menus1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
 import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-copy1';
-import { attachEntryFlow } from './entry-flow.mjs?v=20261114-saju-almanac1';
+import { attachEntryFlow } from './entry-flow.mjs?v=20261115-saju-reopen1';
 
 const $=id=>document.getElementById(id);
 const form=$('compatibility-form'),button=$('compatibility-open');
@@ -22,7 +22,7 @@ const entryFlow=attachEntryFlow(form);
 const people=['self','partner'];
 const motionQuery=window.matchMedia('(prefers-reduced-motion: reduce)');
 let reducedMotion=motionQuery.matches, motionOverride=false;
-let initialized=false,signedIn=false,busy=false,quoteBusy=false;
+let initialized=false,initFailed=false,signedIn=false,busy=false,quoteBusy=false;
 let generation=0,quoteGeneration=0,quote=null,current=null,quoteTimer,expiryTimer;
 let modulesPromise,readyPromise,compatibility;
 let zodiacModulePromise,zodiacPreviewGeneration=0;
@@ -58,11 +58,9 @@ const billing=new SajuPayment({
   onBalance:()=>updateOffer(),
   onIdentityReady:()=>{for(const picker of profilePickers)picker.refresh();},
   onAccountChange:()=>{
-    generation++;quoteGeneration++;busy=false;quoteBusy=false;signedIn=false;readyPromise=null;
+    generation++;quoteGeneration++;busy=false;quoteBusy=false;initialized=false;initFailed=!billing.identityReady;signedIn=false;readyPromise=null;
     resetView(true);updateOffer();
-    if(billing.identityReady)Promise.resolve().then(()=>ready()).catch(error=>{
-      initialized=true;$('compatibility-error').textContent=requestError(error);$('compatibility-error').hidden=false;updateOffer();
-    });
+    if(billing.identityReady)Promise.resolve().then(()=>ready()).catch(()=>{});
   },
   onModeChange:()=>{
     if(initialized){generation++;quoteGeneration++;busy=false;quoteBusy=false;resetView(true);}
@@ -166,7 +164,7 @@ function updateOffer() {
   $('compatibility-price').textContent=preview?'궁합 · 관리자 미리보기':active?'궁합 · 다시 보기 0쭈':`궁합 · ${COMPATIBILITY_PRICE}쭈`;
   $('compatibility-wallet').textContent=preview?'관리자 미리보기 · 차감 없음':signedIn&&Number.isSafeInteger(billing.balance)?`보유 ${new Intl.NumberFormat('ko-KR').format(billing.balance)}쭈`:initialized?'로그인 후 두 사람의 궁합을 펼칠 수 있어요.':'로그인과 보유 쭈를 확인하고 있어요.';
   $('compatibility-login').hidden=signedIn||preview;
-  button.disabled=busy||quoteBusy||!initialized;
+  button.disabled=busy||quoteBusy||(!initialized&&!initFailed);
   button.querySelector('span').textContent=busy?'두 사람의 궁합을 준비하고 있어요…':quoteBusy?'이용 내역 확인 중…':preview?'궁합 미리보기':active?'궁합 다시 보기 · 0쭈':`${COMPATIBILITY_PRICE}쭈로 궁합 펼치기`;
   if(savedOnly) {
     button.disabled=busy||quoteBusy||!initialized||!(active||preview);
@@ -175,7 +173,12 @@ function updateOffer() {
       $('compatibility-price').textContent=quoteBusy?'이용권 확인 중…':empty;
       button.querySelector('span').textContent='궁합 다시 보기';
     }
-    $('pair-ticket-retry').hidden=Boolean(offer)||!signedIn||!complete()||busy||quoteBusy;
+    if(initFailed){
+      $('compatibility-price').textContent='궁합 내역을 불러오지 못했어요.';
+    }
+    $('compatibility-wallet').hidden=!initialized;
+    $('compatibility-login').hidden=!initialized||signedIn||preview;
+    $('pair-ticket-retry').hidden=Boolean(offer)||(!initFailed&&!signedIn)||!complete()||busy||quoteBusy;
   }
   $('pair-swap').disabled=busy;$('compatibility-clear').disabled=busy;
   for(const picker of profilePickers)picker.setDisabled(busy);
@@ -183,8 +186,12 @@ function updateOffer() {
 }
 async function ready() {
   if(readyPromise)return readyPromise;
+  initFailed=false;
+  $('compatibility-error').hidden=true;
+  updateOffer();
   const task=(async()=>{
     const state=await billing.init();
+    if(readyPromise!==task)throw new Error('account_changed');
     if(!compatibility)compatibility=new SajuCompatibilityPayment(billing);
     signedIn=state.signedIn===true;initialized=true;
     for(const picker of profilePickers)picker.refresh();
@@ -192,7 +199,13 @@ async function ready() {
     updateOffer();return compatibility;
   })();
   readyPromise=task;
-  try{return await task;}catch(error){if(readyPromise===task)readyPromise=null;throw error;}
+  try{return await task;}catch(error){
+    if(readyPromise===task){
+      readyPromise=null;initFailed=true;
+      $('compatibility-error').textContent=requestError(error);$('compatibility-error').hidden=false;updateOffer();
+    }
+    throw error;
+  }
 }
 async function modules() {
   modulesPromise ||= Promise.all([
@@ -241,7 +254,13 @@ function changed() {
   $('compatibility-status').textContent='';$('compatibility-error').hidden=true;updateFields();updateOffer();
   if(!busy&&complete()&&(signedIn||billing.adminPreview))quoteTimer=setTimeout(()=>void refreshQuote(),180);
 }
-$('pair-ticket-retry').addEventListener('click',()=>void refreshQuote());
+async function retryPairStatus() {
+  if(!initialized){
+    try {await ready();} catch {return;}
+  }
+  await refreshQuote();
+}
+$('pair-ticket-retry').addEventListener('click',retryPairStatus);
 form.addEventListener('input',changed);form.addEventListener('change',changed);
 $('pair-swap').addEventListener('click',()=>{
   const fields=['name','gender','year','month','day','calendar','hour','minute'];
@@ -343,7 +362,7 @@ $('compatibility-copy').addEventListener('click',async()=>{
   catch{$('compatibility-copy-status').textContent='복사 권한을 확인해 주세요.';}
 });
 function refreshProfiles(){if(!busy)for(const picker of profilePickers)picker.refresh({preserveStatus:picker.statusElement.dataset.state==='error'});}
-function resume(){updateBirthYearLimit();refreshProfiles();expireCurrent();updateOffer();if(!busy)void refreshQuote();}
+function resume(){updateBirthYearLimit();refreshProfiles();expireCurrent();updateOffer();if(!busy){if(savedOnly&&initFailed&&complete())void retryPairStatus();else void refreshQuote();}}
 window.addEventListener('focus',resume);window.addEventListener('pageshow',resume);
 window.addEventListener('storage',event=>{if(event.key===null||event.key?.startsWith(SAVED_PROFILES_PREFIX))refreshProfiles();});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')resume();});
@@ -358,4 +377,4 @@ for(const button of document.querySelectorAll('[data-reading-size] button,button
   });
 }
 updateFields();updateOffer();
-void ready().catch(error=>{initialized=true;$('compatibility-error').textContent=requestError(error);$('compatibility-error').hidden=false;updateOffer();});
+void ready().catch(()=>{});

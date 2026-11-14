@@ -1,7 +1,7 @@
-import {openCatalogChoice, showTickets} from './service-directory.mjs?v=20261115-saju-menus1';
+import {openCatalogChoice, showTickets} from './service-directory.mjs?v=20261115-saju-reopen1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
 import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-copy1';
-import { attachEntryFlow } from './entry-flow.mjs?v=20261114-saju-almanac1';
+import { attachEntryFlow } from './entry-flow.mjs?v=20261115-saju-reopen1';
 
 const $ = id => document.getElementById(id);
 const form = $('birth-form');
@@ -16,6 +16,7 @@ let detailModulesPromise;
 let billingPromise;
 let billing;
 let billingInitialized = false;
+let billingInitFailed = false;
 let billingSignedIn = false;
 let billingMode = false;
 let busy = false;
@@ -146,7 +147,10 @@ const profilePicker=new SajuProfilePicker({
       ...form.querySelectorAll('input[name="calendar"]')],
     read:readSavedPerson,delay:600,
   },
-  fill:profile=>fillPerson(profile),
+  fill:profile=>{
+    fillPerson(profile);
+    if (directory.saved) void entryFlow.advance();
+  },
   clear:()=>fillPerson({name:'',gender:null,birth:{calendar:'solar',year:'',month:'',day:'',leapMonth:false,hour:null,minute:0}}),
 });
 
@@ -341,8 +345,17 @@ function updateEntryOffer() {
       chooseEntryTarget(choices[0]);
       target = targetFrom('entry');
     }
-    showTickets($('ticket-list'), {choices,current:target,pending:entryCheckPending || (!quote && !entryQuoteError && hasBirth()),
-      error:entryQuoteError,signedIn:billingSignedIn,busy,select:choice=>{chooseEntryTarget(choice);updateEntryOffer();}});
+    const state = billingInitFailed || entryQuoteError ? 'error' : !billingInitialized ? 'pending'
+      : !billingSignedIn ? 'login' : !quote || entryCheckPending ? 'pending' : choices.length ? 'available' : 'empty';
+    showTickets($('ticket-list'), {choices,state,busy,retry:retryEntryStatus,select:choice=>{
+      if (busy || !owned(validEntryQuote()?.status,choice)) { updateEntryOffer(); return; }
+      chooseEntryTarget(choice);
+      updateEntryOffer();
+      submit.click();
+    }});
+    $('entry-check-error').hidden=true;
+    $('payment-status').hidden=true;
+    $('login-link').hidden=true;
   }
   $('change-product').hidden = directory.saved;
   $('choice-name').textContent = TOPICS[target.topic].label;
@@ -365,7 +378,7 @@ function updateEntryOffer() {
   if (busy) return;
   submit.disabled = entryCheckPending || entryQuoteError || (directory.saved && !purchased);
   submit.querySelector('span').textContent = entryCheckPending ? '구매 내역 확인 중…'
-    : directory.saved && !purchased ? '다시 볼 이용권 없음' : preview ? `${targetLabel(target)} 미리보기` : purchased ? `${targetLabel(target)} 다시 보기 · 0쭈` : `${priceLabel(quote?.status,target)}로 ${targetLabel(target)} 펼치기`;
+    : directory.saved && !purchased ? '내 풀이 다시 보기' : preview ? `${targetLabel(target)} 미리보기` : purchased ? `${targetLabel(target)} 다시 보기 · 0쭈` : `${priceLabel(quote?.status,target)}로 ${targetLabel(target)} 펼치기`;
 }
 function updateProductOffer() {
   expireCurrentReading();
@@ -432,7 +445,14 @@ async function refreshEntryQuote() {
 }
 form.addEventListener('input',scheduleEntryCheck);
 form.addEventListener('change',scheduleEntryCheck);
-$('retry-entry-status').addEventListener('click',()=>void refreshEntryQuote());
+async function retryEntryStatus() {
+  if (busy || entryCheckPending) return;
+  if (!billingInitialized) {
+    try { await readyBilling(); } catch { return; }
+  }
+  await refreshEntryQuote();
+}
+$('retry-entry-status').addEventListener('click',retryEntryStatus);
 document.querySelectorAll('input[name="report-topic"]').forEach(input=>input.addEventListener('change',updateProductOffer));
 $('fortune-year').addEventListener('change',updateProductOffer);
 document.querySelectorAll('.reading-size-control button').forEach(button=>button.addEventListener('click',()=>{
@@ -706,16 +726,18 @@ function recordFortuneVisit() {
 
 async function readyBilling() {
   if (billingPromise) return billingPromise;
+  billingInitFailed=false;
+  updateEntryOffer();
   const task=(async()=>{
-    const {SajuPayment}=await import('./payment.js?v=20261113-saju-lists1');
+    const {SajuPayment}=await import('./payment.js?v=20261115-saju-reopen1');
     billing ||= new SajuPayment({
       onBalance:()=>updateBillingStatus(),
       onIdentityReady:()=>profilePicker.refresh(),
       onAccountChange:()=>{
-        billingSignedIn=false;billingPromise=null;
+        billingInitialized=false;billingSignedIn=false;billingInitFailed=!billing.identityReady;billingPromise=null;
         resetAfterAccountChange();
         updateBillingStatus();
-        if (billing.identityReady) Promise.resolve().then(()=>readyBilling()).catch(()=>{$('payment-status').textContent='로그인 정보를 다시 확인해 주세요. 펼치기를 누르면 재시도해요.';});
+        if (billing.identityReady) Promise.resolve().then(()=>readyBilling()).catch(()=>{});
       },
       onModeChange:({adminPreview})=>{
         if (billingInitialized&&billingMode!==Boolean(adminPreview)) resetAfterAccountChange();
@@ -725,6 +747,7 @@ async function readyBilling() {
     });
     const state=await billing.init();
     recordFortuneVisit();
+    if (billingPromise!==task) throw new Error('account_changed');
     billingInitialized=true;billingSignedIn=state.signedIn===true;billingMode=Boolean(state.adminPreview);
     profilePicker.refresh();
     updateBillingStatus();
@@ -732,12 +755,19 @@ async function readyBilling() {
     return billing;
   })();
   billingPromise=task;
-  try{return await task;}catch(error){if(billingPromise===task)billingPromise=null;throw error;}
+  try{return await task;}catch(error){
+    if(billingPromise===task){
+      billingPromise=null;billingInitFailed=true;
+      $('payment-status').textContent='이용 정보를 확인하지 못했어요. 펼치기를 누르면 다시 확인해요.';
+      updateEntryOffer();
+    }
+    throw error;
+  }
 }
 form.addEventListener('submit',async event=>{
   event.preventDefault();
   updateBirthYearLimit();
-  if (busy || !directory.entering || (directory.saved && !owned(validEntryQuote()?.status,targetFrom('entry'))) || !form.reportValidity()) return;
+  if (busy || entryQuoteError || !directory.entering || (directory.saved && !owned(validEntryQuote()?.status,targetFrom('entry'))) || !form.reportValidity()) return;
   const clickedCharge=Number(submit.dataset.expectedCharge);
   busy=true;
   const generation=++submitGeneration;
@@ -803,7 +833,7 @@ form.addEventListener('submit',async event=>{
 // Enable only after the submission listener can prevent native GET requests.
 updateEntryOffer();
 $('payment-status').textContent='로그인과 보유 쭈를 확인하고 있어요.';
-void readyBilling().catch(()=>{$('payment-status').textContent='이용 정보를 확인하지 못했어요. 펼치기를 누르면 다시 확인해요.';$('login-link').hidden=false;});
+void readyBilling().catch(()=>{});
 $('edit-birth').addEventListener('click',()=>{
   reportGeneration++;
   clearTimeout(readingRefreshTimer);
@@ -835,7 +865,8 @@ function resumeAccessCheck() {
   if (currentReading) {
     updateProductOffer();
     if (!reportBusy) void refreshReportAccess();
-  } else if (!busy && billingSignedIn && hasBirth()) void refreshEntryQuote();
+  } else if (directory.saved && billingInitFailed && hasBirth()) void retryEntryStatus();
+  else if (!busy && billingSignedIn && hasBirth()) void refreshEntryQuote();
 }
 window.addEventListener('focus',resumeAccessCheck);
 window.addEventListener('pageshow',resumeAccessCheck);

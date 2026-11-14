@@ -237,7 +237,11 @@ export class SajuPayment {
     const owner = this.user;
     preview.configure(this.client);
     const task = (async () => {
-      try { await preview.refresh(); } catch { throw problem(); }
+      try {
+        await preview.refresh();
+        // An auth notification can start a newer check during the first refresh.
+        if (owner === this.user && !preview.isReady()) await preview.refresh();
+      } catch { throw problem(); }
       if (owner !== this.user) throw problem('not_signed_in');
       if (!preview.isReady()) throw problem('mode_changed');
       return this.adminPreview;
