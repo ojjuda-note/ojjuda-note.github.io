@@ -81,7 +81,7 @@ function resultForMission(s) {
     '<p class="suite-hint">최다 득표 · ' + leaders.map(esc).join(', ') + ' (' + high + '표)</p>';
 }
 function roundView(s) {
-  const host = s.me === 0;
+  const host = s.me === (s.hostSeat ?? 0);
   switch (s.phase) {
     case 'waiting':
       return '<h1>' + esc(s.title) + '</h1><p>모두 모이면 시작해요. 초대 링크와 비밀번호를 친구에게 알려 주세요.</p>' +
@@ -120,7 +120,7 @@ function render(s, force = false) {
     history.replaceState(null, '', url);
   }
   const focus = newPhase ? null : document.activeElement?.dataset;
-  party?.setPhase(s.phase);
+  party?.setPhase(s.phase,s.hostSeat);
   room = s;
   activeCode = s.code;
   view.innerHTML = '<section class="card"><div class="topline"><span>방 ' + esc(party?.code || s.code) + '</span><span>' + s.round +

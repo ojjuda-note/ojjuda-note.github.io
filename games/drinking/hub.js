@@ -1,22 +1,6 @@
 'use strict';
 (() => {
-  const games = [
-    ['croc','악어 이빨','🐊','아픈 이빨은 딱 하나','#d8e9cb'],
-    ['bottle','술병 나침반','🍾','병 끝이 가리키는 사람','#d7eae4'],
-    ['bomb','시간폭탄','💣','터지기 전에 넘겨요','#f5d7c9'],
-    ['stopwatch','감각 스톱워치','⏱️','목표 시간에 멈추기','#dce8dd'],
-    ['liar','라이어 찾기','🎭','단어를 모르는 한 사람','#e6dded'],
-    ['king','왕게임','👑','왕의 미션은 몇 번에게?','#f4e3b7'],
-    ['truth','진실게임','🃏','솔직한 질문 카드','#f3d9d8'],
-    ['initial','초성 대결','💬','5초 안에 단어 하나','#d8e6ed'],
-    ['minority','소수파 찾기','⚖️','우리의 선택은 몇 대 몇?','#d7e6cf'],
-    ['mission','한 명만 다른 미션','🎬','누구의 몸짓이 다를까?','#efd6c9'],
-    ['fingers','손병호 게임','🖐️','해당하면 손가락 하나 접기','#f0dbc2'],
-    ['imagevote','이미지 게임','🪞','이 질문에 딱 맞는 사람은?','#dbe2f1'],
-    ['secretcount','시크릿 카운트','🔘','비밀 숫자에서 누르면 당첨','#d6e2db'],
-    ['updown','업앤다운','🔢','숫자를 부르면 업 또는 다운','#dbe7ef']
-  ].map(([id,name,icon,description,color]) => ({id,name,icon,description,color}));
-
+  const games=window.DrinkingTableView.games.map(game=>({...game,name:game.title}));
   const byId = id => document.getElementById(id);
   const gameById = id => games.find(game => game.id === id);
   const gameMin = kind => ['liar','king','minority','mission'].includes(kind) ? 3 : 2;
@@ -93,13 +77,8 @@
     const option = el('option','',n+'명'); option.value=String(n); option.selected=n===4; capacity.append(option);
   }
   const tiles = games.map(game => {
-    const tile = el('button','tile');
-    tile.type='button'; tile.dataset.game=game.id;
-    const icon=el('span','game-icon',game.icon);
-    icon.setAttribute('aria-hidden','true'); icon.style.backgroundColor=game.color;
-    const copy=el('span','tile-copy');
-    copy.append(el('strong','',game.name),el('small','',game.description));
-    tile.append(icon,copy);
+    const tile=window.DrinkingTableView.card(game);
+    tile.classList.add('tile');tile.dataset.game=game.id;
     tile.onclick=()=> {
       if (room?.me!==0 || room.kind===game.id || busy) return;
       mutate('select', {kind:game.id,revision:room.revision});

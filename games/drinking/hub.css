@@ -62,3 +62,6 @@ button:disabled { opacity: .65; cursor: default; }
 .mode-options span { color:#485b4d; line-height:1.55; }
 .mode-options a:hover { border-color:#4c775a; }
 @media(max-width:520px) { .mode-options { grid-template-columns:1fr; } }
+
+#games { grid-template-columns:repeat(auto-fill,minmax(min(100%,135px),1fr)); gap:12px; }
+#games .tile[aria-pressed="true"] { outline:3px solid #426e57; outline-offset:-3px; }

@@ -81,7 +81,7 @@ function render(s){
   if(!first&&s.revision<=old.revision)return;
   const focused=!first&&s.round===old.round&&s.phase===old.phase&&view.contains(document.activeElement)?document.activeElement:null;
   const focus=focused?{action:focused.dataset.action,value:focused.dataset.value,do:focused.dataset.do}:null;
-  party?.setPhase(s.phase);room=s;activeCode=s.code;
+  party?.setPhase(s.phase,s.hostSeat);room=s;activeCode=s.code;
   if(first){
     saveStandalone(s.code);
     const url=new URL(location.href);url.searchParams.set('room',s.code);history.replaceState(null,'',url);
@@ -98,7 +98,7 @@ function render(s){
     const biteId=roomId(s),ack=read(key('ack'))===biteId;
     let title=lost?esc(s.players[s.loser])+'님 당첨!':mine?'내 차례예요':esc(s.players[s.turn])+'님 차례';
     let hint=lost?'아픈 이빨은 '+(s.trap+1)+'번이었어요. 다음 판에는 피해 볼까요?':'남은 이빨 '+(24-s.pressed.length)+'개 · '+(mine?'아직 누르지 않은 이빨을 골라요.':'친구가 이빨을 고르고 있어요.');
-    const controls=lost?'<div class="actions">'+(s.me===s.loser&&!ack?control('확인','ack',true):'')+(s.me===0?control('한 판 더','again',true):'')+control('방 나가기','leave')+'</div>':'<div class="actions">'+control('방 나가기','leave')+'</div>';
+    const controls=lost?'<div class="actions">'+(s.me===s.loser&&!ack?control('확인','ack',true):'')+(s.me===(s.hostSeat??0)?control('한 판 더','again',true):'')+control('방 나가기','leave')+'</div>':'<div class="actions">'+control('방 나가기','leave')+'</div>';
     content='<div class="topline"><span>방 '+(party?.code||s.code)+'</span><span>'+s.round+'번째 판 · '+s.players.length+'명</span></div><h1>'+title+'</h1><p aria-live="polite">'+hint+'</p>'+controls+board(s,!lost&&mine)+members;
     if(old&&s.round===old.round&&s.pressed.length>old.pressed.length)fx.play('tooth');
     if(lost&&s.me===s.loser&&!ack&&!document.hidden&&lastBite!==biteId){lastBite=biteId;fx.startBite();}

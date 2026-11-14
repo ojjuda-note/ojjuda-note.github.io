@@ -1,25 +1,25 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261115-secretcount-turn2'
+ const revision='20261115-pub-table1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
-  croc:'1.3.3',
-  liar:'1.5.3',
-  king:'1.7.0',
-  minority:'1.6.0',
-  mission:'1.5.3',
-  bottle:'1.3.3',
-  bomb:'1.5.3',
-  stopwatch:'1.3.3',
-  truth:'1.7.0',
-  initial:'1.4.3',
-  fingers:'1.7.0',
-  imagevote:'1.6.0',
-  secretcount:'1.0.1',
-  updown:'1.3.3',
-  drinking:'1.10.1',
+  croc:'1.4.0',
+  liar:'1.6.0',
+  king:'1.8.0',
+  minority:'1.7.0',
+  mission:'1.6.0',
+  bottle:'1.4.0',
+  bomb:'1.6.0',
+  stopwatch:'1.4.0',
+  truth:'1.8.0',
+  initial:'1.5.0',
+  fingers:'1.8.0',
+  imagevote:'1.7.0',
+  secretcount:'1.1.0',
+  updown:'1.4.0',
+  drinking:'1.11.0',
   tarot:'1.10.2',
   saju:'2.15.1',
   group:'1.2.2',

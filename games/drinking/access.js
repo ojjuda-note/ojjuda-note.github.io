@@ -33,7 +33,7 @@
     exposed = false; content.hidden = true; gate.hidden = false;
     document.title = '오쭈다';
     gate.dataset.state = code;
-    message.textContent = titles[code] || '회원 정보를 확인하고 있어요…';
+    message.textContent = titles[code] || '술집 들어가는 중';
     login.hidden = code !== 'login';
     retry.hidden = code === 'pending';
     clearTimeout(timer);
@@ -75,6 +75,18 @@
     });
     return access;
   }
+
+  function showEntry() {
+    if (!exposed || document.getElementById('pub-entry')) return;
+    const entry=document.createElement('div');
+    entry.id='pub-entry';
+    entry.setAttribute('role','status');
+    entry.textContent='술집 들어가는 중';
+    content.append(entry);
+  }
+  function hideEntry(){document.getElementById('pub-entry')?.remove();}
+  window.DrinkingArrival=Object.freeze({show:showEntry,hide:hideEntry});
+  window.addEventListener('pageshow',hideEntry);
 
   async function start(ticket) {
     if (loading) return loading;
