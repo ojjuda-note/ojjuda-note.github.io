@@ -19,7 +19,7 @@
   imagevote:'1.4.5',
   updown:'1.2.2',
   drinking:'1.6.5',
-  tarot:'1.9.6',
+  tarot:'1.9.7',
   saju:'2.11.1',
   group:'1.2.2',
   chacha_rush:'1.1.1',
