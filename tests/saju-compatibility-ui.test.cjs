@@ -178,7 +178,7 @@ async function assertCalculatedScores(h) {
 // wallet: the real birth calculator, pair reading and DOM renderer are executed.
 async function harness(options={}) {
   const html=await fs.readFile(path.join(appDir,'compatibility.html'),'utf8');
-  const dom=new JSDOM(html,{url:'https://ojjuda.kr/games/starlit-saju/compatibility.html',runScripts:'outside-only',pretendToBeVisual:true});
+  const dom=new JSDOM(html,{url:'https://ojjuda.kr/games/starlit-saju/compatibility.html'+(options.entrySearch||''),runScripts:'outside-only',pretendToBeVisual:true});
   const {window}=dom,NativeDate=window.Date;
   for(const [key,value] of Object.entries(options.initialStorage||{}))window.localStorage.setItem(key,value);
   let nowMs=NativeDate.parse(fixedNow);
@@ -1011,4 +1011,30 @@ test('late zodiac labels cannot survive a compatibility reset or account change 
     assert.equal(h.$(person+'-saved-profiles').querySelectorAll('.profile-picker-zodiac').length,0);
   }
   assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);assert.deepEqual(h.state.fetches,[]);
+});
+
+test('the compatibility tab in saved readings can only reopen a matching, unexpired pair for zero charge',async t=>{
+  const h=await harness({entrySearch:'?reading=saved'});t.after(h.close);
+  const nav=h.window.document.querySelector('.saved-reading-nav');
+  assert.equal(nav.hidden,false);assert.ok(nav.querySelector('[aria-current="page"]').href.includes('compatibility.html'));
+  h.fill();await h.flow.next();await h.flow.next();
+  await waitFor(()=>h.$('compatibility-price').textContent.includes('이용권이 없어요'));
+  assert.equal(h.$('compatibility-open').disabled,true);
+  await h.submit();assert.equal(h.state.starts.length,0);
+  const purchase=await harness();t.after(purchase.close);
+  purchase.fill();await purchase.price(20);await purchase.submit();await purchase.ready();
+  for(const [key,value] of purchase.state.receipts)h.state.receipts.set(key,value);
+  h.window.dispatchEvent(new h.window.Event('focus'));
+  await h.price(0);
+  // The ticket can disappear between a displayed free offer and server confirmation.
+  const tickets=[...h.state.receipts];h.state.receipts.clear();
+  await h.submit();await waitFor(()=>!h.$('compatibility-error').hidden);
+  assert.equal(h.state.starts.length,0);
+  for(const [key,value] of tickets)h.state.receipts.set(key,value);
+  h.window.dispatchEvent(new h.window.Event('focus'));await h.price(0);
+  await h.submit();await h.ready();assert.equal(h.state.charges,0);
+  h.advance(86400001,{focus:true});
+  await waitFor(()=>h.$('compatibility-result').hidden && h.$('compatibility-price').textContent.includes('이용권이 없어요'));
+  assert.equal(h.$('compatibility-open').disabled,true);
+  await h.submit();assert.equal(h.state.starts.length,1);assert.equal(h.state.charges,0);
 });

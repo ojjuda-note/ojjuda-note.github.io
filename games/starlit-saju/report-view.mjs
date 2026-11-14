@@ -1,10 +1,10 @@
-import {personalReadingMap,pairReadingMap,connectReadingMap,indexPages} from './reading-map.mjs?v=20261115-saju-directory1';
+import {personalReadingMap,pairReadingMap,connectReadingMap,indexPages} from './reading-map.mjs?v=20261115-saju-menus1';
 import {getReadingSources} from './sources.mjs?v=20261113-saju-reader1';
 import {applyReadingSummaryViews} from './reading-summary-view.mjs?v=20261113-saju-summary1';
 import {applyReadingScoreViews} from './reading-score-view.mjs?v=20261114-saju-copy1';
 import {createCompatibilityScoreboard,createCompatibilityScoreDetails} from './compatibility-score-view.mjs?v=20261114-saju-copy1';
 import {appendReadingDetail} from './reading-detail.mjs?v=20261114-saju-depth1';
-import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261115-saju-directory1';
+import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261115-saju-menus1';
 import {createReadingNavigator} from './reading-navigator.mjs?v=20261114-saju-almanac1';
 import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
 import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
@@ -529,6 +529,9 @@ function reportSection(section, advice, overview, period=null, portrait=null, fa
   return container;
 }
 
+function monthPeriod(calculated) {
+  return calculated?.start?.label && calculated?.end?.label ? calculated.start.label+' ~ '+calculated.end.label : '';
+}
 function monthView(month, calculated, open, overview, supplements=[]) {
   const detail = node('details', 'month-reading' + (calculated?.isCurrent ? ' is-current' : ''));
   detail.id = `reading-month-${month.month}`;
@@ -548,7 +551,7 @@ function monthView(month, calculated, open, overview, supplements=[]) {
   summary.append(number, intro, mark);
   detail.append(summary);
   const content = node('div', 'month-content');
-  const period = month.periodLabel || (calculated?.start?.label && calculated?.end?.label ? `${calculated.start.label} ~ ${calculated.end.label}` : '');
+  const period = month.periodLabel || monthPeriod(calculated);
   if (period) content.append(node('p', 'month-period', period));
   content.append(readerOverview(overview,detail.id,month.chapters,false,null,summary.id));
   const full=fullReadingDetails(detail.id,month.chapters,month.advice,body=>{
@@ -676,9 +679,18 @@ function monthSection(reading, fortune) {
   const overviews=new Map((reading.reader?.months||[]).map(month=>[month.month,month]));
   section.append(monthSpotlight(overviews,currentMonth,fortune.year));
   const controls = node('div', 'months-controls');
-  const periodInfo=node('details','months-period-info');
-  periodInfo.append(node('summary','','월별 적용 기간'),node('p','months-note',reading.monthsIntro || '각 달을 펼치면 적용 기간을 볼 수 있어요.'));
-  controls.append(periodInfo);
+  controls.id='reading-month-periods';
+  controls.append(node('h4','','월별 적용 기간'));
+  const periods=node('dl','month-period-list');
+  for(const month of reading.months) {
+    const row=node('div');
+    const title=node('dt');
+    title.append(readingLink(month.month+'월','reading-month-'+month.month));
+    row.append(title,node('dd','',month.periodLabel || monthPeriod(calculated.get(month.month))));
+    periods.append(row);
+  }
+  controls.append(periods);
+  if(reading.monthsIntro) controls.append(node('p','months-note',reading.monthsIntro));
   const expand = node('button', 'secondary-button');
   expand.id = 'toggle-all-months';
   expand.type = 'button';
@@ -1158,7 +1170,7 @@ function buildReadingPager(root,{reading,fortune,topic}) {
       for(const part of all(timing,'.reader-timing-group'))add(part,part.querySelector('.reader-timing-kind').textContent,group,{inMenu:false});
     }
     const controls=months.querySelector('.months-controls');
-    add(controls,'월별 적용 기간','근거와 자료',{kind:'support',inMenu:false});
+    add(controls,'월별 적용 기간',`${fortune.year}년 월별운`,{kind:'support'});
     const expand=find('toggle-all-months');if(expand)expand.hidden=true;
     add(find('reading-month-navigation'),'달 선택 목록',`${fortune.year}년 월별운`,{kind:'contents',inMenu:false});
   }
@@ -1325,7 +1337,27 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   show(initial);
   return {mount(container) {
     const map=personalReadingMap(container,reading,fortune,topic,initial);
-    indexPages(map,pages.filter(page=>page.inMenu),page=>page.menuGroup);
+    const monthMenu={label:'월별 세부 풀이',fieldLabel:'월 선택',periods:new Map(),currentId:'reading-month-'+activeMonth};
+    const ageMenu={label:'10년 대운 세부 풀이',fieldLabel:'나이 구간',periods:new Map(),currentId:daeun?.querySelector('.daeun-period.is-current')?.id};
+    const mainPages=[];
+    for(const page of pages) {
+      if(page.kind==='contents')continue;
+      const age=page.element.closest('.daeun-period');
+      const timing=page.element.closest('.reader-timing-card');
+      const month=page.element.closest('.month-reading') || (timing && months?.querySelector('#reading-month-'+timing.dataset.month));
+      const period=age||month;
+      if(!period) {
+        if(page.inMenu)mainPages.push(page);
+        continue;
+      }
+      const menu=age?ageMenu:monthMenu;
+      if(!menu.periods.has(period.id)) {
+        const label=age?age.querySelector('.daeun-age').textContent:(month.dataset.month || month.id.replace('reading-month-',''))+'월';
+        menu.periods.set(period.id,{label,pages:[]});
+      }
+      menu.periods.get(period.id).pages.push(page);
+    }
+    indexPages(map,mainPages,page=>page.menuGroup,[monthMenu,ageMenu]);
     mapView=connectReadingMap(container,map);
     host=container;container.dataset.readerPaged='true';
     motion=createReadingMotion(container,{getCurrentPage:()=>current?.element});

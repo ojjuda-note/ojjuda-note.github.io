@@ -68,13 +68,25 @@ export function personalReadingMap(root, reading, fortune, topic, initialPage) {
   if (topic === 'all') periods.push({label: fortune.year + '년', target: 'reading-annual'});
   if (life && root.querySelector('#reading-daeun')) periods.push({label:'10년 대운', target:'reading-daeun'});
   if (monthly || topic === 'all') {
+    periods.push({label:'월별 적용 기간',target:'reading-month-periods'});
     for (const item of fortune.months) periods.push({label:item.month + '월',target:'reading-month-' + item.month,current:item.isCurrent});
   }
   const lead = life ? reading.personPortrait || scope : scope;
-  return overview({
+  const map=overview({
     id:'saju-overview', title:life ? '나의 타고난 성향' : monthly ? fortune.year + '년 ' + month + '월의 운세' : fortune.year + '년의 운세',
     lines:lead.summaryLines, topics, periods, detail:initialPage.id
   });
+  if (life) {
+    const related = element('nav','map-related');
+    related.setAttribute('aria-label','가족과 생활');
+    for (const key of ['parents','children','contracts','health']) {
+      const card = scope.cards.find(item => item.id === 'natal-' + key);
+      const page = card && root.querySelector('[data-reader-card="' + card.id + '"]');
+      if (page) related.append(link(card.label,page.id,'map-related-link'));
+    }
+    if (related.childElementCount) map.querySelector('.map-topics').append(related);
+  }
+  return map;
 }
 
 export function pairReadingMap(reading) {
@@ -89,9 +101,38 @@ export function pairReadingMap(reading) {
 }
 
 // Use the same available pages as the reader's navigation, including its purchase scope.
-function addFullIndex(map, groups) {
+function addPeriodIndex(index, {label,fieldLabel,periods,currentId}) {
+  if (!periods.size) return;
+  const group = element('details','map-index-group');
+  group.append(element('summary','',label));
+  const field = element('label','map-period-select', fieldLabel);
+  const select = element('select');
+  const list = element('ul');
+  for (const [id,period] of periods) {
+    const option = element('option','',period.label);
+    option.value = id;
+    select.append(option);
+  }
+  if (periods.has(currentId)) select.value = currentId;
+  function showLinks() {
+    list.replaceChildren();
+    for (const page of periods.get(select.value).pages) {
+      const item = element('li');
+      item.append(link(page.label,page.id,''));
+      list.append(item);
+    }
+  }
+  select.addEventListener('change',showLinks);
+  showLinks();
+  field.append(select);
+  group.append(field,list);
+  index.append(group);
+}
+
+function addFullIndex(map, groups, periodMenus) {
   const index = element('details', 'map-index');
   index.append(element('summary', '', '전체 목차'));
+  for (const menu of periodMenus) addPeriodIndex(index,menu);
   for (const [label, pages] of groups) {
     const group = element('details', 'map-index-group');
     group.append(element('summary', '', label));
@@ -106,14 +147,14 @@ function addFullIndex(map, groups) {
   }
   map.append(index);
 }
-export function indexPages(map, pages, groupName) {
+export function indexPages(map, pages, groupName, periodMenus = []) {
   const groups = new Map();
   for (const page of pages) {
     const label = groupName(page);
     if (!groups.has(label)) groups.set(label, []);
     groups.get(label).push(page);
   }
-  addFullIndex(map, groups);
+  addFullIndex(map, groups, periodMenus);
 }
 
 // The overview and the detailed reader are mutually exclusive reading views.

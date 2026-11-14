@@ -3,13 +3,21 @@ import {readingScopeText} from './reading-scope.mjs?v=20261114-saju-final-review
 import { SajuPayment } from './payment.js?v=20261113-saju-lists1';
 import { SajuCompatibilityPayment, COMPATIBILITY_PRICE } from './compatibility-payment.mjs?v=20261113-compatibility20-1';
 import { compatibilityScoreText } from './compatibility-score-view.mjs?v=20261114-saju-copy1';
-import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261115-saju-directory1';
+import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261115-saju-menus1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
 import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-copy1';
 import { attachEntryFlow } from './entry-flow.mjs?v=20261114-saju-almanac1';
 
 const $=id=>document.getElementById(id);
 const form=$('compatibility-form'),button=$('compatibility-open');
+const savedOnly=new URL(window.location.href).searchParams.get('reading')==='saved';
+if(savedOnly) {
+  $('session-name').textContent='내 풀이 다시 보기';
+  document.querySelector('.saved-reading-nav').hidden=false;
+  for(const disclosure of form.querySelectorAll('.saved-people-disclosure'))disclosure.open=true;
+  $('pair-confirm-title').textContent='궁합 이용권 확인';
+  $('compatibility-price-note').textContent='같은 두 사람은 결제 후 24시간 동안 무료로 다시 볼 수 있어요.';
+}
 const entryFlow=attachEntryFlow(form);
 const people=['self','partner'];
 const motionQuery=window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -141,7 +149,7 @@ function resetView(clearInputs=false) {
 function expireCurrent() {
   if(!current||isCurrentActive())return false;
   generation++;clearResult();quote=null;
-  $('compatibility-status').textContent='24시간 이용이 끝났어요. 표시된 금액으로 다시 펼칠 때만 새로 결제해요.';
+  $('compatibility-status').textContent=savedOnly?'궁합 이용 시간이 끝났어요.':'24시간 이용이 끝났어요. 표시된 금액으로 다시 펼칠 때만 새로 결제해요.';
   return true;
 }
 function scheduleExpiry() {
@@ -153,13 +161,22 @@ function scheduleExpiry() {
 function updateOffer() {
   const offer=validQuote(),preview=!!billing.adminPreview;
   const active=Boolean(offer?.status?.entitlement&&compatibility?.isActive(offer.status.entitlement));
-  const charge=preview||active?0:COMPATIBILITY_PRICE;
+  const charge=savedOnly||preview||active?0:COMPATIBILITY_PRICE;
   button.dataset.expectedCharge=String(charge);
   $('compatibility-price').textContent=preview?'궁합 · 관리자 미리보기':active?'궁합 · 다시 보기 0쭈':`궁합 · ${COMPATIBILITY_PRICE}쭈`;
   $('compatibility-wallet').textContent=preview?'관리자 미리보기 · 차감 없음':signedIn&&Number.isSafeInteger(billing.balance)?`보유 ${new Intl.NumberFormat('ko-KR').format(billing.balance)}쭈`:initialized?'로그인 후 두 사람의 궁합을 펼칠 수 있어요.':'로그인과 보유 쭈를 확인하고 있어요.';
   $('compatibility-login').hidden=signedIn||preview;
   button.disabled=busy||quoteBusy||!initialized;
   button.querySelector('span').textContent=busy?'두 사람의 궁합을 준비하고 있어요…':quoteBusy?'이용 내역 확인 중…':preview?'궁합 미리보기':active?'궁합 다시 보기 · 0쭈':`${COMPATIBILITY_PRICE}쭈로 궁합 펼치기`;
+  if(savedOnly) {
+    button.disabled=busy||quoteBusy||!initialized||!(active||preview);
+    if(!active&&!preview) {
+      const empty=offer?'두 사람의 이용권이 없어요':'이용권 확인 전';
+      $('compatibility-price').textContent=quoteBusy?'이용권 확인 중…':empty;
+      button.querySelector('span').textContent='궁합 다시 보기';
+    }
+    $('pair-ticket-retry').hidden=Boolean(offer)||!signedIn||!complete()||busy||quoteBusy;
+  }
   $('pair-swap').disabled=busy;$('compatibility-clear').disabled=busy;
   for(const picker of profilePickers)picker.setDisabled(busy);
   scheduleExpiry();
@@ -181,7 +198,7 @@ async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
     import('./compatibility.mjs?v=20261114-saju-final-review2'),
-    import('./report-view.mjs?v=20261115-saju-directory1'),
+    import('./report-view.mjs?v=20261115-saju-menus1'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
 }
@@ -224,6 +241,7 @@ function changed() {
   $('compatibility-status').textContent='';$('compatibility-error').hidden=true;updateFields();updateOffer();
   if(!busy&&complete()&&(signedIn||billing.adminPreview))quoteTimer=setTimeout(()=>void refreshQuote(),180);
 }
+$('pair-ticket-retry').addEventListener('click',()=>void refreshQuote());
 form.addEventListener('input',changed);form.addEventListener('change',changed);
 $('pair-swap').addEventListener('click',()=>{
   const fields=['name','gender','year','month','day','calendar','hour','minute'];
@@ -266,6 +284,7 @@ form.addEventListener('submit',async event=>{
   event.preventDefault();
   updateBirthYearLimit();
   if(busy||!form.reportValidity())return;
+  if(savedOnly&&!billing.adminPreview&&!compatibility?.isActive(validQuote()?.status.entitlement))return;
   const clickedCharge=Number(button.dataset.expectedCharge),saved=signature(),values=inputs(),names=personNames();
   const id=++generation;quoteGeneration++;clearTimeout(quoteTimer);quoteBusy=false;busy=true;
   $('compatibility-error').hidden=true;$('compatibility-status').textContent='';
@@ -290,7 +309,8 @@ form.addEventListener('submit',async event=>{
     if(id!==generation||saved!==signature()||owner!==billing.user||mode!==billing.modeVersion)return;
     quote={signature:saved,owner,mode,chart,partner,status};
     const required=billing.adminPreview||client.isActive(status.entitlement)?0:COMPATIBILITY_PRICE;
-    const receipt=await client.start(chart,partner,{expectedCharge:Math.min(clickedCharge,required)});
+    if(savedOnly&&required>0)throw new Error('이 두 사람의 궁합 이용 시간이 남아 있지 않아요.');
+    const receipt=await client.start(chart,partner,{expectedCharge:savedOnly?0:Math.min(clickedCharge,required)});
     if(id!==generation||saved!==signature()||owner!==billing.user||mode!==billing.modeVersion)return;
     if(!receipt?.ok||!client.isActive(receipt))throw new Error('이용 시간을 확인하지 못했어요. 표시된 금액을 확인하고 다시 펼쳐 주세요.');
     current={owner,mode,signature:saved,chart,partner,reading,copyText:text,access:receipt};

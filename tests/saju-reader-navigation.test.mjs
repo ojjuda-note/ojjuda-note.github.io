@@ -433,3 +433,39 @@ test('a refreshed reading restores the same decade topic after the current perio
     assert.equal(prepared.querySelector('[data-reader-current]'),restored);
   } finally {h.close();}
 });
+
+test('overview links to family and daily life, month dates and the chosen month or age topic',()=>{
+  const h=mount('all');
+  try {
+    const map=h.host.querySelector('.reading-map');
+    const follow=link=>{
+      assert.ok(link);link.addEventListener('click',event=>event.preventDefault(),{once:true});link.click();
+      assert.equal(h.current().id,link.hash.slice(1));assert.ok(visible(h.current()));
+      h.host.querySelector('.map-return').click();
+    };
+    assert.equal(map.querySelectorAll('.map-related-link').length,4);
+    for(const link of map.querySelectorAll('.map-related-link')) follow(link);
+    const periods=map.querySelector('a[href="#reading-month-periods"]');
+    follow(periods);
+    const dates=h.doc.getElementById('reading-month-periods');
+    assert.deepEqual([...dates.querySelectorAll('dd')].map(el=>el.textContent),reading.months.map(m=>m.periodLabel));
+    assert.ok(map.querySelector('.map-index a[href="#reading-month-periods"]'));
+    const indexes=[...map.querySelectorAll('.map-index-group')];
+    const choices=(group,value)=>{
+      const select=group.querySelector('select');select.value=value;
+      select.dispatchEvent(new h.dom.window.Event('change',{bubbles:true}));return [...group.querySelectorAll('li a')];
+    };
+    const months=indexes.find(group=>group.querySelector('summary').textContent==='월별 세부 풀이');
+    assert.equal(months.querySelectorAll('option').length,12);
+    for(const n of [1,4,12]){
+      const links=choices(months,'reading-month-'+n);
+      const item=links.find(a=>a.textContent==='재물운');
+      assert.equal(h.doc.getElementById(item.hash.slice(1)).dataset.readerCard,'month-'+n+'-money');follow(item);
+    }
+    const ages=indexes.find(group=>group.querySelector('summary').textContent==='10년 대운 세부 풀이');
+    assert.equal(ages.querySelectorAll('option').length,reading.daeun.periods.length);
+    const age=reading.daeun.periods.at(-1);
+    const action=choices(ages,age.id).find(a=>a.textContent.includes('문서'));
+    assert.equal(h.doc.getElementById(action.hash.slice(1)).closest('.daeun-period').id,age.id);follow(action);
+  }finally{h.close();}
+});

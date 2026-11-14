@@ -15,6 +15,9 @@ test('the catalog opens real products before collecting a birthday',async t=>{
 test('the free return path only opens an active ticket and cannot charge after expiry',async t=>{
   const h=await harness({entrySearch:'?reading=saved'});t.after(h.close);
   assert.equal(h.$('birth-form').querySelector('.saved-people-disclosure').open,true);
+  const pairLink=h.window.document.querySelector('.saved-reading-nav a[href*=compatibility]');
+  assert.equal(pairLink.closest('[hidden]'),null);
+  assert.equal(pairLink.search,'?reading=saved');
   h.fill();await h.flow.next();
   await waitFor(()=>h.$('ticket-list').textContent.includes('없어요'));
   assert.equal(h.$('open-story').disabled,true);
