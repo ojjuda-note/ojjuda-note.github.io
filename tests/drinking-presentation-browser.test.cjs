@@ -34,8 +34,14 @@ async function expectViewport(page, label, {dialog = false, local = false} = {})
     const w=innerWidth,h=innerHeight;
     const area=dialog ? document.querySelector('[data-drinking-dialog]') : document.getElementById('access-content');
     const selectors=dialog ? '[data-drinking-close]' :
-      (local ? '#app button,#app input,#app select,#app textarea,[data-drinking-help]' : '#view button,#view input,#view select,#view textarea,[data-drinking-help]');
-    const controls=[...document.querySelectorAll(selectors)].filter(el => {
+      (local ? '#app button,#app input,#app select,#app textarea,#app summary,[data-drinking-help]' : '#view button,#view input,#view select,#view textarea,#view summary,[data-drinking-help]');
+    const controls=[...new Set([...document.querySelectorAll(selectors)].map(el =>
+      el.matches('input[type="radio"],input[type="checkbox"]')&&Number(getComputedStyle(el).opacity)===0 ? el.labels?.[0]||el : el
+    ))].filter(el => {
+      // Chromium can retain layout boxes for the contents of a closed details
+      // element. Its summary is usable; the undisclosed form is not on screen.
+      for(let parent=el.parentElement;parent;parent=parent.parentElement)
+        if(parent.tagName==='DETAILS'&&!parent.open&&![...parent.children].find(child=>child.tagName==='SUMMARY')?.contains(el))return false;
       const css=getComputedStyle(el),box=el.getBoundingClientRect();
       return !el.closest('[hidden]')&&css.display!=='none'&&css.visibility!=='hidden'&&box.width>0&&box.height>0;
     });
@@ -57,8 +63,15 @@ async function expectViewport(page, label, {dialog = false, local = false} = {})
         x:Math.round(r.x),y:Math.round(r.y),right:Math.round(r.right),bottom:Math.round(r.bottom),clip}];
     });
     const box=area?.getBoundingClientRect();
+    const copy=dialog&&area?.querySelector('.dp-result-copy')?.getBoundingClientRect();
+    const artOverlaps=copy ? [...area.querySelectorAll('.dp-glass-art,.dp-glass-vessel')].flatMap(art=>{
+      const r=art.getBoundingClientRect();
+      const separate=r.right<=copy.left+2||r.left>=copy.right-2||r.bottom<=copy.top+2||r.top>=copy.bottom-2;
+      return separate ? [] : [{art:art.getAttribute('class'),bottom:Math.round(r.bottom),copyTop:Math.round(copy.top),
+        left:Math.round(r.left),right:Math.round(r.right),copyLeft:Math.round(copy.left),copyRight:Math.round(copy.right)}];
+    }) : [];
     return {width:w,height:h,documentWidth:document.documentElement.scrollWidth,documentHeight:document.documentElement.scrollHeight,
-      controls:controls.length,clipped,area:box&&{x:box.x,y:box.y,right:box.right,bottom:box.bottom},
+      controls:controls.length,clipped,artOverlaps,area:box&&{x:box.x,y:box.y,right:box.right,bottom:box.bottom},
       playing:document.body.classList.contains('dp-playing')};
   },{dialog,local});
   try {
@@ -67,6 +80,7 @@ async function expectViewport(page, label, {dialog = false, local = false} = {})
     assert.ok(measurement.documentWidth<=measurement.width+2,label+' must not scroll horizontally: '+JSON.stringify(measurement));
     assert.ok(measurement.documentHeight<=measurement.height+2,label+' fits one browser viewport: '+JSON.stringify(measurement));
     assert.deepEqual(measurement.clipped,[],label+' controls fit without document or clipped-container scrolling');
+    assert.deepEqual(measurement.artOverlaps,[],label+' glass artwork does not overlap the result text');
     assert.ok(measurement.area&&measurement.area.x>=-1&&measurement.area.y>=-1&&measurement.area.right<=measurement.width+1&&measurement.area.bottom<=measurement.height+1,label+' play area fits the viewport');
   } catch(error) {
     await screenshot(page,'failure-'+label.replace(/[^a-z0-9-]/gi,'-'));
@@ -222,6 +236,7 @@ test('browser focus, Escape, auth conceal and an actually draining glass remain 
   assert.equal(await f.page.locator('#access-content > [inert]').count(),0,'closing restores background controls');
   await f.page.locator('[data-drinking-help]').click();
   await allSizes(f.page,'guide-focus',{dialog:true});
+  await screenshot(f.page,'guide-how-to-play-390x844');
   await f.page.keyboard.press('Escape');
 
   const malicious='<img src=x onerror="window.__injected=true">';
@@ -239,7 +254,13 @@ test('browser focus, Escape, auth conceal and an actually draining glass remain 
     return {delay:Number(timing.delay),duration:Number(timing.duration)};
   });
   assert.ok(animation&&animation.duration>0,'the liquid has a real browser animation');
+  // Keep the liquid full while the panel and its backdrop finish appearing;
+  // screenshots must show the settled, opaque UI rather than a fade-in frame.
+  await result.evaluate(panel=>Promise.all([
+    ...panel.getAnimations(),...panel.parentElement.getAnimations()
+  ].map(animation=>animation.finished.catch(()=>{}))));
   const full=await liquid.evaluate(element=>new DOMMatrix(getComputedStyle(element).transform).d);
+  await expectViewport(f.page,'result-glass-full',{dialog:true});
   await screenshot(f.page,'result-glass-full');
   await liquid.evaluate((element,timing)=>{
     const drain=element.getAnimations().find(item=>item.animationName==='dp-empty');
@@ -248,6 +269,7 @@ test('browser focus, Escape, auth conceal and an actually draining glass remain 
   await painted(f.page);
   const empty=await liquid.evaluate(element=>({scale:new DOMMatrix(getComputedStyle(element).transform).d,opacity:Number(getComputedStyle(element).opacity)}));
   assert.ok(full>.95&&empty.scale<full*.05&&empty.opacity<.05,'the visible liquid actually empties');
+  await expectViewport(f.page,'result-glass-empty',{dialog:true});
   await screenshot(f.page,'result-glass-empty');
   await allSizes(f.page,'result-12-names',{dialog:true});
   await f.page.evaluate(()=>{

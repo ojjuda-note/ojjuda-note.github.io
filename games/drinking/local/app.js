@@ -954,7 +954,7 @@ function handle(action,value){
   }
 }
 document.addEventListener('click',event=>{
-  if(round?.phase==='spinning'&&!event.target.closest('button,a,input,label,dialog'))brakeBottle();
+  if(round?.phase==='spinning'&&!event.target.closest('button,a,input,label,dialog,[data-drinking-overlay]'))brakeBottle();
 },true);
 app.addEventListener('click',e=>{
   const b=e.target.closest('button[data-action]');

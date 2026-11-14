@@ -133,6 +133,49 @@ test('focus stays inside the dialog and Escape restores the original game contro
   assert.equal(f.content.querySelectorAll('[inert]').length,0);
 });
 
+test('native bottle help text and backdrop clicks do not submit a brake action', async t => {
+  const f=await presentation({reducedMotion:true});t.after(()=>{f.w.PartyLiveGame?.unmount();f.close();});
+  f.w.eval(fs.readFileSync(path.join(root,'games/party-live/bottle.js'),'utf8'));
+  const sent=[],state={phase:'spinning',me:0,players:['하나','둘'],game:{phase:'spinning',shape:'round',direction:'horizontal',
+    positions:[{x:15,y:50},{x:85,y:50}],initialDeg:0,spinAt:0}};
+  const ui={esc:String,now:()=>100,send:(...args)=>sent.push(args)},feature=f.w.PartyLiveGame;
+  f.w.document.getElementById('view').innerHTML='<section class="card"><div id="game">'+feature.view(state,ui)+'</div></section>';
+  f.dp.enter('bottle');f.dp.update({phase:'spinning',roundKey:'bottle:1',urgent:true});
+  feature.mount(state,ui);
+  f.dp.help();f.dialog('guide').querySelector('.dp-guide-goal').click();
+  assert.equal(sent.length,0,'reading instructions must not brake the bottle');
+  assert.ok(f.isOpen('guide'));
+  f.w.document.querySelector('[data-drinking-overlay]').click();
+  assert.equal(sent.length,0,'closing instructions by the backdrop must not brake the bottle');
+  assert.equal(f.isOpen('guide'),false);
+  f.w.document.querySelector('#game h1').click();
+  assert.deepEqual(sent,[['brake']],'ordinary game-surface taps keep their original behavior');
+});
+
+test('local bottle capture handlers ignore help contents and backdrop clicks while spinning', async t => {
+  const f=await screen({url:'/games/drinking/local/#bottle',prepare(w){
+    w.scrollTo=()=>{};
+    w.localStorage.setItem('oj.party.member-a.players',JSON.stringify(['하나','둘']));
+  }});
+  t.after(()=>f.close());
+  await until(()=>f.find('[data-drinking-dialog="guide"]'),'local bottle instructions');
+  f.click('[data-drinking-dialog="guide"] [data-drinking-close]');
+  f.click('[data-action="start"]');f.click('[data-action="set-bottle-table"]');
+  for(const x of [40,260]) {
+    f.find('.bottle-dial').getBoundingClientRect=()=>({left:0,top:0,width:300,height:300,right:300,bottom:300});
+    f.find('.seat-surface').dispatchEvent(new f.w.MouseEvent('click',{bubbles:true,detail:1,clientX:x,clientY:150}));
+  }
+  f.click('[data-action="spin"]');
+  f.w.DrinkingPresentation.help();f.find('.dp-guide-goal').click();
+  assert.equal(f.find('#bottle-title').textContent,'병이 돌고 있어요');
+  f.find('[data-drinking-overlay]').click();
+  assert.ok(f.find('[data-action="brake"]'),'closing help must not trigger the document capture brake handler');
+  assert.equal(f.find('[data-drinking-dialog="guide"]'),null);
+  f.find('#bottle-title').click();
+  assert.equal(f.find('#bottle-title').textContent,'서서히 멈추는 중…','a real game-surface tap still brakes');
+  assert.deepEqual(f.errors,[]);
+});
+
 test('a guide queued while approved modules load opens when the gate exposes content', async t => {
   const f=await presentation({concealed:true});t.after(()=>f.close());
   f.dp.enter('liar');await delay();

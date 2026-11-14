@@ -68,6 +68,9 @@
       overlay.dataset.drinkingOverlay = '';
       overlay.hidden = true;
       overlay.addEventListener('click', event => {
+        // A click on the presentation must not reach the game's screen-wide
+        // "tap to stop" handler underneath it.
+        event.stopPropagation();
         if (event.target === overlay) close();
       });
       host.append(overlay);
