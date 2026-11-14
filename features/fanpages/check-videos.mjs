@@ -8,6 +8,9 @@ runInNewContext(source, context);
 const library = context.window.OJJUDA_FAN_VIDEOS;
 const expectedGroups = ['rescene', 'ive', 'aespa', 'lesserafim', 'twice', 'illit', 'a2omay', 'a2olite', 'a2osoul', 'nmixx', 'babymonster', 'hearts2hearts', 'blackpink', 'idle', 'bts', 'seventeen', 'txt', 'enhypen', 'tws', 'nctdream', 'ateez', 'treasure', 'nctwish', 'andteam', 'kissoflife', 'kiiikiii', 'stayc', 'riize', 'boynextdoor', 'straykids'];
 assert.deepEqual(Object.keys(library).sort(), expectedGroups.sort(), 'Exactly thirty supported idol groups');
+const declaredGroups = [...source.matchAll(/^  ([a-z0-9]+): \\[$/gm)].map((match) => match[1]);
+assert.deepEqual(declaredGroups.slice().sort(), expectedGroups.slice().sort(), 'Each group should be declared once, without shadowed keys');
+
 const seen = new Set();
 for (const [group, videos] of Object.entries(library)) {
   assert.ok(videos.length >= 3, `${group} needs at least three official videos`);
