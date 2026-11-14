@@ -17,6 +17,9 @@ const sorted = values => [...values].sort();
 const wordKey = word => word.normalize('NFKC').replace(/\s+/gu, '').toLowerCase();
 const entryKeys = entries => entries.map(entry => JSON.stringify(entry)).sort();
 const rowEntry = row => row.second === null ? row.body : [row.body, row.second];
+// The SQL below intentionally exercises historical expansion wording. Bundled
+// client files instead follow the current reviewed corrections.
+const currentCatalog = async kind => (await import('../scripts/lib/drinking-catalogs.mjs')).loadDrinkingCatalog(kind);
 
 function validateWords(entries, maxLength) {
   for (const word of entries) {
@@ -320,7 +323,7 @@ test('king: 300 appended missions preserve existing orders and work with two-pla
       });
       st.after(() => ui.close());
       await until(() => ui.find('#order [name="mission"]')?.value, 'king solo recommendation');
-      assert.deepEqual(sorted(ui.w.DrinkingPromptCatalog.king), sorted(expected), 'the bundled client bank also retains the original missions');
+      assert.deepEqual(sorted(ui.w.DrinkingPromptCatalog.king), sorted(await currentCatalog('king')), 'the bundled client bank follows current reviewed wording');
       const solo = ui.find('#order [name="mission"]').value;
       // The fixture uses Math.random()=.5. Each filtered bank begins with its
       // 32 original entries, so its midpoint deterministically selects a new one.
@@ -642,7 +645,7 @@ test('mission: 300 appended pairs preserve private assignments and reveal the re
 
     for (const ui of uis) {
       await ui.wake();
-      await until(() => ui.find('#view h1')?.textContent === '하나, 둘, 셋! 동시에 표현해요', 'mission act UI');
+      await until(() => ui.find('#view h1')?.textContent === '하나, 둘, 셋! 동시에 흉내 내요', 'mission act UI');
       noResult(ui);
       noWords(ui);
     }
@@ -796,7 +799,7 @@ test('bomb: quick categories correct 48 existing cards and add 300 without chang
     await checkPools(f, 'bomb', expected);
     const context = {window: {}};
     vm.runInNewContext(fs.readFileSync(path.join(root, 'games/drinking/round-prompts.js'), 'utf8'), context);
-    assert.deepEqual(sorted(context.window.DrinkingPromptCatalog.bomb), sorted(expected));
+    assert.deepEqual(sorted(context.window.DrinkingPromptCatalog.bomb), sorted(await currentCatalog('bomb')));
     assert.equal(context.window.DrinkingPromptCatalog.bomb.some(topic => oldTopics.has(topic)), false);
     assert.deepEqual(await otherBanks(db, 'bomb'), otherBefore);
   });
@@ -1057,7 +1060,10 @@ test('truth: 300 appended questions preserve existing histories and live hands w
     }
     const context = {window: {}};
     vm.runInNewContext(fs.readFileSync(path.join(root, 'games/drinking/community-prompts.js'), 'utf8'), context);
-    assert.deepEqual(sortedDeck(context.window.DrinkingPromptCatalog), sortedDeck(official));
+    const currentTruth = await currentCatalog('truth');
+    const currentOfficial = Object.fromEntries(['mild', 'spicy'].map(flavor =>
+      [flavor, currentTruth.filter(entry => entry.flavor === flavor).map(entry => entry.body)]));
+    assert.deepEqual(sortedDeck(context.window.DrinkingPromptCatalog), sortedDeck(currentOfficial));
     assert.deepEqual(await unaffected(), unrelatedBefore);
   });
 
@@ -1287,7 +1293,7 @@ test('fingers: 300 appended conditions preserve partial private responses and ea
     await checkPools(f, 'fingers', expected);
     const context = {window: {}};
     vm.runInNewContext(fs.readFileSync(path.join(root, 'games/drinking/community-prompts.js'), 'utf8'), context);
-    assert.deepEqual(sorted(context.window.DrinkingPromptCatalog.fingers), sorted(expected));
+    assert.deepEqual(sorted(context.window.DrinkingPromptCatalog.fingers), sorted(await currentCatalog('fingers')));
   });
 
   await t.test('three real UIs recommend new conditions, keep partial choices private and honor a pass until the five-finger result', async st => {
@@ -1483,7 +1489,7 @@ test('imagevote: 300 appended questions preserve an unfinished private ballot an
     await checkPools(f, 'imagevote', expected);
     const context = {window: {}};
     vm.runInNewContext(fs.readFileSync(path.join(root, 'games/drinking/community-prompts.js'), 'utf8'), context);
-    assert.deepEqual(sorted(context.window.DrinkingPromptCatalog.imagevote), sorted(expected));
+    assert.deepEqual(sorted(context.window.DrinkingPromptCatalog.imagevote), sorted(await currentCatalog('imagevote')));
   });
 
   await t.test('three real UIs recommend new questions and reveal only identical totals after the last vote', async st => {
@@ -1532,7 +1538,7 @@ test('imagevote: 300 appended questions preserve an unfinished private ballot an
           assert.equal(ui.find('#game h1').textContent, question);
           assert.equal(ui.find('[data-result]'), null);
           assert.equal(ui.find('.pair-scores'), null);
-          assert.match(ui.find('.pair-caption').textContent, /상상 속 상황/u);
+          assert.equal(ui.find('.pair-caption').textContent, '질문에 가장 잘 어울리는 한 사람을 골라요.');
           assert.equal(ui.find(`[data-seat="${seat}"]`), null, 'three-person choices omit the current voter');
           assert.equal(ui.w.document.querySelectorAll('#game [data-seat]').length, seat < submitted ? 0 : 2);
         }

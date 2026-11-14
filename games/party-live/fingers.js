@@ -15,20 +15,20 @@
     let body;
     if (s.phase === 'prompt') {
       body = prompt.form(s, ui, {
-        heading:'어떤 사람이 접을까요?', preparing:'조건을 정하고 있어요', label:'조건을 골라 보거나 직접 써 주세요.',
+        heading:'접을 조건을 정해 주세요', preparing:'조건을 정하고 있어요', label:'접을 조건',
         another:'다른 조건', submit:'조건 공개'
       });
     } else if (s.phase === 'answer') {
       body = '<p class="pair-caption">' + ui.esc(s.players[g.current]) + '님의 조건</p><h1>' + ui.esc(g.question) + '</h1>' +
-        (g.mine ? '<p data-submitted>응답했어요. 모두 답하면 손가락 수가 바뀌어요.</p>' :
-          '<p>나도 해당하나요?</p><div class="pair-choices"><button type="button" class="action" data-fold="yes">하나 접기</button>' +
-          '<button type="button" data-fold="no">해당 없음 · 패스</button></div>') +
+        (g.mine ? '<p data-submitted>선택했어요. 다른 사람들의 선택을 기다려 주세요.</p>' :
+          '<p>조건에 해당하면 하나 접어 주세요.</p><div class="pair-choices"><button type="button" class="action" data-fold="yes">하나 접기</button>' +
+          '<button type="button" data-fold="no">안 접기 · 패스</button></div>') +
         '<p class="pair-status">응답 ' + g.submitted + ' / ' + s.players.length + '명</p>';
     } else if (s.phase === 'done') {
-      body = '<h1 data-result>' + prompt.names(s, ui, g.losers) + (g.losers.length > 1 ? ' 함께 당첨!' : ' 당첨!') +
+      body = '<h1 data-result>' + prompt.names(s, ui, g.losers) + (g.losers.length > 1 ? ' 함께 걸렸어요!' : ' 걸렸어요!') +
         '</h1><p>손가락 다섯 개를 모두 접었어요.</p>';
     }
-    return body + (s.phase==='done'?'':'<p>경험 조건은 성인이 된 뒤를 기준으로 해요. 공개하기 싫으면 접지 않고 패스해도 돼요.</p>') + scoreboard(s, ui);
+    return body + (s.phase==='done'?'':'<p>답하기 싫은 조건은 패스해도 돼요.</p>') + scoreboard(s, ui);
   }
   function mount(s, ui) {
     if (s.phase === 'prompt') prompt.bind(s, ui, 'finger_prompt');
@@ -41,7 +41,7 @@
   window.PartyLiveGame = {
     view, mount, messages:{
       invalid_question:'조건을 1~120자로 적어 주세요.',
-      already_answered:'이번 조건에 이미 답했어요.'
+      already_answered:'이번 조건에는 이미 답했어요.'
     }
   };
 })();

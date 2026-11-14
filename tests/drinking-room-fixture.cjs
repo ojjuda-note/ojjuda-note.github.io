@@ -46,11 +46,14 @@ const rebuildMigrationNames = [
 
 const expansionMigrationNames = fs.readdirSync(migrationDir)
   .filter(name => /^\d+_drinking_expand_[a-z]+_300\.sql$/.test(name)).sort();
+const polishMigrationNames = fs.readdirSync(migrationDir)
+  .filter(name => /^\d+_drinking_polish_[a-z]+\.sql$/.test(name)).sort();
 
-async function fixture({beforeRebuild = false, beforeExpansion = false} = {}) {
+async function fixture({beforeRebuild = false, beforeExpansion = false, beforePolish = false} = {}) {
   const migrationNames = beforeRebuild ? baseMigrationNames : [
     ...baseMigrationNames, ...rebuildMigrationNames,
-    ...(beforeExpansion ? [] : expansionMigrationNames)
+    ...(beforeExpansion ? [] : expansionMigrationNames),
+    ...(beforeExpansion || beforePolish ? [] : polishMigrationNames)
   ];
   const db = new PGlite({extensions: {pgcrypto}});
   try {
