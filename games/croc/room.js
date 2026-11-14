@@ -68,7 +68,7 @@ function render(s){
     const lost=s.phase==='done';
     const biteId=roomId(s),ack=read(key('ack'))===biteId;
     let title=lost?esc(s.players[s.loser])+'님 당첨!':mine?'내 차례예요':esc(s.players[s.turn])+'님 차례';
-    let hint=lost?'아픈 이빨은 '+(s.trap+1)+'번이었어요.':'남은 이빨 '+(24-s.pressed.length)+'개 · '+(mine?'이빨 하나를 골라 주세요.':'다른 참가자가 고르고 있어요.');
+    let hint=lost?'아픈 이빨은 '+(s.trap+1)+'번이었어요. 들켰네요. 썸 탈 때도 이렇게 티 나요?':'남은 이빨 '+(24-s.pressed.length)+'개 · '+(mine?'이빨 하나를 골라 주세요.':'다른 참가자가 고르고 있어요.');
     const controls=lost?'<div class="actions">'+(s.me===s.loser&&!ack?control('확인','ack',true):'')+(s.me===0?control('한 판 더','again',true):'')+control('방 나가기','leave')+'</div>':'<div class="actions">'+control('방 나가기','leave')+'</div>';
     content='<div class="topline"><span>방 '+(party?.code||s.code)+'</span><span>'+s.round+'번째 판 · '+s.players.length+'명</span></div><h1>'+title+'</h1><p aria-live="polite">'+hint+'</p>'+controls+board(s,!lost&&mine)+members;
     if(old&&s.round===old.round&&s.pressed.length>old.pressed.length)fx.play('tooth');

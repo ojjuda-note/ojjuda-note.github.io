@@ -55,7 +55,7 @@
     if (loads.has(kind)) return loads.get(kind);
     const request = (async () => {
       try {
-        const result = await invoke('drinking_content','pool',{kinds:[kind]});
+        const result = await invoke('drinking_content','pool',{kinds:[kind],round_mix:true});
         const bank = result?.banks?.[kind];
         if (!validBank(kind,bank)) return false;
         if (JSON.stringify(bank) !== JSON.stringify(banks.get(kind))) banks.set(kind,bank);
@@ -65,9 +65,13 @@
     loads.set(kind,request);
     return request;
   }
+  function kingChoices(bank,pair) {
+    const matched=bank.filter(line=>line.startsWith('둘이 ')===pair);
+    return pair&&!matched.length?bank:matched;
+  }
   function recommendations(kind) {
     let round, snapshot;
-    return async (roundKey, previous) => {
+    return async (roundKey, previous, pair=false) => {
       if (round !== roundKey) {round=roundKey;snapshot=null;}
       if (!snapshot) snapshot=refresh(kind).then(ok=>ok?banks.get(kind):null);
       const request=snapshot, bank=await request;
@@ -75,8 +79,9 @@
         if (snapshot===request) snapshot=null;
         return '';
       }
-      const other=bank.filter(item=>item!==previous);
-      const items=other.length?other:bank;
+      const choices=kind==='king'?kingChoices(bank,pair):bank;
+      const other=choices.filter(item=>item!==previous);
+      const items=other.length?other:choices;
       return items[Math.floor(Math.random()*items.length)] || '';
     };
   }
@@ -118,7 +123,7 @@
     managed:kind => kinds.has(kind),
     list:kind => banks.get(kind) || [],
     truth:() => banks.get('truth') || {mild:[],spicy:[]},
-    refresh,recommendations,submit
+    refresh,recommendations,kingChoices,submit
   };
   void flush();
 })();
