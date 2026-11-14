@@ -129,6 +129,11 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'pS57UX6s-xw', title: 'THUNDER', kind: '뮤직비디오', source: 'SEVENTEEN / HYBE LABELS · 2025.05.26' },
     { id: 'skso_fkQcg0', title: 'Bad Influence (Prod. by Pharrell Williams)', kind: '뮤직비디오', source: 'SEVENTEEN / HYBE LABELS · 2025.06.11' }
   ],
+  straykids: [
+    { id: 'YXOJopiDElc', title: 'SUIATSU · 도쿄돔 무대', kind: '공식 공연 영상', source: 'Stray Kids Japan Official / Sony Music · 2026.11.13' },
+    { id: 'BZ4UzthYTss', title: 'This & That', kind: '뮤직비디오', source: 'Stray Kids / JYP Entertainment · 2026.08.07' },
+    { id: 'Q7IFjVUUb_E', title: 'RUN IT', kind: '뮤직비디오', source: 'Stray Kids / JYP Entertainment · 2026.06.24' }
+  ],
   txt: [
     { id: 'jOnLqqDRfY4', title: '하루에 하루만 더 (Stick With You)', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2026.04.13' },
     { id: 'IcwHopeT5gY', title: 'Beautiful Strangers', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2025.07.21' },
