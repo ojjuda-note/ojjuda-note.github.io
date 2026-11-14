@@ -1174,7 +1174,7 @@ const server = http.createServer((request, response) => {
           assert.equal(await detail.locator('.compatibility-detail-score-value').textContent(),item.value+'점 / 100점');
           assert.equal(await detail.locator('[role="meter"]').count(),0,'score details retain the one original four-bar overview');
           if(item.id==='temperament') {
-            await inspectReadableSurface('compatibility score detail '+label,{text:compatibilityText,body:'.compatibility-score-detail .reader-prose p',minimumBody:18,controls:'.compatibility-score-detail-link:visible'});
+            await inspectReadableSurface('compatibility score detail '+label,{text:compatibilityText,body:'.compatibility-score-detail .reader-prose p',minimumBody:18,controls:'.compatibility-score-detail-link'});
             if(pair==='confirmed'&&viewport!=='phone')await detail.screenshot({path:path.join(artifacts,'saju-depth-score-'+viewport+'.png')});
           }
           await detail.locator('a[href="#compatibility-scores"]').click();
