@@ -73,7 +73,7 @@
   }
   function entry() {
     unmount(); room = null; clearTimeout(timer);
-    if (party) return party.missing();
+    if(party){window.DrinkingPresentation?.leave();return party.missing();}
     const create = mode === 'create';
     const seats = Array.from({length:11}, (_,i) => {
       const n = i+2;
@@ -89,6 +89,7 @@
       '<label>방 비밀번호<input name="password" autocomplete="' + (create?'new-password':'current-password') + '" type="password" required minlength="4" maxlength="32" placeholder="' +
       (create ? '4자 이상으로 정해 주세요' : '방장이 정한 비밀번호') + '"></label>' +
       '<button class="action" type="submit">' + (create ? '방 만들기' : '입장하기') + '</button></form></section>';
+    window.DrinkingGameScreen?.native(kind,null,view);
   }
   function lobby(s) {
     return '<h1>' + esc(s.title) + '</h1><p>모두 모이면 시작해요. 초대 링크와 비밀번호를 친구에게 알려 주세요.</p>' +
@@ -143,6 +144,7 @@
           field.setSelectionRange(previousFocus.start, previousFocus.end, previousFocus.direction);
       }
     }
+    window.DrinkingGameScreen?.native(kind,s,view);
   }
   const messages = {
     not_signed_in:'오쭈다 로그인이 필요해요.', banned:'지금은 대전방을 이용할 수 없어요.',

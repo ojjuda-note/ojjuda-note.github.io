@@ -15,6 +15,9 @@ async function until(check, label, timeout = 6000) {
   throw Error('Timed out: ' + label);
 }
 function rpcArgs(name, args = {}) {
+  if (name === 'drinking_content' || name === 'drinking_prompt_suggestions') {
+    return [args.p_action, args.p_options || {}];
+  }
   if (name === 'party_live_multiplayer' || name === 'party_vote_multiplayer') {
     return [args.p_kind, args.p_action, args.p_code || '', args.p_options || {}];
   }
@@ -116,6 +119,8 @@ async function screen({url = '/games/drinking/?mode=multi', actor = 'member-a', 
     const template = w.document.getElementById('access-page');
     if (template.dataset.kind) w.document.documentElement.dataset.game = template.dataset.kind;
     content.replaceChildren(template.content.cloneNode(true)); content.hidden = false;
+    content.dataset.member = actor;
+    w.OjjudaDrinkingAccessReady = true;
     w.document.getElementById('access-screen').hidden = true;
     const sources = scripts || [...content.querySelectorAll('[data-module]')].map(node => node.dataset.module);
     content.querySelectorAll('[data-module]').forEach(node => node.remove());

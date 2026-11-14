@@ -41,7 +41,7 @@ function entry() {
   room = null;
   revealed = false;
   clearTimeout(timer);
-  if (party) return party.missing();
+  if(party){window.DrinkingPresentation?.leave();return party.missing();}
   const create = mode === 'create';
   const seats = Array.from({length:10}, (_, i) => '<option value="' + (i+3) + '"' + (i === 1 ? ' selected' : '') + '>' + (i+3) + '명</option>').join('');
   view.innerHTML = '<section class="card"><h1>' + title + '</h1><p>' + description + '</p>' +
@@ -53,6 +53,7 @@ function entry() {
     '<label>방 비밀번호<input name="password" type="password" required minlength="4" maxlength="32" placeholder="' +
     (create ? '4자 이상으로 정해 주세요' : '방장이 정한 비밀번호') + '"></label>' +
     '<button class="action" type="submit">' + (create ? '방 만들기' : '입장하기') + '</button></form></section>';
+  window.DrinkingGameScreen?.native(kind,null,view);
 }
 
 function ballots(labels, ownSeat) {
@@ -129,6 +130,7 @@ function render(s, force = false) {
     const buttons = view.querySelectorAll('button[data-do]');
     Array.from(buttons).find(b => b.dataset.do === focus.do && b.dataset.slot === focus.slot)?.focus({preventScroll:true});
   }
+  window.DrinkingGameScreen?.native(kind,s,view);
 }
 
 const messages = {
