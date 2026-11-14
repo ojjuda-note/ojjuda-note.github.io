@@ -966,3 +966,13 @@ body.dp-playing[data-dp-kind="secretcount"][data-dp-phase="press"] .table-headin
   body.dp-playing[data-dp-mode="online"] #view > .card > .table-heading ~ #game { padding-block:0; }
   body.dp-playing[data-dp-mode="online"] #view > .card > .table-heading ~ .actions { margin-block:3px; }
 }
+body.dp-playing .table-heading { width:100%; max-width:none; margin:0; box-sizing:border-box; }
+@media (min-height:481px), (orientation:portrait) {
+  body.dp-playing #access-content:has(.table-heading) > .drinks-room-header > strong { display:none; }
+}
+body.dp-playing[data-dp-kind="secretcount"] :is(#view,#app) .sc-setup h2 {
+  width:auto; margin:0; font-size:clamp(1.5rem,5vw,2rem); line-height:1.3;
+}
+body.dp-playing[data-dp-kind="secretcount"] :is(#view,#app) .sc-setup button[type="submit"] {
+  width:min(100%,16rem); margin:0 auto; min-height:48px; font:750 1.1rem/1.3 system-ui,sans-serif;
+}
