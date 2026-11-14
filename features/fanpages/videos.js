@@ -120,6 +120,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'diBO0gMuTXo', title: 'Hooligan', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.04.08' }
   ],
   seventeen: [
+    { id: 'FEyF183bBWc', title: '도겸×정한 · 정답 없는 여행 NO-CLUE TRIP 하이라이트 예고', kind: '예고편', source: 'SEVENTEEN 공식 YouTube · 2026.11.12' },
+    { id: 'ttCHjgJRAWY', title: '정한×조슈아 (JxJ) · One plus one 인천 공연', kind: '공식 무대', source: 'SEVENTEEN 공식 YouTube · 2026.11.11' },
     { id: 'hdwGWGSfABA', title: '정한×조슈아 (JxJ) · 12 o’clock', kind: '뮤직비디오', source: 'HYBE LABELS / PLEDIS · 2026.10.19' },
     { id: 'Do9BOhk0u_w', title: '디노의 피철인 · 놀아보세 (prod. Hitchhiker)', kind: '뮤직비디오', source: "HYBE LABELS · 공식 채널" },
     { id: 'uh_DpK2xFiE', title: '디노의 피철인 · 미쳐 미쳐', kind: '뮤직비디오', source: "HYBE LABELS · 공식 채널" },
