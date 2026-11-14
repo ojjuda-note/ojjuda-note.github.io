@@ -67,6 +67,14 @@ async function verifyCard(page, id, name) {
     newest.forEach(id => assert(ids.has(id), 'Missing November 14 update in live JSON: ' + id));
     assert.equal(payload.events.find(e => e.id === 'hoengseong-hanwoo-2026')?.attendance?.count,
       400163, 'Missing official 2026 Hoengseong attendance');
+    const hasNovember15Update = ids.has('giverun-busan-20261121');
+    if (hasNovember15Update) {
+      assert(ids.has('changwon-tongil-marathon-20261115'), 'Missing official Changwon marathon');
+      assert.equal(payload.events.find(e => e.id === 'gimhae-buncheong-2026')?.attendance?.count,
+        97887, 'Missing Gimhae 2026 official attendance');
+      assert(payload.events.length >= 717, 'Deployed events count must include November 15 updates');
+      console.log('PASS production JSON: November 15 sports additions and Gimhae official attendance');
+    }
     console.log('PASS production JSON: at least 715 entries, November 14 updates and official attendance');
 
     await page.goto(origin + '/games/festival-schedule/index.html?period=all&category=festival&view=list&q=익산',
@@ -109,6 +117,14 @@ async function verifyCard(page, id, name) {
     await page.locator('[data-category="sports"]').click();
     await verifyCard(page, 'pro-kovo-202627-20261117-ibk-red', 'IBK기업은행 vs 정관장');
     await page.locator('#search').fill('');
+    if (hasNovember15Update) {
+      await page.locator('#search').fill('GIVE RUN 2026 부산');
+      await verifyCard(page, 'giverun-busan-20261121', 'GIVE RUN 2026 부산');
+      await page.locator('#search').fill('창원통일마라톤');
+      await verifyCard(page, 'changwon-tongil-marathon-20261115', '창원통일마라톤');
+      await page.locator('#search').fill('');
+      console.log('PASS November 15 sports event cards and official sources');
+    }
     console.log('PASS newly added festival, V-League, performance cards and official-source details');
 
     const arcade = await browser.newPage({ viewport: { width: 1440, height: 900 }, locale: 'ko-KR' });
@@ -129,6 +145,12 @@ async function verifyCard(page, id, name) {
     await festivalFrame.locator('#search').fill('성남 HIP:FESTA');
     await verifyCard(festivalFrame, 'seongnam-hip-festa-20261121', '성남 HIP:FESTA');
     await arcade.screenshot({ path: path.join(snapshotDir, 'world-game-festival.png'), fullPage: true });
+    if (hasNovember15Update) {
+      await festivalFrame.locator('#search').fill('');
+      await festivalFrame.locator('[data-category="sports"]').click();
+      await festivalFrame.locator('#search').fill('GIVE RUN 2026 부산');
+      await verifyCard(festivalFrame, 'giverun-busan-20261121', 'GIVE RUN 2026 부산');
+    }
     console.log('PASS world.html?game=festival: embedded page rendered ' + arcadeCount + ' cards');
     if(jsErrors.length) console.warn('Non-fatal browser console errors: ' + JSON.stringify(jsErrors.slice(0, 10)));
   } finally {
