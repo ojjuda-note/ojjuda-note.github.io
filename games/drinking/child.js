@@ -5,15 +5,15 @@
   window.DrinkingStandaloneExit = {
     confirm(s) {
       const playing = s.phase !== 'waiting' && s.phase !== 'done';
-      if (s.me === 0 && s.players.length > 1) {
+      if (s.me === (s.hostSeat ?? 0) && s.players.length > 1) {
         const prompt = playing ? '이번 판을 끝내고 방에서 나갈까요?' : '방에서 나갈까요?';
         return window.confirm(prompt + ' 남은 사람 중 한 명이 무작위로 방장을 맡고 같은 방에서 기다려요.');
       }
-      if (s.me === 0) return window.confirm('마지막 참가자예요. 나가면 방이 닫혀요. 나갈까요?');
+      if (s.me === (s.hostSeat ?? 0)) return window.confirm('마지막 참가자예요. 나가면 방이 닫혀요. 나갈까요?');
       if (s.phase !== 'waiting') return window.confirm('나가면 이 방이 모든 참가자에게서 닫혀요. 나갈까요?');
       return true;
     },
-    options(s) { return {round:s.round, waiting:s.phase==='waiting', host:s.me===0}; }
+    options(s) { return {round:s.round, waiting:s.phase==='waiting', host:s.me===(s.hostSeat??0)}; }
   };
   const code = (params.get('party') || '').toUpperCase();
   const child = (params.get('room') || '').toUpperCase();
@@ -53,7 +53,7 @@
   document.querySelector('main').append(status);
   header.href = lobby;
   header.textContent = '← 술게임방';
-  let client, parent, phase, timer, pending, returning = false, navigating = false;
+  let client, parent, resultHost, phase, timer, pending, returning = false, navigating = false;
   let retryRequest, pollNotice = false;
   const connection = window.OjjudaRoomConnection.create({
     onPause: () => clearTimeout(timer),
@@ -169,25 +169,26 @@
     }
     return matched;
   }
+  function hostSeat(){return (phase==='done'?resultHost:null) ?? parent?.hostSeat ?? 0;}
   function control(action) {
     if (action === 'again' || action === 'copy') return '';
     if (action !== 'leave') return null;
     if (!parent) return '';
     const leave = '<button type="button" class="secondary" data-party-leave>술게임방 나가기</button>';
-    if (parent.me === 0) return '<button type="button" class="secondary" data-party-return>모두 대기실로</button>' + leave;
+    if (parent.me === hostSeat()) return '<button type="button" class="secondary" data-party-return>모두 대기실로</button>' + leave;
     return (phase === 'done' ? '<p data-party-wait>방장이 다음 게임을 고르고 있어요.</p>' : '') + leave;
   }
   async function leaveOrReturn(button) {
     if (!parent || returning || navigating || !connection.active()) return;
     const leaving = button.hasAttribute('data-party-leave');
-    if (!leaving && parent.me !== 0) return;
+    if (!leaving && parent.me !== hostSeat()) return;
     if (leaving) {
       let prompt = '술게임방에서 나갈까요?';
       if (parent.players.length === 1) {
         prompt += ' 마지막 참가자가 나가면 방이 닫혀요.';
       } else {
         prompt += phase === 'done' ? ' 남은 사람들은 대기실로 돌아가요.' : ' 이번 판은 끝나고 남은 사람들은 대기실로 돌아가요.';
-        if (parent.me === 0) prompt += ' 남은 참가자 중 한 명이 무작위로 새 방장이 돼요.';
+        if (parent.me === hostSeat()) prompt += ' 남은 참가자 중 한 명이 무작위로 새 방장이 돼요.';
       }
       if (!window.confirm(prompt)) return;
     } else if (phase !== 'done' && !window.confirm('지금 게임을 마치고 모두 함께 대기실로 돌아갈까요?')) return;
@@ -225,5 +226,5 @@
   window.addEventListener('pageshow', e => {
     if (e.persisted) navigating = false;
   });
-  window.DrinkingChild = {code, connect, control, missing, signedOut: () => go(lobby), setPhase: next => { phase = next; }};
+  window.DrinkingChild = {code, connect, control, missing, signedOut: () => go(lobby), setPhase: (next,seat) => { phase = next; resultHost=seat; }};
 })();

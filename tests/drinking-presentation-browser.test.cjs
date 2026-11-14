@@ -701,3 +701,29 @@ test('the secret count button has a private total and a closed lid for the waiti
     await f.context.close();
   }
 });
+
+test('entry shows a moving pub door until access is ready and both modes use one table header',async t=>{
+  const browser=await chromium.launch(launchOptions);t.after(()=>browser.close());
+  for(const multi of [false,true]){
+    const f=await browserSession(browser,{actor:'door-host',reducedMotion:'no-preference',localPlayers:['하나','두리'],
+      rpc:()=>({code:'SC1234',revision:1,round:1,me:0,capacity:2,phase:'setup',game:{phase:'setup'},players:['하나','두리']})});
+    let release;
+    const hold=new Promise(resolve=>{release=resolve;});
+    await f.context.route('**/games/drinking/table-view.js*',async route=>{await hold;await route.fallback();});
+    await f.page.goto(origin+(multi?'/games/secretcount/?room=SC1234':'/games/drinking/local/#secretcount'),{waitUntil:'domcontentloaded'});
+    const gate=f.page.locator('#access-screen');
+    try{
+      await gate.waitFor({state:'visible'});
+      assert.equal(await gate.locator('#access-message').textContent(),'술집 들어가는 중');
+      assert.equal(await gate.evaluate(el=>getComputedStyle(el,'::before').animationName),'pub-door');
+      assert.equal(await f.page.locator('#access-content').isVisible(),false);
+      await f.page.emulateMedia({reducedMotion:'reduce'});
+      assert.equal(await gate.evaluate(el=>getComputedStyle(el,'::before').animationName),'none');
+    }finally{release();}
+    await dismissGuide(f.page);
+    assert.equal(await gate.isVisible(),false);
+    assert.equal((await f.page.locator('.table-heading').innerText()).replace(/\s+/g,' ').trim(),'시크릿 카운트 2명 플레이');
+    await screenshot(f.page,'shared-pub-table-'+(multi?'multi':'local'));
+    assert.deepEqual(f.errors,[]);await f.context.close();
+  }
+});

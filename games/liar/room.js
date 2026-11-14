@@ -63,7 +63,7 @@ function render(s,force=false){
   const focus=oldField&&oldField===document.activeElement?{
    start:oldField.selectionStart,end:oldField.selectionEnd,direction:oldField.selectionDirection
   }:null;
-  party?.setPhase(s.phase);room=s;activeCode=s.code;
+  party?.setPhase(s.phase,s.hostSeat);room=s;activeCode=s.code;
   const members='<ol class="members">'+s.players.map((n,i)=>'<li class="'+(i===s.me?'me':'')+'">'+esc(n)+(i===0?' · 방장':'')+(i===s.me?' (나)':'')+'</li>').join('')+'</ol>';
   const hints=s.hints.length?'<ol class="hints">'+s.hints.map((h,i)=>'<li><strong>'+esc(s.players[i])+'</strong> '+esc(h)+'</li>').join('')+'</ol>':'';
   const heading='<div class="topline"><span>방 '+(party?.code||s.code)+'</span><span>'+s.round+'번째 판 · '+s.players.length+'/'+s.capacity+'명</span></div>';
@@ -74,7 +74,7 @@ function render(s,force=false){
     const high=Math.max(...s.totals),leaders=s.totals.flatMap((v,i)=>v===high?[i]:[]);
     const title=leaders.length>1?'투표가 동점으로 끝났어요':leaders[0]===s.liar?'라이어를 찾았어요!':'라이어가 정체를 숨겼어요!';
     content='<h1 class="suite-heading">'+title+'</h1><p class="suite-hint">라이어는 <strong>'+esc(s.players[s.liar])+'</strong> · 제시어는 <strong>'+esc(s.word)+'</strong></p><ol class="members">'+
-      s.players.map((n,i)=>'<li>'+esc(n)+' · '+s.totals[i]+'표</li>').join('')+'</ol>'+hints+(s.me===0?control('한 판 더','again',true):'');
+      s.players.map((n,i)=>'<li>'+esc(n)+' · '+s.totals[i]+'표</li>').join('')+'</ol>'+hints+(s.me===(s.hostSeat??0)?control('한 판 더','again',true):'');
   }else{
     const role=revealed?'<p class="secret">'+(s.role==='liar'?'당신은 라이어예요.':'제시어 · '+esc(s.word))+'</p>':'';
     const card='<section class="role">'+control(revealed?'내 카드 가리기':'내 카드 보기','reveal')+role+'</section>';

@@ -36,8 +36,10 @@ test('four seats enforce the secret range, private presses, turn limits, retries
   s=await mutate(1,'sc_press');s=await mutate(1,'sc_press');
   assert.deepEqual(s.game,{phase:'done',winner:1,answer:5});
   await assert.rejects(mutate(1,'sc_pass'),/unavailable/);
-  s=await mutate(0,'again');assert.equal(s.phase,'setup');
-  s=await mutate(0,'sc_start',{target:36});assert.equal(s.phase,'press');
+  assert.equal(s.hostSeat,1);
+  await assert.rejects(mutate(0,'again'),/host_only/);
+  s=await mutate(1,'again');assert.equal(s.phase,'setup');assert.equal(s.me,0);
+  s=await mutate(1,'sc_start',{target:36});assert.equal(s.phase,'press');
   const internal='ojjuda_arcade_internal.live_secretcount';
   for(const n of [2,3,4,7,12]){
     const check=await f.db.query("select bool_and(v between $1+1 and $1*9) valid from (select ("+internal+"('{\"phase\":\"setup\"}','sc_start',jsonb_build_object('target',null,'sample',i),0,$1::int,0)->>'secret')::int v from generate_series(1,80) i) samples",[n]);

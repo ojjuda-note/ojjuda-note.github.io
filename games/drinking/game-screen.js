@@ -11,7 +11,7 @@
     return (copy.textContent || '').split('\n').map(line => line.replace(/\s+/g, ' ').trim())
       .filter(Boolean).join('\n');
   }
-  const paragraphs = root => Array.from(root.querySelectorAll(':scope > p')).map(text).filter(Boolean);
+  const paragraphs = root => Array.from(root.querySelectorAll(':scope > p:not(.table-host)')).map(text).filter(Boolean);
 
   function resultCopy(kind, root, heading, state) {
     let title = text(root.querySelector(heading));
@@ -30,6 +30,8 @@
       const words = Array.from(root.querySelectorAll('.breakdown > li, .results-line')).map(text);
       body = [paragraphs(root)[0], ...words].filter(Boolean).join('\n');
     }
+    const host=text(root.querySelector('.table-host'));
+    if(host&&!body.split('\n').includes(host))body=[host,body].filter(Boolean).join('\n');
     return {title: title || '이번 판 결과', body};
   }
 
@@ -39,7 +41,28 @@
     presentation.enter(kind);
     const phase = state?.phase || 'entry';
     const roundKey = ['room', kind, state?.code || 'entry', state?.round || 0].join('/');
-    const root = view.querySelector('#game, .inside') || view.querySelector('.card') || view;
+    const card=view.querySelector('.card');
+    const ui=window.DrinkingTableView;
+    if(ui && card && state && phase!=='waiting'){
+      const pane=card.querySelector(':scope > .inside') || card;
+      let board=pane===card?pane.querySelector(':scope > #game'):pane;
+      if(pane!==card)pane.id='game';
+      if(!board){
+        const focus=pane.contains(document.activeElement)?document.activeElement:null;
+        board=document.createElement('div');
+        board.id='game';
+        for(const child of [...pane.children])if(!child.matches('.topline,.table-heading'))board.append(child);
+        pane.append(board);
+        if(focus?.isConnected)focus.focus({preventScroll:true});
+      }
+      pane.querySelector(':scope > .topline')?.remove();
+      if(!card.querySelector(':scope > .table-heading')){
+        const title=window.DrinkingGameGuides?.[kind]?.title || document.querySelector('header strong')?.textContent || '';
+        card.prepend(ui.heading(kind,title,state.players?.length??0));
+      }
+      if(phase==='done'&&Number.isInteger(state.hostSeat))ui.result(board,state.players[state.hostSeat]);
+    }
+    const root = view.querySelector('#game') || view.querySelector('.inside') || view.querySelector('.card') || view;
     const urgent = (['bomb', 'initial'].includes(kind) && phase === 'active') ||
       (kind === 'bottle' && ['spinning', 'braking'].includes(phase)) ||
       (kind === 'stopwatch' && phase === 'measure');

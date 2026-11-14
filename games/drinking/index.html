@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#faf7ed">
   <title>오쭈다</title>
-  <link rel="stylesheet" href="hub.css?v=20261114-drinks-local1">
-  <link rel="stylesheet" href="/games/drinking/access.css?v=20261114-drinks-afterdark1">
+  <link rel="stylesheet" href="hub.css?v=20261115-pub-table1">
+  <link rel="stylesheet" href="/games/drinking/access.css?v=20261115-pub-table1">
   <script defer src="/config.js"></script>
   <script defer src="/games/matgo/matgo-access.js?v=20261114-drinks-adult1"></script>
-  <script defer src="/games/drinking/access.js?v=20261114-drinks-stability1"></script>
+  <script defer src="/games/drinking/access.js?v=20261115-pub-table1"></script>
 </head>
 <body>
   <section id="access-screen" data-state="pending" aria-label="회원 확인">
-    <p id="access-message" role="status">회원 정보를 확인하고 있어요…</p>
+    <p id="access-message" role="status">술집 들어가는 중</p>
     <a id="access-login" href="/?auth=login&amp;next=world" target="_blank" rel="noopener" hidden>오쭈다 로그인</a>
     <button id="access-retry" type="button" hidden>다시 확인</button>
     <a href="/world.html?tab=arcade">오쭈다로 돌아가기</a>
@@ -29,7 +29,7 @@
       </div>
       <nav class="mode-options" aria-label="플레이 방식">
         <a id="resume-drinks" hidden><strong>참여 중인 방으로 돌아가기</strong></a>
-        <a id="local-play" href="local/?v=20261115-secretcount-turn2"><strong>한 대로 플레이</strong><span>휴대폰 한 대에 참가자 이름을 적고 함께 즐겨요.</span></a>
+        <a id="local-play" href="local/?v=20261115-pub-table1"><strong>한 대로 플레이</strong><span>휴대폰 한 대에 참가자 이름을 적고 함께 즐겨요.</span></a>
         <a href="?mode=multi"><strong>멀티플레이</strong><span>각자 휴대폰으로 같은 방에 입장해요.</span></a>
       </nav>
     </section>
@@ -78,9 +78,10 @@
     <p id="notice" role="status" aria-live="polite"></p>
     <noscript>술게임을 이용하려면 자바스크립트를 켜 주세요.</noscript>
   </main>
+    <span data-module="/games/drinking/table-view.js?v=20261115-pub-table1"></span>
     <span data-module="/games/drinking/connection.js?v=20261114-drinks-stability1"></span>
     <span data-module="entry-refresh.js?v=20261115-secretcount1"></span>
-    <span data-module="hub.js?v=20261115-secretcount1"></span>
+    <span data-module="hub.js?v=20261115-pub-table1"></span>
   </template>
 </body>
 </html>

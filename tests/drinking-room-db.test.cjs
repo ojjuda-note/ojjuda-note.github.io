@@ -132,11 +132,46 @@ test('drinking rooms retain consistent state through overlapping account request
     assert.deepEqual(final.votes, Array.from({length: 12}, (_, i) => i % 2));
     const retry = await native(users[0], 'minority', 'vote', game.code, {round: game.round, target: 0});
     assert.equal(retry.revision, final.revision);
-    const next = await native(users[0], 'minority', 'again', game.code, {round: final.round});
+    assert.equal(final.hostSeat,1);
+    const next = await native(users[final.hostSeat], 'minority', 'again', game.code, {round: final.round});
     assert.equal(next.round, final.round + 1);
     await assert.rejects(native(users[1], 'minority', 'vote', game.code, {round: game.round, target: 0}), /stale_round/);
     await assert.rejects(native(users[0], 'minority', 'again', game.code, {round: final.round}), /stale_round/);
     assert.equal((await native(users[0], 'minority', 'state', game.code)).voteCount, 0);
+  });
+
+  await t.test('finishing a shared game transfers lobby control without changing the result seats',async()=>{
+    await reset();
+    let parent=await sharedRoom(3);
+    parent=await room(users[0],'start',parent.code,{kind:'croc',revision:parent.revision,request_id:randomUUID()});
+    const original=parent.players;
+    let child=await native(users[0],'croc','state',parent.child);
+    const trap=(await db.query('select trap from ojjuda_arcade_internal.croc_rooms where code=$1',[parent.child])).rows[0].trap;
+    child=await native(users[0],'croc','tooth',parent.child,{tooth:(trap+1)%24,revision:child.revision});
+    child=await native(users[1],'croc','tooth',parent.child,{tooth:trap,revision:child.revision});
+    assert.equal(child.phase,'done');assert.equal(child.hostSeat,1);assert.deepEqual(child.players,original);
+    parent=await room(users[1],'state',parent.code);
+    assert.equal(parent.me,parent.hostSeat);
+    const opts={revision:parent.revision,request_id:randomUUID()};
+    await assert.rejects(room(users[0],'return',parent.code,opts),/host_only/);
+    const next=await room(users[1],'return',parent.code,opts);
+    assert.equal(next.me,0);assert.equal(next.hostSeat,0);assert.equal(next.players[0],original[1]);
+    assert.deepEqual((await room(users[1],'return',parent.code,opts)).players,next.players);
+  });
+
+  await t.test('every result chooses the expected host, including ties and rounds without a winner',async()=>{
+    const cases=[
+      ['croc',{loser:2},2],['liar',{liar_slot:2},2],['mission',{odd_slot:2},2],
+      ['king',{cards:[0,2,1],chosen:1,chosen_second:2},1],['minority',{votes:[0,0,1]},2],
+      ['minority',{votes:[0,0,0]},1],['truth',{},1],['fingers',{game_state:{losers:[0,2]}},2],
+      ['imagevote',{game_state:{winners:[2,1]}},1],['bomb',{game_state:{loser:2}},2],
+      ['stopwatch',{game_state:{target:80,scores:[650,900,801]}},2],
+      ...['bottle','updown','initial','secretcount'].map(k=>[k,{game_state:{winner:2}},2])
+    ];
+    for(const [kind,state,seat] of cases){
+      const res=await db.query('select ojjuda_arcade_internal.drinking_result_seat($1,$2::jsonb,3) seat',[kind,JSON.stringify(state)]);
+      assert.equal(res.rows[0].seat,seat,kind);
+    }
   });
 
   await t.test('host handoff preserves the room and a lost leave response is safe to retry', async () => {

@@ -83,7 +83,7 @@ function render(s,force=false){
   const focus=sameTurn&&view.contains(focused)&&focused.name?{
    name:focused.name,start:focused.selectionStart,end:focused.selectionEnd,direction:focused.selectionDirection
   }:null;
-  party?.setPhase(s.phase);room=s;activeCode=s.code;
+  party?.setPhase(s.phase,s.hostSeat);room=s;activeCode=s.code;
   const members='<ol class="members">'+s.players.map((n,i)=>'<li class="'+(i===s.me?'me':'')+'">'+esc(n)+(i===0?' · 방장':'')+(i===s.me?' (나)':'')+'</li>').join('')+'</ol>';
   const heading='<div class="topline"><span>방 '+(party?.code||s.code)+'</span><span>'+s.round+'번째 판 · '+s.players.length+'/'+s.capacity+'명</span></div>';
   let content='';
@@ -106,7 +106,7 @@ function render(s,force=false){
       if(s.declined!=null)content+='<p class="suite-hint">이번 미션은 패스했어요. 벌칙 없이 다음 판으로 넘어가요.</p>';
       else if(s.accepted?.length===2)content+='<p class="suite-hint">두 사람 모두 동의했어요. 진행 중에도 언제든 멈출 수 있어요.</p>';
       else content+='<p class="suite-hint">답하거나 하기 어려운 미션은 이유를 말하지 않고 패스해도 돼요.</p>';
-      content+=party?'':s.me===0?control('한 판 더','again',true):'<p class="suite-hint">방장이 다음 판을 시작할 수 있어요.</p>';
+      content+=party?'':s.me===(s.hostSeat??0)?control('한 판 더','again',true):'<p class="suite-hint">방장이 다음 판을 시작할 수 있어요.</p>';
     }
   }else{
     const role=s.card===0?'이번 판의 왕이에요!':'내 번호는 '+s.card+'번이에요.';

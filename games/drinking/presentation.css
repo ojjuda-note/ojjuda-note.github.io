@@ -947,3 +947,32 @@ body.dp-playing[data-dp-mode="local"][data-dp-phase="intro"] .play-shell:has(:is
   .dp-glass-sheen { opacity: 0; }
   .dp-stage-glow { opacity: .7; }
 }
+
+/* One table header, board and result hierarchy for both ways to play. */
+body.dp-playing .table-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; flex:0 0 auto;
+  padding:8px 14px; color:var(--suite-ink,inherit); background:var(--suite-subtle,transparent); border-bottom:1px solid var(--suite-line,#86978155); }
+body.dp-playing :is(#view,#app) .table-heading h1 { width:auto; display:flex; align-items:center; gap:10px; margin:0;
+  font-size:clamp(20px,2.6vw,32px); line-height:1.2; font-weight:780; }
+body.dp-playing .table-heading > span { flex:none; font-size:clamp(14px,1.6vw,18px); white-space:nowrap; }
+body.dp-playing #view > .card:has(> .table-heading) { padding:0; }
+body.dp-playing #view > .card > .table-heading ~ :is(#game,.actions) { margin-inline:var(--dp-gutter); }
+body.dp-playing #view > .card > .table-heading ~ .actions { margin-bottom:var(--dp-gutter); }
+body.dp-playing #view > .card > .table-heading ~ #game { padding-block:12px; }
+body.dp-playing :is(#view,#app) .table-host { font-weight:750; color:var(--suite-accent,inherit); }
+body.dp-playing[data-dp-kind="secretcount"][data-dp-phase="press"] .table-heading { display:none; }
+@media (orientation:landscape) and (max-height:480px) {
+  /* The navigation bar already carries the game title on a short phone. */
+  body.dp-playing[data-dp-mode="online"] #view > .card > .table-heading { display:none; }
+  body.dp-playing[data-dp-mode="online"] #view > .card > .table-heading ~ #game { padding-block:0; }
+  body.dp-playing[data-dp-mode="online"] #view > .card > .table-heading ~ .actions { margin-block:3px; }
+}
+body.dp-playing .table-heading { width:100%; max-width:none; margin:0; box-sizing:border-box; }
+@media (min-height:481px), (orientation:portrait) {
+  body.dp-playing #access-content:has(.table-heading) > .drinks-room-header > strong { display:none; }
+}
+body.dp-playing[data-dp-kind="secretcount"] :is(#view,#app) .sc-setup h2 {
+  width:auto; margin:0; font-size:clamp(1.5rem,5vw,2rem); line-height:1.3;
+}
+body.dp-playing[data-dp-kind="secretcount"] :is(#view,#app) .sc-setup button[type="submit"] {
+  width:min(100%,16rem); margin:0 auto; min-height:48px; font:750 1.1rem/1.3 system-ui,sans-serif;
+}

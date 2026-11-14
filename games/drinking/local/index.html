@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/games/drinking/question-menu.css?v=20261115-party-question-menu1">
   <link rel="stylesheet" href="style.css?v=20261114-drink-prompts1">
   <link rel="stylesheet" href="/games/party-live/truth-settings.css?v=20261114-truth-flavors1">
-  <link rel="stylesheet" href="/games/drinking/presentation.css?v=20261114-drinking-fit1">
+  <link rel="stylesheet" href="/games/drinking/presentation.css?v=20261115-pub-table1">
   <link rel="stylesheet" href="/games/croc/page-theme.css?v=20261114-croc-design1">
   <link rel="stylesheet" href="/games/bottle/page-theme.css?v=20261115-bottle-design1">
   <link rel="stylesheet" href="/games/drinking/suite-theme.css?v=20261115-secretcount-turn2">
@@ -24,14 +24,14 @@
   <link rel="stylesheet" href="/games/imagevote/page-theme.css?v=20261115-drinking-suite1">
   <link rel="stylesheet" href="/games/secretcount/page-theme.css?v=20261115-secretcount-turn2">
   <link rel="stylesheet" href="/games/updown/page-theme.css?v=20261115-drinking-suite1">
-  <link rel="stylesheet" href="/games/drinking/access.css?v=20261114-drinks-afterdark1">
+  <link rel="stylesheet" href="/games/drinking/access.css?v=20261115-pub-table1">
   <script defer src="/config.js"></script>
   <script defer src="/games/matgo/matgo-access.js?v=20261114-drinks-adult1"></script>
-  <script defer src="/games/drinking/access.js?v=20261114-drinks-stability1"></script>
+  <script defer src="/games/drinking/access.js?v=20261115-pub-table1"></script>
 </head>
 <body>
   <section id="access-screen" data-state="pending" aria-label="회원 확인">
-    <p id="access-message" role="status">회원 정보를 확인하고 있어요…</p>
+    <p id="access-message" role="status">술집 들어가는 중</p>
     <a id="access-login" href="/?auth=login&amp;next=world" target="_blank" rel="noopener" hidden>오쭈다 로그인</a>
     <button id="access-retry" type="button" hidden>다시 확인</button>
     <a href="/world.html?tab=arcade">오쭈다 오락실로</a>
@@ -67,11 +67,12 @@
 <label class="pref"><span>게임 효과음</span><input id="audio-check" type="checkbox"></label>
 <label class="pref"><span>게임 진동</span><input id="haptic-check" type="checkbox"></label>
 <p id="haptic-note"></p><button class="big-button" id="fx-test">효과 체험하기</button></dialog>
+    <span data-module="/games/drinking/table-view.js?v=20261115-pub-table1"></span>
     <span data-module="/games/drinking/prompt-flavors.js?v=20261115-party-question-menu1"></span>
     <span data-module="/games/drinking/question-menu.js?v=20261115-party-question-menu1"></span>
     <span data-module="/games/drinking/game-guides.js?v=20261115-secretcount-turn2"></span>
     <span data-module="/games/drinking/presentation.js?v=20261115-secretcount1"></span>
-    <span data-module="/games/drinking/game-screen.js?v=20261114-drinking-screen1"></span>
+    <span data-module="/games/drinking/game-screen.js?v=20261115-pub-table1"></span>
     <span data-module="/games/drinking/community-prompts.js?v=20261114-drinking-wording1"></span>
     <span data-module="/games/drinking/prompt-submissions.js?v=20261115-party-question-menu1"></span>
     <span data-module="/games/fingers/condition-picker.js?v=20261115-party-question-menu1"></span>
@@ -79,7 +80,7 @@
     <span data-module="/games/party-live/truth.js?v=20261115-party-question-menu1"></span>
     <span data-module="/games/drinking/entry-refresh.js?v=20261115-secretcount1"></span>
     <span data-module="/games/secretcount/controls.js?v=20261115-secretcount-turn2"></span>
-    <span data-module="app.js?v=20261115-secretcount-turn2"></span>
+    <span data-module="app.js?v=20261115-pub-table1"></span>
   </template>
 </body>
 </html>
