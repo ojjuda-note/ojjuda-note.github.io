@@ -1,16 +1,66 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { harness, fixedNow, pause, waitFor } = require('./helpers/saju-ui-harness.cjs');
+const { harness, fixedNow, pause, waitFor, selectReadingItem } = require('./helpers/saju-ui-harness.cjs');
 
 // Keep these full-report transitions in a separate test worker: Node's VM
 // module contexts otherwise accumulate beside the core purchase scenarios.
+
+test('the two-step entry keeps one task in view, validates before moving and preserves input through editing',async t=>{
+  const h=await harness({coins:40});t.after(h.close);
+  const form=h.$('birth-form'),doc=h.window.document;
+  const visibleSteps=()=>[...form.querySelectorAll('[data-flow-step]')].filter(panel=>!panel.hidden);
+  const snapshot=()=>[...form.querySelectorAll('input,select')].map(field=>({id:field.id||field.name,value:field.value,checked:field.checked}));
+  assert.equal(visibleSteps().length,1);assert.equal(form.dataset.flowStep,'0');assert.equal(h.$('open-story').hidden,true);
+  await h.flow.next();assert.equal(form.dataset.flowStep,'0');assert.equal(doc.activeElement,h.$('birth-year'));
+  h.fill({name:'예시 이름',gender:'female',year:1990,month:2,day:31,topic:'annual'});
+  await h.flow.next();assert.equal(form.dataset.flowStep,'0');assert.match(form.querySelector('[data-flow-error]:not([hidden])').textContent,/날짜|생일|생년월일/);
+  h.$('birth-month').value='5';h.change(h.$('birth-month'));h.$('birth-day').value='17';h.change(h.$('birth-day'));
+  h.$('time-unknown').checked=false;h.change(h.$('time-unknown'));
+  h.$('birth-hour').value='8';h.change(h.$('birth-hour'));
+  await h.flow.next();assert.equal(form.dataset.flowStep,'0');assert.equal(doc.activeElement,h.$('birth-minute'));
+  assert.equal(h.$('birth-minute').value,'','an incomplete time never becomes minute zero');
+  h.$('birth-minute').value='37';h.change(h.$('birth-minute'));
+  h.$('birth-year').dispatchEvent(new h.window.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));
+  await waitFor(()=>form.dataset.flowStep==='1'&&form.dataset.flowBusy==='false');
+  assert.equal(visibleSteps().length,1);assert.equal(h.$('entry-product-picker').closest('[hidden]'),null);
+  assert.equal(h.state.starts.length,0,'Enter completes the information step without starting payment');
+  assert.equal(h.state.charges,0);assert.equal(h.$('result').hidden,true);
+  assert.match(form.querySelector('[data-flow-review]').textContent,/예시 이름/);
+  assert.match(form.querySelector('[data-flow-review]').textContent,/1990.05.17/);
+  const values=snapshot();h.flow.back();assert.equal(form.dataset.flowStep,'0');assert.deepEqual(snapshot(),values);
+  await h.flow.next();assert.deepEqual(snapshot(),values);assert.equal(h.state.starts.length,0);
+  await waitFor(()=>!h.$('open-story').disabled);h.$('open-story').click();await h.ready('annual',2026);
+  assert.equal(h.state.starts.length,1);assert.deepEqual(h.state.chargedAmounts,[10]);
+  h.$('edit-birth').click();assert.equal(form.dataset.flowStep,'0');assert.deepEqual(snapshot(),values);
+  assert.equal(h.$('open-story').hidden,true,'editing returns to birth information before another explicit confirmation');
+  h.changeAccount('20000000-0000-4000-8000-000000000002');await pause();
+  assert.equal(form.dataset.flowStep,'0');assert.equal(h.$('birth-year').value,'');
+  assert.equal(form.querySelector('[data-flow-review]').textContent,'');assert.equal(h.$('report-content').textContent,'');
+});
+
+test('selecting a saved person cancels an in-flight next step even when the birthday is identical',async t=>{
+  const h=await harness();t.after(h.close);
+  h.fill({name:'저장한 이름',gender:'female'});
+  const form=h.$('birth-form'),saved=h.$('saved-profiles');
+  saved.closest('details').querySelector('summary').click();
+  saved.querySelector('.profile-picker-save').click();
+  await waitFor(()=>saved.querySelector('.profile-picker-status').dataset.state==='success');
+  h.$('person-name').value='지금 수정한 이름';h.change(h.$('person-name'));
+  form.querySelector('[data-flow-next]').click();assert.equal(form.dataset.flowBusy,'true');
+  saved.querySelector('.profile-picker-use').click();
+  assert.equal(form.dataset.flowBusy,'false','restoring a saved profile immediately releases the old validation');
+  await pause();await pause();
+  assert.equal(form.dataset.flowStep,'0','the earlier validation cannot advance the newly restored person');
+  assert.equal(h.$('person-name').value,'저장한 이름');assert.equal(h.state.starts.length,0);
+  await h.flow.next();assert.equal(form.dataset.flowStep,'1');assert.equal(h.state.starts.length,0);
+});
 
 test('staged paid reports keep decade, month and detailed reading links connected after purchase', async t => {
   const h=await harness({coins:100});t.after(h.close);
   h.fill({topic:'all',gender:'female',hour:null});h.submit();await h.ready('all',2026);
   const doc=h.window.document,host=h.$('report-content'),picker=h.$('reading-page-select');
   const current=()=>host.querySelector('[data-reader-current]');
-  const pick=id=>{picker.value=id;h.change(picker);};
+  const pick=id=>selectReadingItem(picker,id);
   function follow(link) {
     assert.ok(link,'the requested detail link is present');
     const target=h.$(link.hash.slice(1));assert.ok(target);
@@ -53,19 +103,19 @@ test('a foreground solar-term boundary refreshes only the open paid month and pr
   h.fill({topic:'monthly',hour:8,minute:37});h.submit();await h.ready('monthly',2026);
   const host=h.$('report-content'),doc=h.window.document;
   assert.equal(host.querySelector('.month-reading.is-current').id,'reading-month-11');
-  h.$('reading-page-select').value='reading-month-6';h.change(h.$('reading-page-select'));
+  selectReadingItem(h.$('reading-page-select'),'reading-month-6');
   h.$('reading-month-6').querySelector('.reading-page-section-link').click();
   const selected=host.querySelector('[data-reader-current]').id;
   doc.querySelector('[data-reading-size="large"]').click();
   h.pickReport('annual',2027);
-  h.$('reading-page-select').focus();
+  h.$('reading-page-select-toggle').focus();
   const receipt=JSON.stringify([...h.state.receipts.values()]),note=h.$('current-reading-note').textContent;
   h.advance(60000);
   await waitFor(()=>host.querySelector('.month-reading.is-current')?.id==='reading-month-12'&&!h.$('report-product-picker').disabled);
   assert.equal(host.dataset.topic,'monthly');assert.equal(host.dataset.year,'2026');
   assert.equal(host.querySelector('[data-reader-current]').id,selected,'a detailed page stays selected after a clock update');
   assert.equal(h.$('reading-page-select').value,selected);
-  assert.equal(doc.activeElement,h.$('reading-page-select'),'the live replacement keeps keyboard focus');
+  assert.equal(doc.activeElement,h.$('reading-page-select-toggle'),'the live replacement keeps keyboard focus on the visible item list');
   assert.equal(h.$('detailed-reading').dataset.readingSize,'large');
   assert.equal(h.$('other-reading-options').open,true);
   assert.equal(doc.querySelector('input[name="report-topic"]:checked').value,'annual');
@@ -92,7 +142,7 @@ test('a resumed decade boundary keeps the same detailed topic and assumed-time n
   const host=h.$('report-content');
   const oldCurrent=host.querySelector('.daeun-period.is-current');
   assert.equal(oldCurrent.dataset.daeunPeriod,'reading-daeun-period-'+ending.index);
-  h.$('reading-page-select').value='reading-daeun';h.change(h.$('reading-page-select'));
+  selectReadingItem(h.$('reading-page-select'),'reading-daeun');
   host.querySelector(`.daeun-nav a[href="#${oldCurrent.dataset.daeunPeriod}-title"]`).click();
   oldCurrent.querySelector('.reading-page-section-link').click();
   const selected=host.querySelector('[data-reader-current]').dataset.daeunTopic;
@@ -134,9 +184,10 @@ test('New Year updates the birth-year limit on resume, input and submit while fu
   assert.equal(h.$('birth-year').validity.rangeOverflow,false);assert.equal(h.$('birth-form').checkValidity(),true);
   h.$('birth-year').max='2026';h.submit();await h.ready();
   assert.equal(h.$('birth-year').max,'2027');assert.equal(h.state.starts.length,1);
-  h.$('edit-birth').click();h.fill({year:2027,month:1,day:2,fortuneYear:2027,hour:null});h.submit();
-  await waitFor(()=>!h.$('form-error').hidden);
-  assert.match(h.$('form-error').textContent,/미래의 날짜와 시간/);
+  h.$('edit-birth').click();h.fill({year:2027,month:1,day:2,fortuneYear:2027,hour:null});await h.submit();
+  const flowError=h.$('birth-form').querySelector('[data-flow-error]:not([hidden])');
+  assert.ok(flowError,'a future birthday remains in the information step');
+  assert.match(flowError.textContent,/미래의 날짜와 시간/);
   assert.equal(h.state.starts.length,1);assert.deepEqual(h.state.chargedAmounts,[10]);
 });
 

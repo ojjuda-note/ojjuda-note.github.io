@@ -8,16 +8,48 @@ fs.mkdirSync(artifacts, { recursive: true });
 const { chromium } = require('playwright');
 
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.woff': 'font/woff' };
-// The real entry markup and styles, with account and billing scripts omitted.
+// Real entry markup and flow controller, without account or billing code.
+// The isolated form only supplies native select options and time/calendar
+// visibility normally initialized by the app. Validation stays in production.
+const entryFixtureScript = `<script type="module">
+import {attachEntryFlow} from '/games/starlit-saju/entry-flow.mjs';
+const form=document.querySelector('form[data-entry-flow]');
+for(const prefix of ['birth','self','partner']) {
+  if(!document.getElementById(prefix+'-year'))continue;
+  for(const [field,start,end,suffix] of [['month',1,12,'월'],['day',1,31,'일'],['hour',0,23,'시'],['minute',0,59,'분']]) {
+    const select=document.getElementById(prefix+'-'+field);
+    for(let value=start;value<=end;value++){const option=document.createElement('option');option.value=String(value);option.textContent=String(value)+suffix;select.append(option);}
+  }
+  const unknown=document.getElementById(prefix==='birth'?'time-unknown':prefix+'-time-unknown');
+  const timeFields=document.getElementById(prefix==='birth'?'time-fields':prefix+'-time-fields');
+  const syncTime=()=>{timeFields.hidden=unknown.checked;for(const field of ['hour','minute'])document.getElementById(prefix+'-'+field).disabled=unknown.checked;};
+  unknown.addEventListener('change',syncTime);syncTime();
+  const calendar=prefix==='birth'?form.querySelectorAll('input[name="calendar"]'):[document.getElementById(prefix+'-calendar')];
+  const syncCalendar=()=>{
+    const value=prefix==='birth'?form.querySelector('input[name="calendar"]:checked').value:calendar[0].value;
+    document.getElementById(prefix==='birth'?'leap-option':prefix+'-leap-option').hidden=value!=='lunar';
+  };
+  for(const element of calendar)element.addEventListener('change',syncCalendar);syncCalendar();
+}
+const year=document.getElementById('entry-year');
+if(year)for(let value=2025;value<=2028;value++){const option=document.createElement('option');option.value=String(value);option.textContent=value+'년';year.append(option);}
+if(year)year.value='2026';
+attachEntryFlow(form);
+globalThis.__entryFixture={businessSubmits:0};
+form.addEventListener('submit',event=>{event.preventDefault();globalThis.__entryFixture.businessSubmits++;});
+form.dataset.fixtureReady='true';
+</script>`;
 const sajuEntryFixture = fs.readFileSync(path.join(repo,'games/starlit-saju/index.html'),'utf8')
   .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'')
-  .replace('<head>','<head><base href="/games/starlit-saju/">');
+  .replace('<head>','<head><base href="/games/starlit-saju/">')
+  .replace('</body>',entryFixtureScript+'</body>');
 const compatibilityEntryFixture = fs.readFileSync(path.join(repo,'games/starlit-saju/compatibility.html'),'utf8')
   .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'')
-  .replace('<head>','<head><base href="/games/starlit-saju/">');
+  .replace('<head>','<head><base href="/games/starlit-saju/">')
+  .replace('</body>',entryFixtureScript+'</body>');
 // Isolated rendering fixture. It uses production calculation and reading modules
 // with a published example date, and never loads authentication or billing code.
-const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/reading-summary.css"><link rel="stylesheet" href="/games/starlit-saju/reading-score.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"></head><body class="saju-readable"><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
+const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/reading-summary.css"><link rel="stylesheet" href="/games/starlit-saju/reading-score.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"></head><body class="saju-readable saju-flow"><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { analyzeFortune } from '/games/starlit-saju/fortune-data.mjs';
 import { analyzeDaeun } from '/games/starlit-saju/daeun.mjs';
@@ -49,7 +81,7 @@ function show(){
 }
 select.addEventListener('change',show);show();
 </script></body></html>`;
-const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/compatibility.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"></head><body class="saju-readable"><main class="compatibility-main"><section class="result"><label for="fixture-pair">검사할 두 사람</label><select id="fixture-pair"><option value="confirmed">말띠와 양띠</option><option value="uncertain">입춘일 · 시간 모름</option></select><p id="fixture-zodiac" class="birth-summary"></p><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
+const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/compatibility.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"></head><body class="saju-readable saju-flow"><main class="compatibility-main"><section class="result"><label for="fixture-pair">검사할 두 사람</label><select id="fixture-pair"><option value="confirmed">말띠와 양띠</option><option value="uncertain">입춘일 · 시간 모름</option></select><p id="fixture-zodiac" class="birth-summary"></p><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { buildCompatibilityReading } from '/games/starlit-saju/compatibility.mjs';
 import { renderCompatibilityReport } from '/games/starlit-saju/report-view.mjs';
@@ -382,119 +414,210 @@ const server = http.createServer((request, response) => {
       sajuReadableViews[label]={samples:view.samples,minimumContrast:view.minimumContrast,minimumBodyFont:view.prose.length?Math.min(...view.prose.map(item=>item.font)):null,minimumTargetHeight:view.minimumTargetHeight};
       return view;
     }
-    const entryText='h1,h2,.intro-description,.compatibility-intro>p,.entry-benefits li,.entry-steps li,.form-step-title,.field-label,fieldset legend,.field-hint,.form-note,.saju-price-note,.saju-price strong,.product-option strong,.product-option small,.product-option b,.check-row span,.reading-service-nav strong,.reading-service-nav>a>span,.method-preview summary,button:not(:disabled),.back-link,.segmented span,.pair-calendar>label,.pair-privacy';
+    const entryText='h1,h2,.intro-description,.compatibility-intro>p,.entry-benefits li,.entry-steps li,.form-step-title,.field-label,fieldset legend,.field-hint,.form-note,.saju-price-note,.saju-price strong,.product-option strong,.product-option small,.product-option b,.check-row span,.reading-service-nav strong,.reading-service-nav>a>span,.method-preview summary,button:not(:disabled),.back-link,.segmented span,.pair-calendar>label,.pair-privacy,.entry-heading>p,.flow-step-note,.flow-privacy,.flow-review-person h3,.flow-review dt,.flow-review dd,.flow-confirm-title';
     const entryControls='button,input[type=text],input[type=number],select,.check-row,.segmented label,.product-options>label,.reading-service-nav>a,.header-nav .back-link';
-    const readingText='.reading-pager-label,.reading-page-position,.reading-swipe-hint,.reader-label,.reader-headline,.reader-card-title,.reader-prose p,.saju-summary-line,.saju-reading-score-title,.saju-reading-score-scale,.saju-wind-label,.saju-wind-value,.saju-reading-score-notice,.saju-reading-score-unavailable,.saju-reading-score-reason,.daeun-age,.daeun-dates,.daeun-time-notice,.daeun-sequence-note,.reading-summary-table th,.reading-summary-table td';
-    const compatibilityText='.reading-pager-label,.reading-page-position,.reading-swipe-hint,.compatibility-people-title,.compatibility-person-name,.compatibility-summary-line,.compatibility-person-prose p,.compatibility-person-scope,.compatibility-synthesis-people,.compatibility-score-heading h4,.compatibility-score-heading>p,.compatibility-score-eyebrow,.compatibility-score-number strong,.compatibility-score-number>span,.compatibility-score-number small,.compatibility-score-label,.compatibility-score-summary,.compatibility-score-item-heading h5,.compatibility-score-item-value,.compatibility-score-item-summary,.compatibility-score-notice';
-    await saju.goto(new URL('/__saju_entry_fixture',url).href);
-    for(const [viewport,size] of [['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]]) {
-      await saju.setViewportSize(size);
-      const geometry=await saju.locator('#birth-form').evaluate(form=>{
+    const readingText='.reading-domain-button,.reading-current-caption,.reading-current-title,.reading-item-count,.reading-item-action,.reading-body-toggle,.reading-pager-label,.reading-page-position,.reading-swipe-hint,.reader-label,.reader-headline,.reader-card-title,.reader-prose p,.saju-summary-line,.saju-reading-score-title,.saju-reading-score-scale,.saju-wind-label,.saju-wind-value,.saju-reading-score-notice,.saju-reading-score-unavailable,.saju-reading-score-reason,.daeun-age,.daeun-dates,.daeun-time-notice,.daeun-sequence-note,.reading-summary-table th,.reading-summary-table td';
+    const compatibilityText='.reading-domain-button,.reading-current-caption,.reading-current-title,.reading-item-count,.reading-item-action,.reading-body-toggle,.reading-pager-label,.reading-page-position,.reading-swipe-hint,.compatibility-people-title,.compatibility-person-name,.compatibility-summary-line,.compatibility-person-prose p,.compatibility-person-scope,.compatibility-synthesis-people,.compatibility-score-heading h4,.compatibility-score-heading>p,.compatibility-score-eyebrow,.compatibility-score-number strong,.compatibility-score-number>span,.compatibility-score-number small,.compatibility-score-label,.compatibility-score-summary,.compatibility-score-item-heading h5,.compatibility-score-item-value,.compatibility-score-item-summary,.compatibility-score-notice';
+    const sajuFlowViews={};
+    const entrySizes=[['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]];
+    async function assertFlowStage(form,expected,label) {
+      await saju.waitForFunction(({id,expected})=>{const node=document.getElementById(id);return node.dataset.flowBusy!=='true'&&node.dataset.flowStep===String(expected);},{id:await form.getAttribute('id'),expected});
+      const stages=form.locator('[data-flow-step]:visible');
+      assert.equal(await stages.count(),1,label+': only the current input stage is shown');
+      assert.equal(await stages.first().getAttribute('data-flow-step'),String(expected));
+      assert.equal(await saju.evaluate(()=>globalThis.__entryFixture.businessSubmits),0,label+': moving between input stages never reaches the purchase handler');
+    }
+    async function nextFlow(form,expected,label) {
+      await form.locator('[data-flow-next]:visible').click();
+      await assertFlowStage(form,expected,label);
+    }
+    async function formSnapshot(form) {
+      return form.locator('input,select').evaluateAll(nodes=>nodes.map(node=>({id:node.id||node.name,value:node.value,checked:node.checked,disabled:node.disabled})));
+    }
+    async function fillEntry(prefix,{name,gender='female',year,month,day}) {
+      const identity=prefix==='birth'?'person':prefix;
+      await saju.locator('#'+identity+'-name').fill(name);
+      await saju.locator('#'+identity+'-gender').selectOption(gender);
+      await saju.locator('#'+prefix+'-year').fill(String(year));
+      await saju.locator('#'+prefix+'-month').selectOption(String(month));
+      await saju.locator('#'+prefix+'-day').selectOption(String(day));
+    }
+    async function entryScreens(kind,viewport,step) {
+      if(viewport==='phone')return;
+      await saju.evaluate(()=>window.scrollTo(0,0));
+      await saju.screenshot({path:path.join(artifacts,'saju-flow-'+kind+'-'+viewport+'-'+step+'.png'),fullPage:true});
+      if(step==='information'||step==='person-a') {
+        await saju.screenshot({path:path.join(artifacts,'saju-readable-entry-'+kind+'-'+viewport+'-top.png')});
+        await saju.screenshot({path:path.join(artifacts,'saju-readable-entry-'+kind+'-'+viewport+'.png'),fullPage:true});
+      }
+    }
+    for(const [viewport,size] of entrySizes) {
+      await saju.setViewportSize(size);await saju.goto(new URL('/__saju_entry_fixture',url).href);
+      const form=saju.locator('#birth-form');await form.locator('[data-flow-step="0"]').waitFor();
+      await form.and(saju.locator('[data-fixture-ready="true"]')).waitFor();
+      await assertFlowStage(form,0,'general '+viewport);
+      const date=await saju.locator('#birth-year').boundingBox();
+      assert.ok(date&&date.y>=0&&date.y+date.height<=size.height,'general '+viewport+': the birth date is reachable in the first viewport');
+      assert.equal(await saju.locator('#entry-product-picker').isVisible(),false,'product choices wait until the information stage is complete');
+      assert.equal(await saju.locator('#open-story').isVisible(),false,'the purchase action is not mixed into the birth-input stage');
+      const geometry=await form.evaluate(form=>{
         const shown=element=>element.getBoundingClientRect().width>0&&element.getBoundingClientRect().height>0;
         const fonts=selector=>Array.from(form.querySelectorAll(selector)).filter(shown).map(element=>({id:element.id||element.className,size:parseFloat(getComputedStyle(element).fontSize)}));
-        const gender=form.querySelector('#person-gender'),style=getComputedStyle(gender);
-        const measure=document.createElement('canvas').getContext('2d');
+        const gender=form.querySelector('#person-gender'),style=getComputedStyle(gender),measure=document.createElement('canvas').getContext('2d');
         measure.font=style.fontWeight+' '+style.fontSize+' '+style.fontFamily;
-        const selectedText=gender.selectedOptions[0].textContent;
         return {inputs:fonts('input[type=number],input[type=text],select'),notices:fonts('.field-hint,.form-note'),
-          gender:{label:selectedText,textWidth:measure.measureText(selectedText).width,
-            availableWidth:gender.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-16},
+          gender:{textWidth:measure.measureText(gender.selectedOptions[0].textContent).width,availableWidth:gender.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-16},
           checks:Array.from(form.querySelectorAll('.check-row')).filter(shown).map(element=>element.getBoundingClientRect().height),
           overflow:document.documentElement.scrollWidth>innerWidth||form.scrollWidth>form.clientWidth+1};
       });
-      assert.ok(geometry.inputs.length>=5&&geometry.inputs.every(field=>field.size>=16),viewport+': birth inputs remain at least 16px');
-      assert.ok(geometry.notices.length>=4&&geometry.notices.every(field=>field.size>=13),viewport+': birth assumptions and privacy notes remain at least 13px');
-      assert.ok(geometry.checks.length>0&&geometry.checks.every(height=>height>=44),viewport+': unknown-time controls have a 44px touch target');
-      assert.equal(geometry.overflow,false,viewport+': larger entry text keeps the form within the viewport');
-      assert.ok(geometry.gender.textWidth<=geometry.gender.availableWidth,viewport+': the default gender label fits beside the native select arrow');
+      assert.ok(geometry.inputs.length>=5&&geometry.inputs.every(field=>field.size>=16),viewport+': input text remains readable');
+      assert.ok(geometry.notices.every(field=>field.size>=14),viewport+': input instructions remain readable');
+      assert.ok(geometry.checks.length>0&&geometry.checks.every(height=>height>=44));
+      assert.equal(geometry.overflow,false);assert.ok(geometry.gender.textWidth<=geometry.gender.availableWidth);
       sajuEntryViews[viewport]=geometry;
       await inspectReadableSurface('general entry '+viewport,{text:entryText,controls:entryControls,placeholders:true});
-      const visibleLabels=await saju.locator('#birth-form .person-inputs .field-label,#birth-form .date-inputs .field-label').evaluateAll(nodes=>nodes.filter(node=>{
-        const box=node.getBoundingClientRect();return box.width>1&&box.height>1;
-      }).length);
-      assert.equal(visibleLabels,5,viewport+': name, gender, year, month and day have visible labels');
+      assert.equal(await form.locator('.person-inputs .field-label:visible,.date-inputs .field-label:visible').count(),5,'name, gender, year, month and day have visible labels');
+      await entryScreens('general',viewport,'information');
       if(viewport==='phone-small')await saju.locator('.birth-panel').screenshot({path:path.join(artifacts,'saju-entry-phone-small.png')});
-      if(viewport!=='phone') {
-        await saju.evaluate(()=>window.scrollTo(0,0));
-        await saju.screenshot({path:path.join(artifacts,'saju-readable-entry-general-'+viewport+'-top.png')});
-        await saju.screenshot({path:path.join(artifacts,'saju-readable-entry-general-'+viewport+'.png'),fullPage:true});
-      }
+      await fillEntry('birth',{name:'예시 이름',year:1990,month:2,day:31});
+      await nextFlow(form,0,'invalid February date '+viewport);
+      assert.ok(await form.locator('[data-flow-step="0"] [data-flow-error]:visible').textContent(),'a real calendar error explains why the step cannot continue');
+      await saju.locator('#birth-month').selectOption('5');await saju.locator('#birth-day').selectOption('17');
+      await saju.locator('#time-unknown').uncheck();
+      assert.equal(await saju.locator('#birth-hour').inputValue(),'');assert.equal(await saju.locator('#birth-minute').inputValue(),'');
+      await saju.locator('#birth-hour').selectOption('8');
+      await nextFlow(form,0,'missing minute '+viewport);
+      assert.equal(await saju.locator('#birth-minute').inputValue(),'','a missing minute is never silently replaced by zero');
+      await saju.locator('#birth-minute').selectOption('37');
+      await saju.locator('#birth-year').focus();await saju.locator('#birth-year').press('Tab');
+      assert.equal(await saju.evaluate(()=>document.activeElement?.id),'birth-month');
+      assert.ok(await saju.locator('#birth-month').evaluate(element=>parseFloat(getComputedStyle(element).outlineWidth)>=2));
+      await saju.locator('#birth-year').press('Enter');
+      await assertFlowStage(form,1,'general Enter '+viewport);
+      assert.equal(await saju.locator('#entry-product-picker').isVisible(),true);
+      assert.equal(await saju.locator('#birth-year').isVisible(),false);
+      const review=form.locator('[data-flow-review]:visible');
+      assert.ok((await review.textContent()).includes('1990'),'confirmation repeats the entered birth information');
+      const selectedProduct=saju.locator('input[name="entry-topic"][value="annual"]');
+      await selectedProduct.focus();await selectedProduct.press('Space');assert.equal(await selectedProduct.isChecked(),true);
+      const optionStyles=await saju.locator('#entry-product-picker .product-option').evaluateAll(options=>options.slice(0,2).map(option=>{
+        const style=getComputedStyle(option);return [style.backgroundColor,style.backgroundImage,style.borderColor,style.borderWidth,style.boxShadow];
+      }));
+      assert.notDeepEqual(optionStyles[0],optionStyles[1],'the chosen product is visibly marked');
+      const values=await formSnapshot(form);
+      await form.locator('[data-flow-back]:visible').click();await assertFlowStage(form,0,'general back '+viewport);
+      assert.deepEqual(await formSnapshot(form),values,'going back preserves all birth fields and the selected product');
+      await nextFlow(form,1,'general continue '+viewport);assert.deepEqual(await formSnapshot(form),values);
+      await saju.locator('input[name="entry-topic"][value="lifelong"]').check();
+      await inspectReadableSurface('general entry choice '+viewport,{text:entryText,controls:entryControls});
+      await entryScreens('general',viewport,'choice');
+      sajuFlowViews['general '+viewport]={stages:2,firstViewportDate:true,calendarRejected:true,missingMinuteRejected:true,enterAdvances:true,retained:true,purchaseSubmits:0};
     }
-    const selectedProduct=saju.locator('input[name="entry-topic"][value="annual"]');
-    await selectedProduct.focus();await selectedProduct.press('Space');
-    assert.equal(await selectedProduct.isChecked(),true,'a keyboard choice selects the requested reading');
-    const optionStyles=await saju.locator('#entry-product-picker .product-option').evaluateAll(options=>options.slice(0,2).map(option=>{
-      const style=getComputedStyle(option);return [style.backgroundColor,style.backgroundImage,style.borderColor,style.borderWidth,style.boxShadow];
-    }));
-    assert.notDeepEqual(optionStyles[0],optionStyles[1],'the selected product has a visible boundary or surface distinct from another choice');
-    await saju.locator('#birth-year').focus();await saju.locator('#birth-year').press('Tab');
-    assert.equal(await saju.evaluate(()=>document.activeElement?.id),'birth-month','birth fields keep their keyboard reading order');
-    assert.ok(await saju.locator('#birth-month').evaluate(element=>parseFloat(getComputedStyle(element).outlineWidth)>=2),'the focused birth field has a visible outline');
     await saju.evaluate(()=>{
       const error=document.getElementById('form-error');error.textContent='입력한 생년월일을 확인해 주세요.';error.hidden=false;
-      document.getElementById('payment-status').textContent='선택한 풀이와 금액을 확인해 주세요.';
-      document.getElementById('open-story').disabled=false;
+      document.getElementById('payment-status').textContent='선택한 풀이와 금액을 확인해 주세요.';document.getElementById('open-story').disabled=false;
     });
     await inspectReadableSurface('general entry feedback',{text:'#form-error,#payment-status,#open-story'});
-    await saju.goto(new URL('/__compatibility_entry_fixture',url).href);
-    for(const [viewport,size] of [['phone-small',{width:320,height:844}],['phone',{width:390,height:844}],['desktop',{width:1280,height:900}]]) {
-      await saju.setViewportSize(size);
+    for(const [viewport,size] of entrySizes) {
+      await saju.setViewportSize(size);await saju.goto(new URL('/__compatibility_entry_fixture',url).href);
+      const form=saju.locator('#compatibility-form');await form.and(saju.locator('[data-fixture-ready="true"]')).waitFor();
+      await assertFlowStage(form,0,'compatibility A '+viewport);
+      assert.equal(await saju.locator('.compatibility-person:visible').count(),1,'one person is filled at a time');
+      assert.equal(await saju.locator('#partner-year').isVisible(),false);
+      assert.equal(await saju.locator('#compatibility-open').isVisible(),false);
+      const date=await saju.locator('#self-year').boundingBox();
+      assert.ok(date&&date.y>=0&&date.y+date.height<=size.height,'compatibility '+viewport+': A’s birth date is in the first viewport');
       const view=await inspectReadableSurface('compatibility entry '+viewport,{text:entryText,controls:entryControls,placeholders:true});
-      const geometry=await saju.locator('.compatibility-person').evaluateAll(people=>people.map(person=>{
-        const box=person.getBoundingClientRect();return {left:box.left,right:box.right,top:box.top,bottom:box.bottom};
-      }));
-      assert.equal(geometry.length,2,'the compatibility form keeps both A and B');
-      assert.ok(geometry.every(person=>person.left>=-1&&person.right<=size.width+1),'both birth forms fit the screen');
-      if(viewport==='desktop')assert.ok(geometry[1].left>=geometry[0].right-1,'desktop aligns A/B input forms beside each other');
-      else assert.ok(geometry[1].top>=geometry[0].bottom-1,'phone input keeps A then B in a single reading order');
-      assert.equal(await saju.locator('#compatibility-price').textContent(),'궁합 · 20쭈','the redesign preserves the separate compatibility price');
-      compatibilityEntryViews[viewport]={minimumContrast:view.minimumContrast,inputs:view.inputs.length,geometry};
-      if(viewport!=='phone') {
-        await saju.evaluate(()=>window.scrollTo(0,0));
-        await saju.screenshot({path:path.join(artifacts,'saju-readable-entry-compatibility-'+viewport+'-top.png')});
-        await saju.screenshot({path:path.join(artifacts,'saju-readable-entry-compatibility-'+viewport+'.png'),fullPage:true});
-      }
+      await entryScreens('compatibility',viewport,'person-a');
+      await fillEntry('self',{name:'예시 A',year:1990,month:5,day:17});
+      await saju.locator('#self-year').press('Enter');await assertFlowStage(form,1,'compatibility Enter '+viewport);
+      assert.equal(await saju.locator('#partner-year').isVisible(),true);
+      assert.equal(await saju.locator('#self-year').isVisible(),false);
+      await nextFlow(form,1,'empty B '+viewport);
+      assert.equal(await form.locator('[data-flow-step="1"] [data-flow-error]:visible').count(),1,'B has its own required-field feedback');
+      await fillEntry('partner',{name:'예시 B',gender:'male',year:1992,month:3,day:14});
+      await inspectReadableSurface('compatibility entry B '+viewport,{text:entryText,controls:entryControls});
+      await entryScreens('compatibility',viewport,'person-b');
+      await nextFlow(form,2,'compatibility confirm '+viewport);
+      const values=await formSnapshot(form),review=await form.locator('[data-flow-review]:visible').textContent();
+      assert.ok(['예시 A','예시 B','1990','1992'].every(value=>review.includes(value)),'the confirmation keeps both people distinguishable');
+      assert.equal(await saju.locator('#compatibility-price').textContent(),'궁합 · 20쭈');
+      await form.locator('[data-flow-back]:visible').click();await assertFlowStage(form,1,'compatibility back B '+viewport);
+      assert.deepEqual(await formSnapshot(form),values);
+      await form.locator('[data-flow-back]:visible').click();await assertFlowStage(form,0,'compatibility back A '+viewport);
+      assert.deepEqual(await formSnapshot(form),values);
+      await nextFlow(form,1,'compatibility resume B '+viewport);await nextFlow(form,2,'compatibility resume confirm '+viewport);
+      assert.deepEqual(await formSnapshot(form),values,'A and B retain all fields through a full back/forward round trip');
+      await inspectReadableSurface('compatibility entry confirm '+viewport,{text:entryText,controls:entryControls});
+      await entryScreens('compatibility',viewport,'confirm');
+      compatibilityEntryViews[viewport]={minimumContrast:view.minimumContrast,inputs:view.inputs.length};
+      sajuFlowViews['compatibility '+viewport]={stages:3,firstViewportDate:true,emptyBRejected:true,enterAdvances:true,retained:true,purchaseSubmits:0};
     }
     await saju.evaluate(()=>{
       const error=document.getElementById('compatibility-error');error.textContent='두 사람의 생년월일을 확인해 주세요.';error.hidden=false;
-      document.getElementById('compatibility-status').textContent='입력한 정보를 확인해 주세요.';
-      document.getElementById('compatibility-open').disabled=false;
+      document.getElementById('compatibility-status').textContent='입력한 정보를 확인해 주세요.';document.getElementById('compatibility-open').disabled=false;
     });
     await inspectReadableSurface('compatibility entry feedback',{text:'#compatibility-error,#compatibility-status,#compatibility-open'});
     await saju.setViewportSize({width:390,height:844});
     await saju.goto(new URL('/__saju_fixture', url).href);
     assert.equal(await saju.locator('#report-content > [data-reader-paged="true"]').count(),1,'the prepared report keeps its mounted pager host when attached after purchase');
+    async function selectVisibleReading(page,pickerId,id,{keyboard=false}={}) {
+      const nav=page.locator('#'+pickerId+'-navigator');
+      const item=nav.locator('[data-reading-target="'+id+'"]');
+      assert.equal(await item.count(),1,id+': the item is available through the visible menu');
+      const domain=await item.getAttribute('data-reading-domain');
+      const field=nav.locator('.reading-domain-button[data-reading-domain="'+domain+'"]');
+      if(await field.getAttribute('aria-pressed')!=='true')await field.click();
+      const list=nav.locator('.reading-item-picker'),toggle=list.locator(':scope > summary');
+      if(await list.getAttribute('open')===null)await toggle.click();
+      assert.equal(await item.isVisible(),true,id+': the requested item is shown in its field');
+      if(keyboard){await item.focus();await item.press('Enter');}else await item.click();
+      assert.equal(await page.locator('#'+pickerId).inputValue(),id);
+      assert.equal(await item.getAttribute('aria-current'),'page');
+      assert.equal(await list.getAttribute('open'),null,'choosing an item returns the screen to its reading');
+      assert.equal(await field.getAttribute('aria-pressed'),'true');
+    }
+    async function expandReadingBodies(page,currentAttribute) {
+      const current=page.locator('['+currentAttribute+']');
+      const toggles=current.locator('details.reading-body-details:not([open]) > summary:visible');
+      while(await toggles.count())await toggles.first().click();
+    }
     async function inspectReadingControls(label,pickerId,currentAttribute) {
-      const picker=saju.locator('#'+pickerId),current=saju.locator('['+currentAttribute+']');
+      const picker=saju.locator('#'+pickerId),current=saju.locator('['+currentAttribute+']'),nav=saju.locator('#'+pickerId+'-navigator');
+      assert.equal(await picker.isVisible(),false,'the long native picker is replaced by visible fields and an item list');
       const options=await picker.locator('option').evaluateAll(nodes=>nodes.map(node=>node.value));
-      await picker.selectOption(options[0]);await picker.focus();
+      const domains=nav.locator('.reading-domain-button:visible');
+      const domainIds=await domains.evaluateAll(nodes=>nodes.map(node=>node.dataset.readingDomain));
+      assert.ok(domainIds.length>=2,label+': separate fields are directly visible');
+      await domains.first().focus();await domains.first().press('ArrowRight');
+      assert.equal(await nav.locator('.reading-domain-button[aria-pressed="true"]').getAttribute('data-reading-domain'),domainIds[1]);
+      assert.equal(await domains.nth(1).evaluate(element=>element===document.activeElement),true,'field arrow navigation keeps keyboard focus visible');
+      await domains.nth(1).press('ArrowLeft');
+      assert.equal(await nav.locator('.reading-domain-button[aria-pressed="true"]').getAttribute('data-reading-domain'),domainIds[0]);
+      await selectVisibleReading(saju,pickerId,options[0]);
       for(const id of options.slice(1,3)) {
-        await picker.press('ArrowDown');
-        assert.equal(await picker.inputValue(),id,label+': consecutive arrow keys select consecutive entries');
+        await selectVisibleReading(saju,pickerId,id,{keyboard:true});
         assert.equal(await current.getAttribute('id'),id);
-        assert.equal(await picker.evaluate(element=>element===document.activeElement),true,label+': the picker retains keyboard focus');
+        assert.equal(await nav.locator('.reading-item-toggle').evaluate(element=>element===document.activeElement),true,'the collapsed item list retains a reachable focus target');
       }
-      const controls=picker.locator('..').locator('.reading-pager-step'),previous=controls.first(),next=controls.last();
-      const start=await current.getAttribute('id');
-      await next.focus();
+      const controls=saju.locator('.reading-pager .reading-pager-step'),previous=controls.first(),next=controls.last();
+      const start=await current.getAttribute('id');await next.focus();
       for(let step=0;step<2;step++) {
         const before=await current.getAttribute('id');await next.press('Enter');
         assert.notEqual(await current.getAttribute('id'),before);
-        assert.equal(await next.evaluate(element=>element===document.activeElement),true,label+': repeated next presses keep focus on the button');
+        assert.equal(await next.evaluate(element=>element===document.activeElement),true,label+': repeated next presses retain focus');
       }
       await previous.focus();await previous.press('Enter');await previous.press('Enter');
-      assert.equal(await current.getAttribute('id'),start);
-      assert.equal(await previous.evaluate(element=>element===document.activeElement),true,label+': repeated previous presses keep focus on the button');
-      const sizes=await picker.locator('..').locator('select,button').evaluateAll(nodes=>nodes.map(element=>element.getBoundingClientRect().height));
-      assert.ok(sizes.every(height=>height>=44),label+': pager controls remain large enough to tap');
-      assert.ok(await previous.evaluate(element=>parseFloat(getComputedStyle(element).outlineWidth)>=2),label+': the focused control keeps a visible outline');
-      sajuNavigation[label]={arrowChoices:2,nextSteps:2,previousSteps:2,minimumControlHeight:Math.min(...sizes)};
-      await picker.selectOption(options[0]);
+      assert.equal(await current.getAttribute('id'),start);assert.equal(await previous.evaluate(element=>element===document.activeElement),true);
+      const sizes=await saju.locator('.reading-pager button:visible,.reading-item-toggle:visible').evaluateAll(nodes=>nodes.map(element=>element.getBoundingClientRect().height));
+      assert.ok(sizes.every(height=>height>=44),label+': the visible navigation controls remain easy to tap');
+      assert.ok(await previous.evaluate(element=>parseFloat(getComputedStyle(element).outlineWidth)>=2));
+      sajuNavigation[label]={fieldArrowChoices:2,itemChoices:2,nextSteps:2,previousSteps:2,minimumControlHeight:Math.min(...sizes)};
+      await selectVisibleReading(saju,pickerId,options[0]);
     }
     await inspectReadingControls('general','reading-page-select','data-reader-current');
     async function selectReadingPage(id) {
-      const picker=saju.locator('#reading-page-select');
-      if(await picker.locator('option[value="'+id+'"]').count()) await picker.selectOption(id);
+      if(await saju.locator('.reading-item-button[data-reading-target="'+id+'"]').count())await selectVisibleReading(saju,'reading-page-select',id);
       else await saju.locator('a[href="#'+id+'"]:visible').first().click();
       await saju.locator('[data-reader-current][id="'+id+'"]').waitFor({state:'visible'});
     }
@@ -598,11 +721,13 @@ const server = http.createServer((request, response) => {
       await selectReadingPage(cardId);
       const card=saju.locator('[data-reader-current]');
       const readerOrdered=await card.evaluate(element=>{
-        const label=element.querySelector('.portrait-card-label,.reader-card-label'),summary=element.querySelector(':scope > .saju-two-line-summary'),prose=element.querySelector(':scope > .reader-prose');
+        const label=element.querySelector('.portrait-card-label,.reader-card-label'),summary=element.querySelector(':scope > .saju-two-line-summary'),prose=element.querySelector(':scope > .reading-body-details .reader-prose');
         return label&&summary&&prose&&prose.querySelectorAll('p').length>=4&&
           !!(label.compareDocumentPosition(summary)&Node.DOCUMENT_POSITION_FOLLOWING)&&!!(summary.compareDocumentPosition(prose)&Node.DOCUMENT_POSITION_FOLLOWING);
       });
       assert.ok(readerOrdered,topic+': the selected unit retains topic, conclusion and all paragraphs');
+      assert.equal(await card.locator(':scope > .reading-body-details').getAttribute('open'),null,topic+': the longer prose starts folded below the visible summary and scores');
+      assert.equal(await card.locator(':scope > .saju-two-line-summary').isVisible(),true);
       assert.equal(await saju.locator('.portrait-card:visible,.reader-card:visible').count(),1);
       await inspectSajuScores(topic+' paid reading');
       assert.equal(await saju.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,topic+': the selected mobile reading fits');
@@ -642,6 +767,15 @@ const server = http.createServer((request, response) => {
         if(textSize==='normal')normalFont=font;
         else assert.ok(font>normalFont,label+': the large-text setting actually enlarges summary text');
         await selectReadingPage(summaryTargets.portrait);await inspect('portrait card');
+        if(viewport!=='phone') {
+          await saju.locator('.reading-pager').evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));
+          await saju.screenshot({path:path.join(artifacts,'saju-flow-general-'+viewport+'-'+textSize+'-summary.png')});
+          await saju.locator('.reading-item-toggle').click();
+          await inspectReadableSurface('general item menu '+label,{text:'.reading-domain-button,.reading-current-title,.reading-item-group-title,.reading-item-button',controls:'.reading-domain-button,.reading-item-toggle,.reading-item-button'});
+          await saju.screenshot({path:path.join(artifacts,'saju-flow-general-'+viewport+'-'+textSize+'-items.png')});
+          await saju.locator('.reading-item-toggle').click();
+        }
+        await expandReadingBodies(saju,'data-reader-current');
         await inspectReadableSurface('general reading '+label,{text:readingText,body:'.reader-prose p',minimumBody:textSize==='large'?21:18,controls:'.reading-pager select,.reading-pager button,.reading-page-section-link'});
         await saju.locator('[data-reader-current] .saju-reading-score').first().screenshot({path:path.join(artifacts,'saju-reading-scores-'+viewport+'-'+textSize+'.png')});
         await saju.locator('.reading-pager').scrollIntoViewIfNeeded();
@@ -732,7 +866,7 @@ const server = http.createServer((request, response) => {
           assert.deepEqual(actual.map(row=>[row.key,row.value,row.width]),['tailwind','headwind'].map(key=>[key,item.score[key].value,item.score[key].value+'%']),
             label+' '+item.key+': displayed scores and bar widths come from the actual reading model');
           assert.ok(actual.every(row=>row.text.includes(row.value+'점')),label+': positive scores remain explicit text');
-          const paragraphs=await source.locator(':scope > .reader-prose > p').allTextContents();
+          const paragraphs=await source.locator(':scope > .reading-body-details > .reading-body-content > .reader-prose > p').allTextContents();
           assert.deepEqual(paragraphs,item.paragraphs,label+' '+item.key+': the original strength and caution paragraphs remain intact');
           values[item.key]=actual.map(row=>row.value);
           if(item.key==='portrait-decisions'&&((viewport==='phone-small'&&textSize==='large')||(viewport==='desktop'&&textSize==='normal')))
@@ -792,11 +926,11 @@ const server = http.createServer((request, response) => {
     await saju.locator('#report-content[data-ready="confirmed"]').waitFor();
     await inspectReadingControls('compatibility','compatibility-page-select','data-compatibility-current');
     async function selectCompatibilityPage(id) {
-      await saju.locator('#compatibility-page-select').selectOption(id);
+      await selectVisibleReading(saju,'compatibility-page-select',id);
       await saju.locator('[data-compatibility-current][id="'+id+'"]').waitFor({state:'visible'});
       assert.equal(await saju.locator('[data-compatibility-current]').count(),1,'compatibility shows one selected reading page');
     }
-    assert.equal(await saju.locator('#compatibility-page-select').inputValue(),'compatibility-people-overview','compatibility starts with A and B’s character and traits');
+    assert.equal(await saju.locator('#compatibility-page-select').inputValue(),'compatibility-synthesis','compatibility opens with the combined explanation and scores');
     assert.match(await saju.locator('#fixture-zodiac').textContent(), /말띠.*양띠.*입춘/);
     const zodiacCard=saju.locator('[data-reader-card="zodiac"]');
     assert.equal(await zodiacCard.count(),1);
@@ -820,6 +954,7 @@ const server = http.createServer((request, response) => {
     await zodiacCard.scrollIntoViewIfNeeded();
     await saju.screenshot({path:path.join(artifacts,'saju-zodiac-compatibility-desktop.png')});
     async function inspectCompatibilityPeople(label,personCount) {
+      await expandReadingBodies(saju,'data-compatibility-current');
       const current=saju.locator('[data-compatibility-current]');
       const geometry=await current.evaluate(page=>{
         const contained=(inner,outer)=>inner.left>=outer.left-1&&inner.right<=outer.right+1&&inner.top>=outer.top-1&&inner.bottom<=outer.bottom+1;
@@ -874,6 +1009,17 @@ const server = http.createServer((request, response) => {
         const label=viewport+' '+textSize;
         for(const topic of topics) {
           await selectCompatibilityPage('compatibility-people-'+topic);
+          if(topic==='overview') {
+            assert.equal(await saju.locator('[data-compatibility-current] details.reading-body-details:not([open])').count(),2,'A and B initially show their own short summaries before the optional full text');
+            if(viewport!=='phone') {
+              await saju.locator('.reading-pager').evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));
+              await saju.screenshot({path:path.join(artifacts,'saju-flow-compatibility-'+viewport+'-'+textSize+'-people-summary.png')});
+              await saju.locator('.reading-item-toggle').click();
+              await inspectReadableSurface('compatibility item menu '+label,{text:'.reading-domain-button,.reading-current-title,.reading-item-group-title,.reading-item-button',controls:'.reading-domain-button,.reading-item-toggle,.reading-item-button'});
+              await saju.screenshot({path:path.join(artifacts,'saju-flow-compatibility-'+viewport+'-'+textSize+'-items.png')});
+              await saju.locator('.reading-item-toggle').click();
+            }
+          }
           const geometry=await inspectCompatibilityPeople(label+' '+topic,2);
           if(topic==='overview') {
             await inspectReadableSurface('compatibility people '+label,{text:compatibilityText,body:'.compatibility-person-prose p',minimumBody:textSize==='large'?21:18,controls:'.reading-pager select,.reading-pager button'});
@@ -1041,6 +1187,7 @@ const server = http.createServer((request, response) => {
           // Start on actual paragraph glyphs, so PC dragging is verified over
           // reading text rather than only over blank card padding.
           async function paragraphPoints(direction) {
+            await expandReadingBodies(swipe,currentAttribute);
             const paragraph=current.locator('.reader-prose p:visible').first();
             await paragraph.evaluate(element=>element.scrollIntoView({block:'center',behavior:'instant'}));
             return paragraph.evaluate((element,direction)=>{
@@ -1187,6 +1334,7 @@ const server = http.createServer((request, response) => {
             await settled();return value;
           }
           async function points(direction,distance=120) {
+            await expandReadingBodies(slide,currentAttribute);
             const paragraph=current.locator('.reader-prose p:visible').first();
             await paragraph.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
             return paragraph.evaluate((el,{direction,distance})=>{
@@ -1277,6 +1425,6 @@ const server = http.createServer((request, response) => {
     }
     assert.deepEqual(errors, []);
     assert.deepEqual(failed, []);
-    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuEntryViews, compatibilityEntryViews, sajuReadableViews, sajuNavigation, sajuSummaryViews, sajuScoreViews, sajuScoreRegressions, sajuDaeunAssumptionViews, compatibilityPeople, compatibilityScores, sajuSwipeViews, sajuMotionViews, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
+    console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, sajuTopics: ['lifelong', 'annual', 'monthly', 'all'], sajuEntryViews, compatibilityEntryViews, sajuFlowViews, sajuReadableViews, sajuNavigation, sajuSummaryViews, sajuScoreViews, sajuScoreRegressions, sajuDaeunAssumptionViews, compatibilityPeople, compatibilityScores, sajuSwipeViews, sajuMotionViews, viewport: '320×844, 390×844 and 1280×900', errors, failed }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => server.close());

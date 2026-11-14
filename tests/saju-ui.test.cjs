@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
-  harness, fixedNow, PROFILE_USER_A, PROFILE_USER_B, pause, deferred, waitFor, assertNoReadingScores, assertNoCalculationUI, assertReadingScores, assertReadingScoreCopy
+  harness, fixedNow, PROFILE_USER_A, PROFILE_USER_B, pause, deferred, waitFor, selectReadingItem, assertNoReadingScores, assertNoCalculationUI, assertReadingScores, assertReadingScoreCopy
 } = require('./helpers/saju-ui-harness.cjs');
 
 test('only the selected monthly product is generated before its explicit ten-ju purchase', async t => {
@@ -61,10 +61,10 @@ test('reader size and item navigation preserve the purchased reading and scores 
   assert.equal(h.$('report-content').textContent,original);
   assert.deepEqual(assertReadingScores(h.$('report-content')),scores,'larger text preserves every independent numeric score');
   const picker=h.$('reading-page-select'),firstPage=picker.value,card=doc.querySelector('.portrait-card');
-  picker.value=card.id;h.change(picker);
+  selectReadingItem(picker,card.id);
   assert.equal(h.$('report-content').querySelector('[data-reader-current]'),card);
   assert.equal(card.closest('[hidden]'),null,'the requested personal item is revealed');
-  picker.value=firstPage;h.change(picker);
+  selectReadingItem(picker,firstPage);
   assertNoCalculationUI(h);
   for(const link of h.$('report-toc').querySelectorAll('a'))assert.ok(h.$(link.hash.slice(1)),`navigation target exists: ${link.hash}`);
   h.pickReport('annual',2027);
@@ -265,7 +265,7 @@ test('the monthly overview preserves every calculated period, opportunity and ca
     article.open=false;link.click();
     assert.equal(article.open,true);assert.equal(doc.activeElement,heading);
     assert.equal(article.dataset.month,String(item.month));
-    assert.deepEqual([...article.querySelectorAll('.reader-timing-content>.reader-prose>p')].map(p=>p.textContent),item.paragraphs);
+    assert.deepEqual([...article.querySelectorAll('.reader-timing-content>.reading-body-details>.reading-body-content>.reader-prose>p')].map(p=>p.textContent),item.paragraphs);
     assert.deepEqual([...article.querySelectorAll('.reader-timing-point')].map(point=>[point.querySelector('dt').textContent,[...point.querySelectorAll(':scope > dd:not(.saju-reading-score)')].map(part=>part.textContent).join('')]),
       [...item.cautions,...item.opportunities,...item.people,...item.documents].map(point=>[point.label,point.text]),
       'all detailed text remains present, with cautions before opportunities');
@@ -327,7 +327,7 @@ test('every product keeps its personal interpretations and practical suggestions
     for(const overview of overviews)for(const item of overview.cards) {
       const card=h.$('report-content').querySelector(`[data-reader-card="${item.id}"]`);
       assert.ok(card,'every actual personal interpretation remains available');
-      assert.deepEqual([...card.querySelectorAll(':scope > .reader-prose > p')].map(paragraph=>paragraph.textContent),item.paragraphs);
+      assert.deepEqual([...card.querySelectorAll(':scope > .reading-body-details > .reading-body-content > .reader-prose > p')].map(paragraph=>paragraph.textContent),item.paragraphs);
       assert.deepEqual([...card.querySelectorAll('.saju-summary-line')].map(line=>line.textContent),item.summaryLines);
     }
     const advice=topic==='all'?[...expected.adviceByCategory.lifelong,...expected.adviceByCategory.annual,...expected.months.flatMap(month=>month.advice)]:topic==='monthly'?expected.months.flatMap(month=>month.advice):expected.adviceByCategory[topic];

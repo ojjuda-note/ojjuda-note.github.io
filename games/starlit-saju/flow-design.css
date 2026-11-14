@@ -1,0 +1,231 @@
+/* Task-first entry and reading navigation. Loaded after readable-design.css.
+   Keep the existing hidden states, input IDs and swipe surfaces intact. */
+body.saju-flow{--flow-width:720px}
+body.saju-flow .site-header{max-width:768px;min-height:64px;padding:10px 24px;gap:12px}
+body.saju-flow .site-header::after{display:none}
+body.saju-flow .brand{min-height:44px;font-size:20px;gap:8px}
+body.saju-flow .brand small{display:none}
+body.saju-flow .brand-emblem{width:32px;height:32px;border-radius:9px}
+body.saju-flow .header-nav{gap:12px;flex-wrap:nowrap}
+body.saju-flow main,body.saju-flow .compatibility-main{max-width:1008px;padding:12px 24px 36px}
+body.saju-flow .reading-service-nav{display:flex;max-width:var(--flow-width);gap:6px;margin:0 auto 22px;padding:4px;background:#eae5ef;border:0;border-radius:11px}
+body.saju-flow .reading-service-nav>a{display:flex;flex:1;flex-direction:row;align-items:center;justify-content:center;gap:8px;min-width:0;min-height:44px;padding:9px 12px;border:0;border-radius:8px;background:transparent;color:var(--text-muted);text-align:center}
+body.saju-flow .reading-service-nav>a strong{font-size:16px;line-height:1.5;font-weight:650;color:inherit}
+body.saju-flow .reading-service-nav>a>span{margin:0;font-size:14px;line-height:1.5;color:inherit}
+body.saju-flow .reading-service-nav>a[aria-current=page]{background:var(--surface);color:var(--primary);box-shadow:0 1px 3px #30203d12}
+body.saju-flow .reading-service-nav>a:hover{background:var(--surface);color:var(--primary)}
+body.saju-flow .entry-shell{display:block;max-width:var(--flow-width);margin:0 auto}
+body.saju-flow .entry-heading{margin:0 0 18px;padding:0;text-align:left}
+body.saju-flow .entry-heading h1{max-width:none;margin:0 0 5px;font:750 29px/1.4 var(--sans);letter-spacing:-.035em}
+body.saju-flow .entry-heading p{margin:0;color:var(--text-muted);font-size:15px;line-height:1.7;word-break:keep-all;overflow-wrap:anywhere}
+body.saju-flow .birth-panel{padding:24px;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:none}
+body.saju-flow .birth-panel>form,body.saju-flow form[data-entry-flow]{margin:0;max-width:none}
+
+/* One visible step, with editable progress rather than a second instruction list. */
+body.saju-flow .entry-progress{display:flex;gap:8px;margin:0 0 22px;padding:0 0 17px;border-bottom:1px solid var(--border)}
+body.saju-flow .entry-progress button{display:flex;flex:1;align-items:center;justify-content:center;gap:7px;min-width:0;min-height:44px;margin:0;padding:8px 10px;border:1px solid transparent;border-radius:9px;background:var(--surface-soft);color:var(--text-muted);font:600 15px/1.5 var(--sans);word-break:keep-all;overflow-wrap:anywhere}
+body.saju-flow .entry-progress button>span:first-child{display:grid;place-items:center;flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--surface);color:inherit;font-size:14px;font-weight:700}
+body.saju-flow .entry-progress button[aria-current=step]{border-color:var(--primary);background:var(--primary-soft);color:var(--primary);font-weight:750}
+body.saju-flow .entry-progress button[aria-current=step]>span:first-child{background:var(--primary);color:#fff}
+body.saju-flow .entry-progress button:hover:not(:disabled){border-color:var(--primary);color:var(--primary)}
+body.saju-flow .entry-progress button:disabled{opacity:1;cursor:default;color:var(--text-muted);background:var(--surface-soft)}
+body.saju-flow .flow-step{min-width:0;scroll-margin-top:16px}
+body.saju-flow .flow-step-heading,body.saju-flow .birth-panel .flow-step-heading{margin:0 0 12px;text-align:left;color:var(--ink);font:750 22px/1.5 var(--sans);letter-spacing:-.025em}
+body.saju-flow .flow-step-note{margin:0 0 16px;color:var(--text-muted);font-size:14px;line-height:1.75;word-break:keep-all;overflow-wrap:anywhere}
+body.saju-flow form[data-entry-flow] .flow-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap;border:0}
+body.saju-flow form[data-entry-flow] fieldset{min-width:0;margin:0 0 18px;padding:0;border:0}
+body.saju-flow form[data-entry-flow] legend{padding:0;margin:0 0 7px;color:var(--ink);font-size:16px;font-weight:650;line-height:1.6}
+body.saju-flow form[data-entry-flow] .field-label{margin-bottom:5px;font-size:14px;line-height:1.5}
+body.saju-flow form[data-entry-flow] .date-inputs{grid-template-columns:minmax(0,1.35fr) repeat(2,minmax(0,1fr));gap:8px}
+body.saju-flow form[data-entry-flow] .person-inputs{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px;margin-bottom:0}
+body.saju-flow form[data-entry-flow] :is(input[type=text],input[type=number],select),body.saju-flow #birth-form :is(input[type=text],input[type=number],select),body.saju-flow .compatibility-person :is(input[type=text],input[type=number],select){height:48px;padding:9px 11px;font-size:16px}
+body.saju-flow form[data-entry-flow] .field-hint,body.saju-flow #birth-form .field-hint{margin-top:6px;font-size:14px;line-height:1.7}
+body.saju-flow form[data-entry-flow] .segmented{padding:3px;gap:3px}
+body.saju-flow form[data-entry-flow] .segmented span{min-height:44px;padding:8px 12px}
+body.saju-flow form[data-entry-flow] .check-row{min-height:44px;margin-top:4px;font-size:15px;line-height:1.65}
+body.saju-flow form[data-entry-flow] .time-inputs{margin-top:8px}
+body.saju-flow form[data-entry-flow] .time-field{margin-bottom:10px}
+body.saju-flow form[data-entry-flow] .zodiac-preview{padding:9px 11px;margin-top:8px;font-size:14px}
+body.saju-flow form[data-entry-flow] .compatibility-person{margin:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+body.saju-flow form[data-entry-flow] .compatibility-person>legend{margin-bottom:12px;font-size:22px;color:var(--ink)}
+body.saju-flow form[data-entry-flow] .compatibility-person>.date-inputs{margin-bottom:16px}
+body.saju-flow form[data-entry-flow] .compatibility-person>.person-inputs{margin-bottom:16px}
+body.saju-flow form[data-entry-flow] .pair-calendar{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;margin:0 0 16px}
+body.saju-flow form[data-entry-flow] .pair-calendar>label:first-child{font-size:15px}
+body.saju-flow form[data-entry-flow] .pair-calendar>.check-row{grid-column:1/-1}
+
+/* Saved people remain above the fields without occupying an empty first screen. */
+body.saju-flow .saved-people-disclosure{margin:0 0 16px;border:1px solid var(--border);border-radius:9px;background:var(--surface)}
+body.saju-flow .saved-people-disclosure>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;padding:9px 12px;color:var(--primary);font-size:14px;font-weight:650;line-height:1.6;cursor:pointer;list-style:none}
+body.saju-flow .saved-people-disclosure>summary::-webkit-details-marker{display:none}
+body.saju-flow .saved-people-disclosure>summary::after{content:'+';flex-shrink:0;font-size:20px;line-height:1}
+body.saju-flow .saved-people-disclosure[open]>summary{border-bottom:1px solid var(--border)}
+body.saju-flow .saved-people-disclosure[open]>summary::after{content:'−'}
+body.saju-flow .saved-people-disclosure .profile-picker{margin:0;padding:12px;border:0;border-radius:0 0 9px 9px;background:var(--surface-soft)}
+body.saju-flow .saved-people-disclosure .profile-picker-title{font-size:16px}
+body.saju-flow .saved-people-disclosure .profile-picker-empty{padding:9px;margin:8px 0}
+body.saju-flow .saved-people-disclosure .profile-picker-list{max-height:260px;margin:8px 0}
+body.saju-flow .saved-people-disclosure .profile-picker-actions{margin-top:10px}
+body.saju-flow .saved-people-disclosure .profile-picker-status{margin-top:8px}
+
+/* Four comparable products; price never competes with a long side-by-side title. */
+body.saju-flow form[data-entry-flow] .product-picker{margin:0 0 16px}
+body.saju-flow form[data-entry-flow] .product-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+body.saju-flow form[data-entry-flow] .product-options>label{min-width:0;grid-column:auto}
+body.saju-flow form[data-entry-flow] .product-option,body.saju-flow form[data-entry-flow] .product-option-all .product-option{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:6px;min-width:0;min-height:132px;height:100%;padding:15px;border-width:2px;border-radius:10px;text-align:left}
+body.saju-flow form[data-entry-flow] .product-option strong,body.saju-flow form[data-entry-flow] .product-option-all .product-option strong{color:var(--ink);font-size:17px;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere}
+body.saju-flow form[data-entry-flow] .product-option small,body.saju-flow form[data-entry-flow] .product-option-all .product-option small{font-size:14px;line-height:1.6;word-break:keep-all;overflow-wrap:anywhere}
+body.saju-flow form[data-entry-flow] .product-option b,body.saju-flow form[data-entry-flow] .product-option-all .product-option b{align-self:flex-start;margin-top:auto;padding:3px 8px;font-size:18px;line-height:1.5;white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
+body.saju-flow form[data-entry-flow] .product-options input:checked+.product-option strong{color:var(--primary)}
+body.saju-flow form[data-entry-flow] .entry-year-control{margin-top:14px;gap:10px}
+body.saju-flow .flow-review{display:grid;gap:14px;margin:0 0 16px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--surface-soft)}
+body.saju-flow .flow-review-person{min-width:0}
+body.saju-flow .flow-review-person+.flow-review-person{padding-top:12px;border-top:1px solid var(--border)}
+body.saju-flow .flow-review-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+body.saju-flow .flow-review-heading h3{min-width:0;margin:0;color:var(--ink);font-size:16px;font-weight:700;line-height:1.6;word-break:keep-all;overflow-wrap:anywhere}
+body.saju-flow .flow-review dl{display:grid;gap:5px;flex:1;min-width:0;margin:0}
+body.saju-flow .flow-review dl>div{display:grid;grid-template-columns:80px minmax(0,1fr);gap:8px}
+body.saju-flow .flow-review dt{font-size:14px;color:var(--text-muted)}
+body.saju-flow .flow-review dd{min-width:0;margin:0;color:var(--ink);font-size:15px;line-height:1.65;word-break:keep-all;overflow-wrap:anywhere}
+body.saju-flow .flow-review button{min-height:44px;flex-shrink:0;padding:8px 12px;border:1px solid var(--control-border);border-radius:8px;background:var(--surface);color:var(--primary);font-size:14px;font-weight:650;line-height:1.6}
+body.saju-flow .flow-review button:hover{border-color:var(--primary);background:var(--primary-soft)}
+body.saju-flow form[data-entry-flow] .purchase-summary,body.saju-flow form[data-entry-flow] .compatibility-purchase{max-width:none;margin:0;padding:15px 0 0;border:0;border-top:1px solid var(--border);border-radius:0;background:none;text-align:left}
+body.saju-flow form[data-entry-flow] .purchase-heading{margin:0 0 8px;font-size:18px;line-height:1.6}
+body.saju-flow .flow-confirm-title{margin:0 0 5px;font-size:14px;font-weight:650;line-height:1.6;color:var(--text-muted)}
+body.saju-flow form[data-entry-flow] .saju-price{margin:0}
+body.saju-flow form[data-entry-flow] .saju-price strong{font-size:21px;line-height:1.5}
+body.saju-flow form[data-entry-flow] .saju-price-note,body.saju-flow form[data-entry-flow] .compatibility-purchase .saju-price-note{margin:7px 0 0;font-size:14px;line-height:1.75}
+body.saju-flow form[data-entry-flow] .payment-status{margin:10px 0 0;font-size:14px;line-height:1.65}
+body.saju-flow form[data-entry-flow] .login-link{margin-top:5px;font-size:14px;line-height:1.65}
+body.saju-flow form[data-entry-flow] .form-note,body.saju-flow #birth-form .form-note,body.saju-flow form[data-entry-flow] .pair-privacy{margin:10px 0 0;font-size:14px;line-height:1.7}
+body.saju-flow .flow-privacy{margin:8px 0 0;color:var(--text-muted);font-size:14px;line-height:1.7;word-break:keep-all;overflow-wrap:anywhere}
+body.saju-flow form[data-entry-flow] .pair-form-tools{margin:8px 0 14px;gap:10px 16px}
+body.saju-flow form[data-entry-flow] .partner-clear-button{min-height:44px;font-size:14px}
+body.saju-flow .flow-actions{display:flex;position:sticky;bottom:0;z-index:5;align-items:stretch;gap:10px;margin:18px 0 0;padding:12px 0 max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--border);background:var(--surface)}
+body.saju-flow .flow-actions>button{flex:1;min-width:0;min-height:48px;margin:0;font-size:16px;line-height:1.5;padding:11px 14px}
+body.saju-flow .flow-actions>button[data-flow-back]{flex:0 1 100px;background:var(--surface);color:var(--primary);border:1px solid var(--control-border);border-radius:10px}
+body.saju-flow .flow-actions>button[data-flow-next]{background:var(--primary);color:#fff;border:1px solid var(--primary);border-radius:10px;font-weight:700}
+body.saju-flow .flow-actions>button[data-flow-next]:hover:not(:disabled){background:var(--primary-hover)}
+body.saju-flow .flow-actions #open-story,body.saju-flow .flow-actions #compatibility-open{margin:0;min-height:48px}
+body.saju-flow .flow-actions .primary-button svg{width:18px;height:18px;flex-shrink:0}
+body.saju-flow form[data-entry-flow] .method-preview{margin:14px 0 0;padding:5px 0;border:0;border-top:1px solid var(--border);border-radius:0;background:none}
+body.saju-flow form[data-entry-flow] .method-preview>summary{min-height:44px;font-size:14px}
+body.saju-flow .birth-panel>.tarot-link{margin-top:14px;padding-top:14px;font-size:14px;min-height:44px}
+body.saju-flow .site-footer{max-width:768px;margin:26px auto 0;padding:20px 24px 24px;font-size:14px}
+
+/* Reading is organised by visible domains, followed by the selected item. */
+body.saju-flow .result,body.saju-flow #compatibility-result{max-width:960px}
+body.saju-flow .reading-result-heading{margin:0 0 14px}
+body.saju-flow .reading-result-heading h2{margin:0 0 6px;font-size:28px;line-height:1.4}
+body.saju-flow .birth-summary,body.saju-flow .reading-result-heading .birth-summary{font-size:15px;line-height:1.7}
+body.saju-flow .detailed-reading{margin-top:14px;--reading-font-size:18px;--reading-summary-size:20px}
+body.saju-flow .detailed-reading[data-reading-size=large]{--reading-font-size:21px;--reading-summary-size:23px}
+body.saju-flow .reading-controls{margin-bottom:12px;gap:10px}
+body.saju-flow :is(#report-content,#compatibility-report){padding:20px;border-radius:14px}
+body.saju-flow .reading-pager{margin:0 0 20px;padding:0;border:0;border-radius:0;background:none;scroll-margin-top:14px}
+body.saju-flow .reading-navigator{display:grid;gap:10px;min-width:0}
+body.saju-flow .reading-domain-nav{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+body.saju-flow .reading-domain-button{flex:1 1 56px;min-width:0;min-height:44px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text-muted);font:650 15px/1.5 var(--sans);word-break:keep-all;overflow-wrap:anywhere}
+body.saju-flow .reading-domain-button[aria-pressed=true]{border-color:var(--primary);background:var(--primary);color:#fff}
+body.saju-flow .reading-domain-button:hover:not([aria-pressed=true]){border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
+body.saju-flow .reading-item-picker{min-width:0;border:1px solid var(--control-border);border-radius:10px;background:var(--surface)}
+body.saju-flow .reading-item-toggle{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:10px;row-gap:3px;min-height:66px;padding:10px 13px;list-style:none;cursor:pointer;color:var(--ink)}
+body.saju-flow .reading-item-toggle::-webkit-details-marker{display:none}
+body.saju-flow .reading-current-caption{grid-column:1;font-size:14px;line-height:1.4;color:var(--text-muted)}
+body.saju-flow .reading-current-title{grid-column:1;min-width:0;font-size:18px;line-height:1.55;font-weight:750;color:var(--ink);word-break:keep-all;overflow-wrap:anywhere}
+body.saju-flow .reading-item-count{grid-column:2;grid-row:1;align-self:center;font-size:14px;line-height:1.5;color:var(--text-muted);white-space:nowrap;text-align:right}
+body.saju-flow .reading-item-action{grid-column:2;grid-row:2;align-self:center;color:var(--primary);font-size:14px;font-weight:650;line-height:1.5;white-space:nowrap;text-align:right}
+body.saju-flow .reading-item-action::after{content:'⌄';display:inline-block;margin-left:6px;font-size:20px;line-height:1}
+body.saju-flow .reading-item-picker[open]>.reading-item-toggle{border-bottom:1px solid var(--border);background:var(--primary-soft);border-radius:9px 9px 0 0}
+body.saju-flow .reading-item-picker[open]>.reading-item-toggle .reading-item-action::after{transform:rotate(180deg)}
+body.saju-flow .reading-item-groups{display:grid;gap:16px;max-height:min(55vh,460px);overflow:auto;overscroll-behavior:contain;padding:14px;scrollbar-color:#a797b9 #f1edf5}
+body.saju-flow .reading-item-group{min-width:0}
+body.saju-flow .reading-item-group-title{margin:0 0 8px;color:var(--text-muted);font-size:14px;line-height:1.5;font-weight:650}
+body.saju-flow .reading-item-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;list-style:none;padding:0;margin:0}
+body.saju-flow .reading-item-list>li{min-width:0;margin:0}
+body.saju-flow .reading-item-button{width:100%;min-height:44px;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--ink);font:500 15px/1.6 var(--sans);text-align:left;word-break:keep-all;overflow-wrap:anywhere}
+body.saju-flow .reading-item-button[aria-current=page]{border-color:var(--primary);background:var(--primary-soft);color:var(--primary);font-weight:750}
+body.saju-flow .reading-item-button:hover{border-color:var(--primary);background:var(--primary-soft)}
+body.saju-flow .reading-pager-controls{grid-template-columns:72px minmax(0,1fr) 72px;gap:10px;margin-top:10px}
+body.saju-flow .reading-pager-step{min-height:44px;padding:8px;font-size:14px}
+body.saju-flow .reading-page-position{font-size:14px;line-height:1.55}
+body.saju-flow .reading-swipe-hint{margin-top:7px;font-size:14px;line-height:1.6}
+body.saju-flow .reading-back-to-picker{margin-top:20px;min-height:44px;padding-top:10px}
+body.saju-flow .reading-body-details{margin:16px 0 0;border:0;min-width:0}
+body.saju-flow .reading-body-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;margin:0;padding:10px 13px;border:1px solid var(--border);border-radius:9px;background:var(--surface-soft);color:var(--primary);font:650 16px/1.6 var(--sans);cursor:pointer;list-style:none;word-break:keep-all;overflow-wrap:anywhere}
+body.saju-flow .reading-body-toggle::-webkit-details-marker{display:none}
+body.saju-flow .reading-body-toggle::after{content:'+';flex-shrink:0;font-size:22px;line-height:1}
+body.saju-flow .reading-body-details[open]>.reading-body-toggle::after{content:'−'}
+body.saju-flow .reading-body-content{min-width:0;padding:16px 0 0;font-size:var(--reading-font-size,18px);line-height:1.9;color:var(--ink)}
+body.saju-flow .reading-body-content>.report-prose{margin-top:0}
+body.saju-flow .compatibility-people-title{font-size:24px;line-height:1.5;margin-bottom:12px}
+body.saju-flow .compatibility-reading-guide{margin-bottom:16px;font-size:14px;line-height:1.7}
+body.saju-flow .compatibility-person-columns{gap:14px}
+body.saju-flow .compatibility-person-reading{padding:18px;border-top-width:3px;border-radius:11px}
+body.saju-flow .compatibility-person-name{margin:0 0 10px;font-size:17px;line-height:1.6}
+body.saju-flow .compatibility-person-reading .compatibility-two-line-summary{gap:8px;margin:0;padding:0;border:0}
+body.saju-flow .compatibility-person-reading .compatibility-summary-line{font-size:var(--reading-font-size,18px);line-height:1.8}
+body.saju-flow .compatibility-person-reading .compatibility-summary-line:first-child{font-size:var(--reading-font-size,18px);line-height:1.8}
+body.saju-flow .compatibility-person-scope{margin-top:10px;font-size:14px;line-height:1.7}
+body.saju-flow .compatibility-person-details{margin-top:12px}
+body.saju-flow .compatibility-person-details>.reading-body-toggle{background:var(--surface);font-size:15px}
+body.saju-flow .result-actions{gap:10px;margin-top:20px}
+
+@media(max-width:600px){
+  body.saju-flow .site-header{padding:8px 16px;min-height:60px}
+  body.saju-flow main,body.saju-flow .compatibility-main{padding:10px 16px 28px}
+  body.saju-flow .reading-service-nav{margin-bottom:16px;gap:4px}
+  body.saju-flow .reading-service-nav>a{padding:8px;gap:5px}
+  body.saju-flow .reading-service-nav>a strong{font-size:15px}
+  body.saju-flow .reading-service-nav>a>span{font-size:14px}
+  body.saju-flow .entry-heading{margin-bottom:14px}
+  body.saju-flow .entry-heading h1{font-size:26px}
+  body.saju-flow .entry-heading p{font-size:14px;line-height:1.65}
+  body.saju-flow .birth-panel{padding:18px;border-radius:13px}
+  body.saju-flow .entry-progress{gap:6px;margin-bottom:18px;padding-bottom:14px}
+  body.saju-flow .entry-progress button{gap:5px;padding:8px 6px;font-size:14px}
+  body.saju-flow .flow-step-heading,body.saju-flow .birth-panel .flow-step-heading{font-size:20px;margin-bottom:10px}
+  body.saju-flow form[data-entry-flow] .product-options{gap:8px}
+  body.saju-flow form[data-entry-flow] .product-option,body.saju-flow form[data-entry-flow] .product-option-all .product-option{padding:12px;min-height:134px;gap:5px}
+  body.saju-flow form[data-entry-flow] .product-option strong,body.saju-flow form[data-entry-flow] .product-option-all .product-option strong{font-size:16px}
+  body.saju-flow form[data-entry-flow] .product-option b,body.saju-flow form[data-entry-flow] .product-option-all .product-option b{font-size:17px;padding:2px 7px}
+  body.saju-flow .flow-review{padding:11px 12px;gap:8px}
+  body.saju-flow .flow-review dl>div{grid-template-columns:80px minmax(0,1fr);gap:6px}
+  body.saju-flow .flow-review dd{font-size:14px}
+  body.saju-flow .flow-review button{padding:8px 10px}
+  body.saju-flow .flow-actions{gap:8px;margin-top:16px}
+  body.saju-flow .flow-actions>button{font-size:15px;padding:11px 10px}
+  body.saju-flow .flow-actions>button[data-flow-back]{flex-basis:76px}
+  body.saju-flow .site-footer{padding:18px 16px 22px;margin-top:18px}
+  body.saju-flow .reading-result-heading h2{font-size:25px}
+  body.saju-flow :is(#report-content,#compatibility-report){padding:16px 14px}
+  body.saju-flow .reading-domain-button{padding:8px 5px;font-size:14px}
+  body.saju-flow .reading-item-toggle{padding:9px 11px;column-gap:8px;min-height:66px}
+  body.saju-flow .reading-current-title{font-size:17px}
+  body.saju-flow .reading-item-list{grid-template-columns:minmax(0,1fr)}
+  body.saju-flow .reading-item-groups{padding:11px}
+  body.saju-flow .reading-pager-controls{grid-template-columns:56px minmax(0,1fr) 56px;gap:7px}
+  body.saju-flow .reading-pager-step{padding:8px 5px}
+  body.saju-flow .compatibility-person-reading{padding:16px 14px}
+  body.saju-flow .compatibility-people-title{font-size:22px}
+}
+@media(max-width:360px){
+  body.saju-flow .site-header{padding-right:12px;padding-left:12px;gap:8px}
+  body.saju-flow .header-nav{gap:8px}
+  body.saju-flow .brand{font-size:18px;gap:7px}
+  body.saju-flow main,body.saju-flow .compatibility-main{padding-right:12px;padding-left:12px}
+  body.saju-flow .reading-service-nav>a{gap:4px;padding:8px 5px}
+  body.saju-flow .reading-service-nav>a strong{font-size:14px}
+  body.saju-flow .birth-panel{padding:15px}
+  body.saju-flow .entry-progress button{padding:7px 4px;gap:4px}
+  body.saju-flow .entry-progress button>span:first-child{width:22px;height:22px}
+  body.saju-flow form[data-entry-flow] .date-inputs{gap:6px}
+  body.saju-flow form[data-entry-flow] .person-inputs{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:8px}
+  body.saju-flow form[data-entry-flow] :is(input[type=text],input[type=number],select),body.saju-flow #birth-form :is(input[type=text],input[type=number],select),body.saju-flow .compatibility-person :is(input[type=text],input[type=number],select){padding:9px 8px}
+  body.saju-flow form[data-entry-flow] .product-option,body.saju-flow form[data-entry-flow] .product-option-all .product-option{padding:10px}
+  body.saju-flow .flow-review dl>div{grid-template-columns:80px minmax(0,1fr)}
+  body.saju-flow .flow-review button{margin-left:auto}
+  body.saju-flow :is(#report-content,#compatibility-report){padding:14px 12px}
+  body.saju-flow .reading-item-toggle{column-gap:6px}
+  body.saju-flow .reading-item-action::after{margin-left:3px}
+}

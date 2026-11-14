@@ -2,7 +2,8 @@ import {getReadingSources} from './sources.mjs?v=20261113-saju-reader1';
 import {applyReadingSummaryViews} from './reading-summary-view.mjs?v=20261113-saju-summary1';
 import {applyReadingScoreViews} from './reading-score-view.mjs?v=20261114-saju-wind1';
 import {createCompatibilityScoreboard} from './compatibility-score-view.mjs?v=20261114-saju-wind1';
-import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261114-saju-slide1';
+import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261114-saju-flow1';
+import {createReadingNavigator} from './reading-navigator.mjs?v=20261114-saju-flow1';
 import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
 import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
 
@@ -993,9 +994,14 @@ export function renderCompatibilityReport(container, reading, {names=[]}={}) {
   header.append(title);
   section.append(header);
   const pages=createCompatibilityPeoplePages(reading,{names,appendParagraphs:addParagraphs});
+  const synthesis=pages.find(page=>page.element.id==='compatibility-synthesis');
+  if(synthesis) {pages.splice(pages.indexOf(synthesis),1);pages.unshift(synthesis);}
   section.append(...pages.map(page=>page.element));
   const score=createCompatibilityScoreboard(reading.score);score.id='compatibility-scores';
-  section.append(score);pages.push({element:score,label:'궁합 점수',group:'두 사람의 궁합'});
+  // One score DOM serves the combined overview and the direct score page.
+  if(synthesis)synthesis.element.querySelector('.compatibility-two-line-summary').after(score);
+  else section.append(score);
+  pages.push({element:score,label:'궁합 점수',group:'두 사람의 궁합'});
   const overview=readerOverview({
     ...reading,
     origin:reading.origin||'service-reference',
@@ -1155,13 +1161,26 @@ function buildReadingPager(root,{reading,fortune,topic}) {
     const option=node('option','',page.label);option.value=page.id;groups.get(page.menuGroup).append(option);
   }
   const temporary=node('optgroup');temporary.label='지금 읽는 세부 내용';
+  const domainForPage=page=>page.element.closest('#reading-daeun')?'daeun'
+    :page.element.closest('#reading-annual')?'annual'
+    :page.element.closest('#reading-months,#reading-timings')?'monthly':'lifelong';
+  const picker=createReadingNavigator({select,pages,domainForPage,
+    domains:[{id:'lifelong',label:'평생운'},{id:'daeun',label:'대운'},{id:'annual',label:'올해운'},{id:'monthly',label:'월별운'}],
+    groupForPage:page=>String(page.menuGroup||page.group).replace(/^평생운\s*·\s*/,'')
+      .replace(/^\d+년 올해운\s*·\s*/,'').replace(/^\d+년 월별운$/,'월 선택')});
+  label.hidden=true;
   const controls=node('div','reading-pager-controls');
   const previous=node('button','reading-pager-step','이전');previous.type='button';
   const position=node('p','reading-page-position');position.id='reading-page-position';position.setAttribute('role','status');position.setAttribute('aria-live','polite');
   const next=node('button','reading-pager-step','다음');next.type='button';
-  controls.append(previous,position,next);navigation.append(label,select,controls,
+  controls.append(previous,position,next);navigation.append(label,select,picker.element,controls,
     node('p','reading-swipe-hint','본문을 왼쪽으로 밀면 다음, 오른쪽으로 밀면 이전 항목으로 넘어가요.'));
+  picker.toggle.setAttribute('aria-describedby',position.id);
   const back=readingLink('다른 분야 고르기','reading-pager','reader-detail-link reading-back-to-picker');
+  back.addEventListener('click',event=>{
+    if(event.button||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    picker.focus({open:true});
+  });
 
   const managed=new Set();
   for(const page of pages) {
@@ -1216,6 +1235,7 @@ function buildReadingPager(root,{reading,fortune,topic}) {
       temporary.append(option);select.append(temporary);
     }
     select.value=page.id;
+    picker.sync();
     const index=readable.indexOf(page),siblings=readable.filter(item=>item.group===page.group);
     const supporting=page.kind!=='reading';
     previous.textContent=supporting?'풀이로':'이전';
@@ -1276,6 +1296,30 @@ function removeReadingReferenceViews(root) {
   }
 }
 
+// Keep each authored summary and score in view; the complete original prose
+// remains available immediately below them without adding another reading page.
+function collapseReadingBodies(root) {
+  const scopes='.reader-card,.portrait-card,.reader-intro,.portrait-intro,.daeun-topic,.daeun-period-body,.reader-timing-content,.reader-symbol-item';
+  const usedIds=new Set();
+  for(const element of root.querySelectorAll(scopes)) {
+    if(!element.querySelector(':scope > .saju-two-line-summary'))continue;
+    const bodies=[...element.children].filter(child=>child.classList.contains('report-prose'));
+    if(!bodies.length)continue;
+    const details=node('details','reading-body-details');
+    const toggle=node('summary','reading-body-toggle','자세한 풀이 읽기');
+    const parent=element.parentElement;
+    const anchor=element.id||element.getAttribute('aria-labelledby')
+      ||element.querySelector(':scope > [id],:scope > .saju-two-line-summary > [id]')?.id
+      ||parent.id||parent.getAttribute('aria-labelledby')
+      ||`${element.closest('[id]')?.id||'reading'}-${[...parent.children].indexOf(element)}`;
+    let key=anchor,suffix=1;while(usedIds.has(key))key=`${anchor}-${++suffix}`;usedIds.add(key);
+    toggle.id=`${key}-body-toggle`;
+    const content=node('div','reading-body-content');content.id=`${key}-body-content`;
+    toggle.setAttribute('aria-controls',content.id);
+    bodies[0].before(details);details.append(toggle,content);content.append(...bodies);
+  }
+}
+
 /** Render plain-text reading data atomically, preserving the prior view on error. */
 export function renderDetailedReport(container, {reading, fortune, topic}) {
   const sections = reading?.sections;
@@ -1324,6 +1368,7 @@ export function renderDetailedReport(container, {reading, fortune, topic}) {
   removeReadingReferenceViews(fragment);
   applyReadingSummaryViews(fragment,reading);
   applyReadingScoreViews(fragment,reading);
+  collapseReadingBodies(fragment);
   const pager=buildReadingPager(fragment,{reading,fortune,topic});
   container.replaceChildren(fragment);
   pager.mount(container);
