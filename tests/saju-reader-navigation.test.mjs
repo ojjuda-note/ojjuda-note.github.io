@@ -9,6 +9,7 @@ import {buildCompatibilityReading} from '../games/starlit-saju/compatibility.mjs
 import {renderDetailedReport,renderCompatibilityReport,restoreReadingPage} from '../games/starlit-saju/report-view.mjs';
 
 const {JSDOM}=createRequire(import.meta.url)('jsdom');
+const {selectReadingItem}=createRequire(import.meta.url)('./helpers/saju-ui-harness.cjs');
 const now=new Date('2026-11-13T00:00:00Z');
 const chart=calculateSaju({year:1990,month:5,day:17,hour:8,minute:37},{now});
 const fortune=analyzeFortune(chart,{year:2026,now});
@@ -31,7 +32,7 @@ function mount(topic,{reading:report=reading,fortune:forecast=fortune}={}) {
   live.replaceChildren(host);
   const select=doc.getElementById('reading-page-select');
   const current=()=>host.querySelector('[data-reader-current]');
-  const pick=id=>{select.value=id;assert.equal(select.value,id);select.dispatchEvent(new dom.window.Event('change',{bubbles:true}));};
+  const pick=id=>selectReadingItem(select,id);
   const outer=id=>{
     const link=doc.createElement('a');link.href='#'+id;
     link.addEventListener('click',event=>event.preventDefault());
@@ -100,7 +101,7 @@ test('every reading family keeps two authored summary units before its complete 
   const h=mount('all');
   try {
     const before=h.paragraphs(),checks=[];
-    const add=(element,source,selector=':scope > .reader-prose > p',paragraphs=source.paragraphs)=>checks.push({element,source,selector,paragraphs});
+    const add=(element,source,selector=':scope > .reader-prose > p,:scope > .reading-body-details > .reading-body-content > .reader-prose > p',paragraphs=source.paragraphs)=>checks.push({element,source,selector,paragraphs});
     const overview=(id,source)=>{
       add(h.doc.querySelector(`#${id} .reader-intro`),source);
       for(const card of source.cards)add(h.host.querySelector(`[data-reader-card="${card.id}"]`),card);
@@ -116,17 +117,17 @@ test('every reading family keeps two authored summary units before its complete 
     }
     add(h.doc.querySelector('#reading-daeun > .reader-prose'),reading.daeun,':scope > p');
     for(const period of reading.daeun.periods) {
-      add(h.host.querySelector(`[data-daeun-period="${period.id}"]`),period,'.daeun-period-body > .reader-prose > p');
+      add(h.host.querySelector(`[data-daeun-period="${period.id}"]`),period,'.daeun-period-body > .reader-prose > p,.daeun-period-body > .reading-body-details > .reading-body-content > .reader-prose > p');
       for(const topic of [...period.topics,...(period.situations||[])])add(h.host.querySelector(`[data-daeun-topic="${topic.id}"]`),topic);
     }
     add(h.doc.querySelector('#reading-symbols .reader-intro'),reading.reader.symbols);
     const symbols=[...h.host.querySelectorAll('.reader-symbol-item')];
     assert.equal(symbols.length,reading.reader.symbols.items.length);
-    reading.reader.symbols.items.forEach((item,index)=>add(symbols[index],item,':scope > .reader-prose > p',[item.description]));
+    reading.reader.symbols.items.forEach((item,index)=>add(symbols[index],item,':scope > .reader-prose > p,:scope > .reading-body-details > .reading-body-content > .reader-prose > p',[item.description]));
     add(h.doc.querySelector('#reading-timings .reader-intro'),reading.reader.timings);
     for(const item of reading.reader.timings.items) {
       const article=h.host.querySelector(`.reader-timing-card[data-month="${item.month}"]`);
-      add(article,item,'.reader-timing-content > .reader-prose > p');
+      add(article,item,'.reader-timing-content > .reader-prose > p,.reader-timing-content > .reading-body-details > .reading-body-content > .reader-prose > p');
       const points=[...article.querySelectorAll('.reader-timing-point')];
       const expected=[...item.cautions,...item.opportunities,...item.people,...item.documents];
       assert.equal(points.length,expected.length);
@@ -141,7 +142,11 @@ test('every reading family keeps two authored summary units before its complete 
       if(!selector)continue;
       const body=[...element.querySelectorAll(selector)].filter(paragraph=>!paragraph.closest('.saju-two-line-summary'));
       assert.deepEqual(body.map(paragraph=>paragraph.textContent),paragraphs,'summary presentation preserves every original body paragraph');
-      assert.ok(body.length>0&&body.every(visible),'the requested full explanation is not collapsed behind its summary');
+      for(const details of new Set(body.map(paragraph=>paragraph.closest('.reading-body-details')).filter(Boolean))) {
+        assert.equal(details.open,false,'the full prose starts folded while its summary and scores stay visible');
+        details.querySelector('summary').click();
+      }
+      assert.ok(body.length>0&&body.every(visible),'opening the full explanation reveals every original paragraph');
       assert.ok(group.compareDocumentPosition(body[0])&h.dom.window.Node.DOCUMENT_POSITION_FOLLOWING,'the two summary units precede the full explanation');
     }
     assert.deepEqual(h.paragraphs(),before,'visiting summaries never rewrites or removes the purchased prose');
@@ -255,11 +260,12 @@ test('general and compatibility controls retain focus for consecutive choices wh
     const check=(pickerId,currentSelector)=>{
       const select=h.doc.getElementById(pickerId),options=[...select.options];
       const current=()=>h.host.querySelector(currentSelector);
-      select.focus();
+      const toggle=h.doc.getElementById(pickerId+'-toggle');
+      assert.equal(select.hidden,true,'visible field and item buttons replace the long select');
       for(const option of options.slice(1,3)) {
-        select.value=option.value;select.dispatchEvent(new h.dom.window.Event('change',{bubbles:true}));
+        selectReadingItem(select,option.value);
         assert.equal(current().id,option.value);assert.ok(visible(current()));
-        assert.equal(h.doc.activeElement,select,'changing a choice does not move focus out of the picker');
+        assert.equal(h.doc.activeElement,toggle,'choosing an item leaves focus on the visible collapsed list');
       }
       const [previous,next]=select.parentElement.querySelectorAll('.reading-pager-step');
       const start=current().id;
@@ -280,7 +286,7 @@ test('general and compatibility controls retain focus for consecutive choices wh
     check('compatibility-page-select','[data-compatibility-current]');
     h.outer('compatibility-synthesis');assert.equal(h.doc.activeElement,h.doc.getElementById('compatibility-synthesis'));
     h.host.querySelector('[data-compatibility-current] .reading-back-to-picker').click();
-    assert.equal(h.doc.activeElement,h.doc.getElementById('compatibility-page-select'));
+    assert.equal(h.doc.activeElement,h.doc.getElementById('compatibility-page-select-toggle'));
   } finally {h.close();}
 });
 
@@ -299,10 +305,10 @@ test('a refreshed reading restores the same decade topic after the current perio
     const prepared=h.doc.createElement('div');
     renderDetailedReport(prepared,{reading:updated,fortune:forecast,topic:'all'});
     assert.notEqual(prepared.querySelector('.daeun-period.is-current').dataset.daeunPeriod,savedPeriod);
-    h.select.focus();let scrolls=0;
+    const focusTarget=h.doc.getElementById('reading-page-select-toggle');focusTarget.focus();let scrolls=0;
     h.dom.window.HTMLElement.prototype.scrollIntoView=function(){scrolls++;};
     assert.equal(restoreReadingPage(prepared,savedPage),true,'a detail absent from the initial picker can still be restored');
-    assert.equal(h.doc.activeElement,h.select);assert.equal(scrolls,0,'preparing a refresh does not move focus or scroll');
+    assert.equal(h.doc.activeElement,focusTarget);assert.equal(scrolls,0,'preparing a refresh does not move focus or scroll');
     h.live.replaceChildren(prepared);
     const restored=prepared.querySelector('[data-reader-current]');
     assert.equal(restored.dataset.daeunTopic,savedPage);
