@@ -199,7 +199,9 @@ async function harness(options={}) {
     }
     if(focus)window.dispatchEvent(new window.Event('focus'));
   }
-  window.matchMedia=()=>({matches:true,addEventListener(){},removeEventListener(){}});
+  const viewportWidth=Number(options.viewportWidth||390);
+  Object.defineProperty(window,'innerWidth',{value:viewportWidth,writable:true});
+  window.matchMedia=query=>({matches:/prefers-reduced-motion/.test(query)||(/min-width:\s*960px/.test(query)&&viewportWidth>=960),addEventListener(){},removeEventListener(){}});
   window.scrollTo=()=>{};
   window.HTMLElement.prototype.scrollIntoView=function(){};
   const state={
@@ -323,6 +325,7 @@ async function harness(options={}) {
   const change=element=>element.dispatchEvent(new window.Event('change',{bubbles:true}));
   function set(id,value) {const element=$(id);assert.ok(element,`missing form input ${id}`);element.value=String(value);change(element);}
   function fillPerson(prefix,{year=1990,month=5,day=17,hour=null,minute=0,calendar='solar',leap=false,name='',gender=''}={}) {
+    flow.home.start();
     set(`${prefix}-name`,name);set(`${prefix}-gender`,gender);
     set(`${prefix}-calendar`,calendar);
     set(`${prefix}-year`,year);set(`${prefix}-month`,month);set(`${prefix}-day`,day);
@@ -341,12 +344,15 @@ async function harness(options={}) {
     state.anonymous=anonymous;
     for(const parent of state.parentInstances)parent.confirmIdentity();
   }
-  return {dom,window,state,$,fill,fillPerson,submit,price,ready,edit,change,changeAccount,advance,flow,close:()=>dom.window.close()};
+  return {dom,window,state,$,fill,fillPerson,submit,price,ready,edit,change,changeAccount,advance,flow,home:flow.home,close:()=>dom.window.close()};
 }
 
-test('the pair journey validates A then B, preserves both people and purchases only from the final confirmation',async t=>{
+test('the compatibility homepage opens the A/B journey and purchases only from final confirmation',async t=>{
   const h=await harness();t.after(h.close);
   const form=h.$('compatibility-form'),doc=h.window.document;
+  assert.equal(h.home.landing.hidden,false);assert.equal(h.home.panel.hidden,true);
+  h.home.start();assert.equal(doc.activeElement,h.$('self-year'));
+  assert.equal(h.state.starts.length,0,'starting compatibility never purchases either product');
   const visibleSteps=()=>[...form.querySelectorAll('[data-flow-step]')].filter(panel=>!panel.hidden);
   const snapshot=()=>[...form.querySelectorAll('input,select')].map(field=>({id:field.id||field.name,value:field.value,checked:field.checked}));
   assert.equal(form.dataset.flowStep,'0');assert.equal(visibleSteps().length,1);assert.equal(h.$('compatibility-open').hidden,true);
@@ -370,13 +376,30 @@ test('the pair journey validates A then B, preserves both people and purchases o
   h.flow.back();assert.equal(form.dataset.flowStep,'1');assert.deepEqual(snapshot(),values);
   h.flow.back();assert.equal(form.dataset.flowStep,'0');assert.deepEqual(snapshot(),values);
   await h.flow.next();await h.flow.next();assert.equal(form.dataset.flowStep,'2');assert.deepEqual(snapshot(),values);
+  h.home.back();assert.equal(form.dataset.flowStep,'0');assert.deepEqual(snapshot(),values);
+  h.home.start();assert.equal(doc.activeElement,h.$('self-year'));
+  await h.flow.next();await h.flow.next();assert.equal(form.dataset.flowStep,'2');assert.deepEqual(snapshot(),values);
   assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0,'checking and reviewing both people never buys compatibility');
   await h.price(20);h.$('compatibility-open').click();await h.ready();
   assert.equal(h.state.starts.length,1);assert.deepEqual(h.state.chargedAmounts,[20]);
   h.edit();assert.equal(form.dataset.flowStep,'0');assert.deepEqual(snapshot(),values);assert.equal(h.$('compatibility-open').hidden,true);
   h.changeAccount(PROFILE_USER_B);await pause();
   assert.equal(form.dataset.flowStep,'0');assert.equal(h.$('self-year').value,'');assert.equal(h.$('partner-year').value,'');
+  assert.equal(h.home.landing.hidden,false);assert.equal(h.home.panel.hidden,true);
   assert.equal(form.querySelector('[data-flow-review]').textContent,'');assertNoScoreboard(h);
+});
+
+test('an account change during A validation returns to the homepage with both people cleared',async t=>{
+  const h=await harness();t.after(h.close);h.fill();
+  const form=h.$('compatibility-form');
+  form.querySelector('[data-flow-next]').click();assert.equal(form.dataset.flowBusy,'true');
+  h.changeAccount(PROFILE_USER_B);await pause();await pause();
+  assert.equal(form.dataset.flowBusy,'false');assert.equal(form.dataset.flowStep,'0');
+  assert.equal(h.home.landing.hidden,false);assert.equal(h.home.panel.hidden,true);
+  assert.equal(h.window.document.body.dataset.siteView,'home');
+  assert.equal(h.$('self-year').value,'');assert.equal(h.$('partner-year').value,'');
+  assert.equal(form.querySelector('[data-flow-review]').textContent,'');
+  assert.equal(h.$('compatibility-report').textContent,'');assert.equal(h.state.starts.length,0);assertNoScoreboard(h);
 });
 
 test('the separate page checks a pair without requiring a saju purchase, charging or exposing its reading',async t=>{
@@ -404,6 +427,9 @@ test('an explicit twenty-ju purchase reveals the real reading and accessible sco
   assertNoScoreboard(h);
   h.submit();await pause();assert.equal(h.state.starts.length,1,'pending submissions cannot start another payment');
   receiptGate.resolve();await h.ready();
+  const skip=h.window.document.querySelector('.skip-link');
+  assert.equal(skip.hash,'#compatibility-result-title');
+  assert.equal(h.$(skip.hash.slice(1)).closest('[hidden]'),null,'the purchased pair skip link reaches its visible result heading');
   assert.equal(h.state.charges,1);assert.equal(h.state.coins,40);assert.deepEqual(h.state.chargedAmounts,[20]);
   assert.equal(h.state.baseStarts.length,0);
   assert.equal(h.$('compatibility-report').querySelector('details.reading-body-details'),null,'paid explanations are immediately readable after selecting an item');
@@ -414,6 +440,10 @@ test('an explicit twenty-ju purchase reveals the real reading and accessible sco
   const score=await assertCalculatedScores(h);
   const coverage=h.$('compatibility-report').querySelector('#compatibility-reading-coverage');
   assert.ok(coverage&&!coverage.closest('[hidden]'),'compatibility scope is visible after a verified receipt');
+  assert.equal(coverage.tagName,'DETAILS');assert.equal(coverage.open,false,'scope starts folded to keep attention on the pair reading');
+  coverage.querySelector(':scope > summary').click();assert.equal(coverage.open,true);
+  for(const paragraph of reading.readingScope.paragraphs)assert.ok([...coverage.querySelectorAll('p')].some(p=>p.textContent===paragraph));
+  coverage.querySelector(':scope > summary').click();assert.equal(coverage.open,false);
   h.$('compatibility-copy').click();await waitFor(()=>h.state.copies.length===1);
   assert.match(h.state.copies[0],/궁합/);
   for(const paragraph of h.$('compatibility-report').querySelectorAll('.reader-prose > p'))assert.ok(h.state.copies[0].includes(paragraph.textContent),'copy includes every personal interpretation paragraph');

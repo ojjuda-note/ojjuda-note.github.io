@@ -33,12 +33,17 @@ test('only the selected monthly product is generated before its explicit ten-ju 
 test('choosing another product never charges or exposes it before the labelled open button', async t => {
   const h=await harness();t.after(h.close);h.fill();h.submit();await h.ready();
   assert.equal(h.$('other-reading-options').open,false);
-  assert.match(h.$('other-reading-options').querySelector('summary').textContent,/다른 풀이 보기.*전체 30쭈.*각각 10쭈/);
+  assert.match(h.$('other-reading-options').querySelector('summary').textContent,/다른 풀이 보기/);
+  for(const topic of ['annual','monthly'])assert.match(h.$('report-product-picker').querySelector(`[data-report-price="${topic}"]`).textContent,/10쭈/,'each unpurchased product keeps its price beside its selection');
+  assert.match(h.window.document.querySelector('.method-preview').textContent,/각각 10쭈.*전체는 30쭈/,'the base prices remain available in the labelled usage information');
   const previous=h.$('report-content').textContent;
   h.pickReport('annual',2026);await pause();
   assert.equal(h.state.starts.length,1);assert.equal(h.$('report-content').textContent,previous);
   assert.equal(h.$('reading-annual'),null);assert.match(h.$('open-product').textContent,/10쭈/);
   h.$('open-product').click();await h.ready('annual',2026);
+  const current=h.$('report-content').querySelector('[data-reader-current]');
+  assert.equal(h.window.document.activeElement,current,'opening another product moves focus into its visible reading');
+  assert.equal(current.closest('[hidden]'),null);
   assert.equal(h.$('other-reading-options').open,false,'finish the purchase with the reading in front');
   assert.equal(h.state.charges,2);assert.equal(h.$('reading-lifelong'),null);
   h.pickReport('lifelong');assert.match(h.$('open-product').textContent,/0쭈/);
@@ -49,6 +54,9 @@ test('choosing another product never charges or exposes it before the labelled o
 test('reader size and item navigation preserve the purchased reading and scores without another payment', async t => {
   const h=await harness();t.after(h.close);h.fill({hour:8,minute:37});h.submit();await h.ready();
   const doc=h.window.document;
+  const skip=doc.querySelector('.skip-link');
+  assert.equal(skip.hash,'#result-title');
+  assert.equal(h.$(skip.hash.slice(1)).closest('[hidden]'),null,'the result skip link reaches a visible reading heading');
   const original=h.$('report-content').textContent;
   const scores=assertReadingScores(h.$('report-content'));
   assert.equal(h.$('reading-controls').hidden,false);
@@ -326,7 +334,7 @@ test('every product keeps its personal interpretations and practical suggestions
   const expected=buildDetailedReading(h.state.starts[0].chart,fortune);
   for (const topic of ['lifelong','annual','monthly','all']) {
     if(topic!=='lifelong') {h.pickReport(topic,2026);h.$('open-product').click();await h.ready(topic,2026);}
-    const first=h.$('report-content').querySelector(':scope > [data-reader-paged] > :not(.reading-pager)');
+    const first=h.$('report-content').querySelector('.reading-canvas > :not(.reading-coverage):not(.reading-footer)');
     assert.equal(first.id,topic==='all'?'reading-all':topic==='monthly'?'reading-months':`reading-${topic}`,'the requested reading leads the product');
     assertNoCalculationUI(h);assertReadingScores(h.$('report-content'));
     const overviews=topic==='all'?[expected.reader.lifelong,expected.reader.annual,...expected.reader.months]:topic==='monthly'?expected.reader.months:[expected.reader[topic]];

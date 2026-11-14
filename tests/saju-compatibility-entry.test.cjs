@@ -23,14 +23,15 @@ test('the saju first screen links to standalone compatibility before asking for 
   const dom=new JSDOM(html,{url:'https://ojjuda.kr/games/starlit-saju/'});
   t.after(()=>dom.window.close());
   const {document,Node}=dom.window;
-  const nav=document.querySelector('.reading-service-nav');
-  const pair=nav?.querySelector('a[href="./compatibility.html"]');
+  const landing=document.querySelector('.site-landing');
+  const pair=landing?.querySelector('a[href="./compatibility.html#start"]');
   const form=document.getElementById('birth-form');
   assert.ok(pair,'the first screen exposes compatibility before any personal saju purchase');
-  assert.equal(pair.href,'https://ojjuda.kr/games/starlit-saju/compatibility.html');
+  assert.equal(pair.href,'https://ojjuda.kr/games/starlit-saju/compatibility.html#start','the service card opens the separate A/B entry directly');
   assert.match(pair.textContent,/궁합/);
   assert.match(pair.textContent,/20\s*쭈/);
   assert.ok(pair.compareDocumentPosition(form)&Node.DOCUMENT_POSITION_FOLLOWING);
   assert.equal(pair.closest('form, [hidden], #result'),null,'the link is usable before filling a birthday or unlocking a result');
+  assert.equal(form.closest('.site-entry-panel').hidden,true,'the first screen presents both services before birth entry');
   assert.equal(document.querySelector('[name="entry-topic"][value="compatibility"]'),null,'compatibility cannot accidentally buy a personal saju topic');
 });

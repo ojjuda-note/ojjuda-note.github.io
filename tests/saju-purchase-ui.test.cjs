@@ -98,7 +98,11 @@ test('the explicit thirty-ju full purchase opens all three readings and each can
   for(const topic of ['lifelong','annual','monthly']) {
     assert.equal(h.window.document.querySelector(`[data-entry-price="${topic}"]`).textContent,'10쭈');
   }
-  assert.match(h.$('entry-price-note').textContent,/결제 후 24시간.*다시 보기 0쭈.*다시 결제.*이용 시간이 남은 항목/);
+  assert.match(h.$('entry-price-note').textContent,/결제 후 24시간.*다시 보기 0쭈/);
+  const usage=h.window.document.querySelector('.method-preview');
+  assert.ok(usage.querySelector('summary').textContent.trim(),'the longer purchase terms have a labelled disclosure');
+  usage.querySelector('summary').click();assert.equal(usage.open,true);
+  assert.match(usage.textContent,/만료 후 다시 펼칠 때만 결제.*이용 시간이 남은 항목.*중복 차감하지 않고.*기존 이용 시간도 늘리지 않아요/,'expiry and partial-bundle rules remain available before payment');
   assert.equal(h.state.starts.length,0,'selecting the full product only checks ownership');
   h.submit();await h.ready('all',2026);
   assert.deepEqual(h.state.chargedAmounts,[30]);assert.equal(h.state.coins,0);

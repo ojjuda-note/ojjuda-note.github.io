@@ -31,9 +31,11 @@ function assertCurrentBody(element) {
     .filter(paragraph=>paragraph.closest(owner)===element);
   assert.ok(paragraphs.every(visible),'all paragraphs owned by the current reading are immediately readable');
 }
-function mount(topic,{reading:report=reading,fortune:forecast=fortune}={}) {
+function mount(topic,{reading:report=reading,fortune:forecast=fortune,viewportWidth=390}={}) {
   const dom=new JSDOM('<!doctype html><nav id="outside"></nav><div id="report-content"></div>',{url:'https://example.test/'});
   const doc=dom.window.document;globalThis.document=doc;
+  Object.defineProperty(dom.window,'innerWidth',{value:viewportWidth,writable:true});
+  dom.window.matchMedia=query=>({matches:/min-width:\s*960px/.test(query)&&viewportWidth>=960,addEventListener(){},removeEventListener(){}});
   dom.window.HTMLElement.prototype.scrollIntoView=function(){};
   const live=doc.getElementById('report-content'),host=doc.createElement('div');
   renderDetailedReport(host,{reading:report,fortune:forecast,topic});
@@ -168,26 +170,35 @@ test('every reading family exposes two summary units and its complete body witho
   } finally {h.close();}
 });
 
-test('the compact picker keeps every purchased paragraph while exposing only the selected reading unit',()=>{
+test('the homepage reader keeps every purchased paragraph with an independent contents rail and selected reading canvas',()=>{
   for(const topic of ['lifelong','annual','monthly','all']) {
     const h=mount(topic);
     try {
       const before=h.paragraphs();
-      assert.equal(h.host.firstElementChild.className,'reading-pager');
+      const layout=h.host.querySelector('.reading-layout');
+      assert.ok(layout?.querySelector(':scope > nav.reading-pager'),'the contents rail belongs to the reading layout');
+      assert.ok(layout.querySelector(':scope > .reading-canvas'),'the selected reading has its own canvas');
+      assert.ok(layout.querySelector('.reading-canvas > .reading-footer'),'previous and next controls follow the reading');
       assertNoEvidence(h);
       const coverage=h.host.querySelector('#reading-coverage');
-      assert.ok(visible(coverage),'product scope stays visible when calculation panels are removed');
+      assert.equal(coverage.tagName,'DETAILS');assert.equal(coverage.open,false,'long scope information starts folded');
+      const scopeToggle=coverage.querySelector(':scope > summary');
+      assert.ok(visible(scopeToggle),'product scope remains directly available without filling the reading');
+      scopeToggle.click();assert.equal(coverage.open,true);
       for(const paragraph of reading.readingScope.paragraphs) {
         assert.ok(coverage.textContent.includes(paragraph));
+        assert.ok([...coverage.querySelectorAll('p')].some(p=>p.textContent===paragraph&&visible(p)),'opening scope exposes every original paragraph');
         assert.ok(reading.copyByCategory[topic].includes(paragraph),'the copy preserves the same scope');
       }
+      scopeToggle.click();assert.equal(coverage.open,false);
       assert.ok(visible(h.current()));
       assertCurrentBody(h.current());
       assert.equal(h.current().id,topic==='monthly'?'reading-month-11':'reading-summary');
       assert.ok([...h.select.options].filter(option=>option.closest('optgroup')?.label!=='생활 제안').length<=60,'month and decade details keep the primary reading list compact while existing practical suggestions remain reachable');
       for(const option of [...h.select.options]) {
         h.pick(option.value);assert.ok(visible(h.current()),option.textContent);
-        assert.ok(visible(coverage),'moving to another topic cannot hide the scope');
+        assert.ok(visible(scopeToggle),'moving to another topic keeps its scope disclosure reachable');
+        assert.equal(coverage.open,false,'reading navigation does not force the long scope panel open');
         assert.equal(h.host.querySelectorAll('[data-reader-current]').length,1);
         assertCurrentBody(h.current());
       }
@@ -347,7 +358,8 @@ test('a chosen month opens one inner topic and every comparison-table destinatio
 });
 
 test('general and compatibility controls retain focus for consecutive choices while reading links still focus their target',()=>{
-  const h=mount('all');
+  for(const viewportWidth of [390,1280]) {
+  const h=mount('all',{viewportWidth});
   try {
     const check=(pickerId,currentSelector)=>{
       const select=h.doc.getElementById(pickerId),options=[...select.options];
@@ -359,9 +371,10 @@ test('general and compatibility controls retain focus for consecutive choices wh
         selectReadingItem(select,option.value);
         assert.equal(current().id,option.value);assert.ok(visible(current()));
         assertCurrentBody(current());
-        assert.equal(h.doc.activeElement,toggle,'choosing an item leaves focus on the visible collapsed list');
+        const expectedFocus=viewportWidth>=960?h.host.querySelector(`[data-reading-target="${option.value}"]`):toggle;
+        assert.equal(h.doc.activeElement,expectedFocus,'focus stays on the desktop choice or returns to the collapsed mobile contents');
       }
-      const [previous,next]=select.parentElement.querySelectorAll('.reading-pager-step');
+      const [previous,next]=h.host.querySelectorAll('.reading-footer .reading-pager-step');
       const start=current().id;
       next.focus();
       for(let count=0;count<2;count++) {
@@ -380,9 +393,12 @@ test('general and compatibility controls retain focus for consecutive choices wh
     renderCompatibilityReport(h.host,buildCompatibilityReading(chart,partner),{names:[{name:'예시 A'},{name:'예시 B'}]});
     check('compatibility-page-select','[data-compatibility-current]');
     h.outer('compatibility-synthesis');assert.equal(h.doc.activeElement,h.doc.getElementById('compatibility-synthesis'));
-    h.host.querySelector('[data-compatibility-current] .reading-back-to-picker').click();
-    assert.equal(h.doc.activeElement,h.doc.getElementById('compatibility-page-select-toggle'));
+    assert.equal(h.host.querySelector('.reading-back-to-picker'),null,'the separate contents rail does not add a repeated return-to-contents link after each explanation');
+    const peoplePage=h.host.querySelector('.compatibility-people-page');
+    selectReadingItem(h.doc.getElementById('compatibility-page-select'),peoplePage.id);
+    assert.equal(h.host.querySelector('[data-compatibility-current]'),peoplePage,'the existing contents rail returns directly to the A/B comparison');
   } finally {h.close();}
+  }
 });
 
 test('a refreshed reading restores the same decade topic after the current period moves to the front',()=>{

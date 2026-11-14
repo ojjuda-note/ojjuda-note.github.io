@@ -5,9 +5,13 @@ const { harness, fixedNow, pause, waitFor, selectReadingItem } = require('./help
 // Keep these full-report transitions in a separate test worker: Node's VM
 // module contexts otherwise accumulate beside the core purchase scenarios.
 
-test('the two-step entry keeps one task in view, validates before moving and preserves input through editing',async t=>{
+test('the homepage opens a focused two-step entry without buying and preserves input through home and editing',async t=>{
   const h=await harness({coins:40});t.after(h.close);
   const form=h.$('birth-form'),doc=h.window.document;
+  assert.equal(h.home.landing.hidden,false);assert.equal(h.home.panel.hidden,true);
+  assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);
+  h.home.start();assert.equal(doc.activeElement,h.$('birth-year'));
+  assert.equal(h.state.starts.length,0,'starting a reading only opens birth entry');
   const visibleSteps=()=>[...form.querySelectorAll('[data-flow-step]')].filter(panel=>!panel.hidden);
   const snapshot=()=>[...form.querySelectorAll('input,select')].map(field=>({id:field.id||field.name,value:field.value,checked:field.checked}));
   assert.equal(visibleSteps().length,1);assert.equal(form.dataset.flowStep,'0');assert.equal(h.$('open-story').hidden,true);
@@ -29,12 +33,16 @@ test('the two-step entry keeps one task in view, validates before moving and pre
   assert.match(form.querySelector('[data-flow-review]').textContent,/1990.05.17/);
   const values=snapshot();h.flow.back();assert.equal(form.dataset.flowStep,'0');assert.deepEqual(snapshot(),values);
   await h.flow.next();assert.deepEqual(snapshot(),values);assert.equal(h.state.starts.length,0);
+  h.home.back();assert.equal(form.dataset.flowStep,'0');assert.deepEqual(snapshot(),values);
+  h.home.start();assert.equal(doc.activeElement,h.$('birth-year'));
+  await h.flow.next();assert.deepEqual(snapshot(),values);assert.equal(h.state.starts.length,0,'returning home never buys or clears valid input');
   await waitFor(()=>!h.$('open-story').disabled);h.$('open-story').click();await h.ready('annual',2026);
   assert.equal(h.state.starts.length,1);assert.deepEqual(h.state.chargedAmounts,[10]);
   h.$('edit-birth').click();assert.equal(form.dataset.flowStep,'0');assert.deepEqual(snapshot(),values);
   assert.equal(h.$('open-story').hidden,true,'editing returns to birth information before another explicit confirmation');
   h.changeAccount('20000000-0000-4000-8000-000000000002');await pause();
   assert.equal(form.dataset.flowStep,'0');assert.equal(h.$('birth-year').value,'');
+  assert.equal(h.home.landing.hidden,false);assert.equal(h.home.panel.hidden,true,'account reset returns to the homepage without exposing earlier entry');
   assert.equal(form.querySelector('[data-flow-review]').textContent,'');assert.equal(h.$('report-content').textContent,'');
 });
 
@@ -53,6 +61,19 @@ test('selecting a saved person cancels an in-flight next step even when the birt
   assert.equal(form.dataset.flowStep,'0','the earlier validation cannot advance the newly restored person');
   assert.equal(h.$('person-name').value,'저장한 이름');assert.equal(h.state.starts.length,0);
   await h.flow.next();assert.equal(form.dataset.flowStep,'1');assert.equal(h.state.starts.length,0);
+});
+
+test('an account change during birth validation returns to the homepage before old validation can advance',async t=>{
+  const h=await harness();t.after(h.close);h.fill({name:'이전 계정'});
+  const form=h.$('birth-form');
+  form.querySelector('[data-flow-next]').click();assert.equal(form.dataset.flowBusy,'true');
+  h.changeAccount('20000000-0000-4000-8000-000000000002');await pause();await pause();
+  assert.equal(form.dataset.flowBusy,'false');assert.equal(form.dataset.flowStep,'0');
+  assert.equal(h.home.landing.hidden,false);assert.equal(h.home.panel.hidden,true);
+  assert.equal(h.window.document.body.dataset.siteView,'home');
+  assert.equal(h.$('birth-year').value,'');assert.equal(h.$('person-name').value,'');
+  assert.equal(h.$('report-content').textContent,'');assert.equal(h.state.starts.length,0);
+  assert.equal(form.querySelector('[data-flow-review]').textContent,'');
 });
 
 test('staged paid reports keep decade, month and detailed reading links connected after purchase', async t => {
