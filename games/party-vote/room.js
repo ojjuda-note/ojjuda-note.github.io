@@ -5,8 +5,8 @@ const kind = document.documentElement.dataset.game;
 const minority = kind === 'minority';
 const title = minority ? '소수파 찾기' : '한 명만 다른 미션';
 const description = minority
-  ? '두 가지 중 더 끌리는 쪽에 몰래 투표해요. 모두 고르면 소수파가 누구인지 공개돼요.'
-  : '각자 제시어를 확인하고 동시에 혼자 몸짓으로 표현해요. 말·소품·실제 접촉 없이, 다른 동작을 한 사람을 찾아 투표하세요.';
+  ? '두 선택지 중 하나를 몰래 골라요. 모두 투표하면 결과가 공개돼요. 고른 사람이 적은 쪽이 소수파예요.'
+  : '한 명만 다른 제시어를 받아요. 말이나 소품 없이 동시에 몸짓으로 표현하고, 다른 동작을 한 사람을 찾아 투표해요. 다른 사람에게 닿지 않고 혼자 흉내 내세요.';
 const view = document.querySelector('#view');
 const notice = document.querySelector('#notice');
 const roomCode = (new URLSearchParams(location.search).get('room') || '').toUpperCase();
@@ -91,7 +91,7 @@ function roundView(s) {
         (revealed ? '<p class="secret">' + esc(s.word) + '</p>' : '') + '</div><p>확인 ' + s.readyCount + ' / ' + s.players.length + '명</p>' +
         (s.ready ? '<p>다른 참가자가 확인하고 있어요.</p>' : revealed ? control('확인했어요', 'ready', true) : '');
     case 'act':
-      return '<h1>하나, 둘, 셋! 동시에 표현해요</h1><p>말·소품·실제 접촉 없이, 각자 혼자 몸짓만으로 표현하세요.</p>' +
+      return '<h1>하나, 둘, 셋! 동시에 흉내 내요</h1><p>말이나 소품 없이 혼자 표현해 주세요. 다른 사람에게 닿지 않아요.</p>' +
         (host ? control('몸짓을 마쳤어요 · 투표 시작', 'start_vote', true) : '<p>몸짓을 마치면 방장이 투표를 시작해요.</p>');
     case 'vote':
       return '<h1>' + (s.voted ? '투표를 마쳤어요' : minority ? '어느 쪽을 고를까요?' : '누가 다른 미션을 받았을까요?') + '</h1>' +

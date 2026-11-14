@@ -20,13 +20,13 @@
         return '<h1>' + (g.random ? '랜덤 타이머' : secondsLabel(g.baseSeconds) + ' 타이머') + '</h1>' +
           '<div class="bomb-launch"><img src="' + bombArt + '" alt="">' +
           (host ? '<button type="button" class="action" data-game-action="start">시작</button>' : '') + '</div>' +
-          (host ? '<button type="button" data-game-action="adjust">시간 다시 선택</button>' : '<p>방장이 폭탄을 시작하면 게임이 열려요.</p>');
+          (host ? '<button type="button" data-game-action="adjust">시간 다시 선택</button>' : '<p>방장이 시작 버튼을 누르면 폭탄이 돌아가요.</p>');
       case 'active':
         return '<h1>' + ui.esc(g.topic) + '</h1><img class="bomb-active" src="' + bombArt + '" alt="">' +
           (g.holder === s.me ? '<p>내 차례예요. 주제에 맞는 답을 하나 말하고 바로 넘기세요. 이미 나온 답은 안 돼요.</p><button type="button" class="action" id="bomb-pass">말했어요 · 다음 사람</button>' :
             '<p>' + ui.esc(s.players[g.holder]) + '님이 폭탄을 들고 있어요.</p>');
       case 'done':
-        return '<h1>펑! ' + ui.esc(s.players[g.loser]) + '님 당첨!</h1><p>폭탄이 터지는 순간 폭탄을 들고 있었어요.</p>';
+        return '<h1>펑! ' + ui.esc(s.players[g.loser]) + '님 당첨!</h1><p>폭탄을 넘기기 전에 시간이 끝났어요.</p>';
     }
   }
 

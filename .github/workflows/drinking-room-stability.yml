@@ -23,6 +23,8 @@ on:
       - 'supabase/migrations/*party*'
       - 'tests/drinking-*'
       - 'tests/helpers/drinking-ui-fixture.cjs'
+      - 'scripts/build-drinking-polish.mjs'
+      - 'scripts/lib/drinking-catalogs.mjs'
       - '.github/workflows/drinking-room-stability.yml'
   pull_request:
     paths:
@@ -46,6 +48,8 @@ on:
       - 'supabase/migrations/*party*'
       - 'tests/drinking-*'
       - 'tests/helpers/drinking-ui-fixture.cjs'
+      - 'scripts/build-drinking-polish.mjs'
+      - 'scripts/lib/drinking-catalogs.mjs'
       - '.github/workflows/drinking-room-stability.yml'
 permissions:
   contents: read
@@ -78,6 +82,7 @@ jobs:
           tests/drinking-content-catalogs.test.cjs
           tests/drinking-truth-content-rebuild.test.cjs
           tests/drinking-content-expansions.test.cjs
+          tests/drinking-content-wording.test.cjs
           tests/drinking-room-browser.test.cjs
       - name: Verify game release and access boundaries
         run: node --test --test-concurrency=1 tests/game-release-refresh.test.cjs tests/game-assets-loading.test.cjs tests/matgo-access.test.cjs
