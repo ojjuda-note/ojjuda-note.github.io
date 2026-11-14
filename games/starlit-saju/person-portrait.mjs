@@ -1,5 +1,6 @@
-import { getTenGod } from './fortune-data.mjs?v=20261114-saju-depth1';
+import { getTenGod } from './fortune-data.mjs?v=20261114-saju-correction1';
 import { detailContent, portraitConversation } from './general-detail-scenes.mjs?v=20261114-saju-copy1';
+import { describeNatalContext } from './natal-context.mjs?v=20261114-saju-correction1';
 
 // A plain-language portrait assembled from confirmed natal facts. The component
 // meanings and the everyday examples are authored reference material. They are
@@ -383,7 +384,7 @@ function seasonFor(profile,chapters,registry) {
   if(!profile.season)return null;
   const rule=rules.find(value=>value.id?.startsWith('natal.season.')&&SEASONS[value.id.slice('natal.season.'.length)]);
   if(!rule||!Array.isArray(rule.factIds)||rule.factIds.some(id=>!registry.has(id)))fail();
-  return {text:SEASONS[rule.id.slice('natal.season.'.length)],factIds:[...rule.factIds],ruleId:rule.id};
+  return {text:SEASONS[rule.id.slice('natal.season.'.length)],factIds:[...rule.factIds],ruleId:rule.id,key:rule.id.slice('natal.season.'.length)};
 }
 function relationsFor(profile) {
   const matches=profile.interactions.map((value,index)=>({value,id:'natal.interaction.'+index}));
@@ -421,6 +422,7 @@ export function buildPersonPortrait(input) {
   const anchors=choose(entries),first=VOICES[anchors[0]],second=anchors[1]?VOICES[anchors[1]]:null;
   const core=combined(...anchors),stem=STEMS[profile.dayMaster.hanja];
   const season=seasonFor(profile,chapters,registry),relations=relationsFor(profile);
+  const context=describeNatalContext(profile,{codes:anchors,seasonKey:season?.key});
   const coreIds=['natal.day-master','natal.scope',...idsFor(profile,anchors)];
   const portraitParagraphs=[
     first.brief+(second?' '+second.brief:''),
@@ -478,11 +480,27 @@ export function buildPersonPortrait(input) {
     target.godCodes.push(...omittedCodes);
     target.factIds=checked(registry,[...target.factIds,...idsFor(profile,omittedCodes)]);
   }
-  for(const item of cards)Object.assign(item,detailContent(CARD_DETAIL_GROUPS[item.id].map(([title,indexes])=>[title,indexes.map(index=>item.paragraphs[index])])));
+  for(const item of cards) {
+    const groups=CARD_DETAIL_GROUPS[item.id].map(([title,indexes])=>[title,indexes.map(index=>item.paragraphs[index])]);
+    if(item.id!=='portrait-decisions') {
+      const connected=describeNatalContext(profile,{codes:item.godCodes,domain:item.id.slice('portrait-'.length)});
+      const extra=connected.additionalCode?VOICES[connected.additionalCode]:null;
+      const field={'portrait-relationships':'relationship','portrait-work':'work','portrait-pressure':'stress','portrait-adjustment':'misread'}[item.id];
+      const paragraphs=[extra?.[field],...(['portrait-relationships','portrait-pressure'].includes(item.id)?connected.interactions.map(value=>value.text):[])].filter(Boolean);
+      if(paragraphs.length)groups.splice(2,0,['다른 성향과 함께 나타나는 모습',paragraphs]);
+      item.natalContext=connected;
+      checked(registry,connected.factIds);
+    }
+    Object.assign(item,detailContent(groups));
+  }
+  checked(registry,context.factIds);
   const factIds=checked(registry,[...coreIds,...(season?.factIds||[]),...cards.flatMap(value=>value.factIds)]);
   return {
-    id:'person-portrait',title:'나는 어떤 사람일까',headline:'당신은 '+core.headline+'이에요.',
-    ...detailContent([['나를 이해하는 첫 모습',portraitParagraphs.slice(0,2)],['평소 행동에 드러나는 성향',portraitParagraphs.slice(2)]]),cards,
+    id:'person-portrait',title:'나는 어떤 사람일까',headline:'당신은 '+context.headline+'이에요.',
+    ...detailContent([['나를 이해하는 첫 모습',portraitParagraphs.slice(0,2)],
+      ['여러 모습이 함께 드러나는 이유',[...context.paragraphs,...context.interactions.map(value=>value.text)]],
+      ['평소 행동에 드러나는 성향',portraitParagraphs.slice(2)],
+      ['이 성향을 편하게 쓰는 조건',[context.season]]]),cards,natalContext:context,
     origin:ORIGIN,factIds,facts:factIds.map(id=>({...registry.get(id)})),
     anchorCodes:[...anchors],godCodes:unique(entries.map(entry=>entry.god.code)),
     methodNotice:'확정된 원국의 일간·십성, 이미 계산한 계절 관계와 합충에 공통 전통 의미를 연결한 설명이에요. 생활 장면과 두 성향을 이어 쓴 문장은 오쭈다가 작성한 공통 참고 해설이며, 실제 경험이나 성격 검사 결과가 아니에요. 같은 단서에는 같은 설명을 쓰고, 함께 확인된 다른 단서에 따라 문단을 조합해요. 글자 개수로 강약이나 대표 성격을 정하지 않아요.',

@@ -236,6 +236,7 @@ function readerOverview(overview, sectionId, chapters=[], showLabel=false, fallb
     const body=node('div','report-prose reader-prose');
     appendReadingDetail(body,item,addParagraphs);
     card.append(body);
+    if(item.scopeNotice)card.append(node('p','reader-scope-note',item.scopeNotice));
     const chapterIndex=chapters.findIndex(chapter=>chapter.id===item.chapterId);
     const evidenceId=chapterIndex>=0?`${sectionId}-chapter-${chapterIndex+1}`:fallbackEvidenceId;
     if (evidenceId) {
@@ -257,6 +258,34 @@ function readerOverview(overview, sectionId, chapters=[], showLabel=false, fallb
   }
   section.append(topicNav,cards);
   return section;
+}
+
+function appendReaderSupplements(parent,cards=[]) {
+  for(const item of cards) {
+    if(!Array.isArray(item.summaryLines)||item.summaryLines.length!==2
+      ||item.summaryLines.some(line=>typeof line!=='string'||!line.trim())) {
+      throw new Error('추가 해설의 두 줄 요약을 준비하지 못했어요.');
+    }
+    const card=node('article','reader-personal-supplement');
+    card.id=`reading-${item.id}`;
+    card.dataset.readingSupplement=item.id;
+    card.dataset.origin=item.origin;
+    card.dataset.factIds=(item.factIds||[]).join(' ');
+    const heading=node('h4','reader-card-label',item.label);
+    heading.id=`${card.id}-title`;heading.tabIndex=-1;
+    card.setAttribute('aria-labelledby',heading.id);
+    card.append(heading,node('p','reader-label','추가 해설'));
+    const summary=node('div','saju-two-line-summary');
+    summary.setAttribute('role','group');summary.setAttribute('aria-label','두 줄 요약');
+    summary.dataset.origin=item.origin;
+    summary.append(node('h5','reader-card-title saju-summary-line',item.summaryLines[0]),
+      node('p','saju-summary-line',item.summaryLines[1]));
+    const prose=node('div','report-prose reader-prose');
+    appendReadingDetail(prose,item,addParagraphs);
+    card.append(summary,prose);
+    if(item.scopeNotice)card.append(node('p','reader-scope-note',item.scopeNotice));
+    parent.append(card);
+  }
 }
 
 function fullReadingDetails(sectionId, chapters, advice, extra = null) {
@@ -470,7 +499,7 @@ function personPortraitView(portrait, facts, original, visibleScopeNotice='') {
   return section;
 }
 
-function reportSection(section, advice, overview, period=null, portrait=null, facts=[], scopeNotice='') {
+function reportSection(section, advice, overview, period=null, portrait=null, facts=[], scopeNotice='', supplements=[]) {
   const container = node('section', 'report-section');
   const sectionId = `reading-${section.id}`;
   container.id = sectionId;
@@ -495,10 +524,11 @@ function reportSection(section, advice, overview, period=null, portrait=null, fa
   container.append(original,full);
   const suggestions=moreAdvice(advice,sectionId);
   if (suggestions) container.append(suggestions);
+  appendReaderSupplements(container,supplements);
   return container;
 }
 
-function monthView(month, calculated, open, overview) {
+function monthView(month, calculated, open, overview, supplements=[]) {
   const detail = node('details', 'month-reading' + (calculated?.isCurrent ? ' is-current' : ''));
   detail.id = `reading-month-${month.month}`;
   detail.open = open;
@@ -536,6 +566,7 @@ function monthView(month, calculated, open, overview) {
   content.append(full);
   const suggestions=moreAdvice(month.advice,detail.id);
   if (suggestions) content.append(suggestions);
+  appendReaderSupplements(content,supplements);
   detail.append(content);
   detail.setAttribute('aria-labelledby', summary.id);
   return detail;
@@ -655,7 +686,8 @@ function monthSection(reading, fortune) {
   const jumps = node('nav', 'month-jumps');
   jumps.setAttribute('aria-label', '월별 풀이 바로가기');
   jumps.id='reading-month-navigation';
-  const details = reading.months.map(month => monthView(month, calculated.get(month.month), month.month === initiallyOpen,overviews.get(month.month)));
+  const supplements=new Map((reading.reader?.supplements?.months||[]).map(month=>[month.month,month.cards]));
+  const details = reading.months.map(month => monthView(month, calculated.get(month.month), month.month === initiallyOpen,overviews.get(month.month),supplements.get(month.month)));
   for (const detail of details) {
     const month = Number(detail.id.replace('reading-month-', ''));
     const jump = node('button', 'month-jump' + (month === currentMonth ? ' is-current' : ''), `${month}월`);
@@ -1045,6 +1077,10 @@ function buildReadingPager(root,{reading,fortune,topic}) {
     const nodes=new Map(all(scope,'.reader-card').map(element=>[element.dataset.readerCard,element]));
     for(const item of overview?.cards||[])add(nodes.get(item.id),item.label,`${prefix} · ${item.navGroup||'분야별 풀이'}`,options);
   }
+  function supplements(scope,items,prefix,options={}) {
+    const nodes=new Map(all(scope,'[data-reading-supplement]').map(element=>[element.dataset.readingSupplement,element]));
+    for(const item of items||[])add(nodes.get(item.id),item.label,`${prefix} · 추가 해설`,options);
+  }
   function materials(scope,prefix,{inMenu=false}={}) {
     for(const full of all(scope,'.reading-full-text').filter(element=>!element.classList.contains('reader-symbol-sources'))) {
       add(full,`${prefix} 계산·해석 자료`,'근거와 자료',{kind:'support',inMenu});
@@ -1067,6 +1103,7 @@ function buildReadingPager(root,{reading,fortune,topic}) {
     for(const item of reading.personPortrait?.cards||[])add(portraitCards.get(item.id),item.label,'평생운 · 나의 성격');
     add(lifelong.querySelector('.portrait-previous .reader-intro'),'성격·적성의 다른 풀이','평생운 · 다른 성격 풀이');
     cards(lifelong,reading.reader?.lifelong,'평생운');
+    supplements(lifelong,reading.reader?.supplements?.lifelong,'평생운');
     add(find('reading-person-portrait-evidence'),'성격 풀이의 근거','근거와 자료',{kind:'support',inMenu:false});
     materials(lifelong,'평생운',{inMenu:true});
   }
@@ -1088,6 +1125,7 @@ function buildReadingPager(root,{reading,fortune,topic}) {
     const first=add(annual.querySelector('.reader-intro'),`${fortune.year}년 운세 요약`,`${fortune.year}년 올해운`,{showHeading:true});
     defaults.set(annual,first);
     cards(annual,reading.reader?.annual,`${fortune.year}년 올해운`);
+    supplements(annual,reading.reader?.supplements?.annual,`${fortune.year}년 올해운`);
     materials(annual,'올해운',{inMenu:true});
   }
   const months=find('reading-months');
@@ -1101,6 +1139,7 @@ function buildReadingPager(root,{reading,fortune,topic}) {
       const overview=element?.querySelector('.reader-overview');if(overview)defaults.set(overview,first);
       if(month===activeMonth)defaults.set(months,first);
       cards(element,overviews.get(month),group,{group,inMenu:false});
+      supplements(element,reading.reader?.supplements?.months.find(item=>item.month===month)?.cards,group,{group,inMenu:false});
       materials(element,`${month}월`);
       const timing=find(`reading-timings-month-${month}`)?.closest('.reader-timing-card');
       add(timing,`${month}월 기회와 주의점`,group,{inMenu:false});
@@ -1319,7 +1358,7 @@ export function renderDetailedReport(container, {reading, fortune, topic}) {
     const section=sections?.find(value=>value.id===item);
     if (!section?.chapters?.length) throw new Error('선택한 풀이를 준비하지 못했어요.');
     fragment.append(reportSection(section,reading.adviceByCategory?.[item],reading.reader?.[item],item==='annual'?fortune.annual:null,
-      item==='lifelong'?reading.personPortrait:null,reading.facts,reading.reader?.scopeNotice));
+      item==='lifelong'?reading.personPortrait:null,reading.facts,reading.reader?.scopeNotice,reading.reader?.supplements?.[item]));
     if(item==='lifelong'&&reading.daeun) {
       fragment.append(daeunView(reading.daeun));
       relatedTopics.push(['대운 · 10년 흐름','reading-daeun']);

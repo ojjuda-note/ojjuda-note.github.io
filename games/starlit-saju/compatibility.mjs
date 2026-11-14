@@ -1,9 +1,9 @@
-import { getTenGod, makeProfile, interactionPairs } from './fortune-data.mjs?v=20261114-saju-depth1';
+import { getTenGod, makeProfile, interactionPairs } from './fortune-data.mjs?v=20261114-saju-correction1';
 import { GOD_REFERENCE, RELATION_REFERENCE } from './readings-data.mjs?v=20261114-saju-depth1';
 import { zodiacFromChart } from './zodiac.mjs?v=20261114-saju-depth1';
 import { buildCompatibilityScore } from './compatibility-score.mjs?v=20261114-saju-copy1';
-import { buildCompatibilityPeople } from './compatibility-people.mjs?v=20261114-saju-copy1';
-import { attachCompatibilityDetails } from './compatibility-detail-stories.mjs?v=20261114-saju-copy1';
+import { buildCompatibilityPeople } from './compatibility-people.mjs?v=20261114-saju-correction1';
+import { attachCompatibilityDetails } from './compatibility-detail-stories.mjs?v=20261114-saju-correction1';
 
 // A local comparison of two already-calculated charts. All cross-chart pillar
 // pairs are retained; the prose is a disclosed application of shared meanings.
