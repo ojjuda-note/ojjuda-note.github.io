@@ -266,6 +266,13 @@ function assertSummaryDetails(view, summary) {
   if (!completedSummary.ritualInReading) expectedCopy.push(`이렇게 해 보세요: ${completedSummary.ritual}`, '');
   expectedCopy.push('타로의 전통 해석이에요. 미래를 확정하지 않아요.');
   assert.equal(copiedResult, expectedCopy.join('\n'), 'copy includes all three groups and the selected original interpretation in reading order, even when folded or inactive');
+  for (const index of [0, 1]) {
+    const positionText = completed.window.getReading(completedCards[index], 'love', index).positionMeaning;
+    assert.ok(completed.$('#summary-panel-problem').textContent.includes(positionText),
+      'the problem and current-condition interpretations are available in the combined reading');
+    assert.equal(copiedResult.split(positionText).length - 1, 1,
+      'copy preserves each distinct position interpretation once, including the current-condition passage');
+  }
   assert.equal(copiedResult.split(completedSummary.ritual).length - 1, 1);
   assert.equal(copiedResult.split(domainGroup.description).length - 1, 1);
   const copiedLines = copiedResult.split('\n');

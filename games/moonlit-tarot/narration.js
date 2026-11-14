@@ -1,8 +1,8 @@
 import { CARD_LIFE_THEMES } from './life-themes.js?v=20261114-tarot-copy1';
 import { buildDomainGroup } from './domain-narration.js?v=20261114-tarot-review2';
 import { getCardInterpretation, interpretCard, MAIN_CONTEXTS } from './interpretation-engine.js?v=20261114-tarot-review2';
-import { getPersonStory } from './person-stories.js?v=20261114-tarot-review2';
-import { buildPersonNarrative } from './person-narrative.js?v=20261114-tarot-review2';
+import { getPersonStory } from './person-stories.js?v=20261114-tarot-review3';
+import { buildPersonNarrative } from './person-narrative.js?v=20261114-tarot-review3';
 import { splitSummarySentences, summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
 import { directInterpretation, directAction } from './reading-voice.js?v=20261113-tarot-easy1';
 
@@ -70,7 +70,7 @@ function checkReadingInput({ card, topicId, index, position, foundation, guidanc
   if (!card?.id || !card.name || !Object.hasOwn(TOPIC_NAMES, topicId)
       || !Number.isInteger(index) || index < 0 || index > 2 || !position?.label
       || !foundation?.symbol || !foundation.takeaway || !foundation.caution
-      || !guidance?.meaning || !guidance.positions?.[index === 1 ? 0 : index]
+      || !guidance?.meaning || !guidance.positions?.[index]
       || !CARD_LIFE_THEMES[card.id] || ['strength', 'past', 'achievement', 'change'].some(key => !CARD_LIFE_THEMES[card.id][key])
       || !card.topics?.[topicId] || !detail?.example || !detail.action) {
     throw new Error('tarot_narration_requires_authored_card_meanings');
@@ -105,7 +105,7 @@ export function narrateReading({ card, topicId, index, position, foundation, gui
   const person = getPersonStory(card.id);
   const introduction = `${['첫 번째', '두 번째', '세 번째'][index]} 카드는 ‘${displayName}’${hasFinalConsonant(displayName) ? '이야' : '야'}. ‘${position.label}’에 관한 풀이를 들려줄게. ${explanation}`.trim();
   const meaning = rule.meaning;
-  const positionMeaning = directInterpretation(clean(guidance.positions[index === 1 ? 0 : index]));
+  const positionMeaning = directInterpretation(clean(guidance.positions[index]));
   const lifeTheme = Object.fromEntries(Object.entries(CARD_LIFE_THEMES[card.id]).map(([key, text]) =>
     [key, directInterpretation(text)]));
   const topicMeaning = directInterpretation(clean(card.topics[topicId]));
@@ -185,11 +185,13 @@ export function narrateSummary({ cards, topicId, readings, innerMeaning, flowMea
     section('together', '카드에 비친 너의 이야기', story.paragraphs, story.summaryLines),
     section('problem-now', '지금 고민의 핵심', [
       `‘${names[0]}’ 카드의 뜻부터 짚어 볼게. ${problem.meaning}`,
-      `이 뜻을 ${TOPIC_NAMES[topicId]}에 연결하면 네가 중요하게 여기는 부분이 보여. ${firstPerson[topicId]}`
+      `이 뜻을 ${TOPIC_NAMES[topicId]}에 연결하면 네가 중요하게 여기는 부분이 보여. ${firstPerson[topicId]}`,
+      problem.positionMeaning
     ], cardSummary(cards[0], problem.meaning, firstConcern)),
     section('situation-now', '지금 상황과 속마음', [
       `‘${names[1]}’ 카드가 비추는 현재 상황이야. ${situation.meaning}`,
-      `지금의 고민에서는 이 부분을 살펴보렴. ${currentPerson[topicId]}`
+      `지금의 고민에서는 이 부분을 살펴보렴. ${currentPerson[topicId]}`,
+      situation.positionMeaning
     ], cardSummary(cards[1], situation.meaning, currentConcern)),
     section('solution', '지금 선택할 해결 방법', [
       `‘${names[2]}’ 카드가 짚는 선택의 기준이야. ${solution.meaning} ${nextPerson[topicId]}`,

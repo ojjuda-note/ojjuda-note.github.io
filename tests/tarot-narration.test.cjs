@@ -50,7 +50,7 @@ for (const card of DECK.filter(card => card.arcana === 'minor')) {
       assert.equal(result.detailSections, input.base.sections);
       assert.equal(result.reference, input.base.reference);
       assert.deepEqual(plain(result.lifeTheme), Object.fromEntries(Object.entries(CARD_LIFE_THEMES[card.id]).map(([field, value]) => [field, directInterpretation(value)])));
-      assert.equal(result.positionMeaning, directInterpretation(input.guidance.positions[index === 1 ? 0 : index]));
+      assert.equal(result.positionMeaning, directInterpretation(input.guidance.positions[index]));
       assert.ok(result.text.includes(result.positionMeaning), 'the individual reading explains this position in the card itself');
       assert.ok(result.appliedMeaning.length > 60 && !result.text.includes(result.appliedMeaning), 'the detailed situation application is reserved for the combined view');
       assert.ok(!result.text.includes(result.action), 'the practical action is retained for the combined reading and full source, not copied into both views');
@@ -134,11 +134,20 @@ for (const topicId of topics) {
   assert.ok(summary.synthesis.includes(splitSummarySentences(people[1][topicId])[0]),
     'the first two cards are read through this topic rather than a shared motion-only bridge');
   for (const reading of readings) {
-    for (const detail of [reading.example, reading.topicMeaning, reading.foundationCaution, reading.positionMeaning]) {
+    for (const detail of [reading.example, reading.topicMeaning, reading.foundationCaution]) {
       assert.ok(!summary.text.includes(detail), 'the individual card explanation is not copied into another tab');
     }
     assert.equal(summary.text.split(reading.action).length - 1, 1, 'each actual card action is offered once in the combined reading');
   }
+  for (const [index, id] of [[0, 'problem-now'], [1, 'situation-now']]) {
+    const roleSection = summary.groups[0].sections.find(section => section.id === id);
+    assert.ok(roleSection.paragraphs.includes(readings[index].positionMeaning),
+      'the corresponding problem or current-situation lens remains complete in its combined section');
+    assert.equal(summary.text.split(readings[index].positionMeaning).length - 1, 1,
+      'the complete first and second position lenses are available once in the full copy source');
+  }
+  assert.ok(!summary.text.includes(readings[2].positionMeaning),
+    'preserving the first two role lenses does not add a second generic instruction before the selected third-card action');
   for (const detail of [readings[0].lifeTheme.past, readings[0].lifeTheme.achievement]) {
     assert.equal(summary.text.split(detail).length - 1, 1, 'each life explanation is used once instead of copied through several sections');
   }
@@ -180,11 +189,27 @@ for (const card of DECK) for (const topic of topics) for (let index = 0; index <
   assert.equal(reading.paragraphs[1], getPersonStory(card.id)[topic]);
   assert.ok(reading.paragraphs.includes(getPersonStory(card.id).portrait));
   assert.ok(JSON.stringify(reading.detailSections).includes(reading.traditionalMeaning), 'the complete original interpretation remains accessible in source details');
+  const positionSource = reading.detailSections.find(section => section.title === '이 카드가 전하는 말');
+  assert.ok(directInterpretation(positionSource.body).endsWith(reading.positionMeaning),
+    'all 78 cards preserve this actual position passage in the expandable source as well as the main card text');
   const sourcePractice = reading.detailSections.find(section => section.title === '생활 속 예시와 해 볼 일');
   assert.ok(sourcePractice.body.startsWith(reading.example), 'the original hypothetical example remains in source details');
   const sourceAction = [sourcePractice.subtitle, sourcePractice.body.slice(reading.example.length).trim()].filter(Boolean).join(' ');
   assert.equal(reading.action, directAction(sourceAction), 'shown advice is derived from the complete action preserved in source details');
   if (card.details) assert.equal(sourceAction, card.details[topic].action, 'the raw authored action is preserved byte-for-byte');
+}
+for (const card of DECK) for (const topic of topics) {
+  const first = getReading(card, topic, 0), second = getReading(card, topic, 1);
+  assert.notEqual(first.positionMeaning, second.positionMeaning,
+    `${card.id}/${topic}: the current situation is not the first position with a changed heading`);
+  assert.notDeepEqual(plain(first.paragraphs), plain(second.paragraphs),
+    `${card.id}/${topic}: the substantive card body changes with the actual role`);
+  for (const field of ['meaning', 'traditionalMeaning', 'symbol', 'topicMeaning', 'example', 'action', 'caution']) {
+    assert.equal(first[field], second[field], `${card.id}/${topic}: changing role preserves the actual card, topic and authored guidance`);
+  }
+  assert.deepEqual(plain(first.paragraphs.filter(text => text !== first.positionMeaning)),
+    plain(second.paragraphs.filter(text => text !== second.positionMeaning)),
+    'the difference comes from an authored role explanation rather than unrelated or randomized content');
 }
 assert.deepEqual(plain(POSITIONS.map(position => position.label)), ['지금의 문제', '현재 상황', '해결 방법과 결과']);
 assert.equal(Object.keys(CARD_LIFE_THEMES).length, DECK.length);
@@ -200,6 +225,12 @@ for (let index = 0; index < DECK.length; index++) for (const topic of topics) {
   assert.equal(report.ritual, getReading(ordered[2], topic, 2).action);
   assert.equal(report.ritualInReading, true);
   assert.equal(report.text.split(report.ritual).length - 1, 1);
+  for (const [position, id] of [[0, 'problem-now'], [1, 'situation-now']]) {
+    const roleMeaning = getReading(ordered[position], topic, position).positionMeaning;
+    assert.ok(report.sections.find(section => section.id === id).paragraphs.includes(roleMeaning));
+    assert.equal(report.text.split(roleMeaning).length - 1, 1,
+      `${ordered[position].id}/${topic}: the complete role text survives into the combined rendering and copy source`);
+  }
   const solution = report.sections.find(section => section.id === 'solution');
   const body = solution.paragraphs.join(' ');
   const story = getPersonStory(ordered[2].id);

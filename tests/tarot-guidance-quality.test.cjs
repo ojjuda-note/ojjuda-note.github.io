@@ -3,14 +3,14 @@ const { createTarotLoader } = require('./tarot-module-fixture.cjs');
 const { semanticSignature, compareGuidance, findNearGuidance, auditGuidance } = require('../scripts/audit-tarot-guidance.cjs');
 
 const load = createTarotLoader();
-const { DECK } = load('readings.js');
+const { DECK, getReading } = load('readings.js');
 const { CONNECTION_PROFILES } = load('connection-profiles.js');
 const { buildCardConnections, getConnectionProfile } = load('card-connections.js');
 const { CARD_INTERPRETATIONS, getCardInterpretation } = load('interpretation-engine.js');
 const { CARD_PERSON_STORIES, getPersonStory } = load('person-stories.js');
 const { PERSON_PAIR_READINGS } = load('person-pair-readings.js');
 const { buildPersonNarrative } = load('person-narrative.js');
-const { getPersonalContext } = load('personal-contexts.js');
+const { PERSONAL_CONTEXTS, getPersonalContext } = load('personal-contexts.js');
 const { splitSummarySentences } = load('reading-summary.js');
 const plain = value => JSON.parse(JSON.stringify(value));
 const card = id => DECK.find(value => value.id === id);
@@ -32,6 +32,27 @@ for (const value of DECK) {
 }
 assert.throws(() => getConnectionProfile('missing'), /actual_card/u);
 assert.throws(() => getConnectionProfile('__proto__'), /actual_card/u);
+
+// The second role describes present conditions around the question. It must
+// not reactivate the old future-position prose or repeat the first role.
+const currentPositions = new Set();
+for (const value of DECK) {
+  const firstPosition = getReading(value, 'overall', 0).positionMeaning;
+  const currentPosition = getReading(value, 'overall', 1).positionMeaning;
+  assert.notEqual(currentPosition, firstPosition, `${value.id}: present conditions differ from the question's inner background`);
+  assert.ok(splitSummarySentences(currentPosition).length >= 2, `${value.id}: a complete current-condition explanation`);
+  assert.doesNotMatch(currentPosition, /앞으로|기회가 (?:오면|온다면)|때가 (?:오면|온다면)|반드시\s*(성공|재회|합격)|상대는 (?:이미|분명히)/u,
+    `${value.id}: no future-position forecast or unreported event presented as a known fact`);
+  currentPositions.add(currentPosition);
+}
+assert.equal(currentPositions.size, 78, 'all actual cards have their own current-condition passage');
+for (const [id, focus] of [
+  ['emperor', /역할과 결정권|누가 무엇을 맡았는지/u],
+  ['sun', /성과와 솔직한 반응|함께 기뻐할 여유/u],
+  ['swords_nine', /기한이나 받은 요구|확인할 사실과 도움/u],
+  ['cups_queen', /들어 줄 사람과 자리|이야기하는 사람과 듣는 사람/u]
+]) assert.match(getReading(card(id), 'overall', 1).positionMeaning, focus,
+  `${id}: the reading gives a concrete present condition, not merely another wish or feeling`);
 
 // A personal reading must have a complete, card-specific explanation, not just
 // a substituted name or a generic instruction selected by a shared card group.
@@ -139,27 +160,30 @@ for (const [key, passage] of Object.entries(PERSON_PAIR_READINGS)) {
   const parts = key.split(':');
   const ids = parts.slice(0, 2);
   assert.ok(parts.length === 2 || parts.length === 3);
-  if (parts[2]) assert.ok(['overall', 'love', 'money', 'work'].includes(parts[2]));
+  const topics = ['overall', 'love', 'money', 'work'];
+  const selectedContext = PERSONAL_CONTEXTS.find(value => value.id === parts[2]);
+  if (parts[2]) assert.ok(selectedContext || topics.includes(parts[2]), `${key}: the scope names an actual situation or topic`);
   assert.notEqual(ids[0], ids[1]);
   assert.ok(ids.every(id => Object.hasOwn(CARD_PERSON_STORIES, id)), `${key}: authored pairs use real cards`);
   const third = DECK.find(value => !ids.includes(value.id));
-  const paired = buildPersonNarrative({ cards: [...ids.map(card), third], topicId: parts[2] || 'work', names: sameNames });
+  const paired = buildPersonNarrative({ cards: [...ids.map(card), third],
+    topicId: selectedContext?.topicId || parts[2] || 'work', context: selectedContext, names: sameNames });
   assert.equal(paired.evidence.authoredPair, true);
   assert.ok(paired.paragraphs[1].includes(passage), `${key}: the full authored contrast participates in the actual reading`);
-  if (parts[2]) for (const otherTopic of ['overall', 'love', 'money', 'work'].filter(topic => topic !== parts[2])) {
+  if (parts[2]) for (const otherTopic of topics.filter(topic => selectedContext || topic !== parts[2])) {
     const unrelated = buildPersonNarrative({ cards: [...ids.map(card), third], topicId: otherTopic, names: sameNames });
-    assert.ok(!unrelated.paragraphs.join(' ').includes(passage), `${key}: topic-specific pair prose never leaks into ${otherTopic}`);
+    assert.ok(!unrelated.paragraphs.join(' ').includes(passage), `${key}: scoped pair prose never leaks into an unmatched ${otherTopic} reading`);
   }
 }
 const spendingCards = ['devil', 'pentacles_four', 'temperance'].map(card);
-const spending = buildPersonNarrative({ cards: spendingCards, topicId: 'money' });
+const spendingContext = getPersonalContext('money', 'money-spending');
+const spending = buildPersonNarrative({ cards: spendingCards, context: spendingContext });
 const affection = buildPersonNarrative({ cards: spendingCards, topicId: 'love' });
-assert.ok(spending.paragraphs[1].includes(PERSON_PAIR_READINGS['devil:pentacles_four:money']));
-assert.ok(!affection.paragraphs[1].includes(PERSON_PAIR_READINGS['devil:pentacles_four:money']),
+assert.ok(spending.paragraphs[1].includes(PERSON_PAIR_READINGS['devil:pentacles_four:money-spending']));
+assert.ok(!affection.paragraphs[1].includes(PERSON_PAIR_READINGS['devil:pentacles_four:money-spending']),
   'a spending-specific conflict is never inserted into a relationship reading');
 assert.ok(!spending.paragraphs.join(' ').includes('두 카드의 장점은 서로 부족한 부분을 채워 줘'),
   'matching advice categories never imply two harmful defensive habits should reinforce each other');
-const spendingContext = getPersonalContext('money', 'money-spending');
 const specificSpending = buildPersonNarrative({ cards: spendingCards, context: spendingContext, names: sameNames });
 for (const field of ['longing', 'defense', 'cost']) {
   assert.ok(!specificSpending.paragraphs.join(' ').includes(getPersonStory('temperance')[field]),

@@ -1,5 +1,5 @@
-import { getPersonStory } from './person-stories.js?v=20261114-tarot-review2';
-import { PERSON_PAIR_READINGS } from './person-pair-readings.js?v=20261114-tarot-review2';
+import { getPersonStory } from './person-stories.js?v=20261114-tarot-review3';
+import { PERSON_PAIR_READINGS } from './person-pair-readings.js?v=20261114-tarot-review3';
 import { getConnectionProfile } from './connection-profiles.js?v=20261114-tarot-review2';
 import { getCardInterpretation, withParticle } from './interpretation-engine.js?v=20261114-tarot-review2';
 import { splitSummarySentences, summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
@@ -33,11 +33,6 @@ function pairReason(left, right) {
   return 'different-emphasis';
 }
 
-const EMPHASIS = Object.freeze({
-  choice: '네 뜻으로 선택할 여지', limits: '지킬 범위와 책임', practice: '직접 해 보는 행동',
-  review: '경험과 현실을 다시 살피는 일', clarity: '직접 확인한 사실', support: '함께 이어 갈 방법',
-  pause: '서두르지 않을 여유', acceptance: '이미 얻거나 끝낸 것을 인정하는 일'
-});
 const phrase = (value, particle) => withParticle(`‘${value}’`, particle);
 
 // These are editorial comparisons of the actual meanings, not additional
@@ -50,7 +45,7 @@ function commonPair(left, right, reason) {
     return `${leftOffer} ${phrase(right.offer, '은')} 서로 다른 속도를 짚어. 바로 움직일 부분과 더 살필 부분을 나눠야 두 태도를 무리 없이 쓸 수 있어.`;
   }
   if (reason === 'shared-emphasis') {
-    return `${leftOffer} ${phrase(right.offer, '은')} 모두 ${EMPHASIS[left.give]}에 마음을 두는 조합이야. 같은 데 힘을 쏟는 만큼, 다른 조건을 놓치고 있지는 않은지도 함께 살펴봐.`;
+    return `${leftOffer} ${rightOffer} 함께 살리는 조합이야. 두 태도에 힘을 모으되, 선택에 필요한 다른 조건도 함께 살펴보렴.`;
   }
   if (reason === 'right-supports-left') {
     return `${phrase(left.offer, '을')} 살릴 때 ${phrase(right.offer, '이')} 확인할 기준을 더해 줘. ${phrase(left.excess, '이')} 나타나는지 살피는 데 그 기준을 써 보렴.`;
@@ -64,11 +59,19 @@ function commonPair(left, right, reason) {
   return `${leftOffer} ${rightOffer} 함께 놓고 선택을 살펴보는 조합이야. 마음을 쓰는 이유와 지금 확인할 조건이 다를 수 있으니, 한 가지 기준만으로 결론을 정하지 마.`;
 }
 
-function pairReading(cards, profiles, topicId, reason) {
+function pairReading(cards, profiles, topicId, reason, contextId) {
   const key = `${cards[0].id}:${cards[1].id}`;
-  if (Object.hasOwn(PERSON_PAIR_READINGS, `${key}:${topicId}`)) return PERSON_PAIR_READINGS[`${key}:${topicId}`];
-  if (Object.hasOwn(PERSON_PAIR_READINGS, key)) return PERSON_PAIR_READINGS[key];
-  return commonPair(profiles[0], profiles[1], reason);
+  // Select the narrowest authored scope first. Without a matching situation,
+  // a purchase story must not become the explanation of saving or studying.
+  const candidates = [
+    ...(contextId?.startsWith(`${topicId}-`) ? [{ key: `${key}:${contextId}`, scope: 'context' }] : []),
+    { key: `${key}:${topicId}`, scope: 'topic' },
+    { key, scope: 'general' }
+  ];
+  const selected = candidates.find(entry => Object.hasOwn(PERSON_PAIR_READINGS, entry.key));
+  return selected
+    ? { text: PERSON_PAIR_READINGS[selected.key], key: selected.key, scope: selected.scope }
+    : { text: commonPair(profiles[0], profiles[1], reason), key: null, scope: 'common' };
 }
 
 function connectChoice(profiles) {
@@ -106,7 +109,8 @@ export function buildPersonNarrative({ cards, topicId = 'overall', context, name
   const present = context?.cards?.[cards[1].id];
   const presentMeaning = present ? first(present) : first(right[actualTopic]);
   const reason = pairReason(profiles[0], profiles[1]);
-  const pair = pairReading(cards, profiles, actualTopic, reason);
+  const pairSelection = pairReading(cards, profiles, actualTopic, reason, context?.id);
+  const pair = pairSelection.text;
   const concern = context?.concern && !context?.id ? `고민: ${context.concern}. ` : '';
   const limit = SITUATION_BOUNDARIES[context?.id]
     || (context?.boundary ? `지킬 점: ${context.boundary}.` : '');
@@ -114,8 +118,6 @@ export function buildPersonNarrative({ cards, topicId = 'overall', context, name
   const lastSentences = lastAdvice ? splitSummarySentences(lastAdvice) : [];
   const lastMeaning = lastAdvice ? lastSentences[0] : last[actualTopic];
   const lastAction = lastSentences.length > 1 ? lastSentences.slice(1).join(' ') : '';
-  const hasPair = [`${cards[0].id}:${cards[1].id}`, `${cards[0].id}:${cards[1].id}:${actualTopic}`]
-    .some(key => Object.hasOwn(PERSON_PAIR_READINGS, key));
   const choiceLink = connectChoice(profiles);
   const paragraphs = [
     `첫 번째 ‘${labels[0]}’ 카드의 뜻부터 짚어 줄게. ${first(coreMeanings[0])} ${opening} ${concern}`.trim(),
@@ -133,7 +135,9 @@ export function buildPersonNarrative({ cards, topicId = 'overall', context, name
     evidence: {
       cards: cards.map(card => card.id), topicId: actualTopic, contextId: context?.id || null,
       pair: reason, concern: context?.concern || null, boundary: context?.boundary || null,
-      authoredPair: hasPair,
+      authoredPair: pairSelection.key !== null,
+      authoredPairKey: pairSelection.key,
+      authoredPairScope: pairSelection.scope,
       thirdRespondsTo: supports.map(index => cards[index].id),
       lenses: profiles.map((profile, index) => ({ cardId: cards[index].id, offer: profile.offer, excess: profile.excess, route: profile.route })),
       method: 'authored-card-meanings-topic-passages-and-editorial-ordered-relationships'
