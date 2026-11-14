@@ -40,6 +40,7 @@ function fixtureBoot() {
   window.OjjudaReviewInbox = { mount: options => mount('review', options) };
   window.OjjudaAdminActivity = { mount: options => mount('activity', options) };
   window.OjjudaAdminFortunePurchases = { mount: options => mount('fortune-purchases', options) };
+  window.OjjudaAdminDrinkingPrompts = { mount: options => mount('drinking-prompts', options) };
   window.OjjudaPhotoStageAdmin = { mount: options => mount('photo-stages', options) };
   window.OjjudaAdminFriendMessages = { mount: options => mount('messages', options) };
   window.OjjudaAdminAssetLibrary = { mount: options => mount('asset-library', options) };
@@ -288,7 +289,17 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.deepEqual(await current(), { area: 'payment', tab: 'fortune-purchases' });
     assert.equal(await page.evaluate(() => fixture.controllers['fortune-purchases'] !== previousFortuneController), true);
     await area('content');
-    assert.deepEqual(await page.locator('.adm-menu-group[data-group="content"] .adm-menu-link').allTextContents(), ['카드','쪽지 관리','그룹 관리','포토땅따먹기','위치 지도','자료 모아보기']);
+    assert.deepEqual(await page.locator('.adm-menu-group[data-group="content"] .adm-menu-link').allTextContents(), ['카드','쪽지 관리','그룹 관리','포토땅따먹기','술게임 질문·명령 검토','위치 지도','자료 모아보기']);
+    await page.locator('.adm-menu-group[data-group="content"] .adm-menu-link[data-area="content"][data-v="drinking-prompts"]').click();
+    await mounted('drinking-prompts');
+    assert.deepEqual(await current(), { area: 'content', tab: 'drinking-prompts' });
+    assert.equal(await page.evaluate(() => fixture.options['drinking-prompts'].getAdminId()), 'synthetic-admin');
+    assert.equal(await page.evaluate(() => fixture.options['drinking-prompts'].isCurrent()), true);
+    assert.equal(await page.locator('.adm-navigation [aria-current="page"]').first().textContent(), '술게임 질문·명령 검토');
+    await page.evaluate(() => { window.previousDrinkingController = fixture.controllers['drinking-prompts']; });
+    await tab('cards');
+    assert.equal(await page.evaluate(() => previousDrinkingController.destroyed), true, 'leaving prompt review releases its controller');
+    assert.equal(await page.evaluate(() => fixture.options['drinking-prompts'].isCurrent()), false, 'detached prompt review cannot consume stale results');
     await page.locator('[data-admin-folder="members"]').click();
     assert.equal(await page.getByRole('link',{name:'상품권 등록'}).getAttribute('href'),'/admin/rewards.html');
     await tab('messages'); await assertRefreshPreservesHost('messages');
@@ -302,6 +313,13 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.evaluate(() => fixture.options.trash.category), 'cards');
     assert.deepEqual(await page.locator('.adm-menu-group[data-group="system"] [data-area="trash"].adm-menu-link').allTextContents(),['휴지통 전체','삭제한 카드','삭제한 쪽지','기타 보관']);
     assert.equal(await page.locator('[data-act="adm-content-kind"]').count(), 0);
+
+    await page.goto('https://fixture.test/world.html?admin=drinking-prompts'); await loaded(); await mounted('drinking-prompts');
+    assert.deepEqual(await current(), { area: 'content', tab: 'drinking-prompts' }, 'direct prompt review URLs resolve to content management');
+    assert.equal(await page.evaluate(() => fixture.options['drinking-prompts'].container.id), 'world-admin-drinking-prompts');
+    await page.evaluate(() => { worldTest.auth.isAdmin = false; });
+    assert.equal(await page.evaluate(() => fixture.options['drinking-prompts'].getAdminId()), null, 'revoked admin access is not exposed to the module');
+    assert.equal(await page.evaluate(() => fixture.options['drinking-prompts'].isCurrent()), false, 'revoked admin access invalidates prompt review results');
 
     await page.goto('https://fixture.test/world.html?admin=fortune-purchases'); await loaded(); await mounted('fortune-purchases');
     assert.deepEqual(await current(), { area: 'payment', tab: 'fortune-purchases' }, 'direct purchase history URLs resolve to the payment group');
