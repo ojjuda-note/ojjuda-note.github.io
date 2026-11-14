@@ -76,6 +76,7 @@ jobs:
           node --test --test-concurrency=1
           tests/drinking-connection.test.cjs
           tests/drinking-access.test.cjs
+          tests/drinking-entry-refresh.test.cjs
           tests/drinking-room-db.test.cjs
           tests/drinking-room-ui.test.cjs
           tests/drinking-content-rebuild.test.cjs

@@ -3,6 +3,8 @@
 const $=selector=>document.querySelector(selector);
 const memberStore='oj.party.'+document.getElementById('access-content').dataset.member+'.';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261114-croc-design1';
+let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
 const crocGum=[
@@ -176,6 +178,16 @@ function shell(body,scene=false){
   window.DrinkingGameScreen?.local(game.id,round,app);
 }
 function intro(){const enough=players.length>=game.min;
+  if(game.id==='croc'){
+    const steps=[['차례대로','휴대폰을 돌려가며'],['하나씩','남은 이빨을 눌러요'],['딱!','입이 닫히면 당첨']];
+    shell('<div class="croc-kicker">01 · 운과 감각</div><h2>아픈 이빨은<br>딱 하나.</h2>'+
+      '<p>하나씩 눌러 보세요.<br>악어가 입을 닫으면, 그 차례가 당첨!</p>'+
+      '<ol class="croc-rules" aria-label="게임 순서">'+steps.map(([title,description],i)=>
+        '<li><span aria-hidden="true">0'+(i+1)+'</span><strong>'+title+'</strong><small>'+description+'</small></li>').join('')+'</ol>'+
+      actions(enough?btn('게임 시작하기','start'):'<a class="quiet" href="#participants">참가자 설정하기</a>')+
+      '<div class="croc-meta">2~12명 · 한 대로 함께</div>',true);
+    return;
+  }
   if(game.id==='bomb')return bombSetup();
   if(game.id==='stopwatch')return watchSetup();
   if(game.id==='truth'){
@@ -197,6 +209,14 @@ function route(){let id=location.hash.slice(1);if(id==='jenga'){
   }
   game=games.find(g=>g.id===id)||null;game?intro():renderMenu();scrollTo(0,0);if(game)app.focus({preventScroll:true});else if(lastMenuFocus){app.querySelector('[data-action="open"][data-value="'+lastMenuFocus+'"]')?.focus({preventScroll:true})}}
 function go(id){if(id===location.hash.slice(1))route();else location.hash=id}
+async function openLocal(id){
+  const refresh=window.OjjudaDrinkingEntry;
+  if(!refresh)return go(id);
+  const request=++entryRequest,from=location.href;
+  const moved=await refresh.navigateLocal(id,entryRevision);
+  if(moved||request!==entryRequest||location.href!==from||app.querySelector('.play-shell')||document.querySelector('dialog[open]'))return;
+  go(id);
+}
 function end(title,desc,sound='result'){
   stopClock();round.phase='done';if(sound)fx.play(sound);
   shell('<span class="turn-tag">라운드 결과</span><h2>'+esc(title)+'</h2><p>'+esc(desc)+'</p>'+actions(btn('한 판 더',game.id==='bomb'?'bomb-setup':game.id==='truth'?'truth-setup':'start'),btn('게임 목록','menu','quiet')),true)
@@ -263,9 +283,9 @@ function croc(snap=false){
       '<span class="tooth-crown">'+(i+1)+'</span></button>';
   }).join('');
   const remaining='남은 이빨 '+(CROC_TOOTH_COUNT-r.pressed.size)+'개';
-  const safe=r.lastSafe!=null?(r.lastSafe+1)+'번은 안전! · ':'';
+  const safe=r.lastSafe!=null?(r.lastSafe+1)+'번은 통과! · ':'';
   const hint=snap?(r.trap+1)+'번이 아픈 이빨!':safe+remaining;
-  shell(tag(r.turn)+'<h2>'+(snap?'딱! 악어한테 물렸어요':'이빨 하나를 콕!')+'</h2><p class="croc-hint" role="status">'+hint+'</p>'+
+  shell(tag(r.turn)+'<h2>'+(snap?'딱! 악어한테 물렸어요':'이빨 하나를 골라요')+'</h2><p class="croc-hint" role="status">'+hint+'</p>'+
     (snap?actions(btn('확인','ack-bite')):'')+
     '<div class="croc-toy'+(snap?' snapped':'')+'">'+art('croc-board','croc-board')+
     '<div class="teeth">'+teeth+'</div></div>');
@@ -873,7 +893,7 @@ $('#audio-check').onchange=e=>fx.change('sound',e.target.checked);$('#haptic-che
 function handle(action,value){
   const r=round;
   if(action==='filter'){filter=value;fx.play('tap');renderMenu();app.querySelector('.chip[aria-pressed=true]').focus({preventScroll:true});return}
-  if(action==='random'||action==='open'){const eligible=games.filter(g=>g.min<=players.length);const id=action==='random'?eligible[rand(eligible.length)].id:value;lastMenuFocus=id;fx.play(id==='croc'?'tooth':'tap');return go(id)}
+  if(action==='random'||action==='open'){const eligible=games.filter(g=>g.min<=players.length);const id=action==='random'?eligible[rand(eligible.length)].id:value;lastMenuFocus=id;fx.play(id==='croc'?'tooth':'tap');return openLocal(id)}
   if(game?.id==='bomb'){
     if(action==='bomb-setup'&&(r?.phase==='done'||r?.phase==='bomb-ready')){cleanup();return bombSetup()}
     if(!r&&(action==='random-bomb-time'||action==='confirm-bomb-time')){
