@@ -326,7 +326,7 @@ test('every product keeps its personal interpretations and practical suggestions
   const expected=buildDetailedReading(h.state.starts[0].chart,fortune);
   for (const topic of ['lifelong','annual','monthly','all']) {
     if(topic!=='lifelong') {h.pickReport(topic,2026);h.$('open-product').click();await h.ready(topic,2026);}
-    const first=h.$('report-content').querySelector(':scope > [data-reader-paged] > :not(.reading-pager)');
+    const first=h.$('report-content').querySelector(':scope > [data-reader-paged] > [data-reader-branch]');
     assert.equal(first.id,topic==='all'?'reading-all':topic==='monthly'?'reading-months':`reading-${topic}`,'the requested reading leads the product');
     assertNoCalculationUI(h);assertReadingScores(h.$('report-content'));
     const overviews=topic==='all'?[expected.reader.lifelong,expected.reader.annual,...expected.reader.months]:topic==='monthly'?expected.reader.months:[expected.reader[topic]];

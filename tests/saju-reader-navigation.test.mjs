@@ -173,7 +173,27 @@ test('the compact picker keeps every purchased paragraph while exposing only the
     const h=mount(topic);
     try {
       const before=h.paragraphs();
-      assert.equal(h.host.firstElementChild.className,'reading-pager');
+      const overview=h.host.firstElementChild;
+      assert.equal(overview.id,'saju-overview');
+      assert.equal(h.host.dataset.mapView,'overview');
+      const firstMonth=fortune.months.find(item=>item.isCurrent)?.month||1;
+      const source=topic==='annual'?reading.reader.annual:topic==='monthly'?reading.reader.months.find(item=>item.month===firstMonth):reading.personPortrait;
+      assert.equal(overview.querySelector('.map-lead').textContent,source.summaryLines[0]);
+      assert.equal(overview.querySelector('.map-action p').textContent,source.summaryLines[1]);
+      const links=[...overview.querySelectorAll('.map-topic')];
+      assert.equal(links.length,4);
+      for(const link of links) {
+        link.addEventListener('click',event=>event.preventDefault());
+        link.click();
+        assert.equal(h.host.dataset.mapView,'detail');
+        assert.equal(h.current().id,link.hash.slice(1));
+        assert.equal(link.querySelector('.map-preview').textContent,h.current().querySelector('.saju-summary-line').textContent);
+        h.host.querySelector('.map-return').click();
+        assert.equal(h.host.dataset.mapView,'overview');
+      }
+      const main=overview.querySelector('.map-deep-link');
+      main.addEventListener('click',event=>event.preventDefault());
+      main.click();
       assertNoEvidence(h);
       const coverage=h.host.querySelector('#reading-coverage');
       assert.ok(visible(coverage),'product scope stays visible when calculation panels are removed');

@@ -1,3 +1,4 @@
+import {connectReadingMap} from './reading-map.mjs?v=20261115-saju-reading-map1';
 import {appendReadingDetail,readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
 import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
 import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
@@ -96,7 +97,7 @@ export function createCompatibilityPeoplePages(value,{names=[],appendParagraphs}
 }
 
 /** Share the visible domain/item navigation with the ordinary saju reading. */
-export function createCompatibilityPager(section,pages) {
+export function createCompatibilityPager(section,pages,map) {
   const navigation=node('nav','reading-pager compatibility-reading-pager');
   navigation.id='compatibility-reading-pager';navigation.tabIndex=-1;
   navigation.setAttribute('aria-label','궁합 읽을 내용');
@@ -144,9 +145,10 @@ export function createCompatibilityPager(section,pages) {
     event.preventDefault();picker.focus({open:true});
     navigation.scrollIntoView({block:'start',behavior:document.documentElement.dataset.reducedMotion==='true'?'instant':'smooth'});
   });
-  const readable=pages.filter(page=>!page.support);let current,lastReading,motion=null;
+  const readable=pages.filter(page=>!page.support);let current,lastReading,motion=null,mapView=null;
   function show(page,{move=false}={}) {
     if(!page)return false;
+    mapView?.revealDetail();
     let transition=null;
     if(move&&current&&current!==page)transition=motion?.prepare(Math.sign(pages.indexOf(page)-pages.indexOf(current)));
     else motion?.cancel();
@@ -174,10 +176,11 @@ export function createCompatibilityPager(section,pages) {
   next.addEventListener('click',()=>show(readable[readable.indexOf(current)+1],{move:true}));
   section.querySelector(':scope > .report-section-heading').after(navigation);
   show(readable.find(page=>page.element.id==='compatibility-synthesis')||readable[0]);
+  mapView=connectReadingMap(section,map);
   motion=createReadingMotion(section,{getCurrentPage:()=>current?.element});
   attachReadingSwipe(section,{previous,next,motion});
   return {reveal(target) {
-    if(navigation.contains(target))return false;
+    if(navigation.contains(target)||mapView.contains(target))return false;
     let page;
     for(let element=target;element&&element!==section;element=element.parentElement) {
       page=pages.find(item=>item.element===element);if(page)break;

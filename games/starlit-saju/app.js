@@ -453,7 +453,7 @@ async function prepareDetailedReading(chart,target,person=currentPerson||readPer
   detailModulesPromise ||= Promise.all([
     import('./fortune-data.mjs?v=20261114-saju-correction1'),
     import('./readings.mjs?v=20261114-saju-final-review2'),
-    import('./report-view.mjs?v=20261114-saju-almanac1'),
+    import('./report-view.mjs?v=20261115-saju-reading-map1'),
     import('./daeun.mjs?v=20261114-saju-correction1'),
     zodiacModule()
   ]).catch(error=>{detailModulesPromise=null;throw error;});
@@ -512,7 +512,7 @@ async function refreshReadingTime(chart,generation) {
   const step=hadFocus?[...host.querySelectorAll('.reading-pager-step')].indexOf(focused):-1;
   const optionsOpen=$('other-reading-options').open;
   const scroll={left:window.scrollX,top:window.scrollY,behavior:'instant'};
-  prepared.restorePage(host.querySelector('.reading-page-select')?.value);
+  if(host.firstElementChild?.dataset.mapView==='detail')prepared.restorePage(host.querySelector('.reading-page-select')?.value);
   commitDetailedReading(chart,prepared,detail.access);
   $('other-reading-options').open=optionsOpen;
   if (hadFocus) {
@@ -613,7 +613,7 @@ async function openSelectedProduct() {
     currentAccess={chart,owner:payment.user,status:recordReceipt(status,receipt,target)};
     commitDetailedReading(chart,prepared,receipt);
     if (receipt.replayed) toast('구매한 항목을 추가 차감 없이 다시 펼쳤어요.');
-    $('detailed-title').focus({preventScroll:true});
+    $('report-content').querySelector('.map-title')?.focus();
   } catch (error) {
     if (generation!==reportGeneration || currentReading!==chart || $('result').hidden) return;
     if (!inspected) currentAccess=null;
