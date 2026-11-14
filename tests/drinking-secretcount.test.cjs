@@ -46,25 +46,34 @@ test('four seats enforce the secret range, private presses, turn limits, retries
 });
 
 test('one phone hides both counts, uses actual participant limits and ends on the triggering press',async t=>{
+  const pulses=[];
   const ui=await screen({url:'/games/drinking/local/#secretcount',prepare(w){
+    w.navigator.vibrate=ms=>{pulses.push(ms);return true;};
     w.scrollTo=()=>{};w.localStorage.setItem('oj.party.member-a.players',JSON.stringify(['하나','두리','세나','다온']));
   }});t.after(()=>ui.close());
   const manual=ui.find('[value=manual]');manual.click();
   const input=ui.find('.sc-field input');
-  assert.equal(input.placeholder,'5~36');input.value='4';ui.submit('.sc-setup');assert.equal(input.validity.valid,false);
+  assert.equal(input.type,'range');assert.equal(input.min,'5');assert.equal(input.max,'36');
+  input.value='36';input.dispatchEvent(new ui.w.Event('input'));assert.equal(ui.find('.sc-field output').value,'36');
   input.value='5';input.dispatchEvent(new ui.w.Event('input'));ui.submit('.sc-setup');
   const pane=()=>ui.find('.play-body');
   assert.equal(ui.find('[data-sc-pass]').disabled,true);
-  for(let i=0;i<3;i++){ui.click('[data-sc-press]');assert.equal(pane().textContent.trim(),'턴 넘기기');}
+  for(let i=0;i<3;i++){ui.click('[data-sc-press]');assert.equal(pane().textContent.trim(),'1번 · 하나님 차례턴 넘기기');}
   assert.equal(ui.find('[data-sc-press]').disabled,true);
+  assert.ok(ui.find('[data-sc-press]').hasAttribute('data-sc-held'));
+  assert.equal(pulses.filter(v=>v===35).length,3);
   ui.click('[data-sc-pass]');assert.equal(ui.find('[data-sc-pass]').disabled,true);
+  assert.equal(ui.find('.sc-turn').textContent,'2번 · 두리님 차례');
+  assert.ok(!ui.find('[data-sc-press]').hasAttribute('data-sc-held'));
   ui.click('[data-sc-press]');ui.click('[data-sc-press]');
+  await ui.advance(200);
   assert.ok(pane().textContent.includes('두리님 당첨'));assert.equal(ui.find('[data-sc-press]'),null);
   ui.click('[data-action=start]');assert.ok(ui.find('.sc-setup'));assert.deepEqual(ui.errors,[]);
 });
 
 test('rapid taps queue in order before handing off without displaying a counter',async t=>{
-  const ui=await screen({url:'/games/secretcount/',scripts:['/games/secretcount/controls.js','/games/secretcount/room.js']});
+  const pulses=[];
+  const ui=await screen({url:'/games/secretcount/',prepare:w=>{w.navigator.vibrate=ms=>{pulses.push(ms);return true;};},scripts:['/games/secretcount/controls.js','/games/secretcount/room.js']});
   t.after(()=>ui.close());
   const feature=ui.w.PartyLiveGame,view=ui.find('#view'),events=[],pending=[];
   function display(turn,current,used){
@@ -75,7 +84,8 @@ test('rapid taps queue in order before handing off without displaying a counter'
   display(0,0,0);
   for(let i=0;i<3;i++)ui.click('[data-sc-press]');
   assert.equal(ui.find('[data-sc-press]').disabled,true);ui.click('[data-sc-pass]');
-  assert.equal(ui.find('#game').textContent,'턴 넘기기');
+  assert.equal(ui.find('#game').textContent,'1번 · 가님 차례턴 넘기기');
+  assert.deepEqual(pulses,[35,35,35]);
   for(let i=1;i<=3;i++){
     await until(()=>pending.length===1);const release=pending.shift();display(0,0,i);release(true);
   }
@@ -83,4 +93,8 @@ test('rapid taps queue in order before handing off without displaying a counter'
   assert.deepEqual(events,['sc_press','sc_press','sc_press','sc_pass']);
   assert.ok(ui.find('.sc-closed'));assert.equal(ui.find('[data-sc-press]').disabled,true);
   assert.equal(ui.find('[data-sc-pass]'),null);
+  assert.equal(ui.find('.sc-turn').textContent,'2번 · 나님 차례');
+  ui.w.localStorage.setItem('oj.party.vibration','off');
+  display(2,0,0);ui.click('[data-sc-press]');assert.equal(pulses.length,3);
+  await until(()=>pending.length===1);pending.shift()(true);
 });

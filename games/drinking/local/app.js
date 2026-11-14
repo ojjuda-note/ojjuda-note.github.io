@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const memberStore='oj.party.'+document.getElementById('access-content').dataset.member+'.';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-secretcount1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-secretcount-turn2';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -305,12 +305,19 @@ function secretSetup(){
 }
 function secretPlay(){
   const r=round;
-  shell(window.SecretCountControls.controls(true,r.used));
+  const controls=window.SecretCountControls;
+  shell(controls.controls(true,r.used,r.turn,name(r.turn)));
   const press=app.querySelector('[data-sc-press]'),pass=app.querySelector('[data-sc-pass]');
   press.onclick=()=>{
     if(round!==r||r.phase!=='press'||r.used>=3)return;
-    r.total++;r.used++;fx.play('tap');
-    if(r.total===r.target)return end(players[r.turn]+'님 당첨!','비밀 숫자는 '+r.target+'였어요.');
+    const until=controls.pressFeedback(press);
+    r.total++;r.used++;
+    press.toggleAttribute('data-sc-held',r.used===3);
+    if(r.total===r.target){
+      r.phase='finishing';press.disabled=true;pass.disabled=true;
+      setTimeout(()=>{if(round===r)end(players[r.turn]+'님 당첨!','비밀 숫자는 '+r.target+'였어요.');},until-performance.now());
+      return;
+    }
     press.disabled=r.used===3;pass.disabled=false;
   };
   pass.onclick=()=>{
