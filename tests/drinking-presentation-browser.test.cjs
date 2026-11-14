@@ -641,3 +641,53 @@ test('a long native king result opens after consent and stays readable on every 
   assert.equal(state.phase,'done');
   assert.deepEqual(f.errors,[]);
 });
+
+test('the secret count button has a private total and a closed lid for the waiting seat', {timeout:90000}, async t=>{
+  const browser=await chromium.launch(launchOptions);
+  t.after(()=>browser.close());
+  for(const multi of [false,true]){
+    let game={phase:'setup'};
+    let revision=1;
+    const f=await browserSession(browser,{actor:'secret-host',localPlayers:['가','나','다','라'],rpc:(name,args)=>{
+      if(name!=='party_live_multiplayer')return {};
+      if(args.p_action==='sc_start'){assert.equal(args.p_options.target,5);game={phase:'press',current:0,turn:0,used:0};revision++;}
+      if(args.p_action==='sc_press'){game={...game,used:game.used+1};revision++;}
+      if(args.p_action==='sc_pass'){game={phase:'press',current:1,turn:1};revision++;}
+      return {code:'SC1234',revision,me:0,round:1,phase:game.phase,game,players:['가','나','다','라'],capacity:4,title:'시크릿 카운트'};
+    }});
+    const p=f.page;
+    await p.goto(origin+(multi?'/games/secretcount/?room=SC1234':'/games/drinking/local/#secretcount'));
+    await dismissGuide(p);
+    const form=p.locator('.sc-setup');
+    await form.locator('label').filter({hasText:'직접 입력'}).click();
+    await form.locator('[name=target]').fill('5');
+    await form.locator('[type=submit]').click();
+    const hit=p.locator('[data-sc-press]'),pass=p.locator('[data-sc-pass]');
+    await hit.waitFor({state:'visible'});
+    await p.waitForFunction(()=>document.body.dataset.dpPhase==='press');
+    for(const viewport of [viewports[0],viewports[1],viewports[3],viewports[2]]){
+      await p.setViewportSize(viewport);await painted(p);
+      for(const control of [hit,pass]){
+        const r=await control.boundingBox();
+        assert.ok(r&&r.width>=44&&r.height>=36&&r.x>=-1&&r.y>=-1&&r.x+r.width<=viewport.width+1&&r.y+r.height<=viewport.height+1,'buttons fit '+JSON.stringify({multi,viewport,r}));
+      }
+      assert.equal((await p.locator('#access-content').innerText()).trim(),'턴 넘기기');
+    }
+    await p.setViewportSize(viewports[0]);
+    for(let i=0;i<3;i++)await hit.click();
+    assert.equal(await hit.isDisabled(),true);
+    assert.equal((await p.locator('#access-content').innerText()).trim(),'턴 넘기기');
+    await screenshot(p,'secretcount-open-'+(multi?'multi':'local'));
+    await pass.click();
+    if(multi){
+      await p.locator('.sc-closed').waitFor();
+      assert.equal(await hit.isDisabled(),true);assert.equal(await pass.count(),0);
+      await screenshot(p,'secretcount-closed-multi');
+    }else{
+      await hit.click();await hit.click();
+      await p.getByRole('heading',{name:'나님 당첨!'}).first().waitFor({state:'attached'});
+    }
+    assert.deepEqual(f.errors,[]);
+    await f.context.close();
+  }
+});

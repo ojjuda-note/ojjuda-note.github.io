@@ -13,6 +13,7 @@
     ['mission','한 명만 다른 미션','🎬','누구의 몸짓이 다를까?','#efd6c9'],
     ['fingers','손병호 게임','🖐️','해당하면 손가락 하나 접기','#f0dbc2'],
     ['imagevote','이미지 게임','🪞','이 질문에 딱 맞는 사람은?','#dbe2f1'],
+    ['secretcount','시크릿 카운트','🔘','비밀 숫자에서 누르면 당첨','#d6e2db'],
     ['updown','업앤다운','🔢','숫자를 부르면 업 또는 다운','#dbe7ef']
   ].map(([id,name,icon,description,color]) => ({id,name,icon,description,color}));
 

@@ -19,6 +19,7 @@ on:
       - 'games/fingers/**'
       - 'games/imagevote/**'
       - 'games/updown/**'
+      - 'games/secretcount/**'
       - 'supabase/migrations/*drinking*'
       - 'supabase/migrations/*party*'
       - 'tests/drinking-*'
@@ -44,6 +45,7 @@ on:
       - 'games/fingers/**'
       - 'games/imagevote/**'
       - 'games/updown/**'
+      - 'games/secretcount/**'
       - 'supabase/migrations/*drinking*'
       - 'supabase/migrations/*party*'
       - 'tests/drinking-*'
@@ -74,6 +76,7 @@ jobs:
       - name: Verify room consistency and network recovery
         run: >-
           node --test --test-concurrency=1
+          tests/drinking-secretcount.test.cjs
           tests/drinking-connection.test.cjs
           tests/drinking-access.test.cjs
           tests/drinking-entry-refresh.test.cjs

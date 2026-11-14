@@ -6,7 +6,7 @@ const path = require('node:path');
 const test = require('node:test');
 const {JSDOM, VirtualConsole} = require('jsdom');
 const {screen, until, root} = require('./helpers/drinking-ui-fixture.cjs');
-const kinds = ['croc','bottle','bomb','stopwatch','liar','king','truth','initial','minority','mission','fingers','imagevote','updown'];
+const kinds = ['croc','bottle','bomb','stopwatch','liar','king','truth','initial','minority','mission','fingers','imagevote','updown','secretcount'];
 const delay = () => new Promise(resolve => setTimeout(resolve, 35));
 
 async function presentation({concealed = false, reducedMotion = false} = {}) {
@@ -45,7 +45,7 @@ async function presentation({concealed = false, reducedMotion = false} = {}) {
   };
 }
 
-test('each of the 13 games has its own guide, only on entry or an explicit help request', async t => {
+test('each of the 14 games has its own guide, only on entry or an explicit help request', async t => {
   const f=await presentation();t.after(()=>f.close());
   const guides=f.w.DrinkingGameGuides;
   assert.deepEqual(Object.keys(guides).sort(),[...kinds].sort());

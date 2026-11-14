@@ -3,7 +3,7 @@
   'use strict';
   if (window.DrinkingPresentation) return;
 
-  const kinds = new Set(['croc', 'bottle', 'bomb', 'stopwatch', 'liar', 'king', 'truth', 'initial', 'minority', 'mission', 'fingers', 'imagevote', 'updown']);
+  const kinds = new Set(['croc', 'bottle', 'bomb', 'stopwatch', 'liar', 'king', 'truth', 'initial', 'minority', 'mission', 'fingers', 'imagevote', 'updown','secretcount']);
   const seenResults = new Set();
   const focusable = 'button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
   const glassAsset = '/games/drinking/assets/result-glass-v2.webp?v=20261114-result-glass2';
