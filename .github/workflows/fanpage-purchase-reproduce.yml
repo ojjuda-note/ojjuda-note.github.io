@@ -1,0 +1,38 @@
+name: Fanpage purchase failure reproduction
+on:
+  push:
+    branches: ['fanpages/ci-source-audit-20261114']
+    paths: ['.github/workflows/fanpage-purchase-reproduce.yml']
+permissions:
+  contents: read
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: '41a3832331c11b12416aa4901c2ae0a02e569fcf'
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Print the unmodified failing assertion and its implementation
+        run: |
+          git rev-parse HEAD
+          git hash-object tests/admin-fortune-purchases.test.cjs admin/fortune-purchases.js tests/package.json
+          nl -ba tests/admin-fortune-purchases.test.cjs | head -140
+          node -p "JSON.stringify(require('./tests/package.json').scripts,null,2)"
+          grep -nE 'global filters|all request kinds|fortunePurchases|fortune-purchases|fromInput|dateFrom|filter.*(change|input)' admin/index.html admin/fortune-purchases.js tests/admin-fortune-purchases.test.cjs || true
+      - name: Install locked dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Run the exact purchase test without rewriting assertions
+        run: node --test tests/admin-fortune-purchases.test.cjs
+      - name: Replay preceding processes and original whole-unit command
+        run: npm --prefix tests run test:unit
+      - name: Record post-execution source to distinguish fixture mutations
+        if: always()
+        run: |
+          git diff --stat
+          git hash-object tests/admin-fortune-purchases.test.cjs admin/fortune-purchases.js tests/package.json
+          nl -ba tests/admin-fortune-purchases.test.cjs | head -140
