@@ -9,7 +9,7 @@ const root=path.join(__dirname,'..');
   w.__actor=actor;w.__adult=adult;w.__open=(kind,options)=>opened.push({kind,options});w.__notice=s=>notices.push(s);
   w.__client={rpc:async(name,args)=>{
    if(name==='arcade_room_service')return {data:{ok:true,rooms:[],mine:null,can_matgo:adult}};
-   if(name==='arcade_extra_rooms')return {data:await f.publicRpc(actor,name)};
+   if(name==='arcade_general_extra_rooms')return {data:await f.publicRpc(actor,name)};
    if(name==='community_game_monthly_leaders'){const result={};for(const game of args.p_games)result[game]=(await f.publicRpc(actor,'community_game_monthly_ranking',[game]))[0]||null;return {data:result};}
    throw Error(name);
   },functions:{invoke:async(name,{body})=>{assert.equal(name,'poker');const data=await f.call(actor,body);return {data,error:data.error?{context:{json:async()=>data}}:null};}}};
@@ -21,6 +21,16 @@ const root=path.join(__dirname,'..');
   return {w,find,click,opened,notices,refresh:()=>w.__rooms.controller.refresh()};
  }
  try{
+  // Exercise the shipped general lobby RPC, not its retired predecessor.
+  // This single-game fixture supplies empty neighbouring game feeds;
+  // poker room visibility and the complete production wrapper remain real SQL.
+  const migration=fs.readFileSync(path.join(root,'supabase/migrations/20261113173134_shared_drinking_room_and_game_handoff.sql'),'utf8');
+  const start=migration.indexOf('create function public.arcade_general_extra_rooms()');
+  assert.ok(start>=0,'shipped general lobby RPC is present');
+  await f.db.exec(`create schema ojjuda_bang_internal;create schema ojjuda_roulette_internal;
+    create function ojjuda_bang_internal.arcade_rooms() returns jsonb language sql as $$select '{"rooms":[]}'::jsonb$$;
+    create function ojjuda_roulette_internal.arcade_rooms() returns jsonb language sql as $$select '{"rooms":[]}'::jsonb$$;
+    grant usage on schema ojjuda_bang_internal,ojjuda_roulette_internal to authenticated;`+migration.slice(start));
   const a=world(f.users[0]),b=world(f.users[1]),minor=world(f.users[4],false);await pause();
   a.click('[data-arcade-action=create]');const form=a.find('#arcade-room-form');form.elements.kind.value='poker';form.elements.kind.dispatchEvent(new a.w.Event('change'));
   assert.deepEqual([...form.elements.capacity.options].map(x=>x.value),['2','3','4']);form.elements.title.value='포커 공개방';form.elements.capacity.value='4';form.dispatchEvent(new a.w.Event('submit',{bubbles:true,cancelable:true}));
