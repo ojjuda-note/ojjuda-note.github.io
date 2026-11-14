@@ -809,7 +809,7 @@
         { date: '2026-11-14', title: 'STEAL THE WIND 서울 월드투어', sub: '18:00 · 서울 KSPO DOME · BIGHIT MUSIC·HYBE 주최 · 온라인 생중계', href: 'https://weverse.io/txt/notice/39106' },
         { date: '2026-11-15', title: 'STEAL THE WIND 서울 월드투어', sub: '17:00 · 서울 KSPO DOME · BIGHIT MUSIC·HYBE 주최 · 온라인 생중계', href: 'https://weverse.io/txt/notice/39106' },
         { date: '2026-11-16', title: '미니 9집 PERFECT STORM 정식 발매 예정', sub: '18:00 KST 음반·음원 발매 예정 · 세부 정보는 공식 공지 확인', href: 'https://weverse.io/txt/notice/40097' },
-        { date: '2026-11-17', endDate: '2026-11-22', title: 'PERFECT STORM 용산 팝업스토어', sub: '11.17~11.22 매일 11:00~20:00 KST · 서울 용산구 한강대로 42 HYBE 사옥 1층 · 위버스 예약 입장 안내', href: 'https://weverse.io/txt/notice/40808' },
+        { date: '2026-11-17', endDate: '2026-11-22', title: 'PERFECT STORM 용산 팝업스토어', sub: '11.17~11.22 매일 11:00~20:00 KST · 서울 용산구 한강대로 42 HYBE 사옥 1층 · 위버스 예약 입장 · 공식 공지 로그인 필요할 수 있음', href: 'https://weverse.io/txt/notice/40808' },
         { date: '2026-11-18', title: 'PERFECT STORM WITHMUU 팬사인회', sub: '21:00 KST · 당첨자 대상 · 응모 종료 · 장소·변경은 주최 측 확인', href: 'https://weverse.io/txt/notice/40680' },
         { date: '2026-11-20', title: 'STEAL THE WIND 마카오 추가 공연', sub: '20:00 현지시간 · 마카오 GALAXY ARENA · BIGHIT MUSIC·HYBE·iMe 주최', href: 'https://weverse.io/txt/notice/39469' },
         { date: '2026-11-20', title: 'STEAL THE WIND 서울 첫날 온라인 지연 상영', sub: '19:00 KST · 11.13 공연 1회 재상영 · 기존 라이브 구매자 대상', href: 'https://concerts.weverse.io/events/txt_steal_the_wind_seoul' },
@@ -846,7 +846,7 @@
         { date: '2026.10.20', tag: '컴백', title: '11월 16일 미니 9집 PERFECT STORM 발매 예정 · 위버스 공지 로그인 후 확인', href: 'https://weverse.io/txt/notice/40097' }
       ],
       merch: [
-        { title: 'PERFECT STORM 용산 팝업 한정 MD·포토카드', sub: '11.17~11.22 11:00~20:00 · 위버스 예약 입장 · 포토카드·키링 등, 재고·특전은 매장 확인', href: 'https://weverse.io/txt/notice/40808' },
+        { title: 'PERFECT STORM 용산 팝업 한정 MD·포토카드', sub: '11.17~11.22 11:00~20:00 · 위버스 예약 입장 · 포토카드·키링 등, 재고·특전은 매장 확인 · 공식 공지 로그인 필요할 수 있음', href: 'https://weverse.io/txt/notice/40808' },
         { title: 'PERFECT STORM 미니 9집 공식 예약 음반', sub: '위버스샵 · 2026.10.20~11.15 예약 · 11.16 발매 예정 · 가격·재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/3/notices/14652' },
         { title: 'STEAL THE WIND 월드투어 공식 MD', sub: '위버스샵 · 11.05 판매 시작 · 한정 수량·품절 여부는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/3/notices/14842' },
         { title: 'STEAL THE WIND MD 2차 예약', sub: '위버스샵 · 2026.11.06~11.16 14:00 예약 · 2027.01.12 발송 시작 예정', href: 'https://shop.weverse.io/en/shop/USD/artists/3/notices/14875' },
