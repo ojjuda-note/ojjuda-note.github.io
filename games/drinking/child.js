@@ -40,6 +40,7 @@
     mainLink.href = mainDestination();
     if (params.has('party')) {
       navigating = true;
+      connection.pause();
       clearTimeout(timer);
     }
   });
@@ -52,8 +53,12 @@
   document.querySelector('main').append(status);
   header.href = lobby;
   header.textContent = '← 술게임방';
-  let client, parent, phase, timer, pending, returning = false, navigating = false, away = false;
+  let client, parent, phase, timer, pending, returning = false, navigating = false;
   let retryRequest, pollNotice = false;
+  const connection = window.OjjudaRoomConnection.create({
+    onPause: () => clearTimeout(timer),
+    onResume: () => { if(client && !navigating)void refresh(); }
+  });
 
   function message(text, fromPoll = false) {
     pollNotice = fromPoll;
@@ -63,6 +68,7 @@
   function go(url) {
     if (!navigating) {
       navigating = true;
+      connection.pause();
       clearTimeout(timer);
       location.replace(url);
     }
@@ -85,7 +91,7 @@
     header.replaceWith(button);
   }
   function reconcile(state) {
-    if (navigating || away) return false;
+    if (navigating || !connection.active()) return false;
     if (!state || state.code !== code || !Number.isInteger(state.me) || state.me < 0 ||
         !Number.isInteger(state.revision) || !Array.isArray(state.players) || state.me >= state.players.length) {
       throw Error('술게임방 정보를 다시 확인해 주세요.');
@@ -103,20 +109,30 @@
     return true;
   }
   async function rpc(action, options = {}) {
-    const {data, error} = await client.rpc('drinking_room', {
-      p_action: action, p_code: code, p_options: options
-    }).abortSignal(AbortSignal.timeout(12000));
+    let result;
+    try {
+      result = await connection.request(signal => client.rpc('drinking_room', {
+        p_action: action, p_code: code, p_options: options
+      }).abortSignal(signal), {read:action==='state'});
+    } catch(err) {
+      if(!connection.cancelled(err))connection.failed();
+      throw err;
+    }
+    const {data, error} = result;
     const failure = error?.message || data?.error;
     if (failure === 'room_unavailable') return go(retryRequest?.action === 'leave' ? roomList : hub);
     if (failure === 'not_room_member') return go(retryRequest?.action === 'leave' ? roomList : lobby);
     if (failure === 'not_signed_in') return go(lobby);
     if (failure) {
+      if (['stale_state','host_only'].includes(failure)) connection.succeeded();
+      else connection.failed();
       const err = Error(failure === 'stale_state' ? '방 상태가 바뀌었어요. 다시 눌러 주세요.' :
         failure === 'host_only' ? '방장만 모두를 대기실로 이동시킬 수 있어요.' :
         '술게임방에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.');
       err.code = failure;
       throw err;
     }
+    connection.succeeded();
     if (action === 'leave') {
       if (data?.left !== true) throw Error('나간 상태를 확인할 수 없어요. 다시 눌러 주세요.');
       return go(roomList);
@@ -125,17 +141,17 @@
   }
   function schedule() {
     clearTimeout(timer);
-    if (!away && !navigating && parent && !document.hidden) timer = setTimeout(refresh, 1600);
+    if (!navigating && !returning && parent && connection.active()) timer = setTimeout(refresh, connection.delay(1600));
   }
   function refresh() {
-    if (!client || away || navigating || returning || document.hidden) return;
+    if (!client || navigating || returning || !connection.active()) return Promise.resolve(false);
     if (pending) return pending;
     clearTimeout(timer);
     pending = rpc('state').then(matched => {
       if (matched && pollNotice) message('');
       return matched;
     }).catch(err => {
-      message(err.message, true);
+      if (!connection.cancelled(err)) message(err.message, true);
       return false;
     }).finally(() => { pending = null; schedule(); });
     return pending;
@@ -144,8 +160,11 @@
     client = authClient;
     if (!valid(code) || !kinds.has(kind)) return go(hub);
     if (!valid(child)) return go(lobby);
-    const matched = await rpc('state');
-    schedule();
+    const matched = await refresh();
+    if(!matched && !navigating){
+      if(!connection.active())throw Object.assign(Error('연결 확인을 잠시 멈췄어요.'),{code:'superseded'});
+      throw Error('술게임방 연결을 다시 확인하고 있어요.');
+    }
     return matched;
   }
   function control(action) {
@@ -157,7 +176,7 @@
     return (phase === 'done' ? '<p data-party-wait>방장이 다음 게임을 고르고 있어요.</p>' : '') + leave;
   }
   async function leaveOrReturn(button) {
-    if (!parent || returning || navigating) return;
+    if (!parent || returning || navigating || !connection.active()) return;
     const leaving = button.hasAttribute('data-party-leave');
     if (!leaving && parent.me !== 0) return;
     if (leaving) {
@@ -172,6 +191,7 @@
     } else if (phase !== 'done' && !window.confirm('지금 게임을 마치고 모두 함께 대기실로 돌아갈까요?')) return;
     const action = leaving ? 'leave' : 'return';
     returning = true;
+    connection.cancelReads();
     button.disabled = true;
     message('');
     clearTimeout(timer);
@@ -182,7 +202,7 @@
     try {
       await rpc(action, retryRequest.options);
     } catch (err) {
-      message(err.message);
+      if(!connection.cancelled(err))message(err.message);
     } finally {
       returning = false;
       button.disabled = false;
@@ -190,6 +210,7 @@
     }
   }
   function missing() {
+    if(returning || navigating || !connection.active())return;
     view.innerHTML = '<section class="card"><p>술게임방에서 현재 게임을 확인하고 있어요.</p>' +
       '<button type="button" class="secondary" data-do="retry">다시 연결</button>' +
       control('leave') + '</section>';
@@ -199,16 +220,8 @@
     const button = e.target.closest('[data-party-return],[data-party-leave]');
     if (button) void leaveOrReturn(button);
   });
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) clearTimeout(timer);
-    else void refresh();
-  });
-  window.addEventListener('focus', () => { if (parent) void refresh(); });
-  window.addEventListener('pagehide', () => { away = true; clearTimeout(timer); });
   window.addEventListener('pageshow', e => {
-    away = false;
     if (e.persisted) navigating = false;
-    if (parent) void refresh();
   });
   window.DrinkingChild = {code, connect, control, missing, signedOut: () => go(lobby), setPhase: next => { phase = next; }};
 })();
