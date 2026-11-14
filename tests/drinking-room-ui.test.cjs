@@ -331,3 +331,66 @@ test('sentence menus filter mild and spicy, alternate mixed recommendations and 
   menu().querySelector('[data-mode="list"]').click();menu().querySelector('[data-mode="write"]').click();assert.equal(field.value,'선물로 받고 싶은 것은?');
   ui.submit('.party-question-dialog form');assert.equal(ui.find('#party-question').value,field.value);
 });
+
+test('the question picker closes when access is concealed and can reopen after reconnecting', async t=>{
+  const ui=await screen({gate:true,url:'/games/drinking/local/#imagevote',
+    prepare(w){w.scrollTo=()=>{};},
+    rpc:name=>name==='drinking_content'?{banks:{imagevote:['어떤 여행을 좋아해요?']}}:{ok:true}});
+  t.after(()=>ui.close());
+  await until(()=>!ui.find('#access-content').hidden,'access approved');
+  ui.click('[data-action="start"]');
+  ui.click('[data-action="question-menu"]');
+  const open=()=>ui.find('.party-question-dialog[open]');
+  await until(()=>open()?.querySelector('[data-question]').options.length);
+  await ui.online(false);
+  assert.equal(open(),null);
+  assert.equal(ui.find('#access-content').hidden,true);
+  await ui.online(true);
+  await until(()=>!ui.find('#access-content').hidden,'access restored');
+  ui.click('[data-action="question-menu"]');
+  await until(()=>open()?.querySelector('[data-question]').options.length);
+  assert.deepEqual(ui.errors,[]);
+});
+
+test('a pending choice is submitted once, preserves its wording and can be retried on failure', async t=>{
+  const ui=await screen({url:'/games/drinking/local/#imagevote',prepare(w){w.scrollTo=()=>{};}});
+  t.after(()=>ui.close());
+  const requests=[];
+  ui.w.DrinkingQuestionMenu.open({
+    kind:'minority',load:async()=>[['바다','산'],['여름','겨울']],
+    apply:value=>new Promise(resolve=>requests.push({value,resolve}))
+  });
+  const dialog=ui.find('.party-question-dialog[open]'),form=dialog.querySelector('form');
+  const confirm=form.querySelector('[type=submit]'),other=form.querySelector('[data-another]');
+  await until(()=>!confirm.disabled,'available choices');
+  confirm.click();other.click();
+  form.dispatchEvent(new ui.w.Event('submit',{cancelable:true}));
+  assert.equal(requests.length,1);
+  assert.ok(confirm.disabled && other.disabled);
+  requests[0].resolve(false);
+  await until(()=>!confirm.disabled,'recover from rejected change');
+  assert.equal(other.disabled,false);
+  confirm.click();
+  assert.equal(requests.length,2);
+  assert.deepEqual(requests[1].value,requests[0].value);
+  requests[1].resolve(true);
+  await until(()=>!dialog.open,'applied choice');
+});
+
+test('flavor changes reuse the open question list and an explicit retry reloads unavailable content',async t=>{
+  const ui=await screen({url:'/games/drinking/local/#imagevote',prepare(w){w.scrollTo=()=>{};}});
+  t.after(()=>ui.close());
+  const menu=ui.w.DrinkingQuestionMenu;
+  let reads=0;
+  menu.open({kind:'imagevote',load:async()=>++reads===1?[]:['산책을 갈 사람은?','첫 키스는 언제였어요?'],apply:()=>true});
+  const dialog=ui.find('.party-question-dialog[open]'),retry=dialog.querySelector('[data-retry]');
+  await until(()=>!retry.hidden,'empty catalog can retry');
+  retry.click();
+  const level=dialog.querySelector('[data-prompt-flavor]'),choice=dialog.querySelector('[data-question]');
+  await until(()=>choice.options.length===2);
+  for(const mode of ['mild','spicy','mixed']){
+    level.value=mode;level.dispatchEvent(new ui.w.Event('change'));
+    await until(()=>choice.options.length===(mode==='mixed'?2:1));
+  }
+  assert.equal(reads,2,'only the initial load and explicit retry reached the catalog');
+});
