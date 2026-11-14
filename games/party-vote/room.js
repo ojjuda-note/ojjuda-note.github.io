@@ -15,6 +15,14 @@ let activeCode = validCode(roomCode) ? roomCode : '';
 let mode = roomCode ? 'join' : 'create';
 let client, actor, room, timer, requestId, requestFingerprint;
 let busy = false, polling = false, revealed = false;
+let initialized = false, initializing = false, authSubscribed = false;
+const connection = window.OjjudaRoomConnection.create({
+  onPause: () => {
+    cover();
+    if (room && navigator.onLine===false) { notice.textContent='연결이 잠시 끊겼어요. 다시 연결하고 있어요.'; notice.dataset.network='1'; }
+  },
+  onResume: () => { if (room) { render(room, true); void sync(); } else if (!initialized) void init(); }
+});
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => (
   {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]
@@ -97,6 +105,9 @@ function roundView(s) {
   }
 }
 function render(s, force = false) {
+  if (!connection.active()) return;
+  if (!s || !/^[A-Z0-9]{6}$/.test(s.code) || !Number.isInteger(s.revision) || !Array.isArray(s.players) ||
+      !Number.isInteger(s.me) || s.me<0 || s.me>=s.players.length) throw Error('방 상태를 다시 확인하고 있어요.');
   const changedRoom = !room || room.code !== s.code;
   if (!changedRoom && (s.revision < room.revision || (!force && s.revision === room.revision))) return;
   const newPhase = changedRoom || s.round !== room.round || s.phase !== room.phase;
@@ -132,23 +143,30 @@ const messages = {
   host_only:'방장만 할 수 있어요.', unavailable:'게임 단계가 바뀌었어요. 잠시 뒤 다시 확인해 주세요.'
 };
 async function api(action, code = '', options = {}) {
-  const {data,error} = await client.rpc('party_vote_multiplayer', {
-    p_kind:kind, p_action:action, p_code:code, p_options:options
-  }).abortSignal(AbortSignal.timeout(12000));
+  let result;
+  try {
+    result = await connection.request(signal => client.rpc('party_vote_multiplayer', {
+      p_kind:kind, p_action:action, p_code:code, p_options:options
+    }).abortSignal(signal), {read:action === 'state'});
+  } catch (err) { if (!connection.cancelled(err)) { connection.failed(); err.roomConnectionCounted=true; } throw err; }
+  const {data,error} = result;
   if (error || data?.error) {
     const tag = error?.message || data.error;
+    if (messages[tag]) connection.succeeded(); else connection.failed();
     const failure = new Error(messages[tag] || '연결을 확인한 뒤 다시 시도해 주세요.');
-    failure.code = tag;
+    failure.code = tag; failure.roomConnectionCounted = true;
     throw failure;
   }
+  connection.succeeded();
   return data;
 }
 function later() {
   clearTimeout(timer);
-  if (room && !document.hidden) timer = setTimeout(sync, 1100);
+  if (room && connection.active() && !busy) timer = setTimeout(sync, connection.delay(1100));
 }
 async function sync() {
-  if (!room || busy || polling || document.hidden) { later(); return; }
+  if (!connection.active()) return;
+  if (!room || busy || polling) { later(); return; }
   const code = room.code;
   polling = true;
   try {
@@ -158,7 +176,7 @@ async function sync() {
       if (notice.dataset.network) { notice.textContent = ''; delete notice.dataset.network; }
     }
   } catch (err) {
-    if (room?.code === code) {
+    if (!connection.cancelled(err) && connection.active() && room?.code === code) {
       notice.textContent = err.message;
       notice.dataset.network = '1';
       if (['room_unavailable','not_room_member'].includes(err.code)) {
@@ -168,14 +186,21 @@ async function sync() {
   } finally { polling = false; later(); }
 }
 async function run(task) {
-  if (busy) return;
-  busy = true; notice.textContent = ''; delete notice.dataset.network;
-  try { await task(); } catch (err) { notice.textContent = err.message || '연결을 확인해 주세요.'; }
-  finally { busy = false; later(); }
+  if (busy || !connection.active()) return;
+  busy = true; clearTimeout(timer); connection.cancelReads();
+  notice.textContent = ''; delete notice.dataset.network;
+  try { await task(); }
+  catch (err) { if (!connection.cancelled(err) && connection.active()) notice.textContent = err.message || '연결을 확인해 주세요.'; }
+  finally {
+    busy = false;
+    if (room && connection.active()) void sync();
+    else if (!initialized && connection.active()) timer = setTimeout(init, connection.delay(1100));
+    else later();
+  }
 }
 view.addEventListener('submit', event => {
   event.preventDefault();
-  if (busy || event.target.id !== 'entry') return;
+  if (busy || !connection.active() || event.target.id !== 'entry') return;
   const form = new FormData(event.target);
   const password = String(form.get('password') || '');
   const code = String(form.get('code') || '').trim().toUpperCase();
@@ -192,18 +217,23 @@ view.addEventListener('submit', event => {
         if (fingerprint !== requestFingerprint) { requestFingerprint = fingerprint; requestId = crypto.randomUUID(); }
         state = await api('create', '', {title:roomTitle, capacity, password, request_id:requestId});
       } else {
+        activeCode = code; initialized = false;
         state = await api('join', code, {password});
       }
       requestFingerprint = null; requestId = null;
-      render(state);
+      render(state); initialized = true;
+    } catch (err) {
+      // Resolve an interrupted join from server state without replaying it.
+      if (mode === 'join' && messages[err.code]) initialized = true;
+      throw err;
     } finally { button.disabled = false; }
   });
 });
 view.addEventListener('click', event => {
   const button = event.target.closest('button');
-  if (!button || button.disabled || busy) return;
+  if (!button || button.disabled || busy || !connection.active()) return;
   const action = button.dataset.do;
-  if (action === 'retry') { location.reload(); return; }
+  if (action === 'retry') { if (room) void sync(); else void init(); return; }
   if (action === 'create-tab' || action === 'join-tab') {
     mode = action === 'create-tab' ? 'create' : 'join';
     notice.textContent = ''; entry(); return;
@@ -238,11 +268,11 @@ view.addEventListener('click', event => {
 });
 function cover() {
   clearTimeout(timer);
-  if (room && revealed) { revealed = false; render(room, true); }
+  if (room && revealed) {
+    revealed = false;
+    view.querySelectorAll('.secret').forEach(node => node.remove());
+  }
 }
-document.addEventListener('visibilitychange', () => { if (document.hidden) cover(); else if (room) sync(); });
-window.addEventListener('pagehide', cover);
-window.addEventListener('pageshow', () => { if (room) sync(); });
 
 function signedOut() {
   if (party) return party.signedOut();
@@ -250,35 +280,47 @@ function signedOut() {
   view.innerHTML = '<section class="card"><h1>' + title + '</h1><p>오쭈다에 로그인한 뒤 이 화면으로 돌아와 주세요.</p>' +
     '<a href="/?auth=login&amp;next=world" target="_blank" rel="noopener">오쭈다 로그인</a></section>';
 }
+function accountChanged(session) {
+  const id = session?.user && !session.user.is_anonymous ? session.user.id : null;
+  if (id !== (actor || null)) { connection.pause(); room=null; view.replaceChildren(); location.reload(); }
+}
 async function checkAccount() {
-  if (!client) return;
-  const {data} = await client.auth.getSession();
-  if ((data.session?.user?.id || null) !== (actor || null)) location.reload();
+  if (!client || !connection.active()) return;
+  try { const {data,error} = await connection.request(() => client.auth.getSession(), {read:true}); if (!error && connection.active()) accountChanged(data.session); } catch {}
 }
 async function init() {
+  if (initializing || !connection.active()) return;
+  initializing = true; initialized = false; clearTimeout(timer);
   try {
-    client = await window.OjjudaGetClient();
-    const {data,error} = await client.auth.getSession();
+    client = await connection.request(() => window.OjjudaGetClient(), {read:true});
+    if (!connection.active()) return;
+    const {data,error} = await connection.request(() => client.auth.getSession(), {read:true});
     if (error) throw error;
+    if (!connection.active()) return;
     const user = data.session?.user;
-    actor = user?.id;
-    client.auth.onAuthStateChange((_event, session) => {
-      if ((session?.user?.id || null) !== (actor || null)) location.reload();
-    });
-    if (!user || user.is_anonymous) { signedOut(); return; }
-    if (party && !(await party.connect(client))) return;
+    actor = user && !user.is_anonymous ? user.id : null;
+    if (!authSubscribed) { authSubscribed = true; client.auth.onAuthStateChange((_event,session) => accountChanged(session)); }
+    if (!actor) { initialized = true; signedOut(); return; }
+    if (party && !(await party.connect(client))) { initialized=true; connection.pause(); return; }
+    if (!connection.active()) return;
     const last = activeCode || lastRoom();
     if (last) {
-      try { render(await api('state', last)); later(); return; }
+      try { const next=await api('state', last); notice.textContent=''; render(next); initialized = true; later(); return; }
       catch (err) {
         if (err.code === 'room_unavailable') { remember(''); notice.textContent = err.message; }
         else if (err.code !== 'not_room_member') throw err;
       }
     }
-    entry();
+    initialized = true; entry();
   } catch (err) {
-    notice.textContent = err.message || '연결을 확인해 주세요.';
-    view.innerHTML = control('다시 연결', 'retry');
+    if (!connection.cancelled(err) && connection.active()) {
+      if (!err.roomConnectionCounted) connection.failed(); notice.textContent = err.message || '연결을 확인해 주세요.';
+      if (['not_signed_in','banned'].includes(err.code)) initialized = true;
+      if (!room) view.innerHTML = control('다시 연결', 'retry');
+    }
+  } finally {
+    initializing = false;
+    if (!initialized && connection.active()) timer = setTimeout(init, connection.delay(1100));
   }
 }
 window.addEventListener('focus', checkAccount);

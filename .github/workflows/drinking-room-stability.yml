@@ -1,0 +1,74 @@
+name: Drinking room connection stability
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'games/drinking/**'
+      - 'games/croc/**'
+      - 'games/liar/**'
+      - 'games/king/**'
+      - 'games/party-live/**'
+      - 'games/party-vote/**'
+      - 'games/bottle/**'
+      - 'games/bomb/**'
+      - 'games/stopwatch/**'
+      - 'games/truth/**'
+      - 'games/initial/**'
+      - 'games/minority/**'
+      - 'games/mission/**'
+      - 'games/fingers/**'
+      - 'games/imagevote/**'
+      - 'games/updown/**'
+      - 'supabase/migrations/*drinking*'
+      - 'supabase/migrations/*party*'
+      - 'tests/drinking-*'
+      - 'tests/helpers/drinking-ui-fixture.cjs'
+      - '.github/workflows/drinking-room-stability.yml'
+  pull_request:
+    paths:
+      - 'games/drinking/**'
+      - 'games/croc/**'
+      - 'games/liar/**'
+      - 'games/king/**'
+      - 'games/party-live/**'
+      - 'games/party-vote/**'
+      - 'games/bottle/**'
+      - 'games/bomb/**'
+      - 'games/stopwatch/**'
+      - 'games/truth/**'
+      - 'games/initial/**'
+      - 'games/minority/**'
+      - 'games/mission/**'
+      - 'games/fingers/**'
+      - 'games/imagevote/**'
+      - 'games/updown/**'
+      - 'supabase/migrations/*drinking*'
+      - 'supabase/migrations/*party*'
+      - 'tests/drinking-*'
+      - 'tests/helpers/drinking-ui-fixture.cjs'
+      - '.github/workflows/drinking-room-stability.yml'
+permissions:
+  contents: read
+concurrency:
+  group: drinking-room-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  connection-and-rooms:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix tests ci --ignore-scripts
+      - name: Install Chromium
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify room consistency and network recovery
+        run: node --test --test-concurrency=1 tests/drinking-connection.test.cjs tests/drinking-access.test.cjs tests/drinking-room-db.test.cjs tests/drinking-room-ui.test.cjs tests/drinking-room-browser.test.cjs
+      - name: Verify game release and access boundaries
+        run: node --test tests/game-release-refresh.test.cjs tests/game-assets-loading.test.cjs tests/matgo-access.test.cjs
+      - run: node scripts/check-source-layout.mjs

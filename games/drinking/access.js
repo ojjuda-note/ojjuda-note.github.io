@@ -11,9 +11,23 @@
     underage:'이 페이지는 만 19세부터 이용할 수 있어요.',
     unavailable:'회원 정보를 확인할 수 없어요. 연결 상태를 확인한 뒤 다시 시도해 주세요.'};
   let access, ready, approvedUser, authenticatedUser, exposed = false, running = false;
-  let checkId = 0, timer, lastTitle, checking = false, failedModule = false;
+  let checkId = 0, timer, lastTitle, checking = false, failedModule = false, failures = 0;
+  let sources, moduleCursor = 0, loading;
+
+  function signal(allowed) {
+    if (window.OjjudaDrinkingAccessReady === allowed) return;
+    window.OjjudaDrinkingAccessReady = allowed;
+    document.dispatchEvent(new CustomEvent('ojjuda:drinking-access', {detail:{allowed}}));
+  }
+  function retryLater() {
+    clearTimeout(timer);
+    if (!document.hidden && navigator.onLine && !failedModule) {
+      timer = setTimeout(verify, Math.min(15000, 1500 * 2 ** Math.min(failures++, 4)));
+    }
+  }
 
   function conceal(code = 'pending') {
+    signal(false);
     if (exposed) lastTitle = document.title;
     for (const dialog of content.querySelectorAll('dialog[open]')) dialog.close();
     exposed = false; content.hidden = true; gate.hidden = false;
@@ -29,7 +43,7 @@
     ++checkId;checking = false;conceal(code);
     // Existing game clients hold their own timers and the previous member's room.
     // A new document drops those together before a different member can enter.
-    if (running) location.reload();
+    if (running && code !== 'unavailable') location.reload();
   }
 
   async function prepare() {
@@ -51,30 +65,50 @@
     });
     access.subscribe(error => {
       // check() reports denials here too, before its promise rejects.
-      invalidate(error?.code || 'unavailable');
+      const code = error?.code || 'unavailable';
+      if (code === 'unavailable') {
+        // Preserve the mounted room and drafts through a temporary network
+        // failure. It stays concealed until the same member is verified again.
+        invalidate(code);
+        retryLater();
+      } else invalidate(code);
     });
     return access;
   }
 
   async function start(ticket) {
-    if (page.dataset.kind) document.documentElement.dataset.game = page.dataset.kind;
-    content.dataset.member = approvedUser;
-    content.replaceChildren(page.content.cloneNode(true));
-    const sources = Array.from(content.querySelectorAll('[data-module]'), node => node.dataset.module);
-    content.querySelectorAll('[data-module]').forEach(node => node.remove());
-    running = true;
-    for (const src of sources) {
-      if (ticket !== checkId || document.hidden || !navigator.onLine) {
-        location.reload();return false;
-      }
-      await new Promise((resolve,reject) => {
-        const script = document.createElement('script');
-        script.async = false; script.src = src;
-        script.onload = resolve; script.onerror = () => reject(Error('module_failure'));
-        document.head.append(script);
-      });
+    if (loading) return loading;
+    if (!running) {
+      if (page.dataset.kind) document.documentElement.dataset.game = page.dataset.kind;
+      content.dataset.member = approvedUser;
+      content.replaceChildren(page.content.cloneNode(true));
+      sources = Array.from(content.querySelectorAll('[data-module]'), node => node.dataset.module);
+      content.querySelectorAll('[data-module]').forEach(node => node.remove());
+      running = true;
     }
-    return true;
+    loading = (async () => {
+      while (moduleCursor < sources.length) {
+        if (ticket !== checkId || document.hidden || !navigator.onLine) return false;
+        await new Promise((resolve,reject) => {
+          const script = document.createElement('script');
+          const fail = () => {
+            // A timed-out script may still execute later. Never insert it a
+            // second time in this document, even if its access ticket expired.
+            failedModule = true;
+            conceal('unavailable');
+            reject(Error('module_failure'));
+          };
+          const timeout = setTimeout(fail, 15000);
+          script.async = false; script.src = sources[moduleCursor];
+          script.onload = () => { clearTimeout(timeout);resolve(); };
+          script.onerror = () => { clearTimeout(timeout);fail(); };
+          document.head.append(script);
+        });
+        moduleCursor++;
+      }
+      return true;
+    })().finally(() => { loading = null; });
+    return loading;
   }
 
   async function verify() {
@@ -93,16 +127,22 @@
           (authenticatedUser !== undefined && authenticatedUser !== identity.userId)) throw Error('identity_mismatch');
       if (approvedUser && approvedUser !== identity.userId) { invalidate('pending');return; }
       authenticatedUser = approvedUser = identity.userId;
-      if (!running && !await start(ticket)) return;
+      signal(true);
+      if ((!running || moduleCursor < sources.length) && !await start(ticket)) {
+        if (ticket === checkId) retryLater();
+        return;
+      }
       if (ticket !== checkId || document.hidden || !navigator.onLine) return;
       document.title = lastTitle || page.dataset.title;
       gate.hidden = true; content.hidden = false; exposed = true;
+      failures = 0;
       timer = setTimeout(verify,55000);
     } catch (err) {
       if (ticket === checkId) {
         // Leave partially-loaded game modules concealed; retry in a clean document.
-        failedModule = running;
+        failedModule = err?.message === 'module_failure';
         conceal(Object.hasOwn(titles,err?.code) ? err.code : 'unavailable');
+        if (!failedModule && (!err?.code || err.code === 'unavailable')) retryLater();
       }
     } finally { if (ticket === checkId) checking = false; }
   }
@@ -113,10 +153,10 @@
     else void verify();
   });
   window.addEventListener('pagehide',suspend);
-  window.addEventListener('pageshow',e => { if (e.persisted) { suspend(); location.reload(); } });
+  window.addEventListener('pageshow',e => { if (e.persisted) { suspend(); void verify(); } });
   window.addEventListener('offline',() => invalidate('unavailable'));
   window.addEventListener('online',() => { if (!document.hidden) void verify(); });
   window.addEventListener('focus',() => { if (!exposed && !document.hidden) void verify(); });
-  retry.onclick=()=> { if (running) location.reload();else void verify(); };
+  retry.onclick=()=> { if (failedModule) location.reload();else void verify(); };
   verify();
 })();

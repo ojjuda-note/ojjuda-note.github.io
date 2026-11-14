@@ -41,9 +41,19 @@
   const notice = byId('notice'), message = byId('room-message'), list = byId('room-list');
   let client, actor, room, pollTimer, polling = false, busy = false, navigating = false, subscribed = false;
   let generation = 0, lastMutation, listSequence = 0;
+  let opening = false, initialized = false, listing, entryRecovery;
+  const connection = window.OjjudaRoomConnection.create({
+    onPause: () => clearTimeout(pollTimer),
+    onResume: () => {
+      if (navigating) return;
+      if (room) void sync();
+      else if (!initialized || entryRecovery) void open();
+      else void listRooms();
+    }
+  });
   byId('hub-back').addEventListener('click',event=>{
     if(event.button||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
-    navigating=true;generation++;clearTimeout(pollTimer);
+    navigating=true;generation++;connection.pause();clearTimeout(pollTimer);
   });
   const messages = {
     not_signed_in:'오쭈다에 로그인해 주세요.', banned:'현재 이 계정으로 대전방을 이용할 수 없어요.',
@@ -98,7 +108,7 @@
   }
 
   function render(next) {
-    if(navigating)return;
+    if(navigating || !connection.active())return;
     if (!next || !codePattern.test(next.code) || !Array.isArray(next.players)) throw Error('invalid_room');
     if (room && room.code===next.code && room.revision>=next.revision) return;
     const promoted=room?.code===next.code && room.me>0 && next.me===0;
@@ -107,7 +117,7 @@
     const url=new URL('/games/drinking/',location.origin);
     url.searchParams.set('room',room.code); history.replaceState(null,'',url);
     if (room.phase==='playing' && gameById(room.kind) && codePattern.test(room.child)) {
-      navigating=true;clearTimeout(pollTimer);
+      navigating=true;connection.pause();clearTimeout(pollTimer);
       location.replace('/games/'+room.kind+'/?room='+room.child+'&party='+room.code);
       return;
     }
@@ -141,19 +151,30 @@
     byId('login').hidden=!login; byId('retry').hidden=!retry;
   }
   async function rpc(action,code='',options={}) {
-    if (!navigator.onLine) throw Error('offline');
-    const query=client.rpc('drinking_room',{p_action:action,p_code:code,p_options:options});
-    const {data,error}=await (query.abortSignal ? query.abortSignal(AbortSignal.timeout(12000)) : query);
-    if (error || data?.error) throw Error(error?.message || data.error);
-    return data;
+    try {
+      const {data,error}=await connection.request(signal => {
+        const query=client.rpc('drinking_room',{p_action:action,p_code:code,p_options:options});
+        return query.abortSignal ? query.abortSignal(signal) : query;
+      }, {read:['state','list','mine'].includes(action)});
+      if (error || data?.error) throw Error(error?.message || data.error);
+      connection.succeeded();
+      return data;
+    } catch(err) {
+      if (!connection.cancelled(err)) {
+        if (Object.hasOwn(messages,err.message)) connection.succeeded();
+        else connection.failed();
+      }
+      throw err;
+    }
   }
   function explain(err) { return messages[err.message] || '연결을 확인한 뒤 다시 시도해 주세요.'; }
 
   async function listRooms() {
-    if (!actor || room || byId('rooms').hidden) return;
+    if (!actor || room || byId('rooms').hidden || navigating || !connection.active()) return;
+    if (listing) return listing;
     const seq=++listSequence; byId('refresh').disabled=true;
-    list.replaceChildren(); message.textContent='방을 불러오는 중이에요.';
-    try {
+    if (!list.children.length) message.textContent='방을 불러오는 중이에요.';
+    listing=(async () => { try {
       const data=await rpc('list'); if(seq!==listSequence || room)return;
       if (!Array.isArray(data?.rooms)) throw Error('invalid_rooms');
       const links=data.rooms.filter(r=>codePattern.test(r?.code) && (r.phase==='lobby' || r.mine===true)).map(r=>{
@@ -167,16 +188,18 @@
         link.append(info,el('span','room-go',r.mine?'이어서 입장 ›':'입장 ›'));row.append(link);return row;
       });
       list.replaceChildren(...links);message.textContent=links.length?'':'아직 열린 방이 없어요.';
-    } catch(err) { if(seq===listSequence)message.textContent=explain(err); }
+    } catch(err) { if(seq===listSequence && !connection.cancelled(err))message.textContent=explain(err); }
     finally { if(seq===listSequence)byId('refresh').disabled=false; }
+    })().finally(() => {listing=null;});
+    return listing;
   }
 
   function schedule() {
     clearTimeout(pollTimer);
-    if(room&&!document.hidden&&!navigating) pollTimer=setTimeout(sync,1250);
+    if(room&&connection.active()&&!navigating) pollTimer=setTimeout(sync,connection.delay(1250));
   }
   async function sync() {
-    if (!room || busy || polling || document.hidden || navigating) return;
+    if (!room || busy || polling || !connection.active() || navigating) return;
     const code=room.code, gen=generation; polling=true;
     try {
       const next=await rpc('state',code);
@@ -185,6 +208,7 @@
         if(notice.dataset.network){notice.textContent='';delete notice.dataset.network;}
       }
     } catch(err) {
+      if(connection.cancelled(err))return;
       if(gen===generation && room?.code===code) {
         notice.textContent=explain(err);notice.dataset.network='1';
         if(['room_unavailable','not_room_member'].includes(err.message)){
@@ -200,16 +224,19 @@
     return lastMutation.id;
   }
   async function mutate(action,options,code=room?.code || '') {
-    if(busy || !actor || navigating)return;
+    if(busy || !actor || navigating || !connection.active())return;
     const gen=generation; busy=true;updateActions();notice.textContent='';delete notice.dataset.network;
+    connection.cancelReads();clearTimeout(pollTimer);
+    if(action==='create'||action==='join')entryRecovery={attempts:0};
     try {
       const opts={...options};
       if(action!=='join')opts.request_id=operationId(action,code,options);
       const next=await rpc(action,code,opts);
       if(gen!==generation)return;
+      entryRecovery=null;
       if (action==='leave') {
         if(next?.left!==true)throw Error('invalid_leave');
-        navigating=true;clearTimeout(pollTimer);
+        navigating=true;connection.pause();clearTimeout(pollTimer);
         location.replace('/games/drinking/?mode=multi');return;
       }
       lastMutation=null;
@@ -221,10 +248,12 @@
         if(gen===generation && room?.code===next.code)render(chosen);
       }
     } catch(err) {
-      if(gen===generation)notice.textContent=explain(err);
+      if(Object.hasOwn(messages,err.message))entryRecovery=null;
+      if(gen===generation && !connection.cancelled(err))notice.textContent=explain(err);
     } finally {
       busy=false;updateActions();schedule();
       if(room && !navigating)void sync();
+      else if(entryRecovery && connection.active() && !navigating)void open();
     }
   }
 
@@ -257,13 +286,15 @@
     catch{notice.textContent=link;}
   };
   byId('refresh').onclick=listRooms;
-  byId('retry').onclick=()=>location.reload();
+  byId('retry').onclick=()=>{if(room)void sync();else void open();};
 
   async function open() {
-    authScreen('회원 정보를 확인하고 있어요.');
+    if(opening || navigating || !connection.active())return;
+    opening=true;
+    if(!initialized)authScreen('회원 정보를 확인하고 있어요.');
     try {
-      client=await window.OjjudaGetClient();
-      const {data,error}=await client.auth.getSession();
+      client=await connection.request(()=>window.OjjudaGetClient(),{read:true});
+      const {data,error}=await connection.request(()=>client.auth.getSession(),{read:true});
       if(error)throw error;
       const user=data.session?.user;
       actor=user&&!user.is_anonymous?user.id:null;
@@ -271,33 +302,43 @@
         subscribed=true;
         client.auth.onAuthStateChange((_event,session)=>{
           const id=session?.user&&!session.user.is_anonymous?session.user.id:null;
-          if(id!==actor) { generation++;listSequence++;clearTimeout(pollTimer);location.reload(); }
+          if(id!==actor) { generation++;listSequence++;connection.pause();clearTimeout(pollTimer);location.reload(); }
         });
       }
-      if(!actor){authScreen('술게임방에 참여하려면 오쭈다에 로그인해 주세요.',true);return;}
+      if(!actor){initialized=true;authScreen('술게임방에 참여하려면 오쭈다에 로그인해 주세요.',true);return;}
+      if(entryRecovery){
+        const mine=await rpc('mine');
+        if(mine?.room){
+          entryRecovery=null;lastMutation=null;initialized=true;render(mine.room);return;
+        }
+        initialized=true;showEntry(codePattern.test(inviteCode)?inviteCode:'');
+        // A submitted create/join can finish after its response was lost.
+        // Read back membership; never blindly replay a mutation on reconnect.
+        if(++entryRecovery.attempts<4)pollTimer=setTimeout(open,connection.delay(1500));
+        else {entryRecovery=null;notice.textContent='입장 결과를 확인하지 못했어요. 다시 눌러 주세요.';}
+        return;
+      }
       if(inviteCode && codePattern.test(inviteCode)){
-        try {render(await rpc('state',inviteCode));return;}
+        try {render(await rpc('state',inviteCode));initialized=true;return;}
         catch(err){
           if(!['not_room_member','room_unavailable'].includes(err.message))throw err;
-          showEntry(inviteCode); if(err.message==='room_unavailable')notice.textContent=explain(err);
+          showEntry(inviteCode); initialized=true;if(err.message==='room_unavailable')notice.textContent=explain(err);
           return;
         }
       }
       const mine=await rpc('mine');
-      if(mine?.room){render(mine.room);return;}
+      if(mine?.room){render(mine.room);initialized=true;return;}
       showEntry();
+      initialized=true;
       if(inviteCode)notice.textContent='방 코드 6자리를 다시 확인해 주세요.';
       void listRooms();
-    } catch(err) {authScreen(explain(err),err.message==='not_signed_in',true);}
+    } catch(err) {
+      if(!connection.cancelled(err)){
+        authScreen(explain(err),err.message==='not_signed_in',true);
+        if(err.message!=='not_signed_in' && connection.active())pollTimer=setTimeout(open,connection.delay(1500));
+      }
+    } finally {opening=false;}
   }
-
-  window.addEventListener('pageshow',e=>{if(e.persisted)location.reload();});
-  window.addEventListener('pagehide',()=>clearTimeout(pollTimer));
-  window.addEventListener('online',()=>{if(room)void sync();else if(actor)void listRooms();});
-  document.addEventListener('visibilitychange',()=>{
-    if(document.hidden)clearTimeout(pollTimer);
-    else if(room)void sync();
-    else if(actor)void listRooms();
-  });
+  window.addEventListener('pageshow',event=>{if(event.persisted)navigating=false;});
   open();
 })();
