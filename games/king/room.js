@@ -49,7 +49,7 @@ function entry(){
   room=null;clearTimeout(timer);revealed=false;
   if(party)return party.missing();
   const create=mode==='create';
-  view.innerHTML='<section class="card"><div class="inside"><h1>왕게임</h1><p>한 사람은 왕, 나머지는 비밀 번호를 받아요. 왕이 한 명이나 두 명의 번호를 골라 미션을 내리면 주인공이 공개돼요.</p>'+
+  view.innerHTML='<section class="card"><div class="inside"><h1>왕게임</h1><p>왕을 뽑고 나머지는 번호 카드를 받아요. 왕이 한두 개 번호를 골라 미션을 내리면, 그 번호를 가진 사람이 공개돼요.</p>'+
     '<div class="tabs"><button data-do="create-tab" aria-pressed="'+create+'">방 만들기</button><button data-do="join-tab" aria-pressed="'+!create+'">방 들어가기</button></div>'+
     '<form id="entry">'+
     (create?'<label>방 제목<input name="title" required maxlength="40" value="왕게임 같이 한 판 해요"></label><label>참여 인원<select name="capacity">'+Array.from({length:10},(_,i)=>'<option value="'+(i+3)+'" '+(i===1?'selected':'')+'>'+(i+3)+'명</option>').join('')+'</select></label>':
@@ -108,7 +108,7 @@ function render(s,force=false){
       content+=party?'':s.me===0?control('한 판 더','again',true):'<p>방장이 다음 판을 시작할 수 있어요.</p>';
     }
   }else{
-    const role=s.card===0?'당신은 왕이에요.':'내 번호는 '+s.card+'번이에요.';
+    const role=s.card===0?'이번 판의 왕이에요!':'내 번호는 '+s.card+'번이에요.';
     const card='<section class="role">'+control(revealed?'내 카드 가리기':'내 카드 보기','reveal')+
       (revealed?'<p class="secret">'+role+'</p>':'')+'</section>';
     if(s.phase==='cards'){
@@ -119,8 +119,8 @@ function render(s,force=false){
       content='<h1>왕의 미션을 정하세요</h1>'+card+'<form id="order"><label>첫 번째 번호<select name="number">'+numberOptions(count,draftNumber)+'</select></label>'+
         '<label>두 번째 번호 (선택)<select name="second">'+secondOptions(count)+'</select></label>'+
         '<label>미션<input name="mission" maxlength="80" required value="'+esc(draftMission)+'"></label>'+
-        '<p><small>직접 쓴 내용은 관리자 검토 후 공용 목록에 등록될 수 있어요.</small></p>'+
-      control('다른 미션 추천','suggest')+'<div class="actions"><button class="action" type="submit">번호 주인공 공개</button></div></form>';
+        '<p><small>직접 적은 미션은 관리자 검토 후 다른 참가자에게도 추천될 수 있어요.</small></p>'+
+      control('다른 미션 추천','suggest')+'<div class="actions"><button class="action" type="submit">명령 내리기</button></div></form>';
     }else{
       content='<h1>'+esc(s.players[s.king])+'님이 왕이에요</h1>'+card+'<p>왕이 번호와 미션을 고르고 있어요.</p>';
     }

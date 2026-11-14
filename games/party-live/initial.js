@@ -9,14 +9,14 @@
     const g = s.game;
     if (s.phase === 'done') {
       return '<h1>' + ui.esc(s.players[g.winner]) + '님 승리!</h1><p>' + ui.esc(s.players[g.lastOut]) +
-        '님이 ' + ui.esc(g.reason) + '로 탈락했어요.</p>';
+        '님이 탈락했어요. (' + ui.esc(g.reason) + ')</p>';
     }
     const mine = s.me === g.current;
     const whose = mine ? '내 차례예요' : ui.esc(s.players[g.current]) + '님 차례예요';
     const start = '<button type="button" id="initial-start" class="action">5초 시작</button>';
     switch (s.phase) {
       case 'ready':
-        return '<h1>' + whose + '</h1><p>초성 두 개에 맞는 새 두 글자 단어를 말해요. 연애·성인 주제도 좋아요. 이번 초성에서 이미 나온 단어는 빼 주세요.</p>' +
+        return '<h1>' + whose + '</h1><p>초성에 맞는 두 글자 단어를 말해요. 같은 초성에서 이미 나온 단어는 안 돼요.</p>' +
           '<div class="initial-word" aria-label="초성">' + ui.esc(g.initial) + '</div><p>남은 사람 ' + g.alive.length + '명</p>' +
           (mine ? start : '');
       case 'active':

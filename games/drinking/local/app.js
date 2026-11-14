@@ -20,14 +20,14 @@ const games=[
   ['bottle','술병 나침반','운과 감각','병 끝이 가리키는 사람','#b7d9d7',2,'2~12명이 함께해요. 테이블 모양과 방향을 고르고 각자 자리를 정해요. 돌아가는 병을 터치하면 10~20초 동안 서서히 멈춰요. 가끔은 잠깐 멈췄다가 한 칸이나 두 칸 뒤로 아주 천천히 돌아가요.'],
   ['bomb','시간폭탄','순발력','터지기 전에 넘겨요','#f5bba7',2,'나라 이름, 음식 이름처럼 주제에 맞는 답을 바로 말하고 폰을 넘겨요. 이미 나온 답은 다시 말할 수 없어요. 폭탄이 터지면 그때 화면에 표시된 사람이 당첨이에요.'],
   ['stopwatch','감각 스톱워치','운과 감각','목표 시간에 멈추기','#c8d9ce',2,'첫 1초가 지나면 숫자가 사라져요. 목표 시간에 가장 가깝게 멈춘 사람이 이겨요.'],
-  ['liar','라이어 찾기','추리와 대화','첫 키스, 들키지 말고 설명하기','#d0c2e1',3,'한 명만 단어를 몰라요. 한 사람씩 힌트를 준 뒤, 각자 의심하는 사람에게 몰래 투표해요.'],
-  ['king','왕게임','추리와 대화','고백부터 둘만의 스킨십까지','#f0d790',2,'한 명은 왕, 나머지는 비밀 번호를 받아요. 왕이 한 명이나 두 명에게 미션을 내려요. 두 사람 미션은 각자 동의하고 시작해요. 원하지 않는 미션은 벌칙 없이 패스해요.'],
-  ['truth','진실게임','추리와 대화','솔직한 질문 카드','#f0c6c4',2,'내 차례에 카드 한 장을 골라 질문에 답해요. 답하기 어려우면 패스해도 돼요.'],
-  ['initial','초성 대결','순발력','두 글자 단어를 5초 안에','#b8cfe1',2,'초성 두 개에 맞는 새 두 글자 단어를 5초 안에 말해요. 연애·성인 주제도 좋아요. 시간이 다 되거나 틀리면 탈락하고 마지막 한 명이 이겨요.'],
-  ['minority','소수파 찾기','추리와 대화','우리의 선택은 몇 대 몇?','#bfd5bb',3,'두 선택지 중 하나를 각자 몰래 골라요. 모두 투표하면 어느 쪽이 소수파인지 공개돼요.'],
-  ['mission','한 명만 다른 미션','추리와 대화','비슷한 연애 장면, 다른 몸짓','#e5bdac',3,'한 명만 조금 다른 제시어를 받아요. 말·소품·실제 접촉 없이 각자 혼자 몸짓으로 표현한 뒤, 다른 동작을 한 사람에게 몰래 투표해요.'],
-  ['fingers','손병호 게임','추리와 대화','해당하면 손가락 하나 접기','#e1bd95',2,'성인이 된 뒤의 경험을 기준으로 해요. 조건에 해당하면 스스로 손가락을 접고, 공개하기 싫으면 패스해도 돼요. 다섯 개를 먼저 접은 사람이 걸려요.'],
-  ['imagevote','이미지 게임','추리와 대화','이 질문에 딱 맞는 사람은?','#b9c9e4',2,'상상 속 성인 연애 상황에 가장 어울리는 사람에게 몰래 한 표를 주세요. 모두 투표하면 가장 많이 지목된 사람이 공개돼요.'],
+  ['liar','라이어 찾기','추리와 대화','힌트만 듣고 라이어 찾기','#d0c2e1',3,'한 명만 제시어를 몰라요. 돌아가며 힌트를 말한 뒤, 라이어로 의심되는 사람에게 몰래 투표해요.'],
+  ['king','왕게임','추리와 대화','고백부터 둘만의 스킨십까지','#f0d790',2,'왕을 뽑고 나머지는 번호 카드를 받아요. 왕이 한두 개 번호를 골라 미션을 내려요. 둘이 하는 미션은 두 사람 모두 동의하면 시작해요. 원하지 않으면 벌칙 없이 패스해요.'],
+  ['truth','진실게임','추리와 대화','솔직한 질문 카드','#f0c6c4',2,'차례가 오면 카드 한 장을 골라 모두 앞에서 솔직하게 답해요. 답하기 어려우면 패스해도 돼요.'],
+  ['initial','초성 대결','순발력','두 글자 단어를 5초 안에','#b8cfe1',2,'초성에 맞는 두 글자 단어를 5초 안에 말해요. 이미 나온 단어는 다시 말할 수 없어요. 시간이 다 되거나 틀리면 탈락하고, 마지막 한 명이 이겨요.'],
+  ['minority','소수파 찾기','추리와 대화','우리의 선택은 몇 대 몇?','#bfd5bb',3,'두 선택지 중 하나를 몰래 골라요. 모두 투표하면 결과가 공개돼요. 고른 사람이 적은 쪽이 소수파예요.'],
+  ['mission','한 명만 다른 미션','추리와 대화','비슷한 제시어, 다른 몸짓','#e5bdac',3,'한 명만 다른 제시어를 받아요. 말이나 소품 없이 동시에 몸짓으로 표현하고, 다른 동작을 한 사람을 찾아 투표해요. 다른 사람에게 닿지 않고 혼자 흉내 내세요.'],
+  ['fingers','손병호 게임','추리와 대화','해당하면 손가락 하나 접기','#e1bd95',2,'다섯 손가락을 펴고 시작해요. 조건에 해당하면 하나씩 접어요. 다섯 개를 먼저 접으면 걸려요. 답하기 싫은 조건은 패스해도 돼요.'],
+  ['imagevote','이미지 게임','추리와 대화','이 질문에 딱 맞는 사람은?','#b9c9e4',2,'질문을 읽고 가장 잘 어울리는 사람에게 몰래 한 표를 주세요. 모두 투표하면 가장 많이 지목된 사람이 공개돼요.'],
   ['updown','업앤다운','운과 감각','숫자를 부르면, 업 또는 다운!','#c9d8ea',2,'1부터 100 사이에 숨은 숫자를 돌아가며 맞혀요. 업이면 더 큰 수, 다운이면 더 작은 수예요. 정확히 맞힌 사람이 이겨요.']
 ].map(([id,title,category,short,color,min,rule],i)=>({id,title,category,short,color,min,rule,num:String(i+1).padStart(2,'0')}));
 const prompts=window.DrinkingPrompts;
@@ -592,7 +592,7 @@ function afterDeal(){const r=round;r.revealed=false;
     r.phase='king';r.number=1;r.second=null;r.prompt=draw(prompts.kingChoices(r.bank,false));return king();
   }
   r.phase='talk';
-  shell('<h2>'+(game.id==='liar'?'한 사람씩 힌트를 말해요':'하나, 둘, 셋! 동시에 표현해요')+'</h2><p>'+(game.id==='liar'?'정답과 초성은 숨기고, 장소·느낌·상황으로 한마디씩 설명하세요. 누가 단어를 모르는지 찾아봐요.':'말·소품·실제 접촉 없이 각자 혼자 몸짓만으로 표현하세요. 누가 다른 동작을 했나요?')+'</p>'+actions(btn('비밀 투표 시작','start-vote')),true)
+  shell('<h2>'+(game.id==='liar'?'한 사람씩 힌트를 말해요':'하나, 둘, 셋! 동시에 흉내 내요')+'</h2><p>'+(game.id==='liar'?'정답과 초성은 말하지 마세요. 각자 힌트를 하나씩 주고, 누가 단어를 모르는지 찾아봐요.':'말이나 소품 없이 혼자 표현해 주세요. 다른 사람에게 닿지 않아요. 누가 다른 동작을 했나요?')+'</p>'+actions(btn('비밀 투표 시작','start-vote')),true)
 }
 function king(){
   const r=round,count=players.length-1;
@@ -600,11 +600,11 @@ function king(){
     .map(n=>'<option value="'+n+'"'+(n===selected?' selected':'')+'>'+n+'번</option>').join('');
   const secondOptions=()=>'<option value="">한 명에게만</option>'+options(r.second,r.number);
   const second=count>1?'<label for="king-second">두 번째 번호 (선택)</label><p><select class="field" id="king-second">'+secondOptions()+'</select></p>':'';
-  shell('<span class="turn-tag">오늘의 왕 · '+name(r.king)+'</span><h2>몇 번에게 미션을 줄까요?</h2>'+
+  shell('<span class="turn-tag">오늘의 왕 · '+name(r.king)+'</span><h2>미션을 받을 번호를 골라 주세요</h2>'+
     '<label for="king-number">첫 번째 번호</label><p><select class="field" id="king-number">'+options(r.number)+'</select></p>'+second+
     '<label for="king-mission">왕의 미션</label><p><input class="field" id="king-mission" maxlength="80" value="'+esc(r.prompt)+'"></p>'+
-    '<p><small>직접 쓴 내용은 관리자 검토 후 공용 목록에 등록될 수 있어요.</small></p>'+
-      actions(btn('번호 주인공 공개','royal'),btn('다른 미션','new-prompt','quiet')),true);
+    '<p><small>직접 적은 미션은 관리자 검토 후 다른 참가자에게도 추천될 수 있어요.</small></p>'+
+      actions(btn('명령 내리기','royal'),btn('다른 미션','new-prompt','quiet')),true);
   const field=$('#king-mission'),suggest=app.querySelector('[data-action="new-prompt"]');
   const choices=()=>prompts.kingChoices(r.bank,r.second!=null);
   bindLocalSuggestion(r,field,suggest,choices);
@@ -714,7 +714,7 @@ function revealTruth(value){
 }
 function initialReady(){
   const r=round;r.phase='initial-ready';const turn=r.alive[r.turn];
-  shell(tag(turn)+'<h2>준비되면 시작하세요</h2><p>초성 <b>'+esc(r.initial)+'</b> · 남은 사람 '+r.alive.length+'명<br>초성 두 개에 맞는 새 두 글자 단어를 말해요. 연애·성인 주제도 좋아요. 이번 초성에서 이미 나온 단어는 빼 주세요.</p>'+actions(btn('5초 시작','initial-go')),true)
+  shell(tag(turn)+'<h2>준비되면 시작하세요</h2><p>초성 <b>'+esc(r.initial)+'</b> · 남은 사람 '+r.alive.length+'명<br>5초 안에 두 글자 단어를 말해요. 같은 초성에서 이미 나온 단어는 안 돼요.</p>'+actions(btn('5초 시작','initial-go')),true)
 }
 function initialGo(){
   const r=round;r.phase='initial-live';shell(tag(r.alive[r.turn])+'<h2>'+esc(r.initial)+'</h2><p>새 단어를 소리 내어 말해요.</p><div class="countdown" id="seconds">5</div>'+actions(btn('말했어요','word-ok'),btn('중복·오답','word-out','quiet')));
@@ -754,10 +754,10 @@ function upDown(lastGuess){
 function partyPrompt(){
   const r=round,fingers=game.id==='fingers';
   r.phase='party-prompt';
-  shell((fingers?tag(r.turn):'')+'<h2>'+(fingers?'어떤 사람이 접을까요?':'어떤 사람을 찾을까요?')+'</h2>'+
+  shell((fingers?tag(r.turn):'')+'<h2>'+(fingers?'접을 조건을 정해 주세요':'어떤 사람을 찾을까요?')+'</h2>'+
     '<form class="party-prompt" id="party-prompt"><label for="party-question">'+(fingers?'접을 조건':'지목할 질문')+'</label>'+
     '<textarea class="field" id="party-question" rows="2" maxlength="120" required>'+esc(draw(r.bank))+'</textarea>'+
-    '<p><small>직접 쓴 내용은 관리자 검토 후 공용 목록에 등록될 수 있어요.</small></p>'+
+    '<p><small>직접 적은 내용은 관리자 검토 후 다른 참가자에게도 추천될 수 있어요.</small></p>'+
       '<div class="actions">'+btn(fingers?'다른 조건':'다른 질문','party-suggest','quiet')+
     '<button class="start" type="submit">'+(fingers?'이 조건으로 접기':'비밀 투표 시작')+'</button></div></form>'+
     (fingers?fingerScoreboard():''));
@@ -774,7 +774,7 @@ function partyPrompt(){
     fx.play('deal');
     if(!fingers)return startVotes('imagevote');
     r.phase='fold';
-    shell(tag(r.turn)+'<h2>'+esc(prompt)+'</h2><p>성인이 된 뒤의 경험이에요. 본인이 접겠다고 한 사람만 골라 주세요. 패스한 사람은 접지 않고 넘어가요.</p>'+
+    shell(tag(r.turn)+'<h2>'+esc(prompt)+'</h2><p>조건에 해당해서 접겠다는 사람만 골라 주세요. 패스한 사람은 고르지 않아요.</p>'+
       '<form id="fold-form"><fieldset class="fold-players" aria-label="손가락을 접을 사람">'+
       players.map((_,i)=>'<label><input type="checkbox" value="'+i+'"><span>'+name(i)+'</span><small>'+r.fingers[i]+'개</small></label>').join('')+
       '</fieldset><button class="start" type="submit">선택 완료</button></form>');
@@ -807,7 +807,7 @@ function canVoteFor(index){
 function vote(){
   const r=round;if(!r.revealed)return privateScreen(name(r.pos)+'님에게 폰을 주세요',r.voteKind==='imagevote'?'누가 누구를 골랐는지는 공개되지 않아요.':'선택은 마지막에 함께 공개해요.','비밀 투표',actions(btn('내 투표 열기','open-vote')));
   const items=r.voteKind==='minority'?r.pair.map((v,i)=>[i,v]):players.flatMap((v,i)=>canVoteFor(i)?[[i,v]]:[]);
-  shell('<span class="turn-tag">비공개 · '+(r.pos+1)+' / '+players.length+'</span><h2>'+name(r.pos)+'님의 선택</h2><p>'+(r.voteKind==='imagevote'?esc(r.prompt)+'<br>'+(players.length===2?'둘이 할 때는 나도 고를 수 있어요.':'나를 제외한 한 명을 골라요.'):r.voteKind==='minority'?'더 끌리는 쪽을 골라 주세요.':'가장 의심되는 한 명을 골라 주세요.')+'</p>'+choiceList(items,'cast'));
+  shell('<span class="turn-tag">비공개 · '+(r.pos+1)+' / '+players.length+'</span><h2>'+name(r.pos)+'님의 선택</h2><p>'+(r.voteKind==='imagevote'?esc(r.prompt)+'<br>'+(players.length===2?'둘이 할 때는 나도 고를 수 있어요.':'나를 제외한 한 명을 골라요.'):r.voteKind==='minority'?'둘 중 하나만 고른다면?':'가장 의심되는 한 명을 골라 주세요.')+'</p>'+choiceList(items,'cast'));
 }
 function votesDone(){
   const r=round;r.phase='done';fx.play('result');
