@@ -106,7 +106,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: '2GJfWMYCWY0', title: 'GO', kind: '뮤직비디오', source: 'BLACKPINK / YG Entertainment · 2026.02.27' },
     { id: 'CgCVZdcKcqY', title: '뛰어 (JUMP)', kind: '뮤직비디오', source: 'BLACKPINK / YG Entertainment · 2025.07.11' },
     { id: 'k--lCrP69hg', title: 'BLACKPINK 10TH ANNIVERSARY', kind: '기념 영상', source: 'BLACKPINK Official · 2026.08.07' },
-    { id: 'uw4OYow_v7Y', title: 'BLACKPINK 10th Anniversary MEET & GREET', kind: '기념 영상', source: 'BLACKPINK Official · 2026.08.17' }
+    { id: 'uw4OYow_v7Y', title: 'BLACKPINK 10th Anniversary MEET & GREET', kind: '기념 영상', source: 'BLACKPINK Official · 2026.08.17' },
+    { id: 'w1ayRv8j5yk', title: 'DEADLINE JACKET MAKING FILM', kind: '메이킹', source: 'BLACKPINK Official · 2026.03.13' },
+    { id: '0LLFprdOHqo', title: 'GO M/V Behind the Scenes', kind: '메이킹', source: 'BLACKPINK Official · 2026.03.09' }
   ],
   idle: [
     { id: 'FFjDEkZg-54', title: 'Gimme Dat Love', kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.07.06' },
