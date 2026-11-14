@@ -1,12 +1,14 @@
 import { SajuPayment } from './payment.js?v=20261113-saju-lists1';
 import { SajuCompatibilityPayment, COMPATIBILITY_PRICE } from './compatibility-payment.mjs?v=20261113-compatibility20-1';
 import { compatibilityScoreText } from './compatibility-score-view.mjs?v=20261114-saju-wind1';
-import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261114-saju-slide1';
+import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261114-saju-flow1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
 import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-qa1';
+import { attachEntryFlow } from './entry-flow.mjs?v=20261114-saju-flow1';
 
 const $=id=>document.getElementById(id);
 const form=$('compatibility-form'),button=$('compatibility-open');
+const entryFlow=attachEntryFlow(form);
 const people=['self','partner'];
 const motionQuery=window.matchMedia('(prefers-reduced-motion: reduce)');
 let reducedMotion=motionQuery.matches, motionOverride=false;
@@ -95,6 +97,7 @@ function fillPerson(person,{name,gender,birth}) {
   $(person+'-hour').value=birth.hour===null?'':String(birth.hour);
   $(person+'-minute').value=birth.hour===null?'':String(birth.minute);
   changed();
+  entryFlow.refresh();
 }
 function updateFields() {
   for(const person of people) {
@@ -176,7 +179,7 @@ async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
     import('./compatibility.mjs?v=20261114-saju-wind1'),
-    import('./report-view.mjs?v=20261114-saju-slide1'),
+    import('./report-view.mjs?v=20261114-saju-flow1'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
 }
@@ -233,6 +236,7 @@ $('pair-swap').addEventListener('click',()=>{
   }
   for(const picker of profilePickers)picker.resetSelection();
   changed();
+  entryFlow.refresh();
 });
 $('compatibility-clear').addEventListener('click',()=>{generation++;quoteGeneration++;quoteBusy=false;resetView(true);updateOffer();});
 
@@ -307,7 +311,8 @@ form.addEventListener('submit',async event=>{
   }
 });
 $('compatibility-edit').addEventListener('click',()=>{
-  generation++;clearResult();updateOffer();void refreshQuote();$('self-year').focus({preventScroll:true});
+  generation++;clearResult();updateOffer();void refreshQuote();entryFlow.reset();$('self-year').focus({preventScroll:true});
+  form.scrollIntoView({block:'start',behavior:reducedMotion?'instant':'smooth'});
 });
 $('compatibility-copy').addEventListener('click',async()=>{
   if(expireCurrent()){updateOffer();return;}

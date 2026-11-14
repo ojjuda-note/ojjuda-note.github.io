@@ -1,8 +1,10 @@
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
 import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-qa1';
+import { attachEntryFlow } from './entry-flow.mjs?v=20261114-saju-flow1';
 
 const $ = id => document.getElementById(id);
 const form = $('birth-form');
+const entryFlow = attachEntryFlow(form);
 const submit = $('open-story');
 const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 let reducedMotion = reduceQuery.matches;
@@ -163,6 +165,7 @@ function fillPerson({name,gender,birth}) {
   $('birth-minute').value=birth.hour===null?'':String(birth.minute);
   updateTime();
   scheduleEntryCheck();
+  entryFlow.refresh();
 }
 
 function plainWarning(message) {
@@ -450,7 +453,7 @@ async function prepareDetailedReading(chart,target,person=currentPerson||readPer
   detailModulesPromise ||= Promise.all([
     import('./fortune-data.mjs?v=20261113-saju-reader1'),
     import('./readings.mjs?v=20261114-saju-daeun6-1'),
-    import('./report-view.mjs?v=20261114-saju-slide1'),
+    import('./report-view.mjs?v=20261114-saju-flow1'),
     import('./daeun.mjs?v=20261114-saju-qa1'),
     zodiacModule()
   ]).catch(error=>{detailModulesPromise=null;throw error;});
@@ -780,8 +783,9 @@ $('edit-birth').addEventListener('click',()=>{
   document.querySelector('.skip-link').href='#birth-form';
   document.querySelector('.skip-link').textContent='출생 정보 입력으로 바로가기';
   clearError();updateEntryOffer();scheduleEntryCheck();
+  entryFlow.reset();
   $('birth-year').focus({preventScroll:true});
-  form.scrollIntoView({block:'center',behavior:reducedMotion?'instant':'smooth'});
+  form.scrollIntoView({block:'start',behavior:reducedMotion?'instant':'smooth'});
 });
 function toast(message){clearTimeout(toastTimer);$('status').textContent=message;$('status').classList.add('is-visible');toastTimer=setTimeout(()=>$('status').classList.remove('is-visible'),2600);}
 $('copy-reading').addEventListener('click',async()=>{
