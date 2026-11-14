@@ -81,6 +81,7 @@ body.saju-edition .reading-service-nav > a[aria-current=page] { color: #fff8e8; 
   content: ""; position: absolute; inset: auto 0 0; height: 3px; background: #e5cc91;
 }
 body.saju-edition .reading-service-nav a strong { color: inherit; font-size: 16px; }
+body.saju-edition .reading-service-nav a[aria-current=page] strong { color: #fff8e8; }
 body.saju-edition .reading-service-nav a > span { color: #e0dcc9; font-size: 14px; }
 body.saju-edition .entry-shell, body.saju-edition .result, body.saju-edition #compatibility-result {
   max-width: var(--sheet); margin: 26px auto 0;
