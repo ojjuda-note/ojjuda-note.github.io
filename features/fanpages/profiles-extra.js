@@ -485,6 +485,7 @@ if (riizeProfile) {
     member.source = 'https://riizeofficial.jp/profile/' + info[1] + '/';
   }
   riizeProfile.records = [
+    { year: '2026.05', title: '일본 싱글 All of You 더블 플래티넘 인증', detail: '일본레코드협회 골드디스크 더블 플래티넘 인증 · 2026.05.14 공식 발표', href: 'https://riizeofficial.jp/news/20260514/' },
     { year: '2026.08', title: '일본 싱글 3집 Sunburst 발매', detail: '2026.08.26 CD 발매 · Sunburst/Rise Over/KILL SHOT', href: 'https://riizeofficial.jp/discography/sunburst_normal/' }
   ];
   riizeProfile.sources.unshift({ label: 'RIIZE 일본 공식 6인 프로필 · 생일', href: 'https://riizeofficial.jp/profile/' });
@@ -513,3 +514,5 @@ if (boynextdoorProfile) {
 
 // Pending PR reconciliation: only the eight manually reviewed profiles.
 for (const id of ["hearts2hearts", "kissoflife", "kiiikiii", "stayc", "seventeen", "enhypen", "riize", "boynextdoor"]) window.OJJUDA_FAN_PROFILES[id].checkedAt = '2026.11.13';
+// RIIZE-only recheck after the earlier cross-group review stamp.
+window.OJJUDA_FAN_PROFILES.riize.checkedAt = '2026.11.14';
