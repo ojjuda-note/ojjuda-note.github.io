@@ -354,7 +354,18 @@
         "공예",
         "체험"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "attendance": {
+        "count": 97887,
+        "kind": "actual",
+        "year": 2026,
+        "sourceName": "김해시 공식 집계 발표(연합뉴스 2026-11-11 인용)",
+        "sourceUrl": "https://www.yna.co.kr/view/AKR20261111104600052",
+        "sourceCheckedAt": "2026-11-15"
+      },
+      "verificationSources": [
+        "https://files.newsis.com/view/NISX20261111_0003863392"
+      ]
     },
     {
       "id": "busan-fireworks-2026",
