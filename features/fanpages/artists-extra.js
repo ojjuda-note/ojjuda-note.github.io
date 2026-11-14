@@ -167,7 +167,8 @@
       photo: 'Nmixx in Frankfurt 20260324 (1).jpg', photoLabel: '프랑크푸르트 공연', photoYear: '2026', credit: 'PFNKa', license: 'CC BY 4.0',
       morePhotos: [
         commonsPhoto('20260320 NMIXX Amsterdam concert 01.jpg', '암스테르담 월드투어 무대', '2026', 'Robbie Klinkenberg', 'CC BY 4.0'),
-        commonsPhoto('20260320 NMIXX Amsterdam concert 12.jpg', '암스테르담 공연 현장', '2026', 'Robbie Klinkenberg', 'CC BY 4.0')
+        commonsPhoto('20260320 NMIXX Amsterdam concert 12.jpg', '암스테르담 공연 현장', '2026', 'Robbie Klinkenberg', 'CC BY 4.0'),
+        commonsPhoto('20260320 NMIXX Amsterdam concert 04 Lily.jpg', '암스테르담 공연 릴리', '2026', 'Robbie Klinkenberg', 'CC BY 4.0')
       ],
       music: [
         { title: 'Strange Muse', date: '2026.10.19', type: '미니 6집 · 타이틀 긴 소원 (Birthday Wish)', songs: ['긴 소원 (Birthday Wish)', 'Kerosene', 'RudE TaLK', '너는 달 (Sing to the Moon) (LILY, HAEWON)', "Hot 'n Unbothered (SULLYOON, BAE)", '휙 (WHIP) (JIWOO, KYUJIN)'], href: 'https://nmixx.jype.com/discography/vmgvjirm' },
@@ -184,6 +185,8 @@
         { date: '2026-12-13', title: '일본 데뷔 쇼케이스 N=MIXX', sub: '일본 아이치 · 쿠로코군 홀 · 17:00 · 워너뮤직 재팬 주최', href: 'https://nmixxjapan.com/s/222o/page/Japan_debut_showcase' }
       ],
       news: [
+        { date: '2026.10.30', tag: '수상', title: '2026 대한민국 대중문화예술상 문화체육관광부 장관 표창 수상(10.29 시상)', href: 'https://recruit.jype.com/ko/news/61' },
+        { date: '2026.10.28', tag: '공연', title: 'JYP 발표 · 인천 월드투어 피날레 3회 공연 전석 매진 기록', href: 'https://recruit.jype.com/ko/news/60' },
         { date: '2026.10.26', tag: '공연', title: '11.29 CGV 피날레 생중계 확정 · 11.11 예매 시작', href: 'https://www.newspim.com/news/view/20261026001185' },
         { date: '2026.10.19', tag: '컴백', title: '미니 6집 Strange Muse · 긴 소원 (Birthday Wish) 발매', href: 'https://nmixx.jype.com/notice/fsigcq5u' },
         { date: '2026.09.19', tag: '수상', title: '더팩트 뮤직 어워즈 올해의 사운드 대상 수상', href: 'https://www.soompi.com/article/1871808wpp/winners-of-2026-the-fact-music-awards' },
@@ -192,13 +195,14 @@
       merch: [
         { title: 'Strange Muse 공식 앨범', sub: 'JYP JAPAN · 포맷·재고·특전은 판매처에서 확인', href: 'https://jypj-store.com/collections/nmixx-music' },
         { title: 'NMIXX OFFICIAL LIGHT STICK VER.2', sub: 'JYP JAPAN · 공식 응원봉', href: 'https://jypj-store.com/collections/nmixx-official-goods' },
-        { title: 'Strange Muse 팝업 공식 포토카드', sub: 'MAKESTAR · 예약 판매 10.28~11.03 종료 · 11.12 발매 예정', href: 'https://www.makestar.com/product/21421' }
+        { title: 'Strange Muse 팝업 공식 포토카드', sub: 'MAKESTAR · 10.28~11.03 예약 판매 종료 · 11.12 발매 · 현재 판매 종료', href: 'https://www.makestar.com/product/21421' }
       ],
       schedules: [
         { title: 'JYP 공식 NMIXX 일정', sub: '공식 활동 달력', href: 'https://nmixx.jype.com/schedule' },
         { title: '인천 피날레 공식 예매', sub: 'NOL 티켓 · 변경·취소 규정 확인', href: 'https://nol.yanolja.com/ticket/products/26013946' }
       ],
       campaigns: [
+        { kind: '콜라보', date: '2026.10.16', title: '랜디스도넛 × NMIXX', sub: 'Strange Muse 기념 멤버 기획 한정 도넛 6종 · 11.30까지 · 매장별 운영·재고 확인', href: 'https://m.etnews.com/20261016000122' },
         { kind: '광고', date: '2026.09.01', title: 'MAKE UP FOR EVER × NMIXX', sub: '아티스트 컬러글로우 립밤 공식 캠페인', href: 'https://prtimes.jp/main/html/rd/p/000000124.000019175.html' },
         { kind: '홍보대사', date: '2026.06.11', title: '주한영국대사관 Girls Can Dream', sub: '꿈꾸는 소녀에게 불가능은 없다 · 캠페인 홍보대사', href: 'https://www.bntnews.co.kr/article/view/bnt202606120142' }
       ],
@@ -388,6 +392,9 @@
       concept: '틀에 얽매이지 않는 감각과 자유로운 에너지.',
       official: 'https://www.starship-ent.com/musician/kiiikiii', youtube: 'https://www.youtube.com/@KiiiKiii_starship',
       photo: 'KiiiKiii in August 2026.png', photoLabel: '2026년 단체', photoYear: '2026', credit: 'K-POPIT 케이팝잇', license: 'CC BY 4.0',
+      morePhotos: [
+        commonsPhoto('Kiiikiii 250326.jpg', '데뷔 활동 · SBS 라디오', '2025', 'SBS Radio 에라오 · Commons 편집 Orangesclub', 'CC BY 3.0')
+      ],
       music: [
         { title: 'WhyKiiiKiii', date: '2026.08.10', type: '미니 3집 · 타이틀 Pop Off Pop Off', songs: ['Ever2Late!', 'Hey Hi', 'Pop Off Pop Off', 'SWEET SOUR', 'Candy Pink Magic Hole Flip Phone (나 어떡해)', 'Blue Hour'], href: 'https://music.apple.com/us/album/whykiiikiii-ep/6796609538' },
         { title: 'Delulu Pack', date: '2026.01.26', type: '미니 2집 · 타이틀 404 (New Era)', songs: ['Delulu', '404 (New Era)', 'UNDERDOGS', '멍냥 (MUNGNYANG)', 'Dizzy', 'To Me From Me (Prod. TABLO)'], href: 'https://music.apple.com/us/album/delulu-pack-ep/1866860579' },
@@ -407,7 +414,9 @@
       news: [
         { date: '2026.10.15', tag: '공연', title: '2026 MAMA AWARDS 11.21 출연 확정', href: 'https://www.cj.net/jp/press-release/view/1132' },
         { date: '2026.10.14', tag: '공연', title: 'MMA2026 Music Day 11.15 출연 확정', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' },
-        { date: '2026.08.10', tag: '앨범', title: '미니 3집 WhyKiiiKiii · Pop Off Pop Off 발매', href: 'https://music.apple.com/us/album/whykiiikiii-ep/6796609538' }
+        { date: '2026.08.10', tag: '앨범', title: '미니 3집 WhyKiiiKiii · Pop Off Pop Off 발매', href: 'https://music.apple.com/us/album/whykiiikiii-ep/6796609538' },
+        { date: '2026.06.17', tag: '협업', title: 'GS25 × 키키 · 딸기·망고 젤라또바 2종 출시 발표', href: 'https://www.yna.co.kr/view/AKR20260617027900030' },
+        { date: '2026.04.27', tag: '광고', title: 'PANDORA × 키키 · Be Your Lucky Charm 화보 공개', href: 'https://www.marieclairekorea.com/fashion/2026/04/pandora/' }
       ],
       merch: [
         { title: 'WhyKiiiKiii · AMENITIES ver.', sub: '스타쉽스퀘어 공식 앨범 · 재고는 판매처에서 확인', href: 'https://starship-square.com/product/amenities-ver-kiiikiii-ep-whykiiikiii/2061/category/58/display/1/' },
@@ -415,7 +424,11 @@
         { title: 'WhyKiiiKiii · SNAPSHOT 한정반', sub: '스타쉽스퀘어 · 예약판매 8.03~8.12 종료', href: 'https://starship-square.com/product/snapshot-ver-kiiikiii-ep-whykiiikiii-%ED%95%9C%EC%A0%95%EB%B0%98/2074/category/58/display/1/' }
       ],
       campaigns: [
+        { kind: '콜라보', date: '2026.02.14', title: 'New Era × KiiiKiii', sub: '59FIFTY 헤드웨어 브랜드 협업', href: 'https://www.bntnews.co.kr/article/view/bnt202602130181' },
+        { kind: '콜라보', date: '2026.06.17', title: 'GS25 × KiiiKiii 젤라또바', sub: '키키픽 딸기·망고 젤라또바 2종 출시 발표 · 현재 판매·재고는 점포별 확인', href: 'https://www.yna.co.kr/view/AKR20260617027900030' },
+        { kind: '광고', date: '2026.04.27', title: 'PANDORA × KiiiKiii', sub: 'Be Your Lucky Charm · 마리끌레르 5월호 주얼리 화보', href: 'https://www.marieclairekorea.com/fashion/2026/04/pandora/' },
         { kind: '홍보대사', date: '2026.01.21', title: '서울시 2026 서울색·서울빛 홍보대사', sub: '모닝옐로우 · 서울시 공식 위촉', href: 'https://mediahub.seoul.go.kr/archives/2016856' },
+        { kind: '광고', date: '2026.01.13', title: 'WEGO 2026 SPRING 비주얼 모델', sub: '일본 의류 매장 비주얼 · 1.16 1차, 2.13 2차 · 안내방송 3.12 종료 · 증정품 종료·재고는 매장 확인', href: 'https://prtimes.jp/main/html/rd/p/000000144.000057274.html' }
       ],
       accent: '#4c95c2', light: '#daf5ff', dark: '#315e7b', bg: '#f0fbff', shape: '✺'
     },
@@ -423,12 +436,14 @@
       id: 'blackpink', name: 'BLACKPINK', korean: '블랙핑크', category: 'girl', fan: 'BLINK', agency: 'YG Entertainment',
       members: ['지수', '제니', '로제', '리사'],
       debut: '2016.08.08', debutWork: 'SQUARE ONE', songs: ['WHISTLE', 'BOOMBAYAH'],
+      checkedAt: '2026.11.14',
       concept: '블랙과 핑크, 서로 다른 매력이 공존하는 무대.',
       official: 'https://ygfamily.com/ko/artists/blackpink/profile', youtube: 'https://www.youtube.com/@BLACKPINK',
       photo: '20240809 Blackpink Pink Carpet 09.png', photoLabel: '핑크 카펫', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
       morePhotos: [
         commonsPhoto('20240809 Blackpink Pink Carpet 07.png', '영화 핑크 카펫 · 단체', '2024', 'K-POPIT 케이팝잇', 'CC BY 3.0'),
-        commonsPhoto('20240809 Blackpink Pink Carpet 12.png', '영화 핑크 카펫 · 현장', '2024', 'K-POPIT 케이팝잇', 'CC BY 3.0')
+        commonsPhoto('20240809 Blackpink Pink Carpet 12.png', '영화 핑크 카펫 · 현장', '2024', 'K-POPIT 케이팝잇', 'CC BY 3.0'),
+        commonsPhoto('20260526 Jennie Kim 02.jpg', '제니 · 샤넬 행사', '2026', '티비텐', 'CC BY 4.0')
       ],
       music: [
         { title: 'DEADLINE', date: '2026.02.27', type: '미니 3집 · 타이틀 GO', songs: ['JUMP', 'GO', 'Me and my', 'Champion', 'Fxxxboy'], href: 'https://ygfamily.com/en/artists/blackpink/discography/1651' },
@@ -443,16 +458,19 @@
         { title: 'YG BLACKPINK 공식 공지', sub: '행사·예매·변경 사항', href: 'https://ygfamily.com/ko/artists/blackpink/notice' }
       ],
       news: [
+        { date: '2026.11.11', tag: '협업', title: '지수, 토미 힐피거 2026 겨울 캠페인 참여', href: 'https://prtimes.jp/main/html/rd/p/000000305.000010635.html' },
         { date: '2026.08.08', tag: '활동', title: '데뷔 10주년 기념 공식 영상 공개', href: 'https://www.youtube.com/watch?v=k--lCrP69hg' },
         { date: '2026.02.27', tag: '컴백', title: '미니 3집 DEADLINE · 타이틀 GO 발매', href: 'https://ygfamily.com/en/artists/blackpink/discography/1651' },
         { date: '2026.02.21', tag: '기록', title: '공식 YouTube 아티스트 채널 최초 1억 구독자 기록', href: 'https://en.yna.co.kr/view/AEN20260221002851320' }
       ],
       merch: [
+        { title: 'Weverse US 2026 블랙프라이데이', sub: 'BLACKPINK 참여 · 미국·캐나다 배송 · 11/13 18:00~12/2 23:59(미국 PST) · 할인·재고는 품목별 확인', href: 'https://shop.weverse.io/en/shop/KRW/artists/32/notices/14965' },
         { title: 'DEADLINE 공식 앨범 BLACK Ver.', sub: 'YG SELECT · 포토북·포토카드 수록 · 재고는 판매처 확인', href: 'https://ygselect.com/product/blackpink-3rd-mini-album-deadline-black-ver/12808/' },
         { title: 'DEADLINE 공식 앨범 PINK Ver.', sub: 'YG SELECT · 포토북·포토카드 수록 · 재고는 판매처 확인', href: 'https://ygselect.com/product/blackpink-3rd-mini-album-deadline-pink-ver/12809/' },
         { title: 'DEADLINE MOOD LIGHT Ver.', sub: 'YG SELECT · 앨범·무드등 구성 · 재고는 판매처 확인', href: 'https://www.ygselect.com/product/blackpink-3rd-mini-album-deadline-mood-light-ver/12813/' }
       ],
       campaigns: [
+        { kind: '광고', date: '2026.11.11', title: '지수 × TOMMY HILFIGER · 2026 Winter', sub: '글로벌 앰배서더 지수 · A Perfect Holiday 겨울 캠페인 · PVH Japan 11월 11일 발표', href: 'https://prtimes.jp/main/html/rd/p/000000305.000010635.html' },
         { kind: '콜라보', date: '2026.02.26', title: '국립중앙박물관 × BLACKPINK × Spotify', sub: 'DEADLINE 발매 기념 박물관 오디오 도슨트·리스닝존 · 2.26~3.08 종료', href: 'https://weverse.io/blackpink/notice/33735' }
       ],
       accent: '#ff82b4', light: '#482938', dark: '#fff2f7', bg: '#180f18', night: true, shape: '♥'
@@ -461,43 +479,57 @@
       id: 'stayc', name: 'STAYC', korean: '스테이씨', category: 'girl', fan: 'SWITH', agency: 'High Up Entertainment',
       members: ['수민', '시은', '아이사', '세은', '윤', '재이'],
       debut: '2020.11.12', debutWork: 'Star To A Young Culture', songs: ['SO BAD', 'LIKE THIS'],
+      checkedAt: '2026.11.14',
       concept: '선명한 개성과 상큼한 멜로디를 담는 여섯 멤버.',
       official: 'https://www.highup-ent.com/', youtube: 'https://www.youtube.com/@STAYC',
       photo: 'STAYC Metamorphic Showcase 240701.jpg', photoLabel: 'Metamorphic 쇼케이스', photoYear: '2024', credit: 'K-POPIT 케이팝잇 · 원저작 티비텐 TV10', license: 'CC BY 3.0',
+      morePhotos: [
+        commonsPhoto('STAYC in Seattle.jpg', '시애틀 공연 · 단체', '2025', 'David Lee', 'CC BY 4.0')
+      ],
       music: [
         { title: '2:LOVE', date: '2026.06.16', type: '싱글 6집 · 타이틀 2 L0VE', songs: ['2 L0VE', 'WHERE YOU AT?', 'SORRY', 'BEAT MY LOVE'], href: 'https://www.highup-ent.com/stayc/2love/' },
         { title: 'STAY ALIVE', date: '2026.02.11', type: '일본 정규 1집 · CD 17곡', songs: ["MWUAH", "I WANT IT (Japanese Ver.)", "BEBE (Japanese Ver.)", "POPPY", "Teddy Bear (Japanese Ver.)", "ASAP (Japanese Ver.)", "LIT", "STEREOTYPE (Japanese Ver.)", "Tell Me Now", "Satellite", "Lover, Killer", "Say My Name", "MEOW", "GPT (Japanese Ver.)", "Bubble (Japanese Ver.)", "Cheeky Icy Thang (Japanese Ver.)", "Stay WITH me (Japanese Ver.)"], href: 'https://www.universal-music.co.jp/stayc/news/2025-11-11/' },
         { title: 'I WANT IT', date: '2025.07.23', type: '스페셜 싱글 · 타이틀 I WANT IT', songs: ['I WANT IT', 'BOY', '반칙 (Honestly)'], href: 'https://www.highup-ent.com/stayc/i-want-it/' },
+        { title: 'S', date: '2025.03.18', type: '싱글 5집 · 타이틀 BEBE', songs: ['BEBE', 'DIAMOND', 'PIPE DOWN'], href: 'https://www.highup-ent.com/stayc/s/' },
+        { title: 'Metamorphic', date: '2024.07.01', type: '정규 1집 · 타이틀 Cheeky Icy Thang', songs: ['Twenty', 'Cheeky Icy Thang', '1 Thing', 'Give It 2 Me', 'Find (Sieun & Seeun & J)', 'Let Me Know', 'Nada', 'Fakin’ (Sumin & Yoon)', 'Roses (ISA)', 'Beauty Bomb', 'Gummy Bear', 'Stay WITH me', 'Flexing On My Ex', 'Trouble Maker'], href: 'https://www.highup-ent.com/stayc/metamorphic/' },
         { title: 'Star To A Young Culture', date: '2020.11.12', type: '데뷔 싱글 · 타이틀 SO BAD', songs: ['SO BAD', 'LIKE THIS'], href: 'https://www.highup-ent.com/stayc/star-to-a-young-culture/' }
       ],
       news: [
+        { date: '2026.07.03', tag: '공연', title: 'STAY CLOSER 팬콘 투어 7개 도시 일정 발표 · 10월 종료', href: 'https://www.highup-ent.com/en/stayc-announces-stay-closer-fan-con-tour-kicking-off-in-seoul-before-heading-to-global-cities/' },
         { date: '2026.06.16', tag: '음악', title: '싱글 6집 2:LOVE 발매 · 타이틀 2 L0VE', href: 'https://www.highup-ent.com/stayc/2love/' },
         { date: '2025.11.11', tag: '앨범', title: '일본 정규 1집 STAY ALIVE 상세 발표 · 2026.02.11 발매', href: 'https://www.universal-music.co.jp/stayc/news/2025-11-11/' },
         { date: '공식', tag: '로그인', title: 'STAYC Weverse 공식 공지', href: 'https://weverse.io/stayc/notice' }
       ],
       merch: [
+        { title: '2:LOVE 공식 앨범', sub: 'Weverse Global · COURT ZINE·PLAYER PROFILE·PLVE 버전 · 6/1~15 예약 특전 종료 · 재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/JPY/artists/34/notices/13295' },
         { title: 'STAYC 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/34' },
         { title: 'STAY ALIVE 일본 정규 1집 CD', sub: 'UNIVERSAL MUSIC STORE · 통상반 · 스토어 한정 구매 특전 종료 · 재고는 판매처 확인', href: 'https://store-annex.universal-music.co.jp/product/upch29482/' }
       ],
       campaigns: [
+        { kind: '콜라보', date: '2025.07.21', title: '태국관광청(TAT) × Kimpton Maa-Lai Bangkok', sub: 'I WANT IT 공식 뮤직비디오 협찬 · 광고 모델 계약과 별개', href: 'https://www.youtube.com/watch?v=W8ml4ryPwic' },
       ],
       accent: '#e4897b', light: '#ffe7df', dark: '#865366', bg: '#fff8f3', shape: '✾'
     },
     {
       id: 'idle', name: 'i-dle', korean: '아이들', category: 'girl', fan: 'NEVERLAND', agency: 'CUBE Entertainment',
       members: ['미연', '민니', '소연', '우기', '슈화'],
+      checkedAt: '2026.11.14',
       debut: '2018.05.02', debutWork: 'I am', songs: ['LATATA', '달라($$$)', 'MAZE', "DON'T TEXT ME", '알고 싶어 (What’s in your house?)', '들어줘요 (Hear me)'],
       concept: '2018년 LATATA로 데뷔한 다섯 멤버의 셀프 프로듀싱 그룹. 2025년부터 i-dle이라는 이름으로 활동.',
       official: 'https://i-dle.cubeent.co.jp/profile/', youtube: 'https://www.youtube.com/@official_i_dle',
       photo: '(G)I-DLE Airport Departure 2024.png', photoLabel: '2024년 공항 단체', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
+      morePhotos: [
+        commonsPhoto('06072026 I-DLE SHOWCASE 1.png', 'We made 발매 쇼케이스 · 크롭 사진', '2026', 'K-POPIT 케이팝잇 · Wikimedia Commons에서 세로 6% 크롭', 'CC BY 4.0')
+      ],
       music: [
         { title: 'We made', date: '2026.07.06', type: '미니 9집 · 타이틀 Gimme Dat Love', songs: ['Mono (Feat. skaiwater)', 'Gimme Dat Love', 'Morning', 'Crow', 'Love Is Pain'], href: 'https://i-dle.cubeent.co.jp/discography/2929/' },
+        { title: 'HIDE AND SEEK', date: '2026.04.22', type: '일본 디지털 싱글 · TV 애니메이션 오프닝', songs: ['HIDE AND SEEK'], href: 'https://i-dle.cubeent.co.jp/discography/2803/' },
+        { title: 'Mono (Feat. skaiwater)', date: '2026.01.27', type: '디지털 싱글', songs: ['Mono (Feat. skaiwater)'], href: 'https://i-dle.cubeent.co.jp/discography/2612/' },
         { title: 'i-dle', date: '2025.10.03', type: '일본 미니 1집 · 타이틀 どうしよっかな', songs: ['どうしよっかな', 'Invincible', '愛せなかった世界へ永遠にじゃあね', '傷つくのは嫌いだから', 'Queencard (Japanese ver.)'], href: 'https://i-dle.cubeent.co.jp/discography/2530/' },
         { title: 'We are', date: '2025.05.19', type: '미니 8집 · 타이틀 Good Thing', songs: ['Good Thing', 'Girlfriend', 'Love Tease', 'Chain', 'Unstoppable', 'If You Want'], href: 'https://i-dle.cubeent.co.jp/discography/2324/' },
         { title: 'I am', date: '2018.05.02', type: '데뷔 미니 1집 · 타이틀 LATATA', songs: ['LATATA', '달라($$$)', 'MAZE', "DON'T TEXT ME", '알고 싶어 (What’s in your house?)', '들어줘요 (Hear me)'], href: 'https://i-dle.cubeent.co.jp/discography/329/' }
       ],
       appearances: [
-        { date: '2026-11-13', title: '소연 · 일본 라디오 K TRACKS', sub: '닛폰방송 · 21:30~21:50 (일본 현지) · 방송사 주관', href: 'https://i-dle.cubeent.co.jp/news/' },
         { date: '2026-11-16', title: '소연 · 일본 라디오 K TRACKS', sub: '시코쿠방송 · 23:40~24:00 (일본 현지) · 방송사 주관', href: 'https://i-dle.cubeent.co.jp/news/' }
       ],
       schedules: [
@@ -507,13 +539,17 @@
       news: [
         { date: '2026.11.02', tag: '방송', title: '소연, 11.13·11.16 일본 라디오 K TRACKS 출연 안내', href: 'https://i-dle.cubeent.co.jp/news/' },
         { date: '2026.10.28', tag: '인터뷰', title: '소연 Rolling Stone JAPAN 인터뷰 소개', href: 'https://i-dle.cubeent.co.jp/news/' },
+        { date: '2026.10.23', tag: '솔로 활동', title: '민니 디지털 EP i love you to the moon and back 발매', href: 'https://i-dle.cubeent.co.jp/discography/' },
+        { date: '2026.10.20', tag: '굿즈', title: '소연 첫 정규 앨범 일본 수입반 특전 안내', href: 'https://i-dle.cubeent.co.jp/news/3044/' },
         { date: '2026.06.17', tag: '음반', title: '미니 9집 We made 발매·일본 공식 수입반 안내', href: 'https://i-dle.cubeent.co.jp/news/2858/' }
       ],
       merch: [
+        { title: '소연 What a Wonderful Life 공식 수입 음반', sub: '2026.10.28 일본 발매 · Home/Island/Temple 등 버전 및 구매 특전은 공식 공지 확인 · 재고 미확인', href: 'https://i-dle.cubeent.co.jp/news/3044/' },
         { title: 'We made 공식 앨범', sub: 'Weverse Shop · Mono/Crow 버전·포토카드 구성 · 재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/113/notices/13359' },
         { title: 'We made 일본 공식 수입반', sub: 'UNIVERSAL MUSIC · Mono/Crow/POCAALBUM 버전 · 재고·특전은 판매처 확인', href: 'https://www.universal-music.co.jp/i-dle/news/2026-06-17-2/' }
       ],
       campaigns: [
+        { kind: '콜라보', date: '2026.03.24', title: 'i-dle × LINE 일본 공식 계정 · i-BINGO', sub: '일본 공식 계정 개설 기념 빙고·응모 이벤트 · 당시 진행, 현재 참여 가능 여부 미확인', href: 'https://i-dle.cubeent.co.jp/news/2682/' },
         { kind: '광고', date: '2026.05.05', title: '패밀리마트 × i-dle', sub: '2026.05.05~11 일본 점포 FamiMa TV·매장 안내 방송 · 기간 종료', href: 'https://i-dle.cubeent.co.jp/news/2772/' }
       ],
       accent: '#9567d1', light: '#ebdeff', dark: '#594077', bg: '#faf5ff', shape: '✦'
@@ -523,8 +559,10 @@
       members: ['RM', '진', '슈가', '제이홉', '지민', '뷔', '정국'],
       debut: '2013.06.13', debutWork: '2 COOL 4 SKOOL', songs: ['No More Dream', 'We Are Bulletproof Pt.2'],
       concept: '음악과 이야기를 통해 전 세계 아미와 연결되는 일곱 멤버.',
+      checkedAt: '2026.11.14',
       official: 'https://ibighit.com/ko/bts/profile/', youtube: 'https://www.youtube.com/@BTS',
       photo: 'BTS during a White House press conference May 31, 2022 (cropped).jpg', photoLabel: '백악관 기자회견', photoYear: '2022', credit: 'The White House', license: 'Public domain',
+      morePhotos: [commonsPhoto('BTS Arirang World Tour in Paris (17 July 2026) - stadium view.jpg', 'ARIRANG 파리 공연장 전경 · 원본 그대로', '2026', 'Chiyako92', 'CC BY-SA 4.0')],
       music: [
         {
           "title": "ARIRANG",
@@ -573,12 +611,14 @@
           "sub": "가오슝 국립경기장 · Live Nation · 19:00 (현지)",
           "href": "https://tixcraft.com/activity/detail/26_btskns"
         },
+        {"date":"2026-11-21","title":"BTS WORLD TOUR ARIRANG · 가오슝 일본 영화관 생중계","sub":"일본 전국 영화관 · 현지 상영 시간·예매처는 공식 안내 확인","href":"https://bts-official.jp/news/7c1afecf3d0c"},
         {
           "date": "2026-11-22",
           "title": "BTS WORLD TOUR ARIRANG · 가오슝",
           "sub": "가오슝 국립경기장 · Live Nation · 19:00 (현지)",
           "href": "https://tixcraft.com/activity/detail/26_btskns"
         },
+        {"date":"2026-11-28","title":"BTS ARIRANG 도쿄돔 공연·특별편 일본 방송","sub":"TBS 채널 1 · 공연 20:00, 특별편 21:50(일본 시간) · 편성 변경은 TBS 확인","href":"https://www.tbs.co.jp/tbs-ch/information/2026_1026_1100.html"},
         {
           "date": "2026-12-03",
           "title": "BTS WORLD TOUR ARIRANG · 방콕",
@@ -650,9 +690,23 @@
           "title": "BTS WORLD TOUR ARIRANG · 자카르타",
           "sub": "겔로라 붕 카르노 주경기장 · Live Nation · 현지 공연 시각은 예매처 확인",
           "href": "https://btsworldtourofficial.com/"
-        }
+        },
+        {"date":"2026-12-30","title":"BTS ARIRANG 자카르타 공연 일본 영화관 생중계","sub":"일본 전국 영화관 · 12/29 자카르타 공연과 구분 · 상영 12/30 일본 현지","href":"https://bts-official.jp/news/7c1afecf3d0c"},
+        {"date":"2027-02-12","title":"BTS WORLD TOUR ARIRANG · 멜버른","sub":"멜버른 · 마블 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-02-13","title":"BTS WORLD TOUR ARIRANG · 멜버른","sub":"멜버른 · 마블 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-02-20","title":"BTS WORLD TOUR ARIRANG · 시드니","sub":"시드니 · 아코르 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-02-21","title":"BTS WORLD TOUR ARIRANG · 시드니","sub":"시드니 · 아코르 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-03-04","title":"BTS WORLD TOUR ARIRANG · 홍콩","sub":"홍콩 · 카이탁 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-03-06","title":"BTS WORLD TOUR ARIRANG · 홍콩","sub":"홍콩 · 카이탁 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-03-07","title":"BTS WORLD TOUR ARIRANG · 홍콩","sub":"홍콩 · 카이탁 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-03-13","title":"BTS WORLD TOUR ARIRANG · 불라칸","sub":"불라칸 · 필리핀 스포츠 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-03-14","title":"BTS WORLD TOUR ARIRANG · 불라칸","sub":"불라칸 · 필리핀 스포츠 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"},
+        {"date":"2027-03-16","title":"BTS WORLD TOUR ARIRANG · 불라칸","sub":"불라칸 · 필리핀 스포츠 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"}
       ],
       news: [
+        {"date":"2026.11.11","tag":"공연","title":"가오슝·자카르타 공연 일본 영화관 생중계 예고편 및 관객 특전 발표","href":"https://bts-official.jp/news/7c1afecf3d0c"},
+        {"date":"2026.11.09","tag":"굿즈","title":"ARIRANG 런던 공연 영상 패키지 일반·멤버판 공식 발매 안내","href":"https://bts-official.jp/news/d75ca5ab6dd5"},
+        {"date":"2026.10.26","tag":"방송","title":"11월 28일 TBS 도쿄돔 공연과 특별편 일본 CS 방송 안내","href":"https://www.tbs.co.jp/tbs-ch/information/2026_1026_1100.html"},
         {
           "date": "2026.07.18",
           "tag": "기록",
@@ -685,6 +739,9 @@
         }
       ],
       merch: [
+        {"title":"ARIRANG IN LONDON 공연 영상 패키지 · 일반판/멤버판","sub":"Weverse Global 2차 예약 11/11 13:00~11/30 23:59(KST) · 12/18 발매·출고 예정 · 재고는 판매처 확인","href":"https://shop.weverse.io/en/shop/USD/artists/2/notices/14935"},
+        {"title":"ARIRANG IN JAPAN 도쿄돔 공연 디지털 코드","sub":"BTS 일본 공식 · 10/2 예약 시작 · 12/23 발매 예정 · 재고·배송 확인","href":"https://bts-official.jp/news/104e97bc96b7"},
+        {"title":"BTS × BE@RBRICK 100%·400%·1000%","sub":"Weverse 공식 협업 MD · 10/7~10/14 예약 종료 · 2027/4/13 출고 예정 · 가격·재고 미단정","href":"https://shop.weverse.io/ko/shop/USD/artists/2/notices/14525"},
         {
           "title": "ARIRANG 공식 MD",
           "sub": "Weverse · 일부 공지 로그인 필요 · 재고는 판매처 확인",
@@ -697,6 +754,7 @@
         }
       ],
       campaigns: [
+        {"kind":"콜라보","date":"2026.10.07","title":"BTS × BE@RBRICK 공식 피규어 협업","sub":"공식 BE@RBRICK 100%·400%·1000% · 10/7~10/14 예약 판매 종료","href":"https://shop.weverse.io/ko/shop/USD/artists/2/notices/14525"},
         {
           "kind": "콜라보",
           "date": "2026.03",
@@ -711,7 +769,7 @@
       id: 'seventeen', name: 'SEVENTEEN', korean: '세븐틴', category: 'boy', fan: 'CARAT', agency: 'PLEDIS Entertainment',
       members: ['에스쿱스', '정한', '조슈아', '준', '호시', '원우', '우지', '디에잇', '민규', '도겸', '승관', '버논', '디노'],
       debut: '2015.05.26', debutWork: '17 CARAT', songs: ['아낀다 (Adore U)', '20'],
-      checkedAt: '2026.11.12',
+      checkedAt: '2026.11.14',
       concept: '보컬·퍼포먼스·힙합 유닛이 함께 빚는 팀워크.',
       official: 'https://www.pledis.co.kr/', youtube: 'https://www.youtube.com/@pledis17',
       photo: 'Seventeen Carat Land 24.jpg', photoLabel: 'CARAT LAND', photoYear: '2025', credit: 'SEVENTEEN', license: 'CC BY 3.0',
@@ -734,6 +792,9 @@
           href: 'https://www.seventeen-17.jp/posts/discography/insmxq' }
       ],
       appearances: [
+        { date: '2026-11-19', title: '도겸×정한 NO-CLUE TRIP · 본편 첫 공개',
+          sub: 'Weverse · 일본 Hulu · 대만 friDay · 20:00(KST/JST) · 매주 목요일 총 6회 · 공식 VOD 안내 확인',
+          href: 'https://www.seventeen-17.jp/posts/information/jpfkwu' },
         { date: '2026-11-21', title: '정한×조슈아 JOURNEY INTO [DREAMING] · 일본 공연',
           sub: '베루나 돔(사이타마) · 17:00 (일본 현지) · PLEDIS / 공식 일본 팬클럽 · 티켓 변경은 공식 사이트 확인',
           href: 'https://www.seventeen-17.jp/posts/schedule/ztckpb' },
@@ -762,11 +823,23 @@
         { title: 'PLEDIS · SEVENTEEN 공지', sub: '일정 변경·예매 및 공식 알림 · 로그인 후 확인', href: 'https://weverse.io/seventeen/notice' }
       ],
       news: [
+        { date: '2026.11.13', tag: '굿즈', title: 'JxJ 일본 돔 공연 · 11/21·22 공식 MD 현장 수령 운영 안내', href: 'https://www.seventeen-17.jp/posts/information/povezu' },
+        { date: '2026.11.11', tag: '수상·차트', title: 'JxJ DREAMSCAPE, 일본 레코드협회 10월도 골드 인증(누적 10만 장 이상 출하)', href: 'https://www.seventeen-17.jp/posts/information/hheyrw' },
         { date: '2026.11.11', tag: '공연', title: '정한×조슈아 일본 공연 공식 티켓 쉐어링 개시', href: 'https://www.seventeen-17.jp/posts/information/gnelcq' },
         { date: '2026.11.10', tag: '팬 행사', title: '11월 21·22일 일본 공연장 CARAT 공식 팬클럽 부스 안내', href: 'https://www.seventeen-17.jp/posts/information/deipgt' },
+        { date: '2026.11.03', tag: '방송', title: '도겸×정한 NO-CLUE TRIP · VOD 예약과 11/19 첫 공개 안내', href: 'https://www.seventeen-17.jp/posts/information/jpfkwu' },
         { date: '2026.10.19', tag: '음악', title: '정한×조슈아 유닛 JxJ 미니 1집 DREAMSCAPE 발매 · 로그인 후 확인', href: 'https://weverse.io/seventeen/notice/39436/' }
       ],
       merch: [
+        { title: 'JxJ 일본 돔 공연 공식 MD · 현장 수령',
+          sub: '2026.11.21·22 · 베루나돔 레드파킹 · 구매 11:00~16:20 / 수령 12:00~16:30(JST) · 품목·재고는 공식 안내 확인',
+          href: 'https://www.seventeen-17.jp/posts/information/povezu' },
+        { title: '도겸×정한 NO-CLUE TRIP VOD',
+          sub: '11/03~11/19 19:59(KST) 예약·특전 신청 · 11/19 20:00 본편 공개 · 이후 일반 판매',
+          href: 'https://www.seventeen-17.jp/posts/information/jpfkwu' },
+        { title: '도겸×정한 NO-CLUE TRIP PHOTOBOOK',
+          sub: '128쪽 사진집·디지털 코드 · 11/03 예약 개시 · 12/16부터 순차 배송 예정 · 판매·재고 확인',
+          href: 'https://www.seventeen-17.jp/posts/information/coxdza' },
         { title: '정한×조슈아 일본 공연 공식 팝업 스토어',
           sub: '2026.11.06~11.23 · SHIBUYA TSUTAYA B1F · 공식 MD · 품목별 판매 시작일 상이 · 입장 예약 대상 시간은 공식 안내 확인',
           href: 'https://www.seventeen-17.jp/posts/information/cbaizr' },
@@ -784,9 +857,46 @@
       id: 'straykids', name: 'Stray Kids', korean: '스트레이 키즈', category: 'boy', fan: 'STAY', agency: 'JYP Entertainment',
       members: ['방찬', '리노', '창빈', '현진', '한', '필릭스', '승민', '아이엔'],
       debut: '2018.03.25', debutWork: 'I am NOT', songs: ['District 9', 'Mirror'],
-      concept: '직접 만드는 음악과 에너지 넘치는 퍼포먼스.',
+      concept: '3RACHA를 중심으로 직접 만드는 음악과 에너지 넘치는 퍼포먼스.',
+      checkedAt: '2026.11.14',
       official: 'https://straykids.jype.com/', youtube: 'https://www.youtube.com/@StrayKids',
       photo: 'Stray Kids at the 40th Golden Disc Awards, January 10, 2026 (1).png', photoLabel: '골든디스크 시상식', photoYear: '2026', credit: 'K-POPIT 케이팝잇', license: 'CC BY 4.0',
+      morePhotos: [
+        commonsPhoto('Hyunjin of Stray Kids at the 40th Golden Disc Awards, January 10, 2026 (1).png', '현진 · 골든디스크 레드카펫', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0'),
+        commonsPhoto('Han of Stray Kids at the 40th Golden Disc Awards, January 10, 2026 (1).png', '한 · 골든디스크 레드카펫', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0')
+      ],
+      music: [
+        { title: 'SUIATSU', date: '2026.11.09', type: '일본 미니 4집 타이틀곡 선공개 디지털 싱글 · 음반 발매 11.25', songs: ['SUIATSU'], href: 'https://straykids.jype.com/discography/ls6uuw6p' },
+        { title: 'THIS & THAT', date: '2026.08.07', type: '정식 앨범 · 타이틀 This & That', songs: ['RUN IT', 'This & That', 'After You', 'FARMING', 'I Do', 'Way Out', '그날', 'This & That (Festival Version)'], href: 'https://straykids.jype.com/discography/hmzf0t9l' },
+        { title: '별, 빛 (STAY)', date: '2026.03.25', type: '데뷔 8주년 디지털 싱글', songs: ['별, 빛 (STAY)'], href: 'https://straykids.jype.com/discography/9kd9aglq' },
+        { title: 'I am NOT', date: '2018.03.25', type: '데뷔 미니앨범 · 타이틀 District 9', songs: ['District 9', 'Mirror'], href: 'https://straykids.jype.com/discography/vuykzg89' }
+      ],
+      appearances: [
+        { date: '2026-11-25', title: '일본 미니 4집 SUIATSU CD 정식 발매', sub: '일본 소니뮤직 · 타이틀곡 11.09 선공개, CD 11.25 발매 · 판매처별 특전 확인', href: 'https://www.sonymusic.co.jp/artist/StrayKids/info/588572' },
+        { date: '2026-12-20', title: 'SUIATSU 구매자 한정 팬 이벤트 · 도쿄', sub: '벨사르 시부야 가든 B1F · 당첨자 대상 하이터치·사인회 · 시간은 당첨자 안내 · 응모 11.24~12.13 JST', href: 'https://www.straykidsjapan.com/suiatsu/' },
+        { date: '2027-01-30', title: 'SUIATSU 구매자 한정 팬 이벤트 · 오사카', sub: '인텍스 오사카 5호관 · 당첨자 대상 하이터치·사인회 · 시간은 당첨자 안내 · 응모 11.24~12.13 JST', href: 'https://www.straykidsjapan.com/suiatsu/' },
+        { date: '2027-04-24', title: 'RUN IT JAPAN 일본 스타디움 투어', sub: '17:30 JST · 요코하마 닛산 스타디움 · Sony Music 공식 발표 · W회원 선예매 11.16까지', href: 'https://www.sonymusic.co.jp/artist/StrayKids/info/588400' },
+        { date: '2027-04-25', title: 'RUN IT JAPAN 일본 스타디움 투어', sub: '17:00 JST · 요코하마 닛산 스타디움 · Sony Music 공식 발표', href: 'https://www.sonymusic.co.jp/artist/StrayKids/info/588400' },
+        { date: '2027-05-04', title: 'RUN IT JAPAN 일본 스타디움 투어', sub: '17:00 JST · 오사카 얀마 스타디움 나가이 · Sony Music 공식 발표', href: 'https://www.sonymusic.co.jp/artist/StrayKids/info/588400' },
+        { date: '2027-05-05', title: 'RUN IT JAPAN 일본 스타디움 투어', sub: '16:30 JST · 오사카 얀마 스타디움 나가이 · Sony Music 공식 발표', href: 'https://www.sonymusic.co.jp/artist/StrayKids/info/588400' }
+      ],
+      schedules: [
+        { title: 'JYP 공식 Stray Kids 일정', sub: '공식 월별 활동 달력 · 변동 및 취소 확인', href: 'https://straykids.jype.com/schedule' },
+        { title: 'RUN IT JAPAN 공식 투어 일정·예매', sub: '일본 2027년 스타디움 4회 · 공식 공지에서 조건 확인', href: 'https://www.straykidsjapan.com/runitjapan/' }
+      ],
+      news: [
+        { date: '2026.11.13', tag: '영상', title: 'SUIATSU 도쿄돔 무대 영상 공식 공개', href: 'https://www.sonymusic.co.jp/artist/StrayKids/info/588572' },
+        { date: '2026.11.09', tag: '공연', title: 'RUN IT JAPAN 2027 요코하마·오사카 스타디움 4회 확정', href: 'https://www.sonymusic.co.jp/artist/StrayKids/info/588400' },
+        { date: '2026.11.09', tag: '컴백', title: 'SUIATSU 선공개 음원 발매 · 일본 미니 4집 CD는 11.25 예정', href: 'https://straykids.jype.com/discography/ls6uuw6p' }
+      ],
+      merch: [
+        { title: 'SUIATSU 일본 미니 4집 공식 앨범·포토카드', sub: '11.25 CD 발매 예정 · 초회판 A/B·일반판·멤버판, 판매처별 특전 및 재고 확인', href: 'https://www.straykidsjapan.com/suiatsu/' },
+        { title: 'SUIATSU 구매자 한정 팬 이벤트 응모권', sub: '대상 앨범 동봉 시리얼 · 응모 11.24 10:00~12.13 23:59 JST · 당첨·품절 조건 확인', href: 'https://www.straykidsjapan.com/suiatsu/' },
+        { title: 'Stray Kids 공식 상품 목록', sub: 'FANS SHOP · 음반·공식 MD · 가격·재고는 판매처 확인', href: 'https://app.fans/shop/straykids' }
+      ],
+      campaigns: [
+        { kind: '콜라보', date: '2026.10.08', title: 'RUN IT JAPAN × TENJIN', sub: '후쿠오카 서일본철도 역 패널·래핑 버스 · 일부 행사 종료, 버스 운행 및 8역 패널은 11.30까지 예정', href: 'https://ssl.sme.co.jp/artist/StrayKids/info/587469' }
+      ],
       accent: '#ee686b', light: '#4b252d', dark: '#fff1f2', bg: '#191117', night: true, shape: '⚡'
     },
     {
@@ -794,7 +904,7 @@
       members: ['수빈', '연준', '범규', '태현', '휴닝카이'],
       debut: '2019.03.04', debutWork: '꿈의 장: STAR', songs: ['어느날 머리에서 뿔이 자랐다 (CROWN)', 'Blue Orangeade'],
       concept: '다섯 멤버가 함께 그려 나가는 성장과 판타지.',
-      checkedAt: '2026.11.12',
+      checkedAt: '2026.11.14',
       official: 'https://ibighit.com/ko/txt/profile/', youtube: 'https://www.youtube.com/@TXT_bighit',
       photo: 'Tomorrow X Together at a Dior event, April 18, 2025.png', photoLabel: '디올 행사', photoYear: '2025', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
       morePhotos: [
@@ -806,24 +916,30 @@
         { title: '꿈의 장: STAR', date: '2019.03.04', type: '데뷔 미니앨범 · 타이틀 어느날 머리에서 뿔이 자랐다 (CROWN)', songs: ['Blue Orangeade', '어느날 머리에서 뿔이 자랐다 (CROWN)', 'Our Summer', 'Cat & Dog', '별의 낮잠'], href: 'https://ibighit.com/legacy/txt/the_dream_chapter-star-ko.html' }
       ],
       appearances: [
-        { date: '2026-11-13', title: 'STEAL THE WIND 서울 월드투어 첫날', sub: '19:00 · 서울 KSPO DOME · BIGHIT MUSIC·HYBE 주최 · 온라인 생중계', href: 'https://weverse.io/txt/notice/39106' },
         { date: '2026-11-14', title: 'STEAL THE WIND 서울 월드투어', sub: '18:00 · 서울 KSPO DOME · BIGHIT MUSIC·HYBE 주최 · 온라인 생중계', href: 'https://weverse.io/txt/notice/39106' },
         { date: '2026-11-15', title: 'STEAL THE WIND 서울 월드투어', sub: '17:00 · 서울 KSPO DOME · BIGHIT MUSIC·HYBE 주최 · 온라인 생중계', href: 'https://weverse.io/txt/notice/39106' },
         { date: '2026-11-16', title: '미니 9집 PERFECT STORM 정식 발매 예정', sub: '18:00 KST 음반·음원 발매 예정 · 세부 정보는 공식 공지 확인', href: 'https://weverse.io/txt/notice/40097' },
+        { date: '2026-11-17', endDate: '2026-11-22', title: 'PERFECT STORM 용산 팝업스토어', sub: '11.17~11.22 매일 11:00~20:00 KST · 서울 용산구 한강대로 42 HYBE 사옥 1층 · 위버스 예약 입장 · 공식 공지 로그인 필요할 수 있음', href: 'https://weverse.io/txt/notice/40808' },
         { date: '2026-11-18', title: 'PERFECT STORM WITHMUU 팬사인회', sub: '21:00 KST · 당첨자 대상 · 응모 종료 · 장소·변경은 주최 측 확인', href: 'https://weverse.io/txt/notice/40680' },
         { date: '2026-11-20', title: 'STEAL THE WIND 마카오 추가 공연', sub: '20:00 현지시간 · 마카오 GALAXY ARENA · BIGHIT MUSIC·HYBE·iMe 주최', href: 'https://weverse.io/txt/notice/39469' },
+        { date: '2026-11-20', title: 'STEAL THE WIND 서울 첫날 온라인 지연 상영', sub: '19:00 KST · 11.13 공연 1회 재상영 · 기존 라이브 구매자 대상', href: 'https://concerts.weverse.io/events/txt_steal_the_wind_seoul' },
         { date: '2026-11-21', title: 'STEAL THE WIND 마카오 월드투어', sub: '19:00 현지시간 · 마카오 GALAXY ARENA · BIGHIT MUSIC·HYBE·iMe 주최', href: 'https://www.galaxymacau.com/offers/entertainment/tomorrow-x-together-world-tour-macau-2026/' },
+        { date: '2026-11-21', title: 'STEAL THE WIND 서울 둘째 날 온라인 지연 상영', sub: '11:00 KST · 11.14 공연 1회 재상영 · 기존 라이브 구매자 대상', href: 'https://concerts.weverse.io/events/txt_steal_the_wind_seoul' },
         { date: '2026-11-22', title: 'STEAL THE WIND 마카오 월드투어', sub: '17:00 현지시간 · 마카오 GALAXY ARENA · BIGHIT MUSIC·HYBE·iMe 주최', href: 'https://www.galaxymacau.com/offers/entertainment/tomorrow-x-together-world-tour-macau-2026/' },
+        { date: '2026-11-22', title: 'STEAL THE WIND 서울 셋째 날 온라인 지연 상영', sub: '11:00 KST · 11.15 공연 1회 재상영 · 기존 라이브 구매자 대상', href: 'https://concerts.weverse.io/events/txt_steal_the_wind_seoul' },
         { date: '2026-11-27', title: 'PERFECT STORM 오프라인 팬사인회', sub: '20:00 KST · Weverse 당첨자 대상 · 세부 장소는 당첨자 안내', href: 'https://weverse.io/txt/notice/40006' },
         { date: '2026-11-27', title: 'PERFECT STORM 영상통화 팬사인회', sub: '22:00 KST · Weverse 당첨자 대상 · 구매·응모 조건 공식 공지 참조', href: 'https://weverse.io/txt/notice/40006' },
         { date: '2026-12-19', title: 'STEAL THE WIND 후쿠오카 월드투어', sub: '17:00 현지시간 · 일본 미즈호 PayPay 돔 후쿠오카 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' },
         { date: '2026-12-20', title: 'STEAL THE WIND 후쿠오카 월드투어', sub: '16:00 현지시간 · 일본 미즈호 PayPay 돔 후쿠오카 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' },
         { date: '2027-01-07', title: 'STEAL THE WIND 도쿄 월드투어', sub: '18:00 현지시간 · 일본 도쿄 돔 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' },
         { date: '2027-01-08', title: 'STEAL THE WIND 도쿄 월드투어', sub: '18:00 현지시간 · 일본 도쿄 돔 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' },
+        { date: '2027-01-24', title: 'PERFECT STORM 일본 미트앤그리트 · 오사카', sub: '일본 오사카 · 낮~저녁 (JST, 상세 시각·장소 미정) · 구매자 시리얼 응모·추첨', href: 'https://txt-official.jp/news/45388fd1312c' },
         { date: '2027-01-30', title: 'STEAL THE WIND 오사카 월드투어', sub: '17:00 현지시간 · 일본 교세라 돔 오사카 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' },
         { date: '2027-01-31', title: 'STEAL THE WIND 오사카 월드투어', sub: '16:00 현지시간 · 일본 교세라 돔 오사카 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' },
         { date: '2027-02-20', title: 'STEAL THE WIND 나고야 월드투어', sub: '17:00 현지시간 · 일본 반테린 돔 나고야 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' },
-        { date: '2027-02-21', title: 'STEAL THE WIND 나고야 월드투어', sub: '17:00 현지시간 · 일본 반테린 돔 나고야 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' }
+        { date: '2027-02-21', title: 'STEAL THE WIND 나고야 월드투어', sub: '17:00 현지시간 · 일본 반테린 돔 나고야 · HYBE JAPAN 공식 안내', href: 'https://www.hybejapan-concert.com/statics/txt_steal_the_wind_in_japan' },
+        { date: '2027-02-23', title: 'PERFECT STORM 일본 미트앤그리트 · 도쿄', sub: '일본 도쿄 · 낮~저녁 (JST, 상세 시각·장소 미정) · 구매자 시리얼 응모·추첨', href: 'https://txt-official.jp/news/45388fd1312c' },
+        { date: '2027-04-03', title: 'PERFECT STORM 일본 미트앤그리트 · 도쿄', sub: '일본 도쿄 · 낮~저녁 (JST, 상세 시각·장소 미정) · 구매자 시리얼 응모·추첨·사인회 별도 응모', href: 'https://txt-official.jp/news/45388fd1312c' }
       ],
       schedules: [
         { title: 'BIGHIT 공식 TXT 월드투어 일정', sub: 'STEAL THE WIND · 일정·장소·예매 변경 확인', href: 'https://ibighit.com/en/txt/tour/' },
@@ -831,6 +947,8 @@
         { title: '서울 공연 온라인 생중계', sub: '11.13~15 실시간 공연 및 11.20~22 지연 스트리밍', href: 'https://concerts.weverse.io/events/txt_steal_the_wind_seoul' }
       ],
       news: [
+        { date: '2026.11.13', tag: '팬 행사', title: 'PERFECT STORM 일본 미트앤그리트 공식 세부 일정 발표 · 오사카 1/24·도쿄 2/23·4/3', href: 'https://txt-official.jp/news/45388fd1312c' },
+        { date: '2026.11.12', tag: '굿즈', title: 'STEAL THE WIND 서울 공연 공식 MD 현장 수령 예약 안내', href: 'https://shop.weverse.io/en/shop/USD/artists/3/notices/14859' },
         { date: '2026.11.11', tag: '팬 행사', title: '일본 투어 8회 공연 종료 후 당첨자 하이터치 행사 확정 · 응모 11.11~11.17, 11.25~12.01', href: 'https://txt-official.jp/news/02e45668dca1' },
         { date: '2026.11.09', tag: '팬 행사', title: '일본 후쿠오카·도쿄·오사카·아이치 공연 사운드체크 추첨 행사 안내', href: 'https://txt-official.jp/news/061bdc0cc1e4' },
         { date: '2026.11.09', tag: '이벤트', title: '일본 4개 도시 THE MAGIC WORLD 랜턴 행사 예정 · 시간·세부 장소 추후 공지', href: 'https://txt-official.jp/news/64e2fa6963fc' },
@@ -838,6 +956,7 @@
         { date: '2026.10.20', tag: '컴백', title: '11월 16일 미니 9집 PERFECT STORM 발매 예정 · 위버스 공지 로그인 후 확인', href: 'https://weverse.io/txt/notice/40097' }
       ],
       merch: [
+        { title: 'PERFECT STORM 용산 팝업 한정 MD·포토카드', sub: '11.17~11.22 11:00~20:00 · 위버스 예약 입장 · 포토카드·키링 등, 재고·특전은 매장 확인 · 공식 공지 로그인 필요할 수 있음', href: 'https://weverse.io/txt/notice/40808' },
         { title: 'PERFECT STORM 미니 9집 공식 예약 음반', sub: '위버스샵 · 2026.10.20~11.15 예약 · 11.16 발매 예정 · 가격·재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/3/notices/14652' },
         { title: 'STEAL THE WIND 월드투어 공식 MD', sub: '위버스샵 · 11.05 판매 시작 · 한정 수량·품절 여부는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/3/notices/14842' },
         { title: 'STEAL THE WIND MD 2차 예약', sub: '위버스샵 · 2026.11.06~11.16 14:00 예약 · 2027.01.12 발송 시작 예정', href: 'https://shop.weverse.io/en/shop/USD/artists/3/notices/14875' },
@@ -915,13 +1034,20 @@
       members: ['쇼타로', '은석', '성찬', '원빈', '소희', '앤톤'],
       debut: '2023.09.04', debutWork: 'Get A Guitar', songs: ['Get A Guitar', 'Memories'],
       concept: '함께 성장하며 꿈을 실현해 가는 여섯 멤버.',
-      checkedAt: '2026.11.12',
+      checkedAt: '2026.11.14',
       official: 'https://riizeofficial.jp/', youtube: 'https://www.youtube.com/@RIIZE_official',
       photo: 'Riize at the 2024 Melon Music Awards-2.png', photoLabel: '멜론뮤직어워드', photoYear: '2024', credit: 'TenAsia', license: 'CC BY 3.0',
+      morePhotos: [
+        commonsPhoto('Shotaro of Riize at the 2024 Melon Music Awards.png', '쇼타로 · 2024 MMA', '2024', 'TenAsia', 'CC BY 3.0'),
+        commonsPhoto('Wonbin of Riize at the 2024 Melon Music Awards.png', '원빈 · 2024 MMA', '2024', 'TenAsia', 'CC BY 3.0')
+      ],
       music: [
         { title: 'Insomnia', date: '2026.10.26', type: '디지털 싱글 · 공식 뮤직비디오', songs: ['Insomnia'], href: 'https://riizeofficial.jp/news/20261026/' },
         { title: 'Sunburst', date: '2026.08.26', type: '일본 싱글 3집 · CD 발매', songs: ['Sunburst', 'Rise Over', 'KILL SHOT'], href: 'https://riizeofficial.jp/discography/sunburst_normal/' },
         { title: 'II', date: '2026.06.15', type: '미니 2집 · 디지털 발매', songs: ['SOAR', 'Do your dance', 'D-D-Done', 'Overdrive', 'Like a Bomb', 'In a Loop'], href: 'https://riizeofficial.jp/discography/ii/' },
+        { title: 'All of You', date: '2026.02.18', type: '일본 싱글 2집 · CD 발매', songs: ['All of You', 'Flashlight'], href: 'https://riizeofficial.jp/discography/allofyou_normal/' },
+        { title: 'Fame', date: '2025.11.24', type: '싱글 2집 · 디지털 발매', songs: ['Something’s in the Water', 'Fame', 'Sticky Like'], href: 'https://riizeofficial.jp/discography/fame-digital/' },
+        { title: 'ODYSSEY', date: '2025.05.19', type: '정규 1집 · 디지털 발매 · 타이틀 Fly Up', songs: ['Odyssey', 'Bag Bad Back', '잉걸 (Ember to Solar)', 'Fly Up', 'Show Me Love', 'Passage', 'Midnight Mirage', '모든 하루의 끝 (The End of the Day)', 'Inside My Love', 'Another Life'], href: 'https://riizeofficial.jp/discography/odyssey-digital/' },
         { title: 'Get A Guitar', date: '2023.09.04', type: '데뷔 싱글', songs: ['Get A Guitar', 'Memories'], href: 'https://www.youtube.com/watch?v=iUw3LPM7OBU' }
       ],
       appearances: [
@@ -932,10 +1058,15 @@
       news: [
         { date: '2026.11.03', tag: '방송', title: '12월 9일 일본 FNS 가요제 제2야 생방송 출연 발표', href: 'https://riizeofficial.jp/news/20261103/' },
         { date: '2026.10.26', tag: '음악', title: '디지털 싱글 Insomnia 발매 · 공식 뮤직비디오 공개', href: 'https://riizeofficial.jp/news/20261026/' },
-        { date: '2026.10.23', tag: '이벤트', title: '12월 27일 Sunburst 일본 오프라인 이벤트·사인회 발표', href: 'https://riizeofficial.jp/news/2026102303/' }
+        { date: '2026.10.23', tag: '이벤트', title: '12월 27일 Sunburst 일본 오프라인 이벤트·사인회 발표', href: 'https://riizeofficial.jp/news/2026102303/' },
+        { date: '2026.10.14', tag: '시상식', title: 'MMA2026 11월 14일 글로벌 데이 무대 참여 공식 발표', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' }
       ],
       merch: [
+        { title: '2026 RIIZING LOUD · TOKYO DOME 영상 작품', sub: '2026.05.27 DVD·Blu-ray 발매 · 구성·판매 여부는 공식 안내 확인', href: 'https://riizeofficial.jp/news/20260327/' },
         { title: 'RIIZE 2027 SEASON’S GREETINGS', sub: 'Weverse Shop 공식 예약 안내 · 2026.10.13 15:00(KST) 예약 시작 · 12.24부터 출고 예정 · 재고 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/151/notices/14559' },
+      ],
+      campaigns: [
+        { kind: '홍보대사', date: '2026.01.06', title: '삼성전자 × RIIZE · 글로벌 브랜드 앰배서더', sub: 'CES 2026 더 퍼스트룩·갤럭시 워치8·스마트싱스 공동 캠페인 · 공식 보도일', href: 'https://news.samsung.com/kr/삼성전자-ces-2026서-라이즈와-함께-일상-속-ai-경험-확산' }
       ],
       schedules: [
         { title: 'RIIZE 일본 공식 활동 공지', sub: '방송·공연·팬 이벤트 변경 및 취소 확인', href: 'https://riizeofficial.jp/news/' }
@@ -947,7 +1078,7 @@
       members: ['성호', '리우', '명재현', '태산', '이한', '운학'],
       debut: '2023.05.30', debutWork: 'WHO!', songs: ['돌아버리겠다 (But I Like You)', 'One and Only', 'Serenade'],
       concept: '일상의 이야기를 솔직하게 들려주는 여섯 멤버.',
-      checkedAt: '2026.11.12',
+      checkedAt: '2026.11.14',
       official: 'https://kozofficial.com/artist/profile/BOYNEXTDOOR', youtube: 'https://www.youtube.com/@BOYNEXTDOOR_official',
       photo: '2026-01-16 BOYNEXTDOOR at Golden Disc Awards 05 (cropped).png', photoLabel: '골든디스크 시상식', photoYear: '2026', credit: '티비텐 TV10', license: 'CC BY 4.0',
       morePhotos: [
@@ -959,11 +1090,10 @@
         { title: 'WHO!', date: '2023.05.30', type: '데뷔 싱글', songs: ['돌아버리겠다 (But I Like You)', 'One and Only', 'Serenade'], href: 'https://www.kozofficial.com/artist/discography/BOYNEXTDOOR/23' }
       ],
       appearances: [
-        { date: '2026-11-13', title: 'KNOCK ON Vol.2 · 밴쿠버', sub: '캐나다 Queen Elizabeth Theatre · 현지 19:30 · AEG 주최 · 공연장 공식 예매 안내', href: 'https://vancouvercivictheatres.com/events/boynextdoor-tour-knock-on-vol2-nov-13-2026/' },
-        { date: '2026-11-15', title: 'KNOCK ON Vol.2 · 시애틀', sub: '미국 시애틀 · 소속사 그룹 HYBE JAPAN 공식 투어 발표 · 현지 시간·예매 상세 확인', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
-        { date: '2026-11-17', title: 'KNOCK ON Vol.2 · 샌프란시스코', sub: '미국 샌프란시스코 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
-        { date: '2026-11-20', title: 'KNOCK ON Vol.2 · 로스앤젤레스', sub: '미국 로스앤젤레스 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
-        { date: '2026-11-24', title: 'KNOCK ON Vol.2 · 멕시코시티', sub: '멕시코 멕시코시티 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
+        { date: '2026-11-15', title: 'KNOCK ON Vol.2 · 시애틀', sub: '미국 시애틀 Showbox SoDo · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
+        { date: '2026-11-17', title: 'KNOCK ON Vol.2 · 샌프란시스코', sub: '미국 샌프란시스코 The Warfield · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
+        { date: '2026-11-20', title: 'KNOCK ON Vol.2 · 로스앤젤레스', sub: '미국 로스앤젤레스 Peacock Theater · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
+        { date: '2026-11-24', title: 'KNOCK ON Vol.2 · 멕시코시티', sub: '멕시코시티 Arena Ciudad de México · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
         { date: '2026-12-05', title: 'KNOCK ON Vol.2 · 자카르타', sub: '인도네시아 자카르타 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
         { date: '2026-12-26', title: 'KNOCK ON Vol.2 · 쿠알라룸푸르', sub: '말레이시아 쿠알라룸푸르 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' }
       ],
@@ -972,18 +1102,22 @@
         { title: 'BOYNEXTDOOR Weverse 공지', sub: '로그인·커뮤니티 가입 후 공연·행사 변경과 예매 정보 확인', href: 'https://weverse.io/boynextdoor/notice' }
       ],
       news: [
+        { date: '2026.05.19', tag: '협업', title: 'LG유플러스 브랜드 앰배서더 · HOME 협업 캠페인 발표', href: 'https://m.lguplus.com/about/ko/corporation/promotion/press-kit/detail?atclNo=2000001561&pageNo=1&srchCond=titCon' },
         { date: '2026.11.01', tag: '굿즈', title: 'One and Only 후드 재판매 발표 · 11.02 예약 시작', href: 'https://boynextdoor-official.jp/news/1eaa7468d773' },
         { date: '2026.10.27', tag: '굿즈', title: 'HYBE CINE FEST 2026 공식 상품 판매 안내', href: 'https://boynextdoor-official.jp/news/aa8fdc1e75ea' },
         { date: '2026.09.07', tag: '음반', title: 'HOME: DELUXE 예약 시작 · 9.28 정식 발매', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/14247' },
         { date: '2026.07.30', tag: '협업', title: '언더아머 글로벌 앰배서더 · COMMIT 캠페인 발표', href: 'https://www.erajaya.com/index.php/news/under-armour-tunjuk-boynextdoor-sebagai-global-brand-ambassadors' },
       ],
       merch: [
+        { title: 'KNOCK ON Vol.2 투어 공식 MD', sub: 'Weverse Global · 7.09 18:00 KST부터 수량 소진 시까지 예약판매 · 응원봉 키링·포토카드·BOYNEXTDOOR X ASSC 상품 등 · 가격·재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/13681' },
         { title: 'HOME: DELUXE 공식 앨범', sub: 'Weverse Shop · 9.28 발매 · 9.07~9.27 예약·특전 기간 종료 · 현재 재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/14247' },
         { title: 'One and Only 후드 재판매', sub: '공식 일본 판매 · 멤버십 가입자·일본 배송 한정 · 11.02부터 수량 소진 시 종료', href: 'https://boynextdoor-official.jp/news/1eaa7468d773' },
         { title: 'HYBE CINE FEST 2026 공식 상품', sub: 'Weverse Global · 10.24~10.31 예약 종료 · 한국 등 일부 국가 판매 제한 · 상품별 출고일 확인', href: 'https://shop.weverse.io/ko/shop/USD/artists/112/notices/14790' },
         { title: 'BOYNEXTDOOR 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/112' }
       ],
       campaigns: [
+        { kind: '홍보대사', date: '2026.05.19', title: 'LG유플러스 · 브랜드 앰배서더', sub: 'HOME 선공개곡과 연계한 통신사 공식 캠페인', href: 'https://m.lguplus.com/about/ko/corporation/promotion/press-kit/detail?atclNo=2000001561&pageNo=1&srchCond=titCon' },
+        { kind: '콜라보', date: '2026.07.09', title: 'Anti Social Social Club(ASSC) × BOYNEXTDOOR', sub: 'KNOCK ON Vol.2 공식 투어 MD 협업 · Weverse Global 공식 판매 안내 · 판매·재고는 상품별 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/13681' },
         { kind: '홍보대사', date: '2026.07.30', title: 'Under Armour · 글로벌 브랜드 앰배서더', sub: '글로벌 COMMIT 캠페인 · 언더아머 공식 유통사 발표', href: 'https://www.erajaya.com/index.php/news/under-armour-tunjuk-boynextdoor-sebagai-global-brand-ambassadors' },
       ],
       accent: '#478bc5', light: '#dfefff', dark: '#2d5678', bg: '#f3faff', shape: '✱'

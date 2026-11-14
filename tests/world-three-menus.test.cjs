@@ -69,7 +69,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   const categories={
    solo:['chacha_rush','solitaire','archery','sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'],
    multi:['bang','tank','tour','ttang','janggi','chess','billiards'],
-   adult:['matgo','poker','roulette','photo_ttang']
+   adult:['matgo','poker','roulette','photo_ttang','drinking']
   };
   assert.deepEqual([...w.document.querySelectorAll('[data-arcade-games]')].map(grid=>grid.dataset.arcadeGames),Object.keys(categories),'Arcade has solo, multiplayer and adult games');
   assertArcadeCategories();

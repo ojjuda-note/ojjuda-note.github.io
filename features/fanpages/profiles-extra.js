@@ -27,6 +27,32 @@ for (const artist of window.OJJUDA_FAN_ARTISTS.filter((item) => item.basicProfil
   };
 }
 
+
+/* Stray Kids: JYP-published member birth dates; unknown personal facts stay blank. */
+const strayKidsProfile = window.OJJUDA_FAN_PROFILES.straykids;
+if (strayKidsProfile) {
+  strayKidsProfile.expanded = true;
+  strayKidsProfile.checkedAt = '2026.11.14';
+  const birthdays = {
+    '방찬': '1997.10.03', '리노': '1998.10.25', '창빈': '1999.08.11',
+    '현진': '2000.03.20', '한': '2000.09.14', '필릭스': '2000.09.15',
+    '승민': '2000.09.22', '아이엔': '2001.02.08'
+  };
+  for (const member of strayKidsProfile.members) {
+    member.birthday = birthdays[member.name] || null;
+    member.source = 'https://straykids.jype.com/profile';
+  }
+  strayKidsProfile.awards = [
+    { year: '2026.01', title: '제40회 골든디스크 어워즈 음반 대상', detail: 'KARMA · 2026.01.10 타이베이 개최', href: 'https://www.soompi.com/article/1811420wpp/winners-of-40th-golden-disc-awards' },
+    { year: '2026.03', title: '제40회 일본 골드 디스크 대상 4관왕', detail: 'Hollow 아시아 앨범 오브 더 이어 등 4개 부문', href: 'https://www.koreaherald.com/article/10692784' }
+  ];
+  strayKidsProfile.records = [
+    { year: '2026.11', title: 'RUN IT 일본 투어 총 52만 관객', detail: '2026년 11월 6~8일 도쿄돔 포함 일본 4개 지역 10회 공연 완료 · JYP 공식 자료', href: 'https://straykids.jype.com/discography/ls6uuw6p' }
+  ];
+  strayKidsProfile.sources.unshift({ label: 'JYP 공식 멤버 프로필 · 생일', href: 'https://straykids.jype.com/profile' });
+  strayKidsProfile.sources.push({ label: 'JYP 공식 최신 발매·공연 기록', href: 'https://straykids.jype.com/discography/ls6uuw6p' });
+}
+
 /* ENHYPEN: dates from BELIFT LAB's current six-member profile. */
 const enhypenProfile = window.OJJUDA_FAN_PROFILES.enhypen;
 if (enhypenProfile) {
@@ -77,6 +103,10 @@ if (txtProfile) {
 const idleProfile = window.OJJUDA_FAN_PROFILES.idle;
 if (idleProfile) {
   idleProfile.expanded = true;
+  idleProfile.awards = [
+    { year: '2026.02', title: 'Mono 음악방송 3관왕', detail: '2.05 M COUNTDOWN · 2.06 MUSIC BANK · 2.08 인기가요 1위', href: 'https://i-dle.cubeent.co.jp/news/2639/' },
+    { year: '2025.11', title: 'MAMA AWARDS FANS’ CHOICE', detail: '2025 MAMA AWARDS 팬스 초이스 수상 · 큐브 공식 보도', href: 'https://i-dle.cubeent.co.jp/news/2588/' }
+  ];
   idleProfile.records = [
     { year: '2025', title: 'i-dle로 활동명 변경', detail: '데뷔 7주년 이후 다섯 멤버의 팀 이름으로 활동', href: 'https://i-dle.cubeent.co.jp/profile/' },
     { year: '2026', title: '네 번째 월드투어 Syncopation', detail: '2026.02.21 서울 KSPO DOME 개막 · 아시아·오세아니아 공연', href: 'https://i-dle.cubeent.co.jp/news/2588/' }
@@ -91,6 +121,7 @@ if (idleProfile) {
   }
   idleProfile.sources.unshift({ label: '큐브 일본 공식 프로필 · 생일', href: 'https://i-dle.cubeent.co.jp/profile/' });
   idleProfile.sources.push({ label: '큐브 일본 공식 2026 월드투어 발표', href: 'https://i-dle.cubeent.co.jp/news/2588/' });
+  idleProfile.sources.push({ label: '큐브 일본 공식 Mono 음악방송 3관왕', href: 'https://i-dle.cubeent.co.jp/news/2639/' });
 }
 
 /* NMIXX: only publicly documented dates are filled. Unknown personal facts remain blank. */
@@ -98,10 +129,12 @@ const nmixxProfile = window.OJJUDA_FAN_PROFILES.nmixx;
 if (nmixxProfile) {
   nmixxProfile.expanded = true;
   nmixxProfile.awards = [
-    { year: '2026.09', title: '더팩트 뮤직 어워즈 대상', detail: 'Sound of the Year · 2026.09.19', href: 'https://www.soompi.com/article/1871808wpp/winners-of-2026-the-fact-music-awards' }
+    { year: '2026.09', title: '더팩트 뮤직 어워즈 대상', detail: 'Sound of the Year · 2026.09.19', href: 'https://www.soompi.com/article/1871808wpp/winners-of-2026-the-fact-music-awards' },
+    { year: '2026.10', title: '대한민국 대중문화예술상 장관 표창', detail: '2026.10.29 제17회 시상식 · 문화체육관광부 장관 표창', href: 'https://recruit.jype.com/ko/news/61' }
   ];
   nmixxProfile.records = [
-    { year: '2026', title: '첫 월드투어 진행', detail: 'EPISODE 1: ZERO FRONTIER · 유럽·아시아 투어', href: 'https://recruit.jype.com/ko/news/60' }
+    { year: '2026', title: '첫 월드투어 진행', detail: 'EPISODE 1: ZERO FRONTIER · 유럽·아시아 투어', href: 'https://recruit.jype.com/ko/news/60' },
+    { year: '2026.10', title: '월드투어 피날레 3회 전석 매진 발표', detail: '10.28 JYP 발표 기준 · 인천 11.27~29 공연', href: 'https://recruit.jype.com/ko/news/60' }
   ];
   const birthdays = {
     '릴리': '2002.10.17',
@@ -117,6 +150,7 @@ if (nmixxProfile) {
   }
   nmixxProfile.sources.unshift({ label: 'JYP 공식 멤버 프로필·생일', href: 'https://nmixx.jype.com/profile' });
   nmixxProfile.sources.push({ label: '2026 TMA 수상', href: 'https://www.soompi.com/article/1871808wpp/winners-of-2026-the-fact-music-awards' });
+  nmixxProfile.sources.push({ label: 'JYP · 2026 대중문화예술상 장관 표창', href: 'https://recruit.jype.com/ko/news/61' });
 }
 
 /* BABYMONSTER: YG-published birthdays and seven-member debut; private details stay blank. */
@@ -182,12 +216,14 @@ if (hearts2heartsProfile) {
 const blackpinkProfile = window.OJJUDA_FAN_PROFILES.blackpink;
 if (blackpinkProfile) {
   blackpinkProfile.expanded = true;
+  blackpinkProfile.checkedAt = '2026.11.14';
   blackpinkProfile.records = [
     { year: '2026.02', title: '유튜브 공식 아티스트 채널 최초 1억 구독자', detail: '2026.02.20 달성 · 유튜브 레드 다이아몬드 크리에이터 어워드', href: 'https://en.yna.co.kr/view/AEN20260221002851320' },
     { year: '2025–2026', title: '월드투어 DEADLINE', detail: '16개 도시·33회 공연 후 2026년 1월 종료', href: 'https://www.ygfamily.com/en/news/report/7378' }
   ];
   blackpinkProfile.awards = [
-    { year: '2026.01', title: '제40회 골든디스크 어워즈 디지털 음원 본상', detail: 'YG 공식 수상 이력', href: 'https://ygfamily.com/ko/artists/blackpink/profile' }
+    { year: '2026.01', title: '제40회 골든디스크 어워즈 디지털 음원 본상', detail: 'YG 공식 수상 이력', href: 'https://ygfamily.com/ko/artists/blackpink/profile' },
+    { year: '2025.12', title: '2025 AAA · 10 레전더리 여자그룹', detail: 'YG 공식 수상 이력', href: 'https://ygfamily.com/ko/artists/blackpink/profile' }
   ];
   const birthdays = { '지수': '1995.01.03', '제니': '1996.01.16', '로제': '1997.02.11', '리사': '1997.03.27' };
   for (const member of blackpinkProfile.members) {
@@ -203,9 +239,10 @@ if (blackpinkProfile) {
    MBTI, school and hometown information remains unset. */
 const btsProfile = window.OJJUDA_FAN_PROFILES.bts;
 if (btsProfile) {
-  btsProfile.checkedAt = '2026.11.12';
+  btsProfile.checkedAt = '2026.11.14';
   btsProfile.expanded = true;
   btsProfile.records = [
+    { year: '2026.07', title: 'FIFA 월드컵 결승 하프타임 공연', detail: '2026.07.19 · 미국 메트라이프 스타디움 · FIFA 공식 무대 공개', href: 'https://www.youtube.com/watch?v=qUzSrkIuP0U' },
     { year: '2026.03', title: '정규 5집 ARIRANG 발매', detail: '2026.03.20 · 타이틀 SWIM · 총 14곡', href: 'https://ibighit.com/ko/bts/discography/detail/arirang' },
     { year: '2026–27', title: 'BTS WORLD TOUR ARIRANG', detail: '고양에서 시작 · 아시아·미주·유럽·호주 등', href: 'https://btsworldtourofficial.com/' },
     { year: '2026.07', title: 'NORMAL 뮤직비디오 스트리밍 기록', detail: 'Spotify K-pop 영상 공개 첫날 스트리밍 기록', href: 'https://newsroom.spotify.com/2026-07-18/bts-music-video-normal/' }
@@ -235,12 +272,13 @@ if (btsProfile) {
    Other personal data are unpublished or unverified and remain blank. */
 const seventeenProfile = window.OJJUDA_FAN_PROFILES.seventeen;
 if (seventeenProfile) {
-  seventeenProfile.checkedAt = '2026.11.12';
+  seventeenProfile.checkedAt = '2026.11.14';
   seventeenProfile.expanded = true;
   seventeenProfile.records = [
     { year: '2015.05', title: '17 CARAT로 데뷔', detail: '13명 · 보컬/힙합/퍼포먼스 3유닛 · 직접 제작에 참여', href: 'https://www.pledis.co.kr/artist/detail/seventeen/profile/' },
     { year: '2025.05', title: '정규 5집 HAPPY BURSTDAY', detail: '타이틀 THUNDER · 단체곡 3곡과 멤버 솔로 13곡', href: 'https://www.seventeen-17.jp/posts/discography/incaiv' },
-    { year: '2026.10', title: '정한×조슈아 JxJ 유닛 DREAMSCAPE', detail: '타이틀 12 o’clock · 미니 1집 7곡', href: 'https://www.pledis.co.kr/en/artist/detail/seventeen/discography/?albumType=ALL' }
+    { year: '2026.10', title: '정한×조슈아 JxJ 유닛 DREAMSCAPE', detail: '타이틀 12 o’clock · 미니 1집 7곡', href: 'https://www.pledis.co.kr/en/artist/detail/seventeen/discography/?albumType=ALL' },
+    { year: '2026.10', title: 'JxJ DREAMSCAPE · 일본 골드 인증', detail: '10월도 일본 레코드협회 골드 디스크(누적 10만 장 이상 출하) · 11/11 공식 발표', href: 'https://www.seventeen-17.jp/posts/information/hheyrw' }
   ];
   const officialBirthdays = {
     '에스쿱스': ['1995.08.08', 'scoups'],
@@ -461,6 +499,10 @@ if (staycProfile) {
     member.birthday = birthdays[member.name] || null;
     member.source = 'https://www.highup-ent.com/en/stayc/';
   }
+  staycProfile.records = [
+    { year: '2026.08–10', title: 'STAY CLOSER · 8도시 팬콘 투어', detail: '서울 8/22~23 개막 · 마닐라·마카오·타이베이·퍼스·멜버른·시드니·홍콩(10/24 추가 공연)까지', href: 'https://stayc.lnk.to/tour' }
+  ];
+  staycProfile.sources.push({ label: 'STAY CLOSER 공식 투어 일정 · 홍콩 추가 공연', href: 'https://stayc.lnk.to/tour' });
   staycProfile.sources.unshift({ label: '하이업엔터테인먼트 공식 멤버 소개·생일', href: 'https://www.highup-ent.com/en/stayc/' });
   staycProfile.sources.push({ label: '공식 2:LOVE 음반·트랙리스트', href: 'https://www.highup-ent.com/stayc/2love/' });
 }
@@ -485,6 +527,7 @@ if (riizeProfile) {
     member.source = 'https://riizeofficial.jp/profile/' + info[1] + '/';
   }
   riizeProfile.records = [
+    { year: '2026.05', title: '일본 싱글 All of You 더블 플래티넘 인증', detail: '일본레코드협회 골드디스크 더블 플래티넘 인증 · 2026.05.14 공식 발표', href: 'https://riizeofficial.jp/news/20260514/' },
     { year: '2026.08', title: '일본 싱글 3집 Sunburst 발매', detail: '2026.08.26 CD 발매 · Sunburst/Rise Over/KILL SHOT', href: 'https://riizeofficial.jp/discography/sunburst_normal/' }
   ];
   riizeProfile.sources.unshift({ label: 'RIIZE 일본 공식 6인 프로필 · 생일', href: 'https://riizeofficial.jp/profile/' });
@@ -504,6 +547,9 @@ if (boynextdoorProfile) {
     member.birthday = officialBirthdays[member.name] || null;
     member.source = 'https://kozofficial.com/artist/profile/BOYNEXTDOOR';
   }
+  boynextdoorProfile.awards = [
+    { year: '2026', title: '40회 골든디스크어워즈 음원 본상 · 네이버 AI Choice', href: 'https://enews.imbc.com/News/RetrieveNewsInfo/490432' }
+  ];
   boynextdoorProfile.sources.push(
     { label: 'KOZ 공식 그룹 프로필 · 멤버 생일', href: 'https://kozofficial.com/artist/profile/BOYNEXTDOOR' },
     { label: 'KOZ 공식 정규 1집 트랙리스트', href: 'https://www.kozofficial.com/artist/discography/BOYNEXTDOOR/32' },
@@ -513,3 +559,10 @@ if (boynextdoorProfile) {
 
 // Pending PR reconciliation: only the eight manually reviewed profiles.
 for (const id of ["hearts2hearts", "kissoflife", "kiiikiii", "stayc", "seventeen", "enhypen", "riize", "boynextdoor"]) window.OJJUDA_FAN_PROFILES[id].checkedAt = '2026.11.13';
+
+// STAYC was reviewed again against official sources for the current slot.
+window.OJJUDA_FAN_PROFILES.stayc.checkedAt = '2026.11.14';
+// SEVENTEEN reviewed in n=48 without modifying other groups.
+window.OJJUDA_FAN_PROFILES.seventeen.checkedAt = '2026.11.14';
+// RIIZE-only recheck after the earlier cross-group review stamp.
+window.OJJUDA_FAN_PROFILES.riize.checkedAt = '2026.11.14';
