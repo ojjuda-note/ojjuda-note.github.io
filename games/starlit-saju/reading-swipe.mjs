@@ -40,11 +40,14 @@ export function attachReadingSwipe(container,{previous,next,motion=null}) {
   }
   function down(event) {
     if(gesture&&event.pointerId!==gesture.id) {reset();return;}
-    reset();blockedClickUntil=0;
     const target=event.target?.nodeType===1?event.target:event.target?.parentElement;
+    const interactive=Boolean(target?.closest(INTERACTIVE));
+    // Buttons keep a running transition until their click can continue from
+    // its actual position. Starting a new reading drag still cancels it.
+    reset({keepMotion:!gesture&&interactive});blockedClickUntil=0;
     if(event.defaultPrevented||event.isPrimary===false||event.button!==0
       ||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey
-      ||!visible()||!target||target.closest(INTERACTIVE)||selection()?.isCollapsed===false)return;
+      ||!visible()||!target||interactive||selection()?.isCollapsed===false)return;
     gesture={id:event.pointerId,type:event.pointerType||'mouse',x:event.clientX,y:event.clientY,
       time:event.timeStamp,page:currentPage(),horizontal:false,captured:false};
     // Listen outside the reading only while this pointer is held. Returning
@@ -105,7 +108,7 @@ export function attachReadingSwipe(container,{previous,next,motion=null}) {
   }
   function mouseDown(event) {
     // Double/triple clicks retain the browser's word/paragraph selection.
-    if(event.detail>1)reset();
+    if(event.detail>1&&gesture)reset();
   }
   function selectStart(event) {
     if(gesture?.horizontal&&event.cancelable)event.preventDefault();
