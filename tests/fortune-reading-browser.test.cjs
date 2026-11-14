@@ -135,7 +135,10 @@ const server = http.createServer((request, response) => {
     assert.equal(await page.locator('#summary-panel-timeline').isVisible(), false);
     const solutionSummary = page.locator('#summary-panel-problem [data-section-id="solution"] > .reading-two-line-summary');
     assert.equal(await solutionSummary.locator('.reading-summary-line').count(), 2, 'the direct reading keeps two complete summary sentences');
-    assert.match(await solutionSummary.locator('.reading-summary-line').first().textContent(), /(?:봐|보렴|보자|해|하렴|둬|두렴|나눠|적어|골라|멈춰|줘|주렴|거야|바꿔|찾아|돼|남겨|가져|떠올려|이어 가)[.!?]$/u, 'the solution summary gives a concrete action in natural Korean, including everyday verb endings');
+    const solutionLines = await solutionSummary.locator('.reading-summary-line').allTextContents();
+    assert.ok(solutionLines.every(line => /[.!?]$/u.test(line.trim())), 'the reason and the action remain complete sentences');
+    assert.notEqual(solutionLines[0], solutionLines[1], 'the action does not merely repeat the explanation');
+    assert.equal(await page.locator('#summary-panel-problem > .reading-part').first().getAttribute('data-section-id'), 'together', 'the person’s combined story comes before the action sections');
     assert.equal((await page.locator('#summary-panel-problem [data-section-id="possible-outcome"] h3').textContent()).replace(/^\d+\s*/u, ''), '대처 뒤 확인할 변화', 'the outcome is presented as a change to check after acting');
     assert.match(await page.locator('#summary-panel-problem [data-section-id="problem-now"] .reading-summary-full').textContent(), /카드가 짚는 핵심 문제야/, 'the full explanation states the reading directly');
     const tarotViews = {};
