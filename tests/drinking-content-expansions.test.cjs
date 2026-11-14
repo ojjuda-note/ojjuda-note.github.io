@@ -1308,7 +1308,7 @@ test('fingers: 300 appended conditions preserve partial private responses and ea
         url: '/games/fingers/?room=' + room.code,
         actor,
         scripts: ['/games/drinking/community-prompts.js', '/games/drinking/prompt-submissions.js',
-          '/games/party-live/prompt.js', '/games/party-live/fingers.js', '/games/party-live/room.js'],
+          '/games/fingers/condition-picker.js', '/games/party-live/fingers.js', '/games/party-live/room.js'],
         prepare(w) { w.document.getElementById('access-content').dataset.member = actor; },
         rpc(name, args, call) {
           const values = name === 'drinking_content' || name === 'drinking_prompt_suggestions'
@@ -1329,11 +1329,11 @@ test('fingers: 300 appended conditions preserve partial private responses and ea
       const owner = uis[author];
       owner.w.Math.random = () => 0.5 + index * 0.1;
       await owner.wake();
-      await until(() => owner.find('#pair-question')?.value, 'the current author receives a condition recommendation');
-      const previous = owner.find('#pair-question').value;
-      owner.click('#pair-suggest');
-      await until(() => owner.find('#pair-question')?.value !== previous, 'another fingers condition recommendation');
-      const question = owner.find('#pair-question').value;
+      await until(() => owner.find('[data-finger-choice]')?.value, 'the current author receives a condition recommendation');
+      const previous = owner.find('[data-finger-choice]').value;
+      owner.click('[data-finger-random]');
+      await until(() => owner.find('[data-finger-choice]')?.value !== previous, 'another fingers condition recommendation');
+      const question = owner.find('[data-finger-choice]').value;
       assert.ok(extraSet.has(question), 'each tested condition is one of the 300 appended entries');
       assert.equal(seenConditions.has(question), false);
       seenConditions.add(question);

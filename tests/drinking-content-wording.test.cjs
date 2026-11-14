@@ -108,7 +108,7 @@ async function activeRoom(f,kind,oldEntry,{personal}={}){
 
 async function gameScreens(f,kind,actors,code,{random,personal,formerOfficial}={}){
   const scripts=kind==='king'?['/games/drinking/community-prompts.js','/games/drinking/prompt-submissions.js','/games/king/room.js']
-    :['/games/drinking/community-prompts.js','/games/drinking/prompt-submissions.js',...(kind==='fingers'?['/games/party-live/prompt.js']:[]),`/games/party-live/${kind}.js`,'/games/party-live/room.js'];
+    :['/games/drinking/community-prompts.js','/games/drinking/prompt-submissions.js',...(kind==='fingers'?['/games/fingers/condition-picker.js']:[]),`/games/party-live/${kind}.js`,'/games/party-live/room.js'];
   return Promise.all(actors.map(actor=>screen({
     url:`/games/${kind}/?room=${code}`,actor,scripts,
     prepare(w){
@@ -177,7 +177,7 @@ async function showCorrectedLive(f,kind,entry,t){
     await until(()=>uis[0].find('[data-truth-side="0"]'),'truth card ready');
     uis[0].click('[data-truth-side="0"]');
   }else{
-    await until(()=>uis[0].find('#pair-question')?.value===entry,'the current pool automatically recommends the corrected condition');
+    await until(()=>uis[0].find('[data-finger-choice]')?.value===entry,'the current pool automatically recommends the corrected condition');
     uis[0].submit('#pair-form');
   }
   const selector=kind==='truth'?'.truth-face strong':'#game h1',expected=kind==='truth'?entry.body:entry;
