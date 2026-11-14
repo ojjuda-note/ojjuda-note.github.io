@@ -1,9 +1,10 @@
+import {personalReadingMap,pairReadingMap,connectReadingMap} from './reading-map.mjs?v=20261115-saju-reading-map1';
 import {getReadingSources} from './sources.mjs?v=20261113-saju-reader1';
 import {applyReadingSummaryViews} from './reading-summary-view.mjs?v=20261113-saju-summary1';
 import {applyReadingScoreViews} from './reading-score-view.mjs?v=20261114-saju-copy1';
 import {createCompatibilityScoreboard,createCompatibilityScoreDetails} from './compatibility-score-view.mjs?v=20261114-saju-copy1';
 import {appendReadingDetail} from './reading-detail.mjs?v=20261114-saju-depth1';
-import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261114-saju-almanac1';
+import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261115-saju-reading-map1';
 import {createReadingNavigator} from './reading-navigator.mjs?v=20261114-saju-almanac1';
 import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
 import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
@@ -1061,7 +1062,7 @@ export function renderCompatibilityReport(container, reading, {names=[]}={}) {
     element.id=`compatibility-reading-card-${index+1}`;
     pages.push({element,label:reading.cards[index].label,group:'궁합 자세히 읽기'});
   });
-  const pager=createCompatibilityPager(section,pages);
+  const pager=createCompatibilityPager(section,pages,pairReadingMap(reading));
   if(reading.readingScope)section.append(readingScopeView(reading.readingScope,'compatibility-reading-coverage'));
   section.dataset.readerPaged='true';readingPagers.set(section,pager);
   watchReadingTargets(section.ownerDocument);
@@ -1074,7 +1075,7 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   const pages=[],pageByNode=new Map(),defaults=new Map();
   const find=id=>root.querySelector(`[id="${id}"]`);
   const all=(scope,selector)=>[...(scope?.querySelectorAll(selector)||[])];
-  let serial=0,host=root,current=null,lastReading=null,motion=null;
+  let serial=0,host=root,current=null,lastReading=null,motion=null,mapView=null;
   function add(element,label,group,options={}) {
     if(!element)return null;
     if(pageByNode.has(element))return pageByNode.get(element);
@@ -1250,6 +1251,7 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   const readable=pages.filter(page=>page.kind==='reading');
   function show(page,{move=false}={}) {
     if(!page)return false;
+    mapView?.revealDetail();
     let transition=null;
     if(move&&current&&current!==page)transition=motion?.prepare(Math.sign(pages.indexOf(page)-pages.indexOf(current)));
     else motion?.cancel();
@@ -1322,10 +1324,12 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   const initial=topic==='monthly'?defaults.get(months):defaults.get(lifelong||annual)||readable[0];
   show(initial);
   return {mount(container) {
+    mapView=connectReadingMap(container,personalReadingMap(container,reading,fortune,topic,initial));
     host=container;container.dataset.readerPaged='true';
     motion=createReadingMotion(container,{getCurrentPage:()=>current?.element});
     attachReadingSwipe(container,{previous,next,motion});
     readingPagers.set(container,{reveal:target=>{
+      if(mapView.contains(target))return false;
       if(!show(pageFor(target)))return false;
       for(let element=target;element&&element!==container;element=element.parentElement) {
         if(element.tagName==='DETAILS')element.open=true;
