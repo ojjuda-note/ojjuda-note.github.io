@@ -33,7 +33,7 @@ body.dp-playing[data-dp-kind="croc"] .round-head h1 { color: var(--croc-ivory); 
 body.dp-playing[data-dp-kind="croc"] .round-head > span { color: var(--croc-muted); }
 body.dp-playing[data-dp-kind="croc"] .round-mark { box-shadow: 0 0 0 1px #d8dca32b; }
 body.dp-playing[data-dp-kind="croc"] :is(.play-body, #view) :is(h1, h2) { color: var(--croc-ivory); }
-body.dp-playing[data-dp-kind="croc"] :is(.play-body, #view) p { color: var(--croc-muted); }
+body.dp-playing[data-dp-kind="croc"] :is(.play-body, #view) p { color: var(--croc-muted); word-break: keep-all; overflow-wrap: anywhere; }
 body.dp-playing[data-dp-kind="croc"] #view :is(.topline, .topline span, label) { color: var(--croc-muted); }
 body.dp-playing[data-dp-kind="croc"] :is(.play-body, #view) :is(.start, .action) {
   border: 1px solid #f1d493;

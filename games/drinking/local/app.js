@@ -181,7 +181,7 @@ function intro(){const enough=players.length>=game.min;
   if(game.id==='croc'){
     const steps=[['차례대로','휴대폰을 돌려가며'],['하나씩','남은 이빨을 눌러요'],['딱!','입이 닫히면 당첨']];
     shell('<div class="croc-kicker">01 · 운과 감각</div><h2>아픈 이빨은<br>딱 하나.</h2>'+
-      '<p>하나씩 눌러 보세요.<br>악어가 입을 닫으면, 그 차례가 당첨!</p>'+
+      '<p>하나씩 눌러 보세요.<br>입이 닫히면 누른 사람이 당첨!</p>'+
       '<ol class="croc-rules" aria-label="게임 순서">'+steps.map(([title,description],i)=>
         '<li><span aria-hidden="true">0'+(i+1)+'</span><strong>'+title+'</strong><small>'+description+'</small></li>').join('')+'</ol>'+
       actions(enough?btn('게임 시작하기','start'):'<a class="quiet" href="#participants">참가자 설정하기</a>')+
