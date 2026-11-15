@@ -121,6 +121,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Berriz", icon: "✦", url: "https://link.berriz.in/web/main/IVE" }
     ],
     merch: [
+      { title: "Looks Can Kill · 일본 구매 특전 응모", sub: "대상 음반 구매 시리얼 추첨 · 촬영·사인회와 포토카드 응모 기간이 서로 다름 · 공식 안내 확인", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" },
       { title: "Looks Can Kill · 음반", sub: "2026.10.26 발매 · 공식 IVE 스토어", href: "https://shop.ive-starship.com/" },
       { title: "Looks Can Kill · 사인반", sub: "HERO COMICS ver. · 품절(공식 판매처 기준)", href: "https://shop.ive-starship.com/products/hero-comics-ver-ive-looks-can-kill-signed" },
       { title: "STARSHIP SQUARE", sub: "앨범·공식 굿즈", href: "https://www.starship-square.com/product/list.html?cate_no=57" },
@@ -136,9 +137,14 @@ window.OJJUDA_FAN_ARTISTS = [
     appearances: [
       { date: "2026-11-15", title: "MMA2026", sub: "서울 고척스카이돔 · 18:00", href: "https://into.melon.com/2026mma" },
       { date: "2026-11-21", title: "2026 MAMA AWARDS", sub: "교세라 돔 오사카 · CHAPTER 2 · 15:00(JST)", href: "https://www.cj.net/jp/press-release/view/1133" },
-      { date: "2026-12-13", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 MUFG 스타디움(국립경기장) · IVE 출연 확정", href: "https://music-bank.jp/" }
+      { date: "2026-12-13", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 MUFG 스타디움(국립경기장) · IVE 출연 확정", href: "https://music-bank.jp/" },
+      { date: "2026-12-19", title: "Looks Can Kill · 일본 구매자 추첨 이벤트", sub: "도쿄 아리아케 센트럴타워 홀 B · 당첨자 대상 촬영·사인·포스트카드 행사 · 시간은 주최 공지 확인", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" },
+      { date: "2027-01-16", title: "Looks Can Kill · 일본 구매자 추첨 이벤트", sub: "도쿄 포트시티 다케시바 포트홀 · 당첨자 대상 촬영·사인·포스트카드 행사 · 시간은 주최 공지 확인", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" },
+      { date: "2027-01-17", title: "Looks Can Kill · 일본 구매자 추첨 이벤트", sub: "오사카 우메다 크리스털홀 · 당첨자 대상 촬영·사인·포스트카드 행사 · 시간은 주최 공지 확인", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" }
     ],
     campaigns: [
+      { kind: "홍보대사", date: "2026.09.17", title: "UGG 아시아·태평양 앰배서더 · 장원영", sub: "UGG Born to Feel 2026 가을·겨울 캠페인 · Deckers Japan 공식 발표", href: "https://prtimes.jp/main/html/rd/p/000000784.000003434.html" },
+      { kind: "홍보대사", date: "2026.08.19", title: "AGE20'S 글로벌 앰배서더 · 레이", sub: "에이지투웨니스 리브랜딩·뷰티 캠페인 · 애경산업 발표", href: "https://biz.heraldcorp.com/article/10844878" },
       { kind: "홍보대사", date: "2026.02.02", title: "메종 발렌티노 · 레이·리즈", sub: "공식 브랜드 앰배서더 임명 · 발렌티노 발표", href: "https://prtimes.jp/main/html/rd/p/000000257.000101366.html" },
       { kind: "광고", date: "2026.03.30", title: "App Store × IVE · Fashion", sub: "일본 App Store 캠페인 음악 · 레이 내레이션", href: "https://www.sonymusic.co.jp/artist/IVE/info/582822" }
     ],
@@ -147,6 +153,8 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 커뮤니티", sub: "Berriz", href: "https://link.berriz.in/web/main/IVE" }
     ],
     news: [
+      { date: "11.07", tag: "영상", title: "〈Looks Can Kill〉 안무 연습 비하인드 공개", href: "https://www.youtube.com/watch?v=sheag2-3h_o" },
+      { date: "10.29", tag: "행사", title: "〈Looks Can Kill〉 구매자 추첨 이벤트·특전 일정 발표", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" },
       { date: "10.26", tag: "앨범", title: "미니 5집 〈Looks Can Kill〉 정식 발매", href: "https://www.starship-ent.com/musician/ive" },
       { date: "10.16", tag: "행사", title: "IVE, 11월 21일 2026 MAMA AWARDS 출연 발표", href: "https://www.cj.net/jp/press-release/view/1133" },
       { date: "05.27", tag: "앨범", title: "일본 미니 4집 〈LUCID DREAM〉 발매", href: "https://www.sonymusic.co.jp/artist/IVE/info/585343" },
@@ -168,6 +176,7 @@ window.OJJUDA_FAN_ARTISTS = [
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (7).png', '미장센 · 포토월 07', '2026', '티비텐 TV10'),
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (6).png', '미장센 · 포토월 06', '2026', '티비텐 TV10'),
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (8).png', '미장센 · 포토월 08', '2026', '티비텐 TV10'),
+      commonsPhoto('Aespa - 55580814509.jpg', '시애틀 공연 · 그룹 (원본 AI 보정)', '2026', 'David Lee · AI 보정 원본', 'CC BY 4.0'),
       commonsPhoto('03112026 Aespa NingNing Airport Departure 11.png', '닝닝 · 김포공항 (11.03)', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0')
     ],
     links: [
@@ -181,22 +190,28 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "SMTOWN SHOP", sub: "앨범·MD", href: "https://global.shop.smtown.com/collections/aespa" },
       { title: "2027 시즌그리팅 Kit", sub: "공식 예약 상품 · Weverse Shop", href: "https://shop.weverse.io/en/shop/USD/artists/133/sales/69859" },
       { title: "2027 시즌그리팅 Set", sub: "공식 예약 상품 · Weverse Shop", href: "https://shop.weverse.io/en/shop/USD/artists/133/sales/69861" },
-      { title: "KISS N TELL", sub: "일본 미니 1집 · 공식 CD 안내", href: "https://aespa-official.jp/discography/kissntell/" }
+      { title: "KISS N TELL", sub: "일본 미니 1집 · 공식 CD 안내", href: "https://aespa-official.jp/discography/kissntell/" },
+      { title: "KISS N TELL · Happy Holiday 응모", sub: "지정 판매처 구매 시 사인회 응모 코드 · 11.16~11.25(JST) 접수", href: "https://aespa-official.jp/news/happyholiday2026/" }
     ],
     music: [
+      { title: "Santa Baby (with Eartha Kitt)", date: "2026.11.13", type: "협업 디지털 싱글", songs: ["Santa Baby"], href: "https://www.yna.co.kr/amp/view/AKR20261113047000005" },
+      { title: "SYNK : COMPLaeXITY", date: "2026.09.14", type: "스페셜 디지털 싱글 · 멤버 솔로 4곡", songs: ["16 Bit (KARINA Solo)", "Saddle Up (WINTER Solo)", "BYEB4HELLO (GISELLE Solo)", "I Love You But I Gotta Let You Go (NINGNING Solo)"], href: "https://music.apple.com/us/album/synk-complaexity-2026-special-digital-single-ep/6808550171" },
       { title: "KISS N TELL", date: "2026.07.24", type: "일본 미니 1집", songs: ["KISS N TELL", "Orbit Pop", "Fangirl", "ATTITUDE", "Done with Rules", "In Halo"], href: "https://aespa-official.jp/discography/kissntell/" },
       { title: "LEMONADE", date: "2026.05.29", type: "정규 2집", songs: ["WDA (Whole Different Animal) (Feat. G-DRAGON)", "LEMONADE", "SHAKIN‘", "Can‘t Help Myself", "Camouflage", "Bite", "Switchblade (Feat. Ty Dolla $ign)", "Roll", "My Plan", "’Til We Die"], href: "https://aespa-official.jp/discography/lemonade/" },
       { title: "Rich Man", date: "2025.09.05", type: "미니 6집", songs: ["Rich Man", "Drift", "Bubble", "To The Girls"], href: "https://aespa-official.jp/discography/richman/" },
       { title: "Whiplash", date: "2024.10.21", type: "미니 5집", songs: ["Whiplash", "Kill It", "Flights, Not Feelings"], href: "https://aespa-official.jp/discography/whiplash/" }
     ],
     appearances: [
-      { date: "2026-11-14", title: "MMA2026 · 글로벌 데이", sub: "서울 고척스카이돔 · 18:00 · 주최 카카오엔터테인먼트", href: "https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/" },
       { date: "2026-11-28", title: "2026 aespa FAN MEETING · 1회", sub: "고려대학교 화정체육관 · 18:00(KST) · 멜론티켓", href: "https://weverse.io/aespa/notice/40306" },
       { date: "2026-11-29", title: "2026 aespa FAN MEETING · 2회", sub: "고려대학교 화정체육관 · 16:00(KST) · 온라인 생중계 동시 진행", href: "https://weverse.io/aespa/notice/40306" },
       { date: "2026-12-09", title: "2026 FNS 가요제 · 제2야", sub: "후지TV · 18:30~21:54(JST) 생방송 출연", href: "https://aespa-official.jp/news/fns02/" },
+      { date: "2026-12-10", title: "KISS N TELL Happy Holiday · 사인회", sub: "일본 도쿄도 내 · 멤버 전원 참여 · 시간·장소는 당첨자 별도 안내 · 11.16~11.25 응모(JST)", href: "https://aespa-official.jp/news/happyholiday2026/" },
       { date: "2026-12-12", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 MUFG 스타디움(국립경기장) · 17:00 예정(JST)", href: "https://music-bank.jp/" }
     ],
     campaigns: [
+      { kind: "콜라보", date: "2026.11.13", title: "Eartha Kitt × aespa · Santa Baby", sub: "원곡 보컬과 협업한 디지털 싱글 · Primary Wave Music / SM", href: "https://www.yna.co.kr/amp/view/AKR20261113047000005" },
+      { kind: "콜라보", date: "2026.11.13", title: "☆Taku Takahashi (m-flo) × aespa", sub: "〈KISS N TELL〉 리믹스 협업 발표 · 11월 20일 공개 예정", href: "https://aespa-official.jp/news/kissntell-remix/" },
+      { kind: "콜라보", date: "2026.11.13", title: "Setlog × aespa", sub: "〈KISS N TELL〉 리믹스 사전 체험 · 기간 한정 영상 효과", href: "https://aespa-official.jp/news/kissntell-remix/" },
       { kind: "홍보대사", date: "2026.09.09", title: "MARK & LONA · 카리나", sub: "2026 가을·겨울 컬렉션 공식 브랜드 앰배서더 활동", href: "https://aespa-official.jp/news/mark-lona-2026/" }
     ],
     schedules: [
@@ -205,6 +220,11 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 공지", sub: "Weverse", href: "https://weverse.io/aespa/notice" }
     ],
     news: [
+      { date: "11.14", tag: "수상", title: "MMA2026 글로벌-K 아티스트 대상·글로벌 TOP10 2관왕", href: "https://www.melon.com/mma/result.htm?mmaYear=2026" },
+      { date: "11.13", tag: "음악", title: "Eartha Kitt와 협업한 〈Santa Baby〉 싱글 발매", href: "https://www.yna.co.kr/amp/view/AKR20261113047000005" },
+      { date: "11.13", tag: "음악", title: "〈KISS N TELL〉 ☆Taku Takahashi 리믹스 11월 20일 발매 예고", href: "https://aespa-official.jp/news/kissntell-remix/" },
+      { date: "11.13", tag: "행사", title: "12월 10일 도쿄 사인회 확정 · 11월 16~25일 응모", href: "https://aespa-official.jp/news/happyholiday2026/" },
+      { date: "11.13", tag: "기록", title: "〈LEMONADE〉 뮤직비디오 1억 조회수 돌파", href: "https://www.soompi.com/article/1886736wpp/aespas-lemonade-becomes-their-12th-mv-to-hit-100-million-views" },
       { date: "11.10", tag: "팬미팅", title: "11월 29일 팬미팅 온라인 생중계·시청권 안내", href: "https://aespa-official.jp/news/fanmeeting2026-streaming/" },
       { date: "11.03", tag: "방송", title: "12월 9일 후지TV FNS 가요제 출연 발표", href: "https://aespa-official.jp/news/fns02/" },
       { date: "07.24", tag: "음악", title: "일본 미니 1집 〈KISS N TELL〉 발매", href: "https://aespa-official.jp/news/kissntell-release/" },
@@ -236,6 +256,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Weverse", icon: "✦", url: "https://weverse.io/lesserafim" }
     ],
     merch: [
+      { title: "2027 시즌그리팅 · FIM IN BLOOM", sub: "2026.11.17 11:00 KST 공식 예약 시작 예정 · 구성·가격·재고는 Weverse Shop 확인", href: "https://x.com/le_sserafim/status/2121196403443822764" },
       { title: "Made My Night 싱글 앨범", sub: "CHEMICAL NIGHT·컴팩트판 · 한국 9.11 발매·일본 10.09 발매 · 재고는 판매처 확인", href: "https://www.le-sserafim.jp/news/984d91860ac0" },
       { title: "FIM'S Holiday Express 공식 MD", sub: "쿠션·키링·블랭킷 · 11.09부터 한정 예약 · 재고는 판매처 확인", href: "https://www.le-sserafim.jp/news/4fc666123c77" },
       { title: "사쿠라 × Couturier 공식 협업 상품", sub: "DIY 키트·니트 MD · 3차 예약 11.27 18:00(JST)까지·수량 한정", href: "https://www.le-sserafim.jp/news/28a632789865" },
@@ -250,9 +271,9 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "HOT", date: "2025.03.14", type: "미니 5집", songs: ["HOT", "Come Over", "Ash"], href: "https://sourcemusic.com/artist/discography/LE%20SSERAFIM/15" }
     ],
     appearances: [
-      { date: "2026-11-14", title: "PUREFLOW 투어 · 타이베이 (1일차)", sub: "대만 NTSU 아레나 · 현지 시간은 공식 판매처 확인", href: "https://weverse.io/lesserafim/notice/40760" },
-      { date: "2026-11-15", title: "PUREFLOW 투어 · 타이베이 (2일차)", sub: "대만 NTSU 아레나 · 현지 시간은 공식 판매처 확인", href: "https://weverse.io/lesserafim/notice/40760" },
+      { date: "2026-11-15", title: "PUREFLOW 투어 · 타이베이 (2일차)", sub: "대만 NTSU 아레나 · 18:00 대만 현지시간 · iME Taiwan 주최", href: "https://tixcraft.com/activity/detail/26_lsf" },
       { date: "2026-11-21", title: "2026 MAMA AWARDS", sub: "일본 오사카 · CHAPTER 2", href: "https://www.cj.net/jp/press-release/view/1132" },
+      { date: "2026-11-27", title: "PUREFLOW pt.1 · 싱가포르 팬사인회", sub: "14:30 SGT · House of K-pop 주관 추첨 행사 · 11.17 응모 마감 · 장소는 주최 안내 확인", href: "https://houseofkpop.com/products/singapore-fan-sign-event-le-sserafim-2nd-studio-album-pureflow-pt-1-compact-ver" },
       { date: "2026-11-28", title: "PUREFLOW 투어 · 싱가포르", sub: "APEX@EXPO · 현지 17:00 · iMe Singapore 주최", href: "https://ticketmaster.sg/activity/detail/26sg_lsf" },
       { date: "2026-12-05", title: "PUREFLOW 투어 · 마닐라", sub: "SM Mall of Asia Arena · PULP Live World 주최 · 12.06 공연 취소, 12.05만 진행", href: "https://www.pulpliveworld.com/Shows/296" },
       { date: "2026-12-10", endDate: "2026-12-13", title: "VR FEST · INVITATION (1차 상영)", sub: "도쿄 109 시네마즈 프리미엄 신주쿠 · 회차는 극장 확인", href: "https://www.le-sserafim.jp/news/e5aa32400684" },
@@ -265,6 +286,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { date: "2027-01-24", title: "일본 데뷔 4주년 Celebration Greeting · 도쿄", sub: "도쿄 시내 · 시간·세부 장소 미공개 · 구매자 추첨", href: "https://www.le-sserafim.jp/news/555c78286abe" }
     ],
     campaigns: [
+      { kind: "광고", date: "2026.09.07", title: "카즈하 × 시세이도 마끼아쥬", sub: "일본 화장품 브랜드 Maquillage 공식 뮤즈 · 디지털 광고·공식 SNS", href: "https://www.le-sserafim.jp/news/83d065b424d1" },
       { kind: "콜라보", date: "2026.09.10", title: "LE SSERAFIM × 오버워치", sub: "Made My Night 공식 MV 및 게임 컬래버레이션", href: "https://www.invenglobal.com/articles/25804/operation-rescue-le-sserafim-overwatch-collab-music-video-for-made-my-night-released" },
       { kind: "콜라보", date: "2026.05.22", title: "BOOMPALA × Google Android", sub: "Google Android·Gemini 연계 공식 뮤직비디오 프로젝트", href: "https://www.billboard-japan.com/d_news/detail/161790/2" },
       { kind: "콜라보", date: "2026.06.03", title: "사쿠라 × Couturier", sub: "펠리시모 뜨개질·DIY 브랜드 협업 · 공식 한정 상품", href: "https://www.le-sserafim.jp/news/28a632789865" }
@@ -275,6 +297,8 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 채널", sub: "Linktree", href: "https://linktr.ee/lesserafim" }
     ],
     news: [
+      { date: "2026.11.13", tag: "굿즈", title: "2027 시즌그리팅 FIM IN BLOOM 공개 · 11.17 예약 예정", href: "https://x.com/le_sserafim/status/2121196403443822764" },
+      { date: "2026.11.13", tag: "팬사인회", title: "11.27 싱가포르 PUREFLOW 앨범 팬사인회 응모 안내", href: "https://houseofkpop.com/products/singapore-fan-sign-event-le-sserafim-2nd-studio-album-pureflow-pt-1-compact-ver" },
       { date: "2026.11.13", tag: "이벤트", title: "2027.01.23~24 일본 데뷔 4주년 기념 이벤트 공지", href: "https://www.le-sserafim.jp/news/555c78286abe" },
       { date: "2026.11.06", tag: "수상", title: "사쿠라 WIRED Innovation Awards 2026 수상", href: "https://www.le-sserafim.jp/news/8c78b9319fdd" },
       { date: "2026.11.06", tag: "굿즈", title: "FIM'S Holiday Express 공식 MD 예약 안내", href: "https://www.le-sserafim.jp/news/4fc666123c77" },
@@ -309,7 +333,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "FANS", icon: "✦", url: "https://app.fans/community/twice" }
     ],
     merch: [
-      { title: "NAYEON · NA-sty", sub: "2026.11.20 발매 · 카세트 2종 예약 · 포토카드 특전은 판매처 확인", href: "https://www.twicejapan.com/news/detail/2059" },
+      { title: "NAYEON · NA-sty", sub: "2026.11.20 한국 발매 · 카세트 2종 예약 · 특전 포토카드 2종 공개(랜덤·소진 시 종료)", href: "https://www.twicejapan.com/news/detail/2066" },
       { title: "THIS IS FOR · 서울 피날레 라이브 LP", sub: "2026.10.16 발매 · 2LP · JYP JAPAN 공식 판매처", href: "https://jypj-store.com/collections/twice-official-goods/products/tw26-tff-0001" },
       { title: "#BEST 2015-2025 · 한정 BOX", sub: "2026.12.16 발매 예정 · 수량·재고는 공식 판매처 확인", href: "https://jypj-store.com/collections/twice-official-goods/products/tw26-bes-0003" },
       { title: "THIS IS FOR · MUFG STADIUM 라이브 Blu-ray/DVD", sub: "2026.12.02 발매 예정 · 일본 공식 디스코그래피", href: "https://www.twicejapan.com/discography/detail/92/" },
@@ -319,20 +343,21 @@ window.OJJUDA_FAN_ARTISTS = [
     music: [
       { title: "THIS IS FOR WORLD TOUR FINALE in SEOUL - LIVE", date: "2026.10.16", type: "서울 피날레 라이브 음반 · 26곡", songs: ["FOUR", "THIS IS FOR", "Strategy", "MAKE ME GO", "SET ME FREE"], href: "https://music.apple.com/us/album/this-is-for-world-tour-finale-in-seoul-live/6812503580" },
       { title: "#BEST 2015-2025", date: "2026.08.26", type: "일본 베스트 앨범 · 4CD", songs: ["Like OOH-AHH", "CHEER UP", "TT", "Feel Special", "ME + YOU"], href: "https://www.twicejapan.com/discography/detail/91/" },
+      { title: "MISAMO · PLAY", date: "2026.02.04", type: "일본 정규 1집 · 통상반 12곡(구성판별 차이)", songs: ["Confetti", "Hmm", "Not a Goodbye", "Deep Eden", "Red Diamond", "Catch My Eye", "Kitty (MOMO Solo)", "Ma Cherry (SANA Solo)", "Turning Tables (MINA Solo)", "Identity", "Do not touch", "Message"], href: "https://wmg.jp/twice/discography/32400" },
       { title: "TEN: The Story Goes On", date: "2025.10.10", type: "데뷔 10주년 스페셜 앨범", songs: ["ME+YOU", "MEEEEEE", "FIX A DRINK", "CHESS"], href: "https://twice.jype.com/discography?AmSeq=1&PgIndex=1" },
       { title: "THIS IS FOR", date: "2025.07.11", type: "정규 4집", songs: ["THIS IS FOR", "FOUR", "OPTIONS", "MARS"], href: "https://twice.jype.com/discography/7lpxlcye" },
       { title: "STRATEGY", date: "2024.12.06", type: "미니 14집", songs: ["Strategy (feat. Megan Thee Stallion)", "Kiss My Troubles Away", "Sweetest Obsession"], href: "https://twice.jype.com/discography/1xokcjbo" },
       { title: "With YOU-th", date: "2024.02.23", type: "미니 13집", songs: ["ONE SPARK", "I GOT YOU"], href: "https://twice.jype.com/discography/jfzzhl4x" }
     ],
     appearances: [
-      { date: "2026-11-14", title: "나연 · CHAGEE 마닐라 밋앤그릿", sub: "필리핀 현지 17:30 출연 예정 · Bonifacio High Street Activity Center, BGC · 초대권 당첨자 입장", href: "https://thelookout.com.ph/article/nayeon-of-twice-returns-to-manila-for-chagees-first-philippine-flagship-store-opening" },
       { date: "2026-11-20", title: "나연 · NA-sty 싱글 발매", sub: "JYP · 한국 정식 발매일 (예약 공지와 구별)", href: "https://www.twicejapan.com/news/detail/2059" },
       { date: "2026-11-21", title: "2026 MAMA AWARDS", sub: "나연 솔로 출연 · 일본 오사카", href: "https://www.cj.net/jp/press-release/view/1132" },
-      { date: "2026-12-12", title: "뮤직뱅크 글로벌 페스티벌", sub: "MISAMO·나연 출연 · 도쿄", href: "https://music-bank.jp/" },
-      { date: "2027-01-23", title: "나연 · NA-sty 발매 기념 밋앤그릿", sub: "일본 도쿄 · 추첨 당첨자 한정 · 상세 장소·시간 당첨자 별도 안내", href: "https://www.twicejapan.com/news/detail/2065" }
+      { date: "2026-12-12", title: "뮤직뱅크 글로벌 페스티벌", sub: "MISAMO·나연 공연, 사나 MC · 도쿄 MUFG 스타디움 · 현지 17:00 개막 예정", href: "https://music-bank.jp/" },
+      { date: "2027-01-23", title: "나연 · NA-sty 발매 기념 밋앤그릿", sub: "도쿄 · 추첨 당첨자 대상 사인·2샷 촬영·배웅회 · 정확한 장소·시각은 당첨자 안내", href: "https://www.twicejapan.com/news/detail/2066" }
     ],
     campaigns: [
       { kind: "콜라보", date: "2026.10.28", title: "나연 × CHAGEE 필리핀", sub: "11.14 첫 플래그십 개점 기념 팬 행사 · 포토카드 구매 응모는 11.11 종료", href: "https://thelookout.com.ph/article/nayeon-of-twice-returns-to-manila-for-chagees-first-philippine-flagship-store-opening" },
+      { kind: "광고", date: "2026.01.07", title: "나연·모모·지효·쯔위 × Victoria’s Secret PINK", sub: "2026 발렌타인 Wink 컬렉션 캠페인 모델 · 시즌 협업", href: "https://www.victoriassecret.com/us/pink/new-arrivals/trending-now" },
       { kind: "콜라보", date: "2026.10.02", title: "TWICE LOVELYS × Cake.jp", sub: "공식 캐릭터 쿠키·금평당 선물 세트 · 예약 판매 시작", href: "https://www.twicejapan.com/news/detail/2045" },
       { kind: "콜라보", date: "2026.03", title: "TWICE LOVELYS × 반다이", sub: "캐릭터 젤리·참·파우치 · 2026년 3월 출시", href: "https://wmg.jp/twice/news/90426" },
       { kind: "콜라보", date: "2026.02", title: "TWICE LOVELYS × 산리오캐릭터즈", sub: "선스타 문구 데스크 굿즈 시리즈", href: "https://www.twicejapan.com/news/detail/1948" }
@@ -344,6 +369,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 홈페이지", sub: "JYP", href: "https://twice.jype.com/" }
     ],
     news: [
+      { date: "11.13", tag: "굿즈", title: "나연 ‘NA-sty’ 공식 특전 포토카드 2종 공개 · 2027.01.23 팬 이벤트 세부 안내", href: "https://www.twicejapan.com/news/detail/2066" },
       { date: "11.10", tag: "공지", title: "나연 'NA-sty' 팬 이벤트 장소·응모 안내 정정", href: "https://www.twicejapan.com/news/detail/2065" },
       { date: "11.06", tag: "음반", title: "나연 'NA-sty' 11.20 발매 · 카세트 2종 예약", href: "https://www.twicejapan.com/news/detail/2059" },
       { date: "10.28", tag: "행사", title: "나연 × CHAGEE, 11.14 마닐라 팬 이벤트 발표", href: "https://thelookout.com.ph/article/nayeon-of-twice-returns-to-manila-for-chagees-first-philippine-flagship-store-opening" },
@@ -359,6 +385,7 @@ window.OJJUDA_FAN_ARTISTS = [
     image: commonsPhoto('Illit in January 2026.png', '2026 · 단체', '2026', '티비텐 TV10').image,
     imageCredit: "티비텐 TV10 · CC BY 4.0", imageLink: "https://commons.wikimedia.org/wiki/File:Illit_in_January_2026.png",
     photos: [
+      commonsPhoto('29102026 ILLIT TOP TEN AWARDS.png', '2026 TTA 여자 아이돌 그룹 1위', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0'),
       commonsPhoto('Illit in January 2026.png', '2026 · 단체', '2026', '티비텐 TV10'),
       commonsPhoto('Illit at Canada Goose Photo Call, December 11, 2024.png', '캐나다구스 · 포토콜', '2024', '티비텐 TV10', 'CC BY 3.0'),
       commonsPhoto('Illit 240326.jpg', '데뷔 · 단체', '2024', '티비텐 TV10', 'CC BY 3.0'),
@@ -381,23 +408,39 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Weverse", icon: "✦", url: "https://weverse.io/illit" }
     ],
     merch: [
+      { title: "BREAK EVEN · Little Mimi Ver.", sub: "2026.12.30 발매 예정 · 11.05부터 예약판매 · 재고는 판매처 확인", href: "https://shop.weverse.io/en/shop/KRW/artists/120/sales/71786" },
+      { title: "DEARLIT 공식 캐릭터 MD", sub: "2026.09.02부터 한정 수량 판매 · 재고 확인 필요", href: "https://shop.weverse.io/ko/shop/KRW/artists/120/notices/14153" },
       { title: "Weverse Shop", sub: "아일릿 앨범·공식 굿즈", href: "https://shop.weverse.io/ko/shop/KRW/artists/120" },
       { title: "BELIFT LAB", sub: "공식 앨범 안내", href: "https://beliftlab.com/artist/discography/ILLIT" }
     ],
     music: [
+      { title: "You're Under Arrest (Remixes)", date: "2026.11.06", type: "리믹스 싱글", songs: ["You're Under Arrest", "You're Under Arrest (Kids Remix)", "You're Under Arrest (Whistle Remix)", "You're Under Arrest (Club Remix)", "You're Under Arrest (Hyper Remix)", "You're Under Arrest (Sped Up)", "You're Under Arrest (Slowed + Reverb)"], href: "https://weverse.io/illit/notice/40642" },
       { title: "BREAK EVEN", date: "2026.10.26", type: "미니 5집", songs: ["Super in Love", "More", "체포하겠어 (You're Under Arrest)", "Pop"], href: "https://beliftlab.com/artist/discography/ILLIT/22" },
       { title: "MAMIHLAPINATAPAI", date: "2026.04.30", type: "미니 4집", songs: ["It's Me", "GRWM (Get Ready With Me)", "paw, paw!", "Mamihlapinatapai", "Love, older you"], href: "https://beliftlab.com/artist/discography/ILLIT/18" },
       { title: "SUPER REAL ME", date: "2024.03.25", type: "미니 1집", songs: ["My World", "Magnetic", "Midnight Fiction", "Lucky Girl Syndrome"], href: "https://beliftlab.com/artist/discography/ILLIT/8" }
     ],
     appearances: [
+      { date: "2026-12-23", title: "PRESS START❤ ENCORE in JAPAN", sub: "18:30 · 일본 치바 LaLa arena TOKYO-BAY · 주최 HYBE JAPAN · 예매는 공식 안내", href: "https://www.hybejapan.events/illit/press_start_encore", timeZone: "Asia/Tokyo" },
+      { date: "2026-12-24", title: "PRESS START❤ ENCORE in JAPAN", sub: "18:30 · 일본 치바 LaLa arena TOKYO-BAY · 예매는 공식 안내", href: "https://www.hybejapan.events/illit/press_start_encore", timeZone: "Asia/Tokyo" },
+      { date: "2026-12-26", title: "PRESS START❤ ENCORE in JAPAN", sub: "17:00 · 일본 치바 LaLa arena TOKYO-BAY · 예매는 공식 안내", href: "https://www.hybejapan.events/illit/press_start_encore", timeZone: "Asia/Tokyo" },
+      { date: "2026-12-27", title: "PRESS START❤ ENCORE in JAPAN", sub: "17:00 · 일본 치바 LaLa arena TOKYO-BAY · 예매는 공식 안내", href: "https://www.hybejapan.events/illit/press_start_encore", timeZone: "Asia/Tokyo" },
       { date: "2026-11-15", title: "MMA2026", sub: "서울 고척스카이돔 · 18:00", href: "https://into.melon.com/2026mma" },
       { date: "2026-11-20", title: "2026 MAMA AWARDS", sub: "일본 오사카 · CHAPTER 1", href: "https://www.cj.net/jp/press-release/view/1132" }
     ],
+    campaigns: [
+      { kind: "광고", date: "2026.03", title: "FILA", sub: "그룹 스포츠 브랜드 광고 모델 · 빌리프랩 발표", href: "https://www.tenasia.co.kr/article/2026031916524" },
+      { kind: "콜라보", date: "2026.03", title: "Rockfish Weatherwear × ILLIT", sub: "2026.03.03 글로벌 협업 컬렉션 출시", href: "https://www.tenasia.co.kr/article/2026031916524" },
+      { kind: "홍보대사", date: "2026.09", title: "민주 × Glint by VDIVOV", sub: "멤버 민주 · 뷰티 브랜드 앰배서더 · 09.29 브랜드 발표", href: "https://prtimes.jp/main/html/rd/p/000000035.000064439.html" }
+    ],
     schedules: [
+      { title: "일본 앙코르 공연", sub: "HYBE JAPAN · 12월 치바 공연·공식 티켓 안내", href: "https://www.hybejapan.events/illit/press_start_encore" },
       { title: "BELIFT LAB 일정", sub: "공식 스케줄", href: "https://beliftlab.com/artist/schedule/ILLIT" },
       { title: "Weverse 공지", sub: "팬 커뮤니티", href: "https://weverse.io/illit/notice" }
     ],
     news: [
+      { date: "11.06", tag: "수상", title: "뮤직뱅크 ‘체포하겠어’ 1위 · 9,803점", href: "https://www.soompi.com/article/1884749wpp/watch-nmixx-takes-1st-win-for-birthday-wish-on-music-bank-performances-by-ateez-illit-and-more-2" },
+      { date: "11.06", tag: "음악", title: "‘You're Under Arrest (Remixes)’ 7곡 발매", href: "https://weverse.io/illit/notice/40642" },
+      { date: "10.30", tag: "수상", title: "제15회 TTA 여자 아이돌 그룹 부문 1위", href: "https://www.tenasia.co.kr/article/2026103060504" },
       { date: "10.26", tag: "앨범", title: "미니 5집 BREAK EVEN", href: "https://beliftlab.com/artist/discography/ILLIT/22" },
       { date: "공식", tag: "공지", title: "ILLIT 공식 소식", href: "https://weverse.io/illit/notice" }
     ]

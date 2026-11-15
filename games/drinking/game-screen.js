@@ -60,14 +60,14 @@
         const title=window.DrinkingGameGuides?.[kind]?.title || document.querySelector('header strong')?.textContent || '';
         card.prepend(ui.heading(kind,title,state.players?.length??0));
       }
-      if(phase==='done'&&Number.isInteger(state.hostSeat))ui.result(board,state.players[state.hostSeat]);
+      if(phase==='done'&&kind!=='partyroulette'&&Number.isInteger(state.hostSeat))ui.result(board,state.players[state.hostSeat]);
     }
     const root = view.querySelector('#game') || view.querySelector('.inside') || view.querySelector('.card') || view;
     const urgent = (['bomb', 'initial'].includes(kind) && phase === 'active') ||
       (kind === 'bottle' && ['spinning', 'braking'].includes(phase)) ||
       (kind === 'stopwatch' && phase === 'measure');
     presentation.update({phase, roundKey, urgent,
-      result: phase === 'done' ? {key: roundKey + '/done', ...resultCopy(kind, root, 'h1', state)} : null});
+      result: phase === 'done' && kind!=='partyroulette' ? {key: roundKey + '/done', ...resultCopy(kind, root, 'h1', state)} : null});
   }
 
   function local(kind, round, app) {

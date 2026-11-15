@@ -51,7 +51,6 @@ test('each drinking game has its own guide, only on entry or an explicit help re
   assert.deepEqual(Object.keys(guides).sort(),[...kinds].sort());
   assert.equal(Object.isFrozen(guides),true);
   for (const local of [false,true]) for (const kind of kinds) {
-    if(kind==='partyroulette'&&!local)continue;
     const guide=guides[kind];
     assert.ok(guide.title.trim()&&guide.goal.trim(),kind+' title and purpose');
     assert.equal(guide.steps.length,3,kind+' has three actionable steps');
@@ -308,9 +307,10 @@ test('all native and local adapters publish outcomes only from a confirmed done 
     const state={code:'ROOM01',round:3,phase:'done'};
     f.w.DrinkingGameScreen.native(kind,state,view);
     const confirmed=updates.at(-1);
-    assert.ok(confirmed.result?.key&&confirmed.result.title,kind+' native confirmed outcome');
+    if(kind==='partyroulette')assert.equal(confirmed.result,null,'the draw displays only this phone’s private result');
+    else assert.ok(confirmed.result?.key&&confirmed.result.title,kind+' native confirmed outcome');
     f.w.DrinkingGameScreen.native(kind,{...state,revision:100},view);
-    assert.equal(updates.at(-1).result.key,confirmed.result.key,kind+' poll revisions do not invent a new outcome');
+    assert.equal(updates.at(-1).result?.key,confirmed.result?.key,kind+' poll revisions do not invent a new outcome');
     f.w.DrinkingGameScreen.local(kind,{phase:'done'},app);
     assert.ok(updates.at(-1).result?.key,kind+' local confirmed outcome');
     assert.equal(entries.at(-1)[1].local,true);

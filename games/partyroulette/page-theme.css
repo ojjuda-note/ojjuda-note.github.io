@@ -1,0 +1,120 @@
+/* The scene and controls share one landscape surface in both game modes. */
+body.dp-playing[data-dp-kind="partyroulette"] :is(#app, #view) :is(.play-body, #game):has(> .roulette-table) {
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0;
+  margin: 0;
+  background: #0d1915;
+}
+.roulette-table {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  flex: 1 0 auto;
+  width: 100%;
+  color: #f5efdf;
+  background: #12221c;
+}
+.roulette-scene {
+  position: relative;
+  isolation: isolate;
+  min-height: 150px;
+  overflow: hidden;
+  background: #08120e;
+}
+.roulette-scene > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.roulette-scene:has(.drum-zoom) > img { width: 74%; }
+.drum-zoom {
+  position: absolute;
+  right: 4%;
+  top: 50%;
+  width: clamp(64px, 30%, 180px);
+  aspect-ratio: 1;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+.roulette-panel {
+  display: flex;
+  flex-flow: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(8px, 2vmin, 20px);
+  padding: clamp(12px, 4vmin, 46px);
+  border-left: 1px solid #8e82554a;
+  background: linear-gradient(135deg, #1d3027, #101d18);
+  color: #f7efdd;
+  text-align: left;
+  word-break: keep-all;
+}
+body.dp-playing :is(#app,#view) .roulette-panel :is(h1,h2) {
+  margin: 0;
+  color: inherit;
+  font: 760 clamp(20px, 5.7vmin, 42px)/1.18 system-ui, sans-serif;
+  letter-spacing: -.045em;
+}
+.roulette-panel h2:focus { outline: none; }
+body.dp-playing :is(#app,#view) .roulette-panel p {
+  margin: 0;
+  color: #d2d7cb;
+  font: 460 clamp(14px, 3.6vmin, 20px)/1.45 system-ui, sans-serif;
+}
+body.dp-playing :is(#app,#view) .roulette-panel .actions { width: 100%; margin: 0; }
+body.dp-playing :is(#app,#view) .roulette-panel :is(.start,.quiet,.action) {
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 9px 14px;
+  border: 1px solid #e8c786;
+  border-radius: 9px;
+  background: linear-gradient(#edd19a, #d7b475);
+  box-shadow: inset 0 1px #fff3ce70, 0 3px 8px #0003;
+  color: #251e12;
+  font: 750 clamp(16px, 3.8vmin, 21px)/1.35 system-ui, sans-serif;
+}
+body.dp-playing #app .roulette-panel .roulette-target {
+  margin: 0;
+  color: #e1dece;
+  font-size: 15px;
+}
+body.dp-playing #app .roulette-panel select { margin: 0; padding: 5px 10px; font-size: 16px; }
+.draw-result[data-fired="true"] .roulette-panel { background: linear-gradient(130deg, #69472c, #38271e); }
+body.dp-playing #view .draw-result h1 { font-size: clamp(30px, 11vmin, 76px); }
+
+/* Keep the same stage axes when the browser stays portrait on a sideways phone. */
+@media (orientation: portrait) {
+  body.dp-playing #access-content[data-dp-kind="partyroulette"]:is([data-dp-mode="local"],[data-dp-phase="prepare"],[data-dp-phase="together"],[data-dp-phase="done"]) {
+    --roulette-rotated: 1;
+    position: fixed;
+    inset: 0 auto auto 100%;
+    width: 100vh;
+    width: 100dvh;
+    height: 100vw;
+    height: 100dvw;
+    transform: rotate(90deg);
+    transform-origin: left top;
+    padding: env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left) env(safe-area-inset-top);
+    background: #faf7ed;
+  }
+  #access-content[data-dp-kind="partyroulette"] .dp-help { top: 3px; right: max(8px, env(safe-area-inset-bottom)); }
+  #access-content[data-dp-kind="partyroulette"] .dp-overlay { padding: 8px 12px; }
+  #access-content[data-dp-kind="partyroulette"] .dp-dialog { max-height: 100%; }
+  #access-content[data-dp-kind="partyroulette"] .dp-celebration { height: min(26vw, 150px); }
+}
+@media (max-height: 480px), (orientation: portrait) and (max-width: 480px) {
+  body.dp-playing[data-dp-kind="partyroulette"] :is(#app,#view) .table-heading { padding-block: 3px; }
+  body.dp-playing[data-dp-kind="partyroulette"] :is(#app,#view) .table-heading h1 { font-size: 17px; }
+  body.dp-playing[data-dp-kind="partyroulette"] :is(#app,#view) .table-mark { width: 24px; height: 24px; }
+}

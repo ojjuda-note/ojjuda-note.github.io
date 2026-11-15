@@ -5,7 +5,7 @@ const {randomUUID} = require('node:crypto');
 const test = require('node:test');
 const {fixture} = require('./drinking-room-fixture.cjs');
 
-const kinds = ['croc','bottle','bomb','stopwatch','liar','king','truth','initial','minority','mission','fingers','imagevote','updown','secretcount'];
+const kinds = ['croc','bottle','bomb','stopwatch','liar','king','truth','initial','minority','mission','fingers','imagevote','updown','secretcount','partyroulette'];
 const roomTables = ['drinking_rooms','croc_rooms','liar_rooms','king_rooms','party_vote_rooms'];
 
 test('drinking rooms retain consistent state through overlapping account requests', {timeout: 120_000}, async t => {
@@ -61,7 +61,7 @@ test('drinking rooms retain consistent state through overlapping account request
     assert.equal((await db.query('select count(*)::int n from ojjuda_arcade_internal.drinking_rooms')).rows[0].n, 1);
   });
 
-  await t.test('all 14 games preserve the same 12 accounts across start, retry and return', async () => {
+  await t.test('all 15 games preserve the same 12 accounts across start, retry and return', async () => {
     await reset();
     let parent = await sharedRoom();
     const originalPlayers = parent.players;
@@ -78,8 +78,9 @@ test('drinking rooms retain consistent state through overlapping account request
       if (previousChild) await assert.rejects(native(users[0], previousChild.kind, 'state', previousChild.code), /room_unavailable/);
       const snapshots = await Promise.all(users.slice(0, 12).map(actor => native(actor, kind, 'state', parent.child)));
       for (const [i, snapshot] of snapshots.entries()) {
-        assert.equal(snapshot.players[snapshot.me], names[i], kind + ' private seat');
-        assert.deepEqual(snapshot.players, originalPlayers, kind + ' roster');
+        const labels=kind==='partyroulette'?originalPlayers.map((_,j)=>(j+1)+'번'):originalPlayers;
+        assert.equal(snapshot.players[snapshot.me],labels[i],kind+' private seat');
+        assert.deepEqual(snapshot.players,labels,kind+' roster');
         assert.equal(snapshot.revision, snapshots[0].revision, kind + ' revision');
         assert.notEqual(snapshot.phase, 'waiting', kind + ' starts once');
         assert.equal('password_hash' in snapshot, false);
@@ -269,4 +270,37 @@ test('explicit truth and minority choices are shared, turn-scoped, and cannot ch
   await assert.rejects(move(a,'truth_pick',{flavor:'spicy',question:'수위 확인'}),/invalid_flavor/);
   r=await move(a,'truth_pick',{flavor:'mild',question:'어떤 노래를 좋아해요?'});assert.equal(r.game.question,'어떤 노래를 좋아해요?');
   assert.equal((await act(c,'truth','state',r.code)).game.question,r.game.question);
+});
+
+test('group roulette accepts concurrent presses, reveals exactly one phone and preserves its result on reconnect',async t=>{
+  const f=await fixture();t.after(()=>f.close());
+  const n=5,seats=f.users.slice(0,n);
+  const hub=(i,act,code,opts={})=>f.publicRpc(seats[i],'drinking_room',[act,code,opts]);
+  let parent=await hub(0,'create','',{title:'함께',capacity:n,password:'test-pass',request_id:randomUUID()});
+  for(let i=1;i<n;i++)parent=await hub(i,'join',parent.code,{password:'test-pass'});
+  parent=await hub(0,'start',parent.code,{kind:'partyroulette',revision:parent.revision,request_id:randomUUID()});
+  const call=(i,act,opts={})=>f.publicRpc(seats[i],'party_live_multiplayer',['partyroulette',act,parent.child,opts]);
+  let s=await call(0,'state');
+  const opts=()=>({round:s.round,revision:s.revision,request_id:randomUUID()});
+  assert.deepEqual(s.players,['1번','2번','3번','4번','5번']);
+  assert.deepEqual(s.game,{phase:'prepare',count:0,mine:false});
+  await assert.rejects(call(0,'roulette_press',opts()),/unavailable/);
+  const first=opts();await call(0,'roulette_ready',first);await call(0,'roulette_ready',first);
+  assert.equal((await call(1,'state')).game.count,1);
+  await Promise.all(seats.slice(1).map((_,i)=>call(i+1,'roulette_ready',opts())));
+  s=await call(1,'state');assert.equal(s.phase,'together');assert.ok(s.game.opensAt>s.serverMs);
+  await assert.rejects(call(1,'roulette_press',opts()),/countdown_running/);
+  // Move just the fixture clock boundary back; orders still use the public RPC.
+  await f.db.query("update ojjuda_arcade_internal.party_vote_rooms set game_state=jsonb_set(game_state,'{opensAt}','0') where code=$1",[parent.child]);
+  await Promise.all(seats.slice(0,-1).map((_,i)=>call(i,'roulette_press',opts())));
+  const pending=await call(n-1,'state');
+  assert.deepEqual(pending.game,{phase:'together',count:n-1,mine:false,opensAt:0});
+  assert.equal((await call(0,'state')).game.mine,true);
+  let last=opts();await call(n-1,'roulette_press',last);await call(n-1,'roulette_press',last);
+  const results=await Promise.all(seats.map((_,i)=>call(i,'state')));
+  assert.equal(results.filter(s=>s.game.fired).length,1);
+  for(const [i,r] of results.entries()){
+    assert.deepEqual(Object.keys(r.game).sort(),['fired','phase']);assert.equal(r.phase,'done');
+    assert.deepEqual((await call(i,'state')).game,r.game);
+  }
 });

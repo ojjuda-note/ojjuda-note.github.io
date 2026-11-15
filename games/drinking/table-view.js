@@ -14,14 +14,14 @@
     ['fingers','손병호 게임','추리와 대화','해당하면 손가락 하나 접기','#e1bd95',2,'다섯 손가락을 펴고 시작해요. 조건에 해당하면 하나씩 접어요. 다섯 개를 먼저 접으면 걸려요. 답하기 싫은 조건은 패스해도 돼요.'],
     ['imagevote','이미지 게임','추리와 대화','이 질문에 딱 맞는 사람은?','#b9c9e4',2,'질문을 읽고 가장 잘 어울리는 사람에게 몰래 한 표를 주세요. 모두 투표하면 가장 많이 지목된 사람이 공개돼요.'],
     ['updown','업앤다운','운과 감각','숫자를 부르면, 업 또는 다운!','#c9d8ea',2,'1부터 100 사이에 숨은 숫자를 돌아가며 맞혀요. 업이면 더 큰 수, 다운이면 더 작은 수예요. 정확히 맞힌 사람이 이겨요.'],
-    ['secretcount','시크릿 카운트','운과 감각','비밀 숫자에서 버튼을 누르면 당첨','#ccd9ce',2,'한 차례에 버튼을 한 번에서 세 번 누르고 다음 사람에게 넘겨요.']
+    ['secretcount','시크릿 카운트','운과 감각','비밀 숫자에서 버튼을 누르면 당첨','#ccd9ce',2,'한 차례에 버튼을 한 번에서 세 번 누르고 다음 사람에게 넘겨요.'],
   ].map(([id,title,category,short,color,min,rule],i)=>({id,title,category,short,color,min,rule,num:String(i+1).padStart(2,'0')}));
 
   function artwork(kind) {
     const mark = document.createElement('span');
     mark.className = 'table-mark';
     mark.setAttribute('aria-hidden', 'true');
-    if (['stopwatch','secretcount','partyroulette'].includes(kind)) {
+    if (['stopwatch','secretcount'].includes(kind)) {
       mark.classList.add('table-mark-' + kind);
     } else {
       const image = document.createElement('img');

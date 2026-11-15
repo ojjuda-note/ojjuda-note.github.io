@@ -5,7 +5,9 @@
   const kind = document.documentElement.dataset.game;
   const title = document.querySelector('header strong').textContent;
   const feature = window.PartyLiveGame;
+  const existingRoomsOnly = kind === 'partyroulette';
   const descriptions = {
+    partyroulette: '각자 한 사람을 지목하고 카운트다운에 맞춰 함께 눌러요.',
     secretcount: '자기 차례에 버튼을 누르고 다음 사람에게 넘겨요.',
     updown: '1부터 100 사이에 숨은 숫자를 찾아요. 차례대로 숫자를 고르고 UP·DOWN 힌트로 범위를 좁혀요.',
     fingers: '조건에 해당하면 손가락을 하나 접어요. 다섯 손가락을 먼저 접으면 걸려요.',
@@ -75,14 +77,18 @@
   function entry() {
     unmount(); room = null; clearTimeout(timer);
     if(party){window.DrinkingPresentation?.leave();return party.missing();}
-    const create = mode === 'create';
+    if (existingRoomsOnly && !validCode(activeCode)) {
+      location.replace('/games/drinking/?mode=multi');
+      return;
+    }
+    const create = !existingRoomsOnly && mode === 'create';
     const seats = Array.from({length:11}, (_,i) => {
       const n = i+2;
       return '<option value="' + n + '"' + (n===4 ? ' selected' : '') + '>' + n + '명</option>';
     }).join('');
     view.innerHTML = '<section class="card"><h1>' + title + '</h1><p>' + descriptions[kind] + '</p>' +
-      '<div class="tabs"><button data-do="create-tab" aria-pressed="' + create + '">방 만들기</button>' +
-      '<button data-do="join-tab" aria-pressed="' + !create + '">방 들어가기</button></div>' +
+      (existingRoomsOnly ? '' : '<div class="tabs"><button data-do="create-tab" aria-pressed="' + create + '">방 만들기</button>' +
+      '<button data-do="join-tab" aria-pressed="' + !create + '">방 들어가기</button></div>') +
       '<form id="entry">' + (create
         ? '<label>방 제목<input name="title" required maxlength="40" value="' + title + ' 같이 한 판 해요"></label>' +
           '<label>참여 인원<select name="capacity">' + seats + '</select></label>'
@@ -93,6 +99,7 @@
     window.DrinkingGameScreen?.native(kind,null,view);
   }
   function lobby(s) {
+    if(kind==='partyroulette')return '<h1>'+esc(s.title)+'</h1><p>참가자 '+s.players.length+'/'+s.capacity+'명 · 모두 모이면 시작해요.</p>';
     return '<h1>' + esc(s.title) + '</h1><p>모두 모이면 시작해요. 초대 링크와 비밀번호를 친구에게 알려 주세요.</p>' +
       '<ol class="members">' + s.players.map((player,i) => '<li' + (i===s.me?' class="me"':'') + '>' +
         esc(player) + (i===0?' · 방장':'') + (i===s.me?' (나)':'') + '</li>').join('') + '</ol>' + control('초대 링크 복사','copy',true);
@@ -127,7 +134,7 @@
     room = s; activeCode = s.code;
     const ui = {esc, now:serverNow, send:(action,opts)=>send(s,action,opts)};
     const playing = s.phase !== 'waiting';
-    const replay = party || s.phase !== 'done' ? '' : s.me===(s.hostSeat??0) ? control('한 판 더','again',true) : '<p>방장이 다음 판을 시작할 수 있어요.</p>';
+    const replay = existingRoomsOnly || party || s.phase !== 'done' ? '' : s.me===(s.hostSeat??0) ? control('한 판 더','again',true) : '<p>방장이 다음 판을 시작할 수 있어요.</p>';
     view.innerHTML = '<section class="card"><div class="topline"><span>' + esc(s.title) + '</span><span>' +
       s.round + '번째 판 · ' + s.players.length + '/' + s.capacity + '명</span></div><div id="game">' +
       (playing ? feature.view(s,ui) : lobby(s)) + '</div><div class="actions">' + replay + control('방 나가기','leave') + '</div></section>';
@@ -253,7 +260,7 @@
     run(async()=>{
       try {
         let next;
-        if (mode==='create') {
+        if (!existingRoomsOnly && mode==='create') {
           const roomTitle=String(form.get('title')||'').trim();
           const capacity=Number(form.get('capacity'));
           const fingerprint=JSON.stringify([roomTitle,capacity,password]);

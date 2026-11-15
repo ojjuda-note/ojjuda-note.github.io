@@ -35,13 +35,14 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   ive: {
-    checkedAt: '2026.11.10',
+    checkedAt: '2026.11.15',
     debut: '2021.12.01', debutWork: 'ELEVEN',
     agency: 'STARSHIP Entertainment',
     concept: 'I HAVE, 그리고 당당한 IVE의 순간.',
     heightSource: 'https://www.youtube.com/watch?v=sqe55UwRU2o',
     awards: [
-      { year: '2022', title: 'MAMA 올해의 노래', detail: 'LOVE DIVE', href: 'https://mama.mnetplus.world/history/2022/winners' }
+      { year: '2022', title: 'MAMA 올해의 노래', detail: 'LOVE DIVE', href: 'https://mama.mnetplus.world/history/2022/winners' },
+      { year: '2026.09', title: '장원영 · 올해의 브랜드 대상', detail: '여자 광고모델 부문 · 2년 연속', href: 'https://www.etnews.com/20260901000136' }
     ],
     records: [
       { year: '2023.02', title: '음악방송 누적 37관왕', detail: 'ELEVEN · LOVE DIVE · After LIKE', href: 'https://enews.imbc.com/News/RetrieveNewsInfo/373075' }
@@ -60,16 +61,19 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   aespa: {
-    checkedAt: '2026.11.13',
+    checkedAt: '2026.11.15',
     debut: '2020.11.17', debutWork: 'Black Mamba',
     agency: 'SM Entertainment',
     concept: '현실과 가상 세계를 잇는 aespa.',
     heightSource: 'https://kpopdiscover.com/en/groups/aespa/',
     awards: [
+      { year: '2026.11', title: 'MMA2026 올해의 글로벌-K 아티스트 · 대상', detail: '11.14 첫 시상 부문 수상', href: 'https://www.melon.com/mma/result.htm?mmaYear=2026' },
+      { year: '2026.11', title: 'MMA2026 글로벌 TOP10', detail: '11.14 글로벌 TOP10 수상 · 2관왕', href: 'https://www.yna.co.kr/view/AKR20261114049700005' },
       { year: '2024', title: 'MAMA 올해의 노래', detail: 'Supernova', href: 'https://mama.mnetplus.world/history/2024/winners' },
       { year: '2025', title: '한국대중음악상 올해의 노래', detail: 'Supernova', href: 'https://koreanmusicawards.com/project/aespa-supernova/' }
     ],
     records: [
+      { year: '2026.11', title: 'LEMONADE MV 1억 조회', detail: '11.13 돌파 · 그룹 12번째 1억 뷰 뮤직비디오', href: 'https://www.soompi.com/article/1886736wpp/aespas-lemonade-becomes-their-12th-mv-to-hit-100-million-views' },
       { year: '2024', title: 'MAMA 6관왕', detail: 'Supernova · Armageddon 외', href: 'https://cjenm.com/en/news/2024-mama-awards-wrap-up-historic-run-with-iconic-performances-and-milestone-moments/' }
     ],
     members: [
@@ -85,7 +89,7 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   lesserafim: {
-    checkedAt: '2026.11.13',
+    checkedAt: '2026.11.15',
     debut: '2022.05.02', debutWork: 'FEARLESS',
     agency: 'SOURCE MUSIC · HYBE',
     concept: 'IM FEARLESS, 두려움 없이 나아가는 다섯 멤버.',
@@ -94,6 +98,7 @@ window.OJJUDA_FAN_PROFILES = {
       { year: '2024', title: 'MTV VMAs PUSH 퍼포먼스상', detail: 'EASY', href: 'https://www.paramountpressexpress.com/mtv/releases/?view=110288-mtv-reveals-winners-for-2024-video-music-awards-vmas' }
     ],
     records: [
+      { year: '2026.08', title: '사쿠라 · Forbes JAPAN 30 UNDER 30', detail: '2026 일본 선정 · 멤버 개인 기록', href: 'https://www.le-sserafim.jp/news/11619647448c' },
       { year: '2026.11', title: '사쿠라 · WIRED Innovation Awards 2026', detail: '멤버 개인 수상 · 일본 WIRED 선정', href: 'https://www.le-sserafim.jp/news/8c78b9319fdd' },
       { year: '2024.03', title: '빌보드 200 8위', detail: 'EASY', href: 'https://ca.billboard.com/music/chart-beat/twice-le-sserafim-first-2-all-female-k-pop-groups-billboard-200-top-10-together-1235621542/' }
     ],
@@ -111,7 +116,7 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   twice: {
-    checkedAt: '2026.11.13',
+    checkedAt: '2026.11.15',
     debut: '2015.10.20', debutWork: 'The Story Begins · OOH-AHH하게',
     agency: 'JYP Entertainment',
     concept: 'SIXTEEN에서 출발한 아홉 멤버의 이야기.',
@@ -144,12 +149,14 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   illit: {
-    checkedAt: '2026.11.10',
+    checkedAt: '2026.11.15',
     debut: '2024.03.25', debutWork: 'SUPER REAL ME · Magnetic',
     agency: 'BELIFT LAB · HYBE',
     concept: 'Magnetic부터 BREAK EVEN까지, 아일릿의 이야기.',
     heightSource: 'https://kprofiles.com/illit-members-profile/',
     awards: [
+      { year: '2026.11', title: 'KBS 뮤직뱅크 1위', detail: '체포하겠어 (You\'re Under Arrest) · 2026.11.06 · 9,803점', href: 'https://www.soompi.com/article/1884749wpp/watch-nmixx-takes-1st-win-for-birthday-wish-on-music-bank-performances-by-ateez-illit-and-more-2' },
+      { year: '2026.10', title: '제15회 TTA 베스트 여자 아이돌 그룹', detail: '2026.10.30 · 여자 아이돌 그룹 부문 1위', href: 'https://www.tenasia.co.kr/article/2026103060504' },
       { year: '2024', title: 'MAMA 여자 신인상', detail: 'BEST NEW FEMALE ARTIST', href: 'https://mama.mnetplus.world/history/2024/winners' }
     ],
     records: [

@@ -794,29 +794,69 @@ test('one phone can choose or write prompts inline and read the fingers recommen
   assert.deepEqual(session.errors,[]);
 });
 
-test('party roulette plays from the phone menu through a turn and a named result',async t=>{
+async function expectRouletteStage(page,rotated) {
+  await page.locator('.roulette-scene img').evaluate(image=>image.decode());
+  const stage=await page.locator('.roulette-table').evaluate(table=>{
+    const host=document.getElementById('access-content'),scene=table.querySelector('.roulette-scene'),panel=table.querySelector('.roulette-panel');
+    const frame=table.getBoundingClientRect();
+    return {turned:getComputedStyle(host).getPropertyValue('--roulette-rotated').trim()==='1',
+      wide:host.clientWidth>host.clientHeight,sideBySide:panel.offsetLeft>=scene.offsetLeft+scene.offsetWidth-1,
+      fits:frame.left>=-1&&frame.top>=-1&&frame.right<=innerWidth+1&&frame.bottom<=innerHeight+1};
+  });
+  assert.deepEqual(stage,{turned:rotated,wide:true,sideBySide:true,fits:true});
+}
+
+test('old roulette links open the local catalog or multiplayer directory',async t=>{
   const browser=await chromium.launch(launchOptions);t.after(()=>browser.close());
-  const session=await browserSession(browser,{actor:'wheel-member',localPlayers:['보리','나리'],
-    viewport:{width:360,height:640},rpc:()=>({})});
+  const session=await browserSession(browser,{actor:'wheel-member',localPlayers:['보리','나리','마루'],
+    rpc:(_name,args)=>args.p_action==='mine'?{room:null}:{rooms:[]}});
   const page=session.page;
-  await page.addInitScript(()=>{Math.random=()=>.75;});
   const {revision}=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../game-release.json'),'utf8'));
-  await page.goto(origin+'/games/drinking/local/?v='+revision+'#menu');
-  await page.getByRole('button',{name:/러시안 룰렛/}).click();
-  await dismissGuide(page);
-  await page.getByRole('button',{name:'탄환 넣기'}).click();
-  await page.getByRole('button',{name:'탄창 돌리기'}).click();
-  const press=page.getByRole('button',{name:'너 마셔!'});
-  await press.waitFor({state:'visible'});
-  const box=await press.boundingBox();
-  assert.ok(box.y>=0&&box.y+box.height<=640,'turn button fits the phone screen');
-  assert.equal(await page.locator('.party-wheel-board h2').innerText(),'보리님 차례');
-  await screenshot(page,'partyroulette-360x640');
-  await press.click();
-  await page.getByRole('button',{name:'다음 차례'}).click();
-  await press.click();
-  const result=page.locator('[data-drinking-dialog="result"]');
-  await result.waitFor();
-  assert.match(await result.innerText(),/나리님 당첨/);
+  await page.goto(origin+'/games/drinking/local/?v='+revision+'#partyroulette');
+  await page.waitForURL(/#menu$/);
+  await page.locator('.games .table-card').first().waitFor();
+  assert.equal(await page.getByRole('button',{name:/러시안 룰렛/}).count(),0);
+  await page.evaluate(()=>{Math.random=()=>.9999;});
+  await page.getByRole('button',{name:'랜덤 게임'}).click();
+  await page.waitForURL(/#secretcount$/);
+  await page.goto(origin+'/games/partyroulette/');
+  await page.waitForURL('**/games/drinking/?mode=multi');
+  await page.locator('#open-create').waitFor();
   assert.deepEqual(session.errors,[]);
+});
+
+test('three phones share a countdown and exactly one shows the firing result without choosing names',async t=>{
+  const browser=await chromium.launch(launchOptions);t.after(()=>browser.close());
+  const n=3,ready=new Set(),pressed=new Set();let phase='prepare',revision=1,opensAt=0;
+  const sessions=await Promise.all([0,1,2].map(async seat=>{
+    return browserSession(browser,{actor:'roulette-device-'+seat,viewport:seat===0?{width:360,height:640}:{width:844,height:390},rpc:(_name,args)=>{
+      const act=args.p_action;
+      if(act==='roulette_ready'&&phase==='prepare'){
+        ready.add(seat);revision++;
+        if(ready.size===n){phase='together';opensAt=Date.now()+3000;}
+      }else if(act==='roulette_press'&&phase==='together'){
+        if(Date.now()<opensAt)throw Error('countdown_running');
+        pressed.add(seat);revision++;
+        if(pressed.size===n)phase='done';
+      }
+      const marks=phase==='prepare'?ready:pressed;
+      return {code:'GRP001',title:'함께',capacity:n,players:['1번','2번','3번'],me:seat,revision,round:1,
+        phase,serverMs:Date.now(),hostSeat:0,game:phase==='done'?{phase,fired:seat===1}:{phase,count:marks.size,mine:marks.has(seat),opensAt}};
+    }});
+  }));
+  const pages=sessions.map(s=>s.page);
+  await Promise.all(pages.map(async (p,i)=>{
+    await p.goto(origin+'/games/partyroulette/?room=GRP001');await dismissGuide(p);
+    await expectRouletteStage(p,i===0);
+    assert.equal(await p.locator('#game select, #game input').count(),0);
+    await p.getByRole('button',{name:'준비',exact:true}).click();
+  }));
+  await Promise.all(pages.map(p=>p.getByRole('button',{name:'너 마셔!',exact:true}).click()));
+  await Promise.all(pages.map(p=>p.locator('.draw-result').waitFor()));
+  const labels=await Promise.all(pages.map(p=>p.locator('.draw-result h1').innerText()));
+  assert.deepEqual(labels,['통과','팡!','통과']);
+  for(const [i,p] of pages.entries()){
+    assert.equal(await p.locator('[data-drinking-dialog="result"]').count(),0);
+    assert.deepEqual(sessions[i].errors,[]);
+  }
 });

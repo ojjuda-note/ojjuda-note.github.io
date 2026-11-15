@@ -112,12 +112,18 @@ assert.notDeepEqual(videoFacts([{ id: 'abcdefghijk' }]), videoFacts([{ id: '0123
         const response = await page.request.get(`${base}/features/fanpages/${file}`, { headers: { 'Cache-Control': 'no-cache' } });
         assert.equal(response.status(), 200);
         const dir = path.join(root,'features/fanpages');
-        if (file === 'index.html') {
+        if (file === 'index.html' || file === 'artist.html') {
           const {buildHub,readPhotoManifest} = await import('../scripts/build-fanpage-hub.mjs');
           const manifest = await page.request.get(base+'/features/fanpages/photo-manifest.js');
           assert.equal(manifest.status(),200);
           const expected = buildHub(dir,readPhotoManifest(await manifest.text()));
-          assert.equal(await response.text(),expected.markup,'deployed hub markup');
+          assert.equal(await response.text(),file === 'artist.html' ? expected.detailMarkup : expected.markup,'deployed fanpage markup');
+          if (file === 'artist.html') {
+            const [path,json] = [...expected.details].find(([name])=>name.startsWith('./artist-data/'+group+'-'));
+            const selected = await page.request.get(base+'/features/fanpages/'+path);
+            assert.equal(selected.status(),200);
+            assert.equal(await selected.text(),json,'deployed artist data');
+          }
           const summary = await page.request.get(base+'/features/fanpages/hub-artists.js?v='+expected.hash);
           assert.equal(summary.status(),200);
           assert.equal(await summary.text(),expected.script,'deployed hub summary');

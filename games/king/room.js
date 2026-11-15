@@ -119,9 +119,10 @@ function render(s,force=false){
   view.innerHTML='<section class="card"><div class="inside">'+heading+content+'<div class="actions">'+control('방 나가기','leave')+'</div></div></section>';
   const order=view.querySelector('#order');
   if(order){
-    refreshMissions=menu.mount(order,{kind:'king',state:missionDraft,load:()=>menu.catalog('king',draftSecond!=null),apply:async(mission,manual)=>{
+    const display=mission=>menu.kingMission(mission,draftNumber,draftSecond);
+    refreshMissions=menu.mount(order,{kind:'king',display,state:missionDraft,load:()=>menu.catalog('king',draftSecond!=null),apply:async(mission,manual)=>{
       if(room!==s||busy||!connection.active())return false;
-      const options={round:s.round,mission,number:draftNumber};
+      const options={round:s.round,mission:manual?mission:display(mission),number:draftNumber};
       if(draftSecond!=null)options.second=draftSecond;
       let sent=false;
       await run(async()=>{
@@ -186,15 +187,14 @@ async function run(task){
   }
 }
 view.addEventListener('change',e=>{
+  if(e.target.name!=='number'&&e.target.name!=='second')return;
+  const previousSecond=draftSecond;
   if(e.target.name==='number'){
     draftNumber=Number(e.target.value);
-    if(draftSecond===draftNumber){draftSecond=null;void refreshMissions();}
+    if(draftSecond===draftNumber)draftSecond=null;
     e.target.form.elements.second.innerHTML=secondOptions(room.players.length-1);
-  }
-  if(e.target.name==='second'){
-    const previous=draftSecond;draftSecond=Number(e.target.value)||null;
-    if((draftSecond==null)!==(previous==null))void refreshMissions();
-  }
+  }else draftSecond=Number(e.target.value)||null;
+  void refreshMissions({labelsOnly:(draftSecond==null)===(previousSecond==null)});
 });
 view.addEventListener('submit',e=>{
   e.preventDefault();

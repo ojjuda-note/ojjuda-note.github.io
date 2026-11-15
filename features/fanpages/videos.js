@@ -12,6 +12,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: '9XttLI0oH0I', title: 'LOVE ATTACK', kind: '뮤직비디오', source: 'RESCENE / THE MUZE' }
   ],
   ive: [
+    { id: 'sheag2-3h_o', title: 'Looks Can Kill · DANCE PRACTICE BEHIND', kind: '안무 연습 비하인드', source: 'IVE 공식 · 2026.11.07' },
+    { id: 'ObeUFZEBk48', title: 'Looks Can Kill · DANCE PRACTICE', kind: '안무 연습', source: 'IVE 공식 · 2026.10.26' },
     { id: 'rsNhWkC4neE', title: 'Looks Can Kill', kind: '뮤직비디오', source: 'STARSHIP · 2026.10.19' },
     { id: 'vL4y-ZuKzZs', title: 'Looks Can Kill', kind: '퍼포먼스 영상', source: 'IVE 공식 · 2026.10.21' },
     { id: 'trlOTS4nKO4', title: 'LUCID DREAM', kind: '뮤직비디오', source: 'Sony Music Japan · 2026.05.25' },
@@ -21,6 +23,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'Y8JFxS1HlDo', title: 'LOVE DIVE', kind: '뮤직비디오', source: 'IVE / STARSHIP' }
   ],
   aespa: [
+    { id: 'cnSMlOc9L5k', title: 'MMA2026 · WDA + Switchblade + LEMONADE', kind: '공식 시상식 무대', source: '멜론 Melon · 2026.11.14' },
+    { id: 'rr39g9rl4ZU', title: '카리나·윈터 서울 신드롬 비하인드', kind: '공식 메이킹', source: 'aespa 공식 · 2026.11.13' },
+    { id: 'cU8BEe99RzM', title: '지젤 · Love Riot', kind: '뮤직비디오', source: 'aespa 공식 · 2026.10.30' },
     { id: 'inxzQt78lOk', title: 'KISS N TELL', kind: '뮤직비디오', source: 'SMTOWN · 2026.07.24' },
     { id: '83C3TZ4Zm_o', title: 'LEMONADE', kind: '뮤직비디오', source: 'SMTOWN · 2026.05.29' },
     { id: 'iTJSbJtS8MU', title: 'WDA (Whole Different Animal) (Feat. G-DRAGON)', kind: '뮤직비디오', source: 'SMTOWN · 2026.05.11' },
@@ -29,6 +34,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'nFYwcndNuOY', title: 'Armageddon', kind: '뮤직비디오', source: 'aespa / SMTOWN' }
   ],
   lesserafim: [
+    { id: 'mBw5NdhOMPA', title: '인생은 게임이다 | LE PLAY', kind: '공식 콘텐츠 · 투어 일상', source: 'LE SSERAFIM Official · 2026.11.13' },
+    { id: 'otYU8-OUunU', title: '디즈니 월드에서 미션 수행', kind: '공식 비하인드', source: 'LE SSERAFIM Official · 2026.11.11' },
     { id: 'Y1Lah0BM0KQ', title: 'Made My Night', kind: '뮤직비디오 · 오버워치 협업', source: 'LE SSERAFIM / HYBE LABELS' },
     { id: '27C4pfRsf9g', title: 'ICONIC BY MISTAKE', kind: '뮤직비디오 · 합동 프로젝트', source: 'LE SSERAFIM · ILLIT · KATSEYE / HYBE LABELS' },
     { id: 'V1Lr-_AxeR8', title: 'BOOMPALA', kind: '뮤직비디오', source: 'LE SSERAFIM / HYBE LABELS' },
@@ -42,12 +49,15 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: '387tGAU9pNY', title: 'THIS IS FOR · TOKYO DOME LIVE', kind: '공식 공연 영상', source: 'TWICE JAPAN OFFICIAL · 2026.08.26' },
     { id: 'h_5NFu_UmRA', title: 'THIS IS FOR · SEOUL FINALE Behind', kind: '메이킹', source: 'TWICE Official · 2026.08.13' },
     { id: 'UPsCaaaqRe0', title: 'THIS IS FOR · SEOUL FINALE Playlist', kind: '공식 공연 플레이리스트', source: 'TWICE Official · 2026.07.13' },
+    { id: 'gOjG-70-D5o', title: 'MISAMO · Confetti', kind: '뮤직비디오', source: 'MISAMO / JYP Entertainment · 2026.01' },
     { id: 'zqorlX_5oHQ', title: 'ME+YOU', kind: '뮤직비디오', source: 'TWICE / JYP · 2025.10.10' },
     { id: 'eHHQaoEW30Q', title: 'THIS IS FOR', kind: '뮤직비디오', source: 'TWICE / JYP' },
     { id: 'hTiiQhCkPtc', title: 'THIS IS FOR', kind: '안무 비하인드', source: 'TWICE Official' },
     { id: 'g2IDtpL1YkE', title: 'THIS IS FOR', kind: '콘셉트 티저', source: 'TWICE / JYP' }
   ],
   illit: [
+    { id: 'V2V9-9VhYJo', title: '체포하겠어 (You\'re Under Arrest)', kind: '뮤직비디오', source: 'HYBE LABELS · 2026.10.26' },
+    { id: '_H043SYWpF4', title: '체포하겠어 · Official MV (Performance ver.)', kind: '퍼포먼스 뮤직비디오', source: 'HYBE LABELS · 2026.10.29' },
     { id: 'Vk5-c_v4gMU', title: 'Magnetic', kind: '뮤직비디오', source: 'ILLIT / HYBE LABELS' },
     { id: 'tbDGl7jEazA', title: 'Cherish (My Love)', kind: '뮤직비디오', source: 'ILLIT / HYBE LABELS' },
     { id: 'x_RYZsOfpKY', title: 'NOT CUTE ANYMORE', kind: '뮤직비디오', source: 'ILLIT / HYBE LABELS' },

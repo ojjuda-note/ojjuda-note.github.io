@@ -33,7 +33,7 @@
 
 배포 대상 HTML **103개**를 파일별로 기록했다. 한 게임의 체험·대전 주소와 아티스트별 안내 페이지도 각각 한 행이다. `world.html` 안의 아지트·오락실·공원·설정 탭과 미션은 위 기능표에 따로 담았다. 테스트용 HTML 한 개는 배포 대상에서 제외했다.
 
-오락실 공개 바로가기는 혼자 즐기는 게임 12종과 함께하는 게임 7종이다. 포토땅따먹기·맞고·세븐포커·룰렛은 성인용 경로로, 술게임 14종에는 각각 전용 진입점이 있다. 한 대로 플레이 안의 러시안 룰렛을 포함하면 술게임은 15종이다. 나사 풀기의 두 모드와 당구의 세 종목은 각 게임에 포함한다.
+오락실 공개 바로가기는 혼자 즐기는 게임 12종과 함께하는 게임 7종이다. 포토땅따먹기·맞고·세븐포커·룰렛은 성인용 경로로, 술게임 15종에는 각각 전용 진입점이 있다. 나사 풀기의 두 모드와 당구의 세 종목은 각 게임에 포함한다.
 
 ### 입장·계정·안내 (12)
 
@@ -97,7 +97,7 @@
 | 술병 나침반 | [games/bottle/index.html](../../games/bottle/index.html) |
 | 악어 이빨 | [games/croc/index.html](../../games/croc/index.html) |
 | 술게임 입구·대전방 | [games/drinking/index.html](../../games/drinking/index.html) |
-| 술게임 한 대로 플레이 · 러시안 룰렛 포함 | [games/drinking/local/index.html](../../games/drinking/local/index.html) |
+| 술게임 한 대로 플레이 | [games/drinking/local/index.html](../../games/drinking/local/index.html) |
 | 술게임 회원 확인 | [games/drinking/verify/index.html](../../games/drinking/verify/index.html) |
 | 손병호 게임 | [games/fingers/index.html](../../games/fingers/index.html) |
 | 이미지 게임 | [games/imagevote/index.html](../../games/imagevote/index.html) |
@@ -106,6 +106,7 @@
 | 라이어 찾기 | [games/liar/index.html](../../games/liar/index.html) |
 | 소수파 찾기 | [games/minority/index.html](../../games/minority/index.html) |
 | 한 명만 다른 미션 | [games/mission/index.html](../../games/mission/index.html) |
+| 러시안 룰렛 | [games/partyroulette/index.html](../../games/partyroulette/index.html) |
 | 시크릿 카운트 | [games/secretcount/index.html](../../games/secretcount/index.html) |
 | 감각 스톱워치 | [games/stopwatch/index.html](../../games/stopwatch/index.html) |
 | 진실게임 | [games/truth/index.html](../../games/truth/index.html) |

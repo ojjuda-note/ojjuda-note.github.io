@@ -42,6 +42,7 @@ test('random start draws from every multiplayer game the joined players can play
     t.after(()=>f.close());
     await until(()=>!f.find('#lobby').hidden);
     const all=Array.from(f.find('#games').children,tile=>tile.dataset.game);
+    assert.ok(!all.includes('partyroulette'));
     const pool=size<2?[]:all.filter(kind=>size>=3||!threeRequired.includes(kind));
     const button=f.find('#random-start');
     assert.equal(button.hidden,false);assert.equal(button.disabled,size===1);
@@ -404,6 +405,73 @@ test('sentence menus filter mild and spicy, alternate mixed recommendations and 
   assert.ok(ui.find('.play-body').textContent.includes(field.value));
 });
 
+test('king pair orders follow both selected card numbers in local and multiplayer games',async t=>{
+  const solo='손을 들기.';
+  const template='둘이 먼저 뽑힌 사람이 나중에 뽑힌 사람 손바닥에 숫자를 쓰면 나중에 뽑힌 사람이 맞히기.';
+  const bank={banks:{king:[solo,template]},flavors:{king:[null,'spicy']}};
+  const expected=(a,b)=>a+'번이 '+b+'번 손바닥에 숫자를 쓰면 '+b+'번이 맞히기.';
+  for(const local of [true,false])await t.test(local?'one phone':'separate phones',async st=>{
+    let room={code:'KING01',title:'왕게임',capacity:4,players:['가','나','다','라'],me:0,king:0,card:0,round:1,revision:1,phase:'order'};
+    const ui=await screen({url:local?'/games/drinking/local/#king':'/games/king/?room=KING01',
+      ...(local?{prepare(w){w.scrollTo=()=>{};}}:{scripts:['/games/drinking/prompt-submissions.js','/games/king/room.js']}),
+      rpc(name,args){
+        if(name==='drinking_content')return bank;
+        if(name==='king_multiplayer'){
+          if(args.p_action==='order'){
+            const {number,second,mission}=args.p_options;
+            room={...room,phase:'response',revision:2,number,second,mission,recipient:number,secondRecipient:second,accepted:[]};
+          }
+          return room;
+        }
+        return {ok:true};
+      }});
+    st.after(()=>ui.close());
+    const form=local?'#king-order-form':'#order';
+    function deal(){
+      ui.click('[data-action="start"]');
+      for(let i=0;i<4;i++){ui.click('[data-action="reveal"]');ui.click('[data-action="hide"]');}
+    }
+    if(local)deal();
+    const select=(selector,value)=>{
+      const el=ui.find(selector);
+      el.value=String(value);el.dispatchEvent(new ui.w.Event('change',{bubbles:true}));
+    };
+    const first=local?'#king-number':'#order [name="number"]',second=local?'#king-second':'#order [name="second"]';
+    const chosen=()=>ui.find('[data-selected]')?.textContent;
+    await until(()=>chosen()===solo,'solo catalog');
+    select(second,2);
+    await until(()=>chosen()===expected(1,2),'pair loaded');
+    const catalogReads=()=>ui.calls.filter(c=>c.name==='drinking_content').length;
+    const reads=catalogReads();
+    select(first,3);select(second,1);
+    assert.equal(chosen(),expected(3,1));
+    assert.deepEqual([...ui.find('[data-question]').options].map(option=>option.text),[expected(3,1)]);
+    assert.equal(catalogReads(),reads,'changing numbers within a pair only changes display labels');
+    assert.deepEqual([...ui.w.DrinkingPrompts.list('king')],[solo,template]);
+    select(first,1);
+    await until(()=>chosen()===solo,'a repeated number restores the solo catalog');
+    assert.equal(ui.find(second).value,'');
+    select(first,3);select(second,1);
+    await until(()=>chosen()===expected(3,1),'second pair');
+    ui.submit(form);
+    const heading=local?'.king-order h2':'.king-order h1';
+    await until(()=>ui.find(heading)?.textContent===expected(3,1),'revealed numbered order');
+    if(!local){
+      assert.equal(room.mission,expected(3,1),'all room clients receive the same resolved round snapshot');
+    }else{
+      ui.click('[data-action="king-no"]');
+      deal();select(second,2);
+      ui.click('[data-mode="write"]');
+      const field=ui.find('#prompt-text-0');
+      field.value='먼저 뽑힌 사람이 <b>나중에 뽑힌 사람</b>을 부르기.';
+      field.dispatchEvent(new ui.w.Event('input'));ui.submit(form);
+      assert.equal(ui.find(heading).textContent,field.value,'manual missions remain literal');
+      assert.equal(ui.find(heading+' b'),null);
+    }
+    assert.deepEqual(ui.errors,[]);
+  });
+});
+
 test('the lobby invites an eligible friend and accepting the notification joins that exact room',async t=>{
   const fs=require('node:fs'), path=require('node:path');
   const migration=name=>fs.readFileSync(path.join(__dirname,'../supabase/migrations',name),'utf8');
@@ -460,7 +528,9 @@ test('5,000 new cards reach the game selectors with their reviewed flavors',asyn
   const before=(await pool({kinds:games})).banks;
   const files=fs.readdirSync(dir);
   const {reviewedFlavorCatalog}=await import('../scripts/build-drinking-flavor500-reread.mjs');
-  for(const name of ['drinking_prompt_flavors',...games.map(k=>'drinking_flavor500_'+k),'drinking_flavor500_reread']){
+  const {reviewedKingPairPlan}=await import('../scripts/build-drinking-king-pair-wording.mjs');
+  const kingPlan=reviewedKingPairPlan();
+  for(const name of ['drinking_prompt_flavors',...games.map(k=>'drinking_flavor500_'+k),'drinking_flavor500_reread','drinking_king_pair_moves','drinking_king_pair_wording']){
     const match=files.filter(file=>file.endsWith('_'+name+'.sql'));
     assert.equal(match.length,1,name);
     await f.db.exec(fs.readFileSync(path.join(dir,match[0]),'utf8'));
@@ -471,7 +541,7 @@ test('5,000 new cards reach the game selectors with their reviewed flavors',asyn
   t.after(()=>ui.close());
   const {DrinkingPrompts:prompts,PartyPromptFlavors:tastes}=ui.w;
   for(const kind of games){
-    const data=reviewedFlavorCatalog(kind);
+    const data=kind==='king'?kingPlan.catalog:reviewedFlavorCatalog(kind);
     assert.equal(await prompts.refresh(kind),true);
     if(kind==='truth'){
       const changes=JSON.parse(fs.readFileSync(path.join(root,'games/drinking/content/corrections/flavor500-reread.json'),'utf8')).truth;
@@ -485,7 +555,12 @@ test('5,000 new cards reach the game selectors with their reviewed flavors',asyn
       continue;
     }
     const previous=before[kind].length,items=prompts.list(kind);
-    assert.deepEqual(JSON.parse(JSON.stringify(items.slice(0,previous))),before[kind]);
+    const expectedLegacy=kind==='king'?kingPlan.legacy:before[kind];
+    assert.deepEqual(JSON.parse(JSON.stringify(items.slice(0,previous))),expectedLegacy);
+    if(kind==='king'){
+      for(const edit of kingPlan.legacyEdits)assert.equal(tastes.level(kind,edit.to),edit.flavor);
+      assert.equal(prompts.kingChoices(items,true).length,682);
+    }
     assert.equal(items.length,previous+1000);
     for(const flavor of ['mild','spicy']){
       const filtered=tastes.filter(kind,items.slice(previous),flavor);
@@ -562,43 +637,30 @@ test('participant storage errors are visible and edits remain usable',async t=>{
   assert.equal(f.w.localStorage.getItem(key),'["노을","구름"]');
 });
 
-test('local party roulette gives every seat one chance, ends once, and starts a fresh wheel on replay',async t=>{
-  for(const [count,hit] of [[2,0],[4,2],[12,11]]){
-    const players=Array.from({length:count},(_,i)=>'손님'+(i+1));
-    const ui=await screen({url:'/games/drinking/local/#partyroulette',prepare(w){
-      w.scrollTo=()=>{};
-      w.localStorage.setItem('oj.party.member-a.players',JSON.stringify(players));
-      w.Math.random=()=>(hit+.5)/count;
-    }});
-    t.after(()=>ui.close());
-    const button=step=>'[data-action="wheel-'+step+'"]';
-    ui.click('[data-drinking-dialog="guide"] [data-drinking-close]');
-    assert.equal(ui.find(button('press')),null);
-    ui.click(button('load'));assert.match(ui.find('.party-wheel-disc').textContent,/★/);
-    ui.click(button('spin'));
-    assert.equal(ui.find(button('press')),null);
-    await ui.advance(900);
-    assert.equal(ui.find('.party-wheel-disc').textContent.includes('★'),false);
-    for(let seat=0;seat<=hit;seat++){
-      assert.equal(ui.find('.party-wheel-board h2').textContent,players[seat]+'님 차례');
-      assert.equal(ui.find(button('press')).textContent,'너 마셔!');
-      const old=ui.find(button('press'));old.click();old.click();
-      assert.equal(ui.find(button('press')),null);
-      if(seat<hit){
-        assert.equal(ui.find('.party-wheel-board h2').textContent,players[seat]+'님은 통과!');
-        ui.click(button('pass'));
-      }
-    }
-    assert.equal(ui.find('.play-body h2').textContent,'팡! '+players[hit]+'님 당첨!');
-    assert.match(ui.find('[data-drinking-dialog="result"]').textContent,/당첨/);
-    ui.click('[data-drinking-dialog="result"] [data-drinking-close]');
-    ui.click('[data-action="start"]');assert.ok(ui.find(button('load')));
-    ui.click(button('load'));ui.click(button('spin'));
-    ui.find('#local-back').click();
-    await until(async()=>{await ui.advance(0);return ui.find('.main-roster');},'menu after leaving mid-spin');
-    await ui.advance(1100);
-    assert.ok(ui.find('[data-action="open"][data-value="partyroulette"]'));
-    assert.equal(ui.find('.party-wheel-board'),null);
-    assert.deepEqual(ui.errors,[]);
-  }
+test('retired roulette link returns to the local catalog and keeps saved participants',async t=>{
+  const key='oj.party.member-a.players',saved='["하나","둘","셋"]';
+  const f=await screen({url:'/games/drinking/local/#partyroulette',prepare(w){
+    w.scrollTo=()=>{};w.localStorage.setItem(key,saved);
+  }});
+  t.after(()=>f.close());
+  assert.equal(f.w.location.hash,'#menu');
+  assert.ok(f.find('.main-roster'));
+  assert.equal(f.find('[data-value="partyroulette"]'),null);
+  assert.equal(f.w.localStorage.getItem(key),saved);
+  assert.deepEqual(f.errors,[]);
+});
+
+test('previous roulette selection can be replaced in an existing lobby',async t=>{
+  let current=hub({kind:'partyroulette'});
+  const f=await screen({rpc:(_name,args)=>{
+    if(args.p_action==='select')current=hub({kind:args.p_options.kind,revision:2});
+    return args.p_action==='mine'?{room:current}:current;
+  }});
+  t.after(()=>f.close());
+  await until(()=>!f.find('#lobby').hidden);
+  assert.ok(f.find('#start').disabled);
+  assert.equal(f.find('[data-game="partyroulette"]'),null);
+  f.click('[data-game="bottle"]');
+  await until(()=>!f.find('#start').disabled);
+  assert.match(f.find('#selected-game').textContent,/술병/);
 });
