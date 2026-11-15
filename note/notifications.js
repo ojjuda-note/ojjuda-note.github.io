@@ -61,6 +61,7 @@
     let identity = getUserId() || null, identityRun = 0, viewRun = 0, listRun = 0, countRun = 0;
     let items = [], retentionItems = [], cursor = null, snapshotAt = null, hasMore = false;
     let notificationUnread = 0, retentionUnread = 0, unread = 0, loading = false, saving = false, loadError = '';
+    let readRefreshPending = false, readRefreshQueued = false;
     let countRequest = null, lastRefresh = 0, priorFocus = null, priorOverflow = '', inertState = [];
     const trigger = button('알림', () => open(), 'btn nn-trigger'); trigger.id = 'note-notifications';
     const badge = el('span', '', 'nn-badge'); badge.id = 'note-notification-badge'; badge.hidden = true; badge.setAttribute('aria-hidden', 'true'); trigger.append(badge);
@@ -96,12 +97,37 @@
       const slot=document.querySelector('[data-notifications-slot]');if(slot&&trigger.parentElement!==slot)slot.append(trigger);
       syncBadges();
     }
-    function announceRead(run,user) {
-      if(!current(run,user))return;
-      channel?.postMessage({type:'read',user});countRequest=null;lastRefresh=0;
-      if(layer.hidden)void refreshCount(true);
+    function scheduleReadRefresh() {
+      if (!readRefreshPending || readRefreshQueued) return;
+      readRefreshQueued = true;
+      queueMicrotask(() => {
+        readRefreshQueued = false;
+        if (!readRefreshPending || !identity || identity !== userNow() ||
+            document.visibilityState === 'hidden' || loading || saving) return;
+        if (!layer.hidden) void loadPage();
+        else if (!countRequest?.afterRead) {
+          // A pre-read snapshot is obsolete. Start one fresh count immediately;
+          // later read events share a trailing count if this one is still busy.
+          countRequest = null;
+          void refreshCount(true);
+        }
+      });
     }
-    if(channel)channel.onmessage=event=>{if(event.data?.type==='read'&&event.data.user===userNow()){countRequest=null;lastRefresh=0;void refresh({force:true});}};
+    function invalidateRead() {
+      if (!identity || identity !== userNow()) return;
+      readRefreshPending = true;
+      countRun++;
+      lastRefresh = 0;
+      scheduleReadRefresh();
+    }
+    function announceRead(run,user) {
+      if (!current(run,user)) return;
+      invalidateRead();
+      channel?.postMessage({type:'read',user});
+    }
+    if (channel) channel.onmessage = event => {
+      if (event.data?.type === 'read' && event.data.user === userNow()) invalidateRead();
+    };
     document.addEventListener('click',event=>{if(event.target.closest('[data-notifications-open]')){event.preventDefault();open();}});
     const userNow = () => getUserId() || null;
     const current = (run, user) => run === identityRun && user === identity && user === userNow();
@@ -128,6 +154,7 @@
       for (const control of rows.querySelectorAll('button')) control.disabled = loading || saving;
       for (const control of footer.querySelectorAll('button')) control.disabled = loading || saving;
       rows.setAttribute('aria-busy', String(loading || saving));
+      if (!loading && !saving) scheduleReadRefresh();
     }
     function clearView() {
       viewRun++; listRun++; loading = false; saving = false; items = []; retentionItems = [];
@@ -145,7 +172,7 @@
     }
     function changeIdentity(next) {
       if (next === identity) return false;
-      identityRun++; countRun++; countRequest = null; lastRefresh = 0; close(); identity = next; setUnread(0, 0);
+      identityRun++; countRun++; readRefreshPending = false; countRequest = null; lastRefresh = 0; close(); identity = next; setUnread(0, 0);
       return true;
     }
     function showEmpty(text) { const row = el('li', text, 'nn-empty'); rows.replaceChildren(row); }
@@ -217,6 +244,7 @@
       if (loading || saving || layer.hidden || !identity || identity !== userNow()) return;
       const run = identityRun, user = identity, view = viewRun, request = ++listRun;
       const after = more ? cursor : null;
+      if (!more) readRefreshPending = false;
       loading = true; countRun++; status.textContent = '알림을 불러오는 중이에요.';
       updateControls(); keepFocus();
       const requests = [rpc('list_notifications', { p_limit: 30,
@@ -224,6 +252,10 @@
       if (!more) requests.push(rpc('list_retention_alerts'));
       const results = await Promise.allSettled(requests);
       if (!currentView(run, user, view) || request !== listRun) return;
+      if (readRefreshPending && document.visibilityState === 'visible') {
+        loading = false;
+        return loadPage();
+      }
       const normal = results[0], retention = results[1];
       let generalOk = false, retentionOk = more;
       if (normal.status === 'fulfilled' && normal.value && Array.isArray(normal.value.items)) {
@@ -253,8 +285,10 @@
       const user = identity, run = identityRun;
       if (!user || user !== userNow() || document.visibilityState === 'hidden') return;
       if (countRequest?.user === user && countRequest.run === run) return countRequest.promise;
-      if (!force && Date.now() - lastRefresh < 15000) return;
-      const request = ++countRun, holder = { user, run, promise: null }; countRequest = holder;
+      if (!force && !readRefreshPending && Date.now() - lastRefresh < 15000) return;
+      const request = ++countRun, holder = { user, run, afterRead: readRefreshPending, promise: null };
+      readRefreshPending = false;
+      countRequest = holder;
       holder.promise = (async () => {
         try {
           try {
@@ -283,7 +317,12 @@
             if (normalOk || retentionOk) lastRefresh = Date.now();
           }
         }
-        finally { if (countRequest === holder) countRequest = null; }
+        finally {
+          if (countRequest === holder) {
+            countRequest = null;
+            scheduleReadRefresh();
+          }
+        }
       })();
       return holder.promise;
     }
@@ -414,7 +453,7 @@
       changeIdentity(userNow());
       if (!identity || document.visibilityState === 'hidden') return;
       const force = options.force !== false;
-      if (!force && Date.now() - lastRefresh < 15000) return;
+      if (!force && !readRefreshPending && Date.now() - lastRefresh < 15000) return;
       if (!layer.hidden) return loadPage();
       return refreshCount(force);
     }
@@ -428,7 +467,7 @@
       if (event.shiftKey && (document.activeElement === first || !panel.contains(document.activeElement))) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && (document.activeElement === last || !panel.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
     });
-    window.addEventListener('ojjuda:messages-read', () => { countRequest=null;lastRefresh=0;void refresh({force:true});channel?.postMessage({type:'read',user:userNow()}); });
+    window.addEventListener('ojjuda:messages-read', () => announceRead(identityRun, userNow()));
     window.addEventListener('focus', () => void refresh({ force: false }));
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void refresh({ force: false }); });
     client.auth.onAuthStateChange((_event, session) => {

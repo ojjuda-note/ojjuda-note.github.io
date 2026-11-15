@@ -209,3 +209,50 @@ test('the bell shows the drinking room title and can decline a friend invitation
     assert.equal(f.calls.filter(c=>c.name==='arcade_friend_invite').length,1);
   }finally{f.close();}
 });
+
+test('read bursts during a pending badge request use one fresh snapshot',async()=>{
+  const first=deferred(),latest=deferred(),f=fixture({handle:()=>first.promise});
+  try {
+    await f.boot();
+    f.respond(()=>latest.promise);
+    for(let i=0;i<5;i++)f.channels[0].onmessage({data:{type:'read',user:'member-a'}});
+    await settle();
+    assert.equal(f.calls.length,2,'the new snapshot starts without waiting for the obsolete one');
+    first.resolve({data:{notifications:99,retention:0}});await settle();
+    assert.equal(f.badge().hidden,true,'the superseded count stays off screen');
+    assert.equal(f.calls.length,2);
+    latest.resolve({data:{notifications:1,retention:0}});await settle();
+    assert.equal(f.badge().text,'1');
+  }finally{f.close();}
+});
+
+test('an open list reconciles reads received during loading without a manual refresh',async()=>{
+  const f=fixture(),oldList=deferred();
+  const list=n=>({data:{items:[],unread_count:n,as_of:'2026-11-15T00:00:00Z'}});
+  try {
+    await f.boot();f.calls.length=0;
+    f.respond(name=>name==='list_app_notifications'?oldList.promise:{data:[]});
+    f.api.open();
+    for(let i=0;i<5;i++)f.channels[0].onmessage({data:{type:'read',user:'member-a'}});
+    f.respond(name=>name==='list_app_notifications'?list(0):{data:[]});
+    oldList.resolve(list(9));await settle();
+    assert.deepEqual(f.calls.map(c=>c.name),['list_app_notifications','list_retention_alerts','list_app_notifications','list_retention_alerts']);
+    assert.equal(f.badge().hidden,true);
+    assert.equal(f.w.document.querySelector('.nn-summary').textContent,'새 알림이 없어요.');
+  }finally{f.close();}
+});
+
+test('reads that arrive during a refresh leave at most one trailing count for that account',async()=>{
+  const f=fixture(),pending=deferred();
+  try {
+    await f.boot();f.calls.length=0;
+    f.respond(()=>pending.promise);
+    const signal=()=>f.channels[0].onmessage({data:{type:'read',user:'member-a'}});
+    signal();await settle();
+    for(let i=0;i<4;i++){signal();await settle();}
+    assert.equal(f.calls.length,1);
+    f.respond(()=>({data:{notifications:0,retention:0}}));
+    pending.resolve({data:{notifications:8,retention:0}});await settle();
+    assert.equal(f.calls.length,2);assert.equal(f.badge().hidden,true);
+  }finally{f.close();}
+});
