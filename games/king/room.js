@@ -18,16 +18,8 @@ const key=(field)=>'oj.king.'+actor+'.'+field;
 function saveStandalone(code){if(!party)save(key('last'),code)}
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const control=(title,act,primary=false)=>party?.control(act)??'<button type="button" class="'+(primary?'action':'secondary')+'" data-do="'+act+'">'+title+'</button>';
-const recommend=window.DrinkingPrompts.recommendations('king');
-let missionStarted=false, missionEdit=0,missionCustom=false;
-async function suggestMission(){
-  const key=room.code+'/'+room.round, edit=++missionEdit;
-  const text=await recommend(key,draftMission.trim(),draftSecond!=null);
-  const field=view.querySelector('#order [name="mission"]');
-  if(!room||room.code+'/'+room.round!==key||edit!==missionEdit||!field)return;
-  missionCustom=false;field.value=draftMission=text;
-  if(!text)field.placeholder='추천할 미션이 없어요. 직접 적어 주세요.';
-}
+const menu=window.DrinkingQuestionMenu;
+let missionDraft,refreshMissions;
 let revealed=false, composing=false, deferredState=null;
 view.addEventListener('compositionstart',e=>{
  if(e.target.matches('input,textarea'))composing=true;
@@ -37,7 +29,7 @@ view.addEventListener('compositionend',()=>{
  const next=deferredState;deferredState=null;
  if(next)render(next,true);
 });
-let draftNumber=1,draftSecond=null,draftMission='';
+let draftNumber=1,draftSecond=null;
 function numberOptions(count,selected,exclude){
   return Array.from({length:count},(_,i)=>i+1).filter(n=>n!==exclude)
     .map(n=>'<option value="'+n+'"'+(n===selected?' selected':'')+'>'+n+'번</option>').join('');
@@ -72,7 +64,7 @@ function render(s,force=false){
   deferredState=null;
   if(!sameTurn)composing=false;
   if(first||s.round!==room.round){
-    draftNumber=1;draftSecond=null;draftMission='';missionStarted=false;missionCustom=false;missionEdit++;
+    draftNumber=1;draftSecond=null;missionDraft=menu.draft();
   }
   if(first||s.round!==room.round||s.phase!==room.phase)revealed=false;
   if(first){
@@ -119,14 +111,27 @@ function render(s,force=false){
       const count=s.players.length-1;
       content='<h1 class="suite-heading">번호와 미션을 골라 주세요</h1>'+card+'<form id="order"><label>첫 번째 번호<select name="number">'+numberOptions(count,draftNumber)+'</select></label>'+
         '<label>두 번째 번호 (선택)<select name="second">'+secondOptions(count)+'</select></label>'+
-        '<label>미션<input name="mission" maxlength="80" required value="'+esc(draftMission)+'"></label>'+
-        '<p><small>직접 적은 미션은 관리자 검토 후 다른 참가자에게도 추천될 수 있어요.</small></p>'+
-      control('미션 선택 · 직접 입력','suggest')+'<div class="actions"><button class="action" type="submit">명령 내리기</button></div></form>';
+        menu.markup('king','명령 내리기')+'</form>';
     }else{
       content='<h1 class="suite-heading">'+esc(s.players[s.king])+'님이 왕이에요</h1>'+card+'<p class="suite-hint">왕이 번호와 미션을 고르고 있어요.</p>';
     }
   }
   view.innerHTML='<section class="card"><div class="inside">'+heading+content+'<div class="actions">'+control('방 나가기','leave')+'</div></div></section>';
+  const order=view.querySelector('#order');
+  if(order){
+    refreshMissions=menu.mount(order,{kind:'king',state:missionDraft,load:()=>menu.catalog('king',draftSecond!=null),apply:async(mission,manual)=>{
+      if(room!==s||busy||!connection.active())return false;
+      const options={round:s.round,mission,number:draftNumber};
+      if(draftSecond!=null)options.second=draftSecond;
+      let sent=false;
+      await run(async()=>{
+        const next=await api('order',s.code,options);
+        sent=true;if(manual)window.DrinkingPrompts.submit('king',mission);
+        render(next);
+      });
+      return sent;
+    }});
+  }
   if(focus){
    const field=Array.from(view.querySelectorAll('input,select,textarea')).find(node=>node.name===focus.name);
    if(field){
@@ -134,7 +139,6 @@ function render(s,force=false){
     if(focus.start!=null&&field.setSelectionRange)field.setSelectionRange(focus.start,focus.end,focus.direction);
    }
   }
-  if(!missionStarted&&s.phase==='order'&&s.me===s.king){missionStarted=true;void suggestMission();}
 
   window.DrinkingGameScreen?.native('king',s,view);
 }
@@ -181,32 +185,21 @@ async function run(task){
    else later();
   }
 }
-view.addEventListener('input',e=>{
-  if(e.target.name==='mission'){missionCustom=true;missionEdit++;draftMission=e.target.value;}
-});
 view.addEventListener('change',e=>{
   if(e.target.name==='number'){
     draftNumber=Number(e.target.value);
-    if(draftSecond===draftNumber){draftSecond=null;if(!missionCustom)void suggestMission();}
+    if(draftSecond===draftNumber){draftSecond=null;void refreshMissions();}
     e.target.form.elements.second.innerHTML=secondOptions(room.players.length-1);
   }
-  if(e.target.name==='second'){draftSecond=Number(e.target.value)||null;if(!missionCustom)void suggestMission();}
+  if(e.target.name==='second'){
+    const previous=draftSecond;draftSecond=Number(e.target.value)||null;
+    if((draftSecond==null)!==(previous==null))void refreshMissions();
+  }
 });
 view.addEventListener('submit',e=>{
   e.preventDefault();
-  if(busy||!connection.active())return;
+  if(e.target.id!=='entry'||busy||!connection.active())return;
   const form=new FormData(e.target);
-  if(e.target.id==='order'){
-    const mission=String(form.get('mission')||'').trim(),number=Number(form.get('number'));
-    if(!mission||room?.phase!=='order'||room.me!==room.king)return;
-    const order={round:room.round,mission,number};
-    if(form.get('second'))order.second=Number(form.get('second'));
-    run(async()=>{
-      const next=await api('order',room.code,order);
-      window.DrinkingPrompts.submit('king',mission);
-      render(next);
-    });return;
-  }
   const title=String(form.get('title')||'').trim(),password=form.get('password');
   const code=activeCode;
   if(mode==='join'&&!/^[A-Z0-9]{6}$/.test(code)){notice.textContent='목록에서 입장할 방을 선택해 주세요.';return}
@@ -241,14 +234,6 @@ view.addEventListener('click',e=>{
     return;
   }
   if(act==='leave'){if(!window.DrinkingStandaloneExit.confirm(room))return;run(async()=>{await api('leave',room.code, window.DrinkingStandaloneExit.options(room));saveStandalone('');history.replaceState(null,'',location.pathname);activeCode='';entry()});return}
-  if(act==='suggest'){
-    const {code,round}=room,recipient=draftSecond,menu=window.DrinkingQuestionMenu;
-    menu.open({kind:'king',initial:draftMission,load:()=>menu.catalog('king',null,recipient!=null),apply:(value,manual)=>{
-      const field=view.querySelector('#order [name="mission"]');
-      if(room?.code!==code||room.round!==round||room.phase!=='order'||room.me!==room.king||draftSecond!==recipient||!field)return false;
-      missionEdit++;missionCustom=manual;draftMission=field.value=value;field.setCustomValidity('');
-    }});return;
-  }
   if(act==='ready'||act==='again'){
     const current=room;
     run(async()=>{const updated=await api(act,current.code,{round:current.round});revealed=false;render(updated,true)});

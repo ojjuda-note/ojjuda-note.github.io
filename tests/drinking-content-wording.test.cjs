@@ -144,18 +144,16 @@ async function showCorrectedKing(f,live,word,t){
   // filters solo/two-person missions and fills the actual form itself.
   const uis=await gameScreens(f,'king',live.actors,state.code,{random:(selected+.25)/choices.length});t.after(()=>uis.forEach(ui=>ui.close()));
   const ui=uis[kingSeat];
-  await until(()=>ui.find('#order [name="mission"]')?.value,'current king recommendation');
+  await until(()=>ui.find('#order [data-selected]')?.textContent,'current king recommendation');
   if(pair){
     const second=ui.find('#order [name="second"]');second.value='2';
     second.dispatchEvent(new ui.w.Event('change',{bubbles:true}));
-    await until(()=>ui.find('#order [name="mission"]')?.value.startsWith('둘이 '),'two-person recommendation');
+    await until(()=>ui.find('#order [data-selected]')?.textContent.startsWith('둘이 '),'two-person recommendation');
   }
-  ui.click('[data-do="suggest"]');
-  await until(()=>[...(ui.find('.party-question-dialog [data-question]')?.options||[])].some(option=>option.textContent===word),'the corrected mission is in the active catalog');
-  const picker=ui.find('.party-question-dialog [data-question]');
+  await until(()=>[...(ui.find('.question-picker [data-question]')?.options||[])].some(option=>option.textContent===word),'the corrected mission is in the active catalog');
+  const picker=ui.find('.question-picker [data-question]');
   picker.value=[...picker.options].find(option=>option.textContent===word).value;picker.dispatchEvent(new ui.w.Event('change'));
-  ui.submit('.party-question-dialog form');
-  assert.equal(ui.find('#order [name="mission"]').value,word,'the selected corrected mission is used verbatim');
+  assert.equal(ui.find('#order [data-selected]').textContent,word,'the selected corrected mission is used verbatim');
   ui.submit('#order');
   await until(()=>ui.find('.king-order h1')?.textContent===word,'corrected king mission reaches the server');
   for(const screen of uis){await screen.wake();await until(()=>screen.find('.king-order h1')?.textContent===word,'same corrected mission on every screen');assert.deepEqual(screen.errors,[]);}

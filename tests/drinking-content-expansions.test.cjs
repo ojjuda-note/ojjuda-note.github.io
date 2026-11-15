@@ -322,9 +322,9 @@ test('king: 300 appended missions preserve existing orders and work with two-pla
         }
       });
       st.after(() => ui.close());
-      await until(() => ui.find('#order [name="mission"]')?.value, 'king solo recommendation');
+      await until(() => ui.find('#order [data-selected]')?.textContent, 'king solo recommendation');
       assert.deepEqual(sorted(ui.w.DrinkingPromptCatalog.king), sorted(await currentCatalog('king')), 'the bundled client bank follows current reviewed wording');
-      const solo = ui.find('#order [name="mission"]').value;
+      const solo = ui.find('#order [data-selected]').textContent;
       // The fixture uses Math.random()=.5. Each filtered bank begins with its
       // 32 original entries, so its midpoint deterministically selects a new one.
       assert.ok(extraSet.has(solo));
@@ -332,17 +332,15 @@ test('king: 300 appended missions preserve existing orders and work with two-pla
       const second = ui.find('#order [name="second"]');
       second.value = '2';
       second.dispatchEvent(new ui.w.Event('change', {bubbles: true}));
-      await until(() => ui.find('#order [name="mission"]')?.value.startsWith('둘이 '), 'king two-player recommendation');
-      const suggested = ui.find('#order [name="mission"]').value;
+      await until(() => ui.find('#order [data-selected]')?.textContent.startsWith('둘이 '), 'king two-player recommendation');
+      const suggested = ui.find('#order [data-selected]').textContent;
       assert.ok(extraSet.has(suggested));
-      ui.click('[data-do="suggest"]');
-      await until(()=>ui.find('.party-question-dialog [data-question]')?.options.length,'existing two-person missions');
-      const menu=ui.find('.party-question-dialog [data-question]');
+      await until(()=>ui.find('.question-picker [data-question]')?.options.length,'existing two-person missions');
+      const menu=ui.find('.question-picker [data-question]');
       const pick=[...menu.options].find(o=>extraSet.has(o.textContent)&&o.textContent!==suggested);
       assert.ok(pick);menu.value=pick.value;menu.dispatchEvent(new ui.w.Event('change'));
-      ui.submit('.party-question-dialog form');
-      await until(() => ui.find('#order [name="mission"]')?.value !== suggested, 'another king two-player recommendation');
-      const selected = ui.find('#order [name="mission"]').value;
+      await until(() => ui.find('#order [data-selected]')?.textContent !== suggested, 'another king two-player recommendation');
+      const selected = ui.find('#order [data-selected]').textContent;
       assert.ok(extraSet.has(selected));
       assert.ok(selected.startsWith('둘이 '));
       ui.submit('#order');
@@ -1524,16 +1522,14 @@ test('imagevote: 300 appended questions preserve an unfinished private ballot an
     for (const [index, targets] of [[1, 0, 1], [1, 2, 0]].entries()) {
       owner.w.Math.random = () => 0.5 + index * 0.2;
       owner.click('[data-do="again"]');
-      await until(() => owner.find('#pair-question')?.value, 'a new image round recommends a question');
-      const previous = owner.find('#pair-question').value;
-      owner.click('#pair-suggest');
-      await until(()=>owner.find('.party-question-dialog [data-question]')?.options.length,'image question catalog');
-      const menu=owner.find('.party-question-dialog [data-question]');
+      await until(() => owner.find('#pair-form [data-selected]')?.textContent, 'a new image round recommends a question');
+      const previous = owner.find('#pair-form [data-selected]').textContent;
+      await until(()=>owner.find('.question-picker [data-question]')?.options.length,'image question catalog');
+      const menu=owner.find('.question-picker [data-question]');
       const pick=[...menu.options].find(o=>extraSet.has(o.textContent)&&o.textContent!==previous&&!seenQuestions.has(o.textContent));
       assert.ok(pick);menu.value=pick.value;menu.dispatchEvent(new owner.w.Event('change'));
-      owner.submit('.party-question-dialog form');
-      await until(() => owner.find('#pair-question')?.value !== previous, 'another image question recommendation');
-      const question = owner.find('#pair-question').value;
+      await until(() => owner.find('#pair-form [data-selected]')?.textContent !== previous, 'another image question recommendation');
+      const question = owner.find('#pair-form [data-selected]').textContent;
       assert.ok(extraSet.has(question), 'the actual recommendation comes from the 300 additional questions');
       assert.equal(seenQuestions.has(question), false);
       seenQuestions.add(question);

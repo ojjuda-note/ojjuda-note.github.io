@@ -15,6 +15,7 @@ let activeCode = validCode(roomCode) ? roomCode : '';
 let mode = roomCode ? 'join' : 'create';
 let client, actor, room, timer, requestId, requestFingerprint;
 let busy = false, polling = false, revealed = false;
+let choiceDraft, editingChoices=false;
 let initialized = false, initializing = false, authSubscribed = false;
 const connection = window.OjjudaRoomConnection.create({
   onPause: () => {
@@ -95,9 +96,15 @@ function roundView(s) {
       return '<h1 class="suite-heading">하나, 둘, 셋! 동시에 흉내 내요</h1><p class="suite-hint">말이나 소품 없이 혼자 표현해 주세요. 다른 사람에게 닿지 않아요.</p>' +
         (host ? control('몸짓을 마쳤어요 · 투표 시작', 'start_vote', true) : '<p class="suite-hint">몸짓을 마치면 방장이 투표를 시작해요.</p>');
     case 'vote':
+      if(minority&&!s.voteCount&&s.choicesReady===false&&s.me!==0)
+        return '<h1 class="suite-heading">방장이 선택지를 고르고 있어요</h1><p class="suite-hint">선택지가 정해지면 투표할 수 있어요.</p>';
+      if(minority&&s.me===0&&!s.voteCount&&(editingChoices||s.choicesReady===false)){
+        return '<h1 class="suite-heading">투표할 선택지를 정해 주세요</h1><form id="minority-prompt">'+
+          window.DrinkingQuestionMenu.markup('minority','이 선택지로 투표')+'</form>';
+      }
       return '<h1 class="suite-heading">' + (s.voted ? '투표를 마쳤어요' : minority ? '어느 쪽을 고를까요?' : '누가 다른 미션을 받았을까요?') + '</h1>' +
         '<p class="suite-hint">투표 ' + s.voteCount + ' / ' + s.players.length + '명</p>' +
-        (s.voted ? '<p class="suite-hint">모두 투표하면 결과가 공개돼요.</p>' : minority ? ballots(s.choices) : ballots(s.players, s.me))+(minority&&host&&!s.voteCount?window.DrinkingQuestionMenu.button('minority'):'');
+        (s.voted ? '<p class="suite-hint">모두 투표하면 결과가 공개돼요.</p>' : minority ? ballots(s.choices) : ballots(s.players, s.me))+(minority&&s.me===0&&!s.voteCount?'<button type="button" class="secondary" data-edit-choices>선택지 다시 고르기</button>':'');
     case 'done':
       return (minority ? resultForMinority(s) : resultForMission(s)) +
         (party ? '' : host ? control('한 판 더', 'again', true) : '<p>방장이 다음 판을 시작할 수 있어요.</p>');
@@ -112,7 +119,13 @@ function render(s, force = false) {
   const changedRoom = !room || room.code !== s.code;
   if (!changedRoom && (s.revision < room.revision || (!force && s.revision === room.revision))) return;
   const newPhase = changedRoom || s.round !== room.round || s.phase !== room.phase;
-  if (newPhase) revealed = false;
+  if (newPhase) {
+    revealed=false;editingChoices=false;
+    if(minority&&s.phase==='vote'&&s.me===0){
+      choiceDraft=window.DrinkingQuestionMenu.draft();
+      choiceDraft.selected=s.choices;
+    }
+  }
   if (changedRoom) {
     remember(s.code);
     const url = new URL(location.href);
@@ -126,14 +139,22 @@ function render(s, force = false) {
   view.innerHTML = '<section class="card"><div class="topline"><span>' + esc(s.title) + '</span><span>' + s.round +
     '번째 판 · ' + s.players.length + '/' + s.capacity + '명</span></div>' + roundView(s) +
     '<div class="actions">' + control('방 나가기', 'leave') + '</div></section>';
-  const choose=view.querySelector('[data-question-menu]');
-  if(choose)choose.onclick=()=>{
+  const picker=view.querySelector('#minority-prompt');
+  if(picker){
     const menu=window.DrinkingQuestionMenu;
-    menu.open({kind:'minority',initial:s.choices,load:()=>menu.catalog('minority'),apply:async choices=>{
-      if(!connection.active()||busy||room?.code!==s.code||room.round!==s.round||room.phase!=='vote'||room.voteCount||room.me!==0)return false;
-      const next=await api('minority_question',s.code,{round:s.round,revision:room.revision,choices});render(next,true);return true;
+    menu.mount(picker,{kind:'minority',state:choiceDraft,load:()=>menu.catalog('minority'),apply:async choices=>{
+      if(room!==s||busy||!connection.active())return false;
+      let sent=false;
+      await run(async()=>{
+        const next=await api('minority_question',s.code,{round:s.round,revision:s.revision,choices});
+        if(room?.code!==s.code||room.round!==s.round)return;
+        editingChoices=false;sent=true;render(next,true);
+      });
+      return sent;
     }});
-  };
+  }
+  const edit=view.querySelector('[data-edit-choices]');
+  if(edit)edit.onclick=()=>{editingChoices=true;render(s,true);};
   if (focus?.do) {
     const buttons = view.querySelectorAll('button[data-do]');
     Array.from(buttons).find(b => b.dataset.do === focus.do && b.dataset.slot === focus.slot)?.focus({preventScroll:true});
