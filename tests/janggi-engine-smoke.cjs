@@ -6,8 +6,26 @@ const path = require('node:path');
 
 (async () => {
  const staged = path.resolve(process.argv[2], 'games/janggi/fairy-4d4b393-9991472750de');
+ const {BOOK_FILE,openingCounts,warmOpeningBook} = await import('../games/janggi/opening-book.mjs?v=20261115-janggi-book1');
+ const data = fs.readFileSync(path.join(path.dirname(staged),BOOK_FILE));
+ const book = JSON.parse(data);
+ assert.deepEqual(book.meta.accepted,[23529,24641]);
+ assert.equal(Object.keys(book.positions).length,4306);
+ global.location = new URL('https://ojjuda.kr');
+ global.fetch = async url => {
+  assert.equal(path.basename(url.pathname),BOOK_FILE);
+  return {ok:true,json:async()=>book};
+ };
+ await warmOpeningBook();
  const {createNeuralPlayer} = await import('../games/janggi/neural-player.mjs');
  const {createJanggiStart,janggiRules} = await import('../games/janggi/worker-rules.mjs');
+ for(const c of ['eheh','ehhe','heeh','hehe'])for(const h of ['eheh','ehhe','heeh','hehe']){
+  const state=createJanggiStart({c,h});
+  const legal=new Set(janggiRules.moves(state).map(m=>String(m.f*90+m.t)));
+  const counts=openingCounts(state);
+  assert.ok(Object.keys(counts).length>1);
+  assert.ok(Object.entries(counts).every(([id,n])=>legal.has(id)&&n>=8));
+ }
  const engine = await require(path.join(staged,'stockfish.js'))({
   wasmBinary:fs.readFileSync(path.join(staged,'stockfish.wasm'))
  });
@@ -33,6 +51,6 @@ const path = require('node:path');
   assert.deepEqual(mate,{f:0,t:5});
   assert.equal(janggiRules.status(janggiRules.apply(position,mate)).reason,'checkmate');
  }
- console.log('PASS: shipped Fairy-Stockfish and NNUE, openings and one-move mate on all three tiers');
+ console.log('PASS: shipped Fairy-Stockfish and NNUE, opening book for all layouts and one-move mate on all three tiers');
  process.exit(0);
 })().catch(error=>{console.error(error);process.exit(1)});

@@ -1,5 +1,7 @@
 // Search for the three advanced Janggi tiers. Runs in a module Worker, so
 // longer searches cannot freeze the board or its close/undo controls.
+import { openingCounts, pickOpeningMove } from './opening-book.mjs?v=20261115-janggi-book1';
+
 const VALUES = Object.freeze({ R: 1300, C: 700, H: 500, E: 300, A: 300, P: 200, K: 0 });
 const MATE = 100000;
 const TIMEOUT = Symbol('janggi-master-timeout');
@@ -163,7 +165,8 @@ export function analyzeJanggiMasterMove(state, rules, options = {}) {
  if(settlement>0)return report({pass:1});
  const rootMoves=settlement===0?[...legal,{pass:1}]:legal;
  let root=ordered(state,rootMoves,null,0), chosen=root[0], alternatives=[chosen];
- const margin=state.n<10&&!state.passes&&!isCheck(state)?config.openingMargin:0;
+ const counts=openingCounts(state);
+ const margin=(state.n<10||!!counts)&&!state.passes&&!isCheck(state)?config.openingMargin:0;
  for (let depth=1;depth<=maxDepth;depth++) {
   try {
    const ranked=[];
@@ -194,7 +197,7 @@ export function analyzeJanggiMasterMove(state, rules, options = {}) {
  }
  if(depthReached && alternatives.length>1){
   const random=options.random??Math.random;
-  chosen=alternatives[Math.floor(random()*alternatives.length)];
+  chosen=pickOpeningMove(alternatives,counts,random);
  }
  return report(chosen);
 }

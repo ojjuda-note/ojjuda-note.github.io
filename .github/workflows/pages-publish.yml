@@ -70,6 +70,24 @@ jobs:
           echo 'Public site size and file count:'
           du -sh "$site"
           find "$site" -type f | wc -l
+      - name: Restore aggregate Janggi opening counts
+        id: openings
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/ojjuda-public/games/janggi/openings-20261115.json
+          key: janggi-openings-${{ hashFiles('scripts/build-janggi-openings.mjs', 'games/janggi/opening-book.mjs', 'games/janggi/worker-rules.mjs', 'games/janggi/search-rules.mjs', 'games/janggi/neural-player.mjs') }}
+      - name: Read the pinned source records for the opening statistics
+        if: steps.openings.outputs.cache-hit != 'true'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: aunsiels/alphazero_janggi
+          ref: 5884af5bd94aaade2d078528233349fe2f4205d3
+          path: janggi-corpus
+          sparse-checkout: data
+          persist-credentials: false
+      - name: Stage the aggregate opening counts
+        if: steps.openings.outputs.cache-hit != 'true'
+        run: node scripts/build-janggi-openings.mjs janggi-corpus/data "$RUNNER_TEMP/ojjuda-public/games/janggi"
       - name: Restore pinned Janggi engine files
         uses: actions/cache@v4
         with:

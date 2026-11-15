@@ -1,5 +1,7 @@
 // The external engine communicates only through UCI. Ojjuda supplies the
 // permitted root moves and handles its own bikjang, shuttle and points rules.
+import { openingCounts, pickOpeningMove } from './opening-book.mjs?v=20261115-janggi-book1';
+
 const ENGINE='/games/janggi/fairy-4d4b393-9991472750de/';
 const NETWORK='janggi-9991472750de.nnue';
 const limits={pro:12000,master:40000,grandmaster:120000};
@@ -56,19 +58,21 @@ export function createNeuralPlayer(makeWorker=url=>new Worker(url)){
       close();
      }else if(pending){
       if(/^info string NNUE evaluation/i.test(data))pending.usedNetwork=true;
-      const pv=data.match(/^info depth (\d+).*? multipv (\d+) score cp (-?\d+) .*?\bpv (\S+)/);
-      if(pv&&!/\b(?:upperbound|lowerbound)\b/.test(data)){
-       pending.lines.set(Number(pv[2]),{depth:Number(pv[1]),score:Number(pv[3]),move:pv[4]});
+      const pv=data.match(/^info depth (\d+).*? multipv (\d+) score (cp|mate) (-?\d+) .*?\bpv (\S+)/);
+      if(pv){
+       const rank=Number(pv[2]);
+       if(pv[3]==='mate'||/\b(?:upperbound|lowerbound)\b/.test(data))pending.lines.delete(rank);
+       else pending.lines.set(rank,{depth:Number(pv[1]),score:Number(pv[4]),move:pv[5]});
       }
       if(data.startsWith('bestmove ')){
        const job=pending;pending=null;clearTimeout(job.timer);
        const best=data.split(/\s+/)[1],first=job.lines.get(1);
-       let choice=best;
+       let choice=job.legal.get(best);
        if(job.opening&&first?.move===best){
         const near=[...job.lines.values()].filter(line=>line.depth===first.depth&&Math.abs(first.score-line.score)<=6&&job.legal.has(line.move));
-        if(near.length)choice=near[Math.floor(Math.random()*near.length)].move;
+        if(near.length)choice=pickOpeningMove(near.map(line=>job.legal.get(line.move)),job.counts??openingCounts(job.state));
        }
-       job.resolve(job.usedNetwork?job.legal.get(choice)??null:null);
+       job.resolve(job.usedNetwork?choice??null:null);
       }
      }
     };
@@ -88,9 +92,10 @@ export function createNeuralPlayer(makeWorker=url=>new Worker(url)){
   if(!ready||pending)return null;
   const legal=new Map(rules.moves(state).map(move=>[notation(move),move]));
   if(!legal.size||rules.isDraw(state))return null;
-  const opening=state.n<10;
+  const counts=openingCounts(state);
+  const opening=state.n<10||!!counts;
   const recommended=await new Promise(resolve=>{
-   pending={legal,lines:new Map(),opening,usedNetwork:false,resolve,timer:setTimeout(close,budgetMs+350)};
+   pending={legal,state,counts,lines:new Map(),opening,usedNetwork:false,resolve,timer:setTimeout(close,budgetMs+350)};
    try{
     worker.postMessage('setoption name MultiPV value '+(opening?3:1));
     worker.postMessage('position fen '+positionFen(state));

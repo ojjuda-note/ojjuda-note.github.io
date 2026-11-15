@@ -70,7 +70,7 @@
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261115-janggi-streaks1">
 <link rel="stylesheet" href="/games/janggi/replay.css?v=20261110-janggi-replay1">
-<script src="/shared/games/world-game-assets.js?v=20261115-janggi-search1" defer></script>
+<script src="/shared/games/world-game-assets.js?v=20261115-janggi-book1" defer></script>
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
 <script src="/shared/games/game-challenges.js?v=20261110-admin-record-free1" defer></script>
@@ -277,7 +277,7 @@
 // Optional game engines load when selected. A missing engine must not block World.
 let janggiProAiPromise = null;
 function ensureJanggiProAi() {
- return janggiProAiPromise ??= import('/games/janggi/pro-ai.mjs?v=20261115-janggi-search1').then(module => {
+ return janggiProAiPromise ??= import('/games/janggi/pro-ai.mjs?v=20261115-janggi-book1').then(module => {
   if (typeof module.chooseJanggiProMove !== 'function') throw new Error('Janggi Pro AI export is missing');
   return module.chooseJanggiProMove;
  }).catch(error => { janggiProAiPromise = null; throw error; });
@@ -1212,7 +1212,7 @@ function jgMasterThink(state,level){
  clearTimeout(jgIdleTimer);
  return new Promise((resolve,reject)=>{
   try{
-   jgWorker??=new Worker('/games/janggi/master-worker.mjs?v=20261115-janggi-search1',{type:'module'});
+   jgWorker??=new Worker('/games/janggi/master-worker.mjs?v=20261115-janggi-book1',{type:'module'});
    const id=crypto.randomUUID();
    jgPending={id,reject,timer:setTimeout(jgStopWorker,budgetMs+2500)};
    jgWorker.onerror=event=>{event.preventDefault();jgStopWorker()};
