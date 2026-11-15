@@ -68,9 +68,9 @@
 <script src="/admin/world-admin-loader.js?v=20261114-drinking-plus3001" defer></script>
 <link rel="stylesheet" href="/features/friends/friend-messages.css?v=20261106-source-folders1">
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
-<link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261110-janggi-entry2">
+<link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261115-janggi-streaks1">
 <link rel="stylesheet" href="/games/janggi/replay.css?v=20261110-janggi-replay1">
-<script src="/shared/games/world-game-assets.js?v=20261115-drinking-menu2" defer></script>
+<script src="/shared/games/world-game-assets.js?v=20261115-janggi-streaks1" defer></script>
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
 <script src="/shared/games/game-challenges.js?v=20261110-admin-record-free1" defer></script>
@@ -96,7 +96,7 @@
 <script src="/games/solitaire/rules.js?v=20261106-solitaire-ranking1" defer></script>
 <script src="/games/mines/rules.js?v=20261022-ranks1" defer></script>
 <script src="/games/sacheonseong/ranking.js?v=20261108-sacheonseong-200-stacks1" defer></script>
-<script src="/shared/games/world-game-rankings.js?v=20261111-agit-welcome1" defer></script>
+<script src="/shared/games/world-game-rankings.js?v=20261115-janggi-streaks1" defer></script>
 <link rel="stylesheet" href="/park/world-park-notes.css?v=20261112-feed-overlay1">
 <script src="/park/world-park-notes.js?v=20261113-card-type1" defer></script>
 
@@ -1328,10 +1328,16 @@ function jgOpenSavedReplay(index){
  if(record.mode==='online')E.online={p1n:record.names?.c,p2n:record.names?.h};
  Je();
 }
+function jgStreakReceipt(session){
+ const streak=session.streakRound?.streak;
+ if(!streak||session.owner!==D.user?.id)return '';
+ const label=[...Rp,...JG_EXTRA_LEVELS].find(([id])=>id===session.level)?.[1];
+ return label?`${label} · 내 현재 ${streak.current}연승 · 내 최고 ${streak.best}연승`:'';
+}
 function worldBoardResultMarkup(){
  const result=E.over,draw=result.result==='draw',won=!draw&&(E.mode==='local'||result.result===E.me),names=Op();
  const metric=E.kind==='janggi'&&typeof jgReplayReason==='function'?jgReplayReason():draw?(result.reason==='bikjang'?'같은 빅장 3회':''):E.mode==='local'?`${names[result.result]||ze().side[result.result]} 승리`:result.reason==='checkmate'?(E.kind==='chess'?'체크메이트':'외통'):'';
- return `<div id="bd-root" class="bd-root bd-result-root" data-world-board="${E.kind}">${worldGameResultMarkup({game:E.kind,outcome:draw?'draw':won?'success':'failure',metric,key:worldGameResultKey(E,'end'),actions:`${E.kind==='janggi'?'<div><button class="btn" data-act="bd-review-open">기보 보기</button></div>':''}<div class="game-result-navigation"><button class="btn" data-act="close">나가기</button><button class="btn pri" data-act="bd-again" data-game-result-play>${E.mode==='online'?'목록으로':'계속하기'}</button></div>`})}</div>`;
+ return `<div id="bd-root" class="bd-root bd-result-root" data-world-board="${E.kind}">${worldGameResultMarkup({game:E.kind,outcome:draw?'draw':won?'success':'failure',metric,key:worldGameResultKey(E,'end'),extra:E.kind==='janggi'&&E.streakRound&&!E.reviewArchive?`<p data-jg-streak-receipt role="status">${w(jgStreakReceipt(E))}</p>`:'',actions:`${E.kind==='janggi'?'<div><button class="btn" data-act="bd-review-open">기보 보기</button></div>':''}<div class="game-result-navigation"><button class="btn" data-act="close">나가기</button><button class="btn pri" data-act="bd-again" data-game-result-play>${E.mode==='online'?'목록으로':'계속하기'}</button></div>`})}</div>`;
 }
 var cPromoGlyph={q:{w:"♕",b:"♛"},r:{w:"♖",b:"♜"},b:{w:"♗",b:"♝"},n:{w:"♘",b:"♞"}};function qp(){if(E.over)return worldBoardResultMarkup();let t=ze(),e=Op(),o=xl(),r=da(o),a=E.st||{},i=E.mode==="ai"?"컴퓨터와":E.mode==="local"?"같은 폰에서 둘이":"온라인",l=d=>`<div class="bd-who${!E.over&&E.s.t===d?" on":""}"><span class="bd-dot" style="background:${E.kind==="chess"?d==="w"?"#FFFFFF":"#2E2E3A":Ip[d]}"></span><b>${w(e[d])}</b><span class="note">${t.side[d]}</span>${E.mode!=="ai"||d===E.me?`<span class="note">무르기 ${bU(d)}회 남음</span>`:""}${m2(d)}</div>`,s=[];E.over?s.push(`<button class="btn sm pri" data-act="bd-again">${E.mode==="online"?"목록으로":"새 판"}</button>`):(s.push(`<button class="btn sm" data-act="bd-undo"${vU()?"":" disabled"}>무르기</button>`),E.kind==="janggi"&&s.push(`<button class="btn sm" data-act="bd-pass"${$l()&&Za(E.s)?"":" disabled"}>한 수 쉬기</button>`),s.push(`<button class="btn sm ghost danger" data-act="bd-resign"${E.thinking?" disabled":""}>기권</button>`));let u=E.mode==="online"&&E.online?.undoRequestedBy?{by:E.online.undoRequestedBy===E.online.p1?t.first:t.second,mine:E.online.undoRequestedBy===D.user?.id}:E.mode==="local"?E.undoPending:null,n=u?`<div class="bd-undo-request" role="status"><span>${E.mode==="online"&&u.mine?"무르기를 요청했어요. 상대의 답을 기다려요.":`${t.side[u.by]}의 무르기 요청이에요. 상대가 결정해 주세요.`}</span>${E.mode==="online"&&u.mine?`<button class="btn sm ghost" data-act="bd-undo-answer" data-accept="0"${E.undoBusy?" disabled":""}>요청 취소</button>`:`<span class="row"><button class="btn sm pri" data-act="bd-undo-answer" data-accept="1"${E.undoBusy?" disabled":""}>승인</button><button class="btn sm ghost" data-act="bd-undo-answer" data-accept="0"${E.undoBusy?" disabled":""}>거부</button></span>`}</div>`:"";let c=E.promo?`<div class="bd-promo" role="dialog" aria-label="승진할 말 고르기"><p>폰이 끝까지 왔어요! 무엇으로 바꿀까요?</p><div class="row">${[["q","퀸"],["r","룩"],["b","비숍"],["n","나이트"]].map(([d,p])=>`<button class="btn" data-act="bd-promo" data-p="${d}"><span class="bd-glyph" aria-hidden="true">${cPromoGlyph[d]?.[E.s.t]||d.toUpperCase()}</span> ${p}</button>`).join("")}</div></div>`:"";return`<div id="bd-root" class="bd-root" data-world-board="${E.kind}"><div class="mhead"><h3>${t.emoji} ${t.name} · ${i}${worldArcadeCaption(E.online?.id)}</h3><span class="bd-headbtns">${Wi()?`<button class="btn sm ghost" data-act="bd-sound" aria-label="효과음 켜기·끄기">${Wr()}</button>`:""}<button class="btn sm ghost" data-act="close">닫기</button></span></div>
     <div class="bd-match"><div class="bd-table">${l(r)}<div class="bd-play"><div class="bd-wrap">${E.kind==="chess"?c2():p2()}${c}</div></div>${l(o)}</div><div class="bd-tools">
@@ -1420,7 +1426,7 @@ function $2(t,e){let o=E.online.id,r=E;r.online.moveBusy=!0,r.pendingAction=veri
  ${t==='janggi'?`<div class="ge-janggi-colors" role="group" aria-label="내 장기 진영 색상"><span class="ge-label">내 말 색상</span><div class="seg bd-seg jg-color-choices">${[['first','파랑 · 초','blue'],['second','빨강 · 한','red']].map(([side,label,color])=>`<button type="button" class="${r===side?'on':''}" data-act="bd-side" data-v="${side}" data-k="janggi" aria-pressed="${r===side}"><span class="jg-color-dot ${color}" aria-hidden="true"></span>${label}</button>`).join('')}</div><p class="ge-color-note">파랑(초)이 먼저, 빨강(한)은 나중에 둬요.</p></div>`:''}
  ${t==='janggi'?'</div>':''}
  <button class="btn pri ge-primary" data-act="bd-start" data-k="${t}" data-mode="ai">시작하기</button>
- ${t==='janggi'?'':`<details class="ge-more"><summary>순서 설정</summary><div class="seg bd-seg">${[['first',`먼저 두기 (${e.side[e.first]})`],['second',`나중에 두기 (${e.side[e.second]})`]].map(([l,s])=>`<button class="${r===l?'on':''}" data-act="bd-side" data-v="${l}" data-k="${t}" aria-pressed="${r===l}">${s}</button>`).join('')}</div></details>`}</section>
+ ${t==='janggi'?'<details class="ge-more jg-streaks"><summary>난이도별 연승 기록</summary><div data-jg-streaks aria-live="polite"></div></details>':`<details class="ge-more"><summary>순서 설정</summary><div class="seg bd-seg">${[['first',`먼저 두기 (${e.side[e.first]})`],['second',`나중에 두기 (${e.side[e.second]})`]].map(([l,s])=>`<button class="${r===l?'on':''}" data-act="bd-side" data-v="${l}" data-k="${t}" aria-pressed="${r===l}">${s}</button>`).join('')}</div></details>`}</section>
  <section data-entry-panel="opponent" hidden>${await ln([t],t,e.side[e.first],entry)}<details class="ge-more"><summary>같은 기기에서 둘이 하기</summary><button class="btn ge-secondary" data-act="bd-start" data-k="${t}" data-mode="local">둘이서 시작하기</button></details></section>
  ${t==='janggi'&&typeof jgReplayMenuMarkup==='function'?jgReplayMenuMarkup():''}</div>`;
 }
@@ -1436,6 +1442,27 @@ async function k2(){
  const menu=document.getElementById("bd-menu"),kind=g.bdKind;
  if(menu&&kind)return renderBoardMenu(menu,kind);
 }
+async function loadJanggiStreaks(panel,current){
+ const host=panel.querySelector('[data-jg-streaks]');
+ if(!D.online||!D.user?.id){host.textContent='로그인하면 연승 기록을 볼 수 있어요.';return}
+ const request=Symbol();panel.streakRequest=request;
+ host.textContent='연승 기록을 불러오는 중이에요…';
+ try{
+  const {data,error}=await S.rpc('janggi_streak_summary');
+  if(!current()||!panel.isConnected||panel.streakRequest!==request)return;
+  if(error||!data)throw error||new Error('streaks_unavailable');
+  const levels=[...Rp,...JG_EXTRA_LEVELS].map(([id,label])=>[id==='hard'?'hard_exact':id,label]);
+  levels.push(['hard','기존 통합']);
+  const score=value=>Number.isSafeInteger(value)&&value>=0?value+'연승':'—';
+  const rows=levels.map(([id,label])=>{
+   const row=data[id];if(!row)throw new Error('incomplete_streaks');
+   return `<tr><th scope="row">${label}</th><td>${score(row.current)}</td><td>${score(row.best)}</td><td>${score(row.monthly_best)}</td></tr>`;
+  }).join('');
+  host.innerHTML=`<table aria-label="장기 난이도별 연승"><thead><tr><th scope="col">난이도</th><th scope="col">내 현재</th><th scope="col">내 최고</th><th scope="col">이달 전체 최고</th></tr></thead><tbody>${rows}</tbody></table><p class="note">—는 대국 기록이 없다는 뜻이에요. 기존 통합은 어려움부터 그랜드마스터까지 함께 저장된 기록이에요.</p>`;
+ }catch(error){
+  if(current()&&panel.isConnected&&panel.streakRequest===request)host.textContent='기록을 불러오지 못했어요. 닫았다가 다시 열어 주세요.';
+ }
+}
 var boardMenuRequest=0;
 async function renderBoardMenu(menu,kind){
  if(!menu)return;
@@ -1443,7 +1470,11 @@ async function renderBoardMenu(menu,kind){
  const current=()=>request===boardMenuRequest&&menu.isConnected&&document.getElementById("bd-menu")===menu&&g.bdKind===kind&&D.user?.id===owner&&D.online===online;
  try{
   const content=await Hp(kind,{fresh:menu.dataset.freshEntry==="1",current});
-  if(current()){menu.innerHTML=content;delete menu.dataset.freshEntry;}
+  if(current()){
+   menu.innerHTML=content;delete menu.dataset.freshEntry;
+   const panel=menu.querySelector('.jg-streaks');
+   if(panel)panel.ontoggle=()=>{if(panel.open)void loadJanggiStreaks(panel,current)};
+  }
  }catch(error){
   if(!current())return;
   console.error(error);
@@ -3100,11 +3131,18 @@ async function savePracticeStreak(session,winner){
  if(!winner)return;
  round.pending=true;
  try{
-  const difficulty=session.kind==='janggi'&&JG_EXTRA_LEVELS.some(([level])=>session.level===level)?'hard':session.level;
+  const difficulty=session.kind==='janggi'&&session.level==='hard'?'hard_exact':session.level;
   const {data,error}=await S.rpc('record_practice_game_result',{p_game:session.kind,p_round:round.id,p_outcome:winner==='draw'?'draw':winner===session.me?'win':'loss',p_difficulty:difficulty});
   if(error||!data?.ok)throw error||new Error('result_not_saved');
   round.saved=true;
   round.retry?.remove();notifyStreakSaved(round.owner);
+  if(session.kind==='janggi'&&data.streak){
+   round.streak=data.streak;
+   if(D.user?.id===round.owner&&E===session){
+    const receipt=document.querySelector('#bd-root [data-jg-streak-receipt]');
+    if(receipt)receipt.textContent=jgStreakReceipt(session);
+   }
+  }
  }catch(error){
   console.error(error);
   if(D.online&&D.user?.id===round.owner){
