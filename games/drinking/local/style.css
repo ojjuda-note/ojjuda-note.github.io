@@ -347,3 +347,9 @@ body { background: radial-gradient(ellipse at 45% 0, #fffdf6, #f6f4ec 70%); }
 
 .player-actions { display:grid; grid-template-columns:auto 1fr; gap:10px; }
 #player-status:empty, #roster-feedback:empty { display:none; }
+
+.icon-button, .stepper button {
+  display:inline-grid; place-items:center; flex:none;
+  width:44px; height:44px; padding:0; line-height:1;
+}
+.chips { flex-wrap:wrap; }

@@ -883,6 +883,35 @@ test('three phones choose a target during loading and reveal the same winner',as
   }
 });
 
+test('drinking menu buttons keep square artwork and identify the scare before selection', async t => {
+  const browser = await chromium.launch(launchOptions);
+  t.after(() => browser.close());
+  const {page} = await browserSession(browser, {actor:'menu-buttons', rpc:async()=>[]});
+  await page.goto(origin+'/games/drinking/local/#menu');
+  const cards = page.locator('.games .table-card');
+  await cards.first().waitFor();
+  for (const width of [320, 390, 1280]) {
+    await page.setViewportSize({width, height:800});
+    await painted(page);
+    for (const art of await cards.locator('.card-art').all()) {
+      const bounds = await art.boundingBox();
+      assert.ok(bounds.width > 0 && Math.abs(bounds.width - bounds.height) < 1, 'square artwork at '+width);
+    }
+    const cropped = await cards.locator('img').evaluateAll(images =>
+      images.filter(img => getComputedStyle(img).objectFit !== 'contain').length);
+    assert.equal(cropped, 0);
+    const sound = await page.locator('#effects').boundingBox();
+    assert.equal(sound.width, sound.height);
+  }
+  await page.locator('[data-action="filter"][data-value="순발력"]').click();
+  const warned = cards.filter({has:page.locator('.card-warning')});
+  assert.equal(await warned.count(), 1);
+  assert.equal(await warned.getAttribute('data-value'), 'shapematch');
+  const badge = warned.getByText('주의', {exact:true});
+  assert.ok(await badge.isVisible());
+  assert.equal(await badge.evaluate(el => getComputedStyle(el).color), 'rgb(180, 35, 35)');
+});
+
 test('shape match enters from the local catalog and reveals the slowest player using the shared glass', {timeout:90000}, async t => {
   const browser=await chromium.launch(launchOptions);
   t.after(()=>browser.close());

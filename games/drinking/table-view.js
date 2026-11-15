@@ -20,7 +20,7 @@
 
   const localGames = [...games, {
     id:'shapematch', title:'모양 맞추기', category:'순발력', short:'녹색 동그라미가 보이면 터치',
-    color:'#c2d4bb', min:2, num:String(games.length+1).padStart(2,'0'),
+    color:'#c2d4bb', warning:'주의', min:2, num:String(games.length+1).padStart(2,'0'),
     rule:'한 대를 돌려가며 화면을 눌러요. 녹색 동그라미에 가장 늦게 반응한 사람이 당첨이에요.'
   }];
 
@@ -44,6 +44,12 @@
     const art=document.createElement('span');
     art.className='card-art';art.style.backgroundColor=game.color;
     art.append(artwork(game.id));
+    if (game.warning) {
+      const badge = document.createElement('span');
+      badge.className = 'card-warning';
+      badge.textContent = game.warning;
+      art.append(badge);
+    }
     const copy=document.createElement('span');
     copy.className='card-copy';
     const title=document.createElement('strong');
