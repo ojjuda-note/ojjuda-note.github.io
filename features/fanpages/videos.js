@@ -169,6 +169,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'BrxjpUZs6KI', title: 'TV아사히 드림 페스티벌 2026 출연 인사', kind: '공식 인사 영상', source: 'TV아사히 드림 페스티벌' }
   ],
   ateez: [
+    { id: 'SGovymtCzvA', title: 'UP', kind: '뮤직비디오', source: 'ATEEZ / KQ ENTERTAINMENT · 2026.11.13' },
+    { id: '9gbcejnz-4s', title: 'UP Visualizer', kind: '비주얼라이저', source: 'ATEEZ / KQ ENTERTAINMENT · 2026.11.14' },
     { id: 'iqQWCYMlMw0', title: 'DRIP', kind: '뮤직비디오', source: 'ATEEZ / KQ ENTERTAINMENT · 2026.10.23' },
     { id: 'S1g5qrY5w3o', title: 'UP MV Teaser 2', kind: '뮤직비디오 티저', source: 'ATEEZ / KQ ENTERTAINMENT · 2026.11.12' },
     { id: 'lYH1OEsyhaQ', title: 'UP MV Teaser 1', kind: '뮤직비디오 티저', source: 'ATEEZ / KQ ENTERTAINMENT · 2026.11.10' },
