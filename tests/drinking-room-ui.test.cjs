@@ -459,21 +459,26 @@ test('5,000 new cards reach the game selectors with their reviewed flavors',asyn
   const pool=options=>f.publicRpc(f.users[0],'drinking_content',['pool',options]);
   const before=(await pool({kinds:games})).banks;
   const files=fs.readdirSync(dir);
-  for(const name of ['drinking_prompt_flavors',...games.map(k=>'drinking_flavor500_'+k)]){
+  const {reviewedFlavorCatalog}=await import('../scripts/build-drinking-flavor500-reread.mjs');
+  for(const name of ['drinking_prompt_flavors',...games.map(k=>'drinking_flavor500_'+k),'drinking_flavor500_reread']){
     const match=files.filter(file=>file.endsWith('_'+name+'.sql'));
     assert.equal(match.length,1,name);
     await f.db.exec(fs.readFileSync(path.join(dir,match[0]),'utf8'));
   }
   const ui=await screen({actor:f.users[0],url:'/games/drinking/local/',
-    scripts:['/games/drinking/prompt-flavors.js','/games/drinking/prompt-submissions.js'],
+    scripts:['/games/drinking/community-prompts.js','/games/drinking/prompt-flavors.js','/games/drinking/prompt-submissions.js','/games/party-live/truth.js'],
     rpc:(name,args)=>f.publicRpc(f.users[0],name,rpcArgs(name,args))});
   t.after(()=>ui.close());
   const {DrinkingPrompts:prompts,PartyPromptFlavors:tastes}=ui.w;
   for(const kind of games){
-    const data=JSON.parse(fs.readFileSync(path.join(root,'games/drinking/content/expansions/flavor500',kind+'.json'),'utf8'));
+    const data=reviewedFlavorCatalog(kind);
     assert.equal(await prompts.refresh(kind),true);
     if(kind==='truth'){
+      const changes=JSON.parse(fs.readFileSync(path.join(root,'games/drinking/content/corrections/flavor500-reread.json'),'utf8')).truth;
+      for(const edit of changes)ui.w.localStorage.setItem('oj.party.'+f.users[0]+'.truth.v2.card.'+edit.flavor+'.'+edit.from,'1');
+      const deck=ui.w.PartyTruthCards.deck();
       for(const flavor of ['mild','spicy']){
+        assert.deepEqual(Array.from(deck[flavor]),Array.from(prompts.truth()[flavor]),'superseded official questions stay out of personal decks');
         assert.equal(data[flavor].length,500);
         assert.deepEqual(Array.from(prompts.truth()[flavor]),[...before.truth[flavor],...data[flavor]]);
       }

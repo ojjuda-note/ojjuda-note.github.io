@@ -307,7 +307,9 @@ for(const kind of kinds){
         if(kind==='truth'){
           for(const flavor of ['mild','spicy'])assert.deepEqual(sorted(bank[flavor]),sorted(plan.catalog.filter(entry=>entry.flavor===flavor).map(entry=>entry.body)));
           const currentText=new Set(plan.catalog.map(entry=>entry.body));
-          assert.deepEqual(sorted(bank.retiredTruth),sorted(plan.original.map(entry=>entry.body).filter(body=>!currentText.has(body))),'the current client remembers every superseded official spelling');
+          const earlier=plan.original.map(entry=>entry.body).filter(body=>!currentText.has(body));
+          const expansionEdits=JSON.parse(fs.readFileSync(path.join(root,'games/drinking/content/corrections/flavor500-reread.json'),'utf8')).truth;
+          assert.deepEqual(sorted(bank.retiredTruth),sorted([...new Set([...earlier,...expansionEdits.map(edit=>edit.from)])]),'the current client remembers every superseded official spelling');
         }else assert.deepEqual(sorted(bank[kind]),sorted(plan.catalog));
       }
       const active=current.filter(row=>row.active);

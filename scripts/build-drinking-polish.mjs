@@ -10,32 +10,20 @@ function jsonLiteral(value){
   return delimiter+json+delimiter+'::jsonb';
 }
 
-export function createPolishPlan(kind,{root=catalogRoot}={}){
-  if(!drinkingKinds.includes(kind))throw Error('Choose one drinking game catalog');
-  const correction=loadDrinkingPolish(kind,{root});
-  if(!correction)throw Error('The reviewed natural1 correction manifest is missing: '+kind);
-  if(!correction.entries.length)throw Error('No wording changed; no polish migration is needed: '+kind);
-  const original=loadDrinkingCatalog(kind,{root,includePolish:false});
-  const catalog=loadDrinkingCatalog(kind,{root});
-  if(catalog.length!==original.length)throw Error('Wording corrections must preserve the catalog count');
-  const migrationDir=path.join(root,'supabase/migrations');
-  const names=fs.readdirSync(migrationDir).filter(name=>new RegExp('^\\d+_drinking_polish_'+kind+'\\.sql$').test(name));
-  if(names.length!==1)throw Error('Create exactly one new polish migration with the Supabase CLI first: '+kind);
+export function wordingUpdateBlock(kind,edits,{labeled=false}={}){
   const truth=kind==='truth',pair=isPairKind(kind);
   const table='ojjuda_arcade_internal.'+(truth?'drinking_truth_cards':'drinking_content_items');
   const body=side=>truth?`(entry->'${side}')->>'body'`:pair?`(entry->'${side}')->>0`:`(entry->'${side}')#>>'{}'`;
   const second=side=>pair?`(entry->'${side}')->>1`:'null::text';
-  const match=truth?`c.flavor=(entry->'from')->>'flavor' and c.body=${body('from')}`
+  const source=truth?`c.flavor=(entry->'from')->>'flavor' and c.body=${body('from')}`
     :`c.kind='${kind}' and c.body=${body('from')} and c.second is not distinct from ${second('from')}`;
+  const match=labeled&&!truth?source+" and c.prompt_flavor=entry->>'flavor'":source;
   const assignment=`body=${body('to')}${pair?',second='+second('to'):''},revision=c.revision+1`;
   let blockTag='$polish$';
-  while(JSON.stringify(correction.entries).includes(blockTag))blockTag=blockTag.slice(0,-1)+'x$';
-  const sql=`-- Polish ${kind} wording in place; preserve IDs, flags, queues and live room snapshots.
-begin;
-select pg_advisory_xact_lock(24613,911);
-do ${blockTag}
+  while(JSON.stringify(edits).includes(blockTag))blockTag=blockTag.slice(0,-1)+'x$';
+  return `do ${blockTag}
 declare
- edits constant jsonb:=${jsonLiteral(correction.entries)};
+ edits constant jsonb:=${jsonLiteral(edits)};
  corrected integer;
 begin
  -- Every source must identify exactly one row, including archived rows. A missing
@@ -65,9 +53,27 @@ ${truth?` -- A prior spelling may already belong to this card, never to a differ
  update ${table} c set ${assignment}
  from jsonb_array_elements(edits) entry where ${match};
  get diagnostics corrected=row_count;`}
- if corrected<>${correction.entries.length} then raise exception '${kind}_wording_row_count_changed'; end if;
+ if corrected<>${edits.length} then raise exception '${kind}_wording_row_count_changed'; end if;
 end;
-${blockTag};
+${blockTag};`;
+}
+
+export function createPolishPlan(kind,{root=catalogRoot}={}){
+  if(!drinkingKinds.includes(kind))throw Error('Choose one drinking game catalog');
+  const correction=loadDrinkingPolish(kind,{root});
+  if(!correction)throw Error('The reviewed natural1 correction manifest is missing: '+kind);
+  if(!correction.entries.length)throw Error('No wording changed; no polish migration is needed: '+kind);
+  const original=loadDrinkingCatalog(kind,{root,includePolish:false});
+  const catalog=loadDrinkingCatalog(kind,{root});
+  if(catalog.length!==original.length)throw Error('Wording corrections must preserve the catalog count');
+  const migrationDir=path.join(root,'supabase/migrations');
+  const names=fs.readdirSync(migrationDir).filter(name=>new RegExp('^\\d+_drinking_polish_'+kind+'\\.sql$').test(name));
+  if(names.length!==1)throw Error('Create exactly one new polish migration with the Supabase CLI first: '+kind);
+  const truth=kind==='truth';
+  const sql=`-- Polish ${kind} wording in place; preserve IDs, flags, queues and live room snapshots.
+begin;
+select pg_advisory_xact_lock(24613,911);
+${wordingUpdateBlock(kind,correction.entries)}
 commit;
 `;
   let clientPath=null,clientSource=null;
