@@ -10,8 +10,9 @@
     const status=container.querySelector('.referral-status'), results=container.querySelector('.referral-results');
     const confirmation=container.querySelector('.referral-confirm'), skip=container.querySelector('.referral-skip');
     let selected=null, candidate=null, active=false, locked=false, run=0, timer=null, composing=false;
+    let pendingQuery=null;
     const button=(label,action) => { const b=document.createElement('button'); b.type='button'; b.className='referral-button'; b.textContent=label; b.addEventListener('click',action); return b; };
-    function cancel() { run++; clearTimeout(timer); timer=null; }
+    function cancel() { run++; clearTimeout(timer); timer=null; pendingQuery=null; }
     function reset() { cancel(); selected=candidate=null; input.value=''; status.textContent=''; results.replaceChildren(); confirmation.replaceChildren(); confirmation.hidden=true; skip.hidden=true; }
     function choose(person) {
       if (!active || locked) return;
@@ -25,10 +26,13 @@
     }
     async function lookup() {
       if (!active || locked || composing) return;
-      cancel(); const request=run, query=normalize(input.value);
+      const query=normalize(input.value);
+      if (pendingQuery===query) return;
+      cancel(); const request=run;
       selected=candidate=null; confirmation.hidden=true; results.replaceChildren(); skip.hidden=!query;
       if (!query) { status.textContent=''; return; }
       if (query.length>12) { status.textContent='닉네임을 12자 이내로 입력해 주세요.'; return; }
+      pendingQuery=query;
       status.textContent='비슷한 닉네임을 찾고 있어요.';
       try {
         const {data,error}=await client.rpc('search_signup_referrers',{p_query:query});
@@ -41,6 +45,7 @@
           b.setAttribute('aria-label',`${person.nickname} 추천인으로 선택`); results.append(b);
         }
       } catch { if (request===run && active) status.textContent='추천인을 찾지 못했어요. 다시 찾거나 추천인 없이 가입할 수 있어요.'; }
+      finally { if (request===run) pendingQuery=null; }
     }
     function changed() {
       cancel(); selected=candidate=null; confirmation.hidden=true; results.replaceChildren(); status.textContent=''; skip.hidden=!normalize(input.value);
