@@ -1806,12 +1806,14 @@
       id: 'nctwish', name: 'NCT WISH', korean: '엔시티 위시', category: 'boy', fan: 'NCTzen', agency: 'SM Entertainment',
       members: ['시온', '리쿠', '유우시', '재희', '료', '사쿠야'],
       debut: '2024.02.21', debutWork: 'WISH', songs: ['WISH'],
-      checkedAt: '2026.11.13',
+      checkedAt: '2026.11.15',
       concept: '밝은 에너지로 소원을 전하는 NCT의 여섯 멤버 유닛.',
       official: 'https://www.nct-jp.net/', youtube: 'https://www.youtube.com/@NCTWISH',
       photo: '2026 NCT WISH promotion 01.jpg', photoLabel: '2026년 단체', photoYear: '2026', credit: 'numbuzin', license: 'CC BY 4.0',
       morePhotos: [
-        commonsPhoto('2026 NCT WISH promotion 03.jpg', '넘버즈인 1주년 인사 영상 · 2026.02.26', '2026', 'numbuzin', 'CC BY 4.0')
+        commonsPhoto('2026 NCT WISH promotion 03.jpg', '넘버즈인 1주년 인사 영상 · 2026.02.26', '2026', 'numbuzin', 'CC BY 4.0'),
+        commonsPhoto('NCT Wish Poppop 250430.jpg', '2025 poppop 활동 · 단체', '2025', 'K-POPIT 케이팝잇 / TV10', 'CC BY 3.0'),
+        commonsPhoto('NCTWish-240316.jpg', '2024 서울 팬미팅 · 단체', '2024', '아이도루러브', 'CC BY 3.0')
       ],
       music: [
         {
@@ -1845,6 +1847,13 @@
             "Voyage"
           ],
           "href": "https://music.apple.com/us/album/ode-to-love-the-1st-album/1891040424"
+        },
+        {
+          "title": "YO-I-DON! / BOY MEETS GIRL",
+          "date": "2026.07.15",
+          "type": "일본 더블 A사이드 싱글 · avex trax",
+          "songs": ["YO-I-DON!", "BOY MEETS GIRL"],
+          "href": "https://www.avexnet.jp/contents/NCT12-XXXX-XXXX/discography/1021607"
         },
         {
           "title": "WISHLIST",
@@ -1896,6 +1905,24 @@
           "title": "INTO THE WISH : Face Our WISH 서울 2일차",
           "sub": "서울 고척스카이돔 · 17:00 (KST) · 멜론티켓 공식 예매",
           "href": "https://weverse.io/nctwish/notice/40058"
+        },
+        {
+          "date": "2027-01-23",
+          "title": "INTO THE WISH 가오슝 공연",
+          "sub": "가오슝 아레나 · 17:00 (대만 현지시간) · 11/15 일반 예매 · ibon",
+          "href": "https://weverse.io/nctwish/notice/40575"
+        },
+        {
+          "date": "2027-02-06",
+          "title": "INTO THE WISH 방콕 공연",
+          "sub": "IMPACT ARENA · 공연 시간·예매는 현지 주최사 공지 확인",
+          "href": "https://weverse.io/nctwish/notice/39830?hl=ko"
+        },
+        {
+          "date": "2027-02-13",
+          "title": "INTO THE WISH 마닐라 공연",
+          "sub": "SMART ARANETA COLISEUM · 공연 시간·예매는 현지 주최사 공지 확인",
+          "href": "https://weverse.io/nctwish/notice/39830?hl=ko"
         },
         {
           "date": "2027-02-26",
@@ -1956,6 +1983,42 @@
           "title": "INTO THE WISH 일본 아이치 2일차",
           "sub": "포트메세 나고야 제1전시관 · 16:00 (JST)",
           "href": "https://www.nct-jp.net/news/detail.php?id=1137082"
+        },
+        {
+          "date": "2027-03-27",
+          "title": "INTO THE WISH 마카오 공연 1일차",
+          "sub": "GALAXY ARENA · 19:00 (마카오 현지시간) · Damai·Fantopia 예매",
+          "href": "https://weverse.io/nctwish/notice/40675"
+        },
+        {
+          "date": "2027-03-28",
+          "title": "INTO THE WISH 마카오 공연 2일차",
+          "sub": "GALAXY ARENA · 17:00 (마카오 현지시간) · Damai·Fantopia 예매",
+          "href": "https://weverse.io/nctwish/notice/40675"
+        },
+        {
+          "date": "2027-04-03",
+          "title": "INTO THE WISH 타이베이 공연",
+          "sub": "TAIPEI ARENA · 공연 시간·예매는 현지 주최사 공지 확인",
+          "href": "https://weverse.io/nctwish/notice/39830?hl=ko"
+        },
+        {
+          "date": "2027-04-10",
+          "title": "INTO THE WISH 자카르타 공연",
+          "sub": "ICE BSD HALL 5 · 공연 시간·예매는 현지 주최사 공지 확인",
+          "href": "https://weverse.io/nctwish/notice/39830?hl=ko"
+        },
+        {
+          "date": "2027-04-24",
+          "title": "INTO THE WISH 쿠알라룸푸르 공연",
+          "sub": "IDEA LIVE ARENA · 공연 시간·예매는 현지 주최사 공지 확인",
+          "href": "https://weverse.io/nctwish/notice/39830?hl=ko"
+        },
+        {
+          "date": "2027-04-30",
+          "title": "INTO THE WISH 홍콩 공연",
+          "sub": "ASIAWORLD-ARENA · 공연 시간·예매는 현지 주최사 공지 확인",
+          "href": "https://weverse.io/nctwish/notice/39830?hl=ko"
         }
       ],
       schedules: [
@@ -1980,6 +2043,12 @@
           "tag": "음악",
           "title": "미니 4집 I SPY 발매 · 6곡 수록",
           "href": "https://smtownandstore.com/product/nct-wish-the-4th-mini-album-i-spy-deluxe-book-ver/29341/category/53/display/1/"
+        },
+        {
+          "date": "2026.10.11",
+          "tag": "공연",
+          "title": "2027 아시아 순회공연 13개 도시 일정 공식 발표",
+          "href": "https://weverse.io/nctwish/notice/39830?hl=ko"
         }
       ],
       merch: [
@@ -1997,9 +2066,26 @@
           "title": "WISHLIST 일본 공식 음반",
           "sub": "avex trax · 한정 패키지·특전 · 재고 확인",
           "href": "https://avexnet.jp/release/1021226"
+        },
+        {
+          "title": "INTO THE WISH : Our WISH 투어 Blu-ray·Digital Code",
+          "sub": "Weverse Shop 공식 · 2026.08.14 예약 판매 시작 · 재고는 판매처 확인",
+          "href": "https://shop.weverse.io/ko/shop/KRW/artists/155/notices/14018"
+        },
+        {
+          "title": "WEGO × NCT WISH 협업 아이템",
+          "sub": "WEGO 공식 · 2026.04.13 발표 · 04.17 온라인 선행 판매 · 04.18 일반 발매 · 재고 확인",
+          "href": "https://wego.jp/blogs/news/nctwish-2026-collaboration"
         }
       ],
       campaigns: [
+        {
+          "kind": "광고 모델",
+          "date": "2026.02.06",
+          "title": "넘버즈인(numbuzin) 브랜드 모델 활동",
+          "sub": "2026.02.04 모델 1주년 팬사인회 · 02.06 공식 제공 보도에서 협업 지속 확인",
+          "href": "https://sports.khan.co.kr/en/article/202602061808007"
+        },
         {
           "kind": "콜라보",
           "date": "2026.03.19",
