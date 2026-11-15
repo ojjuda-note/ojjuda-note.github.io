@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261115-janggi-book1'
+ const revision='20261115-janggi-motion1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -47,7 +47,7 @@
   breakout:'1.8.1',
   spot:'1.14.1',
   screw:'2.24.1',
-  janggi:'1.14.0',
+  janggi:'1.14.1',
   chess:'1.5.1',
   billiards:'1.5.1',
   matgo:'1.7.1'
