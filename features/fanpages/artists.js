@@ -58,6 +58,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Mnet Plus", icon: "✦", url: "https://artist.mnetplus.world/main/stg/rescene-official" }
     ],
     merch: [
+      { title: "2027 시즌그리팅 · PAGES OF YOUTH", sub: "2026.12.22 발매 · 예약·재고는 판매처 확인", href: "https://www.kpopfriends.com/product/리센느-rescene-2027-시즌그리팅-pages-of-youth/7123/category/574/display/1/" },
       { title: "PULSE", sub: "4th Mini Album", href: "https://artist.mnetplus.world/main/stg/rescene-official/contents/6acda1b99b432c2a150adc7a" },
       { title: "LIGHT STICK V2", sub: "Official Goods", href: "https://kplaceshop.com/products/rescene-official-light-stick-ver-2" }
     ],
@@ -68,7 +69,9 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "SCENEDROME", date: "2024.08.27", type: "미니 1집", songs: ["LOVE ATTACK", "Pinball"], href: "https://en.themuze.kr/scenedrome" }
     ],
     appearances: [
-      { date: "2026-11-14", title: "MMA2026", sub: "서울 고척스카이돔 · 18:00", href: "https://into.melon.com/2026mma" },
+      { date: "2026-11-15", title: "SBS 인기가요", sub: "15:15 생방송 · RESCENE 출연", href: "https://programs.sbs.co.kr/enter/gayo/main" },
+      { date: "2026-11-24", title: "멜론 STAGE 99 팬밋업", sub: "서울 마포구 무신사 개러지 · 추첨 초청 560명 · 응모 종료", href: "https://www.asiae.co.kr/article/2026110409590132572" },
+      { date: "2026-11-29", title: "후즈팬 PULSE 대면·영상통화 팬사인회", sub: "대면 14:00 · 장소 및 영상통화 참여 개별 안내 · 응모 종료", href: "https://whosfanstore.zendesk.com/hc/ko/articles/63913860664217--%EB%8B%B9%EC%B2%A8%EC%9E%90-%EB%B0%9C%ED%91%9C-RESCENE-%EB%A6%AC%EC%84%BC%EB%8A%90-4th-Mini-Album-PULSE-%EB%8C%80%EB%A9%B4-%EA%B0%9C%EC%9D%B8-%EC%98%81%EC%83%81%ED%86%B5%ED%99%94-%ED%8C%AC%EC%82%AC%EC%9D%B8%ED%9A%8C-11-29-%EC%9D%B4%EB%B2%A4%ED%8A%B8" },
       { date: "2026-11-20", title: "2026 MAMA AWARDS", sub: "일본 오사카 · CHAPTER 1", href: "https://www.cj.net/jp/press-release/view/1132" },
       { date: "2026-11-22", title: "[PULSE] 메이크스타 팬사인회", sub: "대면 13:00 · 영상통화 별도 · 응모 마감", href: "https://www.makestar.com/product/21557" },
       { date: "2026-12-05", endDate: "2026-12-06", title: "AAA 2026", sub: "대만 가오슝 · 12.05~12.06", href: "https://asiaartistawards.com/news/detail/184791/all" },
@@ -87,8 +90,10 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 스케줄", sub: "Mnet Plus · 최신 일정", href: "https://artist.mnetplus.world/main/stg/rescene-official/schedule/2026/11" }
     ],
     news: [
+      { date: "11.14", tag: "수상", title: "MMA2026 글로벌 TOP10·모두의 스타·핫트렌드 3관왕", href: "https://www.xportsnews.com/article/2219598" },
+      { date: "11.14", tag: "수상", title: "〈쇼! 음악중심〉 ‘With’ 1위", href: "https://www.soompi.com/article/1886997wpp/watch-rescene-takes-3rd-win-for-with-on-music-core-performances-by-bestie-ateez-nct-dream-and-more" },
       { date: "11.11", tag: "수상", title: "〈쇼챔피언〉 ‘With’ 1위", href: "https://www.soompi.com/article/1886056wpp/watch-rescene-takes-2nd-win-for-with-on-show-champion-performances-by-p1harmony-xlov-and-more" },
-      { date: "11.10", tag: "방송", title: "〈더쇼〉 사전 녹화·생방송", href: "https://artist.mnetplus.world/main/stg/rescene-official/surveys/6af01659da3bdb578b5182ae" },
+      { date: "11.10", tag: "수상", title: "〈더쇼〉 ‘With’ 1위", href: "https://www.soompi.com/article/1885603wpp/watch-rescene-takes-1st-win-for-with-on-the-show" },
       { date: "11.03", tag: "앨범", title: "4th Mini Album [PULSE]", href: "https://artist.mnetplus.world/main/stg/rescene-official/contents/6acda1b99b432c2a150adc7a" },
       { date: "10.19", tag: "사진", title: "PULSE 콘셉트 포토 A", href: "https://artist.mnetplus.world/main/stg/rescene-official/contents/6ad5d55f71a55b46a7487eb5" }
     ]
