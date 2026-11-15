@@ -86,7 +86,7 @@
       '<form id="entry">' + (create
         ? '<label>방 제목<input name="title" required maxlength="40" value="' + title + ' 같이 한 판 해요"></label>' +
           '<label>참여 인원<select name="capacity">' + seats + '</select></label>'
-        : '<label>방 코드<input name="code" value="' + esc(activeCode) + '" required maxlength="6" minlength="6" autocapitalize="characters" spellcheck="false"></label>') +
+        : '') +
       '<label>방 비밀번호<input name="password" autocomplete="' + (create?'new-password':'current-password') + '" type="password" required minlength="4" maxlength="32" placeholder="' +
       (create ? '4자 이상으로 정해 주세요' : '방장이 정한 비밀번호') + '"></label>' +
       '<button class="action" type="submit">' + (create ? '방 만들기' : '입장하기') + '</button></form></section>';
@@ -128,7 +128,7 @@
     const ui = {esc, now:serverNow, send:(action,opts)=>send(s,action,opts)};
     const playing = s.phase !== 'waiting';
     const replay = party || s.phase !== 'done' ? '' : s.me===(s.hostSeat??0) ? control('한 판 더','again',true) : '<p>방장이 다음 판을 시작할 수 있어요.</p>';
-    view.innerHTML = '<section class="card"><div class="topline"><span>방 ' + esc(party?.code || s.code) + '</span><span>' +
+    view.innerHTML = '<section class="card"><div class="topline"><span>' + esc(s.title) + '</span><span>' +
       s.round + '번째 판 · ' + s.players.length + '/' + s.capacity + '명</span></div><div id="game">' +
       (playing ? feature.view(s,ui) : lobby(s)) + '</div><div class="actions">' + replay + control('방 나가기','leave') + '</div></section>';
     if (playing) { mounted = true; feature.mount?.(s,ui); }
@@ -154,7 +154,7 @@
     join_rate_limit:'비밀번호를 여러 번 틀렸어요. 1분 뒤 다시 입력해 주세요.', wrong_password:'방 비밀번호가 맞지 않아요.',
     invalid_password:'다른 방 비밀번호를 입력해 주세요.', invalid_title:'방 제목과 참여 인원을 확인해 주세요.',
     stale_round:'새 판이 시작됐어요.', stale_state:'게임이 진행됐어요. 현재 화면을 확인해 주세요.',
-    invalid_game:'이 게임의 방 코드를 확인해 주세요.', host_only:'방장만 할 수 있어요.',
+    invalid_game:'선택한 게임방을 다시 확인해 주세요.', host_only:'방장만 할 수 있어요.',
     unavailable:'게임 단계가 바뀌었어요. 현재 화면을 확인해 주세요.',
     not_your_turn:'내 차례에 눌러 주세요.', invalid_action:'지금 사용할 수 없는 동작이에요.',
     invalid_target:'화면에서 다시 골라 주세요.', invalid_settings:'테이블 모양과 방향을 골라 주세요.',
@@ -246,8 +246,8 @@
     event.preventDefault();if (busy || !connection.active()) return;
     const form=new FormData(event.target);
     const password=String(form.get('password')||'');
-    const code=String(form.get('code')||'').trim().toUpperCase();
-    if (mode==='join'&&!validCode(code)) { notice.textContent='방 코드 6자리를 확인해 주세요.';return; }
+    const code=activeCode;
+    if (mode==='join'&&!validCode(code)) { notice.textContent='목록에서 입장할 방을 선택해 주세요.';return; }
     const button=event.target.querySelector('[type=submit]');
     button.disabled=true;
     run(async()=>{
@@ -280,14 +280,15 @@
     }
     const action=b.dataset.do;
     if (action==='retry') { if(room)void sync();else void init();return; }
-    if (action==='create-tab'||action==='join-tab') {
+    if (action==='join-tab' && !activeCode) { location.assign('/games/drinking/?mode=multi&game='+kind); return; }
+  if (action==='create-tab'||action==='join-tab') {
       mode=action==='create-tab'?'create':'join';notice.textContent='';entry();return;
     }
     if (!room) return;
     if (action==='copy') {
       const link=location.href;
-      if (navigator.clipboard) navigator.clipboard.writeText(link).then(()=>{notice.textContent='초대 링크를 복사했어요.';},()=>{notice.textContent=link;});
-      else notice.textContent=link;
+      if (navigator.clipboard) navigator.clipboard.writeText(link).then(()=>{notice.textContent='초대 링크를 복사했어요.';},()=>{notice.textContent='초대 링크를 복사하지 못했어요.';});
+      else notice.textContent='초대 링크를 복사하지 못했어요.';
       return;
     }
     if (action==='again') { void send(room,action);return; }

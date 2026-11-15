@@ -74,12 +74,17 @@
     }
     return false;
   }
-  function inviteButton() {
+  function inviteButton(title) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'secondary';
-    button.textContent = '초대 링크 복사';
-    button.title = '술게임방 ' + code + ' · 초대 링크 복사';
+    const roomName = document.createElement('strong');
+    roomName.textContent = title;
+    const action = document.createElement('small');
+    action.textContent = '초대 링크 복사';
+    button.classList.add('room-invite');
+    button.append(roomName, action);
+    button.title = title + ' · 초대 링크 복사';
     button.setAttribute('aria-label', button.title);
     button.addEventListener('click', async () => {
       const url = new URL(lobby, location.origin).href;
@@ -87,7 +92,7 @@
         await navigator.clipboard.writeText(url);
         message('술게임방 초대 링크를 복사했어요.');
       } catch {
-        message(url);
+        message('복사하지 못했어요. 친구에게 방 제목을 알려 주세요.');
       }
     });
     header.replaceWith(button);
@@ -106,7 +111,7 @@
     if (state.kind !== kind || state.child !== child) {
       return go('/games/' + state.kind + '/?room=' + state.child + '&party=' + code);
     }
-    if (!parent) inviteButton();
+    if (!parent) inviteButton(state.title);
     parent = state;
     return true;
   }

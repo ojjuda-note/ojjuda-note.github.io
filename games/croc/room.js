@@ -59,7 +59,7 @@ function entry(){
     '<div class="tabs"><button data-do="create-tab" aria-pressed="'+create+'">방 만들기</button><button data-do="join-tab" aria-pressed="'+!create+'">방 들어가기</button></div>'+
     '<form id="entry">'+
     (create?'<label>방 제목<input name="title" required maxlength="40" value="악어 이빨 같이 한 판 해요"></label><label>참여 인원<select name="capacity">'+Array.from({length:11},(_,i)=>'<option value="'+(i+2)+'" '+(i===2?'selected':'')+'>'+(i+2)+'명</option>').join('')+'</select></label>':
-    '<label>방 코드<input name="code" required maxlength="6" minlength="6" autocapitalize="characters" spellcheck="false" value="'+esc(activeCode)+'"></label>')+
+    '')+
     '<label>방 비밀번호<input type="password" name="password" minlength="4" maxlength="32" required placeholder="'+(create?'4자 이상으로 정해 주세요':'방장이 정한 비밀번호')+'"></label><button class="action" type="submit">'+(create?'방 만들기':'입장하기')+'</button></form></div></section>';
   window.DrinkingGameScreen?.native('croc',null,view);
 }
@@ -87,11 +87,11 @@ function render(s){
     const url=new URL(location.href);url.searchParams.set('room',s.code);history.replaceState(null,'',url);
   }
   const mine=s.turn===s.me;
-  const code='<div class="topline"><strong class="code">'+(party?.code||s.code)+'</strong><span>방 코드</span></div>';
+  const roomHeading='<div class="topline"><strong>'+esc(s.title)+'</strong></div>';
   const members='<ol class="members">'+s.players.map((n,i)=>'<li class="'+(i===s.me?'me':'')+'">'+(i+1)+'. '+esc(n)+(i===0?' · 방장':'')+(i===s.me?' (나)':'')+'</li>').join('')+'</ol>';
   let content;
   if(s.phase==='waiting'){
-    content=code+'<h1>참가자를 기다려요</h1><p>현재 '+s.players.length+' / '+s.capacity+'명 · 모두 모이면 시작해요.</p>'+members+
+    content=roomHeading+'<h1>참가자를 기다려요</h1><p>현재 '+s.players.length+' / '+s.capacity+'명 · 모두 모이면 시작해요.</p>'+members+
       '<div class="actions">'+control('초대 링크 복사','copy',true)+control('방 나가기','leave')+'</div><p class="sub">친구에게 링크와 방 비밀번호를 알려 주세요.</p>';
   }else{
     const lost=s.phase==='done';
@@ -99,7 +99,7 @@ function render(s){
     let title=lost?esc(s.players[s.loser])+'님 당첨!':mine?'내 차례예요':esc(s.players[s.turn])+'님 차례';
     let hint=lost?'아픈 이빨은 '+(s.trap+1)+'번이었어요. 다음 판에는 피해 볼까요?':'남은 이빨 '+(24-s.pressed.length)+'개 · '+(mine?'아직 누르지 않은 이빨을 골라요.':'친구가 이빨을 고르고 있어요.');
     const controls=lost?'<div class="actions">'+(s.me===s.loser&&!ack?control('확인','ack',true):'')+(s.me===(s.hostSeat??0)?control('한 판 더','again',true):'')+control('방 나가기','leave')+'</div>':'<div class="actions">'+control('방 나가기','leave')+'</div>';
-    content='<div class="topline"><span>방 '+(party?.code||s.code)+'</span><span>'+s.round+'번째 판 · '+s.players.length+'명</span></div><h1>'+title+'</h1><p aria-live="polite">'+hint+'</p>'+controls+board(s,!lost&&mine)+members;
+    content='<div class="topline"><span>'+esc(s.title)+'</span><span>'+s.round+'번째 판 · '+s.players.length+'명</span></div><h1>'+title+'</h1><p aria-live="polite">'+hint+'</p>'+controls+board(s,!lost&&mine)+members;
     if(old&&s.round===old.round&&s.pressed.length>old.pressed.length)fx.play('tooth');
     if(lost&&s.me===s.loser&&!ack&&!document.hidden&&lastBite!==biteId){lastBite=biteId;fx.startBite();}
   }
@@ -157,8 +157,8 @@ view.addEventListener('submit',e=>{
   if(busy||!connection.active())return;
   const form=new FormData(e.target);
   const title=String(form.get('title')||'').trim(),password=form.get('password');
-  const code=String(form.get('code')||'').trim().toUpperCase();
-  if(mode==='join'&&!/^[A-Z0-9]{6}$/.test(code)){notice.textContent='방 코드 6자리를 확인해 주세요.';return}
+  const code=activeCode;
+  if(mode==='join'&&!/^[A-Z0-9]{6}$/.test(code)){notice.textContent='목록에서 입장할 방을 선택해 주세요.';return}
   const button=e.target.querySelector('[type=submit]');button.disabled=true;
   run(async()=>{try{
     const capacity=Number(form.get('capacity')),fingerprint=JSON.stringify([title,capacity,password]);
@@ -176,12 +176,13 @@ view.addEventListener('submit',e=>{
 view.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.disabled||busy||!connection.active())return;
   const act=b.dataset.do;
+  if (act==='join-tab' && !activeCode) { location.assign('/games/drinking/?mode=multi&game='+'croc'); return; }
   if(act==='create-tab'||act==='join-tab'){mode=act==='create-tab'?'create':'join';notice.textContent='';entry();return}
   if(!room)return;
   if(act==='ack'){acknowledgeBite();return}
   if(act==='copy'){
-    navigator.clipboard?.writeText(location.href).then(()=>{notice.textContent='초대 링크를 복사했어요.'},()=>{notice.textContent=location.href});
-    if(!navigator.clipboard)notice.textContent=location.href;
+    navigator.clipboard?.writeText(location.href).then(()=>{notice.textContent='초대 링크를 복사했어요.'},()=>{notice.textContent='초대 링크를 복사하지 못했어요.'});
+    if(!navigator.clipboard)notice.textContent='초대 링크를 복사하지 못했어요.';
     return;
   }
   if(act==='leave'){if(!window.DrinkingStandaloneExit.confirm(room))return;run(async()=>{await api('leave',room.code, window.DrinkingStandaloneExit.options(room));saveStandalone('');history.replaceState(null,'',location.pathname);activeCode='';entry()});return}
