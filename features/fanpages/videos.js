@@ -12,6 +12,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: '9XttLI0oH0I', title: 'LOVE ATTACK', kind: '뮤직비디오', source: 'RESCENE / THE MUZE' }
   ],
   ive: [
+    { id: 'sheag2-3h_o', title: 'Looks Can Kill · DANCE PRACTICE BEHIND', kind: '안무 연습 비하인드', source: 'IVE 공식 · 2026.11.07' },
+    { id: 'ObeUFZEBk48', title: 'Looks Can Kill · DANCE PRACTICE', kind: '안무 연습', source: 'IVE 공식 · 2026.10.26' },
     { id: 'rsNhWkC4neE', title: 'Looks Can Kill', kind: '뮤직비디오', source: 'STARSHIP · 2026.10.19' },
     { id: 'vL4y-ZuKzZs', title: 'Looks Can Kill', kind: '퍼포먼스 영상', source: 'IVE 공식 · 2026.10.21' },
     { id: 'trlOTS4nKO4', title: 'LUCID DREAM', kind: '뮤직비디오', source: 'Sony Music Japan · 2026.05.25' },

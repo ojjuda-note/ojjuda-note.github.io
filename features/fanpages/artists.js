@@ -121,6 +121,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Berriz", icon: "✦", url: "https://link.berriz.in/web/main/IVE" }
     ],
     merch: [
+      { title: "Looks Can Kill · 일본 구매 특전 응모", sub: "대상 음반 구매 시리얼 추첨 · 촬영·사인회와 포토카드 응모 기간이 서로 다름 · 공식 안내 확인", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" },
       { title: "Looks Can Kill · 음반", sub: "2026.10.26 발매 · 공식 IVE 스토어", href: "https://shop.ive-starship.com/" },
       { title: "Looks Can Kill · 사인반", sub: "HERO COMICS ver. · 품절(공식 판매처 기준)", href: "https://shop.ive-starship.com/products/hero-comics-ver-ive-looks-can-kill-signed" },
       { title: "STARSHIP SQUARE", sub: "앨범·공식 굿즈", href: "https://www.starship-square.com/product/list.html?cate_no=57" },
@@ -136,9 +137,14 @@ window.OJJUDA_FAN_ARTISTS = [
     appearances: [
       { date: "2026-11-15", title: "MMA2026", sub: "서울 고척스카이돔 · 18:00", href: "https://into.melon.com/2026mma" },
       { date: "2026-11-21", title: "2026 MAMA AWARDS", sub: "교세라 돔 오사카 · CHAPTER 2 · 15:00(JST)", href: "https://www.cj.net/jp/press-release/view/1133" },
-      { date: "2026-12-13", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 MUFG 스타디움(국립경기장) · IVE 출연 확정", href: "https://music-bank.jp/" }
+      { date: "2026-12-13", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 MUFG 스타디움(국립경기장) · IVE 출연 확정", href: "https://music-bank.jp/" },
+      { date: "2026-12-19", title: "Looks Can Kill · 일본 구매자 추첨 이벤트", sub: "도쿄 아리아케 센트럴타워 홀 B · 당첨자 대상 촬영·사인·포스트카드 행사 · 시간은 주최 공지 확인", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" },
+      { date: "2027-01-16", title: "Looks Can Kill · 일본 구매자 추첨 이벤트", sub: "도쿄 포트시티 다케시바 포트홀 · 당첨자 대상 촬영·사인·포스트카드 행사 · 시간은 주최 공지 확인", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" },
+      { date: "2027-01-17", title: "Looks Can Kill · 일본 구매자 추첨 이벤트", sub: "오사카 우메다 크리스털홀 · 당첨자 대상 촬영·사인·포스트카드 행사 · 시간은 주최 공지 확인", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" }
     ],
     campaigns: [
+      { kind: "홍보대사", date: "2026.09.17", title: "UGG 아시아·태평양 앰배서더 · 장원영", sub: "UGG Born to Feel 2026 가을·겨울 캠페인 · Deckers Japan 공식 발표", href: "https://prtimes.jp/main/html/rd/p/000000784.000003434.html" },
+      { kind: "홍보대사", date: "2026.08.19", title: "AGE20'S 글로벌 앰배서더 · 레이", sub: "에이지투웨니스 리브랜딩·뷰티 캠페인 · 애경산업 발표", href: "https://biz.heraldcorp.com/article/10844878" },
       { kind: "홍보대사", date: "2026.02.02", title: "메종 발렌티노 · 레이·리즈", sub: "공식 브랜드 앰배서더 임명 · 발렌티노 발표", href: "https://prtimes.jp/main/html/rd/p/000000257.000101366.html" },
       { kind: "광고", date: "2026.03.30", title: "App Store × IVE · Fashion", sub: "일본 App Store 캠페인 음악 · 레이 내레이션", href: "https://www.sonymusic.co.jp/artist/IVE/info/582822" }
     ],
@@ -147,6 +153,8 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 커뮤니티", sub: "Berriz", href: "https://link.berriz.in/web/main/IVE" }
     ],
     news: [
+      { date: "11.07", tag: "영상", title: "〈Looks Can Kill〉 안무 연습 비하인드 공개", href: "https://www.youtube.com/watch?v=sheag2-3h_o" },
+      { date: "10.29", tag: "행사", title: "〈Looks Can Kill〉 구매자 추첨 이벤트·특전 일정 발표", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" },
       { date: "10.26", tag: "앨범", title: "미니 5집 〈Looks Can Kill〉 정식 발매", href: "https://www.starship-ent.com/musician/ive" },
       { date: "10.16", tag: "행사", title: "IVE, 11월 21일 2026 MAMA AWARDS 출연 발표", href: "https://www.cj.net/jp/press-release/view/1133" },
       { date: "05.27", tag: "앨범", title: "일본 미니 4집 〈LUCID DREAM〉 발매", href: "https://www.sonymusic.co.jp/artist/IVE/info/585343" },

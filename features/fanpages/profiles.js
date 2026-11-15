@@ -35,13 +35,14 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   ive: {
-    checkedAt: '2026.11.10',
+    checkedAt: '2026.11.15',
     debut: '2021.12.01', debutWork: 'ELEVEN',
     agency: 'STARSHIP Entertainment',
     concept: 'I HAVE, 그리고 당당한 IVE의 순간.',
     heightSource: 'https://www.youtube.com/watch?v=sqe55UwRU2o',
     awards: [
-      { year: '2022', title: 'MAMA 올해의 노래', detail: 'LOVE DIVE', href: 'https://mama.mnetplus.world/history/2022/winners' }
+      { year: '2022', title: 'MAMA 올해의 노래', detail: 'LOVE DIVE', href: 'https://mama.mnetplus.world/history/2022/winners' },
+      { year: '2026.09', title: '장원영 · 올해의 브랜드 대상', detail: '여자 광고모델 부문 · 2년 연속', href: 'https://www.etnews.com/20260901000136' }
     ],
     records: [
       { year: '2023.02', title: '음악방송 누적 37관왕', detail: 'ELEVEN · LOVE DIVE · After LIKE', href: 'https://enews.imbc.com/News/RetrieveNewsInfo/373075' }
