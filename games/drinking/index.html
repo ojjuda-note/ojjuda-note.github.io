@@ -34,38 +34,42 @@
       </nav>
     </section>
     <section id="welcome" hidden>
-      <h1>술게임 멀티</h1>
-      <p class="intro">친구들과 방에 모여 14가지 게임을 골라 즐겨요.</p>
       <div id="account" class="panel" hidden><p id="account-message"></p><a id="login" href="/?auth=login&amp;next=world" target="_blank" rel="noopener" hidden>오쭈다 로그인</a><button id="retry" type="button" hidden>다시 연결</button></div>
       <div id="entry" hidden>
-        <div class="forms">
-          <form id="create-form" class="panel">
-            <h2>방 만들기</h2>
-            <label>방 제목<input name="title" required maxlength="40" value="우리 술게임방"></label>
+        <section id="directory" aria-labelledby="directory-heading">
+          <div class="directory-head">
+            <div><h1 id="directory-heading">술게임 멀티</h1><p>친구들과 같은 방에 모여 게임을 즐겨요.</p></div>
+            <a class="create-link" id="open-create" href="?mode=multi&amp;view=create"><span aria-hidden="true">＋</span> 방 만들기</a>
+          </div>
+          <section class="panel rooms" id="rooms" aria-labelledby="rooms-title">
+            <div class="room-head"><h2 id="rooms-title">방 목록</h2><button id="refresh" type="button">새로고침</button></div>
+            <label class="search-label" for="room-search">방 제목 검색</label>
+            <div class="search-box"><input id="room-search" type="search" placeholder="찾고 싶은 방 제목" maxlength="40" autocomplete="off"></div>
+            <p id="room-message" role="status"></p>
+            <ul id="room-list"></ul>
+          </section>
+        </section>
+        <section class="entry-detail" id="detail" hidden>
+          <a class="text-link" id="all-rooms" href="?mode=multi">← 방 목록</a>
+          <form id="create-form" class="panel room-form" hidden>
+            <h1>방 만들기</h1><p>친구들이 찾기 쉬운 방 제목을 지어 주세요.</p>
+            <label>방 제목<input name="title" required maxlength="40" placeholder="예) 금요일 저녁 모임"></label>
             <label>최대 인원<select name="capacity"></select></label>
             <label>방 비밀번호<input type="password" name="password" required minlength="4" maxlength="32" autocomplete="new-password" placeholder="4자 이상"></label>
             <button type="submit" class="primary">방 만들기</button>
           </form>
-          <form id="join-form" class="panel">
-            <h2>방 들어가기</h2>
-            <label>방 코드<input name="code" id="room-code" required maxlength="6" autocapitalize="characters" spellcheck="false" autocomplete="off" placeholder="코드 6자리"></label>
+          <form id="join-form" class="panel room-form" hidden>
+            <h1 id="join-title">초대받은 방</h1><p>방 비밀번호를 입력하면 입장할 수 있어요.</p>
             <label>방 비밀번호<input name="password" type="password" required minlength="4" maxlength="32" autocomplete="current-password" placeholder="방장이 정한 비밀번호"></label>
-            <button type="submit">입장하기</button>
-            <a class="text-link" id="all-rooms" href="?mode=multi" hidden>전체 방 보기</a>
+            <button type="submit" class="primary">입장하기</button>
           </form>
-        </div>
-        <section class="panel rooms" id="rooms" aria-labelledby="rooms-title">
-          <div class="room-head"><h2 id="rooms-title">열린 술게임방</h2><button id="refresh" type="button">새로고침</button></div>
-          <p id="room-message" role="status"></p>
-          <ul id="room-list"></ul>
         </section>
       </div>
     </section>
     <section id="lobby" hidden aria-labelledby="room-title">
       <div class="room-head"><h1 id="room-title" tabindex="-1"></h1><button id="leave" type="button">방 나가기</button></div>
       <section class="panel roster">
-        <div class="room-head"><span>방 코드 <strong id="lobby-code"></strong></span><button id="invite" type="button">초대 링크 복사</button></div>
-        <h2 id="member-count"></h2>
+        <div class="room-head"><h2 id="member-count"></h2><button id="invite" type="button">초대 링크 복사</button></div>
         <ul id="members"></ul>
       </section>
       <div class="pick">

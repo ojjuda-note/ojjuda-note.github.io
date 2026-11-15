@@ -41,7 +41,12 @@
   const notice = byId('notice'), message = byId('room-message'), list = byId('room-list');
   let client, actor, room, pollTimer, polling = false, busy = false, navigating = false, subscribed = false;
   let generation = 0, lastMutation, listSequence = 0;
+  const createPage = params.get('view') === 'create';
+  const search = byId('room-search');
+  let availableRooms = null;
+  let joinTarget = '';
   let randomStart;
+  if (suggested) byId('open-create').href += '&game=' + encodeURIComponent(suggested.id);
   let opening = false, initialized = false, listing, entryRecovery;
   const connection = window.OjjudaRoomConnection.create({
     onPause: () => clearTimeout(pollTimer),
@@ -126,7 +131,6 @@
     }
     byId('room-title').textContent=room.title;
     document.title=room.title+' · 술게임';
-    byId('lobby-code').textContent=room.code;
     byId('member-count').textContent='참가자 '+room.players.length+'/'+room.capacity+'명';
     byId('members').replaceChildren(...room.players.map((name,i)=>{
       const marks=[i===0?'방장':'',i===room.me?'나':''].filter(Boolean);
@@ -144,8 +148,14 @@
     byId('hub-back').href='/games/drinking/';
     room=null; clearTimeout(pollTimer); document.title='술게임 멀티 · 오쭈다';
     byId('lobby').hidden=true; byId('welcome').hidden=false; byId('account').hidden=true; byId('entry').hidden=false;
-    byId('create-form').hidden=!!invite; byId('rooms').hidden=!!invite; byId('all-rooms').hidden=!invite;
-    byId('room-code').value=invite; updateActions();
+    joinTarget=invite;
+    const creating=createPage && !invite;
+    byId('directory').hidden=creating || !!invite;
+    byId('detail').hidden=!byId('directory').hidden;
+    byId('create-form').hidden=!creating;
+    byId('join-form').hidden=!invite;
+    if(creating) document.title='방 만들기 · 술게임';
+    updateActions();
   }
 
   function authScreen(text,login=false,retry=false) {
@@ -172,25 +182,39 @@
   }
   function explain(err) { return messages[err.message] || '연결을 확인한 뒤 다시 시도해 주세요.'; }
 
+  const searchable = text => text.normalize('NFC').trim().toLocaleLowerCase('ko');
+  function renderRooms() {
+    if (!availableRooms) return;
+    const query=searchable(search.value);
+    const matches=availableRooms.filter(r=>searchable(r.title).includes(query));
+    const rows=matches.map(r=>{
+      const row=el('li'), link=el('a','room');
+      link.href='/games/drinking/?room='+r.code;
+      link.dataset.member=String(r.mine===true);
+      const info=el('span','room-copy');
+      info.append(el('strong','',r.title),el('small','',[
+        r.mine && '내 방', r.phase==='playing'?'게임 중':'대기 중',r.players+'/'+r.capacity+'명',r.host && '방장 '+r.host
+      ].filter(Boolean).join(' · ')));
+      link.append(info,el('span','room-go',r.mine?'이어서 입장 ›':'입장 ›'));
+      row.append(link);
+      return row;
+    });
+    list.replaceChildren(...rows);
+    message.textContent=query ? (rows.length ? '검색 결과 '+rows.length+'개' : '검색 결과가 없어요. 다른 방 제목으로 찾아보세요.')
+      : rows.length ? '' : '아직 열린 방이 없어요. 새 방을 만들어 보세요.';
+  }
+  search.addEventListener('input',renderRooms);
+
   async function listRooms() {
-    if (!actor || room || byId('rooms').hidden || navigating || !connection.active()) return;
+    if (!actor || room || byId('directory').hidden || navigating || !connection.active()) return;
     if (listing) return listing;
     const seq=++listSequence; byId('refresh').disabled=true;
     if (!list.children.length) message.textContent='방을 불러오는 중이에요.';
     listing=(async () => { try {
       const data=await rpc('list'); if(seq!==listSequence || room)return;
       if (!Array.isArray(data?.rooms)) throw Error('invalid_rooms');
-      const links=data.rooms.filter(r=>codePattern.test(r?.code) && (r.phase==='lobby' || r.mine===true)).map(r=>{
-        const row=el('li'), link=el('a','room');
-        link.href='/games/drinking/?room='+r.code;
-        link.dataset.room=r.code; link.dataset.member=String(r.mine===true); link.dataset.status=r.phase;
-        const info=el('span','room-copy');
-        info.append(el('strong','',r.title),el('small','',[
-          r.mine && '내 방', r.phase==='playing'?'게임 중':'대기 중',r.players+'/'+r.capacity+'명', r.host && '방장 '+r.host
-        ].filter(Boolean).join(' · ')));
-        link.append(info,el('span','room-go',r.mine?'이어서 입장 ›':'입장 ›'));row.append(link);return row;
-      });
-      list.replaceChildren(...links);message.textContent=links.length?'':'아직 열린 방이 없어요.';
+      availableRooms=data.rooms.filter(r=>codePattern.test(r?.code) && (r.phase==='lobby' || r.mine===true));
+      renderRooms();
     } catch(err) { if(seq===listSequence && !connection.cancelled(err))message.textContent=explain(err); }
     finally { if(seq===listSequence)byId('refresh').disabled=false; }
     })().finally(() => {listing=null;});
@@ -262,12 +286,14 @@
 
   byId('create-form').onsubmit=e=>{
     e.preventDefault();const f=e.target.elements;
+    if(byId('create-form').hidden)return;
+    if(!f.title.value.trim()){notice.textContent='방 제목을 입력해 주세요.';f.title.focus();return;}
     void mutate('create',{title:f.title.value.trim(),capacity:Number(f.capacity.value),password:f.password.value});
   };
   byId('join-form').onsubmit=e=>{
-    e.preventDefault();const f=e.target.elements,code=f.code.value.trim().toUpperCase();
-    if(!codePattern.test(code)){notice.textContent='영문 또는 숫자로 된 방 코드 6자리를 입력해 주세요.';f.code.focus();return;}
-    void mutate('join',{password:f.password.value},code);
+    e.preventDefault();
+    if(!joinTarget || byId('join-form').hidden)return;
+    void mutate('join',{password:e.target.elements.password.value},joinTarget);
   };
   byId('random-start').onclick=()=>{
     if(!room || room.me!==0 || room.phase!=='lobby' || busy || navigating)return;
@@ -296,7 +322,7 @@
     if(!room)return;
     const link=location.origin+'/games/drinking/?room='+room.code;
     try{await navigator.clipboard.writeText(link);notice.textContent='초대 링크를 복사했어요. 비밀번호와 함께 알려 주세요.';}
-    catch{notice.textContent=link;}
+    catch{notice.textContent='복사하지 못했어요. 친구에게 방 제목을 알려 주세요.';}
   };
   byId('refresh').onclick=listRooms;
   byId('retry').onclick=()=>{if(room)void sync();else void open();};
@@ -335,7 +361,13 @@
         try {render(await rpc('state',inviteCode));initialized=true;return;}
         catch(err){
           if(!['not_room_member','room_unavailable'].includes(err.message))throw err;
-          showEntry(inviteCode); initialized=true;if(err.message==='room_unavailable')notice.textContent=explain(err);
+          if(err.message==='room_unavailable'){
+            showEntry();initialized=true;notice.textContent=explain(err);void listRooms();return;
+          }
+          const directory=await rpc('list');
+          const invited=directory?.rooms?.find(r=>r.code===inviteCode);
+          byId('join-title').textContent=invited?.title || '초대받은 방';
+          showEntry(inviteCode);initialized=true;
           return;
         }
       }
@@ -343,7 +375,7 @@
       if(mine?.room){render(mine.room);initialized=true;return;}
       showEntry();
       initialized=true;
-      if(inviteCode)notice.textContent='방 코드 6자리를 다시 확인해 주세요.';
+      if(inviteCode)notice.textContent='초대 링크가 올바르지 않아요. 목록에서 방을 찾아 주세요.';
       void listRooms();
     } catch(err) {
       if(!connection.cancelled(err)){
