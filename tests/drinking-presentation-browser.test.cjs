@@ -795,6 +795,10 @@ test('one phone can choose or write prompts inline and read the fingers recommen
 });
 
 async function expectRouletteStage(page,rotated) {
+  await page.waitForFunction(expected=>{
+    const angle=document.getElementById('access-content')?.dataset.rouletteAngle;
+    return angle!=null && (Math.abs(Number(angle))===90)===expected;
+  },rotated,{timeout:3000});
   await page.locator('.roulette-scene img').evaluate(image=>image.decode());
   const stage=await page.locator('.roulette-table').evaluate(table=>{
     const host=document.getElementById('access-content'),scene=table.querySelector('.roulette-scene');

@@ -94,15 +94,17 @@ body.dp-playing #app .roulette-panel select { margin: 0; padding: 5px 10px; font
 body.dp-playing #view .draw-result h1 { font-size: clamp(30px, 11vmin, 76px); }
 
 /* Preserve the site's navigation and result dialog when the play surface turns. */
-#access-content[data-dp-kind="partyroulette"][data-roulette-angle]:is([data-roulette-angle="90"],[data-roulette-angle="-90"]) {
-  --roulette-rotated: 1;
-  position: fixed;
-  inset: 50% auto auto 50%;
-  width: 100vh; width: 100dvh;
-  height: 100vw; height: 100dvw;
-  transform: translate(-50%,-50%) rotate(var(--pr-angle));
-  transform-origin: center;
-  background: #faf7ed;
+@media (orientation:portrait) {
+  #access-content[data-dp-kind="partyroulette"][data-roulette-angle]:is([data-roulette-angle="90"],[data-roulette-angle="-90"]) {
+    --roulette-rotated: 1;
+    position: fixed;
+    inset: 50% auto auto 50%;
+    width: 100vh; width: 100dvh;
+    height: 100vw; height: 100dvw;
+    transform: translate(-50%,-50%) rotate(var(--pr-angle));
+    transform-origin: center;
+    background: #faf7ed;
+  }
 }
 #access-content[data-roulette-angle="90"] { --pr-angle:90deg; }
 #access-content[data-roulette-angle="-90"] { --pr-angle:-90deg; }
