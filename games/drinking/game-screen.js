@@ -95,7 +95,7 @@
     }
     const roundKey = ['local', kind, mark?.id || 'intro'].join('/');
     const root = app.querySelector('.play-body') || app;
-    const urgent = ['initial-live', 'watch-running', 'spinning', 'braking'].includes(phase) ||
+    const urgent = ['initial-live', 'watch-running', 'shape-live', 'spinning', 'braking'].includes(phase) ||
       (kind === 'bomb' && phase === 'play');
     presentation.update({phase, roundKey, urgent,
       result: phase === 'done' ? {key: roundKey + '/done/' + mark.results,

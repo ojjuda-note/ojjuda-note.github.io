@@ -882,3 +882,37 @@ test('three phones choose a target during loading and reveal the same winner',as
     assert.deepEqual(sessions[i].errors,[]);
   }
 });
+
+test('shape match enters from the local catalog and reveals the slowest player using the shared glass', {timeout:90000}, async t => {
+  const browser=await chromium.launch(launchOptions);
+  t.after(()=>browser.close());
+  const f=await browserSession(browser,{actor:'shape-fixture',localPlayers:['하나','둘'],rpc:async()=>[],reducedMotion:'no-preference'});
+  const p=f.page;
+  await p.goto(origin+'/games/drinking/local/#menu');
+  await p.locator('[data-value="shapematch"]').click();
+  await dismissGuide(p);
+  await p.locator('[data-action="start"]').click();
+  const scores=[];
+  for(const delay of [120,950]) {
+    await p.locator('[data-action="shape-go"]').click();
+    const field=p.locator('.sm-field');
+    assert.equal(await field.evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(0, 0, 0)');
+    assert.equal(await field.locator('.sm-piece').count(),1);
+    const ghost=field.locator('.sm-ghost');
+    await ghost.waitFor({state:'visible',timeout:8000});
+    await ghost.evaluate(img=>img.decode());
+    await ghost.waitFor({state:'hidden'});
+    await p.locator('.sm-live').getByText('녹색 동그라미').waitFor({state:'attached'});
+    await new Promise(resolve=>setTimeout(resolve,delay));
+    await field.click();
+    scores.push(parseInt(await p.locator('.play-body h2').innerText(),10));
+    await p.locator('[data-action="shape-next"]').click();
+  }
+  const panel=p.locator('[data-drinking-dialog="result"]');
+  await panel.waitFor({state:'visible'});
+  assert.ok(scores[1]>scores[0]);
+  assert.match(await panel.innerText(),/둘 당첨!/);
+  assert.ok((await panel.innerText()).includes(String(scores[1])));
+  assert.ok(await panel.locator('[data-drinking-glass] [data-drinking-glass-image]').count());
+  assert.deepEqual(f.errors,[]);
+});

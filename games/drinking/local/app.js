@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-partyroulette-fullscreen1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-shapematch1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -17,8 +17,14 @@ const crocGum=[
 ];
 const jawCount=crocGum.length*2;
 const CROC_TOOTH_COUNT=jawCount*2;
-const games=window.DrinkingTableView.games;
+const games=window.DrinkingTableView.localGames;
 const pageIntroductions={
+  shapematch:{
+    heading:['녹색 동그라미가','보이면 누르세요.'],
+    description:['휴대폰 한 대를 돌려가며 반응 시간을 재요.','가장 느린 사람이 당첨이에요.'],
+    steps:[['차례 확인','휴대폰을 받아요'],['모양 확인','초록색 원을 기다려요'],['화면 터치','모두의 기록을 비교해요']],
+    button:'게임 시작하기'
+  },
   partyroulette:{
     heading:['탄창을 돌리고,','한 사람을 가리켜요.'],
     description:['불발이면 가리킨 사람에게 폰을 넘겨요.','팡! 하면 그 사람이 당첨이에요.'],
@@ -98,6 +104,7 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 const paths={users:'<circle cx="9" cy="8" r="3"/><path d="M3 19v-2a6 6 0 0 1 12 0v2M16 6a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 4"/>',sound:'<path d="M3 9h4l5-4v14l-5-4H3zM15 9a4 4 0 0 1 0 6m3-9a8 8 0 0 1 0 12"/>',arrow:'<path d="M5 12h13m-5-5 5 5-5 5"/>',back:'<path d="m14 5-7 7 7 7"/>',random:'<path d="M3 6h3c5 0 7 12 12 12h3m-4-4 4 4-4 4M3 18h3c2 0 3-2 5-5m2-3c2-3 3-4 5-4h3m-4-4 4 4-4 4"/>',play:'<path d="m7 4 13 8-13 8z" fill="currentColor" stroke="none"/>'};
 function icon(key){return '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">'+paths[key]+'</svg>'}
 function artPath(id){
+  if(id==='shapematch')return '/games/shapematch/mark.svg';
   const directory=(id==='croc'||id==='croc-board')?'/games/croc/art/':'art/';
   return directory+id+'.webp';
 }
@@ -192,6 +199,7 @@ function markLocalHost(){
     case 'liar':case 'mission':candidates=[r.secret];break;
     case 'fingers':candidates=players.map((_,i)=>r.fingers[i]===0?i:-1);break;
     case 'imagevote':candidates=players.map((_,i)=>r.counts[i]===Math.max(...r.counts)?i:-1);break;
+    case 'shapematch':candidates=r.shapeWinners;break;
     case 'stopwatch':{
       const errors=r.records.map(v=>Math.abs(v-r.target));
       candidates=errors.map((v,i)=>v===Math.min(...errors)?i:-1);break;
@@ -214,6 +222,7 @@ function markLocalHost(){
   window.DrinkingTableView?.result(app.querySelector('.play-body'),r.nextHost);
 }
 function cleanup(){
+  round?.stopShape?.();
   round?.rouletteBoard?.destroy();
   if(round?.nextHost)players=[round.nextHost,...players.filter(p=>p!==round.nextHost)];
   stopClock();fx.quiet();
@@ -387,6 +396,7 @@ async function begin(){
     }
     case 'croc':r.trap=rand(CROC_TOOTH_COUNT);r.pressed=new Set();return croc();
     case 'bottle':return chooseBottleTable();
+    case 'shapematch':r.records=[];return shapeReady();
     case 'stopwatch':
       r.target=watchTenths*10;r.records=[];
       return readyWatch();
@@ -708,6 +718,47 @@ function watchScreen(running,interrupted=false){
 function readyWatch(interrupted=false){
   round.phase='watch-ready';watchScreen(false,interrupted);
 }
+function shapeReady(){
+  round.phase='shape-ready';
+  shell(tag(round.turn)+'<h2>휴대폰을 받아 주세요</h2><p>녹색 동그라미가 보이면 화면을 누르세요.</p>'+
+    actions(btn('내 차례 시작','shape-go')));
+}
+
+function shapeGo(){
+  const r=round;
+  if(r?.phase!=='shape-ready'||document.hidden)return;
+  r.phase='shape-live';
+  shell(tag(r.turn)+'<h2>녹색 동그라미를 찾아요</h2>'+
+    '<div class="sm-field" role="button" tabindex="0" aria-label="도형이 들어오는 게임 화면">'+
+    '<span class="sm-piece" hidden></span><img class="sm-ghost" src="/games/shapematch/ghost.svg" alt="귀신" hidden>'+
+    '<span class="sm-hint"></span><span class="sm-live" aria-live="polite"></span></div>');
+  r.stopShape=window.OjjudaShapeMatch.play(app.querySelector('.sm-field'),{
+    scare:()=>fx.play('shape-scare'),
+    interrupt:()=>{if(r===round&&r.phase==='shape-live'){fx.quiet();r.stopShape=null;shapeReady()}},
+    finish:ms=>{
+      if(r!==round||r.phase!=='shape-live')return;
+      r.stopShape=null;r.records.push(ms);r.phase='shape-score';fx.play('stop');
+      shell(tag(r.turn)+'<h2>'+ms+' ms</h2><p>녹색 동그라미를 보고 누르기까지 걸린 시간이에요.</p>'+
+        actions(btn(r.turn+1<players.length?'다음 참가자':'당첨자 보기','shape-next')));
+      app.querySelector('[data-action="shape-next"]').focus({preventScroll:true});
+    }
+  });
+}
+
+function nextShape(){
+  const r=round;
+  if(r?.phase!=='shape-score')return;
+  if(r.turn+1<players.length){r.turn++;return shapeReady()}
+  const slowest=Math.max(...r.records);
+  r.shapeWinners=r.records.flatMap((ms,i)=>ms===slowest?[i]:[]);
+  const title=r.shapeWinners.map(name).join(' · ')+(r.shapeWinners.length>1?' 공동 당첨!':' 당첨!');
+  const rows=r.records.map((ms,i)=>'<li><span>'+name(i)+'</span><strong>'+ms+' ms</strong></li>').join('');
+  r.phase='done';fx.play('result');
+  shell('<span class="turn-tag">라운드 결과</span><h2>'+title+'</h2>'+
+    '<p>가장 느린 반응 시간은 '+slowest+' ms예요.</p><ul class="breakdown" aria-label="참가자 기록">'+rows+'</ul>'+
+    actions(btn('한 판 더','start'),btn('게임 목록','menu','quiet')));
+}
+
 function startWatch(){
   const r=round;
   if(r?.phase!=='watch-ready'||document.hidden||feedback.open)return;
@@ -1061,6 +1112,8 @@ function handle(action,value){
   const r=round;
   if(action==='filter'){filter=value;fx.play('tap');renderMenu();app.querySelector('.chip[aria-pressed=true]').focus({preventScroll:true});return}
   if(action==='random'||action==='open'){const eligible=games.filter(g=>g.min<=players.length);const id=action==='random'?eligible[rand(eligible.length)].id:value;lastMenuFocus=id;fx.play(id==='croc'?'tooth':'tap');return openLocal(id)}
+  if(game?.id==='shapematch'&&action==='shape-go')return shapeGo();
+  if(game?.id==='shapematch'&&action==='shape-next')return nextShape();
   if(game?.id==='bomb'){
     if(action==='bomb-setup'&&(r?.phase==='done'||r?.phase==='bomb-ready')){cleanup();return bombSetup()}
     if(!r&&(action==='random-bomb-time'||action==='confirm-bomb-time')){

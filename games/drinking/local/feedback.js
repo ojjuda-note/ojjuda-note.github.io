@@ -53,6 +53,12 @@
       return;
     }
     if(!prefs.sound||!ctx||ctx.state!=='running')return;
+    if(id==='shape-scare'){
+      const source=window.OjjudaShapeMatch.screamSource(ctx);
+      source.connect(master);voices.add(source);
+      source.onended=()=>{voices.delete(source);source.disconnect()};
+      source.start();return;
+    }
     const now=ctx.currentTime;
     for(const [delay,f1,f2,dur,type] of scores[id]||scores.tap){
       const osc=ctx.createOscillator(),gain=ctx.createGain(),at=now+delay;
