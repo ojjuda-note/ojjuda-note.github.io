@@ -31,7 +31,7 @@
 
 ## 페이지와 게임
 
-배포 대상 HTML **104개**를 파일별로 기록했다. 한 게임의 체험·대전 주소와 아티스트별 안내 페이지도 각각 한 행이다. `world.html` 안의 아지트·오락실·공원·설정 탭과 미션은 위 기능표에 따로 담았다. 테스트용 HTML 한 개는 배포 대상에서 제외했다.
+배포 대상 HTML **105개**를 파일별로 기록했다. 한 게임의 체험·대전 주소와 아티스트별 안내 페이지도 각각 한 행이다. `world.html` 안의 아지트·오락실·공원·설정 탭과 미션은 위 기능표에 따로 담았다. 테스트용 HTML 한 개는 배포 대상에서 제외했다.
 
 오락실 공개 바로가기는 혼자 즐기는 게임 12종과 함께하는 게임 7종이다. 포토땅따먹기·맞고·세븐포커·룰렛은 성인용 경로로, 술게임 15종에는 각각 전용 진입점이 있다. 나사 풀기의 두 모드와 당구의 세 종목은 각 게임에 포함한다.
 
@@ -81,11 +81,12 @@
 | 탱크게임 | [games/tank/index.html](../../games/tank/index.html) |
 | 월드땅따먹기 | [games/ttang.html](../../games/ttang.html) |
 
-### 게임의 별도 진입·체험 (3)
+### 게임의 별도 진입·체험 (4)
 
 | 화면 | 진입 파일 |
 | --- | --- |
 | 샛별키우기 별도 진입점 | [games/bulssi/index.html](../../games/bulssi/index.html) |
+| 장기 AI 대국 | [games/janggi/ai.html](../../games/janggi/ai.html) |
 | 맞고 회원 대결 | [games/matgo-online.html](../../games/matgo-online.html) |
 | 포토땅따먹기 한 판 체험 | [photo-ttang.html](../../photo-ttang.html) |
 
