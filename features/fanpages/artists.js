@@ -587,9 +587,9 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "SUPERSTAR", date: "2026.11.09", type: "데뷔 EP · 더블 타이틀 · 실물 발매 11.10", songs: ["SUPERSTAR", "Dancing in the Dark", "While We’re Young", "Very First Love (첫사랑)", "Moonlight Shadow"], href: "https://www.melon.com/album/detail.htm?albumId=14644792" }
     ],
     appearances: [
-      { date: "2026-11-16", title: "아리랑TV SHOW K-POP 사전녹화", sub: "공식 팬클럽 참여 공지 · 시간·장소는 A2O SOUL 공식 공지 확인", href: "https://artist.mnetplus.world/main/stg/a2osoul" },
+      { date: "2026-11-16", title: "아리랑TV SHOW K-POP 사전녹화", sub: "공식 팬클럽 참여 공지 · 시간·장소는 A2O SOUL 공식 공지 확인", href: "https://artist.mnetplus.world/main/stg/a2osoul/contents/6af88433fcbfd2033a1104ee" },
       { date: "2026-11-16", title: "SUPERSTAR 대형 패널 전시 마지막 날", sub: "일본 타워레코드 시부야점 1F · 11/10~16 · 영업시간 내", href: "https://towershibuya.jp/news/2026/11/03/236821" },
-      { date: "2026-11-17", title: "SBS Life 더쇼 사전녹화", sub: "Dancing in the Dark · 상세 시간·참여 규정은 공식 공지 확인", href: "https://artist.mnetplus.world/main/stg/a2osoul" },
+      { date: "2026-11-17", title: "SBS Life 더쇼 사전녹화", sub: "Dancing in the Dark · 상세 시간·참여 규정은 공식 공지 확인", href: "https://artist.mnetplus.world/main/stg/a2osoul/contents/6af969c70a97884ab9090a8e" },
       { date: "2026-11-18", title: "단체 영상통화 팬사인회", sub: "MAKESTAR · 19:00", href: "https://www.makestar.com/product/21876" },
       { date: "2026-11-20", title: "단체 대면 팬사인회", sub: "MAKESTAR · 20:00", href: "https://www.makestar.com/product/21876" },
       { date: "2026-11-21", title: "SUPERSTAR 팬사인회", sub: "WITHMUU · 18:30", href: "https://withmuu.com/goods/event_sale.php?sno=1650" },
