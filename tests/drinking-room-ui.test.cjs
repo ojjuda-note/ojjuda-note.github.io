@@ -527,9 +527,9 @@ test('5,000 new cards reach the game selectors with their reviewed flavors',asyn
   const before=(await pool({kinds:games})).banks;
   const files=fs.readdirSync(dir);
   const {reviewedFlavorCatalog}=await import('../scripts/build-drinking-flavor500-reread.mjs');
-  const {kingPairMovePlan}=await import('../scripts/build-drinking-king-pair-moves.mjs');
-  const kingPlan=kingPairMovePlan();
-  for(const name of ['drinking_prompt_flavors',...games.map(k=>'drinking_flavor500_'+k),'drinking_flavor500_reread','drinking_king_pair_moves']){
+  const {reviewedKingPairPlan}=await import('../scripts/build-drinking-king-pair-wording.mjs');
+  const kingPlan=reviewedKingPairPlan();
+  for(const name of ['drinking_prompt_flavors',...games.map(k=>'drinking_flavor500_'+k),'drinking_flavor500_reread','drinking_king_pair_moves','drinking_king_pair_wording']){
     const match=files.filter(file=>file.endsWith('_'+name+'.sql'));
     assert.equal(match.length,1,name);
     await f.db.exec(fs.readFileSync(path.join(dir,match[0]),'utf8'));
