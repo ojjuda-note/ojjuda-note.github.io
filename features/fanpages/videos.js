@@ -195,6 +195,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'UulR1x4tvZE', title: 'Dreamcatcher', kind: '스페셜 비디오', source: 'SMTOWN' }
   ],
   andteam: [
+    { id: 'VHA0FMXsQgk', title: 'Good Boy', kind: '뮤직비디오', source: 'HYBE LABELS / YX LABELS · 2026.09.24' },
+    { id: 'r1itPAdS9KU', title: 'Mark on Me · Moving ver.', kind: '안무 영상', source: '&TEAM 공식 YouTube · 2026.09.09' },
     {"id":"F-NcvXY8_vU","title":"Mark on Me","kind":"뮤직비디오","source":"HYBE LABELS / YX LABELS · 2026.09.08"},
     {"id":"8hU6P7MmRyk","title":"We on Fire","kind":"뮤직비디오","source":"HYBE LABELS / YX LABELS · 2026.04.13"},
     {"id":"KqE0P1qMtQg","title":"Back to Life","kind":"뮤직비디오","source":"HYBE LABELS / YX LABELS · 2025.10.27"},
