@@ -7,7 +7,7 @@ const source = fs.readFileSync(process.env.OJJUDA_ROOMS_JS || path.join(__dirnam
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const room = (patch = {}) => ({ room_no: 17, kind: 'chess', title: '친구와 체스', host_name: '회원', players: 1, capacity: 2, status: 'waiting', is_member: true, is_host: true, match_id: null, ...patch });
 
-function fixture(t) {
+function fixture(t, overrides = {}) {
   const dom = new JSDOM('<main><section data-arcade-rooms></section></main><div id="modal-root"></div>', { url: 'https://fixture.test/world.html', runScripts: 'outside-only', pretendToBeVisual: true });
   const w = dom.window, calls = [], opened = [], freshOpened = [], notifications = [], timers = new Map();
   let now = 100000, nextTimer = 0, hidden = false, actor = 'member-a';
@@ -29,7 +29,8 @@ function fixture(t) {
     canOpen: () => !w.document.querySelector('#modal-root .modal,#gov,#matgo-overlay'),
     onOpen: async (value, owner) => { opened.push({ value, owner }); if (state.openOverlay) w.document.body.classList.add('gaming'); },
     onFreshGame: async (value, owner) => { freshOpened.push({ value, owner }); if (state.freshPending) await state.freshPending; },
-    goArcade() {}, closeModal() { w.document.querySelector('#modal-root').replaceChildren(); }, renderModal() {}
+    goArcade() {}, closeModal() { w.document.querySelector('#modal-root').replaceChildren(); }, renderModal() {},
+    ...overrides
   });
   t.after(() => { app.dispose(); w.close(); });
   const advance = async duration => {
@@ -186,4 +187,32 @@ test('a waiting room that disappears cannot arm a later unrelated playing room',
   const playing = room({ status: 'playing', match_id: 'old-match', players: 2 });
   f.state.data = { ...f.state.data, rooms: [playing], mine: playing }; await f.app.refresh();
   assert.equal(f.opened.length, 0);
+});
+
+test('rapid native room cancellations send one request and a failed attempt can be retried', async t => {
+  let attempts = 0, resolveCancel, rejectCancel;
+  const f = fixture(t, {
+    onCancelNative() {
+      attempts++;
+      return new Promise((resolve, reject) => { resolveCancel = resolve; rejectCancel = reject; });
+    }
+  });
+  const own = room({kind: 'tank', native: true});
+  f.state.extra = [own];
+  await f.start();
+  const cancel = () => f.list().querySelector('[data-arcade-action="cancel"]').click();
+  for (let i = 0; i < 5; i++) cancel();
+  assert.equal(attempts, 1);
+  rejectCancel(new Error('unavailable'));
+  await tick();
+  assert.equal(f.notifications.length, 1);
+  cancel();
+  assert.equal(attempts, 2);
+  f.state.delayed = true;
+  f.state.extra = [];
+  resolveCancel();
+  await tick();
+  assert.equal(f.list().querySelector('[data-arcade-action="cancel"]'), null, 'a confirmed cancellation cannot be repeated while the list reloads');
+  assert.equal(f.notifications.length, 2);
+  await f.reply(0, f.state.data);
 });
