@@ -67,10 +67,18 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin=
 
   await open();await page.evaluate(()=>referralFixture.defer=true);
   await page.locator('#signup-referrer').fill('이전');await page.waitForFunction(()=>referralFixture.pending.length===1);
-  await page.locator('#signup-referrer').fill('새이름');await page.waitForFunction(()=>referralFixture.pending.length===2);
-  await page.evaluate(()=>referralFixture.pending[1]({data:[{id:'00000000-0000-4000-8000-000000000003',nickname:'새이름'}]}));
+  const searchButton=page.locator('[data-referral-search]');
+  await page.locator('#signup-referrer').press('Enter');
+  await searchButton.click();
+  assert.equal(await page.evaluate(()=>referralFixture.searches.length),1,'one pending search for automatic lookup, Enter and click');
+  await page.evaluate(()=>referralFixture.pending[0]({error:{message:'fixture failure'}}));
+  await page.getByRole('status').filter({hasText:'추천인을 찾지 못했어요'}).waitFor();
+  await searchButton.click();
+  await page.waitForFunction(()=>referralFixture.pending.length===2);
+  await page.locator('#signup-referrer').fill('새이름');await page.waitForFunction(()=>referralFixture.pending.length===3);
+  await page.evaluate(()=>referralFixture.pending[2]({data:[{id:'00000000-0000-4000-8000-000000000003',nickname:'새이름'}]}));
   await page.getByRole('button',{name:'새이름 추천인으로 선택',exact:true}).waitFor();
-  await page.evaluate(()=>referralFixture.pending[0]({data:referralFixture.people}));
+  await page.evaluate(()=>referralFixture.pending[1]({data:referralFixture.people}));
   assert.deepEqual(await page.locator('.referral-candidate').allTextContents(),['새이름'],'late search cannot replace current results');
   await page.locator('#login-tab').click();assert.equal(await page.locator('#signup-referral-slot').isVisible(),false);
   await page.locator('#signup-tab').click();await page.locator('[data-close-dialog]').click();
