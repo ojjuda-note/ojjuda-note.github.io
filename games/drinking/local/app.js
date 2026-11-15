@@ -17,7 +17,9 @@ const crocGum=[
 ];
 const jawCount=crocGum.length*2;
 const CROC_TOOTH_COUNT=jawCount*2;
-const games=window.DrinkingTableView.games;
+const games=[...window.DrinkingTableView.games,{
+  id:'partyroulette',title:'러시안 룰렛',category:'운과 감각',short:'너 마셔! 별 탄환의 주인공은?',color:'#d0dfd1',min:2
+}];
 const pageIntroductions={
   liar:{
     heading:['힌트 속에 숨은','한 사람을 찾아요.'],
@@ -96,6 +98,7 @@ function artPath(id){
   return directory+id+'.webp';
 }
 function art(id,cls=''){
+  if(id==='partyroulette')return '<span class="table-mark table-mark-partyroulette '+cls+'" aria-hidden="true"></span>';
   if(id==='secretcount')return '<span class="game-art sc-emblem '+cls+'" aria-hidden="true"></span>';
   if(id==='stopwatch')return '<span class="game-art watch-art '+cls+'" aria-hidden="true">'+watchCase('0.00')+'</span>';
   return '<img class="game-art '+cls+'" src="'+artPath(id)+'" alt="" draggable="false" decoding="async">';
@@ -179,7 +182,7 @@ function markLocalHost(){
   const r=round;
   let candidates=[];
   switch(game.id){
-    case 'croc':case 'bomb':case 'secretcount':case 'updown':candidates=[r.turn];break;
+    case 'croc':case 'bomb':case 'secretcount':case 'partyroulette':case 'updown':candidates=[r.turn];break;
     case 'bottle':candidates=[r.winningSeat];break;
     case 'initial':candidates=r.alive;break;
     case 'king':candidates=[r.roles.indexOf(r.number),r.second==null?-1:r.roles.indexOf(r.second)];break;
@@ -210,6 +213,7 @@ function markLocalHost(){
 function cleanup(){
   if(round?.nextHost)players=[round.nextHost,...players.filter(p=>p!==round.nextHost)];
   stopClock();fx.quiet();
+  clearTimeout(round?.spinTimer);
   if(round?.watchFrame!=null)cancelAnimationFrame(round.watchFrame);
   if(round?.bottleFrame!=null)cancelAnimationFrame(round.bottleFrame);
   round=null;
@@ -237,7 +241,7 @@ function renderMenu(){
 }
 function shell(body,scene=false){
   navigation(true);
-  app.innerHTML='<article class="play-shell"><header class="round-head"><h1>'+art(game.id,'round-mark')+game.title+'</h1><span>'+players.length+'명 플레이</span></header>'+(scene&&game.id!=='secretcount'?'<div class="stage-art" style="--pastel:'+game.color+';--scene:url('+artPath(game.id)+')">'+art(game.id)+'</div>':'')+'<div class="play-body">'+body+'</div></article>';
+  app.innerHTML='<article class="play-shell"><header class="round-head"><h1>'+art(game.id,'round-mark')+game.title+'</h1><span>'+players.length+'명 플레이</span></header>'+(scene&&!['secretcount','partyroulette'].includes(game.id)?'<div class="stage-art" style="--pastel:'+game.color+';--scene:url('+artPath(game.id)+')">'+art(game.id)+'</div>':'')+'<div class="play-body">'+body+'</div></article>';
   if(window.DrinkingTableView){
     app.querySelector('.round-head').replaceWith(window.DrinkingTableView.heading(game.id,game.title,players.length));
   }
@@ -273,6 +277,7 @@ function intro(){const enough=players.length>=game.min;
       '<div class="bottle-meta">2~12명 · 한 대로 함께</div>',true);
     return;
   }
+  if(game.id==='partyroulette')return rouletteSetup();
   if(game.id==='secretcount')return secretSetup();
   if(game.id==='bomb')return bombSetup();
   if(game.id==='stopwatch')return watchSetup();
@@ -309,6 +314,72 @@ async function openLocal(id){
 function end(title,desc,sound='result'){
   stopClock();round.phase='done';if(sound)fx.play(sound);
   shell('<span class="turn-tag">라운드 결과</span><h2>'+esc(title)+'</h2><p>'+esc(desc)+'</p>'+actions(btn('한 판 더',game.id==='bomb'?'bomb-setup':game.id==='truth'?'truth-setup':'start'),btn('게임 목록','menu','quiet')),true)
+}
+function rouletteSetup(){
+  cleanup();
+  round={phase:'wheel-empty',turn:0};
+  rouletteView();
+}
+function rouletteView(){
+  const r=round;
+  let title,description,button='';
+  switch(r.phase){
+    case 'wheel-empty':
+      title='별 탄환을 넣어 주세요';
+      description='참가자마다 한 칸, 당첨은 딱 한 칸이에요.';
+      button=btn('탄환 넣기','wheel-load');
+      break;
+    case 'wheel-loaded':
+      title='별 탄환이 들어갔어요';
+      description='탄창을 돌려 당첨 칸을 섞어 주세요.';
+      button=btn('탄창 돌리기','wheel-spin');
+      break;
+    case 'wheel-spin':
+      title='룰렛이 돌아가요';
+      description='멈추면 첫 번째 차례가 시작돼요.';
+      break;
+    case 'wheel-press':
+      title=name(r.turn)+'님 차례';
+      description='내 차례에 한 번 눌러 주세요.';
+      button=btn('너 마셔!','wheel-press');
+      break;
+    case 'wheel-pass':
+      title=name(r.turn)+'님은 통과!';
+      description=name(r.turn+1)+'님에게 폰을 넘겨 주세요.';
+      button=btn('다음 차례','wheel-pass','quiet');
+      break;
+  }
+  const slots=Array.from({length:players.length},(_,i)=>{
+    const symbol=r.phase==='wheel-loaded'&&i===0?'★':i+1;
+    return '<i style="--angle:'+(360*i/players.length)+'deg">'+symbol+'</i>';
+  }).join('');
+  shell('<div class="party-wheel-board" data-phase="'+r.phase+'"><div class="party-wheel-art" aria-hidden="true">'+
+    '<div class="party-wheel-disc" style="--step:'+(360/players.length)+'deg">'+slots+'</div></div>'+
+    '<h2 tabindex="-1">'+title+'</h2><p>'+description+'</p>'+ (button?actions(button):'')+'</div>');
+}
+function rouletteAction(action){
+  const r=round;
+  if(!r)return;
+  if(action==='wheel-load'&&r.phase==='wheel-empty'){
+    r.phase='wheel-loaded';fx.play('deal');
+  }else if(action==='wheel-spin'&&r.phase==='wheel-loaded'){
+    r.hit=rand(players.length);
+    r.phase='wheel-spin';
+    fx.play('turn');
+    const duration=window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:850;
+    r.spinTimer=setTimeout(()=>{
+      if(round!==r||r.phase!=='wheel-spin')return;
+      r.phase='wheel-press';rouletteView();
+      app.querySelector('[data-action="wheel-press"]').focus({preventScroll:true});
+    },duration);
+  }else if(action==='wheel-press'&&r.phase==='wheel-press'){
+    if(r.turn===r.hit)return end('팡! '+players[r.turn]+'님 당첨!','이번 건배는 '+players[r.turn]+'님 차례예요.');
+    r.phase='wheel-pass';fx.play('tap');
+  }else if(action==='wheel-pass'&&r.phase==='wheel-pass'){
+    r.turn++;r.phase='wheel-press';fx.play('turn');
+  }else return;
+  rouletteView();
+  app.querySelector('.party-wheel-board h2').focus({preventScroll:true});
 }
 function secretSetup(){
   cleanup();
@@ -357,6 +428,7 @@ function timed(ms,onLimit,beat=0,onBeat=null){
   Object.assign(round,{remain:ms,onLimit,beat,lastBeat:Math.ceil(ms/beat),onBeat});clock()
 }
 async function begin(){
+  if(game.id==='partyroulette')return rouletteSetup();
   if(game.id==='secretcount')return secretSetup();
   if(players.length<game.min)return go('participants');
   cleanup();round={turn:0,phase:'play'};fx.play(game.id==='croc'?'tooth':'deal');const r=round;
@@ -1039,6 +1111,7 @@ $('#fx-close').onclick=()=>feedback.close();$('#fx-test').onclick=()=>{fx.unlock
 $('#audio-check').onchange=e=>fx.change('sound',e.target.checked);$('#haptic-check').onchange=e=>fx.change('vibration',e.target.checked);
 function handle(action,value){
   const r=round;
+  if(game?.id==='partyroulette'&&action.startsWith('wheel-'))return rouletteAction(action);
   if(action==='filter'){filter=value;fx.play('tap');renderMenu();app.querySelector('.chip[aria-pressed=true]').focus({preventScroll:true});return}
   if(action==='random'||action==='open'){const eligible=games.filter(g=>g.min<=players.length);const id=action==='random'?eligible[rand(eligible.length)].id:value;lastMenuFocus=id;fx.play(id==='croc'?'tooth':'tap');return openLocal(id)}
   if(game?.id==='bomb'){
