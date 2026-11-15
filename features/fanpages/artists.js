@@ -469,7 +469,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "A2O 공식", sub: "새 굿즈 공지", href: "https://www.a2oentertainment.world/" }
     ],
     music: [
-      { title: "BAD HABITS TONITE", date: "2026.10.18", type: "EP · 4곡", songs: ["BAD HABITS TONITE", "I Follow", "BAD HABITS TONITE (Chinese Ver.)", "I Follow (Chinese Ver.)"], href: "https://music.apple.com/us/album/bad-habits-tonite-ep/6822765669" },
+      { title: "BAD HABITS TONITE", date: "2026.10.18", type: "싱글 앨범 · 4곡 · 타이틀 BAD HABITS TONITE", songs: ["BAD HABITS TONITE", "I Follow", "BAD HABITS TONITE (Chinese Ver.)", "I Follow (Chinese Ver.)"], href: "https://music.apple.com/us/album/bad-habits-tonite-ep/6822765669" },
       { title: "Love Got Me Ooh", date: "2026.07.17", type: "EP · 4곡", songs: ["Love Got Me Ooh", "Rain On My Parade", "Love Got Me Ooh (Chinese Ver.)", "Rain On My Parade (Chinese Ver.)"], href: "https://music.apple.com/us/album/love-got-me-ooh-ep/6788713890" },
       { title: "PAPARAZZI ARRIVE", date: "2025.10.24", type: "첫 EP · 14곡", songs: [
         "PAPARAZZI ARRIVE (English Ver.)",
@@ -493,13 +493,14 @@ window.OJJUDA_FAN_ARTISTS = [
     ],
     appearances: [],
     campaigns: [
-      { kind: "콜라보", date: "2026.10", title: "FILA FUSION × A2O MAY", sub: "상하이 행사·브랜드 제공 사진 · Hypebeast", href: "https://hypebeast.cn/2026/11/fila-fusion-a2o-may-idol" }
+      { kind: "콜라보", date: "2026.10.29", title: "FILA FUSION × A2O MAY · OOTidol", sub: "상하이 IDOL 다운 컬렉션 행사·런웨이 (10.29~11.01) · Hypebeast", href: "https://hypebeast.cn/2026/11/fila-fusion-a2o-may-idol" }
     ],
     schedules: [
       { title: "A2O MAY 공식 X", sub: "행사·활동 공지", href: "https://x.com/A2O_MAY" },
       { title: "A2O 공식", sub: "새 일정 확인", href: "https://www.a2oentertainment.world/" }
     ],
     news: [
+      { date: "2026.10.23", tag: "방송", title: "장쑤TV Music Show 2026 · BAD HABITS TONITE 무대", href: "https://www.youtube.com/watch?v=a2JXTXnqfZc" },
       { date: "10.18", tag: "앨범", title: "BAD HABITS TONITE 발매", href: "https://www.melon.com/album/detail.htm?albumId=14801672" },
       { date: "2026.10", tag: "콜라보", title: "FILA FUSION 행사·화보", href: "https://hypebeast.cn/2026/11/fila-fusion-a2o-may-idol" }
     ]
