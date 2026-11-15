@@ -890,6 +890,12 @@ test('drinking menu buttons keep square artwork and identify the scare before se
   await page.goto(origin+'/games/drinking/local/#menu');
   const cards = page.locator('.games .table-card');
   await cards.first().waitFor();
+  for (const kind of ['stopwatch', 'secretcount', 'shapematch']) {
+    const thumbnail = page.locator('.games [data-value="' + kind + '"] .card-art img');
+    await thumbnail.evaluate(img => img.decode());
+    assert.deepEqual(await thumbnail.evaluate(img => [img.naturalWidth, img.naturalHeight]), [508, 508]);
+    assert.equal(await thumbnail.getAttribute('src'), '/games/drinking/local/art/' + kind + '.webp');
+  }
   for (const width of [320, 390, 1280]) {
     await page.setViewportSize({width, height:800});
     await painted(page);

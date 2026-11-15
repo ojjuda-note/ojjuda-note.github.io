@@ -28,14 +28,10 @@
     const mark = document.createElement('span');
     mark.className = 'table-mark';
     mark.setAttribute('aria-hidden', 'true');
-    if (['stopwatch','secretcount'].includes(kind)) {
-      mark.classList.add('table-mark-' + kind);
-    } else {
-      const image = document.createElement('img');
-      image.alt = '';
-      image.src = kind === 'shapematch' ? '/games/shapematch/mark.svg' : kind === 'croc' ? '/games/croc/art/croc.webp' : '/games/drinking/local/art/' + kind + '.webp';
-      mark.append(image);
-    }
+    const image = document.createElement('img');
+    image.alt = '';
+    image.src = kind === 'croc' ? '/games/croc/art/croc.webp' : '/games/drinking/local/art/' + kind + '.webp';
+    mark.append(image);
     return mark;
   }
   function card(game) {
