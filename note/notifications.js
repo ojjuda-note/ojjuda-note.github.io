@@ -228,14 +228,16 @@
       if (!gift && !item.read_at) { const readButton = button('읽음 표시', () => void (retention ? markRetentionRead(item) : markRead([item.id]))); readButton.dataset.notificationRead = item.id; actions.append(readButton); }
       row.append(meta, actions); return row;
     }
-    function render() {
+    function render(retryMore = false) {
       const focusId = document.activeElement?.closest('[data-notification-id]')?.dataset.notificationId;
-      const visible = noticeItems();
-      rows.replaceChildren(...visible.map(rowFor));
-      if (!visible.length) showEmpty(loadError?'알림을 불러오지 못했어요.':'아직 받은 알림이 없어요.');
+      if (!retryMore) {
+        const visible = noticeItems();
+        rows.replaceChildren(...visible.map(rowFor));
+        if (!visible.length) showEmpty(loadError?'알림을 불러오지 못했어요.':'아직 받은 알림이 없어요.');
+      }
       footer.replaceChildren();
-      if (hasMore && cursor) { const more = button('알림 더 보기', () => void loadPage(true)); more.id = 'note-notifications-more'; footer.append(more); }
-      if (loadError) footer.append(button('다시 시도', () => void loadPage()));
+      if (!retryMore && hasMore && cursor) { const more = button('알림 더 보기', () => void loadPage(true)); more.id = 'note-notifications-more'; footer.append(more); }
+      if (loadError) footer.append(button('다시 시도', () => void loadPage(retryMore)));
       updateControls();
       if (focusId) [...rows.children].find(row=>row.dataset.notificationId===focusId)?.querySelector('button')?.focus({ preventScroll: true });
       keepFocus();
@@ -278,8 +280,8 @@
         : !generalOk ? '일반 알림을 불러오지 못했어요.'
           : !retentionOk ? '삭제 예정 카드 목록을 불러오지 못했어요.' : '';
       status.textContent = loadError ? `${loadError} 다시 시도해 주세요.` : '';
-      if (generalOk || retentionOk) lastRefresh = Date.now();
-      render(); return !loadError;
+      if (generalOk || (!more && retentionOk)) lastRefresh = Date.now();
+      render(more && !generalOk); return !loadError;
     }
     async function refreshCount(force = false) {
       const user = identity, run = identityRun;
