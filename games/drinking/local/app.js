@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-local-participants1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-partyroulette1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -350,7 +350,8 @@ function rouletteView(){
       break;
   }
   const slots=Array.from({length:players.length},(_,i)=>{
-    const symbol=r.phase==='wheel-loaded'&&i===0?'★':i+1;
+    const passed=i<r.turn || (i===r.turn && r.phase==='wheel-pass');
+    const symbol=passed?'✓':r.phase==='wheel-loaded'&&i===0?'★':'•';
     return '<i style="--angle:'+(360*i/players.length)+'deg">'+symbol+'</i>';
   }).join('');
   shell('<div class="party-wheel-board" data-phase="'+r.phase+'"><div class="party-wheel-art" aria-hidden="true">'+
@@ -370,7 +371,7 @@ function rouletteAction(action){
     r.spinTimer=setTimeout(()=>{
       if(round!==r||r.phase!=='wheel-spin')return;
       r.phase='wheel-press';rouletteView();
-      app.querySelector('[data-action="wheel-press"]').focus({preventScroll:true});
+      if(!document.querySelector('[aria-modal="true"],dialog[open]'))app.querySelector('[data-action="wheel-press"]').focus({preventScroll:true});
     },duration);
   }else if(action==='wheel-press'&&r.phase==='wheel-press'){
     if(r.turn===r.hit)return end('팡! '+players[r.turn]+'님 당첨!','이번 건배는 '+players[r.turn]+'님 차례예요.');

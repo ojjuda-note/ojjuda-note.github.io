@@ -347,3 +347,38 @@ body { background: radial-gradient(ellipse at 45% 0, #fffdf6, #f6f4ec 70%); }
 
 .player-actions { display:grid; grid-template-columns:auto 1fr; gap:10px; }
 #player-status:empty, #roster-feedback:empty { display:none; }
+
+/* The one-device roulette uses a tabletop prize wheel and a single star token. */
+.table-mark.table-mark-partyroulette, .party-wheel-disc {
+  background-color:#244e44;
+  background-image:radial-gradient(circle,#ffdf8b 0 12%,#8c5b32 13% 16%,transparent 17%),
+    repeating-conic-gradient(from -22.5deg,#226353 0deg 42deg,#f2d495 42deg 45deg,#ce7655 45deg 87deg,#f2d495 87deg 90deg);
+  border:3px solid #c49a56; border-radius:50%; box-shadow:inset 0 0 0 2px #fae5ac,0 3px 6px #173d3240;
+}
+.games .table-card .card-art:has(.table-mark-partyroulette) {
+  display:grid; place-items:center;
+  background-image:radial-gradient(ellipse at 40% 25%,#eaf2d5,#acccaa 75%,#9dbfa4);
+}
+#app .games .table-card .table-mark-partyroulette {
+  width:auto; height:78%; max-width:85%; aspect-ratio:1; border-width:5px; border-radius:50%;
+  transform:rotate(-14deg); box-shadow:inset 0 0 0 2px #fae5ac,0 6px 0 #537260,0 10px 10px #31533f50;
+}
+.party-wheel-board { display:grid; justify-items:center; gap:8px; }
+.party-wheel-board h2, .party-wheel-board p { margin:0; }
+.party-wheel-board h2:focus { outline:none; }
+.party-wheel-board .actions { margin:6px 0 0; }
+.party-wheel-board button { min-width:9rem; }
+.party-wheel-art { width:clamp(104px,24vmin,168px); aspect-ratio:1; position:relative; margin:4px 0 10px; }
+.party-wheel-art::after {
+  content:''; position:absolute; top:-5px; left:50%; transform:translateX(-50%);
+  border-inline:7px solid transparent; border-top:15px solid #573c28;
+}
+.party-wheel-disc {
+  position:absolute; inset:0; border-width:5px;
+  background-image:radial-gradient(circle,#ffdf8b 0 12%,#8c5b32 13% 16%,transparent 17%),
+    repeating-conic-gradient(from calc(var(--step) / -2),#22594f 0deg,#38816b calc(var(--step) - 3deg),#f2d495 calc(var(--step) - 3deg) var(--step));
+}
+.party-wheel-disc i { position:absolute; inset:0; padding-top:4%; text-align:center; transform:rotate(var(--angle)); color:#ffe2a0; font:700 1.2rem/1.1 system-ui; }
+[data-phase="wheel-spin"] .party-wheel-disc { animation:party-wheel-spin .85s cubic-bezier(.16,.66,.23,1) both; }
+@keyframes party-wheel-spin { to { transform:rotate(3turn); } }
+@media(prefers-reduced-motion:reduce) { [data-phase="wheel-spin"] .party-wheel-disc { animation:none; } }
