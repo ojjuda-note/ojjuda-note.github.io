@@ -579,19 +579,24 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "SUPERSTAR · CARABINER Ver.", sub: "공식 유통 실물 음반 · 뮤직아트 · 11/10 출시", href: "https://musicart.kr/shop/shopdetail.html?GfDT=bmp5W11M&branduid=3531929&current_category=014&mcode=000&scode=&search=&sort=regdate&type=P&xcode=014" },
       { title: "SUPERSTAR · 무신사 특전", sub: "뮤직플랜트 공식 유통 음반 · 특전 11/15 23:59 종료 · 판매 상태는 링크 확인", href: "https://www.musinsa.com/products/7641862" },
       { title: "Mnet Plus", sub: "공식 팬 커뮤니티", href: "https://artist.mnetplus.world/main/stg/a2osoul" },
-      { title: "SUPERSTAR · 영상통화 이벤트 Ⅱ", sub: "Mnet Plus Merch · 11.10 12:00~11.12 23:59(KST) 구매 응모·포토카드", href: "https://mnetplusmerch.co.kr/product/a2o-soul-group-video-call-event-ep-superstar-soul-ver-constellation-ve/1774/category/195/display/1/" }
+      { title: "SUPERSTAR · 영상통화 이벤트 Ⅱ", sub: "Mnet Plus Merch · 11.10 12:00~11.12 23:59(KST) 구매 응모 종료·포토카드", href: "https://mnetplusmerch.co.kr/product/a2o-soul-group-video-call-event-ep-superstar-soul-ver-constellation-ve/1774/category/195/display/1/" },
+      { title: "SUPERSTAR · WITHMUU 팬사인회 특전", sub: "11.14~11.16 23:59(KST) 응모 · 포토카드 15종 중 랜덤 1매 · 판매 조건 공식 확인", href: "https://link.withmuu.com/s9e3EU" },
+      { title: "SUPERSTAR · 애플뮤직 팬사인회 특전", sub: "11.22 영상통화·대면 행사 · 11.14 응모 종료 · 음반·포토카드 구성 공식 확인", href: "https://en.applemusic.co.kr/Product/Detail/view/pid/123700/cid/1632" }
     ],
     music: [
-      { title: "SUPERSTAR", date: "2026.11.09", type: "데뷔 EP · 더블 타이틀", songs: ["SUPERSTAR", "Dancing in the Dark", "While We’re Young", "Very First Love (첫사랑)", "Moonlight Shadow"], href: "https://www.melon.com/album/detail.htm?albumId=14644792" }
+      { title: "SUPERSTAR", date: "2026.11.09", type: "데뷔 EP · 더블 타이틀 · 실물 발매 11.10", songs: ["SUPERSTAR", "Dancing in the Dark", "While We’re Young", "Very First Love (첫사랑)", "Moonlight Shadow"], href: "https://www.melon.com/album/detail.htm?albumId=14644792" }
     ],
     appearances: [
-      { date: "2026-11-14", title: "SUPERSTAR 공개 팬사인회", sub: "스타필드 수원 타워 아트리움 · MUSICART · 19:30", href: "https://musicart.kr/shop/shopdetail.html?branduid=3531976" },
-      { date: "2026-11-15", title: "SUPERSTAR 단체 영상통화 이벤트", sub: "Mnet Plus Merch · 18:00 · 응모 종료", href: "https://mnetplusmerch.com/article/event/8/8892/" },
-      { date: "2026-11-15", title: "SUPERSTAR 대면 팬사인회", sub: "Mnet Plus Merch · 20:00 · 응모 종료", href: "https://mnetplusmerch.com/article/event/8/8892/" },
+      { date: "2026-11-16", title: "아리랑TV SHOW K-POP 사전녹화", sub: "공식 팬클럽 참여 공지 · 시간·장소는 A2O SOUL 공식 공지 확인", href: "https://artist.mnetplus.world/main/stg/a2osoul/contents/6af88433fcbfd2033a1104ee" },
       { date: "2026-11-16", title: "SUPERSTAR 대형 패널 전시 마지막 날", sub: "일본 타워레코드 시부야점 1F · 11/10~16 · 영업시간 내", href: "https://towershibuya.jp/news/2026/11/03/236821" },
+      { date: "2026-11-17", title: "SBS Life 더쇼 사전녹화", sub: "Dancing in the Dark · 상세 시간·참여 규정은 공식 공지 확인", href: "https://artist.mnetplus.world/main/stg/a2osoul/contents/6af969c70a97884ab9090a8e" },
       { date: "2026-11-18", title: "단체 영상통화 팬사인회", sub: "MAKESTAR · 19:00", href: "https://www.makestar.com/product/21876" },
       { date: "2026-11-20", title: "단체 대면 팬사인회", sub: "MAKESTAR · 20:00", href: "https://www.makestar.com/product/21876" },
       { date: "2026-11-21", title: "SUPERSTAR 팬사인회", sub: "WITHMUU · 18:30", href: "https://withmuu.com/goods/event_sale.php?sno=1650" },
+      { date: "2026-11-22", title: "SUPERSTAR 그룹 영상통화 팬사인회", sub: "애플뮤직 · 18:00 KST · 응모 종료(11.14)", href: "https://en.applemusic.co.kr/Product/Detail/view/pid/123700/cid/1632" },
+      { date: "2026-11-22", title: "SUPERSTAR 대면 팬사인회", sub: "애플뮤직 · 19:00 KST · 응모 종료(11.14)", href: "https://jp.applemusic.co.kr/Product/Detail/view/pid/123698/cid/568" },
+      { date: "2026-11-25", title: "SUPERSTAR 단체 영상통화 팬사인회", sub: "WITHMUU · 19:00 KST · 응모 11.14~11.16 23:59", href: "https://link.withmuu.com/s9e3EU" },
+      { date: "2026-11-27", title: "SUPERSTAR 대면 팬사인회", sub: "WITHMUU · 20:00 KST · 응모 11.14~11.16 23:59", href: "https://link.withmuu.com/s9e3EU" },
       { date: "2026-11-30", title: "SUPERSTAR 패널 전시 마지막 날", sub: "일본 타워레코드 시부야점 5F · 입고일부터 11/30까지", href: "https://towershibuya.jp/news/2026/11/03/236821" }
     ],
     schedules: [
@@ -599,6 +604,8 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "A2O SOUL 공식 X", sub: "행사·활동 안내", href: "https://x.com/A2O_SOUL" }
     ],
     news: [
+      { date: "11.15", tag: "방송", title: "SBS 인기가요 · Dancing in the Dark 무대 공개", href: "https://www.youtube.com/watch?v=so6VpcUmQGk" },
+      { date: "11.14", tag: "팬이벤트", title: "WITHMUU 11/25 영상통화·11/27 대면 팬사인회 발표 · 응모 11/16 마감", href: "https://link.withmuu.com/s9e3EU" },
       { date: "11.13", tag: "보도", title: "첫 EP SUPERSTAR · 뉴 신스웨이브 음악 조명", href: "https://m.tf.co.kr/read/entertain/2388281.htm" },
       { date: "11.10", tag: "굿즈", title: "SUPERSTAR 영상통화 이벤트 Ⅱ · 11/12 응모 마감", href: "https://mnetplusmerch.co.kr/product/a2o-soul-group-video-call-event-ep-superstar-soul-ver-constellation-ve/1774/category/195/display/1/" },
       { date: "11.09", tag: "뮤직비디오", title: "Dancing in the Dark · 공식 MV 공개", href: "https://www.youtube.com/watch?v=JPJokqIoIJI" },
