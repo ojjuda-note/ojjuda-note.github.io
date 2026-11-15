@@ -35,9 +35,33 @@
     return {title: title || '이번 판 결과', body};
   }
 
+  const lastRoom = new WeakMap();
+  function roomCue(kind, state, view) {
+    const prev = lastRoom.get(view);
+    lastRoom.set(view, state);
+    if (!prev || !state || state.code !== prev.code || state.round !== prev.round ||
+        state.revision <= prev.revision || document.hidden || kind === 'partyroulette' || kind === 'croc') return;
+    const phase = state.phase, g = state.game || {}, old = prev.game || {};
+    let cue;
+    if (phase !== prev.phase) {
+      if (phase === 'done') cue = {bomb:'boom', bottle:'finish', king:'king'}[kind] || 'result';
+      else if (phase === 'spinning') cue = 'spin';
+      else if (phase === 'active' && kind === 'bomb') cue = 'tick';
+      else if (phase === 'intermission') cue = 'snap';
+      else if (phase === 'response' && kind === 'king') cue = 'king';
+      else if (phase === 'answer' && kind === 'truth') cue = 'truth';
+      else if (['cards','answer','vote','hints','act'].includes(phase)) cue = 'deal';
+    } else if (phase !== 'done') {
+      if ((!prev.voted && state.voted) || (phase === 'vote' && !old.mine && g.mine)) cue = 'vote';
+      else if (Number.isInteger(g.turn) && g.turn !== old.turn) cue = 'turn';
+    }
+    if (cue) window.PartyFX?.play(cue);
+  }
+
   function native(kind, state, view, now = Date.now) {
     const presentation = window.DrinkingPresentation;
     if (!presentation || !view) return;
+    roomCue(kind,state,view);
     presentation.enter(kind);
     const phase = state?.phase || 'entry';
     const roundKey = ['room', kind, state?.code || 'entry', state?.round || 0].join('/');

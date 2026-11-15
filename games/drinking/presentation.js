@@ -331,6 +331,15 @@
     for (const text of data.steps || []) steps.append(node('li', '', text));
     body.append(goal, steps);
     if (data.resultNote) body.append(node('p', 'dp-guide-note', data.resultNote));
+    if (!active.local && window.PartyFX) {
+      const label = node('label', 'dp-guide-sound');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = window.PartyFX.prefs.sound;
+      checkbox.addEventListener('change', () => window.PartyFX.change('sound', checkbox.checked));
+      label.append(checkbox, ' 게임 효과음');
+      body.append(label);
+    }
     panel.append(body);
     footer(panel, '알겠어요');
     return true;

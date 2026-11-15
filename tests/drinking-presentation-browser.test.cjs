@@ -849,7 +849,7 @@ test('three phones choose a target during loading and reveal the same winner',as
   const browser=await chromium.launch(launchOptions);t.after(()=>browser.close());
   const n=3,ready=new Set(),pressed=new Set(),targets=new Map();let phase='prepare',revision=1,opensAt=0,revealAt=0;
   const sessions=await Promise.all([0,1,2].map(async seat=>{
-    return browserSession(browser,{actor:'roulette-device-'+seat,viewport:seat===0?{width:360,height:640}:{width:844,height:390},rpc:(_name,args)=>{
+    return browserSession(browser,{actor:'roulette-device-'+seat,reducedMotion:'no-preference',viewport:seat===0?{width:360,height:640}:{width:844,height:390},rpc:(_name,args)=>{
       const act=args.p_action;
       if(act==='roulette_ready'&&phase==='prepare'){
         targets.set(seat,args.p_options.target);ready.add(seat);revision++;
@@ -867,6 +867,21 @@ test('three phones choose a target during loading and reveal the same winner',as
   const pages=sessions.map(s=>s.page);
   await Promise.all(pages.map(async (p,i)=>{
     await p.goto(origin+'/games/partyroulette/?room=GRP001');await dismissGuide(p);
+    await p.evaluate(() => {
+      window.revealEvents = [];
+      const play = window.PartyFX.play;
+      window.PartyFX.play = (id, ...args) => {
+        if (id === 'shot' || id === 'dry') window.revealEvents.push(id);
+        return play(id, ...args);
+      };
+      new MutationObserver(records => {
+        for (const record of records) for (const light of record.addedNodes) {
+          if (!light.matches?.('.pr-screen-flash')) continue;
+          const box = light.getBoundingClientRect();
+          window.revealEvents.push(box.width === innerWidth && box.height === innerHeight ? 'viewport' : 'partial');
+        }
+      }).observe(document.body, {childList:true});
+    });
     assert.equal(await p.getByRole('button',{name:'장전하기'}).isDisabled(),true);
     const select=p.getByLabel('누구를 쏘실건가요?',{exact:true});
     assert.equal(await select.locator('option[value="'+i+'"]').count(),0);
@@ -879,6 +894,7 @@ test('three phones choose a target during loading and reveal the same winner',as
   for(const [i,p] of pages.entries()){
     const result=p.locator('[data-drinking-dialog="result"]');
     await result.waitFor();assert.match(await result.innerText(),/3번 당첨!/);
+    assert.deepEqual(await p.evaluate(() => window.revealEvents), i === 1 ? ['shot','viewport'] : ['dry']);
     assert.deepEqual(sessions[i].errors,[]);
   }
 });

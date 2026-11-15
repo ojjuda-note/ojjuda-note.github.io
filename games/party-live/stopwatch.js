@@ -91,11 +91,12 @@
     currentMount = sync;
     $('#watch-start').onclick = () => {
       if (started != null || held != null || document.hidden) return;
-      interrupted = false; started = performance.now();sync();$('#watch-stop').focus();
+      interrupted = false; started = performance.now(); window.PartyFX?.play('watch');sync();$('#watch-stop').focus();
     };
     $('#watch-stop').onclick = () => {
       if (started === null) return;
       held = Math.max(0,Math.round((performance.now()-started)/10));
+      window.PartyFX?.play('stop');
       started = null;
       try {sessionStorage.setItem(storageKey(roomKey),String(held));} catch {}
       sync(); ui.send('watch_score',{score:held});

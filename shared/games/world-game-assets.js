@@ -1,27 +1,27 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261116-drinking-entry-scenes1'
+ const revision='20261116-drinking-foley1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
-  croc:'1.4.1',
-  liar:'1.6.1',
-  king:'1.11.1',
-  minority:'1.9.1',
-  mission:'1.6.1',
-  bottle:'1.4.1',
-  bomb:'1.6.1',
-  stopwatch:'1.4.2',
-  truth:'1.10.1',
-  initial:'1.5.1',
-  fingers:'1.9.1',
-  imagevote:'1.9.2',
-  secretcount:'1.1.2',
-  updown:'1.4.1',
-  partyroulette:'1.4.1',
-  drinking:'1.23.4',
-  shapematch:'1.0.3',
+  croc:'1.5.0',
+  liar:'1.7.0',
+  king:'1.12.0',
+  minority:'1.10.0',
+  mission:'1.7.0',
+  bottle:'1.5.0',
+  bomb:'1.7.0',
+  stopwatch:'1.5.0',
+  truth:'1.11.0',
+  initial:'1.6.0',
+  fingers:'1.10.0',
+  imagevote:'1.10.0',
+  secretcount:'1.2.0',
+  updown:'1.5.0',
+  partyroulette:'1.5.0',
+  drinking:'1.24.0',
+  shapematch:'1.1.0',
   tarot:'1.10.2',
   saju:'2.15.1',
   group:'1.2.2',

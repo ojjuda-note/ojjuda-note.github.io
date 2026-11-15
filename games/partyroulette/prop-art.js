@@ -79,7 +79,17 @@
   }
 
   function flash(prop) {
-    if(!prop)return;
+    if(!prop || document.hidden)return;
+    // The prop is rotated and clipped on portrait phones. Put the light above the entire game.
+    const surface = document.fullscreenElement || document.body;
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && !document.querySelector('.pr-screen-flash')) {
+      const light = document.createElement('div');
+      light.className = 'pr-screen-flash';
+      light.setAttribute('aria-hidden','true');
+      surface.append(light);
+      light.addEventListener('animationend', () => light.remove(), {once:true});
+      window.setTimeout(() => light.remove(), 360);
+    }
     const element=prop.querySelector('.pr-flash');
     element.classList.add('pr-lit');
     window.setTimeout(()=>element.classList.remove('pr-lit'),220);

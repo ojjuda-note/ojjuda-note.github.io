@@ -169,7 +169,7 @@ view.addEventListener('click',e=>{
   if (act==='join-tab' && !activeCode) { location.assign('/games/drinking/?mode=multi&game='+'liar'); return; }
   if(act==='create-tab'||act==='join-tab'){mode=act==='create-tab'?'create':'join';notice.textContent='';entry();return}
   if(!room)return;
-  if(act==='reveal'){revealed=!revealed;render(room,true);return}
+  if(act==='reveal'){revealed=!revealed;window.PartyFX?.play('flip');render(room,true);return}
   if(act==='copy'){
     navigator.clipboard?.writeText(location.href).then(()=>{notice.textContent='초대 링크를 복사했어요.'},()=>{notice.textContent='초대 링크를 복사하지 못했어요.'});
     if(!navigator.clipboard)notice.textContent='초대 링크를 복사하지 못했어요.';

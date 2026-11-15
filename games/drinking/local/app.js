@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261116-shapematch-records1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261116-drinking-foley1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -180,7 +180,7 @@ async function startBomb(){
 }
 function bombBurst(){
   const r=round;r.lock=true;fx.play('boom');shell('<div class="burst-stage">'+art('bomb','burst-bomb')+'<i aria-hidden="true"></i><b>펑!</b></div><h2>'+name(r.turn)+' 당첨!</h2>');
-  timed(620,()=>end('펑! '+players[r.turn]+' 당첨','폭탄이 터질 때 폰을 들고 있던 사람이에요.','stop'))
+  timed(620,()=>end('펑! '+players[r.turn]+' 당첨','폭탄이 터질 때 폰을 들고 있던 사람이에요.',null))
 }
 const name=i=>esc(players[i]), tag=i=>'<span class="turn-tag">'+name(i)+' 차례</span>';
 const cards=()=>games.filter(g=>filter==='전체'||filter===g.category);
@@ -372,7 +372,9 @@ function timed(ms,onLimit,beat=0,onBeat=null){
 async function begin(){
   if(game.id==='secretcount')return secretSetup();
   if(players.length<game.min)return go('participants');
-  cleanup();round={turn:0,phase:'play'};fx.play(game.id==='croc'?'tooth':'deal');const r=round;
+  cleanup();round={turn:0,phase:'play'};const r=round;
+  const cardGame=['liar','mission','king','truth','minority','fingers','imagevote'].includes(game.id);
+  fx.play(game.id==='croc'?'tooth':cardGame?'deal':'tap');
   if(prompts.managed(game.id)&&!['truth','fingers','minority','king','imagevote'].includes(game.id)){
     const button=app.querySelector('[data-action="start"]');
     if(button){button.disabled=true;button.textContent='불러오는 중…';}
@@ -665,7 +667,7 @@ function animateBottle(now){
     $('#bottle-title').textContent=players[seat]+'님 당첨!';
     $('#bottle-hint').textContent='병 입구가 '+(seat+1)+'번 자리를 가리켰어요.';
     $('#spin-status').innerHTML=actions(btn('다시 돌리기','spin'),btn('자리 옮기기','edit-seats','quiet'),btn('게임 목록','menu','quiet'));
-    fx.play('stop');
+    fx.play('finish');
     markLocalHost();
     window.DrinkingGameScreen?.local(game.id,r,app);
     return;
@@ -765,7 +767,7 @@ function nextShape(){
 function startWatch(){
   const r=round;
   if(r?.phase!=='watch-ready'||document.hidden||feedback.open)return;
-  r.phase='watch-running';watchScreen(true);
+  r.phase='watch-running';watchScreen(true);fx.play('watch');
   const face=$('#watch-reading');
   r.started=performance.now();
   function update(now){
@@ -1191,6 +1193,7 @@ function handle(action,value){
       r.answers[n]=action==='king-yes';
       if(action==='king-no'){r.declined=n;r.phase='done';}
       else if(r.answers[r.number]&&r.answers[r.second])r.phase='done';
+      fx.play(r.phase==='done'?'result':'vote');
       return kingResult();
     }
     case 'truth-pick':return revealTruth(value);
