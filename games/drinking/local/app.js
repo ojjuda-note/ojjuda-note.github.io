@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-roulette-landscape1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-drinking-menu2';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -210,7 +210,6 @@ function markLocalHost(){
 function cleanup(){
   if(round?.nextHost)players=[round.nextHost,...players.filter(p=>p!==round.nextHost)];
   stopClock();fx.quiet();
-  clearTimeout(round?.spinTimer);
   if(round?.watchFrame!=null)cancelAnimationFrame(round.watchFrame);
   if(round?.bottleFrame!=null)cancelAnimationFrame(round.bottleFrame);
   round=null;
@@ -238,11 +237,11 @@ function renderMenu(){
 }
 function shell(body,scene=false){
   navigation(true);
-  app.innerHTML='<article class="play-shell"><header class="round-head"><h1>'+art(game.id,'round-mark')+game.title+'</h1><span>'+players.length+'명 플레이</span></header>'+(scene&&!['secretcount','partyroulette'].includes(game.id)?'<div class="stage-art" style="--pastel:'+game.color+';--scene:url('+artPath(game.id)+')">'+art(game.id)+'</div>':'')+'<div class="play-body">'+body+'</div></article>';
+  app.innerHTML='<article class="play-shell"><header class="round-head"><h1>'+art(game.id,'round-mark')+game.title+'</h1><span>'+players.length+'명 플레이</span></header>'+(scene&&game.id!=='secretcount'?'<div class="stage-art" style="--pastel:'+game.color+';--scene:url('+artPath(game.id)+')">'+art(game.id)+'</div>':'')+'<div class="play-body">'+body+'</div></article>';
   if(window.DrinkingTableView){
-    app.querySelector('.round-head').replaceWith(window.DrinkingTableView.heading(game.id,game.title,game.id==='partyroulette'?round.slots:players.length));
+    app.querySelector('.round-head').replaceWith(window.DrinkingTableView.heading(game.id,game.title,players.length));
   }
-  if(round?.phase==='done'&&game.id!=='partyroulette')markLocalHost();
+  if(round?.phase==='done')markLocalHost();
   window.DrinkingGameScreen?.local(game.id,round,app);
 }
 function pageIntro(copy,enough){
@@ -274,7 +273,6 @@ function intro(){const enough=players.length>=game.min;
       '<div class="bottle-meta">2~12명 · 한 대로 함께</div>',true);
     return;
   }
-  if(game.id==='partyroulette')return rouletteSetup();
   if(game.id==='secretcount')return secretSetup();
   if(game.id==='bomb')return bombSetup();
   if(game.id==='stopwatch')return watchSetup();
@@ -292,6 +290,8 @@ function intro(){const enough=players.length>=game.min;
 }
 function route(){let id=location.hash.slice(1);if(id==='jenga'){
   id='stopwatch';history.replaceState(null,'','#stopwatch');
+}else if(id==='partyroulette'){
+  id='menu';history.replaceState(null,'','#menu');
 }cleanup();
   if(id==='participants'){
     history.replaceState(null,'','#menu');game=null;renderMenu();scrollTo(0,0);playerSettings();return;
@@ -311,130 +311,6 @@ async function openLocal(id){
 function end(title,desc,sound='result'){
   stopClock();round.phase='done';if(sound)fx.play(sound);
   shell('<span class="turn-tag">라운드 결과</span><h2>'+esc(title)+'</h2><p>'+esc(desc)+'</p>'+actions(btn('한 판 더',game.id==='bomb'?'bomb-setup':game.id==='truth'?'truth-setup':'start'),btn('게임 목록','menu','quiet')),true)
-}
-function rouletteSetup(){
-  const slots=game?.id==='partyroulette'&&round?.slots||players.length;
-  cleanup();
-  round={phase:'wheel-empty',used:0,slots,angle:0};
-  rouletteView();
-}
-function rouletteView(){
-  const r=round;
-  let title,description,button='';
-  switch(r.phase){
-    case 'wheel-empty':
-      title='탄창을 준비해 주세요';
-      description='참가자 한 명당 한 칸, 당첨은 한 칸이에요.';
-      button=btn('탄환 넣기','wheel-load');
-      break;
-    case 'wheel-loaded':
-      title='탄창을 돌려 주세요';
-      description='손가락으로 탄창을 훑고 놓아 보세요.';
-      button=btn('탄창 돌리기','wheel-spin');
-      break;
-    case 'wheel-spin':
-      title='룰렛이 돌아가요';
-      description='멈추면 첫 번째 차례가 시작돼요.';
-      break;
-    case 'wheel-press':
-      title='한 사람을 지목해 주세요';
-      description='상대를 정한 뒤 버튼을 눌러요.';
-      button=btn('너 마셔!','wheel-press');
-      break;
-    case 'wheel-handoff':
-      title='통과! 폰을 넘겨 주세요';
-      description='방금 지목받은 사람이 폰을 받고 다음 상대를 골라요.';
-      button=btn('폰 받았어요','wheel-accept','quiet');
-      break;
-  }
-  const preparing=['wheel-empty','wheel-loaded','wheel-spin'].includes(r.phase);
-  const holes=Array.from({length:r.slots},(_,i)=>{
-    const marked=(r.phase==='wheel-loaded'&&i===0)?' is-marked':'';
-    return '<i class="drum-hole'+marked+'" style="--seat:'+360*i/r.slots+'deg"></i>';
-  }).join('');
-  const countField=r.phase==='wheel-empty'?'<label class="roulette-target">참가 인원 <select>'+
-    Array.from({length:11},(_,i)=>'<option value="'+(i+2)+'"'+(i+2===r.slots?' selected':'')+'>'+(i+2)+'명</option>').join('')+'</select></label>':'';
-  const size=Math.min(19,145/r.slots);
-  const angleStyle='--hole-size:'+size+'%;--orbit:'+(-32/size*100)+'%;--angle:'+r.angle+'deg;--start:'+(r.from||0)+'deg;--duration:'+(r.duration||0)+'ms';
-  const drum='<span class="drum-metal" style="'+angleStyle+'"><span class="party-wheel-disc">'+holes+'</span></span>';
-  const control=r.phase==='wheel-loaded'?'<button type="button" class="drum-zoom" aria-label="탄창을 밀어 돌리기">'+drum+'</button>':
-    '<span class="drum-zoom" aria-hidden="true">'+drum+'</span>';
-  shell('<div class="party-wheel-board roulette-table" data-phase="'+r.phase+'"><div class="roulette-scene">'+
-    '<img src="'+artPath('partyroulette-table')+'" alt="" draggable="false">'+(preparing?control:'')+'</div>'+
-    '<div class="roulette-panel"><h2 tabindex="-1">'+title+'</h2><p>'+description+'</p>'+countField+(button?actions(button):'')+'</div></div>');
-  const picker=app.querySelector('.roulette-target select');
-  if(picker)picker.onchange=()=>{
-    const count=Number(picker.value);
-    if(!Number.isInteger(count)||count<2||count>12)return;
-    r.slots=count;rouletteView();app.querySelector('.roulette-target select').focus({preventScroll:true});
-  };
-  if(r.phase==='wheel-loaded')bindDrumDrag(app.querySelector('button.drum-zoom'),r);
-}
-function bindDrumDrag(control,r){
-  const metal=control.firstElementChild;
-  let drag;
-  control.onpointerdown=e=>{
-    if(drag||e.button!==0)return;
-    const rotated=getComputedStyle(control).getPropertyValue('--roulette-rotated').trim()==='1';
-    drag={rotated,id:e.pointerId,x:e.clientX,y:e.clientY,angle:r.angle,last:r.angle,time:e.timeStamp,speed:0};
-    control.setPointerCapture(e.pointerId);
-  };
-  control.onpointermove=e=>{
-    if(drag?.id!==e.pointerId)return;
-    const screenX=e.clientX-drag.x,screenY=e.clientY-drag.y;
-    const dx=drag.rotated?screenY:screenX,dy=drag.rotated?-screenX:screenY;
-    if(!drag.axis&&Math.max(Math.abs(dx),Math.abs(dy))<4)return;
-    drag.axis??=Math.abs(dx)>=Math.abs(dy)?'x':'y';
-    r.angle=drag.angle+(drag.axis==='x'?dx:-dy)*300/Math.max(1,control.clientWidth);
-    drag.speed=(r.angle-drag.last)/Math.max(8,e.timeStamp-drag.time);
-    drag.time=e.timeStamp;drag.last=r.angle;
-    metal.style.setProperty('--angle',r.angle+'deg');
-  };
-  control.onpointerup=e=>{
-    if(drag?.id!==e.pointerId)return;
-    const gesture=drag;drag=null;
-    if(gesture.axis){
-      const momentum=gesture.speed*Math.max(0,1-(e.timeStamp-gesture.time)/220);
-      const direction=Math.sign(momentum)||Math.sign(r.angle-gesture.angle)||1;
-      spinRoulette(direction,Math.abs(momentum));
-    }
-  };
-  control.onlostpointercapture=control.onpointercancel=()=>{drag=null;};
-  control.onclick=()=>spinRoulette(1,1);
-}
-function spinRoulette(direction,speed){
-  const r=round;
-  if(game?.id!=='partyroulette'||r?.phase!=='wheel-loaded')return;
-  r.hit=rand(r.slots);
-  const strength=Math.min(4,Math.max(.35,speed));
-  r.duration=window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:Math.round(1050+strength*360);
-  r.from=r.angle;
-  const target=-r.hit*360/r.slots;
-  const remaining=((direction*(target-r.from))%360+360)%360;
-  r.angle+=direction*(360*Math.ceil(strength)+remaining);
-  r.phase='wheel-spin';fx.play('turn');rouletteView();
-  app.querySelector('.party-wheel-board h2').focus({preventScroll:true});
-  r.spinTimer=setTimeout(()=>{
-    if(round!==r||r.phase!=='wheel-spin')return;
-    r.phase='wheel-press';rouletteView();
-    if(!document.querySelector('[aria-modal="true"],dialog[open]'))app.querySelector('[data-action="wheel-press"]').focus({preventScroll:true});
-  },r.duration);
-}
-function rouletteAction(action){
-  const r=round;
-  if(!r)return;
-  if(action==='wheel-load'&&r.phase==='wheel-empty'){
-    r.phase='wheel-loaded';fx.play('deal');
-  }else if(action==='wheel-spin'){
-    return spinRoulette(1,1);
-  }else if(action==='wheel-press'&&r.phase==='wheel-press'){
-    if(r.used===r.hit)return end('지목받은 사람 당첨!','이번에 지목받은 사람이 마셔요.');
-    r.used++;r.angle+=360/r.slots;r.phase='wheel-handoff';fx.play('turn');
-  }else if(action==='wheel-accept'&&r.phase==='wheel-handoff'){
-    r.phase='wheel-press';
-  }else return;
-  rouletteView();
-  app.querySelector('.party-wheel-board h2').focus({preventScroll:true});
 }
 function secretSetup(){
   cleanup();
@@ -483,7 +359,6 @@ function timed(ms,onLimit,beat=0,onBeat=null){
   Object.assign(round,{remain:ms,onLimit,beat,lastBeat:Math.ceil(ms/beat),onBeat});clock()
 }
 async function begin(){
-  if(game.id==='partyroulette')return rouletteSetup();
   if(game.id==='secretcount')return secretSetup();
   if(players.length<game.min)return go('participants');
   cleanup();round={turn:0,phase:'play'};fx.play(game.id==='croc'?'tooth':'deal');const r=round;
@@ -1167,7 +1042,6 @@ $('#fx-close').onclick=()=>feedback.close();$('#fx-test').onclick=()=>{fx.unlock
 $('#audio-check').onchange=e=>fx.change('sound',e.target.checked);$('#haptic-check').onchange=e=>fx.change('vibration',e.target.checked);
 function handle(action,value){
   const r=round;
-  if(game?.id==='partyroulette'&&action.startsWith('wheel-'))return rouletteAction(action);
   if(action==='filter'){filter=value;fx.play('tap');renderMenu();app.querySelector('.chip[aria-pressed=true]').focus({preventScroll:true});return}
   if(action==='random'||action==='open'){const eligible=games.filter(g=>g.min<=players.length);const id=action==='random'?eligible[rand(eligible.length)].id:value;lastMenuFocus=id;fx.play(id==='croc'?'tooth':'tap');return openLocal(id)}
   if(game?.id==='bomb'){

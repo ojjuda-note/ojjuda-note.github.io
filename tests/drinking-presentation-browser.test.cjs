@@ -806,45 +806,22 @@ async function expectRouletteStage(page,rotated) {
   assert.deepEqual(stage,{turned:rotated,wide:true,sideBySide:true,fits:true});
 }
 
-test('party roulette plays from the phone menu through an anonymous handoff and a result',async t=>{
+test('old roulette links open the local catalog or multiplayer directory',async t=>{
   const browser=await chromium.launch(launchOptions);t.after(()=>browser.close());
   const session=await browserSession(browser,{actor:'wheel-member',localPlayers:['보리','나리','마루'],
-    viewport:{width:360,height:640},reducedMotion:'no-preference',rpc:()=>({})});
+    rpc:(_name,args)=>args.p_action==='mine'?{room:null}:{rooms:[]}});
   const page=session.page;
-  await page.addInitScript(()=>{Math.random=()=>.5;});
   const {revision}=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../game-release.json'),'utf8'));
-  await page.goto(origin+'/games/drinking/local/?v='+revision+'#menu');
-  await page.getByRole('button',{name:/러시안 룰렛/}).click();
-  await dismissGuide(page);
-  await expectRouletteStage(page,true);
-  await page.getByRole('button',{name:'탄환 넣기'}).click();
-  const drum=page.getByRole('button',{name:'탄창을 밀어 돌리기'});
-  assert.equal(await drum.locator('.drum-hole').count(),3);
-  await screenshot(page,'partyroulette-drum-360x640');
-  const rect=await drum.boundingBox();
-  const y=rect.y+rect.height/2;
-  await page.mouse.move(rect.x+rect.width*.2,y);await page.mouse.down();
-  await page.mouse.move(rect.x+rect.width*.8,y,{steps:8});
-  const angle=await drum.locator('.drum-metal').evaluate(el=>parseFloat(el.style.getPropertyValue('--angle')));
-  assert.ok(angle>30,'drag advances the visible drum before release');
-  await page.mouse.up();
-  await page.locator('[data-phase="wheel-spin"]').waitFor();
-  assert.equal(await page.locator('.party-wheel-disc').evaluate(el=>getComputedStyle(el).animationName),'drum-coast');
-  const press=page.getByRole('button',{name:'너 마셔!'});
-  await press.waitFor({state:'visible'});
-  const box=await press.boundingBox();
-  assert.ok(box.y>=0&&box.y+box.height<=640,'turn button fits the phone screen');
-  assert.equal(await page.locator('.party-wheel-board h2').innerText(),'한 사람을 지목해 주세요');
-  await screenshot(page,'partyroulette-360x640');
-  await page.setViewportSize({width:844,height:390});
-  await expectRouletteStage(page,false);
-  await screenshot(page,'partyroulette-landscape');
-  await press.click();
-  await page.getByRole('button',{name:'폰 받았어요'}).click();
-  await press.click();
-  const result=page.locator('[data-drinking-dialog="result"]');
-  await result.waitFor();
-  assert.match(await result.innerText(),/지목받은 사람 당첨/);
+  await page.goto(origin+'/games/drinking/local/?v='+revision+'#partyroulette');
+  await page.waitForURL(/#menu$/);
+  await page.locator('.games .table-card').first().waitFor();
+  assert.equal(await page.getByRole('button',{name:/러시안 룰렛/}).count(),0);
+  await page.evaluate(()=>{Math.random=()=>.9999;});
+  await page.getByRole('button',{name:'랜덤 게임'}).click();
+  await page.waitForURL(/#secretcount$/);
+  await page.goto(origin+'/games/partyroulette/');
+  await page.waitForURL('**/games/drinking/?mode=multi');
+  await page.locator('#open-create').waitFor();
   assert.deepEqual(session.errors,[]);
 });
 

@@ -347,38 +347,3 @@ body { background: radial-gradient(ellipse at 45% 0, #fffdf6, #f6f4ec 70%); }
 
 .player-actions { display:grid; grid-template-columns:auto 1fr; gap:10px; }
 #player-status:empty, #roster-feedback:empty { display:none; }
-
-button.drum-zoom { touch-action:none; user-select:none; cursor:grab; -webkit-tap-highlight-color:transparent; }
-button.drum-zoom:active { cursor:grabbing; }
-button.drum-zoom:focus-visible { outline:2px solid #ffe0a3; outline-offset:2px; }
-.drum-metal {
-  position:relative; display:block; width:94%; aspect-ratio:1; border-radius:50%;
-  background:linear-gradient(135deg,#d6c7b4,#6f6e69 16%,#252827 43%,#92877a 71%,#332d28 87%);
-  box-shadow:2px 3px 0 #5e564d,4px 6px 0 #262322,6px 9px 0 #3a322b,10px 13px 15px #000b;
-}
-.party-wheel-disc {
-  position:absolute; inset:3%; border-radius:50%; transform:rotate(var(--angle));
-  background:repeating-radial-gradient(closest-side,transparent 0 2px,#e5d8c409 2px 3px),
-    conic-gradient(from -20deg,#444643,#7b786e 17%,#484947 37%,#69655b 58%,#373a38 80%,#444643);
-  box-shadow:inset 0 0 0 1px #181919,inset 0 0 6px 2px #c7bda244;
-}
-.drum-metal::after {
-  content:''; position:absolute; inset:0; border-radius:50%; pointer-events:none;
-  background:linear-gradient(140deg,#fff5dc24,transparent 45%,#08080846);
-}
-.party-wheel-disc::after {
-  content:''; position:absolute; inset:40%; border-radius:50%; border:1px solid #222322;
-  background:radial-gradient(circle at 37% 28%,#98958a,#53544f 54%,#30312e 70%,#a69a88 78%,#242421 85%);
-}
-.drum-hole {
-  position:absolute; left:50%; top:50%; width:var(--hole-size); aspect-ratio:1; border-radius:50%;
-  transform:translate(-50%,-50%) rotate(var(--seat)) translateY(var(--orbit)) rotate(calc(-1 * var(--seat)));
-  background:radial-gradient(ellipse at 65% 80%,#262421,#0e100f 65%); border:1px solid #1c1b18;
-  box-shadow:inset 1px 2px 3px #000,0 1px 1px #c3b7a0;
-}
-.drum-hole.is-marked { background:radial-gradient(circle at 36% 30%,#e6cf91,#92724d 55%,#393127 86%); }
-.roulette-target { display:inline-flex; align-items:center; gap:10px; color:#504639; font-size:.95rem; }
-.roulette-target select { min-height:44px; padding:4px 9px; border:1px solid #998977; border-radius:7px; background:#fffaf1; color:#302b25; font:inherit; }
-[data-phase="wheel-spin"] .party-wheel-disc { animation:drum-coast var(--duration) cubic-bezier(.12,.63,.23,1) both; }
-@keyframes drum-coast { from { transform:rotate(var(--start)); } to { transform:rotate(var(--angle)); } }
-@media(prefers-reduced-motion:reduce) { [data-phase="wheel-spin"] .party-wheel-disc { animation:none; } }

@@ -3,6 +3,8 @@
   const games=window.DrinkingTableView.games.map(game=>({...game,name:game.title}));
   const byId = id => document.getElementById(id);
   const gameById = id => games.find(game => game.id === id);
+  // An existing round can finish after its game leaves the catalog.
+  const canResume = id => !!gameById(id) || id === 'partyroulette';
   const gameMin = kind => ['liar','king','minority','mission'].includes(kind) ? 3 : 2;
   const codePattern = /^[A-Z0-9]{6}$/;
   const params = new URL(location.href).searchParams;
@@ -23,7 +25,7 @@
   });
   if (!params.has('room') && !params.has('game') && params.get('mode') !== 'multi') {
     const code=(params.get('resume')||'').toUpperCase(), direct=params.get('gameFrom');
-    if(codePattern.test(code)&&(!direct||gameById(direct))){
+    if(codePattern.test(code)&&(!direct||canResume(direct))){
       const resume=byId('resume-drinks');
       resume.href=direct?'/games/'+direct+'/?room='+code:'?room='+code;
       resume.hidden=false;
@@ -135,7 +137,7 @@
     byId('hub-back').href='/games/drinking/?resume='+room.code;
     const url=new URL('/games/drinking/',location.origin);
     url.searchParams.set('room',room.code); history.replaceState(null,'',url);
-    if (room.phase==='playing' && gameById(room.kind) && codePattern.test(room.child)) {
+    if (room.phase==='playing' && canResume(room.kind) && codePattern.test(room.child)) {
       navigating=true;connection.pause();clearTimeout(pollTimer);
       location.replace('/games/'+room.kind+'/?room='+room.child+'&party='+room.code);
       return;
@@ -318,7 +320,7 @@
     void mutate('start',{kind:randomStart.kind,revision:room.revision});
   };
   byId('start').onclick=()=>{
-    if(room?.me===0 && room.kind && room.players.length>=gameMin(room.kind))
+    if(room?.me===0 && gameById(room.kind) && room.players.length>=gameMin(room.kind))
       void mutate('start',{kind:room.kind,revision:room.revision});
   };
   byId('leave').onclick=()=>{

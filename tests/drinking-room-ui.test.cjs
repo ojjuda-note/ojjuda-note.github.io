@@ -42,6 +42,7 @@ test('random start draws from every multiplayer game the joined players can play
     t.after(()=>f.close());
     await until(()=>!f.find('#lobby').hidden);
     const all=Array.from(f.find('#games').children,tile=>tile.dataset.game);
+    assert.ok(!all.includes('partyroulette'));
     const pool=size<2?[]:all.filter(kind=>size>=3||!threeRequired.includes(kind));
     const button=f.find('#random-start');
     assert.equal(button.hidden,false);assert.equal(button.disabled,size===1);
@@ -636,29 +637,30 @@ test('participant storage errors are visible and edits remain usable',async t=>{
   assert.equal(f.w.localStorage.getItem(key),'["노을","구름"]');
 });
 
-test('anonymous local roulette sets slots by headcount, hands over the phone, and never overwrites saved names',async t=>{
-  for(const [count,hit] of [[2,0],[3,1],[5,3],[12,11]]){
-    const key='oj.party.member-a.players',saved='["하나","둘","셋"]';
-    const ui=await screen({url:'/games/drinking/local/#partyroulette',prepare(w){w.scrollTo=()=>{};w.localStorage.setItem(key,saved);}});
-    t.after(()=>ui.close());
-    const button=step=>'[data-action="wheel-'+step+'"]';
-    ui.click('[data-drinking-dialog="guide"] [data-drinking-close]');
-    const field=ui.find('.roulette-target select');field.value=String(count);field.dispatchEvent(new ui.w.Event('change'));
-    assert.equal(ui.find('.party-wheel-disc').children.length,count);
-    ui.click(button('load'));assert.ok(ui.find('.drum-hole.is-marked'));
-    ui.w.Math.random=()=>(hit+.5)/count;
-    ui.click(button('spin'));assert.equal(ui.find(button('press')),null);await ui.advance(3000);
-    for(let i=0;i<=hit;i++){
-      assert.equal(ui.find('.play-body select'),null);
-      const old=ui.find(button('press'));old.click();old.click();
-      if(i<hit){assert.match(ui.find('.party-wheel-board h2').textContent,/폰을 넘겨/);ui.click(button('accept'));}
-    }
-    assert.equal(ui.find('.play-body h2').textContent,'지목받은 사람 당첨!');
-    assert.equal(ui.find('.play-body .table-host'),null);assert.equal(ui.w.localStorage.getItem(key),saved);
-    ui.click('[data-drinking-dialog="result"] [data-drinking-close]');ui.click('[data-action="start"]');
-    assert.equal(ui.find('.roulette-target select').value,String(count));
-    ui.click(button('load'));ui.click(button('spin'));ui.find('#local-back').click();
-    await until(async()=>{await ui.advance(0);return ui.find('.main-roster');});
-    await ui.advance(3000);assert.equal(ui.find('.party-wheel-board'),null);assert.deepEqual(ui.errors,[]);
-  }
+test('retired roulette link returns to the local catalog and keeps saved participants',async t=>{
+  const key='oj.party.member-a.players',saved='["하나","둘","셋"]';
+  const f=await screen({url:'/games/drinking/local/#partyroulette',prepare(w){
+    w.scrollTo=()=>{};w.localStorage.setItem(key,saved);
+  }});
+  t.after(()=>f.close());
+  assert.equal(f.w.location.hash,'#menu');
+  assert.ok(f.find('.main-roster'));
+  assert.equal(f.find('[data-value="partyroulette"]'),null);
+  assert.equal(f.w.localStorage.getItem(key),saved);
+  assert.deepEqual(f.errors,[]);
+});
+
+test('previous roulette selection can be replaced in an existing lobby',async t=>{
+  let current=hub({kind:'partyroulette'});
+  const f=await screen({rpc:(_name,args)=>{
+    if(args.p_action==='select')current=hub({kind:args.p_options.kind,revision:2});
+    return args.p_action==='mine'?{room:current}:current;
+  }});
+  t.after(()=>f.close());
+  await until(()=>!f.find('#lobby').hidden);
+  assert.ok(f.find('#start').disabled);
+  assert.equal(f.find('[data-game="partyroulette"]'),null);
+  f.click('[data-game="bottle"]');
+  await until(()=>!f.find('#start').disabled);
+  assert.match(f.find('#selected-game').textContent,/술병/);
 });
