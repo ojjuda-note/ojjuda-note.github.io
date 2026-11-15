@@ -38,3 +38,22 @@ body.dp-playing :is(#app,#view) .question-picker :is(button[aria-pressed="true"]
 .king-numbers select { width:100%; min-width:0; }
 .blind-cards { width:min(100%,32rem); margin:10px auto 0; }
 .blind-cards summary { cursor:pointer; padding:10px; }
+
+/* Keep the picker and confirmation together on short landscape screens. */
+@media (min-width:600px) and (max-height:480px) {
+  body.dp-playing :is(#app,#view) .question-picker {
+    grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); align-items:end; gap:4px 8px;
+  }
+  body.dp-playing :is(#app,#view) .question-picker .question-modes { align-self:center; padding:2px; gap:2px; }
+  body.dp-playing :is(#app,#view) .question-picker .prompt-flavor-select { gap:5px; }
+  body.dp-playing :is(#app,#view) .question-picker :is(button,select,textarea) { min-height:36px; padding:4px 6px; font-size:14px; }
+  body.dp-playing :is(#app,#view) .question-picker label { font-size:14px; gap:2px; }
+  .question-picker [data-panel="list"]:not([hidden]) { display:contents; }
+  .question-picker [data-panel="write"]:not([hidden]) { grid-column:1 / -1; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; gap:4px 8px; }
+  .question-picker [data-panel="write"] textarea { height:44px; }
+  .question-picker [data-another],.question-picker [data-retry] { grid-column:1; }
+  .question-picker [type="submit"] { grid-column:2; }
+  .question-picker [role="status"]:not(:empty) { grid-column:1 / -1; }
+  body.dp-playing :is(#app,#view) .question-picker [data-selected] { margin:0; font-size:13px; line-height:1.25; }
+}
+#truth-prompt:has(+ .blind-cards[open]) { display:none; }
