@@ -10,15 +10,18 @@ function jsonLiteral(value){
   return delimiter+json+delimiter+'::jsonb';
 }
 
-export function wordingUpdateBlock(kind,edits,{labeled=false}={}){
+export function wordingUpdateBlock(kind,edits,{labeled=false,promoteUnlabeled=false}={}){
   const truth=kind==='truth',pair=isPairKind(kind);
   const table='ojjuda_arcade_internal.'+(truth?'drinking_truth_cards':'drinking_content_items');
   const body=side=>truth?`(entry->'${side}')->>'body'`:pair?`(entry->'${side}')->>0`:`(entry->'${side}')#>>'{}'`;
   const second=side=>pair?`(entry->'${side}')->>1`:'null::text';
   const source=truth?`c.flavor=(entry->'from')->>'flavor' and c.body=${body('from')}`
     :`c.kind='${kind}' and c.body=${body('from')} and c.second is not distinct from ${second('from')}`;
-  const match=labeled&&!truth?source+" and c.prompt_flavor=entry->>'flavor'":source;
-  const assignment=`body=${body('to')}${pair?',second='+second('to'):''},revision=c.revision+1`;
+  let match=source;
+  if(promoteUnlabeled)match+=' and c.prompt_flavor is null';
+  else if(labeled&&!truth)match+=" and c.prompt_flavor=entry->>'flavor'";
+  const newFlavor=promoteUnlabeled?",prompt_flavor=entry->>'flavor'":'';
+  const assignment=`body=${body('to')}${pair?',second='+second('to'):''}${newFlavor},revision=c.revision+1`;
   let blockTag='$polish$';
   while(JSON.stringify(edits).includes(blockTag))blockTag=blockTag.slice(0,-1)+'x$';
   return `do ${blockTag}

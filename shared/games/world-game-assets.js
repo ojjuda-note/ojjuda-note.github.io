@@ -7,7 +7,7 @@
  const versions=Object.freeze({
   croc:'1.4.1',
   liar:'1.6.1',
-  king:'1.10.1',
+  king:'1.11.0',
   minority:'1.9.1',
   mission:'1.6.1',
   bottle:'1.4.1',
@@ -20,7 +20,7 @@
   secretcount:'1.1.1',
   updown:'1.4.1',
   partyroulette:'1.1.0',
-  drinking:'1.19.0',
+  drinking:'1.20.0',
   tarot:'1.10.2',
   saju:'2.15.1',
   group:'1.2.2',
