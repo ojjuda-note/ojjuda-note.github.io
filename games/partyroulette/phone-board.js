@@ -8,7 +8,8 @@
   function markup() {
     return '<section class="roulette-table"><div class="roulette-scene">'+
       '<div class="pr-wheel" aria-hidden="true"></div>'+art().markup()+'</div>'+
-      '<div class="roulette-panel"><h2></h2><p class="pr-status" role="status" aria-live="polite"></p>'+
+      '<div class="roulette-panel"><button type="button" class="quiet pr-menu" aria-expanded="false" hidden>메뉴</button>'+
+      '<div class="pr-caption"><h2></h2><p class="pr-status" role="status" aria-live="polite"></p></div>'+
       '<label class="pr-target" hidden>누구를 쏘실건가요?<select aria-label="누구를 쏘실건가요?"></select></label>'+
       '<button class="action pr-next" type="button"></button>'+
       '<button type="button" class="quiet pr-flip" hidden>방향 전환</button></div></section>';
@@ -24,6 +25,7 @@
     const prop=root.querySelector('.pr-prop'), wheel=root.querySelector('.pr-wheel');
     const swipe=root.querySelector('.pr-swipe'),trigger=root.querySelector('.pr-trigger');
     const next=root.querySelector('.pr-next'), flip=root.querySelector('.pr-flip'), label=root.querySelector('.pr-target');
+    const menu=root.querySelector('.pr-menu');
     const select=label.querySelector('select'),status=root.querySelector('.pr-status'),title=root.querySelector('h2');
     const events=new AbortController(),listen=(el,event,fn)=>el?.addEventListener(event,fn,{signal:events.signal});
     let drag=null,frame=0,timer=0,tick=0,busy=false,alive=true,rotation=0,lastScreenAngle;
@@ -58,6 +60,7 @@
       lastScreenAngle=angle;
       const side=m.side||1;
       rotation=wide?(side===nativeSide?0:180):side*(angle===180?-90:90);
+      m.rotation=rotation;
       host.dataset.rouletteAngle=String(rotation);
       prop.dataset.mirror=String(side===1);
     }
@@ -78,6 +81,10 @@
       const waiting=multi && g.mine && room.phase==='together';
       const countdown=multi&&room.phase==='together'?Math.max(0,Math.ceil((g.opensAt-options.now())/1000)):0;
       root.dataset.step=m.step;wheel.hidden=!load;prop.hidden=load;
+      root.classList.toggle('pr-immersive',!load&&!m.menuOpen);
+      menu.hidden=load;
+      menu.setAttribute('aria-expanded',String(!!m.menuOpen));
+      menu.textContent=m.menuOpen?'게임으로':'메뉴';
       label.hidden=!(multi && (load || (room.phase==='together'&&m.target===null&&!waiting)));
       title.textContent=load?'탄창 장전':spin?'탄창을 돌려요':wait?'준비 완료':waiting?'모두 누르면 공개돼요':countdown?countdown+'초 후 함께 눌러요':'방아쇠를 눌러요';
       status.textContent=load?(multi?'내 번호는 '+room.players[room.me]+' · ':'')+m.n+'칸 중 한 칸에 한 발이 들어가요.':
@@ -131,6 +138,7 @@
     listen(swipe,'pointercancel',halt);
     listen(swipe,'click',e=>{if(m.step==='spin'&&e.detail===0){halt();coast(.017);}});
     listen(select,'change',()=>{m.target=select.value===''?null:Number(select.value);render();});
+    listen(menu,'click',()=>{m.menuOpen=!m.menuOpen;render();});
     listen(flip,'click',()=>{m.side=-(m.side||1);orient();});
     listen(next,'click',async()=>{
       if(busy||next.disabled)return;

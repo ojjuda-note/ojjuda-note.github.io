@@ -94,15 +94,17 @@ body.dp-playing #app .roulette-panel select { margin: 0; padding: 5px 10px; font
 body.dp-playing #view .draw-result h1 { font-size: clamp(30px, 11vmin, 76px); }
 
 /* Preserve the site's navigation and result dialog when the play surface turns. */
-#access-content[data-dp-kind="partyroulette"][data-roulette-angle]:is([data-roulette-angle="90"],[data-roulette-angle="-90"]) {
-  --roulette-rotated: 1;
-  position: fixed;
-  inset: 50% auto auto 50%;
-  width: 100vh; width: 100dvh;
-  height: 100vw; height: 100dvw;
-  transform: translate(-50%,-50%) rotate(var(--pr-angle));
-  transform-origin: center;
-  background: #faf7ed;
+@media (orientation:portrait) {
+  #access-content[data-dp-kind="partyroulette"][data-roulette-angle]:is([data-roulette-angle="90"],[data-roulette-angle="-90"]) {
+    --roulette-rotated: 1;
+    position: fixed;
+    inset: 50% auto auto 50%;
+    width: 100vh; width: 100dvh;
+    height: 100vw; height: 100dvw;
+    transform: translate(-50%,-50%) rotate(var(--pr-angle));
+    transform-origin: center;
+    background: #faf7ed;
+  }
 }
 #access-content[data-roulette-angle="90"] { --pr-angle:90deg; }
 #access-content[data-roulette-angle="-90"] { --pr-angle:-90deg; }
@@ -140,4 +142,103 @@ body.dp-playing[data-dp-kind="partyroulette"] {
 }
 body.dp-playing[data-dp-kind="partyroulette"] :is(#app,#view) .pr-prop button {
   margin:0; padding:0; min-height:0; border:0; background:transparent; box-shadow:none;
+}
+
+/* The photograph, cylinder and trigger scale together in both phone orientations. */
+.roulette-table.pr-immersive, #game.pr-revealing > .pr-reveal {
+  position:fixed;
+  inset:0;
+  z-index:15;
+  display:block;
+  width:auto;
+  height:auto;
+  max-width:none;
+  margin:0;
+  padding:0;
+  overflow:hidden;
+  background:radial-gradient(ellipse at 12% 40%,#4c3524,#211b16 65%,#130f0d);
+}
+.roulette-table.pr-immersive .roulette-scene, #game.pr-revealing > .pr-reveal {
+  display:grid;
+  place-items:center;
+  container-type:size;
+}
+.roulette-table.pr-immersive .roulette-scene {
+  position:absolute;
+  inset:0;
+  min-height:0;
+  padding:0;
+  background:transparent;
+}
+:is(.roulette-table.pr-immersive,#game.pr-revealing > .pr-reveal) .pr-prop {
+  width:min(100%,230vmin);
+  width:min(100cqw,230cqh);
+  max-width:none;
+  margin:0;
+}
+:is(.roulette-table.pr-immersive,#game.pr-revealing > .pr-reveal) .pr-photo {
+  overflow:visible;
+  border-radius:0;
+  box-shadow:none;
+}
+body.dp-playing :is(#app,#view) .pr-immersive .roulette-panel {
+  position:absolute;
+  inset:0;
+  z-index:1;
+  display:flex;
+  flex-flow:row;
+  align-items:flex-end;
+  justify-content:flex-end;
+  gap:6px;
+  padding:max(8px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));
+  box-sizing:border-box;
+  border:0;
+  background:transparent;
+  pointer-events:none;
+}
+body.dp-playing :is(#app,#view) .pr-immersive .pr-caption {
+  margin-right:auto;
+  max-width:62%;
+  padding:5px 10px;
+  border-radius:10px;
+  background:#181510d9;
+}
+body.dp-playing :is(#app,#view) .pr-immersive .pr-caption h2 {
+  font-size:clamp(14px,3vmin,21px);
+}
+body.dp-playing :is(#app,#view) .pr-immersive .pr-caption p {
+  color:#f5ead7;
+  font-size:clamp(12px,2.4vmin,17px);
+  line-height:1.35;
+}
+body.dp-playing :is(#app,#view) .pr-immersive .roulette-panel :is(button,.pr-target) {
+  pointer-events:auto;
+  width:auto;
+  min-height:44px;
+}
+body.dp-playing :is(#app,#view) .pr-immersive :is(.pr-menu,.pr-flip,.pr-target) {
+  border:1px solid #e1cb9d80;
+  border-radius:10px;
+  padding:6px 12px;
+  color:#fff3da;
+  background:#211c16ec;
+}
+.pr-immersive .pr-menu {
+  position:absolute;
+  top:max(7px,env(safe-area-inset-top));
+  left:max(10px,env(safe-area-inset-left));
+}
+body.dp-playing #access-content:has(.pr-immersive) > header,
+body.dp-playing #access-content:has(.pr-immersive) :is(.table-heading,#view > .card > .actions) { visibility:hidden; }
+body.dp-playing #access-content:has(.pr-immersive) #notice:not(:empty) {
+  position:absolute;
+  top:6px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:24;
+  max-width:60%;
+  border-radius:8px;
+  padding:6px 12px;
+  color:#fff;
+  background:#251f1aee;
 }

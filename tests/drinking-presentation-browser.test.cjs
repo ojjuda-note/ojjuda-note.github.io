@@ -795,15 +795,22 @@ test('one phone can choose or write prompts inline and read the fingers recommen
 });
 
 async function expectRouletteStage(page,rotated) {
+  await page.waitForFunction(expected=>{
+    const angle=document.getElementById('access-content')?.dataset.rouletteAngle;
+    return angle!=null && (Math.abs(Number(angle))===90)===expected;
+  },rotated,{timeout:3000});
   await page.locator('.roulette-scene img').evaluate(image=>image.decode());
   const stage=await page.locator('.roulette-table').evaluate(table=>{
-    const host=document.getElementById('access-content'),scene=table.querySelector('.roulette-scene'),panel=table.querySelector('.roulette-panel');
-    const frame=table.getBoundingClientRect();
+    const host=document.getElementById('access-content'),scene=table.querySelector('.roulette-scene');
+    const frame=scene.getBoundingClientRect(),photo=scene.querySelector('.pr-prop').getBoundingClientRect();
+    const edgeToEdge=Math.abs(frame.left)<2&&Math.abs(frame.top)<2&&
+      Math.abs(frame.right-innerWidth)<2&&Math.abs(frame.bottom-innerHeight)<2;
+    const long=Math.max(innerWidth,innerHeight),short=Math.min(innerWidth,innerHeight);
+    const targetWidth=Math.min(long,short*2.3);
     return {turned:getComputedStyle(host).getPropertyValue('--roulette-rotated').trim()==='1',
-      wide:host.clientWidth>host.clientHeight,sideBySide:panel.offsetLeft>=scene.offsetLeft+scene.offsetWidth-1,
-      fits:frame.left>=-1&&frame.top>=-1&&frame.right<=innerWidth+1&&frame.bottom<=innerHeight+1};
+      edgeToEdge,fullSize:Math.abs(Math.max(photo.width,photo.height)-targetWidth)<2};
   });
-  assert.deepEqual(stage,{turned:rotated,wide:true,sideBySide:true,fits:true});
+  assert.deepEqual(stage,{turned:rotated,edgeToEdge:true,fullSize:true});
 }
 
 test('local roulette loads in portrait then turns for play without a target picker',async t=>{
@@ -820,10 +827,18 @@ test('local roulette loads in portrait then turns for play without a target pick
   assert.equal(await page.locator('#access-content').getAttribute('data-roulette-angle'),null);
   await page.getByRole('button',{name:'장전하기'}).click();
   await expectRouletteStage(page,true);
+  await page.getByRole('button',{name:'메뉴',exact:true}).click();
+  await page.locator('#local-back').waitFor({state:'visible'});
+  await page.getByRole('button',{name:'게임으로',exact:true}).click();
   await page.getByRole('button',{name:'방향 전환'}).click();
   assert.equal(await page.locator('#access-content').getAttribute('data-roulette-angle'),'-90');
   await page.getByRole('button',{name:'시작',exact:true}).click();
-  await page.getByRole('button',{name:'방아쇠 누르기'}).waitFor();
+  await expectRouletteStage(page,true);
+  await page.getByRole('button',{name:'방아쇠 누르기'}).click({trial:true});
+  await page.setViewportSize({width:844,height:390});
+  await expectRouletteStage(page,false);
+  await page.getByRole('button',{name:'방아쇠 누르기'}).click({trial:true});
+  await screenshot(page,'local-partyroulette-fullscreen-landscape');
   await page.goto(origin+'/games/partyroulette/');
   await page.waitForURL('**/games/drinking/?mode=multi');
   await page.locator('#open-create').waitFor();

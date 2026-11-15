@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261115-imagevote-direct1'
+ const revision='20261115-partyroulette-fullscreen1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -19,7 +19,7 @@
   imagevote:'1.9.2',
   secretcount:'1.1.1',
   updown:'1.4.1',
-  partyroulette:'1.4.0',
+  partyroulette:'1.4.1',
   drinking:'1.22.1',
   tarot:'1.10.2',
   saju:'2.15.1',
