@@ -252,19 +252,23 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   assert.equal(failedSignup.element('nickname').value, failedName);
 
   const nicknameMember = { id: 'nickname-member', email: 'member@ojjuda.kr', user_metadata: { nickname: '기존별명' } };
-  let authStatus = 555, prepareCalls = 0;
-  const retryPark = setup('?next=note', { user:nicknameMember, userResponse:user => authStatus
-    ? {data:{user:null},error:{status:authStatus}} : {data:{user}} });
+  let authStatus = 555, prepareCalls = 0, identityCalls = 0;
+  const retryPark = setup('?next=note', { user:nicknameMember, userResponse:user => {
+    identityCalls++;
+    return authStatus ? {data:{user:null},error:{status:authStatus}} : {data:{user}};
+  } });
   retryPark.client.rpc = async () => { prepareCalls++; return {data:true}; };
   await retryPark.flush();
   assert.deepEqual(retryPark.navigations,[]);
   assert.equal(prepareCalls,0,'unverified identity never enters the park');
   assert.equal(retryPark.element('back-to-login').textContent,'다시 시도');
+  assert.equal(identityCalls,1,'simultaneous admin and park checks share one Auth request');
   authStatus = 0;
   retryPark.element('back-to-login').listeners.click();
   retryPark.element('back-to-login').listeners.click();
   await retryPark.flush();
   assert.equal(prepareCalls,1);
+  assert.equal(identityCalls,2,'a retry gets a new server identity check');
   assert.deepEqual(retryPark.navigations,['/world.html?place=park']);
   const expiredPark = setup('?next=note', {user:nicknameMember,userResponse:()=>({data:{user:null},error:{status:401}})});
   await expiredPark.flush();
@@ -445,6 +449,22 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   closed.element('recovery-reset-button').listeners.click();
   assert.equal(closed.recoveries.length, 1); assert.equal(closed.element('recovery-reset-button').hidden, true);
   const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
+  const oldIdentity = deferred(), newIdentity = deferred();
+  const owners = [];
+  const sessionSwitch = setup('?next=note', {user:nicknameMember,userResponse:user => {
+    owners.push(user.id);
+    return owners.length === 1 ? oldIdentity.promise : newIdentity.promise;
+  }});
+  await sessionSwitch.flush();
+  await sessionSwitch.emit('SIGNED_OUT',null);
+  await sessionSwitch.emit('SIGNED_IN',{user:nicknameMember});
+  oldIdentity.resolve({data:{user:nicknameMember}});
+  await sessionSwitch.flush();
+  assert.deepEqual(owners,[nicknameMember.id,nicknameMember.id], 'even the same account gets a fresh check after signing out');
+  assert.deepEqual(sessionSwitch.navigations,[], 'a response from the old session cannot open the park');
+  newIdentity.resolve({data:{user:nicknameMember}});
+  await sessionSwitch.flush();
+
   const oldNickname = deferred();
   const nicknameRace = setup('?auth=signup', { nicknameResponse: () => oldNickname.promise });
   await nicknameRace.flush(); nicknameRace.fill(); const pendingNickname = nicknameRace.submit();

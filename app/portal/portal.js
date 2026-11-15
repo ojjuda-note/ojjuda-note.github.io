@@ -51,6 +51,7 @@
   let busy = false;
   let recoveryGrant = null, recoveryCompleted = false;
   let identityVersion = 0;
+  let pendingIdentity = null;
   let authEventVersion = 0;
   let authViewVersion = 0;
   let enteringNote = false;
@@ -340,7 +341,7 @@
     const accountChanged = () => session?.user?.id !== expectedUserId || identityVersion !== expectedIdentityVersion
       || authViewVersion !== expectedViewVersion;
     try {
-      const { data: identity, error: identityError } = await client.auth.getUser();
+      const { data: identity, error: identityError } = await verifyCurrentUser();
       if (accountChanged()) return;
       if (identityError && (identityError.status >= 500 || identityError.status === 429 || identityError.name === 'AuthRetryableFetchError')) {
         const notice = '지금은 계정을 확인할 수 없어요. 잠시 후 다시 시도해 주세요.';
@@ -421,11 +422,20 @@
     }
   }
 
+  function verifyCurrentUser() {
+    if (pendingIdentity) return pendingIdentity;
+    const request = client.auth.getUser().finally(() => {
+      if (pendingIdentity === request) pendingIdentity = null;
+    });
+    pendingIdentity = request;
+    return request;
+  }
+
   async function checkAdmin(expectedId, version) {
     adminLink.hidden = true;
     try {
       // A stored session is only UI state. Verify identity with Auth before checking roles.
-      const { data: identity, error: identityError } = await client.auth.getUser();
+      const { data: identity, error: identityError } = await verifyCurrentUser();
       if (identityError || identity?.user?.id !== expectedId || version !== identityVersion) return;
       const role = await client.from('app_admins').select('user_id').eq('user_id', expectedId).maybeSingle();
       if (version !== identityVersion || session?.user?.id !== expectedId) return;
@@ -442,6 +452,7 @@
     authReady = true;
     if (oldId !== newId) {
       identityVersion++;
+      pendingIdentity = null;
       adminLink.hidden = true;
       if (newId) void checkAdmin(newId, identityVersion);
     }
