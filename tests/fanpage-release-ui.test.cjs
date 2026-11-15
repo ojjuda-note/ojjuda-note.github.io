@@ -111,7 +111,19 @@ assert.notDeepEqual(videoFacts([{ id: 'abcdefghijk' }]), videoFacts([{ id: '0123
       for (const file of ['artists.js', 'artists-extra.js', 'profiles.js', 'profiles-extra.js', 'videos.js', 'artist.html', 'index.html']) {
         const response = await page.request.get(`${base}/features/fanpages/${file}`, { headers: { 'Cache-Control': 'no-cache' } });
         assert.equal(response.status(), 200);
-        assert.equal(await response.text(), fs.readFileSync(path.join(root, 'features/fanpages', file), 'utf8'), `deployed source mismatch: ${file}`);
+        const dir = path.join(root,'features/fanpages');
+        if (file === 'index.html') {
+          const {buildHub,readPhotoManifest} = await import('../scripts/build-fanpage-hub.mjs');
+          const manifest = await page.request.get(base+'/features/fanpages/photo-manifest.js');
+          assert.equal(manifest.status(),200);
+          const expected = buildHub(dir,readPhotoManifest(await manifest.text()));
+          assert.equal(await response.text(),expected.markup,'deployed hub markup');
+          const summary = await page.request.get(base+'/features/fanpages/hub-artists.js?v='+expected.hash);
+          assert.equal(summary.status(),200);
+          assert.equal(await summary.text(),expected.script,'deployed hub summary');
+        } else {
+          assert.equal(await response.text(),fs.readFileSync(path.join(dir,file),'utf8'),`deployed source mismatch: ${file}`);
+        }
         report.deployedFiles.push(file);
       }
     }
