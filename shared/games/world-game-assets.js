@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261115-king-wording1'
+ const revision='20261115-king-wording2'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -20,7 +20,7 @@
   secretcount:'1.1.1',
   updown:'1.4.1',
   partyroulette:'1.1.0',
-  drinking:'1.20.1',
+  drinking:'1.20.2',
   tarot:'1.10.2',
   saju:'2.15.1',
   group:'1.2.2',
