@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 const $=selector=>document.querySelector(selector);
-const memberStore='oj.party.'+document.getElementById('access-content').dataset.member+'.';
+const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
 const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-flavor500-reread1';
 let entryRequest=0;
@@ -103,8 +103,9 @@ function art(id,cls=''){
 function btn(label,action,cls='start',value=''){return '<button type="button" class="'+cls+'" data-action="'+action+'" data-value="'+esc(value)+'">'+esc(label)+'</button>'}
 function actions(...buttons){return '<div class="actions">'+buttons.join('')+'</div>'}
 function choiceList(items,action){return '<div class="options">'+items.map(([value,label])=>btn(label,action,'choice',value)).join('')+'</div>'}
-let players=Array.from({length:4},(_,i)=>'참가자 '+(i+1));
-try{const p=JSON.parse(localStorage.getItem(memberStore+'players'));if(Array.isArray(p)&&p.length>=2&&p.length<=12&&p.every(n=>typeof n==='string'&&n.trim()&&n.length<=12)&&new Set(p).size===p.length)players=p}catch{}
+const defaultPlayers=()=>Array.from({length:4},(_,i)=>'참가자 '+(i+1));
+let players=defaultPlayers();
+try{const p=JSON.parse(localStorage.getItem(playerKey));if(Array.isArray(p)&&p.length>=2&&p.length<=12&&p.every(n=>typeof n==='string'&&n.trim()&&n.length<=12)&&new Set(p).size===p.length)players=p}catch{}
 let game=null, round=null, filter='전체', draft=[], lastMenuFocus=null, timer=null, lastStamp=0;
 const bombMinSeconds=20, bombSpreadSeconds=15;
 function bombLimit(count){return 30+(count-4)*5}
@@ -198,7 +199,12 @@ function markLocalHost(){
   const seats=players.map((_,i)=>(i+1)%players.length);
   const next=seats.find(i=>candidates.includes(i))??seats[0];
   r.nextHost=players[next];
-  try{localStorage.setItem(memberStore+'players',JSON.stringify([r.nextHost,...players.filter(n=>n!==r.nextHost)]));}catch{}
+  try {
+    const saved=JSON.parse(localStorage.getItem(playerKey)) ?? defaultPlayers();
+    if (Array.isArray(saved) && saved.length===players.length && players.every(n=>saved.includes(n))) {
+      localStorage.setItem(playerKey,JSON.stringify([r.nextHost,...players.filter(n=>n!==r.nextHost)]));
+    }
+  } catch {}
   window.DrinkingTableView?.result(app.querySelector('.play-body'),r.nextHost);
 }
 function cleanup(){
@@ -220,7 +226,7 @@ function renderMenu(){
   navigation(false);
   const preview=players.slice(0,3).map(esc).join(' · ')+(players.length>3?' 외 '+(players.length-3)+'명':'');
   const roster='<section class="main-roster" aria-label="함께할 참가자"><div><h2>참가자 <b>'+players.length+'명</b></h2>'+
-    '<p>'+preview+'</p></div>'+btn('참가자 설정','people','quiet')+'</section>';
+    '<p>'+preview+'</p><p id="roster-feedback" role="status"></p></div>'+btn('참가자 설정','people','quiet')+'</section>';
   const count=cards().length;
   app.innerHTML='<section class="hero"><picture class="hero-art"><source media="(max-width: 720px)" srcset="art/hero-small.webp"><img src="art/hero.webp" width="1788" height="596" alt="" fetchpriority="high"></picture><div class="hero-copy"><h1>술게임</h1><p>한 대를 돌려가며 즐기는<br>게임 '+games.length+'가지</p><button class="hero-play" data-action="random">'+icon('random')+'랜덤 게임</button></div></section>'+roster+'<div class="catalog-head"><div class="section-title"><h2>게임 선택</h2><span class="num">'+String(count).padStart(2,'0')+'</span></div><div class="chips" aria-label="게임 분류">'+['전체','운과 감각','추리와 대화','순발력'].map(f=>'<button class="chip" data-action="filter" data-value="'+f+'" aria-pressed="'+(filter===f)+'">'+f+'</button>').join('')+'</div></div><section class="games" aria-label="게임 목록"></section><footer class="catalog-foot">오쭈다 술게임 · 테스트판</footer>';
   app.querySelector('.games').replaceChildren(...cards().map(g=>{
@@ -975,6 +981,7 @@ function votesDone(){
 }
 function playerSettings(){
   if(game)return;
+  $('#player-status').textContent='';
   draft=[...players];nameFields();settings.showModal()
 }
 function nameFields(){
@@ -990,10 +997,39 @@ $('#less').onclick=()=>{if(draft.length>2){draft.pop();nameFields();fx.play('tap
 $('#more').onclick=()=>{if(draft.length<12){draft.push('참가자 '+(draft.length+1));nameFields();fx.play('tap')}};
 $('#dismiss').onclick=()=>settings.close();
 settings.addEventListener('close',()=>{if(!game)app.querySelector('[data-action="people"]')?.focus({preventScroll:true})});
-$('#player-form').onsubmit=e=>{e.preventDefault();const next=draft.map((s,i)=>s.trim()||'참가자 '+(i+1));const duplicate=next.findIndex((v,i)=>next.indexOf(v)!==i);
-  if(duplicate!==-1){const input=$('#name-fields').querySelectorAll('input')[duplicate];input.setCustomValidity('서로 구분할 수 있는 다른 이름을 적어 주세요.');input.reportValidity();return}
+function applyPlayers(next){
   if(players.length!==next.length)bombSeconds=bombLimit(next.length);
-  players=next;try{localStorage.setItem(memberStore+'players',JSON.stringify(players))}catch{};settings.close();fx.play('turn');renderMenu()
+  players=next;
+  renderMenu();
+}
+$('#reset-players').onclick=()=>{
+  try { localStorage.removeItem(playerKey); }
+  catch {
+    $('#player-status').textContent='저장한 이름을 지우지 못했어요. 다시 시도해 주세요.';
+    return;
+  }
+  applyPlayers(defaultPlayers());
+  draft=[...players];
+  nameFields();
+  $('#player-status').textContent='기본 참가자 4명으로 초기화했어요.';
+};
+$('#player-form').onsubmit=e=>{
+  e.preventDefault();
+  const next=draft.map((s,i)=>s.trim()||'참가자 '+(i+1));
+  const duplicate=next.findIndex((v,i)=>next.indexOf(v)!==i);
+  if(duplicate!==-1){
+    const input=$('#name-fields').querySelectorAll('input')[duplicate];
+    input.setCustomValidity('서로 구분할 수 있는 다른 이름을 적어 주세요.');
+    input.reportValidity();
+    return;
+  }
+  let message='참가자 '+next.length+'명을 저장했어요.';
+  try { localStorage.setItem(playerKey,JSON.stringify(next)); }
+  catch { message='이 기기에 저장하지 못했어요. 이번에는 입력한 이름으로 플레이해요.'; }
+  applyPlayers(next);
+  settings.close();
+  fx.play('turn');
+  $('#roster-feedback').textContent=message;
 };
 $('#effects').innerHTML=icon('sound');
 $('#effects').onclick=()=>{interruptWatch();privateCover();if(round?.phase!=='bite')fx.quiet();$('#audio-check').checked=fx.prefs.sound;$('#haptic-check').checked=fx.prefs.vibration;

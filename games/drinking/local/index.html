@@ -46,10 +46,14 @@
 <main id="app" class="wrap" tabindex="-1"></main>
 <dialog id="settings" aria-labelledby="settings-title"><form id="player-form">
   <div class="dialog-head"><h2 id="settings-title">참가자 설정</h2><button class="icon-button" type="button" id="dismiss" aria-label="닫기">✕</button></div>
-  <p>한 대로 함께할 사람의 이름을 적어 주세요. </p>
+  <p>저장한 이름은 다음에도 이 기기에서 사용할 수 있어요.</p>
   <div class="stepper"><strong>참가 인원</strong><button type="button" id="less" aria-label="한 명 줄이기">−</button><b id="draft-count"></b><button type="button" id="more" aria-label="한 명 늘리기">＋</button></div>
   <div id="name-fields"></div>
-  <button class="big-button" type="submit">설정 완료</button>
+  <p id="player-status" role="status"></p>
+  <div class="player-actions">
+    <button class="quiet" type="button" id="reset-players">초기화</button>
+    <button class="big-button" type="submit">참가자 저장</button>
+  </div>
 </form></dialog>
 <dialog id="truth-editor" aria-labelledby="truth-editor-title">
   <div class="dialog-head"><h2 id="truth-editor-title">질문 카드 등록</h2><button class="icon-button" type="button" id="truth-close" aria-label="닫기">✕</button></div>
