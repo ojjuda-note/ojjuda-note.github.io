@@ -172,9 +172,14 @@ for(const action of ['create','join']) {
     await until(()=>!f.find('#entry').hidden,'entry before '+action);
     const form=f.find(action==='create'?'#create-form':'#join-form');
     form.elements.password.value='room-pass';
-    if(action==='create')form.elements.title.value='친구들 방';
+    const suggestedTitle=form.elements.title?.value;
+    if(action==='create'){
+      assert.ok(suggestedTitle.trim());
+      form.elements.title.value='  ';
+    }
     f.submit(action==='create'?'#create-form':'#join-form');
     await until(()=>reply,'server committed '+action);
+    if(action==='create')assert.equal(f.calls.find(c=>c.args.p_action==='create').args.p_options.title,suggestedTitle);
     await f.hidden(true);await f.hidden(false);
     await until(()=>!f.find('#lobby').hidden&&f.find('#room-title').textContent === '친구들 방','membership readback');
     assert.equal(f.calls.filter(c=>c.args.p_action===action).length,1,'no blind re-submission');

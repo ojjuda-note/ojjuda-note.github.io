@@ -42,6 +42,12 @@
   let client, actor, room, pollTimer, polling = false, busy = false, navigating = false, subscribed = false;
   let generation = 0, lastMutation, listSequence = 0;
   const createPage = params.get('view') === 'create';
+  if (createPage) {
+    const moods = ['신나는', '반가운', '흥겨운', '유쾌한', '용감한', '느긋한', '춤추는', '노래하는', '웃는', '꿈꾸는', '빛나는', '즐거운'];
+    const animals = ['수달', '펭귄', '여우', '너구리', '쿼카', '토끼', '고양이', '다람쥐', '판다', '돌고래', '부엉이', '고슴도치'];
+    const pick = words => words[Math.floor(Math.random() * words.length)];
+    byId('create-form').elements.title.defaultValue = pick(moods) + ' ' + pick(animals) + '의 테이블';
+  }
   const search = byId('room-search');
   let availableRooms = null;
   let joinTarget = '';
@@ -287,8 +293,8 @@
   byId('create-form').onsubmit=e=>{
     e.preventDefault();const f=e.target.elements;
     if(byId('create-form').hidden)return;
-    if(!f.title.value.trim()){notice.textContent='방 제목을 입력해 주세요.';f.title.focus();return;}
-    void mutate('create',{title:f.title.value.trim(),capacity:Number(f.capacity.value),password:f.password.value});
+    f.title.value=f.title.value.trim() || f.title.defaultValue;
+    void mutate('create',{title:f.title.value,capacity:Number(f.capacity.value),password:f.password.value});
   };
   byId('join-form').onsubmit=e=>{
     e.preventDefault();
