@@ -410,6 +410,11 @@ if (treasureProfile) {
 const nctwishProfile = window.OJJUDA_FAN_PROFILES.nctwish;
 if (nctwishProfile) {
   nctwishProfile.expanded = true;
+  nctwishProfile.checkedAt = '2026.11.15';
+  nctwishProfile.awards = [
+    { year: '2026.10', title: 'I SPY 음악방송 첫 1위', detail: '2026.10.23 KBS 뮤직뱅크 · 8,352점', href: 'https://www.soompi.com/article/1881045wpp/watch-nct-wish-takes-1st-win-for-i-spy-on-music-bank-performances-by-ive-a2o-lite-and-more' },
+    { year: '2026.09', title: '일본 싱글 더블 플래티넘 인증', detail: 'YO-I-DON! / BOY MEETS GIRL · 일본레코드협회 2026년 8월도 · 출하 50만 장 이상', href: 'https://avexnet.jp/news/1036770' }
+  ];
   const nctwishBirthdays = {
     '시온': '2002.05.11', '리쿠': '2003.06.28', '유우시': '2004.04.05',
     '재희': '2005.06.21', '료': '2007.08.04', '사쿠야': '2007.11.18'
@@ -420,7 +425,8 @@ if (nctwishProfile) {
   }
   nctwishProfile.records = [
     { year: '2026.10', title: '미니 4집 I SPY 발매', detail: '2026.10.12 정식 발매 · 총 6곡 · SM ENTERTAINMENT 공식 음반 정보', href: 'https://smtownandstore.com/product/nct-wish-the-4th-mini-album-i-spy-deluxe-book-ver/29341/category/53/display/1/' },
-    { year: '2026.11', title: '첫 일본 전국 아레나 투어 발표', detail: '2027.02~03 도쿄·고베·후쿠오카·아이치 10회 확정', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' }
+    { year: '2026.11', title: '첫 일본 전국 아레나 투어 발표', detail: '2027.02~03 도쿄·고베·후쿠오카·아이치 10회 확정', href: 'https://www.nct-jp.net/news/detail.php?id=1137082' },
+    { year: '2026.11', title: '고척스카이돔 첫 단독 공연 2회 선예매 매진', detail: '2026.11.04 발표 · 공연일 2027.01.15~16', href: 'https://k-popit.com/articles/2026110445412' }
   ];
   nctwishProfile.sources.unshift({ label: 'KBS WORLD 공식 아티스트 소개 · 멤버 생일 및 발매일', href: 'https://world.kbs.co.kr/service/contents_view.htm?board_seq=450066&lang=j' });
   nctwishProfile.sources.unshift({ label: 'NCT 일본 공식 소개 · 데뷔 일자', href: 'https://www.nct-jp.net/profile/' });
