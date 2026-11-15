@@ -35,7 +35,7 @@ function entry(){
     '<div class="tabs"><button data-do="create-tab" aria-pressed="'+create+'">방 만들기</button><button data-do="join-tab" aria-pressed="'+!create+'">방 들어가기</button></div>'+
     '<form id="entry">'+
     (create?'<label>방 제목<input name="title" required maxlength="40" value="라이어 찾기 같이 한 판 해요"></label><label>참여 인원<select name="capacity">'+Array.from({length:10},(_,i)=>'<option value="'+(i+3)+'" '+(i===1?'selected':'')+'>'+(i+3)+'명</option>').join('')+'</select></label>':
-    '<label>방 코드<input name="code" required maxlength="6" minlength="6" autocapitalize="characters" spellcheck="false" value="'+esc(activeCode)+'"></label>')+
+    '')+
     '<label>방 비밀번호<input type="password" name="password" minlength="4" maxlength="32" required placeholder="'+(create?'4자 이상으로 정해 주세요':'방장이 정한 비밀번호')+'"></label><button class="action" type="submit">'+(create?'방 만들기':'입장하기')+'</button></form></div></section>';
   window.DrinkingGameScreen?.native('liar',null,view);
 }
@@ -66,7 +66,7 @@ function render(s,force=false){
   party?.setPhase(s.phase,s.hostSeat);room=s;activeCode=s.code;
   const members='<ol class="members">'+s.players.map((n,i)=>'<li class="'+(i===s.me?'me':'')+'">'+esc(n)+(i===0?' · 방장':'')+(i===s.me?' (나)':'')+'</li>').join('')+'</ol>';
   const hints=s.hints.length?'<ol class="hints">'+s.hints.map((h,i)=>'<li><strong>'+esc(s.players[i])+'</strong> '+esc(h)+'</li>').join('')+'</ol>':'';
-  const heading='<div class="topline"><span>방 '+(party?.code||s.code)+'</span><span>'+s.round+'번째 판 · '+s.players.length+'/'+s.capacity+'명</span></div>';
+  const heading='<div class="topline"><span>'+esc(s.title)+'</span><span>'+s.round+'번째 판 · '+s.players.length+'/'+s.capacity+'명</span></div>';
   let content='';
   if(s.phase==='waiting'){
     content='<h1 class="suite-heading">'+esc(s.title)+'</h1><p class="suite-hint">모두 모이면 시작해요. 초대 링크와 방 비밀번호를 친구에게 알려 주세요.</p>'+members+control('초대 링크 복사','copy',true);
@@ -147,8 +147,8 @@ view.addEventListener('submit',e=>{
     run(async()=>render(await api('hint',room.code,{round:room.round,hint:text})));return;
   }
   const title=String(form.get('title')||'').trim(),password=form.get('password');
-  const code=String(form.get('code')||'').trim().toUpperCase();
-  if(mode==='join'&&!/^[A-Z0-9]{6}$/.test(code)){notice.textContent='방 코드 6자리를 확인해 주세요.';return}
+  const code=activeCode;
+  if(mode==='join'&&!/^[A-Z0-9]{6}$/.test(code)){notice.textContent='목록에서 입장할 방을 선택해 주세요.';return}
   const button=e.target.querySelector('[type=submit]');button.disabled=true;
   run(async()=>{try{
     const capacity=Number(form.get('capacity')),fingerprint=JSON.stringify([title,capacity,password]);
@@ -166,12 +166,13 @@ view.addEventListener('submit',e=>{
 view.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.disabled||busy||!connection.active())return;
   const act=b.dataset.do;
+  if (act==='join-tab' && !activeCode) { location.assign('/games/drinking/?mode=multi&game='+'liar'); return; }
   if(act==='create-tab'||act==='join-tab'){mode=act==='create-tab'?'create':'join';notice.textContent='';entry();return}
   if(!room)return;
   if(act==='reveal'){revealed=!revealed;render(room,true);return}
   if(act==='copy'){
-    navigator.clipboard?.writeText(location.href).then(()=>{notice.textContent='초대 링크를 복사했어요.'},()=>{notice.textContent=location.href});
-    if(!navigator.clipboard)notice.textContent=location.href;
+    navigator.clipboard?.writeText(location.href).then(()=>{notice.textContent='초대 링크를 복사했어요.'},()=>{notice.textContent='초대 링크를 복사하지 못했어요.'});
+    if(!navigator.clipboard)notice.textContent='초대 링크를 복사하지 못했어요.';
     return;
   }
   if(act==='leave'){if(!window.DrinkingStandaloneExit.confirm(room))return;run(async()=>{await api('leave',room.code, window.DrinkingStandaloneExit.options(room));saveStandalone('');history.replaceState(null,'',location.pathname);activeCode='';entry()});return}

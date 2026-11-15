@@ -11,6 +11,29 @@ const liar = patch => ({code:'LIAR01', title:'라이어 방', players:['하나',
   phase:'hints', revision:1, round:1, turn:0, hints:[], role:'citizen', word:'사과', ...patch});
 const quiet = () => ({data:null,error:null});
 
+test('room directory filters titles only and keeps rooms with identical names distinct',async t=>{
+  const rooms=['ROOM01','ROOM02','ROOM03'].map((code,i)=>({
+    code,title:i===2?'다른 방':'금요일 Café',host:'친구',players:1,capacity:4,phase:'lobby'
+  }));
+  const f=await screen({rpc:(_name,args)=>args.p_action==='mine'?{room:null}:{rooms}});
+  t.after(()=>f.close());
+  await until(()=>f.find('#room-list').children.length===3,'directory loaded');
+  assert.ok(f.find('#create-form').hidden && f.find('#join-form').hidden);
+  assert.equal(f.find('#open-create').search,'?mode=multi&view=create');
+  const search=f.find('#room-search');
+  const filter=value=>{search.value=value;search.dispatchEvent(new f.w.Event('input'));};
+  filter('  CAFE\u0301 ');
+  const results=[...f.find('#room-list').querySelectorAll('a')];
+  assert.deepEqual(results.map(a=>new URL(a.href).searchParams.get('room')),['ROOM01','ROOM02']);
+  assert.ok(results.every(a=>a.querySelector('strong').textContent==='금요일 Café'));
+  for(const word of ['ROOM01','친구']){
+    filter(word);assert.equal(f.find('#room-list').children.length,0);
+    assert.match(f.find('#room-message').textContent,/검색 결과가 없어요/);
+  }
+  filter('');assert.equal(f.find('#room-list').children.length,3);
+  assert.equal(f.find('[name="code"]'),null);
+});
+
 test('random start draws from every multiplayer game the joined players can play',async t=>{
   const threeRequired=['liar','king','minority','mission'];
   for(const size of [1,2,3,12]){
@@ -62,7 +85,7 @@ test('a delayed lobby read cannot roll back a newer game selection or duplicate 
     return current;
   }});
   t.after(() => f.close());
-  await until(() => f.find('#lobby-code')?.textContent === 'ROOM01', 'initial lobby');
+  await until(() => f.find('#room-title')?.textContent === '친구들 방', 'initial lobby');
   await f.wake(); await until(() => answerRead, 'delayed poll');
   f.click('[data-game="bottle"]');
   f.find('[data-game="bottle"]').click();
@@ -82,7 +105,7 @@ test('lobby read failures retain the roster and recover once after offline/onlin
     return args.p_action === 'mine' ? {room:current} : current;
   }});
   t.after(() => f.close());
-  await until(() => f.find('#lobby-code')?.textContent === 'ROOM01', 'initial lobby');
+  await until(() => f.find('#room-title')?.textContent === '친구들 방', 'initial lobby');
   const roster = f.find('#members');
   failing = true; await f.wake();
   await until(() => f.find('#notice').textContent, 'temporary network message');
@@ -108,7 +131,7 @@ test('a departed lobby never renders its late response or restarts polling', asy
     return new Promise(resolve => {resolveState=resolve;});
   }});
   t.after(() => f.close());
-  await until(() => f.find('#lobby-code').textContent === 'ROOM01', 'lobby');
+  await until(() => f.find('#room-title').textContent === '친구들 방', 'lobby');
   await f.wake(); await until(() => resolveState, 'poll');
   await f.event('pagehide');
   const before = f.calls.length;
@@ -122,7 +145,7 @@ test('returning to a cached lobby resumes state reads after the main-link depart
   let current=hub();
   const f=await screen({rpc(name,args){return args.p_action==='mine'?{room:current}:current;}});
   t.after(()=>f.close());
-  await until(()=>f.find('#lobby-code').textContent==='ROOM01','lobby before departure');
+  await until(()=>f.find('#room-title').textContent === '친구들 방','lobby before departure');
   f.find('#hub-back').click();
   await f.event('pagehide');
   const before=f.calls.length;
@@ -136,7 +159,7 @@ test('returning to a cached lobby resumes state reads after the main-link depart
 for(const action of ['create','join']) {
   test('a committed '+action+' with a lost response is recovered by reading membership on return', async t=>{
     let member=false,reply;
-    const f=await screen({url:action==='join'?'/games/drinking/?room=ROOM01':'/games/drinking/?mode=multi',
+    const f=await screen({url:action==='join'?'/games/drinking/?room=ROOM01':'/games/drinking/?mode=multi&view=create',
       rpc(name,args){
         if(args.p_action===action){member=true;return new Promise(resolve=>{reply=resolve;});}
         if(args.p_action==='mine')return {room:member?hub():null};
@@ -149,11 +172,11 @@ for(const action of ['create','join']) {
     await until(()=>!f.find('#entry').hidden,'entry before '+action);
     const form=f.find(action==='create'?'#create-form':'#join-form');
     form.elements.password.value='room-pass';
-    if(action==='join')form.elements.code.value='ROOM01';
+    if(action==='create')form.elements.title.value='친구들 방';
     f.submit(action==='create'?'#create-form':'#join-form');
     await until(()=>reply,'server committed '+action);
     await f.hidden(true);await f.hidden(false);
-    await until(()=>!f.find('#lobby').hidden&&f.find('#lobby-code').textContent==='ROOM01','membership readback');
+    await until(()=>!f.find('#lobby').hidden&&f.find('#room-title').textContent === '친구들 방','membership readback');
     assert.equal(f.calls.filter(c=>c.args.p_action===action).length,1,'no blind re-submission');
     assert.ok(f.calls.some(c=>c.args.p_action==='mine'&&c.settled));
     reply(hub());await tick();
@@ -185,7 +208,7 @@ for(const game of ['croc','liar','king','bomb','mission']) {
 }
 
 test('temporary access failures preserve mounted drafts and require fresh approval to expose them', async t => {
-  const f = await screen({gate:true,rpc(name,args) {
+  const f = await screen({url:'/games/drinking/?mode=multi&view=create',gate:true,rpc(name,args) {
     if (args.p_action === 'mine') return {room:null};
     if (args.p_action === 'list') return {rooms:[]};
     return quiet();
@@ -220,7 +243,7 @@ test('an account change conceals the old room before a delayed answer can be app
     return quiet();
   }});
   t.after(() => f.close());
-  await until(() => !f.find('#access-content').hidden && f.find('#lobby-code').textContent==='ROOM01', 'old account room');
+  await until(() => !f.find('#access-content').hidden && f.find('#room-title').textContent === '친구들 방', 'old account room');
   await f.wake(); await until(() => resolveState, 'old account poll');
   await f.account('member-b');
   assert.equal(f.find('#access-content').hidden, true);
@@ -283,18 +306,18 @@ test('twelve isolated pages share one actual SQL room through joins, outage, upd
     }});
     windows.push(f); return f;
   }
-  const host=await open(db.users[0]);
+  const host=await open(db.users[0],'/games/drinking/?mode=multi&view=create');
   await until(()=>!host.find('#entry').hidden,'host entry');
   const create=host.find('#create-form');
   create.elements.title.value='열두 명 연결 검사'; create.elements.capacity.value='12';create.elements.password.value='room-pass';
   host.submit('#create-form');host.submit('#create-form');
   await until(()=>!host.find('#lobby').hidden,'created room');
-  const code=host.find('#lobby-code').textContent;
+  const code=new URL(host.w.location.href).searchParams.get('room');
   assert.equal(host.calls.filter(c=>c.args.p_action==='create').length,1);
-  const guests=await Promise.all(db.users.slice(1,12).map(user=>open(user)));
+  const guests=await Promise.all(db.users.slice(1,12).map(user=>open(user,'/games/drinking/?room='+code)));
   await Promise.all(guests.map(async f=>{
     await until(()=>!f.find('#entry').hidden,'guest entry');
-    f.find('#join-form').elements.code.value=code;f.find('#join-form').elements.password.value='room-pass';
+    f.find('#join-form').elements.password.value='room-pass';
     f.submit('#join-form');
     await until(()=>!f.find('#lobby').hidden,'guest joined');
   }));
