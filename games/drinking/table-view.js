@@ -18,6 +18,12 @@
     ['partyroulette','러시안 룰렛','운과 감각','불발이면 폰을 넘겨요','#d9c7a4',2,'탄창을 돌리고 방아쇠를 눌러요. 팡! 하면 그 휴대폰이 가리킨 사람이 당첨이에요.'],
   ].map(([id,title,category,short,color,min,rule],i)=>({id,title,category,short,color,min,rule,num:String(i+1).padStart(2,'0')}));
 
+  const localGames = [...games, {
+    id:'shapematch', title:'모양 맞추기', category:'순발력', short:'녹색 동그라미가 보이면 터치',
+    color:'#c2d4bb', min:2, num:String(games.length+1).padStart(2,'0'),
+    rule:'한 대를 돌려가며 화면을 눌러요. 녹색 동그라미에 가장 늦게 반응한 사람이 당첨이에요.'
+  }];
+
   function artwork(kind) {
     const mark = document.createElement('span');
     mark.className = 'table-mark';
@@ -27,7 +33,7 @@
     } else {
       const image = document.createElement('img');
       image.alt = '';
-      image.src = kind === 'croc' ? '/games/croc/art/croc.webp' : '/games/drinking/local/art/' + kind + '.webp';
+      image.src = kind === 'shapematch' ? '/games/shapematch/mark.svg' : kind === 'croc' ? '/games/croc/art/croc.webp' : '/games/drinking/local/art/' + kind + '.webp';
       mark.append(image);
     }
     return mark;
@@ -69,5 +75,5 @@
     }
     label.textContent = '다음 방장 · ' + name;
   }
-  window.DrinkingTableView = Object.freeze({games,artwork,card,heading,result});
+  window.DrinkingTableView = Object.freeze({games,localGames,artwork,card,heading,result});
 })();

@@ -48,9 +48,9 @@ async function presentation({concealed = false, reducedMotion = false} = {}) {
 test('each drinking game has its own guide, only on entry or an explicit help request', async t => {
   const f=await presentation();t.after(()=>f.close());
   const guides=f.w.DrinkingGameGuides;
-  assert.deepEqual(Object.keys(guides).sort(),[...kinds].sort());
+  assert.deepEqual(Object.keys(guides).sort(),[...kinds,'shapematch'].sort());
   assert.equal(Object.isFrozen(guides),true);
-  for (const local of [false,true]) for (const kind of kinds) {
+  for (const local of [false,true]) for (const kind of local ? [...kinds,'shapematch'] : kinds) {
     const guide=guides[kind];
     assert.ok(guide.title.trim()&&guide.goal.trim(),kind+' title and purpose');
     assert.equal(guide.steps.length,3,kind+' has three actionable steps');
@@ -344,4 +344,29 @@ test('spinning the same local bottle round again creates a fresh result key only
   assert.notEqual(updates.at(-1).result.key,first,'same object, newly confirmed bottle outcome');
   const second=updates.at(-1).result.key;
   bridge.local('bottle',round,app);assert.equal(updates.at(-1).result.key,second);
+});
+
+test('shape match uses the longest reaction, including ties, for the shared result and next host', async t => {
+  const f=await screen({url:'/games/drinking/local/#shapematch',prepare(w){
+    w.localStorage.setItem('oj.party.member-a.players',JSON.stringify(['하나','둘','셋']));
+    w.scrollTo=()=>{};
+  }});
+  t.after(()=>f.close());
+  await until(()=>f.find('[data-drinking-dialog="guide"]'),'shape match instructions');
+  f.click('[data-drinking-close]');
+  let finish;
+  f.w.OjjudaShapeMatch={play:(_field,options)=>{finish=options.finish;return ()=>{}}};
+  f.click('[data-action="start"]');
+  for(const ms of [140,720,720]){
+    f.click('[data-action="shape-go"]');
+    finish(ms);
+    assert.equal(f.find('[data-drinking-dialog="result"]'),null);
+    f.click('[data-action="shape-next"]');
+  }
+  const panel=f.find('[data-drinking-dialog="result"]');
+  assert.match(panel.textContent,/둘 · 셋 공동 당첨!/);
+  assert.match(panel.textContent,/720 ms/);
+  assert.doesNotMatch(panel.querySelector('h2').textContent,/하나/);
+  assert.match(f.find('.table-host').textContent,/둘/);
+  assert.ok(panel.querySelector('[data-drinking-glass] [data-drinking-glass-image]'));
 });
