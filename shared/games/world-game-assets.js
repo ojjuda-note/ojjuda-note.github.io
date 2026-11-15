@@ -1,25 +1,25 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261115-flavor500'
+ const revision='20261115-flavor500-reread1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   croc:'1.4.1',
   liar:'1.6.1',
-  king:'1.10.0',
-  minority:'1.9.0',
+  king:'1.10.1',
+  minority:'1.9.1',
   mission:'1.6.1',
   bottle:'1.4.1',
   bomb:'1.6.1',
   stopwatch:'1.4.1',
-  truth:'1.10.0',
+  truth:'1.10.1',
   initial:'1.5.1',
-  fingers:'1.9.0',
-  imagevote:'1.9.0',
+  fingers:'1.9.1',
+  imagevote:'1.9.1',
   secretcount:'1.1.1',
   updown:'1.4.1',
-  drinking:'1.16.0',
+  drinking:'1.16.2',
   tarot:'1.10.2',
   saju:'2.15.1',
   group:'1.2.2',
