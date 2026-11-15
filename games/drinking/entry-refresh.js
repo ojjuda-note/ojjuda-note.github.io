@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   if (window.OjjudaDrinkingEntry) return;
-  const kinds = new Set(['menu','croc','bottle','bomb','stopwatch','liar','king','truth','initial','minority','mission','fingers','imagevote','updown','secretcount','partyroulette']);
+  const kinds = new Set(['menu','croc','bottle','bomb','stopwatch','liar','king','truth','initial','minority','mission','fingers','imagevote','updown','secretcount']);
   const revisionPattern = /^\d{8}-[a-z0-9-]{1,60}$/;
   let releaseCheck = null;
   let navigating = false;
