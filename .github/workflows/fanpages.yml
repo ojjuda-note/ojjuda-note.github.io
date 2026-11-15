@@ -133,7 +133,7 @@ jobs:
         shell: bash
         run: |
           # New data remains a preview until the existing Pages workflow publishes it.
-          if git diff --quiet HEAD^ HEAD -- features/fanpages && ! git diff --quiet HEAD^ HEAD -- tests/fanpage-release-ui.test.cjs .github/workflows/fanpages.yml; then
+          if git diff --quiet HEAD^ HEAD -- features/fanpages scripts/build-fanpage-hub.mjs .github/workflows/pages-publish.yml && ! git diff --quiet HEAD^ HEAD -- tests/fanpage-release-ui.test.cjs .github/workflows/fanpages.yml; then
             FANPAGE_LIVE=true node tests/fanpage-release-ui.test.cjs
           fi
       - name: Save release screen evidence
