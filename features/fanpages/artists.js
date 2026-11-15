@@ -385,6 +385,7 @@ window.OJJUDA_FAN_ARTISTS = [
     image: commonsPhoto('Illit in January 2026.png', '2026 · 단체', '2026', '티비텐 TV10').image,
     imageCredit: "티비텐 TV10 · CC BY 4.0", imageLink: "https://commons.wikimedia.org/wiki/File:Illit_in_January_2026.png",
     photos: [
+      commonsPhoto('29102026 ILLIT TOP TEN AWARDS.png', '2026 TTA 여자 아이돌 그룹 1위', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0'),
       commonsPhoto('Illit in January 2026.png', '2026 · 단체', '2026', '티비텐 TV10'),
       commonsPhoto('Illit at Canada Goose Photo Call, December 11, 2024.png', '캐나다구스 · 포토콜', '2024', '티비텐 TV10', 'CC BY 3.0'),
       commonsPhoto('Illit 240326.jpg', '데뷔 · 단체', '2024', '티비텐 TV10', 'CC BY 3.0'),
@@ -407,23 +408,39 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Weverse", icon: "✦", url: "https://weverse.io/illit" }
     ],
     merch: [
+      { title: "BREAK EVEN · Little Mimi Ver.", sub: "2026.12.30 발매 예정 · 11.05부터 예약판매 · 재고는 판매처 확인", href: "https://shop.weverse.io/en/shop/KRW/artists/120/sales/71786" },
+      { title: "DEARLIT 공식 캐릭터 MD", sub: "2026.09.02부터 한정 수량 판매 · 재고 확인 필요", href: "https://shop.weverse.io/ko/shop/KRW/artists/120/notices/14153" },
       { title: "Weverse Shop", sub: "아일릿 앨범·공식 굿즈", href: "https://shop.weverse.io/ko/shop/KRW/artists/120" },
       { title: "BELIFT LAB", sub: "공식 앨범 안내", href: "https://beliftlab.com/artist/discography/ILLIT" }
     ],
     music: [
+      { title: "You're Under Arrest (Remixes)", date: "2026.11.06", type: "리믹스 싱글", songs: ["You're Under Arrest", "You're Under Arrest (Kids Remix)", "You're Under Arrest (Whistle Remix)", "You're Under Arrest (Club Remix)", "You're Under Arrest (Hyper Remix)", "You're Under Arrest (Sped Up)", "You're Under Arrest (Slowed + Reverb)"], href: "https://weverse.io/illit/notice/40642" },
       { title: "BREAK EVEN", date: "2026.10.26", type: "미니 5집", songs: ["Super in Love", "More", "체포하겠어 (You're Under Arrest)", "Pop"], href: "https://beliftlab.com/artist/discography/ILLIT/22" },
       { title: "MAMIHLAPINATAPAI", date: "2026.04.30", type: "미니 4집", songs: ["It's Me", "GRWM (Get Ready With Me)", "paw, paw!", "Mamihlapinatapai", "Love, older you"], href: "https://beliftlab.com/artist/discography/ILLIT/18" },
       { title: "SUPER REAL ME", date: "2024.03.25", type: "미니 1집", songs: ["My World", "Magnetic", "Midnight Fiction", "Lucky Girl Syndrome"], href: "https://beliftlab.com/artist/discography/ILLIT/8" }
     ],
     appearances: [
+      { date: "2026-12-23", title: "PRESS START❤ ENCORE in JAPAN", sub: "18:30 · 일본 치바 LaLa arena TOKYO-BAY · 주최 HYBE JAPAN · 예매는 공식 안내", href: "https://www.hybejapan.events/illit/press_start_encore", timeZone: "Asia/Tokyo" },
+      { date: "2026-12-24", title: "PRESS START❤ ENCORE in JAPAN", sub: "18:30 · 일본 치바 LaLa arena TOKYO-BAY · 예매는 공식 안내", href: "https://www.hybejapan.events/illit/press_start_encore", timeZone: "Asia/Tokyo" },
+      { date: "2026-12-26", title: "PRESS START❤ ENCORE in JAPAN", sub: "17:00 · 일본 치바 LaLa arena TOKYO-BAY · 예매는 공식 안내", href: "https://www.hybejapan.events/illit/press_start_encore", timeZone: "Asia/Tokyo" },
+      { date: "2026-12-27", title: "PRESS START❤ ENCORE in JAPAN", sub: "17:00 · 일본 치바 LaLa arena TOKYO-BAY · 예매는 공식 안내", href: "https://www.hybejapan.events/illit/press_start_encore", timeZone: "Asia/Tokyo" },
       { date: "2026-11-15", title: "MMA2026", sub: "서울 고척스카이돔 · 18:00", href: "https://into.melon.com/2026mma" },
       { date: "2026-11-20", title: "2026 MAMA AWARDS", sub: "일본 오사카 · CHAPTER 1", href: "https://www.cj.net/jp/press-release/view/1132" }
     ],
+    campaigns: [
+      { kind: "광고", date: "2026.03", title: "FILA", sub: "그룹 스포츠 브랜드 광고 모델 · 빌리프랩 발표", href: "https://www.tenasia.co.kr/article/2026031916524" },
+      { kind: "콜라보", date: "2026.03", title: "Rockfish Weatherwear × ILLIT", sub: "2026.03.03 글로벌 협업 컬렉션 출시", href: "https://www.tenasia.co.kr/article/2026031916524" },
+      { kind: "홍보대사", date: "2026.09", title: "민주 × Glint by VDIVOV", sub: "멤버 민주 · 뷰티 브랜드 앰배서더 · 09.29 브랜드 발표", href: "https://prtimes.jp/main/html/rd/p/000000035.000064439.html" }
+    ],
     schedules: [
+      { title: "일본 앙코르 공연", sub: "HYBE JAPAN · 12월 치바 공연·공식 티켓 안내", href: "https://www.hybejapan.events/illit/press_start_encore" },
       { title: "BELIFT LAB 일정", sub: "공식 스케줄", href: "https://beliftlab.com/artist/schedule/ILLIT" },
       { title: "Weverse 공지", sub: "팬 커뮤니티", href: "https://weverse.io/illit/notice" }
     ],
     news: [
+      { date: "11.06", tag: "수상", title: "뮤직뱅크 ‘체포하겠어’ 1위 · 9,803점", href: "https://www.soompi.com/article/1884749wpp/watch-nmixx-takes-1st-win-for-birthday-wish-on-music-bank-performances-by-ateez-illit-and-more-2" },
+      { date: "11.06", tag: "음악", title: "‘You're Under Arrest (Remixes)’ 7곡 발매", href: "https://weverse.io/illit/notice/40642" },
+      { date: "10.30", tag: "수상", title: "제15회 TTA 여자 아이돌 그룹 부문 1위", href: "https://www.tenasia.co.kr/article/2026103060504" },
       { date: "10.26", tag: "앨범", title: "미니 5집 BREAK EVEN", href: "https://beliftlab.com/artist/discography/ILLIT/22" },
       { date: "공식", tag: "공지", title: "ILLIT 공식 소식", href: "https://weverse.io/illit/notice" }
     ]
