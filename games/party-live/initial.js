@@ -42,8 +42,11 @@
     }
     if (s.phase === 'active') {
       const counter = root.querySelector('#initial-seconds');
+      let lastSecond = null;
       const tick = () => {
         const remaining = Math.min(5,Math.max(0,Math.ceil((g.endsAt - ui.now()) / 1000)));
+        if (remaining && lastSecond !== null && remaining !== lastSecond) window.PartyFX?.play('count');
+        lastSecond = remaining;
         counter.textContent = String(remaining);
         if (!remaining) {
           root.querySelectorAll('#initial-answer,#initial-out').forEach(button => { button.disabled = true; });

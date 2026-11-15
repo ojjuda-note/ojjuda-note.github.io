@@ -15,10 +15,7 @@
       '<button type="button" class="quiet pr-flip" hidden>방향 전환</button></div></section>';
   }
   function pulse(hit) {
-    try {
-      if(window.PartyFX?.prefs.vibration===false || localStorage.getItem('oj.party.vibration')==='off')return;
-      navigator.vibrate?.(hit?[42,60,42,60,42]:32);
-    } catch {}
+    window.PartyFX?.play(hit ? 'shot' : 'dry', hit ? [42,60,42,60,42] : 32);
   }
   function mount(root,m,options) {
     const room=options.room, multi=!!room, g=room?.game, host=document.getElementById('access-content');
@@ -46,7 +43,14 @@
       if(i===m.loaded)hole.className='loaded';
       wheel.append(hole);
     }
+    let detent = Math.floor(m.angle * m.n / full), lastClick = -Infinity;
     function paint() {
+      const nextDetent = Math.floor(m.angle * m.n / full);
+      if (m.step === 'spin' && nextDetent !== detent && performance.now() - lastClick > 65) {
+        window.PartyFX?.play('ratchet', 0);
+        lastClick = performance.now();
+      }
+      detent = nextDetent;
       wheel.style.transform='rotate('+m.angle+'rad)';
       if(m.step==='spin')art().rotate(prop,m.angle);
     }
@@ -142,7 +146,7 @@
     listen(flip,'click',()=>{m.side=-(m.side||1);orient();});
     listen(next,'click',async()=>{
       if(busy||next.disabled)return;
-      if(m.step==='load'){permitTilt();m.step='spin';render();paint();swipe.focus();return;}
+      if(m.step==='load'){window.PartyFX?.play('load');permitTilt();m.step='spin';render();paint();swipe.focus();return;}
       if(m.step!=='spin')return;
       halt();m.slot=((Math.round(-m.angle*m.n/full)%m.n)+m.n)%m.n;
       if(multi){busy=true;render();await options.send('roulette_ready',{target:m.target});busy=false;if(alive)render();}

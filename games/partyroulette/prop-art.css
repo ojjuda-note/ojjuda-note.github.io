@@ -50,3 +50,17 @@
   clip-path:polygon(100% 42%,66% 31%,76% 3%,46% 36%,12% 14%,37% 43%,0 51%,41% 59%,18% 87%,55% 66%,76% 97%,68% 68%,100% 56%);
 }
 .pr-flash.pr-lit { opacity:1; }
+
+.pr-screen-flash {
+  position:fixed; inset:0; z-index:2147483647; pointer-events:none;
+  background:radial-gradient(ellipse at center, #fff 18%, #fffbe6 75%, #ffe7ad);
+  animation:pr-shot-light 230ms ease-out both;
+}
+@keyframes pr-shot-light {
+  from { opacity:.96; }
+  22% { opacity:.63; }
+  to { opacity:0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pr-screen-flash { display:none; }
+}

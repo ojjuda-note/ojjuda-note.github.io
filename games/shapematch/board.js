@@ -132,35 +132,5 @@
     return stop;
   }
 
-  // A short open-vowel voice with moving pitch, formants and a breath component.
-  // The shared mixer owns volume, muting and stopping the sound.
-  let scream;
-  function screamSource(ctx) {
-    if (!scream || scream.sampleRate !== ctx.sampleRate) {
-      const sr = ctx.sampleRate;
-      scream = ctx.createBuffer(1, Math.round(sr * 1.08), sr);
-      const out = scream.getChannelData(0);
-      let phase = 0, lastNoise = 0;
-      for (let i=0; i<out.length; i++) {
-        const t = i/sr, sweep = Math.min(1,t/.16);
-        const pitch = 300 + 365*sweep - 270*t*t + 22*Math.sin(52*t);
-        phase += 2*Math.PI*pitch/sr;
-        let voice = 0;
-        for (let h=1; h<=8; h++) {
-          const f = h*pitch;
-          const formant = .15 + Math.exp(-(((f-940)/250)**2)) +
-            1.6*Math.exp(-(((f-1590)/260)**2)) + .8*Math.exp(-(((f-2950)/340)**2));
-          voice += Math.sin(h*phase)*formant/h;
-        }
-        const noise = Math.random()-.5;
-        const env = Math.min(1,t/.045) * Math.min(1,(1.08-t)/.36);
-        out[i] = Math.tanh(voice+.15*(noise-lastNoise))*env*.9;
-        lastNoise = noise;
-      }
-    }
-    const source = ctx.createBufferSource();
-    source.buffer = scream;
-    return source;
-  }
-  window.OjjudaShapeMatch = Object.freeze({play, screamSource});
+  window.OjjudaShapeMatch = Object.freeze({play});
 })();

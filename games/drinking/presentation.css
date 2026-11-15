@@ -976,3 +976,6 @@ body.dp-playing[data-dp-kind="secretcount"] :is(#view,#app) .sc-setup h2 {
 body.dp-playing[data-dp-kind="secretcount"] :is(#view,#app) .sc-setup button[type="submit"] {
   width:min(100%,16rem); margin:0 auto; min-height:48px; font:750 1.1rem/1.3 system-ui,sans-serif;
 }
+
+.dp-guide-sound { display:inline-flex; align-items:center; gap:.4em; min-height:44px; cursor:pointer; }
+.dp-guide-sound input { width:1.15em; height:1.15em; margin:0; }

@@ -227,7 +227,7 @@ view.addEventListener('click',e=>{
     if(room.phase==='response')run(async()=>render(await api(act,room.code,{round:room.round})));
     return;
   }
-  if(act==='reveal'){revealed=!revealed;render(room,true);return}
+  if(act==='reveal'){revealed=!revealed;window.PartyFX?.play('flip');render(room,true);return}
   if(act==='copy'){
     navigator.clipboard?.writeText(location.href).then(()=>{notice.textContent='초대 링크를 복사했어요.'},()=>{notice.textContent='초대 링크를 복사하지 못했어요.'});
     if(!navigator.clipboard)notice.textContent='초대 링크를 복사하지 못했어요.';

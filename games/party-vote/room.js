@@ -272,7 +272,7 @@ view.addEventListener('click', event => {
     notice.textContent = ''; entry(); return;
   }
   if (!room) return;
-  if (action === 'reveal') { revealed = !revealed; render(room, true); return; }
+  if (action === 'reveal') { revealed = !revealed; window.PartyFX?.play('flip'); render(room, true); return; }
   if (action === 'copy') {
     if (navigator.clipboard) navigator.clipboard.writeText(location.href).then(
       () => { notice.textContent = '초대 링크를 복사했어요.'; }, () => { notice.textContent='초대 링크를 복사하지 못했어요.'; });
