@@ -176,7 +176,7 @@ window.OJJUDA_FAN_ARTISTS = [
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (7).png', '미장센 · 포토월 07', '2026', '티비텐 TV10'),
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (6).png', '미장센 · 포토월 06', '2026', '티비텐 TV10'),
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (8).png', '미장센 · 포토월 08', '2026', '티비텐 TV10'),
-      commonsPhoto('Aespa - 55580814509.jpg', '시애틀 공연 · 그룹', '2026', 'David Lee', 'CC BY 4.0'),
+      commonsPhoto('Aespa - 55580814509.jpg', '시애틀 공연 · 그룹 (원본 AI 보정)', '2026', 'David Lee · AI 보정 원본', 'CC BY 4.0'),
       commonsPhoto('03112026 Aespa NingNing Airport Departure 11.png', '닝닝 · 김포공항 (11.03)', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0')
     ],
     links: [
