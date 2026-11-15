@@ -348,23 +348,6 @@ body { background: radial-gradient(ellipse at 45% 0, #fffdf6, #f6f4ec 70%); }
 .player-actions { display:grid; grid-template-columns:auto 1fr; gap:10px; }
 #player-status:empty, #roster-feedback:empty { display:none; }
 
-/* The tabletop photo and the interactive face share the same light direction. */
-.party-wheel-board { display:grid; justify-items:center; gap:7px; }
-.party-wheel-board h2, .party-wheel-board p { margin:0; }
-.party-wheel-board h2:focus { outline:none; }
-.party-wheel-board .actions { margin:4px 0 0; }
-.party-wheel-board .actions button { min-width:9rem; }
-.party-wheel-art {
-  position:relative; isolation:isolate; overflow:hidden; width:min(100%,490px,83dvh); aspect-ratio:2.08;
-  border-radius:14px; border:1px solid #655549; background:linear-gradient(115deg,#33271d,#171514 76%);
-  box-shadow:inset 0 1px 1px #fff2,0 3px 9px #19140e24;
-}
-.party-wheel-art img { display:block; width:76%; height:100%; object-fit:cover; object-position:center 53%;
-  -webkit-mask-image:linear-gradient(to right,#000 66%,transparent); mask-image:linear-gradient(to right,#000 66%,transparent); }
-.drum-zoom {
-  position:absolute; right:3%; top:50%; transform:translateY(-50%); height:88%; aspect-ratio:1; padding:0;
-  display:grid; place-items:center; margin:0; border:0; border-radius:50%; background:transparent; color:inherit;
-}
 button.drum-zoom { touch-action:none; user-select:none; cursor:grab; -webkit-tap-highlight-color:transparent; }
 button.drum-zoom:active { cursor:grabbing; }
 button.drum-zoom:focus-visible { outline:2px solid #ffe0a3; outline-offset:2px; }
@@ -398,6 +381,4 @@ button.drum-zoom:focus-visible { outline:2px solid #ffe0a3; outline-offset:2px; 
 .roulette-target select { min-height:44px; padding:4px 9px; border:1px solid #998977; border-radius:7px; background:#fffaf1; color:#302b25; font:inherit; }
 [data-phase="wheel-spin"] .party-wheel-disc { animation:drum-coast var(--duration) cubic-bezier(.12,.63,.23,1) both; }
 @keyframes drum-coast { from { transform:rotate(var(--start)); } to { transform:rotate(var(--angle)); } }
-:is([data-phase="wheel-press"],[data-phase="wheel-handoff"]) .party-wheel-art img { width:84%; object-fit:contain; }
-:is([data-phase="wheel-press"],[data-phase="wheel-handoff"]) .drum-zoom { height:44%; right:4%; }
 @media(prefers-reduced-motion:reduce) { [data-phase="wheel-spin"] .party-wheel-disc { animation:none; } }

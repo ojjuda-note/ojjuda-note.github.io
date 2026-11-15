@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-group-draw1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-roulette-landscape1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -348,7 +348,6 @@ function rouletteView(){
       break;
   }
   const preparing=['wheel-empty','wheel-loaded','wheel-spin'].includes(r.phase);
-  const photo=preparing?'partyroulette-drum':'partyroulette';
   const holes=Array.from({length:r.slots},(_,i)=>{
     const marked=(r.phase==='wheel-loaded'&&i===0)?' is-marked':'';
     return '<i class="drum-hole'+marked+'" style="--seat:'+360*i/r.slots+'deg"></i>';
@@ -360,9 +359,9 @@ function rouletteView(){
   const drum='<span class="drum-metal" style="'+angleStyle+'"><span class="party-wheel-disc">'+holes+'</span></span>';
   const control=r.phase==='wheel-loaded'?'<button type="button" class="drum-zoom" aria-label="탄창을 밀어 돌리기">'+drum+'</button>':
     '<span class="drum-zoom" aria-hidden="true">'+drum+'</span>';
-  shell('<div class="party-wheel-board" data-phase="'+r.phase+'"><div class="party-wheel-art">'+
-    '<img src="'+artPath(photo)+'" alt="" draggable="false">'+control+'</div>'+
-    '<h2 tabindex="-1">'+title+'</h2><p>'+description+'</p>'+countField+(button?actions(button):'')+'</div>');
+  shell('<div class="party-wheel-board roulette-table" data-phase="'+r.phase+'"><div class="roulette-scene">'+
+    '<img src="'+artPath('partyroulette-table')+'" alt="" draggable="false">'+(preparing?control:'')+'</div>'+
+    '<div class="roulette-panel"><h2 tabindex="-1">'+title+'</h2><p>'+description+'</p>'+countField+(button?actions(button):'')+'</div></div>');
   const picker=app.querySelector('.roulette-target select');
   if(picker)picker.onchange=()=>{
     const count=Number(picker.value);
@@ -376,12 +375,14 @@ function bindDrumDrag(control,r){
   let drag;
   control.onpointerdown=e=>{
     if(drag||e.button!==0)return;
-    drag={id:e.pointerId,x:e.clientX,y:e.clientY,angle:r.angle,last:r.angle,time:e.timeStamp,speed:0};
+    const rotated=getComputedStyle(control).getPropertyValue('--roulette-rotated').trim()==='1';
+    drag={rotated,id:e.pointerId,x:e.clientX,y:e.clientY,angle:r.angle,last:r.angle,time:e.timeStamp,speed:0};
     control.setPointerCapture(e.pointerId);
   };
   control.onpointermove=e=>{
     if(drag?.id!==e.pointerId)return;
-    const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+    const screenX=e.clientX-drag.x,screenY=e.clientY-drag.y;
+    const dx=drag.rotated?screenY:screenX,dy=drag.rotated?-screenX:screenY;
     if(!drag.axis&&Math.max(Math.abs(dx),Math.abs(dy))<4)return;
     drag.axis??=Math.abs(dx)>=Math.abs(dy)?'x':'y';
     r.angle=drag.angle+(drag.axis==='x'?dx:-dy)*300/Math.max(1,control.clientWidth);
