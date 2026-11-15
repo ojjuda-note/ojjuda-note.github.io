@@ -161,13 +161,19 @@ test('a shared card starts before the feed and fetches reply backgrounds near th
     };
     const parent = { id, kind: 'memo', body: '원글', tags: [], background_key: '10', created_at: '2026-11-12T00:00:00Z' };
     const rows = Array.from({length: 30}, (_, i) => ({...parent, id: id.slice(0,-3) + String(i+2).padStart(3,'0'), kind: 'comment'}));
+    let finishCard;
+    let delayCard = false;
     const replyQuery = { select(){return this;}, eq(){return this;}, not(){return this;}, order(){return this;},
       limit(){calls.push('replies');return Promise.resolve({data: rows});} };
     w.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
     w.supabase = { createClient: () => ({
       auth: { onAuthStateChange(){}, getSession: async () => ({ data:{session:null} }) },
       schema: () => ({ from: () => replyQuery, rpc: async name => {
-        if(name==='get_card') {calls.push(name);return {data: parent};}
+        if(name==='get_card') {
+          calls.push(name);
+          if (delayCard) await new Promise(resolve => { finishCard = resolve; });
+          return {data: parent};
+        }
         if(name==='list_cards') {calls.push(name);return {data:[parent]};}
         return {data:[]};
       } })
@@ -188,9 +194,22 @@ test('a shared card starts before the feed and fetches reply backgrounds near th
     img.dispatchEvent(new w.Event('error'));
     assert.equal(img.srcset,'');
     assert.match(img.src,/\/10\.jpg$/);
+    await w.OjjudaParkFull.refresh();
+    await settle();
+    assert.deepEqual(calls, ['get_card','replies','get_card','replies'], 'detail refresh rechecks the card and replies without loading the hidden feed');
+
+    delayCard = true;
+    const pending = w.OjjudaParkFull.refresh();
+    await settle();
     doc.querySelector('.back-button').click();
     await settle();
-    assert.deepEqual(calls, ['get_card','replies','list_cards']);
+    assert.equal(doc.querySelector('#detail').hidden, true);
+    assert.equal(calls.filter(name => name === 'list_cards').length, 1);
+    finishCard();
+    await pending;
+    await settle();
+    delayCard = false;
+    assert.deepEqual(calls.slice(-2), ['get_card','list_cards'], 'late card data cannot re-open a detail or fetch replies after Back');
     assert.equal(doc.querySelectorAll('#feed-list article').length, 1);
     doc.querySelector('#feed-list article .photo').click();
     await settle();
