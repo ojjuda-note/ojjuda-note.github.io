@@ -1751,6 +1751,12 @@
       ],
       news: [
         {
+          "date": "2026.11.14",
+          "tag": "무대",
+          "title": "MBC 쇼! 음악중심 SHOCK 무대 영상 공개 · YG 공식 소개",
+          "href": "https://yg-life.com/archives/198207?lang=ko"
+        },
+        {
           "date": "2026.11.02",
           "tag": "컴백",
           "title": "디지털 싱글 SHOCK 발매 · 공식 트랙·크레딧 공개",
@@ -1764,6 +1770,11 @@
         }
       ],
       merch: [
+        {
+          "title": "SHOCK 공식 MD 구매 특전 · YG SELECT",
+          "sub": "11.12 11:00 KST부터 · 3만원 구매당 미공개 랜덤 셀피 포토카드 1장 · 준비 수량 소진 시 종료 · 남은 수량은 판매처 확인",
+          "href": "https://www.ygselect.com/article/event/12/657941/"
+        },
         {
           "title": "SHOCK 공식 MD",
           "sub": "YG SELECT · 포토카드 홀더·키링 등 · 판매·재고는 공식몰 확인 · 일부 품절, 현재 재고 확인",
