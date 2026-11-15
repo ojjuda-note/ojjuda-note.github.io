@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261115-partyroulette-phone1'
+ const revision='20261115-imagevote-direct1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -16,7 +16,7 @@
   truth:'1.10.1',
   initial:'1.5.1',
   fingers:'1.9.1',
-  imagevote:'1.9.1',
+  imagevote:'1.9.2',
   secretcount:'1.1.1',
   updown:'1.4.1',
   partyroulette:'1.4.0',
