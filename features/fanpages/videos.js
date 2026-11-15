@@ -56,6 +56,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'g2IDtpL1YkE', title: 'THIS IS FOR', kind: '콘셉트 티저', source: 'TWICE / JYP' }
   ],
   illit: [
+    { id: 'V2V9-9VhYJo', title: '체포하겠어 (You\'re Under Arrest)', kind: '뮤직비디오', source: 'HYBE LABELS · 2026.10.26' },
+    { id: '_H043SYWpF4', title: '체포하겠어 · Official MV (Performance ver.)', kind: '퍼포먼스 뮤직비디오', source: 'HYBE LABELS · 2026.10.29' },
     { id: 'Vk5-c_v4gMU', title: 'Magnetic', kind: '뮤직비디오', source: 'ILLIT / HYBE LABELS' },
     { id: 'tbDGl7jEazA', title: 'Cherish (My Love)', kind: '뮤직비디오', source: 'ILLIT / HYBE LABELS' },
     { id: 'x_RYZsOfpKY', title: 'NOT CUTE ANYMORE', kind: '뮤직비디오', source: 'ILLIT / HYBE LABELS' },
