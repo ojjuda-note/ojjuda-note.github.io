@@ -256,3 +256,52 @@ test('reads that arrive during a refresh leave at most one trailing count for th
     assert.equal(f.calls.length,2);assert.equal(f.badge().hidden,true);
   }finally{f.close();}
 });
+
+test('retry after a failed next page resumes at the same cursor without replacing earlier rows', async () => {
+  const page = id => ({id:uuid(id), kind:'like', created_at:'2026-10-30T00:00:00Z'});
+  const f = fixture();
+  try {
+    await f.boot();
+    const retry = deferred();
+    let thirdPageAttempts = 0;
+    f.respond((name,args) => {
+      if (name === 'list_retention_alerts') return {data:[retention(20)]};
+      const last = args.p_before_id;
+      if (last === uuid(2)) {
+        if (++thirdPageAttempts === 1) return {error:{message:'temporary'}};
+        return retry.promise;
+      }
+      const item = page(last ? 2 : 1);
+      return {data:{items:[item], unread_count:3, as_of:item.created_at, has_more:true, next_cursor:item}};
+    });
+    const doc = f.w.document;
+    f.api.open(); await settle();
+    doc.querySelector('#note-notifications-more').click(); await settle();
+    const firstRow = doc.querySelector('[data-notification-id="'+uuid(1)+'"]');
+    doc.querySelector('#note-notifications-more').click(); await settle();
+    const retryButton = [...doc.querySelectorAll('.nn-pagination button')].find(b=>b.textContent==='다시 시도');
+    assert.ok(retryButton);
+    f.calls.length = 0;
+    retryButton.click(); retryButton.click(); await settle();
+    assert.deepEqual(f.calls.map(c=>[c.name,c.args.p_before_id]),[['list_app_notifications',uuid(2)]]);
+    assert.equal(doc.querySelector('[data-notification-id="'+uuid(1)+'"]'),firstRow);
+    retry.resolve({data:{items:[page(3)],unread_count:3,has_more:false,next_cursor:null}});
+    await settle();
+    assert.equal(doc.querySelectorAll('[data-notification-id]').length,4);
+    assert.equal(doc.querySelector('.nn-pagination button'),null);
+  } finally { f.close(); }
+});
+
+test('retry on initial load still refreshes both notification sources', async () => {
+  const f = fixture();
+  try {
+    await f.boot();
+    f.respond(()=>({error:{message:'temporary'}}));
+    f.api.open(); await settle();
+    f.calls.length=0;
+    f.respond(name=>name==='list_retention_alerts'?{data:[]}:{data:{items:[],unread_count:0,has_more:false}});
+    f.w.document.querySelector('.nn-pagination button').click(); await settle();
+    assert.deepEqual(f.calls.map(c=>c.name),['list_app_notifications','list_retention_alerts']);
+    assert.equal(f.w.document.querySelector('.nn-pagination button'),null);
+  } finally { f.close(); }
+});
