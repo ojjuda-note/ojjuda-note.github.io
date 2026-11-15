@@ -317,7 +317,8 @@
   }
 
   function guide(manual = false) {
-    const data = window.DrinkingGameGuides?.[active?.kind];
+    const guide = window.DrinkingGameGuides?.[active?.kind];
+    const data = active?.local ? guide : guide?.multi || guide;
     if (!data || !accessible()) return false;
     const panel = open('guide', `${data.title} 하는 법`, manual);
     if (!panel) return false;

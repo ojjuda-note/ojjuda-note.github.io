@@ -6,6 +6,7 @@
   const title = document.querySelector('header strong').textContent;
   const feature = window.PartyLiveGame;
   const descriptions = {
+    partyroulette: '각자 한 사람을 지목하고 카운트다운에 맞춰 함께 눌러요.',
     secretcount: '자기 차례에 버튼을 누르고 다음 사람에게 넘겨요.',
     updown: '1부터 100 사이에 숨은 숫자를 찾아요. 차례대로 숫자를 고르고 UP·DOWN 힌트로 범위를 좁혀요.',
     fingers: '조건에 해당하면 손가락을 하나 접어요. 다섯 손가락을 먼저 접으면 걸려요.',
@@ -93,6 +94,7 @@
     window.DrinkingGameScreen?.native(kind,null,view);
   }
   function lobby(s) {
+    if(kind==='partyroulette')return '<h1>'+esc(s.title)+'</h1><p>참가자 '+s.players.length+'/'+s.capacity+'명 · 모두 모이면 시작해요.</p>';
     return '<h1>' + esc(s.title) + '</h1><p>모두 모이면 시작해요. 초대 링크와 비밀번호를 친구에게 알려 주세요.</p>' +
       '<ol class="members">' + s.players.map((player,i) => '<li' + (i===s.me?' class="me"':'') + '>' +
         esc(player) + (i===0?' · 방장':'') + (i===s.me?' (나)':'') + '</li>').join('') + '</ol>' + control('초대 링크 복사','copy',true);

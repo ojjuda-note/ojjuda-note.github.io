@@ -398,6 +398,6 @@ button.drum-zoom:focus-visible { outline:2px solid #ffe0a3; outline-offset:2px; 
 .roulette-target select { min-height:44px; padding:4px 9px; border:1px solid #998977; border-radius:7px; background:#fffaf1; color:#302b25; font:inherit; }
 [data-phase="wheel-spin"] .party-wheel-disc { animation:drum-coast var(--duration) cubic-bezier(.12,.63,.23,1) both; }
 @keyframes drum-coast { from { transform:rotate(var(--start)); } to { transform:rotate(var(--angle)); } }
-[data-phase="wheel-press"] .party-wheel-art img { width:84%; object-fit:contain; }
-[data-phase="wheel-press"] .drum-zoom { height:44%; right:4%; }
+:is([data-phase="wheel-press"],[data-phase="wheel-handoff"]) .party-wheel-art img { width:84%; object-fit:contain; }
+:is([data-phase="wheel-press"],[data-phase="wheel-handoff"]) .drum-zoom { height:44%; right:4%; }
 @media(prefers-reduced-motion:reduce) { [data-phase="wheel-spin"] .party-wheel-disc { animation:none; } }
