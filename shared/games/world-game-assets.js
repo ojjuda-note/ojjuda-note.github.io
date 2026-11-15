@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261115-restaurants-c2s46-yangsan8'
+ const revision='20261115-drinking-multi-random1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -19,7 +19,7 @@
   imagevote:'1.7.0',
   secretcount:'1.1.0',
   updown:'1.4.0',
-  drinking:'1.11.0',
+  drinking:'1.12.0',
   tarot:'1.10.2',
   saju:'2.15.1',
   group:'1.2.2',

@@ -41,6 +41,7 @@
   const notice = byId('notice'), message = byId('room-message'), list = byId('room-list');
   let client, actor, room, pollTimer, polling = false, busy = false, navigating = false, subscribed = false;
   let generation = 0, lastMutation, listSequence = 0;
+  let randomStart;
   let opening = false, initialized = false, listing, entryRecovery;
   const connection = window.OjjudaRoomConnection.create({
     onPause: () => clearTimeout(pollTimer),
@@ -87,11 +88,18 @@
   });
   byId('games').replaceChildren(...tiles);
 
+  function eligibleGames() {
+    return games.filter(game=>room.players.length>=gameMin(game.id));
+  }
+
   function updateActions() {
     byId('create-form').querySelector('button').disabled=busy;
     byId('join-form').querySelector('button').disabled=busy;
     if (!room) return;
     const host=room.me===0, selected=gameById(room.kind);
+    const randomButton=byId('random-start');
+    randomButton.hidden=!host;
+    randomButton.disabled=!host || busy || !eligibleGames().length;
     byId('start').hidden=!host;
     byId('start').disabled=busy || !selected || room.players.length<gameMin(room.kind);
     byId('leave').disabled=busy;
@@ -260,6 +268,16 @@
     e.preventDefault();const f=e.target.elements,code=f.code.value.trim().toUpperCase();
     if(!codePattern.test(code)){notice.textContent='영문 또는 숫자로 된 방 코드 6자리를 입력해 주세요.';f.code.focus();return;}
     void mutate('join',{password:f.password.value},code);
+  };
+  byId('random-start').onclick=()=>{
+    if(!room || room.me!==0 || room.phase!=='lobby' || busy || navigating)return;
+    const eligible=eligibleGames();
+    if(!eligible.length)return;
+    // Retry the same draw if the server reply was lost at this room revision.
+    if(randomStart?.room!==room){
+      randomStart={room,kind:eligible[Math.floor(Math.random()*eligible.length)].id};
+    }
+    void mutate('start',{kind:randomStart.kind,revision:room.revision});
   };
   byId('start').onclick=()=>{
     if(room?.me===0 && room.kind && room.players.length>=gameMin(room.kind))

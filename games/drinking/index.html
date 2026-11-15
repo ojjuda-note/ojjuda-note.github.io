@@ -69,7 +69,10 @@
         <ul id="members"></ul>
       </section>
       <div class="pick">
-        <h2>게임 선택</h2>
+        <div class="room-head">
+          <h2>게임 선택</h2>
+          <button id="random-start" type="button" hidden disabled>랜덤 게임</button>
+        </div>
         <p id="selected-game" role="status"></p>
         <button id="start" class="primary" type="button">게임 시작</button>
         <div id="games" aria-label="술게임 목록"></div>
@@ -81,7 +84,7 @@
     <span data-module="/games/drinking/table-view.js?v=20261115-pub-table1"></span>
     <span data-module="/games/drinking/connection.js?v=20261114-drinks-stability1"></span>
     <span data-module="entry-refresh.js?v=20261115-secretcount1"></span>
-    <span data-module="hub.js?v=20261115-pub-table1"></span>
+    <span data-module="hub.js?v=20261115-drinking-multi-random1"></span>
   </template>
 </body>
 </html>
