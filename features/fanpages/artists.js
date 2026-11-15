@@ -530,12 +530,14 @@ window.OJJUDA_FAN_ARTISTS = [
     ],
     merch: [
       { title: "NEON", sub: "데뷔 싱글 · 음원", href: "https://www.melon.com/album/detail.htm?albumId=14644795" },
-      { title: "Mnet Plus", sub: "팬 커뮤니티·굿즈", href: "https://artist.mnetplus.world/main/stg/a2olite" }
+      { title: "A2O LITE 0TH OFFICIAL MEMBERSHIP", sub: "공식 디지털 멤버십 · 12.11 23:59(KST) 모집 마감 · 조건과 혜택은 공지 확인", href: "https://artist.mnetplus.world/main/stg/a2olite/contents/6ac6f8919e9dbc2c2299b753" }
     ],
     music: [
       { title: "NEON", date: "2026.10.13", type: "데뷔 싱글", songs: ["NEON"], href: "https://www.melon.com/album/detail.htm?albumId=14644795" }
     ],
     appearances: [
+      { date: "2026-12-18", title: "2026 KBS 가요대축제", sub: "서울 KBS 아레나 · 19:00(KST) · 11.13 출연 발표", href: "https://www.soompi.com/article/1886817wpp/2026-kbs-song-festival-announces-artist-lineup" },
+      { date: "2026-12-25", title: "2026 SBS 가요대전 · DAY 2", sub: "경기 고양 킨텍스 · A2O LITE 출연 · 관람 안내는 예매처 확인", href: "https://www.klook.com/en-PH/activity/183716-2025-sbs-gayo-daejeon-ticket-shuttle-package/" },
       { date: "2027-01-15", title: "D AWARDS 2027 in PARIS", sub: "DAY 1 · 프랑스 파리 Plenitude Arena · 공연 시각 추후 발표", href: "https://d-awards.world/" }
     ],
     schedules: [
@@ -543,6 +545,10 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "A2O 공식 링크", sub: "공식 채널 모음", href: "https://linktr.ee/a2o.lite" }
     ],
     news: [
+      { date: "2026.11.13", tag: "영상", title: "A2O WORLD · NEON INFINITE 뮤직비디오 공개", href: "https://www.youtube.com/watch?v=G_ej20-QWng" },
+      { date: "2026.11.13", tag: "행사", title: "12월 18일 KBS 가요대축제 출연 확정", href: "https://www.soompi.com/article/1886817wpp/2026-kbs-song-festival-announces-artist-lineup" },
+      { date: "2026.11.11", tag: "차트", title: "NEON · 써클 디지털·스트리밍·글로벌 K팝 차트 3관왕", href: "https://www.soompi.com/article/1886133wpp/ive-riize-and-illit-top-circle-weekly-charts-a2o-earns-triple-crown" },
+      { date: "2026.11.08", tag: "수상", title: "NEON · 인기가요 트리플 크라운·음악방송 통산 11관왕", href: "https://www.soompi.com/article/1885054wpp/watch-a2o-lite-takes-11th-win-and-triple-crown-for-neon-on-inkigayo-performances-by-blackpinks-jisoo-and-more" },
       { date: "10.29", tag: "차트", title: "NEON · 빌보드 Global 200 8위·Global Excl. U.S. 3위", href: "https://prtimes.jp/main/html/rd/p/000000009.000192898.html" },
       { date: "10.28", tag: "행사", title: "D AWARDS 2027 파리 1월 15일 출연 확정", href: "https://d-awards.world/" },
       { date: "10.23", tag: "수상", title: "NEON · 더쇼·쇼챔피언·엠카 3관왕", href: "https://prtimes.jp/main/html/rd/p/000000008.000192898.html" },
