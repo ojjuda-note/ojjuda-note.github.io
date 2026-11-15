@@ -49,6 +49,8 @@ button,input,select,textarea{font-family:inherit}button,a{-webkit-tap-highlight-
 .world-redesign .gbtn{--game-tint:#e2eee5;--game-edge:#aac3b1;border-color:var(--game-edge);box-shadow:0 3px 0 color-mix(in srgb,var(--game-edge) 38%,transparent)}
 .world-redesign .gbtn .ge{background:linear-gradient(145deg,color-mix(in srgb,var(--game-tint) 45%,white),var(--game-tint));border-bottom:1px solid color-mix(in srgb,var(--game-edge) 60%,transparent)}
 .world-redesign .gbtn .ge img{filter:saturate(1.35) contrast(1.08)}
+.world-redesign .gbtn .ge.arcade-cover{height:auto;aspect-ratio:3/2;overflow:hidden}
+.world-redesign .gbtn .ge.arcade-cover img{width:100%;height:100%;object-fit:cover;filter:none}
 .world-redesign .gbtn>span:last-child{flex:1;text-align:center;background:var(--surface);min-height:48px}
 .world-redesign .gbtn[data-v=saetbyeol],.world-redesign .gbtn[data-v=stacker],.world-redesign .gbtn[data-v=janggi]{--game-tint:#f7e4b5;--game-edge:#d7b96c}
 .world-redesign .gbtn[data-v=photo_ttang],.world-redesign .gbtn[data-v=breakout],.world-redesign .gbtn[data-v=ttang]{--game-tint:#dbeaf7;--game-edge:#9bbad4}
