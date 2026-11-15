@@ -3,26 +3,30 @@ name: Publish lightweight Pages site
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - 'tests/**'
-      - 'scripts/**'
-      - 'supabase/**'
-      - 'ops/**'
-      - 'docs/**'
-      - 'AGENTS.md'
-      - 'README.md'
-      - '.gitignore'
-      - '_config.yml'
+    paths:
+      - '**'
+      - '!tests/**'
+      - '!scripts/**'
+      - '!supabase/**'
+      - '!ops/**'
+      - '!docs/**'
+      - '!AGENTS.md'
+      - '!README.md'
+      - '!.gitignore'
+      - '!_config.yml'
+      - 'scripts/build-fanpage-hub.mjs'
   pull_request:
     paths:
       - '.github/workflows/pages-publish.yml'
+      - 'scripts/build-fanpage-hub.mjs'
+      - 'tests/fanpage-hub-transfer.cjs'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: pages
+  group: ${{ github.event_name == 'pull_request' && format('pages-preview-{0}', github.event.pull_request.number) || 'pages' }}
   cancel-in-progress: false
 
 jobs:
@@ -85,6 +89,13 @@ jobs:
             --source features/fanpages/artists-extra.js \
             --cache "$RUNNER_TEMP/ojjuda-fan-photo-cache" \
             --output "$RUNNER_TEMP/ojjuda-public/features/fanpages"
+      - name: Build fanpage hub summaries from staged artist data
+        run: node scripts/build-fanpage-hub.mjs "$RUNNER_TEMP/ojjuda-public/features/fanpages"
+      - name: Compare cold mobile hub and detail navigation
+        if: github.event_name == 'pull_request'
+        run: |
+          npm --prefix tests ci --ignore-scripts
+          node tests/fanpage-hub-transfer.cjs "$RUNNER_TEMP/ojjuda-public"
       - name: Build responsive Park card backgrounds
         run: python scripts/build-park-backgrounds.py "$RUNNER_TEMP/ojjuda-public"
       - name: Upload Pages artifact
