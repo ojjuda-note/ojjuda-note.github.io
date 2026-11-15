@@ -31,7 +31,9 @@ test('a capture slides in board coordinates from either seat and resumes after a
  for(const flip of [false,true]){
   const move={f:54,t:18};
   const duration=ctx.jgMoveDuration(move),motion={moves:[move],duration};
-  assert.ok(duration>ctx.jgMoveDuration({f:54,t:45}));
+  assert.equal(ctx.jgMoveDuration({f:54,t:45}),520);
+  assert.equal(duration,700);
+  assert.equal(ctx.jgMoveDuration({f:81,t:0}),820);
   const initial=board(flip);ctx.jgAnimateMove(motion,initial.svg);
   assert.ok(initial.onTop());assert.equal(initial.frames[0].keys[0].transform,`translate(0px, ${flip?-152:152}px)`);
   assert.equal(initial.frames[0].keys.at(-1).transform,'translate(0px, 0px)');
@@ -60,4 +62,17 @@ test('a fast AI waits only for the previous landing and cannot apply a stale rep
  ctx.E=session();await turn();ctx.E=session();timers.shift().fn();assert.equal(applied,1);
  ctx.E=session();now=2000;await turn();assert.equal(applied,2);assert.equal(timers.length,0);
  ctx.E=session();ctx.qt=true;now=1000;await turn();assert.equal(applied,3);assert.equal(timers.length,0);
+});
+
+test('local AI calculation starts after a long slide has landed',async()=>{
+ let now=1000, searches=0, applied=0;
+ const timers=[];
+ const ctx=vm.createContext({qt:false,wn:520,JG_MASTER_BUDGETS:{},
+  E:{kind:'janggi',level:'normal',s:{},anim:{endsAt:1820}},performance:{now:()=>now},
+  h2(){},ze:()=>({best(){searches++;return {f:27,t:36}}}),Ka(){applied++},
+  setTimeout:(fn,delay)=>timers.push({fn,delay})});
+ vm.runInContext(part('function Fl(){','function g2(t){'),ctx);
+ ctx.Fl();assert.equal(searches,0);assert.equal(timers[0].delay,880);
+ now+=timers[0].delay;await timers.shift().fn();
+ assert.equal(searches,1);assert.equal(applied,1);assert.equal(timers.length,0);
 });
