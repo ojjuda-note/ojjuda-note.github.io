@@ -3,19 +3,23 @@ name: Publish lightweight Pages site
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - 'tests/**'
-      - 'scripts/**'
-      - 'supabase/**'
-      - 'ops/**'
-      - 'docs/**'
-      - 'AGENTS.md'
-      - 'README.md'
-      - '.gitignore'
-      - '_config.yml'
+    paths:
+      - '**'
+      - '!tests/**'
+      - '!scripts/**'
+      - '!supabase/**'
+      - '!ops/**'
+      - '!docs/**'
+      - '!AGENTS.md'
+      - '!README.md'
+      - '!.gitignore'
+      - '!_config.yml'
+      - 'scripts/build-fanpage-hub.mjs'
   pull_request:
     paths:
       - '.github/workflows/pages-publish.yml'
+      - 'scripts/build-fanpage-hub.mjs'
+      - 'tests/fanpage-hub-transfer.cjs'
   workflow_dispatch:
 
 permissions:
