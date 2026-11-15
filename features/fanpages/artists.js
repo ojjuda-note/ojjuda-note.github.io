@@ -121,7 +121,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Berriz", icon: "✦", url: "https://link.berriz.in/web/main/IVE" }
     ],
     merch: [
-      { title: "Looks Can Kill · 일본 구매 특전 응모", sub: "대상 음반 구매자 한정 · 시리얼 추첨 2026.10.30~2027.01.24 23:59(JST) · 조건은 공식 안내 확인", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" },
+      { title: "Looks Can Kill · 일본 구매 특전 응모", sub: "대상 음반 구매 시리얼 추첨 · 촬영·사인회와 포토카드 응모 기간이 서로 다름 · 공식 안내 확인", href: "https://www.sonymusic.co.jp/artist/IVE/info/588141" },
       { title: "Looks Can Kill · 음반", sub: "2026.10.26 발매 · 공식 IVE 스토어", href: "https://shop.ive-starship.com/" },
       { title: "Looks Can Kill · 사인반", sub: "HERO COMICS ver. · 품절(공식 판매처 기준)", href: "https://shop.ive-starship.com/products/hero-comics-ver-ive-looks-can-kill-signed" },
       { title: "STARSHIP SQUARE", sub: "앨범·공식 굿즈", href: "https://www.starship-square.com/product/list.html?cate_no=57" },
