@@ -91,6 +91,22 @@ test('three Chromium sessions keep one SQL room through reconnection, a game and
   assert.equal(states.filter(s=>s.me===0).length,1);
   assert.ok(states.every(s=>s.code===code&&s.phase==='lobby'&&s.players.length===2));
   assert.equal(states[0].revision,states[1].revision);
+  const remaining=[first,second];
+  const elected=remaining[states.findIndex(s=>s.me===0)];
+  const guest=remaining.find(s=>s!==elected);
+  assert.equal(await guest.page.locator('#random-start').isVisible(),false);
+  await elected.page.locator('#random-start').click();
+  await Promise.all(remaining.map(s=>s.page.waitForURL(url=>url.pathname!=='/games/drinking/'&&url.searchParams.get('party')===code)));
+  assert.equal(first.page.url(),second.page.url(),'a single draw takes both phones to the same child room');
+  const picked=await db.publicRpc(elected.actor,'drinking_room',['state',code,{}]);
+  assert.equal(picked.phase,'playing');
+  for(const client of remaining){
+    const url=new URL(client.page.url());
+    assert.equal(url.pathname,'/games/'+picked.kind+'/');
+    assert.equal(url.searchParams.get('room'),picked.child);
+    await dismissGuide(client.page);
+  }
+  assert.equal(elected.calls.filter(c=>c.args.p_action==='start').length,1);
   assert.deepEqual(errors,[]);
   t.diagnostic('Three independent Chromium contexts and actual SQL game functions passed; RPC delay/offline is controlled locally, not a production network/load measurement.');
 });

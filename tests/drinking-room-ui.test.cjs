@@ -11,6 +11,48 @@ const liar = patch => ({code:'LIAR01', title:'라이어 방', players:['하나',
   phase:'hints', revision:1, round:1, turn:0, hints:[], role:'citizen', word:'사과', ...patch});
 const quiet = () => ({data:null,error:null});
 
+test('random start draws from every multiplayer game the joined players can play',async t=>{
+  const threeRequired=['liar','king','minority','mission'];
+  for(const size of [1,2,3,12]){
+    const current=hub({players:Array.from({length:size},(_,i)=>'참가자 '+(i+1))});
+    const f=await screen({rpc:(_name,args)=>args.p_action==='mine'?{room:{...current}}:{...current}});
+    t.after(()=>f.close());
+    await until(()=>!f.find('#lobby').hidden);
+    const all=Array.from(f.find('#games').children,tile=>tile.dataset.game);
+    const pool=size<2?[]:all.filter(kind=>size>=3||!threeRequired.includes(kind));
+    const button=f.find('#random-start');
+    assert.equal(button.hidden,false);assert.equal(button.disabled,size===1);
+    if(size===1){button.click();assert.ok(!f.calls.some(c=>c.args.p_action==='start'));continue;}
+    for(let i=0;i<pool.length;i++){
+      f.w.Math.random=()=>(i+0.5)/pool.length;
+      button.click();button.click();
+      await until(()=>!button.disabled);
+      const starts=f.calls.filter(c=>c.args.p_action==='start');
+      assert.equal(starts.length,i+1);
+      assert.equal(starts[i].args.p_options.kind,pool[i]);
+      // Move to a fresh lobby revision for the next independent draw.
+      current.revision++;
+      await f.wake();await until(()=>f.calls.at(-1).settled);
+    }
+  }
+});
+
+test('retrying a random start after a lost reply reuses the draw and request ID',async t=>{
+  const current=hub();
+  const f=await screen({rpc:(_name,args)=>{
+    if(args.p_action==='start')return {error:{message:'Failed to fetch'}};
+    return args.p_action==='mine'?{room:current}:current;
+  }});
+  t.after(()=>f.close());
+  await until(()=>!f.find('#lobby').hidden);
+  const button=f.find('#random-start');
+  f.w.Math.random=()=>0;button.click();await until(()=>!button.disabled);
+  f.w.Math.random=()=>0.99;button.click();await until(()=>!button.disabled);
+  const starts=f.calls.filter(c=>c.args.p_action==='start');
+  assert.equal(starts.length,2);
+  assert.deepEqual(starts[1].args.p_options,starts[0].args.p_options);
+});
+
 test('a delayed lobby read cannot roll back a newer game selection or duplicate the action', async t => {
   let current = hub(), answerRead;
   const f = await screen({rpc(name, args) {
