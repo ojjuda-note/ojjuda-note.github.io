@@ -436,11 +436,12 @@ if (nctwishProfile) {
 // Official source rechecked 2026-11-12.
 const andteamProfile = window.OJJUDA_FAN_PROFILES.andteam;
 if (andteamProfile) {
-  andteamProfile.checkedAt = '2026.11.12';
+  andteamProfile.checkedAt = '2026.11.15';
   andteamProfile.expanded = true;
   andteamProfile.records = [
     { year: '2022.12', title: '일본 데뷔', detail: 'First Howling : ME · Under the skin', href: 'https://www.andteam-official.jp/news/owsyjh' },
-    { year: '2026–2027', title: 'Mark on You 일본 투어', detail: '홀·아레나 공연 · 변경은 공식 일정 확인', href: 'https://www.andteam-official.jp/news/dd0f71998bc8' }
+    { year: '2026–2027', title: 'Mark on You 일본 투어', detail: '홀·아레나 공연 · 변경은 공식 일정 확인', href: 'https://www.andteam-official.jp/news/dd0f71998bc8' },
+    { year: '2026.11', title: 'NHK 홍백가합전 2년 연속 출연 확정', detail: '11월 13일 공식 발표 · 제77회 2026년 12월 31일 방송 예정', href: 'https://www.andteam-official.jp/news/712534560fd6' }
   ];
   const officialMembers = {
     '의주': ['2002.09.07', 'EJ'],
