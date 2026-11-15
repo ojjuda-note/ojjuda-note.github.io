@@ -797,15 +797,27 @@ test('one phone can choose or write prompts inline and read the fingers recommen
 test('party roulette plays from the phone menu through a turn and a named result',async t=>{
   const browser=await chromium.launch(launchOptions);t.after(()=>browser.close());
   const session=await browserSession(browser,{actor:'wheel-member',localPlayers:['보리','나리'],
-    viewport:{width:360,height:640},rpc:()=>({})});
+    viewport:{width:360,height:640},reducedMotion:'no-preference',rpc:()=>({})});
   const page=session.page;
-  await page.addInitScript(()=>{Math.random=()=>.75;});
+  await page.addInitScript(()=>{Math.random=()=>.2;});
   const {revision}=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../game-release.json'),'utf8'));
   await page.goto(origin+'/games/drinking/local/?v='+revision+'#menu');
   await page.getByRole('button',{name:/러시안 룰렛/}).click();
   await dismissGuide(page);
+  await page.getByLabel('탄창 구멍 수').selectOption('8');
   await page.getByRole('button',{name:'탄환 넣기'}).click();
-  await page.getByRole('button',{name:'탄창 돌리기'}).click();
+  const drum=page.getByRole('button',{name:'탄창을 밀어 돌리기'});
+  assert.equal(await drum.locator('.drum-hole').count(),8);
+  await screenshot(page,'partyroulette-drum-360x640');
+  const rect=await drum.boundingBox();
+  const y=rect.y+rect.height/2;
+  await page.mouse.move(rect.x+rect.width*.2,y);await page.mouse.down();
+  await page.mouse.move(rect.x+rect.width*.8,y,{steps:8});
+  const angle=await drum.locator('.drum-metal').evaluate(el=>parseFloat(el.style.getPropertyValue('--angle')));
+  assert.ok(angle>30,'drag advances the visible drum before release');
+  await page.mouse.up();
+  await page.locator('[data-phase="wheel-spin"]').waitFor();
+  assert.equal(await page.locator('.party-wheel-disc').evaluate(el=>getComputedStyle(el).animationName),'drum-coast');
   const press=page.getByRole('button',{name:'너 마셔!'});
   await press.waitFor({state:'visible'});
   const box=await press.boundingBox();

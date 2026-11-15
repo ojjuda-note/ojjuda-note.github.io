@@ -21,7 +21,7 @@
     const mark = document.createElement('span');
     mark.className = 'table-mark';
     mark.setAttribute('aria-hidden', 'true');
-    if (['stopwatch','secretcount','partyroulette'].includes(kind)) {
+    if (['stopwatch','secretcount'].includes(kind)) {
       mark.classList.add('table-mark-' + kind);
     } else {
       const image = document.createElement('img');
