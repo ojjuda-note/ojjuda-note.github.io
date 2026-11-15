@@ -727,3 +727,69 @@ test('entry shows a moving pub door until access is ready and both modes use one
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
 });
+
+test('one phone can choose or write prompts inline and read the fingers recommendation', {timeout:90000}, async t=>{
+  const browser=await chromium.launch(launchOptions);
+  t.after(()=>browser.close());
+  const banks={
+    king:['동물 흉내 내기','노래 한 소절 부르기','둘이 손으로 하트 만들기'],
+    truth:{mild:['요즘 즐겨 듣는 노래는?'],spicy:['가장 설렜던 데이트는?']},
+    imagevote:['여행 계획을 잘 짤 사람은?','요리를 즐길 사람은?'],
+    minority:[['바다 여행','산 여행'],['커피','차']],
+    fingers:['운동화를 신은 사람 접어','오늘 커피 마신 사람 접어']
+  };
+  const session=await browserSession(browser,{actor:'inline-prompt-player',localPlayers:['가을','겨울','봄'],
+    rpc(name){return name==='drinking_content'?{banks}:{ok:true};}});
+  const page=session.page;
+  for(const kind of ['fingers','king','truth','minority','imagevote']){
+    await page.goto(origin+'/games/drinking/local/#'+kind);
+    await dismissGuide(page);
+    await page.locator('[data-action="start"]').click();
+    if(kind==='king')for(let i=0;i<3;i++){
+      await page.locator('[data-action="reveal"]').click();
+      await page.locator('[data-action="hide"]').click();
+    }
+    if(kind==='fingers'){
+      const button=page.locator('[data-finger-random]');
+      await button.waitFor({state:'visible'});
+      const colors=await button.evaluate(el=>[getComputedStyle(el).color,getComputedStyle(el).backgroundColor]);
+      function luminance(css){
+        const rgb=css.match(/\d+/g).slice(0,3).map(Number).map(c=>c/255).map(c=>c<=.04045?c/12.92:((c+.055)/1.055)**2.4);
+        return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;
+      }
+      const [light,dark]=colors.map(luminance).sort((a,b)=>b-a);
+      assert.ok((light+.05)/(dark+.05)>=4.5,'readable recommendation on the actual game theme');
+      continue;
+    }
+    const picker=page.locator('.question-picker');
+    const select=picker.locator('[data-question]');
+    await select.waitFor({state:'visible'});
+    await page.waitForFunction(()=>document.querySelector('[data-question]')?.options.length>0);
+    assert.equal(await picker.locator('[data-mode="list"]').getAttribute('aria-pressed'),'true');
+    await page.setViewportSize({width:844,height:390});
+    await expectViewport(page,'inline-landscape-'+kind,{local:true});
+    await page.setViewportSize({width:390,height:844});
+    await select.selectOption({index:0});
+    if(kind==='king'){
+      const text=await select.locator('option:checked').textContent();
+      await picker.locator('[type=submit]').click();
+      await page.locator('.king-order h2').filter({hasText:text}).waitFor({state:'attached'});
+    }else{
+      await picker.locator('[data-mode="write"]').click();
+      const value=kind==='minority'?'바닷가':'누가 여행 계획을 가장 잘 짤까요?';
+      await picker.locator('textarea').first().fill(value);
+      if(kind==='minority'){
+        await picker.locator('textarea').nth(1).fill(value);
+        assert.equal(await picker.locator('[type=submit]').isDisabled(),true);
+        await picker.locator('textarea').nth(1).fill('산속');
+      }
+      await picker.locator('[data-mode="list"]').click();
+      await picker.locator('[data-mode="write"]').click();
+      assert.equal(await picker.locator('textarea').first().inputValue(),value);
+      await picker.locator('[type=submit]').click();
+      if(kind!=='truth')await page.locator('[data-action="open-vote"]').click();
+      assert.ok((await page.locator('.play-body').innerText()).includes(value));
+    }
+  }
+  assert.deepEqual(session.errors,[]);
+});

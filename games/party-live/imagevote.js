@@ -4,10 +4,7 @@
   function view(s, ui) {
     const g = s.game;
     if (s.phase === 'prompt') {
-      return prompt.form(s, ui, {
-        heading:'누가 떠오르나요?', preparing:'질문을 정하고 있어요', label:'질문을 고르거나 직접 써 주세요.',
-        another:'다른 질문', submit:'투표 시작'
-      });
+      return prompt.form(s,ui);
     }
     if (s.phase === 'vote') {
       const pair = s.players.length === 2;

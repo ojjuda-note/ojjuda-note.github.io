@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const memberStore='oj.party.'+document.getElementById('access-content').dataset.member+'.';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-auto-room-title1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-inline-prompts1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -40,8 +40,8 @@ const pageIntroductions={
   minority:{
     heading:['우리의 선택은','몇 대 몇일까요?'],
     description:['둘 중 하나를 몰래 골라요.','더 적게 선택된 쪽이 소수파예요.'],
-    steps:[['선택지 보기','둘 중 하나'],['비밀 투표','마음 가는 쪽으로'],['함께 공개','표수를 확인해요']],
-    button:'비밀 투표 시작'
+    steps:[['선택지 정하기','목록 또는 직접 입력'],['비밀 투표','마음 가는 쪽으로'],['함께 공개','표수를 확인해요']],
+    button:'선택지 정하기'
   },
   mission:{
     heading:['같은 듯 다른 몸짓,','한 명을 찾아요.'],
@@ -69,7 +69,7 @@ const pageIntroductions={
   }
 };
 const prompts=window.DrinkingPrompts;
-const manualGames=new Set(['king','imagevote']);
+const questionMenu=window.DrinkingQuestionMenu;
 function rand(n){return Math.floor(Math.random()*n)}
 function shuffled(items){const copy=[...items];for(let i=copy.length-1;i>0;i--){const j=rand(i+1);[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}
 const bags=new WeakMap();
@@ -77,7 +77,6 @@ function draw(items){if(!items.length)return '';if(!bags.get(items)?.length)bags
 const truthDeck={mild:[],spicy:[]};
 const truthSettings={mode:'spicy',showFlavor:false};
 const truthTools=window.PartyTruthCards;
-const truthFlavorNames={mild:'순한맛',spicy:'빨간맛'};
 function refreshTruthDeck(official){
   const next=window.PartyTruthCards.deck(official);
   for(const flavor of Object.keys(truthDeck)){
@@ -154,18 +153,6 @@ async function loadRoundBank(r){
   const message=loaded?'아직 등록된 내용이 없어요.':'내용을 불러오지 못했어요. 연결을 확인해 주세요.';
   shell('<h2>'+message+'</h2>'+actions(btn('다시 시도',kind==='bomb'?'start-bomb':'start'),btn('게임 목록','menu','quiet')));
   return false;
-}
-function bindLocalSuggestion(r,field,button,choices=()=>r.bank){
-  button.hidden=!choices().length;
-  if(r.bank.length)return;
-  let edited=false;
-  field.addEventListener('input',()=>{edited=true;},{once:true});
-  r.bankReady.then(()=>{
-    const available=choices();
-    if(round!==r||!field.isConnected||!available.length)return;
-    button.hidden=false;
-    if(!edited&&!field.value)field.value=draw(available);
-  });
 }
 async function startBomb(){
   const r=round;
@@ -284,8 +271,8 @@ function intro(){const enough=players.length>=game.min;
   if(game.id==='bomb')return bombSetup();
   if(game.id==='stopwatch')return watchSetup();
   if(game.id==='truth'){
-    shell('<h2><span class="suite-kicker">07 · 추리와 대화</span>오늘은 조금 더<br>솔직하게.</h2><p>돌아가며 카드 한 장을 골라요.<br>답하기 어려우면 패스해도 돼요.</p>'+truthTools.settingsForm(truthSettings)+actions(btn('질문 카드 고르기','start'),
-      btn('질문 카드 등록','truth-editor','quiet'))+'<p id="truth-start-message" role="status"></p>',true);
+    shell('<h2><span class="suite-kicker">07 · 추리와 대화</span>오늘은 조금 더<br>솔직하게.</h2><p>내 차례에 질문을 고르거나 직접 적어요.<br>답하기 어려우면 패스해도 돼요.</p>'+truthTools.settingsForm(truthSettings)+actions(btn('질문 고르기','start'),
+      btn('질문 카드 등록','truth-editor','quiet')),true);
     truthTools.bindSettings(truthSettings);
     return;
   }
@@ -367,11 +354,7 @@ async function begin(){
   if(game.id==='secretcount')return secretSetup();
   if(players.length<game.min)return go('participants');
   cleanup();round={turn:0,phase:'play'};fx.play(game.id==='croc'?'tooth':'deal');const r=round;
-  if(manualGames.has(game.id)){
-    const kind=game.id;
-    r.bank=[];
-    r.bankReady=prompts.refresh(kind).then(loaded=>{if(round===r&&loaded)r.bank=prompts.list(kind);});
-  }else if(prompts.managed(game.id)&&!['truth','fingers','minority'].includes(game.id)){
+  if(prompts.managed(game.id)&&!['truth','fingers','minority','king','imagevote'].includes(game.id)){
     const button=app.querySelector('[data-action="start"]');
     if(button){button.disabled=true;button.textContent='불러오는 중…';}
     if(!await loadRoundBank(r))return;
@@ -382,20 +365,16 @@ async function begin(){
     case 'stopwatch':
       r.target=watchTenths*10;r.records=[];
       return readyWatch();
-    case 'truth':return startTruthRound(r);
+    case 'truth':r.truthSettings={...truthSettings};return dealTruth();
     case 'fingers':
       r.fingers=players.map(()=>5);
       return fingerPrompt();
-    case 'imagevote':return partyPrompt();
+    case 'imagevote':return chooseVotePrompt();
     case 'updown':
       r.answer=1+rand(100);r.low=1;r.high=100;r.guesses=0;
       return upDown();
     case 'initial':r.alive=players.map((_,i)=>i);r.initial=draw(r.bank);return initialReady();
-    case 'minority':{
-      const ok=await prompts.refresh('minority');if(round!==r)return;
-      r.pair=ok?window.PartyPromptFlavors.recommend('minority',prompts.list('minority')):null;
-      return startVotes('minority');
-    }
+    case 'minority':return chooseVotePrompt();
     case 'liar':r.secret=rand(players.length);r.word=draw(r.bank);break;
     case 'mission':r.secret=rand(players.length);r.pair=draw(r.bank);break;
     case 'king':r.roles=shuffled(players.map((_,i)=>i));r.king=r.roles.indexOf(0);break;
@@ -763,7 +742,7 @@ function deal(){
 }
 function afterDeal(){const r=round;r.revealed=false;
   if(game.id==='king'){
-    r.phase='king';r.number=1;r.second=null;r.prompt=window.PartyPromptFlavors.recommend('king',prompts.kingChoices(r.bank,false))||'';return king();
+    r.phase='king';r.number=1;r.second=null;return king();
   }
   r.phase='talk';
   shell('<h2>'+(game.id==='liar'?'한 사람씩 힌트를 말해요':'하나, 둘, 셋! 동시에 흉내 내요')+'</h2><p>'+(game.id==='liar'?'정답과 초성은 말하지 마세요. 각자 힌트를 하나씩 주고, 누가 단어를 모르는지 찾아봐요.':'말이나 소품 없이 혼자 표현해 주세요. 다른 사람에게 닿지 않아요. 누가 다른 동작을 했나요?')+'</p>'+actions(btn('비밀 투표 시작','start-vote')),true)
@@ -773,20 +752,19 @@ function king(){
   const options=(selected,exclude)=>Array.from({length:count},(_,i)=>i+1).filter(n=>n!==exclude)
     .map(n=>'<option value="'+n+'"'+(n===selected?' selected':'')+'>'+n+'번</option>').join('');
   const secondOptions=()=>'<option value="">한 명에게만</option>'+options(r.second,r.number);
-  const second=count>1?'<label for="king-second">두 번째 번호 (선택)</label><p><select class="field" id="king-second">'+secondOptions()+'</select></p>':'';
-  shell('<span class="turn-tag">오늘의 왕 · '+name(r.king)+'</span><h2>미션을 받을 번호를 골라 주세요</h2>'+
-    '<label for="king-number">첫 번째 번호</label><p><select class="field" id="king-number">'+options(r.number)+'</select></p>'+second+
-    '<label for="king-mission">왕의 미션</label><p><input class="field" id="king-mission" maxlength="80" value="'+esc(r.prompt)+'"></p>'+
-    '<p><small>직접 적은 미션은 관리자 검토 후 다른 참가자에게도 추천될 수 있어요.</small></p>'+
-      actions(btn('명령 내리기','royal'),btn('미션 선택 · 직접 입력','question-menu','quiet')),true);
-  const field=$('#king-mission');
-  const choices=()=>prompts.kingChoices(r.bank,r.second!=null);
-  r.bankReady.then(()=>{if(field.isConnected&&!field.value&&!r.custom)field.value=r.prompt=window.PartyPromptFlavors.recommend('king',choices())||'';});
-  field.oninput=()=>{r.custom=true;field.setCustomValidity('');};
+  const second=count>1?'<label>두 번째 번호 (선택)<select class="field" id="king-second">'+secondOptions()+'</select></label>':'';
+  shell('<span class="turn-tag">오늘의 왕 · '+name(r.king)+'</span><h2>번호와 미션을 골라 주세요</h2>'+
+    '<form id="king-order-form"><div class="king-numbers"><label>첫 번째 번호<select class="field" id="king-number">'+options(r.number)+'</select></label>'+second+'</div>'+
+    questionMenu.markup('king','명령 내리기')+'</form>',true);
+  const refresh=questionMenu.mount($('#king-order-form'),{kind:'king',load:()=>questionMenu.catalog('king',r.second!=null),apply:(mission,manual)=>{
+    if(round!==r||r.phase!=='king')return false;
+    if(manual)prompts.submit('king',mission);
+    r.prompt=mission;r.answers={};
+    r.phase=r.second==null?'done':'king-answer';fx.play('king');kingResult();
+  }});
   function switchRecipients(second){
-    if(r.second===second)return;
-    r.second=second;
-    if(!r.custom)field.value=r.prompt=window.PartyPromptFlavors.recommend('king',choices())||'';
+    const changed=(r.second==null)!==(second==null);
+    r.second=second;if(changed)void refresh();
   }
   $('#king-number').onchange=e=>{
     r.number=Number(e.target.value);
@@ -794,19 +772,6 @@ function king(){
     if(count>1)$('#king-second').innerHTML=secondOptions();
   };
   if(count>1)$('#king-second').onchange=e=>switchRecipients(Number(e.target.value)||null);
-}
-function revealKingOrder(){
-  const r=round;
-  if(r.phase!=='king')return;
-  const input=$('#king-mission'),mission=input.value.trim();
-  if(!mission){
-    input.setCustomValidity('미션을 적거나 다른 미션을 골라 주세요.');input.reportValidity();
-    input.oninput=()=>input.setCustomValidity('');return;
-  }
-  window.DrinkingPrompts.submit('king',mission);
-  r.prompt=mission;r.answers={};
-  r.phase=r.second==null?'done':'king-answer';fx.play('king');
-  kingResult();
 }
 function kingResult(){
   const r=round,numbers=r.second==null?[r.number]:[r.number,r.second];
@@ -824,27 +789,6 @@ function kingResult(){
     '<h2>'+esc(r.prompt)+'</h2><dl class="king-recipients" aria-label="명령을 받은 사람">'+recipients+'</dl></section>'+footer,true);
 }
 const truthEditor=$('#truth-editor'),truthMessage=$('#truth-message');
-async function startTruthRound(r){
-  const button=app.querySelector('[data-action="start"]'),message=$('#truth-start-message');
-  if(button)button.disabled=true;
-  if(message)message.textContent='질문을 불러오는 중이에요…';
-  let loaded=false;
-  try{loaded=await prompts.refresh('truth')}catch{}
-  if(round!==r)return;
-  r.official=loaded?prompts.truth():{mild:[],spicy:[]};
-  refreshTruthDeck(r.official);
-  r.truthSettings={...truthSettings};
-  const missing=truthTools.enabledFlavors(r.truthSettings.mode).find(flavor=>!truthDeck[flavor].length);
-  if(!missing)return dealTruth();
-  if(loaded){
-    cleanup();intro();openTruthEditor();
-    $('#truth-flavor').value=missing;
-    truthMessage.textContent=truthFlavorNames[missing]+' 질문을 한 장 이상 추가해 주세요.';
-    return;
-  }
-  cleanup();intro();
-  $('#truth-start-message').textContent='질문을 불러오지 못했어요. 연결을 확인하고 다시 시작해 주세요.';
-}
 function openTruthEditor(){
   truthMessage.textContent='';
   truthEditor.showModal();
@@ -870,16 +814,34 @@ function dealTruth(){
     return '<button type="button" class="truth-back" data-action="truth-pick" data-value="'+i+
       '" aria-label="'+truthTools.sideName(i,taste)+'">'+art('back')+truthTools.cardLabel(taste)+'</button>';
   }).join('');
-  shell(tag(round.turn)+'<h2 tabindex="-1" id="truth-title">카드 한 장을 골라요</h2>'+
-    '<div class="truth-pair">'+cards+'</div>'+btn('질문 선택 · 직접 입력','question-menu','quiet'));
+  const r=round,turn=r.turn;
+  shell(tag(turn)+'<h2 tabindex="-1" id="truth-title">답할 질문을 정해 주세요</h2>'+
+    '<form id="truth-prompt">'+questionMenu.markup('truth','이 질문으로 시작',truthTools.enabledFlavors(mode))+'</form>'+
+    '<details class="blind-cards" hidden><summary>카드 뒤집기로 뽑기</summary><div class="truth-pair">'+cards+'</div></details>');
+  const form=$('#truth-prompt'),blind=app.querySelector('.blind-cards');
+  async function loadQuestions(){
+    const loaded=await prompts.refresh('truth');
+    if(!form.isConnected)return {mild:[],spicy:[]};
+    r.official=loaded?prompts.truth():{mild:[],spicy:[]};
+    refreshTruthDeck(r.official);
+    const allowed=truthTools.enabledFlavors(mode);
+    blind.hidden=!allowed.every(flavor=>truthDeck[flavor].length);
+    if(!loaded&&!allowed.some(flavor=>truthDeck[flavor].length))throw Error('catalog unavailable');
+    return truthDeck;
+  }
+  questionMenu.mount(form,{kind:'truth',load:loadQuestions,apply:(question,manual,flavor)=>{
+    if(round!==r||r.phase!=='truth-pick'||r.turn!==turn)return false;
+    if(manual)prompts.submit('truth',question,flavor);
+    showTruthQuestion(r,flavor==='spicy',question);
+  }});
   $('#truth-title').focus({preventScroll:true});
 }
 function revealTruth(value){
   const r=round;
   if(r.phase!=='truth-pick'||(value!=='0'&&value!=='1'))return;
-  r.phase='truth-answer';
   const spicy=r.truthCards[Number(value)]==='spicy';
   const question=draw(spicy?truthDeck.spicy:truthDeck.mild);
+  if(!question)return;
   showTruthQuestion(r,spicy,question);
 }
 function showTruthQuestion(r,spicy,question){
@@ -956,22 +918,20 @@ function showFold(r,prompt){
     fx.play('turn');fingerPrompt();
   };
 }
-function partyPrompt(){
-  const r=round;
+function chooseVotePrompt(){
+  const r=round,kind=game.id,paired=kind==='minority';
   r.phase='party-prompt';
-  shell('<h2>어떤 사람을 찾을까요?</h2><form class="party-prompt" id="party-prompt"><label for="party-question">지목할 질문</label>'+
-    '<textarea class="field" id="party-question" rows="2" maxlength="120" required>'+esc(window.PartyPromptFlavors.recommend('imagevote',r.bank)||'')+'</textarea>'+
-    '<p><small>직접 적은 내용은 관리자 검토 후 다른 참가자에게도 추천될 수 있어요.</small></p>'+
-    '<div class="actions">'+btn('질문 선택 · 직접 입력','question-menu','quiet')+'<button class="start" type="submit">비밀 투표 시작</button></div></form>');
-  const field=$('#party-question');
-  r.bankReady.then(()=>{if(field.isConnected&&!field.value&&!r.custom)field.value=window.PartyPromptFlavors.recommend('imagevote',r.bank)||'';});
-  field.oninput=()=>{r.custom=true;field.setCustomValidity('');};
-  $('#party-prompt').onsubmit=event=>{
-    event.preventDefault();if(round!==r||r.phase!=='party-prompt')return;
-    const prompt=field.value.trim();
-    if(!prompt||prompt.length>120){field.setCustomValidity('1~120자로 적어 주세요.');field.reportValidity();return;}
-    prompts.submit('imagevote',prompt);r.prompt=prompt;fx.play('deal');startVotes('imagevote');
-  };
+  shell('<h2>'+(paired?'투표할 선택지를 정해 주세요':'지목할 질문을 정해 주세요')+'</h2>'+
+    '<form id="party-prompt">'+questionMenu.markup(kind,'비밀 투표 시작')+'</form>');
+  questionMenu.mount($('#party-prompt'),{kind,load:()=>questionMenu.catalog(kind),apply:(value,manual)=>{
+    if(round!==r||r.phase!=='party-prompt')return false;
+    if(paired)r.pair=value;
+    else{
+      r.prompt=value;
+      if(manual)prompts.submit(kind,value);
+    }
+    fx.play('deal');startVotes(kind);
+  }});
 }
 function fingerScoreboard(){
   return '<ul class="party-scores" aria-label="남은 손가락">'+players.map((_,i)=>
@@ -988,7 +948,7 @@ function canVoteFor(index){
   return index<players.length&&(index!==round.pos||(round.voteKind==='imagevote'&&players.length===2));
 }
 function vote(){
-  const r=round;if(!r.revealed)return privateScreen(name(r.pos)+'님에게 폰을 주세요',r.voteKind==='imagevote'?'누가 누구를 골랐는지는 공개되지 않아요.':'선택은 마지막에 함께 공개해요.','비밀 투표',actions(r.voteKind==='minority'&&!r.pair?'':btn('내 투표 열기','open-vote'),r.voteKind==='minority'&&r.pos===0?btn('선택지 정하기','question-menu','quiet'):''));
+  const r=round;if(!r.revealed)return privateScreen(name(r.pos)+'님에게 폰을 주세요',r.voteKind==='imagevote'?'누가 누구를 골랐는지는 공개되지 않아요.':'선택은 마지막에 함께 공개해요.','비밀 투표',actions(btn('내 투표 열기','open-vote')));
   const items=r.voteKind==='minority'?r.pair.map((v,i)=>[i,v]):players.flatMap((v,i)=>canVoteFor(i)?[[i,v]]:[]);
   shell('<span class="turn-tag">비공개 · '+(r.pos+1)+' / '+players.length+'</span><h2>'+name(r.pos)+'님의 선택</h2><p>'+(r.voteKind==='imagevote'?esc(r.prompt)+'<br>'+(players.length===2?'둘이 할 때는 나도 고를 수 있어요.':'나를 제외한 한 명을 골라요.'):r.voteKind==='minority'?'둘 중 하나만 고른다면?':'가장 의심되는 한 명을 골라 주세요.')+'</p>'+choiceList(items,'cast'));
 }
@@ -1055,24 +1015,6 @@ function handle(action,value){
   if(game?.id==='stopwatch'&&action==='watch-setup'&&r?.phase==='done'){cleanup();return watchSetup()}
   if(game?.id==='truth'&&action==='truth-setup'&&r?.phase==='done'){cleanup();return intro()}
   if(game?.id==='truth'&&action==='truth-editor')return openTruthEditor();
-  if(action==='question-menu'&&r){
-    const menu=window.DrinkingQuestionMenu,kind=game.id,phase=r.phase,turn=r.turn;
-    const input=kind==='king'?$('#king-mission'):kind==='imagevote'?$('#party-question'):null;
-    return menu.open({kind,initial:input?.value||'',flavors:kind==='truth'?truthTools.enabledFlavors(r.truthSettings.mode):null,
-      load:flavor=>menu.catalog(kind,flavor,r.second!=null),apply:(value,manual,flavor)=>{
-        if(round!==r||r.phase!==phase||r.turn!==turn)return false;
-        if(kind==='truth'){
-          if(manual)prompts.submit('truth',value,flavor);
-          showTruthQuestion(r,flavor==='spicy',value);
-        }else if(kind==='minority'){
-          if(r.pos!==0||r.revealed)return false;
-          r.pair=value; r.revealed=true;vote();
-        }else{
-          if(!input?.isConnected)return false;
-          r.custom=true;input.value=value;input.setCustomValidity('');if(kind==='king')r.prompt=value;
-        }
-      }});
-  }
   if(action==='menu')return go('menu');if(action==='people')return playerSettings();if(action==='start')return begin();if(!r)return;
   switch(action){
     case 'tooth':{const i=Number(value);if(r.lock||r.pressed.has(i))return;r.pressed.add(i);
@@ -1131,8 +1073,6 @@ function handle(action,value){
       if(r.voteKind==='imagevote')r.counts[target]++;else r.votes.push(target);
       r.revealed=false;r.pos++;fx.play('vote');return r.pos===players.length?votesDone():vote();
     }
-    case 'new-prompt':r.custom=false;r.prompt=draw(prompts.kingChoices(r.bank,r.second!=null));fx.play('flip');return king();
-    case 'royal':return revealKingOrder();
     case 'king-yes':case 'king-no':{
       const n=Number(value);
       if(r.phase!=='king-answer'||n!==[r.number,r.second].find(i=>!r.answers[i]))return;

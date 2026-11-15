@@ -256,9 +256,9 @@ test('explicit truth and minority choices are shared, turn-scoped, and cannot ch
   const f=await fixture();t.after(()=>f.close());const [a,b,c]=f.users;
   const act=(who,kind,action,code,opts)=>f.publicRpc(who,kind==='truth'?'party_live_multiplayer':'party_vote_multiplayer',[kind,action,code,opts||{}]);
   async function create(kind){let r=await act(a,kind,'create','',{title:'질문 선택',password:'abcd',capacity:3,request_id:randomUUID()});for(const who of [b,c])r=await act(who,kind,'join',r.code,{password:'abcd'});return act(a,kind,'state',r.code);}
-  let r=await create('minority');const opt={round:r.round,revision:r.revision,choices:['첫 번째','두 번째']};
+  let r=await create('minority');assert.equal(r.choicesReady,false);const opt={round:r.round,revision:r.revision,choices:['첫 번째','두 번째']};
   await assert.rejects(act(b,'minority','minority_question',r.code,opt),/host_only/);
-  const old=r.choices;r=await act(a,'minority','minority_question',r.code,opt);assert.deepEqual(r.choices,opt.choices);
+  const old=r.choices;r=await act(a,'minority','minority_question',r.code,opt);assert.deepEqual(r.choices,opt.choices);assert.equal((await act(c,'minority','state',r.code)).choicesReady,true);
   await assert.rejects(act(b,'minority','vote',r.code,{round:r.round,target:1,choices:old}),/choices_changed/);
   await assert.rejects(act(b,'minority','vote',r.code,{round:r.round,target:1}),/choices_changed/);
   r=await act(b,'minority','vote',r.code,{round:r.round,target:1,choices:r.choices});

@@ -81,3 +81,11 @@ body.dp-playing[data-dp-kind="fingers"][data-dp-phase="answer"] #view .suite-hea
   body.dp-playing :is(#pair-form,#party-prompt) [data-finger-random] { justify-self: stretch; }
   body.dp-playing :is(#pair-form,#party-prompt) > [type="submit"] { grid-column: 2; margin: 0; }
 }
+
+body.dp-playing[data-dp-kind="fingers"] :is(#party-prompt,#pair-form) :is([data-finger-random],[data-finger-retry]) {
+  appearance:none; background:#28453f; color:#eff5e9; border:1px solid #86a99b;
+  border-radius:9px; padding:8px 14px; font:inherit; font-weight:650; box-shadow:none;
+}
+body.dp-playing[data-dp-kind="fingers"] :is([data-finger-random],[data-finger-retry]):focus-visible {
+  outline:2px solid #c7e3d4; outline-offset:2px;
+}
