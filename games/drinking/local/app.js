@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-king-moves1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-noir-drum1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -18,7 +18,7 @@ const crocGum=[
 const jawCount=crocGum.length*2;
 const CROC_TOOTH_COUNT=jawCount*2;
 const games=[...window.DrinkingTableView.games,{
-  id:'partyroulette',title:'러시안 룰렛',category:'운과 감각',short:'너 마셔! 별 탄환의 주인공은?',color:'#d0dfd1',min:2
+  id:'partyroulette',title:'러시안 룰렛',category:'운과 감각',short:'탄창을 돌리고, 한 사람씩 너 마셔!',color:'#28231f',min:2
 }];
 const pageIntroductions={
   liar:{
@@ -98,7 +98,6 @@ function artPath(id){
   return directory+id+'.webp';
 }
 function art(id,cls=''){
-  if(id==='partyroulette')return '<span class="table-mark table-mark-partyroulette '+cls+'" aria-hidden="true"></span>';
   if(id==='secretcount')return '<span class="game-art sc-emblem '+cls+'" aria-hidden="true"></span>';
   if(id==='stopwatch')return '<span class="game-art watch-art '+cls+'" aria-hidden="true">'+watchCase('0.00')+'</span>';
   return '<img class="game-art '+cls+'" src="'+artPath(id)+'" alt="" draggable="false" decoding="async">';
@@ -182,7 +181,8 @@ function markLocalHost(){
   const r=round;
   let candidates=[];
   switch(game.id){
-    case 'croc':case 'bomb':case 'secretcount':case 'partyroulette':case 'updown':candidates=[r.turn];break;
+    case 'croc':case 'bomb':case 'secretcount':case 'updown':candidates=[r.turn];break;
+    case 'partyroulette':candidates=[r.target];break;
     case 'bottle':candidates=[r.winningSeat];break;
     case 'initial':candidates=r.alive;break;
     case 'king':candidates=[r.roles.indexOf(r.number),r.second==null?-1:r.roles.indexOf(r.second)];break;
@@ -317,7 +317,7 @@ function end(title,desc,sound='result'){
 }
 function rouletteSetup(){
   cleanup();
-  round={phase:'wheel-empty',turn:0};
+  round={phase:'wheel-empty',turn:0,target:null,used:0,slots:players.length,angle:0};
   rouletteView();
 }
 function rouletteView(){
@@ -325,13 +325,13 @@ function rouletteView(){
   let title,description,button='';
   switch(r.phase){
     case 'wheel-empty':
-      title='별 탄환을 넣어 주세요';
-      description='참가자마다 한 칸, 당첨은 딱 한 칸이에요.';
+      title='탄창을 준비해 주세요';
+      description='참가자 '+players.length+'명 · 탄창 '+r.slots+'칸 · 당첨 1칸';
       button=btn('탄환 넣기','wheel-load');
       break;
     case 'wheel-loaded':
-      title='별 탄환이 들어갔어요';
-      description='탄창을 돌려 당첨 칸을 섞어 주세요.';
+      title='탄창을 돌려 주세요';
+      description='손가락으로 탄창을 훑고 놓아 보세요.';
       button=btn('탄창 돌리기','wheel-spin');
       break;
     case 'wheel-spin':
@@ -340,44 +340,93 @@ function rouletteView(){
       break;
     case 'wheel-press':
       title=name(r.turn)+'님 차례';
-      description='내 차례에 한 번 눌러 주세요.';
-      button=btn('너 마셔!','wheel-press');
-      break;
-    case 'wheel-pass':
-      title=name(r.turn)+'님은 통과!';
-      description=name(r.turn+1)+'님에게 폰을 넘겨 주세요.';
-      button=btn('다음 차례','wheel-pass','quiet');
+      description=(r.used?name(r.turn)+'님 통과! ':'')+'상대를 지목하고 너 마셔!를 눌러 주세요.';
+      button='<button type="button" class="start" data-action="wheel-press" disabled>너 마셔!</button>';
       break;
   }
-  const slots=Array.from({length:players.length},(_,i)=>{
-    const passed=i<r.turn || (i===r.turn && r.phase==='wheel-pass');
-    const symbol=passed?'✓':r.phase==='wheel-loaded'&&i===0?'★':'•';
-    return '<i style="--angle:'+(360*i/players.length)+'deg">'+symbol+'</i>';
+  const preparing=['wheel-empty','wheel-loaded','wheel-spin'].includes(r.phase);
+  const photo=preparing?'partyroulette-drum':'partyroulette';
+  const holes=Array.from({length:r.slots},(_,i)=>{
+    const marked=(r.phase==='wheel-loaded'&&i===0)?' is-marked':'';
+    return '<i class="drum-hole'+marked+'" style="--seat:'+360*i/r.slots+'deg"></i>';
   }).join('');
-  shell('<div class="party-wheel-board" data-phase="'+r.phase+'"><div class="party-wheel-art" aria-hidden="true">'+
-    '<div class="party-wheel-disc" style="--step:'+(360/players.length)+'deg">'+slots+'</div></div>'+
-    '<h2 tabindex="-1">'+title+'</h2><p>'+description+'</p>'+ (button?actions(button):'')+'</div>');
+  const nominee=r.phase==='wheel-press'?'<label class="roulette-target">지목할 사람 <select>'+
+    '<option value="">상대 선택</option>'+players.map((person,i)=>i===r.turn?'':'<option value="'+i+'">'+esc(person)+'</option>').join('')+'</select></label>':'';
+  const size=Math.min(19,145/r.slots);
+  const angleStyle='--hole-size:'+size+'%;--orbit:'+(-32/size*100)+'%;--angle:'+r.angle+'deg;--start:'+(r.from||0)+'deg;--duration:'+(r.duration||0)+'ms';
+  const drum='<span class="drum-metal" style="'+angleStyle+'"><span class="party-wheel-disc">'+holes+'</span></span>';
+  const control=r.phase==='wheel-loaded'?'<button type="button" class="drum-zoom" aria-label="탄창을 밀어 돌리기">'+drum+'</button>':
+    '<span class="drum-zoom" aria-hidden="true">'+drum+'</span>';
+  shell('<div class="party-wheel-board" data-phase="'+r.phase+'"><div class="party-wheel-art">'+
+    '<img src="'+artPath(photo)+'" alt="" draggable="false">'+control+'</div>'+
+    '<h2 tabindex="-1">'+title+'</h2><p>'+description+'</p>'+nominee+(button?actions(button):'')+'</div>');
+  const picker=app.querySelector('.roulette-target select');
+  if(picker)picker.onchange=()=>{
+    const seat=Number(picker.value);
+    r.target=picker.value!=='' && Number.isInteger(seat) && seat>=0 && seat<players.length && seat!==r.turn ? seat : null;
+    app.querySelector('[data-action="wheel-press"]').disabled=r.target===null;
+  };
+  if(r.phase==='wheel-loaded')bindDrumDrag(app.querySelector('button.drum-zoom'),r);
+}
+function bindDrumDrag(control,r){
+  const metal=control.firstElementChild;
+  let drag;
+  control.onpointerdown=e=>{
+    if(drag||e.button!==0)return;
+    drag={id:e.pointerId,x:e.clientX,y:e.clientY,angle:r.angle,last:r.angle,time:e.timeStamp,speed:0};
+    control.setPointerCapture(e.pointerId);
+  };
+  control.onpointermove=e=>{
+    if(drag?.id!==e.pointerId)return;
+    const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+    if(!drag.axis&&Math.max(Math.abs(dx),Math.abs(dy))<4)return;
+    drag.axis??=Math.abs(dx)>=Math.abs(dy)?'x':'y';
+    r.angle=drag.angle+(drag.axis==='x'?dx:-dy)*300/Math.max(1,control.clientWidth);
+    drag.speed=(r.angle-drag.last)/Math.max(8,e.timeStamp-drag.time);
+    drag.time=e.timeStamp;drag.last=r.angle;
+    metal.style.setProperty('--angle',r.angle+'deg');
+  };
+  control.onpointerup=e=>{
+    if(drag?.id!==e.pointerId)return;
+    const gesture=drag;drag=null;
+    if(gesture.axis){
+      const momentum=gesture.speed*Math.max(0,1-(e.timeStamp-gesture.time)/220);
+      const direction=Math.sign(momentum)||Math.sign(r.angle-gesture.angle)||1;
+      spinRoulette(direction,Math.abs(momentum));
+    }
+  };
+  control.onlostpointercapture=control.onpointercancel=()=>{drag=null;};
+  control.onclick=()=>spinRoulette(1,1);
+}
+function spinRoulette(direction,speed){
+  const r=round;
+  if(game?.id!=='partyroulette'||r?.phase!=='wheel-loaded')return;
+  r.hit=rand(r.slots);
+  const strength=Math.min(4,Math.max(.35,speed));
+  r.duration=window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:Math.round(1050+strength*360);
+  r.from=r.angle;
+  const target=-r.hit*360/r.slots;
+  const remaining=((direction*(target-r.from))%360+360)%360;
+  r.angle+=direction*(360*Math.ceil(strength)+remaining);
+  r.phase='wheel-spin';fx.play('turn');rouletteView();
+  app.querySelector('.party-wheel-board h2').focus({preventScroll:true});
+  r.spinTimer=setTimeout(()=>{
+    if(round!==r||r.phase!=='wheel-spin')return;
+    r.phase='wheel-press';rouletteView();
+    if(!document.querySelector('[aria-modal="true"],dialog[open]'))app.querySelector('.roulette-target select').focus({preventScroll:true});
+  },r.duration);
 }
 function rouletteAction(action){
   const r=round;
   if(!r)return;
   if(action==='wheel-load'&&r.phase==='wheel-empty'){
     r.phase='wheel-loaded';fx.play('deal');
-  }else if(action==='wheel-spin'&&r.phase==='wheel-loaded'){
-    r.hit=rand(players.length);
-    r.phase='wheel-spin';
-    fx.play('turn');
-    const duration=window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:850;
-    r.spinTimer=setTimeout(()=>{
-      if(round!==r||r.phase!=='wheel-spin')return;
-      r.phase='wheel-press';rouletteView();
-      if(!document.querySelector('[aria-modal="true"],dialog[open]'))app.querySelector('[data-action="wheel-press"]').focus({preventScroll:true});
-    },duration);
-  }else if(action==='wheel-press'&&r.phase==='wheel-press'){
-    if(r.turn===r.hit)return end('팡! '+players[r.turn]+'님 당첨!','이번 건배는 '+players[r.turn]+'님 차례예요.');
-    r.phase='wheel-pass';fx.play('tap');
-  }else if(action==='wheel-pass'&&r.phase==='wheel-pass'){
-    r.turn++;r.phase='wheel-press';fx.play('turn');
+  }else if(action==='wheel-spin'){
+    return spinRoulette(1,1);
+  }else if(action==='wheel-press'&&r.phase==='wheel-press'&&r.target!==null){
+    if(r.used===r.hit)return end('팡! '+players[r.target]+'님 당첨!',players[r.turn]+'님이 지목한 '+players[r.target]+'님이 마실 차례예요.');
+    r.used++;r.angle+=360/r.slots;
+    r.turn=r.target;r.target=null;fx.play('turn');
   }else return;
   rouletteView();
   app.querySelector('.party-wheel-board h2').focus({preventScroll:true});
