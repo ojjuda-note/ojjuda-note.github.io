@@ -502,3 +502,62 @@ test('5,000 new cards reach the game selectors with their reviewed flavors',asyn
   await assert.rejects(f.publicRpc(f.users[14],'drinking_content',['pool',{kinds:games,include_flavors:true}]));
   assert.deepEqual(ui.errors,[]);
 });
+
+test('one-device names can be saved, reopened and reset without clearing another member',async t=>{
+  const key='oj.party.member-a.players', other='oj.party.member-b.players';
+  const open=async values=>{
+    const f=await screen({url:'/games/drinking/local/#menu',prepare(w){
+      w.scrollTo=()=>{};
+      for(const [k,v] of Object.entries(values))w.localStorage.setItem(k,v);
+    }});
+    t.after(()=>f.close());
+    f.click('[data-action="people"]');
+    return f;
+  };
+  const names=f=>[...f.find('#name-fields').querySelectorAll('input')].map(input=>input.value);
+  const edit=(f,index,value)=>{
+    const field=f.find('#name-fields').querySelectorAll('input')[index];
+    field.value=value;field.dispatchEvent(new f.w.Event('input',{bubbles:true}));
+  };
+  const first=await open({[key]:JSON.stringify(['하나','두리']),[other]:'["파랑","노랑"]'});
+  assert.deepEqual(names(first),['하나','두리']);
+  first.click('#more');
+  edit(first,0,' 세나 ');edit(first,2,'두리');
+  first.submit('#player-form');
+  assert.ok(first.find('#settings').open);
+  assert.equal(first.find('#name-fields [data-index="2"]').validity.customError,true);
+  edit(first,2,'다온');
+  first.click('#player-form [type=submit]');
+  assert.equal(first.find('#settings').open,false);
+  assert.deepEqual(JSON.parse(first.w.localStorage.getItem(key)),['세나','두리','다온']);
+  assert.match(first.find('#roster-feedback').textContent,/3명을 저장/);
+
+  const again=await open({...first.w.localStorage});
+  assert.deepEqual(names(again),['세나','두리','다온']);
+  edit(again,0,'보류');again.click('#dismiss');again.click('[data-action="people"]');
+  assert.equal(names(again)[0],'세나');
+  again.click('#reset-players');
+  const defaults=['참가자 1','참가자 2','참가자 3','참가자 4'];
+  assert.deepEqual(names(again),defaults);
+  assert.equal(again.w.localStorage.getItem(key),null);
+  assert.deepEqual(JSON.parse(again.w.localStorage.getItem(other)),['파랑','노랑']);
+  again.click('#dismiss');
+  assert.match(again.find('.main-roster h2').textContent,/4명/);
+  assert.deepEqual(names(await open({...again.w.localStorage})),defaults);
+});
+
+test('participant storage errors are visible and edits remain usable',async t=>{
+  const key='oj.party.member-a.players';
+  const f=await screen({url:'/games/drinking/local/#menu',prepare(w){
+    w.scrollTo=()=>{};
+    w.localStorage.setItem(key,'["노을","구름"]');
+    w.Storage.prototype.setItem=w.Storage.prototype.removeItem=()=>{throw Error('storage unavailable');};
+  }});
+  t.after(()=>f.close());
+  f.click('[data-action="people"]');f.click('#reset-players');
+  assert.match(f.find('#player-status').textContent,/지우지 못했어요/);
+  f.click('#more');f.click('#player-form [type=submit]');
+  assert.match(f.find('#roster-feedback').textContent,/저장하지 못했어요/);
+  assert.match(f.find('.main-roster h2').textContent,/3명/);
+  assert.equal(f.w.localStorage.getItem(key),'["노을","구름"]');
+});
