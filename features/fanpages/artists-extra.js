@@ -1690,7 +1690,7 @@
       debut: '2020.08.07', debutWork: 'THE FIRST STEP : CHAPTER ONE', songs: ['BOY', '들어와 (COME TO ME)'],
       concept: '2020년 8월 BOY로 데뷔한 YG의 10인조 그룹. 2026년 NEW WAV와 SHOCK에서 힙합 사운드를 선보였다.',
       official: 'https://ygfamily.com/ko/artists/treasure/profile', youtube: 'https://www.youtube.com/@TREASURE',
-      checkedAt: '2026.11.13',
+      checkedAt: '2026.11.15',
       photo: '240405 트레저 TTA Malaysia 1st Place.jpg', photoLabel: '2024년 단체', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
       morePhotos: [
         commonsPhoto('230428 TREASURE(트레저) Yoshi ICN.jpg', '요시 · 인천공항', '2023', 'K-POPIT 케이팝잇 (TENASIA)', 'CC BY 3.0'),
@@ -1733,9 +1733,9 @@
       ],
       appearances: [
         {
-          "date": "2026-11-14",
-          "title": "MBC 쇼! 음악중심 출연",
-          "sub": "15:20 KST 방송 일정 · YG 공식 달력 · 개별 무대·사전녹화·방청 안내는 별도 공지 확인",
+          "date": "2026-11-15",
+          "title": "SBS 인기가요 출연",
+          "sub": "15:20 KST 방송 예정 · YG 공식 일정 · 개별 무대·사전녹화·방청 안내는 공식 공지 확인",
           "href": "https://ygfamily.com/ko/artists/treasure/schedule"
         },
         {
