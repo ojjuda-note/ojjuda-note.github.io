@@ -1416,12 +1416,12 @@
       morePhotos: [
         commonsPhoto('260228 ATEEZ Choi San @ Dolce & Gabbana FW 26.27 Show in Milan.jpg', '산 · 밀라노 패션위크', '2026', 'sublimitas viii · Flickr 원작 · Commons FlickreviewR 확인 · 크롭본', 'CC BY-SA 4.0')
       ],
-      checkedAt: '2026.11.13',
+      checkedAt: '2026.11.15',
       music: [
         {
           "title": "GOLDEN HOUR : Part.6",
           "date": "2026.11.13",
-          "type": "미니 15집 · 11.13 14:00 발매 예정 · 타이틀 UP",
+          "type": "미니 15집 · 11.13 14:00 발매 · 타이틀 UP",
           "songs": [
             "ANEMIA",
             "DRIP",
@@ -1474,28 +1474,22 @@
       ],
       appearances: [
         {
-          "date": "2026-11-14",
-          "title": "MMA 2026 Global Day 출연",
-          "sub": "서울 고척스카이돔 · 카카오엔터테인먼트 · 개별 출연 시각은 공식 안내 확인",
-          "href": "https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/"
+          "date": "2026-11-15",
+          "title": "SBS 인기가요 UP 컴백 무대",
+          "sub": "15:20 KST 생방송 · 서울 SBS 등촌동 공개홀 · 사전녹화 종료 · 방청은 KQ 공식 안내 확인",
+          "href": "https://ateez.kqent.com/surveys/6af55701b2aee70bd8ed5ff0"
         },
         {
-          "date": "2026-11-13",
-          "title": "GOLDEN HOUR : Part.6 발매 예정",
-          "sub": "14:00 KST · 타이틀 UP · KQ 공식 발표",
-          "href": "https://ateez.kqent.com/en/contents/6ade0ef2ba711e7b9ec3e59c"
+          "date": "2026-11-19",
+          "title": "NHK E테레 한글! 나비 방송",
+          "sub": "23:00~23:20 JST · 일본 NHK E테레 · 재방송 11/20·11/25",
+          "href": "https://ateez-official.jp/contents/1119482"
         },
         {
-          "date": "2026-11-13",
-          "title": "KBS2 뮤직뱅크 출연",
-          "sub": "사전녹화 08:45 / 생방송 17:10 KST · KBS 신관 공개홀 · 방청 신청 종료, 선정 참가자 대상 · 집합 안내는 공식 공지 확인",
-          "href": "https://ateez.kqent.com/surveys/6af41182a993a556cdd4e773"
-        },
-        {
-          "date": "2026-11-14",
-          "title": "MBC 쇼! 음악중심 사전녹화",
-          "sub": "05:30 KST · 상암 MBC 신사옥 공개홀 · 방청 신청 종료, 선정 참가자 대상 · 집합 안내는 공식 공지 확인",
-          "href": "https://ateez.kqent.com/surveys/6af55eeab2aee70bd8ed5ff5"
+          "date": "2026-11-26",
+          "title": "NHK E테레 한글! 나비 방송",
+          "sub": "23:00~23:20 JST · 일본 NHK E테레 · 재방송 11/27·12/02",
+          "href": "https://ateez-official.jp/contents/1119483"
         },
         {
           "date": "2027-01-22",
@@ -1514,6 +1508,12 @@
           "title": "ZERO TO ALL 인천 월드투어",
           "sub": "16:00 · 인천 인스파이어 NAVER ARENA KST · 예매·변경은 공식 공지 확인",
           "href": "https://ateez.kqent.com/contents/6ae94a808d38027a8d6b8b65"
+        },
+        {
+          "date": "2027-01-31",
+          "title": "Part.6 발매 기념 도쿄 팬 이벤트",
+          "sub": "일본 도쿄 도내 · 사인회·하트터치·하이터치·촬영 행사 · 추첨 응모 11/17부터 순차 진행, 세부 시간·장소 추후 공지",
+          "href": "https://ateez-official.jp/contents/1123028"
         },
         {
           "date": "2027-02-02",
@@ -1588,6 +1588,36 @@
       ],
       news: [
         {
+          "date": "2026.11.14",
+          "tag": "영상",
+          "title": "UP 공식 비주얼라이저 공개",
+          "href": "https://ateez.kqent.com/contents/6af8711332e56d41748a8dcf"
+        },
+        {
+          "date": "2026.11.14",
+          "tag": "방송",
+          "title": "MMA 2026 무대·레드카펫 참석",
+          "href": "https://news.tvbs.com.tw/entertainment/jk-pop/4050433"
+        },
+        {
+          "date": "2026.11.13",
+          "tag": "컴백",
+          "title": "GOLDEN HOUR : Part.6 발매 · UP 공식 MV 공개",
+          "href": "https://ateez.kqent.com/en/contents/6af5b1ecf0d69d09142fc301"
+        },
+        {
+          "date": "2026.11.13",
+          "tag": "이벤트",
+          "title": "Part.6 음원 다운로드 이벤트 · 11/15 23:59까지",
+          "href": "https://ateez.kqent.com/contents/6af444ad12a914425c3f85ce"
+        },
+        {
+          "date": "2026.11.12",
+          "tag": "방송",
+          "title": "11/15 SBS 인기가요 UP 컴백 무대 참가 공지",
+          "href": "https://ateez.kqent.com/surveys/6af55701b2aee70bd8ed5ff0"
+        },
+        {
           "date": "2026.11.12",
           "tag": "영상",
           "title": "UP 공식 뮤직비디오 티저 2 공개",
@@ -1608,14 +1638,14 @@
         {
           "date": "2026.10.25",
           "tag": "컴백",
-          "title": "미니 15집 Part.6 트랙리스트 발표 · 11.13 정식 발매 예정",
+          "title": "미니 15집 Part.6 트랙리스트 발표 · 11.13 정식 발매 확정",
           "href": "https://ateez.kqent.com/en/contents/6ade0ef2ba711e7b9ec3e59c"
         }
       ],
       merch: [
         {
           "title": "GOLDEN HOUR : Part.6 공식 음반 3종 세트",
-          "sub": "KQ TOKTOQ 공식 음반 · 11/13 발매 예정 · 현재 판매 조건·재고는 판매처 확인",
+          "sub": "KQ TOKTOQ 공식 음반 · 11/13 정식 발매 · 현재 판매 조건·재고는 판매처 확인",
           "href": "https://ateez.kqent.com/shop/products/243"
         },
         {
