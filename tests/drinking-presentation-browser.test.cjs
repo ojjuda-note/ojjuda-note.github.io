@@ -793,3 +793,30 @@ test('one phone can choose or write prompts inline and read the fingers recommen
   }
   assert.deepEqual(session.errors,[]);
 });
+
+test('party roulette plays from the phone menu through a turn and a named result',async t=>{
+  const browser=await chromium.launch(launchOptions);t.after(()=>browser.close());
+  const session=await browserSession(browser,{actor:'wheel-member',localPlayers:['보리','나리'],
+    viewport:{width:360,height:640},rpc:()=>({})});
+  const page=session.page;
+  await page.addInitScript(()=>{Math.random=()=>.75;});
+  const {revision}=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../game-release.json'),'utf8'));
+  await page.goto(origin+'/games/drinking/local/?v='+revision+'#menu');
+  await page.getByRole('button',{name:/러시안 룰렛/}).click();
+  await dismissGuide(page);
+  await page.getByRole('button',{name:'탄환 넣기'}).click();
+  await page.getByRole('button',{name:'탄창 돌리기'}).click();
+  const press=page.getByRole('button',{name:'너 마셔!'});
+  await press.waitFor({state:'visible'});
+  const box=await press.boundingBox();
+  assert.ok(box.y>=0&&box.y+box.height<=640,'turn button fits the phone screen');
+  assert.equal(await page.locator('.party-wheel-board h2').innerText(),'보리님 차례');
+  await screenshot(page,'partyroulette-360x640');
+  await press.click();
+  await page.getByRole('button',{name:'다음 차례'}).click();
+  await press.click();
+  const result=page.locator('[data-drinking-dialog="result"]');
+  await result.waitFor();
+  assert.match(await result.innerText(),/나리님 당첨/);
+  assert.deepEqual(session.errors,[]);
+});
