@@ -13,6 +13,10 @@
   const tastes=window.PartyPromptFlavors;
   const format=value=>Array.isArray(value)?value.join(' / '):value;
 
+  function kingMission(text,first,second){
+    if(!Number.isInteger(first)||first<1||!Number.isInteger(second)||second<1||first===second)return text;
+    return text.replace(/^둘이 (?=(?:먼저|나중에) 뽑힌 사람)/,'').replaceAll('먼저 뽑힌 사람',first+'번').replaceAll('나중에 뽑힌 사람',second+'번');
+  }
   function draft(){
     return {mode:'list',topic:'전체',selected:null,written:['',''],ownFlavor:'mild'};
   }
@@ -30,7 +34,7 @@
       '<p role="status"></p><button type="submit" class="start action" disabled>'+submit+'</button></div>';
   }
 
-  function mount(form,{kind,state=draft(),load,apply}){
+  function mount(form,{kind,state=draft(),load,apply,display=format}){
     const picker=form.querySelector('.question-picker');
     const find=selector=>picker.querySelector(selector);
     const category=find('[data-category]'),selection=find('[data-question]'),flavor=find('[data-prompt-flavor]');
@@ -59,7 +63,7 @@
       find('[data-another]').hidden=rows.length<2;
       selection.disabled=!rows.length;category.disabled=category.options.length<2;
       const selected=rows[selection.selectedIndex];
-      find('[data-selected]').textContent=selected?format(selected):'';
+      find('[data-selected]').textContent=selected?display(selected):'';
       status.textContent=manual?(paired&&fields[0].value.trim()&&!valid()&&fields[0].value.trim().toLowerCase()===fields[1].value.trim().toLowerCase()?'서로 다른 선택지를 적어 주세요.':''):
         loading?'문구를 불러오는 중…':failed?'목록을 불러오지 못했어요. 다시 시도하거나 직접 입력해 주세요.':
         !rows.length?'이 수위에 맞는 문구가 없어요. 다른 수위나 직접 입력을 골라 주세요.':'';
@@ -80,10 +84,15 @@
       let selected=rows.find(line=>JSON.stringify(line)===JSON.stringify(state.selected));
       if(selected===undefined)selected=tastes.recommend(kind,rows,undefined,flavor.value,level);
       state.selected=selected;
-      selection.replaceChildren(...rows.map((line,i)=>new Option(format(line),String(i))));
+      selection.replaceChildren(...rows.map((line,i)=>new Option(display(line),String(i))));
       selection.selectedIndex=rows.indexOf(selected);sync();
     }
-    async function refresh(){
+    async function refresh({labelsOnly=false}={}){
+      if(labelsOnly){
+        rows.forEach((line,i)=>{selection.options[i].text=display(line);});
+        sync();
+        return;
+      }
       const serial=++request;
       loading=true;failed=false;bank=[];rows=[];selection.replaceChildren();sync();
       try{
@@ -138,5 +147,5 @@
     const items=prompts.list(kind);
     return kind==='king'?prompts.kingChoices(items,pair):items;
   }
-  window.DrinkingQuestionMenu={draft,markup,mount,catalog};
+  window.DrinkingQuestionMenu={draft,markup,mount,catalog,kingMission};
 })();

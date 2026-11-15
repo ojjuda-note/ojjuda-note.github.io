@@ -404,6 +404,73 @@ test('sentence menus filter mild and spicy, alternate mixed recommendations and 
   assert.ok(ui.find('.play-body').textContent.includes(field.value));
 });
 
+test('king pair orders follow both selected card numbers in local and multiplayer games',async t=>{
+  const solo='손을 들기.';
+  const template='둘이 먼저 뽑힌 사람이 나중에 뽑힌 사람 손바닥에 숫자를 쓰면 나중에 뽑힌 사람이 맞히기.';
+  const bank={banks:{king:[solo,template]},flavors:{king:[null,'spicy']}};
+  const expected=(a,b)=>a+'번이 '+b+'번 손바닥에 숫자를 쓰면 '+b+'번이 맞히기.';
+  for(const local of [true,false])await t.test(local?'one phone':'separate phones',async st=>{
+    let room={code:'KING01',title:'왕게임',capacity:4,players:['가','나','다','라'],me:0,king:0,card:0,round:1,revision:1,phase:'order'};
+    const ui=await screen({url:local?'/games/drinking/local/#king':'/games/king/?room=KING01',
+      ...(local?{prepare(w){w.scrollTo=()=>{};}}:{scripts:['/games/drinking/prompt-submissions.js','/games/king/room.js']}),
+      rpc(name,args){
+        if(name==='drinking_content')return bank;
+        if(name==='king_multiplayer'){
+          if(args.p_action==='order'){
+            const {number,second,mission}=args.p_options;
+            room={...room,phase:'response',revision:2,number,second,mission,recipient:number,secondRecipient:second,accepted:[]};
+          }
+          return room;
+        }
+        return {ok:true};
+      }});
+    st.after(()=>ui.close());
+    const form=local?'#king-order-form':'#order';
+    function deal(){
+      ui.click('[data-action="start"]');
+      for(let i=0;i<4;i++){ui.click('[data-action="reveal"]');ui.click('[data-action="hide"]');}
+    }
+    if(local)deal();
+    const select=(selector,value)=>{
+      const el=ui.find(selector);
+      el.value=String(value);el.dispatchEvent(new ui.w.Event('change',{bubbles:true}));
+    };
+    const first=local?'#king-number':'#order [name="number"]',second=local?'#king-second':'#order [name="second"]';
+    const chosen=()=>ui.find('[data-selected]')?.textContent;
+    await until(()=>chosen()===solo,'solo catalog');
+    select(second,2);
+    await until(()=>chosen()===expected(1,2),'pair loaded');
+    const catalogReads=()=>ui.calls.filter(c=>c.name==='drinking_content').length;
+    const reads=catalogReads();
+    select(first,3);select(second,1);
+    assert.equal(chosen(),expected(3,1));
+    assert.deepEqual([...ui.find('[data-question]').options].map(option=>option.text),[expected(3,1)]);
+    assert.equal(catalogReads(),reads,'changing numbers within a pair only changes display labels');
+    assert.deepEqual([...ui.w.DrinkingPrompts.list('king')],[solo,template]);
+    select(first,1);
+    await until(()=>chosen()===solo,'a repeated number restores the solo catalog');
+    assert.equal(ui.find(second).value,'');
+    select(first,3);select(second,1);
+    await until(()=>chosen()===expected(3,1),'second pair');
+    ui.submit(form);
+    const heading=local?'.king-order h2':'.king-order h1';
+    await until(()=>ui.find(heading)?.textContent===expected(3,1),'revealed numbered order');
+    if(!local){
+      assert.equal(room.mission,expected(3,1),'all room clients receive the same resolved round snapshot');
+    }else{
+      ui.click('[data-action="king-no"]');
+      deal();select(second,2);
+      ui.click('[data-mode="write"]');
+      const field=ui.find('#prompt-text-0');
+      field.value='먼저 뽑힌 사람이 <b>나중에 뽑힌 사람</b>을 부르기.';
+      field.dispatchEvent(new ui.w.Event('input'));ui.submit(form);
+      assert.equal(ui.find(heading).textContent,field.value,'manual missions remain literal');
+      assert.equal(ui.find(heading+' b'),null);
+    }
+    assert.deepEqual(ui.errors,[]);
+  });
+});
+
 test('the lobby invites an eligible friend and accepting the notification joins that exact room',async t=>{
   const fs=require('node:fs'), path=require('node:path');
   const migration=name=>fs.readFileSync(path.join(__dirname,'../supabase/migrations',name),'utf8');
@@ -460,7 +527,9 @@ test('5,000 new cards reach the game selectors with their reviewed flavors',asyn
   const before=(await pool({kinds:games})).banks;
   const files=fs.readdirSync(dir);
   const {reviewedFlavorCatalog}=await import('../scripts/build-drinking-flavor500-reread.mjs');
-  for(const name of ['drinking_prompt_flavors',...games.map(k=>'drinking_flavor500_'+k),'drinking_flavor500_reread']){
+  const {kingPairMovePlan}=await import('../scripts/build-drinking-king-pair-moves.mjs');
+  const kingPlan=kingPairMovePlan();
+  for(const name of ['drinking_prompt_flavors',...games.map(k=>'drinking_flavor500_'+k),'drinking_flavor500_reread','drinking_king_pair_moves']){
     const match=files.filter(file=>file.endsWith('_'+name+'.sql'));
     assert.equal(match.length,1,name);
     await f.db.exec(fs.readFileSync(path.join(dir,match[0]),'utf8'));
@@ -471,7 +540,7 @@ test('5,000 new cards reach the game selectors with their reviewed flavors',asyn
   t.after(()=>ui.close());
   const {DrinkingPrompts:prompts,PartyPromptFlavors:tastes}=ui.w;
   for(const kind of games){
-    const data=reviewedFlavorCatalog(kind);
+    const data=kind==='king'?kingPlan.catalog:reviewedFlavorCatalog(kind);
     assert.equal(await prompts.refresh(kind),true);
     if(kind==='truth'){
       const changes=JSON.parse(fs.readFileSync(path.join(root,'games/drinking/content/corrections/flavor500-reread.json'),'utf8')).truth;
@@ -485,7 +554,12 @@ test('5,000 new cards reach the game selectors with their reviewed flavors',asyn
       continue;
     }
     const previous=before[kind].length,items=prompts.list(kind);
-    assert.deepEqual(JSON.parse(JSON.stringify(items.slice(0,previous))),before[kind]);
+    const expectedLegacy=kind==='king'?kingPlan.legacy:before[kind];
+    assert.deepEqual(JSON.parse(JSON.stringify(items.slice(0,previous))),expectedLegacy);
+    if(kind==='king'){
+      for(const edit of kingPlan.legacyEdits)assert.equal(tastes.level(kind,edit.to),edit.flavor);
+      assert.equal(prompts.kingChoices(items,true).length,682);
+    }
     assert.equal(items.length,previous+1000);
     for(const flavor of ['mild','spicy']){
       const filtered=tastes.filter(kind,items.slice(previous),flavor);
