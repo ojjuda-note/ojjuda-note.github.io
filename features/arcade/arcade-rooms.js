@@ -293,6 +293,25 @@
       options.renderModal(`<div class="mhead"><h3>방 #${room.room_no} 참여</h3><button class="btn sm ghost" data-act="close">닫기</button></div><form id="arcade-join-form"><p>${escape(room.title)}</p>${layoutSelect('hehe')}<div class="mfoot"><button type="submit" class="btn pri">이 배치로 참여</button></div></form>`, '장기방 참여');
       document.getElementById('arcade-join-form').onsubmit = event => { event.preventDefault(); void join(room, event.target.elements.layout.value); };
     }
+    async function cancelNative(room, actor) {
+      busy = true;
+      const revision = ++epoch;
+      render();
+      try {
+        await options.onCancelNative(room);
+        if (!current(actor) || revision !== epoch) return false;
+        rooms = rooms.filter(item => item.room_no !== room.room_no);
+        if (mine?.room_no === room.room_no) {
+          mine = null;
+          waitingRoom = null;
+        }
+        return true;
+      } finally {
+        busy = false;
+        render();
+        schedule();
+      }
+    }
     async function click(event) {
       if (event.target.closest('[data-drinking-hub]') && !drinkingAllowed()) {
         event.preventDefault();
@@ -310,7 +329,11 @@
       if (action === 'join') chooseRoom(room);
       if (action === 'cancel') {
         const actor = owner;
-        try { if(room.native)await options.onCancelNative(room);else await perform('cancel', { p_room: room.room_no }, actor); if (current(actor)) options.notify('대전방을 닫았어요.'); }
+        if (!current(actor)) return;
+        try {
+          const canceled = room.native ? await cancelNative(room, actor) : await perform('cancel', { p_room: room.room_no }, actor);
+          if (canceled && current(actor)) options.notify('대전방을 닫았어요.');
+        }
         catch (error) { if (current(actor)) options.notify(message(error)); }
         void poll(true);
       }
