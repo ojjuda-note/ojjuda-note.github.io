@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#faf7ed">
   <title>오쭈다</title>
-  <link rel="stylesheet" href="hub.css?v=20261115-drinking-invites1">
+  <link rel="stylesheet" href="hub.css?v=20261116-drinking-entry-scenes1">
   <link rel="stylesheet" href="/games/drinking/access.css?v=20261116-drinking-3d-art1">
   <script defer src="/config.js"></script>
   <script defer src="/games/matgo/matgo-access.js?v=20261114-drinks-adult1"></script>
@@ -24,13 +24,19 @@
   <main>
     <section id="play-modes" hidden aria-labelledby="modes-title">
       <div class="mode-intro">
-        <img src="/assets/design/games/drinking.svg?v=20261114-drinks-local1" alt="" width="120" height="84">
+        <img src="assets/mode-entrance.webp" width="1344" height="507" alt="">
         <h1 id="modes-title">술게임</h1>
       </div>
       <nav class="mode-options" aria-label="플레이 방식">
         <a id="resume-drinks" hidden><strong>참여 중인 방으로 돌아가기</strong></a>
-        <a id="local-play" href="local/?v=20261116-shapematch-records1"><strong>한 대로 플레이</strong><span>휴대폰 한 대에 참가자 이름을 적고 함께 즐겨요.</span></a>
-        <a href="?mode=multi"><strong>멀티플레이</strong><span>각자 휴대폰으로 같은 방에 입장해요.</span></a>
+        <a class="mode-card" id="local-play" href="local/?v=20261116-drinking-entry-scenes1">
+          <img src="assets/mode-local.webp" width="720" height="480" alt="">
+          <div class="mode-copy"><strong>한 대로 플레이</strong><span>휴대폰 한 대를 함께 써요.</span></div>
+        </a>
+        <a class="mode-card" href="?mode=multi">
+          <img src="assets/mode-multi.webp" width="720" height="480" alt="">
+          <div class="mode-copy"><strong>멀티플레이</strong><span>각자 휴대폰으로 같은 방에 모여요.</span></div>
+        </a>
       </nav>
     </section>
     <section id="welcome" hidden>

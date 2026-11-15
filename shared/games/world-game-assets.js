@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261116-arcade-covers1'
+ const revision='20261116-drinking-entry-scenes1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -20,7 +20,7 @@
   secretcount:'1.1.2',
   updown:'1.4.1',
   partyroulette:'1.4.1',
-  drinking:'1.23.3',
+  drinking:'1.23.4',
   shapematch:'1.0.3',
   tarot:'1.10.2',
   saju:'2.15.1',
