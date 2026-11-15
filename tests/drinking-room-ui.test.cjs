@@ -449,3 +449,51 @@ test('the lobby invites an eligible friend and accepting the notification joins 
   assert.equal((await db.publicRpc(friend,'drinking_room',['state',room.code,{}])).me,1);
   assert.equal((await invite(friend,'list')).invites.length,0);
 });
+
+test('5,000 new cards reach the game selectors with their reviewed flavors',async t=>{
+  const fs=require('node:fs'),path=require('node:path');
+  const root=path.join(__dirname,'..');
+  const dir=path.join(root,'supabase/migrations');
+  const games=['king','truth','minority','imagevote','fingers'];
+  const f=await fixture();t.after(()=>f.close());
+  const pool=options=>f.publicRpc(f.users[0],'drinking_content',['pool',options]);
+  const before=(await pool({kinds:games})).banks;
+  const files=fs.readdirSync(dir);
+  for(const name of ['drinking_prompt_flavors',...games.map(k=>'drinking_flavor500_'+k)]){
+    const match=files.filter(file=>file.endsWith('_'+name+'.sql'));
+    assert.equal(match.length,1,name);
+    await f.db.exec(fs.readFileSync(path.join(dir,match[0]),'utf8'));
+  }
+  const ui=await screen({actor:f.users[0],url:'/games/drinking/local/',
+    scripts:['/games/drinking/prompt-flavors.js','/games/drinking/prompt-submissions.js'],
+    rpc:(name,args)=>f.publicRpc(f.users[0],name,rpcArgs(name,args))});
+  t.after(()=>ui.close());
+  const {DrinkingPrompts:prompts,PartyPromptFlavors:tastes}=ui.w;
+  for(const kind of games){
+    const data=JSON.parse(fs.readFileSync(path.join(root,'games/drinking/content/expansions/flavor500',kind+'.json'),'utf8'));
+    assert.equal(await prompts.refresh(kind),true);
+    if(kind==='truth'){
+      for(const flavor of ['mild','spicy']){
+        assert.equal(data[flavor].length,500);
+        assert.deepEqual(Array.from(prompts.truth()[flavor]),[...before.truth[flavor],...data[flavor]]);
+      }
+      continue;
+    }
+    const previous=before[kind].length,items=prompts.list(kind);
+    assert.deepEqual(JSON.parse(JSON.stringify(items.slice(0,previous))),before[kind]);
+    assert.equal(items.length,previous+1000);
+    for(const flavor of ['mild','spicy']){
+      const filtered=tastes.filter(kind,items.slice(previous),flavor);
+      assert.equal(filtered.length,500);
+      assert.deepEqual(JSON.parse(JSON.stringify(filtered)),data[flavor]);
+      if(kind==='king'){
+        assert.equal(prompts.kingChoices(filtered,false).length,250);
+        assert.equal(prompts.kingChoices(filtered,true).length,250);
+      }
+      assert.ok(filtered.includes(tastes.recommend(kind,items.slice(previous),undefined,flavor)));
+    }
+  }
+  assert.equal((await pool({kinds:games})).flavors,undefined,'older clients retain the original shape');
+  await assert.rejects(f.publicRpc(f.users[14],'drinking_content',['pool',{kinds:games,include_flavors:true}]));
+  assert.deepEqual(ui.errors,[]);
+});

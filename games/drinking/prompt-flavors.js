@@ -1,7 +1,7 @@
 /* Keep the preference per member on this device. Personal labels are scoped to the current page. */
 (() => {
   'use strict';
-  const memory=new Map(),custom=new Map(),next=new Map();
+  const memory=new Map(),custom=new Map(),catalog=new Map(),next=new Map();
   const member=document.getElementById('access-content')?.dataset.member||'';
   const key=kind=>'oj.party.'+member+'.promptMode.'+kind;
   const modes=['mild','spicy','mixed'];
@@ -11,7 +11,16 @@
   function set(kind,value){if(!modes.includes(value))return;memory.set(kind,value);try{localStorage.setItem(key(kind),value);}catch{}}
   function signature(kind,value){return JSON.stringify([kind,value]);}
   function tag(kind,value,flavor){if(['mild','spicy'].includes(flavor))custom.set(signature(kind,value),flavor);}
-  function level(kind,value){return custom.get(signature(kind,value))||(adult.test(Array.isArray(value)?value.join(' '):value)?'spicy':'mild');}
+  function setCatalog(kind,values,labels){
+    const entries=new Map();
+    if(Array.isArray(labels)&&labels.length===values.length){
+      labels.forEach((label,i)=>{
+        if(label==='mild'||label==='spicy')entries.set(JSON.stringify(values[i]),label);
+      });
+    }
+    catalog.set(kind,entries);
+  }
+  function level(kind,value){return catalog.get(kind)?.get(JSON.stringify(value))||custom.get(signature(kind,value))||(adult.test(Array.isArray(value)?value.join(' '):value)?'spicy':'mild');}
   function filter(kind,values,selected=mode(kind),getLevel=v=>level(kind,v)){return selected==='mixed'?values:values.filter(v=>getLevel(v)===selected);}
   function recommend(kind,values,previous,selected=mode(kind),getLevel=v=>level(kind,v)){
     if(!values.length)return undefined;
@@ -27,5 +36,5 @@
     return pick;
   }
   function selector(kind,allowed=modes){return '<label class="prompt-flavor-select">수위<select data-prompt-flavor>'+allowed.map(k=>'<option value="'+k+'"'+(mode(kind)===k?' selected':'')+'>'+names[k]+'</option>').join('')+'</select></label>';}
-  window.PartyPromptFlavors={mode,set,level,tag,filter,recommend,selector,names};
+  window.PartyPromptFlavors={mode,set,level,tag,setCatalog,filter,recommend,selector,names};
 })();
