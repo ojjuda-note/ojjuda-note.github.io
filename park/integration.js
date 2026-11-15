@@ -81,8 +81,8 @@
   function refresh() {
     if (overlayOpen() || !canLeave()) return false;
     if (detail.hidden) return loadFeed(false, true);
-    // Refresh the visible card first. Back navigation reloads the list once.
-    feedDeferred = true;
+    if (!feedDeferred) return refreshCards(true);
+    // A shared card opens before the feed. Keep its first list read on Back.
     $('#reply-count').textContent = '0';
     return renderDetail();
   }
