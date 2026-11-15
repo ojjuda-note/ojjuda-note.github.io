@@ -2120,7 +2120,7 @@
         "Under the skin",
         "Scent of you"
       ],
-      "checkedAt": '2026.11.13',
+      "checkedAt": '2026.11.15',
       "concept": "다른 개성을 지닌 아홉 멤버가 음악과 무대로 하나가 되는 팀.",
       "official": "https://www.andteam-official.jp/",
       "youtube": "https://www.youtube.com/@andTEAM_official",
@@ -2129,7 +2129,10 @@
       "photoYear": "2026",
       "credit": "K-POPIT 케이팝잇",
       "license": "CC BY 4.0",
-      morePhotos: [commonsPhoto('241002 &Team (1).jpg', '2024년 단체 사진', '2024', 'nacco', 'CC BY 3.0')],
+      morePhotos: [
+        commonsPhoto('241002 &Team (1).jpg', '2024년 단체 사진', '2024', 'nacco', 'CC BY 3.0'),
+        commonsPhoto('K of &TEAM 2026.09.21 Mark on Me showcase 01.jpg', 'Mark on Me 쇼케이스 · K', '2026', 'Kollection K', 'CC BY-SA 4.0')
+      ],
       music: [
         {
           "title": "Fearless",
@@ -2222,10 +2225,34 @@
           "href": "https://www.andteam-official.jp/news/021ab1de6a61"
         },
         {
+          "date": "2026-11-22",
+          "title": "EJ·FUMA·JO·MAKI · ABEMA 슈퍼 포뮬러 2026 VTR",
+          "sub": "13:00경 JST/KST 방송 예정 · 녹화 영상 출연 · 생중계 사정에 따라 시간 변경 가능",
+          "href": "https://www.andteam-official.jp/news/bc623a596e4f"
+        },
+        {
           "date": "2026-11-27",
           "title": "Mark on You 홀 투어 · 히로시마",
           "sub": "히로시마 문화학원 HBG홀 · 17:30 입장 / 18:30 개연 JST/KST · 예매·변경 사항은 공식 공지 확인",
           "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-11-28",
+          "title": "JO · 영화 원댄스 개봉 기념 무대인사 · 도쿄",
+          "sub": "TOHO 시네마즈 롯폰기 힐스 · 08:55 상영 후 / 12:35 상영 전 인사 · 11/16 23:59까지 추첨 접수",
+          "href": "https://www.andteam-official.jp/news/5053213ee98e"
+        },
+        {
+          "date": "2026-11-29",
+          "title": "JO · 영화 원댄스 개봉 기념 무대인사 · 나고야",
+          "sub": "TOHO 시네마즈 나고야 사카에 · 10:20 상영 후 무대인사 · 출연자 변경 가능",
+          "href": "https://www.andteam-official.jp/news/5053213ee98e"
+        },
+        {
+          "date": "2026-11-29",
+          "title": "JO · 영화 원댄스 개봉 기념 무대인사 · 오사카",
+          "sub": "TOHO 시네마즈 우메다 · 13:40 상영 후 / 17:10 상영 전 무대인사 · 출연자 변경 가능",
+          "href": "https://www.andteam-official.jp/news/5053213ee98e"
         },
         {
           "date": "2026-12-10",
@@ -2252,6 +2279,13 @@
           "href": "https://www.andteam-official.jp/news/021ab1de6a61"
         },
         {
+          "date": "2026-12-16",
+          "endDate": "2026-12-27",
+          "title": "2027 시즌그리팅 Mini Gallery · 요코하마",
+          "sub": "요코하마 비브레 6층 HYBE MUSIC GROUP STORE · 공식 상품 당일 5,000엔 이상 구매 시 입장 · 조기 종료 가능",
+          "href": "https://www.andteam-official.jp/news/4b7089b11b28"
+        },
+        {
           "date": "2026-12-19",
           "title": "&TEAM Mark on You · 홀 투어",
           "sub": "일본 에히메 마쓰야마 시민회관 · 18:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
@@ -2268,6 +2302,12 @@
           "title": "&TEAM Mark on You · 홀 투어",
           "sub": "일본 홋카이도 삿포로 문화예술극장 hitaru · 17:00 일본 현지 · 예매·변경·취소는 공식 공지 확인",
           "href": "https://www.andteam-official.jp/news/021ab1de6a61"
+        },
+        {
+          "date": "2026-12-31",
+          "title": "NHK 제77회 홍백가합전 출연",
+          "sub": "NHK 종합 · 19:20~23:45 JST/KST 생방송 · &TEAM 2년 연속 출연 · 시간 변경 가능",
+          "href": "https://www.andteam-official.jp/news/712534560fd6"
         },
         {
           "date": "2027-01-05",
@@ -2428,6 +2468,31 @@
       ],
       news: [
         {
+          "date": "2026.11.14",
+          "tag": "영화",
+          "title": "JO 주연 영화 원댄스 11/28~29 도쿄·나고야·오사카 무대인사 확정",
+          "href": "https://www.andteam-official.jp/news/5053213ee98e"
+        },
+        {
+          "date": "2026.11.13",
+          "tag": "방송",
+          "title": "&TEAM, 12월 31일 제77회 NHK 홍백가합전 출연 확정",
+          "href": "https://www.andteam-official.jp/news/712534560fd6"
+        },
+        {
+          "date": "2026.11.13",
+          "tag": "방송",
+          "title": "EJ·FUMA·JO·MAKI 11월 22일 ABEMA 슈퍼 포뮬러 VTR 출연 발표",
+          "href": "https://www.andteam-official.jp/news/bc623a596e4f"
+        },
+        {
+          "date": "2026.11.13",
+          "tag": "팬클럽",
+          "title": "11월 18~19일 오사카 공연 LUNÉ 회원 특전 예약 시작",
+          "href": "https://www.andteam-official.jp/news/631419a2c417"
+        },
+
+        {
           "date": "2026.11.12",
           "tag": "광고",
           "title": "For us, 미쓰이 라라포트·아울렛 블랙프라이데이 TV 광고 음악 선정",
@@ -2460,6 +2525,12 @@
       ],
       merch: [
         {
+          "title": "2027 시즌그리팅 Who Ate the Cake? · CAPSULE ver.",
+          "sub": "공식 Weverse Shop · 2026.12.16 11:00 JST 판매 시작 · 랜덤 10종 · 품절·재고는 판매처 확인",
+          "href": "https://www.andteam-official.jp/news/4b7089b11b28"
+        },
+
+        {
           "title": "&TEAM CAFE THE WOLF BUTLERS 공식 MD",
           "sub": "예약 11/12 12:00~2027/1/31 18:00 JST · 수량 한정·일본 내 배송 · 2027년 4월 중순 이후 순차 발송 예정",
           "href": "https://www.andteam-official.jp/news/56e8ec3cf6be"
@@ -2481,6 +2552,14 @@
         }
       ],
       campaigns: [
+        {
+          "kind": "음악 협업",
+          "date": "2026.10.10",
+          "title": "베이블레이드 X 애니메이션 오프닝 · Fearless",
+          "sub": "TAKARA TOMY 애니메이션 BEYBLADE X 베이킹덤 편 신 오프닝 주제가 · 공식 발표 9/17, 음원 발매 10/10",
+          "href": "https://www.andteam-official.jp/news/3727e6736b51"
+        },
+
         {
           "kind": "광고",
           "date": "2026.11.12",
