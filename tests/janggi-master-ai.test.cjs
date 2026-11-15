@@ -102,13 +102,49 @@ test('background AI turn applies a verified move and ignores an abandoned match'
  assert.equal(applied.length, 1);
 });
 
-test('advanced tiers preserve their worker while the Janggi UI gets its own release', () => {
+test('advanced tiers load the revised worker with the independent Janggi release', () => {
  const revision = JSON.parse(fs.readFileSync(path.join(root, 'game-release.json'), 'utf8')).revision;
  const assets = fs.readFileSync(path.join(root, 'shared/games/world-game-assets.js'), 'utf8');
- assert.ok(source.includes('master-worker.mjs?v=20261110-janggi-replay1'));
+ assert.ok(source.includes('master-worker.mjs?v=20261115-janggi-search1'));
  assert.ok(source.includes(`world-game-assets.js?v=${revision}`));
  assert.ok(assets.includes(`const revision='${revision}'`));
  const version = assets.match(/janggi:'(\d+)\.(\d+)\.(\d+)'/)?.slice(1).map(Number);
  assert.ok(version && (version[0]>1 || version[0]===1 && (version[1]>9 || version[1]===9 && version[2]>=1)),
-  'the Janggi UI keeps its independent 1.9.1-or-newer release without changing the AI worker');
+  'the game has its independent release');
+});
+
+test('optimized search agrees with the game arbiter across every starting layout',async()=>{
+ const {createJanggiStart,janggiRules}=await import('../games/janggi/worker-rules.mjs');
+ const {searchRules}=await import('../games/janggi/search-rules.mjs');
+ const layouts=['eheh','ehhe','heeh','hehe'];
+ let seed=31;
+ for(const c of layouts)for(const h of layouts){
+  let state=createJanggiStart({c,h});
+  for(let ply=0;ply<50;ply++){
+   const legal=janggiRules.moves(state);
+   assert.deepEqual(searchRules.moves(state),legal);
+   assert.deepEqual(searchRules.captures(state),legal.filter(move=>move.x));
+   assert.equal(searchRules.isCheck(state),janggiRules.isCheck(state));
+   if(!legal.length)break;
+   seed=(Math.imul(1664525,seed)+1013904223)>>>0;
+   state=janggiRules.apply(state,legal[seed%legal.length]);
+  }
+ }
+});
+
+test('all advanced levels finish a point win by passing and find a quiet chariot mate',async()=>{
+ const {createJanggiStart,janggiRules}=await import('../games/janggi/worker-rules.mjs');
+ const {searchRules}=await import('../games/janggi/search-rules.mjs');
+ const {analyzeJanggiMasterMove}=await import('../games/janggi/master-ai.mjs');
+ const han=janggiRules.apply(createJanggiStart(),{pass:1});
+ const b=Array(90).fill('');
+ for(const [sq,piece] of [[0,'R'],[12,'a'],[13,'k'],[39,'P'],[41,'H'],[75,'K'],[86,'C'],[89,'p']])b[sq]=piece;
+ const puzzle={b,t:'c',n:24,passes:0};
+ for(const level of ['pro','master','grandmaster']){
+  const choose=state=>analyzeJanggiMasterMove(state,searchRules,{level,budgetMs:150,random:()=>0}).move;
+  assert.deepEqual(choose(han),{pass:1});
+  assert.equal(janggiRules.status(janggiRules.apply(han,{pass:1})).result,'h');
+  assert.deepEqual(choose(puzzle),{f:0,t:5});
+  assert.equal(janggiRules.status(janggiRules.apply(puzzle,{f:0,t:5})).reason,'checkmate');
+ }
 });

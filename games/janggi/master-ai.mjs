@@ -1,16 +1,17 @@
-// Stronger Janggi engine for the master tiers. Runs in a module Worker, so
+// Search for the three advanced Janggi tiers. Runs in a module Worker, so
 // longer searches cannot freeze the board or its close/undo controls.
 const VALUES = Object.freeze({ R: 1300, C: 700, H: 500, E: 300, A: 300, P: 200, K: 0 });
 const MATE = 100000;
 const TIMEOUT = Symbol('janggi-master-timeout');
 
 export const MASTER_LEVELS = Object.freeze({
- master: Object.freeze({ label: '마스터', budgetMs: 4500, maxDepth: 8, quiescence: 4 }),
- grandmaster: Object.freeze({ label: '그랜드마스터', budgetMs: 7500, maxDepth: 10, quiescence: 5 })
+ pro: Object.freeze({ label: '프로', budgetMs: 2700, maxDepth: 6, quiescence: 3, openingMargin: 10 }),
+ master: Object.freeze({ label: '마스터', budgetMs: 4500, maxDepth: 8, quiescence: 4, openingMargin: 7 }),
+ grandmaster: Object.freeze({ label: '그랜드마스터', budgetMs: 7500, maxDepth: 10, quiescence: 5, openingMargin: 5 })
 });
 
 const sameMove = (a, b) => !!a && !!b && a.f === b.f && a.t === b.t;
-const moveId = move => move.f * 90 + move.t;
+const moveId = move => move.pass ? 8100 : move.f * 90 + move.t;
 const pieceValue = piece => VALUES[piece?.toUpperCase()] || 0;
 
 // Repetition, bikjang and two-shuttle history affect the legal continuations.
@@ -30,12 +31,12 @@ export function analyzeJanggiMasterMove(state, rules, options = {}) {
  const maxDepth = Math.max(1, Math.min(12, Number(options.maxDepth) || config.maxDepth));
  const { moves, apply, evaluate, isCheck, isDraw, status } = rules;
  const started = Date.now(), deadline = started + budgetMs;
- const table = new Map(), history = new Int32Array(90 * 90);
+ const table = new Map(), history = new Int32Array(90 * 90 + 1);
  const killers = Array.from({ length: 24 }, () => []);
  let nodes = 0, depthReached = 0;
  const report = move => ({ move, depth: depthReached, nodes, elapsedMs: Date.now() - started });
 
- if (isDraw(state)) return report(null);
+ if (terminal(state,0)!==null) return report(null);
  const legal = moves(state);
  if (!legal.length) return report(isCheck(state) ? null : { pass: 1 });
 
@@ -49,6 +50,14 @@ export function analyzeJanggiMasterMove(state, rules, options = {}) {
   const result = status(node);
   if (!result.over) return null;
   return result.result === 'draw' ? 0 : result.result === node.t ? MATE - ply : -MATE + ply;
+ }
+
+ // Passing is a real choice even when other moves are available. Consider
+ // voluntary passes only when they settle the game immediately.
+ function passScore(node, ply) {
+  if (node.passes!==1 || isCheck(node)) return null;
+  const score=terminal(apply(node,{pass:1}),ply+1);
+  return score===null?null:-score;
  }
 
  function ordered(node, list, pv, ply) {
@@ -68,13 +77,20 @@ export function analyzeJanggiMasterMove(state, rules, options = {}) {
   const checked = isCheck(node);
   const available = checked ? moves(node) : null;
   if (checked && !available.length) return -MATE + ply;
-  const standPat = evaluate(node);
+  const settlement=passScore(node,ply);
+  if (settlement!==null) {
+   if (settlement>=beta || settlement>0) return settlement;
+   alpha=Math.max(alpha,settlement);
+  }
   if (!checked) {
+   const standPat=evaluate(node);
    if (standPat >= beta) return standPat;
    alpha = Math.max(alpha, standPat);
   }
-  if (remaining <= 0) return checked ? standPat : alpha;
-  const tactical = checked ? available : moves(node).filter(move => node.b[move.t]);
+  if (!checked && remaining<=0) return alpha;
+  // At the normal horizon still search the legal answers to a check.
+  if (checked && remaining<=-2) return evaluate(node);
+  const tactical = checked ? available : rules.captures ? rules.captures(node) : moves(node).filter(move => node.b[move.t]);
   for (const move of ordered(node, tactical, null, ply)) {
    const score = -quiescence(apply(node, move), -beta, -alpha, ply + 1, remaining - 1);
    if (score >= beta) return score;
@@ -90,13 +106,13 @@ export function analyzeJanggiMasterMove(state, rules, options = {}) {
   if (depth <= 0) return quiescence(node, alpha, beta, ply, config.quiescence);
 
   const key = positionKey(node), prior = table.get(key);
-  const alphaBefore = alpha, betaBefore = beta;
   if (prior && prior.depth >= depth) {
    if (prior.bound === 'exact') return prior.score;
    if (prior.bound === 'lower') alpha = Math.max(alpha, prior.score);
    if (prior.bound === 'upper') beta = Math.min(beta, prior.score);
    if (alpha >= beta) return prior.score;
   }
+  const alphaBefore = alpha, betaBefore = beta;
   const legal = moves(node);
   if (!legal.length) {
    if (isCheck(node)) return -MATE + ply;
@@ -104,7 +120,10 @@ export function analyzeJanggiMasterMove(state, rules, options = {}) {
   }
 
   const checked = isCheck(node);
-  let bestScore = -Infinity, bestMove = null;
+  const settlement=passScore(node,ply);
+  if(settlement!==null && (settlement>=beta || settlement>0))return settlement;
+  let bestScore=settlement??-Infinity, bestMove=settlement===null?null:{pass:1};
+  alpha=Math.max(alpha,bestScore);
   const nextMoves = ordered(node, legal, prior?.move, ply);
   for (let index = 0; index < nextMoves.length; index++) {
    const move = nextMoves[index], capture = !!node.b[move.t];
@@ -140,27 +159,42 @@ export function analyzeJanggiMasterMove(state, rules, options = {}) {
   return bestScore;
  }
 
- let root = ordered(state, legal, null, 0), chosen = root[0];
- // The previous complete iteration remains safe if the time budget expires.
- for (let depth = 1; depth <= maxDepth; depth++) {
+ const settlement=passScore(state,0);
+ if(settlement>0)return report({pass:1});
+ const rootMoves=settlement===0?[...legal,{pass:1}]:legal;
+ let root=ordered(state,rootMoves,null,0), chosen=root[0], alternatives=[chosen];
+ const margin=state.n<10&&!state.passes&&!isCheck(state)?config.openingMargin:0;
+ for (let depth=1;depth<=maxDepth;depth++) {
   try {
-   const ranked = [];
-   let alpha = -Infinity;
-   for (const move of root) {
+   const ranked=[];
+   let best=-Infinity;
+   for(const move of root){
     checkTime();
-    const score = -search(apply(state, move), depth - 1, -Infinity, -alpha, 1);
-    ranked.push({ move, score });
-    alpha = Math.max(alpha, score);
+    // A score inside this narrow opening band must be exact. Fail-low
+    // bounds from ordinary alpha-beta cannot be used to pick alternatives.
+    const score=-search(apply(state,move),depth-1,-Infinity,-best+margin+1,1);
+    ranked.push({move,score});
+    if(score>best){
+     best=score;
+     if(!depthReached)chosen=move;
+    }
    }
-   ranked.sort((a, b) => b.score - a.score);
-   chosen = ranked[0].move;
-   root = ranked.map(entry => entry.move);
-   depthReached = depth;
-   if (ranked[0].score >= MATE - 20) break;
-  } catch (error) {
-   if (error !== TIMEOUT) throw error;
+   ranked.sort((a,b)=>b.score-a.score);
+   chosen=ranked[0].move;
+   root=ranked.map(entry=>entry.move);
+   alternatives=margin && depth>=2 && Math.abs(best)<MATE-400
+    ? ranked.filter(entry=>entry.score>=best-margin).map(entry=>entry.move)
+    : [chosen];
+   depthReached=depth;
+   if(best>=MATE-20)break;
+  } catch(error) {
+   if(error!==TIMEOUT)throw error;
    break;
   }
+ }
+ if(depthReached && alternatives.length>1){
+  const random=options.random??Math.random;
+  chosen=alternatives[Math.floor(random()*alternatives.length)];
  }
  return report(chosen);
 }

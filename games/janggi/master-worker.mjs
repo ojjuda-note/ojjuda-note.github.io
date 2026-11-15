@@ -1,16 +1,23 @@
-import { analyzeJanggiMasterMove, MASTER_LEVELS } from './master-ai.mjs';
-import { janggiRules } from './worker-rules.mjs?v=20261110-janggi-replay1';
+import { analyzeJanggiMasterMove, MASTER_LEVELS } from './master-ai.mjs?v=20261115-janggi-search1';
+import { searchRules } from './search-rules.mjs?v=20261115-janggi-search1';
+import { createNeuralPlayer } from './neural-player.mjs?v=20261115-janggi-search1';
 
-self.onmessage = ({ data }) => {
+const neural=createNeuralPlayer();
+self.onmessage = async ({ data }) => {
  const requestId = data?.requestId;
  try {
-  if (!MASTER_LEVELS[data?.level]) throw new Error('알 수 없는 AI 난이도');
+  const config=MASTER_LEVELS[data?.level];
+  if (!config) throw new Error('알 수 없는 AI 난이도');
   if (!Array.isArray(data?.state?.b) || data.state.b.length !== 90) throw new Error('잘못된 장기판');
-  const analysis = analyzeJanggiMasterMove(data.state, janggiRules, {
-   level: data.level,
-   budgetMs: data.budgetMs
+  const started=Date.now(),budgetMs=Math.max(60,Math.min(config.budgetMs,Number(data.budgetMs)||config.budgetMs));
+  const learned=typeof Worker==='function'?await neural.choose(data.state,data.level,searchRules,budgetMs):null;
+  if(learned){
+   self.postMessage({requestId,move:learned,engine:'nnue'});return;
+  }
+  const analysis=analyzeJanggiMasterMove(data.state,searchRules,{
+   level:data.level,budgetMs:Math.max(80,budgetMs-(Date.now()-started))
   });
-  self.postMessage({ requestId, ...analysis });
+  self.postMessage({requestId,...analysis,engine:'search'});
  } catch (error) {
   self.postMessage({ requestId, error: String(error?.message || error) });
  }

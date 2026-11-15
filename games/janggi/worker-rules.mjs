@@ -39,3 +39,5 @@ function ca(t,e){
 export const janggiRules = Object.freeze({ moves: Dr, apply: ca, evaluate: pl, isCheck: hl, isDraw: jgBikjangDraw, status: Mp });
 export { vp as createJanggiStart };
 
+// Shared primitives for the search-only move generator.
+export { Ep as pieceTargets, jgRepeats as repeatsShuttle };
