@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261116-drinking-buttons1'
+ const revision='20261116-drinking-3d-art1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -12,16 +12,16 @@
   mission:'1.6.1',
   bottle:'1.4.1',
   bomb:'1.6.1',
-  stopwatch:'1.4.1',
+  stopwatch:'1.4.2',
   truth:'1.10.1',
   initial:'1.5.1',
   fingers:'1.9.1',
   imagevote:'1.9.2',
-  secretcount:'1.1.1',
+  secretcount:'1.1.2',
   updown:'1.4.1',
   partyroulette:'1.4.1',
-  drinking:'1.23.1',
-  shapematch:'1.0.1',
+  drinking:'1.23.2',
+  shapematch:'1.0.2',
   tarot:'1.10.2',
   saju:'2.15.1',
   group:'1.2.2',
