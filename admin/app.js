@@ -56,7 +56,12 @@
   }
 
   document.getElementById('retry').addEventListener('click', refresh);
-  client.auth.onAuthStateChange(() => { setTimeout(refresh, 0); });
+  client.auth.onAuthStateChange(event => {
+    // The explicit startup refresh already covers INITIAL_SESSION.
+    if (event === 'INITIAL_SESSION') return;
+    ++run;
+    setTimeout(refresh, 0);
+  });
   refresh();
 })();
 
