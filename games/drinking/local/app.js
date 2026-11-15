@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-partyroulette1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-king-moves1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -835,19 +835,20 @@ function king(){
   shell('<span class="turn-tag">오늘의 왕 · '+name(r.king)+'</span><h2>번호와 미션을 골라 주세요</h2>'+
     '<form id="king-order-form"><div class="king-numbers"><label>첫 번째 번호<select class="field" id="king-number">'+options(r.number)+'</select></label>'+second+'</div>'+
     questionMenu.markup('king','명령 내리기')+'</form>',true);
-  const refresh=questionMenu.mount($('#king-order-form'),{kind:'king',load:()=>questionMenu.catalog('king',r.second!=null),apply:(mission,manual)=>{
+  const display=mission=>questionMenu.kingMission(mission,r.number,r.second);
+  const refresh=questionMenu.mount($('#king-order-form'),{kind:'king',display,load:()=>questionMenu.catalog('king',r.second!=null),apply:(mission,manual)=>{
     if(round!==r||r.phase!=='king')return false;
     if(manual)prompts.submit('king',mission);
-    r.prompt=mission;r.answers={};
+    r.prompt=manual?mission:display(mission);r.answers={};
     r.phase=r.second==null?'done':'king-answer';fx.play('king');kingResult();
   }});
   function switchRecipients(second){
     const changed=(r.second==null)!==(second==null);
-    r.second=second;if(changed)void refresh();
+    r.second=second;void refresh({labelsOnly:!changed});
   }
   $('#king-number').onchange=e=>{
     r.number=Number(e.target.value);
-    if(r.second===r.number)switchRecipients(null);
+    switchRecipients(r.second===r.number?null:r.second);
     if(count>1)$('#king-second').innerHTML=secondOptions();
   };
   if(count>1)$('#king-second').onchange=e=>switchRecipients(Number(e.target.value)||null);
