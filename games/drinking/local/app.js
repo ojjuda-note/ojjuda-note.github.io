@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-drinking-menu2';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-partyroulette-phone1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -19,6 +19,12 @@ const jawCount=crocGum.length*2;
 const CROC_TOOTH_COUNT=jawCount*2;
 const games=window.DrinkingTableView.games;
 const pageIntroductions={
+  partyroulette:{
+    heading:['탄창을 돌리고,','한 사람을 가리켜요.'],
+    description:['불발이면 가리킨 사람에게 폰을 넘겨요.','팡! 하면 그 사람이 당첨이에요.'],
+    steps:[['장전','인원수만큼 칸이 생겨요'],['회전','위에서 아래로 쓸어요'],['시작','방아쇠를 눌러요']],
+    button:'장전 화면 열기'
+  },
   liar:{
     heading:['힌트 속에 숨은','한 사람을 찾아요.'],
     description:['한 명만 제시어를 몰라요.','힌트를 듣고 라이어를 골라 보세요.'],
@@ -208,6 +214,7 @@ function markLocalHost(){
   window.DrinkingTableView?.result(app.querySelector('.play-body'),r.nextHost);
 }
 function cleanup(){
+  round?.rouletteBoard?.destroy();
   if(round?.nextHost)players=[round.nextHost,...players.filter(p=>p!==round.nextHost)];
   stopClock();fx.quiet();
   if(round?.watchFrame!=null)cancelAnimationFrame(round.watchFrame);
@@ -241,7 +248,7 @@ function shell(body,scene=false){
   if(window.DrinkingTableView){
     app.querySelector('.round-head').replaceWith(window.DrinkingTableView.heading(game.id,game.title,players.length));
   }
-  if(round?.phase==='done')markLocalHost();
+  if(round?.phase==='done'&&game.id!=='partyroulette')markLocalHost();
   window.DrinkingGameScreen?.local(game.id,round,app);
 }
 function pageIntro(copy,enough){
@@ -290,8 +297,6 @@ function intro(){const enough=players.length>=game.min;
 }
 function route(){let id=location.hash.slice(1);if(id==='jenga'){
   id='stopwatch';history.replaceState(null,'','#stopwatch');
-}else if(id==='partyroulette'){
-  id='menu';history.replaceState(null,'','#menu');
 }cleanup();
   if(id==='participants'){
     history.replaceState(null,'','#menu');game=null;renderMenu();scrollTo(0,0);playerSettings();return;
@@ -368,6 +373,18 @@ async function begin(){
     if(!await loadRoundBank(r))return;
   }
   switch(game.id){
+    case 'partyroulette':{
+      shell(window.PartyRouletteBoard.markup());
+      const model=window.PartyRouletteBoard.model(players.length);
+      r.rouletteBoard=window.PartyRouletteBoard.mount(app.querySelector('.roulette-table'),model,{
+        finish:()=>{
+          if(r!==round)return;
+          r.rouletteBoard.destroy();
+          end('가리킨 사람이 당첨!','방금 휴대폰이 가리킨 사람이 이번 판의 당첨자예요.',null);
+        }
+      });
+      return;
+    }
     case 'croc':r.trap=rand(CROC_TOOTH_COUNT);r.pressed=new Set();return croc();
     case 'bottle':return chooseBottleTable();
     case 'stopwatch':

@@ -42,7 +42,7 @@ test('random start draws from every multiplayer game the joined players can play
     t.after(()=>f.close());
     await until(()=>!f.find('#lobby').hidden);
     const all=Array.from(f.find('#games').children,tile=>tile.dataset.game);
-    assert.ok(!all.includes('partyroulette'));
+    assert.ok(all.includes('partyroulette'));
     const pool=size<2?[]:all.filter(kind=>size>=3||!threeRequired.includes(kind));
     const button=f.find('#random-start');
     assert.equal(button.hidden,false);assert.equal(button.disabled,size===1);
@@ -637,15 +637,22 @@ test('participant storage errors are visible and edits remain usable',async t=>{
   assert.equal(f.w.localStorage.getItem(key),'["노을","구름"]');
 });
 
-test('retired roulette link returns to the local catalog and keeps saved participants',async t=>{
+test('local roulette opens from its link without a target picker and keeps saved participants',async t=>{
   const key='oj.party.member-a.players',saved='["하나","둘","셋"]';
   const f=await screen({url:'/games/drinking/local/#partyroulette',prepare(w){
     w.scrollTo=()=>{};w.localStorage.setItem(key,saved);
   }});
   t.after(()=>f.close());
-  assert.equal(f.w.location.hash,'#menu');
-  assert.ok(f.find('.main-roster'));
-  assert.equal(f.find('[data-value="partyroulette"]'),null);
+  assert.equal(f.w.location.hash,'#partyroulette');
+  f.click('[data-action="start"]');
+  assert.equal(f.find('.roulette-table').dataset.step,'load');
+  assert.equal(f.find('.pr-target'),null);
+  assert.equal(f.find('.pr-wheel').children.length,3);
+  f.click('.pr-next');
+  assert.equal(f.find('.roulette-table').dataset.step,'spin');
+  f.click('.pr-next');
+  assert.equal(f.find('.roulette-table').dataset.step,'play');
+  assert.ok(!f.find('.pr-trigger').hidden);
   assert.equal(f.w.localStorage.getItem(key),saved);
   assert.deepEqual(f.errors,[]);
 });
@@ -658,8 +665,8 @@ test('previous roulette selection can be replaced in an existing lobby',async t=
   }});
   t.after(()=>f.close());
   await until(()=>!f.find('#lobby').hidden);
-  assert.ok(f.find('#start').disabled);
-  assert.equal(f.find('[data-game="partyroulette"]'),null);
+  assert.ok(!f.find('#start').disabled);
+  assert.ok(f.find('[data-game="partyroulette"]'));
   f.click('[data-game="bottle"]');
   await until(()=>!f.find('#start').disabled);
   assert.match(f.find('#selected-game').textContent,/술병/);

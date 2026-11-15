@@ -1,37 +1,42 @@
 (() => {
   'use strict';
-  let timer;
-  function view(s) {
-    const g=s.game, n=s.players.length;
-    const done=s.phase==='done', preparing=s.phase==='prepare';
-    const title=done?(g.fired?'팡!':'통과'):(preparing?'한 사람을 지목해 주세요':'함께 누를 시간');
-    const result=done?' draw-result':'';
-    const status=done?'<p>'+(g.fired?'내 휴대폰이 지목한 사람이 당첨이에요.':'팡!이 뜬 휴대폰이 지목한 사람이 당첨이에요.')+'</p>':
-      '<p role="status" id="group-count">'+(preparing?'준비 ':'누른 사람 ')+g.count+'/'+n+'명</p>'+
-      (g.mine?'<p>모두 '+(preparing?'준비하면 카운트다운이 시작돼요.':'누르면 결과가 나와요.')+'</p>':
-        '<button type="button" class="action" id="group-press">'+(preparing?'준비':'너 마셔!')+'</button>');
-    return '<section class="group-draw roulette-table'+result+'"'+(done?' data-fired="'+g.fired+'" role="status"':'')+'>'+
-      '<div class="roulette-scene"><img src="/games/drinking/local/art/partyroulette-table.webp" alt="" draggable="false"></div>'+
-      '<div class="roulette-panel"><h1>'+title+'</h1>'+status+'</div></section>';
-  }
-  function mount(s,ui){
-    const button=document.getElementById('group-press');
-    if(!button)return;
-    const preparing=s.phase==='prepare';
-    function update(){
-      const seconds=preparing?0:Math.max(0,Math.ceil((s.game.opensAt-ui.now())/1000));
-      button.disabled=seconds>0;
-      button.textContent=seconds?seconds+'초 후 함께 눌러요':preparing?'준비':'너 마셔!';
-      if(!seconds)clearInterval(timer);
+  let key,model,board,revealTimer,showTimer,effectKey;
+  const game=()=>window.PartyRouletteBoard;
+  function view(s,ui) {
+    if(s.phase!=='done')return game().markup();
+    const g=s.game;
+    if(!Number.isInteger(g.target)){
+      return '<h1>'+(g.fired?'팡!':'통과')+'</h1><p>팡!이 뜬 휴대폰이 가리킨 사람이 당첨이에요.</p>';
     }
-    if(!preparing)timer=setInterval(update,100);
-    update();
-    button.onclick=async()=>{
-      if(button.disabled)return;
-      button.disabled=true;
-      const success=await ui.send(preparing?'roulette_ready':'roulette_press',{});
-      if(!success && button.isConnected)update();
-    };
+    const title=ui.esc(s.players[g.target])+' 당첨!';
+    const detail=ui.esc(s.players[g.shooter])+' 휴대폰이 가리킨 사람이에요.';
+    return '<div class="pr-reveal" aria-hidden="true">'+window.PartyRouletteArt.markup()+'</div>'+
+      '<h1 class="pr-winner">'+title+'</h1><p class="pr-detail">'+detail+'</p>';
   }
-  window.PartyLiveGame={view,mount,unmount:()=>clearInterval(timer),messages:{countdown_running:'카운트다운이 끝나면 눌러 주세요.'}};
+  function mount(s,ui) {
+    const id=[s.code,s.round,s.me].join('/');
+    if(id!==key){model=game().model(s.players.length);key=id;}
+    if(s.phase!=='done'){
+      board=game().mount(document.querySelector('.roulette-table'),model,{room:s,...ui});return;
+    }
+    const g=s.game,stage=document.querySelector('.pr-reveal');
+    if(!stage)return;
+    const prop=stage.querySelector('.pr-prop');
+    prop.querySelector('.pr-swipe').hidden=true;
+    const wait=Math.max(0,(g.revealAt||0)-ui.now());
+    const fresh=Number.isFinite(g.revealAt)&&ui.now()-g.revealAt<1600&&effectKey!==id;
+    if(!fresh){stage.hidden=true;return;}
+    stage.parentElement.classList.add('pr-revealing');
+    revealTimer=setTimeout(()=>{
+      effectKey=id;game().pulse(g.fired);
+      if(g.fired)window.PartyRouletteArt.flash(prop);
+    },wait);
+    showTimer=setTimeout(()=>{stage.parentElement.classList.remove('pr-revealing');stage.hidden=true;},wait+290);
+  }
+  function unmount(){
+    board?.destroy();board=null;clearTimeout(revealTimer);clearTimeout(showTimer);
+  }
+  window.PartyLiveGame={view,mount,unmount,messages:{
+    invalid_target:'가리킬 상대를 선택해 주세요.',countdown_running:'카운트다운이 끝나면 눌러 주세요.'
+  }};
 })();

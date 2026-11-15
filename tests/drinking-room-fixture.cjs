@@ -53,7 +53,7 @@ async function fixture({beforeRebuild = false, beforeExpansion = false, beforePo
   const migrationNames = beforeRebuild ? baseMigrationNames : [
     ...baseMigrationNames, ...rebuildMigrationNames,
     ...(beforeExpansion ? [] : expansionMigrationNames),
-    ...(beforeExpansion || beforePolish ? [] : [...polishMigrationNames,'20261114171222_drinking_chosen_questions.sql','20261114175917_drinking_secretcount.sql','20261114183840_drinking_winner_hosts.sql','20261115031439_drinking_minority_choices_ready.sql','20261115062425_drinking_group_roulette.sql'])
+    ...(beforeExpansion || beforePolish ? [] : [...polishMigrationNames,'20261114171222_drinking_chosen_questions.sql','20261114175917_drinking_secretcount.sql','20261114183840_drinking_winner_hosts.sql','20261115031439_drinking_minority_choices_ready.sql','20261115062425_drinking_group_roulette.sql','20261115124738_drinking_roulette_targets.sql'])
   ];
   const db = new PGlite({extensions: {pgcrypto}});
   try {

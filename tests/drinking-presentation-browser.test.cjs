@@ -806,57 +806,64 @@ async function expectRouletteStage(page,rotated) {
   assert.deepEqual(stage,{turned:rotated,wide:true,sideBySide:true,fits:true});
 }
 
-test('old roulette links open the local catalog or multiplayer directory',async t=>{
+test('local roulette loads in portrait then turns for play without a target picker',async t=>{
   const browser=await chromium.launch(launchOptions);t.after(()=>browser.close());
   const session=await browserSession(browser,{actor:'wheel-member',localPlayers:['보리','나리','마루'],
     rpc:(_name,args)=>args.p_action==='mine'?{room:null}:{rooms:[]}});
   const page=session.page;
   const {revision}=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../game-release.json'),'utf8'));
   await page.goto(origin+'/games/drinking/local/?v='+revision+'#partyroulette');
-  await page.waitForURL(/#menu$/);
-  await page.locator('.games .table-card').first().waitFor();
-  assert.equal(await page.getByRole('button',{name:/러시안 룰렛/}).count(),0);
-  await page.evaluate(()=>{Math.random=()=>.9999;});
-  await page.getByRole('button',{name:'랜덤 게임'}).click();
-  await page.waitForURL(/#secretcount$/);
+  await dismissGuide(page);
+  await page.setViewportSize({width:390,height:844});
+  await page.locator('[data-action="start"]').click();
+  assert.equal(await page.locator('.pr-target').count(),0);
+  assert.equal(await page.locator('#access-content').getAttribute('data-roulette-angle'),null);
+  await page.getByRole('button',{name:'장전하기'}).click();
+  await expectRouletteStage(page,true);
+  await page.getByRole('button',{name:'방향 전환'}).click();
+  assert.equal(await page.locator('#access-content').getAttribute('data-roulette-angle'),'-90');
+  await page.getByRole('button',{name:'시작',exact:true}).click();
+  await page.getByRole('button',{name:'방아쇠 누르기'}).waitFor();
   await page.goto(origin+'/games/partyroulette/');
   await page.waitForURL('**/games/drinking/?mode=multi');
   await page.locator('#open-create').waitFor();
   assert.deepEqual(session.errors,[]);
 });
 
-test('three phones share a countdown and exactly one shows the firing result without choosing names',async t=>{
+test('three phones choose a target during loading and reveal the same winner',async t=>{
   const browser=await chromium.launch(launchOptions);t.after(()=>browser.close());
-  const n=3,ready=new Set(),pressed=new Set();let phase='prepare',revision=1,opensAt=0;
+  const n=3,ready=new Set(),pressed=new Set(),targets=new Map();let phase='prepare',revision=1,opensAt=0,revealAt=0;
   const sessions=await Promise.all([0,1,2].map(async seat=>{
     return browserSession(browser,{actor:'roulette-device-'+seat,viewport:seat===0?{width:360,height:640}:{width:844,height:390},rpc:(_name,args)=>{
       const act=args.p_action;
       if(act==='roulette_ready'&&phase==='prepare'){
-        ready.add(seat);revision++;
+        targets.set(seat,args.p_options.target);ready.add(seat);revision++;
         if(ready.size===n){phase='together';opensAt=Date.now()+3000;}
       }else if(act==='roulette_press'&&phase==='together'){
         if(Date.now()<opensAt)throw Error('countdown_running');
         pressed.add(seat);revision++;
-        if(pressed.size===n)phase='done';
+        if(pressed.size===n){phase='done';revealAt=Date.now()+900;}
       }
       const marks=phase==='prepare'?ready:pressed;
       return {code:'GRP001',title:'함께',capacity:n,players:['1번','2번','3번'],me:seat,revision,round:1,
-        phase,serverMs:Date.now(),hostSeat:0,game:phase==='done'?{phase,fired:seat===1}:{phase,count:marks.size,mine:marks.has(seat),opensAt}};
+        phase,serverMs:Date.now(),hostSeat:2,game:phase==='done'?{phase,fired:seat===1,shooter:1,target:targets.get(1),revealAt}:{phase,count:marks.size,mine:marks.has(seat),opensAt,myTarget:targets.get(seat)}};
     }});
   }));
   const pages=sessions.map(s=>s.page);
   await Promise.all(pages.map(async (p,i)=>{
     await p.goto(origin+'/games/partyroulette/?room=GRP001');await dismissGuide(p);
+    assert.equal(await p.getByRole('button',{name:'장전하기'}).isDisabled(),true);
+    const select=p.getByLabel('누구를 쏘실건가요?',{exact:true});
+    assert.equal(await select.locator('option[value="'+i+'"]').count(),0);
+    await select.selectOption(String((i+1)%n));
+    await p.getByRole('button',{name:'장전하기'}).click();
     await expectRouletteStage(p,i===0);
-    assert.equal(await p.locator('#game select, #game input').count(),0);
-    await p.getByRole('button',{name:'준비',exact:true}).click();
+    await p.getByRole('button',{name:'시작',exact:true}).click();
   }));
-  await Promise.all(pages.map(p=>p.getByRole('button',{name:'너 마셔!',exact:true}).click()));
-  await Promise.all(pages.map(p=>p.locator('.draw-result').waitFor()));
-  const labels=await Promise.all(pages.map(p=>p.locator('.draw-result h1').innerText()));
-  assert.deepEqual(labels,['통과','팡!','통과']);
+  await Promise.all(pages.map(p=>p.getByRole('button',{name:'방아쇠 누르기'}).click()));
   for(const [i,p] of pages.entries()){
-    assert.equal(await p.locator('[data-drinking-dialog="result"]').count(),0);
+    const result=p.locator('[data-drinking-dialog="result"]');
+    await result.waitFor();assert.match(await result.innerText(),/3번 당첨!/);
     assert.deepEqual(sessions[i].errors,[]);
   }
 });

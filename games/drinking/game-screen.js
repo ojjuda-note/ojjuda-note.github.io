@@ -35,12 +35,13 @@
     return {title: title || '이번 판 결과', body};
   }
 
-  function native(kind, state, view) {
+  function native(kind, state, view, now = Date.now) {
     const presentation = window.DrinkingPresentation;
     if (!presentation || !view) return;
     presentation.enter(kind);
     const phase = state?.phase || 'entry';
     const roundKey = ['room', kind, state?.code || 'entry', state?.round || 0].join('/');
+    const sharedResult = kind !== 'partyroulette' || Number.isInteger(state?.game?.target);
     const card=view.querySelector('.card');
     const ui=window.DrinkingTableView;
     if(ui && card && state && phase!=='waiting'){
@@ -60,14 +61,20 @@
         const title=window.DrinkingGameGuides?.[kind]?.title || document.querySelector('header strong')?.textContent || '';
         card.prepend(ui.heading(kind,title,state.players?.length??0));
       }
-      if(phase==='done'&&kind!=='partyroulette'&&Number.isInteger(state.hostSeat))ui.result(board,state.players[state.hostSeat]);
+      if(phase==='done'&&sharedResult&&Number.isInteger(state.hostSeat))ui.result(board,state.players[state.hostSeat]);
     }
     const root = view.querySelector('#game') || view.querySelector('.inside') || view.querySelector('.card') || view;
     const urgent = (['bomb', 'initial'].includes(kind) && phase === 'active') ||
       (kind === 'bottle' && ['spinning', 'braking'].includes(phase)) ||
       (kind === 'stopwatch' && phase === 'measure');
-    presentation.update({phase, roundKey, urgent,
-      result: phase === 'done' && kind!=='partyroulette' ? {key: roundKey + '/done', ...resultCopy(kind, root, 'h1', state)} : null});
+    const result = phase === 'done' && sharedResult ? {key: roundKey + '/done', ...resultCopy(kind, root, 'h1', state)} : null;
+    const delay = kind === 'partyroulette' && result ? (state.game.revealAt || 0) + 300 - now() : 0;
+    if (delay > 0) {
+      presentation.update({phase, roundKey, urgent});
+      setTimeout(() => {
+        if (root.isConnected && view.contains(root)) presentation.update({phase, roundKey, urgent, result});
+      }, delay);
+    } else presentation.update({phase, roundKey, urgent, result});
   }
 
   function local(kind, round, app) {

@@ -272,7 +272,9 @@ test('explicit truth and minority choices are shared, turn-scoped, and cannot ch
   assert.equal((await act(c,'truth','state',r.code)).game.question,r.game.question);
 });
 
-test('group roulette accepts concurrent presses, reveals exactly one phone and preserves its result on reconnect',async t=>{
+for (const withTargets of [false,true]) test(withTargets
+  ? 'group roulette seals targets and reveals the same winner on every phone after concurrent presses'
+  : 'legacy group roulette reveals exactly one phone and preserves its result on reconnect',async t=>{
   const f=await fixture();t.after(()=>f.close());
   const n=5,seats=f.users.slice(0,n);
   const hub=(i,act,code,opts={})=>f.publicRpc(seats[i],'drinking_room',[act,code,opts]);
@@ -285,22 +287,48 @@ test('group roulette accepts concurrent presses, reveals exactly one phone and p
   assert.deepEqual(s.players,['1번','2번','3번','4번','5번']);
   assert.deepEqual(s.game,{phase:'prepare',count:0,mine:false});
   await assert.rejects(call(0,'roulette_press',opts()),/unavailable/);
-  const first=opts();await call(0,'roulette_ready',first);await call(0,'roulette_ready',first);
-  assert.equal((await call(1,'state')).game.count,1);
-  await Promise.all(seats.slice(1).map((_,i)=>call(i+1,'roulette_ready',opts())));
+  const targetFor=i=>(i+1)%n;
+  // One older client chooses on press; the others choose before becoming ready.
+  const readyOptions=i=>withTargets&&i!==1?{...opts(),target:targetFor(i)}:opts();
+  if(withTargets)await assert.rejects(call(0,'roulette_ready',{...opts(),target:0}),/invalid_target/);
+  const first=readyOptions(0);await call(0,'roulette_ready',first);await call(0,'roulette_ready',first);
+  assert.deepEqual((await call(1,'state')).game,{phase:'prepare',count:1,mine:false});
+  if(withTargets)assert.equal((await call(0,'state')).game.myTarget,targetFor(0));
+  await Promise.all(seats.slice(1).map((_,i)=>call(i+1,'roulette_ready',readyOptions(i+1))));
   s=await call(1,'state');assert.equal(s.phase,'together');assert.ok(s.game.opensAt>s.serverMs);
   await assert.rejects(call(1,'roulette_press',opts()),/countdown_running/);
   // Move just the fixture clock boundary back; orders still use the public RPC.
   await f.db.query("update ojjuda_arcade_internal.party_vote_rooms set game_state=jsonb_set(game_state,'{opensAt}','0') where code=$1",[parent.child]);
-  await Promise.all(seats.slice(0,-1).map((_,i)=>call(i,'roulette_press',opts())));
+  const pressOptions=i=>withTargets&&i===1?{...opts(),target:targetFor(i)}:opts();
+  if(withTargets){
+    assert.equal((await call(0,'state')).game.myTarget,targetFor(0));
+    assert.equal((await call(1,'state')).game.myTarget,undefined);
+    await assert.rejects(call(0,'roulette_press',{...opts(),target:2}),/target_locked/);
+    for(const target of [0,n,-1,null,'1',1.25]){
+      await assert.rejects(call(0,'roulette_press',{...opts(),target}),/invalid_target/);
+    }
+  }
+  await Promise.all(seats.slice(0,-1).map((_,i)=>call(i,'roulette_press',pressOptions(i))));
+  if(withTargets)await assert.rejects(call(1,'roulette_press',{...opts(),target:3}),/target_locked/);
   const pending=await call(n-1,'state');
-  assert.deepEqual(pending.game,{phase:'together',count:n-1,mine:false,opensAt:0});
+  assert.deepEqual(pending.game,{phase:'together',count:n-1,mine:false,opensAt:0,...(withTargets?{myTarget:targetFor(n-1)}:{})});
   assert.equal((await call(0,'state')).game.mine,true);
-  let last=opts();await call(n-1,'roulette_press',last);await call(n-1,'roulette_press',last);
+  let last=pressOptions(n-1);await call(n-1,'roulette_press',last);await call(n-1,'roulette_press',last);
   const results=await Promise.all(seats.map((_,i)=>call(i,'state')));
   assert.equal(results.filter(s=>s.game.fired).length,1);
   for(const [i,r] of results.entries()){
-    assert.deepEqual(Object.keys(r.game).sort(),['fired','phase']);assert.equal(r.phase,'done');
+    assert.equal(r.phase,'done');
+    if(withTargets){
+      const shooter=results.findIndex(s=>s.game.fired);
+      assert.equal(r.game.shooter,shooter);
+      assert.equal(r.game.target,targetFor(shooter));
+      assert.equal(r.game.revealAt,results[0].game.revealAt);
+      assert.ok(r.game.revealAt>pending.serverMs);
+      assert.equal(r.hostSeat,r.game.target);
+    }else{
+      assert.deepEqual(Object.keys(r.game).sort(),['fired','phase']);
+      assert.equal(r.hostSeat,0);
+    }
     assert.deepEqual((await call(i,'state')).game,r.game);
   }
 });
