@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const memberStore='oj.party.'+document.getElementById('access-content').dataset.member+'.';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-pub-table1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-drinking-multi-random1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
