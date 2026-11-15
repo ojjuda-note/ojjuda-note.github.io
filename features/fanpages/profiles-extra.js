@@ -357,7 +357,7 @@ if (nctdreamProfile) {
 const ateezProfile = window.OJJUDA_FAN_PROFILES.ateez;
 if (ateezProfile) {
   ateezProfile.expanded = true;
-  ateezProfile.checkedAt = '2026.11.12';
+  ateezProfile.checkedAt = '2026.11.15';
   const ateezBirthdays = {
     '홍중': '1998.11.07', '성화': '1998.04.03', '윤호': '1999.03.23', '여상': '1999.06.15',
     '산': '1999.07.10', '민기': '1999.08.09', '우영': '1999.11.26', '종호': '2000.10.12'
@@ -368,6 +368,7 @@ if (ateezProfile) {
   }
   ateezProfile.awards = []; // Primary award announcement still unverified.
   ateezProfile.records = [
+    { year: '2026.11', title: 'GOLDEN HOUR : Part.6 발매', detail: '2026.11.13 미니 15집 · 타이틀 UP · 5곡', href: 'https://ateez.kqent.com/en/contents/6af5b1ecf0d69d09142fc301' },
     { year: '2026', title: 'GOLDEN HOUR : Part.5 발매', detail: '2026.06.26 미니 14집 · 타이틀 BAD', href: 'https://ateez-official.jp/musics/20862' },
     { year: '2027', title: 'ZERO TO ALL 월드투어 예정', detail: '인천 1.22~24·일본 2월·유럽 3~4월 공식 발표', href: 'https://ateez.kqent.com/en/contents/6ac915ceb899027df4664814' }
   ];
