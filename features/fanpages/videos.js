@@ -23,6 +23,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'Y8JFxS1HlDo', title: 'LOVE DIVE', kind: '뮤직비디오', source: 'IVE / STARSHIP' }
   ],
   aespa: [
+    { id: 'cnSMlOc9L5k', title: 'MMA2026 · WDA + Switchblade + LEMONADE', kind: '공식 시상식 무대', source: '멜론 Melon · 2026.11.14' },
+    { id: 'rr39g9rl4ZU', title: '카리나·윈터 서울 신드롬 비하인드', kind: '공식 메이킹', source: 'aespa 공식 · 2026.11.13' },
+    { id: 'cU8BEe99RzM', title: '지젤 · Love Riot', kind: '뮤직비디오', source: 'aespa 공식 · 2026.10.30' },
     { id: 'inxzQt78lOk', title: 'KISS N TELL', kind: '뮤직비디오', source: 'SMTOWN · 2026.07.24' },
     { id: '83C3TZ4Zm_o', title: 'LEMONADE', kind: '뮤직비디오', source: 'SMTOWN · 2026.05.29' },
     { id: 'iTJSbJtS8MU', title: 'WDA (Whole Different Animal) (Feat. G-DRAGON)', kind: '뮤직비디오', source: 'SMTOWN · 2026.05.11' },

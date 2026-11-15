@@ -61,16 +61,19 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   aespa: {
-    checkedAt: '2026.11.13',
+    checkedAt: '2026.11.15',
     debut: '2020.11.17', debutWork: 'Black Mamba',
     agency: 'SM Entertainment',
     concept: '현실과 가상 세계를 잇는 aespa.',
     heightSource: 'https://kpopdiscover.com/en/groups/aespa/',
     awards: [
+      { year: '2026.11', title: 'MMA2026 올해의 글로벌-K 아티스트 · 대상', detail: '11.14 첫 시상 부문 수상', href: 'https://www.melon.com/mma/result.htm?mmaYear=2026' },
+      { year: '2026.11', title: 'MMA2026 글로벌 TOP10', detail: '11.14 글로벌 TOP10 수상 · 2관왕', href: 'https://www.yna.co.kr/view/AKR20261114049700005' },
       { year: '2024', title: 'MAMA 올해의 노래', detail: 'Supernova', href: 'https://mama.mnetplus.world/history/2024/winners' },
       { year: '2025', title: '한국대중음악상 올해의 노래', detail: 'Supernova', href: 'https://koreanmusicawards.com/project/aespa-supernova/' }
     ],
     records: [
+      { year: '2026.11', title: 'LEMONADE MV 1억 조회', detail: '11.13 돌파 · 그룹 12번째 1억 뷰 뮤직비디오', href: 'https://www.soompi.com/article/1886736wpp/aespas-lemonade-becomes-their-12th-mv-to-hit-100-million-views' },
       { year: '2024', title: 'MAMA 6관왕', detail: 'Supernova · Armageddon 외', href: 'https://cjenm.com/en/news/2024-mama-awards-wrap-up-historic-run-with-iconic-performances-and-milestone-moments/' }
     ],
     members: [

@@ -176,6 +176,7 @@ window.OJJUDA_FAN_ARTISTS = [
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (7).png', '미장센 · 포토월 07', '2026', '티비텐 TV10'),
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (6).png', '미장센 · 포토월 06', '2026', '티비텐 TV10'),
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (8).png', '미장센 · 포토월 08', '2026', '티비텐 TV10'),
+      commonsPhoto('Aespa - 55580814509.jpg', '시애틀 공연 · 그룹 (원본 AI 보정)', '2026', 'David Lee · AI 보정 원본', 'CC BY 4.0'),
       commonsPhoto('03112026 Aespa NingNing Airport Departure 11.png', '닝닝 · 김포공항 (11.03)', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0')
     ],
     links: [
@@ -189,22 +190,28 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "SMTOWN SHOP", sub: "앨범·MD", href: "https://global.shop.smtown.com/collections/aespa" },
       { title: "2027 시즌그리팅 Kit", sub: "공식 예약 상품 · Weverse Shop", href: "https://shop.weverse.io/en/shop/USD/artists/133/sales/69859" },
       { title: "2027 시즌그리팅 Set", sub: "공식 예약 상품 · Weverse Shop", href: "https://shop.weverse.io/en/shop/USD/artists/133/sales/69861" },
-      { title: "KISS N TELL", sub: "일본 미니 1집 · 공식 CD 안내", href: "https://aespa-official.jp/discography/kissntell/" }
+      { title: "KISS N TELL", sub: "일본 미니 1집 · 공식 CD 안내", href: "https://aespa-official.jp/discography/kissntell/" },
+      { title: "KISS N TELL · Happy Holiday 응모", sub: "지정 판매처 구매 시 사인회 응모 코드 · 11.16~11.25(JST) 접수", href: "https://aespa-official.jp/news/happyholiday2026/" }
     ],
     music: [
+      { title: "Santa Baby (with Eartha Kitt)", date: "2026.11.13", type: "협업 디지털 싱글", songs: ["Santa Baby"], href: "https://www.yna.co.kr/amp/view/AKR20261113047000005" },
+      { title: "SYNK : COMPLaeXITY", date: "2026.09.14", type: "스페셜 디지털 싱글 · 멤버 솔로 4곡", songs: ["16 Bit (KARINA Solo)", "Saddle Up (WINTER Solo)", "BYEB4HELLO (GISELLE Solo)", "I Love You But I Gotta Let You Go (NINGNING Solo)"], href: "https://music.apple.com/us/album/synk-complaexity-2026-special-digital-single-ep/6808550171" },
       { title: "KISS N TELL", date: "2026.07.24", type: "일본 미니 1집", songs: ["KISS N TELL", "Orbit Pop", "Fangirl", "ATTITUDE", "Done with Rules", "In Halo"], href: "https://aespa-official.jp/discography/kissntell/" },
       { title: "LEMONADE", date: "2026.05.29", type: "정규 2집", songs: ["WDA (Whole Different Animal) (Feat. G-DRAGON)", "LEMONADE", "SHAKIN‘", "Can‘t Help Myself", "Camouflage", "Bite", "Switchblade (Feat. Ty Dolla $ign)", "Roll", "My Plan", "’Til We Die"], href: "https://aespa-official.jp/discography/lemonade/" },
       { title: "Rich Man", date: "2025.09.05", type: "미니 6집", songs: ["Rich Man", "Drift", "Bubble", "To The Girls"], href: "https://aespa-official.jp/discography/richman/" },
       { title: "Whiplash", date: "2024.10.21", type: "미니 5집", songs: ["Whiplash", "Kill It", "Flights, Not Feelings"], href: "https://aespa-official.jp/discography/whiplash/" }
     ],
     appearances: [
-      { date: "2026-11-14", title: "MMA2026 · 글로벌 데이", sub: "서울 고척스카이돔 · 18:00 · 주최 카카오엔터테인먼트", href: "https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/" },
       { date: "2026-11-28", title: "2026 aespa FAN MEETING · 1회", sub: "고려대학교 화정체육관 · 18:00(KST) · 멜론티켓", href: "https://weverse.io/aespa/notice/40306" },
       { date: "2026-11-29", title: "2026 aespa FAN MEETING · 2회", sub: "고려대학교 화정체육관 · 16:00(KST) · 온라인 생중계 동시 진행", href: "https://weverse.io/aespa/notice/40306" },
       { date: "2026-12-09", title: "2026 FNS 가요제 · 제2야", sub: "후지TV · 18:30~21:54(JST) 생방송 출연", href: "https://aespa-official.jp/news/fns02/" },
+      { date: "2026-12-10", title: "KISS N TELL Happy Holiday · 사인회", sub: "일본 도쿄도 내 · 멤버 전원 참여 · 시간·장소는 당첨자 별도 안내 · 11.16~11.25 응모(JST)", href: "https://aespa-official.jp/news/happyholiday2026/" },
       { date: "2026-12-12", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 MUFG 스타디움(국립경기장) · 17:00 예정(JST)", href: "https://music-bank.jp/" }
     ],
     campaigns: [
+      { kind: "콜라보", date: "2026.11.13", title: "Eartha Kitt × aespa · Santa Baby", sub: "원곡 보컬과 협업한 디지털 싱글 · Primary Wave Music / SM", href: "https://www.yna.co.kr/amp/view/AKR20261113047000005" },
+      { kind: "콜라보", date: "2026.11.13", title: "☆Taku Takahashi (m-flo) × aespa", sub: "〈KISS N TELL〉 리믹스 협업 발표 · 11월 20일 공개 예정", href: "https://aespa-official.jp/news/kissntell-remix/" },
+      { kind: "콜라보", date: "2026.11.13", title: "Setlog × aespa", sub: "〈KISS N TELL〉 리믹스 사전 체험 · 기간 한정 영상 효과", href: "https://aespa-official.jp/news/kissntell-remix/" },
       { kind: "홍보대사", date: "2026.09.09", title: "MARK & LONA · 카리나", sub: "2026 가을·겨울 컬렉션 공식 브랜드 앰배서더 활동", href: "https://aespa-official.jp/news/mark-lona-2026/" }
     ],
     schedules: [
@@ -213,6 +220,11 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 공지", sub: "Weverse", href: "https://weverse.io/aespa/notice" }
     ],
     news: [
+      { date: "11.14", tag: "수상", title: "MMA2026 글로벌-K 아티스트 대상·글로벌 TOP10 2관왕", href: "https://www.melon.com/mma/result.htm?mmaYear=2026" },
+      { date: "11.13", tag: "음악", title: "Eartha Kitt와 협업한 〈Santa Baby〉 싱글 발매", href: "https://www.yna.co.kr/amp/view/AKR20261113047000005" },
+      { date: "11.13", tag: "음악", title: "〈KISS N TELL〉 ☆Taku Takahashi 리믹스 11월 20일 발매 예고", href: "https://aespa-official.jp/news/kissntell-remix/" },
+      { date: "11.13", tag: "행사", title: "12월 10일 도쿄 사인회 확정 · 11월 16~25일 응모", href: "https://aespa-official.jp/news/happyholiday2026/" },
+      { date: "11.13", tag: "기록", title: "〈LEMONADE〉 뮤직비디오 1억 조회수 돌파", href: "https://www.soompi.com/article/1886736wpp/aespas-lemonade-becomes-their-12th-mv-to-hit-100-million-views" },
       { date: "11.10", tag: "팬미팅", title: "11월 29일 팬미팅 온라인 생중계·시청권 안내", href: "https://aespa-official.jp/news/fanmeeting2026-streaming/" },
       { date: "11.03", tag: "방송", title: "12월 9일 후지TV FNS 가요제 출연 발표", href: "https://aespa-official.jp/news/fns02/" },
       { date: "07.24", tag: "음악", title: "일본 미니 1집 〈KISS N TELL〉 발매", href: "https://aespa-official.jp/news/kissntell-release/" },
