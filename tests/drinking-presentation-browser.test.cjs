@@ -794,6 +794,18 @@ test('one phone can choose or write prompts inline and read the fingers recommen
   assert.deepEqual(session.errors,[]);
 });
 
+async function expectRouletteStage(page,rotated) {
+  await page.locator('.roulette-scene img').evaluate(image=>image.decode());
+  const stage=await page.locator('.roulette-table').evaluate(table=>{
+    const host=document.getElementById('access-content'),scene=table.querySelector('.roulette-scene'),panel=table.querySelector('.roulette-panel');
+    const frame=table.getBoundingClientRect();
+    return {turned:getComputedStyle(host).getPropertyValue('--roulette-rotated').trim()==='1',
+      wide:host.clientWidth>host.clientHeight,sideBySide:panel.offsetLeft>=scene.offsetLeft+scene.offsetWidth-1,
+      fits:frame.left>=-1&&frame.top>=-1&&frame.right<=innerWidth+1&&frame.bottom<=innerHeight+1};
+  });
+  assert.deepEqual(stage,{turned:rotated,wide:true,sideBySide:true,fits:true});
+}
+
 test('party roulette plays from the phone menu through an anonymous handoff and a result',async t=>{
   const browser=await chromium.launch(launchOptions);t.after(()=>browser.close());
   const session=await browserSession(browser,{actor:'wheel-member',localPlayers:['보리','나리','마루'],
@@ -804,6 +816,7 @@ test('party roulette plays from the phone menu through an anonymous handoff and 
   await page.goto(origin+'/games/drinking/local/?v='+revision+'#menu');
   await page.getByRole('button',{name:/러시안 룰렛/}).click();
   await dismissGuide(page);
+  await expectRouletteStage(page,true);
   await page.getByRole('button',{name:'탄환 넣기'}).click();
   const drum=page.getByRole('button',{name:'탄창을 밀어 돌리기'});
   assert.equal(await drum.locator('.drum-hole').count(),3);
@@ -823,6 +836,9 @@ test('party roulette plays from the phone menu through an anonymous handoff and 
   assert.ok(box.y>=0&&box.y+box.height<=640,'turn button fits the phone screen');
   assert.equal(await page.locator('.party-wheel-board h2').innerText(),'한 사람을 지목해 주세요');
   await screenshot(page,'partyroulette-360x640');
+  await page.setViewportSize({width:844,height:390});
+  await expectRouletteStage(page,false);
+  await screenshot(page,'partyroulette-landscape');
   await press.click();
   await page.getByRole('button',{name:'폰 받았어요'}).click();
   await press.click();
@@ -836,7 +852,7 @@ test('three phones share a countdown and exactly one shows the firing result wit
   const browser=await chromium.launch(launchOptions);t.after(()=>browser.close());
   const n=3,ready=new Set(),pressed=new Set();let phase='prepare',revision=1,opensAt=0;
   const sessions=await Promise.all([0,1,2].map(async seat=>{
-    return browserSession(browser,{actor:'roulette-device-'+seat,rpc:(_name,args)=>{
+    return browserSession(browser,{actor:'roulette-device-'+seat,viewport:seat===0?{width:360,height:640}:{width:844,height:390},rpc:(_name,args)=>{
       const act=args.p_action;
       if(act==='roulette_ready'&&phase==='prepare'){
         ready.add(seat);revision++;
@@ -852,8 +868,9 @@ test('three phones share a countdown and exactly one shows the firing result wit
     }});
   }));
   const pages=sessions.map(s=>s.page);
-  await Promise.all(pages.map(async p=>{
+  await Promise.all(pages.map(async (p,i)=>{
     await p.goto(origin+'/games/partyroulette/?room=GRP001');await dismissGuide(p);
+    await expectRouletteStage(p,i===0);
     assert.equal(await p.locator('#game select, #game input').count(),0);
     await p.getByRole('button',{name:'준비',exact:true}).click();
   }));

@@ -3,14 +3,16 @@
   let timer;
   function view(s) {
     const g=s.game, n=s.players.length;
-    if(s.phase==='done')return '<section class="group-draw draw-result" data-fired="'+g.fired+'" role="status">'+
-      '<h1>'+(g.fired?'팡!':'통과')+'</h1><p>'+(g.fired?'내 휴대폰이 지목한 사람이 당첨이에요.':'팡!이 뜬 휴대폰이 지목한 사람이 당첨이에요.')+'</p></section>';
-    const preparing=s.phase==='prepare';
-    return '<section class="group-draw"><img class="draw-still" src="/games/drinking/local/art/partyroulette.webp" alt="">'+
-      '<h1>'+(preparing?'한 사람을 지목해 주세요':'함께 누를 시간')+'</h1><p role="status" id="group-count">'+
-      (preparing?'준비 ':'누른 사람 ')+g.count+'/'+n+'명</p>'+
+    const done=s.phase==='done', preparing=s.phase==='prepare';
+    const title=done?(g.fired?'팡!':'통과'):(preparing?'한 사람을 지목해 주세요':'함께 누를 시간');
+    const result=done?' draw-result':'';
+    const status=done?'<p>'+(g.fired?'내 휴대폰이 지목한 사람이 당첨이에요.':'팡!이 뜬 휴대폰이 지목한 사람이 당첨이에요.')+'</p>':
+      '<p role="status" id="group-count">'+(preparing?'준비 ':'누른 사람 ')+g.count+'/'+n+'명</p>'+
       (g.mine?'<p>모두 '+(preparing?'준비하면 카운트다운이 시작돼요.':'누르면 결과가 나와요.')+'</p>':
-       '<button type="button" class="action" id="group-press">'+(preparing?'준비':'너 마셔!')+'</button>')+'</section>';
+        '<button type="button" class="action" id="group-press">'+(preparing?'준비':'너 마셔!')+'</button>');
+    return '<section class="group-draw roulette-table'+result+'"'+(done?' data-fired="'+g.fired+'" role="status"':'')+'>'+
+      '<div class="roulette-scene"><img src="/games/drinking/local/art/partyroulette-table.webp" alt="" draggable="false"></div>'+
+      '<div class="roulette-panel"><h1>'+title+'</h1>'+status+'</div></section>';
   }
   function mount(s,ui){
     const button=document.getElementById('group-press');
