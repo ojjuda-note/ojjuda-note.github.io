@@ -18,6 +18,7 @@ on:
   pull_request:
     paths:
       - 'features/fanpages/**'
+      - 'scripts/build-fanpage-hub.mjs'
       - 'shared/navigation/section-back.js'
       - 'tests/fanpage*.cjs'
       - 'tests/section-back-navigation.test.cjs'
@@ -27,6 +28,7 @@ on:
     branches: [main]
     paths:
       - 'features/fanpages/**'
+      - 'scripts/build-fanpage-hub.mjs'
       - 'shared/navigation/section-back.js'
       - 'tests/fanpage*.cjs'
       - 'tests/section-back-navigation.test.cjs'
@@ -87,7 +89,7 @@ jobs:
         id: scope
         shell: bash
         run: |
-          if [[ '${{ github.event_name }}' != 'workflow_run' ]] || ! git diff --quiet HEAD^ HEAD -- features/fanpages .github/workflows/fanpages.yml tests/fanpage-release-ui.test.cjs; then
+          if [[ '${{ github.event_name }}' != 'workflow_run' ]] || ! git diff --quiet HEAD^ HEAD -- features/fanpages scripts/build-fanpage-hub.mjs .github/workflows/fanpages.yml tests/fanpage-release-ui.test.cjs; then
             echo 'changed=true' >> "$GITHUB_OUTPUT"
           else
             echo 'changed=false' >> "$GITHUB_OUTPUT"
