@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261116-drinking-3d-art1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261116-shapematch-records1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -749,10 +749,16 @@ function nextShape(){
   const slowest=Math.max(...r.records);
   r.shapeWinners=r.records.flatMap((ms,i)=>ms===slowest?[i]:[]);
   const title=r.shapeWinners.map(name).join(' · ')+(r.shapeWinners.length>1?' 공동 당첨!':' 당첨!');
-  const rows=r.records.map((ms,i)=>'<li><span>'+name(i)+'</span><strong>'+ms+' ms</strong></li>').join('');
+  const rows=r.records.map((ms,i)=>{
+    const winner=ms===slowest;
+    const badge=winner?' <small>당첨</small>':'';
+    return '<tr'+(winner?' class="sm-slowest"':'')+'><th scope="row">'+name(i)+badge+'</th> <td>'+ms+' ms</td></tr>';
+  }).join('');
   r.phase='done';fx.play('result');
   shell('<span class="turn-tag">라운드 결과</span><h2>'+title+'</h2>'+
-    '<p>가장 느린 반응 시간은 '+slowest+' ms예요.</p><ul class="breakdown" aria-label="참가자 기록">'+rows+'</ul>'+
+    '<p>가장 느린 반응 시간은 '+slowest+' ms예요.</p>'+
+    '<table class="sm-results" aria-label="참가자별 반응 시간"><thead><tr>'+
+      '<th scope="col">참가자</th><th scope="col">반응 시간</th></tr></thead><tbody>'+rows+'</tbody></table>'+
     actions(btn('한 판 더','start'),btn('게임 목록','menu','quiet')));
 }
 

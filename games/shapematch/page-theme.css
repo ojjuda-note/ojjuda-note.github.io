@@ -40,3 +40,21 @@ body[data-dp-kind="shapematch"] .sm-field {
 .sm-ghost { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #070708; }
 .sm-hint { position: absolute; bottom: 10px; left: 0; right: 0; text-align: center; font-size: 14px; }
 .sm-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+.sm-results {
+  width: min(100%, 26em);
+  margin: .3em auto .7em;
+  border-collapse: collapse;
+  line-height: 1.4;
+}
+.sm-results :is(th, td) {
+  padding: .35em .65em;
+  border-bottom: 1px solid var(--suite-line);
+  text-align: start;
+}
+.sm-results thead th { color: var(--suite-muted); font-size: .85em; }
+.sm-results tbody th { overflow-wrap: anywhere; font-weight: 600; }
+.sm-results tr > :last-child { text-align: end; white-space: nowrap; }
+.sm-results td { font-variant-numeric: tabular-nums; }
+.sm-results .sm-slowest { background: var(--suite-subtle); color: var(--suite-accent); }
+.sm-slowest small { margin-inline-start: .25em; font-size: .75em; white-space: nowrap; }

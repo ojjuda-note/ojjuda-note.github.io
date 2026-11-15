@@ -921,7 +921,7 @@ test('drinking menu buttons keep square artwork and identify the scare before se
 test('shape match enters from the local catalog and reveals the slowest player using the shared glass', {timeout:90000}, async t => {
   const browser=await chromium.launch(launchOptions);
   t.after(()=>browser.close());
-  const f=await browserSession(browser,{actor:'shape-fixture',localPlayers:['하나','둘'],rpc:async()=>[],reducedMotion:'no-preference'});
+  const f=await browserSession(browser,{actor:'shape-fixture',localPlayers:['참가자 4','참가자 1'],rpc:async()=>[],reducedMotion:'no-preference'});
   const p=f.page;
   await p.goto(origin+'/games/drinking/local/#menu');
   await p.locator('[data-value="shapematch"]').click();
@@ -946,8 +946,28 @@ test('shape match enters from the local catalog and reveals the slowest player u
   const panel=p.locator('[data-drinking-dialog="result"]');
   await panel.waitFor({state:'visible'});
   assert.ok(scores[1]>scores[0]);
-  assert.match(await panel.innerText(),/둘 당첨!/);
+  assert.match(await panel.innerText(),/참가자 1 당첨!/);
   assert.ok((await panel.innerText()).includes(String(scores[1])));
   assert.ok(await panel.locator('[data-drinking-glass] [data-drinking-glass-image]').count());
+  await panel.locator('[data-drinking-close]').first().click();
+  const table=p.getByRole('table',{name:'참가자별 반응 시간'});
+  const rows=table.locator('tbody tr');
+  assert.deepEqual(await rows.locator('th').allTextContents(),['참가자 4','참가자 1 당첨']);
+  assert.deepEqual(await rows.locator('td').allTextContents(),scores.map(ms=>ms+' ms'));
+  for (const width of [320, 768]) {
+    await p.setViewportSize({width,height:844});
+    await settledGame(p);
+    for (const row of await rows.all()) {
+      const gap=await row.evaluate(row=>{
+        const textBox=node=>{
+          const range=document.createRange();
+          range.selectNodeContents(node);
+          return range.getBoundingClientRect();
+        };
+        return textBox(row.cells[1]).left-textBox(row.cells[0]).right;
+      });
+      assert.ok(gap>=8,'keep names visibly separate from times at '+width+'px');
+    }
+  }
   assert.deepEqual(f.errors,[]);
 });
