@@ -766,6 +766,9 @@ test('one phone can choose or write prompts inline and read the fingers recommen
     await select.waitFor({state:'visible'});
     await page.waitForFunction(()=>document.querySelector('[data-question]')?.options.length>0);
     assert.equal(await picker.locator('[data-mode="list"]').getAttribute('aria-pressed'),'true');
+    await page.setViewportSize({width:844,height:390});
+    await expectViewport(page,'inline-landscape-'+kind,{local:true});
+    await page.setViewportSize({width:390,height:844});
     await select.selectOption({index:0});
     if(kind==='king'){
       const text=await select.locator('option:checked').textContent();
