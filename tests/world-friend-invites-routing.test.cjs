@@ -16,7 +16,7 @@ const deferred = () => {
 function fixture() {
   let installed;
   const calls = [], pending = deferred();
-  const context = {D:{online:true, user:{id:'me'}}, S:{}, Fh() {}, ke() {}, M() {},
+  const context = {location:{assign:url=>calls.push({url})},D:{online:true, user:{id:'me'}}, S:{}, Fh() {}, ke() {}, M() {},
     Al:(game, options) => calls.push({game, options}), El:() => calls.push({close:true}),
     window:{
       OjjudaFriendInvites:{install(config) { installed = config; }},
@@ -74,4 +74,10 @@ test('Matgo invitation forwards cancellation and requests propagated failures', 
   await assert.rejects(f.join({kind:'matgo', code:'A1B2C3D4'}), error => error === problem);
   f.context.window.openMatgo = async () => false;
   await assert.rejects(f.join({kind:'matgo', code:'A1B2C3D4'}), /game_asset_unavailable/);
+});
+
+test('accepting a drinking invitation opens the joined shared room',async()=>{
+  const f=fixture();
+  await f.join({kind:'drinking',code:'ABC123'});
+  assert.deepEqual(f.calls,[{url:'/games/drinking/?room=ABC123'}]);
 });
