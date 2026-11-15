@@ -2553,7 +2553,7 @@
       ],
       campaigns: [
         {
-          "kind": "음악 협업",
+          "kind": "콜라보",
           "date": "2026.10.10",
           "title": "베이블레이드 X 애니메이션 오프닝 · Fearless",
           "sub": "TAKARA TOMY 애니메이션 BEYBLADE X 베이킹덤 편 신 오프닝 주제가 · 공식 발표 9/17, 음원 발매 10/10",
