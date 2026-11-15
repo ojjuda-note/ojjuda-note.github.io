@@ -65,6 +65,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'LM875jeR-PM', title: "It's Me", kind: '안무 영상', source: 'ILLIT Official' }
   ],
   a2omay: [
+    { id: 'Bg5Lpvtsoy8', title: 'BAD HABITS TONITE · Chinese Version', kind: '공식 중국어 버전', source: 'A2O MAY 공식 YouTube · 2026.10.19' },
+    { id: 'BjUOaFXmp8Q', title: 'BAD HABITS TONITE · Full Stage', kind: '공식 무대', source: 'A2O MAY 공식 YouTube' },
+    { id: 'a2JXTXnqfZc', title: 'BAD HABITS TONITE · Music Show 2026 (Jiangsu TV)', kind: '공식 방송 무대', source: 'A2O MAY 공식 YouTube · 장쑤TV 2026.10.23' },
     { id: 'GioJ0KPZADg', title: 'Under My Skin', kind: '뮤직비디오', source: 'A2O WORLD' },
     { id: 'nnCBHkvQZo0', title: 'BOSS', kind: '뮤직비디오', source: 'A2O WORLD' },
     { id: '0kBL7n_Yxak', title: 'B.B.B (Bigger Badder Better)', kind: '뮤직비디오', source: 'A2O WORLD' },
