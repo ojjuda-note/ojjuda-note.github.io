@@ -2,6 +2,7 @@
 (() => {
   'use strict';
   const kinds = new Set(['bomb','liar','minority','mission','initial','king','fingers','imagevote','truth']);
+  const flavorKinds = new Set(['king','fingers','minority','imagevote']);
   const banks = new Map();
   const loads = new Map();
   const owner = document.getElementById('access-content').dataset.member;
@@ -55,9 +56,12 @@
     if (loads.has(kind)) return loads.get(kind);
     const request = (async () => {
       try {
-        const result = await invoke('drinking_content','pool',{kinds:[kind],round_mix:!['fingers','king','truth','imagevote','minority'].includes(kind)});
+        const options = {kinds:[kind],round_mix:kind!=='truth'&&!flavorKinds.has(kind)};
+        if (flavorKinds.has(kind)) options.include_flavors=true;
+        const result = await invoke('drinking_content','pool',options);
         const bank = result?.banks?.[kind];
         if (!validBank(kind,bank)) return false;
+        if (flavorKinds.has(kind)) window.PartyPromptFlavors?.setCatalog?.(kind,bank,result.flavors?.[kind]);
         if (JSON.stringify(bank) !== JSON.stringify(banks.get(kind))) banks.set(kind,bank);
         return true;
       } catch { return false; }
