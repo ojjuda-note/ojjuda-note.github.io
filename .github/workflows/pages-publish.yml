@@ -85,6 +85,13 @@ jobs:
             --source features/fanpages/artists-extra.js \
             --cache "$RUNNER_TEMP/ojjuda-fan-photo-cache" \
             --output "$RUNNER_TEMP/ojjuda-public/features/fanpages"
+      - name: Build fanpage hub summaries from staged artist data
+        run: node scripts/build-fanpage-hub.mjs "$RUNNER_TEMP/ojjuda-public/features/fanpages"
+      - name: Compare cold mobile hub and detail navigation
+        if: github.event_name == 'pull_request'
+        run: |
+          npm --prefix tests ci --ignore-scripts
+          node tests/fanpage-hub-transfer.cjs "$RUNNER_TEMP/ojjuda-public"
       - name: Build responsive Park card backgrounds
         run: python scripts/build-park-backgrounds.py "$RUNNER_TEMP/ojjuda-public"
       - name: Upload Pages artifact
