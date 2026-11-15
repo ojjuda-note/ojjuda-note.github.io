@@ -364,6 +364,10 @@ test('shape match uses the longest reaction, including ties, for the shared resu
     f.click('[data-action="shape-next"]');
   }
   const panel=f.find('[data-drinking-dialog="result"]');
+  const table=f.find('.sm-results');
+  assert.deepEqual(Array.from(table.tHead.rows[0].cells,cell=>cell.textContent),['참가자','반응 시간']);
+  assert.deepEqual(Array.from(table.tBodies[0].rows,row=>[row.cells[0].textContent,row.cells[1].textContent]),
+    [['하나','140 ms'],['둘 당첨','720 ms'],['셋 당첨','720 ms']]);
   assert.match(panel.textContent,/둘 · 셋 공동 당첨!/);
   assert.match(panel.textContent,/720 ms/);
   assert.doesNotMatch(panel.querySelector('h2').textContent,/하나/);
