@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  let key,model,board,revealTimer,showTimer,effectKey;
+  let key,model,board,revealTimer,showTimer,effectKey,revealHost;
   const game=()=>window.PartyRouletteBoard;
   function view(s,ui) {
     if(s.phase!=='done')return game().markup();
@@ -26,14 +26,25 @@
     const wait=Math.max(0,(g.revealAt||0)-ui.now());
     const fresh=Number.isFinite(g.revealAt)&&ui.now()-g.revealAt<1600&&effectKey!==id;
     if(!fresh){stage.hidden=true;return;}
+    revealHost=document.getElementById('access-content');
+    revealHost.dataset.rouletteAngle=String(model.rotation??(innerWidth<innerHeight?90:0));
+    prop.dataset.mirror=String((model.side||1)===1);
     stage.parentElement.classList.add('pr-revealing');
     revealTimer=setTimeout(()=>{
       effectKey=id;game().pulse(g.fired);
       if(g.fired)window.PartyRouletteArt.flash(prop);
     },wait);
-    showTimer=setTimeout(()=>{stage.parentElement.classList.remove('pr-revealing');stage.hidden=true;},wait+290);
+    showTimer=setTimeout(()=>{
+      stage.parentElement.classList.remove('pr-revealing');stage.hidden=true;
+      clearRevealOrientation();
+    },wait+290);
+  }
+  function clearRevealOrientation(){
+    if(revealHost)delete revealHost.dataset.rouletteAngle;
+    revealHost=null;
   }
   function unmount(){
+    clearRevealOrientation();
     board?.destroy();board=null;clearTimeout(revealTimer);clearTimeout(showTimer);
   }
   window.PartyLiveGame={view,mount,unmount,messages:{
