@@ -184,7 +184,7 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'KcW1_wI6rsc', title: 'EVERYTHING', kind: '뮤직비디오', source: 'TREASURE Official / YG' }
   ],
   nctwish: [
-    { id: 'PsPNLkBPMVg', title: 'I SPY · Dance Practice', kind: '안무 영상', source: 'NCT WISH Official · 2026.10.15' },
+    { id: 'PsPNLkBPMVg', title: 'I SPY · Dance Practice', kind: '안무 영상', source: 'NCT WISH Official · 2026.10.16' },
     { id: 'tauDyjAj4xU', title: 'I SPY · 안무 연습 비하인드', kind: '메이킹', source: 'NCT WISH Official · 2026.10.22' },
     { id: 'jl4YoocJqfc', title: 'I SPY · 트레일러 비하인드', kind: '메이킹', source: 'NCT WISH Official · 2026.10.30' },
     { id: 'E1d8dVSs0Bg', title: 'YO-I-DON!', kind: '뮤직비디오', source: 'SMTOWN · 2026.07' },
