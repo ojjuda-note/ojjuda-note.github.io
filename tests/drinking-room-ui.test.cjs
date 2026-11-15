@@ -562,8 +562,8 @@ test('participant storage errors are visible and edits remain usable',async t=>{
   assert.equal(f.w.localStorage.getItem(key),'["노을","구름"]');
 });
 
-test('local party roulette gives every seat one chance, ends once, and starts a fresh wheel on replay',async t=>{
-  for(const [count,slots,hit,start] of [[2,5,0,1],[2,8,6,0],[4,7,5,2],[12,12,11,0],[12,5,4,11]]){
+test('local party roulette matches the roster, passes the turn to the nominee and awards one named result',async t=>{
+  for(const [count,hit] of [[2,0],[3,1],[5,3],[8,4],[12,11]]){
     const players=Array.from({length:count},(_,i)=>'손님'+(i+1));
     const ui=await screen({url:'/games/drinking/local/#partyroulette',prepare(w){
       w.scrollTo=()=>{};
@@ -574,29 +574,31 @@ test('local party roulette gives every seat one chance, ends once, and starts a 
     const button=step=>'[data-action="wheel-'+step+'"]';
     ui.click('[data-drinking-dialog="guide"] [data-drinking-close]');
     assert.equal(ui.find(button('press')),null);
-    const options=ui.find('.drum-count select');
-    assert.deepEqual([...options.options].map(o=>Number(o.value)),[5,6,7,8,9,10,11,12]);
-    options.value=String(slots);options.dispatchEvent(new ui.w.Event('change'));
-    assert.equal(ui.find('.party-wheel-disc').children.length,slots);
+    assert.equal(ui.find('.party-wheel-disc').children.length,count);
     ui.click(button('load'));assert.ok(ui.find('.drum-hole.is-marked'));
-    const draws=[(hit+.5)/slots,(start+.5)/count];
-    ui.w.Math.random=()=>draws.shift()??.25;
+    ui.w.Math.random=()=>(hit+.5)/count;
     ui.click(button('spin'));
     assert.equal(ui.find(button('press')),null);
     await ui.advance(3000);
     assert.equal(ui.find('.drum-hole.is-marked'),null);
+    let turn=0,target;
     for(let press=0;press<=hit;press++){
-      const seat=(start+press)%count;
-      assert.equal(ui.find('.party-wheel-board h2').textContent,players[seat]+'님 차례');
-      assert.equal(ui.find(button('press')).textContent,'너 마셔!');
+      assert.equal(ui.find('.party-wheel-board h2').textContent,players[turn]+'님 차례');
+      const select=ui.find('.roulette-target select');
+      assert.equal(select.value,'');
+      assert.deepEqual([...select.options].slice(1).map(o=>o.text),players.filter((_,i)=>i!==turn));
+      assert.ok(ui.find(button('press')).disabled);
+      target=(turn+count-1)%count;
+      select.value=String(target);select.dispatchEvent(new ui.w.Event('change'));
+      assert.equal(ui.find(button('press')).disabled,false);
       const old=ui.find(button('press'));old.click();old.click();
-      assert.equal(ui.find(button('press')),null);
       if(press<hit){
-        assert.equal(ui.find('.party-wheel-board h2').textContent,players[seat]+'님은 통과!');
-        ui.click(button('pass'));
+        turn=target;
+        assert.match(ui.find('.party-wheel-board p').textContent,/통과/);
       }
     }
-    assert.equal(ui.find('.play-body h2').textContent,'팡! '+players[(start+hit)%count]+'님 당첨!');
+    assert.equal(ui.find('.play-body h2').textContent,'팡! '+players[target]+'님 당첨!');
+    assert.equal(ui.find('.play-body .table-host').textContent,'다음 방장 · '+players[target]);
     assert.match(ui.find('[data-drinking-dialog="result"]').textContent,/당첨/);
     ui.click('[data-drinking-dialog="result"] [data-drinking-close]');
     ui.click('[data-action="start"]');assert.ok(ui.find(button('load')));
