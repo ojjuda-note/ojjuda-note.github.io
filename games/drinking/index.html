@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#faf7ed">
   <title>오쭈다</title>
-  <link rel="stylesheet" href="hub.css?v=20261115-room-directory1">
+  <link rel="stylesheet" href="hub.css?v=20261115-drinking-invites1">
   <link rel="stylesheet" href="/games/drinking/access.css?v=20261115-pub-table1">
   <script defer src="/config.js"></script>
   <script defer src="/games/matgo/matgo-access.js?v=20261114-drinks-adult1"></script>
@@ -29,7 +29,7 @@
       </div>
       <nav class="mode-options" aria-label="플레이 방식">
         <a id="resume-drinks" hidden><strong>참여 중인 방으로 돌아가기</strong></a>
-        <a id="local-play" href="local/?v=20261115-room-directory1"><strong>한 대로 플레이</strong><span>휴대폰 한 대에 참가자 이름을 적고 함께 즐겨요.</span></a>
+        <a id="local-play" href="local/?v=20261115-auto-room-title1"><strong>한 대로 플레이</strong><span>휴대폰 한 대에 참가자 이름을 적고 함께 즐겨요.</span></a>
         <a href="?mode=multi"><strong>멀티플레이</strong><span>각자 휴대폰으로 같은 방에 입장해요.</span></a>
       </nav>
     </section>
@@ -52,8 +52,8 @@
         <section class="entry-detail" id="detail" hidden>
           <a class="text-link" id="all-rooms" href="?mode=multi">← 방 목록</a>
           <form id="create-form" class="panel room-form" hidden>
-            <h1>방 만들기</h1><p>친구들이 찾기 쉬운 방 제목을 지어 주세요.</p>
-            <label>방 제목<input name="title" required maxlength="40" placeholder="예) 금요일 저녁 모임"></label>
+            <h1>방 만들기</h1><p>방 제목은 자동으로 정해져요. 원하는 이름으로 바꿔도 돼요.</p>
+            <label>방 제목<input name="title" maxlength="40" placeholder="자동으로 정한 제목 사용"></label>
             <label>최대 인원<select name="capacity"></select></label>
             <label>방 비밀번호<input type="password" name="password" required minlength="4" maxlength="32" autocomplete="new-password" placeholder="4자 이상"></label>
             <button type="submit" class="primary">방 만들기</button>
@@ -69,7 +69,7 @@
     <section id="lobby" hidden aria-labelledby="room-title">
       <div class="room-head"><h1 id="room-title" tabindex="-1"></h1><button id="leave" type="button">방 나가기</button></div>
       <section class="panel roster">
-        <div class="room-head"><h2 id="member-count"></h2><button id="invite" type="button">초대 링크 복사</button></div>
+        <div class="room-head"><h2 id="member-count"></h2><button id="invite" type="button" aria-haspopup="dialog">친구 초대</button></div>
         <ul id="members"></ul>
       </section>
       <div class="pick">
@@ -82,13 +82,18 @@
         <div id="games" aria-label="술게임 목록"></div>
       </div>
     </section>
+    <dialog id="friend-invite" aria-labelledby="invite-title">
+      <div class="room-head"><h2 id="invite-title">친구 초대</h2><button id="invite-close" type="button" autofocus>닫기</button></div>
+      <p id="invite-status" role="status"></p>
+      <ul id="invite-list" aria-label="초대할 친구"></ul>
+    </dialog>
     <p id="notice" role="status" aria-live="polite"></p>
     <noscript>술게임을 이용하려면 자바스크립트를 켜 주세요.</noscript>
   </main>
     <span data-module="/games/drinking/table-view.js?v=20261115-pub-table1"></span>
     <span data-module="/games/drinking/connection.js?v=20261114-drinks-stability1"></span>
     <span data-module="entry-refresh.js?v=20261115-secretcount1"></span>
-    <span data-module="hub.js?v=20261115-room-directory1"></span>
+    <span data-module="hub.js?v=20261115-auto-room-title1"></span>
   </template>
 </body>
 </html>

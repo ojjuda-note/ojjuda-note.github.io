@@ -184,3 +184,28 @@ test('visit gifts need explicit confirmation even after mark-all; a repeated cli
     assert.match(row().textContent,/지급 완료/);assert.equal(row().querySelector('button'),null);
   } finally {f.close();}
 });
+
+test('the bell shows the drinking room title and can decline a friend invitation',async()=>{
+  const target=uuid(712);
+  let pending=true;
+  const f=fixture({handle:async(name,args)=>{
+    if(name==='arcade_friend_invite'){
+      assert.equal(args.p_id,target);assert.equal(args.p_action,'decline');pending=false;return {data:{ok:true}};
+    }
+    if(name==='app_notification_summary')return {data:{notifications:pending?1:0,retention:0}};
+    if(name==='list_retention_alerts')return {data:[]};
+    if(name==='list_app_notifications')return {data:{items:pending?[{id:'world:drinking_invite:'+target,kind:'drinking_invite',
+      source:'world',target_id:target,room_title:'수달의 테이블',sender_name:'친구',created_at:'2026-11-15T01:00:00Z'}]:[],
+      unread_count:pending?1:0,as_of:'2026-11-15T01:00:01Z'}};
+    return {data:0};
+  }});
+  try{
+    await f.boot();f.api.open();await settle();
+    const d=f.w.document;
+    assert.match(d.querySelector('.nn-copy').textContent,/친구.*수달의 테이블/);
+    assert.ok(d.querySelector('[data-drinking-invite-action="accept"]'));
+    d.querySelector('[data-drinking-invite-action="decline"]').click();await settle();
+    assert.equal(d.querySelector('[data-drinking-invite-action]'),null);
+    assert.equal(f.calls.filter(c=>c.name==='arcade_friend_invite').length,1);
+  }finally{f.close();}
+});

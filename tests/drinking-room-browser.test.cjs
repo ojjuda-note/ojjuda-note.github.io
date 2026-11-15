@@ -26,19 +26,22 @@ test('three Chromium sessions keep one SQL room through reconnection, a game and
   const [host,first,second]=await Promise.all(db.users.slice(0,3).map(open));
   assert.equal(await host.page.locator('#create-form').isVisible(),false);
   await host.page.getByRole('link',{name:'방 만들기'}).click();
-  await host.page.locator('#create-form [name="title"]').fill('브라우저 연결 검사');
+  const titleField=host.page.getByLabel('방 제목',{exact:true});
+  await titleField.waitFor();
+  const roomTitle=await titleField.inputValue();
+  assert.ok(roomTitle.trim() && roomTitle.length<=40);
   await host.page.locator('#create-form [name="capacity"]').selectOption('3');
   await host.page.locator('#create-form [name="password"]').fill('browser-pass');
   await host.page.locator('#create-form [type="submit"]').click();
   await host.page.locator('#lobby').waitFor({state:'visible'});
   const code=new URL(host.page.url()).searchParams.get('room');
-  assert.equal(await host.page.locator('#room-title').textContent(),'브라우저 연결 검사');
+  assert.equal(await host.page.locator('#room-title').textContent(),roomTitle);
   assert.match(code,/^[A-Z0-9]{6}$/);
   await Promise.all([first,second].map(async s=>{
     await s.page.getByRole('button',{name:'새로고침'}).click();
-    await s.page.getByLabel('방 제목 검색').fill('연결');
-    await s.page.getByRole('link',{name:/브라우저 연결 검사/}).click();
-    await s.page.getByRole('heading',{name:'브라우저 연결 검사'}).waitFor();
+    await s.page.getByLabel('방 제목 검색').fill(roomTitle);
+    await s.page.locator('#room-list a').filter({hasText:roomTitle}).click();
+    await s.page.getByRole('heading',{name:roomTitle,exact:true}).waitFor();
     assert.equal(await s.page.getByText(code,{exact:true}).count(),0);
     await s.page.locator('#join-form [name="password"]').fill('browser-pass');
     await s.page.locator('#join-form [type="submit"]').click();

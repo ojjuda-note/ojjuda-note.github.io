@@ -42,14 +42,22 @@
   let client, actor, room, pollTimer, polling = false, busy = false, navigating = false, subscribed = false;
   let generation = 0, lastMutation, listSequence = 0;
   const createPage = params.get('view') === 'create';
+  if (createPage) {
+    const moods = ['신나는', '반가운', '흥겨운', '유쾌한', '용감한', '느긋한', '춤추는', '노래하는', '웃는', '꿈꾸는', '빛나는', '즐거운'];
+    const animals = ['수달', '펭귄', '여우', '너구리', '쿼카', '토끼', '고양이', '다람쥐', '판다', '돌고래', '부엉이', '고슴도치'];
+    const pick = words => words[Math.floor(Math.random() * words.length)];
+    byId('create-form').elements.title.defaultValue = pick(moods) + ' ' + pick(animals) + '의 테이블';
+  }
   const search = byId('room-search');
   let availableRooms = null;
   let joinTarget = '';
   let randomStart;
+  const inviteDialog=byId('friend-invite');
+  let pickerVersion=0;
   if (suggested) byId('open-create').href += '&game=' + encodeURIComponent(suggested.id);
   let opening = false, initialized = false, listing, entryRecovery;
   const connection = window.OjjudaRoomConnection.create({
-    onPause: () => clearTimeout(pollTimer),
+    onPause: () => { clearTimeout(pollTimer); closeInvites(); },
     onResume: () => {
       if (navigating) return;
       if (room) void sync();
@@ -67,6 +75,7 @@
     invalid_title:'방 제목과 최대 인원을 확인해 주세요.', invalid_capacity:'최대 인원을 2~12명으로 골라 주세요.',
     not_room_member:'방 비밀번호를 입력해 주세요.', room_unavailable:'방이 닫혔거나 만료됐어요.',
     room_full:'자리가 모두 찼어요.', join_rate_limit:'비밀번호를 여러 번 틀렸어요. 잠시 뒤 다시 시도해 주세요.',
+    friend_required:'현재 친구 목록에 있는 친구만 초대할 수 있어요.', invite_rate_limit:'잠시 뒤에 다시 초대해 주세요.',
     room_in_progress:'참여 중인 방을 먼저 나가 주세요.', room_already_started:'이미 게임이 시작됐어요.',
     host_only:'방장만 할 수 있어요.', stale_state:'방 상태가 바뀌었어요. 현재 대기실을 확인해 주세요.',
     unavailable:'방 상태가 바뀌었어요. 다시 확인해 주세요.', not_enough_players:'게임에 필요한 인원이 아직 모이지 않았어요.'
@@ -108,6 +117,8 @@
     byId('start').hidden=!host;
     byId('start').disabled=busy || !selected || room.players.length<gameMin(room.kind);
     byId('leave').disabled=busy;
+    byId('invite').disabled=busy || room.players.length>=room.capacity;
+    if (byId('invite').disabled) closeInvites();
     tiles.forEach(tile=>{
       const chosen=tile.dataset.game===room.kind;
       tile.setAttribute('aria-pressed', String(chosen));
@@ -145,6 +156,7 @@
   }
 
   function showEntry(invite='') {
+    closeInvites();
     byId('hub-back').href='/games/drinking/';
     room=null; clearTimeout(pollTimer); document.title='술게임 멀티 · 오쭈다';
     byId('lobby').hidden=true; byId('welcome').hidden=false; byId('account').hidden=true; byId('entry').hidden=false;
@@ -168,7 +180,7 @@
       const {data,error}=await connection.request(signal => {
         const query=client.rpc('drinking_room',{p_action:action,p_code:code,p_options:options});
         return query.abortSignal ? query.abortSignal(signal) : query;
-      }, {read:['state','list','mine'].includes(action)});
+      }, {read:['state','list','mine','invite_friends'].includes(action)});
       if (error || data?.error) throw Error(error?.message || data.error);
       connection.succeeded();
       return data;
@@ -287,8 +299,8 @@
   byId('create-form').onsubmit=e=>{
     e.preventDefault();const f=e.target.elements;
     if(byId('create-form').hidden)return;
-    if(!f.title.value.trim()){notice.textContent='방 제목을 입력해 주세요.';f.title.focus();return;}
-    void mutate('create',{title:f.title.value.trim(),capacity:Number(f.capacity.value),password:f.password.value});
+    f.title.value=f.title.value.trim() || f.title.defaultValue;
+    void mutate('create',{title:f.title.value,capacity:Number(f.capacity.value),password:f.password.value});
   };
   byId('join-form').onsubmit=e=>{
     e.preventDefault();
@@ -318,11 +330,45 @@
     }
     void mutate('leave',{revision:room.revision});
   };
+  function closeInvites() {
+    pickerVersion++;
+    if (inviteDialog.open) inviteDialog.close();
+  }
+  byId('invite-close').onclick=closeInvites;
   byId('invite').onclick=async()=>{
-    if(!room)return;
-    const link=location.origin+'/games/drinking/?room='+room.code;
-    try{await navigator.clipboard.writeText(link);notice.textContent='초대 링크를 복사했어요. 비밀번호와 함께 알려 주세요.';}
-    catch{notice.textContent='복사하지 못했어요. 친구에게 방 제목을 알려 주세요.';}
+    if (!room || busy || navigating || inviteDialog.open || !connection.active()) return;
+    const code=room.code, version=++pickerVersion;
+    const current=()=>inviteDialog.open && pickerVersion===version && room?.code===code && connection.active();
+    const status=byId('invite-status'), friends=byId('invite-list');
+    friends.replaceChildren();
+    status.textContent='친구 목록을 불러오는 중이에요.';
+    inviteDialog.showModal();
+    try {
+      const data=await rpc('invite_friends',code);
+      if (!current()) return;
+      if (!Array.isArray(data?.friends)) throw Error('invalid_friends');
+      status.textContent=data.friends.length?'초대할 친구를 선택해 주세요.':'지금 초대할 수 있는 친구가 없어요.';
+      for (const friend of data.friends) {
+        const row=el('li'), send=el('button','','초대');
+        send.type='button';
+        send.setAttribute('aria-label',friend.nick+'님 초대');
+        send.onclick=async()=>{
+          if (!current() || send.disabled) return;
+          send.disabled=true;
+          try {
+            const {data:sent,error}=await connection.request(signal=>{
+              const q=client.rpc('arcade_friend_invite',{p_action:'send',p_kind:'drinking',p_code:code,p_to:friend.id});
+              return q.abortSignal ? q.abortSignal(signal) : q;
+            });
+            if (error || !sent?.ok) throw Error(error?.message || 'unavailable');
+            if (current()) {send.textContent='초대 보냄';status.textContent=friend.nick+'님에게 초대 알림을 보냈어요.';}
+          } catch(err) {
+            if (current()) {send.disabled=false;status.textContent=explain(err);}
+          }
+        };
+        row.append(el('strong','',friend.nick),send);friends.append(row);
+      }
+    } catch(err) { if(current()) status.textContent=explain(err); }
   };
   byId('refresh').onclick=listRooms;
   byId('retry').onclick=()=>{if(room)void sync();else void open();};

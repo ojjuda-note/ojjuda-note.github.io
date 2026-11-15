@@ -91,6 +91,13 @@ button:disabled { opacity: .65; cursor: default; }
 .room-form label { margin-top:17px; }
 .room-form input,.room-form select,.room-form button { min-height:48px; }
 .room-form .primary { margin-top:24px; background:#234b39; border-color:#234b39; color:white; }
+#friend-invite { width:min(420px,calc(100% - 28px)); max-height:75dvh; padding:22px; overflow:auto;
+  border:1px solid #c7cbbb; border-radius:18px; color:#213d30; background:#fffdf6; }
+#friend-invite::backdrop { background:#10271f88; }
+#invite-status { margin:14px 0; line-height:1.5; }
+#invite-list { list-style:none; margin:0; padding:0; }
+#invite-list li { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; border-top:1px solid #e3e3d6; }
+#invite-list button { flex:none; background:#234b39; color:white; }
 @media(max-width:460px) {
   .directory-head { gap:16px; }
   .create-link { width:100%; }

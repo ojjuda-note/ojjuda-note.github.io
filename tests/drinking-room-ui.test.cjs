@@ -172,9 +172,14 @@ for(const action of ['create','join']) {
     await until(()=>!f.find('#entry').hidden,'entry before '+action);
     const form=f.find(action==='create'?'#create-form':'#join-form');
     form.elements.password.value='room-pass';
-    if(action==='create')form.elements.title.value='친구들 방';
+    const suggestedTitle=form.elements.title?.value;
+    if(action==='create'){
+      assert.ok(suggestedTitle.trim());
+      form.elements.title.value='  ';
+    }
     f.submit(action==='create'?'#create-form':'#join-form');
     await until(()=>reply,'server committed '+action);
+    if(action==='create')assert.equal(f.calls.find(c=>c.args.p_action==='create').args.p_options.title,suggestedTitle);
     await f.hidden(true);await f.hidden(false);
     await until(()=>!f.find('#lobby').hidden&&f.find('#room-title').textContent === '친구들 방','membership readback');
     assert.equal(f.calls.filter(c=>c.args.p_action===action).length,1,'no blind re-submission');
@@ -395,4 +400,50 @@ test('sentence menus filter mild and spicy, alternate mixed recommendations and 
   menu().querySelector('[data-mode="write"]').click();const field=menu().querySelector('textarea');field.value='선물로 받고 싶은 것은?';field.dispatchEvent(new ui.w.Event('input'));
   menu().querySelector('[data-mode="list"]').click();menu().querySelector('[data-mode="write"]').click();assert.equal(field.value,'선물로 받고 싶은 것은?');
   ui.submit('.party-question-dialog form');assert.equal(ui.find('#party-question').value,field.value);
+});
+
+test('the lobby invites an eligible friend and accepting the notification joins that exact room',async t=>{
+  const fs=require('node:fs'), path=require('node:path');
+  const migration=name=>fs.readFileSync(path.join(__dirname,'../supabase/migrations',name),'utf8');
+  const db=await fixture();
+  t.after(()=>db.close());
+  const [host,friend,other]=db.users;
+  await db.db.exec(`
+    create schema ojjuda_matgo_internal;
+    create table ojjuda_matgo_internal.rooms(host_id uuid, code text, status text);
+    create table public.friendships(requester uuid,addressee uuid,status text);
+    create function public.is_friend(uuid,uuid) returns boolean language sql stable as $$
+      select exists(select 1 from public.friendships where status='accepted'
+        and (requester=$1 and addressee=$2 or requester=$2 and addressee=$1)) $$;
+    create function ojjuda_roulette_internal.arcade_eligible(uuid) returns boolean language sql as $$ select true $$;
+  `);
+  await db.db.query("insert into public.friendships values ($1,$2,'accepted')",[host,friend]);
+  await db.db.exec(migration('20261009062933_arcade_friend_invites.sql'));
+  await db.db.exec(migration('20261010134600_arcade_invite_popup.sql'));
+  const roulette=migration('20261031123640_roulette_arcade_integration.sql');
+  const service=roulette.match(/create or replace function ojjuda_arcade_internal\.friend_invite_service\([\s\S]*?end;\$\$;/i);
+  await db.db.exec(service[0]);
+  await db.db.exec(migration('20261115013320_drinking_room_directory.sql'));
+  await db.db.exec(migration('20261115013328_drinking_friend_invitations.sql'));
+  const room=await db.publicRpc(host,'drinking_room',['create','',{title:'친구들 테이블',capacity:4,password:'private-pass',request_id:crypto.randomUUID()}]);
+  const invite=(actor,action,id=null)=>db.publicRpc(actor,'arcade_friend_invite',[action,null,null,null,id]);
+  const f=await screen({actor:host,rpc:async(name,args)=>{
+    const values=name==='arcade_friend_invite'?[args.p_action,args.p_to,args.p_kind,args.p_code,null]:rpcArgs(name,args);
+    return db.publicRpc(host,name,values);
+  }});
+  t.after(()=>f.close());
+  await until(()=>!f.find('#lobby').hidden,'lobby');
+  f.click('#invite');
+  await until(()=>f.find('#invite-list button'),'friend options');
+  assert.equal(f.find('#invite-list').children.length,1);
+  f.click('#invite-list button');
+  await until(()=>f.find('#invite-status').textContent.includes('보냈어요'),'notification sent');
+  assert.equal((await invite(other,'list')).invites.length,0);
+  const [pending]=(await invite(friend,'list')).invites;
+  assert.equal(pending.room_title,room.title);
+  await assert.rejects(invite(other,'accept',pending.id),/invite_unavailable/);
+  const joined=await invite(friend,'accept',pending.id);
+  assert.equal(joined.code,room.code);
+  assert.equal((await db.publicRpc(friend,'drinking_room',['state',room.code,{}])).me,1);
+  assert.equal((await invite(friend,'list')).invites.length,0);
 });
