@@ -177,6 +177,7 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'vqkfEUqjl6Y', title: 'Adrenaline', kind: '뮤직비디오', source: 'ATEEZ / KQ ENTERTAINMENT · 2026.02.06' }
   ],
   treasure: [
+    { id: 'D63ISSQE-Ng', title: 'SHOCK · MBC 쇼! 음악중심 11.14', kind: '음악방송 무대', source: 'MBCkpop · YG LIFE 공식 임베드 · 2026.11.14' },
     { id: 'u_hpZueWI9g', title: 'SHOCK', kind: '뮤직비디오', source: 'TREASURE Official / YG' },
     { id: 'QERKD90hG98', title: 'IF I', kind: '뮤직비디오', source: 'TREASURE Official / YG' },
     { id: 'nSKPJ2UmnqU', title: 'ZOOM ZOOM', kind: '안무 영상', source: 'TREASURE Official / YG' },

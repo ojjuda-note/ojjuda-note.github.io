@@ -379,7 +379,7 @@ if (ateezProfile) {
 // Official source rechecked 2026-11-12.
 const treasureProfile = window.OJJUDA_FAN_PROFILES.treasure;
 if (treasureProfile) {
-  treasureProfile.checkedAt = '2026.11.12';
+  treasureProfile.checkedAt = '2026.11.15';
   treasureProfile.expanded = true;
   const birthdays = {
     '최현석': '1999.04.21', '지훈': '2000.03.14', '요시': '2000.05.15',
@@ -393,6 +393,9 @@ if (treasureProfile) {
   }
   treasureProfile.awards = [
     { year: '2023.01', title: '골든디스크 어워즈 베스트 그룹', detail: 'YG 공식 수상 이력', href: 'https://ygfamily.com/ko/artists/treasure/profile' },
+    { year: '2022.12', title: 'Asia Artist Awards 베스트 뮤지션', detail: 'YG 공식 수상 이력', href: 'https://ygfamily.com/ko/artists/treasure/profile' },
+    { year: '2022.10', title: '더팩트 뮤직 어워즈 올해의 아티스트 본상', detail: 'YG 공식 수상 이력', href: 'https://ygfamily.com/ko/artists/treasure/profile' },
+    { year: '2021.12', title: 'MAMA 월드와이드 팬스 초이스 TOP10', detail: 'YG 공식 수상 이력', href: 'https://ygfamily.com/ko/artists/treasure/profile' },
     { year: '2021.01', title: '서울가요대상 신인상', detail: '제30회 · YG 공식 수상 이력', href: 'https://ygfamily.com/ko/artists/treasure/profile' }
   ];
   treasureProfile.records = [
