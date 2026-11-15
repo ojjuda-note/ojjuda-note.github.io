@@ -7,7 +7,7 @@
  const versions=Object.freeze({
   croc:'1.4.1',
   liar:'1.6.1',
-  king:'1.11.0',
+  king:'1.11.1',
   minority:'1.9.1',
   mission:'1.6.1',
   bottle:'1.4.1',
