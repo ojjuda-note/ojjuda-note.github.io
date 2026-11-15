@@ -3,7 +3,7 @@
 const $=selector=>document.querySelector(selector);
 const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-noir-drum1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261115-group-draw1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -17,9 +17,7 @@ const crocGum=[
 ];
 const jawCount=crocGum.length*2;
 const CROC_TOOTH_COUNT=jawCount*2;
-const games=[...window.DrinkingTableView.games,{
-  id:'partyroulette',title:'러시안 룰렛',category:'운과 감각',short:'탄창을 돌리고, 한 사람씩 너 마셔!',color:'#28231f',min:2
-}];
+const games=window.DrinkingTableView.games;
 const pageIntroductions={
   liar:{
     heading:['힌트 속에 숨은','한 사람을 찾아요.'],
@@ -182,7 +180,6 @@ function markLocalHost(){
   let candidates=[];
   switch(game.id){
     case 'croc':case 'bomb':case 'secretcount':case 'updown':candidates=[r.turn];break;
-    case 'partyroulette':candidates=[r.target];break;
     case 'bottle':candidates=[r.winningSeat];break;
     case 'initial':candidates=r.alive;break;
     case 'king':candidates=[r.roles.indexOf(r.number),r.second==null?-1:r.roles.indexOf(r.second)];break;
@@ -243,9 +240,9 @@ function shell(body,scene=false){
   navigation(true);
   app.innerHTML='<article class="play-shell"><header class="round-head"><h1>'+art(game.id,'round-mark')+game.title+'</h1><span>'+players.length+'명 플레이</span></header>'+(scene&&!['secretcount','partyroulette'].includes(game.id)?'<div class="stage-art" style="--pastel:'+game.color+';--scene:url('+artPath(game.id)+')">'+art(game.id)+'</div>':'')+'<div class="play-body">'+body+'</div></article>';
   if(window.DrinkingTableView){
-    app.querySelector('.round-head').replaceWith(window.DrinkingTableView.heading(game.id,game.title,players.length));
+    app.querySelector('.round-head').replaceWith(window.DrinkingTableView.heading(game.id,game.title,game.id==='partyroulette'?round.slots:players.length));
   }
-  if(round?.phase==='done')markLocalHost();
+  if(round?.phase==='done'&&game.id!=='partyroulette')markLocalHost();
   window.DrinkingGameScreen?.local(game.id,round,app);
 }
 function pageIntro(copy,enough){
@@ -316,8 +313,9 @@ function end(title,desc,sound='result'){
   shell('<span class="turn-tag">라운드 결과</span><h2>'+esc(title)+'</h2><p>'+esc(desc)+'</p>'+actions(btn('한 판 더',game.id==='bomb'?'bomb-setup':game.id==='truth'?'truth-setup':'start'),btn('게임 목록','menu','quiet')),true)
 }
 function rouletteSetup(){
+  const slots=game?.id==='partyroulette'&&round?.slots||players.length;
   cleanup();
-  round={phase:'wheel-empty',turn:0,target:null,used:0,slots:players.length,angle:0};
+  round={phase:'wheel-empty',used:0,slots,angle:0};
   rouletteView();
 }
 function rouletteView(){
@@ -326,7 +324,7 @@ function rouletteView(){
   switch(r.phase){
     case 'wheel-empty':
       title='탄창을 준비해 주세요';
-      description='참가자 '+players.length+'명 · 탄창 '+r.slots+'칸 · 당첨 1칸';
+      description='참가자 한 명당 한 칸, 당첨은 한 칸이에요.';
       button=btn('탄환 넣기','wheel-load');
       break;
     case 'wheel-loaded':
@@ -339,9 +337,14 @@ function rouletteView(){
       description='멈추면 첫 번째 차례가 시작돼요.';
       break;
     case 'wheel-press':
-      title=name(r.turn)+'님 차례';
-      description=(r.used?name(r.turn)+'님 통과! ':'')+'상대를 지목하고 너 마셔!를 눌러 주세요.';
-      button='<button type="button" class="start" data-action="wheel-press" disabled>너 마셔!</button>';
+      title='한 사람을 지목해 주세요';
+      description='상대를 정한 뒤 버튼을 눌러요.';
+      button=btn('너 마셔!','wheel-press');
+      break;
+    case 'wheel-handoff':
+      title='통과! 폰을 넘겨 주세요';
+      description='방금 지목받은 사람이 폰을 받고 다음 상대를 골라요.';
+      button=btn('폰 받았어요','wheel-accept','quiet');
       break;
   }
   const preparing=['wheel-empty','wheel-loaded','wheel-spin'].includes(r.phase);
@@ -350,8 +353,8 @@ function rouletteView(){
     const marked=(r.phase==='wheel-loaded'&&i===0)?' is-marked':'';
     return '<i class="drum-hole'+marked+'" style="--seat:'+360*i/r.slots+'deg"></i>';
   }).join('');
-  const nominee=r.phase==='wheel-press'?'<label class="roulette-target">지목할 사람 <select>'+
-    '<option value="">상대 선택</option>'+players.map((person,i)=>i===r.turn?'':'<option value="'+i+'">'+esc(person)+'</option>').join('')+'</select></label>':'';
+  const countField=r.phase==='wheel-empty'?'<label class="roulette-target">참가 인원 <select>'+
+    Array.from({length:11},(_,i)=>'<option value="'+(i+2)+'"'+(i+2===r.slots?' selected':'')+'>'+(i+2)+'명</option>').join('')+'</select></label>':'';
   const size=Math.min(19,145/r.slots);
   const angleStyle='--hole-size:'+size+'%;--orbit:'+(-32/size*100)+'%;--angle:'+r.angle+'deg;--start:'+(r.from||0)+'deg;--duration:'+(r.duration||0)+'ms';
   const drum='<span class="drum-metal" style="'+angleStyle+'"><span class="party-wheel-disc">'+holes+'</span></span>';
@@ -359,12 +362,12 @@ function rouletteView(){
     '<span class="drum-zoom" aria-hidden="true">'+drum+'</span>';
   shell('<div class="party-wheel-board" data-phase="'+r.phase+'"><div class="party-wheel-art">'+
     '<img src="'+artPath(photo)+'" alt="" draggable="false">'+control+'</div>'+
-    '<h2 tabindex="-1">'+title+'</h2><p>'+description+'</p>'+nominee+(button?actions(button):'')+'</div>');
+    '<h2 tabindex="-1">'+title+'</h2><p>'+description+'</p>'+countField+(button?actions(button):'')+'</div>');
   const picker=app.querySelector('.roulette-target select');
   if(picker)picker.onchange=()=>{
-    const seat=Number(picker.value);
-    r.target=picker.value!=='' && Number.isInteger(seat) && seat>=0 && seat<players.length && seat!==r.turn ? seat : null;
-    app.querySelector('[data-action="wheel-press"]').disabled=r.target===null;
+    const count=Number(picker.value);
+    if(!Number.isInteger(count)||count<2||count>12)return;
+    r.slots=count;rouletteView();app.querySelector('.roulette-target select').focus({preventScroll:true});
   };
   if(r.phase==='wheel-loaded')bindDrumDrag(app.querySelector('button.drum-zoom'),r);
 }
@@ -413,7 +416,7 @@ function spinRoulette(direction,speed){
   r.spinTimer=setTimeout(()=>{
     if(round!==r||r.phase!=='wheel-spin')return;
     r.phase='wheel-press';rouletteView();
-    if(!document.querySelector('[aria-modal="true"],dialog[open]'))app.querySelector('.roulette-target select').focus({preventScroll:true});
+    if(!document.querySelector('[aria-modal="true"],dialog[open]'))app.querySelector('[data-action="wheel-press"]').focus({preventScroll:true});
   },r.duration);
 }
 function rouletteAction(action){
@@ -423,10 +426,11 @@ function rouletteAction(action){
     r.phase='wheel-loaded';fx.play('deal');
   }else if(action==='wheel-spin'){
     return spinRoulette(1,1);
-  }else if(action==='wheel-press'&&r.phase==='wheel-press'&&r.target!==null){
-    if(r.used===r.hit)return end('팡! '+players[r.target]+'님 당첨!',players[r.turn]+'님이 지목한 '+players[r.target]+'님이 마실 차례예요.');
-    r.used++;r.angle+=360/r.slots;
-    r.turn=r.target;r.target=null;fx.play('turn');
+  }else if(action==='wheel-press'&&r.phase==='wheel-press'){
+    if(r.used===r.hit)return end('지목받은 사람 당첨!','이번에 지목받은 사람이 마셔요.');
+    r.used++;r.angle+=360/r.slots;r.phase='wheel-handoff';fx.play('turn');
+  }else if(action==='wheel-accept'&&r.phase==='wheel-handoff'){
+    r.phase='wheel-press';
   }else return;
   rouletteView();
   app.querySelector('.party-wheel-board h2').focus({preventScroll:true});

@@ -794,7 +794,7 @@ test('one phone can choose or write prompts inline and read the fingers recommen
   assert.deepEqual(session.errors,[]);
 });
 
-test('party roulette plays from the phone menu through a turn and a named result',async t=>{
+test('party roulette plays from the phone menu through an anonymous handoff and a result',async t=>{
   const browser=await chromium.launch(launchOptions);t.after(()=>browser.close());
   const session=await browserSession(browser,{actor:'wheel-member',localPlayers:['보리','나리','마루'],
     viewport:{width:360,height:640},reducedMotion:'no-preference',rpc:()=>({})});
@@ -821,17 +821,48 @@ test('party roulette plays from the phone menu through a turn and a named result
   await press.waitFor({state:'visible'});
   const box=await press.boundingBox();
   assert.ok(box.y>=0&&box.y+box.height<=640,'turn button fits the phone screen');
-  assert.equal(await page.locator('.party-wheel-board h2').innerText(),'보리님 차례');
+  assert.equal(await page.locator('.party-wheel-board h2').innerText(),'한 사람을 지목해 주세요');
   await screenshot(page,'partyroulette-360x640');
-  const target=page.getByLabel('지목할 사람');
-  assert.ok(await press.isDisabled());
-  await target.selectOption({label:'마루'});
   await press.click();
-  assert.equal(await page.locator('.party-wheel-board h2').innerText(),'마루님 차례');
-  assert.ok(await press.isDisabled());
-  await target.selectOption({label:'나리'});await press.click();
+  await page.getByRole('button',{name:'폰 받았어요'}).click();
+  await press.click();
   const result=page.locator('[data-drinking-dialog="result"]');
   await result.waitFor();
-  assert.match(await result.innerText(),/나리님 당첨/);
+  assert.match(await result.innerText(),/지목받은 사람 당첨/);
   assert.deepEqual(session.errors,[]);
+});
+
+test('three phones share a countdown and exactly one shows the firing result without choosing names',async t=>{
+  const browser=await chromium.launch(launchOptions);t.after(()=>browser.close());
+  const n=3,ready=new Set(),pressed=new Set();let phase='prepare',revision=1,opensAt=0;
+  const sessions=await Promise.all([0,1,2].map(async seat=>{
+    return browserSession(browser,{actor:'roulette-device-'+seat,rpc:(_name,args)=>{
+      const act=args.p_action;
+      if(act==='roulette_ready'&&phase==='prepare'){
+        ready.add(seat);revision++;
+        if(ready.size===n){phase='together';opensAt=Date.now()+3000;}
+      }else if(act==='roulette_press'&&phase==='together'){
+        if(Date.now()<opensAt)throw Error('countdown_running');
+        pressed.add(seat);revision++;
+        if(pressed.size===n)phase='done';
+      }
+      const marks=phase==='prepare'?ready:pressed;
+      return {code:'GRP001',title:'함께',capacity:n,players:['1번','2번','3번'],me:seat,revision,round:1,
+        phase,serverMs:Date.now(),hostSeat:0,game:phase==='done'?{phase,fired:seat===1}:{phase,count:marks.size,mine:marks.has(seat),opensAt}};
+    }});
+  }));
+  const pages=sessions.map(s=>s.page);
+  await Promise.all(pages.map(async p=>{
+    await p.goto(origin+'/games/partyroulette/?room=GRP001');await dismissGuide(p);
+    assert.equal(await p.locator('#game select, #game input').count(),0);
+    await p.getByRole('button',{name:'준비',exact:true}).click();
+  }));
+  await Promise.all(pages.map(p=>p.getByRole('button',{name:'너 마셔!',exact:true}).click()));
+  await Promise.all(pages.map(p=>p.locator('.draw-result').waitFor()));
+  const labels=await Promise.all(pages.map(p=>p.locator('.draw-result h1').innerText()));
+  assert.deepEqual(labels,['통과','팡!','통과']);
+  for(const [i,p] of pages.entries()){
+    assert.equal(await p.locator('[data-drinking-dialog="result"]').count(),0);
+    assert.deepEqual(sessions[i].errors,[]);
+  }
 });

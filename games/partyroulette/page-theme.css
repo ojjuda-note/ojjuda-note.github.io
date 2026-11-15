@@ -1,0 +1,6 @@
+.group-draw { width:min(100%,30rem); margin:auto; text-align:center; display:grid; justify-items:center; gap:.65rem; }
+.group-draw .draw-still { display:block; width:min(100%,24rem); height:clamp(85px,20dvh,170px); object-fit:cover; object-position:50% 44%; border-radius:12px; }
+.group-draw .action { min-height:48px; min-width:10rem; }
+.group-draw.draw-result { min-height:clamp(130px,28dvh,250px); align-content:center; padding:16px; border-radius:14px; color:#efe8d9; background:#34312d; }
+.group-draw.draw-result[data-fired="true"] { background:#683a24; color:#fff3d4; }
+.group-draw.draw-result h1 { font-size:clamp(2rem,9vw,4rem) !important; }
