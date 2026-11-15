@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261116-drinking-foley1'
+ const revision='20261116-restaurants-c2s47-jeju-broadcast2-loc1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -28,7 +28,7 @@
   chacha_rush:'1.1.1',
   byeolcheonji:'1.0.5',
   festival:'1.6.2',
-  restaurants:'1.13.4',
+  restaurants:'1.13.5',
   recommendations:'1.7.2',
   archery:'3.4.1',
   roulette:'1.10.1',
