@@ -342,6 +342,18 @@
     try {
       const { data: identity, error: identityError } = await client.auth.getUser();
       if (accountChanged()) return;
+      if (identityError && (identityError.status >= 500 || identityError.status === 429 || identityError.name === 'AuthRetryableFetchError')) {
+        const notice = '지금은 계정을 확인할 수 없어요. 잠시 후 다시 시도해 주세요.';
+        if (overrideNickname !== undefined) {
+          feedback.textContent = notice;
+        } else {
+          showState('공원 연결을 다시 확인해 주세요', notice, '다시 시도');
+          authMode = 'note-retry';
+          $('guest-browse').hidden = true;
+          $('back-to-login').focus();
+        }
+        return;
+      }
       if (identityError || !identity?.user || identity.user.id !== session.user.id) {
         applySession(null);
         openAuth('login', 'note');
@@ -644,6 +656,7 @@
   });
   forgot.addEventListener('click', () => setAuthMode(authMode === 'forgot' ? 'login' : 'forgot'));
   $('back-to-login').addEventListener('click', () => {
+    if (authMode === 'note-retry') { void enterNote(); return; }
     if (recoveryGrant) { setAuthMode('forgot'); email.focus(); }
     else if (recoveryCompleted) { setAuthMode('login'); email.focus(); }
     else if (!recoveryPending && session?.user) {

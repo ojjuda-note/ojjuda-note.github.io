@@ -252,6 +252,25 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   assert.equal(failedSignup.element('nickname').value, failedName);
 
   const nicknameMember = { id: 'nickname-member', email: 'member@ojjuda.kr', user_metadata: { nickname: '기존별명' } };
+  let authStatus = 555, prepareCalls = 0;
+  const retryPark = setup('?next=note', { user:nicknameMember, userResponse:user => authStatus
+    ? {data:{user:null},error:{status:authStatus}} : {data:{user}} });
+  retryPark.client.rpc = async () => { prepareCalls++; return {data:true}; };
+  await retryPark.flush();
+  assert.deepEqual(retryPark.navigations,[]);
+  assert.equal(prepareCalls,0,'unverified identity never enters the park');
+  assert.equal(retryPark.element('back-to-login').textContent,'다시 시도');
+  authStatus = 0;
+  retryPark.element('back-to-login').listeners.click();
+  retryPark.element('back-to-login').listeners.click();
+  await retryPark.flush();
+  assert.equal(prepareCalls,1);
+  assert.deepEqual(retryPark.navigations,['/world.html?place=park']);
+  const expiredPark = setup('?next=note', {user:nicknameMember,userResponse:()=>({data:{user:null},error:{status:401}})});
+  await expiredPark.flush();
+  assert.deepEqual(expiredPark.navigations,[]);
+  assert.match(expiredPark.element('auth-feedback').textContent,/로그인을 다시 확인/);
+
   const repair = setup('?auth=login&next=note', { user: nicknameMember });
   repair.client.rpc = async () => ({ error: { code: '23505', message: 'nickname conflict' } });
   await repair.flush();
