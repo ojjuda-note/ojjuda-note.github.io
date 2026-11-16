@@ -27,8 +27,12 @@
     node.className = className;
     return node;
   };
+  const dateFormat = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  });
   const date = value => value && Number.isFinite(Date.parse(value))
-    ? new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(value))
+    ? dateFormat.format(new Date(value))
     : '기록 없음';
   const button = (text, className = 'btn') => {
     const node = el('button', text, className); node.type = 'button'; return node;
@@ -195,6 +199,10 @@
             if (error) throw error;
             if (!data || !Array.isArray(data.items) || !Number.isSafeInteger(Number(data.total))) throw new Error('invalid_navigation_history');
             const total = Number(data.total);
+            if (historyOffset > 0 && historyOffset >= total) {
+              historyOffset = total > 0 ? Math.floor((total - 1) / HISTORY_SIZE) * HISTORY_SIZE : 0;
+              if (total > 0) return loadHistory();
+            }
             historyStatus.textContent = total ? `방문·게임 기록 ${total.toLocaleString('ko-KR')}건` : '아직 저장된 방문·게임 기록이 없어요.';
             for (const entry of data.items) {
               const line = el('li', undefined, 'acct-history-item');
