@@ -32,7 +32,8 @@
     let filter = '', query = '';
     const current = id => !disposed && id && options.getUserId() === id;
     const drinkingAllowed = () => Boolean(current(owner) && options.matgoAllowed?.() === true);
-    const paused = () => document.hidden || document.body.classList.contains('gaming') || document.body.classList.contains('matgo-open') || !!document.querySelector('#gov,#matgo-overlay,#ttang-overlay,.tour-game-dialog,.roulette-game-dialog,#bd-root');
+    const offline = () => window.navigator.onLine === false;
+    const paused = () => offline() || document.hidden || document.body.classList.contains('gaming') || document.body.classList.contains('matgo-open') || !!document.querySelector('#gov,#matgo-overlay,#ttang-overlay,.tour-game-dialog,.roulette-game-dialog,#bd-root');
     const needsUpdates = () => !disposed && owner && !paused() && (root?.isConnected || mine?.status === 'waiting' || mine?.status === 'playing');
     // Detect an opponent promptly; casual lobby browsing needs fewer server reads.
     const pollInterval = () => mine?.status === 'waiting' || mine?.status === 'playing' ? ACTIVE_POLL_MS : IDLE_POLL_MS;
@@ -54,6 +55,10 @@
       suspended = next;
       if (next) { clearTimeout(timer); timer = null; }
       else if (needsUpdates()) void poll(true);
+    }
+    function connectionChanged() {
+      activityChanged();
+      render();
     }
     function card(room) {
       const [, name] = games[room.kind] || ['', '게임'];
@@ -110,7 +115,8 @@
       const drinking = filter === 'drinking';
       root.querySelector('[data-room-search]').disabled = drinking;
       const warning = root.querySelector('[data-room-issue]');
-      warning.hidden = !issue; warning.textContent = issue;
+      const status = offline() ? '연결이 끊겼어요. 연결되면 방 목록을 다시 확인해요.' : issue;
+      warning.hidden = !status; warning.textContent = status;
       const text = query.trim().replace(/^#/, '').toLocaleLowerCase();
       const shown = rooms.filter(r => (!filter || r.kind === filter) && (!text || String(r.room_no).toLowerCase().includes(text) || r.title.toLocaleLowerCase().includes(text)));
       if (!drinking && mine && !shown.some(r => r.room_no === mine.room_no)) shown.unshift(mine);
@@ -144,7 +150,7 @@
         const [data,extra] = await Promise.all([call('list'),options.extraRooms?.() || Promise.resolve([])]);
         // A return/manual refresh supersedes this read. Applying it first could
         // open an old match and pause the fresh read queued below.
-        if (!current(actor) || revision !== epoch || pollAgain) return;
+        if (!current(actor) || revision !== epoch || pollAgain || offline()) return;
         rooms = [...(data.rooms || []), ...extra].filter(room => !drinkingKinds.has(room.kind));
         mine = data.mine && !drinkingKinds.has(data.mine.kind) ? data.mine : rooms.find(room => room.is_member) || null;
         canMatgo = data.can_matgo === true; issue = '';
@@ -156,7 +162,7 @@
         const justStarted = mine?.status === 'playing' && waitingRoom === mine.room_no;
         render();
         if (!mine?.native && justStarted) { await openMatch(mine, true); if (openedMatch === mine.match_id) waitingRoom = null; }
-      } catch (error) { if (current(actor) && revision === epoch && !pollAgain) { issue = message(error); render(); } }
+      } catch (error) { if (current(actor) && revision === epoch && !pollAgain && !offline()) { issue = message(error); render(); } }
       finally { polling = false; if (pollAgain) { pollAgain = false; void poll(); } else schedule(); }
     }
     function sync() {
@@ -347,6 +353,8 @@
     document.addEventListener('input', input);
     document.addEventListener('change', input);
     document.addEventListener('visibilitychange', activityChanged);
+    window.addEventListener('offline', connectionChanged);
+    window.addEventListener('online', connectionChanged);
     const stopAccessWatch = window.OjjudaMatgoAccess?.subscribe?.(sync);
     const observer = new MutationObserver(activityChanged);
     observer.observe(document.body, { childList: true, attributes: true, attributeFilter: ['class'] });
@@ -354,7 +362,7 @@
     if (modalRoot) observer.observe(modalRoot, { childList: true });
     const refresh = () => poll(true);
     window.addEventListener('ojjuda:arcade-rooms-changed', refresh);
-    return { sync, openCreate, created, refresh, dispose() { disposed = true; epoch++; clearTimeout(timer); stopAccessWatch?.(); observer.disconnect(); document.removeEventListener('visibilitychange', activityChanged); document.removeEventListener('click', click); document.removeEventListener('input', input); document.removeEventListener('change', input); window.removeEventListener('ojjuda:arcade-rooms-changed', refresh); } };
+    return { sync, openCreate, created, refresh, dispose() { disposed = true; epoch++; clearTimeout(timer); stopAccessWatch?.(); observer.disconnect(); window.removeEventListener('offline', connectionChanged); window.removeEventListener('online', connectionChanged); document.removeEventListener('visibilitychange', activityChanged); document.removeEventListener('click', click); document.removeEventListener('input', input); document.removeEventListener('change', input); window.removeEventListener('ojjuda:arcade-rooms-changed', refresh); } };
   }
   window.OjjudaArcadeRooms = { create, markup, feedMarkup, shortcut, message };
 })();
