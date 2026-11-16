@@ -248,3 +248,37 @@ test('rapid native room cancellations send one request and a failed attempt can 
   assert.equal(f.notifications.length, 2);
   await f.reply(0, f.state.data);
 });
+
+test('native room entry sends one request, can retry, and settles only its own account', async t => {
+  const attempts = [];
+  const f = fixture(t, {
+    onOpen(value, actor) {
+      return new Promise((resolve, reject) => attempts.push({ value, actor, resolve, reject }));
+    }
+  });
+  const target = room({ kind: 'ttang', native: true, is_member: false, is_host: false });
+  f.state.extra = [target];
+  await f.start();
+  const enter = () => f.list().querySelector('[data-arcade-action="join"]');
+  for (let i = 0; i < 5; i++) enter().click();
+  await tick();
+  assert.equal(attempts.length, 1, 'repeated taps start only one entry');
+  assert.equal(enter().disabled, true);
+  assert.equal(enter().textContent, '입장 중…');
+  attempts[0].reject(Error('room_full'));
+  await tick();
+  assert.equal(f.notifications.length, 1);
+  assert.equal(enter().disabled, false);
+  enter().click(); await tick();
+  assert.equal(attempts.length, 2);
+
+  f.actor('member-b'); f.app.sync(); await tick();
+  assert.equal(enter().disabled, false, 'the next account can use its own room list');
+  enter().click(); await tick();
+  assert.deepEqual(attempts.map(a => a.actor), ['member-a', 'member-a', 'member-b']);
+  attempts[1].reject(Error('room_unavailable')); await tick();
+  assert.equal(f.notifications.length, 1, 'the previous account cannot post an entry error');
+  assert.equal(enter().disabled, true, 'the previous response cannot release this entry');
+  attempts[2].resolve(); await tick();
+  assert.equal(enter().disabled, false);
+});
