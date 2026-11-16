@@ -32,7 +32,7 @@
     const originalSrc = ghost.src;
     if (selectedGhost !== originalGhost) {
       const photo = new Image();
-      photo.src = new URL(selectedGhost, originalSrc).href;
+      photo.src = new URL(selectedGhost + '?v=faces1', originalSrc).href;
       // Keep the original ready if the selected photo misses the reveal on a slow connection.
       photo.decode().then(() => {
         if (!signal.aborted && stage === 'before') ghost.src = photo.src;
