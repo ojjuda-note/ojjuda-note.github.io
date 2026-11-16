@@ -11,6 +11,7 @@ const slot = $('#detail-card-slot'), replies = $('#reply-list');
 const backdrop = $('#composer-backdrop'), text = $('#compose-text'), tags = $('#compose-tags');
 const submit = $('#publish-card'), composeMessage = $('#compose-message');
 const cache = new Map(), stack = [];
+let feedReturnPoint = null;
 let session = null, authKnown = false, ready = false, busy = false, authEventVersion = 0;
 let focusBefore = null, kind = 'memo', parentId = null, backgroundKey = '10';
 let feedCursor = null, replyCursor = null, feedRun = 0, detailRun = 0;
@@ -1279,12 +1280,15 @@ function updateCardUrl(id = null, push = false) {
   history[push ? 'pushState' : 'replaceState'](state, '', url);
 }
 
-function showFeed(updateUrl = true) {
+function showFeed(updateUrl = true, returnPoint = null) {
+  feedReturnPoint = null;
   detailRun++; replyLoading = false; stack.length = 0;
   if (updateUrl) updateCardUrl();
   feed.hidden = false; detail.hidden = true;
   requestTagFit();
-  window.scrollTo({ top: 0, behavior: 'auto' });
+  const opener = returnPoint && list.querySelector(returnPoint.selector);
+  opener?.focus({ preventScroll: true });
+  window.scrollTo({ top: opener ? returnPoint.top : 0, behavior: 'auto' });
 }
 async function loadReplies(id, version, more = false) {
   if (more && replyLoading) return;
@@ -1326,9 +1330,13 @@ async function loadReplies(id, version, more = false) {
     next.type = 'button'; next.dataset.moreReplies = ''; replies.append(next);
   }
 }
-async function renderDetail() {
+async function renderDetail(opener = document.activeElement) {
   if (!client || !stack.length) return;
   const id = stack.at(-1), version = ++detailRun;
+  if (!feed.hidden && list.contains(opener) && opener.dataset.open === id) {
+    const control = opener.classList.contains('photo-open') ? '.photo-open' : '.card-actions button';
+    feedReturnPoint = { selector: `${control}[data-open="${id}"]`, top: window.scrollY };
+  }
   feed.hidden = true; detail.hidden = false;
   banner('');
   $('.replies').hidden = false;
@@ -1407,10 +1415,10 @@ async function renderDetail() {
     resumeGuestWriting(id);
   }
 }
-function openCard(id) {
+function openCard(id, opener) {
   if (!validCardId(id) || !authKnown) return;
   const alreadyLinked = new URL(location.href).searchParams.get('card') === id;
-  stack.push(id); updateCardUrl(id, !alreadyLinked); renderDetail();
+  stack.push(id); updateCardUrl(id, !alreadyLinked); renderDetail(opener);
 }
 function returnToParentCard() {
   const id = stack.at(-1);
@@ -1426,10 +1434,10 @@ function returnToParentCard() {
 function goBack() {
   if (history.state?.noteNavigation) { history.back(); return; }
   if (stack.length > 1) { stack.pop(); updateCardUrl(stack.at(-1)); renderDetail(); }
-  else returnToFeed();
+  else returnToFeed(true, feedReturnPoint);
 }
-function returnToFeed(updateUrl = true) {
-  showFeed(updateUrl);
+function returnToFeed(updateUrl = true, returnPoint = null) {
+  showFeed(updateUrl, returnPoint);
   if (feedDeferred) void loadFeed();
 }
 window.addEventListener('popstate', () => {
@@ -1437,7 +1445,7 @@ window.addEventListener('popstate', () => {
   if (validCardId(id)) {
     if (!authKnown) { initialCardId = id; return; }
     stack.length = 0; stack.push(id); void renderDetail();
-  } else { initialCardId = null; returnToFeed(false); }
+  } else { initialCardId = null; returnToFeed(false, feedReturnPoint); }
 });
 
 function canWrite() {
@@ -3533,7 +3541,7 @@ document.addEventListener('click', event => {
   const manage = event.target.closest('[data-manage-card]');
   if (manage) { manageCard(manage.dataset.manageCard); return; }
   const open = event.target.closest('[data-open]');
-  if (open && !open.disabled) { openCard(open.dataset.open); return; }
+  if (open && !open.disabled) { openCard(open.dataset.open, open); return; }
   const compose = event.target.closest('[data-compose]');
   if (compose) { openComposer(compose.dataset.compose, null, compose.dataset.replyTo); return; }
   const show = event.target.closest('[data-show="feed"]');
