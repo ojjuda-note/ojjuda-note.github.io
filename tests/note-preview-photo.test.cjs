@@ -52,12 +52,13 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   // Exercise the real browser publish handler against the migrated PostgreSQL RPCs.
   const source = read('note/preview.js');
   const validCardIdSource = source.match(/^const validCardId = .*;$/m)[0];
+  const guestComposerSource = source.slice(source.indexOf('function isGuestComposer()'),source.indexOf('\nfunction updateComposer()'));
   const publishSource = source.slice(source.indexOf('async function publishCard()'),source.indexOf('\nfunction updateAuth()'));
   const publishFromPreview = async ({body='미리보기 사진 유지',background='42',kind='memo',parent=null,attachment=false,draftBackground=background,withDraft=true}={}) => {
     const requestId=randomUUID(), photoId=randomUUID(), attachmentPath=`${member}/${photoId}.jpg`;
     if(attachment) await db.query('insert into storage.objects(bucket_id,name,owner_id) values($1,$2,$3)',[kind==='event'?'note-event-photos':'note-card-photos',attachmentPath,member]);
     const calls=[];
-    const c={ console:{warn(){}},busy:false,ready:true,submit:{disabled:false},text:{value:body},composeMessage:{textContent:''},
+    const c={ console:{warn(){}},busy:false,ready:true,authKnown:true,submit:{disabled:false},text:{value:body},composeMessage:{textContent:''},
       cardPhotoPreparing:false,editingId:null,composerUserId:member,identityEpoch:1,composerRun:1,backgroundKey:background,
       cardPhotoEditPath:null,kind,parentId:parent,cardPhotoBlob:attachment&&kind!=='event'?{}:null,cardPhotoRequestId:photoId,
       photoFromWorld:{card:true,event:true},eventPhotoBlob:attachment&&kind==='event'?{}:null,eventPhotoRequestId:photoId,
@@ -78,7 +79,7 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
       c.identityEpoch++; // Stop after the real publication succeeds, before unrelated feed rendering.
       return result;
     };
-    vm.createContext(c);vm.runInContext(validCardIdSource+'\n'+publishSource,c);await vm.runInContext('publishCard()',c);
+    vm.createContext(c);vm.runInContext([validCardIdSource,guestComposerSource,publishSource].join('\n'),c);await vm.runInContext('publishCard()',c);
     return {calls,message:c.composeMessage.textContent,result:await value('select result as value from ojjuda_note_internal.spend_requests where request_id=$1',[requestId])};
   };
   const overlength=await publishFromPreview({body:'가'.repeat(201)});assert.equal(overlength.calls.length,0);assert.equal(overlength.result,undefined,'overlength photo card is not published');
