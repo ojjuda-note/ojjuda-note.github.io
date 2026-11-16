@@ -455,7 +455,7 @@
       id: 'blackpink', name: 'BLACKPINK', korean: '블랙핑크', category: 'girl', fan: 'BLINK', agency: 'YG Entertainment',
       members: ['지수', '제니', '로제', '리사'],
       debut: '2016.08.08', debutWork: 'SQUARE ONE', songs: ['WHISTLE', 'BOOMBAYAH'],
-      checkedAt: '2026.11.14',
+      checkedAt: '2026.11.16',
       concept: '블랙과 핑크, 서로 다른 매력이 공존하는 무대.',
       official: 'https://ygfamily.com/ko/artists/blackpink/profile', youtube: 'https://www.youtube.com/@BLACKPINK',
       photo: '20240809 Blackpink Pink Carpet 09.png', photoLabel: '핑크 카펫', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
@@ -477,18 +477,21 @@
         { title: 'YG BLACKPINK 공식 공지', sub: '행사·예매·변경 사항', href: 'https://ygfamily.com/ko/artists/blackpink/notice' }
       ],
       news: [
+        { date: '2026.11.15', tag: '수상', title: '로제·제니, 2026 키즈 초이스 어워즈 개인 부문 수상', href: 'https://www.soompi.com/article/1887086wpp/bts-rose-jennie-kpop-demon-hunters-and-katseye-win-at-2026-nickelodeon-kids-choice-awards' },
         { date: '2026.11.11', tag: '협업', title: '지수, 토미 힐피거 2026 겨울 캠페인 참여', href: 'https://prtimes.jp/main/html/rd/p/000000305.000010635.html' },
         { date: '2026.08.08', tag: '활동', title: '데뷔 10주년 기념 공식 영상 공개', href: 'https://www.youtube.com/watch?v=k--lCrP69hg' },
         { date: '2026.02.27', tag: '컴백', title: '미니 3집 DEADLINE · 타이틀 GO 발매', href: 'https://ygfamily.com/en/artists/blackpink/discography/1651' },
         { date: '2026.02.21', tag: '기록', title: '공식 YouTube 아티스트 채널 최초 1억 구독자 기록', href: 'https://en.yna.co.kr/view/AEN20260221002851320' }
       ],
       merch: [
+        { title: 'JUMP 공식 티셔츠', sub: 'YG SELECT · JUMP 티셔츠 · 가격·옵션·재고는 판매처 확인', href: 'https://www.ygselect.com/product/jump-blackpink-t-shirt/11971/category/24/display/1/' },
         { title: 'Weverse US 2026 블랙프라이데이', sub: 'BLACKPINK 참여 · 미국·캐나다 배송 · 11/13 18:00~12/2 23:59(미국 PST) · 할인·재고는 품목별 확인', href: 'https://shop.weverse.io/en/shop/KRW/artists/32/notices/14965' },
         { title: 'DEADLINE 공식 앨범 BLACK Ver.', sub: 'YG SELECT · 포토북·포토카드 수록 · 재고는 판매처 확인', href: 'https://ygselect.com/product/blackpink-3rd-mini-album-deadline-black-ver/12808/' },
         { title: 'DEADLINE 공식 앨범 PINK Ver.', sub: 'YG SELECT · 포토북·포토카드 수록 · 재고는 판매처 확인', href: 'https://ygselect.com/product/blackpink-3rd-mini-album-deadline-pink-ver/12809/' },
         { title: 'DEADLINE MOOD LIGHT Ver.', sub: 'YG SELECT · 앨범·무드등 구성 · 재고는 판매처 확인', href: 'https://www.ygselect.com/product/blackpink-3rd-mini-album-deadline-mood-light-ver/12813/' }
       ],
       campaigns: [
+        { kind: '홍보대사', date: '2026.04.09', title: '제니 × Ray-Ban · 글로벌 앰배서더', sub: 'Ray-Ban 및 Ray-Ban Meta · Styles for Unfiltered Confidence 캠페인 · 공식 브랜드 페이지', href: 'https://www.ray-ban.com/row/ray-ban-and-jennie' },
         { kind: '광고', date: '2026.11.11', title: '지수 × TOMMY HILFIGER · 2026 Winter', sub: '글로벌 앰배서더 지수 · A Perfect Holiday 겨울 캠페인 · PVH Japan 11월 11일 발표', href: 'https://prtimes.jp/main/html/rd/p/000000305.000010635.html' },
         { kind: '콜라보', date: '2026.02.26', title: '국립중앙박물관 × BLACKPINK × Spotify', sub: 'DEADLINE 발매 기념 박물관 오디오 도슨트·리스닝존 · 2.26~3.08 종료', href: 'https://weverse.io/blackpink/notice/33735' }
       ],
