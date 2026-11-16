@@ -1,0 +1,41 @@
+module.exports=async function({db,assert,as,board,uid,migration}){
+  await db.exec('reset role');
+  await db.exec("create function public.has_banned(text) returns boolean language sql immutable as $$select $1='금지항목'$$");
+  await db.exec(migration('_group_post_activities.sql'));
+  await as(1);
+  const room_id=(await board('create_room',{name:'가을 모임'})).id;
+  const save=(id,activity)=>board('save',{id,room_id,title:'이번 모임',activity});
+  const poll=uid(9210),ladder=uid(9211),wheel=uid(9212);
+  const config={kind:'poll',options:['김밥','떡볶이']};
+  const original=await save(poll,config);
+  assert.deepEqual((await save(poll,config)).activity,config);
+  assert.deepEqual((await board('feed',{room_id}))[0].activity,config);
+  await assert.rejects(save(uid(9213),{...config,options:['금지항목','OK']}),/banned_word/);
+  await assert.rejects(save(uid(9213),{...config,options:['중복','중복']}),/같은 이름/);
+  await assert.rejects(save(uid(9213),{kind:'ladder',names:['A','B','C'],options:['1','2']}),/수를 맞춰/);
+  await as(2);await assert.rejects(board('activity_state',{id:poll}),e=>e.code==='42501');
+  await board('request',{room_id});await as(1);await board('approve',{room_id,user_id:uid(2)});
+  const vote=(choice)=>board('activity_vote',{id:poll,choice});
+  assert.deepEqual(await vote(0),{counts:[1,0],mine:0});
+  assert.deepEqual(await vote(0),{counts:[1,0],mine:0});
+  assert.deepEqual(await vote(1),{counts:[0,1],mine:1});
+  await assert.rejects(vote(2));
+  await as(2);assert.deepEqual(await vote(1),{counts:[0,2],mine:1});
+  await as(1);assert.equal((await board('save',{id:poll,room_id,title:'제목 수정',updated_at:original.updated_at})).activity.kind,'poll');
+  const feed=await board('feed',{room_id});
+  await assert.rejects(board('save',{id:poll,room_id,title:'다른 항목',updated_at:feed[0].updated_at,activity:{...config,options:['A','B']}}),/바꿀 수 없/);
+  for(const [id,activity] of [[wheel,{kind:'wheel',options:['A','B','C']}],[ladder,{kind:'ladder',names:['가','나','다'],options:['당첨','꽝','꽝']}]]) {
+    await as(1);await save(id,activity);
+    assert.deepEqual(await board('activity_state',{id}),{result:null});
+    const first=await board('activity_draw',{id});
+    if(id===wheel)assert.ok(Number.isInteger(first.result.winner)&&first.result.winner>=0&&first.result.winner<3);
+    else assert.ok(first.result.rungs.length>=2&&first.result.rungs.every(x=>Number.isInteger(x)&&x>=0&&x<2));
+    await as(2);assert.deepEqual(await board('activity_draw',{id}),first);
+    assert.deepEqual(await board('activity_state',{id}),first);
+  }
+  await as(1);await board('kick',{room_id,user_id:uid(2)});
+  await as(2);await assert.rejects(vote(0),e=>e.code==='42501');
+  await assert.rejects(board('activity_draw',{id:wheel}),e=>e.code==='42501');
+  await as(1);await board('remove',{id:poll});await db.exec('reset role');
+  assert.equal((await db.query('select count(*)::int n from ojjuda_groups_internal.activity_votes where entry_id=$1',[poll])).rows[0].n,0);
+};

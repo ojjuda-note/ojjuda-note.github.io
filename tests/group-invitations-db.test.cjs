@@ -124,5 +124,6 @@ assert.equal(olderRecent.length,10);assert.equal(new Set([...recentPage.slice(0,
 
 await db.exec('reset role');
 await require('./helpers/group-age-scenarios.cjs')({db,assert,as,api,board,val,uid,migration});
+await require('./helpers/group-activity-scenarios.cjs')({db,assert,as,board,uid,migration});
 }finally{await db.close();}
 });
