@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   let rendererPromise = null;
-  const inkFace = '.park-ink-paper,.park-ink-photo';
+  const inkFace = '.park-ink-overlay';
   const inkSelector = ':scope > canvas.park-ink-art[data-ink-ready="true"]';
   const media = 'img,video,iframe,canvas';
   const controls = '.card-photo-thumb,.card-meta,.card-actions,.card-manage';
@@ -32,10 +32,8 @@
     try {
       check();
       // Export the original built-in photo even when the screen uses a smaller rendition.
-      const paper = photo.matches('.park-ink-paper');
-      const originalPhoto = !paper && photo.querySelector(':scope > img.park-card-background');
-      const originalBackground = paper ? 'none'
-        : originalPhoto ? `url("${originalPhoto.src}")` : getComputedStyle(photo).backgroundImage;
+      const originalPhoto = photo.querySelector(':scope > img.park-card-background');
+      const originalBackground = originalPhoto ? `url("${originalPhoto.src}")` : getComputedStyle(photo).backgroundImage;
       const images = [...originalBackground.matchAll(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))\s*\)/g)];
       // Only the public built-in background belongs in the exported card.
       // Decode it first: html2canvas otherwise skips failed images silently.

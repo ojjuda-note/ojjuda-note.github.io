@@ -254,7 +254,7 @@ html body .shell > .col > .main { width: min(100%, 1268px); }
 .guest-compose-login:not([hidden]) { display: inline-flex; margin-block: 10px; }
 /* Calligraphy keeps its readable source in the DOM, separate from the painted card. */
 .park-ink-art { display: none; pointer-events: none; }
-:is(.park-ink-paper,.park-ink-photo) > .park-ink-art[data-ink-ready="true"] {
+.park-ink-overlay > .park-ink-art[data-ink-ready="true"] {
   display: block;
   position: absolute;
   inset: 0;
@@ -262,14 +262,14 @@ html body .shell > .col > .main { width: min(100%, 1268px); }
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background: var(--park-ink-paper, #fcfbf8);
+  background: transparent;
 }
-:is(.park-ink-paper,.park-ink-photo) > .park-ink-art[hidden] { display: none; }
-.park-ink-photo > .park-ink-art[data-ink-ready="true"] {
-  inset: 12% 10%;
-  width: 80%;
-  height: 76%;
-  border-radius: 3px;
+.park-ink-overlay > .park-ink-art[hidden] { display: none; }
+#main .park-photo-cards .park-ink-overlay > .card-quote {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 #main .park-photo-cards .park-ink-art[data-ink-ready="true"] + .card-quote {
   position: absolute;
@@ -282,13 +282,7 @@ html body .shell > .col > .main { width: min(100%, 1268px); }
   overflow: hidden;
   white-space: nowrap;
 }
-#main .park-photo-cards :is(.park-ink-paper,.park-ink-photo) .card-tags { z-index: 1; }
-#main .park-photo-cards article:has(.park-ink-paper) .card-photo-frame::after { background: none; }
-#main .park-photo-cards article:has(.park-ink-paper) :is(.card-meta,.card-actions button) {
-  color: var(--park-ink-controls, #34372e);
-  text-shadow: 0 1px 3px #fff;
-}
-#main .park-photo-cards article:has(.park-ink-paper) :is(.photo-open,.card-actions button):focus-visible { outline-color: #42473a; }
+#main .park-photo-cards .park-ink-overlay .card-tags { z-index: 1; }
 .park-ink-editor:not([hidden]) { display: grid; gap: 4px; margin: 9px 0 5px; font: 600 13px var(--font-b); color: var(--ink); }
 .park-ink-editor #compose-text {
   width: 100%;
@@ -303,5 +297,5 @@ html body .shell > .col > .main { width: min(100%, 1268px); }
   resize: vertical;
   overflow-y: auto;
 }
-.compose-photo:is(.park-ink-paper,.park-ink-photo) :is(#compose-tags,#compose-tag-display,#card-photo-attach,#card-photo-remove) { z-index: 2; }
-.compose-photo.park-ink-paper > .compose-shade { display: none; }
+.compose-photo.park-ink-overlay :is(#compose-tags,#compose-tag-display,#card-photo-attach,#card-photo-remove) { z-index: 2; }
+.park-ink-overlay > :is(.photo-shade,.compose-shade) { display: none; }

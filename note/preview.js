@@ -793,10 +793,7 @@ const expandedBodyEntries = new Set(), quoteFitEntries = new Set();
 const inkCards = new WeakMap();
 function inkOptions(style, width) {
   const inkColor = COLOR_PALETTE[style.textColor]?.solid;
-  const box = COLOR_PALETTE[style.boxColor];
-  const paperColor = box?.box.slice(0, 7)
-    || (inkColor && colorLuminance(inkColor) > .45 ? '#31352e' : undefined);
-  return { width, inkColor, paperColor, zoom: style.size === 'small' ? .85 : style.size === 'large' ? 1.12 : 1 };
+  return { width, inkColor, zoom: style.size === 'small' ? .85 : style.size === 'large' ? 1.12 : 1 };
 }
 function drawInkCard(photo) {
   const job = inkCards.get(photo);
@@ -808,15 +805,12 @@ function drawInkCard(photo) {
     requestTagFit();
   }
 }
-let composeInkFrame = 0, composeInkRun = 0, editingInkPhoto = false;
+let composeInkFrame = 0, composeInkRun = 0;
 function syncComposeInk(selected, style) {
   const photo = $('.compose-photo'), editor = $('#compose-ink-editor'), canvas = $('#compose-ink-art');
   if (!canvas || !editor) return;
   const on = selected && !!window.ParkCalligraphy && !backdrop.hidden;
-  const hasPhoto = !!(selectedPhotoKey || editingInkPhoto || (kind === 'event' &&
-    (eventPhotoPreviewUrl || (!eventPhotoRemove && eventHadPhoto))));
-  photo.classList.toggle('park-ink-photo', on && hasPhoto);
-  photo.classList.toggle('park-ink-paper', on && !hasPhoto);
+  photo.classList.toggle('park-ink-overlay', on);
   if (editor.hidden === on) {
     // Move the same field so login handoff, IME, tags, and draft listeners keep their state.
     const focused = document.activeElement === text, start = text.selectionStart, end = text.selectionEnd;
@@ -830,7 +824,6 @@ function syncComposeInk(selected, style) {
   canvas.hidden = !on;
   if (!on) { delete canvas.dataset.inkReady; return; }
   const body = text.value, options = inkOptions(style, 720);
-  photo.style.setProperty('--park-ink-paper', options.paperColor || '#fcfbf8');
   composeInkFrame = requestAnimationFrame(() => {
     if (run !== composeInkRun || backdrop.hidden) return;
     if (window.ParkCalligraphy.render(canvas, body, options)) canvas.dataset.inkReady = 'true';
@@ -907,8 +900,7 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
   if (card.kind === 'event') photo.dataset.protectPhoto = String(!card.is_mine);
   const hiddenEvent = card.kind === 'event' && card.body == null;
   const useInk = !hiddenEvent && style.font === 'calligraphy' && !!window.ParkCalligraphy && typeof card.body === 'string';
-  const inkHasPhoto = useInk && (photoAssetKey(card.photo_key) || (card.kind === 'event' && (card.has_event_photo || card.event_photo_path)));
-  const key = hiddenEvent || (useInk && !inkHasPhoto) ? null : photoAssetKey(visiblePhoto);
+  const key = hiddenEvent ? null : photoAssetKey(visiblePhoto);
   if (key && card.kind !== 'event' && document.documentElement.hasAttribute('data-park-webp')) {
     photo.dataset.imageSizes = compact ? '(max-width: 624px) 67vw, 400px'
       : expanded ? '(max-width: 624px) 100vw, 600px'
@@ -939,11 +931,9 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
   }
   photo.append(node('span', 'photo-shade'));
   if (useInk) {
-    photo.classList.add(inkHasPhoto ? 'park-ink-photo' : 'park-ink-paper');
+    photo.classList.add('park-ink-overlay');
     if (!expanded) open.setAttribute('aria-label', body + ', 카드 크게 보기');
     const options = inkOptions(style, expanded ? 1080 : compact ? 480 : 720);
-    photo.style.setProperty('--park-ink-paper', options.paperColor || '#fcfbf8');
-    if (options.paperColor && colorLuminance(options.paperColor) < .3) item.style.setProperty('--park-ink-controls', '#fff');
     const canvas = node('canvas', 'park-ink-art');
     canvas.setAttribute('aria-hidden', 'true');
     photo.append(canvas);
@@ -2507,7 +2497,6 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   $('.compose-photo')?.classList.remove('has-card-photo');
   localComposerBaseline = null; localComposerDirty = false; localComposerStored = false;
   parentId = editingId ? card.parent_id : kind === 'comment' ? replyTarget : null;
-  editingInkPhoto = !!(editingId && photoAssetKey(card.photo_key));
   backgroundKey = editingId ? (card.photo_key || card.background_key) : guest ? '10' : String(PHOTO_FIRST + Math.floor(Math.random() * (PHOTO_LAST - PHOTO_FIRST + 1)));
   writingPosition = null; eventPosition = null; publishRequestId = crypto.randomUUID(); photoRequestId = crypto.randomUUID(); locationRun++;
   replyDueChecking = false; replyDueRun++;

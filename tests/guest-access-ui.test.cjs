@@ -95,15 +95,31 @@ const cardId='00000000-0000-4000-8000-000000000001';
     const sample=document.createElement('canvas');sample.width=80;sample.height=60;
     const ctx=sample.getContext('2d');ctx.drawImage(art,0,0,sample.width,sample.height);
     const pixels=ctx.getImageData(0,0,sample.width,sample.height).data;
-    let dark=0,hash=2166136261;
+    let inkPixels=0,clearPixels=0,hash=2166136261;
     for(let i=0;i<pixels.length;i+=4){
-     const ink=pixels[i+3]>160&&pixels[i]<100&&pixels[i+1]<100&&pixels[i+2]<100;
-     if(ink)dark++;
+     const alpha=pixels[i+3],ink=alpha>160;
+     if(ink)inkPixels++;
+     if(alpha===0)clearPixels++;
      hash=Math.imul(hash^Number(ink),16777619);
     }
-    return dark>10&&dark<sample.width*sample.height*.85&&hash!==previous?hash:false;
+    return inkPixels>10&&clearPixels>sample.width*sample.height*.5&&hash!==previous?hash:false;
    },{selector,previous});
    return result.jsonValue();
+  };
+  const checkPhotoBehindInk=async(selector,key)=>{
+   const surface=await page.locator(selector).evaluate(art=>{
+    const face=art.closest('.photo,.compose-photo'),background=face.querySelector(':scope > img.park-card-background');
+    const css=getComputedStyle(art);
+    return {
+     overlay:face.classList.contains('park-ink-overlay'),
+     color:css.backgroundColor, image:css.backgroundImage,
+     background:background?.src||getComputedStyle(face).backgroundImage
+    };
+   });
+   assert.equal(surface.overlay,true);
+   assert.equal(surface.color,'rgba(0, 0, 0, 0)','spaces between strokes must reveal the underlying photo');
+   assert.equal(surface.image,'none','the canvas must not paint a CSS paper texture');
+   assert.ok(surface.background.includes('/note/assets/'+key+'.jpg'),'expected the original card photo behind the strokes');
   };
   await enter();await page.evaluate(()=>guestFixture.park());await page.locator('[data-park-app] iframe').waitFor();
   const frame=page.frames().find(f=>f.url().includes('/park/'));await preparePark(frame);
@@ -133,19 +149,27 @@ const cardId='00000000-0000-4000-8000-000000000001';
   await page.waitForFunction(()=>document.querySelector('#convert-calligraphy').getAttribute('aria-pressed')==='true');
   assert.equal(await page.locator('#compose-text').inputValue(),'붓글씨로 이어 쓰기');
   const initialInk=await waitForInk('#compose-ink-art');
+  await checkPhotoBehindInk('#compose-ink-art',await page.evaluate(()=>backgroundKey));
   await page.locator('#compose-text').fill('고쳐 쓴 붓글씨');
   await waitForInk('#compose-ink-art',initialInk);
   assert.deepEqual(await page.evaluate(()=>[currentStyle().font,text.value]),['calligraphy','고쳐 쓴 붓글씨']);
-  await page.evaluate(()=>{const card=cardElement({id:crypto.randomUUID(),kind:'memo',body:text.value,tags:[],style:currentStyle(),created_at:new Date().toISOString()});list.replaceChildren(card);});
-  await page.locator('#feed-list .note-font-calligraphy').evaluate(el=>el.classList.add('ju-font-poster'));
-  assert.equal(await page.locator('#feed-list .card-quote').textContent(),'고쳐 쓴 붓글씨');
+  await page.evaluate(()=>{
+   const card={id:crypto.randomUUID(),kind:'memo',background_key:'37',body:text.value,tags:[],style:currentStyle(),created_at:new Date().toISOString()};
+   list.replaceChildren(cardElement(card),cardElement({...card,id:crypto.randomUUID(),photo_key:'13'}));
+  });
+  await page.locator('#feed-list .note-font-calligraphy').first().evaluate(el=>el.classList.add('ju-font-poster'));
+  assert.deepEqual(await page.locator('#feed-list .card-quote').allTextContents(),['고쳐 쓴 붓글씨','고쳐 쓴 붓글씨']);
   await page.locator('#convert-calligraphy').click();
   assert.equal(await page.locator('#compose-font').inputValue(),'default');
   assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
   assert.equal(await page.locator('#compose-ink-art').isVisible(),false);
   await page.locator('#close-composer').click();
   await page.locator('#feed-list .photo').first().scrollIntoViewIfNeeded();
-  await waitForInk('#feed-list .photo > canvas.park-ink-art');
+  for(const [index,key] of [[1,'37'],[2,'13']]){
+   const selector='#feed-list article:nth-child('+index+') .photo > canvas.park-ink-art';
+   await waitForInk(selector);
+   await checkPhotoBehindInk(selector,key);
+  }
   await page.goto(origin+'/park/?card='+cardId);await preparePark(page);
   await page.evaluate(id=>openComposer('reply',null,id),cardId);await page.locator('#guest-compose-login').click();await login('note');assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
   // Login is the automatic entry; a guest can still deliberately select signup

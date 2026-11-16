@@ -543,66 +543,40 @@
       ctx.fill();
       ctx.restore();
     }
-    function grain(ctx, palette) {
-      const width = ctx.canvas.width,
-        height = ctx.canvas.height;
-      const frame = ctx.getImageData(0, 0, width, height),
-        d = frame.data;
-      // Only the original red channel is used to read adjacent ink boundaries.
-      const original = new Uint8Array(width * height);
-      for (let index = 0; index < original.length; index++) original[index] = d[index * 4];
-      const sampleScale = WIDTH / width;
+    function textureInk(ctx) {
+      const { width, height } = ctx.canvas;
+      const frame = ctx.getImageData(0, 0, width, height);
+      const pixels = frame.data;
+      const scale = WIDTH / width;
       let seed = 72341;
       for (let y = 0; y < height; y++) {
-        const paperY = y * sampleScale;
-        const fiber = Math.sin(paperY * .083) * .29 + Math.sin(paperY * .88) * .11;
+        const brushY = y * scale;
         for (let x = 0; x < width; x++) {
-          const pixel = y * width + x;
-          const i = 4 * pixel;
-          const paperX = x * sampleScale;
+          const alpha = (y * width + x) * 4 + 3;
+          const coverage = pixels[alpha];
+          if (!coverage) continue;
           seed = Math.imul(seed, 1664525) + 1013904223 >>> 0;
-          const u = seed / 4294967296;
-          // Estimate ink coverage relative to the actual sheet, including dark paper and light ink.
-          const ink = palette
-            ? Math.min(1, Math.max(Math.abs(d[i] - palette.paper[0]), Math.abs(d[i + 1] - palette.paper[1]), Math.abs(d[i + 2] - palette.paper[2])) / palette.contrast)
-            : 1 - d[i] / 255;
-          let n = (u - .5) * (3 + ink * 10) + fiber;
-          if (ink > .02) {
-            const m = Math.sin(paperX * .039 + paperY * .017) * Math.sin(paperY * .034 - paperX * .011);
-            const pool = Math.max(0, .32 + .62 * m + .2 * Math.sin(paperX * .115 - paperY * .07));
-            n += ink * (1.3 + pool * pool * 16 + (u > .987 ? 9 : 0));
-          }
-          if (x > 0 && x < width - 1 && y > 0 && y < height - 1) {
-            const j = u < .25 ? pixel + 1 : u < .5 ? pixel - 1 : u < .75 ? pixel + width : pixel - width;
-            const neighbor = original[j] - original[pixel];
-            if (Math.abs(neighbor) > 25) n += neighbor * (.08 + .23 * Math.abs(Math.sin(paperX * .86 + paperY * .51)));
-          }
-          d[i] += n;
-          d[i + 1] += n;
-          d[i + 2] += n;
+          const noise = seed / 4294967296;
+          const brushX = x * scale;
+          const pool = Math.sin(brushX * .039 + brushY * .017) * Math.sin(brushY * .034 - brushX * .011);
+          // Dry pigment reveals the actual backdrop, including at antialiased edges.
+          const loss = Math.max(0, .012 + .025 * pool + .024 * (noise - .5) + (noise > .987 ? .045 : 0));
+          pixels[alpha] = Math.round(coverage * (1 - loss));
         }
       }
       ctx.putImageData(frame, 0, 0);
     }
-    function makePalette(inkColor, paperColor) {
-      if (!inkColor && !paperColor) return null;
-      const channels = color => [1, 3, 5].map(start => parseInt(color.slice(start, start + 2), 16));
-      const ink = channels(inkColor || '#171815');
-      const paper = channels(paperColor || '#fcfbf8');
-      // Blend towards the sheet as the brush lifts, equally for white and dark ink.
-      const tint = inkColor ? shade => {
-        const amount = Math.max(0, (shade - 11) / 430);
-        return 'rgb(' + ink.map((channel, i) => Math.round(channel + (paper[i] - channel) * amount)).join(',') + ')';
-      } : null;
-      return {paper, tint, contrast: Math.max(1, ...ink.map((value, i) => Math.abs(value - paper[i])))};
+    function makeTint(inkColor) {
+      if (!inkColor) return null;
+      const rgb = [1, 3, 5].map(start => parseInt(inkColor.slice(start, start + 2), 16)).join(',');
+      return shade => 'rgba(' + rgb + ',' + (1 - Math.max(0, shade - 11) / 430) + ')';
     }
-    function draw(ctx, input, accent, zoom, inkColor, paperColor) {
-      const palette = makePalette(inkColor, paperColor);
-      const tint = palette?.tint;
+    function draw(ctx, input, accent, zoom, inkColor) {
+      const tint = makeTint(inkColor);
       ctx.save();
-      ctx.setTransform(ctx.canvas.width / WIDTH, 0, 0, ctx.canvas.height / HEIGHT, 0, 0);
-      ctx.fillStyle = paperColor || '#fcfbf8';
-      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.scale(ctx.canvas.width / WIDTH, ctx.canvas.height / HEIGHT);
       const page = layout(input, zoom);
       if (!input.trim()) {
         ctx.restore();
@@ -639,7 +613,7 @@
       }
       if (accent && page.last) accentStroke(ctx, page.last);
       ctx.restore();
-      grain(ctx, palette);
+      textureInk(ctx);
       return page;
     }
     return {
@@ -650,12 +624,11 @@
   })();
   const lastPaint = new WeakMap();
   const normalizeColor = value => typeof value === 'string' && /^#[a-f0-9]{6}$/i.test(value) ? value.toLowerCase() : '';
-  /** Paint an entire calligraphy card at the desired pixel width. CSS controls its displayed size. */
+  /** Paint isolated lettering onto a transparent canvas. CSS controls its displayed size. */
   function render(canvas, text, {
     width = 1080,
     accent = true,
     inkColor,
-    paperColor,
     zoom = 1
   } = {}) {
     if (!canvas || typeof canvas.getContext !== 'function') return null;
@@ -663,11 +636,10 @@
     const pixelHeight = Math.max(1, Math.round(pixelWidth * Composition.HEIGHT / Composition.WIDTH));
     const normalized = String(text ?? '').normalize('NFC');
     inkColor = normalizeColor(inkColor);
-    paperColor = normalizeColor(paperColor);
     zoom = Math.min(1.12, Math.max(.85, Number(zoom) || 1));
     const last = lastPaint.get(canvas);
     if (last && last.text === normalized && last.accent === accent && last.width === pixelWidth
-        && last.inkColor === inkColor && last.paperColor === paperColor && last.zoom === zoom
+        && last.inkColor === inkColor && last.zoom === zoom
         && canvas.width === pixelWidth && canvas.height === pixelHeight) return canvas;
     if (canvas.width !== pixelWidth) canvas.width = pixelWidth;
     if (canvas.height !== pixelHeight) canvas.height = pixelHeight;
@@ -675,13 +647,12 @@
       willReadFrequently: true
     });
     if (!ctx) return null;
-    Composition.draw(ctx, normalized, accent, zoom, inkColor, paperColor);
+    Composition.draw(ctx, normalized, accent, zoom, inkColor);
     lastPaint.set(canvas, {
       text: normalized,
       width: pixelWidth,
       accent,
       inkColor,
-      paperColor,
       zoom
     });
     return canvas;

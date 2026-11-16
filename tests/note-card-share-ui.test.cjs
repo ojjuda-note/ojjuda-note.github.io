@@ -11,12 +11,13 @@ fs.mkdirSync(proof,{recursive:true});
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
  try{
   const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce',acceptDownloads:true});
-  let vendorLoads=0,failBackground=false,downloads=0,kakaoSdkRequests=0;
+  let vendorLoads=0,failBackground=false,downloads=0,kakaoSdkRequests=0,inkBackground;
   await context.route('**/*',route=>{
    const url=new URL(route.request().url());
    if(url.hostname==='t1.kakaocdn.net')kakaoSdkRequests++;
    if(url.origin!==origin)return route.abort();
    if(url.pathname==='/park/')return route.fulfill({contentType:'text/html',body:html});
+   if(url.pathname==='/note/assets/188.jpg')return route.fulfill({contentType:'image/jpeg',body:inkBackground});
    if(url.pathname==='/note/assets/189.jpg'&&failBackground)return route.fulfill({status:404,body:'missing test image'});
    if(url.pathname==='/vendor/html2canvas-1.4.1.min.js'){
     vendorLoads++;
@@ -38,6 +39,11 @@ fs.mkdirSync(proof,{recursive:true});
   });
   const page=await context.newPage(),errors=[];page.setDefaultTimeout(12000);
   page.on('pageerror',error=>errors.push(error.message));page.on('download',()=>downloads++);
+  inkBackground=Buffer.from(await page.evaluate(()=>{
+   const canvas=document.createElement('canvas');canvas.width=32;canvas.height=24;
+   const ctx=canvas.getContext('2d');ctx.fillStyle='#50afd8';ctx.fillRect(0,0,32,24);
+   return canvas.toDataURL('image/jpeg').split(',')[1];
+  }),'base64');
   await page.goto(origin+'/park/');
   await page.addStyleTag({content:'@font-face{font-family:"Jua";src:url("/assets/game-media/jua-cb995145eb03.woff2") format("woff2")}@font-face{font-family:"Noto Sans KR";src:url("/assets/game-media/jua-cb995145eb03.woff2") format("woff2");font-weight:100 900}@font-face{font-family:"Gowun Dodum";src:url("/assets/game-media/jua-cb995145eb03.woff2") format("woff2")}'});
   await page.evaluate(async()=>{
@@ -80,6 +86,7 @@ fs.mkdirSync(proof,{recursive:true});
    };
   });
   await page.addScriptTag({content:read('note/share-image.js')});
+  await page.addScriptTag({content:read('note/calligraphy.js')});
   await page.addScriptTag({content:read('note/share-kakao.js')});
   await page.addScriptTag({content:source.slice(0,boot)});
   await page.evaluate(()=>{
@@ -89,7 +96,8 @@ fs.mkdirSync(proof,{recursive:true});
     {id:id(2),kind:'comment',body:'다른 카드의 답글\n오늘도 웃어요',tags:['답글'],background_key:'24',style:{font:'round'}},
     {id:id(3),kind:'memo',body:'그림이 없는 카드',tags:['메모'],background_key:'plain',style:{font:'round'}},
     {id:id(4),kind:'event',body:'범위 제한 이벤트',tags:['이벤트'],background_key:'10',is_mine:false},
-    {id:id(5),kind:'memo',body:'깨진 사진은 공유하지 않아요',tags:['검증'],background_key:'189',style:{font:'round'}}
+    {id:id(5),kind:'memo',body:'깨진 사진은 공유하지 않아요',tags:['검증'],background_key:'189',style:{font:'round'}},
+    {id:id(6),kind:'memo',body:'오늘도 수고했어',tags:[],background_key:'188',style:{font:'calligraphy',textColor:'black'}}
    ].map(card=>({...card,created_at:'2026-10-31T00:00:00Z'}));
    window.deniedCards=new Set();
    noteRpc=async(name,args)=>name==='get_card'?shareCards.find(card=>card.id===args.p_id&&!deniedCards.has(card.id))||null:name==='list_cards'?shareCards:[];
@@ -156,6 +164,26 @@ fs.mkdirSync(proof,{recursive:true});
    catch(error){return error.message;}
   }),/not_configured/,'an unconfigured adapter fails before loading the SDK or uploading');
   assert.equal(kakaoSdkRequests,0);
+
+  // Both the built-in photo and the actual brush strokes must survive the PNG capture.
+  await open(6);await ready();await action('share').click();
+  await page.waitForFunction(()=>sharedPayloads.at(-1)?.title==='오늘도 수고했어');
+  const inkShare=await page.evaluate(async()=>{
+   const bitmap=await createImageBitmap(sharedPayloads.at(-1).files[0]);
+   const canvas=document.createElement('canvas');canvas.width=96;canvas.height=72;
+   const ctx=canvas.getContext('2d');ctx.drawImage(bitmap,0,0,96,72);bitmap.close();
+   const pixels=ctx.getImageData(10,10,76,52).data;
+   let photoPixels=0,inkPixels=0;
+   for(let i=0;i<pixels.length;i+=4){
+    if(pixels[i+3]<230)continue;
+    if(pixels[i+2]-pixels[i]>40&&pixels[i+1]-pixels[i]>24)photoPixels++;
+    if(Math.max(pixels[i],pixels[i+1],pixels[i+2])<100&&Math.abs(pixels[i+2]-pixels[i])<18)inkPixels++;
+   }
+   return {photoPixels,inkPixels,total:pixels.length/4};
+  });
+  assert.ok(inkShare.photoPixels>inkShare.total*.7,'the selected photo is visible around and between the strokes');
+  assert.ok(inkShare.inkPixels>25,'the exported photograph contains the painted calligraphy');
+  await close();
 
   // Manual link copy and link-only sharing remain available as secondary actions.
   await open(2);await ready();await action('copy').click();
