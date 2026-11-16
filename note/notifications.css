@@ -28,7 +28,7 @@
 @media(max-height:420px){.nn-body{flex:0 0 auto;overflow:visible}.nn-heading{padding-top:10px}.nn-status{padding-top:8px;padding-bottom:8px}}
 
 /* One inbox, using the World's controls and settings-card geometry. */
-.nn-backdrop[hidden],.nn-badge[hidden],[data-notification-badge][hidden],[data-notification-dot][hidden]{display:none!important}
+.nn-backdrop[hidden],.nn-toolbar[hidden],.nn-badge[hidden],[data-notification-badge][hidden],[data-notification-dot][hidden]{display:none!important}
 .nn-top-actions{display:flex;align-items:center;gap:8px;flex:none}
 .nn-bell{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:36px;height:36px;padding:0;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);cursor:pointer}
 .nn-bell svg{width:20px;height:20px}

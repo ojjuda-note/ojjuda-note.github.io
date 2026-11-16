@@ -52,6 +52,30 @@ test('closed notification badge uses one summary request and keeps the detail li
   }finally{f.close();}
 });
 
+test('the notification toolbar is visible to members and hidden from guests',async()=>{
+  const f=fixture({user:null});
+  try {
+    const {document}=f.w;
+    const style=document.createElement('style');
+    style.textContent=fs.readFileSync(path.join(__dirname,'../note/notifications.css'),'utf8');
+    document.head.append(style);
+    await f.boot();
+    f.api.open();
+    const toolbar=document.querySelector('.nn-toolbar');
+    assert.equal(f.w.getComputedStyle(toolbar).display,'none');
+    assert.match(document.querySelector('.nn-list').textContent,/로그인/);
+    assert.equal(f.calls.length,0);
+    await f.user('member-a');
+    f.api.open();
+    await settle();
+    assert.equal(f.w.getComputedStyle(toolbar).display,'flex');
+    assert.match(toolbar.querySelector('.nn-summary').textContent,/알림 5개/);
+    await f.user(null);
+    f.api.open();
+    assert.equal(f.w.getComputedStyle(toolbar).display,'none');
+  } finally { f.close(); }
+});
+
 test('signed-out and hidden pages make no badge request; polling throttles and force refresh works',async()=>{
   const f=fixture({user:null});try{
     await f.boot();await f.api.refresh();await f.poll();assert.equal(f.calls.length,0);
