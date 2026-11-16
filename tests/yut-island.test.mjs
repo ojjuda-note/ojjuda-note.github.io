@@ -187,14 +187,14 @@ test('new games deal one of each tile without overlap and keep the layout throug
   t.mock.method(Math,'random',()=>((seed=(Math.imul(1664525,seed)+1013904223)>>>0)/2**32));
   for(const mode of ['easy','island']){
     const locations=new Map();
-    for(let i=0;i<100;i++){
+    for(let i=0;i<300;i++){
       const g=newGame(4,11,mode,4);
       const entries=Object.entries(g.eventTiles).concat(Object.entries(g.islandTiles));
       assert.deepEqual(Object.values(g.eventTiles).sort(),['back','carry','home']);
       assert.deepEqual(g.islandTiles,{});
       const nodes=entries.map(([n])=>Number(n));
       assert.equal(new Set(nodes).size,nodes.length);
-      assert.ok(nodes.every(n=>n>0&&n<FINISH&&![5,10,15,22].includes(n)));
+      assert.ok(nodes.every(n=>n>0&&n<FINISH));
       for(const [node,effect] of entries){
         if(!locations.has(effect))locations.set(effect,new Set());
         locations.get(effect).add(Number(node));
@@ -207,9 +207,25 @@ test('new games deal one of each tile without overlap and keep the layout throug
       assert.deepEqual(move(saved,3),next);
     }
     for(const positions of locations.values()){
-      assert.ok(positions.size>1);
-      assert.ok([...positions].some(n=>n>=20));
-      assert.ok([...positions].some(n=>n<20));
+      for(const junction of [5,10,15,22])assert.ok(positions.has(junction));
+    }
+  }
+});
+test('fork events apply once on landing, and a carried pair can take either available exit',()=>{
+  const routes=[[5,[4],6,20],[10,[9],11,25],[22,[5,20,21],23,27]];
+  for(const [junction,trail,outer,inner] of routes){
+    for(const effect of ['back','carry','home']){
+      const s=ordinary();s.pawns[0][0]=trail;s.eventTiles={[junction]:effect};
+      const landed=move(roll(s,faces(1)),0);
+      assert.equal(landed.lastMove.event,effect);
+      if(effect==='carry'){
+        assert.equal(position(landed.pawns[0][1]),junction);
+        const again=roll({...landed,team:0},faces(1));
+        assert.deepEqual(moves(again).filter(m=>m.index===0).map(m=>m.to),[outer,inner]);
+        assert.equal(position(move(again,0,true).pawns[0][1]),inner);
+      }else assert.equal(position(landed.pawns[0][0]),effect==='back'?trail.at(-1):-1);
+      const passed=move(roll(s,faces(2)),0);
+      assert.equal(passed.lastMove.event,null);assert.equal(position(passed.pawns[0][0]),outer);
     }
   }
 });
