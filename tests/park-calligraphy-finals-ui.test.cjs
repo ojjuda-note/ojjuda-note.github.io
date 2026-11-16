@@ -175,6 +175,52 @@ test('isolated two-stem vowels use the Park brush in either Unicode spelling', (
     assert.equal(new Set(pairs.map(pair => pair[0])).size, 4);
   }));
 
+test('ㅐ joins its two stems once and ㅒ leaves an opening between its two joins', () =>
+  withBrushPage(async page => {
+    const results = await page.evaluate(() => {
+      const canvas = document.createElement('canvas');
+      function inspect(vowel, width) {
+        window.ParkCalligraphy.render(canvas, vowel, { width, accent: false });
+        const b = window.ParkCalligraphy.inkBounds(canvas);
+        const w = Math.round(b.width * width) + 2, h = Math.round(b.height * canvas.height) + 2;
+        const data = canvas.getContext('2d').getImageData(Math.round(b.x * width) - 1,
+          Math.round(b.y * canvas.height) - 1, w, h).data;
+        const ink = i => data[i * 4 + 3] >= 150;
+        const seen = new Uint8Array(w * h);
+        let inkPieces = 0, holes = 0;
+        for (let start = 0; start < seen.length; start++) {
+          if (seen[start]) continue;
+          const stack = [start], painted = ink(start);
+          seen[start] = 1;
+          let area = 0, outside = false;
+          while (stack.length) {
+            const i = stack.pop(), x = i % w, y = Math.floor(i / w);
+            area++;
+            if (x === 0 || y === 0 || x === w - 1 || y === h - 1) outside = true;
+            for (let row = Math.max(0, y - 1); row <= Math.min(h - 1, y + 1); row++) {
+              for (let col = Math.max(0, x - 1); col <= Math.min(w - 1, x + 1); col++) {
+                const j = row * w + col;
+                if (seen[j] || ink(j) !== painted) continue;
+                seen[j] = 1;
+                stack.push(j);
+              }
+            }
+          }
+          if (area < 4) continue; // Ignore isolated antialiasing specks at brush tips.
+          if (painted) inkPieces++;
+          else if (!outside) holes++;
+        }
+        return [inkPieces, holes];
+      }
+      return [192, 328].map(width => ['ㅐ', 'ㅒ', 'ㅔ'].map(vowel => inspect(vowel, width)));
+    });
+    for (const [ae, yae, e] of results) {
+      assert.deepEqual(ae, [1, 0], 'one bridge joins the two strokes of ㅐ');
+      assert.deepEqual(yae, [1, 1], 'two bridges enclose one pocket of paper in ㅒ');
+      assert.deepEqual(e, [2, 0], 'the left-facing arm of ㅔ keeps its stems separate');
+    }
+  }));
+
 test('Park centers each brush line and emphasizes only matching tags', () =>
   withBrushPage(async page => {
     const result = await page.evaluate(() => {

@@ -250,41 +250,46 @@
     const eArm = curve('1,53,.30 8,54,.67 19,53,.88 33,50,.87 44,47,.72 53,46,.49');
     const eUpperArm = curve('4,40,.29 12,40,.64 23,38,.80 37,35,.82 48,33,.67 55,33,.47');
     const eLowerArm = curve('0,66,.30 7,66,.66 18,64,.82 31,61,.85 42,59,.69 50,58,.47');
+    // ㅐ joins its two uprights across their counters. Give the inside stem
+    // a shorter, lighter descent and carry each crossbar into the outer stem.
+    const aeInner = curve('22,11,.22 28,15,.61 31,24,.81 29,37,.88 25,53,.85 20,69,.69 18,81,.49 19,89,.26 23,94,.045');
+    const aeOuter = curve('86,1,.22 94,6,.68 97,15,.93 96,31,.97 92,49,.90 86,69,.76 82,86,.53 82,99,.30 85,107,.045');
+    const aeFinal = [...aeOuter.slice(0, -3), ...curve('82,87,.54 81,101,.33 85,111,.17 91,117,.03')];
+    const aeBridge = curve('24,53,.38 34,53,.78 51,51,.92 68,48,.87 82,46,.73 95,46,.53');
+    const aeUpperBridge = curve('28,40,.38 39,39,.74 57,37,.85 75,35,.81 89,35,.68 97,35,.50');
+    const aeLowerBridge = curve('21,66,.38 32,65,.76 49,63,.88 65,61,.82 80,60,.69 90,60,.49');
     // The remaining straight vowels share a bowed axis.
     function verticalPaths(v, flourish, phraseEnd) {
       if (v === 'ㅔ') return [eArm, eInner, flourish ? eFinal : eOuter];
       if (v === 'ㅖ') return [eUpperArm, eLowerArm, eInner, flourish ? eFinal : eOuter];
+      if (v === 'ㅐ') return [aeBridge, aeInner, flourish ? aeFinal : aeOuter];
+      if (v === 'ㅒ') return [aeUpperBridge, aeLowerBridge, aeInner, flourish ? aeFinal : aeOuter];
       const leftBars = 'ㅓㅕ'.includes(v),
-        doubleBars = 'ㅑㅒㅕ'.includes(v),
-        twoStems = 'ㅐㅒ'.includes(v);
-      const axes = twoStems ? [16, 99] : [v === 'ㅣ' ? 57 : leftBars ? 85 : 29];
+        doubleBars = 'ㅑㅕ'.includes(v);
+      const x = v === 'ㅣ' ? 57 : leftBars ? 85 : 29;
       const paths = [];
-      function axis(x, isOuter) {
-        if (isOuter && flourish) {
+      function axis() {
+        if (flourish) {
           // After a bowed descent, ease the heel forward as the brush lifts.
           return curve(`${x - 2},1,.21 ${x + 9},4,.66 ${x + 15},13,1.00 ${x + 11},28,1.08 ${x + 1},49,.96 ${x - 13},73,.73 ${x - 18},90,.51 ${x - 16},103,.32 ${x - 7},112,.17 ${x + 5},118,.025`);
         }
         return curve(`${x - 1},1,.20 ${x + 9},4,.66 ${x + 14},12,.97 ${x + 11},26,1.08 ${x + 2},47,.95 ${x - 11},69,.76 ${x - 16},86,.53 ${x - 14},99,.30 ${x - 6},108,.025`);
       }
       const starts = doubleBars ? [31, 58] : [47];
-      const x = axes[0];
       function bar(y) {
         const joint = x + 1 - (y - 47) * .21;
         if (leftBars) return curve(`0,${y + 13},.045 ${joint * .19},${y + 13},.64 ${joint * .53},${y + 7},.78 ${joint * .82},${y + .8},.45 ${joint + 1},${y},.12`);
-        if (flourish && phraseEnd && !twoStems && y === starts[starts.length - 1]) {
+        if (flourish && phraseEnd && y === starts[starts.length - 1]) {
           // Continue the existing arm: a loaded shoulder, a level sweep and a fine lift.
           return curve(`${joint - 2},${y + 2},.22 ${joint + 12},${y},.68 65,${y - 7},.90 91,${y - 9},.79 119,${y - 7},.65 146,${y - 7},.47 170,${y - 11},.31 189,${y - 18},.17 205,${y - 28},.025`);
         }
-        const reach = twoStems ? axes[1] : flourish ? 109 : 100;
+        const reach = flourish ? 109 : 100;
         const delta = reach - joint;
         return curve(`${joint},${y + 1},.18 ${joint + delta * .13},${y},.47 ${joint + delta * .45},${y - 9},.70 ${joint + delta * .72},${y - 14},.47 ${reach},${y - 16},.03`);
       }
       if (leftBars) for (const y of starts) paths.push(bar(y));
-      // The inner stem of ㅐ/ㅒ lands lower; two dark tips touching read as one.
-      const firstStem = axis(x, axes.length === 1);
-      paths.push(twoStems ? map(firstStem, 0, 8, 100, 86) : firstStem);
+      paths.push(axis());
       if (!leftBars && v !== 'ㅣ') for (const y of starts) paths.push(bar(y));
-      if (twoStems) paths.push(axis(axes[1], true));
       return paths;
     }
     const terminalL = curve('18,48,.16 22,55,.74 19,66,1.05 14,80,1.08 17,90,.88 28,95,.75 46,94,.63 66,87,.52 87,77,.42 110,69,.31 129,64,.19 143,60,.09 152,56,.02');
@@ -447,7 +452,7 @@
       '도': letter(79, 'M22 20 C40 13 55 9 68 9 C73 9 76 10 75 13 C72 16 63 18 54 19 C40 21 29 24 24 26 C20 27 18 24 22 20 Z', 'M24 20 C30 20 32 23 30 27 C26 35 22 44 25 47 C28 50 44 44 60 36 C56 42 42 51 33 55 C19 62 12 58 14 48 C16 38 19 26 24 20 Z', 'M42 55 C49 53 54 56 52 62 C47 70 45 76 43 81 L34 82 C35 73 38 62 42 55 Z', 'M0 86 C22 76 46 70 68 68 C76 67 86 67 91 68 C83 72 75 74 62 77 C43 82 24 89 9 94 C4 96 -2 92 0 86 Z'),
       '수': letter(99, 'M62 4 C68 2 75 7 72 14 C69 24 58 36 48 45 C35 58 18 68 -6 74 C10 65 26 50 40 34 C50 22 55 13 58 7 Q60 4 62 4 Z', 'M51 32 C55 31 61 35 69 41 C78 47 83 49 94 49 C89 54 82 57 75 55 C66 53 56 45 50 38 C48 35 48 34 51 32 Z', 'M0 81 C21 70 45 65 64 62 C79 60 94 60 103 62 C107 62 111 64 112 66 C98 65 80 67 62 73 C43 78 21 84 9 90 C3 92 -2 87 0 81 Z', 'M58 70 C64 68 68 70 65 76 C58 87 53 100 46 110 C40 119 30 128 21 131 C35 117 43 98 49 80 C52 73 54 71 58 70 Z'),
       '고': letter(91, 'M17 20 C31 15 52 6 68 5 C76 4 80 8 78 15 C74 28 62 43 44 58 C51 47 59 31 62 21 C63 17 63 16 60 17 C50 19 33 28 23 31 C15 34 11 27 17 20 Z', 'M44 54 C50 51 56 55 53 61 C49 68 45 77 44 83 L34 86 C35 75 39 60 44 54 Z', 'M-2 85 C18 76 45 69 65 67 C80 66 93 67 103 69 C86 70 75 73 62 78 C43 84 27 91 10 97 C3 100 -5 93 -2 85 Z'),
-      '했': letter(86, 'M18 9 C26 8 37 11 37 16 C36 20 30 20 27 18 C22 15 18 12 18 9 Z', 'M5 29 C15 23 28 21 39 21 C45 20 48 21 47 23 C37 26 25 29 13 34 C8 36 3 34 5 29 Z', 'M32 33 C39 31 43 35 41 42 C38 51 27 60 19 61 C10 64 6 59 9 52 C12 44 23 35 30 34 Q33 34 31 37 C23 41 17 49 17 54 C18 58 24 54 28 50 C33 45 36 37 32 33 Z', 'M53 11 C58 11 61 14 59 20 C54 32 49 45 47 56 Q45 62 42 65 C41 54 43 39 47 26 C49 19 51 13 53 11 Z', 'M48 37 C56 31 63 29 71 28 L70 33 C64 34 57 38 49 42 Z', 'M78 4 C84 4 87 9 85 15 C80 31 74 48 71 62 Q70 66 68 72 C66 56 67 43 71 26 C73 17 75 6 78 4 Z', 'M33 67 C38 66 43 69 40 74 C34 82 19 95 9 99 C18 88 25 78 29 70 Z M30 80 C34 79 40 84 45 91 C38 92 32 88 28 85 Z', 'M60 68 C65 64 70 66 68 72 C64 80 55 91 46 99 C49 90 56 78 58 71 Z M59 80 C64 79 68 83 73 86 C78 90 83 91 86 91 C78 98 68 94 60 87 Z'),
+      '했': letter(86, 'M18 9 C26 8 37 11 37 16 C36 20 30 20 27 18 C22 15 18 12 18 9 Z', 'M5 29 C15 23 28 21 39 21 C45 20 48 21 47 23 C37 26 25 29 13 34 C8 36 3 34 5 29 Z', 'M32 33 C39 31 43 35 41 42 C38 51 27 60 19 61 C10 64 6 59 9 52 C12 44 23 35 30 34 Q33 34 31 37 C23 41 17 49 17 54 C18 58 24 54 28 50 C33 45 36 37 32 33 Z', 'M53 12 C57 12 60 15 59 21 C58 29 55 37 53 44 C50 51 49 58 49 62 C44 58 44 51 47 40 C49 32 53 21 53 12 Z', 'M49 37 C57 36 67 33 77 32 L77 36 C67 36 58 40 51 42 Q48 43 49 37 Z', 'M78 4 C84 4 87 8 86 14 C84 25 77 45 74 60 C73 65 73 69 74 72 C69 69 67 62 68 53 C69 40 75 23 78 12 Q80 6 78 4 Z', 'M33 67 C38 66 43 69 40 74 C34 82 19 95 9 99 C18 88 25 78 29 70 Z M30 80 C34 79 40 84 45 91 C38 92 32 88 28 85 Z', 'M60 68 C65 64 70 66 68 72 C64 80 55 91 46 99 C49 90 56 78 58 71 Z M59 80 C64 79 68 83 73 86 C78 90 83 91 86 91 C78 98 68 94 60 87 Z'),
       '어': letter(93, 'M40 22 C49 20 56 25 55 34 C53 47 42 61 28 70 C16 78 4 76 3 67 C1 58 9 43 18 33 C25 25 34 20 40 20 C44 20 46 23 43 26 C39 30 32 33 25 41 C16 51 11 62 15 65 C20 68 31 62 41 51 C52 39 56 25 40 22 Z', 'M45 48 C58 41 67 34 76 33 C81 32 82 36 80 38 C69 40 57 48 49 54 Q43 56 45 48 Z', 'M86 1 C92 -1 98 4 95 13 C89 32 83 56 80 77 C77 95 78 105 81 111 C74 106 72 95 72 79 C72 56 77 32 81 14 C83 8 83 3 86 1 Z'),
       '이': letter(78, 'M39 26 C46 24 52 28 50 36 C48 46 36 60 25 66 C13 73 4 70 5 61 C5 49 17 34 29 28 C34 25 39 24 41 27 C42 29 37 31 33 34 C24 40 16 50 15 58 C14 64 18 65 25 61 C33 56 43 46 46 37 C48 32 46 27 39 26 Z', 'M66 0 C74 0 80 4 78 14 C75 32 68 54 65 75 C62 91 62 103 65 112 C57 106 54 91 56 72 C58 51 63 32 65 18 C67 9 69 4 66 0 Z'),
       '건': letter(93, 'M8 30 C17 25 34 17 42 17 C48 16 51 20 48 27 C42 38 24 51 2 65 C18 50 31 35 34 28 C24 30 17 36 11 37 C7 38 5 35 8 30 Z', 'M43 39 C55 33 63 28 70 27 L70 34 C61 36 51 42 44 45 C41 46 40 42 43 39 Z', 'M75 2 C82 0 86 5 84 12 C79 30 74 48 68 64 C66 68 64 69 62 72 C62 59 65 40 69 23 C71 12 72 5 75 2 Z', 'M28 65 C35 61 43 64 40 72 C37 80 29 88 32 92 C36 97 52 92 65 87 C80 82 91 78 102 77 C93 82 79 93 59 100 C42 107 26 107 20 101 C13 94 19 77 28 65 Z'),
