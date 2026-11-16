@@ -456,7 +456,18 @@ test('one phone opens truth cards from Start and keeps question tools in setting
   await until(()=>f.find('.truth-back:not(:disabled)'));
   assert.match(f.find('.turn-tag').textContent,/참가자 2/);
   f.click('.truth-back[data-value="0"]');action('truth-next');
-  assert.match(f.find('.turn-tag').textContent,/참가자 3/);
+  for(let index=2;index<12;index++){
+    const expected=Math.floor(index/4)+1+'/3바퀴 · 참가자 '+(index%4+1)+' 차례';
+    await until(()=>f.find('.truth-back:not(:disabled)'));
+    assert.equal(f.find('.turn-tag').textContent,expected);
+    assert.equal(f.find('[data-drinking-dialog="result"]'),null);
+    f.click('.truth-back[data-value="0"]');
+    assert.equal(f.find('.turn-tag').textContent,expected);
+    action(index%2?'truth-pass':'truth-next');
+  }
+  assert.equal(f.find('[data-drinking-dialog="result"] h2').textContent,'다 같이 한잔!');
+  f.click('[data-drinking-close]');action('truth-setup');action('start');
+  assert.equal(f.find('.turn-tag').textContent,'1/3바퀴 · 참가자 2 차례');
   assert.deepEqual(f.errors,[]);
 });
 

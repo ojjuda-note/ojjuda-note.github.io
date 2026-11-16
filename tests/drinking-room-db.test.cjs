@@ -272,6 +272,48 @@ test('explicit truth and minority choices are shared, turn-scoped, and cannot ch
   assert.equal((await act(c,'truth','state',r.code)).game.question,r.game.question);
 });
 
+test('truth completes three laps, synchronizes the toast, and rejects actions from a previous lap', async t=>{
+  const f=await fixture();
+  t.after(()=>f.close());
+  const seats=f.users.slice(0,3);
+  const rpc=(who,action,code,opts={})=>f.publicRpc(who,'party_live_multiplayer',['truth',action,code,opts]);
+  let s=await rpc(seats[0],'create','',{title:'세 바퀴',capacity:3,password:'abcd',request_id:randomUUID()});
+  for(const who of seats.slice(1))s=await rpc(who,'join',s.code,{password:'abcd'});
+  const move=(who,action,opts={})=>rpc(who,action,s.code,{round:s.round,revision:s.revision,turn:s.game.turn,
+    lap:s.game.lap,request_id:randomUUID(),...opts});
+  const begin={mode:'mild',deck:{mild:['첫 질문','둘째 질문'],spicy:[]},catalog_revision:'20261114-drinking-rebuild1'};
+  s=await move(seats[0],'truth_begin',begin);
+  const firstRevision=s.revision;
+  for(let lap=1;lap<=3;lap++){
+    for(const [turn,who] of seats.entries()){
+      assert.equal(s.phase,'pick');
+      assert.equal(s.game.lap,lap);
+      assert.equal(s.game.turn,turn);
+      assert.equal(s.game.question,undefined);
+      if(lap===2&&turn===0){
+        await assert.rejects(move(who,'truth_pick',{side:0,lap:1}),/stale_turn/);
+        await assert.rejects(move(who,'truth_pick',{side:0,lap:undefined,revision:firstRevision}),/stale_state/);
+      }
+      s=await move(who,'truth_pick',{side:turn%2});
+      const peer=await rpc(seats[(turn+1)%seats.length],'state',s.code);
+      assert.equal(peer.phase,'answer');
+      assert.equal(peer.game.lap,lap);
+      assert.equal(peer.game.question,s.game.question);
+      s=await move(who,(lap+turn)%2?'truth_pass':'truth_answer');
+    }
+  }
+  for(const who of seats){
+    const view=await rpc(who,'state',s.code);
+    assert.deepEqual(view.game,{phase:'done',lap:3});
+  }
+  const nextHost=seats[s.hostSeat];
+  s=await move(nextHost,'again');
+  assert.equal(s.me,0);
+  s=await move(nextHost,'truth_begin',begin);
+  assert.equal(s.game.turn,0);
+  assert.equal(s.game.lap,1);
+});
+
 for (const withTargets of [false,true]) test(withTargets
   ? 'group roulette seals targets and reveals the same winner on every phone after concurrent presses'
   : 'legacy group roulette reveals exactly one phone and preserves its result on reconnect',async t=>{

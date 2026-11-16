@@ -110,7 +110,7 @@
         !Number.isInteger(s.me) || s.me<0 || s.me>=s.players.length) throw Error('방 상태를 다시 확인하고 있어요.');
     const first = !room || room.code !== s.code;
     if (!first && s.revision <= room.revision) return;
-    const sameTurn = !first && s.round===room.round && s.phase===room.phase && s.game?.turn===room.game?.turn;
+    const sameTurn = !first && s.round===room.round && s.phase===room.phase && s.game?.turn===room.game?.turn && s.game?.lap===room.game?.lap;
     if (composing && sameTurn) {
       if (!deferredState || s.revision>=deferredState.revision) deferredState=s;
       return;

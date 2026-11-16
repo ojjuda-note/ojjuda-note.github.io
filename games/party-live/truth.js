@@ -123,18 +123,22 @@
       '<button type="button" data-truth-next="truth_pass">패스</button></div>':'<p class="suite-hint">답하거나 패스하면 다음 차례로 넘어가요.</p>');
   }
   function view(s,ui) {
-    if (s.phase==='done') return '<h1 class="suite-heading">모두 한 번씩 마쳤어요!</h1><p class="suite-hint">다음 판에는 어떤 질문이 나올까요?</p>';
-    return board(s,ui)+form(s,ui);
+    if (s.phase==='done') return s.game.lap===3
+      ? '<h1 class="suite-heading">다 같이 한잔!</h1><p class="suite-hint">모두 세 바퀴를 마쳤어요.</p>'
+      : '<h1 class="suite-heading">모두 한 번씩 마쳤어요!</h1>';
+    const progress=['pick','answer'].includes(s.phase)?'<p class="suite-hint">'+(s.game.lap||1)+'/3바퀴</p>':'';
+    return progress+board(s,ui)+form(s,ui);
   }
   function roomDeck(s,official) {
     const deck=personalDeck(official);
+    const turns=3*s.players.length;
     for (const flavor of flavors) {
       const cards=deck[flavor];
       // Leave space for questions already added from other phones, plus this round's turns.
-      const limit=Math.max(0,2048-(s.game.added?.[flavor] || 0)-s.players.length);
+      const limit=Math.max(0,2048-(s.game.added?.[flavor] || 0)-turns);
       if (cards.length<=limit) continue;
-      const count=Math.min(s.players.length,limit);
-      // Each player draws once. A sample without replacement draws fairly from the whole catalog.
+      const count=Math.min(turns,limit);
+      // Sample enough cards for all three laps without repeating a question.
       for (let i=0;i<count;i++) {
         const j=i+Math.floor(Math.random()*(cards.length-i));
         [cards[i],cards[j]]=[cards[j],cards[i]];
@@ -168,21 +172,24 @@
         }
       }
     };
+    const turn={turn:s.game.turn,lap:s.game.lap||1};
     const picker=$('#truth-prompt');
     if(picker){
       const menu=window.DrinkingQuestionMenu;
-      if(e.pickerTurn!==s.game.turn){e.pickerTurn=s.game.turn;e.picker=menu.draft();}
+      if(e.pickerLap!==turn.lap||e.pickerTurn!==turn.turn){
+        e.pickerLap=turn.lap;e.pickerTurn=turn.turn;e.picker=menu.draft();
+      }
       menu.mount(picker,{kind:'truth',state:e.picker,load:()=>menu.catalog('truth'),apply:async(question,manual,flavor)=>{
-        const ok=await ui.send('truth_pick',{turn:s.game.turn,question,flavor});
+        const ok=await ui.send('truth_pick',{...turn,question,flavor});
         if(ok&&manual)window.DrinkingPrompts.submit('truth',question,flavor);
         return ok;
       }});
     }
     document.querySelectorAll('[data-truth-side]').forEach(button=>{
-      button.onclick=()=>ui.send('truth_pick',{turn:s.game.turn,side:Number(button.dataset.truthSide)});
+      button.onclick=()=>ui.send('truth_pick',{...turn,side:Number(button.dataset.truthSide)});
     });
     document.querySelectorAll('[data-truth-next]').forEach(button=>{
-      button.onclick=()=>ui.send(button.dataset.truthNext,{turn:s.game.turn});
+      button.onclick=()=>ui.send(button.dataset.truthNext,turn);
     });
     const begin=$('#truth-begin');
     if (!begin) return;

@@ -4,7 +4,7 @@ const $=selector=>document.querySelector(selector);
 const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
 const turnOrderKey=playerKey+'.turnOrder';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261117-drinking-cards-turn-choices1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261117-truth-three-laps1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -300,7 +300,7 @@ function intro(){const enough=players.length>=game.min;
   if(game.id==='stopwatch')return watchSetup();
   if(game.id==='truth'){
     shell('<h2><span class="suite-kicker">07 · 추리와 대화</span>오늘은 조금 더<br>솔직하게.</h2>'+
-      '<p>내 차례에 카드 한 장을 뒤집고 질문에 답해요.<br>답하기 어려우면 패스해도 돼요.</p>'+
+      '<p>내 차례에 카드 한 장을 뒤집고 질문에 답해요.<br>세 바퀴를 마치면 다 같이 한잔!</p>'+
       actions(btn('게임 시작','start')),true);
     app.querySelector('.round-head').insertAdjacentHTML('beforeend',btn('설정','truth-settings','quiet truth-settings-link'));
     return;
@@ -409,7 +409,7 @@ async function begin(){
     case 'stopwatch':
       r.target=watchTenths*10;r.records=[];
       return readyWatch();
-    case 'truth':r.truthSettings={...truthSettings};return dealTruth();
+    case 'truth':r.lap=1;r.truthSettings={...truthSettings};return dealTruth();
     case 'fingers':
       r.fingers=players.map(()=>5);
       return fingerPrompt();
@@ -929,6 +929,9 @@ $('#truth-form').onsubmit=e=>{
   input.value='';input.focus();
   truthMessage.textContent=result.saved?'이 기기의 질문에 추가했어요.':'이번 플레이에 사용할 질문으로 추가했어요.';
 };
+function truthTurn(r){
+  return '<span class="turn-tag">'+r.lap+'/3바퀴 · '+name(r.turn)+' 차례</span>';
+}
 function dealTruth(){
   const r=round,{mode,showFlavor}=r.truthSettings;
   r.phase='truth-pick';
@@ -945,7 +948,7 @@ function dealTruth(){
     return '<button type="button" class="truth-back" disabled data-action="truth-pick" data-value="'+i+
       '" aria-label="'+truthTools.sideName(i,taste)+'">'+art('back')+truthTools.cardLabel(taste)+'</button>';
   }).join('');
-  shell(tag(r.turn)+'<h2 tabindex="-1" id="truth-title">카드 한 장을 골라 주세요</h2>'+
+  shell(truthTurn(r)+'<h2 tabindex="-1" id="truth-title">카드 한 장을 골라 주세요</h2>'+
     '<div class="truth-pair">'+cards+'</div><p id="truth-load" role="status">카드를 준비하고 있어요.</p>'+
     '<button type="button" class="quiet" id="truth-retry" hidden>다시 불러오기</button>'+
     '<button type="button" class="quiet" data-action="truth-reconfigure" hidden>설정으로</button>');
@@ -985,7 +988,7 @@ function revealTruth(value){
 }
 function showTruthQuestion(r,spicy,question){
   r.phase='truth-answer';fx.play('truth');
-  shell(tag(r.turn)+'<div class="truth-front '+(spicy?'truth-spicy':'truth-mild')+'">'+
+  shell(truthTurn(r)+'<div class="truth-front '+(spicy?'truth-spicy':'truth-mild')+'">'+
     '<h2 tabindex="-1" id="truth-title">'+(spicy?'빨간맛':'순한맛')+'</h2><p>'+esc(question)+'</p></div>'+
     actions(btn('답했어요','truth-next'),btn('패스','truth-pass','quiet')));
   $('#truth-title').focus({preventScroll:true});
@@ -1265,7 +1268,11 @@ function handle(action,value){
     case 'truth-pick':return revealTruth(value);
     case 'truth-next':case 'truth-pass':
       if(r.phase!=='truth-answer')return;
-      if(++r.turn===players.length)return end('모두 한 번씩 마쳤어요!','새로운 질문으로 다음 라운드를 즐겨요.');
+      r.turn=(r.turn+1)%players.length;
+      if(r.turn===0){
+        if(r.lap===3)return end('다 같이 한잔!','모두 세 바퀴를 마쳤어요.');
+        r.lap++;
+      }
       fx.play('turn');return dealTruth();
     case 'initial-go':if(r.phase==='initial-ready')initialGo();return;
     case 'initial-next':if(r.phase==='intermission')initialGo();return;
