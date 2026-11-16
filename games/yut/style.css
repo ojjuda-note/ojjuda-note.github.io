@@ -179,3 +179,11 @@ dialog .primary{width:100%}#dialog-body>.secondary{margin:4px 3px 0 0}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important}}
 
 @media(max-width:410px){#pawn-picker:has(>:nth-child(3)) .pawn-copy b{font-size:13px}#pawn-picker:has(>:nth-child(3)) .pawn-choice[aria-pressed=true]:after{display:none}}
+
+.yut-round-summary{text-align:left}
+.yut-round-summary h3{margin:0 0 5px;font-size:15px;color:inherit}
+.game-result-card .yut-round-summary{color:#324d42}
+.yut-round-summary ol{margin:0;padding:0;list-style:none}
+.yut-round-summary li{display:grid;grid-template-columns:3em 1fr auto;align-items:center;padding:3px 0;border-bottom:1px solid #81978b38;font-size:14px}
+.yut-round-summary li>span:last-child{font-size:12px;font-variant-numeric:tabular-nums}
+.yut-round-summary [role=status]{text-align:center}

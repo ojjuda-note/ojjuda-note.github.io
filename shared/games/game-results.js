@@ -8,7 +8,7 @@
     stacker: { name: '탑 쌓기', unit: '층' }, breakout: { name: '벽돌깨기' },
     spot: { name: '틀린그림 찾기' }, screw: { name: '나사 풀기' },
     screw_box: { name: '나사 풀기 · 박스' }, screw_flat: { name: '나사 풀기 · 평면' },
-    bang: { name: '뱅' }, tank: { name: '탱크' }, tour: { name: '오쭈다 투어' },
+    bang: { name: '뱅' }, tank: { name: '탱크' }, tour: { name: '오쭈다 투어' }, yut: { name: '섬마을 윷놀이' },
     ttang: { name: '땅따먹기' }, janggi: { name: '장기' }, chess: { name: '체스' },
     billiards: { name: '당구' }, carom4: { name: '당구 · 4구' },
     carom3: { name: '당구 · 3구' }, pool8: { name: '당구 · 8볼' },
@@ -21,7 +21,7 @@
   const SAD = new Set(['failure', 'gold-loss']);
   const PAGE_GAMES = Object.freeze({
     '/games/roulette/index.html': 'roulette', '/games/mines/index.html': 'mines',
-    '/games/ojjuda-tour/index.html': 'tour', '/games/tank/index.html': 'tank',
+    '/games/ojjuda-tour/index.html': 'tour', '/games/tank/index.html': 'tank', '/games/yut/index.html': 'yut',
     '/games/matgo-online.html': 'matgo', '/games/matgo.html': 'matgo',
     '/games/ttang.html': 'ttang', '/games/photo-ttang.html': 'photo_ttang',
     '/games/spot-difference/index.html': 'spot', '/games/poker/index.html': 'poker',

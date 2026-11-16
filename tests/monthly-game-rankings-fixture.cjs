@@ -106,4 +106,15 @@ async function createFixture(existingDb, { participants = true, latestBest = par
   };
   return {db,clock,claim,actor,migrationName};
 }
-module.exports = {createFixture,definition,read,migrationName,participantsMigrationName,bestStreakMigrationName,excludeZeroMigrationName};
+async function installYutRankings(db){
+  const withClock=sql=>sql.replace(/\b(?:statement_timestamp|clock_timestamp|now)\(\)/g,'fixture.clock()');
+  const details=read('20261022130306_multiplayer_ranking_details.sql');
+  await db.exec("alter table ojjuda_guest_internal.round_records add constraint round_records_game_check check(true), add constraint round_records_actor_check check(true),add constraint round_records_outcome_check check(true),add primary key(game,actor_key,round_id,round_no), alter achieved_at set default fixture.clock()");
+  await db.exec(withClock(definition(read('20261022121120_game_ranking_criteria.sql'),'ojjuda_guest_internal.record_marble_result')));
+  await db.exec(details.match(/do \$territory\$[\s\S]*?end;\$territory\$;/)[0]);
+  await db.exec(withClock(read('20261108140000_monthly_game_personal_rank.sql')));
+  const file=fs.readdirSync(path.join(root,'supabase/migrations')).find(f=>f.endsWith('_yut_monthly_rankings.sql'));
+  await db.exec(read(file));
+}
+
+module.exports = {installYutRankings,createFixture,definition,read,migrationName,participantsMigrationName,bestStreakMigrationName,excludeZeroMigrationName};

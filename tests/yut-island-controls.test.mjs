@@ -117,6 +117,9 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   assert.equal(doc.querySelector('.game-result-card'),null);
   await until(()=>doc.querySelector('.game-result-card'));
   const card=doc.querySelector('.game-result-card');
+  assert.equal(card.querySelector('.game-result-monthly-link').search,'?game=yut');
+  assert.equal(card.querySelectorAll('.yut-round-summary li').length,2);
+  assert.match(card.querySelector('.yut-round-summary li').textContent,/1위산호 팀골인 4\/4/);
   assert.equal(card.dataset.resultOutcome,'success');assert.match(card.textContent,/산호 팀 승리!/);
   assert.match(card.textContent,/말 4개 모두 골인/);assert.ok(card.querySelector('.game-result-confetti'));
   assert.ok(card.querySelector('.game-result-spark'));
@@ -283,7 +286,13 @@ test('an invited player returning to a finished room sees their own outcome once
   let heartbeat;
   t.mock.method(globalThis,'setInterval',callback=>{heartbeat=callback;return 1;});
   const channel={on(){return this;},subscribe(fn){fn('SUBSCRIBED');},async send(){}};
-  w.OjjudaGetClient=()=>({channel:()=>channel,async removeChannel(){}});
+  const saves=[];let attempts=0;
+  w.OjjudaGetClient=()=>({channel:()=>channel,async removeChannel(){},auth:{async getSession(){return {data:{session:null}};}}});
+  w.OjjudaGuestScores={async yut(round,won){
+    saves.push([round,won]);
+    if(++attempts===1)throw Error('offline');
+    return {ok:true};
+  }};
   w.HTMLCanvasElement.prototype.getContext=()=>null;
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
@@ -295,7 +304,11 @@ test('an invited player returning to a finished room sees their own outcome once
   assert.equal(card.dataset.resultOutcome,'failure');assert.match(card.textContent,/바다 팀 승리!/);
   assert.equal(card.querySelector('.game-result-effects').childElementCount,0);
   assert.ok(doc.getElementById('setup').hidden);assert.equal(doc.querySelector('.game-result-dialog').open,true);
+  const retry=card.querySelector('.yut-round-summary button');
+  await wait(()=>!retry.hidden);retry.click();
+  await wait(()=>card.textContent.includes('월간 기록 저장됨'));
   heartbeat();assert.equal(doc.querySelector('.game-result-card'),card);
+  assert.deepEqual(saves,[[game.roundId,false],[game.roundId,false]]);
   const online=[...card.querySelectorAll('button')].find(b=>b.textContent==='온라인 대전');online.click();
   await wait(()=>!doc.querySelector('.game-result-card')&&!doc.getElementById('setup').hidden);
   assert.equal(doc.querySelector('#entry-controls [aria-pressed=true]').textContent,'온라인 대전');

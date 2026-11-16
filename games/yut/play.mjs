@@ -1,8 +1,9 @@
-import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=13';
-import {createBoard,PAWN_HOP_MS} from './board.mjs?v=22';
+import {roundSummary} from './results.mjs?v=1';
+import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=14';
+import {createBoard,PAWN_HOP_MS} from './board.mjs?v=23';
 import {createToss,drawRack} from './toss.mjs?v=8';
 import {createTableSounds} from './sound.mjs?v=3';
-import {openRoom,roomCode} from './room.mjs?v=13';
+import {openRoom,roomCode} from './room.mjs?v=14';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=5';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
@@ -226,7 +227,7 @@ async function showState(s,animate=true){
 function showResult(reopen=false){
   const s=game,winner=s.winner;
   if(s.phase!=='won'||busy||!$('setup').hidden)return;
-  const key='yut:'+ (net?net.host:'local-'+localRound);
+  const key='yut:'+(s.roundId??(net?net.host:'local-'+localRound));
   if(!reopen&&lastResultKey===key)return;
   lastResultKey=key;closePanel();
   const name=TEAMS[winner].name+' 팀',count=s.pawns[winner].length;
@@ -241,10 +242,14 @@ function showResult(reopen=false){
     {label:'오락실로',onClick:()=>location.assign('/world.html?tab=arcade')}
   ];
   const title=name+' 승리!',metric='말 '+count+'개 모두 골인';
+  const summary=roundSummary(s,net?net.seat:0);
   if(window.OjjudaGameResults){
-    window.OjjudaGameResults.show({key,outcome:lost?'failure':'success',title,metric,actions,share:false});
+    const result=window.OjjudaGameResults.show({game:'yut',key,outcome:lost?'failure':'success',title,metric,actions});
+    result.card.querySelector('.game-result-extra').append(summary);
   }else{
-    openPanel(title,'result');body.append(message(metric));
+    openPanel(title,'result');body.append(message(metric),summary);
+    const monthly=element('a','이번 달 1~10위 · 내 순위','secondary');
+    monthly.href='/features/arcade/monthly-ranking.html?game=yut';monthly.target='_blank';monthly.rel='noopener';body.append(monthly);
     for(const action of actions)body.append(button(action.label,'secondary',action.onClick??closePanel));
   }
 }

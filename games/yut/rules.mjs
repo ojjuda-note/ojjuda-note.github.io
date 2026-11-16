@@ -46,7 +46,7 @@ export function newGame(count=2,zodiacOffset=2,mode=DEFAULT_MODE,pieceCounts=DEF
   if(!Array.isArray(computerTeams)||!computerTeams.every(i=>Number.isInteger(i)&&i>=0&&i<count))throw Error('컴퓨터 팀을 다시 골라 주세요.');
   const animals=teamAnimals??Array.from({length:count},(_,i)=>defaultTeamAnimal(i,zodiacOffset));
   if(!Array.isArray(animals)||animals.length!==count||!animals.every(i=>Number.isInteger(i)&&i>=0&&i<12))throw Error('각 팀의 동물을 골라 주세요.');
-  return {mode,eventTiles:dealTiles(),islandTiles:{},teamAnimals:[...animals],computerTeams:[...new Set(computerTeams)], team:0, turn:1, phase:'roll', revision:0, sticks:null, steps:0,
+  return {roundId:globalThis.crypto?.randomUUID?.()??null,mode,eventTiles:dealTiles(),islandTiles:{},teamAnimals:[...animals],computerTeams:[...new Set(computerTeams)], team:0, turn:1, phase:'roll', revision:0, sticks:null, steps:0,
     pawns:counts.map(n=>Array.from({length:n},()=>[])), zodiacOffset, winner:null, lastMove:null,pendingRolls:[],
     note:'윷을 던져 첫 말을 출발시키세요.'};
 }

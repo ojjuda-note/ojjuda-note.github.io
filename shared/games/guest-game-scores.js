@@ -60,6 +60,7 @@
   window.OjjudaGuestScores = Object.freeze({submit,submitScrewBox,ranking,
     spot:async(stage)=>adminPreview()?previewReceipt():rpc('record_spot_clear',{p_stage:stage,p_guest_token:token()}),
     territory:async(runId,won)=>adminPreview()?previewReceipt():rpc('record_ttang_result',{p_round:runId,p_won:won,p_guest_token:token()}),
+    yut:async(runId,won)=>adminPreview()?previewReceipt():rpc('record_yut_result',{p_round:runId,p_won:won,p_guest_token:token()}),
     marble:async(runId,won)=>adminPreview()?previewReceipt():rpc('record_marble_result',{p_round:runId,p_won:won,p_guest_token:token()})
   });
 })();
