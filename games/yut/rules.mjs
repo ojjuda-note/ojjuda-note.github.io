@@ -10,10 +10,11 @@ export const YUT = ['', '도', '개', '걸', '윷', '모'];
 export const ROCK = [3,16], WHIRL = [8,13], WIND = [6,18];
 const fork = new Set([5,10,22]);
 
-export function newGame(count=2,zodiacOffset=2) {
+export function newGame(count=2,zodiacOffset=2,mode='island') {
   if (![2,3,4].includes(count)) throw new Error('2~4팀을 골라 주세요.');
   if (!Number.isInteger(zodiacOffset)||zodiacOffset<0||zodiacOffset>=12) throw new Error('십이지 동물을 골라 주세요.');
-  return {team:0, turn:1, phase:'roll', revision:0, sticks:null, steps:0,
+  if (mode!=='easy'&&mode!=='island') throw new Error('놀이 방식을 골라 주세요.');
+  return {mode, team:0, turn:1, phase:'roll', revision:0, sticks:null, steps:0,
     pawns:Array.from({length:count},()=>[[],[]]), zodiacOffset, winner:null, lastMove:null,
     note:'윷을 던져 첫 말을 출발시키세요.'};
 }
@@ -75,11 +76,12 @@ export function move(state,index,shortcut=false) {
   const moving=team.flatMap((p,i)=>i===index||(from!==HOME&&position(p)===from)?[i]:[]);
   let {next,frames}=advance(trail,state.steps,shortcut);
   let at=position(next), effect='', captured=0;
-  if(ROCK.includes(at)||WHIRL.includes(at)){
+  const obstacles=state.mode!=='easy';
+  if(obstacles&&(ROCK.includes(at)||WHIRL.includes(at))){
     const back=WHIRL.includes(at)?2:1;
     for(let i=0;i<back&&next.length;i++){next.pop();frames.push(position(next));}
     effect=back===2?'소용돌이! 두 칸 뒤로 밀렸어요.':'바위턱! 한 칸 뒤로 밀렸어요.';
-  }else if(WIND.includes(at)){
+  }else if(obstacles&&WIND.includes(at)){
     const gust=advance(next,2,false);
     next=gust.next;frames.push(...gust.frames);effect='순풍! 두 칸 더 갔어요.';
   }

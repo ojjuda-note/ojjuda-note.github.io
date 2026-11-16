@@ -5,6 +5,16 @@ import {ANIMALS,animalFor} from '../games/yut/zodiac.mjs';
 
 const faces=n=>Array.from({length:4},(_,i)=>+(i<n&&n<5));
 function setup(at,steps){const g=newGame();g.pawns[0][0]=at;return roll(g,faces(steps));}
+test('easy games land on the rolled square while older snapshots keep their island effects',()=>{
+  for(const [tile,end] of [[3,2],[16,15],[8,6],[13,11],[6,8],[18,0]]){
+    const trail=Array.from({length:tile-1},(_,i)=>i+1);
+    const easy=newGame(2,2,'easy');easy.pawns[0][0]=trail;
+    assert.equal(position(move(roll(easy,faces(1)),0).pawns[0][0]),tile);
+    const legacy={...easy};delete legacy.mode;
+    assert.equal(position(move(roll(legacy,faces(1)),0).pawns[0][0]),end);
+  }
+  assert.throws(()=>newGame(2,2,'unknown'));
+});
 test('a pair may start with any zodiac animal and the settled throw reproduces after the turn',()=>{
   assert.equal(new Set(ANIMALS).size,12);
   for(let offset=0;offset<12;offset++){
@@ -58,8 +68,8 @@ test('friendly stack moves together, captures a full stack, and both pieces can 
 });
 test('every 2–4 team game reaches a winner within bounded play',()=>{
   let v=12345;const rnd=()=>((v=(Math.imul(1664525,v)+1013904223)>>>0)/2**32);
-  for(const n of [2,3,4])for(let run=0;run<50;run++){
-    let g=newGame(n),count=0;
+  for(const mode of ['easy','island'])for(const n of [2,3,4])for(let run=0;run<50;run++){
+    let g=newGame(n,2,mode),count=0;
     while(g.phase!=='won'&&count++<3000){
       g=roll(g,Array.from({length:4},()=>+(rnd()<.5)));const options=moves(g);
       assert.ok(options.length);const m=options[Math.floor(rnd()*options.length)];g=move(g,m.index,m.shortcut);
@@ -86,7 +96,8 @@ test('invitees occupy up to four distinct seats; only the active seat can advanc
     const host=await openRoom(null,()=>{},mock);clients.push(host);
     for(let i=1;i<=4;i++){store.clear();clients.push(await openRoom(host.view().host,()=>{},mock));if(i<4)await until(()=>clients[i].view().seat===i);}
     await until(()=>clients[4].view().status.includes('찼'));
-    host.start(8);await until(()=>clients[3].view().game?.revision===0);
+    host.start(8,'easy');await until(()=>clients[3].view().game?.revision===0);
+    assert.equal(clients[3].view().game.mode,'easy');
     assert.equal(clients[3].view().game.zodiacOffset,8);
     clients[2].action({type:'roll'});await new Promise(r=>setTimeout(r,20));assert.equal(host.view().game.revision,0);
     host.action({type:'roll'});await until(()=>clients[1].view().game?.phase==='move');

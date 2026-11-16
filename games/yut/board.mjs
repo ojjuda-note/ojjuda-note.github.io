@@ -1,5 +1,5 @@
 import { drawZodiac } from './zodiac.mjs?v=2';
-import { TEAMS } from './rules.mjs?v=3';
+import { TEAMS } from './rules.mjs?v=4';
 
 // A square lacquer board viewed by a level, front-facing orthographic camera.
 const TAU = Math.PI * 2;
@@ -51,6 +51,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   const reduced=()=>typeof matchMedia==='function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const dep=(x,z)=>-x*sin+z*cos;
   let targets=[],options=[],selected=null,gesture=null,drawnPawns=[],skipClick=null;
+  let playMode='island',flags=[];
   let backdrop=null,beamKey='',beamStart=0,beamRise=0;
   const beamMs=1150;
   const horizontal=(x,z)=>x*cos+z*sin;
@@ -230,21 +231,23 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   function trail(){
     for(const route of tracks)for(let i=1;i<route.length;i++){
       const [x,z]=nodes[route[i-1]],[u,v]=nodes[route[i]],path=[[x,z],[u,v]],diag=route.length!==21;
-      wire(path,'#446b61',.155,surface+.018);wire(path,diag?'#e1f3e5':'#f4dca5',diag?.05:.068,surface+.020);
+      wire(path,'#375d53',diag?.143:.170,surface+.018);wire(path,diag?'#e1f3e5':'#fff0c8',diag?.068:.081,surface+.020);
       const a=(x+u)/2,b=(z+v)/2,n=Math.hypot(u-x,v-z),dx=(u-x)/n,dz=(v-z)/n;
       face(mapAt([[a-.105*dx,b-.105*dz],[a-.044*dz,b+.044*dx],[a+.105*dx,b+.105*dz],[a+.044*dz,b-.044*dx]],surface+.022),diag?'#f5faf0':'#fff1c9');
     }
   }
   function tile(i){
-    const [x,z]=nodes[i],type=types[i],hero=['start','corner','center'].includes(type);
+    const [x,z]=nodes[i],original=types[i];
+    const type=playMode==='easy'&&['stone','whirl','breeze'].includes(original)?'normal':original;
+    const hero=['start','corner','center'].includes(type);
     const rad=hero?.735:i>=20?.42:.505,y=hero?.435:.352;
     const outer=ring(x,z,rad,rad,32),lid=ring(x,z,rad*.84,rad*.84,32),[sx,sy]=project([x,y,z]),r=rad*scale;
     const tones=hero?['#fff5d8','#d9b879','#f5e0ac']:type==='stone'?['#ffd6b7','#c58271','#f2b6a0']:
       type==='breeze'?['#e4f5d7','#8abca2','#c5e6c3']:type==='whirl'?['#ece4fa','#ac98c1','#ecd1e5']:
       i>=20?['#f0f7e9','#c5d4ca','#e6ecd9']:['#fff8e1','#d1d8c5','#f6efdb'];
     castShadow(x,z,surface+.004,rad*1.13,rad*1.10,y-surface,.67);
-    solid(ring(x,z,rad*.91,rad*.91,32),outer,surface+.014,surface+.065,hero?'#8e7654':'#637c70','#b1a781');
-    solid(outer,outer,surface+.065,y-.087,hero?'#b29868':'#9faf98',tones[1]);
+    solid(ring(x,z,rad*.91,rad*.91,32),outer,surface+.014,surface+.065,hero?'#8e7654':'#4d7163','#b1a781');
+    solid(outer,outer,surface+.065,y-.087,hero?'#b29868':'#8a9f90',tones[1]);
     solid(outer,lid,y-.087,y,hero?'#eed5a3':'#d3d9c0',
       glaze(sx-r,sy-r*.6,sx+r,sy+r*.68,[[0,tones[0]],[.38,tones[1]],[.63,tones[2]],[.80,tones[0]],[1,tones[2]]]));
     const lip=Array.from({length:16},(_,j)=>{const a=-2.9+j*.073;return [x+Math.cos(a)*rad*.905,y-.021,z+Math.sin(a)*rad*.905];});
@@ -377,7 +380,9 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     return positions;
   }
   function drawBoard(reserve){
-    water();lacquer();inlay();trail();
+    water();lacquer();
+    ctx.save();ctx.globalAlpha=options.length?.38:.59;inlay();ctx.restore();
+    trail();
     const display=objects.map(o=>({order:dep(o.x,o.z),draw:o.draw}));
     if(reserve.length)display.push({order:dep(rack.x,rack.z)-1,draw:reserveTray});
     display.sort((a,b)=>a.order-b.order);
@@ -394,27 +399,35 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     if(liftedSource)ctx.globalAlpha=.48;
     else castShadow(x,z,first.ground,rx/scale,ry/(tilt*scale),first.size*.83,.43);
     ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,TAU);ctx.fillStyle=teamInk[team];ctx.fill();
-    ctx.strokeStyle='#fffbee';ctx.lineWidth=Math.max(2.5,scale*.105);ctx.stroke();
-    ctx.strokeStyle=TEAMS[team].color;ctx.lineWidth=Math.max(1.4,scale*.062);ctx.stroke();
+    ctx.strokeStyle=chosen?'#163653':'#fffbee';ctx.lineWidth=chosen?Math.max(5,scale*.16):Math.max(2.2,scale*.088);ctx.stroke();
+    ctx.strokeStyle=chosen?'#96e9ff':TEAMS[team].color;ctx.lineWidth=chosen?Math.max(2.6,scale*.088):Math.max(1.2,scale*.052);ctx.stroke();
     if(chosen){
       for(const side of [-1,1]){
-        const end=cx+side*(rx+scale*.035);
-        flat([[end,cy],[end+side*scale*.16,cy-scale*.105],[end+side*scale*.16,cy+scale*.105]],'#fffbed',teamInk[team],1);
+        const end=cx+side*(rx+scale*.043),notch=Math.max(4,scale*.13);
+        flat([[end,cy],[end+side*notch,cy-notch*.73],[end+side*notch,cy+notch*.73]],'#97ebff','#193e5e',1.2);
       }
     }
     if(liftedSource){ctx.restore();return;}
     for(const a of group)pawn(a.p,a.x,a.z,a.y,a.size);
-    const font=Math.max(10,Math.min(16,scale*.235)),h=font*1.39;
+    const font=Math.max(chosen?12:10,Math.min(17,scale*.245)),h=font*(chosen?1.52:1.40);
     const numbers=group.map(a=>a.p.index+1).sort().join('·');
     const name=(first.from<0&&!carried?'대기':scale<28?TEAMS[team].mark:TEAMS[team].name)+' '+numbers;
     ctx.font='bold '+font+'px "Noto Sans CJK KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    const w=(ctx.measureText(name)?.width??font*name.length*.86)+font*.78;
+    const mark=chosen?font*.94:0;
+    const w=(ctx.measureText(name)?.width??font*name.length*.86)+font*.78+mark;
     const left=Math.max(1,Math.min(width-w-1,cx-w/2));
-    const top=Math.max(1,Math.min(height-h-1,cy+ry*.76-h*.20));
-    ctx.beginPath();ctx.arc(left+w-h/2,top+h/2,h/2,-pi/2,pi/2);
-    ctx.arc(left+h/2,top+h/2,h/2,pi/2,pi*1.5);ctx.closePath();
-    ctx.fillStyle=teamInk[team];ctx.fill();ctx.lineWidth=Math.max(1,font*.095);ctx.strokeStyle='#fffbed';ctx.stroke();
-    ctx.fillStyle='#fff';ctx.fillText(name,left+w/2,top+h*.51);
+    const top=Math.max(1,Math.min(height-h-1,cy+ry*.76-h*.21));
+    const cap=chosen?h*.28:h/2;
+    ctx.beginPath();ctx.moveTo(left+cap,top);
+    ctx.arcTo(left+w,top,left+w,top+h,cap);ctx.arcTo(left+w,top+h,left,top+h,cap);
+    ctx.arcTo(left,top+h,left,top,cap);ctx.arcTo(left,top,left+w,top,cap);ctx.closePath();
+    ctx.fillStyle=chosen?'#193f60':teamInk[team];ctx.fill();ctx.lineWidth=Math.max(1,font*.10);ctx.strokeStyle=chosen?'#b3efff':'#fffbed';ctx.stroke();
+    if(chosen){
+      const xx=left+font*.38,yy=top+h*.52;
+      ctx.beginPath();ctx.moveTo(xx,yy);ctx.lineTo(xx+font*.22,yy+font*.21);ctx.lineTo(xx+font*.65,yy-font*.27);
+      ctx.strokeStyle='#9aecff';ctx.lineWidth=Math.max(1.7,font*.17);ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
+    }
+    ctx.fillStyle='#fff';ctx.fillText(name,left+(w+mark)/2,top+h*.51);
     for(const a of group)a.tag={left,top,right:left+w,bottom:top+h};
     ctx.restore();
   }
@@ -437,7 +450,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   function drawBeam(n,elapsed,hover){
     const {cx,cy,radius:r,reach}=beamShape(n);
     const h=Math.max(1,reach*beamRise),depth=r*tilt;
-    const gold=hover?'255,182,51':'255,210,106';
+    const gold=hover?'255,160,39':'255,190,67';
     ctx.save();ctx.translate(cx,cy);
     // The footprint stays on the tile while the fluted sides grow vertically.
     ctx.save();ctx.scale(r*1.52,depth*1.52);
@@ -447,8 +460,8 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     const oval=(y,rx,ry,color,weight)=>{
       ctx.beginPath();ctx.ellipse(0,y,rx,ry,0,0,TAU);ctx.strokeStyle=color;ctx.lineWidth=weight;ctx.stroke();
     };
-    oval(0,r*1.17,depth*1.17,hover?'#704724':'#5a6551',Math.max(2,scale*.072));
-    oval(0,r*1.17,depth*1.17,hover?'#fff3a2':'#ffebae',Math.max(1,scale*.038));
+    oval(0,r*1.17,depth*1.17,hover?'#60371d':'#795029',Math.max(2.8,scale*.089));
+    oval(0,r*1.17,depth*1.17,hover?'#fff1a6':'#ffc063',Math.max(1.4,scale*.045));
     const shaft=glaze(0,depth*.42,0,-h,[[0,'rgba(255,244,170,.08)'],[.20,'rgba('+gold+','+(hover?.58:.42)+')'],[.68,'rgba(255,244,187,.28)'],[1,'rgba(255,250,219,0)']]);
     ctx.fillStyle=shaft;ctx.beginPath();ctx.moveTo(-r,0);
     ctx.lineTo(-r*.84,-h);ctx.lineTo(r*.84,-h);ctx.lineTo(r,0);
@@ -474,6 +487,71 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       }
     }
     ctx.restore();
+  }
+  function flagLayout(allowed){
+    const index=gesture?.index??selected;
+    if(index==null||!options.length)return [];
+    const font=Math.max(13,Math.min(18,scale*.34)),h=font+9;
+    ctx.font='bold '+font+'px "Noto Sans CJK KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
+    const placed=[],obstacles=[];
+    for(const actor of drawnPawns){
+      if(isLifted(actor))continue;
+      const [x,foot]=project([actor.x,actor.y,actor.z]),[,head]=project([actor.x,actor.y+1.07*actor.size,actor.z]);
+      const r=scale*.43*actor.size;
+      obstacles.push({left:x-r,top:head-r*.21,right:x+r,bottom:foot+r*.19});
+      if(actor.tag)obstacles.push(actor.tag);
+    }
+    for(const [i,n] of allowed.entries()){
+      const option=options.find(o=>o.team===activeTeam&&o.index===index&&o.to===n);
+      const fallback=n===0?'골인':allowed.length>1?'길 '+(i+1):'도착';
+      const label=typeof option?.label==='string'?option.label.trim().slice(0,6)||fallback:fallback;
+      const w=Math.ceil((ctx.measureText(label)?.width??font*label.length)+font*.86+5);
+      const {cx,cy,radius,reach}=beamShape(n);
+      const rise=Math.max(12,Math.min(reach*.74,scale*1.13)),side=radius*.92+w*.45;
+      const candidates=[
+        [cx,cy-rise-h*.51],[cx-side,cy-rise*.70],[cx+side,cy-rise*.70],
+        [cx-side,cy+radius*.54],[cx+side,cy+radius*.54],[cx,cy+radius*tilt+h*.67]
+      ];
+      let best=null,bestCost=Infinity;
+      for(const [rank,[x,y]] of candidates.entries()){
+        const left=Math.max(3,Math.min(width-w-3,x-w/2)),top=Math.max(3,Math.min(height-h-3,y-h/2));
+        const flag={n,label,font,left,top,right:left+w,bottom:top+h,cx,cy,radius};
+        let cost=rank*3+Math.abs(left+w/2-x)+Math.abs(top+h/2-y);
+        for(const rect of [...obstacles,...placed]){
+          const overlapX=Math.min(flag.right+3,rect.right)-Math.max(flag.left-3,rect.left);
+          const overlapY=Math.min(flag.bottom+3,rect.bottom)-Math.max(flag.top-3,rect.top);
+          if(overlapX>0&&overlapY>0)cost+=overlapX*overlapY*4;
+        }
+        // Keep the rim of each legal square visible, including its neighbour at a fork.
+        for(const node of allowed){
+          const beam=beamShape(node),rad=beam.radius*.74;
+          const dx=Math.max(flag.left-beam.cx,0,beam.cx-flag.right);
+          const dy=Math.max(flag.top-beam.cy,0,beam.cy-flag.bottom)/tilt;
+          cost+=Math.max(0,rad-Math.hypot(dx,dy))*7;
+        }
+        if(cost<bestCost){best=flag;bestCost=cost;}
+      }
+      placed.push(best);
+    }
+    return placed;
+  }
+  function drawFlag(flag,hover){
+    const {left:l,top:t,right:r,bottom:b,cx,cy,radius,font,label}=flag;
+    const h=b-t,mid=(t+b)/2,edge='#6b371c';
+    const joinX=Math.max(l+h*.22,Math.min(r-h*.28,cx));
+    const joinY=cy>mid?b:t;
+    ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.beginPath();ctx.moveTo(cx,cy-radius*tilt*.30);ctx.lineTo(joinX,joinY);
+    ctx.lineWidth=3.2;ctx.strokeStyle=edge;ctx.stroke();ctx.lineWidth=1.55;ctx.strokeStyle='#ffc469';ctx.stroke();
+    const pts=[[l+3,t],[r-3,t],[r,t+3],[r-h*.12,mid],[r,b-3],[r-3,b],[l+3,b],[l,b-3],[l,t+3]];
+    flat(pts.map(([x,y])=>[x,y+1.3]),'rgba(63,39,23,.23)');
+    flat(pts,hover?'#ffb340':'#ffc06a',edge,Math.max(1.8,font*.13));
+    ctx.fillStyle='#452912';ctx.font='bold '+font+'px "Noto Sans CJK KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,(l+r)/2-1,mid);
+    ctx.restore();
+  }
+  function flagAt(x,y,allowed){
+    return flags.find(f=>allowed.includes(f.n)&&x>=f.left-1&&x<=f.right+1&&y>=f.top-1&&y<=f.bottom+1);
   }
   function paint(time) {
     frame=0;if(dead||!width||!height)return;
@@ -520,6 +598,8 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     const over=gesture?.moved?destinationAt(gesture.x,gesture.y,allowed):null;
     for(const n of allowed)drawBeam(n,elapsed,n===over);
     drawPawns();
+    if(!gesture?.moved||!flags.length||turnStart)flags=flagLayout(allowed);
+    for(const flag of flags)drawFlag(flag,flag.n===over);
     if(gesture?.moved)drawLifted();
     moves=moves.filter(m=>time-m.start<265);
     if(turnStart||moves.length||(allowed.length&&elapsed<beamMs))schedule();
@@ -527,7 +607,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   function schedule(){if(!dead&&!frame)frame=requestAnimationFrame(paint);}
   function resize() {
     const rect=canvas.getBoundingClientRect();width=rect.width;height=rect.height;
-    backdrop=null;
+    backdrop=null;flags=[];
     if(gesture){gesture.x=gesture.clientX-rect.left;gesture.y=gesture.clientY-rect.top;}
     const ratio=Math.min(window.devicePixelRatio||1,2);
     const w=Math.max(1,Math.round(width*ratio)),h=Math.max(1,Math.round(height*ratio));
@@ -559,6 +639,8 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     return d<=Math.max(22,.42*actor.size*scale)?d+.04*Math.abs(py-(head+base)/2):Infinity;
   }
   function destinationAt(px,py,allowed){
+    const flag=flagAt(px,py,allowed);
+    if(flag)return flag.n;
     let nearest=null,distance=Math.max(22,scale*.78);
     for(const n of allowed){
       const [x,z]=nodes[n],[sx,sy]=project([x,targetHeight(n),z]);
@@ -622,13 +704,22 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     if(canvas.style)canvas.style.cursor='';
     schedule();
   }
+  function canSwitchHere(option,x,y,allowed){
+    if(!option||option.index===selected||flagAt(x,y,allowed))return false;
+    return drawnPawns.some(actor=>{
+      if(optionFor(actor)?.index!==option.index)return false;
+      const t=actor.tag;
+      if(t&&x>=t.left&&x<=t.right&&y>=t.top&&y<=t.bottom)return true;
+      return !allowed.includes(actor.from)&&pawnDistance(actor,x,y)<scale*.29*actor.size;
+    });
+  }
   function pointerDown(event){
     if(!options.length||gesture||event.isPrimary===false||(event.button!=null&&event.button!==0))return;
     skipClick=null;
     const [x,y]=local(event);
-    if(selected!=null&&destinationAt(x,y,destinationNodes())!=null)return;
-    const option=pieceAt(x,y);
+    const allowed=destinationNodes(),option=pieceAt(x,y);
     if(!option)return;
+    if(selected!=null&&destinationAt(x,y,allowed)!=null&&!canSwitchHere(option,x,y,allowed))return;
     const id=event.pointerId??0;
     const g={...option,id,x,y,startX:x,startY:y,clientX:event.clientX,clientY:event.clientY,moved:false};
     gesture=g;selected=option.index;
@@ -671,8 +762,8 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   function tap(event){
     const [x,y]=local(event);
     if(skipClick&&performance.now()<=skipClick.until&&Math.hypot(x-skipClick.x,y-skipClick.y)<32){skipClick=null;return;}
-    const node=destinationAt(x,y,destinationNodes()),option=pieceAt(x,y);
-    if(option&&(selected==null||node==null)){
+    const allowed=destinationNodes(),node=destinationAt(x,y,allowed),option=pieceAt(x,y);
+    if(option&&(selected==null||node==null||canSwitchHere(option,x,y,allowed))){
       selected=option.index;choosePawn?.(option.index);schedule();return;
     }
     if(node!=null)chooseDestination?.(node);
@@ -687,7 +778,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       canvas.classList.toggle('choosing',targets.length>0||options.length>0);schedule();
     },
     setMoves(available=[],selectedIndex=null){
-      backdrop=null;
+      backdrop=null;flags=[];
       options=available.filter(o=>o&&TEAMS[o.team]&&[0,1].includes(o.index)&&(o.from===-1||nodes[o.from])&&nodes[o.to]);
       selected=Number.isInteger(selectedIndex)?selectedIndex:null;
       if(!options.length&&!targets.length){beamKey='';beamRise=0;}
@@ -697,7 +788,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       schedule();
     },
     setState(next={}) {
-      backdrop=null;
+      backdrop=null;flags=[];
       const list=Array.isArray(next.pieces)?next.pieces.filter(p=>p&&TEAMS[p.team]&&nodes[p.node]).map(p=>({...p})):[];
       if(next.snap)moves=[];
       else if(!reduced()){
@@ -711,12 +802,12 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
         }
       }
       reserves=Array.isArray(next.waiting)?next.waiting.filter(p=>p&&TEAMS[p.team]&&[0,1].includes(p.index)).map(p=>({...p})):[];
-      pieces=list;activeTeam=next.activeTeam;
+      pieces=list;activeTeam=next.activeTeam;playMode=next.mode==='easy'?'easy':'island';
       if(gesture&&gesture.team!==activeTeam)closeGesture(true);
       schedule();
     },
     rotate(direction=1) {
-      backdrop=null;
+      backdrop=null;flags=[];
       turnFrom=angle;turnTo+=(direction<0?-1:1)*pi/2;
       if(reduced()){angle=turnTo;turnStart=0;} else turnStart=performance.now();
       schedule();

@@ -51,7 +51,8 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   globalThis.requestAnimationFrame=f=>{frames.set(++fid,f);return fid;};
   globalThis.cancelAnimationFrame=id=>frames.delete(id);
   const gradient=()=>({addColorStop(){}});
-  const ctx=new Proxy({createLinearGradient:gradient,createRadialGradient:gradient},{get(target,key){return target[key]??(()=>{});}});
+  const marks=new Map();
+  const ctx=new Proxy({createLinearGradient:gradient,createRadialGradient:gradient,fillText:(word,x,y)=>marks.set(word,[x,y])},{get(target,key){return target[key]??(()=>{});}});
   w.HTMLCanvasElement.prototype.getContext=()=>ctx;
   w.HTMLCanvasElement.prototype.getBoundingClientRect=()=>({width:390,height:500,left:0,top:0});
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
@@ -61,26 +62,23 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   const tick=()=>{const queued=[...frames.values()];frames.clear();queued.forEach(f=>f(performance.now()+4000));};
   const until=async(pred)=>{for(let i=0;i<100;i++){if(pred())return;await new Promise(r=>setTimeout(r,20));}assert.fail('state did not arrive');};
   function setFaces(n){let i=0;t.mock.method(Math,'random',()=>i++%4<n?0.1:0.9);}
-  function chooseMove(which){
-    assert.equal(first().textContent,'이동 선택');
-    first().click();
-    const choices=doc.querySelectorAll('#dialog-body .choice');
-    assert.ok(choices.length>which);
-    choices[which].click();
-  }
+  const selected=()=>doc.querySelector('#pawn-picker [aria-pressed="true"]')?.dataset.pawn;
   await import('../games/yut/play.mjs');
   assert.equal(first().textContent,'윷 던지기');
   const rack=doc.getElementById('rack-canvas');
   assert.equal(text('rack-title'),'던질 윷');
   assert.equal(rack.width,390);
   assert.equal(rack.height,500);
-  setFaces(1);first().click();
+  assert.match(text('goals'),/쉬운 놀이/);
+  setFaces(1);first().focus();first().click();
   assert.equal(doc.getElementById('toss-layer').hidden,false);assert.equal(text('outcome'),'');assert.ok(first().disabled);
   tick();
-  await until(()=>first().textContent==='이동 선택');
+  await until(()=>first().textContent==='1칸 이동');
   await new Promise(r=>setTimeout(r,350));
   assert.match(text('team-title'),/산호/);
-  assert.match(text('note'),/끌어/);
+  assert.equal(doc.activeElement,first());
+  assert.match(text('note'),/금빛 칸/);
+  assert.equal(selected(),'0');
   assert.equal(text('outcome'),'도 · 1칸'); assert.ok(doc.getElementById('toss-layer').hidden);
   assert.equal(rack.getAttribute('aria-label'),'던진 윷 네 가락 · 도 · 1칸');
   tick();
@@ -89,45 +87,47 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
     const e=new w.MouseEvent(type,{clientX:x,clientY:y,button:0,bubbles:true,cancelable:true});
     Object.defineProperty(e,'pointerId',{value:1});canvas.dispatchEvent(e);
   }
-  // With both pieces still waiting, tapping the highlighted first square opens
-  // the two legal choices without committing either. Use that hit to drop #2.
-  let destination;
-  for(let y=0;y<500&&!destination;y+=6)for(let x=0;x<390&&!destination;x+=6){
-    pointer('click',x,y);if(doc.querySelector('dialog').open)destination=[x,y];
-  }
-  assert.ok(destination);
-  doc.getElementById('close').click();
-  tick();
-  let held=false;
-  for(let y=0;y<500&&!held;y+=6)for(let x=0;x<390&&!held;x+=6){
-    pointer('pointerdown',x,y);
-    held=text('note').startsWith('2번 말');
-    if(!held)pointer('pointercancel',x,y);
-  }
-  assert.ok(held);
-  assert.match(text('note'),/2번 말/);
+  // The suggested piece can be changed by grabbing its teammate on the board.
+  assert.ok(marks.has('대기 2'));assert.ok(marks.has('도착'));
+  pointer('pointerdown',...marks.get('대기 2'));
+  assert.equal(selected(),'1');
+  const destination=marks.get('도착');
   pointer('pointermove',...destination);tick();pointer('pointerup',...destination);
   await until(()=>text('team-title').includes('바다')&&first().textContent==='윷 던지기');
   prefs.matches=true;setFaces(2);first().click();
   assert.ok(doc.getElementById('toss-layer').hidden);
-  chooseMove(0);
-  await until(()=>text('team-title').includes('산호')&&first().textContent==='윷 던지기');
+  assert.equal(first().textContent,'2칸 이동');
+  first().click();
   assert.equal(rack.getAttribute('aria-label'),'던진 윷 네 가락 · 개 · 2칸');
+  setFaces(4);first().click();
+  assert.equal(selected(),'1');
+  first().click();
+  assert.match(text('team-title'),/산호/);
   setFaces(1);first().click();
-  chooseMove(0);
+  assert.deepEqual([...doc.querySelectorAll('#actions button')].map(b=>b.textContent),['지름길로 이동','바깥길로 이동']);
+  const otherPawn=doc.querySelector('#pawn-picker [data-pawn="0"]');
+  otherPawn.focus();otherPawn.click();
+  assert.equal(selected(),'0');assert.equal(first().textContent,'1칸 이동');
+  assert.equal(doc.activeElement.dataset.pawn,'0');
+  doc.querySelector('#pawn-picker [data-pawn="1"]').click();tick();
+  // A single tap of the sign commits the selected route without a dialog.
+  pointer('click',...marks.get('지름길'));
+  assert.ok(!doc.querySelector('dialog').open);
   assert.ok(text('team-title').includes('바다'));
   doc.getElementById('team-title').click();assert.ok(doc.querySelector('dialog').open);
   assert.equal(doc.querySelectorAll('.score-card').length,2);
   doc.getElementById('close').click();doc.getElementById('settings').click();
   [...doc.querySelectorAll('#dialog-body button')].find(b=>b.textContent==='놀이 방법').click();
-  assert.deepEqual([...doc.querySelectorAll('.effect-row b')].map(el=>el.textContent),['바위턱','소용돌이','순풍']);
+  assert.equal(doc.querySelectorAll('.effect-row').length,0);
   doc.getElementById('close').click();doc.getElementById('settings').click();
   const pair=doc.getElementById('zodiac-pair');
   assert.equal(pair.options.length,12);
   pair.value='11';pair.dispatchEvent(new w.Event('change'));
+  doc.getElementById('game-mode').value='island';
   [...doc.querySelectorAll('#dialog-body button')].find(b=>b.textContent==='한 기기에서 새로 시작').click();
   [...doc.querySelectorAll('#dialog-body button')].find(b=>b.textContent==='계속하기').click();
   doc.getElementById('team-title').click();
+  assert.match(text('goals'),/장애물 놀이/);
   assert.match(doc.querySelector('.score-card').textContent,/1번 말 · 돼지/);
   assert.match(doc.querySelector('.score-card').textContent,/2번 말 · 쥐/);
 });
