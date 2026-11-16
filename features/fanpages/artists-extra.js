@@ -292,7 +292,7 @@
       id: 'hearts2hearts', name: 'Hearts2Hearts', korean: '하츠투하츠', category: 'girl', fan: 'S2U', agency: 'SM Entertainment',
       members: ['지우', '카르멘', '유하', '스텔라', '주은', '에이나', '이안', '예온'],
       debut: '2025.02.24', debutWork: 'The Chase', songs: ['The Chase', 'Butterflies'],
-      checkedAt: '2026.11.13',
+      checkedAt: '2026.11.16',
       concept: '서로 다른 마음을 이어 하나의 하모니를 만드는 여덟 멤버.',
       official: 'https://hearts2heartsofficial.jp/', youtube: 'https://www.youtube.com/@hearts2hearts.official',
       photo: '260221 HEARTS2HEARTS @ 2026 Fanmeeting HEARTS2HOUSE.jpg', photoLabel: 'HEARTS2HOUSE 팬미팅', photoYear: '2026', credit: 'sublimitas viii', license: 'CC BY-SA 4.0',
@@ -321,6 +321,8 @@
       ],
       schedules: [{ title: '일본 공식 일정·공지', sub: '팬 이벤트·공연·발매·변경 확인', href: 'https://hearts2heartsofficial.jp/news/' }],
       news: [
+        { date: '2026.11.14', tag: '수상', title: 'MMA2026 TOP10·글로벌 TOP10·글로벌 임팩트 아티스트 3관왕', href: 'https://www.sportsworldi.com/newsView/20261114506970' },
+        { date: '2026.11.08', tag: '수상', title: 'KGMA2026 베스트 뮤직·글로벌 핫스타상 2관왕', href: 'https://isplus.com/article/view/isp202611080248' },
         { date: '2026.10.26', tag: '굿즈', title: 'ICONIC HEART 한국어판 공식 MD 예약 판매 안내 · 11.01 접수 종료', href: 'https://hearts2heartsofficial.jp/news/20261026/' },
         { date: '2026.09.08', tag: '활동', title: '티니핑 애니메이션 엔딩곡 발표·11.21 ANIMAX MUSIX 출연 확정', href: 'https://hearts2heartsofficial.jp/news/2026090802/' },
         { date: '2026.11.06', tag: '굿즈', title: 'READY! S2U 공식 MD 공개 · 온라인 11.12 20:00 판매 시작', href: 'https://hearts2heartsofficial.jp/news/20261106/' },
