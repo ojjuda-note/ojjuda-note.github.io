@@ -63,7 +63,7 @@ test('only one square can send a pawn one step back, including saved boards with
   g.eventTiles={};
   assert.deepEqual(backSquares(),[4]);delete g.islandTiles;assert.deepEqual(backSquares(),[3]);
 });
-test('four sticks give five outcomes and invalid or repeated actions cannot advance the turn',()=>{
+test('regular throws keep their movement and invalid or repeated actions cannot advance the turn',()=>{
   for(let n=1;n<=5;n++){
     const s=roll(ordinary(),faces(n));assert.equal(s.steps,n);
     if(n>=4){assert.equal(s.phase,'roll');assert.equal(move(s,0),s);continue;}
@@ -71,6 +71,48 @@ test('four sticks give five outcomes and invalid or repeated actions cannot adva
     assert.equal(move(s,1,true),s);
     const next=move(s,0);assert.equal(next.team,n>=4?0:1);
   }
+});
+test('only the marked stick alone changes do into backdo',()=>{
+  for(let bits=0;bits<16;bits++){
+    const sticks=Array.from({length:4},(_,i)=>(bits>>i)&1);
+    const g=ordinary();g.pawns[0][0]=[1,2,3];
+    const result=roll(g,sticks),count=sticks.reduce((sum,n)=>sum+n,0);
+    assert.equal(result.steps,bits===8?-1:count||5);
+    if(bits===8){
+      assert.deepEqual(moves(result),[{index:0,shortcut:false,to:2}]);
+      assert.equal(move(result,1),result);
+      assert.deepEqual(move(result,0).pawns[0][0],[1,2]);
+    }
+  }
+});
+test('backdo retraces the actual shortcut, carries a stack and grants a capture throw',()=>{
+  const g=ordinary();const trail=[1,2,3,4,5,20,21,22];
+  g.pawns[0]=[[...trail],[...trail],[],[FINISH]];
+  g.pawns[1][0]=trail.slice(0,-1);
+  const rolled=roll(g,[0,0,0,1]);
+  assert.deepEqual(moves(rolled),[{index:0,shortcut:false,to:21}]);
+  const action=computerAction(rolled);
+  assert.deepEqual(action,{type:'move',index:0,steps:-1,shortcut:false});
+  const next=act(rolled,action);
+  assert.deepEqual(next.pawns[0].slice(0,2),[trail.slice(0,-1),trail.slice(0,-1)]);
+  assert.deepEqual(next.pawns[1][0],[]);assert.equal(next.team,0);
+  assert.equal(next.lastMove.captured,1);assert.deepEqual(next.lastMove.frames,[21]);
+  const first=ordinary();first.pawns[0][0]=[1];first.pawns[1][0]=[1];
+  const back=move(roll(first,[0,0,0,1]),0);
+  assert.deepEqual(back.lastMove.frames,[-1]);assert.deepEqual(back.pawns[0][0],[]);assert.deepEqual(back.pawns[1][0],[1]);
+});
+test('an unusable backdo waits for other banked moves and passes only when none can be played',()=>{
+  const sticks=[0,0,0,1];const g=ordinary();
+  const pass=roll(g,sticks);assert.equal(pass.phase,'roll');assert.equal(pass.team,1);
+  assert.deepEqual(pass.pendingRolls,[]);assert.equal(pass.passedBackdo,true);
+  const waiting=roll(roll(g,faces(4)),sticks);
+  assert.deepEqual(waiting.pendingRolls,[4,-1]);assert.deepEqual(moves(waiting,-1),[]);
+  const out=move(waiting,1,false,4);assert.deepEqual(out.pendingRolls,[-1]);
+  assert.deepEqual(moves(out),[{index:1,shortcut:false,to:3}]);
+  assert.equal(position(move(out,1).pawns[0][1]),3);
+  const reset=move({...waiting,eventTiles:{4:'home'}},0,false,4);
+  assert.equal(reset.team,1);assert.equal(reset.phase,'roll');assert.deepEqual(reset.pendingRolls,[]);
+  const legacy={...out,steps:1,pendingRolls:[1]};assert.deepEqual(restoreGame(legacy).pendingRolls,[1]);
 });
 test('yut, mo and geol can be spent in any order on different pawns after all throws',()=>{
   let g=ordinary(),original=g.pawns;
@@ -215,7 +257,8 @@ test('every 2–8 team game reaches a winner within bounded play',()=>{
     let g=newGame(n,2,mode,2+run%3),count=0;
     while(g.phase!=='won'&&count++<3000){
       if(g.phase==='roll'){g=roll(g,Array.from({length:4},()=>+(rnd()<.5)));continue;}
-      const steps=g.pendingRolls[Math.floor(rnd()*g.pendingRolls.length)],options=moves(g,steps);
+      const usable=g.pendingRolls.filter(steps=>moves(g,steps).length);
+      const steps=usable[Math.floor(rnd()*usable.length)],options=moves(g,steps);
       assert.ok(options.length);const m=options[Math.floor(rnd()*options.length)];g=move(g,m.index,m.shortcut,steps);
       for(const team of g.pawns)for(const p of team)for(const node of p)assert.ok(node>=0&&node<=29);
     }

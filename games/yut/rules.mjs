@@ -13,7 +13,8 @@ export const TEAMS = [
 ];
 export const validTeamCount=n=>Number.isInteger(n)&&n>=2&&n<=TEAMS.length;
 export const defaultTeamAnimal=(team,offset=2)=>(offset+TEAMS[team].animalOffset)%12;
-export const YUT = ['', '도', '개', '걸', '윷', '모'];
+export const BACK_DO_STICK=3, BACK_DO_LABEL='한 칸 뒤로';
+export const YUT = Object.assign(['', '도', '개', '걸', '윷', '모'],{'-1':'빽도'});
 const fork = new Set([5,10,22]);
 
 export const EVENT_NAMES=Object.freeze({back:'빽도',carry:'업기',home:'꽝'});
@@ -75,13 +76,19 @@ export function restoreGame(state){
 export function throwSticks(random=Math.random) {
   return Array.from({length:4},()=>random()<0.5?1:0);
 }
+function passUnusedBackdo(state){
+  if(state.phase!=='move'||singleResult(state)!==-1||moves(state,-1).length)return state;
+  return {...state,phase:'roll',pendingRolls:[],team:(state.team+1)%state.pawns.length,turn:state.turn+1,
+    passedBackdo:true,note:'물러날 말이 없어 차례를 넘겨요.'};
+}
 export function roll(state,sticks) {
   if (state.phase!=='roll'||!Array.isArray(sticks)||sticks.length!==4||!sticks.every(n=>n===0||n===1)) return state;
-  const steps=sticks.reduce((sum,n)=>sum+n,0)||5;
+  const flats=sticks.reduce((sum,n)=>sum+n,0);
+  const steps=flats===1&&sticks[BACK_DO_STICK]===1?-1:flats||5;
   const revision=state.revision+1,bonus=steps>=4;
-  return {...state,revision,sticks,steps,throwSeed:sticks.reduce((seed,n)=>31*seed+n,revision*11+state.team),
+  return passUnusedBackdo({...state,passedBackdo:false,revision,sticks,steps,throwSeed:sticks.reduce((seed,n)=>31*seed+n,revision*11+state.team),
     pendingRolls:[...pendingRolls(state),steps],lastMove:null,phase:bonus?'roll':'move',
-    note:bonus?'한 번 더 던지세요.':'움직일 말을 고르세요.'};
+    note:bonus?'한 번 더 던지세요.':'움직일 말을 고르세요.'});
 }
 function nextNode(trail,shortcut) {
   const n=position(trail);
@@ -97,6 +104,9 @@ function nextNode(trail,shortcut) {
 }
 function advance(trail,steps,shortcut) {
   const next=[...trail], frames=[];
+  if(steps===-1){
+    next.pop();return {next,frames:[position(next)]};
+  }
   for(let step=0;step<steps&&position(next)!==FINISH;step++){
     const node=nextNode(next,step===0&&shortcut);
     next.push(node); frames.push(node);
@@ -108,10 +118,10 @@ export function moves(state,steps=singleResult(state)) {
   const team=state.pawns[state.team], options=[];
   for(let index=0;index<team.length;index++){
     const trail=team[index], from=position(trail);
-    if(from===FINISH||(from!==HOME&&team.findIndex(p=>position(p)===from)!==index)) continue;
+    if(from===FINISH||(steps===-1&&from===HOME)||(from!==HOME&&team.findIndex(p=>position(p)===from)!==index)) continue;
     const direct=advance(trail,steps,false);
     options.push({index,shortcut:false,to:position(direct.next)});
-    if(fork.has(from)){
+    if(steps>0&&fork.has(from)){
       const cut=advance(trail,steps,true);
       if(cut.frames.join(',')!==direct.frames.join(',')) options.push({index,shortcut:true,to:position(cut.next)});
     }
@@ -166,9 +176,9 @@ export function move(state,index,shortcut=false,steps=singleResult(state)) {
   if(!event&&at!==HOME&&at!==FINISH&&stackSize>moving.length)notes.push('말 '+stackSize+'개가 함께 가요.');
   if(won)notes.push('말 '+team.length+'개 모두 골인!');
   else if(extra)notes.push('한 번 더 던져요.');
-  return {...state,pawns,revision:state.revision+1,phase,winner:won?state.team:null,pendingRolls:won?[]:remaining,
+  return passUnusedBackdo({...state,passedBackdo:false,pawns,revision:state.revision+1,phase,winner:won?state.team:null,pendingRolls:won?[]:remaining,
     team:keepTurn?state.team:(state.team+1)%pawns.length,turn:state.turn+(keepTurn?0:1),
-    lastMove:{team:state.team,steps,indices:moving,frames,from,landing,event:event??null,pickedUp,captured},note:notes.join(' ')};
+    lastMove:{team:state.team,steps,indices:moving,frames,from,landing,event:event??null,pickedUp,captured},note:notes.join(' ')});
 }
 // Estimate the remaining path with the same forks and center-entry rule as a real move.
 function stepsLeft(trail){

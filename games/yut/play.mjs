@@ -1,9 +1,9 @@
-import {roundSummary} from './results.mjs?v=1';
-import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=14';
-import {createBoard,PAWN_HOP_MS} from './board.mjs?v=24';
-import {createToss,drawRack} from './toss.mjs?v=8';
+import {roundSummary} from './results.mjs?v=2';
+import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=15';
+import {createBoard,PAWN_HOP_MS} from './board.mjs?v=25';
+import {createToss,drawRack} from './toss.mjs?v=9';
 import {createTableSounds} from './sound.mjs?v=4';
-import {openRoom,roomCode} from './room.mjs?v=14';
+import {openRoom,roomCode} from './room.mjs?v=15';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=5';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
@@ -63,7 +63,10 @@ function animalIcon(team,index,offset,teamAnimals,numbered=true){
 const layer=(s)=>s.pawns.flatMap((team,t)=>team.flatMap((trail,i)=>{
   const node=position(trail);return node===HOME||node===FINISH?[]:[{team:t,index:i,node}];
 }));
-function turnTeam(s){return busy&&!casting&&s.lastMove?s.lastMove.team:s.team;}
+function turnTeam(s){
+  if(casting&&s.passedBackdo)return (s.team+s.pawns.length-1)%s.pawns.length;
+  return busy&&!casting&&s.lastMove?s.lastMove.team:s.team;
+}
 function draw(s,override,snap=false){
   const pieces=override??layer(s);
   const waiting=s.pawns.flatMap((team,t)=>team.flatMap((trail,i)=>
@@ -90,7 +93,8 @@ function standings(){
   });const scoreboard=element('div',undefined,'scoreboard');scoreboard.append(...rows);body.append(scoreboard);
 }
 const delay=ms=>new Promise(done=>setTimeout(done,ms));
-const targetTile=m=>m.to===FINISH?0:m.to;
+const targetTile=m=>m.to===FINISH||m.to===HOME?0:m.to;
+const distanceLabel=steps=>steps===-1?'뒤로 1칸':steps+'칸';
 function canMovePiece(){
   return !game.computerTeams?.includes(game.team)&&game.phase==='move'&&!busy&&!pendingRoom&&!dialog.open&&
     (!net||!!(room&&net.game&&net.connected&&net.seat===game.team));
@@ -100,7 +104,10 @@ function allMoves(s){
   return [...new Set(pendingRolls(s))].flatMap(steps=>moves(s,steps).map(m=>({...m,steps})));
 }
 function choosePawn(index){
-  if(!canMovePiece()||!allMoves(game).some(m=>m.index===index))return;
+  if(!canMovePiece())return;
+  const choices=allMoves(game).filter(m=>m.index===index);
+  if(!choices.length)return;
+  if(selectedSteps&&!choices.some(m=>m.steps===selectedSteps))selectedSteps=null;
   selectedPawn=index;pawnPicked=true;
   renderHUD();
 }
@@ -126,8 +133,8 @@ function chooseDestination(tile,index=null){
   for(const m of choices){
     const from=position(s.pawns[s.team][m.index]);
     const who=from===HOME?'새 말':(m.index+1)+'번 말';
-    const route=m.to===FINISH?'골인':m.to===0?'마지막 칸':choices.some(o=>o.index===m.index&&o.steps===m.steps&&o.shortcut!==m.shortcut)?(m.shortcut?'지름길':'바깥길'):'';
-    const name=who+' · '+YUT[m.steps]+' '+m.steps+'칸'+(route?' · '+route:'');
+    const route=m.to===FINISH?'골인':m.to===HOME?'대기석':m.to===0?'마지막 칸':choices.some(o=>o.index===m.index&&o.steps===m.steps&&o.shortcut!==m.shortcut)?(m.shortcut?'지름길':'바깥길'):'';
+    const name=who+' · '+YUT[m.steps]+' '+distanceLabel(m.steps)+(route?' · '+route:'');
     body.append(button(name,'secondary',()=>{
       closePanel();if(game===s)place(m,dragged);
     }));
@@ -145,7 +152,7 @@ function destinationMenu(s,options){
     body.append(button(labels+' · '+rolls,'secondary',()=>{closePanel();if(game===s)chooseTile(tile);}));
   }
 }
-function result(s){return s.sticks?YUT[s.steps]+' · '+s.steps+'칸':'';}
+function result(s){return s.sticks?YUT[s.steps]+' · '+distanceLabel(s.steps):'';}
 function bankCounts(s){
   const counts=new Map();
   for(const steps of pendingRolls(s))counts.set(steps,(counts.get(steps)??0)+1);
@@ -171,6 +178,7 @@ function showBonus(s){
   bonusTimer=setTimeout(clearBonus,1500);
 }
 function moveNotice(s){
+  if(s.passedBackdo)return s.note;
   const move=s.lastMove;
   if(!move||s.phase!=='roll')return '';
   const parts=[];
@@ -208,7 +216,7 @@ async function showState(s,animate=true){
   if(panel==='scores'&&dialog.open)standings();
   if(casting){
     draw(s);
-    $('toss-label').textContent=TEAMS[s.team].name+' 팀 · 윷 던지기';
+    $('toss-label').textContent=TEAMS[previous.team].name+' 팀 · 윷 던지기';
     $('toss-layer').hidden=false;
     let settled=false;
     const landed=()=>{
@@ -302,6 +310,7 @@ function scheduleComputer(){
   },s.phase==='roll'?680:850);
 }
 function destinationLabel(s,m,choices){
+  if(m.to===HOME)return '대기석';
   if(m.to===FINISH)return '골인';
   if(choices.some(o=>o.index===m.index&&o.steps===m.steps&&o.shortcut!==m.shortcut)){
     return m.shortcut?'지름길':position(s.pawns[s.team][m.index])===22?'다른 길':'바깥길';
@@ -310,7 +319,7 @@ function destinationLabel(s,m,choices){
   if(effect)return EVENT_NAMES[effect];
   if(s.pawns.some((p,t)=>t!==s.team&&p.some(trail=>position(trail)===m.to)))return '잡기';
   if(s.pawns[s.team].some((trail,i)=>i!==m.index&&position(trail)===m.to))return '합류';
-  return '도착';
+  return m.steps===-1?'뒤로':'도착';
 }
 function renderReserve(s,team,options,lobby){
   $('reserve').hidden=!!lobby;
@@ -402,25 +411,26 @@ function moveControls(s,options,steps){
   const paths=options.filter(o=>o.index===selectedPawn&&o.steps===steps).sort((a,b)=>Number(b.shortcut)-Number(a.shortcut));
   for(const [i,m] of paths.entries()){
     const cue=destinationLabel(s,m,options);
-    const label=cue==='골인'?'골인하기':paths.length>1?cue+'로 이동':steps+'칸 이동';
+    const label=m.to===HOME?'대기석으로':cue==='골인'?'골인하기':paths.length>1?cue+'로 이동':distanceLabel(steps)+' 이동';
     const eventName=EVENT_NAMES[tileEffect(s,m.to)];
     const action=button(eventName?label+' · '+eventName:label,i?'secondary route-btn':'primary advance-btn',()=>{if(game===s)place(m);});
     action.setAttribute('aria-label',action.textContent+' · '+nodeName(m.to));actions.append(action);
   }
 }
-function resultControls(s,steps){
+function resultControls(s,steps,options){
   const holder=$('result-picker'),title=$('move-result'),counts=bankCounts(s);
   const focused=holder.contains(document.activeElement);
   holder.replaceChildren();holder.hidden=counts.size<2;title.hidden=!holder.hidden;
   if(holder.hidden){
-    title.textContent=YUT[steps]+' · '+steps+'칸'+(counts.get(steps)>1?' ×'+counts.get(steps):'');
+    title.textContent=YUT[steps]+' · '+distanceLabel(steps)+(counts.get(steps)>1?' ×'+counts.get(steps):'');
     return;
   }
   for(const [value,count] of counts){
-    const chip=button(YUT[value]+' '+value+'칸'+(count>1?' ×'+count:''),'result-choice',()=>{
+    const chip=button(YUT[value]+' '+distanceLabel(value)+(count>1?' ×'+count:''),'result-choice',()=>{
       if(game!==s||!canMovePiece())return;
       selectedSteps=value;renderHUD();
     });
+    chip.disabled=!options.some(m=>m.steps===value);
     chip.setAttribute('aria-pressed',String(steps===value));holder.append(chip);
   }
   if(focused)holder.querySelector('[aria-pressed=true]')?.focus({preventScroll:true});
@@ -436,9 +446,10 @@ function renderHUD(){
   actions.replaceChildren();
   const moving=canMovePiece(),steps=currentSteps();
   const options=s.phase==='move'&&!busy&&!pendingRoom&&!lobby&&!dialog.open?allMoves(s):[];
-  if(moving&&steps&&options.length&&!options.some(o=>o.index===selectedPawn)){
-    const onBoard=options.find(o=>position(s.pawns[s.team][o.index])!==HOME);
-    selectedPawn=(onBoard??options[0]).index;
+  if(moving&&steps&&!options.some(o=>o.index===selectedPawn&&o.steps===steps)){
+    const eligible=options.filter(o=>o.steps===steps);
+    const preferred=eligible.find(o=>position(s.pawns[s.team][o.index])!==HOME)??eligible[0];
+    selectedPawn=preferred?.index??null;pawnPicked=false;
   }
   renderReserve(s,team,moving?options:[],lobby);
   const manyRolls=bankCounts(s).size>1;
@@ -452,7 +463,7 @@ function renderHUD(){
   if(moving)$('board').setAttribute('aria-description','금빛 칸을 누르거나 말을 끌어 놓으세요.');
   else $('board').removeAttribute('aria-description');
   if(moving){
-    resultControls(s,steps);moveControls(s,options,steps);
+    resultControls(s,steps,options);moveControls(s,options,steps);
   }else if(lobby)actions.append(button('대기실 열기','primary',lobbyPanel));
   else if(s.phase==='won')actions.append(button('결과 보기','primary',()=>showResult(true),busy));
   else{
@@ -508,9 +519,10 @@ function rules(){
   list.append(element('li','윷이나 모가 나오면 한 번 더 던져요.'),element('li','다 던지면 갈 수 있는 칸이 모두 빛나요. 원하는 칸을 누르세요.'));
   const more=element('details',undefined,'game-details');
   more.append(element('summary','자세한 규칙'),
+    element('p','‘한 칸 뒤로’가 적힌 윷만 평평한 면이 위로 나오면 빽도예요. 판 위의 말 하나가 왔던 길로 한 칸 물러나요. 첫 칸에서는 대기석으로 돌아가요.'),
     element('p','도·개·걸·윷·모는 1~5칸이에요. 다른 말을 쓰려면 판이나 대기석에서 먼저 고르세요. 말은 금빛 칸으로 끌어 놓거나 이동 버튼으로 옮겨도 돼요.'),
     element('p','갈림길에 멈추면 다음에 지름길을 고를 수 있어요. 출발점을 한 칸 지나면 골인이에요.'),
-    element('p','같은 팀 말은 업어서 함께 가요. 도·개·걸로 상대 말을 잡으면 한 번 더 던져요. 남은 결과는 계속 쓸 수 있어요.'));
+    element('p','같은 팀 말은 업어서 함께 가요. 빽도·도·개·걸로 상대 말을 잡으면 한 번 더 던져요. 남은 결과는 계속 쓸 수 있어요.'));
   if(game.eventTiles)more.append(button('이번 판 특수 칸 보기','secondary',showEventGuide));
   body.append(list,message('우리 팀 말을 먼저 모두 골인시키면 이겨요.'),more,button('알겠어요','primary',closePanel));
 }
