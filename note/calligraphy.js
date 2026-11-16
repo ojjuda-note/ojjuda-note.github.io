@@ -242,12 +242,22 @@
       const i = ch.codePointAt(0) - 0xAC00;
       return i >= 0 && i < 11172 ? [initial[Math.floor(i / 588)], medial[Math.floor(i / 28) % 21], final[i % 28]] : null;
     }
-    // The straight vowels are written on a bowed axis; bars are positioned on it.
+    // In ㅔ and ㅖ, the short arm belongs to the inner upright. Keep its
+    // joint square to the stem, with a lighter shoulder and a taller outer stroke.
+    const eInner = curve('46,10,.22 53,14,.61 55,23,.79 54,37,.87 50,54,.85 44,71,.70 41,83,.47 41,90,.20 44,94,.035');
+    const eOuter = curve('90,1,.27 96,5,.70 99,13,.94 98,30,.96 94,52,.84 89,73,.68 85,90,.46 85,101,.24 88,108,.035');
+    const eFinal = [...eOuter.slice(0, -3), ...curve('85,89,.48 85,103,.30 89,112,.15 95,118,.025')];
+    const eArm = curve('1,53,.30 8,54,.67 19,53,.88 33,50,.87 44,47,.72 53,46,.49');
+    const eUpperArm = curve('4,40,.29 12,40,.64 23,38,.80 37,35,.82 48,33,.67 55,33,.47');
+    const eLowerArm = curve('0,66,.30 7,66,.66 18,64,.82 31,61,.85 42,59,.69 50,58,.47');
+    // The remaining straight vowels share a bowed axis.
     function verticalPaths(v, flourish, phraseEnd) {
-      const leftBars = 'ㅓㅔㅕㅖ'.includes(v),
-        doubleBars = 'ㅑㅒㅕㅖ'.includes(v),
-        twoStems = 'ㅐㅒㅔㅖ'.includes(v);
-      const axes = twoStems ? leftBars ? [32, 103] : [16, 99] : [v === 'ㅣ' ? 57 : leftBars ? 85 : 29];
+      if (v === 'ㅔ') return [eArm, eInner, flourish ? eFinal : eOuter];
+      if (v === 'ㅖ') return [eUpperArm, eLowerArm, eInner, flourish ? eFinal : eOuter];
+      const leftBars = 'ㅓㅕ'.includes(v),
+        doubleBars = 'ㅑㅒㅕ'.includes(v),
+        twoStems = 'ㅐㅒ'.includes(v);
+      const axes = twoStems ? [16, 99] : [v === 'ㅣ' ? 57 : leftBars ? 85 : 29];
       const paths = [];
       function axis(x, isOuter) {
         if (isOuter && flourish) {
@@ -270,7 +280,7 @@
         return curve(`${joint},${y + 1},.18 ${joint + delta * .13},${y},.47 ${joint + delta * .45},${y - 9},.70 ${joint + delta * .72},${y - 14},.47 ${reach},${y - 16},.03`);
       }
       if (leftBars) for (const y of starts) paths.push(bar(y));
-      // The inner stem of ㅐ/ㅔ lands lower; two dark tips touching read as one.
+      // The inner stem of ㅐ/ㅒ lands lower; two dark tips touching read as one.
       const firstStem = axis(x, axes.length === 1);
       paths.push(twoStems ? map(firstStem, 0, 8, 100, 86) : firstStem);
       if (!leftBars && v !== 'ㅣ') for (const y of starts) paths.push(bar(y));
@@ -311,47 +321,31 @@
         curve('61,40,.41 46,39,.78 30,48,.92 21,66,1 22,82,.94 31,90,.76 48,89,.74 64,79,.86 74,62,.89 74,49,.77 66,42,.60 55,43,.18')
       ]
     };
-    // Ink extents in horizontal bands. A narrow tail can tuck beside another
-    // letter where their thicker strokes fall at different heights.
     function inkMetrics(strokes) {
-      const bands = [null, null, null];
       let inkTop = Infinity, inkBottom = -Infinity;
-      const bandAt = y => y < 34 ? 0 : y < 66 ? 1 : 2;
-      function include(x, y, radius) {
-        for (let i = bandAt(y - radius); i <= bandAt(y + radius); i++) {
-          const left = x - radius, right = x + radius;
-          if (!bands[i]) bands[i] = [left, right];
-          else {
-            bands[i][0] = Math.min(bands[i][0], left);
-            bands[i][1] = Math.max(bands[i][1], right);
-          }
-        }
-      }
       for (const { knots, width } of strokes) {
-        let previous;
-        for (const knot of knots) {
-          const [x, y, pressure] = knot;
+        for (const [,y,pressure] of knots) {
           const radius = width * pressure * .5 + .65;
           inkTop = Math.min(inkTop, y - radius);
           inkBottom = Math.max(inkBottom, y + radius);
-          include(x, y, radius);
-          if (previous && bandAt(y) !== bandAt(previous[1])) {
-            for (const boundary of [34, 66]) {
-              const t = (boundary - previous[1]) / (y - previous[1]);
-              if (t > 0 && t < 1) {
-                const p = previous[2] + (pressure - previous[2]) * t;
-                include(previous[0] + (x - previous[0]) * t, boundary, width * p * .5 + .65);
-              }
-            }
-          }
-          previous = knot;
         }
       }
-      return { profile: bands, inkTop, inkBottom };
+      return { inkTop, inkBottom };
     }
     function shape(ch, options = {}) {
+      const wordEnd = options === true || !!(options && (options.final || options.wordEnd || options.terminal));
+      const phraseEnd = wordEnd && !!options.phraseEnd;
       const data = decompose(ch);
-      if (!data) return null;
+      if (!data) {
+        if (ch.length !== 1) return null;
+        // Standalone medial jamo and their keyboard forms use the same brush.
+        const vowel = medial[ch.charCodeAt(0) - 0x1161] || ch;
+        if (!'ㅐㅒㅔㅖ'.includes(vowel)) return null;
+        const strokes = verticalPaths(vowel, wordEnd, phraseEnd).map(path => ({
+          knots: map(path, 4, 0, 57, 88), width: 13.8
+        }));
+        return { strokes, advance: 67, ...inkMetrics(strokes), brushCode: vowel.codePointAt(0) };
+      }
       const [c, v, f] = data,
         m = mixed[v],
         horizontal = !!hVowels[v],
@@ -359,8 +353,6 @@
       const complexOnset = !!pairs[c],
         complexFinal = !!pairs[f];
       const twinVowel = 'ㅐㅒㅔㅖ'.includes(v);
-      const wordEnd = options === true || !!(options && (options.final || options.wordEnd || options.terminal));
-      const phraseEnd = wordEnd && !!options.phraseEnd;
       const long = wordEnd && !f,
         strokes = [];
       const baseAdvance = m ? 94 : horizontal ? 90 : twinVowel ? 96 : v === 'ㅣ' ? 76 : v === 'ㅓ' || v === 'ㅕ' ? 82 : 88;
@@ -463,29 +455,18 @@
       '최': letter(86, 'M27 10 C33 9 45 12 45 17 C44 21 38 20 35 18 Q29 14 27 10 Z', 'M5 31 C18 24 41 19 54 20 C58 21 58 22 59 23 C45 24 27 29 13 35 Q4 39 5 31 Z', 'M38 29 C44 27 49 30 46 35 C38 46 21 56 4 63 C17 52 28 40 34 32 Z', 'M31 44 C34 41 40 43 45 47 Q50 51 56 50 C49 57 40 55 34 50 Z', 'M33 59 C39 57 45 59 43 65 L35 82 L26 84 Q27 70 33 59 Z', 'M-2 88 C19 79 43 73 61 72 C67 71 69 72 72 73 C55 77 29 86 9 95 Q0 100 -2 88 Z', 'M78 2 C87 2 93 6 91 14 C87 32 79 57 76 77 C73 94 73 103 76 110 C69 105 65 95 66 80 C66 59 73 35 76 21 C78 13 81 5 78 2 Z'),
       '다': letter(91, 'M10 27 C21 20 39 13 47 15 C51 16 49 18 46 20 C35 24 22 28 15 32 C10 35 7 31 10 27 Z', 'M13 28 C19 25 25 27 22 33 C17 41 11 55 14 61 C17 68 34 56 52 43 C43 58 26 72 15 75 C5 78 1 73 2 64 C3 52 9 34 13 28 Z', 'M59 2 C66 1 76 5 73 15 C68 36 59 61 57 83 C55 98 57 110 62 116 C53 112 47 100 47 85 C47 62 52 39 57 18 C59 11 61 5 59 2 Z', 'M55 48 C72 38 84 33 96 34 C104 35 111 35 117 33 C112 37 104 39 96 40 C82 42 70 48 60 54 C54 57 51 53 55 48 Z')
     };
-    // Measured ink top, bottom and horizontal extents in the same three bands.
-    const profiles = {
-      오: [7,97,[25,68],[23,96],[2,97]],
-      늘: [4,107,[20,63],[6,91],[21,98]],
-      도: [9,95,[17,76],[13,60],[-1,91]],
-      수: [3,131,[40,73],[6,112],[-6,97]],
-      고: [4,98,[14,79],[38,68],[-3,103]],
-      했: [4,99,[4,86],[6,79],[9,86]],
-      어: [0,111,[17,96],[2,89],[2,82]],
-      이: [0,112,[20,79],[4,74],[5,67]],
-      건: [1,106,[6,85],[2,78],[16,102]],
-      강: [2,106,[4,97],[4,81],[16,68]],
-      최: [2,110,[4,92],[4,86],[-2,78]],
-      다: [1,116,[8,117],[1,116],[1,62]]
+    const verticalExtents = {
+      오: [7,97], 늘: [4,107], 도: [9,95], 수: [3,131], 고: [4,98], 했: [4,99],
+      어: [0,111], 이: [0,112], 건: [1,106], 강: [2,106], 최: [2,110], 다: [1,116]
     };
-    for (const [ch, [inkTop, inkBottom, ...profile]] of Object.entries(profiles)) {
-      Object.assign(characters[ch], { inkTop, inkBottom, profile });
+    for (const [ch, [inkTop, inkBottom]] of Object.entries(verticalExtents)) {
+      Object.assign(characters[ch], { inkTop, inkBottom });
     }
     // The last arm of 다 can finish its sweep in the open space at the end
     // of a phrase. The shorter form still fits before a following syllable.
     const finalDa = letter(120, ...characters.다.paths.slice(0, -1),
       'M54 49 C65 42 78 35 91 34 C108 32 123 36 134 34 C142 33 148 30 155 26 C149 34 137 40 126 41 C114 42 103 39 91 41 C77 43 68 50 59 55 C53 58 49 53 54 49 Z');
-    Object.assign(finalDa, { inkTop: 1, inkBottom: 116, profile: [[8,155],[1,146],[1,62]] });
+    Object.assign(finalDa, { inkTop: 1, inkBottom: 116 });
     return {
       get: (ch, phraseEnd) => ch === '다' && phraseEnd ? finalDa : characters[ch] || null
     };
@@ -507,7 +488,6 @@
       if (hand && typeof Path2D === 'function') {
         if (!dictionary.has(hand)) dictionary.set(hand, {
           advance: hand.advance,
-          profile: hand.profile,
           inkTop: hand.inkTop,
           inkBottom: hand.inkBottom,
           paths: hand.paths.map(path => new Path2D(path))
@@ -535,21 +515,90 @@
     const boundWord = /^(?:수|것|때|뿐|줄|듯|채|데|리)$/u;
     const locationWord = /^(?:위|아래|곁|옆|속|앞|뒤|사이)(?:에|에서|으로|로|까지|부터)?$/u;
     const tailParticle = /(?:처럼|에게|한테|까지|부터|에서|으로|보다|[을를의은는])$/u;
-    function separation(a, b) {
-      const ap = a.glyph.profile, bp = b.glyph.profile;
-      const natural = a.glyph.advance * a.scale;
-      if (!ap || !bp) return natural;
-      // Compare the facing ink at the same height, accounting for scale, lean and baseline.
-      let clearance = 0;
-      for (let y = 8; y <= 99; y += 9) {
-        const ay = (y - a.y) / a.scale, by = (y - b.y) / b.scale;
-        if (ay < 0 || by < 0 || ay > 110 || by > 110) continue;
-        const right = ap[ay < 34 ? 0 : ay < 66 ? 1 : 2];
-        const left = bp[by < 34 ? 0 : by < 66 ? 1 : 2];
-        if (left && right) clearance = Math.max(clearance,
-          (right[1] - ay * a.tilt) * a.scale - (left[0] - by * b.tilt) * b.scale);
+    // Two-unit slices follow the facing edges. Thin tips at different heights
+    // can tuck together while two full stems still have a visible white seam.
+    const contours = new WeakMap();
+    let measureContext;
+    function contour(glyph) {
+      if (!glyph.strokes && !glyph.paths) return null;
+      if (contours.has(glyph)) return contours.get(glyph);
+      const bands = [];
+      if (glyph.strokes) {
+        // Walk the existing stroke knots, without painting and reading a second
+        // copy of every syllable. Record in the brush's usual -0.04 rad lean.
+        for (const {knots, width} of glyph.strokes) {
+          for (let k = 1; k < knots.length; k++) {
+            const [x0,y0,p0] = knots[k-1], [x1,y1,p1] = knots[k];
+            const dx = x1-x0, dy = y1-y0;
+            const length = Math.hypot(dx,dy) || 1;
+            // A horizontal segment's extrema are at its endpoints. Only split
+            // segments that cross multiple slices on their way up or down.
+            const steps = Math.max(1, Math.ceil(Math.abs(dy - .04*dx) / 5));
+            const nib = .5 * width * Math.sqrt(.27 + .73 * ((dy * .97 - dx * .24) / length) ** 2);
+            for (let step = 0; step <= steps; step++) {
+              const t = step / steps, px = x0 + t*dx, py = y0 + t*dy;
+              const x = px + .04*py, y = py - .04*px;
+              const radius = Math.max(.55, nib * (p0 + t*(p1-p0)));
+              for (let i = Math.floor(8 + (y-radius)/2); i <= Math.floor(8 + (y+radius)/2); i++) {
+                const off = Math.max(0, Math.abs((i-8)*2 + 1 - y) - 1);
+                const half = radius - .35 * off*off / radius;
+                const band = bands[i];
+                if (!band) bands[i] = [x-half, x+half];
+                else { band[0] = Math.min(band[0], x-half); band[1] = Math.max(band[1], x+half); }
+              }
+            }
+          }
+        }
+        contours.set(glyph, bands);
+        return bands;
       }
-      return Math.max(natural * .72, clearance + 3.5 * Math.min(a.scale, b.scale));
+      // The few hand-drawn Bézier outlines have no pressure knots. A 2:1
+      // stencil covers x=-16…176 and y=-16…152, including the final 다 flourish.
+      if (!measureContext) {
+        const surface = typeof OffscreenCanvas === 'function' ? new OffscreenCanvas(96, 84) :
+          typeof document !== 'undefined' ? document.createElement('canvas') : null;
+        if (!surface) return null;
+        surface.width = 96; surface.height = 84;
+        measureContext = surface.getContext('2d', {willReadFrequently:true});
+        if (!measureContext) return null;
+      }
+      const ctx = measureContext;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, 96, 84);
+      ctx.setTransform(.5, 0, 0, .5, 8, 8);
+      ctx.rotate(-.04);
+      ctx.fillStyle = '#000';
+      for (const path of glyph.paths) ctx.fill(path);
+      const data = ctx.getImageData(0, 0, 96, 84).data;
+      for (let y = 0; y < 84; y++) {
+        let left = 96, right = -1;
+        for (let x = 0; x < 96; x++) if (data[(y * 96 + x) * 4 + 3] >= 32) {
+          left = Math.min(left, x); right = x;
+        }
+        if (right >= left) bands[y] = [(left - 8) * 2, (right - 7) * 2];
+      }
+      contours.set(glyph, bands);
+      return bands;
+    }
+    function separation(a, b) {
+      const natural = a.glyph.advance * a.scale;
+      const ap = contour(a.glyph), bp = contour(b.glyph);
+      if (!ap || !bp) return natural;
+      const aLean = a.tilt + .04, bLean = b.tilt + .04;
+      const aTop = a.y + aLean * a.glyph.advance * a.scale / 2;
+      const bTop = b.y + bLean * b.glyph.advance * b.scale / 2;
+      let clearance = 0;
+      const top = Math.max(aTop - 16 * a.scale, bTop - 16 * b.scale);
+      const bottom = Math.min(aTop + (ap.length - 8) * 2 * a.scale, bTop + (bp.length - 8) * 2 * b.scale);
+      for (let y = top; y < bottom; y += 2) {
+        const ay = (y - aTop) / a.scale, by = (y - bTop) / b.scale;
+        const right = ap[Math.floor(8 + ay / 2)];
+        const left = bp[Math.floor(8 + by / 2)];
+        if (left && right) clearance = Math.max(clearance,
+          (right[1] - ay * aLean) * a.scale - (left[0] - by * bLean) * b.scale);
+      }
+      const seam = a.glyph.strokes || b.glyph.strokes ? 6.5 : 3.5;
+      return Math.max(natural * .55, clearance + seam * Math.min(a.scale, b.scale));
     }
     function lineWidth(letters, start, end) {
       const last = letters[end - 1];
@@ -686,9 +735,9 @@
             const y = -(scale - 1) * 70 + 4 * Math.cos(wi * 1.8) - 12 * arch + 4 * (1 - phase) - 3 * phase + tuck;
             const p = {ch, word, newWord: !j, glyph, range, x: 0, y, scale,
               tilt: -.053 + .019 * Math.sin(wi * 1.7) + .050 * arch - (firstInTag ? .023 : 0),
-              seed: (li + 1)*30181 + (wi + 1)*9767 + j*179 + ch.codePointAt(0)};
+              seed: (li + 1)*30181 + (wi + 1)*9767 + j*179 + (glyph.brushCode ?? ch.codePointAt(0))};
             const prev = letters.at(-1);
-            if (prev) p.x = prev.x + separation(prev, p) + (p.newWord ? 17 : 0);
+            if (prev) p.x = prev.x + separation(prev, p) + (p.newWord ? 11 : 0);
             letters.push(p);
           }
         }
@@ -712,7 +761,7 @@
           }
           if (!run.length) { top = 0; bottom = 88; }
           for (const stroke of marks) bottom = Math.max(bottom, stroke.bottom + 10);
-          const gap = 8;
+          const gap = 4;
           const row = { letters: run, marks, x: -width / 2, y: height - top };
           height += bottom - top;
           row.end = height + gap / 2;
@@ -721,7 +770,7 @@
           widest = Math.max(widest, width + 42);
         }
       }
-      height = Math.max(1, height - 8);
+      height = Math.max(1, height - 4);
       const preferredAreaScale = ranges.length ? 1.065 : 1;
       const tall = longForm ? 665 : rows.length > 2 ? 565 : 475;
       const fit = Math.min(Math.min((longForm ? 950 : 840) * preferredAreaScale / widest,
