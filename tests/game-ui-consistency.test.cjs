@@ -81,6 +81,9 @@ test('shared UI caches stay consistent while the game release revision updates i
       sharedReferences++;
       checkAsset(match[1], match[2], page);
     }
+    for (const match of html.matchAll(/\/shared\/games\/game-results\.js\?v=([\w-]+)/g)) {
+      checkAsset('results-script', match[1], page);
+    }
     for (const match of html.matchAll(/\/shared\/games\/multiplayer-entry\.css\?v=([\w-]+)/g)) {
       multiplayerReferences++;
       checkAsset('multiplayer-entry', match[1], page);
