@@ -222,6 +222,7 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     {"id":"1fVsSx5ggQc","title":"For us · 라라포트 BLACK FRIDAY TV CM","kind":"광고 영상","source":"미쓰이 쇼핑파크 / &TEAM · 2026.11.09"}
   ],
   kissoflife: [
+    { id: 'RcRYAE0ZcLQ', title: '2026 KGMA · 댄스 프랙티스', kind: '안무 연습', source: 'KISS OF LIFE 공식 YouTube · 2026.11.08' },
     { id: 'nk9zx3gGqSc', title: 'Sticky / THE FIRST TAKE', kind: '라이브', source: 'THE FIRST TAKE · 공식 채널 · 2026.09.28' },
     { id: '6bIVPKhafSI', title: 'SWEAT (Japanese Ver.) / THE FIRST TAKE', kind: '라이브', source: "THE FIRST TAKE · 2026.10.12" },
     { id: 'dsGK0HZZx1k', title: 'SWEAT (Japanese Ver.)', kind: '뮤직비디오', source: "KISS OF LIFE Official · 2026.09.15" },
@@ -229,12 +230,15 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'eTvUZymLyGY', title: 'SWEAT', kind: '뮤직비디오', source: "KISS OF LIFE Official · 2026.08.04" }
   ],
   kiiikiii: [
+    { id: 'SNFyIzOlxBc', title: 'MMA2026 · Pop Off Pop Off + Delulu + 404 (New Era)', kind: '공식 시상식 무대', source: '멜론 Melon · 2026.11.15' },
     { id: 'UsbRoaH6y-Q', title: 'Pop Off Pop Off', kind: '뮤직비디오', source: "STARSHIP · 공식 채널" },
     { id: 'hjcG58y_Fyc', title: 'Pop Off Pop Off', kind: '안무 영상', source: "KiiiKiii · 공식 채널" },
     { id: 'zhHB4dZTChw', title: '404 (New Era)', kind: '뮤직비디오', source: "STARSHIP · 공식 채널" },
     { id: 'hAEfi_SKTEU', title: 'I DO ME', kind: '뮤직비디오', source: "STARSHIP · 공식 채널" }
   ],
   stayc: [
+    { id: 'I92VUQLh9f8', title: '[STAY:SEE] EP.195 · 2 L0VE 음악방송 Behind', kind: '음악방송 비하인드', source: 'STAYC Official · 2026.07.31' },
+    { id: '-p7SaDSMsBo', title: '[STAY:SEE] EP.188 · 2 L0VE MV Behind', kind: '뮤직비디오 메이킹', source: 'STAYC Official · 2026.06.24' },
     { id: 'HgewvBTOJwU', title: '2 L0VE', kind: '뮤직비디오', source: "STAYC Official · 2026.06.16" },
     { id: 'GwLfMAQEY9s', title: '2 L0VE', kind: '안무 영상', source: "STAYC Official · 2026.06.16" },
     { id: 'udOf9JGMA7U', title: 'MWUAH', kind: '뮤직비디오', source: "STAYC Japan Official · 2026.02.10" },

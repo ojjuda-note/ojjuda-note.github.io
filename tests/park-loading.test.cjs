@@ -116,11 +116,26 @@ for (const member of [false, true]) {
       };
       window.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
       window.supabase = { createClient: () => client };
+      let dateFormatters = 0;
+      const NativeDateTimeFormat = window.Intl.DateTimeFormat;
+      window.Intl.DateTimeFormat = class extends NativeDateTimeFormat {
+        constructor(locale, options) {
+          super(locale, options);
+          if (locale === 'ko-KR' && options?.day === 'numeric') dateFormatters++;
+        }
+      };
       window.eval(read('note/preview.js'));
       onAuth('INITIAL_SESSION', session);
       const settle = () => new Promise(resolve => window.setTimeout(resolve, 0));
       await settle();
       assert.equal(requested.length, 1);
+      const labels = [...window.document.querySelectorAll('#feed-list .card-meta small')];
+      const expectedDate = new NativeDateTimeFormat('ko-KR', {
+        year: 'numeric', month: 'numeric', day: 'numeric'
+      }).format(new Date(cards[0].created_at));
+      assert.equal(labels.length, cards.length);
+      assert.ok(labels.every(label => label.textContent === expectedDate));
+      assert.equal(dateFormatters, 1, 'the first page shares one date formatter');
       const photos = [...window.document.querySelectorAll('#feed-list article .photo')];
       assert.equal(photos.length, 20);
       assert.equal(photos.filter(photo => photo.style.backgroundImage).length, 3);
@@ -163,6 +178,7 @@ test('a shared card starts before the feed and fetches reply backgrounds near th
     const rows = Array.from({length: 30}, (_, i) => ({...parent, id: id.slice(0,-3) + String(i+2).padStart(3,'0'), kind: 'comment'}));
     let finishCard;
     let delayCard = false;
+    let failCard = false;
     const replyQuery = { select(){return this;}, eq(){return this;}, not(){return this;}, order(){return this;},
       limit(){calls.push('replies');return Promise.resolve({data: rows});} };
     w.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
@@ -171,6 +187,7 @@ test('a shared card starts before the feed and fetches reply backgrounds near th
       schema: () => ({ from: () => replyQuery, rpc: async name => {
         if(name==='get_card') {
           calls.push(name);
+          if (failCard) return {error: {message:'temporary test failure'}};
           if (delayCard) await new Promise(resolve => { finishCard = resolve; });
           return {data: parent};
         }
@@ -217,12 +234,21 @@ test('a shared card starts before the feed and fetches reply backgrounds near th
     const feedRequests = () => calls.filter(name=>name==='list_cards').length;
     await w.OjjudaParkFull.refresh();
     await settle();
-    assert.equal(feedRequests(), 2, 'refreshing a card opened from a loaded feed also updates that feed');
+    assert.equal(feedRequests(), 1, 'refresh reads the visible card without fetching the hidden feed');
+    failCard = true;
+    await w.OjjudaParkFull.refresh();
+    const retry = doc.querySelector('#detail [data-retry-card]');
+    assert.ok(retry, 'a temporary detail failure can be retried in place');
+    failCard = false;
+    const beforeRetry = calls.length;
+    retry.click(); retry.click();
+    await settle();
+    assert.deepEqual(calls.slice(beforeRetry), ['get_card', 'replies']);
     assert.equal(w.OjjudaParkFull.returnHome(),true);
     assert.equal(doc.querySelector('#detail').hidden,true);
     assert.equal(doc.querySelector('#feed').hidden,false);
     assert.equal(new URL(w.location.href).searchParams.has('card'),false);
-    assert.equal(feedRequests(),2,'returning from a card reuses the default feed');
+    assert.equal(feedRequests(),2,'returning from several detail refreshes reads the updated feed once');
     doc.querySelector('[data-sort="popular"]').click();
     await settle();
     assert.equal(w.OjjudaParkFull.returnHome(),true);

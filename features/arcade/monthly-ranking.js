@@ -12,7 +12,7 @@
   ['poker','포커','골드'],['roulette','룰렛','골드'],['photo_ttang','포토 땅따먹기','장']
  ];
  const byId = new Map(games.map(([id,name,unit])=>[id,{name,unit}]));
- const aliases = {screw:'screw_box',carom4:'billiards',carom3:'billiards',pool8:'billiards'};
+ const aliases = {__proto__:null,screw:'screw_box',carom4:'billiards',carom3:'billiards',pool8:'billiards'};
  const $ = selector=>document.querySelector(selector);
  const option=$('#ranking-game'),period=$('#ranking-period'),status=$('#ranking-status');
  const list=$('#ranking-leaders'),mine=$('#ranking-mine'),mineRow=$('#ranking-mine-row'),refresh=$('#ranking-refresh');
@@ -20,8 +20,10 @@
  const raw=params.get('game');
  let game=byId.has(raw)?raw:aliases[raw]||'sacheonseong';
  let client=null,request=0,resetTimer=null,lastEndsAt=0;
+ const scoreFormat=new Intl.NumberFormat('ko-KR');
+ const periodFormat=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'numeric',hourCycle:'h23'});
  const number=value=>{
-  try{return new Intl.NumberFormat('ko-KR').format(BigInt(value));}
+  try{return scoreFormat.format(BigInt(value));}
   catch{return String(value??'—');}
  };
  function formatScore(record,id){
@@ -77,7 +79,7 @@
   return /^[a-f0-9]{64}$/.test(stored)?stored:null;
  }
  function clockLabel(value){
-  const parts=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'numeric',hourCycle:'h23'}).formatToParts(new Date(value));
+  const parts=periodFormat.formatToParts(new Date(value));
   const part=type=>parts.find(item=>item.type===type)?.value||'?';
   return `${part('month')}월 ${part('day')}일 ${part('hour')}시`;
  }

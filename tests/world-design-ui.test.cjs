@@ -115,6 +115,17 @@ world=world.slice(0,boot)+`
    assert.equal(grid,3,'mobile keeps exactly three game buttons per row');
    const labels=await page.locator('[data-arcade-games] .gbtn>span:last-child').evaluateAll(nodes=>nodes.map(n=>({size:parseFloat(getComputedStyle(n).fontSize),weight:parseInt(getComputedStyle(n).fontWeight),fits:n.scrollWidth<=n.clientWidth+1})));
    assert.ok(labels.every(n=>n.size>=12.5&&n.weight>=700&&n.fits),'larger bold game names fit every mobile card');
+   const rowGaps=await page.locator('[data-arcade-games=solo] .gbtn').evaluateAll(cards=>{
+    const gaps=new Map();
+    for(const card of cards){
+     const box=card.getBoundingClientRect(),text=document.createRange();
+     text.selectNodeContents(card.lastElementChild);
+     const gap=box.bottom-text.getBoundingClientRect().bottom;
+     gaps.set(box.top,Math.min(gap,gaps.get(box.top)??Infinity));
+    }
+    return [...gaps.values()];
+   });
+   assert.ok(rowGaps.every(gap=>gap>=0&&gap<=15),'mobile rows end just below their tallest caption at '+width);
    const colors=await page.locator('[data-arcade-games=solo] .gbtn .ge').evaluateAll(nodes=>new Set(nodes.map(n=>getComputedStyle(n).backgroundImage)).size);
    assert.ok(colors>=4,'game covers are visually distinct');
   }
@@ -131,7 +142,19 @@ world=world.slice(0,boot)+`
  assert.equal(await page.locator('#agit-daily h2').innerText(),'일상 둘러보기');
  assert.equal(await page.locator('#agit-daily a[href="/features/fanpages/index.html"]').count(),1,'Fanpage remains visible between Group and Restaurants');
  assert.deepEqual(await page.locator('[data-act=agit-daily][aria-label*="회원 전용"]').evaluateAll(buttons=>buttons.map(button=>button.dataset.v)),['group'],'only Group requires membership in the current daily tools');
- await fits('mobile Hub');
+ const dailyCovers=page.locator('#agit-daily img, .agit-reading-grid img');
+ assert.deepEqual(await dailyCovers.evaluateAll(images=>images.map(image=>image.getAttribute('src'))),
+  ['group','fanpages','restaurants','festival','biorhythm','tarot','saju'].map(id=>'/features/home/daily-'+id+'.webp'));
+ const readings=page.locator('.agit-reading-grid > a');
+ assert.deepEqual(await readings.locator('strong').allTextContents(),['바이오리듬','타로','사주']);
+ for(const width of [320,768,390]){
+  await page.setViewportSize({width,height:850});
+  const boxes=await readings.evaluateAll(cards=>cards.map(card=>{
+   const {x,y,width}=card.getBoundingClientRect();return {x,y,width,fits:card.scrollWidth<=card.clientWidth+1};
+  }));
+  assert.ok(boxes.every((b,i)=>b.y===boxes[0].y&&b.width>=44&&b.fits&&(!i||b.x>=boxes[i-1].x+boxes[i-1].width-1)),'three readable links share one row at '+width);
+  await fits('Hub '+width);
+ }
  await page.locator('.bottomnav [data-tab=my]').click();assert.equal(await page.locator('[data-ju-shop-open]').count(),0);
  assert.equal(await page.locator('[data-my-group=themes],.settings-theme-section,[data-world-theme-settings],[data-act=theme],[data-act=accent]').count(),0,'all manual appearance controls are removed');await fits('mobile settings');
  await page.screenshot({path:path.join(proof,'settings-mobile.png'),fullPage:true});

@@ -356,6 +356,7 @@
       photo: 'KISS OF LIFE at Music Bank (4K) 20240705 02.png', photoLabel: '뮤직뱅크 출근길', photoYear: '2024', credit: '티비텐 TV10', license: 'CC BY 3.0',
       morePhotos: [
         commonsPhoto('28082026 Kiss of Life Newsis Hallyu Expo 1.png', '2026 뉴시스 한류엑스포 · 단체', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0'),
+        commonsPhoto('28082026 Kiss of Life Newsis Hallyu Expo 2.png', '2026 뉴시스 한류엑스포 · 단체 두 번째 장면', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0'),
         commonsPhoto('28082026 Belle Newsis Hallyu Expo 1.png', '벨 · 2026 한류엑스포', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0'),
         commonsPhoto('05062026 KISS OF LIFE Airport Departure.png', '2026.06.05 인천공항 출국 · 단체', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0')
       ],
@@ -375,6 +376,7 @@
         { title: '일본 공식 공연·행사', sub: '컬럼비아 공식 공연·발매 이벤트 안내', href: 'https://columbia.jp/artist-info/kissoflife/live/' }
       ],
       news: [
+        { date: '2026.11.09', tag: '수상', title: '2026 KGMA 베스트 스테이지·스타일 아이콘 2관왕 (11.08 시상)', href: 'https://star.ytn.co.kr/_sn/0117_202611091748308778' },
         { date: '2026.10.23', tag: '시상식', title: '12.05 가오슝 AAA 공식 출연 명단 발표', href: 'https://www.asiaartistawards.com/en/news/3225' },
         { date: '2026.10.12', tag: '무대', title: 'THE FIRST TAKE에서 SWEAT 일본어 버전 라이브 공개', href: 'https://columbia.jp/artist-info/kissoflife/media/94488.html' },
         { date: '2026.09.28', tag: '영상', title: 'THE FIRST TAKE에서 Sticky 라이브 공개', href: 'https://kissoflife.jp/page/media.html' },
@@ -389,6 +391,7 @@
         { title: 'KISS OF LIFE 일본 공식 MD', sub: '일본 공식 판매 2026.06.18 시작 · 현재 재고·가격은 판매처 확인', href: 'https://kissoflife.jp/page/20260618.html' }
       ],
       campaigns: [
+        { kind: '콜라보', date: '2026.08.03', title: '순간 seju × 도쿄 조이폴리스 × KISS OF LIFE', sub: '일본 테마파크 배경 협업 단편 영상 2편 · 8.03부터 순차 공개', href: 'https://seju.tokyo/topics/topic-36131/' },
         { kind: '콜라보', date: '2026.07.04', title: 'DIGIMON BEATBREAK × BREAK IT', sub: '일본 TV 애니메이션 엔딩 테마 음원 협업', href: 'https://prtimes.jp/main/html/rd/p/000005074.000019470.html' },
         { kind: '콜라보', date: '2026.07.17', title: 'SAISON CARD × KISS OF LIFE', sub: '팬 참여 이벤트·입회 포토카드 캠페인 · 2026.10.08 행사 종료', href: 'https://kissoflife.jp/page/20260717.html' }
       ],
@@ -399,6 +402,7 @@
       members: ['지유', '이솔', '수이', '하음', '키야'],
       debut: '2025.03.24', debutWork: 'UNCUT GEM', songs: ['I DO ME', 'BTG'],
       concept: '틀에 얽매이지 않는 감각과 자유로운 에너지.',
+      checkedAt: '2026.11.16',
       official: 'https://www.starship-ent.com/musician/kiiikiii', youtube: 'https://www.youtube.com/@KiiiKiii_starship',
       photo: 'KiiiKiii in August 2026.png', photoLabel: '2026년 단체', photoYear: '2026', credit: 'K-POPIT 케이팝잇', license: 'CC BY 4.0',
       morePhotos: [
@@ -412,27 +416,33 @@
         { title: 'UNCUT GEM', date: '2025.03.24', type: '데뷔 미니 1집 · I DO ME / BTG 수록', songs: ['DEBUT SONG', 'GROUNDWORK', 'I DO ME', 'THERE THEY GO', 'BTG', '한 개뿐인 (ONE OFF)'], href: 'https://music.apple.com/us/album/uncut-gem-ep/1800872866' }
       ],
       appearances: [
-        { date: '2026-11-15', title: 'MMA2026 · Music Day', sub: '서울 고척스카이돔 · 11월 15일 · 카카오엔터테인먼트 발표', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' },
-        { date: '2026-11-21', title: '2026 MAMA AWARDS · CHAPTER 2', sub: '일본 오사카 교세라돔 · CJ ENM 공식 출연 발표', href: 'https://www.cj.net/jp/press-release/view/1132' }
+        { date: '2026-11-21', title: '2026 MAMA AWARDS · CHAPTER 2', sub: '일본 오사카 교세라돔 · CJ ENM 공식 출연 발표', href: 'https://www.cj.net/jp/press-release/view/1132' },
+        { date: '2027-01-16', title: 'D AWARDS 2027 · 파리 DAY 2', sub: '프랑스 낭테르 Plenitude Arena · 1월 16일 · 주최사 공식 라인업', href: 'https://d-awards.world/' }
       ],
       schedules: [
         { title: '공식 활동·공지', sub: 'KiiiKiii 공식 사이트', href: 'https://kiiikiii.kr/' },
-        { title: 'MMA2026 안내', sub: '11.15 Music Day · 주최사 보도자료', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' },
-        { title: '2026 MAMA 출연 공지', sub: '11.21 CHAPTER 2 · 주최사', href: 'https://www.cj.net/jp/press-release/view/1132' }
+        { title: '2026 MAMA 출연 공지', sub: '11.21 CHAPTER 2 · 주최사', href: 'https://www.cj.net/jp/press-release/view/1132' },
+        { title: 'D AWARDS 2027 공식 라인업', sub: '2027.01.16 파리 DAY 2 · 주최사', href: 'https://d-awards.world/' }
       ],
       news: [
+        { date: '2026.11.16', tag: '수상', title: 'MMA2026 · TOP10·베스트 퍼포먼스(여자)·베스트 뮤직스타일 3관왕', href: 'https://www.bntnews.co.kr/article/view/bnt202611160169' },
+        { date: '2026.11.09', tag: '수상', title: 'KGMA2026 · 그랜드 아너스 초이스 대상 포함 3관왕', href: 'https://www.bntnews.co.kr/article/view/bnt202611090129' },
         { date: '2026.10.15', tag: '공연', title: '2026 MAMA AWARDS 11.21 출연 확정', href: 'https://www.cj.net/jp/press-release/view/1132' },
         { date: '2026.10.14', tag: '공연', title: 'MMA2026 Music Day 11.15 출연 확정', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' },
+        { date: '2026.10.12', tag: '공연', title: 'D AWARDS 2027 프랑스 파리 공연 1월 16일 출연 발표', href: 'https://d-awards.world/' },
+        { date: '2026.08.12', tag: '광고', title: 'Coach · 브랜드 앰버서더 및 Head in the Clouds LA 무대 의상 공식 발표', href: 'https://prtimes.jp/main/html/rd/p/000000317.000027522.html' },
         { date: '2026.08.10', tag: '앨범', title: '미니 3집 WhyKiiiKiii · Pop Off Pop Off 발매', href: 'https://music.apple.com/us/album/whykiiikiii-ep/6796609538' },
         { date: '2026.06.17', tag: '협업', title: 'GS25 × 키키 · 딸기·망고 젤라또바 2종 출시 발표', href: 'https://www.yna.co.kr/view/AKR20260617027900030' },
         { date: '2026.04.27', tag: '광고', title: 'PANDORA × 키키 · Be Your Lucky Charm 화보 공개', href: 'https://www.marieclairekorea.com/fashion/2026/04/pandora/' }
       ],
       merch: [
+        { title: 'WhyKiiiKiii · PLANET SUNSET 한정반', sub: '스타쉽스퀘어 공식 앨범 · 판매·재고는 판매처 확인', href: 'https://starship-square.com/product/planet-sunset-ver-kiiikiii-ep-whykiiikiii-%ED%95%9C%EC%A0%95%EB%B0%98/2077/category/1/display/9/' },
         { title: 'WhyKiiiKiii · AMENITIES ver.', sub: '스타쉽스퀘어 공식 앨범 · 재고는 판매처에서 확인', href: 'https://starship-square.com/product/amenities-ver-kiiikiii-ep-whykiiikiii/2061/category/58/display/1/' },
         { title: 'Delulu Pack · Headphone ver.', sub: '스타쉽스퀘어 공식 앨범 · 재고는 판매처에서 확인', href: 'https://starship-square.com/product/headphone-ver-kiiikiii-the-2nd-ep-delulu-pack/1874/' },
         { title: 'WhyKiiiKiii · SNAPSHOT 한정반', sub: '스타쉽스퀘어 · 예약판매 8.03~8.12 종료', href: 'https://starship-square.com/product/snapshot-ver-kiiikiii-ep-whykiiikiii-%ED%95%9C%EC%A0%95%EB%B0%98/2074/category/58/display/1/' }
       ],
       campaigns: [
+        { kind: '홍보대사', date: '2026.08.12', title: 'Coach × KiiiKiii · 브랜드 앰버서더', sub: '코치 공식 발표 8.12 · 8.08 미국 Head in the Clouds LA 공연에 Coach Fall 2026 맞춤 의상 제공', href: 'https://prtimes.jp/main/html/rd/p/000000317.000027522.html' },
         { kind: '콜라보', date: '2026.02.14', title: 'New Era × KiiiKiii', sub: '59FIFTY 헤드웨어 브랜드 협업', href: 'https://www.bntnews.co.kr/article/view/bnt202602130181' },
         { kind: '콜라보', date: '2026.06.17', title: 'GS25 × KiiiKiii 젤라또바', sub: '키키픽 딸기·망고 젤라또바 2종 출시 발표 · 현재 판매·재고는 점포별 확인', href: 'https://www.yna.co.kr/view/AKR20260617027900030' },
         { kind: '광고', date: '2026.04.27', title: 'PANDORA × KiiiKiii', sub: 'Be Your Lucky Charm · 마리끌레르 5월호 주얼리 화보', href: 'https://www.marieclairekorea.com/fashion/2026/04/pandora/' },
@@ -445,7 +455,7 @@
       id: 'blackpink', name: 'BLACKPINK', korean: '블랙핑크', category: 'girl', fan: 'BLINK', agency: 'YG Entertainment',
       members: ['지수', '제니', '로제', '리사'],
       debut: '2016.08.08', debutWork: 'SQUARE ONE', songs: ['WHISTLE', 'BOOMBAYAH'],
-      checkedAt: '2026.11.14',
+      checkedAt: '2026.11.16',
       concept: '블랙과 핑크, 서로 다른 매력이 공존하는 무대.',
       official: 'https://ygfamily.com/ko/artists/blackpink/profile', youtube: 'https://www.youtube.com/@BLACKPINK',
       photo: '20240809 Blackpink Pink Carpet 09.png', photoLabel: '핑크 카펫', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
@@ -461,24 +471,33 @@
         { title: 'THE ALBUM', date: '2020.10.02', type: '정규 1집 · 타이틀 Lovesick Girls', songs: ['How You Like That', 'Ice Cream (with Selena Gomez)', 'Pretty Savage', 'Bet You Wanna (Feat. Cardi B)', 'Lovesick Girls', 'Crazy Over You', 'Love To Hate Me', 'You Never Know'], href: 'https://ygfamily.com/en/artists/blackpink/discography/249' },
         { title: 'SQUARE ONE', date: '2016.08.08', type: '데뷔 싱글', songs: ['WHISTLE', 'BOOMBAYAH'], href: 'https://ygfamily.com/en/artists/blackpink/discography/228' }
       ],
-      appearances: [],
+      appearances: [
+        { date: '2026-11-27', timeZone: 'America/Los_Angeles', title: '리사 솔로 · VIVA LA LISA 라스베이거스', sub: 'The Colosseum at Caesars Palace · 주최 Caesars Entertainment · 공연 시간·예매는 공식 안내 확인', href: 'https://newsroom.caesars.com/press-releases/press-release-details/2026/LISA-ADDS-TWO-NEW-DATES-TO-HER-SOLD-OUT-LAS-VEGAS-RESIDENCY-DUE-TO-OVERWHELMING-DEMAND-VIVA-LA-LISA-AT-THE-COLOSSEUM-AT-CAESARS-PALACE--NOV-12-13-14-27-28--29-2026--2026-eGkXjvCgqE/default.aspx' },
+        { date: '2026-11-28', timeZone: 'America/Los_Angeles', title: '리사 솔로 · VIVA LA LISA 라스베이거스', sub: 'The Colosseum at Caesars Palace · 주최 Caesars Entertainment · 공연 시간·예매는 공식 안내 확인', href: 'https://newsroom.caesars.com/press-releases/press-release-details/2026/LISA-ADDS-TWO-NEW-DATES-TO-HER-SOLD-OUT-LAS-VEGAS-RESIDENCY-DUE-TO-OVERWHELMING-DEMAND-VIVA-LA-LISA-AT-THE-COLOSSEUM-AT-CAESARS-PALACE--NOV-12-13-14-27-28--29-2026--2026-eGkXjvCgqE/default.aspx' },
+        { date: '2026-11-29', timeZone: 'America/Los_Angeles', title: '리사 솔로 · VIVA LA LISA 라스베이거스', sub: 'The Colosseum at Caesars Palace · 주최 Caesars Entertainment · 공연 시간·예매는 공식 안내 확인', href: 'https://newsroom.caesars.com/press-releases/press-release-details/2026/LISA-ADDS-TWO-NEW-DATES-TO-HER-SOLD-OUT-LAS-VEGAS-RESIDENCY-DUE-TO-OVERWHELMING-DEMAND-VIVA-LA-LISA-AT-THE-COLOSSEUM-AT-CAESARS-PALACE--NOV-12-13-14-27-28--29-2026--2026-eGkXjvCgqE/default.aspx' }
+      ],
       schedules: [
         { title: 'YG BLACKPINK 공식 공연 안내', sub: '투어 이력·새 공연 발표 확인', href: 'https://ygfamily.com/en/artists/blackpink/concert' },
         { title: 'YG BLACKPINK 공식 공지', sub: '행사·예매·변경 사항', href: 'https://ygfamily.com/ko/artists/blackpink/notice' }
       ],
       news: [
+        { date: '2026.11.16', tag: '로그인', title: '위버스 BLINK 멤버십(GL/JP) 신규 구매 11/16 14시부터 일시 중단 · 기존 가입자 이용 유지', href: 'https://weverse.io/blackpink/notice/41029' },
+        { date: '2026.11.15', tag: '수상', title: '로제·제니, 2026 키즈 초이스 어워즈 개인 부문 수상', href: 'https://www.soompi.com/article/1887086wpp/bts-rose-jennie-kpop-demon-hunters-and-katseye-win-at-2026-nickelodeon-kids-choice-awards' },
         { date: '2026.11.11', tag: '협업', title: '지수, 토미 힐피거 2026 겨울 캠페인 참여', href: 'https://prtimes.jp/main/html/rd/p/000000305.000010635.html' },
+        { date: '2026.11.05', tag: '기록', title: 'GO 뮤직비디오 11/4 조회수 1억 돌파 · 16번째 그룹 MV', href: 'https://www.soompi.com/article/1884332wpp/blackpinks-go-becomes-their-16th-group-mv-to-surpass-100-million-views' },
         { date: '2026.08.08', tag: '활동', title: '데뷔 10주년 기념 공식 영상 공개', href: 'https://www.youtube.com/watch?v=k--lCrP69hg' },
         { date: '2026.02.27', tag: '컴백', title: '미니 3집 DEADLINE · 타이틀 GO 발매', href: 'https://ygfamily.com/en/artists/blackpink/discography/1651' },
         { date: '2026.02.21', tag: '기록', title: '공식 YouTube 아티스트 채널 최초 1억 구독자 기록', href: 'https://en.yna.co.kr/view/AEN20260221002851320' }
       ],
       merch: [
+        { title: 'JUMP 공식 티셔츠', sub: 'YG SELECT · JUMP 티셔츠 · 가격·옵션·재고는 판매처 확인', href: 'https://www.ygselect.com/product/jump-blackpink-t-shirt/11971/category/24/display/1/' },
         { title: 'Weverse US 2026 블랙프라이데이', sub: 'BLACKPINK 참여 · 미국·캐나다 배송 · 11/13 18:00~12/2 23:59(미국 PST) · 할인·재고는 품목별 확인', href: 'https://shop.weverse.io/en/shop/KRW/artists/32/notices/14965' },
         { title: 'DEADLINE 공식 앨범 BLACK Ver.', sub: 'YG SELECT · 포토북·포토카드 수록 · 재고는 판매처 확인', href: 'https://ygselect.com/product/blackpink-3rd-mini-album-deadline-black-ver/12808/' },
         { title: 'DEADLINE 공식 앨범 PINK Ver.', sub: 'YG SELECT · 포토북·포토카드 수록 · 재고는 판매처 확인', href: 'https://ygselect.com/product/blackpink-3rd-mini-album-deadline-pink-ver/12809/' },
         { title: 'DEADLINE MOOD LIGHT Ver.', sub: 'YG SELECT · 앨범·무드등 구성 · 재고는 판매처 확인', href: 'https://www.ygselect.com/product/blackpink-3rd-mini-album-deadline-mood-light-ver/12813/' }
       ],
       campaigns: [
+        { kind: '홍보대사', date: '2026.04.09', title: '제니 × Ray-Ban · 글로벌 앰배서더', sub: 'Ray-Ban 및 Ray-Ban Meta · Styles for Unfiltered Confidence 캠페인 · 공식 브랜드 페이지', href: 'https://www.ray-ban.com/row/ray-ban-and-jennie' },
         { kind: '광고', date: '2026.11.11', title: '지수 × TOMMY HILFIGER · 2026 Winter', sub: '글로벌 앰배서더 지수 · A Perfect Holiday 겨울 캠페인 · PVH Japan 11월 11일 발표', href: 'https://prtimes.jp/main/html/rd/p/000000305.000010635.html' },
         { kind: '콜라보', date: '2026.02.26', title: '국립중앙박물관 × BLACKPINK × Spotify', sub: 'DEADLINE 발매 기념 박물관 오디오 도슨트·리스닝존 · 2.26~3.08 종료', href: 'https://weverse.io/blackpink/notice/33735' }
       ],
@@ -488,7 +507,7 @@
       id: 'stayc', name: 'STAYC', korean: '스테이씨', category: 'girl', fan: 'SWITH', agency: 'High Up Entertainment',
       members: ['수민', '시은', '아이사', '세은', '윤', '재이'],
       debut: '2020.11.12', debutWork: 'Star To A Young Culture', songs: ['SO BAD', 'LIKE THIS'],
-      checkedAt: '2026.11.14',
+      checkedAt: '2026.11.16',
       concept: '선명한 개성과 상큼한 멜로디를 담는 여섯 멤버.',
       official: 'https://www.highup-ent.com/', youtube: 'https://www.youtube.com/@STAYC',
       photo: 'STAYC Metamorphic Showcase 240701.jpg', photoLabel: 'Metamorphic 쇼케이스', photoYear: '2024', credit: 'K-POPIT 케이팝잇 · 원저작 티비텐 TV10', license: 'CC BY 3.0',
@@ -503,7 +522,15 @@
         { title: 'Metamorphic', date: '2024.07.01', type: '정규 1집 · 타이틀 Cheeky Icy Thang', songs: ['Twenty', 'Cheeky Icy Thang', '1 Thing', 'Give It 2 Me', 'Find (Sieun & Seeun & J)', 'Let Me Know', 'Nada', 'Fakin’ (Sumin & Yoon)', 'Roses (ISA)', 'Beauty Bomb', 'Gummy Bear', 'Stay WITH me', 'Flexing On My Ex', 'Trouble Maker'], href: 'https://www.highup-ent.com/stayc/metamorphic/' },
         { title: 'Star To A Young Culture', date: '2020.11.12', type: '데뷔 싱글 · 타이틀 SO BAD', songs: ['SO BAD', 'LIKE THIS'], href: 'https://www.highup-ent.com/stayc/star-to-a-young-culture/' }
       ],
+      appearances: [
+        { date: '2026-11-22', title: 'AUBL 2026–27 시즌 개막전 참석', sub: '안산 상록수 김연경체육관 · 17:00 경기 시작 · 연세대 vs 상하이교통대 · AUBL 주최 · 일반석 무료 입장', href: 'https://x.com/STAYC_official/status/2121931980795458012' }
+      ],
+      schedules: [
+        { title: 'STAYC Weverse 공식 일정·공지', sub: '공연·방송·팬행사 안내 및 일정 변경 확인 · 일부 공지 열람은 로그인 필요', href: 'https://weverse.io/stayc/notice' }
+      ],
       news: [
+        { date: '2026.11.15', tag: '행사', title: 'STAYC, 11월 22일 안산 AUBL 개막전 참석 발표', href: 'https://x.com/STAYC_official/status/2121931980795458012' },
+        { date: '2026.11.12', tag: '기념', title: '데뷔 6주년 기념 인사·Special Present 공개 · 열람 시 로그인 필요', href: 'https://weverse.io/stayc/media/2-181504379' },
         { date: '2026.07.03', tag: '공연', title: 'STAY CLOSER 팬콘 투어 7개 도시 일정 발표 · 10월 종료', href: 'https://www.highup-ent.com/en/stayc-announces-stay-closer-fan-con-tour-kicking-off-in-seoul-before-heading-to-global-cities/' },
         { date: '2026.06.16', tag: '음악', title: '싱글 6집 2:LOVE 발매 · 타이틀 2 L0VE', href: 'https://www.highup-ent.com/stayc/2love/' },
         { date: '2025.11.11', tag: '앨범', title: '일본 정규 1집 STAY ALIVE 상세 발표 · 2026.02.11 발매', href: 'https://www.universal-music.co.jp/stayc/news/2025-11-11/' },
@@ -515,6 +542,8 @@
         { title: 'STAY ALIVE 일본 정규 1집 CD', sub: 'UNIVERSAL MUSIC STORE · 통상반 · 스토어 한정 구매 특전 종료 · 재고는 판매처 확인', href: 'https://store-annex.universal-music.co.jp/product/upch29482/' }
       ],
       campaigns: [
+        { kind: '콜라보', date: '2026.08.06', title: 'STAYC × 알비레오 STAYC M 요금제', sub: '팬 전용 통신 요금제 · 멤버 미공개 포토카드 혜택 2026.11.01~2027.03.31 · 가입·혜택 조건은 공식 판매처 확인', href: 'https://www.albireomobile.com/plan/PC1HB00031_STAY_261101' },
+        { kind: '광고', date: '2026.02.04', title: '윤 × 레진스낵(Lezhin Snack)', sub: '숏드라마 플랫폼 광고 모델 · 2월 4일 첫 광고 영상 공개', href: 'https://weverse.io/stayc/media/0-169288540' },
         { kind: '콜라보', date: '2025.07.21', title: '태국관광청(TAT) × Kimpton Maa-Lai Bangkok', sub: 'I WANT IT 공식 뮤직비디오 협찬 · 광고 모델 계약과 별개', href: 'https://www.youtube.com/watch?v=W8ml4ryPwic' },
       ],
       accent: '#e4897b', light: '#ffe7df', dark: '#865366', bg: '#fff8f3', shape: '✾'
@@ -1100,9 +1129,9 @@
       ],
       appearances: [
         { date: '2026-11-15', timeZone: 'America/Los_Angeles', title: 'KNOCK ON Vol.2 · 시애틀', sub: '미국 시애틀 Showbox SoDo · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
-        { date: '2026-11-17', title: 'KNOCK ON Vol.2 · 샌프란시스코', sub: '미국 샌프란시스코 The Warfield · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
-        { date: '2026-11-20', title: 'KNOCK ON Vol.2 · 로스앤젤레스', sub: '미국 로스앤젤레스 Peacock Theater · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
-        { date: '2026-11-24', title: 'KNOCK ON Vol.2 · 멕시코시티', sub: '멕시코시티 Arena Ciudad de México · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
+        { date: '2026-11-17', timeZone: 'America/Los_Angeles', title: 'KNOCK ON Vol.2 · 샌프란시스코', sub: '미국 샌프란시스코 The Warfield · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
+        { date: '2026-11-20', timeZone: 'America/Los_Angeles', title: 'KNOCK ON Vol.2 · 로스앤젤레스', sub: '미국 로스앤젤레스 Peacock Theater · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
+        { date: '2026-11-24', timeZone: 'America/Mexico_City', title: 'KNOCK ON Vol.2 · 멕시코시티', sub: '멕시코시티 Arena Ciudad de México · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
         { date: '2026-12-05', title: 'KNOCK ON Vol.2 · 자카르타', sub: '인도네시아 자카르타 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
         { date: '2026-12-26', title: 'KNOCK ON Vol.2 · 쿠알라룸푸르', sub: '말레이시아 쿠알라룸푸르 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' }
       ],

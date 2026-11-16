@@ -54,6 +54,37 @@ function fixture(t, overrides = {}) {
   };
 }
 
+async function connection(f, online) {
+  Object.defineProperty(f.w.navigator, 'onLine', { configurable: true, value: online });
+  f.w.dispatchEvent(new f.w.Event(online ? 'online' : 'offline'));
+  await tick();
+}
+
+test('offline rooms keep the last list, skip reads and refresh once on reconnect', async t => {
+  const f = fixture(t);
+  f.state.data.rooms = [room({ is_member: false })];
+  await f.start();
+  const before = f.calls.length;
+  await connection(f, false);
+  await f.advance(12000);
+  t.diagnostic('room read attempts during 12 offline seconds: ' + (f.calls.length - before));
+  assert.equal(f.calls.length, before);
+  await f.app.refresh();
+  assert.equal(f.calls.length, before);
+  assert.match(f.list().querySelector('[data-room-issue]').textContent, /연결/);
+  assert.ok(f.list().querySelector('.arcade-room-card'));
+  f.state.data.rooms = [];
+  await connection(f, true);
+  await connection(f, true);
+  assert.equal(f.calls.length, before + 2);
+  assert.equal(f.list().querySelector('.arcade-room-card'), null);
+  assert.equal(f.list().querySelector('[data-room-issue]').hidden, true);
+  f.app.dispose();
+  await connection(f, false);
+  await connection(f, true);
+  assert.equal(f.calls.length, before + 2);
+});
+
 test('a hidden tab makes no periodic room RPCs and refreshes immediately when visible again', async t => {
   const f = fixture(t); await f.start(); assert.equal(f.calls.length, 2);
   await f.visibility(true); const before = f.calls.length; await f.advance(12000);
@@ -123,11 +154,12 @@ test('an opponent joining while hidden is opened on return, never by a late hidd
   await f.visibility(false); assert.equal(f.opened.length, 1);
 });
 
-for (const interruption of ['visibility', 'game']) {
+for (const interruption of ['visibility', 'game', 'network']) {
   test('return from ' + interruption + ' completes its fresh read before a superseded match can open', async t => {
     const f = fixture(t); f.state.data = { ...f.state.data, rooms: [room()], mine: room() }; f.state.openOverlay = true; await f.start();
     f.state.delayed = true; const pending = f.app.refresh(); await tick();
     if (interruption === 'visibility') { await f.visibility(true); await f.visibility(false); }
+    else if (interruption === 'network') { await connection(f, false); await connection(f, true); }
     else { f.w.document.body.classList.add('gaming'); await tick(); f.w.document.body.classList.remove('gaming'); await tick(); }
     const stale = room({ status: 'playing', match_id: 'closed-match', players: 2 });
     await f.reply(0, { ...f.state.data, rooms: [stale], mine: stale }); await pending;

@@ -56,7 +56,7 @@
   }
   let instance;
 
-  function install({ client, getUserId = () => null, onOpenCard, onOpenInquiry, onKeepCard, onOpenWorld, onGiftClaimed, onOpenGroup = id => location.assign('/groups/#room=' + encodeURIComponent(id)) } = {}) {
+  function install({ client, getUserId = () => null, refreshClosedBadge = true, onOpenCard, onOpenInquiry, onKeepCard, onOpenWorld, onGiftClaimed, onOpenGroup = id => location.assign('/groups/#room=' + encodeURIComponent(id)) } = {}) {
     if (instance || !client?.schema || !client?.auth) return instance;
     let identity = getUserId() || null, identityRun = 0, viewRun = 0, listRun = 0, countRun = 0;
     let items = [], retentionItems = [], cursor = null, snapshotAt = null, hasMore = false;
@@ -284,6 +284,7 @@
       render(more && !generalOk); return !loadError;
     }
     async function refreshCount(force = false) {
+      if (!refreshClosedBadge && layer.hidden) return;
       const user = identity, run = identityRun;
       if (!user || user !== userNow() || document.visibilityState === 'hidden') return;
       if (countRequest?.user === user && countRequest.run === run) return countRequest.promise;
