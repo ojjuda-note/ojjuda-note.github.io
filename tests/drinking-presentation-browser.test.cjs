@@ -747,8 +747,8 @@ test('one phone can choose or write prompts inline and read the fingers recommen
     if(kind==='truth'){
       assert.equal(await page.locator('.truth-settings,.question-picker').count(),0);
       await page.getByRole('button',{name:'설정',exact:true}).click();
-      await page.getByText('반반',{exact:true}).click();
-      await page.getByText('보이기',{exact:true}).click();
+      await page.getByRole('radio',{name:'반반',exact:true}).check();
+      await page.getByRole('radio',{name:'보이기',exact:true}).check();
       await page.getByRole('button',{name:'질문 고르기'}).click();
     }else await page.locator('[data-action="start"]').click();
     if(kind==='king')for(let i=0;i<3;i++){
