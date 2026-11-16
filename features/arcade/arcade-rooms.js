@@ -29,6 +29,7 @@
   function create(options) {
     let root = null, list = null, owner = null, epoch = 0, timer = null, polling = false, pollAgain = false, lastRead = null, busy = false, disposed = false;
     let rooms = [], mine = null, canMatgo = false, issue = '', signature = '', openedMatch = null, waitingRoom = null;
+    let openingRoom = null;
     let filter = '', query = '';
     const current = id => !disposed && id && options.getUserId() === id;
     const drinkingAllowed = () => Boolean(current(owner) && options.matgoAllowed?.() === true);
@@ -64,7 +65,8 @@
       const [, name] = games[room.kind] || ['', '게임'];
       const artwork = /^(carom|pool)/.test(room.kind) ? 'carom4' : Object.hasOwn(games, room.kind) ? room.kind : 'tank';
       const playing = room.status === 'playing';
-      const action = room.is_member ? (playing ? '새 게임' : room.native ? '대기실 열기' : '대기 중') : playing ? '대전 중' : '참여';
+      let action = room.is_member ? (playing ? '새 게임' : room.native ? '대기실 열기' : '대기 중') : playing ? '대전 중' : '참여';
+      if (openingRoom?.roomNo === room.room_no) action = '입장 중…';
       return `<article class="arcade-room-card${room.is_member ? ' mine' : ''}">
         <div class="arcade-room-game"><img src="/assets/design/games/${artwork}.svg" alt="" width="36" height="28"><b>${name}</b></div>
         <div class="arcade-room-copy"><span class="arcade-room-number">방 #${escape(room.room_no)}${room.is_host ? ' · 내 방' : room.is_member ? ' · 참여한 방' : ''}</span><h4>${escape(room.title)}</h4><p>${escape(room.host_name)} <span>· ${room.players}/${room.capacity}명</span></p></div>
@@ -170,6 +172,7 @@
       const actor = options.getUserId();
       const changedOwner = actor !== owner;
       if (changedOwner) {
+        if (openingRoom) { openingRoom = null; busy = false; }
         if (owner && document.getElementById('arcade-room-form')) options.closeModal();
         epoch++; owner = actor; rooms = []; mine = null; openedMatch = null; waitingRoom = null; issue = ''; signature = '';
         lastRead = null; canMatgo = options.matgoAllowed?.() === true; clearTimeout(timer); timer = null;
@@ -284,17 +287,27 @@
         await openMatch(updated); void poll(true);
       } catch (error) { if (current(actor)) { options.notify(message(error)); void poll(true); } }
     }
-    function chooseRoom(room) {
-      if (room.is_member && room.status === 'playing') {
-        const actor = owner;
-        if (busy || !current(actor) || typeof options.onFreshGame !== 'function') return;
-        busy = true; epoch++; render();
-        Promise.resolve().then(() => { if (current(actor)) return options.onFreshGame(room, actor); })
-          .catch(error => { if (current(actor)) options.notify(message(error)); })
-          .finally(() => { busy = false; render(); if (current(actor)) void poll(true); else schedule(); });
+    async function chooseRoom(room) {
+      const fresh = room.is_member && room.status === 'playing';
+      if (fresh || room.native) {
+        const actor = owner, open = fresh ? options.onFreshGame : options.onOpen;
+        if (busy || !current(actor) || typeof open !== 'function') return;
+        const entry = { roomNo: room.room_no };
+        openingRoom = entry; busy = true; epoch++; render();
+        try {
+          await Promise.resolve();
+          if (openingRoom === entry && current(actor)) await open.call(options, room, actor);
+        } catch (error) {
+          if (openingRoom === entry && current(actor)) options.notify(message(error));
+        } finally {
+          if (openingRoom === entry) {
+            openingRoom = null; busy = false; render();
+            if (fresh && current(actor)) void poll(true);
+            else schedule();
+          }
+        }
         return;
       }
-      if(room.native){void options.onOpen(room,owner).catch(error=>options.notify(message(error)));return;}
       if (room.kind !== 'janggi' || room.is_member) { void join(room); return; }
       options.renderModal(`<div class="mhead"><h3>방 #${room.room_no} 참여</h3><button class="btn sm ghost" data-act="close">닫기</button></div><form id="arcade-join-form"><p>${escape(room.title)}</p>${layoutSelect('hehe')}<div class="mfoot"><button type="submit" class="btn pri">이 배치로 참여</button></div></form>`, '장기방 참여');
       document.getElementById('arcade-join-form').onsubmit = event => { event.preventDefault(); void join(room, event.target.elements.layout.value); };
@@ -332,7 +345,7 @@
       if (action === 'refresh') { void poll(true); return; }
       const room = rooms.find(r => String(r.room_no) === button.dataset.room) || (String(mine?.room_no) === button.dataset.room ? mine : null);
       if (!room || busy) return;
-      if (action === 'join') chooseRoom(room);
+      if (action === 'join') void chooseRoom(room);
       if (action === 'cancel') {
         const actor = owner;
         if (!current(actor)) return;

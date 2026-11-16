@@ -55,7 +55,11 @@ const root=path.join(__dirname,'..');
   const choices=[...w.document.querySelector('[data-room-filter]').options].map(o=>o.value);
   for(const game of ['tank','tour','ttang','janggi','chess','carom4','carom3','pool8','matgo'])assert.ok(choices.includes(game));
   assert.equal(w.document.querySelectorAll('.arcade-room-card').length,3);assert.equal(w.document.querySelectorAll('script').length,0);
-  for(const b of w.document.querySelectorAll('[data-arcade-action="join"]'))b.click();assert.deepEqual(opened,['tank','tour','ttang']);
+  for (const card of cards) {
+    w.document.querySelector('[data-arcade-action="join"][data-room="'+card.room_no+'"]').click();
+    await new Promise(resolve => setImmediate(resolve));
+  }
+  assert.deepEqual(opened,['tank','tour','ttang']);
   controller.openCreate('tank');let form=w.document.getElementById('arcade-room-form');assert.equal(form.elements.capacity.options.length,11);form.elements.capacity.value='12';
   await form.onsubmit({preventDefault(){}});assert.equal(created[0].kind,'tank');assert.equal(created[0].capacity,12);
   controller.openCreate('tour');form=w.document.getElementById('arcade-room-form');assert.equal(form.elements.capacity.options.length,7);await form.onsubmit({preventDefault(){}});
