@@ -1,7 +1,7 @@
 /* Park supplies content and actions; World owns the only application chrome. */
 (() => {
   'use strict';
-  const frameVersion = '20261117-park-guest2';
+  const frameVersion = '20261117-park-ink1';
   const actions = new Set(['feed','saved','mine','events','event-new','blocked','settings','compose','glasses']);
   const loadingCards=Array.from({length:3},()=>'<div class="park-skeleton-card"><div class="park-skeleton-photo"><span class="park-skeleton-quote"></span><span class="park-skeleton-quote short"></span></div><div class="park-skeleton-meta"><span></span><span></span></div></div>').join('');
   function menuMarkup() {

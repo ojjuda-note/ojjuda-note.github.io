@@ -75,6 +75,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
   await page.locator('[data-g=start]').click();assert.equal(new URL(page.url()).pathname,'/world.html','members can immediately replay');
   // Run the actual card composer and its embedded navigation adapter.
   const preparePark=async frame=>{
+   await frame.addScriptTag({content:read('note/calligraphy.js')});
    await frame.addScriptTag({content:note.slice(0,noteBoot)});
    await frame.evaluate(()=>{
     authKnown=ready=true;
@@ -85,6 +86,24 @@ const cardId='00000000-0000-4000-8000-000000000001';
     };
    });
    await frame.addScriptTag({content:read('park/integration.js')});
+  };
+  // Inspect a small raster sample so styling a textarea or creating an empty canvas cannot pass.
+  const waitForInk=async(selector,previous=null)=>{
+   const result=await page.waitForFunction(({selector,previous})=>{
+    const art=document.querySelector(selector);
+    if(art?.dataset.inkReady!=='true'||!art.getBoundingClientRect().width)return false;
+    const sample=document.createElement('canvas');sample.width=80;sample.height=60;
+    const ctx=sample.getContext('2d');ctx.drawImage(art,0,0,sample.width,sample.height);
+    const pixels=ctx.getImageData(0,0,sample.width,sample.height).data;
+    let dark=0,hash=2166136261;
+    for(let i=0;i<pixels.length;i+=4){
+     const ink=pixels[i+3]>160&&pixels[i]<100&&pixels[i+1]<100&&pixels[i+2]<100;
+     if(ink)dark++;
+     hash=Math.imul(hash^Number(ink),16777619);
+    }
+    return dark>10&&dark<sample.width*sample.height*.85&&hash!==previous?hash:false;
+   },{selector,previous});
+   return result.jsonValue();
   };
   await enter();await page.evaluate(()=>guestFixture.park());await page.locator('[data-park-app] iframe').waitFor();
   const frame=page.frames().find(f=>f.url().includes('/park/'));await preparePark(frame);
@@ -113,16 +132,20 @@ const cardId='00000000-0000-4000-8000-000000000001';
   });
   await page.waitForFunction(()=>document.querySelector('#convert-calligraphy').getAttribute('aria-pressed')==='true');
   assert.equal(await page.locator('#compose-text').inputValue(),'붓글씨로 이어 쓰기');
-  const family=el=>getComputedStyle(el).fontFamily;
-  assert.match(await page.locator('#compose-text').evaluate(family),/East Sea Dokdo/);
+  const initialInk=await waitForInk('#compose-ink-art');
   await page.locator('#compose-text').fill('고쳐 쓴 붓글씨');
+  await waitForInk('#compose-ink-art',initialInk);
   assert.deepEqual(await page.evaluate(()=>[currentStyle().font,text.value]),['calligraphy','고쳐 쓴 붓글씨']);
   await page.evaluate(()=>{const card=cardElement({id:crypto.randomUUID(),kind:'memo',body:text.value,tags:[],style:currentStyle(),created_at:new Date().toISOString()});list.replaceChildren(card);});
   await page.locator('#feed-list .note-font-calligraphy').evaluate(el=>el.classList.add('ju-font-poster'));
-  assert.match(await page.locator('#feed-list .card-quote').evaluate(family),/East Sea Dokdo/);
+  assert.equal(await page.locator('#feed-list .card-quote').textContent(),'고쳐 쓴 붓글씨');
   await page.locator('#convert-calligraphy').click();
   assert.equal(await page.locator('#compose-font').inputValue(),'default');
   assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
+  assert.equal(await page.locator('#compose-ink-art').isVisible(),false);
+  await page.locator('#close-composer').click();
+  await page.locator('#feed-list .photo').first().scrollIntoViewIfNeeded();
+  await waitForInk('#feed-list .photo > canvas.park-ink-art');
   await page.goto(origin+'/park/?card='+cardId);await preparePark(page);
   await page.evaluate(id=>openComposer('reply',null,id),cardId);await page.locator('#guest-compose-login').click();await login('note');assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
   // Login is the automatic entry; a guest can still deliberately select signup

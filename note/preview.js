@@ -128,10 +128,14 @@ function backgroundObserver(photo) {
 }
 function revealFeedBackground(photo) {
   const key = photo.dataset.pendingBackground;
-  if (!key) return;
+  const ink = inkCards.has(photo);
+  if (!key && !ink) return;
   backgroundObserver(photo)?.unobserve(photo);
-  delete photo.dataset.pendingBackground;
-  setPhotoBackground(photo, key);
+  if (key) {
+    delete photo.dataset.pendingBackground;
+    setPhotoBackground(photo, key);
+  }
+  if (ink) drawInkCard(photo);
 }
 function setPhotoBackground(element, value) {
   const key = photoAssetKey(value);
@@ -785,6 +789,52 @@ function requestTagFit() {
   });
 }
 const expandedBodyEntries = new Set(), quoteFitEntries = new Set();
+const inkCards = new WeakMap();
+function inkOptions(style, width) {
+  const inkColor = COLOR_PALETTE[style.textColor]?.solid;
+  const box = COLOR_PALETTE[style.boxColor];
+  const paperColor = box?.box.slice(0, 7)
+    || (inkColor && colorLuminance(inkColor) > .45 ? '#31352e' : undefined);
+  return { width, inkColor, paperColor, zoom: style.size === 'small' ? .85 : style.size === 'large' ? 1.12 : 1 };
+}
+function drawInkCard(photo) {
+  const job = inkCards.get(photo);
+  if (!job) return;
+  const canvas = job.canvas;
+  if (canvas.dataset.inkReady === 'true') return;
+  if (window.ParkCalligraphy.render(canvas, job.body, job.options)) {
+    canvas.dataset.inkReady = 'true';
+    requestTagFit();
+  }
+}
+let composeInkFrame = 0, composeInkRun = 0, editingInkPhoto = false;
+function syncComposeInk(selected, style) {
+  const photo = $('.compose-photo'), editor = $('#compose-ink-editor'), canvas = $('#compose-ink-art');
+  if (!canvas || !editor) return;
+  const on = selected && !!window.ParkCalligraphy && !backdrop.hidden;
+  const hasPhoto = !!(selectedPhotoKey || editingInkPhoto || (kind === 'event' &&
+    (eventPhotoPreviewUrl || (!eventPhotoRemove && eventHadPhoto))));
+  photo.classList.toggle('park-ink-photo', on && hasPhoto);
+  photo.classList.toggle('park-ink-paper', on && !hasPhoto);
+  if (editor.hidden === on) {
+    // Move the same field so login handoff, IME, tags, and draft listeners keep their state.
+    const focused = document.activeElement === text, start = text.selectionStart, end = text.selectionEnd;
+    editor.hidden = !on;
+    if (on) { editor.append(text); text.style.width = ''; text.style.height = ''; text.style.fontSize = ''; }
+    else $('#compose-tag-display').before(text);
+    if (focused) { text.focus({ preventScroll: true }); text.setSelectionRange(start, end); }
+  }
+  cancelAnimationFrame(composeInkFrame);
+  const run = ++composeInkRun;
+  canvas.hidden = !on;
+  if (!on) { delete canvas.dataset.inkReady; return; }
+  const body = text.value, options = inkOptions(style, 720);
+  photo.style.setProperty('--park-ink-paper', options.paperColor || '#fcfbf8');
+  composeInkFrame = requestAnimationFrame(() => {
+    if (run !== composeInkRun || backdrop.hidden) return;
+    if (window.ParkCalligraphy.render(canvas, body, options)) canvas.dataset.inkReady = 'true';
+  });
+}
 function fitPhotoQuote(photo, quote, tagRow) {
   // A hidden feed has zero bounds, not an overflowing card. Leave its layout intact.
   if (!photo.isConnected || photo.getBoundingClientRect().width <= 0) return;
@@ -794,6 +844,7 @@ function fitPhotoQuote(photo, quote, tagRow) {
   fitTagRow(tagRow);
   // Measure at the authored CSS size first so a short wide line is not penalized by its character count.
   quote.style.fontSize = '';
+  if (inkCards.get(photo)?.canvas.dataset.inkReady === 'true') return;
   if (!photoQuoteClipped(photo, quote, tagRow)) return;
   const authored = parseFloat(getComputedStyle(quote).fontSize);
   let best = Math.min(12, authored);
@@ -813,7 +864,7 @@ function fitPhotoQuote(photo, quote, tagRow) {
 function refreshExpandedBodies() {
   for (const entry of quoteFitEntries) {
     if (!entry.photo.isConnected) {
-      if (entry.photo.dataset.pendingBackground) backgroundObserver(entry.photo)?.unobserve(entry.photo);
+      if (entry.photo.dataset.pendingBackground || inkCards.has(entry.photo)) backgroundObserver(entry.photo)?.unobserve(entry.photo);
       quoteFitEntries.delete(entry);
       continue;
     }
@@ -828,6 +879,8 @@ function refreshExpandedBodies() {
   }
 }
 function photoQuoteClipped(photo, quote, tagRow) {
+  const ink = inkCards.get(photo);
+  if (ink?.canvas.dataset.inkReady === 'true') return ink.body.length > 36 || ink.body.split('\n').length > 6;
   const photoBounds = photo.getBoundingClientRect(), quoteBounds = quote.getBoundingClientRect();
   const tagBounds = tagRow.getBoundingClientRect();
   return quote.scrollHeight > quote.clientHeight + 1 || quote.scrollWidth > quote.clientWidth + 1
@@ -852,7 +905,9 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
   const photo = node('span', 'photo');
   if (card.kind === 'event') photo.dataset.protectPhoto = String(!card.is_mine);
   const hiddenEvent = card.kind === 'event' && card.body == null;
-  const key = hiddenEvent ? null : photoAssetKey(visiblePhoto);
+  const useInk = !hiddenEvent && style.font === 'calligraphy' && !!window.ParkCalligraphy && typeof card.body === 'string';
+  const inkHasPhoto = useInk && (photoAssetKey(card.photo_key) || (card.kind === 'event' && (card.has_event_photo || card.event_photo_path)));
+  const key = hiddenEvent || (useInk && !inkHasPhoto) ? null : photoAssetKey(visiblePhoto);
   if (key && card.kind !== 'event' && document.documentElement.hasAttribute('data-park-webp')) {
     photo.dataset.imageSizes = compact ? '(max-width: 624px) 67vw, 400px'
       : expanded ? '(max-width: 624px) 100vw, 600px'
@@ -881,7 +936,21 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
     });
     tagRow.append(chip);
   }
-  photo.append(node('span', 'photo-shade'), quote, tagRow);
+  photo.append(node('span', 'photo-shade'));
+  if (useInk) {
+    photo.classList.add(inkHasPhoto ? 'park-ink-photo' : 'park-ink-paper');
+    if (!expanded) open.setAttribute('aria-label', body + ', 카드 크게 보기');
+    const options = inkOptions(style, expanded ? 1080 : compact ? 480 : 720);
+    photo.style.setProperty('--park-ink-paper', options.paperColor || '#fcfbf8');
+    if (options.paperColor && colorLuminance(options.paperColor) < .3) item.style.setProperty('--park-ink-controls', '#fff');
+    const canvas = node('canvas', 'park-ink-art');
+    canvas.setAttribute('aria-hidden', 'true');
+    photo.append(canvas);
+    inkCards.set(photo, { canvas, body, options });
+    if (observer && deferBackground) observer.observe(photo);
+    else drawInkCard(photo);
+  }
+  photo.append(quote, tagRow);
   open.append(photo); frame.append(open);
   quoteFitEntries.add({ photo, quote, tagRow });
   if (card.kind === 'event') frame.append(node('span', 'note-event-badge', '이벤트/광고'));
@@ -987,6 +1056,7 @@ function previewCardWidth(compact) {
 function cardPhotoOverflows(body, values = []) {
   if (!body) return false;
   const compact = kind === 'comment', style = currentStyle();
+  if (style.font === 'calligraphy' && window.ParkCalligraphy) return false;
   const probe = node('article', compact ? 'reply-card' : kind === 'event' ? 'photo-card note-event-card' : 'photo-card');
   probe.style.maxWidth = 'none';
   const host = node('div', 'park-photo-cards');
@@ -2297,9 +2367,10 @@ function updateComposer() {
   $('.compose-photo')?.classList.toggle('tags-chip', document.activeElement !== tags && !!tags.value.trim());
   syncQuickChoices();
   syncCardPhotoAttach();
-  if (!backdrop.hidden) resizeComposerText();
-  $('#compose-count').textContent = `${text.value.length} / 200자`;
   const visual = currentStyle();
+  syncComposeInk(selected, visual);
+  if (!backdrop.hidden && text.parentNode === $('.compose-photo')) resizeComposerText();
+  $('#compose-count').textContent = `${text.value.length} / 200자`;
   const extra = visual.boxTransparency !== 25 || selectedPhotoKey || tags.value.trim() || visual.font !== 'default'
     || visual.size !== 'normal' || visual.effect !== 'none'
     || ['textColor', 'boxColor'].some(key => visual[key] !== 'default');
@@ -2374,6 +2445,7 @@ function resizeComposerText() {
   text.style.height = `${Math.min(maximum, Math.max(minimum, text.scrollHeight))}px`;
 }
 function composerPhotoOverflows() {
+  if (text.parentNode?.id === 'compose-ink-editor') return false;
   const tagsRow = $('#compose-tag-display');
   return text.scrollHeight > text.clientHeight + 1 || (tagsRow.childElementCount > 0
     && text.getBoundingClientRect().bottom + 6 > tagsRow.getBoundingClientRect().top);
@@ -2427,6 +2499,7 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   $('.compose-photo')?.classList.remove('has-card-photo');
   localComposerBaseline = null; localComposerDirty = false; localComposerStored = false;
   parentId = editingId ? card.parent_id : kind === 'comment' ? replyTarget : null;
+  editingInkPhoto = !!(editingId && photoAssetKey(card.photo_key));
   backgroundKey = editingId ? (card.photo_key || card.background_key) : guest ? '10' : String(PHOTO_FIRST + Math.floor(Math.random() * (PHOTO_LAST - PHOTO_FIRST + 1)));
   writingPosition = null; eventPosition = null; publishRequestId = crypto.randomUUID(); photoRequestId = crypto.randomUUID(); locationRun++;
   replyDueChecking = false; replyDueRun++;
