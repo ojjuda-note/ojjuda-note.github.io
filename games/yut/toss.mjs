@@ -1,3 +1,4 @@
+import {BACK_DO_LABEL,BACK_DO_STICK} from './rules.mjs?v=15';
 // Movement is in world coordinates. A camera fitted to the available surface
 // projects the split timber, its floor support and its shadow into the same space.
 const TAU = Math.PI * 2;
@@ -372,6 +373,13 @@ function drawStick(ctx,r,model) {
     }
     stroke(ctx,[f(-side+9,2.2),f(-34,1),f(-11,1.9),f(0,.4),f(33,.95),f(side-8,-1.4)],'rgba(166,117,68,.46)',.75);
     stroke(ctx,[f(-side+15,-4.9),f(-1,-3.4),f(15,-5.2),f(35,-4.1)],'rgba(179,128,73,.38)',.75);
+    if(r.index===BACK_DO_STICK){
+      const [x,y]=f(0,0),[ax,ay]=f(1,0),[bx,by]=f(0,1);
+      ctx.save();ctx.transform(ax-x,ay-y,bx-x,by-y,x,y);
+      ctx.font='bold 20px "Noto Sans KR","Malgun Gothic",sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#602715';
+      ctx.fillText(BACK_DO_LABEL,0,0,98);ctx.restore();
+    }
   }
   for(const sign of [-1,1]){
     // A small chamfer wraps continuously around the semicircular sawn end.

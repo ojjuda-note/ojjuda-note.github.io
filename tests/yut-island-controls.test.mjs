@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {readFileSync} from 'node:fs';
 import {JSDOM} from 'jsdom';
-import {createThrow,sampleThrow} from '../games/yut/toss.mjs';
+import {createThrow,sampleThrow,drawRack,drawThrow} from '../games/yut/toss.mjs';
 import {createBoard} from '../games/yut/board.mjs';
 import {FINISH,newGame,nodeName} from '../games/yut/rules.mjs';
 
@@ -38,6 +38,18 @@ test('each stick rebounds briefly once and settles on its rolled face in the pil
     assert.ok(plan.totalMs-plan.settleMs>=450);
   }
   assert.ok(arrangements.size>4);
+});
+
+test('the same single flat face bears the backdo inscription in the rack and landed throw',()=>{
+  let count=0;const gradient=()=>({addColorStop(){}});
+  const ctx=new Proxy({createLinearGradient:gradient,createRadialGradient:gradient,fillText(text){if(text==='한 칸 뒤로')count++;}},
+    {get:(target,key)=>target[key]??(()=>{})});
+  drawRack(ctx,400,85);assert.equal(count,1);
+  for(let mask=0;mask<16;mask++){
+    const faces=Array.from({length:4},(_,i)=>(mask>>i)&1),plan=createThrow(faces,903+mask);
+    count=0;drawRack(ctx,390,70,faces,903+mask);assert.equal(count,faces[3]);
+    count=0;drawThrow(ctx,390,500,plan,plan.totalMs);assert.equal(count,faces[3]);
+  }
 });
 
 test('the arcade entrance, piece controls, winning move and rematch work together',async t=>{
@@ -174,6 +186,14 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   assert.equal(new Set(places).size,3);
   assert.ok(places.every(place=>place&&!place.includes(' · ')));
   doc.getElementById('close').click();
+  // Bank a yut before backdo, use it to enter and then visibly retrace a square.
+  prefs.matches=true;setFaces(4);first().click();
+  let marked=0;t.mock.method(Math,'random',()=>marked++%4===3?.1:.9);first().click();
+  assert.equal(chip(1).textContent,'빽도 뒤로 1칸');assert.equal(chip(1).disabled,true);
+  chip(0).click();first().click();
+  assert.equal(text('move-result'),'빽도 · 뒤로 1칸');
+  assert.equal(first().textContent,'뒤로 1칸 이동');first().click();
+  doc.getElementById('settings').click();dialogButton('게임 시작').click();dialogButton('계속하기').click();
   prefs.matches=true;setFaces(1);first().click();tick();
   const [x,y]=marks.get('도착');
   doc.getElementById('board').dispatchEvent(new w.MouseEvent('click',{clientX:x,clientY:y,bubbles:true}));

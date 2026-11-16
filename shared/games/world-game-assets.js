@@ -39,7 +39,7 @@
   mines:'1.5.1',
   sacheonseong:'1.18.2',
   saetbyeol:'1.8.1',
-  yut:'1.12.1',
+  yut:'1.13.0',
   tour:'1.6.1',
   ttang:'1.7.1',
   photo_ttang:'1.6.1',
