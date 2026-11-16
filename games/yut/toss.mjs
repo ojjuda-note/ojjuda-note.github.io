@@ -271,7 +271,13 @@ function camera(width,height,scale,baseline) {
 
 function stageScene(plan,t,cam) {
   const scene=flightStates(plan,t);
-  for(const r of scene)if(r.phase==='flight')r.height=Math.max(0,r.floor+r.arc*cam.lift-r.support);
+  // Preserve near-ground clearance and the full recoil. Only the high part
+  // of the launch is compressed in a short viewport, with a continuous slope.
+  for(const r of scene){
+    const excess=Math.max(0,r.height-40);
+    const freeHeight=excess-16*(1-Math.exp(-excess/16));
+    r.height+=(cam.lift-1)*freeHeight;
+  }
   return seatUpper(scene,plan);
 }
 
