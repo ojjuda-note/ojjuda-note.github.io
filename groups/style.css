@@ -102,18 +102,39 @@
 
 .group-activity,.activity-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:12px 0}
 .group-activity{padding:12px 14px;border:1px solid #cbdcd4;border-radius:12px;background:#f2f7f4}
-.activity-editor:not([hidden]){display:grid;gap:12px;margin-top:16px}
-.activity-editor [hidden]{display:none}
-.poll-options{display:grid;gap:8px;margin:14px 0}
-.poll-options button{position:relative;display:flex;justify-content:space-between;align-items:center;gap:12px;overflow:hidden;text-align:left;padding:12px 14px 16px;min-height:46px}
-.poll-options button span,.activity-legend li,.draw-result,.ladder-labels>*{overflow-wrap:anywhere}
-.poll-options button b{white-space:nowrap}
-.poll-options button i{position:absolute;bottom:0;left:0;height:4px;background:#3d8069}
-.poll-options [aria-pressed=true],.ladder-labels [aria-pressed=true],.ladder-labels .chosen{background:#e1efe8;color:#174936;border-color:#3d8069}
+.dialog .activity-heading{grid-template-columns:1fr}
+.activity-editor,.poll-ballot{min-width:0;margin:16px 0 0;padding:12px 14px 14px;border:1px solid var(--line);border-radius:12px}
+.activity-editor[hidden],.activity-editor [hidden]{display:none}
+.activity-editor legend,.poll-ballot legend,.poll-result-heading h4{font-weight:750}
+.activity-editor [data-entry-list]{display:grid;gap:10px;margin-bottom:10px}
+.activity-row{display:flex;align-items:end;gap:8px}
+.activity-row label{flex:1;min-width:0;margin:0}
+.activity-row input{min-width:0;width:100%}
+.activity-row .row-remove{padding:6px 9px}
+.activity-editor .hint{margin:8px 0 0}
+.poll-ballot{display:grid;gap:8px;margin:0;padding:10px 0;border:0}
+.poll-ballot label{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.poll-ballot label:has(:checked){border-color:var(--green);background:#e8f3ed}
+.poll-ballot input{accent-color:var(--green);width:18px;height:18px;min-height:0;margin:0;flex:none}
+.ballot-actions{justify-content:flex-start}
+.poll-result-heading,.poll-result-label,.ladder-results>div{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.poll-result-heading h4{margin:0;font-size:1.05rem}
+.poll-results ul,.ladder-results{margin:12px 0;padding:0;list-style:none}
+.poll-results li{margin:0 0 14px}
+.poll-result-label strong,.poll-result-heading>span{white-space:nowrap;font-size:.9rem}
+.poll-result-label small,.wheel-winner b{color:#174936;border:1px solid #8ab29d;border-radius:5px;padding:1px 5px;font-size:.76rem;white-space:nowrap}
+.poll-track{margin-top:6px;width:100%;height:13px;border-radius:5px;background:#dce8df;overflow:hidden}
+.poll-track span{display:block;height:100%;background:#36765b}
+.ladder-results>div{padding:6px 0;border-bottom:1px solid var(--line)}
+.ladder-results dd{margin:0;text-align:right;font-weight:650}
+.poll-result-label>span,.poll-ballot span,.ladder-results dt,.ladder-results dd,.activity-legend li,.draw-result,.ladder-labels>*{overflow-wrap:anywhere}
+.ladder-labels [aria-pressed=true],.ladder-labels .chosen{background:#e1efe8;color:#174936;border-color:#3d8069}
+@media(forced-colors:active){.poll-track{border:1px solid CanvasText}.poll-track span{background:Highlight;forced-color-adjust:none}}
 .activity-wheel-frame{width:min(68vw,230px);margin:22px auto 16px;position:relative}
 .activity-wheel-frame::before{content:'';position:absolute;z-index:1;left:50%;top:-7px;transform:translateX(-50%);border:10px solid transparent;border-bottom:0;border-top:19px solid #21312a;filter:drop-shadow(0 1px 1px white)}
 .activity-wheel{position:relative;aspect-ratio:1;border:3px solid white;box-shadow:0 0 0 2px #42564c;border-radius:50%}
 .activity-wheel b{position:absolute;transform:translate(-50%,-50%);color:white;font-size:1rem}
+.activity-wheel .wheel-hit{border-radius:50%;background:white;color:#183d2d;padding:2px 7px}
 .activity-legend{columns:2;column-gap:24px;padding-inline-start:1.8rem;margin:8px 0 16px}
 .activity-legend li{break-inside:avoid;padding:3px 0}
 .ladder-scroll{max-width:100%;overflow:auto;margin:12px 0}
@@ -121,6 +142,8 @@
 .ladder-board svg{width:100%;display:block;height:clamp(100px,29vh,240px)}
 .ladder-board svg line{stroke:#a2afa7;stroke-width:2;vector-effect:non-scaling-stroke}
 .ladder-board svg polyline{fill:none;stroke:#236c52;stroke-width:4;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+@media(prefers-reduced-motion:no-preference){.ladder-board polyline{stroke-dasharray:1;animation:group-ladder-trace .65s ease-out both}}
+@keyframes group-ladder-trace{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
 .ladder-labels{display:grid;grid-template-columns:repeat(var(--lanes),minmax(0,1fr));align-items:stretch;text-align:center}
 .ladder-labels>*{margin:2px;padding:5px 2px;font-size:.88rem;line-height:1.3;align-content:center}
 .ladder-labels button{min-height:40px}
