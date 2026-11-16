@@ -252,8 +252,30 @@ html body .shell > .col > .main { width: min(100%, 1268px); }
   display: none !important;
 }
 .guest-compose-login:not([hidden]) { display: inline-flex; margin-block: 10px; }
+.note-opacity-hint { margin: 4px 2px 0; color: var(--ink-2); font-size: 12px; }
 /* Calligraphy keeps its readable source in the DOM, separate from the painted card. */
 .park-ink-art { display: none; pointer-events: none; }
+.park-ink-box-frame { display: none; }
+.park-ink-overlay > .park-ink-box-frame:not([hidden]) {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  container-type: size;
+  pointer-events: none;
+}
+/* Match the contained 1080 × 790 canvas, including its letterboxing on tall photos. */
+.park-ink-sheet {
+  position: relative;
+  width: min(100cqw, calc(100cqh * 1080 / 790));
+  aspect-ratio: 1080 / 790;
+}
+.park-ink-box {
+  position: absolute;
+  border-radius: clamp(6px, 1.8cqw, 14px);
+  background-color: var(--note-box-color);
+}
 .park-ink-overlay > .park-ink-art[data-ink-ready="true"] {
   display: block;
   position: absolute;
@@ -265,12 +287,6 @@ html body .shell > .col > .main { width: min(100%, 1268px); }
   background: transparent;
 }
 .park-ink-overlay > .park-ink-art[hidden] { display: none; }
-#main .park-photo-cards .park-ink-overlay > .card-quote {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  backdrop-filter: none;
-}
 #main .park-photo-cards .park-ink-art[data-ink-ready="true"] + .card-quote {
   position: absolute;
   width: 1px;

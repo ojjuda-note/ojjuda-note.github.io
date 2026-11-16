@@ -549,6 +549,7 @@
       const pixels = frame.data;
       const scale = WIDTH / width;
       let seed = 72341;
+      let left = width, top = height, right = -1, bottom = -1;
       for (let y = 0; y < height; y++) {
         const brushY = y * scale;
         for (let x = 0; x < width; x++) {
@@ -562,9 +563,19 @@
           // Dry pigment reveals the actual backdrop, including at antialiased edges.
           const loss = Math.max(0, .012 + .025 * pool + .024 * (noise - .5) + (noise > .987 ? .045 : 0));
           pixels[alpha] = Math.round(coverage * (1 - loss));
+          if (pixels[alpha]) {
+            left = Math.min(left, x);
+            right = Math.max(right, x);
+            top = Math.min(top, y);
+            bottom = y;
+          }
         }
       }
       ctx.putImageData(frame, 0, 0);
+      return right < left ? null : Object.freeze({
+        x: left / width, y: top / height,
+        width: (right - left + 1) / width, height: (bottom - top + 1) / height
+      });
     }
     function makeTint(inkColor) {
       if (!inkColor) return null;
@@ -580,7 +591,7 @@
       const page = layout(input, zoom);
       if (!input.trim()) {
         ctx.restore();
-        return page;
+        return null;
       }
       ctx.translate(page.dx, page.dy);
       ctx.scale(page.fit, page.fit);
@@ -613,8 +624,7 @@
       }
       if (accent && page.last) accentStroke(ctx, page.last);
       ctx.restore();
-      textureInk(ctx);
-      return page;
+      return textureInk(ctx);
     }
     return {
       draw,
@@ -647,18 +657,20 @@
       willReadFrequently: true
     });
     if (!ctx) return null;
-    Composition.draw(ctx, normalized, accent, zoom, inkColor);
+    const bounds = Composition.draw(ctx, normalized, accent, zoom, inkColor);
     lastPaint.set(canvas, {
       text: normalized,
       width: pixelWidth,
       accent,
       inkColor,
+      bounds,
       zoom
     });
     return canvas;
   }
   window.ParkCalligraphy = Object.freeze({
     render,
+    inkBounds: canvas => lastPaint.get(canvas)?.bounds ?? null,
     width: Composition.WIDTH,
     height: Composition.HEIGHT
   });

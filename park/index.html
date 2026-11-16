@@ -42,7 +42,7 @@
 <link rel="stylesheet" href="/shared/brand/brand-copy.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/features/wallet/paid-ui.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/app/world/world-design.css?v=20261106-source-folders1">
-<link rel="stylesheet" href="/park/design.css?v=20261117-park-ink2">
+<link rel="stylesheet" href="/park/design.css?v=20261117-park-inkbox1">
 <link rel="stylesheet" href="/app/world/world-themes.css?v=20261110-themes3">
 <script src="/app/world/world-themes.js?v=20261110-theme-copy1" defer></script>
 <meta property="og:type" content="website">
@@ -216,7 +216,8 @@
             <div class="note-color-fields" aria-label="색 선택">
               <fieldset class="note-color-field" data-color-field="textColor"><legend>글씨 색</legend><div class="note-color-choices"></div></fieldset>
               <fieldset class="note-color-field" data-color-field="boxColor"><legend>네모난 글상자 색</legend><div class="note-color-choices"></div></fieldset>
-              <div class="note-opacity-control"><label for="compose-box-transparency">글상자 투명도</label><input id="compose-box-transparency" type="range" min="0" max="100" step="1" value="25"><input id="compose-box-transparency-value" type="number" min="0" max="100" step="1" value="25" inputmode="numeric" aria-label="글상자 투명도 숫자 입력"><span aria-hidden="true">%</span></div>
+              <div class="note-opacity-control"><label for="compose-box-transparency">글상자 불투명도</label><input id="compose-box-transparency" type="range" min="0" max="100" step="1" value="25" aria-describedby="compose-box-opacity-hint"><input id="compose-box-transparency-value" type="number" min="0" max="100" step="1" value="25" inputmode="numeric" aria-label="글상자 불투명도 숫자 입력" aria-describedby="compose-box-opacity-hint"><span aria-hidden="true">%</span></div>
+              <p class="note-opacity-hint" id="compose-box-opacity-hint">0% 투명 · 100% 불투명</p>
             </div>
             <p class="note-setting-help">글씨 꾸미기는 카드에 1개월간 적용돼요. 기본 배경은 미리보기 사진으로 등록돼요.</p>
             <fieldset class="note-photo-pick" id="note-photo-pick">
@@ -252,10 +253,10 @@
   <script src="/note/notifications.js?v=20261117-inbox-keyboard1" defer></script>
   <script src="/note/feed-swipe.js?v=20261022-1" defer></script>
   <script src="/features/account/account-deletion.js?v=20261106-source-folders1" defer></script>
-  <script src="/note/share-image.js?v=20261117-park-ink2" defer></script>
+  <script src="/note/share-image.js?v=20261117-park-inkbox1" defer></script>
   <script src="/note/share-kakao.js?v=20261031-kakao-card-share1" defer></script>
-  <script src="/note/calligraphy.js?v=20261117-park-ink2" defer></script>
-  <script src="/note/preview.js?v=20261117-park-ink2" defer></script>
+  <script src="/note/calligraphy.js?v=20261117-park-inkbox1" defer></script>
+  <script src="/note/preview.js?v=20261117-park-inkbox1" defer></script>
   <script src="/note/pull-refresh.js?v=20261004-refresh1" defer></script>
   <script src="/note/navigation.js?v=20260929-my1" defer></script>
   <script src="/park/integration.js?v=20261116-visible-card1" defer></script>

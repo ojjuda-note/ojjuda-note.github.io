@@ -97,7 +97,8 @@ fs.mkdirSync(proof,{recursive:true});
     {id:id(3),kind:'memo',body:'그림이 없는 카드',tags:['메모'],background_key:'plain',style:{font:'round'}},
     {id:id(4),kind:'event',body:'범위 제한 이벤트',tags:['이벤트'],background_key:'10',is_mine:false},
     {id:id(5),kind:'memo',body:'깨진 사진은 공유하지 않아요',tags:['검증'],background_key:'189',style:{font:'round'}},
-    {id:id(6),kind:'memo',body:'오늘도 수고했어',tags:[],background_key:'188',style:{font:'calligraphy',textColor:'black'}}
+    ...[0,50,100].map((level,index)=>({id:id(6+index),kind:'memo',body:'오늘도 수고했어',tags:[],background_key:'188',
+     style:{font:'calligraphy',textColor:'black',boxColor:'white',boxTransparency:level}}))
    ].map(card=>({...card,created_at:'2026-10-31T00:00:00Z'}));
    window.deniedCards=new Set();
    noteRpc=async(name,args)=>name==='get_card'?shareCards.find(card=>card.id===args.p_id&&!deniedCards.has(card.id))||null:name==='list_cards'?shareCards:[];
@@ -165,25 +166,37 @@ fs.mkdirSync(proof,{recursive:true});
   }),/not_configured/,'an unconfigured adapter fails before loading the SDK or uploading');
   assert.equal(kakaoSdkRequests,0);
 
-  // Both the built-in photo and the actual brush strokes must survive the PNG capture.
-  await open(6);await ready();await action('share').click();
-  await page.waitForFunction(()=>sharedPayloads.at(-1)?.title==='오늘도 수고했어');
-  const inkShare=await page.evaluate(async()=>{
-   const bitmap=await createImageBitmap(sharedPayloads.at(-1).files[0]);
-   const canvas=document.createElement('canvas');canvas.width=96;canvas.height=72;
-   const ctx=canvas.getContext('2d');ctx.drawImage(bitmap,0,0,96,72);bitmap.close();
-   const pixels=ctx.getImageData(10,10,76,52).data;
-   let photoPixels=0,inkPixels=0;
-   for(let i=0;i<pixels.length;i+=4){
-    if(pixels[i+3]<230)continue;
-    if(pixels[i+2]-pixels[i]>40&&pixels[i+1]-pixels[i]>24)photoPixels++;
-    if(Math.max(pixels[i],pixels[i+1],pixels[i+2])<100&&Math.abs(pixels[i+2]-pixels[i])<18)inkPixels++;
+  // The same words on a known blue photo, with only the white box opacity changed.
+  for(const number of [6,7,8]){
+   await open(number);await ready();
+   const before=await count();await action('share').click();
+   await page.waitForFunction(n=>sharedPayloads.length===n+1,before);
+   await close();
+  }
+  const samples=await page.evaluate(async()=>{
+   const [clear,half,solid]=await Promise.all(sharedPayloads.slice(-3).map(async payload=>{
+    const bitmap=await createImageBitmap(payload.files[0]);
+    const canvas=document.createElement('canvas');canvas.width=96;canvas.height=72;
+    const ctx=canvas.getContext('2d');ctx.drawImage(bitmap,0,0,96,72);bitmap.close();
+    return ctx.getImageData(3,3,90,66).data;
+   }));
+   let photo=0,outside=0,box=0,ink=0;
+   const isBlue=(image,i)=>image[i+3]>245&&Math.abs(image[i]-80)<8
+    &&Math.abs(image[i+1]-175)<8&&Math.abs(image[i+2]-216)<8;
+   for(let i=0;i<clear.length;i+=4){
+    if(isBlue(clear,i)){
+     photo++;
+     if(isBlue(half,i)&&isBlue(solid,i))outside++;
+     if(solid[i]>245&&solid[i+1]>245&&solid[i+2]>237&&half[i]>clear[i]+20&&half[i]<solid[i]-20)box++;
+    }
+    if([clear,half,solid].every(image=>image[i+3]>245&&Math.max(image[i],image[i+1],image[i+2])<82))ink++;
    }
-   return {photoPixels,inkPixels,total:pixels.length/4};
+   return {photo,outside,box,ink,total:clear.length/4};
   });
-  assert.ok(inkShare.photoPixels>inkShare.total*.7,'the selected photo is visible around and between the strokes');
-  assert.ok(inkShare.inkPixels>25,'the exported photograph contains the painted calligraphy');
-  await close();
+  assert.ok(samples.photo>samples.total*.7,'zero opacity shows the original blue photo between strokes');
+  assert.ok(samples.box>50,'the same pixels show a translucent then solid white box behind the strokes');
+  assert.ok(samples.outside>50,'the photo outside the box stays unchanged at all three levels');
+  assert.ok(samples.ink>25,'the painted ink remains visible in the same position at all three levels');
 
   // Manual link copy and link-only sharing remain available as secondary actions.
   await open(2);await ready();await action('copy').click();
