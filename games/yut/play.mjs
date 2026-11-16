@@ -1,8 +1,8 @@
-import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=12';
-import {createBoard,PAWN_HOP_MS} from './board.mjs?v=21';
+import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=13';
+import {createBoard,PAWN_HOP_MS} from './board.mjs?v=22';
 import {createToss,drawRack} from './toss.mjs?v=8';
-import {createTableSounds} from './sound.mjs?v=2';
-import {openRoom,roomCode} from './room.mjs?v=12';
+import {createTableSounds} from './sound.mjs?v=3';
+import {openRoom,roomCode} from './room.mjs?v=13';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=5';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
@@ -137,7 +137,7 @@ function showBonus(s){
       bursts.append(group);
     }
   }
-  bonusRoll.hidden=false;sounds.fireworks();
+  bonusRoll.hidden=false;sounds.cheer();
   bonusTimer=setTimeout(clearBonus,1500);
 }
 function moveNotice(s){
