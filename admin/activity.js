@@ -73,6 +73,7 @@
     function clearAccount() { if (destroyed || !isCurrent()) return; run++; owner = null; clear('관리자 계정으로 다시 열어 주세요.'); }
     function setBusy(busy) { refreshButton.disabled = busy; list.setAttribute('aria-busy', String(busy)); }
     function renderItems(items) {
+      const expanded = new Set(Array.from(list.querySelectorAll('details[open][data-record-id]'), detail => detail.dataset.recordId));
       list.replaceChildren();
       for (const row of items) {
         const card = el('article', 'aa-card'), head = el('div', 'aa-card-head');
@@ -81,22 +82,32 @@
         card.append(head, el('p', 'aa-meta', `처리자: ${actor}${row.target_nick ? ` · 대상: ${row.target_nick}` : ''}`));
         if (row.reason) card.append(el('p', 'aa-reason', `사유: ${row.reason}`));
         const detail = el('details', 'aa-detail'), values = el('dl'); detail.append(el('summary', '', '상세 기록'));
+        if (row.id != null) {
+          detail.dataset.recordId = String(row.id);
+          detail.open = expanded.has(detail.dataset.recordId);
+        }
         const rows = [...changes(row), ['작업 번호', row.id], ['운영자 번호', row.admin_id], ['대상 회원 번호', row.target_user], ['대상 자료', row.target], ['카드 번호', row.card_id], ['신고 번호', row.report_id]];
         for (const [label, value] of rows) if (value != null && value !== '') values.append(el('dt', '', label), el('dd', '', value));
         detail.append(values); card.append(detail); list.append(card);
       }
     }
-    async function refresh(reset = false) {
+    async function refresh(keepDetails = false) {
       if (!active()) { if (!destroyed && isCurrent()) clearAccount(); return; }
-      if (reset) offset = 0;
       const version = ++run, requested = { p_source: source, p_action: action || null, p_limit: PAGE_SIZE, p_offset: offset };
-      setBusy(true); status.textContent = '작업 기록을 불러오고 있어요.'; list.replaceChildren(); pager.replaceChildren();
+      setBusy(true); status.textContent = '작업 기록을 불러오고 있어요.';
+      if (!keepDetails) list.replaceChildren();
+      pager.replaceChildren();
       try {
         const { data, error } = await client.rpc('admin_activity_list', requested);
         if (!valid(version)) return;
         if (error) throw error;
         if (!data || !Array.isArray(data.items) || !Array.isArray(data.actions) || !Number.isSafeInteger(Number(data.total_count)) || Number(data.total_count) < 0) throw new Error('invalid_activity_response');
         const total = Number(data.total_count);
+        if (total === 0) offset = 0;
+        else if (offset >= total) {
+          offset = Math.floor((total - 1) / PAGE_SIZE) * PAGE_SIZE;
+          return refresh();
+        }
         actionSelect.replaceChildren(el('option', '', '전체 작업')); actionSelect.firstElementChild.value = '';
         for (const item of data.actions) { const option = el('option', '', `${actionLabel(item.action)} (${number(item.count)})`); option.value = item.action; actionSelect.append(option); }
         if (action && ![...actionSelect.options].some(option => option.value === action)) { const option = el('option', '', actionLabel(action)); option.value = action; actionSelect.append(option); }
