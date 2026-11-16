@@ -37,6 +37,7 @@ function fixture({empty=false,guest=false,member=false,publicGroups=true,hash=''
     return {data};
   }})};
   if(coldReads){const make=w.supabase.createClient;w.supabase.createClient=()=>{const c=make(),invoke=c.rpc;c.rpc=(name,args)=>({then(resolve,reject){return invoke(name,args).then(resolve,reject);}});return c;};}
+  w.eval(fs.readFileSync(path.join(root,'groups/activities.js'),'utf8'));
   w.eval(fs.readFileSync(path.join(root,'groups/app.js'),'utf8'));return {dom,w,calls,saved:()=>saved};
 }
 test('creating from the main directory keeps the new group in the list until entered',async()=>{
@@ -382,3 +383,51 @@ test('age color palettes retain strong text contrast and do not depend on color 
  for(const [,ink,bg] of palettes){const a=luminance(ink),b=luminance(bg);assert.ok((Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=4.5,ink+' on '+bg);}
  assert.match(css,/\.age-tag\{[^}]*white-space:normal/);assert.match(css,/@media\(forced-colors:active\)/);
 });
+
+for (const kind of ['poll','ladder','wheel']) {
+  test('compose and participate in a group '+kind,async()=>{
+    let post, selection=null, drawn=null;
+    const f=fixture({hash:'#room='+room,respond(action,p){
+      if(action==='save'){
+        post={...p,author_id:id,author_name:'작성자',room_name:'모임',created_at:'2026-11-17T00:00:00Z',updated_at:'2026-11-17T00:00:00Z'};
+        return {data:post};
+      }
+      if(action==='feed')return {data:post?[post]:[]};
+      if(action==='activity_vote')selection=p.choice;
+      if(action==='activity_draw')drawn=kind==='wheel'?{winner:1}:{rungs:[0]};
+      if(action.startsWith('activity_'))return {data:kind==='poll'?{counts:[0,Number(selection===1)],mine:selection}:{result:drawn}};
+    }});
+    try {
+      await tick();const d=f.w.document;
+      d.querySelector('[data-action=compose]').click();
+      const form=d.querySelector('#composer');
+      form.elements.kind.value=kind;form.elements.kind.dispatchEvent(new f.w.Event('change'));
+      assert.equal(d.querySelector('#schedule-fields').hidden,true);
+      form.elements.title.value='우리 모임';form.elements.activity_options.value='김밥';
+      form.dispatchEvent(new f.w.Event('submit',{cancelable:true}));await tick();
+      assert.ok(form.querySelector('.error').textContent);assert.equal(post,undefined);
+      form.elements.activity_options.value='김밥\n떡볶이';
+      if(kind==='ladder')form.elements.activity_names.value='민지\n서준';
+      form.dispatchEvent(new f.w.Event('submit',{cancelable:true}));await tick();
+      assert.equal(post.activity.kind,kind);assert.equal(post.starts_at,null);assert.deepEqual(Array.from(post.activity.options),['김밥','떡볶이']);
+      d.querySelector('[data-activity]').click();await tick();
+      if(kind==='poll'){
+        d.querySelector('[data-choice="1"]').click();await tick();
+        assert.equal(d.querySelector('[data-choice="1"]').getAttribute('aria-pressed'),'true');
+        assert.match(d.querySelector('.activity-summary').textContent,/총 1표/);
+      }else{
+        d.querySelector('[data-draw]').click();await tick();
+        assert.match(d.querySelector('.draw-result').textContent,/떡볶이/);
+        assert.equal(d.querySelector('[data-draw]'),null);
+        if(kind==='ladder'){
+          d.querySelector('[data-lane="1"]').click();
+          assert.match(d.querySelector('.draw-result').textContent,/서준 → 김밥/);
+        }
+      }
+      d.querySelector('[data-close]').click();d.querySelector('[data-edit]').click();
+      const edit=d.querySelector('#composer');
+      assert.equal(edit.elements.kind.value,kind);assert.equal(edit.elements.kind.disabled,true);
+      assert.equal(edit.elements.activity_options.readOnly,true);
+    }finally{f.dom.window.close();}
+  });
+}
