@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import {JSDOM} from 'jsdom';
 import {createThrow,sampleThrow} from '../games/yut/toss.mjs';
 import {createBoard} from '../games/yut/board.mjs';
+import {FINISH,newGame} from '../games/yut/rules.mjs';
 
 test('each stick rebounds briefly once and settles on its rolled face in the pile',()=>{
   const arrangements=new Set();
@@ -39,9 +40,9 @@ test('each stick rebounds briefly once and settles on its rolled face in the pil
   assert.ok(arrangements.size>4);
 });
 
-test('a throw waits for a player to place a piece, including a reserve piece',async t=>{
+test('the arcade entrance, piece controls, winning move and rematch work together',async t=>{
   const html=readFileSync(new URL('../games/yut/index.html',import.meta.url),'utf8');
-  const dom=new JSDOM(html,{url:'https://example.test/games/yut/'});
+  const dom=new JSDOM(html,{url:'https://example.test/games/yut/',runScripts:'outside-only'});
   const {window:w}=dom, doc=w.document, frames=new Map();
   const prefs={matches:false,addEventListener(){}};
   for(const [key,val] of Object.entries({window:w,document:doc,location:w.location,history:w.history,matchMedia:()=>prefs})){
@@ -57,6 +58,8 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   w.HTMLCanvasElement.prototype.getBoundingClientRect=()=>({width:390,height:500,left:0,top:0});
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
+  w.matchMedia=()=>prefs;
+  w.eval(readFileSync(new URL('../shared/games/game-results.js',import.meta.url),'utf8'));
   t.after(()=>dom.window.close());
   const first=()=>doc.querySelector('#actions button'), text=id=>doc.getElementById(id).textContent;
   const tick=()=>{const queued=[...frames.values()];frames.clear();queued.forEach(f=>f(performance.now()+4000));};
@@ -71,6 +74,34 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   const selectValue=(id,value)=>{
     const el=doc.getElementById(id);el.value=String(value);el.dispatchEvent(new w.Event('change'));
   };
+  const entryButton=name=>[...doc.querySelectorAll('#entry-controls button')].find(b=>b.textContent===name);
+  assert.equal(doc.body.dataset.mpEntry,'true');assert.ok(doc.getElementById('tabletop').hidden);
+  assert.equal(entryButton('컴퓨터 대전').getAttribute('aria-pressed'),'true');
+  entryButton('온라인 대전').click();assert.ok(!entryButton('방 코드로 참가').hidden);
+  entryButton('방 코드로 참가').click();assert.ok(doc.getElementById('join-code'));
+  doc.getElementById('close').click();entryButton('같은 기기').click();
+  assert.equal(doc.getElementById('game-mode').value,'island');
+  selectValue('team-count',8);assert.equal(doc.getElementById('team-pieces-7').value,'4');
+  selectValue('team-count',2);entryButton('컴퓨터 대전').click();entryButton('게임 시작하기').click();
+  assert.equal(doc.body.dataset.mpEntry,'false');assert.equal(doc.getElementById('tabletop').hidden,false);
+  assert.equal(doc.getElementById('entry-controls').childElementCount,0);
+  // Roll yut repeatedly so the same team keeps playing, then watch the final move land.
+  setFaces(4);prefs.matches=true;
+  for(let turn=0;turn<50;turn++){
+    first().click();
+    if(first().textContent==='골인하기'&&text('goals')==='골인 3/4'){prefs.matches=false;first().click();break;}
+    first().click();
+  }
+  assert.equal(doc.querySelector('.game-result-card'),null);
+  await until(()=>doc.querySelector('.game-result-card'));
+  const card=doc.querySelector('.game-result-card');
+  assert.equal(card.dataset.resultOutcome,'success');assert.match(card.textContent,/산호 팀 승리!/);
+  assert.match(card.textContent,/말 4개 모두 골인/);assert.ok(card.querySelector('.game-result-confetti'));
+  assert.ok(card.querySelector('.game-result-spark'));
+  const resultButton=label=>[...doc.querySelectorAll('.game-result-actions button')].find(b=>b.textContent===label);
+  resultButton('윷판 보기').click();await until(()=>!doc.querySelector('.game-result-card'));
+  first().click();assert.equal(doc.querySelectorAll('.game-result-confetti').length,0);
+  t.mock.method(Math,'random',()=>.99);resultButton('다시 한 판').click();await until(()=>!doc.querySelector('.game-result-card'));
   assert.equal(doc.querySelector('dialog').open,false);
   assert.equal(text('goals'),'골인 0/4');
   assert.equal(reserve.querySelectorAll('button').length,4);
@@ -200,6 +231,44 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   doc.getElementById('join-code').value='bad';dialogButton('참가하기').click();
   assert.match(text('dialog-body'),/전체를 붙여 넣으세요/);
 
+});
+
+test('an invited player returning to a finished room sees their own outcome once',async t=>{
+  const keys=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+  const host=Buffer.from(await crypto.subtle.exportKey('raw',keys.publicKey)).toString('base64url');
+  const html=readFileSync(new URL('../games/yut/index.html',import.meta.url),'utf8');
+  const dom=new JSDOM(html,{url:'https://example.test/games/yut/#room='+host,runScripts:'outside-only'});
+  const w=dom.window,doc=w.document;
+  t.after(()=>w.close());
+  w.matchMedia=()=>({matches:true,addEventListener(){}});
+  for(const [key,value] of Object.entries({window:w,document:doc,location:w.location,history:w.history,
+    sessionStorage:w.sessionStorage,matchMedia:w.matchMedia,requestAnimationFrame:()=>1,cancelAnimationFrame:()=>{}})){
+    Object.defineProperty(globalThis,key,{value,writable:true,configurable:true});
+  }
+  const game=newGame(2);
+  game.winner=game.team=1;game.phase='won';game.revision=42;game.pawns[1]=game.pawns[1].map(()=>[FINISH]);
+  w.sessionStorage.setItem('island-yut:key:'+host,JSON.stringify(await crypto.subtle.exportKey('jwk',keys.privateKey)));
+  w.sessionStorage.setItem('island-yut:state:'+host,JSON.stringify({seats:[host,'guest'],game}));
+  let heartbeat;
+  t.mock.method(globalThis,'setInterval',callback=>{heartbeat=callback;return 1;});
+  const channel={on(){return this;},subscribe(fn){fn('SUBSCRIBED');},async send(){}};
+  w.OjjudaGetClient=()=>({channel:()=>channel,async removeChannel(){}});
+  w.HTMLCanvasElement.prototype.getContext=()=>null;
+  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+  w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
+  w.eval(readFileSync(new URL('../shared/games/game-results.js',import.meta.url),'utf8'));
+  await import('../games/yut/play.mjs?finished-room');
+  const wait=async pred=>{for(let n=0;n<100&&!pred();n++)await new Promise(r=>setTimeout(r,10));assert.ok(pred());};
+  await wait(()=>heartbeat&&doc.querySelector('.game-result-card'));
+  const card=doc.querySelector('.game-result-card');
+  assert.equal(card.dataset.resultOutcome,'failure');assert.match(card.textContent,/바다 팀 승리!/);
+  assert.equal(card.querySelector('.game-result-effects').childElementCount,0);
+  assert.ok(doc.getElementById('setup').hidden);assert.equal(doc.querySelector('.game-result-dialog').open,true);
+  heartbeat();assert.equal(doc.querySelector('.game-result-card'),card);
+  const online=[...card.querySelectorAll('button')].find(b=>b.textContent==='온라인 대전');online.click();
+  await wait(()=>!doc.querySelector('.game-result-card')&&!doc.getElementById('setup').hidden);
+  assert.equal(doc.querySelector('#entry-controls [aria-pressed=true]').textContent,'온라인 대전');
+  assert.equal(w.location.hash,'');
 });
 
 test('board dragging uses the chosen pawn and its legal squares, including after rotation',()=>{

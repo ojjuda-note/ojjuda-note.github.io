@@ -12,6 +12,18 @@ const tray=$('reserve-pawns');
 let trayKey='',trayDrag=null,suppressTrayClick=false;
 const rack=$('rack-canvas'),rackContext=rack.getContext('2d');
 let rackFaces=null,rackSeed=null,paintedFaces='',roomSetup=null,botTimer=null;
+let localRound=0,lastResultKey='';
+function showTable(){
+  if($('setup').hidden)return;
+  $('setup').hidden=true;$('entry-controls').replaceChildren();
+  document.body.dataset.mpEntry='false';$('tabletop').hidden=false;
+  window.dispatchEvent(new window.Event('resize'));
+}
+function showEntry(kind){
+  closePanel();$('tabletop').hidden=true;$('setup').hidden=false;
+  document.body.dataset.mpEntry='true';
+  const controls=$('entry-controls');controls.replaceChildren();setupControls(controls,true,kind);
+}
 function paintRack(){
   if(!rackContext)return;
   const rect=rack.getBoundingClientRect(),ratio=Math.min(window.devicePixelRatio||1,2);
@@ -160,6 +172,32 @@ async function showState(s,animate=true){
   }
   if(token!==motion)return;
   casting=false;busy=false;$('toss-layer').hidden=true;reveal(s);draw(s);renderHUD();
+  if(s.phase==='won'&&(animate||net?.game))showResult();
+}
+function showResult(reopen=false){
+  const s=game,winner=s.winner;
+  if(s.phase!=='won'||busy||!$('setup').hidden)return;
+  const key='yut:'+ (net?net.host:'local-'+localRound);
+  if(!reopen&&lastResultKey===key)return;
+  lastResultKey=key;closePanel();
+  const name=TEAMS[winner].name+' 팀',count=s.pawns[winner].length;
+  const lost=net?net.seat>=0&&net.seat!==winner:s.computerTeams?.includes(winner);
+  const replay=async()=>{
+    if(net){await leaveRoom();showEntry('online');return;}
+    resetLocal({count:s.pawns.length,offset:s.zodiacOffset,counts:s.pawns.map(p=>p.length),animals:s.teamAnimals,mode:s.mode},!!s.computerTeams?.length);
+  };
+  const actions=[
+    {label:net?'온라인 대전':'다시 한 판',onClick:replay,autofocus:true},
+    {label:'윷판 보기'},
+    {label:'오락실로',onClick:()=>location.assign('/world.html?tab=arcade')}
+  ];
+  const title=name+' 승리!',metric='말 '+count+'개 모두 골인';
+  if(window.OjjudaGameResults){
+    window.OjjudaGameResults.show({key,outcome:lost?'failure':'success',title,metric,actions,share:false});
+  }else{
+    openPanel(title,'result');body.append(message(metric));
+    for(const action of actions)body.append(button(action.label,'secondary',action.onClick??closePanel));
+  }
 }
 function dispatch(action){
   if(busy||pendingRoom||game.computerTeams?.includes(game.team))return;
@@ -169,7 +207,7 @@ function dispatch(action){
 function scheduleComputer(){
   clearTimeout(botTimer);
   const s=game;
-  if(!s.computerTeams?.includes(s.team)||s.phase==='won'||busy||pendingRoom)return;
+  if(!$('setup').hidden||!s.computerTeams?.includes(s.team)||s.phase==='won'||busy||pendingRoom)return;
   if(net?(!room||!net.game||!net.isHost||!net.connected):dialog.open)return;
   botTimer=setTimeout(()=>{
     if(game!==s||busy||pendingRoom||(net?!net.isHost||!net.connected:dialog.open))return;
@@ -312,7 +350,7 @@ function renderHUD(){
     $('move-result').textContent=result(s);
     moveControls(s,options);
   }else if(lobby)actions.append(button('대기실 열기','primary',lobbyPanel));
-  else if(s.phase==='won')actions.append(button(net?'게임 메뉴':'다시 한 판','primary',()=>net?settings():settings(true)));
+  else if(s.phase==='won')actions.append(button('결과 보기','primary',()=>showResult(true),busy));
   else{
     const disabled=busy||pendingRoom||bot||!!(net&&!net.connected)||!!other||s.phase!=='roll';
     const label=casting?'윷 던지는 중…':busy?'말 이동 중…':bot?'컴퓨터 차례':other?'상대 팀 차례':s.phase==='move'?'말 옮기기':'윷 던지기';
@@ -385,7 +423,8 @@ function rules(){
 function resetLocal(setup,computer){
   const {count,offset,mode,counts,animals}=setup;
   const bots=computer?Array.from({length:count-1},(_,i)=>i+1):[];
-  closePanel();local=newGame(count,offset,mode,counts,bots,animals);void showState(local,false);
+  closePanel();showTable();localRound++;local=newGame(count,offset,mode,counts,bots,animals);void showState(local,false);
+  $('actions').querySelector('button')?.focus({preventScroll:true});
 }
 function modePicker(current,onChange){
   const box=element('div'),label=element('label','놀이 방식'),select=element('select');
@@ -403,22 +442,22 @@ function setupSelect(id,items,current){
   }
   select.value=String(current);return select;
 }
-function settings(initial=false){
+function settings(){
   if(pendingRoom)return;
-  openPanel(initial?'윷놀이 시작':'게임 메뉴','settings');
-  if(!initial){
-    const menu=element('div',undefined,'menu-grid');
-    menu.append(button('놀이 방법','secondary',rules),button('말 현황','secondary',standings));
-    if((!net||net.game)&&game.eventTiles)menu.append(button('특수 칸','secondary',showEventGuide));
-    menu.append(button('윷판 돌리기','secondary',()=>{board.rotate(1);closePanel();}));body.append(menu);
-  }
+  openPanel('게임 메뉴','settings');
+  const menu=element('div',undefined,'menu-grid');
+  menu.append(button('놀이 방법','secondary',rules),button('말 현황','secondary',standings));
+  if((!net||net.game)&&game.eventTiles)menu.append(button('특수 칸','secondary',showEventGuide));
+  menu.append(button('윷판 돌리기','secondary',()=>{board.rotate(1);closePanel();}));body.append(menu);
   if(net){
     body.append(button('온라인 대기실','secondary',lobbyPanel),
       button('방 나가기','secondary',()=>confirmPanel('온라인 방 나가기',net.isHost?'방장이 나가면 방이 닫혀요.':'현재 방에서 나갈까요?',leaveRoom)));
     return;
   }
-  let kind=local.computerTeams?.length?'computer':'together';
-  const kinds=element('div',undefined,'play-kinds');kinds.setAttribute('role','group');kinds.setAttribute('aria-label','대결 방식');
+  setupControls(body,false);
+}
+function setupControls(target,entry,kind=local.computerTeams?.length?'computer':'together'){
+  const kinds=element('div',undefined,entry?'seg':'play-kinds');kinds.setAttribute('role','group');kinds.setAttribute('aria-label','대결 방식');
   const label=element('label','참가 팀');label.htmlFor='team-count';
   const teamCounts=Array.from({length:TEAMS.length-1},(_,i)=>[i+2,(i+2)+'팀']);
   const teams=setupSelect('team-count',teamCounts,local.pawns.length);
@@ -441,25 +480,25 @@ function settings(initial=false){
     }
   }
   teams.onchange=drawTeams;drawTeams();
-  const actions=element('div',undefined,'form-actions');
-  const start=button('','primary',()=>{
+  const actions=element('div',undefined,entry?'entry-actions':'form-actions');
+  const start=button('',entry?'ge-primary':'primary',()=>{
     const count=Number(teams.value);
     const setup={count,counts:counts.slice(0,count),animals:animals.slice(0,count),offset:animals[0],mode:mode.select.value};
     if(kind==='online'){roomSetup=setup;void connect(null);return;}
     const play=()=>resetLocal(setup,kind==='computer');
     if(local.revision&&local.phase!=='won')confirmPanel('새 판을 시작할까요?','진행 중인 한 기기 게임을 끝내고 새 판을 시작해요.',play);else play();
   });
-  const join=button('방 코드로 참가','secondary',joinPanel);
+  const join=button('방 코드로 참가',entry?'ge-secondary':'secondary',joinPanel);
   function refresh(){
     for(const item of kinds.children)item.setAttribute('aria-pressed',String(item.dataset.kind===kind));
-    start.textContent=kind==='online'?'초대방 만들기':'게임 시작';join.hidden=kind!=='online';
+    start.textContent=kind==='online'?'초대방 만들기':entry?'게임 시작하기':'게임 시작';join.hidden=kind!=='online';
   }
-  for(const [value,title] of [['computer','컴퓨터 대결'],['together','한 기기'],['online','온라인 멀티']]){
-    const item=button(title,'secondary',()=>{kind=value;refresh();});item.dataset.kind=value;kinds.append(item);
+  for(const [value,title,entryTitle] of [['computer','컴퓨터 대결','컴퓨터 대전'],['together','한 기기','같은 기기'],['online','온라인 멀티','온라인 대전']]){
+    const item=button(entry?entryTitle:title,entry?'':'secondary',()=>{kind=value;refresh();});item.dataset.kind=value;kinds.append(item);
   }
-  const options=element('details',undefined,'game-details');
+  const options=element('details',undefined,entry?'ge-more':'game-details');
   options.append(element('summary','팀별 동물·말 수'),roster);
-  actions.append(start,join);refresh();body.append(kinds,settingsRow,options,actions);
+  actions.append(start,join);refresh();target.append(kinds,settingsRow,...(entry?[actions,options]:[options,actions]));
 }
 function joinPanel(){
   openPanel('친구 방 참가','join');
@@ -539,7 +578,7 @@ let lastLobby='';
 function networkUpdate(v){
   net=v;
   const signature=JSON.stringify([v.seats,v.status,!!v.game,v.seat,v.connected]);
-  if(v.game&&(!shown||!roomGame||v.game.revision!==game.revision)){const first=!roomGame;roomGame=true;void showState(v.game,!first);if(first&&panel==='lobby')closePanel();}
+  if(v.game&&(!shown||!roomGame||v.game.revision!==game.revision)){const first=!roomGame;roomGame=true;showTable();if(first&&panel==='lobby')closePanel();void showState(v.game,!first);}
   if(signature!==lastLobby){lastLobby=signature;if(panel==='lobby'&&dialog.open)lobbyPanel();renderHUD();}
 }
 let roomGame=false;
@@ -549,12 +588,12 @@ async function connect(host){
   try{
     const active=await openRoom(host,v=>{if(id===attempt)networkUpdate(v);},undefined,host?null:roomSetup);
     if(id!==attempt){await active.close();return;}
-    room=active;pendingRoom=false;renderHUD();
+    room=active;pendingRoom=false;showTable();renderHUD();
     setRoomAddress(net.host);if(net.game)closePanel();else lobbyPanel();
   }catch(err){
     if(id!==attempt)return;
     pendingRoom=false;net=null;roomGame=false;renderHUD();openPanel('방 연결을 확인해 주세요','error');body.append(message(err.message||'온라인 연결이 어려워요.'),
-      button('다시 연결','primary',()=>connect(host)),button('한 기기에서 하기','secondary',()=>leaveRoom()));
+      button('다시 연결','primary',()=>connect(host)),button('한 기기에서 하기','secondary',async()=>{await leaveRoom();showEntry('together');}));
   }
 }
 async function leaveRoom(){
@@ -567,5 +606,6 @@ dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoun
 reduced.addEventListener?.('change',()=>{if(reduced.matches&&casting)toss.cancel();});
 void showState(local,false);
 const invite=new URLSearchParams(location.hash.slice(1));const embedded=document.querySelector('meta[name="yut-invite-room"]')?.content;
+showEntry(invite.has('room')||roomCode(embedded)?'online':undefined);
 if(invite.has('room'))void connect(invite.get('room'));
 else if(roomCode(embedded))void connect(embedded);
