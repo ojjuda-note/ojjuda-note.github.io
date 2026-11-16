@@ -11,14 +11,14 @@ test('new games give every team four pieces and enable island obstacles by defau
     const game=newGame(count);
     assert.equal(game.mode,'island');
     assert.deepEqual(game.pawns.map(team=>team.length),Array(count).fill(4));
-    assert.deepEqual(Object.values(game.islandTiles).sort(),['breeze','whirl']);
+    assert.deepEqual(game.islandTiles,{});
     assert.equal(new Set(game.teamAnimals).size,count);
     assert.deepEqual(game.teamAnimals,game.pawns.map((_,t)=>animalFor(t,0,game.zodiacOffset)));
   }
   for(const count of [1,9,7.5,'8'])assert.throws(()=>newGame(count));
 });
-test('easy games land on the rolled square while older snapshots keep their island effects',()=>{
-  for(const [tile,end] of [[3,2],[16,16],[8,6],[13,11],[6,8],[18,0]]){
+test('old boards retain a single back square and retire wind and whirlpools',()=>{
+  for(const [tile,end] of [[3,2],[16,16],[8,8],[13,13],[6,6],[18,18]]){
     const trail=Array.from({length:tile-1},(_,i)=>i+1);
     const easy=ordinary(2,2,'easy');easy.pawns[0][0]=trail;
     assert.equal(position(move(roll(easy,faces(1)),0).pawns[0][0]),tile);
@@ -59,17 +59,17 @@ test('four sticks give five outcomes and invalid or repeated actions cannot adva
     const next=move(s,0);assert.equal(next.team,n>=4?0:1);
   }
 });
-test('island effects follow their dealt squares, including shortcuts, and apply only on landing',()=>{
+test('retired obstacle squares are ordinary even on a saved shortcut',()=>{
   const g=ordinary();
   g.eventTiles={2:'home',4:'back'};g.islandTiles={21:'whirl',1:'breeze'};
   const land=(trail,steps)=>{
     g.pawns[0][0]=trail;
     return move(roll(g,faces(steps)),0).pawns[0][0];
   };
-  assert.deepEqual(land([],1),[1,2,3]);
+  assert.deepEqual(land([],1),[1]);
   assert.deepEqual(land([1,2],1),[1,2,3]);
   assert.deepEqual(land([1,2,3],1),[1,2,3]);
-  assert.deepEqual(land([5,20],1),[5]);
+  assert.deepEqual(land([5,20],1),[5,20,21]);
   assert.deepEqual(land([1,2,3],2),[1,2,3,4,5]);
 });
 test('either waiting pawn may start, while touching a stack still moves both together',()=>{
@@ -102,7 +102,7 @@ test('new games deal one of each tile without overlap and keep the layout throug
       const g=newGame(4,11,mode,4);
       const entries=Object.entries(g.eventTiles).concat(Object.entries(g.islandTiles));
       assert.deepEqual(Object.values(g.eventTiles).sort(),['back','carry','home']);
-      assert.deepEqual(Object.values(g.islandTiles).sort(),mode==='island'?['breeze','whirl']:[]);
+      assert.deepEqual(g.islandTiles,{});
       const nodes=entries.map(([n])=>Number(n));
       assert.equal(new Set(nodes).size,nodes.length);
       assert.ok(nodes.every(n=>n>0&&n<FINISH&&![5,10,15,22].includes(n)));
@@ -126,11 +126,11 @@ test('new games deal one of each tile without overlap and keep the layout throug
 });
 test('carry takes exactly one waiting teammate and both travel on the same trail',()=>{
   const g=newGame(2,11,'easy',4);
-  g.eventTiles={3:'carry',5:'carry'};
+  g.eventTiles={3:'carry'};
   let s=move(roll(g,faces(3)),2);
   assert.deepEqual(s.pawns[0],[[1,2,3],[],[1,2,3],[]]);assert.equal(s.lastMove.pickedUp,0);
   assert.deepEqual(s.lastMove.indices,[2]);assert.deepEqual(g.pawns[0],[[],[],[],[]]);
-  s=move(roll({...s,team:0},faces(2)),0);
+  s=move(roll({...s,team:0,eventTiles:{5:'carry'}},faces(2)),0);
   assert.deepEqual(s.pawns[0],[[1,2,3,4,5],[],[1,2,3,4,5],[]]);
   assert.equal(s.lastMove.pickedUp,null);
   const noReserve={...g,pawns:[[[1],[8],[FINISH],[20]],g.pawns[1]]};

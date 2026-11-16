@@ -14,39 +14,28 @@ export const TEAMS = [
 export const validTeamCount=n=>Number.isInteger(n)&&n>=2&&n<=TEAMS.length;
 export const defaultTeamAnimal=(team,offset=2)=>(offset+TEAMS[team].animalOffset)%12;
 export const YUT = ['', '도', '개', '걸', '윷', '모'];
-const WHIRL = [8,13], WIND = [6,18];
 const fork = new Set([5,10,22]);
 
-export const EVENT_NAMES={back:'뒤로 한 칸',carry:'말 업기 ×2',home:'처음으로',whirl:'소용돌이',breeze:'순풍'};
-function dealTiles(mode){
+export const EVENT_NAMES=Object.freeze({back:'빽도',carry:'엎기',home:'꽝'});
+function dealTiles(){
   const reserved=new Set([0,5,10,15,22]);
   const spots=Array.from({length:FINISH},(_,n)=>n).filter(n=>!reserved.has(n));
-  function deal(effects){
-    const tiles={};
-    for(const effect of effects){
-      const index=Math.floor(Math.random()*spots.length);
-      const [node]=spots.splice(index,1);
-      tiles[node]=effect;
-    }
-    return tiles;
+  const eventTiles={};
+  for(const effect of Object.keys(EVENT_NAMES)){
+    const index=Math.floor(Math.random()*spots.length);
+    const [node]=spots.splice(index,1);
+    eventTiles[node]=effect;
   }
-  return {eventTiles:deal(['back','carry','home']),islandTiles:mode==='island'?deal(['whirl','breeze']):{}};
+  return eventTiles;
 }
 export function tileEffect(state,node){
   const event=state.eventTiles?.[node];
   const first=(map,effect)=>Object.keys(map??{}).find(n=>map[n]===effect);
-  if(event==='back')return first(state.eventTiles,'back')===String(node)?'back':undefined;
-  if(event||state.mode==='easy')return event;
-  if(state.islandTiles){
-    const tile=state.islandTiles[node];
-    if(tile!=='stone')return tile;
-    // Older rounds used rocks for the same one-step penalty.
-    if(!first(state.eventTiles,'back')&&first(state.islandTiles,'stone')===String(node))return 'back';
-    return;
-  }
-  if(node===3&&!first(state.eventTiles,'back'))return 'back';
-  if(WHIRL.includes(node))return 'whirl';
-  if(WIND.includes(node))return 'breeze';
+  if(Object.hasOwn(EVENT_NAMES,event))return first(state.eventTiles,event)===String(node)?event:undefined;
+  if(state.mode==='easy')return;
+  // Old saved boards used a stone (or a fixed square) for the one-step penalty.
+  const oldBack=state.islandTiles?state.islandTiles[node]==='stone'&&first(state.islandTiles,'stone')===String(node):node===3;
+  if(oldBack&&!first(state.eventTiles,'back'))return 'back';
 }
 export function newGame(count=2,zodiacOffset=2,mode=DEFAULT_MODE,pieceCounts=DEFAULT_PIECES,computerTeams=[],teamAnimals=null) {
   if(!validTeamCount(count))throw Error('2~'+TEAMS.length+'팀을 골라 주세요.');
@@ -57,7 +46,7 @@ export function newGame(count=2,zodiacOffset=2,mode=DEFAULT_MODE,pieceCounts=DEF
   if(!Array.isArray(computerTeams)||!computerTeams.every(i=>Number.isInteger(i)&&i>=0&&i<count))throw Error('컴퓨터 팀을 다시 골라 주세요.');
   const animals=teamAnimals??Array.from({length:count},(_,i)=>defaultTeamAnimal(i,zodiacOffset));
   if(!Array.isArray(animals)||animals.length!==count||!animals.every(i=>Number.isInteger(i)&&i>=0&&i<12))throw Error('각 팀의 동물을 골라 주세요.');
-  return {mode,...dealTiles(mode),teamAnimals:[...animals],computerTeams:[...new Set(computerTeams)], team:0, turn:1, phase:'roll', revision:0, sticks:null, steps:0,
+  return {mode,eventTiles:dealTiles(),islandTiles:{},teamAnimals:[...animals],computerTeams:[...new Set(computerTeams)], team:0, turn:1, phase:'roll', revision:0, sticks:null, steps:0,
     pawns:counts.map(n=>Array.from({length:n},()=>[])), zodiacOffset, winner:null, lastMove:null,
     note:'윷을 던져 첫 말을 출발시키세요.'};
 }
@@ -122,14 +111,10 @@ export function move(state,index,shortcut=false) {
   const landing=at,event=tileEffect(state,at);
   if(event==='home'){
     next=[];frames.push(HOME);
-    effect='처음으로! '+(moving.length>1?'업은 말까지 모두 대기석으로 돌아갔어요.':'대기석으로 돌아갔어요.');
-  }else if(event==='back'||event==='whirl'){
-    const back=event==='whirl'?2:1;
-    for(let i=0;i<back&&next.length;i++){next.pop();frames.push(position(next));}
-    effect=event==='back'?'뒤로 한 칸! 왔던 길로 한 칸 물러났어요.':'소용돌이! 두 칸 뒤로 밀렸어요.';
-  }else if(event==='breeze'){
-    const gust=advance(next,2,false);
-    next=gust.next;frames.push(...gust.frames);effect='순풍! 두 칸 더 갔어요.';
+    effect=EVENT_NAMES.home+'! '+(moving.length>1?'업은 말까지 모두 대기석으로 돌아갔어요.':'대기석으로 돌아갔어요.');
+  }else if(event==='back'){
+    next.pop();frames.push(position(next));
+    effect=EVENT_NAMES.back+'! 왔던 길로 한 칸 물러났어요.';
   }
   at=position(next);
   moving.forEach(i=>{team[i]=[...next];});
@@ -146,8 +131,8 @@ export function move(state,index,shortcut=false) {
     const reserve=team.findIndex(trail=>position(trail)===HOME);
     if(stacked===1&&reserve>=0){
       team[reserve]=[...next];pickedUp=reserve;
-      effect='말 업기 ×2! 대기 중인 '+(reserve+1)+'번 말을 업었어요.';
-    }else effect=stacked>1?'말 업기 ×2! 이미 업힌 말이 함께 가요.':'말 업기 ×2! 업을 대기 말이 없어요.';
+      effect=EVENT_NAMES.carry+'! 대기 중인 '+(reserve+1)+'번 말을 업었어요.';
+    }else effect=EVENT_NAMES.carry+'! '+(stacked>1?'이미 업힌 말이 함께 가요.':'업을 대기 말이 없어요.');
   }
   const won=team.every(p=>position(p)===FINISH);
   const extra=state.steps>=4||captured>0;
@@ -155,7 +140,7 @@ export function move(state,index,shortcut=false) {
   if(effect)notes.push(effect);
   if(captured)notes.push(captured+'마리를 잡았어요!');
   const stackSize=team.filter(p=>position(p)===at).length;
-  if(!state.eventTiles?.[landing]&&at!==HOME&&at!==FINISH&&stackSize>moving.length)notes.push('말 '+stackSize+'개가 함께 가요.');
+  if(!event&&at!==HOME&&at!==FINISH&&stackSize>moving.length)notes.push('말 '+stackSize+'개가 함께 가요.');
   if(won)notes.push('말 '+team.length+'개 모두 골인!');
   else if(extra)notes.push('한 번 더 던져요.');
   return {...state,pawns,revision:state.revision+1,phase:won?'won':'roll',winner:won?state.team:null,

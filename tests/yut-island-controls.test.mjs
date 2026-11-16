@@ -108,7 +108,8 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   assert.equal(first().textContent,'윷 던지기');
   doc.getElementById('settings').click();dialogButton('특수 칸').click();
   const places=[...doc.querySelectorAll('.event-card small')].map(el=>el.textContent);
-  assert.equal(places.length,5);assert.equal(new Set(places).size,5);
+  assert.deepEqual([...doc.querySelectorAll('.event-card strong')].map(el=>el.textContent),['엎기','빽도','꽝']);
+  assert.equal(new Set(places).size,3);
   assert.ok(places.every(place=>place&&!place.includes(' · ')));
   doc.getElementById('close').click();
   prefs.matches=true;setFaces(1);first().click();tick();
@@ -118,7 +119,7 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   doc.getElementById('settings').click();dialogButton('놀이 방법').click();
   assert.equal(doc.querySelectorAll('#dialog-body ol li').length,2);
   assert.equal(doc.querySelector('#dialog-body details').open,false);
-  assert.equal(doc.querySelectorAll('.effect-row').length,2);
+  assert.ok(dialogButton('이번 판 특수 칸 보기'));
   doc.getElementById('close').click();doc.getElementById('settings').click();
   const options=doc.querySelector('#dialog-body details');assert.equal(options.open,false);
   const participantCount=doc.getElementById('team-count');
@@ -204,7 +205,7 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   assert.equal(doc.querySelectorAll('.score-card').length,2);
   doc.getElementById('close').click();doc.getElementById('settings').click();
   [...doc.querySelectorAll('#dialog-body button')].find(b=>b.textContent==='놀이 방법').click();
-  assert.equal(doc.querySelectorAll('.effect-row').length,0);
+  assert.ok(dialogButton('이번 판 특수 칸 보기'));
   doc.getElementById('close').click();doc.getElementById('settings').click();
   doc.querySelector('#dialog-body details summary').click();
   assert.equal(doc.getElementById('team-animal-0').options.length,12);
@@ -369,9 +370,9 @@ test('board landmarks stay fixed when pieces enter, hop across or leave the far 
       {get:(o,k)=>o[k]??(()=>{})});
     const canvas={width,height,style:{},classList:{toggle(){}},getContext:()=>ctx,
       getBoundingClientRect:()=>({left:0,top:0,width,height}),addEventListener(){},removeEventListener(){}};
-    const board=createBoard(canvas),eventTiles={1:'back',16:'carry'};
+    const board=createBoard(canvas),eventTiles={1:'back',16:'carry',13:'home'};
     const state=(pieces,activeTeam=0,snap=true)=>board.setState({pieces,activeTeam,snap,eventTiles});
-    const sample=time=>{marks.clear();frame(time);return ['−1','×2'].map(key=>{assert.ok(marks.has(key));return marks.get(key);});};
+    const sample=time=>{marks.clear();frame(time);return ['빽도','엎기','꽝'].map(key=>{assert.ok(marks.has(key));return marks.get(key);});};
     for(let turn=0;turn<4;turn++){
       state([]);if(turn)board.rotate();
       const reference=sample(performance.now()+900);
