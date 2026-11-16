@@ -29,13 +29,15 @@
   const passwordConfirm = $('password-confirm');
   const nickname = $('nickname');
   const submit = $('auth-submit');
-  const referral = window.OjjudaSignupReferral?.mount($('signup-referral-slot'), client);
-  function prepareIdentity() {
-    if (!window.OjjudaIdentity?.fields) return false;
-    if (!$('signup-identity-slot').innerHTML) $('signup-identity-slot').innerHTML = window.OjjudaIdentity.fields('signup');
-    return true;
+  let referral;
+  function prepareSignupFields() {
+    const slot = $('signup-identity-slot');
+    if (!slot.hasChildNodes() && window.OjjudaIdentity?.fields) {
+      slot.innerHTML = window.OjjudaIdentity.fields('signup');
+    }
+    referral ??= window.OjjudaSignupReferral?.mount($('signup-referral-slot'), client);
+    referral?.setActive(true);
   }
-  prepareIdentity();
   const forgot = $('forgot-trigger');
   const accountActions = $('account-actions');
   const signedInActions = $('signed-in-actions');
@@ -51,6 +53,7 @@
   let busy = false;
   let recoveryGrant = null, recoveryCompleted = false;
   let identityVersion = 0;
+  let pendingIdentity = null;
   let authEventVersion = 0;
   let authViewVersion = 0;
   let enteringNote = false;
@@ -171,7 +174,8 @@
     authMode = mode;
     $('guest-browse').hidden = mode !== 'login';
     const isSignup = mode === 'signup';
-    referral?.setActive(isSignup);
+    if (isSignup) prepareSignupFields();
+    else referral?.setActive(false);
     const isForgot = mode === 'forgot';
     const isReset = mode === 'reset' || mode === 'direct-reset';
     if (mode !== 'direct-reset') clearRecoveryGrant();
@@ -186,7 +190,7 @@
     });
     dialog.querySelectorAll('.signup-only').forEach(field => { field.hidden = !isSignup; });
     $('recovery-identity-slot').hidden = !isForgot;
-    if (prepareIdentity()) $('recovery-birth').max = window.OjjudaIdentity.todayKorea();
+    if (isForgot && window.OjjudaIdentity?.fields) $('recovery-birth').max = window.OjjudaIdentity.todayKorea();
     nickname.closest('.field').hidden = !(isSignup || isNickname);
     nickname.setAttribute('aria-describedby', isSignup ? 'nickname-auto-help' : '');
     $('nickname-auto-help').hidden = !isSignup;
@@ -209,7 +213,7 @@
           : '오락실에서 게임을 즐기고 공원에서 이야기를 나눠요.';
     submit.firstChild.textContent = isSignup ? '회원가입 ' : isForgot ? '회원정보 확인 ' : isReset ? '확인 ' : isNickname ? '아지트 시작하기 ' : '로그인 ';
     feedback.textContent = notice;
-    if ((isSignup || isForgot) && !prepareIdentity()) feedback.textContent = '회원정보 입력 화면을 불러오지 못했어요. 다시 시도해 주세요.';
+    if ((isSignup || isForgot) && !window.OjjudaIdentity?.fields) feedback.textContent = '회원정보 입력 화면을 불러오지 못했어요. 다시 시도해 주세요.';
     submit.disabled = busy || !client || ((isSignup || isForgot) && !window.OjjudaIdentity);
   }
 
@@ -340,8 +344,20 @@
     const accountChanged = () => session?.user?.id !== expectedUserId || identityVersion !== expectedIdentityVersion
       || authViewVersion !== expectedViewVersion;
     try {
-      const { data: identity, error: identityError } = await client.auth.getUser();
+      const { data: identity, error: identityError } = await verifyCurrentUser();
       if (accountChanged()) return;
+      if (identityError && (identityError.status >= 500 || identityError.status === 429 || identityError.name === 'AuthRetryableFetchError')) {
+        const notice = '지금은 계정을 확인할 수 없어요. 잠시 후 다시 시도해 주세요.';
+        if (overrideNickname !== undefined) {
+          feedback.textContent = notice;
+        } else {
+          showState('공원 연결을 다시 확인해 주세요', notice, '다시 시도');
+          authMode = 'note-retry';
+          $('guest-browse').hidden = true;
+          $('back-to-login').focus();
+        }
+        return;
+      }
       if (identityError || !identity?.user || identity.user.id !== session.user.id) {
         applySession(null);
         openAuth('login', 'note');
@@ -409,11 +425,20 @@
     }
   }
 
+  function verifyCurrentUser() {
+    if (pendingIdentity) return pendingIdentity;
+    const request = client.auth.getUser().finally(() => {
+      if (pendingIdentity === request) pendingIdentity = null;
+    });
+    pendingIdentity = request;
+    return request;
+  }
+
   async function checkAdmin(expectedId, version) {
     adminLink.hidden = true;
     try {
       // A stored session is only UI state. Verify identity with Auth before checking roles.
-      const { data: identity, error: identityError } = await client.auth.getUser();
+      const { data: identity, error: identityError } = await verifyCurrentUser();
       if (identityError || identity?.user?.id !== expectedId || version !== identityVersion) return;
       const role = await client.from('app_admins').select('user_id').eq('user_id', expectedId).maybeSingle();
       if (version !== identityVersion || session?.user?.id !== expectedId) return;
@@ -430,12 +455,15 @@
     authReady = true;
     if (oldId !== newId) {
       identityVersion++;
+      pendingIdentity = null;
       adminLink.hidden = true;
       if (newId) void checkAdmin(newId, identityVersion);
     }
     renderAccount();
-    if (prepareIdentity()) window.OjjudaPortalAvailability?.ready();
-    else window.OjjudaPortalAvailability?.fail('일부 로그인 기능을 불러오지 못했어요. 다시 시도하거나 손님으로 둘러보세요.');
+    if (window.OjjudaIdentity?.fields) {
+      if (authMode === 'signup' && dialog.open) prepareSignupFields();
+      window.OjjudaPortalAvailability?.ready();
+    } else window.OjjudaPortalAvailability?.fail('일부 로그인 기능을 불러오지 못했어요. 다시 시도하거나 손님으로 둘러보세요.');
   }
 
   function validEmail(value) {
@@ -444,7 +472,7 @@
 
   async function submitForm(event) {
     event.preventDefault();
-    if (['signup', 'forgot'].includes(authMode) && !prepareIdentity()) {
+    if (['signup', 'forgot'].includes(authMode) && !window.OjjudaIdentity?.fields) {
       feedback.textContent = '회원정보 입력 화면을 불러오지 못했어요. 다시 시도해 주세요.';
       return;
     }
@@ -458,6 +486,7 @@
     }
     let signupIdentity = null, recoveryDetails = null, signupReferrer = null;
     if (authMode === 'signup') {
+      prepareSignupFields();
       try { signupIdentity = window.OjjudaIdentity.read(form, 'signup'); signupReferrer = referral?.read() || null; }
       catch (error) { feedback.textContent = error.message; return; }
     }
@@ -626,7 +655,9 @@
     });
   });
   dialog.querySelectorAll('[data-auth-mode]').forEach(button => {
-    button.addEventListener('click', () => setAuthMode(button.dataset.authMode));
+    button.addEventListener('click', () => {
+      if (button.dataset.authMode !== authMode) setAuthMode(button.dataset.authMode);
+    });
   });
   dialog.querySelector('[data-close-dialog]').addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
@@ -644,6 +675,7 @@
   });
   forgot.addEventListener('click', () => setAuthMode(authMode === 'forgot' ? 'login' : 'forgot'));
   $('back-to-login').addEventListener('click', () => {
+    if (authMode === 'note-retry') { void enterNote(); return; }
     if (recoveryGrant) { setAuthMode('forgot'); email.focus(); }
     else if (recoveryCompleted) { setAuthMode('login'); email.focus(); }
     else if (!recoveryPending && session?.user) {

@@ -5,9 +5,11 @@ import {calculateSaju} from '../games/starlit-saju/engine.mjs';
 import {analyzeFortune} from '../games/starlit-saju/fortune-data.mjs';
 import {analyzeDaeun} from '../games/starlit-saju/daeun.mjs';
 import {buildDetailedReading} from '../games/starlit-saju/readings.mjs';
-import {renderDetailedReport} from '../games/starlit-saju/report-view.mjs';
+import {buildCompatibilityReading} from '../games/starlit-saju/compatibility.mjs';
+import {renderDetailedReport,renderCompatibilityReport,restoreReadingPage} from '../games/starlit-saju/report-view.mjs';
 
 const {JSDOM}=createRequire(import.meta.url)('jsdom');
+const {selectReadingItem}=createRequire(import.meta.url)('./helpers/saju-ui-harness.cjs');
 const now=new Date('2026-11-13T00:00:00Z');
 const chart=calculateSaju({year:1990,month:5,day:17,hour:8,minute:37},{now});
 const fortune=analyzeFortune(chart,{year:2026,now});
@@ -21,21 +23,31 @@ function visible(element) {
   }
   return true;
 }
-function mount(topic) {
+function assertCurrentBody(element) {
+  assert.ok(visible(element),'the selected reading is visible');
+  assert.equal(element.querySelector('details.reading-body-details'),null,'a selected explanation never needs a second disclosure');
+  const owner=element.matches('[data-compatibility-current]')?'[data-compatibility-page]':'[data-reader-page]';
+  const paragraphs=[...element.querySelectorAll('.reader-prose > p,.compatibility-person-prose > p')]
+    .filter(paragraph=>paragraph.closest(owner)===element);
+  assert.ok(paragraphs.every(visible),'all paragraphs owned by the current reading are immediately readable');
+}
+function mount(topic,{reading:report=reading,fortune:forecast=fortune}={}) {
   const dom=new JSDOM('<!doctype html><nav id="outside"></nav><div id="report-content"></div>',{url:'https://example.test/'});
   const doc=dom.window.document;globalThis.document=doc;
   dom.window.HTMLElement.prototype.scrollIntoView=function(){};
-  const host=doc.getElementById('report-content');renderDetailedReport(host,{reading,fortune,topic});
+  const live=doc.getElementById('report-content'),host=doc.createElement('div');
+  renderDetailedReport(host,{reading:report,fortune:forecast,topic});
+  live.replaceChildren(host);
   const select=doc.getElementById('reading-page-select');
   const current=()=>host.querySelector('[data-reader-current]');
-  const pick=id=>{select.value=id;assert.equal(select.value,id);select.dispatchEvent(new dom.window.Event('change',{bubbles:true}));};
+  const pick=id=>selectReadingItem(select,id);
   const outer=id=>{
     const link=doc.createElement('a');link.href='#'+id;
     link.addEventListener('click',event=>event.preventDefault());
     doc.getElementById('outside').append(link);link.click();link.remove();
   };
   const paragraphs=()=>[...host.querySelectorAll('p:not(.reading-page-position)')].map(node=>node.textContent);
-  return {dom,doc,host,select,current,pick,outer,paragraphs,close:()=>dom.window.close()};
+  return {dom,doc,host,live,select,current,pick,outer,paragraphs,close:()=>dom.window.close()};
 }
 function assertSummary(h,element,expected) {
   assert.ok(element,'the requested reading item remains present');
@@ -93,7 +105,7 @@ function assertReadingScore(h,summary,expected) {
   }
 }
 
-test('every reading family keeps two authored summary units before its complete body when requested',()=>{
+test('every reading family exposes two summary units and its complete body without a second click',()=>{
   const h=mount('all');
   try {
     const before=h.paragraphs(),checks=[];
@@ -119,7 +131,7 @@ test('every reading family keeps two authored summary units before its complete 
     add(h.doc.querySelector('#reading-symbols .reader-intro'),reading.reader.symbols);
     const symbols=[...h.host.querySelectorAll('.reader-symbol-item')];
     assert.equal(symbols.length,reading.reader.symbols.items.length);
-    reading.reader.symbols.items.forEach((item,index)=>add(symbols[index],item,':scope > .reader-prose > p',[item.description]));
+    reading.reader.symbols.items.forEach((item,index)=>add(symbols[index],item,':scope > .reader-prose > p',item.paragraphs||[item.description]));
     add(h.doc.querySelector('#reading-timings .reader-intro'),reading.reader.timings);
     for(const item of reading.reader.timings.items) {
       const article=h.host.querySelector(`.reader-timing-card[data-month="${item.month}"]`);
@@ -138,7 +150,14 @@ test('every reading family keeps two authored summary units before its complete 
       if(!selector)continue;
       const body=[...element.querySelectorAll(selector)].filter(paragraph=>!paragraph.closest('.saju-two-line-summary'));
       assert.deepEqual(body.map(paragraph=>paragraph.textContent),paragraphs,'summary presentation preserves every original body paragraph');
-      assert.ok(body.length>0&&body.every(visible),'the requested full explanation is not collapsed behind its summary');
+      assert.ok(body.length>0&&body.every(visible),'selecting the item immediately reveals every authored paragraph');
+      assert.ok(body.every(paragraph=>!paragraph.closest('details.reading-body-details')),'the summary cannot replace the purchased full explanation');
+      if(source.detailSections) {
+        const prose=body[0].parentElement;
+        assert.deepEqual([...prose.querySelectorAll(':scope > .reading-body-heading')].map(heading=>heading.textContent),source.detailSections.map(section=>section.title),'meaningful section headings retain their authored order');
+        assert.deepEqual(body.map(paragraph=>Number(paragraph.dataset.readingDetailSection)),source.detailSections.flatMap((section,index)=>section.paragraphs.map(()=>index)),'every paragraph stays attached to its own explanation heading');
+        assert.deepEqual(source.detailSections.flatMap(section=>section.paragraphs),paragraphs);
+      }
       assert.ok(group.compareDocumentPosition(body[0])&h.dom.window.Node.DOCUMENT_POSITION_FOLLOWING,'the two summary units precede the full explanation');
     }
     assert.deepEqual(h.paragraphs(),before,'visiting summaries never rewrites or removes the purchased prose');
@@ -154,14 +173,43 @@ test('the compact picker keeps every purchased paragraph while exposing only the
     const h=mount(topic);
     try {
       const before=h.paragraphs();
-      assert.equal(h.host.firstElementChild.className,'reading-pager');
+      const overview=h.host.firstElementChild;
+      assert.equal(overview.id,'saju-overview');
+      assert.equal(h.host.dataset.mapView,'overview');
+      const firstMonth=fortune.months.find(item=>item.isCurrent)?.month||1;
+      const source=topic==='annual'?reading.reader.annual:topic==='monthly'?reading.reader.months.find(item=>item.month===firstMonth):reading.personPortrait;
+      assert.equal(overview.querySelector('.map-lead').textContent,source.summaryLines[0]);
+      assert.equal(overview.querySelector('.map-action p').textContent,source.summaryLines[1]);
+      const links=[...overview.querySelectorAll('.map-topic')];
+      assert.equal(links.length,4);
+      for(const link of links) {
+        link.addEventListener('click',event=>event.preventDefault());
+        link.click();
+        assert.equal(h.host.dataset.mapView,'detail');
+        assert.equal(h.current().id,link.hash.slice(1));
+        assert.equal(link.querySelector('.map-preview').textContent,h.current().querySelector('.saju-summary-line').textContent);
+        h.host.querySelector('.map-return').click();
+        assert.equal(h.host.dataset.mapView,'overview');
+      }
+      const main=overview.querySelector('.map-deep-link');
+      main.addEventListener('click',event=>event.preventDefault());
+      main.click();
       assertNoEvidence(h);
+      const coverage=h.host.querySelector('#reading-coverage');
+      assert.ok(visible(coverage),'product scope stays visible when calculation panels are removed');
+      for(const paragraph of reading.readingScope.paragraphs) {
+        assert.ok(coverage.textContent.includes(paragraph));
+        assert.ok(reading.copyByCategory[topic].includes(paragraph),'the copy preserves the same scope');
+      }
       assert.ok(visible(h.current()));
+      assertCurrentBody(h.current());
       assert.equal(h.current().id,topic==='monthly'?'reading-month-11':'reading-summary');
       assert.ok([...h.select.options].filter(option=>option.closest('optgroup')?.label!=='생활 제안').length<=60,'month and decade details keep the primary reading list compact while existing practical suggestions remain reachable');
       for(const option of [...h.select.options]) {
         h.pick(option.value);assert.ok(visible(h.current()),option.textContent);
+        assert.ok(visible(coverage),'moving to another topic cannot hide the scope');
         assert.equal(h.host.querySelectorAll('[data-reader-current]').length,1);
+        assertCurrentBody(h.current());
       }
       assert.deepEqual(h.paragraphs(),before,'navigation neither rewrites nor removes the original prose');
       assert.equal(Boolean(h.doc.getElementById('reading-lifelong')),['lifelong','all'].includes(topic));
@@ -172,9 +220,82 @@ test('the compact picker keeps every purchased paragraph while exposing only the
   }
 });
 
+test('personal supplementary explanations remain behind the main topics and keep their full copy without evidence or invented scores',()=>{
+  const h=mount('all');
+  try {
+    const before=h.paragraphs();
+    const supplements=reading.reader.supplements;
+    const contexts=[
+      {source:supplements.lifelong,scope:h.doc.getElementById('reading-lifelong'),last:reading.reader.lifelong.cards.at(-1)},
+      {source:supplements.annual,scope:h.doc.getElementById('reading-annual'),last:reading.reader.annual.cards.at(-1)},
+      ...supplements.months.map(month=>({source:month.cards,scope:h.doc.getElementById(`reading-month-${month.month}`),
+        last:reading.reader.months.find(value=>value.month===month.month).cards.at(-1)})),
+    ];
+    for(const {source,scope,last} of contexts) {
+      const main=scope.querySelector(`[data-reader-card="${last.id}"]`);
+      const pickPage=element=>{
+        if(scope.classList.contains('month-reading')) {
+          h.pick(scope.id);
+          const link=scope.querySelector(`.reading-page-sections a[href="#${element.id}"]`);
+          assert.ok(link,`${element.id}: the month overview links to its additional explanation`);
+          link.click();
+        } else h.pick(element.id);
+      };
+      for(const item of source) {
+        const element=scope.querySelector(`[data-reading-supplement="${item.id}"]`);
+        assert.ok(element,`${item.id}: a useful explanation cannot disappear with its calculation chapter`);
+        assert.ok(main.compareDocumentPosition(element)&h.dom.window.Node.DOCUMENT_POSITION_FOLLOWING,
+          'the main personal topics remain before optional additional explanations');
+        pickPage(element);
+        assert.equal(h.current(),element);assertCurrentBody(element);
+        assertSummary(h,element,item.summaryLines);
+        assert.deepEqual([...element.querySelectorAll(':scope > .reader-prose > p')].map(p=>p.textContent),item.paragraphs);
+        assert.deepEqual([...element.querySelectorAll('.reading-body-heading')].map(p=>p.textContent),item.detailSections.map(section=>section.title));
+        const notice=element.querySelector(':scope > .reader-scope-note');
+        assert.equal(notice.textContent,item.scopeNotice);assert.ok(visible(notice));
+        assert.equal(element.querySelector('.saju-reading-score,[role="meter"]'),null,
+          'the source classification is not converted into an unsupported score');
+        assert.equal(element.querySelector(':scope > .reader-label').textContent,'추가 해설');
+        assert.equal(h.host.querySelectorAll('[data-reader-current]').length,1);
+        let cursor=0;
+        for(const text of [item.label,'추가 해설',...item.summaryLines,...item.detailSections.flatMap(section=>[section.title,...section.paragraphs]),item.scopeNotice]) {
+          const index=reading.copyByCategory.all.indexOf(text,cursor);
+          assert.ok(index>=cursor,`${item.id}: visible text is missing or reordered in the copy`);cursor=index+text.length;
+        }
+      }
+      pickPage(main);
+      h.host.querySelectorAll('.reading-pager-step')[1].click();
+      assert.equal(h.current().dataset.readingSupplement,source[0].id,
+        'the next-reading action reaches additional interpretation after the main topics');
+    }
+    assertNoEvidence(h);
+    assert.deepEqual(h.paragraphs(),before,'visiting added explanations does not rewrite any purchased paragraph');
+  } finally {h.close();}
+});
+
+test('all eight existing life-topic scope notices are visible with their selected body and retained in copies',()=>{
+  const h=mount('lifelong');
+  try {
+    const scoped=reading.reader.lifelong.cards.filter(item=>item.scopeNotice);
+    assert.equal(scoped.length,8,'the requested family, health and life-situation boundaries are all covered');
+    for(const item of scoped) {
+      const element=h.host.querySelector(`[data-reader-card="${item.id}"]`);
+      h.pick(element.id);
+      const notice=element.querySelector(':scope > .reader-scope-note');
+      assert.ok(notice,`${item.id}: a scope note must not disappear when calculation records are hidden`);
+      assert.equal(notice.textContent,item.scopeNotice);assert.ok(visible(notice));
+      assert.ok(reading.copyByCategory.lifelong.includes(item.scopeNotice));
+      assert.ok(reading.copyByCategory.all.includes(item.scopeNotice));
+      assert.equal(notice.closest('.reading-full-text,.support-details,.chapter-evidence'),null);
+    }
+    assertNoEvidence(h);
+  } finally {h.close();}
+});
+
 test('portrait tables, outer contents and decade topics reveal their reading without evidence menus',()=>{
   const h=mount('all');
   try {
+    assert.equal(h.host.querySelector('.daeun-time-notice'),null,'a known birth time has no assumption notice');
     const first=h.host.querySelector('.portrait-card');assert.equal(visible(first),false);
     h.host.querySelector('.portrait-summary-table tbody a').click();
     assert.equal(h.current(),first);assert.ok(visible(first));
@@ -193,6 +314,31 @@ test('portrait tables, outer contents and decade topics reveal their reading wit
     assert.equal(h.current(),situation);assert.ok(visible(situation));
     assert.ok(visible(period.querySelector('.daeun-dates')),'period dates remain visible beside a selected decade topic');
     assert.equal([...period.querySelectorAll('.daeun-topic')].filter(visible).length,1);
+  } finally {h.close();}
+});
+
+test('an unknown-time decade stays reachable and keeps its six-AM notice beside every selected period and topic',()=>{
+  const unknownChart=calculateSaju({year:1990,month:5,day:17,hour:null},{now});
+  const forecast=analyzeFortune(unknownChart,{year:2026,now});
+  const report=buildDetailedReading(unknownChart,forecast,{daeun:analyzeDaeun(unknownChart,{gender:'female',now})});
+  const h=mount('lifelong',{reading:report,fortune:forecast});
+  try {
+    h.pick('reading-daeun');
+    const notice=h.host.querySelector('.daeun-time-notice');
+    assert.equal(notice.textContent,report.daeun.birthTimeNotice);
+    assert.ok(visible(notice));
+    assert.ok(notice.previousElementSibling.classList.contains('report-section-heading'),'the assumption is stated immediately below the decade heading');
+    h.doc.querySelector('#reading-daeun .daeun-nav a').click();
+    const period=h.current();
+    assert.ok(period.classList.contains('daeun-period'));assert.ok(visible(notice));
+    const topic=period.querySelector('.daeun-topic');
+    period.querySelector(`.reading-page-sections a[href="#${topic.id}"]`).click();
+    assert.equal(h.current(),topic);assert.ok(visible(topic));assert.ok(visible(notice));
+    assert.ok(visible(period.querySelector('.daeun-dates')));
+    assert.equal(h.host.querySelectorAll('.daeun-time-notice').length,1);
+    assert.equal(unknownChart.timeKnown,false);
+    assertNoEvidence(h);
+    h.pick('reading-summary');assert.equal(visible(notice),false,'the decade assumption does not relabel the natal reading');
   } finally {h.close();}
 });
 
@@ -218,4 +364,108 @@ test('a chosen month opens one inner topic and every comparison-table destinatio
     h.outer('reading-month-12-summary');assert.equal(h.current(),month);
     assert.deepEqual(h.paragraphs(),before);
   } finally {h.close();}
+});
+
+test('general and compatibility controls retain focus for consecutive choices while reading links still focus their target',()=>{
+  const h=mount('all');
+  try {
+    const check=(pickerId,currentSelector)=>{
+      const select=h.doc.getElementById(pickerId),options=[...select.options];
+      const current=()=>h.host.querySelector(currentSelector);
+      assertCurrentBody(current());
+      const toggle=h.doc.getElementById(pickerId+'-toggle');
+      assert.equal(select.hidden,true,'visible field and item buttons replace the long select');
+      for(const option of options.slice(1,3)) {
+        selectReadingItem(select,option.value);
+        assert.equal(current().id,option.value);assert.ok(visible(current()));
+        assertCurrentBody(current());
+        assert.equal(h.doc.activeElement,toggle,'choosing an item leaves focus on the visible collapsed list');
+      }
+      const [previous,next]=select.parentElement.querySelectorAll('.reading-pager-step');
+      const start=current().id;
+      next.focus();
+      for(let count=0;count<2;count++) {
+        const before=current().id;next.click();assert.notEqual(current().id,before);
+        assertCurrentBody(current());
+        assert.equal(h.doc.activeElement,next,'the next button supports repeated keyboard activation');
+      }
+      previous.focus();previous.click();previous.click();
+      assert.equal(h.doc.activeElement,previous);assert.equal(current().id,start);
+      previous.blur();const untouched=h.doc.activeElement;next.click();
+      assert.equal(h.doc.activeElement,untouched,'a click without focused controls does not force focus into the text');
+    };
+    check('reading-page-select','[data-reader-current]');
+    h.outer('reading-daeun');assert.equal(h.doc.activeElement,h.doc.getElementById('reading-daeun'));
+    const partner=calculateSaju({year:1992,month:3,day:14,hour:10,minute:20},{now});
+    renderCompatibilityReport(h.host,buildCompatibilityReading(chart,partner),{names:[{name:'예시 A'},{name:'예시 B'}]});
+    check('compatibility-page-select','[data-compatibility-current]');
+    h.outer('compatibility-synthesis');assert.equal(h.doc.activeElement,h.doc.getElementById('compatibility-synthesis'));
+    h.host.querySelector('[data-compatibility-current] .reading-back-to-picker').click();
+    assert.equal(h.doc.activeElement,h.doc.getElementById('compatibility-page-select-toggle'));
+  } finally {h.close();}
+});
+
+test('a refreshed reading restores the same decade topic after the current period moves to the front',()=>{
+  const h=mount('all');
+  try {
+    h.pick('reading-daeun');
+    const period=h.host.querySelector('.daeun-period.is-current'),topic=period.querySelector('.daeun-topic');
+    h.host.querySelector(`.daeun-nav a[href="#${period.id}-title"]`).click();
+    period.querySelector(`.reading-page-sections a[href="#${topic.id}"]`).click();
+    const savedPage=h.current().id,savedPeriod=period.dataset.daeunPeriod;
+    assert.equal(savedPage,topic.dataset.daeunTopic);
+    const later=new Date('2036-11-13T00:00:00Z');
+    const forecast=analyzeFortune(chart,{year:2026,now:later});
+    const updated=buildDetailedReading(chart,forecast,{daeun:analyzeDaeun(chart,{gender:'female',now:later})});
+    const prepared=h.doc.createElement('div');
+    renderDetailedReport(prepared,{reading:updated,fortune:forecast,topic:'all'});
+    assert.notEqual(prepared.querySelector('.daeun-period.is-current').dataset.daeunPeriod,savedPeriod);
+    const focusTarget=h.doc.getElementById('reading-page-select-toggle');focusTarget.focus();let scrolls=0;
+    h.dom.window.HTMLElement.prototype.scrollIntoView=function(){scrolls++;};
+    assert.equal(restoreReadingPage(prepared,savedPage),true,'a detail absent from the initial picker can still be restored');
+    assert.equal(h.doc.activeElement,focusTarget);assert.equal(scrolls,0,'preparing a refresh does not move focus or scroll');
+    h.live.replaceChildren(prepared);
+    const restored=prepared.querySelector('[data-reader-current]');
+    assert.equal(restored.dataset.daeunTopic,savedPage);
+    assert.equal(restored.closest('.daeun-period').dataset.daeunPeriod,savedPeriod);
+    assert.ok(visible(restored));
+    assert.equal(restoreReadingPage(prepared,'missing-reading-page'),false);
+    assert.equal(prepared.querySelector('[data-reader-current]'),restored);
+  } finally {h.close();}
+});
+
+test('overview links to family and daily life, month dates and the chosen month or age topic',()=>{
+  const h=mount('all');
+  try {
+    const map=h.host.querySelector('.reading-map');
+    const follow=link=>{
+      assert.ok(link);link.addEventListener('click',event=>event.preventDefault(),{once:true});link.click();
+      assert.equal(h.current().id,link.hash.slice(1));assert.ok(visible(h.current()));
+      h.host.querySelector('.map-return').click();
+    };
+    assert.equal(map.querySelectorAll('.map-related-link').length,4);
+    for(const link of map.querySelectorAll('.map-related-link')) follow(link);
+    const periods=map.querySelector('a[href="#reading-month-periods"]');
+    follow(periods);
+    const dates=h.doc.getElementById('reading-month-periods');
+    assert.deepEqual([...dates.querySelectorAll('dd')].map(el=>el.textContent),reading.months.map(m=>m.periodLabel));
+    assert.ok(map.querySelector('.map-index a[href="#reading-month-periods"]'));
+    const indexes=[...map.querySelectorAll('.map-index-group')];
+    const choices=(group,value)=>{
+      const select=group.querySelector('select');select.value=value;
+      select.dispatchEvent(new h.dom.window.Event('change',{bubbles:true}));return [...group.querySelectorAll('li a')];
+    };
+    const months=indexes.find(group=>group.querySelector('summary').textContent==='월별 세부 풀이');
+    assert.equal(months.querySelectorAll('option').length,12);
+    for(const n of [1,4,12]){
+      const links=choices(months,'reading-month-'+n);
+      const item=links.find(a=>a.textContent==='재물운');
+      assert.equal(h.doc.getElementById(item.hash.slice(1)).dataset.readerCard,'month-'+n+'-money');follow(item);
+    }
+    const ages=indexes.find(group=>group.querySelector('summary').textContent==='10년 대운 세부 풀이');
+    assert.equal(ages.querySelectorAll('option').length,reading.daeun.periods.length);
+    const age=reading.daeun.periods.at(-1);
+    const action=choices(ages,age.id).find(a=>a.textContent.includes('문서'));
+    assert.equal(h.doc.getElementById(action.hash.slice(1)).closest('.daeun-period').id,age.id);follow(action);
+  }finally{h.close();}
 });

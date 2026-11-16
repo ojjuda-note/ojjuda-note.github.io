@@ -78,6 +78,12 @@
     return true;
   }
 
+  function refresh() {
+    if (overlayOpen() || !canLeave()) return false;
+    if (detail.hidden) return loadFeed(false, true);
+    return refreshVisibleCard();
+  }
+
   function reportState() {
     reporting = false;
     if (!hostVisible) return;
@@ -170,7 +176,7 @@
 
   window.OjjudaNoteNavigation?.leaveMy();
   window.OjjudaParkFull = Object.freeze({ embedded: hosted, navigate, returnHome, compose: () => navigate('compose'), back, canLeave, overlayOpen, cardOpen:()=>!detail.hidden,
-    refresh: () => overlayOpen()||!canLeave()?false:detail.hidden?loadFeed(false,true):refreshCards(true),
+    refresh,
     refreshBalance: () => loadWorldBalance(session?.user?.id) });
   reportState();
   send({ type: 'ojjuda:park-ready' });

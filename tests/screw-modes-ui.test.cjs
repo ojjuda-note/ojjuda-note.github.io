@@ -32,10 +32,10 @@ async function checkFlatControls(page,cdp){
  const view=()=>page.evaluate(()=>screwWorld.current().game.state.view.zoom);
  await fingers('touchStart',[point(148,314,1),point(212,314,2)]);
  await fingers('touchMove',[point(111,314,1),point(249,314,2)]);
- assert.ok(await view()>1.8,'spreading two fingers zooms the board');
+ await page.waitForFunction(()=>screwWorld.current().game.state.view.zoom>1.8);
  await fingers('touchMove',[point(148,314,1),point(212,314,2)]);
+ await page.waitForFunction(()=>screwWorld.current().game.state.view.zoom<1.03);
  await fingers('touchEnd',[]);
- assert.ok(await view()<1.03,'pinching back restores the original view');
  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.selected),null);
  await page.mouse.move(r.x+r.width/2,r.y+r.height*.55);
  await page.mouse.wheel(0,-150);await page.waitForFunction(()=>screwWorld.current().game.state.view.zoom>1.2);

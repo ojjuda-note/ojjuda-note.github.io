@@ -1,5 +1,5 @@
 import { GOD_REFERENCE, GROUP_PAIR_RULES } from './readings-data.mjs?v=20261113-saju-easy1';
-import { PLAIN_GOD_EXPLANATIONS } from './plain-language.mjs?v=20261113-saju-easy1';
+import { PLAIN_GOD_EXPLANATIONS } from './plain-language.mjs?v=20261114-saju-copy1';
 import { GOD_CONTEXTS, PAIR_CONTEXTS, TOPIC_CONTEXTS } from './deeper-reading-data.mjs?v=20261113-saju-easy1';
 
 // A transparent explanation layer over existing facts. No extra chart facts,

@@ -234,6 +234,14 @@
 .summary-tabs button:not([aria-selected="true"]):hover { background: #b597ce1a; }
 .summary-tabs button:focus-visible, .summary-panel:focus-visible { outline: 2px solid #edc68e; outline-offset: 3px; }
 .summary-panel[hidden] { display: none; }
+.card-introduction-description, .domain-description { margin: 0 0 24px; color: #cbbbd7; font-size: 14px; line-height: 1.85; }
+.card-introduction-heading { display: flex; align-items: center; gap: 22px; margin-bottom: 22px; }
+.card-introduction-heading h3 { margin: 0; color: #f0d4a6; font: 600 19px/1.7 var(--sans); }
+.card-introduction-art { flex: 0 0 74px; width: 74px; height: 128px; margin: 0; }
+.card-introduction-reference { margin-top: 18px; }
+#card-introductions .reading-source { font-size: 14px; }
+#card-introductions .reading-source p { font-size: 14px; }
+#card-reading-basis { margin-top: 24px; }
 .domain-controls { display: grid; grid-template-columns: 1fr auto; gap: 9px 12px; margin-bottom: 8px; text-align: left; align-items: baseline; }
 .domain-controls label { color: #edcea0; font-size: 14px; }
 .domain-controls .domain-total { color: #bca8c9; font-size: 12px; line-height: 1.6; text-align: right; }
@@ -254,6 +262,9 @@
 @media (max-width: 760px) {
   .summary-tabs { gap: 4px; padding: 4px; margin-bottom: 24px; }
   .summary-tabs button { padding: 10px 4px; font-size: 13px; }
+  .card-introduction-heading { gap: 16px; }
+  .card-introduction-heading h3 { font-size: 17px; }
+  .card-introduction-art { flex-basis: 62px; width: 62px; height: 108px; }
   .domain-controls { gap: 9px 8px; }
   .domain-controls .domain-total { font-size: 11px; }
   .domain-controls select { font-size: 13px; }

@@ -4,17 +4,17 @@
   const labels = {mild:'순한맛',spicy:'빨간맛'};
   const flavors = Object.keys(labels);
   const member = $('#access-content').dataset.member;
-  const prefix = 'oj.party.' + member + '.truth.';
+  const prefix = 'oj.party.' + member + '.truth.v2.';
+  const catalogRevision = '20261114-drinking-rebuild1';
   const memory = {mild:new Set(),spicy:new Set()};
   const valid = (flavor,question) => Object.hasOwn(labels,flavor) && typeof question==='string' &&
     question.trim().length>0 && question.length<=240;
 
   const baseline = window.DrinkingPromptCatalog;
-  const baseText = new Set([...baseline.mild,...baseline.spicy]);
-  const legacyDefaults = [...baseline.mild.slice(0,24),...baseline.spicy.slice(0,16)];
+  // Old official copies stay stored but must not rejoin the personal deck.
+  const baseText = new Set([...baseline.mild,...baseline.spicy,...(baseline.retiredTruth||[])]);
 
-  function personalDeck() {
-    const official = window.DrinkingPrompts.truth();
+  function personalDeck(official=window.DrinkingPrompts.truth()) {
     const deck = {mild:new Set(official.mild),spicy:new Set(official.spicy)};
     const canon = new Set([...official.mild,...official.spicy]);
     function add(flavor,question) {
@@ -27,28 +27,10 @@
       for (let i=0;i<localStorage.length;i++) {
         const key=localStorage.key(i);
         if (!key?.startsWith(prefix)) continue;
-        const match=/^(card|base)\.(mild|spicy)\.([\s\S]+)$/.exec(key.slice(prefix.length));
+        const match=/^card\.(mild|spicy)\.([\s\S]+)$/.exec(key.slice(prefix.length));
         if (!match) continue;
-        const [,type,flavor,text]=match;
-        if (type==='card') add(flavor,text);
-        else if (official[flavor].includes(text)) {
-          let edit;
-          try { edit=JSON.parse(localStorage.getItem(key)); } catch { continue; }
-          add(edit?.flavor,edit?.question);
-        }
-      }
-      // Old room edits had numeric preset indexes and were only available in multiplayer.
-      if (document.documentElement.dataset.game==='truth') {
-        const saved=JSON.parse(localStorage.getItem('oj.party.live.truth.edits.v1'));
-        if (Array.isArray(saved)) for (const row of saved) {
-          if (!Array.isArray(row) || typeof row[0]!=='string') continue;
-          const [key,edit]=row;
-          if (key.startsWith('c')) add(edit?.flavor,edit?.question);
-          else if (/^b\d+$/.test(key)) {
-            const i=Number(key.slice(1));
-            if (official[i<24?'mild':'spicy'].includes(legacyDefaults[i])) add(edit?.flavor,edit?.question);
-          }
-        }
+        const [,flavor,text]=match;
+        add(flavor,text);
       }
     } catch { /* Browser storage may be unavailable. The current session still works. */ }
     for (const flavor of flavors) for (const text of memory[flavor]) add(flavor,text);
@@ -75,8 +57,8 @@
         '><span>'+label+'</span></label>').join('')+'</div></fieldset>';
     }
     return '<div class="truth-settings">'+
-      group('truth-mode','카드 구성',[['mild','순한맛만'],['spicy','빨간맛만'],['mixed','반반']],settings.mode)+
-      group('truth-visibility','고르기 전 카드 맛',[['hide','숨기기'],['show','보이기']],settings.showFlavor?'show':'hide')+'</div>';
+      group('truth-mode','질문 수위',[['mild','순한맛만'],['spicy','빨간맛만'],['mixed','반반']],settings.mode)+
+      group('truth-visibility','카드에 수위 표시',[['hide','숨기기'],['show','보이기']],settings.showFlavor?'show':'hide')+'</div>';
   }
   function bindSettings(settings) {
     const controls=$('.truth-settings');
@@ -102,25 +84,25 @@
     const target=s.code+'/'+s.round;
     if (target!==activeRound) {
       activeRound=target;
-      entry={mode:'mixed',showFlavor:false,flavor:'mild',question:'',expanded:false,message:'',busy:false};
+      entry={mode:'spicy',showFlavor:false,flavor:'spicy',question:'',expanded:false,message:'',busy:false};
     }
     return entry;
   }
   function form(s,ui) {
     const e=formState(s);
     return '<details id="truth-editor" class="truth-edit"'+(e.expanded?' open':'')+'><summary>질문 카드 등록</summary>'+
-      '<form id="truth-form"><label>카드 맛<select id="truth-flavor"><option value="mild">순한맛</option>'+
+      '<form id="truth-form"><label>질문 수위<select id="truth-flavor"><option value="mild">순한맛</option>'+
       '<option value="spicy"'+(e.flavor==='spicy'?' selected':'')+'>빨간맛</option></select></label>'+
       '<label>질문<textarea id="truth-question" rows="3" maxlength="240" required>'+ui.esc(e.question)+'</textarea></label>'+
-      '<p><small>직접 쓴 내용은 관리자 검토 후 공용 목록에 등록될 수 있어요.</small></p>'+
+      '<p><small>직접 적은 질문은 관리자 검토 후 다른 참가자에게도 추천될 수 있어요.</small></p>'+
       '<button type="submit" id="truth-submit"'+(e.busy?' disabled':'')+'>이 방에 추가</button></form>'+
       '<p role="status" id="truth-message">'+ui.esc(e.message)+'</p></details>';
   }
   function board(s,ui) {
     if (s.phase==='setup') {
-      if (s.me!==0) return '<h1>방장이 카드를 준비하고 있어요</h1><p>내 차례에 카드 한 장을 골라 질문에 답해요.</p>';
-      return '<h1>진실게임을 시작할까요?</h1>'+settingsForm(formState(s))+
-        '<button type="button" class="action" id="truth-begin">이 카드로 시작</button><p role="status" id="truth-start-message"></p>';
+      if (s.me!==0) return '<h1 class="suite-heading">방장이 질문을 준비하고 있어요</h1><p class="suite-hint">내 차례에 카드를 골라 모두 앞에서 답해요.</p>';
+      return '<h1 class="suite-heading">오늘은 조금 더, 솔직하게.</h1>'+settingsForm(formState(s))+
+        '<button type="button" class="action" id="truth-begin">이 설정으로 시작</button><p class="suite-hint" role="status" id="truth-start-message"></p>';
     }
     const mine=s.me===s.game.turn, name=ui.esc(s.players[s.game.turn]);
     if (s.phase==='pick') {
@@ -129,24 +111,29 @@
         const control=mine?'data-truth-side="'+i+'"':'disabled';
         return '<button type="button" '+control+' aria-label="'+sideName(i,taste)+'">'+cardLabel(taste)+'</button>';
       });
-      const heading=mine?'카드 한 장을 골라요':name+'님이 카드를 고르고 있어요';
-      return '<h1>'+heading+'</h1><div class="truth-hand">'+cards.join('')+'</div>';
+      if(!mine)return '<h1 class="suite-heading">'+name+'님이 질문을 고르고 있어요</h1><div class="truth-hand">'+cards.join('')+'</div>';
+      return '<h1 class="suite-heading">답할 질문을 정해 주세요</h1><form id="truth-prompt">'+
+        window.DrinkingQuestionMenu.markup('truth','이 질문으로 시작',enabledFlavors(s.game.mode))+'</form>'+
+        '<details class="blind-cards"><summary>카드 뒤집기로 뽑기</summary><div class="truth-hand">'+cards.join('')+'</div></details>';
     }
     const flavor=s.game.flavor==='spicy'?'spicy':'mild';
-    return '<h1>'+name+'님의 질문</h1><div class="truth-face '+flavor+'"><span>'+labels[flavor]+'</span><strong>'+
+    return '<h1 class="suite-heading">'+name+'님의 차례예요</h1><div class="truth-face '+flavor+'"><span>'+labels[flavor]+'</span><strong>'+
       ui.esc(s.game.question)+'</strong></div>'+(mine?'<div class="actions">'+
       '<button type="button" class="action" data-truth-next="truth_answer">답했어요</button>'+
-      '<button type="button" data-truth-next="truth_pass">패스</button></div>':'<p>답하거나 패스하면 다음 차례로 넘어가요.</p>');
+      '<button type="button" data-truth-next="truth_pass">패스</button></div>':'<p class="suite-hint">답하거나 패스하면 다음 차례로 넘어가요.</p>');
   }
   function view(s,ui) {
-    if (s.phase==='done') return '<h1>모두 한 번씩 마쳤어요!</h1><p>다음 판에는 어떤 질문이 나올까요?</p>';
+    if (s.phase==='done') return '<h1 class="suite-heading">모두 한 번씩 마쳤어요!</h1><p class="suite-hint">다음 판에는 어떤 질문이 나올까요?</p>';
     return board(s,ui)+form(s,ui);
   }
-  function roomDeck(count) {
-    const deck=personalDeck();
+  function roomDeck(s,official) {
+    const deck=personalDeck(official);
     for (const flavor of flavors) {
       const cards=deck[flavor];
-      if (cards.length<=2048) continue;
+      // Leave space for questions already added from other phones, plus this round's turns.
+      const limit=Math.max(0,2048-(s.game.added?.[flavor] || 0)-s.players.length);
+      if (cards.length<=limit) continue;
+      const count=Math.min(s.players.length,limit);
       // Each player draws once. A sample without replacement draws fairly from the whole catalog.
       for (let i=0;i<count;i++) {
         const j=i+Math.floor(Math.random()*(cards.length-i));
@@ -181,6 +168,16 @@
         }
       }
     };
+    const picker=$('#truth-prompt');
+    if(picker){
+      const menu=window.DrinkingQuestionMenu;
+      if(e.pickerTurn!==s.game.turn){e.pickerTurn=s.game.turn;e.picker=menu.draft();}
+      menu.mount(picker,{kind:'truth',state:e.picker,load:()=>menu.catalog('truth'),apply:async(question,manual,flavor)=>{
+        const ok=await ui.send('truth_pick',{turn:s.game.turn,question,flavor});
+        if(ok&&manual)window.DrinkingPrompts.submit('truth',question,flavor);
+        return ok;
+      }});
+    }
     document.querySelectorAll('[data-truth-side]').forEach(button=>{
       button.onclick=()=>ui.send('truth_pick',{turn:s.game.turn,side:Number(button.dataset.truthSide)});
     });
@@ -195,15 +192,16 @@
       const msg=$('#truth-start-message');
       try {
         msg.textContent='질문을 불러오는 중이에요…';
-        if (!await window.DrinkingPrompts.refresh()) {
-          msg.textContent='질문을 불러오지 못했어요. 연결을 확인하고 다시 시작해 주세요.';return;
-        }
+        const loaded=await window.DrinkingPrompts.refresh('truth');
         if (!current || current.s.code!==s.code || current.s.round!==s.round || current.s.phase!=='setup') return;
-        const latest=current.s, deck=roomDeck(latest.players.length);
+        const latest=current.s, deck=roomDeck(latest,loaded?window.DrinkingPrompts.truth():{mild:[],spicy:[]});
         const missing=enabledFlavors(e.mode).find(f=>!deck[f].length && !latest.game.added?.[f]);
-        if (missing) {msg.textContent=labels[missing]+' 질문을 한 장 이상 추가해 주세요.';return;}
+        if (missing) {
+          msg.textContent=loaded?labels[missing]+' 질문을 한 장 이상 추가해 주세요.':'질문을 불러오지 못했어요. 직접 추가하거나 다시 시작해 주세요.';
+          return;
+        }
         msg.textContent='';
-        await current.ui.send('truth_begin',{deck,mode:e.mode,showFlavor:e.showFlavor});
+        await current.ui.send('truth_begin',{deck,mode:e.mode,showFlavor:e.showFlavor,catalog_revision:catalogRevision});
       } finally {begin.disabled=false;}
     };
   }

@@ -1,0 +1,51 @@
+/* Shared drinking-game surfaces with the red switch as the focal point. */
+body.dp-playing[data-dp-kind="secretcount"] {
+  --suite-bg: radial-gradient(ellipse at 28% 18%, #2c4545, #1a2e31 58%, #112125);
+  --suite-surface: linear-gradient(142deg, #2b4141, #1b2c30 78%);
+  --suite-subtle: #1a2f31;
+  --suite-ink: #f6f1e5;
+  --suite-muted: #bfcdc6;
+  --suite-accent: #e6ca94;
+  --suite-accent-ink: #352e21;
+  --suite-line: #aec4ba44;
+}
+.sc-setup,.sc-controls { margin:auto; width:min(100%,22rem); display:grid; justify-items:center; gap:clamp(12px,3vh,26px); text-align:center }
+.sc-setup h2 { margin:0; color:var(--suite-ink); font-size:clamp(1.4rem,3.3vw,2rem); letter-spacing:-.045em }
+.sc-setup-art.sc-emblem { width:clamp(45px,9dvh,90px); margin:0 auto }
+.sc-setup .sc-range { margin:0; color:var(--suite-muted) }
+.sc-setup fieldset { border:0; padding:0; margin:0; display:flex; gap:8px }
+.sc-setup legend,.sc-reader { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip-path:inset(50%) }
+.sc-setup fieldset label { position:relative; display:block; padding:10px 18px; border-radius:10px; border:1px solid var(--suite-line); background:var(--suite-subtle); color:var(--suite-ink); font-weight:700; cursor:pointer }
+.sc-setup fieldset input { position:absolute; opacity:0; width:1px; height:1px }
+body.dp-playing[data-dp-kind="secretcount"] :is(.play-body,#view) .sc-setup fieldset label:has(:checked) { background:var(--suite-accent); color:var(--suite-accent-ink); border-color:var(--suite-accent) }
+.sc-setup fieldset label:focus-within { outline:3px solid #0084a0; outline-offset:2px }
+.sc-field:not([hidden]) { display:grid; width:min(100%,19rem); box-sizing:border-box; padding:10px 16px; border:1px solid var(--suite-line); border-radius:12px; background:var(--suite-subtle); text-align:left }
+.sc-range-head,.sc-range-ends { display:flex; align-items:baseline; justify-content:space-between }
+.sc-range-head output { font-size:1.45rem; font-weight:750; font-variant-numeric:tabular-nums; color:var(--suite-accent) }
+.sc-range-ends { margin-top:8px; color:var(--suite-muted); font-size:.85rem; font-variant-numeric:tabular-nums }
+.sc-field input[type=range] { width:100%; min-height:44px; margin:0; padding:0; accent-color:var(--suite-accent); cursor:pointer }
+.sc-controls .sc-turn { margin:0 0 clamp(34px,8dvh,4rem); padding:6px 14px; border-radius:999px; border:1px solid var(--suite-line); background:var(--suite-subtle); max-width:100%; font-weight:750; font-size:clamp(1.05rem,3.7vw,1.4rem); line-height:1.25; color:var(--suite-accent); overflow-wrap:anywhere }
+.sc-setup button,.sc-pass { min-height:44px; padding:10px 24px; border-radius:12px; border:1px solid #566460; background:#263a36; color:#fff; font:inherit; font-weight:700; cursor:pointer }
+.sc-controls { align-content:center; perspective:700px; padding:10px 0 }
+.sc-machine,.sc-emblem { position:relative; display:grid; place-items:center; aspect-ratio:1; width:min(54vw,31dvh,230px); border-radius:24%; background:linear-gradient(140deg,#c6c9bf,#717b74 42%,#414f4c 78%,#788078); box-shadow:inset 0 2px 2px #fff9,inset 0 -5px 3px #202d2a,0 10px 15px #18272530; isolation:isolate }
+.sc-machine::before,.sc-emblem::before { content:''; position:absolute; inset:12%; border-radius:50%; background:linear-gradient(155deg,#313a39,#c4c6bb 60%,#444f4a); box-shadow:0 2px 0 #ffffff69 }
+.sc-machine [data-sc-press],.sc-emblem::after { appearance:none; position:absolute; inset:17%; width:66%; height:66%; padding:0; margin:0; border-radius:50%; border:0; background:radial-gradient(ellipse at 34% 24%,#ff9980,#e44537 35%,#b22222 72%,#8c1b1d); box-shadow:inset 0 3px 3px #ffd6afab,inset 0 -5px 4px #7d161f,0 5px 0 #611e24,0 8px 9px #271a19b3; cursor:pointer; z-index:1 }
+.sc-machine [data-sc-press]:is(:enabled:active,.sc-pressed,[data-sc-held]) { transform:translateY(5px) scale(.96); filter:brightness(.78); box-shadow:inset 0 4px 8px #751d21,0 1px 1px #562328 }
+.sc-machine [data-sc-press]:focus-visible,.sc-pass:focus-visible { outline:3px solid #0084a0; outline-offset:5px }
+.sc-machine [data-sc-press]:disabled { opacity:1; cursor:default }
+.sc-pass:disabled { opacity:.48; cursor:default }
+.sc-lid { position:absolute; inset:1%; border-radius:24%; background:repeating-linear-gradient(45deg,#43534f 0 6px,#3c4b47 6px 12px); border:3px solid #83938a; box-shadow:inset 0 2px 3px #cad0bf55,inset 0 -5px 6px #192823; transform:perspective(600px) rotateX(100deg); transform-origin:50% 0; pointer-events:none; z-index:2 }
+.sc-closed .sc-lid { transform:none }
+.sc-lid::after { content:''; position:absolute; left:34%; right:34%; bottom:11%; height:4%; background:#b9c2b6; border-radius:5px }
+.sc-emblem { width:56%; max-width:7rem; margin:auto }
+.sc-emblem::after { content:'' }
+.round-head .sc-emblem { width:1.5rem }
+body[data-dp-kind=secretcount][data-dp-phase=press] :is(.round-head,.topline,#view .actions,.stage-art) { display:none }
+body[data-dp-kind=secretcount][data-dp-phase=press] :is(.play-body,#game) { display:grid; place-content:center; justify-items:center; min-height:0; flex:1 }
+@media(prefers-reduced-motion:no-preference){.sc-lid{transition:transform .2s ease}}
+body.dp-playing[data-dp-kind=secretcount][data-dp-phase=press] #access-content > header,
+body.dp-playing[data-dp-kind=secretcount][data-dp-phase=press] #access-content > .dp-help,
+body.dp-playing[data-dp-kind=secretcount][data-dp-phase=press] #app .round-head,
+body.dp-playing[data-dp-kind=secretcount][data-dp-phase=press] #view .card > :is(.topline,.actions) { display:none }
+.sc-controls .sc-pass { min-width:9rem; color:var(--suite-accent-ink); background:var(--suite-accent); border-color:var(--suite-accent); box-shadow:inset 0 1px #fff5 }
+@media(max-height:480px){ .sc-setup { gap:6px } .sc-setup-art.sc-emblem { display:none } .sc-controls .sc-turn { margin-bottom:12px } }

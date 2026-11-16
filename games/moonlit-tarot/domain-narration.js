@@ -1,9 +1,9 @@
-import { CARD_INTERPRETATIONS } from './interpretation-engine.js?v=20261113-tarot-easy1';
-import { CASE_GUIDES, getCaseGuide } from './case-guides.js?v=20261113-tarot-easy1';
-import { LIFE_TOPICS } from './topic-catalog-life.js?v=20261113-tarot-context1';
-import { RELATIONSHIP_TOPICS } from './topic-catalog-relations.js?v=20261113-tarot-context1';
-import { PRACTICAL_TOPICS } from './topic-catalog-practical.js?v=20261113-tarot-context1';
-import { WELLBEING_TOPICS } from './topic-catalog-wellbeing.js?v=20261113-tarot-context1';
+import { CARD_INTERPRETATIONS } from './interpretation-engine.js?v=20261114-tarot-first-person1';
+import { CASE_GUIDES, getCaseGuide } from './case-guides.js?v=20261114-tarot-first-person1';
+import { LIFE_TOPICS } from './topic-catalog-life.js?v=20261114-tarot-first-person1';
+import { RELATIONSHIP_TOPICS } from './topic-catalog-relations.js?v=20261114-tarot-first-person1';
+import { PRACTICAL_TOPICS } from './topic-catalog-practical.js?v=20261114-tarot-first-person1';
+import { WELLBEING_TOPICS } from './topic-catalog-wellbeing.js?v=20261114-tarot-first-person1';
 import { summaryLinesFrom } from './reading-summary.js?v=20261113-tarot-summary1';
 
 // Fifty editorial lenses on the same three cards, not extra draws or predictions.
@@ -26,10 +26,7 @@ export const READING_CATEGORIES = Object.freeze([
   { id: 'opportunities', label: '행운·도움·주의할 흐름', count: 5 }
 ]);
 
-function fullName(card, reading) {
-  const displayName = reading.displayName || card.name;
-  return displayName === card.name ? card.name : `${displayName}(${card.name})`;
-}
+export const DOMAIN_READING_BASIS = '같은 세 장을 50가지 주제로 풀이한다. 카드의 기본 뜻과 전통 자료는 여러 풀이에서 함께 참고하며, 이해를 돕는 가상 장면과 생활 제안을 담고 있다. 예시는 실제로 겪은 일이나 앞으로 생길 일, 상대의 속마음을 확인한 내용은 아니다.';
 
 /** Independent of the initially selected topic: each domain has its own prose. */
 export function buildDomainGroup({ cards, readings } = {}) {
@@ -39,7 +36,6 @@ export function buildDomainGroup({ cards, readings } = {}) {
       || readings.some(reading => !reading?.meaning)) {
     throw new Error('tarot_domains_require_three_actual_cards');
   }
-  const names = cards.map((card, index) => fullName(card, readings[index]));
   const sections = READING_TOPICS.map(topic => {
     const situation = CASE_GUIDES[topic.id];
     const guides = cards.map(card => getCaseGuide(topic.id, card.id));
@@ -51,8 +47,6 @@ export function buildDomainGroup({ cards, readings } = {}) {
     };
     const summaryLines = summaryLinesFrom(guides[0].insight, guides[2].action,
       [guides[2].insight, guides[1].insight, guides[1].action]);
-    summaryLines[0] = `‘${cards[0].name}’ 카드: ${summaryLines[0]}`;
-    summaryLines[1] = `‘${cards[2].name}’ 카드: ${summaryLines[1]}`;
     return {
       id: topic.id,
       number: topic.number,
@@ -65,16 +59,16 @@ export function buildDomainGroup({ cards, readings } = {}) {
       summaryLines,
       paragraphs: [
         situation.example,
-        `‘${names[0]}’ 카드가 짚는 핵심이야. ${interpretation.cause}`,
-        `‘${names[1]}’ 카드로 현재 상황을 살펴보자. ${interpretation.scene}`,
-        `‘${names[2]}’ 카드가 권하는 행동이야. ${interpretation.response} ${interpretation.outcome}`
+        interpretation.cause,
+        interpretation.scene,
+        `${interpretation.response} ${interpretation.outcome}`
       ]
     };
   });
   return {
     id: 'domains',
     label: '분야별 풀이',
-    description: '같은 세 장을 주제별로 풀었어요. 카드의 기본 뜻과 전통 자료는 여러 풀이에서 함께 참고해요. 생활 제안과 가상 장면도 예시로 담았어요. 예시는 실제로 겪은 일이나 앞으로 생길 일, 상대의 속마음을 확인한 내용은 아니에요.',
+    description: '지금 궁금한 분야를 골라 내 상황과 연결해 읽어 본다.',
     categories: READING_CATEGORIES,
     sections
   };

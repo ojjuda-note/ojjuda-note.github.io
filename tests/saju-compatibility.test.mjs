@@ -86,8 +86,8 @@ test('swapping the people reverses every real location and the directed day-mast
   const reversed=reverse.interactions.map(match=>[match.kind,match.partnerPillarKey,match.selfPillarKey,match.otherCharacter.hanja,match.birthCharacter.hanja].join(':')).sort();
   assert.deepEqual(normalized,reversed);
   assert.equal(forward.comparisons.length,reverse.comparisons.length);
-  assert.match(forward.cards[0].paragraphs[0],/^사주에서는 내가 생각이나 경험을 나누고, 상대가 도움을 얻는/);
-  assert.match(reverse.cards[0].paragraphs[0],/^사주에서는 내가 상대의 말에서 배우거나 도움을 얻는/);
+  assert.match(forward.cards[0].paragraphs[0],/^이 궁합의 강점은 내가 나누는 생각과 경험을 상대에게 필요한 도움으로 연결하는/);
+  assert.match(reverse.cards[0].paragraphs[0],/^이 궁합의 강점은 상대의 생각과 경험에서 배우고 필요한 도움을 얻는/);
 });
 
 test('individual stem meanings remain distinct even when the broad element relationship is the same',()=>{

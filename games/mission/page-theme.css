@@ -1,0 +1,40 @@
+/* Copper-lit stage finishes; card privacy, gestures and voting stay game controlled. */
+body.dp-playing[data-dp-kind="mission"] {
+  --suite-bg: radial-gradient(ellipse at 28% 18%, #4b342d, #29221f 58%, #181717);
+  --suite-surface: linear-gradient(140deg, #40312b, #282321 78%);
+  --suite-subtle: #302723;
+  --suite-ink: #f7ede2;
+  --suite-muted: #cdbbb0;
+  --suite-accent: #eab294;
+  --suite-accent-ink: #432c24;
+  --suite-line: #d4af963d;
+}
+body.dp-playing[data-dp-kind="mission"] .stage-art { background: radial-gradient(ellipse at 48% 58%, #9b7257, #604537 52%, #352c28); }
+body.dp-playing[data-dp-kind="mission"] .stage-art::before { inset: 0; background: radial-gradient(ellipse at 50% 12%, #ffe4ba29, transparent 65%); filter: none; }
+body.dp-playing[data-dp-kind="mission"] .stage-art .game-art {
+  mask-image: radial-gradient(ellipse at 50% 52%, #000 42%, #000e 68%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 52%, #000 42%, #000e 68%, transparent 100%);
+}
+body.dp-playing[data-dp-kind="mission"] .private-card,
+body.dp-playing[data-dp-kind="mission"] #view .mission-card { background: linear-gradient(150deg, #503b30, #302823); border-color: #cda98a70; box-shadow: inset 0 0 0 1px #e4c3a43b, 0 10px 28px #110c0955; }
+body.dp-playing[data-dp-kind="mission"] .private-card.hidden-face { background: repeating-linear-gradient(135deg, #302821 0 8px, #3a2f27 8px 9px); }
+body.dp-playing[data-dp-kind="mission"] .private-card:not(.hidden-face),
+body.dp-playing[data-dp-kind="mission"] #view .mission-card:has(.secret) { background: linear-gradient(140deg, #f3e9d6, #e1cdb5); border-color: #d5b99a; box-shadow: inset 0 0 0 1px #fff4dc99, 0 10px 28px #110c0955; }
+body.dp-playing[data-dp-kind="mission"] .private-card .secret-art { background-color: #dfcbb5; }
+body.dp-playing[data-dp-kind="mission"] .private-card.hidden-face .secret-art { background-color: #302821; }
+body.dp-playing[data-dp-kind="mission"] .private-card strong { background: transparent; color: #51372a; }
+body.dp-playing[data-dp-kind="mission"] .private-card.hidden-face strong { color: #e5c9ac; }
+body.dp-playing[data-dp-kind="mission"] #view .mission-card .secret { color: #51372a; }
+body.dp-playing[data-dp-kind="mission"] #view .mission-card > button { background: #49352b; border-color: #a781685e; color: #f5e3ce; box-shadow: inset 0 1px #f4dbc320; }
+body.dp-playing[data-dp-kind="mission"] #app .options .choice,
+body.dp-playing[data-dp-kind="mission"] #view .ballots button { background: #3d3028; border-color: #c7a08259; color: #f0dfcd; box-shadow: inset 0 1px #ffe6c90d; }
+body.dp-playing[data-dp-kind="mission"] #app .options .choice.selected { background: #e7b493; border-color: #f2d0af; color: #483024; }
+body.dp-playing[data-dp-kind="mission"] .results-line,
+body.dp-playing[data-dp-kind="mission"] #view .breakdown li { background: #3a2d26; color: #e3cdbb; box-shadow: inset 0 0 0 1px #d2af8c38; }
+body.dp-playing[data-dp-kind="mission"] #view .breakdown strong { color: #fae1bd; }
+body.dp-playing[data-dp-kind="mission"] #view .breakdown span { color: #cdb5a5; }
+body.dp-playing[data-dp-kind="mission"][data-dp-phase="done"] :is(#app, #view) p strong { color: #f4c6a5; }
+@media (hover: hover) {
+  body.dp-playing[data-dp-kind="mission"] #app .options .choice:not(:disabled):hover,
+  body.dp-playing[data-dp-kind="mission"] #view .ballots button:not(:disabled):hover { background: #574133; border-color: #ebc6a2; }
+}

@@ -104,7 +104,7 @@ test('pro search can see beyond a tempting shallow move', async () => {
  assert.deepEqual(plain(move), nodes[0][1], 'AI avoids the immediate reward that loses next turn');
 });
 
-test('advanced Janggi results use the existing hard leaderboard', async () => {
+test('all Janggi levels submit separate results, including confirmed hard', async () => {
  const start = source.indexOf('async function savePracticeStreak(');
  const end = source.indexOf('\n}\n', start) + 2;
  const calls = [];
@@ -117,10 +117,10 @@ test('advanced Janggi results use the existing hard leaderboard', async () => {
  });
  vm.runInContext(source.slice(start, end), ctx);
  const round = { id: 'round', owner: 'member', saved: false, pending: false, retry: { remove() {} } };
- for (const [index, level] of ['pro', 'master', 'grandmaster'].entries()) {
+ for (const [index, level] of ['easy','normal','hard','pro','master','grandmaster'].entries()) {
   const sessionRound = { ...round, id: `round-${index}`, saved: false, pending: false };
   await ctx.savePracticeStreak({ kind: 'janggi', mode: 'ai', level, me: 'c', owner: 'member', streakRound: sessionRound }, 'c');
-  assert.equal(calls[index].p_difficulty, 'hard');
+  assert.equal(calls[index].p_difficulty, level==='hard'?'hard_exact':level);
   assert.equal(sessionRound.saved, true);
  }
 });
@@ -141,4 +141,42 @@ test('administrator preview never submits a practice result',async()=>{
  await ctx.savePracticeStreak({kind:'janggi',mode:'ai'},'c');
  assert.equal(calls,0);assert.equal(guestFinishes,0);
  assert.equal(round.saved,false);assert.equal(round.pending,false);
+});
+
+test('Janggi menu and result card show separate records, including old mixed rounds', async t => {
+ const {JSDOM}=require('jsdom');
+ const dom=new JSDOM('<div id="bd-menu"></div>',{runScripts:'outside-only'});
+ t.after(()=>dom.window.close());
+ const w=dom.window, levels=['easy','normal','hard_exact','pro','master','grandmaster','hard'];
+ const stats=Object.fromEntries(levels.map(id=>[id,{current:null,best:null,monthly_best:null}]));
+ stats.pro={current:0,best:3,monthly_best:4};
+ stats.hard={current:null,best:null,monthly_best:9};
+ Object.assign(w,{
+  D:{online:true,user:{id:'A'}},g:{bdKind:'janggi'},
+  Xe:{janggi:{name:'장기',emoji:'',first:'c',side:{c:'초'}}},
+  Rp:[['easy','쉬움'],['normal','보통'],['hard','어려움']],
+  JG_EXTRA_LEVELS:[['pro','프로'],['master','마스터'],['grandmaster','그랜드마스터']],
+  jgChooser:()=>'',ln:async()=>'',S:{rpc:async()=>({data:stats})}
+ });
+ const part=(start,end)=>source.slice(source.indexOf(start),source.indexOf(end,source.indexOf(start)+1));
+ w.eval(part('async function Hp(', 'async function vn(')+part('async function loadJanggiStreaks(', 'var Qp='));
+ const menu=w.document.querySelector('#bd-menu');
+ await w.renderBoardMenu(menu,'janggi');
+ const panel=menu.querySelector('.jg-streaks');panel.open=true;
+ await new Promise(r=>setTimeout(r,15));
+ const rows=[...panel.querySelectorAll('tbody tr')].map(row=>[...row.cells].map(cell=>cell.textContent));
+ assert.equal(rows.length,7);
+ assert.deepEqual(rows[2],['어려움','—','—','—']);
+ assert.deepEqual(rows[3],['프로','0연승','3연승','4연승']);
+ assert.deepEqual(rows[6],['기존 통합','—','—','9연승']);
+ const session={kind:'janggi',owner:'A',mode:'ai',level:'pro',me:'c',streakRound:{id:'round',owner:'A'},over:{result:'c'}};
+ Object.assign(w,{E:session,w:x=>x,Op:()=>({}),jgReplayReason:()=>'',worldGameResultKey:()=>'end',
+  worldGameResultMarkup:options=>options.extra,adminGamePreviewActive:()=>false,notifyStreakSaved:()=>{}});
+ w.eval(part('function jgStreakReceipt(', 'var cPromoGlyph=')+part('async function savePracticeStreak(', 'let chachaRushPortalPromise'));
+ menu.innerHTML=w.worldBoardResultMarkup();
+ w.S.rpc=async()=>({data:{ok:true,streak:{current:2,best:4}}});
+ await w.savePracticeStreak(session,'c');
+ assert.equal(menu.querySelector('[data-jg-streak-receipt]').textContent,'프로 · 내 현재 2연승 · 내 최고 4연승');
+ w.D.user.id='B';
+ assert.equal(w.jgStreakReceipt(session),'');
 });

@@ -150,3 +150,32 @@ test('visit gifts reserve once and credit only the confirming account', async ()
     assert.equal((await db.query("select has_function_privilege('anon','public.claim_visit_gift(uuid)','execute') as allowed")).rows[0].allowed,false);
   } finally {await db.close();}
 });
+
+test('a drinking invite shows its sender and room only in the eligible recipient inbox',async t=>{
+  const db=await fixture();t.after(()=>db.close());
+  await db.exec(`
+    create schema ojjuda_arcade_internal;
+    create table ojjuda_arcade_internal.drinking_rooms(code text primary key,title text);
+    create table public.arcade_friend_invites(id uuid primary key,room_code text,sender_id uuid,recipient_id uuid,
+      kind text,status text,created_at timestamptz default now(),expires_at timestamptz);
+    create function public.is_friend(uuid,uuid) returns boolean language sql as $$select true$$;
+    create function ojjuda_arcade_internal.drinking_invitable_room(text,uuid,uuid) returns boolean language sql as
+      $$select exists(select 1 from ojjuda_arcade_internal.drinking_rooms where code=$1)$$;
+    insert into ojjuda_arcade_internal.drinking_rooms values ('ABC123','수달의 테이블');
+  `);
+  await db.exec(migration('20261115025215_drinking_friend_invite_inbox.sql'));
+  await db.query("insert into public.profiles(id,nickname) values($1,'초대하는 친구')",[userA]);
+  await db.query("insert into public.arcade_friend_invites(id,room_code,sender_id,recipient_id,kind,status,expires_at) values(gen_random_uuid(),'ABC123',$1,$2,'drinking','pending',now()+interval '1 minute')",[userA,userB]);
+  async function inbox(actor){
+    await db.query("select set_config('request.jwt.claim.sub',$1,false)",[actor]);
+    return (await db.query('select ojjuda_note_internal.list_app_notifications() as result')).rows[0].result;
+  }
+  assert.equal((await inbox(userA)).items.length,0);
+  const incoming=await inbox(userB);
+  assert.equal(incoming.unread_count,1);
+  assert.deepEqual([incoming.items[0].kind,incoming.items[0].sender_name,incoming.items[0].room_title],
+    ['drinking_invite','초대하는 친구','수달의 테이블']);
+  assert.doesNotMatch(JSON.stringify(incoming),/ABC123/);
+  await db.exec("update public.arcade_friend_invites set status='accepted'");
+  assert.equal((await inbox(userB)).unread_count,0);
+});

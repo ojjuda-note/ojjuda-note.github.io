@@ -32,7 +32,8 @@
     let filter = '', query = '';
     const current = id => !disposed && id && options.getUserId() === id;
     const drinkingAllowed = () => Boolean(current(owner) && options.matgoAllowed?.() === true);
-    const paused = () => document.hidden || document.body.classList.contains('gaming') || document.body.classList.contains('matgo-open') || !!document.querySelector('#gov,#matgo-overlay,#ttang-overlay,.tour-game-dialog,.roulette-game-dialog,#bd-root');
+    const offline = () => window.navigator.onLine === false;
+    const paused = () => offline() || document.hidden || document.body.classList.contains('gaming') || document.body.classList.contains('matgo-open') || !!document.querySelector('#gov,#matgo-overlay,#ttang-overlay,.tour-game-dialog,.roulette-game-dialog,#bd-root');
     const needsUpdates = () => !disposed && owner && !paused() && (root?.isConnected || mine?.status === 'waiting' || mine?.status === 'playing');
     // Detect an opponent promptly; casual lobby browsing needs fewer server reads.
     const pollInterval = () => mine?.status === 'waiting' || mine?.status === 'playing' ? ACTIVE_POLL_MS : IDLE_POLL_MS;
@@ -54,6 +55,10 @@
       suspended = next;
       if (next) { clearTimeout(timer); timer = null; }
       else if (needsUpdates()) void poll(true);
+    }
+    function connectionChanged() {
+      activityChanged();
+      render();
     }
     function card(room) {
       const [, name] = games[room.kind] || ['', '게임'];
@@ -110,7 +115,8 @@
       const drinking = filter === 'drinking';
       root.querySelector('[data-room-search]').disabled = drinking;
       const warning = root.querySelector('[data-room-issue]');
-      warning.hidden = !issue; warning.textContent = issue;
+      const status = offline() ? '연결이 끊겼어요. 연결되면 방 목록을 다시 확인해요.' : issue;
+      warning.hidden = !status; warning.textContent = status;
       const text = query.trim().replace(/^#/, '').toLocaleLowerCase();
       const shown = rooms.filter(r => (!filter || r.kind === filter) && (!text || String(r.room_no).toLowerCase().includes(text) || r.title.toLocaleLowerCase().includes(text)));
       if (!drinking && mine && !shown.some(r => r.room_no === mine.room_no)) shown.unshift(mine);
@@ -144,7 +150,7 @@
         const [data,extra] = await Promise.all([call('list'),options.extraRooms?.() || Promise.resolve([])]);
         // A return/manual refresh supersedes this read. Applying it first could
         // open an old match and pause the fresh read queued below.
-        if (!current(actor) || revision !== epoch || pollAgain) return;
+        if (!current(actor) || revision !== epoch || pollAgain || offline()) return;
         rooms = [...(data.rooms || []), ...extra].filter(room => !drinkingKinds.has(room.kind));
         mine = data.mine && !drinkingKinds.has(data.mine.kind) ? data.mine : rooms.find(room => room.is_member) || null;
         canMatgo = data.can_matgo === true; issue = '';
@@ -156,7 +162,7 @@
         const justStarted = mine?.status === 'playing' && waitingRoom === mine.room_no;
         render();
         if (!mine?.native && justStarted) { await openMatch(mine, true); if (openedMatch === mine.match_id) waitingRoom = null; }
-      } catch (error) { if (current(actor) && revision === epoch && !pollAgain) { issue = message(error); render(); } }
+      } catch (error) { if (current(actor) && revision === epoch && !pollAgain && !offline()) { issue = message(error); render(); } }
       finally { polling = false; if (pollAgain) { pollAgain = false; void poll(); } else schedule(); }
     }
     function sync() {
@@ -293,6 +299,25 @@
       options.renderModal(`<div class="mhead"><h3>방 #${room.room_no} 참여</h3><button class="btn sm ghost" data-act="close">닫기</button></div><form id="arcade-join-form"><p>${escape(room.title)}</p>${layoutSelect('hehe')}<div class="mfoot"><button type="submit" class="btn pri">이 배치로 참여</button></div></form>`, '장기방 참여');
       document.getElementById('arcade-join-form').onsubmit = event => { event.preventDefault(); void join(room, event.target.elements.layout.value); };
     }
+    async function cancelNative(room, actor) {
+      busy = true;
+      const revision = ++epoch;
+      render();
+      try {
+        await options.onCancelNative(room);
+        if (!current(actor) || revision !== epoch) return false;
+        rooms = rooms.filter(item => item.room_no !== room.room_no);
+        if (mine?.room_no === room.room_no) {
+          mine = null;
+          waitingRoom = null;
+        }
+        return true;
+      } finally {
+        busy = false;
+        render();
+        schedule();
+      }
+    }
     async function click(event) {
       if (event.target.closest('[data-drinking-hub]') && !drinkingAllowed()) {
         event.preventDefault();
@@ -310,7 +335,11 @@
       if (action === 'join') chooseRoom(room);
       if (action === 'cancel') {
         const actor = owner;
-        try { if(room.native)await options.onCancelNative(room);else await perform('cancel', { p_room: room.room_no }, actor); if (current(actor)) options.notify('대전방을 닫았어요.'); }
+        if (!current(actor)) return;
+        try {
+          const canceled = room.native ? await cancelNative(room, actor) : await perform('cancel', { p_room: room.room_no }, actor);
+          if (canceled && current(actor)) options.notify('대전방을 닫았어요.');
+        }
         catch (error) { if (current(actor)) options.notify(message(error)); }
         void poll(true);
       }
@@ -324,6 +353,8 @@
     document.addEventListener('input', input);
     document.addEventListener('change', input);
     document.addEventListener('visibilitychange', activityChanged);
+    window.addEventListener('offline', connectionChanged);
+    window.addEventListener('online', connectionChanged);
     const stopAccessWatch = window.OjjudaMatgoAccess?.subscribe?.(sync);
     const observer = new MutationObserver(activityChanged);
     observer.observe(document.body, { childList: true, attributes: true, attributeFilter: ['class'] });
@@ -331,7 +362,7 @@
     if (modalRoot) observer.observe(modalRoot, { childList: true });
     const refresh = () => poll(true);
     window.addEventListener('ojjuda:arcade-rooms-changed', refresh);
-    return { sync, openCreate, created, refresh, dispose() { disposed = true; epoch++; clearTimeout(timer); stopAccessWatch?.(); observer.disconnect(); document.removeEventListener('visibilitychange', activityChanged); document.removeEventListener('click', click); document.removeEventListener('input', input); document.removeEventListener('change', input); window.removeEventListener('ojjuda:arcade-rooms-changed', refresh); } };
+    return { sync, openCreate, created, refresh, dispose() { disposed = true; epoch++; clearTimeout(timer); stopAccessWatch?.(); observer.disconnect(); window.removeEventListener('offline', connectionChanged); window.removeEventListener('online', connectionChanged); document.removeEventListener('visibilitychange', activityChanged); document.removeEventListener('click', click); document.removeEventListener('input', input); document.removeEventListener('change', input); window.removeEventListener('ojjuda:arcade-rooms-changed', refresh); } };
   }
   window.OjjudaArcadeRooms = { create, markup, feedMarkup, shortcut, message };
 })();

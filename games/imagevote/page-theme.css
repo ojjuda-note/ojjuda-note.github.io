@@ -1,0 +1,38 @@
+/* Indigo ballots; private selection, two-person rules and score order are unchanged. */
+body.dp-playing[data-dp-kind="imagevote"] {
+  --suite-bg: radial-gradient(ellipse at 28% 18%, #373957, #1f263d 58%, #131a2b);
+  --suite-surface: linear-gradient(140deg, #333950, #232b40 78%);
+  --suite-subtle: #252d45;
+  --suite-ink: #f2f0f7;
+  --suite-muted: #bfc4dc;
+  --suite-accent: #c8c2ed;
+  --suite-accent-ink: #302e4c;
+  --suite-line: #c0c0de3d;
+}
+body.dp-playing[data-dp-kind="imagevote"] .stage-art { background: radial-gradient(ellipse at 48% 58%, #777391, #4b506d 52%, #2d374f); }
+body.dp-playing[data-dp-kind="imagevote"] .stage-art::before { inset: 0; background: radial-gradient(ellipse at 50% 14%, #f8d9ef29, transparent 65%); filter: none; }
+body.dp-playing[data-dp-kind="imagevote"] .stage-art .game-art {
+  mask-image: radial-gradient(ellipse at 50% 52%, #000 42%, #000e 68%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 52%, #000 42%, #000e 68%, transparent 100%);
+}
+body.dp-playing[data-dp-kind="imagevote"] .party-prompt label { color: #e0dff0; }
+body.dp-playing[data-dp-kind="imagevote"] :is(#app, #view) :is(#party-question, #pair-question) { background: #21293e; border-color: #b8b7d766; color: #f2edf8; box-shadow: inset 0 1px 3px #0b10212b; }
+body.dp-playing[data-dp-kind="imagevote"] .private-card { background: linear-gradient(150deg, #424563, #2c344c); border-color: #bdb5da70; box-shadow: inset 0 1px #f0def71a, 0 10px 28px #0b102155; }
+body.dp-playing[data-dp-kind="imagevote"] .private-card.hidden-face { background: repeating-linear-gradient(135deg, #2a3048 0 8px, #343a52 8px 9px); }
+body.dp-playing[data-dp-kind="imagevote"] .private-card .secret-art { background-color: #272f47; }
+body.dp-playing[data-dp-kind="imagevote"] .private-card strong { background: transparent; color: #dfd5f0; }
+body.dp-playing[data-dp-kind="imagevote"] #app .options .choice,
+body.dp-playing[data-dp-kind="imagevote"] #view .pair-choices button { background: #343d56; border-color: #bbb5d466; color: #efeaf6; box-shadow: inset 0 1px #eadcfd12, 0 4px 12px #09111e2b; }
+body.dp-playing[data-dp-kind="imagevote"] #app .options .choice.selected,
+body.dp-playing[data-dp-kind="imagevote"] #view .pair-choices button:active { background: #c9c0e5; border-color: #f0dff4; color: #342c4c; box-shadow: inset 0 0 0 2px #f4e5f3; }
+body.dp-playing[data-dp-kind="imagevote"] .party-scores li,
+body.dp-playing[data-dp-kind="imagevote"] #view .pair-scores li { background: #2b354d; border-color: #b8b6d14d; color: #e2e1ee; box-shadow: inset 0 1px #f0e2ff0a; }
+body.dp-playing[data-dp-kind="imagevote"] .party-scores b,
+body.dp-playing[data-dp-kind="imagevote"] #view .pair-scores b { color: #ecd1e9; }
+body.dp-playing[data-dp-kind="imagevote"] #view :is(.pair-caption, .pair-status) { color: #cfc6e1; }
+body.dp-playing[data-dp-kind="imagevote"][data-dp-phase="vote"] #app .play-body > p { color: #e0dbed; }
+body.dp-playing[data-dp-kind="imagevote"][data-dp-phase="done"] :is(#app, #view) :is(.play-body > h2, .suite-heading) { color: #efd4e9; }
+@media (hover: hover) {
+  body.dp-playing[data-dp-kind="imagevote"] #app .options .choice:not(:disabled):not(.selected):hover,
+  body.dp-playing[data-dp-kind="imagevote"] #view .pair-choices button:not(:disabled):not(:active):hover { background: #4a4d6a; border-color: #e3d1ee; }
+}

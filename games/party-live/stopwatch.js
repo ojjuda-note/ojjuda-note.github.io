@@ -32,15 +32,15 @@
     const winners = ordered.filter(row => row.error === ordered[0].error);
     const rows = ordered.map(row => '<tr><th scope="row">' + ui.esc(row.name) + '</th><td>' + seconds(row.score) +
       '초</td><td>' + seconds(row.error) + '초</td></tr>').join('');
-    return '<h1>' + winners.map(row => ui.esc(row.name)).join(' · ') + (winners.length > 1 ? ' 공동 1등!' : ' 1등!') +
-      '</h1><p>목표 ' + (s.game.target/10).toFixed(1) + '초</p><table class="watch-results">' +
+    return '<h1 class="suite-heading">' + winners.map(row => ui.esc(row.name)).join(' · ') + (winners.length > 1 ? ' 공동 1등!' : ' 1등!') +
+      '</h1><p class="suite-hint">목표 시간에 가장 가깝게 멈췄어요.</p><p class="suite-hint">목표 ' + (s.game.target/10).toFixed(1) + '초</p><table class="watch-results">' +
       '<thead><tr><th>참가자</th><th>기록</th><th>목표와 차이</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
   function view(s,ui) {
     updateLocal(s);
     if (s.phase === 'setup') {
-      if (s.me !== 0) return '<h1>목표 시간을 정하고 있어요</h1><p>방장이 정하면 각자 시작할 수 있어요.</p>';
-      return '<h1>목표 시간을 정하세요</h1><p>시작 후 1초가 지나면 숫자가 사라져요.</p>' +
+      if (s.me !== 0) return '<h1 class="suite-heading">방장이 시간을 정하고 있어요</h1><p class="suite-hint">목표가 정해지면 각자 휴대폰에서 시작해요.</p>';
+      return '<h1 class="suite-heading">몇 초에 멈출까요?</h1><p class="suite-hint">1초 뒤 숫자가 사라져요. 목표에 가깝게 멈춰요.</p>' +
         '<label for="watch-target">목표 시간</label><div class="watch-target"><button type="button" id="watch-minus" aria-label="0.1초 줄이기">−</button>' +
         '<output id="watch-setting" for="watch-target">' + (target/10).toFixed(1) + '초</output>' +
         '<button type="button" id="watch-plus" aria-label="0.1초 늘리기">＋</button></div>' +
@@ -48,11 +48,11 @@
         '<button type="button" id="watch-begin" class="action">이 시간으로 시작</button>';
     }
     if (s.phase === 'done') return finish(s,ui);
-    if (s.game.myScore != null) return '<h1>내 기록 ' + seconds(s.game.myScore) + '초</h1>' +
-      '<p>목표와 ' + seconds(Math.abs(s.game.target*10-s.game.myScore)) + '초 차이예요. 모두 멈추면 순위를 공개해요.</p>' +
-      '<p>완료 ' + s.game.submitted + ' / ' + s.players.length + '명</p>';
-    return '<h1>목표 ' + (s.game.target/10).toFixed(1) + '초</h1>' + clock(held == null ? '0.00' : seconds(held)) +
-      '<p id="watch-hint"></p><button type="button" class="action" id="watch-start">시작</button>' +
+    if (s.game.myScore != null) return '<h1 class="suite-heading">내 기록 ' + seconds(s.game.myScore) + '초</h1>' +
+      '<p class="suite-hint">목표와 ' + seconds(Math.abs(s.game.target*10-s.game.myScore)) + '초 차이예요. 모두 마치면 순위를 공개해요.</p>' +
+      '<p class="suite-hint">기록 제출 ' + s.game.submitted + ' / ' + s.players.length + '명</p>';
+    return '<h1 class="suite-heading">목표 ' + (s.game.target/10).toFixed(1) + '초</h1>' + clock(held == null ? '0.00' : seconds(held)) +
+      '<p id="watch-hint" class="suite-hint"></p><button type="button" class="action" id="watch-start">시작</button>' +
       '<button type="button" class="action" id="watch-stop">멈추기</button>' +
       '<button type="button" class="action" id="watch-save">기록 보내기</button>';
   }
@@ -85,17 +85,18 @@
       $('#watch-stop').hidden = started == null;
       $('#watch-save').hidden = held == null;
       $('#watch-hint').textContent = held != null ? '멈춘 기록을 보낼 수 있어요.' : started != null ?
-        '목표 시간이라고 느낄 때 멈추세요.' : interrupted ? '화면이 바뀌었어요. 준비되면 다시 시작하세요.' : '준비되면 내 휴대폰에서 시작을 누르세요.';
+        '목표 시간이라고 느끼면 멈추세요.' : interrupted ? '측정이 멈췄어요. 다시 시작해 주세요.' : '준비되면 시작을 눌러 주세요.';
       paint();
     }
     currentMount = sync;
     $('#watch-start').onclick = () => {
       if (started != null || held != null || document.hidden) return;
-      interrupted = false; started = performance.now();sync();$('#watch-stop').focus();
+      interrupted = false; started = performance.now(); window.PartyFX?.play('watch');sync();$('#watch-stop').focus();
     };
     $('#watch-stop').onclick = () => {
       if (started === null) return;
       held = Math.max(0,Math.round((performance.now()-started)/10));
+      window.PartyFX?.play('stop');
       started = null;
       try {sessionStorage.setItem(storageKey(roomKey),String(held));} catch {}
       sync(); ui.send('watch_score',{score:held});

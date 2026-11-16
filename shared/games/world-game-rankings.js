@@ -26,7 +26,7 @@ const rankingConditions={
  mines:'난이도가 높은 순, 같은 난이도에서는 완료 시간이 짧은 순으로 정해요. 기본 8개 난이도만 집계해요.',
  tour:streakCondition,
  billiards:boardCondition+' 4구·3쿠션·포켓볼을 통합 표시하며, 종목별 연승은 합산하지 않아요.',
- janggi:boardCondition,chess:boardCondition,
+ janggi:'회원 대결 → 그랜드마스터 → 마스터 → 프로 → 어려움 → 보통 → 쉬움 순이에요. 같은 난이도는 그달 최고 연승으로 정해요. 기존 통합 기록은 어려움과 같은 순위 기준을 써요.',chess:boardCondition,
  screw_box:'박스형에서 해당 월에 기록한 가장 높은 점수로 정해요.',
  screw_flat:'평면형에서 해당 월에 기록한 가장 높은 점수로 정해요.',
  spot:'해당 월에 완료한 서로 다른 그림의 장수로 정해요. 같은 그림은 한 번만 세요.',
@@ -150,7 +150,7 @@ function labelGame(target,game,detail=''){
 function makeRow(id,game,token,playable=true,openState=null){
  const row=el('tr','','board-leader');row.dataset.game=id;
  const period=playable?'이번 달':'해당 월';
- const name=el('th','','board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='stage_score'?' · 최고 통과 단계 → 같은 단계 최고 점수 → 먼저 달성한 순':game.rankingBasis==='stage_time'?' · 최고 완료 단계 → 가장 짧은 완료 시간 → 먼저 달성한 순':game.rankingBasis==='opponents_streak'?' · 이긴 상대 수 → '+period+' 최고 연승 → 먼저 달성한 순':['picture_clears','photo_clears'].includes(game.rankingBasis)?' · '+period+' 완료한 그림 장수':game.rankingBasis==='best_round_gain'?' · '+period+' 한 판 최대 획득 골드':game.rankingBasis==='difficulty_streak'?' · 회원대결, 어려움, 보통, 쉬움 순 · 같은 난이도는 '+period+' 최고 연승순':game.rankingBasis==='difficulty_time'?' · 난이도 → 완료 시간 → 먼저 달성한 순':game.rankingBasis==='mole_grid_score'?' · 6×6 → 5×5 → 4×4 → 3×3 순 · 같은 크기는 최고 점수순':game.rankingBasis==='current_streak'?' · '+period+' 최고 연승 기준':'');
+ const name=el('th','','board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='stage_score'?' · 최고 통과 단계 → 같은 단계 최고 점수 → 먼저 달성한 순':game.rankingBasis==='stage_time'?' · 최고 완료 단계 → 가장 짧은 완료 시간 → 먼저 달성한 순':game.rankingBasis==='opponents_streak'?' · 이긴 상대 수 → '+period+' 최고 연승 → 먼저 달성한 순':['picture_clears','photo_clears'].includes(game.rankingBasis)?' · '+period+' 완료한 그림 장수':game.rankingBasis==='best_round_gain'?' · '+period+' 한 판 최대 획득 골드':id==='janggi'?' · '+rankingConditions.janggi:game.rankingBasis==='difficulty_streak'?' · 회원대결, 어려움, 보통, 쉬움 순 · 같은 난이도는 '+period+' 최고 연승순':game.rankingBasis==='difficulty_time'?' · 난이도 → 완료 시간 → 먼저 달성한 순':game.rankingBasis==='mole_grid_score'?' · 6×6 → 5×5 → 4×4 → 3×3 순 · 같은 크기는 최고 점수순':game.rankingBasis==='current_streak'?' · '+period+' 최고 연승 기준':'');
  labelGame(name,game);
  if(playable&&!game.maintenance&&typeof onOpenGame==='function'){
   const opening=openState||{busy:false,buttons:new Set()};
@@ -191,7 +191,9 @@ function paintRecord(target,id,game,top,period='이번 달'){
  }else if(game.rankingBasis==='opponents_streak'){
   const n=Number(top.opponents);if(Number.isInteger(n)&&n>=1&&n<=11)detail=n+'명 상대';
  }else if(game.rankingBasis==='difficulty_streak'){
-  const level={online:'회원대결',hard:'어려움',normal:'보통',easy:'쉬움'}[top.difficulty]||'';
+  const labels={online:'회원대결',hard:'어려움',normal:'보통',easy:'쉬움'};
+  if(id==='janggi')Object.assign(labels,{hard:'기존 통합',hard_exact:'어려움',pro:'프로',master:'마스터',grandmaster:'그랜드마스터'});
+  const level=labels[top.difficulty]||'';
   const variant=id==='billiards'?{carom4:'4구',carom3:'3쿠션',pool8:'포켓볼'}[top.variant]:'';
   detail=[variant,level].filter(Boolean).join(' · ');
  }

@@ -18,7 +18,7 @@ const prose=portrait=>[portrait.headline,...portrait.paragraphs,...portrait.card
 test('the opening portrait explains a person through several confirmed natal clues without replacing the calculation',()=>{
   const {fortune,report,portrait}=fixture();
   assert.ok(portrait&&portrait.headline.length>15);
-  assert.ok(portrait.paragraphs.length>=2&&portrait.paragraphs.length<=4);
+  assert.ok(portrait.paragraphs.length>=2);
   assert.equal(portrait.cards.length,5);
   assert.equal(new Set(portrait.cards.map(card=>card.id)).size,5);
   const ids=new Set(report.facts.map(fact=>fact.id));
@@ -27,10 +27,13 @@ test('the opening portrait explains a person through several confirmed natal clu
     assert.ok(block.factIds.length>0);
     assert.equal(new Set(block.factIds).size,block.factIds.length);
     for(const id of block.factIds){assert.ok(ids.has(id),id);assert.ok(id.startsWith('natal.'),id);}
+    assert.ok(block.detailSections.length>1,'the complete portrait separates behavior, examples and practical responses');
+    assert.ok(block.detailSections.every(section=>section.title.trim()&&section.paragraphs.length>0));
+    assert.deepEqual(block.detailSections.flatMap(section=>section.paragraphs),block.paragraphs,'section headings neither omit nor duplicate personal explanations');
   }
   assert.ok(portrait.factIds.some(id=>id.startsWith('natal.god.')),'the person is not described by the day stem alone');
   for(const card of portrait.cards){
-    assert.ok(card.paragraphs.length>=4&&card.paragraphs.length<=5);
+    assert.ok(card.paragraphs.length>=4);
     assert.equal(new Set(card.paragraphs).size,card.paragraphs.length);
     assert.ok(card.paragraphs.some(text=>/예를|가령|가정|가상의|한다고 해 볼게요/.test(text)),'each trait should be recognizable in a hypothetical everyday scene');
   }

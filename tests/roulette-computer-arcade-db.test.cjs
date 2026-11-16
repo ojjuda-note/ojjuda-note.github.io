@@ -22,7 +22,7 @@ const [A,B,C,D]=ids;
    create function ojjuda_bang_internal.arcade_rooms() returns jsonb language sql as $$select '{"ok":true,"rooms":[{"kind":"bang"}]}'::jsonb$$;
   `);
   for(const file of ['20261009062933_arcade_friend_invites.sql','20261010134600_arcade_invite_popup.sql','20261018081035_tank_friend_invites.sql'])await db.exec(read(file));
-  const migrations=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).filter(file=>file.includes('_roulette_')).sort();
+  const migrations=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).filter(file=>/^\d+_roulette_.*\.sql$/.test(file)).sort();
   assert.ok(migrations.some(file=>file.endsWith('_roulette_computer_mode.sql')));
   assert.ok(migrations.some(file=>file.endsWith('_roulette_computer_arcade_visibility.sql')));
   for(const file of migrations)await db.exec(read(file));

@@ -1,0 +1,71 @@
+/* Inline controls use the current game's surface and accent colors. */
+body.dp-playing :is(#app,#view) .question-picker {
+  display:grid; grid-column:1 / -1; gap:12px; width:min(100%,32rem); min-width:0; margin:0 auto; text-align:left;
+  color:var(--suite-ink); color-scheme:dark;
+}
+body.dp-playing :is(#app,#view) .question-picker [hidden] { display:none; }
+.question-picker .question-modes {
+  display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; border-radius:12px;
+  border:1px solid var(--suite-line); background:var(--suite-subtle);
+}
+body.dp-playing :is(#app,#view) .question-picker :is(button,select,textarea) {
+  min-width:0; min-height:44px; margin:0; border-radius:8px; font:inherit;
+}
+body.dp-playing :is(#app,#view) .question-picker label { display:grid; gap:4px; min-width:0; margin:0; font-weight:700; }
+body.dp-playing :is(#app,#view) .question-picker .prompt-flavor-select { grid-template-columns:auto minmax(0,1fr); align-items:center; gap:12px; }
+body.dp-playing :is(#app,#view) .question-picker :is(select,textarea,button[type="button"]) {
+  color:var(--suite-ink); background:var(--suite-subtle); border:1px solid var(--suite-line); box-shadow:none; padding:8px 10px;
+}
+body.dp-playing :is(#app,#view) .question-picker :is(select,textarea) { width:100%; box-sizing:border-box; }
+body.dp-playing :is(#app,#view) .question-picker .question-modes button { border:0; }
+body.dp-playing :is(#app,#view) .question-picker :is(button[aria-pressed="true"],[type="submit"]) {
+  background:var(--suite-accent); color:var(--suite-accent-ink); border:0; font-weight:750;
+}
+.question-picker [data-panel]:not([hidden]) { display:grid; gap:10px; min-width:0; }
+.question-picker [data-selected],.question-picker [role="status"] { margin:0; font-size:.9rem; overflow-wrap:anywhere; }
+.question-picker :is([role="status"],[data-selected]):empty { display:none; }
+.question-picker :is([data-another],[data-retry]) { justify-self:start; }
+.question-picker :is(button,select,textarea):focus-visible { outline:2px solid var(--suite-accent); outline-offset:2px; }
+.question-picker button:disabled { opacity:.55; }
+@media (min-width:560px), (max-height:740px) {
+  .question-picker [data-panel="list"]:not([hidden]) { grid-template-columns: minmax(0,1fr) minmax(0,2fr); }
+  .question-picker [data-selected] { grid-column:1 / -1; }
+  .question-picker [data-another],.question-picker [data-retry] { grid-column:1 / -1; }
+  body.dp-playing :is(#app,#view) .question-picker { gap:8px; }
+}
+.king-numbers { width:min(100%,32rem); margin:0 auto 12px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; text-align:left; }
+.king-numbers label { display:grid; gap:4px; }
+.king-numbers select { width:100%; min-width:0; }
+.blind-cards { width:min(100%,32rem); margin:10px auto 0; }
+.blind-cards summary { cursor:pointer; padding:10px; }
+
+/* Keep the picker and confirmation together on short landscape screens. */
+@media (min-width:600px) and (max-height:480px) {
+  body.dp-playing :is(#app,#view) .question-picker {
+    grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); align-items:end; gap:4px 8px;
+  }
+  body.dp-playing :is(#app,#view) .question-picker .question-modes { align-self:center; padding:2px; gap:2px; }
+  body.dp-playing :is(#app,#view) .question-picker .prompt-flavor-select { gap:5px; }
+  body.dp-playing :is(#app,#view) .question-picker :is(button,select,textarea) { min-height:36px; padding:4px 6px; font-size:14px; }
+  body.dp-playing :is(#app,#view) .question-picker label { font-size:14px; gap:2px; }
+  .question-picker [data-panel="list"]:not([hidden]) { display:contents; }
+  .question-picker [data-panel="write"]:not([hidden]) { grid-column:1 / -1; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; gap:4px 8px; }
+  .question-picker [data-panel="write"] textarea { height:44px; }
+  .question-picker [data-another],.question-picker [data-retry] { grid-column:1; }
+  .question-picker [type="submit"] { grid-column:2; }
+  .question-picker [role="status"]:not(:empty) { grid-column:1 / -1; }
+  body.dp-playing :is(#app,#view) .question-picker [data-selected] { margin:0; font-size:13px; line-height:1.25; }
+}
+#truth-prompt:has(+ .blind-cards[open]) { display:none; }
+@media (min-width:600px) and (max-height:480px) {
+  body.dp-playing #app .play-body:has(> :is(#truth-prompt,#king-order-form)) {
+    display:grid; grid-template-columns:minmax(0,.75fr) minmax(0,1.5fr);
+    grid-template-rows:auto auto auto; align-content:center; align-items:center; gap:4px 14px;
+  }
+  body.dp-playing #app .play-body:has(> :is(#truth-prompt,#king-order-form)) > :is(.turn-tag,h2,.blind-cards) { grid-column:1; margin:0; }
+  body.dp-playing #app .play-body > :is(#truth-prompt,#king-order-form,.blind-cards[open]) { grid-column:2; grid-row:1 / span 3; min-width:0; }
+  body.dp-playing #app .play-body:has(> #truth-prompt) > .blind-cards[open] { grid-column:2; }
+  body.dp-playing #app .blind-cards[open] .truth-pair { width:min(100%,230px); }
+  body.dp-playing #app .king-numbers { margin:0 auto 4px; }
+  body.dp-playing #app .king-numbers :is(label,select) { min-height:0; margin:0; font-size:14px; }
+}

@@ -30,7 +30,7 @@ test('the personal summary keeps every original fact and detailed reading intact
   for(const overview of overviews(report)) {
     assert.equal(overview.origin,'service-reference');
     assert.ok(overview.headline.length>12);
-    assert.ok(overview.paragraphs.length>0&&overview.paragraphs.length<=3);
+    assert.ok(overview.paragraphs.length>0);
     assert.equal(new Set(overview.cards.map(card=>card.id)).size,overview.cards.length);
     for(const topic of coreTopics)assert.ok(overview.cards.some(card=>card.id.endsWith('-'+topic)),topic);
     for(const block of [overview,...overview.cards]) {
@@ -39,9 +39,12 @@ test('the personal summary keeps every original fact and detailed reading intact
       assert.equal(new Set(block.factIds).size,block.factIds.length);
       for(const id of block.factIds)assert.ok(facts.has(id),`summary cannot use an uncomputed fact: ${id}`);
       assert.ok(block.paragraphs.every(text=>typeof text==='string'&&text.trim()));
+      assert.ok(block.detailSections.length>1,'the complete story has distinct reading sections');
+      assert.ok(block.detailSections.every(section=>section.title.trim()&&section.paragraphs.length>0));
+      assert.deepEqual(block.detailSections.flatMap(section=>section.paragraphs),block.paragraphs,'the full explanation is preserved in its section order');
     }
     for(const card of overview.cards) {
-      assert.ok(card.paragraphs.length>=5&&card.paragraphs.length<=7,`${card.id} should have connected short paragraphs`);
+      assert.ok(card.paragraphs.length>=5,`${card.id} retains its complete connected explanation`);
       assert.equal(new Set(card.paragraphs).size,card.paragraphs.length,`${card.id} must not pad its length with duplicate paragraphs`);
       assert.ok(typeof card.navGroup==='string'&&card.navGroup.trim());
       const example=card.paragraphs.findIndex(text=>/가령|가정해 볼게요|가상의 상황/.test(text));
@@ -55,7 +58,7 @@ test('first reading answers personal patterns without raw terminology, invented 
   const {report}=reading();
   assert.match(report.reader.lifelong.headline,/편이에요\./);
   assert.match(prose(report.reader.lifelong),/성향/);
-  assert.match(report.reader.annual.headline,/당신, 2026년에는 .+ 일을 먼저 챙겨 보세요\./);
+  assert.match(report.reader.annual.headline,/당신, 2026년에는 .+ (?:일을 먼저 챙겨 보세요|일도 함께 챙기세요)\./);
   assert.match(report.reader.annual.paragraphs[0],/^당신은 .+사람이에요\./);
   for(const overview of overviews(report))for(const text of paragraphs(overview)) {
     assert.doesNotMatch(text,/천간|(?<![가-힣])지지(?![가-힣])|십성|일간|원국|지장간|오행|납음|사주란|사주는|확정된 [0-9]+글자|위쪽 글자|아래쪽 글자/);
@@ -84,7 +87,7 @@ test('year and month narratives use their own actual pair of relationships and p
       for(const topic of ['opportunities','cautions','response'])if(card.id.endsWith('-'+topic)) {
         assert.ok(card.situationRuleIds.includes(`situation.${topic}.${expected[0]}`),'the concrete situation follows the actual first period relationship');
         if(expected[1])assert.ok(card.situationRuleIds.includes(`condition.${topic}.${expected[1]}`),'the second period relationship adds a condition');
-        assert.match(card.paragraphs[4],/^가령 .+가정해 볼게요/,'a dedicated hypothetical scene replaces the copied domain example');
+        assert.ok(card.paragraphs.some(paragraph=>/^가령 .+가정해 볼게요/.test(paragraph)),'a dedicated hypothetical scene replaces the copied domain example');
       }
     }
   }
@@ -127,14 +130,24 @@ test('every year and month domain connects observed natal habits to the actual p
     assert.match(connection.paragraphs[0],/^당신은 .+사람이에요\./);
     assert.ok(connection.paragraphs[1].startsWith(label+'에는 '));
     assert.match(connection.paragraphs[1],/세요\.$/);
-    assert.match(connection.paragraphs[2],/^예를 들어 .+ 떠올려 보세요\..+장점이에요\. 다만 .+수 있어요\.$/);
+    assert.match(connection.paragraphs[2],/^.+장점이에요\. 예를 들어 .+ 떠올려 보세요\. 다만 .+수 있어요\. .+세요\.$/);
     assert.doesNotMatch(connection.reading,/타고난 바탕|흐름으로 읽|중심으로 읽혀요|반드시|무조건|보장|합격한다|수익이 생깁니다|사고가 납니다/);
     const card=overview.cards.find(value=>value.id.endsWith('-'+domain));
     assert.deepEqual(card.natalGodCodes,connection.natalCodes);
-    assert.equal(card.paragraphs[0],connection.paragraphs[0]);
-    assert.ok(card.paragraphs[2].includes(connection.paragraphs[1]));
-    assert.equal(card.paragraphs[3],connection.paragraphs[2]);
-    assert.equal(card.paragraphs.at(-1),connection.paragraphs[3]);
+    if(prefix==='annual') {
+      assert.equal(card.paragraphs[0],connection.paragraphs[0]);
+      const positions=connection.paragraphs.map(text=>card.paragraphs.findIndex(paragraph=>paragraph.includes(text)));
+      assert.ok(positions.every((position,index)=>position>=0&&(index===0||position>positions[index-1])),'the personal pattern, period meaning, example and response stay connected in order');
+    } else {
+      assert.ok(card.paragraphs[0].includes(connection.paragraphs[1]),'a month leads with its own actual task');
+      assert.ok(!card.paragraphs.includes(connection.paragraphs[0]),'the same lifelong introduction is not repeated in all twelve months');
+      const application=card.detailSections.find(section=>section.title==='내 성향을 이달에 적용하면').paragraphs.join(' ');
+      assert.ok(application.includes(connection.paragraphs[2].split(' 예를 들어 ')[0]),'the first natal strength is still tied to the monthly scene');
+      assert.ok(application.includes(connection.paragraphs[2].slice(connection.paragraphs[2].indexOf('다만 '))),'the complete original conditional caution and response remain');
+      const secondary=connection.paragraphs[0].split(' 한편으로는 ')[1];
+      if(secondary)assert.ok(application.includes(secondary),'a second observed strength or caution cannot become an invented advantage');
+      assert.equal(card.paragraphs.at(-1),connection.paragraphs[3],'the concrete next step is retained');
+    }
     for(const code of connection.natalCodes)for(const entry of fortune.profile.gods.filter(entry=>entry.god.code===code)) {
       assert.ok(card.factIds.includes(`natal.god.${entry.pillarKey}.${entry.position}`),'the used natal behaviour keeps its actual calculation fact');
     }
@@ -244,14 +257,14 @@ test('multiple real birth inputs retain complete narratives while varying the ac
   for(const {fortune,report} of results) {
     const actual=new Set(fortune.profile.gods.map(entry=>entry.god.code));
     for(const card of report.reader.lifelong.cards) {
-      assert.ok(card.paragraphs.length>=5&&card.paragraphs.length<=7,card.id);
+      assert.ok(card.paragraphs.length>=5,card.id);
       assert.ok(card.godCodes.every(code=>actual.has(code)));
     }
     for(const overview of overviews(report))for(const card of overview.cards)assert.ok(card.paragraphs.every(text=>!text.includes('undefined')&&!text.includes('[object')));
   }
   const bodies=results.map(({report})=>prose(report.reader.lifelong));
   assert.equal(new Set(bodies).size,inputs.length);
-  const scenes=results.map(({report})=>report.reader.lifelong.cards.find(card=>card.id==='natal-career-examples').paragraphs[4]);
+  const scenes=results.map(({report})=>report.reader.lifelong.cards.find(card=>card.id==='natal-career-examples').paragraphs.filter(paragraph=>/가령|예를 들어|가정해 볼게요/.test(paragraph)).join(' '));
   assert.ok(new Set(scenes).size>=3,'career examples follow different actual tendencies');
 });
 

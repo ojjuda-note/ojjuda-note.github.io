@@ -37,3 +37,9 @@ html[data-reduced-motion=true] .archive-card:after{opacity:.35}
 .reading-service-nav>a[aria-current=page] strong{color:var(--gold-light)}
 .reading-service-nav>a:hover{border-color:var(--gold);background:#49355380}
 @media(max-width:540px){.reading-service-nav{gap:8px;margin-bottom:26px}.reading-service-nav>a{padding:11px 12px;min-height:74px}.reading-service-nav>a strong{font-size:13px}.reading-service-nav>a>span{font-size:10px}}
+
+/* Keep birth entry and the assumption notice readable on small screens. */
+#birth-form input[type=number],#birth-form input[type=text],#birth-form select{font-size:16px}
+#birth-form .field-hint,#birth-form .form-note{font-size:13px;line-height:1.8}
+#birth-form .check-row{min-height:44px;font-size:14px}
+#birth-form .check-row input{width:19px;height:19px;flex-shrink:0}

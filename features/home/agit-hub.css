@@ -90,17 +90,17 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 
 /* Every corner has a little personality, but the grid stays orderly. */
 .agit-life-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
-.agit-life-tile{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:13px;min-width:0;min-height:220px;overflow:hidden;padding:13px;border:1px solid #efe5e6;border-radius:21px;background:#fff;color:var(--agit-ink);text-align:left;text-decoration:none;cursor:pointer;transition:transform .18s,box-shadow .18s}
+.agit-life-tile{position:relative;display:flex;flex-direction:column;gap:0;min-width:0;overflow:hidden;padding:0;border:1px solid #efe5e6;border-radius:21px;background:#fff;color:var(--agit-ink);text-align:left;text-decoration:none;cursor:pointer;transition:transform .18s,box-shadow .18s}
 .agit-life-tile:hover{transform:translateY(-3px);box-shadow:0 12px 24px #816b771a}
-.agit-life-top{position:absolute;z-index:1;top:17px;right:17px}
+.agit-life-top{position:absolute;z-index:1;top:8px;right:8px}
 .agit-life-tile-arrow{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#ffffffdf;color:#81546a;font-size:17px;font-weight:650;box-shadow:0 2px 7px #61425514}
-.agit-life-art{display:grid;place-items:center;flex:1;min-height:132px;padding:13px;border-radius:15px;background:#edf3f1}
+.agit-life-art{display:block;width:100%;aspect-ratio:3/2;overflow:hidden;background:#edf3f1}
 .agit-life-tile--2 .agit-life-art{background:#fff0e2}
 .agit-life-tile--3 .agit-life-art{background:#e9f2f8}
 .agit-life-tile--4 .agit-life-art{background:#f3ebf9}
-.agit-life-art img{display:block;width:min(100%,148px);height:118px;object-fit:contain;transition:transform .18s}
+.agit-life-art img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .18s}
 .agit-life-tile:hover img{transform:scale(1.055)}
-.agit-life-title{display:grid;gap:4px;padding:0 3px 2px}
+.agit-life-title{display:grid;gap:3px;padding:10px 13px}
 .agit-life-title strong{font-size:18px;font-weight:850;letter-spacing:-.055em;line-height:1.3;word-break:keep-all}
 .agit-life-title small{color:#73646f;font-size:12px;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .agit-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:29px;padding:17px 3px 0;border-top:1px solid #e9dfe2;color:#786b73;font-size:12px}
@@ -184,10 +184,8 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
  .agit-quest-name{font-size:14px;line-height:1.32}
  .agit-quest-arrow{font-size:18px}
  .agit-life-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
- .agit-life-tile{min-height:180px;padding:10px;border-radius:17px;gap:9px}
- .agit-life-art{min-height:105px;padding:7px;border-radius:12px}
- .agit-life-art img{height:88px;width:min(100%,110px)}
- .agit-life-top{top:13px;right:13px}
+ .agit-life-tile{border-radius:15px}
+ .agit-life-title{padding:8px 10px}
  .agit-life-title strong{font-size:16px}
  .agit-life-title small{font-size:11px}
 }
@@ -269,7 +267,6 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 }
 @media(min-width:741px){
  .agit-quest-card{min-height:95px}
- .agit-life-tile{min-height:220px}
 }
 @media(min-width:900px){
  .agit-hub{grid-template-columns:minmax(0,.93fr) minmax(0,1.07fr)}
@@ -281,106 +278,26 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 .agit-navigation-spinner{display:block;width:32px;height:32px;border:4px solid #f8e8ec;border-top-color:#a45a79;border-radius:50%;animation:world-boot-spin .85s linear infinite}
 @media(prefers-reduced-motion:reduce){.agit-navigation-spinner{animation:none}}
 
-/* A quiet rhythm card opens the reading banners before Tarot and Saju. */
-.agit-biorhythm-banner{grid-column:1/-1;position:relative;isolation:isolate;display:flex;align-items:center;justify-content:space-between;gap:28px;min-width:0;min-height:236px;margin:26px 0 10px;padding:30px 38px;border:1px solid #d8e5db;border-radius:24px;overflow:hidden;background:radial-gradient(ellipse at 93% 4%,#dcefe44f,transparent 62%),linear-gradient(115deg,#fffaf0,#f3f7ef);color:#334b44!important;text-decoration:none;box-shadow:0 12px 30px #5a76600e}
-.agit-biorhythm-banner::after{content:'';position:absolute;inset:7px;z-index:-1;border:1px solid #ffffffb3;border-radius:18px;pointer-events:none}
-.agit-biorhythm-copy{position:relative;z-index:1;min-width:0}
-.agit-biorhythm-kicker{display:flex;align-items:center;flex-wrap:wrap;gap:10px;color:#4f7163;font-size:10px;letter-spacing:.12em;font-weight:750}
-.agit-biorhythm-kicker>span{padding:4px 8px;border:1px solid #d3e3d6;border-radius:99px;background:#fffdf6;color:#55705f;font-size:10px;letter-spacing:0;font-weight:650}
-.agit-biorhythm-copy h2{margin:10px 0 9px;color:#334b44;font-size:32px;font-weight:800;letter-spacing:-.055em;line-height:1.35;word-break:keep-all}
-.agit-biorhythm-copy p{margin:0;color:#64756b;font-size:13px;line-height:1.75;word-break:keep-all}
-.agit-biorhythm-cta{display:inline-flex;align-items:center;justify-content:space-between;gap:25px;margin-top:17px;padding:10px 15px;border:1px solid #537e69;border-radius:10px;background:#426d59;color:#fffdf7;font-size:12px;font-weight:750;transition:background .18s}
-.agit-biorhythm-banner:hover .agit-biorhythm-cta{background:#315442}
-.agit-biorhythm-banner:focus-visible{outline-color:#426d59!important;outline-offset:4px!important}
-.agit-biorhythm-art{position:relative;flex:0 1 360px;min-width:210px;max-width:42%;pointer-events:none;text-align:center}
-.agit-biorhythm-art svg{display:block;width:100%;height:auto;overflow:visible}
-.agit-biorhythm-legend{display:flex;justify-content:center;gap:18px;margin-bottom:3px;font-size:11px;color:#5a6b63}
-.agit-biorhythm-legend span{display:inline-flex;align-items:center;gap:6px}
-.agit-biorhythm-legend span::before{content:'';width:13px;height:3px;border-radius:3px;background:#c86a65}
-.agit-biorhythm-legend span:nth-child(2)::before{background:#357e79}
-.agit-biorhythm-legend span:nth-child(3)::before{background:#8671b0}
-.agit-biorhythm-art-note{font-size:10px;color:#6d7b71;letter-spacing:.025em}
-.agit-biorhythm-banner+.agit-tarot-banner{margin-top:12px}
-@media(max-width:600px){.agit-biorhythm-banner{flex-direction:column;align-items:stretch;gap:17px;min-height:0;margin-top:21px;padding:25px 22px 18px;border-radius:18px}.agit-biorhythm-copy h2{font-size:27px}.agit-biorhythm-copy p{font-size:12px}.agit-biorhythm-kicker{font-size:9px;gap:8px;letter-spacing:.08em}.agit-biorhythm-kicker>span{font-size:9px}.agit-biorhythm-cta{margin-top:14px;min-height:42px;font-size:12px;gap:20px}.agit-biorhythm-art{flex:auto;width:100%;max-width:320px;min-width:0;margin:0 auto}.agit-biorhythm-art svg{height:94px}.agit-biorhythm-art-note{display:none}.agit-biorhythm-legend{gap:20px;margin-bottom:0;font-size:10px}}
-@media(max-width:360px){.agit-biorhythm-banner{padding:22px 18px 16px}.agit-biorhythm-copy h2{font-size:24px}.agit-biorhythm-kicker{gap:7px}.agit-biorhythm-art svg{height:84px}}
-
-/* Moonlit Tarot follows the daily rhythm card. */
-.agit-tarot-banner{grid-column:1/-1;min-width:0;position:relative;isolation:isolate;display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:236px;margin:26px 0 10px;padding:30px 38px;overflow:hidden;border:1px solid #b9986666;border-radius:24px;color:#f6e5c7!important;text-decoration:none;background:#160e24 url('/games/moonlit-tarot/assets/scene.webp') 80% 30%/cover;box-shadow:0 16px 35px #32203e20}
-.agit-tarot-banner::before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#160e24f5 0%,#1d1025d9 39%,#1b0e2045 70%,#160e2499 100%)}
-.agit-tarot-banner::after{content:'';position:absolute;inset:7px;border:1px solid #d6b98330;border-radius:18px;pointer-events:none}
-.agit-tarot-copy{position:relative;z-index:1}.agit-tarot-kicker{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.12em;color:#d7b9e7}.agit-tarot-kicker i{color:#dfc194;font-style:normal;font-size:15px}
-.agit-tarot-copy h2{margin:8px 0 9px;font-family:var(--font-d),serif;font-size:32px;font-weight:600;letter-spacing:-.045em;line-height:1.35;color:#ffe7bb}.agit-tarot-copy p{font-size:13px;line-height:1.65;margin:0;color:#dfcfe7}
-.agit-tarot-cta{display:inline-flex;align-items:center;gap:25px;margin-top:17px;padding:9px 15px;background:linear-gradient(120deg,#d0ae75,#efd7a9,#cbaa72);border:1px solid #f7ddb5;border-radius:5px;color:#302034;font-size:12px;font-weight:750;box-shadow:0 4px 20px #09051140}
-.agit-tarot-price{position:relative;align-self:flex-end;z-index:1;min-width:96px;padding:11px 15px;text-align:center;border:1px solid #dac29991;border-radius:12px;background:#1d1126cc;backdrop-filter:blur(8px)}.agit-tarot-price strong{display:block;font-size:13px;font-weight:500;white-space:nowrap}.agit-tarot-price b{font-size:23px;font-weight:700;color:#ffe4aa}.agit-tarot-price small{display:block;margin-top:3px;font-size:9px;color:#cdb6db}
-.agit-tarot-shimmer{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;border-radius:inherit}
-.agit-tarot-shimmer::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 55% 24%,#ffefbe 0 1px,transparent 2px),radial-gradient(circle at 88% 14%,#ffefbe 0 1px,transparent 2px),radial-gradient(circle at 64% 75%,#ffefbe 0 1px,transparent 2px);opacity:.65;animation:agitTarotGlow 4s ease-in-out infinite}
-/* A slow glass reflection passes behind the text, then leaves a quiet pause. */
-.agit-tarot-shimmer::after{content:'';position:absolute;top:-70%;bottom:-70%;left:-100%;width:96%;background:linear-gradient(90deg,transparent 12%,#f2dbba0d 20%,#fff4d640 42%,#fffaf0b0 49%,#fff6de52 52%,#d6c3ff1f 66%,transparent 85%);mix-blend-mode:screen;opacity:0;transform:translate3d(0,0,0) skewX(-24deg);animation:agitTarotWindowLight 12s linear infinite}
-.agit-tarot-banner:hover .agit-tarot-cta{filter:brightness(1.1)}.agit-tarot-banner:focus-visible{outline-color:#bf9ce3!important;outline-offset:4px!important}
-@keyframes agitTarotGlow{50%{opacity:.2}}
-@keyframes agitTarotWindowLight{0%,8%{transform:translate3d(0,0,0) skewX(-24deg);opacity:0}22%,38%{opacity:.56}50%{opacity:.28}64%,100%{transform:translate3d(229.1667%,0,0) skewX(-24deg);opacity:0}}
-@media(max-width:600px){.agit-tarot-banner{margin-top:21px;min-height:226px;padding:25px 22px;border-radius:18px;background-position:73% center;gap:6px}.agit-tarot-banner::before{background:linear-gradient(90deg,#160e24f2,#1d1025b3 48%,#1b0e204a 76%,#160e2466)}.agit-tarot-copy h2{font-size:27px}.agit-tarot-copy p{font-size:12px}.agit-tarot-kicker{font-size:8px;letter-spacing:.07em;gap:5px}.agit-tarot-price{min-width:76px;padding:9px 10px}.agit-tarot-price strong{font-size:11px}.agit-tarot-price b{font-size:20px}.agit-tarot-price small{font-size:8px}.agit-tarot-cta{font-size:11px;gap:18px;padding:8px 12px}}
-@media(prefers-reduced-motion:reduce){.agit-tarot-shimmer::before,.agit-tarot-shimmer::after{animation:none}.agit-tarot-shimmer::after{display:none}}
-
-/* Starlit Saju follows Tarot with its own quiet celestial reading room. */
-.agit-saju-banner{grid-column:1/-1;min-width:0;position:relative;isolation:isolate;display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:248px;margin:12px 0 10px;padding:30px 38px;overflow:hidden;border:1px solid #ba9b5d66;border-radius:24px;background:radial-gradient(ellipse at 78% 70%,#51406970,transparent 50%),radial-gradient(ellipse at 92% 0%,#374d5b85,transparent 54%),linear-gradient(115deg,#111320,#1c1830 60%,#161928);color:#f2e4ca!important;text-decoration:none;box-shadow:0 16px 35px #32203e20}
-.agit-saju-banner::after{content:'';position:absolute;inset:7px;border:1px solid #d8bd8730;border-radius:18px;pointer-events:none}
-.agit-saju-copy{position:relative;z-index:2;flex-shrink:0}.agit-saju-kicker{display:flex;align-items:center;gap:8px;color:#d7c092;font-size:10px;letter-spacing:.12em}.agit-saju-kicker i{color:#e4c994;font-style:normal;font-size:15px}
-.agit-saju-copy h2{margin:8px 0 9px;font-family:var(--font-d),serif;font-size:32px;font-weight:600;letter-spacing:-.045em;line-height:1.35;color:#f9e4b9}.agit-saju-copy p{margin:0;color:#c9c6d9;font-size:13px;line-height:1.65}
-.agit-saju-cta{display:inline-flex;align-items:center;gap:25px;margin-top:17px;padding:9px 15px;border:1px solid #f7ddb5;border-radius:5px;background:linear-gradient(120deg,#c9a76a,#ead4a8,#c1a46d);color:#292338;font-size:12px;font-weight:750;box-shadow:0 4px 20px #09051140}
-.agit-saju-art{position:relative;display:grid;place-items:center;align-self:stretch;width:390px;min-width:240px;min-height:186px;pointer-events:none}.agit-saju-orbit{position:absolute;top:50%;left:50%;width:282px;aspect-ratio:1;transform:translate(-50%,-50%);border:1px solid #c8b17a60;border-radius:50%;box-shadow:0 0 0 12px #c5ae7b0e,0 0 0 13px #c5ae7b38,0 0 0 38px #c5ae7b08,0 0 0 39px #c5ae7b28}
-.agit-saju-orbit::before,.agit-saju-orbit::after{content:'';position:absolute;inset:22px;border:1px solid #ceb67f35;transform:rotate(45deg)}.agit-saju-orbit::after{transform:rotate(15deg);inset:40px}.agit-saju-moon{position:absolute;top:-20px;right:23px;color:#f4d993;font:44px Georgia,serif;text-shadow:0 0 22px #dfc18e60;transform:rotate(-20deg)}
-.agit-saju-scrolls{position:relative;display:flex;align-items:center;gap:12px;transform:perspective(600px) rotateY(-8deg)}.agit-saju-scrolls>span{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;width:65px;height:145px;border:1px solid #d9bc7d85;border-radius:5px;background:linear-gradient(155deg,#252039f2,#141424e8);box-shadow:0 8px 25px #07091466,inset 0 0 0 4px #201d30,inset 0 0 0 5px #b6a37640}.agit-saju-scrolls>span:nth-child(2){transform:translateY(-8px)}.agit-saju-scrolls>span:nth-child(3){transform:translateY(-12px);border-color:#e9cd8e;box-shadow:0 0 32px #d9b77720,inset 0 0 0 4px #201d30,inset 0 0 0 5px #d4b57960}.agit-saju-scrolls small{font:7px Georgia,serif;letter-spacing:.12em;color:#c5ae81}.agit-saju-scrolls b{font:37px/1.1 'Noto Serif KR',Georgia,serif;color:#e9cf96;text-shadow:0 0 20px #e6c38138}.agit-saju-scrolls i{font-style:normal;font-size:8px;color:#bdb5c8;letter-spacing:.04em}
-/* The reflection is visible on entry, with staggered passes and a short pause.
-   It stays behind the lettering and inside each window frame. */
-.agit-saju-scrolls>span{position:relative;isolation:isolate;overflow:hidden}
-.agit-saju-scrolls>span::before{content:'';position:absolute;z-index:0;top:-35%;left:-110%;width:108%;height:170%;pointer-events:none;background:linear-gradient(105deg,transparent 12%,#bad9ed33 24%,#e4d2ff59 36%,#fff2c2bf 47%,#fff9e6e0 52%,#f0cc8899 64%,transparent 88%);opacity:.45;transform:translateX(105%) skewX(-18deg);animation:agitSajuWindowLight 6s linear infinite;animation-delay:-2.4s}
-.agit-saju-scrolls>span:nth-child(2)::before{animation-delay:-1.8s}
-.agit-saju-scrolls>span:nth-child(3)::before{animation-delay:-1.2s}
-.agit-saju-scrolls>span:nth-child(4)::before{animation-delay:-.6s}
-.agit-saju-scrolls>span>small,.agit-saju-scrolls>span>b,.agit-saju-scrolls>span>i{position:relative;z-index:1}
-.agit-saju-scrolls b{text-shadow:0 1px 4px #080811,0 0 20px #e6c38138}
-@keyframes agitSajuWindowLight{0%{opacity:0;transform:translateX(0) skewX(-18deg)}10%,58%{opacity:.88}74%,100%{opacity:0;transform:translateX(220%) skewX(-18deg)}}
-.agit-saju-stars{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 48% 19%,#ffe4ab 0 1px,transparent 2px),radial-gradient(circle at 92% 23%,#ffe4ab 0 1px,transparent 2px),radial-gradient(circle at 67% 81%,#ffe4ab 0 1px,transparent 2px),radial-gradient(circle at 57% 63%,#f8ead0 0 1px,transparent 2px),radial-gradient(circle at 83% 10%,#f8ead0 0 1px,transparent 2px);opacity:.8;animation:agitSajuGlow 6s ease-in-out infinite}
-.agit-saju-banner:hover .agit-saju-cta{filter:brightness(1.1)}.agit-saju-banner:focus-visible{outline-color:#e3c48a!important;outline-offset:4px!important}@keyframes agitSajuGlow{50%{opacity:.3}}
-@media(max-width:600px){.agit-saju-banner{min-height:226px;padding:25px 22px;border-radius:18px;gap:0}.agit-saju-copy h2{font-size:27px}.agit-saju-copy p{font-size:12px}.agit-saju-kicker{font-size:8px;letter-spacing:.07em;gap:5px}.agit-saju-cta{font-size:11px;gap:18px;padding:8px 12px}.agit-saju-art{position:absolute;right:-48px;top:8px;width:260px;height:210px;min-width:0;opacity:.85;z-index:0}.agit-saju-orbit{width:216px}.agit-saju-scrolls{gap:8px;transform:perspective(600px) rotateY(-15deg) rotate(-7deg)}.agit-saju-scrolls>span{width:49px;height:122px}.agit-saju-scrolls small{font-size:6px}.agit-saju-scrolls b{font-size:30px}.agit-saju-scrolls i{display:none}.agit-saju-moon{right:55px;top:-7px}.agit-saju-banner::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,#111320f2,transparent 78%);pointer-events:none}}
-@media(prefers-reduced-motion:reduce){.agit-saju-stars,.agit-saju-scrolls>span::before{animation:none}.agit-saju-scrolls>span::before{opacity:.35;transform:translateX(105%) skewX(-18deg)}}
-
-/* The three reading banners share a compact size: about two thirds of the original. */
-.agit-biorhythm-banner,.agit-tarot-banner,.agit-saju-banner{min-height:160px;padding:18px 26px;gap:18px}
-.agit-biorhythm-copy,.agit-tarot-copy,.agit-saju-copy{min-width:0;max-width:100%;flex:1 1 auto}
-.agit-biorhythm-copy h2,.agit-tarot-copy h2,.agit-saju-copy h2{margin:6px 0 4px;font-size:26px;line-height:1.25}
-.agit-biorhythm-copy p,.agit-tarot-copy p,.agit-saju-copy p{font-size:12px;line-height:1.5}
-.agit-biorhythm-kicker,.agit-tarot-kicker,.agit-saju-kicker{line-height:1.3}
-.agit-biorhythm-cta,.agit-tarot-cta,.agit-saju-cta{min-height:30px;margin-top:10px;padding:7px 12px;gap:16px;font-size:11px;line-height:1.25}
-.agit-biorhythm-art{flex:0 1 280px;min-width:180px;max-width:40%}
-.agit-biorhythm-art svg{height:103px}
-.agit-biorhythm-art-note{display:none}
-.agit-biorhythm-legend{font-size:10px;gap:15px}
-.agit-biorhythm-kicker>span{padding:3px 7px;font-size:9px}
-.agit-tarot-price{padding:8px 11px;min-width:87px;flex-shrink:0}
-.agit-tarot-price strong{font-size:11px}.agit-tarot-price b{font-size:20px}.agit-tarot-price small{font-size:8px}
-.agit-saju-art{width:250px;min-width:180px;min-height:120px}
-.agit-saju-orbit{width:170px;box-shadow:0 0 0 8px #c5ae7b0e,0 0 0 9px #c5ae7b38,0 0 0 23px #c5ae7b08,0 0 0 24px #c5ae7b28}
-.agit-saju-moon{top:-5px;right:12px;font-size:29px}
-.agit-saju-scrolls{gap:8px}.agit-saju-scrolls>span{width:41px;height:87px;gap:7px}
-.agit-saju-scrolls small{font-size:6px}.agit-saju-scrolls b{font-size:26px}.agit-saju-scrolls i{font-size:6px}
-@media(max-width:600px){
- .agit-biorhythm-banner,.agit-tarot-banner,.agit-saju-banner{min-height:150px;padding:16px 18px;gap:9px;border-radius:18px}
- .agit-biorhythm-banner{flex-direction:row;align-items:center}
- .agit-biorhythm-copy h2,.agit-tarot-copy h2,.agit-saju-copy h2{font-size:24px;line-height:1.2}
- .agit-biorhythm-copy p,.agit-tarot-copy p,.agit-saju-copy p{font-size:11px;line-height:1.5}
- .agit-biorhythm-kicker,.agit-tarot-kicker,.agit-saju-kicker{font-size:8px;letter-spacing:.07em;gap:6px}
- .agit-biorhythm-kicker>span{font-size:8px;padding:3px 6px}
- .agit-biorhythm-cta,.agit-tarot-cta,.agit-saju-cta{min-height:29px;margin-top:9px;padding:6px 10px;gap:12px;font-size:10px}
- .agit-biorhythm-art{position:absolute;top:27px;right:-42px;width:210px;min-width:0;max-width:none;opacity:.26;z-index:0}
- .agit-biorhythm-art svg{height:100px}.agit-biorhythm-legend{display:none}
- .agit-tarot-price{min-width:71px;padding:7px 8px}.agit-tarot-price strong{font-size:10px}.agit-tarot-price b{font-size:18px}.agit-tarot-price small{font-size:7px}
- .agit-saju-art{top:10px;right:-42px;width:200px;height:132px;min-height:0;opacity:.65}
- .agit-saju-orbit{width:132px}.agit-saju-scrolls{gap:5px}.agit-saju-scrolls>span{width:33px;height:77px;gap:6px}
- .agit-saju-scrolls small{font-size:5px}.agit-saju-scrolls b{font-size:22px}.agit-saju-moon{right:34px;top:0;font-size:25px}
+.agit-reading-grid {
+  grid-column:1/-1; display:grid; grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:clamp(6px,2vw,14px); margin-top:clamp(18px,3vw,30px);
 }
-@media(max-width:390px){
- .agit-tarot-banner{padding-right:15px;gap:5px}.agit-tarot-price{min-width:62px;padding:6px}.agit-tarot-price strong{font-size:9px}.agit-tarot-price small{font-size:6px}
- .agit-tarot-copy h2{font-size:22px}.agit-biorhythm-copy h2,.agit-saju-copy h2{font-size:23px}
+.agit-reading-card {
+  display:flex; flex-direction:column; min-width:0; overflow:hidden;
+  border:1px solid var(--agit-line); border-radius:15px; background:#fff;
+  color:var(--agit-ink); text-align:center; text-decoration:none;
+}
+.agit-reading-card:hover { border-color:var(--agit-berry); }
+.agit-reading-card img { display:block; width:100%; height:auto; aspect-ratio:3/2; object-fit:cover; }
+.agit-reading-copy { display:grid; gap:3px; padding:8px 3px 9px; }
+.agit-reading-copy strong { font-size:clamp(14px,2vw,18px); line-height:1.3; letter-spacing:-.045em; }
+.agit-reading-copy small { display:flex; flex-wrap:wrap; justify-content:center; gap:0 6px;
+  color:#665965; font-size:clamp(11px,1.5vw,13px); line-height:1.45; }
+.agit-reading-copy small span { white-space:nowrap; }
+@media(max-width:519px) {
+  .agit-reading-copy small { flex-direction:column; }
+}
+@media(min-width:740px) {
+  .agit-reading-card { display:grid; grid-template-columns:44% minmax(0,1fr); align-items:center; }
+  .agit-reading-copy { padding:10px 6px; }
 }

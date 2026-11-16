@@ -245,6 +245,20 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
     const privileges = await db.query("select has_table_privilege($1,'ojjuda_note_internal.thread_aliases','select') as can_read",[role]);
     assert.equal(privileges.rows[0].can_read,false);
   }
+  // Apply only the public view grants in this isolated fixture. Each reader
+  // must see the public root, while moderation and personal blocks still hold.
+  const blockedReply = await add([], {kind:'comment',parent:blockedCard});
+  await db.exec('grant usage on schema auth,ojjuda_note to anon,authenticated; grant select on ojjuda_note.public_cards to anon,authenticated');
+  for (const [role,actor] of [['anon',''],['authenticated',viewer],['authenticated',author]]) {
+    await db.query("select set_config('request.jwt.claim.sub',$1,false)",[actor]);
+    await db.exec('set role '+role);
+    const rows = (await db.query('select id,is_mine from ojjuda_note.public_cards where id=any($1::uuid[])',
+      [[normal,hidden,archived,normalEvent,normalReply,after,blockedCard,blockedReply]])).rows;
+    const expected = actor===viewer ? [normal] : [normal,blockedCard,blockedReply];
+    assert.deepEqual(new Set(ids(rows)),new Set(expected),'public rows match the reader and visible parent chain');
+    assert.equal(rows.find(card=>card.id===normal).is_mine,actor===viewer);
+    await db.exec('reset role');
+  }
   await db.close();
   console.log('PASS: single-word tags, whitespace parsing, search-driven composer defaults, mixed tags, explicit search, pagination and existing moderation');
 })().catch(error=>{console.error(error);process.exitCode=1;});

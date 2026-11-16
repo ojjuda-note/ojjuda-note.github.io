@@ -289,13 +289,13 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.deepEqual(await current(), { area: 'payment', tab: 'fortune-purchases' });
     assert.equal(await page.evaluate(() => fixture.controllers['fortune-purchases'] !== previousFortuneController), true);
     await area('content');
-    assert.deepEqual(await page.locator('.adm-menu-group[data-group="content"] .adm-menu-link').allTextContents(), ['카드','쪽지 관리','그룹 관리','포토땅따먹기','술게임 질문·명령 검토','위치 지도','자료 모아보기']);
+    assert.deepEqual(await page.locator('.adm-menu-group[data-group="content"] .adm-menu-link').allTextContents(), ['카드','쪽지 관리','그룹 관리','포토땅따먹기','술게임 질문·단어 관리','위치 지도','자료 모아보기']);
     await page.locator('.adm-menu-group[data-group="content"] .adm-menu-link[data-area="content"][data-v="drinking-prompts"]').click();
     await mounted('drinking-prompts');
     assert.deepEqual(await current(), { area: 'content', tab: 'drinking-prompts' });
     assert.equal(await page.evaluate(() => fixture.options['drinking-prompts'].getAdminId()), 'synthetic-admin');
     assert.equal(await page.evaluate(() => fixture.options['drinking-prompts'].isCurrent()), true);
-    assert.equal(await page.locator('.adm-navigation [aria-current="page"]').first().textContent(), '술게임 질문·명령 검토');
+    assert.equal(await page.locator('.adm-navigation [aria-current="page"]').first().textContent(), '술게임 질문·단어 관리');
     await page.evaluate(() => { window.previousDrinkingController = fixture.controllers['drinking-prompts']; });
     await tab('cards');
     assert.equal(await page.evaluate(() => previousDrinkingController.destroyed), true, 'leaving prompt review releases its controller');

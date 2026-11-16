@@ -1,0 +1,183 @@
+/* Bottle's own table; shared presentation owns sizing, rotation and hit areas. */
+body.dp-playing[data-dp-kind="bottle"] {
+  --bottle-ivory: #f4efdf;
+  --bottle-muted: #afc3c9;
+  --bottle-amber: #dfc58e;
+  --bottle-line: #d6e3e922;
+  color: var(--bottle-ivory);
+  background: radial-gradient(ellipse at 25% 40%, #163743, #091925 55%, #050f1a);
+}
+body.dp-playing[data-dp-kind="bottle"] #access-content > header {
+  color: var(--bottle-ivory);
+  border-color: var(--bottle-line);
+  background: #0b1928ed;
+}
+body.dp-playing[data-dp-kind="bottle"] #access-content > header :is(.arcade-return, .drinks-home, .icon-button, button) {
+  border: 1px solid #a6b9c03b;
+  background: #173340;
+  color: #ece9db;
+  box-shadow: none;
+}
+body.dp-playing[data-dp-kind="bottle"] #access-content > header strong { color: var(--bottle-muted); }
+body.dp-playing[data-dp-kind="bottle"] :is(.play-shell, #view > .card) {
+  border: 1px solid #a3bbc838;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #15303e, #0b1f2e 70%);
+  box-shadow: 0 22px 60px #0005, inset 0 1px #eef6ff0c;
+}
+body.dp-playing[data-dp-kind="bottle"] .round-head {
+  background: #0c2130bd;
+  border-bottom: 1px solid var(--bottle-line);
+}
+body.dp-playing[data-dp-kind="bottle"] .round-head h1 { color: var(--bottle-ivory); font-weight: 780; }
+body.dp-playing[data-dp-kind="bottle"] .round-head > span { color: var(--bottle-muted); }
+body.dp-playing[data-dp-kind="bottle"] .round-mark { box-shadow: 0 0 0 1px #d8e3e52b; }
+body.dp-playing[data-dp-kind="bottle"] :is(.play-body, #view) :is(h1, h2) { color: var(--bottle-ivory); }
+body.dp-playing[data-dp-kind="bottle"] :is(.play-body, #view) p { color: var(--bottle-muted); word-break: keep-all; overflow-wrap: anywhere; }
+body.dp-playing[data-dp-kind="bottle"] #view :is(.topline, .topline span, label) { color: var(--bottle-muted); }
+body.dp-playing[data-dp-kind="bottle"] :is(.play-body, #view) :is(.start, .action) {
+  border: 1px solid #e6d1a3;
+  border-radius: 12px;
+  background: linear-gradient(165deg, #f0dfb6, #c7a565);
+  color: #1d2b32;
+  font-weight: 800;
+  box-shadow: inset 0 1px #fff6d796, 0 7px 24px #040b1340;
+}
+body.dp-playing[data-dp-kind="bottle"] :is(.play-body, #view) :is(.quiet, .secondary, .tabs button) {
+  border-color: #96b3be50;
+  background: #1c3948;
+  color: #e3eaf0;
+  box-shadow: none;
+}
+body.dp-playing[data-dp-kind="bottle"] #view .tabs [aria-pressed="true"] { border-color: #d2bd8c; background: #d9c390; color: #1c2a35; }
+body.dp-playing[data-dp-kind="bottle"] #view :is(input, select) { background: #0c2434; border-color: #789caa78; color: #f0eee3; }
+body.dp-playing[data-dp-kind="bottle"] #view :is(input, select)::placeholder { color: #9ab4bf; }
+body.dp-playing[data-dp-kind="bottle"] #view .members li { border-color: var(--bottle-line); background: #0e2b3a; color: #c3d2d7; }
+body.dp-playing[data-dp-kind="bottle"] #view .members .me { background: #3a5362; color: #f5e6ba; }
+body.dp-playing[data-dp-kind="bottle"] .turn-tag {
+  color: #e8d29f;
+  border-color: #d1be8c50;
+  background: #b7bdc512;
+  box-shadow: inset 0 1px #fff8d00a;
+}
+body.dp-playing[data-dp-kind="bottle"] .bottle-kicker {
+  margin: 0 0 calc(5px * var(--dp-fit-scale));
+  color: var(--bottle-amber);
+  font-size: calc(11px * var(--dp-fit-scale));
+  line-height: 1.4;
+  font-weight: 750;
+  letter-spacing: .12em;
+}
+body.dp-playing[data-dp-kind="bottle"][data-dp-phase="intro"] .play-body h2 {
+  margin: calc(5px * var(--dp-fit-scale)) 0;
+  font-size: calc(clamp(28px, 3.4vw, 34px) * var(--dp-fit-scale));
+  line-height: 1.16;
+  letter-spacing: -.065em;
+  font-weight: 850;
+}
+body.dp-playing[data-dp-kind="bottle"][data-dp-phase="intro"] .play-body > p {
+  margin: calc(6px * var(--dp-fit-scale)) 0;
+  font-size: calc(15px * var(--dp-fit-scale));
+  line-height: 1.5;
+}
+body.dp-playing[data-dp-kind="bottle"] .bottle-rules {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: calc(8px * var(--dp-fit-scale));
+  width: min(100%, calc(520px * var(--dp-fit-scale)));
+  margin: calc(8px * var(--dp-fit-scale)) 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+body.dp-playing[data-dp-kind="bottle"] .bottle-rules li {
+  display: grid;
+  align-content: start;
+  gap: calc(4px * var(--dp-fit-scale));
+  padding: calc(8px * var(--dp-fit-scale));
+  border: 1px solid #b2cbd421;
+  border-radius: 11px;
+  background: #05152240;
+}
+body.dp-playing[data-dp-kind="bottle"] .bottle-rules span { color: #d2bc86; font: 700 calc(10px * var(--dp-fit-scale))/1.2 ui-monospace, monospace; letter-spacing: .08em; }
+body.dp-playing[data-dp-kind="bottle"] .bottle-rules strong { color: #f1ecdc; font-size: calc(14px * var(--dp-fit-scale)); line-height: 1.3; }
+body.dp-playing[data-dp-kind="bottle"] .bottle-rules small { color: #a9bec8; font-size: calc(12px * var(--dp-fit-scale)); line-height: 1.35; word-break: keep-all; }
+body.dp-playing[data-dp-kind="bottle"] .bottle-meta { margin-top: calc(7px * var(--dp-fit-scale)); color: #91acba; font-size: calc(12px * var(--dp-fit-scale)); line-height: 1.4; }
+body.dp-playing[data-dp-kind="bottle"][data-dp-phase="intro"] .stage-art { height: clamp(120px, 25dvh, 340px); }
+body.dp-playing[data-dp-kind="bottle"] .stage-art {
+  background: radial-gradient(ellipse at 48% 62%, #3b6670, #1b4150 48%, #102b3e 85%);
+}
+body.dp-playing[data-dp-kind="bottle"] .stage-art::before {
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 15%, #d2e2dc26, transparent 60%);
+  filter: none;
+}
+body.dp-playing[data-dp-kind="bottle"] .stage-art .game-art {
+  mask-image: radial-gradient(ellipse at 50% 52%, #000 42%, #000e 65%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 52%, #000 42%, #000e 65%, transparent 100%);
+  filter: saturate(.94) contrast(1.04);
+}
+/* Table finishes and seat states do not change the board's geometry. */
+body.dp-playing[data-dp-kind="bottle"] :is(.bottle-board, .bottle-dial) {
+  background: repeating-conic-gradient(from -1deg, #dac79b1a 0deg .7deg, transparent .7deg 45deg), radial-gradient(ellipse at 45% 35%, #285b69, #102e3e 78%);
+  box-shadow: inset 0 0 0 4px #947d52, inset 0 0 0 7px #d8c49a, 0 20px 44px #020b1466;
+}
+body.dp-playing[data-dp-kind="bottle"] :is(.bottle-setup, .bottle-form) legend { color: #c6d6dc; }
+body.dp-playing[data-dp-kind="bottle"] :is(.table-option, .direction-option, .bottle-options label) > span { background: #102e3e; border-color: #7294a15c; color: #dce5e8; }
+body.dp-playing[data-dp-kind="bottle"] :is(.bottle-setup, .bottle-form) input:checked + span { background: #365467; border-color: #dcc695; color: #f3e5be; box-shadow: inset 0 0 0 1px #dcc695; }
+body.dp-playing[data-dp-kind="bottle"] :is(.table-mini, .bottle-mini) { border-color: #bba16d; background: linear-gradient(130deg, #356174, #17394b); }
+body.dp-playing[data-dp-kind="bottle"] :is(.bottle-seat, .bottle-dial .seat) { background: #eee1bd; border-color: #bea474; color: #213543; box-shadow: 0 3px 8px #020a124d; }
+body.dp-playing[data-dp-kind="bottle"] .bottle-dial button.seat { border-color: #d8c493; }
+body.dp-playing[data-dp-kind="bottle"] .bottle-dial button.seat:disabled { background: #345261; border-color: #708c96; color: #cfdee2; }
+body.dp-playing[data-dp-kind="bottle"] .bottle-seat.mine { border-color: #92dbdc; box-shadow: 0 0 0 3px #86c5cf35; }
+body.dp-playing[data-dp-kind="bottle"] :is(.bottle-seat.winner, .bottle-dial .winning-seat) { background: #f4d58d; border-color: #ffe9b7; color: #28313a; box-shadow: 0 0 0 4px #f4d58d52, 0 0 24px #eccb6e4d; }
+body.dp-playing[data-dp-kind="bottle"] :is(.bottle-seats li, .bottle-players li) { color: #bfd0d7; }
+body.dp-playing[data-dp-kind="bottle"] .bottle-seats b { background: #2a4656; color: #e7d09a; }
+body.dp-playing[data-dp-kind="bottle"] .bottle-players b { color: #e0c58e; }
+body.dp-playing[data-dp-kind="bottle"] :is(.bottle-seats button, .bottle-table-reset) { background: #173646; border-color: #7899a25e; color: #dce7ea; }
+body.dp-playing[data-dp-kind="bottle"] .bottle-seats button[aria-pressed="true"] { background: #385369; border-color: #dfc58e; color: #fff0c9; box-shadow: inset 0 0 0 1px #dfc58e; }
+body.dp-playing[data-dp-kind="bottle"] :is(.seat-surface, .bottle-hit):focus-visible::after { background: #15384a; border-color: #f3dfae; color: #fff2ce; }
+body.dp-playing[data-dp-kind="bottle"][data-dp-phase="done"] :is(#bottle-title, .bottle-heading) { color: #eed49e; }
+body.dp-playing[data-dp-kind="bottle"][data-dp-phase="braking"] :is(#bottle-hint, .bottle-hint) { color: #d8cba9; }
+body.dp-playing[data-dp-kind="bottle"] :is(.play-body, #view, #access-content > header, .dp-dialog--guide) :is(button, a, input, select):focus-visible,
+body.dp-playing[data-dp-kind="bottle"] .dp-help:focus-visible { outline: 3px solid #eddbac; outline-offset: 3px; }
+body.dp-playing[data-dp-kind="bottle"] #notice { color: #e3c895; }
+body.dp-playing[data-dp-kind="bottle"] .dp-help { background: #173748; border-color: #85a5b661; color: #ead8ac; box-shadow: 0 3px 12px #0003; }
+body.dp-playing[data-dp-kind="bottle"] .dp-dialog--guide { background: linear-gradient(145deg, #1b3848, #0d2132); border-color: #9bb4c14d; color: #f3efdf; box-shadow: 0 28px 90px #0008; }
+body.dp-playing[data-dp-kind="bottle"] .dp-dialog--guide .dp-guide-goal { color: #bed1da; }
+body.dp-playing[data-dp-kind="bottle"] .dp-dialog--guide .dp-guide-steps li::before { background: #365364; color: #e4cc96; }
+body.dp-playing[data-dp-kind="bottle"] .dp-dialog--guide .dp-guide-note { background: #0a1b2b; border-color: #acc4d02e; color: #bcced2; }
+body.dp-playing[data-dp-kind="bottle"] .dp-dialog--guide .dp-dismiss { background: #193747; border-color: #a2bcc842; color: #e8ecee; }
+body.dp-playing[data-dp-kind="bottle"] .dp-dialog--guide .dp-primary { background: linear-gradient(160deg, #edddb5, #c4a66a); border-color: #dcc796; color: #1b2b37; }
+@media (hover: hover) {
+  body.dp-playing[data-dp-kind="bottle"] :is(.play-body, #view) :is(.start, .action):hover { filter: brightness(1.06); }
+  body.dp-playing[data-dp-kind="bottle"] .dp-dialog--guide .dp-primary:hover { background: #f0e1bb; }
+}
+@media (max-height: 800px) {
+  body.dp-playing[data-dp-kind="bottle"][data-dp-phase="intro"] .stage-art { height: clamp(100px, 20dvh, 160px); }
+}
+@media (max-width: 520px) and (max-height: 740px) {
+  body.dp-playing[data-dp-kind="bottle"][data-dp-phase="intro"] .stage-art { height: clamp(100px, 17dvh, 126px); }
+  body.dp-playing[data-dp-kind="bottle"] .bottle-rules li { grid-template-columns: auto minmax(0, 1fr); gap: 3px; padding: 7px 6px; }
+  body.dp-playing[data-dp-kind="bottle"] .bottle-rules span { grid-column: 1; grid-row: 1 / 3; }
+  body.dp-playing[data-dp-kind="bottle"] .bottle-rules :is(strong, small) { grid-column: 2; }
+}
+@media (max-height: 480px) and (min-width: 600px) {
+  /* Shared label margins must not add a second gap around each option row. */
+  body.dp-playing[data-dp-kind="bottle"] #view .bottle-table-setup .bottle-options label { margin: 0; }
+  body.dp-playing[data-dp-kind="bottle"] #view #bottle-table.bottle-table-setup { margin: 4px 0; }
+  body.dp-playing[data-dp-kind="bottle"][data-dp-phase="intro"] .play-body {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto auto auto auto;
+    align-content: safe center;
+    column-gap: 24px;
+    row-gap: 4px;
+  }
+  body.dp-playing[data-dp-kind="bottle"][data-dp-phase="intro"] .play-body > .bottle-kicker { grid-column: 1; grid-row: 1; }
+  body.dp-playing[data-dp-kind="bottle"][data-dp-phase="intro"] .play-body > h2 { grid-column: 1; grid-row: 2; }
+  body.dp-playing[data-dp-kind="bottle"][data-dp-phase="intro"] .play-body > p { grid-column: 1; grid-row: 3 / 5; }
+  body.dp-playing[data-dp-kind="bottle"][data-dp-phase="intro"] .play-body > .bottle-rules { grid-column: 2; grid-row: 1 / 3; margin: 0; }
+  body.dp-playing[data-dp-kind="bottle"][data-dp-phase="intro"] .play-body > .actions { grid-column: 2; grid-row: 3; margin-top: 4px; }
+  body.dp-playing[data-dp-kind="bottle"][data-dp-phase="intro"] .play-body > .bottle-meta { grid-column: 2; grid-row: 4; margin-top: 0; }
+}

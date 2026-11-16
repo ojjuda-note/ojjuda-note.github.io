@@ -1,6 +1,7 @@
 /* Park supplies content and actions; World owns the only application chrome. */
 (() => {
   'use strict';
+  const frameVersion = '20261116-park-badge1';
   const actions = new Set(['feed','saved','mine','events','event-new','blocked','settings','compose','glasses']);
   const loadingCards=Array.from({length:3},()=>'<div class="park-skeleton-card"><div class="park-skeleton-photo"><span class="park-skeleton-quote"></span><span class="park-skeleton-quote short"></span></div><div class="park-skeleton-meta"><span></span><span></span></div></div>').join('');
   function menuMarkup() {
@@ -77,7 +78,7 @@
       forget();
       panel=next;panel.hidden=false;panel.removeAttribute('aria-hidden');owner=app.userId();overlayOpen=false;cardOpen=false;
       const view=initial&&new URL(location.href).searchParams.get('view')==='glasses'?'glasses':'cards';
-      const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');url.searchParams.set('v','20261113-card-type1');
+      const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');url.searchParams.set('v',frameVersion);
       if(initial){const source=new URL(location.href);for(const key of ['card','keep','compose'])if(source.searchParams.has(key))url.searchParams.set(key,source.searchParams.get(key));initial=false;}
       frame=document.createElement('iframe');frame.title='공원 카드';frame.allow='geolocation; clipboard-write; web-share';frame.dataset.view=view;frame.src=url.pathname+url.search;
       frameVisible=true;
@@ -101,7 +102,7 @@
       if(!actions.has(action))return;
       pending=action;
       if(!active()){app.enter();return;}
-      if(frame?.dataset.view==='glasses'&&action!=='glasses'){loading(true);frame.src='/park/?embedded=1&v=20261113-card-type1';return;}
+      if(frame?.dataset.view==='glasses'&&action!=='glasses'){loading(true);frame.src='/park/?embedded=1&v='+frameVersion;return;}
       flush();
     }
     function refreshBalance(){api()?.refreshBalance?.();}

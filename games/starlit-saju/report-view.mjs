@@ -1,8 +1,13 @@
+import {personalReadingMap,pairReadingMap,connectReadingMap,indexPages} from './reading-map.mjs?v=20261115-saju-menus1';
 import {getReadingSources} from './sources.mjs?v=20261113-saju-reader1';
 import {applyReadingSummaryViews} from './reading-summary-view.mjs?v=20261113-saju-summary1';
-import {applyReadingScoreViews} from './reading-score-view.mjs?v=20261114-saju-wind1';
-import {createCompatibilityScoreboard} from './compatibility-score-view.mjs?v=20261114-saju-wind1';
-import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261114-saju-wind1';
+import {applyReadingScoreViews} from './reading-score-view.mjs?v=20261114-saju-copy1';
+import {createCompatibilityScoreboard,createCompatibilityScoreDetails} from './compatibility-score-view.mjs?v=20261114-saju-copy1';
+import {appendReadingDetail} from './reading-detail.mjs?v=20261114-saju-depth1';
+import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261115-saju-menus1';
+import {createReadingNavigator} from './reading-navigator.mjs?v=20261114-saju-almanac1';
+import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
+import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
 
 const readingPagers=new WeakMap();
 const pagerDocuments=new WeakSet();
@@ -10,6 +15,12 @@ const pagerDocuments=new WeakSet();
 function revealPagedTarget(target) {
   const container=target?.closest('[data-reader-paged]');
   return container?readingPagers.get(container)?.reveal(target):false;
+}
+
+export function restoreReadingPage(container,pageId) {
+  if(typeof pageId!=='string'||!pageId)return false;
+  const target=[...container.querySelectorAll('[data-reader-page]')].find(element=>element.id===pageId);
+  return target?Boolean(revealPagedTarget(target)):false;
 }
 
 function watchReadingTargets(doc) {
@@ -204,7 +215,7 @@ function readerOverview(overview, sectionId, chapters=[], showLabel=false, fallb
     intro.append(headline);
   }
   const prose=node('div','report-prose reader-prose');
-  addParagraphs(prose,overview.paragraphs);
+  appendReadingDetail(prose,overview,addParagraphs);
   intro.append(prose);
   section.append(intro);
   const topicNav=node('nav','reader-topic-nav');
@@ -224,8 +235,9 @@ function readerOverview(overview, sectionId, chapters=[], showLabel=false, fallb
     const title=node('h5','reader-card-title',item.title);
     card.append(label,title);
     const body=node('div','report-prose reader-prose');
-    addParagraphs(body,item.paragraphs);
+    appendReadingDetail(body,item,addParagraphs);
     card.append(body);
+    if(item.scopeNotice)card.append(node('p','reader-scope-note',item.scopeNotice));
     const chapterIndex=chapters.findIndex(chapter=>chapter.id===item.chapterId);
     const evidenceId=chapterIndex>=0?`${sectionId}-chapter-${chapterIndex+1}`:fallbackEvidenceId;
     if (evidenceId) {
@@ -247,6 +259,34 @@ function readerOverview(overview, sectionId, chapters=[], showLabel=false, fallb
   }
   section.append(topicNav,cards);
   return section;
+}
+
+function appendReaderSupplements(parent,cards=[]) {
+  for(const item of cards) {
+    if(!Array.isArray(item.summaryLines)||item.summaryLines.length!==2
+      ||item.summaryLines.some(line=>typeof line!=='string'||!line.trim())) {
+      throw new Error('추가 해설의 두 줄 요약을 준비하지 못했어요.');
+    }
+    const card=node('article','reader-personal-supplement');
+    card.id=`reading-${item.id}`;
+    card.dataset.readingSupplement=item.id;
+    card.dataset.origin=item.origin;
+    card.dataset.factIds=(item.factIds||[]).join(' ');
+    const heading=node('h4','reader-card-label',item.label);
+    heading.id=`${card.id}-title`;heading.tabIndex=-1;
+    card.setAttribute('aria-labelledby',heading.id);
+    card.append(heading,node('p','reader-label','추가 해설'));
+    const summary=node('div','saju-two-line-summary');
+    summary.setAttribute('role','group');summary.setAttribute('aria-label','두 줄 요약');
+    summary.dataset.origin=item.origin;
+    summary.append(node('h5','reader-card-title saju-summary-line',item.summaryLines[0]),
+      node('p','saju-summary-line',item.summaryLines[1]));
+    const prose=node('div','report-prose reader-prose');
+    appendReadingDetail(prose,item,addParagraphs);
+    card.append(summary,prose);
+    if(item.scopeNotice)card.append(node('p','reader-scope-note',item.scopeNotice));
+    parent.append(card);
+  }
 }
 
 function fullReadingDetails(sectionId, chapters, advice, extra = null) {
@@ -398,7 +438,7 @@ function personPortraitView(portrait, facts, original, visibleScopeNotice='') {
   const headline=node('h4','reader-headline portrait-headline',portrait.headline);
   headline.id='person-portrait-headline';headline.tabIndex=-1;
   const prose=node('div','report-prose reader-prose portrait-prose');
-  addParagraphs(prose,portrait.paragraphs);
+  appendReadingDetail(prose,portrait,addParagraphs);
   intro.append(headline,portraitSummaryTable(portrait),prose);
   section.append(intro);
 
@@ -420,7 +460,7 @@ function personPortraitView(portrait, facts, original, visibleScopeNotice='') {
     label.append(number,document.createTextNode(item.label));
     card.append(label,node('h5','portrait-card-title',item.title));
     const body=node('div','report-prose reader-prose portrait-prose');
-    addParagraphs(body,item.paragraphs);
+    appendReadingDetail(body,item,addParagraphs);
     const evidenceLink=readingLink('이 성격 풀이의 근거','reading-person-portrait-evidence','reader-detail-link');
     evidenceLink.setAttribute('aria-label',`${item.label} 풀이의 근거 보기`);
     card.append(body,evidenceLink);
@@ -460,7 +500,7 @@ function personPortraitView(portrait, facts, original, visibleScopeNotice='') {
   return section;
 }
 
-function reportSection(section, advice, overview, period=null, portrait=null, facts=[], scopeNotice='') {
+function reportSection(section, advice, overview, period=null, portrait=null, facts=[], scopeNotice='', supplements=[]) {
   const container = node('section', 'report-section');
   const sectionId = `reading-${section.id}`;
   container.id = sectionId;
@@ -485,10 +525,14 @@ function reportSection(section, advice, overview, period=null, portrait=null, fa
   container.append(original,full);
   const suggestions=moreAdvice(advice,sectionId);
   if (suggestions) container.append(suggestions);
+  appendReaderSupplements(container,supplements);
   return container;
 }
 
-function monthView(month, calculated, open, overview) {
+function monthPeriod(calculated) {
+  return calculated?.start?.label && calculated?.end?.label ? calculated.start.label+' ~ '+calculated.end.label : '';
+}
+function monthView(month, calculated, open, overview, supplements=[]) {
   const detail = node('details', 'month-reading' + (calculated?.isCurrent ? ' is-current' : ''));
   detail.id = `reading-month-${month.month}`;
   detail.open = open;
@@ -507,7 +551,7 @@ function monthView(month, calculated, open, overview) {
   summary.append(number, intro, mark);
   detail.append(summary);
   const content = node('div', 'month-content');
-  const period = month.periodLabel || (calculated?.start?.label && calculated?.end?.label ? `${calculated.start.label} ~ ${calculated.end.label}` : '');
+  const period = month.periodLabel || monthPeriod(calculated);
   if (period) content.append(node('p', 'month-period', period));
   content.append(readerOverview(overview,detail.id,month.chapters,false,null,summary.id));
   const full=fullReadingDetails(detail.id,month.chapters,month.advice,body=>{
@@ -526,6 +570,7 @@ function monthView(month, calculated, open, overview) {
   content.append(full);
   const suggestions=moreAdvice(month.advice,detail.id);
   if (suggestions) content.append(suggestions);
+  appendReaderSupplements(content,supplements);
   detail.append(content);
   detail.setAttribute('aria-labelledby', summary.id);
   return detail;
@@ -634,9 +679,18 @@ function monthSection(reading, fortune) {
   const overviews=new Map((reading.reader?.months||[]).map(month=>[month.month,month]));
   section.append(monthSpotlight(overviews,currentMonth,fortune.year));
   const controls = node('div', 'months-controls');
-  const periodInfo=node('details','months-period-info');
-  periodInfo.append(node('summary','','월별 적용 기간'),node('p','months-note',reading.monthsIntro || '각 달을 펼치면 적용 기간을 볼 수 있어요.'));
-  controls.append(periodInfo);
+  controls.id='reading-month-periods';
+  controls.append(node('h4','','월별 적용 기간'));
+  const periods=node('dl','month-period-list');
+  for(const month of reading.months) {
+    const row=node('div');
+    const title=node('dt');
+    title.append(readingLink(month.month+'월','reading-month-'+month.month));
+    row.append(title,node('dd','',month.periodLabel || monthPeriod(calculated.get(month.month))));
+    periods.append(row);
+  }
+  controls.append(periods);
+  if(reading.monthsIntro) controls.append(node('p','months-note',reading.monthsIntro));
   const expand = node('button', 'secondary-button');
   expand.id = 'toggle-all-months';
   expand.type = 'button';
@@ -645,7 +699,8 @@ function monthSection(reading, fortune) {
   const jumps = node('nav', 'month-jumps');
   jumps.setAttribute('aria-label', '월별 풀이 바로가기');
   jumps.id='reading-month-navigation';
-  const details = reading.months.map(month => monthView(month, calculated.get(month.month), month.month === initiallyOpen,overviews.get(month.month)));
+  const supplements=new Map((reading.reader?.supplements?.months||[]).map(month=>[month.month,month.cards]));
+  const details = reading.months.map(month => monthView(month, calculated.get(month.month), month.month === initiallyOpen,overviews.get(month.month),supplements.get(month.month)));
   for (const detail of details) {
     const month = Number(detail.id.replace('reading-month-', ''));
     const jump = node('button', 'month-jump' + (month === currentMonth ? ' is-current' : ''), `${month}월`);
@@ -721,7 +776,7 @@ function supplementSection(id, reading, className) {
   const intro=node('div','reader-intro');
   intro.append(node('h4','reader-headline',reading.headline));
   const prose=node('div','report-prose reader-prose');
-  addParagraphs(prose,reading.paragraphs);
+  appendReadingDetail(prose,reading,addParagraphs);
   intro.append(prose);
   body.append(intro);
   section.append(header,body);
@@ -805,7 +860,7 @@ function timingsView(timings, reading, fortune) {
     const content=node('div','reader-timing-content');
     content.append(node('h5','reader-timing-kind','나의 성향과 이 시기의 주의점'));
     const prose=node('div','report-prose reader-prose');
-    addParagraphs(prose,item.paragraphs);
+    appendReadingDetail(prose,item,addParagraphs);
     if (prose.childNodes.length) content.append(prose);
     const opportunities=timingPoints(item.opportunities,'이 기간에 살릴 기회');
     const people=timingPoints(item.people,'도움을 구해 볼 사람');
@@ -846,7 +901,7 @@ function symbolsView(symbols) {
     const article=node('article','reader-symbol-item');
     article.append(node('h4','reader-card-label',item.label),node('h5','reader-card-title',item.value));
     const prose=node('div','report-prose reader-prose');
-    addParagraphs(prose,[item.description]);
+    appendReadingDetail(prose,item.paragraphs?.length?item:{...item,paragraphs:[item.description]},addParagraphs);
     article.append(prose);
     list.append(article);
   }
@@ -893,13 +948,14 @@ function daeunView(reading) {
   title.id='reading-daeun-title';
   header.append(title);
   section.append(header);
+  if(reading.timeAssumed===true)section.append(node('p','reader-scope-note daeun-time-notice',reading.birthTimeNotice));
   if(!reading.available) {
     section.append(node('p','reader-scope-note',reading.message));
     return section;
   }
   const intro=node('div','report-prose reader-prose');
   intro.append(node('h4','reader-headline',reading.headline));
-  addParagraphs(intro,reading.paragraphs);
+  appendReadingDetail(intro,reading,addParagraphs);
   section.append(intro);
   const nav=node('nav','reader-topic-links daeun-nav');
   nav.setAttribute('aria-label','10년 흐름 바로가기');
@@ -908,6 +964,7 @@ function daeunView(reading) {
     const targetId=period.id+'-title';
     nav.append(readingLink(period.ageLabel+(period.isCurrent?' · 지금':''),targetId,'reader-topic-link'));
     const details=node('details','daeun-period');
+    details.id=period.id;
     details.dataset.daeunPeriod=period.id;
     details.dataset.factIds=period.factIds.join(' ');
     details.classList.toggle('is-current',period.isCurrent);
@@ -920,15 +977,16 @@ function daeunView(reading) {
     const body=node('div','daeun-period-body');
     body.append(node('p','daeun-dates',period.periodLabel));
     const prose=node('div','report-prose reader-prose');
-    addParagraphs(prose,period.paragraphs);
+    appendReadingDetail(prose,period,addParagraphs);
     body.append(prose);
     for(const topic of [...period.topics,...(period.situations||[])]) {
       const article=node('article','daeun-topic');
+      article.id=topic.id;
       article.dataset.daeunTopic=topic.id;
       article.dataset.factIds=topic.factIds.join(' ');
       article.append(node('h5','reader-card-label',topic.label),node('h6','reader-card-title',topic.title));
       const paragraphs=node('div','report-prose reader-prose');
-      addParagraphs(paragraphs,topic.paragraphs);
+      appendReadingDetail(paragraphs,topic,addParagraphs);
       article.append(paragraphs);
       body.append(article);
     }
@@ -965,6 +1023,16 @@ function daeunView(reading) {
   return section;
 }
 
+function readingScopeView(scope,id) {
+  const section=node('aside','reader-scope-note reading-coverage');
+  section.id=id;
+  const title=node('p','reader-card-label',scope.title);title.id=`${id}-title`;
+  section.setAttribute('aria-labelledby',title.id);
+  section.append(title);
+  addParagraphs(section,scope.paragraphs);
+  return section;
+}
+
 /** Render both people's interpretation and every comparison fact together. */
 export function renderCompatibilityReport(container, reading, {names=[]}={}) {
   if (!reading || !Array.isArray(reading.facts) || !Array.isArray(reading.cards)) {
@@ -982,9 +1050,16 @@ export function renderCompatibilityReport(container, reading, {names=[]}={}) {
   header.append(title);
   section.append(header);
   const pages=createCompatibilityPeoplePages(reading,{names,appendParagraphs:addParagraphs});
+  const synthesis=pages.find(page=>page.element.id==='compatibility-synthesis');
+  if(synthesis) {pages.splice(pages.indexOf(synthesis),1);pages.unshift(synthesis);}
   section.append(...pages.map(page=>page.element));
   const score=createCompatibilityScoreboard(reading.score);score.id='compatibility-scores';
-  section.append(score);pages.push({element:score,label:'궁합 점수',group:'두 사람의 궁합'});
+  // One score DOM serves the combined overview and the direct score page.
+  if(synthesis)synthesis.element.querySelector('.compatibility-two-line-summary').after(score);
+  else section.append(score);
+  pages.push({element:score,label:'궁합 점수',group:'두 사람의 궁합'});
+  const scoreDetails=createCompatibilityScoreDetails(reading.score,{appendParagraphs:addParagraphs});
+  section.append(...scoreDetails.map(page=>page.element));pages.push(...scoreDetails);
   const overview=readerOverview({
     ...reading,
     origin:reading.origin||'service-reference',
@@ -999,7 +1074,8 @@ export function renderCompatibilityReport(container, reading, {names=[]}={}) {
     element.id=`compatibility-reading-card-${index+1}`;
     pages.push({element,label:reading.cards[index].label,group:'궁합 자세히 읽기'});
   });
-  const pager=createCompatibilityPager(section,pages);
+  const pager=createCompatibilityPager(section,pages,pairReadingMap(reading));
+  if(reading.readingScope)section.append(readingScopeView(reading.readingScope,'compatibility-reading-coverage'));
   section.dataset.readerPaged='true';readingPagers.set(section,pager);
   watchReadingTargets(section.ownerDocument);
   container.replaceChildren(section);
@@ -1011,7 +1087,7 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   const pages=[],pageByNode=new Map(),defaults=new Map();
   const find=id=>root.querySelector(`[id="${id}"]`);
   const all=(scope,selector)=>[...(scope?.querySelectorAll(selector)||[])];
-  let serial=0,host=root,current=null,lastReading=null;
+  let serial=0,host=root,current=null,lastReading=null,motion=null,mapView=null;
   function add(element,label,group,options={}) {
     if(!element)return null;
     if(pageByNode.has(element))return pageByNode.get(element);
@@ -1024,6 +1100,10 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   function cards(scope,overview,prefix,options={}) {
     const nodes=new Map(all(scope,'.reader-card').map(element=>[element.dataset.readerCard,element]));
     for(const item of overview?.cards||[])add(nodes.get(item.id),item.label,`${prefix} · ${item.navGroup||'분야별 풀이'}`,options);
+  }
+  function supplements(scope,items,prefix,options={}) {
+    const nodes=new Map(all(scope,'[data-reading-supplement]').map(element=>[element.dataset.readingSupplement,element]));
+    for(const item of items||[])add(nodes.get(item.id),item.label,`${prefix} · 추가 해설`,options);
   }
   function materials(scope,prefix,{inMenu=false}={}) {
     for(const full of all(scope,'.reading-full-text').filter(element=>!element.classList.contains('reader-symbol-sources'))) {
@@ -1047,6 +1127,7 @@ function buildReadingPager(root,{reading,fortune,topic}) {
     for(const item of reading.personPortrait?.cards||[])add(portraitCards.get(item.id),item.label,'평생운 · 나의 성격');
     add(lifelong.querySelector('.portrait-previous .reader-intro'),'성격·적성의 다른 풀이','평생운 · 다른 성격 풀이');
     cards(lifelong,reading.reader?.lifelong,'평생운');
+    supplements(lifelong,reading.reader?.supplements?.lifelong,'평생운');
     add(find('reading-person-portrait-evidence'),'성격 풀이의 근거','근거와 자료',{kind:'support',inMenu:false});
     materials(lifelong,'평생운',{inMenu:true});
   }
@@ -1068,6 +1149,7 @@ function buildReadingPager(root,{reading,fortune,topic}) {
     const first=add(annual.querySelector('.reader-intro'),`${fortune.year}년 운세 요약`,`${fortune.year}년 올해운`,{showHeading:true});
     defaults.set(annual,first);
     cards(annual,reading.reader?.annual,`${fortune.year}년 올해운`);
+    supplements(annual,reading.reader?.supplements?.annual,`${fortune.year}년 올해운`);
     materials(annual,'올해운',{inMenu:true});
   }
   const months=find('reading-months');
@@ -1081,13 +1163,14 @@ function buildReadingPager(root,{reading,fortune,topic}) {
       const overview=element?.querySelector('.reader-overview');if(overview)defaults.set(overview,first);
       if(month===activeMonth)defaults.set(months,first);
       cards(element,overviews.get(month),group,{group,inMenu:false});
+      supplements(element,reading.reader?.supplements?.months.find(item=>item.month===month)?.cards,group,{group,inMenu:false});
       materials(element,`${month}월`);
       const timing=find(`reading-timings-month-${month}`)?.closest('.reader-timing-card');
       add(timing,`${month}월 기회와 주의점`,group,{inMenu:false});
       for(const part of all(timing,'.reader-timing-group'))add(part,part.querySelector('.reader-timing-kind').textContent,group,{inMenu:false});
     }
     const controls=months.querySelector('.months-controls');
-    add(controls,'월별 적용 기간','근거와 자료',{kind:'support',inMenu:false});
+    add(controls,'월별 적용 기간',`${fortune.year}년 월별운`,{kind:'support'});
     const expand=find('toggle-all-months');if(expand)expand.hidden=true;
     add(find('reading-month-navigation'),'달 선택 목록',`${fortune.year}년 월별운`,{kind:'contents',inMenu:false});
   }
@@ -1144,12 +1227,26 @@ function buildReadingPager(root,{reading,fortune,topic}) {
     const option=node('option','',page.label);option.value=page.id;groups.get(page.menuGroup).append(option);
   }
   const temporary=node('optgroup');temporary.label='지금 읽는 세부 내용';
+  const domainForPage=page=>page.element.closest('#reading-daeun')?'daeun'
+    :page.element.closest('#reading-annual')?'annual'
+    :page.element.closest('#reading-months,#reading-timings')?'monthly':'lifelong';
+  const picker=createReadingNavigator({select,pages,domainForPage,
+    domains:[{id:'lifelong',label:'평생운'},{id:'daeun',label:'대운'},{id:'annual',label:'올해운'},{id:'monthly',label:'월별운'}],
+    groupForPage:page=>String(page.menuGroup||page.group).replace(/^평생운\s*·\s*/,'')
+      .replace(/^\d+년 올해운\s*·\s*/,'').replace(/^\d+년 월별운$/,'월 선택')});
+  label.hidden=true;
   const controls=node('div','reading-pager-controls');
   const previous=node('button','reading-pager-step','이전');previous.type='button';
   const position=node('p','reading-page-position');position.id='reading-page-position';position.setAttribute('role','status');position.setAttribute('aria-live','polite');
   const next=node('button','reading-pager-step','다음');next.type='button';
-  controls.append(previous,position,next);navigation.append(label,select,controls);
+  controls.append(previous,position,next);
+  navigation.append(label,select,picker.element,controls);
+  picker.toggle.setAttribute('aria-describedby',position.id);
   const back=readingLink('다른 분야 고르기','reading-pager','reader-detail-link reading-back-to-picker');
+  back.addEventListener('click',event=>{
+    if(event.button||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    picker.focus({open:true});
+  });
 
   const managed=new Set();
   for(const page of pages) {
@@ -1166,6 +1263,10 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   const readable=pages.filter(page=>page.kind==='reading');
   function show(page,{move=false}={}) {
     if(!page)return false;
+    mapView?.revealDetail();
+    let transition=null;
+    if(move&&current&&current!==page)transition=motion?.prepare(Math.sign(pages.indexOf(page)-pages.indexOf(current)));
+    else motion?.cancel();
     const contexts=new Set();
     for(let ancestor=page.element;ancestor&&ancestor!==host;ancestor=ancestor.parentElement) {
       if(ancestor.tagName==='DETAILS') {
@@ -1174,6 +1275,9 @@ function buildReadingPager(root,{reading,fortune,topic}) {
       }
       if(ancestor.classList.contains('daeun-period')) {
         const dates=ancestor.querySelector('.daeun-dates');if(dates)contexts.add(dates);
+      }
+      if(ancestor.classList.contains('reader-daeun')) {
+        const notice=ancestor.querySelector(':scope > .daeun-time-notice');if(notice)contexts.add(notice);
       }
       if(ancestor.classList.contains('month-reading')) {
         const dates=ancestor.querySelector('.month-period');if(dates)contexts.add(dates);
@@ -1198,6 +1302,7 @@ function buildReadingPager(root,{reading,fortune,topic}) {
       temporary.append(option);select.append(temporary);
     }
     select.value=page.id;
+    picker.sync();
     const index=readable.indexOf(page),siblings=readable.filter(item=>item.group===page.group);
     const supporting=page.kind!=='reading';
     previous.textContent=supporting?'풀이로':'이전';
@@ -1207,9 +1312,11 @@ function buildReadingPager(root,{reading,fortune,topic}) {
     select.setAttribute('aria-describedby',position.id);
     page.element.append(back);
     if(move) {
-      page.focus.focus({preventScroll:true});
-      navigation.scrollIntoView({block:'start',behavior:document.documentElement.dataset.reducedMotion==='true'?'instant':'smooth'});
+      // Keep the picker or step button focused for consecutive keyboard choices.
+      // Links into the reading still focus their destination in readingLink().
+      navigation.scrollIntoView({block:'start',behavior:transition||document.documentElement.dataset.reducedMotion==='true'?'instant':'smooth'});
     }
+    motion?.finish(transition,page.element);
     return true;
   }
   function pageFor(target) {
@@ -1229,8 +1336,34 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   const initial=topic==='monthly'?defaults.get(months):defaults.get(lifelong||annual)||readable[0];
   show(initial);
   return {mount(container) {
+    const map=personalReadingMap(container,reading,fortune,topic,initial);
+    const monthMenu={label:'월별 세부 풀이',fieldLabel:'월 선택',periods:new Map(),currentId:'reading-month-'+activeMonth};
+    const ageMenu={label:'10년 대운 세부 풀이',fieldLabel:'나이 구간',periods:new Map(),currentId:daeun?.querySelector('.daeun-period.is-current')?.id};
+    const mainPages=[];
+    for(const page of pages) {
+      if(page.kind==='contents')continue;
+      const age=page.element.closest('.daeun-period');
+      const timing=page.element.closest('.reader-timing-card');
+      const month=page.element.closest('.month-reading') || (timing && months?.querySelector('#reading-month-'+timing.dataset.month));
+      const period=age||month;
+      if(!period) {
+        if(page.inMenu)mainPages.push(page);
+        continue;
+      }
+      const menu=age?ageMenu:monthMenu;
+      if(!menu.periods.has(period.id)) {
+        const label=age?age.querySelector('.daeun-age').textContent:(month.dataset.month || month.id.replace('reading-month-',''))+'월';
+        menu.periods.set(period.id,{label,pages:[]});
+      }
+      menu.periods.get(period.id).pages.push(page);
+    }
+    indexPages(map,mainPages,page=>page.menuGroup,[monthMenu,ageMenu]);
+    mapView=connectReadingMap(container,map);
     host=container;container.dataset.readerPaged='true';
+    motion=createReadingMotion(container,{getCurrentPage:()=>current?.element});
+    attachReadingSwipe(container,{previous,next,motion});
     readingPagers.set(container,{reveal:target=>{
+      if(mapView.contains(target))return false;
       if(!show(pageFor(target)))return false;
       for(let element=target;element&&element!==container;element=element.parentElement) {
         if(element.tagName==='DETAILS')element.open=true;
@@ -1274,7 +1407,7 @@ export function renderDetailedReport(container, {reading, fortune, topic}) {
     const section=sections?.find(value=>value.id===item);
     if (!section?.chapters?.length) throw new Error('선택한 풀이를 준비하지 못했어요.');
     fragment.append(reportSection(section,reading.adviceByCategory?.[item],reading.reader?.[item],item==='annual'?fortune.annual:null,
-      item==='lifelong'?reading.personPortrait:null,reading.facts,reading.reader?.scopeNotice));
+      item==='lifelong'?reading.personPortrait:null,reading.facts,reading.reader?.scopeNotice,reading.reader?.supplements?.[item]));
     if(item==='lifelong'&&reading.daeun) {
       fragment.append(daeunView(reading.daeun));
       relatedTopics.push(['대운 · 10년 흐름','reading-daeun']);
@@ -1303,6 +1436,7 @@ export function renderDetailedReport(container, {reading, fortune, topic}) {
   applyReadingSummaryViews(fragment,reading);
   applyReadingScoreViews(fragment,reading);
   const pager=buildReadingPager(fragment,{reading,fortune,topic});
+  if(reading.readingScope)fragment.append(readingScopeView(reading.readingScope,'reading-coverage'));
   container.replaceChildren(fragment);
   pager.mount(container);
 }

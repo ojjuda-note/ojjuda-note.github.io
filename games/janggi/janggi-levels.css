@@ -133,3 +133,8 @@ body .world-board-screen #bd-menu > .ge-board-entry[data-entry-key="janggi"] {
  }
  #bd-menu .ge-board-entry[data-entry-key="janggi"] .jg-entry-settings {gap: 14px;}
 }
+
+.jg-streaks table {width:100%;border-collapse:collapse;margin:8px 0;font-size:13px;font-variant-numeric:tabular-nums}
+.jg-streaks th,.jg-streaks td {padding:7px 3px;border-bottom:1px solid #dbe5dd;text-align:right}
+.jg-streaks th:first-child {text-align:left}
+.jg-streaks .note {text-align:left}

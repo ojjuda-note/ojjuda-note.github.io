@@ -1,19 +1,32 @@
-import { SajuPayment } from './payment.js?v=20261113-saju-lists1';
+import {readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
+import {readingScopeText} from './reading-scope.mjs?v=20261114-saju-final-review2';
+import { SajuPayment } from './payment.js?v=20261115-saju-reopen1';
 import { SajuCompatibilityPayment, COMPATIBILITY_PRICE } from './compatibility-payment.mjs?v=20261113-compatibility20-1';
-import { compatibilityScoreText } from './compatibility-score-view.mjs?v=20261114-saju-wind1';
-import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261114-saju-wind1';
+import { compatibilityScoreText } from './compatibility-score-view.mjs?v=20261114-saju-copy1';
+import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261115-saju-menus1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
-import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-easy1';
+import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-copy1';
+import { attachEntryFlow } from './entry-flow.mjs?v=20261115-saju-reopen1';
 
 const $=id=>document.getElementById(id);
 const form=$('compatibility-form'),button=$('compatibility-open');
+const savedOnly=new URL(window.location.href).searchParams.get('reading')==='saved';
+if(savedOnly) {
+  $('session-name').textContent='내 풀이 다시 보기';
+  document.querySelector('.saved-reading-nav').hidden=false;
+  for(const disclosure of form.querySelectorAll('.saved-people-disclosure'))disclosure.open=true;
+  $('pair-confirm-title').textContent='궁합 이용권 확인';
+  $('compatibility-price-note').textContent='같은 두 사람은 결제 후 24시간 동안 무료로 다시 볼 수 있어요.';
+}
+const entryFlow=attachEntryFlow(form);
 const people=['self','partner'];
 const motionQuery=window.matchMedia('(prefers-reduced-motion: reduce)');
 let reducedMotion=motionQuery.matches, motionOverride=false;
-let initialized=false,signedIn=false,busy=false,quoteBusy=false;
+let initialized=false,initFailed=false,signedIn=false,busy=false,quoteBusy=false;
 let generation=0,quoteGeneration=0,quote=null,current=null,quoteTimer,expiryTimer;
 let modulesPromise,readyPromise,compatibility;
 let zodiacModulePromise,zodiacPreviewGeneration=0;
+const NETWORK_READING_NOTICE='연결이 잠시 끊겼어요. 남은 이용 시간 동안 이 풀이를 계속 읽을 수 있어요. 다시 확인하려면 연결 후 ‘출생 정보 다시 보기’를 눌러 주세요.';
 
 function zodiacModule() {
   zodiacModulePromise ||= import('./zodiac.mjs?v=20261113-saju-easy1').catch(error=>{zodiacModulePromise=null;throw error;});
@@ -45,11 +58,9 @@ const billing=new SajuPayment({
   onBalance:()=>updateOffer(),
   onIdentityReady:()=>{for(const picker of profilePickers)picker.refresh();},
   onAccountChange:()=>{
-    generation++;quoteGeneration++;busy=false;quoteBusy=false;signedIn=false;readyPromise=null;
+    generation++;quoteGeneration++;busy=false;quoteBusy=false;initialized=false;initFailed=!billing.identityReady;signedIn=false;readyPromise=null;
     resetView(true);updateOffer();
-    if(billing.identityReady)Promise.resolve().then(()=>ready()).catch(error=>{
-      initialized=true;$('compatibility-error').textContent=requestError(error);$('compatibility-error').hidden=false;updateOffer();
-    });
+    if(billing.identityReady)Promise.resolve().then(()=>ready()).catch(()=>{});
   },
   onModeChange:()=>{
     if(initialized){generation++;quoteGeneration++;busy=false;quoteBusy=false;resetView(true);}
@@ -65,8 +76,12 @@ function options(select,start,end,suffix) {
 for(const person of people) {
   options($(person+'-month'),1,12,'월');options($(person+'-day'),1,31,'일');
   options($(person+'-hour'),0,23,'시');options($(person+'-minute'),0,59,'분');
-  $(person+'-year').max=String(Math.min(2050,Number(new Intl.DateTimeFormat('en',{year:'numeric',timeZone:'Asia/Seoul'}).format(new Date()))));
 }
+function updateBirthYearLimit() {
+  const max=String(Math.min(2050,Number(new Intl.DateTimeFormat('en',{year:'numeric',timeZone:'Asia/Seoul'}).format(new Date()))));
+  for(const person of people)$(person+'-year').max=max;
+}
+updateBirthYearLimit();
 const profileStore=new SajuSavedProfiles({getIdentity:()=>({userId:billing.identityReady?billing.user:null,anonymous:billing.anonymous===true})});
 const profilePickers=people.map((person,index)=>new SajuProfilePicker({
   element:$(person+'-saved-profiles'),store:profileStore,
@@ -90,6 +105,7 @@ function fillPerson(person,{name,gender,birth}) {
   $(person+'-hour').value=birth.hour===null?'':String(birth.hour);
   $(person+'-minute').value=birth.hour===null?'':String(birth.minute);
   changed();
+  entryFlow.refresh();
 }
 function updateFields() {
   for(const person of people) {
@@ -131,7 +147,7 @@ function resetView(clearInputs=false) {
 function expireCurrent() {
   if(!current||isCurrentActive())return false;
   generation++;clearResult();quote=null;
-  $('compatibility-status').textContent='24시간 이용이 끝났어요. 표시된 금액으로 다시 펼칠 때만 새로 결제해요.';
+  $('compatibility-status').textContent=savedOnly?'궁합 이용 시간이 끝났어요.':'24시간 이용이 끝났어요. 표시된 금액으로 다시 펼칠 때만 새로 결제해요.';
   return true;
 }
 function scheduleExpiry() {
@@ -143,21 +159,39 @@ function scheduleExpiry() {
 function updateOffer() {
   const offer=validQuote(),preview=!!billing.adminPreview;
   const active=Boolean(offer?.status?.entitlement&&compatibility?.isActive(offer.status.entitlement));
-  const charge=preview||active?0:COMPATIBILITY_PRICE;
+  const charge=savedOnly||preview||active?0:COMPATIBILITY_PRICE;
   button.dataset.expectedCharge=String(charge);
   $('compatibility-price').textContent=preview?'궁합 · 관리자 미리보기':active?'궁합 · 다시 보기 0쭈':`궁합 · ${COMPATIBILITY_PRICE}쭈`;
   $('compatibility-wallet').textContent=preview?'관리자 미리보기 · 차감 없음':signedIn&&Number.isSafeInteger(billing.balance)?`보유 ${new Intl.NumberFormat('ko-KR').format(billing.balance)}쭈`:initialized?'로그인 후 두 사람의 궁합을 펼칠 수 있어요.':'로그인과 보유 쭈를 확인하고 있어요.';
   $('compatibility-login').hidden=signedIn||preview;
-  button.disabled=busy||quoteBusy||!initialized;
+  button.disabled=busy||quoteBusy||(!initialized&&!initFailed);
   button.querySelector('span').textContent=busy?'두 사람의 궁합을 준비하고 있어요…':quoteBusy?'이용 내역 확인 중…':preview?'궁합 미리보기':active?'궁합 다시 보기 · 0쭈':`${COMPATIBILITY_PRICE}쭈로 궁합 펼치기`;
+  if(savedOnly) {
+    button.disabled=busy||quoteBusy||!initialized||!(active||preview);
+    if(!active&&!preview) {
+      const empty=offer?'두 사람의 이용권이 없어요':'이용권 확인 전';
+      $('compatibility-price').textContent=quoteBusy?'이용권 확인 중…':empty;
+      button.querySelector('span').textContent='궁합 다시 보기';
+    }
+    if(initFailed){
+      $('compatibility-price').textContent='궁합 내역을 불러오지 못했어요.';
+    }
+    $('compatibility-wallet').hidden=!initialized;
+    $('compatibility-login').hidden=!initialized||signedIn||preview;
+    $('pair-ticket-retry').hidden=Boolean(offer)||(!initFailed&&!signedIn)||!complete()||busy||quoteBusy;
+  }
   $('pair-swap').disabled=busy;$('compatibility-clear').disabled=busy;
   for(const picker of profilePickers)picker.setDisabled(busy);
   scheduleExpiry();
 }
 async function ready() {
   if(readyPromise)return readyPromise;
+  initFailed=false;
+  $('compatibility-error').hidden=true;
+  updateOffer();
   const task=(async()=>{
     const state=await billing.init();
+    if(readyPromise!==task)throw new Error('account_changed');
     if(!compatibility)compatibility=new SajuCompatibilityPayment(billing);
     signedIn=state.signedIn===true;initialized=true;
     for(const picker of profilePickers)picker.refresh();
@@ -165,13 +199,19 @@ async function ready() {
     updateOffer();return compatibility;
   })();
   readyPromise=task;
-  try{return await task;}catch(error){if(readyPromise===task)readyPromise=null;throw error;}
+  try{return await task;}catch(error){
+    if(readyPromise===task){
+      readyPromise=null;initFailed=true;
+      $('compatibility-error').textContent=requestError(error);$('compatibility-error').hidden=false;updateOffer();
+    }
+    throw error;
+  }
 }
 async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
-    import('./compatibility.mjs?v=20261114-saju-wind1'),
-    import('./report-view.mjs?v=20261114-saju-wind1'),
+    import('./compatibility.mjs?v=20261114-saju-final-review2'),
+    import('./report-view.mjs?v=20261115-saju-menus1'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
 }
@@ -191,19 +231,36 @@ async function refreshQuote() {
     quote={signature:saved,owner,mode:billing.modeVersion,chart,partner,status};
     expireCurrent();
     $('compatibility-error').hidden=true;
+    if($('compatibility-copy-status').textContent===NETWORK_READING_NOTICE)$('compatibility-copy-status').textContent='';
   }catch(error){
     if(id!==quoteGeneration||saved!==signature()||owner!==billing.user)return;
-    quote=null;
-    if(current)clearResult();
-    if(error?.name!=='SajuInputError'){$('compatibility-error').textContent=requestError(error);$('compatibility-error').hidden=false;}
+    const keepReading=error?.code==='network'&&isCurrentActive();
+    const keepQuote=error?.code==='network'&&compatibility?.isActive(validQuote()?.status?.entitlement);
+    if(!keepQuote)quote=null;
+    if(current&&!keepReading)clearResult();
+    if(keepReading) {
+      $('compatibility-error').hidden=true;
+      $('compatibility-copy-status').textContent=NETWORK_READING_NOTICE;
+    }else if(error?.name!=='SajuInputError'){
+      $('compatibility-error').textContent=requestError(error)+(keepQuote?' 남은 이용 시간은 그대로예요. 연결을 확인한 뒤 다시 펼쳐 주세요.':'');
+      $('compatibility-error').hidden=false;
+    }
   }finally{if(id===quoteGeneration){quoteBusy=false;updateOffer();}}
 }
 function changed() {
+  updateBirthYearLimit();
   generation++;quoteGeneration++;clearTimeout(quoteTimer);busy=false;quoteBusy=false;quote=null;clearResult();
   form.removeAttribute('aria-busy');form.querySelectorAll('fieldset').forEach(fieldset=>fieldset.disabled=false);
   $('compatibility-status').textContent='';$('compatibility-error').hidden=true;updateFields();updateOffer();
   if(!busy&&complete()&&(signedIn||billing.adminPreview))quoteTimer=setTimeout(()=>void refreshQuote(),180);
 }
+async function retryPairStatus() {
+  if(!initialized){
+    try {await ready();} catch {return;}
+  }
+  await refreshQuote();
+}
+$('pair-ticket-retry').addEventListener('click',retryPairStatus);
 form.addEventListener('input',changed);form.addEventListener('change',changed);
 $('pair-swap').addEventListener('click',()=>{
   const fields=['name','gender','year','month','day','calendar','hour','minute'];
@@ -218,6 +275,7 @@ $('pair-swap').addEventListener('click',()=>{
   }
   for(const picker of profilePickers)picker.resetSelection();
   changed();
+  entryFlow.refresh();
 });
 $('compatibility-clear').addEventListener('click',()=>{generation++;quoteGeneration++;quoteBusy=false;resetView(true);updateOffer();});
 
@@ -228,12 +286,12 @@ function copyText(reading,chart,partner,names) {
     const zodiac=reading.zodiac?.[person];
     if(zodiac)lines.push(`${labels[index]}: ${zodiac.label} · ${zodiac.note}`);
   }
-  lines.push(reading.title,'',compatibilityPeopleText(reading,names));
+  lines.push(reading.title,...readingScopeText(reading.readingScope),'',compatibilityPeopleText(reading,names));
   lines.push('',compatibilityScoreText(reading.score),'');
   lines.push(reading.headline);
   if(reading.scopeNotice)lines.push(reading.scopeNotice);
-  lines.push(...reading.paragraphs);
-  for(const card of reading.cards)lines.push('',card.label,card.title,...card.paragraphs);
+  lines.push(...readingDetailText(reading));
+  for(const card of reading.cards)lines.push('',card.label,card.title,...readingDetailText(card));
   return lines.join('\n');
 }
 function expiresLabel(access) {
@@ -243,7 +301,9 @@ function expiresLabel(access) {
 }
 form.addEventListener('submit',async event=>{
   event.preventDefault();
+  updateBirthYearLimit();
   if(busy||!form.reportValidity())return;
+  if(savedOnly&&!billing.adminPreview&&!compatibility?.isActive(validQuote()?.status.entitlement))return;
   const clickedCharge=Number(button.dataset.expectedCharge),saved=signature(),values=inputs(),names=personNames();
   const id=++generation;quoteGeneration++;clearTimeout(quoteTimer);quoteBusy=false;busy=true;
   $('compatibility-error').hidden=true;$('compatibility-status').textContent='';
@@ -268,7 +328,8 @@ form.addEventListener('submit',async event=>{
     if(id!==generation||saved!==signature()||owner!==billing.user||mode!==billing.modeVersion)return;
     quote={signature:saved,owner,mode,chart,partner,status};
     const required=billing.adminPreview||client.isActive(status.entitlement)?0:COMPATIBILITY_PRICE;
-    const receipt=await client.start(chart,partner,{expectedCharge:Math.min(clickedCharge,required)});
+    if(savedOnly&&required>0)throw new Error('이 두 사람의 궁합 이용 시간이 남아 있지 않아요.');
+    const receipt=await client.start(chart,partner,{expectedCharge:savedOnly?0:Math.min(clickedCharge,required)});
     if(id!==generation||saved!==signature()||owner!==billing.user||mode!==billing.modeVersion)return;
     if(!receipt?.ok||!client.isActive(receipt))throw new Error('이용 시간을 확인하지 못했어요. 표시된 금액을 확인하고 다시 펼쳐 주세요.');
     current={owner,mode,signature:saved,chart,partner,reading,copyText:text,access:receipt};
@@ -291,7 +352,8 @@ form.addEventListener('submit',async event=>{
   }
 });
 $('compatibility-edit').addEventListener('click',()=>{
-  generation++;clearResult();updateOffer();void refreshQuote();$('self-year').focus({preventScroll:true});
+  generation++;clearResult();updateOffer();void refreshQuote();entryFlow.reset();$('self-year').focus({preventScroll:true});
+  form.scrollIntoView({block:'start',behavior:reducedMotion?'instant':'smooth'});
 });
 $('compatibility-copy').addEventListener('click',async()=>{
   if(expireCurrent()){updateOffer();return;}
@@ -300,7 +362,7 @@ $('compatibility-copy').addEventListener('click',async()=>{
   catch{$('compatibility-copy-status').textContent='복사 권한을 확인해 주세요.';}
 });
 function refreshProfiles(){if(!busy)for(const picker of profilePickers)picker.refresh({preserveStatus:picker.statusElement.dataset.state==='error'});}
-function resume(){refreshProfiles();expireCurrent();updateOffer();if(!busy)void refreshQuote();}
+function resume(){updateBirthYearLimit();refreshProfiles();expireCurrent();updateOffer();if(!busy){if(savedOnly&&initFailed&&complete())void retryPairStatus();else void refreshQuote();}}
 window.addEventListener('focus',resume);window.addEventListener('pageshow',resume);
 window.addEventListener('storage',event=>{if(event.key===null||event.key?.startsWith(SAVED_PROFILES_PREFIX))refreshProfiles();});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')resume();});
@@ -315,4 +377,4 @@ for(const button of document.querySelectorAll('[data-reading-size] button,button
   });
 }
 updateFields();updateOffer();
-void ready().catch(error=>{initialized=true;$('compatibility-error').textContent=requestError(error);$('compatibility-error').hidden=false;updateOffer();});
+void ready().catch(()=>{});

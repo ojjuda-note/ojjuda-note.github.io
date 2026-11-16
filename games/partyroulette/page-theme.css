@@ -1,0 +1,244 @@
+/* The scene and controls share one landscape surface in both game modes. */
+body.dp-playing[data-dp-kind="partyroulette"] :is(#app, #view) :is(.play-body, #game):has(> .roulette-table) {
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0;
+  margin: 0;
+  background: #0d1915;
+}
+.roulette-table {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  flex: 1 0 auto;
+  width: 100%;
+  color: #f5efdf;
+  background: #12221c;
+}
+.roulette-scene {
+  position: relative;
+  isolation: isolate;
+  min-height: 150px;
+  overflow: hidden;
+  background: #08120e;
+}
+.roulette-scene > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.roulette-scene:has(.drum-zoom) > img { width: 74%; }
+.drum-zoom {
+  position: absolute;
+  right: 4%;
+  top: 50%;
+  width: clamp(64px, 30%, 180px);
+  aspect-ratio: 1;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+.roulette-panel {
+  display: flex;
+  flex-flow: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(8px, 2vmin, 20px);
+  padding: clamp(12px, 4vmin, 46px);
+  border-left: 1px solid #8e82554a;
+  background: linear-gradient(135deg, #1d3027, #101d18);
+  color: #f7efdd;
+  text-align: left;
+  word-break: keep-all;
+}
+body.dp-playing :is(#app,#view) .roulette-panel :is(h1,h2) {
+  margin: 0;
+  color: inherit;
+  font: 760 clamp(20px, 5.7vmin, 42px)/1.18 system-ui, sans-serif;
+  letter-spacing: -.045em;
+}
+.roulette-panel h2:focus { outline: none; }
+body.dp-playing :is(#app,#view) .roulette-panel p {
+  margin: 0;
+  color: #d2d7cb;
+  font: 460 clamp(14px, 3.6vmin, 20px)/1.45 system-ui, sans-serif;
+}
+body.dp-playing :is(#app,#view) .roulette-panel .actions { width: 100%; margin: 0; }
+body.dp-playing :is(#app,#view) .roulette-panel :is(.start,.quiet,.action) {
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 9px 14px;
+  border: 1px solid #e8c786;
+  border-radius: 9px;
+  background: linear-gradient(#edd19a, #d7b475);
+  box-shadow: inset 0 1px #fff3ce70, 0 3px 8px #0003;
+  color: #251e12;
+  font: 750 clamp(16px, 3.8vmin, 21px)/1.35 system-ui, sans-serif;
+}
+body.dp-playing #app .roulette-panel .roulette-target {
+  margin: 0;
+  color: #e1dece;
+  font-size: 15px;
+}
+body.dp-playing #app .roulette-panel select { margin: 0; padding: 5px 10px; font-size: 16px; }
+.draw-result[data-fired="true"] .roulette-panel { background: linear-gradient(130deg, #69472c, #38271e); }
+body.dp-playing #view .draw-result h1 { font-size: clamp(30px, 11vmin, 76px); }
+
+/* Preserve the site's navigation and result dialog when the play surface turns. */
+@media (orientation:portrait) {
+  #access-content[data-dp-kind="partyroulette"][data-roulette-angle]:is([data-roulette-angle="90"],[data-roulette-angle="-90"]) {
+    --roulette-rotated: 1;
+    position: fixed;
+    inset: 50% auto auto 50%;
+    width: 100vh; width: 100dvh;
+    height: 100vw; height: 100dvw;
+    transform: translate(-50%,-50%) rotate(var(--pr-angle));
+    transform-origin: center;
+    background: #faf7ed;
+  }
+}
+#access-content[data-roulette-angle="90"] { --pr-angle:90deg; }
+#access-content[data-roulette-angle="-90"] { --pr-angle:-90deg; }
+#access-content[data-roulette-angle="180"] { transform:rotate(180deg); }
+.roulette-table [hidden], .pr-reveal[hidden] { display:none !important; }
+.roulette-scene { display:grid; place-items:center; padding:clamp(7px,1.6vmin,18px); }
+.roulette-scene .pr-prop { width:min(100%,calc(132vmin - 90px)); }
+.roulette-panel .pr-target { display:grid; gap:5px; font-size:clamp(15px,2.6vmin,20px); color:#f7efdd; }
+.roulette-panel .pr-target select { width:100%; min-height:44px; font-size:16px; color:#211d15; background:#faf5e8; border-radius:8px; }
+body.dp-playing :is(#app,#view) .roulette-panel .pr-flip {
+  color:#e7dac3; background:transparent; border:1px solid #928268; min-height:36px; font-size:14px; padding:4px 10px;
+}
+.pr-wheel { touch-action:none; width:min(80%,34vmin,215px); aspect-ratio:1; position:relative; border-radius:50%;
+  border:5px solid #736e5e; box-shadow:0 3px 14px #0009,inset 0 0 0 2px #cebf99;
+  background:radial-gradient(circle at center,#25251f 0 7%,#ae9d77 8% 10%,transparent 11%),linear-gradient(130deg,#afa488,#4d4c40 45%,#827b64); }
+.pr-wheel i { position:absolute; aspect-ratio:1; border-radius:50%; transform:translate(-50%,-50%);
+  background:radial-gradient(circle at 65% 70%,#38382e,#0e100e 68%,#8c846e 82%); border:1px solid #292a23; }
+.pr-wheel i.loaded { background:radial-gradient(circle,#e5cb86 0 17%,#806032 19% 25%,#c9a962 27% 58%,#f0d99b 68%,#71592f 76%); }
+#game.pr-revealing > :is(.pr-winner,.pr-detail,.table-host) { visibility:hidden; }
+.pr-reveal { margin:auto; width:min(75%,480px); }
+@media (orientation:portrait) {
+  .roulette-table[data-step="load"] { grid-template-columns:1fr; grid-template-rows:minmax(100px,1fr) auto; }
+  .roulette-table[data-step="load"] .roulette-panel { border-left:0; border-top:1px solid #8e82554a; padding:16px; gap:10px; }
+}
+@media (max-height: 480px), (orientation: portrait) and (max-width: 480px) {
+  body.dp-playing[data-dp-kind="partyroulette"] :is(#app,#view) .table-heading { padding-block: 3px; }
+  body.dp-playing[data-dp-kind="partyroulette"] :is(#app,#view) .table-heading h1 { font-size: 17px; }
+  body.dp-playing[data-dp-kind="partyroulette"] :is(#app,#view) .table-mark { width: 24px; height: 24px; }
+}
+
+body.dp-playing[data-dp-kind="partyroulette"] {
+  --suite-bg:#15261f; --suite-surface:#23392e; --suite-subtle:#192d24;
+  --suite-ink:#f6efde; --suite-muted:#c8d2bd; --suite-accent:#e4bf7f;
+  --suite-accent-ink:#271e12; --suite-line:#b5be9b40;
+}
+body.dp-playing[data-dp-kind="partyroulette"] :is(#app,#view) .pr-prop button {
+  margin:0; padding:0; min-height:0; border:0; background:transparent; box-shadow:none;
+}
+
+/* The photograph, cylinder and trigger scale together in both phone orientations. */
+.roulette-table.pr-immersive, #game.pr-revealing > .pr-reveal {
+  position:fixed;
+  inset:0;
+  z-index:15;
+  display:block;
+  width:auto;
+  height:auto;
+  max-width:none;
+  margin:0;
+  padding:0;
+  overflow:hidden;
+  background:radial-gradient(ellipse at 12% 40%,#4c3524,#211b16 65%,#130f0d);
+}
+.roulette-table.pr-immersive .roulette-scene, #game.pr-revealing > .pr-reveal {
+  display:grid;
+  place-items:center;
+  container-type:size;
+}
+.roulette-table.pr-immersive .roulette-scene {
+  position:absolute;
+  inset:0;
+  min-height:0;
+  padding:0;
+  background:transparent;
+}
+:is(.roulette-table.pr-immersive,#game.pr-revealing > .pr-reveal) .pr-prop {
+  width:min(100%,230vmin);
+  width:min(100cqw,230cqh);
+  max-width:none;
+  margin:0;
+}
+:is(.roulette-table.pr-immersive,#game.pr-revealing > .pr-reveal) .pr-photo {
+  overflow:visible;
+  border-radius:0;
+  box-shadow:none;
+}
+body.dp-playing :is(#app,#view) .pr-immersive .roulette-panel {
+  position:absolute;
+  inset:0;
+  z-index:1;
+  display:flex;
+  flex-flow:row;
+  align-items:flex-end;
+  justify-content:flex-end;
+  gap:6px;
+  padding:max(8px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));
+  box-sizing:border-box;
+  border:0;
+  background:transparent;
+  pointer-events:none;
+}
+body.dp-playing :is(#app,#view) .pr-immersive .pr-caption {
+  margin-right:auto;
+  max-width:62%;
+  padding:5px 10px;
+  border-radius:10px;
+  background:#181510d9;
+}
+body.dp-playing :is(#app,#view) .pr-immersive .pr-caption h2 {
+  font-size:clamp(14px,3vmin,21px);
+}
+body.dp-playing :is(#app,#view) .pr-immersive .pr-caption p {
+  color:#f5ead7;
+  font-size:clamp(12px,2.4vmin,17px);
+  line-height:1.35;
+}
+body.dp-playing :is(#app,#view) .pr-immersive .roulette-panel :is(button,.pr-target) {
+  pointer-events:auto;
+  width:auto;
+  min-height:44px;
+}
+body.dp-playing :is(#app,#view) .pr-immersive :is(.pr-menu,.pr-flip,.pr-target) {
+  border:1px solid #e1cb9d80;
+  border-radius:10px;
+  padding:6px 12px;
+  color:#fff3da;
+  background:#211c16ec;
+}
+.pr-immersive .pr-menu {
+  position:absolute;
+  top:max(7px,env(safe-area-inset-top));
+  left:max(10px,env(safe-area-inset-left));
+}
+body.dp-playing #access-content:has(.pr-immersive) > header,
+body.dp-playing #access-content:has(.pr-immersive) :is(.table-heading,#view > .card > .actions) { visibility:hidden; }
+body.dp-playing #access-content:has(.pr-immersive) #notice:not(:empty) {
+  position:absolute;
+  top:6px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:24;
+  max-width:60%;
+  border-radius:8px;
+  padding:6px 12px;
+  color:#fff;
+  background:#251f1aee;
+}

@@ -8,7 +8,7 @@ export class TarotRevelation {
   constructor() {
     this.dialog = document.createElement('dialog');
     this.dialog.className = 'revelation-dialog';
-    this.dialog.setAttribute('aria-label', '마녀가 수정구에서 당신의 이야기를 읽고 있어요');
+    this.dialog.setAttribute('aria-label', '수정구에서 나의 이야기가 펼쳐지는 중');
     this.dialog.innerHTML = `
       <div class="revelation-world" aria-hidden="true">
         <img class="revelation-art" src="./assets/scene.webp" alt="" draggable="false">
@@ -36,7 +36,7 @@ export class TarotRevelation {
       <div class="revelation-copy" role="status" aria-live="polite" aria-atomic="true">
         <span class="revelation-kicker">달의 마녀 · 루나</span>
         <p class="revelation-caption">마녀가 별빛에 귀를 기울여요</p>
-        <span class="revelation-whisper">잠시, 당신의 이야기를 기다려 보세요.</span>
+        <span class="revelation-whisper">잠시 기다려 주세요. 세 장에 담긴 이야기를 이어 드릴게요.</span>
       </div>
       <button type="button" class="revelation-skip" autofocus>건너뛰기 <span aria-hidden="true">→</span></button>`;
     document.body.append(this.dialog);
@@ -107,7 +107,7 @@ export class TarotRevelation {
     const cue = name => { try { onCue(name); } catch { /* Sound must never block the reading. */ } };
     this._lastFocus = document.activeElement;
     this.caption.textContent = '마녀가 별빛에 귀를 기울여요';
-    this.whisper.textContent = '잠시, 당신의 이야기를 기다려 보세요.';
+    this.whisper.textContent = '잠시 기다려 주세요. 세 장에 담긴 이야기를 이어 드릴게요.';
     this.dialog.dataset.stage = 'gather';
     this.dialog.classList.toggle('is-reduced', reduced);
     this._promise = new Promise(resolve => { this._resolve = resolve; });
@@ -126,8 +126,8 @@ export class TarotRevelation {
     if (!reduced) cue('gather');
     this._later(() => {
       this.dialog.dataset.stage = 'receive';
-      this.caption.textContent = '당신의 이야기가 빛나기 시작해요';
-      this.whisper.textContent = '수정구에 담긴 속삭임을 전해 드릴게요.';
+      this.caption.textContent = '나의 이야기가 펼쳐진다';
+      this.whisper.textContent = '이제 세 장이 전하는 메시지를 들려드릴게요.';
     }, reduced ? 120 : 1450);
     if (!reduced) this._later(() => {
       this.dialog.dataset.stage = 'reveal';

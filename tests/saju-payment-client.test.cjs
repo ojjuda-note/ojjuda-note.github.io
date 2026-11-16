@@ -721,3 +721,22 @@ test('a response delayed beyond its deadline does not reveal or extend the purch
   await assert.rejects(p.payment.start(birth(), { ...annual, expectedCharge: 0 }), error => error.code === 'access_expired');
   assert.equal(server.coins.get(server.a), 40);
 });
+
+test('a concurrent auth refresh does not strand a member before the first reading lookup',async()=>{
+  const {server,page}=harness(),p=page();
+  await p.payment.init();p.payment.ready=false;
+  const first=deferred(),second=deferred(),firstEntered=deferred(),secondEntered=deferred();
+  let count=0;
+  server.beforeAdmin=()=>{
+    count++;
+    if(count===1){firstEntered.resolve();return first.promise;}
+    if(count===2){secondEntered.resolve();return second.promise;}
+  };
+  const initializing=p.payment.init();await firstEntered.promise;
+  const concurrent=p.context.window.OjjudaAdminPreview.refresh();await secondEntered.promise;
+  first.resolve();
+  try {assert.equal((await initializing).signedIn,true);}
+  finally {second.resolve();await concurrent;}
+  assert.equal(p.payment.adminPreview,false);
+  assert.ok(server.requests.every(request=>!request.name.includes('buy')));
+});

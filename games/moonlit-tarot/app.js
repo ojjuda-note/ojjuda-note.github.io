@@ -1,8 +1,8 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261113-tarot-easy1';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261114-tarot-first-person1';
 import { TarotFX, TarotAudio } from './fx.js';
-import { TarotPayment, getTarotPrice } from './payment.js?v=20261113-tarot-24h1';
-import { TarotRevelation } from './revelation.js?v=20261112-tarot-daily1';
-import { createPersonalReading } from './personal-reading-ui.js?v=20261113-tarot-easy1';
+import { TarotPayment, getTarotPrice } from './payment.js?v=20261114-tarot-copy1';
+import { TarotRevelation } from './revelation.js?v=20261114-tarot-first-person1';
+import { createPersonalReading } from './personal-reading-ui.js?v=20261114-tarot-first-person1';
 import { renderSectionSummary, installSummaryExpiryGuard } from './reading-summary-view.js?v=20261113-tarot-summary1';
 
 const $ = (selector) => document.querySelector(selector);
@@ -36,7 +36,7 @@ const billing = new TarotPayment({
     billingReady = false;
     clearTimeout(readingExpiryTimer);
     $('#summon-button').disabled = true;
-    $('#payment-status').textContent = '로그인이 바뀌었어요. 새로고침 후 다시 이용해 주세요.';
+    $('#payment-status').textContent = '로그인 계정이 바뀌었어요. 새로고침 후 다시 이용해 주세요.';
     $('#login-link').hidden = false;
   }
 });
@@ -64,7 +64,7 @@ function updatePaymentStatus() {
   $('.tarot-price strong').textContent = preview ? '관리자 모드' : `1회 ${getTarotPrice(state.topic)}쭈`;
   $('.tarot-price span').textContent = preview ? '쭈 차감 없음 · 기록 미저장' : '세 장의 풀이 · 종합 점괘 · 50가지 주제';
   $('#daily-limit-note').textContent = preview ? '횟수 제한 없이 매번 새로운 카드로 시작해요.' : '결제 후 24시간 이용 · 만료 후 재결제';
-  $('#help-usage-note').textContent = preview ? '쭈 차감·기록 저장 없이 횟수 제한 없이 이용해요. 일반 이용은 아지트에서 관리자 모드를 꺼 주세요.' : '전체 30쭈 · 연애·금전·일과 도전 각 10쭈. 결제 후 24시간 동안 다시 보기는 무료이며, 만료 후에는 다시 결제해요.';
+  $('#help-usage-note').textContent = preview ? '관리자 모드에서는 쭈를 차감하거나 기록을 저장하지 않아요. 일반 이용으로 돌아가려면 아지트에서 관리자 모드를 꺼 주세요.' : '전체 30쭈 · 연애·금전·일과 도전 각 10쭈. 결제 후 24시간 동안 다시 보기는 무료이며, 만료 후에는 다시 결제해요.';
   $('#restart-small span').textContent = preview ? '새 운세 보기' : '다른 주제 고르기';
   $('#restart-result span').textContent = preview ? '새 운세 보기' : '다른 주제 고르기';
   if (preview) {
@@ -87,7 +87,7 @@ function updatePaymentStatus() {
   $('#summon-button').dataset.replay = String(!unfinished && !!previous);
   $('#summon-button span').textContent = unfinished ? '진행하던 운세 이어보기' : previous ? (previous.openOrder.length === 3 ? '점괘 다시 보기' : '점괘 이어보기') : `${getTarotPrice(state.topic)}쭈로 운세 시작하기`;
   const expires = previous ? new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(previous.reset_at)) : '';
-  $('#payment-status').textContent = unfinished ? '시작하던 운세를 이어서 확인해요.' : previous ? `${expires}까지 다시 보기 무료${balance ? ' · ' + balance : ''}` : balance;
+  $('#payment-status').textContent = unfinished ? '진행하던 운세를 이어서 확인해 주세요.' : previous ? `${expires}까지 다시 보기 무료${balance ? ' · ' + balance : ''}` : balance;
   $$('[data-topic]').forEach(button => {
     button.disabled = !!unfinished || state.busy;
     button.dataset.readToday = String(!!billing.receiptFor(button.dataset.topic));
@@ -375,7 +375,7 @@ async function summon() {
       return;
     }
     state.drawn = receipt ? receipt.drawn.map(id => DECK.find(card => card.id === id)) : randomDeck();
-    if (state.drawn.length !== 5 || state.drawn.some(card => !card) || new Set(state.drawn.map(card => card.id)).size !== 5) throw new Error('카드를 불러오지 못했어요. 다시 눌러 같은 운세를 확인해 주세요.');
+    if (state.drawn.length !== 5 || state.drawn.some(card => !card) || new Set(state.drawn.map(card => card.id)).size !== 5) throw new Error('카드를 불러오지 못했어요. 시작 버튼을 다시 눌러 같은 운세를 이어서 확인해 주세요.');
     if (receipt) state.topic = receipt.topic;
   } catch (error) {
     if (epoch !== state.epoch || expireDisplayedReading()) return;
@@ -523,7 +523,7 @@ async function discardCard(index) {
   if (state.discarded.size < 2) {
     setPhase('discard');
     effects.setMood('idle');
-    setTitle('한 장 더 버려주세요', '', 'THE CHOICE');
+    setTitle('한 장 더 버려 주세요', '', 'THE CHOICE');
     setOracle('남길 카드에 마음을 기울여 보렴.', { tag: '마녀의 속삭임' });
     updateDiscardProgress();
     cards.find(item => !state.discarded.has(item.index))?.button.focus({ preventScroll: true });
@@ -758,7 +758,7 @@ function showReading(slot = state.lastReading) {
 }
 
 function showOverallOracle(summary = getSummary(state.openOrder.map(index => state.drawn[index]), state.topic)) {
-  setOracle(state.summaryReady ? summary.oneLine : '세 장의 이야기를 함께 살펴보렴.', { tag: state.summaryReady ? '종합 점괘 · 한마디 정리' : '종합 점괘', speak: false });
+  setOracle(state.summaryReady ? summary.oneLine : '세 장에 담긴 나의 이야기를 함께 살펴본다.', { tag: state.summaryReady ? '종합 점괘 · 핵심 풀이' : '종합 점괘', speak: false });
   $('#reading-open span').textContent = '종합 점괘 자세히 보기';
   $('#reading-open').hidden = false;
   $('#reading-open').disabled = false;
@@ -817,15 +817,11 @@ function renderDomainCategories(panel, group, cardNames) {
   controls.append(label, total, select);
   panel.append(controls);
   if (group.description) {
-    const basis = document.createElement('details');
-    basis.id = 'summary-domain-basis';
-    basis.className = 'reading-source domain-basis';
-    const title = document.createElement('summary');
-    title.textContent = '풀이 기준';
     const description = document.createElement('p');
+    description.id = 'summary-domain-description';
+    description.className = 'domain-description';
     description.textContent = group.description;
-    basis.append(title, description);
-    panel.append(basis);
+    panel.append(description);
   }
   const sections = document.createElement('div');
   sections.id = 'summary-domain-sections';
@@ -833,6 +829,99 @@ function renderDomainCategories(panel, group, cardNames) {
   renderReadingSections(sections, group.sections, '', 'h3', cardNames);
   panel.append(sections);
   selectDomainCategory(panel, group.categories[0].id);
+}
+
+const SUMMARY_DETAIL_TITLE = '함께 읽는 종합 해석';
+
+function renderSummaryDetails(panel, sections, cardNames, id = 'summary-detail', heading = SUMMARY_DETAIL_TITLE) {
+  if (!Array.isArray(sections) || !sections.length) return;
+  const details = document.createElement('details');
+  details.id = id;
+  details.className = 'reading-source';
+  const title = document.createElement('summary');
+  title.textContent = heading;
+  const content = document.createElement('div');
+  content.id = `${id}-sections`;
+  content.className = 'reading-sections';
+  renderReadingSections(content, sections, '', 'h3', cardNames);
+  details.append(title, content);
+  panel.append(details);
+}
+
+function appendCardReference(parent, reference) {
+  if (!reference?.url) return;
+  const paragraph = document.createElement('p');
+  const link = document.createElement('a');
+  link.href = reference.url;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.textContent = `${reference.label || '참고한 자료 읽기'} ↗`;
+  paragraph.append(link);
+  parent.append(paragraph);
+}
+
+function renderCardIntroductions(panel, group, cardNames) {
+  if (group.description) {
+    const description = document.createElement('p');
+    description.className = 'card-introduction-description';
+    description.textContent = group.description;
+    panel.append(description);
+  }
+  const entries = document.createElement('div');
+  entries.id = 'card-introductions';
+  renderReadingSections(entries, group.sections, '', 'h3', cardNames);
+  group.sections.forEach((part, index) => {
+    const section = entries.children[index];
+    const card = DECK.find(value => value.id === part.cardId);
+    if (card) {
+      const art = document.createElement('div');
+      art.className = 'result-card-art card-introduction-art';
+      art.setAttribute('role', 'img');
+      art.setAttribute('aria-label', `${card.name} 카드 그림`);
+      applyArtwork(art, card);
+      const heading = section.querySelector('h3');
+      const intro = document.createElement('div');
+      intro.className = 'card-introduction-heading';
+      heading.before(intro);
+      intro.append(art, heading);
+    }
+    if (part.nameGuide) {
+      const details = document.createElement('details');
+      details.className = 'reading-name-help';
+      const title = document.createElement('summary');
+      title.textContent = '카드 이름 더 알아보기';
+      const description = document.createElement('p');
+      description.textContent = part.nameGuide;
+      details.append(title, description);
+      section.append(details);
+    }
+    renderSummaryDetails(section, part.detailSections, cardNames, `card-source-${index}`, '카드의 뜻과 주의점 더 보기');
+    const references = document.createElement('details');
+    references.className = 'reading-source card-introduction-reference';
+    const title = document.createElement('summary');
+    title.textContent = '참고 자료와 다른 해석';
+    references.append(title);
+    appendCardReference(references, part.reference);
+    if (part.sourceNote) {
+      const explanation = document.createElement('p');
+      explanation.textContent = part.sourceNote.body;
+      references.append(explanation);
+      appendCardReference(references, part.sourceNote.reference);
+    }
+    section.append(references);
+  });
+  panel.append(entries);
+  renderSummaryDetails(panel, group.detailSections, cardNames, 'card-connections-detail', '세 카드를 함께 읽는 법');
+  if (group.basisParagraphs?.length) {
+    const details = document.createElement('details');
+    details.id = 'card-reading-basis';
+    details.className = 'reading-source';
+    const title = document.createElement('summary');
+    title.textContent = '풀이 방식과 범위';
+    details.append(title);
+    appendReadingParagraphs(details, group.basisParagraphs);
+    panel.append(details);
+  }
 }
 
 function renderSummaryGroups(summary, cardNames) {
@@ -855,12 +944,14 @@ function renderSummaryGroups(summary, cardNames) {
     panel.setAttribute('role', 'tabpanel');
     panel.setAttribute('aria-labelledby', tab.id);
     panel.tabIndex = 0;
-    if (group.id === 'domains' && group.categories?.length) renderDomainCategories(panel, group, cardNames);
-    else renderReadingSections(panel, group.sections, '', 'h3', cardNames);
+    if (group.id === 'cards') renderCardIntroductions(panel, group, cardNames);
+    else if (group.id === 'domains' && group.categories?.length) renderDomainCategories(panel, group, []);
+    else renderReadingSections(panel, group.sections, '', 'h3', []);
+    if (group.id === 'problem') renderSummaryDetails(panel, summary.detailSections, []);
     tabs.append(tab);
     panels.append(panel);
   });
-  selectSummaryGroup(groups.some(group => group.id === 'problem') ? 'problem' : groups[0].id);
+  selectSummaryGroup(groups[0].id);
 }
 
 function buildResults() {
@@ -869,10 +960,11 @@ function buildResults() {
   const topic = TOPICS.find(t => t.id === state.topic);
   const readingDate = !billing.adminPreview && billing.record?.readingDay ? new Date(`${billing.record.readingDay}T12:00:00+09:00`) : new Date();
   $('#result-date').textContent = `${new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' }).format(readingDate)} · ${topic.label}${billing.adminPreview ? ' · 관리자 모드' : ''}`;
-  $('#result-title').textContent = '당신을 위한 종합 점괘';
+  $('#result-title').textContent = '나를 위한 종합 점괘';
   renderSummaryGroups(summary, drawn.map(card => card.name));
   if (personalReading?.mount({ cards: drawn, topicId: state.topic }) === false) return;
   $('#summary-ritual').textContent = summary.ritual;
+  $('#summary-ritual').closest('.ritual').hidden = !!summary.ritualInReading;
   showOverallOracle(summary);
 }
 
@@ -923,6 +1015,7 @@ async function showResultsWithRevelation() {
   if (ready && state.phase === 'complete' && state.revealed === 3) {
     state.summaryReady = true;
     showOverallOracle();
+    selectSummaryGroup('cards');
     openDialog('result-dialog');
   }
 }
@@ -933,24 +1026,51 @@ async function copyResult() {
   const drawn = state.openOrder.map(i => state.drawn[i]);
   const summary = getSummary(drawn, state.topic);
   const parts = ['오쭈다 · 달의 마녀 타로', '종합 점괘', $('#result-date').textContent, ''];
+  const appendSection = section => {
+    parts.push(section.number ? `${section.number}. ${section.title}` : section.title);
+    if (section.subtitle) parts.push(section.subtitle);
+    narrativeParagraphs(section.paragraphs, section.body || '').forEach(paragraph => parts.push(paragraph, ''));
+  };
+  const appendReference = reference => {
+    if (reference?.url) parts.push(`${reference.label || '참고 자료'}: ${reference.url}`, '');
+  };
   summaryGroups(summary).forEach(group => {
     parts.push(group.label, '');
     if (group.description) parts.push(group.description, '');
-    const appendSection = section => {
-      parts.push(section.number ? `${section.number}. ${section.title}` : section.title);
-      if (section.subtitle) parts.push(section.subtitle);
-      narrativeParagraphs(section.paragraphs, section.body || '').forEach(paragraph => parts.push(paragraph, ''));
-    };
     if (group.categories?.length) {
       group.categories.forEach(category => {
         parts.push(category.label, '');
         group.sections.filter(section => section.categoryId === category.id).forEach(appendSection);
       });
-    } else group.sections.forEach(appendSection);
+    } else group.sections.forEach(section => {
+      appendSection(section);
+      if (group.id !== 'cards') return;
+      if (section.nameGuide) parts.push('카드 이름 더 알아보기', section.nameGuide, '');
+      if (section.detailSections?.length) {
+        parts.push('카드의 뜻과 주의점 더 보기', '');
+        section.detailSections.forEach(appendSection);
+      }
+      appendReference(section.reference);
+      if (section.sourceNote) {
+        parts.push('다르게 읽는 풀이', section.sourceNote.body, '');
+        appendReference(section.sourceNote.reference);
+      }
+    });
+    if (group.id === 'cards') {
+      if (group.detailSections?.length) {
+        parts.push('세 카드를 함께 읽는 법', '');
+        group.detailSections.forEach(appendSection);
+      }
+      if (group.basisParagraphs?.length) parts.push('풀이 방식과 범위', ...group.basisParagraphs, '');
+    }
+    if (group.id === 'problem' && Array.isArray(summary.detailSections) && summary.detailSections.length) {
+      parts.push(SUMMARY_DETAIL_TITLE, '');
+      summary.detailSections.forEach(appendSection);
+    }
   });
   parts.push(...(personalReading?.copyLines() || []));
   if (epoch !== state.epoch || expireDisplayedReading()) return;
-  parts.push(`이렇게 해 보세요: ${summary.ritual}`, '', '타로의 전통 해석이에요. 미래를 확정하지 않아요.');
+  if (!summary.ritualInReading) parts.push(`이렇게 해 보세요: ${summary.ritual}`, '');
   const text = parts.join('\n');
   try {
     if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
@@ -1090,9 +1210,9 @@ $$('[data-topic]').forEach(button => button.addEventListener('click', () => {
   $$('[data-topic]').forEach(b => { b.classList.toggle('active', b === button); b.setAttribute('aria-pressed', String(b === button)); });
   const invitations = {
     overall: '오늘 마음에 남은 일을 하나 떠올려 봐.',
-    love: '지금 네 마음을 함께 살펴보자.',
+    love: '지금 내 마음을 차분히 살펴본다.',
     money: '돈에 관해 마음에 걸리는 일을 떠올려 보렴.',
-    work: '지금 가진 힘과 필요한 도움을 살펴보자.',
+    work: '지금 살릴 강점과 필요한 도움을 짚어 보자.',
   };
   setOracle(invitations[state.topic], { tag: '마녀의 초대' });
   updatePaymentStatus();
@@ -1215,7 +1335,7 @@ function restorePaidReading(receipt) {
   } else {
     setPhase('discard');
     updateDiscardProgress();
-    setTitle(state.discarded.size ? '한 장 더 버려주세요' : '버릴 카드 두 장을 고르세요', '누르면 바로 버려져요.', 'WELCOME BACK');
+    setTitle(state.discarded.size ? '한 장 더 버려 주세요' : '버릴 카드 두 장을 고르세요', '누르면 바로 버려져요.', 'WELCOME BACK');
   }
   if (state.revealed > 0 && state.revealed < 3) {
     const data = state.drawn[state.openOrder[state.lastReading]];
@@ -1224,7 +1344,7 @@ function restorePaidReading(receipt) {
     $('#reading-open').hidden = false;
     $('#reading-open').disabled = false;
     $('#reading-open span').textContent = '이 카드의 이야기 자세히 읽기';
-  } else if (!state.revealed) setOracle('아까의 이야기를 이어가 보자.', { tag: '이어보기', speak: false });
+  } else if (!state.revealed) setOracle('아까의 이야기를 이어 가자.', { tag: '이어보기', speak: false });
   effects.setMood(state.kept.length ? 'reading' : 'idle');
   layout(false);
   updatePaymentStatus();
@@ -1252,7 +1372,7 @@ async function initializeBilling() {
       });
       updatePaymentStatus();
       $('#summon-button span').textContent = '같은 운세 다시 확인하기';
-      $('#payment-status').textContent = '시작하던 운세를 이어서 확인해요. 같은 운세의 이용 금액은 한 번만 사용돼요.';
+      $('#payment-status').textContent = '진행하던 운세를 이어서 확인해 주세요. 같은 운세의 이용 금액은 한 번만 차감돼요.';
     }
     else if (result.signedIn === false) {
       $('#payment-status').textContent = '아지트에 로그인한 뒤 이용해 주세요.';
@@ -1288,8 +1408,7 @@ personalReading = createPersonalReading({
   }),
   canRead: () => !expireDisplayedReading(),
   renderSections: renderReadingSections,
-  renderText: setReadingText,
-  selectGroup: selectSummaryGroup
+  renderText: setReadingText
 });
 installSummaryExpiryGuard(expireDisplayedReading);
 void initializeBilling();

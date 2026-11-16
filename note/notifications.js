@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  const COPY = Object.freeze({ visit_gift: '방문 선물', group_invite: '그룹 초대가 도착했어요.', daily_update: '오쭈다에 변경된 내용이 있어요.', broadcast_update: '오쭈다에 새 소식이 있어요.', world_message: '친구에게 새 쪽지가 도착했어요.', reply: '내 카드에 새 답글이 달렸어요.', like: '내 카드에 좋아요가 도착했어요.', inquiry_reply: '내 문의에 답변이 도착했어요.', world_guestbook: '새 방명록이 도착했어요.', world_friend_request: '새 친구 신청이 도착했어요.', world_friend_accepted: '친구 신청이 수락됐어요.', world_comment: '내 사진·영상에 새 댓글이 달렸어요.' });
+  const COPY = Object.freeze({ drinking_invite:'친구가 술게임방에 초대했어요.', visit_gift: '방문 선물', group_invite: '그룹 초대가 도착했어요.', daily_update: '오쭈다에 변경된 내용이 있어요.', broadcast_update: '오쭈다에 새 소식이 있어요.', world_message: '친구에게 새 쪽지가 도착했어요.', reply: '내 카드에 새 답글이 달렸어요.', like: '내 카드에 좋아요가 도착했어요.', inquiry_reply: '내 문의에 답변이 도착했어요.', world_guestbook: '새 방명록이 도착했어요.', world_friend_request: '새 친구 신청이 도착했어요.', world_friend_accepted: '친구 신청이 수락됐어요.', world_comment: '내 사진·영상에 새 댓글이 달렸어요.' });
   const el = (tag, text, cls) => { const item = document.createElement(tag); if (text !== undefined) item.textContent = text; if (cls) item.className = cls; return item; };
   const button = (text, action, cls = 'button') => { const item = el('button', text, cls); item.type = 'button'; item.addEventListener('click', action); return item; };
   const updateLines = (kind, summary) => (kind === 'daily_update' ? summary.split(' · ') : summary
@@ -56,11 +56,12 @@
   }
   let instance;
 
-  function install({ client, getUserId = () => null, onOpenCard, onOpenInquiry, onKeepCard, onOpenWorld, onGiftClaimed, onOpenGroup = id => location.assign('/groups/#room=' + encodeURIComponent(id)) } = {}) {
+  function install({ client, getUserId = () => null, refreshClosedBadge = true, onOpenCard, onOpenInquiry, onKeepCard, onOpenWorld, onGiftClaimed, onOpenGroup = id => location.assign('/groups/#room=' + encodeURIComponent(id)) } = {}) {
     if (instance || !client?.schema || !client?.auth) return instance;
     let identity = getUserId() || null, identityRun = 0, viewRun = 0, listRun = 0, countRun = 0;
     let items = [], retentionItems = [], cursor = null, snapshotAt = null, hasMore = false;
     let notificationUnread = 0, retentionUnread = 0, unread = 0, loading = false, saving = false, loadError = '';
+    let readRefreshPending = false, readRefreshQueued = false;
     let countRequest = null, lastRefresh = 0, priorFocus = null, priorOverflow = '', inertState = [];
     const trigger = button('알림', () => open(), 'btn nn-trigger'); trigger.id = 'note-notifications';
     const badge = el('span', '', 'nn-badge'); badge.id = 'note-notification-badge'; badge.hidden = true; badge.setAttribute('aria-hidden', 'true'); trigger.append(badge);
@@ -96,12 +97,37 @@
       const slot=document.querySelector('[data-notifications-slot]');if(slot&&trigger.parentElement!==slot)slot.append(trigger);
       syncBadges();
     }
-    function announceRead(run,user) {
-      if(!current(run,user))return;
-      channel?.postMessage({type:'read',user});countRequest=null;lastRefresh=0;
-      if(layer.hidden)void refreshCount(true);
+    function scheduleReadRefresh() {
+      if (!readRefreshPending || readRefreshQueued) return;
+      readRefreshQueued = true;
+      queueMicrotask(() => {
+        readRefreshQueued = false;
+        if (!readRefreshPending || !identity || identity !== userNow() ||
+            document.visibilityState === 'hidden' || loading || saving) return;
+        if (!layer.hidden) void loadPage();
+        else if (!countRequest?.afterRead) {
+          // A pre-read snapshot is obsolete. Start one fresh count immediately;
+          // later read events share a trailing count if this one is still busy.
+          countRequest = null;
+          void refreshCount(true);
+        }
+      });
     }
-    if(channel)channel.onmessage=event=>{if(event.data?.type==='read'&&event.data.user===userNow()){countRequest=null;lastRefresh=0;void refresh({force:true});}};
+    function invalidateRead() {
+      if (!identity || identity !== userNow()) return;
+      readRefreshPending = true;
+      countRun++;
+      lastRefresh = 0;
+      scheduleReadRefresh();
+    }
+    function announceRead(run,user) {
+      if (!current(run,user)) return;
+      invalidateRead();
+      channel?.postMessage({type:'read',user});
+    }
+    if (channel) channel.onmessage = event => {
+      if (event.data?.type === 'read' && event.data.user === userNow()) invalidateRead();
+    };
     document.addEventListener('click',event=>{if(event.target.closest('[data-notifications-open]')){event.preventDefault();open();}});
     const userNow = () => getUserId() || null;
     const current = (run, user) => run === identityRun && user === identity && user === userNow();
@@ -128,6 +154,7 @@
       for (const control of rows.querySelectorAll('button')) control.disabled = loading || saving;
       for (const control of footer.querySelectorAll('button')) control.disabled = loading || saving;
       rows.setAttribute('aria-busy', String(loading || saving));
+      if (!loading && !saving) scheduleReadRefresh();
     }
     function clearView() {
       viewRun++; listRun++; loading = false; saving = false; items = []; retentionItems = [];
@@ -145,7 +172,7 @@
     }
     function changeIdentity(next) {
       if (next === identity) return false;
-      identityRun++; countRun++; countRequest = null; lastRefresh = 0; close(); identity = next; setUnread(0, 0);
+      identityRun++; countRun++; readRefreshPending = false; countRequest = null; lastRefresh = 0; close(); identity = next; setUnread(0, 0);
       return true;
     }
     function showEmpty(text) { const row = el('li', text, 'nn-empty'); rows.replaceChildren(row); }
@@ -162,8 +189,9 @@
         && typeof item.summary === 'string' && item.summary.length <= 200;
       const text = update ? updateCopy(item.kind, item.summary) : el('p', retention
         ? item.reason === 'parent_due' ? '상위 카드와 함께 공개 종료 예정이에요.' : '내 카드가 곧 공개 종료돼요.'
+        : item.kind === 'drinking_invite' ? `${item.sender_name || '친구'}님이 ‘${item.room_title || '술게임방'}’에 초대했어요.`
         : item.kind === 'group_invite' && item.group_name ? `${item.sender_name || '방장'}님이 ‘${item.group_name}’ 그룹에 초대했어요.` : COPY[item.kind], 'nn-copy');
-      const meta = el('div', undefined, 'nn-meta'), source = el('span',item.source==='updates'?'오쭈다':item.kind==='group_invite'?'그룹':item.kind==='inquiry_reply'?'문의':item.source==='world'?(item.kind==='world_message'?'쪽지':'친구'):'익명카드','nn-source'), state = el('span', item.read_at ? '읽음' : '안 읽음');
+      const meta = el('div', undefined, 'nn-meta'), source = el('span',item.source==='updates'?'오쭈다':item.kind==='drinking_invite'?'술게임':item.kind==='group_invite'?'그룹':item.kind==='inquiry_reply'?'문의':item.source==='world'?(item.kind==='world_message'?'쪽지':'친구'):'익명카드','nn-source'), state = el('span', item.read_at ? '읽음' : '안 읽음');
       const time = el('time'); const created = new Date(item.created_at);
       if (Number.isFinite(created.getTime())) { time.dateTime = created.toISOString(); time.textContent = created.toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
       if (gift) {
@@ -183,10 +211,11 @@
       } else row.append(text);
       const actions = el('div', undefined, 'nn-actions');
       if (gift && !item.claimed) actions.append(button('확인', () => void claimGift(item)));
-      if (item.kind === 'group_invite' && UUID.test(item.target_id || '')) {
+      if (['group_invite','drinking_invite'].includes(item.kind) && UUID.test(item.target_id || '')) {
         for (const [action, label] of [['accept','수락'],['decline','거절']]) {
-          const control = button(label, () => void respondGroupInvite(item, action));
-          control.dataset.groupInviteAction = action; actions.append(control);
+          const control = button(label, () => void respondInvite(item, action));
+          if(item.kind==='group_invite') control.dataset.groupInviteAction=action;
+          else control.dataset.drinkingInviteAction=action; actions.append(control);
         }
       }
       const world=item.source==='world';
@@ -199,14 +228,16 @@
       if (!gift && !item.read_at) { const readButton = button('읽음 표시', () => void (retention ? markRetentionRead(item) : markRead([item.id]))); readButton.dataset.notificationRead = item.id; actions.append(readButton); }
       row.append(meta, actions); return row;
     }
-    function render() {
+    function render(retryMore = false) {
       const focusId = document.activeElement?.closest('[data-notification-id]')?.dataset.notificationId;
-      const visible = noticeItems();
-      rows.replaceChildren(...visible.map(rowFor));
-      if (!visible.length) showEmpty(loadError?'알림을 불러오지 못했어요.':'아직 받은 알림이 없어요.');
+      if (!retryMore) {
+        const visible = noticeItems();
+        rows.replaceChildren(...visible.map(rowFor));
+        if (!visible.length) showEmpty(loadError?'알림을 불러오지 못했어요.':'아직 받은 알림이 없어요.');
+      }
       footer.replaceChildren();
-      if (hasMore && cursor) { const more = button('알림 더 보기', () => void loadPage(true)); more.id = 'note-notifications-more'; footer.append(more); }
-      if (loadError) footer.append(button('다시 시도', () => void loadPage()));
+      if (!retryMore && hasMore && cursor) { const more = button('알림 더 보기', () => void loadPage(true)); more.id = 'note-notifications-more'; footer.append(more); }
+      if (loadError) footer.append(button('다시 시도', () => void loadPage(retryMore)));
       updateControls();
       if (focusId) [...rows.children].find(row=>row.dataset.notificationId===focusId)?.querySelector('button')?.focus({ preventScroll: true });
       keepFocus();
@@ -215,6 +246,7 @@
       if (loading || saving || layer.hidden || !identity || identity !== userNow()) return;
       const run = identityRun, user = identity, view = viewRun, request = ++listRun;
       const after = more ? cursor : null;
+      if (!more) readRefreshPending = false;
       loading = true; countRun++; status.textContent = '알림을 불러오는 중이에요.';
       updateControls(); keepFocus();
       const requests = [rpc('list_notifications', { p_limit: 30,
@@ -222,6 +254,10 @@
       if (!more) requests.push(rpc('list_retention_alerts'));
       const results = await Promise.allSettled(requests);
       if (!currentView(run, user, view) || request !== listRun) return;
+      if (readRefreshPending && document.visibilityState === 'visible') {
+        loading = false;
+        return loadPage();
+      }
       const normal = results[0], retention = results[1];
       let generalOk = false, retentionOk = more;
       if (normal.status === 'fulfilled' && normal.value && Array.isArray(normal.value.items)) {
@@ -244,15 +280,18 @@
         : !generalOk ? '일반 알림을 불러오지 못했어요.'
           : !retentionOk ? '삭제 예정 카드 목록을 불러오지 못했어요.' : '';
       status.textContent = loadError ? `${loadError} 다시 시도해 주세요.` : '';
-      if (generalOk || retentionOk) lastRefresh = Date.now();
-      render(); return !loadError;
+      if (generalOk || (!more && retentionOk)) lastRefresh = Date.now();
+      render(more && !generalOk); return !loadError;
     }
     async function refreshCount(force = false) {
+      if (!refreshClosedBadge && layer.hidden) return;
       const user = identity, run = identityRun;
       if (!user || user !== userNow() || document.visibilityState === 'hidden') return;
       if (countRequest?.user === user && countRequest.run === run) return countRequest.promise;
-      if (!force && Date.now() - lastRefresh < 15000) return;
-      const request = ++countRun, holder = { user, run, promise: null }; countRequest = holder;
+      if (!force && !readRefreshPending && Date.now() - lastRefresh < 15000) return;
+      const request = ++countRun, holder = { user, run, afterRead: readRefreshPending, promise: null };
+      readRefreshPending = false;
+      countRequest = holder;
       holder.promise = (async () => {
         try {
           try {
@@ -281,7 +320,12 @@
             if (normalOk || retentionOk) lastRefresh = Date.now();
           }
         }
-        finally { if (countRequest === holder) countRequest = null; }
+        finally {
+          if (countRequest === holder) {
+            countRequest = null;
+            scheduleReadRefresh();
+          }
+        }
       })();
       return holder.promise;
     }
@@ -361,24 +405,33 @@
       saving=false;close();
       if(world)action(item.target_type,target);else action(target);
     }
-    async function respondGroupInvite(item, action) {
-      if (saving || loading || !identity || identity !== userNow() || !items.some(value => value.id === item.id && value.kind === 'group_invite')) return;
+    async function respondInvite(item, action) {
+      if (saving || loading || !identity || identity !== userNow() || !items.some(value => value.id === item.id && ['group_invite','drinking_invite'].includes(value.kind))) return;
       const run=identityRun,user=identity,view=viewRun;
       saving=true;status.textContent='초대를 처리하고 있어요.';updateControls();keepFocus();
       try {
-        const {data,error}=await client.rpc('group_invitation',{p_action:action,p_payload:{id:item.target_id}});
+        const drinking=item.kind==='drinking_invite';
+        const {data,error}=drinking
+          ? await client.rpc('arcade_friend_invite',{p_action:action,p_id:item.target_id})
+          : await client.rpc('group_invitation',{p_action:action,p_payload:{id:item.target_id}});
         if(error)throw error;
         if(!current(run,user))return;
         announceRead(run,user);
         if(!currentView(run,user,view))return;
         saving=false;
+        if(drinking && action==='accept'){
+          if(data?.kind!=='drinking' || !/^[A-Z0-9]{6}$/.test(data.code)) throw Error('room_unavailable');
+          close();location.assign('/games/drinking/?room='+data.code);return;
+        }
         if(action==='accept' && UUID.test(data?.room_id||'')) {close();onOpenGroup(data.room_id);return;}
         await loadPage();
         if(currentView(run,user,view))status.textContent=action==='decline'?'초대를 거절했어요.':'가입했어요.';
       } catch(error) {
         if(!currentView(run,user,view))return;
         saving=false;await loadPage();
-        if(currentView(run,user,view))status.textContent=error?.message||'초대를 처리하지 못했어요. 다시 시도해 주세요.';
+        if(currentView(run,user,view))status.textContent=item.kind==='drinking_invite'
+          ? (/room_in_progress/.test(error?.message)?'참여 중인 방을 먼저 나가 주세요.':'입장할 수 없는 초대예요. 친구에게 다시 초대해 달라고 해주세요.')
+          : error?.message||'초대를 처리하지 못했어요. 다시 시도해 주세요.';
       } finally {if(currentView(run,user,view)){saving=false;updateControls();}}
     }
     async function keepCard(item) {
@@ -403,7 +456,7 @@
       changeIdentity(userNow());
       if (!identity || document.visibilityState === 'hidden') return;
       const force = options.force !== false;
-      if (!force && Date.now() - lastRefresh < 15000) return;
+      if (!force && !readRefreshPending && Date.now() - lastRefresh < 15000) return;
       if (!layer.hidden) return loadPage();
       return refreshCount(force);
     }
@@ -417,7 +470,7 @@
       if (event.shiftKey && (document.activeElement === first || !panel.contains(document.activeElement))) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && (document.activeElement === last || !panel.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
     });
-    window.addEventListener('ojjuda:messages-read', () => { countRequest=null;lastRefresh=0;void refresh({force:true});channel?.postMessage({type:'read',user:userNow()}); });
+    window.addEventListener('ojjuda:messages-read', () => announceRead(identityRun, userNow()));
     window.addEventListener('focus', () => void refresh({ force: false }));
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void refresh({ force: false }); });
     client.auth.onAuthStateChange((_event, session) => {

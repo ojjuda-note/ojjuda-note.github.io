@@ -52,7 +52,9 @@
   } else if(id==='tank'&&Number(record.opponents)>0)detail.push(`${record.opponents}명 상대`);
   else if(['chess','janggi','billiards'].includes(id)){
    const variant={carom4:'4구',carom3:'3쿠션',pool8:'포켓볼'}[record.variant];
-   const level={online:'회원대결',hard:'어려움',normal:'보통',easy:'쉬움'}[record.difficulty];
+   const labels={online:'회원대결',hard:'어려움',normal:'보통',easy:'쉬움'};
+   if(id==='janggi')Object.assign(labels,{hard:'기존 통합',hard_exact:'어려움',pro:'프로',master:'마스터',grandmaster:'그랜드마스터'});
+   const level=labels[record.difficulty];
    if(variant)detail.push(variant);if(level)detail.push(level);
   }
   return detail.join(' · ');

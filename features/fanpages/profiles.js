@@ -4,12 +4,15 @@
 const a2oMember = (name, source) => ({ name, birthday: null, height: null, hometown: '', school: '', note: 'A2O', source });
 window.OJJUDA_FAN_PROFILES = {
   rescene: {
-    checkedAt: '2026.11.13',
+    checkedAt: '2026.11.15',
     debut: '2024.03.26', debutWork: 'Re:Scene · UhUh',
     agency: 'THE MUZE Entertainment',
     concept: '향기로 다시 떠오르는 장면, RESCENE.',
     heightSource: 'https://kpopdiscover.com/en/groups/rescene/',
     awards: [
+      { year: '2026.11', title: 'MMA2026 3관왕', detail: '글로벌 TOP10 · 카카오뱅크 모두의 스타 · 핫트렌드 (11.14)', href: 'https://www.xportsnews.com/article/2219598' },
+      { year: '2026.11', title: 'MBC 쇼! 음악중심 1위', detail: 'With · 2026.11.14 · 8,473점', href: 'https://www.soompi.com/article/1886997wpp/watch-rescene-takes-3rd-win-for-with-on-music-core-performances-by-bestie-ateez-nct-dream-and-more' },
+      { year: '2026.11', title: 'SBS M 더쇼 1위', detail: 'With · 2026.11.10', href: 'https://www.soompi.com/article/1885603wpp/watch-rescene-takes-1st-win-for-with-on-the-show' },
       { year: '2026.11', title: 'MBC M 쇼챔피언 1위', detail: 'With · 2026.11.11', href: 'https://www.xportsnews.com/article/2218400' },
       { year: '2026.07', title: 'SBS 인기가요 1위', detail: 'LOVE ATTACK', href: 'https://news.sbs.co.kr/english/endPagePrintPopup.do?news_id=N1008676108' },
       { year: '2026.07', title: 'MBC 쇼! 음악중심 1위', detail: 'Pretty Girl', href: 'https://news.sbs.co.kr/english/endPagePrintPopup.do?news_id=N1008676108' }
@@ -32,13 +35,14 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   ive: {
-    checkedAt: '2026.11.10',
+    checkedAt: '2026.11.15',
     debut: '2021.12.01', debutWork: 'ELEVEN',
     agency: 'STARSHIP Entertainment',
     concept: 'I HAVE, 그리고 당당한 IVE의 순간.',
     heightSource: 'https://www.youtube.com/watch?v=sqe55UwRU2o',
     awards: [
-      { year: '2022', title: 'MAMA 올해의 노래', detail: 'LOVE DIVE', href: 'https://mama.mnetplus.world/history/2022/winners' }
+      { year: '2022', title: 'MAMA 올해의 노래', detail: 'LOVE DIVE', href: 'https://mama.mnetplus.world/history/2022/winners' },
+      { year: '2026.09', title: '장원영 · 올해의 브랜드 대상', detail: '여자 광고모델 부문 · 2년 연속', href: 'https://www.etnews.com/20260901000136' }
     ],
     records: [
       { year: '2023.02', title: '음악방송 누적 37관왕', detail: 'ELEVEN · LOVE DIVE · After LIKE', href: 'https://enews.imbc.com/News/RetrieveNewsInfo/373075' }
@@ -57,32 +61,35 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   aespa: {
-    checkedAt: '2026.11.10',
+    checkedAt: '2026.11.15',
     debut: '2020.11.17', debutWork: 'Black Mamba',
     agency: 'SM Entertainment',
     concept: '현실과 가상 세계를 잇는 aespa.',
     heightSource: 'https://kpopdiscover.com/en/groups/aespa/',
     awards: [
+      { year: '2026.11', title: 'MMA2026 올해의 글로벌-K 아티스트 · 대상', detail: '11.14 첫 시상 부문 수상', href: 'https://www.melon.com/mma/result.htm?mmaYear=2026' },
+      { year: '2026.11', title: 'MMA2026 글로벌 TOP10', detail: '11.14 글로벌 TOP10 수상 · 2관왕', href: 'https://www.yna.co.kr/view/AKR20261114049700005' },
       { year: '2024', title: 'MAMA 올해의 노래', detail: 'Supernova', href: 'https://mama.mnetplus.world/history/2024/winners' },
       { year: '2025', title: '한국대중음악상 올해의 노래', detail: 'Supernova', href: 'https://koreanmusicawards.com/project/aespa-supernova/' }
     ],
     records: [
+      { year: '2026.11', title: 'LEMONADE MV 1억 조회', detail: '11.13 돌파 · 그룹 12번째 1억 뷰 뮤직비디오', href: 'https://www.soompi.com/article/1886736wpp/aespas-lemonade-becomes-their-12th-mv-to-hit-100-million-views' },
       { year: '2024', title: 'MAMA 6관왕', detail: 'Supernova · Armageddon 외', href: 'https://cjenm.com/en/news/2024-mama-awards-wrap-up-historic-run-with-iconic-performances-and-milestone-moments/' }
     ],
     members: [
-      { name: '카리나', birthday: '2000.04.11', height: '168', hometown: '경기 성남', school: '고졸 검정고시 · 합격', note: '리더', source: 'https://smtown-official.jp/artist_corporate/' },
-      { name: '지젤', birthday: '2000.10.30', height: '164', hometown: '일본 도쿄', school: '세이신 국제학교 · 졸업', note: '래퍼', source: 'https://smtown-official.jp/artist_corporate/' },
-      { name: '윈터', birthday: '2001.01.01', height: '165', hometown: '경남 양산', school: '고졸 검정고시 · 합격', note: '보컬', source: 'https://smtown-official.jp/artist_corporate/' },
-      { name: '닝닝', birthday: '2002.10.23', height: '161', hometown: '중국 하얼빈', school: '', note: '보컬 · 막내', source: 'https://smtown-official.jp/artist_corporate/' }
+      { name: '카리나', birthday: '2000.04.11', height: '168', hometown: '경기 성남', school: '고졸 검정고시 · 합격', note: '리더', source: 'https://aespa-official.jp/profile/' },
+      { name: '지젤', birthday: '2000.10.30', height: '164', hometown: '일본 도쿄', school: '세이신 국제학교 · 졸업', note: '래퍼', source: 'https://aespa-official.jp/profile/' },
+      { name: '윈터', birthday: '2001.01.01', height: '165', hometown: '경남 양산', school: '고졸 검정고시 · 합격', note: '보컬', source: 'https://aespa-official.jp/profile/' },
+      { name: '닝닝', birthday: '2002.10.23', height: '161', hometown: '중국 하얼빈', school: '', note: '보컬 · 막내', source: 'https://aespa-official.jp/profile/' }
     ],
     sources: [
-      { label: 'SM 공식 생일', href: 'https://smtown-official.jp/artist_corporate/' },
+      { label: 'aespa 일본 공식 생일', href: 'https://aespa-official.jp/profile/' },
       { label: 'MAMA 기록', href: 'https://mama.mnetplus.world/history/2024/winners' },
       { label: '한국대중음악상', href: 'https://koreanmusicawards.com/project/aespa-supernova/' }
     ]
   },
   lesserafim: {
-    checkedAt: '2026.11.13',
+    checkedAt: '2026.11.15',
     debut: '2022.05.02', debutWork: 'FEARLESS',
     agency: 'SOURCE MUSIC · HYBE',
     concept: 'IM FEARLESS, 두려움 없이 나아가는 다섯 멤버.',
@@ -91,6 +98,7 @@ window.OJJUDA_FAN_PROFILES = {
       { year: '2024', title: 'MTV VMAs PUSH 퍼포먼스상', detail: 'EASY', href: 'https://www.paramountpressexpress.com/mtv/releases/?view=110288-mtv-reveals-winners-for-2024-video-music-awards-vmas' }
     ],
     records: [
+      { year: '2026.08', title: '사쿠라 · Forbes JAPAN 30 UNDER 30', detail: '2026 일본 선정 · 멤버 개인 기록', href: 'https://www.le-sserafim.jp/news/11619647448c' },
       { year: '2026.11', title: '사쿠라 · WIRED Innovation Awards 2026', detail: '멤버 개인 수상 · 일본 WIRED 선정', href: 'https://www.le-sserafim.jp/news/8c78b9319fdd' },
       { year: '2024.03', title: '빌보드 200 8위', detail: 'EASY', href: 'https://ca.billboard.com/music/chart-beat/twice-le-sserafim-first-2-all-female-k-pop-groups-billboard-200-top-10-together-1235621542/' }
     ],
@@ -108,7 +116,7 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   twice: {
-    checkedAt: '2026.11.13',
+    checkedAt: '2026.11.15',
     debut: '2015.10.20', debutWork: 'The Story Begins · OOH-AHH하게',
     agency: 'JYP Entertainment',
     concept: 'SIXTEEN에서 출발한 아홉 멤버의 이야기.',
@@ -141,12 +149,14 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   illit: {
-    checkedAt: '2026.11.10',
+    checkedAt: '2026.11.15',
     debut: '2024.03.25', debutWork: 'SUPER REAL ME · Magnetic',
     agency: 'BELIFT LAB · HYBE',
     concept: 'Magnetic부터 BREAK EVEN까지, 아일릿의 이야기.',
     heightSource: 'https://kprofiles.com/illit-members-profile/',
     awards: [
+      { year: '2026.11', title: 'KBS 뮤직뱅크 1위', detail: '체포하겠어 (You\'re Under Arrest) · 2026.11.06 · 9,803점', href: 'https://www.soompi.com/article/1884749wpp/watch-nmixx-takes-1st-win-for-birthday-wish-on-music-bank-performances-by-ateez-illit-and-more-2' },
+      { year: '2026.10', title: '제15회 TTA 베스트 여자 아이돌 그룹', detail: '2026.10.30 · 여자 아이돌 그룹 부문 1위', href: 'https://www.tenasia.co.kr/article/2026103060504' },
       { year: '2024', title: 'MAMA 여자 신인상', detail: 'BEST NEW FEMALE ARTIST', href: 'https://mama.mnetplus.world/history/2024/winners' }
     ],
     records: [
@@ -186,16 +196,18 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   a2olite: {
-    checkedAt: '2026.11.13',
+    checkedAt: '2026.11.15',
     debut: '2026.10.13', debutWork: 'NEON',
     agency: 'A2O Entertainment',
     concept: '아홉 멤버의 네온빛 Zalpha Pop.',
     awards: [
+      { year: '2026.11', title: '인기가요 트리플 크라운·음악방송 11관왕', detail: 'NEON · 11.08 인기가요 3번째 1위', href: 'https://www.soompi.com/article/1885054wpp/watch-a2o-lite-takes-11th-win-and-triple-crown-for-neon-on-inkigayo-performances-by-blackpinks-jisoo-and-more' },
       { year: '2026.10', title: '더쇼 첫 1위', detail: 'NEON · 2026.10.20', href: 'https://prtimes.jp/main/html/rd/p/000000005.000192898.html' },
       { year: '2026.10', title: '엠카운트다운 1위', detail: 'NEON · 2026.10.22, 음악방송 3관왕', href: 'https://prtimes.jp/main/html/rd/p/000000008.000192898.html' },
       { year: '2026.10', title: '인기가요 1위', detail: 'NEON', href: 'https://m.programs.sbs.co.kr/programTemplate/amp/clip/mobile/22000638968' }
     ],
     records: [
+      { year: '2026.11', title: '써클 차트 3관왕', detail: 'NEON · 디지털·스트리밍·글로벌 K팝 차트 1위(11.11 보도)', href: 'https://www.soompi.com/article/1886133wpp/ive-riize-and-illit-top-circle-weekly-charts-a2o-earns-triple-crown' },
       { year: '2026.10', title: '빌보드 글로벌 차트 2개 부문 톱10', detail: 'NEON · Global 200 8위 / Global Excl. U.S. 3위 · 10.31 차트', href: 'https://prtimes.jp/main/html/rd/p/000000009.000192898.html' },
       { year: '2026.10', title: '오리콘 주간 스트리밍 급상승 1위', detail: 'NEON · 2026.10.29 발표', href: 'https://prtimes.jp/main/html/rd/p/000000009.000192898.html' },
       { year: '2026.10', title: '멜론 TOP100 1위', detail: 'NEON · 데뷔 다음 날', href: 'https://en.yna.co.kr/view/AEN20261015001400315' }

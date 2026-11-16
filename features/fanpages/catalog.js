@@ -21,7 +21,7 @@
     videos: ['영상', true, [title,field('kind','분류'),field('source','채널·출처'),field('id','YouTube 영상 ID','youtube'),field('file','영상 파일','video')]],
     music: ['앨범·노래', true, [title,field('type','음반 종류'),date,field('songs','수록곡 (한 줄에 한 곡)','lines'),href]],
     merch: ['굿즈', true, [title,sub,href]],
-    appearances: ['출연 예정', true, [title,field('date','시작일','date'),field('endDate','종료일','date'),sub,href]],
+    appearances: ['출연 예정', true, [title,field('date','시작일','date'),field('endDate','종료일','date'),field('timeZone','현지 시간대 (선택, 예: America/Los_Angeles)'),sub,href]],
     schedules: ['공식 일정', true, [title,sub,href]],
     news: ['소식', true, [title,date,field('tag','분류'),href]],
     campaigns: ['콜라보·광고', true, [title,field('kind','분류'),date,sub,href]],
@@ -75,7 +75,7 @@
     if (typeof value !== 'string') return value;
     return value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
   }
-  function prepare() {
+  function prepare(detailId) {
     const artists = [], profiles = Object.create(null), videos = Object.create(null);
     for (const id of new Set([...seedArtists.keys(), ...entries.keys()])) {
       const original = seedArtists.get(id);
@@ -84,6 +84,12 @@
       const edits = entries.get(id) || {};
       const customTheme = !original || original.theme || ['bg','night'].some(k=>Object.hasOwn(edits.identity || {},k));
       const a = {...identity,id,theme:customTheme ? {bg:identity.bg,night:identity.night} : null,basicProfile:original?.basicProfile};
+      // The grid, carousel and related artists only display identity fields.
+      if (id !== detailId) {
+        raw.set(id, {artist:a});
+        artists.push(escape(a));
+        continue;
+      }
       for (const key of ['links','photos','music','merch','appearances','schedules','news','campaigns']) a[key]=sectionValue(id,key);
       const p = sectionValue(id,'profile');
       for (const key of ['members','sources','awards','records']) p[key]=sectionValue(id,key);
@@ -101,7 +107,7 @@
   if (client) window.ojjudaSupabase=client;
   async function read() {
     if (!client) throw Error('연결할 수 없어요.');
-    const group = new URLSearchParams(location.search).get('group');
+    const group = document.body?.dataset?.page === 'hub' ? null : new URLSearchParams(location.search).get('group');
     const controller = new AbortController();
     const timer = setTimeout(()=>controller.abort(),8000);
     try {
@@ -116,7 +122,7 @@
         if (error) throw error;
         entries.set(group,data.sections);
       }
-      prepare();
+      prepare(group);
     } finally { clearTimeout(timer); }
   }
   const catalog = {client, sections, entries, raw, sectionValue, address, ready:null, available:false};

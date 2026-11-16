@@ -5,6 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const {pathToFileURL,fileURLToPath} = require('node:url');
 const {JSDOM} = require('jsdom');
+const {entryFlowDriver,selectReadingItem} = require('./helpers/saju-ui-harness.cjs');
 
 const appDir=path.resolve(__dirname,'../games/starlit-saju');
 const fixedNow='2026-11-13T03:00:00.000Z';
@@ -34,22 +35,46 @@ function selectCompatibilityPage(h,id) {
   const picker=h.$('compatibility-page-select');
   assert.ok(picker,'the paid compatibility has a reading picker');
   assert.ok([...picker.options].some(option=>option.value===id),`${id} is available in the reading picker`);
-  picker.value=id;h.change(picker);
+  selectReadingItem(picker,id);
   const page=h.$(id);
   assert.ok(page,`${id} has a reading page`);
   assert.equal(page.closest('[hidden]'),null,`${id} is revealed when selected`);
   return page;
 }
+function assertCompleteExplanation(element,item,label) {
+  const prose=element.matches('.reader-prose,.compatibility-person-prose')?element:element.querySelector('.reader-prose,.compatibility-person-prose');
+  assert.ok(prose,`${label} has its own complete explanation`);
+  const paragraphs=[...prose.querySelectorAll(':scope > p')];
+  assert.deepEqual(paragraphs.map(paragraph=>paragraph.textContent),item.paragraphs,`${label} retains every paragraph in its authored order`);
+  assert.equal(prose.closest('details.reading-body-details'),null,`${label} does not hide the body behind its summary`);
+  assert.ok(paragraphs.length>0&&paragraphs.every(paragraph=>{
+    if(paragraph.closest('[hidden]'))return false;
+    for(let ancestor=paragraph.parentElement;ancestor;ancestor=ancestor.parentElement)if(ancestor.tagName==='DETAILS'&&!ancestor.open)return false;
+    return true;
+  }),`${label} is fully readable as soon as its item is selected`);
+  if(item.detailSections) {
+    assert.deepEqual([...prose.querySelectorAll(':scope > .reading-body-heading')].map(heading=>heading.textContent),item.detailSections.map(section=>section.title),`${label} has meaningful headings for its full explanation`);
+    assert.deepEqual(item.detailSections.flatMap(section=>section.paragraphs),item.paragraphs);
+  }
+}
 async function assertCalculatedPeople(h,names=['','']) {
   const {buildCompatibilityReading}=await import(pathToFileURL(path.join(appDir,'compatibility.mjs')).href);
   const {chart,partner}=h.state.starts.at(-1),reading=buildCompatibilityReading(chart,partner);
   const pageIds=PEOPLE_TOPICS.map(topic=>`compatibility-people-${topic}`);
-  assert.deepEqual([...h.$('compatibility-page-select').options].slice(0,pageIds.length+2).map(option=>option.value),[...pageIds,'compatibility-synthesis','compatibility-scores'],'matching A/B topics come before the synthesis and scores');
+  assert.deepEqual([...h.$('compatibility-report').querySelectorAll('.reading-item-button[data-reading-domain="people"]')].map(button=>button.dataset.readingTarget),pageIds,'the people field lists the matching A/B topics in order');
   for(const topic of PEOPLE_TOPICS) {
     const page=selectCompatibilityPage(h,`compatibility-people-${topic}`);
     const people=[...page.querySelectorAll('.compatibility-person-reading')];
     assert.deepEqual(people.map(person=>person.dataset.personKey),['self','partner'],'every topic presents A before B');
     assert.deepEqual(people.map(person=>person.dataset.personMarker),['A','B']);
+    const jumps=[...page.querySelectorAll('.compatibility-person-jumps a')];
+    assert.equal(jumps.length,2,'a long comparison offers direct A/B movement');
+    for(const [index,link] of jumps.entries()) {
+      const heading=people[index].querySelector('.compatibility-person-name');
+      assert.equal(link.hash,'#'+heading.id);link.click();
+      assert.equal(h.$('compatibility-report').querySelector('[data-compatibility-current]'),page,'moving between A and B stays in the same topic');
+      assert.equal(h.window.document.activeElement,heading,'the chosen person’s heading receives focus');
+    }
     for(const [index,person] of people.entries()) {
       const expected=topic==='overview'?reading.people[index]:reading.people[index].cards.find(card=>card.topicId===topic);
       assert.ok(expected,`${topic} comes from the real person reading`);
@@ -58,17 +83,18 @@ async function assertCalculatedPeople(h,names=['','']) {
       const summary=person.querySelector('.compatibility-two-line-summary');
       assert.equal(summary?.getAttribute('role'),'group');assert.equal(summary?.getAttribute('aria-label'),'두 줄 요약');
       assert.deepEqual([...summary.querySelectorAll('.compatibility-summary-line')].map(line=>line.textContent),expected.summaryLines,`${marker} ${topic} retains both calculated summary units`);
-      for(const paragraph of expected.paragraphs)assert.ok(person.textContent.includes(paragraph),`${marker} ${topic} retains its full interpretation`);
+      assertCompleteExplanation(person,expected,`${marker} ${topic}`);
       assert.equal(person.querySelector('.compatibility-evidence-link'),null,`${marker} ${topic} keeps its interpretation without an evidence link`);
     }
   }
   const synthesis=selectCompatibilityPage(h,'compatibility-synthesis');
   assert.deepEqual([...synthesis.querySelectorAll('.compatibility-summary-line')].map(line=>line.textContent),reading.synthesis.summaryLines);
-  for(const paragraph of reading.synthesis.paragraphs)assert.ok(synthesis.textContent.includes(paragraph),'the combined explanation retains its full interpretation');
+  assertCompleteExplanation(synthesis,reading.synthesis,'the combined explanation');
   assertNoCompatibilityEvidence(h);
   selectCompatibilityPage(h,'compatibility-people-overview');
   h.$('compatibility-report').querySelector('[data-compatibility-step="next"]').click();
   assert.equal(h.$('compatibility-page-select').value,'compatibility-people-decisions','next follows the same A/B topic order');
+  [...h.$('compatibility-people-decisions').querySelectorAll('.compatibility-person-reading')].forEach((element,index)=>assertCompleteExplanation(element,reading.people[index].cards.find(card=>card.topicId==='decisions'),'next immediately exposes each person’s decision story'));
   h.$('compatibility-report').querySelector('[data-compatibility-step="previous"]').click();
   assert.equal(h.$('compatibility-page-select').value,'compatibility-people-overview');
   return reading;
@@ -131,6 +157,18 @@ async function assertCalculatedScores(h) {
     assert.equal(displayed.items.find(value=>value.id===item.id).value,item.value);
     const row=board.querySelector(`[data-score-item="${item.id}"]`);
     for(const value of [item.label,item.summary])assert.ok(row.textContent.includes(value),`${item.id} retains its label and short explanation`);
+    const link=row.querySelector('.compatibility-score-detail-link');
+    assert.equal(link?.hash,`#compatibility-score-detail-${item.id}`,`${item.id} connects its score to its own full explanation`);
+    link.click();
+    const detail=h.$(link.hash.slice(1));
+    assert.equal(h.$('compatibility-report').querySelector('[data-compatibility-current]'),detail,'the score link selects exactly its corresponding reading');
+    assert.equal(h.$('compatibility-report').querySelectorAll('[data-compatibility-current]').length,1);
+    assertCompleteExplanation(detail,item,item.id);
+    assert.deepEqual([...detail.querySelectorAll('.compatibility-summary-line')].map(line=>line.textContent),item.summaryLines);
+    assert.equal(detail.querySelector('.compatibility-detail-score-value').textContent,`${item.value}점 / 100점`);
+    assert.equal(detail.querySelector('[role="meter"]'),null,'each detail preserves the one original four-bar scoreboard');
+    detail.querySelector('a[href="#compatibility-scores"]').click();
+    assert.equal(h.$('compatibility-report').querySelector('[data-compatibility-current]'),board);
   }
   assertNoCompatibilityEvidence(h);
   return score;
@@ -140,7 +178,7 @@ async function assertCalculatedScores(h) {
 // wallet: the real birth calculator, pair reading and DOM renderer are executed.
 async function harness(options={}) {
   const html=await fs.readFile(path.join(appDir,'compatibility.html'),'utf8');
-  const dom=new JSDOM(html,{url:'https://ojjuda.kr/games/starlit-saju/compatibility.html',runScripts:'outside-only',pretendToBeVisual:true});
+  const dom=new JSDOM(html,{url:'https://ojjuda.kr/games/starlit-saju/compatibility.html'+(options.entrySearch||''),runScripts:'outside-only',pretendToBeVisual:true});
   const {window}=dom,NativeDate=window.Date;
   for(const [key,value] of Object.entries(options.initialStorage||{}))window.localStorage.setItem(key,value);
   let nowMs=NativeDate.parse(fixedNow);
@@ -217,7 +255,7 @@ async function harness(options={}) {
     async status(chart,partner) {
       const owner=state.user,key=pairKey(chart,partner,owner),gate=state.statusGate;
       state.statusCalls.push({chart,partner,owner,key});
-      if(state.failStatus>0) {state.failStatus--;throw Object.assign(new Error('궁합 구매 내역을 확인하지 못했어요.'),{code:'network'});}
+      if(state.failStatus>0) {state.failStatus--;throw Object.assign(new Error('궁합 구매 내역을 확인하지 못했어요.'),{code:state.statusErrorCode||'network'});}
       const found=state.receipts.get(key);
       const result={ok:true,price:20,coins:state.coins,entitlement:this.isActive(found)?found:null,adminPreview:state.adminPreview,server_now:new Date(nowMs).toISOString()};
       if(gate)await gate.promise;
@@ -293,7 +331,8 @@ async function harness(options={}) {
     if(hour!==null) {set(`${prefix}-hour`,hour);set(`${prefix}-minute`,minute);}
   }
   function fill(first=selfBirth,second=partnerBirth) {fillPerson('self',first);fillPerson('partner',second);}
-  function submit() {$('compatibility-form').dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true}));}
+  const flow=entryFlowDriver($('compatibility-form'),window);
+  function submit() {return flow.confirm();}
   async function price(amount) {await waitFor(()=>state.statusCalls.length>0&&$('compatibility-open').dataset.expectedCharge===String(amount)&&!$('compatibility-open').disabled,`offer ${amount} did not settle`);}
   async function ready() {await waitFor(()=>!$('compatibility-result').hidden&&$('compatibility-report').querySelector('#compatibility-reading'),$('compatibility-error').textContent||'purchased compatibility missing');}
   function edit() {$('compatibility-edit').click();}
@@ -302,8 +341,43 @@ async function harness(options={}) {
     state.anonymous=anonymous;
     for(const parent of state.parentInstances)parent.confirmIdentity();
   }
-  return {dom,window,state,$,fill,fillPerson,submit,price,ready,edit,change,changeAccount,advance,close:()=>dom.window.close()};
+  return {dom,window,state,$,fill,fillPerson,submit,price,ready,edit,change,changeAccount,advance,flow,close:()=>dom.window.close()};
 }
+
+test('the pair journey validates A then B, preserves both people and purchases only from the final confirmation',async t=>{
+  const h=await harness();t.after(h.close);
+  const form=h.$('compatibility-form'),doc=h.window.document;
+  const visibleSteps=()=>[...form.querySelectorAll('[data-flow-step]')].filter(panel=>!panel.hidden);
+  const snapshot=()=>[...form.querySelectorAll('input,select')].map(field=>({id:field.id||field.name,value:field.value,checked:field.checked}));
+  assert.equal(form.dataset.flowStep,'0');assert.equal(visibleSteps().length,1);assert.equal(h.$('compatibility-open').hidden,true);
+  await h.flow.next();assert.equal(form.dataset.flowStep,'0');assert.equal(doc.activeElement,h.$('self-year'));
+  h.fillPerson('self',{...selfBirth,name:'예시 A',gender:'female',hour:null});
+  h.$('self-year').dispatchEvent(new h.window.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));
+  await waitFor(()=>form.dataset.flowStep==='1'&&form.dataset.flowBusy==='false');
+  assert.equal(h.$('partner-year').value,'','an empty later person does not block finishing A');
+  assert.equal(h.state.starts.length,0);assert.equal(visibleSteps().length,1);
+  await h.flow.next();assert.equal(form.dataset.flowStep,'1');assert.equal(doc.activeElement,h.$('partner-year'));
+  h.fillPerson('partner',{...partnerBirth,name:'예시 B',gender:'male',month:2,day:31,hour:null});
+  await h.flow.next();assert.equal(form.dataset.flowStep,'1');assert.ok(form.querySelector('[data-flow-error]:not([hidden])'));
+  h.$('partner-month').value='3';h.change(h.$('partner-month'));h.$('partner-day').value='14';h.change(h.$('partner-day'));
+  h.$('partner-time-unknown').checked=false;h.change(h.$('partner-time-unknown'));
+  h.$('partner-hour').value='0';h.change(h.$('partner-hour'));
+  await h.flow.next();assert.equal(form.dataset.flowStep,'1');assert.equal(doc.activeElement,h.$('partner-minute'));
+  h.$('partner-minute').value='0';h.change(h.$('partner-minute'));
+  await h.flow.next();assert.equal(form.dataset.flowStep,'2');assert.equal(visibleSteps().length,1);
+  const values=snapshot(),review=form.querySelector('[data-flow-review]').textContent;
+  assert.ok(['예시 A','예시 B','1990.05.17','1992.03.14','시간 모름','00:00'].every(value=>review.includes(value)));
+  h.flow.back();assert.equal(form.dataset.flowStep,'1');assert.deepEqual(snapshot(),values);
+  h.flow.back();assert.equal(form.dataset.flowStep,'0');assert.deepEqual(snapshot(),values);
+  await h.flow.next();await h.flow.next();assert.equal(form.dataset.flowStep,'2');assert.deepEqual(snapshot(),values);
+  assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0,'checking and reviewing both people never buys compatibility');
+  await h.price(20);h.$('compatibility-open').click();await h.ready();
+  assert.equal(h.state.starts.length,1);assert.deepEqual(h.state.chargedAmounts,[20]);
+  h.edit();assert.equal(form.dataset.flowStep,'0');assert.deepEqual(snapshot(),values);assert.equal(h.$('compatibility-open').hidden,true);
+  h.changeAccount(PROFILE_USER_B);await pause();
+  assert.equal(form.dataset.flowStep,'0');assert.equal(h.$('self-year').value,'');assert.equal(h.$('partner-year').value,'');
+  assert.equal(form.querySelector('[data-flow-review]').textContent,'');assertNoScoreboard(h);
+});
 
 test('the separate page checks a pair without requiring a saju purchase, charging or exposing its reading',async t=>{
   const h=await harness();t.after(h.close);
@@ -332,16 +406,22 @@ test('an explicit twenty-ju purchase reveals the real reading and accessible sco
   receiptGate.resolve();await h.ready();
   assert.equal(h.state.charges,1);assert.equal(h.state.coins,40);assert.deepEqual(h.state.chargedAmounts,[20]);
   assert.equal(h.state.baseStarts.length,0);
-  assert.ok(h.$('compatibility-report').textContent.length>3000);
+  assert.equal(h.$('compatibility-report').querySelector('details.reading-body-details'),null,'paid explanations are immediately readable after selecting an item');
   assert.equal(h.$('compatibility-report').querySelectorAll('.reader-card').length,6);
   assert.ok(h.$('compatibility-expiry').textContent.trim());
-  assert.equal(h.$('compatibility-page-select').value,'compatibility-people-overview','the purchased reading starts with both people’s character and traits');
+  assert.equal(h.$('compatibility-page-select').value,'compatibility-synthesis','the purchased reading starts with the combined explanation and its score');
   const reading=await assertCalculatedPeople(h);
   const score=await assertCalculatedScores(h);
+  const coverage=h.$('compatibility-report').querySelector('#compatibility-reading-coverage');
+  assert.ok(coverage&&!coverage.closest('[hidden]'),'compatibility scope is visible after a verified receipt');
   h.$('compatibility-copy').click();await waitFor(()=>h.state.copies.length===1);
   assert.match(h.state.copies[0],/궁합/);
   for(const paragraph of h.$('compatibility-report').querySelectorAll('.reader-prose > p'))assert.ok(h.state.copies[0].includes(paragraph.textContent),'copy includes every personal interpretation paragraph');
   assert.doesNotMatch(h.state.copies[0],/궁합 계산 근거|점수를 계산한 방법/);
+  for(const paragraph of reading.readingScope.paragraphs) {
+    assert.ok(coverage.textContent.includes(paragraph));
+    assert.ok(h.state.copies[0].includes(paragraph),'the copy retains scope without restoring calculation evidence');
+  }
   assertCopiedPeople(h.state.copies[0],reading);
   const copyLines=h.state.copies[0].split('\n');
   assert.ok(copyLines.some(line=>line.includes('종합 궁합')&&line.includes(`${score.total}점`)),'copy associates the total with its score');
@@ -350,6 +430,7 @@ test('an explicit twenty-ju purchase reveals the real reading and accessible sco
   for(const item of score.items) {
     assert.ok(copyLines.some(line=>line.includes(item.label)&&line.includes(`${item.value}점`)),`copy associates ${item.id} with its numeric score`);
     assert.ok(h.state.copies[0].includes(item.summary),`copy includes ${item.id} summary`);
+    for(const value of [...item.paragraphs,...item.detailSections.map(section=>section.title)])assert.ok(h.state.copies[0].includes(value),`copy includes ${item.id} complete explanation and headings`);
     assert.equal(h.state.copies[0].includes(item.reason),false,`copy omits the ${item.id} calculation formula`);
   }
   assert.deepEqual(h.state.fetches,[]);
@@ -387,6 +468,60 @@ test('changing the partner hides the old reading and requires its own twenty-ju 
   assert.notEqual(h.state.starts[0].key,h.state.starts[1].key);
   assert.equal(h.state.starts[1].partner.solar.iso,'1987-12-11');
   await assertCalculatedScores(h);
+});
+
+test('a temporary connection failure preserves the paid page and free quote only until the original expiry',async t=>{
+  const h=await harness();t.after(h.close);
+  h.fill();await h.price(20);h.submit();await h.ready();
+  selectCompatibilityPage(h,'compatibility-people-work');
+  const content=h.$('compatibility-report').firstElementChild,expiry=h.$('compatibility-expiry').textContent;
+  h.state.failStatus=1;h.window.dispatchEvent(new h.window.Event('focus'));
+  await waitFor(()=>!h.$('compatibility-open').disabled&&/연결이 잠시 끊겼어요/.test(h.$('compatibility-copy-status').textContent));
+  assert.equal(h.$('compatibility-result').hidden,false);
+  assert.equal(h.$('compatibility-report').firstElementChild,content,'a background retry must not replace the page being read');
+  assert.equal(h.$('compatibility-page-select').value,'compatibility-people-work');
+  assert.equal(h.$('compatibility-copy').disabled,false);
+  assert.equal(h.$('compatibility-open').dataset.expectedCharge,'0');
+  assert.match(h.$('compatibility-copy-status').textContent,/출생 정보 다시 보기/,'the visible result explains how to retry');
+  assert.equal(h.$('compatibility-expiry').textContent,expiry);
+  assert.equal(h.state.charges,1);
+
+  h.window.dispatchEvent(new h.window.Event('focus'));
+  await waitFor(()=>!h.$('compatibility-open').disabled&&h.$('compatibility-copy-status').textContent==='');
+  assert.equal(h.$('compatibility-report').firstElementChild,content);
+  h.state.failStatus=1;h.edit();
+  await waitFor(()=>!h.$('compatibility-open').disabled&&!h.$('compatibility-error').hidden);
+  assert.equal(h.$('compatibility-result').hidden,true);
+  assertNoScoreboard(h);
+  assert.equal(h.$('compatibility-open').dataset.expectedCharge,'0','an unexpired quote stays free even before reopening the reading');
+  assert.match(h.$('compatibility-error').textContent,/연결을 확인한 뒤 다시 펼쳐/);
+  h.submit();await h.ready();
+  assert.equal(h.state.starts.at(-1).expectedCharge,0);assert.equal(h.state.charges,1);
+  assert.equal(h.$('compatibility-expiry').textContent,expiry);
+
+  h.state.failStatus=1;h.window.dispatchEvent(new h.window.Event('focus'));
+  await waitFor(()=>!h.$('compatibility-open').disabled&&/연결이 잠시 끊겼어요/.test(h.$('compatibility-copy-status').textContent));
+  h.$('compatibility-copy').click();await waitFor(()=>h.state.copies.length===1);
+  h.advance(ACCESS_MS+1);
+  assert.equal(h.$('compatibility-result').hidden,true);assertNoScoreboard(h);
+  assert.equal(h.$('compatibility-copy').disabled,true);
+  assert.equal(h.$('compatibility-open').dataset.expectedCharge,'20');
+  h.$('compatibility-copy').click();await pause();assert.equal(h.state.copies.length,1);
+  assert.equal(h.state.charges,1,'preserving an offline result never extends or renews its entitlement');
+  h.submit();await h.ready();assert.equal(h.state.starts.at(-1).expectedCharge,20);assert.equal(h.state.charges,2);
+});
+
+test('authentication and invalid status failures still remove a previously paid compatibility reading',async t=>{
+  for(const code of ['not_signed_in','invalid']) {
+    const h=await harness({statusErrorCode:code});t.after(h.close);
+    h.fill();await h.price(20);h.submit();await h.ready();
+    h.state.failStatus=1;h.window.dispatchEvent(new h.window.Event('focus'));
+    await waitFor(()=>!h.$('compatibility-open').disabled&&!h.$('compatibility-error').hidden);
+    assert.equal(h.$('compatibility-result').hidden,true,code);assertNoScoreboard(h);
+    assert.equal(h.$('compatibility-copy').disabled,true,code);
+    assert.equal(h.$('compatibility-open').dataset.expectedCharge,'20',code);
+    assert.equal(h.state.charges,1);
+  }
 });
 
 test('expiry removes the reading and copy access without automatically charging, then permits an explicit new purchase',async t=>{
@@ -511,7 +646,10 @@ test('changed birth inputs invalidate a pending result and never purchase the ch
   assert.equal(h.$('compatibility-result').hidden,true);assert.equal(h.$('compatibility-report').textContent,'');
   assertNoScoreboard(h);
   assert.equal(h.state.starts.length,1);assert.equal(h.state.charges,1);
-  await h.price(20);h.state.receiptGate=null;h.submit();await h.ready();
+  await h.price(20);h.state.receiptGate=null;await h.submit();
+  assert.equal(h.$('compatibility-form').dataset.flowStep,'1','a changed hidden partner must be checked again before the next purchase');
+  assert.equal(h.state.starts.length,1,'the unreviewed changed pair is not purchased by a stale confirmation');
+  h.submit();await h.ready();
   assert.equal(h.state.starts.length,2);assert.equal(h.state.starts[1].partner.solar.iso,'1987-12-11');
   assert.equal(h.state.charges,2);assert.equal(h.state.receipts.size,2);
 });
@@ -585,6 +723,39 @@ test('swapping people preserves unselected or partly entered times and their unk
   assert.equal(h.$('partner-hour').value,'');assert.equal(h.$('partner-minute').value,'');
   assert.equal(h.$('compatibility-form').checkValidity(),false);
   h.submit();await pause();assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);
+});
+
+test('returning at the Korean new year refreshes both birth-year limits without purchasing',async t=>{
+  const h=await harness();t.after(h.close);
+  const boundary=Date.parse('2026-12-31T15:00:00.000Z');
+  h.advance(boundary-Date.parse(fixedNow)-1,{runTimers:false});
+  h.window.dispatchEvent(new h.window.Event('focus'));
+  for(const person of ['self','partner'])assert.equal(h.$(person+'-year').max,'2026');
+  h.advance(1,{runTimers:false});
+  h.window.dispatchEvent(new h.window.Event('pageshow'));
+  for(const person of ['self','partner'])assert.equal(h.$(person+'-year').max,'2027');
+  assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);
+});
+
+test('a new-year input refreshes validation while future birthdays still cannot start a purchase',async t=>{
+  const h=await harness();t.after(h.close);
+  h.fill({year:2027,month:1,day:2,hour:null},partnerBirth);
+  assert.equal(h.$('compatibility-form').checkValidity(),false);
+  h.advance(Date.parse('2026-12-31T15:00:00.000Z')-Date.parse(fixedNow),{runTimers:false});
+  await h.submit();
+  const flowError=h.$('compatibility-form').querySelector('[data-flow-error]:not([hidden])');
+  assert.ok(flowError,'the future birthday is rejected in its own input stage');
+  for(const person of ['self','partner'])assert.equal(h.$(person+'-year').max,'2027');
+  assert.match(flowError.textContent,/미래/);
+  assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);
+  // Stay on the same page through another year boundary, without a resume event.
+  h.advance(Date.parse('2027-12-31T15:00:00.000Z')-Date.parse('2026-12-31T15:00:00.000Z'),{runTimers:false});
+  h.$('self-year').value='2028';h.change(h.$('self-year'));
+  for(const person of ['self','partner'])assert.equal(h.$(person+'-year').max,'2028');
+  h.$('self-day').value='1';h.change(h.$('self-day'));
+  await h.price(20);h.submit();await h.ready();
+  assert.equal(h.state.starts[0].chart.solar.iso,'2028-01-01');
+  assert.equal(h.state.charges,1);
 });
 
 test('a signed-out visitor sees the login state and cannot obtain or pay for a compatibility reading',async t=>{
@@ -711,6 +882,29 @@ test('both compatibility pickers share saved people and restore or swap the comp
   }
 });
 
+test('deleting saved people follows the next or previous row without taking focus from birth inputs',async t=>{
+  const h=await harness();t.after(h.close);
+  const host=h.$('self-saved-profiles'),rows=()=>[...host.querySelectorAll('.profile-picker-item')];
+  for(let index=0;index<4;index++) {
+    host.querySelector('.profile-picker-new').click();
+    h.fillPerson('self',{...selfBirth,year:1990+index,name:`저장 ${index+1}`});
+    h.advance(600);
+  }
+  assert.equal(rows().length,4);
+  const ids=rows().map(row=>row.dataset.profileId);
+  let remove=rows()[1].querySelector('.profile-picker-delete');remove.focus();remove.click();
+  assert.equal(h.window.document.activeElement.closest('.profile-picker-item')?.dataset.profileId,ids[2],'deleting a middle row moves to its next person');
+  remove=rows().at(-1).querySelector('.profile-picker-delete');remove.focus();remove.click();
+  assert.equal(h.window.document.activeElement.closest('.profile-picker-item')?.dataset.profileId,ids[2],'deleting the last row moves to its previous person');
+  h.$('partner-year').focus();rows()[0].querySelector('.profile-picker-delete').click();
+  assert.equal(h.window.document.activeElement,h.$('partner-year'),'a delete started outside the list does not steal focus');
+  remove=rows()[0].querySelector('.profile-picker-delete');remove.focus();remove.click();
+  assert.equal(h.window.document.activeElement,host.querySelector('.profile-picker-new'),'the empty list leads to entering a new person');
+  assert.equal(rows().length,0);
+  assert.equal(h.$('partner-saved-profiles').querySelectorAll('.profile-picker-item').length,0);
+  assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);
+});
+
 test('changing only both names and genders preserves the paid pair and its original expiry',async t=>{
   const h=await harness({user:PROFILE_USER_A});t.after(h.close);
   h.fill({...selfBirth,name:'같은 이름',gender:'male'},{...partnerBirth,name:'같은 이름',gender:'female'});
@@ -817,4 +1011,41 @@ test('late zodiac labels cannot survive a compatibility reset or account change 
     assert.equal(h.$(person+'-saved-profiles').querySelectorAll('.profile-picker-zodiac').length,0);
   }
   assert.equal(h.state.starts.length,0);assert.equal(h.state.charges,0);assert.deepEqual(h.state.fetches,[]);
+});
+
+test('the compatibility tab in saved readings can only reopen a matching, unexpired pair for zero charge',async t=>{
+  const h=await harness({entrySearch:'?reading=saved'});t.after(h.close);
+  const nav=h.window.document.querySelector('.saved-reading-nav');
+  assert.equal(nav.hidden,false);assert.ok(nav.querySelector('[aria-current="page"]').href.includes('compatibility.html'));
+  h.fill();await h.flow.next();await h.flow.next();
+  await waitFor(()=>h.$('compatibility-price').textContent.includes('이용권이 없어요'));
+  assert.equal(h.$('compatibility-open').disabled,true);
+  await h.submit();assert.equal(h.state.starts.length,0);
+  const purchase=await harness();t.after(purchase.close);
+  purchase.fill();await purchase.price(20);await purchase.submit();await purchase.ready();
+  for(const [key,value] of purchase.state.receipts)h.state.receipts.set(key,value);
+  h.window.dispatchEvent(new h.window.Event('focus'));
+  await h.price(0);
+  // The ticket can disappear between a displayed free offer and server confirmation.
+  const tickets=[...h.state.receipts];h.state.receipts.clear();
+  await h.submit();await waitFor(()=>!h.$('compatibility-error').hidden);
+  assert.equal(h.state.starts.length,0);
+  for(const [key,value] of tickets)h.state.receipts.set(key,value);
+  h.window.dispatchEvent(new h.window.Event('focus'));await h.price(0);
+  await h.submit();await h.ready();assert.equal(h.state.charges,0);
+  h.advance(86400001,{focus:true});
+  await waitFor(()=>h.$('compatibility-result').hidden && h.$('compatibility-price').textContent.includes('이용권이 없어요'));
+  assert.equal(h.$('compatibility-open').disabled,true);
+  await h.submit();assert.equal(h.state.starts.length,1);assert.equal(h.state.charges,0);
+});
+
+test('saved pairs can retry an initial wallet failure without reloading or paying',async t=>{
+  const h=await harness({entrySearch:'?reading=saved',failInit:1});t.after(h.close);
+  h.fill();await h.flow.next();await h.flow.next();
+  assert.match(h.$('compatibility-price').textContent,/불러오지 못/);
+  assert.equal(h.$('compatibility-login').hidden,true);
+  assert.equal(h.$('pair-ticket-retry').hidden,false);
+  h.$('pair-ticket-retry').click();
+  await waitFor(()=>h.$('compatibility-price').textContent.includes('이용권이 없어요'));
+  assert.equal(h.$('pair-ticket-retry').hidden,true);assert.equal(h.state.starts.length,0);
 });

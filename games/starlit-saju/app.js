@@ -1,8 +1,12 @@
+import {openCatalogChoice, showTickets} from './service-directory.mjs?v=20261115-saju-reopen1';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
-import { SajuProfilePicker } from './profile-picker.mjs?v=20261113-saju-easy1';
+import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-copy1';
+import { attachEntryFlow } from './entry-flow.mjs?v=20261115-saju-reopen1';
 
 const $ = id => document.getElementById(id);
 const form = $('birth-form');
+const directory = openCatalogChoice(document);
+const entryFlow = attachEntryFlow(form);
 const submit = $('open-story');
 const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 let reducedMotion = reduceQuery.matches;
@@ -12,6 +16,7 @@ let detailModulesPromise;
 let billingPromise;
 let billing;
 let billingInitialized = false;
+let billingInitFailed = false;
 let billingSignedIn = false;
 let billingMode = false;
 let busy = false;
@@ -70,7 +75,10 @@ appendOptions($('birth-month'), 1, 12, '월');
 appendOptions($('birth-day'), 1, 31, '일');
 appendOptions($('birth-hour'), 0, 23, '시', true);
 appendOptions($('birth-minute'), 0, 59, '분', true);
-$('birth-year').max = String(Math.min(2050, Number(new Intl.DateTimeFormat('en', {year:'numeric',timeZone:'Asia/Seoul'}).format(new Date()))));
+function updateBirthYearLimit() {
+  $('birth-year').max = String(Math.min(2050,koreanYear()));
+}
+updateBirthYearLimit();
 function setMotion() {
   document.documentElement.dataset.reducedMotion = String(reducedMotion);
   $('motion-toggle').setAttribute('aria-pressed', String(reducedMotion));
@@ -119,7 +127,7 @@ function updateTime() {
   $('time-fields').hidden = unknown;
   $('birth-hour').disabled = unknown;
   $('birth-minute').disabled = unknown;
-  $('time-help').textContent = unknown ? '시간을 몰라도 상세 풀이를 볼 수 있어요.' : '한국 표준시로 입력해 주세요. 00시는 자정, 12시는 정오예요.';
+  $('time-help').textContent = unknown ? '시간을 모르면 대운은 오전 6시 00분을 기준으로 계산해요.' : '한국 표준시로 입력해 주세요. 00시는 자정, 12시는 정오예요.';
   clearError();
 }
 form.querySelectorAll('input[name="calendar"]').forEach(input => input.addEventListener('change', updateCalendar));
@@ -139,7 +147,10 @@ const profilePicker=new SajuProfilePicker({
       ...form.querySelectorAll('input[name="calendar"]')],
     read:readSavedPerson,delay:600,
   },
-  fill:profile=>fillPerson(profile),
+  fill:profile=>{
+    fillPerson(profile);
+    if (directory.saved) void entryFlow.advance();
+  },
   clear:()=>fillPerson({name:'',gender:null,birth:{calendar:'solar',year:'',month:'',day:'',leapMonth:false,hour:null,minute:0}}),
 });
 
@@ -160,6 +171,7 @@ function fillPerson({name,gender,birth}) {
   $('birth-minute').value=birth.hour===null?'':String(birth.minute);
   updateTime();
   scheduleEntryCheck();
+  entryFlow.refresh();
 }
 
 function plainWarning(message) {
@@ -207,6 +219,7 @@ let entryCheckTimer;
 let quoteGeneration = 0;
 let currentAccess = null;
 let accessTimer;
+let readingRefreshTimer;
 
 function koreanYear(now = new Date()) {
   return Number(new Intl.DateTimeFormat('en', {year:'numeric',timeZone:'Asia/Seoul'}).format(now));
@@ -259,6 +272,7 @@ function accessEndLabel(access) {
 }
 function expireCurrentReading(force=false) {
   if (!currentDetail || (!force && activeAccess(currentDetail.access))) return false;
+  clearTimeout(readingRefreshTimer);
   currentDetail=null;
   $('report-content').replaceChildren();
   delete $('report-content').dataset.topic;
@@ -308,10 +322,45 @@ async function calculateBirth(input) {
 function validEntryQuote() {
   return entryQuote && entryQuote.signature===birthSignature() && entryQuote.owner===billing?.user ? entryQuote : null;
 }
+function entryTickets(quote) {
+  if (!quote) return [];
+  const status = quote.status;
+  const years = [...$('entry-year').options].map(option => Number(option.value));
+  const candidates = [{topic:'lifelong', year:0}];
+  for (const year of years) {
+    for (const topic of ['annual','monthly','all']) candidates.push({topic, year});
+  }
+  return candidates.filter(choice => owned(status,choice)).map(choice => ({...choice, label:targetLabel(choice)}));
+}
+function chooseEntryTarget(choice) {
+  form.querySelector('input[name="entry-topic"][value="'+choice.topic+'"]').checked = true;
+  if (choice.year) $('entry-year').value = String(choice.year);
+}
 function updateEntryOffer() {
-  const target = targetFrom('entry');
-  $('entry-year-field').hidden = target.topic==='lifelong';
   const quote = validEntryQuote();
+  let target = targetFrom('entry');
+  if (directory.saved) {
+    const choices = entryTickets(quote);
+    if (choices.length && !choices.some(choice => sameTarget(choice,target))) {
+      chooseEntryTarget(choices[0]);
+      target = targetFrom('entry');
+    }
+    const state = billingInitFailed || entryQuoteError ? 'error' : !billingInitialized ? 'pending'
+      : !billingSignedIn ? 'login' : !quote || entryCheckPending ? 'pending' : choices.length ? 'available' : 'empty';
+    showTickets($('ticket-list'), {choices,state,busy,retry:retryEntryStatus,select:choice=>{
+      if (busy || !owned(validEntryQuote()?.status,choice)) { updateEntryOffer(); return; }
+      chooseEntryTarget(choice);
+      updateEntryOffer();
+      submit.click();
+    }});
+    $('entry-check-error').hidden=true;
+    $('payment-status').hidden=true;
+    $('login-link').hidden=true;
+  }
+  $('change-product').hidden = directory.saved;
+  $('choice-name').textContent = TOPICS[target.topic].label;
+  $('session-name').textContent = directory.saved ? '내 풀이 다시 보기' : TOPICS[target.topic].label;
+  $('entry-year-field').hidden = directory.saved || target.topic==='lifelong';
   const preview = Boolean(billing?.adminPreview);
   const purchased = owned(quote?.status,target);
   document.querySelectorAll('[data-entry-price]').forEach(value => {
@@ -320,12 +369,16 @@ function updateEntryOffer() {
     value.textContent = preview ? '차감 없음' : owned(quote?.status,choice) ? '이용 가능' : priceLabel(quote?.status,choice);
   });
   $('entry-price-value').textContent = `${targetLabel(target)} · ${preview?'관리자 미리보기':purchased?'추가 차감 없음':priceLabel(quote?.status,target)}`;
-  submit.dataset.expectedCharge=String(preview?0:payable(quote?.status,target));
+  submit.dataset.expectedCharge=String(directory.saved || preview ? 0 : payable(quote?.status,target));
+  if (directory.saved) {
+    $('entry-price-value').textContent = purchased ? '다시 보기 · 0쭈' : '';
+    $('entry-price-note').textContent = '결제한 시각부터 24시간 안에 다시 보는 풀이는 0쭈예요.';
+  }
   scheduleAccessExpiry();
   if (busy) return;
-  submit.disabled = entryCheckPending || entryQuoteError;
+  submit.disabled = entryCheckPending || entryQuoteError || (directory.saved && !purchased);
   submit.querySelector('span').textContent = entryCheckPending ? '구매 내역 확인 중…'
-    : preview ? `${targetLabel(target)} 미리보기` : purchased ? `${targetLabel(target)} 다시 보기 · 0쭈` : `${priceLabel(quote?.status,target)}로 ${targetLabel(target)} 펼치기`;
+    : directory.saved && !purchased ? '내 풀이 다시 보기' : preview ? `${targetLabel(target)} 미리보기` : purchased ? `${targetLabel(target)} 다시 보기 · 0쭈` : `${priceLabel(quote?.status,target)}로 ${targetLabel(target)} 펼치기`;
 }
 function updateProductOffer() {
   expireCurrentReading();
@@ -349,6 +402,7 @@ function updateProductOffer() {
   scheduleAccessExpiry();
 }
 function scheduleEntryCheck() {
+  updateBirthYearLimit();
   updateZodiacPreview();
   clearTimeout(entryCheckTimer);
   quoteGeneration++;
@@ -391,7 +445,14 @@ async function refreshEntryQuote() {
 }
 form.addEventListener('input',scheduleEntryCheck);
 form.addEventListener('change',scheduleEntryCheck);
-$('retry-entry-status').addEventListener('click',()=>void refreshEntryQuote());
+async function retryEntryStatus() {
+  if (busy || entryCheckPending) return;
+  if (!billingInitialized) {
+    try { await readyBilling(); } catch { return; }
+  }
+  await refreshEntryQuote();
+}
+$('retry-entry-status').addEventListener('click',retryEntryStatus);
 document.querySelectorAll('input[name="report-topic"]').forEach(input=>input.addEventListener('change',updateProductOffer));
 $('fortune-year').addEventListener('change',updateProductOffer);
 document.querySelectorAll('.reading-size-control button').forEach(button=>button.addEventListener('click',()=>{
@@ -400,12 +461,52 @@ document.querySelectorAll('.reading-size-control button').forEach(button=>button
   document.querySelectorAll('.reading-size-control button').forEach(choice=>choice.setAttribute('aria-pressed',String(choice===button)));
 }));
 
+function readingTimeState({topic,fortune,reading},now=new Date()) {
+  const time=now.getTime(),year=koreanYear(now),state=[];
+  const inside=(start,end)=>time>=Date.parse(start)&&time<Date.parse(end);
+  if (['annual','all'].includes(topic)) state.push(
+    inside(fortune.annual.start.iso,fortune.annual.end.iso),
+    year===fortune.year&&time<Date.parse(fortune.annual.start.iso));
+  if (['monthly','all'].includes(topic)) state.push(
+    fortune.months.find(month=>inside(month.start.iso,month.end.iso))?.month??null,
+    year===fortune.year&&time<Date.parse(fortune.months[0].start.iso));
+  const daeun=reading.daeun;
+  if (['lifelong','all'].includes(topic)&&daeun?.available) state.push(
+    daeun.periods.find(period=>inside(period.startsAt,period.endsAt))?.index??null,
+    time<Date.parse(daeun.startsAt));
+  return JSON.stringify(state);
+}
+function scheduleReadingRefresh({retryChanged=true}={}) {
+  clearTimeout(readingRefreshTimer);
+  const detail=currentDetail;
+  if (!detail||reportBusy||$('result').hidden||document.visibilityState!=='visible'||!activeAccess(detail.access)) return;
+  const now=Date.now(),dates=[];
+  if (['annual','all'].includes(detail.topic)) dates.push(detail.fortune.annual.start.iso,detail.fortune.annual.end.iso);
+  if (['monthly','all'].includes(detail.topic)) for (const month of detail.fortune.months) dates.push(month.start.iso,month.end.iso);
+  if (['lifelong','all'].includes(detail.topic)&&detail.reading.daeun?.available) {
+    for (const period of detail.reading.daeun.periods) dates.push(period.startsAt,period.endsAt);
+  }
+  const boundaries=dates.map(Date.parse);
+  if (['annual','monthly','all'].includes(detail.topic)) boundaries.push(Date.UTC(koreanYear()+1,0,1)-9*3600000);
+  const expires=now+billing.remainingMs(detail.access);
+  const changed=retryChanged&&detail.timeState!==readingTimeState(detail);
+  const next=changed?now:Math.min(...boundaries.filter(time=>time>now&&time<expires));
+  if (!Number.isFinite(next)) return;
+  // Wake at an actual displayed boundary, not on a polling interval. Hidden
+  // pages check again on resume, and an expired receipt never reopens itself.
+  readingRefreshTimer=setTimeout(()=>{
+    if (detail!==currentDetail||reportBusy||document.visibilityState!=='visible') return;
+    if (detail.timeState!==readingTimeState(detail)) void refreshReportAccess();
+    else scheduleReadingRefresh();
+  },Math.max(1,Math.min(next-now,2147483647)));
+}
+
 async function prepareDetailedReading(chart,target,person=currentPerson||readPerson()) {
   detailModulesPromise ||= Promise.all([
-    import('./fortune-data.mjs?v=20261113-saju-reader1'),
-    import('./readings.mjs?v=20261114-saju-wind2'),
-    import('./report-view.mjs?v=20261114-saju-wind1'),
-    import('./daeun.mjs?v=20261113-saju-reader1'),
+    import('./fortune-data.mjs?v=20261114-saju-correction1'),
+    import('./readings.mjs?v=20261114-saju-final-review2'),
+    import('./report-view.mjs?v=20261115-saju-menus1'),
+    import('./daeun.mjs?v=20261114-saju-correction1'),
     zodiacModule()
   ]).catch(error=>{detailModulesPromise=null;throw error;});
   const [dataModule,readingModule,viewModule,daeunModule,zodiacData]=await detailModulesPromise;
@@ -419,12 +520,16 @@ async function prepareDetailedReading(chart,target,person=currentPerson||readPer
   if (typeof copyText!=='string' || !copyText.trim()) throw new Error('product_reading_incomplete');
   const content=document.createElement('div');
   viewModule.renderDetailedReport(content,{reading,fortune,topic:target.topic});
-  return {fortune,reading,content,copyText,target,person:{...person},zodiac};
+  return {fortune,reading,content,copyText,target,person:{...person},zodiac,
+    timeState:readingTimeState({...target,fortune,reading},now),
+    restorePage:pageId=>viewModule.restoreReadingPage(content,pageId)};
 }
-function commitDetailedReading(chart,{fortune,reading,content,copyText,target},access) {
+function commitDetailedReading(chart,{fortune,reading,content,copyText,target,timeState},access) {
   if (!activeAccess(access)) throw Object.assign(new Error('이용 시간이 끝났어요. 표시된 금액을 확인한 뒤 다시 펼쳐 주세요.'),{code:'access_expired'});
-  $('report-content').replaceChildren(...content.childNodes);
-  currentDetail={chart,topic:target.topic,year:target.year,reading,fortune,copyText,access};
+  // The prepared host owns the pager registration used by in-reading links.
+  // Move it intact so decade, month and detail links can reveal their pages.
+  $('report-content').replaceChildren(content);
+  currentDetail={chart,topic:target.topic,year:target.year,reading,fortune,copyText,access,timeState};
   $('result-warnings').hidden=!$('result-warnings').childElementCount;
   $('report-content').dataset.topic=target.topic;
   $('report-content').dataset.year=String(target.year);
@@ -443,6 +548,32 @@ function commitDetailedReading(chart,{fortune,reading,content,copyText,target},a
   $('copy-reading').disabled=false;
   $('report-error').hidden=true;
   updateProductOffer();
+  scheduleReadingRefresh();
+}
+
+async function refreshReadingTime(chart,generation) {
+  const detail=currentDetail;
+  if (!detail||!activeAccess(detail.access)||detail.timeState===readingTimeState(detail)) return;
+  // Refresh only what is already open. A product/year merely selected in the
+  // purchase controls is never prepared or bought by a clock update.
+  const prepared=await prepareDetailedReading(chart,{topic:detail.topic,year:detail.year});
+  if (generation!==reportGeneration||currentReading!==chart||currentDetail!==detail||$('result').hidden) return;
+  if (!activeAccess(detail.access)) { expireCurrentReading(); return; }
+  const host=$('report-content'),focused=document.activeElement;
+  const hadFocus=host.contains(focused),focusId=hadFocus?focused.id:'';
+  const step=hadFocus?[...host.querySelectorAll('.reading-pager-step')].indexOf(focused):-1;
+  const optionsOpen=$('other-reading-options').open;
+  const scroll={left:window.scrollX,top:window.scrollY,behavior:'instant'};
+  if(host.firstElementChild?.dataset.mapView==='detail')prepared.restorePage(host.querySelector('.reading-page-select')?.value);
+  commitDetailedReading(chart,prepared,detail.access);
+  $('other-reading-options').open=optionsOpen;
+  if (hadFocus) {
+    const replacement=(focusId&&document.getElementById(focusId))
+      ||(step>=0&&host.querySelectorAll('.reading-pager-step')[step])
+      ||host.querySelector('[data-reader-current]');
+    replacement?.focus({preventScroll:true});
+  }
+  window.scrollTo(scroll);
 }
 function recordReceipt(status,receipt,target) {
   const next={...status,coins:receipt.coins??status.coins,entitlements:[...(status.entitlements||[])]};
@@ -473,7 +604,9 @@ function openInitialReport(chart,prepared,status,receipt,signature) {
 async function refreshReportAccess() {
   if (!currentReading || reportBusy) return;
   const chart=currentReading,generation=++reportGeneration;
+  clearTimeout(readingRefreshTimer);
   reportBusy=true;
+  let refreshed=false;
   $('retry-report').disabled=true;
   updateProductOffer();
   try {
@@ -483,6 +616,9 @@ async function refreshReportAccess() {
     currentAccess={chart,owner:payment.user,status};
     fillYears($('fortune-year'),chart.solar.year,Number($('fortune-year').value),status);
     if (currentDetail && !owned(status,currentDetail)) expireCurrentReading(true);
+    await refreshReadingTime(chart,generation);
+    if (generation!==reportGeneration || currentReading!==chart || $('result').hidden) return;
+    refreshed=true;
     $('report-error').hidden=true;
   } catch {
     if (generation!==reportGeneration || currentReading!==chart) return;
@@ -495,6 +631,7 @@ async function refreshReportAccess() {
       reportBusy=false;
       $('retry-report').disabled=false;
       updateProductOffer();
+      scheduleReadingRefresh({retryChanged:refreshed});
     }
   }
 }
@@ -528,7 +665,7 @@ async function openSelectedProduct() {
     currentAccess={chart,owner:payment.user,status:recordReceipt(status,receipt,target)};
     commitDetailedReading(chart,prepared,receipt);
     if (receipt.replayed) toast('구매한 항목을 추가 차감 없이 다시 펼쳤어요.');
-    $('detailed-title').focus({preventScroll:true});
+    $('report-content').querySelector('.map-title')?.focus();
   } catch (error) {
     if (generation!==reportGeneration || currentReading!==chart || $('result').hidden) return;
     if (!inspected) currentAccess=null;
@@ -543,6 +680,7 @@ async function openSelectedProduct() {
       $('copy-reading').disabled=!currentDetail;
       $('report-status').classList.remove('is-loading');
       updateProductOffer();
+      scheduleReadingRefresh();
     }
   }
 }
@@ -561,6 +699,7 @@ function resetAfterAccountChange() {
   submitGeneration++;reportGeneration++;quoteGeneration++;
   clearTimeout(entryCheckTimer);
   clearTimeout(accessTimer);
+  clearTimeout(readingRefreshTimer);
   busy=false;reportBusy=false;entryCheckPending=false;entryQuoteError=false;
   currentReading=null;currentPerson=null;currentDetail=null;currentAccess=null;entryQuote=null;
   $('result').hidden=true;$('intro').hidden=false;
@@ -573,11 +712,10 @@ function resetAfterAccountChange() {
   $('reading-controls').hidden=true;$('other-reading-options').open=false;
   $('copy-reading').disabled=true;
   form.reset();
+  openCatalogChoice(document);
   profilePicker.resetSelection();profilePicker.setDisabled(false);profilePicker.refresh();
   form.querySelectorAll('fieldset').forEach(fieldset=>{fieldset.disabled=false;});
   form.removeAttribute('aria-busy');
-  document.querySelector('.skip-link').href='#birth-form';
-  document.querySelector('.skip-link').textContent='출생 정보 입력으로 바로가기';
   fillYears($('entry-year'));
   updateCalendar();updateTime();updateZodiacPreview();updateEntryOffer();
 }
@@ -588,16 +726,18 @@ function recordFortuneVisit() {
 
 async function readyBilling() {
   if (billingPromise) return billingPromise;
+  billingInitFailed=false;
+  updateEntryOffer();
   const task=(async()=>{
-    const {SajuPayment}=await import('./payment.js?v=20261113-saju-lists1');
+    const {SajuPayment}=await import('./payment.js?v=20261115-saju-reopen1');
     billing ||= new SajuPayment({
       onBalance:()=>updateBillingStatus(),
       onIdentityReady:()=>profilePicker.refresh(),
       onAccountChange:()=>{
-        billingSignedIn=false;billingPromise=null;
+        billingInitialized=false;billingSignedIn=false;billingInitFailed=!billing.identityReady;billingPromise=null;
         resetAfterAccountChange();
         updateBillingStatus();
-        if (billing.identityReady) Promise.resolve().then(()=>readyBilling()).catch(()=>{$('payment-status').textContent='로그인 정보를 다시 확인해 주세요. 펼치기를 누르면 재시도해요.';});
+        if (billing.identityReady) Promise.resolve().then(()=>readyBilling()).catch(()=>{});
       },
       onModeChange:({adminPreview})=>{
         if (billingInitialized&&billingMode!==Boolean(adminPreview)) resetAfterAccountChange();
@@ -607,6 +747,7 @@ async function readyBilling() {
     });
     const state=await billing.init();
     recordFortuneVisit();
+    if (billingPromise!==task) throw new Error('account_changed');
     billingInitialized=true;billingSignedIn=state.signedIn===true;billingMode=Boolean(state.adminPreview);
     profilePicker.refresh();
     updateBillingStatus();
@@ -614,11 +755,19 @@ async function readyBilling() {
     return billing;
   })();
   billingPromise=task;
-  try{return await task;}catch(error){if(billingPromise===task)billingPromise=null;throw error;}
+  try{return await task;}catch(error){
+    if(billingPromise===task){
+      billingPromise=null;billingInitFailed=true;
+      $('payment-status').textContent='이용 정보를 확인하지 못했어요. 펼치기를 누르면 다시 확인해요.';
+      updateEntryOffer();
+    }
+    throw error;
+  }
 }
 form.addEventListener('submit',async event=>{
   event.preventDefault();
-  if (busy || !form.reportValidity()) return;
+  updateBirthYearLimit();
+  if (busy || entryQuoteError || !directory.entering || (directory.saved && !owned(validEntryQuote()?.status,targetFrom('entry'))) || !form.reportValidity()) return;
   const clickedCharge=Number(submit.dataset.expectedCharge);
   busy=true;
   const generation=++submitGeneration;
@@ -648,6 +797,7 @@ form.addEventListener('submit',async event=>{
     if(!stillCurrent())return;
     entryQuote={signature,chart,status,owner:payment.user};
     entryQuoteError=false;$('entry-check-error').hidden=true;
+    if (directory.saved && !owned(status,target)) throw Object.assign(new Error('이용 시간이 끝났어요. 풀이 목록에서 다시 선택해 주세요.'),{code:'access_expired'});
     const prepared=await prepareDetailedReading(chart,target,person);
     if(!stillCurrent())return;
     submit.querySelector('span').textContent='선택한 항목의 이용 내역 확인 중…';
@@ -683,9 +833,10 @@ form.addEventListener('submit',async event=>{
 // Enable only after the submission listener can prevent native GET requests.
 updateEntryOffer();
 $('payment-status').textContent='로그인과 보유 쭈를 확인하고 있어요.';
-void readyBilling().catch(()=>{$('payment-status').textContent='이용 정보를 확인하지 못했어요. 펼치기를 누르면 다시 확인해요.';$('login-link').hidden=false;});
+void readyBilling().catch(()=>{});
 $('edit-birth').addEventListener('click',()=>{
   reportGeneration++;
+  clearTimeout(readingRefreshTimer);
   reportBusy=false;currentReading=null;currentPerson=null;currentDetail=null;currentAccess=null;
   $('report-content').replaceChildren();
   delete $('report-content').dataset.topic;
@@ -694,8 +845,9 @@ $('edit-birth').addEventListener('click',()=>{
   document.querySelector('.skip-link').href='#birth-form';
   document.querySelector('.skip-link').textContent='출생 정보 입력으로 바로가기';
   clearError();updateEntryOffer();scheduleEntryCheck();
+  entryFlow.reset();
   $('birth-year').focus({preventScroll:true});
-  form.scrollIntoView({block:'center',behavior:reducedMotion?'instant':'smooth'});
+  form.scrollIntoView({block:'start',behavior:reducedMotion?'instant':'smooth'});
 });
 function toast(message){clearTimeout(toastTimer);$('status').textContent=message;$('status').classList.add('is-visible');toastTimer=setTimeout(()=>$('status').classList.remove('is-visible'),2600);}
 $('copy-reading').addEventListener('click',async()=>{
@@ -706,13 +858,15 @@ $('copy-reading').addEventListener('click',async()=>{
 });
 
 function resumeAccessCheck() {
+  updateBirthYearLimit();
   if(!busy)profilePicker.refresh({preserveStatus:profilePicker.statusElement.dataset.state==='error'});
   expireCurrentReading();
   updateEntryOffer();
   if (currentReading) {
     updateProductOffer();
     if (!reportBusy) void refreshReportAccess();
-  } else if (!busy && billingSignedIn && hasBirth()) void refreshEntryQuote();
+  } else if (directory.saved && billingInitFailed && hasBirth()) void retryEntryStatus();
+  else if (!busy && billingSignedIn && hasBirth()) void refreshEntryQuote();
 }
 window.addEventListener('focus',resumeAccessCheck);
 window.addEventListener('pageshow',resumeAccessCheck);
@@ -721,6 +875,7 @@ window.addEventListener('storage',event=>{
 });
 document.addEventListener('visibilitychange',()=>{
   if (document.visibilityState==='visible') resumeAccessCheck();
+  else clearTimeout(readingRefreshTimer);
 });
 
 // Contents links reveal their requested section without exposing every chapter.

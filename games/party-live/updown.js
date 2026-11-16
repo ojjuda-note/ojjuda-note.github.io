@@ -19,8 +19,8 @@
   function view(s, ui) {
     const g = s.game;
     if (s.phase === 'done') {
-      return '<h1 data-result>' + ui.esc(s.players[g.winner]) + '님이 맞혔어요!</h1>' +
-        '<div class="updown-range"><span>정답</span><strong>' + g.answer + '</strong></div>' + lastGuess(s, ui);
+      return '<h1 class="suite-heading" data-result>' + ui.esc(s.players[g.winner]) + '님이 맞혔어요!</h1>' +
+        '<div class="updown-range"><span>정답</span><strong>' + g.answer + '</strong></div><p class="suite-hint">숨은 숫자를 정확히 맞혔어요.</p>' + lastGuess(s, ui);
     }
     const mine = s.me === g.current;
     const heading = mine ? '내 차례예요' : ui.esc(s.players[g.current]) + '님 차례예요';
@@ -29,7 +29,7 @@
       '<div class="updown-entry"><input id="updown-guess" inputmode="numeric" type="number" step="1" min="' +
       g.low + '" max="' + g.high + '" autocomplete="off" aria-describedby="updown-range" required>' +
       '<button class="action" type="submit">숫자 맞히기</button></div></form>';
-    return '<h1 data-current>' + heading + '</h1>' +
+    return '<h1 class="suite-heading" data-current>' + heading + '</h1>' +
       '<div class="updown-range"><span>가능한 숫자</span><strong id="updown-range">' + range + '</strong></div>' +
       lastGuess(s, ui) + (mine ? form : '');
   }

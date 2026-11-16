@@ -11,7 +11,7 @@ const retention=(n,read=false)=>({id:uuid(n),card_id:uuid(n+100),created_at:'202
 const missing=(code='PGRST202',name='public.app_notification_summary')=>({error:{code,
   message:code==='PGRST202'?`Could not find the function ${name} without parameters in the schema cache`:`function ${name}() does not exist`}});
 
-function fixture({user='member-a',handle}={}){
+function fixture({user='member-a',handle,refreshClosedBadge}={}){
   const dom=new JSDOM('<main><div data-notifications-slot></div><span data-notification-badge hidden></span><i data-notification-dot hidden></i><button data-note-my></button></main>',
     {url:'https://ojjuda.kr/world.html',runScripts:'outside-only',pretendToBeVisual:true});
   const w=dom.window,calls=[],timers=[],intervals=[],broadcasts=[],channels=[],openedGroups=[];
@@ -28,7 +28,7 @@ function fixture({user='member-a',handle}={}){
   const invoke=async(schema,name,args)=>{calls.push({schema,name,user:identity,args});return responder(name,args,identity,schema);};
   const client={rpc:(name,args)=>invoke('public',name,args),schema:schema=>({rpc:(name,args)=>invoke(schema,name,args)}),
     auth:{onAuthStateChange(callback){authCallback=callback;}}};
-  w.eval(source);const api=w.OjjudaNotifications.install({client,getUserId:()=>identity,onOpenGroup:id=>openedGroups.push(id)});
+  w.eval(source);const api=w.OjjudaNotifications.install({client,getUserId:()=>identity,refreshClosedBadge,onOpenGroup:id=>openedGroups.push(id)});
   return {dom,w,api,calls,channels,broadcasts,openedGroups,
     badge:()=>({hidden:w.document.querySelector('#note-notification-badge').hidden,text:w.document.querySelector('#note-notification-badge').textContent}),
     respond:callback=>{responder=callback;},advance:ms=>{clock+=ms;},
@@ -183,4 +183,151 @@ test('visit gifts need explicit confirmation even after mark-all; a repeated cli
     pending.resolve();await settle();
     assert.match(row().textContent,/지급 완료/);assert.equal(row().querySelector('button'),null);
   } finally {f.close();}
+});
+
+test('the bell shows the drinking room title and can decline a friend invitation',async()=>{
+  const target=uuid(712);
+  let pending=true;
+  const f=fixture({handle:async(name,args)=>{
+    if(name==='arcade_friend_invite'){
+      assert.equal(args.p_id,target);assert.equal(args.p_action,'decline');pending=false;return {data:{ok:true}};
+    }
+    if(name==='app_notification_summary')return {data:{notifications:pending?1:0,retention:0}};
+    if(name==='list_retention_alerts')return {data:[]};
+    if(name==='list_app_notifications')return {data:{items:pending?[{id:'world:drinking_invite:'+target,kind:'drinking_invite',
+      source:'world',target_id:target,room_title:'수달의 테이블',sender_name:'친구',created_at:'2026-11-15T01:00:00Z'}]:[],
+      unread_count:pending?1:0,as_of:'2026-11-15T01:00:01Z'}};
+    return {data:0};
+  }});
+  try{
+    await f.boot();f.api.open();await settle();
+    const d=f.w.document;
+    assert.match(d.querySelector('.nn-copy').textContent,/친구.*수달의 테이블/);
+    assert.ok(d.querySelector('[data-drinking-invite-action="accept"]'));
+    d.querySelector('[data-drinking-invite-action="decline"]').click();await settle();
+    assert.equal(d.querySelector('[data-drinking-invite-action]'),null);
+    assert.equal(f.calls.filter(c=>c.name==='arcade_friend_invite').length,1);
+  }finally{f.close();}
+});
+
+test('read bursts during a pending badge request use one fresh snapshot',async()=>{
+  const first=deferred(),latest=deferred(),f=fixture({handle:()=>first.promise});
+  try {
+    await f.boot();
+    f.respond(()=>latest.promise);
+    for(let i=0;i<5;i++)f.channels[0].onmessage({data:{type:'read',user:'member-a'}});
+    await settle();
+    assert.equal(f.calls.length,2,'the new snapshot starts without waiting for the obsolete one');
+    first.resolve({data:{notifications:99,retention:0}});await settle();
+    assert.equal(f.badge().hidden,true,'the superseded count stays off screen');
+    assert.equal(f.calls.length,2);
+    latest.resolve({data:{notifications:1,retention:0}});await settle();
+    assert.equal(f.badge().text,'1');
+  }finally{f.close();}
+});
+
+test('an open list reconciles reads received during loading without a manual refresh',async()=>{
+  const f=fixture(),oldList=deferred();
+  const list=n=>({data:{items:[],unread_count:n,as_of:'2026-11-15T00:00:00Z'}});
+  try {
+    await f.boot();f.calls.length=0;
+    f.respond(name=>name==='list_app_notifications'?oldList.promise:{data:[]});
+    f.api.open();
+    for(let i=0;i<5;i++)f.channels[0].onmessage({data:{type:'read',user:'member-a'}});
+    f.respond(name=>name==='list_app_notifications'?list(0):{data:[]});
+    oldList.resolve(list(9));await settle();
+    assert.deepEqual(f.calls.map(c=>c.name),['list_app_notifications','list_retention_alerts','list_app_notifications','list_retention_alerts']);
+    assert.equal(f.badge().hidden,true);
+    assert.equal(f.w.document.querySelector('.nn-summary').textContent,'새 알림이 없어요.');
+  }finally{f.close();}
+});
+
+test('reads that arrive during a refresh leave at most one trailing count for that account',async()=>{
+  const f=fixture(),pending=deferred();
+  try {
+    await f.boot();f.calls.length=0;
+    f.respond(()=>pending.promise);
+    const signal=()=>f.channels[0].onmessage({data:{type:'read',user:'member-a'}});
+    signal();await settle();
+    for(let i=0;i<4;i++){signal();await settle();}
+    assert.equal(f.calls.length,1);
+    f.respond(()=>({data:{notifications:0,retention:0}}));
+    pending.resolve({data:{notifications:8,retention:0}});await settle();
+    assert.equal(f.calls.length,2);assert.equal(f.badge().hidden,true);
+  }finally{f.close();}
+});
+
+test('retry after a failed next page resumes at the same cursor without replacing earlier rows', async () => {
+  const page = id => ({id:uuid(id), kind:'like', created_at:'2026-10-30T00:00:00Z'});
+  const f = fixture();
+  try {
+    await f.boot();
+    const retry = deferred();
+    let thirdPageAttempts = 0;
+    f.respond((name,args) => {
+      if (name === 'list_retention_alerts') return {data:[retention(20)]};
+      const last = args.p_before_id;
+      if (last === uuid(2)) {
+        if (++thirdPageAttempts === 1) return {error:{message:'temporary'}};
+        return retry.promise;
+      }
+      const item = page(last ? 2 : 1);
+      return {data:{items:[item], unread_count:3, as_of:item.created_at, has_more:true, next_cursor:item}};
+    });
+    const doc = f.w.document;
+    f.api.open(); await settle();
+    doc.querySelector('#note-notifications-more').click(); await settle();
+    const firstRow = doc.querySelector('[data-notification-id="'+uuid(1)+'"]');
+    doc.querySelector('#note-notifications-more').click(); await settle();
+    const retryButton = [...doc.querySelectorAll('.nn-pagination button')].find(b=>b.textContent==='다시 시도');
+    assert.ok(retryButton);
+    f.calls.length = 0;
+    retryButton.click(); retryButton.click(); await settle();
+    assert.deepEqual(f.calls.map(c=>[c.name,c.args.p_before_id]),[['list_app_notifications',uuid(2)]]);
+    assert.equal(doc.querySelector('[data-notification-id="'+uuid(1)+'"]'),firstRow);
+    retry.resolve({data:{items:[page(3)],unread_count:3,has_more:false,next_cursor:null}});
+    await settle();
+    assert.equal(doc.querySelectorAll('[data-notification-id]').length,4);
+    assert.equal(doc.querySelector('.nn-pagination button'),null);
+  } finally { f.close(); }
+});
+
+test('retry on initial load still refreshes both notification sources', async () => {
+  const f = fixture();
+  try {
+    await f.boot();
+    f.respond(()=>({error:{message:'temporary'}}));
+    f.api.open(); await settle();
+    f.calls.length=0;
+    f.respond(name=>name==='list_retention_alerts'?{data:[]}:{data:{items:[],unread_count:0,has_more:false}});
+    f.w.document.querySelector('.nn-pagination button').click(); await settle();
+    assert.deepEqual(f.calls.map(c=>c.name),['list_app_notifications','list_retention_alerts']);
+    assert.equal(f.w.document.querySelector('.nn-pagination button'),null);
+  } finally { f.close(); }
+});
+
+test('the embedded Park skips hidden badge reads and still reconciles its open inbox', async () => {
+  const f = fixture({refreshClosedBadge:false});
+  try {
+    await f.boot();
+    f.advance(15000); await f.poll();
+    f.visibility('hidden'); f.visibility('visible');
+    await f.api.refresh();
+    f.channels[0].onmessage({data:{type:'read',user:'member-a'}});
+    await settle();
+    assert.deepEqual(f.calls, [], 'the World header owns the visible badge');
+
+    f.api.open(); await settle();
+    assert.deepEqual(f.calls.map(c=>c.name), ['list_app_notifications','list_retention_alerts']);
+    f.calls.length=0;
+    f.channels[0].onmessage({data:{type:'read',user:'member-a'}});
+    await settle();
+    assert.deepEqual(f.calls.map(c=>c.name), ['list_app_notifications','list_retention_alerts']);
+
+    f.api.close(); f.calls.length=0;
+    await f.user('member-b'); await f.poll();
+    assert.deepEqual(f.calls, []);
+    f.api.open(); await settle();
+    assert.deepEqual(f.calls.map(c=>c.user), ['member-b','member-b']);
+  } finally { f.close(); }
 });

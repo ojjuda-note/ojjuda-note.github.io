@@ -1,0 +1,32 @@
+/* Ink and cyan finishes; initial letters, five-second timing and targets keep their sizing. */
+body.dp-playing[data-dp-kind="initial"] {
+  --suite-bg: radial-gradient(ellipse at 30% 18%, #153b55, #0c1d35 58%, #080f20);
+  --suite-surface: linear-gradient(140deg, #15324a, #101e34 78%);
+  --suite-subtle: #10273c;
+  --suite-ink: #edf7fb;
+  --suite-muted: #abc5d6;
+  --suite-accent: #75e0ed;
+  --suite-accent-ink: #103440;
+  --suite-line: #92cadd3b;
+}
+body.dp-playing[data-dp-kind="initial"] .stage-art { background: radial-gradient(ellipse at 48% 58%, #397e96, #204763 52%, #12263d); }
+body.dp-playing[data-dp-kind="initial"] .stage-art::before { inset: 0; background: radial-gradient(ellipse at 50% 15%, #b7f9ff25, transparent 65%); filter: none; }
+body.dp-playing[data-dp-kind="initial"] .stage-art .game-art {
+  mask-image: radial-gradient(ellipse at 50% 52%, #000 42%, #000e 68%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 52%, #000 42%, #000e 68%, transparent 100%);
+}
+body.dp-playing[data-dp-kind="initial"] .initial-word {
+  background: linear-gradient(#92d9e908 1px, transparent 1px), linear-gradient(90deg, #92d9e908 1px, transparent 1px), radial-gradient(ellipse at 50% 0, #1e4b62, #10263c 78%);
+  background-size: 28px 28px, 28px 28px, auto;
+  border-color: #88ced36b;
+  color: #d7fbff;
+  box-shadow: inset 0 1px #b9f6ff26, 0 12px 30px #030d1b4d;
+  text-shadow: 0 0 28px #75e0ed2e;
+}
+body.dp-playing[data-dp-kind="initial"][data-dp-phase="initial-live"] .play-body { background: radial-gradient(ellipse at 50% 25%, #58cde810, transparent 65%); }
+body.dp-playing[data-dp-kind="initial"][data-dp-phase="initial-live"] #app .play-body > h2 { color: #d7fbff; text-shadow: 0 0 28px #75e0ed2e; }
+body.dp-playing[data-dp-kind="initial"] #app .play-body > p b { color: #b7eef5; }
+body.dp-playing[data-dp-kind="initial"] :is(.initial-time, .countdown) { color: #75e0ed; font-variant-numeric: tabular-nums; text-shadow: 0 0 22px #75e0ed21; }
+body.dp-playing[data-dp-kind="initial"] #view #initial-out { background: #182b40; border-color: #9bbdcc4d; color: #dbeaf2; box-shadow: none; }
+body.dp-playing[data-dp-kind="initial"][data-dp-phase="intermission"] .turn-tag { background: #392b35; border-color: #dbaba64d; color: #edbdb6; }
+body.dp-playing[data-dp-kind="initial"][data-dp-phase="intermission"] :is(#app, #view) :is(.play-body > h2, .suite-heading) { color: #efcbc4; }

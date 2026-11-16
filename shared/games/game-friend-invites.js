@@ -5,7 +5,7 @@
   let refreshRequest=null, refreshAgain=false;
   let expiryTimer, countdownTimer, mountObserver, incoming=[], responses=[];
   const deadlines=new Map(), handled=new Set();
-  const names={matgo:'맞고',ttang:'월드땅따먹기',marble:'마블',tank:'탱크게임',roulette:'룰렛'};
+  const names={matgo:'맞고',ttang:'월드땅따먹기',marble:'마블',tank:'탱크게임',roulette:'룰렛',drinking:'술게임'};
   const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const message=error=>{
     const text=String(error?.message||error||'');
@@ -77,6 +77,8 @@
     if(invite){
       node.setAttribute('aria-label',`${item.sender_name}님의 ${names[item.kind]||'게임'} 초대`);
       node.innerHTML='<span class="ge-inline-copy" role="status" data-invite-status>친구가 게임에 초대했습니다.</span><button type="button" data-answer="accept">수락</button><button type="button" data-answer="decline">거부</button><span class="ge-inline-time" aria-label="남은 시간"><strong data-seconds></strong>초</span>';
+      if(item.kind==='drinking')node.querySelector('.ge-inline-copy').textContent=
+        (item.sender_name||'친구')+'님이 ‘'+(item.room_title||'술게임방')+'’에 초대했어요.';
       node.querySelector('.ge-inline-copy').title=node.getAttribute('aria-label');
     } else {
       node._focus=document.activeElement;

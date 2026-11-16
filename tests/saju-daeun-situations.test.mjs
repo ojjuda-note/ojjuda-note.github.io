@@ -88,17 +88,21 @@ test('the comparison with the previous decade cites both actual periods instead 
 });
 
 test('the full copy includes every new situation while keeping its source facts internal and missing periods uninvented',()=>{
-  const {reading}=build(),copy=copyDaeunReading(reading);
-  for(const period of reading.periods)for(const situation of period.situations) {
-    assert.ok(copy.includes(situation.label));assert.ok(copy.includes(situation.title));
-    for(const paragraph of situation.paragraphs)assert.ok(copy.includes(paragraph));
-    for(const id of situation.factIds) {
-      const entry=reading.facts.find(item=>item.id===id);
-      assert.ok(entry,'the situation remains linked to its actual source');
-      assert.ok(!copy.includes(entry.label+': '+entry.value));
+  for(const {reading} of [build(),build({...births[0],hour:null},'female')]) {
+    const copy=copyDaeunReading(reading);
+    assert.equal(reading.available,true);
+    if(reading.timeAssumed)assert.ok(copy.includes(reading.birthTimeNotice));
+    for(const period of reading.periods)for(const situation of period.situations) {
+      assert.ok(copy.includes(situation.label));assert.ok(copy.includes(situation.title));
+      for(const paragraph of situation.paragraphs)assert.ok(copy.includes(paragraph));
+      for(const id of situation.factIds) {
+        const entry=reading.facts.find(item=>item.id===id);
+        assert.ok(entry,'the situation remains linked to its actual source');
+        assert.ok(!copy.includes(entry.label+': '+entry.value));
+      }
     }
   }
-  for(const [birth,gender] of [[{...births[0],hour:null},'female'],[births[0],null]]) {
+  for(const [birth,gender] of [[{...births[0],hour:null},null],[births[0],null],[{year:2024,month:2,day:4,hour:17,minute:27},'female']]) {
     const unavailable=build(birth,gender).reading;
     assert.equal(unavailable.available,false);
     assert.deepEqual(unavailable.periods,[]);

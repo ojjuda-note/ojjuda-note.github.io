@@ -26,6 +26,11 @@ const ids = DECK.map(card => card.id);
 assert.equal(new Set(ids).size, 78);
 assert.deepEqual(Object.keys(CARD_PATTERNS).sort(), Array.from(ids).sort());
 assert.deepEqual(Object.keys(CARD_FOUNDATIONS).sort(), Array.from(ids).sort());
+// First-person copy must preserve the number four in the traditional artwork.
+assert.match(CARD_FOUNDATIONS.magician.symbol, /네 가지 무늬의 도구/u);
+assert.match(CARD_FOUNDATIONS.world.symbol, /네 모서리의 형상/u);
+assert.match(CARD_FOUNDATIONS.wands_four.symbol, /네 개의 지팡이/u);
+assert.match(getReading('wands_four', 'overall', 0).reference.label, /네 가지 무늬/u);
 
 // Every content key must be reachable with three real distinct cards. Checking
 // all 456,456 ordered draws also catches an accidentally unused theme or slot.
@@ -106,6 +111,21 @@ for (const invalid of [[], ['fool'], ['fool', 'fool', 'star'], ['missing', 'moon
 }
 assert.throws(() => getSummary(base, 'missing'), /tarot_corpus_missing_record/);
 assert.throws(() => getFortune('love', '999'), /tarot_corpus_missing_record/);
+for (const invalid of ['missing', '__proto__', null, undefined, {}, { id: 'missing' }, -1, 78, 1.5]) {
+  assert.throws(() => getReading(invalid, 'love', 0), /requires_actual_card/,
+    'an unknown card must never silently receive the Fool interpretation');
+}
+for (const invalid of ['missing', null, {}, { id: 'missing' }]) {
+  assert.throws(() => getReading('sun', invalid, 0), /requires_known_topic/);
+}
+for (const invalid of [-1, 3, 1.5, 'missing', null, {}]) {
+  assert.throws(() => getReading('sun', 'love', invalid), /requires_known_position/);
+}
+const preservedOriginal = getFortune('money', '022');
+const restored = getSummary(['fool', 'justice', 'pentacles_king'], 'money');
+for (const text of [preservedOriginal.oneLine, preservedOriginal.body, preservedOriginal.action]) {
+  assert.ok(restored.text.includes(text), 'the complete selected original survives the full result text');
+}
 assert.doesNotMatch(fs.readFileSync(path.join(__dirname, '../games/moonlit-tarot/readings.js'), 'utf8'), /SPREAD_ONE_LINES|SPREAD_LINKS|SPREAD_TOPIC_PROSE/);
 
 console.log('PASS tarot corpus: 2,560 literal originals, duplicates and similarity, all 78 cards, 456,456 ordered draws, topic/order effects, honest references and stable replay');

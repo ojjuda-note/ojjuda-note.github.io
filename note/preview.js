@@ -1260,6 +1260,7 @@ async function renderDetail() {
   banner('');
   $('.replies').hidden = false;
   state(slot, '카드를 불러오는 중이에요.'); state(replies, '답글을 불러오는 중이에요.');
+  $('#reply-count').textContent = '0';
   $('#detail [data-compose="reply"]').disabled = true;
   window.scrollTo({ top: 0, behavior: 'auto' });
   if (backdrop.hidden && management.hidden) $('.back-button').focus({ preventScroll: true });
@@ -1269,6 +1270,7 @@ async function renderDetail() {
   try {
     card = await noteRpc('get_card', { p_id: id, p_lat: position?.latitude ?? null,
       p_lon: position?.longitude ?? null });
+    if (version !== detailRun) return;
     // The author can manage their own event even when they are outside its paid range.
     if (session?.user && (!card || (card.kind === 'event' && card.body == null))) {
       const ownEvent = await noteRpc('get_my_event', { p_card_id: id });
@@ -1279,7 +1281,12 @@ async function renderDetail() {
   if (version !== detailRun) return;
   if (error) {
     console.warn('Note card:', error);
-    state(slot, '카드를 불러오지 못했어요.'); state(replies, '잠시 후 다시 열어 주세요.'); return;
+    state(slot, '카드를 불러오지 못했어요.'); state(replies, '');
+    const retry = node('button', 'button', '카드 다시 불러오기');
+    retry.type = 'button'; retry.dataset.retryCard = '';
+    retry.onclick = () => { if (version === detailRun) void renderDetail(); };
+    slot.append(retry);
+    return;
   }
   if (!card) {
     cache.delete(id); $('#reply-count').textContent = '0';
@@ -3089,6 +3096,12 @@ async function managementPhotoAction(cardId, key, requestId, after) {
     return result;
   }, after);
 }
+function refreshVisibleCard() {
+  // Revalidate the visible thread now and its list once when the reader returns.
+  feedRun++; feedLoading = false; feedDeferred = true;
+  cache.clear();
+  return renderDetail();
+}
 async function refreshCards(keepDetail = false) {
   feedRun++; detailRun++; cache.clear();
   slot.replaceChildren(); replies.replaceChildren(); $('#reply-count').textContent = '0';
@@ -3474,6 +3487,7 @@ window.OjjudaCharge?.install({ client, getUserId: () => session?.user?.id || nul
   onBalance: (coins, userId) => { if (session?.user?.id === userId) { balanceRun++; worldCoins = coins; updateAuth(); } } });
 window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.50-beta' });
 notificationController = window.OjjudaNoteNotifications?.install({
+  refreshClosedBadge: !parkEmbedded, // World owns the visible bell when Park is embedded.
   onGiftClaimed: userId => loadWorldBalance(userId),
   client, getUserId: () => session?.user?.id || null,
   onOpenCard: id => { window.OjjudaNoteNavigation?.leaveMy(); openCard(id); },
@@ -3499,7 +3513,10 @@ if (client) {
     if (document.visibilityState !== 'visible') return;
     loadWorldBalance(session?.user?.id); loadNoteState(); notificationController?.refresh?.();
     void loadAccountProfile(session?.user?.id);
-    if (backdrop.hidden && management.hidden) refreshCards(stack.length > 0);
+    if (backdrop.hidden && management.hidden) {
+      if (stack.length) void refreshVisibleCard();
+      else void refreshCards(false);
+    }
   });
 } else {
   authKnown = true; banner('공원 연결 설정을 확인해 주세요');
