@@ -33,6 +33,7 @@ function fixtureBoot(){
   }
   if(name==='admin_trash_friend_message'){state.removed=args.p_id;return {data:{ok:true,deleted:1}};}
   if(name==='admin_friend_messages'){
+   if(state.failNextAdminPage && args.p_before_id){state.failNextAdminPage=false;return {error:{message:'temporary fixture error'}};}
    let rows=Array.from({length:36},(_,i)=>({id:id(200-i),sender_id:i%2?B:A,recipient_id:i%2?A:B,sender_name:i%2?'초록산책':'오쭈다',recipient_name:i%2?'오쭈다':'초록산책',body:i===0?'<img src=x onerror="window.injected=true">':i===1?'내일 오후에 같이 게임해요.':'친구와 주고받은 쪽지 '+i,created_at:'2026-10-20T10:00:00Z'}));
    rows=rows.filter(m=>m.id!==state.removed);if(args.p_query)rows=rows.filter(m=>m.body.includes(args.p_query)||m.sender_name.includes(args.p_query));if(args.p_before_id)rows=rows.filter(m=>m.id<args.p_before_id);const page=rows.slice(0,30);
    return {data:{items:page,has_more:rows.length>30,next_cursor:page.length?{id:page.at(-1).id,created_at:page.at(-1).created_at}:null}};
@@ -73,7 +74,14 @@ world=world.slice(0,boot)+'('+fixtureBoot.toString()+')();\n'+world.slice(world.
  await page.locator('.fm-head').getByRole('button',{name:'닫기',exact:true}).click();await page.evaluate(()=>{messageFixture.blocked=false;messageFixture.admin();});
  await page.waitForFunction(()=>document.querySelectorAll('.afm-card').length===30);assert.equal(await page.locator('.afm-card img').count(),0,'message bodies are text, never markup');assert.equal(await page.evaluate(()=>window.injected),undefined);
  await page.screenshot({path:path.join(proof,'admin-notes-mobile.png'),fullPage:true});
- await page.locator('.afm-pager').getByRole('button',{name:'다음',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.afm-card').length===6);
+ await page.evaluate(()=>{messageFixture.failNextAdminPage=true;});
+ await page.locator('.afm-pager').getByRole('button',{name:'다음',exact:true}).click();
+ await page.getByText('쪽지를 불러오지 못했어요. 새로고침을 눌러 주세요.',{exact:true}).waitFor();
+ await page.locator('.afm-search').getByRole('button',{name:'새로고침',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelectorAll('.afm-card').length===6);
+ const [failed,retried]=await page.evaluate(()=>messageFixture.calls.filter(c=>c.name==='admin_friend_messages').slice(-2).map(c=>c.args));
+ assert.ok(failed.p_before_id);assert.deepEqual(retried,failed);
+ assert.equal(await page.locator('.afm-pager span').innerText(),'2페이지');
  await page.locator('.afm-search input').fill('내일');await page.locator('.afm-search').getByRole('button',{name:'검색',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.afm-card').length===1);assert.ok((await page.locator('.afm-body').textContent()).includes('내일 오후'));
  await page.setViewportSize({width:1280,height:950});await page.screenshot({path:path.join(proof,'admin-notes-desktop.png'),fullPage:true});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
