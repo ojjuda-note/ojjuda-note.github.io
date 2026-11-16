@@ -2,8 +2,9 @@
 'use strict';
 const $=selector=>document.querySelector(selector);
 const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
+const turnOrderKey=playerKey+'.turnOrder';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261116-shapematch-selected1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261117-bottle-seats1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -114,8 +115,15 @@ function btn(label,action,cls='start',value=''){return '<button type="button" cl
 function actions(...buttons){return '<div class="actions">'+buttons.join('')+'</div>'}
 function choiceList(items,action){return '<div class="options">'+items.map(([value,label])=>btn(label,action,'choice',value)).join('')+'</div>'}
 const defaultPlayers=()=>Array.from({length:4},(_,i)=>'참가자 '+(i+1));
-let players=defaultPlayers();
-try{const p=JSON.parse(localStorage.getItem(playerKey));if(Array.isArray(p)&&p.length>=2&&p.length<=12&&p.every(n=>typeof n==='string'&&n.trim()&&n.length<=12)&&new Set(p).size===p.length)players=p}catch{}
+let seatNames=defaultPlayers();
+try{const p=JSON.parse(localStorage.getItem(playerKey));if(Array.isArray(p)&&p.length>=2&&p.length<=12&&p.every(n=>typeof n==='string'&&n.trim()&&n.length<=12)&&new Set(p).size===p.length)seatNames=p}catch{}
+// Seat numbers follow the saved roster. Only turn order follows the host.
+let players=seatNames;
+try{
+  const order=JSON.parse(localStorage.getItem(turnOrderKey));
+  if(Array.isArray(order)&&order.length===seatNames.length&&seatNames.every(name=>order.includes(name)))players=order;
+}catch{}
+function hostFirst(host){return [host,...players.filter(name=>name!==host)]}
 let game=null, round=null, filter='전체', draft=[], lastMenuFocus=null, timer=null, lastStamp=0;
 const bombMinSeconds=20, bombSpreadSeconds=15;
 function bombLimit(count){return 30+(count-4)*5}
@@ -190,7 +198,7 @@ function markLocalHost(){
   let candidates=[];
   switch(game.id){
     case 'croc':case 'bomb':case 'secretcount':case 'updown':candidates=[r.turn];break;
-    case 'bottle':candidates=[r.winningSeat];break;
+    case 'bottle':candidates=[players.indexOf(seatNames[r.winningSeat])];break;
     case 'initial':candidates=r.alive;break;
     case 'king':candidates=[r.roles.indexOf(r.number),r.second==null?-1:r.roles.indexOf(r.second)];break;
     case 'liar':case 'mission':candidates=[r.secret];break;
@@ -212,8 +220,8 @@ function markLocalHost(){
   r.nextHost=players[next];
   try {
     const saved=JSON.parse(localStorage.getItem(playerKey)) ?? defaultPlayers();
-    if (Array.isArray(saved) && saved.length===players.length && players.every(n=>saved.includes(n))) {
-      localStorage.setItem(playerKey,JSON.stringify([r.nextHost,...players.filter(n=>n!==r.nextHost)]));
+    if (Array.isArray(saved) && saved.length===seatNames.length && seatNames.every((name,i)=>saved[i]===name)) {
+      localStorage.setItem(turnOrderKey,JSON.stringify(hostFirst(r.nextHost)));
     }
   } catch {}
   window.DrinkingTableView?.result(app.querySelector('.play-body'),r.nextHost);
@@ -221,7 +229,7 @@ function markLocalHost(){
 function cleanup(){
   round?.stopShape?.();
   round?.rouletteBoard?.destroy();
-  if(round?.nextHost)players=[round.nextHost,...players.filter(p=>p!==round.nextHost)];
+  if(round?.nextHost)players=hostFirst(round.nextHost);
   stopClock();fx.quiet();
   if(round?.watchFrame!=null)cancelAnimationFrame(round.watchFrame);
   if(round?.bottleFrame!=null)cancelAnimationFrame(round.bottleFrame);
@@ -462,7 +470,7 @@ function setBottleTable(){
   const direction=$('input[name="table-direction"]:checked').value;
   if(!Object.hasOwn(bottleTables,table)||!['horizontal','vertical'].includes(direction))return;
   const sameTable=round.table===table&&round.direction===direction&&Array.isArray(round.positions);
-  const positions=players.map((_,i)=>sameTable?round.positions[i]??null:null);
+  const positions=seatNames.map((_,i)=>sameTable?round.positions[i]??null:null);
   Object.assign(round,{table,direction,positions,seatHistory:[],angle:0});
   fx.play('tap');editBottleSeats();
 }
@@ -549,18 +557,18 @@ function showBottle(){
   const r=round,picking=r.phase==='seating',complete=r.positions.every(Boolean);
   const seats=r.positions.map((point,i)=>{
     if(!point)return '';
-    const label=esc(players[i]),attrs='data-seat="'+i+'" style="'+seatStyle(point)+'"';
+    const label=esc(seatNames[i]),attrs='data-seat="'+i+'" style="'+seatStyle(point)+'"';
     if(picking)return '<button class="seat" type="button" '+attrs+' data-action="edit-player" data-value="'+i+'" aria-label="'+label+' 자리 옮기기" aria-pressed="'+(i===r.activePlayer)+'">'+(i+1)+'</button>';
     return '<span class="seat" '+attrs+' title="'+label+'">'+(i+1)+'</span>';
   }).join('');
-  const roster=players.map((name,i)=>'<li>'+(picking?'<button data-action="edit-player" data-value="'+i+'" aria-pressed="'+(i===r.activePlayer)+'" aria-label="'+esc(name)+(r.positions[i]?' 자리 옮기기':' 자리 놓기')+'">':'')+
+  const roster=seatNames.map((name,i)=>'<li>'+(picking?'<button data-action="edit-player" data-value="'+i+'" aria-pressed="'+(i===r.activePlayer)+'" aria-label="'+esc(name)+(r.positions[i]?' 자리 옮기기':' 자리 놓기')+'">':'')+
     '<b>'+(i+1)+'</b>'+esc(name)+(picking?'</button>':'')+'</li>').join('');
-  const heading=picking?(complete?'자리를 확인해 주세요':esc(players[r.activePlayer])+'님의 자리는 어디인가요?'):'술병을 돌려 보세요';
+  const heading=picking?(complete?'자리를 확인해 주세요':esc(seatNames[r.activePlayer])+'님의 자리는 어디인가요?'):'술병을 돌려 보세요';
   const hint=picking?(complete?'자리를 끌어 옮길 수 있어요. 준비되면 술병을 돌려요.':'테이블에서 앉은 곳을 누르세요. 다른 이름을 골라 자리를 정할 수도 있어요.'):'화면을 터치하면 병이 서서히 멈춰요.';
   const controls=picking?actions(complete?btn('술병 돌리기','spin'):'',r.seatHistory.length?btn('한 번 되돌리기','undo-seat','quiet'):'',btn('테이블 다시 선택','change-table','quiet')):'';
   const ratio=bottleTables[r.table].ratio,vertical=r.direction==='vertical';
   const size=ratio===1?340:vertical?490/ratio:490;
-  const surface=picking?'<button type="button" class="seat-surface" aria-label="'+esc(players[r.activePlayer])+' 자리 놓기. 방향키로 위치를 정한 뒤 엔터를 누르세요."></button>':'';
+  const surface=picking?'<button type="button" class="seat-surface" aria-label="'+esc(seatNames[r.activePlayer])+' 자리 놓기. 방향키로 위치를 정한 뒤 엔터를 누르세요."></button>':'';
   shell('<h2 id="bottle-title">'+heading+'</h2><p id="bottle-hint" aria-live="polite">'+hint+'</p>'+
     '<div class="dial bottle-dial table-'+r.table+' '+r.direction+'" style="aspect-ratio:'+(vertical?1/ratio:ratio)+';--board-width:'+size+'px">'+art('pointer')+surface+seats+'</div>'+
     '<div id="spin-status">'+controls+'</div><ul class="bottle-seats" aria-label="참가자 자리">'+roster+'</ul>');
@@ -570,9 +578,7 @@ function spin(){
   const r=round;
   if(!['seating','done'].includes(r.phase)||!r.positions.every(Boolean))return;
   if(r.nextHost){
-    const k=players.indexOf(r.nextHost);
-    r.positions=[r.positions[k],...r.positions.filter((_,i)=>i!==k)];
-    players=[r.nextHost,...players.filter(n=>n!==r.nextHost)];
+    players=hostFirst(r.nextHost);
     r.seatHistory=[];
     delete r.nextHost;
   }
@@ -599,7 +605,7 @@ function brakeBottle(){
   r.started=now;
   r.phase='braking';
   r.duration=10000+rand(10001);
-  r.winningSeat=rand(players.length);
+  r.winningSeat=rand(seatNames.length);
   const rect=$('.bottle-dial').getBoundingClientRect();
   const bearings=r.positions.map(p=>Math.atan2((p.left-50)*rect.width,(50-p.top)*rect.height)*180/Math.PI);
   const target=(bearings[r.winningSeat]+360)%360;
@@ -664,7 +670,7 @@ function animateBottle(now){
     r.phase='done';
     const seat=r.winningSeat;
     $('.bottle-dial [data-seat="'+seat+'"]').classList.add('winning-seat');
-    $('#bottle-title').textContent=players[seat]+'님 당첨!';
+    $('#bottle-title').textContent=seatNames[seat]+'님 당첨!';
     $('#bottle-hint').textContent='병 입구가 '+(seat+1)+'번 자리를 가리켰어요.';
     $('#spin-status').innerHTML=actions(btn('다시 돌리기','spin'),btn('자리 옮기기','edit-seats','quiet'),btn('게임 목록','menu','quiet'));
     fx.play('finish');
@@ -1058,7 +1064,7 @@ function votesDone(){
 function playerSettings(){
   if(game)return;
   $('#player-status').textContent='';
-  draft=[...players];nameFields();settings.showModal()
+  draft=[...seatNames];nameFields();settings.showModal()
 }
 function nameFields(){
   $('#draft-count').textContent=draft.length+'명';$('#less').disabled=draft.length===2;$('#more').disabled=draft.length===12;
@@ -1075,17 +1081,18 @@ $('#dismiss').onclick=()=>settings.close();
 settings.addEventListener('close',()=>{if(!game)app.querySelector('[data-action="people"]')?.focus({preventScroll:true})});
 function applyPlayers(next){
   if(players.length!==next.length)bombSeconds=bombLimit(next.length);
+  seatNames=next;
   players=next;
   renderMenu();
 }
 $('#reset-players').onclick=()=>{
-  try { localStorage.removeItem(playerKey); }
+  try { localStorage.removeItem(turnOrderKey); localStorage.removeItem(playerKey); }
   catch {
     $('#player-status').textContent='저장한 이름을 지우지 못했어요. 다시 시도해 주세요.';
     return;
   }
   applyPlayers(defaultPlayers());
-  draft=[...players];
+  draft=[...seatNames];
   nameFields();
   $('#player-status').textContent='기본 참가자 4명으로 초기화했어요.';
 };
@@ -1100,7 +1107,7 @@ $('#player-form').onsubmit=e=>{
     return;
   }
   let message='참가자 '+next.length+'명을 저장했어요.';
-  try { localStorage.setItem(playerKey,JSON.stringify(next)); }
+  try { localStorage.removeItem(turnOrderKey); localStorage.setItem(playerKey,JSON.stringify(next)); }
   catch { message='이 기기에 저장하지 못했어요. 이번에는 입력한 이름으로 플레이해요.'; }
   applyPlayers(next);
   settings.close();
