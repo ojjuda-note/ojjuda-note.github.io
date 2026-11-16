@@ -166,6 +166,7 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'Q7IFjVUUb_E', title: 'RUN IT', kind: '뮤직비디오', source: 'Stray Kids / JYP Entertainment · 2026.06.24' }
   ],
   txt: [
+    { id: 'M9G4guYg-i8', title: 'Angel Bite', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2026.11.16' },
     { id: 'jOnLqqDRfY4', title: '하루에 하루만 더 (Stick With You)', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2026.04.13' },
     { id: 'IcwHopeT5gY', title: 'Beautiful Strangers', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2025.07.21' },
     { id: '80SH8Z_DOnY', title: 'Over The Moon', kind: '뮤직비디오', source: 'HYBE LABELS / BIGHIT MUSIC · 2024.11.04' }
