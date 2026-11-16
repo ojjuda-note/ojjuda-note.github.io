@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-16",
+  "updatedAt": "2026-11-17",
   "events": [
     {
       "id": "gongju-gunbam-2026",
@@ -96,11 +96,11 @@
       "status": "scheduled",
       "attendance": {
         "count": 177000,
-        "kind": "previous",
-        "year": 2025,
-        "sourceName": "함평군 발표(뉴시스 보도)",
-        "sourceUrl": "https://www.newsis.com/view/NISX20251110_0003396272",
-        "sourceCheckedAt": "2026-11-09"
+        "kind": "actual",
+        "year": 2026,
+        "sourceName": "함평군 2026 대한민국 국향대전 폐막 집계(조이뉴스24 보도, 약 17만 7천 명)",
+        "sourceUrl": "https://www.joynews24.com/view/2024565",
+        "sourceCheckedAt": "2026-11-17"
       }
     },
     {
@@ -19885,7 +19885,15 @@
         "크리스마스",
         "연말",
         "겨울"
-      ]
+      ],
+      "attendance": {
+        "count": 31000,
+        "kind": "previous",
+        "year": 2025,
+        "sourceName": "화순군문화관광재단 2025 미리미리 크리스마스 공식 폐막 발표(약 3만 1천 명)",
+        "sourceUrl": "https://www.hfct.or.kr/gallery.do?M=0606000000&S=S01&b_code=0004&keyField=&keyWord=&list_no=125&mod=view&nPage=1&orderby=REG_DATE",
+        "sourceCheckedAt": "2026-11-17"
+      }
     },
     {
       "id": "hockey-seongnam-mayor-national-22-20261113",
@@ -22158,6 +22166,74 @@
         "과학자",
         "포항"
       ]
+    },
+    {
+      "id": "beolgyo-cockle-festival-2026",
+      "title": "제22회 벌교꼬막축제",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-11-20",
+      "end": "2026-11-22",
+      "region": "전남",
+      "city": "보성군",
+      "venue": "벌교읍 벌교천변 행사장",
+      "address": "전남 보성군 벌교읍 벌교천변 일원",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "벌교 꼬막을 주제로 한 제22회 먹거리·문화 축제입니다. 꼬막비빔밥 만들기, 체험과 꼬막 야시장, 공연 및 21일 저녁 불꽃쇼를 운영합니다.",
+      "scheduleNote": "11/20~22, 체험 구역 10:00~18:00, 먹거리 11:00~20:00, 야간 조명 17:00~21:00. 일별 공연·체험은 공식 축제 일정 참조.",
+      "priceNote": "공식 입장료 안내 확인 / 음식 구매와 개별 체험 비용은 별도 현장 확인",
+      "accessNote": "모든 연령 참여 가능. 프로그램별 참가·접수 여부는 보성군 주최 측 상세 일정 확인.",
+      "sourceUrl": "https://tour.boseong.go.kr/tour/festivity/cockle/schedule",
+      "sourceName": "보성군 문화관광 제22회 벌교꼬막축제 공식 일정",
+      "sourceCheckedAt": "2026-11-17",
+      "verificationSources": [
+        "https://tour.boseong.go.kr/tour/festivity/cockle"
+      ],
+      "tags": [
+        "꼬막",
+        "미식",
+        "전남",
+        "야시장",
+        "불꽃"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "gwangju-sharing-kimjang-2026",
+      "title": "2026 빛고을 사랑나눔 김장대전",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-11-27",
+      "end": "2026-12-13",
+      "region": "광주",
+      "city": "남구",
+      "venue": "광주김치타운 다목적체험관",
+      "address": "광주 남구 김치로 60",
+      "lat": 35.109274,
+      "lng": 126.8655706,
+      "geoApprox": true,
+      "summary": "광주김치타운에서 열리는 시민 참여 김장 행사로 사전 예약을 통해 배추김치를 직접 버무리거나 완제품을 현장에서 받을 수 있습니다.",
+      "scheduleNote": "현장 김장 행사 11/27~12/13. 택배 주문·배송 기간은 11/17~12/18로 현장 행사기간과 다릅니다. 개별 체험 회차별 시간은 예약 시 확인.",
+      "priceNote": "10kg 기준 현장 버무림 67,000원 / 현장 완제품 수령 69,000원 / 택배 발송 72,000원. 김치 체험·구매 비용이며 일반 입장료는 별도 공식 안내 확인.",
+      "accessNote": "공식 누리집 사전 예약·주문. 개인·단체 체험 및 완제품·택배 상품마다 신청·수령 조건이 다릅니다.",
+      "sourceUrl": "https://kimchigwangju.co.kr/",
+      "sourceName": "빛고을 사랑나눔 김장대전 공식 행사 누리집",
+      "sourceCheckedAt": "2026-11-17",
+      "verificationSources": [
+        "https://www.jangseong.go.kr/home/www/news/jangseong/notice/show/6679",
+        "https://dh.aks.ac.kr/~gwangju/wiki/index.php/%EA%B4%91%EC%A3%BC%EA%B9%80%EC%B9%98%ED%83%80%EC%9A%B4"
+      ],
+      "tags": [
+        "김장",
+        "김치",
+        "전통음식",
+        "사전예약",
+        "체험"
+      ],
+      "status": "scheduled"
     }
   ]
 }
