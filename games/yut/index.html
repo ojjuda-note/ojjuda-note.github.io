@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#091c23"><title>섬마을 윷놀이 · 오쭈다 오락실</title>
+<link rel="icon" href="./cover.svg?v=6" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css?v=16">
+<script defer src="/config.js"></script><script type="module" src="./play.mjs?v=16"></script></head>
+<body>
+<main class="tabletop">
+  <header class="rail">
+    <a class="rail-btn back" href="/world.html?tab=arcade" aria-label="오락실로 돌아가기"><i aria-hidden="true"></i><span>오락실</span></a>
+    <h1><i class="moon-mark" aria-hidden="true"></i>섬마을 윷놀이</h1>
+    <button id="settings" class="rail-btn" aria-haspopup="dialog"><i class="menu-mark" aria-hidden="true"></i><span>메뉴</span></button>
+  </header>
+  <section class="scene" aria-label="섬마을 윷놀이판">
+    <canvas id="board" role="img" aria-describedby="note" aria-label="팀 이름과 번호가 붙은 십이지 동물 말"></canvas>
+  </section>
+  <section class="reserve" id="reserve" aria-labelledby="reserve-title">
+    <div class="reserve-inner">
+      <div class="reserve-caption"><h2 id="reserve-title">말 대기석</h2><span id="reserve-team"></span></div>
+      <div id="reserve-pawns" role="group" aria-label="출발을 기다리는 말"></div>
+    </div>
+  </section>
+  <section class="station" id="station" aria-label="현재 차례와 게임 조작">
+    <div class="turn-info">
+      <div class="turn-line">
+        <button id="team-title" title="팀별 말 현황" aria-haspopup="dialog">산호 팀 차례</button>
+        <span id="goals" class="goals"></span>
+      </div>
+      <p id="note" role="status"></p>
+      <button id="event-key" type="button" aria-label="이번 판 특수 칸 위치와 효과" aria-haspopup="dialog" hidden>
+        <span><b class="event-glyph back" aria-hidden="true">−1</b> 뒤로 한 칸</span>
+        <span><b class="event-glyph carry" aria-hidden="true">×2</b> 말 업기</span>
+        <span><b class="event-glyph home" aria-hidden="true">⌂</b> 처음으로</span>
+      </button>
+    </div>
+    <div class="rack" id="stick-rack">
+      <div class="rack-heading"><span id="rack-title">던질 윷</span><span id="outcome"></span></div>
+      <div class="rack-well"><canvas id="rack-canvas" role="img" aria-label="던질 윷 네 가락"></canvas></div>
+    </div>
+    <div id="move-tools" hidden>
+      <div class="move-heading"><strong id="move-result"></strong><span id="field-label">판 위의 말</span></div>
+      <div id="pawn-picker" role="group" aria-label="판 위의 말"></div>
+    </div>
+    <div class="dock"><div id="actions"></div></div>
+  </section>
+</main>
+<div id="toss-layer" class="toss-layer" hidden aria-hidden="true">
+  <canvas id="toss-canvas"></canvas><div id="toss-label"></div>
+</div>
+<dialog id="sheet" aria-labelledby="dialog-title"><div class="dialog-title"><h2 id="dialog-title"></h2><button id="close" aria-label="닫기">×</button></div><div id="dialog-body"></div></dialog>
+</body></html>
