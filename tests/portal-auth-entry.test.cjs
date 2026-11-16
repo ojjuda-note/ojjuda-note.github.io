@@ -38,6 +38,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
       firstChild: { textContent: '' }, dataset: {}, attributes: {}, listeners: {}, open: false,
       addEventListener(name, callback) { this.listeners[name] = callback; },
       setAttribute(name, value) { this.attributes[name] = value; },
+      hasChildNodes() { return Boolean(this.innerHTML); },
       closest(selector) { return element(`${key}:${selector}`); },
       querySelector(selector) { return selector.startsWith('#') ? element(selector.slice(1)) : element(selector); },
       querySelectorAll(selector) { return selector === '[data-auth-mode]' ? tabs : []; },
@@ -197,6 +198,20 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     assert.equal(app.element('password').value, '');
     assert.equal(app.element('password-confirm').value, '');
   }
+  const login = setup('?auth=login'); await login.flush();
+  assert.ok(!login.element('signup-identity-slot').innerHTML, 'only signup needs the generated identity fields');
+  login.element('password').value = 'fixture-password';
+  login.element('login-tab').listeners.click();
+  assert.equal(login.element('password').value, 'fixture-password', 'selecting the current login tab keeps the password');
+  login.element('forgot-trigger').listeners.click();
+  assert.ok(login.element('recovery-birth').max);
+  assert.ok(!login.element('signup-identity-slot').innerHTML, 'recovery uses its own identity fields');
+  login.element('signup-tab').listeners.click();
+  assert.ok(login.element('signup-identity-slot').innerHTML);
+  login.fill();
+  login.element('signup-tab').listeners.click();
+  assert.equal(login.element('password-confirm').value, 'test-password', 'selecting the current signup tab keeps confirmation');
+
   const switched = setup('?auth=signup'); await switched.flush(); switched.fill();
   const retainedNickname = switched.element('nickname').value;
   switched.element('login-tab').listeners.click();

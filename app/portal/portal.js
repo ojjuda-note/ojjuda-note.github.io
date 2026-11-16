@@ -29,13 +29,15 @@
   const passwordConfirm = $('password-confirm');
   const nickname = $('nickname');
   const submit = $('auth-submit');
-  const referral = window.OjjudaSignupReferral?.mount($('signup-referral-slot'), client);
-  function prepareIdentity() {
-    if (!window.OjjudaIdentity?.fields) return false;
-    if (!$('signup-identity-slot').innerHTML) $('signup-identity-slot').innerHTML = window.OjjudaIdentity.fields('signup');
-    return true;
+  let referral;
+  function prepareSignupFields() {
+    const slot = $('signup-identity-slot');
+    if (!slot.hasChildNodes() && window.OjjudaIdentity?.fields) {
+      slot.innerHTML = window.OjjudaIdentity.fields('signup');
+    }
+    referral ??= window.OjjudaSignupReferral?.mount($('signup-referral-slot'), client);
+    referral?.setActive(true);
   }
-  prepareIdentity();
   const forgot = $('forgot-trigger');
   const accountActions = $('account-actions');
   const signedInActions = $('signed-in-actions');
@@ -172,7 +174,8 @@
     authMode = mode;
     $('guest-browse').hidden = mode !== 'login';
     const isSignup = mode === 'signup';
-    referral?.setActive(isSignup);
+    if (isSignup) prepareSignupFields();
+    else referral?.setActive(false);
     const isForgot = mode === 'forgot';
     const isReset = mode === 'reset' || mode === 'direct-reset';
     if (mode !== 'direct-reset') clearRecoveryGrant();
@@ -187,7 +190,7 @@
     });
     dialog.querySelectorAll('.signup-only').forEach(field => { field.hidden = !isSignup; });
     $('recovery-identity-slot').hidden = !isForgot;
-    if (prepareIdentity()) $('recovery-birth').max = window.OjjudaIdentity.todayKorea();
+    if (isForgot && window.OjjudaIdentity?.fields) $('recovery-birth').max = window.OjjudaIdentity.todayKorea();
     nickname.closest('.field').hidden = !(isSignup || isNickname);
     nickname.setAttribute('aria-describedby', isSignup ? 'nickname-auto-help' : '');
     $('nickname-auto-help').hidden = !isSignup;
@@ -210,7 +213,7 @@
           : '오락실에서 게임을 즐기고 공원에서 이야기를 나눠요.';
     submit.firstChild.textContent = isSignup ? '회원가입 ' : isForgot ? '회원정보 확인 ' : isReset ? '확인 ' : isNickname ? '아지트 시작하기 ' : '로그인 ';
     feedback.textContent = notice;
-    if ((isSignup || isForgot) && !prepareIdentity()) feedback.textContent = '회원정보 입력 화면을 불러오지 못했어요. 다시 시도해 주세요.';
+    if ((isSignup || isForgot) && !window.OjjudaIdentity?.fields) feedback.textContent = '회원정보 입력 화면을 불러오지 못했어요. 다시 시도해 주세요.';
     submit.disabled = busy || !client || ((isSignup || isForgot) && !window.OjjudaIdentity);
   }
 
@@ -457,8 +460,10 @@
       if (newId) void checkAdmin(newId, identityVersion);
     }
     renderAccount();
-    if (prepareIdentity()) window.OjjudaPortalAvailability?.ready();
-    else window.OjjudaPortalAvailability?.fail('일부 로그인 기능을 불러오지 못했어요. 다시 시도하거나 손님으로 둘러보세요.');
+    if (window.OjjudaIdentity?.fields) {
+      if (authMode === 'signup' && dialog.open) prepareSignupFields();
+      window.OjjudaPortalAvailability?.ready();
+    } else window.OjjudaPortalAvailability?.fail('일부 로그인 기능을 불러오지 못했어요. 다시 시도하거나 손님으로 둘러보세요.');
   }
 
   function validEmail(value) {
@@ -467,7 +472,7 @@
 
   async function submitForm(event) {
     event.preventDefault();
-    if (['signup', 'forgot'].includes(authMode) && !prepareIdentity()) {
+    if (['signup', 'forgot'].includes(authMode) && !window.OjjudaIdentity?.fields) {
       feedback.textContent = '회원정보 입력 화면을 불러오지 못했어요. 다시 시도해 주세요.';
       return;
     }
@@ -481,6 +486,7 @@
     }
     let signupIdentity = null, recoveryDetails = null, signupReferrer = null;
     if (authMode === 'signup') {
+      prepareSignupFields();
       try { signupIdentity = window.OjjudaIdentity.read(form, 'signup'); signupReferrer = referral?.read() || null; }
       catch (error) { feedback.textContent = error.message; return; }
     }
@@ -649,7 +655,9 @@
     });
   });
   dialog.querySelectorAll('[data-auth-mode]').forEach(button => {
-    button.addEventListener('click', () => setAuthMode(button.dataset.authMode));
+    button.addEventListener('click', () => {
+      if (button.dataset.authMode !== authMode) setAuthMode(button.dataset.authMode);
+    });
   });
   dialog.querySelector('[data-close-dialog]').addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
