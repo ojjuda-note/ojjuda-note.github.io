@@ -93,16 +93,17 @@ test('Park centers each brush line and emphasizes only matching tags', () =>
         const scanlines = [];
         let hash = 2166136261;
         for (let y = 0; y < canvas.height; y++) {
-          let left = width, right = -1, gold = 0, goldX = 0;
+          let left = width, right = -1, gold = 0, goldX = 0, hasDarkInk = false;
           for (let x = 0; x < width; x++) {
             const i = (y * width + x) * 4;
             hash = Math.imul(hash ^ bytes[i + 3], 16777619);
             if (bytes[i + 3] < 20) continue;
             left = Math.min(left, x);
             right = x;
+            if (bytes[i + 3] >= 100 && bytes[i] < 120) hasDarkInk = true;
             if (bytes[i] - bytes[i + 2] > 75 && bytes[i + 1] > 95) { gold++; goldX += x; }
           }
-          if (right >= 0) scanlines.push({ y, left, right, gold, goldX });
+          if (right >= 0) scanlines.push({ y, left, right, gold, goldX, hasDarkInk });
         }
         // The widest empty bands split explicit rows without consulting the renderer's layout.
         const cuts = scanlines.slice(1).map((line, i) => ({ at: i + 1, gap: line.y - scanlines[i].y }))
@@ -112,7 +113,9 @@ test('Park centers each brush line and emphasizes only matching tags', () =>
           const band = scanlines.slice(start, starts[i + 1]);
           const left = Math.min(...band.map(p => p.left)), right = Math.max(...band.map(p => p.right));
           const count = band.reduce((n, p) => n + p.gold, 0);
+          const ink = band.filter(p => p.hasDarkInk);
           return { center: (left + right) / (2 * width), count,
+            inkHeight: ink.length ? ink.at(-1).y - ink[0].y + 1 : 0,
             goldX: count ? band.reduce((n, p) => n + p.goldX, 0) / (count * width) : 0 };
         });
         return { hash, bounds, rows };
@@ -128,12 +131,20 @@ test('Park centers each brush line and emphasizes only matching tags', () =>
       const ending = read('봄'.repeat(198) + '건강', ['건강']);
       const nfd = read(phrase.normalize('NFD'), ['건강'.normalize('NFD'), '#날이다'], 2);
       const cleared = read(phrase, [], 2);
-      return { normal, missing, first, last, both, repeated, uneven, ending, nfd, cleared };
+      // Use the untagged second line to account for any change in overall card scale.
+      const sizePhrase = '젊은\n괜찮은 하루 보내세요';
+      const plainSize = read(sizePhrase, [], 2).rows;
+      const taggedSize = read(sizePhrase, ['젊은'], 2).rows;
+      return { normal, missing, first, last, both, repeated, uneven, ending, nfd, cleared, plainSize, taggedSize };
     });
     const { normal, missing, first, last, both, repeated, uneven, ending, nfd, cleared } = result;
     for (const sample of [normal, missing, cleared]) assert.ok(sample.rows.every(row => row.count === 0));
     assert.equal(missing.hash, normal.hash);
     assert.equal(cleared.hash, normal.hash, 'clearing tags restores the original drawing');
+    const [plainWord, plainReference] = result.plainSize.map(row => row.inkHeight);
+    const [taggedWord, taggedReference] = result.taggedSize.map(row => row.inkHeight);
+    assert.ok(taggedWord >= plainWord * 1.28 && taggedWord / taggedReference > plainWord / plainReference * 1.24,
+      'the tagged word has visibly taller brush strokes on a mobile card, independent of its underline');
     assert.deepEqual(nfd, both, 'decomposed Hangul and optional # produce the same artwork');
     assert.ok(first.rows[0].count > 4 && first.rows[0].goldX < .5 && first.rows[1].count === 0,
       '건강 matches before the particle 이 on the upper left');
