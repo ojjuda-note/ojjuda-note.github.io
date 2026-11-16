@@ -943,8 +943,26 @@ test('shape match enters from the local catalog and reveals the slowest player u
   await p.locator('[data-value="shapematch"]').click();
   await dismissGuide(p);
   await p.locator('[data-action="start"]').click();
+  await p.evaluate(() => {
+    window.screamPlayback = [];
+    const start = AudioBufferSourceNode.prototype.start;
+    AudioBufferSourceNode.prototype.start = function(when, offset, duration) {
+      if (document.querySelector('.sm-ghost:not([hidden])') && this.buffer) {
+        const rate = this.buffer.sampleRate;
+        const samples = this.buffer.getChannelData(0).subarray(Math.round(offset*rate), Math.round((offset+duration)*rate));
+        const audible = samples.some(sample => Math.abs(sample) > .1);
+        window.screamPlayback.push({duration, audible});
+      }
+      return start.apply(this, arguments);
+    };
+  });
   const scores=[];
   for(const delay of [120,950]) {
+    if (scores.length) {
+      await p.locator('#effects').click();
+      await p.locator('#audio-check').uncheck();
+      await p.locator('#fx-close').click();
+    }
     await p.locator('[data-action="shape-go"]').click();
     const field=p.locator('.sm-field');
     assert.equal(await field.evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(0, 0, 0)');
@@ -953,6 +971,9 @@ test('shape match enters from the local catalog and reveals the slowest player u
     await ghost.waitFor({state:'visible',timeout:8000});
     await ghost.evaluate(img=>img.decode());
     await ghost.waitFor({state:'hidden'});
+    const sounds = await p.evaluate(() => window.screamPlayback);
+    assert.equal(sounds.length,1,'one scream on the first reveal, silence on the muted second turn');
+    assert.ok(sounds[0].audible && sounds[0].duration >= 1 && sounds[0].duration <= 1.14);
     await p.locator('.sm-live').getByText('녹색 동그라미').waitFor({state:'attached'});
     await new Promise(resolve=>setTimeout(resolve,delay));
     await field.click();

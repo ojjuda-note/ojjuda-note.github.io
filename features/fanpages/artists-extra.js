@@ -356,6 +356,7 @@
       photo: 'KISS OF LIFE at Music Bank (4K) 20240705 02.png', photoLabel: '뮤직뱅크 출근길', photoYear: '2024', credit: '티비텐 TV10', license: 'CC BY 3.0',
       morePhotos: [
         commonsPhoto('28082026 Kiss of Life Newsis Hallyu Expo 1.png', '2026 뉴시스 한류엑스포 · 단체', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0'),
+        commonsPhoto('28082026 Kiss of Life Newsis Hallyu Expo 2.png', '2026 뉴시스 한류엑스포 · 단체 두 번째 장면', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0'),
         commonsPhoto('28082026 Belle Newsis Hallyu Expo 1.png', '벨 · 2026 한류엑스포', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0'),
         commonsPhoto('05062026 KISS OF LIFE Airport Departure.png', '2026.06.05 인천공항 출국 · 단체', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0')
       ],
@@ -375,6 +376,7 @@
         { title: '일본 공식 공연·행사', sub: '컬럼비아 공식 공연·발매 이벤트 안내', href: 'https://columbia.jp/artist-info/kissoflife/live/' }
       ],
       news: [
+        { date: '2026.11.09', tag: '수상', title: '2026 KGMA 베스트 스테이지·스타일 아이콘 2관왕 (11.08 시상)', href: 'https://star.ytn.co.kr/_sn/0117_202611091748308778' },
         { date: '2026.10.23', tag: '시상식', title: '12.05 가오슝 AAA 공식 출연 명단 발표', href: 'https://www.asiaartistawards.com/en/news/3225' },
         { date: '2026.10.12', tag: '무대', title: 'THE FIRST TAKE에서 SWEAT 일본어 버전 라이브 공개', href: 'https://columbia.jp/artist-info/kissoflife/media/94488.html' },
         { date: '2026.09.28', tag: '영상', title: 'THE FIRST TAKE에서 Sticky 라이브 공개', href: 'https://kissoflife.jp/page/media.html' },
@@ -389,6 +391,7 @@
         { title: 'KISS OF LIFE 일본 공식 MD', sub: '일본 공식 판매 2026.06.18 시작 · 현재 재고·가격은 판매처 확인', href: 'https://kissoflife.jp/page/20260618.html' }
       ],
       campaigns: [
+        { kind: '콜라보', date: '2026.08.03', title: '순간 seju × 도쿄 조이폴리스 × KISS OF LIFE', sub: '일본 테마파크 배경 협업 단편 영상 2편 · 8.03부터 순차 공개', href: 'https://seju.tokyo/topics/topic-36131/' },
         { kind: '콜라보', date: '2026.07.04', title: 'DIGIMON BEATBREAK × BREAK IT', sub: '일본 TV 애니메이션 엔딩 테마 음원 협업', href: 'https://prtimes.jp/main/html/rd/p/000005074.000019470.html' },
         { kind: '콜라보', date: '2026.07.17', title: 'SAISON CARD × KISS OF LIFE', sub: '팬 참여 이벤트·입회 포토카드 캠페인 · 2026.10.08 행사 종료', href: 'https://kissoflife.jp/page/20260717.html' }
       ],

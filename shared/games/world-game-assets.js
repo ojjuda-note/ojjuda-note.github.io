@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261116-restaurants-c2s47-jeju-broadcast2-loc1'
+ const revision='20261116-shapematch-scream1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -21,7 +21,7 @@
   updown:'1.5.0',
   partyroulette:'1.5.0',
   drinking:'1.24.0',
-  shapematch:'1.1.0',
+  shapematch:'1.1.1',
   tarot:'1.10.2',
   saju:'2.15.1',
   group:'1.2.2',
