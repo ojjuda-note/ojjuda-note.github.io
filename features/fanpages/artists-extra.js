@@ -391,6 +391,7 @@
         { title: 'KISS OF LIFE 일본 공식 MD', sub: '일본 공식 판매 2026.06.18 시작 · 현재 재고·가격은 판매처 확인', href: 'https://kissoflife.jp/page/20260618.html' }
       ],
       campaigns: [
+        { kind: '콜라보', date: '2026.08.03', title: '순간 seju × 도쿄 조이폴리스 × KISS OF LIFE', sub: '일본 테마파크 배경 협업 단편 영상 2편 · 8.03부터 순차 공개', href: 'https://seju.tokyo/topics/topic-36131/' },
         { kind: '콜라보', date: '2026.07.04', title: 'DIGIMON BEATBREAK × BREAK IT', sub: '일본 TV 애니메이션 엔딩 테마 음원 협업', href: 'https://prtimes.jp/main/html/rd/p/000005074.000019470.html' },
         { kind: '콜라보', date: '2026.07.17', title: 'SAISON CARD × KISS OF LIFE', sub: '팬 참여 이벤트·입회 포토카드 캠페인 · 2026.10.08 행사 종료', href: 'https://kissoflife.jp/page/20260717.html' }
       ],
