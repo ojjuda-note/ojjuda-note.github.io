@@ -1004,6 +1004,7 @@ function flashMessage(value, ms = 2500) {   // 짧게 보여 주고 저절로 �
   flashTimer = setTimeout(() => { if (featureMessage?.textContent === value) message(''); }, ms);
 }
 let tagTabReset = null, searchTagFn = null;
+let resetPopularTags = null;
 function filterSearchOnlyTags(request, searchTag = '') {
   return tagList(searchTag).includes('19금') ? request : request.not('tags', 'cs', '{19금}');
 }
@@ -1709,12 +1710,16 @@ function installFeatures() {
   tagForm.append(tagInput, tagGo);
   const tagChips = node('div', 'note-tag-chips'); tagChips.setAttribute('aria-label', '요즘 많이 쓰는 태그');
   tagPanel.append(tagForm, tagChips); sorts.after(tagPanel);
-  let popularTagsAt = 0;
+  let popularTagsAt = 0, pendingTagEpoch = null;
   const loadPopularTags = async () => {
+    const epoch = identityEpoch;
+    if (!authKnown || pendingTagEpoch === epoch) return;
     if (Date.now() - popularTagsAt < 300000 && tagChips.childElementCount) return;
+    pendingTagEpoch = epoch;
     try {
       const { data, error } = await filterSearchOnlyTags(query().from('public_cards').select('tags').eq('kind', 'memo'))
         .order('created_at', { ascending: false }).limit(200);
+      if (epoch !== identityEpoch) return;
       if (error) throw error;
       const count = new Map();
       for (const row of data || []) for (const t of Array.isArray(row.tags) ? row.tags : []) count.set(t, (count.get(t) || 0) + 1);
@@ -1722,7 +1727,22 @@ function installFeatures() {
       tagChips.replaceChildren(node('span', 'note-tag-chips-title', top.length ? '요즘 많이 쓰는 태그' : '아직 태그가 달린 카드가 없어요'),
         ...top.map(([t]) => { const chip = node('button', 'note-tag-chip', `#${t}`); chip.type = 'button'; chip.addEventListener('click', () => searchTag(t)); return chip; }));
       popularTagsAt = Date.now();
-    } catch (error) { console.warn('Note popular tags:', error); }
+    } catch (error) {
+      if (epoch !== identityEpoch) return;
+      console.warn('Note popular tags:', error);
+      const retry = node('button', 'note-tag-chip', '인기 태그 다시 불러오기');
+      retry.type = 'button'; retry.addEventListener('click', loadPopularTags);
+      tagChips.replaceChildren(retry);
+    } finally {
+      if (pendingTagEpoch === epoch) pendingTagEpoch = null;
+    }
+  };
+  resetPopularTags = () => {
+    popularTagsAt = 0;
+    tagChips.replaceChildren();
+    if (!tagPanel.hidden) setTimeout(() => {
+      if (!tagPanel.hidden && !feed.hidden && feedMode === 'all') void loadPopularTags();
+    }, 0);
   };
   const openTagTab = () => { tagTabOn = true; tagPanel.hidden = false; syncSortButtons(); void loadPopularTags(); };
   const closeTagTab = () => { tagTabOn = false; tagPanel.hidden = true; tagInput.value = ''; };
@@ -3440,6 +3460,7 @@ function receiveAuth(current) {
     text.value = ''; tags.value = ''; editingId = null; composerUserId = null;
     showFeed(!initialCardId);
   }
+  if (firstSession || changed) resetPopularTags?.();
   updateAuth();
   // Start the feed once for this identity, outside the auth callback.
   const epoch = identityEpoch;

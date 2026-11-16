@@ -155,6 +155,66 @@ for (const member of [false, true]) {
   });
 }
 
+test('popular tags share pending reads, retry in place and follow the current viewer', async () => {
+  const dom = new JSDOM(read('park/index.html'), {
+    url: 'https://fixture.test/park/', runScripts: 'outside-only', pretendToBeVisual: true
+  });
+  const w = dom.window, doc = w.document;
+  try {
+    w.scrollTo = () => {};
+    w.matchMedia = () => ({ matches: false });
+    let authChanged;
+    const reads = [];
+    const tags = {
+      select() { return this; }, eq() { return this; }, not() { return this; }, order() { return this; },
+      limit() { return new Promise(resolve => reads.push(resolve)); }
+    };
+    w.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
+    w.supabase = { createClient: () => ({
+      auth: { onAuthStateChange(fn) { authChanged = fn; }, getSession: async () => ({ data: { session: null } }) },
+      from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null }) }) }) }),
+      rpc: async () => ({ data: {} }),
+      schema: () => ({ from: () => tags, rpc: async () => ({ data: [] }) })
+    }) };
+    w.eval(read('note/preview.js'));
+    const tick = () => new Promise(resolve => w.setTimeout(resolve, 0));
+    const tab = name => doc.querySelector('[data-sort="' + name + '"]').click();
+    const chips = doc.querySelector('.note-tag-chips');
+    await tick(); await tick();
+    tab('tag'); tab('latest'); tab('tag');
+    assert.equal(reads.length, 1, 'returning while the first lookup is pending shares it');
+    reads[0]({ data: [{ tags: ['산책'] }] }); await tick();
+    assert.match(chips.textContent, /#산책/);
+    tab('latest'); tab('tag');
+    assert.equal(reads.length, 1, 'completed results are reused for the same viewer');
+
+    authChanged('SIGNED_IN', { user: { id: 'fixture-a' } });
+    assert.equal(chips.childElementCount, 0);
+    await tick();
+    assert.equal(reads.length, 2);
+    authChanged('SIGNED_OUT', null);
+    await tick();
+    assert.equal(reads.length, 3);
+    reads[2]({ error: { message: 'fixture network error' } }); await tick();
+    const retry = chips.querySelector('button');
+    assert.match(retry.textContent, /다시/);
+    retry.click(); retry.click();
+    assert.equal(reads.length, 4, 'repeated retries share the current request');
+    reads[1]({ data: [{ tags: ['이전계정'] }] }); await tick();
+    assert.doesNotMatch(chips.textContent, /이전계정/);
+    reads[3]({ data: [{ tags: ['가을'] }] }); await tick();
+    assert.match(chips.textContent, /#가을/);
+    authChanged('TOKEN_REFRESHED', null);
+    tab('latest');
+    authChanged('SIGNED_IN', { user: { id: 'fixture-b' } }); await tick();
+    assert.equal(reads.length, 4, 'a hidden panel does not fetch tags on account change');
+    tab('tag');
+    assert.equal(reads.length, 5);
+    reads[4]({ data: [] }); await tick();
+    assert.match(chips.textContent, /아직 태그가 달린 카드가 없어요/);
+  } finally { dom.window.close(); }
+});
+
 test('a shared card starts before the feed and fetches reply backgrounds near the rail', async () => {
   const id = '12345678-1234-4123-8123-000000000001';
   const dom = new JSDOM(read('park/index.html'), {
