@@ -80,7 +80,13 @@ const cardId='00000000-0000-4000-8000-000000000001';
    await frame.evaluate(()=>{
     authKnown=ready=true;
     selectCollection=async()=>true;
+    window.guestDraws=[];
     noteRpc=async(name,args)=>{
+      if(name==='guest_card_background'){
+        const key=window.guestDraws.length?'37':'297';
+        window.guestDraws.push({id:args.p_request_id,key});
+        return key;
+      }
       if(name==='publish_guest_card'){window.guestPublication=args;return {card_id:crypto.randomUUID(),tags:[]};}
       return [];
     };
@@ -140,14 +146,18 @@ const cardId='00000000-0000-4000-8000-000000000001';
   await frame.locator('#compose-text').fill('공원의 첫 글');
   assert.equal(await frame.locator('#compose-more').isVisible(),false);
   assert.equal(await frame.locator('#card-photo-attach').isVisible(),false);
+  assert.equal(await frame.locator('#photo-gallery-toggle').isVisible(),false);
+  await frame.waitForFunction(()=>document.querySelector('.compose-photo').style.backgroundImage.includes('/297.jpg'));
   page.once('dialog', dialog=>dialog.accept());
   await frame.locator('#publish-card').click();
   await frame.locator('#composer-backdrop').waitFor({state:'hidden'});
   const posted=await frame.evaluate(()=>guestPublication);
   assert.equal(posted.p_body,'공원의 첫 글');assert.equal(posted.p_parent_id,null);
   assert.deepEqual(Object.keys(posted).sort(),['p_body','p_parent_id','p_request_id']);
+  assert.equal(posted.p_request_id,await frame.evaluate(()=>guestDraws[0].id));
   await page.locator('[data-park-action=compose]').click();
   await frame.locator('#compose-text').fill('붓글씨로 이어 쓰기');
+  await frame.waitForFunction(()=>document.querySelector('.compose-photo').style.backgroundImage.includes('/37.jpg'));
   await frame.locator('#convert-calligraphy').click();await login('note');
   assert.equal(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('ojjuda.park.compose-login.v1')).body),'붓글씨로 이어 쓰기');
   if(process.env.GUEST_PROOF_DIR){fs.mkdirSync(process.env.GUEST_PROOF_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.GUEST_PROOF_DIR,'guest-login.png')});}
@@ -162,7 +172,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
   await page.waitForFunction(()=>document.querySelector('#convert-calligraphy').getAttribute('aria-pressed')==='true');
   assert.equal(await page.locator('#compose-text').inputValue(),'붓글씨로 이어 쓰기');
   const initialInk=await waitForInk('#compose-ink-art');
-  await checkPhotoBehindInk('#compose-ink-art',await page.evaluate(()=>backgroundKey));
+  await checkPhotoBehindInk('#compose-ink-art','37');
   const defaultBox=await readInkBox('.compose-photo');
   assert.ok(defaultBox[3]>0&&defaultBox[3]<255,'the default has a visible, translucent box');
   await page.locator('#compose-text').fill('고쳐 쓴 붓글씨');

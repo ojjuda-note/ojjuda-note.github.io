@@ -13,7 +13,7 @@ const submit = $('#publish-card'), composeMessage = $('#compose-message');
 const cache = new Map(), stack = [];
 let feedReturnPoint = null;
 let session = null, authKnown = false, ready = false, busy = false, authEventVersion = 0;
-let focusBefore = null, kind = 'memo', parentId = null, backgroundKey = '10';
+let focusBefore = null, kind = 'memo', parentId = null, backgroundKey = null;
 let feedCursor = null, replyCursor = null, feedRun = 0, detailRun = 0;
 let stageAuth = null;
 let worldCoins = null, balanceRun = 0;
@@ -2039,7 +2039,9 @@ function updateFeaturedPhoto() {
   const name = selected ? photoName(selected, '제공 배경') : '기본 배경 무작위';
   const ownedUntil = selected && activePhotoEntitlement(selected);
   const price = selected ? ownedUntil ? `구매한 배경 · ${dateLabel(ownedUntil)}까지 사용` : '배경 이용권 · 10 ZU / 1개월' : '무료 · 이 배경으로 등록';
-  $('#photo-featured-image').src = `/note/assets/${selected || backgroundKey}.jpg`;
+  const featured = $('#photo-featured-image'), key = selected || photoAssetKey(backgroundKey);
+  if (key) featured.src = `/note/assets/${key}.jpg`;
+  else featured.removeAttribute('src');
   $('#photo-featured-image').alt = selected ? `${name} 미리보기` : '기본 배경 미리보기';
   $('#photo-featured-name').textContent = name;
   $('#photo-featured-detail').textContent = price;
@@ -2102,7 +2104,8 @@ function loginForComposer(convert) {
   if (busy || !isGuestComposer()) return;
   try {
     sessionStorage.setItem(guestReturnKey, JSON.stringify({
-      body: text.value, parent: parentId, convert, until: Date.now() + 15 * 60_000
+      body: text.value, parent: parentId, convert, requestId: publishRequestId, backgroundKey,
+      until: Date.now() + 15 * 60_000
     }));
   } catch {
     if (text.value && !confirm('이 브라우저에서는 로그인 후 글을 이어 쓸 수 없어요. 로그인할까요?')) return;
@@ -2124,6 +2127,21 @@ function currentStyle() {
     boxTransparency: Number($('#compose-box-transparency')?.value ?? 25) };
 }
 function chosenPhoto() { return selectedPhotoKey || 'plain'; }
+function randomDefaultBackground() {
+  return String(PHOTO_FIRST + Math.floor(Math.random() * (PHOTO_LAST - PHOTO_FIRST + 1)));
+}
+async function loadGuestBackground(requestId, run, epoch) {
+  let key;
+  try {
+    key = photoAssetKey(await noteRpc('guest_card_background', { p_request_id: requestId }));
+  } catch { /* A guest can still publish with the same request ID while the preview is offline. */ }
+  if (run !== composerRun || epoch !== identityEpoch || backdrop.hidden || backgroundKey !== null) return;
+  if (!key && !composerUserId) return;
+  backgroundKey = key || randomDefaultBackground();
+  updateFeaturedPhoto();
+  if (!selectedPhotoKey) setPhotoBackground($('.compose-photo'), backgroundKey);
+  if (composeMessage.textContent === '배경은 등록할 때 자동으로 정해져요.') updateComposer();
+}
 function clearEventPhoto() {
   eventPhotoRun++;
   if (eventPhotoPreviewUrl) URL.revokeObjectURL(eventPhotoPreviewUrl);
@@ -2190,6 +2208,7 @@ function applyComposeStyle() {
   const preview = $('.compose-photo'), style = currentStyle();
   const photo = $('#note-photo-pick').hidden || chosenPhoto() === 'plain' ? backgroundKey : chosenPhoto();
   setPhotoBackground(preview, photo);
+  if (photo === null) preview.style.backgroundImage = 'none';
   if (kind === 'event' && (eventPhotoPreviewUrl || (!eventPhotoRemove && eventCurrentPhotoUrl)))
     preview.style.backgroundImage = `url("${eventPhotoPreviewUrl || eventCurrentPhotoUrl}")`;
   applyVisualStyle(preview, style);
@@ -2452,7 +2471,8 @@ function updateComposer() {
   warning.hidden = !overflows;
   if (isGuestComposer()) {
     submit.disabled = busy || !client || !ready || replyDueChecking || !validEventBody(text.value);
-    composeMessage.textContent = busy ? '등록 중' : !client || !ready ? '공원 연결 확인 중' : '기본 글꼴로 익명 등록돼요.';
+    composeMessage.textContent = busy ? '등록 중' : !client || !ready ? '공원 연결 확인 중'
+      : backgroundKey === null ? '배경은 등록할 때 자동으로 정해져요.' : '기본 글꼴로 익명 등록돼요.';
     return;
   }
   if (!client || !ready) composeMessage.textContent = '노트 연결 확인 후 등록 가능';
@@ -2561,8 +2581,13 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   $('.compose-photo')?.classList.remove('has-card-photo');
   localComposerBaseline = null; localComposerDirty = false; localComposerStored = false;
   parentId = editingId ? card.parent_id : kind === 'comment' ? replyTarget : null;
-  backgroundKey = editingId ? (card.photo_key || card.background_key) : guest ? '10' : String(PHOTO_FIRST + Math.floor(Math.random() * (PHOTO_LAST - PHOTO_FIRST + 1)));
-  writingPosition = null; eventPosition = null; publishRequestId = crypto.randomUUID(); photoRequestId = crypto.randomUUID(); locationRun++;
+  const guestRequestId = validCardId(pending?.requestId) ? pending.requestId : null;
+  const returningBackground = guestRequestId ? photoAssetKey(pending.backgroundKey) : null;
+  if (editingId) backgroundKey = card.photo_key || card.background_key;
+  else if (guest) backgroundKey = null;
+  else backgroundKey = guestRequestId ? returningBackground : randomDefaultBackground();
+  publishRequestId = guest && guestRequestId ? guestRequestId : crypto.randomUUID();
+  writingPosition = null; eventPosition = null; photoRequestId = crypto.randomUUID(); locationRun++;
   replyDueChecking = false; replyDueRun++;
   $('#note-photo-pick').hidden = !!editingId || kind !== 'memo';
   $('#event-photo-choice').hidden = kind !== 'event';
@@ -2606,10 +2631,13 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   autoTagMode = !guest && !editingId; manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
   clearLocalComposer();
   requestedDraftContent = draftContent();
+  if (!guest && draftController && !requestedDraftContent.background_key)
+    requestedDraftContent.background_key = randomDefaultBackground();
   if (draftStatus) draftStatus.hidden = true;
   updateComposer(); backdrop.hidden = false; lockPage(true); updateComposer();
   $('.composer-body').scrollTop = 0;
   text.focus({ preventScroll: true });
+  if (guest) void loadGuestBackground(publishRequestId, run, epoch);
   if (editingId && (kind === 'memo' || kind === 'comment')) void prepareCardPhotoEdit(editingId, run);
   if (kind === 'event' && editingId && eventHadPhoto) void showExistingEventPhoto(card, run);
   if (kind === 'event' && !editingId) {
@@ -2633,10 +2661,19 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
       if (run === composerRun) { draftLoading = false; setComposerInputs(); updateComposer(); if (!backdrop.hidden) text.focus({ preventScroll: true }); }
     }
   }
-  if (pending && run === composerRun && !backdrop.hidden) {
-    if (pending.body && (!text.value || text.value === pending.body || confirm('로그인 전에 쓰던 글을 이어 쓸까요?'))) {
-      text.value = pending.body;
-      text.dispatchEvent(new Event('input', { bubbles: true }));
+  if (pending && run === composerRun && epoch === identityEpoch && !backdrop.hidden) {
+    if (!text.value || text.value === pending.body || (pending.body && confirm('로그인 전에 쓰던 글을 이어 쓸까요?'))) {
+      if (!guest && guestRequestId && parentId === pending.parent) {
+        backgroundKey = returningBackground;
+        selectedPhotoKey = null;
+        $('input[name="photo-choice"][value="plain"]').checked = true;
+        updateFeaturedPhoto(); applyComposeStyle();
+        if (!backgroundKey) void loadGuestBackground(guestRequestId, run, epoch);
+      }
+      if (pending.body) {
+        text.value = pending.body;
+        text.dispatchEvent(new Event('input', { bubbles: true }));
+      }
     }
     if (!guest && pending.convert && $('#compose-font').value !== 'calligraphy') toggleCalligraphy();
     else if (!guest && !pending.convert) $('#compose-more').open = true;
@@ -2731,6 +2768,10 @@ async function publishCard() {
   if (!body || body.length > 200 || !values) return;
   if (cardPhotoPreparing) { composeMessage.textContent = '사진을 준비하는 중이에요. 잠시 뒤 등록해 주세요.'; return; }
   const editId = editingId, actionUserId = composerUserId, actionEpoch = identityEpoch, actionComposerRun = composerRun;
+  // Login may finish before the first guest preview arrived. Use one member draw if publishing first.
+  if (composerUserId && !editId && backgroundKey === null) {
+    backgroundKey = randomDefaultBackground(); updateFeaturedPhoto(); applyComposeStyle();
+  }
   const previewBackgroundKey = backgroundKey;
   const selectedCardPhoto = (!editId || cardPhotoEditPath) && (kind === 'memo' || kind === 'comment') ? cardPhotoBlob : null;
   const selectedCardPhotoExpectedPath = cardPhotoEditPath;

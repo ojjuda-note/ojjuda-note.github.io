@@ -55,7 +55,7 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
       window.restorePayload = null;`);
   }
   function boot(id = 'account-a', gender = 'male') {
-    const saved = dom ? Object.fromEntries(Object.keys(window.localStorage).map(k => [k, window.localStorage.getItem(k)])) : {};
+    const saved = dom && id ? Object.fromEntries(Object.keys(window.localStorage).map(k => [k, window.localStorage.getItem(k)])) : {};
     dom?.window.close();
     dom = new JSDOM(html, { url: 'https://note.test/note/', runScripts: 'outside-only', pretendToBeVisual: true });
     window = dom.window; document = window.document;
@@ -65,7 +65,16 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     window.HTMLElement.prototype.scrollTo = () => {};
     window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
     for (const [k, value] of Object.entries(saved)) window.localStorage.setItem(k, value);
-    run(source); signIn(id, gender);
+    if (!id) {
+      window.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.invalid', supabaseKey: 'fixture' };
+      window.supabase = { createClient: () => ({
+        auth: { onAuthStateChange() {}, getSession: () => new Promise(() => {}) },
+        rpc: async name => ({ data: name === 'get_my_member_identity' ? { gender: 'private' } : null })
+      }) };
+    }
+    run(source);
+    if (id) signIn(id, gender);
+    else run('authKnown = ready = true; selectCollection = async () => true; refreshCards = async () => {};');
     run(`window.geoCalls = 0; window.deferGeo = false;
       currentPosition = async () => {
         window.geoCalls++;
@@ -170,6 +179,15 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     signIn('gallery-account', 'female'); await open();
     const byId = id => document.getElementById(id);
     const picker = byId('photo-gallery-toggle'), jump = byId('photo-page-jump');
+    const random = window.Math.random;
+    for (const asset of [10, 189, 190, 225, 226, 261, 262, 297]) {
+      close();
+      window.Math.random = () => (asset - 10 + 0.5) / 288;
+      await open();
+      assert.ok(document.querySelector('.compose-photo').style.backgroundImage.includes('/' + asset + '.jpg'));
+      assert.equal(run('chosenPhoto()'), 'plain', 'a randomly assigned photo or ink wash is free');
+    }
+    window.Math.random = random;
     const keys = [];
     picker.click();
     for (const [first, pageCount] of [[10,15], [190,3], [226,3], [262,3]]) {
@@ -207,7 +225,71 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     chooseStyle('handwriting', 'small', 17); close(); await open();
     assert.deepEqual(choices(), { identity: 'nickname', gender: 'private', location: false }, 'storage errors retain choices in the current session');
     assert.deepEqual(styleChoices(), { font: 'handwriting', size: 'small', boxTransparency: 17 });
+    boot(null);
+    const draws = [], posts = [];
+    window.noteRpc = async (name, args) => {
+      if (name === 'guest_card_background') return new Promise((resolve, reject) => {
+        draws.push({ id: args.p_request_id, resolve, reject });
+      });
+      if (name === 'publish_guest_card') {
+        posts.push({ ...args });
+        return { card_id: window.crypto.randomUUID(), tags: [] };
+      }
+      return [];
+    };
+    const preview = () => document.querySelector('.compose-photo').style.backgroundImage;
+    const write = body => {
+      byId('compose-text').value = body;
+      byId('compose-text').dispatchEvent(new window.Event('input', { bubbles: true }));
+    };
+    const first = run("openComposer('memo')");
+    await settle();
+    assert.equal(draws.length, 1);
+    assert.doesNotMatch(preview(), /url\(/, 'a pending draw does not promise a different photo');
+    close();
+    const next = run("openComposer('memo')");
+    await settle();
+    assert.equal(draws.length, 2);
+    assert.notEqual(draws[0].id, draws[1].id);
+    draws[1].resolve('297'); await next; await settle();
+    write('수묵 배경으로 글 쓰기');
+    draws[0].resolve('42'); await first; await settle();
+    assert.match(preview(), /\/297\.jpg/, 'a response from the closed composer cannot replace this preview');
+    byId('publish-card').click(); await settle();
+    assert.deepEqual(posts, [{ p_request_id: draws[1].id, p_body: '수묵 배경으로 글 쓰기', p_parent_id: null }]);
+
+    const replyId = window.crypto.randomUUID();
+    const reply = run("openComposer('reply', null, " + JSON.stringify(replyId) + ")");
+    await settle();
+    assert.equal(draws.length, 3);
+    draws[2].reject(new Error('preview unavailable')); await reply; await settle();
+    write('미리보기가 끊겨도 등록');
+    assert.doesNotMatch(preview(), /url\(/);
+    assert.equal(byId('publish-card').disabled, false);
+    byId('publish-card').click(); await settle();
+    assert.deepEqual(posts[1], { p_request_id: draws[2].id, p_body: '미리보기가 끊겨도 등록', p_parent_id: replyId });
+    const saved = { id: replyId, kind: 'memo', body: '기존 글', tags: [], background_key: '42' };
+    for (const expanded of [false, true]) {
+      const element = window.cardElement(saved, false, expanded);
+      assert.match(element.querySelector('.photo').style.backgroundImage, /\/42\.jpg/);
+    }
+    assert.equal(draws.length, 3, 'reading or rendering a saved card never draws a new background');
+
+    await open();
+    write('배경보다 먼저 등록');
+    byId('publish-card').click(); await settle();
+    assert.equal(posts[2].p_request_id, draws[3].id);
+    signIn('returning-member', 'private');
+    window.pendingGuest = { requestId: window.crypto.randomUUID(), backgroundKey: null,
+      parent: null, body: '로그인 전 쓰던 원고', convert: false };
+    await run("openComposer('memo', null, null, pendingGuest)");
+    await settle();
+    assert.equal(draws[4].id, window.pendingGuest.requestId, 'login resumes the same draw');
+    draws[4].resolve('226'); await settle();
+    draws[3].resolve('10'); await settle();
+    assert.equal(byId('compose-text').value, window.pendingGuest.body);
+    assert.match(preview(), /\/226\.jpg/);
     assert.deepEqual(errors, []);
-    console.log('PASS: composer name, gender, location, font, size and 0-100 transparency persist through close and reload; number/slider input, legacy settings, account separation, edits and blocked storage; unfinished text stays unsaved.');
+    console.log('PASS: composer preferences, legacy drafts and gallery; free member photo and wash draws; guest preview identity, race, offline submission and login return.');
   } finally { dom?.window.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
