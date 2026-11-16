@@ -4,7 +4,7 @@
  const scripts=[
   "/admin/visitors.js?v=20261113-biorhythm-paid1","/admin/trash.js?v=20261021-trash1",
   "/admin/friend-messages.js?v=20261021-trash1","/admin/member-identity.js?v=20260929-phone-unique",
-  "/admin/connections.js?v=20261022-entry1","/admin/accounts.js?v=20261110-member-history1",
+  "/admin/connections.js?v=20261022-entry1","/admin/accounts.js?v=20261116-history-pages1",
   "/admin/activity.js?v=20261107-account-guard1","/admin/photo-stages.js?v=20261006-photo1",
   "/admin/drinking-prompts.js?v=20261114-drinking-plus3001",
   "/admin/fortune-purchases.js?v=20261113-biorhythm-paid1",
