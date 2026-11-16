@@ -1,4 +1,4 @@
-import {BACK_DO_LABEL,BACK_DO_STICK} from './rules.mjs?v=16';
+import {BACK_DO_LABEL,BACK_DO_STICK} from './rules.mjs?v=17';
 // Movement is in world coordinates. A camera fitted to the available surface
 // projects the split timber, its floor support and its shadow into the same space.
 const TAU = Math.PI * 2;

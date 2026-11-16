@@ -1,9 +1,9 @@
-import {roundSummary} from './results.mjs?v=3';
-import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=16';
-import {createBoard,PAWN_HOP_MS} from './board.mjs?v=26';
-import {createToss,drawRack} from './toss.mjs?v=10';
+import {roundSummary} from './results.mjs?v=4';
+import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=17';
+import {createBoard,PAWN_HOP_MS} from './board.mjs?v=27';
+import {createToss,drawRack} from './toss.mjs?v=11';
 import {createTableSounds} from './sound.mjs?v=4';
-import {openRoom,roomCode} from './room.mjs?v=16';
+import {openRoom,roomCode} from './room.mjs?v=17';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=5';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
@@ -144,6 +144,7 @@ function standings(){
 const delay=ms=>new Promise(done=>setTimeout(done,ms));
 const targetTile=m=>m.to===FINISH||m.to===HOME?0:m.to;
 const distanceLabel=steps=>steps===-1?'뒤로 1칸':steps+'칸';
+const rollLabel=(steps,separator=' · ')=>steps===-1?distanceLabel(steps):YUT[steps]+separator+distanceLabel(steps);
 function canMovePiece(){
   return !game.computerTeams?.includes(game.team)&&game.phase==='move'&&!busy&&!pendingRoom&&!dialog.open&&
     (!net||!!(room&&net.game&&net.connected&&net.seat===game.team));
@@ -183,7 +184,7 @@ function chooseDestination(tile,index=null){
     const from=position(s.pawns[s.team][m.index]);
     const who=from===HOME?'새 말':(m.index+1)+'번 말';
     const route=m.to===FINISH?'골인':m.to===HOME?'대기석':m.to===0?nodeName(0):choices.some(o=>o.index===m.index&&o.steps===m.steps&&o.shortcut!==m.shortcut)?(m.shortcut?'지름길':'바깥길'):'';
-    const name=who+' · '+YUT[m.steps]+' '+distanceLabel(m.steps)+(route?' · '+route:'');
+    const name=who+' · '+rollLabel(m.steps,' ')+(route?' · '+route:'');
     body.append(button(name,'secondary',()=>{
       closePanel();if(game===s)place(m,dragged);
     }));
@@ -201,7 +202,7 @@ function destinationMenu(s,options){
     body.append(button(labels+' · '+rolls,'secondary',()=>{closePanel();if(game===s)chooseTile(tile);}));
   }
 }
-function result(s){return s.sticks?YUT[s.steps]+' · '+distanceLabel(s.steps):'';}
+function result(s){return s.sticks?rollLabel(s.steps):'';}
 function bankCounts(s){
   const counts=new Map();
   for(const steps of pendingRolls(s))counts.set(steps,(counts.get(steps)??0)+1);
@@ -473,11 +474,11 @@ function resultControls(s,steps,options){
   const focused=holder.contains(document.activeElement);
   holder.replaceChildren();holder.hidden=counts.size<2;title.hidden=!holder.hidden;
   if(holder.hidden){
-    title.textContent=YUT[steps]+' · '+distanceLabel(steps)+(counts.get(steps)>1?' ×'+counts.get(steps):'');
+    title.textContent=rollLabel(steps)+(counts.get(steps)>1?' ×'+counts.get(steps):'');
     return;
   }
   for(const [value,count] of counts){
-    const chip=button(YUT[value]+' '+distanceLabel(value)+(count>1?' ×'+count:''),'result-choice',()=>{
+    const chip=button(rollLabel(value,' ')+(count>1?' ×'+count:''),'result-choice',()=>{
       if(game!==s||!canMovePiece())return;
       selectedSteps=value;renderHUD();
     });
@@ -520,8 +521,8 @@ function renderHUD(){
   else if(s.phase==='won')actions.append(button('결과 보기','primary',()=>showResult(true),busy));
   else{
     const disabled=!canCast();
-    const rollLabel=pendingRolls(s).length||s.lastMove?.captured&&s.team===s.lastMove.team?'한 번 더 던지기':'윷 던지기';
-    const label=casting?'윷 던지는 중…':busy?'말 이동 중…':bot?'컴퓨터 차례':other?'상대 팀 차례':s.phase==='move'?'말 옮기기':rollLabel;
+    const throwLabel=pendingRolls(s).length||s.lastMove?.captured&&s.team===s.lastMove.team?'한 번 더 던지기':'윷 던지기';
+    const label=casting?'윷 던지는 중…':busy?'말 이동 중…':bot?'컴퓨터 차례':other?'상대 팀 차례':s.phase==='move'?'말 옮기기':throwLabel;
     if(disabled)actions.append(button(label,'primary',null,true));
     else{castButton.textContent=label;if(!keepCast)actions.append(castButton);}
   }
@@ -542,6 +543,9 @@ const eventDescriptions={
   home:['⌂','도착한 말과 그 위에 업힌 말이 함께 대기석으로 돌아가요.']
 };
 function eventPlace(node){
+  if(node===22)return '가운데 갈림길';
+  if(node===5||node===10)return '바깥길 '+node+'번 갈림길';
+  if(node===15)return '바깥길 15번 합류점';
   if(node<20)return '바깥길 '+node+'번';
   // Inner fork numbers run from the preceding corner or from the shared center.
   const [from,toward,offset]=node<22?[5,22,19]:node<25?[22,15,22]:node<27?[10,22,24]:[22,0,26];
@@ -572,10 +576,10 @@ function rules(){
   list.append(element('li','윷 던지기를 누르면 섞이고, 떼면 던져요. 윷이나 모가 나오면 한 번 더 던져요.'),element('li','다 던지면 갈 수 있는 칸이 모두 빛나요. 원하는 칸을 누르세요.'));
   const more=element('details',undefined,'game-details');
   more.append(element('summary','자세한 규칙'),
-    element('p','‘한 칸 뒤로’가 적힌 윷만 평평한 면이 위로 나오면 빽도예요. 판 위의 말 하나가 왔던 길로 한 칸 물러나요. 첫 도 칸에서 물러나면 나가기 칸에 서요. 거기서 한 칸 더 나가면 골인이에요.'),
+    element('p','‘한 칸 뒤로’가 적힌 윷만 평평한 면이 위로 나오면 ‘뒤로’예요. 판 위의 말 하나를 한 칸 물려요. 첫 도 칸에서 물러나면 나가기 칸에 서요. 거기서 한 칸 더 나가면 골인이에요.'),
     element('p','도·개·걸·윷·모는 1~5칸이에요. 다른 말을 쓰려면 판이나 대기석에서 먼저 고르세요. 말은 금빛 칸으로 끌어 놓거나 이동 버튼으로 옮겨도 돼요.'),
     element('p','갈림길에 멈추면 다음에 지름길을 고를 수 있어요. 나가기 칸을 지나면 골인이에요.'),
-    element('p','같은 팀 말은 업어서 함께 가요. 빽도·도·개·걸로 상대 말을 잡으면 한 번 더 던져요. 남은 결과는 계속 쓸 수 있어요.'));
+    element('p','같은 팀 말은 업어서 함께 가요. 뒤로·도·개·걸로 상대 말을 잡으면 한 번 더 던져요. 남은 결과는 계속 쓸 수 있어요.'));
   if(game.eventTiles)more.append(button('이번 판 특수 칸 보기','secondary',showEventGuide));
   body.append(list,message('우리 팀 말을 먼저 모두 골인시키면 이겨요.'),more,button('알겠어요','primary',closePanel));
 }
