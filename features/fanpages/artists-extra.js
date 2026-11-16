@@ -180,11 +180,17 @@
         { date: '2026-11-28', title: '첫 월드투어 ZERO FRONTIER 피날레', sub: '인천 인스파이어 아레나 · 17:00 · JYP 주최', href: 'https://nol.yanolja.com/ticket/products/26013946' },
         { date: '2026-11-29', title: '첫 월드투어 ZERO FRONTIER 피날레', sub: '인천 인스파이어 아레나 · 16:00 · JYP 주최', href: 'https://nol.yanolja.com/ticket/products/26013946' },
         { date: '2026-11-29', title: '피날레 CGV 라이브뷰잉', sub: '국내 CGV · 인천 공연 실시간 중계 · 11.11 예매 시작', href: 'https://www.newspim.com/news/view/20261026001185' },
+        { date: '2026-12-02', title: 'N=MIXX 앨범 발매 기념 도쿄 인스토어 이벤트', sub: '일본 도쿄 타워레코드 시부야점 B1F · 현지 17:00 · 멤버별 사인·하이바이, 추첨 당첨자 대상', href: 'https://nmixxjapan.com/s/222o/news/detail/10030' },
         { date: '2026-12-09', title: '일본 첫 베스트 앨범 N=MIXX 발매', sub: '일본 정식 발매 예정 · 공식 일본 사이트', href: 'https://nmixxjapan.com/s/222o/page/best_album_n_mixx' },
+        { date: '2026-12-11', title: 'N=MIXX 앨범 발매 기념 나고야 인스토어 이벤트', sub: '일본 아이치 타워레코드 나고야 PARCO점 · 현지 18:00 · 멤버별 사인·하이바이, 추첨 당첨자 대상', href: 'https://nmixxjapan.com/s/222o/news/detail/10030' },
         { date: '2026-12-12', title: '일본 데뷔 쇼케이스 N=MIXX', sub: '일본 아이치 · 쿠로코군 홀 · 18:00 · 워너뮤직 재팬 주최', href: 'https://nmixxjapan.com/s/222o/page/Japan_debut_showcase' },
-        { date: '2026-12-13', title: '일본 데뷔 쇼케이스 N=MIXX', sub: '일본 아이치 · 쿠로코군 홀 · 17:00 · 워너뮤직 재팬 주최', href: 'https://nmixxjapan.com/s/222o/page/Japan_debut_showcase' }
+        { date: '2026-12-13', title: '일본 데뷔 쇼케이스 N=MIXX', sub: '일본 아이치 · 쿠로코군 홀 · 17:00 · 워너뮤직 재팬 주최', href: 'https://nmixxjapan.com/s/222o/page/Japan_debut_showcase' },
+        { date: '2026-12-19', title: 'N=MIXX 일본 발매 기념 도쿄 이벤트', sub: '일본 도쿄 빅사이트 동1홀 · 구매자 응모 추첨(11.04 신청 종료) · 시간은 공식 안내 확인', href: 'https://nmixxjapan.com/s/222o/page/best_album_n_mixx' },
+        { date: '2026-12-20', title: 'N=MIXX 일본 발매 기념 오사카 이벤트', sub: '일본 인텍스 오사카 3호관 · 구매자 응모 추첨(11.04 신청 종료) · 시간은 공식 안내 확인', href: 'https://nmixxjapan.com/s/222o/page/best_album_n_mixx' }
       ],
       news: [
+        { date: '2026.11.06', tag: '팬이벤트', title: 'N=MIXX · 12.02 시부야·12.11 나고야 멤버별 사인·하이바이 이벤트 발표', href: 'https://nmixxjapan.com/s/222o/news/detail/10030' },
+        { date: '2026.11.06', tag: '굿즈', title: 'N=MIXX 일본 발매 특전 포토카드 럭키드로우 · 12.08~21 매장별 운영 안내', href: 'https://nmixxjapan.com/s/222o/news/detail/10031' },
         { date: '2026.10.30', tag: '수상', title: '2026 대한민국 대중문화예술상 문화체육관광부 장관 표창 수상(10.29 시상)', href: 'https://recruit.jype.com/ko/news/61' },
         { date: '2026.10.28', tag: '공연', title: 'JYP 발표 · 인천 월드투어 피날레 3회 공연 전석 매진 기록', href: 'https://recruit.jype.com/ko/news/60' },
         { date: '2026.10.26', tag: '공연', title: '11.29 CGV 피날레 생중계 확정 · 11.11 예매 시작', href: 'https://www.newspim.com/news/view/20261026001185' },
@@ -193,6 +199,7 @@
         { date: '발매 예정', tag: '소식', title: '일본 첫 베스트 앨범 N=MIXX, 12월 9일 발매 안내', href: 'https://nmixxjapan.com/s/222o/page/best_album_n_mixx' }
       ],
       merch: [
+        { title: 'N=MIXX 일본 첫 베스트 앨범', sub: '2026.12.09 일본 발매 예정 · 초회 A/B·통상반 및 매장별 특전 · 예약·재고는 공식 판매처 확인', href: 'https://nmixxjapan.com/s/222o/page/best_album_n_mixx' },
         { title: 'Strange Muse 공식 앨범', sub: 'JYP JAPAN · 포맷·재고·특전은 판매처에서 확인', href: 'https://jypj-store.com/collections/nmixx-music' },
         { title: 'NMIXX OFFICIAL LIGHT STICK VER.2', sub: 'JYP JAPAN · 공식 응원봉', href: 'https://jypj-store.com/collections/nmixx-official-goods' },
         { title: 'Strange Muse 팝업 공식 포토카드', sub: 'MAKESTAR · 10.28~11.03 예약 판매 종료 · 11.12 발매 · 현재 판매 종료', href: 'https://www.makestar.com/product/21421' }
