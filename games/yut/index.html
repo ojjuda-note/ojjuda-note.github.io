@@ -2,9 +2,9 @@
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#091c23"><title>섬마을 윷놀이 · 오쭈다 오락실</title>
-<link rel="icon" href="./cover.svg?v=3" type="image/svg+xml">
-<link rel="stylesheet" href="./style.css?v=3">
-<script defer src="/config.js"></script><script type="module" src="./play.mjs?v=3"></script></head>
+<link rel="icon" href="./cover.svg?v=4" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css?v=4">
+<script defer src="/config.js"></script><script type="module" src="./play.mjs?v=4"></script></head>
 <body>
 <main class="tabletop">
   <header class="rail">
@@ -15,22 +15,27 @@
   <section class="scene" aria-label="섬마을 윷놀이판">
     <canvas id="board" role="img" aria-label="밤바다에 놓인 자개 윷판. 스무 칸의 바깥길과 가운데를 지나는 두 지름길이 있어요."></canvas>
   </section>
-  <section class="dock" aria-label="게임 조작">
+  <section class="station" aria-label="윷과 게임 조작">
+    <div class="rack">
+      <div class="rack-heading"><span id="rack-title">던질 윷</span><span id="outcome"></span></div>
+      <div class="rack-well"><canvas id="rack-canvas" role="img" aria-label="던질 윷 네 가락"></canvas></div>
+    </div>
+    <div class="dock">
     <div class="playbar">
       <div class="turn-info">
         <div class="turn-line">
           <button id="team-title" title="팀별 말 현황" aria-haspopup="dialog">산호 팀 차례</button>
           <span id="goals" class="goals"></span>
-          <span id="outcome"></span>
         </div>
         <p id="note" role="status"></p>
       </div>
       <div id="actions"></div>
     </div>
+    </div>
   </section>
 </main>
 <div id="toss-layer" class="toss-layer" hidden aria-hidden="true">
-  <div class="toss-card"><canvas id="toss-canvas" width="600" height="400"></canvas><div id="toss-label"></div></div>
+  <canvas id="toss-canvas"></canvas><div id="toss-label"></div>
 </div>
 <dialog id="sheet" aria-labelledby="dialog-title"><div class="dialog-title"><h2 id="dialog-title"></h2><button id="close" aria-label="닫기">×</button></div><div id="dialog-body"></div></dialog>
 </body></html>

@@ -14,18 +14,20 @@
     <path id="wave" d="M0 10q9 0 16-5t16-4q7 0 15 4t21 3m-68 6q9 0 16-5t16-4q7 0 15 4t21 3" fill="none" stroke="#88a895" stroke-width="1.2"/>
   </defs>
   <rect width="480" height="320" fill="url(#sea)"/>
-  <circle cx="80" cy="51" r="24" fill="#d2ddd4" opacity=".08"/><circle cx="80" cy="51" r="18" fill="url(#shell)"/>
-  <g opacity=".45"><use xlink:href="#wave" x="16" y="134"/><use xlink:href="#wave" x="373" y="62"/><use xlink:href="#wave" x="378" y="251"/><use xlink:href="#wave" x="44" y="266"/></g>
-  <g fill="#0b1b21" opacity=".7"><path d="m30 199 209-90 214 65-202 116z"/></g>
-  <g transform="matrix(.87 .34 -.74 .44 222 79)"><rect x="1" y="20" width="254" height="254" rx="18" fill="#0b2229"/><rect y="12" width="254" height="254" rx="18" fill="#796542"/><rect y="9" width="254" height="254" rx="18" fill="#273e3c"/><rect width="254" height="254" rx="18" fill="url(#lacquer)" stroke="#bbaa7e" stroke-width="2.3"/><rect x="6" y="6" width="242" height="242" rx="14" fill="none" stroke="url(#shell)" stroke-width="1.6"/>
+  <g opacity=".35"><use xlink:href="#wave" x="38" y="26"/><use xlink:href="#wave" x="362" y="261"/></g>
+  <rect x="14" y="72" width="270" height="200" rx="19" fill="#04151b" opacity=".8"/>
+  <g transform="translate(11 56) scale(1.08 .81)"><rect x="1" y="20" width="254" height="254" rx="18" fill="#0b2229"/><rect y="12" width="254" height="254" rx="18" fill="#796542"/><rect y="9" width="254" height="254" rx="18" fill="#273e3c"/><rect width="254" height="254" rx="18" fill="url(#lacquer)" stroke="#bbaa7e" stroke-width="2.3"/><rect x="6" y="6" width="242" height="242" rx="14" fill="none" stroke="url(#shell)" stroke-width="1.6"/>
     <g transform="translate(17 17)"><path d="M0 0h220v220H0zm0 0 220 220M220 0 0 220" fill="none" stroke="#819990" stroke-width="3"/>
       <use xlink:href="#edge"/><use xlink:href="#edge" transform="translate(220) rotate(90)"/><use xlink:href="#edge" transform="translate(220 220) rotate(180)"/><use xlink:href="#edge" transform="translate(0 220) rotate(-90)"/>
       <use xlink:href="#disc" x="37" y="37"/><use xlink:href="#disc" x="74" y="74"/><use xlink:href="#disc" x="146" y="146"/><use xlink:href="#disc" x="183" y="183"/><use xlink:href="#disc" x="183" y="37"/><use xlink:href="#disc" x="146" y="74"/><use xlink:href="#disc" x="74" y="146"/><use xlink:href="#disc" x="37" y="183"/><use xlink:href="#gate" x="110" y="110"/>
     </g>
   </g>
-  <g fill="none" stroke="#04191e" opacity=".42" stroke-linecap="round"><path d="m155 164 48 57m41-60 4 51m43-67-29 48m44-9 30-24" stroke-width="15"/></g>
-  <g transform="translate(154 137) rotate(-56)"><use xlink:href="#flat"/></g>
-  <g transform="translate(224 100) rotate(-24)"><use xlink:href="#round"/></g>
-  <g transform="translate(281 103) rotate(31)"><use xlink:href="#flat"/></g>
-  <g transform="translate(328 157) rotate(63)"><use xlink:href="#round"/></g>
+  <g fill="#081e23"><rect x="299" y="40" width="165" height="239" rx="16" stroke="#91a593" stroke-width="1.2"/></g>
+  <g stroke="#001819" fill="none" stroke-width="18" stroke-linecap="round" opacity=".8">
+    <path d="m319 93 124-12m-119 65 124-12m-128 63 124-12m-119 65 124-12"/>
+  </g>
+  <g transform="translate(378 81) rotate(85)"><use xlink:href="#round"/></g>
+  <g transform="translate(383 133) rotate(85)"><use xlink:href="#flat"/></g>
+  <g transform="translate(378 185) rotate(85)"><use xlink:href="#round"/></g>
+  <g transform="translate(383 237) rotate(85)"><use xlink:href="#flat"/></g>
 </svg>

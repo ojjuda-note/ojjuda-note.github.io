@@ -1,12 +1,28 @@
 import {TEAMS,HOME,FINISH,YUT,newGame,position,moves,nodeName,act} from './rules.mjs?v=1';
-import {createBoard} from './board.mjs?v=3';
-import {createToss} from './toss.mjs?v=3';
+import {createBoard} from './board.mjs?v=4';
+import {createToss,drawRack} from './toss.mjs?v=4';
 import {openRoom} from './room.mjs?v=1';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile), toss=createToss($('toss-canvas'));
 const dialog=$('sheet'), body=$('dialog-body'), reduced=matchMedia('(prefers-reduced-motion: reduce)');
 let local=newGame(), shown=null, net=null, room=null, pendingRoom=false, attempt=0, busy=false, motion=0, panel='',game=local;
 let casting=false,autoTimer=0,focusTile=null;
+const rack=$('rack-canvas'),rackContext=rack.getContext('2d');
+let rackFaces=null,paintedFaces='';
+function paintRack(){
+  if(!rackContext)return;
+  const rect=rack.getBoundingClientRect(),ratio=Math.min(window.devicePixelRatio||1,2);
+  const w=Math.round(rect.width*ratio),h=Math.round(rect.height*ratio);
+  if(!w||!h)return;
+  const key=rackFaces?rackFaces.join(''):'ready';
+  if(w===rack.width&&h===rack.height&&key===paintedFaces)return;
+  if(w!==rack.width)rack.width=w;
+  if(h!==rack.height)rack.height=h;
+  drawRack(rackContext,w,h,rackFaces);
+  paintedFaces=key;
+}
+if(typeof ResizeObserver==='function')new ResizeObserver(paintRack).observe(rack);
+else window.addEventListener('resize',paintRack);
 function element(tag,text,cls){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(cls)el.className=cls;return el;}
 function button(text,cls,fn,disabled=false){const b=element('button',text,cls);b.type='button';b.disabled=disabled;b.onclick=fn;return b;}
 function dot(t){const badge=element('span',TEAMS[t].mark,'team-dot');badge.setAttribute('aria-hidden','true');badge.style.setProperty('--team',TEAMS[t].color);return badge;}
@@ -37,7 +53,13 @@ function chooseTile(tile){
   if(picks.length>1){focusTile=tile;renderHUD();}
 }
 function result(s){return s.sticks?YUT[s.steps]+' · '+s.steps+'칸':'';}
-function reveal(s){$('outcome').textContent=result(s);}
+function reveal(s){
+  rackFaces=s.sticks??null;
+  $('outcome').textContent=result(s);
+  $('rack-title').textContent=rackFaces?'던진 윷':'던질 윷';
+  rack.setAttribute('aria-label',rackFaces?'던진 윷 네 가락 · '+result(s):'던질 윷 네 가락');
+  paintRack();
+}
 async function showState(s,animate=true){
   if(shown===s)return;
   const previous=shown;shown=s;game=s;const token=++motion;

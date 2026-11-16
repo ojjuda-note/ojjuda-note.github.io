@@ -46,14 +46,20 @@ test('one tap throws and auto-moves a forced piece; an actual choice waits for i
   function setFaces(n){let i=0;t.mock.method(Math,'random',()=>i++%4<n?0.1:0.9);}
   await import('../games/yut/play.mjs');
   assert.equal(first().textContent,'윷 던지기');
+  const rack=doc.getElementById('rack-canvas');
+  assert.equal(text('rack-title'),'던질 윷');
+  assert.equal(rack.width,390);
+  assert.equal(rack.height,500);
   setFaces(1);first().click();
   assert.equal(doc.getElementById('toss-layer').hidden,false);assert.equal(text('outcome'),'');assert.ok(first().disabled);
   tick();
   await until(()=>text('team-title').includes('바다')&&first().textContent==='윷 던지기');
   assert.equal(text('outcome'),'도 · 1칸'); assert.ok(doc.getElementById('toss-layer').hidden);
+  assert.equal(rack.getAttribute('aria-label'),'던진 윷 네 가락 · 도 · 1칸');
   prefs.matches=true;setFaces(2);first().click();
   assert.ok(doc.getElementById('toss-layer').hidden);
   await until(()=>text('team-title').includes('산호')&&first().textContent==='윷 던지기');
+  assert.equal(rack.getAttribute('aria-label'),'던진 윷 네 가락 · 개 · 2칸');
   setFaces(1);first().click();
   assert.equal(doc.querySelectorAll('#actions .choice').length,2);
   await new Promise(r=>setTimeout(r,320));
