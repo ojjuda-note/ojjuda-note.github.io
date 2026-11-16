@@ -1,6 +1,6 @@
 import {TEAMS,HOME,FINISH,YUT,newGame,position,moves,nodeName,act} from './rules.mjs?v=1';
-import {createBoard} from './board.mjs?v=2';
-import {createToss} from './toss.mjs?v=2';
+import {createBoard} from './board.mjs?v=3';
+import {createToss} from './toss.mjs?v=3';
 import {openRoom} from './room.mjs?v=1';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile), toss=createToss($('toss-canvas'));
@@ -13,7 +13,12 @@ function dot(t){const badge=element('span',TEAMS[t].mark,'team-dot');badge.setAt
 const layer=(s)=>s.pawns.flatMap((team,t)=>team.flatMap((trail,i)=>{
   const node=position(trail);return node===HOME||node===FINISH?[]:[{team:t,index:i,node}];
 }));
-function draw(s,override){board.setState({pieces:override??layer(s),activeTeam:s.team});}
+function draw(s,override){
+  const pieces=override??layer(s);
+  const waiting=s.pawns.flatMap((team,t)=>team.flatMap((trail,i)=>
+    position(trail)===HOME&&!pieces.some(p=>p.team===t&&p.index===i)?[{team:t,index:i}]:[]));
+  board.setState({pieces,activeTeam:s.team,waiting});
+}
 function standings(){
   openPanel('말 현황','scores');const s=game;
   const rows=s.pawns.map((team,t)=>{
@@ -79,6 +84,7 @@ function renderHUD(){
   const s=game,lobby=net&&!net.game,team=s.team;
   $('team-title').replaceChildren(...(lobby?[document.createTextNode('온라인 대기실')]:
     [dot(team),document.createTextNode(TEAMS[team].name+' 팀'+(s.phase==='won'?' 승리!':' 차례'))]));
+  $('goals').textContent=lobby?'':'골인 '+s.pawns[team].filter(p=>position(p)===FINISH).length+'/2';
   $('note').textContent=lobby?(net.status||'초대 링크로 친구를 불러 주세요.'):
     (net?.status||(casting?'윷가락이 멈추기를 기다려요.':s.note));
   const actions=$('actions');actions.replaceChildren();board.setTargets([]);
@@ -87,7 +93,8 @@ function renderHUD(){
   const other=net&&net.seat!==team,disabled=busy||pendingRoom||!!(net&&!net.connected)||!!other;
   if(casting||busy||s.phase==='roll'||other){
     const label=casting?'윷 던지는 중…':busy?'말 이동 중…':other?'상대 팀 차례':'윷 던지기';
-    actions.append(button(label,'primary',()=>dispatch({type:'roll'}),disabled));return;
+    const cls=!disabled&&s.phase==='roll'?'primary cast-btn':'primary';
+    actions.append(button(label,cls,()=>dispatch({type:'roll'}),disabled));return;
   }
   const options=moves(s);
   if(options.length===1){
@@ -121,9 +128,15 @@ function rules(){
    '팀마다 말이 두 개예요. 도·개·걸·윷·모가 나오면 1·2·3·4·5칸을 가요. 네 가락 중 평평한 면이 하나도 없으면 모예요.',
    '오른쪽 위나 왼쪽 위 모서리에 멈추면 다음 이동 때 지름길을 고를 수 있어요. 가운데 칸에서도 골인 쪽 길을 고를 수 있어요.',
    '같은 팀 말은 업어서 함께 가요. 상대 말을 잡으면 그 말은 대기로 돌아가요. 윷·모를 내거나 말을 잡으면 한 번 더 던져요.',
-   '딱 멈춘 칸에서만 장애물이 작동해요. 바위턱은 한 칸, 소용돌이는 두 칸 뒤로 밀어요. 순풍은 두 칸 앞으로 보내요. 한 번 움직일 때 효과는 한 번만 받아요.',
+   '특수 칸에 딱 멈추면 아래 효과를 한 번 받아요.',
    '출발점에 돌아와 한 칸 더 지나면 골인이에요. 두 말을 먼저 골인시키세요.'].forEach(t=>list.append(element('li',t)));
-  body.append(list,button('알겠어요','primary',closePanel));
+  const effects=element('div',undefined,'effects');
+  for(const [symbol,name,effect,tint] of [['▲','바위턱','한 칸 뒤로','#efb59e'],['◎','소용돌이','두 칸 뒤로','#b6c9f0'],['»','순풍','두 칸 앞으로','#a2e6d0']]){
+    const row=element('div',undefined,'effect-row'), icon=element('span',symbol,'effect-icon');
+    icon.style.setProperty('--tint',tint);icon.setAttribute('aria-hidden','true');
+    row.append(icon,element('b',name),element('span',effect));effects.append(row);
+  }
+  body.append(list,effects,button('알겠어요','primary',closePanel));
 }
 function resetLocal(count){
   closePanel();local=newGame(count);void showState(local,false);

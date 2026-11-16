@@ -1,26 +1,32 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#aee5e5"><title>섬마을 윷놀이 · 오쭈다 오락실</title>
-<link rel="stylesheet" href="./style.css?v=2">
-<script defer src="/config.js"></script><script type="module" src="./play.mjs?v=2"></script></head>
+<meta name="theme-color" content="#091c23"><title>섬마을 윷놀이 · 오쭈다 오락실</title>
+<link rel="icon" href="./cover.svg?v=3" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css?v=3">
+<script defer src="/config.js"></script><script type="module" src="./play.mjs?v=3"></script></head>
 <body>
 <main class="tabletop">
   <header class="rail">
-    <a class="rail-btn" href="/world.html?tab=arcade" aria-label="오락실로 돌아가기"><span aria-hidden="true">‹</span> 오락실</a>
-    <h1>섬마을 윷놀이</h1>
-    <button id="settings" class="rail-btn" aria-haspopup="dialog"><span aria-hidden="true">☰</span> 메뉴</button>
+    <a class="rail-btn back" href="/world.html?tab=arcade" aria-label="오락실로 돌아가기"><i aria-hidden="true"></i><span>오락실</span></a>
+    <h1><i class="moon-mark" aria-hidden="true"></i>섬마을 윷놀이</h1>
+    <button id="settings" class="rail-btn" aria-haspopup="dialog"><i class="menu-mark" aria-hidden="true"></i><span>메뉴</span></button>
   </header>
   <section class="scene" aria-label="섬마을 윷놀이판">
-    <canvas id="board" role="img" aria-label="스무 칸의 섬길과 대각선 지름길이 있는 3D 윷놀이판"></canvas>
+    <canvas id="board" role="img" aria-label="밤바다에 놓인 자개 윷판. 스무 칸의 바깥길과 가운데를 지나는 두 지름길이 있어요."></canvas>
   </section>
   <section class="dock" aria-label="게임 조작">
     <div class="playbar">
-      <div class="info"><button id="team-title" title="팀별 말 현황" aria-haspopup="dialog">산호 팀 차례</button>
-        <span id="outcome"></span></div>
+      <div class="turn-info">
+        <div class="turn-line">
+          <button id="team-title" title="팀별 말 현황" aria-haspopup="dialog">산호 팀 차례</button>
+          <span id="goals" class="goals"></span>
+          <span id="outcome"></span>
+        </div>
+        <p id="note" role="status"></p>
+      </div>
       <div id="actions"></div>
     </div>
-    <p id="note" role="status"></p>
   </section>
 </main>
 <div id="toss-layer" class="toss-layer" hidden aria-hidden="true">

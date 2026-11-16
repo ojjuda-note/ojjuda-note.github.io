@@ -33,7 +33,8 @@ test('one tap throws and auto-moves a forced piece; an actual choice waits for i
   let fid=0;
   globalThis.requestAnimationFrame=f=>{frames.set(++fid,f);return fid;};
   globalThis.cancelAnimationFrame=id=>frames.delete(id);
-  const ctx=new Proxy({createLinearGradient:()=>({addColorStop(){}})},{get(target,key){return target[key]??(()=>{});}});
+  const gradient=()=>({addColorStop(){}});
+  const ctx=new Proxy({createLinearGradient:gradient,createRadialGradient:gradient},{get(target,key){return target[key]??(()=>{});}});
   w.HTMLCanvasElement.prototype.getContext=()=>ctx;
   w.HTMLCanvasElement.prototype.getBoundingClientRect=()=>({width:390,height:500,left:0,top:0});
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
@@ -61,4 +62,7 @@ test('one tap throws and auto-moves a forced piece; an actual choice waits for i
   assert.ok(text('team-title').includes('바다'));
   doc.getElementById('team-title').click();assert.ok(doc.querySelector('dialog').open);
   assert.equal(doc.querySelectorAll('.score-card').length,2);
+  doc.getElementById('close').click();doc.getElementById('settings').click();
+  [...doc.querySelectorAll('#dialog-body button')].find(b=>b.textContent==='놀이 방법').click();
+  assert.deepEqual([...doc.querySelectorAll('.effect-row b')].map(el=>el.textContent),['바위턱','소용돌이','순풍']);
 });
