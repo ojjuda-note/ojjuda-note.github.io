@@ -253,13 +253,11 @@ export function sampleThrow(plan,elapsedMs) {
   return seatUpper(flightStates(plan,elapsedMs),plan);
 }
 
-// A single field and a hairline rim keep attention on movement and contact.
+// A matte green throwing surface keeps the wooden sticks in focus.
 function backdrop(ctx,width,height) {
   const light=ctx.createLinearGradient(0,0,width*.7,height);
-  light.addColorStop(0,'#285456');light.addColorStop(.54,'#1a4144');light.addColorStop(1,'#16363a');
+  light.addColorStop(0,'#425e4c');light.addColorStop(1,'#293f35');
   ctx.fillStyle=light;ctx.fillRect(0,0,width,height);
-  const edge=Math.max(1,Math.min(width,height)*.0025);
-  ctx.strokeStyle='#51706b';ctx.lineWidth=edge;ctx.strokeRect(edge,edge,width-2*edge,height-2*edge);
 }
 
 function camera(width,height,scale,baseline) {
