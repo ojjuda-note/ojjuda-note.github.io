@@ -40,6 +40,9 @@ world=world.slice(0,boot)+'my();window.entryFixture={tab:()=>g.tab===\'place\'?g
     const placement=await page.evaluate(()=>({login:document.getElementById('auth-submit').getBoundingClientRect().bottom,browse:document.getElementById('guest-browse').getBoundingClientRect().top}));
     assert.ok(placement.browse>=placement.login,'browse is below the login button');
     await page.locator('#signup-tab').click();assert.equal(await page.locator('#guest-browse').isVisible(),false);
+    await page.locator('#auth-submit').click();
+    assert.equal(await page.locator('#auth-feedback').innerText(),'이메일을 입력해 주세요.');
+    assert.equal(await page.getByRole('textbox',{name:'이메일'}).evaluate(input=>input===document.activeElement),true);
     await page.locator('#login-tab').click();
     await page.locator('#email').fill('fixture@example.invalid');await page.locator('#password').fill('fixture-password');await page.locator('#auth-submit').click();
     await page.waitForURL(origin+'/world.html');await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),'hub');

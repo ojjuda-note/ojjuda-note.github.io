@@ -9,25 +9,28 @@
   function ageAt(birthDate, today = todayKorea()) {
     return Number(today.slice(0, 4)) - Number(birthDate.slice(0, 4)) - (today.slice(5) < birthDate.slice(5) ? 1 : 0);
   }
+  function fieldError(field, message) {
+    return Object.assign(new Error(message), { field });
+  }
   function parseBirth(birthSix, genderCode, today = todayKorea(), enforceAge = true) {
-    if (!/^\d{6}$/.test(birthSix)) throw new Error('생년월일을 숫자 6자리로 입력해 주세요.');
-    if (!/^[1-4]$/.test(genderCode)) throw new Error('성별 숫자는 1·2·3·4 중 한 자리로 입력해 주세요.');
+    if (!/^\d{6}$/.test(birthSix)) throw fieldError('birth', '생년월일을 숫자 6자리로 입력해 주세요.');
+    if (!/^[1-4]$/.test(genderCode)) throw fieldError('code', '성별 숫자는 1·2·3·4 중 한 자리로 입력해 주세요.');
     const year = (Number(genderCode) <= 2 ? 1900 : 2000) + Number(birthSix.slice(0, 2));
     const month = Number(birthSix.slice(2, 4)), day = Number(birthSix.slice(4, 6));
     const date = new Date(Date.UTC(year, month - 1, day));
-    if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) throw new Error('존재하지 않는 생년월일이에요. 날짜를 확인해 주세요.');
+    if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) throw fieldError('birth', '존재하지 않는 생년월일이에요. 날짜를 확인해 주세요.');
     const birthDate = `${year}-${birthSix.slice(2, 4)}-${birthSix.slice(4, 6)}`;
-    if (birthDate > today) throw new Error('미래의 생년월일은 입력할 수 없어요.');
+    if (birthDate > today) throw fieldError('birth', '미래의 생년월일은 입력할 수 없어요.');
     const age = ageAt(birthDate, today);
-    if (enforceAge && age < MIN_AGE) throw new Error('만 14세 이상만 가입할 수 있어요.');
+    if (enforceAge && age < MIN_AGE) throw fieldError('birth', '만 14세 이상만 가입할 수 있어요.');
     return { birthDate, gender: ['1', '3'].includes(genderCode) ? 'male' : 'female', age };
   }
   function normalizePhone(value) {
     let phone = String(value).trim();
-    if (!/^(?:\+82[\s-]?)?\d[\d\s-]*$/.test(phone)) throw new Error('전화번호를 확인해 주세요.');
+    if (!/^(?:\+82[\s-]?)?\d[\d\s-]*$/.test(phone)) throw fieldError('phone', '전화번호를 확인해 주세요.');
     phone = phone.replace(/[\s-]/g, '');
     if (phone.startsWith('+82')) phone = '0' + phone.slice(3);
-    if (!/^(?:010\d{8}|01[16789]\d{7,8}|02\d{7,8}|0(?:[3-6][1-5]|70)\d{7,8})$/.test(phone)) throw new Error('전화번호를 확인해 주세요.');
+    if (!/^(?:010\d{8}|01[16789]\d{7,8}|02\d{7,8}|0(?:[3-6][1-5]|70)\d{7,8})$/.test(phone)) throw fieldError('phone', '전화번호를 확인해 주세요.');
     return phone;
   }
   const unusableEmailDomains = [
@@ -50,7 +53,7 @@
     const phone = normalizePhone(value), lastEight = phone.slice(3);
     if (!/^010\d{8}$/.test(phone) || /^(\d)\1{7}$/.test(lastEight)
       || ['01234567', '12345678', '87654321'].includes(lastEight)) {
-      throw new Error('가입할 때는 정상적인 010 휴대전화 번호를 입력해 주세요.');
+      throw fieldError('phone', '가입할 때는 정상적인 010 휴대전화 번호를 입력해 주세요.');
     }
     return phone;
   }

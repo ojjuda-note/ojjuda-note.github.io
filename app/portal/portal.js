@@ -485,11 +485,6 @@
       setAuthMode('forgot', messageFor('recovery_expired')); return;
     }
     let signupIdentity = null, recoveryDetails = null, signupReferrer = null;
-    if (authMode === 'signup') {
-      prepareSignupFields();
-      try { signupIdentity = window.OjjudaIdentity.read(form, 'signup'); signupReferrer = referral?.read() || null; }
-      catch (error) { feedback.textContent = error.message; return; }
-    }
     if (authMode === 'forgot') {
       try {
         const birth = $('recovery-birth').value, gender = $('recovery-gender').value;
@@ -501,17 +496,6 @@
           phone: window.OjjudaIdentity.normalizePhone($('recovery-phone').value) };
       } catch (error) { feedback.textContent = error.message; return; }
     }
-    if (!isPasswordReset && authMode !== 'nickname' && (authMode === 'signup'
-      ? !window.OjjudaIdentity.validSignupEmail(address) : !validEmail(address))) {
-      feedback.textContent = authMode === 'signup' ? '올바른 이메일을 입력해 주세요. 일회용 이메일은 가입할 수 없어요.' : '이메일 주소를 확인해 주세요.';
-      email.focus();
-      return;
-    }
-    if (authMode !== 'forgot' && authMode !== 'nickname' && secret.length < 6) {
-      feedback.textContent = '비밀번호는 6자 이상으로 입력해 주세요.';
-      password.focus();
-      return;
-    }
     if (authMode === 'signup' || authMode === 'nickname') {
       const name = authMode === 'signup' ? ensureSignupNickname(true) : nickname.value.trim();
       if (!name || name.length > 12) {
@@ -520,20 +504,43 @@
         return;
       }
     }
-    if (authMode === 'signup') {
-      if (!$('age-check').checked) {
-        feedback.textContent = '만 14세 이상인지 확인해 주세요.';
-        return;
-      }
-      if (!$('policy-check').checked) {
-        feedback.textContent = '이용약관과 개인정보처리방침에 동의해 주세요.';
-        return;
-      }
+    if (!isPasswordReset && authMode !== 'nickname' && (authMode === 'signup'
+      ? !window.OjjudaIdentity.validSignupEmail(address) : !validEmail(address))) {
+      if (!address) feedback.textContent = '이메일을 입력해 주세요.';
+      else feedback.textContent = authMode === 'signup' ? '올바른 이메일을 입력해 주세요. 일회용 이메일은 가입할 수 없어요.' : '이메일 주소를 확인해 주세요.';
+      email.focus();
+      return;
+    }
+    if (authMode !== 'forgot' && authMode !== 'nickname' && secret.length < 6) {
+      feedback.textContent = '비밀번호는 6자 이상으로 입력해 주세요.';
+      password.focus();
+      return;
     }
     if ((authMode === 'signup' || isPasswordReset) && secret !== passwordConfirm.value) {
       feedback.textContent = passwordConfirm.value ? '두 비밀번호가 달라요. 다시 확인해 주세요.' : '비밀번호 확인을 입력해 주세요.';
       passwordConfirm.focus();
       return;
+    }
+    if (authMode === 'signup') {
+      prepareSignupFields();
+      try {
+        signupIdentity = window.OjjudaIdentity.read(form, 'signup');
+        signupReferrer = referral?.read() || null;
+      } catch (error) {
+        feedback.textContent = error.message;
+        if (error.field) $(`signup-${error.field}`)?.focus();
+        return;
+      }
+      if (!$('age-check').checked) {
+        feedback.textContent = '만 14세 이상인지 확인해 주세요.';
+        $('age-check').focus();
+        return;
+      }
+      if (!$('policy-check').checked) {
+        feedback.textContent = '이용약관과 개인정보처리방침에 동의해 주세요.';
+        $('policy-check').focus();
+        return;
+      }
     }
 
     const requestView = authViewVersion;
