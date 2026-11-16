@@ -44,6 +44,9 @@
     try {
       const { data, error } = await client.auth.getUser();
       if (current !== run) return;
+      if (error && (error.status >= 500 || error.status === 429 || error.name === 'AuthRetryableFetchError')) {
+        show('error'); return;
+      }
       if (error || !data?.user) { show('auth'); return; }
       const role = await client.from('app_admins').select('user_id').eq('user_id', data.user.id).maybeSingle();
       if (current !== run) return;
@@ -59,8 +62,8 @@
   client.auth.onAuthStateChange(event => {
     // The explicit startup refresh already covers INITIAL_SESSION.
     if (event === 'INITIAL_SESSION') return;
-    ++run;
-    setTimeout(refresh, 0);
+    const eventRun = ++run;
+    setTimeout(() => { if (eventRun === run) return refresh(); }, 0);
   });
   refresh();
 })();
