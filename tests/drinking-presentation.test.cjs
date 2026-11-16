@@ -426,3 +426,52 @@ test('shape match uses the longest reaction, including ties, for the shared resu
   assert.match(f.find('.table-host').textContent,/둘/);
   assert.ok(panel.querySelector('[data-drinking-glass] [data-drinking-glass-image]'));
 });
+
+test('one phone opens truth cards from Start and keeps question tools in settings', async t=>{
+  const f=await screen({url:'/games/drinking/local/#truth',prepare(w){w.scrollTo=()=>{};},
+    rpc:()=>({banks:{truth:{mild:['순한 질문'],spicy:['기본 질문']}}})});
+  t.after(()=>f.close());
+  await until(()=>f.find('[data-drinking-dialog="guide"]'));
+  f.click('[data-drinking-close]');
+  const action=key=>f.click('[data-action="'+key+'"]');
+  assert.equal(f.find('[data-action="start"]').textContent,'게임 시작');
+  assert.equal(f.find('.truth-settings,.question-picker,[data-action="truth-editor"]'),null);
+  action('truth-settings');action('truth-editor');
+  assert.ok(f.find('#truth-editor').open);
+  f.find('#truth-question').value='등록한 질문';f.submit('#truth-form');f.click('#truth-close');
+  action('truth-choose');
+  await until(()=>Array.from(f.find('[data-question]').options,o=>o.text).includes('등록한 질문'));
+  const select=f.find('[data-question]');
+  select.selectedIndex=Array.from(select.options,o=>o.text).indexOf('등록한 질문');
+  select.dispatchEvent(new f.w.Event('change'));f.submit('#truth-prompt');
+  assert.ok(f.find('#prepared-truth').textContent.includes('등록한 질문'));
+  action('truth-intro');action('start');
+  await until(()=>f.find('.truth-back:not(:disabled)'));
+  assert.equal(f.w.document.querySelectorAll('.truth-back').length,2);
+  assert.equal(f.find('#truth-prompt,.truth-front'),null);
+  assert.ok(!f.find('.play-body').textContent.includes('등록한 질문'));
+  f.click('.truth-back[data-value="1"]');
+  assert.equal(f.find('.truth-front p').textContent,'등록한 질문');
+  action('truth-pass');
+  await until(()=>f.find('.truth-back:not(:disabled)'));
+  assert.match(f.find('.turn-tag').textContent,/참가자 2/);
+  f.click('.truth-back[data-value="0"]');action('truth-next');
+  assert.match(f.find('.turn-tag').textContent,/참가자 3/);
+  assert.deepEqual(f.errors,[]);
+});
+
+test('one press of Next starts five seconds for the next surviving initial player',async t=>{
+  const f=await screen({url:'/games/drinking/local/#initial',prepare(w){w.scrollTo=()=>{};},
+    rpc:()=>({banks:{initial:['ㄱㅅ','ㅂㅅ']}})});
+  t.after(()=>f.close());
+  await until(()=>f.find('[data-drinking-dialog="guide"]'));
+  f.click('[data-drinking-close]');
+  const action=key=>f.click('[data-action="'+key+'"]');
+  action('start');await until(()=>f.find('[data-action="initial-go"]'));
+  action('initial-go');action('word-out');action('initial-next');
+  assert.equal(f.find('[data-action="initial-go"]'),null);
+  assert.equal(f.find('#seconds').textContent,'5');
+  assert.match(f.find('.turn-tag').textContent,/참가자 2/);
+  assert.ok(f.find('[data-action="word-ok"]'));
+  assert.deepEqual(f.errors,[]);
+});

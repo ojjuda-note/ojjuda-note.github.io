@@ -744,7 +744,13 @@ test('one phone can choose or write prompts inline and read the fingers recommen
   for(const kind of ['fingers','king','truth','minority','imagevote']){
     await page.goto(origin+'/games/drinking/local/#'+kind);
     await dismissGuide(page);
-    await page.locator('[data-action="start"]').click();
+    if(kind==='truth'){
+      assert.equal(await page.locator('.truth-settings,.question-picker').count(),0);
+      await page.getByRole('button',{name:'설정',exact:true}).click();
+      await page.getByText('반반',{exact:true}).click();
+      await page.getByText('보이기',{exact:true}).click();
+      await page.getByRole('button',{name:'질문 고르기'}).click();
+    }else await page.locator('[data-action="start"]').click();
     if(kind==='king')for(let i=0;i<3;i++){
       await page.locator('[data-action="reveal"]').click();
       await page.locator('[data-action="hide"]').click();
@@ -786,8 +792,17 @@ test('one phone can choose or write prompts inline and read the fingers recommen
       await picker.locator('[data-mode="list"]').click();
       await picker.locator('[data-mode="write"]').click();
       assert.equal(await picker.locator('textarea').first().inputValue(),value);
+      if(kind==='truth'){
+        await picker.locator('[data-prompt-flavor]').selectOption('mixed');
+        await picker.locator('[data-write-level] select').selectOption('mild');
+      }
       await picker.locator('[type=submit]').click();
-      if(kind!=='truth')await page.locator('[data-action="open-vote"]').click();
+      if(kind==='truth'){
+        await page.getByRole('button',{name:'설정 완료'}).click();
+        await page.getByRole('button',{name:'게임 시작',exact:true}).click();
+        assert.equal(await page.locator('.truth-back').count(),2);
+        await page.getByRole('button',{name:/순한맛 카드 뒤집기/}).click();
+      }else await page.locator('[data-action="open-vote"]').click();
       assert.ok((await page.locator('.play-body').innerText()).includes(value));
     }
   }

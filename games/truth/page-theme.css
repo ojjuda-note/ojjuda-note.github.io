@@ -54,3 +54,12 @@ body.dp-playing[data-dp-kind="truth"] #truth-editor :is(button, input, select, t
   body.dp-playing[data-dp-mode="local"][data-dp-kind="truth"][data-dp-phase="intro"] .play-body > .actions { grid-column: 2; grid-row: 2; margin: 0; }
   body.dp-playing[data-dp-mode="local"][data-dp-kind="truth"][data-dp-phase="intro"] .play-body > #truth-start-message { grid-column: 1 / -1; grid-row: 3; margin: 0; }
 }
+
+body.dp-playing[data-dp-kind="truth"] .table-heading .truth-settings-link {
+  flex: none; min-height: 44px; padding: 0 14px; border: 1px solid var(--suite-line);
+  border-radius: 10px; background: var(--suite-subtle); color: var(--suite-ink); font: inherit;
+}
+body.dp-playing[data-dp-kind="truth"] .table-heading:has(.truth-settings-link) > span { margin-left: auto; }
+body.dp-playing[data-dp-kind="truth"] #truth-load[hidden],
+body.dp-playing[data-dp-kind="truth"] #truth-retry[hidden],
+body.dp-playing[data-dp-kind="truth"] [data-action="truth-reconfigure"][hidden] { display: none; }

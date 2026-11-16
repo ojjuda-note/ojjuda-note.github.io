@@ -332,3 +332,36 @@ for (const withTargets of [false,true]) test(withTargets
     assert.deepEqual((await call(i,'state')).game,r.game);
   }
 });
+
+test('initial next starts one server deadline and keeps the surviving seat and turn',async t=>{
+  const f=await fixture();t.after(()=>f.close());
+  const state={phase:'intermission',current:2,turn:4,alive:[0,2],initial:'ㅅㄱ',reason:'시간 초과',lastOut:1};
+  const move=(game,actor,turn=4)=>f.db.query("select ojjuda_arcade_internal.live_initial($1::jsonb,'next',$2::jsonb,$3,3,7000) as game",
+    [JSON.stringify(game),JSON.stringify({turn}),actor]);
+  await assert.rejects(move(state,1),/not_your_turn/);await assert.rejects(move(state,2,3),/stale_turn/);
+  const next=(await move(state,2)).rows[0].game;
+  assert.deepEqual(next,{phase:'active',current:2,turn:4,alive:[0,2],initial:'ㅅㄱ',endsAt:12000});
+  await assert.rejects(move(next,2),/unavailable/);
+});
+
+test('all minority catalog pairs become short distinct choices without changing existing ballots',async t=>{
+  const fs=require('node:fs'),path=require('node:path');
+  const directory=path.join(__dirname,'../supabase/migrations');
+  const f=await fixture();t.after(()=>f.close());
+  const apply=name=>f.db.exec(fs.readFileSync(path.join(directory,name),'utf8'));
+  for(const file of fs.readdirSync(directory).filter(name=>name.includes('_drinking_flavor500_')||name.endsWith('_drinking_prompt_flavors.sql')).sort())await apply(file);
+  const pool=async()=>(await f.publicRpc(f.users[0],'drinking_content',['pool',{kinds:['minority'],include_flavors:true}])).banks.minority;
+  const metadata=async()=>(await f.db.query("select id,active,party_pick,prompt_flavor from ojjuda_arcade_internal.drinking_content_items where kind='minority' order by id")).rows;
+  const old=await pool(),flags=await metadata();
+  const act=(who,action,code,opts)=>f.publicRpc(who,'party_vote_multiplayer',['minority',action,code,opts||{}]);
+  const room=await act(f.users[0],'create','',{title:'기존 투표',capacity:3,password:'abcd',request_id:randomUUID()});
+  for(const seat of [1,2])await act(f.users[seat],'join',room.code,{password:'abcd'});
+  const prior=(await act(f.users[0],'state',room.code)).choices;
+  await apply('20261116185723_drinking_minority_short_choices.sql');
+  assert.deepEqual((await act(f.users[0],'state',room.code)).choices,prior);
+  assert.deepEqual(await metadata(),flags);
+  const pairs=await pool(),key=p=>p.map(s=>s.replaceAll(' ','')).sort().join('|');
+  assert.equal(pairs.length,1360);assert.equal(new Set(pairs.map(key)).size,1360);
+  assert.ok(pairs.every((pair,i)=>pair.length===2&&pair.every(s=>s.length>0&&s.length<=9)&&key(pair)!==key(old[i])));
+  for(const expected of ['짜장면|짬뽕','부먹|찍먹','축구|야구','산|바다','애인|가족','돈|명예','로또1등|연금복권'])assert.ok(pairs.some(p=>p.join('|')===expected),expected);
+});

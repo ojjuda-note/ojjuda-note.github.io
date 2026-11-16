@@ -22,13 +22,14 @@
   }
   function markup(kind,submit,flavors){
     const label=labels[kind],paired=kind==='minority';
-    const field=(text,index)=>'<label>'+text+'<textarea id="prompt-text-'+index+'" rows="2" maxlength="'+limits[kind]+'"></textarea></label>';
+    const inputLimit=paired?10:limits[kind];
+    const field=(text,index)=>'<label>'+text+'<textarea id="prompt-text-'+index+'" rows="2" maxlength="'+inputLimit+'"></textarea></label>';
     return '<div class="question-picker">'+
       '<div class="question-modes" role="group" aria-label="'+label+' 정하는 방법"><button type="button" data-mode="list">기존 '+label+'</button><button type="button" data-mode="write">직접 입력</button></div>'+
       tastes.selector(kind,flavors?.length===1?flavors:undefined)+
       '<div data-panel="list"><label>주제<select data-category></select></label><label>'+label+' 선택<select data-question></select></label>'+
       '<p data-selected></p><button type="button" data-another>다른 '+label+' 추천</button><button type="button" data-retry hidden>다시 불러오기</button></div>'+
-      '<div data-panel="write" hidden>'+field(paired?'첫 번째 선택지':'내 '+label,0)+(paired?field('두 번째 선택지',1):'')+
+      '<div data-panel="write" hidden>'+field(paired?'첫 번째 선택지 (10자 이내)':'내 '+label,0)+(paired?field('두 번째 선택지 (10자 이내)',1):'')+
       '<label data-write-level>내 '+label+' 수위<select><option value="mild">순한맛</option><option value="spicy">빨간맛</option></select></label>'+
       (paired?'':'<small>직접 쓴 문구는 관리자 검토 후 공용 목록에 등록될 수 있어요.</small>')+'</div>'+
       '<p role="status"></p><button type="submit" class="start action" disabled>'+submit+'</button></div>';
@@ -50,7 +51,7 @@
     }
     function valid(){
       const selected=value(),parts=Array.isArray(selected)?selected:[selected];
-      return parts.every(part=>typeof part==='string'&&part.length>0&&part.length<=limits[kind])&&
+      return parts.every(part=>typeof part==='string'&&part.length>0&&part.length<=(paired&&state.mode==='write'?10:limits[kind]))&&
         (!paired||parts.length===2&&parts[0].toLowerCase()!==parts[1].toLowerCase());
     }
     function sync(){
