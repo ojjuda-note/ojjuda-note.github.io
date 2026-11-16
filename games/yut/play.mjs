@@ -1,24 +1,25 @@
-import {TEAMS,HOME,FINISH,YUT,newGame,position,moves,nodeName,act} from './rules.mjs?v=2';
-import {createBoard} from './board.mjs?v=5';
-import {createToss,drawRack} from './toss.mjs?v=5';
-import {openRoom} from './room.mjs?v=2';
+import {TEAMS,HOME,FINISH,YUT,newGame,position,moves,nodeName,act,lastThrowSeed} from './rules.mjs?v=3';
+import {createBoard} from './board.mjs?v=6';
+import {createToss,drawRack} from './toss.mjs?v=6';
+import {openRoom} from './room.mjs?v=3';
+import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=1';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
 const dialog=$('sheet'), body=$('dialog-body'), reduced=matchMedia('(prefers-reduced-motion: reduce)');
 let local=newGame(), shown=null, net=null, room=null, pendingRoom=false, attempt=0, busy=false, motion=0, panel='',game=local;
 let casting=false,selectedPawn=null,placement=null;
 const rack=$('rack-canvas'),rackContext=rack.getContext('2d');
-let rackFaces=null,paintedFaces='';
+let rackFaces=null,rackSeed=null,paintedFaces='',roomOffset=2;
 function paintRack(){
   if(!rackContext)return;
   const rect=rack.getBoundingClientRect(),ratio=Math.min(window.devicePixelRatio||1,2);
   const w=Math.round(rect.width*ratio),h=Math.round(rect.height*ratio);
   if(!w||!h)return;
-  const key=rackFaces?rackFaces.join(''):'ready';
+  const key=rackFaces?rackFaces.join('')+'-'+rackSeed:'ready';
   if(w===rack.width&&h===rack.height&&key===paintedFaces)return;
   if(w!==rack.width)rack.width=w;
   if(h!==rack.height)rack.height=h;
-  drawRack(rackContext,w,h,rackFaces);
+  drawRack(rackContext,w,h,rackFaces,rackSeed);
   paintedFaces=key;
 }
 if(typeof ResizeObserver==='function')new ResizeObserver(paintRack).observe(rack);
@@ -26,6 +27,17 @@ else window.addEventListener('resize',paintRack);
 function element(tag,text,cls){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(cls)el.className=cls;return el;}
 function button(text,cls,fn,disabled=false){const b=element('button',text,cls);b.type='button';b.disabled=disabled;b.onclick=fn;return b;}
 function dot(t){const badge=element('span',TEAMS[t].mark,'team-dot');badge.setAttribute('aria-hidden','true');badge.style.setProperty('--team',TEAMS[t].color);return badge;}
+function pieceName(s,team,index){
+  return (index+1)+'번 말 · '+ANIMALS[animalFor(team,index,s.zodiacOffset)];
+}
+function animalIcon(team,index,offset){
+  const canvas=element('canvas',undefined,'animal-icon');
+  canvas.width=100;canvas.height=88;canvas.setAttribute('aria-hidden','true');
+  const ctx=canvas.getContext('2d');
+  const project=([x,y,z])=>[50+(x*.966+z*.259)*58,73+(-x*.259+z*.966)*30-y*50];
+  if(ctx)drawZodiac(ctx,project,0,0,0,1,animalFor(team,index,offset),TEAMS[team].color,index);
+  return canvas;
+}
 const layer=(s)=>s.pawns.flatMap((team,t)=>team.flatMap((trail,i)=>{
   const node=position(trail);return node===HOME||node===FINISH?[]:[{team:t,index:i,node}];
 }));
@@ -33,7 +45,8 @@ function draw(s,override,snap=false){
   const pieces=override??layer(s);
   const waiting=s.pawns.flatMap((team,t)=>team.flatMap((trail,i)=>
     position(trail)===HOME&&!pieces.some(p=>p.team===t&&p.index===i)?[{team:t,index:i}]:[]));
-  board.setState({pieces,activeTeam:s.team,waiting,snap});
+  const withAnimal=p=>({...p,animal:animalFor(p.team,p.index,s.zodiacOffset)});
+  board.setState({pieces:pieces.map(withAnimal),activeTeam:s.team,waiting:waiting.map(withAnimal),snap});
 }
 function standings(){
   openPanel('말 현황','scores');const s=game;
@@ -41,7 +54,13 @@ function standings(){
     const row=element('div',undefined,'score-card'+(t===s.team?' active':''));
     const top=element('div',undefined,'score-top');
     top.append(dot(t),document.createTextNode(TEAMS[t].name+' 팀'),element('small','골인 '+team.filter(p=>position(p)===FINISH).length+'/2'));
-    row.append(top,element('div',team.map((p,i)=>(i+1)+'번 '+nodeName(position(p))).join('  ·  '),'pawns'));return row;
+    const pawns=element('div',undefined,'score-pieces');
+    team.forEach((trail,i)=>{
+      const info=element('span',undefined,'score-piece'),copy=element('span');
+      copy.append(element('b',pieceName(s,t,i)),element('small',nodeName(position(trail))));
+      info.append(animalIcon(t,i,s.zodiacOffset),copy);pawns.append(info);
+    });
+    row.append(top,pawns);return row;
   });const scoreboard=element('div',undefined,'scoreboard');scoreboard.append(...rows);body.append(scoreboard);
 }
 const delay=ms=>new Promise(done=>setTimeout(done,ms));
@@ -73,6 +92,7 @@ function chooseTile(tile){
 function result(s){return s.sticks?YUT[s.steps]+' · '+s.steps+'칸':'';}
 function reveal(s){
   rackFaces=s.sticks??null;
+  rackSeed=lastThrowSeed(s);
   $('outcome').textContent=result(s);
   $('rack-title').textContent=rackFaces?'던진 윷':'던질 윷';
   rack.setAttribute('aria-label',rackFaces?'던진 윷 네 가락 · '+result(s):'던질 윷 네 가락');
@@ -94,8 +114,7 @@ async function showState(s,animate=true){
     draw(s);
     $('toss-label').textContent=TEAMS[s.team].name+' 팀 · 윷 던지기';
     $('toss-layer').hidden=false;
-    const seed=s.sticks.reduce((v,f)=>31*v+f,s.revision*11+s.team);
-    await toss.play(s.sticks,seed,()=>{
+    await toss.play(s.sticks,lastThrowSeed(s),()=>{
       if(motion!==token)return;
       $('toss-label').textContent=result(s);reveal(s);
     });
@@ -139,7 +158,7 @@ function renderHUD(){
     const cls=!disabled&&s.phase==='roll'?'primary cast-btn':'primary';
     actions.append(button(label,cls,()=>dispatch({type:'roll'}),disabled));return;
   }
-  if(!net?.status)$('note').textContent=selectedPawn===null?'내 말을 밝은 칸으로 끌어 놓으세요.':(selectedPawn+1)+'번 말 · 놓을 칸을 누르세요.';
+  if(!net?.status)$('note').textContent=selectedPawn===null?'내 말을 밝은 칸으로 끌어 놓으세요.':pieceName(s,team,selectedPawn)+' · 놓을 칸을 누르세요.';
   const alternate=button('이동 선택','secondary',()=>moveChoices(moves(game)),disabled);
   alternate.setAttribute('aria-haspopup','dialog');actions.append(alternate);
 }
@@ -152,7 +171,7 @@ function moveChoices(picks){
     const current=position(team[m.index]);
     const stacked=current!==HOME&&team.every(p=>position(p)===current);
     const branches=options.some(o=>o.index===m.index&&o.shortcut!==m.shortcut);
-    let label=stacked?'업힌 두 말':(m.index+1)+'번 말';
+    let label=stacked?'업힌 두 말':pieceName(state,state.team,m.index);
     label+=current===HOME?' 출발':branches?(m.shortcut?' · 지름길':' · 원래 길'):' 이동';
     const b=button(label,'choice',()=>{
       closePanel();
@@ -184,8 +203,22 @@ function rules(){
   }
   body.append(list,effects,button('알겠어요','primary',closePanel));
 }
-function resetLocal(count){
-  closePanel();local=newGame(count);void showState(local,false);
+function resetLocal(count,offset=local.zodiacOffset){
+  closePanel();local=newGame(count,offset);void showState(local,false);
+}
+function pairPicker(current,onChange){
+  const box=element('div',undefined,'pair-picker'),label=element('label','산호 팀의 십이지 말');
+  const select=element('select'),preview=element('div',undefined,'pair-preview');
+  select.id='zodiac-pair';label.htmlFor=select.id;
+  ANIMALS.forEach((name,i)=>{
+    const option=element('option',name+' · '+ANIMALS[(i+1)%ANIMALS.length]);
+    option.value=i;select.append(option);
+  });
+  select.value=current??2;
+  function paint(){const offset=Number(select.value);preview.replaceChildren(animalIcon(0,0,offset),animalIcon(0,1,offset));}
+  select.onchange=()=>{paint();onChange?.(Number(select.value));};paint();
+  box.append(label,select,preview);
+  return {box,select};
 }
 function settings(){
   if(pendingRoom)return;
@@ -203,11 +236,13 @@ function settings(){
   const label=element('label','한 기기에서 함께할 팀 수');label.htmlFor='team-count';
   const select=element('select');select.id='team-count';
   [2,3,4].forEach(n=>{const o=element('option',n+'팀');o.value=n;o.selected=n===local.pawns.length;select.append(o);});
+  const pair=pairPicker(local.zodiacOffset);
   const actions=element('div',undefined,'form-actions');actions.append(
     button('한 기기에서 새로 시작','primary',()=>{
-      const n=Number(select.value);if(local.revision&&local.phase!=='won')confirmPanel('새 판을 시작할까요?','지금 진행 중인 한 기기 게임이 종료돼요.',()=>resetLocal(n));else resetLocal(n);
-    }),button('친구 초대방 만들기','secondary',()=>connect(null)));
-  body.append(label,select,actions,message('초대방에서는 각자 기기로 접속해요. 방장은 게임이 끝날 때까지 방을 열어 두세요.'));
+      const n=Number(select.value),offset=Number(pair.select.value);
+      if(local.revision&&local.phase!=='won')confirmPanel('새 판을 시작할까요?','지금 진행 중인 한 기기 게임이 종료돼요.',()=>resetLocal(n,offset));else resetLocal(n,offset);
+    }),button('친구 초대방 만들기','secondary',()=>{roomOffset=Number(pair.select.value);connect(null);}));
+  body.append(label,select,pair.box,actions,message('초대방에서는 각자 기기로 접속해요. 방장은 게임이 끝날 때까지 방을 열어 두세요.'));
 }
 function confirmPanel(title,copy,yes){
   openPanel(title,'confirm');const wrap=element('div',undefined,'form-actions');wrap.append(button('계속하기','primary',yes),button('취소','secondary',closePanel));body.append(message(copy),wrap);
@@ -223,8 +258,8 @@ function lobbyPanel(){
     const label=element('label','친구 초대 링크');label.htmlFor='invite';const link=element('input');link.id='invite';link.readOnly=true;link.value=inviteUrl();
     const actions=element('div',undefined,'form-actions');const copy=button('초대 링크 복사','secondary',async()=>{
       try{await navigator.clipboard.writeText(link.value);copy.textContent='복사했어요';}catch{link.select();copy.textContent='선택된 링크를 복사해 주세요';}
-    });actions.append(copy,button('모인 팀으로 시작','primary',()=>{room?.start();if(net?.game)closePanel();},net.seats.length<2||!net.connected));
-    body.append(label,link,actions);
+    });actions.append(copy,button('모인 팀으로 시작','primary',()=>{room?.start(roomOffset);if(net?.game)closePanel();},net.seats.length<2||!net.connected));
+    body.append(label,link,pairPicker(roomOffset,offset=>{roomOffset=offset;}).box,actions);
   }else if(net.game)body.append(button('게임 보기','primary',closePanel));
   else body.append(message('방장이 게임을 시작하면 윷판이 열려요.'));
   if(net.status)body.append(message(net.status));

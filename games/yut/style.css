@@ -62,7 +62,12 @@ dialog p,dialog li{font-size:14px;line-height:1.65;color:var(--muted)}dialog p{m
 dialog label{display:block;font-size:14px;font-weight:700;margin:14px 0 7px}dialog select,dialog input{width:100%;border:1px solid #65857b;border-radius:8px;padding:11px;background:#0b242a;color:#f3f1df}
 .form-actions,.menu-grid{display:grid;gap:8px;margin-top:12px}.menu-grid{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:16px;padding-bottom:15px;border-bottom:1px solid var(--line)}
 .menu-grid .secondary{min-width:0;padding:8px 4px;font-size:13px}.scoreboard{display:grid;gap:8px}.score-card{padding:10px 13px;background:#102c31;border:1px solid #54726d;border-radius:10px}.score-card.active{border-color:#d6b577;background:#243c3b}
-.score-top{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:750}.score-top small{margin-left:auto;font-size:12px;color:#c3d6c9}.pawns{margin-top:5px;color:var(--muted);font-size:13px}
+.score-top{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:750}.score-top small{margin-left:auto;font-size:12px;color:#c3d6c9}.score-pieces{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}
+.score-piece{display:flex;align-items:center;gap:3px;line-height:1.35}.score-piece b,.score-piece small{display:block}.score-piece b{font-size:12px}.score-piece small{font-size:11px;color:var(--muted)}
+.animal-icon{display:block;width:42px;height:37px;flex:none}
+.pair-picker{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:10px}
+.pair-picker label{grid-column:1/-1}.pair-preview{display:flex;align-items:center;border-radius:8px;background:#b9d5c92b}
+@media(max-width:355px){.score-piece .animal-icon{width:30px;height:27px}.score-piece b{font-size:11px}}
 dialog .primary{width:100%}#dialog-body>.secondary{margin:4px 3px 0 0}
 .effects{display:grid;gap:4px;margin:12px 0 16px;padding:10px 12px;background:#0d252b;border:1px solid var(--line);border-radius:9px}
 .effect-row{display:flex;align-items:center;gap:9px;font-size:13px}.effect-row b{color:var(--pearl)}.effect-row span:last-child{margin-left:auto;color:var(--muted)}

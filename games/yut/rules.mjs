@@ -10,13 +10,21 @@ export const YUT = ['', '도', '개', '걸', '윷', '모'];
 export const ROCK = [3,16], WHIRL = [8,13], WIND = [6,18];
 const fork = new Set([5,10,22]);
 
-export function newGame(count=2) {
+export function newGame(count=2,zodiacOffset=2) {
   if (![2,3,4].includes(count)) throw new Error('2~4팀을 골라 주세요.');
+  if (!Number.isInteger(zodiacOffset)||zodiacOffset<0||zodiacOffset>=12) throw new Error('십이지 동물을 골라 주세요.');
   return {team:0, turn:1, phase:'roll', revision:0, sticks:null, steps:0,
-    pawns:Array.from({length:count},()=>[[],[]]), winner:null, lastMove:null,
+    pawns:Array.from({length:count},()=>[[],[]]), zodiacOffset, winner:null, lastMove:null,
     note:'윷을 던져 첫 말을 출발시키세요.'};
 }
 export const position = trail => trail.length ? trail[trail.length-1] : HOME;
+export function lastThrowSeed(state) {
+  if(!state.sticks)return null;
+  const justRolled=state.phase==='move';
+  const revision=state.revision-(justRolled?0:1);
+  const team=justRolled?state.team:(state.lastMove?.team??state.team);
+  return state.sticks.reduce((seed,face)=>31*seed+face,revision*11+team);
+}
 export function throwSticks(random=Math.random) {
   return Array.from({length:4},()=>random()<0.5?1:0);
 }

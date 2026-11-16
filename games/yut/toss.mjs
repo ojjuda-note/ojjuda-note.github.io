@@ -78,13 +78,97 @@ function rocking(offset,velocity,decay,frequency,t) {
   return Math.exp(-decay*t)*(offset*Math.cos(frequency*t)+(velocity+decay*offset)/frequency*Math.sin(frequency*t));
 }
 function landedAngles(r,ms) {
-  if(ms>=r.groundTime)return {pitch:0,roll:r.roll,yaw:r.yaw};
+  if(ms>=r.groundTime)return {pitch:r.restPitch,roll:r.roll,yaw:r.yaw};
   const t=ms*.001,fade=1-smooth(clamp((ms/r.groundTime-.54)/.46));
   return {
     yaw:mix(r.impactYaw,r.yaw,glide(ms/r.glideTime)),
-    pitch:fade*rocking(r.impactPitch,r.pitchVelocity,r.pitchDecay,r.pitchFrequency,t),
+    pitch:r.restPitch+fade*rocking(r.impactPitch-r.restPitch,r.pitchVelocity,r.pitchDecay,r.pitchFrequency,t),
     roll:r.roll+fade*rocking(r.impactRoll-r.roll,r.rollVelocity,r.rollDecay,r.rollFrequency,t)
   };
+}
+
+function pileLayout(random) {
+  const between=(a,b)=>mix(a,b,random());
+  const mirrorX=random()<.5?-1:1,mirrorY=random()<.5?-1:1,rotation=between(-.09,.09);
+  const c=Math.cos(rotation),s=Math.sin(rotation);
+  function pose(x,y,yaw,role){
+    x*=mirrorX;y*=mirrorY;
+    const angle=Math.atan2(mirrorY*Math.sin(yaw),mirrorX*Math.cos(yaw))+rotation;
+    // Keep timber grain in the same reading direction across mirrored layouts.
+    const reverse=Math.cos(angle)<0;
+    const heading=reverse?Math.atan2(-Math.sin(angle),-Math.cos(angle)):angle;
+    return {x:c*x-s*y,y:s*x+c*y,yaw:heading,role,tiltSign:reverse?-1:1};
+  }
+  const x=between(-12,12),y=between(-16,-10),low=between(-.20,.20);
+  const upper=low+between(.95,1.25),lowAt=(random()<.5?-1:1)*between(14,22),upperAt=between(13,22);
+  const slots=[pose(x-lowAt*Math.cos(low),y-lowAt*Math.sin(low),low,'base'),
+    pose(x-upperAt*Math.cos(upper),y-upperAt*Math.sin(upper),upper,'upper'),
+    pose(between(-64,-60),between(42,49),between(-.32,.15),'loose'),
+    pose(between(59,63),between(49,56),between(-.13,.32),'loose')];
+  for(let i=slots.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[slots[i],slots[j]]=[slots[j],slots[i]];}
+  return slots;
+}
+
+const dot3=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+function tangentLine(r,axes,normal) {
+  const side=dot3(axes[1],normal),up=dot3(axes[2],normal);
+  let best=cross[0],max=-Infinity;
+  for(const p of cross){
+    const score=p[0]*side+p[1]*up;
+    if(score>max){max=score;best=p;}
+  }
+  return [r.x,r.depth,r.height+r.support].map((v,i)=>v+axes[1][i]*best[0]+axes[2][i]*best[1]);
+}
+
+// For two intersecting extrusions the common supporting plane is normal to
+// both long axes. Their two tangent lines meet at the real bearing point.
+function bearing(lower,upper) {
+  const low=basis(lower.yaw,lower.pitch,lower.roll),high=basis(upper.yaw,upper.pitch,upper.roll);
+  const [a]=low,[b]=high;
+  const det=a[0]*b[1]-a[1]*b[0];
+  if(Math.abs(det)<.13)return null;
+  const dx0=upper.x-lower.x,dy0=upper.depth-lower.depth;
+  const reach=Math.max(Math.abs((dx0*b[1]-dy0*b[0])/det),Math.abs((dx0*a[1]-dy0*a[0])/det));
+  const coverage=smooth(clamp((length/2+30-reach)/32))*smooth(clamp((Math.abs(det)-.13)/.18));
+  if(coverage===0)return null;
+  const sign=Math.sign(det);
+  const normal=[(a[1]*b[2]-a[2]*b[1])*sign,(a[2]*b[0]-a[0]*b[2])*sign,det*sign];
+  const l=tangentLine(lower,low,normal),u=tangentLine(upper,high,normal.map(v=>-v));
+  const dx=u[0]-l[0],dy=u[1]-l[1],ta=(dx*b[1]-dy*b[0])/det,tb=(dx*a[1]-dy*a[0])/det;
+  const z=l[2]+a[2]*ta;
+  return {x:l[0]+a[0]*ta,depth:l[1]+a[1]*ta,z,gap:u[2]+b[2]*tb-z,coverage};
+}
+
+function restState(r,pitch=0) {
+  return {index:r.index,x:r.endX,depth:r.endDepth,yaw:r.yaw,roll:r.roll,pitch,
+    height:0,support:floorSupport(pitch,r.roll)};
+}
+function restingPitch(lower,upper,sign) {
+  const base=restState(lower);
+  let lo=0,hi=.45;
+  for(let i=0;i<18;i++){
+    const mid=(lo+hi)*.5,contact=bearing(base,restState(upper,mid*sign));
+    if(contact&&contact.gap<-.26)lo=mid;else hi=mid;
+  }
+  return sign*(lo+hi)*.5;
+}
+
+function seatUpper(scene,plan) {
+  const base=scene[plan.base],upper=scene[plan.upper];
+  upper.baseIndex=-1;upper.stackLift=0;upper.contact=null;
+  // The lower rod can receive the other one while still settling. Blend in
+  // over the final approach, including on a low, wide projection.
+  const entry=smooth(clamp((base.sinceImpact+125)/125));
+  if(entry===0)return scene;
+  const topOfBase=base.height+base.support+floorSupport(-base.pitch,base.roll+Math.PI);
+  if(upper.height>=topOfBase+30)return scene;
+  const contact=bearing(base,upper);
+  if(!contact)return scene;
+  upper.stackLift=Math.max(0,Math.min(-contact.gap,topOfBase-upper.height))*contact.coverage*entry;
+  upper.height+=upper.stackLift;
+  upper.baseIndex=plan.base;
+  upper.contact={...contact,coverage:contact.coverage*entry,gap:Math.max(0,contact.gap)};
+  return scene;
 }
 
 const gravity=.00178; // world units per millisecond squared, shared by all four
@@ -92,24 +176,23 @@ const gravity=.00178; // world units per millisecond squared, shared by all four
 export function createThrow(faces,seed) {
   if(!Array.isArray(faces)||faces.length!==4||faces.some(f=>f!==0&&f!==1))throw TypeError('윷 네 개의 앞뒷면이 필요해요.');
   const rng=generator(seed), between=(a,b)=>mix(a,b,rng());
-  const targets=[[-104,-65],[104,-67],[-104,66],[104,65]];
-  for(let i=targets.length-1;i>0;i--){
-    const j=Math.floor(rng()*(i+1));[targets[i],targets[j]]=[targets[j],targets[i]];
-  }
-  const lead=between(-15,10),handDepth=between(39,54),handYaw=between(-.46,-.26),flip=rng()<.5?-1:1;
+  const slots=pileLayout(rng);
+  const lead=between(-15,10),handDepth=between(39,54),handYaw=between(-.46,-.26);
   const rods=faces.map((face,i)=>{
     const dir=rng()<.5?-1:1;
-    const delay=between(12,58)+i*15,flight=between(932,1080);
-    const bounce=flight*between(.285,.33),hop=bounce*between(.29,.39),slide=between(380,540);
-    const groundTime=bounce+hop+slide,glideTime=groundTime*between(.77,.92);
-    const yaw=flip*[-.41,.26,.38,-.23][i]+between(-.095,.095),roll=face?0:Math.PI;
+    const slot=slots[i],delay=between(12,58)+i*15;
+    const landing=slot.role==='base'?between(955,992):slot.role==='upper'?between(1120,1172):between(995,1120);
+    const flight=landing-delay;
+    const bounce=between(174,228),slide=between(275,365);
+    const groundTime=bounce+slide,glideTime=groundTime*between(.80,.95);
+    const yaw=slot.yaw,roll=face?0:Math.PI;
     const across=(i-1.5)*19+between(-1.5,1.5),along=(i%2?7:-7)+between(-3,3);
     const x0=lead+along*Math.cos(handYaw)-across*Math.sin(handYaw);
     const d0=handDepth+along*Math.sin(handYaw)+across*Math.cos(handYaw);
-    const endX=targets[i][0]+between(-2,2),endDepth=targets[i][1]+between(-3,3);
+    const endX=slot.x,endDepth=slot.y;
     // The incoming horizontal momentum carries into a short frictional slide.
     const vx=(endX-x0)/(flight+glideTime/4),vd=(endDepth-d0)/(flight+glideTime/4);
-    const r={index:i,face,delay,flight,bounce,hop,slide,groundTime,glideTime,
+    const r={index:i,face,delay,flight,bounce,hop:0,slide,groundTime,glideTime,restPitch:0,
       finish:delay+flight+groundTime,x0,d0,endX,endDepth,vx,vd,
       contactX:x0+vx*flight,contactD:d0+vd*flight,yaw,roll,
       impactYaw:yaw,impactPitch:(rng()<.5?-1:1)*between(.22,.44),impactRoll:roll-dir*between(1.05,1.82),
@@ -128,16 +211,15 @@ export function createThrow(faces,seed) {
     const start=airborneAngles(r,-flight);
     r.startHeight=floorSupport(start.pitch,start.roll)+between(13,22);
     r.contactHeight=floorSupport(r.impactPitch,r.impactRoll);
-    const second=landedAngles(r,bounce),third=landedAngles(r,bounce+hop);
-    r.secondHeight=floorSupport(second.pitch,second.roll);
-    r.thirdHeight=floorSupport(third.pitch,third.roll);
     return r;
   });
+  const base=slots.findIndex(p=>p.role==='base'),upper=slots.findIndex(p=>p.role==='upper');
+  rods[upper].restPitch=restingPitch(rods[base],rods[upper],slots[upper].tiltSign);
   const settleMs=Math.max(...rods.map(r=>r.finish));
-  return {rods,settleMs,totalMs:settleMs+530};
+  return {rods,base,upper,settleMs,totalMs:settleMs+530};
 }
 
-export function sampleThrow(plan,elapsedMs) {
+function flightStates(plan,elapsedMs) {
   return plan.rods.map(r=>{
     // The bundle is lifted into release velocity over the first few frames.
     const release=elapsedMs-r.delay,power=Math.max(3,r.delay/11);
@@ -147,22 +229,23 @@ export function sampleThrow(plan,elapsedMs) {
     const angles=air?airborneAngles(r,impact):landedAngles(r,impact);
     const support=floorSupport(angles.pitch,angles.roll);
     let floor=support,arc=0;
-    if(air||impact<r.bounce+r.hop){
-      const rebound=impact>=r.bounce;
-      const dt=air?t:rebound?impact-r.bounce:impact;
-      const duration=air?r.flight:rebound?r.hop:r.bounce;
-      const start=air?r.startHeight:rebound?r.secondHeight:r.contactHeight;
-      const end=air?r.contactHeight:rebound?r.thirdHeight:r.secondHeight;
-      floor=mix(start,end,dt/duration);
-      // The center of mass, independent of the turning tips, follows gravity.
-      arc=.5*gravity*dt*(duration-dt);
+    if(air){
+      floor=mix(r.startHeight,r.contactHeight,t/r.flight);
+      arc=.5*gravity*t*(r.flight-t);
+    }else if(impact<r.bounce){
+      // One short recoil of the contacting end, followed by grounded rolling.
+      arc=.5*gravity*impact*(r.bounce-impact);
     }
     const travel=air?t:r.flight+r.glideTime*.25*glide(impact/r.glideTime);
     const settled=elapsedMs>=r.finish;
     return {index:r.index,face:r.face,x:settled?r.endX:r.x0+r.vx*travel,
       depth:settled?r.endDepth:r.d0+r.vd*travel,...angles,
-      height:Math.max(0,floor+arc-support),floor,arc,support,settled};
+      height:Math.max(0,floor+arc-support),floor,arc,support,settled,sinceImpact:impact,phase:air?'flight':impact<r.bounce?'bounce':'ground'};
   });
+}
+
+export function sampleThrow(plan,elapsedMs) {
+  return seatUpper(flightStates(plan,elapsedMs),plan);
 }
 
 // A single field and a hairline rim keep attention on movement and contact.
@@ -176,20 +259,20 @@ function backdrop(ctx,width,height) {
 
 function camera(width,height,scale,baseline) {
   const w=width/scale,h=height/scale;
-  const distance=Math.max(1900,Math.min(w,h)*3.2);
-  const spreadX=Math.min(w*.241,length*1.24)/104;
-  const spreadDepth=Math.min(h*.190,length*.49)/(66*groundSin);
+  const distance=1900;
   const wide=clamp((width/height-.85)/.8);
   const lift=Math.min(1.65,h*(.36-.16*wide)/(200*groundCos));
   function project(x,depth,z){
     const perspective=distance/(distance-depth*groundCos-z*groundSin);
     return [w/2+x*perspective,h*baseline+(depth*groundSin-z*groundCos)*perspective];
   }
-  return {w,h,scale,distance,project,spreadX,spreadDepth,lift};
+  return {w,h,scale,distance,project,lift};
 }
 
-function stageRod(r,cam) {
-  return {...r,x:r.x*cam.spreadX,depth:r.depth*cam.spreadDepth,height:Math.max(0,r.floor+r.arc*cam.lift-r.support)};
+function stageScene(plan,t,cam) {
+  const scene=flightStates(plan,t);
+  for(const r of scene)if(r.phase==='flight')r.height=Math.max(0,r.floor+r.arc*cam.lift-r.support);
+  return seatUpper(scene,plan);
 }
 
 function orient(r,cam) {
@@ -346,9 +429,9 @@ function fixedLens(plan,width,height){
   // Measure once for this throw and viewport. The camera never follows a
   // rotating tip, pumps its zoom at impact or jumps between neighboring sticks.
   for(let t=0;t<plan.settleMs+26;t+=26){
-    const scene=sampleThrow(plan,t);
+    const scene=stageScene(plan,t,cam);
     for(const state of scene){
-      const m=orient(stageRod(state,cam),cam);
+      const m=orient(state,cam);
       for(const x of [-length/2,length/2])for(const [s,h] of cross){
         const [px,py]=m.point(x,s,h);
         left=Math.min(left,px);right=Math.max(right,px);top=Math.min(top,py);bottom=Math.max(bottom,py);
@@ -362,26 +445,85 @@ function fixedLens(plan,width,height){
   throwLens.set(plan,lens);return lens;
 }
 
+function contactShadow(ctx,base,top,cam) {
+  const contact=top.r.contact;
+  if(contact.gap>30)return;
+  const pts=[-length/2,length/2].flatMap(x=>cross.map(([s,h])=>base.m.point(x,s,h)));
+  pts.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+  const boundary=ordered=>{
+    const edge=[];
+    for(const p of ordered){
+      while(edge.length>1){
+        const a=edge[edge.length-2],b=edge[edge.length-1];
+        if((b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0])>0)break;
+        edge.pop();
+      }
+      edge.push(p);
+    }
+    edge.pop();return edge;
+  };
+  const hull=[...boundary(pts),...boundary(pts.reverse())];
+  const c=cam.project(contact.x+2,contact.depth+3,contact.z);
+  const a=top.m.point(-length/2,0,0),b=top.m.point(length/2,0,0);
+  ctx.save();ctx.beginPath();hull.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));
+  ctx.closePath();ctx.clip();ctx.translate(...c);ctx.rotate(Math.atan2(b[1]-a[1],b[0]-a[0]));
+  const strength=Math.exp(-contact.gap/10)*contact.coverage;
+  for(let i=2;i>=0;i--){
+    ctx.beginPath();ctx.ellipse(0,0,24+i*1.6,radius*.71+i*1.8,0,0,TAU);
+    ctx.fillStyle='rgba(39,22,12,'+(.19*strength)+')';ctx.fill();
+  }
+  ctx.restore();
+}
 function renderBodies(ctx,parts,cam){
   for(const {r,m} of parts)drawShadow(ctx,r,m,cam);
   const depth=({r,m})=>r.depth*groundCos+(r.height+m.support)*groundSin;
   parts.sort((a,b)=>depth(a)-depth(b));
-  for(const {r,m} of parts)drawStick(ctx,r,m);
+  const top=parts.find(({r})=>r.contact&&r.contact.gap<36);
+  const base=top&&parts.find(({r})=>r.index===top.r.baseIndex);
+  if(base&&parts.indexOf(base)>parts.indexOf(top)){
+    parts.splice(parts.indexOf(base),1);parts.splice(parts.indexOf(top),0,base);
+  }
+  for(const part of parts){
+    if(part===top&&base)contactShadow(ctx,base,top,cam);
+    drawStick(ctx,part.r,part.m);
+  }
 }
 
 export function drawThrow(ctx,width,height,plan,elapsedMs) {
   if(!ctx||width<=0||height<=0)return;
   const lens=fixedLens(plan,width,height),cam=lens.cam;
-  const parts=bodies(sampleThrow(plan,elapsedMs).map(r=>stageRod(r,cam)),cam);
+  const parts=bodies(stageScene(plan,elapsedMs,cam),cam);
   backdrop(ctx,width,height);
   ctx.save();ctx.scale(cam.scale,cam.scale);ctx.translate(lens.x,lens.y);ctx.scale(lens.zoom,lens.zoom);
   ctx.lineJoin='round';ctx.lineCap='round';renderBodies(ctx,parts,cam);ctx.restore();
 }
 
-// The rack uses the same meshes, end grain, face marks and light as the throw.
-// Its positions are in reading order so a supplied result remains legible.
-export function drawRack(ctx,width,height,faces=null) {
+const rackPlans=new WeakMap();
+function resultRack(ctx,width,height,faces,seed){
+  const mask=faces.reduce((bits,v,i)=>bits|(v<<i),0);
+  let saved=rackPlans.get(ctx);
+  if(!saved||saved.seed!==seed||saved.mask!==mask){
+    saved={seed,mask,plan:createThrow(faces,seed)};rackPlans.set(ctx,saved);
+  }
+  const cam=camera(width,height,1,.5);
+  const parts=bodies(stageScene(saved.plan,saved.plan.settleMs,cam),cam);
+  let l=Infinity,r=-Infinity,t=Infinity,b=-Infinity;
+  for(const {m} of parts)for(const x of [-length/2,length/2])for(const [s,h] of cross){
+    const [px,py]=m.point(x,s,h);l=Math.min(l,px);r=Math.max(r,px);t=Math.min(t,py);b=Math.max(b,py);
+  }
+  // Uniform reframing preserves the crossing angle, bearing point and visible
+  // face order even in a short landscape result tray.
+  const pad=Math.max(3,Math.min(width,height)*.055);
+  const scale=Math.min((width-2*pad)/(r-l+7),(height-2*pad)/(b-t+11));
+  if(scale<=0)return;
+  ctx.save();ctx.translate(width/2,height/2);ctx.scale(scale,scale);ctx.translate(-(l+r+3)/2,-(t+b+5)/2);
+  ctx.lineJoin='round';ctx.lineCap='round';renderBodies(ctx,parts,cam);ctx.restore();
+}
+
+export function drawRack(ctx,width,height,faces=null,seed=null) {
   if(!ctx||width<=0||height<=0)return;
+  backdrop(ctx,width,height);
+  if(faces){resultRack(ctx,width,height,faces,seed);return;}
   const wide=width/height>=1.58;
   const scale=Math.min(width*(wide?.383:.72),height*(wide?1.40:.78))/length;
   const cam=camera(width,height,scale,.50);
@@ -389,14 +531,13 @@ export function drawRack(ctx,width,height,faces=null) {
     ? [[-.239,-.225,-.045],[.239,-.225,.035],[-.239,.220,.050],[.239,.220,-.04]]
     : [[-.035,-.344,-.085],[.03,-.118,-.050],[-.025,.110,-.080],[.045,.340,-.045]];
   const parts=bodies(layout.map(([x,y,yaw],i)=>{
-    const face=faces?.[i]??[0,1,0,1][i];
+    const face=[0,1,0,1][i];
     // Invert the ground perspective so all rows are centered inside the tray.
     const planeY=y*cam.h+radius*.14;
     const depth=planeY/(groundSin+planeY*groundCos/cam.distance);
     return {index:i,face,yaw,roll:face?0:Math.PI,pitch:0,height:0,
       x:x*cam.w*(1-depth*groundCos/cam.distance),depth};
   }),cam);
-  backdrop(ctx,width,height);
   ctx.save();ctx.scale(scale,scale);ctx.lineJoin='round';ctx.lineCap='round';
   renderBodies(ctx,parts,cam);ctx.restore();
 }

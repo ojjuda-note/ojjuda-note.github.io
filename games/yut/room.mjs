@@ -1,4 +1,4 @@
-import {newGame, act} from './rules.mjs?v=2';
+import {newGame, act} from './rules.mjs?v=3';
 const encoder=new TextEncoder();
 const curve={name:'ECDSA',namedCurve:'P-256'};
 const signing={name:'ECDSA',hash:'SHA-256'};
@@ -98,8 +98,8 @@ export async function openRoom(invite,update,clientFactory=()=>window.OjjudaGetC
     render();
   },4000);
   render();
-  return {view,start(){if(!isHost||!connected||snapshot.game||snapshot.seats.length<2)return;
-      snapshot={...snapshot,game:newGame(snapshot.seats.length)};changed();},
+  return {view,start(zodiacOffset=2){if(!isHost||!connected||snapshot.game||snapshot.seats.length<2)return;
+      snapshot={...snapshot,game:newGame(snapshot.seats.length,zodiacOffset)};changed();},
     action(action){if(!connected||!snapshot.game)return;
       const data={revision:snapshot.game.revision,action};
       if(isHost)take(me.id,data);else void send('action',data).catch(()=>{});},

@@ -1,9 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {newGame,roll,move,moves,position,FINISH} from '../games/yut/rules.mjs';
+import {newGame,roll,move,moves,position,FINISH,lastThrowSeed} from '../games/yut/rules.mjs';
+import {ANIMALS,animalFor} from '../games/yut/zodiac.mjs';
 
 const faces=n=>Array.from({length:4},(_,i)=>+(i<n&&n<5));
 function setup(at,steps){const g=newGame();g.pawns[0][0]=at;return roll(g,faces(steps));}
+test('a pair may start with any zodiac animal and the settled throw reproduces after the turn',()=>{
+  assert.equal(new Set(ANIMALS).size,12);
+  for(let offset=0;offset<12;offset++){
+    const game=newGame(4,offset);
+    const roster=game.pawns.flatMap((team,t)=>team.map((_,i)=>animalFor(t,i,game.zodiacOffset)));
+    assert.equal(roster[0],offset);assert.equal(new Set(roster).size,8);
+    assert.ok(roster.every(n=>Number.isInteger(n)&&n>=0&&n<12));
+  }
+  assert.equal(animalFor(0,0,undefined),animalFor(0,0,newGame().zodiacOffset));
+  let game=newGame();assert.equal(lastThrowSeed(game),null);
+  for(const steps of [1,4,2,2]){
+    const thrown=roll(game,faces(steps)),seed=lastThrowSeed(thrown);
+    game=move(thrown,moves(thrown)[0].index);
+    assert.equal(lastThrowSeed(JSON.parse(JSON.stringify(game))),seed);
+  }
+});
 test('four sticks give five outcomes and invalid or repeated actions cannot advance the turn',()=>{
   for(let n=1;n<=5;n++){
     const s=roll(newGame(),faces(n));assert.equal(s.steps,n);assert.equal(roll(s,faces(1)),s);
@@ -69,7 +86,8 @@ test('invitees occupy up to four distinct seats; only the active seat can advanc
     const host=await openRoom(null,()=>{},mock);clients.push(host);
     for(let i=1;i<=4;i++){store.clear();clients.push(await openRoom(host.view().host,()=>{},mock));if(i<4)await until(()=>clients[i].view().seat===i);}
     await until(()=>clients[4].view().status.includes('찼'));
-    host.start();await until(()=>clients[3].view().game?.revision===0);
+    host.start(8);await until(()=>clients[3].view().game?.revision===0);
+    assert.equal(clients[3].view().game.zodiacOffset,8);
     clients[2].action({type:'roll'});await new Promise(r=>setTimeout(r,20));assert.equal(host.view().game.revision,0);
     host.action({type:'roll'});await until(()=>clients[1].view().game?.phase==='move');
     const opt=moves(host.view().game)[0];host.action({type:'move',...opt});
