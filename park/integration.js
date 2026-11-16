@@ -81,10 +81,7 @@
   function refresh() {
     if (overlayOpen() || !canLeave()) return false;
     if (detail.hidden) return loadFeed(false, true);
-    if (!feedDeferred) return refreshCards(true);
-    // A shared card opens before the feed. Keep its first list read on Back.
-    $('#reply-count').textContent = '0';
-    return renderDetail();
+    return refreshVisibleCard();
   }
 
   function reportState() {
