@@ -117,6 +117,64 @@ test('Park keeps the parallel brushstrokes of ㅔ and ㅖ separate on small card
     }
   }));
 
+test('the short arm of ㅔ reaches visibly left of the inner stem in Park lettering', () =>
+  withBrushPage(async page => {
+    const samples = await page.evaluate(() => {
+      const canvas = document.createElement('canvas');
+      const results = [];
+      for (const width of [192, 328]) {
+        for (const word of ['게', '제', '에', '네']) {
+          window.ParkCalligraphy.render(canvas, word, { width, accent: false });
+          const b = window.ParkCalligraphy.inkBounds(canvas);
+          const w = Math.round(b.width * width), h = Math.round(b.height * canvas.height);
+          const ink = canvas.getContext('2d').getImageData(Math.round(b.x * width),
+            Math.round(b.y * canvas.height), w, h).data;
+          // From the right edge, skip the outer stem, then measure the inner one.
+          function innerStem(y) {
+            let x = w - 1;
+            const painted = () => x >= 0 && ink[(y * w + x) * 4 + 3] >= 128;
+            while (x >= 0 && !painted()) x--;
+            while (painted()) x--;
+            while (x >= 0 && !painted()) x--;
+            const right = x;
+            while (painted()) x--;
+            return { left: x + 1, thickness: right - x };
+          }
+          const upperY = Math.round(h * .29), lowerY = Math.round(h * .65);
+          const upper = innerStem(upperY), lower = innerStem(lowerY);
+          let armRows = 0;
+          for (let y = Math.ceil(h * .32); y <= Math.floor(h * .59); y++) {
+            const stemEdge = upper.left + (lower.left - upper.left) * (y - upperY) / (lowerY - upperY);
+            const middle = innerStem(y);
+            if (upper.thickness && lower.thickness && middle.thickness &&
+                stemEdge - middle.left > upper.thickness * .60) armRows++;
+          }
+          results.push({ word, width, armRows });
+        }
+      }
+      return results;
+    });
+    for (const { word, width, armRows } of samples) {
+      assert.ok(armRows >= 2, `${word} needs a readable left-facing arm at ${width}px`);
+    }
+  }));
+
+test('isolated two-stem vowels use the Park brush in either Unicode spelling', () =>
+  withBrushPage(async page => {
+    const pairs = await page.evaluate(() => {
+      const canvas = document.createElement('canvas');
+      canvas.getContext('2d').fillText = () => { throw new Error('A standalone vowel used the system font'); };
+      function draw(vowel) {
+        window.ParkCalligraphy.render(canvas, vowel, { width: 192, accent: false });
+        if (!window.ParkCalligraphy.inkBounds(canvas)) throw new Error('Missing vowel ' + vowel);
+        return canvas.toDataURL();
+      }
+      return [['ㅐ', 'ᅢ'], ['ㅔ', 'ᅦ'], ['ㅒ', 'ᅤ'], ['ㅖ', 'ᅨ']].map(pair => pair.map(draw));
+    });
+    for (const [compatibility, conjoining] of pairs) assert.equal(compatibility === conjoining, true);
+    assert.equal(new Set(pairs.map(pair => pair[0])).size, 4);
+  }));
+
 test('Park centers each brush line and emphasizes only matching tags', () =>
   withBrushPage(async page => {
     const result = await page.evaluate(() => {
@@ -198,12 +256,13 @@ test('Park centers each brush line and emphasizes only matching tags', () =>
 test('Park keeps a short phrase together and respects intentional space between lines', () =>
   withBrushPage(async page => {
     const result = await page.evaluate(() => {
-      function inspect(body, tags = []) {
+      function inspect(body, tags = [], cardWidth = 328) {
         const canvas = document.createElement('canvas');
-        window.ParkCalligraphy.render(canvas, body, { width: 328, tags });
+        window.ParkCalligraphy.render(canvas, body, { width: cardWidth, tags });
         const { width, height } = canvas;
         const bounds = window.ParkCalligraphy.inkBounds(canvas);
         const bytes = canvas.getContext('2d').getImageData(0, 0, width, height).data;
+        const inkColumns = new Uint8Array(width);
         let firstInk, lastInk, firstGold, lastGold, largestGap = 0;
         for (let y = 0; y < height; y++) {
           let ink = false;
@@ -211,6 +270,7 @@ test('Park keeps a short phrase together and respects intentional space between 
             const i = (width * y + x) * 4;
             if (bytes[i + 3] < 35) continue;
             ink = true;
+            inkColumns[x] = 1;
             if (bytes[i] - bytes[i + 2] > 75 && bytes[i + 1] > 95) {
               firstGold ??= y;
               lastGold = y;
@@ -222,7 +282,14 @@ test('Park keeps a short phrase together and respects intentional space between 
           lastInk = y;
         }
         const inkHeight = lastInk - firstInk + 1;
+        let wordGap = 0, gap = 0;
+        for (let x = Math.ceil((bounds.x + bounds.width * .3) * width);
+             x < (bounds.x + bounds.width * .7) * width; x++) {
+          gap = inkColumns[x] ? 0 : gap + 1;
+          wordGap = Math.max(gap, wordGap);
+        }
         return {
+          aspect: bounds.width * width / inkHeight, wordGap: wordGap / inkHeight,
           largestGap: largestGap / inkHeight,
           goldSpan: firstGold === undefined ? 0 : (lastGold - firstGold + 1) / inkHeight,
           bounds
@@ -235,7 +302,8 @@ test('Park keeps a short phrase together and respects intentional space between 
         bamboo: inspect('대나무처럼 곧게', ['대나무']),
         compact: inspect('하나\n하나'),
         stanza: inspect('하나\n\n하나'),
-        mixed: inspect('작은 봄 🌱 '.repeat(21) + '다시 피어날 꽃!', ['꽃'])
+        mixed: inspect('작은 봄 🌱 '.repeat(21) + '다시 피어날 꽃!', ['꽃']),
+        spacing: [192, 328].map(w => ({ repeated: inspect('두근두근', [], w), spaced: inspect('내 맘', [], w) }))
       };
     });
     // Both words have a gold mark. Their vertical span shows whether they share a line.
@@ -249,6 +317,11 @@ test('Park keeps a short phrase together and respects intentional space between 
       'two normal lines keep their strokes close, with a visible gap');
     assert.ok(result.stanza.largestGap > result.compact.largestGap + .12,
       'a deliberate blank line keeps more breathing room than a normal line break');
+    for (const { repeated, spaced } of result.spacing) {
+      assert.ok(repeated.aspect > 2.2 && repeated.aspect < 3,
+        '두근두근 fits into one compact line, about two and a half letter-heights wide');
+      assert.ok(spaced.wordGap >= .04, 'the space in 내 맘 keeps a clear vertical strip between the words');
+    }
     assert.ok(result.mixed.goldSpan > 0, 'the final tagged word survives a long mixed-script card');
     const bounds = result.mixed.bounds;
     assert.ok(bounds.x > 0 && bounds.y > 0 && bounds.x + bounds.width < 1 && bounds.y + bounds.height < 1);
