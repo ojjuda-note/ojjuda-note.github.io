@@ -172,7 +172,7 @@
     const topBar = curve('2,25,.13 13,23,.67 43,16,.77 74,12,.52 98,14,.03');
     const midBar = curve('16,52,.15 33,50,.54 64,43,.62 87,39,.055');
     const under = curve('3,88,.21 13,92,.81 35,90,.89 68,80,.59 89,77,.28 100,78,.03');
-    const foot = curve('22,5,.21 26,10,.84 23,29,1.07 16,58,.94 13,76,.83 18,84,.7 33,85,.67 56,78,.50 81,61,.29 100,48,.025');
+    const foot = curve('22,5,.24 26,13,.94 23,34,1.09 15,63,1.02 14,76,.93 19,84,.85 33,86,.76 54,80,.55 79,65,.29 100,51,.025');
     const round = curve('57,12,.10 46,10,.66 27,24,.91 15,48,1.1 13,73,.86 21,86,.70 40,88,.68 60,78,.64 77,60,.51 86,41,.63 85,25,.65 75,17,.44 58,20,.21 48,27,.03');
     const hook = curve('3,30,.15 13,29,.68 36,18,.97 62,10,1.09 79,10,.93 84,16,.74 82,29,.60 69,49,.55 48,71,.36 26,90,.18 11,99,.02');
     const topHook = curve('4,23,.20 17,21,.78 43,14,.93 67,9,.87 84,11,.74 88,21,.70 86,38,.70 78,65,.55 68,88,.19 62,96,.025');
@@ -204,6 +204,7 @@
     };
     const lowerN = curve('16,5,.11 25,13,.73 24,26,.99 15,51,1.04 9,74,.87 12,87,.77 24,93,.72 43,90,.65 65,79,.52 87,67,.27 103,63,.025');
     const hLine = curve('-1,57,.13 8,57,.79 29,52,1.04 57,43,.86 81,39,.54 101,39,.025');
+    const sweepLine = curve('-1,57,.14 9,56,.82 30,50,1.06 55,45,.88 75,44,.62 93,44,.42 108,41,.19 117,36,.018');
     const up = curve('51,1,.17 55,8,.79 53,20,1.04 46,36,.74 41,52,.18');
     const down = curve('58,27,.27 60,34,.76 59,46,1.03 55,59,.99 46,75,.79 38,92,.44 32,111,.025');
     const baseLine = curve('-2,62,.15 7,62,.85 30,54,1.02 58,44,.88 81,38,.49 103,38,.03');
@@ -214,28 +215,36 @@
       ㅠ: [map(hLine, 0, -13, 100, 89), map(down, -14, -5, 90, 102), map(down, 23, -10, 90, 103)],
       ㅡ: [baseLine]
     };
+    const terminalVowels = { ㅗ: [up, sweepLine], ㅡ: [sweepLine] };
     function decompose(ch) {
       if (!ch || Array.from(ch).length !== 1) return null;
       const i = ch.codePointAt(0) - 0xAC00;
       return i >= 0 && i < 11172 ? [initial[Math.floor(i / 588)], medial[Math.floor(i / 28) % 21], final[i % 28]] : null;
     }
     // The straight vowels are written on a bowed axis; bars are positioned on it.
-    function verticalPaths(v, flourish) {
+    function verticalPaths(v, flourish, phraseEnd) {
       const leftBars = 'ㅓㅔㅕㅖ'.includes(v),
         doubleBars = 'ㅑㅒㅕㅖ'.includes(v),
         twoStems = 'ㅐㅒㅔㅖ'.includes(v);
       const axes = twoStems ? leftBars ? [55, 91] : [24, 90] : [v === 'ㅣ' ? 57 : leftBars ? 85 : 29];
       const paths = [];
       function axis(x, isOuter) {
-        const extension = isOuter && flourish ? 13 : 0;
-        return curve(`${x + 7},0,.14 ${x + 10},8,.94 ${x + 7},25,1.04 ${x + .3},49,.91 ${x - 6},72,.68 ${x - 10},91,.40 ${x - 10.5},${101 + extension / 2},.16 ${x - 8},${106 + extension},.025`);
+        if (isOuter && flourish) {
+          // After a bowed descent, ease the heel forward as the brush lifts.
+          return curve(`${x + 7},0,.17 ${x + 10},8,.96 ${x + 7},26,1.04 ${x},50,.93 ${x - 7},76,.71 ${x - 11},95,.44 ${x - 10},108,.20 ${x - 5},116,.025`);
+        }
+        return curve(`${x + 7},0,.14 ${x + 10},8,.94 ${x + 7},25,1.04 ${x + .3},49,.91 ${x - 6},72,.68 ${x - 10},91,.40 ${x - 10.5},101,.16 ${x - 8},106,.025`);
       }
       const starts = doubleBars ? [31, 58] : [47];
       const x = axes[0];
       function bar(y) {
         const joint = x + 1 - (y - 47) * .21;
         if (leftBars) return curve(`0,${y + 13},.045 ${joint * .19},${y + 13},.64 ${joint * .53},${y + 7},.78 ${joint * .82},${y + .8},.45 ${joint + 1},${y},.12`);
-        const reach = twoStems ? axes[1] : flourish ? 111 : 100;
+        if (flourish && phraseEnd && !twoStems && y === starts[starts.length - 1]) {
+          // Continue the existing arm: a loaded shoulder, a level sweep and a fine lift.
+          return curve(`${joint - 2},${y + 2},.22 ${joint + 12},${y},.68 68,${y - 5},.82 96,${y - 7},.69 124,${y - 7},.51 153,${y - 8},.34 176,${y - 11},.18 190,${y - 16},.023`);
+        }
+        const reach = twoStems ? axes[1] : flourish ? 109 : 100;
         const delta = reach - joint;
         return curve(`${joint},${y + 1},.18 ${joint + delta * .13},${y},.47 ${joint + delta * .45},${y - 9},.70 ${joint + delta * .72},${y - 14},.47 ${reach},${y - 16},.03`);
       }
@@ -279,6 +288,44 @@
         curve('61,40,.41 46,39,.78 30,48,.92 21,66,1 22,82,.94 31,90,.76 48,89,.74 64,79,.86 74,62,.89 74,49,.77 66,42,.60 55,43,.18')
       ]
     };
+    // Ink extents in horizontal bands. A narrow tail can tuck beside another
+    // letter where their thicker strokes fall at different heights.
+    function inkMetrics(strokes) {
+      const bands = [null, null, null];
+      let inkTop = Infinity, inkBottom = -Infinity;
+      const bandAt = y => y < 34 ? 0 : y < 66 ? 1 : 2;
+      function include(x, y, radius) {
+        for (let i = bandAt(y - radius); i <= bandAt(y + radius); i++) {
+          const left = x - radius, right = x + radius;
+          if (!bands[i]) bands[i] = [left, right];
+          else {
+            bands[i][0] = Math.min(bands[i][0], left);
+            bands[i][1] = Math.max(bands[i][1], right);
+          }
+        }
+      }
+      for (const { knots, width } of strokes) {
+        let previous;
+        for (const knot of knots) {
+          const [x, y, pressure] = knot;
+          const radius = width * pressure * .5 + .65;
+          inkTop = Math.min(inkTop, y - radius);
+          inkBottom = Math.max(inkBottom, y + radius);
+          include(x, y, radius);
+          if (previous && bandAt(y) !== bandAt(previous[1])) {
+            for (const boundary of [34, 66]) {
+              const t = (boundary - previous[1]) / (y - previous[1]);
+              if (t > 0 && t < 1) {
+                const p = previous[2] + (pressure - previous[2]) * t;
+                include(previous[0] + (x - previous[0]) * t, boundary, width * p * .5 + .65);
+              }
+            }
+          }
+          previous = knot;
+        }
+      }
+      return { profile: bands, inkTop, inkBottom };
+    }
     function shape(ch, options = {}) {
       const data = decompose(ch);
       if (!data) return null;
@@ -290,6 +337,7 @@
         complexFinal = !!pairs[f];
       const twinVowel = 'ㅐㅒㅔㅖ'.includes(v);
       const wordEnd = options === true || !!(options && (options.final || options.wordEnd || options.terminal));
+      const phraseEnd = wordEnd && !!options.phraseEnd;
       const long = wordEnd && !f,
         strokes = [];
       const baseAdvance = m ? 94 : horizontal ? 90 : twinVowel ? 96 : v === 'ㅣ' ? 76 : v === 'ㅓ' || v === 'ㅕ' ? 82 : 88;
@@ -303,10 +351,11 @@
           return;
         }
         let paths = profiles[key] || hVowels[key];
-        if (!paths) paths = verticalPaths(key, long && place !== 'mixed');
+        if (long && phraseEnd && place === 'base' && terminalVowels[key]) paths = terminalVowels[key];
+        if (!paths) paths = verticalPaths(key, long && place !== 'mixed', phraseEnd);
         if ((key === 'ㄱ' || key === 'ㅋ') && place === 'top') paths = [topHook, ...paths.slice(1)];
-        if (key === 'ㄴ' && place === 'final') paths = [wordEnd && !complexFinal ? terminalN : lowerN];
-        if (key === 'ㄹ' && place === 'final' && wordEnd && !complexFinal) paths = [zigTop, zigSpan, terminalL];
+        if (key === 'ㄴ' && place === 'final') paths = [phraseEnd ? terminalN : lowerN];
+        if (key === 'ㄹ' && place === 'final' && phraseEnd) paths = [zigTop, zigSpan, terminalL];
         const density = 'ㅂㅌㅍㅁㄹ'.includes(key) ? .82 : 'ㅎㅊㅈ'.includes(key) ? .88 : 1;
         const width = 15.6 * weight * density * Math.min(1.08, Math.sqrt(Math.min(w / 44, h / 55)));
         for (const path of paths) strokes.push({
@@ -328,14 +377,14 @@
         const topX = (advance - upperW) / 2 + (c === 'ㅇ' ? 3 : 0);
         draw(c, topX, f ? 1 : 4, upperW, top, 1.05, 'top');
         const y = top + (v === 'ㅡ' ? 0 : 3);
-        draw(v, 1, y, advance - (wordEnd && v === 'ㅡ' ? -2 : 6), (complexFinal ? 56 : f ? 65 : 99) - y, 1.00);
+        draw(v, 1, y, advance - 6, (complexFinal ? 56 : f ? 65 : 99) - y, 1.00, 'base');
       } else {
         const compact = c === 'ㅇ',
           wide = complexOnset,
           start = f ? 7 : 12;
-        const cWidth = compact ? f ? 31 : 35 : wide ? 51 : twinVowel ? 44 : 48;
-        const cHeight = compact ? f ? 34 : 45 : f ? 50 : 65;
-        const cY = compact ? f ? 19 : 30 : start;
+        const cWidth = compact ? f ? 31 : 39 : wide ? 51 : twinVowel ? 44 : 48;
+        const cHeight = compact ? f ? 34 : 48 : f ? 50 : 65;
+        const cY = compact ? f ? 19 : 27 : start;
         draw(c, 1, cY, cWidth, cHeight, compact ? 1.00 : 1.07);
         const vx = cWidth + (compact ? 0 : -1);
         draw(v, vx, f ? 0 : -1, advance - vx - 5, complexFinal ? 53 : f ? 60 : 88, 1.03);
@@ -360,6 +409,7 @@
       }
       return {
         strokes,
+        ...inkMetrics(strokes),
         advance
       };
     }
@@ -389,6 +439,24 @@
       '최': letter(86, 'M27 10 C33 9 45 12 45 17 C44 21 38 20 35 18 Q29 14 27 10 Z', 'M5 31 C18 24 41 19 54 20 C58 21 58 22 59 23 C45 24 27 29 13 35 Q4 39 5 31 Z', 'M38 29 C44 27 49 30 46 35 C38 46 21 56 4 63 C17 52 28 40 34 32 Z', 'M31 44 C34 41 40 43 45 47 Q50 51 56 50 C49 57 40 55 34 50 Z', 'M33 59 C39 57 45 59 43 65 L35 82 L26 84 Q27 70 33 59 Z', 'M-2 88 C19 79 43 73 61 72 C67 71 69 72 72 73 C55 77 29 86 9 95 Q0 100 -2 88 Z', 'M81 2 C87 0 91 4 90 12 C86 34 79 58 75 81 Q72 97 72 109 C66 101 66 86 68 72 C70 52 73 29 77 12 Q79 4 81 2 Z'),
       '다': letter(91, 'M10 27 C21 20 39 13 47 15 C51 16 49 18 46 20 C35 24 22 28 15 32 C10 35 7 31 10 27 Z', 'M13 28 C19 25 25 27 22 33 C17 41 11 55 14 61 C17 68 34 56 52 43 C43 58 26 72 15 75 C5 78 1 73 2 64 C3 52 9 34 13 28 Z', 'M62 2 C68 0 74 5 71 15 C64 38 58 62 56 83 C54 98 54 108 57 115 C49 107 47 93 49 73 C50 54 54 26 59 8 Q60 3 62 2 Z', 'M55 49 C68 40 79 36 92 35 C101 34 110 35 114 37 C96 38 79 44 62 54 Q55 57 55 49 Z')
     };
+    // Measured ink top, bottom and horizontal extents in the same three bands.
+    const profiles = {
+      오: [7,97,[25,68],[23,96],[2,97]],
+      늘: [4,107,[20,63],[6,91],[21,98]],
+      도: [9,95,[17,76],[13,60],[-1,91]],
+      수: [3,131,[40,73],[6,112],[-6,97]],
+      고: [4,97,[14,79],[38,68],[-3,100]],
+      했: [4,99,[4,86],[6,79],[9,86]],
+      어: [0,111,[19,96],[5,89],[5,82]],
+      이: [-1,111,[23,78],[8,73],[13,66]],
+      건: [1,104,[6,85],[2,78],[18,99]],
+      강: [2,104,[4,97],[4,81],[20,67]],
+      최: [1,109,[4,91],[4,86],[-2,78]],
+      다: [1,115,[8,72],[1,114],[1,59]]
+    };
+    for (const [ch, [inkTop, inkBottom, ...profile]] of Object.entries(profiles)) {
+      Object.assign(characters[ch], { inkTop, inkBottom, profile });
+    }
     return {
       get: ch => characters[ch] || null
     };
@@ -402,7 +470,7 @@
     const syllables = str => segmenter ? Array.from(segmenter.segment(str), entry => entry.segment) : Array.from(str);
     const dictionary = new Map();
     const shapes = new Map();
-    function get(ch, end) {
+    function get(ch, end, phraseEnd) {
       if (!ch.trim()) return {
         advance: 33
       };
@@ -410,14 +478,17 @@
       if (hand && typeof Path2D === 'function') {
         if (!dictionary.has(ch)) dictionary.set(ch, {
           advance: hand.advance,
+          profile: hand.profile,
+          inkTop: hand.inkTop,
+          inkBottom: hand.inkBottom,
           paths: hand.paths.map(path => new Path2D(path))
         });
         return dictionary.get(ch);
       }
-      const key = ch + (end ? '1' : '0');
+      const key = ch + (phraseEnd ? '2' : end ? '1' : '0');
       if (shapes.has(key)) return shapes.get(key);
       const composite = CalliGlyphs.shape(ch, {
-        wordEnd: end
+        wordEnd: end, phraseEnd
       });
       if (composite) {
         if (shapes.size >= 256) shapes.delete(shapes.keys().next().value);
@@ -429,36 +500,76 @@
         other: ch
       };
     }
-    function splitRows(line, limit) {
-      const chars = syllables(line);
-      if (chars.length <= limit) return [line];
-      const words = line.split(/\s+/u),
-        out = [];
-      let current = '';
-      for (const word of words) {
-        if (current && syllables(current + ' ' + word).length > limit) {
-          out.push(current);
-          current = '';
-        }
-        const g = syllables(word);
-        while (g.length > limit) out.push(g.splice(0, limit).join(''));
-        current = current ? current + ' ' + g.join('') : g.join('');
+    const closing = /^[,.;:!?%…。，、！？：；”’»」』）】〕〉》)\]}]+$/u;
+    const opening = /^[“‘«「『（【〔〈《(\[{]+$/u;
+    const beforeNoun = /^(?:내|네|제|그|이|저|어느|어떤|모든|온|한|두|세|몇|여러|가장|더)$/u;
+    const boundWord = /^(?:수|것|때|뿐|줄|듯|채|데|리)$/u;
+    function separation(a, b) {
+      const ap = a.glyph.profile, bp = b.glyph.profile;
+      const natural = a.glyph.advance * a.scale;
+      if (!ap || !bp) return natural;
+      // Compare the facing ink at the same height, accounting for scale, lean and baseline.
+      let clearance = 0;
+      for (let y = 8; y <= 99; y += 9) {
+        const ay = (y - a.y) / a.scale, by = (y - b.y) / b.scale;
+        if (ay < 0 || by < 0 || ay > 110 || by > 110) continue;
+        const right = ap[ay < 34 ? 0 : ay < 66 ? 1 : 2];
+        const left = bp[by < 34 ? 0 : by < 66 ? 1 : 2];
+        if (left && right) clearance = Math.max(clearance,
+          (right[1] - ay * a.tilt) * a.scale - (left[0] - by * b.tilt) * b.scale);
       }
-      if (current) out.push(current);
-      return out;
+      return Math.max(natural * .72, clearance + 3.5 * Math.min(a.scale, b.scale));
     }
-    function rowsFor(input, longForm) {
-      const lines = input.normalize('NFC').trim().split(/\r?\n/u).map(x => x.trim().replace(/\s+/gu, ' '));
-      // Cards can contain 200 characters. Balance longer text across more of the sheet.
-      if (longForm) {
-        const perLine = Math.max(11, Math.ceil(Math.sqrt(syllables(input).length * 1.65)));
-        return lines.flatMap(line => splitRows(line, perLine));
+    function lineWidth(letters, start, end) {
+      const last = letters[end - 1];
+      return last.x + last.glyph.advance * last.scale - letters[start].x;
+    }
+    function breakCost(a, b) {
+      if (opening.test(a.ch) || closing.test(b.ch)) return 18;
+      if (!b.newWord) return a.range && a.range === b.range ? 1.5 : .35;
+      if (a.word === b.word) return -.35;
+      if (beforeNoun.test(a.word) || boundWord.test(b.word)) return 5;
+      if (a.range && a.range === b.range) return 2;
+      if (/[은는던]$/u.test(a.word) && /^[가-힣]{1,2}[.!?…]?$/u.test(b.word)) return 1.15;
+      if (/[,.;:!?…。，！？]$/u.test(a.ch)) return -.14;
+      return 0;
+    }
+    function rowsFor(letters, manual, longForm) {
+      if (!letters.length) return [[]];
+      const total = lineWidth(letters, 0, letters.length);
+      if (manual && total < 1580) return [letters];
+      // Several enlarged words need a wider measure to keep the whole verse readable.
+      const marked = letters.filter(p => p.range).length / letters.length;
+      const proportion = longForm ? 154 : 84 + Math.min(90, Math.max(0, marked - .4) * 400);
+      const target = Math.max(186, Math.sqrt(total * proportion));
+      const stops = [0];
+      // Keep short inflected words intact even when their tagged stem is enlarged.
+      // Long unspaced text can still wrap at syllable boundaries.
+      for (let start = 0; start < letters.length;) {
+        let end = start + 1;
+        while (end < letters.length && !letters[end].newWord) end++;
+        if (end - start > 7 && lineWidth(letters, start, end) > 1.52 * target) {
+          for (let i = start + 1; i < end; i++) stops.push(i);
+        }
+        stops.push(end);
+        start = end;
       }
-      if (lines.length > 1) return lines.flatMap(s => splitRows(s, 11));
-      const words = lines[0].split(' ');
-      if (words.length === 2 && syllables(lines[0]).length <= 13) return words;
-      if (words.length === 3 && syllables(lines[0]).length < 13) return [words[0], words.slice(1).join(' ')];
-      return splitRows(lines[0], syllables(lines[0]).length <= 17 ? 7 : 10);
+      const best = Array(stops.length).fill(Infinity), previous = [];
+      best[0] = 0;
+      for (let end = 1; end < stops.length; end++) {
+        const finish = stops[end];
+        const penalty = finish === letters.length ? 0 : breakCost(letters[finish - 1], letters[finish]);
+        for (let start = end - 1; start >= 0; start--) {
+          const from = stops[start], ratio = lineWidth(letters, from, finish) / target;
+          const rag = ratio - 1;
+          const cost = best[start] + .08 + rag * rag * (rag > 0 ? 2.4 : 1) + penalty;
+          if (cost < best[end]) { best[end] = cost; previous[end] = start; }
+          if (ratio > 2.7) break;
+        }
+      }
+      const rows = [];
+      for (let i = stops.length - 1; i > 0; i = previous[i]) rows.push(letters.slice(stops[previous[i]], stops[i]));
+      return rows.reverse();
     }
     function tagRanges(source, tags) {
       const ranges = [];
@@ -483,68 +594,83 @@
     }
     const handDepth = { 어: 112, 다: 116, 이: 112, 수: 132, 최: 110, 늘: 107 };
     function lowerEdge(p) {
-      return p.y + p.scale * ((handDepth[p.ch] ?? 104) + Math.max(0, p.tilt) * p.glyph.advance);
+      return p.y + p.scale * ((p.glyph.inkBottom ?? handDepth[p.ch] ?? 104) + Math.max(0, p.tilt) * p.glyph.advance);
     }
     function layout(input, source, ranges, zoom, accent) {
+      const paragraphs = input.trim().split(/\r\n?|\n/u);
       const longForm = syllables(input).length > 36;
       const rows = [];
       let position = 0, rangeIndex = 0, widest = 1, height = 0;
-      for (const [i, line] of rowsFor(input, longForm).entries()) {
-        let x = 0, top = 0, bottom = 0, currentMark = null;
-        const letters = [], marks = [];
-        for (const [wi, word] of line.split(' ').entries()) {
-          if (wi) x += 29;
+      for (const [li, paragraph] of paragraphs.entries()) {
+        const letters = [], words = paragraph.trim().split(/\s+/u);
+        for (const [wi, word] of words.entries()) {
           const chars = syllables(word);
+          let last = chars.length - 1;
+          while (last > 0 && closing.test(chars[last])) last--;
           for (const [j, ch] of chars.entries()) {
-            // Wrapping may split a word, but the source cursor follows the original text.
             while (source[position] === ' ') position++;
             while (rangeIndex < ranges.length && ranges[rangeIndex][1] <= position) rangeIndex++;
-            const range = ranges[rangeIndex];
-            const marked = range && range[0] < position + ch.length && position < range[1];
+            const candidate = ranges[rangeIndex];
+            const range = candidate && candidate[0] < position + ch.length ? candidate : null;
             position += ch.length;
-            const glyph = get(ch, j === chars.length - 1);
-            const scale = marked ? 1.35 : 1;
-            const y = 3.7 * Math.sin(j * 1.6 + wi) - (scale - 1) * 70;
-            const p = {ch, glyph, x, y, scale, tilt: [-.057, -.028, .015, -.043, .01][(j+i)%5],
-              seed: (i+1)*30181 + (wi+1)*9767 + j*179 + ch.codePointAt(0)};
+            const glyph = get(ch, j === last, j === last && wi === words.length - 1);
+            // Give short grammatical words less weight, unless the writer tagged them.
+            const supporting = (boundWord.test(word) && wi > 0) ||
+              (beforeNoun.test(word) && chars.length === 1 && wi + 1 < words.length) ||
+              (j === last && j >= 1 && /[을를]/u.test(ch));
+            const scale = range ? 1.35 : supporting ? .86 : 1;
+            const y = -(scale - 1) * 68 + 2.8 * Math.cos(wi + .74 * j) - Math.min(j, 3) * .65;
+            const p = {ch, word, newWord: !j, glyph, range, x: 0, y, scale,
+              tilt: [-.048, -.029, .009, -.032][(j + wi) % 4],
+              seed: (li + 1)*30181 + (wi + 1)*9767 + j*179 + ch.codePointAt(0)};
+            const prev = letters.at(-1);
+            if (prev) p.x = prev.x + separation(prev, p) + (p.newWord ? 17 : 0);
             letters.push(p);
-            const depth = lowerEdge(p);
-            top = Math.min(top, y - 8 * scale);
-            bottom = Math.max(bottom, depth + 6 * scale);
-            if (accent && marked) {
-              if (!currentMark || currentMark.range !== range) {
-                currentMark = {range, left: x, right: x, bottom: depth};
-                marks.push(currentMark);
-              }
-              currentMark.right = x + glyph.advance * scale;
-              currentMark.bottom = Math.max(currentMark.bottom, depth);
-            } else currentMark = null;
-            x += (glyph.advance + 5.5) * scale;
           }
         }
-        // A manual blank line occupies one line in the composition.
-        if (!letters.length) bottom = 100;
-        for (const mark of marks) bottom = Math.max(bottom, mark.bottom + 14);
-        const row = { letters, marks, x: -x / 2, y: height - top };
-        height += bottom - top + 16;
-        row.end = height - 8;
-        rows.push(row);
-        widest = Math.max(widest, x + 46);
+        for (const run of rowsFor(letters, paragraphs.length > 1, longForm)) {
+          let top = Infinity, bottom = -Infinity, mark = null;
+          const width = run.length ? lineWidth(run, 0, run.length) : 0;
+          const origin = run.length ? run[0].x : 0, marks = [];
+          for (const p of run) {
+            p.x -= origin;
+            const depth = lowerEdge(p);
+            top = Math.min(top, p.y + p.scale * ((p.glyph.inkTop ?? -4) + Math.min(0, p.tilt) * p.glyph.advance));
+            bottom = Math.max(bottom, depth);
+            if (accent && p.range) {
+              if (!mark || mark.range !== p.range) {
+                mark = {range: p.range, left: p.x, right: p.x, bottom: depth};
+                marks.push(mark);
+              }
+              mark.right = p.x + p.glyph.advance * p.scale;
+              mark.bottom = Math.max(mark.bottom, depth);
+            } else mark = null;
+          }
+          if (!run.length) { top = 0; bottom = 88; }
+          for (const stroke of marks) bottom = Math.max(bottom, stroke.bottom + 10);
+          const gap = 8;
+          const row = { letters: run, marks, x: -width / 2, y: height - top };
+          height += bottom - top;
+          row.end = height + gap / 2;
+          height += gap;
+          rows.push(row);
+          widest = Math.max(widest, width + 42);
+        }
       }
-      height = Math.max(1, height - 16);
-      // Give tagged text room to grow even when most of the longest line is tagged.
+      height = Math.max(1, height - 8);
       const preferredAreaScale = ranges.length ? 1.065 : 1;
-      const fit = Math.min(Math.min((longForm ? 960 : 862) * preferredAreaScale / widest,
-        (longForm ? 670 : 470) * preferredAreaScale / height, 1.95) * zoom,
-        (WIDTH-48) / widest, (HEIGHT-48) / height);
+      const tall = longForm ? 665 : rows.length > 2 ? 565 : 475;
+      const fit = Math.min(Math.min((longForm ? 950 : 840) * preferredAreaScale / widest,
+        tall * preferredAreaScale / height, 1.95) * zoom, (WIDTH - 48) / widest, (HEIGHT - 48) / height);
       return {rows, fit, dy: (HEIGHT - height * fit) / 2};
     }
     const rng = seed => () => (seed = Math.imul(seed, 1664525) + 1013904223 >>> 0) / 4294967296;
     function accentStroke(ctx, mark) {
-      const length = Math.max(1, mark.right - mark.left - 4);
+      const inset = Math.min(13, (mark.right - mark.left) * .10);
+      const length = Math.max(1, mark.right - mark.left - 2 * inset);
       ctx.save();
-      ctx.translate(mark.left + 2, mark.bottom + 12);
-      ctx.scale(length / 130, .62);
+      ctx.translate(mark.left + inset, mark.bottom + 8);
+      ctx.scale(length / 130, .51);
       const g = ctx.createLinearGradient(0, 0, 130, 0);
       g.addColorStop(0, '#f4d696');
       g.addColorStop(.66, '#edb452');
@@ -559,7 +685,7 @@
       ctx.fill();
       ctx.restore();
     }
-    function textureInk(ctx, rowEnds) {
+    function textureInk(ctx, rowEnds, rightEdges) {
       const { width, height } = ctx.canvas;
       const frame = ctx.getImageData(0, 0, width, height);
       const pixels = frame.data;
@@ -569,6 +695,7 @@
       let rowIndex = 0, rowStart = 0, rowLeft = width, rowRight = -1;
       for (let y = 0; y < height; y++) {
         const brushY = y * scale;
+        let lastX = -1;
         for (let x = 0; x < width; x++) {
           const alpha = (y * width + x) * 4 + 3;
           const coverage = pixels[alpha];
@@ -581,12 +708,14 @@
           const loss = Math.max(0, .012 + .025 * pool + .024 * (noise - .5) + (noise > .987 ? .045 : 0));
           pixels[alpha] = Math.round(coverage * (1 - loss));
           if (pixels[alpha]) {
+            lastX = x;
             rowLeft = Math.min(rowLeft, x);
             rowRight = Math.max(rowRight, x);
             top = Math.min(top, y);
             bottom = y;
           }
         }
+        if (rightEdges) rightEdges[y] = lastX;
         if (y + 1 >= rowEnds[rowIndex]) {
           // Center the actual painted pixels, including brush tails and punctuation.
           // Move a row in the same pixel buffer already used to texture the ink.
@@ -594,6 +723,7 @@
             const shift = Math.round((width - 1 - rowLeft - rowRight) / 2);
             if (shift) {
               for (let line = rowStart; line <= y; line++) {
+                if (rightEdges && rightEdges[line] >= 0) rightEdges[line] += shift;
                 const begin = (line * width + rowLeft) * 4;
                 const end = (line * width + rowRight + 1) * 4;
                 pixels.copyWithin(begin + shift * 4, begin, end);
@@ -619,7 +749,7 @@
       const rgb = [1, 3, 5].map(start => parseInt(inkColor.slice(start, start + 2), 16)).join(',');
       return shade => 'rgba(' + rgb + ',' + (1 - Math.max(0, shade - 11) / 430) + ')';
     }
-    function draw(ctx, input, source, ranges, accent, zoom, inkColor) {
+    function draw(ctx, input, source, ranges, accent, zoom, inkColor, rightEdges) {
       const tint = makeTint(inkColor);
       ctx.save();
       ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -668,7 +798,7 @@
       ctx.restore();
       const rowEnds = page.rows.map(row => Math.round((page.dy + row.end * page.fit) * ctx.canvas.height / HEIGHT));
       rowEnds[rowEnds.length - 1] = ctx.canvas.height;
-      return textureInk(ctx, rowEnds);
+      return textureInk(ctx, rowEnds, rightEdges);
     }
     return {
       draw,
@@ -677,6 +807,61 @@
       HEIGHT
     };
   })();
+  // Look for the shoulder of the lettering: the open space next to a short line.
+  // rightEdges includes brush tips and gold marks, after centering each line.
+  function motifPosition(width, height, bounds, rightEdges) {
+    const top = Math.round(bounds.y * height), bottom = Math.round((bounds.y + bounds.height) * height);
+    const right = Math.round((bounds.x + bounds.width) * width);
+    const gap = Math.max(2, Math.round(width * .014));
+    const margin = gap * 2, step = Math.max(1, Math.round(width / 90));
+    const preferred = Math.round(Math.min(width * .205, Math.max(width * .15, (bottom - top) * .61)));
+    for (const size of [preferred, Math.round(preferred * .79)]) {
+      if (size < 8) break;
+      let best = null, lowest = Infinity;
+      const from = Math.max(margin, Math.floor(top - size * .62));
+      const to = Math.min(height - size - margin, Math.ceil(bottom - size * .38));
+      for (let y = from; y <= to; y += step) {
+        let edge = -1;
+        for (let line = Math.max(0, y - gap); line < Math.min(height, y + size + gap); line++) {
+          edge = Math.max(edge, rightEdges[line]);
+        }
+        if (edge < 0) continue;
+        const x = edge + 1 + gap;
+        if (x + size > width - margin) continue;
+        const score = Math.abs(y + size * .50 - top - (bottom - top) * .30)
+          + Math.max(0, x + size - right) * .85;
+        if (score < lowest) { lowest = score; best = {x, y, size}; }
+      }
+      if (best) return best;
+    }
+    // A wide, short line sometimes leaves room just above its last word.
+    const size = Math.min(preferred, top - margin - gap);
+    if (size >= Math.max(8, width * .105)) {
+      return {x: Math.max(margin, Math.min(width - margin - size, Math.round(right - size * .90))),
+        y: top - gap - size, size};
+    }
+    return null;
+  }
+  function paintMotif(ctx, motif, bounds, rightEdges, inkColor) {
+    const {width, height} = ctx.canvas;
+    const space = motifPosition(width, height, bounds, rightEdges);
+    if (!space) return bounds;
+    const {x, y, size} = space;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    window.ParkInkMotifs.paint(ctx, motif, x, y, size, inkColor);
+    ctx.restore();
+    // Only this square changed. Include its painted pixels in the adjustable box.
+    const pixels = ctx.getImageData(x, y, size, size).data;
+    let left = Math.round(bounds.x * width), top = Math.round(bounds.y * height);
+    let right = Math.round((bounds.x + bounds.width) * width), bottom = Math.round((bounds.y + bounds.height) * height);
+    for (let j = 0; j < size; j++) for (let i = 0; i < size; i++) {
+      if (!pixels[(j * size + i) * 4 + 3]) continue;
+      left = Math.min(left, x + i); right = Math.max(right, x + i + 1);
+      top = Math.min(top, y + j); bottom = Math.max(bottom, y + j + 1);
+    }
+    return Object.freeze({x: left / width, y: top / height, width: (right - left) / width, height: (bottom - top) / height});
+  }
   const lastPaint = new WeakMap();
   const normalizeColor = value => typeof value === 'string' && /^#[a-f0-9]{6}$/i.test(value) ? value.toLowerCase() : '';
   /** Paint isolated lettering onto a transparent canvas. CSS controls its displayed size. */
@@ -692,13 +877,15 @@
     const pixelHeight = Math.max(1, Math.round(pixelWidth * Composition.HEIGHT / Composition.WIDTH));
     const normalized = String(text ?? '').normalize('NFC');
     const source = normalized.trim().replace(/\s+/gu, ' ');
-    const ranges = Composition.tagRanges(source, Array.isArray(tags) ? tags : []);
+    const cardTags = Array.isArray(tags) ? tags : [];
+    const ranges = Composition.tagRanges(source, cardTags);
+    const motif = window.ParkInkMotifs?.choose(source, cardTags);
     const tagKey = JSON.stringify(ranges);
     inkColor = normalizeColor(inkColor);
     zoom = Math.min(1.12, Math.max(.85, Number(zoom) || 1));
     const last = lastPaint.get(canvas);
     if (last && last.text === normalized && last.tagKey === tagKey && last.accent === accent && last.width === pixelWidth
-        && last.inkColor === inkColor && last.zoom === zoom
+        && last.inkColor === inkColor && last.zoom === zoom && last.motif === motif
         && canvas.width === pixelWidth && canvas.height === pixelHeight) return canvas;
     if (canvas.width !== pixelWidth) canvas.width = pixelWidth;
     if (canvas.height !== pixelHeight) canvas.height = pixelHeight;
@@ -706,10 +893,13 @@
       willReadFrequently: true
     });
     if (!ctx) return null;
-    const bounds = Composition.draw(ctx, normalized, source, ranges, accent, zoom, inkColor);
+    const rightEdges = motif ? new Int16Array(pixelHeight) : null;
+    let bounds = Composition.draw(ctx, normalized, source, ranges, accent, zoom, inkColor, rightEdges);
+    if (motif && bounds) bounds = paintMotif(ctx, motif, bounds, rightEdges, inkColor);
     lastPaint.set(canvas, {
       text: normalized,
       tagKey,
+      motif,
       width: pixelWidth,
       accent,
       inkColor,

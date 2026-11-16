@@ -3,7 +3,7 @@ const path = require('node:path');
 const test = require('node:test');
 const { chromium } = require('playwright');
 
-async function withBrushPage(check) {
+async function withBrushPage(check, { motifs = false } = {}) {
   const browser = await chromium.launch({
     headless: true,
     executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined,
@@ -11,8 +11,9 @@ async function withBrushPage(check) {
   });
   try {
     const page = await browser.newPage();
+    if (motifs) await page.addScriptTag({ path: path.join(__dirname, '../note/calligraphy-motifs.js') });
     await page.addScriptTag({ path: path.join(__dirname, '../note/calligraphy.js') });
-    await check(page);
+    return await check(page);
   } finally {
     await browser.close();
   }
@@ -158,3 +159,120 @@ test('Park centers each brush line and emphasizes only matching tags', () =>
     assert.ok(ending.bounds.x > 0 && ending.bounds.y > 0 && ending.bounds.x + ending.bounds.width < 1
       && ending.bounds.y + ending.bounds.height < 1, 'long cards retain their margins');
   }));
+
+test('Park keeps a short phrase together and respects intentional space between lines', () =>
+  withBrushPage(async page => {
+    const result = await page.evaluate(() => {
+      function inspect(body, tags = []) {
+        const canvas = document.createElement('canvas');
+        window.ParkCalligraphy.render(canvas, body, { width: 328, tags });
+        const { width, height } = canvas;
+        const bounds = window.ParkCalligraphy.inkBounds(canvas);
+        const bytes = canvas.getContext('2d').getImageData(0, 0, width, height).data;
+        let firstInk, lastInk, firstGold, lastGold, largestGap = 0;
+        for (let y = 0; y < height; y++) {
+          let ink = false;
+          for (let x = 0; x < width; x++) {
+            const i = (width * y + x) * 4;
+            if (bytes[i + 3] < 35) continue;
+            ink = true;
+            if (bytes[i] - bytes[i + 2] > 75 && bytes[i + 1] > 95) {
+              firstGold ??= y;
+              lastGold = y;
+            }
+          }
+          if (!ink) continue;
+          firstInk ??= y;
+          if (lastInk !== undefined) largestGap = Math.max(largestGap, y - lastInk - 1);
+          lastInk = y;
+        }
+        const inkHeight = lastInk - firstInk + 1;
+        return {
+          largestGap: largestGap / inkHeight,
+          goldSpan: firstGold === undefined ? 0 : (lastGold - firstGold + 1) / inkHeight,
+          bounds
+        };
+      }
+      const pair = ['내', '마음'];
+      return {
+        automatic: inspect('오늘도 당신을 생각하는 내 마음', pair),
+        manual: inspect('오늘도 당신을 생각하는 내\n마음', pair),
+        bamboo: inspect('대나무처럼 곧게', ['대나무']),
+        compact: inspect('하나\n하나'),
+        stanza: inspect('하나\n\n하나'),
+        mixed: inspect('작은 봄 🌱 '.repeat(21) + '다시 피어날 꽃!', ['꽃'])
+      };
+    });
+    // Both words have a gold mark. Their vertical span shows whether they share a line.
+    assert.ok(result.automatic.goldSpan > 0 && result.automatic.goldSpan < .16,
+      '내 마음 stays together across automatic breaks');
+    assert.ok(result.manual.goldSpan > result.automatic.goldSpan + .12,
+      'an explicit break between 내 and 마음 takes precedence');
+    assert.ok(result.bamboo.goldSpan > 0 && result.bamboo.goldSpan < .16,
+      'the emphasized 대나무 stays within a single line when the short word wraps');
+    assert.ok(result.compact.largestGap > 0 && result.compact.largestGap < .11,
+      'two normal lines keep their strokes close, with a visible gap');
+    assert.ok(result.stanza.largestGap > result.compact.largestGap + .12,
+      'a deliberate blank line keeps more breathing room than a normal line break');
+    assert.ok(result.mixed.goldSpan > 0, 'the final tagged word survives a long mixed-script card');
+    const bounds = result.mixed.bounds;
+    assert.ok(bounds.x > 0 && bounds.y > 0 && bounds.x + bounds.width < 1 && bounds.y + bounds.height < 1);
+  }));
+
+test('Park paints the matching ink motif and replaces it when tag priority changes', async () => {
+  // Read the same artwork with the standalone brush and with both Park scripts.
+  const sample = page => page.evaluate(() => {
+    const canvas = document.createElement('canvas');
+    const phrase = '달빛 아래 매화가 피었다';
+    const moonFirst = ['달빛', '매화'], flowerFirst = ['매화', '달빛'];
+    function paint(text, tags) {
+      window.ParkCalligraphy.render(canvas, text, { width: 240, zoom: 1.12, tags });
+      const { width, height } = canvas;
+      const data = canvas.getContext('2d').getImageData(0, 0, width, height).data;
+      let mask = '', left = width, right = -1, top = height, bottom = -1;
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const alpha = data[(y * width + x) * 4 + 3];
+          mask += alpha > 24 ? '1' : '0';
+          if (!alpha) continue;
+          left = Math.min(left, x); right = Math.max(right, x);
+          top = Math.min(top, y); bottom = y;
+        }
+      }
+      const b = window.ParkCalligraphy.inkBounds(canvas);
+      const reported = [b.x * width, b.y * height, b.width * width, b.height * height].map(Math.round);
+      return { mask, reported, measured: [left, top, right - left + 1, bottom - top + 1],
+        margin: Math.min(left, top, width - 1 - right, height - 1 - bottom) };
+    }
+    const choose = window.ParkInkMotifs?.choose;
+    return {
+      choices: choose && [
+        choose(phrase, flowerFirst), choose(phrase, ['없는태그']), choose('초승달이 뜬다', []),
+        choose('계산을 달리다', ['매화']) ?? null
+      ],
+      moon: paint(phrase, moonFirst),
+      blossom: paint(phrase, flowerFirst),
+      restored: paint(phrase, moonFirst),
+      fallback: paint('초승달이 뜬다', ['없는태그']),
+      noMatch: paint('계산을 달리다', ['매화'])
+    };
+  });
+  const letters = await withBrushPage(sample);
+  const park = await withBrushPage(sample, { motifs: true });
+  assert.deepEqual(park.choices, ['blossom', 'moon', 'crescent', null]);
+  assert.equal(park.noMatch.mask === letters.noMatch.mask, true, 'absent keywords leave the canvas clear around the text');
+  assert.equal(park.moon.mask === park.restored.mask, true, 'reselecting the first tag restores its illustration');
+  assert.ok(letters.moon.mask === letters.blossom.mask && park.moon.mask !== park.blossom.mask,
+    'changing tag order refreshes the picture on the same canvas with identical emphasized words');
+  for (const key of ['moon', 'blossom', 'fallback']) {
+    const plain = letters[key].mask, illustrated = park[key].mask;
+    let added = 0, erased = 0;
+    for (let i = 0; i < plain.length; i++) {
+      if (plain[i] === '0' && illustrated[i] === '1') added++;
+      if (plain[i] === '1' && illustrated[i] === '0') erased++;
+    }
+    assert.ok(added > 12 && erased === 0, key + ' adds visible ink beside the undisturbed lettering');
+    assert.ok(park[key].margin > 0, key + ' fits at maximum zoom with transparent outer edges');
+    assert.deepEqual(park[key].reported, park[key].measured, key + ' is included in the reported ink bounds');
+  }
+});

@@ -282,3 +282,41 @@ test('native room entry sends one request, can retry, and settles only its own a
   attempts[2].resolve(); await tick();
   assert.equal(enter().disabled, false);
 });
+
+test('the lobby only reports an empty list after a successful read', async t => {
+  const f = fixture(t);
+  f.state.delayed = true;
+  await f.start();
+  const empty = () => f.list().querySelector('.arcade-room-empty')?.textContent || '';
+  const issue = () => f.list().querySelector('[data-room-issue]');
+  assert.match(empty(), /불러오는 중/);
+  f.state.pending.shift()({data:null, error:{message:'temporary'}});
+  await tick();
+  assert.equal(issue().hidden, false);
+  assert.doesNotMatch(empty(), /방이 없어요|불러오는 중/);
+  f.state.delayed = false;
+  await f.app.refresh();
+  assert.equal(issue().hidden, true);
+  assert.match(empty(), /아직 열린 방이 없어요/);
+});
+
+test('creating from a filtered lobby uses that game and explicit shortcuts take precedence', async t => {
+  const f = fixture(t, {renderModal(markup) { f.w.document.getElementById('modal-root').innerHTML = markup; }});
+  await f.start();
+  const filter = f.list().querySelector('[data-room-filter]');
+  const create = f.list().querySelector('[data-arcade-action="create"]');
+  const form = () => f.w.document.getElementById('arcade-room-form');
+  const select = value => {
+    filter.value = value;
+    filter.dispatchEvent(new f.w.Event('change', {bubbles:true}));
+  };
+  select('chess'); create.click();
+  assert.equal(form().elements.kind.value, 'chess');
+  assert.match(form().elements.title.value, /체스/);
+  assert.equal(form().querySelector('[data-create-layout]').hidden, true);
+  f.app.openCreate('tank');
+  assert.equal(form().elements.kind.value, 'tank');
+  assert.equal(form().querySelector('[data-create-capacity]').hidden, false);
+  select(''); create.click();
+  assert.equal(form().elements.kind.value, 'janggi');
+});

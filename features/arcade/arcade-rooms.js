@@ -74,6 +74,12 @@
         <button class="btn sm${!playing || room.is_member ? ' pri' : ''}" data-arcade-action="join" data-room="${escape(room.room_no)}"${busy || (playing && !room.is_member) || (!playing && room.is_member && !room.native) || (!room.is_member && room.players>=room.capacity) ? ' disabled' : ''}>${action}</button>
         ${room.is_host && !playing ? `<button class="arcade-cancel" data-arcade-action="cancel" data-room="${room.room_no}"${busy ? ' disabled' : ''}>대기 취소</button>` : ''}</div></article>`;
     }
+    function emptyRoomMessage(search, status) {
+      if (!owner) return '로그인하면 대전방을 만들고 참여할 수 있어요.';
+      if (status) return '';
+      if (lastRead === null) return '열린 대전방을 불러오는 중이에요.';
+      return search || filter ? '조건에 맞는 방이 없어요.' : '아직 열린 방이 없어요.<br>첫 대전방을 만들어 보세요.';
+    }
     function render() {
       const canDrink = drinkingAllowed();
       if (!canDrink) document.querySelectorAll('[data-drinking-shortcut]').forEach(link => link.remove());
@@ -123,12 +129,13 @@
       const shown = rooms.filter(r => (!filter || r.kind === filter) && (!text || String(r.room_no).toLowerCase().includes(text) || r.title.toLocaleLowerCase().includes(text)));
       if (!drinking && mine && !shown.some(r => r.room_no === mine.room_no)) shown.unshift(mine);
       shown.sort((a, b) => String(a.room_no).localeCompare(String(b.room_no),undefined,{numeric:true}));
-      const next = JSON.stringify([shown, busy, owner, filter, Boolean(text)]);
+      const empty = !drinking && !shown.length ? emptyRoomMessage(text, status) : '';
+      const next = JSON.stringify([shown, busy, owner, filter, empty]);
       if (signature !== next) {
         const chat = list.closest('.plog'), atBottom = chat && chat.scrollHeight - chat.scrollTop - chat.clientHeight < 40;
         signature = next;
         list.innerHTML = drinking ? drinkingLink() : shown.length ? shown.map(card).join('')
-          : `<p class="arcade-room-empty">${owner ? query || filter ? '조건에 맞는 방이 없어요.' : '아직 열린 방이 없어요.<br>첫 대전방을 만들어 보세요.' : '로그인하면 대전방을 만들고 참여할 수 있어요.'}</p>`;
+          : empty ? `<p class="arcade-room-empty">${empty}</p>` : '';
         if (atBottom) chat.scrollTop = chat.scrollHeight;
       }
       root.querySelector('[data-arcade-action="create"]').disabled = busy || !owner;
@@ -210,7 +217,7 @@
         issue = ''; render(); return data.room;
       } finally { busy = false; render(); schedule(); }
     }
-    function openCreate(kind = filter === 'drinking' ? 'drinking' : 'janggi') {
+    function openCreate(kind = filter || 'janggi') {
       sync();
       if (drinkingKinds.has(kind)) kind = 'drinking';
       if (!owner) { options.notify(errors.not_signed_in); return; }
