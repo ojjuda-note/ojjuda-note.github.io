@@ -47,6 +47,22 @@ test('rank viewer paints only top ten, highlights me and separates a personal 12
  assert.equal(new URL(window.location.href).searchParams.get('game'),'mines');
 });
 
+test('an unknown game opens the default ranking',async t=>{
+ const dom=new JSDOM(page,{url:'https://fixture.test/ranking?game=constructor',runScripts:'outside-only'});
+ t.after(()=>dom.window.close());
+ const {window}=dom,requested=[];
+ window.AbortSignal=AbortSignal;
+ window.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'synthetic'};
+ window.supabase={createClient:()=>({rpc(_name,args){
+  requested.push(args.p_game);
+  return {abortSignal:async()=>({data:null,error:{message:'fixture'}})};
+ }})};
+ window.eval(viewer);
+ await new Promise(setImmediate);
+ assert.deepEqual(requested,['sacheonseong']);
+ assert.equal(window.document.querySelector('#ranking-game').value,'sacheonseong');
+});
+
 test('shared entry/result links remain while extra ranking tiles stay out of the arcade grid',async t=>{
  const dom=new JSDOM('<!doctype html><html><body><section class="game-entry" data-entry-key="screw"></section><a data-v="chacha_rush" href="https://external.example">차차 러시</a></body></html>',
   {url:'https://ojjuda.kr/world.html',runScripts:'outside-only'});
