@@ -50,7 +50,7 @@ export function moves(state) {
   const team=state.pawns[state.team], options=[];
   for(let index=0;index<team.length;index++){
     const trail=team[index], from=position(trail);
-    if(from===FINISH|| (index>0&&position(team[0])===from)) continue;
+    if(from===FINISH||(from!==HOME&&index>0&&position(team[0])===from)) continue;
     const direct=advance(trail,state.steps,false);
     options.push({index,shortcut:false,to:position(direct.next)});
     if(fork.has(from)){

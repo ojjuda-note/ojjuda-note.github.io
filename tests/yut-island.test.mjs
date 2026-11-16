@@ -16,6 +16,14 @@ test('an event applies once and retreats along the actual trail',()=>{
   assert.equal(position(move(setup([1,2,3,4,5,6,7],1),0).pawns[0][0]),6);
   assert.equal(position(move(setup([1,2,3,4,5],1),0).pawns[0][0]),8);
 });
+test('either waiting pawn may start, while touching a stack still moves both together',()=>{
+  const turn=roll(newGame(),faces(1));
+  assert.deepEqual(moves(turn).map(m=>m.index),[0,1]);
+  assert.deepEqual(move(turn,1).pawns[0],[[],[1]]);
+  const stack=setup([1,2,3,4],1);stack.pawns[0][1]=[1,2,3,4];
+  assert.deepEqual(moves(stack).map(m=>m.index),[0]);
+  assert.deepEqual(move(stack,0).pawns[0],[[1,2,3,4,5],[1,2,3,4,5]]);
+});
 test('shortcuts remember entry at the center, and a stop there offers the finish route',()=>{
   const corner=setup([5],3);assert.deepEqual(moves(corner).filter(x=>x.index===0).map(x=>x.to),[8,22]);
   assert.equal(position(move(corner,0,true).pawns[0][0]),22);

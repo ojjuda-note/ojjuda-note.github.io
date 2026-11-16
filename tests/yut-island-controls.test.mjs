@@ -3,6 +3,7 @@ import test from 'node:test';
 import {readFileSync} from 'node:fs';
 import {JSDOM} from 'jsdom';
 import {createThrow,sampleThrow} from '../games/yut/toss.mjs';
+import {createBoard} from '../games/yut/board.mjs';
 
 test('every throw rises, contacts the floor, rebounds and settles on its authoritative faces',()=>{
   for(let bits=0;bits<16;bits++){
@@ -11,9 +12,17 @@ test('every throw rises, contacts the floor, rebounds and settles on its authori
     for(const rod of plan.rods){
       const at=t=>sampleThrow(plan,t)[rod.index];
       const impact=rod.delay+rod.flight;
-      assert.ok(at(rod.delay+rod.flight*.5).height>150);
-      assert.ok(at(impact).height<.001);
-      assert.ok(at(impact+rod.bounce*.5).height>20);
+      const apex=at(rod.delay+rod.flight*.5).height, contact=at(impact);
+      const rebound=at(impact+rod.bounce*.5).height;
+      assert.ok(apex>150);
+      assert.ok(contact.height<.001&&Math.abs(contact.pitch)>.1);
+      assert.ok(rebound>apex*.04&&rebound<apex*.25);
+      const secondBounce=at(impact+rod.bounce+rod.hop*.5);
+      assert.ok(secondBounce.height<rebound);
+      for(const boundary of [impact,impact+rod.bounce,impact+rod.bounce+rod.hop,rod.finish]){
+        const left=at(boundary-.01),right=at(boundary+.01);
+        assert.ok(Math.hypot(left.x-right.x,left.depth-right.depth,left.height-right.height)<.1);
+      }
       const end=at(plan.settleMs+1);
       assert.ok(end.settled);assert.equal(end.height,0);
       assert.equal(end.roll,rod.face===1?0:Math.PI);
@@ -22,7 +31,7 @@ test('every throw rises, contacts the floor, rebounds and settles on its authori
   }
 });
 
-test('one tap throws and auto-moves a forced piece; an actual choice waits for input',async t=>{
+test('a throw waits for a player to place a piece, including a reserve piece',async t=>{
   const html=readFileSync(new URL('../games/yut/index.html',import.meta.url),'utf8');
   const dom=new JSDOM(html,{url:'https://example.test/games/yut/'});
   const {window:w}=dom, doc=w.document, frames=new Map();
@@ -35,7 +44,11 @@ test('one tap throws and auto-moves a forced piece; an actual choice waits for i
   globalThis.cancelAnimationFrame=id=>frames.delete(id);
   const gradient=()=>({addColorStop(){}});
   const ctx=new Proxy({createLinearGradient:gradient,createRadialGradient:gradient},{get(target,key){return target[key]??(()=>{});}});
-  w.HTMLCanvasElement.prototype.getContext=()=>ctx;
+  const pawnLabels=new Map();
+  let translation;
+  const boardCtx=new Proxy({translate:(x,y)=>{translation=[x,y];},
+    fillText:text=>pawnLabels.set(text,translation)},{get:(target,key)=>target[key]??ctx[key]});
+  w.HTMLCanvasElement.prototype.getContext=function(){return this.id==='board'?boardCtx:ctx;};
   w.HTMLCanvasElement.prototype.getBoundingClientRect=()=>({width:390,height:500,left:0,top:0});
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
@@ -44,6 +57,13 @@ test('one tap throws and auto-moves a forced piece; an actual choice waits for i
   const tick=()=>{const queued=[...frames.values()];frames.clear();queued.forEach(f=>f(performance.now()+4000));};
   const until=async(pred)=>{for(let i=0;i<100;i++){if(pred())return;await new Promise(r=>setTimeout(r,20));}assert.fail('state did not arrive');};
   function setFaces(n){let i=0;t.mock.method(Math,'random',()=>i++%4<n?0.1:0.9);}
+  function chooseMove(which){
+    assert.equal(first().textContent,'이동 선택');
+    first().click();
+    const choices=doc.querySelectorAll('#dialog-body .choice');
+    assert.ok(choices.length>which);
+    choices[which].click();
+  }
   await import('../games/yut/play.mjs');
   assert.equal(first().textContent,'윷 던지기');
   const rack=doc.getElementById('rack-canvas');
@@ -53,22 +73,87 @@ test('one tap throws and auto-moves a forced piece; an actual choice waits for i
   setFaces(1);first().click();
   assert.equal(doc.getElementById('toss-layer').hidden,false);assert.equal(text('outcome'),'');assert.ok(first().disabled);
   tick();
-  await until(()=>text('team-title').includes('바다')&&first().textContent==='윷 던지기');
+  await until(()=>first().textContent==='이동 선택');
+  await new Promise(r=>setTimeout(r,350));
+  assert.match(text('team-title'),/산호/);
+  assert.match(text('note'),/끌어/);
   assert.equal(text('outcome'),'도 · 1칸'); assert.ok(doc.getElementById('toss-layer').hidden);
   assert.equal(rack.getAttribute('aria-label'),'던진 윷 네 가락 · 도 · 1칸');
+  tick();
+  const canvas=doc.getElementById('board');
+  function pointer(type,x,y){
+    const e=new w.MouseEvent(type,{clientX:x,clientY:y,button:0,bubbles:true,cancelable:true});
+    Object.defineProperty(e,'pointerId',{value:1});canvas.dispatchEvent(e);
+  }
+  // With both pieces still waiting, tapping the highlighted first square opens
+  // the two legal choices without committing either. Use that hit to drop #2.
+  let destination;
+  for(let y=0;y<500&&!destination;y+=6)for(let x=0;x<390&&!destination;x+=6){
+    pointer('click',x,y);if(doc.querySelector('dialog').open)destination=[x,y];
+  }
+  assert.ok(destination);
+  doc.getElementById('close').click();
+  tick();
+  pointer('pointerdown',...pawnLabels.get('2'));
+  assert.match(text('note'),/2번 말/);
+  pointer('pointermove',...destination);tick();pointer('pointerup',...destination);
+  await until(()=>text('team-title').includes('바다')&&first().textContent==='윷 던지기');
   prefs.matches=true;setFaces(2);first().click();
   assert.ok(doc.getElementById('toss-layer').hidden);
+  chooseMove(0);
   await until(()=>text('team-title').includes('산호')&&first().textContent==='윷 던지기');
   assert.equal(rack.getAttribute('aria-label'),'던진 윷 네 가락 · 개 · 2칸');
   setFaces(1);first().click();
-  assert.equal(doc.querySelectorAll('#actions .choice').length,2);
-  await new Promise(r=>setTimeout(r,320));
-  assert.equal(doc.querySelectorAll('#actions .choice').length,2);
-  doc.querySelectorAll('#actions .choice')[1].click();
+  chooseMove(0);
   assert.ok(text('team-title').includes('바다'));
   doc.getElementById('team-title').click();assert.ok(doc.querySelector('dialog').open);
   assert.equal(doc.querySelectorAll('.score-card').length,2);
   doc.getElementById('close').click();doc.getElementById('settings').click();
   [...doc.querySelectorAll('#dialog-body button')].find(b=>b.textContent==='놀이 방법').click();
   assert.deepEqual([...doc.querySelectorAll('.effect-row b')].map(el=>el.textContent),['바위턱','소용돌이','순풍']);
+});
+
+test('board dragging uses the chosen pawn and its legal squares, including after rotation',()=>{
+  globalThis.window={devicePixelRatio:1,addEventListener(){},removeEventListener(){}};
+  globalThis.matchMedia=()=>({matches:true});
+  let frame;
+  globalThis.requestAnimationFrame=fn=>{frame=fn;return 1;};
+  globalThis.cancelAnimationFrame=()=>{};
+  const draw=()=>frame(performance.now());
+  const grad=()=>({addColorStop(){}});
+  const ctx=new Proxy({createLinearGradient:grad,createRadialGradient:grad},{get:(obj,key)=>obj[key]??(()=>{})});
+  const handlers=new Map(),bounds={left:0,top:0,width:390,height:390};
+  const canvas={width:390,height:390,style:{},getContext:()=>ctx,getBoundingClientRect:()=>bounds,
+    addEventListener:(name,fn)=>handlers.set(name,fn),removeEventListener(){},
+    setPointerCapture(){},releasePointerCapture(){},classList:{toggle(){}}};
+  const options=[{team:0,index:0,from:1,to:2},{team:0,index:1,from:7,to:8}];
+  let touched=null,selected=null;const drops=[];
+  const board=createBoard(canvas,n=>{touched=n},i=>{selected=i;board.setMoves(options,i)},(i,n)=>drops.push([i,n]));
+  const pointer=(type,x,y)=>handlers.get(type)({pointerId:1,pointerType:'touch',isPrimary:true,button:0,clientX:x,clientY:y,preventDefault(){}});
+  board.setState({activeTeam:0,pieces:[{team:0,index:0,node:1},{team:0,index:1,node:7}]});
+  for(const orientation of [0,90]){
+    board.setMoves([],null);
+    if(orientation)board.rotate();
+    board.setTargets([1,2,7,8]);draw();
+    const spans=new Map();
+    for(let y=0;y<390;y+=4)for(let x=0;x<390;x+=4){
+      touched=null;pointer('click',x,y);
+      if(touched===null)continue;
+      const box=spans.get(touched)??[x,y,x,y];
+      spans.set(touched,[Math.min(x,box[0]),Math.min(y,box[1]),Math.max(x,box[2]),Math.max(y,box[3])]);
+    }
+    const center=n=>{const [x,y,right,bottom]=spans.get(n);return [(x+right)/2,(y+bottom)/2];};
+    assert.equal(spans.size,4);
+    board.setTargets([]);board.setMoves(options,null);draw();
+    const start=center(1),legal=center(2),illegal=center(8);
+    const before=drops.length;
+    pointer('pointerdown',...start);pointer('pointermove',...illegal);pointer('pointerup',...illegal);
+    assert.equal(drops.length,before);
+    pointer('pointerdown',...start);pointer('pointermove',...legal);pointer('pointercancel',...legal);
+    assert.equal(drops.length,before);
+    pointer('pointerdown',...start);pointer('pointermove',...legal);draw();pointer('pointerup',...legal);
+    assert.equal(selected,0);
+    assert.deepEqual(drops.slice(before),[[0,2]]);
+  }
+  board.destroy();
 });

@@ -6,7 +6,6 @@ const length = 116, radius = 13.6, facets = 16;
 const cross = Array.from({length:facets+1},(_,i)=>section(Math.PI*i/facets));
 const clamp = t => Math.max(0, Math.min(1, t));
 const mix = (a,b,t) => a+(b-a)*t;
-const easeOut = t => 1-(1-t)**2;
 const smooth = t => t*t*(3-2*t);
 
 function section(theta) { return [radius*Math.cos(theta), radius*(.31-Math.sin(theta))]; }
@@ -22,162 +21,157 @@ function generator(seed) {
   };
 }
 
+function basis(yaw,pitch,roll) {
+  const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
+  const cr=Math.cos(roll),sr=Math.sin(roll);
+  return [[cy*cp,sy*cp,sp],[-sy*cr-cy*sp*sr,cy*cr-sy*sp*sr,cp*sr],
+    [sy*sr-cy*sp*cr,-cy*sr-sy*sp*cr,cp*cr]];
+}
+function floorSupport(pitch,roll) {
+  const cp=Math.cos(pitch),across=cp*Math.sin(roll),up=cp*Math.cos(roll);
+  let lowest=Infinity;
+  for(const [s,h] of cross)lowest=Math.min(lowest,s*across+h*up);
+  const slope=Math.abs(Math.sin(pitch));
+  const shoulder=(length/2-2.5)*slope-lowest;
+  const cap=length/2*slope-(.84*lowest-.32*up);
+  return Math.max(shoulder,cap);
+}
+
+function quaternion(yaw,pitch,roll) {
+  const cy=Math.cos(yaw/2),sy=Math.sin(yaw/2),cp=Math.cos(pitch/2),sp=-Math.sin(pitch/2);
+  const cr=Math.cos(roll/2),sr=Math.sin(roll/2);
+  return [cy*cp*cr+sy*sp*sr,cy*cp*sr-sy*sp*cr,cy*sp*cr+sy*cp*sr,sy*cp*cr-cy*sp*sr];
+}
+function releaseSpin(r,start,direction,turns) {
+  const [a,b,c,d]=start,[e,f,g,h]=quaternion(r.impactYaw,r.impactPitch,r.impactRoll);
+  const delta=[a*e+b*f+c*g+d*h,a*f-b*e-c*h+d*g,a*g+b*h-c*e-d*f,a*h-b*g+c*f-d*e];
+  // Choose the equivalent quaternion which keeps the seeded axial spin sense.
+  const sign=Math.sign(delta[1])*direction,norm=Math.hypot(delta[1],delta[2],delta[3]);
+  r.localAxis=delta.slice(1).map(v=>v*sign/norm);
+  r.spin=(2*Math.atan2(norm,delta[0]*sign)+turns*TAU)/r.flight;
+  r.frame=spinFrame(r);
+}
+function spinFrame(r) {
+  const impact=basis(r.impactYaw,r.impactPitch,r.impactRoll);
+  const axis=[0,1,2].map(i=>impact.reduce((v,dir,j)=>v+dir[i]*r.localAxis[j],0));
+  // Rodrigues rotation about the same tilted axis throughout free flight.
+  return impact.map(v=>{
+    const dot=axis[0]*v[0]+axis[1]*v[1]+axis[2]*v[2];
+    return {v,parallel:axis.map(a=>a*dot),
+      tangent:[axis[1]*v[2]-axis[2]*v[1],axis[2]*v[0]-axis[0]*v[2],axis[0]*v[1]-axis[1]*v[0]]};
+  });
+}
+function airborneAngles(r,relativeMs){
+  const phase=relativeMs*r.spin,c=Math.cos(phase),s=Math.sin(phase);
+  const component=(j,k)=>{
+    const {v,parallel,tangent}=r.frame[j];
+    return v[k]*c+parallel[k]*(1-c)+tangent[k]*s;
+  };
+  const roll=Math.atan2(component(1,2),component(2,2));
+  const expectedRoll=r.impactRoll+r.localAxis[0]*phase;
+  return {yaw:Math.atan2(component(0,1),component(0,0)),pitch:Math.asin(Math.max(-1,Math.min(1,component(0,2)))),
+    roll:roll+Math.round((expectedRoll-roll)/TAU)*TAU};
+}
+
+function glide(u) {return 1-(1-clamp(u))**4;}
+function rocking(offset,velocity,decay,frequency,t) {
+  return Math.exp(-decay*t)*(offset*Math.cos(frequency*t)+(velocity+decay*offset)/frequency*Math.sin(frequency*t));
+}
+function landedAngles(r,ms) {
+  if(ms>=r.groundTime)return {pitch:0,roll:r.roll,yaw:r.yaw};
+  const t=ms*.001,fade=1-smooth(clamp((ms/r.groundTime-.54)/.46));
+  return {
+    yaw:mix(r.impactYaw,r.yaw,glide(ms/r.glideTime)),
+    pitch:fade*rocking(r.impactPitch,r.pitchVelocity,r.pitchDecay,r.pitchFrequency,t),
+    roll:r.roll+fade*rocking(r.impactRoll-r.roll,r.rollVelocity,r.rollDecay,r.rollFrequency,t)
+  };
+}
+
+const gravity=.00178; // world units per millisecond squared, shared by all four
 // faces[i] is 1 for the flat face or 0 for the rounded, marked face.
-// Times in the plan and sampler are milliseconds. Angles are radians.
 export function createThrow(faces,seed) {
   if(!Array.isArray(faces)||faces.length!==4||faces.some(f=>f!==0&&f!==1))throw TypeError('윷 네 개의 앞뒷면이 필요해요.');
   const rng=generator(seed), between=(a,b)=>mix(a,b,rng());
   const targets=[[-104,-65],[104,-67],[-104,66],[104,65]];
-  for(let n=targets.length-1;n>0;n--){
-    const j=Math.floor(rng()*(n+1));[targets[n],targets[j]]=[targets[j],targets[n]];
+  for(let i=targets.length-1;i>0;i--){
+    const j=Math.floor(rng()*(i+1));[targets[i],targets[j]]=[targets[j],targets[i]];
   }
-  const bias=between(-14,14), flip=rng()<.5?-1:1;
+  const lead=between(-15,10),handDepth=between(39,54),handYaw=between(-.46,-.26),flip=rng()<.5?-1:1;
   const rods=faces.map((face,i)=>{
-    const dir=(i%2?1:-1)*flip, group=i<2?-1:1;
-    const [endX,endDepth]=targets[i];
-    const delay=between(32,78)+i*12, flight=between(850,980);
-    const bounce=between(285,350), hop=between(160,225), slide=between(265,365);
-    const finish=delay+flight+bounce+hop+slide;
-    const yaw=flip*[-.41,.26,.38,-.23][i]+between(-.095,.095), roll=face?0:Math.PI;
-    return {index:i,face,delay,flight,bounce,hop,slide,finish,
-      x0:-81+i*14+bias, d0:102+i*4, contactX:group*40+dir*9+bias,
-      contactD:group*18-dir*9, endX:endX+between(-2,2),endDepth:endDepth+between(-3,3),
-      peak:between(178,209), bow:dir*between(35,62),firstLift:between(26,45),
-      lastLift:between(7,15), yaw, roll,
-      startYaw:-1.02+i*.082,impactYaw:yaw+dir*between(.50,1.05)*TAU,
-      startRoll:roll-dir*between(2.35,3.65)*TAU,
-      impactRoll:roll-dir*between(.57,.91)*TAU,
-      startPitch:between(.24,.47),impactPitch:dir*between(.19,.48),
-      pitchTurns:(i%2?1:-1)*TAU,turnDir:dir};
+    const dir=rng()<.5?-1:1;
+    const delay=between(12,58)+i*15,flight=between(932,1080);
+    const bounce=flight*between(.285,.33),hop=bounce*between(.29,.39),slide=between(380,540);
+    const groundTime=bounce+hop+slide,glideTime=groundTime*between(.77,.92);
+    const yaw=flip*[-.41,.26,.38,-.23][i]+between(-.095,.095),roll=face?0:Math.PI;
+    const across=(i-1.5)*19+between(-1.5,1.5),along=(i%2?7:-7)+between(-3,3);
+    const x0=lead+along*Math.cos(handYaw)-across*Math.sin(handYaw);
+    const d0=handDepth+along*Math.sin(handYaw)+across*Math.cos(handYaw);
+    const endX=targets[i][0]+between(-2,2),endDepth=targets[i][1]+between(-3,3);
+    // The incoming horizontal momentum carries into a short frictional slide.
+    const vx=(endX-x0)/(flight+glideTime/4),vd=(endDepth-d0)/(flight+glideTime/4);
+    const r={index:i,face,delay,flight,bounce,hop,slide,groundTime,glideTime,
+      finish:delay+flight+groundTime,x0,d0,endX,endDepth,vx,vd,
+      contactX:x0+vx*flight,contactD:d0+vd*flight,yaw,roll,
+      impactYaw:yaw,impactPitch:(rng()<.5?-1:1)*between(.22,.44),impactRoll:roll-dir*between(1.05,1.82),
+      pitchDecay:between(5.7,7.7),pitchFrequency:between(12,17),
+      rollDecay:between(5.8,7.3),rollFrequency:between(7.4,10.3)};
+    const startRotation=quaternion(handYaw+(i-1.5)*.065+between(-.055,.055),between(.12,.30),
+      r.impactRoll-dir*between(1.70,4.08));
+    const turns=rng()<.18?0:1;
+    releaseSpin(r,startRotation,dir,turns);
+    const earlier=airborneAngles(r,-.25),later=airborneAngles(r,.25);
+    const yawVelocity=(later.yaw-earlier.yaw)/.5;
+    r.impactYaw-=yawVelocity*between(.29,.50)*glideTime/4;
+    releaseSpin(r,startRotation,dir,turns);
+    r.pitchVelocity=(later.pitch-earlier.pitch)*2000*.25-Math.sign(r.impactPitch)*between(2.0,3.2);
+    r.rollVelocity=(later.roll-earlier.roll)*2000*between(.56,.78);
+    const start=airborneAngles(r,-flight);
+    r.startHeight=floorSupport(start.pitch,start.roll)+between(13,22);
+    r.contactHeight=floorSupport(r.impactPitch,r.impactRoll);
+    const second=landedAngles(r,bounce),third=landedAngles(r,bounce+hop);
+    r.secondHeight=floorSupport(second.pitch,second.roll);
+    r.thirdHeight=floorSupport(third.pitch,third.roll);
+    return r;
   });
   const settleMs=Math.max(...rods.map(r=>r.finish));
   return {rods,settleMs,totalMs:settleMs+530};
 }
 
-// Sample a flight, two separate impacts and a short final skid. Each group's
-// first contact paths converge before the four sticks scatter to distinct slots.
 export function sampleThrow(plan,elapsedMs) {
   return plan.rods.map(r=>{
-    const t=Math.max(0,elapsedMs-r.delay),impact=t-r.flight;
-    let x,depth,height,yaw,roll,pitch;
-    if(impact<0){
-      const u=clamp(t/r.flight),arc=4*u*(1-u);
-      x=mix(r.x0,r.contactX,u)+r.bow*arc;
-      depth=mix(r.d0,r.contactD,u)-18*arc;
-      height=14*(1-u)+r.peak*arc;
-      yaw=mix(r.startYaw,r.impactYaw,u);roll=mix(r.startRoll,r.impactRoll,u);
-      pitch=mix(r.startPitch,r.impactPitch+r.pitchTurns,u);
-    }else{
-      const whole=clamp(impact/(r.bounce+r.hop+r.slide));
-      const spread=easeOut(whole), bend=Math.sin(Math.PI*spread)*r.turnDir;
-      x=mix(r.contactX,r.endX,spread)+12*bend;
-      depth=mix(r.contactD,r.endDepth,spread)-16*bend;
-      yaw=mix(r.impactYaw,r.yaw,easeOut(spread));
-      roll=mix(r.impactRoll,r.roll,spread);
-      let u,amp,tilt;
-      if(impact<r.bounce){
-        u=impact/r.bounce;amp=r.firstLift;
-        tilt=mix(r.impactPitch,-r.impactPitch*.5,u)+r.turnDir*.56*Math.sin(Math.PI*u);
-      }else if(impact<r.bounce+r.hop){
-        u=(impact-r.bounce)/r.hop;amp=r.lastLift;
-        tilt=mix(-r.impactPitch*.5,r.impactPitch*.15,u)-r.turnDir*.24*Math.sin(Math.PI*u);
-      }else{
-        u=clamp((impact-r.bounce-r.hop)/r.slide);amp=0;
-        tilt=r.impactPitch*.15*(1-smooth(u));
-        roll+=r.turnDir*.095*Math.sin(u*TAU)*(1-u);
-      }
-      height=amp*4*u*(1-u);pitch=tilt;
+    // The bundle is lifted into release velocity over the first few frames.
+    const release=elapsedMs-r.delay,power=Math.max(3,r.delay/11);
+    const t=release<0?r.delay/power*(clamp(elapsedMs/r.delay)**power-1):release;
+    const impact=t-r.flight;
+    const air=impact<0;
+    const angles=air?airborneAngles(r,impact):landedAngles(r,impact);
+    const support=floorSupport(angles.pitch,angles.roll);
+    let floor=support,arc=0;
+    if(air||impact<r.bounce+r.hop){
+      const rebound=impact>=r.bounce;
+      const dt=air?t:rebound?impact-r.bounce:impact;
+      const duration=air?r.flight:rebound?r.hop:r.bounce;
+      const start=air?r.startHeight:rebound?r.secondHeight:r.contactHeight;
+      const end=air?r.contactHeight:rebound?r.thirdHeight:r.secondHeight;
+      floor=mix(start,end,dt/duration);
+      // The center of mass, independent of the turning tips, follows gravity.
+      arc=.5*gravity*dt*(duration-dt);
     }
-    return {index:r.index,face:r.face,x,depth,height,pitch,yaw,roll,settled:elapsedMs>=r.finish};
+    const travel=air?t:r.flight+r.glideTime*.25*glide(impact/r.glideTime);
+    const settled=elapsedMs>=r.finish;
+    return {index:r.index,face:r.face,x:settled?r.endX:r.x0+r.vx*travel,
+      depth:settled?r.endDepth:r.d0+r.vd*travel,...angles,
+      height:Math.max(0,floor+arc-support),floor,arc,support,settled};
   });
 }
 
-const shell=['#c5dbce','#a5ccc8','#e3dcc4','#a1c7ce','#c9b8c7'];
-
-function cornerInlay(ctx,x,y,rotation) {
-  ctx.save();ctx.translate(x,y);ctx.rotate(rotation);ctx.lineCap='square';
-  const fret=[[0,58],[0,14],[13,14],[13,0],[56,0]];
-  const lock=[[5,43],[5,20],[23,20],[23,5],[43,5]];
-  stroke(ctx,fret,'#48615a',4.4);stroke(ctx,fret,'#c3ba85',2.3);
-  stroke(ctx,lock,'#0b2026',5.5);stroke(ctx,lock,'#83aba8',2.1);
-  stroke(ctx,[[8,31],[8,9],[31,9]],'#e0d4ae',1.55);
-  for(const [a,b] of [[0,52],[0,41],[49,0],[33,0],[13,0]]){
-    polygon(ctx,[[a-1,b],[a+1,b-1],[a+4,b],[a+1,b+1]],shell[(a+b)%5]);
-  }
-  polygon(ctx,[[7,4],[10,7],[7,10],[4,7]],'#c0cad1');
-  ctx.restore();
-}
-
-// Small nacre shards form the crest of a wave, with engraving running underneath it.
-function tideInlay(ctx,x,y,scale,flip) {
-  ctx.save();ctx.translate(x,y);ctx.scale(scale*flip,scale);
-  for(let i=0;i<3;i++){
-    ctx.strokeStyle=['#4b756f','#355f60','#507a74'][i];ctx.lineWidth=.85;
-    ctx.beginPath();ctx.moveTo(-6,17+i*3);
-    ctx.bezierCurveTo(11,24+i*2,28,16+i*3,42,4+i*3);
-    ctx.bezierCurveTo(53,-5+i*3,69,-6+i*3,75,-1+i*3);
-    ctx.stroke();
-  }
-  for(let i=0;i<14;i++){
-    const t=i/13,xx=4+t*68,yy=14-15*Math.sin(t*Math.PI/2)+4*Math.sin(t*TAU);
-    const len=3.2+Math.sin(t*Math.PI)*2.7;
-    polygon(ctx,[[xx,yy],[xx+len*.29,yy-1.6],[xx+len,yy-1.25],[xx+len*.28,yy+.88]],
-      shell[(i*3)%5]);
-  }
-  ctx.restore();
-}
-
-function mat(ctx,W,H) {
-  // Thin stepped rims and a quiet open field keep the silhouettes readable in flight.
-  const rim=ctx.createLinearGradient(0,0,W,H);
-  rim.addColorStop(0,'#537172');rim.addColorStop(.12,'#163237');rim.addColorStop(.48,'#071a21');rim.addColorStop(.88,'#324b4b');rim.addColorStop(1,'#122326');
-  ctx.fillStyle=rim;ctx.fillRect(0,0,W,H);
-  for(const [inset,color,weight] of [[3,'#a89c74',1],[7,'#071d24',4],[9,'#6a8b82',.8]]){
-    ctx.strokeStyle=color;ctx.lineWidth=weight;ctx.strokeRect(inset,inset,W-2*inset,H-2*inset);
-  }
-  const field=ctx.createLinearGradient(28,9,W*.75,H);
-  field.addColorStop(0,'#265358');field.addColorStop(.43,'#194247');
-  field.addColorStop(.8,'#143239');field.addColorStop(1,'#102d35');
-  ctx.fillStyle=field;ctx.fillRect(12,12,W-24,H-24);
-  ctx.save();ctx.beginPath();ctx.rect(13,13,W-26,H-26);ctx.clip();
-  // Woven ramie catches a grazing light across the lacquered tray.
-  for(let row=0;row<(H-24)/4;row++){
-    const yy=13+row*4;
-    ctx.fillStyle=row%3?'rgba(5,27,32,.10)':'rgba(177,202,175,.028)';ctx.fillRect(12,yy,W-24,.7);
-    ctx.fillStyle='rgba(178,214,195,.043)';
-    for(let xx=14+(row%2)*5;xx<W-12;xx+=11)ctx.fillRect(xx,yy+1,4.6,.7);
-  }
-  for(const [xx,yy,scale,flip] of [[32,H*.28,.72,1],[W-32,H*.71,.72,-1],[39,H*.83,.5,1],[W-39,H*.16,.5,-1]]){
-    tideInlay(ctx,xx,yy,scale,flip);
-  }
-  // Fine repeating tide lines fade into the shore at the two long edges.
-  for(const [x,y,mirror] of [[13,H*.67,1],[W-13,H*.29,-1]]){
-    ctx.save();ctx.translate(x,y);ctx.scale(mirror,1);ctx.strokeStyle='#32565a';ctx.lineWidth=.8;
-    for(let j=0;j<5;j++){
-      ctx.beginPath();ctx.moveTo(-6,j*4);
-      ctx.bezierCurveTo(9,5+j*4,21,-12+j*4,32,-12+j*4);
-      ctx.bezierCurveTo(42,-14+j*4,53,-3+j*4,65,-8+j*4);ctx.stroke();
-    }
-    ctx.restore();
-  }
-  ctx.restore();
-  ctx.lineWidth=.85;ctx.strokeStyle='#637d70';ctx.strokeRect(15,15,W-30,H-30);
-  for(const [x,y,rotation] of [[21,21,0],[W-21,21,Math.PI/2],[W-21,H-21,Math.PI],[21,H-21,-Math.PI/2]]){
-    cornerInlay(ctx,x,y,rotation);
-  }
-}
-const matCache=new WeakMap();
+// A single field and a hairline rim keep attention on movement and contact.
 function backdrop(ctx,width,height) {
-  const unit=Math.max(Math.min(width/510,height/340),Math.max(width,height)/1100);
-  const w=Math.round(width/unit),h=Math.round(height/unit);
-  let image=matCache.get(ctx);
-  if(!image||image.width!==w||image.height!==h){
-    if(typeof OffscreenCanvas==='function')image=new OffscreenCanvas(w,h);
-    else if(ctx.canvas?.ownerDocument)image=ctx.canvas.ownerDocument.createElement('canvas');
-    if(image){image.width=w;image.height=h;mat(image.getContext('2d'),w,h);matCache.set(ctx,image);}
-  }
-  if(image)ctx.drawImage(image,0,0,width,height);
-  else{ctx.save();ctx.scale(width/w,height/h);mat(ctx,w,h);ctx.restore();}
+  const light=ctx.createLinearGradient(0,0,width*.7,height);
+  light.addColorStop(0,'#285456');light.addColorStop(.54,'#1a4144');light.addColorStop(1,'#16363a');
+  ctx.fillStyle=light;ctx.fillRect(0,0,width,height);
+  const edge=Math.max(1,Math.min(width,height)*.0025);
+  ctx.strokeStyle='#51706b';ctx.lineWidth=edge;ctx.strokeRect(edge,edge,width-2*edge,height-2*edge);
 }
 
 function camera(width,height,scale,baseline) {
@@ -185,7 +179,8 @@ function camera(width,height,scale,baseline) {
   const distance=Math.max(1900,Math.min(w,h)*3.2);
   const spreadX=Math.min(w*.241,length*1.24)/104;
   const spreadDepth=Math.min(h*.190,length*.49)/(66*groundSin);
-  const lift=Math.min(1.65,h*.36/(200*groundCos));
+  const wide=clamp((width/height-.85)/.8);
+  const lift=Math.min(1.65,h*(.36-.16*wide)/(200*groundCos));
   function project(x,depth,z){
     const perspective=distance/(distance-depth*groundCos-z*groundSin);
     return [w/2+x*perspective,h*baseline+(depth*groundSin-z*groundCos)*perspective];
@@ -194,17 +189,12 @@ function camera(width,height,scale,baseline) {
 }
 
 function stageRod(r,cam) {
-  return {...r,x:r.x*cam.spreadX,depth:r.depth*cam.spreadDepth,height:r.height*cam.lift};
+  return {...r,x:r.x*cam.spreadX,depth:r.depth*cam.spreadDepth,height:Math.max(0,r.floor+r.arc*cam.lift-r.support)};
 }
 
 function orient(r,cam) {
-  const cy=Math.cos(r.yaw),sy=Math.sin(r.yaw),cr=Math.cos(r.roll),sr=Math.sin(r.roll);
-  const cp=Math.cos(r.pitch),sp=Math.sin(r.pitch);
-  const along=[cy*cp,sy*cp,sp];
-  const across=[-sy*cr-cy*sp*sr,cy*cr-sy*sp*sr,cp*sr];
-  const up=[sy*sr-cy*sp*cr,-cy*sr-sy*sp*cr,cp*cr];
-  // Exact floor support of the extruded section at the current attitude.
-  const support=length*.5*Math.abs(along[2])-Math.min(...cross.map(([s,h])=>s*across[2]+h*up[2]));
+  const [along,across,up]=basis(r.yaw,r.pitch,r.roll);
+  const support=r.support??floorSupport(r.pitch,r.roll);
   function vector(x,s,h){
     return [along[0]*x+across[0]*s+up[0]*h,along[1]*x+across[1]*s+up[1]*h,along[2]*x+across[2]*s+up[2]*h];
   }
@@ -315,60 +305,65 @@ function drawStick(ctx,r,model) {
   }
 }
 function drawShadow(ctx,r,m,cam) {
-  const t=clamp(r.height/170), x=r.x+2+r.height*.10,d=r.depth+2+r.height*.12;
-  const center=cam.project(x,d,0);
-  const cos=Math.cos(r.yaw),sin=Math.sin(r.yaw);
-  const span=(length*.48*Math.abs(Math.cos(r.pitch))+2);
-  const end=cam.project(x+span*cos,d+span*sin,0);
-  const angle=Math.atan2(end[1]-center[1],end[0]-center[0]);
-  const half=Math.max(5,Math.hypot(end[0]-center[0],end[1]-center[1]));
-  ctx.save();ctx.translate(...center);ctx.rotate(angle);
+  const cos=Math.cos(r.yaw),sin=Math.sin(r.yaw),pitch=Math.sin(r.pitch);
+  const span=length*.49*Math.cos(r.pitch);
+  const z=r.height+m.support;
+  const shadowEnd=sign=>{
+    const alt=z+sign*length*.49*pitch;
+    return cam.project(r.x+sign*span*cos+alt*.16,r.depth+sign*span*sin+alt*.22,0);
+  };
+  const a=shadowEnd(-1),b=shadowEnd(1),dx=(b[0]-a[0])*.5,dy=(b[1]-a[1])*.5;
+  const x=(a[0]+b[0])*.5,y=(a[1]+b[1])*.5,angle=Math.atan2(dy,dx);
+  const half=Math.max(4,Math.hypot(dx,dy)),air=clamp(z/200);
+  ctx.save();ctx.translate(x,y);ctx.rotate(angle);
   for(let i=4;i>=0;i--){
-    ctx.beginPath();ctx.ellipse(0,0,half+i*(1.3+2.9*t),radius*.58+i*(1.2+2.1*t),0,0,TAU);
-    ctx.fillStyle='rgba(0,10,15,'+((.16-.095*t)*(1-.10*i))+')';ctx.fill();
-  }
-  if(r.height<2&&m.support<22){
-    ctx.beginPath();ctx.ellipse(0,-.4,Math.max(6,half-1),radius*.52,0,0,TAU);
-    ctx.fillStyle='rgba(0,10,15,.40)';ctx.fill();
+    ctx.beginPath();ctx.ellipse(0,0,half+i*(1.3+2.9*air),radius*.56+i*(1.2+2.5*air),0,0,TAU);
+    ctx.fillStyle='rgba(3,17,18,'+((.14-.082*air)*(1-.10*i))+')';ctx.fill();
   }
   ctx.restore();
-}
-
-function impactDust(ctx,r,time,cam) {
-  const u=clamp((time-r.delay-r.flight)/215);
-  if(u===0||u===1)return;
-  for(let i=0;i<6;i++){
-    const a=i*TAU/6+r.index*.84;
-    const x=r.contactX*cam.spreadX+Math.cos(a)*(11+u*17);
-    const d=r.contactD*cam.spreadDepth+Math.sin(a)*(11+u*19);
-    const [px,py]=cam.project(x,d,9*Math.sin(u*Math.PI));
-    ctx.beginPath();ctx.ellipse(px,py,1.1*(1-u)+.3,.55,0,0,TAU);
-    ctx.fillStyle='rgba(244,229,190,'+(.60*(1-u))+')';ctx.fill();
-  }
+  // The shadow concentrates underneath the first touching tip, then grows
+  // along the length as the other end drops onto the surface.
+  const contact=Math.exp(-r.height/5.2);
+  if(contact<.006)return;
+  const weightedTip=-Math.sign(pitch)*(1-Math.exp(-Math.abs(pitch)*4.8));
+  const center=cam.project(r.x+span*cos*weightedTip,r.depth+span*sin*weightedTip,0);
+  ctx.save();ctx.translate(...center);ctx.rotate(Math.atan2(sin*groundSin,cos));
+  ctx.beginPath();ctx.ellipse(0,0,Math.max(4,half*(1-.77*Math.abs(weightedTip))),radius*.53,0,0,TAU);
+  ctx.fillStyle='rgba(1,10,12,'+(.43*contact)+')';ctx.fill();ctx.restore();
 }
 
 function bodies(scene,cam){
   return scene.map(r=>({r,m:orient(r,cam)}));
 }
 
-// Follow the cluster at the top of the arc. Frame both end caps even while a
-// stick is upright. The floor stays still once the sticks have landed.
-function frameThrow(parts,cam){
+const throwLens=new WeakMap();
+function fixedLens(plan,width,height){
+  const cached=throwLens.get(plan);
+  if(cached&&cached.width===width&&cached.height===height)return cached;
+  const scale=Math.min(width*.445,height*.63)/length;
+  const cam=camera(width,height,scale,.57);
   let left=Infinity,right=-Infinity,top=Infinity,bottom=-Infinity;
-  for(const {m} of parts)for(const x of [-length/2,length/2])for(const [s,h] of cross){
-    const [px,py]=m.point(x,s,h);
-    left=Math.min(left,px);right=Math.max(right,px);top=Math.min(top,py);bottom=Math.max(bottom,py);
+  // Measure once for this throw and viewport. The camera never follows a
+  // rotating tip, pumps its zoom at impact or jumps between neighboring sticks.
+  for(let t=0;t<plan.settleMs+26;t+=26){
+    const scene=sampleThrow(plan,t);
+    for(const state of scene){
+      const m=orient(stageRod(state,cam),cam);
+      for(const x of [-length/2,length/2])for(const [s,h] of cross){
+        const [px,py]=m.point(x,s,h);
+        left=Math.min(left,px);right=Math.max(right,px);top=Math.min(top,py);bottom=Math.max(bottom,py);
+      }
+    }
   }
-  const pad=Math.min(cam.w,cam.h)*.028;
-  const headroom=Math.max(pad,cam.h*.105);
+  const pad=Math.min(cam.w,cam.h)*.030+1.2,headroom=cam.h*.102+1.4;
   const zoom=Math.min(1,(cam.w-2*pad)/(right-left),(cam.h-headroom-pad)/(bottom-top));
   const shift=(lo,hi,size,near)=>Math.max(near-lo*zoom,Math.min(0,size-pad-hi*zoom));
-  return {zoom,x:shift(left,right,cam.w,pad),y:shift(top,bottom,cam.h,headroom)};
+  const lens={cam,width,height,zoom,x:shift(left,right,cam.w,pad),y:shift(top,bottom,cam.h,headroom)};
+  throwLens.set(plan,lens);return lens;
 }
 
-function renderBodies(ctx,parts,cam,plan,time){
+function renderBodies(ctx,parts,cam){
   for(const {r,m} of parts)drawShadow(ctx,r,m,cam);
-  if(plan)for(const rod of plan.rods)impactDust(ctx,rod,time,cam);
   const depth=({r,m})=>r.depth*groundCos+(r.height+m.support)*groundSin;
   parts.sort((a,b)=>depth(a)-depth(b));
   for(const {r,m} of parts)drawStick(ctx,r,m);
@@ -376,13 +371,11 @@ function renderBodies(ctx,parts,cam,plan,time){
 
 export function drawThrow(ctx,width,height,plan,elapsedMs) {
   if(!ctx||width<=0||height<=0)return;
-  const scale=Math.min(width*.445,height*.63)/length;
-  const cam=camera(width,height,scale,.55);
+  const lens=fixedLens(plan,width,height),cam=lens.cam;
   const parts=bodies(sampleThrow(plan,elapsedMs).map(r=>stageRod(r,cam)),cam);
-  const frame=frameThrow(parts,cam);
   backdrop(ctx,width,height);
-  ctx.save();ctx.scale(scale,scale);ctx.translate(frame.x,frame.y);ctx.scale(frame.zoom,frame.zoom);
-  ctx.lineJoin='round';ctx.lineCap='round';renderBodies(ctx,parts,cam,plan,elapsedMs);ctx.restore();
+  ctx.save();ctx.scale(cam.scale,cam.scale);ctx.translate(lens.x,lens.y);ctx.scale(lens.zoom,lens.zoom);
+  ctx.lineJoin='round';ctx.lineCap='round';renderBodies(ctx,parts,cam);ctx.restore();
 }
 
 // The rack uses the same meshes, end grain, face marks and light as the throw.
@@ -405,7 +398,7 @@ export function drawRack(ctx,width,height,faces=null) {
   }),cam);
   backdrop(ctx,width,height);
   ctx.save();ctx.scale(scale,scale);ctx.lineJoin='round';ctx.lineCap='round';
-  renderBodies(ctx,parts,cam,null,0);ctx.restore();
+  renderBodies(ctx,parts,cam);ctx.restore();
 }
 
 export function createToss(canvas) {
