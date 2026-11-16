@@ -11,7 +11,7 @@ const retention=(n,read=false)=>({id:uuid(n),card_id:uuid(n+100),created_at:'202
 const missing=(code='PGRST202',name='public.app_notification_summary')=>({error:{code,
   message:code==='PGRST202'?`Could not find the function ${name} without parameters in the schema cache`:`function ${name}() does not exist`}});
 
-function fixture({user='member-a',handle}={}){
+function fixture({user='member-a',handle,refreshClosedBadge}={}){
   const dom=new JSDOM('<main><div data-notifications-slot></div><span data-notification-badge hidden></span><i data-notification-dot hidden></i><button data-note-my></button></main>',
     {url:'https://ojjuda.kr/world.html',runScripts:'outside-only',pretendToBeVisual:true});
   const w=dom.window,calls=[],timers=[],intervals=[],broadcasts=[],channels=[],openedGroups=[];
@@ -28,7 +28,7 @@ function fixture({user='member-a',handle}={}){
   const invoke=async(schema,name,args)=>{calls.push({schema,name,user:identity,args});return responder(name,args,identity,schema);};
   const client={rpc:(name,args)=>invoke('public',name,args),schema:schema=>({rpc:(name,args)=>invoke(schema,name,args)}),
     auth:{onAuthStateChange(callback){authCallback=callback;}}};
-  w.eval(source);const api=w.OjjudaNotifications.install({client,getUserId:()=>identity,onOpenGroup:id=>openedGroups.push(id)});
+  w.eval(source);const api=w.OjjudaNotifications.install({client,getUserId:()=>identity,refreshClosedBadge,onOpenGroup:id=>openedGroups.push(id)});
   return {dom,w,api,calls,channels,broadcasts,openedGroups,
     badge:()=>({hidden:w.document.querySelector('#note-notification-badge').hidden,text:w.document.querySelector('#note-notification-badge').textContent}),
     respond:callback=>{responder=callback;},advance:ms=>{clock+=ms;},
@@ -303,5 +303,31 @@ test('retry on initial load still refreshes both notification sources', async ()
     f.w.document.querySelector('.nn-pagination button').click(); await settle();
     assert.deepEqual(f.calls.map(c=>c.name),['list_app_notifications','list_retention_alerts']);
     assert.equal(f.w.document.querySelector('.nn-pagination button'),null);
+  } finally { f.close(); }
+});
+
+test('the embedded Park skips hidden badge reads and still reconciles its open inbox', async () => {
+  const f = fixture({refreshClosedBadge:false});
+  try {
+    await f.boot();
+    f.advance(15000); await f.poll();
+    f.visibility('hidden'); f.visibility('visible');
+    await f.api.refresh();
+    f.channels[0].onmessage({data:{type:'read',user:'member-a'}});
+    await settle();
+    assert.deepEqual(f.calls, [], 'the World header owns the visible badge');
+
+    f.api.open(); await settle();
+    assert.deepEqual(f.calls.map(c=>c.name), ['list_app_notifications','list_retention_alerts']);
+    f.calls.length=0;
+    f.channels[0].onmessage({data:{type:'read',user:'member-a'}});
+    await settle();
+    assert.deepEqual(f.calls.map(c=>c.name), ['list_app_notifications','list_retention_alerts']);
+
+    f.api.close(); f.calls.length=0;
+    await f.user('member-b'); await f.poll();
+    assert.deepEqual(f.calls, []);
+    f.api.open(); await settle();
+    assert.deepEqual(f.calls.map(c=>c.user), ['member-b','member-b']);
   } finally { f.close(); }
 });
