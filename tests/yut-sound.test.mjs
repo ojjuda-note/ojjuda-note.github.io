@@ -53,6 +53,8 @@ test('recorded sounds follow each stick contact, pawn action and mute preference
     assert.equal(starts[n].time,3.265);
     assert.ok(starts.slice(n).every(cue=>cue.duration>0));
   }
+  const beforeBurst=starts.length;sound.fireworks();await flush();
+  assert.deepEqual(starts.slice(beforeBurst).map(cue=>[cue.time,cue.offset]),[[3,1.96717],[3.18,1.96717]]);
   const n=starts.length;
   sound.quickThrow();sound.setEnabled(false);
   await flush();

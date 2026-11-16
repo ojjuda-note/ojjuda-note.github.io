@@ -3,14 +3,14 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#091c23"><title>섬마을 윷놀이 · 오쭈다 오락실</title>
 <link rel="icon" href="./cover.webp?v=1" type="image/webp">
-<link rel="stylesheet" href="./style.css?v=19">
+<link rel="stylesheet" href="./style.css?v=20">
 <link rel="stylesheet" href="/shared/games/game-entry.css?v=20261109-unified-multiplayer-ui2">
 <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
 <link rel="stylesheet" href="/shared/games/arcade-return.css?v=20261112-arcade-entry-return1">
 <link rel="stylesheet" href="/shared/games/game-results.css?v=20261113-game-popup-order1">
 <script defer src="/config.js"></script>
 <script defer src="/shared/games/game-results.js?v=20261113-game-popup-order1"></script>
-<script type="module" src="./play.mjs?v=21"></script></head>
+<script type="module" src="./play.mjs?v=22"></script></head>
 <body data-mp-entry="true">
 <header class="mp-entry-bar"><a class="mp-entry-back arcade-return" href="/world.html?tab=arcade">← 오쭈다 오락실</a><span>오쭈다 오락실</span></header>
 <main id="setup">
@@ -50,7 +50,7 @@
       <div class="rack-well"><canvas id="rack-canvas" role="img" aria-label="던질 윷 네 가락"></canvas></div>
     </div>
     <div id="move-tools" hidden>
-      <div class="move-heading"><strong id="move-result" role="status"></strong><span id="field-label">판 위의 말</span></div>
+      <div class="move-heading"><strong id="move-result" role="status"></strong><div id="result-picker" role="group" aria-label="쓸 결과 선택" hidden></div><span id="field-label">판 위의 말</span></div>
       <div id="pawn-picker" role="group" aria-label="판 위의 말"></div>
     </div>
     <div class="dock"><div id="actions"></div></div>
@@ -58,6 +58,10 @@
 </main>
 <div id="toss-layer" class="toss-layer" hidden aria-hidden="true">
   <canvas id="toss-canvas"></canvas><div id="toss-label"></div>
+</div>
+<div id="bonus-roll" aria-hidden="true" hidden>
+  <div class="game-result-effects"></div>
+  <strong>한 번 더!!</strong>
 </div>
 <dialog id="sheet" aria-labelledby="dialog-title"><div class="dialog-title"><h2 id="dialog-title"></h2><button id="close" aria-label="닫기">×</button></div><div id="dialog-body"></div></dialog>
 </body></html>

@@ -1,4 +1,4 @@
-import {TEAMS,validTeamCount,DEFAULT_MODE,DEFAULT_PIECES,newGame,act} from './rules.mjs?v=11';
+import {TEAMS,validTeamCount,DEFAULT_MODE,DEFAULT_PIECES,newGame,act,restoreGame} from './rules.mjs?v=12';
 const encoder=new TextEncoder();
 const curve={name:'ECDSA',namedCurve:'P-256'};
 const signing={name:'ECDSA',hash:'SHA-256'};
@@ -38,6 +38,7 @@ export async function openRoom(invite,update,clientFactory=()=>window.OjjudaGetC
   let closed=false,connected=false,timer=0,lastHost=Date.now(),notice='',clock=0,atHost=0;
   const initial={seats:[host],game:null,setup};
   let snapshot=isHost?(saved('state:'+host)||initial):{seats:[],game:null};
+  if(isHost&&snapshot.game)snapshot={...snapshot,game:restoreGame(snapshot.game)};
   const limit=()=>snapshot.setup?.count??TEAMS.length;
   const view=()=>({host,isHost,seats:snapshot.seats,seat:snapshot.seats.indexOf(me.id),game:snapshot.game,setup:snapshot.setup??null,
     status:notice||(!connected?'방에 연결 중이에요.':!isHost&&Date.now()-lastHost>14000?'방장 연결을 기다리고 있어요.':!isHost&&!snapshot.seats.includes(me.id)?'방장의 응답을 기다리고 있어요.':''),

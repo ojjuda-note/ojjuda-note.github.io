@@ -65,7 +65,7 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   const tick=()=>{const queued=[...frames.values()];frames.clear();queued.forEach(f=>f(performance.now()+4000));};
   const until=async(pred,limit=100)=>{for(let i=0;i<limit;i++){if(pred())return;await new Promise(r=>setTimeout(r,20));}assert.fail('state did not arrive');};
   function setFaces(n){let i=0;t.mock.method(Math,'random',()=>i++%4<n?0.1:0.9);}
-  const selected=()=>doc.querySelector('#reserve-pawns [aria-pressed="true"], #move-tools:not([hidden]) [aria-pressed="true"]')?.dataset.pawn;
+  const selected=()=>doc.querySelector('#reserve-pawns [aria-pressed="true"], #move-tools:not([hidden]) [data-pawn][aria-pressed="true"]')?.dataset.pawn;
   const reserve=doc.getElementById('reserve-pawns');
   // Keep the opening route ordinary by placing all effects at the end of the candidate list.
   t.mock.method(Math,'random',()=>.99);
@@ -85,11 +85,33 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   selectValue('team-count',2);entryButton('컴퓨터 대전').click();entryButton('게임 시작하기').click();
   assert.equal(doc.body.dataset.mpEntry,'false');assert.equal(doc.getElementById('tabletop').hidden,false);
   assert.equal(doc.getElementById('entry-controls').childElementCount,0);
-  // Roll yut repeatedly so the same team keeps playing, then watch the final move land.
-  setFaces(4);prefs.matches=true;
+  const bonus=doc.getElementById('bonus-roll'),chips=doc.getElementById('result-picker');
+  const chip=value=>chips.querySelectorAll('button')[value];
+  for(const n of [4,0]){
+    setFaces(n);prefs.matches=false;first().click();
+    assert.ok(bonus.hidden);assert.equal(doc.getElementById('toss-layer').hidden,false);
+    tick();await until(()=>first().textContent==='한 번 더 던지기');
+    assert.equal(bonus.hidden,false);assert.equal(bonus.querySelectorAll('.game-result-spark').length,24);
+    assert.equal(reserve.querySelectorAll('button:enabled').length,0);
+  }
+  prefs.matches=true;setFaces(3);first().click();
+  assert.ok(bonus.hidden);assert.equal(first().textContent,'쓸 결과를 고르세요');
+  assert.deepEqual([...chips.children].map(b=>b.textContent),['윷 4칸','모 5칸','걸 3칸']);
+  chip(1).click();reserve.querySelector('[data-pawn="2"]').click();assert.match(first().textContent,/5칸/);first().click();
+  assert.deepEqual([...chips.children].map(b=>b.textContent),['윷 4칸','걸 3칸']);
+  chip(1).click();reserve.querySelector('[data-pawn="0"]').click();first().click();
+  assert.ok(chips.hidden);assert.match(text('move-result'),/윷 · 4칸/);
+  // Restart, bank enough yuts to finish, and watch the final move land.
+  t.mock.method(Math,'random',()=>.99);
+  doc.getElementById('settings').click();dialogButton('게임 시작').click();dialogButton('계속하기').click();
+  setFaces(4);for(let n=0;n<32;n++)first().click();
+  assert.equal(bonus.hidden,false);assert.equal(bonus.querySelectorAll('.game-result-spark').length,0);
+  setFaces(1);first().click();
   for(let turn=0;turn<50;turn++){
-    first().click();
-    if(first().textContent==='골인하기'&&text('goals')==='골인 3/4'){prefs.matches=false;first().click();break;}
+    if(!chips.hidden)chip(0).click();
+    if(first().textContent==='골인하기'&&!reserve.querySelector('button')&&doc.querySelectorAll('#pawn-picker button').length===1){
+      prefs.matches=false;first().click();break;
+    }
     first().click();
   }
   assert.equal(doc.querySelector('.game-result-card'),null);
@@ -193,10 +215,11 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   first().click();
   assert.equal(rack.getAttribute('aria-label'),'던진 윷 네 가락 · 개 · 2칸');
   setFaces(4);first().click();
+  assert.equal(first().textContent,'한 번 더 던지기');
+  setFaces(1);first().click();chip(0).click();
   assert.equal(selected(),'1');
   first().click();
   assert.match(text('team-title'),/산호/);
-  setFaces(1);first().click();
   assert.deepEqual([...doc.querySelectorAll('#actions button')].map(b=>b.textContent),['지름길로 이동','바깥길로 이동']);
   assert.equal(reserve.querySelectorAll('button').length,1);
   const otherPawn=reserve.querySelector('[data-pawn="0"]');
