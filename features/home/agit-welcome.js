@@ -280,7 +280,7 @@
     }
     rows.unshift({ id: 'join-benefits', type: 'join', name: '비회원 가입 혜택',
       condition: '비회원이 새로 접속할 때마다', group: '가입', title: '여기, 같이 놀래요? 💗',
-      body: '추천인·월간 1등 상품권, 익명카드, 방문 도장 등 회원 혜택을 소개해요.', variant: 1 });
+      body: '추천인·월간 1등 상품권, 공원 카드 꾸미기, 방문 도장 등 회원 혜택을 소개해요.', variant: 1 });
     return rows;
   }
   function greetingFor(type, context) {
@@ -407,7 +407,7 @@
       '<ul class="agit-join-benefits">' +
       '<li><span aria-hidden="true">🎁</span><span>초대한 친구 10명이 가입 후 14일 중 7일 방문하면 <b>5천원 상품권</b></span></li>' +
       '<li><span aria-hidden="true">🏆</span><span>게임별 월간 1등에게도 <b>5천원 상품권</b></span></li>' +
-      '<li><span aria-hidden="true">💬</span><span>공원에서 <b>익명카드</b>로 속마음 나누기</span></li>' +
+      '<li><span aria-hidden="true">💬</span><span>공원 글을 <b>캘리그라피</b>로 꾸미기</span></li>' +
       '<li><span aria-hidden="true">🌷</span><span>매일 도장 찍고 내 게임 기록 남기기</span></li>' +
       '</ul><div class="agit-welcome-actions">' +
       '<button type="button" class="agit-welcome-okay">무료로 가입하기</button>' +

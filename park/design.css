@@ -253,6 +253,7 @@ html body .shell > .col > .main { width: min(100%, 1268px); }
 }
 .guest-compose-login:not([hidden]) { display: inline-flex; margin-block: 10px; }
 .note-font-calligraphy .card-quote, .note-font-calligraphy textarea {
-  font-family: "East Sea Dokdo", "Nanum Pen Script", cursive;
+  /* An explicit conversion also takes precedence over a previously selected shop font. */
+  font-family: "East Sea Dokdo", "Nanum Pen Script", cursive !important;
   font-weight: 400;
 }

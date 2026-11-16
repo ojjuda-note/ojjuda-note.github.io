@@ -118,6 +118,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
   await page.locator('#compose-text').fill('고쳐 쓴 붓글씨');
   assert.deepEqual(await page.evaluate(()=>[currentStyle().font,text.value]),['calligraphy','고쳐 쓴 붓글씨']);
   await page.evaluate(()=>{const card=cardElement({id:crypto.randomUUID(),kind:'memo',body:text.value,tags:[],style:currentStyle(),created_at:new Date().toISOString()});list.replaceChildren(card);});
+  await page.locator('#feed-list .note-font-calligraphy').evaluate(el=>el.classList.add('ju-font-poster'));
   assert.match(await page.locator('#feed-list .card-quote').evaluate(family),/East Sea Dokdo/);
   await page.locator('#convert-calligraphy').click();
   assert.equal(await page.locator('#compose-font').inputValue(),'default');
