@@ -5,18 +5,6 @@
     ['square','blue'], ['circle','yellow'], ['triangle','green'],
     ['diamond','purple'], ['rectangle','orange'], ['circle','red']
   ];
-  const originalGhost = 'ghost.svg';
-  const ghosts = [originalGhost, 'ghosts/door.webp', 'ghosts/water.webp', 'ghosts/mask.webp',
-    'ghosts/paper.webp', 'ghosts/mirror.webp'];
-  let remainingGhosts = [];
-  let lastGhost;
-
-  function pickGhost() {
-    if (!remainingGhosts.length) remainingGhosts = ghosts.slice();
-    const choices = remainingGhosts.filter(file => file !== lastGhost);
-    const pool = choices.length ? choices : remainingGhosts;
-    return pool[Math.floor(Math.random() * pool.length)];
-  }
 
   function play(field, {finish, interrupt, scare}) {
     const token = new AbortController();
@@ -28,16 +16,6 @@
     let stage = 'before';
     let frame = 0, clock = 0, hintTimer = 0, targetAt = null;
     let used = [];
-    const selectedGhost = pickGhost();
-    const originalSrc = ghost.src;
-    if (selectedGhost !== originalGhost) {
-      const photo = new Image();
-      photo.src = new URL(selectedGhost + '?v=faces1', originalSrc).href;
-      // Keep the original ready if the selected photo misses the reveal on a slow connection.
-      photo.decode().then(() => {
-        if (!signal.aborted && stage === 'before') ghost.src = photo.src;
-      }).catch(() => {});
-    }
 
     function stop() {
       token.abort();
@@ -140,8 +118,6 @@
       stage = 'scare';
       shape.hidden = true;
       hint.textContent = '';
-      remainingGhosts = remainingGhosts.filter(file => file !== selectedGhost);
-      lastGhost = ghost.src === originalSrc ? originalGhost : selectedGhost;
       ghost.hidden = false;
       scare();
       clock = setTimeout(() => {

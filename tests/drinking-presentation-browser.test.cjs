@@ -957,7 +957,6 @@ test('shape match enters from the local catalog and reveals the slowest player u
     };
   });
   const scores=[];
-  const revealedGhosts = new Set();
   for(const delay of [120,950]) {
     if (scores.length) {
       await p.locator('#effects').click();
@@ -972,9 +971,7 @@ test('shape match enters from the local catalog and reveals the slowest player u
     await ghost.waitFor({state:'visible',timeout:8000});
     await ghost.evaluate(img=>img.decode());
     const ghostPath = await ghost.evaluate(img => new URL(img.currentSrc).pathname);
-    assert.match(ghostPath, /^\/games\/shapematch\/(?:ghost\.svg|ghosts\/(?:door|water|mask|paper|mirror)\.webp)$/);
-    assert.ok(!revealedGhosts.has(ghostPath), 'consecutive players see different ghosts');
-    revealedGhosts.add(ghostPath);
+    assert.equal(ghostPath, '/games/shapematch/ghost.svg', 'each player sees the original monochrome ghost');
     await ghost.waitFor({state:'hidden'});
     const sounds = await p.evaluate(() => window.screamPlayback);
     assert.equal(sounds.length,1,'one scream on the first reveal, silence on the muted second turn');
