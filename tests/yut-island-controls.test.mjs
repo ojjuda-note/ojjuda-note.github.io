@@ -90,9 +90,18 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   assert.equal(doc.querySelectorAll('.effect-row').length,3);
   doc.getElementById('close').click();doc.getElementById('settings').click();
   const options=doc.querySelector('#dialog-body details');assert.equal(options.open,false);
+  const participantCount=doc.getElementById('team-count');
+  assert.equal(participantCount.closest('details'),null);
+  assert.deepEqual([...participantCount.options].map(o=>Number(o.value)),[2,3,4,5,6,7,8]);
   options.querySelector('summary').click();assert.equal(options.open,true);
-  selectValue('team-count',4);assert.equal(doc.getElementById('game-mode').value,'island');
-  for(let t=0;t<4;t++)assert.equal(doc.getElementById('team-pieces-'+t).value,'4');
+  selectValue('team-count',8);assert.equal(doc.getElementById('game-mode').value,'island');
+  const animals=new Set();
+  for(let t=0;t<8;t++){
+    animals.add(doc.getElementById('team-animal-'+t).value);
+    assert.equal(doc.getElementById('team-pieces-'+t).value,'4');
+    assert.deepEqual([...doc.getElementById('team-pieces-'+t).options].map(o=>o.value),['2','3','4']);
+  }
+  assert.equal(animals.size,8);
   selectValue('team-count',2);selectValue('team-pieces-0',2);selectValue('team-pieces-1',2);selectValue('game-mode','easy');
   prefs.matches=false;t.mock.method(Math,'random',()=>.99);
   dialogButton('한 기기').click();dialogButton('게임 시작').click();dialogButton('계속하기').click();

@@ -1,4 +1,4 @@
-import {DEFAULT_MODE,DEFAULT_PIECES,newGame,act} from './rules.mjs?v=8';
+import {TEAMS,validTeamCount,DEFAULT_MODE,DEFAULT_PIECES,newGame,act} from './rules.mjs?v=9';
 const encoder=new TextEncoder();
 const curve={name:'ECDSA',namedCurve:'P-256'};
 const signing={name:'ECDSA',hash:'SHA-256'};
@@ -28,6 +28,7 @@ export function roomCode(value){
 }
 export async function openRoom(invite,update,clientFactory=()=>window.OjjudaGetClient(),setup=null){
   if(invite!=null&&!validId(invite))throw Error('초대 링크를 다시 확인해 주세요.');
+  if(setup&&!validTeamCount(setup.count))throw Error('초대방 정원은 2~'+TEAMS.length+'명이에요.');
   const me=await identity(invite?saved('key:'+invite):null);
   const host=invite||me.id,isHost=host===me.id;
   save('key:'+host,me.jwk);
@@ -37,7 +38,7 @@ export async function openRoom(invite,update,clientFactory=()=>window.OjjudaGetC
   let closed=false,connected=false,timer=0,lastHost=Date.now(),notice='',clock=0,atHost=0;
   const initial={seats:[host],game:null,setup};
   let snapshot=isHost?(saved('state:'+host)||initial):{seats:[],game:null};
-  const limit=()=>snapshot.setup?.count??4;
+  const limit=()=>snapshot.setup?.count??TEAMS.length;
   const view=()=>({host,isHost,seats:snapshot.seats,seat:snapshot.seats.indexOf(me.id),game:snapshot.game,setup:snapshot.setup??null,
     status:notice||(!connected?'방에 연결 중이에요.':!isHost&&Date.now()-lastHost>14000?'방장 연결을 기다리고 있어요.':!isHost&&!snapshot.seats.includes(me.id)?'방장의 응답을 기다리고 있어요.':''),
     connected:connected&&(isHost||Date.now()-lastHost<14000)});
