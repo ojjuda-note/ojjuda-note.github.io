@@ -22,7 +22,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 #settings{justify-self:end}
 .menu-mark{height:12px;width:15px;position:relative;background:linear-gradient(90deg,var(--jade) 75%,transparent 75%) 0 50%/100% 1.5px no-repeat;border-top:1.5px solid var(--jade);border-bottom:1.5px solid var(--jade)}
 .scene{position:relative;min-width:0;min-height:0;overflow:hidden;background:#0b222a}
-.reserve{position:relative;z-index:1;background:#132f32;border-top:1px solid #769b91;border-bottom:1px solid #41655f;color:#eff6ec}
+.reserve{position:relative;z-index:1;container-type:inline-size;background:#132f32;border-top:1px solid #769b91;border-bottom:1px solid #41655f;color:#eff6ec}
 .reserve-inner{display:flex;align-items:center;gap:clamp(12px,3vw,28px);max-width:620px;min-height:66px;padding:6px 14px;margin:auto}
 .reserve-caption{flex:none;line-height:1.3}
 .reserve-caption h2{font:750 clamp(15px,1.6vw,19px)/1.3 var(--sans);margin:0}
@@ -98,7 +98,11 @@ dialog .setup-hint{margin:7px 0 11px;font-size:13px;color:#cce0d6}
 .roster-team .animal-icon{width:32px;height:30px}.roster-line select{min-height:42px;padding:5px 6px}
 .share-actions{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}.share-actions button{flex:1;padding:7px 6px}
 #pawn-picker:has(>:nth-child(3)){grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-flow:row}
-@media(min-width:800px){#reserve-pawns:has(>:nth-child(3)){grid-template-columns:repeat(4,minmax(0,1fr))}.reserve-inner:has(#reserve-pawns>:nth-child(3)){max-width:780px}}
+@container (min-width:550px){
+  .reserve-inner{max-width:850px;gap:14px}
+  #reserve-pawns:has(>:nth-child(3)){grid-template-columns:repeat(3,minmax(0,1fr))}
+  #reserve-pawns:has(>:nth-child(4)){grid-template-columns:repeat(4,minmax(0,1fr))}
+}
 @media(max-width:355px){.score-piece .animal-icon{width:30px;height:27px}.score-piece b{font-size:11px}}
 dialog .primary{width:100%}#dialog-body>.secondary{margin:4px 3px 0 0}
 #event-key{display:flex;align-items:center;flex-wrap:wrap;gap:3px 10px;min-height:30px;margin-top:3px;padding:3px 0;border:0;background:transparent;color:#e6e9dc;text-align:left;font-size:12px}
@@ -110,15 +114,28 @@ dialog .primary{width:100%}#dialog-body>.secondary{margin:4px 3px 0 0}
 .effects{display:grid;gap:4px;margin:12px 0 16px;padding:10px 12px;background:#0d252b;border:1px solid var(--line);border-radius:9px}
 .effect-row{display:flex;align-items:center;gap:9px;font-size:13px}.effect-row b{color:var(--pearl)}.effect-row span:last-child{margin-left:auto;color:var(--muted)}
 .effect-icon{display:inline-grid;place-items:center;width:23px;height:23px;font-size:15px;font-weight:800;color:var(--tint)}
-@media(max-aspect-ratio:6/5){
+@media(aspect-ratio < 6/5){
   .station{min-height:clamp(162px,calc(100dvh - 103vw - 112px),320px);grid-template-rows:auto minmax(min-content,1fr) auto;border-top:0}
   .rack{min-height:58px}
+}
+@media(min-width:560px) and (aspect-ratio < 6/5){
+  .station{
+    min-height:0;grid-template-columns:minmax(0,.9fr) minmax(0,1fr);grid-template-rows:auto auto;
+    grid-template-areas:"turn tools" "turn action";align-items:center;gap:8px clamp(16px,3vw,34px);
+    padding:10px max(16px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+  }
+  .turn-info{grid-area:turn}.rack,#move-tools{grid-area:tools}.dock{grid-area:action}
+  .turn-line{flex-wrap:wrap}.rack{height:clamp(60px,8dvh,86px)}
 }
 @media(min-aspect-ratio:6/5){
   .tabletop{grid-template-columns:minmax(0,1fr) clamp(220px,29vw,410px);grid-template-rows:auto minmax(0,1fr) auto}
   .rail{grid-column:1/-1}.scene{grid-column:1;grid-row:2}.reserve{grid-column:1;grid-row:3}.station{grid-column:2;grid-row:2/4;border-top:0;border-left:1px solid #73918b;padding:clamp(12px,2vw,32px);gap:20px}
   .turn-line{align-items:flex-start;flex-wrap:wrap}.rack{align-self:center;height:min(100%,340px)}
   #actions .primary,#actions .route-btn{min-height:50px}
+}
+@media(min-width:920px) and (min-aspect-ratio:6/5){
+  .tabletop{grid-template-columns:minmax(0,1fr) clamp(238px,21vw,322px)}
+  .station{padding-inline:clamp(14px,1.5vw,22px)}
 }
 @media(min-width:960px){.rail{padding-inline:max(32px,env(safe-area-inset-left)) max(32px,env(safe-area-inset-right))}}
 @media(max-width:580px){

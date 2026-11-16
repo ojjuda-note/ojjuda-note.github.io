@@ -1,5 +1,5 @@
 import {TEAMS,HOME,FINISH,YUT,EVENT_NAMES,ROCK,WHIRL,WIND,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed} from './rules.mjs?v=6';
-import {createBoard} from './board.mjs?v=12';
+import {createBoard} from './board.mjs?v=13';
 import {createToss,drawRack} from './toss.mjs?v=7';
 import {openRoom,roomCode} from './room.mjs?v=6';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=3';

@@ -609,7 +609,11 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       cos=[1,0,-1,0][cardinal];sin=[0,1,0,-1][cardinal];
     }
     const span=10.06*(Math.abs(cos)+Math.abs(sin));
-    tilt=Math.min(.90,Math.max(.44,height/width*1.02));
+    const aspect=height/width;
+    const wideFrame=Math.max(0,Math.min(1,(width-500)/140));
+    // The raised rim and pieces take up screen height in addition to the square playing surface.
+    const depthAllowance=.11*Math.sqrt(1-Math.min(.9,aspect)**2);
+    tilt=Math.min(.90,Math.max(.44,aspect*1.02-wideFrame*depthAllowance));
     lift=Math.sqrt(1-tilt*tilt);
     const pad=Math.max(3,Math.min(10,Math.min(width,height)*.014));
     // Fit the panel, beveled coins, obstacles and any raised pawn to the same camera.
