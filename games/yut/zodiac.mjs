@@ -1,7 +1,8 @@
 // Small ceramic sculptures. Geometry is shared by every instance and shaded in
 // camera space. The depth buffer also keeps adjoining ears, horns and tails solid.
+import {defaultTeamAnimal} from './rules.mjs?v=9';
 export const ANIMALS=Object.freeze(['쥐','소','호랑이','토끼','용','뱀','말','양','원숭이','닭','개','돼지']);
-export function animalFor(team,_index,offset=2,teamAnimals){return teamAnimals?.[team]??(team*3+offset)%12;}
+export function animalFor(team,_index,offset=2,teamAnimals){return teamAnimals?.[team]??defaultTeamAnimal(team,offset);}
 
 const TAU=Math.PI*2, dark='#352f39', ivory='#fff0ce', rose='#ee9a95';
 const palette=new Map(),models=new Array(12),bases=new Map(),cache=new Map();

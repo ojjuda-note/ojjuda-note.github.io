@@ -2,11 +2,17 @@ export const HOME = -1;
 export const FINISH = 29;
 export const DEFAULT_MODE='island', DEFAULT_PIECES=4;
 export const TEAMS = [
-  {name:'산호', color:'#ed7057', mark:'●'},
-  {name:'바다', color:'#239b90', mark:'◆'},
-  {name:'자두', color:'#9661c5', mark:'▲'},
-  {name:'유자', color:'#dfad38', mark:'★'}
+  {name:'산호', color:'#ed7057', ink:'#863525', mark:'●', animalOffset:0},
+  {name:'바다', color:'#239b90', ink:'#075d59', mark:'◆', animalOffset:3},
+  {name:'자두', color:'#9661c5', ink:'#584078', mark:'▲', animalOffset:6},
+  {name:'유자', color:'#dfad38', ink:'#735016', mark:'★', animalOffset:9},
+  {name:'하늘', color:'#5397e4', ink:'#234b82', mark:'■', animalOffset:1},
+  {name:'새싹', color:'#84ac54', ink:'#365715', mark:'✿', animalOffset:4},
+  {name:'장미', color:'#e775a7', ink:'#853253', mark:'♥', animalOffset:7},
+  {name:'밤톨', color:'#b08161', ink:'#573e2b', mark:'☾', animalOffset:10}
 ];
+export const validTeamCount=n=>Number.isInteger(n)&&n>=2&&n<=TEAMS.length;
+export const defaultTeamAnimal=(team,offset=2)=>(offset+TEAMS[team].animalOffset)%12;
 export const YUT = ['', '도', '개', '걸', '윷', '모'];
 export const ROCK = [3,16], WHIRL = [8,13], WIND = [6,18];
 const fork = new Set([5,10,22]);
@@ -36,13 +42,13 @@ export function tileEffect(state,node){
   if(WIND.includes(node))return 'breeze';
 }
 export function newGame(count=2,zodiacOffset=2,mode=DEFAULT_MODE,pieceCounts=DEFAULT_PIECES,computerTeams=[],teamAnimals=null) {
-  if (![2,3,4].includes(count)) throw new Error('2~4팀을 골라 주세요.');
+  if(!validTeamCount(count))throw Error('2~'+TEAMS.length+'팀을 골라 주세요.');
   if (!Number.isInteger(zodiacOffset)||zodiacOffset<0||zodiacOffset>=12) throw new Error('십이지 동물을 골라 주세요.');
   if (mode!=='easy'&&mode!=='island') throw new Error('놀이 방식을 골라 주세요.');
   const counts=Array.isArray(pieceCounts)?pieceCounts:Array(count).fill(pieceCounts);
   if(counts.length!==count||!counts.every(n=>[2,3,4].includes(n)))throw Error('각 팀의 말은 2~4개로 골라 주세요.');
   if(!Array.isArray(computerTeams)||!computerTeams.every(i=>Number.isInteger(i)&&i>=0&&i<count))throw Error('컴퓨터 팀을 다시 골라 주세요.');
-  const animals=teamAnimals??Array.from({length:count},(_,i)=>(zodiacOffset+i*3)%12);
+  const animals=teamAnimals??Array.from({length:count},(_,i)=>defaultTeamAnimal(i,zodiacOffset));
   if(!Array.isArray(animals)||animals.length!==count||!animals.every(i=>Number.isInteger(i)&&i>=0&&i<12))throw Error('각 팀의 동물을 골라 주세요.');
   return {mode,...dealTiles(mode),teamAnimals:[...animals],computerTeams:[...new Set(computerTeams)], team:0, turn:1, phase:'roll', revision:0, sticks:null, steps:0,
     pawns:counts.map(n=>Array.from({length:n},()=>[])), zodiacOffset, winner:null, lastMove:null,
