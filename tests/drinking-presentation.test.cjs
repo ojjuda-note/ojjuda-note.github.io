@@ -183,6 +183,58 @@ test('local bottle capture handlers ignore help contents and backdrop clicks whi
   assert.deepEqual(f.errors,[]);
 });
 
+test('local bottle keeps each numbered place through replay, seat edits and host handoff', async t => {
+  const names=['하나','둘','셋'], key='oj.party.member-a.players';
+  const f=await screen({url:'/games/drinking/local/#bottle',prepare(w){
+    w.scrollTo=()=>{};
+    w.localStorage.setItem(key,JSON.stringify(names));
+    w.HTMLElement.prototype.getBoundingClientRect=()=>({left:0,top:0,width:300,height:300,right:300,bottom:300});
+  }});
+  t.after(()=>f.close());
+  const clickAction=action=>f.click('[data-action="'+action+'"]');
+  const place=(x,y)=>f.find('.seat-surface').dispatchEvent(new f.w.MouseEvent('click',{
+    bubbles:true,detail:1,clientX:x,clientY:y
+  }));
+  const markers=()=>Array.from(f.w.document.querySelectorAll('.bottle-dial .seat'),node=>
+    [node.textContent,node.style.left,node.style.top]);
+  const roster=()=>Array.from(f.w.document.querySelectorAll('.bottle-seats li'),node=>node.textContent);
+  await until(()=>f.find('[data-drinking-dialog="guide"]'),'local bottle instructions');
+  f.click('[data-drinking-dialog="guide"] [data-drinking-close]');
+  clickAction('start');clickAction('set-bottle-table');
+  place(45,150);place(150,45);place(255,150);
+  let expected=markers();
+  for(const [winner,random] of [[1,.5],[2,.8],[0,.1]]){
+    clickAction('spin');
+    assert.deepEqual(markers(),expected);
+    assert.deepEqual(roster(),names.map((name,i)=>(i+1)+name));
+    f.w.Math.random=()=>random;
+    clickAction('brake');
+    await f.advance(21000);
+    assert.equal(f.find('.winning-seat').textContent,String(winner+1));
+    assert.equal(f.find('#bottle-title').textContent,names[winner]+'님 당첨!');
+    assert.match(f.find('#bottle-hint').textContent,new RegExp((winner+1)+'번 자리'));
+    assert.ok(f.find('.table-host').textContent.includes(names[winner]));
+    assert.deepEqual(JSON.parse(f.w.localStorage.getItem(key)),names);
+    f.click('[data-drinking-dialog="result"] [data-drinking-close]');
+    if(winner===2){
+      clickAction('edit-seats');
+      f.click('.bottle-seats [data-value="1"]');
+      place(150,255);
+      const edited=markers();
+      assert.notDeepEqual(edited[1],expected[1]);
+      assert.deepEqual([edited[0],edited[2]],[expected[0],expected[2]]);
+      expected=edited;
+    }
+  }
+  const reopened=await screen({url:'/games/drinking/local/#participants',prepare(w){
+    w.scrollTo=()=>{};
+    for(const [k,v] of Object.entries(f.w.localStorage))w.localStorage.setItem(k,v);
+  }});
+  t.after(()=>reopened.close());
+  assert.deepEqual(Array.from(reopened.find('#name-fields').querySelectorAll('input'),input=>input.value),names);
+  assert.deepEqual(f.errors,[]);
+});
+
 test('the local primary back link restores the game menu and cancels a running stopwatch', async t => {
   const pendingFrames=new Set(),cancelledFrames=new Set();
   const release=JSON.parse(fs.readFileSync(path.join(root,'game-release.json'),'utf8'));
