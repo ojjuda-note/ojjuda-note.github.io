@@ -82,6 +82,41 @@ test('Hangul brush keeps both final consonants legible in Park cards', () =>
     }
   }));
 
+test('Park keeps the parallel brushstrokes of ㅔ and ㅖ separate on small cards', () =>
+  withBrushPage(async page => {
+    const samples = await page.evaluate(() => {
+      const canvas = document.createElement('canvas');
+      const result = [];
+      for (const width of [192, 328]) {
+        for (const word of ['에', '게', '네', '예', '계']) {
+          window.ParkCalligraphy.render(canvas, word, { width, accent: false });
+          const b = window.ParkCalligraphy.inkBounds(canvas);
+          const w = Math.round(b.width * width), h = Math.round(b.height * canvas.height);
+          const pixels = canvas.getContext('2d').getImageData(Math.round(b.x * width),
+            Math.round(b.y * canvas.height), w, h).data;
+          // Read the upper shafts of the vowel, above its connecting arm and beside the initial.
+          let rows = 0, openRows = 0;
+          for (let y = Math.ceil(h * .12); y <= Math.floor(h * .32); y++) {
+            rows++;
+            let sawInk = false, sawGap = false;
+            for (let x = w - 1; x >= w * .54; x--) {
+              const alpha = pixels[(y * w + x) * 4 + 3];
+              if (alpha >= 128) {
+                if (sawGap) { openRows++; break; }
+                sawInk = true;
+              } else if (sawInk && alpha <= 85) sawGap = true;
+            }
+          }
+          result.push({ word, width, openRows, rows });
+        }
+      }
+      return result;
+    });
+    for (const { word, width, openRows, rows } of samples) {
+      assert.ok(openRows >= rows / 2, `${word} needs daylight between its two vowel strokes at ${width}px`);
+    }
+  }));
+
 test('Park centers each brush line and emphasizes only matching tags', () =>
   withBrushPage(async page => {
     const result = await page.evaluate(() => {

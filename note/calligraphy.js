@@ -10,7 +10,7 @@
     let seed = Math.round((knots[0][0] * 937 + knots[0][1] * 523 + stroke.width * 211) * 100);
     const pick = random || (() => (seed = Math.imul(seed, 1664525) + 1013904223 >>> 0) / 4294967296);
     const phase = pick() * Math.PI * 2;
-    const nibAngle = .30 + pick() * .30;
+    const nibAngle = .16 + pick() * .14;
     const nibX = Math.cos(nibAngle),
       nibY = Math.sin(nibAngle);
     const wet = pick(),
@@ -52,7 +52,7 @@
     if (points.length < 2) return;
     const weight = stroke.width * (.96 + wet * .085);
     const headLength = Math.min(length * .16, weight * (.25 + wet * .12));
-    const tailLength = Math.min(length * .26, weight * (.46 + lift * .26));
+    const tailLength = Math.min(length * .34, weight * (.80 + lift * .58));
     for (let i = 0; i < points.length; i++) {
       const q = points[i],
         before = points[Math.max(0, i - 1)],
@@ -64,12 +64,15 @@
       q.ny = dx / norm;
       const across = q.nx * nibX + q.ny * nibY;
       // An oblique flexible nib leaves a thinner return and a broader downstroke.
-      const nib = Math.sqrt(.47 + .53 * across * across);
+      const nib = Math.sqrt(.27 + .73 * across * across);
+      const down = dy / norm;
+      // Load the descending side of a loop, then lift across its return.
+      const press = 1 + .16 * Math.max(0, down) - .12 * Math.max(0, -down);
       const atHead = Math.min(1, q.d / headLength);
       const atTail = Math.min(1, (length - q.d) / tailLength);
       const load = .50 + .50 * Math.sin(atHead * Math.PI / 2);
       const release = .075 + .925 * Math.sin(atTail * Math.PI / 2);
-      const half = weight * .50 * Math.pow(q.p, .93) * nib * load * release;
+      const half = weight * .51 * Math.pow(q.p, .96) * nib * press * load * release;
       const breathing = Math.sin(q.d * .145 + phase) * .022 + Math.sin(q.d * .331 - phase) * .009;
       const roughness = Math.min(.16, half * .021);
       q.l = half * (1 + lean + breathing) + roughness * Math.sin(q.d * 1.73 + phase);
@@ -173,7 +176,7 @@
     const midBar = curve('16,52,.15 33,50,.54 64,43,.62 87,39,.055');
     const under = curve('3,88,.21 13,92,.81 35,90,.89 68,80,.59 89,77,.28 100,78,.03');
     const foot = curve('22,5,.24 26,13,.94 23,34,1.09 15,63,1.02 14,76,.93 19,84,.85 33,86,.76 54,80,.55 79,65,.29 100,51,.025');
-    const round = curve('58,14,.27 52,11,.60 42,13,.85 27,25,1.03 16,45,1.08 12,65,.93 16,80,.80 26,87,.68 41,86,.63 59,77,.54 77,59,.42 88,40,.38 87,27,.52 79,21,.57 68,20,.41 54,26,.17 47,33,.025');
+    const round = curve('55,8,.23 41,8,.62 26,15,.99 14,30,1.22 8,52,1.23 9,72,.97 17,83,.73 30,87,.52 46,85,.43 63,78,.39 77,66,.37 87,51,.43 91,34,.57 87,23,.69 79,19,.61 68,20,.40 59,25,.19 54,31,.025');
     const hook = curve('3,30,.15 13,29,.68 36,18,.97 62,10,1.09 79,10,.93 84,16,.74 82,29,.60 69,49,.55 48,71,.36 26,90,.18 11,99,.02');
     const topHook = curve('4,23,.20 17,21,.78 43,14,.93 67,9,.87 84,11,.74 88,21,.70 86,38,.70 78,65,.55 68,88,.19 62,96,.025');
     const armL = curve('13,8,.23 23,12,.73 25,28,.91 20,52,.95 16,78,.70 19,93,.14');
@@ -186,7 +189,7 @@
     const bent = curve('21,13,.26 26,19,.78 25,35,.99 18,57,.95 14,74,.83 15,83,.79 23,88,.78 37,88,.65 57,83,.44 78,74,.24 99,66,.025');
     // Fold back with the tip still down; lift again before the bottom sweep.
     const foldedL = curve('6,18,.23 16,19,.62 39,13,.82 63,8,.78 78,8,.72 84,13,.69 82,23,.60 73,37,.49 64,43,.32 49,47,.43 30,50,.61 16,54,.54 11,58,.16');
-    const zigFoot = curve('17,51,.22 21,58,.67 18,69,.83 14,81,.80 15,89,.71 24,93,.74 40,91,.66 60,85,.52 82,77,.31 101,75,.025');
+    const zigFoot = curve('18,50,.20 21,57,.74 18,69,1.01 14,82,1.02 16,91,.91 25,95,.80 42,93,.68 62,85,.55 85,76,.35 100,71,.23 110,66,.07 116,62,.02');
     const boxTop = curve('14,23,.11 37,17,.52 62,12,.78 83,12,.74 87,19,.63 82,41,.67 75,62,.66 67,83,.25');
     const profiles = {
       ㄱ: [hook],
@@ -206,16 +209,21 @@
     };
     // Narrow double onsets need an open bowl and a fine crossbar at card size.
     // The left stroke of ㅂ turns along the base so the counter survives scaling.
-    const twinB = [
-      curve('14,8,.32 20,12,.83 19,31,.96 13,61,.84 11,80,.70 15,88,.60 27,88,.49 48,83,.37 69,78,.18 84,75,.065'),
-      curve('83,0,.30 88,5,.86 89,23,.97 83,47,.86 77,70,.67 72,85,.43 73,90,.12'),
-      curve('15,54,.15 31,51,.50 55,46,.46 78,42,.22')
+    const doubleB = [
+      curve('6,22,.18 11,26,.59 12,39,.76 9,61,.86 7,78,.78 9,86,.81 16,89,.85 27,88,.79 38,83,.49 43,78,.20'),
+      curve('35,13,.19 40,15,.62 41,26,.81 39,48,.74 37,70,.63 38,81,.36 41,85,.10'),
+      curve('9,55,.21 19,55,.68 31,51,.66 42,46,.30'),
+      curve('60,13,.21 65,16,.60 65,33,.80 60,56,.88 59,72,.81 60,82,.77 64,85,.88 77,80,.72 88,73,.50 94,69,.18'),
+      curve('89,0,.24 95,4,.79 97,17,.96 95,37,.94 90,58,.70 89,71,.44 92,77,.10'),
+      curve('60,47,.20 69,44,.66 79,41,.68 94,38,.36')
     ];
-    const twinD = [
-      curve('9,23,.30 19,23,.64 45,16,.74 72,11,.60 95,12,.10'),
-      curve('17,17,.25 23,23,.80 21,39,.98 13,67,.88 13,80,.73 20,87,.67 36,88,.52 58,81,.34 83,71,.16 101,68,.03')
+    const doubleD = [
+      curve('3,35,.19 9,33,.78 23,25,.94 34,22,.75 42,22,.32'),
+      curve('10,31,.26 12,38,.91 10,53,1.01 6,74,.92 6,82,.79 10,87,.75 19,89,.65 32,84,.46 43,74,.21'),
+      curve('53,24,.15 61,19,.72 75,10,1.01 88,6,.84 98,7,.29'),
+      curve('62,17,.21 65,24,.83 63,39,1.04 57,62,1.03 55,74,.87 59,82,.82 68,83,.69 80,78,.49 92,67,.30 103,56,.04')
     ];
-    const lowerN = curve('16,5,.11 25,13,.73 24,26,.99 15,51,1.04 9,74,.87 12,87,.77 24,93,.72 43,90,.65 65,79,.52 87,67,.27 103,63,.025');
+    const lowerN = curve('15,6,.11 23,13,.76 22,27,1.07 13,51,1.1 8,73,1.0 10,84,.85 17,91,.71 31,94,.63 49,90,.56 68,82,.44 86,71,.32 101,64,.17 111,59,.02');
     const hLine = curve('-1,53,.41 4,57,.72 13,59,1.01 31,55,1.07 55,47,.82 76,41,.51 92,39,.25 103,38,.025');
     const sweepLine = curve('-1,57,.14 9,56,.82 30,50,1.06 55,45,.88 75,44,.62 93,44,.42 108,41,.19 117,36,.018');
     const up = curve('51,1,.17 55,8,.79 53,20,1.04 46,36,.74 41,52,.18');
@@ -239,14 +247,14 @@
       const leftBars = 'ㅓㅔㅕㅖ'.includes(v),
         doubleBars = 'ㅑㅒㅕㅖ'.includes(v),
         twoStems = 'ㅐㅒㅔㅖ'.includes(v);
-      const axes = twoStems ? leftBars ? [55, 91] : [24, 90] : [v === 'ㅣ' ? 57 : leftBars ? 85 : 29];
+      const axes = twoStems ? leftBars ? [32, 103] : [16, 99] : [v === 'ㅣ' ? 57 : leftBars ? 85 : 29];
       const paths = [];
       function axis(x, isOuter) {
         if (isOuter && flourish) {
           // After a bowed descent, ease the heel forward as the brush lifts.
-          return curve(`${x + 6},1,.46 ${x + 12},5,.82 ${x + 13},14,1.02 ${x + 8},30,1.10 ${x - 1},50,.96 ${x - 12},73,.72 ${x - 18},91,.49 ${x - 17},104,.29 ${x - 10},113,.12 ${x - 4},116,.025`);
+          return curve(`${x - 2},1,.21 ${x + 9},4,.66 ${x + 15},13,1.00 ${x + 11},28,1.08 ${x + 1},49,.96 ${x - 13},73,.73 ${x - 18},90,.51 ${x - 16},103,.32 ${x - 7},112,.17 ${x + 5},118,.025`);
         }
-        return curve(`${x + 6},1,.46 ${x + 12},5,.83 ${x + 13},14,1.02 ${x + 8},30,1.08 ${x},50,.91 ${x - 11},73,.66 ${x - 16},90,.42 ${x - 16},101,.19 ${x - 12},107,.025`);
+        return curve(`${x - 1},1,.20 ${x + 9},4,.66 ${x + 14},12,.97 ${x + 11},26,1.08 ${x + 2},47,.95 ${x - 11},69,.76 ${x - 16},86,.53 ${x - 14},99,.30 ${x - 6},108,.025`);
       }
       const starts = doubleBars ? [31, 58] : [47];
       const x = axes[0];
@@ -255,19 +263,21 @@
         if (leftBars) return curve(`0,${y + 13},.045 ${joint * .19},${y + 13},.64 ${joint * .53},${y + 7},.78 ${joint * .82},${y + .8},.45 ${joint + 1},${y},.12`);
         if (flourish && phraseEnd && !twoStems && y === starts[starts.length - 1]) {
           // Continue the existing arm: a loaded shoulder, a level sweep and a fine lift.
-          return curve(`${joint - 2},${y + 2},.22 ${joint + 12},${y},.68 68,${y - 5},.82 96,${y - 7},.69 124,${y - 7},.51 153,${y - 8},.34 176,${y - 11},.18 190,${y - 16},.023`);
+          return curve(`${joint - 2},${y + 2},.22 ${joint + 12},${y},.68 65,${y - 7},.90 91,${y - 9},.79 119,${y - 7},.65 146,${y - 7},.47 170,${y - 11},.31 189,${y - 18},.17 205,${y - 28},.025`);
         }
         const reach = twoStems ? axes[1] : flourish ? 109 : 100;
         const delta = reach - joint;
         return curve(`${joint},${y + 1},.18 ${joint + delta * .13},${y},.47 ${joint + delta * .45},${y - 9},.70 ${joint + delta * .72},${y - 14},.47 ${reach},${y - 16},.03`);
       }
       if (leftBars) for (const y of starts) paths.push(bar(y));
-      paths.push(axis(x, axes.length === 1));
+      // The inner stem of ㅐ/ㅔ lands lower; two dark tips touching read as one.
+      const firstStem = axis(x, axes.length === 1);
+      paths.push(twoStems ? map(firstStem, 0, 8, 100, 86) : firstStem);
       if (!leftBars && v !== 'ㅣ') for (const y of starts) paths.push(bar(y));
       if (twoStems) paths.push(axis(axes[1], true));
       return paths;
     }
-    const terminalL = curve('19,49,.12 22,57,.76 16,72,.90 13,84,.78 19,92,.71 38,91,.72 60,81,.62 86,72,.44 111,70,.23 126,73,.015');
+    const terminalL = curve('18,48,.16 22,55,.74 19,66,1.05 14,80,1.08 17,90,.88 28,95,.75 46,94,.63 66,87,.52 87,77,.42 110,69,.31 129,64,.19 143,60,.09 152,56,.02');
     const terminalN = curve('18,2,.12 24,12,.81 22,30,1.03 14,55,.94 10,78,.83 14,89,.73 29,93,.68 49,87,.54 75,72,.38 98,62,.25 117,60,.025');
     // Two letters share one 받침 row. Give each its own compact pen forms:
     // the open spaces in ㄹ, ㅁ, ㅂ and ㅎ must survive at card thumbnail sizes.
@@ -354,25 +364,24 @@
       const long = wordEnd && !f,
         strokes = [];
       const baseAdvance = m ? 94 : horizontal ? 90 : twinVowel ? 96 : v === 'ㅣ' ? 76 : v === 'ㅓ' || v === 'ㅕ' ? 82 : 88;
-      const advance = baseAdvance + (complexOnset ? 12 : 0) + (complexFinal ? 5 : 0) + (f ? 2 : 0) + (wordEnd ? 3 : 0);
+      const advance = baseAdvance + (complexOnset ? 17 : 0) + (complexFinal ? 5 : 0) + (f ? 2 : 0) + (wordEnd ? 3 : 0);
       function draw(key, x, y, w, h, weight = 1, place = '') {
-        if (pairs[key]) {
+        if (pairs[key] && key !== 'ㅃ' && key !== 'ㄸ') {
           const [a, b] = pairs[key];
           // The first press is shallower; the second carries the gesture onward.
-          draw(a, x, y + h * .095, w * .45, h * .84, weight * .70, 'twin');
-          draw(b, x + w * .52, y, w * .48, h, weight * .79, 'twin');
+          draw(a, x - w * .02, y + h * .18, w * .485, h * .71, weight * .65, 'twin');
+          draw(b, x + w * .51, y - h * .03, w * .49, h * 1.04, weight * .74, 'twin');
           return;
         }
-        let paths = profiles[key] || hVowels[key];
-        if (place === 'twin' && key === 'ㅂ') paths = twinB;
-        if (place === 'twin' && key === 'ㄷ') paths = twinD;
+        let paths = key === 'ㅃ' ? doubleB : key === 'ㄸ' ? doubleD : profiles[key] || hVowels[key];
         if (long && phraseEnd && place === 'base' && terminalVowels[key]) paths = terminalVowels[key];
         if (!paths) paths = verticalPaths(key, long && place !== 'mixed', phraseEnd);
         if ((key === 'ㄱ' || key === 'ㅋ') && place === 'top') paths = [topHook, ...paths.slice(1)];
         if (key === 'ㄴ' && place === 'final') paths = [phraseEnd ? terminalN : lowerN];
-        if (key === 'ㄹ' && place === 'final' && phraseEnd) paths = [foldedL, terminalL];
-        const density = 'ㅂㅌㅍㅁㄹ'.includes(key) ? .82 : 'ㅎㅊㅈ'.includes(key) ? .88 : 1;
-        const width = 15.6 * weight * density * Math.min(1.08, Math.sqrt(Math.min(w / 44, h / 55)));
+        if (key === 'ㄹ' && place === 'final' && wordEnd) paths = [foldedL, terminalL];
+        const density = key === 'ㅃ' ? .54 : key === 'ㄸ' ? .65 : 'ㅂㅌㅍㅁㄹ'.includes(key) ? .82 : 'ㅎㅊㅈ'.includes(key) ? .88 : 1;
+        const stemWeight = 'ㅐㅒㅔㅖ'.includes(key) ? .85 : 1;
+        const width = 15.6 * weight * density * stemWeight * Math.min(1.08, Math.sqrt(Math.min(w / 44, h / 55)));
         for (const path of paths) strokes.push({
           knots: map(path, x, y, w, h),
           width
@@ -397,9 +406,9 @@
         const compact = c === 'ㅇ',
           wide = complexOnset,
           start = f ? 7 : 12;
-        const cWidth = compact ? f ? 31 : 39 : wide ? 59 : twinVowel ? 44 : 48;
+        const cWidth = compact ? f ? 34 : 45 : wide ? 61 : twinVowel ? 44 : 48;
         const cHeight = compact ? f ? 34 : 48 : f ? 50 : 65;
-        const cY = compact ? f ? 19 : 27 : start;
+        const cY = compact ? f ? 18 : 22 : start;
         draw(c, 1, cY, cWidth, cHeight, compact ? 1.00 : 1.07);
         const vx = cWidth + (compact ? 0 : -1);
         draw(v, vx, f ? 0 : -1, advance - vx - 5, complexFinal ? 53 : f ? 60 : 88, 1.03);
@@ -445,14 +454,14 @@
       '늘': letter(85, 'M32 5 C39 4 43 9 39 14 C35 19 30 25 31 28 C33 31 47 26 63 18 C58 25 43 35 31 36 C22 37 19 33 22 24 C25 17 28 9 32 5 Z', 'M7 50 C23 42 54 36 78 35 C87 34 90 35 91 37 C83 39 68 40 54 44 L15 57 C8 59 4 55 7 50 Z', 'M26 62 C37 56 58 51 70 52 C76 53 75 57 71 61 L57 72 C61 72 64 71 68 70 C66 74 54 77 41 79 C34 81 30 80 32 76 C35 73 46 70 54 65 L59 60 C49 59 38 64 31 66 C26 68 24 66 26 62 Z', 'M35 79 C41 76 45 79 42 83 C39 87 34 91 34 94 C36 99 50 97 69 92 C79 89 88 85 98 81 C88 90 69 101 47 105 C33 108 23 106 22 99 C20 92 27 84 35 79 Z'),
       '도': letter(79, 'M22 20 C40 13 55 9 68 9 C73 9 76 10 75 13 C72 16 63 18 54 19 C40 21 29 24 24 26 C20 27 18 24 22 20 Z', 'M24 20 C30 20 32 23 30 27 C26 35 22 44 25 47 C28 50 44 44 60 36 C56 42 42 51 33 55 C19 62 12 58 14 48 C16 38 19 26 24 20 Z', 'M42 55 C49 53 54 56 52 62 C47 70 45 76 43 81 L34 82 C35 73 38 62 42 55 Z', 'M0 86 C22 76 46 70 68 68 C76 67 86 67 91 68 C83 72 75 74 62 77 C43 82 24 89 9 94 C4 96 -2 92 0 86 Z'),
       '수': letter(99, 'M62 4 C68 2 75 7 72 14 C69 24 58 36 48 45 C35 58 18 68 -6 74 C10 65 26 50 40 34 C50 22 55 13 58 7 Q60 4 62 4 Z', 'M51 32 C55 31 61 35 69 41 C78 47 83 49 94 49 C89 54 82 57 75 55 C66 53 56 45 50 38 C48 35 48 34 51 32 Z', 'M0 81 C21 70 45 65 64 62 C79 60 94 60 103 62 C107 62 111 64 112 66 C98 65 80 67 62 73 C43 78 21 84 9 90 C3 92 -2 87 0 81 Z', 'M58 70 C64 68 68 70 65 76 C58 87 53 100 46 110 C40 119 30 128 21 131 C35 117 43 98 49 80 C52 73 54 71 58 70 Z'),
-      '고': letter(91, 'M17 20 C31 15 52 6 68 5 C76 4 80 8 78 15 C74 28 62 43 44 58 C51 47 59 31 62 21 C63 17 63 16 60 17 C50 19 33 28 23 31 C15 34 11 27 17 20 Z', 'M44 54 C50 51 56 55 53 61 C49 68 45 77 44 83 L34 86 C35 75 39 60 44 54 Z', 'M-2 85 C20 76 42 71 66 68 C78 67 91 66 100 68 C89 70 77 73 66 77 C46 83 24 89 8 96 C2 99 -5 92 -2 85 Z'),
+      '고': letter(91, 'M17 20 C31 15 52 6 68 5 C76 4 80 8 78 15 C74 28 62 43 44 58 C51 47 59 31 62 21 C63 17 63 16 60 17 C50 19 33 28 23 31 C15 34 11 27 17 20 Z', 'M44 54 C50 51 56 55 53 61 C49 68 45 77 44 83 L34 86 C35 75 39 60 44 54 Z', 'M-2 85 C18 76 45 69 65 67 C80 66 93 67 103 69 C86 70 75 73 62 78 C43 84 27 91 10 97 C3 100 -5 93 -2 85 Z'),
       '했': letter(86, 'M18 9 C26 8 37 11 37 16 C36 20 30 20 27 18 C22 15 18 12 18 9 Z', 'M5 29 C15 23 28 21 39 21 C45 20 48 21 47 23 C37 26 25 29 13 34 C8 36 3 34 5 29 Z', 'M32 33 C39 31 43 35 41 42 C38 51 27 60 19 61 C10 64 6 59 9 52 C12 44 23 35 30 34 Q33 34 31 37 C23 41 17 49 17 54 C18 58 24 54 28 50 C33 45 36 37 32 33 Z', 'M53 11 C58 11 61 14 59 20 C54 32 49 45 47 56 Q45 62 42 65 C41 54 43 39 47 26 C49 19 51 13 53 11 Z', 'M48 37 C56 31 63 29 71 28 L70 33 C64 34 57 38 49 42 Z', 'M78 4 C84 4 87 9 85 15 C80 31 74 48 71 62 Q70 66 68 72 C66 56 67 43 71 26 C73 17 75 6 78 4 Z', 'M33 67 C38 66 43 69 40 74 C34 82 19 95 9 99 C18 88 25 78 29 70 Z M30 80 C34 79 40 84 45 91 C38 92 32 88 28 85 Z', 'M60 68 C65 64 70 66 68 72 C64 80 55 91 46 99 C49 90 56 78 58 71 Z M59 80 C64 79 68 83 73 86 C78 90 83 91 86 91 C78 98 68 94 60 87 Z'),
-      '어': letter(93, 'M42 24 C49 24 53 28 52 35 C51 45 42 58 31 66 C20 75 9 77 6 70 C3 64 7 51 15 40 C22 30 29 23 36 22 C40 22 43 25 40 29 C38 31 34 33 30 36 C21 45 15 58 17 63 C20 66 29 58 37 49 C45 39 49 28 42 24 Z', 'M45 48 C58 41 67 34 76 33 C81 32 82 36 80 38 C69 40 57 48 49 54 Q43 56 45 48 Z', 'M86 1 C92 -1 98 4 95 13 C89 32 83 56 80 77 C77 95 78 105 81 111 C74 106 72 95 72 79 C72 56 77 32 81 14 C83 8 83 3 86 1 Z'),
-      '이': letter(78, 'M40 27 C46 27 49 31 46 38 C43 48 33 60 21 65 C12 69 7 64 9 56 C12 45 23 32 33 28 C37 26 40 27 39 30 C30 35 20 47 19 56 C21 60 27 54 32 49 C39 41 44 31 40 27 Z', 'M69 0 C75 -1 79 4 77 13 C73 30 67 55 64 79 C62 91 61 103 62 111 C57 102 56 87 57 73 C59 50 63 24 65 10 C66 5 67 2 69 0 Z'),
-      '건': letter(93, 'M8 30 C17 25 34 17 42 17 C48 16 51 20 48 27 C42 38 24 51 2 65 C18 50 31 35 34 28 C24 30 17 36 11 37 C7 38 5 35 8 30 Z', 'M43 39 C55 33 63 28 70 27 L70 34 C61 36 51 42 44 45 C41 46 40 42 43 39 Z', 'M75 2 C82 0 86 5 84 12 C79 30 74 48 68 64 C66 68 64 69 62 72 C62 59 65 40 69 23 C71 12 72 5 75 2 Z', 'M29 66 C36 63 41 65 38 72 C34 79 29 87 31 90 C34 95 52 89 65 85 C77 81 86 77 99 75 C85 82 70 90 51 98 C35 104 25 106 20 100 C15 93 22 74 29 66 Z'),
-      '강': letter(90, 'M6 31 C18 25 33 17 42 17 C47 17 51 20 49 25 C44 36 28 50 8 61 C20 49 32 34 35 28 C27 30 16 38 10 38 C6 38 3 35 6 31 Z', 'M67 3 C73 0 78 4 76 12 C73 26 67 42 62 58 Q60 66 56 68 C55 57 57 43 61 25 C63 14 63 6 67 3 Z', 'M62 37 C74 29 87 25 97 27 C97 29 93 30 88 31 C80 34 71 39 63 43 Z', 'M54 64 C64 63 69 67 66 76 C63 86 50 98 38 102 C26 106 20 102 21 94 C23 83 35 70 46 65 C50 63 54 64 53 68 C44 72 33 84 32 93 C32 99 43 93 50 87 C59 79 63 68 54 64 Z'),
-      '최': letter(86, 'M27 10 C33 9 45 12 45 17 C44 21 38 20 35 18 Q29 14 27 10 Z', 'M5 31 C18 24 41 19 54 20 C58 21 58 22 59 23 C45 24 27 29 13 35 Q4 39 5 31 Z', 'M38 29 C44 27 49 30 46 35 C38 46 21 56 4 63 C17 52 28 40 34 32 Z', 'M31 44 C34 41 40 43 45 47 Q50 51 56 50 C49 57 40 55 34 50 Z', 'M33 59 C39 57 45 59 43 65 L35 82 L26 84 Q27 70 33 59 Z', 'M-2 88 C19 79 43 73 61 72 C67 71 69 72 72 73 C55 77 29 86 9 95 Q0 100 -2 88 Z', 'M81 2 C87 0 91 4 90 12 C86 34 79 58 75 81 Q72 97 72 109 C66 101 66 86 68 72 C70 52 73 29 77 12 Q79 4 81 2 Z'),
-      '다': letter(91, 'M10 27 C21 20 39 13 47 15 C51 16 49 18 46 20 C35 24 22 28 15 32 C10 35 7 31 10 27 Z', 'M13 28 C19 25 25 27 22 33 C17 41 11 55 14 61 C17 68 34 56 52 43 C43 58 26 72 15 75 C5 78 1 73 2 64 C3 52 9 34 13 28 Z', 'M62 2 C68 0 74 5 71 15 C64 38 58 62 56 83 C54 98 54 108 57 115 C49 107 47 93 49 73 C50 54 54 26 59 8 Q60 3 62 2 Z', 'M55 49 C68 40 79 36 92 35 C101 34 110 35 114 37 C96 38 79 44 62 54 Q55 57 55 49 Z')
+      '어': letter(93, 'M40 22 C49 20 56 25 55 34 C53 47 42 61 28 70 C16 78 4 76 3 67 C1 58 9 43 18 33 C25 25 34 20 40 20 C44 20 46 23 43 26 C39 30 32 33 25 41 C16 51 11 62 15 65 C20 68 31 62 41 51 C52 39 56 25 40 22 Z', 'M45 48 C58 41 67 34 76 33 C81 32 82 36 80 38 C69 40 57 48 49 54 Q43 56 45 48 Z', 'M86 1 C92 -1 98 4 95 13 C89 32 83 56 80 77 C77 95 78 105 81 111 C74 106 72 95 72 79 C72 56 77 32 81 14 C83 8 83 3 86 1 Z'),
+      '이': letter(78, 'M39 26 C46 24 52 28 50 36 C48 46 36 60 25 66 C13 73 4 70 5 61 C5 49 17 34 29 28 C34 25 39 24 41 27 C42 29 37 31 33 34 C24 40 16 50 15 58 C14 64 18 65 25 61 C33 56 43 46 46 37 C48 32 46 27 39 26 Z', 'M66 0 C74 0 80 4 78 14 C75 32 68 54 65 75 C62 91 62 103 65 112 C57 106 54 91 56 72 C58 51 63 32 65 18 C67 9 69 4 66 0 Z'),
+      '건': letter(93, 'M8 30 C17 25 34 17 42 17 C48 16 51 20 48 27 C42 38 24 51 2 65 C18 50 31 35 34 28 C24 30 17 36 11 37 C7 38 5 35 8 30 Z', 'M43 39 C55 33 63 28 70 27 L70 34 C61 36 51 42 44 45 C41 46 40 42 43 39 Z', 'M75 2 C82 0 86 5 84 12 C79 30 74 48 68 64 C66 68 64 69 62 72 C62 59 65 40 69 23 C71 12 72 5 75 2 Z', 'M28 65 C35 61 43 64 40 72 C37 80 29 88 32 92 C36 97 52 92 65 87 C80 82 91 78 102 77 C93 82 79 93 59 100 C42 107 26 107 20 101 C13 94 19 77 28 65 Z'),
+      '강': letter(90, 'M6 31 C18 25 33 17 42 17 C47 17 51 20 49 25 C44 36 28 50 8 61 C20 49 32 34 35 28 C27 30 16 38 10 38 C6 38 3 35 6 31 Z', 'M67 3 C73 0 78 4 76 12 C73 26 67 42 62 58 Q60 66 56 68 C55 57 57 43 61 25 C63 14 63 6 67 3 Z', 'M62 37 C74 29 87 25 97 27 C97 29 93 30 88 31 C80 34 71 39 63 43 Z', 'M53 64 C61 62 69 65 68 73 C67 84 55 97 41 103 C27 109 16 105 17 95 C17 84 29 70 43 65 C49 62 54 63 54 66 C50 70 40 74 33 84 C27 91 26 97 31 98 C38 99 50 91 56 83 C63 75 64 67 53 64 Z'),
+      '최': letter(86, 'M27 10 C33 9 45 12 45 17 C44 21 38 20 35 18 Q29 14 27 10 Z', 'M5 31 C18 24 41 19 54 20 C58 21 58 22 59 23 C45 24 27 29 13 35 Q4 39 5 31 Z', 'M38 29 C44 27 49 30 46 35 C38 46 21 56 4 63 C17 52 28 40 34 32 Z', 'M31 44 C34 41 40 43 45 47 Q50 51 56 50 C49 57 40 55 34 50 Z', 'M33 59 C39 57 45 59 43 65 L35 82 L26 84 Q27 70 33 59 Z', 'M-2 88 C19 79 43 73 61 72 C67 71 69 72 72 73 C55 77 29 86 9 95 Q0 100 -2 88 Z', 'M78 2 C87 2 93 6 91 14 C87 32 79 57 76 77 C73 94 73 103 76 110 C69 105 65 95 66 80 C66 59 73 35 76 21 C78 13 81 5 78 2 Z'),
+      '다': letter(91, 'M10 27 C21 20 39 13 47 15 C51 16 49 18 46 20 C35 24 22 28 15 32 C10 35 7 31 10 27 Z', 'M13 28 C19 25 25 27 22 33 C17 41 11 55 14 61 C17 68 34 56 52 43 C43 58 26 72 15 75 C5 78 1 73 2 64 C3 52 9 34 13 28 Z', 'M59 2 C66 1 76 5 73 15 C68 36 59 61 57 83 C55 98 57 110 62 116 C53 112 47 100 47 85 C47 62 52 39 57 18 C59 11 61 5 59 2 Z', 'M55 48 C72 38 84 33 96 34 C104 35 111 35 117 33 C112 37 104 39 96 40 C82 42 70 48 60 54 C54 57 51 53 55 48 Z')
     };
     // Measured ink top, bottom and horizontal extents in the same three bands.
     const profiles = {
@@ -460,20 +469,25 @@
       늘: [4,107,[20,63],[6,91],[21,98]],
       도: [9,95,[17,76],[13,60],[-1,91]],
       수: [3,131,[40,73],[6,112],[-6,97]],
-      고: [4,97,[14,79],[38,68],[-3,100]],
+      고: [4,98,[14,79],[38,68],[-3,103]],
       했: [4,99,[4,86],[6,79],[9,86]],
-      어: [0,111,[19,96],[5,89],[5,82]],
-      이: [-1,111,[23,78],[8,73],[13,66]],
-      건: [1,104,[6,85],[2,78],[18,99]],
-      강: [2,104,[4,97],[4,81],[20,67]],
-      최: [1,109,[4,91],[4,86],[-2,78]],
-      다: [1,115,[8,72],[1,114],[1,59]]
+      어: [0,111,[17,96],[2,89],[2,82]],
+      이: [0,112,[20,79],[4,74],[5,67]],
+      건: [1,106,[6,85],[2,78],[16,102]],
+      강: [2,106,[4,97],[4,81],[16,68]],
+      최: [2,110,[4,92],[4,86],[-2,78]],
+      다: [1,116,[8,117],[1,116],[1,62]]
     };
     for (const [ch, [inkTop, inkBottom, ...profile]] of Object.entries(profiles)) {
       Object.assign(characters[ch], { inkTop, inkBottom, profile });
     }
+    // The last arm of 다 can finish its sweep in the open space at the end
+    // of a phrase. The shorter form still fits before a following syllable.
+    const finalDa = letter(120, ...characters.다.paths.slice(0, -1),
+      'M54 49 C65 42 78 35 91 34 C108 32 123 36 134 34 C142 33 148 30 155 26 C149 34 137 40 126 41 C114 42 103 39 91 41 C77 43 68 50 59 55 C53 58 49 53 54 49 Z');
+    Object.assign(finalDa, { inkTop: 1, inkBottom: 116, profile: [[8,155],[1,146],[1,62]] });
     return {
-      get: ch => characters[ch] || null
+      get: (ch, phraseEnd) => ch === '다' && phraseEnd ? finalDa : characters[ch] || null
     };
   })();
   const Composition = (() => {
@@ -489,16 +503,16 @@
       if (!ch.trim()) return {
         advance: 33
       };
-      const hand = Lettering.get(ch);
+      const hand = Lettering.get(ch, phraseEnd);
       if (hand && typeof Path2D === 'function') {
-        if (!dictionary.has(ch)) dictionary.set(ch, {
+        if (!dictionary.has(hand)) dictionary.set(hand, {
           advance: hand.advance,
           profile: hand.profile,
           inkTop: hand.inkTop,
           inkBottom: hand.inkBottom,
           paths: hand.paths.map(path => new Path2D(path))
         });
-        return dictionary.get(ch);
+        return dictionary.get(hand);
       }
       const key = ch + (phraseEnd ? '2' : end ? '1' : '0');
       if (shapes.has(key)) return shapes.get(key);
@@ -647,14 +661,31 @@
             // Give short grammatical words less weight, unless the writer tagged them.
             const supporting = (boundWord.test(word) && wi > 0) ||
               (leadWord.test(word) && chars.length === 1 && wi + 1 < words.length);
-            const scale = range ? 1.35 : j > last ? .76 : supporting ? .83 : j >= particleStart ? .86 : 1;
+            const baseScale = range ? 1.35 : j > last ? .76 : supporting ? .83 : j >= particleStart ? .86 : 1;
+            // A word starts with a planted stroke, opens around its stressed syllable,
+            // then settles into its ending. Single-syllable words keep their full size.
+            const firstInTag = range && position - ch.length === range[0];
+            const lastInTag = range && position === range[1];
+            let shapeScale = 1;
+            if (last > 0 && j <= last && !supporting && (range || j < particleStart)) {
+              if (firstInTag) shapeScale = lastInTag ? 1.08 : 1.20;
+              else if (range) {
+                const syllable = CalliGlyphs.decompose(ch);
+                const tallVowel = syllable && !syllable[2] && 'ㅏㅐㅓㅔㅣㅑㅒㅕㅖ'.includes(syllable[1]);
+                shapeScale = lastInTag ? .97 : tallVowel ? 1.07 : .96;
+              }
+              else if (j === 0) shapeScale = 1.08;
+              else if (j === last) shapeScale = .95;
+            }
+            const scale = baseScale * shapeScale;
             // The baseline follows a single gesture per word: lift through the body,
             // settle at its end. Short particles sit in the shoulder of the stem.
             const phase = last ? Math.min(1, j / last) : .5;
             const arch = Math.sin(phase * Math.PI);
-            const y = -(scale - 1) * 67 + 3 * Math.cos(wi * 1.8) - 5.8 * arch - 1.8 * phase;
+            const tuck = j >= particleStart && !range ? 8 : 0;
+            const y = -(scale - 1) * 70 + 4 * Math.cos(wi * 1.8) - 12 * arch + 4 * (1 - phase) - 3 * phase + tuck;
             const p = {ch, word, newWord: !j, glyph, range, x: 0, y, scale,
-              tilt: -.037 + .018 * Math.sin(wi * 1.7) + .027 * arch,
+              tilt: -.053 + .019 * Math.sin(wi * 1.7) + .050 * arch - (firstInTag ? .023 : 0),
               seed: (li + 1)*30181 + (wi + 1)*9767 + j*179 + ch.codePointAt(0)};
             const prev = letters.at(-1);
             if (prev) p.x = prev.x + separation(prev, p) + (p.newWord ? 17 : 0);
@@ -699,10 +730,10 @@
     }
     const rng = seed => () => (seed = Math.imul(seed, 1664525) + 1013904223 >>> 0) / 4294967296;
     function accentStroke(ctx, mark) {
-      const inset = Math.min(13, (mark.right - mark.left) * .10);
+      const inset = (mark.right - mark.left) * .15;
       const length = Math.max(1, mark.right - mark.left - 2 * inset);
       ctx.save();
-      ctx.translate(mark.left + inset, mark.bottom + 8);
+      ctx.translate(mark.left + inset, mark.bottom + 5);
       ctx.scale(length / 130, .51);
       const g = ctx.createLinearGradient(0, 0, 130, 0);
       g.addColorStop(0, '#f4d696');
@@ -855,7 +886,7 @@
     const gap = Math.max(2, Math.round(width * .014));
     const margin = Math.max(2, Math.ceil(width * .015)), step = Math.max(1, Math.round(width / 140));
     const preferred = Math.round(Math.min(width * .205, Math.max(width * .15, (bottom - top) * .61)));
-    for (const size of [preferred, Math.round(preferred * .79)]) {
+    for (const size of [preferred, Math.round(preferred * .79), Math.round(preferred * .61)]) {
       if (size < 8) break;
       let best = null, lowest = Infinity;
       const from = Math.max(margin, top - size + gap);
