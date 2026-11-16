@@ -116,6 +116,7 @@ dialog .primary{width:100%}#dialog-body>.secondary{margin:4px 3px 0 0}
 #event-key>span{display:inline-flex;gap:4px;align-items:center;white-space:nowrap}
 .event-glyph{display:inline-grid;place-items:center;min-width:20px;height:18px;padding:0 2px;border:1px solid #eadfc8;border-radius:5px;color:white;font:750 12px/1 var(--sans)}
 .event-glyph.back{background:#8e482f}.event-glyph.carry{background:#1b6354}.event-glyph.home{background:#514276;font-size:16px}
+.event-glyph.stone{background:#794d54}.event-glyph.whirl{background:#5c567d}.event-glyph.breeze{background:#335c53}
 .event-guide{display:grid;gap:8px;margin:14px 0}.event-card{border-bottom:1px solid var(--line);padding-bottom:8px}
 .event-card strong{margin-left:7px;font-size:15px}.event-card p{margin:3px 0}.event-card small{color:#b6d7c8}
 .effects{display:grid;gap:4px;margin:12px 0 16px;padding:10px 12px;background:#0d252b;border:1px solid var(--line);border-radius:9px}

@@ -11,18 +11,29 @@ export const YUT = ['', '도', '개', '걸', '윷', '모'];
 export const ROCK = [3,16], WHIRL = [8,13], WIND = [6,18];
 const fork = new Set([5,10,22]);
 
-export const EVENT_NAMES={back:'뒤로 한 칸',carry:'말 업기 ×2',home:'처음으로'};
-function dealEventTiles(mode){
+export const EVENT_NAMES={back:'뒤로 한 칸',carry:'말 업기 ×2',home:'처음으로',stone:'바위턱',whirl:'소용돌이',breeze:'순풍'};
+function dealTiles(mode){
   const reserved=new Set([0,5,10,15,22]);
-  if(mode==='island')for(const n of [...ROCK,...WHIRL,...WIND])reserved.add(n);
   const spots=Array.from({length:FINISH},(_,n)=>n).filter(n=>!reserved.has(n));
-  const tiles={};
-  for(const effect of ['back','carry','carry','home']){
-    const index=Math.floor(Math.random()*spots.length);
-    const [node]=spots.splice(index,1);
-    tiles[node]=effect;
+  function deal(effects){
+    const tiles={};
+    for(const effect of effects){
+      const index=Math.floor(Math.random()*spots.length);
+      const [node]=spots.splice(index,1);
+      tiles[node]=effect;
+    }
+    return tiles;
   }
-  return tiles;
+  return {eventTiles:deal(['back','carry','home']),islandTiles:mode==='island'?deal(['stone','whirl','breeze']):{}};
+}
+export function tileEffect(state,node){
+  const event=state.eventTiles?.[node];
+  if(event||state.mode==='easy')return event;
+  if(state.islandTiles)return state.islandTiles[node];
+  // Island boards saved before obstacles were dealt used these six fixed squares.
+  if(ROCK.includes(node))return 'stone';
+  if(WHIRL.includes(node))return 'whirl';
+  if(WIND.includes(node))return 'breeze';
 }
 export function newGame(count=2,zodiacOffset=2,mode=DEFAULT_MODE,pieceCounts=DEFAULT_PIECES,computerTeams=[],teamAnimals=null) {
   if (![2,3,4].includes(count)) throw new Error('2~4팀을 골라 주세요.');
@@ -33,7 +44,7 @@ export function newGame(count=2,zodiacOffset=2,mode=DEFAULT_MODE,pieceCounts=DEF
   if(!Array.isArray(computerTeams)||!computerTeams.every(i=>Number.isInteger(i)&&i>=0&&i<count))throw Error('컴퓨터 팀을 다시 골라 주세요.');
   const animals=teamAnimals??Array.from({length:count},(_,i)=>(zodiacOffset+i*3)%12);
   if(!Array.isArray(animals)||animals.length!==count||!animals.every(i=>Number.isInteger(i)&&i>=0&&i<12))throw Error('각 팀의 동물을 골라 주세요.');
-  return {mode,eventTiles:dealEventTiles(mode),teamAnimals:[...animals],computerTeams:[...new Set(computerTeams)], team:0, turn:1, phase:'roll', revision:0, sticks:null, steps:0,
+  return {mode,...dealTiles(mode),teamAnimals:[...animals],computerTeams:[...new Set(computerTeams)], team:0, turn:1, phase:'roll', revision:0, sticks:null, steps:0,
     pawns:counts.map(n=>Array.from({length:n},()=>[])), zodiacOffset, winner:null, lastMove:null,
     note:'윷을 던져 첫 말을 출발시키세요.'};
 }
@@ -95,16 +106,15 @@ export function move(state,index,shortcut=false) {
   const moving=team.flatMap((p,i)=>i===index||(from!==HOME&&position(p)===from)?[i]:[]);
   let {next,frames}=advance(trail,state.steps,shortcut);
   let at=position(next), effect='', captured=0;
-  const obstacles=state.mode!=='easy';
-  const landing=at,event=state.eventTiles?.[at];
+  const landing=at,event=tileEffect(state,at);
   if(event==='home'){
     next=[];frames.push(HOME);
     effect='처음으로! '+(moving.length>1?'업은 말까지 모두 대기석으로 돌아갔어요.':'대기석으로 돌아갔어요.');
-  }else if(event==='back'||(obstacles&&(ROCK.includes(at)||WHIRL.includes(at)))){
-    const back=event==='back'||!WHIRL.includes(at)?1:2;
+  }else if(event==='back'||event==='stone'||event==='whirl'){
+    const back=event==='whirl'?2:1;
     for(let i=0;i<back&&next.length;i++){next.pop();frames.push(position(next));}
     effect=event==='back'?'뒤로 한 칸! 왔던 길로 한 칸 물러났어요.':back===2?'소용돌이! 두 칸 뒤로 밀렸어요.':'바위턱! 한 칸 뒤로 밀렸어요.';
-  }else if(obstacles&&WIND.includes(at)){
+  }else if(event==='breeze'){
     const gust=advance(next,2,false);
     next=gust.next;frames.push(...gust.frames);effect='순풍! 두 칸 더 갔어요.';
   }
@@ -132,7 +142,7 @@ export function move(state,index,shortcut=false) {
   if(effect)notes.push(effect);
   if(captured)notes.push(captured+'마리를 잡았어요!');
   const stackSize=team.filter(p=>position(p)===at).length;
-  if(!event&&at!==HOME&&at!==FINISH&&stackSize>moving.length)notes.push('말 '+stackSize+'개가 함께 가요.');
+  if(!state.eventTiles?.[landing]&&at!==HOME&&at!==FINISH&&stackSize>moving.length)notes.push('말 '+stackSize+'개가 함께 가요.');
   if(won)notes.push('말 '+team.length+'개 모두 골인!');
   else if(extra)notes.push('한 번 더 던져요.');
   return {...state,pawns,revision:state.revision+1,phase:won?'won':'roll',winner:won?state.team:null,

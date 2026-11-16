@@ -1,5 +1,5 @@
 import { animalFor,drawZodiac } from './zodiac.mjs?v=3';
-import { TEAMS } from './rules.mjs?v=7';
+import { TEAMS,tileEffect } from './rules.mjs?v=8';
 
 // A square lacquer board viewed by a level, front-facing orthographic camera.
 const TAU = Math.PI * 2;
@@ -31,8 +31,7 @@ for (let i=1;i<5;i++) nodes.push([-c+i*c*2/5,c]);
 nodes.push([2*c/3,-2*c/3],[c/3,-c/3],[0,0],[-c/3,c/3],[-2*c/3,2*c/3],
   [-2*c/3,-2*c/3],[-c/3,-c/3],[c/3,c/3],[2*c/3,2*c/3]);
 const tracks = [[...Array.from({length:20},(_,n)=>n),0],[5,20,21,22,23,24,15],[10,25,26,22,27,28,0]];
-const types = nodes.map((_,i) => i===0?'start':i===22?'center':[5,10,15].includes(i)?'corner':
-  [3,16].includes(i)?'stone':[8,13].includes(i)?'whirl':[6,18].includes(i)?'breeze':i>=20?'path':'normal');
+const types = nodes.map((_,i) => i===0?'start':i===22?'center':[5,10,15].includes(i)?'corner':i>=20?'path':'normal');
 const pi = Math.PI;
 function mix(color,other,amt) {
   const val = s => {
@@ -81,7 +80,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   }
   const dep=(x,z)=>-x*sin+z*cos;
   let targets=[],options=[],selected=null,gesture=null,drawnPawns=[],skipClick=null;
-  let playMode='island',eventTiles=null,flags=[];
+  let tileState={},flags=[];
   let backdrop=null,beamKey='',beamStart=0,beamRise=0;
   const beamMs=1150;
   const horizontal=(x,z)=>x*cos+z*sin;
@@ -282,12 +281,11 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     }
   }
   function tile(i){
-    const [x,z]=nodes[i],original=types[i];
-    const type=playMode==='easy'&&['stone','whirl','breeze'].includes(original)?'normal':original;
+    const [x,z]=nodes[i],type=tileEffect(tileState,i)??types[i];
     const hero=['start','corner','center'].includes(type);
     const rad=hero?.735:i>=20?.42:.505,y=hero?.435:.352;
     const outer=ring(x,z,rad,rad,32),lid=ring(x,z,rad*.84,rad*.84,32),[sx,sy]=project([x,y,z]),r=rad*scale;
-    const event=eventTiles?.[i],stamp=Object.hasOwn(eventStamps,event)?eventStamps[event]:null;
+    const stamp=Object.hasOwn(eventStamps,type)?eventStamps[type]:null;
     const tones=stamp?stamp.tones:hero?['#fff5d8','#d9b879','#f5e0ac']:type==='stone'?['#ffd6b7','#c58271','#f2b6a0']:
       type==='breeze'?['#e4f5d7','#8abca2','#c5e6c3']:type==='whirl'?['#ece4fa','#ac98c1','#ecd1e5']:
       i>=20?['#f0f7e9','#c5d4ca','#e6ecd9']:['#fff8e1','#d1d8c5','#f6efdb'];
@@ -887,8 +885,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
         }
       }
       reserves=Array.isArray(next.waiting)?next.waiting.filter(p=>p&&TEAMS[p.team]&&validPawnIndex(p.index)).map(p=>({...p})):[];
-      pieces=list;setActiveTeam(next.activeTeam??null);playMode=next.mode==='easy'?'easy':'island';
-      eventTiles=next.eventTiles??null;
+      pieces=list;setActiveTeam(next.activeTeam??null);tileState=next;
       if(gesture&&(gesture.team!==activeTeam||(gesture.external&&!reserves.some(p=>p.team===gesture.team&&p.index===gesture.index))))closeGesture(true);
       schedule();
     },

@@ -1,4 +1,4 @@
-import {DEFAULT_MODE,DEFAULT_PIECES,newGame,act} from './rules.mjs?v=7';
+import {DEFAULT_MODE,DEFAULT_PIECES,newGame,act} from './rules.mjs?v=8';
 const encoder=new TextEncoder();
 const curve={name:'ECDSA',namedCurve:'P-256'};
 const signing={name:'ECDSA',hash:'SHA-256'};

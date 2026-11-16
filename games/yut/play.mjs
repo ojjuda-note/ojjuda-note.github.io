@@ -1,7 +1,7 @@
-import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,ROCK,WHIRL,WIND,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed} from './rules.mjs?v=7';
-import {createBoard} from './board.mjs?v=15';
+import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed} from './rules.mjs?v=8';
+import {createBoard} from './board.mjs?v=16';
 import {createToss,drawRack} from './toss.mjs?v=7';
-import {openRoom,roomCode} from './room.mjs?v=7';
+import {openRoom,roomCode} from './room.mjs?v=8';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=3';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
@@ -50,7 +50,7 @@ function draw(s,override,snap=false){
     position(trail)===HOME&&!pieces.some(p=>p.team===t&&p.index===i)?[{team:t,index:i}]:[]));
   const withAnimal=p=>({...p,animal:animalFor(p.team,p.index,s.zodiacOffset,s.teamAnimals)});
   const activeTeam=(s.phase==='won'&&!busy)||(net&&!net.game)?null:turnTeam(s);
-  board.setState({pieces:pieces.map(withAnimal),activeTeam,waiting:waiting.map(withAnimal),mode:s.mode??'island',eventTiles:s.eventTiles,snap});
+  board.setState({pieces:pieces.map(withAnimal),activeTeam,waiting:waiting.map(withAnimal),mode:s.mode??'island',eventTiles:s.eventTiles,islandTiles:s.islandTiles,snap});
   const locations=s.pawns[s.team].map((trail,i)=>pieceName(s,s.team,i)+' · '+nodeName(position(trail)));
   $('board').setAttribute('aria-label',TEAMS[s.team].name+' 팀. '+locations.join(', ')+'.');
 }
@@ -171,12 +171,8 @@ function destinationLabel(s,m,choices){
   if(choices.some(o=>o.index===m.index&&o.shortcut!==m.shortcut)){
     return m.shortcut?'지름길':position(s.pawns[s.team][m.index])===22?'다른 길':'바깥길';
   }
-  if(s.eventTiles?.[m.to])return EVENT_NAMES[s.eventTiles[m.to]];
-  if(s.mode!=='easy'){
-    if(ROCK.includes(m.to))return '바위턱';
-    if(WHIRL.includes(m.to))return '소용돌이';
-    if(WIND.includes(m.to))return '순풍';
-  }
+  const effect=tileEffect(s,m.to);
+  if(effect)return EVENT_NAMES[effect];
   if(s.pawns.some((p,t)=>t!==s.team&&p.some(trail=>position(trail)===m.to)))return '잡기';
   if(s.pawns[s.team].some((trail,i)=>i!==m.index&&position(trail)===m.to))return '업기';
   return '도착';
@@ -271,7 +267,7 @@ function moveControls(s,options){
   for(const [i,m] of paths.entries()){
     const cue=destinationLabel(s,m,options);
     const label=cue==='골인'?'골인하기':paths.length>1?cue+'로 이동':s.steps+'칸 이동';
-    const eventName=EVENT_NAMES[s.eventTiles?.[m.to]];
+    const eventName=EVENT_NAMES[tileEffect(s,m.to)];
     const action=button(eventName?label+' · '+eventName:label,i?'secondary route-btn':'primary advance-btn',()=>{if(game===s)place(m);});
     action.setAttribute('aria-label',action.textContent+' · '+nodeName(m.to));actions.append(action);
   }
@@ -326,7 +322,10 @@ function message(text){const el=element('p',text,'message');el.setAttribute('rol
 const eventDescriptions={
   back:['−1','방금 지나온 길로 한 칸 물러나요.'],
   carry:['×2','혼자 도착하면 대기 말 하나를 업어요. 이후 두 말이 함께 움직여요.'],
-  home:['⌂','도착한 말과 함께 업힌 말이 모두 대기석으로 돌아가요.']
+  home:['⌂','도착한 말과 함께 업힌 말이 모두 대기석으로 돌아가요.'],
+  stone:['▲','바위턱에 걸려 한 칸 뒤로 가요.'],
+  whirl:['◎','소용돌이에 밀려 두 칸 뒤로 가요.'],
+  breeze:['»','순풍을 타고 두 칸 더 가요.']
 };
 function eventPlace(node){
   if(node<20)return '바깥길 '+node+'번';
@@ -337,8 +336,9 @@ function eventPlace(node){
 }
 function eventGuide(s){
   const guide=element('div',undefined,'event-guide');
+  const boardNodes=Array.from({length:FINISH},(_,n)=>n);
   for(const [type,[glyph,copy]] of Object.entries(eventDescriptions)){
-    const nodes=Object.keys(s.eventTiles??{}).map(Number).filter(n=>s.eventTiles[n]===type);
+    const nodes=boardNodes.filter(n=>tileEffect(s,n)===type);
     if(!nodes.length)continue;
     const card=element('div',undefined,'event-card'),icon=element('span',glyph,'event-glyph '+type);
     icon.setAttribute('aria-hidden','true');
@@ -349,7 +349,8 @@ function eventGuide(s){
 }
 function showEventGuide(){
   openPanel('이번 판 특수 칸','events');
-  body.append(message('윷을 던져 멈춘 칸의 효과가 한 번 적용돼요. 새 판마다 위치가 바뀌어요.'),eventGuide(game),button('알겠어요','primary',closePanel));
+  const copy=game.islandTiles?'새 판마다 종류별로 한 칸씩 뽑아요. 멈춘 칸의 효과가 한 번 적용돼요.':'멈춘 칸의 효과가 한 번 적용돼요.';
+  body.append(message(copy),eventGuide(game),button('알겠어요','primary',closePanel));
 }
 function rules(){
   openPanel('놀이 방법','help');

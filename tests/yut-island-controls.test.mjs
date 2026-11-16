@@ -64,7 +64,7 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   function setFaces(n){let i=0;t.mock.method(Math,'random',()=>i++%4<n?0.1:0.9);}
   const selected=()=>doc.querySelector('#reserve-pawns [aria-pressed="true"], #move-tools:not([hidden]) [aria-pressed="true"]')?.dataset.pawn;
   const reserve=doc.getElementById('reserve-pawns');
-  // Keep the route exercised below ordinary; the last four board squares receive the events.
+  // Keep the opening route ordinary by placing all effects at the end of the candidate list.
   t.mock.method(Math,'random',()=>.99);
   await import('../games/yut/play.mjs');
   const dialogButton=name=>[...doc.querySelectorAll('#dialog-body button')].find(b=>b.textContent===name);
@@ -75,6 +75,11 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   assert.match(text('goals'),/장애물 놀이.*0\/4/);
   assert.equal(reserve.querySelectorAll('button').length,4);
   assert.equal(first().textContent,'윷 던지기');
+  doc.getElementById('event-key').click();
+  const places=[...doc.querySelectorAll('.event-card small')].map(el=>el.textContent);
+  assert.equal(places.length,6);assert.equal(new Set(places).size,6);
+  assert.ok(places.every(place=>place&&!place.includes(' · ')));
+  doc.getElementById('close').click();
   prefs.matches=true;setFaces(1);first().click();tick();
   const [x,y]=marks.get('도착');
   doc.getElementById('board').dispatchEvent(new w.MouseEvent('click',{clientX:x,clientY:y,bubbles:true}));

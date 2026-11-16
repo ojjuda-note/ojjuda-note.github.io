@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {newGame,roll,move,moves,position,FINISH,lastThrowSeed,computerAction} from '../games/yut/rules.mjs';
+import {newGame,roll,move,moves,position,FINISH,tileEffect,lastThrowSeed,computerAction} from '../games/yut/rules.mjs';
 import {ANIMALS,animalFor} from '../games/yut/zodiac.mjs';
 
-const ordinary=(...args)=>({...newGame(...args),eventTiles:{}});
+const ordinary=(...args)=>({...newGame(...args),eventTiles:{},islandTiles:{}});
 const faces=n=>Array.from({length:4},(_,i)=>+(i<n&&n<5));
 function setup(at,steps){const g=ordinary(2,2,'island',2);g.pawns[0][0]=at;return roll(g,faces(steps));}
 test('new games give every team four pieces and enable island obstacles by default',()=>{
@@ -11,8 +11,7 @@ test('new games give every team four pieces and enable island obstacles by defau
     const game=newGame(count);
     assert.equal(game.mode,'island');
     assert.deepEqual(game.pawns.map(team=>team.length),Array(count).fill(4));
-    game.pawns[0][0]=[1,2];
-    assert.equal(position(move(roll(game,faces(1)),0).pawns[0][0]),2);
+    assert.deepEqual(Object.values(game.islandTiles).sort(),['breeze','stone','whirl']);
   }
 });
 test('easy games land on the rolled square while older snapshots keep their island effects',()=>{
@@ -20,7 +19,7 @@ test('easy games land on the rolled square while older snapshots keep their isla
     const trail=Array.from({length:tile-1},(_,i)=>i+1);
     const easy=ordinary(2,2,'easy');easy.pawns[0][0]=trail;
     assert.equal(position(move(roll(easy,faces(1)),0).pawns[0][0]),tile);
-    const legacy={...easy};delete legacy.mode;delete legacy.eventTiles;
+    const legacy={...easy};delete legacy.mode;delete legacy.eventTiles;delete legacy.islandTiles;
     assert.equal(position(move(roll(legacy,faces(1)),0).pawns[0][0]),end);
   }
   assert.throws(()=>newGame(2,2,'unknown'));
@@ -48,10 +47,19 @@ test('four sticks give five outcomes and invalid or repeated actions cannot adva
     const next=move(s,0);assert.equal(next.team,n>=4?0:1);
   }
 });
-test('an event applies once and retreats along the actual trail',()=>{
-  assert.equal(position(move(setup([1,2],1),0).pawns[0][0]),2);
-  assert.equal(position(move(setup([1,2,3,4,5,6,7],1),0).pawns[0][0]),6);
-  assert.equal(position(move(setup([1,2,3,4,5],1),0).pawns[0][0]),8);
+test('island effects follow their dealt squares, including shortcuts, and apply only on landing',()=>{
+  const g=ordinary();
+  g.islandTiles={4:'stone',21:'whirl',1:'breeze'};
+  g.eventTiles={2:'home'};
+  const land=(trail,steps)=>{
+    g.pawns[0][0]=trail;
+    return move(roll(g,faces(steps)),0).pawns[0][0];
+  };
+  assert.deepEqual(land([],1),[1,2,3]);
+  assert.deepEqual(land([1,2],1),[1,2,3]);
+  assert.deepEqual(land([1,2,3],1),[1,2,3]);
+  assert.deepEqual(land([5,20],1),[5]);
+  assert.deepEqual(land([1,2,3],2),[1,2,3,4,5]);
 });
 test('either waiting pawn may start, while touching a stack still moves both together',()=>{
   const turn=roll(ordinary(2,2,'island',2),faces(1));
@@ -74,24 +82,35 @@ test('three or four pieces stack by square even without pawn one; computer may f
   assert.deepEqual(action,{type:'move',index:1,shortcut:false});
   assert.equal(move(turn,action.index).phase,'won');
 });
-test('new games deal four distinct event squares and moves keep the dealt board',t=>{
+test('new games deal one of each tile without overlap and keep the layout throughout play',t=>{
   let seed=43;
   t.mock.method(Math,'random',()=>((seed=(Math.imul(1664525,seed)+1013904223)>>>0)/2**32));
   for(const mode of ['easy','island']){
-    const layouts=new Set();
-    for(let i=0;i<50;i++){
-      const g=newGame(4,11,mode,4),map=g.eventTiles;
-      const nodes=Object.keys(map).map(Number);
-      assert.deepEqual(Object.values(map).sort(),['back','carry','carry','home']);
+    const locations=new Map();
+    for(let i=0;i<100;i++){
+      const g=newGame(4,11,mode,4);
+      const entries=Object.entries(g.eventTiles).concat(Object.entries(g.islandTiles));
+      assert.deepEqual(Object.values(g.eventTiles).sort(),['back','carry','home']);
+      assert.deepEqual(Object.values(g.islandTiles).sort(),mode==='island'?['breeze','stone','whirl']:[]);
+      const nodes=entries.map(([n])=>Number(n));
+      assert.equal(new Set(nodes).size,nodes.length);
       assert.ok(nodes.every(n=>n>0&&n<FINISH&&![5,10,15,22].includes(n)));
-      if(mode==='island')assert.ok(nodes.every(n=>![3,6,8,13,16,18].includes(n)));
-      layouts.add(JSON.stringify(map));
+      for(const [node,effect] of entries){
+        if(!locations.has(effect))locations.set(effect,new Set());
+        locations.get(effect).add(Number(node));
+      }
+      for(let n=0;n<FINISH;n++)assert.equal(tileEffect(g,n),g.eventTiles[n]??g.islandTiles[n]);
       const thrown=roll(g,faces(2)),next=move(thrown,3);
-      assert.deepEqual(next.eventTiles,map);
+      assert.deepEqual(next.eventTiles,g.eventTiles);
+      assert.deepEqual(next.islandTiles,g.islandTiles);
       const saved=JSON.parse(JSON.stringify(thrown));
       assert.deepEqual(move(saved,3),next);
     }
-    assert.ok(layouts.size>1);
+    for(const positions of locations.values()){
+      assert.ok(positions.size>1);
+      assert.ok([...positions].some(n=>n>=20));
+      assert.ok([...positions].some(n=>n<20));
+    }
   }
 });
 test('carry takes exactly one waiting teammate and both travel on the same trail',()=>{
@@ -174,7 +193,8 @@ test('invitees occupy up to four distinct seats; only the active seat can advanc
     host.start(8,'easy');await until(()=>clients[3].view().game?.revision===0);
     assert.equal(clients[3].view().game.mode,'easy');
     assert.deepEqual(clients[3].view().game.eventTiles,host.view().game.eventTiles);
-    assert.equal(Object.keys(host.view().game.eventTiles).length,4);
+    assert.equal(Object.keys(host.view().game.eventTiles).length,3);
+    assert.deepEqual(clients[3].view().game.islandTiles,{});
     assert.deepEqual(clients[3].view().game.pawns.map(p=>p.length),[2,3,4,4]);assert.deepEqual(clients[3].view().game.teamAnimals,[11,9,5,8]);
     assert.equal(clients[3].view().game.zodiacOffset,8);
     clients[2].action({type:'roll'});await new Promise(r=>setTimeout(r,20));assert.equal(host.view().game.revision,0);
