@@ -43,12 +43,26 @@ function stampShape(points,x,z,size,y) { return points.map(([px,pz])=>[x+px*size
 
 export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   const ctx = canvas.getContext('2d');
-  if(!ctx) return {setState(){},setMoves(){},setTargets(){},rotate(){},destroy(){}};
+  if(!ctx)return {setState(){},setMoves(){},setTargets(){},beginReserveDrag(){return false;},updateReserveDrag(){},endReserveDrag(){return false;},cancelReserveDrag(){},rotate(){},destroy(){}};
   let width=0,height=0,scale=1,ox=0,oy=0;
   let angle=0,cos=1,sin=0,tilt=.8,lift=.6;
-  let turnFrom=angle,turnTo=angle,turnStart=0,moves=[],pieces=[],reserves=[],activeTeam=0;
+  let turnFrom=angle,turnTo=angle,turnStart=0,moves=[],pieces=[],reserves=[],activeTeam=null;
+  const emphasisMs=640,turnGrowth=.14;
+  let emphasisFrom=TEAMS.map(()=>0),emphasisStart=null;
   let frame=0,dead=false;
   const reduced=()=>typeof matchMedia==='function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function emphasis(team,time){
+    const target=team===activeTeam?1:0;
+    if(emphasisStart===null)return target;
+    const t=Math.min(1,Math.max(0,(time-emphasisStart)/emphasisMs)),ease=t*t*(3-2*t);
+    return emphasisFrom[team]+(target-emphasisFrom[team])*ease;
+  }
+  function setActiveTeam(team){
+    if(team===activeTeam)return;
+    const now=performance.now();
+    emphasisFrom=TEAMS.map((_,i)=>emphasis(i,now));
+    activeTeam=team;emphasisStart=reduced()?null:now;
+  }
   const dep=(x,z)=>-x*sin+z*cos;
   let targets=[],options=[],selected=null,gesture=null,drawnPawns=[],skipClick=null;
   let playMode='island',flags=[];
@@ -337,26 +351,6 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     const animal=Number.isInteger(p.animal)&&p.animal>=0&&p.animal<12?p.animal:(p.team*3+p.index+2)%12;
     drawZodiac(ctx,project,x,y,z,size,animal,TEAMS[p.team].color);
   }
-  const rack={x:1.35,z:3.12};
-  function rackPoint(x,z){
-    return [rack.x+.18*Math.abs(sin)+x*cos-z*sin,rack.z-.15*Math.abs(sin)+x*sin+z*cos];
-  }
-  function reservePositions(){
-    return reserves.filter(p=>p.team===activeTeam).map(p=>{
-      const [x,z]=rackPoint((p.index-.5)*1.38,0);
-      return {p,x,z,y:surface+.101,ground:surface+.101,size:1.22,from:-1};
-    });
-  }
-  function reserveTray(){
-    const tray=rounded(0,0,2.68,1.00,.14).map(([x,z])=>rackPoint(x,z));
-    const inset=rounded(0,0,2.60,.92,.13).map(([x,z])=>rackPoint(x,z));
-    solid(tray,tray,surface+.018,surface+.071,'#988568','#ead2a3');
-    solid(inset,inset,surface+.071,surface+.095,'#798e82','#a3bcb0');
-    for(const offset of [-.69,.69]){
-      const [x,z]=rackPoint(offset,0);
-      feature(x,z,surface+.098,.355,.355,'#849e92');
-    }
-  }
   function pawnPositions(time){
     const positions=[],groups=new Map();
     for(const p of pieces){
@@ -366,7 +360,8 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     for(const [node,group] of groups){
       const [nx,nz]=nodes[node],ground=nodeHeight(node)+.004;
       group.forEach((p,i)=>{
-        const offset=(i-(group.length-1)/2)*.80,size=group.length>1?1.06:1.38;
+        const offset=(i-(group.length-1)/2)*.80,baseSize=group.length>1?1.06:1.38;
+        const light=emphasis(p.team,time),size=baseSize*(1+turnGrowth*light);
         let x=nx+offset*cos,z=nz+offset*sin,y=ground;
         const step=moves.find(move=>move.team===p.team&&move.index===p.index);
         if(step){
@@ -374,30 +369,42 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
           x=step.from[0]*(1-t)+x*t;z=step.from[1]*(1-t)+z*t;
           y+=Math.sin(pi*t)*.53;
         }
-        positions.push({p,x,z,y,ground,size,from:node});
+        positions.push({p,x,z,y,ground,size,baseSize,light,from:node});
       });
     }
     return positions;
   }
-  function drawBoard(reserve){
+  function drawBoard(){
     water();lacquer();
     ctx.save();ctx.globalAlpha=options.length?.38:.59;inlay();ctx.restore();
     trail();
     const display=objects.map(o=>({order:dep(o.x,o.z),draw:o.draw}));
-    if(reserve.length)display.push({order:dep(rack.x,rack.z)-1,draw:reserveTray});
     display.sort((a,b)=>a.order-b.order);
     for(const v of display)v.draw();
+  }
+  function turnHalo(cx,cy,rx,ry,light){
+    ctx.save();ctx.translate(cx,cy);ctx.scale(rx,ry);
+    ctx.globalAlpha*=light;
+    const glow=ctx.createRadialGradient(0,0,.96,0,0,1.55);
+    glow.addColorStop(0,'rgba(45,188,187,.88)');
+    glow.addColorStop(.38,'rgba(141,255,248,.80)');
+    glow.addColorStop(1,'rgba(162,255,246,0)');
+    ctx.fillStyle=glow;ctx.fillRect(-1.55,-1.55,3.1,3.1);
+    ctx.beginPath();ctx.arc(0,0,1.16,0,TAU);
+    ctx.lineWidth=.065;ctx.strokeStyle='#edfffa';ctx.stroke();
+    ctx.restore();
   }
   function drawPawnGroup(group,carried=false){
     const first=group[0],team=first.p.team,stack=group.length>1;
     const last=group[group.length-1],x=(first.x+last.x)/2,z=(first.z+last.z)/2;
     const [cx,cy]=project([x,first.ground+.013,z]);
-    const rx=scale*(stack?.89:.49*first.size),ry=scale*.49*first.size*tilt;
+    const rx=scale*(stack?.89*(1+turnGrowth*first.light):.49*first.size),ry=scale*.49*first.size*tilt;
     const chosen=team===activeTeam&&selected!==null&&group.some(a=>a.p.index===selected);
     ctx.save();
     const liftedSource=!carried&&isLifted(first);
     if(liftedSource)ctx.globalAlpha=.48;
     else castShadow(x,z,first.ground,rx/scale,ry/(tilt*scale),first.size*.83,.43);
+    if(first.light>0&&!liftedSource)turnHalo(cx,cy,rx,ry,first.light);
     ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,TAU);ctx.fillStyle=teamInk[team];ctx.fill();
     ctx.strokeStyle=chosen?'#163653':'#fffbee';ctx.lineWidth=chosen?Math.max(5,scale*.16):Math.max(2.2,scale*.088);ctx.stroke();
     ctx.strokeStyle=chosen?'#96e9ff':TEAMS[team].color;ctx.lineWidth=chosen?Math.max(2.6,scale*.088):Math.max(1.2,scale*.052);ctx.stroke();
@@ -411,7 +418,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     for(const a of group)pawn(a.p,a.x,a.z,a.y,a.size);
     const font=Math.max(chosen?12:10,Math.min(17,scale*.245)),h=font*(chosen?1.52:1.40);
     const numbers=group.map(a=>a.p.index+1).sort().join('·');
-    const name=(first.from<0&&!carried?'대기':scale<28?TEAMS[team].mark:TEAMS[team].name)+' '+numbers;
+    const name=(scale<28?TEAMS[team].mark:TEAMS[team].name)+' '+numbers;
     ctx.font='bold '+font+'px "Noto Sans CJK KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
     const mark=chosen?font*.94:0;
     const w=(ctx.measureText(name)?.width??font*name.length*.86)+font*.78+mark;
@@ -567,11 +574,15 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     lift=Math.sqrt(1-tilt*tilt);
     const pad=Math.max(3,Math.min(10,Math.min(width,height)*.014));
     // Fit the panel, beveled coins, obstacles and any raised pawn to the same camera.
-    const actors=pawnPositions(time),reserve=reservePositions();
-    drawnPawns=[...actors,...reserve];
+    if(emphasisStart!==null&&(reduced()||time-emphasisStart>=emphasisMs))emphasisStart=null;
+    drawnPawns=pawnPositions(time);
     const farthest=c*(Math.abs(cos)+Math.abs(sin));
     let top=Math.min(-span*.5*tilt-surface*lift,-(farthest+.81)*tilt-.49*lift,-(farthest+.25)*tilt-.80*lift);
-    for(const a of actors)top=Math.min(top,(dep(a.x,a.z)-.40*a.size)*tilt-(a.y+1.15*a.size)*lift);
+    for(const a of drawnPawns){
+      // Fit the largest turn pose throughout the transition so the board itself stays still.
+      const size=a.baseSize*(1+turnGrowth);
+      top=Math.min(top,(dep(a.x,a.z)-.40*size)*tilt-(a.y+1.15*size)*lift);
+    }
     const bottom=(span*.5+.08)*tilt+.83*lift;
     scale=Math.min((width-pad*2)/span,(height-pad*2)/(bottom-top));
     ox=width/2;oy=height/2-(top+bottom)*scale/2;
@@ -580,12 +591,12 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     if(key!==beamKey){beamKey=key;beamStart=time;backdrop=null;}
     const elapsed=reduced()?beamMs:Math.max(0,time-beamStart);
     beamRise=1-(1-Math.min(1,elapsed/510))**3;
-    const stationary=allowed.length&&!turnStart&&!moves.length;
+    const stationary=!turnStart&&!moves.length;
     if(stationary&&backdrop){
       ctx.drawImage(backdrop,0,0,width,height);
     }else{
       backdrop=null;
-      drawBoard(reserve);
+      drawBoard();
       if(stationary){
         const picture=typeof OffscreenCanvas==='function'?new OffscreenCanvas(canvas.width,canvas.height):canvas.ownerDocument?.createElement('canvas');
         if(picture){
@@ -600,9 +611,9 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     drawPawns();
     if(!gesture?.moved||!flags.length||turnStart)flags=flagLayout(allowed);
     for(const flag of flags)drawFlag(flag,flag.n===over);
-    if(gesture?.moved)drawLifted();
+    if(gesture?.moved&&(!gesture.external||insideCanvas(gesture)))drawLifted();
     moves=moves.filter(m=>time-m.start<265);
-    if(turnStart||moves.length||(allowed.length&&elapsed<beamMs))schedule();
+    if(turnStart||moves.length||(allowed.length&&elapsed<beamMs)||(emphasisStart!==null&&drawnPawns.some(a=>a.p.team===activeTeam||emphasisFrom[a.p.team]>0)))schedule();
   }
   function schedule(){if(!dead&&!frame)frame=requestAnimationFrame(paint);}
   function resize() {
@@ -681,7 +692,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   function drawLifted(){
     const g=gesture,base=surface+.01,u=(g.x-ox)/scale+g.gripX,d=((g.y-oy)/scale+g.gripY+base*lift)/tilt;
     const x=u*cos-d*sin,z=u*sin+d*cos;
-    const carried=drawnPawns.filter(isLifted);
+    const carried=g.external?[{p:g.p,from:-1,size:1.38*(1+turnGrowth),light:1}]:drawnPawns.filter(isLifted);
     if(carried.length)drawPawnGroup(carried.map((actor,i)=>{
       const offset=(i-(carried.length-1)/2)*.80;
       return {...actor,x:x+offset*cos,z:z+offset*sin,ground:base,y:base+.30+i*.045};
@@ -691,6 +702,32 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     const rect=canvas.getBoundingClientRect();
     return [event.clientX-rect.left,event.clientY-rect.top];
   }
+  const insideCanvas=g=>g.x>=0&&g.y>=0&&g.x<width&&g.y<height;
+  function beginReserveDrag(index,event){
+    if(dead||gesture)return false;
+    const p=reserves.find(p=>p.team===activeTeam&&p.index===index);
+    if(!p||!options.some(o=>o.team===p.team&&o.index===index&&o.from===-1))return false;
+    const [x,y]=local(event);
+    if(selected!==index)flags=[];
+    selected=index;skipClick=null;
+    gesture={external:true,p,team:p.team,index,from:-1,x,y,clientX:event.clientX,clientY:event.clientY,moved:true,gripX:0,gripY:0};
+    schedule();return true;
+  }
+  function updateReserveDrag(event){
+    if(!gesture?.external)return;
+    [gesture.x,gesture.y]=local(event);gesture.clientX=event.clientX;gesture.clientY=event.clientY;
+    schedule();
+  }
+  function endReserveDrag(event){
+    if(!gesture?.external)return false;
+    updateReserveDrag(event);
+    const g=gesture,to=insideCanvas(g)?destinationAt(g.x,g.y,destinationNodes()):null;
+    closeGesture(true);
+    if(to==null)return false;
+    if(dropPawn)dropPawn(g.index,to);else chooseDestination?.(to);
+    return true;
+  }
+  function cancelReserveDrag(){if(gesture?.external)closeGesture(false);}
   function closeGesture(blockClick){
     if(!gesture)return;
     const g=gesture;gesture=null;backdrop=null;
@@ -772,6 +809,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   for(const [type,listener] of Object.entries(listeners))canvas.addEventListener(type,listener);
   resize();
   return {
+    beginReserveDrag,updateReserveDrag,endReserveDrag,cancelReserveDrag,
     setTargets(destinations) {
       targets=[...new Set(destinations.filter(n=>nodes[n]))];
       if(!targets.length&&!options.length){beamKey='';beamRise=0;backdrop=null;}
@@ -802,8 +840,8 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
         }
       }
       reserves=Array.isArray(next.waiting)?next.waiting.filter(p=>p&&TEAMS[p.team]&&[0,1].includes(p.index)).map(p=>({...p})):[];
-      pieces=list;activeTeam=next.activeTeam;playMode=next.mode==='easy'?'easy':'island';
-      if(gesture&&gesture.team!==activeTeam)closeGesture(true);
+      pieces=list;setActiveTeam(next.activeTeam??null);playMode=next.mode==='easy'?'easy':'island';
+      if(gesture&&(gesture.team!==activeTeam||(gesture.external&&!reserves.some(p=>p.team===gesture.team&&p.index===gesture.index))))closeGesture(true);
       schedule();
     },
     rotate(direction=1) {

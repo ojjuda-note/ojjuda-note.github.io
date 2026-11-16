@@ -62,7 +62,8 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   const tick=()=>{const queued=[...frames.values()];frames.clear();queued.forEach(f=>f(performance.now()+4000));};
   const until=async(pred)=>{for(let i=0;i<100;i++){if(pred())return;await new Promise(r=>setTimeout(r,20));}assert.fail('state did not arrive');};
   function setFaces(n){let i=0;t.mock.method(Math,'random',()=>i++%4<n?0.1:0.9);}
-  const selected=()=>doc.querySelector('#pawn-picker [aria-pressed="true"]')?.dataset.pawn;
+  const selected=()=>doc.querySelector('#reserve-pawns [aria-pressed="true"], #move-tools:not([hidden]) [aria-pressed="true"]')?.dataset.pawn;
+  const reserve=doc.getElementById('reserve-pawns');
   await import('../games/yut/play.mjs');
   assert.equal(first().textContent,'윷 던지기');
   const rack=doc.getElementById('rack-canvas');
@@ -70,6 +71,9 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   assert.equal(rack.width,390);
   assert.equal(rack.height,500);
   assert.match(text('goals'),/쉬운 놀이/);
+  assert.equal(doc.querySelector('.scene').nextElementSibling.id,'reserve');
+  assert.equal(reserve.querySelectorAll('button:disabled').length,2);
+  assert.match(text('reserve-team'),/산호/);
   setFaces(1);first().focus();first().click();
   assert.equal(doc.getElementById('toss-layer').hidden,false);assert.equal(text('outcome'),'');assert.ok(first().disabled);
   tick();
@@ -83,17 +87,24 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   assert.equal(rack.getAttribute('aria-label'),'던진 윷 네 가락 · 도 · 1칸');
   tick();
   const canvas=doc.getElementById('board');
-  function pointer(type,x,y){
+  function eventAt(target,type,x,y){
     const e=new w.MouseEvent(type,{clientX:x,clientY:y,button:0,bubbles:true,cancelable:true});
-    Object.defineProperty(e,'pointerId',{value:1});canvas.dispatchEvent(e);
+    Object.defineProperty(e,'pointerId',{value:1});target.dispatchEvent(e);
   }
-  // The suggested piece can be changed by grabbing its teammate on the board.
-  assert.ok(marks.has('대기 2'));assert.ok(marks.has('도착'));
-  pointer('pointerdown',...marks.get('대기 2'));
-  assert.equal(selected(),'1');
+  const pointer=(type,x,y)=>eventAt(canvas,type,x,y);
+  assert.ok(!marks.has('대기 2'));assert.ok(marks.has('도착'));
+  const second=reserve.querySelector('[data-pawn="1"]');
   const destination=marks.get('도착');
-  pointer('pointermove',...destination);tick();pointer('pointerup',...destination);
+  eventAt(second,'pointerdown',170,530);eventAt(w,'pointermove',...destination);tick();
+  assert.equal(selected(),'1');
+  eventAt(w,'pointercancel',...destination);assert.equal(first().textContent,'1칸 이동');
+  eventAt(second,'pointerdown',170,530);eventAt(w,'pointermove',170,520);eventAt(w,'pointerup',170,520);
+  assert.equal(first().textContent,'1칸 이동');
+  eventAt(second,'pointerdown',170,530);eventAt(w,'pointermove',...destination);tick();
+  eventAt(w,'pointerup',...destination);
   await until(()=>text('team-title').includes('바다')&&first().textContent==='윷 던지기');
+  assert.match(text('reserve-team'),/바다/);
+  assert.equal(reserve.querySelectorAll('button:disabled').length,2);
   prefs.matches=true;setFaces(2);first().click();
   assert.ok(doc.getElementById('toss-layer').hidden);
   assert.equal(first().textContent,'2칸 이동');
@@ -105,7 +116,8 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   assert.match(text('team-title'),/산호/);
   setFaces(1);first().click();
   assert.deepEqual([...doc.querySelectorAll('#actions button')].map(b=>b.textContent),['지름길로 이동','바깥길로 이동']);
-  const otherPawn=doc.querySelector('#pawn-picker [data-pawn="0"]');
+  assert.equal(reserve.querySelectorAll('button').length,1);
+  const otherPawn=reserve.querySelector('[data-pawn="0"]');
   otherPawn.focus();otherPawn.click();
   assert.equal(selected(),'0');assert.equal(first().textContent,'1칸 이동');
   assert.equal(doc.activeElement.dataset.pawn,'0');
@@ -179,7 +191,7 @@ test('board dragging uses the chosen pawn and its legal squares, including after
   board.setState({activeTeam:0,pieces:[{team:0,index:0,node:1},{team:1,index:0,node:2},{team:1,index:1,node:2}],
     waiting:[{team:0,index:1}],snap:true});
   board.setMoves([options[0]],null);tags.clear();draw();
-  assert.deepEqual([...tags.keys()].sort(),['산호 1','바다 1·2','대기 2'].sort());
+  assert.deepEqual([...tags.keys()].sort(),['산호 1','바다 1·2'].sort());
   const before=drops.length,source=tags.get('산호 1'),occupied=tags.get('바다 1·2');
   pointer('pointerdown',...source);pointer('pointermove',...occupied);draw();pointer('pointerup',...occupied);
   assert.deepEqual(drops.slice(before),[[0,2]]);
