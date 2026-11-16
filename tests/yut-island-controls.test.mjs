@@ -99,8 +99,32 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   assert.equal(doc.getElementById('entry-controls').childElementCount,0);
   const bonus=doc.getElementById('bonus-roll'),chips=doc.getElementById('result-picker');
   const chip=value=>chips.querySelectorAll('button')[value];
+  const tossLayer=doc.getElementById('toss-layer');
+  function castPointer(target,type,id=4){
+    const e=new w.MouseEvent(type,{bubbles:true,button:0,detail:1});
+    Object.defineProperty(e,'pointerId',{value:id});target.dispatchEvent(e);
+  }
+  const trigger=first();
+  castPointer(trigger,'pointerdown');assert.ok(tossLayer.classList.contains('shuffling'));
+  tick();tick();assert.equal(first(),trigger);assert.equal(text('toss-label'),'떼면 던져요');
+  castPointer(w,'pointerup',9);assert.ok(tossLayer.classList.contains('shuffling'));
+  castPointer(w,'pointercancel');assert.equal(tossLayer.hidden,true);
+  castPointer(w,'pointerup');assert.equal(first().textContent,'윷 던지기');
+  castPointer(trigger,'pointerdown');w.dispatchEvent(new w.Event('blur'));
+  assert.equal(tossLayer.hidden,true);
   for(const n of [4,0]){
-    setFaces(n);prefs.matches=false;first().click();
+    setFaces(n);prefs.matches=false;
+    if(n===4){
+      castPointer(first(),'pointerdown');assert.equal(text('outcome'),'');
+      castPointer(w,'pointerup');
+    }else{
+      const control=first();
+      control.dispatchEvent(new w.KeyboardEvent('keydown',{key:' ',bubbles:true,cancelable:true}));
+      control.dispatchEvent(new w.KeyboardEvent('keydown',{key:' ',repeat:true,bubbles:true,cancelable:true}));
+      tick();assert.ok(tossLayer.classList.contains('shuffling'));
+      control.dispatchEvent(new w.KeyboardEvent('keyup',{key:' ',bubbles:true,cancelable:true}));
+    }
+    assert.equal(tossLayer.classList.contains('shuffling'),false);
     assert.ok(bonus.hidden);assert.equal(doc.getElementById('toss-layer').hidden,false);
     tick();await until(()=>first().textContent==='한 번 더 던지기');
     assert.equal(bonus.hidden,false);assert.equal(bonus.querySelectorAll('.game-result-spark').length,24);

@@ -97,9 +97,17 @@ test('backdo retraces the actual shortcut, carries a stack and grants a capture 
   assert.deepEqual(next.pawns[0].slice(0,2),[trail.slice(0,-1),trail.slice(0,-1)]);
   assert.deepEqual(next.pawns[1][0],[]);assert.equal(next.team,0);
   assert.equal(next.lastMove.captured,1);assert.deepEqual(next.lastMove.frames,[21]);
-  const first=ordinary();first.pawns[0][0]=[1];first.pawns[1][0]=[1];
-  const back=move(roll(first,[0,0,0,1]),0);
-  assert.deepEqual(back.lastMove.frames,[-1]);assert.deepEqual(back.pawns[0][0],[]);assert.deepEqual(back.pawns[1][0],[1]);
+});
+test('backdo from the first do square goes to the exit, where the next forward step finishes',()=>{
+  const first=ordinary();first.pawns[0]=[[1],[1],[],[FINISH]];first.pawns[1][0]=[19,0];
+  const backdo=roll(first,[0,0,0,1]);
+  assert.deepEqual(moves(backdo),[{index:0,shortcut:false,to:0}]);
+  const back=move(backdo,0);
+  assert.deepEqual(back.lastMove.frames,[0]);assert.deepEqual(back.pawns[0].slice(0,2),[[0],[0]]);
+  assert.deepEqual(back.pawns[1][0],[]);assert.equal(back.lastMove.captured,1);
+  const finished=move(roll(back,faces(1)),0);
+  assert.deepEqual(finished.lastMove.frames,[FINISH]);assert.equal(position(finished.pawns[0][1]),FINISH);
+  const fartherBack=move(roll(back,[0,0,0,1]),0);assert.deepEqual(fartherBack.lastMove.frames,[19]);
 });
 test('an unusable backdo waits for other banked moves and passes only when none can be played',()=>{
   const sticks=[0,0,0,1];const g=ordinary();
@@ -234,7 +242,8 @@ test('back and home apply on landing, once, and affect only the arriving group',
   assert.deepEqual(home.pawns[0],[[],[],[12]]);assert.deepEqual(home.pawns[1][0],[5]);assert.deepEqual(home.lastMove.frames,[4,5,-1]);
   assert.equal(position(move(roll(g,faces(3)),0).pawns[0][0]),6);
   g.eventTiles={1:'back'};g.pawns[0]=[[],[],[]];
-  assert.deepEqual(move(roll(g,faces(1)),2).pawns[0],[[],[],[]]);
+  const first=move(roll(g,faces(1)),2);
+  assert.deepEqual(first.lastMove.frames,[1,0]);assert.deepEqual(first.pawns[0],[[],[],[0]]);
 });
 test('shortcuts remember entry at the center, and a stop there offers the finish route',()=>{
   const corner=setup([5],3);assert.deepEqual(moves(corner).filter(x=>x.index===0).map(x=>x.to),[8,22]);
@@ -285,13 +294,14 @@ test('eight distinct seats can play a full turn each and the ninth cannot act',a
     assert.equal(roomCode('https://example.test/#room='+host.view().host),host.view().host);assert.equal(roomCode('bogus'),null);
     for(let i=1;i<=8;i++){store.clear();clients.push(await openRoom(host.view().host,()=>{},mock));if(i<8)await until(()=>clients[i].view().seat===i);}
     await until(()=>clients[8].view().status.includes('찼'));
-    const rand=t.mock.method(Math,'random',()=>0); // The first square sends each pawn back to its bench.
+    let tile=0; // Put the home obstacle on square one so every seat ends its turn there.
+    const rand=t.mock.method(Math,'random',()=>tile++<2?.99:0);
     host.start();await until(()=>clients.slice(0,8).every(c=>c.view().game?.revision===0));
     const game=clients[7].view().game;
     assert.equal(game.mode,'easy');assert.equal(game.zodiacOffset,8);assert.deepEqual(game.islandTiles,{});
     assert.deepEqual(game.pawns.map(p=>p.length),counts);assert.deepEqual(game.teamAnimals,animals);
     assert.deepEqual(game.eventTiles,host.view().game.eventTiles);
-    assert.equal(Object.keys(game.eventTiles).length,3);
+    assert.equal(Object.keys(game.eventTiles).length,3);assert.equal(game.eventTiles[1],'home');
     let face=0;rand.mock.mockImplementation(()=>face++%4===0?.1:.9);
     for(let seat=0;seat<8;seat++){
       assert.equal(host.view().game.team,seat);
