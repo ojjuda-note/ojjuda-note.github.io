@@ -17,7 +17,7 @@ fs.mkdirSync(proof,{recursive:true});
    if(url.hostname==='t1.kakaocdn.net')kakaoSdkRequests++;
    if(url.origin!==origin)return route.abort();
    if(url.pathname==='/park/')return route.fulfill({contentType:'text/html',body:html});
-   if(url.pathname==='/note/assets/188.jpg')return route.fulfill({contentType:'image/jpeg',body:inkBackground});
+   if(url.pathname==='/note/assets/297.jpg')return route.fulfill({contentType:'image/jpeg',body:inkBackground});
    if(url.pathname==='/note/assets/189.jpg'&&failBackground)return route.fulfill({status:404,body:'missing test image'});
    if(url.pathname==='/vendor/html2canvas-1.4.1.min.js'){
     vendorLoads++;
@@ -97,7 +97,7 @@ fs.mkdirSync(proof,{recursive:true});
     {id:id(3),kind:'memo',body:'그림이 없는 카드',tags:['메모'],background_key:'plain',style:{font:'round'}},
     {id:id(4),kind:'event',body:'범위 제한 이벤트',tags:['이벤트'],background_key:'10',is_mine:false},
     {id:id(5),kind:'memo',body:'깨진 사진은 공유하지 않아요',tags:['검증'],background_key:'189',style:{font:'round'}},
-    ...[0,50,100].map((level,index)=>({id:id(6+index),kind:'memo',body:'오늘도 수고했어',tags:[],background_key:'188',
+    ...[0,50,100].map((level,index)=>({id:id(6+index),kind:'memo',body:'오늘도 수고했어',tags:[],background_key:'297',
      style:{font:'calligraphy',textColor:'black',boxColor:'white',boxTransparency:level}}))
    ].map(card=>({...card,created_at:'2026-10-31T00:00:00Z'}));
    window.deniedCards=new Set();

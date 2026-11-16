@@ -23,10 +23,22 @@
     ['green', '초록'], ['blue', '파랑'], ['purple', '보라'],
     ['black', '검정'], ['white', '흰색']
   ];
-  const PHOTO_CHOICES = [['', '지정 없음'], ...Array.from({ length: 180 }, (_, index) =>
-    [String(index + 10), `사진 ${String(index + 1).padStart(3, '0')}`])];
+  const PHOTO_GROUPS = [
+    { name: '사진', first: 10, last: 189 },
+    { name: '한 색 수묵', first: 190, last: 225 },
+    { name: '두 색 수묵', first: 226, last: 261 },
+    { name: '여러 색 수묵', first: 262, last: 297 }
+  ];
+  const PHOTO_CHOICES = [['', '지정 없음']];
+  for (const group of PHOTO_GROUPS) {
+    for (let key = group.first; key <= group.last; key++) {
+      const number = String(key - group.first + 1).padStart(group === PHOTO_GROUPS[0] ? 3 : 2, '0');
+      PHOTO_CHOICES.push([String(key), `${group.name} ${number}`]);
+    }
+  }
   const PHOTO_PAGE_SIZE = 12;
-  const photoKeyValid = value => /^\d{2,3}$/.test(String(value)) && Number(value) >= 10 && Number(value) <= 189;
+  const photoKeyValid = value => /^\d{2,3}$/.test(String(value))
+    && Number(value) >= PHOTO_GROUPS[0].first && Number(value) <= PHOTO_GROUPS.at(-1).last;
   const photoUrl = key => `/note/assets/${key}.jpg?v=20260927-curated180`;
   // Match the World's risk_pattern() for badges; the server decides which rows enter the risk list.
   const RISK_SIGNAL = /(죽고\s*싶|자살|자해|사라지고\s*싶|없어지고\s*싶|살기\s*싫|살고\s*싶지\s*않|끝내고\s*싶|목숨|유서|뛰어내리|맞았|때렸|폭행|협박|학대|성폭|스토킹|죽여\s*버|죽일\s*거)/i;
@@ -422,7 +434,7 @@
         const initialPhotoKey = photoKey; extraDraftCheck = () => content.isConnected && photoKey !== initialPhotoKey;
         let photoPage = photoKey ? Math.floor((Number(photoKey) - 10) / PHOTO_PAGE_SIZE) : 0;
         const photoPanel = el('section', 'na-photo-selector');
-        photoPanel.append(el('h4', '', '지정 사진'), el('p', 'na-photo-help', `처음 무작위 배정된 무료 사진: ${originalPhoto} · 아래 사진을 고르면 지정 기간 동안 적용됩니다.`));
+        photoPanel.append(el('h4', '', '지정 배경'), el('p', 'na-photo-help', `처음 무작위 배정된 무료 배경: ${originalPhoto} · 아래에서 고르면 지정 기간 동안 적용됩니다.`));
         const originalChoice = button('처음 사진 사용', () => selectPhoto(''));
         originalChoice.classList.add('na-photo-original');
         photoPanel.append(originalChoice);
@@ -448,8 +460,15 @@
         const pageLabel = el('label', 'na-photo-page-label'); pageLabel.append(el('span', '', '페이지'));
         const pageSelect = el('select', 'inp na-input');
         const pageCount = Math.ceil((PHOTO_CHOICES.length - 1) / PHOTO_PAGE_SIZE);
-        for (let index = 0; index < pageCount; index++) {
-          const option = el('option', '', `${index + 1} / ${pageCount}`); option.value = String(index); pageSelect.append(option);
+        for (const group of PHOTO_GROUPS) {
+          const section = el('optgroup'); section.label = group.name;
+          const start = Math.floor((group.first - PHOTO_GROUPS[0].first) / PHOTO_PAGE_SIZE);
+          const count = Math.ceil((group.last - group.first + 1) / PHOTO_PAGE_SIZE);
+          for (let page = 0; page < count; page++) {
+            const option = el('option', '', `${group.name} ${page + 1} / ${count}`);
+            option.value = String(start + page); section.append(option);
+          }
+          pageSelect.append(section);
         }
         pageSelect.addEventListener('change', () => { photoPage = Number(pageSelect.value); renderPhotoPage(); });
         pageLabel.append(pageSelect);

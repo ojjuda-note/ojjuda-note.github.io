@@ -173,41 +173,54 @@
     const midBar = curve('16,52,.15 33,50,.54 64,43,.62 87,39,.055');
     const under = curve('3,88,.21 13,92,.81 35,90,.89 68,80,.59 89,77,.28 100,78,.03');
     const foot = curve('22,5,.24 26,13,.94 23,34,1.09 15,63,1.02 14,76,.93 19,84,.85 33,86,.76 54,80,.55 79,65,.29 100,51,.025');
-    const round = curve('57,12,.10 46,10,.66 27,24,.91 15,48,1.1 13,73,.86 21,86,.70 40,88,.68 60,78,.64 77,60,.51 86,41,.63 85,25,.65 75,17,.44 58,20,.21 48,27,.03');
+    const round = curve('58,14,.27 52,11,.60 42,13,.85 27,25,1.03 16,45,1.08 12,65,.93 16,80,.80 26,87,.68 41,86,.63 59,77,.54 77,59,.42 88,40,.38 87,27,.52 79,21,.57 68,20,.41 54,26,.17 47,33,.025');
     const hook = curve('3,30,.15 13,29,.68 36,18,.97 62,10,1.09 79,10,.93 84,16,.74 82,29,.60 69,49,.55 48,71,.36 26,90,.18 11,99,.02');
     const topHook = curve('4,23,.20 17,21,.78 43,14,.93 67,9,.87 84,11,.74 88,21,.70 86,38,.70 78,65,.55 68,88,.19 62,96,.025');
     const armL = curve('13,8,.23 23,12,.73 25,28,.91 20,52,.95 16,78,.70 19,93,.14');
     const armR = curve('79,0,.16 88,5,.83 87,24,.91 82,49,.85 72,77,.57 64,94,.09');
-    const forkL = curve('67,2,.18 70,11,.83 64,29,1.09 51,48,.98 33,67,.81 12,82,.49 -2,88,.07');
-    const forkR = curve('54,42,.12 58,52,.35 67,65,.59 82,76,.86 94,79,.56 101,77,.09');
+    const forkL = curve('64,2,.39 69,7,.81 68,16,1.03 58,33,1.08 44,52,1.03 27,69,.79 12,81,.43 -3,89,.04');
+    const forkR = curve('52,40,.10 55,47,.34 63,58,.57 75,68,.76 88,73,.77 97,72,.39 102,69,.055');
+    // A written ㅈ turns its top stroke into the left fall without lifting the brush.
+    const joinedJ = curve('0,23,.28 8,23,.63 26,17,.77 51,10,.78 72,7,.74 79,9,.77 80,16,.82 73,28,.95 60,45,1.06 42,62,.96 23,76,.64 5,86,.29 -5,90,.026');
     const head = curve('27,4,.13 40,9,.55 54,17,.87 60,24,.68 56,28,.14');
-    const bent = curve('22,12,.14 26,20,.81 23,43,.99 15,68,.88 13,80,.78 18,85,.74 35,85,.68 59,77,.54 81,67,.29 99,55,.03');
-    const zigTop = curve('7,18,.13 20,18,.67 44,12,.79 67,7,.74 82,8,.64 83,18,.56 75,32,.42 64,44,.09');
-    const zigSpan = curve('72,37,.13 57,41,.51 36,47,.69 17,54,.52 11,59,.10');
-    const zigFoot = curve('19,49,.12 21,59,.68 16,73,.79 13,84,.74 17,91,.66 34,91,.63 57,83,.55 79,76,.32 99,75,.025');
+    const bent = curve('21,13,.26 26,19,.78 25,35,.99 18,57,.95 14,74,.83 15,83,.79 23,88,.78 37,88,.65 57,83,.44 78,74,.24 99,66,.025');
+    // Fold back with the tip still down; lift again before the bottom sweep.
+    const foldedL = curve('6,18,.23 16,19,.62 39,13,.82 63,8,.78 78,8,.72 84,13,.69 82,23,.60 73,37,.49 64,43,.32 49,47,.43 30,50,.61 16,54,.54 11,58,.16');
+    const zigFoot = curve('17,51,.22 21,58,.67 18,69,.83 14,81,.80 15,89,.71 24,93,.74 40,91,.66 60,85,.52 82,77,.31 101,75,.025');
     const boxTop = curve('14,23,.11 37,17,.52 62,12,.78 83,12,.74 87,19,.63 82,41,.67 75,62,.66 67,83,.25');
     const profiles = {
       ㄱ: [hook],
       ㄴ: [foot],
       ㄷ: [topBar, bent],
-      ㄹ: [zigTop, zigSpan, zigFoot],
+      ㄹ: [foldedL, zigFoot],
       ㅁ: [armL, boxTop, under],
       ㅂ: [armL, armR, midBar, under],
       ㅅ: [forkL, forkR],
       ㅇ: [round],
-      ㅈ: [topBar, map(forkL, 1, 13, 95, 82), map(forkR, 0, 13, 97, 83)],
-      ㅊ: [head, map(topBar, 1, 19, 98, 65), map(forkL, 3, 30, 93, 73), map(forkR, 0, 29, 99, 73)],
+      ㅈ: [joinedJ, map(forkR, 3, 12, 97, 85)],
+      ㅊ: [head, map(joinedJ, 1, 24, 98, 77), map(forkR, 3, 32, 96, 68)],
       ㅋ: [hook, map(midBar, -2, 4, 94, 95)],
       ㅌ: [topBar, map(midBar, -2, 3, 94, 90), bent],
       ㅍ: [topBar, map(armL, 14, 10, 72, 81), map(armR, -5, 13, 94, 75), under],
       ㅎ: [map(head, 4, -1, 90, 79), map(topBar, 0, 16, 100, 60), map(round, 7, 34, 82, 69)]
     };
+    // Narrow double onsets need an open bowl and a fine crossbar at card size.
+    // The left stroke of ㅂ turns along the base so the counter survives scaling.
+    const twinB = [
+      curve('14,8,.32 20,12,.83 19,31,.96 13,61,.84 11,80,.70 15,88,.60 27,88,.49 48,83,.37 69,78,.18 84,75,.065'),
+      curve('83,0,.30 88,5,.86 89,23,.97 83,47,.86 77,70,.67 72,85,.43 73,90,.12'),
+      curve('15,54,.15 31,51,.50 55,46,.46 78,42,.22')
+    ];
+    const twinD = [
+      curve('9,23,.30 19,23,.64 45,16,.74 72,11,.60 95,12,.10'),
+      curve('17,17,.25 23,23,.80 21,39,.98 13,67,.88 13,80,.73 20,87,.67 36,88,.52 58,81,.34 83,71,.16 101,68,.03')
+    ];
     const lowerN = curve('16,5,.11 25,13,.73 24,26,.99 15,51,1.04 9,74,.87 12,87,.77 24,93,.72 43,90,.65 65,79,.52 87,67,.27 103,63,.025');
-    const hLine = curve('-1,57,.13 8,57,.79 29,52,1.04 57,43,.86 81,39,.54 101,39,.025');
+    const hLine = curve('-1,53,.41 4,57,.72 13,59,1.01 31,55,1.07 55,47,.82 76,41,.51 92,39,.25 103,38,.025');
     const sweepLine = curve('-1,57,.14 9,56,.82 30,50,1.06 55,45,.88 75,44,.62 93,44,.42 108,41,.19 117,36,.018');
     const up = curve('51,1,.17 55,8,.79 53,20,1.04 46,36,.74 41,52,.18');
     const down = curve('58,27,.27 60,34,.76 59,46,1.03 55,59,.99 46,75,.79 38,92,.44 32,111,.025');
-    const baseLine = curve('-2,62,.15 7,62,.85 30,54,1.02 58,44,.88 81,38,.49 103,38,.03');
+    const baseLine = curve('-1,57,.42 4,61,.72 13,63,1.01 34,56,1.04 59,45,.84 79,39,.52 96,37,.23 104,38,.025');
     const hVowels = {
       ㅗ: [up, hLine],
       ㅛ: [map(up, -9, 7, 84, 91), map(up, 25, -1, 82, 97), hLine],
@@ -231,9 +244,9 @@
       function axis(x, isOuter) {
         if (isOuter && flourish) {
           // After a bowed descent, ease the heel forward as the brush lifts.
-          return curve(`${x + 7},0,.17 ${x + 10},8,.96 ${x + 7},26,1.04 ${x},50,.93 ${x - 7},76,.71 ${x - 11},95,.44 ${x - 10},108,.20 ${x - 5},116,.025`);
+          return curve(`${x + 6},1,.46 ${x + 12},5,.82 ${x + 13},14,1.02 ${x + 8},30,1.10 ${x - 1},50,.96 ${x - 12},73,.72 ${x - 18},91,.49 ${x - 17},104,.29 ${x - 10},113,.12 ${x - 4},116,.025`);
         }
-        return curve(`${x + 7},0,.14 ${x + 10},8,.94 ${x + 7},25,1.04 ${x + .3},49,.91 ${x - 6},72,.68 ${x - 10},91,.40 ${x - 10.5},101,.16 ${x - 8},106,.025`);
+        return curve(`${x + 6},1,.46 ${x + 12},5,.83 ${x + 13},14,1.02 ${x + 8},30,1.08 ${x},50,.91 ${x - 11},73,.66 ${x - 16},90,.42 ${x - 16},101,.19 ${x - 12},107,.025`);
       }
       const starts = doubleBars ? [31, 58] : [47];
       const x = axes[0];
@@ -341,21 +354,23 @@
       const long = wordEnd && !f,
         strokes = [];
       const baseAdvance = m ? 94 : horizontal ? 90 : twinVowel ? 96 : v === 'ㅣ' ? 76 : v === 'ㅓ' || v === 'ㅕ' ? 82 : 88;
-      const advance = baseAdvance + (complexOnset ? 7 : 0) + (complexFinal ? 5 : 0) + (f ? 2 : 0) + (wordEnd ? 3 : 0);
+      const advance = baseAdvance + (complexOnset ? 12 : 0) + (complexFinal ? 5 : 0) + (f ? 2 : 0) + (wordEnd ? 3 : 0);
       function draw(key, x, y, w, h, weight = 1, place = '') {
         if (pairs[key]) {
           const [a, b] = pairs[key];
-          const left = key === 'ㄺ' || key === 'ㄼ' ? 0.52 : 0.47;
-          draw(a, x, y + h * .035, w * left, h * .94, weight * .75, place);
-          draw(b, x + w * (left + .035), y, w * (.965 - left), h, weight * .76, place);
+          // The first press is shallower; the second carries the gesture onward.
+          draw(a, x, y + h * .095, w * .45, h * .84, weight * .70, 'twin');
+          draw(b, x + w * .52, y, w * .48, h, weight * .79, 'twin');
           return;
         }
         let paths = profiles[key] || hVowels[key];
+        if (place === 'twin' && key === 'ㅂ') paths = twinB;
+        if (place === 'twin' && key === 'ㄷ') paths = twinD;
         if (long && phraseEnd && place === 'base' && terminalVowels[key]) paths = terminalVowels[key];
         if (!paths) paths = verticalPaths(key, long && place !== 'mixed', phraseEnd);
         if ((key === 'ㄱ' || key === 'ㅋ') && place === 'top') paths = [topHook, ...paths.slice(1)];
         if (key === 'ㄴ' && place === 'final') paths = [phraseEnd ? terminalN : lowerN];
-        if (key === 'ㄹ' && place === 'final' && phraseEnd) paths = [zigTop, zigSpan, terminalL];
+        if (key === 'ㄹ' && place === 'final' && phraseEnd) paths = [foldedL, terminalL];
         const density = 'ㅂㅌㅍㅁㄹ'.includes(key) ? .82 : 'ㅎㅊㅈ'.includes(key) ? .88 : 1;
         const width = 15.6 * weight * density * Math.min(1.08, Math.sqrt(Math.min(w / 44, h / 55)));
         for (const path of paths) strokes.push({
@@ -366,14 +381,14 @@
       // Horizontal and compound syllables make room at the bottom for the coda.
       if (m) {
         const top = complexFinal ? 31 : f ? 34 : 50;
-        const upperW = complexOnset ? 53 : 'ㅇㅎ'.includes(c) ? 38 : 49;
+        const upperW = complexOnset ? 59 : 'ㅇㅎ'.includes(c) ? 38 : 49;
         draw(c, 8 + (53 - upperW) * .55, 5, upperW, top, 1.01, 'top');
         const lower = complexFinal ? 24 : f ? 29 : 40;
         draw(m[0], 2, top + 2, 60, lower, .89);
         draw(m[1], 59, -1, advance - 64, complexFinal ? 53 : f ? 61 : 85, .96, 'mixed');
       } else if (horizontal) {
         const top = f ? v === 'ㅡ' ? 41 : 36 : v === 'ㅡ' ? 66 : v === 'ㅗ' || v === 'ㅛ' ? 51 : 43;
-        const upperW = (c === 'ㅇ' ? 40 : c === 'ㅎ' ? 51 : complexOnset ? 72 : 62) * (v === 'ㅡ' ? 1.03 : 1);
+        const upperW = (c === 'ㅇ' ? 40 : c === 'ㅎ' ? 51 : complexOnset ? 78 : 62) * (v === 'ㅡ' ? 1.03 : 1);
         const topX = (advance - upperW) / 2 + (c === 'ㅇ' ? 3 : 0);
         draw(c, topX, f ? 1 : 4, upperW, top, 1.05, 'top');
         const y = top + (v === 'ㅡ' ? 0 : 3);
@@ -382,7 +397,7 @@
         const compact = c === 'ㅇ',
           wide = complexOnset,
           start = f ? 7 : 12;
-        const cWidth = compact ? f ? 31 : 39 : wide ? 51 : twinVowel ? 44 : 48;
+        const cWidth = compact ? f ? 31 : 39 : wide ? 59 : twinVowel ? 44 : 48;
         const cHeight = compact ? f ? 34 : 48 : f ? 50 : 65;
         const cY = compact ? f ? 19 : 27 : start;
         draw(c, 1, cY, cWidth, cHeight, compact ? 1.00 : 1.07);
@@ -502,8 +517,10 @@
     }
     const closing = /^[,.;:!?%…。，、！？：；”’»」』）】〕〉》)\]}]+$/u;
     const opening = /^[“‘«「『（【〔〈《(\[{]+$/u;
-    const beforeNoun = /^(?:내|네|제|그|이|저|어느|어떤|모든|온|한|두|세|몇|여러|가장|더)$/u;
+    const leadWord = /^(?:내|네|제|그|이|저|우리|어느|어떤|모든|온|한|두|세|몇|여러|가장|더|곧|늘|또|잘|꼭|첫|새|다시|잠깐|함께)$/u;
     const boundWord = /^(?:수|것|때|뿐|줄|듯|채|데|리)$/u;
+    const locationWord = /^(?:위|아래|곁|옆|속|앞|뒤|사이)(?:에|에서|으로|로|까지|부터)?$/u;
+    const tailParticle = /(?:처럼|에게|한테|까지|부터|에서|으로|보다|[을를의은는])$/u;
     function separation(a, b) {
       const ap = a.glyph.profile, bp = b.glyph.profile;
       const natural = a.glyph.advance * a.scale;
@@ -528,9 +545,12 @@
       if (opening.test(a.ch) || closing.test(b.ch)) return 18;
       if (!b.newWord) return a.range && a.range === b.range ? 1.5 : .35;
       if (a.word === b.word) return -.35;
-      if (beforeNoun.test(a.word) || boundWord.test(b.word)) return 5;
+      if (leadWord.test(a.word) || boundWord.test(b.word) || /의$/u.test(a.word)) return 5;
       if (a.range && a.range === b.range) return 2;
-      if (/[은는던]$/u.test(a.word) && /^[가-힣]{1,2}[.!?…]?$/u.test(b.word)) return 1.15;
+      if (/(?:지만|[가-힣]{2}면|어서|면서)$/u.test(a.word)) return -.48;
+      if (locationWord.test(b.word) || /(?:처럼|에게|으로|까지|히|게)$/u.test(a.word)) return .78;
+      if (/^[가-힣]$/u.test(a.word) && /(?:면|며|는|어요|아요|다[.!?]?)$/u.test(b.word)) return 1.5;
+      if (/[은는던]$/u.test(a.word) && /^[가-힣]{1,2}[.!?…]?$/u.test(b.word) && !/[게히]$/u.test(b.word)) return 1.15;
       if (/[,.;:!?…。，！？]$/u.test(a.ch)) return -.14;
       return 0;
     }
@@ -541,7 +561,13 @@
       // Several enlarged words need a wider measure to keep the whole verse readable.
       const marked = letters.filter(p => p.range).length / letters.length;
       const proportion = longForm ? 154 : 84 + Math.min(90, Math.max(0, marked - .4) * 400);
-      const target = Math.max(186, Math.sqrt(total * proportion));
+      // Medium-length sayings read in a few complete phrases. A wider measure
+      // opens gradually as words accumulate; very short verses keep their cadence.
+      const phraseLines = Math.max(2.7, Math.sqrt(letters.length * .44));
+      const compactWidth = Math.sqrt(total * proportion);
+      const phraseWidth = Math.min(1040, total / phraseLines);
+      const blend = Math.min(1, Math.max(0, (letters.length - 8) / 9));
+      const target = Math.max(186, compactWidth + Math.max(0, phraseWidth - compactWidth) * blend);
       const stops = [0];
       // Keep short inflected words intact even when their tagged stem is enlarged.
       // Long unspaced text can still wrap at syllable boundaries.
@@ -607,6 +633,10 @@
           const chars = syllables(word);
           let last = chars.length - 1;
           while (last > 0 && closing.test(chars[last])) last--;
+          const stem = chars.slice(0, last + 1).join('');
+          const particle = stem.match(tailParticle)?.[0];
+          const particleStart = particle && stem.length > particle.length + 1
+            ? last + 1 - particle.length : last + 1;
           for (const [j, ch] of chars.entries()) {
             while (source[position] === ' ') position++;
             while (rangeIndex < ranges.length && ranges[rangeIndex][1] <= position) rangeIndex++;
@@ -616,12 +646,15 @@
             const glyph = get(ch, j === last, j === last && wi === words.length - 1);
             // Give short grammatical words less weight, unless the writer tagged them.
             const supporting = (boundWord.test(word) && wi > 0) ||
-              (beforeNoun.test(word) && chars.length === 1 && wi + 1 < words.length) ||
-              (j === last && j >= 1 && /[을를]/u.test(ch));
-            const scale = range ? 1.35 : supporting ? .86 : 1;
-            const y = -(scale - 1) * 68 + 2.8 * Math.cos(wi + .74 * j) - Math.min(j, 3) * .65;
+              (leadWord.test(word) && chars.length === 1 && wi + 1 < words.length);
+            const scale = range ? 1.35 : j > last ? .76 : supporting ? .83 : j >= particleStart ? .86 : 1;
+            // The baseline follows a single gesture per word: lift through the body,
+            // settle at its end. Short particles sit in the shoulder of the stem.
+            const phase = last ? Math.min(1, j / last) : .5;
+            const arch = Math.sin(phase * Math.PI);
+            const y = -(scale - 1) * 67 + 3 * Math.cos(wi * 1.8) - 5.8 * arch - 1.8 * phase;
             const p = {ch, word, newWord: !j, glyph, range, x: 0, y, scale,
-              tilt: [-.048, -.029, .009, -.032][(j + wi) % 4],
+              tilt: -.037 + .018 * Math.sin(wi * 1.7) + .027 * arch,
               seed: (li + 1)*30181 + (wi + 1)*9767 + j*179 + ch.codePointAt(0)};
             const prev = letters.at(-1);
             if (prev) p.x = prev.x + separation(prev, p) + (p.newWord ? 17 : 0);
@@ -685,7 +718,7 @@
       ctx.fill();
       ctx.restore();
     }
-    function textureInk(ctx, rowEnds, rightEdges) {
+    function textureInk(ctx, rowEnds, edges) {
       const { width, height } = ctx.canvas;
       const frame = ctx.getImageData(0, 0, width, height);
       const pixels = frame.data;
@@ -695,7 +728,7 @@
       let rowIndex = 0, rowStart = 0, rowLeft = width, rowRight = -1;
       for (let y = 0; y < height; y++) {
         const brushY = y * scale;
-        let lastX = -1;
+        let firstX = width, lastX = -1;
         for (let x = 0; x < width; x++) {
           const alpha = (y * width + x) * 4 + 3;
           const coverage = pixels[alpha];
@@ -708,6 +741,7 @@
           const loss = Math.max(0, .012 + .025 * pool + .024 * (noise - .5) + (noise > .987 ? .045 : 0));
           pixels[alpha] = Math.round(coverage * (1 - loss));
           if (pixels[alpha]) {
+            if (lastX < 0) firstX = x;
             lastX = x;
             rowLeft = Math.min(rowLeft, x);
             rowRight = Math.max(rowRight, x);
@@ -715,7 +749,10 @@
             bottom = y;
           }
         }
-        if (rightEdges) rightEdges[y] = lastX;
+        if (edges) {
+          edges.left[y] = firstX;
+          edges.right[y] = lastX;
+        }
         if (y + 1 >= rowEnds[rowIndex]) {
           // Center the actual painted pixels, including brush tails and punctuation.
           // Move a row in the same pixel buffer already used to texture the ink.
@@ -723,7 +760,10 @@
             const shift = Math.round((width - 1 - rowLeft - rowRight) / 2);
             if (shift) {
               for (let line = rowStart; line <= y; line++) {
-                if (rightEdges && rightEdges[line] >= 0) rightEdges[line] += shift;
+                if (edges && edges.right[line] >= 0) {
+                  edges.left[line] += shift;
+                  edges.right[line] += shift;
+                }
                 const begin = (line * width + rowLeft) * 4;
                 const end = (line * width + rowRight + 1) * 4;
                 pixels.copyWithin(begin + shift * 4, begin, end);
@@ -749,7 +789,7 @@
       const rgb = [1, 3, 5].map(start => parseInt(inkColor.slice(start, start + 2), 16)).join(',');
       return shade => 'rgba(' + rgb + ',' + (1 - Math.max(0, shade - 11) / 430) + ')';
     }
-    function draw(ctx, input, source, ranges, accent, zoom, inkColor, rightEdges) {
+    function draw(ctx, input, source, ranges, accent, zoom, inkColor, edges) {
       const tint = makeTint(inkColor);
       ctx.save();
       ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -798,7 +838,7 @@
       ctx.restore();
       const rowEnds = page.rows.map(row => Math.round((page.dy + row.end * page.fit) * ctx.canvas.height / HEIGHT));
       rowEnds[rowEnds.length - 1] = ctx.canvas.height;
-      return textureInk(ctx, rowEnds, rightEdges);
+      return textureInk(ctx, rowEnds, edges);
     }
     return {
       draw,
@@ -808,29 +848,32 @@
     };
   })();
   // Look for the shoulder of the lettering: the open space next to a short line.
-  // rightEdges includes brush tips and gold marks, after centering each line.
-  function motifPosition(width, height, bounds, rightEdges) {
+  // Both contours include brush tips and gold marks, after centering each line.
+  function motifPosition(width, height, bounds, edges) {
     const top = Math.round(bounds.y * height), bottom = Math.round((bounds.y + bounds.height) * height);
-    const right = Math.round((bounds.x + bounds.width) * width);
+    const left = Math.round(bounds.x * width), right = Math.round((bounds.x + bounds.width) * width);
     const gap = Math.max(2, Math.round(width * .014));
-    const margin = gap * 2, step = Math.max(1, Math.round(width / 90));
+    const margin = Math.max(2, Math.ceil(width * .015)), step = Math.max(1, Math.round(width / 140));
     const preferred = Math.round(Math.min(width * .205, Math.max(width * .15, (bottom - top) * .61)));
     for (const size of [preferred, Math.round(preferred * .79)]) {
       if (size < 8) break;
       let best = null, lowest = Infinity;
-      const from = Math.max(margin, Math.floor(top - size * .62));
-      const to = Math.min(height - size - margin, Math.ceil(bottom - size * .38));
+      const from = Math.max(margin, top - size + gap);
+      const to = Math.min(height - size - margin, bottom - gap);
       for (let y = from; y <= to; y += step) {
-        let edge = -1;
+        let outerLeft = width, outerRight = -1;
         for (let line = Math.max(0, y - gap); line < Math.min(height, y + size + gap); line++) {
-          edge = Math.max(edge, rightEdges[line]);
+          outerLeft = Math.min(outerLeft, edges.left[line]);
+          outerRight = Math.max(outerRight, edges.right[line]);
         }
-        if (edge < 0) continue;
-        const x = edge + 1 + gap;
-        if (x + size > width - margin) continue;
-        const score = Math.abs(y + size * .50 - top - (bottom - top) * .30)
-          + Math.max(0, x + size - right) * .85;
-        if (score < lowest) { lowest = score; best = {x, y, size}; }
+        if (outerRight < 0) continue;
+        for (const x of [outerRight + 1 + gap, outerLeft - gap - size]) {
+          if (x < margin || x + size > width - margin) continue;
+          const overhang = Math.max(0, left - x, x + size - right);
+          const score = Math.abs(y + size * .50 - top - (bottom - top) * .30)
+            + overhang * .85 + (x < outerLeft ? gap : 0);
+          if (score < lowest) { lowest = score; best = {x, y, size}; }
+        }
       }
       if (best) return best;
     }
@@ -842,9 +885,9 @@
     }
     return null;
   }
-  function paintMotif(ctx, motif, bounds, rightEdges, inkColor) {
+  function paintMotif(ctx, motif, bounds, edges, inkColor) {
     const {width, height} = ctx.canvas;
-    const space = motifPosition(width, height, bounds, rightEdges);
+    const space = motifPosition(width, height, bounds, edges);
     if (!space) return bounds;
     const {x, y, size} = space;
     ctx.save();
@@ -893,9 +936,9 @@
       willReadFrequently: true
     });
     if (!ctx) return null;
-    const rightEdges = motif ? new Int16Array(pixelHeight) : null;
-    let bounds = Composition.draw(ctx, normalized, source, ranges, accent, zoom, inkColor, rightEdges);
-    if (motif && bounds) bounds = paintMotif(ctx, motif, bounds, rightEdges, inkColor);
+    const edges = motif ? { left: new Int16Array(pixelHeight), right: new Int16Array(pixelHeight) } : null;
+    let bounds = Composition.draw(ctx, normalized, source, ranges, accent, zoom, inkColor, edges);
+    if (motif && bounds) bounds = paintMotif(ctx, motif, bounds, edges, inkColor);
     lastPaint.set(canvas, {
       text: normalized,
       tagKey,
