@@ -1,5 +1,5 @@
 /* Park has its own document, but shares the World design tokens and theme. */
-:root { --park-card-ratio: 4 / 3; --park-card-max-width: 600px; }
+:root { --park-card-ratio: 1 / 1; --park-card-max-width: 600px; }
 html,body{background:var(--bg);color:var(--ink);font-family:var(--font-b)}
 html body .shell > .col > .main { width: min(100%, 1268px); }
 
@@ -241,7 +241,7 @@ html body .shell > .col > .main { width: min(100%, 1268px); }
 
 .composer-body { container-type: inline-size; }
 .composer-body > .compose-photo {
-  --compose-photo-height: 75cqw;
+  --compose-photo-height: 100cqw;
   height: auto;
   aspect-ratio: var(--park-card-ratio);
 }
