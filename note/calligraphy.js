@@ -503,8 +503,8 @@
             const marked = range && range[0] < position + ch.length && position < range[1];
             position += ch.length;
             const glyph = get(ch, j === chars.length - 1);
-            const scale = marked ? 1.20 : 1;
-            const y = 3.7 * Math.sin(j * 1.6 + wi) - (marked ? 14 : 0);
+            const scale = marked ? 1.35 : 1;
+            const y = 3.7 * Math.sin(j * 1.6 + wi) - (scale - 1) * 70;
             const p = {ch, glyph, x, y, scale, tilt: [-.057, -.028, .015, -.043, .01][(j+i)%5],
               seed: (i+1)*30181 + (wi+1)*9767 + j*179 + ch.codePointAt(0)};
             letters.push(p);
@@ -532,7 +532,10 @@
         widest = Math.max(widest, x + 46);
       }
       height = Math.max(1, height - 16);
-      const fit = Math.min(Math.min((longForm ? 960 : 862) / widest, (longForm ? 670 : 470) / height, 1.95) * zoom,
+      // Give tagged text room to grow even when most of the longest line is tagged.
+      const preferredAreaScale = ranges.length ? 1.065 : 1;
+      const fit = Math.min(Math.min((longForm ? 960 : 862) * preferredAreaScale / widest,
+        (longForm ? 670 : 470) * preferredAreaScale / height, 1.95) * zoom,
         (WIDTH-48) / widest, (HEIGHT-48) / height);
       return {rows, fit, dy: (HEIGHT - height * fit) / 2};
     }
