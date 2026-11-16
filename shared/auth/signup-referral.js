@@ -11,8 +11,9 @@
     const confirmation=container.querySelector('.referral-confirm'), skip=container.querySelector('.referral-skip');
     let selected=null, candidate=null, active=false, locked=false, run=0, timer=null, composing=false;
     let pendingQuery=null;
+    let searchDue=false;
     const button=(label,action) => { const b=document.createElement('button'); b.type='button'; b.className='referral-button'; b.textContent=label; b.addEventListener('click',action); return b; };
-    function cancel() { run++; clearTimeout(timer); timer=null; pendingQuery=null; }
+    function cancel() { run++; clearTimeout(timer); timer=null; pendingQuery=null; searchDue=false; }
     function reset() { cancel(); selected=candidate=null; input.value=''; status.textContent=''; results.replaceChildren(); confirmation.replaceChildren(); confirmation.hidden=true; skip.hidden=true; }
     function choose(person) {
       if (!active || locked) return;
@@ -36,7 +37,7 @@
       status.textContent='비슷한 닉네임을 찾고 있어요.';
       try {
         const {data,error}=await client.rpc('search_signup_referrers',{p_query:query});
-        if (request!==run || !active || locked || normalize(input.value)!==query) return;
+        if (request!==run || locked || normalize(input.value)!==query) return;
         if (error || !Array.isArray(data)) throw error || Error('invalid_response');
         const people=data.filter(p=>validId(p.id)&&typeof p.nickname==='string'&&p.nickname.length<=12).slice(0,5);
         status.textContent=people.length?'추천인을 선택해 주세요.':'같거나 비슷한 닉네임이 없어요. 이름을 다시 확인해 주세요.';
@@ -44,12 +45,13 @@
           const b=button(person.nickname,()=>choose(person)); b.classList.add('referral-candidate');
           b.setAttribute('aria-label',`${person.nickname} 추천인으로 선택`); results.append(b);
         }
-      } catch { if (request===run && active) status.textContent='추천인을 찾지 못했어요. 다시 찾거나 추천인 없이 가입할 수 있어요.'; }
+      } catch { if (request===run) status.textContent='추천인을 찾지 못했어요. 다시 찾거나 추천인 없이 가입할 수 있어요.'; }
       finally { if (request===run) pendingQuery=null; }
     }
     function changed() {
       cancel(); selected=candidate=null; confirmation.hidden=true; results.replaceChildren(); status.textContent=''; skip.hidden=!normalize(input.value);
-      if (active && !locked && !composing && normalize(input.value)) timer=setTimeout(lookup,300);
+      searchDue=!locked && !composing && Boolean(normalize(input.value));
+      if (active && searchDue) timer=setTimeout(lookup,300);
     }
     input.addEventListener('input',changed);
     input.addEventListener('compositionstart',()=>{composing=true;cancel();});
@@ -58,7 +60,13 @@
     search.addEventListener('click',()=>void lookup()); skip.addEventListener('click',()=>{if(!locked){reset();input.focus();}});
     return {
       reset,
-      setActive(value) { active=!!value; if(!active){cancel();results.replaceChildren();confirmation.hidden=true;} },
+      setActive(value) {
+        if (active===Boolean(value)) return;
+        active=Boolean(value);
+        // Keep results and in-flight replies with this form. Only pause an unsent lookup.
+        if (!active) { clearTimeout(timer); timer=null; }
+        else if (searchDue) timer=setTimeout(lookup,300);
+      },
       setBusy(value) { locked=!!value; if(locked)cancel(); for(const el of container.querySelectorAll('input,button')) el.disabled=locked; },
       read() {
         if (!normalize(input.value)) return null;

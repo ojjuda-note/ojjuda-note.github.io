@@ -81,8 +81,33 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin=
   await page.evaluate(()=>referralFixture.pending[1]({data:referralFixture.people}));
   assert.deepEqual(await page.locator('.referral-candidate').allTextContents(),['새이름'],'late search cannot replace current results');
   await page.locator('#login-tab').click();assert.equal(await page.locator('#signup-referral-slot').isVisible(),false);
-  await page.locator('#signup-tab').click();await page.locator('[data-close-dialog]').click();
+  await page.locator('#signup-tab').click();
+  assert.deepEqual(await page.locator('.referral-candidate').allTextContents(),['새이름']);
+  await page.getByRole('button',{name:'새이름 추천인으로 선택',exact:true}).click();
+  await page.locator('#login-tab').click();await page.locator('#signup-tab').click();
+  await page.getByRole('button',{name:'이 사람이 맞아요',exact:true}).click();
+  assert.equal(await page.evaluate(()=>referralFixture.searches.length),3,'switching tabs preserves candidates and confirmation without a new lookup');
+  await page.locator('[data-close-dialog]').click();
   await page.locator('[data-open-auth=signup]').click();assert.equal(await page.locator('#signup-referrer').inputValue(),'');
+
+  await page.clock.install({time:new Date('2026-11-16T00:00:00Z')});
+  await page.clock.pauseAt(new Date('2026-11-16T00:01:00Z'));
+  await page.locator('#signup-referrer').fill('민준');
+  await page.locator('#login-tab').click();
+  await page.clock.runFor(350);
+  assert.equal(await page.evaluate(()=>referralFixture.searches.length),3,'an unsent search waits while signup is hidden');
+  await page.locator('#signup-tab').click();await page.clock.runFor(350);
+  assert.equal(await page.evaluate(()=>referralFixture.pending.length),4,'returning starts the deferred search once');
+  await page.locator('#login-tab').click();
+  await page.evaluate(()=>referralFixture.pending[3]({data:referralFixture.people}));
+  await page.locator('#signup-tab').click();await confirm();
+  assert.equal(await page.evaluate(()=>referralFixture.searches.length),4,'a reply received on the login tab can still be selected');
+  await page.locator('#signup-referrer').fill('닫기');await page.clock.runFor(350);
+  await page.locator('[data-close-dialog]').click();
+  await page.locator('[data-open-auth=signup]').click();
+  await page.evaluate(()=>referralFixture.pending[4]({data:referralFixture.people}));
+  assert.equal(await page.locator('.referral-candidate').count(),0,'a closed form discards its late reply');
+  assert.equal(await page.locator('#referral-status').textContent(),'');
   assert.deepEqual(errors,[]);
   console.log('PASS: real signup form optional/explicit referral confirmation, edit invalidation, deleted target, metadata, skip, stale requests, mode/reset and responsive widths; no live signup');
  }finally{await browser.close();}
