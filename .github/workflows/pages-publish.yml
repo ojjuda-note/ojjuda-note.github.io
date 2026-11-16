@@ -15,6 +15,8 @@ on:
       - '!.gitignore'
       - '!_config.yml'
       - 'scripts/build-fanpage-hub.mjs'
+      - 'scripts/build-park-backgrounds.py'
+      - 'scripts/build-park-ink-washes.py'
   pull_request:
     paths:
       - '.github/workflows/pages-publish.yml'
