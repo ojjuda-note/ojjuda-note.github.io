@@ -225,8 +225,8 @@ test('Park paints the matching ink motif and replaces it when tag priority chang
     const canvas = document.createElement('canvas');
     const phrase = '달빛 아래 매화가 피었다';
     const moonFirst = ['달빛', '매화'], flowerFirst = ['매화', '달빛'];
-    function paint(text, tags) {
-      window.ParkCalligraphy.render(canvas, text, { width: 240, zoom: 1.12, tags });
+    function paint(text, tags, size = 240) {
+      window.ParkCalligraphy.render(canvas, text, { width: size, zoom: 1.12, tags });
       const { width, height } = canvas;
       const data = canvas.getContext('2d').getImageData(0, 0, width, height).data;
       let mask = '', left = width, right = -1, top = height, bottom = -1;
@@ -254,6 +254,8 @@ test('Park paints the matching ink motif and replaces it when tag priority chang
       blossom: paint(phrase, flowerFirst),
       restored: paint(phrase, moonFirst),
       fallback: paint('초승달이 뜬다', ['없는태그']),
+      besideNarrowLine: paint('바람에 흔들려도 대나무는 곧게 자라요.', ['대나무'], 328),
+      leftShoulder: paint('초승달 아래 내 작은 마음', ['달'], 328),
       noMatch: paint('계산을 달리다', ['매화'])
     };
   });
@@ -264,7 +266,7 @@ test('Park paints the matching ink motif and replaces it when tag priority chang
   assert.equal(park.moon.mask === park.restored.mask, true, 'reselecting the first tag restores its illustration');
   assert.ok(letters.moon.mask === letters.blossom.mask && park.moon.mask !== park.blossom.mask,
     'changing tag order refreshes the picture on the same canvas with identical emphasized words');
-  for (const key of ['moon', 'blossom', 'fallback']) {
+  for (const key of ['moon', 'blossom', 'fallback', 'besideNarrowLine', 'leftShoulder']) {
     const plain = letters[key].mask, illustrated = park[key].mask;
     let added = 0, erased = 0;
     for (let i = 0; i < plain.length; i++) {

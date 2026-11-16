@@ -40,7 +40,7 @@
       const backgrounds = images.map(async match => {
         const source = new URL((match[1] || match[2] || match[3]).trim(), location.href);
         const key = source.pathname.match(/^\/note\/assets\/(\d{2,3})\.jpg$/)?.[1];
-        if (source.origin !== location.origin || !key || Number(key) < 10 || Number(key) > 189)
+        if (source.origin !== location.origin || !key || Number(key) < 10 || Number(key) > 297)
           throw new Error('card_background_not_public');
         const response = await fetch(source.href, { signal: controller.signal, credentials: 'same-origin' });
         check(); if (!response.ok) throw new Error('card_background_unavailable');

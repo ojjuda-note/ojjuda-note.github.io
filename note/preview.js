@@ -64,7 +64,14 @@ const validCardId = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[
 function noteLoginHref(cardId = parentId || (!detail.hidden ? stack.at(-1) : null)) {
   return '/?auth=login&next=note' + (validCardId(cardId) ? `&card=${encodeURIComponent(cardId)}` : '');
 }
-const PHOTO_FIRST = 10, PHOTO_LAST = 189, PHOTO_PAGE_SIZE = 12;
+const PHOTO_PAGE_SIZE = 12;
+const PHOTO_GROUPS = [
+  { label: '사진', first: 10, last: 189 },
+  { label: '한 색 수묵', first: 190, last: 225 },
+  { label: '두 색 수묵', first: 226, last: 261 },
+  { label: '여러 색 수묵', first: 262, last: 297 }
+];
+const PHOTO_FIRST = PHOTO_GROUPS[0].first, PHOTO_LAST = PHOTO_GROUPS.at(-1).last;
 const FONT_CODES = ['default', 'round', 'serif', 'handwriting', 'calligraphy', 'mono'];
 const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 'snow',
   'starlight', 'fireflies', 'petals', 'bubbles', 'aurora', 'confetti', 'sunbeams',
@@ -86,6 +93,36 @@ let photoEntitlements = new Map(), photoEntitlementRun = 0;
 function photoAssetKey(value) {
   const key = String(value ?? '');
   return /^\d{2,3}$/.test(key) && Number(key) >= PHOTO_FIRST && Number(key) <= PHOTO_LAST ? key : null;
+}
+function photoGroupFor(key) {
+  return PHOTO_GROUPS.find(group => Number(key) >= group.first && Number(key) <= group.last) || PHOTO_GROUPS[0];
+}
+function photoName(key, prefix = '사진') {
+  const group = photoGroupFor(key);
+  const index = Number(key) - group.first + 1;
+  return group === PHOTO_GROUPS[0] ? `${prefix} ${String(index).padStart(3, '0')}` : `${group.label} ${String(index).padStart(2, '0')}`;
+}
+const photoPageFor = key => Math.floor((Number(key) - PHOTO_FIRST) / PHOTO_PAGE_SIZE);
+function installPhotoGroups(element, selectGroup) {
+  for (const group of PHOTO_GROUPS) {
+    const button = node('button', 'button', group.label);
+    button.type = 'button'; button.value = String(group.first);
+    button.addEventListener('click', () => selectGroup(group));
+    element.append(button);
+  }
+}
+function markPhotoGroup(element, group) {
+  for (const button of element.children) button.setAttribute('aria-pressed', String(Number(button.value) === group.first));
+}
+function photoThumbnail(key) {
+  const img = node('img');
+  img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
+  const original = `/note/assets/${key}.jpg`;
+  if (Number(key) > PHOTO_GROUPS[0].last) {
+    img.addEventListener('error', () => { img.src = original; }, { once: true });
+    img.src = `/note/assets/cards/480/${key}.webp`;
+  } else img.src = original;
+  return img;
 }
 function activePhotoEntitlement(key, entitlements = photoEntitlements) {
   const expiry = entitlements.get(key);
@@ -112,7 +149,7 @@ async function loadPhotoEntitlements(userId) {
 async function photoActionFor(key, userId) {
   const entitlements = await loadPhotoEntitlements(userId);
   if (activePhotoEntitlement(key, entitlements)) return 'apply_owned_card_photo';
-  const title = `사진 ${String(Number(key) - PHOTO_FIRST + 1).padStart(3, '0')}`;
+  const title = photoName(key);
   return window.confirm(`${title}을 10 ZU에 1개월 동안 사용할까요? 구매 기간에는 다른 카드에도 적용할 수 있어요.`)
     ? 'purchase_card_photo' : null;
 }
@@ -1974,14 +2011,10 @@ function installStyleChoices() {
     updateFeaturedPhoto();
     applyComposeStyle(); recordDraft();
   });
+  installPhotoGroups($('#photo-groups'), group => {
+    photoPage = photoPageFor(group.first); renderPhotoPage();
+  });
   const pageJump = $('#photo-page-jump');
-  const pageCount = Math.ceil((PHOTO_LAST - PHOTO_FIRST + 1) / PHOTO_PAGE_SIZE);
-  for (let page = 0; page < pageCount; page++) {
-    const first = page * PHOTO_PAGE_SIZE + 1;
-    const last = Math.min(first + PHOTO_PAGE_SIZE - 1, PHOTO_LAST - PHOTO_FIRST + 1);
-    const option = node('option', '', `${page + 1} · ${String(first).padStart(3, '0')}–${String(last).padStart(3, '0')}`);
-    option.value = String(page); pageJump.append(option);
-  }
   pageJump.addEventListener('change', () => { photoPage = Number(pageJump.value); renderPhotoPage(); });
   $('#photo-gallery-toggle').addEventListener('click', () => {
     const gallery = $('#photo-gallery');
@@ -1989,10 +2022,8 @@ function installStyleChoices() {
     $('#photo-gallery-toggle').setAttribute('aria-expanded', String(!gallery.hidden));
     if (!gallery.hidden) { updateFeaturedPhoto(); renderPhotoPage(); }
   });
-  $('#photo-prev').addEventListener('click', () => { if (photoPage > 0) { photoPage--; renderPhotoPage(); } });
-  $('#photo-next').addEventListener('click', () => {
-    if (PHOTO_FIRST + (photoPage + 1) * PHOTO_PAGE_SIZE <= PHOTO_LAST) { photoPage++; renderPhotoPage(); }
-  });
+  $('#photo-prev').addEventListener('click', () => { photoPage--; renderPhotoPage(); });
+  $('#photo-next').addEventListener('click', () => { photoPage++; renderPhotoPage(); });
 }
 function setColorChoice(group, code) {
   const choices = document.getElementsByName(group);
@@ -2005,11 +2036,11 @@ function updatePaidSubmit() {
 function updateFeaturedPhoto() {
   updatePaidSubmit();
   const selected = photoAssetKey(selectedPhotoKey);
-  const name = selected ? `제공 배경 ${String(Number(selected) - PHOTO_FIRST + 1).padStart(3, '0')}` : '기본 배경 무작위';
+  const name = selected ? photoName(selected, '제공 배경') : '기본 배경 무작위';
   const ownedUntil = selected && activePhotoEntitlement(selected);
-  const price = selected ? ownedUntil ? `구매한 배경 · ${dateLabel(ownedUntil)}까지 사용` : '배경 이용권 · 10 ZU / 1개월' : '무료 · 이 사진으로 등록';
+  const price = selected ? ownedUntil ? `구매한 배경 · ${dateLabel(ownedUntil)}까지 사용` : '배경 이용권 · 10 ZU / 1개월' : '무료 · 이 배경으로 등록';
   $('#photo-featured-image').src = `/note/assets/${selected || backgroundKey}.jpg`;
-  $('#photo-featured-image').alt = selected ? `${name} 미리보기` : '기본 사진 미리보기';
+  $('#photo-featured-image').alt = selected ? `${name} 미리보기` : '기본 배경 미리보기';
   $('#photo-featured-name').textContent = name;
   $('#photo-featured-detail').textContent = price;
   for (const id of ['photo-featured-detail', 'photo-featured-badge', 'photo-selection']) $('#' + id).classList.toggle('ju-paid-price', !!selected && !ownedUntil);
@@ -2020,8 +2051,22 @@ function updateFeaturedPhoto() {
 function renderPhotoPage() {
   const grid = $('#photo-grid'); grid.replaceChildren();
   const first = PHOTO_FIRST + photoPage * PHOTO_PAGE_SIZE;
-  for (let number = first; number <= Math.min(PHOTO_LAST, first + PHOTO_PAGE_SIZE - 1); number++) {
-    const key = String(number), title = `사진 ${String(number - PHOTO_FIRST + 1).padStart(3, '0')}`;
+  const group = photoGroupFor(first);
+  const startPage = photoPageFor(group.first), endPage = photoPageFor(group.last);
+  const pageJump = $('#photo-page-jump');
+  if (pageJump.dataset.group !== String(group.first)) {
+    pageJump.dataset.group = String(group.first);
+    pageJump.replaceChildren();
+    for (let page = startPage; page <= endPage; page++) {
+      const from = (page - startPage) * PHOTO_PAGE_SIZE + 1;
+      const to = Math.min(from + PHOTO_PAGE_SIZE - 1, group.last - group.first + 1);
+      const option = node('option', '', `${page - startPage + 1} · ${from}–${to}`);
+      option.value = String(page); pageJump.append(option);
+    }
+  }
+  markPhotoGroup($('#photo-groups'), group);
+  for (let number = first; number <= Math.min(group.last, first + PHOTO_PAGE_SIZE - 1); number++) {
+    const key = String(number), title = photoName(key);
     const ownedUntil = activePhotoEntitlement(key);
     const accessLabel = ownedUntil ? `구매함 · ${dateLabel(ownedUntil)}까지 사용` : '구매·갱신 · 10 ZU / 1개월';
     const tile = node('label', 'note-photo-tile' + (ownedUntil ? '' : ' ju-paid-choice')); tile.title = `${title} · ${accessLabel}`;
@@ -2032,17 +2077,15 @@ function renderPhotoPage() {
       selectedPhotoKey = key; updateFeaturedPhoto();
       applyComposeStyle(); recordDraft();
     });
-    // Tiles use the same original as the featured image, composer, and published card.
-    // The older "-s" files were not made from the matching numbered originals.
-    const img = node('img'); img.src = `/note/assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
+    const img = photoThumbnail(key);
     const caption = node('span', 'note-photo-tile-caption', title);
     const mark = node('span', 'note-photo-tile-mark', '✓'); mark.setAttribute('aria-hidden', 'true');
     tile.append(input, img, caption, mark); grid.append(tile);
   }
-  $('#photo-page-status').textContent = `${photoPage + 1} / ${Math.ceil((PHOTO_LAST - PHOTO_FIRST + 1) / PHOTO_PAGE_SIZE)}`;
-  $('#photo-page-jump').value = String(photoPage);
-  $('#photo-prev').disabled = photoPage === 0;
-  $('#photo-next').disabled = first + PHOTO_PAGE_SIZE > PHOTO_LAST;
+  $('#photo-page-status').textContent = `${photoPage - startPage + 1} / ${endPage - startPage + 1}`;
+  pageJump.value = String(photoPage);
+  $('#photo-prev').disabled = busy || draftLoading || photoPage === startPage;
+  $('#photo-next').disabled = busy || draftLoading || photoPage === endPage;
 }
 
 let fontBeforeConversion = 'default';
@@ -2319,7 +2362,7 @@ function restoreDraft(content) {
   selectedPhotoKey = kind === 'memo' ? photoAssetKey(content.photo_key) : null;
   $('input[name="photo-choice"][value="plain"]').checked = !selectedPhotoKey;
   updateFeaturedPhoto();
-  if (selectedPhotoKey) photoPage = Math.floor((Number(selectedPhotoKey) - PHOTO_FIRST) / PHOTO_PAGE_SIZE);
+  if (selectedPhotoKey) photoPage = photoPageFor(selectedPhotoKey);
   applyComposeStyle();
   $('#compose-title').textContent = kind === 'comment' ? '답글 카드 쓰기' : '새 카드 쓰기';
   $('#compose-context').textContent = kind === 'comment' ? replyContext() : '사진 위에 마음을 적어 주세요.';
@@ -2331,7 +2374,11 @@ function setComposerInputs() {
   const disabled = busy || draftLoading;
   text.disabled = disabled; tags.disabled = disabled;
   $('#card-location-button').disabled = disabled;
-  for (const selector of ['#compose-font', '#compose-size', '#compose-effect', '#compose-box-transparency', '#compose-box-transparency-value', '#event-select-center', '#event-radius', '#event-hours', '#photo-gallery-toggle', '#photo-prev', '#photo-next', '#photo-page-jump']) { const input = $(selector); if (input) input.disabled = disabled; }
+  for (const selector of ['#compose-font', '#compose-size', '#compose-effect', '#compose-box-transparency', '#compose-box-transparency-value', '#event-select-center', '#event-radius', '#event-hours', '#photo-gallery-toggle', '#photo-page-jump']) { const input = $(selector); if (input) input.disabled = disabled; }
+  const pageGroup = photoGroupFor(PHOTO_FIRST + photoPage * PHOTO_PAGE_SIZE);
+  $('#photo-prev').disabled = disabled || photoPage === photoPageFor(pageGroup.first);
+  $('#photo-next').disabled = disabled || photoPage === photoPageFor(pageGroup.last);
+  $('#photo-groups').querySelectorAll('button').forEach(button => { button.disabled = disabled; });
   $('#event-photo-file').disabled = disabled || eventPhotoPreparing;
   $('#event-photo-clear').disabled = disabled || eventPhotoPreparing;
   $('#card-photo-file').disabled = disabled || cardPhotoPreparing;
@@ -3339,37 +3386,45 @@ function manageCard(id) {
   cancelManagement();
 }
 function showPhotoChoices(card) {
-  const run = showManagement('사진 배경 선택'), userId = session?.user?.id;
-  managementBody.append(node('p', 'management-help', '사진별로 10 ZU를 내면 1개월 동안 다른 카드에도 추가 결제 없이 적용할 수 있어요. 기간이 끝나면 다시 구매할 수 있으며 자동 연장은 하지 않아요.'));
+  const run = showManagement('배경 선택'), userId = session?.user?.id;
+  managementBody.append(node('p', 'management-help', '배경별로 10 ZU를 내면 1개월 동안 다른 카드에도 추가 결제 없이 적용할 수 있어요. 기간이 끝나면 다시 구매할 수 있으며 자동 연장은 하지 않아요.'));
   if (card.photo_until) managementBody.append(node('p', 'management-help', `현재 사진 만료: ${dateLabel(card.photo_until)}`));
+  const groups = node('div', 'note-photo-groups');
+  groups.setAttribute('role', 'group'); groups.setAttribute('aria-label', '배경 종류');
   const choices = node('div', 'note-photo-choice');
   const pages = node('div', 'note-photo-pages');
-  let page = 0;
+  let page = photoPageFor(photoAssetKey(card.photo_key || card.background_key) || PHOTO_FIRST);
   const render = () => {
     choices.replaceChildren(); pages.replaceChildren();
     const first = PHOTO_FIRST + page * PHOTO_PAGE_SIZE;
-    for (let number = first; number <= Math.min(PHOTO_LAST, first + PHOTO_PAGE_SIZE - 1); number++) {
-      const key = String(number), title = `사진 ${String(number - PHOTO_FIRST + 1).padStart(3, '0')}`;
+    const group = photoGroupFor(first);
+    const startPage = photoPageFor(group.first), endPage = photoPageFor(group.last);
+    markPhotoGroup(groups, group);
+    for (let number = first; number <= Math.min(group.last, first + PHOTO_PAGE_SIZE - 1); number++) {
+      const key = String(number), title = photoName(key);
       const button = node('button', 'button'); button.type = 'button';
-      const img = node('img'); img.src = `/note/assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
+      const img = photoThumbnail(key);
       const ownedUntil = activePhotoEntitlement(key);
       button.classList.toggle('ju-paid-choice', !ownedUntil);
       button.append(img, node('strong', '', title), node('small', '', ownedUntil ? `${dateLabel(ownedUntil)}까지 사용` : '구매·갱신 10 ZU · 1개월'));
-      button.addEventListener('click', () => {
+      button.addEventListener('click', async () => {
         const requestId = crypto.randomUUID();
-        managementPhotoAction(card.id, key, requestId,
+        await managementPhotoAction(card.id, key, requestId,
           async () => { closeManagement(); await refreshCards(stack.length > 0); await loadWorldBalance(session?.user?.id); });
+        // A declined or failed purchase leaves the picker open. Restore its page boundaries.
+        if (run === managementRun && session?.user?.id === userId && !managementBusy) render();
       });
       choices.append(button);
     }
-    const prev = node('button', 'button', '이전'); prev.type = 'button'; prev.disabled = page === 0;
+    const prev = node('button', 'button', '이전'); prev.type = 'button'; prev.disabled = page === startPage;
     prev.addEventListener('click', () => { page--; render(); });
     const next = node('button', 'button', '다음'); next.type = 'button';
-    next.disabled = first + PHOTO_PAGE_SIZE > PHOTO_LAST;
+    next.disabled = page === endPage;
     next.addEventListener('click', () => { page++; render(); });
-    pages.append(prev, node('span', '', `${page + 1} / ${Math.ceil((PHOTO_LAST - PHOTO_FIRST + 1) / PHOTO_PAGE_SIZE)}`), next);
+    pages.append(prev, node('span', '', `${page - startPage + 1} / ${endPage - startPage + 1}`), next);
   };
-  render(); managementBody.append(choices, pages); cancelManagement();
+  installPhotoGroups(groups, group => { page = photoPageFor(group.first); render(); });
+  render(); managementBody.append(groups, choices, pages); cancelManagement();
   if (userId) void loadPhotoEntitlements(userId).then(() => {
     if (run === managementRun && session?.user?.id === userId && !managementBusy) render();
   }).catch(error => {

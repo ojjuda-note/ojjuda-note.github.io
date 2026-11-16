@@ -14,14 +14,25 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
     create role anon; create role authenticated; create role service_role;
     create schema auth; create schema ojjuda_note; create schema ojjuda_note_internal; create schema storage;
     grant usage on schema auth,ojjuda_note to anon,authenticated;
+    create table auth.users(id uuid primary key);
+    insert into auth.users values ('${member}');
     create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
     create table ojjuda_note.cards(id uuid primary key default gen_random_uuid(),author_id uuid,
       kind text,parent_id uuid,body text,tags text[],background_key text check(background_key ~ '^([1-9][0-9]|1[0-8][0-9])$'),
-      identity_mode text,archived_at timestamptz);
+      identity_mode text,archived_at timestamptz, constraint note_guest_basic_card check (author_id is not null or
+        (kind in ('memo','comment') and identity_mode='anonymous' and background_key='10')));
     create view ojjuda_note.public_cards as select * from ojjuda_note.cards where archived_at is null;
-    create table ojjuda_note_internal.spend_requests(request_id uuid primary key,user_id uuid,kind text,coins int,target_id uuid,result jsonb);
+    create table ojjuda_note_internal.spend_requests(request_id uuid primary key,user_id uuid,kind text,coins int,target_id uuid,result jsonb,created_at timestamptz default now());
     create table ojjuda_note_internal.card_locations(card_id uuid,author_id uuid,exact_lat float8,exact_lon float8,coarse_lat float8,coarse_lon float8);
-    create table ojjuda_note_internal.card_visuals(card_id uuid primary key,style jsonb);
+    create table ojjuda_note_internal.card_visuals(card_id uuid primary key,style jsonb,style_until timestamptz,
+      photo_key text constraint card_visuals_photo_key_check check (photo_key is null),photo_until timestamptz,updated_at timestamptz default now());
+    create table ojjuda_note_internal.drafts(user_id uuid primary key,revision bigint default 0,active boolean default false,
+      body text,tags text,background_key text,kind text,parent_id uuid,style jsonb,photo_key text,updated_at timestamptz,
+      constraint note_draft_content check (not active));
+    create function ojjuda_note_internal.is_world_member() returns boolean language sql stable as $$select auth.uid() is not null$$;
+    create function ojjuda_note_internal.valid_card_style(jsonb) returns boolean language sql immutable as $$select jsonb_typeof($1)='object'$$;
+    create function ojjuda_note_internal.read_draft() returns table(revision bigint,content jsonb,updated_at timestamptz)
+      language sql stable as $$select d.revision,to_jsonb(d),d.updated_at from ojjuda_note_internal.drafts d where d.user_id=auth.uid()$$;
     create table ojjuda_note_internal.event_ads(card_id uuid,author_id uuid,center_lat float8,center_lon float8,radius_km int,starts_at timestamptz,ends_at timestamptz,price_coins int,photo_path text);
     create table public.user_private(user_id uuid primary key,coins int);
     insert into public.user_private values('${member}',1000);
@@ -41,7 +52,11 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
       insert into ojjuda_note_internal.test_attachments values($1,$2);
     end$$;
   `);
+  await db.exec(read('supabase/scripts/notes/note_photo_inventory_180_2026_09_27.sql'));
   await db.exec(read('supabase/migrations/20260928075731_note_initial_photo_and_replace_only.sql'));
+  await db.exec('BEGIN;\n' + read('supabase/migrations/20260928132900_note_card_photo_monthly_entitlement.sql') + '\nCOMMIT;');
+  // Install the refund-table DDL without replaying a correction for a specific live account.
+  await db.exec(read('supabase/migrations/20260928133000_note_card_photo_duplicate_refund.sql').split('DO $refund$')[0]);
   const migration = fs.readdirSync(path.join(root,'supabase/migrations')).find(n=>n.endsWith('_note_preview_background.sql'));
   await db.exec(read('supabase/migrations/'+migration));
   const value = async (sql,args=[]) => (await db.query(sql,args)).rows[0]?.value;
@@ -123,6 +138,44 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   assert.equal(await value("select has_function_privilege('authenticated','ojjuda_note_internal.publish_card_core(uuid,text,text,text[],text,jsonb,double precision,double precision,uuid,text)','execute') as value"),false);
   await db.query("select set_config('request.jwt.claim.sub','',false)");
   await assert.rejects(()=>rpc('publish_card',basic('42')),e=>e.code==='42501');
+
+  const watercolor = fs.readdirSync(path.join(root,'supabase/migrations')).find(n=>n.endsWith('_park_watercolor_background_keys.sql'));
+  await db.exec(read('supabase/migrations/'+watercolor));
+  await assert.rejects(()=>rpc('publish_card',basic('297')),e=>e.code==='42501');
+  const guestCard=key=>db.query("insert into ojjuda_note.cards(kind,identity_mode,background_key) values ('memo','anonymous',$1)",[key]);
+  await guestCard('10');
+  await assert.rejects(()=>guestCard('297'),e=>e.code==='23514');
+  await db.query("select set_config('request.jwt.claim.sub',$1,false)",[member]);
+  for(const key of ['189','190','225','226','261','262','297']) {
+    const saved=await publishFromPreview({background:key});
+    assert.equal(saved.result?.background_key,key,saved.message);
+  }
+  for(const bad of ['298','09','plain']) await assert.rejects(()=>rpc('publish_card',basic(bad)),e=>e.code==='22023');
+  await db.query('select setseed(.42)');
+  const expected=await value("select (10+floor(random()*288))::int::text as value");
+  await db.query('select setseed(.42)');
+  const balance=()=>value('select coins as value from public.user_private where user_id=$1',[member]);
+  const initialCoins=await balance();
+  const randomCard=await rpc('publish_card',{...legacy,p_request_id:randomUUID()});
+  assert.equal(randomCard.background_key,expected);
+  assert.equal(await balance(),initialCoins,'the random wash is free');
+
+  const purchase={p_card_id:parent,p_photo_key:'297',p_request_id:randomUUID()};
+  const receipt=await rpc('purchase_card_photo',purchase);
+  assert.equal(receipt.cost_coins,10);
+  assert.deepEqual(await rpc('purchase_card_photo',purchase),receipt,'retry does not buy the same wash twice');
+  const secondCard={...purchase,p_card_id:randomCard.card_id,p_request_id:randomUUID()};
+  const owned=await rpc('apply_owned_card_photo',secondCard);
+  assert.equal(owned.cost_coins,0);
+  assert.equal(owned.photo_until,receipt.photo_until,'ownership is reused without extending the month');
+  assert.equal(await balance(),initialCoins-10);
+  assert.equal((await value('select ojjuda_note_internal.card_visual_for($1) as value',[randomCard.card_id])).photo_key,'297');
+  await assert.rejects(()=>rpc('purchase_card_photo',{...purchase,p_photo_key:'298',p_request_id:randomUUID()}),e=>e.code==='22023');
+
+  const draft={kind:'memo',parent_id:null,body:'붓글씨',tags:'',background_key:'190',photo_key:'297'};
+  const saveDraft=(revision,content)=>value('select content as value from ojjuda_note_internal.save_draft($1,$2::jsonb)',[revision,JSON.stringify(content)]);
+  assert.equal((await saveDraft(0,draft)).photo_key,'297');
+  await assert.rejects(()=>saveDraft(1,{...draft,photo_key:'298'}),e=>e.code==='22023');
   await db.close();
-  console.log('PASS: preview-to-publish photo equality, restored drafts, replies, attachments, events, retries, legacy calls and access checks');
+  console.log('PASS: preview-to-publish backgrounds, restored drafts, replies, attachments, events, guest defaults, watercolor rentals, free reuse, retries and access checks');
 })().catch(error=>{console.error(error);process.exit(1)});

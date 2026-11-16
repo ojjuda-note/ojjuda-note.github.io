@@ -167,6 +167,39 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     assert.deepEqual(choices(), { identity: 'anonymous', gender: 'female', location: true });
     assert.deepEqual(styleChoices(), { font: 'default', size: 'normal', boxTransparency: 25 });
 
+    signIn('gallery-account', 'female'); await open();
+    const byId = id => document.getElementById(id);
+    const picker = byId('photo-gallery-toggle'), jump = byId('photo-page-jump');
+    const keys = [];
+    picker.click();
+    for (const [first, pageCount] of [[10,15], [190,3], [226,3], [262,3]]) {
+      byId('photo-groups').querySelector(`button[value="${first}"]`).click();
+      assert.equal(jump.options.length, pageCount);
+      assert.ok(byId('photo-prev').disabled);
+      for (const option of [...jump.options]) {
+        jump.value = option.value;
+        jump.dispatchEvent(new window.Event('change', { bubbles: true }));
+        const inputs = byId('photo-grid').querySelectorAll('input[name="photo-choice"]');
+        assert.equal(inputs.length, 12);
+        keys.push(...Array.from(inputs, input => Number(input.value)));
+      }
+      assert.ok(byId('photo-next').disabled);
+    }
+    assert.deepEqual(keys, Array.from({ length: 288 }, (_, i) => i + 10), 'each background appears once');
+    const last = byId('photo-grid').querySelector('input[value="297"]');
+    last.click();
+    assert.equal(run('chosenPhoto()'), '297');
+    assert.match(byId('photo-featured-image').src, /\/297\.jpg$/);
+    picker.click(); picker.click();
+    assert.ok(byId('photo-grid').querySelector('input[value="297"]').checked);
+    // A legacy draft can still carry an explicitly selected paid background.
+    close(); await open();
+    await run("restoreDraft({kind:'memo', parent_id:null, body:'수묵 배경', tags:'', background_key:'10', photo_key:'226'})");
+    picker.click();
+    assert.equal(run('chosenPhoto()'), '226');
+    assert.ok(byId('photo-grid').querySelector('input[value="226"]').checked);
+    close();
+
     signIn('blocked-storage', 'male');
     window.Storage.prototype.getItem = () => { throw new Error('blocked'); };
     window.Storage.prototype.setItem = () => { throw new Error('blocked'); };
