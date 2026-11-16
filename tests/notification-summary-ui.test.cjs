@@ -409,3 +409,41 @@ test('polling and returning to an expanded inbox keep older rows and a pending p
     assert.deepEqual(f.calls.map(c=>c.name),['list_app_notifications','list_retention_alerts']);
   } finally { f.close(); }
 });
+
+test('keyboard pagination focuses the new notification or retry, and respects a move to Close', async () => {
+  const f = fixture();
+  try {
+    const doc = f.w.document;
+    f.w.HTMLElement.prototype.getClientRects = function () { return this.closest('[hidden]') ? [] : [{}]; };
+    const item = n => ({ id:uuid(n), kind:'like', created_at:'2026-11-01T00:00:00Z', read_at:'2026-11-02T00:00:00Z' });
+    const first = item(3), second = item(2), last = item(1);
+    const page = (items, next) => ({ data:{ items, unread_count:0,
+      as_of:first.created_at, has_more:Boolean(next), next_cursor:next } });
+    const pending = deferred();
+    let attempts = 0;
+    f.respond((name, args) => {
+      if (name === 'list_retention_alerts') return {data:[]};
+      if (!args.p_before_id) return page([first], first);
+      if (++attempts === 1) return {error:{message:'temporary'}};
+      if (attempts === 2) return page([first, second], second);
+      return pending.promise;
+    });
+    const bell = doc.querySelector('#note-notifications');
+    bell.focus(); bell.click(); await settle();
+    const activateFooter = () => {
+      const control = doc.querySelector('.nn-pagination button');
+      control.focus(); control.click();
+    };
+    activateFooter(); await settle();
+    assert.equal(doc.activeElement.textContent, '다시 시도');
+    activateFooter(); await settle();
+    assert.equal(doc.activeElement.dataset.notificationId, second.id);
+    activateFooter();
+    const close = doc.querySelector('.nn-heading button');
+    close.focus();
+    pending.resolve(page([last], null)); await settle();
+    assert.equal(doc.activeElement, close);
+    close.click();
+    assert.equal(doc.activeElement, bell);
+  } finally { f.close(); }
+});

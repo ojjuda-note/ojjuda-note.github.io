@@ -75,7 +75,7 @@
     const readAll = button('모두 읽음', () => void markRead(null)); readAll.id = 'note-notifications-read-all';
     const reload = button('새로고침', () => void loadPage()); const toolbarActions=el('div',undefined,'nn-toolbar-actions'); toolbarActions.append(reload,readAll); toolbar.append(summary,toolbarActions);
     const body = el('div', undefined, 'nn-body'), rows = el('ul', undefined, 'nn-list'); rows.id = 'note-notification-list'; rows.setAttribute('aria-label', '내 알림');
-    const footer = el('div', undefined, 'nn-pagination');
+    const footer = el('div', undefined, 'nn-pagination'); footer.tabIndex = -1;
     const status = el('p', '', 'nn-status'); status.id = 'note-notification-status'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); status.setAttribute('aria-atomic', 'true');
     body.append(rows, footer); panel.append(heading, toolbar, body, status); layer.append(panel); document.body.append(layer);
     attach();
@@ -183,7 +183,7 @@
     const noticeItems = () => [...items, ...retentionItems].sort((a, b) =>
       Date.parse(b.created_at) - Date.parse(a.created_at) || String(b.id).localeCompare(String(a.id)));
     function rowFor(item) {
-      const row = el('li', undefined, `nn-item${item.read_at ? '' : ' nn-unread'}`); row.dataset.notificationId = item.id;
+      const row = el('li', undefined, `nn-item${item.read_at ? '' : ' nn-unread'}`); row.dataset.notificationId = item.id; row.tabIndex = -1;
       const retention = item.kind === 'retention';
       const gift = item.kind === 'visit_gift';
       const update = ['daily_update','broadcast_update'].includes(item.kind)
@@ -229,8 +229,10 @@
       if (!gift && !item.read_at) { const readButton = button('읽음 표시', () => void (retention ? markRetentionRead(item) : markRead([item.id]))); readButton.dataset.notificationRead = item.id; actions.append(readButton); }
       row.append(meta, actions); return row;
     }
-    function render(retryMore = false) {
-      const focusId = document.activeElement?.closest('[data-notification-id]')?.dataset.notificationId;
+    function render(retryMore = false, firstNewId = null) {
+      const active = document.activeElement;
+      const focusedRow = active?.closest('[data-notification-id]');
+      const focusId = focusedRow?.dataset.notificationId;
       if (!retryMore) {
         const visible = noticeItems();
         rows.replaceChildren(...visible.map(rowFor));
@@ -240,15 +242,25 @@
       if (!retryMore && hasMore && cursor) { const more = button('알림 더 보기', () => void loadPage(true)); more.id = 'note-notifications-more'; footer.append(more); }
       if (loadError) footer.append(button('다시 시도', () => void loadPage(retryMore)));
       updateControls();
-      if (focusId) [...rows.children].find(row=>row.dataset.notificationId===focusId)?.querySelector('button')?.focus({ preventScroll: true });
+      if (active === footer) {
+        const firstNew = firstNewId && [...rows.children].find(row => row.dataset.notificationId === firstNewId);
+        const target = firstNew || footer.querySelector('button') || rows.querySelector('[data-notification-id]:last-child') || closeButton;
+        target.focus();
+      } else if (focusId) {
+        const row = [...rows.children].find(item => item.dataset.notificationId === focusId);
+        const target = active === focusedRow ? row : (row?.querySelector('button') || row);
+        target?.focus({ preventScroll: true });
+      }
       keepFocus();
     }
     async function loadPage(more = false) {
       if (loading || saving || layer.hidden || !identity || identity !== userNow()) return;
       const run = identityRun, user = identity, view = viewRun, request = ++listRun;
       const after = more ? cursor : null;
-      if (more) browsingHistory = true;
-      else readRefreshPending = false;
+      if (more) {
+        browsingHistory = true;
+        if (footer.contains(document.activeElement)) footer.focus({ preventScroll: true });
+      } else readRefreshPending = false;
       loading = true; countRun++; status.textContent = '알림을 불러오는 중이에요.';
       updateControls(); keepFocus();
       const requests = [rpc('list_notifications', { p_limit: 30,
@@ -261,11 +273,12 @@
         return loadPage();
       }
       const normal = results[0], retention = results[1];
-      let generalOk = false, retentionOk = more;
+      let generalOk = false, retentionOk = more, firstNewId;
       if (normal.status === 'fulfilled' && normal.value && Array.isArray(normal.value.items)) {
         const data = normal.value;
         const incoming = data.items.filter(item => item && validNoticeId(item.id) && Object.hasOwn(COPY, item.kind) && Number.isFinite(Date.parse(item.created_at)));
         const merged = new Map((more ? items : []).map(item => [item.id, item]));
+        if (more) firstNewId = incoming.find(item => !merged.has(item.id))?.id;
         for (const item of incoming) merged.set(item.id, item);
         items = [...merged.values()];
         if (!more) {
@@ -286,7 +299,8 @@
           : !retentionOk ? '삭제 예정 카드 목록을 불러오지 못했어요.' : '';
       status.textContent = loadError ? `${loadError} 다시 시도해 주세요.` : '';
       if (generalOk || (!more && retentionOk)) lastRefresh = Date.now();
-      render(more && !generalOk); return !loadError;
+      render(more && !generalOk, firstNewId);
+      return !loadError;
     }
     async function refreshCount(force = false) {
       if (!refreshClosedBadge && layer.hidden) return;
