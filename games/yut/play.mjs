@@ -1,7 +1,7 @@
-import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed} from './rules.mjs?v=10';
-import {createBoard} from './board.mjs?v=18';
+import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed} from './rules.mjs?v=11';
+import {createBoard} from './board.mjs?v=19';
 import {createToss,drawRack} from './toss.mjs?v=7';
-import {openRoom,roomCode} from './room.mjs?v=10';
+import {openRoom,roomCode} from './room.mjs?v=11';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=5';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
@@ -112,12 +112,11 @@ function moveNotice(s){
   const move=s.lastMove;
   if(!move||s.phase!=='roll')return '';
   const parts=[];
-  if(move.event==='carry'){
-    if(move.pickedUp!=null)parts.push('말 업기 ×2');
-  }else if(move.event)parts.push(EVENT_NAMES[move.event]);
+  const eventName=EVENT_NAMES[move.event];
+  if(eventName&&(move.event!=='carry'||move.pickedUp!=null))parts.push(eventName);
   const pawns=s.pawns[move.team],at=position(pawns[move.indices[0]]);
   if(at===FINISH)parts.push('골인');
-  else if(at!==HOME&&move.pickedUp==null&&pawns.filter(p=>position(p)===at).length>move.indices.length)parts.push('말 업기');
+  else if(at!==HOME&&move.pickedUp==null&&pawns.filter(p=>position(p)===at).length>move.indices.length)parts.push('같은 팀 말과 합류');
   if(move.captured)parts.push('잡기');
   if(s.team===move.team)parts.push('한 번 더');
   return parts.join(' · ');
@@ -225,7 +224,7 @@ function destinationLabel(s,m,choices){
   const effect=tileEffect(s,m.to);
   if(effect)return EVENT_NAMES[effect];
   if(s.pawns.some((p,t)=>t!==s.team&&p.some(trail=>position(trail)===m.to)))return '잡기';
-  if(s.pawns[s.team].some((trail,i)=>i!==m.index&&position(trail)===m.to))return '업기';
+  if(s.pawns[s.team].some((trail,i)=>i!==m.index&&position(trail)===m.to))return '합류';
   return '도착';
 }
 function renderReserve(s,team,options,lobby){
@@ -368,11 +367,9 @@ function openPanel(title,name){
 function closePanel(){if(dialog.open)dialog.close();}
 function message(text){const el=element('p',text,'message');el.setAttribute('role','status');return el;}
 const eventDescriptions={
-  back:['−1','방금 지나온 길로 한 칸 물러나요.'],
-  carry:['×2','혼자 도착하면 대기 말 하나를 업어요. 이후 두 말이 함께 움직여요.'],
-  home:['⌂','도착한 말과 함께 업힌 말이 모두 대기석으로 돌아가요.'],
-  whirl:['◎','소용돌이에 밀려 두 칸 뒤로 가요.'],
-  breeze:['»','순풍을 타고 두 칸 더 가요.']
+  carry:['×2','혼자 도착하면 대기 말 하나를 업어요. 두 말이 함께 움직여요.'],
+  back:['−1','왔던 길로 한 칸 물러나요.'],
+  home:['⌂','도착한 말과 그 위에 업힌 말이 함께 대기석으로 돌아가요.']
 };
 function eventPlace(node){
   if(node<20)return '바깥길 '+node+'번';
@@ -408,15 +405,6 @@ function rules(){
     element('p','도·개·걸·윷·모는 1~5칸이에요. 다른 말을 쓰려면 판이나 대기석에서 먼저 고르세요. 말은 금빛 칸으로 끌어 놓거나 이동 버튼으로 옮겨도 돼요.'),
     element('p','갈림길에 멈추면 다음에 지름길을 고를 수 있어요. 출발점을 한 칸 지나면 골인이에요.'),
     element('p','같은 팀 말은 업어서 함께 가요. 윷·모가 나오거나 상대 말을 잡으면 한 번 더 던져요.'));
-  if(game.mode!=='easy'){
-    const effects=element('div',undefined,'effects');
-    for(const [symbol,name,effect,tint] of [['◎','소용돌이','두 칸 뒤로','#b6c9f0'],['»','순풍','두 칸 앞으로','#a2e6d0']]){
-      const row=element('div',undefined,'effect-row'),icon=element('span',symbol,'effect-icon');
-      icon.style.setProperty('--tint',tint);icon.setAttribute('aria-hidden','true');
-      row.append(icon,element('b',name),element('span',effect));effects.append(row);
-    }
-    more.append(effects);
-  }
   if(game.eventTiles)more.append(button('이번 판 특수 칸 보기','secondary',showEventGuide));
   body.append(list,message('우리 팀 말을 먼저 모두 골인시키면 이겨요.'),more,button('알겠어요','primary',closePanel));
 }

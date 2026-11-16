@@ -111,12 +111,8 @@ dialog label{display:block;font-size:14px;font-weight:700;margin:14px 0 7px}dial
 dialog .primary{width:100%}#dialog-body>.secondary{margin:4px 3px 0 0}
 .event-glyph{display:inline-grid;place-items:center;min-width:20px;height:18px;padding:0 2px;border:1px solid #eadfc8;border-radius:5px;color:white;font:750 12px/1 var(--sans)}
 .event-glyph.back{background:#8e482f}.event-glyph.carry{background:#1b6354}.event-glyph.home{background:#514276;font-size:16px}
-.event-glyph.whirl{background:#5c567d}.event-glyph.breeze{background:#335c53}
 .event-guide{display:grid;gap:8px;margin:14px 0}.event-card{border-bottom:1px solid var(--line);padding-bottom:8px}
 .event-card strong{margin-left:7px;font-size:15px}.event-card p{margin:3px 0}.event-card small{color:#b6d7c8}
-.effects{display:grid;gap:4px;margin:12px 0 16px;padding:10px 12px;background:#0d252b;border:1px solid var(--line);border-radius:9px}
-.effect-row{display:flex;align-items:center;gap:9px;font-size:13px}.effect-row b{color:var(--pearl)}.effect-row span:last-child{margin-left:auto;color:var(--muted)}
-.effect-icon{display:inline-grid;place-items:center;width:23px;height:23px;font-size:15px;font-weight:800;color:var(--tint)}
 @media(aspect-ratio < 6/5){
   /* A stable control strip leaves the remaining visible height for the board. */
   .tabletop{grid-template-rows:auto minmax(0,1fr) auto calc(clamp(166px,22dvh,190px) + env(safe-area-inset-bottom))}

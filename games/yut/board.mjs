@@ -1,5 +1,5 @@
 import { animalFor,drawZodiac } from './zodiac.mjs?v=5';
-import { TEAMS,tileEffect } from './rules.mjs?v=10';
+import { TEAMS,EVENT_NAMES,tileEffect } from './rules.mjs?v=11';
 
 // A square lacquer board viewed by a level, front-facing orthographic camera.
 const TAU = Math.PI * 2;
@@ -14,9 +14,9 @@ const validPawnIndex=index=>Number.isInteger(index)&&index>=0&&index<4;
 const PEARL=['#fff1cd','#f1f3e4','#c5e8e1','#d0d3eb','#ead0df','#f7ddc7'];
 const GOLD='#ffe3a2';
 const eventStamps={
-  back:{color:'#8e482f',tones:['#ffe3bf','#b87852','#f6c194'],glyph:'−1',
+  back:{color:'#8e482f',tones:['#ffe3bf','#b87852','#f6c194'],
     contour:[[-.88,0],[-.46,-.54],[.65,-.54],[.77,-.41],[.77,.41],[.65,.54],[-.46,.54]]},
-  carry:{color:'#1b6354',tones:['#e2f7d5','#73a58b','#b9e5bf'],glyph:'×2',
+  carry:{color:'#1b6354',tones:['#e2f7d5','#73a58b','#b9e5bf'],
     contour:[[-.62,-.55],[.62,-.55],[.79,-.34],[.79,.34],[.62,.55],[-.62,.55],[-.79,.34],[-.79,-.34]]},
   home:{color:'#514276',tones:['#eee4ff','#a58bb9','#d8caeb'],
     contour:[[-.74,-.36],[0,-.67],[.74,-.36],[.62,.33],[0,.61],[-.62,.33]]}
@@ -279,20 +279,15 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       face(mapAt([[a-.105*dx,b-.105*dz],[a-.044*dz,b+.044*dx],[a+.105*dx,b+.105*dz],[a+.044*dz,b-.044*dx]],surface+.022),diag?'#f5faf0':'#fff1c9');
     }
   }
-  function eventStamp(stamp,x,y,r){
+  function eventStamp(stamp,label,x,y,r){
     // The face stays readable from each viewing side, like the pawn number plates.
     const h=r*Math.max(.78,tilt);
     const contour=stamp.contour.map(([u,v])=>[x+u*r,y+v*h]);
     flat(contour,stamp.color,'#fff4d9',Math.max(.8,r*.06));
-    if(stamp.glyph){
-      ctx.save();
-      ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fffbed';
-      ctx.font='bold '+Math.max(7,r*.94)+'px system-ui, sans-serif';
-      ctx.fillText(stamp.glyph,x,y+h*.035,r*1.34);ctx.restore();
-    }else{
-      const house=[[-.46,.01],[0,-.38],[.46,.01],[.33,.01],[.33,.30],[.09,.30],[.09,.09],[-.09,.09],[-.09,.30],[-.33,.30],[-.33,.01]];
-      flat(house.map(([u,v])=>[x+u*r,y+v*h]),'#fffbed');
-    }
+    ctx.save();
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fffbed';
+    ctx.font='bold '+Math.max(8,r*.86)+'px system-ui, sans-serif';
+    ctx.fillText(label,x,y+h*.035,r*1.38);ctx.restore();
   }
   function tile(i){
     const [x,z]=nodes[i],type=tileEffect(tileState,i)??types[i];
@@ -301,7 +296,6 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     const [sx,sy]=project([x,y,z]),r=rad*scale;
     const stamp=Object.hasOwn(eventStamps,type)?eventStamps[type]:null;
     const tones=stamp?stamp.tones:hero?['#fff5d8','#d9b879','#f5e0ac']:
-      type==='breeze'?['#e4f5d7','#8abca2','#c5e6c3']:type==='whirl'?['#ece4fa','#ac98c1','#ecd1e5']:
       i>=20?['#f0f7e9','#c5d4ca','#e6ecd9']:['#fff8e1','#d1d8c5','#f6efdb'];
     castShadow(x,z,surface+.004,rad*1.27,rad*1.19,y-surface,.59);
     castShadow(x,z,surface+.006,rad*.98,rad*.96,.08,.77);
@@ -325,24 +319,10 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     const disc=(size,col)=>feature(x,z,y+.006,size,size,col);
     const mark=(p,col)=>face(stampShape(p,x,z,rad,y+.019),col);
     const stroke=(p,col,w)=>line(stampShape(p,x,z,rad,y+.022),col,w*rad);
-    if(stamp){eventStamp(stamp,sx,sy,r);return;}
+    if(stamp){eventStamp(stamp,EVENT_NAMES[type],sx,sy,r);return;}
     outline(ring(x,z,rad*.75,rad*.75,28),hero?'#a3824c':'#8b9c8c',.016,y+.010);
     if(type==='path'||type==='normal'){disc(rad*.105,type==='path'?'#577b79':'#8c8d71');disc(rad*.047,tones[0]);return;}
-    if(type==='whirl'){
-      const pool=ring(x,z,rad*.46,rad*.46,28);
-      walls(ring(x,z,rad*.33,rad*.33,28),y+.012,pool,y+.092,'#807292');
-      feature(x,z,y+.020,rad*.34,rad*.34,'#5c567d');
-      const swirl=Array.from({length:42},(_,j)=>{const a=j*.26,r=rad*.46*(1-j/44);return [x+r*Math.cos(a),y+.022+.074*(1-j/44)**2,z+r*Math.sin(a)];});
-      line(swirl,'#e0cfeb',rad*.072);
-      outline(pool,'#aa94bd',.029,y+.093);
-    }else if(type==='breeze'){
-      const current=[[-.52,.15],[-.24,.09],[.04,-.15],[.22,-.21],[.23,-.31],[.48,-.18],[.28,.04],[.27,-.045],[.12,-.02],[-.14,.19],[-.34,.23]];
-      for(const [dx,dz,sz,rise] of [[0,-.15,.93,.10],[.03,.16,.79,.067]]){
-        const shape=current.map(([a,b])=>[x+(a*sz+dx)*rad,z+(b*sz+dz)*rad]);
-        solid(shape,shape,y+.008,y+rise,'#335c53','#518976');
-        wire(shape.slice(1,5),'#d4ead1',.018,y+rise+.002);
-      }
-    }else if(type==='start'){
+    if(type==='start'){
       disc(rad*.63,'#854a49');const sz=.19;
       for(let row=0;row<3;row++)for(let col=0;col<4;col++)if((row+col)%2===0){
         const a=(col-2)*sz,b=(row-1.5)*sz;mark([[a,b],[a+sz,b],[a+sz,b+sz],[a,b+sz]],'#fbecc8');
