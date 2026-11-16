@@ -115,6 +115,17 @@ world=world.slice(0,boot)+`
    assert.equal(grid,3,'mobile keeps exactly three game buttons per row');
    const labels=await page.locator('[data-arcade-games] .gbtn>span:last-child').evaluateAll(nodes=>nodes.map(n=>({size:parseFloat(getComputedStyle(n).fontSize),weight:parseInt(getComputedStyle(n).fontWeight),fits:n.scrollWidth<=n.clientWidth+1})));
    assert.ok(labels.every(n=>n.size>=12.5&&n.weight>=700&&n.fits),'larger bold game names fit every mobile card');
+   const rowGaps=await page.locator('[data-arcade-games=solo] .gbtn').evaluateAll(cards=>{
+    const gaps=new Map();
+    for(const card of cards){
+     const box=card.getBoundingClientRect(),text=document.createRange();
+     text.selectNodeContents(card.lastElementChild);
+     const gap=box.bottom-text.getBoundingClientRect().bottom;
+     gaps.set(box.top,Math.min(gap,gaps.get(box.top)??Infinity));
+    }
+    return [...gaps.values()];
+   });
+   assert.ok(rowGaps.every(gap=>gap>=0&&gap<=15),'mobile rows end just below their tallest caption at '+width);
    const colors=await page.locator('[data-arcade-games=solo] .gbtn .ge').evaluateAll(nodes=>new Set(nodes.map(n=>getComputedStyle(n).backgroundImage)).size);
    assert.ok(colors>=4,'game covers are visually distinct');
   }
