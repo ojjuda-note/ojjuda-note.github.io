@@ -61,6 +61,7 @@
     let identity = getUserId() || null, identityRun = 0, viewRun = 0, listRun = 0, countRun = 0;
     let items = [], retentionItems = [], cursor = null, snapshotAt = null, hasMore = false;
     let notificationUnread = 0, retentionUnread = 0, unread = 0, loading = false, saving = false, loadError = '';
+    let browsingHistory = false;
     let readRefreshPending = false, readRefreshQueued = false;
     let countRequest = null, lastRefresh = 0, priorFocus = null, priorOverflow = '', inertState = [];
     const trigger = button('알림', () => open(), 'btn nn-trigger'); trigger.id = 'note-notifications';
@@ -158,7 +159,7 @@
     }
     function clearView() {
       viewRun++; listRun++; loading = false; saving = false; items = []; retentionItems = [];
-      cursor = null; snapshotAt = null; hasMore = false; loadError = '';
+      cursor = null; snapshotAt = null; hasMore = false; browsingHistory = false; loadError = '';
       rows.replaceChildren(); footer.replaceChildren(); status.textContent = ''; updateControls();
     }
     function close() {
@@ -246,7 +247,8 @@
       if (loading || saving || layer.hidden || !identity || identity !== userNow()) return;
       const run = identityRun, user = identity, view = viewRun, request = ++listRun;
       const after = more ? cursor : null;
-      if (!more) readRefreshPending = false;
+      if (more) browsingHistory = true;
+      else readRefreshPending = false;
       loading = true; countRun++; status.textContent = '알림을 불러오는 중이에요.';
       updateControls(); keepFocus();
       const requests = [rpc('list_notifications', { p_limit: 30,
@@ -266,7 +268,10 @@
         const merged = new Map((more ? items : []).map(item => [item.id, item]));
         for (const item of incoming) merged.set(item.id, item);
         items = [...merged.values()];
-        if (!more) snapshotAt = Number.isFinite(Date.parse(data.as_of)) ? data.as_of : null;
+        if (!more) {
+          snapshotAt = Number.isFinite(Date.parse(data.as_of)) ? data.as_of : null;
+          browsingHistory = false;
+        }
         cursor = data.next_cursor && validNoticeId(data.next_cursor.id) && Number.isFinite(Date.parse(data.next_cursor.created_at)) ? data.next_cursor : null;
         hasMore = Boolean(data.has_more && cursor);
         setUnread(data.unread_count); generalOk = true;
@@ -457,6 +462,11 @@
       if (!identity || document.visibilityState === 'hidden') return;
       const force = options.force !== false;
       if (!force && !readRefreshPending && Date.now() - lastRefresh < 15000) return;
+      // While reading older pages, passive updates must leave rows, focus and retry controls intact.
+      if (!layer.hidden && browsingHistory && !force && !readRefreshPending) {
+        if (!loading && !saving) return refreshCount(false);
+        return;
+      }
       if (!layer.hidden) return loadPage();
       return refreshCount(force);
     }
