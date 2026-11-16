@@ -1,6 +1,6 @@
 import {roundSummary} from './results.mjs?v=1';
 import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=14';
-import {createBoard,PAWN_HOP_MS} from './board.mjs?v=23';
+import {createBoard,PAWN_HOP_MS} from './board.mjs?v=24';
 import {createToss,drawRack} from './toss.mjs?v=8';
 import {createTableSounds} from './sound.mjs?v=3';
 import {openRoom,roomCode} from './room.mjs?v=14';
@@ -15,7 +15,7 @@ for(const event of ['pointerup','keydown','click'])document.addEventListener(eve
 document.addEventListener('visibilitychange',()=>{if(document.hidden){sounds.stop();clearBonus();}});
 window.addEventListener('pagehide',sounds.stop);
 let local=newGame(2,11,DEFAULT_MODE,DEFAULT_PIECES,[1]), shown=null, net=null, room=null, pendingRoom=false, attempt=0, busy=false, motion=0, panel='',game=local;
-let casting=false,selectedPawn=null,selectedSteps=null,placement=null,resumeActionFocus=false;
+let casting=false,selectedPawn=null,pawnPicked=false,selectedSteps=null,placement=null,resumeActionFocus=false;
 const tray=$('reserve-pawns');
 let trayKey='',trayDrag=null,suppressTrayClick=false;
 const rack=$('rack-canvas'),rackContext=rack.getContext('2d');
@@ -52,12 +52,12 @@ function dot(t){const badge=element('span',TEAMS[t].mark,'team-dot');badge.setAt
 function pieceName(s,team,index){
   return (index+1)+'번 말 · '+ANIMALS[animalFor(team,index,s.zodiacOffset,s.teamAnimals)];
 }
-function animalIcon(team,index,offset,teamAnimals){
+function animalIcon(team,index,offset,teamAnimals,numbered=true){
   const canvas=element('canvas',undefined,'animal-icon');
   canvas.width=100;canvas.height=88;canvas.setAttribute('aria-hidden','true');
   const ctx=canvas.getContext('2d');
   const project=([x,y,z])=>[50+(x*.966+z*.259)*58,73+(-x*.259+z*.966)*30-y*50];
-  if(ctx)drawZodiac(ctx,project,0,0,0,1,animalFor(team,index,offset,teamAnimals),TEAMS[team].color,index);
+  if(ctx)drawZodiac(ctx,project,0,0,0,1,animalFor(team,index,offset,teamAnimals),TEAMS[team].color,numbered?index:undefined);
   return canvas;
 }
 const layer=(s)=>s.pawns.flatMap((team,t)=>team.flatMap((trail,i)=>{
@@ -96,25 +96,54 @@ function canMovePiece(){
     (!net||!!(room&&net.game&&net.connected&&net.seat===game.team));
 }
 function currentSteps(){return selectedSteps??singleResult(game);}
+function allMoves(s){
+  return [...new Set(pendingRolls(s))].flatMap(steps=>moves(s,steps).map(m=>({...m,steps})));
+}
 function choosePawn(index){
-  if(!canMovePiece()||!moves(game,currentSteps()).some(m=>m.index===index))return;
-  selectedPawn=index;
+  if(!canMovePiece()||!allMoves(game).some(m=>m.index===index))return;
+  selectedPawn=index;pawnPicked=true;
   renderHUD();
 }
 function place(move,dragged=false){
   if(!canMovePiece())return;
   if(dragged)placement={state:game,move};
-  dispatch({type:'move',index:move.index,shortcut:move.shortcut,steps:currentSteps()});
+  dispatch({type:'move',index:move.index,shortcut:move.shortcut,steps:move.steps});
 }
-function dropPawn(index,tile){
+function chooseDestination(tile,index=null){
   if(!canMovePiece())return;
-  const move=moves(game,currentSteps()).find(m=>m.index===index&&targetTile(m)===tile);
-  if(move)place(move,true);
+  const s=game,dragged=index!==null;
+  let picks=allMoves(s).filter(m=>targetTile(m)===tile&&(!dragged||m.index===index));
+  if(!picks.length)return;
+  const preferredPawn=!dragged&&pawnPicked?picks.filter(m=>m.index===selectedPawn):picks;
+  if(preferredPawn.length)picks=preferredPawn;
+  const preferredRoll=selectedSteps?picks.filter(m=>m.steps===selectedSteps):picks;
+  if(preferredRoll.length)picks=preferredRoll;
+  // Unselected reserve pieces are equivalent. Keep independent routes and rolls distinct.
+  const choices=picks.filter((m,i)=>position(s.pawns[s.team][m.index])!==HOME||
+    !picks.slice(0,i).some(prev=>prev.steps===m.steps&&position(s.pawns[s.team][prev.index])===HOME));
+  if(choices.length===1&&preferredPawn.length&&preferredRoll.length){place(choices[0],dragged);return;}
+  openPanel(choices.length===1?'이 칸으로 이동':'어떻게 이동할까요?','destination');
+  for(const m of choices){
+    const from=position(s.pawns[s.team][m.index]);
+    const who=from===HOME?'새 말':(m.index+1)+'번 말';
+    const route=m.to===FINISH?'골인':m.to===0?'마지막 칸':choices.some(o=>o.index===m.index&&o.steps===m.steps&&o.shortcut!==m.shortcut)?(m.shortcut?'지름길':'바깥길'):'';
+    const name=who+' · '+YUT[m.steps]+' '+m.steps+'칸'+(route?' · '+route:'');
+    body.append(button(name,'secondary',()=>{
+      closePanel();if(game===s)place(m,dragged);
+    }));
+  }
 }
-function chooseTile(tile){
-  if(!canMovePiece())return;
-  const picks=moves(game,currentSteps()).filter(m=>targetTile(m)===tile&&(selectedPawn===null||m.index===selectedPawn));
-  if(picks.length)place(picks[0]);
+function dropPawn(index,tile){chooseDestination(tile,index);}
+function chooseTile(tile){chooseDestination(tile);}
+function destinationMenu(s,options){
+  if(!canMovePiece()||game!==s)return;
+  openPanel('이동할 칸 선택','destination');
+  for(const tile of new Set(options.map(targetTile))){
+    const here=options.filter(m=>targetTile(m)===tile);
+    const labels=[...new Set(here.map(m=>nodeName(m.to)))].join(' / ');
+    const rolls=[...new Set(here.map(m=>YUT[m.steps]))].join('·');
+    body.append(button(labels+' · '+rolls,'secondary',()=>{closePanel();if(game===s)chooseTile(tile);}));
+  }
 }
 function result(s){return s.sticks?YUT[s.steps]+' · '+s.steps+'칸':'';}
 function bankCounts(s){
@@ -167,7 +196,8 @@ async function showState(s,animate=true){
   cancelTrayDrag();
   const previous=shown;shown=s;game=s;const token=++motion;
   const placed=placement?.state===previous?placement.move:null;
-  placement=null;selectedPawn=null;selectedSteps=null;
+  placement=null;selectedPawn=null;pawnPicked=false;selectedSteps=null;
+  if(panel==='destination'&&dialog.open)closePanel();
   toss.cancel();sounds.stop();clearBonus();$('toss-layer').hidden=true;
   const fresh=animate&&previous&&previous.revision+1===s.revision;
   const changed=fresh&&!reduced.matches;
@@ -273,7 +303,7 @@ function scheduleComputer(){
 }
 function destinationLabel(s,m,choices){
   if(m.to===FINISH)return '골인';
-  if(choices.some(o=>o.index===m.index&&o.shortcut!==m.shortcut)){
+  if(choices.some(o=>o.index===m.index&&o.steps===m.steps&&o.shortcut!==m.shortcut)){
     return m.shortcut?'지름길':position(s.pawns[s.team][m.index])===22?'다른 길':'바깥길';
   }
   const effect=tileEffect(s,m.to);
@@ -295,8 +325,8 @@ function renderReserve(s,team,options,lobby){
       const item=element('button',undefined,'pawn-choice');
       item.type='button';item.dataset.pawn=String(index);
       item.setAttribute('aria-label',TEAMS[team].name+' 팀 '+pieceName(s,team,index)+' · 대기');
-      const copy=element('span',(index+1)+'번','pawn-copy');
-      item.append(animalIcon(team,index,s.zodiacOffset,s.teamAnimals),copy);tray.append(item);
+      item.title=item.getAttribute('aria-label');
+      item.append(animalIcon(team,index,s.zodiacOffset,s.teamAnimals,false));tray.append(item);
     }
     if(!indices.length)tray.append(element('span','대기 말 없음','reserve-empty'));
   }
@@ -360,14 +390,16 @@ function moveControls(s,options,steps){
     const group=team.filter(trail=>position(trail)===position(team[index])).length;
     const item=button('','pawn-choice',()=>choosePawn(index));
     item.dataset.pawn=String(index);item.setAttribute('aria-pressed',String(selected));
-    const copy=element('span',undefined,'pawn-copy');
-    copy.append(element('b',group>1?'업기 ×'+group:(index+1)+'번'),element('small',nodeName(position(team[index]))));
     item.setAttribute('aria-label',pieceName(s,s.team,index)+' · '+nodeName(position(team[index]))+(group>1?' · 업은 말 '+group+'개':''));
-    item.append(animalIcon(s.team,index,s.zodiacOffset,s.teamAnimals),copy);
+    item.title=item.getAttribute('aria-label');
+    item.append(animalIcon(s.team,index,s.zodiacOffset,s.teamAnimals,false));
     picker.append(item);
   }
   if(restorePicker)picker.querySelector('[data-pawn="'+selectedPawn+'"]')?.focus({preventScroll:true});
-  const paths=options.filter(o=>o.index===selectedPawn).sort((a,b)=>Number(b.shortcut)-Number(a.shortcut));
+  if(!steps){
+    actions.append(button('이동할 칸 선택','primary',()=>destinationMenu(s,options)));return;
+  }
+  const paths=options.filter(o=>o.index===selectedPawn&&o.steps===steps).sort((a,b)=>Number(b.shortcut)-Number(a.shortcut));
   for(const [i,m] of paths.entries()){
     const cue=destinationLabel(s,m,options);
     const label=cue==='골인'?'골인하기':paths.length>1?cue+'로 이동':steps+'칸 이동';
@@ -403,23 +435,24 @@ function renderHUD(){
   resumeActionFocus=actions.contains(document.activeElement)||(resumeActionFocus&&document.activeElement===document.body&&!dialog.open);
   actions.replaceChildren();
   const moving=canMovePiece(),steps=currentSteps();
-  const options=moving?moves(s,steps):[];
-  if(options.length&&!options.some(o=>o.index===selectedPawn)){
+  const options=s.phase==='move'&&!busy&&!pendingRoom&&!lobby&&!dialog.open?allMoves(s):[];
+  if(moving&&steps&&options.length&&!options.some(o=>o.index===selectedPawn)){
     const onBoard=options.find(o=>position(s.pawns[s.team][o.index])!==HOME);
     selectedPawn=(onBoard??options[0]).index;
   }
-  renderReserve(s,team,options,lobby);
-  board.setMoves(options.map(m=>({team:s.team,index:m.index,from:position(s.pawns[s.team][m.index]),to:targetTile(m),label:destinationLabel(s,m,options)})),selectedPawn);
+  renderReserve(s,team,moving?options:[],lobby);
+  const manyRolls=bankCounts(s).size>1;
+  board.setMoves(options.map(m=>({team:s.team,index:m.index,from:position(s.pawns[s.team][m.index]),
+    to:targetTile(m),label:manyRolls?YUT[m.steps]:destinationLabel(s,m,options)})),selectedPawn,moving);
   const rackWasHidden=$('stick-rack').hidden;
   $('move-tools').hidden=!moving;$('stick-rack').hidden=moving;
   if(rackWasHidden&&!moving)paintRack();
   $('station').dataset.phase=moving?'move':'roll';
   $('note').textContent=net?.status||(!lobby&&!busy?moveNotice(s):'');
-  if(moving)$('board').setAttribute('aria-description',steps?'말을 고른 뒤 금빛 칸을 누르세요.':'쓸 결과를 먼저 고르세요.');
+  if(moving)$('board').setAttribute('aria-description','금빛 칸을 누르거나 말을 끌어 놓으세요.');
   else $('board').removeAttribute('aria-description');
   if(moving){
     resultControls(s,steps);moveControls(s,options,steps);
-    if(!steps)actions.append(button('쓸 결과를 고르세요','primary',()=>{},true));
   }else if(lobby)actions.append(button('대기실 열기','primary',lobbyPanel));
   else if(s.phase==='won')actions.append(button('결과 보기','primary',()=>showResult(true),busy));
   else{
@@ -472,7 +505,7 @@ function showEventGuide(){
 function rules(){
   openPanel('놀이 방법','help');
   const list=element('ol');
-  list.append(element('li','윷이나 모가 나오면 한 번 더 던져요.'),element('li','다 던지면 쓸 결과와 말을 고르고 금빛 칸을 누르세요.'));
+  list.append(element('li','윷이나 모가 나오면 한 번 더 던져요.'),element('li','다 던지면 갈 수 있는 칸이 모두 빛나요. 원하는 칸을 누르세요.'));
   const more=element('details',undefined,'game-details');
   more.append(element('summary','자세한 규칙'),
     element('p','도·개·걸·윷·모는 1~5칸이에요. 다른 말을 쓰려면 판이나 대기석에서 먼저 고르세요. 말은 금빛 칸으로 끌어 놓거나 이동 버튼으로 옮겨도 돼요.'),

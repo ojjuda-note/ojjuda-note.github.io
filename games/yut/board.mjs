@@ -81,7 +81,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     activeTeam=team;emphasisStart=reduced()?null:now;
   }
   const dep=(x,z)=>-x*sin+z*cos;
-  let targets=[],options=[],selected=null,gesture=null,drawnPawns=[],skipClick=null;
+  let targets=[],options=[],interactive=true,selected=null,gesture=null,drawnPawns=[],skipClick=null;
   let tileState={},flags=[];
   let backdrop=null,beamKey='',beamStart=0,beamRise=0;
   const beamMs=1150;
@@ -533,8 +533,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     ctx.restore();
   }
   function flagLayout(allowed){
-    const index=gesture?.index??selected;
-    if(index==null||!options.length)return [];
+    if(!options.some(o=>o.label))return [];
     const font=Math.max(13,Math.min(18,scale*.34)),h=font+9;
     ctx.font='bold '+font+'px "Noto Sans CJK KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
     const placed=[],obstacles=[];
@@ -545,10 +544,9 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       obstacles.push({left:x-r,top:head-r*.21,right:x+r,bottom:foot+r*.19});
       if(actor.tag)obstacles.push(actor.tag);
     }
-    for(const [i,n] of allowed.entries()){
-      const option=options.find(o=>o.team===activeTeam&&o.index===index&&o.to===n);
-      const fallback=n===0?'골인':allowed.length>1?'길 '+(i+1):'도착';
-      const label=typeof option?.label==='string'?option.label.trim().slice(0,6)||fallback:fallback;
+    for(const n of allowed){
+      const labels=[...new Set(options.filter(o=>o.team===activeTeam&&o.to===n&&o.label).map(o=>o.label))];
+      const label=labels.join('·')||(n===0?'골인':'도착');
       const w=Math.ceil((ctx.measureText(label)?.width??font*label.length)+font*.86+5);
       const {cx,cy,radius,reach}=beamShape(n);
       const rise=Math.max(12,Math.min(reach*.74,scale*1.13)),side=radius*.92+w*.45;
@@ -632,7 +630,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     if(emphasisStart!==null&&(reduced()||time-emphasisStart>=emphasisMs))emphasisStart=null;
     drawnPawns=pawnPositions(time);
     const allowed=destinationNodes();
-    const key=allowed.length?[activeTeam,selected??'all',...allowed].join('/'):'';
+    const key=allowed.length?[activeTeam,...allowed].join('/'):'';
     if(key!==beamKey){beamKey=key;beamStart=time;backdrop=null;}
     const elapsed=reduced()?beamMs:Math.max(0,time-beamStart);
     beamRise=1-(1-Math.min(1,elapsed/510))**3;
@@ -651,8 +649,12 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
         }
       }
     }
-    const over=gesture?.moved?destinationAt(gesture.x,gesture.y,allowed):null;
-    for(const n of allowed)drawBeam(n,elapsed,n===over);
+    const dropNodes=gesture?.moved?destinationNodes(gesture.index):allowed;
+    const over=gesture?.moved?destinationAt(gesture.x,gesture.y,dropNodes):null;
+    for(const n of allowed){
+      ctx.save();if(!dropNodes.includes(n))ctx.globalAlpha=.55;
+      drawBeam(n,elapsed,n===over);ctx.restore();
+    }
     drawPawns();
     if(!gesture?.moved||!flags.length||turnStart)flags=flagLayout(allowed);
     for(const flag of flags)drawFlag(flag,flag.n===over);
@@ -681,8 +683,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       (actor.from>=0||actor.p.index===gesture.index);
   }
   function targetHeight(n){return nodeHeight(n)+.025;}
-  function destinationNodes(){
-    const index=gesture?.index??selected;
+  function destinationNodes(index=null){
     if(!options.length)return targets;
     return [...new Set(options.filter(o=>o.team===activeTeam&&(index==null||o.index===index)).map(o=>o.to))];
   }
@@ -749,7 +750,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   }
   const insideCanvas=g=>g.x>=0&&g.y>=0&&g.x<width&&g.y<height;
   function beginReserveDrag(index,event){
-    if(dead||gesture)return false;
+    if(dead||gesture||!interactive)return false;
     const p=reserves.find(p=>p.team===activeTeam&&p.index===index);
     if(!p||!options.some(o=>o.team===p.team&&o.index===index&&o.from===-1))return false;
     const [x,y]=local(event);
@@ -766,7 +767,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   function endReserveDrag(event){
     if(!gesture?.external)return false;
     updateReserveDrag(event);
-    const g=gesture,to=insideCanvas(g)?destinationAt(g.x,g.y,destinationNodes()):null;
+    const g=gesture,to=insideCanvas(g)?destinationAt(g.x,g.y,destinationNodes(g.index)):null;
     closeGesture(true);
     if(to==null)return false;
     if(dropPawn)dropPawn(g.index,to);else chooseDestination?.(to);
@@ -796,15 +797,15 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     });
   }
   function pointerDown(event){
-    if(!options.length||gesture||event.isPrimary===false||(event.button!=null&&event.button!==0))return;
+    if(!interactive||!options.length||gesture||event.isPrimary===false||(event.button!=null&&event.button!==0))return;
     skipClick=null;
     const [x,y]=local(event);
     const allowed=destinationNodes(),option=pieceAt(x,y);
-    if(!option)return;
-    if(selected!=null&&destinationAt(x,y,allowed)!=null&&!canSwitchHere(option,x,y,allowed))return;
+    if(!option||flagAt(x,y,allowed))return;
+    const tapTo=canSwitchHere(option,x,y,allowed)?null:destinationAt(x,y,allowed);
     const id=event.pointerId??0;
-    const g={...option,id,x,y,startX:x,startY:y,clientX:event.clientX,clientY:event.clientY,moved:false};
-    gesture=g;selected=option.index;
+    const g={...option,id,x,y,startX:x,startY:y,clientX:event.clientX,clientY:event.clientY,moved:false,tapTo};
+    gesture=g;
     try{if(canvas.setPointerCapture){canvas.setPointerCapture(id);g.captured=true;}}catch{/* detached before capture */}
     if(!g.captured){
       g.fallback=true;
@@ -812,13 +813,16 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       window.addEventListener('pointercancel',pointerCancel);
     }
     event.preventDefault?.();
-    choosePawn?.(option.index);
+    if(tapTo==null){selected=option.index;choosePawn?.(option.index);}
     schedule();
   }
   function updatePointer(event){
     const g=gesture;
     [g.x,g.y]=local(event);g.clientX=event.clientX;g.clientY=event.clientY;
-    if(!g.moved&&Math.hypot(g.x-g.startX,g.y-g.startY)>5){g.moved=true;backdrop=null;}
+    if(!g.moved&&Math.hypot(g.x-g.startX,g.y-g.startY)>5){
+      g.moved=true;backdrop=null;
+      if(g.tapTo!=null){selected=g.index;choosePawn?.(g.index);}
+    }
   }
   function pointerMove(event){
     if(!gesture||gesture.id!==(event.pointerId??0))return;
@@ -831,8 +835,9 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   function pointerUp(event){
     if(!gesture||gesture.id!==(event.pointerId??0))return;
     updatePointer(event);
-    const g=gesture,to=g.moved?destinationAt(g.x,g.y,destinationNodes()):null;
+    const g=gesture,to=g.moved?destinationAt(g.x,g.y,destinationNodes(g.index)):null;
     closeGesture(true);event.preventDefault?.();
+    if(!g.moved&&g.tapTo!=null){chooseDestination?.(g.tapTo);return;}
     if(to!=null){
       if(dropPawn)dropPawn(g.index,to);
       else chooseDestination?.(to);
@@ -842,10 +847,11 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     if(gesture&&gesture.id===(event.pointerId??0))closeGesture(true);
   }
   function tap(event){
+    if(!interactive)return;
     const [x,y]=local(event);
     if(skipClick&&performance.now()<=skipClick.until&&Math.hypot(x-skipClick.x,y-skipClick.y)<32){skipClick=null;return;}
     const allowed=destinationNodes(),node=destinationAt(x,y,allowed),option=pieceAt(x,y);
-    if(option&&(selected==null||node==null||canSwitchHere(option,x,y,allowed))){
+    if(option&&(node==null||canSwitchHere(option,x,y,allowed))){
       selected=option.index;choosePawn?.(option.index);schedule();return;
     }
     if(node!=null)chooseDestination?.(node);
@@ -860,14 +866,14 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       if(!targets.length&&!options.length){beamKey='';beamRise=0;backdrop=null;}
       canvas.classList.toggle('choosing',targets.length>0||options.length>0);schedule();
     },
-    setMoves(available=[],selectedIndex=null){
-      backdrop=null;flags=[];
+    setMoves(available=[],selectedIndex=null,canInteract=true){
+      interactive=canInteract;backdrop=null;flags=[];
       options=available.filter(o=>o&&TEAMS[o.team]&&validPawnIndex(o.index)&&(o.from===-1||nodes[o.from])&&nodes[o.to]);
       selected=Number.isInteger(selectedIndex)?selectedIndex:null;
       if(!options.length&&!targets.length){beamKey='';beamRise=0;}
-      if(gesture&&!options.some(o=>o.index===gesture.index&&o.team===gesture.team&&o.from===gesture.from))closeGesture(true);
-      canvas.classList.toggle('choosing',options.length>0||targets.length>0);
-      if(canvas.style)canvas.style.touchAction=options.length?'none':'';
+      if(gesture&&(!interactive||!options.some(o=>o.index===gesture.index&&o.team===gesture.team&&o.from===gesture.from)))closeGesture(true);
+      canvas.classList.toggle('choosing',interactive&&(options.length>0||targets.length>0));
+      if(canvas.style)canvas.style.touchAction=interactive&&options.length?'none':'';
       schedule();
     },
     setState(next={}) {
