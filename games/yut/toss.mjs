@@ -559,7 +559,7 @@ export function createToss(canvas) {
     const run=running;running=null;cancelAnimationFrame(run.frame);clearTimeout(run.deadline);
     run.resizeObserver?.disconnect();window.removeEventListener('resize',run.resize);run.resolve();
   }
-  function play(faces,seed,onSettle){
+  function play(faces,seed,onSettle,onThrow){
     cancel();
     const plan=createThrow(faces,seed);
     if(!ctx){onSettle?.();return Promise.resolve();}
@@ -572,6 +572,7 @@ export function createToss(canvas) {
     resize();
     return new Promise(resolve=>{
       const run={resolve,frame:0,deadline:0,settled:false,resize,resizeObserver:null},start=performance.now();running=run;
+      onThrow?.(plan);
       if(typeof ResizeObserver==='function'){
         run.resizeObserver=new ResizeObserver(resize);run.resizeObserver.observe(canvas);
       }

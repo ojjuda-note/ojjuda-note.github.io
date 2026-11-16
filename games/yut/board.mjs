@@ -3,6 +3,7 @@ import { TEAMS,EVENT_NAMES,tileEffect } from './rules.mjs?v=11';
 
 // A square lacquer board viewed by a level, front-facing orthographic camera.
 const TAU = Math.PI * 2;
+export const PAWN_HOP_MS=265;
 // Camera-facing arrangements, ordered back to front on a single shared base.
 const stackSeats=[
   [],[[0,0]],[[-.40,0],[.40,0]],
@@ -397,7 +398,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
         let centerX=nx,centerZ=nz,y=ground;
         const step=moves.find(move=>move.team===p.team&&move.index===p.index);
         if(step){
-          const t=Math.max(0,Math.min(1,(time-step.start)/265));
+          const t=Math.max(0,Math.min(1,(time-step.start)/PAWN_HOP_MS));
           centerX=step.from[0]*(1-t)+nx*t;centerZ=step.from[1]*(1-t)+nz*t;
           y+=Math.sin(pi*t)*stepLift*tilt;
         }
@@ -656,7 +657,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     if(!gesture?.moved||!flags.length||turnStart)flags=flagLayout(allowed);
     for(const flag of flags)drawFlag(flag,flag.n===over);
     if(gesture?.moved&&(!gesture.external||insideCanvas(gesture)))drawLifted();
-    moves=moves.filter(m=>time-m.start<265);
+    moves=moves.filter(m=>time-m.start<PAWN_HOP_MS);
     if(turnStart||moves.length||(allowed.length&&elapsed<beamMs)||(emphasisStart!==null&&drawnPawns.some(a=>a.p.team===activeTeam||emphasisFrom[a.p.team]>0)))schedule();
   }
   function schedule(){if(!dead&&!frame)frame=requestAnimationFrame(paint);}
@@ -875,7 +876,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       if(next.snap)moves=[];
       else if(!reduced()){
         const now=performance.now();
-        moves=moves.filter(v=>now-v.start<265);
+        moves=moves.filter(v=>now-v.start<PAWN_HOP_MS);
         for(const p of list){
           const prev=pieces.find(o=>o.team===p.team&&o.index===p.index);
           if(prev&&prev.node===p.node)continue;

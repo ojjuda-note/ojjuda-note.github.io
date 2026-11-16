@@ -1,11 +1,16 @@
 import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed} from './rules.mjs?v=11';
-import {createBoard} from './board.mjs?v=19';
-import {createToss,drawRack} from './toss.mjs?v=7';
+import {createBoard,PAWN_HOP_MS} from './board.mjs?v=20';
+import {createToss,drawRack} from './toss.mjs?v=8';
+import {createTableSounds} from './sound.mjs?v=1';
 import {openRoom,roomCode} from './room.mjs?v=11';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=5';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
 const dialog=$('sheet'), body=$('dialog-body'), reduced=matchMedia('(prefers-reduced-motion: reduce)');
+const sounds=createTableSounds();
+for(const event of ['pointerup','keydown','click'])document.addEventListener(event,sounds.unlock,true);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)sounds.stop();});
+window.addEventListener('pagehide',sounds.stop);
 let local=newGame(2,11,DEFAULT_MODE,DEFAULT_PIECES,[1]), shown=null, net=null, room=null, pendingRoom=false, attempt=0, busy=false, motion=0, panel='',game=local;
 let casting=false,selectedPawn=null,placement=null,resumeActionFocus=false;
 const tray=$('reserve-pawns');
@@ -134,8 +139,9 @@ async function showState(s,animate=true){
   const previous=shown;shown=s;game=s;const token=++motion;
   const placed=placement?.state===previous?placement.move:null;
   placement=null;selectedPawn=null;
-  toss.cancel();$('toss-layer').hidden=true;
-  const changed=animate&&previous&&previous.revision+1===s.revision&&!reduced.matches;
+  toss.cancel();sounds.stop();$('toss-layer').hidden=true;
+  const fresh=animate&&previous&&previous.revision+1===s.revision;
+  const changed=fresh&&!reduced.matches;
   casting=!!(changed&&s.phase==='move');busy=!!changed;
   if(casting)$('outcome').textContent='';else reveal(s);
   renderHUD();
@@ -147,7 +153,7 @@ async function showState(s,animate=true){
     await toss.play(s.sticks,lastThrowSeed(s),()=>{
       if(motion!==token)return;
       $('toss-label').textContent=result(s);reveal(s);
-    });
+    },sounds.throwSticks);
   }else if(changed&&previous.phase==='move'&&s.lastMove){
     const {team,indices,frames}=s.lastMove,base=layer(previous).filter(p=>p.team!==team||!indices.includes(p.index));
     const dropAt=placed&&team===previous.team&&indices.includes(placed.index)?frames.indexOf(placed.to):-1;
@@ -158,16 +164,28 @@ async function showState(s,animate=true){
         $('note').textContent=net?.status||EVENT_NAMES[s.lastMove.event]||'';
         return 670;
       }
-      return 235;
+      return PAWN_HOP_MS;
+    };
+    const land=(node,ms,index)=>{
+      const kind=node===FINISH?'finish':s.lastMove.landing===node&&s.lastMove.event?s.lastMove.event:
+        index===frames.length-1&&s.lastMove.captured?'capture':null;
+      sounds.land(kind,ms,index);
     };
     if(dropAt>=0){
+      land(placed.to,0,dropAt);
       if(remaining.length){draw(s,movingAt(placed.to),true);await delay(pauseAt(placed.to));}
       else{draw(s,undefined,true);if(s.lastMove.event)await delay(pauseAt(placed.to));}
     }
-    for(const node of remaining){
+    for(const [i,node] of remaining.entries()){
       if(token!==motion)return;
+      land(node,node===HOME||node===FINISH?0:PAWN_HOP_MS,i+dropAt+1);
       draw(s,movingAt(node));await delay(pauseAt(node));
     }
+  }else if(fresh&&s.phase==='move'){
+    sounds.quickThrow();
+  }else if(fresh&&previous.phase==='move'&&s.lastMove){
+    const move=s.lastMove;
+    sounds.land(move.frames.at(-1)===FINISH?'finish':move.event||(move.captured?'capture':null));
   }
   if(token!==motion)return;
   casting=false;busy=false;$('toss-layer').hidden=true;reveal(s);draw(s);renderHUD();
@@ -435,6 +453,12 @@ function settings(){
   openPanel('게임 메뉴','settings');
   const menu=element('div',undefined,'menu-grid');
   menu.append(button('놀이 방법','secondary',rules),button('말 현황','secondary',standings));
+  const soundButton=button('','secondary',()=>{sounds.setEnabled(!sounds.enabled);soundLabel();});
+  function soundLabel(){
+    soundButton.textContent=sounds.enabled?'효과음 켜짐':'효과음 꺼짐';
+    soundButton.setAttribute('aria-pressed',String(sounds.enabled));
+  }
+  soundLabel();menu.append(soundButton);
   if((!net||net.game)&&game.eventTiles)menu.append(button('특수 칸','secondary',showEventGuide));
   menu.append(button('윷판 돌리기','secondary',()=>{board.rotate(1);closePanel();}));body.append(menu);
   if(net){
@@ -591,7 +615,7 @@ async function leaveRoom(){
 $('settings').onclick=()=>settings();$('team-title').onclick=standings;$('close').onclick=closePanel;
 dialog.addEventListener('close',()=>{if(!dialog.open){panel='';renderHUD();}});
 dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closePanel();}});
-reduced.addEventListener?.('change',()=>{if(reduced.matches&&casting)toss.cancel();});
+reduced.addEventListener?.('change',()=>{if(reduced.matches&&casting){toss.cancel();sounds.stop();}});
 void showState(local,false);
 const invite=new URLSearchParams(location.hash.slice(1));const embedded=document.querySelector('meta[name="yut-invite-room"]')?.content;
 showEntry(invite.has('room')||roomCode(embedded)?'online':undefined);

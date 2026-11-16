@@ -106,7 +106,14 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   assert.equal(text('goals'),'골인 0/4');
   assert.equal(reserve.querySelectorAll('button').length,4);
   assert.equal(first().textContent,'윷 던지기');
-  doc.getElementById('settings').click();dialogButton('특수 칸').click();
+  doc.getElementById('settings').click();
+  assert.equal(dialogButton('효과음 켜짐').getAttribute('aria-pressed'),'true');
+  dialogButton('효과음 켜짐').click();
+  assert.equal(dialogButton('효과음 꺼짐').getAttribute('aria-pressed'),'false');
+  assert.equal(w.localStorage.getItem('ojjuda.yut.sound'),'off');
+  dialogButton('효과음 꺼짐').click();
+  assert.equal(w.localStorage.getItem('ojjuda.yut.sound'),'on');
+  dialogButton('특수 칸').click();
   const places=[...doc.querySelectorAll('.event-card small')].map(el=>el.textContent);
   assert.deepEqual([...doc.querySelectorAll('.event-card strong')].map(el=>el.textContent),['엎기','빽도','꽝']);
   assert.equal(new Set(places).size,3);
