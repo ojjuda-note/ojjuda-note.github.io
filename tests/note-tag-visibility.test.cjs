@@ -165,6 +165,19 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   assert.deepEqual(ids(await search('19금 일상')),[mixed], 'multi-tag search may show 19금 only when explicitly included');
   assert.deepEqual(new Set(ids(await search('19금'))),new Set([only,mixed]), 'explicit tag search reveals tagged cards and preserves moderation');
   assert.ok(!ids(await search('19금')).some(id=>[hidden,blockedCard,archived].includes(id)));
+  const older = await add(['오래된산책']);
+  const newer = await add(['오래된산책']);
+  await db.query("update ojjuda_note.cards set created_at=statement_timestamp()-interval '12 days' where id=$1",[older]);
+  await db.query("insert into ojjuda_note.reactions values($1,$2,'like')",[older,viewer]);
+  for (const previousTab of ['latest','popular']) {
+    context.feedSort=previousTab;
+    assert.deepEqual(ids(await search('오래된산책')),[newer,older],
+      `tag search after ${previousTab} includes older cards in newest-first order`);
+  }
+  const popularIds=ids(await list('popular'));
+  assert.ok(popularIds.includes(newer));
+  assert.ok(!popularIds.includes(older));
+  context.feedSort='latest';
   for (const mode of ['saved','mine']) {
     context.feedMode=mode;
     assert.deepEqual(ids(await search('')),[normal], `${mode}: hide tagged cards without hiding ordinary cards`);

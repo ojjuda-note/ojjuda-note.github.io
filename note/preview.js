@@ -1106,20 +1106,15 @@ function filterSearchOnlyTags(request, searchTag = '') {
 function canDisplayTaggedCard(card) {
   return tagList(feedTerm).includes('19금') || !card?.tags?.includes('19금');
 }
-function cursorFilter(cursor, ascending = false, popular = false) {
+function cursorFilter(cursor) {
   if (!cursor || !validCardId(cursor.id) || !Number.isFinite(Date.parse(cursor.created_at))) return null;
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(cursor.created_at)) return null;
   // Keep PostgreSQL microseconds: rounding to milliseconds can skip tied rows.
-  const time = cursor.created_at, op = ascending ? 'gt' : 'lt';
-  const tie = `created_at.${op}.${time},and(created_at.eq.${time},id.${op}.${cursor.id})`;
-  if (!popular) return tie;
-  const count = Number(cursor.like_count);
-  if (!Number.isSafeInteger(count) || count < 0) return null;
-  return `like_count.lt.${count},and(like_count.eq.${count},or(${tie}))`;
+  const time = cursor.created_at;
+  return `created_at.lt.${time},and(created_at.eq.${time},id.lt.${cursor.id})`;
 }
 function filteredFeed() {
-  // 인기의 최근 7일 조건은 전체 피드에만 적용해요. 메모함은 모든 보이는 카드를 최신순으로 보여요.
-  const popular = feedMode === 'all' && feedSort === 'popular';
+  // Tag searches and personal collections show all visible matches, newest first.
   let request = filterSearchOnlyTags(query().from('public_cards').select(columns), feedTerm);
   // Saved and own collections include replies as well as root cards.
   if (feedMode === 'all') request = request.eq('kind', 'memo');
@@ -1127,11 +1122,7 @@ function filteredFeed() {
   if (feedMode === 'mine') request = request.eq('is_mine', true);
   if (feedTerm) request = request.contains('tags', tagList(feedTerm));
   if (feedSnapshot) request = request.lte('created_at', feedSnapshot);
-  if (popular) {
-    request = request.gte('created_at', new Date((feedSnapshot ? Date.parse(feedSnapshot) : Date.now()) - 7 * 86400000).toISOString());
-    request = request.order('like_count', { ascending: false });
-  }
-  const after = cursorFilter(feedCursor, false, popular);
+  const after = cursorFilter(feedCursor);
   if (after) request = request.or(after);
   return request.order('created_at', { ascending: false }).order('id', { ascending: false }).limit(20);
 }
