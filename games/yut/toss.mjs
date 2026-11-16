@@ -80,10 +80,14 @@ function rocking(offset,velocity,decay,frequency,t) {
 function landedAngles(r,ms) {
   if(ms>=r.groundTime)return {pitch:r.restPitch,roll:r.roll,yaw:r.yaw};
   const t=ms*.001,fade=1-smooth(clamp((ms/r.groundTime-.54)/.46));
+  // The second contact rocks the stick about its lower edge without another hop.
+  const u=clamp((ms-r.bounce)/(r.groundTime-r.bounce));
+  const wobble=Math.sin(1.5*TAU*u)*Math.exp(-2.2*u)*(1-smooth(clamp((u-.73)/.27)));
+  const spin=Math.sign(r.impactRoll-r.roll),tip=Math.sign(r.impactPitch-r.restPitch);
   return {
-    yaw:mix(r.impactYaw,r.yaw,glide(ms/r.glideTime)),
-    pitch:r.restPitch+fade*rocking(r.impactPitch-r.restPitch,r.pitchVelocity,r.pitchDecay,r.pitchFrequency,t),
-    roll:r.roll+fade*rocking(r.impactRoll-r.roll,r.rollVelocity,r.rollDecay,r.rollFrequency,t)
+    yaw:mix(r.impactYaw,r.yaw,glide(ms/r.glideTime))+.039*spin*tip*wobble,
+    pitch:r.restPitch+fade*rocking(r.impactPitch-r.restPitch,r.pitchVelocity,r.pitchDecay,r.pitchFrequency,t)-.050*tip*wobble,
+    roll:r.roll+fade*rocking(r.impactRoll-r.roll,r.rollVelocity,r.rollDecay,r.rollFrequency,t)-.195*spin*wobble
   };
 }
 
@@ -184,7 +188,7 @@ export function createThrow(faces,seed) {
     const landing=slot.role==='base'?between(955,992):slot.role==='upper'?between(1120,1172):between(995,1120);
     const flight=landing-delay;
     const bounce=between(174,228),slide=between(275,365);
-    const groundTime=bounce+slide,glideTime=groundTime*between(.80,.95);
+    const glideTime=(bounce+slide)*between(.80,.95),groundTime=bounce+slide+80;
     const yaw=slot.yaw,roll=face?0:Math.PI;
     const across=(i-1.5)*19+between(-1.5,1.5),along=(i%2?7:-7)+between(-3,3);
     const x0=lead+along*Math.cos(handYaw)-across*Math.sin(handYaw);

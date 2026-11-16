@@ -1,9 +1,17 @@
-import { drawZodiac } from './zodiac.mjs?v=2';
-import { TEAMS } from './rules.mjs?v=4';
+import { animalFor,drawZodiac } from './zodiac.mjs?v=3';
+import { TEAMS } from './rules.mjs?v=5';
 
 // A square lacquer board viewed by a level, front-facing orthographic camera.
 const TAU = Math.PI * 2;
 const teamInk=['#863525','#075d59','#584078','#735016'];
+// Camera-facing arrangements, ordered back to front on a single shared base.
+const stackSeats=[
+  [],[[0,0]],[[-.40,0],[.40,0]],
+  [[0,-.36],[-.37,.22],[.37,.22]],
+  [[-.34,-.33],[.34,-.33],[-.38,.27],[.38,.27]]
+];
+const pawnSizes=[0,1.38,1.06,.89,.85];
+const validPawnIndex=index=>Number.isInteger(index)&&index>=0&&index<4;
 const PEARL=['#fff1cd','#f1f3e4','#c5e8e1','#d0d3eb','#ead0df','#f7ddc7'];
 const GOLD='#ffe3a2';
 const c = 4.05;
@@ -348,28 +356,32 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   objects.push({x:3.19,z:1.64,draw:()=>lantern(3.19,1.64)});
   function nodeHeight(n){return [0,5,10,15,22].includes(n)?.435:.352;}
   function pawn(p,x,z,y,size){
-    const animal=Number.isInteger(p.animal)&&p.animal>=0&&p.animal<12?p.animal:(p.team*3+p.index+2)%12;
+    const animal=Number.isInteger(p.animal)&&p.animal>=0&&p.animal<12?p.animal:animalFor(p.team,p.index);
     drawZodiac(ctx,project,x,y,z,size,animal,TEAMS[p.team].color);
   }
   function pawnPositions(time){
     const positions=[],groups=new Map();
     for(const p of pieces){
-      const group=groups.get(p.node)||[];
-      group.push(p);groups.set(p.node,group);
+      const key=p.node*TEAMS.length+p.team;
+      const group=groups.get(key)||[];
+      group.push(p);groups.set(key,group);
     }
-    for(const [node,group] of groups){
+    for(const group of groups.values()){
+      const node=group[0].node;
       const [nx,nz]=nodes[node],ground=nodeHeight(node)+.004;
       group.forEach((p,i)=>{
-        const offset=(i-(group.length-1)/2)*.80,baseSize=group.length>1?1.06:1.38;
+        const [side,depth]=stackSeats[group.length][i];
+        const baseSize=pawnSizes[group.length];
         const light=emphasis(p.team,time),size=baseSize*(1+turnGrowth*light);
-        let x=nx+offset*cos,z=nz+offset*sin,y=ground;
+        let centerX=nx,centerZ=nz,y=ground;
         const step=moves.find(move=>move.team===p.team&&move.index===p.index);
         if(step){
           const t=Math.max(0,Math.min(1,(time-step.start)/265));
-          x=step.from[0]*(1-t)+x*t;z=step.from[1]*(1-t)+z*t;
+          centerX=step.from[0]*(1-t)+nx*t;centerZ=step.from[1]*(1-t)+nz*t;
           y+=Math.sin(pi*t)*.53;
         }
-        positions.push({p,x,z,y,ground,size,baseSize,light,from:node});
+        positions.push({p,x:centerX+side*cos-depth*sin,z:centerZ+side*sin+depth*cos,
+          centerX,centerZ,y,ground,size,baseSize,light,from:node});
       });
     }
     return positions;
@@ -396,9 +408,10 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   }
   function drawPawnGroup(group,carried=false){
     const first=group[0],team=first.p.team,stack=group.length>1;
-    const last=group[group.length-1],x=(first.x+last.x)/2,z=(first.z+last.z)/2;
+    const x=stack?first.centerX:first.x,z=stack?first.centerZ:first.z;
     const [cx,cy]=project([x,first.ground+.013,z]);
-    const rx=scale*(stack?.89*(1+turnGrowth*first.light):.49*first.size),ry=scale*.49*first.size*tilt;
+    const rx=scale*(stack?.89*(1+turnGrowth*first.light):.49*first.size);
+    const ry=scale*tilt*(group.length>=3?.72*(1+turnGrowth*first.light):.49*first.size);
     const chosen=team===activeTeam&&selected!==null&&group.some(a=>a.p.index===selected);
     ctx.save();
     const liftedSource=!carried&&isLifted(first);
@@ -417,7 +430,8 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     if(liftedSource){ctx.restore();return;}
     for(const a of group)pawn(a.p,a.x,a.z,a.y,a.size);
     const font=Math.max(chosen?12:10,Math.min(17,scale*.245)),h=font*(chosen?1.52:1.40);
-    const numbers=group.map(a=>a.p.index+1).sort().join('·');
+    const ids=group.map(a=>a.p.index+1).sort((a,b)=>a-b);
+    const numbers=ids.length>2&&ids.at(-1)-ids[0]===ids.length-1?ids[0]+'–'+ids.at(-1):ids.join('·');
     const name=(scale<28?TEAMS[team].mark:TEAMS[team].name)+' '+numbers;
     ctx.font='bold '+font+'px "Noto Sans CJK KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
     const mark=chosen?font*.94:0;
@@ -442,7 +456,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     const groups=[];
     for(const a of drawnPawns){
       // Members converging onto a square keep their own base until they arrive together.
-      const stack=a.from<0?null:groups.find(([b])=>b.from===a.from&&b.p.team===a.p.team&&Math.hypot(a.x-b.x,a.z-b.z)<.96);
+      const stack=groups.find(([b])=>b.from===a.from&&b.p.team===a.p.team&&Math.hypot(a.centerX-b.centerX,a.centerZ-b.centerZ)<.22);
       if(stack)stack.push(a);else groups.push([a]);
     }
     groups.sort(([a],[b])=>dep(a.x,a.z)-dep(b.x,b.z));
@@ -683,7 +697,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       if(!option||option.team!==activeTeam)continue;
       const d=pawnDistance(actor,px,py);
       if(d<distance){
-        const [x,y]=project([actor.x,actor.y,actor.z]);
+        const [x,y]=project([actor.centerX,actor.y,actor.centerZ]);
         nearest={...option,gripX:(x-px)/scale,gripY:(y-py)/scale};distance=d;
       }
     }
@@ -694,8 +708,8 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     const x=u*cos-d*sin,z=u*sin+d*cos;
     const carried=g.external?[{p:g.p,from:-1,size:1.38*(1+turnGrowth),light:1}]:drawnPawns.filter(isLifted);
     if(carried.length)drawPawnGroup(carried.map((actor,i)=>{
-      const offset=(i-(carried.length-1)/2)*.80;
-      return {...actor,x:x+offset*cos,z:z+offset*sin,ground:base,y:base+.30+i*.045};
+      const [side,depth]=stackSeats[carried.length][i];
+      return {...actor,centerX:x,centerZ:z,x:x+side*cos-depth*sin,z:z+side*sin+depth*cos,ground:base,y:base+.30};
     }),true);
   }
   function local(event){
@@ -817,7 +831,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     },
     setMoves(available=[],selectedIndex=null){
       backdrop=null;flags=[];
-      options=available.filter(o=>o&&TEAMS[o.team]&&[0,1].includes(o.index)&&(o.from===-1||nodes[o.from])&&nodes[o.to]);
+      options=available.filter(o=>o&&TEAMS[o.team]&&validPawnIndex(o.index)&&(o.from===-1||nodes[o.from])&&nodes[o.to]);
       selected=Number.isInteger(selectedIndex)?selectedIndex:null;
       if(!options.length&&!targets.length){beamKey='';beamRise=0;}
       if(gesture&&!options.some(o=>o.index===gesture.index&&o.team===gesture.team&&o.from===gesture.from))closeGesture(true);
@@ -827,7 +841,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     },
     setState(next={}) {
       backdrop=null;flags=[];
-      const list=Array.isArray(next.pieces)?next.pieces.filter(p=>p&&TEAMS[p.team]&&nodes[p.node]).map(p=>({...p})):[];
+      const list=Array.isArray(next.pieces)?next.pieces.filter(p=>p&&TEAMS[p.team]&&validPawnIndex(p.index)&&nodes[p.node]).map(p=>({...p})):[];
       if(next.snap)moves=[];
       else if(!reduced()){
         const now=performance.now();
@@ -839,7 +853,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
           moves.push({team:p.team,index:p.index,from:nodes[prev?.node]??nodes[0],start:now});
         }
       }
-      reserves=Array.isArray(next.waiting)?next.waiting.filter(p=>p&&TEAMS[p.team]&&[0,1].includes(p.index)).map(p=>({...p})):[];
+      reserves=Array.isArray(next.waiting)?next.waiting.filter(p=>p&&TEAMS[p.team]&&validPawnIndex(p.index)).map(p=>({...p})):[];
       pieces=list;setActiveTeam(next.activeTeam??null);playMode=next.mode==='easy'?'easy':'island';
       if(gesture&&(gesture.team!==activeTeam||(gesture.external&&!reserves.some(p=>p.team===gesture.team&&p.index===gesture.index))))closeGesture(true);
       schedule();

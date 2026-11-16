@@ -10,12 +10,17 @@ export const YUT = ['', '도', '개', '걸', '윷', '모'];
 export const ROCK = [3,16], WHIRL = [8,13], WIND = [6,18];
 const fork = new Set([5,10,22]);
 
-export function newGame(count=2,zodiacOffset=2,mode='island') {
+export function newGame(count=2,zodiacOffset=2,mode='island',pieceCounts=2,computerTeams=[],teamAnimals=null) {
   if (![2,3,4].includes(count)) throw new Error('2~4팀을 골라 주세요.');
   if (!Number.isInteger(zodiacOffset)||zodiacOffset<0||zodiacOffset>=12) throw new Error('십이지 동물을 골라 주세요.');
   if (mode!=='easy'&&mode!=='island') throw new Error('놀이 방식을 골라 주세요.');
-  return {mode, team:0, turn:1, phase:'roll', revision:0, sticks:null, steps:0,
-    pawns:Array.from({length:count},()=>[[],[]]), zodiacOffset, winner:null, lastMove:null,
+  const counts=Array.isArray(pieceCounts)?pieceCounts:Array(count).fill(pieceCounts);
+  if(counts.length!==count||!counts.every(n=>[2,3,4].includes(n)))throw Error('각 팀의 말은 2~4개로 골라 주세요.');
+  if(!Array.isArray(computerTeams)||!computerTeams.every(i=>Number.isInteger(i)&&i>=0&&i<count))throw Error('컴퓨터 팀을 다시 골라 주세요.');
+  const animals=teamAnimals??Array.from({length:count},(_,i)=>(zodiacOffset+i*3)%12);
+  if(!Array.isArray(animals)||animals.length!==count||!animals.every(i=>Number.isInteger(i)&&i>=0&&i<12))throw Error('각 팀의 동물을 골라 주세요.');
+  return {mode,teamAnimals:[...animals],computerTeams:[...new Set(computerTeams)], team:0, turn:1, phase:'roll', revision:0, sticks:null, steps:0,
+    pawns:counts.map(n=>Array.from({length:n},()=>[])), zodiacOffset, winner:null, lastMove:null,
     note:'윷을 던져 첫 말을 출발시키세요.'};
 }
 export const position = trail => trail.length ? trail[trail.length-1] : HOME;
@@ -59,7 +64,7 @@ export function moves(state) {
   const team=state.pawns[state.team], options=[];
   for(let index=0;index<team.length;index++){
     const trail=team[index], from=position(trail);
-    if(from===FINISH||(from!==HOME&&index>0&&position(team[0])===from)) continue;
+    if(from===FINISH||(from!==HOME&&team.findIndex(p=>position(p)===from)!==index)) continue;
     const direct=advance(trail,state.steps,false);
     options.push({index,shortcut:false,to:position(direct.next)});
     if(fork.has(from)){
@@ -99,12 +104,47 @@ export function move(state,index,shortcut=false) {
   const notes=[TEAMS[state.team].name+' '+(index+1)+'번 말'+(at===FINISH?' 골인!':' 이동.')];
   if(effect)notes.push(effect);
   if(captured)notes.push(captured+'마리를 잡았어요!');
-  if(at!==HOME&&at!==FINISH&&moving.length===1&&team.filter(p=>position(p)===at).length>1)notes.push('두 말이 업혔어요.');
-  if(won)notes.push('두 말 모두 골인!');
+  const stackSize=team.filter(p=>position(p)===at).length;
+  if(at!==HOME&&at!==FINISH&&stackSize>moving.length)notes.push('말 '+stackSize+'개가 함께 가요.');
+  if(won)notes.push('말 '+team.length+'개 모두 골인!');
   else if(extra)notes.push('한 번 더 던져요.');
   return {...state,pawns,revision:state.revision+1,phase:won?'won':'roll',winner:won?state.team:null,
     team:won||extra?state.team:(state.team+1)%pawns.length,turn:state.turn+(won||extra?0:1),
     lastMove:{team:state.team,indices:moving,frames,from},note:notes.join(' ')};
+}
+// Estimate the remaining path with the same forks and center-entry rule as a real move.
+function stepsLeft(trail){
+  const at=position(trail);
+  if(at===FINISH)return 0;
+  const next=nextNode(trail,false);
+  let remaining=stepsLeft([...trail,next]);
+  if(fork.has(at)){
+    const cut=nextNode(trail,true);
+    if(cut!==next)remaining=Math.min(remaining,stepsLeft([...trail,cut]));
+  }
+  return 1+remaining;
+}
+export function computerAction(state){
+  if(state.phase==='roll')return {type:'roll'};
+  if(state.phase!=='move')return null;
+  const team=state.team,progress=state.pawns[team].map(stepsLeft);
+  let best=null,bestScore=-Infinity;
+  for(const option of moves(state)){
+    const next=move(state,option.index,option.shortcut);
+    const own=next.pawns[team];
+    let score=next.phase==='won'?10000:0;
+    for(let i=0;i<own.length;i++){
+      score+=progress[i]-stepsLeft(own[i]);
+      if(position(own[i])===FINISH&&progress[i]>0)score+=35;
+    }
+    next.pawns.forEach((pawns,t)=>{
+      if(t!==team)pawns.forEach((p,i)=>{
+        if(position(p)===HOME&&position(state.pawns[t][i])!==HOME)score+=24;
+      });
+    });
+    if(score>bestScore){bestScore=score;best={type:'move',index:option.index,shortcut:option.shortcut};}
+  }
+  return best;
 }
 export function act(state,action) {
   if(!state||!action) return state;

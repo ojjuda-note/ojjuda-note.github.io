@@ -1,4 +1,4 @@
-import {newGame, act} from './rules.mjs?v=4';
+import {newGame, act} from './rules.mjs?v=5';
 const encoder=new TextEncoder();
 const curve={name:'ECDSA',namedCurve:'P-256'};
 const signing={name:'ECDSA',hash:'SHA-256'};
@@ -19,8 +19,15 @@ async function identity(jwk){
   }
   return {jwk,privateKey,id:pack(await crypto.subtle.exportKey('raw',publicKey))};
 }
-export async function openRoom(invite,update,clientFactory=()=>window.OjjudaGetClient()){
-  if(invite&&!validId(invite))throw Error('초대 링크를 다시 확인해 주세요.');
+export function roomCode(value){
+  const raw=String(value??'').trim();
+  if(validId(raw))return raw;
+  const hash=raw.indexOf('#');
+  const code=new URLSearchParams(hash>=0?raw.slice(hash+1):raw).get('room');
+  return validId(code)?code:null;
+}
+export async function openRoom(invite,update,clientFactory=()=>window.OjjudaGetClient(),setup=null){
+  if(invite!=null&&!validId(invite))throw Error('초대 링크를 다시 확인해 주세요.');
   const me=await identity(invite?saved('key:'+invite):null);
   const host=invite||me.id,isHost=host===me.id;
   save('key:'+host,me.jwk);
@@ -28,8 +35,10 @@ export async function openRoom(invite,update,clientFactory=()=>window.OjjudaGetC
   const client=await clientFactory(),channel=client.channel('island-yut-v1-'+topic,{config:{broadcast:{ack:true,self:false}}});
   const keys=new Map(),seen=new Map(),online=new Map();
   let closed=false,connected=false,timer=0,lastHost=Date.now(),notice='',clock=0,atHost=0;
-  let snapshot=isHost?(saved('state:'+host)||{seats:[host],game:null}):{seats:[],game:null};
-  const view=()=>({host,isHost,seats:snapshot.seats,seat:snapshot.seats.indexOf(me.id),game:snapshot.game,
+  const initial={seats:[host],game:null,setup};
+  let snapshot=isHost?(saved('state:'+host)||initial):{seats:[],game:null};
+  const limit=()=>snapshot.setup?.count??4;
+  const view=()=>({host,isHost,seats:snapshot.seats,seat:snapshot.seats.indexOf(me.id),game:snapshot.game,setup:snapshot.setup??null,
     status:notice||(!connected?'방에 연결 중이에요.':!isHost&&Date.now()-lastHost>14000?'방장 연결을 기다리고 있어요.':!isHost&&!snapshot.seats.includes(me.id)?'방장의 응답을 기다리고 있어요.':''),
     connected:connected&&(isHost||Date.now()-lastHost<14000)});
   function render(){if(!closed)update(view());}
@@ -41,10 +50,13 @@ export async function openRoom(invite,update,clientFactory=()=>window.OjjudaGetC
   }
   function broadcast(){return send('state',snapshot);}
   function changed(){save('state:'+host,snapshot);render();void broadcast().catch(()=>{});}
+  function apply(action){
+    const next=act(snapshot.game,action);
+    if(next!==snapshot.game){snapshot={...snapshot,game:next};changed();}
+  }
   function take(id,data){
     if(!snapshot.game||snapshot.seats.indexOf(id)!==snapshot.game.team||data?.revision!==snapshot.game.revision)return;
-    const next=act(snapshot.game,data.action);
-    if(next!==snapshot.game){snapshot={...snapshot,game:next};changed();}
+    apply(data.action);
   }
   async function receive({payload}){
     try{
@@ -59,14 +71,14 @@ export async function openRoom(invite,update,clientFactory=()=>window.OjjudaGetC
       if(!isHost){
         lastHost=Date.now();
         if(body.type==='state'&&Array.isArray(body.data?.seats)){
-          snapshot=body.data;notice=snapshot.seats.includes(me.id)?'':snapshot.game?'이미 시작한 방이에요.':snapshot.seats.length===4?'자리가 모두 찼어요.':'';
+          snapshot=body.data;notice=snapshot.seats.includes(me.id)?'':snapshot.game?'이미 시작한 방이에요.':snapshot.seats.length>=limit()?'자리가 모두 찼어요.':'';
         }else if(body.type==='closed')notice='방장이 방을 닫았어요.';
         render();return;
       }
       const id=body.from;
       if(body.type==='hi'){
         online.set(id,Date.now());
-        if(!snapshot.game&&!snapshot.seats.includes(id)&&snapshot.seats.length<4){
+        if(!snapshot.game&&!snapshot.seats.includes(id)&&snapshot.seats.length<limit()){
           snapshot={...snapshot,seats:[...snapshot.seats,id]};changed();
         }else if(!snapshot.seats.includes(id)||!atHost||Date.now()-atHost>700){atHost=Date.now();void broadcast().catch(()=>{});}
       }
@@ -98,8 +110,18 @@ export async function openRoom(invite,update,clientFactory=()=>window.OjjudaGetC
     render();
   },4000);
   render();
-  return {view,start(zodiacOffset=2,mode='island'){if(!isHost||!connected||snapshot.game||snapshot.seats.length<2)return;
-      snapshot={...snapshot,game:newGame(snapshot.seats.length,zodiacOffset,mode)};changed();},
+  return {view,start(zodiacOffset=2,mode='island',pieceCounts=2,fillBots=false){
+      if(!isHost||!connected||snapshot.game)return;
+      const humans=snapshot.seats.length,settings=snapshot.setup,count=settings?.count??humans;
+      if(count<2||humans>count||(!fillBots&&humans<count))return;
+      const bots=Array.from({length:count-humans},(_,i)=>humans+i);
+      const game=newGame(count,settings?.offset??zodiacOffset,settings?.mode??mode,settings?.counts??pieceCounts,bots,settings?.animals);
+      snapshot={...snapshot,game};changed();
+    },
+    computerAction(action,revision){
+      const g=snapshot.game;
+      if(isHost&&connected&&g&&g.revision===revision&&g.computerTeams?.includes(g.team))apply(action);
+    },
     action(action){if(!connected||!snapshot.game)return;
       const data={revision:snapshot.game.revision,action};
       if(isHost)take(me.id,data);else void send('action',data).catch(()=>{});},

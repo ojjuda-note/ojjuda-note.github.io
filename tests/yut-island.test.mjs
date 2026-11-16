@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {newGame,roll,move,moves,position,FINISH,lastThrowSeed} from '../games/yut/rules.mjs';
+import {newGame,roll,move,moves,position,FINISH,lastThrowSeed,computerAction} from '../games/yut/rules.mjs';
 import {ANIMALS,animalFor} from '../games/yut/zodiac.mjs';
 
 const faces=n=>Array.from({length:4},(_,i)=>+(i<n&&n<5));
@@ -15,12 +15,12 @@ test('easy games land on the rolled square while older snapshots keep their isla
   }
   assert.throws(()=>newGame(2,2,'unknown'));
 });
-test('a pair may start with any zodiac animal and the settled throw reproduces after the turn',()=>{
+test('all pieces of a team share its zodiac animal and throws reproduce after the turn',()=>{
   assert.equal(new Set(ANIMALS).size,12);
   for(let offset=0;offset<12;offset++){
     const game=newGame(4,offset);
     const roster=game.pawns.flatMap((team,t)=>team.map((_,i)=>animalFor(t,i,game.zodiacOffset)));
-    assert.equal(roster[0],offset);assert.equal(new Set(roster).size,8);
+    assert.equal(roster[0],offset);assert.equal(new Set(roster).size,4);
     assert.ok(roster.every(n=>Number.isInteger(n)&&n>=0&&n<12));
   }
   assert.equal(animalFor(0,0,undefined),animalFor(0,0,newGame().zodiacOffset));
@@ -51,6 +51,19 @@ test('either waiting pawn may start, while touching a stack still moves both tog
   assert.deepEqual(moves(stack).map(m=>m.index),[0]);
   assert.deepEqual(move(stack,0).pawns[0],[[1,2,3,4,5],[1,2,3,4,5]]);
 });
+test('three or four pieces stack by square even without pawn one; computer may finish a stack',()=>{
+  const g=newGame(3,11,'easy',[4,2,3],[1,2],[11,0,6]);
+  assert.deepEqual(g.pawns.map(team=>team.length),[4,2,3]);
+  assert.ok(g.pawns[0].every((_,i)=>ANIMALS[animalFor(0,i,g.zodiacOffset,g.teamAnimals)]==='돼지'));
+  assert.ok(g.pawns[1].every((_,i)=>ANIMALS[animalFor(1,i,g.zodiacOffset,g.teamAnimals)]==='쥐'));
+  assert.throws(()=>newGame(2,11,'easy',[1,4]));
+  assert.throws(()=>newGame(2,11,'easy',[4,4],[],[12,0]));
+  g.pawns[0]=[[FINISH],[19],[19],[19]];
+  const turn=roll(g,faces(2)),action=computerAction(turn);
+  assert.deepEqual(moves(turn).map(m=>m.index),[1]);
+  assert.deepEqual(action,{type:'move',index:1,shortcut:false});
+  assert.equal(move(turn,action.index).phase,'won');
+});
 test('shortcuts remember entry at the center, and a stop there offers the finish route',()=>{
   const corner=setup([5],3);assert.deepEqual(moves(corner).filter(x=>x.index===0).map(x=>x.to),[8,22]);
   assert.equal(position(move(corner,0,true).pawns[0][0]),22);
@@ -69,7 +82,7 @@ test('friendly stack moves together, captures a full stack, and both pieces can 
 test('every 2–4 team game reaches a winner within bounded play',()=>{
   let v=12345;const rnd=()=>((v=(Math.imul(1664525,v)+1013904223)>>>0)/2**32);
   for(const mode of ['easy','island'])for(const n of [2,3,4])for(let run=0;run<50;run++){
-    let g=newGame(n,2,mode),count=0;
+    let g=newGame(n,2,mode,2+run%3),count=0;
     while(g.phase!=='won'&&count++<3000){
       g=roll(g,Array.from({length:4},()=>+(rnd()<.5)));const options=moves(g);
       assert.ok(options.length);const m=options[Math.floor(rnd()*options.length)];g=move(g,m.index,m.shortcut);
@@ -79,7 +92,7 @@ test('every 2–4 team game reaches a winner within bounded play',()=>{
   }
 });
 
-import {openRoom} from '../games/yut/room.mjs';
+import {openRoom,roomCode} from '../games/yut/room.mjs';
 test('invitees occupy up to four distinct seats; only the active seat can advance the game',async()=>{
   const bus=new Set(), store=new Map(), clients=[];
   const tempStorage={getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v)};
@@ -93,11 +106,13 @@ test('invitees occupy up to four distinct seats; only the active seat can advanc
   });
   const until=async check=>{for(let i=0;i<150;i++){if(check())return;await new Promise(r=>setTimeout(r,10));}assert.fail('network update timeout');};
   try{
-    const host=await openRoom(null,()=>{},mock);clients.push(host);
+    const host=await openRoom(null,()=>{},mock,{count:4,counts:[2,3,4,4],mode:'easy',offset:8,animals:[11,9,5,8]});clients.push(host);
+    assert.equal(roomCode('https://example.test/#room='+host.view().host),host.view().host);assert.equal(roomCode('bogus'),null);
     for(let i=1;i<=4;i++){store.clear();clients.push(await openRoom(host.view().host,()=>{},mock));if(i<4)await until(()=>clients[i].view().seat===i);}
     await until(()=>clients[4].view().status.includes('찼'));
     host.start(8,'easy');await until(()=>clients[3].view().game?.revision===0);
     assert.equal(clients[3].view().game.mode,'easy');
+    assert.deepEqual(clients[3].view().game.pawns.map(p=>p.length),[2,3,4,4]);assert.deepEqual(clients[3].view().game.teamAnimals,[11,9,5,8]);
     assert.equal(clients[3].view().game.zodiacOffset,8);
     clients[2].action({type:'roll'});await new Promise(r=>setTimeout(r,20));assert.equal(host.view().game.revision,0);
     host.action({type:'roll'});await until(()=>clients[1].view().game?.phase==='move');

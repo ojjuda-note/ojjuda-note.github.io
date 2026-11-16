@@ -86,8 +86,19 @@ dialog label{display:block;font-size:14px;font-weight:700;margin:14px 0 7px}dial
 .score-top{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:750}.score-top small{margin-left:auto;font-size:12px;color:#c3d6c9}.score-pieces{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}
 .score-piece{display:flex;align-items:center;gap:3px;line-height:1.35}.score-piece b,.score-piece small{display:block}.score-piece b{font-size:12px}.score-piece small{font-size:11px;color:var(--muted)}
 .animal-icon{display:block;width:42px;height:37px;flex:none}
-.pair-picker{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:10px}
-.pair-picker label{grid-column:1/-1}.pair-preview{display:flex;align-items:center;border-radius:8px;background:#b9d5c92b}
+.play-kinds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.play-kinds button{padding:8px 3px;font-size:14px}
+.play-kinds [aria-pressed=true]{background:#d8f0e7;color:#15382f;border-color:#9ddfc7}
+dialog .setup-hint{margin:7px 0 11px;font-size:13px;color:#cce0d6}
+.settings-row{display:grid;grid-template-columns:minmax(70px,.85fr) minmax(0,2fr);gap:10px}
+.settings-row label{margin-top:2px}.settings-row select{min-height:44px}
+.roster{margin-top:16px}.roster-line{display:grid;grid-template-columns:minmax(82px,1.2fr) minmax(72px,1fr) minmax(58px,.7fr);gap:6px;align-items:center;padding:5px 0}
+.roster-head{color:#c8ddd4;border-bottom:1px solid var(--line);font-size:13px;padding-bottom:6px}
+.roster-head b{color:var(--pearl)}.roster-team{display:flex;align-items:center;gap:3px;font-weight:700;font-size:14px}
+.roster-team .animal-icon{width:32px;height:30px}.roster-line select{min-height:42px;padding:5px 6px}
+.share-actions{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}.share-actions button{flex:1;padding:7px 6px}
+#pawn-picker:has(>:nth-child(3)){grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-flow:row}
+@media(min-width:800px){#reserve-pawns:has(>:nth-child(3)){grid-template-columns:repeat(4,minmax(0,1fr))}.reserve-inner:has(#reserve-pawns>:nth-child(3)){max-width:780px}}
 @media(max-width:355px){.score-piece .animal-icon{width:30px;height:27px}.score-piece b{font-size:11px}}
 dialog .primary{width:100%}#dialog-body>.secondary{margin:4px 3px 0 0}
 .effects{display:grid;gap:4px;margin:12px 0 16px;padding:10px 12px;background:#0d252b;border:1px solid var(--line);border-radius:9px}
