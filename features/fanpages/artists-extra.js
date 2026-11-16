@@ -831,7 +831,7 @@
       ],
       appearances: [
         { date: '2026-11-20', endDate: '2026-11-30', title: 'SNOW with MINITEEN · 공식 캐릭터 팝업',
-          sub: '서울 성동구 스퀘어포털 1층 · 11:00~21:00(KST) · 11/17 11:00 사전예약 시작 · 공식 입장 안내 확인',
+          sub: '서울 성동구 스퀘어포털 1층 · 11:00~21:00(KST) · 11/17 11:00 사전예약 시작 · Weverse 로그인 필요 · 공식 입장 안내 확인',
           href: 'https://weverse.io/seventeen/notice/40906' },
         { date: '2026-11-19', title: '도겸×정한 NO-CLUE TRIP · 본편 첫 공개',
           sub: 'Weverse · 일본 Hulu · 대만 friDay · 20:00(KST/JST) · 매주 목요일 총 6회 · 공식 VOD 안내 확인',
@@ -875,7 +875,7 @@
       ],
       merch: [
         { title: 'SNOW with MINITEEN · 공식 캐릭터 팝업 MD',
-          sub: '11/20~30 서울 성동구 스퀘어포털 1층 · 11/17 11:00(KST) 사전예약 시작 · 품목별 재고·구매 조건은 현장 확인',
+          sub: '11/20~30 서울 성동구 스퀘어포털 1층 · 11/17 11:00(KST) 사전예약 시작 · Weverse 로그인 필요 · 재고·구매 조건은 현장 확인',
           href: 'https://weverse.io/seventeen/notice/40906' },
         { title: '도겸×정한 NO-CLUE TRIP 공식 MD · 2차 예약',
           sub: 'Weverse Global · 11/13 13:30~11/19 15:00(KST) 예약 · 2027/1/14 출고 시작 · 재고는 판매처 확인',
