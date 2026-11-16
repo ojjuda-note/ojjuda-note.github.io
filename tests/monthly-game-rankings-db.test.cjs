@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const { randomUUID, createHash } = require('node:crypto');
 const fs = require('node:fs'),path = require('node:path'),vm = require('node:vm');
-const { createFixture, read, migrationName, definition } = require('./monthly-game-rankings-fixture.cjs');
+const { createFixture, installYutRankings, read, migrationName, definition } = require('./monthly-game-rankings-fixture.cjs');
 const hash = token => createHash('sha256').update(token).digest('hex');
 
 (async () => {
@@ -37,6 +37,7 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   const catalogMeta=async()=>(await db.query("select prosecdef,proconfig,proacl::text from pg_proc where oid='ojjuda_ranking_internal.catalog()'::regprocedure")).rows;
   const beforeCatalog=await catalogMeta();await db.exec(read(solitaireCatalog));await db.exec(read(solitaireCatalog));
   await db.exec(read(chachaCatalog));await db.exec(read(chachaCatalog));
+  await installYutRankings(db);
   assert.deepEqual(await catalogMeta(),beforeCatalog,'catalog update preserves grants and execution settings');
   const updatedFunctions=await db.query(`select pg_get_functiondef(p.oid) definition from pg_proc p join pg_namespace n on n.oid=p.pronamespace
    where n.nspname in('ojjuda_roulette_internal','ojjuda_ranking_internal','ojjuda_arcade_internal','ojjuda_guest_internal','ojjuda_archery_internal')`);
@@ -55,7 +56,7 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   const submit=(token,score,id=randomUUID(),game='runner')=>value('select public.submit_guest_game_score($1,$2,$3,$4) value',[game,score,token,id]);
   const guest=(token,period='month',game='runner')=>value('select ojjuda_guest_internal.ranking($1,$2,$3) value',[game,period,token]);
   const catalog=await value('select ojjuda_ranking_internal.catalog() value');
-  assert.equal(catalog.length,24);assert.equal(new Set(catalog).size,24);assert.ok(catalog.includes('roulette'));assert.ok(catalog.includes('archery'));assert.ok(catalog.includes('chacha_rush'));
+  assert.equal(catalog.length,25);assert.equal(new Set(catalog).size,25);assert.ok(catalog.includes('roulette'));assert.ok(catalog.includes('archery'));assert.ok(catalog.includes('chacha_rush'));
   assert.ok(catalog.includes('screw_box')&&catalog.includes('screw_flat')&&catalog.includes('billiards'));
   assert.ok(!catalog.includes('carom4')&&!catalog.includes('pool8'));
   const world=fs.readFileSync(path.join(__dirname,'../world.html'),'utf8');
@@ -140,7 +141,7 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   await db.query("insert into board_games values($1,$2,$3,'pool8','done','p2','2026-10-16Z',array['p1'])",[randomUUID(),a,b]);
   for(let i=0;i<4;i++)await round(a,'tank',1,`2026-10-15T00:0${i}:00Z`,1);
   await round(b,'tank',1,'2026-10-15T00:06:00Z',5);
-  for(const game of ['tour','ttang']) {
+  for(const game of ['tour','yut','ttang']) {
    await round(a,game,1,'2026-10-15T00:01:00Z');await round(a,game,1,'2026-10-15T00:02:00Z');await round(a,game,0,'2026-10-15T00:03:00Z');
    await round(b,game,1,'2026-10-15T00:01:00Z');
   }
@@ -274,6 +275,6 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   const sql=read(migrationName);
   assert.ok(!/insert\s+into\s+ojjuda_rewards_internal|capture_month_end\(|update\s+.*wallets/i.test(sql));
   assert.match(sql,/'0 16 \$ \* \*'/);assert.match(sql,/'5 \* \* \* \*'/);
-  console.log('PASS: exact 01:00 KST and year boundaries; unchanged daily/coupon buckets; monthly guest receipts and picture clears; all 24 shipped criteria, Solitaire difficulty/time, archery cleared-stage/score and roulette paid-prize/month-boundary archives, and per-seat takeover exclusions; fixed immutable/empty archives, retries and concurrent requests; current/history parity; access controls and zero financial side effects.');
+  console.log('PASS: exact 01:00 KST and year boundaries; unchanged daily/coupon buckets; monthly guest receipts and picture clears; all 25 shipped criteria, Solitaire difficulty/time, archery cleared-stage/score and roulette paid-prize/month-boundary archives, and per-seat takeover exclusions; fixed immutable/empty archives, retries and concurrent requests; current/history parity; access controls and zero financial side effects.');
  } finally {await db.close();}
 })().catch(error=>{console.error(error.message,error.where||'',error.stack);process.exitCode=1;});

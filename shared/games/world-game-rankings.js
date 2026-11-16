@@ -9,7 +9,7 @@ const nextReset=month=>Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)
 const validMonth=month=>typeof month==='string'&&/^\d{4}-(0[1-9]|1[0-2])$/.test(month);
 const monthName=month=>Number(month.slice(0,4))+'년 '+Number(month.slice(5,7))+'월';
 const rankGroups=[{id:'solo',name:'혼자하는 플레이'},{id:'multi',name:'함께하는 플레이'},{id:'adult',name:'어른들 플레이'}];
-const multiGames=new Set(['bang','tank','tour','ttang','janggi','chess','billiards']);
+const multiGames=new Set(['bang','tank','tour','yut','ttang','janggi','chess','billiards']);
 const adultGames=new Set(['matgo','poker','roulette','photo_ttang']);
 const rankGroupFor=id=>adultGames.has(id)?'adult':multiGames.has(id)?'multi':'solo';
 const groupedEntries=entries=>rankGroups.map(group=>({...group,entries:entries.filter(([id])=>rankGroupFor(id)===group.id)})).filter(group=>group.entries.length);
@@ -25,6 +25,7 @@ const rankingConditions={
  solitaire:'보통 → 초보 순으로 우선하고, 같은 난이도에서는 클리어 시간이 짧은 순으로 정해요. 시간이 같으면 먼저 달성한 순이에요.',
  mines:'난이도가 높은 순, 같은 난이도에서는 완료 시간이 짧은 순으로 정해요. 기본 8개 난이도만 집계해요.',
  tour:streakCondition,
+ yut:streakCondition,
  billiards:boardCondition+' 4구·3쿠션·포켓볼을 통합 표시하며, 종목별 연승은 합산하지 않아요.',
  janggi:'회원 대결 → 그랜드마스터 → 마스터 → 프로 → 어려움 → 보통 → 쉬움 순이에요. 같은 난이도는 그달 최고 연승으로 정해요. 기존 통합 기록은 어려움과 같은 순위 기준을 써요.',chess:boardCondition,
  screw_box:'박스형에서 해당 월에 기록한 가장 높은 점수로 정해요.',

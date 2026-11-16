@@ -3,6 +3,12 @@ import assert from 'node:assert/strict';
 import {newGame,roll,move,moves,position,FINISH,tileEffect,lastThrowSeed,computerAction,restoreGame,act} from '../games/yut/rules.mjs';
 import {ANIMALS,animalFor} from '../games/yut/zodiac.mjs';
 
+import {roundStandings} from '../games/yut/results.mjs';
+test('mixed team sizes share ranks for equal finished proportions',()=>{
+  const pawns=[[[],[FINISH]],[[FINISH],[FINISH],[FINISH]],[[FINISH],[],[FINISH],[]],[[],[],[]]];
+  assert.deepEqual(roundStandings(pawns).map(r=>[r.team,r.rank]),[[1,1],[0,2],[2,2],[3,4]]);
+});
+
 const ordinary=(...args)=>({...newGame(...args),eventTiles:{},islandTiles:{}});
 const faces=n=>Array.from({length:4},(_,i)=>+(i<n&&n<5));
 function setup(at,steps){const g=ordinary(2,2,'island',2);g.pawns[0][0]=at;return roll(g,faces(steps));}

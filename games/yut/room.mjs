@@ -1,4 +1,4 @@
-import {TEAMS,validTeamCount,DEFAULT_MODE,DEFAULT_PIECES,newGame,act,restoreGame} from './rules.mjs?v=13';
+import {TEAMS,validTeamCount,DEFAULT_MODE,DEFAULT_PIECES,newGame,act,restoreGame} from './rules.mjs?v=14';
 const encoder=new TextEncoder();
 const curve={name:'ECDSA',namedCurve:'P-256'};
 const signing={name:'ECDSA',hash:'SHA-256'};
