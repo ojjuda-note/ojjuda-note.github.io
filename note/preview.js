@@ -709,11 +709,14 @@ function shownName(card) {
   return card.id ? anonAlias(card.id, card.created_at) : { name: '익명', icon: 'ㅇ' };
 }
 
+let cardDateFormatter;
 function dateLabel(value) {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? '' : new Intl.DateTimeFormat('ko-KR', {
+  if (Number.isNaN(date.getTime())) return '';
+  cardDateFormatter ??= new Intl.DateTimeFormat('ko-KR', {
     year: 'numeric', month: 'numeric', day: 'numeric'
-  }).format(date);
+  });
+  return cardDateFormatter.format(date);
 }
 function archiveDueThisMonth(value) {
   const due = Date.parse(value);

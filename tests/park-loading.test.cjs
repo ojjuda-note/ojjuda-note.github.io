@@ -116,11 +116,26 @@ for (const member of [false, true]) {
       };
       window.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
       window.supabase = { createClient: () => client };
+      let dateFormatters = 0;
+      const NativeDateTimeFormat = window.Intl.DateTimeFormat;
+      window.Intl.DateTimeFormat = class extends NativeDateTimeFormat {
+        constructor(locale, options) {
+          super(locale, options);
+          if (locale === 'ko-KR' && options?.day === 'numeric') dateFormatters++;
+        }
+      };
       window.eval(read('note/preview.js'));
       onAuth('INITIAL_SESSION', session);
       const settle = () => new Promise(resolve => window.setTimeout(resolve, 0));
       await settle();
       assert.equal(requested.length, 1);
+      const labels = [...window.document.querySelectorAll('#feed-list .card-meta small')];
+      const expectedDate = new NativeDateTimeFormat('ko-KR', {
+        year: 'numeric', month: 'numeric', day: 'numeric'
+      }).format(new Date(cards[0].created_at));
+      assert.equal(labels.length, cards.length);
+      assert.ok(labels.every(label => label.textContent === expectedDate));
+      assert.equal(dateFormatters, 1, 'the first page shares one date formatter');
       const photos = [...window.document.querySelectorAll('#feed-list article .photo')];
       assert.equal(photos.length, 20);
       assert.equal(photos.filter(photo => photo.style.backgroundImage).length, 3);
