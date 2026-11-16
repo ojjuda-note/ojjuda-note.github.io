@@ -237,6 +237,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'hAEfi_SKTEU', title: 'I DO ME', kind: '뮤직비디오', source: "STARSHIP · 공식 채널" }
   ],
   stayc: [
+    { id: 'I92VUQLh9f8', title: '[STAY:SEE] EP.195 · 2 L0VE 음악방송 Behind', kind: '음악방송 비하인드', source: 'STAYC Official · 2026.07.31' },
+    { id: '-p7SaDSMsBo', title: '[STAY:SEE] EP.188 · 2 L0VE MV Behind', kind: '뮤직비디오 메이킹', source: 'STAYC Official · 2026.06.24' },
     { id: 'HgewvBTOJwU', title: '2 L0VE', kind: '뮤직비디오', source: "STAYC Official · 2026.06.16" },
     { id: 'GwLfMAQEY9s', title: '2 L0VE', kind: '안무 영상', source: "STAYC Official · 2026.06.16" },
     { id: 'udOf9JGMA7U', title: 'MWUAH', kind: '뮤직비디오', source: "STAYC Japan Official · 2026.02.10" },

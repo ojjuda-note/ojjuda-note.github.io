@@ -507,7 +507,7 @@
       id: 'stayc', name: 'STAYC', korean: '스테이씨', category: 'girl', fan: 'SWITH', agency: 'High Up Entertainment',
       members: ['수민', '시은', '아이사', '세은', '윤', '재이'],
       debut: '2020.11.12', debutWork: 'Star To A Young Culture', songs: ['SO BAD', 'LIKE THIS'],
-      checkedAt: '2026.11.14',
+      checkedAt: '2026.11.16',
       concept: '선명한 개성과 상큼한 멜로디를 담는 여섯 멤버.',
       official: 'https://www.highup-ent.com/', youtube: 'https://www.youtube.com/@STAYC',
       photo: 'STAYC Metamorphic Showcase 240701.jpg', photoLabel: 'Metamorphic 쇼케이스', photoYear: '2024', credit: 'K-POPIT 케이팝잇 · 원저작 티비텐 TV10', license: 'CC BY 3.0',
@@ -522,7 +522,15 @@
         { title: 'Metamorphic', date: '2024.07.01', type: '정규 1집 · 타이틀 Cheeky Icy Thang', songs: ['Twenty', 'Cheeky Icy Thang', '1 Thing', 'Give It 2 Me', 'Find (Sieun & Seeun & J)', 'Let Me Know', 'Nada', 'Fakin’ (Sumin & Yoon)', 'Roses (ISA)', 'Beauty Bomb', 'Gummy Bear', 'Stay WITH me', 'Flexing On My Ex', 'Trouble Maker'], href: 'https://www.highup-ent.com/stayc/metamorphic/' },
         { title: 'Star To A Young Culture', date: '2020.11.12', type: '데뷔 싱글 · 타이틀 SO BAD', songs: ['SO BAD', 'LIKE THIS'], href: 'https://www.highup-ent.com/stayc/star-to-a-young-culture/' }
       ],
+      appearances: [
+        { date: '2026-11-22', title: 'AUBL 2026–27 시즌 개막전 참석', sub: '안산 상록수 김연경체육관 · 17:00 경기 시작 · 연세대 vs 상하이교통대 · AUBL 주최 · 일반석 무료 입장', href: 'https://x.com/STAYC_official/status/2121931980795458012' }
+      ],
+      schedules: [
+        { title: 'STAYC Weverse 공식 일정·공지', sub: '공연·방송·팬행사 안내 및 일정 변경 확인 · 일부 공지 열람은 로그인 필요', href: 'https://weverse.io/stayc/notice' }
+      ],
       news: [
+        { date: '2026.11.15', tag: '행사', title: 'STAYC, 11월 22일 안산 AUBL 개막전 참석 발표', href: 'https://x.com/STAYC_official/status/2121931980795458012' },
+        { date: '2026.11.12', tag: '기념', title: '데뷔 6주년 기념 인사·Special Present 공개 · 열람 시 로그인 필요', href: 'https://weverse.io/stayc/media/2-181504379' },
         { date: '2026.07.03', tag: '공연', title: 'STAY CLOSER 팬콘 투어 7개 도시 일정 발표 · 10월 종료', href: 'https://www.highup-ent.com/en/stayc-announces-stay-closer-fan-con-tour-kicking-off-in-seoul-before-heading-to-global-cities/' },
         { date: '2026.06.16', tag: '음악', title: '싱글 6집 2:LOVE 발매 · 타이틀 2 L0VE', href: 'https://www.highup-ent.com/stayc/2love/' },
         { date: '2025.11.11', tag: '앨범', title: '일본 정규 1집 STAY ALIVE 상세 발표 · 2026.02.11 발매', href: 'https://www.universal-music.co.jp/stayc/news/2025-11-11/' },
@@ -534,6 +542,8 @@
         { title: 'STAY ALIVE 일본 정규 1집 CD', sub: 'UNIVERSAL MUSIC STORE · 통상반 · 스토어 한정 구매 특전 종료 · 재고는 판매처 확인', href: 'https://store-annex.universal-music.co.jp/product/upch29482/' }
       ],
       campaigns: [
+        { kind: '콜라보', date: '2026.08.06', title: 'STAYC × 알비레오 STAYC M 요금제', sub: '팬 전용 통신 요금제 · 멤버 미공개 포토카드 혜택 2026.11.01~2027.03.31 · 가입·혜택 조건은 공식 판매처 확인', href: 'https://www.albireomobile.com/plan/PC1HB00031_STAY_261101' },
+        { kind: '광고', date: '2026.02.04', title: '윤 × 레진스낵(Lezhin Snack)', sub: '숏드라마 플랫폼 광고 모델 · 2월 4일 첫 광고 영상 공개', href: 'https://weverse.io/stayc/media/0-169288540' },
         { kind: '콜라보', date: '2025.07.21', title: '태국관광청(TAT) × Kimpton Maa-Lai Bangkok', sub: 'I WANT IT 공식 뮤직비디오 협찬 · 광고 모델 계약과 별개', href: 'https://www.youtube.com/watch?v=W8ml4ryPwic' },
       ],
       accent: '#e4897b', light: '#ffe7df', dark: '#865366', bg: '#fff8f3', shape: '✾'
