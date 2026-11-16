@@ -47,16 +47,30 @@ export function newGame(count=2,zodiacOffset=2,mode=DEFAULT_MODE,pieceCounts=DEF
   const animals=teamAnimals??Array.from({length:count},(_,i)=>defaultTeamAnimal(i,zodiacOffset));
   if(!Array.isArray(animals)||animals.length!==count||!animals.every(i=>Number.isInteger(i)&&i>=0&&i<12))throw Error('각 팀의 동물을 골라 주세요.');
   return {mode,eventTiles:dealTiles(),islandTiles:{},teamAnimals:[...animals],computerTeams:[...new Set(computerTeams)], team:0, turn:1, phase:'roll', revision:0, sticks:null, steps:0,
-    pawns:counts.map(n=>Array.from({length:n},()=>[])), zodiacOffset, winner:null, lastMove:null,
+    pawns:counts.map(n=>Array.from({length:n},()=>[])), zodiacOffset, winner:null, lastMove:null,pendingRolls:[],
     note:'윷을 던져 첫 말을 출발시키세요.'};
 }
 export const position = trail => trail.length ? trail[trail.length-1] : HOME;
 export function lastThrowSeed(state) {
   if(!state.sticks)return null;
+  if(Number.isInteger(state.throwSeed))return state.throwSeed;
   const justRolled=state.phase==='move';
   const revision=state.revision-(justRolled?0:1);
   const team=justRolled?state.team:(state.lastMove?.team??state.team);
   return state.sticks.reduce((seed,face)=>31*seed+face,revision*11+team);
+}
+export function pendingRolls(state){
+  return state.pendingRolls??(state.phase==='move'?[state.steps]:[]);
+}
+export function singleResult(state){
+  const held=pendingRolls(state);
+  return held.length&&held.every(n=>n===held[0])?held[0]:null;
+}
+export function restoreGame(state){
+  if(!state||Array.isArray(state.pendingRolls))return state;
+  const bonusDue=state.phase==='move'&&state.steps>=4;
+  return {...state,pendingRolls:pendingRolls(state),throwSeed:lastThrowSeed(state),
+    phase:bonusDue?'roll':state.phase,lastMove:bonusDue?null:state.lastMove};
 }
 export function throwSticks(random=Math.random) {
   return Array.from({length:4},()=>random()<0.5?1:0);
@@ -64,7 +78,10 @@ export function throwSticks(random=Math.random) {
 export function roll(state,sticks) {
   if (state.phase!=='roll'||!Array.isArray(sticks)||sticks.length!==4||!sticks.every(n=>n===0||n===1)) return state;
   const steps=sticks.reduce((sum,n)=>sum+n,0)||5;
-  return {...state,revision:state.revision+1,sticks,steps,phase:'move',note:YUT[steps]+'! 움직일 말을 고르세요.'};
+  const revision=state.revision+1,bonus=steps>=4;
+  return {...state,revision,sticks,steps,throwSeed:sticks.reduce((seed,n)=>31*seed+n,revision*11+state.team),
+    pendingRolls:[...pendingRolls(state),steps],lastMove:null,phase:bonus?'roll':'move',
+    note:bonus?'한 번 더 던지세요.':'움직일 말을 고르세요.'};
 }
 function nextNode(trail,shortcut) {
   const n=position(trail);
@@ -86,27 +103,27 @@ function advance(trail,steps,shortcut) {
   }
   return {next,frames};
 }
-export function moves(state) {
-  if(state.phase!=='move') return [];
+export function moves(state,steps=singleResult(state)) {
+  if(state.phase!=='move'||!pendingRolls(state).includes(steps)) return [];
   const team=state.pawns[state.team], options=[];
   for(let index=0;index<team.length;index++){
     const trail=team[index], from=position(trail);
     if(from===FINISH||(from!==HOME&&team.findIndex(p=>position(p)===from)!==index)) continue;
-    const direct=advance(trail,state.steps,false);
+    const direct=advance(trail,steps,false);
     options.push({index,shortcut:false,to:position(direct.next)});
     if(fork.has(from)){
-      const cut=advance(trail,state.steps,true);
+      const cut=advance(trail,steps,true);
       if(cut.frames.join(',')!==direct.frames.join(',')) options.push({index,shortcut:true,to:position(cut.next)});
     }
   }
   return options;
 }
-export function move(state,index,shortcut=false) {
-  if(!moves(state).some(m=>m.index===index&&m.shortcut===shortcut)) return state;
+export function move(state,index,shortcut=false,steps=singleResult(state)) {
+  if(!moves(state,steps).some(m=>m.index===index&&m.shortcut===shortcut)) return state;
   const pawns=state.pawns.map(team=>team.map(t=>[...t]));
   const team=pawns[state.team], trail=team[index], from=position(trail);
   const moving=team.flatMap((p,i)=>i===index||(from!==HOME&&position(p)===from)?[i]:[]);
-  let {next,frames}=advance(trail,state.steps,shortcut);
+  let {next,frames}=advance(trail,steps,shortcut);
   let at=position(next), effect='', captured=0;
   const landing=at,event=tileEffect(state,at);
   if(event==='home'){
@@ -135,7 +152,13 @@ export function move(state,index,shortcut=false) {
     }else effect=EVENT_NAMES.carry+'! '+(stacked>1?'이미 업힌 말이 함께 가요.':'업을 대기 말이 없어요.');
   }
   const won=team.every(p=>position(p)===FINISH);
-  const extra=state.steps>=4||captured>0;
+  const remaining=[...pendingRolls(state)];remaining.splice(remaining.indexOf(steps),1);
+  // A yut or mo already earned its extra throw before the move.
+  const extra=captured>0&&steps<4;
+  const keepTurn=won||extra||remaining.length>0;
+  let phase='roll';
+  if(won)phase='won';
+  else if(!extra&&remaining.length)phase='move';
   const notes=[TEAMS[state.team].name+' '+(index+1)+'번 말'+(at===FINISH?' 골인!':' 이동.')];
   if(effect)notes.push(effect);
   if(captured)notes.push(captured+'마리를 잡았어요!');
@@ -143,9 +166,9 @@ export function move(state,index,shortcut=false) {
   if(!event&&at!==HOME&&at!==FINISH&&stackSize>moving.length)notes.push('말 '+stackSize+'개가 함께 가요.');
   if(won)notes.push('말 '+team.length+'개 모두 골인!');
   else if(extra)notes.push('한 번 더 던져요.');
-  return {...state,pawns,revision:state.revision+1,phase:won?'won':'roll',winner:won?state.team:null,
-    team:won||extra?state.team:(state.team+1)%pawns.length,turn:state.turn+(won||extra?0:1),
-    lastMove:{team:state.team,indices:moving,frames,from,landing,event:event??null,pickedUp,captured},note:notes.join(' ')};
+  return {...state,pawns,revision:state.revision+1,phase,winner:won?state.team:null,pendingRolls:won?[]:remaining,
+    team:keepTurn?state.team:(state.team+1)%pawns.length,turn:state.turn+(keepTurn?0:1),
+    lastMove:{team:state.team,steps,indices:moving,frames,from,landing,event:event??null,pickedUp,captured},note:notes.join(' ')};
 }
 // Estimate the remaining path with the same forks and center-entry rule as a real move.
 function stepsLeft(trail){
@@ -164,8 +187,8 @@ export function computerAction(state){
   if(state.phase!=='move')return null;
   const team=state.team,progress=state.pawns[team].map(stepsLeft);
   let best=null,bestScore=-Infinity;
-  for(const option of moves(state)){
-    const next=move(state,option.index,option.shortcut);
+  for(const steps of new Set(pendingRolls(state)))for(const option of moves(state,steps)){
+    const next=move(state,option.index,option.shortcut,steps);
     const own=next.pawns[team];
     let score=next.phase==='won'?10000:0;
     for(let i=0;i<own.length;i++){
@@ -177,14 +200,14 @@ export function computerAction(state){
         if(position(p)===HOME&&position(state.pawns[t][i])!==HOME)score+=24;
       });
     });
-    if(score>bestScore){bestScore=score;best={type:'move',index:option.index,shortcut:option.shortcut};}
+    if(score>bestScore){bestScore=score;best={type:'move',index:option.index,shortcut:option.shortcut,steps};}
   }
   return best;
 }
 export function act(state,action) {
   if(!state||!action) return state;
   if(action.type==='roll')return roll(state,throwSticks());
-  if(action.type==='move')return move(state,action.index,action.shortcut);
+  if(action.type==='move')return move(state,action.index,action.shortcut,action.steps);
   return state;
 }
 export function nodeName(n){

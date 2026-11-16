@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {newGame,roll,move,moves,position,FINISH,tileEffect,lastThrowSeed,computerAction} from '../games/yut/rules.mjs';
+import {newGame,roll,move,moves,position,FINISH,tileEffect,lastThrowSeed,computerAction,restoreGame,act} from '../games/yut/rules.mjs';
 import {ANIMALS,animalFor} from '../games/yut/zodiac.mjs';
 
 const ordinary=(...args)=>({...newGame(...args),eventTiles:{},islandTiles:{}});
@@ -39,7 +39,12 @@ test('all pieces of a team share its zodiac animal and throws reproduce after th
   let game=newGame();assert.equal(lastThrowSeed(game),null);
   for(const steps of [1,4,2,2]){
     const thrown=roll(game,faces(steps)),seed=lastThrowSeed(thrown);
-    game=move(thrown,moves(thrown)[0].index);
+    game=thrown;
+    if(game.phase==='move'){
+      game=move(game,0,false,steps);
+      assert.equal(lastThrowSeed(JSON.parse(JSON.stringify(game))),seed);
+      while(game.phase==='move')game=move(game,0,false,game.pendingRolls[0]);
+    }
     assert.equal(lastThrowSeed(JSON.parse(JSON.stringify(game))),seed);
   }
 });
@@ -54,10 +59,38 @@ test('only one square can send a pawn one step back, including saved boards with
 });
 test('four sticks give five outcomes and invalid or repeated actions cannot advance the turn',()=>{
   for(let n=1;n<=5;n++){
-    const s=roll(ordinary(),faces(n));assert.equal(s.steps,n);assert.equal(roll(s,faces(1)),s);
+    const s=roll(ordinary(),faces(n));assert.equal(s.steps,n);
+    if(n>=4){assert.equal(s.phase,'roll');assert.equal(move(s,0),s);continue;}
+    assert.equal(roll(s,faces(1)),s);
     assert.equal(move(s,1,true),s);
     const next=move(s,0);assert.equal(next.team,n>=4?0:1);
   }
+});
+test('yut, mo and geol can be spent in any order on different pawns after all throws',()=>{
+  let g=ordinary(),original=g.pawns;
+  for(const n of [4,5,3]){
+    g=roll(g,faces(n));assert.equal(g.pawns,original);
+    if(n>=4){assert.deepEqual(moves(g,n),[]);assert.equal(move(g,0,false,n),g);}
+  }
+  assert.deepEqual(g.pendingRolls,[4,5,3]);
+  assert.equal(roll(g,faces(1)),g);assert.equal(move(g,0),g);assert.equal(move(g,0,false,1),g);
+  g=move(g,2,false,5);assert.equal(position(g.pawns[0][2]),5);assert.deepEqual(g.pendingRolls,[4,3]);
+  g=move(g,0,false,3);assert.equal(position(g.pawns[0][0]),3);
+  g=move(g,1,false,4);assert.equal(position(g.pawns[0][1]),4);
+  assert.equal(g.team,1);assert.equal(g.turn,2);assert.deepEqual(g.pendingRolls,[]);
+});
+test('duplicate results are spent one at a time; captures preserve unused results and saved games resume',()=>{
+  let g=ordinary();g.pawns[1][1]=[2];
+  for(const n of [4,4,2])g=roll(g,faces(n));
+  g=move(g,0,false,2);assert.equal(g.phase,'roll');assert.deepEqual(g.pendingRolls,[4,4]);
+  g=roll(g,faces(3));g=move(g,1,false,4);assert.deepEqual(g.pendingRolls,[4,3]);
+  assert.deepEqual(restoreGame(JSON.parse(JSON.stringify(g))),g);
+  const action=computerAction(g);assert.ok(g.pendingRolls.includes(action.steps));assert.equal(act(g,action).pendingRolls.length,1);
+  const legacy={...g,phase:'move',steps:5};delete legacy.pendingRolls;
+  const restored=restoreGame(legacy);assert.equal(restored.phase,'roll');assert.deepEqual(restored.pendingRolls,[5]);
+  assert.deepEqual(restoreGame({...legacy,phase:'roll'}).pendingRolls,[]);
+  g=ordinary();g.pawns[1][0]=[4];g=roll(roll(g,faces(4)),faces(1));
+  g=move(g,0,false,4);assert.equal(g.lastMove.captured,1);assert.equal(g.phase,'move');assert.deepEqual(g.pendingRolls,[1]);
 });
 test('retired obstacle squares are ordinary even on a saved shortcut',()=>{
   const g=ordinary();
@@ -90,7 +123,7 @@ test('three or four pieces stack by square even without pawn one; computer may f
   g.pawns[0]=[[FINISH],[19],[19],[19]];
   const turn=roll(g,faces(2)),action=computerAction(turn);
   assert.deepEqual(moves(turn).map(m=>m.index),[1]);
-  assert.deepEqual(action,{type:'move',index:1,shortcut:false});
+  assert.deepEqual(action,{type:'move',index:1,shortcut:false,steps:2});
   assert.equal(move(turn,action.index).phase,'won');
 });
 test('new games deal one of each tile without overlap and keep the layout throughout play',t=>{
@@ -167,7 +200,7 @@ test('friendly stack moves together, captures a full stack, and both pieces can 
   let t=move(s,0);assert.deepEqual(t.pawns[0][0],t.pawns[0][1]);
   t.team=0;t.pawns[1]=[[10,25,26,22],[10,25,26,22]];
   t=move(roll(t,faces(1)),0);assert.equal(t.team,0);assert.deepEqual(t.pawns[1],[[],[]]);
-  t=move(roll(t,faces(4)),0,true);assert.equal(t.phase,'won');assert.equal(t.winner,0);
+  t=move(roll(roll(t,faces(4)),faces(1)),0,true,4);assert.equal(t.phase,'won');assert.equal(t.winner,0);
   assert.equal(position(t.pawns[0][0]),FINISH);
 });
 test('every 2–8 team game reaches a winner within bounded play',()=>{
@@ -175,8 +208,9 @@ test('every 2–8 team game reaches a winner within bounded play',()=>{
   for(const mode of ['easy','island'])for(const n of [2,3,4,5,6,7,8])for(let run=0;run<50;run++){
     let g=newGame(n,2,mode,2+run%3),count=0;
     while(g.phase!=='won'&&count++<3000){
-      g=roll(g,Array.from({length:4},()=>+(rnd()<.5)));const options=moves(g);
-      assert.ok(options.length);const m=options[Math.floor(rnd()*options.length)];g=move(g,m.index,m.shortcut);
+      if(g.phase==='roll'){g=roll(g,Array.from({length:4},()=>+(rnd()<.5)));continue;}
+      const steps=g.pendingRolls[Math.floor(rnd()*g.pendingRolls.length)],options=moves(g,steps);
+      assert.ok(options.length);const m=options[Math.floor(rnd()*options.length)];g=move(g,m.index,m.shortcut,steps);
       for(const team of g.pawns)for(const p of team)for(const node of p)assert.ok(node>=0&&node<=29);
     }
     assert.equal(g.phase,'won');
@@ -219,6 +253,18 @@ test('eight distinct seats can play a full turn each and the ninth cannot act',a
       await until(()=>clients.slice(0,8).every(c=>c.view().game?.revision===(seat+1)*2));
     }
     assert.equal(host.view().game.team,0);assert.deepEqual(clients[7].view().game,host.view().game);
+    const send=async action=>{
+      const next=host.view().game.revision+1;host.action(action);
+      await until(()=>clients.slice(0,8).every(c=>c.view().game.revision===next));
+    };
+    for(const n of [4,5,3]){
+      let i=0;rand.mock.mockImplementation(()=>i++%4<n&&n<5?.1:.9);
+      await send({type:'roll'});
+    }
+    assert.deepEqual(clients[7].view().game.pendingRolls,[4,5,3]);
+    await send({type:'move',index:1,steps:5});
+    assert.deepEqual(clients[7].view().game.pendingRolls,[4,3]);
+    assert.equal(position(clients[7].view().game.pawns[0][1]),5);
     assert.equal(clients[8].view().seat,-1);
   }finally{await Promise.all(clients.map(c=>c.close()));if(previous)Object.defineProperty(globalThis,'sessionStorage',previous);else delete globalThis.sessionStorage;}
 });

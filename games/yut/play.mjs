@@ -1,18 +1,20 @@
-import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed} from './rules.mjs?v=11';
-import {createBoard,PAWN_HOP_MS} from './board.mjs?v=20';
+import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=12';
+import {createBoard,PAWN_HOP_MS} from './board.mjs?v=21';
 import {createToss,drawRack} from './toss.mjs?v=8';
-import {createTableSounds} from './sound.mjs?v=1';
-import {openRoom,roomCode} from './room.mjs?v=11';
+import {createTableSounds} from './sound.mjs?v=2';
+import {openRoom,roomCode} from './room.mjs?v=12';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=5';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
 const dialog=$('sheet'), body=$('dialog-body'), reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const sounds=createTableSounds();
+const bonusRoll=$('bonus-roll'),bursts=bonusRoll.querySelector('.game-result-effects');
+let bonusTimer;
 for(const event of ['pointerup','keydown','click'])document.addEventListener(event,sounds.unlock,true);
-document.addEventListener('visibilitychange',()=>{if(document.hidden)sounds.stop();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){sounds.stop();clearBonus();}});
 window.addEventListener('pagehide',sounds.stop);
 let local=newGame(2,11,DEFAULT_MODE,DEFAULT_PIECES,[1]), shown=null, net=null, room=null, pendingRoom=false, attempt=0, busy=false, motion=0, panel='',game=local;
-let casting=false,selectedPawn=null,placement=null,resumeActionFocus=false;
+let casting=false,selectedPawn=null,selectedSteps=null,placement=null,resumeActionFocus=false;
 const tray=$('reserve-pawns');
 let trayKey='',trayDrag=null,suppressTrayClick=false;
 const rack=$('rack-canvas'),rackContext=rack.getContext('2d');
@@ -92,27 +94,52 @@ function canMovePiece(){
   return !game.computerTeams?.includes(game.team)&&game.phase==='move'&&!busy&&!pendingRoom&&!dialog.open&&
     (!net||!!(room&&net.game&&net.connected&&net.seat===game.team));
 }
+function currentSteps(){return selectedSteps??singleResult(game);}
 function choosePawn(index){
-  if(!canMovePiece()||!moves(game).some(m=>m.index===index))return;
+  if(!canMovePiece()||!moves(game,currentSteps()).some(m=>m.index===index))return;
   selectedPawn=index;
   renderHUD();
 }
 function place(move,dragged=false){
   if(!canMovePiece())return;
   if(dragged)placement={state:game,move};
-  dispatch({type:'move',index:move.index,shortcut:move.shortcut});
+  dispatch({type:'move',index:move.index,shortcut:move.shortcut,steps:currentSteps()});
 }
 function dropPawn(index,tile){
   if(!canMovePiece())return;
-  const move=moves(game).find(m=>m.index===index&&targetTile(m)===tile);
+  const move=moves(game,currentSteps()).find(m=>m.index===index&&targetTile(m)===tile);
   if(move)place(move,true);
 }
 function chooseTile(tile){
   if(!canMovePiece())return;
-  const picks=moves(game).filter(m=>targetTile(m)===tile&&(selectedPawn===null||m.index===selectedPawn));
+  const picks=moves(game,currentSteps()).filter(m=>targetTile(m)===tile&&(selectedPawn===null||m.index===selectedPawn));
   if(picks.length)place(picks[0]);
 }
 function result(s){return s.sticks?YUT[s.steps]+' · '+s.steps+'칸':'';}
+function bankCounts(s){
+  const counts=new Map();
+  for(const steps of pendingRolls(s))counts.set(steps,(counts.get(steps)??0)+1);
+  return counts;
+}
+function clearBonus(){
+  clearTimeout(bonusTimer);bonusRoll.hidden=true;bursts.replaceChildren();
+}
+function showBonus(s){
+  if(s.steps<4||document.visibilityState==='hidden')return;
+  if(!reduced.matches){
+    for(let burst=0;burst<2;burst++){
+      const group=element('span',undefined,'bonus-burst');
+      for(let ray=0;ray<12;ray++){
+        const spark=element('i',undefined,'game-result-spark');
+        spark.style.setProperty('--angle',(ray*30+burst*15)+'deg');
+        group.append(spark);
+      }
+      bursts.append(group);
+    }
+  }
+  bonusRoll.hidden=false;sounds.fireworks();
+  bonusTimer=setTimeout(clearBonus,1500);
+}
 function moveNotice(s){
   const move=s.lastMove;
   if(!move||s.phase!=='roll')return '';
@@ -129,7 +156,8 @@ function moveNotice(s){
 function reveal(s){
   rackFaces=s.sticks??null;
   rackSeed=lastThrowSeed(s);
-  $('outcome').textContent=result(s);
+  const held=pendingRolls(s);
+  $('outcome').textContent=held.length>1?'모은 결과 · '+[...bankCounts(s)].map(([n,count])=>YUT[n]+(count>1?' ×'+count:'')).join(' · '):result(s);
   rack.setAttribute('aria-label',rackFaces?'던진 윷 네 가락 · '+result(s):'던질 윷 네 가락');
   paintRack();
 }
@@ -138,11 +166,12 @@ async function showState(s,animate=true){
   cancelTrayDrag();
   const previous=shown;shown=s;game=s;const token=++motion;
   const placed=placement?.state===previous?placement.move:null;
-  placement=null;selectedPawn=null;
-  toss.cancel();sounds.stop();$('toss-layer').hidden=true;
+  placement=null;selectedPawn=null;selectedSteps=null;
+  toss.cancel();sounds.stop();clearBonus();$('toss-layer').hidden=true;
   const fresh=animate&&previous&&previous.revision+1===s.revision;
   const changed=fresh&&!reduced.matches;
-  casting=!!(changed&&s.phase==='move');busy=!!changed;
+  const rolled=fresh&&previous.phase==='roll';
+  casting=!!(changed&&rolled);busy=!!changed;
   if(casting)$('outcome').textContent='';else reveal(s);
   renderHUD();
   if(panel==='scores'&&dialog.open)standings();
@@ -150,10 +179,13 @@ async function showState(s,animate=true){
     draw(s);
     $('toss-label').textContent=TEAMS[s.team].name+' 팀 · 윷 던지기';
     $('toss-layer').hidden=false;
-    await toss.play(s.sticks,lastThrowSeed(s),()=>{
-      if(motion!==token)return;
-      $('toss-label').textContent=result(s);reveal(s);
-    },sounds.throwSticks);
+    let settled=false;
+    const landed=()=>{
+      if(settled||motion!==token)return;
+      settled=true;$('toss-label').textContent=result(s);reveal(s);showBonus(s);
+    };
+    await toss.play(s.sticks,lastThrowSeed(s),landed,sounds.throwSticks);
+    landed();
   }else if(changed&&previous.phase==='move'&&s.lastMove){
     const {team,indices,frames}=s.lastMove,base=layer(previous).filter(p=>p.team!==team||!indices.includes(p.index));
     const dropAt=placed&&team===previous.team&&indices.includes(placed.index)?frames.indexOf(placed.to):-1;
@@ -181,8 +213,8 @@ async function showState(s,animate=true){
       land(node,node===HOME||node===FINISH?0:PAWN_HOP_MS,i+dropAt+1);
       draw(s,movingAt(node));await delay(pauseAt(node));
     }
-  }else if(fresh&&s.phase==='move'){
-    sounds.quickThrow();
+  }else if(rolled){
+    sounds.quickThrow();showBonus(s);
   }else if(fresh&&previous.phase==='move'&&s.lastMove){
     const move=s.lastMove;
     sounds.land(move.frames.at(-1)===FINISH?'finish':move.event||(move.captured?'capture':null));
@@ -312,7 +344,7 @@ function cancelMatchingPointer(event){if(trayDrag?.id===event.pointerId)cancelTr
 window.addEventListener('pointercancel',cancelMatchingPointer);
 tray.addEventListener('lostpointercapture',cancelMatchingPointer);
 window.addEventListener('blur',cancelTrayDrag);
-function moveControls(s,options){
+function moveControls(s,options,steps){
   const picker=$('pawn-picker'),actions=$('actions'),team=s.pawns[s.team];
   const indices=[...new Set(options.filter(o=>position(team[o.index])!==HOME).map(o=>o.index))];
   picker.hidden=!indices.length;$('field-label').hidden=picker.hidden;
@@ -333,11 +365,28 @@ function moveControls(s,options){
   const paths=options.filter(o=>o.index===selectedPawn).sort((a,b)=>Number(b.shortcut)-Number(a.shortcut));
   for(const [i,m] of paths.entries()){
     const cue=destinationLabel(s,m,options);
-    const label=cue==='골인'?'골인하기':paths.length>1?cue+'로 이동':s.steps+'칸 이동';
+    const label=cue==='골인'?'골인하기':paths.length>1?cue+'로 이동':steps+'칸 이동';
     const eventName=EVENT_NAMES[tileEffect(s,m.to)];
     const action=button(eventName?label+' · '+eventName:label,i?'secondary route-btn':'primary advance-btn',()=>{if(game===s)place(m);});
     action.setAttribute('aria-label',action.textContent+' · '+nodeName(m.to));actions.append(action);
   }
+}
+function resultControls(s,steps){
+  const holder=$('result-picker'),title=$('move-result'),counts=bankCounts(s);
+  const focused=holder.contains(document.activeElement);
+  holder.replaceChildren();holder.hidden=counts.size<2;title.hidden=!holder.hidden;
+  if(holder.hidden){
+    title.textContent=YUT[steps]+' · '+steps+'칸'+(counts.get(steps)>1?' ×'+counts.get(steps):'');
+    return;
+  }
+  for(const [value,count] of counts){
+    const chip=button(YUT[value]+' '+value+'칸'+(count>1?' ×'+count:''),'result-choice',()=>{
+      if(game!==s||!canMovePiece())return;
+      selectedSteps=value;renderHUD();
+    });
+    chip.setAttribute('aria-pressed',String(steps===value));holder.append(chip);
+  }
+  if(focused)holder.querySelector('[aria-pressed=true]')?.focus({preventScroll:true});
 }
 function renderHUD(){
   const s=game,lobby=net&&!net.game,other=net&&net.seat!==s.team;
@@ -348,34 +397,35 @@ function renderHUD(){
   const actions=$('actions');
   resumeActionFocus=actions.contains(document.activeElement)||(resumeActionFocus&&document.activeElement===document.body&&!dialog.open);
   actions.replaceChildren();
-  const options=canMovePiece()?moves(s):[];
+  const moving=canMovePiece(),steps=currentSteps();
+  const options=moving?moves(s,steps):[];
   if(options.length&&!options.some(o=>o.index===selectedPawn)){
     const onBoard=options.find(o=>position(s.pawns[s.team][o.index])!==HOME);
     selectedPawn=(onBoard??options[0]).index;
   }
   renderReserve(s,team,options,lobby);
   board.setMoves(options.map(m=>({team:s.team,index:m.index,from:position(s.pawns[s.team][m.index]),to:targetTile(m),label:destinationLabel(s,m,options)})),selectedPawn);
-  const moving=options.length>0;
   const rackWasHidden=$('stick-rack').hidden;
   $('move-tools').hidden=!moving;$('stick-rack').hidden=moving;
   if(rackWasHidden&&!moving)paintRack();
   $('station').dataset.phase=moving?'move':'roll';
   $('note').textContent=net?.status||(!lobby&&!busy?moveNotice(s):'');
-  if(moving)$('board').setAttribute('aria-description','말을 고른 뒤 금빛 칸을 누르세요.');
+  if(moving)$('board').setAttribute('aria-description',steps?'말을 고른 뒤 금빛 칸을 누르세요.':'쓸 결과를 먼저 고르세요.');
   else $('board').removeAttribute('aria-description');
   if(moving){
-    $('move-result').textContent=result(s);
-    moveControls(s,options);
+    resultControls(s,steps);moveControls(s,options,steps);
+    if(!steps)actions.append(button('쓸 결과를 고르세요','primary',()=>{},true));
   }else if(lobby)actions.append(button('대기실 열기','primary',lobbyPanel));
   else if(s.phase==='won')actions.append(button('결과 보기','primary',()=>showResult(true),busy));
   else{
     const disabled=busy||pendingRoom||bot||!!(net&&!net.connected)||!!other||s.phase!=='roll';
-    const label=casting?'윷 던지는 중…':busy?'말 이동 중…':bot?'컴퓨터 차례':other?'상대 팀 차례':s.phase==='move'?'말 옮기기':'윷 던지기';
+    const rollLabel=pendingRolls(s).length||s.lastMove?.captured&&s.team===s.lastMove.team?'한 번 더 던지기':'윷 던지기';
+    const label=casting?'윷 던지는 중…':busy?'말 이동 중…':bot?'컴퓨터 차례':other?'상대 팀 차례':s.phase==='move'?'말 옮기기':rollLabel;
     actions.append(button(label,disabled?'primary':'primary cast-btn',()=>dispatch({type:'roll'}),disabled));
   }
   scheduleComputer();
   if(resumeActionFocus&&!dialog.open){
-    const next=actions.querySelector('button:enabled');
+    const next=moving&&!steps?$('result-picker').querySelector('button'):actions.querySelector('button:enabled');
     if(next){next.focus({preventScroll:true});resumeActionFocus=false;}
   }
 }
@@ -417,12 +467,12 @@ function showEventGuide(){
 function rules(){
   openPanel('놀이 방법','help');
   const list=element('ol');
-  list.append(element('li','윷 던지기를 누르세요.'),element('li','금빛 칸을 누르면 말이 이동해요.'));
+  list.append(element('li','윷이나 모가 나오면 한 번 더 던져요.'),element('li','다 던지면 쓸 결과와 말을 고르고 금빛 칸을 누르세요.'));
   const more=element('details',undefined,'game-details');
   more.append(element('summary','자세한 규칙'),
     element('p','도·개·걸·윷·모는 1~5칸이에요. 다른 말을 쓰려면 판이나 대기석에서 먼저 고르세요. 말은 금빛 칸으로 끌어 놓거나 이동 버튼으로 옮겨도 돼요.'),
     element('p','갈림길에 멈추면 다음에 지름길을 고를 수 있어요. 출발점을 한 칸 지나면 골인이에요.'),
-    element('p','같은 팀 말은 업어서 함께 가요. 윷·모가 나오거나 상대 말을 잡으면 한 번 더 던져요.'));
+    element('p','같은 팀 말은 업어서 함께 가요. 도·개·걸로 상대 말을 잡으면 한 번 더 던져요. 남은 결과는 계속 쓸 수 있어요.'));
   if(game.eventTiles)more.append(button('이번 판 특수 칸 보기','secondary',showEventGuide));
   body.append(list,message('우리 팀 말을 먼저 모두 골인시키면 이겨요.'),more,button('알겠어요','primary',closePanel));
 }

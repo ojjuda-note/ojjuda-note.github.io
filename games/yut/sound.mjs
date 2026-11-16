@@ -72,6 +72,11 @@ export function createTableSounds(){
   function quickThrow(){
     play('wood',0,.53,.96);play('wood',37,.38,1.15);play('wood',94,.21,1.03);
   }
+  function fireworks(){
+    // Two short accents from the recorded burst in the existing tabletop bank.
+    play('table',0,.31,1.15,1.96717,.26);
+    play('table',180,.23,1.32,1.96717,.21);
+  }
   function land(kind,delay=0,step=0){
     // A single landing for the whole stack, with an extra physical contact on special moves.
     play('table',delay,.74,1+(step%3)*.065,0,.09646);
@@ -80,5 +85,5 @@ export function createTableSounds(){
     if(kind==='home')play('wood',delay+44,.56,.74);
     if(kind==='finish')play('table',delay+85,.57,1.04,1.48375,.29342);
   }
-  return {unlock,stop,setEnabled,get enabled(){return enabled;},throwSticks,quickThrow,land};
+  return {unlock,stop,setEnabled,get enabled(){return enabled;},throwSticks,quickThrow,fireworks,land};
 }
