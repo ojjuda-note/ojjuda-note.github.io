@@ -66,6 +66,11 @@ const button=(game)=>`<button class="gbtn" ${game==='matgo'?'data-act="matgo-ope
   assert.deepEqual(adultPopular(),['matgo','poker'],'fixed adult picks survive release expiry and an empty record response');
   assert.equal(list('adult').querySelectorAll('.arcade-badge').length,2);
   assert.equal(list('solo').querySelectorAll('.arcade-badge.popular').length,0,'ordinary categories still require recorded plays');
+  const yutCard=fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').match(/<a class="gbtn" data-v="yut"[^>]*>[\s\S]*?<\/a>/)[0];
+  list('multi').insertAdjacentHTML('beforeend',yutCard);await delay();
+  assert.equal(card('yut').querySelector('.arcade-cover .arcade-badge.new')?.textContent,'신규');
+  clock=Date.parse('2026-11-16T17:58:43+09:00')+month;await w.OjjudaArcadePromotions.refresh(true);
+  assert.equal(badge('yut'),undefined,'Yut uses its original release date, independent of patches');
   assert.ok([...w.document.querySelectorAll('.gbtn')].every(b=>b.querySelectorAll('.arcade-badge').length<=1));
   console.log('PASS: recorded top threes, fixed adult popular pair, new badge precedence, access removal/reinsertion, exact expiry, focus, ties and cache');
  }finally{observers.forEach(o=>o.disconnect());await delay();w.close();}
