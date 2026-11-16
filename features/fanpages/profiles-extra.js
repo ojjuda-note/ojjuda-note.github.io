@@ -478,7 +478,7 @@ for (const id of ['tws','nctdream','ateez','treasure','nctwish','andteam']) {
 const kissOfLifeProfile = window.OJJUDA_FAN_PROFILES.kissoflife;
 if (kissOfLifeProfile) {
   kissOfLifeProfile.expanded = true;
-  kissOfLifeProfile.checkedAt = '2026.11.13';
+  kissOfLifeProfile.checkedAt = '2026.11.16';
   const officialBirthdays = { '쥴리': '2000.03.29', '나띠': '2002.05.30', '벨': '2004.03.20', '하늘': '2005.05.25' };
   for (const member of kissOfLifeProfile.members) {
     member.birthday = officialBirthdays[member.name] || null;
@@ -486,6 +486,8 @@ if (kissOfLifeProfile) {
   }
   kissOfLifeProfile.sources.unshift({ label: 'S2엔터테인먼트 공식 멤버 생일', href: 'https://s2ent.co.kr/34' });
   kissOfLifeProfile.awards = [
+    { year: '2026.11', title: '2026 KGMA 베스트 스테이지상', detail: '2026.11.08 · 서울 고척스카이돔', href: 'https://isplus.com/article/view/isp202611080402' },
+    { year: '2026.11', title: '2026 KGMA 스타일 아이콘상', detail: '사전 발표 수상 · 2026.11.08 시상식', href: 'https://isplus.com/article/view/isp202611080402' },
     { year: '2026.09', title: '2026 SPOTV K-POP AWARDS 본상', detail: 'Artist of the Year (Bonsang) · 2026.09.06', href: 'https://www.soompi.com/article/1868372wpp/winners-of-2026-spotv-k-pop-awards' },
     { year: '2026.09', title: '2026 SPOTV K-POP AWARDS 베스트 여자 그룹상', detail: 'Best Female Group · 2026.09.06', href: 'https://www.soompi.com/article/1868372wpp/winners-of-2026-spotv-k-pop-awards' }
   ];
