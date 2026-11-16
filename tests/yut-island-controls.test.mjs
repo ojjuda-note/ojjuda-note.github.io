@@ -68,8 +68,29 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   t.mock.method(Math,'random',()=>.99);
   await import('../games/yut/play.mjs');
   const dialogButton=name=>[...doc.querySelectorAll('#dialog-body button')].find(b=>b.textContent===name);
-  assert.equal(text('dialog-title'),'윷놀이 시작');
-  dialogButton('한 기기').click();dialogButton('게임 시작').click();
+  const selectValue=(id,value)=>{
+    const el=doc.getElementById(id);el.value=String(value);el.dispatchEvent(new w.Event('change'));
+  };
+  assert.equal(doc.querySelector('dialog').open,false);
+  assert.match(text('goals'),/장애물 놀이.*0\/4/);
+  assert.equal(reserve.querySelectorAll('button').length,4);
+  assert.equal(first().textContent,'윷 던지기');
+  prefs.matches=true;setFaces(1);first().click();tick();
+  const [x,y]=marks.get('도착');
+  doc.getElementById('board').dispatchEvent(new w.MouseEvent('click',{clientX:x,clientY:y,bubbles:true}));
+  assert.equal(first().textContent,'컴퓨터 차례');
+  doc.getElementById('settings').click();dialogButton('놀이 방법').click();
+  assert.equal(doc.querySelectorAll('#dialog-body ol li').length,2);
+  assert.equal(doc.querySelector('#dialog-body details').open,false);
+  assert.equal(doc.querySelectorAll('.effect-row').length,3);
+  doc.getElementById('close').click();doc.getElementById('settings').click();
+  const options=doc.querySelector('#dialog-body details');assert.equal(options.open,false);
+  options.querySelector('summary').click();assert.equal(options.open,true);
+  selectValue('team-count',4);assert.equal(doc.getElementById('game-mode').value,'island');
+  for(let t=0;t<4;t++)assert.equal(doc.getElementById('team-pieces-'+t).value,'4');
+  selectValue('team-count',2);selectValue('team-pieces-0',2);selectValue('team-pieces-1',2);selectValue('game-mode','easy');
+  prefs.matches=false;t.mock.method(Math,'random',()=>.99);
+  dialogButton('한 기기').click();dialogButton('게임 시작').click();dialogButton('계속하기').click();
   assert.equal(doc.getElementById('event-key').hidden,false);doc.getElementById('event-key').click();
   assert.equal(text('dialog-title'),'이번 판 특수 칸');assert.equal(doc.querySelectorAll('.event-card').length,3);
   assert.match(text('dialog-body'),/대기 말 하나를 업어요/);doc.getElementById('close').click();
@@ -140,9 +161,7 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   [...doc.querySelectorAll('#dialog-body button')].find(b=>b.textContent==='놀이 방법').click();
   assert.equal(doc.querySelectorAll('.effect-row').length,0);
   doc.getElementById('close').click();doc.getElementById('settings').click();
-  const selectValue=(id,value)=>{
-    const el=doc.getElementById(id);el.value=String(value);el.dispatchEvent(new w.Event('change'));
-  };
+  doc.querySelector('#dialog-body details summary').click();
   assert.equal(doc.getElementById('team-animal-0').options.length,12);
   dialogButton('컴퓨터 대결').click();
   selectValue('team-count',3);selectValue('team-pieces-0',4);selectValue('team-pieces-1',3);

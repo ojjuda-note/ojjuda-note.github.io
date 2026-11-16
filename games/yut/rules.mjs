@@ -1,5 +1,6 @@
 export const HOME = -1;
 export const FINISH = 29;
+export const DEFAULT_MODE='island', DEFAULT_PIECES=4;
 export const TEAMS = [
   {name:'산호', color:'#ed7057', mark:'●'},
   {name:'바다', color:'#239b90', mark:'◆'},
@@ -23,7 +24,7 @@ function dealEventTiles(mode){
   }
   return tiles;
 }
-export function newGame(count=2,zodiacOffset=2,mode='island',pieceCounts=2,computerTeams=[],teamAnimals=null) {
+export function newGame(count=2,zodiacOffset=2,mode=DEFAULT_MODE,pieceCounts=DEFAULT_PIECES,computerTeams=[],teamAnimals=null) {
   if (![2,3,4].includes(count)) throw new Error('2~4팀을 골라 주세요.');
   if (!Number.isInteger(zodiacOffset)||zodiacOffset<0||zodiacOffset>=12) throw new Error('십이지 동물을 골라 주세요.');
   if (mode!=='easy'&&mode!=='island') throw new Error('놀이 방식을 골라 주세요.');

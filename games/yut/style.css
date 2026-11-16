@@ -89,6 +89,10 @@ dialog label{display:block;font-size:14px;font-weight:700;margin:14px 0 7px}dial
 .play-kinds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
 .play-kinds button{padding:8px 3px;font-size:14px}
 .play-kinds [aria-pressed=true]{background:#d8f0e7;color:#15382f;border-color:#9ddfc7}
+.game-details{margin:10px 0;border-block:1px solid var(--line)}
+.game-details summary{padding:12px 2px;min-height:44px;color:var(--pearl);font-size:14px;font-weight:700;cursor:pointer}
+.game-details summary:focus-visible{outline:3px solid var(--brass);outline-offset:1px}
+.game-details[open]{padding-bottom:10px}
 dialog .setup-hint{margin:7px 0 11px;font-size:13px;color:#cce0d6}
 .settings-row{display:grid;grid-template-columns:minmax(70px,.85fr) minmax(0,2fr);gap:10px}
 .settings-row label{margin-top:2px}.settings-row select{min-height:44px}

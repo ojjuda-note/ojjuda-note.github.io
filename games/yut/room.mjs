@@ -1,4 +1,4 @@
-import {newGame, act} from './rules.mjs?v=6';
+import {DEFAULT_MODE,DEFAULT_PIECES,newGame,act} from './rules.mjs?v=7';
 const encoder=new TextEncoder();
 const curve={name:'ECDSA',namedCurve:'P-256'};
 const signing={name:'ECDSA',hash:'SHA-256'};
@@ -110,7 +110,7 @@ export async function openRoom(invite,update,clientFactory=()=>window.OjjudaGetC
     render();
   },4000);
   render();
-  return {view,start(zodiacOffset=2,mode='island',pieceCounts=2,fillBots=false){
+  return {view,start(zodiacOffset=2,mode=DEFAULT_MODE,pieceCounts=DEFAULT_PIECES,fillBots=false){
       if(!isHost||!connected||snapshot.game)return;
       const humans=snapshot.seats.length,settings=snapshot.setup,count=settings?.count??humans;
       if(count<2||humans>count||(!fillBots&&humans<count))return;

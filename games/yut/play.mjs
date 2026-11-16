@@ -1,12 +1,12 @@
-import {TEAMS,HOME,FINISH,YUT,EVENT_NAMES,ROCK,WHIRL,WIND,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed} from './rules.mjs?v=6';
-import {createBoard} from './board.mjs?v=13';
+import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,ROCK,WHIRL,WIND,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed} from './rules.mjs?v=7';
+import {createBoard} from './board.mjs?v=14';
 import {createToss,drawRack} from './toss.mjs?v=7';
-import {openRoom,roomCode} from './room.mjs?v=6';
+import {openRoom,roomCode} from './room.mjs?v=7';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=3';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
 const dialog=$('sheet'), body=$('dialog-body'), reduced=matchMedia('(prefers-reduced-motion: reduce)');
-let local=newGame(2,11,'easy',2,[1]), shown=null, net=null, room=null, pendingRoom=false, attempt=0, busy=false, motion=0, panel='',game=local;
+let local=newGame(2,11,DEFAULT_MODE,DEFAULT_PIECES,[1]), shown=null, net=null, room=null, pendingRoom=false, attempt=0, busy=false, motion=0, panel='',game=local;
 let casting=false,selectedPawn=null,placement=null,resumeActionFocus=false;
 const tray=$('reserve-pawns');
 let trayKey='',trayDrag=null,suppressTrayClick=false;
@@ -299,8 +299,8 @@ function renderHUD(){
   if(rackWasHidden&&!moving)paintRack();
   $('station').dataset.phase=moving?'move':'roll';
   $('note').textContent=net?.status||(lobby?'친구를 초대한 뒤 시작하세요.':casting?'윷을 던지는 중이에요.':
-    busy?'말이 움직이고 있어요.':moving?'금빛 칸을 누르거나 아래 버튼으로 옮기세요.':
-    s.phase==='won'?s.note:bot?'컴퓨터가 차례를 진행하고 있어요.':other?'상대 팀이 두고 있어요.':s.revision===0?'우리 팀 말을 모두 골인시키면 이겨요.':s.note);
+    busy?'말이 움직이고 있어요.':moving?'금빛 칸을 누르세요.':
+    s.phase==='won'?s.note:bot?'컴퓨터가 두고 있어요.':other?'상대 팀이 두고 있어요.':s.revision===0?'윷 던지기를 누르세요.':s.note);
   if(moving){
     $('move-result').textContent=result(s);
     moveControls(s,options);
@@ -353,20 +353,23 @@ function showEventGuide(){
 function rules(){
   openPanel('놀이 방법','help');
   const list=element('ol');
-  ['윷 던지기를 누르세요. 도·개·걸·윷·모는 차례로 1~5칸이에요.',
-   '옮길 말 하나가 미리 선택돼요. 이동 버튼이나 금빛 칸을 누르세요. 새 말을 내고 싶으면 윷판 아래 대기석에서 고르거나 금빛 칸으로 끌어 놓으세요.',
-   '갈림길에 멈추면 다음 차례에 지름길을 고를 수 있어요. 출발점으로 돌아와 한 칸 더 지나면 골인이에요.',
-   '같은 팀 말은 업어서 함께 가요. 윷·모가 나오거나 상대 말을 잡으면 한 번 더 던져요. 우리 팀 말을 모두 골인시키면 이겨요.'].forEach(t=>list.append(element('li',t)));
-  body.append(list);
-  if(game.eventTiles)body.append(button('이번 판 특수 칸 보기','secondary',showEventGuide));
-  if(game.mode==='easy'){body.append(button('알겠어요','primary',closePanel));return;}
-  const effects=element('div',undefined,'effects');
-  for(const [symbol,name,effect,tint] of [['▲','바위턱','한 칸 뒤로','#efb59e'],['◎','소용돌이','두 칸 뒤로','#b6c9f0'],['»','순풍','두 칸 앞으로','#a2e6d0']]){
-    const row=element('div',undefined,'effect-row'), icon=element('span',symbol,'effect-icon');
-    icon.style.setProperty('--tint',tint);icon.setAttribute('aria-hidden','true');
-    row.append(icon,element('b',name),element('span',effect));effects.append(row);
+  list.append(element('li','윷 던지기를 누르세요.'),element('li','금빛 칸을 누르면 말이 이동해요.'));
+  const more=element('details',undefined,'game-details');
+  more.append(element('summary','자세한 규칙'),
+    element('p','도·개·걸·윷·모는 1~5칸이에요. 다른 말을 쓰려면 판이나 대기석에서 먼저 고르세요. 말은 금빛 칸으로 끌어 놓거나 이동 버튼으로 옮겨도 돼요.'),
+    element('p','갈림길에 멈추면 다음에 지름길을 고를 수 있어요. 출발점을 한 칸 지나면 골인이에요.'),
+    element('p','같은 팀 말은 업어서 함께 가요. 윷·모가 나오거나 상대 말을 잡으면 한 번 더 던져요.'));
+  if(game.mode!=='easy'){
+    const effects=element('div',undefined,'effects');
+    for(const [symbol,name,effect,tint] of [['▲','바위턱','한 칸 뒤로','#efb59e'],['◎','소용돌이','두 칸 뒤로','#b6c9f0'],['»','순풍','두 칸 앞으로','#a2e6d0']]){
+      const row=element('div',undefined,'effect-row'),icon=element('span',symbol,'effect-icon');
+      icon.style.setProperty('--tint',tint);icon.setAttribute('aria-hidden','true');
+      row.append(icon,element('b',name),element('span',effect));effects.append(row);
+    }
+    more.append(effects);
   }
-  body.append(effects,button('알겠어요','primary',closePanel));
+  if(game.eventTiles)more.append(button('이번 판 특수 칸 보기','secondary',showEventGuide));
+  body.append(list,message('우리 팀 말을 먼저 모두 골인시키면 이겨요.'),more,button('알겠어요','primary',closePanel));
 }
 function resetLocal(setup,computer){
   const {count,offset,mode,counts,animals}=setup;
@@ -376,7 +379,7 @@ function resetLocal(setup,computer){
 function modePicker(current,onChange){
   const box=element('div'),label=element('label','놀이 방식'),select=element('select');
   label.htmlFor='game-mode';select.id=label.htmlFor;
-  for(const [value,copy] of [['easy','쉬운 놀이 · 랜덤 특수 칸'],['island','장애물 놀이 · 섬 장애물 추가']]){
+  for(const [value,copy] of [['island','장애물 놀이'],['easy','쉬운 놀이']]){
     const option=element('option',copy);option.value=value;select.append(option);
   }
   select.value=current;select.onchange=()=>onChange?.(select.value);
@@ -406,10 +409,10 @@ function settings(initial=false){
   const kinds=element('div',undefined,'play-kinds');kinds.setAttribute('role','group');kinds.setAttribute('aria-label','대결 방식');
   const label=element('label','참가 팀');label.htmlFor='team-count';
   const sizes=[2,3,4],teams=setupSelect('team-count',sizes.map(n=>[n,n+'팀']),local.pawns.length);
-  const mode=modePicker(local.mode??'island'),numbers=element('div'),settingsRow=element('div',undefined,'settings-row');numbers.append(label,teams);settingsRow.append(numbers,mode.box);
+  const mode=modePicker(local.mode??DEFAULT_MODE),numbers=element('div'),settingsRow=element('div',undefined,'settings-row');numbers.append(label,teams);settingsRow.append(numbers,mode.box);
   const roster=element('div',undefined,'roster'),head=element('div',undefined,'roster-line roster-head');
   head.append(element('b','팀 구성'),element('span','동물'),element('span','말 수'));
-  const counts=TEAMS.map((_,t)=>local.pawns[t]?.length??2);
+  const counts=TEAMS.map((_,t)=>local.pawns[t]?.length??DEFAULT_PIECES);
   const animals=TEAMS.map((_,t)=>animalFor(t,0,local.zodiacOffset,local.teamAnimals));
   function drawTeams(){
     roster.replaceChildren(head);
@@ -442,7 +445,9 @@ function settings(initial=false){
   for(const [value,title] of [['computer','컴퓨터 대결'],['together','한 기기'],['online','온라인 멀티']]){
     const item=button(title,'secondary',()=>{kind=value;refresh();});item.dataset.kind=value;kinds.append(item);
   }
-  actions.append(start,join);refresh();body.append(kinds,hint,settingsRow,roster,actions);
+  const options=element('details',undefined,'game-details');
+  options.append(element('summary','팀·말·놀이 설정'),settingsRow,roster);
+  actions.append(start,join);refresh();body.append(kinds,hint,options,actions);
 }
 function joinPanel(){
   openPanel('친구 방 참가','join');
@@ -506,7 +511,7 @@ function lobbyPanel(){
       body.append(download,message('다른 계정의 친구에게는 초대 파일을 보내세요. 친구가 브라우저로 파일을 열면 이 방에 들어와요.'));
     }
     body.append(message((portable?'':web?'친구에게 초대 링크를 보내세요. ':'친구에게 게임 파일과 방 코드를 보내세요. ')+'게임 중에는 방장 창을 열어 두세요.'));
-    const start=fill=>{room?.start(2,'easy',2,fill);if(net?.game)closePanel();};
+    const start=fill=>{room?.start(2,DEFAULT_MODE,DEFAULT_PIECES,fill);if(net?.game)closePanel();};
     const full=net.seats.length===capacity;
     const actions=element('div',undefined,'form-actions');
     if(!net.setup)actions.append(button('모인 팀으로 시작','primary',()=>start(false),net.seats.length<2||!net.connected));
@@ -552,4 +557,3 @@ void showState(local,false);
 const invite=new URLSearchParams(location.hash.slice(1));const embedded=document.querySelector('meta[name="yut-invite-room"]')?.content;
 if(invite.has('room'))void connect(invite.get('room'));
 else if(roomCode(embedded))void connect(embedded);
-else settings(true);

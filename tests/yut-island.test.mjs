@@ -5,7 +5,16 @@ import {ANIMALS,animalFor} from '../games/yut/zodiac.mjs';
 
 const ordinary=(...args)=>({...newGame(...args),eventTiles:{}});
 const faces=n=>Array.from({length:4},(_,i)=>+(i<n&&n<5));
-function setup(at,steps){const g=ordinary();g.pawns[0][0]=at;return roll(g,faces(steps));}
+function setup(at,steps){const g=ordinary(2,2,'island',2);g.pawns[0][0]=at;return roll(g,faces(steps));}
+test('new games give every team four pieces and enable island obstacles by default',()=>{
+  for(const count of [2,3,4]){
+    const game=newGame(count);
+    assert.equal(game.mode,'island');
+    assert.deepEqual(game.pawns.map(team=>team.length),Array(count).fill(4));
+    game.pawns[0][0]=[1,2];
+    assert.equal(position(move(roll(game,faces(1)),0).pawns[0][0]),2);
+  }
+});
 test('easy games land on the rolled square while older snapshots keep their island effects',()=>{
   for(const [tile,end] of [[3,2],[16,15],[8,6],[13,11],[6,8],[18,0]]){
     const trail=Array.from({length:tile-1},(_,i)=>i+1);
@@ -45,7 +54,7 @@ test('an event applies once and retreats along the actual trail',()=>{
   assert.equal(position(move(setup([1,2,3,4,5],1),0).pawns[0][0]),8);
 });
 test('either waiting pawn may start, while touching a stack still moves both together',()=>{
-  const turn=roll(ordinary(),faces(1));
+  const turn=roll(ordinary(2,2,'island',2),faces(1));
   assert.deepEqual(moves(turn).map(m=>m.index),[0,1]);
   assert.deepEqual(move(turn,1).pawns[0],[[],[1]]);
   const stack=setup([1,2,3,4],1);stack.pawns[0][1]=[1,2,3,4];
