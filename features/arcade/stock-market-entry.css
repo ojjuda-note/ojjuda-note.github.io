@@ -1,0 +1,7 @@
+.arcade-market-entry{display:flex;align-items:center;gap:12px;min-height:68px;margin:4px 0 16px;padding:11px 15px;text-decoration:none;border-radius:17px;border:1px solid color-mix(in srgb,var(--accent,#1fa488) 35%,var(--line,#daddf0));background:color-mix(in srgb,var(--accent,#1fa488) 9%,var(--surface,#fff));color:var(--ink,#233);transition:background .15s,border-color .15s}
+.arcade-market-entry:hover{background:color-mix(in srgb,var(--accent,#1fa488) 15%,var(--surface,#fff));border-color:var(--accent,#1fa488)}
+.arcade-market-icon{font-size:23px;line-height:1;flex:none}
+.arcade-market-copy{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.arcade-market-copy strong{font-size:15px;font-weight:750}
+.arcade-market-copy small{font-size:12px;line-height:1.5;color:var(--ink-2,#667)}
+.arcade-market-entry>span:last-child{font-size:19px;font-weight:700;color:var(--accent,#1fa488)}
