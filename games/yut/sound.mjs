@@ -3,8 +3,8 @@ const recordings={
   wood:'/games/roulette/audio/wood-ball-impact-clean.wav',
   roll:'/games/roulette/audio/wood-ball-roll-clean.wav',
   table:'/games/drinking/audio/table-foley-v1.wav',
-  // Trimmed from “Cheer 1 short” by jayfrosting (CC0), https://freesound.org/s/333405/
-  cheer:'/games/yut/audio/bonus-cheer.mp3'
+  // Hand claps from the Versilian Community Sample Library (CC0), https://github.com/sgossner/VCSL
+  applause:'/games/yut/audio/bonus-applause.mp3'
 };
 const preference='ojjuda.yut.sound';
 export function createTableSounds(){
@@ -74,8 +74,8 @@ export function createTableSounds(){
   function quickThrow(){
     play('wood',0,.53,.96);play('wood',37,.38,1.15);play('wood',94,.21,1.03);
   }
-  function cheer(){
-    play('cheer',0,.60,1);
+  function applaud(){
+    play('applause',0,.60,1);
   }
   function land(kind,delay=0,step=0){
     // A single landing for the whole stack, with an extra physical contact on special moves.
@@ -85,5 +85,5 @@ export function createTableSounds(){
     if(kind==='home')play('wood',delay+44,.56,.74);
     if(kind==='finish')play('table',delay+85,.57,1.04,1.48375,.29342);
   }
-  return {unlock,stop,setEnabled,get enabled(){return enabled;},throwSticks,quickThrow,cheer,land};
+  return {unlock,stop,setEnabled,get enabled(){return enabled;},throwSticks,quickThrow,applaud,land};
 }

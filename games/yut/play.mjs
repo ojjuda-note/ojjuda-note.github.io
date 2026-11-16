@@ -2,7 +2,7 @@ import {roundSummary} from './results.mjs?v=1';
 import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=14';
 import {createBoard,PAWN_HOP_MS} from './board.mjs?v=24';
 import {createToss,drawRack} from './toss.mjs?v=8';
-import {createTableSounds} from './sound.mjs?v=3';
+import {createTableSounds} from './sound.mjs?v=4';
 import {openRoom,roomCode} from './room.mjs?v=14';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=5';
 
@@ -167,7 +167,7 @@ function showBonus(s){
       bursts.append(group);
     }
   }
-  bonusRoll.hidden=false;sounds.cheer();
+  bonusRoll.hidden=false;sounds.applaud();
   bonusTimer=setTimeout(clearBonus,1500);
 }
 function moveNotice(s){
