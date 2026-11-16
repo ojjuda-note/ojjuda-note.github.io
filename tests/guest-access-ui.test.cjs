@@ -121,6 +121,17 @@ const cardId='00000000-0000-4000-8000-000000000001';
    assert.equal(surface.image,'none','the canvas must not paint a CSS paper texture');
    assert.ok(surface.background.includes('/note/assets/'+key+'.jpg'),'expected the original card photo behind the strokes');
   };
+  const readInkBox=async selector=>{
+   const box=page.locator(selector+' .park-ink-box');await box.waitFor({state:'visible'});
+   const state=await box.evaluate(box=>{
+    const bounds=box.getBoundingClientRect(), face=box.closest('.photo,.compose-photo').getBoundingClientRect();
+    const pixel=document.createElement('canvas').getContext('2d');
+    pixel.fillStyle=getComputedStyle(box).backgroundColor;pixel.fillRect(0,0,1,1);
+    return {rgba:Array.from(pixel.getImageData(0,0,1,1).data),area:bounds.width*bounds.height/(face.width*face.height)};
+   });
+   assert.ok(state.area>0&&state.area<.97,'the box surrounds the lettering and leaves some photo outside');
+   return state.rgba;
+  };
   await enter();await page.evaluate(()=>guestFixture.park());await page.locator('[data-park-app] iframe').waitFor();
   const frame=page.frames().find(f=>f.url().includes('/park/'));await preparePark(frame);
   await page.locator('[data-park-action=compose]').click();
@@ -150,12 +161,30 @@ const cardId='00000000-0000-4000-8000-000000000001';
   assert.equal(await page.locator('#compose-text').inputValue(),'붓글씨로 이어 쓰기');
   const initialInk=await waitForInk('#compose-ink-art');
   await checkPhotoBehindInk('#compose-ink-art',await page.evaluate(()=>backgroundKey));
+  const defaultBox=await readInkBox('.compose-photo');
+  assert.ok(defaultBox[3]>0&&defaultBox[3]<255,'the default has a visible, translucent box');
   await page.locator('#compose-text').fill('고쳐 쓴 붓글씨');
-  await waitForInk('#compose-ink-art',initialInk);
+  const editedInk=await waitForInk('#compose-ink-art',initialInk);
   assert.deepEqual(await page.evaluate(()=>[currentStyle().font,text.value]),['calligraphy','고쳐 쓴 붓글씨']);
+  await page.locator('#compose-more>summary').click();
+  const slider=page.locator('#compose-box-transparency'), number=page.locator('#compose-box-transparency-value');
+  const boxColors=[];
+  for(const level of [0,50,100]){
+   if(level===50)await number.fill('50');else await slider.press(level===0?'Home':'End');
+   assert.equal(await slider.inputValue(),String(level));
+   assert.equal(await number.inputValue(),String(level));
+   boxColors.push(await readInkBox('.compose-photo'));
+   assert.equal(await waitForInk('#compose-ink-art'),editedInk,'changing only the box preserves the strokes');
+  }
+  assert.equal(boxColors[0][3],0);
+  assert.ok(boxColors[1][3]>0&&boxColors[1][3]<255);
+  assert.equal(boxColors[2][3],255);
+  await number.fill('50');
   await page.evaluate(()=>{
    const card={id:crypto.randomUUID(),kind:'memo',background_key:'37',body:text.value,tags:[],style:currentStyle(),created_at:new Date().toISOString()};
    list.replaceChildren(cardElement(card),cardElement({...card,id:crypto.randomUUID(),photo_key:'13'}));
+   cache.set(card.id,card);
+   noteRpc=async(name,args)=>name==='get_card'?cache.get(args.p_id):[];
   });
   await page.locator('#feed-list .note-font-calligraphy').first().evaluate(el=>el.classList.add('ju-font-poster'));
   assert.deepEqual(await page.locator('#feed-list .card-quote').allTextContents(),['고쳐 쓴 붓글씨','고쳐 쓴 붓글씨']);
@@ -163,13 +192,18 @@ const cardId='00000000-0000-4000-8000-000000000001';
   assert.equal(await page.locator('#compose-font').inputValue(),'default');
   assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
   assert.equal(await page.locator('#compose-ink-art').isVisible(),false);
+  assert.equal(await page.locator('.compose-photo .park-ink-box').isVisible(),false);
   await page.locator('#close-composer').click();
   await page.locator('#feed-list .photo').first().scrollIntoViewIfNeeded();
   for(const [index,key] of [[1,'37'],[2,'13']]){
-   const selector='#feed-list article:nth-child('+index+') .photo > canvas.park-ink-art';
+   const face='#feed-list article:nth-child('+index+') .photo',selector=face+' canvas.park-ink-art';
    await waitForInk(selector);
    await checkPhotoBehindInk(selector,key);
+   assert.deepEqual(await readInkBox(face),boxColors[1],'a saved card retains its box color and opacity');
   }
+  await page.locator('#feed-list .photo-open').first().click();
+  await waitForInk('#detail-card-slot canvas.park-ink-art');
+  assert.deepEqual(await readInkBox('#detail-card-slot .photo'),boxColors[1],'detail matches the preview and feed');
   await page.goto(origin+'/park/?card='+cardId);await preparePark(page);
   await page.evaluate(id=>openComposer('reply',null,id),cardId);await page.locator('#guest-compose-login').click();await login('note');assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
   // Login is the automatic entry; a guest can still deliberately select signup

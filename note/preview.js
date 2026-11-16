@@ -204,7 +204,7 @@ function applyVisualStyle(element, style = {}) {
   if (EFFECT_CODES.includes(style.effect) && style.effect !== 'none') element.classList.add(`note-effect-${style.effect}`);
   const textColor = COLOR_PALETTE[style.textColor];
   const boxColor = COLOR_PALETTE[style.boxColor];
-  const textHex = textColor?.solid || '#FFFDF7';
+  const textHex = textColor?.solid || (style.font === 'calligraphy' ? '#191A17' : '#FFFDF7');
   const darkText = colorLuminance(textHex) < .3;   // 어두운 글씨면 기본 글상자를 밝은 유리로
   const boxHex = boxColor?.box || (darkText ? '#FFFDF7A8' : '#1C1A2447');
   element.style.setProperty('--note-text-color', textHex);
@@ -795,12 +795,37 @@ function inkOptions(style, width) {
   const inkColor = COLOR_PALETTE[style.textColor]?.solid;
   return { width, inkColor, zoom: style.size === 'small' ? .85 : style.size === 'large' ? 1.12 : 1 };
 }
+function renderParkInk(canvas, body, options) {
+  if (!window.ParkCalligraphy.render(canvas, body, options)) return false;
+  const bounds = window.ParkCalligraphy.inkBounds?.(canvas);
+  let frame = canvas.previousElementSibling;
+  if (!frame?.classList.contains('park-ink-box-frame')) {
+    if (!bounds) return true;
+    frame = node('span', 'park-ink-box-frame');
+    frame.setAttribute('aria-hidden', 'true');
+    const sheet = node('span', 'park-ink-sheet');
+    sheet.append(node('span', 'park-ink-box'));
+    frame.append(sheet);
+    canvas.before(frame);
+  }
+  frame.hidden = !bounds;
+  if (bounds) {
+    const left = Math.max(0, bounds.x - .026), top = Math.max(0, bounds.y - .032);
+    const right = Math.min(1, bounds.x + bounds.width + .026);
+    const bottom = Math.min(1, bounds.y + bounds.height + .032);
+    Object.assign(frame.querySelector('.park-ink-box').style, {
+      left: `${left * 100}%`, top: `${top * 100}%`,
+      width: `${(right - left) * 100}%`, height: `${(bottom - top) * 100}%`
+    });
+  }
+  return true;
+}
 function drawInkCard(photo) {
   const job = inkCards.get(photo);
   if (!job) return;
   const canvas = job.canvas;
   if (canvas.dataset.inkReady === 'true') return;
-  if (window.ParkCalligraphy.render(canvas, job.body, job.options)) {
+  if (renderParkInk(canvas, job.body, job.options)) {
     canvas.dataset.inkReady = 'true';
     requestTagFit();
   }
@@ -826,7 +851,7 @@ function syncComposeInk(selected, style) {
   const body = text.value, options = inkOptions(style, 720);
   composeInkFrame = requestAnimationFrame(() => {
     if (run !== composeInkRun || backdrop.hidden) return;
-    if (window.ParkCalligraphy.render(canvas, body, options)) canvas.dataset.inkReady = 'true';
+    if (renderParkInk(canvas, body, options)) canvas.dataset.inkReady = 'true';
   });
 }
 function fitPhotoQuote(photo, quote, tagRow) {

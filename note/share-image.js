@@ -59,6 +59,9 @@
       if (photo.matches(inkFace) && !(ink?.width > 0 && ink.height > 0)) throw new Error('card_ink_unavailable');
       const rect = photo.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0 || getComputedStyle(photo).visibility === 'hidden') throw new Error('card_image_hidden');
+      const sheet = ink && photo.querySelector('.park-ink-sheet')?.getBoundingClientRect();
+      const box = ink && photo.querySelector('.park-ink-box');
+      const boxColor = box && getComputedStyle(box).backgroundColor;
       let background = originalBackground;
       for (const [original, prepared] of replacements) background = background.replace(original, prepared);
       const scale = Math.min(2, 2048 / rect.width, 4096 / rect.height, Math.sqrt(4000000 / (rect.width * rect.height)));
@@ -75,7 +78,18 @@
           captured.style.minHeight = '0'; captured.style.maxHeight = 'none';
           const publicInk = ink && captured.querySelector(inkSelector);
           if (ink && !publicInk) throw new Error('card_ink_unavailable');
-          if (publicInk) captured.querySelector('.card-quote')?.remove();
+          if (publicInk) {
+            captured.querySelector('.card-quote')?.remove();
+            // html2canvas stretches a canvas into its CSS box. Use the actual
+            // contained sheet bounds so the strokes line up with their backing.
+            if (sheet?.width && sheet.height) {
+              Object.assign(publicInk.style, {
+                inset: 'auto', left: `${sheet.left - rect.left}px`, top: `${sheet.top - rect.top}px`,
+                width: `${sheet.width}px`, height: `${sheet.height}px`
+              });
+            }
+            if (box) captured.querySelector('.park-ink-box').style.backgroundColor = boxColor;
+          }
           captured.querySelectorAll(media + ',' + controls).forEach(element => {
             if (element !== publicInk) element.remove();
           });
