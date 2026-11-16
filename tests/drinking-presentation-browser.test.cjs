@@ -956,6 +956,7 @@ test('shape match enters from the local catalog and reveals the slowest player u
       return start.apply(this, arguments);
     };
   });
+  const seenGhosts = new Set();
   const scores=[];
   for(const delay of [120,950]) {
     if (scores.length) {
@@ -971,7 +972,13 @@ test('shape match enters from the local catalog and reveals the slowest player u
     await ghost.waitFor({state:'visible',timeout:8000});
     await ghost.evaluate(img=>img.decode());
     const ghostPath = await ghost.evaluate(img => new URL(img.currentSrc).pathname);
-    assert.equal(ghostPath, '/games/shapematch/ghost.svg', 'each player sees the original monochrome ghost');
+    assert.ok(['/games/shapematch/ghost.svg', '/games/shapematch/ghosts/black-eyes.webp',
+      '/games/shapematch/ghosts/white-eyes.webp'].includes(ghostPath));
+    assert.ok(!seenGhosts.has(ghostPath), 'consecutive players see different ghosts');
+    seenGhosts.add(ghostPath);
+    if (ghostPath.endsWith('.webp')) {
+      assert.equal(await ghost.evaluate(img => getComputedStyle(img).backgroundColor), 'rgb(0, 0, 0)');
+    }
     await ghost.waitFor({state:'hidden'});
     const sounds = await p.evaluate(() => window.screamPlayback);
     assert.equal(sounds.length,1,'one scream on the first reveal, silence on the muted second turn');
