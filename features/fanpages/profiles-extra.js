@@ -93,7 +93,7 @@ if (txtProfile) {
   }
   txtProfile.records = [
     { year: '2025.08', title: '빅히트 뮤직과 멤버 전원 재계약', detail: '2026년 미니 8집 공식 소개에서 확인', href: 'https://ibighit.com/ko/txt/discography/detail/7th_year' },
-    { year: '2026.11', title: 'STEAL THE WIND 월드투어 개막', detail: '11.13~15 서울 KSPO DOME 공연 예정', href: 'https://weverse.io/txt/notice/39106' }
+    { year: '2026.11', title: 'STEAL THE WIND 월드투어 개막', detail: '11.13~15 서울 KSPO DOME에서 개막 공연', href: 'https://weverse.io/txt/notice/39106' }
   ];
   txtProfile.sources.unshift({ label: 'TXT 일본 공식 멤버 프로필 · 생일·신장', href: 'https://txt-official.jp/profile/' });
   txtProfile.sources.push({ label: 'BIGHIT MUSIC 공식 2026 미니 8집', href: 'https://ibighit.com/ko/txt/discography/detail/7th_year' });
