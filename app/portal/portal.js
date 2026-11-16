@@ -485,17 +485,6 @@
       setAuthMode('forgot', messageFor('recovery_expired')); return;
     }
     let signupIdentity = null, recoveryDetails = null, signupReferrer = null;
-    if (authMode === 'forgot') {
-      try {
-        const birth = $('recovery-birth').value, gender = $('recovery-gender').value;
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(birth) || !['male', 'female'].includes(gender)
-          || Number(birth.slice(0, 4)) < 1900 || Number(birth.slice(0, 4)) > 2099) throw new Error('생년월일과 성별을 확인해 주세요.');
-        const code = String((Number(birth.slice(0, 4)) < 2000 ? 1 : 3) + (gender === 'female' ? 1 : 0));
-        window.OjjudaIdentity.parseBirth(birth.slice(2).replaceAll('-', ''), code, undefined, false);
-        recoveryDetails = { email: address, birth_date: birth, gender,
-          phone: window.OjjudaIdentity.normalizePhone($('recovery-phone').value) };
-      } catch (error) { feedback.textContent = error.message; return; }
-    }
     if (authMode === 'signup' || authMode === 'nickname') {
       const name = authMode === 'signup' ? ensureSignupNickname(true) : nickname.value.trim();
       if (!name || name.length > 12) {
@@ -510,6 +499,24 @@
       else feedback.textContent = authMode === 'signup' ? '올바른 이메일을 입력해 주세요. 일회용 이메일은 가입할 수 없어요.' : '이메일 주소를 확인해 주세요.';
       email.focus();
       return;
+    }
+    if (authMode === 'forgot') {
+      const phoneInput = $('recovery-phone'), birthInput = $('recovery-birth'), genderInput = $('recovery-gender');
+      let phone;
+      try { phone = window.OjjudaIdentity.normalizePhone(phoneInput.value); }
+      catch (error) { feedback.textContent = error.message; phoneInput.focus(); return; }
+      const birth = birthInput.value, gender = genderInput.value;
+      try {
+        if (!/^(?:19|20)\d{2}-\d{2}-\d{2}$/.test(birth)) throw new Error('생년월일을 확인해 주세요.');
+        const code = String((birth.startsWith('19') ? 1 : 3) + (gender === 'female' ? 1 : 0));
+        window.OjjudaIdentity.parseBirth(birth.slice(2).replaceAll('-', ''), code, undefined, false);
+      } catch (error) { feedback.textContent = error.message; birthInput.focus(); return; }
+      if (!['male', 'female'].includes(gender)) {
+        feedback.textContent = '성별을 선택해 주세요.';
+        genderInput.focus();
+        return;
+      }
+      recoveryDetails = { email: address, phone, birth_date: birth, gender };
     }
     if (authMode !== 'forgot' && authMode !== 'nickname' && secret.length < 6) {
       feedback.textContent = '비밀번호는 6자 이상으로 입력해 주세요.';
@@ -680,7 +687,11 @@
     if ($('signup-result')) $('signup-result').textContent = '';
     pendingDestination = null;
   });
-  forgot.addEventListener('click', () => setAuthMode(authMode === 'forgot' ? 'login' : 'forgot'));
+  forgot.addEventListener('click', () => {
+    if (authMode === 'forgot') { setAuthMode('login'); return; }
+    setAuthMode('forgot');
+    (validEmail(email.value.trim()) ? $('recovery-phone') : email).focus();
+  });
   $('back-to-login').addEventListener('click', () => {
     if (authMode === 'note-retry') { void enterNote(); return; }
     if (recoveryGrant) { setAuthMode('forgot'); email.focus(); }

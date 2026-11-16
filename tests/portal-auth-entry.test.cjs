@@ -459,10 +459,34 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     app.element('back-to-login').listeners.click();
     assert.equal(app.element('login-tab').attributes['aria-selected'], 'true');
   }
-  for (const field of Object.keys(recoveryValues)) {
-    const app = setup('?auth=forgot'); await app.flush(); fillRecovery(app); app.element(field).value = '';
-    await app.submit(); assert.equal(app.recoveries.length, 0, `${field} must be required for recovery`);
+  const guided = setup('?auth=login'); await guided.flush();
+  const forgot = guided.element('forgot-trigger');
+  forgot.focus(); forgot.listeners.click();
+  assert.equal(guided.focused, 'email', 'opening recovery starts at the first input');
+  for (const [field, value] of Object.entries(recoveryValues)) {
+    guided.element('auth-submit').focus();
+    await guided.submit();
+    assert.equal(guided.focused, field, 'empty recovery inputs are visited in screen order');
+    assert.equal(guided.recoveries.length, 0);
+    guided.element(field).value = value;
   }
+  await guided.submit(); assert.equal(guided.recoveries.length, 1);
+  for (const [field, invalid, hint] of [
+    ['email','missing-at-sign',/이메일/], ['recovery-phone','abc',/전화번호/],
+    ['recovery-birth','2100-01-01',/생년월일/], ['recovery-birth','2001-02-29',/존재하지/],
+    ['recovery-birth','2099-01-01',/미래/], ['recovery-gender','',/성별/]
+  ]) {
+    const app = setup('?auth=forgot'); await app.flush(); fillRecovery(app); app.element(field).value = invalid;
+    app.element('auth-submit').focus(); await app.submit();
+    assert.equal(app.recoveries.length, 0);
+    assert.match(app.element('auth-feedback').textContent, hint);
+    assert.equal(app.focused, field);
+  }
+  const remembered = setup('?auth=login'); await remembered.flush();
+  remembered.element('email').value = recoveryValues.email;
+  remembered.element('forgot-trigger').listeners.click();
+  assert.equal(remembered.element('email').value, recoveryValues.email);
+  assert.equal(remembered.focused, 'recovery-phone');
   const mismatch = setup('?auth=forgot', { recoveryVerified: false });
   await mismatch.flush(); fillRecovery(mismatch); await mismatch.submit();
   assert.equal(mismatch.element('recovery-reset-button').hidden, true);
