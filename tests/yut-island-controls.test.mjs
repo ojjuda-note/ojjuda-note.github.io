@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {JSDOM} from 'jsdom';
 import {createThrow,sampleThrow} from '../games/yut/toss.mjs';
 import {createBoard} from '../games/yut/board.mjs';
-import {FINISH,newGame} from '../games/yut/rules.mjs';
+import {FINISH,newGame,nodeName} from '../games/yut/rules.mjs';
 
 test('each stick rebounds briefly once and settles on its rolled face in the pile',()=>{
   const arrangements=new Set();
@@ -95,12 +95,42 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
     assert.equal(reserve.querySelectorAll('button:enabled').length,0);
   }
   prefs.matches=true;setFaces(3);first().click();
-  assert.ok(bonus.hidden);assert.equal(first().textContent,'쓸 결과를 고르세요');
+  assert.ok(bonus.hidden);assert.equal(first().textContent,'이동할 칸 선택');
+  marks.clear();tick();
+  for(const resultName of ['윷','모','걸'])assert.ok(marks.has(resultName));
+  assert.equal(reserve.querySelectorAll('button:enabled').length,4);
   assert.deepEqual([...chips.children].map(b=>b.textContent),['윷 4칸','모 5칸','걸 3칸']);
   chip(1).click();reserve.querySelector('[data-pawn="2"]').click();assert.match(first().textContent,/5칸/);first().click();
   assert.deepEqual([...chips.children].map(b=>b.textContent),['윷 4칸','걸 3칸']);
-  chip(1).click();reserve.querySelector('[data-pawn="0"]').click();first().click();
+  assert.equal(selected(),undefined);
+  assert.equal(doc.querySelectorAll('#pawn-picker button').length,1);
+  const tileMenu=()=>[...doc.querySelectorAll('#dialog-body button')];
+  const viewAll=()=>{first().click();return tileMenu().map(b=>b.textContent);};
+  // Home and the pawn already on square 5 can use either roll, including both forks.
+  assert.equal(viewAll().length,6);
+  doc.getElementById('close').click();
+  const fresh=reserve.querySelector('[data-pawn="0"]');fresh.click();
+  assert.equal(viewAll().length,6);doc.getElementById('close').click();
+  const taps=()=>{const hits=[];ctx.fillText=(word,x,y)=>{if(word==='걸')hits.push([x,y]);};tick();return hits;};
+  const goals=taps();assert.equal(goals.length,3);
+  ctx.fillText=(word,x,y)=>marks.set(word,[x,y]);
+  // Tap the reserve's three-step landing without choosing a roll.
+  first().click();
+  const entry=tileMenu().find(b=>b.textContent===nodeName(3)+' · 걸');
+  assert.ok(entry);entry.click();
   assert.ok(chips.hidden);assert.match(text('move-result'),/윷 · 4칸/);
+  // A roll of five can bring out a fresh pawn, or a roll of one can move the pawn on four.
+  t.mock.method(Math,'random',()=>.99);
+  doc.getElementById('settings').click();dialogButton('게임 시작').click();dialogButton('계속하기').click();
+  for(const n of [4,0,1]){setFaces(n);first().click();}
+  chip(0).click();first().click();
+  marks.clear();tick();
+  const shared=marks.get('모·도');assert.ok(shared);
+  doc.getElementById('board').dispatchEvent(new w.MouseEvent('click',{clientX:shared[0],clientY:shared[1],bubbles:true}));
+  assert.deepEqual(tileMenu().map(b=>b.textContent).sort(),['1번 말 · 도 1칸','새 말 · 모 5칸'].sort());
+  tileMenu().find(b=>b.textContent.startsWith('새 말')).click();
+  assert.equal(reserve.querySelectorAll('button').length,2);
+  assert.equal(text('move-result'),'도 · 1칸');
   // Restart, bank enough yuts to finish, and watch the final move land.
   t.mock.method(Math,'random',()=>.99);
   doc.getElementById('settings').click();dialogButton('게임 시작').click();dialogButton('계속하기').click();
@@ -253,7 +283,7 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   for(let i=1;i<=4;i++)assert.ok(scores[0].textContent.includes(i+'번 말 · 돼지'));
   assert.match(scores[1].textContent,/컴퓨터.*골인 0\/3/);
   assert.equal(text('reserve-team'),'산호 · 돼지');
-  assert.deepEqual([...reserve.querySelectorAll('button')].map(el=>el.textContent),['1번','2번','3번','4번']);
+  assert.deepEqual([...reserve.querySelectorAll('button')].map(el=>[el.textContent,el.childElementCount,el.firstElementChild.tagName]),Array(4).fill(['',1,'CANVAS']));
   for(const b of reserve.querySelectorAll('button'))assert.match(b.getAttribute('aria-label'),/돼지/);
   doc.getElementById('close').click();
   setFaces(1);first().click();reserve.querySelector('[data-pawn="3"]').click();first().click();
