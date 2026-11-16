@@ -1,8 +1,8 @@
-import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed} from './rules.mjs?v=9';
-import {createBoard} from './board.mjs?v=17';
+import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed} from './rules.mjs?v=10';
+import {createBoard} from './board.mjs?v=18';
 import {createToss,drawRack} from './toss.mjs?v=7';
-import {openRoom,roomCode} from './room.mjs?v=9';
-import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=4';
+import {openRoom,roomCode} from './room.mjs?v=10';
+import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=5';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
 const dialog=$('sheet'), body=$('dialog-body'), reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -96,11 +96,24 @@ function chooseTile(tile){
   if(picks.length)place(picks[0]);
 }
 function result(s){return s.sticks?YUT[s.steps]+' · '+s.steps+'칸':'';}
+function moveNotice(s){
+  const move=s.lastMove;
+  if(!move||s.phase!=='roll')return '';
+  const parts=[];
+  if(move.event==='carry'){
+    if(move.pickedUp!=null)parts.push('말 업기 ×2');
+  }else if(move.event)parts.push(EVENT_NAMES[move.event]);
+  const pawns=s.pawns[move.team],at=position(pawns[move.indices[0]]);
+  if(at===FINISH)parts.push('골인');
+  else if(at!==HOME&&move.pickedUp==null&&pawns.filter(p=>position(p)===at).length>move.indices.length)parts.push('말 업기');
+  if(move.captured)parts.push('잡기');
+  if(s.team===move.team)parts.push('한 번 더');
+  return parts.join(' · ');
+}
 function reveal(s){
   rackFaces=s.sticks??null;
   rackSeed=lastThrowSeed(s);
   $('outcome').textContent=result(s);
-  $('rack-title').textContent=rackFaces?'던진 윷':'던질 윷';
   rack.setAttribute('aria-label',rackFaces?'던진 윷 네 가락 · '+result(s):'던질 윷 네 가락');
   paintRack();
 }
@@ -131,7 +144,7 @@ async function showState(s,animate=true){
     const movingAt=node=>[...base,...(node===HOME||node===FINISH?[]:indices.map(index=>({team,index,node})))];
     const pauseAt=node=>{
       if(s.lastMove.event&&node===s.lastMove.landing){
-        $('note').textContent=s.note;
+        $('note').textContent=net?.status||EVENT_NAMES[s.lastMove.event]||'';
         return 670;
       }
       return 235;
@@ -180,22 +193,20 @@ function destinationLabel(s,m,choices){
 function renderReserve(s,team,options,lobby){
   $('reserve').hidden=!!lobby;
   if(lobby)return;
-  $('reserve').classList.toggle('two-row-tray',s.pawns.some(pawns=>pawns.length>2));
   const indices=s.pawns[team].flatMap((trail,index)=>position(trail)===HOME?[index]:[]);
-  $('reserve-team').textContent=TEAMS[team].name+' 팀';
+  const animal=ANIMALS[animalFor(team,0,s.zodiacOffset,s.teamAnimals)];
+  $('reserve-team').textContent=TEAMS[team].name+' · '+animal;
   const key=[team,animalFor(team,0,s.zodiacOffset,s.teamAnimals),...indices].join('/');
   if(key!==trayKey){
     cancelTrayDrag();trayKey=key;tray.replaceChildren();
     for(const index of indices){
-      const animal=ANIMALS[animalFor(team,index,s.zodiacOffset,s.teamAnimals)];
       const item=element('button',undefined,'pawn-choice');
       item.type='button';item.dataset.pawn=String(index);
       item.setAttribute('aria-label',TEAMS[team].name+' 팀 '+pieceName(s,team,index)+' · 대기');
-      const copy=element('span',undefined,'pawn-copy');
-      copy.append(element('b',animal),element('small',(index+1)+'번 말'));
+      const copy=element('span',(index+1)+'번','pawn-copy');
       item.append(animalIcon(team,index,s.zodiacOffset,s.teamAnimals),copy);tray.append(item);
     }
-    if(!indices.length)tray.append(element('span','대기 중인 말이 없어요.','reserve-empty'));
+    if(!indices.length)tray.append(element('span','대기 말 없음','reserve-empty'));
   }
   for(const item of tray.querySelectorAll('button')){
     const index=Number(item.dataset.pawn);
@@ -253,12 +264,13 @@ function moveControls(s,options){
   const restorePicker=picker.contains(document.activeElement);
   picker.replaceChildren();
   for(const index of indices){
-    const selected=index===selectedPawn,animal=ANIMALS[animalFor(s.team,index,s.zodiacOffset,s.teamAnimals)];
+    const selected=index===selectedPawn;
     const group=team.filter(trail=>position(trail)===position(team[index])).length;
     const item=button('','pawn-choice',()=>choosePawn(index));
     item.dataset.pawn=String(index);item.setAttribute('aria-pressed',String(selected));
     const copy=element('span',undefined,'pawn-copy');
-    copy.append(element('b',group>1?'업은 말 '+group+'개':animal),element('small',group>1?nodeName(position(team[index])):(index+1)+'번 · '+nodeName(position(team[index]))));
+    copy.append(element('b',group>1?'업기 ×'+group:(index+1)+'번'),element('small',nodeName(position(team[index]))));
+    item.setAttribute('aria-label',pieceName(s,s.team,index)+' · '+nodeName(position(team[index]))+(group>1?' · 업은 말 '+group+'개':''));
     item.append(animalIcon(s.team,index,s.zodiacOffset,s.teamAnimals),copy);
     picker.append(item);
   }
@@ -275,11 +287,9 @@ function moveControls(s,options){
 function renderHUD(){
   const s=game,lobby=net&&!net.game,other=net&&net.seat!==s.team;
   const team=turnTeam(s),bot=s.computerTeams?.includes(s.team);
-  $('event-key').hidden=!!lobby||!s.eventTiles;
-  const mode=s.mode==='easy'?'쉬운 놀이':'장애물 놀이';
   $('team-title').replaceChildren(...(lobby?[document.createTextNode('온라인 대기실')]:
     [dot(team),document.createTextNode(TEAMS[team].name+' 팀'+(s.phase==='won'?' 승리!':busy&&!casting?' 이동 중':' 차례'))]));
-  $('goals').textContent=lobby?'':mode+' · 골인 '+s.pawns[team].filter(p=>position(p)===FINISH).length+'/'+s.pawns[team].length;
+  $('goals').textContent=lobby?'':'골인 '+s.pawns[team].filter(p=>position(p)===FINISH).length+'/'+s.pawns[team].length;
   const actions=$('actions');
   resumeActionFocus=actions.contains(document.activeElement)||(resumeActionFocus&&document.activeElement===document.body&&!dialog.open);
   actions.replaceChildren();
@@ -295,9 +305,9 @@ function renderHUD(){
   $('move-tools').hidden=!moving;$('stick-rack').hidden=moving;
   if(rackWasHidden&&!moving)paintRack();
   $('station').dataset.phase=moving?'move':'roll';
-  $('note').textContent=net?.status||(lobby?'친구를 초대한 뒤 시작하세요.':casting?'윷을 던지는 중이에요.':
-    busy?'말이 움직이고 있어요.':moving?'금빛 칸을 누르세요.':
-    s.phase==='won'?s.note:bot?'컴퓨터가 두고 있어요.':other?'상대 팀이 두고 있어요.':s.revision===0?'윷 던지기를 누르세요.':s.note);
+  $('note').textContent=net?.status||(!lobby&&!busy?moveNotice(s):'');
+  if(moving)$('board').setAttribute('aria-description','말을 고른 뒤 금빛 칸을 누르세요.');
+  else $('board').removeAttribute('aria-description');
   if(moving){
     $('move-result').textContent=result(s);
     moveControls(s,options);
@@ -323,7 +333,6 @@ const eventDescriptions={
   back:['−1','방금 지나온 길로 한 칸 물러나요.'],
   carry:['×2','혼자 도착하면 대기 말 하나를 업어요. 이후 두 말이 함께 움직여요.'],
   home:['⌂','도착한 말과 함께 업힌 말이 모두 대기석으로 돌아가요.'],
-  stone:['▲','바위턱에 걸려 한 칸 뒤로 가요.'],
   whirl:['◎','소용돌이에 밀려 두 칸 뒤로 가요.'],
   breeze:['»','순풍을 타고 두 칸 더 가요.']
 };
@@ -363,7 +372,7 @@ function rules(){
     element('p','같은 팀 말은 업어서 함께 가요. 윷·모가 나오거나 상대 말을 잡으면 한 번 더 던져요.'));
   if(game.mode!=='easy'){
     const effects=element('div',undefined,'effects');
-    for(const [symbol,name,effect,tint] of [['▲','바위턱','한 칸 뒤로','#efb59e'],['◎','소용돌이','두 칸 뒤로','#b6c9f0'],['»','순풍','두 칸 앞으로','#a2e6d0']]){
+    for(const [symbol,name,effect,tint] of [['◎','소용돌이','두 칸 뒤로','#b6c9f0'],['»','순풍','두 칸 앞으로','#a2e6d0']]){
       const row=element('div',undefined,'effect-row'),icon=element('span',symbol,'effect-icon');
       icon.style.setProperty('--tint',tint);icon.setAttribute('aria-hidden','true');
       row.append(icon,element('b',name),element('span',effect));effects.append(row);
@@ -399,8 +408,9 @@ function settings(initial=false){
   openPanel(initial?'윷놀이 시작':'게임 메뉴','settings');
   if(!initial){
     const menu=element('div',undefined,'menu-grid');
-    menu.append(button('놀이 방법','secondary',rules),button('말 현황','secondary',standings),
-      button('윷판 돌리기','secondary',()=>{board.rotate(1);closePanel();}));body.append(menu);
+    menu.append(button('놀이 방법','secondary',rules),button('말 현황','secondary',standings));
+    if((!net||net.game)&&game.eventTiles)menu.append(button('특수 칸','secondary',showEventGuide));
+    menu.append(button('윷판 돌리기','secondary',()=>{board.rotate(1);closePanel();}));body.append(menu);
   }
   if(net){
     body.append(button('온라인 대기실','secondary',lobbyPanel),
@@ -431,7 +441,7 @@ function settings(initial=false){
     }
   }
   teams.onchange=drawTeams;drawTeams();
-  const actions=element('div',undefined,'form-actions'),hint=element('p',undefined,'setup-hint');
+  const actions=element('div',undefined,'form-actions');
   const start=button('','primary',()=>{
     const count=Number(teams.value);
     const setup={count,counts:counts.slice(0,count),animals:animals.slice(0,count),offset:animals[0],mode:mode.select.value};
@@ -442,7 +452,6 @@ function settings(initial=false){
   const join=button('방 코드로 참가','secondary',joinPanel);
   function refresh(){
     for(const item of kinds.children)item.setAttribute('aria-pressed',String(item.dataset.kind===kind));
-    hint.textContent=kind==='computer'?'내가 산호 팀이에요. 나머지 팀은 컴퓨터가 맡아요.':kind==='together'?'한 기기에서 차례대로 플레이해요.':'친구마다 자기 기기에서 한 팀을 맡아요.';
     start.textContent=kind==='online'?'초대방 만들기':'게임 시작';join.hidden=kind!=='online';
   }
   for(const [value,title] of [['computer','컴퓨터 대결'],['together','한 기기'],['online','온라인 멀티']]){
@@ -450,7 +459,7 @@ function settings(initial=false){
   }
   const options=element('details',undefined,'game-details');
   options.append(element('summary','팀별 동물·말 수'),roster);
-  actions.append(start,join);refresh();body.append(kinds,hint,settingsRow,options,actions);
+  actions.append(start,join);refresh();body.append(kinds,settingsRow,options,actions);
 }
 function joinPanel(){
   openPanel('친구 방 참가','join');
@@ -552,7 +561,7 @@ async function leaveRoom(){
   ++attempt;pendingRoom=false;const old=room;room=null;net=null;roomGame=false;lastLobby='';setRoomAddress(null);closePanel();void showState(local,false);renderHUD();
   if(old)await old.close().catch(()=>{});
 }
-$('event-key').onclick=showEventGuide;$('settings').onclick=()=>settings();$('team-title').onclick=standings;$('close').onclick=closePanel;
+$('settings').onclick=()=>settings();$('team-title').onclick=standings;$('close').onclick=closePanel;
 dialog.addEventListener('close',()=>{if(!dialog.open){panel='';renderHUD();}});
 dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closePanel();}});
 reduced.addEventListener?.('change',()=>{if(reduced.matches&&casting)toss.cancel();});

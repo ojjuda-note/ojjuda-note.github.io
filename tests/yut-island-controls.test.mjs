@@ -72,12 +72,12 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
     const el=doc.getElementById(id);el.value=String(value);el.dispatchEvent(new w.Event('change'));
   };
   assert.equal(doc.querySelector('dialog').open,false);
-  assert.match(text('goals'),/장애물 놀이.*0\/4/);
+  assert.equal(text('goals'),'골인 0/4');
   assert.equal(reserve.querySelectorAll('button').length,4);
   assert.equal(first().textContent,'윷 던지기');
-  doc.getElementById('event-key').click();
+  doc.getElementById('settings').click();dialogButton('특수 칸').click();
   const places=[...doc.querySelectorAll('.event-card small')].map(el=>el.textContent);
-  assert.equal(places.length,6);assert.equal(new Set(places).size,6);
+  assert.equal(places.length,5);assert.equal(new Set(places).size,5);
   assert.ok(places.every(place=>place&&!place.includes(' · ')));
   doc.getElementById('close').click();
   prefs.matches=true;setFaces(1);first().click();tick();
@@ -87,7 +87,7 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   doc.getElementById('settings').click();dialogButton('놀이 방법').click();
   assert.equal(doc.querySelectorAll('#dialog-body ol li').length,2);
   assert.equal(doc.querySelector('#dialog-body details').open,false);
-  assert.equal(doc.querySelectorAll('.effect-row').length,3);
+  assert.equal(doc.querySelectorAll('.effect-row').length,2);
   doc.getElementById('close').click();doc.getElementById('settings').click();
   const options=doc.querySelector('#dialog-body details');assert.equal(options.open,false);
   const participantCount=doc.getElementById('team-count');
@@ -105,15 +105,15 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   selectValue('team-count',2);selectValue('team-pieces-0',2);selectValue('team-pieces-1',2);selectValue('game-mode','easy');
   prefs.matches=false;t.mock.method(Math,'random',()=>.99);
   dialogButton('한 기기').click();dialogButton('게임 시작').click();dialogButton('계속하기').click();
-  assert.equal(doc.getElementById('event-key').hidden,false);doc.getElementById('event-key').click();
+  assert.equal(doc.getElementById('event-key'),null);doc.getElementById('settings').click();dialogButton('특수 칸').click();
   assert.equal(text('dialog-title'),'이번 판 특수 칸');assert.equal(doc.querySelectorAll('.event-card').length,3);
   assert.match(text('dialog-body'),/대기 말 하나를 업어요/);doc.getElementById('close').click();
   assert.equal(first().textContent,'윷 던지기');
   const rack=doc.getElementById('rack-canvas');
-  assert.equal(text('rack-title'),'던질 윷');
+  assert.equal(rack.getAttribute('aria-label'),'던질 윷 네 가락');assert.equal(text('note'),'');
   assert.equal(rack.width,390);
   assert.equal(rack.height,500);
-  assert.match(text('goals'),/쉬운 놀이/);
+  assert.equal(text('goals'),'골인 0/2');
   assert.equal(doc.querySelector('.scene').nextElementSibling.id,'reserve');
   assert.equal(reserve.querySelectorAll('button:disabled').length,2);
   assert.match(text('reserve-team'),/산호/);
@@ -124,7 +124,7 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   await new Promise(r=>setTimeout(r,350));
   assert.match(text('team-title'),/산호/);
   assert.equal(doc.activeElement,first());
-  assert.match(text('note'),/금빛 칸/);
+  assert.equal(text('note'),'');assert.match(doc.getElementById('board').getAttribute('aria-description'),/금빛 칸/);
   assert.equal(selected(),'0');
   assert.equal(text('outcome'),'도 · 1칸'); assert.ok(doc.getElementById('toss-layer').hidden);
   assert.equal(rack.getAttribute('aria-label'),'던진 윷 네 가락 · 도 · 1칸');
@@ -182,12 +182,14 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   selectValue('team-animal-0',11);selectValue('team-animal-1',6);selectValue('game-mode','island');
   dialogButton('게임 시작').click();dialogButton('계속하기').click();
   doc.getElementById('team-title').click();
-  assert.match(text('goals'),/장애물 놀이.*0\/4/);
+  assert.equal(text('goals'),'골인 0/4');
   const scores=doc.querySelectorAll('.score-card');
   assert.equal(scores.length,3);
   for(let i=1;i<=4;i++)assert.ok(scores[0].textContent.includes(i+'번 말 · 돼지'));
   assert.match(scores[1].textContent,/컴퓨터.*골인 0\/3/);
-  assert.deepEqual([...reserve.querySelectorAll('b')].map(el=>el.textContent),Array(4).fill('돼지'));
+  assert.equal(text('reserve-team'),'산호 · 돼지');
+  assert.deepEqual([...reserve.querySelectorAll('button')].map(el=>el.textContent),['1번','2번','3번','4번']);
+  for(const b of reserve.querySelectorAll('button'))assert.match(b.getAttribute('aria-label'),/돼지/);
   doc.getElementById('close').click();
   setFaces(1);first().click();reserve.querySelector('[data-pawn="3"]').click();first().click();
   assert.match(text('team-title'),/바다/);assert.equal(first().textContent,'컴퓨터 차례');assert.equal(first().disabled,true);
@@ -244,7 +246,7 @@ test('board dragging uses the chosen pawn and its legal squares, including after
     assert.equal(selected,0);
     assert.deepEqual(drops.slice(before),[[0,2]]);
   }
-  board.setState({activeTeam:0,pieces:[{team:0,index:0,node:1},{team:1,index:0,node:2},{team:1,index:1,node:2}],
+  board.setState({activeTeam:0,eventTiles:{},islandTiles:{},pieces:[{team:0,index:0,node:1},{team:1,index:0,node:2},{team:1,index:1,node:2}],
     waiting:[{team:0,index:1}],snap:true});
   board.setMoves([options[0]],null);tags.clear();draw();
   assert.deepEqual([...tags.keys()].sort(),['산호 1','바다 1·2'].sort());

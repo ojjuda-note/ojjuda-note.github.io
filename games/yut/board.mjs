@@ -1,5 +1,5 @@
-import { animalFor,drawZodiac } from './zodiac.mjs?v=4';
-import { TEAMS,tileEffect } from './rules.mjs?v=9';
+import { animalFor,drawZodiac } from './zodiac.mjs?v=5';
+import { TEAMS,tileEffect } from './rules.mjs?v=10';
 
 // A square lacquer board viewed by a level, front-facing orthographic camera.
 const TAU = Math.PI * 2;
@@ -9,7 +9,7 @@ const stackSeats=[
   [[0,-.36],[-.37,.22],[.37,.22]],
   [[-.34,-.33],[.34,-.33],[-.38,.27],[.38,.27]]
 ];
-const pawnSizes=[0,1.38,1.06,.89,.85];
+const pawnSizes=[0,1.12,.96,.81,.77];
 const validPawnIndex=index=>Number.isInteger(index)&&index>=0&&index<4;
 const PEARL=['#fff1cd','#f1f3e4','#c5e8e1','#d0d3eb','#ead0df','#f7ddc7'];
 const GOLD='#ffe3a2';
@@ -60,6 +60,8 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   if(!ctx)return {setState(){},setMoves(){},setTargets(){},beginReserveDrag(){return false;},updateReserveDrag(){},endReserveDrag(){return false;},cancelReserveDrag(){},rotate(){},destroy(){}};
   let width=0,height=0,scale=1,ox=0,oy=0;
   let angle=0,cos=1,sin=0,tilt=.8,lift=.6,framedAngle=null;
+  const boardDepth=1.42;
+  let objectDepth=null;
   let turnFrom=angle,turnTo=angle,turnStart=0,moves=[],pieces=[],reserves=[],activeTeam=null;
   const emphasisMs=640,turnGrowth=.14,stepLift=.53;
   let emphasisFrom=TEAMS.map(()=>0),emphasisStart=null;
@@ -84,7 +86,9 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   const beamMs=1150;
   const horizontal=(x,z)=>x*cos+z*sin;
   function project([x,y,z]) {
-    return [ox+horizontal(x,z)*scale,oy+(dep(x,z)*tilt-y*lift)*scale];
+    const d=dep(x,z);
+    // Spread the stations along the table while keeping each solid's proportions.
+    return [ox+horizontal(x,z)*scale,oy+((d+(objectDepth??d)*(boardDepth-1))*tilt-y*lift)*scale];
   }
   function flat(points, color, stroke, lineWidth=1) {
     if(!points.length)return;
@@ -296,7 +300,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     const rad=hero?.735:i>=20?.42:.505,y=nodeHeight(i);
     const [sx,sy]=project([x,y,z]),r=rad*scale;
     const stamp=Object.hasOwn(eventStamps,type)?eventStamps[type]:null;
-    const tones=stamp?stamp.tones:hero?['#fff5d8','#d9b879','#f5e0ac']:type==='stone'?['#ffd6b7','#c58271','#f2b6a0']:
+    const tones=stamp?stamp.tones:hero?['#fff5d8','#d9b879','#f5e0ac']:
       type==='breeze'?['#e4f5d7','#8abca2','#c5e6c3']:type==='whirl'?['#ece4fa','#ac98c1','#ecd1e5']:
       i>=20?['#f0f7e9','#c5d4ca','#e6ecd9']:['#fff8e1','#d1d8c5','#f6efdb'];
     castShadow(x,z,surface+.004,rad*1.27,rad*1.19,y-surface,.59);
@@ -324,15 +328,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     if(stamp){eventStamp(stamp,sx,sy,r);return;}
     outline(ring(x,z,rad*.75,rad*.75,28),hero?'#a3824c':'#8b9c8c',.016,y+.010);
     if(type==='path'||type==='normal'){disc(rad*.105,type==='path'?'#577b79':'#8c8d71');disc(rad*.047,tones[0]);return;}
-    if(type==='stone'){
-      const rocks=[[-.12,.020,.245,.44],[.16,.045,.188,.285]];
-      castShadow(x,z,y+.008,.32,.22,.42,.58);
-      for(const [dx,dz,rise,peak] of rocks){
-        const foot=ring(x+dx,z+dz,rise,rise*.75,5,.18), tip=[x+dx-.045,y+peak,z+dz];
-        const faces=foot.map((p,k)=>[p,foot[(k+1)%foot.length],k]).sort(([a,b],[c,d])=>dep(a[0]+b[0],a[1]+b[1])-dep(c[0]+d[0],c[1]+d[1]));
-        for(const [a,b,k] of faces)face([[a[0],y+.01,a[1]],[b[0],y+.01,b[1]],tip],['#794d54','#a46260','#b4796c','#d99b81','#eeaf8b'][k]);
-      }
-    }else if(type==='whirl'){
+    if(type==='whirl'){
       const pool=ring(x,z,rad*.46,rad*.46,28);
       walls(ring(x,z,rad*.33,rad*.33,28),y+.012,pool,y+.092,'#807292');
       feature(x,z,y+.020,rad*.34,rad*.34,'#5c567d');
@@ -437,16 +433,17 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     trail();
     const display=objects.map(o=>({order:dep(o.x,o.z),draw:o.draw}));
     display.sort((a,b)=>a.order-b.order);
-    for(const v of display)v.draw();
+    for(const v of display){objectDepth=v.order;v.draw();}
+    objectDepth=null;
   }
   function turnHalo(cx,cy,rx,ry,light){
     ctx.save();ctx.translate(cx,cy);ctx.scale(rx,ry);
     ctx.globalAlpha*=light;
-    const glow=ctx.createRadialGradient(0,0,.96,0,0,1.55);
+    const glow=ctx.createRadialGradient(0,0,.96,0,0,1.34);
     glow.addColorStop(0,'rgba(45,188,187,.88)');
     glow.addColorStop(.38,'rgba(141,255,248,.80)');
     glow.addColorStop(1,'rgba(162,255,246,0)');
-    ctx.fillStyle=glow;ctx.fillRect(-1.55,-1.55,3.1,3.1);
+    ctx.fillStyle=glow;ctx.fillRect(-1.34,-1.34,2.68,2.68);
     ctx.beginPath();ctx.arc(0,0,1.16,0,TAU);
     ctx.lineWidth=.065;ctx.strokeStyle='#edfffa';ctx.stroke();
     ctx.restore();
@@ -455,7 +452,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     const first=group[0],team=first.p.team,stack=group.length>1;
     const x=stack?first.centerX:first.x,z=stack?first.centerZ:first.z;
     const [cx,cy]=project([x,first.ground+.013,z]);
-    const rx=scale*(stack?.89*(1+turnGrowth*first.light):.49*first.size);
+    const rx=scale*(stack?.78*(1+turnGrowth*first.light):.49*first.size);
     const ry=scale*tilt*(group.length>=3?.72*(1+turnGrowth*first.light):.49*first.size);
     const chosen=team===activeTeam&&selected!==null&&group.some(a=>a.p.index===selected);
     ctx.save();
@@ -627,9 +624,9 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     // even on an empty board. Only the viewport and deliberate rotation affect the camera.
     const size=pawnSizes[1]*(1+turnGrowth),farCorner=c*rotationSpan;
     const head=nodeHeight(0)+.004+1.15*size;
-    const top=(t,l)=>-Math.max(span*.5*t+surface*l,(farCorner+.40*size)*t+(head+stepLift*t)*l);
-    const bottom=(t,l)=>(span*.5+.08)*t+.83*l;
-    let low=.32,high=.90;
+    const top=(t,l)=>-Math.max(span*.5*boardDepth*t+surface*l,(farCorner*boardDepth+.40*size)*t+(head+stepLift*t)*l);
+    const bottom=(t,l)=>(span*.5+.08)*boardDepth*t+.83*l;
+    let low=.72,high=.85;
     for(let i=0;i<10;i++){
       const mid=(low+high)/2,l=Math.sqrt(1-mid*mid);
       if(bottom(mid,l)-top(mid,l)<=availableHeight)low=mid;
@@ -757,9 +754,9 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     return nearest;
   }
   function drawLifted(){
-    const g=gesture,base=surface+.01,u=(g.x-ox)/scale+g.gripX,d=((g.y-oy)/scale+g.gripY+base*lift)/tilt;
+    const g=gesture,base=surface+.01,u=(g.x-ox)/scale+g.gripX,d=((g.y-oy)/scale+g.gripY+base*lift)/(tilt*boardDepth);
     const x=u*cos-d*sin,z=u*sin+d*cos;
-    const carried=g.external?[{p:g.p,from:-1,size:1.38*(1+turnGrowth),light:1}]:drawnPawns.filter(isLifted);
+    const carried=g.external?[{p:g.p,from:-1,size:pawnSizes[1]*(1+turnGrowth),light:1}]:drawnPawns.filter(isLifted);
     if(carried.length)drawPawnGroup(carried.map((actor,i)=>{
       const [side,depth]=stackSeats[carried.length][i];
       return {...actor,centerX:x,centerZ:z,x:x+side*cos-depth*sin,z:z+side*sin+depth*cos,ground:base,y:base+.30};
