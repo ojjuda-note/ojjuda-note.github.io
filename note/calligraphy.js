@@ -247,6 +247,38 @@
     }
     const terminalL = curve('19,49,.12 22,57,.76 16,72,.90 13,84,.78 19,92,.71 38,91,.72 60,81,.62 86,72,.44 111,70,.23 126,73,.015');
     const terminalN = curve('18,2,.12 24,12,.81 22,30,1.03 14,55,.94 10,78,.83 14,89,.73 29,93,.68 49,87,.54 75,72,.38 98,62,.25 117,60,.025');
+    // Two letters share one 받침 row. Give each its own compact pen forms:
+    // the open spaces in ㄹ, ㅁ, ㅂ and ㅎ must survive at card thumbnail sizes.
+    const codaFoot = curve('7,85,.40 20,87,.87 44,84,.88 72,79,.63 95,76,.16');
+    const codaBar = curve('8,23,.27 24,21,.84 50,16,.86 76,13,.66 96,13,.12');
+    const codaMiddle = curve('17,50,.28 35,49,.72 62,44,.75 84,43,.21');
+    const codaLeft = curve('18,9,.38 23,17,.97 22,34,1.02 17,58,.94 12,84,.65');
+    const codaRight = curve('81,5,.33 87,12,.93 85,31,.98 79,57,.94 71,85,.51');
+    const codaAngle = curve('5,22,.32 23,18,.92 53,12,.97 78,10,.87 86,14,.84 85,30,.88 76,61,.80 65,88,.29');
+    const codaCorner = curve('18,7,.30 23,15,1 21,36,1.08 13,71,1 14,83,.94 23,87,.84 44,84,.87 71,76,.62 97,67,.16');
+    const codaFork = [
+      curve('62,6,.33 64,15,.96 55,35,1.06 39,56,.97 18,77,.71 0,89,.12'),
+      curve('46,44,.26 54,51,.61 69,65,.94 84,73,.84 101,75,.13')
+    ];
+    const codaProfiles = {
+      ㄱ: [codaAngle],
+      ㄴ: [codaCorner],
+      ㄹ: [
+        curve('5,21,.28 20,18,.84 50,13,.93 74,12,.84 81,15,.79 80,28,.86 74,44,.83 62,48,.72 38,50,.73 18,54,.25'),
+        curve('22,51,.43 24,58,.91 19,73,.97 17,84,.94 23,89,.86 45,86,.88 72,80,.65 97,74,.13')
+      ],
+      ㅁ: [codaLeft, codaAngle, codaFoot],
+      ㅂ: [codaLeft, codaRight, codaMiddle, codaFoot],
+      ㅅ: codaFork,
+      ㅈ: [codaBar, ...codaFork.map(stroke => map(stroke, 0, 13, 98, 87))],
+      ㅌ: [codaBar, codaMiddle, codaCorner],
+      ㅍ: [codaBar, map(codaLeft, 14, 12, 65, 78), map(codaRight, -2, 10, 88, 81), codaFoot],
+      ㅎ: [
+        curve('38,-2,.26 46,0,.72 55,5,.96 65,11,.38'),
+        curve('6,32,.21 24,29,.79 48,23,.89 75,22,.69 97,24,.10'),
+        curve('61,40,.41 46,39,.78 30,48,.92 21,66,1 22,82,.94 31,90,.76 48,89,.74 64,79,.86 74,62,.89 74,49,.77 66,42,.60 55,43,.18')
+      ]
+    };
     function shape(ch, options = {}) {
       const data = decompose(ch);
       if (!data) return null;
@@ -284,19 +316,19 @@
       }
       // Horizontal and compound syllables make room at the bottom for the coda.
       if (m) {
-        const top = f ? 34 : 50;
+        const top = complexFinal ? 31 : f ? 34 : 50;
         const upperW = complexOnset ? 53 : 'ㅇㅎ'.includes(c) ? 38 : 49;
         draw(c, 8 + (53 - upperW) * .55, 5, upperW, top, 1.01, 'top');
-        const lower = f ? 29 : 40;
+        const lower = complexFinal ? 24 : f ? 29 : 40;
         draw(m[0], 2, top + 2, 60, lower, .89);
-        draw(m[1], 59, -1, advance - 64, f ? 61 : 85, .96, 'mixed');
+        draw(m[1], 59, -1, advance - 64, complexFinal ? 53 : f ? 61 : 85, .96, 'mixed');
       } else if (horizontal) {
         const top = f ? v === 'ㅡ' ? 41 : 36 : v === 'ㅡ' ? 66 : v === 'ㅗ' || v === 'ㅛ' ? 51 : 43;
         const upperW = (c === 'ㅇ' ? 40 : c === 'ㅎ' ? 51 : complexOnset ? 72 : 62) * (v === 'ㅡ' ? 1.03 : 1);
         const topX = (advance - upperW) / 2 + (c === 'ㅇ' ? 3 : 0);
         draw(c, topX, f ? 1 : 4, upperW, top, 1.05, 'top');
         const y = top + (v === 'ㅡ' ? 0 : 3);
-        draw(v, 1, y, advance - (wordEnd && v === 'ㅡ' ? -2 : 6), f ? 65 - y : 99 - y, 1.00);
+        draw(v, 1, y, advance - (wordEnd && v === 'ㅡ' ? -2 : 6), (complexFinal ? 56 : f ? 65 : 99) - y, 1.00);
       } else {
         const compact = c === 'ㅇ',
           wide = complexOnset,
@@ -306,13 +338,25 @@
         const cY = compact ? f ? 19 : 30 : start;
         draw(c, 1, cY, cWidth, cHeight, compact ? 1.00 : 1.07);
         const vx = cWidth + (compact ? 0 : -1);
-        draw(v, vx, f ? 0 : -1, advance - vx - 5, f ? 60 : 88, 1.03);
+        draw(v, vx, f ? 0 : -1, advance - vx - 5, complexFinal ? 53 : f ? 60 : 88, 1.03);
       }
-      if (f) {
-        const y = complexFinal ? 69 : f === 'ㅇ' ? 62 : f === 'ㄴ' && stacked ? 63 : 66;
-        const w = complexFinal ? advance * .90 : f === 'ㅇ' ? 38 : f === 'ㅎ' ? 52 : f === 'ㅅ' ? 56 : f === 'ㅁ' ? 55 : advance * .72;
+      if (complexFinal) {
+        const [left, right] = pairs[f];
+        const start = advance * .035, span = advance * .93;
+        const split = left === 'ㄹ' ? .50 : left === 'ㄴ' ? .43 : .475;
+        const gap = span * .065, space = span - gap;
+        const top = stacked ? 61 : 60, height = 100 - top;
+        function codaPart(key, x, width) {
+          const weight = Math.min(11.7, width * .31) * ('ㄹㅁㅂㅌㅍㅎ'.includes(key) ? .87 : 1);
+          for (const path of codaProfiles[key]) strokes.push({ knots: map(path, x, top, width, height), width: weight });
+        }
+        codaPart(left, start, space * split);
+        codaPart(right, start + space * split + gap, space * (1 - split));
+      } else if (f) {
+        const y = f === 'ㅇ' ? 62 : f === 'ㄴ' && stacked ? 63 : 66;
+        const w = f === 'ㅇ' ? 38 : f === 'ㅎ' ? 52 : f === 'ㅅ' ? 56 : f === 'ㅁ' ? 55 : advance * .72;
         const x = f === 'ㅇ' ? advance * .38 : f === 'ㄴ' ? advance * .10 : (advance - w) * .47;
-        draw(f, x, y, w, 99 - y, complexFinal ? .94 : 1.04, 'final');
+        draw(f, x, y, w, 99 - y, 1.04, 'final');
       }
       return {
         strokes,
