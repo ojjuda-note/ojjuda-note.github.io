@@ -507,12 +507,19 @@ function renderBodies(ctx,parts,cam){
 }
 
 function shufflePose(ms){
-  const t=ms/1000,wrist=t*6.2,turn=t*3.45+.16*Math.sin(wrist);
+  const t=ms/1000;
   return Array.from({length:4},(_,index)=>{
-    const a=turn+index*Math.PI/2;
-    return {index,x:13*Math.sin(wrist)+17*Math.sin(a+.55),depth:38+29*Math.cos(a),
-      height:35+21*Math.sin(a)+5*Math.cos(wrist),yaw:-.34+.19*Math.sin(wrist)+.16*Math.cos(a),
-      pitch:.13+.11*Math.sin(a),roll:a*1.7+index*.9+.38*Math.sin(wrist+.4*index)};
+    const phase=index*TAU/4,clock=t*(1+.085*index),direction=index%2?-1:1;
+    const weave=clock*12.6+phase,swing=clock*10.1+phase*1.8,flick=clock*19.4+phase*1.3;
+    return {
+      index,
+      x:32*Math.sin(weave)+12*Math.sin(flick),
+      depth:35+31*Math.cos(weave)+10*Math.sin(swing),
+      height:43+20*Math.sin(weave+phase*.65)+11*Math.cos(flick),
+      yaw:phase-.4+direction*(1.85*Math.sin(swing)+.82*Math.sin(flick)),
+      pitch:.62*Math.sin(weave+phase)+.29*Math.cos(flick),
+      roll:phase+direction*(clock*31+4.1*Math.sin(swing+phase))
+    };
   });
 }
 
@@ -613,15 +620,15 @@ export function createToss(canvas) {
   function shuffle(still=false){
     cancel();if(!ctx)return;
     resize();
-    const run={frame:0},start=performance.now();running=run;observeSize(run);
+    const run={frame:0};running=run;observeSize(run);
     function update(now){
       if(running!==run)return;
-      run.pose=shufflePose(Math.max(0,now-start));
+      run.pose=shufflePose(still?0:now);
       const w=canvas.width,h=canvas.height;
       paintBundle(ctx,w,h,run.pose,throwCamera(w,h));
       if(!still)run.frame=requestAnimationFrame(update);
     }
-    update(start);
+    update(performance.now());
   }
   function play(faces,seed,onSettle,onThrow,held=null){
     cancel();
