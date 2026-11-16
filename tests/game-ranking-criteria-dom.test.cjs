@@ -17,15 +17,15 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  assert.equal(games.matgo.rankingBasis,'best_round_gain');assert.equal(games.poker.rankingBasis,'best_round_gain');
  const rows={solitaire:{nick:'카드친구',score:299999880},archery:{nick:'궁수친구',score:45,stage:17},sacheonseong:{nick:'사천성친구',score:1999994000,stage:3},mines:{nick:'먼저 달성',score:69940},chacha_rush:{nick:'차차친구',score:42},billiards:{nick:'당구친구',score:3,difficulty:'hard',variant:'pool8'},
   janggi:{nick:'장기친구',score:2,difficulty:'normal'},chess:{nick:'<img onerror=alert(1)>',score:7,difficulty:'online'},
-  bang:{nick:'뱅친구',score:5},tour:{nick:'마블친구',score:4},tank:{nick:'탱크친구',score:2,opponents:11},ttang:{nick:'땅친구',score:3},spot:{nick:'그림친구',score:12},matgo:{nick:'맞고친구',score:900},poker:{nick:'포커친구',score:800},roulette:{nick:'룰렛친구',score:1200},photo_ttang:{nick:'사진친구',score:4}};
+  bang:{nick:'뱅친구',score:5},tour:{nick:'마블친구',score:4},yut:{nick:'윷친구',score:2},tank:{nick:'탱크친구',score:2,opponents:11},ttang:{nick:'땅친구',score:3},spot:{nick:'그림친구',score:12},matgo:{nick:'맞고친구',score:900},poker:{nick:'포커친구',score:800},roulette:{nick:'룰렛친구',score:1200},photo_ttang:{nick:'사진친구',score:4}};
  const host=w.document.querySelector('main');
  const reads=[];
  w.OjjudaGameRankings.mount(host,{owner:'member',client:{rpc:async(name,args)=>{reads.push({name,args});return {data:name==='community_game_monthly_history'?{month:args.p_month?.slice(0,7)||'2026-10',currentMonth:'2026-10',closed:!!args.p_month,months:[{month:'2026-10'},{month:'2026-09'}],leaders:rows}:rows};}},games,onOpenGame(){}});
  await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));
- const categories={solo:['solitaire','archery','sacheonseong','saetbyeol','mines','chacha_rush','screw_box','screw_flat','spot','mole','runner','stacker','breakout'],multi:['bang','tank','tour','billiards','janggi','chess','ttang'],adult:['matgo','poker','roulette','photo_ttang']};
+ const categories={solo:['solitaire','archery','sacheonseong','saetbyeol','mines','chacha_rush','screw_box','screw_flat','spot','mole','runner','stacker','breakout'],multi:['bang','tank','tour','yut','billiards','janggi','chess','ttang'],adult:['matgo','poker','roulette','photo_ttang']};
  const historyPages={
   solo:[['solitaire','archery','sacheonseong'],['saetbyeol','mines','chacha_rush'],['screw_box','screw_flat','spot'],['mole','runner','stacker'],['breakout']],
-  multi:[['bang','tank','tour'],['billiards','janggi','chess'],['ttang']],
+  multi:[['bang','tank','tour'],['yut','billiards','janggi'],['chess','ttang']],
   adult:[['matgo','poker','roulette'],['photo_ttang']]
  };
  const groupIds=key=>[...host.querySelectorAll(`[data-rank-group=${key}] [data-game]`)].map(item=>item.dataset.game);
@@ -88,7 +88,7 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  assert.equal(value('solitaire'),'2분 0초');assert.match(row('solitaire').textContent,/보통/);assert.equal(value('mines'),'1분 0초');assert.match(row('mines').textContent,/고급/);
  assert.equal(value('billiards'),'3연승');assert.match(row('billiards').textContent,/포켓볼 · 어려움/);
  assert.equal(value('janggi'),'2연승');assert.equal(value('chess'),'7연승');assert.match(row('chess').textContent,/회원대결/);
- assert.equal(value('ttang'),'3연승');assert.equal(value('spot'),'12장');assert.match(row('tank').textContent,/11명 상대/);assert.equal(value('tour'),'4연승');assert.equal(value('tank'),'2연승');
+ assert.equal(value('ttang'),'3연승');assert.equal(value('spot'),'12장');assert.match(row('tank').textContent,/11명 상대/);assert.equal(value('tour'),'4연승');assert.equal(value('yut'),'2연승');assert.equal(value('tank'),'2연승');
  assert.equal(value('matgo'),'900G');assert.equal(value('poker'),'800G');assert.equal(value('roulette'),'1,200G');assert.equal(value('photo_ttang'),'4장');
  assert.match(row('poker').querySelector('th').title,/한 판 최대 획득 골드/);
  assert.equal(host.querySelectorAll('img').length,0,'nicknames remain text');
