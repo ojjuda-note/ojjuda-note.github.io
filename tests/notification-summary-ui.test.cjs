@@ -331,3 +331,57 @@ test('the embedded Park skips hidden badge reads and still reconciles its open i
     assert.deepEqual(f.calls.map(c=>c.user), ['member-b','member-b']);
   } finally { f.close(); }
 });
+
+test('polling and returning to an expanded inbox keep older rows and a pending page retry', async () => {
+  const f = fixture();
+  try {
+    await f.boot();
+    let failNext = true;
+    const first = {id:uuid(1),kind:'like',created_at:'2026-11-01T10:00:00Z'};
+    const older = {...first,id:uuid(2),created_at:'2026-10-31T10:00:00Z'};
+    f.respond((name,args) => {
+      if (name === 'app_notification_summary') return {data:{notifications:4,retention:0}};
+      if (name === 'list_retention_alerts') return {data:[]};
+      const more = Boolean(args.p_before_id);
+      if (more && failNext) return {error:{message:'temporary'}};
+      return {data:{items:[more ? older : first],unread_count:3,as_of:first.created_at,
+        has_more:!more,next_cursor:more ? null : first}};
+    });
+    const doc = f.w.document;
+    f.api.open(); await settle();
+    doc.querySelector('#note-notifications-more').click(); await settle();
+    const retry = doc.querySelector('.nn-pagination button');
+    assert.equal(retry.textContent,'다시 시도');
+    f.calls.length = 0; f.advance(15001); await f.poll();
+    assert.equal(doc.querySelector('.nn-pagination button'),retry,'polling preserves the retry cursor');
+    assert.deepEqual(f.calls.map(c=>c.name),['app_notification_summary']);
+    assert.equal(f.badge().text,'4');
+
+    failNext = false;
+    retry.click(); await settle();
+    const oldRow = doc.querySelector('[data-notification-id="'+older.id+'"]');
+    assert.ok(oldRow);
+    f.calls.length = 0; f.advance(15001);
+    f.visibility('hidden'); f.visibility('visible');
+    f.w.dispatchEvent(new f.w.Event('focus')); await settle();
+    assert.deepEqual(f.calls.map(c=>c.name),['app_notification_summary']);
+    assert.equal(doc.querySelector('[data-notification-id="'+older.id+'"]'),oldRow);
+
+    f.calls.length = 0;
+    f.channels[0].onmessage({data:{type:'read',user:'member-a'}}); await settle();
+    assert.deepEqual(f.calls.map(c=>c.name),['list_app_notifications','list_retention_alerts']);
+    assert.equal(oldRow.isConnected,false);
+
+    doc.querySelector('#note-notifications-more').click(); await settle();
+    f.calls.length = 0;
+    [...doc.querySelectorAll('.nn-toolbar button')].find(b=>b.textContent==='새로고침').click();
+    await settle();
+    assert.deepEqual(f.calls.map(c=>c.name),['list_app_notifications','list_retention_alerts']);
+    assert.equal(doc.querySelector('[data-notification-id="'+older.id+'"]'),null);
+
+    doc.querySelector('#note-notifications-more').click(); await settle();
+    f.api.close(); f.api.open(); await settle();
+    f.calls.length = 0; f.advance(15001); await f.poll();
+    assert.deepEqual(f.calls.map(c=>c.name),['list_app_notifications','list_retention_alerts']);
+  } finally { f.close(); }
+});
