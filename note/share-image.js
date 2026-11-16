@@ -2,6 +2,10 @@
 (() => {
   'use strict';
   let rendererPromise = null;
+  const inkFace = '.park-ink-paper,.park-ink-photo';
+  const inkSelector = ':scope > canvas.park-ink-art[data-ink-ready="true"]';
+  const media = 'img,video,iframe,canvas';
+  const controls = '.card-photo-thumb,.card-meta,.card-actions,.card-manage';
   const timeout = (promise, milliseconds = 12000) => new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('card_image_timeout')), milliseconds);
     Promise.resolve(promise).then(value => { clearTimeout(timer); resolve(value); }, error => { clearTimeout(timer); reject(error); });
@@ -28,8 +32,10 @@
     try {
       check();
       // Export the original built-in photo even when the screen uses a smaller rendition.
-      const originalPhoto = photo.querySelector(':scope > img.park-card-background');
-      const originalBackground = originalPhoto ? `url("${originalPhoto.src}")` : getComputedStyle(photo).backgroundImage;
+      const paper = photo.matches('.park-ink-paper');
+      const originalPhoto = !paper && photo.querySelector(':scope > img.park-card-background');
+      const originalBackground = paper ? 'none'
+        : originalPhoto ? `url("${originalPhoto.src}")` : getComputedStyle(photo).backgroundImage;
       const images = [...originalBackground.matchAll(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))\s*\)/g)];
       // Only the public built-in background belongs in the exported card.
       // Decode it first: html2canvas otherwise skips failed images silently.
@@ -50,7 +56,9 @@
       const [capture, replacements] = await timeout(Promise.all([
         renderer(), Promise.all(backgrounds), document.fonts?.ready || Promise.resolve()
       ]));
-      check(); beforeCapture(); check();
+      check(); await timeout(beforeCapture()); check();
+      const ink = photo.matches(inkFace) ? photo.querySelector(inkSelector) : null;
+      if (photo.matches(inkFace) && !(ink?.width > 0 && ink.height > 0)) throw new Error('card_ink_unavailable');
       const rect = photo.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0 || getComputedStyle(photo).visibility === 'hidden') throw new Error('card_image_hidden');
       let background = originalBackground;
@@ -60,13 +68,19 @@
         backgroundColor: null, scale, width: Math.ceil(rect.width), height: Math.ceil(rect.height),
         windowWidth: innerWidth, windowHeight: innerHeight,
         allowTaint: false, useCORS: false, foreignObjectRendering: false, imageTimeout: 8000, logging: false,
-        ignoreElements: element => element.matches('.card-photo-thumb,.card-meta,.card-actions,.card-manage'),
+        ignoreElements: element => element.matches(controls)
+          || (element !== ink && element.matches(media) && photo.contains(element)),
         onclone(clonedDocument, captured) {
           check();
           captured.style.backgroundImage = background;
           captured.style.width = `${rect.width}px`; captured.style.height = `${rect.height}px`;
           captured.style.minHeight = '0'; captured.style.maxHeight = 'none';
-          captured.querySelectorAll('img,video,iframe,canvas,.card-photo-thumb,.card-meta,.card-actions,.card-manage').forEach(element => element.remove());
+          const publicInk = ink && captured.querySelector(inkSelector);
+          if (ink && !publicInk) throw new Error('card_ink_unavailable');
+          if (publicInk) captured.querySelector('.card-quote')?.remove();
+          captured.querySelectorAll(media + ',' + controls).forEach(element => {
+            if (element !== publicInk) element.remove();
+          });
           const style = clonedDocument.createElement('style');
           style.textContent = '.photo,.photo *,.photo::before,.photo::after,.photo *::before,.photo *::after{animation:none!important;transition:none!important}';
           clonedDocument.head.append(style);
