@@ -504,6 +504,12 @@ if (kissOfLifeProfile) {
 /* KiiiKiii: only officially published group achievements; personal details remain unknown. */
 const kiiikiiiProfile = window.OJJUDA_FAN_PROFILES.kiiikiii;
 if (kiiikiiiProfile) {
+  kiiikiiiProfile.expanded = true;
+  kiiikiiiProfile.checkedAt = '2026.11.16';
+  kiiikiiiProfile.awards = [
+    { year: '2026.11', title: 'MMA2026 3관왕', detail: '11.15 고척스카이돔 · TOP10·베스트 퍼포먼스(여자)·베스트 뮤직스타일', href: 'https://www.bntnews.co.kr/article/view/bnt202611160169' },
+    { year: '2026.11', title: 'KGMA2026 대상 포함 3관왕', detail: '11.08 고척스카이돔 · 그랜드 아너스 초이스·베스트 뮤직·베스트 스트리밍송', href: 'https://www.bntnews.co.kr/article/view/bnt202611090129' }
+  ];
   kiiikiiiProfile.records = [
     { year: '2025', title: '데뷔 첫해 신인상 7개', detail: '서울시 공식 발표 · 시상 내역 상세는 원문 확인', href: 'https://mediahub.seoul.go.kr/archives/2016856' },
     { year: '2026.02', title: '404 (New Era) 멜론 TOP100 1위', detail: '카카오엔터테인먼트 발표 · 발매 16일 만에 1위', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' }
@@ -511,6 +517,8 @@ if (kiiikiiiProfile) {
   kiiikiiiProfile.sources.unshift({ label: 'STARSHIP 공식 앨범·아티스트 프로필', href: 'https://www.starship-ent.com/musician/kiiikiii' });
   kiiikiiiProfile.sources.push({ label: '서울시 홍보대사·수상 이력', href: 'https://mediahub.seoul.go.kr/archives/2016856' });
   kiiikiiiProfile.sources.push({ label: '카카오엔터테인먼트 활동·차트', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' });
+  kiiikiiiProfile.sources.push({ label: 'MMA2026 · 11.15 3관왕', href: 'https://www.bntnews.co.kr/article/view/bnt202611160169' });
+  kiiikiiiProfile.sources.push({ label: 'KGMA2026 · 11.08 3관왕', href: 'https://www.bntnews.co.kr/article/view/bnt202611090129' });
 }
 
 

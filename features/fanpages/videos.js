@@ -230,6 +230,7 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'eTvUZymLyGY', title: 'SWEAT', kind: '뮤직비디오', source: "KISS OF LIFE Official · 2026.08.04" }
   ],
   kiiikiii: [
+    { id: 'SNFyIzOlxBc', title: 'MMA2026 · Pop Off Pop Off + Delulu + 404 (New Era)', kind: '공식 시상식 무대', source: '멜론 Melon · 2026.11.15' },
     { id: 'UsbRoaH6y-Q', title: 'Pop Off Pop Off', kind: '뮤직비디오', source: "STARSHIP · 공식 채널" },
     { id: 'hjcG58y_Fyc', title: 'Pop Off Pop Off', kind: '안무 영상', source: "KiiiKiii · 공식 채널" },
     { id: 'zhHB4dZTChw', title: '404 (New Era)', kind: '뮤직비디오', source: "STARSHIP · 공식 채널" },
