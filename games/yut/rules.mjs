@@ -14,10 +14,10 @@ export const TEAMS = [
 export const validTeamCount=n=>Number.isInteger(n)&&n>=2&&n<=TEAMS.length;
 export const defaultTeamAnimal=(team,offset=2)=>(offset+TEAMS[team].animalOffset)%12;
 export const YUT = ['', '도', '개', '걸', '윷', '모'];
-export const ROCK = [3,16], WHIRL = [8,13], WIND = [6,18];
+const WHIRL = [8,13], WIND = [6,18];
 const fork = new Set([5,10,22]);
 
-export const EVENT_NAMES={back:'뒤로 한 칸',carry:'말 업기 ×2',home:'처음으로',stone:'바위턱',whirl:'소용돌이',breeze:'순풍'};
+export const EVENT_NAMES={back:'뒤로 한 칸',carry:'말 업기 ×2',home:'처음으로',whirl:'소용돌이',breeze:'순풍'};
 function dealTiles(mode){
   const reserved=new Set([0,5,10,15,22]);
   const spots=Array.from({length:FINISH},(_,n)=>n).filter(n=>!reserved.has(n));
@@ -30,14 +30,21 @@ function dealTiles(mode){
     }
     return tiles;
   }
-  return {eventTiles:deal(['back','carry','home']),islandTiles:mode==='island'?deal(['stone','whirl','breeze']):{}};
+  return {eventTiles:deal(['back','carry','home']),islandTiles:mode==='island'?deal(['whirl','breeze']):{}};
 }
 export function tileEffect(state,node){
   const event=state.eventTiles?.[node];
+  const first=(map,effect)=>Object.keys(map??{}).find(n=>map[n]===effect);
+  if(event==='back')return first(state.eventTiles,'back')===String(node)?'back':undefined;
   if(event||state.mode==='easy')return event;
-  if(state.islandTiles)return state.islandTiles[node];
-  // Island boards saved before obstacles were dealt used these six fixed squares.
-  if(ROCK.includes(node))return 'stone';
+  if(state.islandTiles){
+    const tile=state.islandTiles[node];
+    if(tile!=='stone')return tile;
+    // Older rounds used rocks for the same one-step penalty.
+    if(!first(state.eventTiles,'back')&&first(state.islandTiles,'stone')===String(node))return 'back';
+    return;
+  }
+  if(node===3&&!first(state.eventTiles,'back'))return 'back';
   if(WHIRL.includes(node))return 'whirl';
   if(WIND.includes(node))return 'breeze';
 }
@@ -116,10 +123,10 @@ export function move(state,index,shortcut=false) {
   if(event==='home'){
     next=[];frames.push(HOME);
     effect='처음으로! '+(moving.length>1?'업은 말까지 모두 대기석으로 돌아갔어요.':'대기석으로 돌아갔어요.');
-  }else if(event==='back'||event==='stone'||event==='whirl'){
+  }else if(event==='back'||event==='whirl'){
     const back=event==='whirl'?2:1;
     for(let i=0;i<back&&next.length;i++){next.pop();frames.push(position(next));}
-    effect=event==='back'?'뒤로 한 칸! 왔던 길로 한 칸 물러났어요.':back===2?'소용돌이! 두 칸 뒤로 밀렸어요.':'바위턱! 한 칸 뒤로 밀렸어요.';
+    effect=event==='back'?'뒤로 한 칸! 왔던 길로 한 칸 물러났어요.':'소용돌이! 두 칸 뒤로 밀렸어요.';
   }else if(event==='breeze'){
     const gust=advance(next,2,false);
     next=gust.next;frames.push(...gust.frames);effect='순풍! 두 칸 더 갔어요.';
@@ -153,7 +160,7 @@ export function move(state,index,shortcut=false) {
   else if(extra)notes.push('한 번 더 던져요.');
   return {...state,pawns,revision:state.revision+1,phase:won?'won':'roll',winner:won?state.team:null,
     team:won||extra?state.team:(state.team+1)%pawns.length,turn:state.turn+(won||extra?0:1),
-    lastMove:{team:state.team,indices:moving,frames,from,landing,event:event??null,pickedUp},note:notes.join(' ')};
+    lastMove:{team:state.team,indices:moving,frames,from,landing,event:event??null,pickedUp,captured},note:notes.join(' ')};
 }
 // Estimate the remaining path with the same forks and center-entry rule as a real move.
 function stepsLeft(trail){

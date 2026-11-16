@@ -11,14 +11,14 @@ test('new games give every team four pieces and enable island obstacles by defau
     const game=newGame(count);
     assert.equal(game.mode,'island');
     assert.deepEqual(game.pawns.map(team=>team.length),Array(count).fill(4));
-    assert.deepEqual(Object.values(game.islandTiles).sort(),['breeze','stone','whirl']);
+    assert.deepEqual(Object.values(game.islandTiles).sort(),['breeze','whirl']);
     assert.equal(new Set(game.teamAnimals).size,count);
     assert.deepEqual(game.teamAnimals,game.pawns.map((_,t)=>animalFor(t,0,game.zodiacOffset)));
   }
   for(const count of [1,9,7.5,'8'])assert.throws(()=>newGame(count));
 });
 test('easy games land on the rolled square while older snapshots keep their island effects',()=>{
-  for(const [tile,end] of [[3,2],[16,15],[8,6],[13,11],[6,8],[18,0]]){
+  for(const [tile,end] of [[3,2],[16,16],[8,6],[13,11],[6,8],[18,0]]){
     const trail=Array.from({length:tile-1},(_,i)=>i+1);
     const easy=ordinary(2,2,'easy');easy.pawns[0][0]=trail;
     assert.equal(position(move(roll(easy,faces(1)),0).pawns[0][0]),tile);
@@ -43,6 +43,15 @@ test('all pieces of a team share its zodiac animal and throws reproduce after th
     assert.equal(lastThrowSeed(JSON.parse(JSON.stringify(game))),seed);
   }
 });
+test('only one square can send a pawn one step back, including saved boards with rocks',()=>{
+  const g=ordinary();g.eventTiles={7:'back',12:'back'};g.islandTiles={4:'stone',18:'stone'};
+  const backSquares=()=>Array.from({length:FINISH},(_,n)=>n).filter(n=>tileEffect(g,n)==='back');
+  assert.deepEqual(backSquares(),[7]);assert.equal(tileEffect(g,4),undefined);assert.equal(tileEffect(g,12),undefined);
+  g.pawns[0][0]=[1,2,3];
+  assert.equal(position(move(roll(g,faces(1)),0).pawns[0][0]),4);
+  g.eventTiles={};
+  assert.deepEqual(backSquares(),[4]);delete g.islandTiles;assert.deepEqual(backSquares(),[3]);
+});
 test('four sticks give five outcomes and invalid or repeated actions cannot advance the turn',()=>{
   for(let n=1;n<=5;n++){
     const s=roll(ordinary(),faces(n));assert.equal(s.steps,n);assert.equal(roll(s,faces(1)),s);
@@ -52,8 +61,7 @@ test('four sticks give five outcomes and invalid or repeated actions cannot adva
 });
 test('island effects follow their dealt squares, including shortcuts, and apply only on landing',()=>{
   const g=ordinary();
-  g.islandTiles={4:'stone',21:'whirl',1:'breeze'};
-  g.eventTiles={2:'home'};
+  g.eventTiles={2:'home',4:'back'};g.islandTiles={21:'whirl',1:'breeze'};
   const land=(trail,steps)=>{
     g.pawns[0][0]=trail;
     return move(roll(g,faces(steps)),0).pawns[0][0];
@@ -94,7 +102,7 @@ test('new games deal one of each tile without overlap and keep the layout throug
       const g=newGame(4,11,mode,4);
       const entries=Object.entries(g.eventTiles).concat(Object.entries(g.islandTiles));
       assert.deepEqual(Object.values(g.eventTiles).sort(),['back','carry','home']);
-      assert.deepEqual(Object.values(g.islandTiles).sort(),mode==='island'?['breeze','stone','whirl']:[]);
+      assert.deepEqual(Object.values(g.islandTiles).sort(),mode==='island'?['breeze','whirl']:[]);
       const nodes=entries.map(([n])=>Number(n));
       assert.equal(new Set(nodes).size,nodes.length);
       assert.ok(nodes.every(n=>n>0&&n<FINISH&&![5,10,15,22].includes(n)));
