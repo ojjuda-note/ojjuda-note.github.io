@@ -220,6 +220,7 @@
       members: ['루카', '파리타', '아사', '아현', '라미', '로라', '치키타'],
       debut: '2024.04.01', debutWork: 'BABYMONS7ER', songs: ['SHEESH', 'LIKE THAT'],
       concept: '2023년 BATTER UP을 발표하고, 2024년 4월 일곱 멤버로 정식 데뷔한 YG의 걸그룹.',
+      checkedAt: '2026.11.16',
       official: 'https://ygfamily.com/ko/artists/babymonster/profile', youtube: 'https://www.youtube.com/@BABYMONSTER',
       photo: 'BabyMonster Promoting drip on 2024112.png', photoLabel: 'DRIP 활동', photoYear: '2024', credit: 'SBS Radio', license: 'CC BY 3.0',
       morePhotos: [
@@ -240,7 +241,6 @@
         { title: 'BATTER UP', date: '2023.11.27', type: '첫 디지털 싱글', songs: ['BATTER UP'], href: 'https://www.ygfamily.com/en/artists/babymonster/discography/1578' }
       ],
       appearances: [
-        { date: '2026-11-14', title: 'CHOOM 월드투어 · 쿠알라룸푸르', sub: '말레이시아 Unifi Arena · 현지 17:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
         { date: '2026-11-18', title: 'MTV JAPAN BABYMONSTER VideoSelects 재방송', sub: '일본 MTV · 21:00~22:00 (현지 시간)', href: 'https://www.sonymusic.co.jp/artist/BABYMONSTER/info/587656' },
         { date: '2026-11-20', title: '2026 MAMA AWARDS', sub: '일본 오사카 교세라 돔 · 공식 일정 18:00', href: 'https://ygfamily.com/ko/artists/babymonster/schedule' },
         { date: '2026-11-21', title: 'CHOOM 월드투어 · 타이베이', sub: '대만 Taipei Arena · 현지 19:30', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
