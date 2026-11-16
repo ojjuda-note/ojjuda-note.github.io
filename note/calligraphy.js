@@ -429,10 +429,6 @@
         other: ch
       };
     }
-    function rootLength(word) {
-      const m = word.match(/^(.+?)(하셨습니다|했습니다|하세요|합니다|했어요|했어|해요|이에요|예요|이다|다)([.!?…]*)$/u);
-      return m && syllables(m[1]).length >= 2 ? syllables(m[1]).length : Infinity;
-    }
     function splitRows(line, limit) {
       const chars = syllables(line);
       if (chars.length <= limit) return [line];
@@ -464,115 +460,88 @@
       if (words.length === 3 && syllables(lines[0]).length < 13) return [words[0], words.slice(1).join(' ')];
       return splitRows(lines[0], syllables(lines[0]).length <= 17 ? 7 : 10);
     }
-    function layout(input, zoom) {
-      const longForm = syllables(input).length > 36;
-      const rows = rowsFor(input, longForm),
-        count = rows.length,
-        placements = [],
-        rowBoxes = [];
-      const presets = count === 1 ? [[.0, 0, 154]] : count === 2 ? [[0, 0, 103], [25, 138, 164]] : [];
-      let top = 0;
-      rows.forEach((line, i) => {
-        const last = i === count - 1,
-          size = presets.length ? presets[i][2] : last ? 101 : i === 0 ? 88 : 73;
-        const startX = presets.length ? presets[i][0] : [0, 49, 13, 82][i % 4];
-        const startY = presets.length ? presets[i][1] : top;
-        top += size * 1.22;
-        let x = startX,
-          loX = x,
-          rowBottom = startY,
-          before = placements.length;
-        const words = line.split(' ');
-        words.forEach((word, wi) => {
-          if (wi) x += size * .25;
-          const chars = syllables(word),
-            root = last && wi === words.length - 1 ? rootLength(word) : Infinity;
-          const lastWordContrast = last && words.length > 1 && wi < words.length - 1;
-          chars.forEach((ch, j) => {
-            const glyph = get(ch, j === chars.length - 1);
-            const subordinate = j >= root || lastWordContrast,
-              hasRoot = Number.isFinite(root);
-            let scale = size * (subordinate ? .78 : 1);
-            if (count === 2 && !last && j === 0) scale *= 1.11;
-            if (!subordinate && j === 0 && (last || count === 1)) scale *= 1.09;
-            if (hasRoot && j === root) x += size * .035;
-            const lift = 5 * Math.sin(j * 1.6 + wi) + (j >= root ? size * .245 : lastWordContrast ? size * .22 : 0);
-            const y = startY + lift + (count === 2 && !last ? [0, 13, 6][j % 3] : 0);
-            const tilt = [-.057, -.028, .015, -.043, .01][(j + i) % 5];
-            placements.push({
-              ch,
-              glyph,
-              x,
-              y,
-              scale: scale / 100,
-              tilt,
-              seed: (i + 1) * 30181 + (wi + 1) * 9767 + j * 179 + ch.codePointAt(0)
-            });
-            rowBottom = Math.max(rowBottom, y + scale * 1.15);
-            x += scale * (glyph.advance / 100 + .055);
-          });
-        });
-        rowBoxes.push({
-          x: loX,
-          y: startY,
-          w: x - loX,
-          h: rowBottom - startY,
-          end: i === count - 1,
-          letters: placements.slice(before)
-        });
-      });
-      let maxX = 0,
-        maxY = 0,
-        minX = Infinity,
-        minY = Infinity;
-      for (const p of placements) {
-        minX = Math.min(minX, p.x - p.scale * 10);
-        minY = Math.min(minY, p.y - p.scale * 10);
-        maxX = Math.max(maxX, p.x + p.scale * (p.glyph.advance + 14));
-        maxY = Math.max(maxY, p.y + 132 * p.scale);
+    function tagRanges(source, tags) {
+      const ranges = [];
+      for (const tag of new Set(tags)) {
+        if (typeof tag !== 'string') continue;
+        const word = tag.normalize('NFC').trim().replace(/^#+/u, '').replace(/\s+/gu, ' ').trim();
+        if (!word) continue;
+        let start = source.indexOf(word);
+        while (start !== -1) {
+          ranges.push([start, start + word.length]);
+          start = source.indexOf(word, start + 1);
+        }
       }
-      if (!placements.length) return {
-        placements,
-        rows
-      };
-      const spanX = maxX - minX;
-      const spanY = maxY - minY;
-      const standardFit = Math.min((longForm ? 960 : 862) / spanX, (longForm ? 670 : 470) / spanY, 1.55);
-      const fit = Math.min(standardFit * zoom, (WIDTH - 48) / spanX, (HEIGHT - 48) / spanY);
-      const dx = (WIDTH - (maxX - minX) * fit) / 2 - minX * fit;
-      const dy = (HEIGHT - (maxY - minY) * fit) / 2 - minY * fit - 4;
-      return {
-        placements,
-        rows,
-        fit,
-        dx,
-        dy,
-        last: rowBoxes.at(-1)
-      };
+      ranges.sort((a, b) => a[0] - b[0]);
+      const merged = [];
+      for (const range of ranges) {
+        const previous = merged.at(-1);
+        if (previous && range[0] < previous[1]) previous[1] = Math.max(previous[1], range[1]);
+        else merged.push(range);
+      }
+      return merged;
+    }
+    const handDepth = { 어: 112, 다: 116, 이: 112, 수: 132, 최: 110, 늘: 107 };
+    function lowerEdge(p) {
+      return p.y + p.scale * ((handDepth[p.ch] ?? 104) + Math.max(0, p.tilt) * p.glyph.advance);
+    }
+    function layout(input, source, ranges, zoom, accent) {
+      const longForm = syllables(input).length > 36;
+      const rows = [];
+      let position = 0, rangeIndex = 0, widest = 1, height = 0;
+      for (const [i, line] of rowsFor(input, longForm).entries()) {
+        let x = 0, top = 0, bottom = 0, currentMark = null;
+        const letters = [], marks = [];
+        for (const [wi, word] of line.split(' ').entries()) {
+          if (wi) x += 29;
+          const chars = syllables(word);
+          for (const [j, ch] of chars.entries()) {
+            // Wrapping may split a word, but the source cursor follows the original text.
+            while (source[position] === ' ') position++;
+            while (rangeIndex < ranges.length && ranges[rangeIndex][1] <= position) rangeIndex++;
+            const range = ranges[rangeIndex];
+            const marked = range && range[0] < position + ch.length && position < range[1];
+            position += ch.length;
+            const glyph = get(ch, j === chars.length - 1);
+            const scale = marked ? 1.20 : 1;
+            const y = 3.7 * Math.sin(j * 1.6 + wi) - (marked ? 14 : 0);
+            const p = {ch, glyph, x, y, scale, tilt: [-.057, -.028, .015, -.043, .01][(j+i)%5],
+              seed: (i+1)*30181 + (wi+1)*9767 + j*179 + ch.codePointAt(0)};
+            letters.push(p);
+            const depth = lowerEdge(p);
+            top = Math.min(top, y - 8 * scale);
+            bottom = Math.max(bottom, depth + 6 * scale);
+            if (accent && marked) {
+              if (!currentMark || currentMark.range !== range) {
+                currentMark = {range, left: x, right: x, bottom: depth};
+                marks.push(currentMark);
+              }
+              currentMark.right = x + glyph.advance * scale;
+              currentMark.bottom = Math.max(currentMark.bottom, depth);
+            } else currentMark = null;
+            x += (glyph.advance + 5.5) * scale;
+          }
+        }
+        // A manual blank line occupies one line in the composition.
+        if (!letters.length) bottom = 100;
+        for (const mark of marks) bottom = Math.max(bottom, mark.bottom + 14);
+        const row = { letters, marks, x: -x / 2, y: height - top };
+        height += bottom - top + 16;
+        row.end = height - 8;
+        rows.push(row);
+        widest = Math.max(widest, x + 46);
+      }
+      height = Math.max(1, height - 16);
+      const fit = Math.min(Math.min((longForm ? 960 : 862) / widest, (longForm ? 670 : 470) / height, 1.95) * zoom,
+        (WIDTH-48) / widest, (HEIGHT-48) / height);
+      return {rows, fit, dy: (HEIGHT - height * fit) / 2};
     }
     const rng = seed => () => (seed = Math.imul(seed, 1664525) + 1013904223 >>> 0) / 4294967296;
-    function accentStroke(ctx, box) {
-      // A single light, lifted brush stroke follows the last line.
-      const length = Math.min(204, box.w * .36);
-      const x = box.x + box.w - length * .96 - 6;
-      const descenders = {
-        어: 112,
-        다: 116,
-        이: 112,
-        수: 132,
-        최: 110,
-        늘: 107
-      };
-      let bottom = box.y;
-      for (const p of box.letters) {
-        if (p.x + p.scale * (p.glyph.advance + 8) < x || p.x > x + length) continue;
-        const depth = descenders[p.ch] ?? 104;
-        bottom = Math.max(bottom, p.y + p.scale * (depth + Math.min(0, p.tilt) * 45));
-      }
-      const y = bottom + 18;
+    function accentStroke(ctx, mark) {
+      const length = Math.max(1, mark.right - mark.left - 4);
       ctx.save();
-      ctx.translate(x, y);
-      ctx.scale(length / 130, Math.min(1.05, length / 120));
+      ctx.translate(mark.left + 2, mark.bottom + 12);
+      ctx.scale(length / 130, .62);
       const g = ctx.createLinearGradient(0, 0, 130, 0);
       g.addColorStop(0, '#f4d696');
       g.addColorStop(.66, '#edb452');
@@ -587,13 +556,14 @@
       ctx.fill();
       ctx.restore();
     }
-    function textureInk(ctx) {
+    function textureInk(ctx, rowEnds) {
       const { width, height } = ctx.canvas;
       const frame = ctx.getImageData(0, 0, width, height);
       const pixels = frame.data;
       const scale = WIDTH / width;
       let seed = 72341;
       let left = width, top = height, right = -1, bottom = -1;
+      let rowIndex = 0, rowStart = 0, rowLeft = width, rowRight = -1;
       for (let y = 0; y < height; y++) {
         const brushY = y * scale;
         for (let x = 0; x < width; x++) {
@@ -608,11 +578,31 @@
           const loss = Math.max(0, .012 + .025 * pool + .024 * (noise - .5) + (noise > .987 ? .045 : 0));
           pixels[alpha] = Math.round(coverage * (1 - loss));
           if (pixels[alpha]) {
-            left = Math.min(left, x);
-            right = Math.max(right, x);
+            rowLeft = Math.min(rowLeft, x);
+            rowRight = Math.max(rowRight, x);
             top = Math.min(top, y);
             bottom = y;
           }
+        }
+        if (y + 1 >= rowEnds[rowIndex]) {
+          // Center the actual painted pixels, including brush tails and punctuation.
+          // Move a row in the same pixel buffer already used to texture the ink.
+          if (rowRight >= rowLeft) {
+            const shift = Math.round((width - 1 - rowLeft - rowRight) / 2);
+            if (shift) {
+              for (let line = rowStart; line <= y; line++) {
+                const begin = (line * width + rowLeft) * 4;
+                const end = (line * width + rowRight + 1) * 4;
+                pixels.copyWithin(begin + shift * 4, begin, end);
+                if (shift > 0) pixels.fill(0, begin, Math.min(end, begin + shift * 4));
+                else pixels.fill(0, Math.max(begin, end + shift * 4), end);
+              }
+            }
+            left = Math.min(left, rowLeft + shift);
+            right = Math.max(right, rowRight + shift);
+          }
+          while (rowIndex < rowEnds.length && rowEnds[rowIndex] <= y + 1) rowIndex++;
+          rowStart = y + 1; rowLeft = width; rowRight = -1;
         }
       }
       ctx.putImageData(frame, 0, 0);
@@ -626,52 +616,60 @@
       const rgb = [1, 3, 5].map(start => parseInt(inkColor.slice(start, start + 2), 16)).join(',');
       return shade => 'rgba(' + rgb + ',' + (1 - Math.max(0, shade - 11) / 430) + ')';
     }
-    function draw(ctx, input, accent, zoom, inkColor) {
+    function draw(ctx, input, source, ranges, accent, zoom, inkColor) {
       const tint = makeTint(inkColor);
       ctx.save();
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.scale(ctx.canvas.width / WIDTH, ctx.canvas.height / HEIGHT);
-      const page = layout(input, zoom);
       if (!input.trim()) {
         ctx.restore();
         return null;
       }
-      ctx.translate(page.dx, page.dy);
+      const page = layout(input, source, ranges, zoom, accent);
+      ctx.translate(WIDTH / 2, page.dy);
       ctx.scale(page.fit, page.fit);
-      for (const p of page.placements) {
+      for (const row of page.rows) {
         ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.scale(p.scale, p.scale);
-        ctx.rotate(p.tilt);
-        if (p.glyph.paths || p.glyph.other) {
-          const wash = ctx.createLinearGradient(1, 6, 70, 106);
-          wash.addColorStop(0, tint ? tint(34) : '#22221e');
-          wash.addColorStop(.36, tint ? tint(20) : '#141614');
-          wash.addColorStop(.71, tint ? tint(33) : '#21221f');
-          wash.addColorStop(1, tint ? tint(44) : '#2c2c25');
-          ctx.fillStyle = wash;
-        }
-        if (p.glyph.paths) {
-          for (const path of p.glyph.paths) ctx.fill(path);
-        } else if (p.glyph.strokes) {
-          const random = rng(p.seed);
-          for (const stroke of p.glyph.strokes) {
-            paintCalliInk(ctx, stroke, random, tint);
+        ctx.translate(row.x, row.y);
+        for (const p of row.letters) {
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.scale(p.scale, p.scale);
+          ctx.rotate(p.tilt);
+          if (p.glyph.paths || p.glyph.other) {
+            const wash = ctx.createLinearGradient(1, 6, 70, 106);
+            wash.addColorStop(0, tint ? tint(34) : '#22221e');
+            wash.addColorStop(.36, tint ? tint(20) : '#141614');
+            wash.addColorStop(.71, tint ? tint(33) : '#21221f');
+            wash.addColorStop(1, tint ? tint(44) : '#2c2c25');
+            ctx.fillStyle = wash;
           }
-        } else if (p.glyph.other) {
-          ctx.font = '68px serif';
-          ctx.textBaseline = 'alphabetic';
-          ctx.fillText(p.ch, 0, 83, p.glyph.advance);
+          if (p.glyph.paths) {
+            for (const path of p.glyph.paths) ctx.fill(path);
+          } else if (p.glyph.strokes) {
+            const random = rng(p.seed);
+            for (const stroke of p.glyph.strokes) {
+              paintCalliInk(ctx, stroke, random, tint);
+            }
+          } else if (p.glyph.other) {
+            ctx.font = '68px serif';
+            ctx.textBaseline = 'alphabetic';
+            ctx.fillText(p.ch, 0, 83, p.glyph.advance);
+          }
+          ctx.restore();
         }
+        for (const mark of row.marks) accentStroke(ctx, mark);
         ctx.restore();
       }
-      if (accent && page.last) accentStroke(ctx, page.last);
       ctx.restore();
-      return textureInk(ctx);
+      const rowEnds = page.rows.map(row => Math.round((page.dy + row.end * page.fit) * ctx.canvas.height / HEIGHT));
+      rowEnds[rowEnds.length - 1] = ctx.canvas.height;
+      return textureInk(ctx, rowEnds);
     }
     return {
       draw,
+      tagRanges,
       WIDTH,
       HEIGHT
     };
@@ -682,6 +680,7 @@
   function render(canvas, text, {
     width = 1080,
     accent = true,
+    tags = [],
     inkColor,
     zoom = 1
   } = {}) {
@@ -689,10 +688,13 @@
     const pixelWidth = Math.max(1, Math.min(1080, Math.round(Number(width) || 1080)));
     const pixelHeight = Math.max(1, Math.round(pixelWidth * Composition.HEIGHT / Composition.WIDTH));
     const normalized = String(text ?? '').normalize('NFC');
+    const source = normalized.trim().replace(/\s+/gu, ' ');
+    const ranges = Composition.tagRanges(source, Array.isArray(tags) ? tags : []);
+    const tagKey = JSON.stringify(ranges);
     inkColor = normalizeColor(inkColor);
     zoom = Math.min(1.12, Math.max(.85, Number(zoom) || 1));
     const last = lastPaint.get(canvas);
-    if (last && last.text === normalized && last.accent === accent && last.width === pixelWidth
+    if (last && last.text === normalized && last.tagKey === tagKey && last.accent === accent && last.width === pixelWidth
         && last.inkColor === inkColor && last.zoom === zoom
         && canvas.width === pixelWidth && canvas.height === pixelHeight) return canvas;
     if (canvas.width !== pixelWidth) canvas.width = pixelWidth;
@@ -701,9 +703,10 @@
       willReadFrequently: true
     });
     if (!ctx) return null;
-    const bounds = Composition.draw(ctx, normalized, accent, zoom, inkColor);
+    const bounds = Composition.draw(ctx, normalized, source, ranges, accent, zoom, inkColor);
     lastPaint.set(canvas, {
       text: normalized,
+      tagKey,
       width: pixelWidth,
       accent,
       inkColor,

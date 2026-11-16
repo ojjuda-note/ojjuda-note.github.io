@@ -3,7 +3,7 @@ const path = require('node:path');
 const test = require('node:test');
 const { chromium } = require('playwright');
 
-test('Hangul brush keeps both final consonants legible in Park cards', async () => {
+async function withBrushPage(check) {
   const browser = await chromium.launch({
     headless: true,
     executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined,
@@ -12,6 +12,14 @@ test('Hangul brush keeps both final consonants legible in Park cards', async () 
   try {
     const page = await browser.newPage();
     await page.addScriptTag({ path: path.join(__dirname, '../note/calligraphy.js') });
+    await check(page);
+  } finally {
+    await browser.close();
+  }
+}
+
+test('Hangul brush keeps both final consonants legible in Park cards', () =>
+  withBrushPage(async page => {
     // Isolate all 11 compound finals and ㄲ/ㅆ beside three single finals on the same body.
     const sameBody = Array.from('앇앉않앍앎앏앐앑앒앓앖앆았안알암');
     const words = [...sameBody, '젊', '흙', '괆', '젊은', '오늘이 내 생에 가장 젊은 날이다'];
@@ -71,7 +79,71 @@ test('Hangul brush keeps both final consonants legible in Park cards', async () 
         }
       }
     }
-  } finally {
-    await browser.close();
-  }
-});
+  }));
+
+test('Park centers each brush line and emphasizes only matching tags', () =>
+  withBrushPage(async page => {
+    const result = await page.evaluate(() => {
+      const canvas = document.createElement('canvas');
+      const width = 328;
+      function read(body, tags, rowCount = 1) {
+        window.ParkCalligraphy.render(canvas, body, { width, tags });
+        const bounds = window.ParkCalligraphy.inkBounds(canvas);
+        const bytes = canvas.getContext('2d').getImageData(0, 0, width, canvas.height).data;
+        const scanlines = [];
+        let hash = 2166136261;
+        for (let y = 0; y < canvas.height; y++) {
+          let left = width, right = -1, gold = 0, goldX = 0;
+          for (let x = 0; x < width; x++) {
+            const i = (y * width + x) * 4;
+            hash = Math.imul(hash ^ bytes[i + 3], 16777619);
+            if (bytes[i + 3] < 20) continue;
+            left = Math.min(left, x);
+            right = x;
+            if (bytes[i] - bytes[i + 2] > 75 && bytes[i + 1] > 95) { gold++; goldX += x; }
+          }
+          if (right >= 0) scanlines.push({ y, left, right, gold, goldX });
+        }
+        // The widest empty bands split explicit rows without consulting the renderer's layout.
+        const cuts = scanlines.slice(1).map((line, i) => ({ at: i + 1, gap: line.y - scanlines[i].y }))
+          .sort((a, b) => b.gap - a.gap).slice(0, rowCount - 1).map(c => c.at).sort((a, b) => a - b);
+        const starts = [0, ...cuts, scanlines.length];
+        const rows = starts.slice(0, -1).map((start, i) => {
+          const band = scanlines.slice(start, starts[i + 1]);
+          const left = Math.min(...band.map(p => p.left)), right = Math.max(...band.map(p => p.right));
+          const count = band.reduce((n, p) => n + p.gold, 0);
+          return { center: (left + right) / (2 * width), count,
+            goldX: count ? band.reduce((n, p) => n + p.goldX, 0) / (count * width) : 0 };
+        });
+        return { hash, bounds, rows };
+      }
+      const phrase = '건강이 최고다\n가장 젊은 날이다.';
+      const normal = read(phrase, [], 2);
+      const missing = read(phrase, ['없는말'], 2);
+      const first = read(phrase, ['건강'], 2);
+      const last = read(phrase, ['날이다'], 2);
+      const both = read(phrase, ['건강', '날이다'], 2);
+      const repeated = read('건강이 최고다\n오래오래 건강', ['건강'], 2);
+      const uneven = read('오\n가장 젊은 날이다\n건강', [], 3);
+      const ending = read('봄'.repeat(198) + '건강', ['건강']);
+      const nfd = read(phrase.normalize('NFD'), ['건강'.normalize('NFD'), '#날이다'], 2);
+      const cleared = read(phrase, [], 2);
+      return { normal, missing, first, last, both, repeated, uneven, ending, nfd, cleared };
+    });
+    const { normal, missing, first, last, both, repeated, uneven, ending, nfd, cleared } = result;
+    for (const sample of [normal, missing, cleared]) assert.ok(sample.rows.every(row => row.count === 0));
+    assert.equal(missing.hash, normal.hash);
+    assert.equal(cleared.hash, normal.hash, 'clearing tags restores the original drawing');
+    assert.deepEqual(nfd, both, 'decomposed Hangul and optional # produce the same artwork');
+    assert.ok(first.rows[0].count > 4 && first.rows[0].goldX < .5 && first.rows[1].count === 0,
+      '건강 matches before the particle 이 on the upper left');
+    assert.ok(last.rows[1].count > 4 && last.rows[1].goldX > .5 && last.rows[0].count === 0,
+      '날이다 matches before punctuation on the lower right');
+    for (const sample of [both, repeated]) assert.ok(sample.rows.every(row => row.count > 4));
+    for (const sample of [normal, both, uneven]) {
+      for (const row of sample.rows) assert.ok(Math.abs(row.center - .5) < .035, 'row center: ' + row.center);
+    }
+    assert.ok(ending.rows[0].count > 0, 'a tag at the end of a 200-character post remains visible');
+    assert.ok(ending.bounds.x > 0 && ending.bounds.y > 0 && ending.bounds.x + ending.bounds.width < 1
+      && ending.bounds.y + ending.bounds.height < 1, 'long cards retain their margins');
+  }));

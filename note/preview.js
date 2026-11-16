@@ -791,9 +791,9 @@ function requestTagFit() {
 }
 const expandedBodyEntries = new Set(), quoteFitEntries = new Set();
 const inkCards = new WeakMap();
-function inkOptions(style, width) {
+function inkOptions(style, width, cardTags) {
   const inkColor = COLOR_PALETTE[style.textColor]?.solid;
-  return { width, inkColor, zoom: style.size === 'small' ? .85 : style.size === 'large' ? 1.12 : 1 };
+  return { width, inkColor, tags: cardTags, zoom: style.size === 'small' ? .85 : style.size === 'large' ? 1.12 : 1 };
 }
 function renderParkInk(canvas, body, options) {
   if (!window.ParkCalligraphy.render(canvas, body, options)) return false;
@@ -831,7 +831,7 @@ function drawInkCard(photo) {
   }
 }
 let composeInkFrame = 0, composeInkRun = 0;
-function syncComposeInk(selected, style) {
+function syncComposeInk(selected, style, previewTags) {
   const photo = $('.compose-photo'), editor = $('#compose-ink-editor'), canvas = $('#compose-ink-art');
   if (!canvas || !editor) return;
   const on = selected && !!window.ParkCalligraphy && !backdrop.hidden;
@@ -848,7 +848,7 @@ function syncComposeInk(selected, style) {
   const run = ++composeInkRun;
   canvas.hidden = !on;
   if (!on) { delete canvas.dataset.inkReady; return; }
-  const body = text.value, options = inkOptions(style, 720);
+  const body = text.value, options = inkOptions(style, 720, previewTags);
   composeInkFrame = requestAnimationFrame(() => {
     if (run !== composeInkRun || backdrop.hidden) return;
     if (renderParkInk(canvas, body, options)) canvas.dataset.inkReady = 'true';
@@ -944,7 +944,8 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
   const body = hiddenEvent ? '범위 안에서만 보이는 이벤트' : typeof card.body === 'string' ? card.body : '';
   fillCardQuote(quote, body);
   const tagRow = node('span', 'card-tags');
-  for (const tag of Array.isArray(card.tags) ? card.tags.slice(0, 5) : []) {
+  const cardTags = Array.isArray(card.tags) ? card.tags.slice(0, 5) : [];
+  for (const tag of cardTags) {
     const chip = node('span', '', `#${tag}`); chip.dataset.tag = tag; chip.setAttribute('role', 'button'); chip.title = `#${tag} 태그로 찾기`;
     chip.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); searchTagFn?.(tag); });
     chip.tabIndex = 0;
@@ -958,7 +959,7 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
   if (useInk) {
     photo.classList.add('park-ink-overlay');
     if (!expanded) open.setAttribute('aria-label', body + ', 카드 크게 보기');
-    const options = inkOptions(style, expanded ? 1080 : compact ? 480 : 720);
+    const options = inkOptions(style, expanded ? 1080 : compact ? 480 : 720, cardTags);
     const canvas = node('canvas', 'park-ink-art');
     canvas.setAttribute('aria-hidden', 'true');
     photo.append(canvas);
@@ -2391,7 +2392,8 @@ function updateComposer() {
   syncQuickChoices();
   syncCardPhotoAttach();
   const visual = currentStyle();
-  syncComposeInk(selected, visual);
+  const previewTags = tagList(tags.value).slice(0, 5);
+  syncComposeInk(selected, visual, previewTags);
   if (!backdrop.hidden && text.parentNode === $('.compose-photo')) resizeComposerText();
   $('#compose-count').textContent = `${text.value.length} / 200자`;
   const extra = visual.boxTransparency !== 25 || selectedPhotoKey || tags.value.trim() || visual.font !== 'default'
@@ -2399,7 +2401,6 @@ function updateComposer() {
     || ['textColor', 'boxColor'].some(key => visual[key] !== 'default');
   $('#compose-more>summary').textContent = extra ? '꾸미기 · 추가 설정 (선택됨)' : '꾸미기 · 추가 설정';
   const values = parsedTags();
-  const previewTags = tagList(tags.value).slice(0, 5);
   $('#compose-tag-display').replaceChildren(...previewTags.map(value => node('span', '', `#${value.slice(0, 20)}`)));
   fitTagRow($('#compose-tag-display'));
   const overflows = !backdrop.hidden && !!text.value.trim()
