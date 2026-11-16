@@ -10,6 +10,19 @@ export const YUT = ['', '도', '개', '걸', '윷', '모'];
 export const ROCK = [3,16], WHIRL = [8,13], WIND = [6,18];
 const fork = new Set([5,10,22]);
 
+export const EVENT_NAMES={back:'뒤로 한 칸',carry:'말 업기 ×2',home:'처음으로'};
+function dealEventTiles(mode){
+  const reserved=new Set([0,5,10,15,22]);
+  if(mode==='island')for(const n of [...ROCK,...WHIRL,...WIND])reserved.add(n);
+  const spots=Array.from({length:FINISH},(_,n)=>n).filter(n=>!reserved.has(n));
+  const tiles={};
+  for(const effect of ['back','carry','carry','home']){
+    const index=Math.floor(Math.random()*spots.length);
+    const [node]=spots.splice(index,1);
+    tiles[node]=effect;
+  }
+  return tiles;
+}
 export function newGame(count=2,zodiacOffset=2,mode='island',pieceCounts=2,computerTeams=[],teamAnimals=null) {
   if (![2,3,4].includes(count)) throw new Error('2~4팀을 골라 주세요.');
   if (!Number.isInteger(zodiacOffset)||zodiacOffset<0||zodiacOffset>=12) throw new Error('십이지 동물을 골라 주세요.');
@@ -19,7 +32,7 @@ export function newGame(count=2,zodiacOffset=2,mode='island',pieceCounts=2,compu
   if(!Array.isArray(computerTeams)||!computerTeams.every(i=>Number.isInteger(i)&&i>=0&&i<count))throw Error('컴퓨터 팀을 다시 골라 주세요.');
   const animals=teamAnimals??Array.from({length:count},(_,i)=>(zodiacOffset+i*3)%12);
   if(!Array.isArray(animals)||animals.length!==count||!animals.every(i=>Number.isInteger(i)&&i>=0&&i<12))throw Error('각 팀의 동물을 골라 주세요.');
-  return {mode,teamAnimals:[...animals],computerTeams:[...new Set(computerTeams)], team:0, turn:1, phase:'roll', revision:0, sticks:null, steps:0,
+  return {mode,eventTiles:dealEventTiles(mode),teamAnimals:[...animals],computerTeams:[...new Set(computerTeams)], team:0, turn:1, phase:'roll', revision:0, sticks:null, steps:0,
     pawns:counts.map(n=>Array.from({length:n},()=>[])), zodiacOffset, winner:null, lastMove:null,
     note:'윷을 던져 첫 말을 출발시키세요.'};
 }
@@ -82,10 +95,14 @@ export function move(state,index,shortcut=false) {
   let {next,frames}=advance(trail,state.steps,shortcut);
   let at=position(next), effect='', captured=0;
   const obstacles=state.mode!=='easy';
-  if(obstacles&&(ROCK.includes(at)||WHIRL.includes(at))){
-    const back=WHIRL.includes(at)?2:1;
+  const landing=at,event=state.eventTiles?.[at];
+  if(event==='home'){
+    next=[];frames.push(HOME);
+    effect='처음으로! '+(moving.length>1?'업은 말까지 모두 대기석으로 돌아갔어요.':'대기석으로 돌아갔어요.');
+  }else if(event==='back'||(obstacles&&(ROCK.includes(at)||WHIRL.includes(at)))){
+    const back=event==='back'||!WHIRL.includes(at)?1:2;
     for(let i=0;i<back&&next.length;i++){next.pop();frames.push(position(next));}
-    effect=back===2?'소용돌이! 두 칸 뒤로 밀렸어요.':'바위턱! 한 칸 뒤로 밀렸어요.';
+    effect=event==='back'?'뒤로 한 칸! 왔던 길로 한 칸 물러났어요.':back===2?'소용돌이! 두 칸 뒤로 밀렸어요.':'바위턱! 한 칸 뒤로 밀렸어요.';
   }else if(obstacles&&WIND.includes(at)){
     const gust=advance(next,2,false);
     next=gust.next;frames.push(...gust.frames);effect='순풍! 두 칸 더 갔어요.';
@@ -99,18 +116,27 @@ export function move(state,index,shortcut=false) {
     // All members of a stack follow the arriving group's route after they meet.
     team.forEach((p,i)=>{if(position(p)===at)team[i]=[...next];});
   }
+  let pickedUp=null;
+  if(event==='carry'){
+    const stacked=team.filter(trail=>position(trail)===at).length;
+    const reserve=team.findIndex(trail=>position(trail)===HOME);
+    if(stacked===1&&reserve>=0){
+      team[reserve]=[...next];pickedUp=reserve;
+      effect='말 업기 ×2! 대기 중인 '+(reserve+1)+'번 말을 업었어요.';
+    }else effect=stacked>1?'말 업기 ×2! 이미 업힌 말이 함께 가요.':'말 업기 ×2! 업을 대기 말이 없어요.';
+  }
   const won=team.every(p=>position(p)===FINISH);
   const extra=state.steps>=4||captured>0;
   const notes=[TEAMS[state.team].name+' '+(index+1)+'번 말'+(at===FINISH?' 골인!':' 이동.')];
   if(effect)notes.push(effect);
   if(captured)notes.push(captured+'마리를 잡았어요!');
   const stackSize=team.filter(p=>position(p)===at).length;
-  if(at!==HOME&&at!==FINISH&&stackSize>moving.length)notes.push('말 '+stackSize+'개가 함께 가요.');
+  if(!event&&at!==HOME&&at!==FINISH&&stackSize>moving.length)notes.push('말 '+stackSize+'개가 함께 가요.');
   if(won)notes.push('말 '+team.length+'개 모두 골인!');
   else if(extra)notes.push('한 번 더 던져요.');
   return {...state,pawns,revision:state.revision+1,phase:won?'won':'roll',winner:won?state.team:null,
     team:won||extra?state.team:(state.team+1)%pawns.length,turn:state.turn+(won||extra?0:1),
-    lastMove:{team:state.team,indices:moving,frames,from},note:notes.join(' ')};
+    lastMove:{team:state.team,indices:moving,frames,from,landing,event:event??null,pickedUp},note:notes.join(' ')};
 }
 // Estimate the remaining path with the same forks and center-entry rule as a real move.
 function stepsLeft(trail){

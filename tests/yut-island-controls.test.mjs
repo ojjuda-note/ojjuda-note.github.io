@@ -64,10 +64,15 @@ test('a throw waits for a player to place a piece, including a reserve piece',as
   function setFaces(n){let i=0;t.mock.method(Math,'random',()=>i++%4<n?0.1:0.9);}
   const selected=()=>doc.querySelector('#reserve-pawns [aria-pressed="true"], #move-tools:not([hidden]) [aria-pressed="true"]')?.dataset.pawn;
   const reserve=doc.getElementById('reserve-pawns');
+  // Keep the route exercised below ordinary; the last four board squares receive the events.
+  t.mock.method(Math,'random',()=>.99);
   await import('../games/yut/play.mjs');
   const dialogButton=name=>[...doc.querySelectorAll('#dialog-body button')].find(b=>b.textContent===name);
   assert.equal(text('dialog-title'),'윷놀이 시작');
   dialogButton('한 기기').click();dialogButton('게임 시작').click();
+  assert.equal(doc.getElementById('event-key').hidden,false);doc.getElementById('event-key').click();
+  assert.equal(text('dialog-title'),'이번 판 특수 칸');assert.equal(doc.querySelectorAll('.event-card').length,3);
+  assert.match(text('dialog-body'),/대기 말 하나를 업어요/);doc.getElementById('close').click();
   assert.equal(first().textContent,'윷 던지기');
   const rack=doc.getElementById('rack-canvas');
   assert.equal(text('rack-title'),'던질 윷');

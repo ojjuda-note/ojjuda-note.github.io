@@ -1,5 +1,5 @@
 import { animalFor,drawZodiac } from './zodiac.mjs?v=3';
-import { TEAMS } from './rules.mjs?v=5';
+import { TEAMS } from './rules.mjs?v=6';
 
 // A square lacquer board viewed by a level, front-facing orthographic camera.
 const TAU = Math.PI * 2;
@@ -14,6 +14,14 @@ const pawnSizes=[0,1.38,1.06,.89,.85];
 const validPawnIndex=index=>Number.isInteger(index)&&index>=0&&index<4;
 const PEARL=['#fff1cd','#f1f3e4','#c5e8e1','#d0d3eb','#ead0df','#f7ddc7'];
 const GOLD='#ffe3a2';
+const eventStamps={
+  back:{color:'#8e482f',tones:['#ffe3bf','#b87852','#f6c194'],glyph:'−1',
+    contour:[[-.88,0],[-.46,-.54],[.65,-.54],[.77,-.41],[.77,.41],[.65,.54],[-.46,.54]]},
+  carry:{color:'#1b6354',tones:['#e2f7d5','#73a58b','#b9e5bf'],glyph:'×2',
+    contour:[[-.62,-.55],[.62,-.55],[.79,-.34],[.79,.34],[.62,.55],[-.62,.55],[-.79,.34],[-.79,-.34]]},
+  home:{color:'#514276',tones:['#eee4ff','#a58bb9','#d8caeb'],
+    contour:[[-.74,-.36],[0,-.67],[.74,-.36],[.62,.33],[0,.61],[-.62,.33]]}
+};
 const c = 4.05;
 const nodes = [[c,c]];
 for (let i=1;i<=5;i++) nodes.push([c,c-i*c*2/5]);
@@ -73,7 +81,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   }
   const dep=(x,z)=>-x*sin+z*cos;
   let targets=[],options=[],selected=null,gesture=null,drawnPawns=[],skipClick=null;
-  let playMode='island',flags=[];
+  let playMode='island',eventTiles=null,flags=[];
   let backdrop=null,beamKey='',beamStart=0,beamRise=0;
   const beamMs=1150;
   const horizontal=(x,z)=>x*cos+z*sin;
@@ -258,13 +266,29 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       face(mapAt([[a-.105*dx,b-.105*dz],[a-.044*dz,b+.044*dx],[a+.105*dx,b+.105*dz],[a+.044*dz,b-.044*dx]],surface+.022),diag?'#f5faf0':'#fff1c9');
     }
   }
+  function eventStamp(stamp,x,y,r){
+    // The face stays readable from each viewing side, like the pawn number plates.
+    const h=r*Math.max(.78,tilt);
+    const contour=stamp.contour.map(([u,v])=>[x+u*r,y+v*h]);
+    flat(contour,stamp.color,'#fff4d9',Math.max(.8,r*.06));
+    if(stamp.glyph){
+      ctx.save();
+      ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fffbed';
+      ctx.font='bold '+Math.max(7,r*.94)+'px system-ui, sans-serif';
+      ctx.fillText(stamp.glyph,x,y+h*.035,r*1.34);ctx.restore();
+    }else{
+      const house=[[-.46,.01],[0,-.38],[.46,.01],[.33,.01],[.33,.30],[.09,.30],[.09,.09],[-.09,.09],[-.09,.30],[-.33,.30],[-.33,.01]];
+      flat(house.map(([u,v])=>[x+u*r,y+v*h]),'#fffbed');
+    }
+  }
   function tile(i){
     const [x,z]=nodes[i],original=types[i];
     const type=playMode==='easy'&&['stone','whirl','breeze'].includes(original)?'normal':original;
     const hero=['start','corner','center'].includes(type);
     const rad=hero?.735:i>=20?.42:.505,y=hero?.435:.352;
     const outer=ring(x,z,rad,rad,32),lid=ring(x,z,rad*.84,rad*.84,32),[sx,sy]=project([x,y,z]),r=rad*scale;
-    const tones=hero?['#fff5d8','#d9b879','#f5e0ac']:type==='stone'?['#ffd6b7','#c58271','#f2b6a0']:
+    const event=eventTiles?.[i],stamp=Object.hasOwn(eventStamps,event)?eventStamps[event]:null;
+    const tones=stamp?stamp.tones:hero?['#fff5d8','#d9b879','#f5e0ac']:type==='stone'?['#ffd6b7','#c58271','#f2b6a0']:
       type==='breeze'?['#e4f5d7','#8abca2','#c5e6c3']:type==='whirl'?['#ece4fa','#ac98c1','#ecd1e5']:
       i>=20?['#f0f7e9','#c5d4ca','#e6ecd9']:['#fff8e1','#d1d8c5','#f6efdb'];
     castShadow(x,z,surface+.004,rad*1.13,rad*1.10,y-surface,.67);
@@ -277,6 +301,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     const disc=(size,col)=>feature(x,z,y+.006,size,size,col);
     const mark=(p,col)=>face(stampShape(p,x,z,rad,y+.019),col);
     const stroke=(p,col,w)=>line(stampShape(p,x,z,rad,y+.022),col,w*rad);
+    if(stamp){eventStamp(stamp,sx,sy,r);return;}
     outline(ring(x,z,rad*.75,rad*.75,28),hero?'#a3824c':'#8b9c8c',.016,y+.010);
     if(type==='path'||type==='normal'){disc(rad*.105,type==='path'?'#577b79':'#8c8d71');disc(rad*.047,tones[0]);return;}
     if(type==='stone'){
@@ -855,6 +880,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       }
       reserves=Array.isArray(next.waiting)?next.waiting.filter(p=>p&&TEAMS[p.team]&&validPawnIndex(p.index)).map(p=>({...p})):[];
       pieces=list;setActiveTeam(next.activeTeam??null);playMode=next.mode==='easy'?'easy':'island';
+      eventTiles=next.eventTiles??null;
       if(gesture&&(gesture.team!==activeTeam||(gesture.external&&!reserves.some(p=>p.team===gesture.team&&p.index===gesture.index))))closeGesture(true);
       schedule();
     },

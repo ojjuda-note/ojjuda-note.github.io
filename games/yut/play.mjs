@@ -1,7 +1,7 @@
-import {TEAMS,HOME,FINISH,YUT,ROCK,WHIRL,WIND,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed} from './rules.mjs?v=5';
-import {createBoard} from './board.mjs?v=11';
+import {TEAMS,HOME,FINISH,YUT,EVENT_NAMES,ROCK,WHIRL,WIND,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed} from './rules.mjs?v=6';
+import {createBoard} from './board.mjs?v=12';
 import {createToss,drawRack} from './toss.mjs?v=7';
-import {openRoom,roomCode} from './room.mjs?v=5';
+import {openRoom,roomCode} from './room.mjs?v=6';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=3';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
@@ -50,7 +50,7 @@ function draw(s,override,snap=false){
     position(trail)===HOME&&!pieces.some(p=>p.team===t&&p.index===i)?[{team:t,index:i}]:[]));
   const withAnimal=p=>({...p,animal:animalFor(p.team,p.index,s.zodiacOffset,s.teamAnimals)});
   const activeTeam=(s.phase==='won'&&!busy)||(net&&!net.game)?null:turnTeam(s);
-  board.setState({pieces:pieces.map(withAnimal),activeTeam,waiting:waiting.map(withAnimal),mode:s.mode??'island',snap});
+  board.setState({pieces:pieces.map(withAnimal),activeTeam,waiting:waiting.map(withAnimal),mode:s.mode??'island',eventTiles:s.eventTiles,snap});
   const locations=s.pawns[s.team].map((trail,i)=>pieceName(s,s.team,i)+' · '+nodeName(position(trail)));
   $('board').setAttribute('aria-label',TEAMS[s.team].name+' 팀. '+locations.join(', ')+'.');
 }
@@ -129,13 +129,20 @@ async function showState(s,animate=true){
     const dropAt=placed&&team===previous.team&&indices.includes(placed.index)?frames.indexOf(placed.to):-1;
     const remaining=dropAt<0?frames:frames.slice(dropAt+1);
     const movingAt=node=>[...base,...(node===HOME||node===FINISH?[]:indices.map(index=>({team,index,node})))];
+    const pauseAt=node=>{
+      if(s.lastMove.event&&node===s.lastMove.landing){
+        $('note').textContent=s.note;
+        return 670;
+      }
+      return 235;
+    };
     if(dropAt>=0){
-      if(remaining.length){draw(s,movingAt(placed.to),true);await delay(170);}
-      else draw(s,undefined,true);
+      if(remaining.length){draw(s,movingAt(placed.to),true);await delay(pauseAt(placed.to));}
+      else{draw(s,undefined,true);if(s.lastMove.event)await delay(pauseAt(placed.to));}
     }
     for(const node of remaining){
       if(token!==motion)return;
-      draw(s,movingAt(node));await delay(235);
+      draw(s,movingAt(node));await delay(pauseAt(node));
     }
   }
   if(token!==motion)return;
@@ -164,6 +171,7 @@ function destinationLabel(s,m,choices){
   if(choices.some(o=>o.index===m.index&&o.shortcut!==m.shortcut)){
     return m.shortcut?'지름길':position(s.pawns[s.team][m.index])===22?'다른 길':'바깥길';
   }
+  if(s.eventTiles?.[m.to])return EVENT_NAMES[s.eventTiles[m.to]];
   if(s.mode!=='easy'){
     if(ROCK.includes(m.to))return '바위턱';
     if(WHIRL.includes(m.to))return '소용돌이';
@@ -262,13 +270,15 @@ function moveControls(s,options){
   for(const [i,m] of paths.entries()){
     const cue=destinationLabel(s,m,options);
     const label=cue==='골인'?'골인하기':paths.length>1?cue+'로 이동':s.steps+'칸 이동';
-    const action=button(label,i?'secondary route-btn':'primary advance-btn',()=>{if(game===s)place(m);});
-    action.setAttribute('aria-label',label+' · '+nodeName(m.to));actions.append(action);
+    const eventName=EVENT_NAMES[s.eventTiles?.[m.to]];
+    const action=button(eventName?label+' · '+eventName:label,i?'secondary route-btn':'primary advance-btn',()=>{if(game===s)place(m);});
+    action.setAttribute('aria-label',action.textContent+' · '+nodeName(m.to));actions.append(action);
   }
 }
 function renderHUD(){
   const s=game,lobby=net&&!net.game,other=net&&net.seat!==s.team;
   const team=turnTeam(s),bot=s.computerTeams?.includes(s.team);
+  $('event-key').hidden=!!lobby||!s.eventTiles;
   const mode=s.mode==='easy'?'쉬운 놀이':'장애물 놀이';
   $('team-title').replaceChildren(...(lobby?[document.createTextNode('온라인 대기실')]:
     [dot(team),document.createTextNode(TEAMS[team].name+' 팀'+(s.phase==='won'?' 승리!':busy&&!casting?' 이동 중':' 차례'))]));
@@ -312,6 +322,34 @@ function openPanel(title,name){
 }
 function closePanel(){if(dialog.open)dialog.close();}
 function message(text){const el=element('p',text,'message');el.setAttribute('role','status');return el;}
+const eventDescriptions={
+  back:['−1','방금 지나온 길로 한 칸 물러나요.'],
+  carry:['×2','혼자 도착하면 대기 말 하나를 업어요. 이후 두 말이 함께 움직여요.'],
+  home:['⌂','도착한 말과 함께 업힌 말이 모두 대기석으로 돌아가요.']
+};
+function eventPlace(node){
+  if(node<20)return '바깥길 '+node+'번';
+  // Inner fork numbers run from the preceding corner or from the shared center.
+  const [from,toward,offset]=node<22?[5,22,19]:node<25?[22,15,22]:node<27?[10,22,24]:[22,0,26];
+  const landmark=n=>n===22?'가운데':n===0?'출발점':n+'번';
+  return landmark(from)+' → '+landmark(toward)+' 사이 '+(node-offset)+'번째';
+}
+function eventGuide(s){
+  const guide=element('div',undefined,'event-guide');
+  for(const [type,[glyph,copy]] of Object.entries(eventDescriptions)){
+    const nodes=Object.keys(s.eventTiles??{}).map(Number).filter(n=>s.eventTiles[n]===type);
+    if(!nodes.length)continue;
+    const card=element('div',undefined,'event-card'),icon=element('span',glyph,'event-glyph '+type);
+    icon.setAttribute('aria-hidden','true');
+    card.append(icon,element('strong',EVENT_NAMES[type]),element('p',copy),element('small',nodes.map(eventPlace).join(' · ')));
+    guide.append(card);
+  }
+  return guide;
+}
+function showEventGuide(){
+  openPanel('이번 판 특수 칸','events');
+  body.append(message('윷을 던져 멈춘 칸의 효과가 한 번 적용돼요. 새 판마다 위치가 바뀌어요.'),eventGuide(game),button('알겠어요','primary',closePanel));
+}
 function rules(){
   openPanel('놀이 방법','help');
   const list=element('ol');
@@ -320,6 +358,7 @@ function rules(){
    '갈림길에 멈추면 다음 차례에 지름길을 고를 수 있어요. 출발점으로 돌아와 한 칸 더 지나면 골인이에요.',
    '같은 팀 말은 업어서 함께 가요. 윷·모가 나오거나 상대 말을 잡으면 한 번 더 던져요. 우리 팀 말을 모두 골인시키면 이겨요.'].forEach(t=>list.append(element('li',t)));
   body.append(list);
+  if(game.eventTiles)body.append(button('이번 판 특수 칸 보기','secondary',showEventGuide));
   if(game.mode==='easy'){body.append(button('알겠어요','primary',closePanel));return;}
   const effects=element('div',undefined,'effects');
   for(const [symbol,name,effect,tint] of [['▲','바위턱','한 칸 뒤로','#efb59e'],['◎','소용돌이','두 칸 뒤로','#b6c9f0'],['»','순풍','두 칸 앞으로','#a2e6d0']]){
@@ -337,7 +376,7 @@ function resetLocal(setup,computer){
 function modePicker(current,onChange){
   const box=element('div'),label=element('label','놀이 방식'),select=element('select');
   label.htmlFor='game-mode';select.id=label.htmlFor;
-  for(const [value,copy] of [['easy','쉬운 놀이 · 나온 수만큼 이동'],['island','장애물 놀이 · 특수 칸에서 앞뒤로 이동']]){
+  for(const [value,copy] of [['easy','쉬운 놀이 · 랜덤 특수 칸'],['island','장애물 놀이 · 섬 장애물 추가']]){
     const option=element('option',copy);option.value=value;select.append(option);
   }
   select.value=current;select.onchange=()=>onChange?.(select.value);
@@ -505,7 +544,7 @@ async function leaveRoom(){
   ++attempt;pendingRoom=false;const old=room;room=null;net=null;roomGame=false;lastLobby='';setRoomAddress(null);closePanel();void showState(local,false);renderHUD();
   if(old)await old.close().catch(()=>{});
 }
-$('settings').onclick=()=>settings();$('team-title').onclick=standings;$('close').onclick=closePanel;
+$('event-key').onclick=showEventGuide;$('settings').onclick=()=>settings();$('team-title').onclick=standings;$('close').onclick=closePanel;
 dialog.addEventListener('close',()=>{if(!dialog.open){panel='';renderHUD();}});
 dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closePanel();}});
 reduced.addEventListener?.('change',()=>{if(reduced.matches&&casting)toss.cancel();});
