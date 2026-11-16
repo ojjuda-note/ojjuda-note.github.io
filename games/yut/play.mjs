@@ -1,5 +1,5 @@
 import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,ROCK,WHIRL,WIND,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed} from './rules.mjs?v=7';
-import {createBoard} from './board.mjs?v=14';
+import {createBoard} from './board.mjs?v=15';
 import {createToss,drawRack} from './toss.mjs?v=7';
 import {openRoom,roomCode} from './room.mjs?v=7';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=3';
@@ -184,6 +184,7 @@ function destinationLabel(s,m,choices){
 function renderReserve(s,team,options,lobby){
   $('reserve').hidden=!!lobby;
   if(lobby)return;
+  $('reserve').classList.toggle('two-row-tray',s.pawns.some(pawns=>pawns.length>2));
   const indices=s.pawns[team].flatMap((trail,index)=>position(trail)===HOME?[index]:[]);
   $('reserve-team').textContent=TEAMS[team].name+' 팀';
   const key=[team,animalFor(team,0,s.zodiacOffset,s.teamAnimals),...indices].join('/');
@@ -265,7 +266,7 @@ function moveControls(s,options){
     item.append(animalIcon(s.team,index,s.zodiacOffset,s.teamAnimals),copy);
     picker.append(item);
   }
-  if(restorePicker)picker.querySelector('[data-pawn="'+selectedPawn+'"]')?.focus();
+  if(restorePicker)picker.querySelector('[data-pawn="'+selectedPawn+'"]')?.focus({preventScroll:true});
   const paths=options.filter(o=>o.index===selectedPawn).sort((a,b)=>Number(b.shortcut)-Number(a.shortcut));
   for(const [i,m] of paths.entries()){
     const cue=destinationLabel(s,m,options);
@@ -314,7 +315,7 @@ function renderHUD(){
   scheduleComputer();
   if(resumeActionFocus&&!dialog.open){
     const next=actions.querySelector('button:enabled');
-    if(next){next.focus();resumeActionFocus=false;}
+    if(next){next.focus({preventScroll:true});resumeActionFocus=false;}
   }
 }
 function openPanel(title,name){

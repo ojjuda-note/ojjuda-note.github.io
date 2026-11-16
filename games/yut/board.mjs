@@ -61,9 +61,9 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   const ctx = canvas.getContext('2d');
   if(!ctx)return {setState(){},setMoves(){},setTargets(){},beginReserveDrag(){return false;},updateReserveDrag(){},endReserveDrag(){return false;},cancelReserveDrag(){},rotate(){},destroy(){}};
   let width=0,height=0,scale=1,ox=0,oy=0;
-  let angle=0,cos=1,sin=0,tilt=.8,lift=.6;
+  let angle=0,cos=1,sin=0,tilt=.8,lift=.6,framedAngle=null;
   let turnFrom=angle,turnTo=angle,turnStart=0,moves=[],pieces=[],reserves=[],activeTeam=null;
-  const emphasisMs=640,turnGrowth=.14;
+  const emphasisMs=640,turnGrowth=.14,stepLift=.53;
   let emphasisFrom=TEAMS.map(()=>0),emphasisStart=null;
   let frame=0,dead=false;
   const reduced=()=>typeof matchMedia==='function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -403,10 +403,10 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
         if(step){
           const t=Math.max(0,Math.min(1,(time-step.start)/265));
           centerX=step.from[0]*(1-t)+nx*t;centerZ=step.from[1]*(1-t)+nz*t;
-          y+=Math.sin(pi*t)*.53;
+          y+=Math.sin(pi*t)*stepLift*tilt;
         }
         positions.push({p,x:centerX+side*cos-depth*sin,z:centerZ+side*sin+depth*cos,
-          centerX,centerZ,y,ground,size,baseSize,light,from:node});
+          centerX,centerZ,y,ground,size,light,from:node});
       });
     }
     return positions;
@@ -599,6 +599,28 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   function flagAt(x,y,allowed){
     return flags.find(f=>allowed.includes(f.n)&&x>=f.left-1&&x<=f.right+1&&y>=f.top-1&&y<=f.bottom+1);
   }
+  function frameBoard(){
+    const rotationSpan=Math.abs(cos)+Math.abs(sin),span=10.06*rotationSpan;
+    const pad=Math.max(3,Math.min(10,Math.min(width,height)*.014));
+    const widthScale=(width-2*pad)/span,availableHeight=(height-2*pad)/widthScale;
+    // Reserve the far corner for a full-size, highlighted pawn at the top of its hop,
+    // even on an empty board. Only the viewport and deliberate rotation affect the camera.
+    const size=pawnSizes[1]*(1+turnGrowth),farCorner=c*rotationSpan;
+    const head=nodeHeight(0)+.004+1.15*size;
+    const top=(t,l)=>-Math.max(span*.5*t+surface*l,(farCorner+.40*size)*t+(head+stepLift*t)*l);
+    const bottom=(t,l)=>(span*.5+.08)*t+.83*l;
+    let low=.32,high=.90;
+    for(let i=0;i<10;i++){
+      const mid=(low+high)/2,l=Math.sqrt(1-mid*mid);
+      if(bottom(mid,l)-top(mid,l)<=availableHeight)low=mid;
+      else high=mid;
+    }
+    tilt=low;lift=Math.sqrt(1-tilt*tilt);
+    const first=top(tilt,lift),last=bottom(tilt,lift);
+    scale=Math.min(widthScale,(height-2*pad)/(last-first));
+    ox=width/2;oy=height/2-(first+last)*scale/2;
+    framedAngle=angle;
+  }
   function paint(time) {
     frame=0;if(dead||!width||!height)return;
     if(turnStart){const t=Math.min(1,(time-turnStart)/420);angle=turnFrom+(turnTo-turnFrom)*(1-(1-t)**3);if(t===1)turnStart=0;}
@@ -608,33 +630,15 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       const cardinal=(Math.round(angle/(pi/2))%4+4)%4;
       cos=[1,0,-1,0][cardinal];sin=[0,1,0,-1][cardinal];
     }
-    const span=10.06*(Math.abs(cos)+Math.abs(sin));
-    const aspect=height/width;
-    const wideFrame=Math.max(0,Math.min(1,(width-500)/140));
-    // The raised rim and pieces take up screen height in addition to the square playing surface.
-    const depthAllowance=.11*Math.sqrt(1-Math.min(.9,aspect)**2);
-    tilt=Math.min(.90,Math.max(.44,aspect*1.02-wideFrame*depthAllowance));
-    lift=Math.sqrt(1-tilt*tilt);
-    const pad=Math.max(3,Math.min(10,Math.min(width,height)*.014));
-    // Fit the panel, beveled coins, obstacles and any raised pawn to the same camera.
+    if(framedAngle!==angle)frameBoard();
     if(emphasisStart!==null&&(reduced()||time-emphasisStart>=emphasisMs))emphasisStart=null;
     drawnPawns=pawnPositions(time);
-    const farthest=c*(Math.abs(cos)+Math.abs(sin));
-    let top=Math.min(-span*.5*tilt-surface*lift,-(farthest+.81)*tilt-.49*lift,-(farthest+.25)*tilt-.80*lift);
-    for(const a of drawnPawns){
-      // Fit the largest turn pose throughout the transition so the board itself stays still.
-      const size=a.baseSize*(1+turnGrowth);
-      top=Math.min(top,(dep(a.x,a.z)-.40*size)*tilt-(a.y+1.15*size)*lift);
-    }
-    const bottom=(span*.5+.08)*tilt+.83*lift;
-    scale=Math.min((width-pad*2)/span,(height-pad*2)/(bottom-top));
-    ox=width/2;oy=height/2-(top+bottom)*scale/2;
     const allowed=destinationNodes();
     const key=allowed.length?[activeTeam,selected??'all',...allowed].join('/'):'';
     if(key!==beamKey){beamKey=key;beamStart=time;backdrop=null;}
     const elapsed=reduced()?beamMs:Math.max(0,time-beamStart);
     beamRise=1-(1-Math.min(1,elapsed/510))**3;
-    const stationary=!turnStart&&!moves.length;
+    const stationary=!turnStart;
     if(stationary&&backdrop){
       ctx.drawImage(backdrop,0,0,width,height);
     }else{
@@ -661,7 +665,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   function schedule(){if(!dead&&!frame)frame=requestAnimationFrame(paint);}
   function resize() {
     const rect=canvas.getBoundingClientRect();width=rect.width;height=rect.height;
-    backdrop=null;flags=[];
+    framedAngle=null;backdrop=null;flags=[];
     if(gesture){gesture.x=gesture.clientX-rect.left;gesture.y=gesture.clientY-rect.top;}
     const ratio=Math.min(window.devicePixelRatio||1,2);
     const w=Math.max(1,Math.round(width*ratio)),h=Math.max(1,Math.round(height*ratio));

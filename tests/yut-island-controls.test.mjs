@@ -270,3 +270,35 @@ test('destination light rises, accepts a drop on its shaft and stops animating',
   assert.equal(tap(195,above),22);assert.equal(pending,null);
   board.destroy();
 });
+
+test('board landmarks stay fixed when pieces enter, hop across or leave the far row',()=>{
+  globalThis.window={devicePixelRatio:1,addEventListener(){},removeEventListener(){}};
+  globalThis.matchMedia=()=>({matches:false});
+  let frame;
+  globalThis.requestAnimationFrame=fn=>{frame=fn;return 1;};
+  globalThis.cancelAnimationFrame=()=>{};
+  const gradient=()=>({addColorStop(){}});
+  for(const [width,height] of [[390,400],[706,408],[1138,779],[590,245]]){
+    const marks=new Map();
+    const ctx=new Proxy({createRadialGradient:gradient,createLinearGradient:gradient,fillText:(s,x,y)=>marks.set(s,[x,y])},
+      {get:(o,k)=>o[k]??(()=>{})});
+    const canvas={width,height,style:{},classList:{toggle(){}},getContext:()=>ctx,
+      getBoundingClientRect:()=>({left:0,top:0,width,height}),addEventListener(){},removeEventListener(){}};
+    const board=createBoard(canvas),eventTiles={1:'back',16:'carry'};
+    const state=(pieces,activeTeam=0,snap=true)=>board.setState({pieces,activeTeam,snap,eventTiles});
+    const sample=time=>{marks.clear();frame(time);return ['−1','×2'].map(key=>{assert.ok(marks.has(key));return marks.get(key);});};
+    for(let turn=0;turn<4;turn++){
+      state([]);if(turn)board.rotate();
+      const reference=sample(performance.now()+900);
+      for(const node of [0,5,10,15]){
+        const pawn={team:0,index:0,node};
+        state([pawn],0,false);
+        const start=performance.now();
+        for(const ms of [0,65,132,230,300])assert.deepEqual(sample(start+ms),reference);
+        state([pawn,{...pawn,index:1}],1);assert.deepEqual(sample(start+700),reference);
+        state([]);assert.deepEqual(sample(start+900),reference);
+      }
+    }
+    board.destroy();
+  }
+});

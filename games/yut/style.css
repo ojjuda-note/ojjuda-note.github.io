@@ -107,6 +107,9 @@ dialog .setup-hint{margin:7px 0 11px;font-size:13px;color:#cce0d6}
   #reserve-pawns:has(>:nth-child(3)){grid-template-columns:repeat(3,minmax(0,1fr))}
   #reserve-pawns:has(>:nth-child(4)){grid-template-columns:repeat(4,minmax(0,1fr))}
 }
+@container (width < 550px){
+  .two-row-tray #reserve-pawns{grid-template-rows:repeat(2,minmax(var(--tray-row-height,48px),auto))}
+}
 @media(max-width:355px){.score-piece .animal-icon{width:30px;height:27px}.score-piece b{font-size:11px}}
 dialog .primary{width:100%}#dialog-body>.secondary{margin:4px 3px 0 0}
 #event-key{display:flex;align-items:center;flex-wrap:wrap;gap:3px 10px;min-height:30px;margin-top:3px;padding:3px 0;border:0;background:transparent;color:#e6e9dc;text-align:left;font-size:12px}
@@ -119,10 +122,16 @@ dialog .primary{width:100%}#dialog-body>.secondary{margin:4px 3px 0 0}
 .effect-row{display:flex;align-items:center;gap:9px;font-size:13px}.effect-row b{color:var(--pearl)}.effect-row span:last-child{margin-left:auto;color:var(--muted)}
 .effect-icon{display:inline-grid;place-items:center;width:23px;height:23px;font-size:15px;font-weight:800;color:var(--tint)}
 @media(aspect-ratio < 6/5){
+  /* The play area keeps its track when the message, reserve or move controls change. */
+  .tabletop{
+    --controls-budget:340px;
+    grid-template-rows:auto clamp(165px,calc(100svh - var(--controls-budget) - env(safe-area-inset-top) - env(safe-area-inset-bottom)),103vw) auto minmax(min-content,1fr);
+  }
   .station{min-height:clamp(162px,calc(100dvh - 103vw - 112px),320px);grid-template-rows:auto minmax(min-content,1fr) auto;border-top:0}
   .rack{min-height:58px}
 }
 @media(min-width:560px) and (aspect-ratio < 6/5){
+  .tabletop{--controls-budget:246px}
   .station{
     min-height:0;grid-template-columns:minmax(0,.9fr) minmax(0,1fr);grid-template-rows:auto auto;
     grid-template-areas:"turn tools" "turn action";align-items:center;gap:8px clamp(16px,3vw,34px);
@@ -151,6 +160,7 @@ dialog .primary{width:100%}#dialog-body>.secondary{margin:4px 3px 0 0}
   .goals{font-size:12px}.team-dot{width:22px;height:22px}.primary{font-size:17px}dialog{padding:17px}
 }
 @media(max-height:480px) and (min-aspect-ratio:6/5){
+  .reserve{--tray-row-height:44px}
   .reserve-inner{min-height:51px;padding-block:3px}#reserve-pawns .pawn-choice{min-height:44px}
   .rail{padding-top:env(safe-area-inset-top);padding-bottom:0}.rail-btn{min-height:36px}.rail h1{font-size:18px}
   .station{gap:7px;padding:8px 10px}.turn-line{gap:4px 7px}#team-title{font-size:17px}.goals{font-size:12px}#note{font-size:14px;margin-top:4px}
