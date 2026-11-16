@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f6f4ed"><title>섬마을 윷놀이 · 오쭈다 오락실</title>
+<link rel="stylesheet" href="./style.css?v=1">
+<script defer src="/config.js"></script><script type="module" src="./play.mjs?v=1"></script></head>
+<body>
+<header class="top"><div class="top-in"><a href="/world.html?tab=arcade" class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>오쭈다 오락실</a><div class="tools"><button id="help"><span aria-hidden="true">?</span> 놀이 방법</button><button id="settings">게임 설정</button></div></div></header>
+<main>
+<div class="heading"><div><p class="eyebrow"><span></span> 함께하는 플레이</p><h1>섬마을 윷놀이</h1><p class="intro">윷을 던져 섬을 한 바퀴! 두 말을 먼저 골인시킨 팀이 이겨요.</p></div></div>
+<div class="game-layout">
+<section class="scene" aria-label="섬마을 윷놀이판"><canvas id="board" role="img" aria-label="스무 칸의 섬길과 대각선 지름길이 있는 3D 윷놀이판"></canvas><div class="map-label"><span class="map-dot"></span><span id="map-mode">한 기기 · 2팀</span></div><button id="rotate" class="rotate" aria-label="보드 시점 돌리기" title="시점 돌리기">⟳</button></section>
+<aside class="console"><div class="turn-bar"><span class="minor">현재 차례</span><span id="turn-no"></span></div><h2 id="team-title">산호 팀</h2><div id="sticks-stage"><div id="sticks" aria-label="네 개의 윷가락"></div><div id="outcome">첫 윷을 던져 볼까요?</div></div>
+<p id="note" class="note" aria-live="polite"></p><div id="actions"></div></aside>
+</div>
+<section class="status"><h2>우리 말 현황</h2><div id="scoreboard" class="scoreboard"></div></section>
+<div class="legend" aria-label="특수 칸"><span><b class="rock">▴</b> 바위턱 <em>−1칸</em></span><span><b class="whirl">◎</b> 소용돌이 <em>−2칸</em></span><span><b class="wind">»</b> 순풍 <em>+2칸</em></span></div>
+</main>
+<dialog id="sheet"><div class="dialog-title"><h2 id="dialog-title"></h2><button id="close" aria-label="닫기">×</button></div><div id="dialog-body"></div></dialog>
+</body></html>

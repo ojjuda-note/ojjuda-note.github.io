@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261116-restaurants-c2s47-jeju-broadcast2-loc1'
+ const revision='20261116-island-yut1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -39,6 +39,7 @@
   mines:'1.5.1',
   sacheonseong:'1.18.2',
   saetbyeol:'1.8.1',
+  yut:'1.0.0',
   tour:'1.6.1',
   ttang:'1.7.1',
   photo_ttang:'1.6.1',
