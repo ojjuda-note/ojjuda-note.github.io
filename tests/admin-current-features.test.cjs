@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const read=p=>fs.readFileSync(path.join(__dirname,'..',p),'utf8');
-async function entry(query, allowed = true, signedIn = true) {
+async function entry(query, allowed = true, signedIn = true, userError = null) {
   const panels = Object.fromEntries(['status', 'auth-required', 'no-permission', 'error', 'retry']
     .map(id => [id, {hidden: false, addEventListener() {}}]));
   const redirects = [], scheduled = [], checks = {user: 0, role: 0};
@@ -11,6 +11,7 @@ async function entry(query, allowed = true, signedIn = true) {
     auth: {
       async getUser() {
         checks.user++;
+        if (userError) return {data:{user:null},error:userError};
         return {data: {user: signedIn ? {id: 'synthetic-admin'} : null}};
       },
       onAuthStateChange(listener) { onAuth = listener; }
@@ -52,6 +53,18 @@ async function entry(query, allowed = true, signedIn = true) {
  for(const [allowed,signedIn,panel]of [[false,true,'no-permission'],[true,false,'auth-required']]){
   const result=await entry('?admin=messages',allowed,signedIn);assert.deepEqual(result.redirects,[]);assert.equal(result.panels[panel].hidden,false);
  }
+ const burst = await entry('?admin=overview');
+ for (const event of ['SIGNED_IN','TOKEN_REFRESHED','SIGNED_IN']) burst.onAuth(event);
+ await burst.flush();
+ assert.deepEqual(burst.checks,{user:2,role:2},'one additional lookup for concurrent auth events');
+ for (const error of [{status:503},{status:429},{name:'AuthRetryableFetchError'}]) {
+   const failed = await entry('?admin=overview',true,true,error);
+   assert.equal(failed.panels.error.hidden,false);
+   assert.deepEqual(failed.checks,{user:1,role:0});
+   assert.deepEqual(failed.redirects,[]);
+ }
+ const expired = await entry('?admin=overview',true,true,{status:401});
+ assert.equal(expired.panels['auth-required'].hidden,false);
  const opened = await entry('?admin=overview');
  opened.onAuth('INITIAL_SESSION');
  await opened.flush();
