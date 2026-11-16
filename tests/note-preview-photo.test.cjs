@@ -176,6 +176,66 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   const saveDraft=(revision,content)=>value('select content as value from ojjuda_note_internal.save_draft($1,$2::jsonb)',[revision,JSON.stringify(content)]);
   assert.equal((await saveDraft(0,draft)).photo_key,'297');
   await assert.rejects(()=>saveDraft(1,{...draft,photo_key:'298'}),e=>e.code==='22023');
+
+  // Run the real guest publisher before and after its upgrade, including its retry path.
+  await db.exec(`
+    alter table ojjuda_note.cards drop constraint note_guest_basic_card;
+    create schema ojjuda_traffic;
+    create table ojjuda_traffic.settings(singleton boolean primary key, salt uuid not null);
+    insert into ojjuda_traffic.settings values (true,'a023fd6a-da03-4f38-975a-9ed940e7a127');
+    create table ojjuda_note_internal.settings(singleton boolean primary key, spam_max_consecutive int,
+      spam_window_seconds int, spam_max_posts int);
+    insert into ojjuda_note_internal.settings values (true,2,600,3);
+    create table ojjuda_note_internal.retention_alerts(recipient_id uuid);
+    create table ojjuda_note_internal.notifications(actor_id uuid, kind text);
+    create function ojjuda_note_internal.enforce_anti_spam() returns trigger language plpgsql as $$begin return new; end$$;
+    create function ojjuda_note_internal.remember_thread_alias() returns trigger language plpgsql as $$begin return new; end$$;
+    create function ojjuda_note_internal.spam_body_hash(text) returns text language sql immutable as $$select md5($1)$$;
+    create function ojjuda_note_internal.auto_card_tags(integer,date,text) returns text[] language sql as $$select array['공원']$$;
+  `);
+  await db.exec(read('supabase/migrations/20261116140954_park_guest_cards_and_calligraphy.sql'));
+  const guestPublish = (id,body,parent=null) => rpc('publish_guest_card',{p_request_id:id,p_body:body,p_parent_id:parent});
+  const guestPreview = id => rpc('guest_card_background',{p_request_id:id});
+  const stored = id => value('select background_key as value from ojjuda_note.cards where id=$1',[id]);
+  const legacyId = randomUUID();
+  await db.exec("select set_config('request.jwt.claim.sub','',false); set role anon");
+  const oldGuest = await guestPublish(legacyId,'이전에 쓴 글');
+  await db.exec('reset role');
+  assert.equal(await stored(oldGuest.card_id),'10');
+
+  const guestDraw = fs.readdirSync(path.join(root,'supabase/migrations')).find(n=>n.endsWith('_park_guest_random_backgrounds.sql'));
+  await db.exec(read('supabase/migrations/'+guestDraw));
+  assert.equal(await value("select has_table_privilege('anon','ojjuda_note.cards','INSERT') as value"),false);
+  assert.equal(await value("select has_column_privilege('anon','ojjuda_traffic.settings','salt','SELECT') as value"),false);
+  await db.exec('set role anon');
+  assert.deepEqual(await guestPublish(legacyId,'이전에 쓴 글'),oldGuest);
+  await assert.rejects(()=>guestPublish(legacyId,'다른 글'),e=>e.code==='23505');
+  const samples=(await db.query(`
+    select distinct on (key) request_id, key from (
+      select md5(i::text)::uuid as request_id, ojjuda_note.guest_card_background(md5(i::text)::uuid)::int as key
+      from generate_series(1,8192) i
+    ) draws order by key,request_id`)).rows;
+  assert.deepEqual(samples.map(draw=>draw.key),Array.from({length:288},(_,i)=>10+i));
+  const memoId=samples.find(draw=>draw.key===190).request_id;
+  const replyId=samples.find(draw=>draw.key===297).request_id;
+  const memoPreview=await guestPreview(memoId);
+  const memo=await guestPublish(memoId,'오늘 처음으로 핀 꽃');
+  const replyPreview=await guestPreview(replyId);
+  const response=await guestPublish(replyId,'반가운 봄 소식',memo.card_id);
+  assert.deepEqual(await guestPublish(replyId,'반가운 봄 소식',memo.card_id),response);
+  await assert.rejects(()=>guestPublish(randomUUID(),'잠시 뒤에 쓸 글'),e=>e.code==='PNS02');
+  await assert.rejects(()=>rpc('publish_guest_card',{
+    p_request_id:randomUUID(),p_body:'공원 글',p_background_key:'200'
+  }),e=>e.code==='42883');
+  await db.exec('reset role; set role authenticated');
+  assert.equal(await guestPreview(memoId),memoPreview,'restoring a guest draft after login keeps its preview');
+  await assert.rejects(()=>guestPublish(randomUUID(),'회원 글'),e=>e.code==='42501');
+  await db.exec('reset role');
+  assert.equal(await stored(memo.card_id),memoPreview);
+  assert.equal(await stored(response.card_id),replyPreview);
+  assert.equal(await stored(oldGuest.card_id),'10','older cards retain their original background on retry');
+  assert.equal(await balance(),initialCoins-10,'guest draws and retries cost nothing');
+  for(const key of ['plain','09','298',null]) await assert.rejects(()=>guestCard(key),e=>e.code==='23514');
   await db.close();
   console.log('PASS: preview-to-publish backgrounds, restored drafts, replies, attachments, events, guest defaults, watercolor rentals, free reuse, retries and access checks');
 })().catch(error=>{console.error(error);process.exit(1)});
