@@ -951,7 +951,7 @@
     {
       id: 'txt', name: 'TXT', korean: '투모로우바이투게더', category: 'boy', fan: 'MOA', agency: 'BIGHIT MUSIC',
       members: ['수빈', '연준', '범규', '태현', '휴닝카이'],
-      debut: '2019.03.04', debutWork: '꿈의 장: STAR', songs: ['어느날 머리에서 뿔이 자랐다 (CROWN)', 'Blue Orangeade'],
+      debut: '2019.03.04', debutWork: '꿈의 장: STAR', songs: ['Angel Bite', '어느날 머리에서 뿔이 자랐다 (CROWN)', 'Blue Orangeade'],
       concept: '다섯 멤버가 함께 그려 나가는 성장과 판타지.',
       checkedAt: '2026.11.16',
       official: 'https://ibighit.com/ko/txt/profile/', youtube: 'https://www.youtube.com/@TXT_bighit',
