@@ -168,8 +168,32 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     if (missing.endsWith('check')) app.element(missing).checked = false;
     else app.element(missing).value = '';
     await app.submit(); assert.equal(app.signups.length, 0, `${missing} must be required`);
+    assert.equal(app.focused, missing, `focus the missing signup field: ${missing}`);
     if (missing === 'age-check') assert.equal(app.element('auth-feedback').textContent, '만 14세 이상인지 확인해 주세요.');
     if (missing === 'password-confirm') assert.match(app.element('auth-feedback').textContent, /비밀번호 확인을 입력/);
+  }
+  const corrected = setup('?auth=signup'); await corrected.flush();
+  for (const [field, value, message] of [
+    ['email', 'signup-fixture@ojjuda.kr', /^이메일을 입력해 주세요\.$/], ['password', 'test-password', /비밀번호/],
+    ['password-confirm', 'test-password', /비밀번호 확인/], ['signup-birth', '000101', /생년월일/],
+    ['signup-code', '3', /성별/], ['signup-phone', '010-2345-6789', /전화번호/],
+    ['age-check', true, /14세/], ['policy-check', true, /이용약관/]
+  ]) {
+    corrected.element('auth-submit').focus();
+    await corrected.submit();
+    assert.match(corrected.element('auth-feedback').textContent, message);
+    assert.equal(corrected.focused, field);
+    assert.equal(corrected.signups.length, 0);
+    corrected.element(field)[value === true ? 'checked' : 'value'] = value;
+  }
+  await corrected.submit();
+  assert.equal(corrected.signups.length, 1, 'the corrected form submits once');
+  for (const [field, value] of [['signup-birth', '000230'], ['signup-code', '9'], ['signup-phone', '010-1111-1111']]) {
+    const app = setup('?auth=signup'); await app.flush(); app.fill();
+    app.element(field).value = value;
+    app.element('auth-submit').focus(); await app.submit();
+    assert.equal(app.focused, field);
+    assert.equal(app.signups.length, 0);
   }
   for (const email of ['person@example.invalid', 'somebody@example.com', 'guest@mailinator.com', 'broken-email']) {
     const app = setup('?auth=signup'); await app.flush(); app.fill();
