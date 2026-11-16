@@ -176,3 +176,34 @@ test('board dragging uses the chosen pawn and its legal squares, including after
   }
   board.destroy();
 });
+
+test('destination light rises, accepts a drop on its shaft and stops animating',()=>{
+  globalThis.window={devicePixelRatio:1,addEventListener(){},removeEventListener(){}};
+  let reduced=false;
+  globalThis.matchMedia=()=>({matches:reduced});
+  let pending=null;
+  globalThis.requestAnimationFrame=fn=>{pending=fn;return 1;};
+  globalThis.cancelAnimationFrame=()=>{pending=null;};
+  const paint=time=>{const run=pending;assert.ok(run);pending=null;run(time);};
+  const grad=()=>({addColorStop(){}});
+  const ctx=new Proxy({createLinearGradient:grad,createRadialGradient:grad},{get:(o,k)=>o[k]??(()=>{})});
+  const handlers=new Map(),canvas={style:{},classList:{toggle(){}},width:390,height:390,
+    getContext:()=>ctx,getBoundingClientRect:()=>({left:0,top:0,width:390,height:390}),
+    addEventListener:(k,v)=>handlers.set(k,v),removeEventListener(){}};
+  let hit=null;
+  const board=createBoard(canvas,n=>{hit=n});
+  const tap=(x,y)=>{hit=null;handlers.get('click')({clientX:x,clientY:y});return hit;};
+  board.setTargets([22]);paint(100);
+  const base=[];
+  for(let y=0;y<390;y++)if(tap(195,y)===22)base.push(y);
+  const above=base[0]-9;
+  assert.ok(base.length>=30);
+  assert.equal(tap(195,above),null);
+  paint(700);assert.equal(tap(195,above),22);
+  paint(1500);assert.equal(pending,null);
+  board.setTargets([]);paint(1510);
+  assert.equal(tap(195,above),null);assert.equal(pending,null);
+  reduced=true;board.setTargets([22]);paint(1520);
+  assert.equal(tap(195,above),22);assert.equal(pending,null);
+  board.destroy();
+});

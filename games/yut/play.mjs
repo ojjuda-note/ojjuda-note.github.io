@@ -1,5 +1,5 @@
 import {TEAMS,HOME,FINISH,YUT,newGame,position,moves,nodeName,act,lastThrowSeed} from './rules.mjs?v=3';
-import {createBoard} from './board.mjs?v=6';
+import {createBoard} from './board.mjs?v=7';
 import {createToss,drawRack} from './toss.mjs?v=6';
 import {openRoom} from './room.mjs?v=3';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=1';
@@ -158,7 +158,7 @@ function renderHUD(){
     const cls=!disabled&&s.phase==='roll'?'primary cast-btn':'primary';
     actions.append(button(label,cls,()=>dispatch({type:'roll'}),disabled));return;
   }
-  if(!net?.status)$('note').textContent=selectedPawn===null?'내 말을 밝은 칸으로 끌어 놓으세요.':pieceName(s,team,selectedPawn)+' · 놓을 칸을 누르세요.';
+  if(!net?.status)$('note').textContent=selectedPawn===null?'내 말을 빛기둥이 솟은 칸에 끌어 놓으세요.':pieceName(s,team,selectedPawn)+' · 빛기둥이 있는 칸을 누르세요.';
   const alternate=button('이동 선택','secondary',()=>moveChoices(moves(game)),disabled);
   alternate.setAttribute('aria-haspopup','dialog');actions.append(alternate);
 }
@@ -189,7 +189,7 @@ function message(text){const el=element('p',text,'message');el.setAttribute('rol
 function rules(){
   openPanel('놀이 방법','help');
   const list=element('ol');
-  ['윷을 던진 뒤 내 말을 밝은 칸으로 끌어 놓으세요. 말과 칸을 차례로 눌러도 돼요. 버튼으로 고르려면 ‘이동 선택’을 누르세요.',
+  ['윷을 던진 뒤 내 말을 빛기둥이 솟은 칸에 끌어 놓으세요. 말과 칸을 차례로 눌러도 돼요. 버튼으로 고르려면 ‘이동 선택’을 누르세요.',
    '팀마다 말이 두 개예요. 도·개·걸·윷·모가 나오면 1·2·3·4·5칸을 가요. 네 가락 중 평평한 면이 하나도 없으면 모예요.',
    '오른쪽 위나 왼쪽 위 모서리에 멈추면 다음 이동 때 지름길을 고를 수 있어요. 가운데 칸에서도 골인 쪽 길을 고를 수 있어요.',
    '같은 팀 말은 업어서 함께 가요. 상대 말을 잡으면 그 말은 대기로 돌아가요. 윷·모를 내거나 말을 잡으면 한 번 더 던져요.',

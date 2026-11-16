@@ -50,6 +50,8 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   const reduced=()=>typeof matchMedia==='function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const dep=(x,z)=>-x*sin+z*cos;
   let targets=[],options=[],selected=null,gesture=null,drawnPawns=[],skipClick=null;
+  let backdrop=null,beamKey='',beamStart=0,beamRise=0;
+  const beamMs=1150;
   const horizontal=(x,z)=>x*cos+z*sin;
   function project([x,y,z]) {
     return [ox+horizontal(x,z)*scale,oy+(dep(x,z)*tilt-y*lift)*scale];
@@ -392,6 +394,53 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     display.sort((a,b)=>a.order-b.order);
     for(const v of display)v.draw();
   }
+  function beamShape(n){
+    const [x,z]=nodes[n],[cx,cy]=project([x,targetHeight(n),z]);
+    const radius=scale*(nodeHeight(n)>.4?.59:.48);
+    const reach=Math.min(scale*(1.30+.70*lift),Math.max(0,cy-3));
+    return {cx,cy,radius,reach};
+  }
+  function drawBeam(n,elapsed,hover){
+    const {cx,cy,radius:r,reach}=beamShape(n);
+    const h=Math.max(1,reach*beamRise),depth=r*tilt;
+    const gold=hover?'255,182,51':'255,210,106';
+    ctx.save();ctx.translate(cx,cy);
+    // The footprint stays on the tile while the fluted sides grow vertically.
+    ctx.save();ctx.scale(r*1.52,depth*1.52);
+    const pool=ctx.createRadialGradient(0,0,.12,0,0,1);
+    pool.addColorStop(0,'rgba(255,252,200,.72)');pool.addColorStop(.61,'rgba('+gold+',.58)');pool.addColorStop(1,'rgba('+gold+',0)');
+    ctx.fillStyle=pool;ctx.fillRect(-1,-1,2,2);ctx.restore();
+    const oval=(y,rx,ry,color,weight)=>{
+      ctx.beginPath();ctx.ellipse(0,y,rx,ry,0,0,TAU);ctx.strokeStyle=color;ctx.lineWidth=weight;ctx.stroke();
+    };
+    oval(0,r*1.17,depth*1.17,hover?'#704724':'#5a6551',Math.max(2,scale*.072));
+    oval(0,r*1.17,depth*1.17,hover?'#fff3a2':'#ffebae',Math.max(1,scale*.038));
+    const shaft=glaze(0,depth*.42,0,-h,[[0,'rgba(255,244,170,.08)'],[.20,'rgba('+gold+','+(hover?.58:.42)+')'],[.68,'rgba(255,244,187,.28)'],[1,'rgba(255,250,219,0)']]);
+    ctx.fillStyle=shaft;ctx.beginPath();ctx.moveTo(-r,0);
+    ctx.lineTo(-r*.84,-h);ctx.lineTo(r*.84,-h);ctx.lineTo(r,0);
+    ctx.ellipse(0,0,r,depth,0,0,pi);ctx.closePath();ctx.fill();
+    const core=glaze(0,depth*.4,0,-h,[[0,'rgba(255,255,219,.66)'],[.32,'rgba(255,249,195,.48)'],[1,'rgba(255,250,207,0)']]);
+    flat([[-r*.40,depth*.39],[-r*.15,-h*.97],[r*.14,-h],[r*.36,depth*.39]],core);
+    const ray=glaze(0,0,0,-h,[[0,'rgba(255,255,220,.98)'],[.42,'rgba(255,250,193,.87)'],[1,'rgba(255,250,220,0)']]);
+    ctx.strokeStyle=ray;ctx.lineWidth=Math.max(1.1,scale*(hover?.052:.037));
+    for(const edge of [-1,-.68,.73,1]){
+      const foot=Math.sqrt(1-edge*edge)*depth*.82;
+      ctx.beginPath();ctx.moveTo(edge*r,foot);ctx.lineTo(edge*r*.84,-h+foot*.28);ctx.stroke();
+    }
+    oval(0,r,depth,'rgba(255,254,221,.98)',Math.max(1.1,scale*.044));
+    // The rim and flecks travel upward once, then leave a steady light.
+    if(elapsed<beamMs){
+      const t=elapsed/beamMs,k=1-.18*t,opacity=Math.sin(pi*t)*.52;
+      oval(-h*t*.86,r*k,depth*k*.63,'rgba(255,253,204,'+opacity+')',Math.max(1,scale*.045));
+      for(const [i,offset] of [-.48,.20,.58].entries()){
+        const u=(t-.10*i)/.78;
+        if(u<=0||u>=1)continue;
+        const x=offset*r,y=-h*u,s=Math.sin(pi*u)*Math.max(1.5,r*.12);
+        flat([[x,y-s*1.5],[x+s*.60,y],[x,y+s*1.5],[x-s*.60,y]],'rgba(255,255,222,'+Math.sin(pi*u)+')');
+      }
+    }
+    ctx.restore();
+  }
   function paint(time) {
     frame=0;if(dead||!width||!height)return;
     if(turnStart){const t=Math.min(1,(time-turnStart)/420);angle=turnFrom+(turnTo-turnFrom)*(1-(1-t)**3);if(t===1)turnStart=0;}
@@ -414,33 +463,37 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     const bottom=(span*.5+.08)*tilt+.83*lift;
     scale=Math.min((width-pad*2)/span,(height-pad*2)/(bottom-top));
     ox=width/2;oy=height/2-(top+bottom)*scale/2;
-    const movingFigure=gesture?.moved&&!turnStart&&!moves.length;
-    if(movingFigure&&gesture.backdrop){
-      ctx.drawImage(gesture.backdrop,0,0,width,height);
+    const allowed=destinationNodes();
+    const key=allowed.length?[activeTeam,selected??'all',...allowed].join('/'):'';
+    if(key!==beamKey){beamKey=key;beamStart=time;backdrop=null;}
+    const elapsed=reduced()?beamMs:Math.max(0,time-beamStart);
+    beamRise=1-(1-Math.min(1,elapsed/510))**3;
+    const stationary=allowed.length&&!turnStart&&!moves.length;
+    if(stationary&&backdrop){
+      ctx.drawImage(backdrop,0,0,width,height);
     }else{
+      backdrop=null;
       drawScene(reserve);
-      // During a drag only the lifted figurine and the target rings change.
-      if(movingFigure&&typeof OffscreenCanvas==='function'){
-        const picture=new OffscreenCanvas(canvas.width,canvas.height),copy=picture.getContext('2d');
-        if(copy){copy.drawImage(canvas,0,0);gesture.backdrop=picture;}
+      if(stationary){
+        const picture=typeof OffscreenCanvas==='function'?new OffscreenCanvas(canvas.width,canvas.height):canvas.ownerDocument?.createElement('canvas');
+        if(picture){
+          picture.width=canvas.width;picture.height=canvas.height;
+          const copy=picture.getContext('2d');
+          if(copy){copy.drawImage(canvas,0,0);backdrop=picture;}
+        }
       }
     }
-    const allowed=destinationNodes(),over=gesture?.moved?destinationAt(gesture.x,gesture.y,allowed):null;
-    for(const n of allowed){
-      const [x,z]=nodes[n],y=targetHeight(n),radius=nodeHeight(n)>.4?.80:.64;
-      if(n===over)feature(x,z,y,radius,radius,'rgba(252,231,158,.30)');
-      const path=mapAt(ring(x,z,radius,radius,48),y);
-      line([...path,path[0]],'#326860',n===over?.18:.14);
-      line([...path,path[0]],'#fff5cf',n===over?.105:.073);
-    }
+    const over=gesture?.moved?destinationAt(gesture.x,gesture.y,allowed):null;
+    for(const n of allowed)drawBeam(n,elapsed,n===over);
     if(gesture?.moved)drawLifted();
     moves=moves.filter(m=>time-m.start<265);
-    if(turnStart||moves.length)schedule();
+    if(turnStart||moves.length||(allowed.length&&elapsed<beamMs))schedule();
   }
   function schedule(){if(!dead&&!frame)frame=requestAnimationFrame(paint);}
   function resize() {
     const rect=canvas.getBoundingClientRect();width=rect.width;height=rect.height;
-    if(gesture){gesture.backdrop=null;gesture.x=gesture.clientX-rect.left;gesture.y=gesture.clientY-rect.top;}
+    backdrop=null;
+    if(gesture){gesture.x=gesture.clientX-rect.left;gesture.y=gesture.clientY-rect.top;}
     const ratio=Math.min(window.devicePixelRatio||1,2);
     const w=Math.max(1,Math.round(width*ratio)),h=Math.max(1,Math.round(height*ratio));
     if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
@@ -481,6 +534,16 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       const d=pawnDistance(actor,px,py)+.09*scale;
       if(d<distance){nearest=actor.from;distance=d;}
     }
+    // Ground squares and figures take precedence over a shaft behind them.
+    if(nearest===null&&beamRise>0&&!drawnPawns.some(a=>!isLifted(a)&&pawnDistance(a,px,py)<Infinity)){
+      let closest=Infinity;
+      for(const n of allowed){
+        const {cx,cy,radius,reach}=beamShape(n),dx=Math.abs(px-cx);
+        if(dx<radius*.82 && py<cy && py>cy-reach*beamRise*.86 && cy-py<closest){
+          nearest=n;closest=cy-py;
+        }
+      }
+    }
     return nearest;
   }
   function pieceAt(px,py){
@@ -512,7 +575,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   }
   function closeGesture(blockClick){
     if(!gesture)return;
-    const g=gesture;gesture=null;
+    const g=gesture;gesture=null;backdrop=null;
     if(blockClick)skipClick={x:g.x,y:g.y,until:performance.now()+650};
     if(g.captured&&canvas.hasPointerCapture?.(g.id))canvas.releasePointerCapture?.(g.id);
     if(g.fallback){
@@ -546,7 +609,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   function updatePointer(event){
     const g=gesture;
     [g.x,g.y]=local(event);g.clientX=event.clientX;g.clientY=event.clientY;
-    if(!g.moved&&Math.hypot(g.x-g.startX,g.y-g.startY)>5)g.moved=true;
+    if(!g.moved&&Math.hypot(g.x-g.startX,g.y-g.startY)>5){g.moved=true;backdrop=null;}
   }
   function pointerMove(event){
     if(!gesture||gesture.id!==(event.pointerId??0))return;
@@ -584,19 +647,21 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   return {
     setTargets(destinations) {
       targets=[...new Set(destinations.filter(n=>nodes[n]))];
+      if(!targets.length&&!options.length){beamKey='';beamRise=0;backdrop=null;}
       canvas.classList.toggle('choosing',targets.length>0||options.length>0);schedule();
     },
     setMoves(available=[],selectedIndex=null){
-      if(gesture)gesture.backdrop=null;
+      backdrop=null;
       options=available.filter(o=>o&&TEAM[o.team]&&[0,1].includes(o.index)&&(o.from===-1||nodes[o.from])&&nodes[o.to]);
       selected=Number.isInteger(selectedIndex)?selectedIndex:null;
+      if(!options.length&&!targets.length){beamKey='';beamRise=0;}
       if(gesture&&!options.some(o=>o.index===gesture.index&&o.team===gesture.team&&o.from===gesture.from))closeGesture(true);
       canvas.classList.toggle('choosing',options.length>0||targets.length>0);
       if(canvas.style)canvas.style.touchAction=options.length?'none':'';
       schedule();
     },
     setState(next={}) {
-      if(gesture)gesture.backdrop=null;
+      backdrop=null;
       const list=Array.isArray(next.pieces)?next.pieces.filter(p=>p&&nodes[p.node]).map(p=>({...p})):[];
       if(next.snap)moves=[];
       else if(!reduced()){
@@ -615,13 +680,13 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       schedule();
     },
     rotate(direction=1) {
-      if(gesture)gesture.backdrop=null;
+      backdrop=null;
       turnFrom=angle;turnTo+=(direction<0?-1:1)*pi/2;
       if(reduced()){angle=turnTo;turnStart=0;} else turnStart=performance.now();
       schedule();
     },
     destroy(){
-      dead=true;closeGesture(false);
+      dead=true;backdrop=null;closeGesture(false);
       if(frame)cancelAnimationFrame(frame);
       for(const [type,listener] of Object.entries(listeners))canvas.removeEventListener(type,listener);
       ro?.disconnect();window.removeEventListener('resize',resize);
