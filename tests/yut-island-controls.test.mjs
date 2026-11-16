@@ -140,7 +140,9 @@ test('board dragging uses the chosen pawn and its legal squares, including after
   globalThis.cancelAnimationFrame=()=>{};
   const draw=()=>frame(performance.now());
   const grad=()=>({addColorStop(){}});
-  const ctx=new Proxy({createLinearGradient:grad,createRadialGradient:grad},{get:(obj,key)=>obj[key]??(()=>{})});
+  const tags=new Map();
+  const ctx=new Proxy({createLinearGradient:grad,createRadialGradient:grad,fillText:(s,x,y)=>tags.set(s,[x,y])},
+    {get:(obj,key)=>obj[key]??(()=>{})});
   const handlers=new Map(),bounds={left:0,top:0,width:390,height:390};
   const canvas={width:390,height:390,style:{},getContext:()=>ctx,getBoundingClientRect:()=>bounds,
     addEventListener:(name,fn)=>handlers.set(name,fn),removeEventListener(){},
@@ -174,6 +176,13 @@ test('board dragging uses the chosen pawn and its legal squares, including after
     assert.equal(selected,0);
     assert.deepEqual(drops.slice(before),[[0,2]]);
   }
+  board.setState({activeTeam:0,pieces:[{team:0,index:0,node:1},{team:1,index:0,node:2},{team:1,index:1,node:2}],
+    waiting:[{team:0,index:1}],snap:true});
+  board.setMoves([options[0]],null);tags.clear();draw();
+  assert.deepEqual([...tags.keys()].sort(),['산호 1','바다 1·2','대기 2'].sort());
+  const before=drops.length,source=tags.get('산호 1'),occupied=tags.get('바다 1·2');
+  pointer('pointerdown',...source);pointer('pointermove',...occupied);draw();pointer('pointerup',...occupied);
+  assert.deepEqual(drops.slice(before),[[0,2]]);
   board.destroy();
 });
 

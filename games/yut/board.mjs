@@ -1,8 +1,9 @@
-import { drawZodiac } from './zodiac.mjs?v=1';
+import { drawZodiac } from './zodiac.mjs?v=2';
+import { TEAMS } from './rules.mjs?v=3';
 
 // A square lacquer board viewed by a level, front-facing orthographic camera.
 const TAU = Math.PI * 2;
-const TEAM = ['#ed7057', '#239b90', '#9661c5', '#dfad38'];
+const teamInk=['#863525','#075d59','#584078','#735016'];
 const PEARL=['#fff1cd','#f1f3e4','#c5e8e1','#d0d3eb','#ead0df','#f7ddc7'];
 const GOLD='#ffe3a2';
 const c = 4.05;
@@ -331,7 +332,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   function nodeHeight(n){return [0,5,10,15,22].includes(n)?.435:.352;}
   function pawn(p,x,z,y,size){
     const animal=Number.isInteger(p.animal)&&p.animal>=0&&p.animal<12?p.animal:(p.team*3+p.index+2)%12;
-    drawZodiac(ctx,project,x,y,z,size,animal,TEAM[p.team]??TEAM[0],p.index);
+    drawZodiac(ctx,project,x,y,z,size,animal,TEAMS[p.team].color);
   }
   const rack={x:1.35,z:3.12};
   function rackPoint(x,z){
@@ -339,16 +340,16 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   }
   function reservePositions(){
     return reserves.filter(p=>p.team===activeTeam).map(p=>{
-      const [x,z]=rackPoint((p.index-.5)*1.22,0);
-      return {p,x,z,y:surface+.101,ground:surface+.101,size:.94,from:-1};
+      const [x,z]=rackPoint((p.index-.5)*1.38,0);
+      return {p,x,z,y:surface+.101,ground:surface+.101,size:1.22,from:-1};
     });
   }
   function reserveTray(){
-    const tray=rounded(0,0,2.32,.84,.14).map(([x,z])=>rackPoint(x,z));
-    const inset=rounded(0,0,2.24,.76,.13).map(([x,z])=>rackPoint(x,z));
+    const tray=rounded(0,0,2.68,1.00,.14).map(([x,z])=>rackPoint(x,z));
+    const inset=rounded(0,0,2.60,.92,.13).map(([x,z])=>rackPoint(x,z));
     solid(tray,tray,surface+.018,surface+.071,'#988568','#ead2a3');
     solid(inset,inset,surface+.071,surface+.095,'#798e82','#a3bcb0');
-    for(const offset of [-.61,.61]){
+    for(const offset of [-.69,.69]){
       const [x,z]=rackPoint(offset,0);
       feature(x,z,surface+.098,.355,.355,'#849e92');
     }
@@ -362,7 +363,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     for(const [node,group] of groups){
       const [nx,nz]=nodes[node],ground=nodeHeight(node)+.004;
       group.forEach((p,i)=>{
-        const offset=(i-(group.length-1)/2)*.58,size=group.length>1?.76:1;
+        const offset=(i-(group.length-1)/2)*.80,size=group.length>1?1.06:1.38;
         let x=nx+offset*cos,z=nz+offset*sin,y=ground;
         const step=moves.find(move=>move.team===p.team&&move.index===p.index);
         if(step){
@@ -375,24 +376,57 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     }
     return positions;
   }
-  function drawScene(reserve){
+  function drawBoard(reserve){
     water();lacquer();inlay();trail();
     const display=objects.map(o=>({order:dep(o.x,o.z),draw:o.draw}));
     if(reserve.length)display.push({order:dep(rack.x,rack.z)-1,draw:reserveTray});
-    for(const actor of drawnPawns){
-      const {p,x,z,y,ground,size}=actor;
-      if(isLifted(actor))continue;
-      display.push({order:dep(x,z)+.16,draw:()=>{
-        castShadow(x,z,ground,.43*size,.37*size,.83*size+y-ground,.52);
-        if(p.team===activeTeam&&optionFor(actor)?.index===selected){
-          const path=mapAt(ring(x,z,.48*size,.48*size,32),ground+.004);
-          line([...path,path[0]],'#396e68',.105);line([...path,path[0]],GOLD,.052);
-        }
-        pawn(p,x,z,y,size);
-      }});
-    }
     display.sort((a,b)=>a.order-b.order);
     for(const v of display)v.draw();
+  }
+  function drawPawnGroup(group,carried=false){
+    const first=group[0],team=first.p.team,stack=group.length>1;
+    const last=group[group.length-1],x=(first.x+last.x)/2,z=(first.z+last.z)/2;
+    const [cx,cy]=project([x,first.ground+.013,z]);
+    const rx=scale*(stack?.89:.49*first.size),ry=scale*.49*first.size*tilt;
+    const chosen=team===activeTeam&&selected!==null&&group.some(a=>a.p.index===selected);
+    ctx.save();
+    const liftedSource=!carried&&isLifted(first);
+    if(liftedSource)ctx.globalAlpha=.48;
+    else castShadow(x,z,first.ground,rx/scale,ry/(tilt*scale),first.size*.83,.43);
+    ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,TAU);ctx.fillStyle=teamInk[team];ctx.fill();
+    ctx.strokeStyle='#fffbee';ctx.lineWidth=Math.max(2.5,scale*.105);ctx.stroke();
+    ctx.strokeStyle=TEAMS[team].color;ctx.lineWidth=Math.max(1.4,scale*.062);ctx.stroke();
+    if(chosen){
+      for(const side of [-1,1]){
+        const end=cx+side*(rx+scale*.035);
+        flat([[end,cy],[end+side*scale*.16,cy-scale*.105],[end+side*scale*.16,cy+scale*.105]],'#fffbed',teamInk[team],1);
+      }
+    }
+    if(liftedSource){ctx.restore();return;}
+    for(const a of group)pawn(a.p,a.x,a.z,a.y,a.size);
+    const font=Math.max(10,Math.min(16,scale*.235)),h=font*1.39;
+    const numbers=group.map(a=>a.p.index+1).sort().join('·');
+    const name=(first.from<0&&!carried?'대기':scale<28?TEAMS[team].mark:TEAMS[team].name)+' '+numbers;
+    ctx.font='bold '+font+'px "Noto Sans CJK KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    const w=(ctx.measureText(name)?.width??font*name.length*.86)+font*.78;
+    const left=Math.max(1,Math.min(width-w-1,cx-w/2));
+    const top=Math.max(1,Math.min(height-h-1,cy+ry*.76-h*.20));
+    ctx.beginPath();ctx.arc(left+w-h/2,top+h/2,h/2,-pi/2,pi/2);
+    ctx.arc(left+h/2,top+h/2,h/2,pi/2,pi*1.5);ctx.closePath();
+    ctx.fillStyle=teamInk[team];ctx.fill();ctx.lineWidth=Math.max(1,font*.095);ctx.strokeStyle='#fffbed';ctx.stroke();
+    ctx.fillStyle='#fff';ctx.fillText(name,left+w/2,top+h*.51);
+    for(const a of group)a.tag={left,top,right:left+w,bottom:top+h};
+    ctx.restore();
+  }
+  function drawPawns(){
+    const groups=[];
+    for(const a of drawnPawns){
+      // Members converging onto a square keep their own base until they arrive together.
+      const stack=a.from<0?null:groups.find(([b])=>b.from===a.from&&b.p.team===a.p.team&&Math.hypot(a.x-b.x,a.z-b.z)<.96);
+      if(stack)stack.push(a);else groups.push([a]);
+    }
+    groups.sort(([a],[b])=>dep(a.x,a.z)-dep(b.x,b.z));
+    for(const group of groups)drawPawnGroup(group);
   }
   function beamShape(n){
     const [x,z]=nodes[n],[cx,cy]=project([x,targetHeight(n),z]);
@@ -473,7 +507,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       ctx.drawImage(backdrop,0,0,width,height);
     }else{
       backdrop=null;
-      drawScene(reserve);
+      drawBoard(reserve);
       if(stationary){
         const picture=typeof OffscreenCanvas==='function'?new OffscreenCanvas(canvas.width,canvas.height):canvas.ownerDocument?.createElement('canvas');
         if(picture){
@@ -485,6 +519,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     }
     const over=gesture?.moved?destinationAt(gesture.x,gesture.y,allowed):null;
     for(const n of allowed)drawBeam(n,elapsed,n===over);
+    drawPawns();
     if(gesture?.moved)drawLifted();
     moves=moves.filter(m=>time-m.start<265);
     if(turnStart||moves.length||(allowed.length&&elapsed<beamMs))schedule();
@@ -516,6 +551,8 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     return [...new Set(options.filter(o=>o.team===activeTeam&&(index==null||o.index===index)).map(o=>o.to))];
   }
   function pawnDistance(actor,px,py){
+    const tag=actor.tag;
+    if(tag&&px>=tag.left&&px<=tag.right&&py>=tag.top&&py<=tag.bottom)return 0;
     const [x,base]=project([actor.x,actor.y+.10*actor.size,actor.z]);
     const [,head]=project([actor.x,actor.y+1.03*actor.size,actor.z]);
     const dy=py-Math.max(head,Math.min(base,py)),d=Math.hypot(px-x,dy);
@@ -563,11 +600,10 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     const g=gesture,base=surface+.01,u=(g.x-ox)/scale+g.gripX,d=((g.y-oy)/scale+g.gripY+base*lift)/tilt;
     const x=u*cos-d*sin,z=u*sin+d*cos;
     const carried=drawnPawns.filter(isLifted);
-    castShadow(x,z,base,.49,.41,1.22,.56);
-    carried.forEach((actor,i)=>{
-      const stacked=carried.length>1,offset=stacked?(i-(carried.length-1)/2)*.56:0;
-      pawn(actor.p,x+offset*cos,z+offset*sin,base+.30+i*.045,stacked?.76:actor.size);
-    });
+    if(carried.length)drawPawnGroup(carried.map((actor,i)=>{
+      const offset=(i-(carried.length-1)/2)*.80;
+      return {...actor,x:x+offset*cos,z:z+offset*sin,ground:base,y:base+.30+i*.045};
+    }),true);
   }
   function local(event){
     const rect=canvas.getBoundingClientRect();
@@ -652,7 +688,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     },
     setMoves(available=[],selectedIndex=null){
       backdrop=null;
-      options=available.filter(o=>o&&TEAM[o.team]&&[0,1].includes(o.index)&&(o.from===-1||nodes[o.from])&&nodes[o.to]);
+      options=available.filter(o=>o&&TEAMS[o.team]&&[0,1].includes(o.index)&&(o.from===-1||nodes[o.from])&&nodes[o.to]);
       selected=Number.isInteger(selectedIndex)?selectedIndex:null;
       if(!options.length&&!targets.length){beamKey='';beamRise=0;}
       if(gesture&&!options.some(o=>o.index===gesture.index&&o.team===gesture.team&&o.from===gesture.from))closeGesture(true);
@@ -662,7 +698,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     },
     setState(next={}) {
       backdrop=null;
-      const list=Array.isArray(next.pieces)?next.pieces.filter(p=>p&&nodes[p.node]).map(p=>({...p})):[];
+      const list=Array.isArray(next.pieces)?next.pieces.filter(p=>p&&TEAMS[p.team]&&nodes[p.node]).map(p=>({...p})):[];
       if(next.snap)moves=[];
       else if(!reduced()){
         const now=performance.now();
@@ -674,7 +710,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
           moves.push({team:p.team,index:p.index,from:nodes[prev?.node]??nodes[0],start:now});
         }
       }
-      reserves=Array.isArray(next.waiting)?next.waiting.filter(p=>p&&TEAM[p.team]&&[0,1].includes(p.index)).map(p=>({...p})):[];
+      reserves=Array.isArray(next.waiting)?next.waiting.filter(p=>p&&TEAMS[p.team]&&[0,1].includes(p.index)).map(p=>({...p})):[];
       pieces=list;activeTeam=next.activeTeam;
       if(gesture&&gesture.team!==activeTeam)closeGesture(true);
       schedule();

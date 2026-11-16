@@ -1,8 +1,8 @@
 import {TEAMS,HOME,FINISH,YUT,newGame,position,moves,nodeName,act,lastThrowSeed} from './rules.mjs?v=3';
-import {createBoard} from './board.mjs?v=7';
+import {createBoard} from './board.mjs?v=8';
 import {createToss,drawRack} from './toss.mjs?v=6';
 import {openRoom} from './room.mjs?v=3';
-import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=1';
+import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=2';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
 const dialog=$('sheet'), body=$('dialog-body'), reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -47,6 +47,8 @@ function draw(s,override,snap=false){
     position(trail)===HOME&&!pieces.some(p=>p.team===t&&p.index===i)?[{team:t,index:i}]:[]));
   const withAnimal=p=>({...p,animal:animalFor(p.team,p.index,s.zodiacOffset)});
   board.setState({pieces:pieces.map(withAnimal),activeTeam:s.team,waiting:waiting.map(withAnimal),snap});
+  const locations=s.pawns[s.team].map((trail,i)=>pieceName(s,s.team,i)+' · '+nodeName(position(trail)));
+  $('board').setAttribute('aria-label',TEAMS[s.team].name+' 팀. '+locations.join(', ')+'.');
 }
 function standings(){
   openPanel('말 현황','scores');const s=game;

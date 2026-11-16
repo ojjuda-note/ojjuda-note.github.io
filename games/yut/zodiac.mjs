@@ -347,7 +347,9 @@ export function drawZodiac(ctx,project,x,y,z,size,animal,teamColor,index){
     const w=sprite.width/unit*target;
     ctx.drawImage(sprite,p[0]-w*.5,p[1]-w*.735,w,w);
   }
-  const front=norm([-r[2],0,r[0]]),offset=.362*size;
-  const [bx,by]=project([x+front[0]*offset,y+.157*size,z+front[2]*offset]);
-  badge(ctx,bx,by,target,teamColor,index);
+  if(index!==undefined){
+    const front=norm([-r[2],0,r[0]]),offset=.362*size;
+    const [bx,by]=project([x+front[0]*offset,y+.157*size,z+front[2]*offset]);
+    badge(ctx,bx,by,target,teamColor,index);
+  }
 }
