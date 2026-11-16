@@ -48,16 +48,24 @@ function themeLight(base,dx,dz) {
 }
 function stampShape(points,x,z,size,y) { return points.map(([px,pz])=>[x+px*size,y,z+pz*size]); }
 
-export function createBoard(canvas) {
+export function createBoard(canvas,chooseDestination) {
   const ctx = canvas.getContext('2d');
-  if(!ctx) return {setState(){},rotate(){},destroy(){}};
+  if(!ctx) return {setState(){},setTargets(){},rotate(){},destroy(){}};
   let width=0,height=0,scale=1,ox=0,oy=0;
-  let angle=-.57,cos=Math.cos(angle),sin=Math.sin(angle),tilt=.66,lift=.75;
+  let angle=-.24,cos=Math.cos(angle),sin=Math.sin(angle),tilt=.66,lift=.75;
   let turnFrom=angle,turnTo=angle,turnStart=0,moves=[],pieces=[],activeTeam=0;
   let frame=0,dead=false;
   const reduced=()=>typeof matchMedia==='function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const dep=(x,z)=>-x*sin+z*cos;
-  const project=([x,y,z])=>[ox+scale*(x*cos+z*sin),oy+scale*(dep(x,z)*tilt-y*lift)];
+  let across=1,along=1,anchor=null,targets=[];
+  const horizontal=(x,z)=>x*cos+z*sin;
+  // Widen the sea and paths to fit the viewport while preserving each miniature's proportions.
+  function project([x,y,z]) {
+    const h=horizontal(x,z), d=dep(x,z);
+    const u=anchor ? anchor.h*across+(h-anchor.h)*scale : h*across;
+    const v=anchor ? anchor.d*along+(d-anchor.d)*scale : d*along;
+    return [ox+u,oy+v*tilt-y*scale*lift];
+  }
   function flat(points, color, stroke, lineWidth=1) {
     if(!points.length)return;
     ctx.beginPath();for(let i=0;i<points.length;i++){const [x,y]=points[i];if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
@@ -225,7 +233,7 @@ export function createBoard(canvas) {
   const objects=[];
   function add(x,z,draw){objects.push({x,z,draw});}
   for(let i=0;i<nodes.length;i++){const [x,z]=nodes[i];add(x,z,()=>tile(i));}
-  add(-.05,-2.60,()=>house(-.05,-2.60,.91));
+  add(.08,-2.26,()=>house(.08,-2.26,.75));
   for(const [x,z,s] of [[-2.83,-.6,.97],[-2.43,-.29,.73],[-3.12,-.02,.64],[2.79,.20,.94],[2.46,.57,.69],[.60,2.83,.83],[.17,2.62,.62],[-1.8,-4.75,.45],[4.67,.06,.43]])add(x,z,()=>pine(x,z,s));
   for(const [x,z,s] of [[-.87,2.32,.37],[-1,2.63,.27],[-2.74,1.25,.28],[3.06,-1.1,.31],[1.14,-2.87,.35],[-.25,4.66,.23]])add(x,z,()=>shrub(x,z,s));
   for(const [x,z,s] of [[1.13,2.82,1.05],[-2.25,-1.04,.78],[2.6,-.48,.75],[-1.24,-2.56,.80],[-3.1,4.63,.58],[4.57,-2.0,.57]])add(x,z,()=>rockCluster(x,z,s));
@@ -252,9 +260,13 @@ export function createBoard(canvas) {
     if(turnStart){const t=Math.min(1,(time-turnStart)/420);angle=turnFrom+(turnTo-turnFrom)*(1-(1-t)**3);if(t===1)turnStart=0;}
     cos=Math.cos(angle);sin=Math.sin(angle);
     const dimension=Math.abs(cos)+Math.abs(sin);
-    tilt=Math.max(.53,Math.min(.70,.70-(width/height-1.45)*.13));lift=Math.sqrt(1-tilt*tilt);
-    scale=Math.min(width/(10.35*dimension+1.05),height/(10.35*dimension*tilt+1.35));
-    ox=width*.5;oy=height*.505;
+    tilt=width<height?.81:.65;
+    lift=Math.sqrt(1-tilt*tilt);
+    across=width/(10.3*dimension+.12);
+    along=height/(10.3*dimension*tilt+.82);
+    scale=Math.min(across,along);
+    ox=width/2;oy=height*.50;
+    anchor=null;
     water();
     // Tiny moored craft sit beyond the playable coast.
     boat(-5.92,2.27,.78);boat(5.69,-2.52,.55);
@@ -273,14 +285,26 @@ export function createBoard(canvas) {
           x=step.from[0]*(1-t)+x*t;z=step.from[1]*(1-t)+z*t;y+=Math.sin(pi*t)*.53;
         }
         const px=x,pz=z,py=y;
-        display.push({order:dep(x,z)+.30,draw:()=>pawn(p,px,pz,py,g.length>1?.80:1)});
-        if(p.team===activeTeam)display.push({order:dep(x,z)+.20,draw:()=>{
+        display.push({x,z,order:dep(x,z)+.30,draw:()=>pawn(p,px,pz,py,g.length>1?.80:1)});
+        if(p.team===activeTeam)display.push({x,z,order:dep(x,z)+.20,draw:()=>{
           const pts=mapAt(ring(px,pz,g.length>1?.36:.43,g.length>1?.36:.43,32),py+.004);line([...pts,pts[0]],'#fff6d7',.055);
         }});
       });
     }
     display.sort((a,b)=>a.order-b.order);
-    for(const v of display)v.draw();
+    for(const v of display){
+      anchor={h:horizontal(v.x,v.z),d:dep(v.x,v.z)};
+      v.draw();
+    }
+    anchor=null;
+    for(const n of targets){
+      const [x,z]=nodes[n];
+      anchor={h:horizontal(x,z),d:dep(x,z)};
+      const path=mapAt(ring(x,z,.72,.72,48),.48);
+      line([...path,path[0]],'#fffdf0',.14);
+      line([...path,path[0]],'#145649',.065);
+    }
+    anchor=null;
     moves=moves.filter(m=>time-m.start<265);
     if(turnStart||moves.length)schedule();
   }
@@ -294,8 +318,25 @@ export function createBoard(canvas) {
   }
   const ro=typeof ResizeObserver==='function'?new ResizeObserver(resize):null;
   if(ro)ro.observe(canvas);else window.addEventListener('resize',resize);
+  function tap(event) {
+    if(!targets.length||!chooseDestination)return;
+    const rect=canvas.getBoundingClientRect(),px=event.clientX-rect.left,py=event.clientY-rect.top;
+    let nearest=null, distance=Math.max(21,scale*.85);
+    for(const node of targets){
+      const [x,z]=nodes[node], [sx,sy]=project([x,.48,z]);
+      const diff=Math.hypot(px-sx,py-sy);
+      if(diff<distance){nearest=node;distance=diff;}
+    }
+    if(nearest!==null)chooseDestination(nearest);
+  }
+  canvas.addEventListener('click',tap);
   resize();
   return {
+    setTargets(destinations) {
+      targets=[...new Set(destinations.filter(n=>nodes[n]))];
+      canvas.classList.toggle('choosing',targets.length>0);
+      schedule();
+    },
     setState(next={}) {
       const list=Array.isArray(next.pieces)?next.pieces.filter(p=>p&&nodes[p.node]).map(p=>({...p})):[];
       if(!reduced()){
@@ -315,6 +356,6 @@ export function createBoard(canvas) {
       if(reduced()){angle=turnTo;turnStart=0;} else turnStart=performance.now();
       schedule();
     },
-    destroy(){dead=true;if(frame)cancelAnimationFrame(frame);ro?.disconnect();window.removeEventListener('resize',resize);}
+    destroy(){dead=true;canvas.removeEventListener('click',tap);if(frame)cancelAnimationFrame(frame);ro?.disconnect();window.removeEventListener('resize',resize);}
   };
 }
