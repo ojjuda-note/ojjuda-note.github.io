@@ -14,13 +14,12 @@ export const TEAMS = [
 export const validTeamCount=n=>Number.isInteger(n)&&n>=2&&n<=TEAMS.length;
 export const defaultTeamAnimal=(team,offset=2)=>(offset+TEAMS[team].animalOffset)%12;
 export const BACK_DO_STICK=3, BACK_DO_LABEL='한 칸 뒤로';
-export const YUT = Object.assign(['', '도', '개', '걸', '윷', '모'],{'-1':'빽도'});
+export const YUT = Object.assign(['', '도', '개', '걸', '윷', '모'],{'-1':'뒤로'});
 const fork = new Set([5,10,22]);
 
-export const EVENT_NAMES=Object.freeze({back:'빽도',carry:'업기',home:'꽝'});
+export const EVENT_NAMES=Object.freeze({back:'뒤로',carry:'업기',home:'꽝'});
 function dealTiles(){
-  const reserved=new Set([0,5,10,15,22]);
-  const spots=Array.from({length:FINISH},(_,n)=>n).filter(n=>!reserved.has(n));
+  const spots=Array.from({length:FINISH-1},(_,i)=>i+1); // Leave the exit free.
   const eventTiles={};
   for(const effect of Object.keys(EVENT_NAMES)){
     const index=Math.floor(Math.random()*spots.length);
@@ -102,10 +101,15 @@ function nextNode(trail,shortcut) {
   if(n===26) return 22;
   return n+1;
 }
+function stepBack(trail){
+  const from=trail.pop();
+  // The first square borders the exit. From there the outer track continues backwards.
+  if(!trail.length&&from>=0&&from<20)trail.push((from+19)%20);
+}
 function advance(trail,steps,shortcut) {
   const next=[...trail], frames=[];
   if(steps===-1){
-    next.pop();return {next,frames:[position(next)]};
+    stepBack(next);return {next,frames:[position(next)]};
   }
   for(let step=0;step<steps&&position(next)!==FINISH;step++){
     const node=nextNode(next,step===0&&shortcut);
@@ -140,7 +144,7 @@ export function move(state,index,shortcut=false,steps=singleResult(state)) {
     next=[];frames.push(HOME);
     effect=EVENT_NAMES.home+'! '+(moving.length>1?'업은 말까지 모두 대기석으로 돌아갔어요.':'대기석으로 돌아갔어요.');
   }else if(event==='back'){
-    next.pop();frames.push(position(next));
+    stepBack(next);frames.push(position(next));
     effect=EVENT_NAMES.back+'! 왔던 길로 한 칸 물러났어요.';
   }
   at=position(next);
@@ -221,7 +225,7 @@ export function act(state,action) {
   return state;
 }
 export function nodeName(n){
-  if(n===HOME)return '대기';if(n===FINISH)return '골인';if(n===0)return '마지막 칸';
+  if(n===HOME)return '대기';if(n===FINISH)return '골인';if(n===0)return '나가기 칸';
   if(n===22)return '가운데';if(n>19)return '지름길 '+({20:1,21:2,23:4,24:5,25:1,26:2,27:4,28:5}[n])+'칸';
   return n+'번 칸';
 }

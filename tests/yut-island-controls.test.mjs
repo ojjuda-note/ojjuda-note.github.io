@@ -99,8 +99,32 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   assert.equal(doc.getElementById('entry-controls').childElementCount,0);
   const bonus=doc.getElementById('bonus-roll'),chips=doc.getElementById('result-picker');
   const chip=value=>chips.querySelectorAll('button')[value];
+  const tossLayer=doc.getElementById('toss-layer');
+  function castPointer(target,type,id=4){
+    const e=new w.MouseEvent(type,{bubbles:true,button:0,detail:1});
+    Object.defineProperty(e,'pointerId',{value:id});target.dispatchEvent(e);
+  }
+  const trigger=first();
+  castPointer(trigger,'pointerdown');assert.ok(tossLayer.classList.contains('shuffling'));
+  tick();tick();assert.equal(first(),trigger);assert.equal(text('toss-label'),'떼면 던져요');
+  castPointer(w,'pointerup',9);assert.ok(tossLayer.classList.contains('shuffling'));
+  castPointer(w,'pointercancel');assert.equal(tossLayer.hidden,true);
+  castPointer(w,'pointerup');assert.equal(first().textContent,'윷 던지기');
+  castPointer(trigger,'pointerdown');w.dispatchEvent(new w.Event('blur'));
+  assert.equal(tossLayer.hidden,true);
   for(const n of [4,0]){
-    setFaces(n);prefs.matches=false;first().click();
+    setFaces(n);prefs.matches=false;
+    if(n===4){
+      castPointer(first(),'pointerdown');assert.equal(text('outcome'),'');
+      castPointer(w,'pointerup');
+    }else{
+      const control=first();
+      control.dispatchEvent(new w.KeyboardEvent('keydown',{key:' ',bubbles:true,cancelable:true}));
+      control.dispatchEvent(new w.KeyboardEvent('keydown',{key:' ',repeat:true,bubbles:true,cancelable:true}));
+      tick();assert.ok(tossLayer.classList.contains('shuffling'));
+      control.dispatchEvent(new w.KeyboardEvent('keyup',{key:' ',bubbles:true,cancelable:true}));
+    }
+    assert.equal(tossLayer.classList.contains('shuffling'),false);
     assert.ok(bonus.hidden);assert.equal(doc.getElementById('toss-layer').hidden,false);
     tick();await until(()=>first().textContent==='한 번 더 던지기');
     assert.equal(bonus.hidden,false);assert.equal(bonus.querySelectorAll('.game-result-spark').length,24);
@@ -182,16 +206,16 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   assert.equal(w.localStorage.getItem('ojjuda.yut.sound'),'on');
   dialogButton('특수 칸').click();
   const places=[...doc.querySelectorAll('.event-card small')].map(el=>el.textContent);
-  assert.deepEqual([...doc.querySelectorAll('.event-card strong')].map(el=>el.textContent),['업기','빽도','꽝']);
+  assert.deepEqual([...doc.querySelectorAll('.event-card strong')].map(el=>el.textContent),['업기','뒤로','꽝']);
   assert.equal(new Set(places).size,3);
   assert.ok(places.every(place=>place&&!place.includes(' · ')));
   doc.getElementById('close').click();
   // Bank a yut before backdo, use it to enter and then visibly retrace a square.
   prefs.matches=true;setFaces(4);first().click();
   let marked=0;t.mock.method(Math,'random',()=>marked++%4===3?.1:.9);first().click();
-  assert.equal(chip(1).textContent,'빽도 뒤로 1칸');assert.equal(chip(1).disabled,true);
+  assert.equal(chip(1).textContent,'뒤로 1칸');assert.equal(chip(1).disabled,true);
   chip(0).click();first().click();
-  assert.equal(text('move-result'),'빽도 · 뒤로 1칸');
+  assert.equal(text('move-result'),'뒤로 1칸');
   assert.equal(first().textContent,'뒤로 1칸 이동');first().click();
   doc.getElementById('settings').click();dialogButton('게임 시작').click();dialogButton('계속하기').click();
   prefs.matches=true;setFaces(1);first().click();tick();
@@ -463,9 +487,9 @@ test('board landmarks stay fixed when pieces enter, hop across or leave the far 
       {get:(o,k)=>o[k]??(()=>{})});
     const canvas={width,height,style:{},classList:{toggle(){}},getContext:()=>ctx,
       getBoundingClientRect:()=>({left:0,top:0,width,height}),addEventListener(){},removeEventListener(){}};
-    const board=createBoard(canvas),eventTiles={1:'back',16:'carry',13:'home'};
+    const board=createBoard(canvas),eventTiles={5:'back',10:'carry',22:'home'};
     const state=(pieces,activeTeam=0,snap=true)=>board.setState({pieces,activeTeam,snap,eventTiles});
-    const sample=time=>{marks.clear();frame(time);return ['빽도','업기','꽝'].map(key=>{assert.ok(marks.has(key));return marks.get(key);});};
+    const sample=time=>{marks.clear();frame(time);return ['뒤로','업기','꽝'].map(key=>{assert.ok(marks.has(key));return marks.get(key);});};
     for(let turn=0;turn<4;turn++){
       state([]);if(turn)board.rotate();
       const reference=sample(performance.now()+900);

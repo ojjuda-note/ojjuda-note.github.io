@@ -1,4 +1,4 @@
-import {BACK_DO_LABEL,BACK_DO_STICK} from './rules.mjs?v=15';
+import {BACK_DO_LABEL,BACK_DO_STICK} from './rules.mjs?v=17';
 // Movement is in world coordinates. A camera fitted to the available surface
 // projects the split timber, its floor support and its shadow into the same space.
 const TAU = Math.PI * 2;
@@ -441,8 +441,7 @@ const throwLens=new WeakMap();
 function fixedLens(plan,width,height){
   const cached=throwLens.get(plan);
   if(cached&&cached.width===width&&cached.height===height)return cached;
-  const scale=Math.min(width*.445,height*.63)/length;
-  const cam=camera(width,height,scale,.57);
+  const cam=throwCamera(width,height);
   let left=Infinity,right=-Infinity,top=Infinity,bottom=-Infinity;
   // Measure once for this throw and viewport. The camera never follows a
   // rotating tip, pumps its zoom at impact or jumps between neighboring sticks.
@@ -507,13 +506,43 @@ function renderBodies(ctx,parts,cam){
   }
 }
 
-export function drawThrow(ctx,width,height,plan,elapsedMs) {
-  if(!ctx||width<=0||height<=0)return;
-  const lens=fixedLens(plan,width,height),cam=lens.cam;
-  const parts=bodies(stageScene(plan,elapsedMs,cam),cam);
+function shufflePose(ms){
+  const t=ms/1000,wrist=t*6.2,turn=t*3.45+.16*Math.sin(wrist);
+  return Array.from({length:4},(_,index)=>{
+    const a=turn+index*Math.PI/2;
+    return {index,x:13*Math.sin(wrist)+17*Math.sin(a+.55),depth:38+29*Math.cos(a),
+      height:35+21*Math.sin(a)+5*Math.cos(wrist),yaw:-.34+.19*Math.sin(wrist)+.16*Math.cos(a),
+      pitch:.13+.11*Math.sin(a),roll:a*1.7+index*.9+.38*Math.sin(wrist+.4*index)};
+  });
+}
+
+function throwCamera(width,height){
+  return camera(width,height,Math.min(width*.445,height*.63)/length,.57);
+}
+
+function paintBundle(ctx,width,height,scene,cam,x=0,y=0,zoom=1){
   backdrop(ctx,width,height);
-  ctx.save();ctx.scale(cam.scale,cam.scale);ctx.translate(lens.x,lens.y);ctx.scale(lens.zoom,lens.zoom);
-  ctx.lineJoin='round';ctx.lineCap='round';renderBodies(ctx,parts,cam);ctx.restore();
+  ctx.save();ctx.scale(cam.scale,cam.scale);ctx.translate(x,y);ctx.scale(zoom,zoom);
+  ctx.lineJoin='round';ctx.lineCap='round';renderBodies(ctx,bodies(scene,cam),cam);ctx.restore();
+}
+
+export function drawThrow(ctx,width,height,plan,elapsedMs,held=null) {
+  if(!ctx||width<=0||height<=0)return;
+  const lens=fixedLens(plan,width,height),cam=lens.cam,scene=stageScene(plan,elapsedMs,cam);
+  const join=held?smooth(clamp(elapsedMs/220)):1;
+  if(join<1){
+    // Start at the last visible hand pose, then join the shared ballistic path.
+    const start=stageScene(plan,0,cam);
+    for(const [i,stick] of scene.entries()){
+      for(const key of ['x','depth','height'])stick[key]+=(held[i][key]-start[i][key])*(1-join);
+      for(const key of ['yaw','pitch','roll']){
+        const d=held[i][key]-start[i][key];
+        stick[key]+=Math.atan2(Math.sin(d),Math.cos(d))*(1-join);
+      }
+      stick.support=floorSupport(stick.pitch,stick.roll);
+    }
+  }
+  paintBundle(ctx,width,height,scene,cam,lens.x*join,lens.y*join,mix(1,lens.zoom,join));
 }
 
 const rackPlans=new WeakMap();
@@ -563,31 +592,49 @@ export function drawRack(ctx,width,height,faces=null,seed=null) {
 export function createToss(canvas) {
   const ctx=canvas.getContext('2d');let running=null;
   function cancel(){
-    if(!running)return;
+    if(!running)return null;
     const run=running;running=null;cancelAnimationFrame(run.frame);clearTimeout(run.deadline);
-    run.resizeObserver?.disconnect();window.removeEventListener('resize',run.resize);run.resolve();
+    run.resizeObserver?.disconnect();window.removeEventListener('resize',resize);run.resolve?.();
+    return run.pose??null;
   }
-  function play(faces,seed,onSettle,onThrow){
+  function resize(){
+    const bounds=canvas.getBoundingClientRect(),ratio=Math.min(2,window.devicePixelRatio||1);
+    const width=Math.max(1,Math.round(bounds.width*ratio)),height=Math.max(1,Math.round(bounds.height*ratio));
+    if(width!==canvas.width)canvas.width=width;
+    if(height!==canvas.height)canvas.height=height;
+    if(running?.pose)paintBundle(ctx,width,height,running.pose,throwCamera(width,height));
+  }
+  function observeSize(run){
+    if(typeof ResizeObserver==='function'){
+      run.resizeObserver=new ResizeObserver(resize);run.resizeObserver.observe(canvas);
+    }
+    window.addEventListener('resize',resize);
+  }
+  function shuffle(still=false){
+    cancel();if(!ctx)return;
+    resize();
+    const run={frame:0},start=performance.now();running=run;observeSize(run);
+    function update(now){
+      if(running!==run)return;
+      run.pose=shufflePose(Math.max(0,now-start));
+      const w=canvas.width,h=canvas.height;
+      paintBundle(ctx,w,h,run.pose,throwCamera(w,h));
+      if(!still)run.frame=requestAnimationFrame(update);
+    }
+    update(start);
+  }
+  function play(faces,seed,onSettle,onThrow,held=null){
     cancel();
     const plan=createThrow(faces,seed);
     if(!ctx){onSettle?.();return Promise.resolve();}
-    function resize(){
-      const bounds=canvas.getBoundingClientRect(),ratio=Math.min(2,window.devicePixelRatio||1);
-      const width=Math.max(1,Math.round(bounds.width*ratio)),height=Math.max(1,Math.round(bounds.height*ratio));
-      if(width!==canvas.width)canvas.width=width;
-      if(height!==canvas.height)canvas.height=height;
-    }
     resize();
     return new Promise(resolve=>{
-      const run={resolve,frame:0,deadline:0,settled:false,resize,resizeObserver:null},start=performance.now();running=run;
+      const run={resolve,frame:0,deadline:0,settled:false,resizeObserver:null},start=performance.now();running=run;
       onThrow?.(plan);
-      if(typeof ResizeObserver==='function'){
-        run.resizeObserver=new ResizeObserver(resize);run.resizeObserver.observe(canvas);
-      }
-      window.addEventListener('resize',resize);
+      observeSize(run);
       function show(t){
         if(running!==run)return;
-        drawThrow(ctx,canvas.width,canvas.height,plan,t);
+        drawThrow(ctx,canvas.width,canvas.height,plan,t,held);
         if(!run.settled&&t>=plan.settleMs){run.settled=true;onSettle?.();}
       }
       function update(now){
@@ -602,5 +649,5 @@ export function createToss(canvas) {
       run.deadline=setTimeout(()=>{if(running===run){show(plan.totalMs);if(running===run)cancel();}},Math.ceil(plan.totalMs)+90);
     });
   }
-  return {play,cancel};
+  return {play,shuffle,cancel};
 }
