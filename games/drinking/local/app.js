@@ -4,7 +4,7 @@ const $=selector=>document.querySelector(selector);
 const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
 const turnOrderKey=playerKey+'.turnOrder';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261117-bottle-seats1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261117-drinking-cards-turn-choices1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -90,6 +90,7 @@ function draw(items){if(!items.length)return '';if(!bags.get(items)?.length)bags
 const truthDeck={mild:[],spicy:[]};
 const truthSettings={mode:'spicy',showFlavor:false};
 const truthTools=window.PartyTruthCards;
+let preparedTruth=null;
 function refreshTruthDeck(official){
   const next=window.PartyTruthCards.deck(official);
   for(const flavor of Object.keys(truthDeck)){
@@ -298,9 +299,10 @@ function intro(){const enough=players.length>=game.min;
   if(game.id==='bomb')return bombSetup();
   if(game.id==='stopwatch')return watchSetup();
   if(game.id==='truth'){
-    shell('<h2><span class="suite-kicker">07 · 추리와 대화</span>오늘은 조금 더<br>솔직하게.</h2><p>내 차례에 질문을 고르거나 직접 적어요.<br>답하기 어려우면 패스해도 돼요.</p>'+truthTools.settingsForm(truthSettings)+actions(btn('질문 고르기','start'),
-      btn('질문 카드 등록','truth-editor','quiet')),true);
-    truthTools.bindSettings(truthSettings);
+    shell('<h2><span class="suite-kicker">07 · 추리와 대화</span>오늘은 조금 더<br>솔직하게.</h2>'+
+      '<p>내 차례에 카드 한 장을 뒤집고 질문에 답해요.<br>답하기 어려우면 패스해도 돼요.</p>'+
+      actions(btn('게임 시작','start')),true);
+    app.querySelector('.round-head').insertAdjacentHTML('beforeend',btn('설정','truth-settings','quiet truth-settings-link'));
     return;
   }
   if(pageIntroductions[game.id])return pageIntro(pageIntroductions[game.id],enough);
@@ -877,6 +879,41 @@ function kingResult(){
     '<h2>'+esc(r.prompt)+'</h2><dl class="king-recipients" aria-label="명령을 받은 사람">'+recipients+'</dl></section>'+footer,true);
 }
 const truthEditor=$('#truth-editor'),truthMessage=$('#truth-message');
+function showTruthSettings(){
+  shell('<h2 tabindex="-1" id="truth-settings-title">진실게임 설정</h2>'+truthTools.settingsForm(truthSettings)+
+    '<p id="prepared-truth" role="status"></p>'+
+    actions(btn('질문 고르기','truth-choose','quiet'),btn('질문 카드 등록','truth-editor','quiet'))+
+    actions(btn('설정 완료','truth-intro')));
+  $('#local-back [data-local-back-label]').textContent='진실게임으로';
+  truthTools.bindSettings(truthSettings);
+  const summary=$('#prepared-truth');
+  function showPrepared(){
+    if(preparedTruth&&!truthTools.enabledFlavors(truthSettings.mode).includes(preparedTruth.flavor))preparedTruth=null;
+    summary.textContent=preparedTruth?'준비한 질문 · '+preparedTruth.question:'';
+    summary.hidden=!preparedTruth;
+  }
+  app.querySelector('.truth-settings').addEventListener('change',showPrepared);
+  showPrepared();
+  $('#truth-settings-title').focus({preventScroll:true});
+}
+function chooseTruthQuestion(){
+  const flavors=truthTools.enabledFlavors(truthSettings.mode);
+  shell('<h2 tabindex="-1" id="truth-choose-title">질문 고르기</h2><p>다음 게임의 첫 두 장 중 한 장에 넣을 질문을 골라요.</p>'+
+    '<form id="truth-prompt">'+questionMenu.markup('truth','카드에 넣기',flavors)+'</form>'+
+    actions(btn('설정으로','truth-settings','quiet')));
+  $('#local-back [data-local-back-label]').textContent='설정으로';
+  questionMenu.mount($('#truth-prompt'),{kind:'truth',load:async()=>{
+    const loaded=await prompts.refresh('truth');
+    const deck=truthTools.deck(loaded?prompts.truth():{mild:[],spicy:[]});
+    if(!loaded&&!flavors.some(flavor=>deck[flavor].length))throw Error('catalog unavailable');
+    return deck;
+  },apply:(question,manual,flavor)=>{
+    preparedTruth={question,flavor,manual};
+    if(manual)prompts.submit('truth',question,flavor);
+    showTruthSettings();
+  }});
+  $('#truth-choose-title').focus({preventScroll:true});
+}
 function openTruthEditor(){
   truthMessage.textContent='';
   truthEditor.showModal();
@@ -889,54 +926,68 @@ $('#truth-form').onsubmit=e=>{
   if(result.error||result.known){
     truthMessage.textContent=result.error||'이미 있는 질문이에요.';input.focus();return;
   }
-  if(round&&game?.id==='truth')refreshTruthDeck(round.official);
   input.value='';input.focus();
   truthMessage.textContent=result.saved?'이 기기의 질문에 추가했어요.':'이번 플레이에 사용할 질문으로 추가했어요.';
 };
 function dealTruth(){
-  const {mode,showFlavor}=round.truthSettings;
-  round.truthCards=mode==='mixed'?shuffled(['mild','spicy']):[mode,mode];
-  round.phase='truth-pick';
-  const cards=round.truthCards.map((flavor,i)=>{
+  const r=round,{mode,showFlavor}=r.truthSettings;
+  r.phase='truth-pick';
+  const flavors=mode==='mixed'?shuffled(['mild','spicy']):[mode,mode];
+  r.truthCards=flavors.map(flavor=>({flavor,question:''}));
+  const prepared=r.turn===0?preparedTruth:null;
+  if(prepared){
+    const matches=r.truthCards.filter(card=>card.flavor===prepared.flavor);
+    if(matches.length)matches[rand(matches.length)].prepared=prepared;
+    preparedTruth=null;
+  }
+  const cards=r.truthCards.map(({flavor},i)=>{
     const taste=showFlavor?flavor:null;
-    return '<button type="button" class="truth-back" data-action="truth-pick" data-value="'+i+
+    return '<button type="button" class="truth-back" disabled data-action="truth-pick" data-value="'+i+
       '" aria-label="'+truthTools.sideName(i,taste)+'">'+art('back')+truthTools.cardLabel(taste)+'</button>';
   }).join('');
-  const r=round,turn=r.turn;
-  shell(tag(turn)+'<h2 tabindex="-1" id="truth-title">답할 질문을 정해 주세요</h2>'+
-    '<form id="truth-prompt">'+questionMenu.markup('truth','이 질문으로 시작',truthTools.enabledFlavors(mode))+'</form>'+
-    '<details class="blind-cards" hidden><summary>카드 뒤집기로 뽑기</summary><div class="truth-pair">'+cards+'</div></details>');
-  const form=$('#truth-prompt'),blind=app.querySelector('.blind-cards');
-  async function loadQuestions(){
+  shell(tag(r.turn)+'<h2 tabindex="-1" id="truth-title">카드 한 장을 골라 주세요</h2>'+
+    '<div class="truth-pair">'+cards+'</div><p id="truth-load" role="status">카드를 준비하고 있어요.</p>'+
+    '<button type="button" class="quiet" id="truth-retry" hidden>다시 불러오기</button>'+
+    '<button type="button" class="quiet" data-action="truth-reconfigure" hidden>설정으로</button>');
+  const status=$('#truth-load'),retry=$('#truth-retry');
+  async function loadHand(){
+    retry.hidden=true;
+    status.hidden=false;status.textContent='카드를 준비하고 있어요.';
     const loaded=await prompts.refresh('truth');
-    if(!form.isConnected)return {mild:[],spicy:[]};
-    r.official=loaded?prompts.truth():{mild:[],spicy:[]};
-    refreshTruthDeck(r.official);
-    const allowed=truthTools.enabledFlavors(mode);
-    blind.hidden=!allowed.every(flavor=>truthDeck[flavor].length);
-    if(!loaded&&!allowed.some(flavor=>truthDeck[flavor].length))throw Error('catalog unavailable');
-    return truthDeck;
+    if(!status.isConnected)return;
+    refreshTruthDeck(loaded?prompts.truth():{mild:[],spicy:[]});
+    for(const card of r.truthCards){
+      const selected=card.prepared;
+      if(selected&&(selected.manual||truthDeck[card.flavor].includes(selected.question)))card.question=selected.question;
+    }
+    for(const [i,card] of r.truthCards.entries()){
+      if(!card.question){
+        const deck=truthDeck[card.flavor],other=r.truthCards[1-i];
+        card.question=draw(deck);
+        if(deck.length>1&&other.question===card.question)card.question=draw(deck.filter(q=>q!==other.question));
+      }
+      app.querySelector('[data-action="truth-pick"][data-value="'+i+'"]').disabled=!card.question;
+    }
+    const ready=r.truthCards.every(card=>card.question);
+    retry.hidden=ready;
+    status.hidden=ready;
+    if(!ready)status.textContent=loaded?'이 수위의 질문이 부족해요. 설정에서 질문을 추가할 수 있어요.':'카드를 다 불러오지 못했어요.';
+    app.querySelector('[data-action="truth-reconfigure"]').hidden=ready;
   }
-  questionMenu.mount(form,{kind:'truth',load:loadQuestions,apply:(question,manual,flavor)=>{
-    if(round!==r||r.phase!=='truth-pick'||r.turn!==turn)return false;
-    if(manual)prompts.submit('truth',question,flavor);
-    showTruthQuestion(r,flavor==='spicy',question);
-  }});
+  retry.onclick=loadHand;
+  void loadHand();
   $('#truth-title').focus({preventScroll:true});
 }
 function revealTruth(value){
-  const r=round;
-  if(r.phase!=='truth-pick'||(value!=='0'&&value!=='1'))return;
-  const spicy=r.truthCards[Number(value)]==='spicy';
-  const question=draw(spicy?truthDeck.spicy:truthDeck.mild);
-  if(!question)return;
-  showTruthQuestion(r,spicy,question);
+  if(round.phase!=='truth-pick'||(value!=='0'&&value!=='1'))return;
+  const card=round.truthCards[Number(value)];
+  if(card.question)showTruthQuestion(round,card.flavor==='spicy',card.question);
 }
 function showTruthQuestion(r,spicy,question){
   r.phase='truth-answer';fx.play('truth');
   shell(tag(r.turn)+'<div class="truth-front '+(spicy?'truth-spicy':'truth-mild')+'">'+
     '<h2 tabindex="-1" id="truth-title">'+(spicy?'빨간맛':'순한맛')+'</h2><p>'+esc(question)+'</p></div>'+
-    actions(btn('답했어요','truth-next'),btn('패스','truth-pass','quiet'),btn('질문 카드 등록','truth-editor','quiet')));
+    actions(btn('답했어요','truth-next'),btn('패스','truth-pass','quiet')));
   $('#truth-title').focus({preventScroll:true});
 }
 function initialReady(){
@@ -950,7 +1001,7 @@ function initialGo(){
 function initialOut(reason){
   stopClock();const r=round,who=r.alive.splice(r.turn,1)[0];if(r.alive.length===1)return end(players[r.alive[0]]+'님 승리!',players[who]+'님이 탈락했어요. ('+reason+')');
   r.turn%=r.alive.length;r.initial=draw(r.bank);r.phase='intermission';fx.play('snap');
-  shell('<span class="turn-tag">'+esc(reason)+'</span><h2>'+name(who)+'님 탈락</h2><p>새 초성으로 이어갑니다. '+r.alive.length+'명이 남았어요.</p>'+actions(btn('다음 차례','initial-ready')))
+  shell('<span class="turn-tag">'+esc(reason)+'</span><h2>'+name(who)+'님 탈락</h2><p>새 초성으로 이어갑니다. '+r.alive.length+'명이 남았어요.</p>'+actions(btn('다음 차례','initial-next')))
 }
 function upDown(lastGuess){
   const r=round,attempt=r.guesses;
@@ -1135,7 +1186,15 @@ function handle(action,value){
   }
   if(game?.id==='stopwatch'&&action==='watch-setup'&&r?.phase==='done'){cleanup();return watchSetup()}
   if(game?.id==='truth'&&action==='truth-setup'&&r?.phase==='done'){cleanup();return intro()}
-  if(game?.id==='truth'&&action==='truth-editor')return openTruthEditor();
+  if(game?.id==='truth'&&action==='truth-reconfigure'&&r?.phase==='truth-pick'){cleanup();return showTruthSettings();}
+  if(game?.id==='truth'&&!r){
+    if(action==='truth-settings')return showTruthSettings();
+    if(action==='truth-choose')return chooseTruthQuestion();
+    if(action==='truth-editor')return openTruthEditor();
+    if(action==='truth-intro'){intro();app.querySelector('[data-action="truth-settings"]').focus();return;}
+  }
+  if(game?.id==='truth'&&action==='menu'&&$('#truth-choose-title'))return showTruthSettings();
+  if(game?.id==='truth'&&action==='menu'&&$('#truth-settings-title')){intro();app.querySelector('[data-action="truth-settings"]').focus();return;}
   if(action==='menu')return go('menu');if(action==='people')return playerSettings();if(action==='start')return begin();if(!r)return;
   switch(action){
     case 'tooth':{const i=Number(value);if(r.lock||r.pressed.has(i))return;r.pressed.add(i);
@@ -1208,7 +1267,8 @@ function handle(action,value){
       if(r.phase!=='truth-answer')return;
       if(++r.turn===players.length)return end('모두 한 번씩 마쳤어요!','새로운 질문으로 다음 라운드를 즐겨요.');
       fx.play('turn');return dealTruth();
-    case 'initial-go':return initialGo();case 'initial-ready':return initialReady();
+    case 'initial-go':if(r.phase==='initial-ready')initialGo();return;
+    case 'initial-next':if(r.phase==='intermission')initialGo();return;
     case 'word-ok':stopClock();r.turn=(r.turn+1)%r.alive.length;fx.play('turn');return initialReady();
     case 'word-out':return initialOut('중복·오답');
   }

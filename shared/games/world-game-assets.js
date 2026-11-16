@@ -1,26 +1,26 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261117-bottle-seats1'
+ const revision='20261117-drinking-cards-turn-choices1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   croc:'1.5.0',
   liar:'1.7.0',
   king:'1.12.0',
-  minority:'1.10.0',
+  minority:'1.11.0',
   mission:'1.7.0',
   bottle:'1.5.1',
   bomb:'1.7.0',
   stopwatch:'1.5.0',
-  truth:'1.11.0',
-  initial:'1.6.0',
+  truth:'1.12.0',
+  initial:'1.6.1',
   fingers:'1.10.0',
   imagevote:'1.10.0',
   secretcount:'1.2.0',
   updown:'1.5.0',
   partyroulette:'1.5.0',
-  drinking:'1.24.1',
+  drinking:'1.25.0',
   shapematch:'1.3.0',
   tarot:'1.10.2',
   saju:'2.15.1',
