@@ -56,6 +56,7 @@ jobs:
             --exclude='/.gitignore' \
             --exclude='/_config.yml' \
             "$GITHUB_WORKSPACE/" "$site/"
+          node scripts/sync-section-versions.mjs "$site"
           touch "$site/.nojekyll"
           for required in CNAME index.html world.html park/index.html note/index.html sw.js config.js version.json; do
             if [[ ! -s "$site/$required" ]]; then

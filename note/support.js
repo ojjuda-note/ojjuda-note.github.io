@@ -25,7 +25,7 @@
   const button = (text, action) => { const b=el('button',text,'btn button');b.type='button';b.addEventListener('click',action);return b; };
   const date = value => new Date(value).toLocaleString('ko-KR');
   let client, getUserId=()=>null, panel, layer, content, message, focus, run=0, busy=false;
-  let inertState=[],previousOverflow='',targetInquiry=null,source='note',getScreen=()=>source,appVersion='',tabs,title,view='inquiries';
+  let inertState=[],previousOverflow='',targetInquiry=null,source='note',getScreen=()=>source,getAppVersion=()=>'',tabs,title,view='inquiries';
   const validId=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
   function bugDiagnostics(kind) {
     if(kind!=='bug')return {};
@@ -148,7 +148,7 @@
       const kind=choices.querySelector('input:checked')?.value||'other';
       busy=true;send.disabled=true;field.disabled=true;choices.disabled=true;message.textContent='의견을 보내는 중이에요.';keepFocus(epoch,user);
       try{
-        const {error}=await client.from('feedback').insert({user_id:user,kind,body:field.value.trim(),screen:(source+':'+String(getScreen()||'')).slice(0,40),app_version:appVersion,user_agent:navigator.userAgent.slice(0,400),...bugDiagnostics(kind)});
+        const {error}=await client.from('feedback').insert({user_id:user,kind,body:field.value.trim(),screen:(source+':'+String(getScreen()||'')).slice(0,40),app_version:getAppVersion(),user_agent:navigator.userAgent.slice(0,400),...bugDiagnostics(kind)});
         if(error)throw error;if(!valid(epoch,user))return;
         content.replaceChildren(el('p','고마워요! 의견을 잘 받았어요.'),button('닫기',close));message.textContent='아지트 운영팀이 의견을 확인합니다.';keepFocus(epoch,user);
       }catch{if(valid(epoch,user))message.textContent='보내지 못했어요. 작성한 내용은 유지됩니다. 다시 시도해 주세요.';}
@@ -183,7 +183,7 @@
   }
   function install(options) {
     if(layer||!options.client)return;
-    client=options.client;getUserId=options.getUserId;source=options.source==='world'?'world':'note';getScreen=options.getScreen||(()=>source);appVersion=options.appVersion||'';
+    client=options.client;getUserId=options.getUserId;source=options.source==='world'?'world':'note';getScreen=options.getScreen||(()=>source);getAppVersion=options.getAppVersion||(()=>options.appVersion||'');
     try { window.OjjudaDiagnostics?.bindAuth(client,getUserId); } catch { /* Reporting remains available without diagnostics. */ }
     layer=el('div',undefined,'dialog-backdrop note-support-layer');layer.hidden=true;
     panel=el('section',undefined,'management-dialog');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-labelledby','note-support-title');
