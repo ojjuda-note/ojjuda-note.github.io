@@ -1,4 +1,4 @@
-import {TEAMS,FINISH,position} from './rules.mjs?v=15';
+import {TEAMS,FINISH,position} from './rules.mjs?v=16';
 
 export function roundStandings(pawns){
   const teams=pawns.map((pieces,team)=>({

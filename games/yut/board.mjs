@@ -1,5 +1,5 @@
 import { animalFor,drawZodiac } from './zodiac.mjs?v=5';
-import { TEAMS,EVENT_NAMES,tileEffect } from './rules.mjs?v=15';
+import { TEAMS,EVENT_NAMES,tileEffect } from './rules.mjs?v=16';
 
 // A square lacquer board viewed by a level, front-facing orthographic camera.
 const TAU = Math.PI * 2;
