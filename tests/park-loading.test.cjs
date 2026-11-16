@@ -323,3 +323,53 @@ test('a shared card starts before the feed and fetches reply backgrounds near th
     dom.window.close();
   }
 });
+
+test('returning from a reply restores the original feed button and reading position', async () => {
+  const dom = new JSDOM(read('park/index.html'), {
+    url: 'https://fixture.test/park/', runScripts: 'outside-only', pretendToBeVisual: true
+  });
+  const w = dom.window, doc = w.document;
+  try {
+    w.matchMedia = () => ({ matches: false });
+    w.scrollTo = ({ top }) => { w.scrollY = top; };
+    const id = index => '12345678-1234-4123-8123-' + String(index).padStart(12, '0');
+    const root = { id: id(1), kind: 'memo', body: '공원', tags: [] };
+    const reply = { ...root, id: id(2), kind: 'comment', parent_id: root.id };
+    const query = {
+      select() { return this; }, eq() { return this; }, not() { return this; }, order() { return this; },
+      async limit() { return { data: [reply] }; }
+    };
+    w.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.test', supabaseKey: 'test' };
+    w.supabase = { createClient: () => ({
+      auth: { onAuthStateChange() {}, getSession: async () => ({ data: { session: null } }) },
+      schema: () => ({
+        from: () => query,
+        rpc: async (name, args) => ({ data: name === 'list_cards' ? [root]
+          : name === 'get_card' ? (args.p_id === root.id ? root : reply) : [] })
+      })
+    }) };
+    w.eval(read('note/preview.js'));
+    const settle = () => new Promise(resolve => w.setTimeout(resolve, 0));
+    const back = async () => {
+      const popped = new Promise(resolve => w.addEventListener('popstate', resolve, { once: true }));
+      doc.querySelector('.back-button').click();
+      await popped; await settle();
+    };
+    await settle(); await settle();
+    for (const selector of ['.photo-open', '.card-actions [data-open]']) {
+      const opener = doc.querySelector('#feed-list ' + selector);
+      opener.focus();
+      w.scrollTo({ top: 840 });
+      opener.click(); await settle();
+      assert.equal(w.scrollY, 0);
+      doc.querySelector('#reply-list .photo-open').click(); await settle();
+      await back();
+      assert.equal(new URL(w.location.href).searchParams.get('card'), root.id);
+      await back();
+      assert.equal(doc.activeElement, opener);
+      assert.equal(w.scrollY, 840);
+    }
+  } finally {
+    dom.window.close();
+  }
+});
