@@ -395,7 +395,7 @@ for (const kind of ['poll','ladder','wheel']) {
       if(action==='feed')return {data:post?[post]:[]};
       if(action==='activity_vote')selection=p.choice;
       if(action==='activity_draw')drawn=kind==='wheel'?{winner:1}:{rungs:[0]};
-      if(action.startsWith('activity_'))return {data:kind==='poll'?{counts:[0,Number(selection===1)],mine:selection}:{result:drawn}};
+      if(action.startsWith('activity_'))return {data:kind==='poll'?{counts:[1+Number(selection===0),1+Number(selection===1)],mine:selection}:{result:drawn}};
     }});
     try {
       await tick();const d=f.w.document;
@@ -403,18 +403,35 @@ for (const kind of ['poll','ladder','wheel']) {
       const form=d.querySelector('#composer');
       form.elements.kind.value=kind;form.elements.kind.dispatchEvent(new f.w.Event('change'));
       assert.equal(d.querySelector('#schedule-fields').hidden,true);
-      form.elements.title.value='우리 모임';form.elements.activity_options.value='김밥';
+      assert.equal(form.querySelector('[data-title-label]').textContent,{poll:'질문',ladder:'사다리 제목',wheel:'추첨 주제'}[kind]);
+      const group=form.querySelector('[data-editor="'+kind+'"]');
+      assert.equal(group.hidden,false);assert.equal(group.disabled,false);
+      form.elements.title.value='우리 모임';const inputs=group.querySelectorAll('[name=activity_option]');inputs[0].value='김밥';
       form.dispatchEvent(new f.w.Event('submit',{cancelable:true}));await tick();
       assert.ok(form.querySelector('.error').textContent);assert.equal(post,undefined);
-      form.elements.activity_options.value='김밥\n떡볶이';
-      if(kind==='ladder')form.elements.activity_names.value='민지\n서준';
+      inputs[1].value='떡볶이';
+      group.querySelector('[data-add-row]').click();
+      assert.equal(group.querySelectorAll('[data-entry-row]').length,3);
+      group.querySelector('[data-entry-row]:last-child [data-remove-row]').click();
+      if(kind==='ladder'){
+        const names=group.querySelectorAll('[name=activity_name]');names[0].value='민지';names[1].value='서준';
+      }
       form.dispatchEvent(new f.w.Event('submit',{cancelable:true}));await tick();
       assert.equal(post.activity.kind,kind);assert.equal(post.starts_at,null);assert.deepEqual(Array.from(post.activity.options),['김밥','떡볶이']);
       d.querySelector('[data-activity]').click();await tick();
       if(kind==='poll'){
-        d.querySelector('[data-choice="1"]').click();await tick();
-        assert.equal(d.querySelector('[data-choice="1"]').getAttribute('aria-pressed'),'true');
-        assert.match(d.querySelector('.activity-summary').textContent,/총 1표/);
+        assert.equal(d.querySelector('.poll-results'),null);assert.equal(d.querySelector('[data-cast]').disabled,true);
+        d.querySelector('[name=poll_choice][value="1"]').click();assert.equal(selection,null);
+        d.querySelector('[data-cast]').click();await tick();
+        const results=d.querySelector('.poll-results');assert.match(results.textContent,/총 3표/);
+        assert.match(results.querySelectorAll('li')[1].textContent,/내 선택/);
+        assert.match(results.querySelectorAll('li')[1].textContent,/2표 · 66.7%/);
+        assert.ok(Math.abs(parseFloat(results.querySelectorAll('.poll-track span')[1].style.width)-200/3)<0.01);
+        d.querySelector('[data-change-vote]').click();d.querySelector('[name=poll_choice][value="0"]').click();
+        d.querySelector('[data-show-results]').click();assert.equal(selection,1);
+        d.querySelector('[data-change-vote]').click();d.querySelector('[name=poll_choice][value="0"]').click();
+        d.querySelector('[data-cast]').click();await tick();
+        assert.equal(selection,0);assert.match(d.querySelector('.poll-results').textContent,/총 3표/);
       }else{
         d.querySelector('[data-draw]').click();await tick();
         assert.match(d.querySelector('.draw-result').textContent,/떡볶이/);
@@ -422,12 +439,35 @@ for (const kind of ['poll','ladder','wheel']) {
         if(kind==='ladder'){
           d.querySelector('[data-lane="1"]').click();
           assert.match(d.querySelector('.draw-result').textContent,/서준 → 김밥/);
+          assert.deepEqual([...d.querySelectorAll('.ladder-results dd')].map(el=>el.textContent),['떡볶이','김밥']);
+        }else{
+          assert.equal(d.querySelector('.wheel-hit').textContent,'2');assert.match(d.querySelector('.wheel-winner').textContent,/떡볶이.*당첨/);
         }
       }
       d.querySelector('[data-close]').click();d.querySelector('[data-edit]').click();
       const edit=d.querySelector('#composer');
       assert.equal(edit.elements.kind.value,kind);assert.equal(edit.elements.kind.disabled,true);
-      assert.equal(edit.elements.activity_options.readOnly,true);
+      assert.ok([...edit.querySelectorAll('[data-editor] input')].every(input=>input.readOnly));
     }finally{f.dom.window.close();}
   });
 }
+
+test('activity editors keep separate drafts and enforce the 2–10 row limits',async()=>{
+  const f=fixture({hash:'#room='+room});
+  try{
+    await tick();const d=f.w.document;d.querySelector('[data-action=compose]').click();
+    const form=d.querySelector('#composer');
+    const choose=kind=>{form.elements.kind.value=kind;form.elements.kind.dispatchEvent(new f.w.Event('change'));return form.querySelector('[data-editor="'+kind+'"]');};
+    const poll=choose('poll'),add=poll.querySelector('[data-add-row]');
+    poll.querySelector('input').value='첫 번째 보기';
+    for(let i=2;i<10;i++)add.click();
+    assert.equal(add.disabled,true);assert.equal(poll.querySelectorAll('[data-entry-row]').length,10);
+    const wheel=choose('wheel');assert.equal(poll.disabled,true);assert.equal(wheel.querySelector('input').value,'');
+    wheel.querySelector('input').value='돌림판 전용';
+    choose('poll');assert.equal(poll.querySelector('input').value,'첫 번째 보기');
+    assert.equal(new f.w.FormData(form).getAll('activity_option').length,10);
+    while(poll.querySelectorAll('[data-entry-row]').length>2)poll.querySelector('[data-entry-row]:last-child [data-remove-row]').click();
+    assert.equal(add.disabled,false);assert.ok([...poll.querySelectorAll('[data-remove-row]')].every(b=>b.hidden));
+    assert.equal(choose('wheel').querySelector('input').value,'돌림판 전용');
+  }finally{f.dom.window.close();}
+});
