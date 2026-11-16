@@ -807,7 +807,7 @@
       id: 'seventeen', name: 'SEVENTEEN', korean: '세븐틴', category: 'boy', fan: 'CARAT', agency: 'PLEDIS Entertainment',
       members: ['에스쿱스', '정한', '조슈아', '준', '호시', '원우', '우지', '디에잇', '민규', '도겸', '승관', '버논', '디노'],
       debut: '2015.05.26', debutWork: '17 CARAT', songs: ['아낀다 (Adore U)', '20'],
-      checkedAt: '2026.11.14',
+      checkedAt: '2026.11.16',
       concept: '보컬·퍼포먼스·힙합 유닛이 함께 빚는 팀워크.',
       official: 'https://www.pledis.co.kr/', youtube: 'https://www.youtube.com/@pledis17',
       photo: 'Seventeen Carat Land 24.jpg', photoLabel: 'CARAT LAND', photoYear: '2025', credit: 'SEVENTEEN', license: 'CC BY 3.0',
@@ -830,6 +830,9 @@
           href: 'https://www.seventeen-17.jp/posts/discography/insmxq' }
       ],
       appearances: [
+        { date: '2026-11-20', endDate: '2026-11-30', title: 'SNOW with MINITEEN · 공식 캐릭터 팝업',
+          sub: '서울 성동구 스퀘어포털 1층 · 11:00~21:00(KST) · 11/17 11:00 사전예약 시작 · 공식 입장 안내 확인',
+          href: 'https://weverse.io/seventeen/notice/40906' },
         { date: '2026-11-19', title: '도겸×정한 NO-CLUE TRIP · 본편 첫 공개',
           sub: 'Weverse · 일본 Hulu · 대만 friDay · 20:00(KST/JST) · 매주 목요일 총 6회 · 공식 VOD 안내 확인',
           href: 'https://www.seventeen-17.jp/posts/information/jpfkwu' },
@@ -861,6 +864,8 @@
         { title: 'PLEDIS · SEVENTEEN 공지', sub: '일정 변경·예매 및 공식 알림 · 로그인 후 확인', href: 'https://weverse.io/seventeen/notice' }
       ],
       news: [
+        { date: '2026.11.15', tag: '팬 안내', title: 'JxJ 11/21·22 베루나돔 CARAT 부스 특전 수령 예약 11/16 19:00(JST) 시작 · 운영 10:30~16:45', href: 'https://www.seventeen-17.jp/posts/information/cttbou' },
+        { date: '2026.11.13', tag: '굿즈', title: '도겸×정한 NO-CLUE TRIP 공식 MD · Weverse Global 2차 예약 11/19 15:00까지', href: 'https://shop.weverse.io/en/shop/USD/artists/7/notices/14998' },
         { date: '2026.11.13', tag: '굿즈', title: 'JxJ 일본 돔 공연 · 11/21·22 공식 MD 현장 수령 운영 안내', href: 'https://www.seventeen-17.jp/posts/information/povezu' },
         { date: '2026.11.11', tag: '수상·차트', title: 'JxJ DREAMSCAPE, 일본 레코드협회 10월도 골드 인증(누적 10만 장 이상 출하)', href: 'https://www.seventeen-17.jp/posts/information/hheyrw' },
         { date: '2026.11.11', tag: '공연', title: '정한×조슈아 일본 공연 공식 티켓 쉐어링 개시', href: 'https://www.seventeen-17.jp/posts/information/gnelcq' },
@@ -869,6 +874,12 @@
         { date: '2026.10.19', tag: '음악', title: '정한×조슈아 유닛 JxJ 미니 1집 DREAMSCAPE 발매 · 로그인 후 확인', href: 'https://weverse.io/seventeen/notice/39436/' }
       ],
       merch: [
+        { title: 'SNOW with MINITEEN · 공식 캐릭터 팝업 MD',
+          sub: '11/20~30 서울 성동구 스퀘어포털 1층 · 11/17 11:00(KST) 사전예약 시작 · 품목별 재고·구매 조건은 현장 확인',
+          href: 'https://weverse.io/seventeen/notice/40906' },
+        { title: '도겸×정한 NO-CLUE TRIP 공식 MD · 2차 예약',
+          sub: 'Weverse Global · 11/13 13:30~11/19 15:00(KST) 예약 · 2027/1/14 출고 시작 · 재고는 판매처 확인',
+          href: 'https://shop.weverse.io/en/shop/USD/artists/7/notices/14998' },
         { title: 'JxJ 일본 돔 공연 공식 MD · 현장 수령',
           sub: '2026.11.21·22 · 베루나돔 레드파킹 · 구매 11:00~16:20 / 수령 12:00~16:30(JST) · 품목·재고는 공식 안내 확인',
           href: 'https://www.seventeen-17.jp/posts/information/povezu' },
