@@ -1,8 +1,8 @@
-import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed} from './rules.mjs?v=8';
-import {createBoard} from './board.mjs?v=16';
+import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed} from './rules.mjs?v=9';
+import {createBoard} from './board.mjs?v=17';
 import {createToss,drawRack} from './toss.mjs?v=7';
-import {openRoom,roomCode} from './room.mjs?v=8';
-import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=3';
+import {openRoom,roomCode} from './room.mjs?v=9';
+import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=4';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
 const dialog=$('sheet'), body=$('dialog-body'), reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -410,7 +410,8 @@ function settings(initial=false){
   let kind=local.computerTeams?.length?'computer':'together';
   const kinds=element('div',undefined,'play-kinds');kinds.setAttribute('role','group');kinds.setAttribute('aria-label','대결 방식');
   const label=element('label','참가 팀');label.htmlFor='team-count';
-  const sizes=[2,3,4],teams=setupSelect('team-count',sizes.map(n=>[n,n+'팀']),local.pawns.length);
+  const teamCounts=Array.from({length:TEAMS.length-1},(_,i)=>[i+2,(i+2)+'팀']);
+  const teams=setupSelect('team-count',teamCounts,local.pawns.length);
   const mode=modePicker(local.mode??DEFAULT_MODE),numbers=element('div'),settingsRow=element('div',undefined,'settings-row');numbers.append(label,teams);settingsRow.append(numbers,mode.box);
   const roster=element('div',undefined,'roster'),head=element('div',undefined,'roster-line roster-head');
   head.append(element('b','팀 구성'),element('span','동물'),element('span','말 수'));
@@ -422,7 +423,7 @@ function settings(initial=false){
       const row=element('div',undefined,'roster-line'),team=element('div',undefined,'roster-team');
       team.append(animalIcon(t,0,animals[0],animals),element('span',TEAMS[t].name+' 팀'));
       const species=setupSelect('team-animal-'+t,ANIMALS.map((name,id)=>[id,name]),animals[t]);
-      const count=setupSelect('team-pieces-'+t,sizes.map(n=>[n,n+'개']),counts[t]);
+      const count=setupSelect('team-pieces-'+t,[2,3,4].map(n=>[n,n+'개']),counts[t]);
       species.setAttribute('aria-label',TEAMS[t].name+' 팀 동물');count.setAttribute('aria-label',TEAMS[t].name+' 팀 말 수');
       species.onchange=()=>{animals[t]=Number(species.value);team.firstChild.replaceWith(animalIcon(t,0,animals[0],animals));};
       count.onchange=()=>{counts[t]=Number(count.value);};
@@ -448,8 +449,8 @@ function settings(initial=false){
     const item=button(title,'secondary',()=>{kind=value;refresh();});item.dataset.kind=value;kinds.append(item);
   }
   const options=element('details',undefined,'game-details');
-  options.append(element('summary','팀·말·놀이 설정'),settingsRow,roster);
-  actions.append(start,join);refresh();body.append(kinds,hint,options,actions);
+  options.append(element('summary','팀별 동물·말 수'),roster);
+  actions.append(start,join);refresh();body.append(kinds,hint,settingsRow,options,actions);
 }
 function joinPanel(){
   openPanel('친구 방 참가','join');
@@ -481,7 +482,7 @@ function copyValue(title,value,input){
 function lobbyPanel(){
   if(!net)return;
   openPanel('온라인 대기실','lobby');
-  const capacity=net.setup?.count??4;
+  const capacity=net.setup?.count??TEAMS.length;
   const seat=net.seat<0?'자리 확인 중':TEAMS[net.seat].name+' 팀';
   body.append(message('접속 '+net.seats.length+'/'+capacity+'팀 · 내 자리 '+seat));
   if(net.isHost&&!net.game){

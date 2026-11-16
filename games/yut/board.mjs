@@ -1,9 +1,8 @@
-import { animalFor,drawZodiac } from './zodiac.mjs?v=3';
-import { TEAMS,tileEffect } from './rules.mjs?v=8';
+import { animalFor,drawZodiac } from './zodiac.mjs?v=4';
+import { TEAMS,tileEffect } from './rules.mjs?v=9';
 
 // A square lacquer board viewed by a level, front-facing orthographic camera.
 const TAU = Math.PI * 2;
-const teamInk=['#863525','#075d59','#584078','#735016'];
 // Camera-facing arrangements, ordered back to front on a single shared base.
 const stackSeats=[
   [],[[0,0]],[[-.40,0],[.40,0]],
@@ -143,6 +142,17 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
       const c=[1,0,-1,0][side],s=[0,1,0,-1][side];
       if(dep(-s,c)<.08)continue;
       const pt=(x,y,d=5.02)=>[x*c-d*s,y,x*s+d*c];
+      // Each exposed rail carries its grain in the wood's local coordinates.
+      for(let band=0;band<8;band++){
+        const from=-4.51+seeded(side*22+band)*.35;
+        const to=4.51-seeded(side*22+band+9)*.41;
+        const strand=Array.from({length:31},(_,j)=>{
+          const u=from+(to-from)*j/30;
+          const ripple=Math.sin(u*2.1+band*.61)*.012+Math.sin(u*.89+side)*.025;
+          return pt(u,-.20-band*.035+ripple);
+        });
+        line(strand,band%3?'rgba(61,32,20,.20)':'rgba(255,203,142,.24)',band%3?.010:.013);
+      }
       for(const mid of [-3.93,3.93]){
         const corners=[[-.23,-.16],[.23,-.16],[.19,-.29],[.12,-.33],[.10,-.43],[-.10,-.43],[-.12,-.33],[-.19,-.29]];
         face(corners.map(([u,h])=>pt(mid+u,h)),'#cfb27d');
@@ -176,11 +186,11 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     solid(edge(9.59),edge(9.85),-.76,-.66,'#506e66','#7a8374');
     solid(edge(9.85),edge(9.97),-.66,-.56,'#958d73','#c5b295');
     solid(edge(9.97),edge(10.02),-.56,-.50,'#cbac7a','#fae7b9');
-    solid(edge(10.02),edge(10),-.50,-.15,'#79736a','#928775');
+    solid(edge(10.02),edge(10),-.50,-.15,'#965f43','#b78254');
     solid(edge(10),edge(10.06),-.15,-.085,'#c8a778','#f2dfb7');
     solid(edge(10.06),edge(9.96),-.085,.04,'#607c70','#a1b6a2');
     solid(edge(9.96),edge(9.9),.04,surface,'#c5ad82',
-      glaze(ox-scale*4.6,oy-scale*4,ox+scale*4.6,oy+scale*3.1,[[0,'#89baac'],[.26,'#70a899'],[.50,'#86b9a9'],[.68,'#70a495'],[1,'#619486']]));
+      glaze(ox-scale*4.6,oy-scale*4,ox+scale*4.6,oy+scale*3.1,[[0,'#afd8c9'],[.24,'#89c1ae'],[.57,'#79ae9d'],[.82,'#6da192'],[1,'#5a8b80']]));
     clasps();
     outline(edge(9.73),'#f6e6b9',.027);outline(edge(9.48),'#c2ddd0',.017);outline(edge(9.39),'#56897f',.016);
     for(let side=0;side<4;side++){
@@ -283,19 +293,31 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   function tile(i){
     const [x,z]=nodes[i],type=tileEffect(tileState,i)??types[i];
     const hero=['start','corner','center'].includes(type);
-    const rad=hero?.735:i>=20?.42:.505,y=hero?.435:.352;
-    const outer=ring(x,z,rad,rad,32),lid=ring(x,z,rad*.84,rad*.84,32),[sx,sy]=project([x,y,z]),r=rad*scale;
+    const rad=hero?.735:i>=20?.42:.505,y=nodeHeight(i);
+    const [sx,sy]=project([x,y,z]),r=rad*scale;
     const stamp=Object.hasOwn(eventStamps,type)?eventStamps[type]:null;
     const tones=stamp?stamp.tones:hero?['#fff5d8','#d9b879','#f5e0ac']:type==='stone'?['#ffd6b7','#c58271','#f2b6a0']:
       type==='breeze'?['#e4f5d7','#8abca2','#c5e6c3']:type==='whirl'?['#ece4fa','#ac98c1','#ecd1e5']:
       i>=20?['#f0f7e9','#c5d4ca','#e6ecd9']:['#fff8e1','#d1d8c5','#f6efdb'];
-    castShadow(x,z,surface+.004,rad*1.13,rad*1.10,y-surface,.67);
-    solid(ring(x,z,rad*.91,rad*.91,32),outer,surface+.014,surface+.065,hero?'#8e7654':'#4d7163','#b1a781');
-    solid(outer,outer,surface+.065,y-.087,hero?'#b29868':'#8a9f90',tones[1]);
-    solid(outer,lid,y-.087,y,hero?'#eed5a3':'#d3d9c0',
-      glaze(sx-r,sy-r*.6,sx+r,sy+r*.68,[[0,tones[0]],[.38,tones[1]],[.63,tones[2]],[.80,tones[0]],[1,tones[2]]]));
-    const lip=Array.from({length:16},(_,j)=>{const a=-2.9+j*.073;return [x+Math.cos(a)*rad*.905,y-.021,z+Math.sin(a)*rad*.905];});
-    line(lip,hero?'#ffefbd':'#e9efda',.016);
+    castShadow(x,z,surface+.004,rad*1.27,rad*1.19,y-surface,.59);
+    castShadow(x,z,surface+.006,rad*.98,rad*.96,.08,.77);
+    // Sweep circular sections up the turned body. Overlapping the projected
+    // sections avoids hairline seams between separately antialiased facets.
+    const profile=[[surface+.014,.89,hero?'#916b43':'#789281'],[surface+.075,.99,tones[1]],
+      [y-.138,1,tones[1]],[y-.084,.97,tones[2]],[y-.025,.87,tones[2]],[y,.74,tones[0]]];
+    for(let band=1;band<profile.length;band++){
+      const [bottom,lo]=profile[band-1],[top,hi,base]=profile[band];
+      const light=glaze(sx-r,sy,sx+r,sy,[[0,mix(base,'#614835',.25)],[.17,base],
+        [.34,mix(base,'#fff6cf',.54)],[.61,base],[.89,mix(base,'#564d44',.25)],[1,mix(base,'#655246',.38)]]);
+      const steps=Math.max(1,Math.ceil(((top-bottom)*lift*scale+Math.abs(hi-lo)*r)/.85));
+      ctx.fillStyle=light;
+      for(let k=band===1?0:1;k<=steps;k++){
+        const t=k/steps,radius=(lo+(hi-lo)*t)*r,cy=sy+(y-bottom-(top-bottom)*t)*lift*scale;
+        ctx.beginPath();ctx.ellipse(sx,cy,radius,radius*tilt,0,0,TAU);ctx.fill();
+      }
+    }
+    const lid=glaze(sx-r*.65,sy-r*.62,sx+r*.72,sy+r*.60,[[0,tones[0]],[.48,tones[2]],[1,tones[1]]]);
+    ctx.beginPath();ctx.ellipse(sx,sy,r*.74,r*.74*tilt,0,0,TAU);ctx.fillStyle=lid;ctx.fill();
     const disc=(size,col)=>feature(x,z,y+.006,size,size,col);
     const mark=(p,col)=>face(stampShape(p,x,z,rad,y+.019),col);
     const stroke=(p,col,w)=>line(stampShape(p,x,z,rad,y+.022),col,w*rad);
@@ -377,7 +399,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
   }
   const objects=nodes.map(([x,z],i)=>({x,z,draw:()=>tile(i)}));
   objects.push({x:3.19,z:1.64,draw:()=>lantern(3.19,1.64)});
-  function nodeHeight(n){return [0,5,10,15,22].includes(n)?.435:.352;}
+  function nodeHeight(n){return [0,5,10,15,22].includes(n)?.54:.425;}
   function pawn(p,x,z,y,size){
     const animal=Number.isInteger(p.animal)&&p.animal>=0&&p.animal<12?p.animal:animalFor(p.team,p.index);
     drawZodiac(ctx,project,x,y,z,size,animal,TEAMS[p.team].color);
@@ -441,7 +463,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     if(liftedSource)ctx.globalAlpha=.48;
     else castShadow(x,z,first.ground,rx/scale,ry/(tilt*scale),first.size*.83,.43);
     if(first.light>0&&!liftedSource)turnHalo(cx,cy,rx,ry,first.light);
-    ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,TAU);ctx.fillStyle=teamInk[team];ctx.fill();
+    ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,TAU);ctx.fillStyle=TEAMS[team].ink;ctx.fill();
     ctx.strokeStyle=chosen?'#163653':'#fffbee';ctx.lineWidth=chosen?Math.max(5,scale*.16):Math.max(2.2,scale*.088);ctx.stroke();
     ctx.strokeStyle=chosen?'#96e9ff':TEAMS[team].color;ctx.lineWidth=chosen?Math.max(2.6,scale*.088):Math.max(1.2,scale*.052);ctx.stroke();
     if(chosen){
@@ -465,7 +487,7 @@ export function createBoard(canvas,chooseDestination,choosePawn,dropPawn) {
     ctx.beginPath();ctx.moveTo(left+cap,top);
     ctx.arcTo(left+w,top,left+w,top+h,cap);ctx.arcTo(left+w,top+h,left,top+h,cap);
     ctx.arcTo(left,top+h,left,top,cap);ctx.arcTo(left,top,left+w,top,cap);ctx.closePath();
-    ctx.fillStyle=chosen?'#193f60':teamInk[team];ctx.fill();ctx.lineWidth=Math.max(1,font*.10);ctx.strokeStyle=chosen?'#b3efff':'#fffbed';ctx.stroke();
+    ctx.fillStyle=chosen?'#193f60':TEAMS[team].ink;ctx.fill();ctx.lineWidth=Math.max(1,font*.10);ctx.strokeStyle=chosen?'#b3efff':'#fffbed';ctx.stroke();
     if(chosen){
       const xx=left+font*.38,yy=top+h*.52;
       ctx.beginPath();ctx.moveTo(xx,yy);ctx.lineTo(xx+font*.22,yy+font*.21);ctx.lineTo(xx+font*.65,yy-font*.27);
