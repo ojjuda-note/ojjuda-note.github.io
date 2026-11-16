@@ -128,10 +128,14 @@ function backgroundObserver(photo) {
 }
 function revealFeedBackground(photo) {
   const key = photo.dataset.pendingBackground;
-  if (!key) return;
+  const ink = inkCards.has(photo);
+  if (!key && !ink) return;
   backgroundObserver(photo)?.unobserve(photo);
-  delete photo.dataset.pendingBackground;
-  setPhotoBackground(photo, key);
+  if (key) {
+    delete photo.dataset.pendingBackground;
+    setPhotoBackground(photo, key);
+  }
+  if (ink) drawInkCard(photo);
 }
 function setPhotoBackground(element, value) {
   const key = photoAssetKey(value);
@@ -786,10 +790,6 @@ function requestTagFit() {
 }
 const expandedBodyEntries = new Set(), quoteFitEntries = new Set();
 const inkCards = new WeakMap();
-const inkObserver = typeof IntersectionObserver === 'function' ? new IntersectionObserver(entries => {
-  for (const entry of entries) if (entry.isIntersecting) drawInkCard(entry.target);
-}, { rootMargin: '250px 0px' }) : null;
-
 function inkOptions(style, width) {
   const inkColor = COLOR_PALETTE[style.textColor]?.solid;
   const box = COLOR_PALETTE[style.boxColor];
@@ -800,7 +800,6 @@ function inkOptions(style, width) {
 function drawInkCard(photo) {
   const job = inkCards.get(photo);
   if (!job) return;
-  inkObserver?.unobserve(photo);
   const canvas = job.canvas;
   if (canvas.dataset.inkReady === 'true') return;
   if (window.ParkCalligraphy.render(canvas, job.body, job.options)) {
@@ -865,8 +864,7 @@ function fitPhotoQuote(photo, quote, tagRow) {
 function refreshExpandedBodies() {
   for (const entry of quoteFitEntries) {
     if (!entry.photo.isConnected) {
-      if (entry.photo.dataset.pendingBackground) backgroundObserver(entry.photo)?.unobserve(entry.photo);
-      inkObserver?.unobserve(entry.photo);
+      if (entry.photo.dataset.pendingBackground || inkCards.has(entry.photo)) backgroundObserver(entry.photo)?.unobserve(entry.photo);
       quoteFitEntries.delete(entry);
       continue;
     }
@@ -949,7 +947,7 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
     canvas.setAttribute('aria-hidden', 'true');
     photo.append(canvas);
     inkCards.set(photo, { canvas, body, options });
-    if (inkObserver && deferBackground) inkObserver.observe(photo);
+    if (observer && deferBackground) observer.observe(photo);
     else drawInkCard(photo);
   }
   photo.append(quote, tagRow);
@@ -1692,7 +1690,6 @@ function shareCard(cardId) {
       });
       if (!photo || !window.OjjudaCardShareImage) throw new Error('card_image_unavailable');
       revealFeedBackground(photo);
-      drawInkCard(photo);
       const prepared = await window.OjjudaCardShareImage.prepare(photo, {
         filename: `ojjuda-card-${cardId}.png`, isCurrent: active, beforeCapture: refreshExpandedBodies
       });
