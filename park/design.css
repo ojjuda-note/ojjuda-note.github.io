@@ -245,3 +245,14 @@ html body .shell > .col > .main { width: min(100%, 1268px); }
   height: auto;
   aspect-ratio: var(--park-card-ratio);
 }
+
+/* Guest cards use the server's basic format. The login link replaces the controls. */
+.composer[data-guest] :is(.compose-publish-settings, .compose-quick, #compose-more,
+  #compose-tags, #compose-tag-display, #card-photo-attach, #card-photo-remove) {
+  display: none !important;
+}
+.guest-compose-login:not([hidden]) { display: inline-flex; margin-block: 10px; }
+.note-font-calligraphy .card-quote, .note-font-calligraphy textarea {
+  font-family: "East Sea Dokdo", "Nanum Pen Script", cursive;
+  font-weight: 400;
+}

@@ -76,15 +76,54 @@ const cardId='00000000-0000-4000-8000-000000000001';
   // Run the actual card composer and its embedded navigation adapter.
   const preparePark=async frame=>{
    await frame.addScriptTag({content:note.slice(0,noteBoot)});
-   await frame.evaluate(()=>{authKnown=ready=true;noteRpc=async()=>[];});
+   await frame.evaluate(()=>{
+    authKnown=ready=true;
+    selectCollection=async()=>true;
+    noteRpc=async(name,args)=>{
+      if(name==='publish_guest_card'){window.guestPublication=args;return {card_id:crypto.randomUUID(),tags:[]};}
+      return [];
+    };
+   });
    await frame.addScriptTag({content:read('park/integration.js')});
   };
   await enter();await page.evaluate(()=>guestFixture.park());await page.locator('[data-park-app] iframe').waitFor();
   const frame=page.frames().find(f=>f.url().includes('/park/'));await preparePark(frame);
-  await page.locator('[data-park-action=compose]').click();await login('note');
+  await page.locator('[data-park-action=compose]').click();
+  await frame.locator('#compose-text').fill('공원의 첫 글');
+  assert.equal(await frame.locator('#compose-more').isVisible(),false);
+  assert.equal(await frame.locator('#card-photo-attach').isVisible(),false);
+  page.once('dialog', dialog=>dialog.accept());
+  await frame.locator('#publish-card').click();
+  await frame.locator('#composer-backdrop').waitFor({state:'hidden'});
+  const posted=await frame.evaluate(()=>guestPublication);
+  assert.equal(posted.p_body,'공원의 첫 글');assert.equal(posted.p_parent_id,null);
+  assert.deepEqual(Object.keys(posted).sort(),['p_body','p_parent_id','p_request_id']);
+  await page.locator('[data-park-action=compose]').click();
+  await frame.locator('#compose-text').fill('붓글씨로 이어 쓰기');
+  await frame.locator('#convert-calligraphy').click();await login('note');
+  assert.equal(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('ojjuda.park.compose-login.v1')).body),'붓글씨로 이어 쓰기');
   if(process.env.GUEST_PROOF_DIR){fs.mkdirSync(process.env.GUEST_PROOF_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.GUEST_PROOF_DIR,'guest-login.png')});}
+  // The return from login recovers exactly what the guest typed and applies the requested conversion.
+  await page.goto(origin+'/park/');await preparePark(page);
+  await page.evaluate(()=>{
+    session={user:{id:'member'}};
+    loadMyGender=async()=>{myIdentity={gender:'private'};myGender='private';};
+    autoWritingLocation=()=>{};
+    resumeGuestWriting(null);
+  });
+  await page.waitForFunction(()=>document.querySelector('#convert-calligraphy').getAttribute('aria-pressed')==='true');
+  assert.equal(await page.locator('#compose-text').inputValue(),'붓글씨로 이어 쓰기');
+  const family=el=>getComputedStyle(el).fontFamily;
+  assert.match(await page.locator('#compose-text').evaluate(family),/East Sea Dokdo/);
+  await page.locator('#compose-text').fill('고쳐 쓴 붓글씨');
+  assert.deepEqual(await page.evaluate(()=>[currentStyle().font,text.value]),['calligraphy','고쳐 쓴 붓글씨']);
+  await page.evaluate(()=>{const card=cardElement({id:crypto.randomUUID(),kind:'memo',body:text.value,tags:[],style:currentStyle(),created_at:new Date().toISOString()});list.replaceChildren(card);});
+  assert.match(await page.locator('#feed-list .card-quote').evaluate(family),/East Sea Dokdo/);
+  await page.locator('#convert-calligraphy').click();
+  assert.equal(await page.locator('#compose-font').inputValue(),'default');
+  assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
   await page.goto(origin+'/park/?card='+cardId);await preparePark(page);
-  await page.evaluate(id=>openComposer('reply',null,id),cardId);await login('note');assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
+  await page.evaluate(id=>openComposer('reply',null,id),cardId);await page.locator('#guest-compose-login').click();await login('note');assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
   // Login is the automatic entry; a guest can still deliberately select signup
   // or password recovery without losing the card they were replying to.
   await page.locator('#signup-tab').click();assert.equal(await page.locator('#signup-tab').getAttribute('aria-selected'),'true');

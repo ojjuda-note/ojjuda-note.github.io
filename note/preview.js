@@ -39,6 +39,14 @@ function quietLocatedReload(tries = 0) {   // 허용된 위치가 늦게 도착�
 let feedSnapshot = null, feedLoading = false, replyLoading = false;
 let noteState = null, noteStateRun = 0, noticeElement = null, featureMessage = null;
 const parkEmbedded = window.parent !== window && location.pathname.startsWith('/park/');
+const guestReturnKey = 'ojjuda.park.compose-login.v1';
+let guestReturn = null;
+try {
+  const stored = JSON.parse(sessionStorage.getItem(guestReturnKey));
+  sessionStorage.removeItem(guestReturnKey);
+  if (stored && stored.until > Date.now() && typeof stored.body === 'string' && stored.body.length <= 200
+      && (stored.parent === null || stored.parent === new URL(location.href).searchParams.get('card'))) guestReturn = stored;
+} catch {}
 let initialParkCompose = parkEmbedded && new URL(location.href).searchParams.get('compose') === 'memo';
 window.canCloseParkNote = () => {
   if (busy) { message('저장이 끝날 때까지 기다려 주세요.'); return false; }
@@ -56,7 +64,7 @@ function noteLoginHref(cardId = parentId || (!detail.hidden ? stack.at(-1) : nul
   return '/?auth=login&next=note' + (validCardId(cardId) ? `&card=${encodeURIComponent(cardId)}` : '');
 }
 const PHOTO_FIRST = 10, PHOTO_LAST = 189, PHOTO_PAGE_SIZE = 12;
-const FONT_CODES = ['default', 'round', 'serif', 'handwriting', 'mono'];
+const FONT_CODES = ['default', 'round', 'serif', 'handwriting', 'calligraphy', 'mono'];
 const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 'snow',
   'starlight', 'fireflies', 'petals', 'bubbles', 'aurora', 'confetti', 'sunbeams',
   'mist', 'ocean', 'heartbeat', 'orbit', 'glitter', 'meteor', 'leaves', 'neon', 'dawn'];
@@ -1150,6 +1158,7 @@ async function loadFeed(more = false, quiet = false) {
   }
   updateComposer();
   consumeInitialCard();
+  if (!stack.length) resumeGuestWriting(null);
   return true;
 }
 function locationErrorText(error) {
@@ -1312,7 +1321,7 @@ async function renderDetail() {
   const eventCard = card.kind === 'event';
   $('.replies').hidden = eventCard;
   $('#detail [data-compose="reply"]').hidden = eventCard;
-  $('#detail [data-compose="reply"]').disabled = eventCard || !canWrite('comment');
+  $('#detail [data-compose="reply"]').disabled = eventCard || (!!session?.user && !canWrite('comment'));
   $('#detail [data-compose="reply"]').dataset.replyTo = card.id;
   slot.replaceChildren(cardElement(card, false, true));
   if (eventCard) {
@@ -1335,6 +1344,7 @@ async function renderDetail() {
   } else {
     $('#reply-count').textContent = String(card.reply_count || 0);
     loadReplies(id, version);
+    resumeGuestWriting(id);
   }
 }
 function openCard(id) {
@@ -1950,7 +1960,35 @@ function renderPhotoPage() {
   $('#photo-next').disabled = first + PHOTO_PAGE_SIZE > PHOTO_LAST;
 }
 
+let fontBeforeConversion = 'default';
+function toggleCalligraphy() {
+  if (busy || draftLoading) return;
+  if (isGuestComposer()) { loginForComposer(true); return; }
+  if (!session?.user || backdrop.hidden) return;
+  const font = $('#compose-font');
+  if (font.value === 'calligraphy') font.value = fontBeforeConversion;
+  else { fontBeforeConversion = font.value; font.value = 'calligraphy'; }
+  font.dispatchEvent(new Event('change', { bubbles: true }));
+}
+function loginForComposer(convert) {
+  if (busy || !isGuestComposer()) return;
+  try {
+    sessionStorage.setItem(guestReturnKey, JSON.stringify({
+      body: text.value, parent: parentId, convert, until: Date.now() + 15 * 60_000
+    }));
+  } catch {
+    if (text.value && !confirm('이 브라우저에서는 로그인 후 글을 이어 쓸 수 없어요. 로그인할까요?')) return;
+  }
+  (parkEmbedded ? parent : window).location.assign(noteLoginHref(parentId));
+}
+function resumeGuestWriting(parent) {
+  if (!guestReturn || guestReturn.parent !== parent || !authKnown || !backdrop.hidden) return;
+  const pending = guestReturn;
+  guestReturn = null;
+  if (pending.until > Date.now()) void openComposer(parent ? 'reply' : 'memo', null, parent, pending);
+}
 function currentStyle() {
+  if (isGuestComposer()) return {};
   return { ...window.OjjudaDecorations?.styleFields(), font: $('#compose-font').value, size: $('#compose-size').value, theme: $('#compose-theme').value,
     effect: $('#compose-effect').value,
     textColor: $('input[name="textColor"]:checked')?.value || 'default',
@@ -2246,7 +2284,15 @@ function validEventInteger(value, minimum, maximum) {
   const raw = String(value).trim();
   return /^\d{1,2}$/.test(raw) && Number(raw) >= minimum && Number(raw) <= maximum;
 }
+function isGuestComposer() {
+  return authKnown && !session?.user && !composerUserId && !editingId && (kind === 'memo' || kind === 'comment');
+}
 function updateComposer() {
+  const selected = !isGuestComposer() && $('#compose-font').value === 'calligraphy';
+  const convert = $('#convert-calligraphy');
+  convert.setAttribute('aria-pressed', String(selected));
+  convert.textContent = selected ? '캘리그라피 해제' : '캘리그라피로 변환';
+  convert.disabled = busy || draftLoading || !authKnown;
   updatePaidSubmit();
   $('.compose-photo')?.classList.toggle('tags-chip', document.activeElement !== tags && !!tags.value.trim());
   syncQuickChoices();
@@ -2271,6 +2317,11 @@ function updateComposer() {
   }
   warning.textContent = overflows ? '사진에 글이 다 보이지 않아요. 등록할 때 확인할 수 있어요.' : '';
   warning.hidden = !overflows;
+  if (isGuestComposer()) {
+    submit.disabled = busy || !client || !ready || replyDueChecking || !validEventBody(text.value);
+    composeMessage.textContent = busy ? '등록 중' : !client || !ready ? '공원 연결 확인 중' : '기본 글꼴로 익명 등록돼요.';
+    return;
+  }
   if (!client || !ready) composeMessage.textContent = '노트 연결 확인 후 등록 가능';
   else if (!authKnown) composeMessage.textContent = '로그인 확인 중';
   else if (!session?.user) {
@@ -2331,10 +2382,12 @@ function validEventOptions() {
   return validEventInteger($('#event-radius').value, 1, 30)
     && validEventInteger($('#event-hours').value, 1, 24);
 }
-async function openComposer(mode, card = null, replyTo = null) {
+async function openComposer(mode, card = null, replyTo = null, pending = null) {
   if (busy || draftLoading) return;
   if (!authKnown && client) { message('계정을 확인하고 있어요. 잠시 후 다시 눌러 주세요.'); return; }
-  if (!session?.user) {
+  fontBeforeConversion = 'default';
+  const guest = !session?.user;
+  if (guest && (card || !['new', 'memo', 'reply'].includes(mode))) {
     const href = noteLoginHref(replyTo || undefined);
     let target = window;
     try { if (parkEmbedded && parent.location.origin === location.origin) target = parent; } catch {}
@@ -2348,7 +2401,7 @@ async function openComposer(mode, card = null, replyTo = null) {
     try { await loadMyGender(userId); }
     catch { message('회원정보를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.'); return; }
     if (run !== composerRun || epoch !== identityEpoch || session?.user?.id !== userId) return;
-    if (!myIdentity) { showMemberInfo(() => openComposer(mode, card, replyTarget)); return; }
+    if (!myIdentity) { showMemberInfo(() => openComposer(mode, card, replyTarget, pending)); return; }
   }
   if (card?.kind === 'event' && card.is_mine) {
     try {
@@ -2365,12 +2418,16 @@ async function openComposer(mode, card = null, replyTo = null) {
   editingId = card?.is_mine ? card.id : null;
   composerUserId = session?.user?.id || null;
   kind = editingId ? card.kind : mode === 'event' ? 'event' : mode === 'reply' ? 'comment' : 'memo';
+  $('.composer').toggleAttribute('data-guest', guest);
+  const login = $('#guest-compose-login');
+  login.hidden = !guest;
+  login.href = noteLoginHref(replyTarget || undefined);
   cardPhotoEditPath = null;
   clearEventPhoto(); clearCardPhoto();
   $('.compose-photo')?.classList.remove('has-card-photo');
   localComposerBaseline = null; localComposerDirty = false; localComposerStored = false;
   parentId = editingId ? card.parent_id : kind === 'comment' ? replyTarget : null;
-  backgroundKey = editingId ? (card.photo_key || card.background_key) : String(PHOTO_FIRST + Math.floor(Math.random() * (PHOTO_LAST - PHOTO_FIRST + 1)));
+  backgroundKey = editingId ? (card.photo_key || card.background_key) : guest ? '10' : String(PHOTO_FIRST + Math.floor(Math.random() * (PHOTO_LAST - PHOTO_FIRST + 1)));
   writingPosition = null; eventPosition = null; publishRequestId = crypto.randomUUID(); photoRequestId = crypto.randomUUID(); locationRun++;
   replyDueChecking = false; replyDueRun++;
   $('#note-photo-pick').hidden = !!editingId || kind !== 'memo';
@@ -2387,7 +2444,7 @@ async function openComposer(mode, card = null, replyTo = null) {
   $('#photo-grid').replaceChildren(); photoPage = 0; selectedPhotoKey = null;
   $('input[name="photo-choice"][value="plain"]').checked = true;
   updateFeaturedPhoto();
-  $('#card-location-consent').hidden = kind === 'event' || !!editingId;
+  $('#card-location-consent').hidden = guest || kind === 'event' || !!editingId;
   setCardLocationSwitch(false, '카드를 등록하려면 위치를 켜 주세요. 정확한 좌표는 비공개로 저장돼요.');
   $('#note-event-fields').hidden = kind !== 'event' || !!editingId;
   $('#event-radius').value = '1'; $('#event-hours').value = '1';
@@ -2408,11 +2465,11 @@ async function openComposer(mode, card = null, replyTo = null) {
   for (const group of ['textColor', 'boxColor']) setColorChoice(group, style[group]);
   setBoxTransparency(editingId ? (style.boxTransparency ?? 80) : style.boxTransparency);
   applyComposeStyle(); updateEventPrice();
-  text.value = editingId ? card.body : ''; tags.value = editingId ? card.tags.join(', ') : initialComposerTags();
+  text.value = editingId ? card.body : ''; tags.value = editingId ? card.tags.join(', ') : guest ? '' : initialComposerTags();
   const identityMode = editingId ? (card.identity_mode === 'nickname' ? 'nickname' : 'anonymous') : readComposerSettings().identity;
   $(`input[name="identity"][value="${identityMode}"]`).checked = true;
   setGenderInputs(true);
-  autoTagMode = !editingId; manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
+  autoTagMode = !guest && !editingId; manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
   clearLocalComposer();
   requestedDraftContent = draftContent();
   if (draftStatus) draftStatus.hidden = true;
@@ -2442,7 +2499,15 @@ async function openComposer(mode, card = null, replyTo = null) {
       if (run === composerRun) { draftLoading = false; setComposerInputs(); updateComposer(); if (!backdrop.hidden) text.focus({ preventScroll: true }); }
     }
   }
-  if (!editingId && kind !== 'event' && run === composerRun && !backdrop.hidden) autoWritingLocation(run);
+  if (pending && run === composerRun && !backdrop.hidden) {
+    if (pending.body && (!text.value || text.value === pending.body || confirm('로그인 전에 쓰던 글을 이어 쓸까요?'))) {
+      text.value = pending.body;
+      text.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    if (!guest && pending.convert && $('#compose-font').value !== 'calligraphy') toggleCalligraphy();
+    else if (!guest && !pending.convert) $('#compose-more').open = true;
+  }
+  if (!guest && !editingId && kind !== 'event' && run === composerRun && !backdrop.hidden) autoWritingLocation(run);
 }
 function autoWritingLocation(run) {
   const button = $('#card-location-button');
@@ -2487,6 +2552,45 @@ async function replacePublishedCardPhoto(cardId, userId, path, expectedPath) {
     } catch (error) { console.warn('Note previous photo cleanup:', error); }
   }
 }
+async function showPublishedFeed(publishKind, values, cardPhotoFailed = false) {
+  // A new card can be hidden by an older tag search, saved-only view, or popular sort.
+  feedSort = 'latest'; feedTerm = ''; tagTabReset?.();
+  document.querySelectorAll('.feed-sort-tabs [data-sort]').forEach(button => {
+    const selected = button.dataset.sort === feedSort;
+    button.classList.toggle('selected', selected);
+    button.setAttribute('aria-pressed', String(selected));
+  });
+  const refreshed = await selectCollection(publishKind === 'event' ? 'events' : 'all', true);
+  if (publishKind === 'memo') {
+    if (cardPhotoFailed) message('카드는 올렸지만 사진을 붙이지 못했어요. 다시 시도해 주세요.');
+    else if (refreshed) flashMessage(values.includes('19금') ? '카드를 올렸어요. ‘19금’ 태그 검색에서 볼 수 있어요.' : '카드를 올렸어요', 3500);
+    else message('카드는 올렸어요. 목록을 불러오지 못했어요. 새로고침해 주세요.');
+  }
+}
+
+async function publishGuestCard(body) {
+  const run = composerRun, reply = kind === 'comment';
+  busy = true; setComposerInputs(); updateComposer();
+  let result, error;
+  try {
+    result = await noteRpc('publish_guest_card', {
+      p_request_id: publishRequestId, p_body: body, p_parent_id: parentId
+    });
+  } catch (cause) { error = cause; }
+  if (run !== composerRun || !isGuestComposer()) return;
+  busy = false; setComposerInputs(); updateComposer();
+  if (!result?.card_id) {
+    composeMessage.textContent = noteSpamMessage(error) || (error?.code === '23514'
+      ? '내용을 확인해 주세요. 공원 운영 기준에 맞지 않는 표현이 있어요.'
+      : '등록하지 못했어요. 내용을 확인한 뒤 다시 시도해 주세요.');
+    return;
+  }
+  text.value = ''; tags.value = ''; closeComposer(false);
+  if (reply) {
+    await refreshCards(true);
+    flashMessage('답글을 올렸어요.', 3500);
+  } else await showPublishedFeed('memo', result.tags || []);
+}
 async function publishCard() {
   if (busy || submit.disabled || !client || !ready) return;
   let body = text.value.replace(/\r\n?/g, '\n').trim(), values = parsedTags();
@@ -2529,6 +2633,10 @@ async function publishCard() {
   }
   if (kind === 'comment' && !editId && !validCardId(parentId)) {
     composeMessage.textContent = '답글을 달 카드를 다시 열어 주세요.'; return;
+  }
+  if (isGuestComposer()) {
+    await publishGuestCard(body);
+    return;
   }
   let draftToken = null, publishKind = kind, publishParent = parentId;
   recordDraft(); busy = true; setComposerInputs(); updateComposer();
@@ -2695,19 +2803,7 @@ async function publishCard() {
   text.value = ''; tags.value = '';
   closeComposer(false);
   if (!editId && publishKind !== 'comment') {
-    // A new card can be hidden by an older tag search, saved-only view, or popular sort.
-    feedSort = 'latest'; feedTerm = ''; tagTabReset?.();
-    document.querySelectorAll('.feed-sort-tabs [data-sort]').forEach(button => {
-      const selected = button.dataset.sort === feedSort;
-      button.classList.toggle('selected', selected);
-      button.setAttribute('aria-pressed', String(selected));
-    });
-    const refreshed = await selectCollection(publishKind === 'event' ? 'events' : 'all', true);
-    if (publishKind === 'memo') {
-      if (cardPhotoFailed) message('카드는 올렸지만 사진을 붙이지 못했어요. 다시 시도해 주세요.');
-      else if (refreshed) flashMessage(values.includes('19금') ? '카드를 올렸어요. ‘19금’ 태그 검색에서 볼 수 있어요.' : '카드를 올렸어요', 3500);
-      else message('카드는 올렸어요. 목록을 불러오지 못했어요. 새로고침해 주세요.');
-    }
+    await showPublishedFeed(publishKind, values, cardPhotoFailed);
   } else {
     await refreshCards(editId || publishKind === 'comment');
   }
@@ -3390,6 +3486,12 @@ document.addEventListener('click', event => {
 function requestCloseComposer() {
   if (window.canCloseParkNote?.() !== false) closeComposer();
 }
+$('#convert-calligraphy').addEventListener('click', toggleCalligraphy);
+$('#guest-compose-login').addEventListener('click', event => {
+  event.preventDefault();
+  event.stopPropagation();
+  loginForComposer(false);
+});
 $('#close-composer').addEventListener('click', requestCloseComposer);
 backdrop.addEventListener('click', event => { if (event.target === backdrop) requestCloseComposer(); });
 document.addEventListener('keydown', event => { if (event.key === 'Escape' && !backdrop.hidden) requestCloseComposer(); });
@@ -3452,7 +3554,7 @@ function receiveAuth(current) {
     worldCoins = null; balanceRun++; moderator = false; moderatorRun++;
     nearbyPosition = null; writingPosition = null; eventPosition = null;
     noteState = null; noteStateRun++; reactionPending.clear(); message('');
-    composerRun++; draftLoading = false; draftController?.setUser(current?.user?.id); setComposerInputs();
+    composerRun++; busy = false; draftLoading = false; draftController?.setUser(current?.user?.id); setComposerInputs();
     notificationController?.close?.();
     feedRun++; detailRun++; ready = false; feedDeferred = false; cache.clear(); stack.length = 0;
     slot.replaceChildren(); replies.replaceChildren(); state(list, '카드를 불러오는 중이에요.');
