@@ -471,14 +471,20 @@
         { title: 'THE ALBUM', date: '2020.10.02', type: '정규 1집 · 타이틀 Lovesick Girls', songs: ['How You Like That', 'Ice Cream (with Selena Gomez)', 'Pretty Savage', 'Bet You Wanna (Feat. Cardi B)', 'Lovesick Girls', 'Crazy Over You', 'Love To Hate Me', 'You Never Know'], href: 'https://ygfamily.com/en/artists/blackpink/discography/249' },
         { title: 'SQUARE ONE', date: '2016.08.08', type: '데뷔 싱글', songs: ['WHISTLE', 'BOOMBAYAH'], href: 'https://ygfamily.com/en/artists/blackpink/discography/228' }
       ],
-      appearances: [],
+      appearances: [
+        { date: '2026-11-27', timeZone: 'America/Los_Angeles', title: '리사 솔로 · VIVA LA LISA 라스베이거스', sub: 'The Colosseum at Caesars Palace · 주최 Caesars Entertainment · 공연 시간·예매는 공식 안내 확인', href: 'https://newsroom.caesars.com/press-releases/press-release-details/2026/LISA-ADDS-TWO-NEW-DATES-TO-HER-SOLD-OUT-LAS-VEGAS-RESIDENCY-DUE-TO-OVERWHELMING-DEMAND-VIVA-LA-LISA-AT-THE-COLOSSEUM-AT-CAESARS-PALACE--NOV-12-13-14-27-28--29-2026--2026-eGkXjvCgqE/default.aspx' },
+        { date: '2026-11-28', timeZone: 'America/Los_Angeles', title: '리사 솔로 · VIVA LA LISA 라스베이거스', sub: 'The Colosseum at Caesars Palace · 주최 Caesars Entertainment · 공연 시간·예매는 공식 안내 확인', href: 'https://newsroom.caesars.com/press-releases/press-release-details/2026/LISA-ADDS-TWO-NEW-DATES-TO-HER-SOLD-OUT-LAS-VEGAS-RESIDENCY-DUE-TO-OVERWHELMING-DEMAND-VIVA-LA-LISA-AT-THE-COLOSSEUM-AT-CAESARS-PALACE--NOV-12-13-14-27-28--29-2026--2026-eGkXjvCgqE/default.aspx' },
+        { date: '2026-11-29', timeZone: 'America/Los_Angeles', title: '리사 솔로 · VIVA LA LISA 라스베이거스', sub: 'The Colosseum at Caesars Palace · 주최 Caesars Entertainment · 공연 시간·예매는 공식 안내 확인', href: 'https://newsroom.caesars.com/press-releases/press-release-details/2026/LISA-ADDS-TWO-NEW-DATES-TO-HER-SOLD-OUT-LAS-VEGAS-RESIDENCY-DUE-TO-OVERWHELMING-DEMAND-VIVA-LA-LISA-AT-THE-COLOSSEUM-AT-CAESARS-PALACE--NOV-12-13-14-27-28--29-2026--2026-eGkXjvCgqE/default.aspx' }
+      ],
       schedules: [
         { title: 'YG BLACKPINK 공식 공연 안내', sub: '투어 이력·새 공연 발표 확인', href: 'https://ygfamily.com/en/artists/blackpink/concert' },
         { title: 'YG BLACKPINK 공식 공지', sub: '행사·예매·변경 사항', href: 'https://ygfamily.com/ko/artists/blackpink/notice' }
       ],
       news: [
+        { date: '2026.11.16', tag: '로그인', title: '위버스 BLINK 멤버십(GL/JP) 신규 구매 11/16 14시부터 일시 중단 · 기존 가입자 이용 유지', href: 'https://weverse.io/blackpink/notice/41029' },
         { date: '2026.11.15', tag: '수상', title: '로제·제니, 2026 키즈 초이스 어워즈 개인 부문 수상', href: 'https://www.soompi.com/article/1887086wpp/bts-rose-jennie-kpop-demon-hunters-and-katseye-win-at-2026-nickelodeon-kids-choice-awards' },
         { date: '2026.11.11', tag: '협업', title: '지수, 토미 힐피거 2026 겨울 캠페인 참여', href: 'https://prtimes.jp/main/html/rd/p/000000305.000010635.html' },
+        { date: '2026.11.05', tag: '기록', title: 'GO 뮤직비디오 11/4 조회수 1억 돌파 · 16번째 그룹 MV', href: 'https://www.soompi.com/article/1884332wpp/blackpinks-go-becomes-their-16th-group-mv-to-surpass-100-million-views' },
         { date: '2026.08.08', tag: '활동', title: '데뷔 10주년 기념 공식 영상 공개', href: 'https://www.youtube.com/watch?v=k--lCrP69hg' },
         { date: '2026.02.27', tag: '컴백', title: '미니 3집 DEADLINE · 타이틀 GO 발매', href: 'https://ygfamily.com/en/artists/blackpink/discography/1651' },
         { date: '2026.02.21', tag: '기록', title: '공식 YouTube 아티스트 채널 최초 1억 구독자 기록', href: 'https://en.yna.co.kr/view/AEN20260221002851320' }
