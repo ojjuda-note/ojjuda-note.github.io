@@ -118,6 +118,9 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.equal(w.document.querySelector('#plog,#pmsg,[data-act="pl-send"],[data-act="pl-react"],.arcade-welcome [data-tab="park"]'),null,'Arcade contains no public chat or Park shortcut');
   t.actions.tab({tab:'park'});assert.equal(active(),'park');assert.ok(w.document.querySelector('[data-park-app]'));
   t.actions.tab({tab:'my'});assert.equal(active(),'my');assert.equal(w.document.querySelector('.my-hub .h2').textContent,'설정');
+  assert.deepEqual([...w.document.querySelectorAll('[data-my-group="help"] [data-section-versions] .line-row')].map(row=>[...row.children].map(el=>el.textContent)),
+   [['아지트','version.json'],['오락실','features/arcade/version.json'],['공원','park/version.json']].map(([label,file])=>[label,JSON.parse(fs.readFileSync(path.join(root,file),'utf8')).version]));
+
   assert.equal(w.document.querySelector('[data-act="door-toggle"]'),null);
   for(const tab of ['friends','board','home','deco','life','shop']){
    t.actions.tab({tab});assert.equal(active(),'hub',tab+' old navigation redirects to hub');
