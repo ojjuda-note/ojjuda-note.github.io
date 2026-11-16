@@ -7,7 +7,7 @@
   let owner=getAdminId(),destroyed=false,run=0,busy=false,removing=false,query=initialState?.query||'',pages=[null],page=0,next=null;
   const active=()=>!destroyed&&isCurrent()&&!!owner&&getAdminId()===owner;
   const section=el('section','afm-panel'),heading=el('h3','','쪽지 관리'),form=el('form','afm-search'),label=el('label','','쪽지 검색'),input=el('input');input.type='search';input.maxLength=100;input.placeholder='닉네임 또는 쪽지 내용';input.value=query;input.setAttribute('aria-label','쪽지 검색');label.append(input);
-  const search=el('button','btn pri','검색');search.type='submit';const reload=button('새로고침',()=>{pages=[null];page=0;void refresh();});form.append(label,search,reload);
+  const search=el('button','btn pri','검색');search.type='submit';const reload=button('새로고침',()=>void refresh());form.append(label,search,reload);
   const status=el('p','afm-status');status.setAttribute('role','status');
   const list=el('div','afm-list'),pager=el('nav','afm-pager');pager.setAttribute('aria-label','쪽지 관리 페이지');
   const prev=button('이전',()=>{if(page>0){page--;void refresh();}}),nextButton=button('다음',()=>{if(next){pages[++page]=next;void refresh();}}),pageLabel=el('span');pager.append(prev,pageLabel,nextButton);
@@ -34,7 +34,7 @@
   }
   form.addEventListener('submit',event=>{event.preventDefault();if(busy)return;query=input.value.trim();pages=[null];page=0;void refresh();});
   const subscription=client.auth?.onAuthStateChange?.((_event,session)=>{if(session?.user?.id!==owner)clear();})?.data?.subscription;
-  void refresh();return {canLeave:()=>!removing,getState:()=>({query}),refresh:()=>{pages=[null];page=0;return refresh();},destroy(){destroyed=true;run++;subscription?.unsubscribe?.();container.replaceChildren();}};
+  void refresh();return {canLeave:()=>!removing,getState:()=>({query}),refresh,destroy(){destroyed=true;run++;subscription?.unsubscribe?.();container.replaceChildren();}};
  }
  window.OjjudaAdminFriendMessages=Object.freeze({mount});
 })();
