@@ -15,7 +15,7 @@ test('recorded sounds follow each stick contact, pawn action and mute preference
       const wav=Buffer.from(bytes),data=wav.indexOf('data');
       if(wav.toString('ascii',0,3)==='ID3'){
         assert.ok(wav.includes(Buffer.from('Info')));
-        return {duration:1.48,cheering:true};
+        return {duration:1.48,clapping:true};
       }
       assert.equal(wav.toString('ascii',0,4),'RIFF');
       assert.equal(wav.toString('ascii',8,12),'WAVE');
@@ -42,7 +42,7 @@ test('recorded sounds follow each stick contact, pawn action and mute preference
   sound.unlock();sound.unlock();sound.throwSticks(plan);
   await flush();
   assert.equal(requests.length,4);
-  assert.ok(requests.includes('/games/yut/audio/bonus-cheer.mp3'));
+  assert.ok(requests.includes('/games/yut/audio/bonus-applause.mp3'));
   assert.equal(starts.length,11);
   assert.ok(starts.every(cue=>cue.duration>0));
   for(const rod of plan.rods){
@@ -58,8 +58,8 @@ test('recorded sounds follow each stick contact, pawn action and mute preference
     assert.equal(starts[n].time,3.265);
     assert.ok(starts.slice(n).every(cue=>cue.duration>0));
   }
-  const beforeCheer=starts.length;sound.cheer();await flush();
-  assert.deepEqual(starts.slice(beforeCheer).map(cue=>[cue.time,cue.offset,cue.source.buffer.cheering]),[[3,0,true]]);
+  const beforeApplause=starts.length;sound.applaud();await flush();
+  assert.deepEqual(starts.slice(beforeApplause).map(cue=>[cue.time,cue.offset,cue.source.buffer.clapping]),[[3,0,true]]);
   const n=starts.length;
   sound.quickThrow();sound.setEnabled(false);
   await flush();
