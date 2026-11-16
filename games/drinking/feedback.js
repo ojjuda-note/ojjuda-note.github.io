@@ -22,10 +22,10 @@
     ratchet: [3.92813, 0.06429],
     dry: [4.02242, 0.20208],
     shot: [4.25450, 0.42000],
-    scare: [4.70450, 0.54929],
+    scare: [4.70450, 1.07000],
   };
   const names = {truth:'flip', stop:'watch', count:'tick', 'shape-scare':'scare', tooth:'tap', snap:'dry'};
-  const volumes = {tick:.26, spin:.17, ratchet:.24, tap:.34, shot:.84, boom:.72, scare:.5};
+  const volumes = {tick:.26, spin:.17, ratchet:.24, tap:.34, shot:.84, boom:.72, scare:.65};
   const buzz = {tap:9, deal:14, turn:[14,28,14], tooth:18, snap:[70,32,95], spin:8, stop:[32,28,52],
     tick:12, boom:[130,55,180], flip:14, king:[28,30,28,30,68], truth:18, vote:14, count:14, result:[24,36,44]};
   const active = new Set();
@@ -41,7 +41,7 @@
   async function loadBank() {
     if (!context || bank) return;
     if (!loading) {
-      loading = fetch('/games/drinking/audio/table-foley-v1.wav')
+      loading = fetch('/games/drinking/audio/table-foley-v1.wav?v=2')
         .then(response => {
           if (!response.ok) throw Error('audio unavailable');
           return response.arrayBuffer();
