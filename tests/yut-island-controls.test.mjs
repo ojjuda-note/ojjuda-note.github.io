@@ -137,7 +137,7 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   assert.equal(w.localStorage.getItem('ojjuda.yut.sound'),'on');
   dialogButton('특수 칸').click();
   const places=[...doc.querySelectorAll('.event-card small')].map(el=>el.textContent);
-  assert.deepEqual([...doc.querySelectorAll('.event-card strong')].map(el=>el.textContent),['엎기','빽도','꽝']);
+  assert.deepEqual([...doc.querySelectorAll('.event-card strong')].map(el=>el.textContent),['업기','빽도','꽝']);
   assert.equal(new Set(places).size,3);
   assert.ok(places.every(place=>place&&!place.includes(' · ')));
   doc.getElementById('close').click();
@@ -402,7 +402,7 @@ test('board landmarks stay fixed when pieces enter, hop across or leave the far 
       getBoundingClientRect:()=>({left:0,top:0,width,height}),addEventListener(){},removeEventListener(){}};
     const board=createBoard(canvas),eventTiles={1:'back',16:'carry',13:'home'};
     const state=(pieces,activeTeam=0,snap=true)=>board.setState({pieces,activeTeam,snap,eventTiles});
-    const sample=time=>{marks.clear();frame(time);return ['빽도','엎기','꽝'].map(key=>{assert.ok(marks.has(key));return marks.get(key);});};
+    const sample=time=>{marks.clear();frame(time);return ['빽도','업기','꽝'].map(key=>{assert.ok(marks.has(key));return marks.get(key);});};
     for(let turn=0;turn<4;turn++){
       state([]);if(turn)board.rotate();
       const reference=sample(performance.now()+900);

@@ -16,7 +16,7 @@ export const defaultTeamAnimal=(team,offset=2)=>(offset+TEAMS[team].animalOffset
 export const YUT = ['', '도', '개', '걸', '윷', '모'];
 const fork = new Set([5,10,22]);
 
-export const EVENT_NAMES=Object.freeze({back:'빽도',carry:'엎기',home:'꽝'});
+export const EVENT_NAMES=Object.freeze({back:'빽도',carry:'업기',home:'꽝'});
 function dealTiles(){
   const reserved=new Set([0,5,10,15,22]);
   const spots=Array.from({length:FINISH},(_,n)=>n).filter(n=>!reserved.has(n));
