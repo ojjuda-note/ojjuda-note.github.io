@@ -16,11 +16,11 @@
 
   function destination() {
     const allowed = new Set([
-      'overview', 'visitors', 'connections', 'users', 'reports', 'feedback', 'errors', 'note-inquiries', 'note-users', 'words', 'note-actions',
+      'overview', 'visitors', 'connections', 'users', 'suspended', 'reports', 'feedback', 'errors', 'note-inquiries', 'note-users', 'words', 'note-actions',
       'settings', 'fortune-purchases', 'trash-all', 'trash-accounts', 'trash-cards', 'trash-messages', 'trash-other', 'note', 'referrals', 'activity', 'note-reports', 'photo-stages', 'drinking-prompts', 'messages', 'groups',
       'cards', 'risk', 'map', 'notice', 'spam', 'assets', 'note-cards', 'note-risk', 'note-map', 'note-settings', 'note-spam'
     ]);
-    const aliases = { trash: 'trash-all', archive: 'trash-cards', withdrawn: 'trash-accounts', 'note-archive': 'trash-cards', account: 'overview', payment: 'settings', content: 'cards', world: 'cards', support: 'reports', operations: 'notice',
+    const aliases = { __proto__: null, trash: 'trash-all', archive: 'trash-cards', withdrawn: 'trash-accounts', 'note-archive': 'trash-cards', account: 'overview', payment: 'settings', content: 'cards', world: 'cards', support: 'reports', operations: 'notice',
       events: 'cards', 'note-events': 'cards', posts: 'cards', 'house-content': 'cards', review: 'cards', chats: 'messages', quiz: 'overview' };
     const resolve = value => allowed.has(value) ? value : aliases[value];
     let hash = location.hash.slice(1);

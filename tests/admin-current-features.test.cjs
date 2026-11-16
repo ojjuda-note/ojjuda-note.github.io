@@ -50,6 +50,22 @@ async function entry(query, allowed = true, signedIn = true, userError = null) {
    const{redirects}=await entry(route);assert.equal(redirects.length,1);assert.equal(new URL(redirects[0]).searchParams.get('admin'),expected,route);
   }
  }
+ const menuWindow = {document: {addEventListener() {}}};
+ vm.runInNewContext(read('admin/navigation.js'), {window: menuWindow});
+ const menuTabs = new Set(menuWindow.OjjudaAdminNavigation.GROUPS.flatMap(group => group.items.map(item => item[1])));
+ for (const tab of menuTabs) {
+  const {redirects} = await entry('?admin=' + tab);
+  assert.equal(new URL(redirects[0]).searchParams.get('admin'), tab, 'direct menu link: ' + tab);
+ }
+ for (const [route, expected] of [
+  ['?admin=unknown#messages', 'messages'],
+  ['?admin=constructor#messages', 'messages'],
+  ['#toString', 'overview'],
+ ]) {
+  const result = await entry(route);
+  assert.equal(new URL(result.redirects[0]).searchParams.get('admin'), expected, route);
+  assert.deepEqual(result.checks, {user: 1, role: 1});
+ }
  for(const [allowed,signedIn,panel]of [[false,true,'no-permission'],[true,false,'auth-required']]){
   const result=await entry('?admin=messages',allowed,signedIn);assert.deepEqual(result.redirects,[]);assert.equal(result.panels[panel].hidden,false);
  }
