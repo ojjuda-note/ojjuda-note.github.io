@@ -76,6 +76,17 @@ async function verifyCard(page, id, name) {
       console.log('PASS production JSON: November 15 sports additions and Gimhae official attendance');
     }
     console.log('PASS production JSON: at least 715 entries, November 14 updates and official attendance');
+    // November 17 Guangju / Jeonnam: official new events and confirmed attendance editions.
+    const nov17Ids = ['beolgyo-cockle-festival-2026', 'gwangju-sharing-kimjang-2026'];
+    nov17Ids.forEach(id => assert(ids.has(id), 'Missing November 17 event in live JSON: ' + id));
+    assert(payload.events.length >= 736, 'November 17 deployed JSON needs at least 736 events');
+    const hwasun = payload.events.find(e => e.id === 'hwasun-early-christmas-2026');
+    const hampyeong = payload.events.find(e => e.id === 'hampyeong-chrysanthemum-2026');
+    assert.deepEqual([hwasun?.attendance?.count, hwasun?.attendance?.kind, hwasun?.attendance?.year],
+      [31000, 'previous', 2025], 'Hwasun past-edition official attendance missing');
+    assert.deepEqual([hampyeong?.attendance?.count, hampyeong?.attendance?.kind, hampyeong?.attendance?.year],
+      [177000, 'actual', 2026], 'Hampyeong current-edition official attendance missing');
+    console.log('PASS November 17 production data: 736 events, 2 new events and 2 verified attendance figures');
 
     await page.goto(origin + '/games/festival-schedule/index.html?period=all&category=festival&view=list&q=익산',
       { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -92,6 +103,10 @@ async function verifyCard(page, id, name) {
     await verifyCard(page, 'gimje-horizon-2026', '김제지평선축제');
     await page.locator('#search').fill('성남 HIP:FESTA');
     await verifyCard(page, 'seongnam-hip-festa-20261121', '성남 HIP:FESTA');
+    await page.locator('#search').fill('벌교꼬막축제');
+    await verifyCard(page, 'beolgyo-cockle-festival-2026', '벌교꼬막축제');
+    await page.locator('#search').fill('빛고을 사랑나눔 김장대전');
+    await verifyCard(page, 'gwangju-sharing-kimjang-2026', '빛고을 사랑나눔 김장대전');
     await page.screenshot({ path: path.join(snapshotDir, 'standalone.png'), fullPage: true });
     console.log('PASS standalone: three festival events actually displayed');
 
@@ -144,6 +159,10 @@ async function verifyCard(page, id, name) {
     await festivalFrame.locator('[data-category="festival"]').click();
     await festivalFrame.locator('#search').fill('성남 HIP:FESTA');
     await verifyCard(festivalFrame, 'seongnam-hip-festa-20261121', '성남 HIP:FESTA');
+    await festivalFrame.locator('#search').fill('벌교꼬막축제');
+    await verifyCard(festivalFrame, 'beolgyo-cockle-festival-2026', '벌교꼬막축제');
+    await festivalFrame.locator('#search').fill('빛고을 사랑나눔 김장대전');
+    await verifyCard(festivalFrame, 'gwangju-sharing-kimjang-2026', '빛고을 사랑나눔 김장대전');
     await arcade.screenshot({ path: path.join(snapshotDir, 'world-game-festival.png'), fullPage: true });
     if (hasNovember15Update) {
       await festivalFrame.locator('#search').fill('');
