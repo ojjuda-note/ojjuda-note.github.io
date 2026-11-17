@@ -964,9 +964,7 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
   const useInk = !hiddenEvent && style.font === 'calligraphy' && !!window.ParkCalligraphy && typeof card.body === 'string';
   const key = hiddenEvent ? null : photoAssetKey(visiblePhoto);
   if (key && card.kind !== 'event' && document.documentElement.hasAttribute('data-park-webp')) {
-    photo.dataset.imageSizes = compact ? '(max-width: 624px) 67vw, 400px'
-      : expanded ? '(max-width: 624px) 100vw, 600px'
-      : '(max-width: 624px) 100vw, (max-width: 779px) 600px, (max-width: 1268px) 50vw, 600px';
+    photo.dataset.imageSizes = compact ? 'min(67vw, 500px)' : 'min(100vw, 750px)';
   }
   const observer = compact ? replyBackgroundObserver : feedBackgroundObserver;
   if (key && deferBackground && card.kind !== 'event' && observer) {

@@ -66,8 +66,8 @@ async function checkSixLineCard(page, width) {
  assert.ok(sample.size>=minimum,`${width}px: six lines should be at least ${minimum}px (was ${sample.size}px)`);
 }
 (async()=>{const browser=await chromium.launch({headless:true,args:['--no-sandbox']});try{
- for(const width of expectBug?[390]:[320,360,390,768,1280]){
-  const context=await browser.newContext({viewport:{width,height:900},hasTouch:width===390}),page=await context.newPage(),errors=[];
+ for(const width of expectBug?[390]:[320,360,390,768,800,1280,1600]){
+  const context=await browser.newContext({viewport:{width,height:width===800?800:900},hasTouch:width===390}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.origin!=='https://card-font.test')return route.abort();if(u.pathname==='/park/')return route.fulfill({contentType:'text/html',body:html});const f=path.join(root,u.pathname);return f.startsWith(root+path.sep)&&fs.existsSync(f)&&fs.statSync(f).isFile()?route.fulfill({path:f}):route.abort();});
   await page.goto('https://card-font.test/park/');
@@ -96,7 +96,12 @@ async function checkSixLineCard(page, width) {
   const settle=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   const sizes=()=>page.locator('#feed-list .card-quote').evaluateAll(nodes=>nodes.map(n=>({font:parseFloat(getComputedStyle(n).fontSize),height:n.closest('.photo').getBoundingClientRect().height,width:n.closest('.photo').getBoundingClientRect().width,body:n.textContent})));
   await settle();const before=await sizes();assert.equal(before.length,4);assert.ok(before[0].font>12);
-  if(!expectBug)assert.ok(before.every(card=>Math.abs(card.height-card.width)<1&&card.width<=601),width+'px: feed faces are square');
+  if(!expectBug){
+   assert.ok(before.every(card=>Math.abs(card.height-card.width)<1 && card.width<=750.5),width+'px: feed faces are square');
+   if(width>=800)assert.ok(before.every(card=>Math.abs(card.width-750)<1),width+'px: full-size feed faces');
+   const columns=await page.locator('#feed-list').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
+   assert.equal(columns,width===1600?2:1,width+'px: only add a column when both full-size cards fit');
+  }
   if(proof&&width===390)await page.screenshot({path:path.join(proof,expectBug?'before-bug.png':'before-fixed.png'),fullPage:true});
   for(const route of expectBug?['button']:['button','browser','embedded']){
    await page.locator('#feed-list .photo-open').first().click();await page.locator('#detail-card-slot .card-quote').waitFor({state:'visible'});await settle();
@@ -134,7 +139,7 @@ async function checkSixLineCard(page, width) {
    }));
    assert.equal(faces.length,2);
    assert.ok(faces.every(face=>Math.abs(face.height-face.width)<1),width+'px: original and reply are both square');
-   if(width===1280)assert.ok(Math.abs(faces[0].width-600)<1,'original reaches 600×600 on desktop');
+   if(width>=800)assert.ok(Math.abs(faces[0].width-750)<1,'the detail card reaches 750×750');
    assert.ok(Math.abs(faces[1].width-faces[0].width*2/3)<1,`${width}px: replies are two thirds of the parent card width`);
    assert.ok(faces.every(face=>Math.abs(face.footer)<1&&face.buttonsFit&&face.textFits),`${width}px: photo, text and controls fit without a footer`);
    if(width===390)await checkReplyBrowsing(page);
@@ -167,5 +172,5 @@ async function checkSixLineCard(page, width) {
   }
   assert.deepEqual(errors,[]);await context.close();
  }
- if(!expectBug)console.log('PASS: card Back preserves fonts and heights, repeated button/browser/embedded return, nested replies, late fonts, hidden insertion and responsive sizes at five widths');
+ if(!expectBug)console.log('PASS: card Back preserves fonts and heights, repeated button/browser/embedded return, nested replies, late fonts, hidden insertion and responsive sizes at seven widths');
  }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
