@@ -24,13 +24,22 @@ async function checkCompass(view, selector, labelSelector, markerSelector) {
   const stop=view.getByRole('button',{name:'북쪽 고정하기'});
   await stop.waitFor();
   for(const heading of [0,45,90,135,180,225,270,315]){
-    await dial.evaluate((el,heading)=>{
+    const sensor=await dial.evaluate((el,heading)=>{
       const win=el.ownerDocument.defaultView;
-      const screenAngle=win.screen.orientation?.angle??win.orientation??0;
-      const e=Object.assign(new Event('deviceorientationabsolute'),{absolute:true,alpha:(screenAngle-heading+360)%360,beta:0,gamma:0});
-      win.dispatchEvent(e);
+      function send(){
+        const screenAngle=win.screen.orientation?.angle??win.orientation??0;
+        win.dispatchEvent(Object.assign(new Event('deviceorientationabsolute'),{
+          absolute:true,alpha:(screenAngle-heading+360)%360,beta:0,gamma:0
+        }));
+      }
+      send();
+      return win.setInterval(send,50);
     },heading);
-    await view.getByText(new RegExp('위(?:쪽)? · '+labels[heading/45]+'쪽$')).waitFor();
+    try{
+      await view.getByText(new RegExp('위(?:쪽)? · '+labels[heading/45]+'쪽$')).waitFor();
+    }finally{
+      await dial.evaluate((el,id)=>el.ownerDocument.defaultView.clearInterval(id),sensor);
+    }
     const geometry=await dial.evaluate((el,{labelSelector,markerSelector})=>{
       const rect=el.getBoundingClientRect();
       function point(node){
