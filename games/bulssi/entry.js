@@ -27,11 +27,13 @@
     });
   }
   function score(state) {
-    const stage = Math.min(4, Math.max(0, Math.floor(Number(state.stage) || 0), Math.floor(Number(state.maxStage) || 0)));
-    // Existing monthly rankings must keep their original score scale.
-    const levels = game.upgrades.filter(u => u.r < 5).reduce((sum, u) => sum + Math.min(u.mx, Math.max(0, Math.floor(Number(state.lv?.[u.id]) || 0))), 0);
-    const memories = (state.mem || []).slice(0, 5).reduce((sum, n) => sum + Math.min(3, Math.max(0, Math.floor(Number(n) || 0))), 0);
-    return stage * 10000 + levels * 10 + memories * 100 + (state.ended && stage === 4 ? 10000 : 0);
+    // maxStage 5 is the portal opened by the original ending, not a second boss win.
+    const stage = Math.max(state.stage, state.maxStage);
+    const evolutions = Math.min(stage, 4) + Math.max(0, stage - 5);
+    const endings = Number(state.ended) + Number(state.lifeEnded);
+    const levels = game.upgrades.reduce((sum, upgrade) => sum + (state.lv[upgrade.id] || 0), 0);
+    const memories = state.mem.reduce((sum, count) => sum + count, 0);
+    return (evolutions + endings) * 10000 + levels * 10 + memories * 100 + state.foodCollected;
   }
   function status(text, retry = false) {
     $('#starRecordText').textContent = text;
@@ -42,8 +44,9 @@
     const points = score(state);
     const growth=game.upgrades.filter(u=>Number(state.lv?.[u.id])>0).length;
     const chapter=state.stage>=5?state.stage-3:1;
-    $('#starProgress').textContent=state.stage>=5?`${chapter}챕터 · ${names[state.stage]} · 성장 ${growth} / 1,200 · 생명력 ${Math.floor(Number(state.cur?.life)||0).toLocaleString('ko-KR')}`:
-      `1챕터 · ${names[state.stage] || names[0]} · 성장 점수 ${points.toLocaleString('ko-KR')}점`;
+    $('#starProgress').textContent=state.stage>=5?`${chapter}챕터 · ${names[state.stage]} · 성장 ${growth} / 1,200 · 생명력 ${window.OjjudaScoreFormat(Math.floor(Number(state.cur?.life)||0))} · 성장 점수 ${window.OjjudaScoreFormat(points)}점`:
+      `1챕터 · ${names[state.stage] || names[0]} · 성장 점수 ${window.OjjudaScoreFormat(points)}점`;
+    $('#starProgress').title=points.toLocaleString('ko-KR')+'점';
     $('#starStart').textContent=state.stage===4&&state.ended&&!state.lifeStarted?'차원문 열기':state.intro?'이어서 키우기':'시작하기';
   }
   function flush() {
@@ -117,7 +120,7 @@
       clearTimeout(timeout);
       if (m.ok === true) {
         sent = Math.max(sent, flight.score); flight = null;
-        status(`성장 ${sent.toLocaleString('ko-KR')}점 · 게임순위 등록 완료`);
+        status(`성장 ${window.OjjudaScoreFormat(sent)}점 · 게임순위 등록 완료`);
         if (queued) timer = setTimeout(flush, 5500);
       } else {
         if (!queued || queued.score <= flight.score) queued = flight;
@@ -132,7 +135,9 @@
       for (const row of rows) {
         const li = document.createElement('li'), points = document.createElement('b');
         li.textContent = String(row.nick || '손님').slice(0, 20);
-        points.textContent = `${Math.max(0, Number(row.score) || 0).toLocaleString('ko-KR')}점`;
+        const total = Math.max(0, Number(row.score) || 0);
+        points.textContent = window.OjjudaScoreFormat(total) + '점';
+        points.title = total.toLocaleString('ko-KR') + '점';
         li.append(points); list.append(li);
       }
     }
