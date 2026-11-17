@@ -83,15 +83,17 @@ async function verifyCard(page, id, name) {
       'gimje-trail-race-revenge-20261128',
       'gochang-moyangseong-cup-tennis-20261128',
       'moak-trailrun-20261205',
-      'jeongeup-hometown-love-marathon-20261206'
+      'jeongeup-hometown-love-marathon-20261206',
+      'sunchang-jangryu-tennis-20261129',
+      'jeonbuk-tennis-association-club-cup-20261205'
     ];
-    assert(payload.events.length >= 743, 'Deployed data missing November 18 sports');
+    assert(payload.events.length >= 745, 'Deployed data missing November 18 sports');
     n61Sports.forEach(id => assert(ids.has(id), 'Missing November 18 live sports event: ' + id));
     const sunchang = payload.events.find(e => e.id === 'sunchang-tteokbokki-2026');
     assert.equal(sunchang?.attendance?.count, 40000);
     assert.equal(sunchang?.attendance?.kind, 'previous');
     assert.equal(sunchang?.attendance?.year, 2025);
-    console.log('PASS November 18 live JSON: seven sports and previous 2025 attendance');
+    console.log('PASS November 18 live JSON: nine sports and previous 2025 attendance');
     console.log('PASS production JSON: at least 715 entries, November 14 updates and official attendance');
 
     await page.goto(origin + '/games/festival-schedule/index.html?period=all&category=festival&view=list&q=익산',
@@ -138,6 +140,10 @@ async function verifyCard(page, id, name) {
     await verifyCard(page, 'muju-firefly-peace-marathon-20261122', '무주반딧불 평화마라톤대회');
     await page.locator('#search').fill('모악트레일런');
     await verifyCard(page, 'moak-trailrun-20261205', '모악트레일런');
+    await page.locator('#search').fill('순창장류배');
+    await verifyCard(page, 'sunchang-jangryu-tennis-20261129', '순창장류배');
+    await page.locator('#search').fill('전북특별자치도협회장기 클럽');
+    await verifyCard(page, 'jeonbuk-tennis-association-club-cup-20261205', '전북특별자치도협회장기');
     await page.locator('#search').fill('');
     if (hasNovember15Update) {
       await page.locator('#search').fill('GIVE RUN 2026 부산');
@@ -170,6 +176,10 @@ async function verifyCard(page, id, name) {
     await festivalFrame.locator('[data-category="sports"]').click();
     await festivalFrame.locator('#search').fill('무주반딧불 평화마라톤대회');
     await verifyCard(festivalFrame, 'muju-firefly-peace-marathon-20261122', '무주반딧불 평화마라톤대회');
+    await festivalFrame.locator('#search').fill('순창장류배');
+    await verifyCard(festivalFrame, 'sunchang-jangryu-tennis-20261129', '순창장류배');
+    await festivalFrame.locator('#search').fill('전북특별자치도협회장기 클럽');
+    await verifyCard(festivalFrame, 'jeonbuk-tennis-association-club-cup-20261205', '전북특별자치도협회장기');
     await arcade.screenshot({ path: path.join(snapshotDir, 'world-game-festival.png'), fullPage: true });
     if (hasNovember15Update) {
       await festivalFrame.locator('#search').fill('');
