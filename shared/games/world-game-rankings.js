@@ -199,7 +199,9 @@ function paintRecord(target,id,game,top,period='이번 달'){
   detail=[variant,level].filter(Boolean).join(' · ');
  }
  if(detail)labelGame(name.querySelector('button')||name,game,detail);
- score.replaceChildren(el('span',value,'board-score-value'));score.title=score.textContent;
+ const exact=value;
+ if(game.unit==='점'&&game.rankingBasis!=='mole_grid_score'&&window.OjjudaScoreFormat)value=window.OjjudaScoreFormat(top.score)+'점';
+ score.replaceChildren(el('span',value,'board-score-value'));score.title=exact;
 }
 function fitRecords(targets,token){
  let frame=0;
