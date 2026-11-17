@@ -8,3 +8,98 @@
 .pajang-signature svg{width:23px;height:23px;color:#e2c8f4}
 .pajang-members{justify-self:end;white-space:nowrap;color:#dfd5e4;font:550 12px/1.4 system-ui,sans-serif}
 @media(min-width:761px){.pajang-mast-inner{height:60px}}
+
+/* The initial gate is painted with the document, before the member request finishes. */
+#gate:has(.flight-scene) {
+  width:min(464px,calc(100% - 28px));
+  max-width:none;
+  margin:clamp(24px,8vh,78px) auto;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  text-align:center;
+}
+#gate .flight-caption {
+  margin:14px 0 0;
+  color:#6c514b;
+  font:600 15px/1.6 var(--sans,system-ui);
+}
+.flight-scene {
+  position:relative;
+  isolation:isolate;
+  aspect-ratio:3/2;
+  overflow:hidden;
+}
+/* A soft silhouette is already visible if the watercolor is still in transit. */
+.flight-landscape,.flight-landscape::before,.flight-landscape::after,
+.flight-across,.flight-lift {position:absolute;inset:0;pointer-events:none}
+.flight-landscape {
+  background:
+    radial-gradient(ellipse 52% 17% at 58% 75%,#c1d5b7 18%,transparent 96%),
+    radial-gradient(ellipse 46% 19% at 39% 64%,#bbcfc7 12%,transparent 96%),
+    radial-gradient(ellipse 51% 42% at 49% 43%,#d7eaf2 42%,transparent 98%);
+}
+.flight-landscape::before {
+  content:"";
+  inset:40% 12% 31% 67%;
+  clip-path:polygon(0 43%,47% 1%,100% 43%,92% 45%,92% 100%,8% 100%,8% 45%);
+  background:
+    linear-gradient(#8caa9c,#8caa9c) 53% 100%/21% 38% no-repeat,
+    linear-gradient(#f1d197,#f1d197) 17% 66%/14% 16% no-repeat,
+    linear-gradient(#efbd9f 0 42%,#f6e6c9 43%);
+}
+.flight-landscape::after {
+  content:"";
+  background:url("https://ziezbdjofcugznowiuda.supabase.co/storage/v1/object/public/pajang-theme/9a9f3d7ed1d8b3f078e98e438b321bc1264064b42ca5d30917b8b351e87b82c3/hillside.webp") center/contain no-repeat;
+}
+.flight-across {transform:translateX(39%)}
+.flight-lift {transform:translateY(30%)}
+.paper-plane {
+  position:absolute;
+  width:15%;
+  aspect-ratio:1.85;
+  top:0;
+  left:0;
+  translate:-50% -50%;
+  transform:rotate(-13deg);
+  filter:drop-shadow(0 1px 0 #a27c77) drop-shadow(0 2px 2px #6a647c35);
+}
+.paper-plane::before,.paper-plane::after,.paper-plane i {content:"";position:absolute;inset:0}
+.paper-plane::before {
+  background:linear-gradient(140deg,#fffefa 12%,#fbe2d4 92%);
+  clip-path:polygon(0 5%,100% 34%,38% 60%);
+}
+.paper-plane i {
+  background:linear-gradient(150deg,#af7781,#d9a39d);
+  clip-path:polygon(38% 59%,100% 34%,33% 100%);
+}
+.paper-plane::after {
+  background:linear-gradient(140deg,#f4c1b6,#fff3df);
+  clip-path:polygon(13% 84%,100% 34%,33% 100%,36% 72%);
+}
+@media (prefers-reduced-motion:no-preference) {
+  .flight-across {animation:flight-toward-house 3.6s linear infinite}
+  .flight-lift {animation:flight-over-hill 3.6s ease-in-out infinite}
+  .paper-plane {animation:flight-bank 3.6s ease-in-out infinite}
+}
+@keyframes flight-toward-house {
+  0% {transform:translateX(10%)}
+  34% {transform:translateX(37%)}
+  62% {transform:translateX(59%)}
+  86%,100% {transform:translateX(77.5%)}
+}
+@keyframes flight-over-hill {
+  0% {transform:translateY(53%)}
+  37% {transform:translateY(25%)}
+  62% {transform:translateY(34%)}
+  88%,100% {transform:translateY(64%)}
+}
+@keyframes flight-bank {
+  0% {transform:rotate(-23deg) scale(1.02);opacity:.78}
+  12% {opacity:1}
+  38% {transform:rotate(-4deg) scale(.95)}
+  61% {transform:rotate(16deg) scale(.80)}
+  83% {transform:rotate(30deg) scale(.48);opacity:1}
+  91%,100% {transform:rotate(16deg) scale(.22);opacity:0}
+}
