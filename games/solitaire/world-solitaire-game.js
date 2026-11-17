@@ -12,7 +12,7 @@
       dialog.setAttribute('aria-label', '솔리테어');
       const frame = document.createElement('iframe');
       frame.title = '솔리테어';
-      frame.src = '/games/solitaire/index.html?v=20261113-game-popup-order1&owner=' + encodeURIComponent(owner || 'guest');
+      frame.src = '/games/solitaire/index.html?v=20261117-solitaire-arcade-return1&owner=' + encodeURIComponent(owner || 'guest');
       frame.allow = 'autoplay; fullscreen';
       dialog.append(frame);
       let guestFinished = false;

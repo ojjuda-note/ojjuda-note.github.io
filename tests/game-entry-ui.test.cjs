@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
-const {label,checkCorner,checkSpot}=require('./arcade-return-checks.cjs');
+const {label,checkCorner,checkSpot,checkSolitaire}=require('./arcade-return-checks.cjs');
 const root=path.resolve(__dirname,'..');let html=fs.readFileSync(path.join(root,'world.html'),'utf8');
 const boot=html.indexOf('j1(()=>H());gm(');assert(boot>0);
 html=html.slice(0,boot)+`window.entryTest={open:Al,link:openWorldGameLink,rank:openWorldBoardGame,arcade:()=>xf("arcade"),close:El,board:vn,billiards:xn,closeBoard:dt,current:()=>R,boardMe:()=>E.me,
@@ -90,7 +90,7 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  await page.waitForFunction(()=>window.invited);
  assert.deepEqual(await page.evaluate(()=>window.invited),{name:'game_invite',args:{p_kind:'chess',p_to:'online'}});
  await page.evaluate(()=>entryTest.closeBoard());
- assert.deepEqual(errors,[]);await checkSpot(page);await page.close();
+ assert.deepEqual(errors,[]);await checkSpot(page);await checkSolitaire(page);await page.close();
  }
  console.log('PASS: consistent entry cards at 320/390/1280px, public box and flat screw chooser, five direct board starts and opponent menus, live friend sorting, search, safe names and exact invite recipient');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
