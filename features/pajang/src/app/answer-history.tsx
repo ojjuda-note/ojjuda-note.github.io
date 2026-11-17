@@ -18,6 +18,11 @@ const genderOptions = [
   {value:"all", text:"", label:"성별 전체"},
   {value:"female", text:"여", label:"여성 답변"},
 ] as const;
+declare global {
+  interface Window {
+    pajangTakeOpeningFeed?:(scope:string,signal:AbortSignal)=>Promise<{data?:Page;error?:unknown}>|undefined;
+  }
+}
 type Intent = "first"|"more"|"check"|"changed";
 const rowKey = (row:DiscoveryAnswer) => row.peer+"/"+row.day+"/"+row.slot;
 const empty = (key:string):Result => ({key,items:[],total:null,next:null,loading:true,changed:false,error:""});
@@ -27,7 +32,7 @@ function firstPage(cache:Map<string,SavedPage>, key:string):Result {
   return saved && saved.until>Date.now() ? {...saved.result,loading:true} : empty(key);
 }
 
-function useAnswers(filter:string, gender:Gender, order:Order, scope:string, activity:string, visible:boolean) {
+function useAnswers(filter:string, gender:Gender, order:Order, scope:string, openingScope:string, activity:string, visible:boolean) {
   const visibleRef=useRef(visible);
   visibleRef.current=visible;
   const key = JSON.stringify([filter,gender,order,scope]);
@@ -58,8 +63,13 @@ function useAnswers(filter:string, gender:Gender, order:Order, scope:string, act
       try {
         const db=await window.OjjudaGetClient();
         if (signal.aborted) return;
-        const query=db.rpc("pajang_discovery_feed",{p_cursor:cursor,p_interest:filter,p_order:order,p_gender:gender});
-        const {data,error}=await (typeof query.abortSignal==="function"?query.abortSignal(signal):query);
+        const opening=intent==="first" && filter==="all" && order==="latest" && gender==="all"
+          ? window.pajangTakeOpeningFeed?.(openingScope,signal) : undefined;
+        async function fetchPage(){
+          const query=db.rpc("pajang_discovery_feed",{p_cursor:cursor,p_interest:filter,p_order:order,p_gender:gender});
+          return typeof query.abortSignal==="function"?query.abortSignal(signal):query;
+        }
+        const {data,error}=await (opening??fetchPage());
         if (!active || request!==revision) return;
         if (error) throw error;
         const page=data as Page;
@@ -93,7 +103,7 @@ function useAnswers(filter:string, gender:Gender, order:Order, scope:string, act
     // Refresh the first page in place; scrolling back through earlier pages keeps its cursor.
     const poll=window.setInterval(()=>{if(!document.hidden)void read("check");},60000);
     return ()=>{active=false;controller?.abort();load.current=()=>{};window.clearInterval(poll);document.removeEventListener("visibilitychange",onVisible);};
-  },[key,filter,gender,order,cache]);
+  },[key,filter,gender,order,cache,openingScope]);
   const wasVisible=useRef(visible);
   useEffect(()=>{if(visible&&!wasVisible.current)load.current("changed");wasVisible.current=visible;},[visible]);
   useEffect(()=>{cache.clear();load.current("changed");},[activity,cache]);
@@ -154,7 +164,8 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
   const [order,setOrder]=useState<Order>("latest");
   const scope=JSON.stringify([station.authenticated,station.me?.id,station.me?.region,station.me?.interest,station.me?.at,station.day,station.slot,revision]);
   const activity=station.people.filter(p=>p.body).map(p=>p.id+":"+p.at).join(",");
-  const {result,load}=useAnswers(filter,gender,order,scope,activity,active);
+  const openingScope=JSON.stringify([station.me?.id,station.day,station.slot]);
+  const {result,load}=useAnswers(filter,gender,order,scope,openingScope,activity,active);
   const groups:DiscoveryAnswer[][]=[];
   for(const answer of result.items){
     const last=groups.at(-1);

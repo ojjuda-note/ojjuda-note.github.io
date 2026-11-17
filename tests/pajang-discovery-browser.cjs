@@ -42,7 +42,8 @@ function clientFixture(hash) {
       rpc:(name,p)=>{
         if(name==='pajang_member'){
           window.memberCalls.push(p.p_action);
-          if(p.p_action==='entry' && mode==='denied')return Promise.resolve({error:{code:'42501'}});
+          if(['entry','state'].includes(p.p_action) && mode==='denied')return Promise.resolve({error:{code:'42501'}});
+          if(p.p_action==='state'&&!entry.joined)return Promise.resolve({error:{code:'42501',message:'먼저 파장에 참여해 주세요.'}});
           if(p.p_action==='entry')return Promise.resolve({data:entry});
           if(p.p_action==='signal' && p.p_data.peer==='peer2'){
             return (async()=>{
@@ -80,6 +81,37 @@ function clientFixture(hash) {
         }};
       }
     };
+    if(sessionStorage.openTiming){
+      const wait=()=>new Promise(r=>setTimeout(r,180));
+      for(const [obj,key] of [[db.auth,'getUser'],[db.functions,'invoke']]){
+        const original=obj[key];obj[key]=async(...args)=>{await wait();return original(...args);};
+      }
+      const rpc=db.rpc;
+      db.rpc=(name,...args)=>{
+        if(name==='pajang_discovery_feed'){
+          const read=rpc(name,...args);
+          return {abortSignal:async signal=>{await wait();return read.abortSignal(signal);}};
+        }
+        return wait().then(()=>rpc(name,...args));
+      };
+      const from=db.storage.from;
+      db.storage.from=(...args)=>{
+        const bucket=from(...args),download=bucket.download;
+        bucket.download=async key=>{if(key.endsWith('station.js'))await wait();return download(key);};
+        return bucket;
+      };
+      document.addEventListener('click',event=>{
+        if(event.target.closest('[data-pajang-launch]'))sessionStorage.openStart=String(Date.now());
+      },true);
+      function paint(){
+        const target=document.querySelector(mode==='new'?'#welcome #write':'#answers article .quote');
+        if(target?.getClientRects().length && sessionStorage.openStart){
+          sessionStorage.openMs=String(Date.now()-Number(sessionStorage.openStart));return;
+        }
+        requestAnimationFrame(paint);
+      }
+      requestAnimationFrame(paint);
+    }
     window.OjjudaGetClient=async()=>db;
   `;
 }
@@ -108,6 +140,7 @@ function clientFixture(hash) {
     const radio=value=>group.locator('input[value="'+value+'"]');
     const selected=async value=>assert.equal(await radio(value).isChecked(),true);
     await cards.nth(1).waitFor();
+    assert.equal(await page.evaluate(()=>window.feedCalls.length),1,'first feed read is shared with the UI');
     assert.equal(await answers.getByRole('heading',{name:rows[0].question}).count(),1);
     assert.equal(await page.evaluate(()=>window.artPending),true,'feed is usable with all artwork still pending');
     assert.equal(await page.evaluate(()=>window.authCalls),1);
@@ -237,12 +270,15 @@ function clientFixture(hash) {
     await page.setViewportSize({width:390,height:844});
     await page.getByRole('button',{name:'파장 열기'}).click();
     await page.waitForURL('**/station.html');await nav.waitFor();
-    await page.evaluate(()=>{sessionStorage.fixtureMode='new';});
+    await page.evaluate(()=>{sessionStorage.fixtureMode='new';sessionStorage.removeItem('pajang:answered-round');});
     await page.goto(origin+'/world.html#pajang-radar');
     await page.evaluate(()=>{window.hostMarker='stay';});
     await page.getByRole('button',{name:'파장 열기'}).click();
     const frame=page.frameLocator('iframe');await frame.getByRole('heading',{name:'처음 만난 날, 어떤 이야기를 나누고 싶나요?'}).waitFor();
     await capture('entry-mobile');
+    assert.equal(await frame.locator('#marks button').count(),0,'sample radar does not block the question');
+    await frame.locator('.sample-radar summary').click();
+    await frame.locator('#marks button').first().waitFor();
     await frame.getByRole('link',{name:'아지트로',exact:true}).click();await page.locator('dialog').waitFor({state:'detached'});
     assert.equal(await page.evaluate(()=>window.hostMarker),'stay');
     assert.equal(await page.evaluate(()=>document.activeElement.hasAttribute('data-pajang-launch')),true);
@@ -268,7 +304,7 @@ function clientFixture(hash) {
     await selectMenu('마음함');await page.locator('.listperson').filter({hasText:'유진'}).getByRole('button',{name:'대화 열기'}).waitFor();
     assert.ok(!page.url().includes('chat='));
     await page.evaluate(()=>{sessionStorage.fixtureMode='switched';});
-    await page.goto(origin+project+'station.html');await page.getByRole('button',{name:'다시 열기'}).waitFor();
+    await page.goto(origin+project+'station.html');await page.getByRole('link',{name:'오쭈다 로그인하기'}).waitFor();
     assert.equal(await nav.count(),0,'a different auth session cannot mount the previous member state');
     for(const mode of ['guest','denied']){
       await page.evaluate(m=>{sessionStorage.fixtureMode=m;},mode);
@@ -278,6 +314,28 @@ function clientFixture(hash) {
     }
     console.log('PASS three primary destinations, direct acceptance, scroll-stable home exit, modal exit, direct legacy routes, thread reload/back, join handoff, guest/denied returns and embedded focus restoration');
     console.log('PASS single remote identity check, two requested illustrations out of six, zero rereads after join, delayed-send draft, retry identity, concurrent reads and late signal acceptance');
+    // Closing an immediate popup while its member request is pending leaves Agit open.
+    await page.evaluate(()=>{sessionStorage.fixtureMode='member';sessionStorage.openTiming='yes';sessionStorage.removeItem('pajang:answered-round');});
+    await page.goto(origin+'/world.html?closing=1');
+    await page.getByRole('button',{name:'파장 열기'}).click();
+    await page.getByRole('button',{name:'팝업 닫기'}).click();
+    await page.waitForTimeout(500);
+    assert.ok(page.url().endsWith('world.html?closing=1'));
+    assert.equal(await page.locator('dialog').count(),0);
+    for(const scenario of ['new','member-cold','member']){
+      const timings=[];
+      for(let attempt=0;attempt<5;attempt++){
+        await page.evaluate(mode=>{sessionStorage.fixtureMode=mode==='new'?'new':'member';sessionStorage.openTiming='yes';
+          if(mode!=='member')sessionStorage.removeItem('pajang:answered-round');
+          delete sessionStorage.openMs;delete sessionStorage.openStart;},scenario);
+        await page.goto(origin+'/world.html?timing='+attempt);
+        await page.getByRole('button',{name:'파장 열기'}).click();
+        if(scenario!=='new')await page.waitForURL('**/station.html');
+        await page.waitForFunction(()=>sessionStorage.openMs);
+        timings.push(await page.evaluate(()=>Number(sessionStorage.openMs)));
+      }
+      console.log('PAJANG_OPEN_MS',scenario,JSON.stringify(timings),'median',timings.sort((a,b)=>a-b)[2]);
+    }
     assert.deepEqual(errors,[]);
     console.log('PASS 320/390/1080px layout, artwork-independent startup, tap/swipe/keyboard, delayed results, cancellation, in-memory revisit, and denial');
   } finally {await browser.close();}

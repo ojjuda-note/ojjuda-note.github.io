@@ -75,7 +75,6 @@ compass.addEventListener('click',async()=>{
   }catch{stop('방향 권한을 사용할 수 없어 북쪽을 위로 표시해요.');}
   finally{permissionPending=false;}
 });
-if(embedded)document.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();parent.postMessage('pajang:close',location.origin);}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&active)stop();});
 window.addEventListener('pagehide',()=>stop());
 window.addEventListener('pajang-entry-exit',()=>stop(),{once:true});

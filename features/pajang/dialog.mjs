@@ -1,21 +1,17 @@
-import {call, client} from './member.mjs?v=3';
-let checking = false;
+import {answeredRound,client} from './member.mjs?v=open2';
+let opening=false;
 export async function openPajang(launch) {
-  if (checking || document.querySelector('dialog.agit-pajang-dialog[open]')) return;
-  checking = true;
-  launch.setAttribute('aria-busy', 'true');
-  try {
-    const db = await client();
-    const {data} = await db.auth.getSession();
-    if (data.session && !data.session.user.is_anonymous && (await call('entry')).body) {
-      window.location.assign('/features/pajang/station.html');
-      return;
-    }
-  } catch {
-    // The embedded entry can retry the check and display the site's sign-in or error screen.
-  } finally {
-    checking = false;
-    launch.removeAttribute('aria-busy');
+  if(opening||document.querySelector('dialog.agit-pajang-dialog[open]'))return;
+  const user=answeredRound();
+  if(user){
+    opening=true;
+    try{
+      const db=await client(),{data}=await db.auth.getSession();
+      if(data.session?.user?.id===user && !data.session.user.is_anonymous){
+        location.assign('/features/pajang/station.html?entry=agit');return;
+      }
+    }catch{/* The entry frame handles sign-in and retry. */}
+    finally{opening=false;}
   }
   const dialog = document.createElement('dialog');
   dialog.className = 'agit-pajang-dialog';
@@ -33,7 +29,7 @@ export async function openPajang(launch) {
   bar.append(heading, close);
   const frame = document.createElement('iframe');
   frame.title = '파장 회원 전용 소개팅';
-  frame.src = '/features/pajang/?embed=1&v=rounds1';
+  frame.src = '/features/pajang/?embed=1&v=open2';
   frame.allow = "accelerometer 'self'; gyroscope 'self'; magnetometer 'self'";
   dialog.append(bar, frame);
   document.body.append(dialog);

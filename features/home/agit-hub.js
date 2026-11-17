@@ -303,12 +303,17 @@
   }
   const api = {kstDate, missions, visitTarget, quizMode, recommended, themeFor, safeState, mergeProgress, visitStreak, isComplete, complete, stamp, trivia, chosung, initials, baseballAnswer, appendBaseballDigit, baseballResultMarkup, guessBaseball, markup, puzzleMarkup};
   if (root.document) {
+    const loadPajang=()=>import('/features/pajang/dialog.mjs?v=open2');
+    function warmPajang(event){
+      if(event.target.closest?.('[data-pajang-launch]'))void loadPajang().catch(()=>{});
+    }
+    for(const type of ['pointerover','focusin','pointerdown'])root.document.addEventListener(type,warmPajang,{passive:true});
     root.document.addEventListener('click', event => {
       const launch = event.target.closest?.('[data-pajang-launch]');
       if (!launch || event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
       if (typeof root.HTMLDialogElement?.prototype?.showModal !== 'function') return;
       event.preventDefault();
-      import('/features/pajang/dialog.mjs?v=rounds1').then(({openPajang}) => openPajang(launch)).catch(() => root.location.assign(launch.href));
+      loadPajang().then(({openPajang}) => openPajang(launch)).catch(() => root.location.assign(launch.href));
     });
   }
   root.OjjudaAgitHub = api;
