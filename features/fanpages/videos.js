@@ -28,6 +28,7 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'Y8JFxS1HlDo', title: 'LOVE DIVE', kind: '뮤직비디오', source: 'IVE / STARSHIP' }
   ],
   aespa: [
+    { id: 'VjhTWgQumCI', title: 'DICON · aespa 화보 촬영 메이킹 필름', kind: '공식 화보 메이킹', source: 'DICON / DISPATCH · 2026.11.17' },
     { id: 'cnSMlOc9L5k', title: 'MMA2026 · WDA + Switchblade + LEMONADE', kind: '공식 시상식 무대', source: '멜론 Melon · 2026.11.14' },
     { id: 'rr39g9rl4ZU', title: '카리나·윈터 서울 신드롬 비하인드', kind: '공식 메이킹', source: 'aespa 공식 · 2026.11.13' },
     { id: 'cU8BEe99RzM', title: '지젤 · Love Riot', kind: '뮤직비디오', source: 'aespa 공식 · 2026.10.30' },
