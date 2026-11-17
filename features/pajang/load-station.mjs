@@ -1,6 +1,6 @@
-import {call,client,showGate} from './member.mjs?v=3';
+import {call,client,sameMember,showGate} from './member.mjs?v=speed1';
 
-export async function mountStation(beforeMount){
+export async function mountStation(beforeMount,savedStation){
   const urls=new Set();
   let closed=false;
   function dispose(){
@@ -27,11 +27,24 @@ export async function mountStation(beforeMount){
   }
   try{
     const db=await client();
-    const [release,station]=await Promise.all([loadProgram(db),call('state')]);
-    const {data:{user}}=await db.auth.getUser();
-    if(!user||user.is_anonymous)throw Error('signed_out');
+    const [release,station]=await Promise.all([loadProgram(db),savedStation??call('state')]);
+    if(!station?.authenticated||!await sameMember(db))throw Error('signed_out');
     if (beforeMount) await beforeMount();
     window.pajangArt={};
+    const pending=new Map();
+    window.pajangLoadArt=key=>{
+      const name=key+'.webp',hash=release.files[name];
+      if(closed||!hash)return Promise.resolve();
+      if(window.pajangArt[key])return Promise.resolve(window.pajangArt[key]);
+      if(!pending.has(key)){
+        const load=download(release.bucket,name,hash).then(url=>{
+          window.pajangArt[key]=url;
+          return url;
+        }).catch(()=>undefined).finally(()=>pending.delete(key));
+        pending.set(key,load);
+      }
+      return pending.get(key);
+    };
     window.pajangState=station;
     await import(release.script);
     await new Promise(resolve => requestAnimationFrame(resolve));
@@ -49,14 +62,7 @@ export async function mountStation(beforeMount){
       }
     });
     window.addEventListener('pagehide',event=>{if(!event.persisted)dispose();},{once:true});
-    for(const [name,hash] of Object.entries(release.files)){
-      if(!name.endsWith('.webp'))continue;
-      download(release.bucket,name,hash).then(url=>{
-        if(closed)return;
-        window.pajangArt[name.slice(0,-5)]=url;
-        window.dispatchEvent(new Event('pajang-art-ready'));
-      }).catch(()=>{/* An optional image can be unavailable while the feed is in use. */});
-    }
+
   }catch{
     dispose();
     showGate('파장 메인을 불러오지 못했어요. 저장한 답변은 그대로예요.');

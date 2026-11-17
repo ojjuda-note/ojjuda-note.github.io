@@ -1,5 +1,6 @@
 import {useEffect, useMemo, useRef, useState, type PointerEvent} from "react";
 import {badges, interests, signalsWith, type Slot, type Station} from "../lib/station";
+import {InterestArt} from "./interest-art";
 import {I} from "./icons";
 
 export type DiscoveryAnswer = {
@@ -190,7 +191,7 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
         const badge=badges(row.interest);
         return <article key={rowKey(row)} className="answercard">
           <button className="person" onClick={()=>onProfile(row)}>
-            <span className="avatar" style={{background:badge.bg}}>{window.pajangArt[badge.key]?<img src={window.pajangArt[badge.key]} alt=""/>:<I n="user" s={16}/>}</span>
+            <InterestArt interest={row.interest}/>
             <span><strong>{row.name}{row.own?" · 내 답변":""}</strong>{row.region&&<small>{row.region}</small>}</span>
           </button>
           <p className="quote">{row.body}</p>

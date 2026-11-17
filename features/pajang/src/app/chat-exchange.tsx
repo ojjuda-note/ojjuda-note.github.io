@@ -15,10 +15,12 @@ export function ChatExchange({peer,name,lastMessage}:{peer:string;name:string;la
   const [state,setState]=useState<ExchangeState|null>(null);
   const [open,setOpen]=useState(false),[looking,setLooking]=useState<ExchangeKind|null>(null);
   const [busy,setBusy]=useState(false),[error,setError]=useState(""),[status,setStatus]=useState("");
+  const reading=useRef<number|null>(null);
   const revision=useRef(0),pending=useRef(false),mounted=useRef(false);
   const reload=useCallback(async()=>{
-    if(pending.current||document.hidden)return;
+    if(pending.current||reading.current!==null||document.hidden)return;
     const request=++revision.current;
+    reading.current=request;
     try {
       const next=await exchange<ExchangeState>("state",{p_peer:peer});
       if(!mounted.current||request!==revision.current)return;
@@ -27,12 +29,12 @@ export function ChatExchange({peer,name,lastMessage}:{peer:string;name:string;la
     }catch {
       if(!mounted.current||request!==revision.current)return;
       setState(null);setLooking(null);setError("교환 상태를 확인하지 못했어요.");
-    }
+    }finally{if(reading.current===request)reading.current=null;}
   },[peer]);
   useEffect(()=>{
     mounted.current=true;
     const visible=()=>{
-      if(document.hidden){revision.current++;setState(null);setLooking(null);}
+      if(document.hidden){reading.current=null;revision.current++;setState(null);setLooking(null);}
       else void reload();
     };
     const timer=window.setInterval(reload,8000);

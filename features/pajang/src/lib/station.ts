@@ -70,8 +70,24 @@ export const badges = (key:string) => interests.find(x=>x.key===key)||{key:"",na
 export function introDetails(person:Pick<Person,"region"|"interest">) {
   return [person.region,badges(person.interest).name].filter(Boolean).join(" · ");
 }
-export function signalsWith(s:Station,id:string) {
-  const outgoing=s.signals.find(x=>x.src===s.me?.id && x.dst===id);
-  const incoming=s.signals.find(x=>x.dst===s.me?.id && x.src===id);
-  return {outgoing,incoming,match:!!outgoing && !!incoming};
+type Relationship = {outgoing?:Signal; incoming?:Signal; match:boolean};
+const signalIndexes=new WeakMap<Station,Map<string,Relationship>>();
+const unrelated:Relationship={match:false};
+export function signalsWith(s:Station,id:string):Relationship {
+  let peers=signalIndexes.get(s);
+  if(!peers){
+    peers=new Map();
+    const own=s.me?.id;
+    for(const signal of s.signals){
+      const sent=signal.src===own;
+      if(!sent && signal.dst!==own)continue;
+      const other=sent?signal.dst:signal.src;
+      const relation=peers.get(other)??{match:false};
+      if(sent)relation.outgoing??=signal;else relation.incoming??=signal;
+      relation.match=!!relation.outgoing && !!relation.incoming;
+      peers.set(other,relation);
+    }
+    signalIndexes.set(s,peers);
+  }
+  return peers.get(id)??unrelated;
 }

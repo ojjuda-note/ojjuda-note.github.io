@@ -1,5 +1,5 @@
-import {requireMember} from './member.mjs?v=3';
-import {mountStation} from './load-station.mjs?v=letter1';
+import {requireMember} from './member.mjs?v=speed1';
+import {mountStation} from './load-station.mjs?v=speed1';
 const entry=await requireMember();
 if(entry && !entry.joined){
   const params=new URLSearchParams(location.search);
