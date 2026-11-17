@@ -256,8 +256,8 @@
       </section>
       <a class="agit-pajang-banner" href="/features/pajang/" id="pajang-radar" data-pajang-launch aria-haspopup="dialog">
         <span class="agit-pajang-mark" aria-hidden="true"><i></i></span>
-        <span class="agit-pajang-copy"><strong>취향으로 만나는 소개팅, 파장</strong><small>가까운 인연을 레이더로 만나보세요</small></span>
-        <span class="agit-pajang-open">체험하기 <span aria-hidden="true">↗</span></span>
+        <span class="agit-pajang-copy"><strong>취향으로 만나는 소개팅, 파장</strong><small>회원 전용 · 오늘의 질문에 답하고 새로운 인연을 만나보세요</small></span>
+        <span class="agit-pajang-open">파장 열기 <span aria-hidden="true">↗</span></span>
       </a>
       <nav class="agit-reading-grid" aria-label="바이오리듬과 운세">
         <a class="agit-reading-card agit-biorhythm-banner" href="/features/biorhythm/" aria-label="오늘의 바이오리듬, 5쭈, 같은 생일로 결제 후 24시간 이용">
@@ -308,7 +308,7 @@
       if (!launch || event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
       if (typeof root.HTMLDialogElement?.prototype?.showModal !== 'function') return;
       event.preventDefault();
-      import('/features/pajang/dialog.mjs?v=1').then(({openPajang}) => openPajang(launch)).catch(() => root.location.assign(launch.href));
+      import('/features/pajang/dialog.mjs?v=20261117-full1').then(({openPajang}) => openPajang(launch)).catch(() => root.location.assign(launch.href));
     });
   }
   root.OjjudaAgitHub = api;

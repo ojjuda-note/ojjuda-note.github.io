@@ -9,7 +9,7 @@ const embedded = window.parent !== window && new URLSearchParams(location.search
 document.documentElement.classList.toggle('embedded',embedded);
 let active = false, permissionPending = false, timer = 0, last = null, frame = 0;
 
-function select(index) {
+export function select(index) {
   const sample=samples[index];
   $('#reply').textContent='“'+sample.answer+'”';
   $('#by').textContent=sample.name+' · '+sample.range+' · 예시 답변';
@@ -80,25 +80,9 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&active)sto
 window.addEventListener('pagehide',()=>stop());
 draw(0);select(0);
 
-const write = $('#write'), form = $('#answer-form'), mine = $('#mine');
-write.addEventListener('click', () => {
-  form.hidden = false;
-  write.hidden = true;
-  write.setAttribute('aria-expanded','true');
-  mine.focus();
-});
-form.addEventListener('submit', event => {
-  event.preventDefault();
-  if (!mine.value.trim()) {
-    mine.setCustomValidity('내 답변을 한 글자 이상 적어주세요.');
-    mine.reportValidity();
-    return;
-  }
-  $('#my-answer').textContent = '내 답변 · '+mine.value.trim();
-  form.hidden = true;
-  write.hidden = false;
-  write.textContent = '내 답변 수정하기';
-  write.setAttribute('aria-expanded','false');
-  write.focus();
-});
-mine.addEventListener('input', () => mine.setCustomValidity(''));
+
+export function setQuestion(theme){
+  document.querySelector(".answer h2").textContent=theme.q.join(" ");
+  [0,2,1].forEach((feed,index)=>samples[index].answer=theme.answers[feed]);
+  select(0);
+}

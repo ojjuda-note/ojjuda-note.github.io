@@ -2,7 +2,7 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
-  const destinations = { note: '/world.html?place=park', world: '/world.html', home: '/world.html?tab=home', board: '/world.html?tab=board', my: '/world.html?tab=my', photo: '/photo-ttang.html', byeolcheonji: '/byeolcheonji/', groups: '/groups/' };
+  const destinations = { note: '/world.html?place=park', world: '/world.html', home: '/world.html?tab=home', board: '/world.html?tab=board', my: '/world.html?tab=my', photo: '/photo-ttang.html', byeolcheonji: '/byeolcheonji/', groups: '/groups/', pajang: '/features/pajang/' };
   // The document linked from the checkbox and the recorded version must agree.
   // Keep the existing terms during the public notice period (Korea time).
   const termsVersion = Date.now() >= Date.parse('2026-11-20T00:00:00+09:00')
