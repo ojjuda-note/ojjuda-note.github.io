@@ -254,6 +254,11 @@
           </button>`;
         }).join('')}</div>
       </section>
+      <a class="agit-pajang-banner" href="/features/pajang/" id="pajang-radar" data-pajang-launch aria-haspopup="dialog">
+        <span class="agit-pajang-mark" aria-hidden="true"><i></i></span>
+        <span class="agit-pajang-copy"><strong>취향으로 만나는 소개팅, 파장</strong><small>가까운 인연을 레이더로 만나보세요</small></span>
+        <span class="agit-pajang-open">체험하기 <span aria-hidden="true">↗</span></span>
+      </a>
       <nav class="agit-reading-grid" aria-label="바이오리듬과 운세">
         <a class="agit-reading-card agit-biorhythm-banner" href="/features/biorhythm/" aria-label="오늘의 바이오리듬, 5쭈, 같은 생일로 결제 후 24시간 이용">
           <img src="/features/home/daily-biorhythm.webp" width="600" height="400" alt="" loading="lazy">
@@ -297,6 +302,15 @@
     return '';
   }
   const api = {kstDate, missions, visitTarget, quizMode, recommended, themeFor, safeState, mergeProgress, visitStreak, isComplete, complete, stamp, trivia, chosung, initials, baseballAnswer, appendBaseballDigit, baseballResultMarkup, guessBaseball, markup, puzzleMarkup};
+  if (root.document) {
+    root.document.addEventListener('click', event => {
+      const launch = event.target.closest?.('[data-pajang-launch]');
+      if (!launch || event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      if (typeof root.HTMLDialogElement?.prototype?.showModal !== 'function') return;
+      event.preventDefault();
+      import('/features/pajang/dialog.mjs?v=1').then(({openPajang}) => openPajang(launch)).catch(() => root.location.assign(launch.href));
+    });
+  }
   root.OjjudaAgitHub = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
