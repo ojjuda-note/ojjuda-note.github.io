@@ -390,6 +390,10 @@ function respawnMe(){ const W=world, GW=W.GW; let best=null,bs=-1;
       let inside=0; for(let a=0;a<8;a++){ if(W.own[W.si(x+Math.cos(a/8*TAU)*1.2,y+Math.sin(a/8*TAU)*1.2)]===me.id) inside++; }
       let far=99; for(const m of mobs) far=Math.min(far,Math.hypot(m.x-x,m.y-y)); for(const q of W.players) if(q!==me&&q.alive) far=Math.min(far,Math.hypot(q.x-x,q.y-y));
       const sc=inside*2+Math.min(far,10); if(sc>bs){ bs=sc; best={x,y}; } } }
+  if(!best && W.counts[me.id]>0){
+    const cell=W.own.indexOf(me.id);
+    if(cell!==-1) best={x:(cell%GW+.5)/W.G,y:(Math.floor(cell/GW)+.5)/W.G};
+  }
   if(!best){ W.spawn(me); return; }
   me.x=best.x; me.y=best.y; me.ang=Math.random()*TAU-Math.PI; me.target=me.ang; me.trail=[]; me.pts=[]; me.tc=new Map(); me.alive=true; me.plan=[]; me.path=null; me.born=W.time; me.wallT=0; me.wall=false; me.lastK=-1; me.boostT=0; me.shieldT=0;
   W.events.push({t:'spawn',p:me}); }
