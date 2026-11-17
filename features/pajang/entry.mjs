@@ -15,27 +15,26 @@ function enterMain(destination = main) {
   else window.top.location.assign(destination.href);
 }
 
-async function setupProfile(entry) {
-  const response = await fetch('./regions.json?v=rounds1');
-  if (!response.ok) throw Error();
-  const catalog = await response.json();
-  const {province, city, age, interest} = form.elements;
+function setupProfile(entry) {
+  const {province, city, interest} = form.elements;
   form.elements.namedItem('name').value = entry.nickname || '';
-  if (entry.age != null) {
-    age.value = entry.age;
-    age.readOnly = true;
-  }
-  for (const name of Object.keys(catalog)) province.add(new Option(name, name));
   for (const item of interests) interest.add(new Option(item.name, item.key));
-  province.onchange = () => {
-    const places = catalog[province.value] || [];
-    city.replaceChildren(new Option('시·도만 공개', ''));
-    for (const place of places) city.add(new Option(place, place));
-    $('city-field').hidden = !places.length;
-  };
   const fields = $('join-fields');
   fields.hidden = false;
   fields.disabled = false;
+  // Region is optional; the rest of the form can be used before the choices arrive.
+  fetch('./regions.json?v=rounds1').then(response => {
+    if (!response.ok) throw Error();
+    return response.json();
+  }).then(catalog => {
+    for (const name of Object.keys(catalog)) province.add(new Option(name, name));
+    province.onchange = () => {
+      const places = catalog[province.value] || [];
+      city.replaceChildren(new Option('시·도만 공개', ''));
+      for (const place of places) city.add(new Option(place, place));
+      $('city-field').hidden = !places.length;
+    };
+  }).catch(() => { province.disabled = true; });
 }
 
 async function start(firstEntry) {
@@ -43,7 +42,7 @@ async function start(firstEntry) {
   if (firstEntry.body) return enterMain();
   let entry = firstEntry;
   const {setQuestion} = await import('./preview.mjs?v=3');
-  if (!entry.joined) await setupProfile(entry);
+  if (!entry.joined) setupProfile(entry);
   const updates = typeof BroadcastChannel === 'function' ? new BroadcastChannel('pajang-answers') : null;
   let timer;
   let refreshing = null;
@@ -98,9 +97,9 @@ async function start(firstEntry) {
     form.hidden = false;
     answerFields.hidden = joiningOnly;
     answerFields.disabled = joiningOnly;
-    submit.textContent = joiningOnly ? '프로필 등록하고 모두의 답변 보기' : '답변 공개하고 파장 메인으로';
+    submit.textContent = joiningOnly ? '참여하고 모두의 답변 보기' : '답변 공개하고 파장 메인으로';
     write.setAttribute('aria-expanded', String(!joiningOnly));
-    (joiningOnly ? form.elements.namedItem('name') : mine).focus();
+    (joiningOnly ? form.elements.consent : mine).focus();
   }
   write.onclick = () => openForm('answer');
   browse.onclick = () => openForm('feed');
@@ -128,14 +127,14 @@ async function start(firstEntry) {
     }
     submit.disabled = true;
     const joiningOnly = mode === 'feed';
-    status.textContent = joiningOnly ? '프로필을 등록하고 있어요.' : '답변을 저장하고 있어요.';
+    status.textContent = joiningOnly ? '참여 정보를 확인하고 있어요.' : '답변을 저장하고 있어요.';
     try {
       const data = joiningOnly ? {} : {body, day:entry.day, slot:entry.slot, archive:true};
       if (!joiningOnly && entry.question) data.questionId = entry.question.id;
       if (!entry.joined) {
-        const {province, city, interest, age, consent} = form.elements;
+        const {province, city, interest, consent} = form.elements;
         Object.assign(data, {
-          name:form.elements.namedItem('name').value.trim(), age:Number(age.value),
+          name:form.elements.namedItem('name').value.trim(),
           region:[province.value, city.value].filter(Boolean).join(' '), interest:interest.value, consent:consent.checked
         });
       }
