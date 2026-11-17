@@ -68,7 +68,6 @@ async function start(firstEntry) {
       }
       if (entry.day !== current.day || entry.slot !== current.slot) {
         mine.value = '';
-        $('archive').checked = false;
         status.textContent = '새 시간대의 질문이 열렸어요.';
       }
       entry = current;
@@ -131,9 +130,8 @@ async function start(firstEntry) {
     const joiningOnly = mode === 'feed';
     status.textContent = joiningOnly ? '프로필을 등록하고 있어요.' : '답변을 저장하고 있어요.';
     try {
-      const data = joiningOnly ? {} : {body, day:entry.day, slot:entry.slot};
+      const data = joiningOnly ? {} : {body, day:entry.day, slot:entry.slot, archive:true};
       if (!joiningOnly && entry.question) data.questionId = entry.question.id;
-      if (!joiningOnly && $('archive').checked) data.archive = true;
       if (!entry.joined) {
         const {province, city, interest, age, consent} = form.elements;
         Object.assign(data, {

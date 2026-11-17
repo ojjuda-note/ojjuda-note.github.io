@@ -72,5 +72,4 @@
 .discover-switch .allanswers:hover,.discover-switch .allanswers:focus-visible{background:#e5ddeb}
 .cardquestion{margin:18px 0 8px;font-size:14px;line-height:1.6;font-weight:700;color:#674b70;overflow-wrap:anywhere}
 .answercard .quote{white-space:pre-wrap;overflow-wrap:anywhere}
-.archivechoice{font-size:14px;margin:12px 0 16px}
 @media(max-width:620px){.discover-switch .allanswers{padding:6px 10px;font-size:12px}}
