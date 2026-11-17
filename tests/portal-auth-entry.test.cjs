@@ -26,7 +26,7 @@ for (const path of ['/?auth=login', '/?auth=signup&next=world', '/?auth=forgot',
 }
 
 // Exercise the real controller with a fake Auth service: no accounts or emails are created.
-function setup(query, { user = null, confirmed = false, sessionError = false, sessionResponse = null, userResponse = null, signInResponse = null, signupResponse = null, nicknameResponse = null, recoveryResponse = null, recoveryError = null, recoveryVerified = true, resetError = null, now = Date.now() } = {}) {
+function setup(query, { user = null, confirmed = false, sessionError = false, sessionResponse = null, userResponse = null, signInResponse = null, signupResponse = null, nicknameResponse = null, suggestionResponse = null, recoveryResponse = null, recoveryError = null, recoveryVerified = true, resetError = null, crypto = webcrypto, now = Date.now() } = {}) {
   let clock = now;
   let taskId = 0;
   let serviceUser = user;
@@ -75,12 +75,13 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     functions: { async invoke(name, args) { recoveries.push({ name, ...args }); if (recoveryResponse) return recoveryResponse(args.body); const error = args.body.action === 'reset' ? resetError : recoveryError; return error ? { error: { context: { json: async () => ({ error }) } } } : { data: args.body.action === 'reset' ? { reset: true } : { verified: recoveryVerified, reset_token: 'a'.repeat(64), expires_in: 300 } }; } },
     from() { return { select() { return this; }, eq() { return this; }, async maybeSingle() { return { data: null }; } }; },
     async rpc(name, args) {
+      if (name === 'suggest_signup_nickname') return suggestionResponse ? suggestionResponse() : { data: null };
       if (name === 'has_banned') return nicknameResponse ? nicknameResponse(args.t) : { data: false };
       return { data: true };
     }
   };
   const context = {
-    window: { OJJUDA_CONFIG: { supabaseUrl: 'https://example.test', supabaseKey: 'test' }, supabase: { createClient: () => client }, OjjudaIdentity: identity, crypto: webcrypto },
+    window: { OJJUDA_CONFIG: { supabaseUrl: 'https://example.test', supabaseKey: 'test' }, supabase: { createClient: () => client }, OjjudaIdentity: identity, crypto },
     document: { getElementById: element, querySelector: element, querySelectorAll: selector => selector === '[data-policy-document]' ? policyLinks : [] },
     Date: class extends Date { static now() { return clock; } },
     location, URL, URLSearchParams, console: { warn() {}, error() {} },
@@ -134,10 +135,45 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     qr() { throw new Error('World must use the common signup form'); }
   });
   assert.deepEqual(worldRoutes, ['/?auth=signup&next=world', '/?auth=forgot&next=world']);
+  // Exercise signup with both random sources and all possible word indexes.
+  for (let byte = 0; byte < 256; byte++) {
+    const generated = setup('?auth=signup', {
+      crypto: { getRandomValues(bytes) { bytes.fill(byte); return bytes; } }
+    });
+    await generated.flush();
+    assert.match(generated.element('nickname').value, /^[가-힣]{1,4} [가-힣]{1,4}$/, 'generated name fits the signup field');
+    if (byte === 0) assert.equal(generated.element('nickname').value, '노래하는 고래');
+  }
+  for (const [first, second, name] of [[0,64,'노래하는 딸기'],[1,0,'춤추는 고래'],[32,0,'딸기 고래'],[96,22,'우주 하마']]) {
+    const generated = setup('?auth=signup', {
+      crypto: { getRandomValues(bytes) { assert.equal(bytes.length,2); bytes.set([first,second]); return bytes; } }
+    });
+    await generated.flush(); generated.fill(); await generated.submit();
+    assert.equal(generated.signups[0].options.data.nickname,name,'signup combines exactly two words');
+    assert.equal(generated.signups[0].options.data.nickname_auto,true,'the server allocates an unused automatic name');
+  }
+  const dictionarySuggestion = setup('?auth=signup', { suggestionResponse: () => ({data:'노래하는 돌고래'}) });
+  await dictionarySuggestion.flush(); dictionarySuggestion.fill(); await dictionarySuggestion.submit();
+  assert.equal(dictionarySuggestion.signups[0].options.data.nickname,'노래하는 돌고래');
+  assert.equal(dictionarySuggestion.signups[0].options.data.nickname_auto,true);
+  const numberedSuggestion = setup('?auth=signup', { suggestionResponse: () => ({data:'노래하는 딸기12'}) });
+  await numberedSuggestion.flush(); numberedSuggestion.fill(); await numberedSuggestion.submit();
+  assert.equal(numberedSuggestion.signups[0].options.data.nickname,'노래하는 딸기12');
+  let finishSuggestion;
+  const lateSuggestion = setup('?auth=signup', { suggestionResponse: () => new Promise(resolve => {finishSuggestion=resolve;}) });
+  await lateSuggestion.flush(); lateSuggestion.element('nickname').value='내가 고른이름';
+  finishSuggestion({data:'춤추는 고래'}); await lateSuggestion.flush();
+  assert.equal(lateSuggestion.element('nickname').value,'내가 고른이름','late dictionary previews do not overwrite edits');
+  const failedSuggestion = setup('?auth=signup', { suggestionResponse: () => Promise.reject(new Error('network')) });
+  await failedSuggestion.flush(); failedSuggestion.fill(); await failedSuggestion.submit();
+  assert.match(failedSuggestion.signups[0].options.data.nickname,/^[가-힣]{1,4} [가-힣]{1,4}$/,'network failures retain the instant word-pair fallback');
+  const fallback = setup('?auth=signup', {crypto:null});
+  await fallback.flush(); fallback.fill(); await fallback.submit();
+  assert.match(fallback.signups[0].options.data.nickname, /^[가-힣]{1,4} [가-힣]{1,4}$/, 'fallback randomness also creates Hangul words');
   for (const destination of ['world', 'note']) {
     const app = setup(`?auth=signup&next=${destination}`); await app.flush();
     const generatedNickname = app.element('nickname').value;
-    assert.match(generatedNickname, /^[가-힣]{2}[0-9a-z]{10}$/);
+    assert.match(generatedNickname, /^[가-힣]{1,4} [가-힣]{1,4}$/);
     assert.equal(app.element('nickname').readOnly, false, 'the automatic nickname remains editable');
     assert.equal(app.element('nickname').tabIndex, 0);
     assert.equal(app.element('nickname-auto-help').hidden, false);
@@ -253,6 +289,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   switched.fill();
   await switched.submit();
   assert.equal(switched.signups[0].options.data.nickname, '나만의별명', 'signup sends the nickname chosen by the member');
+  assert.equal(switched.signups[0].options.data.nickname_auto, false, 'manual names are not automatically replaced');
 
   const checkedNames = [];
   const rejectedName = setup('?auth=signup', { nicknameResponse: name => {

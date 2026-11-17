@@ -113,14 +113,52 @@
   function ensureSignupNickname(captureInput = false) {
     if (captureInput) signupNickname = nickname.value.trim();
     if (signupNickname === null) {
-      const words = ['구름', '새싹', '고래', '바다', '별빛', '달빛', '바람', '나무', '하늘', '햇살', '노을', '여우', '수달', '라임', '사과', '오리'];
-      const alphabet = '0123456789abcdefghjkmnpqrstvwxyz';
-      const random = new Uint8Array(11);
+      const actions = [
+        '노래하는', '춤추는', '웃는', '달리는', '꿈꾸는', '날아가는', '반짝이는', '산책하는',
+        '여행하는', '수영하는', '그리는', '요리하는', '독서하는', '연주하는', '응원하는', '인사하는',
+        '기다리는', '속삭이는', '미소짓는', '손뼉치는', '하품하는', '기지개켠', '졸고있는', '뒹구는',
+        '숨은', '탐험하는', '모험하는', '첨벙대는', '소풍가는', '별보는', '산오르는', '길찾는'
+      ];
+      const things = [
+        '딸기', '사과', '포도', '복숭아', '자두', '살구', '수박', '참외',
+        '귤', '유자', '감', '배', '앵두', '오디', '산딸기', '무화과',
+        '레몬', '망고', '바나나', '체리', '석류', '멜론', '대추', '키위',
+        '연필', '우산', '풍선', '모자', '방울', '양말', '리본', '단추',
+        '책갈피', '찻잔', '그네', '종이배', '피리', '연', '색연필', '비눗방울',
+        '구름', '별빛', '달빛', '햇살', '노을', '바람', '이슬', '눈꽃',
+        '새싹', '꽃잎', '나뭇잎', '솔방울', '도토리', '밤송이', '민들레', '해바라기',
+        '무지개', '파도', '산들바람', '은하수', '샛별', '눈송이', '풀잎', '물방울', '우주'
+      ];
+      const animals = [
+        '고래', '토끼', '여우', '수달', '고양이', '강아지', '다람쥐', '판다',
+        '오리', '펭귄', '부엉이', '참새', '돌고래', '바다표범', '너구리', '고슴도치',
+        '사슴', '코알라', '햄스터', '기린', '얼룩말', '코끼리', '하마', '사자',
+        '호랑이', '치타', '표범', '늑대', '곰', '양', '염소', '알파카',
+        '병아리', '앵무새', '까치', '제비', '갈매기', '두루미', '백조', '공작',
+        '거북이', '개구리', '도롱뇽', '달팽이', '나비', '꿀벌', '무당벌레', '잠자리',
+        '반딧불이', '물개', '해달', '바다사자', '해마', '불가사리', '문어', '오징어',
+        '복어', '금붕어', '잉어', '가오리', '새우', '가재', '게', '청설모'
+      ];
+      const firstWords = [...actions, ...things];
+      const secondWords = [...animals, ...things];
+      const random = new Uint8Array(2);
       if (window.crypto?.getRandomValues) window.crypto.getRandomValues(random);
       else for (let i = 0; i < random.length; i++) random[i] = Math.floor(Math.random() * 256);
-      signupNickname = words[random[0] % words.length]
-        + Array.from(random.slice(1), value => alphabet[value % alphabet.length]).join('');
+      const first = firstWords[random[0] % firstWords.length];
+      let secondIndex = random[1] % secondWords.length;
+      if (first === secondWords[secondIndex]) secondIndex = (secondIndex + 1) % secondWords.length;
+      signupNickname = first + ' ' + secondWords[secondIndex];
       generatedSignupNickname = signupNickname;
+      const suggestedFrom = signupNickname;
+      Promise.resolve().then(() => client?.rpc('suggest_signup_nickname')).then(result => {
+        const suggested = result?.data;
+        if (result?.error || typeof suggested !== 'string' || suggested.length > 12
+          || !/^[가-힣]{1,5} [가-힣]{1,5}[0-9]*$/.test(suggested)
+          || busy || authMode !== 'signup' || signupNickname !== suggestedFrom
+          || generatedSignupNickname !== suggestedFrom || nickname.value !== suggestedFrom) return;
+        signupNickname = generatedSignupNickname = suggested;
+        nickname.value = suggested;
+      }).catch(() => {});
     }
     nickname.value = signupNickname;
     return signupNickname;
@@ -582,6 +620,7 @@
           options: {
             data: {
               nickname: name,
+              nickname_auto: name === generatedSignupNickname,
               terms_version: termsVersion,
               agreed_at: new Date().toISOString(),
               birth_yymmdd: signupIdentity.birthSix,

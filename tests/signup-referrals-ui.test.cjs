@@ -12,6 +12,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin=
   await context.addInitScript(()=>{
    const f=window.referralFixture={signups:[],searches:[],people:[{id:'00000000-0000-4000-8000-000000000001',nickname:'민준'},{id:'00000000-0000-4000-8000-000000000002',nickname:'민준이'}],pending:[],defer:false,fail:false};
    const client={auth:{onAuthStateChange(){},async getSession(){return{data:{session:null}};},async getUser(){return{data:{user:null}};},async signUp(args){f.signups.push(args);return{data:{session:null}};}},async rpc(name,args){
+    if(name==='suggest_signup_nickname')return{data:'춤추는 고래'};
     if(name==='has_banned')return{data:false};
     if(name!=='search_signup_referrers')throw Error('Unexpected RPC '+name);
     f.searches.push(args);if(f.defer)return new Promise(resolve=>f.pending.push(resolve));
@@ -26,12 +27,14 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin=
   };
   const confirm=async()=>{await page.getByRole('button',{name:'민준 추천인으로 선택',exact:true}).click();await page.getByRole('button',{name:'이 사람이 맞아요',exact:true}).click();};
   await open();
+  await page.waitForFunction(()=>document.querySelector('#nickname').value==='춤추는 고래');
   const initialNickname=await page.locator('#nickname').inputValue();
-  assert.ok(initialNickname.length>0&&initialNickname.length<=12,'signup provides a valid-length nickname without input');
+  assert.match(initialNickname,/^[가-힣]{1,4} [가-힣]{1,4}$/,'signup suggests two Hangul words separated by one space');
   assert.equal(await page.locator('#nickname').evaluate(el=>el.readOnly),false,'signup nickname is suggested automatically and remains editable');
   await fill();assert.equal(await page.locator('#signup-referrer').getAttribute('required'),null);
   await page.locator('#auth-submit').click();await page.waitForFunction(()=>referralFixture.signups.length===1);
   assert.equal(await page.evaluate(()=>referralFixture.signups[0].options.data.nickname),initialNickname,'signup sends the displayed automatic nickname');
+  assert.equal(await page.evaluate(()=>referralFixture.signups[0].options.data.nickname_auto),true,'automatic names are allocated by the server at signup');
   assert.equal(await page.evaluate(()=>'referrer_id'in referralFixture.signups[0].options.data),false,'blank referral is optional');
   assert.equal(await page.evaluate(()=>referralFixture.searches.length),0,'blank signup needs no lookup');
 
