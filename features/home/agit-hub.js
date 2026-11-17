@@ -254,10 +254,14 @@
           </button>`;
         }).join('')}</div>
       </section>
-      <a class="agit-pajang-banner" href="/features/pajang/" id="pajang-radar" data-pajang-launch aria-haspopup="dialog">
-        <span class="agit-pajang-mark" aria-hidden="true"><i></i></span>
-        <span class="agit-pajang-copy"><strong>취향으로 만나는 소개팅, 파장</strong><small>회원 전용 · 오전과 오후, 질문에 답하고 새로운 인연을 만나보세요</small></span>
-        <span class="agit-pajang-open">파장 열기 <span aria-hidden="true">↗</span></span>
+      <a class="agit-pajang-banner" href="/features/pajang/" id="pajang-radar" data-pajang-launch aria-haspopup="dialog"
+         aria-labelledby="agit-pajang-cta agit-pajang-service" aria-describedby="agit-pajang-heading agit-pajang-description">
+        <span class="agit-pajang-brand"><b>파장</b><span id="agit-pajang-service">19+ 회원 소개팅</span></span>
+        <strong class="agit-pajang-title" id="agit-pajang-heading"><span>이 답을 쓴 사람,</span> <span>더 알고 싶어요.</span></strong>
+        <span class="agit-pajang-description" id="agit-pajang-description"><span>오전과 오후, 같은 질문에 답해요.</span> <span>마음이 가는 사람에게 신호를 보내세요.</span></span>
+        <span class="agit-pajang-open" id="agit-pajang-cta">파장 열기 <span aria-hidden="true">→</span></span>
+        <img class="agit-pajang-art" width="720" height="480" loading="lazy" decoding="async" alt=""
+             src="https://ziezbdjofcugznowiuda.supabase.co/storage/v1/object/public/pajang-theme/1992efc91a84e48f094a1cce1ebb3df665175b76b8840b12865d909510e5d255/postcard.webp">
       </a>
       <nav class="agit-reading-grid" aria-label="바이오리듬과 운세">
         <a class="agit-reading-card agit-biorhythm-banner" href="/features/biorhythm/" aria-label="오늘의 바이오리듬, 5쭈, 같은 생일로 결제 후 24시간 이용">

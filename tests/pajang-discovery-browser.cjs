@@ -173,7 +173,16 @@ function clientFixture(hash) {
       if(pathname==='/config.js')return route.fulfill({contentType:'text/javascript',body:clientFixture(hash)});
       if(pathname==='/features/home/agit-hub.css')return route.fulfill({contentType:'text/css',body:await fs.readFile(path.join(feature,'../home/agit-hub.css'))});
       if(pathname==='/program')return route.fulfill({contentType:'application/javascript',body:bundle});
-      if(pathname==='/world.html')return route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/features/home/agit-hub.css"><title>아지트</title><script src="/config.js"></script><button data-pajang-launch>파장 열기</button><script type="module">import {openPajang} from "/features/pajang/dialog.mjs";document.querySelector("button").onclick=e=>openPajang(e.currentTarget);</script></html>'});
+      if(pathname==='/features/home/agit-hub.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../home/agit-hub.js'))});
+      if(pathname==='/world.html')return route.fulfill({contentType:'text/html',body:`<!doctype html><html lang="ko"><head>
+        <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+        <link rel="stylesheet" href="/features/home/agit-hub.css"><title>아지트</title>
+        <style>body{margin:0;padding:0 16px;background:#faf8f3;--font-b:system-ui,sans-serif}</style>
+        <script src="/config.js"></script><script src="/features/home/agit-hub.js"></script></head>
+        <body><main class="agit-hub"></main><script>
+          const shell=document.createElement('template');shell.innerHTML=OjjudaAgitHub.markup({}, {});
+          document.querySelector('main').append(shell.content.querySelector('[data-pajang-launch]'));
+        </script></body></html>`});
       const file=pathname.slice(project.length)||'index.html';
       if(!['station.html','station.css','member.mjs','member-main.mjs','load-station.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','shell.mjs','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
       const mime={html:'text/html',css:'text/css',mjs:'text/javascript',json:'application/json',svg:'image/svg+xml'}[path.extname(file).slice(1)];
@@ -181,6 +190,27 @@ function clientFixture(hash) {
     });
     const flightDir=path.join(__dirname,'artifacts/pajang-discovery');
     await fs.mkdir(flightDir,{recursive:true});
+    await page.goto(origin+'/world.html');
+    const banner=page.getByRole('link',{name:/^파장 열기/});
+    assert.equal(await banner.getAttribute('href'),project);
+    for(const width of [320,390,600,768,1280]){
+      await page.setViewportSize({width,height:844});
+      await banner.scrollIntoViewIfNeeded();
+      const geometry=await banner.evaluate(async el=>{
+        const image=el.querySelector('.agit-pajang-art');await image.decode();
+        const rect=n=>{const r=n.getBoundingClientRect();return {l:r.left,r:r.right,t:r.top,b:r.bottom};};
+        return {box:rect(el),image:rect(image),loaded:image.naturalWidth,
+          text:[...el.querySelectorAll('.agit-pajang-brand,.agit-pajang-title,.agit-pajang-description,.agit-pajang-open')].map(rect)};
+      });
+      const {box,image,text,loaded}=geometry;
+      assert.ok(loaded>0 && box.l>=0 && box.r<=width && image.b<=box.b+1 && image.r<=box.r+1);
+      for(const t of text){
+        assert.ok(t.l>=box.l && t.r<=box.r+1 && t.t>=box.t && t.b<=box.b+1);
+        assert.ok(t.r<=image.l+1 || t.l>=image.r-1 || t.b<=image.t+1 || t.t>=image.b-1,'banner art covers copy at '+width);
+      }
+      if(width===390||width===1280)await banner.screenshot({path:path.join(flightDir,'agit-pajang-banner-'+width+'.png')});
+    }
+    await page.setViewportSize({width:390,height:844});
     for(const [url,ready] of [['index.html?flight-check=new','#welcome #write'],['station.html?flight-check=member','#station #answers']]){
       const member=url.startsWith('station');
       // On the station page, hold the picture past startup: art must never gate real content.
@@ -378,12 +408,12 @@ function clientFixture(hash) {
     await page.screenshot({path:path.join(dir,'pajang-profile-desktop.png'),animations:'disabled'});
     await selectMenu('오늘');await answers.waitFor();await capture('home-desktop');await mast.click();await page.waitForURL('**/world.html');
     await page.setViewportSize({width:390,height:844});
-    await page.getByRole('button',{name:'파장 열기'}).click();
+    await page.getByRole('link',{name:/^파장 열기/}).click();
     await page.waitForURL('**/station.html');await nav.waitFor();
     await page.evaluate(()=>{sessionStorage.fixtureMode='new';sessionStorage.removeItem('pajang:answered-round');});
     await page.goto(origin+'/world.html#pajang-radar');
     await page.evaluate(()=>{window.hostMarker='stay';});
-    await page.getByRole('button',{name:'파장 열기'}).click();
+    await page.getByRole('link',{name:/^파장 열기/}).click();
     const frame=page.frameLocator('iframe');await frame.getByRole('heading',{name:'처음 만난 날, 어떤 이야기를 나누고 싶나요?'}).waitFor();
     await capture('entry-mobile');
     assert.equal(await frame.locator('#marks button').count(),0,'sample radar does not block the question');
@@ -433,7 +463,7 @@ function clientFixture(hash) {
     // Closing an immediate popup while its member request is pending leaves Agit open.
     await page.evaluate(()=>{sessionStorage.fixtureMode='member';sessionStorage.openTiming='yes';sessionStorage.removeItem('pajang:answered-round');});
     await page.goto(origin+'/world.html?closing=1');
-    await page.getByRole('button',{name:'파장 열기'}).click();
+    await page.getByRole('link',{name:/^파장 열기/}).click();
     await page.getByRole('button',{name:'팝업 닫기'}).click();
     await page.waitForTimeout(500);
     assert.ok(page.url().endsWith('world.html?closing=1'));
@@ -445,7 +475,7 @@ function clientFixture(hash) {
           if(mode!=='member')sessionStorage.removeItem('pajang:answered-round');
           delete sessionStorage.openMs;delete sessionStorage.openStart;},scenario);
         await page.goto(origin+'/world.html?timing='+attempt);
-        await page.getByRole('button',{name:'파장 열기'}).click();
+        await page.getByRole('link',{name:/^파장 열기/}).click();
         if(scenario!=='new')await page.waitForURL('**/station.html');
         await page.waitForFunction(()=>sessionStorage.openMs);
         timings.push(await page.evaluate(()=>Number(sessionStorage.openMs)));
