@@ -2,7 +2,7 @@ import {useEffect, useRef, useState} from "react";
 import regionCatalog from "../../regions.json";
 
 export type ExchangeKind = "profile"|"photos";
-type Fields = Partial<Record<"relationship"|"job"|"region"|"religion"|"height"|"mbti"|"bloodType"|"skills"|"hobbies"|"drinking"|"smoking"|"bio",string|number>>;
+type Fields = Partial<Record<"relationship"|"job"|"region"|"height"|"mbti"|"bloodType"|"skills"|"hobbies"|"drinking"|"smoking"|"bio",string|number>>;
 export type SharedProfile = {fields: Fields; age:number|null; gender:string|null};
 type MyProfile = SharedProfile & {showAge:boolean; showGender:boolean};
 
@@ -16,7 +16,7 @@ export async function exchange<T>(action:string, options:{p_peer?:string; p_kind
 const regions:Record<string,string[]>=regionCatalog;
 const labels:{key:keyof Fields; label:string; options?:readonly string[]; limit?:number}[]=[
   {key:"relationship",label:"결혼 이력",options:["싱글","돌싱"]},
-  {key:"job",label:"직업"},{key:"region",label:"사는 지역"},{key:"religion",label:"종교"},
+  {key:"job",label:"직업"},{key:"region",label:"사는 지역"},
   {key:"height",label:"키"},{key:"mbti",label:"MBTI",options:["ISTJ","ISFJ","INFJ","INTJ","ISTP","ISFP","INFP","INTP","ESTP","ESFP","ENFP","ENTP","ESTJ","ESFJ","ENFJ","ENTJ"]},
   {key:"bloodType",label:"혈액형",options:["A","B","O","AB"]},
   {key:"skills",label:"특기",limit:160},{key:"hobbies",label:"취미",limit:160},
@@ -72,7 +72,7 @@ export function ExchangeProfileEditor({onSaved}:{onSaved:()=>void}) {
     event.preventDefault();
     if(!profile||saving.current)return;
     saving.current=true;setBusy(true);setError("");
-    const fields=Object.fromEntries(Object.entries(profile.fields).map(([k,v])=>[k,String(v??"").trim()]).filter(([,v])=>v));
+    const fields=Object.fromEntries(labels.map(({key})=>[key,String(profile.fields[key]??"").trim()]).filter(([,v])=>v));
     try {
       await exchange<MyProfile>("save",{p_data:{fields,showAge:profile.showAge,showGender:profile.showGender}});
       if(mounted.current)onSaved();

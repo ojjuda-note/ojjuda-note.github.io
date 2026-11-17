@@ -53,7 +53,20 @@ test('profile and photo exchange require five messages in each direction and sep
   const a = await person('가을');
   const b = await person('겨울');
   await login(a);
-  await rpc('save', null, null, {fields:{job:'책방지기'}});
+  // Model an existing record created before the field was retired.
+  await rpc('save', null, null, {fields:{job:'책방지기',religion:'legacy-test-value'}});
+  assert.equal((await rpc('mine')).fields.religion,'legacy-test-value');
+  await db.exec(await migration('20261118080000_pajang_retire_exchange_religion.sql'));
+  assert.deepEqual((await rpc('mine')).fields,{job:'책방지기'});
+  assert.deepEqual((await rpc('save',null,null,{fields:{job:'책방지기',religion:{stale:true}}})).fields,{job:'책방지기'});
+  const storedFields=async member=>(await db.query(
+    'select fields from pajang_private.exchange_profiles where person=$1',[member.id])).rows[0].fields;
+  assert.equal((await storedFields(a)).religion,'legacy-test-value');
+  await assert.rejects(() => rpc('save',null,null,{fields:{unknown:'still rejected'}}), {code:'22023'});
+  await login(b);
+  assert.deepEqual((await rpc('save',null,null,{fields:{religion:'not stored',height:170}})).fields,{height:170});
+  assert.deepEqual(await storedFields(b),{height:170});
+  await login(a);
   await assert.rejects(() => rpc('state',b), {code:'42501'});
   await db.query("insert into pajang_private.signals(src,dst,day,note,at) values ($1,$2,current_date,'',1),($2,$1,current_date,'',2)", [a.id,b.id]);
   await messages(a,b,5);
@@ -71,7 +84,7 @@ test('profile and photo exchange require five messages in each direction and sep
   await login(a);
   await rpc('accept',b,'profile');
   await login(b);
-  assert.equal((await rpc('state',a)).peerProfile.fields.job,'책방지기');
+  assert.deepEqual((await rpc('state',a)).peerProfile.fields,{job:'책방지기'});
   const canReadPhotos = async () => (await db.query(
     "select pajang_private.exchange_can_view($1,$2,'photos') as allowed", [b.id,a.id])).rows[0].allowed;
   assert.equal(await canReadPhotos(),false);
@@ -84,4 +97,7 @@ test('profile and photo exchange require five messages in each direction and sep
   assert.equal(await canReadPhotos(),true);
   await rpc('revoke',a,'photos');
   assert.equal(await canReadPhotos(),false);
+  // The normal explicit profile deletion still removes the entire record.
+  await db.query('delete from pajang_private.people where id=$1',[a.id]);
+  assert.equal((await db.query('select count(*)::int n from pajang_private.exchange_profiles where person=$1',[a.id])).rows[0].n,0);
 });
