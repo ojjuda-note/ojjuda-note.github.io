@@ -12,6 +12,7 @@
     if(!active()||session.error||session.data?.user?.id!==owner)throw Error('account_changed');
     const result=await client.rpc('record_photo_ttang_clear_at',{p_stage_id:item.stage,p_finished_at:item.completedAt,p_expected_owner:owner});
     if(result.error)throw result.error;
+    if(result.data?.ok===true&&authorized())dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner,game:'photo_ttang'}}));
     return result.data;
    },
    status(state,result){
@@ -19,7 +20,6 @@
     if(state==='failed')show('기록 저장 다시 시도',true);
     if(state==='saved'){
      show((result.previous_period?'이전 달 ':'이번 달 ')+result.score+'장 완료');
-     dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner,game:'photo_ttang'}}));
     }
    }
   });
