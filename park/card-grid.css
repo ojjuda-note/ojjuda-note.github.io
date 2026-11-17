@@ -1,0 +1,22 @@
+/* The Park feed and its loading cover use the same available-width breakpoint. */
+:root {
+  --park-card-max-width: 750px;
+  --park-grid-gap: 20px;
+}
+.park-feed, .park-load-cover { container: park-grid / inline-size; }
+.park-feed .feed-layout, .park-skeleton-grid {
+  width: 100%;
+  max-width: var(--park-card-max-width);
+  margin-inline: auto;
+}
+.park-feed .feed-list, .park-skeleton-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--park-grid-gap);
+}
+/* Two 750px cards and the space between them. */
+@container park-grid (min-width: 1520px) {
+  .park-feed .feed-layout, .park-skeleton-grid { max-width: 1520px; }
+  .park-feed .feed-list, .park-skeleton-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
