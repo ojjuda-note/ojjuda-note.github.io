@@ -27,7 +27,7 @@ async function request<T,>(url:string,init?:RequestInit):Promise<T>{
   if(error)throw Object.assign(new Error(error.message),{code:error.code});
   return data as T;
 }
-function Art({interest,large=false}:{interest:string;large?:boolean}){return <span className={"avatar"+(large?" large":"")} style={{background:badges(interest).bg}}>{interest?<img src={getArt(interest)} alt=""/>:<I n="user" s={large?26:18}/> }</span>;}
+function Art({interest,large=false}:{interest:string;large?:boolean}){return <span className={"avatar"+(large?" large":"")} style={{background:badges(interest).bg}}>{getArt(interest)?<img src={getArt(interest)} alt=""/>:<I n="user" s={large?26:18}/> }</span>;}
 function Brand(){return <span className="brand"><span className="brandmark"><I n="wave" s={24}/></span><b>파장</b><span className="wordmark">PAJANG</span></span>;}
 function Blank({icon,title,body,button,onClick}:{icon:string;title:string;body:string;button?:string;onClick?:()=>void}){return <div className="empty"><span className="emptyicon"><I n={icon} s={27}/></span><h3>{title}</h3><p>{body}</p>{button&&<button className="secondary" onClick={onClick}>{button}<I n="arrow" s={16}/></button>}</div>;}
 function Dialog({children,close,title}:{children:React.ReactNode;close:()=>void;title:string}){
@@ -181,7 +181,7 @@ export default function StationApp({initialView,initialStation}:{initialView:"ca
     {tab==="discover"&&discovery==="radar"&&<NearbyRadar station={s} sample={false} onProfile={id=>open({kind:"person",peer:id})} onJoin={()=>location.assign("./")} onSettings={async cell=>Boolean(await act(cell?"radar-enable":"radar-disable",cell?{...cell,consent:true,shareBearing:true}:{},true))}/>}
     {tab==="discover"&&discovery==="cards"&&<>
       <section className="hero" aria-label={slotName+(me?.body?" 답변 완료":" 질문")}>
-        <div className="heroart" aria-hidden="true"><img src={window.pajangArt.radio} alt="" fetchPriority="high"/></div>
+        <div className="heroart" aria-hidden="true">{window.pajangArt.radio&&<img src={window.pajangArt.radio} alt="" fetchPriority="high"/>}</div>
         <div className="herocopy">
           <div className="onrow"><span className="onair"><i/>ON AIR</span><span className="questionlabel">{slotName} {me?.body?"답변 완료":"질문"}</span></div>
           {me?.body?<><h1>{slotName} 답변을 남겼어요.</h1><p>다음 질문은 {nextQuestion}에 열려요.</p>
