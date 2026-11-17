@@ -107,7 +107,7 @@ async function start(firstEntry) {
     answerFields.disabled = joiningOnly;
     submit.textContent = joiningOnly ? '참여하고 '+nextName+' 보기' : '답변 공개하고 오늘로';
     write.setAttribute('aria-expanded', String(!joiningOnly));
-    (joiningOnly ? form.elements.consent : mine).focus();
+    (!entry.joined ? form.elements.consent : mine).focus();
   }
   write.onclick = () => openForm('answer');
   browse.onclick = () => openForm('feed');

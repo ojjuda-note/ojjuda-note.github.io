@@ -221,7 +221,7 @@
 .account-section .settings{margin-bottom:0}
 .account-section .discovery-visibility-panel{border:0;margin:6px 0 0;padding:0}
 .account-tools,.sheet-bar{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.account-tools{margin:12px 0}
+.account-tools{margin:12px 0}.account-tools .quiet{margin:0}
 .sheet-bar{position:sticky;top:-1px;z-index:2;background:#fdfcf9;border-bottom:1px solid var(--line);padding:6px 0;margin:0 0 16px}
 .dialog:has(.sheet-bar){padding-top:0}
 .sheet-bar a{background:#f3eef5;border-color:#d6cadb;color:#493651;font-size:13px;min-height:36px}
