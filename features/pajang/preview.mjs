@@ -1,10 +1,19 @@
 const samples = [
   {name:'바늘소리',bearing:0, radius:24,range:'약 1~3km',answer:'작은 음반 가게에서 서로를 닮은 노래를 한 곡씩 골라주고 싶어요.'},
-  {name:'초록걸음',bearing:315,radius:37,range:'약 3~7km',answer:'한강을 따라 느긋하게 걸어요. 해 질 때쯤 아이스크림 하나씩 들고요.'},
+  {name:'초록걸음',bearing:315,radius:31,range:'약 3~7km',answer:'한강을 따라 느긋하게 걸어요. 해 질 때쯤 아이스크림 하나씩 들고요.'},
   {name:'오후의 모카',bearing:90,radius:30,range:'약 3~7km',answer:'창가 자리가 있는 카페에서 커피가 식는 줄도 모르고 이야기하고 싶어요.'}
 ];
 const $ = selector => document.querySelector(selector);
 const rose = $('.rose'), compass = $('#compass'), direction = $('#direction'), note = $('#sensor-note');
+const names=['북','북동','동','남동','남','남서','서','북서'];
+names.forEach((name,index)=>{
+  const label=document.createElement('b');
+  const angle=index*Math.PI/4;
+  label.textContent=name;
+  label.style.left=(50+45*Math.sin(angle))+'%';
+  label.style.top=(50-45*Math.cos(angle))+'%';
+  rose.append(label);
+});
 const embedded = window.parent !== window && new URLSearchParams(location.search).get('embed') === '1';
 document.documentElement.classList.toggle('embedded',embedded);
 let active = false, permissionPending = false, timer = 0, last = null, frame = 0;
@@ -22,7 +31,7 @@ const dots=samples.map((sample,index)=>{
   button.addEventListener('click',()=>select(index));$('#marks').append(button);return button;
 });
 function draw(heading) {
-  rose.style.transform='rotate('+(-heading)+'deg)';
+  rose.style.setProperty('--heading',heading+'deg');
   dots.forEach((dot,i)=>{
     const s=samples[i],angle=(s.bearing-heading)*Math.PI/180;
     dot.style.left=(50+Math.sin(angle)*s.radius)+'%';
@@ -45,7 +54,6 @@ function update(){
   const heading=screenHeading(last);
   if(heading===null){direction.textContent='북쪽 고정';note.textContent='휴대폰을 조금 더 수평으로 들어 주세요.';draw(0);return;}
   clearTimeout(timer);note.textContent='';draw(heading);
-  const names=['북','북동','동','남동','남','남서','서','북서'];
   direction.textContent='휴대폰 위쪽 · '+names[Math.round(((heading%360+360)%360)/45)%8]+'쪽';
 }
 function redraw(){if(!frame)frame=requestAnimationFrame(update);}

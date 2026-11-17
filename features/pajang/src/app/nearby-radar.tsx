@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { badges, introDetails, type Person, type Station } from "../lib/station";
-import { coarseCell, directionName, radarPosition, rangeNames, type RadarBand, type RadarCell } from "../lib/radar";
+import { coarseCell, compassDirections, directionName, radarPosition, rangeNames, type RadarBand, type RadarCell } from "../lib/radar";
 import {InterestArt} from "./interest-art";
 import { I } from "./icons";
 import { useCompass } from "./use-compass";
@@ -19,7 +19,7 @@ const bands = [
   {limit:1, ring:48, radius:32},
   {limit:3, ring:94, radius:72},
   {limit:7, ring:140, radius:116},
-  {limit:15, ring:186, radius:163},
+  {limit:15, ring:186, radius:153},
 ] as const;
 
 function bearingLabel(person: LocatedPerson) {
@@ -37,10 +37,7 @@ function Grid({heading}:{heading:number}){
     <g className="radar-compass" transform={`rotate(${-heading} 200 200)`}>
       {Array.from({length:60},(_,i)=><line key={i} x1="200" y1="4" x2="200" y2={i%5===0?"12":"8"}
         transform={`rotate(${i*6} 200 200)`} stroke="#8b9c83" strokeOpacity={i%5===0?".8":".45"}/>)}
-      {[0,30,60,90,120,150].map(deg=><line key={deg} x1="17" y1="200" x2="383" y2="200" transform={`rotate(${deg} 200 200)`} stroke="#859b79" strokeOpacity=".23" strokeWidth=".9"/>)}
-      {["N","E","S","W"].map((letter,i)=><g key={letter} transform={`rotate(${i*90} 200 200)`}>
-        <text x="200" y="23" textAnchor="middle" fontSize="9" fontWeight="750" fill={i===0?"#914f53":"#57714e"}>{letter}</text>
-      </g>)}
+      {[0,45,90,135].map(deg=><line key={deg} x1="17" y1="200" x2="383" y2="200" transform={`rotate(${deg} 200 200)`} stroke="#859b79" strokeOpacity=".23" strokeWidth=".9"/>)}
       <path d="m200 3 -3.5 8 h7 Z" fill="#a56962"/>
     </g>
     <g className="radar-sweep">
@@ -49,6 +46,12 @@ function Grid({heading}:{heading:number}){
     </g>
     {bands.map(b=><g key={b.limit}><circle cx="200" cy="200" r={b.ring} fill="none" stroke="#9aab90" strokeOpacity=".49" strokeWidth="1"/>
       <text x="200" y={200-b.ring+(b.limit===15?23:11)} textAnchor="middle" fill="#52664c" fontSize="10" fontWeight="650" stroke="#eef2e6" strokeWidth="3" paintOrder="stroke">{b.limit}km</text></g>)}
+    <g className="radar-bearings" textAnchor="middle" dominantBaseline="central" fontSize="14" fontWeight="700" stroke="#edf2e7" strokeWidth="3" paintOrder="stroke" pointerEvents="none">
+      {compassDirections.map((label,i)=>{
+        const {x,y}=radarPosition(i*45,heading,184);
+        return <text key={label} x={x+"%"} y={y+"%"} fill={i===0?"#874448":"#40593d"}>{label}</text>;
+      })}
+    </g>
   </svg>;
 }
 

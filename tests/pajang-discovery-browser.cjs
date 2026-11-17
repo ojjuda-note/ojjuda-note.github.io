@@ -16,12 +16,45 @@ const rows = [
   {...base,peer:'b',name:'단비',interest:'walk',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'나란히 걸으면서 같은 풍경을 보고 웃을 때요.'},
 ];
 
+async function checkCompass(view, selector, labelSelector, markerSelector) {
+  const dial=view.locator(selector);
+  const labels=['북','북동','동','남동','남','남서','서','북서'];
+  assert.deepEqual(await dial.locator(labelSelector).allTextContents(),labels);
+  await view.getByRole('button',{name:'휴대폰 방향 켜기'}).click();
+  const stop=view.getByRole('button',{name:'북쪽 고정하기'});
+  await stop.waitFor();
+  for(const heading of [0,45,90,135,180,225,270,315]){
+    await dial.evaluate((el,heading)=>{
+      const e=Object.assign(new Event('deviceorientationabsolute'),{absolute:true,alpha:(360-heading)%360,beta:0,gamma:0});
+      el.ownerDocument.defaultView.dispatchEvent(e);
+    },heading);
+    await view.getByText(new RegExp('위.*'+labels[heading/45]+'쪽$')).waitFor();
+    const geometry=await dial.evaluate((el,{labelSelector,markerSelector})=>{
+      const rect=el.getBoundingClientRect();
+      function point(node){
+        const p=node.getBoundingClientRect();
+        const x=p.x+p.width/2-rect.x-rect.width/2, y=p.y+p.height/2-rect.y-rect.height/2;
+        return {angle:(Math.atan2(x,-y)*180/Math.PI+360)%360,
+          inside:p.left>=rect.left && p.right<=rect.right && p.top>=rect.top && p.bottom<=rect.bottom};
+      }
+      return {labels:[...el.querySelectorAll(labelSelector)].map(point),person:point(el.querySelector(markerSelector))};
+    },{labelSelector,markerSelector});
+    function difference(a,b){return Math.abs((a-b+540)%360-180);}
+    geometry.labels.forEach((v,i)=>{
+      assert.ok(v.inside && difference(v.angle,i*45-heading)<3,'방위 위치: '+labels[i]+' / '+heading);
+    });
+    assert.ok(difference(geometry.person.angle,315-heading)<3,'북서쪽 사람이 같은 각도로 이동');
+  }
+  await stop.click();
+  await view.getByText('북쪽 고정',{exact:true}).waitFor();
+}
+
 function clientFixture(hash) {
   return `
     const state=${JSON.stringify(state)}, rows=${JSON.stringify(rows)};
     const mode=sessionStorage.fixtureMode||'member';
     const accepted=sessionStorage.accepted==='yes';
-    const friend={id:'peer1',name:'라온',age:28,interest:'walk',region:'경기도'};
+    const friend={id:'peer1',name:'라온',age:28,interest:'walk',region:'경기도',body:'함께 걸어요.',range:15,bearing:315};
     const offered={id:'peer2',name:'유진',age:30,interest:'book',region:'서울특별시'};
     state.people=[friend,offered];state.signals=[{src:'me',dst:'peer1'},{src:'peer1',dst:'me'},{src:'peer2',dst:'me'}];
     if(accepted)state.signals.push({src:'me',dst:'peer2'});
@@ -220,8 +253,10 @@ function clientFixture(hash) {
     await page.goBack();await selected('female');await cards.filter({hasText:rows[1].body}).waitFor();
     assert.ok(Math.abs(await page.evaluate(()=>scrollY)-readingY)<5,'back restores the reading position');
     await page.getByRole('button',{name:'내 주변',exact:true}).click();await page.getByRole('heading',{name:'주변 레이더'}).waitFor();
+    await checkCompass(page,'.radar-scope','.radar-bearings text','.scope-person');
     await capture('radar-mobile');
-    await page.reload();await page.getByRole('heading',{name:'주변 레이더'}).waitFor();await expectHome();
+    await page.reload();await page.getByRole('heading',{name:'주변 레이더'}).waitFor();
+    await checkCompass(page,'.radar-scope','.radar-bearings text','.scope-person');await expectHome();
     await selectMenu('마음함');await page.getByRole('button',{name:'수락하고 대화하기'}).waitFor();
     await capture('inbox-mobile');
     await page.getByRole('button',{name:'대화 열기'}).click();
@@ -264,6 +299,7 @@ function clientFixture(hash) {
     await dialog.getByRole('link',{name:'아지트로',exact:true}).click();await page.waitForURL('**/world.html');
     await page.goto(origin+project+'station.html?view=radar');
     await page.getByRole('heading',{name:'주변 레이더'}).waitFor();
+    await checkCompass(page,'.radar-scope','.radar-bearings text','.scope-person');
     await selectMenu('내 파장');await page.setViewportSize({width:1080,height:840});
     await page.screenshot({path:path.join(dir,'pajang-profile-desktop.png'),animations:'disabled'});
     await selectMenu('오늘');await answers.waitFor();await capture('home-desktop');await mast.click();await page.waitForURL('**/world.html');
@@ -279,6 +315,7 @@ function clientFixture(hash) {
     assert.equal(await frame.locator('#marks button').count(),0,'sample radar does not block the question');
     await frame.locator('.sample-radar summary').click();
     await frame.locator('#marks button').first().waitFor();
+    await checkCompass(frame,'#scope','.rose b','#marks button:nth-child(2)');
     await frame.getByRole('link',{name:'아지트로',exact:true}).click();await page.locator('dialog').waitFor({state:'detached'});
     assert.equal(await page.evaluate(()=>window.hostMarker),'stay');
     assert.equal(await page.evaluate(()=>document.activeElement.hasAttribute('data-pajang-launch')),true);

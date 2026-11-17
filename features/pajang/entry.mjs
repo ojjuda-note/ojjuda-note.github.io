@@ -77,7 +77,7 @@ async function start(firstEntry) {
   async function openRadar(){
     if(!radarPanel.open)return;
     try{
-      radar=await import('./preview.mjs?v=open2');
+      radar=await import('./preview.mjs?v=compass8');
       radar.setQuestion(entry.question??themeFor(entry.day,entry.slot));
     }catch{document.getElementById('sensor-note').textContent='레이더를 불러오지 못했어요. 접었다가 다시 열어 주세요.';}
   }

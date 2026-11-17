@@ -30,8 +30,10 @@ export function wrapDegrees(degrees: number): number {
   return ((degrees % 360) + 360) % 360;
 }
 
+export const compassDirections = ["북", "북동", "동", "남동", "남", "남서", "서", "북서"] as const;
+
 export function directionName(bearing: number): string {
-  return ["북", "북동", "동", "남동", "남", "남서", "서", "북서"][Math.round(wrapDegrees(bearing) / 45) % 8];
+  return compassDirections[Math.round(wrapDegrees(bearing) / 45) % 8];
 }
 
 // Only an eight-way sector leaves the server. A shared cell has no bearing.
