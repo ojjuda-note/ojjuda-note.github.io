@@ -93,7 +93,6 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const lock=useRef(false),serverRevision=useRef(0),bottom=useRef<HTMLDivElement>(null);
   const s=live,me=s.me,theme=s.question??themeFor(s.day,s.slot),period=s.day+"/"+s.slot;
   const slotName=s.slot==="am"?"오전":"오후";
-  const nextQuestion=s.slot==="am"?"오늘 낮 12시":"내일 0시";
   const modal=(pendingModal?.period && pendingModal.period!==period) || (pendingModal?.kind==="answer" && me?.body) ? null : pendingModal;
   const row=modal?.answer;
   const peer=row?{...row,id:row.peer}:s.people.find(p=>p.id===modal?.peer);
@@ -278,11 +277,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
         <div className="letter-copy">
           <div className="letter-date">오늘의 질문 <time dateTime={s.day}>{s.day.replaceAll("-",".")} · {slotName}</time></div>
           <h1>{themeText}</h1>
-          {me?.body&&<p className="saved-line"><strong>✓ 내 답변을 남겼어요.</strong> 다음 질문은 {nextQuestion}에 열려요.</p>}
-          <div className="letter-actions">
-            {!me?.body&&<button className="primary" disabled={!ready} onClick={()=>open({kind:me?"answer":"setup"})}><I n="pencil" s={16}/>내 답변 쓰기</button>}
-            <a href="#answers" onClick={event=>{if(!event.ctrlKey&&!event.metaKey&&!event.shiftKey&&!event.altKey){event.preventDefault();navigate("today","",true);}}}>모두의 답변 보기<I n="arrow" s={16}/></a>
-          </div>
+          {!me?.body&&<button className="primary" disabled={!ready} onClick={()=>open({kind:me?"answer":"setup"})}><I n="pencil" s={16}/>내 답변 쓰기</button>}
         </div>
       </section>
       <button className="mobile-near" onClick={()=>go("radar")}><I n="radar" s={16}/>내 주변<I n="right" s={14}/></button>

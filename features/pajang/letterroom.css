@@ -22,16 +22,13 @@ body {background:var(--bg);color:var(--ink)}
 .station-nav-icon i {background:var(--berry);box-shadow:0 0 0 1px var(--bg)}
 .letter-hero,.entry-intro {position:relative;isolation:isolate;overflow:hidden;border:1px solid #e3cfc3;border-radius:20px;background:#f4e3d9}
 .letter-hero::before,.entry-intro::before {position:absolute;content:"";z-index:-1;inset:0;background:linear-gradient(90deg,#f7e8de 0%,#f8e8ddea 28%,#fae9ddaf 48%,transparent 72%),var(--letter-scene) 70% 56%/cover no-repeat}
-.letter-hero {display:grid;align-content:center;min-height:316px;padding:34px clamp(27px,4vw,58px)}
+.letter-hero {display:grid;align-content:center;padding:34px clamp(27px,4vw,58px)}
 .letter-copy {max-width:66%}
-.letter-date,.letter-actions,.letter-actions a,.mobile-near,.rail-title,.rail-paper button,.rail-near b,.return-today {display:flex;align-items:center;gap:8px}
+.letter-date,.mobile-near,.rail-title,.rail-paper button,.rail-near b,.return-today {display:flex;align-items:center;gap:8px}
 .letter-date,.entry-slot {font-size:13px;font-weight:750;color:var(--berry)}
 .letter-date time {padding-left:10px;border-left:1px solid #bd9e90;font-size:12px;font-weight:500;color:#725d57}
 .letter-hero h1,.entry-intro h1 {font:650 clamp(32px,3.7vw,53px)/1.35 var(--serif);letter-spacing:-.075em;text-wrap:balance;color:#382c28;margin:15px 0 20px}
-.saved-line {font-size:14px;color:#725a53;margin:0 0 6px}
-.saved-line strong {color:var(--dark)}
-.letter-actions {gap:15px;flex-wrap:wrap}
-.letter-actions a {min-height:44px;color:#654940;font-size:14px;font-weight:650}
+.letter-hero h1:last-child {margin-bottom:0}
 .primary,.actions #write,.actions button[type=submit],.composer button {color:#fff9f4;background:var(--berry);border-radius:23px}
 .primary:hover,.actions #write:hover,.actions button[type=submit]:hover,.composer button:hover {background:var(--dark)}
 .secondary,.actions #browse {background:#fff9f2;color:var(--dark);border:1px solid #d9c5b7;border-radius:18px}
@@ -111,14 +108,13 @@ body {background:var(--bg);color:var(--ink)}
   .station-nav {inset:auto 0 0;transform:none;display:grid;grid-template-columns:repeat(3,1fr);padding:5px 12px calc(5px + env(safe-area-inset-bottom));background:#fffbf6fa;border-top:1px solid var(--line)}
   .station-nav a {flex-direction:column;gap:2px;min-height:46px;padding:3px;border-radius:12px;font-size:11px}
   .letter-hero,.entry-intro {border-radius:16px}
-  .letter-hero {min-height:244px;padding:20px}
+  .letter-hero {padding:20px}
   .letter-hero::before,.entry-intro::before {background:linear-gradient(90deg,#f8e7deea 0%,#f9e7ded4 32%,#f7e5db9e 54%,#f6e4d919 83%),linear-gradient(0deg,#f3dfd7aa,transparent 40%),var(--letter-scene) 66% center/cover no-repeat}
   .letter-copy {max-width:93%}
   .letter-hero h1 {font-size:clamp(25px,6.8vw,34px);margin:15px 0;line-height:1.4}
-  .letter-date,.letter-actions a {font-size:12px}
+  .letter-date {font-size:12px}
   .letter-date time {font-size:11px}
-  .saved-line {font-size:12px;max-width:74%}
-  .letter-actions {gap:9px}.letter-actions .primary {padding:8px 13px}
+  .letter-copy .primary {padding:8px 13px}
   .today-rail {display:none}
   .mobile-near {display:flex;margin:7px 0 0 auto;min-height:34px;padding:5px 10px;border-radius:18px;background:#e7eddf;color:var(--sage);font-size:12px;font-weight:650}
   .today-columns {display:block;margin-top:16px}

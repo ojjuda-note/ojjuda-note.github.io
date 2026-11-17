@@ -230,6 +230,9 @@ function clientFixture(hash) {
       const box=await mast.boundingBox();assert.ok(box && box.y>=0 && box.y<65,'Agit exit stays in the viewport');
       assert.equal(await mast.getAttribute('href'),'/world.html');
     };
+    const questionCard=page.locator('.letter-hero');
+    await questionCard.getByRole('heading',{level:1}).waitFor();
+    assert.equal(await questionCard.locator('p,a,button').count(),0,'an answered card shows only the date and question');
     await nav.waitFor();assert.equal(await nav.getByRole('link').count(),3);
     assert.deepEqual(await nav.getByRole('link').allTextContents(),['오늘','마음함','내 파장']);
     await expectHome();
