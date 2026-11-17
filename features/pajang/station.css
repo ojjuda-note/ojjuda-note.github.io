@@ -191,3 +191,54 @@
 .discovery-visibility-control input:disabled{opacity:.6;cursor:default}
 .discovery-visibility-control input:focus-visible{outline:3px solid var(--purple);outline-offset:2px}
 .discovery-visibility-panel p{margin:6px 0 0;color:var(--muted);font-size:12px;line-height:1.6}
+
+/* Shared frame for the five member destinations. */
+.station-layout{width:min(1180px,calc(100% - 40px));margin:0 auto;display:grid;grid-template-columns:164px minmax(0,1fr);gap:clamp(24px,4vw,60px);align-items:start}
+.station-content.wrap{width:100%;min-width:0;min-height:calc(100dvh - 62px);margin:0;padding:26px 0 36px}
+.station-nav{position:sticky;top:calc(80px + env(safe-area-inset-top));display:grid;gap:4px;padding:5px 10px 12px 0;border-right:1px solid var(--line)}
+.station-nav a{display:flex;align-items:center;gap:13px;padding:13px 14px;border-radius:9px;color:#706772;font-size:14px;font-weight:650;line-height:1.25;text-decoration:none}
+.station-nav a[aria-current=page]{background:#e9e0ef;color:#4e345e}
+.station-nav-icon{position:relative;display:grid;place-items:center}
+.station-nav-icon i{position:absolute;right:-4px;top:-2px;width:6px;height:6px;border-radius:50%;background:#ce591f}
+.station-nav a:focus-visible{outline-offset:-3px}
+.station-content .innerpage,.station-content .nearby-section{width:100%;max-width:100%;margin:0 auto}
+.station-content .pagetitle,.nearby-heading{margin-bottom:6px}
+.station-content .hero{background:linear-gradient(110deg,#f1e8f7,#dfd2f2 69%,#d9c9ef);border:1px solid #cfc1dc}
+.station-content .heroart{background:transparent}
+.station-content .heroart:empty{background:repeating-radial-gradient(ellipse at 87% 68%,transparent 0 21px,#8b659429 22px 23px,transparent 24px 43px);opacity:.55}
+.station-content .herobtn{width:fit-content}
+.station-content .herofoot{background:#f3edf7}
+.station-content #answers{scroll-margin-top:calc(74px + env(safe-area-inset-top))}
+.station-content .listbox{margin-top:14px}
+.station-content .innerpage>.sub{margin-bottom:18px}
+.station-account .account-summary,.account-section{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-top:14px}
+.account-summary{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.account-summary .avatar{width:48px;height:48px}
+.account-summary h2,.account-section h2{margin:0;color:var(--ink);font-size:18px;line-height:1.4}
+.account-summary p,.account-section>p{margin:5px 0;color:var(--muted);font-size:14px}
+.account-summary button{margin-inline-start:auto}
+.account-section .account-answer{color:var(--ink);font-size:17px;white-space:pre-wrap;overflow-wrap:anywhere}
+.account-section .settings{margin-bottom:0}
+.account-section .discovery-visibility-panel{border:0;margin:6px 0 0;padding:0}
+.account-tools,.sheet-bar{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.account-tools{margin:12px 0}
+.sheet-bar{position:sticky;top:-1px;z-index:2;background:#fdfcf9;border-bottom:1px solid var(--line);padding:6px 0;margin:0 0 16px}
+.dialog:has(.sheet-bar){padding-top:0}
+.sheet-bar a{background:#f3eef5;border-color:#d6cadb;color:#493651;font-size:13px;min-height:36px}
+.sheet-bar .iconbtn{width:40px;height:40px}
+@media(hover:hover){.station-nav a:hover{background:#f0eaf3;color:#45364c}}
+@media(max-width:760px){
+  .station-layout{display:block;width:calc(100% - 32px)}
+  .station-content.wrap{padding:16px 0 calc(80px + env(safe-area-inset-bottom));min-height:calc(100dvh - 55px)}
+  .station-nav{position:fixed;z-index:7;inset:auto 0 0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:5px max(6px,env(safe-area-inset-right)) calc(5px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));border:0;border-top:1px solid var(--line);background:#fffefa}
+  .station-nav a{flex-direction:column;justify-content:center;gap:3px;min-height:46px;padding:3px 1px;font-size:11px}
+  .station-content .hero{min-height:0}
+  .station-content .herocopy{width:100%;padding:19px 18px 16px}
+  .station-content .hero h1{font-size:clamp(23px,5.7vw,31px);margin:11px 0 6px;max-width:95%}
+  .station-content .herocopy>p{max-width:77%}
+  .station-content .herobtn{margin-top:16px}
+  .station-content .heroart{width:27%;height:37%;top:auto;bottom:32px;right:0}
+  .station-content .herofoot{height:32px}
+  .station-content #answers{scroll-margin-top:calc(63px + env(safe-area-inset-top))}
+  .station-content .chatlog{height:clamp(150px,38dvh,500px)}
+}
