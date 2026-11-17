@@ -139,11 +139,15 @@
         '반딧불이', '물개', '해달', '바다사자', '해마', '불가사리', '문어', '오징어',
         '복어', '금붕어', '잉어', '가오리', '새우', '가재', '게', '청설모'
       ];
-      const random = new Uint8Array(3);
+      const firstWords = [...actions, ...things];
+      const secondWords = [...animals, ...things];
+      const random = new Uint8Array(2);
       if (window.crypto?.getRandomValues) window.crypto.getRandomValues(random);
       else for (let i = 0; i < random.length; i++) random[i] = Math.floor(Math.random() * 256);
-      signupNickname = actions[random[0] % actions.length]
-        + things[random[1] % things.length] + animals[random[2] % animals.length];
+      const first = firstWords[random[0] % firstWords.length];
+      let secondIndex = random[1] % secondWords.length;
+      if (first === secondWords[secondIndex]) secondIndex = (secondIndex + 1) % secondWords.length;
+      signupNickname = first + secondWords[secondIndex];
       generatedSignupNickname = signupNickname;
     }
     nickname.value = signupNickname;

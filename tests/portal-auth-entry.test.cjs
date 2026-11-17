@@ -141,7 +141,14 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     });
     await generated.flush();
     assert.match(generated.element('nickname').value, /^[가-힣]{3,12}$/, 'generated name fits the signup field');
-    if (byte === 0) assert.equal(generated.element('nickname').value, '노래하는딸기고래');
+    if (byte === 0) assert.equal(generated.element('nickname').value, '노래하는고래');
+  }
+  for (const [first, second, name] of [[32,1,'딸기토끼'],[57,2,'우산여우'],[1,64,'춤추는딸기']]) {
+    const generated = setup('?auth=signup', {
+      crypto: { getRandomValues(bytes) { assert.equal(bytes.length,2); bytes.set([first,second]); return bytes; } }
+    });
+    await generated.flush(); generated.fill(); await generated.submit();
+    assert.equal(generated.signups[0].options.data.nickname,name,'signup combines exactly two words');
   }
   const fallback = setup('?auth=signup', {crypto:null});
   await fallback.flush(); fallback.fill(); await fallback.submit();
