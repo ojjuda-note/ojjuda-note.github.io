@@ -1,5 +1,22 @@
-export function openPajang(launch) {
-  if (document.querySelector('dialog.agit-pajang-dialog[open]')) return;
+import {call, client} from './member.mjs?v=3';
+let checking = false;
+export async function openPajang(launch) {
+  if (checking || document.querySelector('dialog.agit-pajang-dialog[open]')) return;
+  checking = true;
+  launch.setAttribute('aria-busy', 'true');
+  try {
+    const db = await client();
+    const {data} = await db.auth.getSession();
+    if (data.session && !data.session.user.is_anonymous && (await call('entry')).body) {
+      window.location.assign('/features/pajang/station.html');
+      return;
+    }
+  } catch {
+    // The embedded entry can retry the check and display the site's sign-in or error screen.
+  } finally {
+    checking = false;
+    launch.removeAttribute('aria-busy');
+  }
   const dialog = document.createElement('dialog');
   dialog.className = 'agit-pajang-dialog';
   dialog.setAttribute('aria-labelledby','pajang-dialog-heading');
@@ -16,7 +33,7 @@ export function openPajang(launch) {
   bar.append(heading, close);
   const frame = document.createElement('iframe');
   frame.title = '파장 회원 전용 소개팅';
-  frame.src = '/features/pajang/?embed=1&v=20261117-full1';
+  frame.src = '/features/pajang/?embed=1&v=rounds1';
   frame.allow = "accelerometer 'self'; gyroscope 'self'; magnetometer 'self'";
   dialog.append(bar, frame);
   document.body.append(dialog);
