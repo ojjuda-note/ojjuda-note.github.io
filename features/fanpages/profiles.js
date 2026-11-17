@@ -66,7 +66,7 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   aespa: {
-    checkedAt: '2026.11.15',
+    checkedAt: '2026.11.17',
     debut: '2020.11.17', debutWork: 'Black Mamba',
     agency: 'SM Entertainment',
     concept: '현실과 가상 세계를 잇는 aespa.',
