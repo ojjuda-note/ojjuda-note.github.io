@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Extract reusable headwords only; source examples/definitions are not distributed."""
-import concurrent.futures, hashlib, json, re, sys, urllib.request, xml.etree.ElementTree as ET
+import concurrent.futures, hashlib, json, re, sys, time, urllib.request, xml.etree.ElementTree as ET
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 REV='42c0d01889f34536e9cf94fe57f62bd2055b1bde'
@@ -14,7 +14,14 @@ unsafe=re.compile('씨발|시발|씨팔|씹|개새끼|병신|좆|자지|보지|�
 def extract(f):
     dest=cache/f['name']
     if not dest.exists():
-        with urllib.request.urlopen(BASE+f['name'],timeout=60) as response: dest.write_bytes(response.read())
+        for attempt in range(3):
+            try:
+                with urllib.request.urlopen(BASE+f['name'],timeout=45) as response: raw=response.read()
+                dest.write_bytes(raw)
+                break
+            except (OSError,TimeoutError):
+                if attempt==2: raise
+                time.sleep(attempt+1)
     raw=dest.read_bytes()
     git_hash=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
     if git_hash!=f['sha']: raise ValueError('Source hash mismatch: '+f['name'])
@@ -32,7 +39,7 @@ def extract(f):
         item.clear()
     return words,blocked
 words=set();blocked=set()
-with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:
+with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
     for i,(new,denied) in enumerate(pool.map(extract,files),1):
         words.update(new);blocked.update(denied)
         if i%10==0 or i==len(files): print(f'Extracted {i}/{len(files)} dictionary shards',flush=True)
