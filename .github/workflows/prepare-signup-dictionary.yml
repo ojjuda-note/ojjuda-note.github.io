@@ -1,0 +1,29 @@
+name: Prepare verified signup dictionary
+on:
+  push:
+    branches: [work/signup-dictionary-artifact]
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Build the pinned public dictionary
+        run: python3 scripts/build-signup-dictionary.py "$RUNNER_TEMP/dictionary-source"
+      - name: Verify and store one Git blob
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(git hash-object data/signup-nicknames/words.txt)" = 304e9f7e14e198c3ef8d3084e8f5284c6e3dbb8d
+          python3 - <<'PY'
+          import json, pathlib, os
+          words=pathlib.Path('data/signup-nicknames/words.txt').read_text()
+          pathlib.Path(os.environ['RUNNER_TEMP'],'blob.json').write_text(json.dumps({'content':words,'encoding':'utf-8'}))
+          PY
+          blob=$(gh api --method POST "repos/$GITHUB_REPOSITORY/git/blobs" --input "$RUNNER_TEMP/blob.json" --jq .sha)
+          test "$blob" = 304e9f7e14e198c3ef8d3084e8f5284c6e3dbb8d
+          echo "NICKNAME_DICTIONARY_BLOB=$blob"

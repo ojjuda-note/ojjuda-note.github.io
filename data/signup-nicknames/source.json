@@ -1,0 +1,13 @@
+{
+  "source": "국립국어원 표준국어대사전",
+  "dictionary_url": "https://stdict.korean.go.kr/",
+  "mirror": "https://github.com/spellcheck-ko/korean-dict-nikl",
+  "revision": "42c0d01889f34536e9cf94fe57f62bd2055b1bde",
+  "snapshot_date": "2026-06-05",
+  "license": "CC-BY-SA-2.0-KR",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0/kr/",
+  "filter": "한글 1~5음절 명사, 단어 항목만; 붙임표 제거, 중복·인명·지명·비하/욕설/성적 표현 제외. 정의와 예문은 배포하지 않음. 서버 금칙어 검사를 추가 적용.",
+  "word_count": 167455,
+  "ordered_distinct_pairs": 28041009570,
+  "sha256": "cf320cf43fbe5a167b528c7112bfe6220290d8ab62cb0356305a8aece3accfdb"
+}
