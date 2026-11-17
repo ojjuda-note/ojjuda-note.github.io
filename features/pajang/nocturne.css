@@ -15,7 +15,7 @@ body{min-height:100dvh;background:radial-gradient(ellipse 70% 480px at 76% 0%,#3
 select option{background:#231e2c;color:var(--ink)}
 input,select,textarea{accent-color:#ccabe0}
 ::placeholder{color:#a69aad;opacity:1}
-.pajang-mast{background:#14111cf5;border-bottom:1px solid #3e3242;backdrop-filter:blur(14px);view-transition-name:pajang-mast}
+.pajang-mast{background:#14111cf5;border-bottom:1px solid #3e3242;backdrop-filter:blur(14px)}
 .pajang-mast .agit-return,.sheet-bar a{background:transparent;border:1px solid #554557;border-radius:24px;color:#efe2eb;padding-inline:12px;font-size:13px}
 .pajang-mast .agit-return:hover,.sheet-bar a:hover{background:#302636}
 .pajang-signature{gap:9px;color:#f4e8ef;font-family:var(--serif);font-weight:650;letter-spacing:.02em}
@@ -156,8 +156,6 @@ input,select,textarea{accent-color:#ccabe0}
 .actions .cancel-form{background:transparent;color:var(--muted)}
 @keyframes pajang-arrive{from{opacity:.65;transform:translateY(4px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:no-preference){
-  @view-transition{navigation:auto}
-  ::view-transition-old(root),::view-transition-new(root){animation-duration:.16s}
   .station-content>.innerpage,.station-content>.nearby-section,.today-page:not([hidden]),#welcome:not([hidden]),.dialog[open]{animation:pajang-arrive .19s ease-out both}
 }
 @media(max-width:760px){
@@ -166,7 +164,7 @@ input,select,textarea{accent-color:#ccabe0}
   .station-nav a[aria-current=page]{background:#342a3a;color:#f4d5bd}
   .station-content .herocopy{width:100%;padding:20px 21px 24px}
   .station-content .heroart{inset:0 0 auto auto;width:100%;height:222px;mask-image:linear-gradient(0deg,transparent,#000 29%)}
-  .station-content .heroart::before{background-position:center 52%}
+  .station-content .heroart::before{background-size:auto 100%;background-position:right top}
   .station-content .heroart::after{background:linear-gradient(90deg,#201727ab,transparent 55%),linear-gradient(0deg,#291e31,transparent 48%)}
   .station-content .hero{background:linear-gradient(140deg,#211727,#2b2033 70%,#251b2b)}
   .station-content .hero h1{font-size:clamp(26px,6vw,36px);line-height:1.37;margin:clamp(83px,22vw,112px) 0 8px;max-width:100%}

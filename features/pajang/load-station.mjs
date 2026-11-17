@@ -38,7 +38,16 @@ export async function mountStation(beforeMount){
     const welcome=document.getElementById('welcome');
     if(welcome)welcome.hidden=true;
     document.getElementById('gate').hidden=true;
-    document.getElementById('station').hidden=false;
+    const root=document.getElementById('station');
+    root.hidden=false;
+    requestAnimationFrame(()=>{
+      const answers=location.hash==='#answers' ? document.getElementById('answers') : null;
+      if(answers)answers.scrollIntoView({block:'start'});
+      if(welcome){
+        const heading=answers?.querySelector('h2') || root.querySelector('main h1');
+        if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}
+      }
+    });
     window.addEventListener('pagehide',event=>{if(!event.persisted)dispose();},{once:true});
     for(const [name,hash] of Object.entries(release.files)){
       if(!name.endsWith('.webp'))continue;

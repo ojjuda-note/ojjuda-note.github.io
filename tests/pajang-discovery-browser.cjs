@@ -70,8 +70,9 @@ function clientFixture(hash) {
     await page.route(origin+'/**',async route=>{
       const pathname=new URL(route.request().url()).pathname;
       if(pathname==='/config.js')return route.fulfill({contentType:'text/javascript',body:clientFixture(hash)});
+      if(pathname==='/features/home/agit-hub.css')return route.fulfill({contentType:'text/css',body:await fs.readFile(path.join(feature,'../home/agit-hub.css'))});
       if(pathname==='/program')return route.fulfill({contentType:'application/javascript',body:bundle});
-      if(pathname==='/world.html')return route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="ko"><meta charset="utf-8"><title>아지트</title><script src="/config.js"></script><button data-pajang-launch>파장 열기</button><script type="module">import {openPajang} from "/features/pajang/dialog.mjs";document.querySelector("button").onclick=e=>openPajang(e.currentTarget);</script></html>'});
+      if(pathname==='/world.html')return route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/features/home/agit-hub.css"><title>아지트</title><script src="/config.js"></script><button data-pajang-launch>파장 열기</button><script type="module">import {openPajang} from "/features/pajang/dialog.mjs";document.querySelector("button").onclick=e=>openPajang(e.currentTarget);</script></html>'});
       const file=pathname.slice(project.length)||'index.html';
       if(!['station.html','station.css','member.mjs','member-main.mjs','load-station.mjs','nocturne.css','dialog-surface.css','assets/favicon.svg','shell.css','shell.mjs','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
       const mime={html:'text/html',css:'text/css',mjs:'text/javascript',json:'application/json',svg:'image/svg+xml'}[path.extname(file).slice(1)];
@@ -143,7 +144,13 @@ function clientFixture(hash) {
       await page.screenshot({path:path.join(dir,'pajang-'+name+'.png'),animations:'disabled'});
     };
     await cards.first().waitFor();
-    await page.screenshot({path:path.join(dir,'pajang-home-mobile.png'),animations:'disabled'});
+    await page.evaluate(async()=>{
+      const css=getComputedStyle(document.documentElement).getPropertyValue('--night-scene');
+      const scene=new Image();
+      scene.src=css.trim().slice(5,-2);
+      await scene.decode();
+    });
+    await capture('home-mobile');
     await radio('female').tap();await cards.filter({hasText:rows[1].body}).waitFor();
     await answers.locator('article').first().scrollIntoViewIfNeeded();await expectHome();
     const readingY=await page.evaluate(()=>scrollY);
