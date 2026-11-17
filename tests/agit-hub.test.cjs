@@ -53,6 +53,7 @@ test('real visits and all five missions persist independently of game preview',a
     const staleCloud=JSON.stringify(model.settings),host={outerHTML:''},input={value:'',focus(){}};
     let instant='2026-11-13T03:03:00Z',localWrites=0,cloudWrites=0,savedCloud,parkOptions;
     const context={
+      sectionReleases:{park:JSON.parse(fs.readFileSync(path.join(__dirname,'../park/version.json'),'utf8'))},
       Date:class extends Date{constructor(...args){super(...(args.length?args:[instant]));}},
       window:{OjjudaAdminPreview:{isEnabled:()=>preview},OjjudaParkNotes:{install(options){parkOptions=options;return{open:mode=>parkOpens.push(mode)};}}},
       D:{online:true,user:{id:'member-a'}},$:model,pi:model,g:{tab:'hub'},_r:{spot:{name:'틀린그림찾기'},group:{name:'그룹',test:true}},

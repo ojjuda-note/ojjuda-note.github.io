@@ -238,7 +238,7 @@ test('local bottle keeps each numbered place through replay, seat edits and host
 test('the local primary back link restores the game menu and cancels a running stopwatch', async t => {
   const pendingFrames=new Set(),cancelledFrames=new Set();
   const release=JSON.parse(fs.readFileSync(path.join(root,'game-release.json'),'utf8'));
-  const f=await screen({url:'/games/drinking/local/#menu',prepare(w){
+  const f=await screen({url:'/games/drinking/local/?v='+encodeURIComponent(release.revision)+'#menu',prepare(w){
     w.scrollTo=()=>{};
     w.localStorage.setItem('oj.party.member-a.players',JSON.stringify(['하나','둘']));
     w.fetch=async url=>{

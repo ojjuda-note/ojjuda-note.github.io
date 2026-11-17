@@ -4,7 +4,7 @@ const $=selector=>document.querySelector(selector);
 const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
 const turnOrderKey=playerKey+'.turnOrder';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261117-truth-three-laps1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261117-drinking-menu-focus1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -317,7 +317,18 @@ function route(){let id=location.hash.slice(1);if(id==='jenga'){
   if(id==='participants'){
     history.replaceState(null,'','#menu');game=null;renderMenu();scrollTo(0,0);playerSettings();return;
   }
-  game=games.find(g=>g.id===id)||null;game?intro():renderMenu();scrollTo(0,0);if(game)app.focus({preventScroll:true});else if(lastMenuFocus){app.querySelector('[data-action="open"][data-value="'+lastMenuFocus+'"]')?.focus({preventScroll:true})}}
+  game=games.find(g=>g.id===id)||null;
+  if(game){
+    lastMenuFocus=game.id;
+    intro();
+    scrollTo(0,0);
+    app.focus({preventScroll:true});
+  }else{
+    renderMenu();
+    scrollTo(0,0);
+    if(lastMenuFocus)app.querySelector('[data-action="open"][data-value="'+lastMenuFocus+'"]')?.focus({preventScroll:true});
+  }
+}
 function go(id){if(id===location.hash.slice(1))route();else location.hash=id}
 async function openLocal(id){
   const refresh=window.OjjudaDrinkingEntry;
@@ -1177,7 +1188,7 @@ $('#audio-check').onchange=e=>fx.change('sound',e.target.checked);$('#haptic-che
 function handle(action,value){
   const r=round;
   if(action==='filter'){filter=value;fx.play('tap');renderMenu();app.querySelector('.chip[aria-pressed=true]').focus({preventScroll:true});return}
-  if(action==='random'||action==='open'){const eligible=games.filter(g=>g.min<=players.length);const id=action==='random'?eligible[rand(eligible.length)].id:value;lastMenuFocus=id;fx.play(id==='croc'?'tooth':'tap');return openLocal(id)}
+  if(action==='random'||action==='open'){const eligible=games.filter(g=>g.min<=players.length);const id=action==='random'?eligible[rand(eligible.length)].id:value;fx.play(id==='croc'?'tooth':'tap');return openLocal(id)}
   if(game?.id==='shapematch'&&action==='shape-go')return shapeGo();
   if(game?.id==='shapematch'&&action==='shape-next')return nextShape();
   if(game?.id==='bomb'){

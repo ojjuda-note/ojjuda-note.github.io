@@ -106,5 +106,16 @@ test('the config client helper coalesces concurrent SDK requests and reuses an e
   assert.equal(await second,client);
   assert.equal(await window.OjjudaGetClient(),client);
   assert.equal(creations,1);
-  assert.match(scripts.find(script=>script.src.includes('member-navigation')).src,/20261113-biorhythm-paid1/);
+  assert.match(scripts.find(script=>script.src.includes('member-navigation')).src,/20261117-page-keys1/);
+});
+
+
+test('known pages use server-valid keys and unknown links do not enter member history', async () => {
+  for (const [path, title] of [['/', '오쭈다 대문'], ['/guide.html', '이용 안내'], ['/admin/', '관리자 모드'], ['/features/guide/creator.html', '오쭈다 소개']]) {
+    const f = await harness(true, true, {path:path + '?next=private'});
+    assert.deepEqual(f.events[0].payload, {p_kind:'page', p_key:'page:' + path, p_title:title});
+    assert.match(f.events[0].payload.p_key, /^[a-z0-9][a-z0-9_./:-]{0,119}$/);
+    click(f.listeners, null, 'https://ojjuda.kr/unknown/private-id');
+    assert.equal(f.events.length, 1);
+  }
 });

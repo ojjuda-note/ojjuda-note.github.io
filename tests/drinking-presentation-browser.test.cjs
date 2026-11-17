@@ -355,7 +355,8 @@ test('13 native games and 13 local games fill actual viewports and return to the
   await online.context.close();
 
   const local=await browserSession(browser,{db,actor:db.users[12],errors,localPlayers:db.names.slice(0,12)});
-  await local.page.goto(origin+'/games/drinking/local/#menu');
+  // The first choice reloads this older menu. Focus must survive the new document.
+  await local.page.goto(origin+'/games/drinking/local/?v=20250101-old#menu');
   await local.page.locator('.game-card').first().waitFor({state:'visible'});
   assert.equal(await local.page.locator('body.dp-playing').count(),0,'the local game menu keeps its original layout');
   assert.equal(await local.page.locator('[data-drinking-dialog]').count(),0);

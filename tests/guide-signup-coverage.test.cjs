@@ -18,9 +18,9 @@ for (const id of sections) {
 }
 
 const cards = [...guide.matchAll(/<details class="game-card" id="([^"]+)" data-game>/g)];
-assert.equal(cards.length, 22, 'all 22 current game guides');
+assert.equal(cards.length, 24, 'all 24 current game guides');
 assert.equal(new Set(cards.map(match => match[1])).size, cards.length, 'unique game guide IDs');
-for (const id of ['game-chacha', 'game-solitaire', 'game-archery', 'game-sacheonseong', 'game-bang']) {
+for (const id of ['game-chacha', 'game-solitaire', 'game-archery', 'game-sacheonseong', 'game-bang', 'game-yut', 'game-roulette']) {
   assert.ok(cards.some(match => match[1] === id), id + ' help is present');
 }
 for (const match of guide.matchAll(/<summary><img src="(\/assets\/design\/games\/[^"]+)"/g)) {
@@ -41,4 +41,4 @@ assert.match(terms, /그룹의 글·일정·댓글·사진·동영상/, 'terms c
 assert.match(terms, /행사·맛집 안내/, 'terms cover event and restaurant guide');
 assert.match(terms, /datetime="2026-11-20"/, 'planned policy effective date is unchanged');
 
-console.log('PASS: 22 game guides, account and discovery links, guest signup CTA, cache/version sync and current policy scope');
+console.log('PASS: 24 game guides, account and discovery links, guest signup CTA, cache/version sync and current policy scope');
