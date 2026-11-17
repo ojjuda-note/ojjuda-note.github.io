@@ -72,6 +72,18 @@ const button=(game)=>`<button class="gbtn" ${game==='matgo'?'data-act="matgo-ope
   clock=Date.parse('2026-11-16T17:58:43+09:00')+month;await w.OjjudaArcadePromotions.refresh(true);
   assert.equal(badge('yut'),undefined,'Yut uses its original release date, independent of patches');
   assert.ok([...w.document.querySelectorAll('.gbtn')].every(b=>b.querySelectorAll('.arcade-badge').length<=1));
+  const beforeSaves=calls;
+  for(let i=0;i<10;i++){
+   clock+=1000;w.dispatchEvent(new w.Event('ojjuda:game-record-saved'));await delay();
+  }
+  console.log('automatic popularity reads for ten saves in ten seconds after a fresh read:',calls-beforeSaves);
+  assert.equal(calls,beforeSaves,'rapid saves reuse the public ranking and leave it marked for refresh');
+  let hidden=true;
+  Object.defineProperty(w.document,'hidden',{configurable:true,get:()=>hidden});
+  clock+=60000;w.dispatchEvent(new w.Event('ojjuda:game-record-saved'));await delay();
+  assert.equal(calls,beforeSaves,'a hidden tab defers the ranking read');
+  hidden=false;w.document.dispatchEvent(new w.Event('visibilitychange'));await delay();
+  assert.equal(calls,beforeSaves+1,'the first visible read picks up all saved records');
   console.log('PASS: recorded top threes, fixed adult popular pair, new badge precedence, access removal/reinsertion, exact expiry, focus, ties and cache');
  }finally{observers.forEach(o=>o.disconnect());await delay();w.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
