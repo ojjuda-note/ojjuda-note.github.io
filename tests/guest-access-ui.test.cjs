@@ -2,11 +2,11 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),root=path.join(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p),'utf8'),origin='https://guest-access.test';
 const strip=html=>html.replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'');
 let world=strip(read('world.html')).replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
-const helpers=['shared/games/game-session.js','app/world/world-navigation.js','shared/auth/guest-access.js','shared/games/game-results.js','park/world-park-notes.js','games/mines/world-mines-game.js','games/saetbyeol/world-saetbyeol-game.js','games/ojjuda-tour/world-tour-game.js','games/tank/world-tank-game.js','games/spot-difference/world-spot-game.js','games/ttang/ttang-bridge.js'].map(read).join('\n');
+const helpers=['shared/games/game-session.js','shared/games/arcade-round-queue.js','shared/games/puzzle-record-queue.js','app/world/world-navigation.js','shared/auth/guest-access.js','shared/games/game-results.js','park/world-park-notes.js','games/mines/world-mines-game.js','games/saetbyeol/world-saetbyeol-game.js','games/ojjuda-tour/world-tour-game.js','games/tank/world-tank-game.js','games/spot-difference/world-spot-game.js','games/ttang/ttang-bridge.js'].map(read).join('\n');
 world=world.replace('<script type="module">',()=>`<script>${helpers}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`window.guestFixture={open:Al,close:El,finish:score=>S2(score),board:(kind)=>savePracticeStreak({kind,mode:'local'},'draw'),member:()=>{D.online=true;D.parkGuest=false;D.user={id:'member'};},park:()=>sr.tab({tab:'park'})};
-window.OjjudaGuestScores={submit:async()=>({ok:false}),ranking:async()=>[]};
+window.OjjudaGuestScores={roundIdentity:()=>'guest:fixture',submitArcadeRound:async()=>({ok:false,reason:'invalid'}),submit:async()=>({ok:false}),ranking:async()=>[]};
 gm(()=>sr.tab({tab:'arcade'}));enterWorldGuest(()=>{g.tab='arcade';H()});`+world.slice(world.indexOf('</script>',boot));
 const note=read('note/preview.js'),noteBoot=note.lastIndexOf('\nif (client) {\n  client.auth.onAuthStateChange');assert.ok(noteBoot>0);
 const portal=read('index.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>/portal\.js|signup-identity\.js|signup-referral\.js|config\.js/.test(tag)?tag:'');

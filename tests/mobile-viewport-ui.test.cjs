@@ -130,11 +130,12 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
           await page.locator('.modal').evaluate(node => node.scrollTop = node.scrollHeight);
           await assertInside(page, page.locator('#modal-save'), area, 'world modal save');
           await page.evaluate(() => document.querySelector('#modal-root').innerHTML='');
+          await page.addScriptTag({content:read('shared/games/puzzle-record-queue.js')});
           await page.addScriptTag({content:read('games/spot-difference/world-spot-game.js')});
           await page.evaluate(() => OjjudaSpotGame.open());
           const frame = await page.locator('.spot-game-dialog iframe').boundingBox();
           assert.ok(frame.y + frame.height <= viewport.height-48+1, 'embedded game stays above system navigation');
-          await page.locator('.spot-game-header button').click();
+          await page.locator('.spot-game-header .arcade-return').click();
 
         }
         if (process.env.MOBILE_VIEWPORT_QA_DIR) {

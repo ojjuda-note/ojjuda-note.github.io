@@ -4,7 +4,7 @@ const root=path.join(__dirname,'..');
 const engine=fs.readFileSync(path.join(root,'games/breakout/breakout-game.js'),'utf8').replace('    return game;',`    game.inspect=()=>({balls,bricks,drops,paddle,waiting,finished,completed,lives,score,level,speed});
     return game;`);
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
- .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>(s.includes('/shared/games/world-game-assets.js')||s.includes('/shared/games/game-entry.js')||s.includes('/shared/games/game-results.js'))?s:'')
+ .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>(s.includes('/shared/games/arcade-round-queue.js')||s.includes('/shared/games/world-game-assets.js')||s.includes('/shared/games/game-entry.js')||s.includes('/shared/games/game-results.js'))?s:'')
  .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
 world=world.replace('</head>','<style>@font-face{font-family:"Gowun Dodum";src:url("/qa-font.ttf")}</style></head>');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
@@ -47,13 +47,22 @@ window.breakoutTest={
  }
 };
 for(const [method,kind] of [['arcadeTap','tap'],['arcadeHit','hit'],['arcadeBonus','bonus'],['arcadeBad','bad']])gt[method]=()=>breakoutTest.audio.push(kind);
-// Keep the real World lifecycle; only the score transport is held for race checks.
-tf=async(game,score)=>{
- breakoutTest.records.push({game,score});
- if(breakoutTest.holdRecords)await new Promise(resolve=>breakoutTest.pendingRecords.push(resolve));
- return {ok:true,best:score};
-};
+// Exercise the shipped queue, including its owner, round ID and completion date.
+// Only the member transport is held for the restart and close race checks.
 g.tab='friends';H();
+const breakoutMember='10000000-0000-4000-8000-000000000001';
+D.online=true;D.user={id:breakoutMember};
+S={rpc(name,args){
+ const reply=async()=>{
+  if(name!=='submit_arcade_round')return {data:[]};
+  if(args.p_expected_owner!==breakoutMember||args.p_guest_token!==null||!Number.isFinite(Date.parse(args.p_finished_at)))throw Error('incorrect arcade round identity or date');
+  if(!/^[0-9a-f-]{36}$/i.test(args.p_round_id))throw Error('missing arcade round UUID');
+  breakoutTest.records.push({game:args.p_game,score:args.p_score});
+  if(breakoutTest.holdRecords)await new Promise(resolve=>breakoutTest.pendingRecords.push(resolve));
+  return {data:{ok:true,best:args.p_score,reward:0}};
+ };
+ const response=reply();response.abortSignal=()=>response;return response;
+}};
 `+world.slice(world.indexOf('</script>',boot));
 
 (async()=>{

@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261117-arcade-score-repair1'
+ const revision='20261117-arcade-score-repair2'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -47,7 +47,7 @@
   runner:'3.4.2',
   stacker:'1.6.2',
   breakout:'1.8.2',
-  spot:'1.14.2',
+  spot:'1.14.3',
   screw:'2.24.1',
   janggi:'1.14.3',
   chess:'1.5.1',
@@ -79,9 +79,9 @@
   mines:['/shared/games/world-tour-game.css?v=20261106-source-folders1',minesRules,'/games/mines/world-mines-game.js?v=20261117-arcade-score-repair1'],
   saetbyeol:['/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/saetbyeol/world-saetbyeol-game.js?v=20261117-saetbyeol-legacy-food1'],
   tour:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/ojjuda-tour/world-tour-game.js?v=20261113-game-popup-order1'],
-  spot:['/shared/games/puzzle-record-queue.js?v=20261117-arcade-score-repair1','/games/spot-difference/world-spot-game.css?v=20261106-source-folders1','/games/spot-difference/world-spot-game.js?v=20261117-arcade-score-repair1'],
+  spot:['/shared/games/puzzle-record-queue.js?v=20261117-arcade-score-repair2','/games/spot-difference/world-spot-game.css?v=20261106-source-folders1','/games/spot-difference/world-spot-game.js?v=20261117-arcade-score-repair2'],
   ttang:['/games/ttang/ttang-bridge.js?v=20261113-game-popup-order1'],
-  photo_ttang:['/shared/games/puzzle-record-queue.js?v=20261117-arcade-score-repair1','/games/photo-ttang/photo-ttang-access.js?v=20261113-game-popup-order1','/games/photo-ttang/photo-ttang-ranking.js?v=20261117-arcade-score-repair1','/games/photo-ttang/photo-ttang-bridge.js?v=20261117-arcade-score-repair1'],
+  photo_ttang:['/shared/games/puzzle-record-queue.js?v=20261117-arcade-score-repair2','/games/photo-ttang/photo-ttang-access.js?v=20261113-game-popup-order1','/games/photo-ttang/photo-ttang-ranking.js?v=20261117-arcade-score-repair1','/games/photo-ttang/photo-ttang-bridge.js?v=20261117-arcade-score-repair1'],
   mole:[moleRanking,...controls,'/games/mole/mole-game.css?v=20261108-mole-grids1','/games/mole/mole-game.js?v=20261117-arcade-score-repair1'],
   runner:[...controls,'/games/runner/runner-game.css?v=20261110-runner-seahorse-v3-1','/games/runner/runner-game.js?v=20261111-runner-inset1'],
   breakout:[...controls,'/games/breakout/breakout-game.css?v=20261106-source-folders1','/games/breakout/breakout-game.js?v=20261110-admin-game-preview1'],

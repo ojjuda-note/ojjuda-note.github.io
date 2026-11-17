@@ -111,3 +111,14 @@ for(const order of [['restaurants','recommendations'],['recommendations','restau
   assert.equal(f.timers.size,0);
  });
 }
+
+test('the World waits for the shared score queue before opening either picture game',async()=>{
+ const f=fixture(),spot=f.api.load('spot'),photo=f.api.load('photo_ttang');
+ const queues=f.nodes.filter(node=>node.src?.startsWith('/shared/games/puzzle-record-queue.js?'));
+ assert.equal(queues.length,1);
+ for(const node of f.nodes)if(node!==queues[0])node.onload();
+ await flush();
+ assert.equal(f.api.ready('spot'),false);assert.equal(f.api.ready('photo_ttang'),false);
+ queues[0].onload();await Promise.all([spot,photo]);
+ assert.equal(f.api.ready('spot'),true);assert.equal(f.api.ready('photo_ttang'),true);
+});
