@@ -1,12 +1,11 @@
 /* Park has its own document, but shares the World design tokens and theme. */
-:root { --park-card-ratio: 1 / 1; --park-card-max-width: 600px; }
+:root { --park-card-ratio: 1 / 1; }
 html,body{background:var(--bg);color:var(--ink);font-family:var(--font-b)}
-html body .shell > .col > .main { width: min(100%, 1268px); }
+html body .shell > .col > .main { width: min(100%, calc(2 * var(--park-card-max-width) + var(--park-grid-gap) + 48px)); }
 
-.feed-layout{width:100%;max-width:none}.note-collection-tabs{gap:8px!important;margin:0 0 18px!important;padding:0 0 14px!important;border:0!important;border-bottom:1px solid var(--line)!important;background:none!important;border-radius:0!important}.note-collection-tabs button{border:0!important;border-radius:9px!important;font:500 13px var(--font-b)!important;min-height:40px!important;padding:9px 16px!important;background:transparent!important;color:var(--ink-2)!important}.note-collection-tabs button.selected{background:var(--accent-soft)!important;color:var(--accent-ink)!important;box-shadow:none!important;font-weight:700!important}
+.note-collection-tabs{gap:8px!important;margin:0 0 18px!important;padding:0 0 14px!important;border:0!important;border-bottom:1px solid var(--line)!important;background:none!important;border-radius:0!important}.note-collection-tabs button{border:0!important;border-radius:9px!important;font:500 13px var(--font-b)!important;min-height:40px!important;padding:9px 16px!important;background:transparent!important;color:var(--ink-2)!important}.note-collection-tabs button.selected{background:var(--accent-soft)!important;color:var(--accent-ink)!important;box-shadow:none!important;font-weight:700!important}
 .feed-sort-tabs.tabs{display:flex;justify-content:flex-end;gap:6px;margin:0 0 20px;width:auto;padding:0;border:0;background:none}.feed-sort-tabs.tabs button{flex:0 1 auto;border:1px solid transparent;border-radius:7px;background:none;color:var(--ink-2);padding:7px 14px;font-size:11px;box-shadow:none}.feed-sort-tabs.tabs button.selected{border-color:var(--line);background:var(--surface);color:var(--accent-ink)}
-.feed-list{display:grid;grid-template-columns:repeat(2,minmax(0,var(--park-card-max-width)));justify-content:center;align-items:start;gap:20px}.photo-card{border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:0 4px 20px #2b463006}.card-meta{padding:14px 16px!important}.card-actions{border-top:1px solid var(--line);padding:10px 14px!important;background:var(--surface)}.photo-open:hover .photo{filter:none}.card-quote{letter-spacing:-.03em}.note-full-body{padding:15px 16px!important;color:var(--ink)!important}.detail{max-width:760px;margin:auto}.button,.icon-button,.composer button{font-family:var(--font-b);border-radius:9px}.button.primary,.composer .button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);box-shadow:none}.composer,.support-dialog,.nn-dialog{border:1px solid var(--line);border-radius:20px;background:var(--surface);box-shadow:0 24px 80px #182a2333}.composer-head{padding:14px 18px}.composer-head h2{font:600 18px var(--font-b)}.dialog-backdrop{background:#182a2359;backdrop-filter:blur(4px)}.composer-footer{background:var(--surface-2)}.photo-picker button{border-radius:8px}.screen-header h1,.page-heading h1{font-family:var(--font-b)}
-@media(max-width:779px){.feed-list{grid-template-columns:minmax(0,var(--park-card-max-width))}}
+.photo-card{border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:0 4px 20px #2b463006}.card-meta{padding:14px 16px!important}.card-actions{border-top:1px solid var(--line);padding:10px 14px!important;background:var(--surface)}.photo-open:hover .photo{filter:none}.card-quote{letter-spacing:-.03em}.note-full-body{padding:15px 16px!important;color:var(--ink)!important}.detail{max-width:760px;margin:auto}.button,.icon-button,.composer button{font-family:var(--font-b);border-radius:9px}.button.primary,.composer .button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);box-shadow:none}.composer,.support-dialog,.nn-dialog{border:1px solid var(--line);border-radius:20px;background:var(--surface);box-shadow:0 24px 80px #182a2333}.composer-head{padding:14px 18px}.composer-head h2{font:600 18px var(--font-b)}.dialog-backdrop{background:#182a2359;backdrop-filter:blur(4px)}.composer-footer{background:var(--surface-2)}.photo-picker button{border-radius:8px}.screen-header h1,.page-heading h1{font-family:var(--font-b)}
 @media(max-width:600px){html.park-embedded .main{padding:20px 18px 90px}.feed-sort-tabs.tabs{justify-content:flex-start;gap:3px;flex-wrap:wrap}.feed-sort-tabs.tabs button{padding:7px 10px}.note-collection-tabs{gap:4px!important}.note-collection-tabs button{font-size:12px!important;padding:8px 12px!important}.photo-card{border-radius:15px}}
 
 .park-feed-title{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
@@ -72,7 +71,8 @@ html body .shell > .col > .main { width: min(100%, 1268px); }
   min-width: 0;
   max-width: none;
 }
-@media (min-width: 1024px) {
+/* Keep the main card full-size before placing replies beside it. */
+@media (min-width: 1440px) {
   .detail-screen { max-width: calc(var(--park-card-max-width) * 11 / 6 + 16px); }
   /* Four of the five reply-column units equal two thirds of the six-unit original. */
   .detail-screen .detail-layout { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
@@ -239,6 +239,7 @@ html body .shell > .col > .main { width: min(100%, 1268px); }
 }
 #main .park-photo-cards .note-event-badge { top: auto; bottom: 10px; left: 12px; border: 0; }
 
+.composer { width: min(100%, calc(var(--park-card-max-width) + 42px)); }
 .composer-body { container-type: inline-size; }
 .composer-body > .compose-photo {
   --compose-photo-height: 100cqw;
