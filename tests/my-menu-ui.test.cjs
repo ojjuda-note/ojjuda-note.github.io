@@ -6,6 +6,7 @@ const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const world = read('world.html');
+const sectionRuntime = require('./helpers/world-section-runtime.cjs')(world);
 const rendererStart = world.indexOf('function worldProfileAvatar(');
 const rendererEnd = world.indexOf('}var Hf=', rendererStart) + 1;
 assert.ok(rendererStart > 0 && rendererEnd > rendererStart, 'World My renderer is available');
@@ -111,7 +112,7 @@ async function worldFixture(context, mobile, errors) {
     });
   });
   await page.addScriptTag({ content: read('park/world-park-notes.js') });
-  await page.addScriptTag({ content: friendRenderer + renderer + noteLinkRenderer });
+  await page.addScriptTag({ content: sectionRuntime + friendRenderer + renderer + noteLinkRenderer });
   await page.addScriptTag({ content: doorAction });
   await page.evaluate(() => renderMy());
   assert.equal(await page.locator('[data-my-group="admin"]').count(), 0, 'member menu omits the administrator entry');

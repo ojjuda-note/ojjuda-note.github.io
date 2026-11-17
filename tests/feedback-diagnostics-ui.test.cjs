@@ -172,14 +172,16 @@ async function verifyForm() {
     assert.equal(await page.evaluate(() => inserts.length), 4, 'only explicit submissions call the existing feedback insert');
 
     // The retained World sender uses the same bug-only contract, including safe collector failure.
-    const legacy = read('world.html').match(/async function ay\(t\)\{[\s\S]*?(?=function iy\()/)?.[0];
+    const world = read('world.html');
+    const sectionRuntime = require('./helpers/world-section-runtime.cjs')(world);
+    const legacy = world.match(/async function ay\(t\)\{[\s\S]*?(?=function iy\()/)?.[0];
     assert(legacy);
     const captures = [];
     const sandbox = { window: { OjjudaDiagnostics: { snapshot: source => ({ source }) } },
       z: () => ({ value: '합성 아지트 고장 신고' }), document: { querySelector: () => ({ value: 'bug' }) },
       D: { user: { id: 'synthetic' } }, g: { tab: 'my' }, Go: 'test', navigator: { userAgent: 'test' },
       S: { from: () => ({ insert: async row => { captures.push(row); return {}; } }) }, dt() {}, M() {} };
-    vm.createContext(sandbox); vm.runInContext(legacy, sandbox); await sandbox.ay({});
+    vm.createContext(sandbox); vm.runInContext(sectionRuntime + legacy, sandbox); await sandbox.ay({});
     assert.equal(captures[0].diagnostics.source, 'world');
     sandbox.document.querySelector = () => ({ value: 'idea' }); await sandbox.ay({});
     assert.equal(Object.hasOwn(captures[1], 'diagnostics'), false);
