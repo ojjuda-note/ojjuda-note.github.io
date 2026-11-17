@@ -5,7 +5,7 @@ export async function prepareProgram(db){
   const {data:manifest,error}=await db.functions.invoke('pajang-assets');
   if(error||!manifest?.files?.['station.js'])throw Error('missing_program');
   const bucket=db.storage.from(manifest.bucket),hash=manifest.files['station.js'];
-  const {data,error:downloadError}=await bucket.download(hash+'/station.js');
+  const {data,error:downloadError}=await bucket.download([hash,'station.js'].join('/'));
   if(downloadError||!data)throw Error('missing_program');
   return {bucket,files:manifest.files,bytes:await verifiedBytes(data,hash)};
 }
