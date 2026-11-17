@@ -259,7 +259,12 @@ function clientFixture(hash) {
     await page.evaluate(()=>window.holdSignal=true);
     await page.getByRole('button',{name:'수락하고 대화하기'}).click();
     await page.waitForFunction(()=>!!window.releaseSignal);await selectMenu('내 파장');
-    await page.evaluate(()=>window.releaseSignal());await page.getByText('내 책방 답변').waitFor();
+    const inboxLink=nav.getByRole('link',{name:'마음함',exact:true});
+    assert.equal(await inboxLink.getAttribute('aria-description'),'받은 신호 1개');
+    await page.evaluate(()=>window.releaseSignal());
+    await page.waitForFunction(()=>!document.querySelector('.station-nav [aria-description]'));
+    assert.ok(page.url().endsWith('tab=profile'),'a late acceptance leaves the selected page in place');
+    await page.getByText('내 책방 답변').waitFor();
     await selectMenu('마음함');await page.locator('.listperson').filter({hasText:'유진'}).getByRole('button',{name:'대화 열기'}).waitFor();
     assert.ok(!page.url().includes('chat='));
     await page.evaluate(()=>{sessionStorage.fixtureMode='switched';});
