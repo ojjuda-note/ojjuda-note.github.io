@@ -42,7 +42,8 @@ function clientFixture(hash) {
       rpc:(name,p)=>{
         if(name==='pajang_member'){
           window.memberCalls.push(p.p_action);
-          if(p.p_action==='entry' && mode==='denied')return Promise.resolve({error:{code:'42501'}});
+          if(['entry','state'].includes(p.p_action) && mode==='denied')return Promise.resolve({error:{code:'42501'}});
+          if(p.p_action==='state'&&!entry.joined)return Promise.resolve({error:{code:'42501',message:'먼저 파장에 참여해 주세요.'}});
           if(p.p_action==='entry')return Promise.resolve({data:entry});
           if(p.p_action==='signal' && p.p_data.peer==='peer2'){
             return (async()=>{
@@ -139,6 +140,7 @@ function clientFixture(hash) {
     const radio=value=>group.locator('input[value="'+value+'"]');
     const selected=async value=>assert.equal(await radio(value).isChecked(),true);
     await cards.nth(1).waitFor();
+    assert.equal(await page.evaluate(()=>window.feedCalls.length),1,'first feed read is shared with the UI');
     assert.equal(await answers.getByRole('heading',{name:rows[0].question}).count(),1);
     assert.equal(await page.evaluate(()=>window.artPending),true,'feed is usable with all artwork still pending');
     assert.equal(await page.evaluate(()=>window.authCalls),1);
@@ -268,12 +270,15 @@ function clientFixture(hash) {
     await page.setViewportSize({width:390,height:844});
     await page.getByRole('button',{name:'파장 열기'}).click();
     await page.waitForURL('**/station.html');await nav.waitFor();
-    await page.evaluate(()=>{sessionStorage.fixtureMode='new';});
+    await page.evaluate(()=>{sessionStorage.fixtureMode='new';sessionStorage.removeItem('pajang:answered-round');});
     await page.goto(origin+'/world.html#pajang-radar');
     await page.evaluate(()=>{window.hostMarker='stay';});
     await page.getByRole('button',{name:'파장 열기'}).click();
     const frame=page.frameLocator('iframe');await frame.getByRole('heading',{name:'처음 만난 날, 어떤 이야기를 나누고 싶나요?'}).waitFor();
     await capture('entry-mobile');
+    assert.equal(await frame.locator('#marks button').count(),0,'sample radar does not block the question');
+    await frame.locator('.sample-radar summary').click();
+    await frame.locator('#marks button').first().waitFor();
     await frame.getByRole('link',{name:'아지트로',exact:true}).click();await page.locator('dialog').waitFor({state:'detached'});
     assert.equal(await page.evaluate(()=>window.hostMarker),'stay');
     assert.equal(await page.evaluate(()=>document.activeElement.hasAttribute('data-pajang-launch')),true);
@@ -299,7 +304,7 @@ function clientFixture(hash) {
     await selectMenu('마음함');await page.locator('.listperson').filter({hasText:'유진'}).getByRole('button',{name:'대화 열기'}).waitFor();
     assert.ok(!page.url().includes('chat='));
     await page.evaluate(()=>{sessionStorage.fixtureMode='switched';});
-    await page.goto(origin+project+'station.html');await page.getByRole('button',{name:'다시 열기'}).waitFor();
+    await page.goto(origin+project+'station.html');await page.getByRole('link',{name:'오쭈다 로그인하기'}).waitFor();
     assert.equal(await nav.count(),0,'a different auth session cannot mount the previous member state');
     for(const mode of ['guest','denied']){
       await page.evaluate(m=>{sessionStorage.fixtureMode=m;},mode);
@@ -309,14 +314,23 @@ function clientFixture(hash) {
     }
     console.log('PASS three primary destinations, direct acceptance, scroll-stable home exit, modal exit, direct legacy routes, thread reload/back, join handoff, guest/denied returns and embedded focus restoration');
     console.log('PASS single remote identity check, two requested illustrations out of six, zero rereads after join, delayed-send draft, retry identity, concurrent reads and late signal acceptance');
-    for(const scenario of ['new','member']){
+    // Closing an immediate popup while its member request is pending leaves Agit open.
+    await page.evaluate(()=>{sessionStorage.fixtureMode='member';sessionStorage.openTiming='yes';sessionStorage.removeItem('pajang:answered-round');});
+    await page.goto(origin+'/world.html?closing=1');
+    await page.getByRole('button',{name:'파장 열기'}).click();
+    await page.getByRole('button',{name:'팝업 닫기'}).click();
+    await page.waitForTimeout(500);
+    assert.ok(page.url().endsWith('world.html?closing=1'));
+    assert.equal(await page.locator('dialog').count(),0);
+    for(const scenario of ['new','member-cold','member']){
       const timings=[];
       for(let attempt=0;attempt<5;attempt++){
-        await page.evaluate(mode=>{sessionStorage.fixtureMode=mode;sessionStorage.openTiming='yes';
+        await page.evaluate(mode=>{sessionStorage.fixtureMode=mode==='new'?'new':'member';sessionStorage.openTiming='yes';
+          if(mode!=='member')sessionStorage.removeItem('pajang:answered-round');
           delete sessionStorage.openMs;delete sessionStorage.openStart;},scenario);
         await page.goto(origin+'/world.html?timing='+attempt);
         await page.getByRole('button',{name:'파장 열기'}).click();
-        if(scenario==='member')await page.waitForURL('**/station.html');
+        if(scenario!=='new')await page.waitForURL('**/station.html');
         await page.waitForFunction(()=>sessionStorage.openMs);
         timings.push(await page.evaluate(()=>Number(sessionStorage.openMs)));
       }

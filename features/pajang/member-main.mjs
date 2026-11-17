@@ -1,10 +1,23 @@
-import {requireMember} from './member.mjs?v=speed1';
-import {mountStation} from './load-station.mjs?v=speed1';
-const entry=await requireMember();
-if(entry && !entry.joined){
+import {requireMember} from './member.mjs?v=open2';
+import {mountStation,prepareProgram} from './load-station.mjs?v=open2';
+let program;
+const station=await requireMember('state',db=>{
+  program=prepareProgram(db);
+  // A guest or a new participant can leave this branch before using the program.
+  program.catch(()=>{});
+});
+const url=new URL(location.href);
+if(url.searchParams.get('entry')==='agit' && station && !station.me?.body){
+  location.replace('./');
+}else if(station?.joined===false){
   const params=new URLSearchParams(location.search);
   const next=params.has('chat')?'chat':params.get('tab')||(params.get('view')==='radar'?'radar':'');
   if(['radar','inbox','chat','profile'].includes(next))location.replace('./?view=feed&next='+next);
   else location.replace(location.hash==='#answers'?'./?view=feed':'./');
+}else if(station?.authenticated){
+  if(url.searchParams.has('entry')){
+    url.searchParams.delete('entry');
+    history.replaceState(history.state,'',url);
+  }
+  await mountStation(undefined,station,program);
 }
-if(entry?.joined)await mountStation();

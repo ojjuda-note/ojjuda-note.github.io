@@ -6,6 +6,9 @@ if(window.parent!==window && new URLSearchParams(location.search).get('embed')==
     window.frameElement?.closest('dialog.agit-pajang-dialog[open]');}catch{}
   if(agitHost){
     const host=window.parent.document;
+    document.addEventListener('keydown',event=>{
+      if(event.key==='Escape'){event.preventDefault();window.parent.postMessage('pajang:close',location.origin);}
+    });
     if(!host.getElementById('pajang-dialog-surface')){
       const link=host.createElement('link');
       link.id='pajang-dialog-surface';

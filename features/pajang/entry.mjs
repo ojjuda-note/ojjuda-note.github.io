@@ -1,4 +1,4 @@
-import {call, requireMember, showGate} from './member.mjs?v=speed1';
+import {call, requireMember, showGate} from './member.mjs?v=open2';
 import {themeFor, interests} from './questions.mjs?v=rounds1';
 
 const $ = id => document.getElementById(id);
@@ -22,7 +22,10 @@ if (Object.hasOwn(destinations,next)) {
 let handoff;
 let leaveEntry=()=>{};
 function enterMain(destination = main, savedStation) {
-  if (window.top !== window) { window.top.location.assign(destination.href); return; }
+  if (window.top !== window) {
+    if(!window.frameElement?.isConnected && params.get('embed')==='1')return;
+    window.top.location.assign(destination.href);return;
+  }
   if (handoff) return handoff;
   leaveEntry();
   handoff=(async()=>{
@@ -32,13 +35,13 @@ function enterMain(destination = main, savedStation) {
     style.href='./station.css?v=letter1';
     const styled=new Promise((resolve,reject)=>{style.onload=resolve;style.onerror=reject;});
     document.querySelector('link[href*="shell.css"]').before(style);
-    const [{mountStation}]=await Promise.all([import('./load-station.mjs?v=speed1'),styled]);
-    await mountStation(()=>{
+    await Promise.all([styled,import('./load-station.mjs?v=open2').then(({mountStation})=>mountStation(async()=>{
+      await styled;
       document.getElementById('entry-style').disabled=true;
       style.media='all';
       history.replaceState(null,'',destination.href);
       window.scrollTo(0,0);
-    },savedStation);
+    },savedStation,undefined,destination))]);
   })().catch(()=>location.replace(destination.href));
   return handoff;
 }
@@ -69,7 +72,17 @@ async function start(firstEntry) {
   if (view === 'feed' && firstEntry.joined) return enterMain(feed);
   if (firstEntry.body) return enterMain();
   let entry = firstEntry;
-  const {setQuestion} = await import('./preview.mjs?v=letter1');
+  let radar;
+  const radarPanel=document.querySelector('.sample-radar');
+  async function openRadar(){
+    if(!radarPanel.open)return;
+    try{
+      radar=await import('./preview.mjs?v=open2');
+      radar.setQuestion(entry.question??themeFor(entry.day,entry.slot));
+    }catch{document.getElementById('sensor-note').textContent='레이더를 불러오지 못했어요. 접었다가 다시 열어 주세요.';}
+  }
+  radarPanel.addEventListener('toggle',openRadar);
+  if(radarPanel.open)void openRadar();
   if (!entry.joined) setupProfile(entry);
   const updates = typeof BroadcastChannel === 'function' ? new BroadcastChannel('pajang-answers') : null;
   let timer;
@@ -78,7 +91,9 @@ async function start(firstEntry) {
 
   function paint() {
     $('slot-label').textContent = (entry.slot === 'am' ? '오전' : '오후') + ' 질문';
-    setQuestion(entry.question ?? themeFor(entry.day, entry.slot));
+    const theme=entry.question??themeFor(entry.day,entry.slot);
+    $('entry-question').textContent=theme.q.join(' ');
+    radar?.setQuestion(theme);
     clearTimeout(timer);
     const until = Date.parse(entry.nextAt) - Date.now();
     timer = setTimeout(refresh, Math.min(12 * 3600000, Math.max(3000, until + 1000)));
@@ -114,6 +129,7 @@ async function start(firstEntry) {
   leaveEntry=()=>{
     clearTimeout(timer);
     updates?.close();
+    radarPanel.removeEventListener('toggle',openRadar);
     document.removeEventListener('visibilitychange',onVisible);
     window.dispatchEvent(new Event('pajang-entry-exit'));
   };
