@@ -343,7 +343,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "FANS", icon: "✦", url: "https://app.fans/community/twice" }
     ],
     merch: [
-      { title: "NAYEON · NA-sty", sub: "2026.11.20 한국 발매 · 카세트 2종 예약 · 특전 포토카드 2종 공개(랜덤·소진 시 종료)", href: "https://www.twicejapan.com/news/detail/2066" },
+      { title: "NAYEON · NA-sty", sub: "11.20 한국 발매 · 카세트 2종 · 일본 특전 시리얼 등록 11.16 18:00~12.25 18:00(JST) · 재고는 공식몰 확인", href: "https://www.twicejapan.com/news/detail/2059" },
       { title: "THIS IS FOR · 서울 피날레 라이브 LP", sub: "2026.10.16 발매 · 2LP · JYP JAPAN 공식 판매처", href: "https://jypj-store.com/collections/twice-official-goods/products/tw26-tff-0001" },
       { title: "#BEST 2015-2025 · 한정 BOX", sub: "2026.12.16 발매 예정 · 수량·재고는 공식 판매처 확인", href: "https://jypj-store.com/collections/twice-official-goods/products/tw26-bes-0003" },
       { title: "THIS IS FOR · MUFG STADIUM 라이브 Blu-ray/DVD", sub: "2026.12.02 발매 예정 · 일본 공식 디스코그래피", href: "https://www.twicejapan.com/discography/detail/92/" },
@@ -360,12 +360,15 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "With YOU-th", date: "2024.02.23", type: "미니 13집", songs: ["ONE SPARK", "I GOT YOU"], href: "https://twice.jype.com/discography/jfzzhl4x" }
     ],
     appearances: [
+      { date: "2026-11-20", title: "나연 · NA-sty Spotify 리스닝 파티", sub: "17:30 KST · 나연 참여 · 일부 지역 Spotify Premium 이용자 대상", href: "https://x.com/JYPETWICE/status/2121588975634952562" },
       { date: "2026-11-20", title: "나연 · NA-sty 싱글 발매", sub: "JYP · 한국 정식 발매일 (예약 공지와 구별)", href: "https://www.twicejapan.com/news/detail/2059" },
       { date: "2026-11-21", title: "2026 MAMA AWARDS", sub: "나연 솔로 출연 · 일본 오사카", href: "https://www.cj.net/jp/press-release/view/1132" },
+      { date: "2026-11-22", title: "나연 · NA-sty 오사카 구매자 특전회", sub: "WITHMUU JAPAN 주최 · 일본 오사카 · 당첨자에게 장소 별도 안내", href: "https://x.com/withmuu_jp/status/2120761807858241963" },
       { date: "2026-12-12", title: "뮤직뱅크 글로벌 페스티벌", sub: "MISAMO·나연 공연, 사나 MC · 도쿄 MUFG 스타디움 · 현지 17:00 개막 예정", href: "https://music-bank.jp/" },
       { date: "2027-01-23", title: "나연 · NA-sty 발매 기념 밋앤그릿", sub: "도쿄 · 추첨 당첨자 대상 사인·2샷 촬영·배웅회 · 정확한 장소·시각은 당첨자 안내", href: "https://www.twicejapan.com/news/detail/2066" }
     ],
     campaigns: [
+      { kind: "홍보대사", date: "2026.04.08", title: "MISAMO × ReFa MUSE", sub: "모모·사나·미나 · 일본 헤어케어 브랜드 홍보대사 · 11.13 신규 광고 영상 공개", href: "https://www.refa.net/news/260408.html" },
       { kind: "콜라보", date: "2026.10.28", title: "나연 × CHAGEE 필리핀", sub: "11.14 첫 플래그십 개점 기념 팬 행사 · 포토카드 구매 응모는 11.11 종료", href: "https://thelookout.com.ph/article/nayeon-of-twice-returns-to-manila-for-chagees-first-philippine-flagship-store-opening" },
       { kind: "광고", date: "2026.01.07", title: "나연·모모·지효·쯔위 × Victoria’s Secret PINK", sub: "2026 발렌타인 Wink 컬렉션 캠페인 모델 · 시즌 협업", href: "https://www.victoriassecret.com/us/pink/new-arrivals/trending-now" },
       { kind: "콜라보", date: "2026.10.02", title: "TWICE LOVELYS × Cake.jp", sub: "공식 캐릭터 쿠키·금평당 선물 세트 · 예약 판매 시작", href: "https://www.twicejapan.com/news/detail/2045" },
@@ -379,6 +382,9 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 홈페이지", sub: "JYP", href: "https://twice.jype.com/" }
     ],
     news: [
+      { date: "11.17", tag: "활동", title: "나연, NA-sty 제작 과정·BABY ANGEL 소개 · Spotify 영상 팟캐스트 첫 화 공개", href: "https://sports.khan.co.kr/en/article/202611171831007" },
+      { date: "11.14", tag: "행사", title: "나연 NA-sty · 11.20 17:30 Spotify 공식 리스닝 파티 발표", href: "https://x.com/JYPETWICE/status/2121588975634952562" },
+      { date: "11.13", tag: "광고", title: "MISAMO × ReFa MUSE · 헤어케어 새 공식 광고 영상 공개", href: "https://prtimes.jp/main/html/rd/p/000001140.000029736.html" },
       { date: "11.13", tag: "굿즈", title: "나연 ‘NA-sty’ 공식 특전 포토카드 2종 공개 · 2027.01.23 팬 이벤트 세부 안내", href: "https://www.twicejapan.com/news/detail/2066" },
       { date: "11.10", tag: "공지", title: "나연 'NA-sty' 팬 이벤트 장소·응모 안내 정정", href: "https://www.twicejapan.com/news/detail/2065" },
       { date: "11.06", tag: "음반", title: "나연 'NA-sty' 11.20 발매 · 카세트 2종 예약", href: "https://www.twicejapan.com/news/detail/2059" },
