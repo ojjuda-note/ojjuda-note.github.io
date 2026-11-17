@@ -6,6 +6,7 @@
   const prefix = 'ojjuda.saetbyeol.save.v1:';
   let game, owner, ready = false, started = false, sent = 0, queued = null, flight = null, timer, timeout;
   let boost = null, boostTimer;
+  let historyRequest = null, historyTimer;
   function post(message) { parent.postMessage({source:'ojjuda-saetbyeol', ...message}, location.origin); }
   function canPlay() {
     if (owner !== 'guest') return true;
@@ -33,7 +34,7 @@
     const endings = Number(state.ended) + Number(state.lifeEnded);
     const levels = game.upgrades.reduce((sum, upgrade) => sum + (state.lv[upgrade.id] || 0), 0);
     const memories = state.mem.reduce((sum, count) => sum + count, 0);
-    return (evolutions + endings) * 10000 + levels * 10 + memories * 100 + state.foodCollected;
+    return (evolutions + endings) * 10000 + levels * 10 + memories * 100 + state.foodCollected + state.legacyFoodCredit;
   }
   function status(text, retry = false) {
     $('#starRecordText').textContent = text;
@@ -47,7 +48,24 @@
     $('#starProgress').textContent=state.stage>=5?`${chapter}챕터 · ${names[state.stage]} · 성장 ${growth} / 1,200 · 생명력 ${window.OjjudaScoreFormat(Math.floor(Number(state.cur?.life)||0))} · 성장 점수 ${window.OjjudaScoreFormat(points)}점`:
       `1챕터 · ${names[state.stage] || names[0]} · 성장 점수 ${window.OjjudaScoreFormat(points)}점`;
     $('#starProgress').title=points.toLocaleString('ko-KR')+'점';
+    const foodNote = state.legacyFoodCredit > 0
+      ? '과거 먹이 추정 +' + state.legacyFoodCredit.toLocaleString('ko-KR') + '점 포함'
+      : state.pendingLegacyFoodCredit > 0 ? '이전 플레이 기록 확인 후 먹이 보정 점수가 반영돼요.' : '';
+    for (const selector of ['#entryFoodCredit', '#starFoodCredit']) {
+      const note = $(selector);
+      note.textContent = foodNote;
+      note.hidden = !foodNote;
+    }
     $('#starStart').textContent=state.stage===4&&state.ended&&!state.lifeStarted?'차원문 열기':state.intro?'이어서 키우기':'시작하기';
+  }
+  function checkFoodHistory() {
+    if (!ready || game.isDemo()) return;
+    const state = game.getState();
+    if (!state.pendingLegacyFoodCredit || historyRequest?.state === state) return;
+    clearTimeout(historyTimer);
+    historyRequest = {id:crypto.randomUUID(), state};
+    post({type:'ojjuda-saetbyeol-legacy-food-check', requestId:historyRequest.id});
+    historyTimer = setTimeout(() => { historyRequest = null; }, 15000);
   }
   function flush() {
     clearTimeout(timer);
@@ -85,7 +103,10 @@
     ready = true;
     $('#starStart').disabled = $('#starGrowth').disabled = $('#starChapters').disabled = false;
     $('#starEntryHint').textContent = '진행 상황은 이 기기에 자동 저장돼요.';
-    refresh();
+    // Freeze the estimate before any new play changes the saved growth or food.
+    if (raw && !Object.hasOwn(raw, 'legacyFoodCredit')) save(game.getState());
+    else refresh();
+    checkFoodHistory();
   }
   let confirmingExit = false;
   async function requestExit(fromBack = false) {
@@ -106,6 +127,15 @@
     const m = event.data;
     if (m.type === 'ojjuda-saetbyeol-init') init(m.owner, m.admin);
     if (!ready) return;
+    if (m.type === 'ojjuda-saetbyeol-legacy-food' && historyRequest && m.requestId === historyRequest.id) {
+      const {state} = historyRequest;
+      clearTimeout(historyTimer);
+      historyRequest = null;
+      if (game.isDemo() || game.getState() !== state || typeof m.eligible !== 'boolean') return;
+      if (m.eligible) state.legacyFoodCredit = state.pendingLegacyFoodCredit;
+      state.pendingLegacyFoodCredit = 0;
+      save(state);
+    }
     if (m.type === 'ojjuda-saetbyeol-booster' && boost && boost.requestId === m.requestId && boost.runId === m.runId) {
       const result = m.result;
       if (!result || result.reason === 'pending') return;
@@ -143,7 +173,7 @@
     }
   }
   window.OjjudaSaetbyeolEntry = {
-    save, buyBooster, canPlay, requestExit,
+    save, buyBooster, canPlay, requestExit, checkFoodHistory,
     get confirmingExit(){ return confirmingExit; },
     ended(runId) { if (ready && !game.isDemo()) post({type:'ojjuda-game-finished', runId, demo:false}); },
     connect(controller) {
@@ -151,7 +181,7 @@
       const enter = (growth=false,chapters=false) => {
         if (!ready || !canPlay()) return;
         started = true; $('#starEntry').hidden = true;
-        game.start(growth);if(chapters)game.openChapters();save(game.getState());
+        game.start(growth);if(chapters)game.openChapters();save(game.getState());checkFoodHistory();
       };
       $('#starStart').onclick = () => enter();
       $('#starChapters').onclick = () => enter(true,true);
@@ -164,6 +194,7 @@
       };
       addEventListener('message', receive);
       addEventListener('online', flush);
+      addEventListener('online', checkFoodHistory);
       addEventListener('online', sendBoost);
       addEventListener('pagehide', () => save(game.getState()));
       if (parent === window) {

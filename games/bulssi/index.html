@@ -97,6 +97,7 @@ body[data-world^="life"] #biomeMeter{border-color:var(--biome-edge);box-shadow:0
 #acts button{flex:1;min-height:52px;font-size:16px}
 #buy{min-height:44px}
 #memLine{text-align:center;color:var(--dim);font-size:12px;margin-top:10px}
+#starFoodCredit,#entryFoodCredit{margin:4px 0 8px;font-size:12px;line-height:1.6}
 #toast{position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 40px);text-align:center;font-size:18px;opacity:0;transition:opacity .6s;pointer-events:none;z-index:6;text-shadow:0 0 12px rgba(6,8,26,.9)}
 #toast.on{opacity:1}
 #overlay{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:rgba(4,5,16,.82);z-index:10;text-align:center;overflow:auto}
@@ -134,12 +135,13 @@ body[data-world^="life"] #biomeMeter{border-color:var(--biome-edge);box-shadow:0
     <span class="star-rating">전체이용</span>
     <p class="ge-copy">작은 불씨에서 시작해<br>차원 너머의 첫 생명까지 키워요.</p>
     <p id="starProgress" class="star-progress">작은 별을 깨울 준비를 하고 있어요.</p>
+    <p id="entryFoodCredit" hidden></p>
     <button id="starStart" class="ge-primary" type="button" disabled>시작하기</button>
     <button id="starChapters" class="ge-secondary" type="button" disabled>챕터 선택</button>
     <button id="starGrowth" class="ge-secondary" type="button" disabled>성장 · 강화</button>
 
     <span id="starEntryHint" class="ge-hint" role="status">게임을 연결하고 있어요…</span>
-    <details class="ge-more"><summary>게임 방법 · 순위 기준</summary><p>화면을 손가락으로 끌거나 마우스를 움직여 천체를 태워요. 모은 빛과 금속으로 별자리의 가지를 강화해요. 현재 단계의 다섯 영역 강화를 모두 마치면 보스 도전이 열리고, 보스를 잡으면 다음 별로 진화해요.</p><p>열·화력·범위·수확·특수를 골고루 키워요. 1챕터 엔딩을 보면 2챕터가 열리고, 각 챕터 보스를 이겨야 다음 챕터를 선택할 수 있어요. 원래 성장 200개와 새 생명 성장 1,000개가 같은 저장 기록으로 이어져요.</p><p>생명 챕터에서는 빛·물·바람으로 세포를 키우고, 그림자 악당이 나타나면 직접 터치해 터뜨려요. 챕터별 성장 20개 전에는 아주 드물게, 200개를 키우면 2초마다 나타나요. 악당의 공격을 피하고 생명력도 모아 보세요.</p><p>1챕터의 오른쪽 위 부스터는 3ZU를 사용해 시간을 5초 늘리고 그 판의 운석과 별을 2배로 늘려요. 다시 쓰면 시간은 5초 더 늘며 천체 수는 2배로 유지돼요. 시간 결정의 8초 한도와는 별도예요.</p><p>모든 챕터의 진화·강화·기억 수집이 성장 점수에 반영돼요. 2챕터부터 일반 탐험에서 먹이를 하나 모을 때마다 1점씩 올라요. 마지막 엔딩을 본 뒤에도 계속 쌓여요. <span id="starDemoNotice" hidden>관리자용 풀 업그레이드 체험은 순위에 기록되지 않아요.</span></p></details>
+    <details class="ge-more"><summary>게임 방법 · 순위 기준</summary><p>화면을 손가락으로 끌거나 마우스를 움직여 천체를 태워요. 모은 빛과 금속으로 별자리의 가지를 강화해요. 현재 단계의 다섯 영역 강화를 모두 마치면 보스 도전이 열리고, 보스를 잡으면 다음 별로 진화해요.</p><p>열·화력·범위·수확·특수를 골고루 키워요. 1챕터 엔딩을 보면 2챕터가 열리고, 각 챕터 보스를 이겨야 다음 챕터를 선택할 수 있어요. 원래 성장 200개와 새 생명 성장 1,000개가 같은 저장 기록으로 이어져요.</p><p>생명 챕터에서는 빛·물·바람으로 세포를 키우고, 그림자 악당이 나타나면 직접 터치해 터뜨려요. 챕터별 성장 20개 전에는 아주 드물게, 200개를 키우면 2초마다 나타나요. 악당의 공격을 피하고 생명력도 모아 보세요.</p><p>1챕터의 오른쪽 위 부스터는 3ZU를 사용해 시간을 5초 늘리고 그 판의 운석과 별을 2배로 늘려요. 다시 쓰면 시간은 5초 더 늘며 천체 수는 2배로 유지돼요. 시간 결정의 8초 한도와는 별도예요.</p><p>모든 챕터의 진화·강화·기억 수집이 성장 점수에 반영돼요. 2챕터부터 일반 탐험에서 먹이를 하나 모을 때마다 1점씩 올라요. 마지막 엔딩을 본 뒤에도 계속 쌓여요. 먹이를 세기 전의 저장 기록은 생명 단계의 강화와 탐험 기록을 기준으로 한 번 보정해요. <span id="starDemoNotice" hidden>관리자용 풀 업그레이드 체험은 순위에 기록되지 않아요.</span></p></details>
     <details id="starRankingDetails" class="ge-more"><summary>오늘의 순위</summary><ol id="starRanking" class="star-ranking"></ol></details>
   </section>
 </main>
@@ -158,6 +160,7 @@ body[data-world^="life"] #biomeMeter{border-color:var(--biome-edge);box-shadow:0
   <div id="info"><div id="uName" class="serif"></div><div id="uDesc"></div><div id="uLock" role="status" hidden></div><div id="uRow"><span id="uLv"></span><button id="buy" aria-describedby="uLock"></button></div></div>
   <div id="acts"><button id="go" class="primary">타오르기</button><button id="bossBtn"></button></div>
   <div id="memLine"></div><div id="starRecord" role="status"><span id="starRecordText">별을 키우면 성장 점수가 순위에 기록돼요.</span><button id="starRetry" type="button" hidden>다시 등록</button></div>
+  <p id="starFoodCredit" hidden></p>
   <div class="monthly-bulssi-entry"><a class="monthly-bulssi-link" href="/features/arcade/monthly-ranking.html?game=saetbyeol" target="_blank" rel="noopener noreferrer">🏆 이번 달 1~10위 · 내 순위</a></div>
 </div></div>
 <div id="toast" class="serif" role="status"></div>
@@ -171,7 +174,7 @@ body[data-world^="life"] #biomeMeter{border-color:var(--biome-edge);box-shadow:0
 </section>
 <div id="overlay" role="dialog" aria-live="polite"><div id="ovText"></div><div id="ovBtns"></div><a class="monthly-bulssi-link monthly-bulssi-overlay" href="/features/arcade/monthly-ranking.html?game=saetbyeol" target="_blank" rel="noopener noreferrer">🏆 이번 달 순위 · 내 기록</a><div id="ovHint">눌러서 계속</div></div>
 <script src="/shared/games/score-format.js?v=20261117-saetbyeol-growth1"></script>
-<script src="./entry.js?v=20261117-saetbyeol-growth1"></script>
+<script src="./entry.js?v=20261117-saetbyeol-legacy-food1"></script>
 <script src="./growth.js?v=20261013-sky2001"></script>
 <script src="./upgrade-branches.js?v=20261110-bulssi-life1"></script>
 <script src="./encounters.js?v=20261110-saetbyeol-worlds1"></script>
@@ -278,9 +281,27 @@ const ENCOUNTERS=window.OjjudaSaetbyeolEncounters;
 const TYPES=ENCOUNTERS.types;
 
 // ---------- save ----------
-const fresh=()=>({stage:0,maxStage:0,cur:{light:0,metal:0,mass:0,life:0},lv:{},mem:Array(10).fill(0),intro:false,tut:false,sound:true,buys:0,sel:null,ended:false,legacyEnding:null,lifeStarted:false,lifeEnded:false,foodCollected:0,genes:{light:0,water:0,wind:0},geneType:null,geneLast:'light'});
+const fresh=()=>({stage:0,maxStage:0,cur:{light:0,metal:0,mass:0,life:0},lv:{},mem:Array(10).fill(0),intro:false,tut:false,sound:true,buys:0,sel:null,ended:false,legacyEnding:null,lifeStarted:false,lifeEnded:false,foodCollected:0,legacyFoodCredit:0,pendingLegacyFoodCredit:0,genes:{light:0,water:0,wind:0},geneType:null,geneLast:'light'});
 let S=fresh(),DEMO=null,demoAllowed=false;
 const save=()=>{if(!DEMO)window.OjjudaSaetbyeolEntry.save(S)};
+const savedCount=value=>Number.isSafeInteger(value)&&value>=0?value:0;
+function restoreFoodCredit(raw){
+  if(Object.hasOwn(raw,'legacyFoodCredit')||Object.hasOwn(raw,'pendingLegacyFoodCredit')){
+    S.legacyFoodCredit=savedCount(raw.legacyFoodCredit);
+    S.pendingLegacyFoodCredit=savedCount(raw.pendingLegacyFoodCredit);
+    return;
+  }
+  if(S.maxStage<5)return;
+  let estimate=0;
+  for(const u of UP){
+    if(u.r>=5)estimate+=S.lv[u.id]*BIOMES[u.r-5].every;
+  }
+  if(!estimate&&(S.maxStage>5||S.cur.life>0||LIFE.keys.some(key=>S.genes[key]>0)||S.mem.slice(5).some(count=>count>0))){
+    estimate=BIOMES[0].every;
+  }
+  if(Object.hasOwn(raw,'foodCollected'))S.pendingLegacyFoodCredit=Math.max(0,estimate-S.foodCollected);
+  else S.legacyFoodCredit=estimate;
+}
 function loadProgress(raw){
   S=fresh();
   if(raw&&typeof raw==='object'){
@@ -296,12 +317,13 @@ function loadProgress(raw){
     S.legacyEnding=['아침의 별','삼킨 별'].includes(raw.legacyEnding)?raw.legacyEnding:null;
     S.lifeStarted=raw.lifeStarted===true||S.stage>=5;
     S.lifeEnded=raw.lifeEnded===true&&S.maxStage===9;
-    if(Number.isSafeInteger(raw.foodCollected)&&raw.foodCollected>=0)S.foodCollected=raw.foodCollected;
+    S.foodCollected=savedCount(raw.foodCollected);
     for(const key of LIFE.keys)S.genes[key]=integer(raw.genes?.[key],12);
     S.geneLast=LIFE.keys.includes(raw.geneLast)?raw.geneLast:'light';
     const geneTotal=Object.values(S.genes).reduce((sum,n)=>sum+n,0);
     S.geneType=S.maxStage>=5&&geneTotal>=12&&Object.hasOwn(LIFE.kinds,raw.geneType)?raw.geneType:null;
     if(S.maxStage>=5&&geneTotal>=12&&!S.geneType)S.geneType=LIFE.choose(S.genes,S.geneLast);
+    restoreFoodCredit(raw);
     S.buys=integer(raw.buys,10000);
     S.sel=UP.some(u=>u.id===raw.sel)?raw.sel:null;
   }
@@ -554,7 +576,7 @@ function startDemo(stage=9){
   st=stats();R=null;applyTheme();closeOv();setMode('hub');
   toast(`${STAGES[stage].name} · 풀 업그레이드 체험 중이에요. 실제 기록은 그대로예요`,3600);
 }
-function endDemo(){S=DEMO;DEMO=null;st=stats();R=null;applyTheme();closeOv();if(!S.sel)selectDefault();setMode('hub');toast('원래 진행으로 돌아왔어요',2600)}
+function endDemo(){S=DEMO;DEMO=null;st=stats();R=null;applyTheme();closeOv();if(!S.sel)selectDefault();setMode('hub');window.OjjudaSaetbyeolEntry.checkFoodHistory();toast('원래 진행으로 돌아왔어요',2600)}
 $('#demoStageSelect').innerHTML=STAGES.map((stage,i)=>`<option value="${i}"${i===9?' selected':''}>${i+1}단계 · ${stage.name}</option>`).join('');
 $('#demoStageSelect').onchange=()=>{if(demoAllowed&&DEMO)startDemo(Number($('#demoStageSelect').value))};
 $('#demoBtn').onclick=()=>{if(!demoAllowed)return;$('#settings').classList.remove('on');if(DEMO)endDemo();else startDemo(Number($('#demoStageSelect').value))};

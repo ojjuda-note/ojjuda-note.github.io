@@ -58,6 +58,7 @@
     return await rpc('guest_game_ranking',{p_game:game,p_period:period,p_guest_token:token()}) || [];
   }
   window.OjjudaGuestScores = Object.freeze({submit,submitScrewBox,ranking,
+    legacySaetbyeolFood:()=>rpc('saetbyeol_legacy_food_eligible',{p_guest_token:token()}),
     spot:async(stage)=>adminPreview()?previewReceipt():rpc('record_spot_clear',{p_stage:stage,p_guest_token:token()}),
     territory:async(runId,won)=>adminPreview()?previewReceipt():rpc('record_ttang_result',{p_round:runId,p_won:won,p_guest_token:token()}),
     yut:async(runId,won)=>adminPreview()?previewReceipt():rpc('record_yut_result',{p_round:runId,p_won:won,p_guest_token:token()}),

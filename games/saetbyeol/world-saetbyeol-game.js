@@ -10,7 +10,7 @@
       const dialog = document.createElement('dialog');
       dialog.className = 'tour-game-dialog saetbyeol-game-dialog arcade-game-view';
       dialog.setAttribute('aria-label', '샛별키우기 · 전체이용');
-      dialog.innerHTML = '<header class="tour-game-header"><button type="button" class="arcade-return">← 오쭈다 오락실</button><span>샛별키우기 · 전체이용</span></header><iframe title="샛별키우기" src="/games/bulssi/index.html?v=20261117-saetbyeol-growth1" allow="autoplay; fullscreen"></iframe>';
+      dialog.innerHTML = '<header class="tour-game-header"><button type="button" class="arcade-return">← 오쭈다 오락실</button><span>샛별키우기 · 전체이용</span></header><iframe title="샛별키우기" src="/games/bulssi/index.html?v=20261117-saetbyeol-legacy-food1" allow="autoplay; fullscreen"></iframe>';
       const frame = dialog.querySelector('iframe');
       const records = new Map();
       const boosters = new Map();
@@ -59,6 +59,21 @@
         } catch { send({type:'ojjuda-saetbyeol-ranking', error:true}); }
         finally { rankingPending = false; }
       }
+      async function checkLegacyFood(requestId) {
+        if (!connected || !uuid(requestId)) return;
+        let eligible = null;
+        try {
+          if (owner) {
+            const {data,error} = await client.rpc('saetbyeol_legacy_food_eligible', {})
+              .abortSignal(AbortSignal.timeout(10000));
+            if (!error && typeof data === 'boolean') eligible = data;
+          } else {
+            const data = await window.OjjudaGuestScores.legacySaetbyeolFood();
+            if (typeof data === 'boolean') eligible = data;
+          }
+        } catch {}
+        send({type:'ojjuda-saetbyeol-legacy-food', requestId, eligible});
+      }
       async function booster(message) {
         const {requestId, runId, stage, demo} = message;
         if (!connected || demo !== false || !uuid(requestId) || !uuid(runId) || !Number.isInteger(stage) || stage < 0 || stage > 4) return;
@@ -103,6 +118,7 @@
         }
         if (message.type === 'ojjuda-game-result') void record(message);
         if (message.type === 'ojjuda-game-ranking') void ranking();
+        if (message.type === 'ojjuda-saetbyeol-legacy-food-check') void checkLegacyFood(message.requestId);
         if (message.type === 'ojjuda-game-booster') void booster(message);
       }
       function requestClose(fromBack = false) {
