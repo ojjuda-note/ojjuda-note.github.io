@@ -1,6 +1,7 @@
 // Embed the release manifests into the shell so its installed versions remain
 // known even when the network is offline or a newer manifest is published.
-import {readFileSync,writeFileSync} from 'node:fs';
+import {existsSync,readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
@@ -19,3 +20,14 @@ for(const [path,field] of [
   html=html.replace(field,(_,before,after)=>before+version+after);
 }
 if(html!==source)writeFileSync(page,html);
+
+// Both withdrawal screens must load the same cleanup rules for private photo uploads.
+if (process.argv[2] && existsSync(resolve(root,'features/account/account-deletion.js'))) {
+  const tag=createHash('sha256').update(readFileSync(resolve(root,'features/account/account-deletion.js'))).digest('hex').slice(0,12);
+  for(const path of ['world.html','park/index.html']) {
+    const file=resolve(root,path);
+    const source=readFileSync(file,'utf8');
+    const updated=source.replace(/(\/features\/account\/account-deletion\.js\?v=)[^"]+/g,(_,prefix)=>prefix+tag);
+    if(updated!==source)writeFileSync(file,updated);
+  }
+}

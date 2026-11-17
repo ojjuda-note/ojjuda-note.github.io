@@ -3,7 +3,7 @@ import {badges, interests, signalsWith, type Slot, type Station} from "../lib/st
 import {I} from "./icons";
 
 export type DiscoveryAnswer = {
-  peer:string; name:string; age:number; region:string; interest:string;
+  peer:string; name:string; region:string; interest:string;
   day:string; slot:Slot; at:number; question:string; body:string;
   own:boolean; sent:boolean; received:boolean;
 };
@@ -102,9 +102,9 @@ export default function AnswerHistory({station,revision,onProfile,onSignal,onCha
         const badge=badges(row.interest);
         return <article key={rowKey(row)} className="answercard">
           <div className="cardtop"><button className="person" onClick={()=>onProfile(row)}>
-            <span className="avatar" style={{background:badge.bg}}><img src={window.pajangArt[badge.key]} alt=""/></span>
-            <span><strong>{row.name}{row.own?" · 내 답변":""}</strong><small>{row.age}세<span>·</span>{row.region}</small></span>
-          </button><span className="tag" style={{background:badge.bg}}>{badge.name}</span></div>
+            <span className="avatar" style={{background:badge.bg}}>{badge.key?<img src={window.pajangArt[badge.key]} alt=""/>:<I n="user" s={18}/>}</span>
+            <span><strong>{row.name}{row.own?" · 내 답변":""}</strong>{row.region&&<small>{row.region}</small>}</span>
+          </button>{badge.name&&<span className="tag" style={{background:badge.bg}}>{badge.name}</span>}</div>
           <time className="answerdate" dateTime={row.day}>{row.day.replaceAll("-",".")} · {row.slot==="am"?"오전":"오후"}</time>
           <h3 className="cardquestion">{row.question}</h3><p className="quote">{row.body}</p>
           {!row.own&&<button className={"sendlink "+(sent?"issent":"")} disabled={!matched&&(sent||station.remaining===0)}
