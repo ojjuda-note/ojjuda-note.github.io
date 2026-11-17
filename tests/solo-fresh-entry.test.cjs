@@ -183,6 +183,12 @@ async function pendingSpot(t,buy){
  };
 }
 
+function assertSpotClear(calls,stage){
+ const records=calls.filter(call=>call.name==='record_spot_clear_at');assert.equal(records.length,1);
+ const finished=records[0].args.p_finished_at;assert.ok(Number.isFinite(Date.parse(finished)));
+ assert.deepEqual(records[0],{name:'record_spot_clear_at',args:{p_stage:stage,p_expected_owner:owner,p_finished_at:finished},actor:owner});
+}
+
 test('Spot payment recovery uses a fresh round and the same receipt, then records completion for its original owner',async t=>{
  const {w,id,request,calls,state,round,start,complete}=await pendingSpot(t);
  assert.equal(state().current,48,'the receipt is confirmed against its original picture');assert.deepEqual(state().order,Array.from({length:82},(_,i)=>i),'receipt recovery preserves the fixed difficulty order');assert.deepEqual(state().found[id],[]);
@@ -190,24 +196,31 @@ test('Spot payment recovery uses a fresh round and the same receipt, then record
  assert.deepEqual(round().paid,[]);assert.equal(round().hintIndex,null);assert.equal(round().timeBought,false);assert.equal(round().assisted,false,'confirmed hints and time are consumed by the old round');
  await start();assert.deepEqual(calls,[{name:'spot_game_buy_v2',args:{p_kind:'hint',p_request_id:request.requestId,p_stage:id,p_spot:2,p_verify_only:false},actor:owner}]);assert.equal(round().pending,null);assert.deepEqual(round().paid,[2]);
  const active=state();w.document.dispatchEvent(new w.Event('visibilitychange'));assert.deepEqual(state(),active,'returning to the same tab does not restart the round');
- await complete();assert.deepEqual(calls.filter(call=>call.name==='record_spot_clear_at'),[{name:'record_spot_clear',args:{p_stage:id},actor:owner}],'a recovered round still submits its completion');
+ await complete();assertSpotClear(calls,id);
  assert.equal(round().rankOwner,owner);
 });
 
 test('Spot denied receipt recovery still records a completed fresh round for the original owner',async t=>{
  const f=await pendingSpot(t,async()=>({ok:false,reason:'coins'}));
  await f.start();assert.equal(f.round().pending,null);assert.equal(f.round().status,'playing');assert.deepEqual(f.round().paid,[]);
- await f.complete();const records=f.calls.filter(call=>call.name==='record_spot_clear_at');assert.equal(records.length,1);
- const finished=records[0].args.p_finished_at;assert.ok(Number.isFinite(Date.parse(finished)));
- assert.deepEqual(records[0],{name:'record_spot_clear_at',args:{p_stage:f.id,p_expected_owner:owner,p_finished_at:finished},actor:owner});assert.equal(f.round().rankOwner,owner);
+ await f.complete();assertSpotClear(f.calls,f.id);assert.equal(f.round().rankOwner,owner);
 });
 
-test('Spot pending recovery cannot charge or submit a completion as a different account',async t=>{
+for(const blocked of [false,true])test('Spot restores an offline clear only for its original account, storage blocked: '+blocked,async t=>{
  let resolve;const response=new Promise(done=>resolve=done),f=await pendingSpot(t,()=>response),other=randomUUID();
  await f.account(other);await f.start();assert.equal(f.calls.length,0,'another account cannot confirm the old receipt');assert.equal(f.round().status,'payment');assert.equal(f.round().pending.requestId,f.request.requestId);
  await f.account(owner);await f.start();assert.equal(f.calls.length,1);assert.equal(f.calls[0].actor,owner);assert.equal(f.calls[0].args.p_request_id,f.request.requestId);
  await f.account(other);resolve({ok:true,kind:'hint',stage:f.id,spot:2,price:1});await tick();await tick();
  assert.equal(f.round().pending,null);assert.equal(f.round().rankOwner,owner,'a late purchase response never rebinds the fresh round to the next account');
+ if(blocked){
+  const proto=f.w.Storage.prototype,write=proto.setItem;
+  proto.setItem=function(key,value){if(key.startsWith('ojjuda.puzzle.pending.v1:'))throw Error('quota');return write.call(this,key,value);};
+ }
  await f.complete();assert.deepEqual(f.calls.filter(call=>call.name==='record_spot_clear_at'),[],'the real wallet rejects the old owner before a ranking RPC under the new account');
- assert.match(f.w.document.getElementById('message').textContent,/완료 기록을 저장하지 못했어요/);
+ assert.equal(f.w.document.getElementById('message').textContent,blocked?'이 화면에서 게임을 시작한 계정으로 다시 로그인해 주세요.':'게임을 시작한 계정으로 로그인하면 기록을 등록해요.');
+ const records=f.w.OjjudaPuzzleRecords.open('spot',owner),[pending]=records.list();
+ assert.equal(pending.stage,f.id);assert.equal(f.w.OjjudaPuzzleRecords.open('spot',other).list().length,0);
+ await f.account(owner);await tick();assertSpotClear(f.calls,f.id);
+ assert.equal(f.calls.find(call=>call.name==='record_spot_clear_at').args.p_finished_at,pending.completedAt);
+ assert.equal(records.list().length,0);f.w.dispatchEvent(new f.w.Event('online'));await tick();assertSpotClear(f.calls,f.id);
 });

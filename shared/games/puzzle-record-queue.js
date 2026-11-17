@@ -1,6 +1,7 @@
 /* A separate storage entry per completion keeps simultaneous games from replacing each other's records. */
 (()=>{
  'use strict';
+ const sessionRecords=new Map();
  function guestIdentity(){
   const key='ojjuda.guest-ranking.v1';
   try{
@@ -14,7 +15,9 @@
  }
  function open(game,owner){
   const guest=!owner||owner==='guest',identity=guest?guestIdentity():owner;
-  const prefix='ojjuda.puzzle.pending.v1:'+game+':'+identity+':',memory=new Map();
+  const prefix='ojjuda.puzzle.pending.v1:'+game+':'+identity+':';
+  if(!sessionRecords.has(prefix))sessionRecords.set(prefix,new Map());
+  const memory=sessionRecords.get(prefix);
   function list(){
    const items=new Map(memory);
    try{
@@ -42,6 +45,16 @@
   function durable(id){try{return localStorage.getItem(prefix+id)!==null;}catch{return false;}}
   return {list,put,remove,durable,current:()=>!guest||guestIdentity()===identity};
  }
+ function putPicture(store,stage,completedAt){
+  const time=Date.parse(completedAt);
+  if(!Number.isFinite(time))return null;
+  const month=new Date(time+8*3600000).toISOString().slice(0,7);
+  return store.put({id:month+':'+stage,stage,completedAt});
+ }
+ function rememberPicture(game,owner,stage,completedAt){
+  const store=open(game,owner),item=putPicture(store,stage,completedAt);
+  return !!item&&store.durable(item.id);
+ }
  function pictures({game,owner,active,submit,status}){
   const store=open(game,owner);let busy=false,requested=false,disposed=false;
   const canSend=()=>!disposed&&active()&&store.current();
@@ -66,13 +79,11 @@
    }finally{busy=false;}
   }
   function add(stage,completedAt=new Date(Date.now()).toISOString()){
-   if(!canSend()||!Number.isFinite(Date.parse(completedAt)))return;
-   const month=new Date(Date.parse(completedAt)+8*3600000).toISOString().slice(0,7);
-   store.put({id:month+':'+stage,stage,completedAt});
+   if(!canSend()||!putPicture(store,stage,completedAt))return;
    status('saving');void flush();
   }
   addEventListener('online',flush);
   return {add,flush,dispose(){disposed=true;removeEventListener('online',flush);}};
  }
- window.OjjudaPuzzleRecords={open,pictures};
+ window.OjjudaPuzzleRecords={open,pictures,rememberPicture};
 })();

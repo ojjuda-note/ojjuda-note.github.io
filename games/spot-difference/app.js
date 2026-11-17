@@ -287,6 +287,10 @@
       const stage=puzzle().id,owner=r.rankOwner,completedAt=new Date(Date.now()).toISOString();
       if(window.parent!==window)window.parent.postMessage({type:'ojjuda:spot-clear',stage,owner,completedAt},window.location.origin);
       else if(owner===clearOwner)standaloneClears?.add(stage,completedAt);
+      else{
+        const saved=window.OjjudaPuzzleRecords.rememberPicture('spot',owner,stage,completedAt);
+        speak(saved?'게임을 시작한 계정으로 로그인하면 기록을 등록해요.':'이 화면에서 게임을 시작한 계정으로 다시 로그인해 주세요.');
+      }
     }
     if(reason==='won')celebrate();
     else showFailure();
