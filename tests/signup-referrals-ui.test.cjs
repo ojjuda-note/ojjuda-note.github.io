@@ -27,7 +27,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin=
   const confirm=async()=>{await page.getByRole('button',{name:'민준 추천인으로 선택',exact:true}).click();await page.getByRole('button',{name:'이 사람이 맞아요',exact:true}).click();};
   await open();
   const initialNickname=await page.locator('#nickname').inputValue();
-  assert.ok(initialNickname.length>0&&initialNickname.length<=12,'signup provides a valid-length nickname without input');
+  assert.match(initialNickname,/^[가-힣]{3,12}$/,'signup suggests a Hangul-only nickname within the field limit');
   assert.equal(await page.locator('#nickname').evaluate(el=>el.readOnly),false,'signup nickname is suggested automatically and remains editable');
   await fill();assert.equal(await page.locator('#signup-referrer').getAttribute('required'),null);
   await page.locator('#auth-submit').click();await page.waitForFunction(()=>referralFixture.signups.length===1);
