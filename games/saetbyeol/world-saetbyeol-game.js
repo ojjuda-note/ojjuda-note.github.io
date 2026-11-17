@@ -10,7 +10,7 @@
       const dialog = document.createElement('dialog');
       dialog.className = 'tour-game-dialog saetbyeol-game-dialog arcade-game-view';
       dialog.setAttribute('aria-label', '샛별키우기 · 전체이용');
-      dialog.innerHTML = '<header class="tour-game-header"><button type="button" class="arcade-return">← 오쭈다 오락실</button><span>샛별키우기 · 전체이용</span></header><iframe title="샛별키우기" src="/games/bulssi/index.html?v=20261113-game-popup-order1" allow="autoplay; fullscreen"></iframe>';
+      dialog.innerHTML = '<header class="tour-game-header"><button type="button" class="arcade-return">← 오쭈다 오락실</button><span>샛별키우기 · 전체이용</span></header><iframe title="샛별키우기" src="/games/bulssi/index.html?v=20261117-saetbyeol-growth1" allow="autoplay; fullscreen"></iframe>';
       const frame = dialog.querySelector('iframe');
       const records = new Map();
       const boosters = new Map();
@@ -36,7 +36,7 @@
       }
       async function record(message) {
         const {runId, score, demo} = message;
-        if (demo !== false || !Number.isSafeInteger(score) || score < 0 || score > 60000 ||
+        if (demo !== false || !Number.isSafeInteger(score) || score < 0 ||
             typeof runId !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(runId)) return;
         let pending = records.get(runId);
         if (pending && pending.score !== score) return;
