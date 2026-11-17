@@ -11,12 +11,18 @@ type Cursor = Record<string, unknown>;
 type Page = {items:DiscoveryAnswer[]; nextCursor:Cursor|null; total:number; remaining:number};
 type Result = {key:string; items:DiscoveryAnswer[]; total:number|null; next:Cursor|null; loading:boolean; changed:boolean; error:string};
 type Order = "recommend"|"latest"|"local";
+type Gender = "male"|"all"|"female";
+const genderOptions = [
+  {value:"male", text:"남", label:"남성 답변"},
+  {value:"all", text:"", label:"성별 전체"},
+  {value:"female", text:"여", label:"여성 답변"},
+] as const;
 type Intent = "first"|"more"|"check"|"changed";
 const rowKey = (row:DiscoveryAnswer) => row.peer+"/"+row.day+"/"+row.slot;
 const empty = (key:string):Result => ({key,items:[],total:null,next:null,loading:true,changed:false,error:""});
 
-function useAnswers(filter:string, order:Order, scope:string, activity:string) {
-  const key = JSON.stringify([filter,order,scope]);
+function useAnswers(filter:string, gender:Gender, order:Order, scope:string, activity:string) {
+  const key = JSON.stringify([filter,gender,order,scope]);
   const [result,setResult] = useState<Result>(()=>empty(key));
   const load = useRef<(intent:Intent)=>void>(()=>{});
   useEffect(()=>{
@@ -37,7 +43,7 @@ function useAnswers(filter:string, order:Order, scope:string, activity:string) {
       if (append) publish({...current,loading:true,error:""});
       try {
         const db=await window.OjjudaGetClient();
-        const {data,error}=await db.rpc("pajang_discovery_feed",{p_cursor:cursor,p_interest:filter,p_order:order});
+        const {data,error}=await db.rpc("pajang_discovery_feed",{p_cursor:cursor,p_interest:filter,p_order:order,p_gender:gender});
         if (!active || request!==revision) return;
         if (error) throw error;
         const page=data as Page;
@@ -61,7 +67,7 @@ function useAnswers(filter:string, order:Order, scope:string, activity:string) {
     // Refresh the first page in place; scrolling back through earlier pages keeps its cursor.
     const poll=window.setInterval(()=>{if(!document.hidden)void read("check");},60000);
     return ()=>{active=false;load.current=()=>{};window.clearInterval(poll);document.removeEventListener("visibilitychange",onVisible);};
-  },[key,filter,order]);
+  },[key,filter,gender,order]);
   useEffect(()=>{load.current("changed");},[activity]);
   return {result:result.key===key?result:empty(key),load};
 }
@@ -72,17 +78,26 @@ type Props = {
 };
 export default function AnswerHistory({station,revision,onProfile,onSignal,onChat,onWrite}:Props) {
   const [filter,setFilter]=useState("all");
+  const [gender,setGender]=useState<Gender>("all");
   const [order,setOrder]=useState<Order>("recommend");
   const scope=JSON.stringify([station.me?.id,station.me?.region,station.me?.interest,station.me?.at,station.day,station.slot,revision]);
   const activity=station.people.filter(p=>p.body).map(p=>p.id+":"+p.at).join(",");
-  const {result,load}=useAnswers(filter,order,scope,activity);
+  const {result,load}=useAnswers(filter,gender,order,scope,activity);
   useEffect(()=>{
     if (window.location.hash==="#answers") document.getElementById("answers")?.scrollIntoView({block:"start"});
   },[]);
   return <section id="answers" className="feedsection" aria-labelledby="all-answers-title">
-    <div className="sectiontitle">
-      <div><h2 id="all-answers-title">모두의 답변{result.total!==null&&<span className="feednumber">{result.total}</span>}</h2>
-      <p>최근 30일의 질문과 답변이에요. 마음에 드는 답변에 신호를 보내 보세요.</p></div>
+    <div className="sectiontitle history-head">
+      <div className="history-heading">
+        <h2 id="all-answers-title">모두의 답변{result.total!==null&&<span className="feednumber">{result.total}</span>}</h2>
+        <div className="answer-genders" role="radiogroup" aria-label="답변 작성자 성별">
+          {genderOptions.map(option=><label key={option.value} className={"answer-gender "+option.value} title={option.label}>
+            <input type="radio" name="answer-gender" value={option.value} aria-label={option.label}
+              checked={gender===option.value} onChange={()=>setGender(option.value)}/>
+            <span aria-hidden="true">{option.text}</span>
+          </label>)}
+        </div>
+      </div>
       <span className="budget"><I n="signal" s={16}/>남은 신호 <b>{station.remaining}<em> / 3</em></b></span>
     </div>
     <div className="filterrow">
@@ -118,8 +133,8 @@ export default function AnswerHistory({station,revision,onProfile,onSignal,onCha
     {result.error&&<p className="notice" role="alert">{result.error}<button onClick={()=>load.current(result.next&&result.items.length?"more":"first")}>다시 시도</button></p>}
     {result.loading&&<p className="history-status" role="status">답변을 불러오고 있어요.</p>}
     {!result.loading&&!result.error&&!result.items.length&&<div className="empty"><span className="emptyicon"><I n="headphones" s={27}/></span>
-      <h3>{filter==="all"?"최근 30일 동안 공개된 답변이 없어요":"이 취향의 답변이 아직 없어요"}</h3>
-      {filter!=="all"?<button className="secondary" onClick={()=>setFilter("all")}>전체 답변 보기<I n="arrow" s={16}/></button>:
+      <h3>{gender!=="all"?"선택한 조건에 맞는 답변이 없어요":filter==="all"?"최근 30일 동안 공개된 답변이 없어요":"이 취향의 답변이 아직 없어요"}</h3>
+      {gender!=="all"||filter!=="all"?<button className="secondary" onClick={()=>{setGender("all");setFilter("all");}}>전체 답변 보기<I n="arrow" s={16}/></button>:
         !station.me?.body&&<button className="secondary" onClick={onWrite}>첫 답변 쓰기<I n="pencil" s={16}/></button>}
     </div>}
     {result.next&&!result.error&&<button className="secondary history-more" disabled={result.loading} onClick={()=>load.current("more")}>답변 더 보기<I n="chevron" s={16}/></button>}
