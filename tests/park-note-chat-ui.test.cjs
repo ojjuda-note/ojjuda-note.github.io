@@ -143,6 +143,10 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
     edgeToEdge:Math.abs(box(element).height-photo.height)<1,
     contentClear:author.bottom<=quote.top&&quote.bottom<=tags.top&&tags.bottom<=photo.bottom-43,
     buttons:controls.map(button=>{
+     // A complete 750px card can be taller than the embedded viewport.
+     // Hit-test each control after scrolling to it as a reader would.
+     button.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'});
+     const photo=box(element.querySelector('.photo')),quote=box(element.querySelector('.card-quote')),tags=box(element.querySelector('.card-tags'));
      const b=box(button),x=b.left+b.width/2,y=b.top+b.height/2;
      return b.width>=44&&b.height>=44&&b.left>=photo.left&&b.right<=photo.right+1&&
       (b.bottom<=quote.top||b.top>=tags.bottom)&&button.contains(document.elementFromPoint(x,y));

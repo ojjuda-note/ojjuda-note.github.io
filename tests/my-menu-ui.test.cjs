@@ -111,7 +111,7 @@ async function worldFixture(context, mobile, errors) {
     });
   });
   await page.addScriptTag({ content: read('park/world-park-notes.js') });
-  await page.addScriptTag({ content: friendRenderer + renderer + noteLinkRenderer });
+  await page.addScriptTag({ content: require('./world-section-fixture.cjs')(world) + friendRenderer + renderer + noteLinkRenderer });
   await page.addScriptTag({ content: doorAction });
   await page.evaluate(() => renderMy());
   assert.equal(await page.locator('[data-my-group="admin"]').count(), 0, 'member menu omits the administrator entry');
