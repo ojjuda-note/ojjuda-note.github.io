@@ -360,14 +360,14 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "With YOU-th", date: "2024.02.23", type: "미니 13집", songs: ["ONE SPARK", "I GOT YOU"], href: "https://twice.jype.com/discography/jfzzhl4x" }
     ],
     appearances: [
-      { date: "2026-11-27", title: "정연 · tvN 그냥사람친구 첫 방송", sub: "20:35 KST · 정연·주헌 등 출연 · tvN", href: "https://sports.khan.co.kr/article/202611041439003" },
-      { date: "2026-11-29", title: "MISAMO · K-WONDER 콘서트 1회차", sub: "13:00 대만 현지(14:00 KST) · 가오슝 아레나 · SHOW Office 주최 · 예매·변경은 공식 판매처 확인", href: "https://ticketplus.com.tw/activity/f79e13ad9885c42f0f8103d9716e9b15" },
-      { date: "2026-11-29", title: "MISAMO · K-WONDER 콘서트 2회차", sub: "18:00 대만 현지(19:00 KST) · 가오슝 아레나 · SHOW Office 주최 · 예매·변경은 공식 판매처 확인", href: "https://ticketplus.com.tw/activity/f79e13ad9885c42f0f8103d9716e9b15" },
-      { date: "2026-11-30", title: "쯔위 · OWNDAYS OFF STAGE WITH TZUYU", sub: "싱가포르 ION Orchard 1층 아트리움 · 당첨자 대상 촬영 행사 · 11.16~25 공식 구매 응모, 시간은 주최 측 확인", href: "https://www.owndays.com/sg/en/news/ambassador_tzuyu" },
       { date: "2026-11-20", title: "나연 · NA-sty Spotify 리스닝 파티", sub: "17:30 KST · 나연 참여 · 일부 지역 Spotify Premium 이용자 대상", href: "https://x.com/JYPETWICE/status/2121588975634952562" },
       { date: "2026-11-20", title: "나연 · NA-sty 싱글 발매", sub: "JYP · 한국 정식 발매일 (예약 공지와 구별)", href: "https://www.twicejapan.com/news/detail/2059" },
       { date: "2026-11-21", title: "2026 MAMA AWARDS", sub: "나연 솔로 출연 · 일본 오사카", href: "https://www.cj.net/jp/press-release/view/1132" },
       { date: "2026-11-22", title: "나연 · NA-sty 오사카 구매자 특전회", sub: "WITHMUU JAPAN 주최 · 일본 오사카 · 당첨자에게 장소 별도 안내", href: "https://x.com/withmuu_jp/status/2120761807858241963" },
+      { date: "2026-11-27", title: "정연 · tvN 그냥사람친구 첫 방송", sub: "20:35 KST · 정연·주헌 등 출연 · tvN", href: "https://sports.khan.co.kr/article/202611041439003" },
+      { date: "2026-11-29", title: "MISAMO · K-WONDER 콘서트 1회차", sub: "13:00 대만 현지(14:00 KST) · 가오슝 아레나 · SHOW Office 주최 · 예매·변경은 공식 판매처 확인", href: "https://ticketplus.com.tw/activity/f79e13ad9885c42f0f8103d9716e9b15" },
+      { date: "2026-11-29", title: "MISAMO · K-WONDER 콘서트 2회차", sub: "18:00 대만 현지(19:00 KST) · 가오슝 아레나 · SHOW Office 주최 · 예매·변경은 공식 판매처 확인", href: "https://ticketplus.com.tw/activity/f79e13ad9885c42f0f8103d9716e9b15" },
+      { date: "2026-11-30", title: "쯔위 · OWNDAYS OFF STAGE WITH TZUYU", sub: "싱가포르 ION Orchard 1층 아트리움 · 당첨자 대상 촬영 행사 · 11.16~25 공식 구매 응모, 시간은 주최 측 확인", href: "https://www.owndays.com/sg/en/news/ambassador_tzuyu" },
       { date: "2026-12-12", title: "뮤직뱅크 글로벌 페스티벌", sub: "MISAMO·나연 공연, 사나 MC · 도쿄 MUFG 스타디움 · 현지 17:00 개막 예정", href: "https://music-bank.jp/" },
       { date: "2027-01-23", title: "나연 · NA-sty 발매 기념 밋앤그릿", sub: "도쿄 · 추첨 당첨자 대상 사인·2샷 촬영·배웅회 · 정확한 장소·시각은 당첨자 안내", href: "https://www.twicejapan.com/news/detail/2066" }
     ],
@@ -387,10 +387,10 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 홈페이지", sub: "JYP", href: "https://twice.jype.com/" }
     ],
     news: [
+      { date: "11.17", tag: "활동", title: "나연, NA-sty 제작 과정·BABY ANGEL 소개 · Spotify 영상 팟캐스트 첫 화 공개", href: "https://sports.khan.co.kr/en/article/202611171831007" },
       { date: "11.16", tag: "협업", title: "쯔위, OWNDAYS 아시아 지역 홍보대사 발표 · 11.30 싱가포르 행사 예고", href: "https://www.owndays.com/sg/en/news/ambassador_tzuyu" },
       { date: "11.16", tag: "영상", title: "MISAMO × ReFa MUSE 새 메이킹 영상 공개", href: "https://www.youtube.com/watch?v=LFE1pgcdc18" },
       { date: "11.06", tag: "공연", title: "MISAMO, 11.29 대만 K-WONDER 가오슝 콘서트 오후 1시 추가 공연 발표", href: "https://ticketplus.com.tw/activity/f79e13ad9885c42f0f8103d9716e9b15" },
-      { date: "11.17", tag: "활동", title: "나연, NA-sty 제작 과정·BABY ANGEL 소개 · Spotify 영상 팟캐스트 첫 화 공개", href: "https://sports.khan.co.kr/en/article/202611171831007" },
       { date: "11.14", tag: "행사", title: "나연 NA-sty · 11.20 17:30 Spotify 공식 리스닝 파티 발표", href: "https://x.com/JYPETWICE/status/2121588975634952562" },
       { date: "11.13", tag: "광고", title: "MISAMO × ReFa MUSE · 헤어케어 새 공식 광고 영상 공개", href: "https://prtimes.jp/main/html/rd/p/000001140.000029736.html" },
       { date: "11.13", tag: "굿즈", title: "나연 ‘NA-sty’ 공식 특전 포토카드 2종 공개 · 2027.01.23 팬 이벤트 세부 안내", href: "https://www.twicejapan.com/news/detail/2066" },
