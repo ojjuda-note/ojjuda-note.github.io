@@ -54,6 +54,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'qEW5IPfGLUI', title: 'EASY', kind: '안무 영상', source: 'LE SSERAFIM / HYBE LABELS' }
   ],
   twice: [
+    { id: 'x64Vby_D3Ps', title: '나연 · NA-sty SNEAK PEEK', kind: '공식 음반 프리뷰', source: 'JYP Entertainment · 2026.11.13' },
+    { id: 'wMuJyhxVM-0', title: 'TWICE 11주년 팬파티·팝업 비하인드', kind: '메이킹', source: 'TWICE 공식 채널 · 2026.11.11' },
+    { id: '01ALXG5nmUE', title: 'MISAMO × ReFa · 헤어케어 광고', kind: '공식 광고 영상', source: 'ReFa / MTG 공식 · 2026.11.13' },
     { id: '387tGAU9pNY', title: 'THIS IS FOR · TOKYO DOME LIVE', kind: '공식 공연 영상', source: 'TWICE JAPAN OFFICIAL · 2026.08.26' },
     { id: 'h_5NFu_UmRA', title: 'THIS IS FOR · SEOUL FINALE Behind', kind: '메이킹', source: 'TWICE Official · 2026.08.13' },
     { id: 'UPsCaaaqRe0', title: 'THIS IS FOR · SEOUL FINALE Playlist', kind: '공식 공연 플레이리스트', source: 'TWICE Official · 2026.07.13' },
