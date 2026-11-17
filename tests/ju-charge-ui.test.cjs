@@ -5,6 +5,7 @@ const { chromium } = require('playwright');
 const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const world = read('world.html');
+const sectionRuntime = require('./helpers/world-section-runtime.cjs')(world);
 const begin = world.indexOf('function worldProfileAvatar(');
 const end = world.indexOf('function Zg()', begin);
 const menu = world.slice(begin, end);
@@ -30,7 +31,7 @@ async function fixture(context, source, rpc) {
       window.D = { online: true, user: { id: 'synthetic-user', email: 'test@example.invalid' } };
       Object.assign(window, { g: {}, P: { communityOpen: false, incoming: [] }, Of: () => '', Jn: [['all','전체 공개']], ce: { ready: true, list: [] }, Go: 'test', w: String, ie: () => '<svg></svg>', Xd: () => '/note/', Is: () => false, Os: () => '' });
     });
-    await page.addScriptTag({ content: require('./world-section-fixture.cjs')(world) + menu });
+    await page.addScriptTag({ content: sectionRuntime + menu });
     await page.evaluate(() => { document.querySelector('#world-my').innerHTML = Yg(); });
   } else {
     await page.setContent('<base href="https://fixture.test/">' + read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<link\b[^>]*>/gi, ''));

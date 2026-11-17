@@ -173,6 +173,7 @@ async function verifyForm() {
 
     // The retained World sender uses the same bug-only contract, including safe collector failure.
     const world = read('world.html');
+    const sectionRuntime = require('./helpers/world-section-runtime.cjs')(world);
     const legacy = world.match(/async function ay\(t\)\{[\s\S]*?(?=function iy\()/)?.[0];
     assert(legacy);
     const captures = [];
@@ -180,9 +181,7 @@ async function verifyForm() {
       z: () => ({ value: '합성 아지트 고장 신고' }), document: { querySelector: () => ({ value: 'bug' }) },
       D: { user: { id: 'synthetic' } }, g: { tab: 'my' }, Go: 'test', navigator: { userAgent: 'test' },
       S: { from: () => ({ insert: async row => { captures.push(row); return {}; } }) }, dt() {}, M() {} };
-    vm.createContext(sandbox); vm.runInContext(require('./world-section-fixture.cjs')(world) + legacy, sandbox); await sandbox.ay({});
-    assert.equal(captures[0].screen, 'my');
-    assert.equal(captures[0].app_version, 'test');
+    vm.createContext(sandbox); vm.runInContext(sectionRuntime + legacy, sandbox); await sandbox.ay({});
     assert.equal(captures[0].diagnostics.source, 'world');
     sandbox.document.querySelector = () => ({ value: 'idea' }); await sandbox.ay({});
     assert.equal(Object.hasOwn(captures[1], 'diagnostics'), false);

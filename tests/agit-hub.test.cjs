@@ -53,7 +53,7 @@ test('real visits and all five missions persist independently of game preview',a
     const staleCloud=JSON.stringify(model.settings),host={outerHTML:''},input={value:'',focus(){}};
     let instant='2026-11-13T03:03:00Z',localWrites=0,cloudWrites=0,savedCloud,parkOptions;
     const context={
-      Go:require('../version.json').version,
+      sectionReleases:{park:JSON.parse(fs.readFileSync(path.join(__dirname,'../park/version.json'),'utf8'))},
       Date:class extends Date{constructor(...args){super(...(args.length?args:[instant]));}},
       window:{OjjudaAdminPreview:{isEnabled:()=>preview},OjjudaParkNotes:{install(options){parkOptions=options;return{open:mode=>parkOpens.push(mode)};}}},
       D:{online:true,user:{id:'member-a'}},$:model,pi:model,g:{tab:'hub'},_r:{spot:{name:'틀린그림찾기'},group:{name:'그룹',test:true}},
@@ -69,7 +69,7 @@ test('real visits and all five missions persist independently of game preview',a
       console,setTimeout,clearTimeout
     };
     vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../features/home/agit-hub.js'),'utf8'),context);
-    vm.runInNewContext(require('./world-section-fixture.cjs')(world)+world.slice(renderStart,renderEnd)+world.slice(progressStart,actionEnd)+world.slice(parkStart,parkEnd),context);
+    vm.runInNewContext(world.slice(renderStart,renderEnd)+world.slice(progressStart,actionEnd)+world.slice(parkStart,parkEnd),context);
     const update=context.updateAgitProgress;
     context.updateAgitProgress=changed=>{const save=update(changed);if(save)pending.push(save);return save;};
     context.refreshAgitHub();

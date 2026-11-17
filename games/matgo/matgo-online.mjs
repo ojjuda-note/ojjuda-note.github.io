@@ -2,10 +2,10 @@ import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=2026110
 import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261112-matgo-gold-tiers';
 import {floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt} from './matgo-view.mjs?v=20261106-source-folders3';
 import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261106-source-folders3';
-import {createWallet,invokeMatgo} from './matgo-wallet.mjs?v=20261113-game-popup-order1';
-import {openMatgoSolo} from './matgo-start.mjs?v=20261113-game-popup-order1';
-import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261106-source-folders3';
-import {createOnlineSound} from './matgo-online-sound.mjs?v=20261113-game-popup-order1';
+import {createWallet,invokeMatgo} from './matgo-wallet.mjs?v=20261117-matgo-double-speed';
+import {openMatgoSolo} from './matgo-start.mjs?v=20261117-matgo-double-speed';
+import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261117-matgo-double-speed';
+import {createOnlineSound} from './matgo-online-sound.mjs?v=20261117-matgo-double-speed';
 import {cpuPortraitHTML} from './matgo-opponent.mjs?v=20261106-source-folders3';
 import {createVentControls} from './matgo-deck-tools.mjs?v=20261106-source-folders3';
 const cardSVG=c=>baseCardSVG(c).replace('<svg',`<svg data-face="${Number(c.id)}"`);
@@ -116,11 +116,11 @@ function showNextEvent(){
   const el=$('#event');el.className='event banner '+(actor===room.seat?'brag':'warn');el.dataset.kind=ev.type;el.dataset.side=actor===room.seat?'mine':'opponent';
   el.innerHTML=`<section class="event-card"><div class="rays"></div><strong class="txt">${escape(head)}</strong><span class="sub">${escape(sub)}</span>${cards?'<div class="cards">'+cards.map(cardSVG).join('')+'</div>':''}</section>`;el.hidden=false;
   sound.play(ev.type==='end'?(ev.winner===room.seat?'win':'lose'):ev.type,ev);
-  eventTimer=setTimeout(()=>{el.hidden=true;showingEvent=false;showNextEvent();},ev.firstPpuk?2400:2000);
+  eventTimer=setTimeout(()=>{el.hidden=true;showingEvent=false;showNextEvent();},ev.firstPpuk?1200:1000);
 }
 async function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261112-arcade-entry-return1&open='+Date.now());return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261117-matgo-double-speed&open='+Date.now());return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const previous=room,changed=room?.id!==next.id||room?.round!==next.round;
   if(!changed&&next.version===room.version&&JSON.stringify(next.gold)===JSON.stringify(room.gold)){clockOffset=(next.serverTime||Date.now())-Date.now();tick();return;}

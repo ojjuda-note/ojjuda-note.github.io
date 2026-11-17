@@ -20,7 +20,7 @@
   secretcount:'1.2.0',
   updown:'1.5.0',
   partyroulette:'1.5.0',
-  drinking:'1.26.0',
+  drinking:'1.26.1',
   shapematch:'1.3.0',
   tarot:'1.10.2',
   saju:'2.15.1',
@@ -52,7 +52,7 @@
   janggi:'1.14.2',
   chess:'1.5.1',
   billiards:'1.5.1',
-  matgo:'1.7.1'
+  matgo:'1.7.2'
  });
  const controls=['/shared/games/game-controls.css?v=20261109-unified-multiplayer-ui2','/shared/games/game-controls.js?v=20261106-source-folders1'];
  const session='/shared/games/game-session.js?v=20261108-streak-exit1';

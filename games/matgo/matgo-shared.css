@@ -26,7 +26,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;touch-
  box-shadow:inset 0 0 0 6px var(--wood),inset 0 0 0 8px var(--wood2),inset 0 10px 40px #00000066,0 18px 40px -20px #000c}
 .floor:before{content:"";position:absolute;inset:8px;border-radius:19px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .08 0'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>");pointer-events:none;mix-blend-mode:overlay}
 .fl{position:absolute;inset:0}
-.stack{position:absolute;width:var(--cw,52px);height:var(--ch,78px);transform-origin:50% 60%;transition:left .3s ease,top .3s ease}
+.stack{position:absolute;width:var(--cw,52px);height:var(--ch,78px);transform-origin:50% 60%;transition:left .15s ease,top .15s ease}
 .stack .c{position:absolute;left:0;top:0;width:var(--cw,52px);height:var(--ch,78px);border-radius:6px;box-shadow:0 1px 0 #fff6 inset,1px 4px 8px #00000055,0 0 0 .5px #0002}
 .stack.pick{cursor:pointer}.stack.pick .c:last-child{outline:3px solid var(--gold);outline-offset:2px;animation:glow 1s infinite}
 .stack.ppuk:after{content:attr(data-ppuk-label);position:absolute;right:-10px;top:-10px;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;box-shadow:0 3px 8px -2px #0008}
@@ -58,26 +58,26 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;touch-
 table.sc{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 10px}table.sc td{padding:4px 4px;border-bottom:1px solid var(--line);text-align:left}table.sc td:last-child{text-align:right}
 .big{font-size:32px;margin:4px 0 8px;font-weight:700}.big.win{color:var(--ok)}.big.lose{color:var(--red)}
 .banner{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:8;pointer-events:none;text-align:center}
-.banner .txt{font-size:44px;font-weight:700;letter-spacing:.04em;color:#fff;text-shadow:0 3px 0 #0003,0 10px 30px #0008;animation:bpop .9s cubic-bezier(.2,1.4,.3,1) both}
-.banner .sub{font-size:15px;color:#fff;opacity:.9;margin-top:4px;animation:bfade .9s .15s both}
+.banner .txt{font-size:44px;font-weight:700;letter-spacing:.04em;color:#fff;text-shadow:0 3px 0 #0003,0 10px 30px #0008;animation:bpop .45s cubic-bezier(.2,1.4,.3,1) both}
+.banner .sub{font-size:15px;color:#fff;opacity:.9;margin-top:4px;animation:bfade .45s .075s both}
 .banner.brag .txt{background:linear-gradient(180deg,#FFF3B0,#F2C14E 55%,#D9952A);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 4px 0 #7a4a00) drop-shadow(0 10px 24px #000a)}
 .banner.warn .txt{color:#FFE5E5;filter:drop-shadow(0 4px 0 #7a1010) drop-shadow(0 10px 24px #000a)}
-.banner .rays{position:absolute;left:50%;top:50%;width:420px;height:420px;transform:translate(-50%,-50%);background:repeating-conic-gradient(from 0deg,#ffffff00 0 10deg,#ffffff22 10deg 20deg);border-radius:50%;animation:spin 3s linear infinite,bfade .5s both;mask-image:radial-gradient(circle,#000 20%,transparent 65%);z-index:-1}
+.banner .rays{position:absolute;left:50%;top:50%;width:420px;height:420px;transform:translate(-50%,-50%);background:repeating-conic-gradient(from 0deg,#ffffff00 0 10deg,#ffffff22 10deg 20deg);border-radius:50%;animation:spin 1.5s linear infinite,bfade .25s both;mask-image:radial-gradient(circle,#000 20%,transparent 65%);z-index:-1}
 .banner.warn .rays{background:repeating-conic-gradient(from 0deg,#ff000000 0 10deg,#ff5c5c33 10deg 20deg)}
 @keyframes bpop{0%{transform:scale(.3) rotate(-8deg);opacity:0}60%{transform:scale(1.15) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0)}}
 @keyframes bfade{from{opacity:0}to{opacity:1}}@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
-.banner.out{animation:bout .35s ease-in both}@keyframes bout{to{opacity:0;transform:translate(-50%,-60%) scale(.9)}}
+.banner.out{animation:bout .175s ease-in both}@keyframes bout{to{opacity:0;transform:translate(-50%,-60%) scale(.9)}}
 .confetti{position:fixed;z-index:8;pointer-events:none;width:9px;height:14px;border-radius:2px;will-change:transform}
-.flash{position:fixed;inset:0;z-index:6;pointer-events:none;box-shadow:inset 0 0 0 0 #ff4b4b00;animation:flash .9s ease-out both}
+.flash{position:fixed;inset:0;z-index:6;pointer-events:none;box-shadow:inset 0 0 0 0 #ff4b4b00;animation:flash .45s ease-out both}
 @keyframes flash{0%{box-shadow:inset 0 0 90px 20px #ff4b4bcc}100%{box-shadow:inset 0 0 0 0 #ff4b4b00}}
-.shake{animation:shk .45s}@keyframes shk{0%,100%{transform:translate(0)}20%{transform:translate(-6px,2px)}40%{transform:translate(6px,-2px)}60%{transform:translate(-4px,1px)}80%{transform:translate(4px,-1px)}}
+.shake{animation:shk .225s}@keyframes shk{0%,100%{transform:translate(0)}20%{transform:translate(-6px,2px)}40%{transform:translate(6px,-2px)}60%{transform:translate(-4px,1px)}80%{transform:translate(4px,-1px)}}
 .fly.steal{filter:drop-shadow(0 0 14px #F2C14E) drop-shadow(0 12px 18px #0009);z-index:9}
-.stealtag{position:fixed;left:50%;top:calc(42% + 70px);transform:translateX(-50%);z-index:9;font-size:22px;font-weight:700;padding:6px 18px;border-radius:999px;pointer-events:none;animation:tagpop 1s ease both}
+.stealtag{position:fixed;left:50%;top:calc(42% + 70px);transform:translateX(-50%);z-index:9;font-size:22px;font-weight:700;padding:6px 18px;border-radius:999px;pointer-events:none;animation:tagpop .5s ease both}
 .stealtag.good{background:linear-gradient(180deg,#FFE7A6,#F2C14E);color:#5A3E00;box-shadow:0 0 24px #F2C14E99}
 .stealtag.bad{background:linear-gradient(180deg,#FF9A9A,#E35D5D);color:#fff;box-shadow:0 0 24px #E35D5D99}
 @keyframes tagpop{0%{opacity:0;transform:translateX(-50%) scale(.5)}25%{opacity:1;transform:translateX(-50%) scale(1.15)}70%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(-14px)}}
-.cap.robbed{animation:robbed .8s ease}@keyframes robbed{0%,100%{background:#ffffff12}30%{background:#E35D5D88;transform:translateX(-4px)}50%{transform:translateX(4px)}70%{transform:translateX(-2px)}}
-.cap.gain{animation:gain .7s ease}@keyframes gain{0%,100%{background:#ffffff12}40%{background:#F2C14E88;transform:scale(1.06)}}
+.cap.robbed{animation:robbed .4s ease}@keyframes robbed{0%,100%{background:#ffffff12}30%{background:#E35D5D88;transform:translateX(-4px)}50%{transform:translateX(4px)}70%{transform:translateX(-2px)}}
+.cap.gain{animation:gain .35s ease}@keyframes gain{0%,100%{background:#ffffff12}40%{background:#F2C14E88;transform:scale(1.06)}}
 .holding{position:fixed;z-index:8;transform:translate(-50%,0);display:flex;align-items:flex-end;gap:10px;pointer-events:none}
 .holding .hc{width:var(--hw);height:var(--hh);border-radius:9px;box-shadow:0 0 0 3px var(--gold),0 0 24px 4px #F2C14Eaa,0 18px 30px -8px #000c;animation:holdbob 1.4s ease-in-out infinite;overflow:hidden}
 .holding .hl{background:#000000a0;color:#fff;font-size:12.5px;line-height:1.5;padding:7px 11px;border-radius:12px;margin-bottom:8px;white-space:nowrap;backdrop-filter:blur(4px)}

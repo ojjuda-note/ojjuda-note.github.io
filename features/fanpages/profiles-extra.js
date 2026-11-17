@@ -314,8 +314,12 @@ if (seventeenProfile) {
 const twsProfile = window.OJJUDA_FAN_PROFILES.tws;
 if (twsProfile) {
   twsProfile.expanded = true;
-  twsProfile.checkedAt = '2026.11.12';
+  twsProfile.checkedAt = '2026.11.17';
+  twsProfile.awards = [
+    { year: '2026.11', title: 'MMA2026 글로벌 임팩트 아티스트 남자 부문', detail: '2026.11.14 서울 고척스카이돔 수상', href: 'https://enews.imbc.com/News/RetrieveNewsInfo/524887' }
+  ];
   twsProfile.records = [
+    { year: '2026.11', title: '뮤직뱅크 Call My Name 첫 1위', detail: '2026.11.13 뮤직뱅크 9,857점 · 싱글 TO US 타이틀', href: 'https://www.soompi.com/article/1886823wpp/watch-tws-takes-1st-win-for-call-my-name-on-music-bank-performances-by-jisoo-ateez-and-more' },
     { year: '2024.01', title: 'Sparkling Blue 데뷔', detail: '2024.01.22 데뷔 미니앨범 · 5곡', href: 'https://music.apple.com/us/album/sparkling-blue/1723932647' },
     { year: '2026.11', title: 'TO US 두 번째 싱글', detail: '11월 2일 발매 · 3곡', href: 'https://music.apple.com/us/album/to-us-single/6818392534' }
   ];
@@ -336,7 +340,7 @@ if (twsProfile) {
 const nctdreamProfile = window.OJJUDA_FAN_PROFILES.nctdream;
 if (nctdreamProfile) {
   nctdreamProfile.expanded = true;
-  nctdreamProfile.checkedAt = '2026.11.14';
+  nctdreamProfile.checkedAt = '2026.11.17';
   // SMTOWN OFFICIAL JAPAN publishes these six current members' birthdays.
   const officialBirthdays = {
     '런쥔': '2000.03.23', '제노': '2000.04.23', '해찬': '2000.06.06',
@@ -350,6 +354,7 @@ if (nctdreamProfile) {
   }
   nctdreamProfile.sources.push({ label: 'SMTOWN 일본 공식 6인 멤버 생일', href: 'https://smtown-official.jp/pickup/' });
   nctdreamProfile.records = [
+    { year: '2026.11', title: '정규 6집 첫 주 100만 장 돌파', detail: '한터 차트 약 100만 2,500장 · 11개 음반 연속 밀리언셀러 · SM 공식 발표 11.16', href: 'https://www.koreatimes.co.kr/amp/entertainment/k-pop/20261116/nct-dream-hits-11th-consecutive-million-seller-with-dream-after-dream' },
     { year: '2026.11', title: '정규 6집 DREAM AFTER DREAM', detail: '2026.11.09 발매 · 타이틀 Boogie Woogie · 10곡', href: 'https://music.apple.com/us/album/dream-after-dream/6827483714' },
     { year: '2026.11', title: '일본 공연 출연', detail: '11.22 TV아사히 드림 페스티벌 출연', href: 'https://nct-jp.net/en/news/detail.php?id=1135918' }
   ];

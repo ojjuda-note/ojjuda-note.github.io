@@ -23,10 +23,11 @@ function fixture({images=false}={}){
  for(const back of [false,true]){
   const f=fixture();try{
    let resolved=false;
-   const task=f.w.throwCard({id:1},{x:10,y:20,w:58,h:87},{x:90,y:120,rot:5},{back,dur:420}).then(()=>resolved=true);
+   const task=f.w.throwCard({id:1},{x:10,y:20,w:58,h:87},{x:90,y:120,rot:5},{back}).then(()=>resolved=true);
    await tick();
    const flight=f.animations.find(a=>a.node.classList.contains('fly'));
    assert.ok(flight,'a flight starts');
+   assert.equal(flight.options.duration,210);
    assert.equal(resolved,false,'a slow/delayed animation must not end when its nominal timer expires');
    assert.ok(flight.node.isConnected,'the moving card remains mounted until its animation completes');
    assert.equal(f.w.getComputedStyle(flight.node).opacity,'1','a moving solo card stays opaque');
@@ -44,6 +45,7 @@ function fixture({images=false}={}){
   let resolved=false;const task=f.w.collect([{id:1,k:'pi'},{id:2,k:'pi'}],0).then(()=>resolved=true);await tick();
   assert.equal(resolved,false,'capture waits for actual completion of every staggered flight');
   const flights=f.animations.filter(a=>a.node.classList.contains('fly'));assert.equal(flights.length,2);
+  assert.deepEqual(flights.map(a=>[a.options.duration,a.options.delay]),[[230,0],[230,35]]);
   flights[0].finish();await tick();assert.ok(flights[0].node.isConnected,'landed cards remain visible until the capture is committed');assert.equal(resolved,false);assert.ok(flights[1].node.isConnected);
   flights[1].finish();await task;assert.ok(flights.every(a=>!a.node.isConnected));
  }finally{f.dom.window.close();}

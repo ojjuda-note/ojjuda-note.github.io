@@ -23,7 +23,7 @@
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/games/matgo/matgo-shared.css?v=20261106-source-folders3">
+<link rel="stylesheet" href="/games/matgo/matgo-shared.css?v=20261117-matgo-double-speed">
 <script src="../config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script src="/games/matgo/matgo-access.js?v=20261106-source-folders3"></script>
@@ -68,7 +68,7 @@ import {cpuPortraitHTML} from "./matgo/matgo-opponent.mjs?v=20261106-source-fold
 import {createVentControls} from "./matgo/matgo-deck-tools.mjs?v=20261106-source-folders3";
 import {CARDS,isPi,piVal,score,Game,soloTierLabel,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo/matgo-engine.mjs?v=20261112-matgo-gold-tiers";
 import {floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt} from "./matgo/matgo-view.mjs?v=20261106-source-folders3";
-import {createWallet} from "./matgo/matgo-wallet.mjs?v=20261113-game-popup-order1";
+import {createWallet} from "./matgo/matgo-wallet.mjs?v=20261117-matgo-double-speed";
 import {createFlightArt} from "./matgo/matgo-flight-art.mjs?v=20261106-source-folders3";
 (async () => {
 'use strict';
@@ -339,7 +339,7 @@ async function throwCard(card,from,to,opts={}){ // Keep geometry fixed; only tra
   if(!await flightArt.prepare([card]))return;
   if(opts.back)Sound.play('flip');
   const w=CW,h=CH,sw=from.w||w,sh=from.h||h;
-  const x=from.x+(sw-w)/2,y=from.y+(sh-h)/2,dx=to.x-x,dy=to.y-y,dur=opts.dur||420;
+  const x=from.x+(sw-w)/2,y=from.y+(sh-h)/2,dx=to.x-x,dy=to.y-y,dur=opts.dur||210;
   const f=flyEl(card,x,y,from.rot||0,w,h,!!opts.back);
   const middle=opts.back ? .45 : .5;
   const frames=[
@@ -361,7 +361,7 @@ async function throwCard(card,from,to,opts={}){ // Keep geometry fixed; only tra
   await f.animate(frames,timing).finished.catch(()=>{});
   Sound.play(opts.dealing?'deal':'land',{onCards:!!opts.onCards});f.remove();
 }
-function landFx(st){ const el=stackEls.get(st); if(!el) return; el.animate([{transform:'scale(1)'},{transform:'scale(1.07) translateY(2px)'},{transform:'scale(.98)'},{transform:'scale(1)'}],{duration:260,easing:'ease-out'}); const under=el.querySelectorAll('.c'); under.forEach((c,i)=>{ if(i<under.length-1) c.animate([{transform:c.style.transform},{transform:c.style.transform+' translate(2px,1px)'},{transform:c.style.transform}],{duration:220}); }); }
+function landFx(st){ const el=stackEls.get(st); if(!el) return; el.animate([{transform:'scale(1)'},{transform:'scale(1.07) translateY(2px)'},{transform:'scale(.98)'},{transform:'scale(1)'}],{duration:130,easing:'ease-out'}); const under=el.querySelectorAll('.c'); under.forEach((c,i)=>{ if(i<under.length-1) c.animate([{transform:c.style.transform},{transform:c.style.transform+' translate(2px,1px)'},{transform:c.style.transform}],{duration:110}); }); }
 async function collect(cards,p){
   if(!await flightArt.prepare(cards))return;
   Sound.play('take',{count:cards.length});
@@ -380,12 +380,12 @@ async function collect(cards,p){
     const f=flyEl(c,r.left,r.top,0,r.width,r.height);el.style.visibility='hidden';
     const dx=x-r.left,dy=y-r.top;flights.push(f);
     f.style.transformOrigin='top left';
-    await f.animate([{transform:'translate3d(0,0,0) scale(1)',offset:0},{transform:`translate3d(${dx*.4}px,${dy*.4-18}px,0) scale(1.05)`,offset:.4},{transform:`translate3d(${dx}px,${dy}px,0) scale(${tw/r.width},${tw*1.5/r.height})`,offset:1}],{duration:460,delay:i*70,easing:'cubic-bezier(.3,.6,.2,1)',fill:'forwards'}).finished.catch(()=>{});
+    await f.animate([{transform:'translate3d(0,0,0) scale(1)',offset:0},{transform:`translate3d(${dx*.4}px,${dy*.4-18}px,0) scale(1.05)`,offset:.4},{transform:`translate3d(${dx}px,${dy}px,0) scale(${tw/r.width},${tw*1.5/r.height})`,offset:1}],{duration:230,delay:i*35,easing:'cubic-bezier(.3,.6,.2,1)',fill:'forwards'}).finished.catch(()=>{});
   }));
   flights.forEach(f=>f.remove());
 }
-function banner(text,sub,kind='brag',ms=1300){ const b=document.createElement('div'); b.className='banner '+kind; b.innerHTML=`<div class="rays"></div><div class="txt">${text}</div>${sub?`<div class="sub">${sub}</div>`:''}`; document.body.appendChild(b); if(kind==='brag') confetti(); else { const f=document.createElement('div'); f.className='flash'; document.body.appendChild(f); setTimeout(()=>f.remove(),900); app.classList.add('shake'); setTimeout(()=>app.classList.remove('shake'),500); } try{ navigator.vibrate&&navigator.vibrate(kind==='brag'?[30,40,30]:[80]); }catch{} setTimeout(()=>{ b.classList.add('out'); setTimeout(()=>b.remove(),360); },ms); return sleep(Math.min(ms,900)); }
-function confetti(n=26){ const cols=['#F2C14E','#F6A9BF','#9C7FE0','#8FC4F2','#7CC27C','#fff']; const cx=innerWidth/2, cy=innerHeight*.38; for(let i=0;i<n;i++){ const c=document.createElement('div'); c.className='confetti'; c.style.background=cols[i%cols.length]; c.style.left=cx+'px'; c.style.top=cy+'px'; document.body.appendChild(c); const a=Math.random()*Math.PI*2, v=120+Math.random()*220, dx=Math.cos(a)*v, dy=Math.sin(a)*v-120; c.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:`translate(${dx}px,${dy+260}px) rotate(${Math.random()*720-360}deg)`,opacity:0}],{duration:1100+Math.random()*500,easing:'cubic-bezier(.2,.7,.4,1)',fill:'forwards'}); setTimeout(()=>c.remove(),1700); } }
+function banner(text,sub,kind='brag',ms=650){ const b=document.createElement('div'); b.className='banner '+kind; b.innerHTML=`<div class="rays"></div><div class="txt">${text}</div>${sub?`<div class="sub">${sub}</div>`:''}`; document.body.appendChild(b); if(kind==='brag') confetti(); else { const f=document.createElement('div'); f.className='flash'; document.body.appendChild(f); setTimeout(()=>f.remove(),450); app.classList.add('shake'); setTimeout(()=>app.classList.remove('shake'),250); } try{ navigator.vibrate&&navigator.vibrate(kind==='brag'?[30,40,30]:[80]); }catch{} setTimeout(()=>{ b.classList.add('out'); setTimeout(()=>b.remove(),180); },ms); return sleep(Math.min(ms,450)); }
+function confetti(n=26){ const cols=['#F2C14E','#F6A9BF','#9C7FE0','#8FC4F2','#7CC27C','#fff']; const cx=innerWidth/2, cy=innerHeight*.38; for(let i=0;i<n;i++){ const c=document.createElement('div'); c.className='confetti'; c.style.background=cols[i%cols.length]; c.style.left=cx+'px'; c.style.top=cy+'px'; document.body.appendChild(c); const a=Math.random()*Math.PI*2, v=120+Math.random()*220, dx=Math.cos(a)*v, dy=Math.sin(a)*v-120; c.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:`translate(${dx}px,${dy+260}px) rotate(${Math.random()*720-360}deg)`,opacity:0}],{duration:550+Math.random()*250,easing:'cubic-bezier(.2,.7,.4,1)',fill:'forwards'}); setTimeout(()=>c.remove(),850); } }
 const ui={
   busy:false, resolveChoose:null, warned:{},
   async chooseGukjin(p,card){
@@ -403,36 +403,36 @@ const ui={
     hold.style.left=(fr.left+fr.width/2)+'px'; hold.style.top=(fr.bottom-h*.35)+'px'; hold.style.setProperty('--hw',w+'px'); hold.style.setProperty('--hh',h+'px'); document.body.appendChild(hold);
     // 시작 위치에서 날아오기
     let src=null; if(from==='hand'){ src=ui.lastHandRect; } else { const dk=$('.deck .back').getBoundingClientRect(); src={left:dk.left,top:dk.top,width:dk.width,height:dk.height}; }
-    const hc=hold.querySelector('.hc'); if(faceReady)hc.replaceChildren(flightArt.face(card)); const hr=hc.getBoundingClientRect(); if(src&&faceReady) hc.animate([{transform:`translate(${src.left-hr.left}px,${src.top-hr.top}px) scale(${src.width/w})`},{transform:'translate(0,0) scale(1)'}],{duration:380,easing:'cubic-bezier(.25,.7,.3,1)'});
+    const hc=hold.querySelector('.hc'); if(faceReady)hc.replaceChildren(flightArt.face(card)); const hr=hc.getBoundingClientRect(); if(src&&faceReady) hc.animate([{transform:`translate(${src.left-hr.left}px,${src.top-hr.top}px) scale(${src.width/w})`},{transform:'translate(0,0) scale(1)'}],{duration:190,easing:'cubic-bezier(.25,.7,.3,1)'});
     return new Promise(res=>{ ui.resolveChoose=(i)=>{ ui.resolveChoose=null; ui.chooseStacks=null; const r=hc.getBoundingClientRect(); ui.holdRect={x:r.left,y:r.top,w:r.width,h:r.height}; hold.remove(); stackEls.forEach(el=>el.classList.remove('pick','dimmed')); res(i); }; }); },
-  async goStop(p,s){ if(p===CPU){ const d=aiGoStop(game,p,s); if(d==='stop')Sound.play('stop'); toast(d==='go'?`상대: 고! (${s}점)`:`상대: 스톱 (${s}점)`,1400); await sleep(900); return d; } render(); Sound.play('prompt'); return new Promise(res=>{ modal(`<div class="go-stop-summary"><h2 id="go-stop-title">${s}점 · 고/스톱</h2><p>상대 ${game.pts(CPU)}점 · 남은 패 ${game.deck.length}장</p></div><div class="row"><button class="btn gold" id="go">고!</button><button class="btn g" id="stop">스톱</button></div>`,{go:()=>res('go'),stop:()=>{Sound.play('stop');res('stop');}},false,true); }); },
+  async goStop(p,s){ if(p===CPU){ const d=aiGoStop(game,p,s); if(d==='stop')Sound.play('stop'); toast(d==='go'?`상대: 고! (${s}점)`:`상대: 스톱 (${s}점)`,1400); await sleep(450); return d; } render(); Sound.play('prompt'); return new Promise(res=>{ modal(`<div class="go-stop-summary"><h2 id="go-stop-title">${s}점 · 고/스톱</h2><p>상대 ${game.pts(CPU)}점 · 남은 패 ${game.deck.length}장</p></div><div class="row"><button class="btn gold" id="go">고!</button><button class="btn g" id="stop">스톱</button></div>`,{go:()=>res('go'),stop:()=>{Sound.play('stop');res('stop');}},false,true); }); },
   async event(type,d={}){ if(!['played','flip','take','bonusPlay','flipBonus'].includes(type))Sound.play(type==='ppuk'&&d.firstPpuk?'bonusPlay':type,d); const who=p=>p===ME?'나':'상대';
     if(['played','flip','take','bonusPlay','flipBonus','ppukBonus','draw','steal'].includes(type)&&!await flightArt.prepare(d.cards||[d.card])){render();return;}
     if(type==='gukjin'){render();if(d.p===CPU)toast('상대 구쌍피 → '+(d.choice==='pi'?'쌍피':'그림(열끗)'),1400);return;}
-    if(type==='state'){ render(); const my=score(game.caps[ME]), op=score(game.caps[CPU]); if(!ui.warned.pibak&&op.pv>=8&&my.pv<=8){ ui.warned.pibak=1; Sound.play('warning'); await banner('피박 위험!','피를 모아야 해요','warn',1300); } if(!ui.warned.gwang&&op.g>=2&&my.g===0&&game.deck.length<10){ ui.warned.gwang=1; Sound.play('warning'); await banner('광박 위험!','광을 하나는 먹어야 해요','warn',1300); } if(!ui.warned.seven&&op.pts>=5&&op.pts<7){ ui.warned.seven=1; Sound.play('warning'); await banner('상대 '+op.pts+'점','곧 날 수 있어요','warn',1100); } return; }
-    if(type==='played'&&d.card){ const st=d.stack; const i=st.indexOf(d.card); const to=cardScreenPos(st,i); let from; if(ui.holdRect&&d.p===ME){ from={...ui.holdRect,rot:0}; ui.holdRect=null; } else if(d.p===ME){ const el=document.querySelector(`.hand.me .c[data-id="${d.card.id}"]`); const r=el?el.getBoundingClientRect():$('.hand.me').getBoundingClientRect(); from={x:r.left,y:r.top,w:r.width,h:r.height,rot:0}; if(el) el.style.visibility='hidden'; } else { const hs=$('.hand.op'); const r=hs.getBoundingClientRect(); from={x:r.left+r.width/2-15,y:r.top,w:30,h:45,rot:0}; } await throwCard(d.card,from,to,{spin:d.p===ME?-25:25,dur:d.quick?330:420,onCards:i>0}); render(); landFx(st); await sleep(d.quick?40:120); return; }
-    if(type==='bomb'){ await banner((d.p===ME?'':'상대 ')+(d.handCount===2?'두 장 폭탄!':'폭탄!'),d.p===ME?'점수 ×2 · 내 패 옆에 뒤집기 '+d.flips+'회 추가':d.handCount+'장 한꺼번에 · 점수 ×2',d.p===ME?'brag':'warn',1400); render(); return; }
+    if(type==='state'){ render(); const my=score(game.caps[ME]), op=score(game.caps[CPU]); if(!ui.warned.pibak&&op.pv>=8&&my.pv<=8){ ui.warned.pibak=1; Sound.play('warning'); await banner('피박 위험!','피를 모아야 해요','warn',650); } if(!ui.warned.gwang&&op.g>=2&&my.g===0&&game.deck.length<10){ ui.warned.gwang=1; Sound.play('warning'); await banner('광박 위험!','광을 하나는 먹어야 해요','warn',650); } if(!ui.warned.seven&&op.pts>=5&&op.pts<7){ ui.warned.seven=1; Sound.play('warning'); await banner('상대 '+op.pts+'점','곧 날 수 있어요','warn',550); } return; }
+    if(type==='played'&&d.card){ const st=d.stack; const i=st.indexOf(d.card); const to=cardScreenPos(st,i); let from; if(ui.holdRect&&d.p===ME){ from={...ui.holdRect,rot:0}; ui.holdRect=null; } else if(d.p===ME){ const el=document.querySelector(`.hand.me .c[data-id="${d.card.id}"]`); const r=el?el.getBoundingClientRect():$('.hand.me').getBoundingClientRect(); from={x:r.left,y:r.top,w:r.width,h:r.height,rot:0}; if(el) el.style.visibility='hidden'; } else { const hs=$('.hand.op'); const r=hs.getBoundingClientRect(); from={x:r.left+r.width/2-15,y:r.top,w:30,h:45,rot:0}; } await throwCard(d.card,from,to,{spin:d.p===ME?-25:25,dur:d.quick?165:210,onCards:i>0}); render(); landFx(st); await sleep(d.quick?20:60); return; }
+    if(type==='bomb'){ await banner((d.p===ME?'':'상대 ')+(d.handCount===2?'두 장 폭탄!':'폭탄!'),d.p===ME?'점수 ×2 · 내 패 옆에 뒤집기 '+d.flips+'회 추가':d.handCount+'장 한꺼번에 · 점수 ×2',d.p===ME?'brag':'warn',700); render(); return; }
     if(type==='played'&&!d.card){ render(); toast(d.p===ME?`폭탄 뒤집기 · ${game.bomb[ME]}회 남음`:'상대 폭탄 뒤집기'); return; }
-    if(type==='flip'){ const st=d.stack; const i=st.indexOf(d.card); const to=cardScreenPos(st,i); const dk=$('.deck .back').getBoundingClientRect(); if(ui.holdRect&&d.p===ME){ const hr=ui.holdRect; ui.holdRect=null; await throwCard(d.card,{x:hr.x,y:hr.y,w:hr.w,h:hr.h,rot:0},to,{dur:380,onCards:i>0}); } else await throwCard(d.card,{x:dk.left,y:dk.top,w:dk.width,h:dk.height,rot:0},to,{back:true,dur:520,onCards:i>0}); render(); landFx(st); await sleep(140); return; }
-    if(type==='take'){ if(d.silent){ render(); return; } await sleep(160); await collect(d.cards,d.p); document.querySelectorAll('.fly.tmp').forEach(e=>e.remove()); render(); return; }
-    if(type==='bonusPlay'){ const el=d.p===ME?document.querySelector(`.hand.me .c[data-id="${d.card.id}"]`):null; const r=el?el.getBoundingClientRect():$('.hand.op').getBoundingClientRect(); if(el) el.style.visibility='hidden'; const tgt=document.querySelectorAll(`.zone.${d.p===ME?'me':'op'} .cap`)[3].getBoundingClientRect(); const f=flyEl(d.card,r.left+(el?0:r.width/2-15),r.top,0,el?r.width:30,el?r.height:45); const dx=tgt.left+tgt.width-26-r.left, dy=tgt.top+6-r.top; await f.animate([{transform:'translate(0,0) scale(1) rotate(0)'},{transform:`translate(${dx*.45}px,${dy*.45-60}px) scale(1.5) rotate(-10deg)`,offset:.45},{transform:`translate(${dx}px,${dy}px) scale(.4) rotate(0)`}],{duration:650,easing:'cubic-bezier(.3,.6,.2,1)',fill:'forwards'}).finished.catch(()=>{}); Sound.play('bonusPlay'); await banner(d.p===ME?'보너스!':'상대 보너스!',`${d.card.pv===2?'쌍피':'쓰리피'} · 한 장 더 받아요`,d.p===ME?'brag':'warn',1000); f.remove(); return; }
-    if(type==='flipBonus'){ const dk=$('.deck .back').getBoundingClientRect(); const fb=floorBox(); const to={x:fb.x+fb.w/2-CW/2,y:fb.y+fb.h/2-CH/2,rot:0}; await throwCard(d.card,{x:dk.left,y:dk.top,w:dk.width,h:dk.height,rot:0},to,{back:true,dur:500,onCards:false}); Sound.play('flipBonus'); const t=flyEl(d.card,to.x,to.y,0); t.classList.add('tmp'); t.dataset.id=d.card.id; t.animate([{transform:'scale(1)'},{transform:'scale(1.25)'},{transform:'scale(1)'}],{duration:400}); await banner(d.p===ME?'보너스!':'상대 보너스!',`${d.card.pv===2?'쌍피':'쓰리피'} · 한 장 더 뒤집어요`,d.p===ME?'brag':'warn',1000); return; }
+    if(type==='flip'){ const st=d.stack; const i=st.indexOf(d.card); const to=cardScreenPos(st,i); const dk=$('.deck .back').getBoundingClientRect(); if(ui.holdRect&&d.p===ME){ const hr=ui.holdRect; ui.holdRect=null; await throwCard(d.card,{x:hr.x,y:hr.y,w:hr.w,h:hr.h,rot:0},to,{dur:190,onCards:i>0}); } else await throwCard(d.card,{x:dk.left,y:dk.top,w:dk.width,h:dk.height,rot:0},to,{back:true,dur:260,onCards:i>0}); render(); landFx(st); await sleep(70); return; }
+    if(type==='take'){ if(d.silent){ render(); return; } await sleep(80); await collect(d.cards,d.p); document.querySelectorAll('.fly.tmp').forEach(e=>e.remove()); render(); return; }
+    if(type==='bonusPlay'){ const el=d.p===ME?document.querySelector(`.hand.me .c[data-id="${d.card.id}"]`):null; const r=el?el.getBoundingClientRect():$('.hand.op').getBoundingClientRect(); if(el) el.style.visibility='hidden'; const tgt=document.querySelectorAll(`.zone.${d.p===ME?'me':'op'} .cap`)[3].getBoundingClientRect(); const f=flyEl(d.card,r.left+(el?0:r.width/2-15),r.top,0,el?r.width:30,el?r.height:45); const dx=tgt.left+tgt.width-26-r.left, dy=tgt.top+6-r.top; await f.animate([{transform:'translate(0,0) scale(1) rotate(0)'},{transform:`translate(${dx*.45}px,${dy*.45-60}px) scale(1.5) rotate(-10deg)`,offset:.45},{transform:`translate(${dx}px,${dy}px) scale(.4) rotate(0)`}],{duration:325,easing:'cubic-bezier(.3,.6,.2,1)',fill:'forwards'}).finished.catch(()=>{}); Sound.play('bonusPlay'); await banner(d.p===ME?'보너스!':'상대 보너스!',`${d.card.pv===2?'쌍피':'쓰리피'} · 한 장 더 받아요`,d.p===ME?'brag':'warn',500); f.remove(); return; }
+    if(type==='flipBonus'){ const dk=$('.deck .back').getBoundingClientRect(); const fb=floorBox(); const to={x:fb.x+fb.w/2-CW/2,y:fb.y+fb.h/2-CH/2,rot:0}; await throwCard(d.card,{x:dk.left,y:dk.top,w:dk.width,h:dk.height,rot:0},to,{back:true,dur:250,onCards:false}); Sound.play('flipBonus'); const t=flyEl(d.card,to.x,to.y,0); t.classList.add('tmp'); t.dataset.id=d.card.id; t.animate([{transform:'scale(1)'},{transform:'scale(1.25)'},{transform:'scale(1)'}],{duration:200}); await banner(d.p===ME?'보너스!':'상대 보너스!',`${d.card.pv===2?'쌍피':'쓰리피'} · 한 장 더 뒤집어요`,d.p===ME?'brag':'warn',500); return; }
     if(type==='ppukBonus'){
-      for(const card of d.cards){const el=document.querySelector(`.fly.tmp[data-id="${card.id}"]`);if(!el)continue;const r=el.getBoundingClientRect();el.remove();await throwCard(card,{x:r.left,y:r.top,w:r.width,h:r.height,rot:0},cardScreenPos(d.stack,d.stack.indexOf(card)),{dur:300,onCards:true});}
+      for(const card of d.cards){const el=document.querySelector(`.fly.tmp[data-id="${card.id}"]`);if(!el)continue;const r=el.getBoundingClientRect();el.remove();await throwCard(card,{x:r.left,y:r.top,w:r.width,h:r.height,rot:0},cardScreenPos(d.stack,d.stack.indexOf(card)),{dur:150,onCards:true});}
       render();return;
     }
-    if(type==='draw'){ const dk=$('.deck .back').getBoundingClientRect(); const hs=$(d.p===ME?'.hand.me':'.hand.op').getBoundingClientRect(); let x=hs.left+hs.width-60,y=hs.top+10,sx=.9,sy=.9; if(d.p===ME){ render(); const el=$(`#handMe .c[data-id="${d.card.id}"]`); if(el){ const r=el.getBoundingClientRect();x=r.left;y=r.top;sx=r.width/dk.width;sy=r.height/dk.height;el.style.visibility='hidden'; } } const f=flyEl(d.card,dk.left,dk.top,0,dk.width,dk.height,d.p!==ME); f.style.transformOrigin='top left'; await f.animate([{transform:'translate(0,0)'},{transform:`translate(${x-dk.left}px,${y-dk.top}px) scale(${sx},${sy})`}],{duration:420,easing:'cubic-bezier(.3,.6,.2,1)',fill:'forwards'}).finished.catch(()=>{}); f.remove(); render(); return; }
+    if(type==='draw'){ const dk=$('.deck .back').getBoundingClientRect(); const hs=$(d.p===ME?'.hand.me':'.hand.op').getBoundingClientRect(); let x=hs.left+hs.width-60,y=hs.top+10,sx=.9,sy=.9; if(d.p===ME){ render(); const el=$(`#handMe .c[data-id="${d.card.id}"]`); if(el){ const r=el.getBoundingClientRect();x=r.left;y=r.top;sx=r.width/dk.width;sy=r.height/dk.height;el.style.visibility='hidden'; } } const f=flyEl(d.card,dk.left,dk.top,0,dk.width,dk.height,d.p!==ME); f.style.transformOrigin='top left'; await f.animate([{transform:'translate(0,0)'},{transform:`translate(${x-dk.left}px,${y-dk.top}px) scale(${sx},${sy})`}],{duration:210,easing:'cubic-bezier(.3,.6,.2,1)',fill:'forwards'}).finished.catch(()=>{}); f.remove(); render(); return; }
     if(type==='steal'){ const fromSel=`.zone.${d.from===ME?'me':'op'}`, toSel=`.zone.${d.to===ME?'me':'op'}`; const el=document.querySelector(`${fromSel} .cap .c[data-id="${d.card.id}"]`); const fromCap=document.querySelectorAll(`${fromSel} .cap`)[3], toCap=document.querySelectorAll(`${toSel} .cap`)[3];
-      if(el&&toCap){ const r=el.getBoundingClientRect(), t=toCap.getBoundingClientRect(); fromCap.classList.add('robbed'); setTimeout(()=>fromCap.classList.remove('robbed'),900);
+      if(el&&toCap){ const r=el.getBoundingClientRect(), t=toCap.getBoundingClientRect(); fromCap.classList.add('robbed'); setTimeout(()=>fromCap.classList.remove('robbed'),450);
         const mid={x:innerWidth/2-CW, y:innerHeight*.42-CH}; const f=flyEl(d.card,r.left,r.top,0,r.width,r.height); f.classList.add('steal'); el.style.visibility='hidden';
         const tag=document.createElement('div'); tag.className='stealtag '+(d.to===ME?'good':'bad'); tag.textContent=d.card.k==='bonus'?`${piVal(d.card)}피 보너스 ${d.to===ME?'가져오기!':'뺏겼어요!'}`:`${piVal(d.card)}피 ${d.to===ME?'가져왔어요!':'뺏겼어요!'}`; document.body.appendChild(tag);
-        await f.animate([{transform:'translate(0,0) scale(1) rotate(0)'},{transform:`translate(${mid.x-r.left}px,${mid.y-r.top}px) scale(${(CW*2)/r.width}) rotate(${d.to===ME?-12:12}deg)`,offset:.4},{transform:`translate(${mid.x-r.left}px,${mid.y-r.top}px) scale(${(CW*2)/r.width}) rotate(${d.to===ME?8:-8}deg)`,offset:.6},{transform:`translate(${t.left+t.width-26-r.left}px,${t.top+6-r.top}px) scale(1) rotate(0)`}],{duration:1050,easing:'cubic-bezier(.3,.6,.25,1)',fill:'forwards'}).finished;
-        toCap.classList.add('gain'); setTimeout(()=>toCap.classList.remove('gain'),700); f.remove(); tag.remove(); try{ navigator.vibrate&&navigator.vibrate(d.to===ME?[20,30,20]:[60]); }catch{} }
+        await f.animate([{transform:'translate(0,0) scale(1) rotate(0)'},{transform:`translate(${mid.x-r.left}px,${mid.y-r.top}px) scale(${(CW*2)/r.width}) rotate(${d.to===ME?-12:12}deg)`,offset:.4},{transform:`translate(${mid.x-r.left}px,${mid.y-r.top}px) scale(${(CW*2)/r.width}) rotate(${d.to===ME?8:-8}deg)`,offset:.6},{transform:`translate(${t.left+t.width-26-r.left}px,${t.top+6-r.top}px) scale(1) rotate(0)`}],{duration:525,easing:'cubic-bezier(.3,.6,.25,1)',fill:'forwards'}).finished;
+        toCap.classList.add('gain'); setTimeout(()=>toCap.classList.remove('gain'),350); f.remove(); tag.remove(); try{ navigator.vibrate&&navigator.vibrate(d.to===ME?[20,30,20]:[60]); }catch{} }
       render(); return; }
-    if(type==='ppuk'&&d.firstPpuk){render();await banner(d.p===ME?'첫뻑!':'상대 첫뻑!',(d.p===ME?'+300G':'-300G')+' · 판 종료 시 정산'+(d.bonusCount?' · 보너스도 함께 묶였어요':''),d.p===ME?'brag':'warn',1800);return;}
+    if(type==='ppuk'&&d.firstPpuk){render();await banner(d.p===ME?'첫뻑!':'상대 첫뻑!',(d.p===ME?'+300G':'-300G')+' · 판 종료 시 정산'+(d.bonusCount?' · 보너스도 함께 묶였어요':''),d.p===ME?'brag':'warn',900);return;}
     const msg={jjok:'쪽!',ppuk:'쌌다!',ppukget:d.opening?'바닥뻑 먹기!':d.self?'자뻑 먹기!':'예쓰!',ttadak:'따닥!',sweep:'싹쓸이!',go:`${d.n}고!`}[type];
-    if(msg){ const mine=d.p===ME; const sub={jjok:piClaimMessage(d,ME),ppuk:`${d.bonusCount?'보너스 '+d.bonusCount+'장도 함께 묶였어요':'세 장이 바닥에 묶였어요'} · 이번 판 ${d.count}/3회`,ppukget:mine?`${d.opening?'처음 깔린 세 장':(d.self?'내가':'상대가')+' 싼 패'}${d.bonusCount?' + 보너스 '+d.bonusCount+'장':''} · ${piClaimMessage(d,ME)}`:piClaimMessage(d,ME),ttadak:'네 장 한꺼번에 · '+piClaimMessage(d,ME),sweep:'바닥을 싹 비웠어요 · '+piClaimMessage(d,ME),go:mine?'더 올려볼까요':'조심! 상대가 고를 불렀어요'}[type]; if(type==='ppuk'&&mine) await banner('쌌다!',sub,'warn',1100); else await banner(type==='ppukget'&&!mine?'아이고!!':mine?msg:`상대 ${msg}`,sub,mine?'brag':'warn',type==='go'?1500:1200); }
-    if(type==='combo'){ const mine=d.p===ME; const names=d.names.length?d.names:d.first; const head=names[0]; const pretty={'고도리':'고도리!','홍단':'홍단!','청단':'청단!','초단':'초단!'}[head]||(head.endsWith('광')?head+'!':head+' 점수!'); const subtxt=d.names.length>1?d.names.slice(1).join(' · '):(d.first.length&&d.names.length?d.first.join(' · '):''); if(mine) await banner(pretty,subtxt||'잘했어요!','brag',1500); else await banner('상대 '+pretty,subtxt||'따라잡아야 해요','warn',1500); }
+    if(msg){ const mine=d.p===ME; const sub={jjok:piClaimMessage(d,ME),ppuk:`${d.bonusCount?'보너스 '+d.bonusCount+'장도 함께 묶였어요':'세 장이 바닥에 묶였어요'} · 이번 판 ${d.count}/3회`,ppukget:mine?`${d.opening?'처음 깔린 세 장':(d.self?'내가':'상대가')+' 싼 패'}${d.bonusCount?' + 보너스 '+d.bonusCount+'장':''} · ${piClaimMessage(d,ME)}`:piClaimMessage(d,ME),ttadak:'네 장 한꺼번에 · '+piClaimMessage(d,ME),sweep:'바닥을 싹 비웠어요 · '+piClaimMessage(d,ME),go:mine?'더 올려볼까요':'조심! 상대가 고를 불렀어요'}[type]; if(type==='ppuk'&&mine) await banner('쌌다!',sub,'warn',550); else await banner(type==='ppukget'&&!mine?'아이고!!':mine?msg:`상대 ${msg}`,sub,mine?'brag':'warn',type==='go'?750:600); }
+    if(type==='combo'){ const mine=d.p===ME; const names=d.names.length?d.names:d.first; const head=names[0]; const pretty={'고도리':'고도리!','홍단':'홍단!','청단':'청단!','초단':'초단!'}[head]||(head.endsWith('광')?head+'!':head+' 점수!'); const subtxt=d.names.length>1?d.names.slice(1).join(' · '):(d.first.length&&d.names.length?d.first.join(' · '):''); if(mine) await banner(pretty,subtxt||'잘했어요!','brag',750); else await banner('상대 '+pretty,subtxt||'따라잡아야 해요','warn',750); }
     if(type==='state'&&false){}
     if(type==='nagari'||type==='end'){ await finishRound(type,d); return; }
     if(logEl&&msg){ logEl.textContent=`${who(d.p)}: ${msg}`; logEl.dataset.hold='1'; setTimeout(()=>{ delete logEl.dataset.hold; },2500); }
@@ -488,7 +488,7 @@ function mount(){
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판 예약 완료 · 지금 패는 그대로, 다음 판 시작 때 5쭈를 사용해요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261113-game-popup-order1&open='+Date.now());};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261117-matgo-double-speed&open='+Date.now());};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html?tab=arcade';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();
@@ -585,14 +585,14 @@ async function shakeAnim(p,cards){ // 같은 월 3장을 꺼내 보여주고 흔
   const src=cards.map(c=>{ const el=mine?document.querySelector(`.hand.me .c[data-id="${c.id}"]`):null; const r=el?el.getBoundingClientRect():$('.hand.op').getBoundingClientRect(); if(el) el.style.visibility='hidden'; return {el,r:el?r:{left:r.left+r.width/2-15,top:r.top,width:30,height:45}}; });
   const flies=cards.map((c,i)=>{ const f=flyEl(c,src[i].r.left,src[i].r.top,0,w,h,!mine); f.classList.add('steal'); f.style.width=w+'px'; f.style.height=h+'px'; return f; });
   // 1) 가운데로 모이며 앞면으로 (상대는 뒷면 → 공개)
-  await Promise.all(flies.map((f,i)=>{ const r=src[i].r; const tx=cx-w/2+(i-1)*w*.62-r.left, ty=cy-h/2-r.top; const rot=(i-1)*14; if(!mine) setTimeout(()=>{ f.replaceChildren(flightArt.face(cards[i])); },230); return f.animate([{transform:`translate(0,0) scale(${r.width/w}) rotateY(0deg)`},{transform:`translate(${tx*.5}px,${ty*.5-40}px) scale(.9) rotateY(${mine?0:90}deg)`,offset:.5},{transform:`translate(${tx}px,${ty}px) scale(1) rotate(${rot}deg)`}],{duration:520,delay:i*70,easing:'cubic-bezier(.25,.7,.3,1)',fill:'forwards'}).finished; }));
+  await Promise.all(flies.map((f,i)=>{ const r=src[i].r; const tx=cx-w/2+(i-1)*w*.62-r.left, ty=cy-h/2-r.top; const rot=(i-1)*14; if(!mine) setTimeout(()=>{ f.replaceChildren(flightArt.face(cards[i])); },115); return f.animate([{transform:`translate(0,0) scale(${r.width/w}) rotateY(0deg)`},{transform:`translate(${tx*.5}px,${ty*.5-40}px) scale(.9) rotateY(${mine?0:90}deg)`,offset:.5},{transform:`translate(${tx}px,${ty}px) scale(1) rotate(${rot}deg)`}],{duration:260,delay:i*35,easing:'cubic-bezier(.25,.7,.3,1)',fill:'forwards'}).finished; }));
   // 2) 흔들흔들 (부채꼴 유지)
   Sound.play('shake');
-  const wob=flies.map((f,i)=>{ const r=src[i].r; const tx=cx-w/2+(i-1)*w*.62-r.left, ty=cy-h/2-r.top; const rot=(i-1)*14; const base=`translate(${tx}px,${ty}px)`; return f.animate([0,1,2,3,4,5,6].map(k=>({transform:`${base} rotate(${rot+(k%2?10:-10)*(k===6?0:1)}deg) translateY(${k%2?-6:0}px)`})),{duration:760,easing:'ease-in-out',fill:'forwards'}).finished; });
-  banner(mine?'흔들기!':'상대 흔들기!',`${cards[0].m}월 세 장 · 이기면 점수 ×2`,mine?'brag':'warn',1300); try{ navigator.vibrate&&navigator.vibrate([25,35,25,35,25]); }catch{}
-  await Promise.all(wob); await sleep(260);
+  const wob=flies.map((f,i)=>{ const r=src[i].r; const tx=cx-w/2+(i-1)*w*.62-r.left, ty=cy-h/2-r.top; const rot=(i-1)*14; const base=`translate(${tx}px,${ty}px)`; return f.animate([0,1,2,3,4,5,6].map(k=>({transform:`${base} rotate(${rot+(k%2?10:-10)*(k===6?0:1)}deg) translateY(${k%2?-6:0}px)`})),{duration:380,easing:'ease-in-out',fill:'forwards'}).finished; });
+  banner(mine?'흔들기!':'상대 흔들기!',`${cards[0].m}월 세 장 · 이기면 점수 ×2`,mine?'brag':'warn',650); try{ navigator.vibrate&&navigator.vibrate([25,35,25,35,25]); }catch{}
+  await Promise.all(wob); await sleep(130);
   // 3) 다시 손으로
-  await Promise.all(flies.map((f,i)=>{ const r=src[i].r; const tx=cx-w/2+(i-1)*w*.62-r.left, ty=cy-h/2-r.top; const rot=(i-1)*14; if(!mine) setTimeout(()=>{ f.replaceChildren(flightArt.face(cards[i],true)); },200); return f.animate([{transform:`translate(${tx}px,${ty}px) scale(1) rotate(${rot}deg)`},{transform:`translate(0,0) scale(${r.width/w}) rotate(0deg)`}],{duration:420,delay:i*60,easing:'cubic-bezier(.4,.1,.3,1)',fill:'forwards'}).finished; }));
+  await Promise.all(flies.map((f,i)=>{ const r=src[i].r; const tx=cx-w/2+(i-1)*w*.62-r.left, ty=cy-h/2-r.top; const rot=(i-1)*14; if(!mine) setTimeout(()=>{ f.replaceChildren(flightArt.face(cards[i],true)); },100); return f.animate([{transform:`translate(${tx}px,${ty}px) scale(1) rotate(${rot}deg)`},{transform:`translate(0,0) scale(${r.width/w}) rotate(0deg)`}],{duration:210,delay:i*30,easing:'cubic-bezier(.4,.1,.3,1)',fill:'forwards'}).finished; }));
   flies.forEach(f=>f.remove()); src.forEach(x=>{ if(x.el) x.el.style.visibility=''; });
 }
 async function resolveChongtong(){
@@ -601,7 +601,7 @@ async function resolveChongtong(){
     if(p===ME){
       Sound.play('prompt');
       decision=await new Promise(res=>modal(`<h2>총통!</h2><p>${months.join('월 · ')}월 네 장이 모두 모였어요.<br>7점으로 이기거나 게임을 계속할 수 있어요.</p><div class="chongtong-cards">${game.hand[p].filter(c=>c.m===months[0]).map(cardSVG).join('')}</div><div class="row"><button class="btn gold" id="chongtong-win">7점으로 승리</button><button class="btn g" id="chongtong-continue">계속하기</button></div>`,{'chongtong-win':()=>res('win'),'chongtong-continue':()=>res('continue')}));
-    }else await banner('상대 총통!',`${months[0]}월 네 장 · 7점 승리`,'warn',1300);
+    }else await banner('상대 총통!',`${months[0]}월 네 장 · 7점 승리`,'warn',650);
     if(!access.allowed()||game.over)return;
     await game.declareChongtong(p,decision);render();
   }
@@ -620,7 +620,7 @@ async function cpuTurn(){
       await resolveChongtong();if(game.over||game.turn!==CPU)break;
       const p=game.turn;
       if(!game.canMove(p)){await game.endTurn(p);continue;}
-      await sleep(p===CPU?650:180);
+      await sleep(p===CPU?325:90);
       let card=p===CPU?aiChooseCard(game,CPU):null,bomb=null;
       if(card){
         const same=game.hand[p].filter(c=>c.m===card.m),matches=game.matches(card.m);
@@ -712,12 +712,12 @@ async function dealAnim(){
     for(const st of game.floor){
       for(let i=0;i<st.length;i++){
         const card=st[i],to=cardScreenPos(st,i);
-        flights.push(throwCard(card,{x:dk.left,y:dk.top,w:dk.width,h:dk.height,rot:0},to,{back:true,dur:380,dealing:true,onCards:i>0}).then(()=>{
+        flights.push(throwCard(card,{x:dk.left,y:dk.top,w:dk.width,h:dk.height,rot:0},to,{back:true,dur:190,dealing:true,onCards:i>0}).then(()=>{
           dealingFloorCards.delete(card.id);
           const target=stackEls.get(st)?.querySelector(`.c[data-id="${card.id}"]`);
           if(target)target.style.visibility='';
         }));
-        await sleep(90);
+        await sleep(45);
       }
     }
     await Promise.all(flights);
