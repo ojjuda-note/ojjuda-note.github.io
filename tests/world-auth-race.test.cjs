@@ -27,7 +27,7 @@ function fixture({ initial = 'A', delayedSession = false, query = '' } = {}) {
   const tasks = [], listeners = [], sessions = [], profiles = [], wallets = [], privateWrites = [], signups = [];
   const applied = [], saved = [], screens = [], errors = [], nicknameCallbacks = [];
   const context = {
-    URL, URLSearchParams, Object,
+    URL, URLSearchParams, Object, resumeArcadeRounds() {},
     location: { href: 'https://fixture.test/world.html' + query, reload() { screens.push('reload'); }, assign(url) { screens.push('route:' + url); } },
     document: { getElementById: () => ({ disabled: false }) },
     worldParkNotes: null, ui: false, ga: false, Tr: false, bm: false, em: null, $c: null,

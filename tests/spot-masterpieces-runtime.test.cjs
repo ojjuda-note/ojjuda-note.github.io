@@ -56,7 +56,7 @@ function domFixture(stored,{admin=false}={}){
  w.JJUDA_PUZZLES=JSON.parse(JSON.stringify(fixtures));
  w.eval(read('game-core.js'));
  w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:1,order:[1,0],completed:[fixtures[0].id],...stored}));
- w.eval(read('app.js'));
+ w.eval(read('../../shared/games/puzzle-record-queue.js'));w.eval(read('app.js'));
  const load=()=>{for(const im of w.document.querySelectorAll('img'))if(im.onload)im.onload();};
  const state=()=>JSON.parse(w.localStorage.getItem('jjuda-spot-six-v1'));
  const round=()=>{const s=state();return s.rounds[w.JJUDA_PUZZLES[s.current].id];};

@@ -26,7 +26,7 @@ async function fixture(options={}){
   parent.postMessage=data=>parent.dispatchEvent(new parent.MessageEvent('message',{data,origin:parent.location.origin,source:w}));
   const $=id=>w.document.getElementById(id);Object.defineProperties($('board-scroll'),{clientWidth:{value:378},clientHeight:{value:702}});
   w.localStorage.setItem('ojjuda-sacheonseong-v1',JSON.stringify({stage:options.stage??9,unlocked:15,sound:false}));
-  w.eval(read('shared/games/game-results.js'));
+  w.eval(read('shared/games/puzzle-record-queue.js'));w.eval(read('shared/games/game-results.js'));
   for(const file of ['engine','faces','ranking','server'])w.eval(read('games/sacheonseong/'+file+'.js'));
   const generate=w.TileGarden.generateStack;w.TileGarden.generateStack=(...args)=>{const result=generate(...args),grid=result.grids[0].map(row=>row.map(()=>w.TileGarden.EMPTY));grid[0][0]=grid[0][1]=0;result.grids=[grid];result.info={...result.info,total:2,layerCount:1};return result;};
   w.eval(read('games/sacheonseong/app.js'));await flush();await flush();
@@ -58,11 +58,11 @@ for(const options of [
 });
 
 test('failed delivery keeps local progress and the durable queue without claiming a record',async()=>{
-  const f=await fixture({duration:3599000,recordOk:false});try{await f.begin();await f.finish();assert.equal(f.card().dataset.resultOutcome,'success');assert.equal(f.$('win-save-status').textContent,'기록 저장 대기');assert.equal(f.rankingCalls,1);assert.equal(JSON.parse(f.w.localStorage.getItem('ojjuda-sacheonseong-pending-v1')).length,1);}finally{f.close();}
+  const f=await fixture({duration:3599000,recordOk:false});try{await f.begin();await f.finish();assert.equal(f.card().dataset.resultOutcome,'success');assert.equal(f.$('win-save-status').textContent,'기록 저장 대기');assert.equal(f.rankingCalls,1);assert.equal(f.w.OjjudaPuzzleRecords.open('sacheonseong',owner).list().length,1);}finally{f.close();}
 });
 
 test('retrying a failed save verifies the same result and clears its pending status',async()=>{
-  const f=await fixture({duration:3599000,recordOk:false});try{await f.begin();await f.finish();const id=f.calls[0].id;f.recordOk=true;f.$('retry-records').click();await flush();await flush();await flush();assert.equal(f.calls[1].id,id);assert.equal(f.card().dataset.resultOutcome,'record');assert.equal(f.$('win-save-status').hidden,true);assert.equal(JSON.parse(f.w.localStorage.getItem('ojjuda-sacheonseong-pending-v1')).length,0);}finally{f.close();}
+  const f=await fixture({duration:3599000,recordOk:false});try{await f.begin();await f.finish();const id=f.calls[0].id;f.recordOk=true;f.$('retry-records').click();await flush();await flush();await flush();assert.equal(f.calls[1].id,id);assert.equal(f.card().dataset.resultOutcome,'record');assert.equal(f.$('win-save-status').hidden,true);assert.equal(f.w.OjjudaPuzzleRecords.open('sacheonseong',owner).list().length,0);}finally{f.close();}
 });
 
 for(const failure of ['before','after','late-before'])test(`unavailable ${failure} ranking keeps the verified clear as success`,async()=>{

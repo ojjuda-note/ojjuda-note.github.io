@@ -9,7 +9,10 @@ const $=s=>document.querySelector(s);
 const SYMBOLS={spades:'♠',hearts:'♥',clubs:'♣',diamonds:'♦'};
 const SUIT_NAMES={spades:'스페이드',hearts:'하트',clubs:'클로버',diamonds:'다이아몬드'};
 const cardElements=new Map();
-const KEY='ojjuda-solitaire-v1:'+ (new URLSearchParams(location.search).get('owner')||'guest');
+const recordOwner=new URLSearchParams(location.search).get('owner')||'guest';
+const KEY='ojjuda-solitaire-v1:'+recordOwner;
+const records=window.OjjudaPuzzleRecords.open('solitaire',recordOwner);
+let delivery=null,deliveryTimer;
 const adminPreview=()=>window.parent!==window&&window.parent.OjjudaAdminPreview?.isEnabled?.()===true;
 let externalPaused=false, runId=crypto.randomUUID(), completion=null, stopWinAnimation=null;
 let state=createGame(), history=[], elapsed=0, started=false, selected=null, locked=false, winPlaying=false, lastTick=Date.now(), ignoreClickUntil=0, lastTap=null, pointer=null, toastTimer, saveWorking=true;
@@ -294,7 +297,7 @@ function win(){
   lastTick=now;
   if(!completion){
     const seconds=Math.max(1,Math.ceil(elapsed/1000));
-    completion={runId,drawCount:state.drawCount,seconds,score:window.OjjudaSolitaireRules.score(state.drawCount,seconds),saved:false};
+    completion={runId,drawCount:state.drawCount,seconds,score:window.OjjudaSolitaireRules.score(state.drawCount,seconds),saved:false,completedAt:new Date(Date.now()).toISOString()};
   }
   save();submitCompletion();
   winPlaying=true;locked=true;updateStats();
@@ -347,9 +350,19 @@ window.OjjudaSolitaireControls={save,pause(){
 
 function submitCompletion(){
   if(adminPreview()){updateRankingStatus();return;}
-  if(!completion||completion.saved||window.parent===window||completion.score==null)return;
-  completion.failed=false;updateRankingStatus();
-  notifyArcade('ojjuda-game-result',{...completion,completed:true});
+  if(window.parent===window||!records.current())return;
+  if(completion&&!completion.saved&&!completion.queued&&completion.score!=null){
+    completion.completedAt ||= new Date(Date.now()).toISOString();
+    records.put({id:completion.runId,runId:completion.runId,drawCount:completion.drawCount,seconds:completion.seconds,score:completion.score,completedAt:completion.completedAt});
+    completion.queued=true;save();
+  }
+  if(delivery)return;
+  delivery=records.list().find(item=>window.OjjudaSolitaireRules.score(item.drawCount,item.seconds)===item.score);
+  if(!delivery)return;
+  if(delivery.id===completion?.runId){completion.failed=false;updateRankingStatus();}
+  notifyArcade('ojjuda-game-result',{...delivery,completed:true});
+  clearTimeout(deliveryTimer);
+  deliveryTimer=setTimeout(()=>{if(delivery?.id===completion?.runId){completion.failed=true;updateRankingStatus();}delivery=null;},15000);
 }
 function updateRankingStatus(){
   const line=$('#ranking-status'),retry=$('#retry-ranking');
@@ -359,7 +372,12 @@ function updateRankingStatus(){
   if(retry)retry.hidden=!completion.failed;
 }
 window.addEventListener('message',event=>{
-  if(event.origin!==location.origin||event.source!==window.parent||event.data?.source!=='ojjuda-world'||event.data.type!=='ojjuda-solitaire-record'||event.data.runId!==completion?.runId)return;
-  completion.saved=event.data.ok===true;completion.failed=!completion.saved;save();updateRankingStatus();
+  if(event.origin!==location.origin||event.source!==window.parent||event.data?.source!=='ojjuda-world'||event.data.type!=='ojjuda-solitaire-record'||!delivery||event.data.runId!==delivery.id)return;
+  const ok=event.data.ok===true,id=delivery.id;
+  clearTimeout(deliveryTimer);delivery=null;
+  if(ok)records.remove(id);
+  if(completion?.runId===id){completion.saved=ok;completion.failed=!ok;save();updateRankingStatus();}
+  if(ok&&records.list().length)setTimeout(submitCompletion,0);
 });
+window.addEventListener('online',submitCompletion);
 submitCompletion();

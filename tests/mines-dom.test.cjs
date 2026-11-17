@@ -5,7 +5,7 @@ const {JSDOM} = require('jsdom');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const owner = '10000000-0000-0000-0000-000000000001';
-function game({member = 'guest', saved = null, legacy = null, initialize = true} = {}) {
+function game({member = 'guest', saved = null, legacy = null, initialize = true, storage = {}} = {}) {
   const dom = new JSDOM(read('games/mines/index.html'), {url:'https://fixture.test/games/mines/',runScripts:'outside-only'});
   const w = dom.window, messages = [], timers = new Map(); let timerId = 0, clock = 0, seed = 13;
   const parent = {postMessage:(data,origin) => messages.push({data,origin})};
@@ -21,10 +21,11 @@ function game({member = 'guest', saved = null, legacy = null, initialize = true}
   const $ = selector => w.document.querySelector(selector);
   Object.defineProperties($('#wrap'), {clientWidth:{get:() => 360},clientHeight:{get:() => 420}});
   $('#wrap').getBoundingClientRect = () => ({left:0,top:0,width:360,height:420});
+  for(const [key,value] of Object.entries(storage))w.localStorage.setItem(key,value);
   if (saved !== null) w.localStorage.setItem('ojjuda.mines.save.v1:' + member,JSON.stringify(saved));
   if (legacy !== null) w.localStorage.setItem('ojjuda-mines-v1',JSON.stringify(legacy));
   require('./game-results-fixture.cjs')(w);
-  w.eval(read('games/mines/rules.js')); w.eval(read('games/mines/entry.js'));
+  w.eval(read('games/mines/rules.js')); w.eval(read('shared/games/puzzle-record-queue.js'));w.eval(read('games/mines/entry.js'));
   const script = $('script:not([src])').textContent;
   w.eval(script.replace("setMode('dig');\nwindow.OjjudaMinesEntry.connect", "window.fixture={get state(){return state},get saved(){return save},get cells(){return cells},get level(){return L},get view(){return view},newGame,open,win,flag,question,plant,nb,checkCustom};\nsetMode('dig');\nwindow.OjjudaMinesEntry.connect"));
   const receive = (data,origin=w.location.origin,sender=parent) => w.dispatchEvent(new w.MessageEvent('message',{origin,source:sender,data:{source:'ojjuda-world',...data}}));
@@ -36,6 +37,30 @@ function game({member = 'guest', saved = null, legacy = null, initialize = true}
   };
   if (initialize) receive({type:'ojjuda-mines-init',owner:member});
   return {dom,w,$,messages,receive,tick,pointer,advance:ms => { clock += ms; }};
+}
+
+{
+  const first=game({member:owner});
+  const complete=(difficulty,seconds)=>{
+    const f=first.w.fixture;f.newGame(difficulty);f.open(f.cells[0]);first.advance(seconds*1000);
+    for(const cell of f.cells)if(!cell.mine)f.open(cell);
+    assert.equal(f.state,'won');
+  };
+  first.$('#minesStart').click();complete(0,12);
+  const original=first.messages.find(m=>m.data.type==='ojjuda-game-result').data;
+  first.receive({type:'ojjuda-mines-record',runId:original.runId,ok:false});
+  complete(1,15);
+  first.receive({type:'ojjuda-mines-exit-request',fromBack:true});
+  const storage=Object.fromEntries(Object.entries(first.w.localStorage));first.w.close();
+  const guest=game({storage});assert.equal(guest.messages.some(m=>m.data.type==='ojjuda-game-result'),false);guest.w.close();
+  const back=game({member:owner,storage});
+  const records=()=>back.messages.filter(m=>m.data.type==='ojjuda-game-result').map(m=>m.data);
+  const retry=records()[0];assert.equal(retry.runId,original.runId);assert.equal(retry.completedAt,original.completedAt);
+  back.receive({type:'ojjuda-mines-record',runId:retry.runId,ok:true});back.tick(5500);
+  assert.equal(records().length,2);
+  const next=records()[1];assert.notEqual(next.runId,original.runId);assert.equal(next.difficulty,1);
+  back.receive({type:'ojjuda-mines-record',runId:next.runId,ok:true});back.w.dispatchEvent(new back.w.Event('online'));
+  assert.equal(records().length,2);back.w.close();
 }
 
 const x = game({initialize:false});
@@ -165,9 +190,24 @@ try {
   assert.ok(rules.score(5,60)>rules.score(1,10),'higher difficulty outranks a faster easy clear');
   assert.ok(rules.score(5,30)>rules.score(5,60),'within one difficulty the faster clear wins');
   assert.equal(rules.record(rules.score(5,60)).time,'1분 0초');
-  assert.equal(rules.score(7,1),89999);assert.equal(rules.score(0,20000),10000);
+  assert.equal(rules.score(7,1),89999);
+  for(const seconds of [9999,10000,11000,20000,rules.maxRankedSeconds]){
+    assert.equal(rules.record(rules.score(3,seconds)).seconds,seconds);
+  }
+  assert.equal(rules.record(40000).time,'10,000초 이상','archived coarse finishes have no exact time');
+  assert.equal(rules.score(3,rules.maxRankedSeconds+1),null);
   for(const [d,sec] of [[8,1],[-1,1],[1,0],[1,NaN],[1,1.5],['1',2]])assert.equal(rules.score(d,sec),null);
 } finally {corrupt.dom.window.close();}
+const slowGame=game();
+try {
+  const {w,$,advance,messages}=slowGame,f=w.fixture;
+  $('#minesStart').click();f.newGame(2);f.open(f.cells[0]);advance(11000000);
+  for(const cell of f.cells)if(!cell.mine)f.open(cell);
+  assert.equal($('#time').textContent,'11000');
+  assert.equal(f.saved.best[2],11000);
+  const submitted=messages.find(m=>m.data.type==='ojjuda-game-result').data;
+  assert.equal(w.OjjudaMinesRules.record(submitted.score).seconds,11000);
+} finally {slowGame.dom.window.close();}
 const old={d:1,best:[null,12,null,null,null,null,null,null]};
 for(const member of ['guest',owner]) {
   const migrated=game({member,legacy:old});

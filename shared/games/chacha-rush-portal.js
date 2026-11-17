@@ -125,20 +125,26 @@ export function installChachaRushPortal({ currentOwner, submitScore, onSaved, on
       respond(session, nonce, 'result', { ok: false, message: '오쭈다에 로그인한 상태에서 시작해야 순위에 등록돼요.' }, round);
       return;
     }
-    try {
-      const result = await submitScore(score);
+    const describe = result => {
       if (!current()) return;
-      if (!result?.ok) {
-        const message = result?.reason === 'too_fast'
-          ? '잠깐 기다린 뒤 다시 도전해 주세요.'
-          : '점수 저장에 실패했어요. 다시 도전해 주세요.';
-        resultFeedback({ ok: false, message });
-        return;
+      if (result?.ok) {
+        onSaved?.(owner);
+        resultFeedback({ok:true,message:result.previous_period?'완료한 달의 기록으로 저장했어요.':'🏆 오쭈다 월간 게임순위에 등록됐어요!'});
+      } else if (result?.pending) {
+        resultFeedback({ok:false,message:result.durable?'점수를 보관했어요. 연결되면 자동으로 저장해요.':'이 화면이 열려 있는 동안 다시 저장해요.'});
+      } else if (result?.reason==='period_closed') {
+        resultFeedback({ok:false,message:'이번 달 순위가 마감됐어요.'});
+      } else {
+        resultFeedback({ok:false,message:result?.reason==='too_fast'?'잠깐 기다린 뒤 다시 도전해 주세요.':'점수를 저장하지 못했어요.'});
       }
-      onSaved?.(owner);
-      resultFeedback({ ok: true, message: '🏆 오쭈다 월간 게임순위에 등록됐어요!' });
+    };
+    try {
+      let first=true;
+      const receipt=await submitScore(score,{owner,id:crypto.randomUUID(),finishedAt:Date.now()},settled=>{if(!first)describe(settled);});
+      first=false;
+      describe(receipt);
     } catch {
-      resultFeedback({ ok: false, message: '연결 오류로 저장하지 못했어요. 다시 도전해 주세요.' });
+      resultFeedback({ok:false,message:'연결 오류로 저장하지 못했어요.'});
     }
   });
 

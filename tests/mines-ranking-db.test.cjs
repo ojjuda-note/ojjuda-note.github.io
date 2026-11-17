@@ -72,6 +72,31 @@ const memberSubmit=read('tests/breakout-score-db.test.cjs').match(/const submitB
   await db.exec(`insert into game_scores(user_id,nick,game,score,created_at) values
    ('${member}','여행친구','mines',69940,now()),('${first}','먼저 달성','mines',19990,now());`);
   assert.equal((await rank())[0].nick,'여행친구','advanced 60 seconds outranks beginner 10 seconds');
+  // Real public member/guest RPCs use the same score key as the monthly peak ledger.
+  const legacyTime=(await db.query("select achieved_at from ojjuda_guest_internal.scores where game='mines'")).rows[0].achieved_at;
+  await db.exec(`create role service_role;create schema ojjuda_ranking_internal;
+    create table ojjuda_ranking_internal.guest_peaks(game text,score int,achieved_at timestamptz);
+    insert into ojjuda_ranking_internal.guest_peaks values('mines',40000,now()),('runner',40000,now());`);
+  const upgrade=read('supabase/migrations/20261117232000_mines_exact_finish_times.sql');
+  await db.exec(upgrade);await db.exec(upgrade);
+  const norm=async value=>(await db.query('select ojjuda_game_internal.mines_rank_score($1) as n',[value])).rows[0].n;
+  const oldGuest=(await db.query("select score,last_score,achieved_at from ojjuda_guest_internal.scores where game='mines'")).rows[0];
+  assert.equal(oldGuest.score,await norm(49950));assert.equal(oldGuest.last_score,49950);
+  assert.deepEqual(oldGuest.achieved_at,legacyTime);assert.equal((await guestSave(49950)).ok,true,'old request can be replayed');
+  assert.equal((await rank())[0].score,await norm(69940));
+  assert.deepEqual((await db.query("select score from ojjuda_ranking_internal.guest_peaks order by game")).rows.map(row=>row.score),[750090000,40000]);
+  const score=(d,seconds)=>90000+(d+1)*250000000-seconds;
+  assert.ok(await norm(89999)>score(7,10000));
+  assert.ok(score(3,249999999)>await norm(39999),'higher difficulty still sorts first');
+  assert.ok(score(3,249999999)>await norm(40000),'unknown legacy duration ranks below known finishes');
+  await db.exec(`delete from public.game_scores where user_id='${member}' and created_at>now();
+    update public.game_scores set created_at=now()-interval '10 seconds' where user_id='${member}' and created_at>now()-interval '5 seconds'`);
+  await db.exec(`set role authenticated;set request.jwt.claim.sub='${member}'`);
+  assert.equal((await memberSave(score(7,11000))).ok,true);
+  await db.exec("set request.jwt.claim.sub='';set role anon");
+  const guestLong=await db.query("select public.submit_guest_game_score('mines',$1,$2,$3) as v",[score(7,10000),'b'.repeat(64),randomUUID()]);
+  assert.equal(guestLong.rows[0].v.ok,true);
+  assert.deepEqual((await rank()).slice(0,2).map(row=>row.score),[score(7,10000),score(7,11000)]);
   console.log('PASS: Minesweeper member/guest records, lower scores, monthly best, bounds, bans, permissions and zero rewards');
  } finally {await db.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

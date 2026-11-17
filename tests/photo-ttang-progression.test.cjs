@@ -7,8 +7,9 @@ const {JSDOM}=require('jsdom');
 const root=path.resolve(__dirname,'..');
 const html=fs.readFileSync(path.join(root,'games/photo-ttang.html'),'utf8');
 
-function fixture(t){
+function fixture(t,postMessage){
   const dom=new JSDOM(html,{url:'https://fixture.test/photo',runScripts:'outside-only'}),w=dom.window;
+  if(postMessage)Object.defineProperty(w,'parent',{value:{postMessage}});
   const timers=new Map();let nextTimer=0;const noop=()=>{};
   w.requestAnimationFrame=noop;w.OjjudaPhotoTtangAccess={allowed:()=>true,subscribe:()=>noop};
   w.setTimeout=(fn,ms)=>{timers.set(++nextTimer,{fn,ms});return nextTimer;};
@@ -102,4 +103,30 @@ test('an uploaded photo trial can clear without offering a nonexistent next stag
   assert.equal(w.startStage(0),true);f.clear();f.tick(3000);
   assert.equal(f.read('roundCleared'),true);assert.equal(w.document.querySelector('#next'),null);
   assert.equal(w.document.querySelector('#list').textContent,'저장하기');
+});
+
+test('an actual silhouette capture is retried after closing the offline game',async t=>{
+  const owner='11111111-1111-4111-8111-111111111111',attempts=[];
+  const dom=new JSDOM('<iframe></iframe><button></button>',{url:'https://fixture.test/world',runScripts:'outside-only'});
+  const host=dom.window,status=host.document.querySelector('button'),frame=host.document.querySelector('iframe');
+  t.after(()=>host.close());
+  for(const file of ['shared/games/puzzle-record-queue.js','games/photo-ttang/photo-ttang-ranking.js'])host.eval(fs.readFileSync(path.join(root,file),'utf8'));
+  let connected=false;
+  const bind=()=>host.OjjudaPhotoRanking.bind({frame,status,owner,authorized:()=>true,client:{
+    auth:{getUser:async()=>({data:{user:{id:owner}}})},
+    rpc:async(name,args)=>{assert.equal(name,'record_photo_ttang_clear_at');attempts.push(args);return connected?{data:{ok:true,score:1}}:{error:'offline'};}
+  }});
+  const close=bind();
+  const f=fixture(t,(data,origin)=>host.dispatchEvent(new host.MessageEvent('message',{data,origin,source:frame.contentWindow})));
+  f.w.startStage(0);
+  f.read(`for(let y=1;y<world.GH-1;y++)for(let x=1;x<world.GW-1;x++){
+    if(x!==1&&x!==world.GW-2&&y!==1&&y!==world.GH-2)continue;
+    const k=y*world.GW+x;world.trail[k]=me.id;me.trail.push(k);
+  }world.capture(me);handleEvents();`);
+  assert.ok(f.read('mySil/silTotal>=GOAL'));
+  f.w.win();await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(attempts.length,1);assert.equal(status.disabled,false);
+  close();connected=true;const done=bind();await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(attempts.length,2);assert.deepEqual(attempts[1],attempts[0]);assert.equal(attempts[0].p_stage_id,'0');
+  assert.equal(status.textContent,'이번 달 1장 완료');done();
 });

@@ -14,7 +14,7 @@ host.addEventListener('click',e=>{const b=e.target.closest('[data-act="game-open
 `+world.slice(world.indexOf('</script>',boot));
 world=world.replace('</head>',`<script>
 window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{id:'adult-member'}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},rpc:async name=>({data:name==='get_my_member_identity'?{age:fixtureAge,locked:true}:[]}),from:()=>{const q={select:()=>q,eq:()=>q,order:()=>q,limit:()=>q,then:resolve=>Promise.resolve({data:[],error:null}).then(resolve)};return q;}};
-</script><script src="/games/matgo/matgo-access.js"></script><script src="/games/photo-ttang/photo-ttang-access.js"></script><script src="/games/ttang/ttang-bridge.js"></script><script src="/games/photo-ttang/photo-ttang-ranking.js"></script><script src="/games/photo-ttang/photo-ttang-bridge.js"></script></head>`);
+</script><script src="/games/matgo/matgo-access.js"></script><script src="/games/photo-ttang/photo-ttang-access.js"></script><script src="/games/ttang/ttang-bridge.js"></script><script src="/shared/games/puzzle-record-queue.js"></script><script src="/games/photo-ttang/photo-ttang-ranking.js"></script><script src="/games/photo-ttang/photo-ttang-bridge.js"></script></head>`);
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});
  try{

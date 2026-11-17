@@ -16,7 +16,7 @@ function fixture(t,{blockedStorage=false}={}){
   if(blockedStorage)for(const method of ['getItem','setItem','removeItem'])w.Storage.prototype[method]=()=>{throw Error('storage blocked');};
   w.eval(source+'\nwindow.installChachaRushPortal=installChachaRushPortal;');
   const api=w.installChachaRushPortal({currentOwner:()=>owner,
-    submitScore:score=>{calls.push({owner,score});return submit(score);},onSaved:value=>saved.push(value)});
+    submitScore:(score,round,notify)=>{calls.push({owner,score});return submit(score,round,notify);},onSaved:value=>saved.push(value)});
   const open=()=>{
     api.open();frame=w.document.querySelector('iframe');
     const url=new URL(frame.src);origin=url.origin;nonce=new URLSearchParams(url.hash.slice(1)).get('ojjuda_run');
@@ -110,4 +110,12 @@ test('Chacha refuses to submit a round after its account changes',async t=>{
   const f=fixture(t);f.start(1);f.owner('member-b');f.finish(1,137);await tick();
   assert.deepEqual(f.calls,[]);assert.deepEqual(f.saved,[]);
   assert.equal(f.responses.at(-1).data.ok,false);assert.match(f.responses.at(-1).data.message,/로그인/);
+});
+test('Chacha acknowledges a retained finish a second time when that same round is saved',async t=>{
+ const f=fixture(t);let retry;
+ f.submit(async(score,round,onSettled)=>{assert.equal(round.owner,'member-a');assert.match(round.id,/^[0-9a-f-]{36}$/);retry=onSettled;return {ok:false,pending:true,durable:true};});
+ f.start(1);f.finish(1,137);await tick();assert.match(f.responses.at(-1).data.message,/보관/);
+ f.finish(1,137);await tick();assert.equal(f.calls.length,1);
+ retry({ok:true,previous_period:true});assert.equal(f.responses.at(-1).data.ok,true);assert.match(f.responses.at(-1).data.message,/완료한 달/);
+ assert.deepEqual(f.saved,['member-a']);
 });

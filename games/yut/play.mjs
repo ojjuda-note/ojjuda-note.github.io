@@ -1,4 +1,4 @@
-import {roundSummary} from './results.mjs?v=4';
+import {roundSummary} from './results.mjs?v=20261117-arcade-score-repair1';
 import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=17';
 import {createBoard,PAWN_HOP_MS} from './board.mjs?v=28';
 import {createToss,drawRack} from './toss.mjs?v=13';
@@ -658,16 +658,18 @@ function setupControls(target,entry,kind=local.computerTeams?.length?'computer':
     if(local.revision&&local.phase!=='won')confirmPanel('새 판을 시작할까요?','진행 중인 한 기기 게임을 끝내고 새 판을 시작해요.',play);else play();
   });
   const join=button('방 코드로 참가',entry?'ge-secondary':'secondary',joinPanel);
+  const recordNote=element('p','한 기기에서는 첫 번째 팀('+TEAMS[0].name+' 팀)의 승패가 내 월간 연승에 반영돼요.','ge-copy');
   function refresh(){
     for(const item of kinds.children)item.setAttribute('aria-pressed',String(item.dataset.kind===kind));
     start.textContent=kind==='online'?'초대방 만들기':entry?'게임 시작하기':'게임 시작';join.hidden=kind!=='online';
+    recordNote.hidden=kind!=='together';
   }
   for(const [value,title,entryTitle] of [['computer','컴퓨터 대결','컴퓨터 대전'],['together','한 기기','같은 기기'],['online','온라인 멀티','온라인 대전']]){
     const item=button(entry?entryTitle:title,entry?'':'secondary',()=>{kind=value;refresh();});item.dataset.kind=value;kinds.append(item);
   }
   const options=element('details',undefined,entry?'ge-more':'game-details');
   options.append(element('summary','팀별 동물·말 수'),roster);
-  actions.append(start,join);refresh();target.append(kinds,settingsRow,...(entry?[actions,options]:[options,actions]));
+  actions.append(start,join);refresh();target.append(kinds,settingsRow,recordNote,...(entry?[actions,options]:[options,actions]));
 }
 function joinPanel(){
   openPanel('친구 방 참가','join');

@@ -188,6 +188,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Weverse", icon: "✦", url: "https://weverse.io/aespa/feed" }
     ],
     merch: [
+      { title: "데뷔 6주년 공식 MD · 플리스 재킷 세트", sub: "SMTOWN &STORE 예약 · 11.17 10:00~11.22 23:59(KST) · 재고는 판매처 확인", href: "https://www.smtownandstore.com/product/aespa-6th-anniversary-pre-order-fleece-jacket-set/29758/category/646/display/1/" },
       { title: "Weverse Shop", sub: "공식 굿즈", href: "https://shop.weverse.io/ko/shop/KRW/artists/133" },
       { title: "SMTOWN SHOP", sub: "앨범·MD", href: "https://global.shop.smtown.com/collections/aespa" },
       { title: "2027 시즌그리팅 Kit", sub: "공식 예약 상품 · Weverse Shop", href: "https://shop.weverse.io/en/shop/USD/artists/133/sales/69859" },
@@ -204,11 +205,16 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "Whiplash", date: "2024.10.21", type: "미니 5집", songs: ["Whiplash", "Kill It", "Flights, Not Feelings"], href: "https://aespa-official.jp/discography/whiplash/" }
     ],
     appearances: [
+      { date: "2026-11-27", title: "저스트 메이크업 2 첫 공개 · 윈터 MC 출연", sub: "쿠팡플레이 · 17:00(KST) · 윈터·태연·나연·임윤아·장도연 5MC", href: "https://enews.imbc.com/News/ViewAmp/525108" },
       { date: "2026-11-28", title: "2026 aespa FAN MEETING · 1회", sub: "고려대학교 화정체육관 · 18:00(KST) · 멜론티켓", href: "https://weverse.io/aespa/notice/40306" },
       { date: "2026-11-29", title: "2026 aespa FAN MEETING · 2회", sub: "고려대학교 화정체육관 · 16:00(KST) · 온라인 생중계 동시 진행", href: "https://weverse.io/aespa/notice/40306" },
       { date: "2026-12-09", title: "2026 FNS 가요제 · 제2야", sub: "후지TV · 18:30~21:54(JST) 생방송 출연", href: "https://aespa-official.jp/news/fns02/" },
       { date: "2026-12-10", title: "KISS N TELL Happy Holiday · 사인회", sub: "일본 도쿄도 내 · 멤버 전원 참여 · 시간·장소는 당첨자 별도 안내 · 11.16~11.25 응모(JST)", href: "https://aespa-official.jp/news/happyholiday2026/" },
-      { date: "2026-12-12", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 MUFG 스타디움(국립경기장) · 17:00 예정(JST)", href: "https://music-bank.jp/" }
+      { date: "2026-12-12", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 MUFG 스타디움(국립경기장) · 17:00 예정(JST)", href: "https://music-bank.jp/" },
+      { date: "2027-03-06", title: "2027 aespa 일본 돔 투어 · 도쿄 1회", sub: "도쿄돔 · 18:30(JST) 공연 시작 · MY-J 선예매 2026.11.16~11.29(추첨)", href: "https://aespa-official.jp/news/dometour2027-fc/" },
+      { date: "2027-03-07", title: "2027 aespa 일본 돔 투어 · 도쿄 2회", sub: "도쿄돔 · 16:00(JST) 공연 시작 · MY-J 선예매 2026.11.16~11.29(추첨)", href: "https://aespa-official.jp/news/dometour2027-fc/" },
+      { date: "2027-04-03", title: "2027 aespa 일본 돔 투어 · 오사카 1회", sub: "교세라돔 오사카 · 18:30(JST) 공연 시작 · MY-J 선예매 2026.11.16~11.29(추첨)", href: "https://aespa-official.jp/news/dometour2027-fc/" },
+      { date: "2027-04-04", title: "2027 aespa 일본 돔 투어 · 오사카 2회", sub: "교세라돔 오사카 · 16:00(JST) 공연 시작 · MY-J 선예매 2026.11.16~11.29(추첨)", href: "https://aespa-official.jp/news/dometour2027-fc/" }
     ],
     campaigns: [
       { kind: "콜라보", date: "2026.11.13", title: "Eartha Kitt × aespa · Santa Baby", sub: "원곡 보컬과 협업한 디지털 싱글 · Primary Wave Music / SM", href: "https://www.yna.co.kr/amp/view/AKR20261113047000005" },
@@ -222,6 +228,9 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 공지", sub: "Weverse", href: "https://weverse.io/aespa/notice" }
     ],
     news: [
+      { date: "11.17", tag: "굿즈", title: "데뷔 6주년 기념 공식 MD 예약 판매 · 11월 22일 마감", href: "https://www.smtownandstore.com/product/aespa-6th-anniversary-pre-order-fleece-jacket-set/29758/category/646/display/1/" },
+      { date: "11.17", tag: "방송", title: "윈터, 쿠팡플레이 〈저스트 메이크업 2〉 MC 합류 · 11월 27일 공개", href: "https://enews.imbc.com/News/ViewAmp/525108" },
+      { date: "11.16", tag: "공연", title: "2027년 3~4월 도쿄·오사카 돔 투어 4회 확정 · MY-J 선예매 시작", href: "https://aespa-official.jp/news/dometour2027-fc/" },
       { date: "11.14", tag: "수상", title: "MMA2026 글로벌-K 아티스트 대상·글로벌 TOP10 2관왕", href: "https://www.melon.com/mma/result.htm?mmaYear=2026" },
       { date: "11.13", tag: "음악", title: "Eartha Kitt와 협업한 〈Santa Baby〉 싱글 발매", href: "https://www.yna.co.kr/amp/view/AKR20261113047000005" },
       { date: "11.13", tag: "음악", title: "〈KISS N TELL〉 ☆Taku Takahashi 리믹스 11월 20일 발매 예고", href: "https://aespa-official.jp/news/kissntell-remix/" },

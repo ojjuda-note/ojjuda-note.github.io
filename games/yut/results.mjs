@@ -64,7 +64,7 @@ export function roundSummary(state,seat){
   async function submit(){
     retry.hidden=true;status.textContent='월간 기록 저장 중…';
     const result=await saveRound(state.roundId,state.winner===seat);
-    if(result?.ok)status.textContent=TEAMS[seat].name+' 팀 · 월간 기록 저장됨';
+    if(result?.ok)status.textContent=TEAMS[seat].name+' 팀 '+(state.winner===seat?'승리':'패배')+' · 월간 기록 저장됨';
     else if(result?.reason==='admin_preview')status.textContent='';
     else if(['banned','owner_changed','request_conflict'].includes(result?.reason))status.textContent='이 플레이어의 월간 기록을 저장할 수 없어요.';
     else{status.textContent='월간 기록을 저장하지 못했어요.';retry.hidden=false;}
