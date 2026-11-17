@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261117-restaurants-c2s48-seogwipo-loc2-tv1'
+ const revision='20261117-photo-respawn1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -42,7 +42,7 @@
   yut:'1.15.2',
   tour:'1.6.1',
   ttang:'1.7.1',
-  photo_ttang:'1.6.1',
+  photo_ttang:'1.6.2',
   mole:'1.8.1',
   runner:'3.4.1',
   stacker:'1.6.1',
@@ -80,7 +80,7 @@
   tour:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/ojjuda-tour/world-tour-game.js?v=20261113-game-popup-order1'],
   spot:['/games/spot-difference/world-spot-game.css?v=20261106-source-folders1','/games/spot-difference/world-spot-game.js?v=20261113-game-popup-order1'],
   ttang:['/games/ttang/ttang-bridge.js?v=20261113-game-popup-order1'],
-  photo_ttang:['/games/photo-ttang/photo-ttang-access.js?v=20261113-game-popup-order1','/games/photo-ttang/photo-ttang-ranking.js?v=20261110-admin-record-free1','/games/photo-ttang/photo-ttang-bridge.js?v=20261113-game-popup-order1'],
+  photo_ttang:['/games/photo-ttang/photo-ttang-access.js?v=20261113-game-popup-order1','/games/photo-ttang/photo-ttang-ranking.js?v=20261110-admin-record-free1','/games/photo-ttang/photo-ttang-bridge.js?v=20261117-photo-respawn1'],
   mole:[...controls,'/games/mole/mole-game.css?v=20261108-mole-grids1','/games/mole/mole-game.js?v=20261108-mole-seven1'],
   runner:[...controls,'/games/runner/runner-game.css?v=20261110-runner-seahorse-v3-1','/games/runner/runner-game.js?v=20261111-runner-inset1'],
   breakout:[...controls,'/games/breakout/breakout-game.css?v=20261106-source-folders1','/games/breakout/breakout-game.js?v=20261110-admin-game-preview1'],

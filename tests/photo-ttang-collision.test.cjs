@@ -27,6 +27,25 @@ function fixture({diagonal=false,bot=false,scale=20}={}){
 function touch(f,x,y,px=x,py=y){f.attacker.x=x;f.attacker.y=y;f.world.visit(f.attacker,px,py);}
 function mob(x,y,extra={}){return Object.assign({type:'bounce',x,y,r:.75,v:4.2,vx:0,vy:0,ph:0,alive:true,born:-1},extra);}
 
+test('respawn uses the last owned cell even when every random sample misses it',()=>{
+  const source=html.slice(html.indexOf('function respawnMe()'),html.indexOf('function newMob('));
+  const math=Object.create(Math); math.random=()=>0;
+  const revive=vm.runInNewContext('(function(world,me,mobs){'+source+'respawnMe();})',{Math:math,TAU:2*Math.PI});
+  const world=new World(32,'solo',40);
+  const player=world.addPlayer({noSpawn:true,alive:false});
+  const last=world.si(12,15);
+  world.setOwn(last,player.id);
+  const before=world.own.slice();
+  revive(world,player,[]);
+  assert.ok(world.own.every((owner,i)=>owner===before[i]),'reviving must preserve every territory cell');
+  assert.equal(world.si(player.x,player.y),last);
+  assert.equal(player.alive,true);
+  world.setOwn(last,0);
+  player.alive=false;
+  revive(world,player,[]);
+  assert.ok(world.counts[player.id]>0,'a player with no territory still receives a starting area');
+});
+
 test('the visible body edge cuts a trail for both the player and computers',()=>{
   for(const bot of [false,true]){
     const f=fixture({bot});touch(f,10,11);
