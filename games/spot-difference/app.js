@@ -2,6 +2,7 @@
   'use strict';
   if(window.self!==window.top)document.body.classList.add('embedded');
   const $=id=>document.getElementById(id),puzzles=window.JJUDA_PUZZLES,core=window.JjudaGame,wallet=window.JjudaWallet;
+  const embeddedOwner=new URLSearchParams(location.search).get('owner');
   const storageKey='jjuda-spot-six-v1';let stored=null,storageWorks=true;
   try{stored=JSON.parse(localStorage.getItem(storageKey));}catch{storageWorks=false;}
   // Keep the last picture and completion history, with a fresh round on return.
@@ -15,7 +16,7 @@
     else if(previous?.deferredHelp)state.rounds[p.id]={...previous,status:'ready',deadline:null};
   }
   const adminPreview=()=>wallet.getState().canViewAnswers===true;
-  let previewSession=false;
+  let previewSession=false,standaloneClears=null,clearOwner=null;
   const canPlay=index=>Number.isInteger(index)&&index>=0&&index<puzzles.length&&(adminPreview()||core.canSelectPuzzle(state,puzzles,index));
   const canOpen=index=>canPlay(index)||!!state.rounds[puzzles[index]?.id]?.pending;
   const classicOrder=state.order.filter(i=>!puzzles[i].motionScene),motionOrder=state.order.filter(i=>puzzles[i].motionScene);
@@ -283,9 +284,9 @@
     speak(reason==='won'?`${targetCount()}곳을 모두 찾았어요!`:reason==='time'?'시간이 다 됐어요. 1 ZU로 30초를 연장할 수 있어요.':'하트를 모두 썼어요. 다시 도전해 보세요.',reason==='won');
     if(!previewSession&&window.parent!==window)window.parent.postMessage({type:'ojjuda:spot-finished'},window.location.origin);
     if(!previewSession&&reason==='won'&&found().length===targetCount()&&(r.rankOwner||window.parent!==window)){
-      const stage=puzzle().id,owner=r.rankOwner;
-      if(window.parent!==window)window.parent.postMessage({type:'ojjuda:spot-clear',stage,owner},window.location.origin);
-      else Promise.resolve(wallet.recordClear?.(owner,stage)).then(result=>{if(!result?.ok)throw Error('save');}).catch(()=>speak('완료 기록을 저장하지 못했어요. 인터넷 연결을 확인해 주세요.'));
+      const stage=puzzle().id,owner=r.rankOwner,completedAt=new Date(Date.now()).toISOString();
+      if(window.parent!==window)window.parent.postMessage({type:'ojjuda:spot-clear',stage,owner,completedAt},window.location.origin);
+      else if(owner===clearOwner)standaloneClears?.add(stage,completedAt);
     }
     if(reason==='won')celebrate();
     else showFailure();
@@ -298,7 +299,7 @@
     if(!canPlay(state.current))return;
     if(r.status!=='ready')return;
     delete r.deferredHelp;
-    r.rankOwner=wallet.getState().userId;r.status='playing';r.deadline=Date.now()+r.remainingMs;refresh();
+    r.rankOwner=window.parent!==window?embeddedOwner:wallet.getState().userId;r.status='playing';r.deadline=Date.now()+r.remainingMs;refresh();
     speak(`시작! 다른 곳 ${targetCount()}개를 찾아보세요.`);
     if(r.hintIndex!==null)showHint();
   }
@@ -673,6 +674,15 @@
   $('wallet-refresh').onclick=()=>{closeWalletMenu();walletMenu.querySelector('summary').focus();return wallet.refresh().catch(()=>speak('인터넷 연결을 확인해 주세요.'));};
   $('wallet-logout').onclick=async()=>{if(paymentBusy)return;closeWalletMenu();walletMenu.querySelector('summary').focus();try{await wallet.signOut();$('wallet-login').focus();speak('로그아웃했어요.');}catch{speak('로그아웃하지 못했어요. 다시 시도해 주세요.');}};
   wallet.subscribe(w=>{
+    if(window.parent===window&&w.userId!==clearOwner){
+      standaloneClears?.dispose();clearOwner=w.userId;
+      standaloneClears=w.userId?window.OjjudaPuzzleRecords.pictures({game:'spot',owner:w.userId,
+        active:()=>wallet.getState().userId===w.userId&&!adminPreview(),
+        submit:item=>wallet.recordClear(w.userId,item.stage,item.completedAt),
+        status:(state,result)=>{if(state==='failed')speak('완료 기록을 보관했어요. 연결되면 다시 등록해요.');else if(result?.previous_period)speak('이전 달 완료 기록을 저장했어요.');}
+      }):null;
+      void standaloneClears?.flush();
+    }
     if(w.canViewAnswers!==true&&answerReview)closeAnswers();
     if(w.canViewAnswers===true){previewSession=true;if(imagesReady&&!answerReview)toggleAnswers();}
     $('wallet-balance').textContent=w.userId?(w.coins===null?'잔액 확인 중':`${w.coins.toLocaleString()} ZU`):'로그인 필요';
