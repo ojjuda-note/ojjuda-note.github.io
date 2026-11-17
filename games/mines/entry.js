@@ -89,7 +89,7 @@
         store.remove(flight.id);flight = null;
         if (store.list().length) setTimeout(flush, 5500);
       } else {
-          flight = null; status('순위 등록을 다시 시도해 주세요.', true);
+        flight = null; status('순위 등록을 다시 시도해 주세요.', true);
       }
     }
     if (m.type === 'ojjuda-mines-ranking') {

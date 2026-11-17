@@ -58,6 +58,10 @@
           send({type:'ojjuda-mines-record',runId:message.runId,ok:false,preview:true});return;
         }
         const {runId, difficulty, seconds, completed} = message;
+        const completedAt=message.completedAt??new Date(Date.now()).toISOString();
+        const finished=Date.parse(completedAt);
+        if(!Number.isFinite(finished))return;
+        const period=new Date(finished+8*3600000).toISOString().slice(0,7);
         const score = window.OjjudaMinesRules.score(difficulty, seconds);
         const legacySlow = seconds >= 10000 && message.score === (difficulty + 1) * 10000;
         if (completed !== true || score === null || (message.score !== score && !legacySlow) ||
@@ -65,11 +69,11 @@
         let pending = records.get(runId);
         if (pending && pending.score !== score) return;
         if (!pending) {
-          startComparison(runId,difficulty);
+          if(period===rankingMonth())startComparison(runId,difficulty);
           const baseline=baselines.get(runId);
           pending = {score, promise:Promise.resolve().then(async() => {
-            const before=await baseline?.leader;
-            const saved=authorized() && typeof onScore==='function' ? await onScore(score,runId,message.completedAt||new Date(Date.now()).toISOString()) : {ok:false};
+            const before=period===rankingMonth()?await baseline?.leader:null;
+            const saved=authorized() && typeof onScore==='function' ? await onScore(score,runId,completedAt) : {ok:false};
             if(!saved?.ok)return {ok:false};
             const after=before?.record.difficulty===difficulty&&before.record.seconds!==null?await readLeader():null;
             return {ok:true,comparison:comparison(before,after,difficulty,seconds)};
