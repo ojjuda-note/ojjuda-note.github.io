@@ -481,3 +481,43 @@ test('Park paints a substantial brush question and a separate dot on small cards
     }
   }));
 
+test('운동 fits its angled vowel tips together with visible paper between them', () =>
+  withBrushPage(async page => {
+    for (const width of [192, 328]) {
+      const sample = await page.evaluate(width => {
+        const canvas = document.createElement('canvas');
+        window.ParkCalligraphy.render(canvas, '운동했네?', { width, accent: false });
+        const { y, height } = window.ParkCalligraphy.inkBounds(canvas);
+        const top = Math.round(y * canvas.height), inkHeight = Math.round(height * canvas.height);
+        const data = canvas.getContext('2d').getImageData(0, top, width, inkHeight).data;
+        const alpha = (x, row) => data[4 * (row * width + x) + 3];
+        // Read the gap between the upper ㅇ and ㄷ from the painted card.
+        const runs = [];
+        for (let x = 0; x < width; x++) {
+          let painted = false;
+          for (let row = Math.ceil(inkHeight * .02); row <= inkHeight * .34; row++) {
+            if (alpha(x, row) >= 110) { painted = true; break; }
+          }
+          if (!painted) continue;
+          if (runs.at(-1)?.end === x - 1) runs.at(-1).end = x;
+          else runs.push({ start: x, end: x });
+        }
+        const [ieung, digeut] = runs;
+        const gap = digeut.start - ieung.end - 1;
+        // Below those initials, a vertical scan must cross ink, paper, then ink.
+        for (let x = ieung.end; x <= digeut.start; x++) {
+          let ink = false, paper = false;
+          for (let row = Math.ceil(inkHeight * .33); row <= inkHeight * .61; row++) {
+            const a = alpha(x, row);
+            if (paper && a >= 96) return { gap, inkHeight, separateTips: true };
+            if (ink && a < 64) paper = true;
+            if (a >= 96) ink = true;
+          }
+        }
+        return { gap, inkHeight, separateTips: false };
+      }, width);
+      assert.ok(sample.gap >= 1 && sample.gap < sample.inkHeight * .23,
+        '운 and 동 should read as adjacent syllables at ' + width + 'px');
+      assert.ok(sample.separateTips, 'ㅜ and ㅗ must pass without touching at ' + width + 'px');
+    }
+  }));
