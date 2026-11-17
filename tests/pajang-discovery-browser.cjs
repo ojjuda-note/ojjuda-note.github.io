@@ -80,6 +80,37 @@ function clientFixture(hash) {
         }};
       }
     };
+    if(sessionStorage.openTiming){
+      const wait=()=>new Promise(r=>setTimeout(r,180));
+      for(const [obj,key] of [[db.auth,'getUser'],[db.functions,'invoke']]){
+        const original=obj[key];obj[key]=async(...args)=>{await wait();return original(...args);};
+      }
+      const rpc=db.rpc;
+      db.rpc=(name,...args)=>{
+        if(name==='pajang_discovery_feed'){
+          const read=rpc(name,...args);
+          return {abortSignal:async signal=>{await wait();return read.abortSignal(signal);}};
+        }
+        return wait().then(()=>rpc(name,...args));
+      };
+      const from=db.storage.from;
+      db.storage.from=(...args)=>{
+        const bucket=from(...args),download=bucket.download;
+        bucket.download=async key=>{if(key.endsWith('station.js'))await wait();return download(key);};
+        return bucket;
+      };
+      document.addEventListener('click',event=>{
+        if(event.target.closest('[data-pajang-launch]'))sessionStorage.openStart=String(Date.now());
+      },true);
+      function paint(){
+        const target=document.querySelector(mode==='new'?'#welcome #write':'#answers article .quote');
+        if(target?.getClientRects().length && sessionStorage.openStart){
+          sessionStorage.openMs=String(Date.now()-Number(sessionStorage.openStart));return;
+        }
+        requestAnimationFrame(paint);
+      }
+      requestAnimationFrame(paint);
+    }
     window.OjjudaGetClient=async()=>db;
   `;
 }
@@ -278,6 +309,19 @@ function clientFixture(hash) {
     }
     console.log('PASS three primary destinations, direct acceptance, scroll-stable home exit, modal exit, direct legacy routes, thread reload/back, join handoff, guest/denied returns and embedded focus restoration');
     console.log('PASS single remote identity check, two requested illustrations out of six, zero rereads after join, delayed-send draft, retry identity, concurrent reads and late signal acceptance');
+    for(const scenario of ['new','member']){
+      const timings=[];
+      for(let attempt=0;attempt<5;attempt++){
+        await page.evaluate(mode=>{sessionStorage.fixtureMode=mode;sessionStorage.openTiming='yes';
+          delete sessionStorage.openMs;delete sessionStorage.openStart;},scenario);
+        await page.goto(origin+'/world.html?timing='+attempt);
+        await page.getByRole('button',{name:'파장 열기'}).click();
+        if(scenario==='member')await page.waitForURL('**/station.html');
+        await page.waitForFunction(()=>sessionStorage.openMs);
+        timings.push(await page.evaluate(()=>Number(sessionStorage.openMs)));
+      }
+      console.log('PAJANG_OPEN_MS',scenario,JSON.stringify(timings),'median',timings.sort((a,b)=>a-b)[2]);
+    }
     assert.deepEqual(errors,[]);
     console.log('PASS 320/390/1080px layout, artwork-independent startup, tap/swipe/keyboard, delayed results, cancellation, in-memory revisit, and denial');
   } finally {await browser.close();}
