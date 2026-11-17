@@ -17,8 +17,9 @@
  const adultPopular = Object.freeze(['matgo','poker']);
  const canonical = key => ['carom4','carom3','pool8'].includes(key)?'billiards':key;
  const keyOf = button => canonical(button.dataset.act === 'matgo-open'?'matgo':button.dataset.v);
- const month = 30*24*60*60*1000, ttl = 5*60*1000;
+ const month = 30*24*60*60*1000, ttl = 5*60*1000, minReadInterval = 60000;
  let counts = new Map(), received = 0, attempted = 0, serverTime = 0, client, pending, queued = false;
+ let recordsChanged = false;
  const now = () => serverTime ? serverTime + Math.max(0,Date.now()-received) : Date.now();
  function apply() {
   queued = false;
@@ -77,31 +78,38 @@
   }
   return false;
  }
- async function refresh(force=false) {
-  if (pending || !document.querySelector('[data-arcade-games]') || (!force&&((received&&Date.now()-received<ttl)||(attempted&&Date.now()-attempted<60000)))) return pending;
+ function refresh(force=false) {
+  if (pending || document.hidden || navigator.onLine === false || !document.querySelector('[data-arcade-games]')) return pending;
+  const time = Date.now();
+  if (!force && ((attempted && time-attempted < minReadInterval) || (!recordsChanged && received && time-received < ttl))) return;
   const config=window.OJJUDA_CONFIG;
   if (!config?.supabaseUrl || !config.supabaseKey || !window.supabase?.createClient) return;
-  client ||= window.supabase.createClient(config.supabaseUrl,config.supabaseKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:'ojjuda-popularity-api'}});
-  attempted=Date.now();pending=(async()=>{
+  attempted=time; recordsChanged=false;
+  pending=readCounts(config).finally(()=>{ pending=null; });
+  return pending;
+ }
+ async function readCounts(config) {
+   const controller = new AbortController();
+   const timeout = setTimeout(()=>controller.abort(),10000);
    try {
-    const {data,error}=await client.rpc('arcade_popularity').abortSignal(AbortSignal.timeout(10000));
+    client ||= window.supabase.createClient(config.supabaseUrl,config.supabaseKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:'ojjuda-popularity-api'}});
+    const {data,error}=await client.rpc('arcade_popularity').abortSignal(controller.signal);
     if (error || !Array.isArray(data?.games) || !Number.isFinite(Date.parse(data.generated_at))) throw Error('unavailable');
     counts=new Map(data.games.filter(row=>typeof row.game==='string'&&Number.isSafeInteger(row.plays)&&row.plays>=0).map(row=>[canonical(row.game),row.plays]));
     received=Date.now();serverTime=Date.parse(data.generated_at);apply();
-   } catch { if (received && Date.now()-received>3*ttl) { counts.clear();apply(); } }
-   finally { pending=null; }
-  })(); return pending;
+   } catch { recordsChanged=true; if (received && Date.now()-received>3*ttl) { counts.clear();apply(); } }
+   finally { clearTimeout(timeout); }
  }
  window.OjjudaArcadePromotions=Object.freeze({refresh});
  function start() {
   // Ignore unrelated chat, ranking and Park DOM updates. Layout reads and
   // game sorting are only needed when the actual arcade catalog changes.
-  new MutationObserver(records=>{if(catalogChanged(records)){schedule();if(!received)void refresh();}}).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','class','style']});
+  new MutationObserver(records=>{if(catalogChanged(records)){schedule();void refresh();}}).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','class','style']});
   apply();void refresh();
   setInterval(()=>{if(!document.hidden){apply();void refresh();}},60000);
  }
- addEventListener('ojjuda:game-record-saved',()=>void refresh(true));
- addEventListener('online',()=>void refresh(true));
+ addEventListener('ojjuda:game-record-saved',()=>{ recordsChanged=true; void refresh(); });
+ addEventListener('online',()=>void refresh());
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){apply();void refresh();}});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();

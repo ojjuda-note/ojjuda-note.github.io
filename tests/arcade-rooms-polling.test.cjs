@@ -196,6 +196,63 @@ test('failed list reads remain retryable and dispose removes wakeup listeners an
   assert.equal(f.calls.length, before); assert.equal(f.timers.size, 0);
 });
 
+test('twenty lobbies pace automatic retries during a one-minute outage and recover immediately on refresh', async t => {
+  const clients = Array.from({length:20}, () => fixture(t));
+  for (const f of clients) {
+    f.w.Math.random = () => 0.5;
+    f.state.error = {message:'unavailable'};
+  }
+  await Promise.all(clients.map(f => f.start()));
+  await Promise.all(clients.map(f => f.advance(60000)));
+  const primaryReads = () => clients.reduce((count, f) =>
+    count + f.calls.filter(call => call.name === 'arcade_room_service').length, 0);
+  t.diagnostic('primary list reads across 20 clients in 60 seconds including initial reads: ' + primaryReads());
+  assert.equal(primaryReads(), 60);
+  for (const f of clients) f.state.error = null;
+  await Promise.all(clients.map(f => f.app.refresh()));
+  assert.equal(primaryReads(), 80);
+  await Promise.all(clients.map(f => f.advance(6000)));
+  assert.equal(primaryReads(), 100, 'normal polling resumes after a good response');
+});
+
+test('an unavailable extra list still shows primary rooms, escapes display values and recovers', async t => {
+  let failing = true;
+  const native = room({room_no:18, title:'추가 방', native:true, is_member:false});
+  const f = fixture(t, {extraRooms:async () => {
+    if (failing) throw Error('unavailable');
+    return [native];
+  }});
+  f.state.data.rooms = [room({players:'<b>1</b>'})];
+  await f.start();
+  assert.equal(f.list().querySelector('.arcade-room-copy h4')?.textContent, '친구와 체스');
+  assert.equal(f.list().querySelector('.arcade-room-copy p b'), null);
+  assert.match(f.list().querySelector('.arcade-room-copy p').textContent, /<b>1<\/b>/);
+  assert.match(f.list().querySelector('[data-room-issue]').textContent, /일부/);
+  failing = false; await f.app.refresh();
+  assert.equal(f.list().querySelector('[data-room-issue]').hidden, true);
+  assert.equal(f.list().querySelectorAll('.arcade-room-card').length, 2);
+});
+
+test('a stalled room read releases the poll after its deadline and permits a fresh read', async t => {
+  let stalled = true, primaryAborts = 0, extraAborts = 0;
+  const abortable = (signal, stopped) => new Promise((resolve, reject) => {
+    signal.addEventListener('abort', () => { stopped(); reject(Error('timeout')); }, {once:true});
+  });
+  const f = fixture(t, {
+    client:{rpc:() => ({abortSignal:signal => stalled
+      ? abortable(signal, () => primaryAborts++)
+      : Promise.resolve({data:{ok:true, rooms:[room()]}})})},
+    extraRooms:signal => stalled ? abortable(signal, () => extraAborts++) : Promise.resolve([])
+  });
+  await f.start();
+  await f.advance(10000);
+  assert.equal(primaryAborts, 1);
+  assert.equal(extraAborts, 1);
+  assert.equal(f.list().querySelector('[data-room-issue]').hidden, false);
+  stalled = false; await f.app.refresh();
+  assert.equal(f.list().querySelector('.arcade-room-copy h4')?.textContent, '친구와 체스');
+});
+
 
 test('an old playing room is never resumed on initial load or shell redraw, and its card requests a fresh game once', async t => {
   const f = fixture(t), playing = room({ status: 'playing', match_id: 'old-match', players: 2 });

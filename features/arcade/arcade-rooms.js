@@ -29,7 +29,7 @@
   function create(options) {
     let root = null, list = null, owner = null, epoch = 0, timer = null, polling = false, pollAgain = false, lastRead = null, busy = false, disposed = false;
     let rooms = [], mine = null, canMatgo = false, issue = '', signature = '', openedMatch = null, waitingRoom = null;
-    let openingRoom = null;
+    let openingRoom = null, retryDelay = 0, readController = null;
     let filter = '', query = '';
     const current = id => !disposed && id && options.getUserId() === id;
     const drinkingAllowed = () => Boolean(current(owner) && options.matgoAllowed?.() === true);
@@ -38,16 +38,21 @@
     const needsUpdates = () => !disposed && owner && !paused() && (root?.isConnected || mine?.status === 'waiting' || mine?.status === 'playing');
     // Detect an opponent promptly; casual lobby browsing needs fewer server reads.
     const pollInterval = () => mine?.status === 'waiting' || mine?.status === 'playing' ? ACTIVE_POLL_MS : IDLE_POLL_MS;
-    async function call(action, params = {}) {
-      const { data, error } = await options.client.rpc('arcade_room_service', { p_action: action, ...params });
+    async function call(action, params = {}, signal) {
+      const request = options.client.rpc('arcade_room_service', { p_action: action, ...params });
+      const { data, error } = await (signal && request.abortSignal ? request.abortSignal(signal) : request);
       if (error) throw error;
       if (!data?.ok) throw Error('unavailable');
       return data;
     }
     function schedule() {
       if (!needsUpdates()) { clearTimeout(timer); timer = null; return; }
-      if (timer) return;
-      timer = setTimeout(() => void poll(), pollInterval());
+      if (timer || polling || busy) return;
+      timer = setTimeout(() => void poll(), retryDelay || pollInterval());
+    }
+    function backoff() {
+      const base = Math.max(pollInterval(), retryDelay);
+      retryDelay = Math.min(60000, Math.round(base * (1.5 + Math.random() * 0.5)));
     }
     let suspended = paused();
     function activityChanged() {
@@ -69,10 +74,10 @@
       if (openingRoom?.roomNo === room.room_no) action = '입장 중…';
       return `<article class="arcade-room-card${room.is_member ? ' mine' : ''}">
         <div class="arcade-room-game"><img src="/assets/design/games/${artwork}.svg" alt="" width="36" height="28"><b>${name}</b></div>
-        <div class="arcade-room-copy"><span class="arcade-room-number">방 #${escape(room.room_no)}${room.is_host ? ' · 내 방' : room.is_member ? ' · 참여한 방' : ''}</span><h4>${escape(room.title)}</h4><p>${escape(room.host_name)} <span>· ${room.players}/${room.capacity}명</span></p></div>
+        <div class="arcade-room-copy"><span class="arcade-room-number">방 #${escape(room.room_no)}${room.is_host ? ' · 내 방' : room.is_member ? ' · 참여한 방' : ''}</span><h4>${escape(room.title)}</h4><p>${escape(room.host_name)} <span>· ${escape(room.players)}/${escape(room.capacity)}명</span></p></div>
         <div class="arcade-room-actions"><span class="arcade-room-state${playing ? ' playing' : ''}">${playing ? '대전 중' : '상대 기다리는 중'}</span>
         <button class="btn sm${!playing || room.is_member ? ' pri' : ''}" data-arcade-action="join" data-room="${escape(room.room_no)}"${busy || (playing && !room.is_member) || (!playing && room.is_member && !room.native) || (!room.is_member && room.players>=room.capacity) ? ' disabled' : ''}>${action}</button>
-        ${room.is_host && !playing ? `<button class="arcade-cancel" data-arcade-action="cancel" data-room="${room.room_no}"${busy ? ' disabled' : ''}>대기 취소</button>` : ''}</div></article>`;
+        ${room.is_host && !playing ? `<button class="arcade-cancel" data-arcade-action="cancel" data-room="${escape(room.room_no)}"${busy ? ' disabled' : ''}>대기 취소</button>` : ''}</div></article>`;
     }
     function emptyRoomMessage(search, status) {
       if (!owner) return '로그인하면 대전방을 만들고 참여할 수 있어요.';
@@ -155,14 +160,24 @@
       if (polling || busy) { if (fresh) pollAgain = true; schedule(); return; }
       const actor = owner, revision = epoch;
       polling = true; pollAgain = false;
+      const controller = new AbortController();
+      readController = controller;
+      const deadline = setTimeout(() => controller.abort(), 10000);
       try {
-        const [data,extra] = await Promise.all([call('list'),options.extraRooms?.() || Promise.resolve([])]);
+        const [primary,extra] = await Promise.allSettled([
+          call('list', {}, controller.signal), options.extraRooms?.(controller.signal) || []
+        ]);
         // A return/manual refresh supersedes this read. Applying it first could
         // open an old match and pause the fresh read queued below.
         if (!current(actor) || revision !== epoch || pollAgain || offline()) return;
-        rooms = [...(data.rooms || []), ...extra].filter(room => !drinkingKinds.has(room.kind));
+        if (primary.status === 'rejected') throw primary.reason;
+        const data = primary.value;
+        const partial = extra.status === 'rejected';
+        rooms = [...(data.rooms || []), ...(partial ? [] : extra.value)].filter(room => !drinkingKinds.has(room.kind));
         mine = data.mine && !drinkingKinds.has(data.mine.kind) ? data.mine : rooms.find(room => room.is_member) || null;
-        canMatgo = data.can_matgo === true; issue = '';
+        canMatgo = data.can_matgo === true;
+        issue = partial ? '일부 게임의 방 목록을 불러오지 못했어요. 잠시 후 다시 확인해요.' : '';
+        if (partial) backoff(); else retryDelay = 0;
         lastRead = Date.now();
         if (mine?.status === 'waiting') waitingRoom = mine.room_no;
         else if (!mine) waitingRoom = null;
@@ -171,25 +186,26 @@
         const justStarted = mine?.status === 'playing' && waitingRoom === mine.room_no;
         render();
         if (!mine?.native && justStarted) { await openMatch(mine, true); if (openedMatch === mine.match_id) waitingRoom = null; }
-      } catch (error) { if (current(actor) && revision === epoch && !pollAgain && !offline()) { issue = message(error); render(); } }
-      finally { polling = false; if (pollAgain) { pollAgain = false; void poll(); } else schedule(); }
+      } catch (error) { if (current(actor) && revision === epoch && !pollAgain && !offline()) { backoff(); issue = message(error); render(); } }
+      finally { clearTimeout(deadline); readController = null; polling = false; if (pollAgain) { pollAgain = false; void poll(); } else schedule(); }
     }
     function sync() {
       if (disposed) return;
       const actor = options.getUserId();
       const changedOwner = actor !== owner;
       if (changedOwner) {
+        readController?.abort();
         if (openingRoom) { openingRoom = null; busy = false; }
         if (owner && document.getElementById('arcade-room-form')) options.closeModal();
         epoch++; owner = actor; rooms = []; mine = null; openedMatch = null; waitingRoom = null; issue = ''; signature = '';
-        lastRead = null; canMatgo = options.matgoAllowed?.() === true; clearTimeout(timer); timer = null;
+        lastRead = null; retryDelay = 0; canMatgo = options.matgoAllowed?.() === true; clearTimeout(timer); timer = null;
       }
       const node = document.querySelector('[data-arcade-rooms]');
       const changed = root !== node; root = node;
       if (changed) signature = '';
       render();
       if (changedOwner && owner) void poll(true);
-      else if (changed && root && owner && (lastRead === null || Date.now() - lastRead >= pollInterval())) void poll();
+      else if (changed && root && owner && !retryDelay && (lastRead === null || Date.now() - lastRead >= pollInterval())) void poll();
       else schedule();
     }
     function layoutSelect(selected) {
@@ -316,7 +332,7 @@
         return;
       }
       if (room.kind !== 'janggi' || room.is_member) { void join(room); return; }
-      options.renderModal(`<div class="mhead"><h3>방 #${room.room_no} 참여</h3><button class="btn sm ghost" data-act="close">닫기</button></div><form id="arcade-join-form"><p>${escape(room.title)}</p>${layoutSelect('hehe')}<div class="mfoot"><button type="submit" class="btn pri">이 배치로 참여</button></div></form>`, '장기방 참여');
+      options.renderModal(`<div class="mhead"><h3>방 #${escape(room.room_no)} 참여</h3><button class="btn sm ghost" data-act="close">닫기</button></div><form id="arcade-join-form"><p>${escape(room.title)}</p>${layoutSelect('hehe')}<div class="mfoot"><button type="submit" class="btn pri">이 배치로 참여</button></div></form>`, '장기방 참여');
       document.getElementById('arcade-join-form').onsubmit = event => { event.preventDefault(); void join(room, event.target.elements.layout.value); };
     }
     async function cancelNative(room, actor) {
@@ -382,7 +398,7 @@
     if (modalRoot) observer.observe(modalRoot, { childList: true });
     const refresh = () => poll(true);
     window.addEventListener('ojjuda:arcade-rooms-changed', refresh);
-    return { sync, openCreate, created, refresh, dispose() { disposed = true; epoch++; clearTimeout(timer); stopAccessWatch?.(); observer.disconnect(); window.removeEventListener('offline', connectionChanged); window.removeEventListener('online', connectionChanged); document.removeEventListener('visibilitychange', activityChanged); document.removeEventListener('click', click); document.removeEventListener('input', input); document.removeEventListener('change', input); window.removeEventListener('ojjuda:arcade-rooms-changed', refresh); } };
+    return { sync, openCreate, created, refresh, dispose() { disposed = true; epoch++; readController?.abort(); clearTimeout(timer); stopAccessWatch?.(); observer.disconnect(); window.removeEventListener('offline', connectionChanged); window.removeEventListener('online', connectionChanged); document.removeEventListener('visibilitychange', activityChanged); document.removeEventListener('click', click); document.removeEventListener('input', input); document.removeEventListener('change', input); window.removeEventListener('ojjuda:arcade-rooms-changed', refresh); } };
   }
   window.OjjudaArcadeRooms = { create, markup, feedMarkup, shortcut, message };
 })();
