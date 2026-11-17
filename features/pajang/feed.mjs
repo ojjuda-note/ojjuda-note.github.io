@@ -110,7 +110,7 @@ async function loadPage(reset) {
     cursor = data.nextCursor;
     remaining = data.remaining;
     updateActions();
-    status.textContent = displayed.size ? '' : '아직 공개된 회원 답변이 없어요.';
+    status.textContent = displayed.size ? '' : '최근 30일 동안 공개된 회원 답변이 없어요.';
   } catch (error) {
     if (request !== version) return;
     if (error.code === '42501') {

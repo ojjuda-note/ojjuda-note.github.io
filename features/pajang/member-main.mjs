@@ -1,6 +1,6 @@
 import {call,client,requireMember,showGate} from './member.mjs?v=3';
 const entry=await requireMember();
-if(entry && !entry.joined)location.replace('./');
+if(entry && !entry.joined)location.replace(location.hash === '#answers' ? './?view=feed' : './');
 if(entry?.joined){
   const urls=[];
   try{
