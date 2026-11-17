@@ -1,5 +1,5 @@
 "use client";
-import {useEffect,useRef,useState} from "react";
+import {useEffect,useLayoutEffect,useRef,useState} from "react";
 import {themeFor,interests,badges,introDetails,signalsWith,type Person,type Message,type Station} from "../lib/station";
 import regionCatalog from "../../regions.json";
 
@@ -69,6 +69,14 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const [live,setLive]=useState<Station>(initialStation);
   const [route,setRoute]=useState(readRoute);
   const {tab,thread}=route;
+  const [visitedToday,setVisitedToday]=useState(tab==="today");
+  const scrollPositions=useRef(new Map<string,number>());
+  const routeKey=tab+"/"+thread;
+  const currentRoute=useRef(routeKey);
+  const scrollTarget=useRef<"answers"|"restore">(location.hash==="#answers"?"answers":"restore");
+  const draftByPeer=useRef(new Map<string,string>());
+  const currentPeer=useRef(thread);
+  currentPeer.current=thread;
   const [pendingModal,setModal]=useState<Modal|null>(null),[inbox,setInbox]=useState("received");
   const [messages,setMessages]=useState<Message[]>([]),[draft,setDraft]=useState(""),[busy,setBusy]=useState(false),[error,setError]=useState(""),[toast,setToast]=useState(""),[net,setNet]=useState(""),[ready,setReady]=useState(false);
   const [historyRevision,setHistoryRevision]=useState(0);
@@ -103,23 +111,47 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     const rev=++threadRevision.current;
     try{const m=await request<Message[]>("/api/station?thread="+encodeURIComponent(id));if(rev===threadRevision.current){setMessages(m);setNet("");}}catch{if(rev===threadRevision.current)setNet("대화를 불러오지 못했어요.");}
   }
-  useEffect(()=>{setDraft("");setMessages([]);if(!validThread||tab!=="chat")return;void readThread(thread);const t=setInterval(()=>{if(!document.hidden&&!lock.current)void readThread(thread);},4000);return()=>{clearInterval(t);threadRevision.current++;};},[thread,tab,validThread]);
+  useLayoutEffect(()=>{setDraft(validThread?(draftByPeer.current.get(thread)??""):"");setMessages([]);if(!validThread||tab!=="chat")return;void readThread(thread);const t=setInterval(()=>{if(!document.hidden&&!lock.current)void readThread(thread);},4000);return()=>{clearInterval(t);threadRevision.current++;};},[thread,tab,validThread]);
   const threadMessages=messages;
   const lastMsg=threadMessages.at(-1)?.id;
-  useEffect(()=>{if(tab==="chat"&&thread)bottom.current?.scrollIntoView({block:"nearest"});},[lastMsg,thread,tab]);
+  const followChat=useRef(true);
+  useLayoutEffect(()=>{followChat.current=true;},[thread]);
   useEffect(()=>{
-    function restore(){setModal(null);setError("");setRoute(readRoute());}
+    const log=bottom.current?.parentElement;
+    if(log && lastMsg && followChat.current)log.scrollTop=log.scrollHeight;
+  },[lastMsg,thread]);
+  useEffect(()=>{
+    const permitted=new Set(matches.map(person=>person.id));
+    for(const id of draftByPeer.current.keys())if(!permitted.has(id))draftByPeer.current.delete(id);
+  },[s]);
+  useLayoutEffect(()=>{
+    currentRoute.current=routeKey;
+    if(scrollTarget.current==="answers" && tab==="today")
+      document.getElementById("answers")?.scrollIntoView({block:"start"});
+    else window.scrollTo(0,scrollPositions.current.get(routeKey)??0);
+  },[route]);
+  useEffect(()=>{
+    const previous=history.scrollRestoration;
+    history.scrollRestoration="manual";
+    function restore(){
+      scrollPositions.current.set(currentRoute.current,window.scrollY);
+      const next=readRoute();
+      scrollTarget.current=location.hash==="#answers"?"answers":"restore";
+      if(next.tab==="today")setVisitedToday(true);
+      setModal(null);setError("");setRoute(next);
+    }
     window.addEventListener("popstate",restore);
-    return ()=>window.removeEventListener("popstate",restore);
+    return ()=>{history.scrollRestoration=previous;window.removeEventListener("popstate",restore);};
   },[]);
   function navigate(next:Tab,peer="",answers=false,replace=false){
     const href=routeHref(next,peer,answers);
+    scrollPositions.current.set(currentRoute.current,window.scrollY);
+    scrollTarget.current=answers?"answers":"restore";
     if(href!==location.pathname+location.search+location.hash){
       if(replace)history.replaceState(history.state,"",href);else history.pushState(null,"",href);
     }
+    if(next==="today")setVisitedToday(true);
     setModal(null);setError("");setRoute({tab:next,thread:peer});
-    if(answers&&tab==="today")document.getElementById("answers")?.scrollIntoView({block:"start"});
-    else if(!answers)window.scrollTo({top:0});
   }
   useEffect(()=>{
     if(thread&&!validThread){
@@ -177,27 +209,27 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     <main className="wrap station-content" id="station-content">
     {net&&<div className="notice" role="status">{net}<button onClick={()=>{void refresh();if(thread)void readThread(thread);}}>다시 연결</button></div>}
     {tab==="radar"&&<NearbyRadar station={s} sample={false} onProfile={id=>open({kind:"person",peer:id})} onJoin={()=>location.assign("./")} onSettings={async cell=>Boolean(await act(cell?"radar-enable":"radar-disable",cell?{...cell,consent:true,shareBearing:true}:{},true))}/>}
-    {tab==="today"&&<>
+    {visitedToday&&<div className="today-page" hidden={tab!=="today"}>
       <section className="hero" aria-label={slotName+(me?.body?" 답변 완료":" 질문")}>
-        <div className="heroart" aria-hidden="true">{window.pajangArt.radio&&<img src={window.pajangArt.radio} alt="" fetchPriority="high"/>}</div>
+        <div className="heroart" aria-hidden="true"><div className="moon-study"/></div>
         <div className="herocopy">
           <div className="onrow"><span className="onair"><i/>ON AIR</span><span className="questionlabel">{slotName} {me?.body?"답변 완료":"질문"}</span></div>
           {me?.body?<><h1>{theme.q.map(line=><span key={line}>{line}</span>)}</h1><p>내 답변을 남겼어요. 다음 질문은 {nextQuestion}에 열려요.</p>
-            <a className="herobtn" href="#answers">모두의 답변 보기<I n="arrow" s={16}/></a></>:
+            <a className="herobtn" href="#answers" onClick={event=>{if(!event.ctrlKey&&!event.metaKey&&!event.shiftKey&&!event.altKey){event.preventDefault();navigate("today","",true);}}}>모두의 답변 보기<I n="arrow" s={16}/></a></>:
             <><h1>{theme.q.map(line=><span key={line}>{line}</span>)}</h1><p>이 시간대의 질문에는 한 번 답할 수 있어요.</p>
             <button className="herobtn" disabled={!ready} onClick={()=>open({kind:me?"answer":"setup"})}><I n="pencil" s={16}/>내 답변 쓰기<I n="arrow" s={16}/></button></>}
         </div>
         <div className="herofoot"><div className="edition"><i/>{s.day.replaceAll("-",".")}<b> / </b>{new Intl.DateTimeFormat("en",{weekday:"short",timeZone:"Asia/Seoul"}).format(date).toUpperCase()}</div><Meter/></div>
       </section>
-      <AnswerHistory station={s} revision={historyRevision}
+      <AnswerHistory active={tab==="today"} station={s} revision={historyRevision}
         onProfile={answer=>answer.own?go("profile"):open({kind:"person",peer:answer.peer,answer})}
         onSignal={answer=>open({kind:"signal",peer:answer.peer,answer})}
         onChat={id=>void openHistoryChat(id)}
-        onWrite={()=>open({kind:"answer"})}/></>}
-    {tab==="inbox"&&<section className="innerpage"><div className="pagetitle"><I n="signal" s={28}/><h1>신호함</h1></div><p className="sub">서로 신호를 보내면 둘만의 대화가 열려요.</p><div className="seg"><button className={inbox==="received"?"on":""} onClick={()=>setInbox("received")}>받은 신호 {incoming.length}</button><button className={inbox==="sent"?"on":""} onClick={()=>setInbox("sent")}>보낸 신호 {sent.length}</button></div>{(inbox==="received"?incoming:sent).length?<div className="listbox">{(inbox==="received"?incoming:sent).map(p=><ListPerson key={p.id} p={p} type={inbox==="received"?"received":"sent"}/>)}</div>:<Blank icon="signal" title={inbox==="received"?"아직 받은 신호가 없어요":"아직 보낸 신호가 없어요"} body="오늘의 답변으로 취향이 닿는 사람을 찾아보세요." button="답변 둘러보기" onClick={()=>navigate("today","",true)}/>}</section>}
-    {tab==="chat"&&<section className="innerpage">{(!active||!thread||!signalsWith(s,thread).match)?<><div className="pagetitle"><I n="chat" s={28}/><h1>대화</h1></div><p className="sub">서로의 신호가 닿은 사람과 이야기를 이어가세요.</p>{matches.length?<div className="listbox">{matches.map(p=><ListPerson key={p.id} p={p} type="chat"/>)}</div>:<Blank icon="chat" title="첫 대화를 기다리고 있어요" body="받은 신호를 수락하면 둘만의 대화방이 열려요." button="신호함 보기" onClick={()=>{setInbox("received");go("inbox");}}/>}</>:<div className="chatbox"><div className="chatheader"><button className="iconbtn" aria-label="대화 목록" onClick={()=>go("chat")}><I n="back"/></button><button className="person" onClick={()=>open({kind:"person",peer:active.id})}><Art interest={active.interest}/><span><strong>{active.name}</strong><small>서로 신호를 보낸 회원</small></span></button><button className="quiet" onClick={()=>open({kind:"block",peer:active.id})}>차단</button></div><ChatExchange key={active.id} peer={active.id} name={active.name} lastMessage={lastMsg}/><div className="chatlog">{threadMessages.length===0?<div className="chatintro"><I n="wave" s={32}/><p>두 사람의 대화가 열렸어요.</p><small>오늘의 답변을 떠올리며 첫인사를 건네보세요.</small></div>:<>{threadMessages.length>=100&&<p className="chatnote">최근 메시지 100개</p>}{threadMessages.map(m=><div key={m.id} className={"bubbleline "+(m.src===me?.id?"mine":"")}><p>{m.body}</p><time>{fmtClock(m.at)}</time></div>)}</>}<div ref={bottom}/></div>{error&&!modal&&<p className="error">{error}</p>}<form className="composer" onSubmit={async e=>{e.preventDefault();if(!draft.trim())return;const ok=await act("message",{peer:thread,body:draft.trim(),id:crypto.randomUUID()});if(ok){setDraft("");void readThread(thread);}}}><input maxLength={500} aria-label="메시지" placeholder="메시지를 입력하세요" value={draft} onChange={e=>setDraft(e.target.value)}/><button aria-label="메시지 보내기" disabled={busy||!draft.trim()}><I n="send" s={18}/></button></form></div>}</section>}
+        onWrite={()=>open({kind:"answer"})}/></div>}
+    {tab==="inbox"&&<section className="innerpage" key="inbox"><div className="channel-heading"><div className="pagetitle"><I n="signal" s={28}/><h1>신호함</h1></div><p className="sub">서로 신호를 보내면 둘만의 대화가 열려요.</p></div><div className="seg"><button className={inbox==="received"?"on":""} onClick={()=>setInbox("received")}>받은 신호 {incoming.length}</button><button className={inbox==="sent"?"on":""} onClick={()=>setInbox("sent")}>보낸 신호 {sent.length}</button></div>{(inbox==="received"?incoming:sent).length?<div className="listbox">{(inbox==="received"?incoming:sent).map(p=><ListPerson key={p.id} p={p} type={inbox==="received"?"received":"sent"}/>)}</div>:<Blank icon="signal" title={inbox==="received"?"아직 받은 신호가 없어요":"아직 보낸 신호가 없어요"} body="오늘의 답변으로 취향이 닿는 사람을 찾아보세요." button="답변 둘러보기" onClick={()=>navigate("today","",true)}/>}</section>}
+    {tab==="chat"&&<section className="innerpage" key={thread||"chat"}>{(!active||!thread||!signalsWith(s,thread).match)?<><div className="channel-heading"><div className="pagetitle"><I n="chat" s={28}/><h1>대화</h1></div><p className="sub">서로의 신호가 닿은 사람과 이야기를 이어가세요.</p></div>{matches.length?<div className="listbox">{matches.map(p=><ListPerson key={p.id} p={p} type="chat"/>)}</div>:<Blank icon="chat" title="첫 대화를 기다리고 있어요" body="받은 신호를 수락하면 둘만의 대화방이 열려요." button="신호함 보기" onClick={()=>{setInbox("received");go("inbox");}}/>}</>:<div className="chatbox"><div className="chatheader"><button className="iconbtn" aria-label="대화 목록" onClick={()=>go("chat")}><I n="back"/></button><button className="person" onClick={()=>open({kind:"person",peer:active.id})}><Art interest={active.interest}/><span><strong>{active.name}</strong><small>서로 신호를 보낸 회원</small></span></button><button className="quiet" onClick={()=>open({kind:"block",peer:active.id})}>차단</button></div><ChatExchange key={active.id} peer={active.id} name={active.name} lastMessage={lastMsg}/><div className="chatlog" onScroll={event=>{const log=event.currentTarget;followChat.current=log.scrollHeight-log.scrollTop-log.clientHeight<64;}}>{threadMessages.length===0?<div className="chatintro"><I n="wave" s={32}/><p>두 사람의 대화가 열렸어요.</p><small>오늘의 답변을 떠올리며 첫인사를 건네보세요.</small></div>:<>{threadMessages.length>=100&&<p className="chatnote">최근 메시지 100개</p>}{threadMessages.map(m=><div key={m.id} className={"bubbleline "+(m.src===me?.id?"mine":"")}><p>{m.body}</p><time>{fmtClock(m.at)}</time></div>)}</>}<div ref={bottom}/></div>{error&&!modal&&<p className="error">{error}</p>}<form className="composer" onSubmit={async e=>{e.preventDefault();if(!draft.trim())return;const ok=await act("message",{peer:thread,body:draft.trim(),id:crypto.randomUUID()});if(ok){draftByPeer.current.delete(thread);if(currentPeer.current===thread){setDraft("");followChat.current=true;void readThread(thread);}}}}><input maxLength={500} aria-label="메시지" placeholder="메시지를 입력하세요" value={draft} onChange={e=>{setDraft(e.target.value);draftByPeer.current.set(thread,e.target.value);}}/><button aria-label="메시지 보내기" disabled={busy||!draft.trim()}><I n="send" s={18}/></button></form></div>}</section>}
     {tab==="profile"&&<section className="station-account innerpage">
-      <div className="pagetitle"><I n="user" s={27}/><h1>내 파장</h1></div>
+      <div className="channel-heading"><div className="pagetitle"><I n="user" s={27}/><h1>내 파장</h1></div></div>
       {me?<><section className="account-summary"><Art interest={me.interest} large/><div><h2>{me.name}</h2><p>{introDetails(me)}</p></div><button className="secondary small" onClick={()=>open({kind:"edit"})}>공개 소개 수정</button></section>
         <section className="account-section"><h2>내 {slotName} 답변</h2><p className="account-question">{themeText}</p>
           {me.body?<p className="account-answer">{me.body}</p>:<button className="secondary" onClick={()=>open({kind:"answer"})}>내 답변 쓰기<I n="pencil" s={15}/></button>}</section>

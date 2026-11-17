@@ -67,7 +67,7 @@ compass.addEventListener('click',async()=>{
   permissionPending=true;
   try{
     if(api.requestPermission && await api.requestPermission(true)!=='granted'){stop('방향 권한이 꺼져 있어 북쪽을 위로 표시해요.');return;}
-    if(document.hidden)return;
+    if(document.hidden || document.getElementById('welcome').hidden)return;
     active=true;compass.textContent='북쪽 고정하기';note.textContent='휴대폰을 수평에 가깝게 들고 살짝 돌려주세요.';
     window.addEventListener('deviceorientation',receive);window.addEventListener('deviceorientationabsolute',receive);
     window.addEventListener('orientationchange',redraw);window.screen.orientation?.addEventListener?.('change',redraw);
@@ -78,6 +78,7 @@ compass.addEventListener('click',async()=>{
 if(embedded)document.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();parent.postMessage('pajang:close',location.origin);}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&active)stop();});
 window.addEventListener('pagehide',()=>stop());
+window.addEventListener('pajang-entry-exit',()=>stop(),{once:true});
 draw(0);select(0);
 
 

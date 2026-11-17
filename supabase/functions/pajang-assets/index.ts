@@ -3,9 +3,8 @@ const files: Record<string,string> = {
   "tennis.webp": "b08bba061750c39a8f9f2ee5910b239bf7e2d95d1fbed0f7709ae771c1875b53",
   "walk.webp": "47bc50f315c0dcf65cdccb6e2af76b120c134d8d8e55034f8511efa633f27266",
   "book.webp": "2a76a993ac3a690eb73a17ee79d4180863ba20c991dd34459abc333d90a6b95a",
-  "radio.webp": "2de81d25f8c731a48b3c1af1f0e3e65210f3136747711b9b14605eaa657f14c2",
   "vinyl.webp": "dfe33b7665d0ecbf952d2004710940635e4879f589ae4680ef85ac6109a23d77",
-  "station.js": "5f6dbd57bec8a16c21b005abde1b3f7c1b8b130a6c72d3c1606fcf9fe8e49598",
+  "station.js": "38b4cf31b08d04720910b0e6c681434f2e9fbbc1cb1bc30853fa7a9f94e39a1b",
   "camera.webp": "b686b71a0517be69e02f61a3028d18e2f406a1087dcebc060d588bcae3df046d"
 };
 const bucket='pajang-member-assets';
