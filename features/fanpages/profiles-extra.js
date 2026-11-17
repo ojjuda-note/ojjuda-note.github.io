@@ -366,7 +366,7 @@ if (nctdreamProfile) {
 const ateezProfile = window.OJJUDA_FAN_PROFILES.ateez;
 if (ateezProfile) {
   ateezProfile.expanded = true;
-  ateezProfile.checkedAt = '2026.11.15';
+  ateezProfile.checkedAt = '2026.11.17';
   const ateezBirthdays = {
     '홍중': '1998.11.07', '성화': '1998.04.03', '윤호': '1999.03.23', '여상': '1999.06.15',
     '산': '1999.07.10', '민기': '1999.08.09', '우영': '1999.11.26', '종호': '2000.10.12'
