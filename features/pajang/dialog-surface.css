@@ -1,0 +1,5 @@
+dialog.agit-pajang-dialog{background:#14111e;color:#f3edf6;border:1px solid #52465c;box-shadow:0 24px 90px #0c081a66}
+dialog.agit-pajang-dialog::backdrop{background:#100c22ab;backdrop-filter:blur(4px)}
+.agit-pajang-dialog .agit-pajang-toolbar{background:#191522;border-color:#393140}
+.agit-pajang-dialog .agit-pajang-toolbar button{background:#302939;color:#ece1ef}
+dialog.agit-pajang-dialog iframe{background:#100e19}

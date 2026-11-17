@@ -26,7 +26,9 @@ function firstPage(cache:Map<string,SavedPage>, key:string):Result {
   return saved && saved.until>Date.now() ? {...saved.result,loading:true} : empty(key);
 }
 
-function useAnswers(filter:string, gender:Gender, order:Order, scope:string, activity:string) {
+function useAnswers(filter:string, gender:Gender, order:Order, scope:string, activity:string, visible:boolean) {
+  const visibleRef=useRef(visible);
+  visibleRef.current=visible;
   const key = JSON.stringify([filter,gender,order,scope]);
   const cache=useMemo(()=>new Map<string,SavedPage>(),[scope]);
   const [result,setResult] = useState<Result>(()=>empty(key));
@@ -37,6 +39,7 @@ function useAnswers(filter:string, gender:Gender, order:Order, scope:string, act
     let controller:AbortController|undefined;
     function publish(next:Result) { current=next; setResult(next); }
     async function read(intent:Intent) {
+      if (!visibleRef.current || document.hidden) return;
       if (intent==="changed" && pages>1) {
         if (!current.changed) publish({...current,changed:true});
         return;
@@ -90,6 +93,8 @@ function useAnswers(filter:string, gender:Gender, order:Order, scope:string, act
     const poll=window.setInterval(()=>{if(!document.hidden)void read("check");},60000);
     return ()=>{active=false;controller?.abort();load.current=()=>{};window.clearInterval(poll);document.removeEventListener("visibilitychange",onVisible);};
   },[key,filter,gender,order,cache]);
+  const wasVisible=useRef(visible);
+  useEffect(()=>{if(visible&&!wasVisible.current)load.current("changed");wasVisible.current=visible;},[visible]);
   useEffect(()=>{cache.clear();load.current("changed");},[activity,cache]);
   return {result:result.key===key?result:firstPage(cache,key),load};
 }
@@ -139,19 +144,16 @@ function GenderSwitch({value,onChange}:{value:Gender;onChange:(next:Gender)=>voi
 }
 
 type Props = {
-  station:Station; revision:number; onProfile:(row:DiscoveryAnswer)=>void;
+  active:boolean; station:Station; revision:number; onProfile:(row:DiscoveryAnswer)=>void;
   onSignal:(row:DiscoveryAnswer)=>void; onChat:(id:string)=>void; onWrite:()=>void;
 };
-export default function AnswerHistory({station,revision,onProfile,onSignal,onChat,onWrite}:Props) {
+export default function AnswerHistory({active,station,revision,onProfile,onSignal,onChat,onWrite}:Props) {
   const [filter,setFilter]=useState("all");
   const [gender,setGender]=useState<Gender>("all");
   const [order,setOrder]=useState<Order>("recommend");
   const scope=JSON.stringify([station.authenticated,station.me?.id,station.me?.region,station.me?.interest,station.me?.at,station.day,station.slot,revision]);
   const activity=station.people.filter(p=>p.body).map(p=>p.id+":"+p.at).join(",");
-  const {result,load}=useAnswers(filter,gender,order,scope,activity);
-  useEffect(()=>{
-    if (window.location.hash==="#answers") document.getElementById("answers")?.scrollIntoView({block:"start"});
-  },[]);
+  const {result,load}=useAnswers(filter,gender,order,scope,activity,active);
   return <section id="answers" className="feedsection" aria-labelledby="all-answers-title">
     <div className="sectiontitle history-head">
       <div className="history-heading">

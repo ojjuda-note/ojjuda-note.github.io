@@ -5,6 +5,14 @@ if(window.parent!==window && new URLSearchParams(location.search).get('embed')==
     window.parent.location.pathname==='/world.html' &&
     window.frameElement?.closest('dialog.agit-pajang-dialog[open]');}catch{}
   if(agitHost){
+    const host=window.parent.document;
+    if(!host.getElementById('pajang-dialog-surface')){
+      const link=host.createElement('link');
+      link.id='pajang-dialog-surface';
+      link.rel='stylesheet';
+      link.href=new URL('./dialog-surface.css?v=night1',import.meta.url).href;
+      host.head.append(link);
+    }
     document.querySelector('.agit-return')?.addEventListener('click',event=>{
       if(event.button||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
       event.preventDefault();

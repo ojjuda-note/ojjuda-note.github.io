@@ -18,9 +18,29 @@ if (Object.hasOwn(destinations,next)) {
   feed.searchParams.set('tab',next);
 }
 
+// Keep the same document and masthead when a member finishes the entry step.
+let handoff;
+let leaveEntry=()=>{};
 function enterMain(destination = main) {
-  if (window.top === window) location.replace(destination.href);
-  else window.top.location.assign(destination.href);
+  if (window.top !== window) { window.top.location.assign(destination.href); return; }
+  if (handoff) return handoff;
+  leaveEntry();
+  handoff=(async()=>{
+    const style=document.createElement('link');
+    style.rel='stylesheet';
+    style.media='print';
+    style.href='./station.css?v=night1';
+    const styled=new Promise((resolve,reject)=>{style.onload=resolve;style.onerror=reject;});
+    document.querySelector('link[href*="shell.css"]').before(style);
+    const [{mountStation}]=await Promise.all([import('./load-station.mjs?v=night1'),styled]);
+    await mountStation(()=>{
+      document.getElementById('entry-style').disabled=true;
+      style.media='all';
+      history.replaceState(null,'',destination.href);
+      window.scrollTo(0,0);
+    });
+  })().catch(()=>location.replace(destination.href));
+  return handoff;
 }
 
 function setupProfile(entry) {
@@ -49,7 +69,7 @@ async function start(firstEntry) {
   if (view === 'feed' && firstEntry.joined) return enterMain(feed);
   if (firstEntry.body) return enterMain();
   let entry = firstEntry;
-  const {setQuestion} = await import('./preview.mjs?v=station2');
+  const {setQuestion} = await import('./preview.mjs?v=night1');
   if (!entry.joined) setupProfile(entry);
   const updates = typeof BroadcastChannel === 'function' ? new BroadcastChannel('pajang-answers') : null;
   let timer;
@@ -67,6 +87,7 @@ async function start(firstEntry) {
   function refresh() {
     if (refreshing) return refreshing;
     refreshing = call('entry').then(current => {
+      if (handoff) return;
       if (current.joined && mode === 'feed') return enterMain(feed);
       if (current.body) return enterMain();
       if (current.joined && !entry.joined) {
@@ -88,8 +109,15 @@ async function start(firstEntry) {
   }
 
   if (updates) updates.onmessage = refresh;
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
-  window.addEventListener('pagehide', () => { clearTimeout(timer); updates?.close(); }, {once:true});
+  const onVisible=()=>{if(!document.hidden)refresh();};
+  document.addEventListener('visibilitychange',onVisible);
+  leaveEntry=()=>{
+    clearTimeout(timer);
+    updates?.close();
+    document.removeEventListener('visibilitychange',onVisible);
+    window.dispatchEvent(new Event('pajang-entry-exit'));
+  };
+  window.addEventListener('pagehide',leaveEntry,{once:true});
   paint();
   $('gate').hidden = true;
   $('welcome').hidden = false;
