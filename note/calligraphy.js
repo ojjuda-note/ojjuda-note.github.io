@@ -497,23 +497,53 @@
     const syllables = str => segmenter ? Array.from(segmenter.segment(str), entry => entry.segment) : Array.from(str);
     const dictionary = new Map();
     const shapes = new Map();
-    // A loaded turn, a lifting neck, and a separate dab from the same nib.
-    const questionMark = {
-      advance: 50, inkTop: 6, inkBottom: 98, closingScale: .90, brushCode: 63,
-      strokes: [
-        { width: 13.8, knots: [
-          [3,30,.18], [9,20,.49], [19,13,.75], [29,12,.91], [38,16,1.02],
-          [42,25,1.05], [41,35,.98], [35,44,.88], [25,52,.73],
-          [18,59,.62], [15,66,.52], [15,74,.34], [17,79,.04]
-        ] },
-        { width: 14.5, knots: [[16,86,.39], [17,89,1.02], [16,93,.95], [12,97,.12]] }
-      ]
-    };
+    const marksByChar = new Map();
+    function brushMark(chars, advance, inkTop, inkBottom, ...strokes) {
+      const glyph = { advance, inkTop, inkBottom, closingScale: .90, brushCode: chars.codePointAt(0), strokes };
+      for (const ch of chars) marksByChar.set(ch, glyph);
+    }
+    const dot = { width: 14.5, knots: [[16,86,.39], [17,89,1.02], [16,93,.95], [12,97,.12]] };
+    brushMark('?？', 50, 6, 98, { width: 13.8, knots: [
+      [3,30,.18], [9,20,.49], [19,13,.75], [29,12,.91], [38,16,1.02],
+      [42,25,1.05], [41,35,.98], [35,44,.88], [25,52,.73],
+      [18,59,.62], [15,66,.52], [15,74,.34], [17,79,.04]
+    ] }, dot);
+    brushMark('!！', 34, 4, 98, { width: 15.5, knots: [
+      [22,6,.28], [25,10,.83], [25,21,1.05], [22,37,.99],
+      [18,54,.76], [15,68,.43], [15,75,.06]
+    ] }, dot);
+    brushMark('.．', 27, 84, 98, dot);
+    brushMark(',，', 28, 78, 106, { width: 14, knots: [
+      [17,80,.33], [20,84,.94], [19,90,1.0], [15,97,.66], [9,102,.32], [4,105,.04]
+    ] });
+    brushMark('~～', 68, 38, 61, { width: 11.5, knots: [
+      [2,57,.08], [9,50,.57], [18,44,.82], [26,44,.92],
+      [36,51,.95], [45,55,.73], [54,51,.52], [64,41,.06]
+    ] });
+    brushMark('-－', 47, 46, 57, { width: 11.5, knots: [
+      [3,53,.29], [9,54,.87], [20,52,.96], [33,49,.63], [43,48,.07]
+    ] });
+    brushMark('*＊', 50, 15, 66,
+      { width: 9.4, knots: [[29,17,.28], [29,25,.96], [25,41,.87], [21,55,.54], [19,64,.06]] },
+      { width: 9.8, knots: [[5,32,.22], [13,34,.83], [24,40,.87], [36,46,.68], [45,49,.09]] },
+      { width: 9.4, knots: [[5,55,.15], [13,49,.72], [25,40,.90], [38,31,.64], [46,26,.06]] });
+    brushMark('@＠', 88, 12, 95,
+      { width: 10, knots: [
+        [55,38,.30], [48,34,.67], [39,36,.83], [30,46,.92], [27,57,.97],
+        [31,64,.84], [39,65,.75], [48,57,.59], [54,44,.39], [56,37,.13]
+      ] },
+      { width: 10.7, knots: [
+        [59,32,.25], [59,39,.87], [55,51,.98], [53,61,.83], [57,66,.65],
+        [66,63,.63], [75,54,.72], [80,42,.79], [79,30,.80], [73,20,.76],
+        [61,15,.66], [46,16,.62], [30,23,.73], [16,36,.88], [8,53,1.03],
+        [8,70,.98], [16,83,.86], [30,90,.77], [47,90,.59], [61,85,.38], [71,78,.06]
+      ] });
     function get(ch, end, phraseEnd) {
       if (!ch.trim()) return {
         advance: 33
       };
-      if (ch === '?' || ch === '？') return questionMark;
+      const mark = marksByChar.get(ch);
+      if (mark) return mark;
       const hand = Lettering.get(ch, phraseEnd);
       if (hand && typeof Path2D === 'function') {
         if (!dictionary.has(hand)) dictionary.set(hand, {
@@ -535,11 +565,11 @@
         return composite;
       }
       return {
-        advance: /^[.,!‘’“”]$/u.test(ch) ? 35 : 65,
+        advance: /^[‘’“”]$/u.test(ch) ? 35 : 65,
         other: ch
       };
     }
-    const closing = /^[,.;:!?%…。，、！？：；”’»」』）】〕〉》)\]}]+$/u;
+    const closing = /^[,.;:!?%~…．。，、！？～：；”’»」』）】〕〉》)\]}]+$/u;
     const opening = /^[“‘«「『（【〔〈《(\[{]+$/u;
     const leadWord = /^(?:내|네|제|그|이|저|우리|어느|어떤|모든|온|한|두|세|몇|여러|가장|더|곧|늘|또|잘|꼭|첫|새|다시|잠깐|함께)$/u;
     const boundWord = /^(?:수|것|때|뿐|줄|듯|채|데|리)$/u;
