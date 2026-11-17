@@ -1,4 +1,19 @@
 :root{color-scheme:light;--paper:#f7f6ef;--ink:#263d33;--muted:#647166;--green:#365f47;--line:#dce1d5;--sage:#e8efdf;--peach:#f4e8dc;--lavender:#ece9f3;--radius:22px}
+.drink-note{color:var(--muted);font-size:12px;margin-top:7px}
+.drink-modes{display:flex;flex-wrap:wrap;gap:8px;margin:-6px 0 18px}
+.drink-modes a{padding:8px 14px;min-height:42px;border-radius:99px;background:#e8efdf;border:1px solid #dce1d5;font-size:12px;font-weight:650}
+.drink-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.drink-card{position:relative;min-width:0;border:1px solid #dce1d5;background:#fffefa;border-radius:18px;padding:14px 12px 10px}
+.drink-heading{display:flex;align-items:center;gap:9px;min-height:64px;margin-bottom:9px}
+.drink-heading img{width:48px;height:48px;flex:none;object-fit:contain}
+.drink-heading h3{font-size:13px;line-height:1.55}.drink-heading small{font-size:10px;color:var(--muted)}
+.drink-warning{position:absolute;right:10px;top:5px;color:#b12e24;font-size:9px;font-weight:700}
+.drink-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;border-top:1px solid #e5e8dd;padding-top:8px}
+.drink-actions a,.drink-local-only{display:flex;align-items:center;justify-content:center;gap:5px;min-height:42px;border-radius:9px;font-size:11px;white-space:nowrap}
+.drink-actions a{background:#edf2e6;color:#365f47;font-weight:650}.drink-actions a:hover{background:#dfe8d4}
+.drink-local-only{font-size:9px;color:var(--muted)}
+@media(max-width:900px){.drink-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.drink-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.drink-card{padding:12px 9px 8px}.drink-heading{gap:6px}.drink-heading img{width:36px;height:36px}.drink-heading h3{font-size:12px}.drink-heading small{font-size:9px}}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:100px;scrollbar-gutter:stable}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:"Pretendard","Noto Sans KR",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15px;line-height:1.75;word-break:keep-all;overflow-wrap:anywhere;-webkit-text-size-adjust:100%}

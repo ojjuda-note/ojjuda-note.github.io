@@ -1,0 +1,559 @@
+{
+  "schema": 1,
+  "existing": {
+    "park": "/world.html?tab=park",
+    "groups": "/groups/index.html"
+  },
+  "routes": [
+    {
+      "slug": "agit",
+      "target": "/world.html?tab=hub",
+      "label": "오쭈다 아지트"
+    },
+    {
+      "slug": "arcade",
+      "target": "/world.html?tab=arcade",
+      "label": "오락실 가볍게 한 판 어때요? 혼자도, 함께도 즐겁게"
+    },
+    {
+      "slug": "pajang-story",
+      "target": "/features/guide/creator.html#pajang-title",
+      "label": "파장에 담은 마음"
+    },
+    {
+      "slug": "pajang",
+      "target": "/features/pajang/",
+      "label": "파장 만나기"
+    },
+    {
+      "slug": "biorhythm",
+      "target": "/features/biorhythm/",
+      "label": "바이오리듬 오늘의 나를 살펴봐요"
+    },
+    {
+      "slug": "tarot",
+      "target": "/games/moonlit-tarot/",
+      "label": "달의 마녀 타로 카드 세 장에 담긴 이야기"
+    },
+    {
+      "slug": "saju",
+      "target": "/games/starlit-saju/",
+      "label": "별빛 사주팔자 내 삶의 흐름을 읽어요"
+    },
+    {
+      "slug": "restaurants",
+      "target": "/games/certified-restaurants/index.html",
+      "label": "인증맛집 맛있는 곳을 찾아요"
+    },
+    {
+      "slug": "festivals",
+      "target": "/games/festival-schedule/index.html",
+      "label": "축제일정 이번 주, 어디 갈까요?"
+    },
+    {
+      "slug": "compatibility",
+      "target": "/games/starlit-saju/compatibility.html",
+      "label": "두 사람의 궁합"
+    },
+    {
+      "slug": "ranking",
+      "target": "/features/arcade/monthly-ranking.html",
+      "label": "이번 달 게임 순위"
+    },
+    {
+      "slug": "chacha",
+      "target": "/games/chacha-rush/index.html",
+      "label": "차차 러시!"
+    },
+    {
+      "slug": "solitaire",
+      "target": "/games/solitaire/index.html",
+      "label": "솔리테어"
+    },
+    {
+      "slug": "archer",
+      "target": "/games/forest-archer/index.html",
+      "label": "바람의 궁수"
+    },
+    {
+      "slug": "sacheonseong",
+      "target": "/games/sacheonseong/index.html",
+      "label": "사천성"
+    },
+    {
+      "slug": "mines",
+      "target": "/games/mines/index.html",
+      "label": "지뢰찾기"
+    },
+    {
+      "slug": "saetbyeol",
+      "target": "/games/saetbyeol/index.html",
+      "label": "샛별키우기"
+    },
+    {
+      "slug": "mole",
+      "target": "/games/mole/index.html",
+      "label": "두더지 잡기"
+    },
+    {
+      "slug": "runner",
+      "target": "/games/runner/index.html",
+      "label": "쭈달리기"
+    },
+    {
+      "slug": "stacker",
+      "target": "/games/stacker/index.html",
+      "label": "탑 쌓기"
+    },
+    {
+      "slug": "breakout",
+      "target": "/games/breakout/index.html",
+      "label": "벽돌깨기"
+    },
+    {
+      "slug": "spot-difference",
+      "target": "/games/spot-difference/index.html",
+      "label": "틀린그림찾기"
+    },
+    {
+      "slug": "screw",
+      "target": "/games/screw/index.html",
+      "label": "나사 풀기"
+    },
+    {
+      "slug": "bang",
+      "target": "/games/bang/index.html",
+      "label": "뱅!"
+    },
+    {
+      "slug": "tank",
+      "target": "/games/tank/index.html",
+      "label": "탱크게임"
+    },
+    {
+      "slug": "marble",
+      "target": "/games/ojjuda-tour/index.html",
+      "label": "마블"
+    },
+    {
+      "slug": "territory",
+      "target": "/games/ttang.html",
+      "label": "월드땅따먹기"
+    },
+    {
+      "slug": "yut",
+      "target": "/games/yut/index.html",
+      "label": "윳놀이"
+    },
+    {
+      "slug": "janggi",
+      "target": "/games/janggi/index.html",
+      "label": "장기"
+    },
+    {
+      "slug": "chess",
+      "target": "/games/chess/index.html",
+      "label": "체스"
+    },
+    {
+      "slug": "billiards",
+      "target": "/games/billiards/index.html",
+      "label": "당구"
+    },
+    {
+      "slug": "matgo",
+      "target": "/world.html?game=matgo",
+      "label": "맞고"
+    },
+    {
+      "slug": "poker",
+      "target": "/world.html?game=poker",
+      "label": "세븐포커"
+    },
+    {
+      "slug": "roulette",
+      "target": "/world.html?game=roulette",
+      "label": "룰렛"
+    },
+    {
+      "slug": "photo-territory",
+      "target": "/world.html?game=photo_ttang",
+      "label": "포토땅따먹기"
+    },
+    {
+      "slug": "drinking",
+      "target": "/games/drinking/index.html",
+      "label": "술게임"
+    },
+    {
+      "slug": "fans",
+      "target": "/features/fanpages/index.html",
+      "label": "팬페이지 전체 보기"
+    },
+    {
+      "slug": "rescene",
+      "target": "/features/fanpages/idols/rescene.html",
+      "label": "리센느 RESCENE"
+    },
+    {
+      "slug": "ive",
+      "target": "/features/fanpages/idols/ive.html",
+      "label": "아이브 IVE"
+    },
+    {
+      "slug": "aespa",
+      "target": "/features/fanpages/idols/aespa.html",
+      "label": "에스파 aespa"
+    },
+    {
+      "slug": "lesserafim",
+      "target": "/features/fanpages/idols/lesserafim.html",
+      "label": "르세라핌 LE SSERAFIM"
+    },
+    {
+      "slug": "twice",
+      "target": "/features/fanpages/idols/twice.html",
+      "label": "트와이스 TWICE"
+    },
+    {
+      "slug": "illit",
+      "target": "/features/fanpages/idols/illit.html",
+      "label": "아일릿 ILLIT"
+    },
+    {
+      "slug": "a2omay",
+      "target": "/features/fanpages/idols/a2omay.html",
+      "label": "에이투오 메이 A2O MAY"
+    },
+    {
+      "slug": "a2olite",
+      "target": "/features/fanpages/idols/a2olite.html",
+      "label": "에이투오 라이트 A2O LITE"
+    },
+    {
+      "slug": "a2osoul",
+      "target": "/features/fanpages/idols/a2osoul.html",
+      "label": "에이투오 소울 A2O SOUL"
+    },
+    {
+      "slug": "nmixx",
+      "target": "/features/fanpages/idols/nmixx.html",
+      "label": "엔믹스 NMIXX"
+    },
+    {
+      "slug": "babymonster",
+      "target": "/features/fanpages/idols/babymonster.html",
+      "label": "베이비몬스터 BABYMONSTER"
+    },
+    {
+      "slug": "hearts2hearts",
+      "target": "/features/fanpages/idols/hearts2hearts.html",
+      "label": "하츠투하츠 Hearts2Hearts"
+    },
+    {
+      "slug": "kissoflife",
+      "target": "/features/fanpages/idols/kissoflife.html",
+      "label": "키스오브라이프 KISS OF LIFE"
+    },
+    {
+      "slug": "kiiikiii",
+      "target": "/features/fanpages/idols/kiiikiii.html",
+      "label": "키키 KiiiKiii"
+    },
+    {
+      "slug": "blackpink",
+      "target": "/features/fanpages/idols/blackpink.html",
+      "label": "블랙핑크 BLACKPINK"
+    },
+    {
+      "slug": "stayc",
+      "target": "/features/fanpages/idols/stayc.html",
+      "label": "스테이씨 STAYC"
+    },
+    {
+      "slug": "idle",
+      "target": "/features/fanpages/idols/idle.html",
+      "label": "아이들 i-dle"
+    },
+    {
+      "slug": "bts",
+      "target": "/features/fanpages/idols/bts.html",
+      "label": "방탄소년단 BTS"
+    },
+    {
+      "slug": "seventeen",
+      "target": "/features/fanpages/idols/seventeen.html",
+      "label": "세븐틴 SEVENTEEN"
+    },
+    {
+      "slug": "straykids",
+      "target": "/features/fanpages/idols/straykids.html",
+      "label": "스트레이 키즈 Stray Kids"
+    },
+    {
+      "slug": "txt",
+      "target": "/features/fanpages/idols/txt.html",
+      "label": "투모로우바이투게더 TXT"
+    },
+    {
+      "slug": "enhypen",
+      "target": "/features/fanpages/idols/enhypen.html",
+      "label": "엔하이픈 ENHYPEN"
+    },
+    {
+      "slug": "riize",
+      "target": "/features/fanpages/idols/riize.html",
+      "label": "라이즈 RIIZE"
+    },
+    {
+      "slug": "boynextdoor",
+      "target": "/features/fanpages/idols/boynextdoor.html",
+      "label": "보이넥스트도어 BOYNEXTDOOR"
+    },
+    {
+      "slug": "tws",
+      "target": "/features/fanpages/idols/tws.html",
+      "label": "투어스 TWS"
+    },
+    {
+      "slug": "nctdream",
+      "target": "/features/fanpages/idols/nctdream.html",
+      "label": "엔시티 드림 NCT DREAM"
+    },
+    {
+      "slug": "ateez",
+      "target": "/features/fanpages/idols/ateez.html",
+      "label": "에이티즈 ATEEZ"
+    },
+    {
+      "slug": "treasure",
+      "target": "/features/fanpages/idols/treasure.html",
+      "label": "트레저 TREASURE"
+    },
+    {
+      "slug": "nctwish",
+      "target": "/features/fanpages/idols/nctwish.html",
+      "label": "엔시티 위시 NCT WISH"
+    },
+    {
+      "slug": "andteam",
+      "target": "/features/fanpages/idols/andteam.html",
+      "label": "앤팀 &TEAM"
+    },
+    {
+      "slug": "settings",
+      "target": "/world.html?tab=my",
+      "label": "내 설정 열기"
+    },
+    {
+      "slug": "signup",
+      "target": "/?auth=signup&next=world",
+      "label": "회원가입"
+    },
+    {
+      "slug": "login",
+      "target": "/?auth=login&next=world",
+      "label": "로그인"
+    },
+    {
+      "slug": "delete-account",
+      "target": "/delete-account.html",
+      "label": "탈퇴 안내"
+    },
+    {
+      "slug": "guide",
+      "target": "/guide.html",
+      "label": "오쭈다 사용법"
+    },
+    {
+      "slug": "creator",
+      "target": "/features/guide/creator.html",
+      "label": "만든이 mj830417의 이야기"
+    },
+    {
+      "slug": "beta",
+      "target": "/features/guide/creator.html#beta-title",
+      "label": "베타 무료 포인트 안내"
+    },
+    {
+      "slug": "terms",
+      "target": "/terms.html",
+      "label": "이용약관"
+    },
+    {
+      "slug": "privacy",
+      "target": "/privacy.html",
+      "label": "개인정보처리방침"
+    },
+    {
+      "slug": "croc",
+      "target": "/games/drinking/local/#croc",
+      "label": "악어 이빨 · 한 대로"
+    },
+    {
+      "slug": "croc-multi",
+      "target": "/games/drinking/?mode=multi&game=croc",
+      "label": "악어 이빨 · 멀티"
+    },
+    {
+      "slug": "bottle",
+      "target": "/games/drinking/local/#bottle",
+      "label": "술병 나침반 · 한 대로"
+    },
+    {
+      "slug": "bottle-multi",
+      "target": "/games/drinking/?mode=multi&game=bottle",
+      "label": "술병 나침반 · 멀티"
+    },
+    {
+      "slug": "bomb",
+      "target": "/games/drinking/local/#bomb",
+      "label": "시간폭탄 · 한 대로"
+    },
+    {
+      "slug": "bomb-multi",
+      "target": "/games/drinking/?mode=multi&game=bomb",
+      "label": "시간폭탄 · 멀티"
+    },
+    {
+      "slug": "stopwatch",
+      "target": "/games/drinking/local/#stopwatch",
+      "label": "감각 스톱워치 · 한 대로"
+    },
+    {
+      "slug": "stopwatch-multi",
+      "target": "/games/drinking/?mode=multi&game=stopwatch",
+      "label": "감각 스톱워치 · 멀티"
+    },
+    {
+      "slug": "liar",
+      "target": "/games/drinking/local/#liar",
+      "label": "라이어 찾기 · 한 대로"
+    },
+    {
+      "slug": "liar-multi",
+      "target": "/games/drinking/?mode=multi&game=liar",
+      "label": "라이어 찾기 · 멀티"
+    },
+    {
+      "slug": "king",
+      "target": "/games/drinking/local/#king",
+      "label": "왕게임 · 한 대로"
+    },
+    {
+      "slug": "king-multi",
+      "target": "/games/drinking/?mode=multi&game=king",
+      "label": "왕게임 · 멀티"
+    },
+    {
+      "slug": "truth",
+      "target": "/games/drinking/local/#truth",
+      "label": "진실게임 · 한 대로"
+    },
+    {
+      "slug": "truth-multi",
+      "target": "/games/drinking/?mode=multi&game=truth",
+      "label": "진실게임 · 멀티"
+    },
+    {
+      "slug": "initial",
+      "target": "/games/drinking/local/#initial",
+      "label": "초성 대결 · 한 대로"
+    },
+    {
+      "slug": "initial-multi",
+      "target": "/games/drinking/?mode=multi&game=initial",
+      "label": "초성 대결 · 멀티"
+    },
+    {
+      "slug": "minority",
+      "target": "/games/drinking/local/#minority",
+      "label": "소수파 찾기 · 한 대로"
+    },
+    {
+      "slug": "minority-multi",
+      "target": "/games/drinking/?mode=multi&game=minority",
+      "label": "소수파 찾기 · 멀티"
+    },
+    {
+      "slug": "mission",
+      "target": "/games/drinking/local/#mission",
+      "label": "한 명만 다른 미션 · 한 대로"
+    },
+    {
+      "slug": "mission-multi",
+      "target": "/games/drinking/?mode=multi&game=mission",
+      "label": "한 명만 다른 미션 · 멀티"
+    },
+    {
+      "slug": "fingers",
+      "target": "/games/drinking/local/#fingers",
+      "label": "손병호 게임 · 한 대로"
+    },
+    {
+      "slug": "fingers-multi",
+      "target": "/games/drinking/?mode=multi&game=fingers",
+      "label": "손병호 게임 · 멀티"
+    },
+    {
+      "slug": "imagevote",
+      "target": "/games/drinking/local/#imagevote",
+      "label": "이미지 게임 · 한 대로"
+    },
+    {
+      "slug": "imagevote-multi",
+      "target": "/games/drinking/?mode=multi&game=imagevote",
+      "label": "이미지 게임 · 멀티"
+    },
+    {
+      "slug": "updown",
+      "target": "/games/drinking/local/#updown",
+      "label": "업앤다운 · 한 대로"
+    },
+    {
+      "slug": "updown-multi",
+      "target": "/games/drinking/?mode=multi&game=updown",
+      "label": "업앤다운 · 멀티"
+    },
+    {
+      "slug": "secretcount",
+      "target": "/games/drinking/local/#secretcount",
+      "label": "시크릿 카운트 · 한 대로"
+    },
+    {
+      "slug": "secretcount-multi",
+      "target": "/games/drinking/?mode=multi&game=secretcount",
+      "label": "시크릿 카운트 · 멀티"
+    },
+    {
+      "slug": "party-roulette",
+      "target": "/games/drinking/local/#partyroulette",
+      "label": "러시안 룰렛 · 한 대로"
+    },
+    {
+      "slug": "party-roulette-multi",
+      "target": "/games/drinking/?mode=multi&game=partyroulette",
+      "label": "러시안 룰렛 · 멀티"
+    },
+    {
+      "slug": "shapematch",
+      "target": "/games/drinking/local/#shapematch",
+      "label": "모양 맞추기 · 한 대로"
+    },
+    {
+      "slug": "drinking-local",
+      "target": "/games/drinking/local/",
+      "label": "술게임 · 한 대로"
+    },
+    {
+      "slug": "drinking-multi",
+      "target": "/games/drinking/?mode=multi",
+      "label": "술게임 · 멀티"
+    },
+    {
+      "slug": "sitemap",
+      "target": "/sitemap.html",
+      "label": "사이트맵"
+    }
+  ]
+}

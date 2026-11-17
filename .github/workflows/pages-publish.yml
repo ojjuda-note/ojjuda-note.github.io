@@ -17,11 +17,17 @@ on:
       - 'scripts/build-fanpage-hub.mjs'
       - 'scripts/build-park-backgrounds.py'
       - 'scripts/build-park-ink-washes.py'
+      - 'scripts/build-short-links.mjs'
   pull_request:
     paths:
       - '.github/workflows/pages-publish.yml'
       - 'scripts/build-fanpage-hub.mjs'
       - 'tests/fanpage-hub-transfer.cjs'
+      - 'scripts/build-short-links.mjs'
+      - 'shared/navigation/short-link.js'
+      - 'shared/navigation/short-links.json'
+      - 'tests/short-links.test.mjs'
+      - 'sitemap.html'
   workflow_dispatch:
 
 permissions:
@@ -39,6 +45,8 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
+      - name: Verify short addresses and complete drinking-game navigation
+        run: node --test tests/short-links.test.mjs
       - name: Stage only public website files
         shell: bash
         run: |
@@ -59,6 +67,7 @@ jobs:
             --exclude='/_config.yml' \
             "$GITHUB_WORKSPACE/" "$site/"
           node scripts/sync-section-versions.mjs "$site"
+          node scripts/build-short-links.mjs "$site"
           touch "$site/.nojekyll"
           for required in CNAME index.html world.html park/index.html note/index.html sw.js config.js version.json; do
             if [[ ! -s "$site/$required" ]]; then

@@ -77,12 +77,12 @@ const searchTitle = '오쭈다 아지트 | 게임·타로·사주·익명카드'
       // The public sitemap now includes searchable game, food, fan and group pages.
       assert.ok(await page.locator('main section').count() >= 7, 'World destinations and discovery sections remain visible');
       for (const href of [
-        '/world.html?tab=arcade', '/world.html?tab=park', '/world.html?tab=my',
-        '/games/screw/index.html', '/features/fanpages/index.html', '/groups/index.html'
+        '/arcade/', '/park/', '/settings/',
+        '/screw/', '/fans/', '/groups/'
       ]) {
         assert.equal(await page.locator(`main section a[href="${href}"]`).count(), 1, `sitemap keeps ${href}`);
       }
-      for (const href of ['/guide.html', '/features/guide/creator.html']) {
+      for (const href of ['/guide/', '/creator/']) {
         assert.ok(await page.locator(`main a[href^="${href}"]`).count() >= 1, 'sitemap includes ' + href);
       }
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
