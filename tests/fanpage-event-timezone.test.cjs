@@ -26,6 +26,7 @@ const root = path.join(__dirname, '..');
         let body = fs.readFileSync(file);
         // Exercise default timezone, range end date, invalid-zone fallback and sorting through the real catalog.
         if (url.pathname.endsWith('/artists-extra.js')) body = body.toString() + `\nwindow.OJJUDA_FAN_ARTISTS.find(a=>a.id==='boynextdoor').appearances.push(
+          {date:'2026-11-15',timeZone:'America/Los_Angeles',title:'KNOCK ON Vol.2 · 시애틀',sub:'fixture only',href:'https://boynextdoortour.com/'},
           {date:'2026-11-15',title:'Korean default',sub:'test',href:'https://example.org'},
           {date:'2026-11-14',endDate:'2026-11-15',timeZone:'America/Los_Angeles',title:'Local range',sub:'test',href:'https://example.org'},
           {date:'2026-11-15',timeZone:'Invalid/Zone',title:'Invalid fallback',sub:'test',href:'https://example.org'});`;
