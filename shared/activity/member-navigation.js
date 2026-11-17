@@ -35,6 +35,10 @@
     '/features/biorhythm': '바이오리듬',
     '/features/biorhythm/': '바이오리듬',
     '/features/biorhythm/index.html': '바이오리듬',
+    '/groups/': '그룹', '/groups/index.html': '그룹',
+    '/park/': '공원', '/park/index.html': '공원',
+    '/sitemap.html': '사이트맵',
+    '/features/guide/creator.html': '오쭈다 소개',
     '/photo-ttang.html': '포토땅따먹기'
   });
   const gameActions = new Set(['game-open', 'bd-open', 'bl-open', 'matgo-open', 'agit-play', 'agit-daily']);
@@ -68,8 +72,8 @@
       const artist = url.searchParams.get('group');
       if (artist === 'rescene') return page('fanpage:rescene', '리센느 팬페이지');
     }
-    const title = pages[pathname] || tidy(document.title.split(/[|｜]/)[0]) || '방문 페이지';
-    return page(pathname, title);
+    if (!Object.hasOwn(pages, pathname)) return null;
+    return page('page:' + pathname, pages[pathname]);
   }
 
   function dispatch(event) {
