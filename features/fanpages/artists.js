@@ -307,7 +307,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 채널", sub: "Linktree", href: "https://linktr.ee/lesserafim" }
     ],
     news: [
-      { date: "2026.11.17", tag: "굿즈", title: "2027 시즌그리팅 FIM IN BLOOM 예약 판매 시작 · 12.07 마감, 12.08 출시", href: "https://shop.weverse.io/ko/shop/KRW/artists/50/notices/14945" },
+      { date: "2026.11.16", tag: "굿즈", title: "2027 시즌그리팅 FIM IN BLOOM 11.17 예약 시작 · 12.07 마감, 12.08 출시", href: "https://shop.weverse.io/ko/shop/KRW/artists/50/notices/14945" },
       { date: "2026.11.13", tag: "팬사인회", title: "11.27 싱가포르 PUREFLOW 앨범 팬사인회 응모 안내", href: "https://houseofkpop.com/products/singapore-fan-sign-event-le-sserafim-2nd-studio-album-pureflow-pt-1-compact-ver" },
       { date: "2026.11.13", tag: "이벤트", title: "2027.01.23~24 일본 데뷔 4주년 기념 이벤트 공지", href: "https://www.le-sserafim.jp/news/555c78286abe" },
       { date: "2026.11.06", tag: "수상", title: "사쿠라 WIRED Innovation Awards 2026 수상", href: "https://www.le-sserafim.jp/news/8c78b9319fdd" },
