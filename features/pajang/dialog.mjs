@@ -7,7 +7,7 @@ export function openPajang(launch) {
   bar.className = 'agit-pajang-toolbar';
   const heading = document.createElement('strong');
   heading.id = 'pajang-dialog-heading';
-  heading.textContent = '파장 · 소개팅 레이더';
+  heading.textContent = '파장 · 취향으로 만나는 소개팅';
   const close = document.createElement('button');
   close.type = 'button';
   close.setAttribute('aria-label','팝업 닫기');
@@ -15,8 +15,8 @@ export function openPajang(launch) {
   close.addEventListener('click',()=>dialog.close());
   bar.append(heading, close);
   const frame = document.createElement('iframe');
-  frame.title = '파장 인연 레이더 체험';
-  frame.src = '/features/pajang/?embed=1';
+  frame.title = '파장 발견, 신호함, 대화';
+  frame.src = '/features/pajang/?embed=1&v=20261117-full1';
   frame.allow = "accelerometer 'self'; gyroscope 'self'; magnetometer 'self'";
   dialog.append(bar, frame);
   document.body.append(dialog);

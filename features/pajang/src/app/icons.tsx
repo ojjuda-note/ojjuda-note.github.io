@@ -1,0 +1,16 @@
+const paths:Record<string,React.ReactNode>={
+ wave:<path d="M3 10v4m4-8v12m5-16v20m5-16v12m4-8v4"/>,
+ signal:<><circle cx="12" cy="12" r="1.5"/><path d="M7.7 7.8a6 6 0 0 0 0 8.4m8.6-8.4a6 6 0 0 1 0 8.4M4.5 4.5a10.7 10.7 0 0 0 0 15m15-15a10.7 10.7 0 0 1 0 15"/></>,
+ discover:<><circle cx="12" cy="12" r="9"/><path d="m15.7 8.3-2.1 5.3-5.3 2.1 2.1-5.3z"/></>,
+ chat:<path d="M20.5 11.5a8.5 8.5 0 0 1-8.8 8.5 10.3 10.3 0 0 1-3.1-.5L3 21l1.5-5A8.8 8.8 0 1 1 20.5 11.5Z"/>,
+ user:<><circle cx="12" cy="8" r="3.4"/><path d="M5.5 20v-1.5a6.5 6.5 0 0 1 13 0V20"/></>,
+ arrow:<path d="M4 12h15m-6-6 6 6-6 6"/>,up:<path d="M6 18 18 6M6.5 6H18v11.5"/>,
+ pencil:<><path d="m5 15-1.3 5.2 5.2-1.3L20 7.8 16.2 4zM14 6.2l3.8 3.8"/></>,
+ pin:<><path d="M18 9.5c0 4.5-6 10.5-6 10.5S6 14 6 9.5a6 6 0 0 1 12 0Z"/><circle cx="12" cy="9" r="1.7"/></>,
+ chevron:<path d="m7 10 5 5 5-5"/>,right:<path d="m9 5 7 7-7 7"/>,back:<path d="m14 5-7 7 7 7"/>,
+ close:<path d="m6 6 12 12M18 6 6 18"/>,check:<path d="m4 12 5 5L20 6"/>,
+ send:<><path d="m3 10 18-7-6 18-3-8zM12 13l9-10"/></>,shield:<><path d="m12 3 8 3v5c0 5-4 8-8 10-4-2-8-5-8-10V6z"/><path d="m8.5 11.5 2.5 2.5 4.5-5"/></>,
+ headphones:<><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="12" width="4" height="8" rx="2"/><rect x="17" y="12" width="4" height="8" rx="2"/></>,
+ clock:<><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></>,info:<><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-9v.1"/></>,
+};
+export function I({n,s=20}:{n:string;s?:number}){return <svg aria-hidden="true" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{paths[n]}</svg>;}
