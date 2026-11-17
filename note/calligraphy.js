@@ -658,7 +658,10 @@
           (right[1] - ay * aLean) * a.scale - (left[0] - by * bLean) * b.scale);
       }
       const seam = a.glyph.strokes || b.glyph.strokes ? 6.5 : 3.5;
-      return Math.max(natural * .55, clearance + seam * Math.min(a.scale, b.scale));
+      // Keep a low dot beside a syllable's long arm, and leave consecutive
+      // symbols in reading order even when their strokes sit at different heights.
+      const keepAdvance = marksByChar.has(b.ch) && (marksByChar.has(a.ch) || '.,．，'.includes(b.ch));
+      return Math.max(keepAdvance ? natural : natural * .55, clearance + seam * Math.min(a.scale, b.scale));
     }
     function lineWidth(letters, start, end) {
       const last = letters[end - 1];
@@ -674,7 +677,7 @@
       if (locationWord.test(b.word) || /(?:처럼|에게|으로|까지|히|게)$/u.test(a.word)) return .78;
       if (/^[가-힣]$/u.test(a.word) && /(?:면|며|는|어요|아요|다[.!?]?)$/u.test(b.word)) return 1.5;
       if (/[은는던]$/u.test(a.word) && /^[가-힣]{1,2}[.!?…]?$/u.test(b.word) && !/[게히]$/u.test(b.word)) return 1.15;
-      if (/[,.;:!?…。，！？]$/u.test(a.ch)) return -.14;
+      if (/[,.;:!?…．。，！？]$/u.test(a.ch)) return -.14;
       return 0;
     }
     function rowsFor(letters, manual, longForm) {

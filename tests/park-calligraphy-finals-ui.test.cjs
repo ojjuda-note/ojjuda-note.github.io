@@ -521,3 +521,40 @@ test('운동 fits its angled vowel tips together with visible paper between them
       assert.ok(sample.separateTips, 'ㅜ and ㅗ must pass without touching at ' + width + 'px');
     }
   }));
+
+test('Park draws eight brush symbols in narrow and fullwidth text on small cards', () =>
+  withBrushPage(async page => {
+    for (const width of [192, 328]) {
+      const result = await page.evaluate(width => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.fillText = ch => { throw new Error('System font used for ' + ch); };
+        function draw(body) {
+          window.ParkCalligraphy.render(canvas, body, { width, accent: false });
+          return canvas.toDataURL();
+        }
+        const pairs = ['!！', '?？', ',，', '~～', '-－', '*＊', '@＠', '.．'];
+        const singles = new Set();
+        let sameSpelling = true;
+        for (const [ascii, wide] of pairs) {
+          const single = draw(ascii);
+          if (!window.ParkCalligraphy.inkBounds(canvas)) throw new Error('Empty brush symbol ' + ascii);
+          singles.add(single);
+          if (single !== draw(wide) || draw('안녕' + ascii) !== draw('안녕' + wide)) sameSpelling = false;
+        }
+        draw('...');
+        const { data } = ctx.getImageData(0, 0, width, canvas.height);
+        let groups = 0, previous = false;
+        for (let x = 0; x < width; x++) {
+          let ink = false;
+          for (let y = 0; y < canvas.height; y++) {
+            if (data[4 * (y * width + x) + 3] >= 96) { ink = true; break; }
+          }
+          if (ink && !previous) groups++;
+          previous = ink;
+        }
+        return { distinct: singles.size, sameSpelling, groups };
+      }, width);
+      assert.deepEqual(result, { distinct: 8, sameSpelling: true, groups: 3 }, width + 'px');
+    }
+  }));
