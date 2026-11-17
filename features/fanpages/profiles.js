@@ -121,7 +121,7 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   twice: {
-    checkedAt: '2026.11.15',
+    checkedAt: '2026.11.17',
     debut: '2015.10.20', debutWork: 'The Story Begins · OOH-AHH하게',
     agency: 'JYP Entertainment',
     concept: 'SIXTEEN에서 출발한 아홉 멤버의 이야기.',
