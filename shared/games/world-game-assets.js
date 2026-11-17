@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261117-restaurants-c2s48-seogwipo-loc2-tv1'
+ const revision='20261117-drinking-menu-focus1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -20,7 +20,7 @@
   secretcount:'1.2.0',
   updown:'1.5.0',
   partyroulette:'1.5.0',
-  drinking:'1.26.0',
+  drinking:'1.26.1',
   shapematch:'1.3.0',
   tarot:'1.10.2',
   saju:'2.15.1',
@@ -35,7 +35,7 @@
   bang:'1.12.1',
   poker:'1.7.1',
   tank:'1.7.1',
-  solitaire:'1.5.1',
+  solitaire:'1.5.2',
   mines:'1.5.1',
   sacheonseong:'1.18.2',
   saetbyeol:'1.8.1',
@@ -74,7 +74,7 @@
   sacheonseong:['/games/sacheonseong/world-sacheonseong-game.css?v=20261106-source-folders1','/games/sacheonseong/world-sacheonseong-game.js?v=20261113-game-popup-order1'],
   poker:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/poker/world-poker-game.css?v=20261106-source-folders1','/games/poker/world-poker-game.js?v=20261113-game-popup-order1'],
   tank:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/tank/world-tank-game.css?v=20261106-source-folders1','/games/tank/world-tank-game.js?v=20261113-game-popup-order1'],
-  solitaire:['/shared/games/world-tour-game.css?v=20261106-source-folders1',solitaireRules,'/games/solitaire/world-solitaire-game.js?v=20261113-game-popup-order1'],
+  solitaire:['/shared/games/world-tour-game.css?v=20261106-source-folders1',solitaireRules,'/games/solitaire/world-solitaire-game.js?v=20261117-solitaire-arcade-return1'],
   mines:['/shared/games/world-tour-game.css?v=20261106-source-folders1',minesRules,'/games/mines/world-mines-game.js?v=20261113-game-popup-order1'],
   saetbyeol:['/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/saetbyeol/world-saetbyeol-game.js?v=20261113-game-popup-order1'],
   tour:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/ojjuda-tour/world-tour-game.js?v=20261113-game-popup-order1'],
