@@ -207,17 +207,18 @@ async function resize(page, size, shortened=false) {
       ['OjjudaTourGame','.tour-game-dialog',true],['OjjudaBangGame','.bang-game-dialog',true],
       ['OjjudaMinesGame','.mines-game-dialog',false],['OjjudaSpotGame','.spot-game-dialog',false]
     ]){
+      const returnControl=selector+' > :is(.tour-game-header,.spot-game-header) :is(.arcade-return,[aria-label="오락실로 돌아가기"])';
       await resize(page,viewports[0]);await checkpoint(page,api+' entry');await page.evaluate(api=>window[api].open({owner:'layout-fixture'}),api);
       await page.locator(selector).waitFor();const game=await frameFits(page,selector);await game.waitForFunction(()=>window.childReady);
       if(multiplayer)await page.waitForFunction(selector=>document.querySelector(selector)?.dataset.mpActive==='true',selector);
       await fullscreen(page,selector,api+' entry');
-      await safeControl(page,`${selector} ${multiplayer?'.mp-entry-back':':is(.tour-game-header,.spot-game-header) button'}`);
+      await safeControl(page,multiplayer?selector+' .mp-entry-back':returnControl);
       await game.locator('#play').click();await game.locator('#move').click();
       if(multiplayer)await page.waitForFunction(selector=>document.querySelector(selector)?.dataset.mpActive==='false',selector);
       const round=await game.evaluate(()=>({...window.round}));
       for(const size of viewports){
         await resize(page,size);await checkpoint(page,api+' play');await fullscreen(page,selector,api+' play');
-        await frameFits(page,selector);await safeControl(page,`${selector} > :is(.tour-game-header,.spot-game-header) button`);
+        await frameFits(page,selector);await safeControl(page,returnControl);
         assert.deepEqual(await game.evaluate(()=>({...window.round})),round,'folding does not reload the game or lose moves');
       }
       await game.locator('#finish').click();await checkpoint(page,api+' result');await fullscreen(page,selector,api+' result');await frameFits(page,selector);
@@ -233,8 +234,8 @@ async function resize(page, size, shortened=false) {
           await fullscreen(page,selector,'spot zoom with viewport CSS loaded last');await frameFits(page,selector);
         }
       }
-      await safeControl(page,`${selector} > :is(.tour-game-header,.spot-game-header) button`);
-      await page.locator(`${selector} > :is(.tour-game-header,.spot-game-header) button`).click();
+      await safeControl(page,returnControl);
+      await page.locator(returnControl).click();
       await page.locator(selector).waitFor({state:'detached'});
       assert.equal(await page.evaluate(()=>document.body.classList.contains('gaming')),false,'iframe close restores the surrounding page');
       console.log('PASS: '+api+' entry/play/result, safe viewport and close');
