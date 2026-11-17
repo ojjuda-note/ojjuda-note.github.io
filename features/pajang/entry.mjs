@@ -28,6 +28,9 @@ function enterMain(destination = main, savedStation) {
   }
   if (handoff) return handoff;
   leaveEntry();
+  $('welcome').hidden=true;
+  $('gate').hidden=false;
+  window.scrollTo(0,0);
   handoff=(async()=>{
     const style=document.createElement('link');
     style.rel='stylesheet';

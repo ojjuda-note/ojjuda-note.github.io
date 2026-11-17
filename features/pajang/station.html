@@ -11,7 +11,7 @@
   <link rel="modulepreload" href="./member.mjs?v=open2">
   <link rel="icon" href="./assets/favicon.svg">
   <link rel="stylesheet" href="./station.css?v=letter1">
-  <link rel="stylesheet" href="./shell.css?v=letter1">
+  <link rel="stylesheet" href="./shell.css?v=flight1">
   <link rel="stylesheet" href="./letterroom.css?v=question2">
   <script type="module" src="./shell.mjs?v=open2"></script>
   <script type="module" src="./member-main.mjs?v=open2"></script>
@@ -22,7 +22,13 @@
     <span class="pajang-signature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path fill="currentColor" stroke="none" d="M12 21C8 18 2 13.5 2 8.5A5.5 5.5 0 0 1 12 5a5.5 5.5 0 0 1 10 3.5C22 13.5 16 18 12 21Z"/></svg>파장</span>
     <span class="pajang-members">19+ 회원 전용</span>
   </div></header>
-  <main id="gate" aria-live="polite"><strong>파장 · 회원 전용 소개팅</strong><p>회원 정보를 확인하고 있어요.</p></main>
+  <main id="gate" aria-live="polite">
+    <div class="flight-scene" aria-hidden="true">
+      <div class="flight-landscape"></div>
+      <div class="flight-across"><div class="flight-lift"><span class="paper-plane"><i></i></span></div></div>
+    </div>
+    <p class="flight-caption" role="status">파장을 열고 있어요.</p>
+  </main>
   <div id="station" hidden></div>
   <noscript>파장의 질문과 답변, 마음함를 보려면 자바스크립트를 켜 주세요.</noscript>
   <script src="/config.js"></script>

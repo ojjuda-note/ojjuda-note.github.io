@@ -52,7 +52,8 @@ async function checkCompass(view, selector, labelSelector, markerSelector) {
 function clientFixture(hash) {
   return `
     const state=${JSON.stringify(state)}, rows=${JSON.stringify(rows)};
-    const mode=sessionStorage.fixtureMode||'member';
+    const flightCheck=new URLSearchParams(location.search).get('flight-check');
+    const mode=flightCheck||sessionStorage.fixtureMode||'member';
     const accepted=sessionStorage.accepted==='yes';
     const friend={id:'peer1',name:'라온',age:28,interest:'walk',region:'경기도',body:'함께 걸어요.',range:15,bearing:315};
     const offered={id:'peer2',name:'유진',age:30,interest:'book',region:'서울특별시'};
@@ -65,7 +66,7 @@ function clientFixture(hash) {
     const messages=[{id:'1',src:'peer1',dst:'me',body:'안녕하세요!',at:1}];
     window.authCalls=0;window.artCalls=[];window.memberCalls=[];window.sendIds=[];
     const db={
-      auth:{getUser:async()=>{window.authCalls++;return {data:{user:mode==='guest'?null:{id:'member'}}};},
+      auth:{getUser:async()=>{window.authCalls++;if(flightCheck)await new Promise(resolve=>{window.finishFlight=resolve;});return {data:{user:mode==='guest'?null:{id:'member'}}};},
         getSession:async()=>({data:{session:mode==='guest'?null:{user:{id:mode==='switched'?'next-member':'member'}}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
       functions:{invoke:async()=>({data:{bucket:'fixture',files:{'station.js':'${hash}',...Object.fromEntries(['coffee','walk','vinyl','camera','book','tennis'].map(key=>[key+'.webp','pending']))}}})},
       storage:{from:()=>({download:async key=>{
@@ -178,6 +179,49 @@ function clientFixture(hash) {
       const mime={html:'text/html',css:'text/css',mjs:'text/javascript',json:'application/json',svg:'image/svg+xml'}[path.extname(file).slice(1)];
       return route.fulfill({contentType:mime,body:await fs.readFile(path.join(feature,file))});
     });
+    const flightDir=path.join(__dirname,'artifacts/pajang-discovery');
+    await fs.mkdir(flightDir,{recursive:true});
+    for(const [url,ready] of [['index.html?flight-check=new','#welcome #write'],['station.html?flight-check=member','#station #answers']]){
+      const member=url.startsWith('station');
+      // On the station page, hold the picture past startup: art must never gate real content.
+      let releasePicture;
+      const picture='**/hillside.webp';
+      if(member)await page.route(picture,async route=>{
+        await new Promise(resolve=>{releasePicture=resolve;});
+        await route.abort();
+      });
+      await page.goto(origin+project+url,{waitUntil:'commit'});
+      const scene=page.locator('#gate .flight-scene');await scene.waitFor();
+      await page.waitForFunction(()=>typeof window.finishFlight==='function');
+      const positions=await scene.evaluate(el=>{
+        const plane=el.querySelector('.paper-plane'),box=el.getBoundingClientRect();
+        const animations=el.getAnimations({subtree:true});
+        return [0,1332,3100].map(time=>{
+          for(const animation of animations){animation.pause();animation.currentTime=time;}
+          const p=plane.getBoundingClientRect();
+          return [(p.x+p.width/2-box.x)/box.width,(p.y+p.height/2-box.y)/box.height,p.width];
+        });
+      });
+      const [start,crest,door]=positions;
+      assert.ok(start[0]<.18 && crest[0]>.35 && door[0]>.74 && door[0]<.8);
+      assert.ok(crest[1]<.32 && start[1]>.47 && door[1]>.58 && door[1]<.70 && door[2]<start[2]);
+      if(!member){
+        await scene.evaluate(async el=>{
+          const art=getComputedStyle(el.querySelector('.flight-landscape'),'::after').backgroundImage;
+          const img=new Image();img.src=art.slice(5,-2);await img.decode();
+          el.getAnimations({subtree:true}).forEach(a=>{a.currentTime=1100;});
+        });
+        await scene.screenshot({path:path.join(flightDir,'paper-plane-flight.png')});
+      }else assert.equal(typeof releasePicture,'function');
+      await page.emulateMedia({reducedMotion:'reduce'});
+      assert.equal(await scene.evaluate(el=>el.getAnimations({subtree:true}).length),0);
+      await page.evaluate(()=>window.finishFlight());
+      await page.locator(ready).waitFor();
+      assert.equal(await scene.isVisible(),false);
+      if(member){releasePicture?.();await page.unroute(picture);}
+      await page.emulateMedia({reducedMotion:'no-preference'});
+    }
+    console.log('PASS watercolor flight, upright static alternative, immediate handoff with art pending');
     await page.goto(origin+project+'station.html#answers');
     const answers=page.locator('#answers'), cards=answers.locator('article'), group=answers.getByRole('radiogroup');
     const radio=value=>group.locator('input[value="'+value+'"]');
@@ -381,6 +425,7 @@ function clientFixture(hash) {
       await page.evaluate(m=>{sessionStorage.fixtureMode=m;},mode);
       await page.goto(origin+project+'station.html');
       await page.locator('#gate p').filter({hasText:mode==='guest'?'로그인한':'이 계정은'}).waitFor();
+      assert.equal(await page.locator('.flight-scene').count(),0);
       await expectHome();await mast.click();await page.waitForURL('**/world.html');
     }
     console.log('PASS three primary destinations, direct acceptance, scroll-stable home exit, modal exit, direct legacy routes, thread reload/back, join handoff, guest/denied returns and embedded focus restoration');
