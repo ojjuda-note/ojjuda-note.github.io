@@ -40,6 +40,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'nFYwcndNuOY', title: 'Armageddon', kind: '뮤직비디오', source: 'aespa / SMTOWN' }
   ],
   lesserafim: [
+    { id: 'g52Ls9Xs-G4', title: '2027 SEASON’S GREETINGS · Visual Clip', kind: '공식 시즌그리팅 영상', source: 'LE SSERAFIM Official · 2026.11' },
+    { id: 'xVtAJs828x8', title: '2027 SEASON’S GREETINGS · SPOT #1', kind: '공식 시즌그리팅 티저', source: 'LE SSERAFIM Official · 2026.11.15' },
     { id: 'mBw5NdhOMPA', title: '인생은 게임이다 | LE PLAY', kind: '공식 콘텐츠 · 투어 일상', source: 'LE SSERAFIM Official · 2026.11.13' },
     { id: 'otYU8-OUunU', title: '디즈니 월드에서 미션 수행', kind: '공식 비하인드', source: 'LE SSERAFIM Official · 2026.11.11' },
     { id: 'Y1Lah0BM0KQ', title: 'Made My Night', kind: '뮤직비디오 · 오버워치 협업', source: 'LE SSERAFIM / HYBE LABELS' },

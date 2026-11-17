@@ -267,7 +267,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { label: "Weverse", icon: "✦", url: "https://weverse.io/lesserafim" }
     ],
     merch: [
-      { title: "2027 시즌그리팅 · FIM IN BLOOM", sub: "2026.11.17 11:00 KST 공식 예약 시작 예정 · 구성·가격·재고는 Weverse Shop 확인", href: "https://x.com/le_sserafim/status/2121196403443822764" },
+      { title: "2027 시즌그리팅 · FIM IN BLOOM", sub: "글로벌 예약 2026.11.17 11:00~12.07 23:59 KST · 12.08 출시 · 수량 소진 시 조기 종료", href: "https://shop.weverse.io/ko/shop/KRW/artists/50/notices/14945" },
       { title: "Made My Night 싱글 앨범", sub: "CHEMICAL NIGHT·컴팩트판 · 한국 9.11 발매·일본 10.09 발매 · 재고는 판매처 확인", href: "https://www.le-sserafim.jp/news/984d91860ac0" },
       { title: "FIM'S Holiday Express 공식 MD", sub: "쿠션·키링·블랭킷 · 11.09부터 한정 예약 · 재고는 판매처 확인", href: "https://www.le-sserafim.jp/news/4fc666123c77" },
       { title: "사쿠라 × Couturier 공식 협업 상품", sub: "DIY 키트·니트 MD · 3차 예약 11.27 18:00(JST)까지·수량 한정", href: "https://www.le-sserafim.jp/news/28a632789865" },
@@ -282,7 +282,6 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "HOT", date: "2025.03.14", type: "미니 5집", songs: ["HOT", "Come Over", "Ash"], href: "https://sourcemusic.com/artist/discography/LE%20SSERAFIM/15" }
     ],
     appearances: [
-      { date: "2026-11-15", title: "PUREFLOW 투어 · 타이베이 (2일차)", sub: "대만 NTSU 아레나 · 18:00 대만 현지시간 · iME Taiwan 주최", href: "https://tixcraft.com/activity/detail/26_lsf" },
       { date: "2026-11-21", title: "2026 MAMA AWARDS", sub: "일본 오사카 · CHAPTER 2", href: "https://www.cj.net/jp/press-release/view/1132" },
       { date: "2026-11-27", title: "PUREFLOW pt.1 · 싱가포르 팬사인회", sub: "14:30 SGT · House of K-pop 주관 추첨 행사 · 11.17 응모 마감 · 장소는 주최 안내 확인", href: "https://houseofkpop.com/products/singapore-fan-sign-event-le-sserafim-2nd-studio-album-pureflow-pt-1-compact-ver" },
       { date: "2026-11-28", title: "PUREFLOW 투어 · 싱가포르", sub: "APEX@EXPO · 현지 17:00 · iMe Singapore 주최", href: "https://ticketmaster.sg/activity/detail/26sg_lsf" },
@@ -308,7 +307,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 채널", sub: "Linktree", href: "https://linktr.ee/lesserafim" }
     ],
     news: [
-      { date: "2026.11.13", tag: "굿즈", title: "2027 시즌그리팅 FIM IN BLOOM 공개 · 11.17 예약 예정", href: "https://x.com/le_sserafim/status/2121196403443822764" },
+      { date: "2026.11.16", tag: "굿즈", title: "2027 시즌그리팅 FIM IN BLOOM 11.17 예약 시작 · 12.07 마감, 12.08 출시", href: "https://shop.weverse.io/ko/shop/KRW/artists/50/notices/14945" },
       { date: "2026.11.13", tag: "팬사인회", title: "11.27 싱가포르 PUREFLOW 앨범 팬사인회 응모 안내", href: "https://houseofkpop.com/products/singapore-fan-sign-event-le-sserafim-2nd-studio-album-pureflow-pt-1-compact-ver" },
       { date: "2026.11.13", tag: "이벤트", title: "2027.01.23~24 일본 데뷔 4주년 기념 이벤트 공지", href: "https://www.le-sserafim.jp/news/555c78286abe" },
       { date: "2026.11.06", tag: "수상", title: "사쿠라 WIRED Innovation Awards 2026 수상", href: "https://www.le-sserafim.jp/news/8c78b9319fdd" },
