@@ -7,7 +7,7 @@ const mine = $('mine');
 const status = $('my-answer');
 const submit = form.querySelector('[type=submit]');
 const main = new URL('./station.html', location.href);
-const feed = new URL('./feed.html', location.href);
+const feed = new URL('./station.html#answers', location.href);
 const view = new URL(location.href).searchParams.get('view');
 
 function enterMain(destination = main) {

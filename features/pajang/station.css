@@ -68,8 +68,12 @@
 [hidden]{display:none!important}#gate{max-width:460px;margin:16vh auto;padding:24px}#gate a{color:var(--purple);font-weight:700}
 
 .discover-switch{max-width:100%;flex-wrap:wrap}
-.discover-switch .allanswers{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 14px;border-radius:20px;color:#443255;font-size:13px;font-weight:700;text-decoration:none}
-.discover-switch .allanswers:hover,.discover-switch .allanswers:focus-visible{background:#e5ddeb}
 .cardquestion{margin:18px 0 8px;font-size:14px;line-height:1.6;font-weight:700;color:#674b70;overflow-wrap:anywhere}
 .answercard .quote{white-space:pre-wrap;overflow-wrap:anywhere}
-@media(max-width:620px){.discover-switch .allanswers{padding:6px 10px;font-size:12px}}
+#answers{scroll-margin-top:80px}
+.answerdate{align-self:flex-start;margin-top:16px;color:var(--muted);font-size:12px}
+.answerdate+.cardquestion{margin-top:5px}
+.history-status{text-align:center;color:var(--muted);padding:18px 0}
+.history-more{display:flex;margin:20px auto 0}
+.sendlink:disabled{cursor:default}
+@media(max-width:620px){#answers{scroll-margin-top:12px}}
