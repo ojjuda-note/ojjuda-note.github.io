@@ -1,8 +1,9 @@
 "use client";
 import {useEffect,useLayoutEffect,useRef,useState} from "react";
-import {themeFor,interests,badges,introDetails,signalsWith,type Person,type Message,type Station} from "../lib/station";
+import {themeFor,interests,introDetails,signalsWith,type Person,type Message,type Station} from "../lib/station";
 import regionCatalog from "../../regions.json";
 
+import {InterestArt as Art} from "./interest-art";
 import {I} from "./icons";
 import NearbyRadar from "./nearby-radar";
 import MyAnswers from "./my-answers";
@@ -18,16 +19,15 @@ type Modal = {kind:"answer"|"signal"|"result"|"setup"|"edit"|"channels"|"help"|"
 const districts:Record<string,string[]> = regionCatalog;
 const provinces=Object.keys(districts);
 const fmtClock=(at:number)=>new Intl.DateTimeFormat("ko-KR",{hour:"2-digit",minute:"2-digit",timeZone:"Asia/Seoul"}).format(new Date(at));
-const getArt=(key:string)=>window.pajangArt[badges(key).key];
 async function request<T,>(url:string,init?:RequestInit):Promise<T>{
   const params=init?.body?JSON.parse(String(init.body)):{};
   const peer=new URL(url,location.origin).searchParams.get("thread");
   const action=peer?"thread":params.action||"state";
-  const {data,error}=await (await window.OjjudaGetClient()).rpc("pajang_member",{p_action:action,p_data:peer?{peer}:params});
+  const query=(await window.OjjudaGetClient()).rpc("pajang_member",{p_action:action,p_data:peer?{peer}:params});
+  const {data,error}=await (init?.signal && query.abortSignal?query.abortSignal(init.signal):query);
   if(error)throw Object.assign(new Error(error.message),{code:error.code});
   return data as T;
 }
-function Art({interest,large=false}:{interest:string;large?:boolean}){return <span className={"avatar"+(large?" large":"")} style={{background:badges(interest).bg}}>{getArt(interest)?<img src={getArt(interest)} alt=""/>:<I n="user" s={large?26:18}/> }</span>;}
 function Blank({icon,title,body,button,onClick}:{icon:string;title:string;body:string;button?:string;onClick?:()=>void}){return <div className="empty"><span className="emptyicon"><I n={icon} s={27}/></span><h3>{title}</h3>{body&&<p>{body}</p>}{button&&<button className="secondary" onClick={onClick}>{button}<I n="arrow" s={16}/></button>}</div>;}
 function Dialog({children,close,title}:{children:React.ReactNode;close:()=>void;title:string}){
   const ref=useRef<HTMLDialogElement>(null);
@@ -65,6 +65,14 @@ function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew:boolea
     <button className="primary wide" disabled={busy||(isNew&&!consent)}>{isNew?"회원 채널 시작하기":"프로필 저장"}<I n="arrow" s={16}/></button></form>;
 }
 
+function ListPerson({p,type,station,busy,onProfile,onAction}:{
+  p:Person;type:"received"|"sent"|"chat";station:Station;busy:boolean;
+  onProfile:()=>void;onAction:()=>void;
+}){
+    const v=signalsWith(station,p.id);const sig=type==="received"?v.incoming:v.outgoing;
+    return <div className="listperson"><button className="person" onClick={onProfile}><Art interest={p.interest}/><span><strong>{p.name}</strong><small>{introDetails(p)}</small></span></button><p>{type==="chat"?"서로의 신호가 닿았어요.":sig?.note||(v.match?"서로의 신호가 닿았어요.":type==="received"?"신호를 보내왔어요.":"상대의 신호를 기다리고 있어요.")}</p><button className="secondary small" disabled={busy||(!station.remaining&&type==="received")} onClick={onAction}>{v.match?"대화 열기":type==="sent"?"상태 보기":"수락하고 대화하기"}<I n="right" s={15}/></button></div>;
+  }
+
 export default function StationApp({initialStation}:{initialStation:Station}){
   const [live,setLive]=useState<Station>(initialStation);
   const [route,setRoute]=useState(readRoute);
@@ -74,13 +82,15 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const routeKey=tab+"/"+thread;
   const currentRoute=useRef(routeKey);
   const scrollTarget=useRef<"answers"|"restore">(location.hash==="#answers"?"answers":"restore");
+  const navigationId=useRef(0),refreshInFlight=useRef(false),threadRead=useRef<AbortController|null>(null);
+  const pendingMessages=useRef(new Map<string,{body:string;id:string}>());
   const draftByPeer=useRef(new Map<string,string>());
   const currentPeer=useRef(thread);
   currentPeer.current=thread;
   const [pendingModal,setModal]=useState<Modal|null>(null),[inbox,setInbox]=useState("received");
   const [messages,setMessages]=useState<Message[]>([]),[draft,setDraft]=useState(""),[busy,setBusy]=useState(false),[error,setError]=useState(""),[toast,setToast]=useState(""),[net,setNet]=useState(""),[ready,setReady]=useState(false);
   const [historyRevision,setHistoryRevision]=useState(0);
-  const lock=useRef(false),serverRevision=useRef(0),threadRevision=useRef(0),bottom=useRef<HTMLDivElement>(null);
+  const lock=useRef(false),serverRevision=useRef(0),bottom=useRef<HTMLDivElement>(null);
   const s=live,me=s.me,theme=s.question??themeFor(s.day,s.slot),period=s.day+"/"+s.slot;
   const slotName=s.slot==="am"?"오전":"오후";
   const nextQuestion=s.slot==="am"?"오늘 낮 12시":"내일 0시";
@@ -93,9 +103,12 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const available=s.remaining;
   const themeText=theme.q.join(" ");
   async function refresh(){
+    if(refreshInFlight.current)return;
+    refreshInFlight.current=true;
     const rev=++serverRevision.current;
     try{const next=await request<Station>("/api/station");if(serverRevision.current===rev){setLive(next);setNet("");}}
     catch{if(serverRevision.current===rev)setNet("회원 채널을 불러오지 못했어요.");}
+    finally{refreshInFlight.current=false;}
   }
   useEffect(()=>{setReady(true);},[]);
   useEffect(()=>{
@@ -107,11 +120,32 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   },[s.nextAt]);
   useEffect(()=>{if(pendingModal&&!modal){setModal(null);setError("");}},[pendingModal,modal]);
   useEffect(()=>{if(!toast)return;const t=setTimeout(()=>setToast(""),3500);return()=>clearTimeout(t);},[toast]);
-  async function readThread(id:string){
-    const rev=++threadRevision.current;
-    try{const m=await request<Message[]>("/api/station?thread="+encodeURIComponent(id));if(rev===threadRevision.current){setMessages(m);setNet("");}}catch{if(rev===threadRevision.current)setNet("대화를 불러오지 못했어요.");}
+  const [threadError,setThreadError]=useState("");
+  async function readThread(id:string,replace=false){
+    if(threadRead.current&&!replace)return;
+    threadRead.current?.abort();
+    const controller=new AbortController();
+    threadRead.current=controller;
+    try{
+      const rows=await request<Message[]>("/api/station?thread="+encodeURIComponent(id),{signal:controller.signal});
+      if(!controller.signal.aborted){setMessages(rows);setThreadError("");}
+    }catch{
+      if(!controller.signal.aborted)setThreadError("대화를 불러오지 못했어요.");
+    }finally{if(threadRead.current===controller)threadRead.current=null;}
   }
-  useLayoutEffect(()=>{setDraft(validThread?(draftByPeer.current.get(thread)??""):"");setMessages([]);if(!validThread||tab!=="chat")return;void readThread(thread);const t=setInterval(()=>{if(!document.hidden&&!lock.current)void readThread(thread);},4000);return()=>{clearInterval(t);threadRevision.current++;};},[thread,tab,validThread]);
+  useLayoutEffect(()=>{
+    setDraft(validThread?(draftByPeer.current.get(thread)??""):"");
+    setMessages([]);setThreadError("");
+    if(!validThread||tab!=="chat")return;
+    void readThread(thread);
+    const tick=()=>{if(!document.hidden&&!lock.current)void readThread(thread);};
+    const timer=window.setInterval(tick,4000);
+    document.addEventListener("visibilitychange",tick);
+    return ()=>{
+      window.clearInterval(timer);document.removeEventListener("visibilitychange",tick);
+      threadRead.current?.abort();threadRead.current=null;
+    };
+  },[thread,tab,validThread]);
   const threadMessages=messages;
   const lastMsg=threadMessages.at(-1)?.id;
   const followChat=useRef(true);
@@ -122,7 +156,8 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   },[lastMsg,thread]);
   useEffect(()=>{
     const permitted=new Set(matches.map(person=>person.id));
-    for(const id of draftByPeer.current.keys())if(!permitted.has(id))draftByPeer.current.delete(id);
+    for(const map of [draftByPeer.current,pendingMessages.current])
+      for(const id of map.keys())if(!permitted.has(id))map.delete(id);
   },[s]);
   useLayoutEffect(()=>{
     currentRoute.current=routeKey;
@@ -134,6 +169,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     const previous=history.scrollRestoration;
     history.scrollRestoration="manual";
     function restore(){
+      navigationId.current++;
       scrollPositions.current.set(currentRoute.current,window.scrollY);
       const next=readRoute();
       scrollTarget.current=location.hash==="#answers"?"answers":"restore";
@@ -144,6 +180,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     return ()=>{history.scrollRestoration=previous;window.removeEventListener("popstate",restore);};
   },[]);
   function navigate(next:Tab,peer="",answers=false,replace=false){
+    navigationId.current++;
     const href=routeHref(next,peer,answers);
     scrollPositions.current.set(currentRoute.current,window.scrollY);
     scrollTarget.current=answers?"answers":"restore";
@@ -168,7 +205,8 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   function go(t:Tab){navigate(t);}
   function startChat(p:string){navigate("chat",p);}
   async function act(action:string,b:Record<string,any>,forceLive=false):Promise<Station|null>{
-    if(lock.current)return null;lock.current=true;setBusy(true);setError("");
+    if(lock.current)return null;
+    const origin=navigationId.current;lock.current=true;setBusy(true);setError("");
     try{
 
       if(action==="delete")await removeAllExchangePhotos();
@@ -176,6 +214,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       if(action==="block"||action==="answer")setHistoryRevision(n=>n+1);
       return next;
     }catch(e){
+      if(origin!==navigationId.current)return null;
       if(b.answerDay && e instanceof Error && "code" in e && (e.code==="PT409"||e.code==="42501")){
         setModal(null);setToast("이 답변은 더 이상 볼 수 없어요.");setHistoryRevision(n=>n+1);void refresh();
       }else if(e instanceof Error && "code" in e && e.code==="PT409"){
@@ -188,7 +227,9 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   function signal(p:Person){const v=signalsWith(s,p.id);if(v.match){startChat(p.id);return;}if(v.outgoing){open({kind:"result",peer:p.id});return;}if(!available){setToast("오늘의 신호를 모두 썼어요. 내일 다시 만나요.");return;}open({kind:"signal",peer:p.id});}
   async function openHistoryChat(id:string) {
     if(signalsWith(s,id).match && s.people.some(person=>person.id===id)){startChat(id);return;}
+    const origin=navigationId.current;
     const next=await act("state",{});
+    if(origin!==navigationId.current)return;
     if(next && signalsWith(next,id).match)startChat(id);
     else {setToast("이 대화방을 열 수 없어요.");setHistoryRevision(n=>n+1);}
   }
@@ -202,21 +243,35 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const signalCount=waiting.length;
   const shownSignals=inbox==="received"?waiting:sent;
   async function deliver(peerId:string,note:string,answer?:DiscoveryAnswer){
+    const origin=navigationId.current;
     const next=await act("signal",{peer:peerId,note,...(answer?{answerDay:answer.day,answerSlot:answer.slot}:{day:s.day,slot:s.slot})});
     if(!next)return;
     setHistoryRevision(n=>n+1);
+    if(origin!==navigationId.current)return;
     if(signalsWith(next,peerId).match)startChat(peerId);
     else setModal({kind:"result",peer:peerId});
   }
-  function ListPerson({p,type}:{p:Person;type:"received"|"sent"|"chat"}){
-    const v=signalsWith(s,p.id);const sig=type==="received"?v.incoming:v.outgoing;
-    return <div className="listperson"><button className="person" onClick={()=>open({kind:"person",peer:p.id})}><Art interest={p.interest}/><span><strong>{p.name}</strong><small>{introDetails(p)}</small></span></button><p>{type==="chat"?"서로의 신호가 닿았어요.":sig?.note||(v.match?"서로의 신호가 닿았어요.":type==="received"?"신호를 보내왔어요.":"상대의 신호를 기다리고 있어요.")}</p><button className="secondary small" disabled={busy||(!available&&type==="received")} onClick={()=>type==="received"?void deliver(p.id,""):signal(p)}>{v.match?"대화 열기":type==="sent"?"상태 보기":"수락하고 대화하기"}<I n="right" s={15}/></button></div>;
+  async function sendMessage(){
+    const submitted=draft,body=submitted.trim(),peerId=thread;
+    if(!body||lock.current||!validThread)return;
+    let message=pendingMessages.current.get(peerId);
+    if(!message||message.body!==body){
+      message={body,id:crypto.randomUUID()};pendingMessages.current.set(peerId,message);
+    }
+    const saved=await act("message",{peer:peerId,...message});
+    if(!saved)return;
+    pendingMessages.current.delete(peerId);
+    if(draftByPeer.current.get(peerId)===submitted){
+      draftByPeer.current.delete(peerId);
+      if(currentPeer.current===peerId)setDraft("");
+    }
+    if(currentPeer.current===peerId){followChat.current=true;void readThread(peerId,true);}
   }
   const modalTitle=modal?({answer:slotName+" 답변",signal:"신호 보내기",result:"신호 상태",setup:"회원 프로필 만들기",edit:"프로필 수정",channels:"채널 선택",help:"파장 이용 안내",block:"프로필 차단",delete:"데이터 삭제",person:"상대 프로필",privateProfile:"교환용 프로필",privatePhotos:"교환용 사진"}[modal.kind]):"";
   return <div className="station-layout">
     <StationNavigation tab={tab} onGo={go} pending={signalCount}/>
     <main className="wrap station-content" id="station-content">
-    {net&&<div className="notice" role="status">{net}<button onClick={()=>{void refresh();if(thread)void readThread(thread);}}>다시 연결</button></div>}
+    {(net||threadError)&&<div className="notice" role="status">{net||threadError}<button onClick={()=>{void refresh();if(thread)void readThread(thread);}}>다시 연결</button></div>}
     {tab==="radar"&&<><button className="return-today" onClick={()=>go("today")}><I n="back" s={15}/>오늘</button><NearbyRadar station={s} sample={false} onProfile={id=>open({kind:"person",peer:id})} onJoin={()=>location.assign("./")} onSettings={async cell=>Boolean(await act(cell?"radar-enable":"radar-disable",cell?{...cell,consent:true,shareBearing:true}:{},true))}/></>}
     {visitedToday&&<div className="today-page" hidden={tab!=="today"}>
       <section className="letter-hero" aria-label={slotName+" 질문"}>
@@ -248,14 +303,14 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     {tab==="inbox"&&<section className="innerpage inbox-page">
       <div className="channel-heading"><h1>마음함</h1></div>
       <div className="seg">{(["received","sent"] as const).map(key=><button key={key} aria-pressed={inbox===key} className={inbox===key?"on":""} onClick={()=>setInbox(key)}>{key==="received"?"받은 신호 "+waiting.length:"보낸 신호 "+sent.length}</button>)}</div>
-      {shownSignals.length?<div className="listbox">{shownSignals.map(p=><ListPerson key={p.id} p={p} type={inbox==="received"?"received":"sent"}/>)}</div>:
+      {shownSignals.length?<div className="listbox">{shownSignals.map(p=><ListPerson key={p.id} p={p} station={s} busy={busy} onProfile={()=>open({kind:"person",peer:p.id})} onAction={()=>inbox==="received"?void deliver(p.id,""):signal(p)} type={inbox==="received"?"received":"sent"}/>)}</div>:
         <Blank icon="letter" title={inbox==="received"?"아직 받은 신호가 없어요":"아직 보낸 신호가 없어요"} body="" button="답변 둘러보기" onClick={()=>navigate("today","",true)}/>}
       {inbox==="received"&&waiting.length>0&&<small className="accept-note">수락할 때 신호 1회를 사용해요. 오늘 남은 신호 {available}회</small>}
       {error&&!modal&&<p className="error" role="alert">{error}</p>}
       <h2 className="inbox-chats">이어지는 대화</h2>
-      {matches.length?<div className="listbox">{matches.map(p=><ListPerson key={p.id} p={p} type="chat"/>)}</div>:<Blank icon="chat" title="아직 열린 대화가 없어요" body="서로 신호를 보내면 여기서 대화를 이어 갈 수 있어요."/>}
+      {matches.length?<div className="listbox">{matches.map(p=><ListPerson key={p.id} p={p} station={s} busy={busy} onProfile={()=>open({kind:"person",peer:p.id})} onAction={()=>startChat(p.id)} type="chat"/>)}</div>:<Blank icon="chat" title="아직 열린 대화가 없어요" body="서로 신호를 보내면 여기서 대화를 이어 갈 수 있어요."/>}
     </section>}
-    {tab==="chat"&&active&&validThread&&<section className="innerpage" key={thread}><div className="chatbox"><div className="chatheader"><button className="iconbtn" aria-label="대화 목록" onClick={()=>go("inbox")}><I n="back"/></button><button className="person" onClick={()=>open({kind:"person",peer:active.id})}><Art interest={active.interest}/><span><strong>{active.name}</strong><small>서로 신호를 보낸 회원</small></span></button><button className="quiet" onClick={()=>open({kind:"block",peer:active.id})}>차단</button></div><ChatExchange key={active.id} peer={active.id} name={active.name} lastMessage={lastMsg}/><div className="chatlog" onScroll={event=>{const log=event.currentTarget;followChat.current=log.scrollHeight-log.scrollTop-log.clientHeight<64;}}>{threadMessages.length===0?<div className="chatintro"><I n="wave" s={32}/><p>두 사람의 대화가 열렸어요.</p><small>오늘의 답변을 떠올리며 첫인사를 건네보세요.</small></div>:<>{threadMessages.length>=100&&<p className="chatnote">최근 메시지 100개</p>}{threadMessages.map(m=><div key={m.id} className={"bubbleline "+(m.src===me?.id?"mine":"")}><p>{m.body}</p><time>{fmtClock(m.at)}</time></div>)}</>}<div ref={bottom}/></div>{error&&!modal&&<p className="error">{error}</p>}<form className="composer" onSubmit={async e=>{e.preventDefault();if(!draft.trim())return;const ok=await act("message",{peer:thread,body:draft.trim(),id:crypto.randomUUID()});if(ok){draftByPeer.current.delete(thread);if(currentPeer.current===thread){setDraft("");followChat.current=true;void readThread(thread);}}}}><input maxLength={500} aria-label="메시지" placeholder="메시지를 입력하세요" value={draft} onChange={e=>{setDraft(e.target.value);draftByPeer.current.set(thread,e.target.value);}}/><button aria-label="메시지 보내기" disabled={busy||!draft.trim()}><I n="send" s={18}/></button></form></div></section>}
+    {tab==="chat"&&active&&validThread&&<section className="innerpage" key={thread}><div className="chatbox"><div className="chatheader"><button className="iconbtn" aria-label="대화 목록" onClick={()=>go("inbox")}><I n="back"/></button><button className="person" onClick={()=>open({kind:"person",peer:active.id})}><Art interest={active.interest}/><span><strong>{active.name}</strong><small>서로 신호를 보낸 회원</small></span></button><button className="quiet" onClick={()=>open({kind:"block",peer:active.id})}>차단</button></div><ChatExchange key={active.id} peer={active.id} name={active.name} lastMessage={lastMsg}/><div className="chatlog" onScroll={event=>{const log=event.currentTarget;followChat.current=log.scrollHeight-log.scrollTop-log.clientHeight<64;}}>{threadMessages.length===0?<div className="chatintro"><I n="wave" s={32}/><p>두 사람의 대화가 열렸어요.</p><small>오늘의 답변을 떠올리며 첫인사를 건네보세요.</small></div>:<>{threadMessages.length>=100&&<p className="chatnote">최근 메시지 100개</p>}{threadMessages.map(m=><div key={m.id} className={"bubbleline "+(m.src===me?.id?"mine":"")}><p>{m.body}</p><time>{fmtClock(m.at)}</time></div>)}</>}<div ref={bottom}/></div>{error&&!modal&&<p className="error">{error}</p>}<form className="composer" onSubmit={e=>{e.preventDefault();void sendMessage();}}><input maxLength={500} aria-label="메시지" placeholder="메시지를 입력하세요" value={draft} onChange={e=>{setDraft(e.target.value);draftByPeer.current.set(thread,e.target.value);}}/><button aria-label="메시지 보내기" disabled={busy||!draft.trim()}><I n="send" s={18}/></button></form></div></section>}
     {tab==="profile"&&<section className="station-account innerpage">
       <div className="channel-heading"><div className="pagetitle"><I n="user" s={27}/><h1>내 파장</h1></div></div>
       {me?<><section className="account-summary"><Art interest={me.interest} large/><div><h2>{me.name}</h2><p>{introDetails(me)}</p></div><button className="secondary small" onClick={()=>open({kind:"edit"})}>공개 소개 수정</button></section>

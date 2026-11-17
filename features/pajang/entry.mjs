@@ -1,4 +1,4 @@
-import {call, requireMember, showGate} from './member.mjs?v=3';
+import {call, requireMember, showGate} from './member.mjs?v=speed1';
 import {themeFor, interests} from './questions.mjs?v=rounds1';
 
 const $ = id => document.getElementById(id);
@@ -21,7 +21,7 @@ if (Object.hasOwn(destinations,next)) {
 // Keep the same document and masthead when a member finishes the entry step.
 let handoff;
 let leaveEntry=()=>{};
-function enterMain(destination = main) {
+function enterMain(destination = main, savedStation) {
   if (window.top !== window) { window.top.location.assign(destination.href); return; }
   if (handoff) return handoff;
   leaveEntry();
@@ -32,13 +32,13 @@ function enterMain(destination = main) {
     style.href='./station.css?v=letter1';
     const styled=new Promise((resolve,reject)=>{style.onload=resolve;style.onerror=reject;});
     document.querySelector('link[href*="shell.css"]').before(style);
-    const [{mountStation}]=await Promise.all([import('./load-station.mjs?v=letter1'),styled]);
+    const [{mountStation}]=await Promise.all([import('./load-station.mjs?v=speed1'),styled]);
     await mountStation(()=>{
       document.getElementById('entry-style').disabled=true;
       style.media='all';
       history.replaceState(null,'',destination.href);
       window.scrollTo(0,0);
-    });
+    },savedStation);
   })().catch(()=>location.replace(destination.href));
   return handoff;
 }
@@ -175,9 +175,9 @@ async function start(firstEntry) {
         });
       }
       const action = joiningOnly ? 'participate' : entry.joined ? 'answer' : 'join';
-      await call(action, data);
+      const saved=await call(action, data);
       updates?.postMessage('saved');
-      enterMain(joiningOnly ? feed : main);
+      enterMain(joiningOnly ? feed : main,saved);
     } catch (error) {
       status.textContent = error.message || '저장하지 못했어요. 다시 시도해 주세요.';
       if (error.code === 'PT409') await refresh();

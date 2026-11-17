@@ -29,24 +29,42 @@ function clientFixture(hash) {
       question:{...state.question,answers:['책을 골라요.','같이 걸어요.','커피를 마셔요.']}};
     if(mode==='new')state.me.body='';
     window.feedCalls=[];window.heldGender=null;window.releaseFeed=null;
+    const messages=[{id:'1',src:'peer1',dst:'me',body:'안녕하세요!',at:1}];
+    window.authCalls=0;window.artCalls=[];window.memberCalls=[];window.sendIds=[];
     const db={
-      auth:{getUser:async()=>({data:{user:mode==='guest'?null:{id:'member'}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
-      functions:{invoke:async()=>({data:{bucket:'fixture',files:{'station.js':'${hash}','radio.webp':'pending','book.webp':'pending'}}})},
+      auth:{getUser:async()=>{window.authCalls++;return {data:{user:mode==='guest'?null:{id:'member'}}};},
+        getSession:async()=>({data:{session:mode==='guest'?null:{user:{id:mode==='switched'?'next-member':'member'}}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
+      functions:{invoke:async()=>({data:{bucket:'fixture',files:{'station.js':'${hash}',...Object.fromEntries(['coffee','walk','vinyl','camera','book','tennis'].map(key=>[key+'.webp','pending']))}}})},
       storage:{from:()=>({download:async key=>{
         if(key.endsWith('station.js'))return {data:await (await fetch('/program')).blob()};
-        window.artPending=true;await new Promise(r=>window.addEventListener('finish-art',r,{once:true}));return {error:'fixture image unavailable'};
+        window.artCalls.push(key.split('/').pop());window.artPending=true;await new Promise(r=>window.addEventListener('finish-art',r,{once:true}));return {error:'fixture image unavailable'};
       }})},
       rpc:(name,p)=>{
         if(name==='pajang_member'){
+          window.memberCalls.push(p.p_action);
           if(p.p_action==='entry' && mode==='denied')return Promise.resolve({error:{code:'42501'}});
           if(p.p_action==='entry')return Promise.resolve({data:entry});
           if(p.p_action==='signal' && p.p_data.peer==='peer2'){
-            sessionStorage.accepted='yes';state.signals.push({src:'me',dst:'peer2'});state.remaining--;
+            return (async()=>{
+              if(window.holdSignal)await new Promise(r=>{window.releaseSignal=r;});
+              sessionStorage.accepted='yes';state.signals.push({src:'me',dst:'peer2'});state.remaining--;
+              return {data:structuredClone(state)};
+            })();
           }
           if(p.p_action==='thread'&&p.p_data.peer==='peer2')return Promise.resolve({data:[]});
-          if(p.p_action==='thread')return Promise.resolve({data:[{id:'1',src:'peer1',dst:'me',body:'안녕하세요!',at:1}]});
+          if(p.p_action==='thread'){
+            if(window.holdRead)return new Promise(resolve=>{window.releaseRead=()=>resolve({data:structuredClone(messages)});});
+            return Promise.resolve({data:structuredClone(messages)});
+          }
+          if(p.p_action==='message')return (async()=>{
+            const {peer,id,body}=p.p_data;window.sendIds.push(id);
+            if(!messages.some(m=>m.id===id))messages.push({src:'me',dst:peer,id,body,at:2});
+            if(window.failReply){window.failReply=false;return {error:{message:'연결이 끊겼어요.'}};}
+            if(window.holdWrite)await new Promise(r=>{window.releaseWrite=r;});
+            return {data:structuredClone(state)};
+          })();
           if(p.p_action==='participate'||p.p_action==='join'){sessionStorage.fixtureMode='member';entry.joined=true;}
-          return Promise.resolve({data:state});
+          return Promise.resolve({data:structuredClone(state)});
         }
         if(name==='pajang_my_answers')return Promise.resolve({data:[{...rows[0],body:'내 책방 답변'}]});
         if(name==='pajang_discovery_visibility')return Promise.resolve({data:{visible:false,hasGender:true}});
@@ -92,6 +110,8 @@ function clientFixture(hash) {
     await cards.nth(1).waitFor();
     assert.equal(await answers.getByRole('heading',{name:rows[0].question}).count(),1);
     assert.equal(await page.evaluate(()=>window.artPending),true,'feed is usable with all artwork still pending');
+    assert.equal(await page.evaluate(()=>window.authCalls),1);
+    assert.deepEqual(await page.evaluate(()=>window.artCalls.slice().sort()),['book.webp','walk.webp']);
     assert.deepEqual(await group.locator('label span').allTextContents(),['남','','여']);
     const dir=path.join(__dirname,'artifacts/pajang-discovery');
     await fs.mkdir(dir,{recursive:true});
@@ -179,6 +199,26 @@ function clientFixture(hash) {
     await page.getByText('안녕하세요!',{exact:true}).waitFor();
     assert.equal(await composer.inputValue(),'반가워요, 라온님.');
     await capture('chat-mobile');
+    const send=page.getByRole('button',{name:'메시지 보내기'});
+    await page.evaluate(()=>window.failReply=true);
+    await send.click();await page.getByText('연결이 끊겼어요.',{exact:true}).waitFor();
+    await page.evaluate(()=>window.holdWrite=true);
+    await send.click();await page.waitForFunction(()=>!!window.releaseWrite);
+    await composer.fill('다음에 쓰고 있던 문장');
+    await page.evaluate(()=>window.releaseWrite());
+    await page.getByText('반가워요, 라온님.',{exact:true}).waitFor();
+    assert.equal(await composer.inputValue(),'다음에 쓰고 있던 문장');
+    assert.equal(await page.locator('.bubbleline').filter({hasText:'반가워요, 라온님.'}).count(),1);
+    assert.equal(await page.evaluate(()=>window.sendIds.length===2&&new Set(window.sendIds).size===1),true);
+    await page.evaluate(()=>{window.holdRead=true;document.dispatchEvent(new Event('visibilitychange'));});
+    await page.waitForFunction(()=>!!window.releaseRead);
+    const before=await page.evaluate(()=>window.memberCalls.filter(x=>x==='thread').length);
+    await page.evaluate(()=>{for(let i=0;i<3;i++)document.dispatchEvent(new Event('visibilitychange'));});
+    assert.equal(await page.evaluate(()=>window.memberCalls.filter(x=>x==='thread').length),before);
+    await selectMenu('내 파장');
+    await page.evaluate(()=>{window.holdRead=false;window.releaseRead();});
+    await page.goBack();await composer.waitFor();
+    assert.equal(await composer.inputValue(),'다음에 쓰고 있던 문장');
     await page.reload();await page.getByText('안녕하세요!',{exact:true}).waitFor();
     await page.goBack();await page.getByRole('button',{name:'대화 열기'}).waitFor();
     await page.getByRole('button',{name:'수락하고 대화하기'}).click();
@@ -195,7 +235,9 @@ function clientFixture(hash) {
     await page.screenshot({path:path.join(dir,'pajang-profile-desktop.png'),animations:'disabled'});
     await selectMenu('오늘');await answers.waitFor();await capture('home-desktop');await mast.click();await page.waitForURL('**/world.html');
     await page.setViewportSize({width:390,height:844});
-    await page.evaluate(()=>{sessionStorage.fixtureMode='new';window.hostMarker='stay';});
+    await page.getByRole('button',{name:'파장 열기'}).click();
+    await page.waitForURL('**/station.html');await nav.waitFor();
+    await page.evaluate(()=>{sessionStorage.fixtureMode='new';});
     await page.goto(origin+'/world.html#pajang-radar');
     await page.evaluate(()=>{window.hostMarker='stay';});
     await page.getByRole('button',{name:'파장 열기'}).click();
@@ -211,6 +253,23 @@ function clientFixture(hash) {
     await page.getByRole('heading',{name:'내 파장'}).waitFor();
     assert.equal(await page.evaluate(()=>window.beforeJoin===document.querySelector('.pajang-mast')),true,'member entry preserves the document');
     assert.ok(page.url().includes('station.html?tab=profile'));
+    assert.equal(await page.evaluate(()=>window.memberCalls.filter(v=>v==='state').length),0,'join uses server response');
+    await page.evaluate(()=>{delete sessionStorage.accepted;});
+    await page.goto(origin+project+'station.html?tab=inbox');
+    await page.evaluate(()=>window.holdSignal=true);
+    await page.getByRole('button',{name:'수락하고 대화하기'}).click();
+    await page.waitForFunction(()=>!!window.releaseSignal);await selectMenu('내 파장');
+    const inboxLink=nav.getByRole('link',{name:'마음함',exact:true});
+    assert.equal(await inboxLink.getAttribute('aria-description'),'받은 신호 1개');
+    await page.evaluate(()=>window.releaseSignal());
+    await page.waitForFunction(()=>!document.querySelector('.station-nav [aria-description]'));
+    assert.ok(page.url().endsWith('tab=profile'),'a late acceptance leaves the selected page in place');
+    await page.getByText('내 책방 답변').waitFor();
+    await selectMenu('마음함');await page.locator('.listperson').filter({hasText:'유진'}).getByRole('button',{name:'대화 열기'}).waitFor();
+    assert.ok(!page.url().includes('chat='));
+    await page.evaluate(()=>{sessionStorage.fixtureMode='switched';});
+    await page.goto(origin+project+'station.html');await page.getByRole('button',{name:'다시 열기'}).waitFor();
+    assert.equal(await nav.count(),0,'a different auth session cannot mount the previous member state');
     for(const mode of ['guest','denied']){
       await page.evaluate(m=>{sessionStorage.fixtureMode=m;},mode);
       await page.goto(origin+project+'station.html');
@@ -218,6 +277,7 @@ function clientFixture(hash) {
       await expectHome();await mast.click();await page.waitForURL('**/world.html');
     }
     console.log('PASS three primary destinations, direct acceptance, scroll-stable home exit, modal exit, direct legacy routes, thread reload/back, join handoff, guest/denied returns and embedded focus restoration');
+    console.log('PASS single remote identity check, two requested illustrations out of six, zero rereads after join, delayed-send draft, retry identity, concurrent reads and late signal acceptance');
     assert.deepEqual(errors,[]);
     console.log('PASS 320/390/1080px layout, artwork-independent startup, tap/swipe/keyboard, delayed results, cancellation, in-memory revisit, and denial');
   } finally {await browser.close();}

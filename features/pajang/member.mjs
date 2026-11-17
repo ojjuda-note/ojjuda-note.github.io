@@ -1,3 +1,8 @@
+let verifiedUser;
+export async function sameMember(db) {
+  const {data,error}=await db.auth.getSession();
+  return !error && !!verifiedUser && data.session?.user?.id===verifiedUser && !data.session.user.is_anonymous;
+}
 export const client = () => window.OjjudaGetClient();
 export async function call(action, data = {}) {
   const db = await client();
@@ -22,8 +27,11 @@ export async function requireMember() {
     // The existing session is shared across Ojjuda pages. The RPC independently checks the caller.
     const {data:{user}}=await db.auth.getUser();
     if(!user||user.is_anonymous){showGate('로그인한 오쭈다 회원만 이용할 수 있어요.',true);return;}
+    verifiedUser=user.id;
     const {data:{subscription}}=db.auth.onAuthStateChange((_event,session)=>{
-      if(!session||session.user?.id!==user.id)location.reload();
+      if(!session||session.user?.id!==user.id||session.user.is_anonymous){
+        verifiedUser=undefined;showGate('회원 정보를 다시 확인하고 있어요.');location.reload();
+      }
     });
     window.addEventListener('pagehide',()=>subscription.unsubscribe(),{once:true});
     const entry=await call('entry');
