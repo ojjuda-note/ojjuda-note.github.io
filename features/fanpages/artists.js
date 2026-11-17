@@ -211,10 +211,10 @@ window.OJJUDA_FAN_ARTISTS = [
       { date: "2026-12-09", title: "2026 FNS 가요제 · 제2야", sub: "후지TV · 18:30~21:54(JST) 생방송 출연", href: "https://aespa-official.jp/news/fns02/" },
       { date: "2026-12-10", title: "KISS N TELL Happy Holiday · 사인회", sub: "일본 도쿄도 내 · 멤버 전원 참여 · 시간·장소는 당첨자 별도 안내 · 11.16~11.25 응모(JST)", href: "https://aespa-official.jp/news/happyholiday2026/" },
       { date: "2026-12-12", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 MUFG 스타디움(국립경기장) · 17:00 예정(JST)", href: "https://music-bank.jp/" },
-      { date: "2027-03-06", title: "2027 aespa 일본 돔 투어 · 도쿄 1회", sub: "도쿄돔 · 18:30(JST) 개연 · MY-J 선예매 2026.11.16~11.29(추첨)", href: "https://aespa-official.jp/news/dometour2027-fc/" },
-      { date: "2027-03-07", title: "2027 aespa 일본 돔 투어 · 도쿄 2회", sub: "도쿄돔 · 16:00(JST) 개연 · MY-J 선예매 2026.11.16~11.29(추첨)", href: "https://aespa-official.jp/news/dometour2027-fc/" },
-      { date: "2027-04-03", title: "2027 aespa 일본 돔 투어 · 오사카 1회", sub: "교세라돔 오사카 · 18:30(JST) 개연 · MY-J 선예매 2026.11.16~11.29(추첨)", href: "https://aespa-official.jp/news/dometour2027-fc/" },
-      { date: "2027-04-04", title: "2027 aespa 일본 돔 투어 · 오사카 2회", sub: "교세라돔 오사카 · 16:00(JST) 개연 · MY-J 선예매 2026.11.16~11.29(추첨)", href: "https://aespa-official.jp/news/dometour2027-fc/" }
+      { date: "2027-03-06", title: "2027 aespa 일본 돔 투어 · 도쿄 1회", sub: "도쿄돔 · 18:30(JST) 공연 시작 · MY-J 선예매 2026.11.16~11.29(추첨)", href: "https://aespa-official.jp/news/dometour2027-fc/" },
+      { date: "2027-03-07", title: "2027 aespa 일본 돔 투어 · 도쿄 2회", sub: "도쿄돔 · 16:00(JST) 공연 시작 · MY-J 선예매 2026.11.16~11.29(추첨)", href: "https://aespa-official.jp/news/dometour2027-fc/" },
+      { date: "2027-04-03", title: "2027 aespa 일본 돔 투어 · 오사카 1회", sub: "교세라돔 오사카 · 18:30(JST) 공연 시작 · MY-J 선예매 2026.11.16~11.29(추첨)", href: "https://aespa-official.jp/news/dometour2027-fc/" },
+      { date: "2027-04-04", title: "2027 aespa 일본 돔 투어 · 오사카 2회", sub: "교세라돔 오사카 · 16:00(JST) 공연 시작 · MY-J 선예매 2026.11.16~11.29(추첨)", href: "https://aespa-official.jp/news/dometour2027-fc/" }
     ],
     campaigns: [
       { kind: "콜라보", date: "2026.11.13", title: "Eartha Kitt × aespa · Santa Baby", sub: "원곡 보컬과 협업한 디지털 싱글 · Primary Wave Music / SM", href: "https://www.yna.co.kr/amp/view/AKR20261113047000005" },
