@@ -101,4 +101,46 @@ test('discovery filtering uses its own opt-in and keeps dated answers paginated 
     assert.equal(published.length,1);
     assert.equal(published[0].body,'수정한 답변');
   });
+
+  await t.test('owners can read every past answer while other members see only published answers',async()=>{
+    await db.exec(await migration('20261118012000_pajang_owner_answer_history.sql'));
+    await db.exec(await migration('20261118012000_pajang_owner_answer_history.sql'));
+    await db.query(`insert into pajang_private.answers(person,day,slot,at,body,question_prompt,archived)
+      values ($1,(now() at time zone 'Asia/Seoul')::date-1,'pm',101,'이전 답변','그때의 질문',false),
+        ($1,(now() at time zone 'Asia/Seoul')::date+1,'pm',102,'미래 답변','미래 질문',true)`,[writer]);
+    const readAll=async request=>{
+      const items=[];
+      let cursor=null;
+      do{
+        const page=await request(cursor);
+        items.push(...page.items);
+        cursor=page.nextCursor;
+      }while(cursor);
+      return items;
+    };
+    const board=cursor=>value('select public.pajang_answer_feed($1) as v',[cursor]);
+    const discovered=cursor=>feed('all',cursor);
+    assert.equal((await mine()).length,32);
+    assert.deepEqual((await mine()).find(row=>row.body==='이전 답변'),{
+      day:(await value("select ((now() at time zone 'Asia/Seoul')::date-1)::text as v")),
+      slot:'pm',question:'그때의 질문',body:'이전 답변'
+    });
+    for(const request of [board,discovered]){
+      const own=(await readAll(request)).filter(row=>row.peer===writer);
+      assert.equal(own.length,32);
+      assert.equal(new Set(own.map(row=>row.day+'/'+row.slot)).size,32);
+      assert.equal(own.some(row=>row.body==='미래 답변'),false);
+      assert.equal(own.find(row=>row.body==='이전 답변').question,'그때의 질문');
+    }
+    assert.equal((await value('select public.pajang_discovery_feed() as v')).total,33);
+    await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:stranger})]);
+    assert.equal((await mine()).length,1);
+    for(const request of [board,discovered]){
+      const others=(await readAll(request)).filter(row=>row.peer===writer);
+      assert.equal(others.length,30);
+      assert.equal(others.some(row=>['이전 답변','미래 답변','답변 30'].includes(row.body)),false);
+    }
+    await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:account,is_anonymous:true})]);
+    for(const request of [mine,()=>board(null),()=>discovered(null)])await assert.rejects(request,{code:'42501'});
+  });
 });
