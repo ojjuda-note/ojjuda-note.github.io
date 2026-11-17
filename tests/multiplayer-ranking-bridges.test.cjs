@@ -61,14 +61,15 @@ const tick=()=>new Promise(r=>setImmediate(r));
   }
   // Validate actual parent callback isolation and invalid stage rejection.
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false};
-  w.eval(read('games/spot-difference/world-spot-game.js'));const pictures=[];w.OjjudaSpotGame.open({onClear:async(stage,owner)=>pictures.push([stage,owner])});
+  w.eval(read('shared/games/puzzle-record-queue.js'));w.eval(read('games/spot-difference/world-spot-game.js'));
+  const pictures=[];w.OjjudaSpotGame.open({owner:'a',onClear:async(stage,owner,when)=>{assert.ok(Number.isFinite(Date.parse(when)));pictures.push([stage,owner]);return {ok:true};}});
   const sf=w.document.querySelector('iframe');
   const spot=(stage,source=sf.contentWindow,origin=w.location.origin)=>w.dispatchEvent(new w.MessageEvent('message',{source,origin,data:{type:'ojjuda:spot-clear',stage,owner:'a'}}));
   for(const invalid of [0,-1,183,153.5,'153',NaN,Infinity])spot(invalid);
   spot(153,w);spot(182,sf.contentWindow,'https://other.test');
   const validStages=[1,17,49,62,63,82,83,152,153,182];
   for(const stage of validStages)spot(stage);await tick();
-  assert.deepEqual(pictures,validStages.map(stage=>[stage,'a']),'only integer stages 1–182 from the same-origin game frame are accepted');
+  assert.deepEqual(pictures.sort((a,b)=>a[0]-b[0]),validStages.map(stage=>[stage,'a']),'only integer stages 1–182 from the same-origin game frame are accepted');
   console.log('PASS: territory win/loss/solo quit, multiplayer handoff and ranking exclusion, remaining-human results, stale results, duplicates/retries, paid six/ten-answer picture completion, partial finds, 182-stage bounds and cross-origin isolation');
  }finally{w.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

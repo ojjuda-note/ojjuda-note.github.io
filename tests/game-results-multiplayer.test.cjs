@@ -40,6 +40,7 @@ for(const game of iframeCompletions)for(const mode of ['guest','member','stale']
  w.OjjudaGuestAccess={finished:options=>finished.push(options)};
  w.OjjudaGameSession={create:({dispose})=>({enter:callback=>callback(),run:callback=>callback(),close:()=>{dispose();return true;}})};
  w.OjjudaSacheonseongRanking={game:stage=>Number.isInteger(stage)&&stage>=1&&stage<=15?'sacheonseong_'+stage:null};
+ if(game.name==='spot')w.eval(read('shared/games/puzzle-record-queue.js'));
  w.eval(read(game.file));w[game.api].open({owner:mode==='member'?guestRound:null,authorized:()=>allowed,onResult:async()=>({ok:true})});
  if(game.name==='sacheonseong')w.document.querySelector('.ge-primary').click();
  const frame=w.document.querySelector('iframe'),send=(data=game.message,source=frame.contentWindow,origin=w.location.origin)=>w.dispatchEvent(new w.MessageEvent('message',{data,source,origin}));

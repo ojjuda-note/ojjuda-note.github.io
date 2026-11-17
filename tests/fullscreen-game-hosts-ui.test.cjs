@@ -13,7 +13,7 @@ const insets = source => source.replace(/env\(safe-area-inset-(top|bottom|left|r
 const viewports = [{width:390,height:844},{width:1280,height:900},{width:844,height:390},{width:344,height:882},{width:673,height:841}];
 
 let world = read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '');
-const scripts = ['shared/viewport/mobile-viewport.js','shared/games/game-entry.js','shared/games/game-results.js','shared/games/multiplayer-entry.js','shared/games/game-session.js',
+const scripts = ['shared/viewport/mobile-viewport.js','shared/games/puzzle-record-queue.js','shared/games/game-entry.js','shared/games/game-results.js','shared/games/multiplayer-entry.js','shared/games/game-session.js',
   'games/ojjuda-tour/world-tour-game.js','games/bang/world-bang-game.js','games/mines/world-mines-game.js','games/spot-difference/world-spot-game.js','games/sacheonseong/world-sacheonseong-game.js'];
 world = world.replace('<script type="module">', () => scripts.map(file => `<script src="/${file}"></script>`).join('')+'<script type="module">');
 // Game-specific sheets normally load on demand. Keep their production cascade,

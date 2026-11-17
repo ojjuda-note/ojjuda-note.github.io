@@ -1,14 +1,14 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright'),root=path.join(__dirname,'..');
 // The shipped World module runs against delayed in-memory reads/RPCs only.
-const gameResults=fs.readFileSync(path.join(root,'shared/games/game-results.js'),'utf8');
-let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>/\bsrc=["']\/shared\/games\/game-results\.js(?:\?|["'])/.test(tag)?tag:'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
+const scoreScripts=['/shared/games/game-results.js','/shared/games/arcade-round-queue.js','/games/mole/ranking.js'];
+let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>scoreScripts.some(src=>tag.includes(src+'?'))?tag:'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
 const rewardJobs=new Map(),rewardTasks=new Map(),rewardResults=new Map(),rewardCalls=[];let rewardJobId=0,screwApi;const rewardNotices=[];addEventListener('ojjuda:game-record-saved',event=>rewardNotices.push(event.detail.owner));
 const rewardRequest=(kind,owner,args)=>{const id=++rewardJobId;rewardCalls.push({kind,owner,args});return new Promise((resolve,reject)=>rewardJobs.set(id,{kind,owner,resolve,reject}));};
 const settleRewardJob=async(id,data,failure)=>{const job=rewardJobs.get(id);if(!job)throw Error('Missing request '+id);rewardJobs.delete(id);if(failure==='reject')job.reject(Error('fixture failure'));else job.resolve({data,error:failure?Error('fixture query error'):null});await new Promise(resolve=>setTimeout(resolve,0));};
-S={rpc(kind,args){return rewardRequest(kind,D.user?.id,args);},from(table){if(table!=='user_private')throw Error('Unexpected table');let owner;const query={select(){return query;},eq(key,value){owner=value;return query;},maybeSingle(){return rewardRequest('quiz',owner);}};return query;}};
+S={rpc(kind,args){const promise=rewardRequest(kind,D.user?.id,args);promise.abortSignal=()=>promise;return promise;},from(table){if(table!=='user_private')throw Error('Unexpected table');let owner;const query={select(){return query;},eq(key,value){owner=value;return query;},maybeSingle(){return rewardRequest('quiz',owner);}};return query;}};
 // This fixture exercises purchases inside the game during its public closure.
 _r.screw.maintenance=null;
 const fakeGame=()=>({controls:'',draw(){},update(){},destroy(){}});
@@ -30,11 +30,11 @@ window.rewardTest={
 };
 `+world.slice(world.indexOf('</script>',boot));
 (async()=>{const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});try{
- async function fixture(kind){const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.route('**/*',route=>{const url=new URL(route.request().url());if(url.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});if(url.pathname==='/shared/games/game-results.js')return route.fulfill({contentType:'text/javascript',body:gameResults});return route.abort();});await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.rewardTest&&window.OjjudaGameResults);if(kind)await page.evaluate(kind=>rewardTest.prepare(kind),kind);return{page,errors,start:(kind,score)=>page.evaluate(args=>rewardTest.start(...args),[kind,score]),finish:(id,data,failure)=>page.evaluate(args=>rewardTest.finish(...args),[id,data,failure]),settle:(id,data,failure)=>page.evaluate(args=>rewardTest.settle(...args),[id,data,failure]),done:id=>page.evaluate(id=>rewardTest.done(id),id),pending:()=>page.evaluate(()=>rewardTest.pending()),snapshot:()=>page.evaluate(()=>rewardTest.snapshot()),switchAccount:(owner,coins,online=true)=>page.evaluate(args=>rewardTest.switchAccount(...args),[owner,coins,online]),close:async()=>{assert.deepEqual(errors,[]);await page.close();}};}
+ async function fixture(kind){const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.route('**/*',route=>{const url=new URL(route.request().url());if(url.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});if(scoreScripts.includes(url.pathname))return route.fulfill({path:path.join(root,url.pathname),contentType:'text/javascript'});return route.abort();});await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.rewardTest&&window.OjjudaGameResults&&window.OjjudaArcadeRoundQueue&&window.OjjudaMoleRanking);if(kind)await page.evaluate(kind=>rewardTest.prepare(kind),kind);return{page,errors,start:(kind,score)=>page.evaluate(args=>rewardTest.start(...args),[kind,score]),finish:(id,data,failure)=>page.evaluate(args=>rewardTest.finish(...args),[id,data,failure]),settle:(id,data,failure)=>page.evaluate(args=>rewardTest.settle(...args),[id,data,failure]),done:id=>page.evaluate(id=>rewardTest.done(id),id),pending:()=>page.evaluate(()=>rewardTest.pending()),snapshot:()=>page.evaluate(()=>rewardTest.snapshot()),switchAccount:(owner,coins,online=true)=>page.evaluate(args=>rewardTest.switchAccount(...args),[owner,coins,online]),close:async()=>{assert.deepEqual(errors,[]);await page.close();}};}
  const receipt={ok:true,coins:7,reward:1,best:150,rank:2,stage:1,count:3,extra_moves:9,price:1};
  // A score result awaits a monthly leader before saving, then another after saving.
  // Release each RPC separately; waiting for S2 while its next RPC is held deadlocks.
- async function startResult(f,score=150){const task=await f.start('result',score),before=(await f.pending()).find(job=>job.id===task);assert.equal(before.kind,'community_game_monthly_ranking');assert.equal(before.owner,'owner-a');await f.settle(before.id,[{score:100,me:false}]);const submit=(await f.pending()).find(job=>job.id>task&&job.kind==='submit_score');assert.ok(submit,'the pre-save leader lookup continues to the score submission');assert.equal(submit.owner,'owner-a');return{task,submit:submit.id};}
+ async function startResult(f,score=150){const task=await f.start('result',score),before=(await f.pending()).find(job=>job.id===task);assert.equal(before.kind,'community_game_monthly_ranking');assert.equal(before.owner,'owner-a');await f.settle(before.id,[{score:4100,me:false}]);const submit=(await f.pending()).find(job=>job.id>task&&job.kind==='submit_arcade_round');assert.ok(submit,'the pre-save leader lookup continues to the score submission');assert.equal(submit.owner,'owner-a');const {args}=(await f.page.evaluate(()=>rewardTest.calls())).at(-1);assert.equal(args.p_score,4000+score);assert.equal(args.p_expected_owner,'owner-a');assert.match(args.p_round_id,/^[0-9a-f-]{36}$/i);return{task,submit:submit.id};}
  for(const kind of ['quiz','daily','score','screw'])for(const mode of ['switch','logout','reject','query']){
   const f=await fixture(kind),id=await f.start(kind);assert.equal((await f.page.evaluate(()=>rewardTest.pending()))[0].owner,'owner-a');await f.switchAccount(mode==='logout'?null:'owner-b',900,mode!=='logout');const before=await f.snapshot(),result=await f.finish(id,receipt,['reject','query'].includes(mode)?mode:undefined);assert.deepEqual(await f.snapshot(),before,kind+' stale '+mode+' response never changes the new model, controls or notices');
   assert.deepEqual(await f.page.evaluate(()=>rewardTest.notices()),[],'stale scores never announce a refresh for the new account');
@@ -77,15 +77,15 @@ window.rewardTest={
  {
   const f=await fixture('result'),old=await startResult(f);await f.page.evaluate(()=>rewardTest.restart());const latest=await startResult(f,999);
   await f.settle(latest.submit,{...receipt,coins:800,best:999});const ranking=(await f.pending()).find(job=>job.id>latest.submit&&job.kind==='community_game_monthly_ranking');assert.ok(ranking);
-  await f.settle(ranking.id,[{score:999,me:true}]);await f.done(latest.task);const before=await f.snapshot(),callsBefore=await f.page.evaluate(()=>rewardTest.calls());
-  assert.equal(before.metric,'3×3 · 999점 · 이번 달 1등');assert.equal(before.outcome,'record');assert.equal(before.coins,800);
+  await f.settle(ranking.id,[{score:4999,me:true}]);await f.done(latest.task);const before=await f.snapshot(),callsBefore=await f.page.evaluate(()=>rewardTest.calls());
+  assert.equal(before.metric,'3×3 · 999점 · 이번 달 1등');assert.equal(before.outcome,'record');assert.equal(before.coins,111,'personal score receipts never update the wallet');
   await f.settle(old.submit,{...receipt,best:1});await f.done(old.task);assert.deepEqual(await f.snapshot(),before,'a result from before restart cannot replace the new result');assert.deepEqual(await f.page.evaluate(()=>rewardTest.calls()),callsBefore,'the stale result never requests ranking again');await f.close();
  }
  {
   const f=await fixture('result'),{task,submit}=await startResult(f);await f.settle(submit,receipt);
   const ranking=(await f.pending()).find(job=>job.id>submit&&job.kind==='community_game_monthly_ranking');assert.ok(ranking);
   await f.switchAccount('owner-b',900);const before=await f.snapshot(),callsBefore=await f.page.evaluate(()=>rewardTest.calls());
-  await f.settle(ranking.id,[{score:150,me:true}]);await f.done(task);assert.deepEqual(await f.snapshot(),before,'a late monthly ranking response cannot enter the new account view');assert.deepEqual(await f.page.evaluate(()=>rewardTest.calls()),callsBefore);await f.close();
+  await f.settle(ranking.id,[{score:4150,me:true}]);await f.done(task);assert.deepEqual(await f.snapshot(),before,'a late monthly ranking response cannot enter the new account view');assert.deepEqual(await f.page.evaluate(()=>rewardTest.calls()),callsBefore);await f.close();
  }
  // Preserve current score storage and the separate screw-mode result keys.
  for(const key of ['screw_box','screw_flat']){

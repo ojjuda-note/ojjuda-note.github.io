@@ -130,6 +130,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
           await page.locator('.modal').evaluate(node => node.scrollTop = node.scrollHeight);
           await assertInside(page, page.locator('#modal-save'), area, 'world modal save');
           await page.evaluate(() => document.querySelector('#modal-root').innerHTML='');
+          await page.addScriptTag({content:read('shared/games/puzzle-record-queue.js')});
           await page.addScriptTag({content:read('games/spot-difference/world-spot-game.js')});
           await page.evaluate(() => OjjudaSpotGame.open());
           const frame = await page.locator('.spot-game-dialog iframe').boundingBox();
