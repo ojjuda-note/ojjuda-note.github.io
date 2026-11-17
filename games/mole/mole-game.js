@@ -108,7 +108,7 @@
     oval(c,42,47,13,13,remaining<8?'#F2C2AA':'#D4E6CC');c.strokeStyle=remaining<8?'#B65A45':'#638965';c.lineWidth=2;c.beginPath();c.arc(42,47,8,0,TAU);c.moveTo(42,41);c.lineTo(42,47);c.lineTo(47,49);c.stroke();
     star(c,228,47,12,'#E7B352');star(c,228,46,9,'#FFD47D');
     c.fillStyle='#8C9078';c.font=`10px ${FONT}`;c.fillText('남은 시간',104,32);c.fillText('점수',290,32);
-    c.fillStyle=remaining<8?'#B65A45':'#3D644C';c.font=`26px ${FONT}`;c.fillText(Math.ceil(Math.max(0,remaining))+'초',104,63);c.fillStyle='#755C42';c.fillText(score+'점',290,63);
+    c.fillStyle=remaining<8?'#B65A45':'#3D644C';c.font=`26px ${FONT}`;c.fillText(Math.ceil(Math.max(0,remaining))+'초',104,63);c.fillStyle='#755C42';c.fillText((window.OjjudaScoreFormat?.(score)??score)+'점',290,63);
     c.fillStyle='#6E9A6540';round(c,20,91,320,7,4);c.fill();const width=320*Math.max(0,remaining)/30;if(width){c.fillStyle=remaining<8?'#DD8C73':'#759E70';round(c,20,91,width,7,Math.min(4,width/2));c.fill();}
     c.restore();
   }
@@ -149,16 +149,6 @@
       x:layout.left+(i%size)*layout.dx,y:layout.top+Math.floor(i/size)*layout.dy,
       scale:3/size,on:false,t:0,dur:1,kind:'m',hit:0
     }));
-  }
-  // Legacy 3×3 scores stay unchanged; encoded tiers make larger boards rank first.
-  function rankingScore(size,points){
-    const grid=normalizeSize(size),earned=Math.max(0,Math.min(999,Math.trunc(Number(points)||0)));
-    return earned?(grid-3)*1000+earned:0;
-  }
-  function rankingRecord(value){
-    const total=Math.max(0,Math.trunc(Number(value)||0));
-    const grid=Math.min(6,3+Math.floor(total/1000));
-    return {grid,points:total-(grid-3)*1000};
   }
   function create(api,gridSize=3){
     const size=normalizeSize(gridSize),board=holes(size),reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||false;
@@ -201,5 +191,5 @@
   function drawPreview(c,size=3){const board=holes(size);for(let i=0;i<MOLE_KINDS.length;i++)Object.assign(board[i],{on:true,t:.5,dur:9,kind:MOLE_KINDS[i]});draw(c,board,30,0,[],null,0,true,true);}
   function soundIcon(value){const muted=value==='🔇';return `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/>${muted?'<path d="m17 9 5 6m0-6-5 6"/>':'<path d="M17 8c3 2 3 6 0 8m2-11c5 4 5 10 0 14"/>'}</svg>`;}
   function hammerIcon(){return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m11 10 7 9" stroke="#AE8250" stroke-width="4" stroke-linecap="round"/><rect x="4" y="3" width="14" height="8" rx="3" transform="rotate(-30 11 7)" fill="#D78B75"/><path d="m9 3 4 7" stroke="#F9DBC0" stroke-width="2"/></svg>';}
-  window.OjjudaMoleGame={create,drawPreview,soundIcon,hammerIcon,rankingScore,rankingRecord,kinds:MOLE_KINDS};
+  window.OjjudaMoleGame={create,drawPreview,soundIcon,hammerIcon,...window.OjjudaMoleRanking,kinds:MOLE_KINDS};
 })();
