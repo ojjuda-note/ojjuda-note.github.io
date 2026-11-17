@@ -202,7 +202,7 @@ function paintRecord(target,id,game,top,period='이번 달'){
  }
  if(detail)labelGame(name.querySelector('button')||name,game,detail);
  const exact=value;
- if(game.unit==='점'&&points!=null&&window.OjjudaScoreFormat)value=window.OjjudaScoreFormat(points)+'점';
+ if((game.unit==='점'||game.unit==='G')&&points!=null&&window.OjjudaScoreFormat)value=window.OjjudaScoreFormat(points)+game.unit;
  score.replaceChildren(el('span',value,'board-score-value'));score.title=exact;
 }
 function fitRecords(targets,token){
