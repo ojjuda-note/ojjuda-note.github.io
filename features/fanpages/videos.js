@@ -1,6 +1,7 @@
 /* Official artist, label and broadcaster uploads. YouTube hosts all videos and thumbnails. */
 window.OJJUDA_FAN_VIDEOS = Object.freeze({
   rescene: [
+    { id: 'xQWsswKhrQo', title: 'With · 인기가요 11.15', kind: '음악방송 무대', source: 'SBSKPOP X INKIGAYO · 2026.11.15' },
     { id: 'LSOE3OKjybs', title: 'MMA2026 · With + Deja Vu + LOVE ATTACK', kind: '공식 시상식 무대', source: '멜론 Melon · 2026.11.14' },
     { id: '5zqZvkkkJ2E', title: 'With · 인기가요 11.08', kind: '음악방송 무대', source: 'SBSKPOP X INKIGAYO · 2026.11.08' },
     { id: 'EEMdvAl21pQ', title: 'With · 쇼챔피언 11.11', kind: '음악방송 무대', source: 'MBC M / ALL THE K-POP · 2026.11.11' },

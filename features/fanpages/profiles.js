@@ -4,12 +4,13 @@
 const a2oMember = (name, source) => ({ name, birthday: null, height: null, hometown: '', school: '', note: 'A2O', source });
 window.OJJUDA_FAN_PROFILES = {
   rescene: {
-    checkedAt: '2026.11.15',
+    checkedAt: '2026.11.17',
     debut: '2024.03.26', debutWork: 'Re:Scene · UhUh',
     agency: 'THE MUZE Entertainment',
     concept: '향기로 다시 떠오르는 장면, RESCENE.',
     heightSource: 'https://kpopdiscover.com/en/groups/rescene/',
     awards: [
+      { year: '2026.11', title: 'SBS 인기가요 1위', detail: 'With · 2026.11.15 · 7,361점 · 음악방송 4관왕', href: 'https://www.soompi.com/article/1887262wpp/watch-rescene-snags-4th-win-for-with-on-inkigayo-performances-by-bestie-ateez-nct-dream-and-more' },
       { year: '2026.11', title: 'MMA2026 3관왕', detail: '글로벌 TOP10 · 카카오뱅크 모두의 스타 · 핫트렌드 (11.14)', href: 'https://www.xportsnews.com/article/2219598' },
       { year: '2026.11', title: 'MBC 쇼! 음악중심 1위', detail: 'With · 2026.11.14 · 8,473점', href: 'https://www.soompi.com/article/1886997wpp/watch-rescene-takes-3rd-win-for-with-on-music-core-performances-by-bestie-ateez-nct-dream-and-more' },
       { year: '2026.11', title: 'SBS M 더쇼 1위', detail: 'With · 2026.11.10', href: 'https://www.soompi.com/article/1885603wpp/watch-rescene-takes-1st-win-for-with-on-the-show' },

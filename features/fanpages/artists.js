@@ -69,7 +69,6 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "SCENEDROME", date: "2024.08.27", type: "미니 1집", songs: ["LOVE ATTACK", "Pinball"], href: "https://en.themuze.kr/scenedrome" }
     ],
     appearances: [
-      { date: "2026-11-15", title: "SBS 인기가요", sub: "15:15 생방송 · RESCENE 출연", href: "https://programs.sbs.co.kr/enter/gayo/main" },
       { date: "2026-11-24", title: "멜론 STAGE 99 팬밋업", sub: "서울 마포구 무신사 개러지 · 추첨 초청 560명 · 응모 종료", href: "https://www.asiae.co.kr/article/2026110409590132572" },
       { date: "2026-11-29", title: "후즈팬 PULSE 대면·영상통화 팬사인회", sub: "대면 14:00 · 장소 및 영상통화 참여 개별 안내 · 응모 종료", href: "https://whosfanstore.zendesk.com/hc/ko/articles/63913860664217--%EB%8B%B9%EC%B2%A8%EC%9E%90-%EB%B0%9C%ED%91%9C-RESCENE-%EB%A6%AC%EC%84%BC%EB%8A%90-4th-Mini-Album-PULSE-%EB%8C%80%EB%A9%B4-%EA%B0%9C%EC%9D%B8-%EC%98%81%EC%83%81%ED%86%B5%ED%99%94-%ED%8C%AC%EC%82%AC%EC%9D%B8%ED%9A%8C-11-29-%EC%9D%B4%EB%B2%A4%ED%8A%B8" },
       { date: "2026-11-20", title: "2026 MAMA AWARDS", sub: "일본 오사카 · CHAPTER 1", href: "https://www.cj.net/jp/press-release/view/1132" },
@@ -90,6 +89,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 스케줄", sub: "Mnet Plus · 최신 일정", href: "https://artist.mnetplus.world/main/stg/rescene-official/schedule/2026/11" }
     ],
     news: [
+      { date: "11.15", tag: "수상", title: "〈인기가요〉 ‘With’ 1위 · 음악방송 4관왕", href: "https://www.soompi.com/article/1887262wpp/watch-rescene-snags-4th-win-for-with-on-inkigayo-performances-by-bestie-ateez-nct-dream-and-more" },
       { date: "11.14", tag: "수상", title: "MMA2026 글로벌 TOP10·모두의 스타·핫트렌드 3관왕", href: "https://www.xportsnews.com/article/2219598" },
       { date: "11.14", tag: "수상", title: "〈쇼! 음악중심〉 ‘With’ 1위", href: "https://www.soompi.com/article/1886997wpp/watch-rescene-takes-3rd-win-for-with-on-music-core-performances-by-bestie-ateez-nct-dream-and-more" },
       { date: "11.11", tag: "수상", title: "〈쇼챔피언〉 ‘With’ 1위", href: "https://www.soompi.com/article/1886056wpp/watch-rescene-takes-2nd-win-for-with-on-show-champion-performances-by-p1harmony-xlov-and-more" },
