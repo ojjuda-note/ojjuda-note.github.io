@@ -148,15 +148,16 @@ button:focus-visible{outline:1px dotted #000;outline-offset:-5px}
     <symbol id="i-dig" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" fill="#c0c0c0" stroke="#808080" stroke-width="2"/><path d="M4 4h16M4 4v16" stroke="#fff" stroke-width="2"/></symbol>
   </defs>
 </svg>
-<script src="./rules.js?v=20261022-ranks1"></script>
-<script src="./entry.js?v=20261113-game-popup-order1"></script>
+<script src="./rules.js?v=20261117-arcade-score-repair1"></script>
+<script src="/shared/games/puzzle-record-queue.js?v=20261117-arcade-score-repair1"></script>
+<script src="./entry.js?v=20261117-arcade-score-repair1"></script>
 <script>
 (()=>{
 const $=s=>document.querySelector(s);
 const LEVELS=[{name:'바보',c:6,r:6,m:3},{name:'초보',c:8,r:8,m:8},{name:'기본',c:9,r:9,m:10},{name:'하급',c:12,r:12,m:20},{name:'중급',c:16,r:16,m:40},{name:'고급',c:30,r:16,m:99},{name:'천재',c:30,r:32,m:198},{name:'외계인',c:60,r:32,m:396}];
 $('#menu').innerHTML=LEVELS.map((l,i)=>`<button role="tab" data-d="${i}">${l.name}</button>`).join('')+'<button role="tab" data-d="8">커스텀</button>';
 const pad=(n,w=3)=>n<0?'-'+String(Math.min(10**(w-1)-1,-n)).padStart(w-1,'0'):String(Math.min(10**w-1,n)).padStart(w,'0');
-const mw=()=>Math.max(3,String(L.m).length),tp=n=>pad(n,n>999?4:3);
+const mw=()=>Math.max(3,String(L.m).length),tp=n=>String(n).padStart(3,'0');
 let save=window.OjjudaMinesRules.progress(null);
 const ckey=()=>`${L.c}x${L.r}x${L.m}`;
 const getBest=()=>save.d===8?(save.cb[ckey()]??null):save.best[save.d];

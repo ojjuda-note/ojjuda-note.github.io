@@ -10,7 +10,7 @@
       const dialog = document.createElement('dialog');
       dialog.className = 'tour-game-dialog mines-game-dialog arcade-game-view';
       dialog.setAttribute('aria-label', '지뢰찾기 · 전체이용');
-     dialog.innerHTML = '<header class="tour-game-header"><button type="button" class="arcade-return">← 오쭈다 오락실</button><span>지뢰찾기 · 전체이용</span></header><iframe title="지뢰찾기" src="/games/mines/index.html?v=20261113-game-popup-order1" allow="autoplay; fullscreen; web-share; clipboard-write"></iframe>';
+     dialog.innerHTML = '<header class="tour-game-header"><button type="button" class="arcade-return">← 오쭈다 오락실</button><span>지뢰찾기 · 전체이용</span></header><iframe title="지뢰찾기" src="/games/mines/index.html?v=20261117-arcade-score-repair1" allow="autoplay; fullscreen; web-share; clipboard-write"></iframe>';
       const frame = dialog.querySelector('iframe');
       const records = new Map(), baselines = new Map();
       let leaderFlight = null;
@@ -44,11 +44,10 @@
         if(!baselines.has(runId))baselines.set(runId,{difficulty,leader:readLeader()});
         if(baselines.size>40)baselines.delete(baselines.keys().next().value);
       }
-      function comparison(before,after,difficulty,seconds,score) {
-        // The encoded ranking caps at 10,000 seconds, so it cannot prove an
-        // exact time difference at that boundary.
-        if(!before||!after||before.month!==after.month||before.record.difficulty!==difficulty||after.record.difficulty!==difficulty||before.record.seconds>=10000||after.record.seconds>=10000||seconds>=10000)return null;
-        if(score>before.score&&after.score===score&&after.me)return {outcome:'record',encouragement:'월간 1등 기록을 넘었어요!'};
+      function comparison(before,after,difficulty,seconds) {
+        if(!before||!after||before.month!==after.month||before.record.difficulty!==difficulty||
+          after.record.difficulty!==difficulty||before.record.seconds===null||after.record.seconds===null)return null;
+        if(seconds<before.record.seconds&&after.record.seconds===seconds&&after.me)return {outcome:'record',encouragement:'월간 1등 기록을 넘었어요!'};
         const difference=seconds-after.record.seconds;
         if(difference>0)return {outcome:'success',encouragement:`1등 기록까지 ${difference}초 · 조금만 더 빠르게!`};
         if(difference===0)return {outcome:'success',encouragement:'1등 기록과 같은 시간이에요!'};
@@ -60,7 +59,8 @@
         }
         const {runId, difficulty, seconds, completed} = message;
         const score = window.OjjudaMinesRules.score(difficulty, seconds);
-        if (completed !== true || score === null || message.score !== score ||
+        const legacySlow = seconds >= 10000 && message.score === (difficulty + 1) * 10000;
+        if (completed !== true || score === null || (message.score !== score && !legacySlow) ||
             typeof runId !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(runId)) return;
         let pending = records.get(runId);
         if (pending && pending.score !== score) return;
@@ -69,10 +69,10 @@
           const baseline=baselines.get(runId);
           pending = {score, promise:Promise.resolve().then(async() => {
             const before=await baseline?.leader;
-            const saved=authorized() && typeof onScore==='function' ? await onScore(score,runId) : {ok:false};
+            const saved=authorized() && typeof onScore==='function' ? await onScore(score,runId,message.completedAt||new Date(Date.now()).toISOString()) : {ok:false};
             if(!saved?.ok)return {ok:false};
-            const after=before?.record.difficulty===difficulty&&before.record.seconds<10000&&seconds<10000?await readLeader():null;
-            return {ok:true,comparison:comparison(before,after,difficulty,seconds,score)};
+            const after=before?.record.difficulty===difficulty&&before.record.seconds!==null?await readLeader():null;
+            return {ok:true,comparison:comparison(before,after,difficulty,seconds)};
           }).catch(() => ({ok:false}))};
           records.set(runId, pending);
         }
