@@ -22460,6 +22460,69 @@
         "정읍",
         "생활체육"
       ]
+    },
+    {
+      "category": "sport",
+      "section": "sports",
+      "region": "전북",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "sourceCheckedAt": "2026-11-18",
+      "status": "scheduled",
+      "id": "sunchang-jangryu-tennis-20261129",
+      "title": "2026 순창장류배 전북 동호인 테니스대회",
+      "sportType": "테니스",
+      "start": "2026-11-29",
+      "end": "2026-11-29",
+      "city": "순창군",
+      "venue": "장소 미정",
+      "address": "",
+      "locationStatus": "undecided",
+      "summary": "전북 동호인 대상 순창장류배 테니스대회. 남자 은·동배부 복식 종목을 진행합니다.",
+      "scheduleNote": "11월 29일 09:00 남자 은·동배부 경기. 선수 참가 신청은 11월 25일까지입니다.",
+      "priceNote": "선수 참가비·일반 관람료 미공개. 공식 대회요강 확인 필요.",
+      "accessNote": "선수 참가 신청은 전북특별자치도테니스협회 공식 홈페이지에서 진행합니다. 일반 관람 가능 여부·예매 조건 미공개.",
+      "sourceUrl": "https://www.jbsta.com/page/dae_main.php?bo_table=schedule&wr_id=1191",
+      "sourceName": "전북특별자치도테니스협회 공식 대회일정",
+      "tags": [
+        "테니스",
+        "순창",
+        "동호인",
+        "생활체육"
+      ]
+    },
+    {
+      "category": "sport",
+      "section": "sports",
+      "region": "전북",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "sourceCheckedAt": "2026-11-18",
+      "status": "scheduled",
+      "id": "jeonbuk-tennis-association-club-cup-20261205",
+      "title": "제54회 전북특별자치도협회장기 클럽 대항 테니스대회",
+      "sportType": "테니스",
+      "start": "2026-12-05",
+      "end": "2026-12-06",
+      "city": "미정",
+      "venue": "장소 미정",
+      "address": "",
+      "locationStatus": "undecided",
+      "summary": "전북특별자치도테니스협회 주최 클럽 대항 테니스대회. 여자단체전 및 남자 금·은·동배부 단체전을 운영합니다.",
+      "scheduleNote": "12월 5일 09:00 여자 단체전·남자 은배부, 12월 6일 09:00 남자 금배부·동배부. 참가 신청은 12월 3일까지입니다.",
+      "priceNote": "선수 참가비·일반 관람료 미공개. 공식 대회요강 확인 필요.",
+      "accessNote": "선수 참가 신청은 전북특별자치도테니스협회 공식 홈페이지에서 진행합니다. 일반 관람 가능 여부·예매 조건 미공개.",
+      "sourceUrl": "https://www.jbsta.com/page/dae_main.php?bo_table=schedule&wr_id=1192",
+      "sourceName": "전북특별자치도테니스협회 공식 대회일정",
+      "tags": [
+        "테니스",
+        "클럽",
+        "단체전",
+        "생활체육",
+        "전북"
+      ]
     }
   ]
 }
