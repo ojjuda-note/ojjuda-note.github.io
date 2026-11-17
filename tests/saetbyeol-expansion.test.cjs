@@ -16,7 +16,6 @@ try{
   f.save();x.tick(600);
   const finalRecord=x.messages.find(message=>message.data.type==='ojjuda-game-result');
   assert.equal(finalRecord.data.score,57680,'all 200 completed upgrades are included in the submitted score');
-  assert.ok(finalRecord.data.score<=60000,'fully grown scores remain inside the ranking limit');
   assert.equal(Object.values(f.parents).filter(p=>p===null).length,130);
   for(let branch=0;branch<5;branch++){
     assert.equal(f.upgrades.filter(u=>u.b===branch).length,240);

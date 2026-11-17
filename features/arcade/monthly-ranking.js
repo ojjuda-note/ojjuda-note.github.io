@@ -36,7 +36,8 @@
    const grid=Math.min(6,3+Math.floor(score/1000));
    return number(score-(grid-3)*1000)+'점';
   }
-  return number(record.score)+(byId.get(id)?.unit||'점');
+  const unit=byId.get(id)?.unit||'점';
+  return (unit==='점'&&window.OjjudaScoreFormat?window.OjjudaScoreFormat(score):number(record.score))+unit;
  }
  function describe(record,id){
   const detail=[];
@@ -72,6 +73,7 @@
   const detail=describe(record,game);
   if(detail){const small=document.createElement('small');small.textContent=detail;who.append(small);}
   const points=document.createElement('span');points.className='rank-points';points.textContent=formatScore(record,game);
+  if(byId.get(game)?.unit==='점'&&game!=='mole')points.title=number(record.score)+'점';
   li.append(position,who,points);return li;
  }
  function guestToken(){

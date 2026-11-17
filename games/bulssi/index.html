@@ -139,7 +139,7 @@ body[data-world^="life"] #biomeMeter{border-color:var(--biome-edge);box-shadow:0
     <button id="starGrowth" class="ge-secondary" type="button" disabled>성장 · 강화</button>
 
     <span id="starEntryHint" class="ge-hint" role="status">게임을 연결하고 있어요…</span>
-    <details class="ge-more"><summary>게임 방법 · 순위 기준</summary><p>화면을 손가락으로 끌거나 마우스를 움직여 천체를 태워요. 모은 빛과 금속으로 별자리의 가지를 강화해요. 현재 단계의 다섯 영역 강화를 모두 마치면 보스 도전이 열리고, 보스를 잡으면 다음 별로 진화해요.</p><p>열·화력·범위·수확·특수를 골고루 키워요. 1챕터 엔딩을 보면 2챕터가 열리고, 각 챕터 보스를 이겨야 다음 챕터를 선택할 수 있어요. 원래 성장 200개와 새 생명 성장 1,000개가 같은 저장 기록으로 이어져요.</p><p>생명 챕터에서는 빛·물·바람으로 세포를 키우고, 그림자 악당이 나타나면 직접 터치해 터뜨려요. 챕터별 성장 20개 전에는 아주 드물게, 200개를 키우면 2초마다 나타나요. 악당의 공격을 피하고 생명력도 모아 보세요.</p><p>1챕터의 오른쪽 위 부스터는 3ZU를 사용해 시간을 5초 늘리고 그 판의 운석과 별을 2배로 늘려요. 다시 쓰면 시간은 5초 더 늘며 천체 수는 2배로 유지돼요. 시간 결정의 8초 한도와는 별도예요.</p><p>기존 샛별 성장 점수의 순위 기준은 유지해요. 새 차원의 생명 성장은 이어서 저장되며 기존 월간 순위에는 더하지 않아요. <span id="starDemoNotice" hidden>관리자용 풀 업그레이드 체험은 순위에 기록되지 않아요.</span></p></details>
+    <details class="ge-more"><summary>게임 방법 · 순위 기준</summary><p>화면을 손가락으로 끌거나 마우스를 움직여 천체를 태워요. 모은 빛과 금속으로 별자리의 가지를 강화해요. 현재 단계의 다섯 영역 강화를 모두 마치면 보스 도전이 열리고, 보스를 잡으면 다음 별로 진화해요.</p><p>열·화력·범위·수확·특수를 골고루 키워요. 1챕터 엔딩을 보면 2챕터가 열리고, 각 챕터 보스를 이겨야 다음 챕터를 선택할 수 있어요. 원래 성장 200개와 새 생명 성장 1,000개가 같은 저장 기록으로 이어져요.</p><p>생명 챕터에서는 빛·물·바람으로 세포를 키우고, 그림자 악당이 나타나면 직접 터치해 터뜨려요. 챕터별 성장 20개 전에는 아주 드물게, 200개를 키우면 2초마다 나타나요. 악당의 공격을 피하고 생명력도 모아 보세요.</p><p>1챕터의 오른쪽 위 부스터는 3ZU를 사용해 시간을 5초 늘리고 그 판의 운석과 별을 2배로 늘려요. 다시 쓰면 시간은 5초 더 늘며 천체 수는 2배로 유지돼요. 시간 결정의 8초 한도와는 별도예요.</p><p>모든 챕터의 진화·강화·기억 수집이 성장 점수에 반영돼요. 2챕터부터 일반 탐험에서 먹이를 하나 모을 때마다 1점씩 올라요. 마지막 엔딩을 본 뒤에도 계속 쌓여요. <span id="starDemoNotice" hidden>관리자용 풀 업그레이드 체험은 순위에 기록되지 않아요.</span></p></details>
     <details id="starRankingDetails" class="ge-more"><summary>오늘의 순위</summary><ol id="starRanking" class="star-ranking"></ol></details>
   </section>
 </main>
@@ -170,7 +170,8 @@ body[data-world^="life"] #biomeMeter{border-color:var(--biome-edge);box-shadow:0
   </div>
 </section>
 <div id="overlay" role="dialog" aria-live="polite"><div id="ovText"></div><div id="ovBtns"></div><a class="monthly-bulssi-link monthly-bulssi-overlay" href="/features/arcade/monthly-ranking.html?game=saetbyeol" target="_blank" rel="noopener noreferrer">🏆 이번 달 순위 · 내 기록</a><div id="ovHint">눌러서 계속</div></div>
-<script src="./entry.js?v=20261113-game-popup-order1"></script>
+<script src="/shared/games/score-format.js?v=20261117-saetbyeol-growth1"></script>
+<script src="./entry.js?v=20261117-saetbyeol-growth1"></script>
 <script src="./growth.js?v=20261013-sky2001"></script>
 <script src="./upgrade-branches.js?v=20261110-bulssi-life1"></script>
 <script src="./encounters.js?v=20261110-saetbyeol-worlds1"></script>
@@ -277,7 +278,7 @@ const ENCOUNTERS=window.OjjudaSaetbyeolEncounters;
 const TYPES=ENCOUNTERS.types;
 
 // ---------- save ----------
-const fresh=()=>({stage:0,maxStage:0,cur:{light:0,metal:0,mass:0,life:0},lv:{},mem:Array(10).fill(0),intro:false,tut:false,sound:true,buys:0,sel:null,ended:false,legacyEnding:null,lifeStarted:false,lifeEnded:false,genes:{light:0,water:0,wind:0},geneType:null,geneLast:'light'});
+const fresh=()=>({stage:0,maxStage:0,cur:{light:0,metal:0,mass:0,life:0},lv:{},mem:Array(10).fill(0),intro:false,tut:false,sound:true,buys:0,sel:null,ended:false,legacyEnding:null,lifeStarted:false,lifeEnded:false,foodCollected:0,genes:{light:0,water:0,wind:0},geneType:null,geneLast:'light'});
 let S=fresh(),DEMO=null,demoAllowed=false;
 const save=()=>{if(!DEMO)window.OjjudaSaetbyeolEntry.save(S)};
 function loadProgress(raw){
@@ -295,6 +296,7 @@ function loadProgress(raw){
     S.legacyEnding=['아침의 별','삼킨 별'].includes(raw.legacyEnding)?raw.legacyEnding:null;
     S.lifeStarted=raw.lifeStarted===true||S.stage>=5;
     S.lifeEnded=raw.lifeEnded===true&&S.maxStage===9;
+    if(Number.isSafeInteger(raw.foodCollected)&&raw.foodCollected>=0)S.foodCollected=raw.foodCollected;
     for(const key of LIFE.keys)S.genes[key]=integer(raw.genes?.[key],12);
     S.geneLast=LIFE.keys.includes(raw.geneLast)?raw.geneLast:'light';
     const geneTotal=Object.values(S.genes).reduce((sum,n)=>sum+n,0);
@@ -308,7 +310,13 @@ function loadProgress(raw){
 
 // ---------- helpers ----------
 const rnd=(s,i)=>{const x=Math.sin(s*12.9898+i*78.233)*43758.5453;return x-Math.floor(x)};
-function fmt(n){n=Math.floor(n);if(n<1e4)return n.toLocaleString('ko-KR');const u=['','K','M','B','T','Qa','Qi'];let i=0,x=n;while(x>=1000&&i<u.length-1){x/=1000;i++}return (x<100?x.toFixed(1):Math.round(x))+u[i]}
+function fmt(n){
+  n=Math.floor(n);
+  if(n<1e9)return window.OjjudaScoreFormat(n);
+  for(const [scale,suffix] of [[1e18,'Qi'],[1e15,'Qa'],[1e12,'T'],[1e9,'B']]){
+    if(n>=scale)return (n/scale).toFixed(1)+suffix;
+  }
+}
 const lv=id=>S.lv[id]||0;
 const cost=u=>Math.ceil(2*u.c*Math.pow(u.m,lv(u.id)));
 const col=()=>STAGES[S.stage];
@@ -769,6 +777,7 @@ function kill(n){
   const now=performance.now();if(now-lastKill>45){lastKill=now;tone(note(5+Math.floor(Math.random()*8)),.12,.025)}
 }
 function feedBiome(node){
+  S.foodCollected++;
   R.fed++;const chapter=S.stage-5,biome=BIOMES[chapter];refreshBiomeMeter();
   if(R.fed%biome.every!==0)return;
   const rgb=col().rgb;
@@ -972,7 +981,7 @@ function updateBoss(dt,cur,rad){
 }
 function endRun(){
   mode='end';refreshBiomeMeter();save();window.OjjudaSaetbyeolEntry.ended(R.id);const g=R.gain;
-  let html=S.stage>=5?`<h2>오늘도 잘 자랐어</h2><p>${R.boss?'아직 준비가 되지 않았다면 잠시 쉬었다 다시 만나면 돼.':'작은 생명이 오늘도 조금 더 따뜻해졌어.'}</p><p class="num">이번에 모은 생명력 ${fmt(g.life)} · ${R.time.toFixed(1)}초의 여행</p>`:
+  let html=S.stage>=5?`<h2>오늘도 잘 자랐어</h2><p>${R.boss?'아직 준비가 되지 않았다면 잠시 쉬었다 다시 만나면 돼.':'작은 생명이 오늘도 조금 더 따뜻해졌어.'}</p><p class="num">이번에 모은 생명력 ${fmt(g.life)} · 먹이 ${R.fed}점 · ${R.time.toFixed(1)}초의 여행</p>`:
     `<h2>식었다</h2><p>${R.boss?`아직 ${col().bossObj} 넘지 못했다.`:'불씨가 잠시 숨을 고른다.'}</p><p class="num">이번에 모은 빛 ${fmt(g.light)}`+(g.metal?`<br>금속 ${fmt(g.metal)}`:'')+(g.mass?`<br>질량 ${fmt(g.mass)}`:'')+`<br>${R.time.toFixed(1)}초 동안 타올랐다</p>`;
   overlay(html,{buttons:[['별자리로 돌아가기',()=>{closeOv();selectDefault();setMode('hub')}]],continueWith:()=>{closeOv();startRun(!!R.boss)}});
 }

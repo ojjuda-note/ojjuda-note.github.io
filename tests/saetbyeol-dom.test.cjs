@@ -222,9 +222,9 @@ console.log('PASS: Saetbyeol entry, growth scoring, retries, account isolation, 
     const receive = (data, origin = w.location.origin, sender = frame.contentWindow) => w.dispatchEvent(new w.MessageEvent('message',{origin,source:sender,data:{source:'ojjuda-saetbyeol',...data}}));
     receive({type:'ojjuda-game-ready'}); await settle();
     assert.equal(sent[0].admin, true, 'admin preview requires the protected server role and preview mode');
-    const result = {type:'ojjuda-game-result',runId:'11111111-1111-4111-8111-111111111111',score:11000,demo:false};
+    const result = {type:'ojjuda-game-result',runId:'11111111-1111-4111-8111-111111111111',score:60001,demo:false};
     receive(result,'https://evil.test'); receive(result,w.location.origin,w);
-    receive({...result,demo:true}); receive({...result,score:60001});
+    receive({...result,demo:true}); receive({...result,score:-1}); receive({...result,score:1.5});
     await settle(); assert.equal(scores.length, 0);
     receive(result); receive(result); await settle();
     assert.equal(scores.length, 1, 'duplicate messages share a single submission');

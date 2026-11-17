@@ -20,10 +20,11 @@ test('rank viewer paints only top ten, highlights me and separates a personal 12
  window.supabase={createClient:()=>({rpc:(name,args)=>{
   queries.push([name,args]);
   const response={month:'2026-11',startsAt:'2026-10-31T16:00:00Z',endsAt:'2026-11-30T16:00:00Z',
-   leaders:Array.from({length:10},(_,i)=>({nick:'선수'+(i+1),score:100-i*5,me:args.p_game==='mines'&&i===2})),
+   leaders:Array.from({length:10},(_,i)=>({nick:'선수'+(i+1),score:i===0?57680:100-i*5,me:args.p_game==='mines'&&i===2})),
    mine:args.p_game==='mines'?null:{rank:12,nick:'나',score:20,me:true}};
   return {abortSignal:async()=>({data:response,error:null})};
  }})};
+ window.eval(read('shared/games/score-format.js'));
  window.eval(viewer);
  await new Promise(resolve=>setTimeout(resolve,15));
  const document=window.document;
@@ -34,6 +35,11 @@ test('rank viewer paints only top ten, highlights me and separates a personal 12
  assert.equal(document.querySelectorAll('#ranking-leaders .rank-row.is-me').length,0);
  assert.equal(document.querySelector('#ranking-mine .rank-place').textContent,'12위');
  assert.equal(document.querySelector('#ranking-mine .rank-points').textContent,'20점');
+ assert.equal(document.querySelector('#ranking-leaders .rank-points').textContent,'57.7K점');
+ assert.equal(document.querySelector('#ranking-leaders .rank-points').title,'57,680점');
+ for(const [score,label] of [[999,'999'],[1000,'1.0K'],[999950,'1.0M'],[1000000,'1.0M'],[1250000,'1.3M']]){
+  assert.equal(window.OjjudaScoreFormat(score),label);
+ }
  assert.match(document.querySelector('#ranking-period').textContent,/11월.*12월/);
  assert.equal(document.querySelector('#ranking-mine').hidden,false);
 
@@ -57,6 +63,7 @@ test('an unknown game opens the default ranking',async t=>{
   requested.push(args.p_game);
   return {abortSignal:async()=>({data:null,error:{message:'fixture'}})};
  }})};
+ window.eval(read('shared/games/score-format.js'));
  window.eval(viewer);
  await new Promise(setImmediate);
  assert.deepEqual(requested,['sacheonseong']);
