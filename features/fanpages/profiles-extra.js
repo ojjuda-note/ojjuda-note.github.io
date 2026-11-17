@@ -567,6 +567,12 @@ if (riizeProfile) {
     member.birthday = info[0];
     member.source = 'https://riizeofficial.jp/profile/' + info[1] + '/';
   }
+  riizeProfile.awards = [
+    { year: '2026.11', title: 'MMA2026 글로벌 TOP10', detail: '2026.11.14 멜론뮤직어워드 수상', href: 'https://www.yna.co.kr/view/AKR20261114049700005' },
+    { year: '2026.11', title: 'MMA2026 베스트 퍼포먼스 남자', detail: '2026.11.14 에이티즈와 함께 해당 부문 수상', href: 'https://www.yna.co.kr/view/AKR20261114049700005' },
+    { year: '2026.11', title: 'KGMA2026 그랜드 퍼포머', detail: '2026.11.08 코리아 그랜드 뮤직 어워즈', href: 'https://www.soompi.com/article/1885017wpp/winners-of-2026-korea-grand-music-awards-music-day' },
+    { year: '2026.11', title: 'KGMA2026 베스트 뮤직', detail: '2026.11.08 코리아 그랜드 뮤직 어워즈', href: 'https://www.soompi.com/article/1885017wpp/winners-of-2026-korea-grand-music-awards-music-day' }
+  ];
   riizeProfile.records = [
     { year: '2026.05', title: '일본 싱글 All of You 더블 플래티넘 인증', detail: '일본레코드협회 골드디스크 더블 플래티넘 인증 · 2026.05.14 공식 발표', href: 'https://riizeofficial.jp/news/20260514/' },
     { year: '2026.08', title: '일본 싱글 3집 Sunburst 발매', detail: '2026.08.26 CD 발매 · Sunburst/Rise Over/KILL SHOT', href: 'https://riizeofficial.jp/discography/sunburst_normal/' }
@@ -609,5 +615,5 @@ for (const id of ["hearts2hearts", "kissoflife", "kiiikiii", "stayc", "seventeen
 window.OJJUDA_FAN_PROFILES.stayc.checkedAt = '2026.11.14';
 // SEVENTEEN reviewed in n=48 without modifying other groups.
 window.OJJUDA_FAN_PROFILES.seventeen.checkedAt = '2026.11.14';
-// RIIZE-only recheck after the earlier cross-group review stamp.
-window.OJJUDA_FAN_PROFILES.riize.checkedAt = '2026.11.14';
+// RIIZE: awards and official member details rechecked for this slot.
+window.OJJUDA_FAN_PROFILES.riize.checkedAt = '2026.11.17';
