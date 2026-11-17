@@ -1,6 +1,6 @@
 import {createFlightArt} from './matgo-flight-art.mjs?v=20261106-source-folders3';
 // Animate only the public events returned to this seat; never reconstruct a deck.
-const FLIGHT=520, COLLECT=620, LIMIT=3200;
+const FLIGHT=260, COLLECT=310, LIMIT=1600;
 export function createOnlineMotion({cardSVG,backSVG,sound,onEvent,onLayout=()=>{}}){
   let current=null;
   const flightArt=createFlightArt({cardSVG,backSVG});
