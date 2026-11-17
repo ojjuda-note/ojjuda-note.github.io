@@ -1,0 +1,53 @@
+:root {
+  color-scheme: light;
+  --ink: #36293e;
+  --muted: #675c6c;
+  --accent: #56385f;
+  --stroke: #e2d9e4;
+  --soft: #f1eaf2;
+  --paper: #faf8f5;
+}
+* {box-sizing: border-box}
+[hidden] {display: none !important}
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.55 system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  letter-spacing: -.025em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+main {width: min(100%, 640px); margin: auto; padding: 22px clamp(16px, 4.5vw, 32px) max(42px, env(safe-area-inset-bottom))}
+h1,h2,p {margin: 0}
+a {color: var(--accent); text-underline-offset: 3px}
+button,a {font: inherit; touch-action: manipulation}
+button {cursor: pointer}
+button:disabled {cursor: default}
+:focus-visible {outline: 3px solid #885fa6; outline-offset: 3px}
+nav,.tools,.person,.actions {display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap}
+nav {margin-bottom: 22px}
+nav a {padding: 8px 0; font-weight: 680; font-size: 14px; text-decoration: none}
+nav a:hover {text-decoration: underline}
+h1 {font-size: clamp(30px, 6vw, 40px); line-height: 1.15; letter-spacing: -.07em}
+header p {margin: 9px 0 22px; color: var(--muted)}
+.tools {border-top: 1px solid var(--stroke); padding: 8px 0; color: var(--muted); font-size: 14px}
+.tools button {border: none; padding: 8px; background: none; color: var(--accent); font-size: 14px; font-weight: 650}
+#status:not(:empty) {padding: 10px 14px; margin-bottom: 12px; border-radius: 9px; background: var(--soft); color: var(--ink); font-size: 14px}
+#cards {display: grid; gap: 13px}
+.card {min-width: 0; padding: clamp(16px, 4.5vw, 24px); border: 1px solid var(--stroke); border-radius: 18px; background: #fffefc}
+.person {justify-content: flex-start; color: var(--muted); font-size: 13px}
+.person strong {color: var(--ink); font-size: 14px}
+.person time {margin-left: auto; font-variant-numeric: tabular-nums}
+.card h2 {margin: 12px 0 7px; color: var(--accent); font-size: 16px; line-height: 1.5}
+.card .answer {line-height: 1.6; white-space: pre-wrap}
+.actions {min-height: 38px; margin-top: 14px; justify-content: flex-end; color: var(--muted); font-size: 13px}
+.actions .relationship {margin-right: auto}
+.actions button,.actions a,#more {
+  border: 1px solid var(--accent); border-radius: 10px; background: var(--accent); color: white; font-size: 14px;
+  font-weight: 680; padding: 9px 15px; min-height: 42px; text-decoration: none;
+}
+.actions button:disabled {color: #5d5062; background: var(--soft); border-color: var(--stroke)}
+#more {display: block; width: 100%; margin: 16px auto 0; background: white; border-color: var(--stroke); color: var(--accent)}
+#gate {max-width: 460px; margin: 15vh auto}
+#gate p {margin: 6px 0 12px}

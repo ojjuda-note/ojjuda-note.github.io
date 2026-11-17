@@ -67,6 +67,7 @@ export default function StationApp({initialView,initialStation}:{initialView:"ca
   const [discovery,setDiscovery]=useState<"cards"|"radar">(initialView);
   const [tab,setTab]=useState<Tab>("discover"),[pendingModal,setModal]=useState<Modal|null>(null),[filter,setFilter]=useState("all"),[sort,setSort]=useState("recommend"),[inbox,setInbox]=useState("received");
   const [thread,setThread]=useState(""),[messages,setMessages]=useState<Message[]>([]),[draft,setDraft]=useState(""),[busy,setBusy]=useState(false),[error,setError]=useState(""),[toast,setToast]=useState(""),[net,setNet]=useState(""),[ready,setReady]=useState(false);
+  const [keepAnswer,setKeepAnswer]=useState(false);
   const lock=useRef(false),serverRevision=useRef(0),threadRevision=useRef(0),bottom=useRef<HTMLDivElement>(null);
   const s=live,me=s.me,theme=s.question??themeFor(s.day,s.slot),period=s.day+"/"+s.slot;
   const slotName=s.slot==="am"?"오전":"오후";
@@ -108,9 +109,21 @@ export default function StationApp({initialView,initialStation}:{initialView:"ca
     if(view==="radar")url.searchParams.set("view","radar");else url.searchParams.delete("view");
     window.history.replaceState(window.history.state,"",url);
   }
+  useEffect(()=>{
+    const url = new URL(window.location.href);
+    const chat = url.searchParams.get("chat");
+    if (!chat) return;
+    if (initialStation.people.some(person=>person.id===chat) && signalsWith(initialStation,chat).match) {
+      setThread(chat); setTab("chat");
+    } else {
+      setToast("이 대화방을 열 수 없어요.");
+    }
+    url.searchParams.delete("chat");
+    window.history.replaceState(window.history.state,"",url);
+  },[initialStation]);
   function open(m:Modal){
     setError("");
-    if(m.kind==="answer"&&me?.body)return;
+    if(m.kind==="answer"){if(me?.body)return;setKeepAnswer(false);}
     setModal(m.kind==="answer"||m.kind==="signal"?{...m,period}:m);
   }
   function close(){if(!lock.current){setModal(null);setError("");}}
@@ -129,7 +142,7 @@ export default function StationApp({initialView,initialStation}:{initialView:"ca
     }
     finally{lock.current=false;setBusy(false);}
   }
-  function signal(p:Person){const v=signalsWith(s,p.id);if(v.match){startChat(p.id);return;}if(v.outgoing){open({kind:"result",peer:p.id});return;}if(!available){setToast("오늘의 신호를 모두 썼어요. 내일 다시 만나요.");return;}open({kind:me?.body?"signal":"answer",peer:p.id});}
+  function signal(p:Person){const v=signalsWith(s,p.id);if(v.match){startChat(p.id);return;}if(v.outgoing){open({kind:"result",peer:p.id});return;}if(!available){setToast("오늘의 신호를 모두 썼어요. 내일 다시 만나요.");return;}open({kind:"signal",peer:p.id});}
   async function enterMember(){
     if(lock.current)return;setBusy(true);lock.current=true;setError("");
     try{const n=await request<Station>("/api/station");setLive(n);setNet("");if(!n.authenticated){setError("회원 채널은 로그인이 필요해요.");return;}
@@ -152,17 +165,17 @@ export default function StationApp({initialView,initialStation}:{initialView:"ca
   function Card({p}:{p:Person}){
     const v=signalsWith(s,p.id),badge=badges(p.interest);
     return <article className="answercard"><div className="cardtop"><button className="person" onClick={()=>open({kind:"person",peer:p.id})}><Art interest={p.interest}/><span><strong>{p.name}</strong><small>{p.age}세<span>·</span>{p.region}</small></span></button><span className="tag" style={{background:badge.bg}}>{badge.name}</span></div>
-      <div className="quotation" aria-hidden="true">“</div><p className="quote">{p.body}</p><button className={"sendlink "+(v.outgoing?"issent":"")} onClick={()=>signal(p)}><span><I n={v.match?"chat":v.outgoing?"check":"signal"} s={17}/>{v.match?"대화하기":v.outgoing?"보낸 신호":"신호 보내기"}</span><I n="up" s={15}/></button></article>;
+      <p className="cardquestion">{themeText}</p><p className="quote">{p.body}</p><button className={"sendlink "+(v.outgoing?"issent":"")} onClick={()=>signal(p)}><span><I n={v.match?"chat":v.outgoing?"check":"signal"} s={17}/>{v.match?"대화하기":v.outgoing?"보낸 신호":v.incoming?"신호 수락하기":"신호 보내기"}</span><I n="up" s={15}/></button></article>;
   }
   function ListPerson({p,type}:{p:Person;type:"received"|"sent"|"chat"}){
     const v=signalsWith(s,p.id);const sig=type==="received"?v.incoming:v.outgoing;
-    return <div className="listperson"><button className="person" onClick={()=>open({kind:"person",peer:p.id})}><Art interest={p.interest}/><span><strong>{p.name}</strong><small>{p.region} · {badges(p.interest).name}</small></span></button><p>{type==="chat"?"서로의 신호가 닿았어요.":sig?.note||(v.match?"서로의 신호가 닿았어요.":type==="received"?"신호를 보내왔어요.":"상대의 신호를 기다리고 있어요.")}</p><button className="secondary small" onClick={()=>signal(p)}>{v.match?"대화 열기":type==="sent"?"상태 보기":"신호 답장"}<I n="right" s={15}/></button></div>;
+    return <div className="listperson"><button className="person" onClick={()=>open({kind:"person",peer:p.id})}><Art interest={p.interest}/><span><strong>{p.name}</strong><small>{p.region} · {badges(p.interest).name}</small></span></button><p>{type==="chat"?"서로의 신호가 닿았어요.":sig?.note||(v.match?"서로의 신호가 닿았어요.":type==="received"?"신호를 보내왔어요.":"상대의 신호를 기다리고 있어요.")}</p><button className="secondary small" onClick={()=>signal(p)}>{v.match?"대화 열기":type==="sent"?"상태 보기":"신호 수락하기"}<I n="right" s={15}/></button></div>;
   }
   const modalTitle=modal?({answer:slotName+" 답변",signal:"신호 보내기",result:"신호 상태",profile:"내 프로필",setup:"회원 프로필 만들기",edit:"프로필 수정",channels:"채널 선택",help:"파장 이용 안내",block:"프로필 차단",delete:"데이터 삭제",person:"상대 프로필"}[modal.kind]):"";
   return <><header className="sitehead"><div className="headinner"><button className="brandbtn" onClick={()=>go("discover")} aria-label="파장 홈"><Brand/></button><nav className="desknav" aria-label="주 메뉴">{nav()}</nav><div className="headtools"><span className="modebtn"><span className="modedot"/>회원 채널</span><button className="profilebtn" aria-label="내 프로필" onClick={()=>open({kind:"profile"})}><I n="user" s={19}/></button></div></div></header>
   <main className="wrap">
     {net&&<div className="notice" role="status">{net}<button onClick={()=>{void refresh();if(thread)void readThread(thread);}}>다시 연결</button></div>}
-    {tab==="discover"&&<div className="discover-switch" aria-label="발견 보기 방식"><button aria-pressed={discovery==="cards"} onClick={()=>chooseDiscovery("cards")}><I n="discover" s={16}/>답변 피드</button><button aria-pressed={discovery==="radar"} onClick={()=>chooseDiscovery("radar")}><I n="signal" s={16}/>주변 레이더</button></div>}
+    {tab==="discover"&&<div className="discover-switch" aria-label="발견 보기 방식"><button aria-pressed={discovery==="cards"} onClick={()=>chooseDiscovery("cards")}><I n="discover" s={16}/>이번 질문</button><button aria-pressed={discovery==="radar"} onClick={()=>chooseDiscovery("radar")}><I n="signal" s={16}/>주변 레이더</button><a className="allanswers" href="./feed.html"><I n="discover" s={16}/>모두의 답변</a></div>}
     {tab==="discover"&&discovery==="radar"&&<NearbyRadar station={s} sample={false} onProfile={id=>open({kind:"person",peer:id})} onJoin={()=>location.assign("./")} onSettings={async cell=>Boolean(await act(cell?"radar-enable":"radar-disable",cell?{...cell,consent:true,shareBearing:true}:{},true))}/>}
     {tab==="discover"&&discovery==="cards"&&<>
       <section className="hero" aria-label={slotName+(me?.body?" 답변 완료":" 질문")}>
@@ -184,15 +197,15 @@ export default function StationApp({initialView,initialStation}:{initialView:"ca
     <footer><a href="/world.html" className="memberlink">아지트로</a><span className="footerbrand"><I n="wave" s={16}/> 파장</span><span>회원 채널 · 만 19세 이상</span><button onClick={()=>open({kind:"help"})}>이용 안내<I n="info" s={14}/></button></footer>
   </main><nav className="mobilenav" aria-label="모바일 주 메뉴">{nav()}</nav>{toast&&<div role="status" className="toast">{toast}</div>}
   {modal&&<Dialog key={modal.kind} close={close} title={modalTitle}>
-    {modal.kind==="answer"&&<><span className="modalicon"><I n="pencil"/></span><h2>{slotName} 답변</h2><p className="questionbox">{themeText}</p><Editor max={220} label="내 이야기" hint="장소, 노래, 기억처럼 구체적인 장면을 들려주세요." submit={modal.peer?"답변 저장하고 신호 보내기":"답변 저장"} busy={busy} onSave={async body=>{if(!await act("answer",{body,day:s.day,slot:s.slot,questionId:s.question?.id}))return;if(modal.peer)open({kind:"signal",peer:modal.peer});else{setModal(null);setToast(slotName+" 답변을 저장했어요.");}}}/></>}
+    {modal.kind==="answer"&&<><span className="modalicon"><I n="pencil"/></span><h2>{slotName} 답변</h2><p className="questionbox">{themeText}</p><p className="sub">이번 시간대에는 파장 회원이 질문과 내 답변을 함께 볼 수 있어요.</p><label className="checkrow archivechoice"><input type="checkbox" checked={keepAnswer} onChange={e=>setKeepAnswer(e.target.checked)}/><span>다음 질문이 열린 뒤에도 내 답변을 회원에게 공개할게요.</span></label><Editor max={220} label="내 이야기" hint="장소, 노래, 기억처럼 구체적인 장면을 들려주세요." submit="답변 저장" busy={busy} onSave={async body=>{if(!await act("answer",{body,day:s.day,slot:s.slot,questionId:s.question?.id,archive:keepAnswer}))return;setModal(null);setToast(slotName+" 답변을 저장했어요.");}}/></>}
     {modal.kind==="signal"&&peer&&<><span className="modalicon"><I n="signal"/></span><h2>{peer.name}님에게 신호 보내기</h2><p className="sub">서로 신호를 보내면 대화를 시작할 수 있어요.</p><p className="questionbox">{peer.body||signalsWith(s,peer.id).incoming?.note}</p><Editor max={120} label="함께 보낼 한마디 (선택)" hint="어떤 부분에 마음이 닿았나요?" submit={"신호 보내기 · 남은 "+available+"회"} busy={busy} optional onSave={async note=>{if(await act("signal",{peer:peer.id,note,day:s.day,slot:s.slot}))setModal({kind:"result",peer:peer.id});}}/></>}
     {modal.kind==="result"&&peer&&<div className="result"><span className="resultart"><Art interest={peer.interest} large/><i><I n={signalsWith(s,peer.id).match?"wave":"signal"}/></i></span><h2>{signalsWith(s,peer.id).match?"서로의 신호가 닿았어요":"신호를 보냈어요"}</h2><p className="sub">{signalsWith(s,peer.id).match?peer.name+"님도 당신에게 신호를 보냈어요. 이제 첫인사를 건네보세요.":peer.name+"님도 신호를 보내면 대화방이 열려요."}</p><button className="primary wide" onClick={()=>signalsWith(s,peer.id).match?startChat(peer.id):(setInbox("sent"),go("inbox"))}>{signalsWith(s,peer.id).match?"대화 시작하기":"보낸 신호 보기"}<I n="arrow" s={17}/></button></div>}
-    {modal.kind==="person"&&peer&&<><Art interest={peer.interest} large/><h2>{peer.name}</h2><p className="sub">{peer.age}세 · {peer.region} · {badges(peer.interest).name}</p>{peer.body&&<div className="questionbox"><small>{slotName} 답변</small>{peer.body}</div>}<button className="primary wide" onClick={()=>signal(peer)}>{signalsWith(s,peer.id).match?"대화 열기":signalsWith(s,peer.id).outgoing?"보낸 신호 확인":"신호 보내기"}<I n="signal" s={17}/></button><button className="textbtn" onClick={()=>open({kind:"block",peer:peer.id})}>이 프로필 차단</button></>}
+    {modal.kind==="person"&&peer&&<><Art interest={peer.interest} large/><h2>{peer.name}</h2><p className="sub">{peer.age}세 · {peer.region} · {badges(peer.interest).name}</p>{peer.body&&<div className="questionbox"><small>{themeText}</small>{peer.body}</div>}<button className="primary wide" onClick={()=>signal(peer)}>{signalsWith(s,peer.id).match?"대화 열기":signalsWith(s,peer.id).outgoing?"보낸 신호 확인":"신호 보내기"}<I n="signal" s={17}/></button><button className="textbtn" onClick={()=>open({kind:"block",peer:peer.id})}>이 프로필 차단</button></>}
     {modal.kind==="profile"&&<><span className="eyebrow">회원 채널</span>{me?<><div className="profhero"><Art interest={me.interest} large/><div><h2>{me.name}</h2><p className="sub">{me.age}세 · {me.region} · {badges(me.interest).name}</p></div></div><div className="profileanswer"><b>내 {slotName} 답변</b><p>{me.body||"아직 이 시간대에 남긴 답변이 없어요."}</p></div><div className="settings"><button onClick={()=>open({kind:"edit"})}>프로필 수정<I n="right" s={17}/></button>{!me.body&&<button onClick={()=>open({kind:"answer"})}>{slotName} 답변 작성<I n="right" s={17}/></button>}</div><button className="textbtn muted" onClick={()=>open({kind:"delete"})}>회원 프로필과 기록 삭제</button></>:<><h2>내 프로필</h2><p className="sub">회원 채널에 참여할 프로필을 만들어 주세요.</p><button className="primary wide" onClick={()=>void enterMember()}>프로필 만들기</button></>}</>}
     {(modal.kind==="edit"||modal.kind==="setup")&&<><h2>{modal.kind==="setup"?"회원 프로필 만들기":"프로필 수정"}</h2><p className="sub">{modal.kind==="setup"?"얼굴 사진 없이 닉네임과 취향으로 시작해요.":"내 프로필에 보여줄 정보를 정해 주세요."}</p><ProfileForm person={modal.kind==="setup"?null:me} isNew={modal.kind==="setup"} busy={busy} onSave={async b=>{const setup=modal.kind==="setup";if(await act("profile",b,setup)){setModal({kind:"profile"});setToast("프로필을 저장했어요.");}}}/></>}
     {modal.kind==="block"&&peer&&<><span className="modalicon"><I n="shield"/></span><h2>{peer.name}님을 차단할까요?</h2><p className="sub">서로의 답변과 신호, 대화가 목록에서 사라져요. 이후 메시지도 보낼 수 없어요.</p><button className="primary wide" disabled={busy} onClick={async()=>{if(await act("block",{peer:peer.id})){go("discover");setToast("프로필을 차단했어요.");}}}>차단하기</button><button className="textbtn" onClick={close}>취소</button></>}
     {modal.kind==="delete"&&<><h2>프로필과 기록을 삭제할까요?</h2><p className="sub">회원 프로필과 작성한 답변, 주고받은 신호와 대화가 삭제돼요. 삭제한 내용은 복구할 수 없어요.</p><button className="primary wide" disabled={busy} onClick={async()=>{if(await act("delete",{})){location.replace("./");}}}>내 기록 삭제</button><button className="textbtn" onClick={close}>취소</button></>}
-    {modal.kind==="help"&&<><span className="modalicon"><I n="headphones"/></span><h2>파장 이용 안내</h2><div className="guidelist">{[["오전과 오후에 한 번씩 답해요","한국 시간 자정과 낮 12시에 새 질문이 열려요. 한 번 답하면 다음 질문이 열릴 때까지 바로 메인으로 들어가요."],["답변에 신호를 보내요","하루에 세 번, 마음에 닿은 답변에 한마디를 붙여 신호를 보낼 수 있어요."],["서로 닿으면 대화해요","두 사람 모두 신호를 보낸 뒤에 대화방이 열려요. 상대 프로필에서 언제든 차단할 수 있어요."]].map(([a,b],i)=><div key={a}><b>{i+1}</b><div><strong>{a}</strong><p>{b}</p></div></div>)}</div><button className="primary wide" onClick={close}>알겠어요</button></>}
+    {modal.kind==="help"&&<><span className="modalicon"><I n="headphones"/></span><h2>파장 이용 안내</h2><div className="guidelist">{[["오전과 오후에 한 번씩 답해요","한국 시간 자정과 낮 12시에 새 질문이 열려요. 한 번 답하면 다음 질문이 열릴 때까지 바로 메인으로 들어가요."],["답변에 신호를 보내요","모두의 답변에서 질문과 답을 함께 읽어 보세요. 내 답을 쓰기 전에도 마음에 드는 사람에게 하루 세 번까지 신호를 보낼 수 있어요."],["서로 닿으면 대화해요","받은 신호를 수락하면 두 사람의 대화방이 열려요. 상대 프로필에서 언제든 차단할 수 있어요."]].map(([a,b],i)=><div key={a}><b>{i+1}</b><div><strong>{a}</strong><p>{b}</p></div></div>)}</div><button className="primary wide" onClick={close}>알겠어요</button></>}
     {error&&<p role="alert" className="error">{error}</p>}
   </Dialog>}</>;
 }
