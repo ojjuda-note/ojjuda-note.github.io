@@ -2237,7 +2237,7 @@
         "Under the skin",
         "Scent of you"
       ],
-      "checkedAt": '2026.11.15',
+      "checkedAt": '2026.11.17',
       "concept": "다른 개성을 지닌 아홉 멤버가 음악과 무대로 하나가 되는 팀.",
       "official": "https://www.andteam-official.jp/",
       "youtube": "https://www.youtube.com/@andTEAM_official",
@@ -2316,6 +2316,12 @@
         }
       ],
       appearances: [
+        {
+          "date": "2026-12-26",
+          "title": "Mark on You 홀 투어 · 삿포로 추가 공연",
+          "sub": "삿포로 문화예술극장 hitaru · 17:00 입장 / 18:00 시작 JST/KST · LUNÉ 선예매 추첨 11/18 12:00~11/23 23:59",
+          "href": "https://www.andteam-official.jp/news/d6fe308a947f"
+        },
         {
           "date": "2026-11-18",
           "title": "Mark on You 홀 투어 · 오사카",
@@ -2585,6 +2591,30 @@
       ],
       news: [
         {
+          "date": "2026.11.17",
+          "tag": "공연",
+          "title": "Mark on You 12월 26일 삿포로 추가 공연 · 11월 18일 선예매 접수 시작",
+          "href": "https://www.andteam-official.jp/news/d6fe308a947f"
+        },
+        {
+          "date": "2026.11.16",
+          "tag": "방송",
+          "title": "JO, 11월 17일 후지TV 메자마시 TV VTR 출연 발표",
+          "href": "https://www.andteam-official.jp/news/949ba3f69330"
+        },
+        {
+          "date": "2026.11.16",
+          "tag": "매체",
+          "title": "JO, 11월 17일 스포츠호치 인터뷰 연재 'R' 게재 발표",
+          "href": "https://www.andteam-official.jp/news/18355afca102"
+        },
+        {
+          "date": "2026.11.16",
+          "tag": "방송",
+          "title": "FUMA·JO·TAKI, 일본TV 'VS.초특급' 11월 17일 새벽 방송 출연 발표",
+          "href": "https://www.andteam-official.jp/news/5f888e07c781"
+        },
+        {
           "date": "2026.11.14",
           "tag": "영화",
           "title": "JO 주연 영화 원댄스 11/28~29 도쿄·나고야·오사카 무대인사 확정",
@@ -2642,6 +2672,11 @@
       ],
       merch: [
         {
+          "title": "Mark on You 현장 한정 오리지널 라벨 캔",
+          "sub": "공연장·일본 전국 전용 자판기 판매 · 멤버별 랜덤 9종 · 가격·재고는 운영처 확인",
+          "href": "https://www.andteam-official.jp/news/95a22c642de6"
+        },
+        {
           "title": "2027 시즌그리팅 Who Ate the Cake? · CAPSULE ver.",
           "sub": "공식 Weverse Shop · 2026.12.16 11:00 JST 판매 시작 · 랜덤 10종 · 품절·재고는 판매처 확인",
           "href": "https://www.andteam-official.jp/news/4b7089b11b28"
@@ -2669,6 +2704,13 @@
         }
       ],
       campaigns: [
+        {
+          "kind": "콜라보",
+          "date": "2026.11.13",
+          "title": "Mark on You × 오사카 우메다 스카이빌딩 겨울 콜라보",
+          "sub": "11/13~11/21 크리스마스 트리 음악 연출, 11/13~12/25 음식점 콜라보, 12/1~12/25 공중정원 특별 티켓·굿즈 · 조건·예약은 공식 안내 확인",
+          "href": "https://www.andteam-official.jp/news/95a22c642de6"
+        },
         {
           "kind": "콜라보",
           "date": "2026.10.10",
