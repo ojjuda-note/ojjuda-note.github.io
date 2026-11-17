@@ -18,7 +18,7 @@ try{
  for(const file of ['puzzles.js','photo-puzzles.js','masterpiece-puzzles.js','game-core.js'])w.eval(read(file));
  const order=Array.from(w.JjudaGame.difficultyOrder(w.JJUDA_PUZZLES));
  w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:48,completed:order.slice(0,order.indexOf(48)).map(index=>w.JJUDA_PUZZLES[index].id)}));
- w.eval(read('app.js'));
+ w.eval(read('../../shared/games/puzzle-record-queue.js'));w.eval(read('app.js'));
  for(const im of d.querySelectorAll('img'))if(im.onload)im.onload();$('start').click();
  const round=()=>{const s=JSON.parse(w.localStorage.getItem('jjuda-spot-six-v1'));return s.rounds[w.JJUDA_PUZZLES[s.current].id];};
  function pointer(target,type,id,x,y){const e=new w.MouseEvent(type,{bubbles:true,cancelable:true,clientX:x,clientY:y});Object.defineProperties(e,{pointerId:{value:id},pointerType:{value:'touch'}});target.dispatchEvent(e);return e;}

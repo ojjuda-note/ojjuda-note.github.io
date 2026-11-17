@@ -14,6 +14,7 @@ async function fixture({stored=null,member=owner,buy}={}){
  w.postMessage=data=>w.dispatchEvent(new w.MessageEvent('message',{data,origin:w.location.origin,source:child}));
  Object.defineProperties(child.document.getElementById('board-scroll'),{clientWidth:{value:348},clientHeight:{value:498}});
  child.localStorage.setItem(KEY,JSON.stringify(stored||{rulesVersion:E.RULES_VERSION,stage:5,unlocked:5,grid:E.generate(5).grid,startedAt:null,finishedMs:null,sound:false,hints:0,shuffles:0}));
+ child.eval(read('shared/games/puzzle-record-queue.js'));
  for(const f of ['engine','faces','ranking','server','app'])child.eval(read('games/sacheonseong/'+f+'.js'));
  await tick();await tick();
  return {w:child,$:id=>child.document.getElementById(id),calls,state:()=>JSON.parse(child.localStorage.getItem(KEY)),close:()=>w.close()};

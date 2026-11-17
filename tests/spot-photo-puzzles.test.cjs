@@ -1,7 +1,9 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {JSDOM}=require('jsdom');
+const test=require('node:test');
 const root=path.join(__dirname,'..','games','spot-difference');
 const read=f=>fs.readFileSync(path.join(root,f),'utf8');
+test('photo puzzles register every completion after delivery settles',async()=>{
 const dom=new JSDOM(read('index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,''),{url:'https://fixture.test/games/spot-difference/',runScripts:'outside-only',pretendToBeVisual:true});
 const w=dom.window;const scores=[],registered=[];
 try{
@@ -57,7 +59,7 @@ try{
  // Asset/interaction coverage replays an already completed catalog; selecting
  // these fixtures never disables the production progression guards.
  w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:0,completed:Array.from(puzzles,p=>p.id)}));
- w.eval(read('app.js'));
+ w.eval(read('../../shared/games/puzzle-record-queue.js'));w.eval(read('app.js'));
  const $=id=>w.document.getElementById(id);
  const groups=Array.from($('stage-picker').children,g=>[g.label,g.children.length]);
  assert.deepEqual(groups,[['쭈다의 일상 · 보통',48],['도시와 사계절 산 · 어려움',14],['세계 명화 · 매우 어려움 · 10곳 찾기',20]]);
@@ -91,6 +93,7 @@ try{
   for(const s of p.spots.slice(1))tap($('difference').parentElement,s.x,s.y);
   assert.equal($('found-count').textContent,String(answers));assert.equal($('celebration').open,true);$('celebration').close();
  }
+ await new Promise(resolve=>setImmediate(resolve));
  assert.deepEqual(scores,Array.from({length:14},(_,i)=>49+i));
  assert.equal($('solved-total').textContent,'82','replaying photo stages preserves the existing completion history');
  const progress=registered.find(t=>t.name==='read_game_progress'),open=registered.find(t=>t.name==='open_game_stage');
@@ -98,3 +101,4 @@ try{
  assert.equal(open.execute({stage:82}).stage,82);assert.throws(()=>open.execute({stage:83}),/1~82/);
  console.log('PASS: 20 selectable very-hard masterpieces, 14 unchanged hard photo pairs, 88 independent photo masks, all target corners clickable, photo asset hashes, grouping, duplicate/miss handling, completion recording and stage-82 WebMCP');
 }finally{w.close();}
+});

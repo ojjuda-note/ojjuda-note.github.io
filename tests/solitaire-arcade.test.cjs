@@ -72,7 +72,7 @@ test('finished records validate mode/time, deduplicate a run and retry a failed 
   w.OjjudaSolitaireGame.close();dom.window.close();
 });
 
-test('the last card freezes the clear time before the finish animation and retries the same saved record',async()=>{
+for(const restart of [false,true])test(restart?'an offline winning hand survives Continue and replays on reconnection':'the last card freezes the clear time before the finish animation and retries the same saved record',async()=>{
   const {pathToFileURL}=require('node:url');
   const engine=await import(pathToFileURL(path.join(root,'games/solitaire/engine.js')));
   const gestures=await import(pathToFileURL(path.join(root,'games/solitaire/gestures.js')));
@@ -90,7 +90,7 @@ test('the last card freezes the clear time before the finish animation and retri
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
   w.eval(read('games/solitaire/rules.js'));
-  w.eval(read('games/solitaire/app.js').replace(/^import .*;\n/gm,''));
+  w.eval(read('shared/games/puzzle-record-queue.js'));w.eval(read('games/solitaire/app.js').replace(/^import .*;\n/gm,''));
   assert.equal(messages.length,0,'unfinished games do not submit');
   clock=1250;
   w.document.querySelector('[data-card-id="diamonds-13"]').click();
@@ -101,6 +101,17 @@ test('the last card freezes the clear time before the finish animation and retri
   assert.match(w.document.querySelector('.win-stats').textContent,/02:00/);
   const ack=ok=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:w.parent,data:{source:'ojjuda-world',type:'ojjuda-solitaire-record',runId,ok}}));
   ack(false);assert.equal(w.document.querySelector('#retry-ranking').hidden,false);
+  if(restart){
+    w.document.querySelector('#play-again').click();
+    const next=JSON.parse(w.localStorage.getItem(key));
+    assert.notEqual(next.runId,runId);assert.equal(next.completion,null);
+    assert.equal(w.OjjudaPuzzleRecords.open('solitaire','qa').list()[0].id,runId);
+    w.dispatchEvent(new w.Event('online'));
+    assert.equal(messages.filter(m=>m.type==='ojjuda-game-result').at(-1).completedAt,record.completedAt);
+    ack(true);assert.equal(w.OjjudaPuzzleRecords.open('solitaire','qa').list().length,0);
+    assert.equal(JSON.parse(w.localStorage.getItem(key)).completion,null);
+    w.close();return;
+  }
   w.document.querySelector('#retry-ranking').click();
   const retried=messages.filter(m=>m.type==='ojjuda-game-result').at(-1);assert.equal(retried.seconds,120);assert.equal(retried.runId,runId);
   ack(true);assert.equal(w.document.querySelector('#ranking-status').textContent,'순위에 기록했어요.');

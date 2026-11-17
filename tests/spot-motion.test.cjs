@@ -43,6 +43,7 @@ test('native menu launches motion independently, counts all ten, records stable 
   const includes=[...d.querySelectorAll('script[src]')].map(s=>s.getAttribute('src').split('?')[0]);
   const scripts=[...catalogFiles,'motion/render.js','motion/native.js','game-core.js','app.js'];
   assert.deepEqual(includes.filter(f=>scripts.includes(f)),scripts,'native entry loads the scene data and renderer before setup');
+  w.eval(read('../../shared/games/puzzle-record-queue.js'));
   for(const file of scripts){
     w.eval(read(file));
     if(file==='motion/render.js')w.OjjudaMotionRenderer.create=(image,scene)=>({draw:(_ctx,side,time)=>draws.push([scene.id,side,time])});

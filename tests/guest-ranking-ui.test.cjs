@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),origin='https://guest.test';
-let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>tag.includes('/shared/games/guest-game-scores.js')||tag.includes('/shared/games/world-game-assets.js')||tag.includes('/shared/games/game-entry.js')||tag.includes('/shared/games/game-results.js')?tag:'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
+let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>tag.includes('/shared/games/arcade-round-queue.js')||tag.includes('/shared/games/guest-game-scores.js')||tag.includes('/shared/games/world-game-assets.js')||tag.includes('/shared/games/game-entry.js')||tag.includes('/shared/games/game-results.js')?tag:'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,login:()=>nr('login'),member:()=>{D.online=true;D.user={id:'member-a'};},finish:score=>{R.game={draw(){}};R.running=true;return S2(score)}};enterWorldGuest(()=>{g.tab='friends';H()});`+world.slice(world.indexOf('</script>',boot));
 (async()=>{
@@ -21,8 +21,8 @@ world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,log
     const guest=options?.auth?.storageKey==='ojjuda-guest-ranking-api';clientOptions.push(options||null);
     return {auth:{onAuthStateChange(){},getSession:async()=>({data:{session:null}})},rpc(name,args){
      calls.push({name,args,guest});
-     const result=name==='submit_guest_game_score'?{data:failScores?{ok:false,reason:'invalid'}:{ok:true,guest:true,best:args.p_score,reward:0,rank:null}}
-       :['record_ttang_result','record_spot_clear'].includes(name)?{data:{ok:true,score:1}}:name==='guest_game_ranking'?{data:[{nick:'손님',score:20,me:true,source:'guest_record'}]}
+     const result=['submit_guest_game_score','submit_arcade_round'].includes(name)?{data:failScores?{ok:false,reason:'invalid'}:{ok:true,guest:true,best:args.p_score,reward:0,rank:null}}
+       :['record_ttang_result','record_spot_clear_at'].includes(name)?{data:{ok:true,score:1}}:name==='guest_game_ranking'?{data:[{nick:'손님',score:args.p_game==='mole'?4020:20,me:true,source:'guest_record'}]}
        :name==='submit_score'?{data:{ok:true,best:args.p_score,reward:0}}:{data:[]};
      const promise=Promise.resolve(result);promise.abortSignal=()=>promise;return promise;
     }};
@@ -45,8 +45,8 @@ world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,log
   assert.equal(await result.locator('#gres').innerText(),'','a successful guest save leaves no pending or failure message');
   const monthly=await page.evaluate(()=>calls.filter(c=>c.name==='guest_game_ranking'&&c.args.p_game==='mole'&&c.args.p_period==='month'));
   assert.equal(monthly.length,2,'the result compares rankings before and after settlement');assert.ok(monthly.every(c=>c.guest));
-  const call=await page.evaluate(()=>calls.find(c=>c.name==='submit_guest_game_score'));
-  assert.equal(call.args.p_score,20);assert.equal(call.args.p_game,'mole');assert.match(call.args.p_guest_token,/^[a-f0-9]{64}$/);assert.match(call.args.p_request_id,/^[a-f0-9-]{36}$/);assert.equal(call.guest,true);
+  const call=await page.evaluate(()=>calls.find(c=>c.name==='submit_arcade_round'));
+  assert.equal(call.args.p_score,4020);assert.equal(call.args.p_game,'mole');assert.match(call.args.p_guest_token,/^[a-f0-9]{64}$/);assert.match(call.args.p_round_id,/^[a-f0-9-]{36}$/);assert.equal(call.guest,true);
   assert.equal(daily.args.p_guest_token,call.args.p_guest_token);assert.ok(monthly.every(c=>c.args.p_guest_token===call.args.p_guest_token),'daily reads, monthly reads and score writes share the same guest identity');
   const options=await page.evaluate(()=>clientOptions.find(c=>c?.auth?.storageKey==='ojjuda-guest-ranking-api'));
   assert.deepEqual(options.auth,{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:'ojjuda-guest-ranking-api'});
@@ -61,7 +61,7 @@ world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,log
   await page.evaluate(()=>guestFixture.open('spot'));
   await page.waitForFunction(()=>document.querySelector('.spot-game-dialog iframe')?.contentDocument?.body?.textContent.includes('game frame'));
   await page.evaluate(()=>{const frame=document.querySelector('.spot-game-dialog iframe');dispatchEvent(new MessageEvent('message',{origin:location.origin,source:frame.contentWindow,data:{type:'ojjuda:spot-clear',stage:4,owner:null}}));});
-  await page.waitForFunction(()=>calls.some(c=>c.name==='record_spot_clear'&&c.args.p_stage===4));
+  await page.waitForFunction(()=>calls.some(c=>c.name==='record_spot_clear_at'&&c.args.p_stage===4));
   await page.getByRole('button',{name:'← 오쭈다 오락실',exact:true}).click();
   await page.evaluate(()=>{guestFixture.member();return guestFixture.submit('runner',99)});
   assert.equal(await page.evaluate(()=>calls.at(-1).name),'submit_score','member writes retain the authenticated API');

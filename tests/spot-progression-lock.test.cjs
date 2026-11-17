@@ -5,7 +5,7 @@ const core=require('../games/spot-difference/game-core.js'),key='jjuda-spot-six-
 const spots=[{x:20,y:20,rx:4,ry:4,text:'하나'},{x:50,y:50,rx:4,ry:4,text:'둘'},{x:80,y:80,rx:4,ry:4,text:'셋'}];
 const puzzles=[{id:30,difficulty:'hard'},{id:10},{id:50,difficulty:'very-hard'},{id:20},{id:40,difficulty:'hard'}].map(p=>({...p,title:`그림 ${p.id}`,spots,original:'/fixture.svg',difference:'/fixture.svg'}));
 const order=[1,3,0,4,2],flush=()=>new Promise(resolve=>setImmediate(resolve));
-function fixture(t,stored,{admin=false,storageBlocked=false,buy}={}){
+function fixture(t,stored,{admin=false,storageBlocked=false,buy,clear,storage={}}={}){
   const dom=new JSDOM(read('index.html'),{url:'https://fixture.test/games/spot-difference/',runScripts:'outside-only',pretendToBeVisual:true});
   const w=dom.window,d=w.document,$=id=>d.getElementById(id);t.after(()=>w.close());
   let now=100000;const ticks=[],charges=[],records=[],tools=[];
@@ -13,11 +13,12 @@ function fixture(t,stored,{admin=false,storageBlocked=false,buy}={}){
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
   d.modelContext={registerTool:tool=>tools.push(tool)};
-  w.JjudaWallet={getState:()=>({userId:owner,coins:100,canViewAnswers:admin}),subscribe:fn=>fn({userId:owner,coins:100,canViewAnswers:admin}),refresh:async()=>{},recordClear:async(userId,stage)=>{records.push({userId,stage});return {ok:true};},buy:async(request,stage)=>{charges.push({...request,stage});return buy?buy(request,stage):{ok:true,kind:request.kind,stage,spot:request.spot,price:1,extend_ms:60000};}};
+  w.JjudaWallet={getState:()=>({userId:owner,coins:100,canViewAnswers:admin}),subscribe:fn=>fn({userId:owner,coins:100,canViewAnswers:admin}),refresh:async()=>{},recordClear:async(userId,stage,completedAt)=>{if(clear)return clear(userId,stage,completedAt);records.push({userId,stage});return {ok:true};},buy:async(request,stage)=>{charges.push({...request,stage});return buy?buy(request,stage):{ok:true,kind:request.kind,stage,spot:request.spot,price:1,extend_ms:60000};}};
   w.JJUDA_PUZZLES=JSON.parse(JSON.stringify(puzzles));w.eval(read('game-core.js'));
+  for(const [key,value] of Object.entries(storage))w.localStorage.setItem(key,value);
   if(stored)w.localStorage.setItem(key,JSON.stringify(stored));
   if(storageBlocked)w.Storage.prototype.setItem=function(){throw Error('blocked');};
-  w.eval(read('app.js'));
+  w.eval(read('../../shared/games/puzzle-record-queue.js'));w.eval(read('app.js'));
   const state=()=>JSON.parse(w.localStorage.getItem(key)),current=()=>Number($('stage-picker').value);
   const load=()=>{for(const image of d.querySelectorAll('img'))image.onload?.();};
   const select=index=>{$('stage-picker').value=index;$('stage-picker').dispatchEvent(new w.Event('change'));load();};
@@ -132,4 +133,17 @@ test('storage failure still enforces locks and opens only the next picture for t
   f.solve();assert.equal(f.$('stage-picker').options[1].disabled,false);assert.equal(f.$('stage-picker').options[2].disabled,true);
   f.$('celebration-next').click();f.load();assert.equal(f.current(),order[1]);
   f.select(order[3]);assert.equal(f.current(),order[1]);
+});
+
+test('offline picture clears from real taps retry on reentry with the same completion timestamps',async t=>{
+  const attempts=[],receipts=[];
+  const first=fixture(t,null,{clear:async(id,stage,time)=>{attempts.push([id,stage,time]);throw Error('offline');}});
+  first.solve();await flush();first.$('celebration-next').onclick();first.load();first.solve();await flush();
+  assert.equal(first.state().completed.length,2);
+  const storage=Object.fromEntries(Object.entries(first.w.localStorage));
+  const second=fixture(t,null,{storage,clear:async(...args)=>{receipts.push(args);return {ok:true};}});
+  await flush();
+  assert.deepEqual(receipts.map(r=>r[1]),[10,20]);
+  for(const row of receipts)assert.deepEqual(row,attempts.find(r=>r[1]===row[1]));
+  second.w.dispatchEvent(new second.w.Event('online'));await flush();assert.equal(receipts.length,2);
 });

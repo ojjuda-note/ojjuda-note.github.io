@@ -4,6 +4,7 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
 (async()=>{const dom=new JSDOM('<body><main></main></body>',{url:'https://fixture.test',runScripts:'outside-only'});try{
  const w=dom.window;w.matchMedia=()=>({matches:true,addEventListener(){},removeEventListener(){}});
  w.ResizeObserver=class{observe(){}disconnect(){}};w.requestAnimationFrame=()=>1;w.cancelAnimationFrame=()=>{};
+ w.eval(read('games/mole/ranking.js'));w.eval(read('shared/games/score-format.js'));
  w.eval(read('games/solitaire/rules.js'));w.eval(read('games/mines/rules.js'));w.eval(read('games/sacheonseong/ranking.js'));w.eval(read('shared/games/world-game-rankings.js'));
  const world=read('world.html'),registry=world.slice(world.indexOf('function worldRankGames(){'),world.indexOf('function openWorldBoardGame'));
  const catalogStart=world.indexOf('var _r='),catalogEnd=world.indexOf(',Z=360',catalogStart);
@@ -90,7 +91,8 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  assert.equal(value('janggi'),'2연승');assert.equal(value('chess'),'7연승');assert.match(row('chess').textContent,/회원대결/);
  assert.equal(value('ttang'),'3연승');assert.equal(value('spot'),'12장');assert.match(row('tank').textContent,/11명 상대/);assert.equal(value('tour'),'4연승');assert.equal(value('yut'),'2연승');assert.equal(value('tank'),'2연승');
  assert.equal(value('matgo'),'900G');assert.equal(value('poker'),'800G');assert.equal(value('roulette'),'1,200G');assert.equal(value('photo_ttang'),'4장');
- assert.match(row('poker').querySelector('th').title,/한 판 최대 획득 골드/);
+ for(const id of ['matgo','poker'])assert.match(row(id).querySelector('th').title,/한 판 최대 획득 골드\(순이익\)/);
+ assert.match(row('roulette').querySelector('th').title,/한 판 최대 당첨 골드/);
  assert.equal(host.querySelectorAll('img').length,0,'nicknames remain text');
  for(const score of [0,'0',-1,'-1',NaN,Infinity,'Infinity']){
   rows.billiards.score=score;await w.OjjudaGameRankings.refresh();
@@ -152,5 +154,8 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  assert.equal(row('sacheonseong').querySelector('.board-game-difficulty').textContent,'3단계');
  rows.mole={nick:'두더지친구',score:3042};await w.OjjudaGameRankings.refresh();
  assert.equal(value('mole'),'42점');assert.match(row('mole').textContent,/6×6/);assert.match(row('mole').querySelector('th').title,/6×6 → 5×5/);
+ rows.mole={nick:'새 기록',score:w.OjjudaMoleRanking.rankingScore(5,1341)};await w.OjjudaGameRankings.refresh();
+ assert.equal(value('mole'),'1.3K점');assert.match(row('mole').textContent,/5×5/);
+ assert.equal(row('mole').querySelector('.board-leader-score').title,'1,341점');
  console.log('PASS: one shared ordered pager, reverse category boundaries, global page counts, unique games in every current/archive paging round, bounded last pages, real catalog, one initial RPC, per-group empty records, Mines and Sacheonseong time, variants, opponents, peak gold and safe text rendering');
 }finally{dom.window.OjjudaGameRankings?.mount(null);dom.window.close();}})().catch(e=>{console.error(e);process.exitCode=1});

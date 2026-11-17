@@ -42,7 +42,7 @@ const tick=()=>new Promise(resolve=>setImmediate(resolve));
   child.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   child.postMessage=data=>child.dispatchEvent(new child.MessageEvent('message',{data,origin:w.location.origin,source:w}));
   w.postMessage=data=>w.dispatchEvent(new w.MessageEvent('message',{data,origin:w.location.origin,source:child}));
-  child.eval(read('games/sacheonseong/ranking.js'));child.eval(read('games/sacheonseong/server.js'));
+  child.eval(read('games/sacheonseong/ranking.js'));child.eval(read('shared/games/puzzle-record-queue.js'));child.eval(read('games/sacheonseong/server.js'));
   child.document.getElementById('online-ranking').click();await tick();await tick();
   assert.deepEqual(queried,[0],'game modal asks its bridge for the overall ranking');
   assert.equal(child.document.querySelectorAll('select').length,0);
