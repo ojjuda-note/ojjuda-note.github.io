@@ -1088,7 +1088,7 @@
       members: ['쇼타로', '은석', '성찬', '원빈', '소희', '앤톤'],
       debut: '2023.09.04', debutWork: 'Get A Guitar', songs: ['Get A Guitar', 'Memories'],
       concept: '함께 성장하며 꿈을 실현해 가는 여섯 멤버.',
-      checkedAt: '2026.11.14',
+      checkedAt: '2026.11.17',
       official: 'https://riizeofficial.jp/', youtube: 'https://www.youtube.com/@RIIZE_official',
       photo: 'Riize at the 2024 Melon Music Awards-2.png', photoLabel: '멜론뮤직어워드', photoYear: '2024', credit: 'TenAsia', license: 'CC BY 3.0',
       morePhotos: [
@@ -1105,21 +1105,28 @@
         { title: 'Get A Guitar', date: '2023.09.04', type: '데뷔 싱글', songs: ['Get A Guitar', 'Memories'], href: 'https://www.youtube.com/watch?v=iUw3LPM7OBU' }
       ],
       appearances: [
+        { date: '2026-11-26', timeZone: 'America/New_York', title: '제100회 Macy’s 추수감사절 퍼레이드', sub: '미국 뉴욕 · Macy’s 주최 플로트 공연 출연 · NBC/Peacock 현지 08:30부터 중계(개별 출연 시각 미정)', href: 'https://www.macysinc.com/newsroom/news/news-details/2026/The-100th-Macys-Thanksgiving-Day-Parade-Brings-Holiday-Magic-to-Life-Through-a-Celebration-of-Culture-and-Creativity/default.aspx' },
+        { date: '2026-11-30', title: 'PLAVE × RIIZE 콜라보 싱글 Lowkey 공개 예정', sub: '한국시간 12:00 · SM·VLAST 공식 발표 · 음원·뮤직비디오 동시 공개 예정(아직 미발매)', href: 'https://www.koreaherald.com/article/10939050' },
         { date: '2026-12-09', title: '2026 FNS 가요제 제2야 생방송', sub: '후지TV 계열 · 일본 현지 18:30~21:54 방송 · 출연 시간 미정', href: 'https://riizeofficial.jp/news/20261103/' },
         { date: '2026-12-27', title: 'Sunburst 오프라인 팬 이벤트', sub: '일본 도쿄 · 추첨 당첨자 대상 · 상세 장소·시간 비공개', href: 'https://riizeofficial.jp/news/2026102302/' },
         { date: '2026-12-27', title: 'Sunburst 프리미엄 그룹 사인회', sub: '일본 도쿄 · 당첨자 50명 · 2차 응모 11.15 23:59(JST) 종료 · 상세 시간 개별 안내', href: 'https://riizeofficial.jp/news/2026102303/' }
       ],
       news: [
+        { date: '2026.11.16', tag: '콜라보', title: 'PLAVE × RIIZE 싱글 Lowkey 11월 30일 낮 12시 발매 예고', href: 'https://www.koreaherald.com/article/10939050' },
+        { date: '2026.11.14', tag: '시상식', title: 'MMA2026 글로벌 TOP10·베스트 퍼포먼스 남자 2개 부문 수상', href: 'https://www.yna.co.kr/view/AKR20261114049700005' },
+        { date: '2026.11.13', tag: '방송', title: '미국 Macy’s 추수감사절 퍼레이드 11월 26일 출연 발표', href: 'https://www.macysinc.com/newsroom/news/news-details/2026/The-100th-Macys-Thanksgiving-Day-Parade-Brings-Holiday-Magic-to-Life-Through-a-Celebration-of-Culture-and-Creativity/default.aspx' },
         { date: '2026.11.03', tag: '방송', title: '12월 9일 일본 FNS 가요제 제2야 생방송 출연 발표', href: 'https://riizeofficial.jp/news/20261103/' },
         { date: '2026.10.26', tag: '음악', title: '디지털 싱글 Insomnia 발매 · 공식 뮤직비디오 공개', href: 'https://riizeofficial.jp/news/20261026/' },
         { date: '2026.10.23', tag: '이벤트', title: '12월 27일 Sunburst 일본 오프라인 이벤트·사인회 발표', href: 'https://riizeofficial.jp/news/2026102303/' },
         { date: '2026.10.14', tag: '시상식', title: 'MMA2026 11월 14일 글로벌 데이 무대 참여 공식 발표', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' }
       ],
       merch: [
+        { title: 'DICON D’FESTA THE ORIGIN (RIIZE) 예약', sub: '공식 Weverse Shop · 2026.11.11 14:00(KST)부터 소진 시까지 예약 · 2027.01.22 출고 시작 예정 · 재고·가격은 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/151/notices/14906' },
         { title: '2026 RIIZING LOUD · TOKYO DOME 영상 작품', sub: '2026.05.27 DVD·Blu-ray 발매 · 구성·판매 여부는 공식 안내 확인', href: 'https://riizeofficial.jp/news/20260327/' },
         { title: 'RIIZE 2027 SEASON’S GREETINGS', sub: 'Weverse Shop 공식 예약 안내 · 2026.10.13 15:00(KST) 예약 시작 · 12.24부터 출고 예정 · 재고 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/151/notices/14559' },
       ],
       campaigns: [
+        { kind: '콜라보', date: '2026.11.16', title: 'PLAVE × RIIZE · Lowkey 합동 싱글 발표', sub: 'SM엔터테인먼트·VLAST 공동 음악 프로젝트 · 11.30 낮 12시 공개 예정, 아직 미발매', href: 'https://www.koreaherald.com/article/10939050' },
         { kind: '홍보대사', date: '2026.01.06', title: '삼성전자 × RIIZE · 글로벌 브랜드 앰배서더', sub: 'CES 2026 더 퍼스트룩·갤럭시 워치8·스마트싱스 공동 캠페인 · 공식 보도일', href: 'https://news.samsung.com/kr/삼성전자-ces-2026서-라이즈와-함께-일상-속-ai-경험-확산' }
       ],
       schedules: [
