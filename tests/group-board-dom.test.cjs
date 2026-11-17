@@ -471,3 +471,37 @@ test('activity editors keep separate drafts and enforce the 2–10 row limits',a
     assert.equal(choose('wheel').querySelector('input').value,'돌림판 전용');
   }finally{f.dom.window.close();}
 });
+
+test('multiline activity paste preserves other entries and rejects over-capacity pastes atomically',async()=>{
+  const f=fixture({hash:'#room='+room});
+  try{
+    await tick();const d=f.w.document;d.querySelector('[data-action=compose]').click();
+    const form=d.querySelector('#composer');form.querySelector('[data-kind-choice=poll]').click();
+    const editor=form.querySelector('[data-editor=poll]'),inputs=()=>[...editor.querySelectorAll('[name=activity_option]')];
+    assert.equal(form.elements.kind.value,'poll');assert.equal(form.querySelector('.composer-extras').open,false);
+    inputs()[1].value='이미 적은 보기';
+    const paste=(input,text)=>{const e=new f.w.Event('paste',{bubbles:true,cancelable:true});Object.defineProperty(e,'clipboardData',{value:{getData:()=>text}});input.dispatchEvent(e);assert.equal(e.defaultPrevented,true);};
+    paste(inputs()[0],'가\r\n나\n다');const values=inputs().map(el=>el.value);
+    assert.deepEqual(values,['가','이미 적은 보기','나','다']);
+    paste(inputs()[0],Array(11).fill('추가').join('\n'));assert.deepEqual(inputs().map(el=>el.value),values);
+    paste(inputs()[0],'추가\n'+'글'.repeat(41));assert.deepEqual(inputs().map(el=>el.value),values);
+    form.querySelector('[data-kind-choice=post]').click();assert.equal(form.querySelector('.composer-extras').open,true);
+  }finally{f.dom.window.close();}
+});
+
+test('ladder member picker fills empty names and keeps the manually entered pair',async()=>{
+  const f=fixture({hash:'#room='+room});
+  try{
+    await tick();const d=f.w.document;d.querySelector('[data-action=compose]').click();
+    d.querySelector('[data-kind-choice=ladder]').click();const editor=d.querySelector('[data-editor=ladder]');
+    editor.querySelector('[name=activity_name]').value='손님';editor.querySelector('[name=activity_option]').value='요리';
+    editor.querySelector('[data-pick-members]').click();await tick();
+    for(const check of editor.querySelectorAll('[data-member-list] input'))check.click();
+    editor.querySelector('[data-use-members]').click();
+    assert.deepEqual([...editor.querySelectorAll('[name=activity_name]')].map(el=>el.value),['손님','민준','수빈']);
+    assert.equal(editor.querySelector('[name=activity_option]').value,'요리');
+    editor.querySelector('[data-pick-members]').click();await tick();
+    assert.ok([...editor.querySelectorAll('[data-member-list] input')].every(el=>el.disabled));
+    d.querySelector('[data-kind-choice=wheel]').click();assert.equal(editor.querySelector('[data-members-picker]').hidden,true);
+  }finally{f.dom.window.close();}
+});
