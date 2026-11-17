@@ -135,7 +135,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
           await page.evaluate(() => OjjudaSpotGame.open());
           const frame = await page.locator('.spot-game-dialog iframe').boundingBox();
           assert.ok(frame.y + frame.height <= viewport.height-48+1, 'embedded game stays above system navigation');
-          await page.locator('.spot-game-header button').click();
+          await page.locator('.spot-game-header .arcade-return').click();
 
         }
         if (process.env.MOBILE_VIEWPORT_QA_DIR) {
