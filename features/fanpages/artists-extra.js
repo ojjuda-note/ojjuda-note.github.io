@@ -1498,10 +1498,16 @@
       official: 'https://ateez.kqent.com/', youtube: 'https://www.youtube.com/@ATEEZofficial',
       photo: 'ATEEZ in August 2024 (cropped).jpg', photoLabel: '2024년 단체', photoYear: '2024', credit: 'pinkllamanade', license: 'CC BY-SA 2.0',
       morePhotos: [
-        commonsPhoto('260228 ATEEZ Choi San @ Dolce & Gabbana FW 26.27 Show in Milan.jpg', '산 · 밀라노 패션위크', '2026', 'sublimitas viii · Flickr 원작 · Commons FlickreviewR 확인 · 크롭본', 'CC BY-SA 4.0')
+        commonsPhoto('260228 ATEEZ Choi San @ Dolce & Gabbana FW 26.27 Show in Milan.jpg', '산 · 밀라노 패션위크', '2026', 'sublimitas viii · Flickr 원작 · Commons FlickreviewR 확인 · 크롭본', 'CC BY-SA 4.0'),
+        commonsPhoto('240803 Ateez 01.jpg', '2024 뉴욕 월드투어 단체 무대', '2024', 'pinkllamanade · Flickr 원작 · Commons FlickreviewR 2025.05.12 확인', 'CC BY-SA 2.0')
       ],
-      checkedAt: '2026.11.15',
+      checkedAt: '2026.11.17',
       music: [
+        {
+          title: 'UP (Orchestra Ver.)', date: '2026.11.16', type: '공식 오케스트라 버전 싱글 · 11.16 14:00 공개',
+          songs: ['UP (Orchestra Ver.)'],
+          href: 'https://ateez.kqent.com/contents/6afa8bf02e54bd45e11e9f9e'
+        },
         {
           "title": "GOLDEN HOUR : Part.6",
           "date": "2026.11.13",
@@ -1558,10 +1564,9 @@
       ],
       appearances: [
         {
-          "date": "2026-11-15",
-          "title": "SBS 인기가요 UP 컴백 무대",
-          "sub": "15:20 KST 생방송 · 서울 SBS 등촌동 공개홀 · 사전녹화 종료 · 방청은 KQ 공식 안내 확인",
-          "href": "https://ateez.kqent.com/surveys/6af55701b2aee70bd8ed5ff0"
+          date: '2026-11-20', title: 'GOLDEN HOUR : Part.6 헬로라이브 팬사인회·영상통화',
+          sub: 'MEET&CALL 공식 주최 · 팬사인회 시간·장소 추후 안내 · 응모 11/07 종료 · 영상통화는 팬사인회 뒤 진행',
+          href: 'https://hellolive.tv/detail/1573'
         },
         {
           "date": "2026-11-19",
@@ -1671,6 +1676,9 @@
         { title: 'KQ 공식 일정·소식', sub: '한국 공개방송·공연·일정 변경', href: 'https://ateez.kqent.com/contents' }
       ],
       news: [
+        { date: '2026.11.17', tag: '협업', title: '일본 I’m donut ? × ATEEZ 한정 도넛·블랭킷 판매 시작 · 11/30까지', href: 'https://ateez-official.jp/contents/1126332' },
+        { date: '2026.11.16', tag: '음악', title: 'UP (Orchestra Ver.) 14:00 정식 공개', href: 'https://ateez.kqent.com/contents/6afa8bf02e54bd45e11e9f9e' },
+        { date: '2026.11.16', tag: '굿즈', title: '일본 타워레코드·HMV Part.6 음반 럭키로토·특별 전시 발표', href: 'https://ateez-official.jp/contents/1128190' },
         {
           "date": "2026.11.14",
           "tag": "영상",
@@ -1727,6 +1735,8 @@
         }
       ],
       merch: [
+        { title: 'I’m donut ? × ATEEZ 한정 BLANKET', sub: '일본 5개 매장 11/17~11/30 판매 · 수량 한정·소진 시 조기 종료 · 재고·가격은 매장 확인', href: 'https://ateez-official.jp/contents/1126332' },
+        { title: 'Part.6 일본 타워레코드·HMV 럭키로토 포토카드', sub: '대상 음반 구매 시 추첨 1회 · 11/17부터 매장별 한정 수량 · 시부야 특별 전시 11/23까지 예정', href: 'https://ateez-official.jp/contents/1128190' },
         {
           "title": "GOLDEN HOUR : Part.6 공식 음반 3종 세트",
           "sub": "KQ TOKTOQ 공식 음반 · 11/13 정식 발매 · 현재 판매 조건·재고는 판매처 확인",
@@ -1744,6 +1754,7 @@
         }
       ],
       campaigns: [
+        { kind: '콜라보', date: '2026.11.17', title: 'ATEEZ × I’m donut ? · 한정 도넛·블랭킷', sub: '일본 시부야·요코하마·교토·후쿠오카·이케부쿠로 5개 점포 · 11/17~11/30 · 수량 한정', href: 'https://ateez-official.jp/contents/1126332' },
         {
           "kind": "콜라보",
           "date": "2026.09.15",
