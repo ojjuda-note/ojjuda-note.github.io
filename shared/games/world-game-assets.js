@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261117-arcade-score-repair2'
+ const revision='20261118-restaurants-c2s49-gyeonggi-tv3'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -28,7 +28,7 @@
   chacha_rush:'1.1.2',
   byeolcheonji:'1.0.5',
   festival:'1.6.2',
-  restaurants:'1.13.6',
+  restaurants:'1.13.7',
   recommendations:'1.7.2',
   archery:'3.4.1',
   roulette:'1.10.1',
