@@ -7,10 +7,12 @@ const mine = $('mine');
 const status = $('my-answer');
 const submit = form.querySelector('[type=submit]');
 const main = new URL('./station.html', location.href);
+const feed = new URL('./feed.html', location.href);
+const view = new URL(location.href).searchParams.get('view');
 
-function enterMain() {
-  if (window.top === window) location.replace(main.href);
-  else window.top.location.assign(main.href);
+function enterMain(destination = main) {
+  if (window.top === window) location.replace(destination.href);
+  else window.top.location.assign(destination.href);
 }
 
 async function setupProfile(entry) {
@@ -37,6 +39,7 @@ async function setupProfile(entry) {
 }
 
 async function start(firstEntry) {
+  if (view === 'feed' && firstEntry.joined) return enterMain(feed);
   if (firstEntry.body) return enterMain();
   let entry = firstEntry;
   const {setQuestion} = await import('./preview.mjs?v=3');
@@ -44,6 +47,7 @@ async function start(firstEntry) {
   const updates = typeof BroadcastChannel === 'function' ? new BroadcastChannel('pajang-answers') : null;
   let timer;
   let refreshing = null;
+  let mode = 'answer';
 
   function paint() {
     $('slot-label').textContent = (entry.slot === 'am' ? '오전' : '오후') + ' 질문';
@@ -56,9 +60,15 @@ async function start(firstEntry) {
   function refresh() {
     if (refreshing) return refreshing;
     refreshing = call('entry').then(current => {
+      if (current.joined && mode === 'feed') return enterMain(feed);
       if (current.body) return enterMain();
+      if (current.joined && !entry.joined) {
+        $('join-fields').disabled = true;
+        $('join-fields').hidden = true;
+      }
       if (entry.day !== current.day || entry.slot !== current.slot) {
         mine.value = '';
+        $('archive').checked = false;
         status.textContent = '새 시간대의 질문이 열렸어요.';
       }
       entry = current;
@@ -78,27 +88,52 @@ async function start(firstEntry) {
   $('gate').hidden = true;
   $('welcome').hidden = false;
   const write = $('write');
-  write.onclick = () => {
+  const browse = $('browse');
+  const answerFields = $('answer-fields');
+  function openForm(destination) {
+    mode = destination;
+    if (destination === 'feed' && entry.joined) return enterMain(feed);
+    const joiningOnly = destination === 'feed';
     write.hidden = true;
+    browse.hidden = true;
     form.hidden = false;
-    write.setAttribute('aria-expanded', 'true');
-    mine.focus();
+    answerFields.hidden = joiningOnly;
+    answerFields.disabled = joiningOnly;
+    submit.textContent = joiningOnly ? '프로필 등록하고 모두의 답변 보기' : '답변 공개하고 파장 메인으로';
+    write.setAttribute('aria-expanded', String(!joiningOnly));
+    (joiningOnly ? form.elements.namedItem('name') : mine).focus();
+  }
+  write.onclick = () => openForm('answer');
+  browse.onclick = () => openForm('feed');
+  $('cancel-form').onclick = () => {
+    if (submit.disabled) return;
+    const trigger = mode === 'feed' ? browse : write;
+    mode = 'answer';
+    write.hidden = false;
+    browse.hidden = false;
+    form.hidden = true;
+    write.setAttribute('aria-expanded', 'false');
+    status.textContent = '';
+    trigger.focus();
   };
+  if (view === 'feed' || view === 'write') openForm(view === 'feed' ? 'feed' : 'answer');
   mine.oninput = () => mine.setCustomValidity('');
   form.onsubmit = async event => {
     event.preventDefault();
     if (submit.disabled) return;
     const body = mine.value.trim();
-    if (!body) {
+    if (mode === 'answer' && !body) {
       mine.setCustomValidity('답변을 한 글자 이상 적어 주세요.');
       mine.reportValidity();
       return;
     }
     submit.disabled = true;
-    status.textContent = '답변을 저장하고 있어요.';
+    const joiningOnly = mode === 'feed';
+    status.textContent = joiningOnly ? '프로필을 등록하고 있어요.' : '답변을 저장하고 있어요.';
     try {
-      const data = {body, day:entry.day, slot:entry.slot};
-      if (entry.question) data.questionId = entry.question.id;
+      const data = joiningOnly ? {} : {body, day:entry.day, slot:entry.slot};
+      if (!joiningOnly && entry.question) data.questionId = entry.question.id;
+      if (!joiningOnly && $('archive').checked) data.archive = true;
       if (!entry.joined) {
         const {province, city, interest, age, consent} = form.elements;
         Object.assign(data, {
@@ -106,9 +141,10 @@ async function start(firstEntry) {
           region:[province.value, city.value].filter(Boolean).join(' '), interest:interest.value, consent:consent.checked
         });
       }
-      await call(entry.joined ? 'answer' : 'join', data);
+      const action = joiningOnly ? 'participate' : entry.joined ? 'answer' : 'join';
+      await call(action, data);
       updates?.postMessage('saved');
-      enterMain();
+      enterMain(joiningOnly ? feed : main);
     } catch (error) {
       status.textContent = error.message || '저장하지 못했어요. 다시 시도해 주세요.';
       if (error.code === 'PT409') await refresh();
