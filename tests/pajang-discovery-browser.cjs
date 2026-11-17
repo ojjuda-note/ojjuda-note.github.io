@@ -235,7 +235,9 @@ function clientFixture(hash) {
     await page.screenshot({path:path.join(dir,'pajang-profile-desktop.png'),animations:'disabled'});
     await selectMenu('오늘');await answers.waitFor();await capture('home-desktop');await mast.click();await page.waitForURL('**/world.html');
     await page.setViewportSize({width:390,height:844});
-    await page.evaluate(()=>{sessionStorage.fixtureMode='new';window.hostMarker='stay';});
+    await page.getByRole('button',{name:'파장 열기'}).click();
+    await page.waitForURL('**/station.html');await nav.waitFor();
+    await page.evaluate(()=>{sessionStorage.fixtureMode='new';});
     await page.goto(origin+'/world.html#pajang-radar');
     await page.evaluate(()=>{window.hostMarker='stay';});
     await page.getByRole('button',{name:'파장 열기'}).click();
