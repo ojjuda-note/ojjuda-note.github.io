@@ -8,8 +8,8 @@
   ['screw_flat','나사 풀기 · 평면','점'],['spot','틀린그림 찾기','장'],['archery','바람의 궁수','점'],
   ['chacha_rush','차차 러시!','점'],['bang','뱅','연승'],['tank','탱크','연승'],
   ['tour','오쭈다 투어','연승'],['yut','윳놀이','연승'],['ttang','땅따먹기','연승'],['janggi','장기','연승'],
-  ['chess','체스','연승'],['billiards','당구','연승'],['matgo','맞고','골드'],
-  ['poker','포커','골드'],['roulette','룰렛','골드'],['photo_ttang','포토 땅따먹기','장']
+  ['chess','체스','연승'],['billiards','당구','연승'],['matgo','맞고','G'],
+  ['poker','포커','G'],['roulette','룰렛','G'],['photo_ttang','포토 땅따먹기','장']
  ];
  const byId = new Map(games.map(([id,name,unit])=>[id,{name,unit}]));
  const aliases = {__proto__:null,screw:'screw_box',carom4:'billiards',carom3:'billiards',pool8:'billiards'};
@@ -38,7 +38,7 @@
    return points==null?'—':(window.OjjudaScoreFormat?.(points)??number(points))+'점';
   }
   const unit=byId.get(id)?.unit||'점';
-  return (unit==='점'&&window.OjjudaScoreFormat?window.OjjudaScoreFormat(score):number(record.score))+unit;
+  return ((unit==='점'||unit==='G')&&window.OjjudaScoreFormat?window.OjjudaScoreFormat(score):number(record.score))+unit;
  }
  function describe(record,id){
   const detail=[];
@@ -74,9 +74,10 @@
   const detail=describe(record,game);
   if(detail){const small=document.createElement('small');small.textContent=detail;who.append(small);}
   const points=document.createElement('span');points.className='rank-points';points.textContent=formatScore(record,game);
-  if(byId.get(game)?.unit==='점'){
+  const unit=byId.get(game)?.unit;
+  if(unit==='점'||unit==='G'){
    const exact=game==='mole'?window.OjjudaMoleRanking?.rankingRecord(record.score)?.points:record.score;
-   if(exact!=null)points.title=number(exact)+'점';
+   if(exact!=null)points.title=number(exact)+unit;
   }
   li.append(position,who,points);return li;
  }

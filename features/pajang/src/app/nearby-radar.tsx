@@ -29,25 +29,25 @@ function bearingLabel(person: LocatedPerson) {
 function Grid({heading}:{heading:number}){
   return <svg aria-hidden="true" className="radar-grid" viewBox="0 0 400 400">
     <defs>
-      <radialGradient id="scope-glow"><stop offset="0" stopColor="#30283f"/><stop offset="1" stopColor="#14131f"/></radialGradient>
-      <linearGradient id="scope-sweep" gradientUnits="userSpaceOnUse" x1="40.7" y1="96.5" x2="110.8" y2="32.2"><stop stopColor="#c3b3ea" stopOpacity=".06"/><stop offset="1" stopColor="#b08ae4" stopOpacity=".58"/></linearGradient>
+      <radialGradient id="scope-glow"><stop offset="0" stopColor="#f6f7ea"/><stop offset="1" stopColor="#dfe9d6"/></radialGradient>
+      <linearGradient id="scope-sweep" gradientUnits="userSpaceOnUse" x1="40.7" y1="96.5" x2="110.8" y2="32.2"><stop stopColor="#b9cea1" stopOpacity=".06"/><stop offset="1" stopColor="#82a07a" stopOpacity=".58"/></linearGradient>
     </defs>
     <circle cx="200" cy="200" r="196" fill="url(#scope-glow)"/>
     <g className="radar-compass" transform={`rotate(${-heading} 200 200)`}>
       {Array.from({length:60},(_,i)=><line key={i} x1="200" y1="4" x2="200" y2={i%5===0?"12":"8"}
-        transform={`rotate(${i*6} 200 200)`} stroke="#b7a7c6" strokeOpacity={i%5===0?".8":".45"}/>)}
-      {[0,30,60,90,120,150].map(deg=><line key={deg} x1="17" y1="200" x2="383" y2="200" transform={`rotate(${deg} 200 200)`} stroke="#968ca9" strokeOpacity=".23" strokeWidth=".9"/>)}
+        transform={`rotate(${i*6} 200 200)`} stroke="#8b9c83" strokeOpacity={i%5===0?".8":".45"}/>)}
+      {[0,30,60,90,120,150].map(deg=><line key={deg} x1="17" y1="200" x2="383" y2="200" transform={`rotate(${deg} 200 200)`} stroke="#859b79" strokeOpacity=".23" strokeWidth=".9"/>)}
       {["N","E","S","W"].map((letter,i)=><g key={letter} transform={`rotate(${i*90} 200 200)`}>
-        <text x="200" y="23" textAnchor="middle" fontSize="9" fontWeight="750" fill={i===0?"#f0c99e":"#c7bed8"}>{letter}</text>
+        <text x="200" y="23" textAnchor="middle" fontSize="9" fontWeight="750" fill={i===0?"#914f53":"#57714e"}>{letter}</text>
       </g>)}
-      <path d="m200 3 -3.5 8 h7 Z" fill="#e0b78a"/>
+      <path d="m200 3 -3.5 8 h7 Z" fill="#a56962"/>
     </g>
     <g className="radar-sweep">
       <path d="M200 200 L40.7 96.5 A190 190 0 0 1 110.8 32.2 Z" fill="url(#scope-sweep)"/>
-      <path d="M200 200 L110.8 32.2" stroke="#9b77c8" strokeOpacity=".63" strokeWidth="1.3"/>
+      <path d="M200 200 L110.8 32.2" stroke="#78936d" strokeOpacity=".63" strokeWidth="1.3"/>
     </g>
-    {bands.map(b=><g key={b.limit}><circle cx="200" cy="200" r={b.ring} fill="none" stroke="#a49ab7" strokeOpacity=".49" strokeWidth="1"/>
-      <text x="200" y={200-b.ring+(b.limit===15?23:11)} textAnchor="middle" fill="#d2c9df" fontSize="10" fontWeight="650" stroke="#211e30" strokeWidth="3" paintOrder="stroke">{b.limit}km</text></g>)}
+    {bands.map(b=><g key={b.limit}><circle cx="200" cy="200" r={b.ring} fill="none" stroke="#9aab90" strokeOpacity=".49" strokeWidth="1"/>
+      <text x="200" y={200-b.ring+(b.limit===15?23:11)} textAnchor="middle" fill="#52664c" fontSize="10" fontWeight="650" stroke="#eef2e6" strokeWidth="3" paintOrder="stroke">{b.limit}km</text></g>)}
   </svg>;
 }
 

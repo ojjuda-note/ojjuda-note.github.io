@@ -20,8 +20,9 @@ test('rank viewer paints only top ten, highlights me and separates a personal 12
  const queries=[];
  window.supabase={createClient:()=>({auth:guestAuth,rpc:(name,args)=>{
   queries.push([name,args]);
+  const topScore={matgo:999,poker:13062,roulette:1200000}[args.p_game]??57680;
   const response={month:'2026-11',startsAt:'2026-10-31T16:00:00Z',endsAt:'2026-11-30T16:00:00Z',
-   leaders:Array.from({length:10},(_,i)=>({nick:'선수'+(i+1),score:i===0?57680:100-i*5,me:args.p_game==='mines'&&i===2})),
+   leaders:Array.from({length:10},(_,i)=>({nick:'선수'+(i+1),score:i===0?topScore:100-i*5,me:args.p_game==='mines'&&i===2})),
    mine:args.p_game==='mines'?null:{rank:12,nick:'나',score:20,me:true}};
   return {abortSignal:async()=>({data:response,error:null})};
  }})};
@@ -52,6 +53,15 @@ test('rank viewer paints only top ten, highlights me and separates a personal 12
  assert.equal(document.querySelectorAll('#ranking-leaders .rank-row.is-me').length,1,'top-ten member is highlighted');
  assert.equal(document.querySelector('#ranking-mine').hidden,true,'top-ten members have no duplicate record below');
  assert.equal(new URL(window.location.href).searchParams.get('game'),'mines');
+
+ for(const [id,label,full] of [['matgo','999G','999G'],['poker','13.1KG','13,062G'],['roulette','1.2MG','1,200,000G']]){
+  const select=document.querySelector('#ranking-game');
+  select.value=id;select.dispatchEvent(new window.Event('change'));
+  await new Promise(resolve=>setTimeout(resolve,15));
+  const top=document.querySelector('#ranking-leaders .rank-points');
+  assert.equal(top.textContent,label);assert.equal(top.title,full);
+  assert.equal(document.querySelector('#ranking-mine .rank-points').textContent,'20G');
+ }
 });
 
 test('an unknown game opens the default ranking',async t=>{
