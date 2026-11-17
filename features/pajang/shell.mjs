@@ -10,7 +10,7 @@ if(window.parent!==window && new URLSearchParams(location.search).get('embed')==
       const link=host.createElement('link');
       link.id='pajang-dialog-surface';
       link.rel='stylesheet';
-      link.href=new URL('./dialog-surface.css?v=night1',import.meta.url).href;
+      link.href=new URL('./dialog-surface.css?v=letter1',import.meta.url).href;
       host.head.append(link);
     }
     document.querySelector('.agit-return')?.addEventListener('click',event=>{

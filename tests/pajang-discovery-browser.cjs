@@ -13,16 +13,18 @@ const state = {day:'2026-11-17',slot:'pm',question:{id:1,q:['처음 만난 날, 
 const base = {region:'서울특별시',day:'2026-11-17',slot:'am',at:1,sent:false,received:false,own:false};
 const rows = [
   {...base,peer:'a',name:'은하',interest:'book',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'동네 책방에 들러서 서로에게 어울리는 책을 한 권씩 골라주고 싶어요.'},
-  {...base,peer:'b',name:'단비',interest:'walk',question:'처음 만났을 때 편해지는 순간은 언제예요?',body:'나란히 걸으면서 같은 풍경을 보고 웃을 때요.'},
+  {...base,peer:'b',name:'단비',interest:'walk',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'나란히 걸으면서 같은 풍경을 보고 웃을 때요.'},
 ];
 
 function clientFixture(hash) {
   return `
     const state=${JSON.stringify(state)}, rows=${JSON.stringify(rows)};
     const mode=sessionStorage.fixtureMode||'member';
+    const accepted=sessionStorage.accepted==='yes';
     const friend={id:'peer1',name:'라온',age:28,interest:'walk',region:'경기도'};
     const offered={id:'peer2',name:'유진',age:30,interest:'book',region:'서울특별시'};
     state.people=[friend,offered];state.signals=[{src:'me',dst:'peer1'},{src:'peer1',dst:'me'},{src:'peer2',dst:'me'}];
+    if(accepted)state.signals.push({src:'me',dst:'peer2'});
     const entry={...state,joined:mode!=='new',body:mode==='new'?'':state.me.body,nickname:'보리',
       question:{...state.question,answers:['책을 골라요.','같이 걸어요.','커피를 마셔요.']}};
     if(mode==='new')state.me.body='';
@@ -38,10 +40,15 @@ function clientFixture(hash) {
         if(name==='pajang_member'){
           if(p.p_action==='entry' && mode==='denied')return Promise.resolve({error:{code:'42501'}});
           if(p.p_action==='entry')return Promise.resolve({data:entry});
+          if(p.p_action==='signal' && p.p_data.peer==='peer2'){
+            sessionStorage.accepted='yes';state.signals.push({src:'me',dst:'peer2'});state.remaining--;
+          }
+          if(p.p_action==='thread'&&p.p_data.peer==='peer2')return Promise.resolve({data:[]});
           if(p.p_action==='thread')return Promise.resolve({data:[{id:'1',src:'peer1',dst:'me',body:'안녕하세요!',at:1}]});
           if(p.p_action==='participate'||p.p_action==='join'){sessionStorage.fixtureMode='member';entry.joined=true;}
           return Promise.resolve({data:state});
         }
+        if(name==='pajang_my_answers')return Promise.resolve({data:[{...rows[0],body:'내 책방 답변'}]});
         if(name==='pajang_discovery_visibility')return Promise.resolve({data:{visible:false,hasGender:true}});
         if(name==='pajang_exchange')return Promise.resolve({data:{myCount:0,peerCount:1,eligible:false,profile:'none',photos:'none',fields:{}}});
         if(name!=='pajang_discovery_feed')throw Error(name);
@@ -74,7 +81,7 @@ function clientFixture(hash) {
       if(pathname==='/program')return route.fulfill({contentType:'application/javascript',body:bundle});
       if(pathname==='/world.html')return route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/features/home/agit-hub.css"><title>아지트</title><script src="/config.js"></script><button data-pajang-launch>파장 열기</button><script type="module">import {openPajang} from "/features/pajang/dialog.mjs";document.querySelector("button").onclick=e=>openPajang(e.currentTarget);</script></html>'});
       const file=pathname.slice(project.length)||'index.html';
-      if(!['station.html','station.css','member.mjs','member-main.mjs','load-station.mjs','nocturne.css','dialog-surface.css','assets/favicon.svg','shell.css','shell.mjs','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
+      if(!['station.html','station.css','member.mjs','member-main.mjs','load-station.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','shell.mjs','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
       const mime={html:'text/html',css:'text/css',mjs:'text/javascript',json:'application/json',svg:'image/svg+xml'}[path.extname(file).slice(1)];
       return route.fulfill({contentType:mime,body:await fs.readFile(path.join(feature,file))});
     });
@@ -83,6 +90,7 @@ function clientFixture(hash) {
     const radio=value=>group.locator('input[value="'+value+'"]');
     const selected=async value=>assert.equal(await radio(value).isChecked(),true);
     await cards.nth(1).waitFor();
+    assert.equal(await answers.getByRole('heading',{name:rows[0].question}).count(),1);
     assert.equal(await page.evaluate(()=>window.artPending),true,'feed is usable with all artwork still pending');
     assert.deepEqual(await group.locator('label span').allTextContents(),['남','','여']);
     const dir=path.join(__dirname,'artifacts/pajang-discovery');
@@ -136,7 +144,8 @@ function clientFixture(hash) {
       const box=await mast.boundingBox();assert.ok(box && box.y>=0 && box.y<65,'Agit exit stays in the viewport');
       assert.equal(await mast.getAttribute('href'),'/world.html');
     };
-    await nav.waitFor();assert.equal(await nav.getByRole('link').count(),5);
+    await nav.waitFor();assert.equal(await nav.getByRole('link').count(),3);
+    assert.deepEqual(await nav.getByRole('link').allTextContents(),['오늘','마음함','내 파장']);
     await expectHome();
     const capture=async name=>{
       await page.waitForTimeout(210);
@@ -145,7 +154,7 @@ function clientFixture(hash) {
     };
     await cards.first().waitFor();
     await page.evaluate(async()=>{
-      const css=getComputedStyle(document.documentElement).getPropertyValue('--night-scene');
+      const css=getComputedStyle(document.documentElement).getPropertyValue('--letter-scene');
       const scene=new Image();
       scene.src=css.trim().slice(5,-2);
       await scene.decode();
@@ -154,25 +163,29 @@ function clientFixture(hash) {
     await radio('female').tap();await cards.filter({hasText:rows[1].body}).waitFor();
     await answers.locator('article').first().scrollIntoViewIfNeeded();await expectHome();
     const readingY=await page.evaluate(()=>scrollY);
-    await selectMenu('레이더');await page.getByRole('heading',{name:'주변 레이더'}).waitFor();
-    await capture('radar-mobile');
+    await selectMenu('마음함');await page.getByRole('heading',{name:'마음함'}).waitFor();
     await page.goBack();await selected('female');await cards.filter({hasText:rows[1].body}).waitFor();
     assert.ok(Math.abs(await page.evaluate(()=>scrollY)-readingY)<5,'back restores the reading position');
-    await selectMenu('레이더');await page.getByRole('heading',{name:'주변 레이더'}).waitFor();
+    await page.getByRole('button',{name:'내 주변',exact:true}).click();await page.getByRole('heading',{name:'주변 레이더'}).waitFor();
+    await capture('radar-mobile');
     await page.reload();await page.getByRole('heading',{name:'주변 레이더'}).waitFor();await expectHome();
-    await selectMenu('신호함');await page.getByRole('button',{name:'신호 수락하기'}).waitFor();
+    await selectMenu('마음함');await page.getByRole('button',{name:'수락하고 대화하기'}).waitFor();
     await capture('inbox-mobile');
-    await selectMenu('대화');await page.getByRole('button',{name:'대화 열기'}).click();
+    await page.getByRole('button',{name:'대화 열기'}).click();
     await page.getByText('안녕하세요!',{exact:true}).waitFor();assert.ok(page.url().includes('chat=peer1'));
     const composer=page.getByRole('textbox',{name:'메시지',exact:true});
     await composer.fill('반가워요, 라온님.');
-    await selectMenu('신호함');await page.goBack();
+    await selectMenu('마음함');await page.goBack();
     await page.getByText('안녕하세요!',{exact:true}).waitFor();
     assert.equal(await composer.inputValue(),'반가워요, 라온님.');
     await capture('chat-mobile');
     await page.reload();await page.getByText('안녕하세요!',{exact:true}).waitFor();
     await page.goBack();await page.getByRole('button',{name:'대화 열기'}).waitFor();
+    await page.getByRole('button',{name:'수락하고 대화하기'}).click();
+    await page.waitForURL('**/*chat=peer2');
+    await page.getByText('두 사람의 대화가 열렸어요.').waitFor();
     await selectMenu('내 파장');await page.getByRole('heading',{name:'내 파장'}).waitFor();
+    await page.getByText('내 책방 답변').waitFor();
     await page.getByRole('button',{name:'공개 소개 수정'}).click();
     const dialog=page.getByRole('dialog');await dialog.waitFor();await capture('profile-editor');
     await dialog.getByRole('link',{name:'아지트로',exact:true}).click();await page.waitForURL('**/world.html');
@@ -180,7 +193,7 @@ function clientFixture(hash) {
     await page.getByRole('heading',{name:'주변 레이더'}).waitFor();
     await selectMenu('내 파장');await page.setViewportSize({width:1080,height:840});
     await page.screenshot({path:path.join(dir,'pajang-profile-desktop.png'),animations:'disabled'});
-    await selectMenu('오늘');await answers.waitFor();await mast.click();await page.waitForURL('**/world.html');
+    await selectMenu('오늘');await answers.waitFor();await capture('home-desktop');await mast.click();await page.waitForURL('**/world.html');
     await page.setViewportSize({width:390,height:844});
     await page.evaluate(()=>{sessionStorage.fixtureMode='new';window.hostMarker='stay';});
     await page.goto(origin+'/world.html#pajang-radar');
@@ -204,7 +217,7 @@ function clientFixture(hash) {
       await page.locator('#gate p').filter({hasText:mode==='guest'?'로그인한':'이 계정은'}).waitFor();
       await expectHome();await mast.click();await page.waitForURL('**/world.html');
     }
-    console.log('PASS five destinations, scroll-stable home exit, modal exit, direct legacy routes, thread reload/back, join handoff, guest/denied returns and embedded focus restoration');
+    console.log('PASS three primary destinations, direct acceptance, scroll-stable home exit, modal exit, direct legacy routes, thread reload/back, join handoff, guest/denied returns and embedded focus restoration');
     assert.deepEqual(errors,[]);
     console.log('PASS 320/390/1080px layout, artwork-independent startup, tap/swipe/keyboard, delayed results, cancellation, in-memory revisit, and denial');
   } finally {await browser.close();}

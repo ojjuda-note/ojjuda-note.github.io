@@ -5,6 +5,7 @@ import regionCatalog from "../../regions.json";
 
 import {I} from "./icons";
 import NearbyRadar from "./nearby-radar";
+import MyAnswers from "./my-answers";
 import AnswerHistory, {type DiscoveryAnswer} from "./answer-history";
 import AnswerGenderVisibility from "./answer-gender-visibility";
 
@@ -27,7 +28,7 @@ async function request<T,>(url:string,init?:RequestInit):Promise<T>{
   return data as T;
 }
 function Art({interest,large=false}:{interest:string;large?:boolean}){return <span className={"avatar"+(large?" large":"")} style={{background:badges(interest).bg}}>{getArt(interest)?<img src={getArt(interest)} alt=""/>:<I n="user" s={large?26:18}/> }</span>;}
-function Blank({icon,title,body,button,onClick}:{icon:string;title:string;body:string;button?:string;onClick?:()=>void}){return <div className="empty"><span className="emptyicon"><I n={icon} s={27}/></span><h3>{title}</h3><p>{body}</p>{button&&<button className="secondary" onClick={onClick}>{button}<I n="arrow" s={16}/></button>}</div>;}
+function Blank({icon,title,body,button,onClick}:{icon:string;title:string;body:string;button?:string;onClick?:()=>void}){return <div className="empty"><span className="emptyicon"><I n={icon} s={27}/></span><h3>{title}</h3>{body&&<p>{body}</p>}{button&&<button className="secondary" onClick={onClick}>{button}<I n="arrow" s={16}/></button>}</div>;}
 function Dialog({children,close,title}:{children:React.ReactNode;close:()=>void;title:string}){
   const ref=useRef<HTMLDialogElement>(null);
   useEffect(()=>{const node=ref.current;if(node&&!node.open)node.showModal();const overflow=document.body.style.overflow;document.body.style.overflow="hidden";return()=>{node?.close();document.body.style.overflow=overflow;};},[]);
@@ -63,7 +64,6 @@ function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew:boolea
     {isNew&&<label className="checkrow"><input type="checkbox" required checked={consent} onChange={e=>setConsent(e.target.checked)}/><span>만 19세 이상이며 파장 회원에게 닉네임과 내가 선택한 공개 정보를 보여 주는 데 동의해요.</span></label>}
     <button className="primary wide" disabled={busy||(isNew&&!consent)}>{isNew?"회원 채널 시작하기":"프로필 저장"}<I n="arrow" s={16}/></button></form>;
 }
-function Meter(){return <div className="meter" aria-hidden="true"><b>FM</b><div className="ruler"><i/><div className="numbers">{["88","92","96","100","104","108"].map(x=><span key={x}>{x}</span>)}</div><strong/></div><b>MHz</b></div>;}
 
 export default function StationApp({initialStation}:{initialStation:Station}){
   const [live,setLive]=useState<Station>(initialStation);
@@ -91,7 +91,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const incoming=s.people.filter(p=>signalsWith(s,p.id).incoming),sent=s.people.filter(p=>signalsWith(s,p.id).outgoing),matches=s.people.filter(p=>signalsWith(s,p.id).match);
   const validThread=Boolean(active&&signalsWith(s,thread).match);
   const available=s.remaining;
-  const themeText=theme.q.join(" "),date=new Date(s.day+"T12:00:00+09:00");
+  const themeText=theme.q.join(" ");
   async function refresh(){
     const rev=++serverRevision.current;
     try{const next=await request<Station>("/api/station");if(serverRevision.current===rev){setLive(next);setNet("");}}
@@ -155,7 +155,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   }
   useEffect(()=>{
     if(thread&&!validThread){
-      navigate("chat","",false,true);
+      navigate("inbox","",false,true);
       setToast("이 대화방을 열 수 없어요.");
     }
   },[thread,validThread]);
@@ -198,51 +198,78 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       if(n.me){go("today");}else{location.replace("./");}}
     catch{setError("회원 채널에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.");}finally{lock.current=false;setBusy(false);}
   }
-  const signalCount=incoming.filter(p=>!signalsWith(s,p.id).match).length;
+  const waiting=incoming.filter(p=>!signalsWith(s,p.id).match);
+  const signalCount=waiting.length;
+  const shownSignals=inbox==="received"?waiting:sent;
+  async function deliver(peerId:string,note:string,answer?:DiscoveryAnswer){
+    const next=await act("signal",{peer:peerId,note,...(answer?{answerDay:answer.day,answerSlot:answer.slot}:{day:s.day,slot:s.slot})});
+    if(!next)return;
+    setHistoryRevision(n=>n+1);
+    if(signalsWith(next,peerId).match)startChat(peerId);
+    else setModal({kind:"result",peer:peerId});
+  }
   function ListPerson({p,type}:{p:Person;type:"received"|"sent"|"chat"}){
     const v=signalsWith(s,p.id);const sig=type==="received"?v.incoming:v.outgoing;
-    return <div className="listperson"><button className="person" onClick={()=>open({kind:"person",peer:p.id})}><Art interest={p.interest}/><span><strong>{p.name}</strong><small>{introDetails(p)}</small></span></button><p>{type==="chat"?"서로의 신호가 닿았어요.":sig?.note||(v.match?"서로의 신호가 닿았어요.":type==="received"?"신호를 보내왔어요.":"상대의 신호를 기다리고 있어요.")}</p><button className="secondary small" onClick={()=>signal(p)}>{v.match?"대화 열기":type==="sent"?"상태 보기":"신호 수락하기"}<I n="right" s={15}/></button></div>;
+    return <div className="listperson"><button className="person" onClick={()=>open({kind:"person",peer:p.id})}><Art interest={p.interest}/><span><strong>{p.name}</strong><small>{introDetails(p)}</small></span></button><p>{type==="chat"?"서로의 신호가 닿았어요.":sig?.note||(v.match?"서로의 신호가 닿았어요.":type==="received"?"신호를 보내왔어요.":"상대의 신호를 기다리고 있어요.")}</p><button className="secondary small" disabled={busy||(!available&&type==="received")} onClick={()=>type==="received"?void deliver(p.id,""):signal(p)}>{v.match?"대화 열기":type==="sent"?"상태 보기":"수락하고 대화하기"}<I n="right" s={15}/></button></div>;
   }
   const modalTitle=modal?({answer:slotName+" 답변",signal:"신호 보내기",result:"신호 상태",setup:"회원 프로필 만들기",edit:"프로필 수정",channels:"채널 선택",help:"파장 이용 안내",block:"프로필 차단",delete:"데이터 삭제",person:"상대 프로필",privateProfile:"교환용 프로필",privatePhotos:"교환용 사진"}[modal.kind]):"";
   return <div className="station-layout">
     <StationNavigation tab={tab} onGo={go} pending={signalCount}/>
     <main className="wrap station-content" id="station-content">
     {net&&<div className="notice" role="status">{net}<button onClick={()=>{void refresh();if(thread)void readThread(thread);}}>다시 연결</button></div>}
-    {tab==="radar"&&<NearbyRadar station={s} sample={false} onProfile={id=>open({kind:"person",peer:id})} onJoin={()=>location.assign("./")} onSettings={async cell=>Boolean(await act(cell?"radar-enable":"radar-disable",cell?{...cell,consent:true,shareBearing:true}:{},true))}/>}
+    {tab==="radar"&&<><button className="return-today" onClick={()=>go("today")}><I n="back" s={15}/>오늘</button><NearbyRadar station={s} sample={false} onProfile={id=>open({kind:"person",peer:id})} onJoin={()=>location.assign("./")} onSettings={async cell=>Boolean(await act(cell?"radar-enable":"radar-disable",cell?{...cell,consent:true,shareBearing:true}:{},true))}/></>}
     {visitedToday&&<div className="today-page" hidden={tab!=="today"}>
-      <section className="hero" aria-label={slotName+(me?.body?" 답변 완료":" 질문")}>
-        <div className="heroart" aria-hidden="true"><div className="moon-study"/></div>
-        <div className="herocopy">
-          <div className="onrow"><span className="onair"><i/>ON AIR</span><span className="questionlabel">{slotName} {me?.body?"답변 완료":"질문"}</span></div>
-          {me?.body?<><h1>{theme.q.map(line=><span key={line}>{line}</span>)}</h1><p>내 답변을 남겼어요. 다음 질문은 {nextQuestion}에 열려요.</p>
-            <a className="herobtn" href="#answers" onClick={event=>{if(!event.ctrlKey&&!event.metaKey&&!event.shiftKey&&!event.altKey){event.preventDefault();navigate("today","",true);}}}>모두의 답변 보기<I n="arrow" s={16}/></a></>:
-            <><h1>{theme.q.map(line=><span key={line}>{line}</span>)}</h1><p>이 시간대의 질문에는 한 번 답할 수 있어요.</p>
-            <button className="herobtn" disabled={!ready} onClick={()=>open({kind:me?"answer":"setup"})}><I n="pencil" s={16}/>내 답변 쓰기<I n="arrow" s={16}/></button></>}
+      <section className="letter-hero" aria-label={slotName+" 질문"}>
+        <div className="letter-copy">
+          <div className="letter-date">오늘의 질문 <time dateTime={s.day}>{s.day.replaceAll("-",".")} · {slotName}</time></div>
+          <h1>{themeText}</h1>
+          {me?.body&&<p className="saved-line"><strong>✓ 내 답변을 남겼어요.</strong> 다음 질문은 {nextQuestion}에 열려요.</p>}
+          <div className="letter-actions">
+            {!me?.body&&<button className="primary" disabled={!ready} onClick={()=>open({kind:me?"answer":"setup"})}><I n="pencil" s={16}/>내 답변 쓰기</button>}
+            <a href="#answers" onClick={event=>{if(!event.ctrlKey&&!event.metaKey&&!event.shiftKey&&!event.altKey){event.preventDefault();navigate("today","",true);}}}>모두의 답변 보기<I n="arrow" s={16}/></a>
+          </div>
         </div>
-        <div className="herofoot"><div className="edition"><i/>{s.day.replaceAll("-",".")}<b> / </b>{new Intl.DateTimeFormat("en",{weekday:"short",timeZone:"Asia/Seoul"}).format(date).toUpperCase()}</div><Meter/></div>
       </section>
+      <button className="mobile-near" onClick={()=>go("radar")}><I n="radar" s={16}/>내 주변<I n="right" s={14}/></button>
+      <div className="today-columns">
       <AnswerHistory active={tab==="today"} station={s} revision={historyRevision}
         onProfile={answer=>answer.own?go("profile"):open({kind:"person",peer:answer.peer,answer})}
         onSignal={answer=>open({kind:"signal",peer:answer.peer,answer})}
         onChat={id=>void openHistoryChat(id)}
-        onWrite={()=>open({kind:"answer"})}/></div>}
-    {tab==="inbox"&&<section className="innerpage" key="inbox"><div className="channel-heading"><div className="pagetitle"><I n="signal" s={28}/><h1>신호함</h1></div><p className="sub">서로 신호를 보내면 둘만의 대화가 열려요.</p></div><div className="seg"><button className={inbox==="received"?"on":""} onClick={()=>setInbox("received")}>받은 신호 {incoming.length}</button><button className={inbox==="sent"?"on":""} onClick={()=>setInbox("sent")}>보낸 신호 {sent.length}</button></div>{(inbox==="received"?incoming:sent).length?<div className="listbox">{(inbox==="received"?incoming:sent).map(p=><ListPerson key={p.id} p={p} type={inbox==="received"?"received":"sent"}/>)}</div>:<Blank icon="signal" title={inbox==="received"?"아직 받은 신호가 없어요":"아직 보낸 신호가 없어요"} body="오늘의 답변으로 취향이 닿는 사람을 찾아보세요." button="답변 둘러보기" onClick={()=>navigate("today","",true)}/>}</section>}
-    {tab==="chat"&&<section className="innerpage" key={thread||"chat"}>{(!active||!thread||!signalsWith(s,thread).match)?<><div className="channel-heading"><div className="pagetitle"><I n="chat" s={28}/><h1>대화</h1></div><p className="sub">서로의 신호가 닿은 사람과 이야기를 이어가세요.</p></div>{matches.length?<div className="listbox">{matches.map(p=><ListPerson key={p.id} p={p} type="chat"/>)}</div>:<Blank icon="chat" title="첫 대화를 기다리고 있어요" body="받은 신호를 수락하면 둘만의 대화방이 열려요." button="신호함 보기" onClick={()=>{setInbox("received");go("inbox");}}/>}</>:<div className="chatbox"><div className="chatheader"><button className="iconbtn" aria-label="대화 목록" onClick={()=>go("chat")}><I n="back"/></button><button className="person" onClick={()=>open({kind:"person",peer:active.id})}><Art interest={active.interest}/><span><strong>{active.name}</strong><small>서로 신호를 보낸 회원</small></span></button><button className="quiet" onClick={()=>open({kind:"block",peer:active.id})}>차단</button></div><ChatExchange key={active.id} peer={active.id} name={active.name} lastMessage={lastMsg}/><div className="chatlog" onScroll={event=>{const log=event.currentTarget;followChat.current=log.scrollHeight-log.scrollTop-log.clientHeight<64;}}>{threadMessages.length===0?<div className="chatintro"><I n="wave" s={32}/><p>두 사람의 대화가 열렸어요.</p><small>오늘의 답변을 떠올리며 첫인사를 건네보세요.</small></div>:<>{threadMessages.length>=100&&<p className="chatnote">최근 메시지 100개</p>}{threadMessages.map(m=><div key={m.id} className={"bubbleline "+(m.src===me?.id?"mine":"")}><p>{m.body}</p><time>{fmtClock(m.at)}</time></div>)}</>}<div ref={bottom}/></div>{error&&!modal&&<p className="error">{error}</p>}<form className="composer" onSubmit={async e=>{e.preventDefault();if(!draft.trim())return;const ok=await act("message",{peer:thread,body:draft.trim(),id:crypto.randomUUID()});if(ok){draftByPeer.current.delete(thread);if(currentPeer.current===thread){setDraft("");followChat.current=true;void readThread(thread);}}}}><input maxLength={500} aria-label="메시지" placeholder="메시지를 입력하세요" value={draft} onChange={e=>{setDraft(e.target.value);draftByPeer.current.set(thread,e.target.value);}}/><button aria-label="메시지 보내기" disabled={busy||!draft.trim()}><I n="send" s={18}/></button></form></div>}</section>}
+        onWrite={()=>open({kind:"answer"})}/>
+        <aside className="today-rail">
+          <section className="rail-paper"><div className="rail-title"><h2>마음함</h2><I n="heart" s={23}/></div>
+            <p>{waiting.length?waiting[0].name+"님이 신호를 보냈어요.":matches.length?"이야기를 이어 갈 대화가 있어요.":"받은 신호와 대화를 모아 봐요."}</p>
+            <button onClick={()=>go("inbox")}>마음함 열기<I n="arrow" s={16}/></button>
+          </section>
+          <button className="rail-near" onClick={()=>go("radar")}><strong>내 주변</strong><span>가까운 곳에서 남긴 답변</span><b>레이더 보기<I n="arrow" s={16}/></b><i aria-hidden="true"/></button>
+        </aside>
+      </div></div>}
+    {tab==="inbox"&&<section className="innerpage inbox-page">
+      <div className="channel-heading"><h1>마음함</h1></div>
+      <div className="seg">{(["received","sent"] as const).map(key=><button key={key} aria-pressed={inbox===key} className={inbox===key?"on":""} onClick={()=>setInbox(key)}>{key==="received"?"받은 신호 "+waiting.length:"보낸 신호 "+sent.length}</button>)}</div>
+      {shownSignals.length?<div className="listbox">{shownSignals.map(p=><ListPerson key={p.id} p={p} type={inbox==="received"?"received":"sent"}/>)}</div>:
+        <Blank icon="letter" title={inbox==="received"?"아직 받은 신호가 없어요":"아직 보낸 신호가 없어요"} body="" button="답변 둘러보기" onClick={()=>navigate("today","",true)}/>}
+      {inbox==="received"&&waiting.length>0&&<small className="accept-note">수락할 때 신호 1회를 사용해요. 오늘 남은 신호 {available}회</small>}
+      {error&&!modal&&<p className="error" role="alert">{error}</p>}
+      <h2 className="inbox-chats">이어지는 대화</h2>
+      {matches.length?<div className="listbox">{matches.map(p=><ListPerson key={p.id} p={p} type="chat"/>)}</div>:<Blank icon="chat" title="아직 열린 대화가 없어요" body="서로 신호를 보내면 여기서 대화를 이어 갈 수 있어요."/>}
+    </section>}
+    {tab==="chat"&&active&&validThread&&<section className="innerpage" key={thread}><div className="chatbox"><div className="chatheader"><button className="iconbtn" aria-label="대화 목록" onClick={()=>go("inbox")}><I n="back"/></button><button className="person" onClick={()=>open({kind:"person",peer:active.id})}><Art interest={active.interest}/><span><strong>{active.name}</strong><small>서로 신호를 보낸 회원</small></span></button><button className="quiet" onClick={()=>open({kind:"block",peer:active.id})}>차단</button></div><ChatExchange key={active.id} peer={active.id} name={active.name} lastMessage={lastMsg}/><div className="chatlog" onScroll={event=>{const log=event.currentTarget;followChat.current=log.scrollHeight-log.scrollTop-log.clientHeight<64;}}>{threadMessages.length===0?<div className="chatintro"><I n="wave" s={32}/><p>두 사람의 대화가 열렸어요.</p><small>오늘의 답변을 떠올리며 첫인사를 건네보세요.</small></div>:<>{threadMessages.length>=100&&<p className="chatnote">최근 메시지 100개</p>}{threadMessages.map(m=><div key={m.id} className={"bubbleline "+(m.src===me?.id?"mine":"")}><p>{m.body}</p><time>{fmtClock(m.at)}</time></div>)}</>}<div ref={bottom}/></div>{error&&!modal&&<p className="error">{error}</p>}<form className="composer" onSubmit={async e=>{e.preventDefault();if(!draft.trim())return;const ok=await act("message",{peer:thread,body:draft.trim(),id:crypto.randomUUID()});if(ok){draftByPeer.current.delete(thread);if(currentPeer.current===thread){setDraft("");followChat.current=true;void readThread(thread);}}}}><input maxLength={500} aria-label="메시지" placeholder="메시지를 입력하세요" value={draft} onChange={e=>{setDraft(e.target.value);draftByPeer.current.set(thread,e.target.value);}}/><button aria-label="메시지 보내기" disabled={busy||!draft.trim()}><I n="send" s={18}/></button></form></div></section>}
     {tab==="profile"&&<section className="station-account innerpage">
       <div className="channel-heading"><div className="pagetitle"><I n="user" s={27}/><h1>내 파장</h1></div></div>
       {me?<><section className="account-summary"><Art interest={me.interest} large/><div><h2>{me.name}</h2><p>{introDetails(me)}</p></div><button className="secondary small" onClick={()=>open({kind:"edit"})}>공개 소개 수정</button></section>
-        <section className="account-section"><h2>내 {slotName} 답변</h2><p className="account-question">{themeText}</p>
-          {me.body?<p className="account-answer">{me.body}</p>:<button className="secondary" onClick={()=>open({kind:"answer"})}>내 답변 쓰기<I n="pencil" s={15}/></button>}</section>
         <section className="account-section"><h2>프로필과 사진 교환</h2><p>대화방에서 각자 메시지를 5개 이상 보낸 뒤, 둘 다 동의한 항목을 교환해요.</p>
           <div className="settings"><button onClick={()=>open({kind:"privateProfile"})}>교환용 프로필 작성<I n="right" s={17}/></button>
           <button onClick={()=>open({kind:"privatePhotos"})}>교환용 사진 관리<I n="right" s={17}/></button></div></section>
+        <MyAnswers key={me.id+period} answered={Boolean(me.body)} onWrite={()=>open({kind:"answer"})}/>
         <section className="account-section"><h2>공개 설정</h2><AnswerGenderVisibility key={me.id} onSaved={()=>setHistoryRevision(n=>n+1)}/></section>
         <div className="account-tools"><button className="quiet" onClick={()=>open({kind:"help"})}>이용 안내</button><button className="quiet" onClick={()=>open({kind:"delete"})}>파장 기록 삭제</button></div></>:
         <Blank icon="user" title="파장에 참여해 주세요" body="오쭈다 회원 정보로 시작할 수 있어요." button="참여하기" onClick={()=>void enterMember()}/>}</section>}
     </main>{toast&&<div role="status" className="toast">{toast}</div>}
   {modal&&<Dialog key={modal.kind} close={close} title={modalTitle}>
     {modal.kind==="answer"&&<><span className="modalicon"><I n="pencil"/></span><h2>{slotName} 답변</h2><p className="questionbox">{themeText}</p><p className="sub">답변을 공개하면 작성일을 포함해 30일 동안 파장 회원이 질문과 내 답변을 함께 볼 수 있어요.</p><Editor max={220} label="내 이야기" hint="장소, 노래, 기억처럼 구체적인 장면을 들려주세요." submit="답변 공개하기" busy={busy} onSave={async body=>{if(!await act("answer",{body,day:s.day,slot:s.slot,questionId:s.question?.id,archive:true}))return;setModal(null);setToast(slotName+" 답변을 저장했어요.");}}/></>}
-    {modal.kind==="signal"&&peer&&<><span className="modalicon"><I n="signal"/></span><h2>{peer.name}님{row?.received || signalsWith(s,peer.id).incoming?"의 신호 수락":"에게 신호 보내기"}</h2><p className="sub">서로 신호를 보내면 대화를 시작할 수 있어요.</p><div className="questionbox">{row&&<small>{row.question}</small>}{peer.body||signalsWith(s,peer.id).incoming?.note}</div><Editor max={120} label="함께 보낼 한마디 (선택)" hint="어떤 부분에 마음이 닿았나요?" submit={(row?.received || signalsWith(s,peer.id).incoming?"신호 수락하기":"신호 보내기")+" · 남은 "+available+"회"} busy={busy} optional onSave={async note=>{if(await act("signal",{peer:peer.id,note,...(row?{answerDay:row.day,answerSlot:row.slot}:{day:s.day,slot:s.slot})}))setModal({kind:"result",peer:peer.id});}}/></>}
+    {modal.kind==="signal"&&peer&&<><span className="modalicon"><I n="signal"/></span><h2>{peer.name}님{row?.received || signalsWith(s,peer.id).incoming?"의 신호 수락":"에게 신호 보내기"}</h2><p className="sub">서로 신호를 보내면 대화를 시작할 수 있어요.</p><div className="questionbox">{row&&<small>{row.question}</small>}{peer.body||signalsWith(s,peer.id).incoming?.note}</div><Editor max={120} label="함께 보낼 한마디 (선택)" hint="어떤 부분에 마음이 닿았나요?" submit={(row?.received || signalsWith(s,peer.id).incoming?"신호 수락하기":"신호 보내기")+" · 남은 "+available+"회"} busy={busy} optional onSave={note=>void deliver(peer.id,note,row)}/></>}
     {modal.kind==="result"&&peer&&<div className="result"><span className="resultart"><Art interest={peer.interest} large/><i><I n={signalsWith(s,peer.id).match?"wave":"signal"}/></i></span><h2>{signalsWith(s,peer.id).match?"서로의 신호가 닿았어요":"신호를 보냈어요"}</h2><p className="sub">{signalsWith(s,peer.id).match?peer.name+"님도 당신에게 신호를 보냈어요. 이제 첫인사를 건네보세요.":peer.name+"님도 신호를 보내면 대화방이 열려요."}</p><button className="primary wide" onClick={()=>signalsWith(s,peer.id).match?startChat(peer.id):(setInbox("sent"),go("inbox"))}>{signalsWith(s,peer.id).match?"대화 시작하기":"보낸 신호 보기"}<I n="arrow" s={17}/></button></div>}
     {modal.kind==="person"&&peer&&<><Art interest={peer.interest} large/><h2>{peer.name}</h2><p className="sub">{introDetails(peer)}</p>{peer.body&&<div className="questionbox"><small>{row?.question||themeText}</small>{peer.body}</div>}<button className="primary wide" onClick={()=>{
         if(!row)return signal(peer);

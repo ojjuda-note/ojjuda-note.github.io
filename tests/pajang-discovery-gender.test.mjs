@@ -33,6 +33,7 @@ test('discovery filtering uses its own opt-in and keeps dated answers paginated 
       name <= '20261117210000_pajang_discovery_gender.sql' && !name.includes('_exchange_photos')).sort()) {
     await db.exec(await migration(file));
   }
+  await db.exec(await migration("20261117235000_pajang_my_answers.sql"));
   const account = randomUUID();
   const writer = randomUUID();
   await db.query('insert into auth.users values ($1)', [account]);
@@ -52,6 +53,9 @@ test('discovery filtering uses its own opt-in and keeps dated answers paginated 
   assert.equal((await feed('female')).total, 0);
   assert.equal((await feed('all')).total, 30);
 
+  const mine=()=>value("select public.pajang_my_answers() as v");
+  assert.equal((await mine()).length,30);
+  assert.equal((await mine())[0].body,"답변 0");
   await preference(true);
   const first = await feed('female');
   assert.equal(first.total, 30);
@@ -64,4 +68,11 @@ test('discovery filtering uses its own opt-in and keeps dated answers paginated 
   assert.equal((await feed('female',first.nextCursor)).total, 0);
   assert.equal((await value('select public.pajang_discovery_feed() as v')).total, 30);
   assert.equal((await value("select public.pajang_exchange('mine') as v")).showGender, true);
+  const stranger=randomUUID();
+  await db.query("insert into auth.users values ($1)",[stranger]);
+  await db.query("insert into ojjuda_account_internal.member_identity values ($1,date '1990-02-01','male')",[stranger]);
+  await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:stranger})]);
+  await assert.rejects(mine,{code:'42501'});
+  await db.query("insert into pajang_private.people(id,owner_id,name,region,interest) values ($1,$2,'다른 회원','','')",[randomUUID(),stranger]);
+  assert.deepEqual(await mine(),[]);
 });

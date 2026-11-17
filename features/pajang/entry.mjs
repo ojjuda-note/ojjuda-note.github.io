@@ -11,7 +11,7 @@ const feed = new URL('./station.html#answers', location.href);
 const params = new URL(location.href).searchParams;
 const view = params.get('view');
 const next = params.get('next');
-const destinations = {radar:'레이더',inbox:'신호함',chat:'대화',profile:'내 파장'};
+const destinations = {radar:'레이더',inbox:'마음함',chat:'마음함',profile:'내 파장'};
 const nextName = Object.hasOwn(destinations,next) ? destinations[next] : '모두의 답변';
 if (Object.hasOwn(destinations,next)) {
   feed.hash='';
@@ -29,10 +29,10 @@ function enterMain(destination = main) {
     const style=document.createElement('link');
     style.rel='stylesheet';
     style.media='print';
-    style.href='./station.css?v=night1';
+    style.href='./station.css?v=letter1';
     const styled=new Promise((resolve,reject)=>{style.onload=resolve;style.onerror=reject;});
     document.querySelector('link[href*="shell.css"]').before(style);
-    const [{mountStation}]=await Promise.all([import('./load-station.mjs?v=night1'),styled]);
+    const [{mountStation}]=await Promise.all([import('./load-station.mjs?v=letter1'),styled]);
     await mountStation(()=>{
       document.getElementById('entry-style').disabled=true;
       style.media='all';
@@ -69,7 +69,7 @@ async function start(firstEntry) {
   if (view === 'feed' && firstEntry.joined) return enterMain(feed);
   if (firstEntry.body) return enterMain();
   let entry = firstEntry;
-  const {setQuestion} = await import('./preview.mjs?v=night1');
+  const {setQuestion} = await import('./preview.mjs?v=letter1');
   if (!entry.joined) setupProfile(entry);
   const updates = typeof BroadcastChannel === 'function' ? new BroadcastChannel('pajang-answers') : null;
   let timer;

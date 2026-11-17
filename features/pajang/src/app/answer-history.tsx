@@ -150,10 +150,16 @@ type Props = {
 export default function AnswerHistory({active,station,revision,onProfile,onSignal,onChat,onWrite}:Props) {
   const [filter,setFilter]=useState("all");
   const [gender,setGender]=useState<Gender>("all");
-  const [order,setOrder]=useState<Order>("recommend");
+  const [order,setOrder]=useState<Order>("latest");
   const scope=JSON.stringify([station.authenticated,station.me?.id,station.me?.region,station.me?.interest,station.me?.at,station.day,station.slot,revision]);
   const activity=station.people.filter(p=>p.body).map(p=>p.id+":"+p.at).join(",");
   const {result,load}=useAnswers(filter,gender,order,scope,activity,active);
+  const groups:DiscoveryAnswer[][]=[];
+  for(const answer of result.items){
+    const last=groups.at(-1);
+    if(last && last[0].day===answer.day && last[0].slot===answer.slot && last[0].question===answer.question)last.push(answer);
+    else groups.push([answer]);
+  }
   return <section id="answers" className="feedsection" aria-labelledby="all-answers-title">
     <div className="sectiontitle history-head">
       <div className="history-heading">
@@ -176,24 +182,25 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
     {result.loading&&result.total===null&&<span className="answer-sr" role="status">답변을 불러오고 있어요.</span>}
     <div className="cardgrid" aria-busy={result.loading}>
       {result.loading&&result.total===null&&[0,1,2].map(i=><div className="answer-skeleton" key={i} aria-hidden="true"><i/><i/><i/><i/></div>)}
-      {result.items.map(row=>{
+      {groups.map(group=><section className="answer-group" key={rowKey(group[0])}>
+        <header><time dateTime={group[0].day}>{group[0].day.replaceAll("-",".")} · {group[0].slot==="am"?"오전":"오후"}</time><h3>{group[0].question}</h3></header>
+        {group.map(row=>{
         const relation=signalsWith(station,row.peer);
         const sent=row.sent||!!relation.outgoing, received=row.received||!!relation.incoming, matched=sent&&received;
         const badge=badges(row.interest);
         return <article key={rowKey(row)} className="answercard">
-          <div className="answer-meta"><time className="answerdate" dateTime={row.day}>{row.day.replaceAll("-",".")} · {row.slot==="am"?"오전":"오후"}</time>
-            {badge.name&&<span className="tag">{badge.name}</span>}</div>
-          <h3 className="cardquestion">{row.question}</h3><p className="quote">{row.body}</p>
-          <div className="answer-foot"><button className="person" onClick={()=>onProfile(row)}>
+          <button className="person" onClick={()=>onProfile(row)}>
             <span className="avatar" style={{background:badge.bg}}>{window.pajangArt[badge.key]?<img src={window.pajangArt[badge.key]} alt=""/>:<I n="user" s={16}/>}</span>
             <span><strong>{row.name}{row.own?" · 내 답변":""}</strong>{row.region&&<small>{row.region}</small>}</span>
           </button>
+          <p className="quote">{row.body}</p>
+          <div className="answer-foot"><span className="tag">{badge.name}</span>
           {!row.own&&<button className={"sendlink "+(sent?"issent":"")} disabled={!matched&&(sent||station.remaining===0)}
             onClick={()=>matched?onChat(row.peer):onSignal(row)}>
             <span><I n={matched?"chat":sent?"check":"signal"} s={17}/>{matched?"대화하기":sent?"보낸 신호":received?"신호 수락하기":"신호 보내기"}</span>
           </button>}</div>
         </article>;
-      })}
+      })}</section>)}
     </div>
     {result.error&&<p className="notice" role="alert">{result.error}<button onClick={()=>load.current(result.next&&result.items.length?"more":"first")}>다시 시도</button></p>}
     {result.total!==null&&!result.error&&!result.items.length&&<div className="empty"><span className="emptyicon" aria-hidden="true"><I n="wave" s={22}/></span>

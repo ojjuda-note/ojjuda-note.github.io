@@ -1,4 +1,6 @@
 const paths:Record<string,React.ReactNode>={
+ letter:<><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></>,
+ heart:<path d="M20.6 5.4a5 5 0 0 0-7.2 0L12 6.9l-1.4-1.5a5 5 0 0 0-7.2 7l7.9 7.8a1 1 0 0 0 1.4 0l7.9-7.8a5 5 0 0 0 0-7Z"/>,
  radar:<><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="m12 12 6-7"/><circle cx="8" cy="16" r="1" fill="currentColor"/></>,
  wave:<path d="M3 10v4m4-8v12m5-16v20m5-16v12m4-8v4"/>,
  signal:<><circle cx="12" cy="12" r="1.5"/><path d="M7.7 7.8a6 6 0 0 0 0 8.4m8.6-8.4a6 6 0 0 1 0 8.4M4.5 4.5a10.7 10.7 0 0 0 0 15m15-15a10.7 10.7 0 0 1 0 15"/></>,
