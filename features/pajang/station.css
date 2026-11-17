@@ -122,16 +122,14 @@
 .history-heading{display:flex;align-items:center;gap:6px;max-width:100%}
 .history-heading h2{margin:0;white-space:nowrap}
 .history-head .budget{margin-inline-start:auto}
-.answer-genders{display:inline-flex;align-items:center;flex-shrink:0;background:#f5f1ed;border:1px solid #d9d3ce}
+.answer-genders{display:inline-flex;align-items:center;flex-shrink:0;background:#fff;border:1px solid #d7d7d7}
 .answer-gender{position:relative;display:block;cursor:pointer}
 .answer-gender input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
-.answer-gender span{display:grid;place-items:center;width:24px;height:24px;font-size:12px;line-height:1;font-weight:700;border:1px solid transparent;pointer-events:none}
-.answer-gender.male span{color:#255a93;background:#e4effb}
-.answer-gender.female span{color:#a23466;background:#fbe4ec}
-.answer-gender input:checked+span{background:#fff;border-color:#9b958f}
-.answer-gender.male input:checked+span{background:#c4dff9;border-color:#4275a5}
-.answer-gender.female input:checked+span{background:#f6ccdc;border-color:#ab4977}
-.answer-gender input:focus-visible+span{outline:2px solid #4a3658;outline-offset:1px}
+.answer-gender span{display:grid;place-items:center;width:24px;height:24px;font-size:12px;line-height:1;font-weight:700;color:#666;border:1px solid transparent;pointer-events:none}
+.answer-gender.all input:checked+span{background:#e9e9e9;border-color:#999}
+.answer-gender.male input:checked+span{color:#255a93;background:#c4dff9;border-color:#4275a5}
+.answer-gender.female input:checked+span{color:#a23466;background:#f6ccdc;border-color:#ab4977}
+.answer-gender input:focus-visible+span{outline:2px solid #494949;outline-offset:1px}
 @media(pointer:coarse){.answer-gender input{top:50%;bottom:auto;height:36px;transform:translateY(-50%)}}
 @media(max-width:350px){.history-heading h2{font-size:21px}}
 
