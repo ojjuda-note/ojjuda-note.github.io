@@ -54,6 +54,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'qEW5IPfGLUI', title: 'EASY', kind: '안무 영상', source: 'LE SSERAFIM / HYBE LABELS' }
   ],
   twice: [
+    { id: 'LFE1pgcdc18', title: 'MISAMO × ReFa MUSE · Hair Couture / Heart 메이킹', kind: '메이킹', source: 'ReFa 공식 채널 · 2026.11.16' },
+    { id: 'ufBI2lYiuKU', title: '쯔위 × OWNDAYS · 브랜드 홍보대사 공식 영상', kind: '공식 광고 영상', source: 'OWNDAYS Singapore · 2026.11.16' },
     { id: 'x64Vby_D3Ps', title: '나연 · NA-sty SNEAK PEEK', kind: '공식 음반 프리뷰', source: 'JYP Entertainment · 2026.11.13' },
     { id: 'wMuJyhxVM-0', title: 'TWICE 11주년 팬파티·팝업 비하인드', kind: '메이킹', source: 'TWICE 공식 채널 · 2026.11.11' },
     { id: '01ALXG5nmUE', title: 'MISAMO × ReFa · 헤어케어 광고', kind: '공식 광고 영상', source: 'ReFa / MTG 공식 · 2026.11.13' },
