@@ -18,6 +18,7 @@ function game({admin = false, member = 'guest', saved = null, context = null, wi
   w.confirm = () => true;
   w.HTMLCanvasElement.prototype.getContext = () => context || new Proxy({}, {get:(_, key) => key === 'measureText' ? () => ({width:20}) : /Gradient$/.test(key) ? () => ({addColorStop(){}}) : () => {}});
   if (saved) w.localStorage.setItem('ojjuda.saetbyeol.save.v1:' + member, JSON.stringify(saved));
+  w.eval(read('shared/games/score-format.js'));
   w.eval(read('games/bulssi/entry.js'));
   for(const name of ['growth','upgrade-branches','encounters','tree-controls','life-expansion','shadow-enemies'])w.eval(read(`games/bulssi/${name}.js`));
   const script = [...w.document.querySelectorAll('script:not([src])')][0].textContent;

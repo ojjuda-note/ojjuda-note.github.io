@@ -36,7 +36,7 @@ test('old completed save keeps every upgrade and enters life through the same st
   assert.equal(saved.lv.h0a,5);
 });
 
-test('new targets reward life currency without changing original ranking score',t=>{
+test('collecting food earns life and a ranking point',t=>{
   const x=game({saved:{stage:5,lv:{h0a:5},cur:{life:0},intro:true,tut:true,ended:true,sound:false}});
   t.after(()=>x.dom.window.close());
   const f=x.w.fixture;
@@ -48,7 +48,7 @@ test('new targets reward life currency without changing original ranking score',
   assert.match(x.$('#cur').textContent,/생명력/);
   f.save();x.tick(600);
   const score=x.messages.find(m=>m.data.type==='ojjuda-game-result')?.data.score;
-  assert.equal(score,50050,'extension growth must not inflate the legacy leaderboard');
+  assert.equal(score,50051);
 });
 
 test('fifty calming journal chapters unlock gradually and remain readable',t=>{
@@ -123,4 +123,27 @@ test('new life bosses have finite health and only the tenth stage completes the 
       assert.equal(f.state.lifeEnded,stage===9);
     }finally{x.dom.window.close();}
   }
+});
+
+test('existing growth across all chapters is counted once and feeding after the finale keeps scoring',t=>{
+  const source=game();
+  const lv=Object.fromEntries(source.w.fixture.upgrades.map(u=>[u.id,u.mx]));
+  source.dom.window.close();
+  const saved={stage:9,maxStage:9,ended:true,lifeEnded:true,lv,mem:Array(10).fill(3),intro:true,tut:true,sound:false};
+  const x=game({saved});t.after(()=>x.dom.window.close());
+  const f=x.w.fixture;
+  assert.match(x.$('#starProgress').textContent,/139\.2K점/);
+  assert.equal(x.$('#starProgress').title,'139,180점');
+  x.$('#starStart').click();
+  f.chooseChapter(1);f.save();
+  assert.match(x.$('#starProgress').textContent,/139\.2K점/);
+  assert.equal(x.$('#starProgress').title,'139,180점');
+  f.chooseChapter(6);f.startRun(false);
+  f.spawn('portal_dust',true);
+  const food=f.run.nodes.at(-1);
+  f.kill(food);f.kill(food);f.save();x.tick(600);
+  assert.equal(x.messages.filter(m=>m.data.type==='ojjuda-game-result').at(-1).data.score,139181);
+  const raw=JSON.parse(x.w.localStorage.getItem('ojjuda.saetbyeol.save.v1:guest'));
+  const reopened=game({saved:raw});t.after(()=>reopened.dom.window.close());
+  assert.equal(reopened.$('#starProgress').title,'139,181점');
 });
