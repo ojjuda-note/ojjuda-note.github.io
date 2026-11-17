@@ -99,7 +99,7 @@ export default function NearbyRadar({station,sample,onProfile,onJoin,onSettings}
   }
 
   return <section className="nearby-section" aria-labelledby="nearby-title">
-    <div className="nearby-heading"><div><div className="onrow"><span className="onair"><i/>{sample?"DEMO":"RADAR"}</span><span className="questionlabel">{sample?"예시 거리·방향":"오늘의 거리·방향"}</span></div><h1 id="nearby-title">주변 레이더</h1><p>내 주변 15km 안에서 오늘의 질문에 답한 사람을 찾아보세요.</p></div></div>
+    <div className="nearby-heading"><div><div className="onrow"><span className="onair"><i/>{sample?"DEMO":"RADAR"}</span><span className="questionlabel">{sample?"예시 거리·방향":"오늘의 거리·방향"}</span></div><h1 id="nearby-title">주변 레이더</h1><p>내 주변 15km 안에서 이번 시간대에 답한 사람을 찾아보세요.</p></div></div>
     <div className="radar-layout">
       <div className="dial-panel">
         <div className="dial-info"><span><i/> {sample?"체험 채널":"회원 채널"}</span><span>반경 약 15km</span></div>
@@ -126,7 +126,7 @@ export default function NearbyRadar({station,sample,onProfile,onJoin,onSettings}
         {person?<><div className="radar-kicker"><I n="signal" s={16}/>{rangeNames[person.range]} · {bearingLabel(person)}</div><div className="radar-identity"><span className="avatar large" style={{background:badges(person.interest).bg}}><img alt="" src={window.pajangArt[badges(person.interest).key]}/></span><div><h2>{person.name}</h2><p>{person.age}세 · {person.region} · {badges(person.interest).name}</p></div></div>
           <p className="radar-quote">{person.body}</p><button className="primary radar-primary" onClick={()=>onProfile(person.id)}>프로필 보기<I n="arrow" s={17}/></button>
           {visible.length>1&&<div className="radar-alternates"><h3>주변 사람</h3><div>{visible.map(p=><button className={p.id===person.id?"sel":""} key={p.id} aria-pressed={p.id===person.id} onClick={()=>setSelected(p.id)}>{p.name}</button>)}</div></div>}</>:
-          <div className="radar-empty"><span className="modalicon"><I n="pin" s={23}/></span><h2>{enabled?"아직 주변 답변이 없어요":"거리 표시가 꺼져 있어요"}</h2><p>{enabled?"서로 거리 표시를 켠 회원이 15km 안에서 오늘의 답변을 쓰면 여기에 나타나요.":!station.me?"회원 프로필을 만든 뒤 오늘의 거리 표시를 켤 수 있어요.":"내 위치를 약 1km 크기의 구역으로 바꿔요. 동의하면 오늘 답변을 쓴 회원끼리 대략적인 거리와 여덟 방위 중 하나를 공유해요."}</p>
+          <div className="radar-empty"><span className="modalicon"><I n="pin" s={23}/></span><h2>{enabled?"아직 주변 답변이 없어요":"거리 표시가 꺼져 있어요"}</h2><p>{enabled?"서로 거리 표시를 켠 회원이 15km 안에서 이번 시간대에 답하면 여기에 나타나요.":!station.me?"회원 프로필을 만든 뒤 오늘의 거리 표시를 켤 수 있어요.":"내 위치를 약 1km 크기의 구역으로 바꿔요. 동의하면 오늘 답변을 쓴 회원끼리 대략적인 거리와 여덟 방위 중 하나를 공유해요."}</p>
           {!enabled&&(station.me?<button className="primary" disabled={pending} onClick={()=>void toggleLocation(true)}>{pending?"위치 확인 중…":"오늘 거리·방향 공유하기"}</button>:<button className="primary" onClick={onJoin}>회원 프로필 만들기</button>)}</div>}
       </div>
     </div>

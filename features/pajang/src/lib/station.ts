@@ -4,7 +4,6 @@ export const interests = [
   {key:"walk", name:"산책", bg:"#dfead9"}, {key:"camera", name:"사진", bg:"#dce8f2"},
   {key:"book", name:"독서", bg:"#ece1ee"}, {key:"tennis", name:"운동", bg:"#e6ebcf"},
 ] as const;
-export const regions = ["마포구","성동구","종로구","용산구","서대문구","영등포구","서울 기타","경기·인천","그 외 지역"];
 export const themes = [
   {q:["둘이서 보내는 느긋한 오후,","무엇을 하고 싶나요?"], answers:[
     "작은 음반 가게에서 서로를 닮은 노래를 한 곡씩 골라주고 싶어요. 집에 가는 길까지 생각날 것 같아서요.",
@@ -56,16 +55,17 @@ export const themes = [
     "서로 다른 결말을 좋아해도 왜 그랬는지 궁금해해줄 때요. 다음 이야기도 들려주고 싶어져요.",
     "실수해서 공을 놓쳐도 같이 웃을 때요. 괜히 다음 경기 날짜를 먼저 물어보게 돼요."]},
 ];
-export function koreaDay(time=Date.now()) {return new Date(time+9*3600000).toISOString().slice(0,10);}
-export function themeFor(day: string) {
-  const offset = Math.floor((Date.parse(day+"T00:00:00Z")-Date.UTC(2026,10,17))/86400000);
-  return themes[((offset%themes.length)+themes.length)%themes.length];
+export type Slot = "am" | "pm";
+export function themeFor(day: string, slot: Slot) {
+  // The existing November 17 afternoon answer belongs to the first question.
+  const days = Math.floor((Date.parse(day+"T00:00:00Z")-Date.UTC(2026,10,17))/86400000);
+  const index = 2 * days + (slot === "am" ? -1 : 0);
+  return themes[(index % themes.length + themes.length) % themes.length];
 }
 export type Person = {id:string; name:string; age:number; region:string; interest:string; body?:string; at?:number; range?:RadarBand; bearing?:number; sameCell?:boolean};
 export type Signal = {src:string;dst:string;day:string;note:string;at:number};
 export type Message = {id:string;src:string;dst:string;body:string;at:number};
-export type Station = {day:string;me:Person|null;people:Person[];signals:Signal[];messages:Message[];authenticated:boolean; remaining:number; radarOn?:boolean; radarDirectionOn?:boolean};
-export const emptyStation = (day:string):Station => ({day,me:null,people:[],signals:[],messages:[],authenticated:false,remaining:3});
+export type Station = {day:string;slot:Slot;nextAt:string;me:Person|null;people:Person[];signals:Signal[];messages:Message[];authenticated:boolean; remaining:number; radarOn?:boolean; radarDirectionOn?:boolean};
 export const badges = (key:string) => interests.find(x=>x.key===key)||interests[0];
 export function signalsWith(s:Station,id:string) {
   const outgoing=s.signals.find(x=>x.src===s.me?.id && x.dst===id);
