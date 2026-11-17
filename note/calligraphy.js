@@ -236,6 +236,10 @@
       ㅠ: [map(hLine, 0, -13, 100, 89), map(down, -14, -5, 90, 102), map(down, 23, -10, 90, 103)],
       ㅡ: [baseLine]
     };
+    // On a 받침 row, keep the ㅗ/ㅜ stem distinct from both consonants
+    // when the lettering is reduced to card size.
+    const stackedO = [curve('48,-5,.26 51,-3,.52 52,3,.72 52,15,.82 51,32,.70 49,48,.48'), hLine];
+    const stackedU = [map(hLine, 0, -10, 100, 89), curve('55,30,.43 56,37,.79 55,49,.89 52,62,.79 48,73,.53 43,82,.21 41,85,.04')];
     const terminalVowels = { ㅗ: [up, sweepLine], ㅡ: [sweepLine] };
     function decompose(ch) {
       if (!ch || Array.from(ch).length !== 1) return null;
@@ -371,6 +375,8 @@
           return;
         }
         let paths = key === 'ㅃ' ? doubleB : key === 'ㄸ' ? doubleD : profiles[key] || hVowels[key];
+        if (f && place === 'base' && key === 'ㅗ') paths = stackedO;
+        if (f && place === 'base' && key === 'ㅜ') paths = stackedU;
         if (long && phraseEnd && place === 'base' && terminalVowels[key]) paths = terminalVowels[key];
         if (!paths) paths = verticalPaths(key, long && place !== 'mixed', phraseEnd);
         if ((key === 'ㄱ' || key === 'ㅋ') && place === 'top') paths = [topHook, ...paths.slice(1)];
@@ -396,7 +402,8 @@
         const top = f ? v === 'ㅡ' ? 41 : 36 : v === 'ㅡ' ? 66 : v === 'ㅗ' || v === 'ㅛ' ? 51 : 43;
         const upperW = (c === 'ㅇ' ? 40 : c === 'ㅎ' ? 51 : complexOnset ? 78 : 62) * (v === 'ㅡ' ? 1.03 : 1);
         const topX = (advance - upperW) / 2 + (c === 'ㅇ' ? 3 : 0);
-        draw(c, topX, f ? 1 : 4, upperW, top, 1.05, 'top');
+        const onsetHeight = f && v === 'ㅗ' ? top - 3 : top;
+        draw(c, topX, f ? 1 : 4, upperW, onsetHeight, 1.05, 'top');
         const y = top + (v === 'ㅡ' ? 0 : 3);
         draw(v, 1, y, advance - 6, (complexFinal ? 56 : f ? 65 : 99) - y, 1.00, 'base');
       } else {
@@ -406,7 +413,10 @@
         const cWidth = compact ? f ? 34 : 45 : wide ? 61 : twinVowel ? 44 : 48;
         const cHeight = compact ? f ? 34 : 48 : f ? 50 : 65;
         const cY = compact ? f ? 18 : 22 : start;
-        draw(c, 1, cY, cWidth, cHeight, compact ? 1.00 : 1.07);
+        // The ㄴ shoulder sits beside two vowel stems in 내/네. A lighter
+        // first press keeps three consecutive downstrokes in the same hand.
+        const weight = c === 'ㄴ' && twinVowel ? .88 : compact ? 1.00 : 1.07;
+        draw(c, 1, cY, cWidth, cHeight, weight);
         const vx = cWidth + (compact ? 0 : -1);
         draw(v, vx, f ? 0 : -1, advance - vx - 5, complexFinal ? 53 : f ? 60 : 88, 1.03);
       }
@@ -423,7 +433,7 @@
         codaPart(left, start, space * split);
         codaPart(right, start + space * split + gap, space * (1 - split));
       } else if (f) {
-        const y = f === 'ㅇ' ? 62 : f === 'ㄴ' && stacked ? 63 : 66;
+        const y = f === 'ㅇ' ? 62 : f === 'ㄴ' && stacked ? (v === 'ㅜ' ? 60 : 63) : 66;
         const w = f === 'ㅇ' ? 38 : f === 'ㅎ' ? 52 : f === 'ㅅ' ? 56 : f === 'ㅁ' ? 55 : advance * .72;
         const x = f === 'ㅇ' ? advance * .38 : f === 'ㄴ' ? advance * .10 : (advance - w) * .47;
         draw(f, x, y, w, 99 - y, 1.04, 'final');
@@ -485,10 +495,23 @@
     const syllables = str => segmenter ? Array.from(segmenter.segment(str), entry => entry.segment) : Array.from(str);
     const dictionary = new Map();
     const shapes = new Map();
+    // A loaded turn, a lifting neck, and a separate dab from the same nib.
+    const questionMark = {
+      advance: 50, inkTop: 6, inkBottom: 98, closingScale: .90, brushCode: 63,
+      strokes: [
+        { width: 13.8, knots: [
+          [3,30,.18], [9,20,.49], [19,13,.75], [29,12,.91], [38,16,1.02],
+          [42,25,1.05], [41,35,.98], [35,44,.88], [25,52,.73],
+          [18,59,.62], [15,66,.52], [15,74,.34], [17,79,.04]
+        ] },
+        { width: 14.5, knots: [[16,86,.39], [17,89,1.02], [16,93,.95], [12,97,.12]] }
+      ]
+    };
     function get(ch, end, phraseEnd) {
       if (!ch.trim()) return {
         advance: 33
       };
+      if (ch === '?' || ch === '？') return questionMark;
       const hand = Lettering.get(ch, phraseEnd);
       if (hand && typeof Path2D === 'function') {
         if (!dictionary.has(hand)) dictionary.set(hand, {
@@ -510,7 +533,7 @@
         return composite;
       }
       return {
-        advance: /^[.,!?‘’“”]$/u.test(ch) ? 35 : 65,
+        advance: /^[.,!‘’“”]$/u.test(ch) ? 35 : 65,
         other: ch
       };
     }
@@ -715,7 +738,7 @@
             // Give short grammatical words less weight, unless the writer tagged them.
             const supporting = (boundWord.test(word) && wi > 0) ||
               (leadWord.test(word) && chars.length === 1 && wi + 1 < words.length);
-            const baseScale = range ? 1.35 : j > last ? .76 : supporting ? .83 : j >= particleStart ? .86 : 1;
+            const baseScale = range ? 1.35 : j > last ? (glyph.closingScale ?? .76) : supporting ? .83 : j >= particleStart ? .86 : 1;
             // A word starts with a planted stroke, opens around its stressed syllable,
             // then settles into its ending. Single-syllable words keep their full size.
             const firstInTag = range && position - ch.length === range[0];

@@ -432,3 +432,52 @@ test('Park paints the matching ink motif and replaces it when tag priority chang
     assert.deepEqual(park[key].reported, park[key].measured, key + ' is included in the reported ink bounds');
   }
 });
+
+test('Park paints a substantial brush question and a separate dot on small cards', () =>
+  withBrushPage(async page => {
+    const samples = await page.evaluate(() => {
+      const results = [];
+      for (const width of [192, 328]) {
+        for (const body of ['?', '？', '운동했네?', '운동했네？']) {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          ctx.fillText = () => { throw new Error('A question mark used the system font: ' + body); };
+          window.ParkCalligraphy.render(canvas, body, { width, accent: false });
+          const bounds = window.ParkCalligraphy.inkBounds(canvas);
+          const { data } = ctx.getImageData(0, 0, width, canvas.height);
+          const painted = (x, y) => data[4 * (y * width + x) + 3] >= 96;
+          // Isolate the trailing mark at the clear seam beside 네.
+          let right = -1, left = 0;
+          for (let x = width - 1; x >= 0; x--) {
+            let hasInk = false;
+            for (let y = 0; y < canvas.height && !hasInk; y++) hasInk = painted(x, y);
+            if (hasInk && right < 0) right = x;
+            if (!hasInk && right >= 0) { left = x + 1; break; }
+          }
+          const bands = [];
+          let active = false;
+          for (let y = 0; y < canvas.height; y++) {
+            let pixels = 0;
+            for (let x = left; x <= right; x++) if (painted(x, y)) pixels++;
+            if (pixels && !active) bands.push({ top: y, bottom: y, area: 0 });
+            if (pixels) {
+              bands.at(-1).bottom = y;
+              bands.at(-1).area += pixels;
+            }
+            active = pixels > 0;
+          }
+          results.push({ width, body, bands, rowHeight: bounds.height * canvas.height });
+        }
+      }
+      return results;
+    });
+    for (const { width, body, bands, rowHeight } of samples) {
+      const label = body + ' at ' + width + 'px';
+      assert.equal(bands.length, 2, 'the hook and dot must stay separate: ' + label);
+      const [hook, dot] = bands;
+      assert.ok(dot.area >= 3 && dot.area < hook.area, 'the brush dot must remain visible: ' + label);
+      assert.ok(dot.bottom - hook.top + 1 >= .52 * rowHeight,
+        'the question mark must carry enough height beside the syllables: ' + label);
+    }
+  }));
+
