@@ -272,6 +272,43 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
     assert.equal(rows.find(card=>card.id===normal).is_mine,actor===viewer);
     await db.exec('reset role');
   }
+  // Compare every public field with the old feed for each reader, including
+  // reactions, aliases and moderated descendants, under the production RLS model.
+  await db.exec(`create role service_role;
+    grant usage on schema ojjuda_note,ojjuda_note_internal,auth to anon,authenticated,service_role;
+    grant select on ojjuda_note.public_cards to service_role;
+    alter table public.profiles add column private_fixture_value text;
+    alter table public.profiles enable row level security;
+    alter table ojjuda_note.cards enable row level security;
+    alter table ojjuda_note.reactions enable row level security;
+    alter table ojjuda_note_internal.blocks enable row level security;
+    alter table ojjuda_note_internal.card_moderation enable row level security;
+    alter table ojjuda_note_internal.card_visuals enable row level security;`);
+  await db.query("insert into ojjuda_note.reactions values ($1,$2,'like'),($1,$3,'bookmark')",[normal,author,viewer]);
+  const readers=[['anon',''],['authenticated',viewer],['authenticated',author],['service_role','']];
+  async function snapshot(role,actor){
+    await db.query("select set_config('request.jwt.claim.sub',$1,false)",[actor]);
+    await db.exec('set role '+role);
+    try { return (await db.query('select * from ojjuda_note.public_cards order by id')).rows; }
+    finally { await db.exec('reset role'); }
+  }
+  const expected=[];
+  for(const [role,actor] of readers) expected.push(await snapshot(role,actor));
+  assert.ok(expected.every(rows=>rows.length>0));
+  const feedMigration=fs.readdirSync(path.join(root,'supabase/migrations')).find(name=>name.endsWith('_restrict_public_card_feed_reader.sql'));
+  await db.exec(read('supabase/migrations/'+feedMigration));
+  for(const [i,[role,actor]] of readers.entries()){
+    assert.deepEqual(await snapshot(role,actor),expected[i],role+' exact public projection');
+    assert.equal((await db.query("select pg_has_role($1,'ojjuda_note_feed_reader','member') as member",[role])).rows[0].member,false);
+  }
+  const permissions=(await db.query(`select r.rolcanlogin,r.rolbypassrls,r.rolsuper,
+    has_column_privilege(r.oid,'public.profiles','private_fixture_value','select') as private_profile,
+    has_table_privilege(r.oid,'ojjuda_note.cards','update') as writes,
+    has_schema_privilege(r.oid,'ojjuda_note_internal','create') as creates
+    from pg_roles r where rolname='ojjuda_note_feed_reader'`)).rows[0];
+  assert.ok(Object.values(permissions).every(value=>value===false));
+  assert.equal((await db.query("select 'security_invoker=true'=any(reloptions) as invoker from pg_class where oid='ojjuda_note.public_cards'::regclass")).rows[0].invoker,true);
+  assert.equal((await db.query("select pg_get_userbyid(relowner) as owner from pg_class where oid='ojjuda_note_internal.visible_cards_feed'::regclass")).rows[0].owner,'ojjuda_note_feed_reader');
   await db.close();
   console.log('PASS: single-word tags, whitespace parsing, search-driven composer defaults, mixed tags, explicit search, pagination and existing moderation');
 })().catch(error=>{console.error(error);process.exitCode=1;});
