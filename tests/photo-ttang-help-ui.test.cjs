@@ -7,7 +7,7 @@ try{
  window.fixtureUid='11111111-1111-4111-8111-111111111111';window.fixtureCoins=30;window.fixtureCalls=[];window.fixtureLost=false;window.rankCalls=[];window.savedEvents=0;addEventListener('ojjuda:game-record-saved',()=>savedEvents++);const receipts={};
  window.OjjudaPhotoTtangAccess={allowed:()=>true,subscribe:()=>()=>{},check:async()=>({userId:fixtureUid})};
  window.OjjudaPhotoTtangBridge={client:{from(){},auth:{getUser:async()=>({data:{user:{id:fixtureUid}}})},rpc(name,args){const promise=(async()=>{
- if(name==='photo_is_admin')return {data:false};if(name==='photo_game_clear'){rankCalls.push(args);if(window.rankFail){rankFail=false;return {error:{message:'offline'}}}if(window.rankDelay)await new Promise(r=>window.finishRank=r);return {data:{ok:true,score:1}};}if(name!=='photo_help_buy')throw Error(name);
+ if(name==='photo_is_admin')return {data:false};if(name==='record_photo_ttang_clear_at'){rankCalls.push(args);if(window.rankFail){rankFail=false;return {error:{message:'offline'}}}if(window.rankDelay)await new Promise(r=>window.finishRank=r);return {data:{ok:true,score:1}};}if(name!=='photo_help_buy')throw Error(name);
  fixtureCalls.push(args);await new Promise(r=>setTimeout(r,window.fixtureDelay||80));let r=receipts[args.p_request_id];if(!r){const price=args.p_kind==='time'?5:3;fixtureCoins-=price;r=receipts[args.p_request_id]={ok:true,price,coins:fixtureCoins,duration_seconds:args.p_kind==='time'?30:args.p_kind==='slow'?5:0};}
  if(fixtureLost){fixtureLost=false;return {error:{message:'response lost'}}}return {data:{...r,coins:fixtureCoins}};
  })();return {then:promise.then.bind(promise),abortSignal:()=>promise};}}};
@@ -72,7 +72,10 @@ try{
  await page.getByRole('button',{name:'기록 저장 다시 시도',exact:true}).waitFor();
  assert.equal(await page.evaluate(()=>rankCalls.length),1);
  await page.getByRole('button',{name:'기록 저장 다시 시도',exact:true}).click();
- await page.waitForFunction(()=>savedEvents===1);assert.deepEqual(await page.evaluate(()=>rankCalls),[{p_stage:'0'},{p_stage:'0'}]);
+ await page.waitForFunction(()=>savedEvents===1);
+ const submitted=await page.evaluate(()=>rankCalls);assert.equal(submitted.length,2);
+ assert.deepEqual(submitted[0],submitted[1]);assert.equal(submitted[0].p_stage_id,'0');
+ assert.equal(submitted[0].p_expected_owner,await page.evaluate(()=>fixtureUid));assert.ok(Number.isFinite(Date.parse(submitted[0].p_finished_at)));
  // Only the active game frame can submit valid stage keys; previews are excluded.
  await page.evaluate(()=>{dispatchEvent(new MessageEvent('message',{origin:location.origin,source:window,data:{type:'ojjuda:photottang:clear',stage:'1'}}));});
  await frame.evaluate(()=>parent.postMessage({type:'ojjuda:photottang:clear',stage:'try123'},location.origin));

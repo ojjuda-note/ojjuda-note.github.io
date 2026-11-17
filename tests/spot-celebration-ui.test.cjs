@@ -382,7 +382,7 @@ const completedBefore=index=>fixtureOrder.slice(0,fixtureOrder.indexOf(index)).m
   await host.addScriptTag({path:path.join(root,'games/spot-difference/wallet.js')});await host.waitForFunction(()=>JjudaWallet.getState().coins===0);
   assert.equal(await host.evaluate(async()=>{try{await JjudaWallet.recordClear('other-member',6);return false}catch{return true}}),true,'standalone score rejects another account');
   for(const stage of [0,183,152.5,'152'])assert.equal(await host.evaluate(async stage=>{try{await JjudaWallet.recordClear('member-a',stage);return false}catch{return true}},stage),true,'standalone score rejects invalid stage bounds');
-  await host.evaluate(async()=>{for(const stage of [62,63,82,83,152,153,182])await JjudaWallet.recordClear('member-a',stage);});assert.deepEqual(await host.evaluate(()=>rpcScores),[62,63,82,83,152,153,182].map(stage=>({name:'record_spot_clear',p_stage:stage})));
+  await host.evaluate(async()=>{for(const stage of [62,63,82,83,152,153,182])await JjudaWallet.recordClear('member-a',stage,'2026-11-17T11:00:00.000Z');});assert.deepEqual(await host.evaluate(()=>rpcScores),[62,63,82,83,152,153,182].map(stage=>({name:'record_spot_clear_at',p_stage:stage,p_finished_at:'2026-11-17T11:00:00.000Z',p_expected_owner:'member-a'})));
   await host.close();
   console.log('PASS: fixed 152-picture difficulty/ID sequence, fresh last-picture reentry, direct result choices, four responsive layouts, image loading races, celebrations, zoom/payment safeguards and original server IDs');
  }finally{await browser.close();}
