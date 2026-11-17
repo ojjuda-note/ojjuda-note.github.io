@@ -238,8 +238,10 @@
     };
     // On a 받침 row, keep the ㅗ/ㅜ stem distinct from both consonants
     // when the lettering is reduced to card size.
-    const stackedO = [curve('48,-5,.26 51,-3,.52 52,3,.72 52,15,.82 51,32,.70 49,48,.48'), hLine];
-    const stackedU = [map(hLine, 0, -10, 100, 89), curve('55,30,.43 56,37,.79 55,49,.89 52,62,.79 48,73,.53 43,82,.21 41,85,.04')];
+    // Shorter, rising tips can pass at different heights between stacked syllables.
+    const stackedBar = curve('8,70,.41 14,72,.72 21,70,1.01 37,58,1.07 54,47,.82 71,36,.51 84,30,.25 94,26,.025');
+    const stackedO = [curve('48,-5,.26 51,-3,.52 52,3,.72 52,15,.82 51,32,.70 49,48,.48'), stackedBar];
+    const stackedU = [map(stackedBar, 0, -10, 100, 89), curve('55,30,.43 56,37,.79 55,49,.89 52,62,.79 48,73,.53 43,82,.21 41,85,.04')];
     const terminalVowels = { ㅗ: [up, sweepLine], ㅡ: [sweepLine] };
     function decompose(ch) {
       if (!ch || Array.from(ch).length !== 1) return null;
