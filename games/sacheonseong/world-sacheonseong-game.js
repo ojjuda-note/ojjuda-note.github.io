@@ -54,11 +54,14 @@
    if(message.type==='ready')initialize();
    if(message.type==='purchase')void purchase(message);
    if(message.type==='record'&&message.owner===(owner||'guest')&&rules.game(message.stage)&&rules.score(message.duration)!==null&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(message.id||'')){
+    const completedAt=message.completedAt??new Date(Date.now()).toISOString(),finished=Date.parse(completedAt);
+    if(!Number.isFinite(finished))return;
+    const period=new Date(finished+8*3600000).toISOString().slice(0,7);
     const score=rules.score(message.duration),key=rules.game(message.stage);
     let pending=records.get(message.id);
     if(pending&&(pending.key!==key||pending.score!==score))return;
-    if(!pending){pending={key,score,promise:Promise.resolve().then(()=>current()&&onScore?onScore(message.stage,score,message.id):{ok:false}).catch(()=>({ok:false}))};records.set(message.id,pending);}
-    void pending.promise.then(result=>{if(!result?.ok)records.delete(message.id);else if(records.size>100)records.delete(records.keys().next().value);send({type:'record',id:message.id,ok:result?.ok===true,owner:owner||'guest',period:monthKey()});});
+    if(!pending){pending={key,score,promise:Promise.resolve().then(()=>current()&&onScore?onScore(message.stage,score,message.id,completedAt):{ok:false}).catch(()=>({ok:false}))};records.set(message.id,pending);}
+    void pending.promise.then(result=>{if(!result?.ok)records.delete(message.id);else if(records.size>100)records.delete(records.keys().next().value);send({type:'record',id:message.id,ok:result?.ok===true,owner:owner||'guest',period});});
    }
    if(message.type==='ranking'&&(message.stage===0||rules.game(message.stage))&&typeof message.id==='string'){
     const period=monthKey();
@@ -68,7 +71,7 @@
   dialog.querySelector('.ge-primary').addEventListener('click',()=>{
    if(frame)return;
    frame=document.createElement('iframe');frame.title='사천성 게임판';frame.allow='web-share';
-   frame.src='/games/sacheonseong/index.html?v=20261113-game-popup-order1';
+   frame.src='/games/sacheonseong/index.html?v=20261117-arcade-score-repair1';
    frame.addEventListener('load',initialize);
    dialog.querySelector('.sacheonseong-entry-wrap').remove();dialog.append(frame);
    dialog.classList.add('sacheonseong-playing');frame.focus();

@@ -28,9 +28,9 @@ function fixture(id = 'stacker', options = {}) {
     gt: { arcadeEnd() {} },
     worldGameAssetRequest: 0, worldClosingGames: null, worldRecommendedRestaurants: null,
     requestAnimationFrame: () => 1, cancelAnimationFrame() {},
-    worldRewardOwner: () => null, worldRewardRequest: () => ({}), worldRewardCurrent: () => true,
+    worldRewardOwner: () => null, worldRewardRequest: () => ({owner:null}), worldRewardCurrent: () => true,
     ti: html => screens.push(html), Ja() {}, nf() {}, w: value => String(value),
-    tf: async (key, score) => { records.push({ key, score }); return { ok: true, best: score, rank: 1, guest: true }; }
+    worldArcadeRound: async (key, score) => { records.push({ key, score }); return { ok: true, best: score, rank: 1, guest: true }; }
   });
   context.window.removeEventListener = () => {};
   if (!options.missing) context.window.OjjudaGameChallenges = {
@@ -206,8 +206,8 @@ function overlayFixture(t, { shareModule = false } = {}) {
     var gt={arcadeEnd(){}};
     function worldGameEntryGate(){return true;} function M(){} function Wi(){return false;} function w(s){return String(s);}
     function E2(){} function A2(){} function C2(){} function requestArcadeClose(){El();} function nf(){}
-    function worldRewardOwner(){return null;} function worldRewardRequest(){return {};} function worldRewardCurrent(){return true;}
-    async function tf(game,score){return {ok:true,best:score,guest:true};}
+    function worldRewardOwner(){return null;} function worldRewardRequest(){return {owner:null};} function worldRewardCurrent(){return true;}
+    async function worldArcadeRound(game,score){return {ok:true,best:score,guest:true};}
     ${world.slice(world.indexOf('function installWorldGameScreen('),world.indexOf('var worldBoardScreenStop='))}
     ${world.slice(world.indexOf("const arcadeDifficultyPrefix="),world.indexOf("const billiardsDifficulties="))}
     ${entrance}\n${controls}\n${preview}\n${rounds}\n${close}

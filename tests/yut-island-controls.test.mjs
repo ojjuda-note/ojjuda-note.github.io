@@ -92,9 +92,12 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   entryButton('온라인 대전').click();assert.ok(!entryButton('방 코드로 참가').hidden);
   entryButton('방 코드로 참가').click();assert.ok(doc.getElementById('join-code'));
   doc.getElementById('close').click();entryButton('같은 기기').click();
+  const recordNote=doc.querySelector('#entry-controls .ge-copy');
+  assert.equal(recordNote.hidden,false);
+  assert.match(recordNote.textContent,/첫 번째 팀\(산호 팀\).*내 월간 연승/);
   assert.equal(doc.getElementById('game-mode').value,'island');
   selectValue('team-count',8);assert.equal(doc.getElementById('team-pieces-7').value,'4');
-  selectValue('team-count',2);entryButton('컴퓨터 대전').click();entryButton('게임 시작하기').click();
+  selectValue('team-count',2);entryButton('컴퓨터 대전').click();assert.equal(recordNote.hidden,true);entryButton('게임 시작하기').click();
   assert.equal(doc.body.dataset.mpEntry,'false');assert.equal(doc.getElementById('tabletop').hidden,false);
   assert.equal(doc.getElementById('entry-controls').childElementCount,0);
   const bonus=doc.getElementById('bonus-roll'),chips=doc.getElementById('result-picker');
@@ -381,6 +384,7 @@ test('an invited player returning to a finished room sees their own outcome once
   const retry=card.querySelector('.yut-round-summary button');
   await wait(()=>!retry.hidden);retry.click();
   await wait(()=>card.textContent.includes('월간 기록 저장됨'));
+  assert.match(card.textContent,/산호 팀 패배 · 월간 기록 저장됨/);
   heartbeat();assert.equal(doc.querySelector('.game-result-card'),card);
   assert.deepEqual(saves,[[game.roundId,false],[game.roundId,false]]);
   const online=[...card.querySelectorAll('button')].find(b=>b.textContent==='온라인 대전');online.click();

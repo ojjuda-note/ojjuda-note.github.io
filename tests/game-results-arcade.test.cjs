@@ -19,6 +19,7 @@ function roundFixture({id='runner',leaders=[[{score:100}],[{score:100}]],receipt
   G2:{[id]:()=>game},_r:{[id]:{unit:id==='stacker'?'층':'점'}},gt:{arcadeEnd(){}},requestAnimationFrame:()=>1,cancelAnimationFrame(){},
   worldRewardRequest:()=>({owner}),worldRewardCurrent:request=>request.owner===owner,worldRewardOwner:()=>owner,
   Xp:()=>day,w:value=>String(value),ti(){},Ja(){},ef:rankRead,breakoutControls:()=>'',
+  worldArcadeRound:async(key,score,round,onSettled,ready)=>{await ready;if(round.owner!==owner)return {ok:false,reason:'owner_changed'};return context.tf(key,score);},
   tf:async(key,score)=>{saved.push({key,score});return save?save():receipt;}
  });
  vm.runInContext(stages+'\n'+rounds,context);
@@ -40,6 +41,20 @@ for(const [name,before,score,after,outcome,gap] of [
  if(gap)assert.ok(f.cards.at(-1).metric.includes('이번 달 1등과 '+gap+' 차이'));
  assert.deepEqual(f.saved,[{key:'runner',score}],'opening or sharing a result must not duplicate a submission');
  assert.deepEqual(f.events,[],'a signed-in round does not consume guest access');
+});
+test('mole submits the full grid rank key once and shares the original points',async()=>{
+ const key=1500005956;
+ for(const guest of [false,true]){
+  const f=roundFixture({id:'mole',guest,leaders:[[],[{score:key,me:true}]]});
+  vm.runInContext(fs.readFileSync(path.join(root,'games/mole/ranking.js'),'utf8'),f.context);
+  if(guest)f.context.window.OjjudaGuestScores={ranking:(()=>{const rows=[[],[{score:key,me:true}]];return async()=>rows.shift();})()};
+  await f.context._2();f.game.gridSize=6;
+  await f.context.S2(1956);await f.context.S2(1956);
+  assert.deepEqual(f.saved,[{key:'mole',score:key}]);
+  assert.ok(f.cards.at(-1).metric.includes('6×6 · 1956점'));
+  assert.equal(f.cards.at(-1).score,1956);
+  assert.ok(f.events.some(event=>event[0]==='complete'&&event[2]===1956));
+ }
 });
 test('stacker keeps floors as its comparison unit and challenge completion runs only once',async()=>{
  const f=roundFixture({id:'stacker',leaders:[[{score:12}],[{score:12}]]});await f.context._2();await f.context.S2(8);await f.context.S2(8);
@@ -301,4 +316,14 @@ for(const kind of ['chess','carom4'])test(kind+': failed streak settlement expos
 test('the board replay action cannot bypass a consumed guest round',()=>{
  let allowed=false;const started=[],c=vm.createContext({window:{OjjudaGuestAccess:{canPlay:()=>allowed}},E:{kind:'chess',mode:'ai',level:'normal',me:'w'},zp:(...args)=>started.push(args)});
  vm.runInContext(world.slice(world.indexOf('var Qp='),world.indexOf('function Tp(')),c);c.Qp['bd-again']();assert.equal(started.length,0);allowed=true;c.Qp['bd-again']();assert.equal(started.length,1);
+});
+for(const id of ['runner','stacker','mole','breakout'])test(id+': a retained round reports recovery without replaying its end event',async()=>{
+ const f=roundFixture({id,leaders:[[{score:1}],[{score:2,me:true}]]});
+ let attempts=0,completed;
+ f.context.worldArcadeRound=async(key,value,round,notify)=>{attempts++;completed=notify;assert.equal(key,id);assert.equal(value,2);assert.equal(round.owner,'member');return {ok:false,pending:true,durable:true};};
+ await f.context._2();await f.context.S2(2);await f.context.S2(2);
+ assert.equal(attempts,1);assert.match(f.cards.at(-1).extra,/점수를 보관/);
+ completed({ok:true});await new Promise(resolve=>setImmediate(resolve));
+ if(id!=='breakout')assert.equal(f.cards.at(-1).outcome,'record');
+ assert.doesNotMatch(f.cards.at(-1).extra,/보관했어요/);
 });

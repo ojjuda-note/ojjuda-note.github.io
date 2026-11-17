@@ -11,6 +11,7 @@ test('monthly leaderboard shows top ten and authenticated/guest rank below ten, 
  const {db,actor,claim,clock} = await createFixture();
  t.after(()=>db.close());
  await db.exec(migration.replace(/\b(?:clock_timestamp|statement_timestamp|now)\(\)/g,'fixture.clock()'));
+ await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261117223000_monthly_ranking_viewer_identity.sql'),'utf8'));
  const ids=Array.from({length:12},(_,i)=>`a0000000-0000-4000-8000-${String(i+1).padStart(12,'0')}`);
  for(let i=0;i<ids.length;i++){
   await actor(ids[i],`선수${i+1}`);
@@ -62,6 +63,27 @@ test('monthly leaderboard shows top ten and authenticated/guest rank below ten, 
  const rankA=(await read('runner',token)).mine.rank,rankB=(await read('runner',nextToken)).mine.rank;
  assert.deepEqual([rankA,rankB].sort((a,b)=>a-b),[13,14]);
  assert.equal(rankA<rankB,hash<nextHash,'same score and timestamp use the same stable identity tie-breaker as top ten');
+
+ // The same browser's guest is now #1. Its old token must never replace a
+ // signed-in member's rank, whether inside or outside the first ten.
+ await db.query("update ojjuda_ranking_internal.guest_peaks set score=150 where game='runner' and guest_hash=$1",[hash]);
+ await claim(ids[10]);result=await read('runner',token);
+ assert.equal(result.leaders[0].nick,'손님');assert.equal(result.leaders.some(r=>r.me),false);
+ assert.deepEqual([result.mine.rank,result.mine.nick],[12,'선수11']);
+ await claim(ids[0]);result=await read('runner',token);
+ assert.deepEqual(result.leaders.filter(r=>r.me).map(r=>r.nick),['선수1']);assert.equal(result.mine,null);
+ const legacyTop=(await db.query("select ojjuda_ranking_internal.current_rows('runner',$1) r",[token])).rows[0].r;
+ assert.deepEqual(legacyTop.filter(r=>r.me).map(r=>r.nick),['선수1']);
+ const newcomer='b0000000-0000-4000-8000-000000000001';
+ await actor(newcomer,'신규회원');await claim(newcomer);
+ result=await read('runner',token);assert.equal(result.mine,null);assert.equal(result.leaders.some(r=>r.me),false);
+ await db.query('update auth.users set is_anonymous=true where id=$1',[newcomer]);
+ result=await read('runner',token);
+ assert.deepEqual(result.leaders.filter(r=>r.me).map(r=>r.nick),['손님']);assert.equal(result.mine,null);
+ await assert.rejects(read('bang',token),/not_signed_in/);
+ await claim(null);
+ result=await read('runner',token);assert.equal(result.leaders[0].me,true);
+ result=await read('runner',nextToken);assert.equal(result.leaders.some(r=>r.me),false);assert.equal(result.mine.rank,14);
 
  await clock('2026-10-31T16:00:00Z');
  result=await read('runner',token);

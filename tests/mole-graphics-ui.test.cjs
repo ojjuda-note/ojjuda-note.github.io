@@ -3,7 +3,7 @@ const fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..');
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
- .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>s.includes('/shared/games/world-game-assets.js')||s.includes('/shared/games/game-entry.js')?s:'')
+ .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>s.includes('/games/mole/ranking.js')||s.includes('/shared/games/world-game-assets.js')||s.includes('/shared/games/game-entry.js')?s:'')
  .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
 world=world.replace('</head>','<style>@font-face{font-family:"Gowun Dodum";src:url("/qa-font.ttf")}</style></head>');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
@@ -73,7 +73,7 @@ g.tab='friends';H();
    const {rankingScore,rankingRecord}=OjjudaMoleGame;
    return [rankingScore(3,500),rankingScore(4,1),rankingScore(4,70),rankingScore(5,1),rankingScore(6,1),rankingRecord(3042)];
   });
-  assert.deepEqual(ranked,[500,1001,1070,2001,3001,{grid:6,points:42}],
+  assert.deepEqual(ranked,[4500,500004001,500004070,1000004001,1500004001,{grid:6,points:42}],
    'larger boards outrank high scores on smaller boards and display actual points');
   // The presentation keeps the established score values and sound hooks.
   for(const [kind,score,audio] of [[.5,'1점','hit'],[.05,'3점','bonus'],[.17,'0점','bad']]){

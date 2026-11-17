@@ -1,0 +1,90 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const {readFileSync}=require('node:fs');
+const {join}=require('node:path');
+const {randomUUID}=require('node:crypto');
+const vm=require('node:vm');
+const {PGlite}=require('@electric-sql/pglite');
+const migration=name=>readFileSync(join(__dirname,'../supabase/migrations',name),'utf8');
+const part=(source,start,end)=>source.slice(source.indexOf(start),source.indexOf(end,source.indexOf(start)));
+test('completed arcade rounds survive ambiguous responses, cooldown and month-end without duplicating awards',async t=>{
+ const db=new PGlite();t.after(()=>db.close());
+ const uid=randomUUID(),banned=randomUUID(),guest='a'.repeat(64);
+ const scalar=async(query,params=[])=>(await db.query(query,params)).rows[0].v;
+ const member=async(id=uid)=>db.exec("reset role;set role authenticated;set app.actor='"+id+"';");
+ const anonymous=async()=>db.exec("reset role;set role anon;set app.actor='';");
+ await db.exec(`create role anon;create role authenticated;create schema auth;
+  create schema ojjuda_guest_internal;create schema ojjuda_game_internal;create schema ojjuda_ranking_internal;
+  grant usage on schema ojjuda_guest_internal,auth to anon,authenticated;
+  create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('app.actor',true),'')::uuid$$;
+  create table public.profiles(id uuid primary key,nickname text); create table public.user_private(user_id uuid primary key,coins integer,banned boolean);
+  create function public.is_banned(uuid) returns boolean language sql stable as $$select banned from public.user_private where user_id=$1$$;
+  create table public.game_scores(user_id uuid,nick text,game text,score integer,reward integer,verified boolean,created_at timestamptz);
+  insert into public.profiles values('${uid}','회원'),('${banned}','정지');
+  insert into public.user_private values('${uid}',52,false),('${banned}',18,true);`);
+ const daily=migration('20261006164811_guest_game_rankings.sql'),monthly=migration('20261031085535_monthly_game_rankings_archive.sql');
+ await db.exec(part(daily,'create table ojjuda_guest_internal.scores','create function ojjuda_guest_internal.score_limit'));
+ await db.exec(part(monthly,'create function ojjuda_ranking_internal.month_key','create function ojjuda_ranking_internal.month_start'));
+ await db.exec(part(monthly,'create table ojjuda_ranking_internal.settings','create table ojjuda_ranking_internal.picture_clears'));
+ await db.exec("update ojjuda_ranking_internal.settings set first_month='2024-01-01'");
+ const source=readFileSync(join(__dirname,'fixtures/continuous-score-functions-before.sql'),'utf8');
+ await db.exec(source.slice(source.indexOf('CREATE OR REPLACE FUNCTION ojjuda_guest_internal.score_limit'))
+  .replace(/'mole' THEN 3999/ig,"'mole' THEN 2000003999").replace(/'mines' THEN 89999/ig,"'mines' THEN 2000089999"));
+ for(const [name,fn] of [['20261117231000_mole_extended_scores.sql','mole_rank_key'],['20261117232000_mines_exact_finish_times.sql','mines_rank_score']]){
+  const code=migration(name),start=code.indexOf('create or replace function');
+  assert.ok(code.slice(start,start+110).includes(fn));await db.exec(code.slice(start,code.indexOf('$$;',start)+3));
+ }
+ await db.exec(migration('20261117235900_arcade_round_receipts.sql'));
+ const at=new Date().toISOString(),old='2025-02-01T00:59:59+09:00',next='2025-02-01T01:00:00+09:00';
+ const submit=(game,score,id,ended,owner,token=null)=>scalar('select public.submit_arcade_round($1,$2,$3,$4,$5,$6) v',[game,score,id,ended,token,owner]);
+ const world=readFileSync(join(__dirname,'../world.html'),'utf8');
+ const makeStacker=vm.runInNewContext('('+part(world,'function T2(','function j2(')+')',{
+  Z:360,he:540,gt:{arcadeBad(){},arcadeBonus(){},arcadeHit(){}}
+ });
+ const play=frames=>{
+  let final;
+  const game=makeStacker({setScore(){},end(value){final=value;}});
+  for(const count of frames){for(let frame=0;frame<count;frame++)game.update(1/60);game.onDown();}
+  return final;
+ };
+ const one=randomUUID(),two=randomUUID(),firstFloor=play([6,74]),secondFloor=play([6,6,6]);
+ assert.deepEqual([firstFloor,secondFloor],[1,2]);
+ await member();
+ const receipt=await submit('stacker',firstFloor,one,at,uid);
+ assert.equal(receipt.ok,true);assert.equal(receipt.reward,0);assert.equal(receipt.coins,52);
+ assert.deepEqual(await submit('stacker',firstFloor,one,at,uid),receipt);
+ assert.deepEqual(await submit('stacker',firstFloor,one,old,uid),receipt,'a regenerated client timestamp cannot redate an accepted round');
+ assert.equal((await submit('stacker',secondFloor,two,at,uid)).reason,'too_fast');
+ assert.equal((await submit('stacker',99,one,at,uid)).reason,'request_conflict');
+ assert.equal((await submit('runner',1,one,at,uid)).reason,'request_conflict');
+ assert.equal((await submit('runner',1,randomUUID(),at,banned)).reason,'owner_changed');
+ await db.exec("reset role;update ojjuda_guest_internal.arcade_round_receipts set received_at=clock_timestamp()-interval '6 seconds';update public.game_scores set created_at=clock_timestamp()-interval '6 seconds';");
+ await member();
+ assert.equal((await submit('stacker',secondFloor,two,at,uid)).ok,true);
+ assert.deepEqual(await submit('stacker',firstFloor,one,at,uid),receipt);
+ assert.equal((await submit('chacha_rush',137,randomUUID(),old,uid)).previous_period,true);
+ for(const [game,score] of [['mole',2999],['mines',39955],['solitaire',1],['sacheonseong_200',123],['breakout',312]])assert.equal((await submit(game,score,randomUUID(),old,uid)).ok,true,game);
+ await member(banned);assert.equal((await submit('runner',5,randomUUID(),at,banned)).reason,'banned');
+ await anonymous();
+ for(const [game,score] of [['chacha_rush',3],['roulette',3],['sacheonseong_201',3],['runner',-1]])assert.equal((await submit(game,score,randomUUID(),at,null,guest)).reason,'invalid');
+ assert.equal((await submit('runner',1,randomUUID(),at,uid,guest)).reason,'owner_changed');
+ assert.equal((await submit('runner',1,randomUUID(),'2038-01-01',null,guest)).reason,'invalid_time');
+ assert.equal((await submit('runner',1,randomUUID(),'2023-12-31',null,guest)).reason,'invalid_time');
+ const g1=randomUUID(),g2=randomUUID();
+ const gr=await submit('mole',2999,g1,old,null,guest);
+ assert.equal(gr.best,1000004999);assert.equal(gr.previous_period,true);
+ await db.exec("reset role;update ojjuda_guest_internal.arcade_round_receipts set received_at=clock_timestamp()-interval '6 seconds';update ojjuda_guest_internal.scores set last_submitted_at=clock_timestamp()-interval '6 seconds';");
+ await anonymous();assert.equal((await submit('mole',20,g2,next,null,guest)).ok,true);
+ assert.deepEqual(await submit('mole',2999,g1,old,null,guest),gr);
+ assert.equal((await submit('mole',20,g1,next,null,guest)).reason,'request_conflict');
+ await assert.rejects(db.query('select * from ojjuda_guest_internal.arcade_round_receipts'),/permission denied/);
+ await db.exec('reset role');
+ assert.equal(await scalar("select count(*)::int v from public.game_scores where game='stacker'"),2);
+ assert.equal(await scalar("select max(score) v from public.game_scores where game='stacker'"),2);
+ assert.equal(await scalar("select score v from public.game_scores where game='mole'"),gr.best);
+ assert.equal(await scalar("select count(*)::int v from public.game_scores where reward<>0 or verified is not false"),0);
+ assert.equal(await scalar("select count(*)::int v from ojjuda_ranking_internal.guest_peaks where month_start='2025-01-01' and score=1000004999"),1);
+ assert.equal(await scalar("select count(*)::int v from ojjuda_ranking_internal.guest_peaks where month_start='2025-02-01' and score=4020"),1);
+ assert.equal(await scalar("select count(*)::int v from ojjuda_guest_internal.scores where day='2025-02-01' and score=1000004999"),1);
+ assert.equal(await scalar("select count(*)::int v from public.game_scores where game='chacha_rush' and created_at=$1",[old]),1);
+});

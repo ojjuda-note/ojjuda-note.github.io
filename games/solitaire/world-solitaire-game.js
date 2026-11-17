@@ -12,7 +12,7 @@
       dialog.setAttribute('aria-label', '솔리테어');
       const frame = document.createElement('iframe');
       frame.title = '솔리테어';
-      frame.src = '/games/solitaire/index.html?v=20261117-solitaire-arcade-return1&owner=' + encodeURIComponent(owner || 'guest');
+      frame.src = '/games/solitaire/index.html?v=20261117-arcade-score-repair1&owner=' + encodeURIComponent(owner || 'guest');
       frame.allow = 'autoplay; fullscreen';
       dialog.append(frame);
       let guestFinished = false;
@@ -20,13 +20,15 @@
       async function record(message) {
         if(window.OjjudaAdminPreview?.isEnabled?.()===true)return;
         const {runId, drawCount, seconds, score} = message;
+        const completedAt=message.completedAt??new Date(Date.now()).toISOString();
+        if(!Number.isFinite(Date.parse(completedAt)))return;
         if (message.completed !== true || typeof runId !== 'string' ||
             !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(runId) ||
             score == null || window.OjjudaSolitaireRules?.score(drawCount, seconds) !== score) return;
         let pending = records.get(runId);
         if (pending && pending.score !== score) return;
         if (!pending) {
-          pending = {score, promise:Promise.resolve().then(() => authorized() && typeof onScore === 'function' ? onScore(score, runId) : {ok:false}).catch(() => ({ok:false}))};
+          pending = {score, promise:Promise.resolve().then(() => authorized() && typeof onScore === 'function' ? onScore(score,runId,completedAt) : {ok:false}).catch(() => ({ok:false}))};
           records.set(runId, pending);
         }
         const result = await pending.promise;

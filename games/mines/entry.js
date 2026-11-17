@@ -4,7 +4,7 @@
   const prefix = 'ojjuda.mines.save.v1:';
   const adminPreview = () => parent!==window&&parent.OjjudaAdminPreview?.isEnabled?.()===true;
   const rules = window.OjjudaMinesRules;
-  let game, owner, ready = false, pending = null, flight = null, timeout;
+  let game, owner, ready = false, store, flight = null, timeout;
   const comparisons=new Map();
   function post(message) { parent.postMessage({source:'ojjuda-mines', ...message}, location.origin); }
   function status(text, retry = false) {
@@ -22,16 +22,16 @@
   }
   function flush() {
     if(adminPreview()){
-      pending=null;flight=null;clearTimeout(timeout);
+      flight=null;clearTimeout(timeout);
       status('관리자 체험 · 완료 기록은 저장하지 않아요');return;
     }
-    if (!ready || !pending || flight) return;
-    flight = pending; pending = null;
+    if (!ready || !store.current() || flight) return;
+    flight = store.list().find(item=>rules.score(item.difficulty,item.seconds)===item.score);
+    if(!flight)return;
     status(`${game.levels[flight.difficulty].name} · ${flight.seconds.toLocaleString('ko-KR')}초 · 순위 등록 중…`);
     post({type:'ojjuda-game-result', ...flight, completed:true});
     timeout = setTimeout(() => {
       if (!flight) return;
-      if (!pending || pending.score <= flight.score) pending = flight;
       flight = null; status('순위 등록을 다시 시도해 주세요.', true);
     }, 15000);
   }
@@ -39,11 +39,13 @@
     if(adminPreview()){status('관리자 체험 · 완료 기록은 저장하지 않아요');return;}
     const score = rules.score(difficulty, seconds);
     if (score === null) {
-      if (!pending && !flight) status('커스텀은 개인 최고 기록만 남겨요.');
+      if (!flight && !store?.list().length) status(seconds > rules.maxRankedSeconds && difficulty < 8
+        ? `순위는 ${rules.maxRankedSeconds.toLocaleString('ko-KR')}초까지예요. 완료 시간은 개인 기록에서 확인해 주세요.`
+        : '커스텀은 개인 최고 기록만 남겨요.');
       return;
     }
     if (!ready) return;
-    if (!pending || pending.score <= score) pending = {runId, difficulty, seconds, score};
+    store.put({id:runId,runId,difficulty,seconds,score,completedAt:new Date(Date.now()).toISOString()});
     flush();
   }
   let confirmingExit = false;
@@ -63,6 +65,7 @@
     const m = event.data;
     if (m.type === 'ojjuda-mines-init' && !ready && typeof m.owner === 'string' && /^(guest|[a-f0-9-]{36})$/i.test(m.owner)) {
       owner = m.owner;
+      store=window.OjjudaPuzzleRecords.open('mines',owner);
       let raw;
       try { raw = JSON.parse(localStorage.getItem(prefix + owner) || (owner === 'guest' ? localStorage.getItem('ojjuda-mines-v1') : 'null')); } catch {}
       game.loadState(rules.progress(raw));
@@ -70,7 +73,7 @@
       $('#minesLevel').value = game.getState().d;
       $('#minesStart').disabled = false;
       $('#minesEntryHint').textContent = '난이도 → 완료 시간 → 먼저 달성한 순서로 순위를 정해요.';
-      progress();
+      progress();flush();
     }
     if (!ready) return;
     if (m.type === 'ojjuda-mines-exit-request') requestExit(m.fromBack === true);
@@ -83,10 +86,9 @@
           dispatchEvent(new CustomEvent('ojjuda-mines-result-comparison',{detail:{runId:m.runId}}));
         }
         status(`${game.levels[flight.difficulty].name} · ${flight.seconds.toLocaleString('ko-KR')}초 · 게임순위 등록 완료`);
-        flight = null;
-        if (pending) setTimeout(flush, 5500);
+        store.remove(flight.id);flight = null;
+        if (store.list().length) setTimeout(flush, 5500);
       } else {
-        if (!pending || pending.score <= flight.score) pending = flight;
         flight = null; status('순위 등록을 다시 시도해 주세요.', true);
       }
     }

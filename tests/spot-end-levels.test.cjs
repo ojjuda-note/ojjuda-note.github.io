@@ -10,7 +10,7 @@ function fixture(pos=48,allDone=false){
  for(const file of ['puzzles.js','photo-puzzles.js','masterpiece-puzzles.js','game-core.js'])w.eval(read(file));
  const puzzles=w.JJUDA_PUZZLES,order=Array.from(w.JjudaGame.difficultyOrder(puzzles)),position=pos==='last'?order.length-1:pos,current=order[position];
  w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current,order:[...order].reverse(),completed:allDone?puzzles.filter((_,i)=>i!==current).map(p=>p.id):order.slice(0,position).map(index=>puzzles[index].id)}));
- w.eval(read('app.js'));
+ w.eval(read('../../shared/games/puzzle-record-queue.js'));w.eval(read('app.js'));
  const state=()=>JSON.parse(w.localStorage.getItem('jjuda-spot-six-v1')),round=()=>{const s=state();return s.rounds[puzzles[s.current].id];};
  const load=()=>{for(const im of d.querySelectorAll('img'))if(im.onload)im.onload();};
  const advance=ms=>{now+=ms;for(const [id,t] of [...timers])if(t.at<=now){timers.delete(id);t.fn();}for(const tick of intervals)tick();};

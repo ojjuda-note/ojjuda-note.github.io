@@ -64,7 +64,7 @@ function fixture(t,stored,fixturePuzzles=puzzles){
  d.modelContext={registerTool:tool=>registered.push(tool)};
  w.JjudaWallet={getState:()=>account,subscribe:fn=>{subscriber=fn;fn(account);},refresh:async()=>{},buy:async(request,stage)=>{charges.push({...request,stage});return {ok:true,kind:request.kind,stage,spot:request.spot,price:1,extend_ms:60000};},recordClear:async(recordOwner,stage)=>{records.push({owner:recordOwner,stage});return {ok:true};}};
  w.JJUDA_PUZZLES=JSON.parse(JSON.stringify(fixturePuzzles));w.eval(read('game-core.js'));
- if(stored)w.localStorage.setItem(key,JSON.stringify(stored));w.eval(read('app.js'));
+ if(stored)w.localStorage.setItem(key,JSON.stringify(stored));w.eval(read('../../shared/games/puzzle-record-queue.js'));w.eval(read('app.js'));
  const state=()=>JSON.parse(w.localStorage.getItem(key)),round=()=>state().rounds[fixturePuzzles[state().current].id];
  const load=()=>{for(const image of d.querySelectorAll('img'))if(image.onload)image.onload();};
  function select(index){$('stage-picker').value=index;$('stage-picker').dispatchEvent(new w.Event('change'));load();}

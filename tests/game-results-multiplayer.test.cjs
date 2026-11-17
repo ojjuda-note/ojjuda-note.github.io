@@ -188,6 +188,8 @@ for(const scenario of [
  {name:'lower difficulty stays success without comparing unlike levels',before:89950,after:89950,me:false,difficulty:2,seconds:10,expected:null},
  {name:'a verified same-difficulty monthly leader can earn a new record',before:39950,after:39960,me:true,difficulty:2,seconds:40,expected:'record'},
  {name:'an earlier equal-time competitor never becomes the player record',before:39950,after:39960,me:false,difficulty:2,seconds:40,expected:'success',text:'같은 시간'},
+ {name:'long finishes show the exact gap',before:750080000,after:750080000,me:false,difficulty:2,seconds:11000,expected:'success',text:'1000초'},
+ {name:'an old rounded leader has no exact gap',before:30000,after:30000,me:false,difficulty:2,seconds:11000,expected:null},
  {name:'a slower same-difficulty completion reports the real time gap',before:39950,after:39950,me:false,difficulty:2,seconds:70,expected:'success',text:'20초'}
 ])test('mines monthly ranking: '+scenario.name,async t=>{
  const w=fixture(t),sent=[],scores=[];let readCount=0;

@@ -160,13 +160,13 @@ test('individual game progress and replay saves are isolated from admin preview'
   assert.ok(source.includes("if(typeof adminGamePreviewActive==='function'&&adminGamePreviewActive())return;\n if(!S||R?.running)return;"));
   assert.ok(source.includes("render(null,adminPreview?'관리자 체험 · 기록은 저장하지 않아요.'"));
   const guarded=[
-    ['games/spot-difference/wallet.js','async recordClear(owner,stage){'],
+    ['games/spot-difference/wallet.js','async recordClear(owner,stage,completedAt){'],
     ['games/spot-difference/world-spot-game.js',"if(window.OjjudaAdminPreview?.isEnabled?.()===true)return;"],
     ['games/solitaire/app.js','if(adminPreview())return;'],
     ['games/mines/entry.js',"if (!ready || adminPreview()) return;"],
     ['games/screw/screw-flat.js','if(adminPreview())return true;'],
     ['games/screw/screw3d.js','if(adminPreview())return true;'],
-    ['games/photo-ttang/photo-ttang-ranking.js','async function save(stage){'],
+    ['games/photo-ttang/photo-ttang-ranking.js','if(!active()||session.error||session.data?.user?.id!==owner)'],
     ['games/ojjuda-tour/world-tour-game.js','if(adminPreview()){'],
     ['games/ttang/ttang-bridge.js','if(adminPreview()){'],
     ['games/tank/world-tank-game.js','admin_preview'],

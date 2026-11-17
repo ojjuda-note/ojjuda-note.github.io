@@ -4,28 +4,28 @@
  const rules=window.OjjudaSacheonseongRanking,KEY='ojjuda-sacheonseong-pending-v1',$=id=>document.getElementById(id);
  const embedded=parent!==window,uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
  function newId(){const b=crypto.getRandomValues(new Uint8Array(16));b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=Array.from(b,n=>n.toString(16).padStart(2,'0')).join('');return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);}
+ const preview=()=>embedded&&parent.OjjudaAdminPreview?.isEnabled?.()===true;
  const purchases=new Map(),leaderRequests=new Map(),deliveries=new Map();
  const monthKey=()=>new Date(Date.now()+8*3600000).toISOString().slice(0,7);
- let owner,stage=1,queue=[],waiting=[],busy=null,deliveryTimer,rankingTimer,rankingId=null,rankStage=0;
- try{const saved=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(saved))queue=saved.filter(r=>r&&uuid.test(r.id)&&rules.game(r.stage)&&rules.score(r.duration)!==null&&(r.owner==='guest'||uuid.test(r.owner))).slice(-100);}catch{}
- function persist(){try{localStorage.setItem(KEY,JSON.stringify(queue));}catch{note('순위 전송 대기 기록을 저장할 수 없어요. 이 화면에서 다시 등록해 주세요.',true);}}
+ let owner,stage=1,store,legacy=[],waiting=[],busy=null,deliveryTimer,rankingTimer,rankingId=null,rankStage=0;
+ try{const saved=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(saved))legacy=saved.filter(r=>r&&uuid.test(r.id)&&rules.game(r.stage)&&rules.score(r.duration)!==null&&(r.owner==='guest'||uuid.test(r.owner)));}catch{}
  function note(message,retry=false){$('server-note').textContent=message;$('retry-records').hidden=!retry;}
  function send(message){if(embedded)parent.postMessage({source:'ojjuda-sacheonseong-game',...message},location.origin);}
  function settleDelivery(id,result){const pending=deliveries.get(id);if(!pending)return;deliveries.delete(id);pending.resolve(result);}
  function flush(){
-  if(!embedded||owner===undefined||busy)return;
-  const next=queue.find(r=>r.owner===owner);if(!next)return;
+  if(!embedded||owner===undefined||busy||preview())return;
+  const next=store.current()&&store.list().find(r=>r.owner===owner&&rules.score(r.duration)!==null&&rules.game(r.stage));if(!next)return;
   busy=next.id;note(`${next.stage}단계 기록을 오락실 순위에 등록하고 있어요…`);
   send({type:'record',...next});
   clearTimeout(deliveryTimer);deliveryTimer=setTimeout(()=>{settleDelivery(next.id,{ok:false,reason:'pending'});busy=null;note('기록은 보관했어요. 연결되면 다시 등록해 주세요.',true);},20000);
  }
  function enqueue(item){
-  if(queue.some(r=>r.id===item.id))return;
-  queue.push({...item,owner});queue=queue.slice(-100);persist();flush();
+  store.put({...item,owner});flush();
  }
  function record(nextStage,result){
   if(!embedded)return Promise.resolve({ok:false,reason:'standalone'});
-  const item={id:newId(),stage:nextStage,duration:result.duration};
+  if(preview())return Promise.resolve({ok:false,reason:'admin_preview'});
+  const item={id:newId(),stage:nextStage,duration:result.duration,completedAt:new Date(Date.now()).toISOString()};
   if(!rules.game(nextStage)||rules.score(item.duration)===null)return Promise.resolve({ok:false,reason:'invalid'});
   const promise=new Promise(resolve=>deliveries.set(item.id,{resolve}));
   Object.defineProperty(promise,'id',{value:item.id});
@@ -81,15 +81,27 @@
    // A live game stays bound to the identity that opened it.
    if(owner!==undefined&&owner!==message.owner)return;
    owner=message.owner;
+   store=window.OjjudaPuzzleRecords.open('sacheonseong',owner);
+   // Older queues have no completion time. Keep the first recovery time thereafter.
+   const previous=legacy.filter(item=>item.owner===owner);
+   if(previous.length){
+    for(const item of previous)store.put({...item,completedAt:item.completedAt||new Date(Date.now()).toISOString()});
+    try{
+     const old=JSON.parse(localStorage.getItem(KEY))||[];
+     const ids=new Set(previous.filter(item=>store.durable(item.id)).map(item=>item.id));
+     localStorage.setItem(KEY,JSON.stringify(old.filter(item=>!ids.has(item.id))));
+    }catch{}
+    legacy=legacy.filter(item=>item.owner!==owner);
+   }
    note('완료 기록은 오락실의 종합 게임순위에 등록돼요.');
    const initial=waiting;waiting=[];initial.forEach(enqueue);flush();
   }
   if(message.type==='purchase'&&message.owner===owner&&purchases.has(message.id)){purchases.get(message.id).finish(message.result||{ok:false,reason:'pending'});}
   if(message.type==='record'&&message.id===busy){
-   clearTimeout(deliveryTimer);const saved=queue.find(r=>r.id===busy);busy=null;
+   clearTimeout(deliveryTimer);const saved=store.list().find(r=>r.id===busy);busy=null;
    const result={id:message.id,ok:message.ok===true,owner:message.owner,period:message.period,stage:saved?.stage};
    settleDelivery(message.id,result);window.dispatchEvent(new CustomEvent('ojjuda:sacheonseong-record',{detail:result}));
-   if(message.ok){queue=queue.filter(r=>r.id!==message.id);persist();note(`${saved?.stage||stage}단계 기록을 오락실 순위에 등록했어요.`);flush();}
+   if(message.ok){store.remove(message.id);note(`${saved?.stage||stage}단계 기록을 오락실 순위에 등록했어요.`);flush();}
    else note('기록은 보관했어요. 다시 등록해 주세요.',true);
   }
   if(message.type==='ranking'&&leaderRequests.has(message.id)){

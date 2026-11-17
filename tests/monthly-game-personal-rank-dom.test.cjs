@@ -9,6 +9,7 @@ const read = file=>fs.readFileSync(path.join(root,file),'utf8');
 const page = read('features/arcade/monthly-ranking.html');
 const viewer = read('features/arcade/monthly-ranking.js');
 const results = read('shared/games/game-results.js');
+const guestAuth = {onAuthStateChange(){},async getSession(){return {data:{session:null}};}};
 
 test('rank viewer paints only top ten, highlights me and separates a personal 12th place',async t=>{
  const dom=new JSDOM(page,{url:'https://ojjuda.kr/features/arcade/monthly-ranking.html?game=runner',runScripts:'outside-only'});
@@ -17,7 +18,7 @@ test('rank viewer paints only top ten, highlights me and separates a personal 12
  window.AbortSignal=AbortSignal;
  window.OJJUDA_CONFIG={supabaseUrl:'https://example.supabase.co',supabaseKey:'public-key'};
  const queries=[];
- window.supabase={createClient:()=>({rpc:(name,args)=>{
+ window.supabase={createClient:()=>({auth:guestAuth,rpc:(name,args)=>{
   queries.push([name,args]);
   const response={month:'2026-11',startsAt:'2026-10-31T16:00:00Z',endsAt:'2026-11-30T16:00:00Z',
    leaders:Array.from({length:10},(_,i)=>({nick:'선수'+(i+1),score:i===0?57680:100-i*5,me:args.p_game==='mines'&&i===2})),
@@ -59,7 +60,7 @@ test('an unknown game opens the default ranking',async t=>{
  const {window}=dom,requested=[];
  window.AbortSignal=AbortSignal;
  window.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'synthetic'};
- window.supabase={createClient:()=>({rpc(_name,args){
+ window.supabase={createClient:()=>({auth:guestAuth,rpc(_name,args){
   requested.push(args.p_game);
   return {abortSignal:async()=>({data:null,error:{message:'fixture'}})};
  }})};
@@ -68,6 +69,42 @@ test('an unknown game opens the default ranking',async t=>{
  await new Promise(setImmediate);
  assert.deepEqual(requested,['sacheonseong']);
  assert.equal(window.document.querySelector('#ranking-game').value,'sacheonseong');
+});
+
+test('an account switch replaces the guest highlight and ignores stale replies',async t=>{
+ const dom=new JSDOM(page,{url:'https://example.test/ranking?game=runner',runScripts:'outside-only'});
+ t.after(()=>dom.window.close());
+ const w=dom.window,doc=w.document,token='a'.repeat(64),requests=[];
+ let session=null,authChanged;
+ const wait=()=>new Promise(resolve=>setTimeout(resolve,10));
+ const change=(event,user)=>{session=user?{user}:null;authChanged(event,session);};
+ const guest={nick:'손님',score:100},member={rank:12,nick:'회원',score:25,me:true};
+ w.AbortSignal=AbortSignal;w.localStorage.setItem('ojjuda.guest-ranking.v1',token);
+ w.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'test'};
+ w.supabase={createClient:()=>({
+  auth:{onAuthStateChange(fn){authChanged=fn;},async getSession(){return {data:{session}};}},
+  rpc(_name,args){return {abortSignal:()=>new Promise(resolve=>{
+   requests.push({args,reply:(leaders,mine=null)=>resolve({data:{
+    month:'2026-11',startsAt:'2026-10-31T16:00:00Z',endsAt:'2026-11-30T16:00:00Z',leaders,mine
+   }})});
+  })};}
+ })};
+ w.eval(viewer);await wait();
+ assert.equal(requests[0].args.p_guest_token,token);
+ requests[0].reply([{...guest,me:true}]);await wait();
+ assert.equal(doc.querySelector('#ranking-leaders .is-me strong').textContent,'손님나');
+ doc.querySelector('#ranking-refresh').click();await wait();
+ change('SIGNED_IN',{id:'member-1'});await wait();
+ assert.equal(requests[2].args.p_guest_token,null);
+ requests[2].reply([guest],member);requests[1].reply([{...guest,me:true}]);await wait();
+ assert.equal(doc.querySelector('#ranking-leaders .is-me'),null);
+ assert.equal(doc.querySelector('#ranking-mine .rank-place').textContent,'12위');
+ change('TOKEN_REFRESHED',{id:'member-1'});await wait();assert.equal(requests.length,3);
+ change('SIGNED_IN',{id:'member-2'});await wait();
+ assert.equal(doc.querySelector('#ranking-mine').hidden,true);
+ requests[3].reply([guest]);await wait();assert.equal(doc.querySelector('.is-me'),null);
+ change('SIGNED_OUT',null);await wait();assert.equal(requests[4].args.p_guest_token,token);
+ requests[4].reply([{...guest,me:true}]);await wait();assert.equal(doc.querySelectorAll('.is-me').length,1);
 });
 
 test('shared entry/result links remain while extra ranking tiles stay out of the arcade grid',async t=>{

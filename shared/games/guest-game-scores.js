@@ -58,8 +58,12 @@
     return await rpc('guest_game_ranking',{p_game:game,p_period:period,p_guest_token:token()}) || [];
   }
   window.OjjudaGuestScores = Object.freeze({submit,submitScrewBox,ranking,
+    roundIdentity:()=>adminPreview()?null:'guest:'+token().slice(0,24),
+    submitArcadeRound:args=>adminPreview()?previewReceipt():rpc('submit_arcade_round',{...args,p_guest_token:token(),p_expected_owner:null}),
     legacySaetbyeolFood:()=>rpc('saetbyeol_legacy_food_eligible',{p_guest_token:token()}),
-    spot:async(stage)=>adminPreview()?previewReceipt():rpc('record_spot_clear',{p_stage:stage,p_guest_token:token()}),
+    spot:async(stage,completedAt)=>adminPreview()?previewReceipt():completedAt
+      ?rpc('record_spot_clear_at',{p_stage:stage,p_finished_at:completedAt,p_expected_owner:null,p_guest_token:token()})
+      :rpc('record_spot_clear',{p_stage:stage,p_guest_token:token()}),
     territory:async(runId,won)=>adminPreview()?previewReceipt():rpc('record_ttang_result',{p_round:runId,p_won:won,p_guest_token:token()}),
     yut:async(runId,won)=>adminPreview()?previewReceipt():rpc('record_yut_result',{p_round:runId,p_won:won,p_guest_token:token()}),
     marble:async(runId,won)=>adminPreview()?previewReceipt():rpc('record_marble_result',{p_round:runId,p_won:won,p_guest_token:token()})

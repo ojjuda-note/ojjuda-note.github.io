@@ -19,7 +19,8 @@
  const params=new URL(location.href).searchParams;
  const raw=params.get('game');
  let game=byId.has(raw)?raw:aliases[raw]||'sacheonseong';
- let client=null,request=0,resetTimer=null,lastEndsAt=0;
+ let client=null,request=0,resetTimer=null,lastEndsAt=0,viewerId;
+ const memberId=session=>session?.user?.is_anonymous?null:(session?.user?.id||null);
  const scoreFormat=new Intl.NumberFormat('ko-KR');
  const periodFormat=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'numeric',hourCycle:'h23'});
  const number=value=>{
@@ -33,8 +34,8 @@
   if(id==='solitaire')return window.OjjudaSolitaireRules?.record(score)?.time||'—';
   if(id==='mines')return window.OjjudaMinesRules?.record(score)?.time||'—';
   if(id==='mole'){
-   const grid=Math.min(6,3+Math.floor(score/1000));
-   return number(score-(grid-3)*1000)+'점';
+   const points=window.OjjudaMoleRanking?.rankingRecord(score)?.points;
+   return points==null?'—':(window.OjjudaScoreFormat?.(points)??number(points))+'점';
   }
   const unit=byId.get(id)?.unit||'점';
   return (unit==='점'&&window.OjjudaScoreFormat?window.OjjudaScoreFormat(score):number(record.score))+unit;
@@ -50,7 +51,7 @@
    const level=window.OjjudaMinesRules?.record(Number(record.score))?.name;
    if(level)detail.push(level);
   } else if(id==='mole'){
-   const grid=Math.min(6,3+Math.floor(Number(record.score)/1000));
+   const grid=window.OjjudaMoleRanking?.rankingRecord(record.score)?.grid;
    if(grid>=3)detail.push(`${grid}×${grid}`);
   } else if(id==='tank'&&Number(record.opponents)>0)detail.push(`${record.opponents}명 상대`);
   else if(['chess','janggi','billiards'].includes(id)){
@@ -73,7 +74,10 @@
   const detail=describe(record,game);
   if(detail){const small=document.createElement('small');small.textContent=detail;who.append(small);}
   const points=document.createElement('span');points.className='rank-points';points.textContent=formatScore(record,game);
-  if(byId.get(game)?.unit==='점'&&game!=='mole')points.title=number(record.score)+'점';
+  if(byId.get(game)?.unit==='점'){
+   const exact=game==='mole'?window.OjjudaMoleRanking?.rankingRecord(record.score)?.points:record.score;
+   if(exact!=null)points.title=number(exact)+'점';
+  }
   li.append(position,who,points);return li;
  }
  function guestToken(){
@@ -99,9 +103,24 @@
     const config=window.OJJUDA_CONFIG;
     if(!config?.supabaseUrl||!config?.supabaseKey||!window.supabase?.createClient)throw Error('연결 설정을 불러오지 못했어요.');
     client=window.supabase.createClient(config.supabaseUrl,config.supabaseKey);
+    client.auth.onAuthStateChange((event,session)=>{
+     const next=memberId(session);
+     if(next===viewerId)return;
+     const initial=event==='INITIAL_SESSION'&&viewerId===undefined;
+     viewerId=next;
+     if(!initial){
+      ++request;
+      list.replaceChildren();mine.hidden=true;mineRow.replaceChildren();
+      setTimeout(()=>void load(),0);
+     }
+    });
    }
+   const session=await client.auth.getSession();
+   if(id!==request)return;
+   if(session.error)throw session.error;
+   viewerId=memberId(session.data.session);
    const {data,error}=await client.rpc('community_game_monthly_personal',{
-    p_game:game,p_guest_token:guestToken()
+    p_game:game,p_guest_token:viewerId?null:guestToken()
    }).abortSignal(AbortSignal.timeout(12000));
    if(id!==request)return;
    if(error)throw error;

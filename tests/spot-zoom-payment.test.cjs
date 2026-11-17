@@ -13,7 +13,7 @@ function fixture(){
  const fresh=w.JjudaGame.freshRound;w.JjudaGame.freshRound=()=>({...fresh(),remainingMs:9000});
  const order=Array.from(w.JjudaGame.difficultyOrder(w.JJUDA_PUZZLES));
  w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:48,completed:order.slice(0,order.indexOf(48)).map(index=>w.JJUDA_PUZZLES[index].id)}));
- w.eval(read('app.js'));
+ w.eval(read('../../shared/games/puzzle-record-queue.js'));w.eval(read('app.js'));
  for(const im of w.document.querySelectorAll('img'))if(im.onload)im.onload();
  $('start').click();$('zoom').click();$('zoom-level').value='2';$('zoom-level').dispatchEvent(new w.Event('change'));
  for(const id of ['zoom-scroll-a','zoom-scroll-b']){$(id).scrollLeft=123;$(id).scrollTop=234;}
@@ -70,7 +70,7 @@ function fixture(){
  const host=new JSDOM('<!doctype html><body><button id="arcade">오락실</button></body>',{url:'https://fixture.test/world.html?tab=arcade',runScripts:'outside-only'});
  try{
   const w=host.window;w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};let closed=0;
-  w.eval(fs.readFileSync(path.join(root,'../../games/spot-difference/world-spot-game.js'),'utf8'));w.OjjudaSpotGame.open({onClose:()=>closed++});
+  w.eval(read('../../shared/games/puzzle-record-queue.js'));w.eval(fs.readFileSync(path.join(root,'../../games/spot-difference/world-spot-game.js'),'utf8'));w.OjjudaSpotGame.open({onClose:()=>closed++});
   const frame=w.document.querySelector('iframe'),send=(origin,source)=>w.dispatchEvent(new w.MessageEvent('message',{origin,source,data:{type:'ojjuda:spot-home'}}));
   assert.equal(w.document.querySelector('.spot-game-header button').textContent,'← 오쭈다 오락실');
   send('https://other.test',frame.contentWindow);send(w.location.origin,w);assert.ok(w.document.querySelector('.spot-game-dialog'),'ignore foreign home requests');
