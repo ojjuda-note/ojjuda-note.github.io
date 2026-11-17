@@ -314,8 +314,12 @@ if (seventeenProfile) {
 const twsProfile = window.OJJUDA_FAN_PROFILES.tws;
 if (twsProfile) {
   twsProfile.expanded = true;
-  twsProfile.checkedAt = '2026.11.12';
+  twsProfile.checkedAt = '2026.11.17';
+  twsProfile.awards = [
+    { year: '2026.11', title: 'MMA2026 글로벌 임팩트 아티스트 남자 부문', detail: '2026.11.14 서울 고척스카이돔 수상', href: 'https://enews.imbc.com/News/RetrieveNewsInfo/524887' }
+  ];
   twsProfile.records = [
+    { year: '2026.11', title: '뮤직뱅크 Call My Name 첫 1위', detail: '2026.11.13 뮤직뱅크 9,857점 · 싱글 TO US 타이틀', href: 'https://www.soompi.com/article/1886823wpp/watch-tws-takes-1st-win-for-call-my-name-on-music-bank-performances-by-jisoo-ateez-and-more' },
     { year: '2024.01', title: 'Sparkling Blue 데뷔', detail: '2024.01.22 데뷔 미니앨범 · 5곡', href: 'https://music.apple.com/us/album/sparkling-blue/1723932647' },
     { year: '2026.11', title: 'TO US 두 번째 싱글', detail: '11월 2일 발매 · 3곡', href: 'https://music.apple.com/us/album/to-us-single/6818392534' }
   ];

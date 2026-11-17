@@ -1194,7 +1194,7 @@
       members: ['신유', '도훈', '영재', '한진', '지훈', '경민'],
       debut: '2024.01.22', debutWork: 'Sparkling Blue', songs: ['첫 만남은 계획대로 되지 않아', 'Oh Mymy : 7s'],
       concept: '언제나 함께라는 이름처럼 일상의 설렘을 노래하는 보이후드 팝 여섯 멤버.',
-      checkedAt: '2026.11.14',
+      checkedAt: '2026.11.17',
       official: 'https://tws-official.jp/profile/', youtube: 'https://www.youtube.com/@TWS_PLEDIS',
       photo: 'TWS at the 2024 Melon Music Awards.png', photoLabel: '멜론뮤직어워드', photoYear: '2024', credit: 'TenAsia', license: 'CC BY 3.0',
       morePhotos: [
@@ -1243,12 +1243,6 @@
       ],
       appearances: [
         {
-          "date": "2026-11-14",
-          "title": "MMA 2026 Global Day 출연",
-          "sub": "서울 고척스카이돔 · 카카오엔터테인먼트 · 개별 출연 시각은 공식 안내 확인",
-          "href": "https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/"
-        },
-        {
           "date": "2026-11-29",
           "title": "TO US 케이타운포유 1:1 영상통화 팬사인회",
           "sub": "18:00 KST · 당첨자 대상 · PLEDIS/케이타운포유 · 응모 종료",
@@ -1265,13 +1259,31 @@
           "title": "TO US 엠투유레코드 오프라인 팬사인회",
           "sub": "20:30 KST · 서울(당첨자 별도 안내) · PLEDIS/엠투유레코드 · 응모 종료",
           "href": "https://weverse.io/tws/notice/40695"
+        },
+        {
+          "date": "2026-12-27",
+          "title": "TBS 채널1 TWS 일본 투어 전곡 방송",
+          "sub": "22:00 JST/KST · 일본 CS TBS 채널1 · 2026 일본 투어 전곡 방송 · 유료 방송",
+          "href": "https://tws-official.jp/schedule/d0921e08bf14"
         }
       ],
       schedules: [
         { title: 'TWS Weverse 공식 행사·팬사인회 안내', sub: '로그인 후 일정 변경·취소 및 당첨자 공지 확인', href: 'https://weverse.io/tws/notice' },
-        { title: 'TWS 일본 공식 소식·일정', sub: '일본 활동 안내', href: 'https://tws-official.jp/' }
+        { title: 'TWS 일본 공식 일정', sub: '방송·공연 일정 · 공식 달력', href: 'https://tws-official.jp/schedule/' }
       ],
       news: [
+        {
+          "date": "2026.11.15",
+          "tag": "수상",
+          "title": "MMA2026 글로벌 임팩트 아티스트 남자 부문 수상(11.14 시상)",
+          "href": "https://enews.imbc.com/News/RetrieveNewsInfo/524887"
+        },
+        {
+          "date": "2026.11.13",
+          "tag": "음악방송",
+          "title": "뮤직뱅크 Call My Name 첫 1위 · 9,857점",
+          "href": "https://www.soompi.com/article/1886823wpp/watch-tws-takes-1st-win-for-call-my-name-on-music-bank-performances-by-jisoo-ateez-and-more"
+        },
         {
           "date": "2026.11.02",
           "tag": "컴백",
@@ -1287,8 +1299,13 @@
       ],
       merch: [
         {
-          "title": "신유 B-DAY FANTASY MOBILE 4차 예약",
-          "sub": "Weverse Shop · 2026.11.09 13:00~11.16 23:59 KST 예약 · 2027.02.10부터 발송 예정 · 조기 품절 가능",
+          "title": "TWS · Weverse US 블랙프라이데이",
+          "sub": "미국·캐나다 배송 한정 · 2026.11.13 18:00~12.02 23:59 PST · 할인·재고는 판매처 확인",
+          "href": "https://shop.weverse.io/es/shop/USD/artists/165/notices/14961"
+        },
+        {
+          "title": "신유 B-DAY FANTASY MOBILE 4차 예약 종료",
+          "sub": "Weverse Shop · 2026.11.16 23:59 KST 예약 종료 · 2027.02.10부터 발송 예정 · 재판매는 공식몰 확인",
           "href": "https://shop.weverse.io/ko/shop/USD/artists/165/notices/14893"
         },
         {
@@ -1307,7 +1324,9 @@
           "href": "https://shop.weverse.io/en/shop/MXN/artists/165/sales/68020"
         }
       ],
-      campaigns: [],
+      campaigns: [
+        { kind: '홍보대사', date: '2026.09.02', title: '트윅스(Twix) 국내 첫 브랜드 앰배서더', sub: '한국마즈 · 두 개니까, 트윅스 캠페인 · 공식 발표', href: 'https://www.newspim.com/news/view/20260902000760' }
+      ],
       accent: '#76a8d7', light: '#e0efff', dark: '#456a91', bg: '#f6fbff', shape: '✦'
     },
     {
