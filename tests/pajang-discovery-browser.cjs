@@ -28,7 +28,7 @@ async function checkCompass(view, selector, labelSelector, markerSelector) {
       const e=Object.assign(new Event('deviceorientationabsolute'),{absolute:true,alpha:(360-heading)%360,beta:0,gamma:0});
       el.ownerDocument.defaultView.dispatchEvent(e);
     },heading);
-    await view.getByText(new RegExp('위.*'+labels[heading/45]+'쪽$')).waitFor();
+    await view.getByText(new RegExp('위(?:쪽)? · '+labels[heading/45]+'쪽$')).waitFor();
     const geometry=await dial.evaluate((el,{labelSelector,markerSelector})=>{
       const rect=el.getBoundingClientRect();
       function point(node){
@@ -41,7 +41,7 @@ async function checkCompass(view, selector, labelSelector, markerSelector) {
     },{labelSelector,markerSelector});
     function difference(a,b){return Math.abs((a-b+540)%360-180);}
     geometry.labels.forEach((v,i)=>{
-      assert.ok(v.inside && difference(v.angle,i*45-heading)<3,'방위 위치: '+labels[i]+' / '+heading);
+      assert.ok(v.inside && difference(v.angle,i*45-heading)<3,'방위 위치: '+labels[i]+' / '+heading+' '+JSON.stringify(v));
     });
     assert.ok(difference(geometry.person.angle,315-heading)<3,'북서쪽 사람이 같은 각도로 이동');
   }
@@ -60,7 +60,7 @@ function clientFixture(hash) {
     if(accepted)state.signals.push({src:'me',dst:'peer2'});
     const entry={...state,joined:mode!=='new',body:mode==='new'?'':state.me.body,nickname:'보리',
       question:{...state.question,answers:['책을 골라요.','같이 걸어요.','커피를 마셔요.']}};
-    if(mode==='new')state.me.body='';
+    if(mode==='new'||mode==='unanswered'){state.me.body='';entry.body='';}
     window.feedCalls=[];window.heldGender=null;window.releaseFeed=null;
     const messages=[{id:'1',src:'peer1',dst:'me',body:'안녕하세요!',at:1}];
     window.authCalls=0;window.artCalls=[];window.memberCalls=[];window.sendIds=[];
@@ -346,6 +346,10 @@ function clientFixture(hash) {
     await page.evaluate(()=>{sessionStorage.fixtureMode='switched';});
     await page.goto(origin+project+'station.html');await page.getByRole('link',{name:'오쭈다 로그인하기'}).waitFor();
     assert.equal(await nav.count(),0,'a different auth session cannot mount the previous member state');
+    await page.evaluate(()=>{sessionStorage.fixtureMode='unanswered';});
+    await page.goto(origin+project+'station.html');
+    await questionCard.getByRole('button',{name:'내 답변 쓰기'}).click();
+    await page.getByRole('dialog').waitFor();
     for(const mode of ['guest','denied']){
       await page.evaluate(m=>{sessionStorage.fixtureMode=m;},mode);
       await page.goto(origin+project+'station.html');
