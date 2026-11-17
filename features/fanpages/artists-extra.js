@@ -1139,7 +1139,7 @@
       members: ['성호', '리우', '명재현', '태산', '이한', '운학'],
       debut: '2023.05.30', debutWork: 'WHO!', songs: ['돌아버리겠다 (But I Like You)', 'One and Only', 'Serenade'],
       concept: '일상의 이야기를 솔직하게 들려주는 여섯 멤버.',
-      checkedAt: '2026.11.14',
+      checkedAt: '2026.11.17',
       official: 'https://kozofficial.com/artist/profile/BOYNEXTDOOR', youtube: 'https://www.youtube.com/@BOYNEXTDOOR_official',
       photo: '2026-01-16 BOYNEXTDOOR at Golden Disc Awards 05 (cropped).png', photoLabel: '골든디스크 시상식', photoYear: '2026', credit: '티비텐 TV10', license: 'CC BY 4.0',
       morePhotos: [
@@ -1151,11 +1151,12 @@
         { title: 'WHO!', date: '2023.05.30', type: '데뷔 싱글', songs: ['돌아버리겠다 (But I Like You)', 'One and Only', 'Serenade'], href: 'https://www.kozofficial.com/artist/discography/BOYNEXTDOOR/23' }
       ],
       appearances: [
-        { date: '2026-11-15', timeZone: 'America/Los_Angeles', title: 'KNOCK ON Vol.2 · 시애틀', sub: '미국 시애틀 Showbox SoDo · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
         { date: '2026-11-17', timeZone: 'America/Los_Angeles', title: 'KNOCK ON Vol.2 · 샌프란시스코', sub: '미국 샌프란시스코 The Warfield · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
         { date: '2026-11-20', timeZone: 'America/Los_Angeles', title: 'KNOCK ON Vol.2 · 로스앤젤레스', sub: '미국 로스앤젤레스 Peacock Theater · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
         { date: '2026-11-24', timeZone: 'America/Mexico_City', title: 'KNOCK ON Vol.2 · 멕시코시티', sub: '멕시코시티 Arena Ciudad de México · AEG Presents 공연·예매 안내', href: 'https://boynextdoortour.com/' },
         { date: '2026-12-05', title: 'KNOCK ON Vol.2 · 자카르타', sub: '인도네시아 자카르타 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' },
+        { date: '2026-12-07', title: 'HOME: DELUXE 발매 기념 WITHMUU 팬사인회', sub: '19:00 KST · 사전 응모·당첨자 대상(10/2 응모 마감) · 장소와 참석 조건은 공식 안내 확인', href: 'https://weverse.io/boynextdoor/notice/39349' },
+        { date: '2026-12-10', title: 'HOME Party in JAPAN 미니 라이브·토크', sub: '일본 도쿄 다치카와 스테이지 가든 · 저녁 행사, 당첨자 초대 · 상세 시각 개별 안내', href: 'https://boynextdoor-official.jp/news/201dd763b1a1' },
         { date: '2026-12-26', title: 'KNOCK ON Vol.2 · 쿠알라룸푸르', sub: '말레이시아 쿠알라룸푸르 · 소속사 그룹 HYBE JAPAN 공식 투어 발표', href: 'https://prtimes.jp/main/html/rd/p/000000697.000045862.html' }
       ],
       schedules: [
@@ -1163,13 +1164,18 @@
         { title: 'BOYNEXTDOOR Weverse 공지', sub: '로그인·커뮤니티 가입 후 공연·행사 변경과 예매 정보 확인', href: 'https://weverse.io/boynextdoor/notice' }
       ],
       news: [
-        { date: '2026.05.19', tag: '협업', title: 'LG유플러스 브랜드 앰배서더 · HOME 협업 캠페인 발표', href: 'https://m.lguplus.com/about/ko/corporation/promotion/press-kit/detail?atclNo=2000001561&pageNo=1&srchCond=titCon' },
+        { date: '2026.11.13', tag: '굿즈', title: 'Weverse US 블랙프라이데이 공식 상품 행사 발표 · 12/2까지(미국 태평양시간)', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/14960' },
+        { date: '2026.11.12', tag: '음반 특전', title: 'HOME: DELUXE Weverse Global 공식 구매 특전 이벤트 공지', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/14927' },
         { date: '2026.11.01', tag: '굿즈', title: 'One and Only 후드 재판매 발표 · 11.02 예약 시작', href: 'https://boynextdoor-official.jp/news/1eaa7468d773' },
         { date: '2026.10.27', tag: '굿즈', title: 'HYBE CINE FEST 2026 공식 상품 판매 안내', href: 'https://boynextdoor-official.jp/news/aa8fdc1e75ea' },
         { date: '2026.09.07', tag: '음반', title: 'HOME: DELUXE 예약 시작 · 9.28 정식 발매', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/14247' },
         { date: '2026.07.30', tag: '협업', title: '언더아머 글로벌 앰배서더 · COMMIT 캠페인 발표', href: 'https://www.erajaya.com/index.php/news/under-armour-tunjuk-boynextdoor-sebagai-global-brand-ambassadors' },
+        { date: '2026.05.19', tag: '협업', title: 'LG유플러스 브랜드 앰배서더 · HOME 협업 캠페인 발표', href: 'https://m.lguplus.com/about/ko/corporation/promotion/press-kit/detail?atclNo=2000001561&pageNo=1&srchCond=titCon' },
       ],
       merch: [
+        { title: 'Weverse US 2026 블랙프라이데이 · BOYNEXTDOOR', sub: '11/13 18:00~12/2 23:59 PST · 미국·캐나다 배송 가능 · 상품별 할인·품절·재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/14960' },
+        { title: 'HOME: DELUXE 공식 구매 특전 이벤트', sub: 'Weverse Global · 11/12 공식 특전 공지 · 이벤트 기간·대상 상품·재고는 상세 페이지 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/14927' },
+        { title: 'BBNEXDO in Sweet Dreams 공식 MD', sub: '일본 도쿄·오사카 팝업 11/7~11/17 · 상품별 수량 한정·현장 입장 규칙은 공식 공지 확인', href: 'https://boynextdoor-official.jp/news/1f23c379c56a' },
         { title: 'KNOCK ON Vol.2 투어 공식 MD', sub: 'Weverse Global · 7.09 18:00 KST부터 수량 소진 시까지 예약판매 · 응원봉 키링·포토카드·BOYNEXTDOOR X ASSC 상품 등 · 가격·재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/13681' },
         { title: 'HOME: DELUXE 공식 앨범', sub: 'Weverse Shop · 9.28 발매 · 9.07~9.27 예약·특전 기간 종료 · 현재 재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/14247' },
         { title: 'One and Only 후드 재판매', sub: '공식 일본 판매 · 멤버십 가입자·일본 배송 한정 · 11.02부터 수량 소진 시 종료', href: 'https://boynextdoor-official.jp/news/1eaa7468d773' },

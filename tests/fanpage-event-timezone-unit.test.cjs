@@ -5,6 +5,8 @@ const read = file => fs.readFileSync(path.join(dir, file), 'utf8');
 const context = vm.createContext({window:{}, URL, location:{href:'https://fan.test/features/fanpages/artist.html?group=boynextdoor',origin:'https://fan.test',search:'?group=boynextdoor'}, URLSearchParams, document:{getElementById:()=>null}});
 for (const file of ['artists.js','artists-extra.js','catalog.js']) vm.runInContext(read(file), context);
 const artist = context.window.OJJUDA_FAN_ARTISTS.find(a=>a.id==='boynextdoor');
+// A past show is cleaned from live data; keep it as a fixed fixture for timezone regression.
+artist.appearances.push({date:'2026-11-15',timeZone:'America/Los_Angeles',title:'KNOCK ON Vol.2 · 시애틀',sub:'fixture only',href:'https://boynextdoortour.com/'});
 assert.equal(artist.appearances.find(e=>e.title.includes('시애틀')).timeZone,'America/Los_Angeles', 'catalog preserves venue zone');
 artist.appearances.push(...[
  {date:'2026-11-15',title:'Korean default'},
