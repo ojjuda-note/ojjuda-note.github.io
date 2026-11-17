@@ -4,6 +4,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { JSDOM } = require('jsdom');
 const root = path.join(__dirname, '..');
+const toolbarSource = fs.readFileSync(path.join(root, 'note/composer-tools.js'), 'utf8');
 const source = fs.readFileSync(path.join(root, 'note/preview.js'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'park/index.html'), 'utf8').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
 const key = id => `ojjuda-note-composer-settings-v1:${id}`;
@@ -36,6 +37,20 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
   }
   const open = async () => { await run("openComposer('memo')"); await settle(); };
   const close = () => run('closeComposer(false)');
+  const tool = name => document.querySelector(`[data-compose-tool="${name}"]`);
+  const panel = name => document.querySelector(`[data-compose-panel="${name}"]`);
+  function openTool(name) {
+    const button = tool(name);
+    assert.ok(button, `the ${name} option is reachable from the toolbar`);
+    assert.equal(button.disabled, false);
+    if (button.getAttribute('aria-expanded') !== 'true') button.click();
+    assert.equal(button.getAttribute('aria-expanded'), 'true');
+    assert.equal(panel(name).hidden, false);
+    assert.equal(document.querySelectorAll('[data-compose-panel]:not([hidden])').length, 1,
+      'only the chosen option panel opens');
+    assert.equal(document.getElementById(button.getAttribute('aria-controls')), panel(name));
+    assert.ok(button.getAttribute('aria-label'), 'icon buttons have accessible names');
+  }
   function choose(identity, gender) {
     for (const [id, value] of [['quick-identity', identity], ['quick-gender', gender]]) {
       const select = document.getElementById(id);
@@ -72,6 +87,7 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
         rpc: async name => ({ data: name === 'get_my_member_identity' ? { gender: 'private' } : null })
       }) };
     }
+    run(toolbarSource);
     run(source);
     if (id) signIn(id, gender);
     else run('authKnown = ready = true; selectCollection = async () => true; refreshCards = async () => {};');
@@ -88,6 +104,44 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     boot(); await open();
     assert.deepEqual(choices(), { identity: 'anonymous', gender: 'male', location: true });
     assert.deepEqual(styleChoices(), { font: 'default', size: 'normal', boxTransparency: 25 });
+    assert.ok(document.querySelector('.composer').classList.contains('composer-tools-ready'));
+    assert.equal(document.querySelectorAll('[data-compose-tool]').length, 6);
+    assert.equal(document.querySelectorAll('[data-compose-panel]:not([hidden])').length, 0,
+      'writing starts with every option panel collapsed');
+    assert.equal(document.activeElement, document.querySelector('.composer'),
+      'opening the editor does not force the phone keyboard open');
+    const originalInput = document.getElementById('compose-text');
+    const originalPhotoInput = document.getElementById('card-photo-file');
+    assert.equal(document.getElementById('compose-tags').closest('.compose-tag-entry')?.parentElement,
+      document.querySelector('.composer-body'), 'tags stay above the card');
+    assert.equal(document.getElementById('publish-card').closest('.composer-head'),
+      document.querySelector('.composer-head'), 'the existing publish action stays in the header');
+    originalInput.value = '옵션을 바꿔도 남아 있는 글';
+    originalInput.dispatchEvent(new window.Event('input', { bubbles: true }));
+    for (const name of ['photo', 'font', 'color', 'effect', 'location', 'settings']) openTool(name);
+    assert.equal(document.getElementById('compose-text'), originalInput, 'panel switches never replace the writing input');
+    assert.equal(document.getElementById('card-photo-file'), originalPhotoInput,
+      'the original attachment input and its listeners are kept');
+    assert.equal(originalInput.value, '옵션을 바꿔도 남아 있는 글');
+    assert.equal(document.querySelectorAll('#compose-text,#card-photo-file,#quick-identity,#quick-gender').length, 4,
+      'moving options never duplicates an input id');
+    chooseStyle('serif', 'large', 37);
+    openTool('photo'); openTool('color');
+    assert.deepEqual(styleChoices(), { font: 'serif', size: 'large', boxTransparency: 37 });
+    document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    assert.equal(document.getElementById('composer-backdrop').hidden, false,
+      'Escape first dismisses the option panel without closing the draft');
+    assert.equal(document.querySelectorAll('[data-compose-panel]:not([hidden])').length, 0);
+    assert.equal(originalInput.value, '옵션을 바꿔도 남아 있는 글');
+    run('busy = true; setComposerInputs(); updateComposer();');
+    assert.equal([...document.querySelectorAll('[data-compose-tool]')].every(button => button.disabled), true,
+      'submission locks the option toolbar too');
+    run('busy = false; setComposerInputs(); updateComposer();');
+    openTool('font'); tool('font').click();
+    assert.equal(document.querySelectorAll('[data-compose-panel]:not([hidden])').length, 0,
+      'tapping the active tool collapses its panel');
+    chooseStyle('default', 'normal', 25);
+    originalInput.value = ''; originalInput.dispatchEvent(new window.Event('input', { bubbles: true }));
     choose('nickname', 'private'); await locationClick();
     assert.deepEqual(stored('account-a'), { identity: 'nickname', gender: 'private', locationEnabled: false,
       font: 'default', size: 'normal', boxTransparency: 25 });
@@ -131,6 +185,10 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
       kind: 'memo', parent_id: null, body: '기존 카드', tags: [], background_key: '42', identity_mode: 'anonymous',
       style: { font: 'handwriting', size: 'large', boxTransparency: 64 } })`);
     assert.deepEqual(styleChoices(), { font: 'handwriting', size: 'large', boxTransparency: 64 }, 'editing uses the existing card style');
+    assert.equal(tool('location').disabled, true, 'editing cannot expose a new location setting');
+    assert.equal(tool('photo').disabled, true, 'a card without an existing attachment cannot gain one while editing');
+    openTool('font');
+    assert.equal(document.getElementById('compose-text').value, '기존 카드');
     choose('nickname', 'male');
     chooseStyle('serif', 'small', 12, true);
     assert.equal(stored('account-a').identity, 'anonymous', 'existing-card edits do not change new-card preferences');
@@ -151,6 +209,10 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     const nameBox = document.getElementById('quick-identity');
     assert.equal(nameBox.selectedOptions[0].textContent,'활기찬 돌고래');
     assert.equal(nameBox.disabled,true);
+    openTool('settings');
+    assert.equal(panel('settings').contains(nameBox), true, 'reply identity stays in the settings panel');
+    assert.equal(document.getElementById('note-photo-pick').hidden, true,
+      'reply photos never expose the new-card background purchase gallery');
     assert.equal(stored('account-a').identity,'nickname','the conversation alias does not overwrite new-card preferences');
     close(); await open();
     assert.equal(choices().identity,'nickname');
@@ -161,6 +223,13 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
         identity: 'anonymous', backgroundKey: '42', eventPosition: null, radius: '1', hours: '1' }
     }));
     await run("openComposer('event')");
+    openTool('photo');
+    assert.equal(panel('photo').contains(document.getElementById('event-photo-choice')), true);
+    openTool('location');
+    assert.equal(panel('location').contains(document.getElementById('note-event-fields')), true);
+    assert.equal(document.getElementById('note-event-fields').hidden, false);
+    assert.equal(document.getElementById('card-location-consent').hidden, true,
+      'event location uses its map instead of the ordinary-card GPS consent');
     assert.equal(choices().identity, 'nickname', 'old event drafts cannot overwrite the latest choice');
     assert.equal(document.getElementById('compose-text').value, '', 'old event text is not restored');
     assert.deepEqual(styleChoices(), { font: 'round', size: 'normal', boxTransparency: 100 });
@@ -244,6 +313,11 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     };
     const first = run("openComposer('memo')");
     await settle();
+    assert.equal(document.querySelector('.compose-toolbar').hidden, true,
+      'guests cannot use member-only option panels');
+    assert.equal(byId('guest-compose-login').hidden, false);
+    assert.equal(byId('convert-calligraphy').closest('.composer-body'), document.querySelector('.composer-body'),
+      'guest conversion still leads to login from the writing screen');
     assert.equal(draws.length, 1);
     assert.doesNotMatch(preview(), /url\(/, 'a pending draw does not promise a different photo');
     close();
@@ -284,12 +358,14 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
       parent: null, body: '로그인 전 쓰던 원고', convert: false };
     await run("openComposer('memo', null, null, pendingGuest)");
     await settle();
+    assert.equal(document.querySelector('.compose-toolbar').hidden, false,
+      'member tools return after login');
     assert.equal(draws[4].id, window.pendingGuest.requestId, 'login resumes the same draw');
     draws[4].resolve('226'); await settle();
     draws[3].resolve('10'); await settle();
     assert.equal(byId('compose-text').value, window.pendingGuest.body);
     assert.match(preview(), /\/226\.jpg/);
     assert.deepEqual(errors, []);
-    console.log('PASS: composer preferences, legacy drafts and gallery; free member photo and wash draws; guest preview identity, race, offline submission and login return.');
+    console.log('PASS: one-panel composer toolbar, input identity, Escape, busy/edit/reply/event/guest boundaries; composer preferences, gallery, backgrounds, offline submission and login return.');
   } finally { dom?.window.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

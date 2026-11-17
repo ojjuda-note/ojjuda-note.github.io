@@ -25,7 +25,11 @@
     if (notificationController?.isOpen?.()) { notificationController.close(); return true; }
     if (window.OjjudaNoteSupport?.isOpen?.()) { window.OjjudaNoteSupport.close(); return true; }
     if (!management.hidden) { closeManagement(); return true; }
-    if (!backdrop.hidden) { if (canLeave()) closeComposer(); return true; }
+    if (!backdrop.hidden) {
+      if (document.querySelector('.composer')?.ojjudaTools?.close()) return true;
+      if (canLeave()) closeComposer();
+      return true;
+    }
     return false;
   }
 

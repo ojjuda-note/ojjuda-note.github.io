@@ -68,7 +68,16 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
         page.on('pageerror', error => errors.push(error.message));
         await page.goto(`https://fixture.test/${source === 'world' ? 'world.html' : 'note/'}`);
         if (source === 'world') await page.waitForFunction(() => window.worldTest);
-        else await page.addScriptTag({content:read('note/navigation.js')});
+        else {
+          await page.addScriptTag({content:read('note/composer-tools.js')});
+          await page.addScriptTag({content:read('note/preview.js')});
+          await page.addScriptTag({content:read('note/navigation.js')});
+          await page.evaluate(() => {
+            authKnown=ready=true; session={user:{id:'viewport-test'}};
+            myIdentity={gender:'private'};myIdentityReady=true;myGender='private';
+            autoWritingLocation=()=>{};
+          });
+        }
         await page.addScriptTag({content:read('shared/viewport/mobile-viewport.js')});
         if (process.env.MOBILE_VIEWPORT_FONT) {
           const font = fs.readFileSync(process.env.MOBILE_VIEWPORT_FONT).toString('base64');
@@ -113,12 +122,37 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
         }
 
         if (source === 'note') {
-          await page.evaluate(() => {document.querySelector('#composer-backdrop').hidden=false;document.querySelector('#publish-card').disabled=false;});
+          await page.evaluate(async () => {await openComposer('memo');document.querySelector('#publish-card').disabled=false;});
           await assertInside(page, page.locator('#publish-card'), area, 'note publish');
+          for (const button of await page.locator('[data-compose-tool]').all()) {
+            await assertInside(page, button, area, 'note option toolbar');
+          }
           await snapshot(page, `note-composer-${viewport.width}`);
+          await page.locator('#compose-text').fill('입력 중');
           const shortHeight = Math.min(300, viewport.height - 100);
           await visibleArea(page, shortHeight, 30);
           await assertInside(page, page.locator('#publish-card'), {top:54,bottom:shortHeight+30-48}, 'note publish above keyboard');
+          for (const button of await page.locator('[data-compose-tool]').all()) {
+            await assertInside(page, button, {top:54,bottom:shortHeight+30-48}, 'note toolbar above keyboard');
+          }
+          const caret = await page.locator('#compose-text').evaluate(input => {
+            const box=input.getBoundingClientRect(), body=input.closest('.composer-body').getBoundingClientRect();
+            const style=getComputedStyle(input), line=parseFloat(style.lineHeight)||parseFloat(style.fontSize)*1.4;
+            const x=box.left+box.width/2, y=box.top+parseFloat(style.paddingTop)+line/2-input.scrollTop;
+            const hit=document.elementFromPoint(x,y);
+            return {focused:document.activeElement===input, x, y, top:body.top, bottom:body.bottom,
+              visible:y>=body.top&&y<=body.bottom&&hit===input};
+          });
+          assert.equal(caret.focused,true,'the active writing input keeps focus as the keyboard appears');
+          assert.ok(caret.visible && caret.y>=54 && caret.y<=shortHeight+30-48,
+            'the current text line must stay visible above the keyboard: '+JSON.stringify(caret));
+          await snapshot(page, `note-composer-caret-${viewport.width}`);
+          await page.locator('[data-compose-tool="color"]').click();
+          for (const button of await page.locator('[data-compose-tool]').all()) {
+            await assertInside(page, button, {top:54,bottom:shortHeight+30-48}, 'note toolbar with keyboard and color panel');
+          }
+          await snapshot(page, `note-composer-keyboard-${viewport.width}`);
+          await page.locator('[data-compose-tool="color"]').click();
           assert.ok(await page.locator('.composer-body').evaluate(node => node.clientHeight > 40 && node.scrollHeight > node.clientHeight));
           const beforeZoom = await page.locator('#publish-card').boundingBox();
           await visibleArea(page, 150, 40, 2);

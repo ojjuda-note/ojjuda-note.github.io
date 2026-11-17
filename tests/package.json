@@ -2,6 +2,9 @@
   "name": "ojjuda-member-identity-tests",
   "private": true,
   "scripts": {
+    "test:park-composer:unit": "node note-composer-settings.test.cjs && node note-preview-photo.test.cjs && node park-loading.test.cjs && node park-frame-cache.test.cjs",
+    "test:park-composer:ui": "node park-note-chat-ui.test.cjs && node mobile-viewport-ui.test.cjs && node guest-access-ui.test.cjs",
+    "test:park-composer": "npm run test:park-composer:unit && npm run test:park-composer:ui",
     "test:guest-access": "node --test guest-access.test.cjs world-navigation-departure.test.cjs game-results-arcade.test.cjs game-results-multiplayer.test.cjs archery-ammo-bridge.test.cjs photo-ttang-guest-login.test.cjs && node guest-access-ui.test.cjs && node photo-ttang-trial-ui.test.cjs",
     "test:fullscreen": "node fullscreen-game-hosts-ui.test.cjs && node screw-modes-ui.test.cjs && node mole-graphics-ui.test.cjs && node runner-graphics-ui.test.cjs && node game-entry-ui.test.cjs && node breakout-items-ui.test.cjs && node archery-mobile-ui.test.cjs && WINDOW_AUDIT_FILTER=오락실 node window-safe-area-ui.test.cjs && node multiplayer-entry-ui.test.cjs && node world-game-back-ui.test.cjs",
     "test:matgo-tools": "node matgo-tazza.test.mjs && node matgo-purchases.test.cjs && node matgo-deck-tools.test.mjs && node matgo-wallet-purchases.test.mjs",
