@@ -62,10 +62,18 @@ jobs:
       - name: Check values, attachments, account boundaries and iframe lifecycle
         run: npm --prefix tests run test:park-composer:unit
       - name: Install Chromium
+        id: browser
         working-directory: tests
         run: npx playwright install --with-deps chromium
-      - name: Check mobile toolbar, shortened viewport and guest login return
-        run: npm --prefix tests run test:park-composer:ui
+      - name: Check the embedded Park toolbar and navigation
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/park-note-chat-ui.test.cjs
+      - name: Check keyboard viewport and active text visibility
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/mobile-viewport-ui.test.cjs
+      - name: Check guest restrictions and login return
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/guest-access-ui.test.cjs
       - name: Save composer screenshots
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

@@ -241,6 +241,10 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   }),true,width+': publish stays reachable above a keyboard-sized viewport');
   if(process.env.OJJUDA_COPY_PROOF_DIR)await page.screenshot({path:path.join(process.env.OJJUDA_COPY_PROOF_DIR,`composer-short-${width}.png`)});
   await page.evaluate(()=>parkFixture.close());
+  assert.equal(await frame.locator('[data-compose-panel]:visible').count(),0,width+': Back closes the option panel first');
+  assert.equal(await frame.locator('#composer-backdrop').isVisible(),true,width+': the first Back preserves the writing screen');
+  await page.evaluate(()=>parkFixture.close());
+  await frame.locator('#composer-backdrop').waitFor({state:'hidden'});
  }
  await page.setViewportSize({width:390,height:850});
  await frame.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
