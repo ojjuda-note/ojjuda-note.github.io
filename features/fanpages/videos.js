@@ -13,6 +13,10 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: '9XttLI0oH0I', title: 'LOVE ATTACK', kind: '뮤직비디오', source: 'RESCENE / THE MUZE' }
   ],
   ive: [
+    { id: '1M1XyP6_aXU', title: 'MMA2026 PERFORMANCE REHEARSAL', kind: '공식 리허설', source: 'IVE 공식 YouTube · 2026.11.16' },
+    { id: 'tVzFbxTKaDI', title: 'MMA2026 · DEAR. CUPID + BANG BANG + Looks Can Kill', kind: '공식 시상식 무대', source: '멜론 Melon · 2026.11.15' },
+    { id: 'CVdfJvBdk60', title: 'IVE · 2027 수능 응원 영상', kind: '스페셜 영상', source: 'IVE 공식 YouTube · 2026.11.16' },
+    { id: 'fpRKQU0LNZM', title: 'IVE-minute · 히어로의 하루', kind: '공식 비하인드', source: 'IVE 공식 YouTube · 2026.11.14' },
     { id: 'sheag2-3h_o', title: 'Looks Can Kill · DANCE PRACTICE BEHIND', kind: '안무 연습 비하인드', source: 'IVE 공식 · 2026.11.07' },
     { id: 'ObeUFZEBk48', title: 'Looks Can Kill · DANCE PRACTICE', kind: '안무 연습', source: 'IVE 공식 · 2026.10.26' },
     { id: 'rsNhWkC4neE', title: 'Looks Can Kill', kind: '뮤직비디오', source: 'STARSHIP · 2026.10.19' },
