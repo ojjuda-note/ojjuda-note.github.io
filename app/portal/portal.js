@@ -127,7 +127,7 @@
         '책갈피', '찻잔', '그네', '종이배', '피리', '연', '색연필', '비눗방울',
         '구름', '별빛', '달빛', '햇살', '노을', '바람', '이슬', '눈꽃',
         '새싹', '꽃잎', '나뭇잎', '솔방울', '도토리', '밤송이', '민들레', '해바라기',
-        '무지개', '파도', '산들바람', '은하수', '샛별', '눈송이', '풀잎', '물방울'
+        '무지개', '파도', '산들바람', '은하수', '샛별', '눈송이', '풀잎', '물방울', '우주'
       ];
       const animals = [
         '고래', '토끼', '여우', '수달', '고양이', '강아지', '다람쥐', '판다',
@@ -147,7 +147,7 @@
       const first = firstWords[random[0] % firstWords.length];
       let secondIndex = random[1] % secondWords.length;
       if (first === secondWords[secondIndex]) secondIndex = (secondIndex + 1) % secondWords.length;
-      signupNickname = first + secondWords[secondIndex];
+      signupNickname = first + ' ' + secondWords[secondIndex];
       generatedSignupNickname = signupNickname;
     }
     nickname.value = signupNickname;

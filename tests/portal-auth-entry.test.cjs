@@ -140,10 +140,10 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
       crypto: { getRandomValues(bytes) { bytes.fill(byte); return bytes; } }
     });
     await generated.flush();
-    assert.match(generated.element('nickname').value, /^[가-힣]{3,12}$/, 'generated name fits the signup field');
-    if (byte === 0) assert.equal(generated.element('nickname').value, '노래하는고래');
+    assert.match(generated.element('nickname').value, /^[가-힣]{1,4} [가-힣]{1,4}$/, 'generated name fits the signup field');
+    if (byte === 0) assert.equal(generated.element('nickname').value, '노래하는 고래');
   }
-  for (const [first, second, name] of [[32,1,'딸기토끼'],[57,2,'우산여우'],[1,64,'춤추는딸기']]) {
+  for (const [first, second, name] of [[0,64,'노래하는 딸기'],[1,0,'춤추는 고래'],[32,0,'딸기 고래'],[96,22,'우주 하마']]) {
     const generated = setup('?auth=signup', {
       crypto: { getRandomValues(bytes) { assert.equal(bytes.length,2); bytes.set([first,second]); return bytes; } }
     });
@@ -152,11 +152,11 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   }
   const fallback = setup('?auth=signup', {crypto:null});
   await fallback.flush(); fallback.fill(); await fallback.submit();
-  assert.match(fallback.signups[0].options.data.nickname, /^[가-힣]{3,12}$/, 'fallback randomness also creates Hangul words');
+  assert.match(fallback.signups[0].options.data.nickname, /^[가-힣]{1,4} [가-힣]{1,4}$/, 'fallback randomness also creates Hangul words');
   for (const destination of ['world', 'note']) {
     const app = setup(`?auth=signup&next=${destination}`); await app.flush();
     const generatedNickname = app.element('nickname').value;
-    assert.match(generatedNickname, /^[가-힣]{3,12}$/);
+    assert.match(generatedNickname, /^[가-힣]{1,4} [가-힣]{1,4}$/);
     assert.equal(app.element('nickname').readOnly, false, 'the automatic nickname remains editable');
     assert.equal(app.element('nickname').tabIndex, 0);
     assert.equal(app.element('nickname-auto-help').hidden, false);
