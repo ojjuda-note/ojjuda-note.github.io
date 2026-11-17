@@ -119,20 +119,21 @@
 .exchange-photos .photo-empty,.exchange-photos .photo-pending{color:var(--muted);font-size:13px}
 
 .history-head{flex-wrap:wrap;row-gap:8px}
-.history-heading{display:flex;align-items:center;gap:clamp(8px,2vw,16px);max-width:100%}
+.history-heading{display:flex;align-items:center;gap:6px;max-width:100%}
 .history-heading h2{margin:0;white-space:nowrap}
 .history-head .budget{margin-inline-start:auto}
-.answer-genders{display:inline-flex;align-items:center;flex-shrink:0;padding:2px;background:#f5f1ed;border:1px solid #d9d3ce;border-radius:999px}
+.answer-genders{display:inline-flex;align-items:center;flex-shrink:0;background:#f5f1ed;border:1px solid #d9d3ce}
 .answer-gender{position:relative;display:block;cursor:pointer}
 .answer-gender input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
-.answer-gender span{display:grid;place-items:center;min-width:44px;height:44px;font-size:14px;font-weight:750;border-radius:999px;border:1px solid transparent;pointer-events:none}
+.answer-gender span{display:grid;place-items:center;width:24px;height:24px;font-size:12px;line-height:1;font-weight:700;border:1px solid transparent;pointer-events:none}
 .answer-gender.male span{color:#255a93;background:#e4effb}
 .answer-gender.female span{color:#a23466;background:#fbe4ec}
 .answer-gender input:checked+span{background:#fff;border-color:#9b958f}
 .answer-gender.male input:checked+span{background:#c4dff9;border-color:#4275a5}
 .answer-gender.female input:checked+span{background:#f6ccdc;border-color:#ab4977}
 .answer-gender input:focus-visible+span{outline:2px solid #4a3658;outline-offset:1px}
-@media(max-width:350px){.history-heading{gap:6px}.history-heading h2{font-size:21px}.answer-gender span{min-width:40px}}
+@media(pointer:coarse){.answer-gender input{top:50%;bottom:auto;height:36px;transform:translateY(-50%)}}
+@media(max-width:350px){.history-heading h2{font-size:21px}}
 
 .discovery-visibility-panel{margin:14px 0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
 .discovery-visibility-control{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;cursor:pointer}
