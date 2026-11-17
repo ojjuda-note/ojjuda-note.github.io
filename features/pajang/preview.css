@@ -16,3 +16,13 @@
 #answer-fields{border:0;padding:0;margin:0;min-width:0}
 .publication-note{margin:0 0 12px;color:var(--muted);font-size:13px;line-height:1.5}
 .actions .cancel-form{width:auto;min-height:36px;margin:3px auto 0;padding:4px 12px;background:transparent;color:var(--muted);font-size:13px}
+
+#welcome{padding-block:26px 36px}
+.entry-intro{padding:22px 20px;border:1px solid #d4c5de;border-radius:16px;background:linear-gradient(135deg,#efe7f3,#f6e9dc)}
+.entry-slot{font-size:12px;font-weight:750;color:#634477}
+.entry-intro h1{margin:9px 0 8px;font-size:clamp(25px,5vw,34px);line-height:1.25}
+#welcome .actions{margin:14px 0 24px}
+.actions #browse{margin-top:8px;background:#fff;border:1px solid #d8cddc;color:#493450}
+.sample-radar{border-top:1px solid var(--line);padding-block:8px}
+.sample-radar summary{cursor:pointer;padding:9px 0;font-weight:650}
+.sample-radar .panel{margin-top:6px}

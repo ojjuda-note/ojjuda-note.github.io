@@ -82,7 +82,7 @@ draw(0);select(0);
 
 
 export function setQuestion(theme){
-  document.querySelector(".answer h2").textContent=theme.q.join(" ");
+  document.getElementById("entry-question").textContent=theme.q.join(" ");
   [0,2,1].forEach((feed,index)=>samples[index].answer=theme.answers[feed]);
   select(0);
 }

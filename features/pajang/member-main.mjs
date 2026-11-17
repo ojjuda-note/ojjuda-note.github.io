@@ -1,7 +1,12 @@
 import {call,client,requireMember,showGate} from './member.mjs?v=3';
 
 const entry=await requireMember();
-if(entry && !entry.joined)location.replace(location.hash === '#answers' ? './?view=feed' : './');
+if(entry && !entry.joined){
+  const params=new URLSearchParams(location.search);
+  const next=params.has('chat')?'chat':params.get('tab')||(params.get('view')==='radar'?'radar':'');
+  if(['radar','inbox','chat','profile'].includes(next))location.replace('./?view=feed&next='+next);
+  else location.replace(location.hash==='#answers'?'./?view=feed':'./');
+}
 if(entry?.joined){
   const urls=new Set();
   let closed=false;

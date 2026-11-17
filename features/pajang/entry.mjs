@@ -8,7 +8,15 @@ const status = $('my-answer');
 const submit = form.querySelector('[type=submit]');
 const main = new URL('./station.html', location.href);
 const feed = new URL('./station.html#answers', location.href);
-const view = new URL(location.href).searchParams.get('view');
+const params = new URL(location.href).searchParams;
+const view = params.get('view');
+const next = params.get('next');
+const destinations = {radar:'레이더',inbox:'신호함',chat:'대화',profile:'내 파장'};
+const nextName = Object.hasOwn(destinations,next) ? destinations[next] : '모두의 답변';
+if (Object.hasOwn(destinations,next)) {
+  feed.hash='';
+  feed.searchParams.set('tab',next);
+}
 
 function enterMain(destination = main) {
   if (window.top === window) location.replace(destination.href);
@@ -41,7 +49,7 @@ async function start(firstEntry) {
   if (view === 'feed' && firstEntry.joined) return enterMain(feed);
   if (firstEntry.body) return enterMain();
   let entry = firstEntry;
-  const {setQuestion} = await import('./preview.mjs?v=3');
+  const {setQuestion} = await import('./preview.mjs?v=station2');
   if (!entry.joined) setupProfile(entry);
   const updates = typeof BroadcastChannel === 'function' ? new BroadcastChannel('pajang-answers') : null;
   let timer;
@@ -97,9 +105,9 @@ async function start(firstEntry) {
     form.hidden = false;
     answerFields.hidden = joiningOnly;
     answerFields.disabled = joiningOnly;
-    submit.textContent = joiningOnly ? '참여하고 모두의 답변 보기' : '답변 공개하고 파장 메인으로';
+    submit.textContent = joiningOnly ? '참여하고 '+nextName+' 보기' : '답변 공개하고 오늘로';
     write.setAttribute('aria-expanded', String(!joiningOnly));
-    (joiningOnly ? form.elements.consent : mine).focus();
+    (!entry.joined ? form.elements.consent : mine).focus();
   }
   write.onclick = () => openForm('answer');
   browse.onclick = () => openForm('feed');
