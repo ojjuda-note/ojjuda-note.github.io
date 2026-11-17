@@ -1336,7 +1336,7 @@
       concept: '성장을 노래하는 NCT의 여섯 멤버 유닛.',
       official: 'https://www.smentertainment.com/', youtube: 'https://www.youtube.com/@NCTDREAM',
       photo: 'NCT Dream at DREAM()SCAPE Press Conference.png', photoLabel: 'DREAM()SCAPE 기자회견 · 당시 사진', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
-      checkedAt: '2026.11.14',
+      checkedAt: '2026.11.17',
       music: [
         {
           "title": "DREAM AFTER DREAM",
@@ -1369,25 +1369,6 @@
       ],
       appearances: [
         {
-          "date": "2026-11-15",
-          "title": "SBS 인기가요 Boogie Woogie 사전녹화 · 03:20 KST",
-          "sub": "등촌동 SBS 공개홀 · 11/15 방송분 · 팬클럽 현장 참여 신청은 11/13 종료 · 사전녹화만 출연",
-          "href": "https://weverse.io/nctdream/notice/40986"
-        },
-        {
-          "date": "2026-11-15",
-          "title": "SBS 인기가요 Boogie Woogie 녹화 · 09:25 KST",
-          "sub": "등촌동 SBS 공개홀 · 11/22 방송분 · 팬클럽 현장 참여 신청은 11/13 종료 · 11/15 출연과 구분",
-          "href": "https://weverse.io/nctdream/notice/40989"
-        },
-        {
-          "date": "2026-11-08",
-          "endDate": "2026-11-16",
-          "title": "WELCOME, DREAMERS 팝업 (11/8~11/16)",
-          "sub": "매일 12:00~20:00 KST · 서울 성동구 연무장7길16 · 방문·입장 안내는 공식 공지 확인",
-          "href": "https://weverse.io/nctdream/notice/40609"
-        },
-        {
           "date": "2026-11-22",
           "title": "TV아사히 드림페스티벌 헤드라이너 출연",
           "sub": "K아레나 요코하마 · 전일정 매진(11/11 공식 공지) · 개별 출연 시각 미공개",
@@ -1413,6 +1394,18 @@
         }
       ],
       news: [
+        {
+          "date": "2026.11.16",
+          "tag": "기록",
+          "title": "DREAM AFTER DREAM 한터 첫 주 약 100만 장 · 11개 음반 연속 밀리언셀러",
+          "href": "https://www.koreatimes.co.kr/amp/entertainment/k-pop/20261116/nct-dream-hits-11th-consecutive-million-seller-with-dream-after-dream"
+        },
+        {
+          "date": "2026.11.16",
+          "tag": "굿즈",
+          "title": "WELCOME, DREAMERS 팝업 MD 위버스 예약판매 시작 · 11/22 포토카드 특전 종료",
+          "href": "https://shop.weverse.io/ko/shop/KRW/artists/131/notices/15003"
+        },
         {
           "date": "2026.11.13",
           "tag": "로그인",
@@ -1451,6 +1444,11 @@
         }
       ],
       merch: [
+        {
+          "title": "DREAM AFTER DREAM POP-UP [WELCOME, DREAMERS] 공식 MD",
+          "sub": "Weverse Global · 11.16 15:00 예약판매 시작~품절 시 · 11.22 23:59까지 7만 원 이상 한 주문당 랜덤 포토카드 1장 · 출고 2027.01.26/02.17 · 재고는 판매처 확인",
+          "href": "https://shop.weverse.io/ko/shop/KRW/artists/131/notices/15003"
+        },
         {
           "title": "DREAM AFTER DREAM 정규 6집",
           "sub": "Weverse Shop 공식 음반 · 기존 예약판매는 11/8 종료 · 현재 판매·재고는 판매처 확인",

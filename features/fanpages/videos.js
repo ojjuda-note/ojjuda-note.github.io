@@ -186,6 +186,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'tXvopPZFY8Y', title: 'TO US Highlight Medley', kind: '하이라이트 메들리', source: 'HYBE LABELS / PLEDIS' }
   ],
   nctdream: [
+    { id: '_PPPSs8FOmo', title: 'Boogie Woogie · 인기가요 261115', kind: '음악방송 무대', source: 'SBSKPOP X INKIGAYO · 2026.11.15' },
+    { id: 'sz4c8LG8LJU', title: 'Boogie Woogie · 뮤직뱅크 261113', kind: '음악방송 무대', source: 'KBS Kpop · 2026.11.13' },
     { id: 'wG7pnZttup8', title: 'Boogie Woogie', kind: '뮤직비디오', source: 'SMTOWN' },
     { id: 'LFbU0A1-IH8', title: 'The Sun', kind: '뮤직비디오', source: 'SMTOWN' },
     { id: 'BrxjpUZs6KI', title: 'TV아사히 드림 페스티벌 2026 출연 인사', kind: '공식 인사 영상', source: 'TV아사히 드림 페스티벌' }
