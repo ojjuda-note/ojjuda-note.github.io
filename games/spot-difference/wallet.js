@@ -46,6 +46,7 @@
     subscribe(fn){listeners.add(fn);fn({...state});return()=>listeners.delete(fn);},
     refresh,
     async recordClear(owner,stage,completedAt){
+      if(completedAt===undefined)completedAt=new Date(Date.now()).toISOString();
       if(window.OjjudaAdminPreview?.isEnabled?.()===true)return {ok:true,preview:true};
       if(!Number.isInteger(stage)||stage<1||stage>182)throw new Error('잘못된 그림 번호예요.');
       for(let attempt=0;attempt<2;attempt++){

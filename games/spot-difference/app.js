@@ -299,7 +299,9 @@
     if(!canPlay(state.current))return;
     if(r.status!=='ready')return;
     delete r.deferredHelp;
-    r.rankOwner=window.parent!==window?embeddedOwner:wallet.getState().userId;r.status='playing';r.deadline=Date.now()+r.remainingMs;refresh();
+    r.rankOwner=wallet.getState().userId;
+    if(window.parent!==window&&embeddedOwner)r.rankOwner=embeddedOwner==='guest'?null:embeddedOwner;
+    r.status='playing';r.deadline=Date.now()+r.remainingMs;refresh();
     speak(`시작! 다른 곳 ${targetCount()}개를 찾아보세요.`);
     if(r.hintIndex!==null)showHint();
   }
