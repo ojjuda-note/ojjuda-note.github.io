@@ -32,7 +32,9 @@ function spot(){
   let now=Date.now(),resolvePurchase,rejectPurchase;const intervals=[],requests=[];
   w.Date.now=()=>now;w.setInterval=fn=>{intervals.push(fn);return intervals.length;};
   w.JjudaWallet={getState:()=>({userId:'member-a',coins:100}),subscribe:fn=>fn({userId:'member-a',coins:100}),refresh:async()=>{},recordClear:async()=>({ok:true}),buy:(request,stage)=>{requests.push({...request,stage});return new Promise((resolve,reject)=>{resolvePurchase=resolve;rejectPurchase=reject;});}};
-  for(const file of ['puzzles.js','game-core.js','app.js'])w.eval(read('games/spot-difference/'+file));
+  for(const file of ['puzzles.js','game-core.js'])w.eval(read('games/spot-difference/'+file));
+  w.eval(read('shared/games/puzzle-record-queue.js'));
+  w.eval(read('games/spot-difference/app.js'));
   function loaded(){for(const image of w.document.querySelectorAll('img'))image.onload?.();}
   loaded();$('start').click();
   const state=()=>JSON.parse(w.localStorage.getItem('jjuda-spot-six-v1'));
