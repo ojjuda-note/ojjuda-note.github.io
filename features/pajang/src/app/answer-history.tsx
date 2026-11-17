@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useMemo, useRef, useState, type PointerEvent} from "react";
 import {badges, interests, signalsWith, type Slot, type Station} from "../lib/station";
 import {I} from "./icons";
 
@@ -20,14 +20,21 @@ const genderOptions = [
 type Intent = "first"|"more"|"check"|"changed";
 const rowKey = (row:DiscoveryAnswer) => row.peer+"/"+row.day+"/"+row.slot;
 const empty = (key:string):Result => ({key,items:[],total:null,next:null,loading:true,changed:false,error:""});
+type SavedPage = {until:number; result:Result};
+function firstPage(cache:Map<string,SavedPage>, key:string):Result {
+  const saved=cache.get(key);
+  return saved && saved.until>Date.now() ? {...saved.result,loading:true} : empty(key);
+}
 
 function useAnswers(filter:string, gender:Gender, order:Order, scope:string, activity:string) {
   const key = JSON.stringify([filter,gender,order,scope]);
+  const cache=useMemo(()=>new Map<string,SavedPage>(),[scope]);
   const [result,setResult] = useState<Result>(()=>empty(key));
   const load = useRef<(intent:Intent)=>void>(()=>{});
   useEffect(()=>{
     let active=true, pending=false, revision=0, pages=0;
-    let current=empty(key);
+    let current=firstPage(cache,key);
+    let controller:AbortController|undefined;
     function publish(next:Result) { current=next; setResult(next); }
     async function read(intent:Intent) {
       if (intent==="changed" && pages>1) {
@@ -38,38 +45,97 @@ function useAnswers(filter:string, gender:Gender, order:Order, scope:string, act
       const append=intent==="more";
       const cursor=append?current.next:null;
       const request=++revision;
+      controller?.abort();
+      controller=new AbortController();
+      const {signal}=controller;
       pending=true;
-      if (intent==="first") { pages=0; publish(empty(key)); }
+      if (intent==="first") { pages=0; publish(firstPage(cache,key)); }
       if (append) publish({...current,loading:true,error:""});
       try {
         const db=await window.OjjudaGetClient();
-        const {data,error}=await db.rpc("pajang_discovery_feed",{p_cursor:cursor,p_interest:filter,p_order:order,p_gender:gender});
+        if (signal.aborted) return;
+        const query=db.rpc("pajang_discovery_feed",{p_cursor:cursor,p_interest:filter,p_order:order,p_gender:gender});
+        const {data,error}=await (typeof query.abortSignal==="function"?query.abortSignal(signal):query);
         if (!active || request!==revision) return;
         if (error) throw error;
         const page=data as Page;
         const rows=new Map((append?current.items:[]).map(row=>[rowKey(row),row]));
         for (const row of page.items) rows.set(rowKey(row),row);
         pages=append?pages+1:1;
-        publish({key,items:[...rows.values()],next:page.nextCursor,total:page.total,loading:false,changed:append&&current.changed,error:""});
+        const next={key,items:[...rows.values()],next:page.nextCursor,total:page.total,loading:false,changed:append&&current.changed,error:""};
+        if (!append) {
+          cache.delete(key);
+          if (cache.size>=8) cache.delete(cache.keys().next().value!);
+          cache.set(key,{until:Date.now()+15_000,result:next});
+        }
+        publish(next);
       } catch (cause) {
         if (!active || request!==revision) return;
-        const denied=typeof cause==="object" && cause!==null && "code" in cause && cause.code==="42501";
-        if (denied) pages=0;
-        publish({...(denied?empty(key):current),loading:false,error:denied?"회원 정보를 확인한 뒤 다시 열어 주세요.":"답변을 불러오지 못했어요."});
+        const code=typeof cause==="object" && cause!==null && "code" in cause?cause.code:"";
+        const denied=code==="42501"||code==="PGRST301"||code==="PGRST303";
+        if (denied) {pages=0;cache.clear();} else cache.delete(key);
+        publish({...(denied||intent==="first"?empty(key):current),loading:false,error:denied?"회원 정보를 확인한 뒤 다시 열어 주세요.":"답변을 불러오지 못했어요."});
       } finally {
         if (request===revision) pending=false;
       }
     }
     load.current=read;
     void read("first");
-    const onVisible=()=>{if (!document.hidden) void read("first");};
+    const onVisible=()=>{
+      if (!document.hidden) {void read("first");return;}
+      cache.clear();++revision;controller?.abort();pages=0;pending=false;publish(empty(key));
+    };
     document.addEventListener("visibilitychange",onVisible);
     // Refresh the first page in place; scrolling back through earlier pages keeps its cursor.
     const poll=window.setInterval(()=>{if(!document.hidden)void read("check");},60000);
-    return ()=>{active=false;load.current=()=>{};window.clearInterval(poll);document.removeEventListener("visibilitychange",onVisible);};
-  },[key,filter,gender,order]);
-  useEffect(()=>{load.current("changed");},[activity]);
-  return {result:result.key===key?result:empty(key),load};
+    return ()=>{active=false;controller?.abort();load.current=()=>{};window.clearInterval(poll);document.removeEventListener("visibilitychange",onVisible);};
+  },[key,filter,gender,order,cache]);
+  useEffect(()=>{cache.clear();load.current("changed");},[activity,cache]);
+  return {result:result.key===key?result:firstPage(cache,key),load};
+}
+
+function GenderSwitch({value,onChange}:{value:Gender;onChange:(next:Gender)=>void}) {
+  const start=useRef<{id:number;x:number;y:number;dragging:boolean}|null>(null);
+  const suppressClick=useRef(false);
+  const [preview,setPreview]=useState<Gender|null>(null);
+  const lit=preview??value;
+  function position(e:PointerEvent<HTMLDivElement>):Gender {
+    const rect=e.currentTarget.getBoundingClientRect();
+    const index=Math.max(0,Math.min(2,Math.floor((e.clientX-rect.left)/rect.width*3)));
+    return genderOptions[index].value;
+  }
+  function cancel(){start.current=null;setPreview(null);}
+  return <div className="answer-genders" data-position={lit} role="radiogroup" aria-label="답변 작성자 성별"
+    onPointerDown={e=>{
+      if (!e.isPrimary||e.button!==0) return;
+      suppressClick.current=false;start.current={id:e.pointerId,x:e.clientX,y:e.clientY,dragging:false};
+    }}
+    onPointerMove={e=>{
+      const p=start.current;if (!p||p.id!==e.pointerId) return;
+      if (!p.dragging) {
+        const dx=Math.abs(e.clientX-p.x),dy=Math.abs(e.clientY-p.y);
+        if (dy>6 && dy>dx){cancel();return;}
+        if (dx<6) return;
+        p.dragging=true;e.currentTarget.setPointerCapture(e.pointerId);
+      }
+      setPreview(position(e));
+    }}
+    onPointerUp={e=>{
+      const p=start.current;if (!p||p.id!==e.pointerId) return;
+      if (p.dragging) {
+        const next=position(e);suppressClick.current=true;
+        e.currentTarget.querySelector<HTMLInputElement>('input[value="'+next+'"]')?.focus({preventScroll:true});
+        onChange(next);
+      }
+      cancel();
+    }}
+    onPointerCancel={cancel} onLostPointerCapture={e=>{if(e.target===e.currentTarget)cancel();}}
+    onClickCapture={e=>{if(e.detail && suppressClick.current){e.preventDefault();e.stopPropagation();suppressClick.current=false;}}}>
+    {genderOptions.map(option=><label key={option.value} className={"answer-gender "+option.value} data-lit={lit===option.value} title={option.label}>
+      <input type="radio" name="answer-gender" value={option.value} aria-label={option.label}
+        checked={value===option.value} onChange={()=>onChange(option.value)}/><span aria-hidden="true">{option.text}</span>
+    </label>)}
+  </div>;
 }
 
 type Props = {
@@ -80,7 +146,7 @@ export default function AnswerHistory({station,revision,onProfile,onSignal,onCha
   const [filter,setFilter]=useState("all");
   const [gender,setGender]=useState<Gender>("all");
   const [order,setOrder]=useState<Order>("recommend");
-  const scope=JSON.stringify([station.me?.id,station.me?.region,station.me?.interest,station.me?.at,station.day,station.slot,revision]);
+  const scope=JSON.stringify([station.authenticated,station.me?.id,station.me?.region,station.me?.interest,station.me?.at,station.day,station.slot,revision]);
   const activity=station.people.filter(p=>p.body).map(p=>p.id+":"+p.at).join(",");
   const {result,load}=useAnswers(filter,gender,order,scope,activity);
   useEffect(()=>{
@@ -89,14 +155,9 @@ export default function AnswerHistory({station,revision,onProfile,onSignal,onCha
   return <section id="answers" className="feedsection" aria-labelledby="all-answers-title">
     <div className="sectiontitle history-head">
       <div className="history-heading">
-        <h2 id="all-answers-title">모두의 답변{result.total!==null&&<span className="feednumber">{result.total}</span>}</h2>
-        <div className="answer-genders" role="radiogroup" aria-label="답변 작성자 성별">
-          {genderOptions.map(option=><label key={option.value} className={"answer-gender "+option.value} title={option.label}>
-            <input type="radio" name="answer-gender" value={option.value} aria-label={option.label}
-              checked={gender===option.value} onChange={()=>setGender(option.value)}/>
-            <span aria-hidden="true">{option.text}</span>
-          </label>)}
-        </div>
+        <h2 id="all-answers-title">모두의 답변</h2>
+        <GenderSwitch value={gender} onChange={setGender}/>
+        <span className="feednumber" aria-label={result.total===null?undefined:"답변 "+result.total+"개"}>{result.total}</span>
       </div>
       <span className="budget"><I n="signal" s={16}/>남은 신호 <b>{station.remaining}<em> / 3</em></b></span>
     </div>
@@ -110,29 +171,30 @@ export default function AnswerHistory({station,revision,onProfile,onSignal,onCha
       </select><I n="chevron" s={13}/></label>
     </div>
     {result.changed&&<p className="notice" role="status">답변 목록이 바뀌었어요.<button onClick={()=>load.current("first")}>새로고침</button></p>}
+    {result.loading&&result.total===null&&<span className="answer-sr" role="status">답변을 불러오고 있어요.</span>}
     <div className="cardgrid" aria-busy={result.loading}>
+      {result.loading&&result.total===null&&[0,1,2].map(i=><div className="answer-skeleton" key={i} aria-hidden="true"><i/><i/><i/><i/></div>)}
       {result.items.map(row=>{
         const relation=signalsWith(station,row.peer);
         const sent=row.sent||!!relation.outgoing, received=row.received||!!relation.incoming, matched=sent&&received;
         const badge=badges(row.interest);
         return <article key={rowKey(row)} className="answercard">
-          <div className="cardtop"><button className="person" onClick={()=>onProfile(row)}>
-            <span className="avatar" style={{background:badge.bg}}>{badge.key?<img src={window.pajangArt[badge.key]} alt=""/>:<I n="user" s={18}/>}</span>
-            <span><strong>{row.name}{row.own?" · 내 답변":""}</strong>{row.region&&<small>{row.region}</small>}</span>
-          </button>{badge.name&&<span className="tag" style={{background:badge.bg}}>{badge.name}</span>}</div>
-          <time className="answerdate" dateTime={row.day}>{row.day.replaceAll("-",".")} · {row.slot==="am"?"오전":"오후"}</time>
+          <div className="answer-meta"><time className="answerdate" dateTime={row.day}>{row.day.replaceAll("-",".")} · {row.slot==="am"?"오전":"오후"}</time>
+            {badge.name&&<span className="tag">{badge.name}</span>}</div>
           <h3 className="cardquestion">{row.question}</h3><p className="quote">{row.body}</p>
+          <div className="answer-foot"><button className="person" onClick={()=>onProfile(row)}>
+            <span className="avatar" style={{background:badge.bg}}>{window.pajangArt[badge.key]?<img src={window.pajangArt[badge.key]} alt=""/>:<I n="user" s={16}/>}</span>
+            <span><strong>{row.name}{row.own?" · 내 답변":""}</strong>{row.region&&<small>{row.region}</small>}</span>
+          </button>
           {!row.own&&<button className={"sendlink "+(sent?"issent":"")} disabled={!matched&&(sent||station.remaining===0)}
             onClick={()=>matched?onChat(row.peer):onSignal(row)}>
             <span><I n={matched?"chat":sent?"check":"signal"} s={17}/>{matched?"대화하기":sent?"보낸 신호":received?"신호 수락하기":"신호 보내기"}</span>
-            {!sent&&<I n="up" s={15}/>}
-          </button>}
+          </button>}</div>
         </article>;
       })}
     </div>
     {result.error&&<p className="notice" role="alert">{result.error}<button onClick={()=>load.current(result.next&&result.items.length?"more":"first")}>다시 시도</button></p>}
-    {result.loading&&<p className="history-status" role="status">답변을 불러오고 있어요.</p>}
-    {!result.loading&&!result.error&&!result.items.length&&<div className="empty"><span className="emptyicon"><I n="headphones" s={27}/></span>
+    {result.total!==null&&!result.error&&!result.items.length&&<div className="empty"><span className="emptyicon" aria-hidden="true"><I n="wave" s={22}/></span>
       <h3>{gender!=="all"?"선택한 조건에 맞는 답변이 없어요":filter==="all"?"최근 30일 동안 공개된 답변이 없어요":"이 취향의 답변이 아직 없어요"}</h3>
       {gender!=="all"||filter!=="all"?<button className="secondary" onClick={()=>{setGender("all");setFilter("all");}}>전체 답변 보기<I n="arrow" s={16}/></button>:
         !station.me?.body&&<button className="secondary" onClick={onWrite}>첫 답변 쓰기<I n="pencil" s={16}/></button>}

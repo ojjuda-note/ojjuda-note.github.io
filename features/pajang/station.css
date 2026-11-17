@@ -118,44 +118,67 @@
 .exchange-photos .photo-remove{position:absolute;bottom:5px;right:5px;border-radius:999px;color:#fff;background:#382d3c;padding:5px 10px}
 .exchange-photos .photo-empty,.exchange-photos .photo-pending{color:var(--muted);font-size:13px}
 
+/* Discovery answers */
 .history-head{flex-wrap:wrap;gap:8px 12px}
-.history-heading{display:flex;align-items:center;gap:12px;max-width:100%}
+.history-heading{display:flex;align-items:center;gap:10px;max-width:100%}
 .history-heading h2{margin:0;white-space:nowrap;letter-spacing:-.055em}
-.history-heading .feednumber{align-self:flex-start;background:transparent;padding:2px 0 0;color:var(--muted);font:600 12px/1.4 var(--mono);font-variant-numeric:tabular-nums}
-.history-head .budget{margin-inline-start:auto;padding:2px 0;border:0;background:transparent;color:var(--muted)}
+.history-heading .feednumber{min-width:2ch;padding:0;background:none;color:var(--muted);font:550 11px/1 var(--mono);font-variant-numeric:tabular-nums}
+.history-head .budget{margin-inline-start:auto;padding:0;border:0;background:none;color:var(--muted)}
 .history-head .budget b{color:var(--ink);font-variant-numeric:tabular-nums}
 
-.answer-genders{display:inline-flex;align-items:center;flex-shrink:0;background:#fff;border:1px solid #c6c6c6;box-shadow:0 1px 2px #0000000c}
+.answer-genders{position:relative;isolation:isolate;display:inline-flex;flex:none;align-items:center;background:#f6f6f6;border:1px solid #cfcfcf;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.answer-genders::before{content:"";position:absolute;pointer-events:none;left:0;top:0;width:24px;height:24px;background:#fff;box-shadow:inset 0 0 0 1px #949494}
+.answer-genders[data-position="all"]::before{transform:translateX(100%)}
+.answer-genders[data-position="female"]::before{transform:translateX(200%)}
 .answer-gender{position:relative;display:block;cursor:pointer}
-.answer-gender + .answer-gender::before{content:"";position:absolute;left:0;top:8px;bottom:8px;border-left:1px solid #dedede;pointer-events:none}
-.answer-gender input{position:absolute;inset:0;z-index:1;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
-.answer-gender span{display:grid;place-items:center;width:24px;height:24px;border:2px solid transparent;background-clip:padding-box;color:#666;font-size:12px;line-height:1;font-weight:650;pointer-events:none}
-.answer-gender input:checked+span{box-shadow:inset 0 -2px #00000021}
-.answer-gender.all input:checked+span{background-color:#dedede}
-.answer-gender.male input:checked+span{color:#fff;background-color:#33689d}
-.answer-gender.female input:checked+span{color:#fff;background-color:#a5406b}
-.answer-gender input:focus-visible+span{outline:2px solid #494949;outline-offset:1px;position:relative;z-index:2}
-@media(prefers-reduced-motion:no-preference){
-  .answer-gender input:checked+span{animation:answer-key-settle .15s ease-out}
-  @keyframes answer-key-settle{from{transform:scale(.92)}to{transform:scale(1)}}
-}
-@media(pointer:coarse){.answer-gender input{top:50%;bottom:auto;height:36px;transform:translateY(-50%)}}
+.answer-gender input{position:absolute;inset:0;z-index:1;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;touch-action:pan-y}
+.answer-gender span{display:grid;place-items:center;width:24px;height:24px;border:2px solid transparent;background-clip:padding-box;color:#626262;font:650 12px/1 var(--sans);pointer-events:none}
+.answer-gender.all[data-lit="true"] span{background-color:#d7d7d7}
+.answer-gender.male[data-lit="true"] span{background-color:#32649a;color:#fff}
+.answer-gender.female[data-lit="true"] span{background-color:#aa406c;color:#fff}
+.answer-gender input:focus-visible+span{position:relative;z-index:2;outline:2px solid #343434;outline-offset:1px}
+@media(pointer:coarse){.answer-gender input{top:50%;bottom:auto;height:44px;transform:translateY(-50%)}}
+@media(prefers-reduced-motion:no-preference){.answer-genders::before{transition:transform 130ms cubic-bezier(.2,.8,.2,1)}}
 @media(forced-colors:active){.answer-gender input:checked+span{outline:2px solid Highlight;outline-offset:-4px}}
-@media(max-width:350px){.history-heading{gap:8px}.history-heading h2{font-size:21px}}
+@media(max-width:350px){.history-heading{gap:6px}.history-heading h2{font-size:21px}.history-head{column-gap:6px}}
 
-#answers .filterrow{gap:14px;margin:12px 0 18px;border-bottom:1px solid var(--line)}
-#answers .chips{gap:clamp(10px,2vw,22px)}
-#answers .chips button{min-height:40px;padding:0 2px;border:solid transparent;border-width:0 0 2px;border-radius:0;background:transparent;color:var(--muted)}
+#answers .filterrow{gap:12px;margin:12px 0 16px;border-bottom:1px solid var(--line)}
+#answers .chips{gap:clamp(8px,2vw,20px)}
+#answers .chips button{min-height:40px;padding:0 3px;border:solid transparent;border-width:0 0 2px;border-radius:0;background:none;color:var(--muted)}
 #answers .chips button.sel{color:var(--dark);border-bottom-color:var(--dark);font-weight:750}
 #answers .chips button:focus-visible{outline-offset:-3px}
-#answers .sort select{color:var(--muted);font-weight:550}
-#answers .answerdate{font-size:11px;letter-spacing:.015em;font-variant-numeric:tabular-nums}
-#answers .cardquestion{color:var(--dark);font-size:15px;line-height:1.5;letter-spacing:-.035em}
-#answers .answercard .quote{line-height:1.75}
-#answers .empty{padding:clamp(32px,5vw,52px) 18px;gap:12px;background:linear-gradient(180deg,var(--paper),#fbf9f5)}
-#answers .emptyicon{width:44px;height:44px;margin-bottom:3px;border:1px solid #d9d0e1;border-radius:50%;background:#f1edf5;color:#66547c;box-shadow:0 0 0 4px #f6f3f8}
+#answers .sort select{font-weight:550;color:var(--muted)}
+#answers .answercard,.answer-skeleton{padding:20px;border:1px solid #ded9df;border-radius:14px;background:var(--paper);box-shadow:0 2px 5px #33243b07}
+#answers .answercard{border-top:2px solid #c2b0ce}
+#answers .answer-meta,.answer-foot{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#answers .answerdate{margin:0;color:#756a78;font:550 11px/1.4 var(--mono);font-variant-numeric:tabular-nums}
+#answers .tag{padding:0;background:none;color:#76677a;font-size:11px}
+#answers .cardquestion{margin:16px 0 9px;color:#66546c;font-size:14px;line-height:1.55;letter-spacing:-.025em}
+#answers .answercard .quote{margin:0;padding:0 0 20px;color:#2f2632;font-size:clamp(17px,1.55vw,21px);line-height:1.65;letter-spacing:-.035em}
+.answer-foot{flex-wrap:wrap;margin-top:auto;padding-top:12px;border-top:1px solid #ece7ea}
+.answer-foot .avatar{width:32px;height:32px}
+.answer-foot .person{min-width:0;text-align:left;gap:8px}
+.answer-foot .person strong{font-size:13px}
+.answer-foot .person small{font-size:11px}
+#answers .sendlink{width:auto;min-height:36px;margin-inline-start:auto;padding:0 10px;border:0;border-radius:8px;background:#f0eaf4;color:#594165;font-size:12px}
+#answers .sendlink:active:not(:disabled){background:#e1d6e9}
+#answers .empty{gap:10px;min-height:188px;justify-content:center;padding:26px 18px;border-radius:14px;background:var(--paper)}
+#answers .emptyicon{position:relative;width:44px;height:36px;margin:0 0 3px;background:transparent;color:#6c517e}
+#answers .emptyicon::before,#answers .emptyicon::after{content:"";position:absolute;top:12px;width:43px;height:12px;background:repeating-linear-gradient(90deg,#c9bece 0 1px,transparent 1px 6px)}
+#answers .emptyicon::before{right:100%}
+#answers .emptyicon::after{left:100%}
 #answers .empty h3{font-size:clamp(16px,2vw,19px);line-height:1.5;font-weight:650}
-@media(hover:hover){#answers .chips button:hover{color:var(--ink)}}
+#answers .empty .secondary{margin-top:1px}
+.answer-skeleton{min-height:188px;display:flex;flex-direction:column;gap:10px}
+.answer-skeleton i{display:block;height:9px;border-radius:3px;background:#e8e4e7}
+.answer-skeleton i:nth-child(1){width:29%;margin-bottom:9px}
+.answer-skeleton i:nth-child(2){width:64%}
+.answer-skeleton i:nth-child(3){width:83%;height:14px}
+.answer-skeleton i:nth-child(4){width:35%;margin-top:auto}
+.answer-sr{position:absolute;width:1px;height:1px;padding:0;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
+@media(hover:hover){#answers .chips button:hover{color:var(--ink)}#answers .sendlink:not(:disabled):hover{background:#e8dfee}}
+@media(max-width:980px){.answer-skeleton:nth-child(3){display:none}}
+@media(max-width:600px){.answer-skeleton:nth-child(2){display:none}#answers .answercard{padding:17px}}
 
 .discovery-visibility-panel{margin:14px 0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
 .discovery-visibility-control{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;cursor:pointer}
