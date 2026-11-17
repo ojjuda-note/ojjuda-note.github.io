@@ -174,6 +174,22 @@ const { PGlite } = require('@electric-sql/pglite');
   const fresh=await db.query("insert into auth.identities values($1,'email',$2) returning identity_data",[rejoining,storedInput]);
   assert.deepEqual(fresh.rows[0].identity_data,{nickname:'kept',email_verified:true});
   assert.deepEqual(await value('select to_jsonb(i) as value from ojjuda_account_internal.member_identity i where user_id=$1',[rejoining]),privateBefore);
+  const nicknameMigration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(file=>file.endsWith('_signup_korean_nickname_allocation.sql'));
+  await db.exec('create function public.has_banned(text) returns boolean language sql as $$ select false $$');
+  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations',nicknameMigration),'utf8'));
+  for(const suffix of ['040','041']) {
+    const id='00000000-0000-4000-8000-000000000'+suffix;
+    await signup(id,{...meta,nickname:'노래하는 딸기',nickname_auto:true,phone_number:'01078901234'});
+    const captured=await value('select raw_user_meta_data as value from auth.users where id=$1',[id]);
+    assert.match(captured.nickname,/^[가-힣]{1,4} [가-힣]{1,4}$/);
+    for(const key of ['birth_yymmdd','gender_code','phone_number','nickname_auto']) assert.equal(key in captured,false);
+    await db.query('update auth.users set raw_user_meta_data=$1 where id=$2',[{...meta,nickname:'노래하는 딸기',nickname_auto:true},id]);
+    assert.deepEqual(await value('select raw_user_meta_data as value from auth.users where id=$1',[id]),captured);
+    await db.query("insert into auth.identities values($1,'email',$2)",[id,{...meta,nickname:'노래하는 딸기',nickname_auto:true}]);
+    assert.deepEqual(await value("select identity_data as value from auth.identities where user_id=$1 and provider='email'",[id]),captured);
+    await db.query('insert into public.profiles(id,nickname) values($1,$2)',[id,'노래하는 딸기']);
+    assert.equal(await value('select nickname as value from public.profiles where id=$1',[id]),captured.nickname);
+  }
   await db.close();
   console.log('PASS: signup validation, member/admin permissions, masked and audited emergency phone access, one-month private withdrawal archive, 72-hour rejoin block and expiry purge');
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -610,6 +610,7 @@
           options: {
             data: {
               nickname: name,
+              nickname_auto: name === generatedSignupNickname,
               terms_version: termsVersion,
               agreed_at: new Date().toISOString(),
               birth_yymmdd: signupIdentity.birthSix,

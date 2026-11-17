@@ -32,6 +32,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin=
   await fill();assert.equal(await page.locator('#signup-referrer').getAttribute('required'),null);
   await page.locator('#auth-submit').click();await page.waitForFunction(()=>referralFixture.signups.length===1);
   assert.equal(await page.evaluate(()=>referralFixture.signups[0].options.data.nickname),initialNickname,'signup sends the displayed automatic nickname');
+  assert.equal(await page.evaluate(()=>referralFixture.signups[0].options.data.nickname_auto),true,'automatic names are allocated by the server at signup');
   assert.equal(await page.evaluate(()=>'referrer_id'in referralFixture.signups[0].options.data),false,'blank referral is optional');
   assert.equal(await page.evaluate(()=>referralFixture.searches.length),0,'blank signup needs no lookup');
 

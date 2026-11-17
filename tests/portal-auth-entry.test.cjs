@@ -149,6 +149,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     });
     await generated.flush(); generated.fill(); await generated.submit();
     assert.equal(generated.signups[0].options.data.nickname,name,'signup combines exactly two words');
+    assert.equal(generated.signups[0].options.data.nickname_auto,true,'the server allocates an unused automatic name');
   }
   const fallback = setup('?auth=signup', {crypto:null});
   await fallback.flush(); fallback.fill(); await fallback.submit();
@@ -272,6 +273,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   switched.fill();
   await switched.submit();
   assert.equal(switched.signups[0].options.data.nickname, '나만의별명', 'signup sends the nickname chosen by the member');
+  assert.equal(switched.signups[0].options.data.nickname_auto, false, 'manual names are not automatically replaced');
 
   const checkedNames = [];
   const rejectedName = setup('?auth=signup', { nicknameResponse: name => {
