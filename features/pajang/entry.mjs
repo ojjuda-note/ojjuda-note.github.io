@@ -47,7 +47,7 @@ async function start(firstEntry) {
 
   function paint() {
     $('slot-label').textContent = (entry.slot === 'am' ? '오전' : '오후') + ' 질문';
-    setQuestion(themeFor(entry.day, entry.slot));
+    setQuestion(entry.question ?? themeFor(entry.day, entry.slot));
     clearTimeout(timer);
     const until = Date.parse(entry.nextAt) - Date.now();
     timer = setTimeout(refresh, Math.min(12 * 3600000, Math.max(3000, until + 1000)));
@@ -98,6 +98,7 @@ async function start(firstEntry) {
     status.textContent = '답변을 저장하고 있어요.';
     try {
       const data = {body, day:entry.day, slot:entry.slot};
+      if (entry.question) data.questionId = entry.question.id;
       if (!entry.joined) {
         const {province, city, interest, age, consent} = form.elements;
         Object.assign(data, {
