@@ -360,6 +360,10 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "With YOU-th", date: "2024.02.23", type: "미니 13집", songs: ["ONE SPARK", "I GOT YOU"], href: "https://twice.jype.com/discography/jfzzhl4x" }
     ],
     appearances: [
+      { date: "2026-11-27", title: "정연 · tvN 그냥사람친구 첫 방송", sub: "20:35 KST · 정연·주헌 등 출연 · tvN", href: "https://sports.khan.co.kr/article/202611041439003" },
+      { date: "2026-11-29", title: "MISAMO · K-WONDER 콘서트 1회차", sub: "13:00 대만 현지(14:00 KST) · 가오슝 아레나 · SHOW Office 주최 · 예매·변경은 공식 판매처 확인", href: "https://ticketplus.com.tw/activity/f79e13ad9885c42f0f8103d9716e9b15" },
+      { date: "2026-11-29", title: "MISAMO · K-WONDER 콘서트 2회차", sub: "18:00 대만 현지(19:00 KST) · 가오슝 아레나 · SHOW Office 주최 · 예매·변경은 공식 판매처 확인", href: "https://ticketplus.com.tw/activity/f79e13ad9885c42f0f8103d9716e9b15" },
+      { date: "2026-11-30", title: "쯔위 · OWNDAYS OFF STAGE WITH TZUYU", sub: "싱가포르 ION Orchard 1층 아트리움 · 당첨자 대상 촬영 행사 · 11.16~25 공식 구매 응모, 시간은 주최 측 확인", href: "https://www.owndays.com/sg/en/news/ambassador_tzuyu" },
       { date: "2026-11-20", title: "나연 · NA-sty Spotify 리스닝 파티", sub: "17:30 KST · 나연 참여 · 일부 지역 Spotify Premium 이용자 대상", href: "https://x.com/JYPETWICE/status/2121588975634952562" },
       { date: "2026-11-20", title: "나연 · NA-sty 싱글 발매", sub: "JYP · 한국 정식 발매일 (예약 공지와 구별)", href: "https://www.twicejapan.com/news/detail/2059" },
       { date: "2026-11-21", title: "2026 MAMA AWARDS", sub: "나연 솔로 출연 · 일본 오사카", href: "https://www.cj.net/jp/press-release/view/1132" },
@@ -368,6 +372,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { date: "2027-01-23", title: "나연 · NA-sty 발매 기념 밋앤그릿", sub: "도쿄 · 추첨 당첨자 대상 사인·2샷 촬영·배웅회 · 정확한 장소·시각은 당첨자 안내", href: "https://www.twicejapan.com/news/detail/2066" }
     ],
     campaigns: [
+      { kind: "홍보대사", date: "2026.11.16", title: "쯔위 × OWNDAYS 동남아 지역 브랜드 홍보대사", sub: "싱가포르·대만 등 아시아 지역 안경 브랜드 캠페인 · 11.30 싱가포르 행사 예정 · 응모·제품 조건은 공식 사이트 확인", href: "https://www.owndays.com/sg/en/news/ambassador_tzuyu" },
       { kind: "홍보대사", date: "2026.04.08", title: "MISAMO × ReFa MUSE", sub: "모모·사나·미나 · 일본 헤어케어 브랜드 홍보대사 · 11.13 신규 광고 영상 공개", href: "https://www.refa.net/news/260408.html" },
       { kind: "콜라보", date: "2026.10.28", title: "나연 × CHAGEE 필리핀", sub: "11.14 첫 플래그십 개점 기념 팬 행사 · 포토카드 구매 응모는 11.11 종료", href: "https://thelookout.com.ph/article/nayeon-of-twice-returns-to-manila-for-chagees-first-philippine-flagship-store-opening" },
       { kind: "광고", date: "2026.01.07", title: "나연·모모·지효·쯔위 × Victoria’s Secret PINK", sub: "2026 발렌타인 Wink 컬렉션 캠페인 모델 · 시즌 협업", href: "https://www.victoriassecret.com/us/pink/new-arrivals/trending-now" },
@@ -382,6 +387,9 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 홈페이지", sub: "JYP", href: "https://twice.jype.com/" }
     ],
     news: [
+      { date: "11.16", tag: "협업", title: "쯔위, OWNDAYS 아시아 지역 홍보대사 발표 · 11.30 싱가포르 행사 예고", href: "https://www.owndays.com/sg/en/news/ambassador_tzuyu" },
+      { date: "11.16", tag: "영상", title: "MISAMO × ReFa MUSE 새 메이킹 영상 공개", href: "https://www.youtube.com/watch?v=LFE1pgcdc18" },
+      { date: "11.06", tag: "공연", title: "MISAMO, 11.29 대만 K-WONDER 가오슝 콘서트 오후 1시 추가 공연 발표", href: "https://ticketplus.com.tw/activity/f79e13ad9885c42f0f8103d9716e9b15" },
       { date: "11.17", tag: "활동", title: "나연, NA-sty 제작 과정·BABY ANGEL 소개 · Spotify 영상 팟캐스트 첫 화 공개", href: "https://sports.khan.co.kr/en/article/202611171831007" },
       { date: "11.14", tag: "행사", title: "나연 NA-sty · 11.20 17:30 Spotify 공식 리스닝 파티 발표", href: "https://x.com/JYPETWICE/status/2121588975634952562" },
       { date: "11.13", tag: "광고", title: "MISAMO × ReFa MUSE · 헤어케어 새 공식 광고 영상 공개", href: "https://prtimes.jp/main/html/rd/p/000001140.000029736.html" },
