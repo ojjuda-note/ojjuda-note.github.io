@@ -1901,7 +1901,7 @@
       id: 'nctwish', name: 'NCT WISH', korean: '엔시티 위시', category: 'boy', fan: 'NCTzen', agency: 'SM Entertainment',
       members: ['시온', '리쿠', '유우시', '재희', '료', '사쿠야'],
       debut: '2024.02.21', debutWork: 'WISH', songs: ['WISH'],
-      checkedAt: '2026.11.15',
+      checkedAt: '2026.11.17',
       concept: '밝은 에너지로 소원을 전하는 NCT의 여섯 멤버 유닛.',
       official: 'https://www.nct-jp.net/', youtube: 'https://www.youtube.com/@NCTWISH',
       photo: '2026 NCT WISH promotion 01.jpg', photoLabel: '2026년 단체', photoYear: '2026', credit: 'numbuzin', license: 'CC BY 4.0',
@@ -2122,9 +2122,21 @@
       ],
       news: [
         {
+          "date": "2026.11.16",
+          "tag": "수상",
+          "title": "11/15 MMA2026 4관왕 · TOP10·글로벌 TOP10·글로벌 임팩트·일본 인기상",
+          "href": "https://www.chosun.com/english/kpop-culture-en/2026/11/16/ZI424YHAEZAUVIJZLT6OUSF4AQ/"
+        },
+        {
+          "date": "2026.11.16",
+          "tag": "영상",
+          "title": "데뷔 1000일 기념 '1000' 스페셜 영상 공개",
+          "href": "https://www.youtube.com/watch?v=CVUFL02iRSE"
+        },
+        {
           "date": "2026.11.04",
           "tag": "공연",
-          "title": "2027 일본 전국 아레나 투어 10회 · 선예매 11.16까지",
+          "title": "2027 일본 아레나 투어 10회 · 선예매 11.16 마감 · 당첨 발표 11.26",
           "href": "https://www.nct-jp.net/news/detail.php?id=1137082"
         },
         {
@@ -2147,6 +2159,16 @@
         }
       ],
       merch: [
+        {
+          "title": "2027 시즌그리팅 Kit·캘린더",
+          "sub": "Weverse Shop 공식 · 10/13 예약 판매 시작 · 12/24부터 출고 예정 · 가격·재고는 판매처 확인",
+          "href": "https://shop.weverse.io/ko/shop/USD/artists/155/notices/14560"
+        },
+        {
+          "title": "I SPY POP-UP WISH LAND 공식 MD",
+          "sub": "Weverse Shop · 10/23 예약 판매 시작 · 2027/01/07부터 출고 예정 · 재고 확인",
+          "href": "https://shop.weverse.io/ko/shop/KRW/artists/155/notices/14703"
+        },
         {
           "title": "I SPY 미니 4집 Deluxe Book Ver.",
           "sub": "SMTOWN &STORE · 포토북·포토카드 · 재고와 가격은 판매처 확인",
