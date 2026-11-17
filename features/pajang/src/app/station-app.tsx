@@ -15,7 +15,7 @@ import {ExchangeProfileEditor} from "./exchange-profile";
 import {MyExchangePhotos,removeAllExchangePhotos} from "./exchange-photos";
 
 import {StationNavigation,readRoute,routeHref,type Tab} from "./station-navigation";
-type Modal = {kind:"answer"|"signal"|"result"|"setup"|"edit"|"channels"|"help"|"block"|"delete"|"person"|"privateProfile"|"privatePhotos";peer?:string;period?:string;answer?:DiscoveryAnswer};
+type Modal = {kind:"answer"|"signal"|"result"|"setup"|"edit"|"channels"|"help"|"block"|"delete"|"person"|"privateProfile"|"privatePhotos";peer?:string;period?:string;originalBody?:string;questionId?:number;answer?:DiscoveryAnswer};
 const districts:Record<string,string[]> = regionCatalog;
 const provinces=Object.keys(districts);
 const fmtClock=(at:number)=>new Intl.DateTimeFormat("ko-KR",{hour:"2-digit",minute:"2-digit",timeZone:"Asia/Seoul"}).format(new Date(at));
@@ -93,7 +93,11 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const lock=useRef(false),serverRevision=useRef(0),bottom=useRef<HTMLDivElement>(null);
   const s=live,me=s.me,theme=s.question??themeFor(s.day,s.slot),period=s.day+"/"+s.slot;
   const slotName=s.slot==="am"?"오전":"오후";
-  const modal=(pendingModal?.period && pendingModal.period!==period) || (pendingModal?.kind==="answer" && me?.body) ? null : pendingModal;
+  const obsoleteAnswer=pendingModal?.kind==="answer" && (pendingModal.questionId!==s.question?.id ||
+    (pendingModal.originalBody===undefined && Boolean(me?.body)));
+  const modal=(pendingModal?.period && pendingModal.period!==period) || obsoleteAnswer ? null : pendingModal;
+  const editingAnswer=modal?.kind==="answer" && modal.originalBody!==undefined;
+  const answerTitle=slotName+(editingAnswer?" 답변 수정":" 답변");
   const row=modal?.answer;
   const peer=row?{...row,id:row.peer}:s.people.find(p=>p.id===modal?.peer);
   const active=s.people.find(p=>p.id===thread);
@@ -197,8 +201,12 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   },[thread,validThread]);
   function open(m:Modal){
     setError("");
-    if(m.kind==="answer" && me?.body)return;
-    setModal(m.answer||m.kind==="answer"||m.kind==="signal"?{...m,period}:m);
+    if(m.kind==="answer"){
+      if(m.originalBody!==(me?.body||undefined))return;
+      setModal({...m,period,questionId:s.question?.id});
+      return;
+    }
+    setModal(m.answer||m.kind==="signal"?{...m,period}:m);
   }
   function close(){if(!lock.current){setModal(null);setError("");}}
   function go(t:Tab){navigate(t);}
@@ -210,7 +218,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
 
       if(action==="delete")await removeAllExchangePhotos();
       serverRevision.current++;const next=await request<Station>("/api/station",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,...b})});serverRevision.current++;if(action==="delete"){location.replace("./");return next;}setLive(next);setNet("");
-      if(action==="block"||action==="answer")setHistoryRevision(n=>n+1);
+      if(action==="block"||action==="answer"||action==="edit-answer")setHistoryRevision(n=>n+1);
       return next;
     }catch(e){
       if(origin!==navigationId.current)return null;
@@ -218,7 +226,10 @@ export default function StationApp({initialStation}:{initialStation:Station}){
         setModal(null);setToast("이 답변은 더 이상 볼 수 없어요.");setHistoryRevision(n=>n+1);void refresh();
       }else if(e instanceof Error && "code" in e && e.code==="PT409"){
         setModal(null);setToast("질문 시간이 바뀌었어요. 새 질문을 확인해 주세요.");void refresh();
-      }else setError(e instanceof Error?e.message:"다시 시도해 주세요.");
+      }else{
+        setError(e instanceof Error?e.message:"다시 시도해 주세요.");
+        if(e instanceof Error && "code" in e && e.code==="PT412")await refresh();
+      }
       return null;
     }
     finally{lock.current=false;setBusy(false);}
@@ -266,7 +277,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     }
     if(currentPeer.current===peerId){followChat.current=true;void readThread(peerId,true);}
   }
-  const modalTitle=modal?({answer:slotName+" 답변",signal:"신호 보내기",result:"신호 상태",setup:"회원 프로필 만들기",edit:"프로필 수정",channels:"채널 선택",help:"파장 이용 안내",block:"프로필 차단",delete:"데이터 삭제",person:"상대 프로필",privateProfile:"교환용 프로필",privatePhotos:"교환용 사진"}[modal.kind]):"";
+  const modalTitle=modal?({answer:answerTitle,signal:"신호 보내기",result:"신호 상태",setup:"회원 프로필 만들기",edit:"프로필 수정",channels:"채널 선택",help:"파장 이용 안내",block:"프로필 차단",delete:"데이터 삭제",person:"상대 프로필",privateProfile:"교환용 프로필",privatePhotos:"교환용 사진"}[modal.kind]):"";
   return <div className="station-layout">
     <StationNavigation tab={tab} onGo={go} pending={signalCount}/>
     <main className="wrap station-content" id="station-content">
@@ -277,7 +288,9 @@ export default function StationApp({initialStation}:{initialStation:Station}){
         <div className="letter-copy">
           <div className="letter-date">오늘의 질문 <time dateTime={s.day}>{s.day.replaceAll("-",".")} · {slotName}</time></div>
           <h1>{themeText}</h1>
-          {!me?.body&&<button className="primary" disabled={!ready} onClick={()=>open({kind:me?"answer":"setup"})}><I n="pencil" s={16}/>내 답변 쓰기</button>}
+          <button className={me?.body?"secondary":"primary"} disabled={!ready} onClick={()=>open(me?{kind:"answer",originalBody:me.body||undefined}:{kind:"setup"})}>
+            <I n="pencil" s={16}/>{me?.body?"내 답변 수정하기":"내 답변 쓰기"}
+          </button>
         </div>
       </section>
       <button className="mobile-near" onClick={()=>go("radar")}><I n="radar" s={16}/>내 주변<I n="right" s={14}/></button>
@@ -318,7 +331,16 @@ export default function StationApp({initialStation}:{initialStation:Station}){
         <Blank icon="user" title="파장에 참여해 주세요" body="오쭈다 회원 정보로 시작할 수 있어요." button="참여하기" onClick={()=>void enterMember()}/>}</section>}
     </main>{toast&&<div role="status" className="toast">{toast}</div>}
   {modal&&<Dialog key={modal.kind} close={close} title={modalTitle}>
-    {modal.kind==="answer"&&<><span className="modalicon"><I n="pencil"/></span><h2>{slotName} 답변</h2><p className="questionbox">{themeText}</p><p className="sub">답변을 공개하면 작성일을 포함해 30일 동안 파장 회원이 질문과 내 답변을 함께 볼 수 있어요.</p><Editor max={220} label="내 이야기" hint="장소, 노래, 기억처럼 구체적인 장면을 들려주세요." submit="답변 공개하기" busy={busy} onSave={async body=>{if(!await act("answer",{body,day:s.day,slot:s.slot,questionId:s.question?.id,archive:true}))return;setModal(null);setToast(slotName+" 답변을 저장했어요.");}}/></>}
+    {modal.kind==="answer"&&<><span className="modalicon"><I n="pencil"/></span><h2>{answerTitle}</h2><p className="questionbox">{themeText}</p>
+      <p className="sub">{editingAnswer?"저장하면 모두의 답변에도 수정한 내용이 보여요.":"답변을 공개하면 작성일을 포함해 30일 동안 파장 회원이 질문과 내 답변을 함께 볼 수 있어요."}</p>
+      <Editor initial={modal.originalBody} max={220} label="내 이야기" hint="장소, 노래, 기억처럼 구체적인 장면을 들려주세요."
+        submit={editingAnswer?"수정 저장하기":"답변 공개하기"} busy={busy} onSave={async body=>{
+          const data={body,day:s.day,slot:s.slot,questionId:modal.questionId};
+          const next=editingAnswer?await act("edit-answer",{...data,previousBody:modal.originalBody}):await act("answer",{...data,archive:true});
+          if(!next)return;
+          setModal(null);setToast(slotName+(editingAnswer?" 답변을 수정했어요.":" 답변을 저장했어요."));
+        }}/>
+    </>}
     {modal.kind==="signal"&&peer&&<><span className="modalicon"><I n="signal"/></span><h2>{peer.name}님{row?.received || signalsWith(s,peer.id).incoming?"의 신호 수락":"에게 신호 보내기"}</h2><p className="sub">서로 신호를 보내면 대화를 시작할 수 있어요.</p><div className="questionbox">{row&&<small>{row.question}</small>}{peer.body||signalsWith(s,peer.id).incoming?.note}</div><Editor max={120} label="함께 보낼 한마디 (선택)" hint="어떤 부분에 마음이 닿았나요?" submit={(row?.received || signalsWith(s,peer.id).incoming?"신호 수락하기":"신호 보내기")+" · 남은 "+available+"회"} busy={busy} optional onSave={note=>void deliver(peer.id,note,row)}/></>}
     {modal.kind==="result"&&peer&&<div className="result"><span className="resultart"><Art interest={peer.interest} large/><i><I n={signalsWith(s,peer.id).match?"wave":"signal"}/></i></span><h2>{signalsWith(s,peer.id).match?"서로의 신호가 닿았어요":"신호를 보냈어요"}</h2><p className="sub">{signalsWith(s,peer.id).match?peer.name+"님도 당신에게 신호를 보냈어요. 이제 첫인사를 건네보세요.":peer.name+"님도 신호를 보내면 대화방이 열려요."}</p><button className="primary wide" onClick={()=>signalsWith(s,peer.id).match?startChat(peer.id):(setInbox("sent"),go("inbox"))}>{signalsWith(s,peer.id).match?"대화 시작하기":"보낸 신호 보기"}<I n="arrow" s={17}/></button></div>}
     {modal.kind==="person"&&peer&&<><Art interest={peer.interest} large/><h2>{peer.name}</h2><p className="sub">{introDetails(peer)}</p>{peer.body&&<div className="questionbox"><small>{row?.question||themeText}</small>{peer.body}</div>}<button className="primary wide" onClick={()=>{

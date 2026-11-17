@@ -78,6 +78,16 @@ function clientFixture(hash) {
           if(['entry','state'].includes(p.p_action) && mode==='denied')return Promise.resolve({error:{code:'42501'}});
           if(p.p_action==='state'&&!entry.joined)return Promise.resolve({error:{code:'42501',message:'먼저 파장에 참여해 주세요.'}});
           if(p.p_action==='entry')return Promise.resolve({data:entry});
+          if(p.p_action==='edit-answer'){
+            const {body,previousBody,day,slot,questionId}=p.p_data;
+            if(day!==state.day||slot!==state.slot||questionId!==state.question.id)return Promise.resolve({error:{code:'PT409'}});
+            if(previousBody!==state.me.body && body!==state.me.body)return Promise.resolve({error:{code:'PT412'}});
+            state.me.body=body;
+            const own=rows.find(r=>r.own);
+            if(own)own.body=body;
+            else rows.unshift({...state.me,peer:state.me.id,day,slot,own:true,question:state.question.q[0]});
+            return Promise.resolve({data:structuredClone(state)});
+          }
           if(p.p_action==='signal' && p.p_data.peer==='peer2'){
             return (async()=>{
               if(window.holdSignal)await new Promise(r=>{window.releaseSignal=r;});
@@ -232,7 +242,24 @@ function clientFixture(hash) {
     };
     const questionCard=page.locator('.letter-hero');
     await questionCard.getByRole('heading',{level:1}).waitFor();
-    assert.equal(await questionCard.locator('p,a,button').count(),0,'an answered card shows only the date and question');
+    assert.equal(await questionCard.locator('p,a').count(),0);
+    const revise=questionCard.getByRole('button',{name:'내 답변 수정하기'});
+    const editor=page.getByRole('dialog',{name:'오후 답변 수정'});
+    await revise.click();
+    assert.equal(await editor.getByLabel('내 이야기').inputValue(),me.body);
+    await editor.getByLabel('내 이야기').fill('취소할 내용');
+    await editor.getByRole('button',{name:'닫기'}).click();
+    await revise.click();
+    assert.equal(await editor.getByLabel('내 이야기').inputValue(),me.body);
+    await editor.getByLabel('내 이야기').fill('  ');
+    assert.ok(await editor.getByRole('button',{name:'수정 저장하기'}).isDisabled());
+    await editor.getByLabel('내 이야기').fill('같이 산책하고 따뜻한 차를 마셔요.');
+    await editor.getByRole('button',{name:'수정 저장하기'}).click();
+    await editor.waitFor({state:'detached'});
+    await cards.filter({hasText:'같이 산책하고 따뜻한 차를 마셔요.'}).waitFor();
+    await revise.click();
+    assert.equal(await editor.getByLabel('내 이야기').inputValue(),'같이 산책하고 따뜻한 차를 마셔요.');
+    await editor.getByRole('button',{name:'닫기'}).click();
     await nav.waitFor();assert.equal(await nav.getByRole('link').count(),3);
     assert.deepEqual(await nav.getByRole('link').allTextContents(),['오늘','마음함','내 파장']);
     await expectHome();

@@ -34,6 +34,7 @@ test('discovery filtering uses its own opt-in and keeps dated answers paginated 
     await db.exec(await migration(file));
   }
   await db.exec(await migration("20261117235000_pajang_my_answers.sql"));
+  await db.exec(await migration("20261117235950_pajang_edit_current_answer.sql"));
   const account = randomUUID();
   const writer = randomUUID();
   await db.query('insert into auth.users values ($1)', [account]);
@@ -75,4 +76,29 @@ test('discovery filtering uses its own opt-in and keeps dated answers paginated 
   await assert.rejects(mine,{code:'42501'});
   await db.query("insert into pajang_private.people(id,owner_id,name,region,interest) values ($1,$2,'다른 회원','','')",[randomUUID(),stranger]);
   assert.deepEqual(await mine(),[]);
+
+  await t.test('current answer edits keep the original row and reject stale drafts',async()=>{
+    const member=(action,data={})=>value("select public.pajang_member($1,$2) as v",[action,data]);
+    const entry=await member('entry');
+    const round={day:entry.day,slot:entry.slot,questionId:entry.question?.id};
+    const edit=(extra={})=>member('edit-answer',{...round,previousBody:'첫 답변',body:'수정한 답변',...extra});
+    await assert.rejects(()=>edit({person:writer}),{code:'PT412'});
+    const first=await member('answer',{...round,body:'첫 답변',archive:true});
+    const saved=await edit();
+    assert.equal(saved.me.body,'수정한 답변');
+    assert.equal(saved.me.at,first.me.at);
+    assert.equal((await mine()).length,1);
+    assert.equal((await mine())[0].body,'수정한 답변');
+    assert.equal((await edit()).me.body,'수정한 답변','a network retry is idempotent');
+    await assert.rejects(()=>edit({body:'다른 탭의 답변'}),{code:'PT412'});
+    await assert.rejects(()=>edit({slot:round.slot==='am'?'pm':'am'}),{code:'PT409'});
+    if(round.questionId!=null)await assert.rejects(()=>edit({questionId:-1}),{code:'PT409'});
+    await assert.rejects(()=>edit({body:' '}),{code:'P0001'});
+    assert.equal((await member('answer',{...round,body:'이전 등록 재시도'})).me.body,'수정한 답변');
+    await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:account})]);
+    const board=await value("select public.pajang_discovery_feed() as v");
+    const published=board.items.filter(a=>a.peer===saved.me.id);
+    assert.equal(published.length,1);
+    assert.equal(published[0].body,'수정한 답변');
+  });
 });
