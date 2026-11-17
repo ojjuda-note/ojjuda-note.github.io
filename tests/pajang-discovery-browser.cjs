@@ -24,11 +24,22 @@ async function checkCompass(view, selector, labelSelector, markerSelector) {
   const stop=view.getByRole('button',{name:'북쪽 고정하기'});
   await stop.waitFor();
   for(const heading of [0,45,90,135,180,225,270,315]){
-    await dial.evaluate((el,heading)=>{
-      const e=Object.assign(new Event('deviceorientationabsolute'),{absolute:true,alpha:(360-heading)%360,beta:0,gamma:0});
-      el.ownerDocument.defaultView.dispatchEvent(e);
+    const sensor=await dial.evaluate((el,heading)=>{
+      const win=el.ownerDocument.defaultView;
+      function send(){
+        const screenAngle=win.screen.orientation?.angle??win.orientation??0;
+        win.dispatchEvent(Object.assign(new Event('deviceorientationabsolute'),{
+          absolute:true,alpha:(screenAngle-heading+360)%360,beta:0,gamma:0
+        }));
+      }
+      send();
+      return win.setInterval(send,50);
     },heading);
-    await view.getByText(new RegExp('위(?:쪽)? · '+labels[heading/45]+'쪽$')).waitFor();
+    try{
+      await view.getByText(new RegExp('위(?:쪽)? · '+labels[heading/45]+'쪽$')).waitFor();
+    }finally{
+      await dial.evaluate((el,id)=>el.ownerDocument.defaultView.clearInterval(id),sensor);
+    }
     const geometry=await dial.evaluate((el,{labelSelector,markerSelector})=>{
       const rect=el.getBoundingClientRect();
       function point(node){
@@ -173,7 +184,12 @@ function clientFixture(hash) {
       if(pathname==='/config.js')return route.fulfill({contentType:'text/javascript',body:clientFixture(hash)});
       if(pathname==='/features/home/agit-hub.css')return route.fulfill({contentType:'text/css',body:await fs.readFile(path.join(feature,'../home/agit-hub.css'))});
       if(pathname==='/program')return route.fulfill({contentType:'application/javascript',body:bundle});
-      if(pathname==='/world.html')return route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/features/home/agit-hub.css"><title>아지트</title><script src="/config.js"></script><button data-pajang-launch>파장 열기</button><script type="module">import {openPajang} from "/features/pajang/dialog.mjs";document.querySelector("button").onclick=e=>openPajang(e.currentTarget);</script></html>'});
+      if(pathname==='/features/home/agit-hub.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../home/agit-hub.js'))});
+      if(pathname==='/world.html')return route.fulfill({contentType:'text/html',body:`<!doctype html>
+        <html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/features/home/agit-hub.css"><title>아지트</title>
+        <script src="/config.js"></script><script src="/features/home/agit-hub.js"></script>
+        <main></main><script>document.querySelector('main').innerHTML=OjjudaAgitHub.markup({},{});</script></html>`});
       const file=pathname.slice(project.length)||'index.html';
       if(!['station.html','station.css','member.mjs','member-main.mjs','load-station.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','shell.mjs','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
       const mime={html:'text/html',css:'text/css',mjs:'text/javascript',json:'application/json',svg:'image/svg+xml'}[path.extname(file).slice(1)];
@@ -377,13 +393,29 @@ function clientFixture(hash) {
     await selectMenu('내 파장');await page.setViewportSize({width:1080,height:840});
     await page.screenshot({path:path.join(dir,'pajang-profile-desktop.png'),animations:'disabled'});
     await selectMenu('오늘');await answers.waitFor();await capture('home-desktop');await mast.click();await page.waitForURL('**/world.html');
+    const banner=page.getByRole('link',{name:/파장.*오늘의 질문 보기/});
+    for(const width of [320,390,1080]){
+      await page.setViewportSize({width,height:844});
+      await banner.scrollIntoViewIfNeeded();
+      await banner.locator('img').evaluate(img=>img.decode());
+      assert.ok(await banner.evaluate(el=>{
+        const box=el.getBoundingClientRect();
+        return box.left>=0 && box.right<=window.innerWidth &&
+          [...el.querySelectorAll('span,strong,b,small')].every(node=>{
+            const text=node.getBoundingClientRect();
+            return text.left>=box.left && text.right<=box.right && text.bottom<=box.bottom;
+          });
+      }),'banner text fits at '+width+'px');
+      await banner.screenshot({path:path.join(dir,'agit-pajang-banner-'+width+'.png')});
+    }
     await page.setViewportSize({width:390,height:844});
-    await page.getByRole('button',{name:'파장 열기'}).click();
+    await banner.focus();
+    await page.keyboard.press('Enter');
     await page.waitForURL('**/station.html');await nav.waitFor();
     await page.evaluate(()=>{sessionStorage.fixtureMode='new';sessionStorage.removeItem('pajang:answered-round');});
     await page.goto(origin+'/world.html#pajang-radar');
     await page.evaluate(()=>{window.hostMarker='stay';});
-    await page.getByRole('button',{name:'파장 열기'}).click();
+    await banner.click();
     const frame=page.frameLocator('iframe');await frame.getByRole('heading',{name:'처음 만난 날, 어떤 이야기를 나누고 싶나요?'}).waitFor();
     await capture('entry-mobile');
     assert.equal(await frame.locator('#marks button').count(),0,'sample radar does not block the question');
@@ -433,7 +465,7 @@ function clientFixture(hash) {
     // Closing an immediate popup while its member request is pending leaves Agit open.
     await page.evaluate(()=>{sessionStorage.fixtureMode='member';sessionStorage.openTiming='yes';sessionStorage.removeItem('pajang:answered-round');});
     await page.goto(origin+'/world.html?closing=1');
-    await page.getByRole('button',{name:'파장 열기'}).click();
+    await banner.click();
     await page.getByRole('button',{name:'팝업 닫기'}).click();
     await page.waitForTimeout(500);
     assert.ok(page.url().endsWith('world.html?closing=1'));
@@ -445,7 +477,7 @@ function clientFixture(hash) {
           if(mode!=='member')sessionStorage.removeItem('pajang:answered-round');
           delete sessionStorage.openMs;delete sessionStorage.openStart;},scenario);
         await page.goto(origin+'/world.html?timing='+attempt);
-        await page.getByRole('button',{name:'파장 열기'}).click();
+        await banner.click();
         if(scenario!=='new')await page.waitForURL('**/station.html');
         await page.waitForFunction(()=>sessionStorage.openMs);
         timings.push(await page.evaluate(()=>Number(sessionStorage.openMs)));
