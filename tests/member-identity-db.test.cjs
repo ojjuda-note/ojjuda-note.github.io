@@ -181,7 +181,7 @@ const { PGlite } = require('@electric-sql/pglite');
     const id='00000000-0000-4000-8000-000000000'+suffix;
     await signup(id,{...meta,nickname:'노래하는 딸기',nickname_auto:true,phone_number:'01078901234'});
     const captured=await value('select raw_user_meta_data as value from auth.users where id=$1',[id]);
-    assert.match(captured.nickname,/^[가-힣]{1,4} [가-힣]{1,4}$/);
+    assert.match(captured.nickname,/^[가-힣]{1,5} [가-힣]{1,5}$/);
     for(const key of ['birth_yymmdd','gender_code','phone_number','nickname_auto']) assert.equal(key in captured,false);
     await db.query('update auth.users set raw_user_meta_data=$1 where id=$2',[{...meta,nickname:'노래하는 딸기',nickname_auto:true},id]);
     assert.deepEqual(await value('select raw_user_meta_data as value from auth.users where id=$1',[id]),captured);

@@ -26,7 +26,7 @@ for (const path of ['/?auth=login', '/?auth=signup&next=world', '/?auth=forgot',
 }
 
 // Exercise the real controller with a fake Auth service: no accounts or emails are created.
-function setup(query, { user = null, confirmed = false, sessionError = false, sessionResponse = null, userResponse = null, signInResponse = null, signupResponse = null, nicknameResponse = null, recoveryResponse = null, recoveryError = null, recoveryVerified = true, resetError = null, crypto = webcrypto, now = Date.now() } = {}) {
+function setup(query, { user = null, confirmed = false, sessionError = false, sessionResponse = null, userResponse = null, signInResponse = null, signupResponse = null, nicknameResponse = null, suggestionResponse = null, recoveryResponse = null, recoveryError = null, recoveryVerified = true, resetError = null, crypto = webcrypto, now = Date.now() } = {}) {
   let clock = now;
   let taskId = 0;
   let serviceUser = user;
@@ -75,6 +75,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     functions: { async invoke(name, args) { recoveries.push({ name, ...args }); if (recoveryResponse) return recoveryResponse(args.body); const error = args.body.action === 'reset' ? resetError : recoveryError; return error ? { error: { context: { json: async () => ({ error }) } } } : { data: args.body.action === 'reset' ? { reset: true } : { verified: recoveryVerified, reset_token: 'a'.repeat(64), expires_in: 300 } }; } },
     from() { return { select() { return this; }, eq() { return this; }, async maybeSingle() { return { data: null }; } }; },
     async rpc(name, args) {
+      if (name === 'suggest_signup_nickname') return suggestionResponse ? suggestionResponse() : { data: null };
       if (name === 'has_banned') return nicknameResponse ? nicknameResponse(args.t) : { data: false };
       return { data: true };
     }
@@ -151,6 +152,21 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     assert.equal(generated.signups[0].options.data.nickname,name,'signup combines exactly two words');
     assert.equal(generated.signups[0].options.data.nickname_auto,true,'the server allocates an unused automatic name');
   }
+  const dictionarySuggestion = setup('?auth=signup', { suggestionResponse: () => ({data:'노래하는 돌고래'}) });
+  await dictionarySuggestion.flush(); dictionarySuggestion.fill(); await dictionarySuggestion.submit();
+  assert.equal(dictionarySuggestion.signups[0].options.data.nickname,'노래하는 돌고래');
+  assert.equal(dictionarySuggestion.signups[0].options.data.nickname_auto,true);
+  const numberedSuggestion = setup('?auth=signup', { suggestionResponse: () => ({data:'노래하는 딸기12'}) });
+  await numberedSuggestion.flush(); numberedSuggestion.fill(); await numberedSuggestion.submit();
+  assert.equal(numberedSuggestion.signups[0].options.data.nickname,'노래하는 딸기12');
+  let finishSuggestion;
+  const lateSuggestion = setup('?auth=signup', { suggestionResponse: () => new Promise(resolve => {finishSuggestion=resolve;}) });
+  await lateSuggestion.flush(); lateSuggestion.element('nickname').value='내가 고른이름';
+  finishSuggestion({data:'춤추는 고래'}); await lateSuggestion.flush();
+  assert.equal(lateSuggestion.element('nickname').value,'내가 고른이름','late dictionary previews do not overwrite edits');
+  const failedSuggestion = setup('?auth=signup', { suggestionResponse: () => Promise.reject(new Error('network')) });
+  await failedSuggestion.flush(); failedSuggestion.fill(); await failedSuggestion.submit();
+  assert.match(failedSuggestion.signups[0].options.data.nickname,/^[가-힣]{1,4} [가-힣]{1,4}$/,'network failures retain the instant word-pair fallback');
   const fallback = setup('?auth=signup', {crypto:null});
   await fallback.flush(); fallback.fill(); await fallback.submit();
   assert.match(fallback.signups[0].options.data.nickname, /^[가-힣]{1,4} [가-힣]{1,4}$/, 'fallback randomness also creates Hangul words');

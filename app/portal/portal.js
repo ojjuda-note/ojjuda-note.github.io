@@ -149,6 +149,16 @@
       if (first === secondWords[secondIndex]) secondIndex = (secondIndex + 1) % secondWords.length;
       signupNickname = first + ' ' + secondWords[secondIndex];
       generatedSignupNickname = signupNickname;
+      const suggestedFrom = signupNickname;
+      Promise.resolve().then(() => client?.rpc('suggest_signup_nickname')).then(result => {
+        const suggested = result?.data;
+        if (result?.error || typeof suggested !== 'string' || suggested.length > 12
+          || !/^[가-힣]{1,5} [가-힣]{1,5}[0-9]*$/.test(suggested)
+          || busy || authMode !== 'signup' || signupNickname !== suggestedFrom
+          || generatedSignupNickname !== suggestedFrom || nickname.value !== suggestedFrom) return;
+        signupNickname = generatedSignupNickname = suggested;
+        nickname.value = suggested;
+      }).catch(() => {});
     }
     nickname.value = signupNickname;
     return signupNickname;
