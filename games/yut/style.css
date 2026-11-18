@@ -249,7 +249,7 @@ dialog .primary{width:100%}#dialog-body>.secondary{margin:4px 3px 0 0}
 }
 #first-seat-stick {
   position:absolute; z-index:1; width:72%; height:21%; top:39.5%; left:14%;
-  display:grid; place-items:center;
+  display:grid; place-items:center; will-change:transform;
 }
 #first-seat-stick canvas {width:100%;height:100%;display:block}
 #first-seat-stick::after {

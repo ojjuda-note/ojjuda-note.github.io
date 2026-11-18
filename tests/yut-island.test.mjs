@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {newGame,roll,move,moves,position,FINISH,tileEffect,lastThrowSeed,computerAction,restoreGame,act,chooseFirstSeat,FIRST_SEAT_SPIN_MS,FIRST_SEAT_RESULT_MS} from '../games/yut/rules.mjs';
+import {newGame,roll,move,moves,position,FINISH,tileEffect,lastThrowSeed,computerAction,restoreGame,act,FIRST_SEAT_SPIN_MS} from '../games/yut/rules.mjs';
 import {ANIMALS,animalFor} from '../games/yut/zodiac.mjs';
 
 import {roundStandings} from '../games/yut/results.mjs';
@@ -17,7 +17,10 @@ test('the chosen seat starts and normal turns wrap around the numbered seats',t=
   const random=t.mock.method(Math,'random',()=>.6);
   for(const [draw,expected] of [[.6,[3,4,1,2]],[0,[1,2,3,4]]]){
     random.mock.mockImplementation(()=>draw);
-    let game=chooseFirstSeat(board);
+    const opening={...board,phase:'opening'};
+    const start=act(opening,{type:'draw-first-seat'});
+    assert.equal(act(start,{type:'begin-play'}),start);
+    let game=act({...start,firstSeatAt:Date.now()-FIRST_SEAT_SPIN_MS},{type:'begin-play'});
     const order=[];
     for(let turn=0;turn<4;turn++){
       order.push(game.team+1);
@@ -328,16 +331,29 @@ test('eight distinct seats can play a full turn each and the ninth cannot act',a
     const rand=t.mock.method(Math,'random',()=>[.99,.99,0,.26][tile++]??0);
     host.start();await until(()=>clients.slice(0,8).every(c=>c.view().game?.revision===0));
     const game=clients[7].view().game;
+    assert.equal(game.phase,'opening');
+    assert.equal(game.firstSeatAt,undefined);
     assert.equal(game.mode,'easy');assert.equal(game.zodiacOffset,8);assert.deepEqual(game.islandTiles,{});
     assert.deepEqual(game.pawns.map(p=>p.length),counts);assert.deepEqual(game.teamAnimals,animals);
     assert.deepEqual(game.eventTiles,host.view().game.eventTiles);
     assert.equal(Object.keys(game.eventTiles).length,3);assert.equal(game.eventTiles[1],'home');
-    assert.equal(game.team,2);
-    assert.equal(game.firstSeatAt,host.view().game.firstSeatAt);
+    clients[2].opening({type:'draw-first-seat'});
+    assert.equal(host.view().game.firstSeatAt,undefined);
+    host.opening({type:'draw-first-seat'});
+    await until(()=>clients.slice(0,8).every(c=>c.view().game?.team===2));
+    const drawn=host.view().game;
+    assert.equal(clients[7].view().game.firstSeatAt,drawn.firstSeatAt);
+    host.opening({type:'draw-first-seat'});
+    host.opening({type:'begin-play'});
     clients[2].action({type:'roll'});
     await new Promise(resolve=>setTimeout(resolve,60));
-    assert.equal(host.view().game.revision,0);
-    await until(()=>Date.now()>=game.firstSeatAt+FIRST_SEAT_SPIN_MS+FIRST_SEAT_RESULT_MS,800);
+    assert.equal(host.view().game,drawn);
+    await until(()=>Date.now()>=drawn.firstSeatAt+FIRST_SEAT_SPIN_MS,500);
+    assert.equal(host.view().game.phase,'opening');
+    clients[2].opening({type:'begin-play'});
+    assert.equal(host.view().game.phase,'opening');
+    host.opening({type:'begin-play'});
+    await until(()=>clients.slice(0,8).every(c=>c.view().game?.phase==='roll'));
     let face=0;rand.mock.mockImplementation(()=>face++%4===0?.1:.9);
     for(let turn=0;turn<8;turn++){
       const seat=(2+turn)%8;

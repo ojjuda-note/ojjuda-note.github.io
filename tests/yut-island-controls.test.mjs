@@ -79,12 +79,18 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   const firstSeatReady=async()=>{
     const layer=doc.getElementById('first-seat');
     assert.equal(layer.hidden,false);
+    assert.equal(first().textContent,'선 정하기');
+    assert.equal(first().disabled,false);
+    assert.equal(layer.classList.contains('resolved'),false);
+    first().click();
     assert.equal(first().disabled,true);
     await until(()=>layer.classList.contains('resolved'),260);
     assert.match(text('first-seat-heading'),/1번 산호 팀부터 시작/);
     assert.equal(layer.hidden,false);
-    assert.equal(first().disabled,true);
-    await until(()=>layer.hidden,160);
+    assert.equal(first().textContent,'시작하기');
+    assert.equal(first().disabled,false);
+    first().click();
+    assert.equal(layer.hidden,true);
   };
   const drawFirstSeat=()=>{
     let calls=0;

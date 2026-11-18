@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261118-yut-first-seat3'
+ const revision='20261118-yut-first-seat4'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -39,7 +39,7 @@
   mines:'1.5.2',
   sacheonseong:'1.18.3',
   saetbyeol:'1.10.0',
-  yut:'1.16.2',
+  yut:'1.17.0',
   tour:'1.6.1',
   ttang:'1.7.1',
   photo_ttang:'1.6.3',

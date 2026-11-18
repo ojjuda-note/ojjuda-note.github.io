@@ -1,4 +1,4 @@
-import {TEAMS,validTeamCount,DEFAULT_MODE,DEFAULT_PIECES,newGame,chooseFirstSeat,act,restoreGame} from './rules.mjs?v=19';
+import {TEAMS,validTeamCount,DEFAULT_MODE,DEFAULT_PIECES,newMatch,act,restoreGame} from './rules.mjs?v=20';
 const encoder=new TextEncoder();
 const curve={name:'ECDSA',namedCurve:'P-256'};
 const signing={name:'ECDSA',hash:'SHA-256'};
@@ -57,7 +57,7 @@ export async function openRoom(invite,update,clientFactory=()=>window.OjjudaGetC
     if(next!==snapshot.game){snapshot={...snapshot,game:next};changed();}
   }
   function take(id,data){
-    if(!snapshot.game||snapshot.seats.indexOf(id)!==snapshot.game.team||data?.revision!==snapshot.game.revision)return;
+    if(!snapshot.game||snapshot.game.phase==='opening'||snapshot.seats.indexOf(id)!==snapshot.game.team||data?.revision!==snapshot.game.revision)return;
     apply(data.action);
   }
   async function receive({payload}){
@@ -117,12 +117,15 @@ export async function openRoom(invite,update,clientFactory=()=>window.OjjudaGetC
       const humans=snapshot.seats.length,settings=snapshot.setup,count=settings?.count??humans;
       if(count<2||humans>count||(!fillBots&&humans<count))return;
       const bots=Array.from({length:count-humans},(_,i)=>humans+i);
-      const game=chooseFirstSeat(newGame(count,settings?.offset??zodiacOffset,settings?.mode??mode,settings?.counts??pieceCounts,bots,settings?.animals));
+      const game=newMatch(count,settings?.offset??zodiacOffset,settings?.mode??mode,settings?.counts??pieceCounts,bots,settings?.animals);
       snapshot={...snapshot,game};changed();
+    },
+    opening(action){
+      if(isHost&&connected&&snapshot.game?.phase==='opening')apply(action);
     },
     computerAction(action,revision){
       const g=snapshot.game;
-      if(isHost&&connected&&g&&g.revision===revision&&g.computerTeams?.includes(g.team))apply(action);
+      if(isHost&&connected&&g&&g.phase!=='opening'&&g.revision===revision&&g.computerTeams?.includes(g.team))apply(action);
     },
     action(action){if(!connected||!snapshot.game)return;
       const data={revision:snapshot.game.revision,action};
