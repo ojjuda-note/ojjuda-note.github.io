@@ -1,5 +1,5 @@
-import {requireMember} from './member.mjs?v=location1';
-import {mountStation,prepareProgram} from './load-station.mjs?v=location1';
+import {requireMember} from './member.mjs?v=location2';
+import {mountStation,prepareProgram} from './load-station.mjs?v=location2';
 let program;
 const station=await requireMember('state',db=>{
   program=prepareProgram(db);

@@ -1,4 +1,4 @@
-import {prepareLocation} from './location.mjs?v=location1';
+import {prepareLocation} from './location.mjs?v=location2';
 let verifiedUser;
 const resumeKey='pajang:answered-round';
 export function answeredRound(){

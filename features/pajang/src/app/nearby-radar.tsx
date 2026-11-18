@@ -60,7 +60,14 @@ export default function NearbyRadar({station,sample,onProfile,onJoin,onSettings}
   const [selected,setSelected]=useState(""),[page,setPage]=useState(0);
   const [pending,setPending]=useState(false),[feedback,setFeedback]=useState(station.locationNotice||"");
   const alive=useRef(true), working=useRef(false);
-  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
+  const locationRead=useRef<AbortController|null>(null);
+  const [locating,setLocating]=useState(false);
+  useEffect(()=>{
+    alive.current=true;
+    const cancel=()=>locationRead.current?.abort();
+    window.addEventListener('pagehide',cancel);
+    return()=>{alive.current=false;cancel();window.removeEventListener('pagehide',cancel);};
+  },[]);
   const located=station.people.filter((p):p is LocatedPerson=>
     (sample||(station.locationEnabled!==false&&Boolean(station.radarOn)))&&Boolean(p.range&&p.body));
   const grouped=bands.map(b=>located.filter(p=>p.range===b.limit));
@@ -85,25 +92,32 @@ export default function NearbyRadar({station,sample,onProfile,onJoin,onSettings}
   async function toggleLocation(enable:boolean){
     if(working.current)return;
     working.current=true;setPending(true);setFeedback("");
+    const controller=new AbortController();locationRead.current=controller;
     try {
       const db=await window.OjjudaGetClient();
       const {data:{session}}=await db.auth.getSession();
+      if(!alive.current||controller.signal.aborted)return;
       if(!session?.user||session.user.is_anonymous)throw Error("회원 정보를 다시 확인해 주세요.");
       let cell:RadarCell|null=null;
       if(enable){
-        cell=await readLocationCell();
+        setLocating(true);
+        cell=await readLocationCell({signal:controller.signal,fresh:true,
+          onProgress:(message:string)=>{if(alive.current)setFeedback(message);}});
+        setLocating(false);
       }
-      if(!alive.current)return;
+      if(!alive.current||controller.signal.aborted)return;
+      setFeedback("설정을 저장하고 있어요.");
       if(!await onSettings(cell,session.user.id))throw Error("설정을 저장하지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요.");
       if(alive.current)setFeedback(enable?"위치 공개를 켰어요.":"위치를 숨겼어요. 다음에도 이 설정이 유지돼요.");
-    }catch(e){if(alive.current)setFeedback(e instanceof Error?e.message:"다시 시도해 주세요.");}
-    finally{working.current=false;if(alive.current)setPending(false);}
+    }catch(e){if(alive.current)setFeedback(e instanceof Error&&e.name==='AbortError'?"위치 확인을 취소했어요. 기존 설정은 그대로예요.":e instanceof Error?e.message:"다시 시도해 주세요.");}
+    finally{controller.abort();locationRead.current=null;working.current=false;if(alive.current){setPending(false);setLocating(false);}}
   }
 
   return <section className="nearby-section" aria-labelledby="nearby-title">
     <div className="nearby-heading"><div><div className="onrow"><span className="onair"><i/>{sample?"DEMO":"RADAR"}</span><span className="questionlabel">{sample?"예시 거리·방향":"오늘의 거리·방향"}</span></div><h1 id="nearby-title">주변 레이더</h1><p>내 주변 15km 안에서 이번 시간대에 답한 사람을 찾아보세요.</p></div></div>
-    {!sample&&<div className="radar-location-setting"><div><strong id="location-switch-label">내 위치 공개</strong><p>대략적인 거리와 방향을 보여요. 설정은 바꿀 때까지 유지돼요.</p></div>
+    {!sample&&<div className="radar-location-setting"><div><strong id="location-switch-label">내 위치 공개</strong><p>대략적인 거리와 방향을 보여 줘요. 설정은 바꿀 때까지 유지돼요.</p></div>
       <button type="button" role="switch" aria-labelledby="location-switch-label" aria-checked={enabled} disabled={pending||!station.me} onClick={()=>void toggleLocation(!enabled)}><span aria-hidden="true"/></button></div>}
+    {feedback&&<div className="radar-location-feedback"><p className="radar-feedback" role="status">{feedback}</p>{locating&&<button type="button" className="secondary small" onClick={()=>locationRead.current?.abort()}>위치 확인 취소</button>}</div>}
     <div className="radar-layout">
       <div className="dial-panel">
         <div className="dial-info"><span><i/> {sample?"체험 채널":"회원 채널"}</span><span>반경 약 15km</span></div>
@@ -130,12 +144,11 @@ export default function NearbyRadar({station,sample,onProfile,onJoin,onSettings}
         {person?<><div className="radar-kicker"><I n="signal" s={16}/>{rangeNames[person.range]} · {bearingLabel(person)}</div><div className="radar-identity"><InterestArt interest={person.interest} large/><div><h2>{person.name}</h2><p>{introDetails(person)}</p></div></div>
           <p className="radar-quote">{person.body}</p><button className="primary radar-primary" onClick={()=>onProfile(person.id)}>공개 정보 보기<I n="arrow" s={17}/></button>
           {visible.length>1&&<div className="radar-alternates"><h3>주변 사람</h3><div>{visible.map(p=><button className={p.id===person.id?"sel":""} key={p.id} aria-pressed={p.id===person.id} onClick={()=>setSelected(p.id)}>{p.name}</button>)}</div></div>}</>:
-          <div className="radar-empty"><span className="modalicon"><I n="pin" s={23}/></span><h2>{!enabled?"위치를 숨겼어요":locatedNow?"아직 주변 답변이 없어요":"위치 허용이 필요해요"}</h2><p>{!enabled?"위 스위치를 켜면 주변 인연을 찾을 수 있어요.":locatedNow?"위치를 공개한 회원이 15km 안에서 이번 시간대에 답하면 여기에 나타나요.":"브라우저의 사이트 권한에서 위치를 허용해 주세요."}</p>
+          <div className="radar-empty"><span className="modalicon"><I n="pin" s={23}/></span><h2>{!enabled?"위치를 숨겼어요":locatedNow?"아직 주변 답변이 없어요":"현재 위치를 확인해 주세요"}</h2><p>{!enabled?"위 스위치를 켜면 주변 인연을 찾을 수 있어요.":locatedNow?"위치를 공개한 회원이 15km 안에서 이번 시간대에 답하면 여기에 나타나요.":"위치가 확인되면 주변 인연을 보여 드려요."}</p>
           {enabled&&!locatedNow&&<button className="primary" disabled={pending} onClick={()=>void toggleLocation(true)}>{pending?"위치 확인 중…":"위치 다시 확인"}</button>}</div>}
 
       </div>
     </div>
     <div className="radar-consent"><I n="info" s={16}/><span>{sample?"샘플의 거리와 방위는 예시예요. 휴대폰 방향만 기기에서 읽어요.":"위치는 약 1km 구역으로 바꿔요. 위치 공개를 켜 두면 다시 들어올 때 현재 위치를 확인해요."}</span></div>
-    {feedback&&<p className="radar-feedback" role="status">{feedback}</p>}
   </section>;
 }

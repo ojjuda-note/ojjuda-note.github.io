@@ -221,6 +221,10 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       if(action==="block"||action==="answer"||action==="edit-answer")setHistoryRevision(n=>n+1);
       return next;
     }catch(e){
+      if(action==='radar-enable'||action==='radar-disable'){
+        if(e instanceof Error && 'code' in e && e.code==='PT412')await refresh();
+        throw e;
+      }
       if(origin!==navigationId.current)return null;
       if(b.answerDay && e instanceof Error && "code" in e && (e.code==="PT409"||e.code==="42501")){
         setModal(null);setToast("이 답변은 더 이상 볼 수 없어요.");setHistoryRevision(n=>n+1);void refresh();

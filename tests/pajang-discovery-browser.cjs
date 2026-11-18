@@ -95,6 +95,7 @@ function clientFixture(hash) {
           if(p.p_action==='state'&&!entry.joined)return Promise.resolve({error:{code:'42501',message:'먼저 파장에 참여해 주세요.'}});
           if(p.p_action==='entry')return Promise.resolve({data:entry});
           if(p.p_action==='radar-enable'||p.p_action==='radar-disable'){
+            if(window.locationSaveError)return Promise.resolve({error:{code:'P0001',message:'위치 설정 저장에 실패했어요. 다시 시도해 주세요.'}});
             if(p.p_data.automatic&&(!state.locationEnabled||p.p_data.locationVersion!==state.locationVersion))return Promise.resolve({data:structuredClone(state)});
             window.geoWrites.push(p.p_data);
             state.radarOn=p.p_action==='radar-enable';state.radarDirectionOn=state.radarOn;
@@ -511,7 +512,7 @@ function clientFixture(hash) {
     assert.equal(await page.evaluate(()=>window.geoWrites.length),0,'off re-entry never uploads a location');
     await context.clearPermissions();
     await locationSwitch.click();
-    await page.getByText('브라우저의 사이트 권한에서 위치를 허용해 주세요.',{exact:true}).waitFor();
+    await page.getByText('위치 권한이 막혀 있어요. 휴대폰 설정에서 브라우저의 위치 권한과 오쭈다 사이트의 위치 허용을 확인해 주세요.',{exact:true}).waitFor();
     assert.equal(await locationSwitch.getAttribute('aria-checked'),'false','denial keeps the saved setting');
     await context.grantPermissions(['geolocation'],{origin});
     await locationSwitch.click();
@@ -521,13 +522,50 @@ function clientFixture(hash) {
     assert.ok(await page.evaluate(()=>window.geoWrites.some(p=>p.automatic)));
     await context.clearPermissions();
     await page.reload();await locationSwitch.waitFor();
-    await page.getByText('브라우저의 사이트 권한에서 위치를 허용해 주세요.',{exact:true}).last().waitFor();
+    await page.getByText('위치 권한이 막혀 있어요. 휴대폰 설정에서 브라우저의 위치 권한과 오쭈다 사이트의 위치 허용을 확인해 주세요.',{exact:true}).last().waitFor();
     assert.equal(await locationSwitch.getAttribute('aria-checked'),'true','browser denial does not overwrite the preference');
     await locationSwitch.click();
     await page.waitForFunction(()=>localStorage.locationEnabled==='false');
     assert.equal(await page.evaluate(()=>window.geoWrites.filter(p=>p.automatic).length),0);
     await page.locator('.radar-location-setting').screenshot({path:path.join(dir,'location-switch.png')});
     console.log('PASS default location request, persistent switch, denied recovery, and coarse-cell-only upload');
+    // Weak first fixes recover without storing raw coordinates; cancellation never toggles sharing.
+    await page.evaluate(()=>{
+      window.locationMode='recover';window.locationWatchCleared=0;
+      Object.defineProperties(navigator.geolocation,{
+        getCurrentPosition:{configurable:true,value:(ok)=>ok({coords:{latitude:37.5665,longitude:126.978,accuracy:8000}})},
+        watchPosition:{configurable:true,value:(ok)=>{
+          window.locationSuccess=ok;
+          if(window.locationMode==='recover')setTimeout(()=>ok({coords:{latitude:37.5665,longitude:126.978,accuracy:30}}),300);
+          return 77;
+        }},
+        clearWatch:{configurable:true,value:()=>{window.locationWatchCleared++;}}
+      });
+    });
+    await locationSwitch.click();
+    await page.getByRole('status').filter({hasText:'더 정확한 위치를 확인하고 있어요.'}).waitFor();
+    await page.waitForFunction(()=>localStorage.locationEnabled==='true');
+    assert.ok(await page.evaluate(()=>window.locationWatchCleared>0));
+    await locationSwitch.click();await page.waitForFunction(()=>localStorage.locationEnabled==='false');
+    await page.evaluate(()=>{window.locationMode='hold';window.geoWrites=[];});
+    await locationSwitch.click();
+    await page.getByRole('button',{name:'위치 확인 취소'}).click();
+    await page.getByRole('status').filter({hasText:'위치 확인을 취소했어요.'}).waitFor();
+    await page.evaluate(()=>window.locationSuccess({coords:{latitude:37.5665,longitude:126.978,accuracy:30}}));
+    assert.equal(await locationSwitch.getAttribute('aria-checked'),'false');
+    assert.equal(await page.evaluate(()=>window.geoWrites.length),0);
+    await locationSwitch.click();await page.getByRole('button',{name:'위치 확인 취소'}).waitFor();
+    await selectMenu('내 파장');
+    await page.evaluate(()=>window.locationSuccess({coords:{latitude:37.5665,longitude:126.978,accuracy:30}}));
+    assert.equal(await page.evaluate(()=>window.geoWrites.length),0,'leaving the radar cannot enable sharing');
+    await selectMenu('오늘');await page.getByRole('button',{name:'내 주변',exact:true}).click();
+    await page.evaluate(()=>{window.locationMode='recover';window.locationSaveError=true;});
+    await locationSwitch.click();
+    await page.getByRole('status').filter({hasText:'위치 설정 저장에 실패했어요. 다시 시도해 주세요.'}).waitFor();
+    assert.equal(await locationSwitch.getAttribute('aria-checked'),'false');
+    await page.locator('.nearby-section').screenshot({path:path.join(dir,'location-recovery.png')});
+    console.log('PASS precise recovery, visible reason, cancellation, navigation cleanup and save-error preservation');
+
     assert.deepEqual(errors,[]);
     console.log('PASS 320/390/1080px layout, artwork-independent startup, tap/swipe/keyboard, delayed results, cancellation, in-memory revisit, and denial');
   } finally {await browser.close();}
