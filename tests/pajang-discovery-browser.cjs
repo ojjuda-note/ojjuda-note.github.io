@@ -634,6 +634,7 @@ function clientFixture(hash) {
         await frame.locator('#welcome #write').waitFor({timeout:5000});
         await frame.locator('#write').click();await frame.locator('#mine').fill('위치를 기다리는 동안 답변을 써요.');
         await page.getByRole('button',{name:'팝업 닫기'}).click();
+        await page.locator('dialog').waitFor({state:'detached'});
         assert.equal(await page.locator('dialog').count(),0);
         continue;
       }
