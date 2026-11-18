@@ -90,7 +90,7 @@ function clientFixture(hash) {
     const messages=[{id:'1',src:'peer1',dst:'me',body:'안녕하세요!',at:1}];
     window.authCalls=0;window.artCalls=[];window.memberCalls=[];window.sendIds=[];
     const db={
-      auth:{getUser:async()=>{window.authCalls++;if(flightCheck)await new Promise(resolve=>{window.finishFlight=resolve;});return {data:{user:mode==='guest'?null:{id:'member'}}};},
+      auth:{getUser:async()=>{window.authCalls++;if(flightCheck||sessionStorage.holdEntryIdentity==='yes')await new Promise(resolve=>{window.finishFlight=resolve;});return {data:{user:mode==='guest'?null:{id:'member'}}};},
         getSession:async()=>({data:{session:mode==='guest'?null:{user:{id:mode==='switched'?'next-member':'member'}}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
       functions:{invoke:async()=>({data:{bucket:'fixture',files:{'station.js':'${hash}',...Object.fromEntries(['coffee','walk','vinyl','camera','book','tennis'].map(key=>[key+'.webp','pending']))}}})},
       storage:{from:()=>({download:async key=>{
@@ -158,7 +158,7 @@ function clientFixture(hash) {
             if(window.holdWrite)await new Promise(r=>{window.releaseWrite=r;});
             return {data:structuredClone(state)};
           })();
-          if(p.p_action==='participate'||p.p_action==='join'){sessionStorage.fixtureMode='member';entry.joined=true;}
+          if(p.p_action==='participate'||p.p_action==='join'){sessionStorage.fixtureMode='member';entry.joined=true;if(p.p_data.body)state.me.body=p.p_data.body;}
           return Promise.resolve({data:structuredClone(state)});
         }
         if(name==='pajang_my_answers')return Promise.resolve({data:[{...rows[0],body:'내 책방 답변'}]});
@@ -455,22 +455,34 @@ function clientFixture(hash) {
       await banner.screenshot({path:path.join(dir,'agit-pajang-banner-'+width+'.png')});
     }
     await page.setViewportSize({width:390,height:844});
+    const entryDocuments=[];
+    page.on('request',request=>{
+      if(request.isNavigationRequest()&&new URL(request.url()).pathname.startsWith(project))entryDocuments.push(request.url());
+    });
     await banner.focus();
     await page.keyboard.press('Enter');
     await page.waitForURL('**/station.html');await nav.waitFor();
+    assert.equal(entryDocuments.length,1,'a returning member opens one document with no intermediate popup');
+    assert.equal(await page.evaluate(()=>window.authCalls),1);
     await page.evaluate(()=>{sessionStorage.fixtureMode='new';sessionStorage.removeItem('pajang:answered-round');});
     await page.goto(origin+'/world.html#pajang-radar');
-    await page.evaluate(()=>{window.hostMarker='stay';});
+    const beforeEntry=entryDocuments.length;
     await banner.click();
-    const frame=page.frameLocator('iframe');await frame.getByRole('heading',{name:'처음 만난 날, 어떤 이야기를 나누고 싶나요?'}).waitFor();
+    await page.getByRole('heading',{name:'처음 만난 날, 어떤 이야기를 나누고 싶나요?'}).waitFor();
+    await page.evaluate(()=>{window.entryMarker=document.querySelector('.pajang-mast');});
+    assert.equal(await page.locator('iframe,dialog.agit-pajang-dialog').count(),0);
     await capture('entry-mobile');
-    assert.equal(await frame.locator('#marks button').count(),0,'sample radar does not block the question');
-    await frame.locator('.sample-radar summary').click();
-    await frame.locator('#marks button').first().waitFor();
-    await checkCompass(frame,'#scope','.rose b','#marks button:nth-child(2)');
-    await frame.getByRole('link',{name:'아지트로',exact:true}).click();await page.locator('dialog').waitFor({state:'detached'});
-    assert.equal(await page.evaluate(()=>window.hostMarker),'stay');
-    assert.equal(await page.evaluate(()=>document.activeElement.hasAttribute('data-pajang-launch')),true);
+    assert.equal(await page.locator('#marks button').count(),0,'sample radar does not block the question');
+    await page.locator('.sample-radar summary').click();
+    await page.locator('#marks button').first().waitFor();
+    await checkCompass(page,'#scope','.rose b','#marks button:nth-child(2)');
+    await page.locator('#write').click();await page.locator('[name=consent]').check();
+    await page.locator('#mine').fill('한 번 열린 화면에서 답변을 남겨요.');
+    await page.locator('#answer-form [type=submit]').click();await nav.waitFor();
+    assert.equal(await page.evaluate(()=>window.entryMarker===document.querySelector('.pajang-mast')),true,'answer submission stays in the same document');
+    assert.equal(entryDocuments.length-beforeEntry,1,'a new member answers and enters without a second navigation');
+    await mast.click();await page.waitForURL('**/world.html');
+    await page.evaluate(()=>{sessionStorage.fixtureMode='new';});
     await page.goto(origin+project+'station.html?tab=profile');
     await page.getByText('파장 첫 참여',{exact:true}).waitFor();
     await page.evaluate(()=>window.beforeJoin=document.querySelector('.pajang-mast'));
@@ -506,16 +518,18 @@ function clientFixture(hash) {
       assert.equal(await page.locator('.flight-scene').count(),0);
       await expectHome();await mast.click();await page.waitForURL('**/world.html');
     }
-    console.log('PASS three primary destinations, direct acceptance, scroll-stable home exit, modal exit, direct legacy routes, thread reload/back, join handoff, guest/denied returns and embedded focus restoration');
+    console.log('PASS three primary destinations, direct acceptance, scroll-stable home exit, modal exit, direct legacy routes, thread reload/back, single-document Agit entry and join, and guest/denied returns');
     console.log('PASS single remote identity check, two requested illustrations out of six, zero rereads after join, delayed-send draft, retry identity, concurrent reads and late signal acceptance');
-    // Closing an immediate popup while its member request is pending leaves Agit open.
-    await page.evaluate(()=>{sessionStorage.fixtureMode='member';sessionStorage.openTiming='yes';sessionStorage.removeItem('pajang:answered-round');});
+    // Leaving a pending member check must not later reopen Pajang.
+    await page.evaluate(()=>{sessionStorage.fixtureMode='member';sessionStorage.openTiming='yes';sessionStorage.holdEntryIdentity='yes';sessionStorage.removeItem('pajang:answered-round');});
     await page.goto(origin+'/world.html?closing=1');
     await banner.click();
-    await page.getByRole('button',{name:'팝업 닫기'}).click();
+    await page.locator('#gate .flight-scene').waitFor();
+    await mast.click();await page.waitForURL('**/world.html');
     await page.waitForTimeout(500);
-    assert.ok(page.url().endsWith('world.html?closing=1'));
+    assert.ok(page.url().endsWith('world.html'));
     assert.equal(await page.locator('dialog').count(),0);
+    await page.evaluate(()=>{delete sessionStorage.holdEntryIdentity;});
     for(const scenario of ['new','member-cold','member']){
       const timings=[];
       for(let attempt=0;attempt<5;attempt++){
@@ -523,10 +537,12 @@ function clientFixture(hash) {
           if(mode!=='member')sessionStorage.removeItem('pajang:answered-round');
           delete sessionStorage.openMs;delete sessionStorage.openStart;},scenario);
         await page.goto(origin+'/world.html?timing='+attempt);
+        const opened=entryDocuments.length;
         await banner.click();
         if(scenario!=='new')await page.waitForURL('**/station.html');
         await page.waitForFunction(()=>sessionStorage.openMs);
         timings.push(await page.evaluate(()=>Number(sessionStorage.openMs)));
+        assert.equal(entryDocuments.length-opened,1,scenario+' opens just one Pajang document');
       }
       console.log('PAJANG_OPEN_MS',scenario,JSON.stringify(timings),'median',timings.sort((a,b)=>a-b)[2]);
     }
@@ -631,10 +647,9 @@ function clientFixture(hash) {
       await page.goto(origin+'/world.html?slow-location='+scenario);
       await banner.click();
       if(scenario==='new'){
-        await frame.locator('#welcome #write').waitFor({timeout:5000});
-        await frame.locator('#write').click();await frame.locator('#mine').fill('위치를 기다리는 동안 답변을 써요.');
-        await page.getByRole('button',{name:'팝업 닫기'}).click();
-        await page.locator('dialog').waitFor({state:'detached'});
+        await page.locator('#welcome #write').waitFor({timeout:5000});
+        await page.locator('#write').click();await page.locator('#mine').fill('위치를 기다리는 동안 답변을 써요.');
+        await mast.click();await page.waitForURL('**/world.html');
         assert.equal(await page.locator('dialog').count(),0);
         continue;
       }

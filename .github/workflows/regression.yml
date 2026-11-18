@@ -57,6 +57,8 @@ jobs:
         run: npm --prefix tests ci --ignore-scripts
       - name: Preserve daily progress across stale saves
         run: node tests/agit-progress-db.test.cjs
+      - name: Check section updates and repeated notice dismissal
+        run: node --test tests/world-section-releases.test.cjs
 
   tarot:
     name: Fortune readings, tarot billing and saju calculations
