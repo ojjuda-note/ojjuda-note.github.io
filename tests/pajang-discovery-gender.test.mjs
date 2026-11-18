@@ -35,6 +35,7 @@ test('discovery filtering uses its own opt-in and keeps dated answers paginated 
   }
   await db.exec(await migration("20261117235000_pajang_my_answers.sql"));
   await db.exec(await migration("20261117235950_pajang_edit_current_answer.sql"));
+  await db.exec(await migration("20261118052051_pajang_persistent_location.sql"));
   const account = randomUUID();
   const writer = randomUUID();
   await db.query('insert into auth.users values ($1)', [account]);
@@ -42,6 +43,39 @@ test('discovery filtering uses its own opt-in and keeps dated answers paginated 
   await db.query("insert into ojjuda_account_internal.member_identity values ($1,date '1990-02-01','female')", [account]);
   await db.query("insert into pajang_private.people(id,owner_id,name,region,interest) values ($1,$2,'회원','경기도','walk')", [writer,account]);
   await db.query("select set_config('request.jwt.claims',$1,false)", [JSON.stringify({sub:account})]);
+  await t.test('location preference survives expiry, blocks late arrivals, and is scoped to its member',async()=>{
+    const member=async(action,data={})=>(await db.query('select public.pajang_member($1,$2) as value',[action,data])).rows[0].value;
+    const fresh=await member('entry');
+    assert.equal(fresh.locationEnabled,true);
+    assert.equal(fresh.locationVersion,0);
+    const cell={latCell:3757,lonCell:12698,consent:true,shareBearing:true,accountId:account};
+    let state=await member('radar-enable',{...cell,automatic:true,locationVersion:0});
+    assert.equal(state.radarOn,true);
+    assert.equal(state.locationVersion,0);
+    state=await member('radar-disable',{locationVersion:0});
+    assert.equal(state.locationEnabled,false);
+    assert.equal(state.radarOn,false);
+    assert.equal(state.locationVersion,1);
+    state=await member('radar-enable',{...cell,automatic:true,locationVersion:0});
+    assert.equal(state.locationEnabled,false,'a pending entry cannot turn sharing back on');
+    assert.equal(state.radarOn,false);
+    assert.equal((await member('entry')).locationEnabled,false,'re-entry preserves off');
+    await assert.rejects(()=>member('radar-enable',{...cell,locationVersion:0}),{code:'PT412'});
+    state=await member('radar-enable',{...cell,locationVersion:1});
+    assert.equal(state.locationEnabled,true);
+    assert.equal(state.locationVersion,2);
+    await db.query("update pajang_private.locations set day=day-1 where person=$1",[writer]);
+    state=await member('state');
+    assert.equal(state.locationEnabled,true,'next-day coordinates expire independently of the preference');
+    assert.equal(state.radarOn,false);
+    state=await member('radar-enable',{...cell,automatic:true,locationVersion:2});
+    assert.equal(state.radarOn,true);
+    await assert.rejects(()=>member('radar-enable',{...cell,accountId:randomUUID(),automatic:true,locationVersion:2}),{code:'42501'});
+    await assert.rejects(()=>member('radar-enable',{...cell,consent:false,locationVersion:2}));
+    assert.equal((await member('state')).locationVersion,2,'failed saves roll back the preference too');
+    await member('radar-disable',{locationVersion:2});
+    assert.equal((await db.query('select count(*)::int n from pajang_private.locations where person=$1',[writer])).rows[0].n,0);
+  });
   // The oldest answer falls outside the 30 calendar dates. Every other row has the same author.
   await db.query(`insert into pajang_private.answers(person,day,slot,at,body,question_prompt,archived)
     select $1,(now() at time zone 'Asia/Seoul')::date-n,'am',100-n,'답변 '||n,'질문 '||n,true

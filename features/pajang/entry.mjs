@@ -1,4 +1,4 @@
-import {call, requireMember, showGate} from './member.mjs?v=open2';
+import {call, requireMember, showGate} from './member.mjs?v=location1';
 import {themeFor, interests} from './questions.mjs?v=rounds1';
 
 const $ = id => document.getElementById(id);
@@ -38,7 +38,7 @@ function enterMain(destination = main, savedStation) {
     style.href='./station.css?v=letter1';
     const styled=new Promise((resolve,reject)=>{style.onload=resolve;style.onerror=reject;});
     document.querySelector('link[href*="shell.css"]').before(style);
-    await Promise.all([styled,import('./load-station.mjs?v=open2').then(({mountStation})=>mountStation(async()=>{
+    await Promise.all([styled,import('./load-station.mjs?v=location1').then(({mountStation})=>mountStation(async()=>{
       await styled;
       document.getElementById('entry-style').disabled=true;
       style.media='all';
@@ -140,6 +140,7 @@ async function start(firstEntry) {
   paint();
   $('gate').hidden = true;
   $('welcome').hidden = false;
+  if(entry.locationNotice)status.textContent=entry.locationNotice;
   const write = $('write');
   const browse = $('browse');
   const answerFields = $('answer-fields');

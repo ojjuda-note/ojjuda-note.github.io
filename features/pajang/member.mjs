@@ -1,3 +1,4 @@
+import {prepareLocation} from './location.mjs?v=location1';
 let verifiedUser;
 const resumeKey='pajang:answered-round';
 export function answeredRound(){
@@ -80,6 +81,8 @@ export async function requireMember(action='entry',onSession) {
       throw result.error;
     }
     rememberRound(user.id,action==='state'?result.data?.me?.body:result.data?.body,result.data?.nextAt);
-    return result.data;
+    const state=await prepareLocation(result.data,db,user.id);
+    if(changed)return;
+    return state;
   }catch(e){showGate(e.code==='42501'?'이 계정은 파장을 이용할 수 없어요. 만 19세 이상 회원 전용이에요.':'회원 정보를 확인하지 못했어요. 잠시 후 다시 열어주세요.');}
 }
