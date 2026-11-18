@@ -162,35 +162,49 @@ assert.ok(bootAt > 0);
       await page.locator('[data-sort="latest"]').focus(); await page.keyboard.press('Enter');
       assert.equal(await active(), 'latest', 'keyboard tab selection still works');
       assert.deepEqual(errors, []);
-      // In embedded Park the same card gestures follow the main menu,
-      // regardless of the selected feed filter. Taps still select filters.
+      // Embedded Park keeps gestures within its own filters, including both
+      // boundaries. Exercise the same browser-generated touch and mouse paths.
       await page.evaluate(() => {
         window.placeRoutes = [];
         window.OjjudaParkFull = { embedded: true, navigate: action => placeRoutes.push(action) };
       });
-      for (const sort of ['latest', 'popular', 'nearby', 'tag']) {
-        await page.locator(`[data-sort="${sort}"]`).click(); await idle();
-        await drag(-1); assert.equal(await active(), sort, 'Park navigates forward without changing the filter');
-        assert.equal(await page.evaluate(()=>placeRoutes.at(-1)), 'menu');
-        assert.equal(await page.locator('.note-feed-peek').count(), 0, 'the preview is removed after navigation');
-        const count = await page.evaluate(() => placeRoutes.length);
-        await drag(1, { hold: true });
-        assert.equal(await page.locator('.note-feed-peek').textContent(), '오락실');
-        if (mobile) await touch('touchEnd', []); else await page.mouse.up(); await idle();
-        assert.equal(await active(), sort, 'leaving Park preserves its selected filter');
-        assert.deepEqual(await page.evaluate(count => placeRoutes.slice(count), count), ['board']);
+      await page.locator('[data-sort="latest"]').click(); await idle();
+      await drag(1,{hold:true});
+      assert.equal(await active(),'latest');
+      assert.equal(await page.locator('.note-feed-peek').count(),0,'the first filter offers no external destination');
+      const firstEdge=await page.locator('.note-feed-page:not(.note-feed-ghost)').evaluate(el=>new DOMMatrixReadOnly(getComputedStyle(el).transform).m41);
+      assert.ok(firstEdge>0&&firstEdge<=60,'the first Park edge resists the drag');
+      if(mobile)await touch('touchEnd',[]);else await page.mouse.up();await idle();
+      assert.equal(await active(),'latest');
+      for (const [prior,next] of [['latest','popular'],['popular','nearby'],['nearby','tag']]) {
+        await drag(-1,{hold:true});
+        assert.equal(await active(),prior,'holding the gesture preserves the current Park filter');
+        assert.equal(await page.locator('.note-feed-peek').textContent(),await page.locator(`[data-sort="${next}"]`).textContent());
+        if(mobile)await touch('touchEnd',[]);else await page.mouse.up();await idle();
+        assert.equal(await active(),next,'a completed Park gesture selects the next filter');
+        assert.equal(await page.locator('.note-feed-peek').count(),0,'the filter preview is removed after settling');
       }
-      const routed = await page.evaluate(() => placeRoutes.length);
-      await drag(1, { distance: 18 });
-      if (mobile) await drag(1, { cancel: true });
+      await drag(-1,{hold:true});
+      assert.equal(await page.locator('.note-feed-peek').count(),0,'the last filter offers no external destination');
+      const lastEdge=await page.locator('.note-feed-page:not(.note-feed-ghost)').evaluate(el=>new DOMMatrixReadOnly(getComputedStyle(el).transform).m41);
+      assert.ok(lastEdge<0&&lastEdge>=-60,'the last Park edge resists the drag');
+      if(mobile)await touch('touchEnd',[]);else await page.mouse.up();await idle();
+      assert.equal(await active(),'tag');
+      for(const previous of ['nearby','popular','latest']){
+        await drag(1);assert.equal(await active(),previous,'reverse swipes stay inside Park filters');
+      }
+      await drag(-1, { distance: 18 });
+      assert.equal(await active(),'latest','a short Park gesture does not change its filter');
+      if (mobile) {await drag(-1, { cancel: true });assert.equal(await active(),'latest','cancelled Park touch keeps its filter');}
       await page.evaluate(() => document.getElementById('composer-backdrop').hidden = false);
-      await drag(1);
+      await drag(-1);
       await page.evaluate(() => document.getElementById('composer-backdrop').hidden = true);
-      assert.equal(await page.evaluate(() => placeRoutes.length), routed, 'short, cancelled and composer gestures cannot leave Park');
+      assert.equal(await active(),'latest','an open composer blocks Park filter gestures');
+      assert.deepEqual(await page.evaluate(() => placeRoutes),[], 'Park gestures never request another app section');
       await page.evaluate(() => { delete window.OjjudaParkFull; });
       await page.locator('[data-sort="tag"]').click();
       await drag(-1, { hold: true });
-      assert.equal(await page.locator('.note-feed-peek').textContent(), '오락실');
+      assert.equal(await page.locator('.note-feed-peek').textContent(), '아지트');
       if (mobile) await touch('touchEnd', []); else await page.mouse.up();
       await page.waitForURL('https://ojjuda.test/world.html');
 

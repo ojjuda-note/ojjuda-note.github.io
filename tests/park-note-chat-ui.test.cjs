@@ -38,6 +38,20 @@ const checkPageNavigationRestored=async(page,label)=>{
  await page.waitForFunction(()=>!document.documentElement.classList.contains('world-park-composing'));
  assert.equal(await page.locator('.bottomnav:visible,.sidenav:visible').count(),1,label+': page navigation returns after writing closes');
 };
+const returnToAgit=async(page,frame)=>{
+ await page.locator('.bottomnav:visible [data-park-action="settings"],.sidenav:visible [data-park-action="settings"]').click();
+ await frame.locator('[data-park-settings-root]').waitFor();
+ await frame.locator('[data-park-settings="world"]').click();
+ await page.locator('.agit-park-banner').waitFor();
+ await page.locator('[data-park-app] iframe').waitFor({state:'hidden'});
+};
+const enterParkFromAgit=async page=>{
+ await page.locator('.agit-park-banner').click();
+ const iframe=page.locator('[data-park-app] iframe');await iframe.waitFor();
+ const frame=await (await iframe.elementHandle()).contentFrame();
+ await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
+ return frame;
+};
 const checkWritingCopy=async frame=>{
  const input=frame.locator('#compose-text');
  assert.equal(await input.getAttribute('placeholder'),copy.replace('? ','?\n'));assert.equal(await input.isVisible(),true);
@@ -55,7 +69,7 @@ for(const [from,to] of [
  vm.runInNewContext(read('park/route.js'),scope);assert.equal(result,'https://fixture.test'+to);
 }
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
-world=world.replace('<script type="module">',`<script>${['app/world/world-themes.js','app/world/world-navigation.js','app/world/world-pull-refresh.js','shared/viewport/mobile-viewport.js','park/world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
+world=world.replace('<script type="module">',`<script>${['app/world/world-themes.js','app/world/world-navigation.js','app/world/world-pull-refresh.js','shared/viewport/mobile-viewport.js','features/home/agit-hub.js','park/world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  window.parkFixture={state:g,enter(id){xf(id,1);clearInterval(g.placeT);g.placeT=null;},
@@ -120,8 +134,9 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  assert.equal(await frame.locator('#compose-text').inputValue(),'아직 작성 중인 공원의 이야기');
  await frame.evaluate(()=>backdrop.dispatchEvent(new MouseEvent('click',{bubbles:true})));
  assert.equal(await frame.locator('#composer-backdrop').isVisible(),true,'canceling backdrop close preserves the draft');
- await page.locator('.bottomnav [data-tab="my"]').evaluate(button=>button.click());
- assert.equal(await iframe.count(),1,'unsaved content blocks leaving through the World menu');
+ await page.locator('.bottomnav [data-park-action="settings"]').evaluate(button=>button.click());
+ assert.equal(await iframe.count(),1,'unsaved content blocks changing the Park menu');
+ assert.equal(await frame.locator('[data-park-settings-root]').count(),0,'settings cannot replace an unfinished card after discard is cancelled');
  assert.equal(await frame.locator('#compose-text').inputValue(),'아직 작성 중인 공원의 이야기','a programmatic page-navigation event keeps the unsaved writing');
  await page.evaluate(()=>parkFixture.close());
  assert.equal(await frame.locator('#composer-backdrop').isVisible(),true,'Back protects unsaved text too');
@@ -164,9 +179,8 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await frame.evaluate(()=>{feed.hidden=true;detail.hidden=false;document.querySelector('[data-compose="reply"]').hidden=false;});
  await page.locator('.park-compose-fab').waitFor({state:'hidden'});
  assert.equal(await frame.locator('[data-compose="reply"]').isVisible(),true);
- await page.locator('.bottomnav [data-tab="my"]').click();
- await page.locator('.my-hub').waitFor();
- await page.locator('.bottomnav [data-tab="park"]').click();
+ await returnToAgit(page,frame);
+ frame=await enterParkFromAgit(page);
  await frame.locator('#feed').waitFor({state:'visible'});
  assert.equal(await frame.locator('#detail').isVisible(),false,'leaving a card and returning opens the Park main feed');
  assert.equal(await frame.locator('[data-sort="latest"]').getAttribute('aria-pressed'),'true');
@@ -273,25 +287,28 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  if(process.env.OJJUDA_COPY_PROOF_DIR)await page.screenshot({path:path.join(process.env.OJJUDA_COPY_PROOF_DIR,'park-mobile.png'),fullPage:true});
  // Short menu visits keep the embedded app connected without showing its UI.
  await page.evaluate(()=>{window.parkInitialFrame=document.querySelector('[data-park-app] iframe');});
- // Collections remain available in Park; the shared menu no longer lists Park shortcuts.
+ // The Park settings return and Agit banner keep the cached document connected.
  for(const action of ['saved','mine','events']){
-  await page.locator('.bottomnav [data-tab="my"]').click();
-  assert.equal(await iframe.count(),1,'World menu keeps the cached Park frame');
+  await returnToAgit(page,frame);
+  assert.equal(await iframe.count(),1,'returning to Agit keeps the cached Park frame');
   assert.equal(await iframe.isVisible(),false,'the cached Park is hidden outside its menu');
   assert.equal(await page.locator('[data-my-group=park],[data-park-action]:visible').count(),0);
-  await page.evaluate(action=>parkFixture.open(action),action);
-  await iframe.waitFor();frame=await (await iframe.elementHandle()).contentFrame();
+  frame=await enterParkFromAgit(page);
   assert.equal(await page.evaluate(()=>document.querySelector('[data-park-app] iframe')===window.parkInitialFrame),true,'returning to Park reuses the loaded iframe');
+  if(action==='events')await page.evaluate(()=>parkFixture.open('events'));
+  else await page.locator(`.bottomnav [data-park-action="${action}"]`).click();
   await frame.waitForFunction(mode=>typeof feedMode!=='undefined'&&feedMode===mode,action);
-  assert.equal(await frame.locator('#feed').isVisible(),true,action+': queued action opens its real collection');
+  assert.equal(await frame.locator('#feed').isVisible(),true,action+': Park action opens its real collection');
   assert.equal(await frame.locator('#note-my-screen').isVisible(),false,action+': collection does not expose a second app menu');
  }
  await frame.evaluate(()=>OjjudaParkFull.navigate('menu'));
- await page.locator('.my-hub').waitFor();
- assert.equal(await iframe.isVisible(),false,'child menu action hides the cached Park');
+ await frame.locator('[data-park-settings-root]').waitFor();
+ assert.equal(await iframe.isVisible(),true,'the legacy child menu action now opens Park settings in place');
+ await page.locator('.bottomnav [data-park-action="settings"][aria-current="page"]').waitFor();
+ await page.evaluate(()=>parkFixture.close());
  await page.evaluate(()=>parkFixture.open('event-new'));await iframe.waitFor();frame=await (await iframe.elementHandle()).contentFrame();
  await frame.locator('#composer-backdrop').waitFor({state:'visible'});
- assert.equal(await frame.evaluate(()=>kind),'event','World menu opens the complete event composer');
+ assert.equal(await frame.evaluate(()=>kind),'event','Park action opens the complete event composer');
  await page.evaluate(()=>parkFixture.close());
  await frame.evaluate(()=>shareCard('00000000-0000-4000-8000-000000000001'));
  assert.match(await frame.locator('#note-share-url').inputValue(),/\/world.html\?place=park&card=/,'new share links use World');
@@ -310,8 +327,8 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await frame.locator('#note-inquiry-body').fill('저장 중 화면을 이동해도 사라지면 안 되는 문의');
  await frame.getByRole('button',{name:'문의 보내기',exact:true}).click();
  await frame.waitForFunction(()=>typeof finishInquiry==='function');
- await page.locator('.bottomnav [data-tab="my"]').click();
- assert.equal(await iframe.count(),1,'World navigation cannot destroy a submitting inquiry');
+ await page.locator('.bottomnav [data-park-action="settings"]').click();
+ assert.equal(await iframe.count(),1,'Park navigation cannot destroy a submitting inquiry');
  assert.equal(await frame.locator('#note-inquiry-body').inputValue(),'저장 중 화면을 이동해도 사라지면 안 되는 문의');
  await frame.evaluate(()=>finishInquiry());
  await frame.getByText('보내지 못했어요. 작성한 내용은 유지됩니다. 다시 시도해 주세요.').waitFor();
@@ -332,44 +349,52 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await frame.getByRole('button',{name:'10 ZU 무료 충전',exact:true}).click();
  await frame.waitForFunction(()=>typeof finishCharge==='function');
  await frame.getByRole('button',{name:'충전창 닫기',exact:true}).click();
- await page.locator('.bottomnav [data-tab="my"]').click();
- assert.equal(await iframe.count(),1,'World navigation cannot interrupt a pending charge after its dialog closes');
+ await page.locator('.bottomnav [data-park-action="settings"]').click();
+ assert.equal(await iframe.count(),1,'Park navigation cannot interrupt a pending charge after its dialog closes');
  await frame.evaluate(()=>finishCharge());
  await frame.waitForFunction(()=>chargeBalance===110);
  assert.equal(await frame.evaluate(()=>chargeCalls),1,'one click sends one charge');
  assert.equal(await frame.evaluate(()=>canCloseParkNote()),true,'navigation resumes after the charge finishes');
  await page.evaluate(()=>parkFixture.user('another-user'));
  await page.waitForFunction(()=>document.querySelector('[data-park-app] iframe').contentWindow.fixtureToken===undefined);
- await page.evaluate(()=>parkFixture.enter('arcade'));
+ frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
+ await returnToAgit(page,frame);
+ await page.locator('.bottomnav [data-tab="arcade"]').click();
  assert.equal(await page.locator('[data-park-app]:visible').count(),0,'leaving hides the old account app');
  assert.equal(await page.locator('#plog,#pmsg,[data-act="pl-send"],[data-act="pl-react"]').count(),0,'returning to Arcade does not restore public chat');
  assert.equal(await page.locator('.arcade-social').count(),1,'the room section remains available');
  // Exercise the real child -> postMessage -> parent navigation path.
- await page.evaluate(()=>parkFixture.enter('park'));await iframe.waitFor();
- frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
+ await page.locator('.bottomnav [data-tab="hub"]').click();
+ frame=await enterParkFromAgit(page);
  assert.equal(await frame.evaluate(()=>OjjudaParkFull.embedded),true);
  await frame.evaluate(()=>OjjudaParkFull.navigate('library'));
  await page.waitForFunction(()=>parkFixture.state.tab==='place'&&parkFixture.state.place?.id==='arcade');
  assert.equal(await iframe.isVisible(),false,'a retired Park library message returns to the arcade');
- // Embedded feed gestures follow Park's position in the main menu.
- await page.evaluate(()=>parkFixture.enter('park'));await iframe.waitFor();
- frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
+ // Park gestures stay inside the Park section, independent of the main menu.
+ await page.locator('.bottomnav [data-tab="hub"]').click();
+ frame=await enterParkFromAgit(page);
  await frame.evaluate(()=>{populateParkFixture();window.scrollTo({top:0,behavior:'instant'});});
  const activeSort=await frame.locator('.feed-sort-tabs .selected').getAttribute('data-sort');
+ assert.equal(activeSort,'latest','banner reentry opens the main feed');
  const dragPark=async dx=>{
   const box=await frame.locator('.note-feed-viewport').boundingBox(),x=box.x+box.width*(dx<0?.75:.25),y=box.y+80;
   await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+dx,y,{steps:8});await page.mouse.up();
+  await frame.waitForFunction(()=>!document.getElementById('feed').matches('.note-feed-dragging,.note-feed-settling'));
  };
  await dragPark(-150);
- await page.waitForFunction(()=>parkFixture.state.tab==='my');
- assert.equal(await iframe.isVisible(),false,'a left swipe from Park reaches the main menu');
- await page.locator('.bottomnav [data-tab="park"]').click();await iframe.waitFor();
- frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
- await frame.evaluate(()=>{populateParkFixture();window.scrollTo({top:0,behavior:'instant'});});
- assert.equal(await page.locator('.bottomnav [aria-current="page"]').getAttribute('data-tab'),'park');
+ assert.equal(await frame.locator('.feed-sort-tabs .selected').getAttribute('data-sort'),'popular','a left swipe opens the next Park filter');
+ assert.equal(await iframe.isVisible(),true,'filter swipes retain the visible Park frame');
  await dragPark(150);
- await page.waitForFunction(()=>parkFixture.state.tab==='place'&&parkFixture.state.place?.id==='arcade');
- assert.equal(await iframe.isVisible(),false,'a right swipe from Park reaches the arcade');
+ assert.equal(await frame.locator('.feed-sort-tabs .selected').getAttribute('data-sort'),'latest');
+ await dragPark(150);
+ assert.equal(await frame.locator('.feed-sort-tabs .selected').getAttribute('data-sort'),'latest','the first Park filter stops at its boundary');
+ await frame.locator('[data-sort="tag"]').click();
+ await frame.waitForFunction(()=>!document.getElementById('feed').matches('.note-feed-dragging,.note-feed-settling'));
+ await dragPark(-150);
+ assert.equal(await frame.locator('.feed-sort-tabs .selected').getAttribute('data-sort'),'tag','the last Park filter stops at its boundary');
+ assert.equal(await page.evaluate(()=>parkFixture.state.tab==='place'&&parkFixture.state.place?.id==='park'),true,'neither edge leaves Park');
+ assert.equal(await page.locator('.bottomnav [aria-current="page"]').getAttribute('data-park-action'),'feed');
+ assert.equal(await page.locator('.bottomnav [data-tab]').count(),0,'Park keeps its dedicated menus through every swipe');
  assert.deepEqual(errors,[]);
  console.log('PASS: real Park feed swipes and postMessage library navigation, single World chrome/scroller, cached Park frame on menu reentry, account reset, sharing, responsive composer, room-only Arcade, pending inquiry/charge navigation guards, and preserved drafts/scroll across render/back/leave');
  }finally{await browser.close();}

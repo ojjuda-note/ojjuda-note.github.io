@@ -48,7 +48,6 @@
     }
 
     function goTo(sort, options = {}, offset = 0) {
-      if (['board', 'menu'].includes(sort) && visible() && placeSwipe()) { clean(); window.OjjudaParkFull.navigate(sort); return; }
       if (sort === 'world' && visible() && !placeSwipe()) { clean(); if(window.OjjudaParkFull?.navigate){window.OjjudaParkFull.navigate('world');return;} (window.parent !== window ? window.parent : window).location.assign('/world.html'); return; }
       if (!visible() || !order.includes(sort)) { settle(); return; }
       const previous = getActive();
@@ -116,9 +115,9 @@
       g.lastAt = now; g.lastX = x;
       const width = viewport.clientWidth;
       const direction = dx < 0 ? 1 : -1;
-      // Embedded Park follows the main menu; filters remain available by tap.
-      g.next = placeSwipe() ? (direction < 0 ? 'board' : 'menu')
-        : order[order.indexOf(g.active) + direction] || (direction > 0 ? 'world' : null);
+      // Park gestures stay within its feed filters and stop at either end.
+      g.next = order[order.indexOf(g.active) + direction]
+        || (!placeSwipe() && direction > 0 ? 'world' : null);
       g.offset = g.next ? Math.max(-width, Math.min(width, dx)) : Math.max(-60, Math.min(60, dx * .22));
       translate(page, g.offset);
       if (!g.next) { peek?.remove(); peek = null; return; }
@@ -127,7 +126,7 @@
         peek.setAttribute('aria-hidden', 'true'); peek.inert = true;
         viewport.append(peek);
       }
-      peek.textContent = g.next === 'board' ? '오락실' : g.next === 'menu' ? '설정' : g.next === 'world' ? '오락실' : tabs.querySelector(`[data-sort="${g.next}"]`)?.textContent || '';
+      peek.textContent = g.next === 'world' ? '아지트' : tabs.querySelector(`[data-sort="${g.next}"]`)?.textContent || '';
       translate(peek, direction * width + g.offset, Math.max(0, -viewport.getBoundingClientRect().top + 24));
     }
 
