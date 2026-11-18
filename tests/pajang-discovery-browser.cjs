@@ -283,7 +283,7 @@ function clientFixture(hash) {
       await page.evaluate(()=>window.finishFlight());
       await page.locator(ready).waitFor();
       assert.equal(await scene.isVisible(),false);
-      if(!member)assert.match(await page.locator('#publication-note').textContent(),/1년\(365일\)/);
+      if(!member)assert.match(await page.locator('#publication-note').textContent(),/최대 365일간/);
       if(member){releasePicture?.();await page.unroute(picture);}
       await page.emulateMedia({reducedMotion:'no-preference'});
     }

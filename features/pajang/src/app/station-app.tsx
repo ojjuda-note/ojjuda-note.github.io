@@ -389,11 +389,11 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     </main>{toast&&<div role="status" className="toast">{toast}</div>}
   {modal&&<Dialog key={modal.kind} close={close} title={modalTitle}>
     {modal.kind==="answer"&&<><span className="modalicon"><I n="pencil"/></span><h2>{answerTitle}</h2><p className="questionbox">{themeText}</p>
-      <p className="sub">{editingAnswer?"저장하면 모두의 답변에도 수정한 내용이 보여요.":"답변을 공개하면 작성일을 포함해 1년(365일) 동안 파장 회원이 질문과 내 답변을 함께 볼 수 있어요."}</p>
+      <p className="sub">{editingAnswer?"저장하면 공개 기간이 남아 있는 답변에 수정한 내용이 보여요. 공개 기간은 바뀌지 않아요.":"이 답변을 공개하면 다른 파장 회원이 질문과 답변을 작성일을 포함해 최대 365일간 볼 수 있어요(한국 시간 기준)."}</p>
       <Editor initial={modal.originalBody} max={220} label="내 이야기" hint="장소, 노래, 기억처럼 구체적인 장면을 들려주세요."
-        submit={editingAnswer?"수정 저장하기":"답변 공개하기"} busy={busy} onSave={async body=>{
+        submit={editingAnswer?"수정 저장하기":"365일간 공개하기"} busy={busy} onSave={async body=>{
           const data={body,day:s.day,slot:s.slot,questionId:modal.questionId};
-          const next=editingAnswer?await act("edit-answer",{...data,previousBody:modal.originalBody}):await act("answer",{...data,archive:true});
+          const next=editingAnswer?await act("edit-answer",{...data,previousBody:modal.originalBody}):await act("answer",{...data,archive:true,publicationPolicy:"year-v1"});
           if(!next)return;
           setModal(null);setToast(slotName+(editingAnswer?" 답변을 수정했어요.":" 답변을 저장했어요."));
         }}/>
