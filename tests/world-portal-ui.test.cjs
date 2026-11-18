@@ -52,8 +52,8 @@ const searchTitle = '오쭈다 아지트 | 게임·타로·사주·익명카드'
       await page.locator('#auth-dialog[open]').waitFor();
       await page.locator('[data-close-dialog]').click();
       await page.locator('#account-actions:not([hidden])').waitFor();
-      assert.equal((await page.locator('#front-title').innerText()).replace(/\s+/g, ' ').trim(), copy);
-      assert.equal(await page.title(), searchTitle, 'the search title describes the current service while the visible greeting stays unchanged');
+      assert.equal(await page.locator('#front-title').innerText(), siteName);
+      assert.equal(await page.title(), searchTitle, 'the search title describes the current service');
       assert.equal(await page.locator('meta[property="og:site_name"]').getAttribute('content'), siteName);
       for (const selector of ['meta[property="og:title"]', 'meta[name="twitter:title"]']) {
         assert.equal(await page.locator(selector).getAttribute('content'), searchTitle);
@@ -67,12 +67,11 @@ const searchTitle = '오쭈다 아지트 | 게임·타로·사주·익명카드'
       for (const href of ['/guide.html', '/sitemap.html', '/features/guide/creator.html']) {
         assert.ok(await page.locator(`a[href^="${href}"]`).count() >= 1, 'public entrance links to ' + href);
       }
-      assert.equal(await page.locator('[data-destination]').count(), 1, 'World entrance');
-      assert.equal(await page.locator('[data-destination="world"]').count(), 1);
-      assert.equal(await page.locator('[data-destination="note"]').count(), 0);
-      assert.equal(await page.locator('.world-feature').count(), 3, 'three destination previews alongside the Hub entrance');
+      assert.equal(await page.locator('.world-welcome, .world-preview').count(), 0);
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'landing fits ' + width);
       if (process.env.OJJUDA_COPY_PROOF_DIR) { fs.mkdirSync(process.env.OJJUDA_COPY_PROOF_DIR, { recursive: true }); await page.screenshot({ path: path.join(process.env.OJJUDA_COPY_PROOF_DIR, `landing-${width}.png`) }); }
+      await page.getByRole('link', { name: '아지트로 이동', exact: true }).click();
+      await page.waitForURL(origin + '/world.html?tab=hub');
       await page.goto(origin + '/sitemap.html');
       // The public sitemap now includes searchable game, food, fan and group pages.
       assert.ok(await page.locator('main section').count() >= 7, 'World destinations and discovery sections remain visible');
@@ -126,7 +125,7 @@ const searchTitle = '오쭈다 아지트 | 게임·타로·사주·익명카드'
     await page.getByRole('heading', { name: '비밀번호가 바뀌었어요', exact: true }).waitFor();
     assert.deepEqual(await page.evaluate(() => portalFixture.passwordUpdates), [{ owner: '00000000-0000-4000-8000-000000000001', password: 'replacement-password' }], 'the existing recovery session handles the reset');
     assert.deepEqual(errors, [], 'no controller or directory runtime failures');
-    console.log('PASS: unified World entrance, header signup return, existing sessions and old Park/card links; three feature links and current guides and four responsive widths. No live accounts or messages.');
+    console.log('PASS: unified World entrance, header signup return, existing sessions and old Park/card links; direct Hub link and current guides and four responsive widths. No live accounts or messages.');
     await context.close();
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
