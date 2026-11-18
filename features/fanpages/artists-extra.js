@@ -286,7 +286,7 @@
       campaigns: [
         { kind: '콜라보', date: '2026.09.16', title: 'BABYMONSTER × SESAME STREET', sub: '공식 협업 굿즈 · 9.17 1차, 10.16 2차 온라인 판매 시작', href: 'https://yg-babymonster-official.jp/news/goods/2734/' },
         { kind: '콜라보', date: '2026.08.30', title: 'adidas × Mercedes-AMG F1 · Orchard Ignition', sub: '싱가포르 adidas × F1 협업 행사에 초청 아티스트로 참여', href: 'https://cnalifestyle.channelnewsasia.com/entertainment/babymonster-adidas-orchard-ignition-singapore-2026-587441' },
-        { kind: '화보', date: '2026.10.23', title: '루카·아사 × SNIDEL 겨울 컬렉션', sub: '브랜드 공식 My Select 겨울 룩 화보·특설 페이지 공개', href: 'https://prtimes.jp/main/html/rd/p/000004519.000018505.html' },
+        { kind: '콜라보', date: '2026.10.23', title: '루카·아사 × SNIDEL 겨울 컬렉션', sub: '브랜드 공식 My Select 겨울 룩 화보·특설 페이지 공개', href: 'https://prtimes.jp/main/html/rd/p/000004519.000018505.html' },
         { kind: '홍보대사', date: '2026.09.24', title: '루카·아사 × SNIDEL', sub: '일본 패션 브랜드 홍보대사 · 브랜드 공식 발표', href: 'https://prtimes.jp/main/html/rd/p/000004511.000018505.html' },
         { kind: '광고', date: '2025.02.13', title: 'BANILA CO × BABYMONSTER', sub: '바닐라코 브랜드 모델·메이크업 캠페인 (2025년 발표)', href: 'https://www.wwdjapan.com/articles/2035672' }
       ],
