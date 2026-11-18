@@ -130,14 +130,17 @@ world=world.slice(0,boot)+`
    assert.ok(colors>=4,'game covers are visually distinct');
   }
   if(width<900){
-   const buttons=await page.locator('.bottomnav>button').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return{x:r.x,width:r.width,height:r.height};}));
-   assert.equal(buttons.length,4);assert.ok(buttons.every(b=>b.width>=44&&b.height>=44),'every mobile menu has a reachable touch area');
+   const buttons=await page.locator('.bottomnav>button').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return{id:n.dataset.tab,label:n.querySelector(':scope>span').textContent,x:r.x,width:r.width,height:r.height};}));
+   assert.deepEqual(buttons.map(({id,label})=>({id,label})),[{id:'hub',label:'아지트'},{id:'arcade',label:'오락실'},{id:'my',label:'설정'}],'the main menu has exactly its three current destinations');
+   assert.ok(buttons.every(b=>b.width>=44&&b.height>=44),'every mobile menu has a reachable touch area');
    assert.ok(Math.max(...buttons.map(b=>b.width))-Math.min(...buttons.map(b=>b.width))<1,'mobile menus have equal widths');
-   assert.ok(buttons[0].x<width/4&&buttons[3].x>width/2,'mobile menus span the bottom bar');
+   assert.ok(buttons[0].x<width/4&&buttons.at(-1).x>width/2&&buttons.at(-1).x+buttons.at(-1).width<=width+1,'all three mobile menus span the bottom bar without overflow');
   }
  }
  await page.setViewportSize({width:390,height:850});await page.evaluate(()=>{document.documentElement.dataset.worldTheme='autumn';designFixture.rank();});await page.screenshot({path:path.join(proof,'arcade-mobile.png'),fullPage:true});
  await page.locator('.bottomnav [data-tab=hub]').click();
+ assert.equal(await page.evaluate(()=>designFixture.state.tab),'hub');
+ assert.equal(await page.locator('.bottomnav [aria-current=page]').getAttribute('data-tab'),'hub','the Agit click selects its own destination');
  assert.deepEqual(await page.locator('[data-act=agit-daily]').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('img').length}))),[{id:'group',images:1},{id:'restaurants',images:1},{id:'festival',images:1}],'Hub preserves the current daily card order and covers');
  assert.equal(await page.locator('#agit-daily h2').innerText(),'일상 둘러보기');
  assert.equal(await page.locator('#agit-daily a[href="/features/fanpages/index.html"]').count(),1,'Fanpage remains visible between Group and Restaurants');
@@ -156,6 +159,9 @@ world=world.slice(0,boot)+`
   await fits('Hub '+width);
  }
  await page.locator('.bottomnav [data-tab=my]').click();assert.equal(await page.locator('[data-ju-shop-open]').count(),0);
+ await page.locator('.my-hub').waitFor();
+ assert.equal(await page.evaluate(()=>designFixture.state.tab),'my');
+ assert.equal(await page.locator('.bottomnav [aria-current=page]').getAttribute('data-tab'),'my','the Settings click opens and selects Settings');
  assert.equal(await page.locator('[data-my-group=themes],.settings-theme-section,[data-world-theme-settings],[data-act=theme],[data-act=accent]').count(),0,'all manual appearance controls are removed');await fits('mobile settings');
  await page.screenshot({path:path.join(proof,'settings-mobile.png'),fullPage:true});
  await page.locator('[data-my-group=profile] summary').click();await page.locator('#p-bio').fill('바뀌지 않아야 하는 작성 내용');await page.evaluate(()=>OjjudaThemes.sync());assert.equal(await page.locator('#p-bio').inputValue(),'바뀌지 않아야 하는 작성 내용');
@@ -164,6 +170,8 @@ world=world.slice(0,boot)+`
  await page.setViewportSize({width:1440,height:1050});await page.evaluate(()=>{document.querySelectorAll('details.my-menu-group').forEach(n=>n.open=false);});await fits('desktop settings');assert.ok(await page.locator('.settings-columns').evaluate(n=>n.clientWidth>850),'settings use the full content width');await page.screenshot({path:path.join(proof,'settings-desktop.png'),fullPage:true});
  // Inspect every theme in the real Arcade, including the dark variant.
  await page.locator('.sidenav [data-tab=arcade]').click();await page.evaluate(()=>{clearInterval(designFixture.state.placeT);designFixture.rank();});
+ assert.equal(await page.evaluate(()=>designFixture.state.tab==='place'&&designFixture.state.place?.id==='arcade'),true);
+ assert.equal(await page.locator('.sidenav [aria-current=page]').getAttribute('data-tab'),'arcade','the Arcade click returns to its real game menu');
  const original=read('brand/ojjuda-logo.svg').match(/d="[^"]+"/g);
  const shapes=await page.locator('.side .ojjuda-theme-logo path').evaluateAll(nodes=>nodes.map(n=>'d="'+n.getAttribute('d')+'"'));
  assert.deepEqual(shapes,original,'logo silhouette and smile remain the original paths');
