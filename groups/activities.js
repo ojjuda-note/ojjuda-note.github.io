@@ -257,8 +257,11 @@
     // Two adjacent crossings cancel each other, preserving the saved draw.
     // Distribute these pairs throughout the board, including for old posts.
     const laneCount = activity.names.length;
-    const minimumRungs = Math.max(12, laneCount * 2);
-    const extraPairs = Math.max(0, Math.ceil((minimumRungs - savedRungs.length) / 2));
+    const minimumRungs = Math.max(12, (laneCount - 1) * 4);
+    const crossings = Array(laneCount - 1).fill(0);
+    savedRungs.forEach(col=>{ crossings[col]++; });
+    const sparseGaps = crossings.flatMap((count,col)=>count < 2 ? [col] : []);
+    const extraPairs = Math.max(sparseGaps.length, Math.ceil((minimumRungs - savedRungs.length) / 2));
     const gapCount = savedRungs.length + 1;
     const rungs = [];
     let pair = 0;
@@ -266,7 +269,7 @@
     for (let gap = 0; gap < gapCount; gap++) {
       const pairLimit = Math.floor((gap + 1) * extraPairs / gapCount);
       for (; pair < pairLimit; pair++) {
-        const col = (seed + pair + gap) % (laneCount - 1);
+        const col = sparseGaps[pair] ?? (seed + pair - sparseGaps.length) % crossings.length;
         rungs.push(col, col);
       }
       if (gap < savedRungs.length) rungs.push(savedRungs[gap]);
