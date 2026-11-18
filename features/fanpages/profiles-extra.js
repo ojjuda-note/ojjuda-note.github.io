@@ -157,9 +157,12 @@ if (nmixxProfile) {
 const babymonsterProfile = window.OJJUDA_FAN_PROFILES.babymonster;
 if (babymonsterProfile) {
   babymonsterProfile.expanded = true;
+  babymonsterProfile.checkedAt = '2026.11.18';
   babymonsterProfile.records = [
     { year: '2024.04', title: '7인조 정식 데뷔', detail: '미니 1집 BABYMONS7ER · SHEESH', href: 'https://ygfamily.com/ko/artists/babymonster/profile' },
     { year: '2026', title: '두 번째 월드투어', detail: '2026–27 춤 (CHOOM) · 아시아·오세아니아 공연', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
+    { year: '2026.09', title: '일본 오사카 돔 공연 9만 명', detail: '9.22~23 교세라 돔 2회 · YG 공식 집계', href: 'https://www.ygfamily.com/en/news/report/7581' },
+    { year: '2026.09', title: '유튜브 공식 채널 누적 조회수 100억 회', detail: '9.03 기준 · YG 공식 발표', href: 'https://ygfamily.com/en/news/report/7573' },
     { year: '2027.04', title: '코첼라 무대 출연 예정', detail: '2026.11.11 YG 발표 · 2027.04.11·18 미국 인디오', href: 'https://ygfamily.com/en/news/report/7601' }
   ];
   const birthdays = {
