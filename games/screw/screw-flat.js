@@ -18,6 +18,7 @@
   const SCREW_COLOR = '#A3B6C7';
   const Pictures=typeof module!=='undefined'&&module.exports?require('./screw-flat-pictures.js'):window.OjjudaFlatPictures;
   const {PICTURES}=Pictures;
+  const ALBUM_PAGE_SIZE=6,ALBUM_PAGES=Math.ceil(PICTURES.length/ALBUM_PAGE_SIZE);
   const Physics=typeof module!=='undefined'&&module.exports?require('./screw-flat-physics.js'):window.OjjudaFlatPhysics;
   const {BOARD,LAST_STAGE,createPhysics,layoutSpareHoles,canUnscrew,canAccessHole,canSeatScrew,bareHole,plateCovers,screwPoint,screwDepth}=Physics;
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
@@ -65,7 +66,7 @@
   const Drills=typeof module!=='undefined'&&module.exports?require('./screw-flat-drills.js'):window.OjjudaFlatDrills;
   function flat(api,startStage=readResumeStage()) {
     const st={view:{zoom:1,x:180,y:316},L:Number.isInteger(startStage)&&startStage>=1&&startStage<=LAST_STAGE?(adminPreview()?startStage:Math.min(startStage,readStage())):1,attemptId:null,score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,message:'',messageTime:0,complete:false,ended:false,failed:false,failureMarker:'',destroyed:false,down:null,pointers:new Map(),pinch:null,gestureBlocked:false,focus:null,
-      albumOpen:false,albumPicture:null,albumFocus:null,collection:Pictures.readCollection(),extraHoles:0,extraMoves:0,moveLimit:0,shopKind:null,shopBusy:'',shopReady:false,shopRun:0};
+      albumOpen:false,albumPicture:null,albumFocus:null,albumPage:0,collection:Pictures.readCollection(),extraHoles:0,extraMoves:0,moveLimit:0,shopKind:null,shopBusy:'',shopReady:false,shopRun:0};
     const walletUser=api.getUserId?.()||null,sameWallet=()=>!!walletUser&&api.getUserId?.()===walletUser;
 
     const drills=adminPreview()?{state:{balance:0,ready:false},use:async()=>({ok:false}),start:()=>null,finish:()=>{},fail:()=>{}}:Drills.create(api,walletUser,readStage(),Physics.replayVersion);
@@ -177,7 +178,7 @@
       st.shopRun++;st.shopBusy='';st.shopKind=null;st.shopReady=false;st.extraHoles=0;st.extraMoves=0;
       st.physics?.destroy();st.L=L;st.level=makeFlatLevel(L);st.moveLimit=moveLimit(st.level);st.physics=createPhysics(st.level);st.moves=0;st.selected=null;st.pending=null;saveResumeStage(L);
       resetView();st.complete=false;st.ended=false;st.failed=false;st.failureMarker='';st.down=null;st.pointers.clear();st.pinch=null;st.gestureBlocked=false;st.focus=null;st.stageScore=st.score;st.messageTime=0;
-      st.albumOpen=false;st.albumPicture=null;st.albumFocus=null;Pictures.preload(st.level.picture,true);
+      st.albumOpen=false;st.albumPicture=null;st.albumFocus=null;st.albumPage=0;Pictures.preload(st.level.picture,true);
       usingDrill=false;drillTrace=[];drillRun=adminPreview()?null:drills.start(L,st.attemptId);
       if(adminPreview()){addHoles(MAX_EXTRA_HOLES);st.extraMoves=99;}
       else if(sameWallet()&&api.buyScrew)void readUpgrades();
@@ -186,15 +187,24 @@
       if(st.pending)return;
       // A selected screw is still fastened; no physical action is pending.
       st.collection=new Set([...st.collection,...Pictures.readCollection()]);
-      st.albumOpen=true;st.albumPicture=null;st.albumFocus=null;st.selected=null;st.focus=null;
-      PICTURES.forEach((p,i)=>{if(st.collection.has(p.id))Pictures.preload(i,true);});
+      st.albumOpen=true;st.albumPicture=null;st.albumFocus=null;st.albumPage=0;st.selected=null;st.focus=null;
+      preloadAlbumPage();
+    }
+    function preloadAlbumPage(){
+      const start=st.albumPage*ALBUM_PAGE_SIZE;
+      PICTURES.slice(start,start+ALBUM_PAGE_SIZE).forEach((p,slot)=>{if(st.collection.has(p.id))Pictures.preload(start+slot,true);});
+    }
+    function albumPage(page){
+      st.albumPage=clamp(page,0,ALBUM_PAGES-1);st.albumFocus=null;preloadAlbumPage();
     }
     function albumTap(x,y){
       if((x>=282&&y<56)||y>=493){st.albumOpen=false;return;}
-      if(st.albumPicture!==null){if(x<116&&y<56)st.albumPicture=null;return;}
-      PICTURES.forEach((p,i)=>{
-        const left=24+(i%2)*162,top=88+Math.floor(i/2)*134;
-        if(x>=left&&x<=left+150&&y>=top&&y<=top+126&&st.collection.has(p.id))st.albumPicture=i;
+      if(st.albumPicture!==null){if(x<116&&y<56){st.albumPage=Math.floor(st.albumPicture/ALBUM_PAGE_SIZE);st.albumPicture=null;preloadAlbumPage();}return;}
+      if(y>=443&&y<=485){if(x>=24&&x<=116)albumPage(st.albumPage-1);else if(x>=244&&x<=336)albumPage(st.albumPage+1);return;}
+      const start=st.albumPage*ALBUM_PAGE_SIZE;
+      PICTURES.slice(start,start+ALBUM_PAGE_SIZE).forEach((p,slot)=>{
+        const left=24+(slot%2)*162,top=82+Math.floor(slot/2)*118;
+        if(x>=left&&x<=left+150&&y>=top&&y<=top+108&&st.collection.has(p.id))st.albumPicture=start+slot;
       });
     }
     function tap(x,y) {
@@ -275,14 +285,20 @@
         c.font='11px "Noto Sans KR",sans-serif';c.fillStyle='#8E7B69';c.fillText('철판을 걷어내고 찾은 작은 풍경',180,474);
       }else{
         c.fillText(`${st.collection.size}/${PICTURES.length}장 · 완성한 그림을 눌러 크게 봐요`,180,64);
-        PICTURES.forEach((p,i)=>{
-          const x=24+(i%2)*162,y=88+Math.floor(i/2)*134,unlocked=st.collection.has(p.id);
-          round(c,x,y,150,126,16);c.fillStyle=unlocked?'#FFFCF7':'#EAE3DA';c.fill();
+        const start=st.albumPage*ALBUM_PAGE_SIZE;
+        PICTURES.slice(start,start+ALBUM_PAGE_SIZE).forEach((p,slot)=>{
+          const i=start+slot,x=24+(slot%2)*162,y=82+Math.floor(slot/2)*118,unlocked=st.collection.has(p.id);
+          round(c,x,y,150,108,16);c.fillStyle=unlocked?'#FFFCF7':'#EAE3DA';c.fill();
           if(st.albumFocus===i){c.strokeStyle='#8B729C';c.lineWidth=2.5;c.stroke();}
-          if(unlocked)Pictures.draw(c,i,x+5,y+5,140,96,true);
-          else{c.font='700 28px "Noto Sans KR",sans-serif';c.fillStyle='#B7AA9B';c.fillText('?',x+75,y+43);c.font='10px "Noto Sans KR",sans-serif';c.fillText('철판을 모두 떼면 열려요',x+75,y+78);}
-          c.font='700 11px "Noto Sans KR",sans-serif';c.fillStyle=unlocked?'#655448':'#A19384';c.fillText(unlocked?p.name:'아직 찾지 못했어요',x+75,y+113);
+          if(unlocked)Pictures.draw(c,i,x+5,y+5,140,78);
+          else{c.font='700 28px "Noto Sans KR",sans-serif';c.fillStyle='#B7AA9B';c.fillText('?',x+75,y+34);c.font='10px "Noto Sans KR",sans-serif';c.fillText('철판을 모두 떼면 열려요',x+75,y+63);}
+          c.font='700 11px "Noto Sans KR",sans-serif';c.fillStyle=unlocked?'#655448':'#A19384';c.fillText(unlocked?p.name:'아직 찾지 못했어요',x+75,y+95);
         });
+        c.font='700 12px "Noto Sans KR",sans-serif';
+        for(const [x,label,enabled] of [[24,'← 이전',st.albumPage>0],[244,'다음 →',st.albumPage<ALBUM_PAGES-1]]){
+          round(c,x,443,92,40,12);c.fillStyle=enabled?'#E0E9DC':'#EEE7DE';c.fill();c.fillStyle=enabled?'#48654D':'#B4A89C';c.fillText(label,x+46,463);
+        }
+        c.fillStyle='#75695E';c.fillText(`${st.albumPage+1} / ${ALBUM_PAGES}`,180,463);
       }
       round(c,24,494,312,34,13);c.fillStyle='#7F9B87';c.fill();c.fillStyle='#FFFFFF';c.textAlign='center';c.font='700 12px "Noto Sans KR",sans-serif';c.fillText('게임으로 돌아가기',180,511);
     }
@@ -438,9 +454,10 @@
         if(st.shopBusy==='buying')return true;
         if(key==='a'||key==='A'||key==='ㅁ'){if(st.albumOpen)st.albumOpen=false;else openAlbum();return true;}
         if(st.albumOpen){
-          if(key==='Escape'||key==='Backspace'){if(st.albumPicture!==null)st.albumPicture=null;else st.albumOpen=false;return true;}
+          if(key==='Escape'||key==='Backspace'){if(st.albumPicture!==null){st.albumPage=Math.floor(st.albumPicture/ALBUM_PAGE_SIZE);st.albumPicture=null;preloadAlbumPage();}else st.albumOpen=false;return true;}
+          if(st.albumPicture===null&&['PageUp','PageDown','Home','End'].includes(key)){albumPage(key==='Home'?0:key==='End'?ALBUM_PAGES-1:st.albumPage+(key==='PageUp'?-1:1));return true;}
           if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){
-            if(st.albumPicture===null){const delta=key==='ArrowLeft'?-1:key==='ArrowUp'?-2:key==='ArrowDown'?2:1;st.albumFocus=st.albumFocus===null?0:(st.albumFocus+delta+PICTURES.length)%PICTURES.length;}
+            if(st.albumPicture===null){const delta=key==='ArrowLeft'?-1:key==='ArrowUp'?-2:key==='ArrowDown'?2:1;st.albumFocus=st.albumFocus===null?st.albumPage*ALBUM_PAGE_SIZE:(st.albumFocus+delta+PICTURES.length)%PICTURES.length;st.albumPage=Math.floor(st.albumFocus/ALBUM_PAGE_SIZE);preloadAlbumPage();}
             return true;
           }
           if(key==='Enter'||key===' '){if(st.albumPicture===null&&st.albumFocus!==null&&st.collection.has(PICTURES[st.albumFocus].id))st.albumPicture=st.albumFocus;return true;}
@@ -467,3 +484,4 @@
   if(typeof window!=='undefined')window.OjjudaScrewGames=api;
   if(typeof module!=='undefined' && module.exports)module.exports=api;
 })();
+
