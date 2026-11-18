@@ -106,6 +106,28 @@ test('discovery filtering uses its own opt-in and keeps dated answers paginated 
     assert.equal((await member('entry')).locationEnabled,false,'a future Pajang participant inherits Park off');
     await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:account})]);
   });
+  await t.test('an answer becomes visible on the nearby radar once its delayed location is saved',async()=>{
+    await db.exec('begin');
+    try{
+      const observer=randomUUID(),observerProfile=randomUUID();
+      const member=async(action,data={})=>(await db.query('select public.pajang_member($1,$2) as value',[action,data])).rows[0].value;
+      const login=async user=>db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:user})]);
+      await db.query('insert into auth.users values ($1)',[observer]);
+      await db.query("insert into ojjuda_account_internal.member_identity values ($1,date '1991-01-01','male')",[observer]);
+      await db.query("insert into pajang_private.people(id,owner_id,name,region,interest) values ($1,$2,'관찰자','경기도','walk')",[observerProfile,observer]);
+      const entry=await member('entry');
+      await member('answer',{body:'위치 확인 중에 저장한 답변',day:entry.day,slot:entry.slot,questionId:entry.question.id,archive:true});
+      await login(observer);
+      const before=await member('radar-enable',{latCell:3757,lonCell:12698,consent:true,automatic:true,locationVersion:0});
+      assert.equal(before.people.find(person=>person.id===writer).range,undefined,'an answer without a saved location has no radar distance');
+      await login(account);
+      const choice=(await db.query('select public.ojjuda_location_preference(true,null,$1,false) as value',[account])).rows[0].value;
+      await member('radar-enable',{latCell:3757,lonCell:12698,consent:true,automatic:true,locationVersion:choice.version});
+      await login(observer);
+      const visible=(await member('state')).people.find(person=>person.id===writer);
+      assert.equal(visible.body,'위치 확인 중에 저장한 답변');assert.equal(visible.range,1);
+    }finally{await db.exec('rollback');}
+  });
   // The oldest answer falls outside the 30 calendar dates. Every other row has the same author.
   await db.query(`insert into pajang_private.answers(person,day,slot,at,body,question_prompt,archived)
     select $1,(now() at time zone 'Asia/Seoul')::date-n,'am',100-n,'답변 '||n,'질문 '||n,true

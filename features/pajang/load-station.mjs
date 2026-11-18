@@ -1,5 +1,4 @@
-import {call,client,sameMember,showGate} from './member.mjs?v=history1';
-import {prepareLocation} from './location.mjs?v=history1';
+import {call,client,sameMember,showGate} from './member.mjs?v=entry2';
 
 // Each protected read uses the current member token. No member data is stored between pages.
 export async function prepareProgram(db){
@@ -66,9 +65,6 @@ export async function mountStation(beforeMount,savedStation,prepared,destination
     const params=new URL(destination,location.href).searchParams;
     const stationRequest=Promise.resolve(savedStation??call('state')).then(async station=>{
       if(closed||!station?.authenticated||!station.me||!await sameMember(db)||closed)throw Error('signed_out');
-      const {data:{session}}=await db.auth.getSession();
-      station=await prepareLocation(station,db,session.user.id);
-      if(closed||!await sameMember(db))throw Error('signed_out');
       const tab=params.get('tab');
       if(!document.hidden && !params.get('chat') && !params.get('view') && (!tab||tab==='today')){
         cancelFeed=startFeed(db,station);

@@ -94,6 +94,12 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const lock=useRef(false),serverRevision=useRef(0),bottom=useRef<HTMLDivElement>(null);
   const liveRef=useRef(live);liveRef.current=live;
   const locationAccount=useRef("");
+  const locationRead=useRef<AbortController|null>(null);
+  const [autoLocation,setAutoLocation]=useState({pending:false,message:initialStation.locationNotice||""});
+  function cancelAutoLocation(){
+    locationRead.current?.abort();locationRead.current=null;
+    setAutoLocation({pending:false,message:""});
+  }
   useEffect(()=>{
     let closed=false,unsubscribe=()=>{};
     void window.OjjudaGetClient().then(async db=>{
@@ -103,22 +109,36 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       const service=(window as any).OjjudaLocation;
       const current=liveRef.current;
       service.acceptPreference(accountId,{enabled:current.locationEnabled!==false,version:current.locationVersion??0},true);
+      function locate(state:Station){
+        if(state.locationEnabled===false||locationRead.current)return;
+        const controller=new AbortController();locationRead.current=controller;
+        const revision=serverRevision.current;
+        setAutoLocation({pending:true,message:"위치를 확인하고 있어요."});
+        void prepareLocation(state,db,accountId,{signal:controller.signal,onProgress:(message:string)=>{
+          if(!closed&&!controller.signal.aborted)setAutoLocation({pending:true,message});
+        }}).then(result=>{
+          if(closed||controller.signal.aborted)return;
+          setAutoLocation({pending:false,message:result.locationNotice||""});
+          // A slow position must not replace an answer or setting changed after entry.
+          if(serverRevision.current===revision){
+            serverRevision.current++;liveRef.current=result;setLive(result);
+          }else if(!lock.current)void refresh();
+        }).finally(()=>{if(locationRead.current===controller)locationRead.current=null;});
+      }
       unsubscribe=service.subscribe(accountId,(choice:{enabled:boolean;version:number})=>{
         const previous=liveRef.current;
         if(closed||choice.version<(previous.locationVersion??0)||
           (choice.version===previous.locationVersion&&choice.enabled===previous.locationEnabled))return;
         const next={...previous,locationEnabled:choice.enabled,locationVersion:choice.version,
           radarOn:choice.enabled?previous.radarOn:false};
+        cancelAutoLocation();
         liveRef.current=next;setLive(next);
-        const revision=++serverRevision.current;
-        if(choice.enabled&&previous.locationEnabled===false){
-          void prepareLocation({...next,locationChecked:false},db,accountId).then(result=>{
-            if(!closed&&serverRevision.current===revision)setLive(result);
-          });
-        }
+        serverRevision.current++;
+        if(choice.enabled)locate({...next,locationChecked:false} as Station);
       });
+      locate(liveRef.current);
     }).catch(()=>{});
-    return()=>{closed=true;unsubscribe();};
+    return()=>{closed=true;unsubscribe();locationRead.current?.abort();};
   },[]);
   useEffect(()=>{
     if(locationAccount.current)(window as any).OjjudaLocation.acceptPreference(locationAccount.current,
@@ -319,7 +339,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     <StationNavigation tab={tab} onGo={go} pending={signalCount}/>
     <main className="wrap station-content" id="station-content">
     {(net||threadError)&&<div className="notice" role="status">{net||threadError}<button onClick={()=>{void refresh();if(thread)void readThread(thread);}}>다시 연결</button></div>}
-    {tab==="radar"&&<><button className="return-today" onClick={()=>go("today")}><I n="back" s={15}/>오늘</button><NearbyRadar station={s} sample={false} onProfile={id=>open({kind:"person",peer:id})} onJoin={()=>location.assign("./")} onSettings={async (cell,accountId)=>Boolean(await act(cell?"radar-enable":"radar-disable",cell?{...cell,consent:true,shareBearing:true,accountId,locationVersion:s.locationVersion}:{accountId,locationVersion:s.locationVersion},true))}/></>}
+    {tab==="radar"&&<><button className="return-today" onClick={()=>go("today")}><I n="back" s={15}/>오늘</button><NearbyRadar station={s} sample={false} autoLocation={autoLocation} onLocationChange={cancelAutoLocation} onProfile={id=>open({kind:"person",peer:id})} onJoin={()=>location.assign("./")} onSettings={async (cell,accountId)=>Boolean(await act(cell?"radar-enable":"radar-disable",cell?{...cell,consent:true,shareBearing:true,accountId,locationVersion:s.locationVersion}:{accountId,locationVersion:s.locationVersion},true))}/></>}
     {visitedToday&&<div className="today-page" hidden={tab!=="today"}>
       <section className="letter-hero" aria-label={slotName+" 질문"}>
         <div className="letter-copy">

@@ -66,6 +66,15 @@ function clientFixture(hash) {
     state.locationEnabled=localStorage.locationEnabled!=='false';
     state.locationVersion=Number(localStorage.locationVersion||0);
     window.geoWrites=[];
+    window.geoReadCount=0;
+    const nativePosition=navigator.geolocation.getCurrentPosition.bind(navigator.geolocation);
+    Object.defineProperty(navigator.geolocation,'getCurrentPosition',{configurable:true,value:(ok,fail,options)=>{
+      window.geoReadCount++;
+      if(sessionStorage.holdEntryLocation==='yes'){
+        window.finishEntryLocation=()=>ok({coords:{latitude:37.5665,longitude:126.978,accuracy:30}});
+      }else nativePosition(ok,fail,options);
+    }});
+    if(sessionStorage.holdEntryLocation==='yes')state.radarOn=false;
     const flightCheck=new URLSearchParams(location.search).get('flight-check');
     const mode=flightCheck||sessionStorage.fixtureMode||'member';
     const accepted=sessionStorage.accepted==='yes';
@@ -116,7 +125,9 @@ function clientFixture(hash) {
               state.locationEnabled=state.radarOn;state.locationVersion++;
               localStorage.locationEnabled=String(state.locationEnabled);localStorage.locationVersion=String(state.locationVersion);
             }
-            return Promise.resolve({data:structuredClone(state)});
+            const result={data:structuredClone(state)};
+            if(window.holdLocationSave&&p.p_data.automatic)return new Promise(resolve=>{window.finishLocationSave=()=>resolve(result);});
+            return Promise.resolve(result);
           }
           if(p.p_action==='edit-answer'){
             const {body,previousBody,day,slot,questionId}=p.p_data;
@@ -214,10 +225,11 @@ function clientFixture(hash) {
       if(pathname==='/features/home/agit-hub.css')return route.fulfill({contentType:'text/css',body:await fs.readFile(path.join(feature,'../home/agit-hub.css'))});
       if(pathname==='/program')return route.fulfill({contentType:'application/javascript',body:bundle});
       if(pathname==='/features/home/agit-hub.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../home/agit-hub.js'))});
+      if(pathname==='/features/home/location-warmup.mjs')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../home/location-warmup.mjs'))});
       if(pathname==='/world.html')return route.fulfill({contentType:'text/html',body:`<!doctype html>
         <html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="/features/home/agit-hub.css"><title>아지트</title>
-        <script src="/config.js"></script><script src="/features/home/agit-hub.js"></script>
+        <script src="/config.js"></script><script src="/features/home/agit-hub.js"></script><script type="module" src="/features/home/location-warmup.mjs"></script>
         <main></main><script>document.querySelector('main').innerHTML=OjjudaAgitHub.markup({},{});</script></html>`});
       if(pathname==='/shared/location/location.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/location/location.js'))});
       const file=pathname.slice(project.length)||'index.html';
@@ -522,6 +534,7 @@ function clientFixture(hash) {
     const locationSwitch=page.getByRole('switch',{name:'내 위치 공개'});
     await locationSwitch.waitFor();
     assert.equal(await locationSwitch.getAttribute('aria-checked'),'true');
+    await page.waitForFunction(()=>window.geoWrites.some(p=>p.automatic));
     assert.ok(await page.evaluate(()=>window.geoWrites.some(p=>p.automatic&&p.latCell===3757&&p.lonCell===12698&&!('latitude' in p))));
     await locationSwitch.click();
     await page.waitForFunction(()=>localStorage.locationEnabled==='false');
@@ -538,6 +551,7 @@ function clientFixture(hash) {
     await page.waitForFunction(()=>localStorage.locationEnabled==='true');
     await page.reload();await locationSwitch.waitFor();
     assert.equal(await locationSwitch.getAttribute('aria-checked'),'true');
+    await page.waitForFunction(()=>window.geoWrites.some(p=>p.automatic));
     assert.ok(await page.evaluate(()=>window.geoWrites.some(p=>p.automatic)));
     await context.clearPermissions();
     await page.reload();await locationSwitch.waitFor();
@@ -598,6 +612,57 @@ function clientFixture(hash) {
     await page.waitForFunction(()=>document.querySelector('[role=switch]')?.getAttribute('aria-checked')==='false');
     assert.equal(await page.locator('.scope-person').count(),0);
     console.log('PASS shared Park/Pajang setting changes update the mounted radar in both directions');
+    await context.grantPermissions(['geolocation']);
+    await page.evaluate(()=>{localStorage.locationEnabled='true';sessionStorage.removeItem('ojjuda:location-cell:member');});
+    await page.goto(origin+'/world.html?warm-location=1');
+    await page.waitForFunction(()=>sessionStorage.getItem('ojjuda:location-cell:member'));
+    assert.equal(await page.evaluate(()=>window.geoReadCount),1,'Agit requests the position before opening Pajang');
+    await banner.click();await page.waitForURL('**/station.html');await answers.waitFor();
+    await page.waitForFunction(()=>window.geoWrites.some(write=>write.automatic));
+    assert.equal(await page.evaluate(()=>window.geoReadCount),0,'Pajang saves the recent Agit cell without another GPS request');
+    console.log('PASS Agit preloads a location and Pajang reuses it for member radar storage');
+    // A permission prompt or slow GPS must not hold either Agit entry route hostage.
+    for(const scenario of ['new','member-cold','member']){
+      await page.evaluate(mode=>{
+        sessionStorage.fixtureMode=mode==='new'?'new':'member';sessionStorage.holdEntryLocation='yes';
+        sessionStorage.removeItem('ojjuda:location-cell:member');localStorage.locationEnabled='true';
+        if(mode!=='member')sessionStorage.removeItem('pajang:answered-round');
+      },scenario);
+      await page.goto(origin+'/world.html?slow-location='+scenario);
+      await banner.click();
+      if(scenario==='new'){
+        await frame.locator('#welcome #write').waitFor({timeout:5000});
+        await frame.locator('#write').click();await frame.locator('#mine').fill('위치를 기다리는 동안 답변을 써요.');
+        await page.getByRole('button',{name:'팝업 닫기'}).click();
+        assert.equal(await page.locator('dialog').count(),0);
+        continue;
+      }
+      await page.waitForURL('**/station.html',{timeout:5000});
+      await answers.waitFor({timeout:5000});await page.waitForFunction(()=>!!window.finishEntryLocation);
+      assert.equal(await page.evaluate(()=>window.geoWrites.length),0);
+      await page.getByRole('button',{name:'내 주변',exact:true}).click();
+      await page.getByRole('status').filter({hasText:'위치를 확인하고 있어요.'}).waitFor();
+      assert.equal(await page.locator('.scope-person').count(),0);
+      if(scenario==='member-cold'){
+        await page.evaluate(()=>{window.holdLocationSave=true;window.finishEntryLocation();});
+        await page.waitForFunction(()=>!!window.finishLocationSave);
+        await selectMenu('오늘');await revise.click();
+        await editor.getByLabel('내 이야기').fill('늦은 위치 응답 뒤에도 남아야 할 답변');
+        await editor.getByRole('button',{name:'수정 저장하기'}).click();await editor.waitFor({state:'detached'});
+        await page.evaluate(()=>window.finishLocationSave());
+        await page.waitForFunction(()=>window.memberCalls.filter(v=>v==='state').length>1);
+        await revise.click();assert.equal(await editor.getByLabel('내 이야기').inputValue(),'늦은 위치 응답 뒤에도 남아야 할 답변');
+        await editor.getByRole('button',{name:'닫기'}).click();
+        await page.getByRole('button',{name:'내 주변',exact:true}).click();await page.locator('.scope-person').first().waitFor();
+      }else{
+        await locationSwitch.click();await page.waitForFunction(()=>localStorage.locationEnabled==='false');
+        await page.evaluate(()=>window.finishEntryLocation());
+        assert.equal(await page.evaluate(()=>window.geoWrites.filter(p=>p.automatic).length),0,'late GPS cannot undo a switch change');
+        assert.equal(await locationSwitch.getAttribute('aria-checked'),'false');
+      }
+    }
+    await page.evaluate(()=>{delete sessionStorage.holdEntryLocation;});
+    console.log('PASS usable Agit entry with unresolved GPS, saved answers survive late location, and off cancels background sharing');
     legacyLocationPage=true;
     await context.grantPermissions(['geolocation']);
     await page.goto(origin+project+'station.html?view=radar&cached-page=1');
