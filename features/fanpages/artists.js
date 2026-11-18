@@ -578,14 +578,18 @@ window.OJJUDA_FAN_ARTISTS = [
     ],
     appearances: [
       { date: "2026-12-18", title: "2026 KBS 가요대축제", sub: "서울 KBS 아레나 · 19:00(KST) · 11.13 출연 발표", href: "https://www.soompi.com/article/1886817wpp/2026-kbs-song-festival-announces-artist-lineup" },
-      { date: "2026-12-25", title: "2026 SBS 가요대전 · DAY 2", sub: "경기 고양 킨텍스 · A2O LITE 출연 · 관람 안내는 예매처 확인", href: "https://www.klook.com/en-PH/activity/183716-2025-sbs-gayo-daejeon-ticket-shuttle-package/" },
+      { date: "2026-12-25", title: "2026 SBS 가요대전 · DAY 2", sub: "경기 고양 킨텍스 · A2O LITE 출연 · 방청·방송 시각은 SBS 공식 공지 확인", href: "https://news.sbs.co.kr/news/endPage.do?news_id=N1008837439" },
       { date: "2027-01-15", title: "D AWARDS 2027 in PARIS", sub: "DAY 1 · 프랑스 파리 Plenitude Arena · 공연 시각 추후 발표", href: "https://d-awards.world/" }
+    ],
+    campaigns: [
+      { kind: "콜라보", date: "2026.11.18", title: "하퍼스 바자 × 폴로 랄프 로렌 화보", sub: "2026년 12월호 BAZAAR STAR 별책 · 11.21 발간 · 공식 첫 패션 화보, 홍보대사 발표와 별개", href: "https://www.harpersbazaar.co.kr/article/1913190" }
     ],
     schedules: [
       { title: "Mnet Plus 공식", sub: "출연 일정·공지", href: "https://artist.mnetplus.world/main/stg/a2olite" },
       { title: "A2O 공식 링크", sub: "공식 채널 모음", href: "https://linktr.ee/a2o.lite" }
     ],
     news: [
+      { date: "2026.11.18", tag: "화보", title: "첫 패션 화보 〈NEON AND BEYOND〉 공개 · 하퍼스 바자 12월호 별책 11.21 발간", href: "https://www.harpersbazaar.co.kr/article/1913190" },
       { date: "2026.11.13", tag: "영상", title: "A2O WORLD · NEON INFINITE 뮤직비디오 공개", href: "https://www.youtube.com/watch?v=G_ej20-QWng" },
       { date: "2026.11.13", tag: "행사", title: "12월 18일 KBS 가요대축제 출연 확정", href: "https://www.soompi.com/article/1886817wpp/2026-kbs-song-festival-announces-artist-lineup" },
       { date: "2026.11.11", tag: "차트", title: "NEON · 써클 디지털·스트리밍·글로벌 K팝 차트 3관왕", href: "https://www.soompi.com/article/1886133wpp/ive-riize-and-illit-top-circle-weekly-charts-a2o-earns-triple-crown" },
