@@ -1,0 +1,238 @@
+/* A focused writing sheet with optional tools directly above its lower bar. */
+.group-writing-dialog {
+  position: fixed;
+  inset: calc(var(--app-viewport-top, 0px) + var(--app-safe-top, 0px) + 14px) 0 auto;
+  width: min(720px, calc(100% - 28px));
+  height: min(860px, var(--app-dialog-height, calc(100dvh - 28px)));
+  max-width: none;
+  max-height: none;
+  margin: 0 auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--paper);
+  color: #263e33;
+}
+.group-writing-dialog .dialog-body,
+.group-writing-dialog #composer {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.group-writing-dialog .group-compose-head {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  flex: none;
+  gap: 8px;
+  min-height: 56px;
+  padding: 6px 14px;
+  border: 0;
+  background: var(--paper);
+}
+.group-compose-head h2 {
+  margin: 0;
+  text-align: center;
+  font-size: 19px;
+  line-height: 1.4;
+}
+.group-writing-dialog .group-compose-head button,
+.group-writing-dialog .group-compose-panel-close {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+}
+.group-writing-dialog .group-compose-head .group-compose-submit { color: var(--green); }
+.group-writing-dialog :is(.group-compose-head,.group-compose-toolbar,.group-compose-options-head) svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.group-compose-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+  padding: 8px 20px 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.group-writing-dialog .group-compose-context {
+  align-self: flex-start;
+  flex: none;
+  max-width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: #eff3ec;
+  color: #52685a;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+#composer .group-compose-body [data-kind-fields] { display: block; flex: none; }
+#composer .group-compose-body [data-kind-fields] .field { gap: 4px; }
+#composer .group-compose-body [data-title-label] { font-size: 12px; color: var(--muted); }
+#composer .group-compose-body input[name="title"] {
+  min-height: 44px;
+  padding: 10px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  font-size: 18px;
+}
+#composer .group-compose-body .activity-editor { flex: none; margin: 0; }
+#composer .group-compose-body .activity-editor[hidden] { display: none; }
+#composer .group-compose-body .composer-extras {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+#composer .group-compose-body .composer-extras > .field {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 5px;
+}
+#composer .group-compose-body [data-body-label] { color: var(--muted); font-size: 12px; }
+#composer .group-compose-body textarea[name="body"] {
+  flex: 1;
+  width: 100%;
+  min-height: clamp(64px, calc(var(--app-viewport-height, 100dvh) - 360px), 260px);
+  padding: 6px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 16px;
+  line-height: 1.8;
+  resize: none;
+}
+.group-compose-count { color: var(--muted); font-size: 11px; text-align: right; }
+.group-compose-status { flex: none; font-size: 13px; }
+.group-compose-status p:not(:empty) { margin: 0; padding: 6px 16px; }
+.group-compose-dock { position: relative; z-index: 2; flex: none; min-width: 0; }
+.group-compose-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 4px;
+  padding: 6px 12px;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+.group-writing-dialog .group-compose-tool {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 60px;
+  min-height: 48px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #65776b;
+  font-size: 11px;
+  line-height: 1.3;
+}
+.group-compose-tool[aria-expanded="true"] { background: #e9efe5; color: var(--green); }
+.group-compose-tool[data-selected="true"]::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  right: 9px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+}
+.group-compose-options {
+  position: absolute;
+  inset: auto 0 100%;
+  max-height: min(340px, calc(var(--app-viewport-height, 100dvh) - 128px));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 16px 16px 0 0;
+  background: var(--paper);
+  box-shadow: 0 -12px 30px -15px #1e372c40;
+}
+.group-compose-options-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0 10px 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+.group-compose-options-head h3 { margin: 0; font-size: 14px; line-height: 1.4; }
+.group-compose-options-body {
+  max-height: min(296px, calc(var(--app-viewport-height, 100dvh) - 172px));
+  padding: 10px 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.group-writing-dialog :is(.group-compose-tool,.group-compose-panel,.group-compose-options)[hidden] { display: none; }
+#composer .group-compose-panel .kind-picker { margin: 0; }
+#composer .group-compose-panel .kind-picker legend { display: none; }
+#composer .group-compose-panel .kind-picker button { min-height: 44px; }
+#composer .group-compose-panel .kind-picker > div { gap: 4px; padding: 0; border: 0; background: transparent; }
+#composer .group-compose-panel .file-picker { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px; }
+#composer .group-compose-panel .file-picker:focus-within { outline: 2px solid var(--green); outline-offset: 2px; }
+#composer .group-compose-panel .hint { margin: 6px 0; font-size: 11px; }
+#composer .group-compose-panel .attachment-list:empty { display: none; }
+#composer .group-compose-panel .composer-room { margin: 0; }
+#composer .group-compose-panel #schedule-fields > br { display: none; }
+#composer .group-compose-panel #schedule-fields > :is(.two,.field) { margin-top: 10px; }
+#composer .group-compose-panel .field { gap: 4px; font-size: 12px; }
+#composer .group-compose-panel .two { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+#composer .group-compose-panel :is(input:not([type="checkbox"]):not([type="file"]),select) { min-height: 44px; min-width: 0; padding: 9px 8px; font-size: 16px; }
+.group-writing-dialog :is(button,input,textarea,select):focus-visible { outline-offset: -2px; }
+@media (max-width: 640px) {
+  .group-writing-dialog {
+    top: calc(var(--app-viewport-top, 0px) + var(--app-safe-top, 0px));
+    width: 100%;
+    height: calc(var(--app-viewport-height, 100dvh) - var(--app-safe-top, 0px) - var(--app-safe-bottom, 0px));
+    border: 0;
+    border-radius: 0;
+  }
+  .group-compose-body { padding-inline: 16px; }
+}
+@media (max-width: 359px) {
+  #composer .group-compose-panel .two { grid-template-columns: minmax(0, 1fr); }
+}

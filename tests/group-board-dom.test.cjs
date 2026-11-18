@@ -38,8 +38,83 @@ function fixture({empty=false,guest=false,member=false,publicGroups=true,hash=''
   }})};
   if(coldReads){const make=w.supabase.createClient;w.supabase.createClient=()=>{const c=make(),invoke=c.rpc;c.rpc=(name,args)=>({then(resolve,reject){return invoke(name,args).then(resolve,reject);}});return c;};}
   w.eval(fs.readFileSync(path.join(root,'groups/activities.js'),'utf8'));
+  w.eval(fs.readFileSync(path.join(root,'groups/composer.js'),'utf8'));
   w.eval(fs.readFileSync(path.join(root,'groups/app.js'),'utf8'));return {dom,w,calls,saved:()=>saved};
 }
+test('writing tools preserve the same body, selection and draft while options open and close',async()=>{
+  const f=fixture({hash:'#room='+room});try{
+    await tick();const d=f.w.document;d.querySelector('[data-action=compose]').click();
+    const form=d.querySelector('#composer'),dialog=form.closest('dialog'),body=form.elements.body;
+    assert.ok(dialog.classList.contains('group-writing-dialog'));
+    assert.ok(form.querySelector('.group-compose-head [type=submit]'));
+    assert.equal(form.querySelector('.group-compose-toolbar').getAttribute('role'),'toolbar');
+    assert.equal(form.querySelector('.group-compose-toolbar').getAttribute('aria-label'),'글쓰기 옵션');
+    assert.notEqual(d.activeElement,body,'opening the composer does not open the native keyboard');
+    assert.equal(form.querySelector('[data-group-tool=room]').hidden,true,'one available group needs no picker');
+    assert.equal(form.querySelector('[data-group-tool=schedule]').hidden,true,'ordinary posts have no schedule tool');
+    assert.ok([...form.querySelectorAll('[data-group-panel]')].every(panel=>panel.hidden));
+    body.value='한글 조합과 선택한 내용을 그대로 남겨요.';body.focus();body.setSelectionRange(3,9,'backward');
+    const selected=()=>[body.value,body.selectionStart,body.selectionEnd,body.selectionDirection];
+    const before=selected();
+    function tap(tool){
+      const button=form.querySelector('[data-group-tool='+tool+']');
+      const down=new f.w.Event('pointerdown',{bubbles:true,cancelable:true});
+      Object.defineProperties(down,{button:{value:0},isPrimary:{value:true}});button.dispatchEvent(down);
+      assert.equal(down.defaultPrevented,true,'pointer tap retains the writing focus');
+      button.dispatchEvent(new f.w.MouseEvent('click',{bubbles:true,cancelable:true,detail:1}));
+    }
+    for(const tool of ['photo','kind']){
+      tap(tool);
+      assert.equal(form.querySelector('[data-group-panel='+tool+']').hidden,false);
+      assert.equal([...form.querySelectorAll('[data-group-panel]')].filter(panel=>!panel.hidden).length,1);
+      assert.equal(form.elements.body,body);assert.equal(d.activeElement,body);assert.deepEqual(selected(),before);
+    }
+    const escape=new f.w.Event('cancel',{cancelable:true});dialog.dispatchEvent(escape);
+    assert.equal(escape.defaultPrevented,true);assert.equal(d.querySelectorAll('dialog').length,1);
+    assert.ok([...form.querySelectorAll('[data-group-panel]')].every(panel=>panel.hidden));
+    assert.deepEqual(selected(),before,'closing an option does not discard or replace writing');
+    dialog.querySelector('[data-close]').click();assert.ok(d.querySelector('[data-no]'));d.querySelector('[data-no]').click();
+    assert.equal(form.elements.body,body);assert.deepEqual(selected(),before);
+  }finally{f.dom.window.close();}
+});
+test('group writing keeps full post serialization and exposes schedule options only for scheduled kinds',async()=>{
+  const f=fixture({hash:'#room='+room});try{
+    await tick();const d=f.w.document;d.querySelector('[data-action=compose]').click();
+    const form=d.querySelector('#composer'),body='한글로 적은 긴 기록\n'.repeat(1000).slice(0,10000);
+    form.elements.body.value=body;form.elements.title.value='여행 일정';
+    form.querySelector('[data-kind-choice=trip]').click();
+    assert.equal(form.querySelector('[data-group-tool=schedule]').hidden,false);
+    assert.equal(d.querySelector('#schedule-fields').hidden,false);
+    form.elements.all_day.checked=true;form.elements.all_day.dispatchEvent(new f.w.Event('change'));
+    form.elements.starts_at.value='2026-11-20';form.elements.ends_at.value='2026-11-21';form.elements.location.value='서울역';
+    form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();await tick();
+    assert.equal(f.saved().body,body);assert.equal(f.saved().body.length,10000);
+    assert.equal(f.saved().kind,'trip');assert.equal(f.saved().room_id,room);assert.equal(f.saved().location,'서울역');
+    assert.equal(f.saved().starts_at,'2026-11-20T00:00:00+09:00');assert.equal(f.saved().ends_at,'2026-11-21T23:59:59+09:00');
+    assert.deepEqual(Array.from(f.saved().media),[]);
+    d.querySelector('[data-action=compose]').click();const fresh=d.querySelector('#composer');
+    assert.equal(fresh.elements.body.value,'');assert.equal(fresh.elements.kind.value,'post');
+    assert.ok([...fresh.querySelectorAll('[data-group-panel]')].every(panel=>panel.hidden));
+    assert.equal(fresh.querySelector('[data-group-tool=schedule]').hidden,true);
+    fresh.closest('dialog').querySelector('[data-close]').click();
+    d.querySelector('[data-edit]').click();const edit=d.querySelector('#composer');
+    assert.equal(edit.elements.room_id.disabled,true);assert.equal(edit.querySelector('[data-group-tool=room]').hidden,true);
+    assert.equal(edit.querySelector('[data-group-tool=schedule]').hidden,false);
+    assert.equal(edit.elements.kind.value,'trip');assert.equal(edit.elements.title.value,'부산에서 보내는 주말');
+  }finally{f.dom.window.close();}
+});
+test('the group picker stays available for multiple memberships without losing the writing',async()=>{
+  const rooms=[{id:room,name:'주말 여행단',owner_id:id,member_count:2},{id:other,name:'함께 걷기',owner_id:id,member_count:3}];
+  const f=fixture({hash:'#room='+room,respond:action=>action==='rooms'?{data:rooms}:undefined});try{
+    await tick();const d=f.w.document;d.querySelector('[data-action=compose]').click();const form=d.querySelector('#composer');
+    form.elements.body.value='어느 모임에 올릴지 고르는 중이에요.';
+    const button=form.querySelector('[data-group-tool=room]');assert.equal(button.hidden,false);button.click();
+    assert.equal(form.querySelector('[data-group-panel=room]').hidden,false);
+    form.elements.room_id.value=other;form.elements.room_id.dispatchEvent(new f.w.Event('change',{bubbles:true}));
+    form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
+    assert.equal(f.saved().room_id,other);assert.equal(f.saved().body,'어느 모임에 올릴지 고르는 중이에요.');
+  }finally{f.dom.window.close();}
+});
 test('creating from the main directory keeps the new group in the list until entered',async()=>{
   const f=fixture({empty:true,publicGroups:false});try{
     await tick();const d=f.w.document;
@@ -478,7 +553,7 @@ test('multiline activity paste preserves other entries and rejects over-capacity
     await tick();const d=f.w.document;d.querySelector('[data-action=compose]').click();
     const form=d.querySelector('#composer');form.querySelector('[data-kind-choice=poll]').click();
     const editor=form.querySelector('[data-editor=poll]'),inputs=()=>[...editor.querySelectorAll('[name=activity_option]')];
-    assert.equal(form.elements.kind.value,'poll');assert.equal(form.querySelector('.composer-extras').open,false);
+    assert.equal(form.elements.kind.value,'poll');assert.equal(form.querySelector('.composer-extras').open,true,'the writing body stays available below activity options');
     inputs()[1].value='이미 적은 보기';
     const paste=(input,text)=>{const e=new f.w.Event('paste',{bubbles:true,cancelable:true});Object.defineProperty(e,'clipboardData',{value:{getData:()=>text}});input.dispatchEvent(e);assert.equal(e.defaultPrevented,true);};
     paste(inputs()[0],'가\r\n나\n다');const values=inputs().map(el=>el.value);
