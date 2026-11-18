@@ -46,7 +46,7 @@ export function showGate(message,login = false) {
   link.textContent=login?'오쭈다 로그인하기':'아지트로 돌아가기';
   gate.replaceChildren(title,line,link);
 }
-export async function requireMember(action='entry',onSession) {
+export async function requireMember(action='entry',onSession,onResult) {
   try {
     const db=await client();
     const {data:{session}}=await db.auth.getSession();
@@ -54,6 +54,7 @@ export async function requireMember(action='entry',onSession) {
       showGate('로그인한 오쭈다 회원만 이용할 수 있어요.',true);return;
     }
     const expected=session.user.id;
+    if(typeof action==='function')action=action(expected);
     let changed=false;
     const {data:{subscription}}=db.auth.onAuthStateChange((_event,current)=>{
       if(!current||current.user?.id!==expected||current.user.is_anonymous){
@@ -65,7 +66,10 @@ export async function requireMember(action='entry',onSession) {
     window.addEventListener('pageshow',e=>{if(e.persisted)location.reload();});
     onSession?.(db);
     const [identity,result]=await Promise.all([
-      db.auth.getUser(),db.rpc('pajang_member',{p_action:action,p_data:{}})
+      db.auth.getUser(),Promise.resolve(db.rpc('pajang_member',{p_action:action,p_data:{}})).then(result=>{
+        if(!changed&&!result.error)onResult?.(result.data);
+        return result;
+      })
     ]);
     if(changed)return;
     const user=identity.data?.user;
@@ -75,6 +79,7 @@ export async function requireMember(action='entry',onSession) {
     verifiedUser=user.id;
     if(result.error){
       if(action==='state' && result.error.code==='42501' && result.error.message==='먼저 파장에 참여해 주세요.'){
+        rememberRound(user.id,false);
         return {joined:false};
       }
       throw result.error;

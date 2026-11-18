@@ -1,4 +1,5 @@
-import {call, client, sameMember, requireMember, showGate} from './member.mjs?v=entry2';
+import {call, client, sameMember, requireMember, showGate, answeredRound} from './member.mjs?v=entry3';
+import {mountStation, prepareProgram} from './load-station.mjs?v=entry3';
 import {prepareLocation} from './location.mjs?v=entry2';
 import {themeFor, interests} from './questions.mjs?v=rounds1';
 
@@ -21,6 +22,8 @@ if (Object.hasOwn(destinations,next)) {
 
 // Keep the same document and masthead when a member finishes the entry step.
 let handoff;
+let program;
+let openProgram;
 let leaveEntry=()=>{};
 function enterMain(destination = main, savedStation) {
   if (window.top !== window) {
@@ -29,6 +32,7 @@ function enterMain(destination = main, savedStation) {
     window.top.location.assign(destination.href);return;
   }
   if (handoff) return handoff;
+  openProgram?.();
   leaveEntry();
   $('welcome').hidden=true;
   $('gate').hidden=false;
@@ -40,13 +44,13 @@ function enterMain(destination = main, savedStation) {
     style.href='./station.css?v=letter1';
     const styled=new Promise((resolve,reject)=>{style.onload=resolve;style.onerror=reject;});
     document.querySelector('link[href*="shell.css"]').before(style);
-    await Promise.all([styled,import('./load-station.mjs?v=entry2').then(({mountStation})=>mountStation(async()=>{
+    await Promise.all([styled,mountStation(async()=>{
       await styled;
       document.getElementById('entry-style').disabled=true;
       style.media='all';
       history.replaceState(null,'',destination.href);
       window.scrollTo(0,0);
-    },savedStation,undefined,destination))]);
+    },savedStation,program,destination)]);
   })().catch(()=>location.replace(destination.href));
   return handoff;
 }
@@ -216,8 +220,28 @@ async function start(firstEntry) {
   };
 }
 
-const entry = await requireMember();
+let entryAction;
+let entry = await requireMember(user => entryAction=answeredRound()===user?'state':'entry', db=>{
+  // Authorize alongside membership, then download only when the member needs the main screen.
+  const ready=new Promise(resolve=>{openProgram=resolve;});
+  program=prepareProgram(db,ready);
+  program.catch(()=>{program=undefined;});
+}, result=>{
+  // A slow identity endpoint must not serialize the download after a successful member read.
+  const needed=entryAction==='state'
+    ? result?.authenticated&&(result.me?.body||view==='feed')
+    : result?.body||(view==='feed'&&result?.joined);
+  if(needed)openProgram?.();
+});
 if (entry) {
-  try { await start(entry); }
+  try {
+    if(entryAction==='state' && entry.authenticated && (entry.me?.body || view==='feed')) {
+      await enterMain(view==='feed'?feed:main,entry);
+    } else {
+      // A round or membership can change since the routing hint was recorded.
+      if(entryAction==='state')entry=await call('entry');
+      await start(entry);
+    }
+  }
   catch { showGate('질문을 불러오지 못했어요. 잠시 후 다시 열어 주세요.'); }
 }
