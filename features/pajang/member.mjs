@@ -59,7 +59,10 @@ export async function requireMember(action='entry',onSession,onResult) {
     const {data:{subscription}}=db.auth.onAuthStateChange((_event,current)=>{
       if(!current||current.user?.id!==expected||current.user.is_anonymous){
         changed=true;verifiedUser=undefined;
-        showGate('회원 정보를 다시 확인하고 있어요.');location.reload();
+        rememberRound(expected,false);
+        showGate('회원 정보를 다시 확인하고 있어요.');
+        if(!current)(window.top||window).location.replace('/features/pajang/');
+        else location.reload();
       }
     });
     window.addEventListener('pagehide',()=>subscription.unsubscribe(),{once:true});

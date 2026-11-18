@@ -1805,7 +1805,7 @@ function selectCollection(mode, preserveMessage = false) {
     tagTabReset?.();
   }
   feedMode = mode; if (!preserveMessage) message(''); showFeed();
-  $('#feed-title').textContent = mode === 'all' ? '공원 카드' : mode === 'events' ? '내 이벤트' : '메모함';
+  $('#feed-title').textContent = mode === 'all' ? '공원 카드' : mode === 'events' ? '내 이벤트' : mode === 'mine' ? '내 카드' : '보관함';
   $('#note-collection-tabs').hidden = mode === 'all' || mode === 'events';
   $('.feed-sort-tabs').hidden = mode !== 'all';
   document.querySelectorAll('[data-collection]').forEach(button => {

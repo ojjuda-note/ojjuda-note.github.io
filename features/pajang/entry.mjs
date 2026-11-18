@@ -1,5 +1,5 @@
-import {call, client, sameMember, requireMember, showGate, answeredRound} from './member.mjs?v=entry3';
-import {mountStation, prepareProgram} from './load-station.mjs?v=entry3';
+import {call, client, sameMember, requireMember, showGate, answeredRound} from './member.mjs?v=account1';
+import {mountStation, prepareProgram} from './load-station.mjs?v=account1';
 import {prepareLocation} from './location.mjs?v=entry2';
 import {themeFor, interests} from './questions.mjs?v=rounds1';
 

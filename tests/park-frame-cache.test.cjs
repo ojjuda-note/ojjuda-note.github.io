@@ -7,12 +7,12 @@ const {JSDOM} = require('jsdom');
 const source = fs.readFileSync(path.join(__dirname, '../park/world-park-notes.js'), 'utf8');
 
 function fixture(search = '') {
-  const dom = new JSDOM('<!doctype html><html><body><div id="app"></div></body></html>', {
+  const dom = new JSDOM('<!doctype html><html><head><meta name="theme-color" content="#704d30"></head><body><div id="app"></div></body></html>', {
     url: 'https://fixture.test/world.html'+search, runScripts: 'outside-only'
   });
   const {window} = dom;
   const timers = new Map();
-  let nextTimer = 0, place = {id: 'park'}, owner = 'member-a', gestureAttach = 0, gestureDetach = 0;
+  let nextTimer = 0, place = {id: 'park'}, owner = 'member-a', gestureAttach = 0, gestureDetach = 0, worldReturns = 0;
   window.setTimeout = (fn, delay) => {const id = ++nextTimer;timers.set(id, {fn, delay});return id;};
   window.clearTimeout = id => timers.delete(id);
   window.eval(source);
@@ -20,11 +20,13 @@ function fixture(search = '') {
     place: () => place,
     userId: () => owner,
     enter: () => {place = {id: 'park'};render('park');},
+    toWorld: () => {worldReturns++;render('hub');},
     onFrameReady: () => {gestureAttach++;return () => {gestureDetach++;};}
   });
   function markup(tab) {
     const main = tab === 'park' ? app.markup() : `<section data-view="${tab}">${tab}</section>`;
-    return `<div class="shell"><aside class="side">${tab}</aside><div class="col"><header class="topbar">${tab}</header><main class="main">${main}</main></div></div><nav class="bottomnav">${tab}</nav>`;
+    const navigation = tab === 'park' ? ['feed','mine','saved','settings'].map(action=>`<button data-park-action="${action}">${action}</button>`).join('') : tab;
+    return `<div class="shell"><aside class="side"><nav class="sidenav">${navigation}</nav></aside><div class="col"><header class="topbar">${tab}</header><main class="main">${main}</main></div></div><nav class="bottomnav">${navigation}</nav>`;
   }
   function render(tab) {
     place = tab === 'park' ? {id: 'park'} : tab === 'arcade' ? {id: 'arcade'} : null;
@@ -32,7 +34,7 @@ function fixture(search = '') {
     app.sync();
   }
   const frame = () => window.document.querySelector('[data-park-app] iframe');
-  return {window, dom, app, render, frame, timers, setOwner: id => {owner = id;}, gestures: () => ({gestureAttach, gestureDetach})};
+  return {window, dom, app, render, frame, timers, setOwner: id => {owner = id;}, gestures: () => ({gestureAttach, gestureDetach}), worldReturns: () => worldReturns};
 }
 
 test('Park iframe survives a short visit to Arcade and returns without reloading', () => {
@@ -61,6 +63,34 @@ test('Park iframe survives a short visit to Arcade and returns without reloading
     assert.deepEqual(calls, ['home','home','saved'], 'an explicit shortcut still opens its target');
     f.window.dispatchEvent(new f.window.PageTransitionEvent('pageshow', {persisted:true}));
     assert.equal(calls.at(-1),'home','browser history restoration returns to the main feed');
+  } finally {f.dom.window.close();}
+});
+
+test('Park browser chrome restores the original section color without changing the member theme', () => {
+  const f = fixture();
+  try {
+    const root = f.window.document.documentElement;
+    const theme = f.window.document.querySelector('meta[name="theme-color"]');
+    const original = theme.content;
+    root.dataset.theme = 'dark';
+    f.render('hub');
+    assert.equal(theme.content,original);
+    f.render('park');
+    const parkColor = theme.content;
+    assert.notEqual(parkColor,original,'entering Park applies its separate browser color');
+    assert.equal(root.classList.contains('world-park-active'),true);
+    assert.equal(root.dataset.theme,'dark','Park preserves the member dark-mode preference');
+    const frame = f.frame();
+    frame.contentWindow.OjjudaParkFull={returnHome:()=>true};
+    for (const other of ['hub','arcade','my']) {
+      f.render(other);
+      assert.equal(theme.content,original,other+' restores the exact previous section color');
+      assert.equal(root.classList.contains('world-park-active'),false);
+      assert.equal(root.dataset.theme,'dark');
+      f.render('park');
+      assert.equal(f.frame(),frame,'color transitions preserve the cached Park frame');
+      assert.equal(theme.content,parkColor);
+    }
   } finally {f.dom.window.close();}
 });
 
@@ -132,5 +162,59 @@ test('only the current visible Park composer hides the host navigation', () => {
     assert.equal(composing(),true);
     report(current,{composerOpen:false,overlayOpen:false});
     assert.equal(composing(),false);
+  } finally {f.dom.window.close();}
+});
+
+test('Park menu selection follows the current card frame and survives shell repaint', () => {
+  const f=fixture();
+  const report=(frame,action,origin='https://fixture.test')=>f.window.dispatchEvent(new f.window.MessageEvent('message',{
+    origin,source:frame.contentWindow,data:{type:'ojjuda:park-state',navigationAction:action}
+  }));
+  const selected=()=>[...f.window.document.querySelectorAll('.sidenav [aria-current="page"],.bottomnav [aria-current="page"]')].map(button=>button.dataset.parkAction);
+  try {
+    f.render('park');
+    const frame=f.frame();let view='feed';
+    frame.contentWindow.OjjudaParkFull={navigationAction:()=>view,returnHome:()=>{view='feed';return true;},navigate(action){view=action;return true;}};
+    f.app.open('saved');
+    assert.deepEqual(selected(),['saved','saved'],'phone and desktop use the same selection');
+    assert.equal(f.app.navigationAction(),'saved');
+    f.render('park');
+    assert.equal(f.frame(),frame,'menu repaint keeps the existing card frame connected');
+    assert.deepEqual(selected(),['saved','saved']);
+    report(frame,'settings','https://foreign.invalid');
+    assert.deepEqual(selected(),['saved','saved'],'another origin cannot select a Park menu');
+    report(frame,'not-a-menu');
+    assert.deepEqual(selected(),['saved','saved'],'unknown menu actions are ignored');
+    view='settings';report(frame,'settings');
+    assert.deepEqual(selected(),['settings','settings']);
+    f.setOwner('member-b');f.render('park');
+    const current=f.frame();
+    assert.notEqual(current,frame);
+    report(frame,'saved');
+    assert.equal(f.app.navigationAction(),'feed','a previous account frame cannot change the selected menu');
+    current.contentWindow.OjjudaParkFull={navigationAction:()=> 'mine'};
+    report(current,'mine');
+    assert.deepEqual(selected(),['mine','mine']);
+  } finally {f.dom.window.close();}
+});
+
+test('Agit return from Park settings respects pending saves and the active frame', () => {
+  const f=fixture();
+  const go=(frame,origin='https://fixture.test')=>f.window.dispatchEvent(new f.window.MessageEvent('message',{
+    origin,source:frame.contentWindow,data:{type:'ojjuda:park-navigate',action:'world'}
+  }));
+  try {
+    f.render('park');
+    const frame=f.frame();
+    frame.contentWindow.canCloseParkNote=()=>false;
+    go(frame);
+    assert.equal(f.worldReturns(),0,'a pending card or account save blocks leaving Park');
+    frame.contentWindow.canCloseParkNote=()=>true;
+    go(frame,'https://foreign.invalid');
+    assert.equal(f.worldReturns(),0);
+    go(frame);
+    assert.equal(f.worldReturns(),1);
+    assert.equal(f.window.document.querySelector('.topbar').textContent,'hub');
+    assert.equal(frame.closest('[data-park-app]').hidden,true,'returning to Agit keeps only an inactive cached Park');
   } finally {f.dom.window.close();}
 });

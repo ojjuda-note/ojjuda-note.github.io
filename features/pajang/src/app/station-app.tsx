@@ -14,9 +14,10 @@ import AnswerGenderVisibility from "./answer-gender-visibility";
 import {ChatExchange} from "./chat-exchange";
 import {ExchangeProfileEditor} from "./exchange-profile";
 import {MyExchangePhotos,removeAllExchangePhotos} from "./exchange-photos";
+import {AccountSettings,AccountActionForm} from "./account-settings";
 
 import {StationNavigation,readRoute,routeHref,type Tab} from "./station-navigation";
-type Modal = {kind:"answer"|"signal"|"result"|"setup"|"edit"|"channels"|"help"|"block"|"delete"|"person"|"privateProfile"|"privatePhotos";peer?:string;period?:string;originalBody?:string;questionId?:number;answer?:DiscoveryAnswer};
+type Modal = {kind:"answer"|"signal"|"result"|"setup"|"edit"|"channels"|"help"|"block"|"delete"|"person"|"privateProfile"|"privatePhotos"|"logout"|"withdraw";peer?:string;period?:string;originalBody?:string;questionId?:number;answer?:DiscoveryAnswer};
 const districts:Record<string,string[]> = regionCatalog;
 const provinces=Object.keys(districts);
 const fmtClock=(at:number)=>new Intl.DateTimeFormat("ko-KR",{hour:"2-digit",minute:"2-digit",timeZone:"Asia/Seoul"}).format(new Date(at));
@@ -30,11 +31,11 @@ async function request<T,>(url:string,init?:RequestInit):Promise<T>{
   return data as T;
 }
 function Blank({icon,title,body,button,onClick}:{icon:string;title:string;body:string;button?:string;onClick?:()=>void}){return <div className="empty"><span className="emptyicon"><I n={icon} s={27}/></span><h3>{title}</h3>{body&&<p>{body}</p>}{button&&<button className="secondary" onClick={onClick}>{button}<I n="arrow" s={16}/></button>}</div>;}
-function Dialog({children,close,title}:{children:React.ReactNode;close:()=>void;title:string}){
+function Dialog({children,close,title,busy=false}:{children:React.ReactNode;close:()=>void;title:string;busy?:boolean}){
   const ref=useRef<HTMLDialogElement>(null);
   useEffect(()=>{const node=ref.current;if(node&&!node.open)node.showModal();const overflow=document.body.style.overflow;document.body.style.overflow="hidden";return()=>{node?.close();document.body.style.overflow=overflow;};},[]);
   return <dialog ref={ref} className="dialog" aria-label={title} onCancel={e=>{e.preventDefault();close();}} onClick={e=>{if(e.target===ref.current){const b=ref.current.getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)close();}}}>
-    <div className="sheet-bar"><a href="/world.html" target="_top"><I n="back" s={15}/>아지트로</a><button className="iconbtn" aria-label="닫기" onClick={close}><I n="close"/></button></div>{children}</dialog>;
+    <div className="sheet-bar"><button className="iconbtn" aria-label="닫기" disabled={busy} onClick={close}><I n="close"/></button></div>{children}</dialog>;
 }
 function Editor({initial="",max,label,submit,onSave,busy,hint,optional=false}:{initial?:string;max:number;label:string;submit:string;onSave:(v:string)=>void;busy:boolean;hint:string;optional?:boolean}){
   const [value,setValue]=useState(initial);
@@ -262,6 +263,10 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     setModal(m.answer||m.kind==="signal"?{...m,period}:m);
   }
   function close(){if(!lock.current){setModal(null);setError("");}}
+  function accountBusy(value:boolean){
+    lock.current=value;setBusy(value);
+    if(value){cancelAutoLocation();threadRead.current?.abort();}
+  }
   function go(t:Tab){navigate(t);}
   function startChat(p:string){navigate("chat",p);}
   async function act(action:string,b:Record<string,any>,forceLive=false):Promise<Station|null>{
@@ -334,7 +339,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     }
     if(currentPeer.current===peerId){followChat.current=true;void readThread(peerId,true);}
   }
-  const modalTitle=modal?({answer:answerTitle,signal:"신호 보내기",result:"신호 상태",setup:"회원 프로필 만들기",edit:"프로필 수정",channels:"채널 선택",help:"파장 이용 안내",block:"프로필 차단",delete:"데이터 삭제",person:"상대 프로필",privateProfile:"교환용 프로필",privatePhotos:"교환용 사진"}[modal.kind]):"";
+  const modalTitle=modal?({answer:answerTitle,signal:"신호 보내기",result:"신호 상태",setup:"회원 프로필 만들기",edit:"프로필 수정",channels:"채널 선택",help:"파장 이용 안내",block:"프로필 차단",delete:"파장 기록 삭제",person:"상대 프로필",privateProfile:"교환용 프로필",privatePhotos:"교환용 사진",logout:"로그아웃",withdraw:"오쭈다 회원탈퇴"}[modal.kind]):"";
   return <div className="station-layout">
     <StationNavigation tab={tab} onGo={go} pending={signalCount}/>
     <main className="wrap station-content" id="station-content">
@@ -377,17 +382,19 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     </section>}
     {tab==="chat"&&active&&validThread&&<section className="innerpage" key={thread}><div className="chatbox"><div className="chatheader"><button className="iconbtn" aria-label="대화 목록" onClick={()=>go("inbox")}><I n="back"/></button><button className="person" onClick={()=>open({kind:"person",peer:active.id})}><Art interest={active.interest}/><span><strong>{active.name}</strong><small>서로 신호를 보낸 회원</small></span></button><button className="quiet" onClick={()=>open({kind:"block",peer:active.id})}>차단</button></div><ChatExchange key={active.id} peer={active.id} name={active.name} lastMessage={lastMsg}/><div className="chatlog" onScroll={event=>{const log=event.currentTarget;followChat.current=log.scrollHeight-log.scrollTop-log.clientHeight<64;}}>{threadMessages.length===0?<div className="chatintro"><I n="wave" s={32}/><p>두 사람의 대화가 열렸어요.</p><small>오늘의 답변을 떠올리며 첫인사를 건네보세요.</small></div>:<>{threadMessages.length>=100&&<p className="chatnote">최근 메시지 100개</p>}{threadMessages.map(m=><div key={m.id} className={"bubbleline "+(m.src===me?.id?"mine":"")}><p>{m.body}</p><time>{fmtClock(m.at)}</time></div>)}</>}<div ref={bottom}/></div>{error&&!modal&&<p className="error">{error}</p>}<form className="composer" onSubmit={e=>{e.preventDefault();void sendMessage();}}><input maxLength={500} aria-label="메시지" placeholder="메시지를 입력하세요" value={draft} onChange={e=>{setDraft(e.target.value);draftByPeer.current.set(thread,e.target.value);}}/><button aria-label="메시지 보내기" disabled={busy||!draft.trim()}><I n="send" s={18}/></button></form></div></section>}
     {tab==="profile"&&<section className="station-account innerpage">
-      <div className="channel-heading"><div className="pagetitle"><I n="user" s={27}/><h1>내 파장</h1></div></div>
+      <div className="channel-heading account-heading"><div className="pagetitle"><I n="user" s={27}/><h1>내 파장</h1></div><a className="secondary account-agit agit-return" href="/world.html" target="_top"><I n="home" s={18}/>아지트 가기</a></div>
       {me?<><section className="account-summary"><Art interest={me.interest} large/><div><h2>{me.name}</h2><p>{introDetails(me)}</p></div><button className="secondary small" onClick={()=>open({kind:"edit"})}>공개 소개 수정</button></section>
         <section className="account-section"><h2>프로필과 사진 교환</h2><p>대화방에서 각자 메시지를 5개 이상 보낸 뒤, 둘 다 동의한 항목을 교환해요.</p>
           <div className="settings"><button onClick={()=>open({kind:"privateProfile"})}>교환용 프로필 작성<I n="right" s={17}/></button>
           <button onClick={()=>open({kind:"privatePhotos"})}>교환용 사진 관리<I n="right" s={17}/></button></div></section>
-        <MyAnswers key={me.id+period} answered={Boolean(me.body)} onWrite={()=>open({kind:"answer"})}/>
         <section className="account-section"><h2>공개 설정</h2><AnswerGenderVisibility key={me.id} onSaved={()=>setHistoryRevision(n=>n+1)}/></section>
-        <div className="account-tools"><button className="quiet" onClick={()=>open({kind:"help"})}>이용 안내</button><button className="quiet" onClick={()=>open({kind:"delete"})}>파장 기록 삭제</button></div></>:
+        <AccountSettings onHelp={()=>open({kind:"help"})} onAction={kind=>open({kind})}/>
+        <MyAnswers key={me.id+period} answered={Boolean(me.body)} onWrite={()=>open({kind:"answer"})}/>
+        <div className="account-tools"><button className="quiet" onClick={()=>open({kind:"delete"})}>파장 기록 삭제</button></div></>:
         <Blank icon="user" title="파장에 참여해 주세요" body="오쭈다 회원 정보로 시작할 수 있어요." button="참여하기" onClick={()=>void enterMember()}/>}</section>}
     </main>{toast&&<div role="status" className="toast">{toast}</div>}
-  {modal&&<Dialog key={modal.kind} close={close} title={modalTitle}>
+  {modal&&<Dialog key={modal.kind} close={close} title={modalTitle} busy={busy}>
+    {(modal.kind==="logout"||modal.kind==="withdraw")&&<AccountActionForm action={modal.kind} close={close} onBusyChange={accountBusy}/>}
     {modal.kind==="answer"&&<><span className="modalicon"><I n="pencil"/></span><h2>{answerTitle}</h2><p className="questionbox">{themeText}</p>
       <p className="sub">{editingAnswer?"저장하면 모두의 답변에도 수정한 내용이 보여요.":"답변을 공개하면 작성일을 포함해 1년(365일) 동안 파장 회원이 질문과 내 답변을 함께 볼 수 있어요."}</p>
       <Editor initial={modal.originalBody} max={220} label="내 이야기" hint="장소, 노래, 기억처럼 구체적인 장면을 들려주세요."
@@ -410,7 +417,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     {modal.kind==="privatePhotos"&&<><h2>교환용 사진</h2><p className="sub">사진은 최대 10장까지 선택해 등록할 수 있어요. 사진을 교환한 상대에게는 나중에 추가한 사진도 보여요. 대화방에서 언제든 공유를 끝낼 수 있어요.</p><MyExchangePhotos/></>}
     {(modal.kind==="edit"||modal.kind==="setup")&&<><h2>{modal.kind==="setup"?"회원 프로필 만들기":"프로필 수정"}</h2><p className="sub">{modal.kind==="setup"?"얼굴 사진 없이 닉네임과 취향으로 시작해요.":"내 프로필에 보여줄 정보를 정해 주세요."}</p><ProfileForm person={modal.kind==="setup"?null:me} isNew={modal.kind==="setup"} busy={busy} onSave={async b=>{const setup=modal.kind==="setup";if(await act(setup?"participate":"profile",b,setup)){go("profile");setToast("프로필을 저장했어요.");}}}/></>}
     {modal.kind==="block"&&peer&&<><span className="modalicon"><I n="shield"/></span><h2>{peer.name}님을 차단할까요?</h2><p className="sub">서로의 답변과 신호, 대화가 목록에서 사라져요. 이후 메시지도 보낼 수 없어요.</p><button className="primary wide" disabled={busy} onClick={async()=>{if(await act("block",{peer:peer.id})){go("today");setToast("프로필을 차단했어요.");}}}>차단하기</button><button className="textbtn" onClick={close}>취소</button></>}
-    {modal.kind==="delete"&&<><h2>프로필과 기록을 삭제할까요?</h2><p className="sub">회원 프로필과 작성한 답변, 주고받은 신호와 대화가 삭제돼요. 삭제한 내용은 복구할 수 없어요.</p><button className="primary wide" disabled={busy} onClick={async()=>{if(await act("delete",{})){location.replace("./");}}}>내 기록 삭제</button><button className="textbtn" onClick={close}>취소</button></>}
+    {modal.kind==="delete"&&<><h2>파장 기록을 삭제할까요?</h2><p className="sub">파장 프로필과 답변, 신호·대화·교환용 사진을 삭제해요. 삭제한 내용은 복구할 수 없으며, 오쭈다 계정은 유지돼요.</p><button className="primary wide" disabled={busy} onClick={async()=>{if(await act("delete",{})){location.replace("./");}}}>파장 기록 삭제</button><button className="textbtn" onClick={close}>취소</button></>}
     {modal.kind==="help"&&<><span className="modalicon"><I n="headphones"/></span><h2>파장 이용 안내</h2><div className="guidelist">{[["오전과 오후에 한 번씩 답해요","한국 시간 자정과 낮 12시에 새 질문이 열려요. 한 번 답하면 다음 질문이 열릴 때까지 바로 메인으로 들어가요."],["답변에 신호를 보내요","모두의 답변에서 최근 1년의 질문과 답을 함께 읽어 보세요. 내 답을 쓰기 전에도 마음에 드는 사람에게 하루 세 번까지 신호를 보낼 수 있어요."],["서로 닿으면 대화해요","받은 신호를 수락하면 두 사람의 대화방이 열려요. 상대 프로필에서 언제든 차단할 수 있어요."],["프로필과 사진을 교환해요","이 대화방에서 각자 메시지를 5개 이상 보낸 뒤 프로필이나 사진 교환을 신청할 수 있어요. 상대가 수락하면 서로 볼 수 있어요."]].map(([a,b],i)=><div key={a}><b>{i+1}</b><div><strong>{a}</strong><p>{b}</p></div></div>)}</div><button className="primary wide" onClick={close}>알겠어요</button></>}
     {error&&<p role="alert" className="error">{error}</p>}
   </Dialog>}</div>;

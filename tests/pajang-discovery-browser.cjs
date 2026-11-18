@@ -127,9 +127,17 @@ function clientFixture(hash) {
     window.feedCalls=[];window.heldGender=null;window.releaseFeed=null;
     const messages=[{id:'1',src:'peer1',dst:'me',body:'안녕하세요!',at:1}];
     window.authCalls=0;window.artCalls=[];window.memberCalls=[];window.sendIds=[];window.programCalls=0;
+    window.accountWrites=[];window.profileReads=[];
+    let authSession=mode==='guest'?null:{user:{id:mode==='switched'?'next-member':'member'},access_token:'fixture-token'};
+    const authListeners=new Set();
     const db={
       auth:{getUser:async()=>{window.authCalls++;if(flightCheck||sessionStorage.holdEntryIdentity==='yes')await new Promise(resolve=>{window.finishFlight=resolve;});return {data:{user:mode==='guest'?null:{id:'member'}}};},
-        getSession:async()=>({data:{session:mode==='guest'?null:{user:{id:mode==='switched'?'next-member':'member'}}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
+        getSession:async()=>({data:{session:authSession}}),
+        onAuthStateChange:listener=>{authListeners.add(listener);return {data:{subscription:{unsubscribe(){authListeners.delete(listener);}}}};},
+        signOut:async options=>{window.accountWrites.push({action:'signOut',...options});sessionStorage.lastSignOutScope=options.scope;authSession=null;sessionStorage.fixtureMode='guest';for(const listener of authListeners)listener('SIGNED_OUT',null);return {error:null};}},
+      from:table=>({select:columns=>({eq:(column,id)=>({maybeSingle:async()=>{
+        window.profileReads.push({table,columns,column,id});return {data:{nickname:'오쭈다보리'}};
+      }})})}),
       functions:{invoke:async()=>({data:{bucket:'fixture',files:{'station.js':'${hash}',...Object.fromEntries(['coffee','walk','vinyl','camera','book','tennis'].map(key=>[key+'.webp','pending']))}}})},
       storage:{from:()=>({download:async key=>{
         if(key.endsWith('station.js')){window.programCalls++;return {data:await (await fetch('/program')).blob()};}
@@ -148,6 +156,7 @@ function clientFixture(hash) {
         }
 
         if(name==='pajang_member'){
+          if(p.p_action==='delete')window.accountWrites.push({action:'delete'});
           state.locationEnabled=localStorage.locationEnabled!=='false';state.locationVersion=Number(localStorage.locationVersion||0);
           if(!state.locationEnabled)state.radarOn=false;
           window.memberCalls.push(p.p_action);
@@ -385,12 +394,11 @@ function clientFixture(hash) {
     // Exercise navigation against the real shell, entry, member gate and popup host.
     await page.goto(origin+project+'station.html');
     const mast=page.locator('.pajang-mast .agit-return');
+    const accountHome=page.getByRole('link',{name:'아지트 가기',exact:true});
     const nav=page.getByRole('navigation',{name:'파장 메뉴'});
     const selectMenu=label=>nav.getByRole('link',{name:label,exact:true}).click();
-    const expectHome=async()=>{
-      const box=await mast.boundingBox();assert.ok(box && box.y>=0 && box.y<65,'Agit exit stays in the viewport');
-      assert.equal(await mast.getAttribute('href'),'/world.html');
-    };
+    const expectHeaderClean=async()=>assert.equal(await mast.count(),0,'the global masthead has no Agit button');
+    const goHome=async()=>{await selectMenu('내 파장');await accountHome.click();await page.waitForURL('**/world.html');};
     const questionCard=page.locator('.letter-hero');
     await questionCard.getByRole('heading',{level:1}).waitFor();
     assert.equal(await questionCard.locator('p,a').count(),0);
@@ -413,7 +421,7 @@ function clientFixture(hash) {
     await editor.getByRole('button',{name:'닫기'}).click();
     await nav.waitFor();assert.equal(await nav.getByRole('link').count(),3);
     assert.deepEqual(await nav.getByRole('link').allTextContents(),['오늘','마음함','내 파장']);
-    await expectHome();
+    await expectHeaderClean();
     const capture=async name=>{
       await page.waitForTimeout(210);
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
@@ -428,7 +436,7 @@ function clientFixture(hash) {
     });
     await capture('home-mobile');
     await radio('female').tap();await cards.filter({hasText:rows[1].body}).waitFor();
-    await answers.locator('article').first().scrollIntoViewIfNeeded();await expectHome();
+    await answers.locator('article').first().scrollIntoViewIfNeeded();await expectHeaderClean();
     const readingY=await page.evaluate(()=>scrollY);
     await selectMenu('마음함');await page.getByRole('heading',{name:'마음함'}).waitFor();
     await page.goBack();await selected('female');await cards.filter({hasText:rows[1].body}).waitFor();
@@ -486,7 +494,7 @@ function clientFixture(hash) {
     await capture('radar-mobile');
     await page.reload();await page.getByRole('heading',{name:'주변 레이더'}).waitFor();
     await sameCellButton.waitFor();
-    await checkCompass(page,'.radar-scope','.radar-bearings text','.scope-person','.scope-same-cell');await expectHome();
+    await checkCompass(page,'.radar-scope','.radar-bearings text','.scope-person','.scope-same-cell');await expectHeaderClean();
     await selectMenu('마음함');await page.getByRole('button',{name:'수락하고 대화하기'}).waitFor();
     await capture('inbox-mobile');
     await page.getByRole('button',{name:'대화 열기'}).click();
@@ -524,15 +532,61 @@ function clientFixture(hash) {
     await page.getByText('두 사람의 대화가 열렸어요.').waitFor();
     await selectMenu('내 파장');await page.getByRole('heading',{name:'내 파장'}).waitFor();
     await page.getByText('내 책방 답변').waitFor();
+    await expectHeaderClean();
+    assert.equal(await accountHome.getAttribute('href'),'/world.html');
+    assert.equal(await accountHome.getAttribute('target'),'_top');
+    const settings=page.getByRole('region',{name:'기본 설정'});
+    assert.equal(await settings.getByRole('link',{name:'이용약관',exact:true}).getAttribute('href'),'/terms.html?from=pajang');
+    assert.equal(await settings.getByRole('link',{name:'개인정보처리방침',exact:true}).getAttribute('href'),'/privacy.html?from=pajang');
+    for(const width of [320,390]){
+      await page.setViewportSize({width,height:844});
+      assert.ok(await settings.evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth));
+      assert.ok(await accountHome.evaluate(el=>el.getBoundingClientRect().height>=44));
+      await settings.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
+      await settings.screenshot({path:path.join(dir,'account-settings-'+width+'.png'),animations:'disabled'});
+    }
+    await settings.getByRole('button',{name:'로그아웃',exact:true}).click();
+    const logout=page.getByRole('dialog',{name:'로그아웃',exact:true});
+    await logout.locator('button[type="submit"]:enabled').waitFor();
+    assert.match(await logout.textContent(),/아지트·공원·파장이 함께 로그아웃/);
+    await logout.getByRole('button',{name:'취소',exact:true}).click();
+    assert.deepEqual(await page.evaluate(()=>window.accountWrites),[],'cancelling logout does not change the account');
+    await settings.getByRole('button',{name:'회원탈퇴',exact:true}).click();
+    const withdrawal=page.getByRole('dialog',{name:'오쭈다 회원탈퇴',exact:true});
+    const nickname=withdrawal.getByLabel('확인을 위해 닉네임 ‘오쭈다보리’을 입력해 주세요.');
+    const consent=withdrawal.getByRole('checkbox');
+    const confirmWithdrawal=withdrawal.getByRole('button',{name:'회원탈퇴',exact:true});
+    await nickname.waitFor();
+    assert.deepEqual(await page.evaluate(()=>window.profileReads.at(-1)),{table:'profiles',columns:'nickname',column:'id',id:'member'});
+    assert.ok(await confirmWithdrawal.isDisabled());
+    await nickname.fill(me.name);await consent.check();
+    assert.ok(await confirmWithdrawal.isDisabled(),'a Pajang alias cannot confirm deletion of the integrated account');
+    await nickname.fill('오쭈다보리');assert.ok(await confirmWithdrawal.isEnabled());
+    await consent.uncheck();assert.ok(await confirmWithdrawal.isDisabled(),'the deletion acknowledgement is also required');
+    await withdrawal.screenshot({path:path.join(dir,'account-withdrawal-confirmation.png'),animations:'disabled'});
+    await withdrawal.getByRole('button',{name:'취소',exact:true}).click();
+    assert.deepEqual(await page.evaluate(()=>window.accountWrites),[],'withdrawal confirmation does not delete data');
+    await settings.getByRole('button',{name:'회원탈퇴',exact:true}).click();
+    await nickname.waitFor();assert.equal(await nickname.inputValue(),'');assert.equal(await consent.isChecked(),false);
+    await withdrawal.getByRole('button',{name:'닫기',exact:true}).click();
+    await settings.getByRole('button',{name:'로그아웃',exact:true}).click();
+    await logout.locator('button[type="submit"]:enabled').waitFor();
+    await logout.getByRole('button',{name:'로그아웃',exact:true}).click();
+    await page.getByRole('link',{name:'오쭈다 로그인하기'}).waitFor();
+    assert.equal(await page.evaluate(()=>sessionStorage.lastSignOutScope),'local','the mocked sign-out completes at the Pajang entrance');
+    await page.evaluate(()=>{sessionStorage.fixtureMode='member';});
+    await page.goto(origin+project+'station.html?tab=profile');await settings.waitFor();
+    console.log('PASS profile-only Agit button, integrated account menus, nickname/consent confirmation, safe cancellation and local logout');
     await page.getByRole('button',{name:'공개 소개 수정'}).click();
     const dialog=page.getByRole('dialog');await dialog.waitFor();await capture('profile-editor');
-    await dialog.getByRole('link',{name:'아지트로',exact:true}).click();await page.waitForURL('**/world.html');
+    assert.equal(await dialog.getByRole('link',{name:'아지트로',exact:true}).count(),0);
+    await dialog.getByRole('button',{name:'닫기'}).click();await goHome();
     await page.goto(origin+project+'station.html?view=radar');
     await page.getByRole('heading',{name:'주변 레이더'}).waitFor();
     await checkCompass(page,'.radar-scope','.radar-bearings text','.scope-person');
     await selectMenu('내 파장');await page.setViewportSize({width:1080,height:840});
     await page.screenshot({path:path.join(dir,'pajang-profile-desktop.png'),animations:'disabled'});
-    await selectMenu('오늘');await answers.waitFor();await capture('home-desktop');await mast.click();await page.waitForURL('**/world.html');
+    await selectMenu('오늘');await answers.waitFor();await capture('home-desktop');await goHome();
     const banner=page.getByRole('link',{name:/파장.*오늘의 질문 보기/});
     for(const width of [320,390,1080]){
       await page.setViewportSize({width,height:844});
@@ -575,7 +629,21 @@ function clientFixture(hash) {
     await page.locator('#answer-form [type=submit]').click();await nav.waitFor();
     assert.equal(await page.evaluate(()=>window.entryMarker===document.querySelector('.pajang-mast')),true,'answer submission stays in the same document');
     assert.equal(entryDocuments.length-beforeEntry,1,'a new member answers and enters without a second navigation');
-    await mast.click();await page.waitForURL('**/world.html');
+    const focusedQuestion=questionCard.getByRole('heading',{level:1});
+    // Reproduce the entry announcement deterministically; React may paint after its RAF.
+    await focusedQuestion.waitFor();
+    await page.keyboard.press('Tab');
+    await focusedQuestion.evaluate(el=>{el.tabIndex=-1;el.focus({preventScroll:true});});
+    assert.ok(await focusedQuestion.evaluate(el=>el===document.activeElement&&el.matches(':focus-visible')));
+    assert.equal(await focusedQuestion.evaluate(el=>getComputedStyle(el).outlineStyle),'none','the automatically focused question has no input-like box');
+    await questionCard.screenshot({path:path.join(dir,'question-without-focus-box.png'),animations:'disabled'});
+    await page.keyboard.press('Tab');
+    assert.ok(await page.evaluate(()=>{
+      const el=document.activeElement;
+      return el?.matches('.letter-copy button:focus-visible')&&getComputedStyle(el).outlineStyle!=='none'&&parseFloat(getComputedStyle(el).outlineWidth)>0;
+    }),'keyboard users still see the answer button focus');
+    console.log('PASS automatic heading focus without a box, while keyboard controls retain visible focus');
+    await goHome();
     await page.evaluate(()=>{sessionStorage.fixtureMode='new';});
     await page.goto(origin+project+'station.html?tab=profile');
     await page.getByText('파장 첫 참여',{exact:true}).waitFor();
@@ -610,18 +678,20 @@ function clientFixture(hash) {
       await page.goto(origin+project+'station.html');
       await page.locator('#gate p').filter({hasText:mode==='guest'?'로그인한':'이 계정은'}).waitFor();
       assert.equal(await page.locator('.flight-scene').count(),0);
-      await expectHome();await mast.click();await page.waitForURL('**/world.html');
+      await expectHeaderClean();
+      if(mode==='guest')assert.equal(await page.getByRole('link',{name:'오쭈다 로그인하기'}).getAttribute('href'),'/?auth=login&next=pajang');
+      else {await page.getByRole('link',{name:'아지트로 돌아가기'}).click();await page.waitForURL('**/world.html');}
     }
-    console.log('PASS three primary destinations, direct acceptance, scroll-stable home exit, modal exit, direct legacy routes, thread reload/back, single-document Agit entry and join, and guest/denied returns');
+    console.log('PASS three primary destinations, direct acceptance, profile-only Agit exit, modal cancellation, direct legacy routes, thread reload/back, single-document Agit entry and join, and guest/denied returns');
     console.log('PASS single remote identity check, two requested illustrations out of six, zero rereads after join, delayed-send draft, retry identity, concurrent reads and late signal acceptance');
     // Leaving a pending member check must not later reopen Pajang.
     await page.evaluate(()=>{sessionStorage.fixtureMode='member';sessionStorage.openTiming='yes';sessionStorage.holdEntryIdentity='yes';sessionStorage.removeItem('pajang:answered-round');});
     await page.goto(origin+'/world.html?closing=1');
     await banner.click();
     await page.locator('#gate .flight-scene').waitFor();
-    await mast.click();await page.waitForURL('**/world.html');
+    await page.goBack();await page.waitForURL('**/world.html?closing=1');
     await page.waitForTimeout(500);
-    assert.ok(page.url().endsWith('world.html'));
+    assert.ok(page.url().endsWith('world.html?closing=1'));
     assert.equal(await page.locator('dialog').count(),0);
     await page.evaluate(()=>{delete sessionStorage.holdEntryIdentity;});
     const openingTimes={};
@@ -756,7 +826,7 @@ function clientFixture(hash) {
       if(scenario==='new'){
         await page.locator('#welcome #write').waitFor({timeout:5000});
         await page.locator('#write').click();await page.locator('#mine').fill('위치를 기다리는 동안 답변을 써요.');
-        await mast.click();await page.waitForURL('**/world.html');
+        await page.goBack();await page.waitForURL('**/world.html?slow-location=new');
         assert.equal(await page.locator('dialog').count(),0);
         continue;
       }
