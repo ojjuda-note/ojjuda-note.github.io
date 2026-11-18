@@ -1,0 +1,267 @@
+/* The original group fields stay in one form; tools only change their layout. */
+(() => {
+  'use strict';
+  const paths = {
+    photo: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 5-5 4 4 3-3 6 6"/>',
+    kind: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+    schedule: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h3m3 0h2"/>',
+    room: '<circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2m2-16a3 3 0 0 1 0 6m2 4a5 5 0 0 1 2 4v2"/>',
+    close: '<path d="m6 6 12 12M18 6 6 18"/>',
+    check: '<path d="m4 12 5 5L20 6"/>'
+  };
+  const icon = name => `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name]}</svg>`;
+  const node = (tag, className) => Object.assign(document.createElement(tag), {className});
+
+  function install(dialog, form) {
+    const head = dialog.querySelector('.dialog-head'), submit = form.querySelector('[type="submit"]');
+    const extras = form.querySelector('.composer-extras'), room = form.querySelector('.composer-room');
+    const title = form.querySelector('[data-kind-fields]'), schedule = form.querySelector('#schedule-fields');
+    const picker = form.querySelector('.kind-picker'), kind = form.elements.kind;
+    if (!head || !submit || !extras || !room || !title || !schedule || !kind) return null;
+
+    const body = node('div', 'group-compose-body'), dock = node('div', 'group-compose-dock');
+    const toolbar = node('div', 'group-compose-toolbar'), card = node('section', 'group-compose-options');
+    const panelHead = node('header', 'group-compose-options-head'), heading = node('h3', '');
+    const panelClose = node('button', 'group-compose-panel-close'), content = node('div', 'group-compose-options-body');
+    const context = node('button', 'group-compose-context'), status = node('div', 'group-compose-status');
+    const panels = {}, buttons = {}, labels = {photo:'사진·동영상', kind:'글 종류', schedule:'일정·장소', room:'올릴 그룹'};
+    let active = '', frame = 0, caretMirror = null;
+    heading.id = 'group-compose-option-title';
+    card.setAttribute('aria-labelledby', heading.id);
+    card.hidden = true;
+    panelClose.type = context.type = 'button';
+    panelClose.setAttribute('aria-label', '옵션 닫기');
+    panelClose.innerHTML = icon('close');
+    panelHead.append(heading, panelClose);
+    card.append(panelHead, content);
+    toolbar.setAttribute('role', 'toolbar');
+    toolbar.setAttribute('aria-label', '글쓰기 옵션');
+    for (const key of Object.keys(labels)) {
+      const panel = node('div', 'group-compose-panel'), button = node('button', 'group-compose-tool');
+      panel.id = 'group-compose-' + key;
+      panel.dataset.groupPanel = key;
+      panel.hidden = true;
+      button.type = 'button';
+      button.dataset.groupTool = key;
+      button.setAttribute('aria-label', labels[key]);
+      button.setAttribute('aria-controls', panel.id);
+      button.setAttribute('aria-expanded', 'false');
+      button.innerHTML = icon(key) + `<span>${labels[key]}</span>`;
+      panels[key] = panel;
+      buttons[key] = button;
+      content.append(panel);
+      toolbar.append(button);
+    }
+    const roomFixed = room.classList.contains('fixed-room') || form.elements.room_id.disabled;
+    panels.room.append(room);
+    const kindField = kind.closest('label');
+    if (picker) panels.kind.append(picker);
+    panels.kind.append(kindField);
+    panels.schedule.append(schedule);
+    const photo = extras.querySelector('.file-picker'), hint = photo?.nextElementSibling;
+    if (photo) panels.photo.append(photo);
+    if (hint?.classList.contains('hint')) panels.photo.append(hint);
+    panels.photo.append(extras.querySelector('#attachments'));
+    extras.querySelectorAll(':scope > br').forEach(el => el.remove());
+    extras.open = true;
+    extras.querySelector('summary').hidden = true;
+    const counter = node('span', 'group-compose-count');
+    form.elements.body.insertAdjacentElement('afterend', counter);
+    body.append(context, title, ...form.querySelectorAll('.activity-editor'), extras);
+    status.append(form.querySelector('.error'), form.querySelector('#upload-status'));
+    const oldFooter = submit.closest('.dialog-foot');
+    const action = submit.textContent;
+    submit.classList.add('group-compose-submit');
+    submit.setAttribute('aria-label', action);
+    submit.title = action;
+    submit.innerHTML = icon('check');
+    const closeButton = head.querySelector('[data-close]');
+    closeButton.innerHTML = icon('close');
+    head.classList.add('group-compose-head');
+    head.querySelector('h2').textContent = action === '저장하기' ? '기록 수정' : '글 작성하기';
+    head.prepend(closeButton);
+    head.append(submit);
+    oldFooter.remove();
+    dock.append(card, toolbar);
+    form.append(head, body, status, dock);
+    dialog.classList.add('group-writing-dialog');
+    dialog.tabIndex = -1;
+
+    function writingField() {
+      const focused = document.activeElement;
+      return body.contains(focused) && focused.matches('input,textarea') ? focused : null;
+    }
+    function close(returnFocus = false) {
+      if (!active) return false;
+      const previous = buttons[active];
+      active = '';
+      card.hidden = true;
+      Object.values(panels).forEach(panel => { panel.hidden = true; });
+      Object.values(buttons).forEach(button => button.setAttribute('aria-expanded', 'false'));
+      if (returnFocus && !previous.hidden && !previous.disabled) previous.focus({preventScroll:true});
+      return true;
+    }
+    function open(key, focus = true) {
+      const button = buttons[key];
+      if (!button || button.hidden || button.disabled) return;
+      active = key;
+      heading.textContent = labels[key];
+      card.hidden = false;
+      for (const name of Object.keys(panels)) {
+        panels[name].hidden = name !== key;
+        buttons[name].setAttribute('aria-expanded', String(name === key));
+      }
+      content.scrollTop = 0;
+      if (focus) {
+        const field = Array.from(panels[key].querySelectorAll('button,input,textarea,select,[tabindex]'))
+          .find(el => !el.disabled && !el.closest('[hidden]'));
+        (field || panelClose).focus({preventScroll:true});
+      }
+    }
+    function bindTool(button, key) {
+      button.addEventListener('pointerdown', event => {
+        if (event.button === 0 && event.isPrimary !== false && writingField()) event.preventDefault();
+      });
+      button.addEventListener('click', event => {
+        const focus = !(event.detail > 0 && writingField());
+        if (active === key) close(focus);
+        else open(key, focus);
+      });
+    }
+    Object.entries(buttons).forEach(([key, button]) => bindTool(button, key));
+    bindTool(context, 'kind');
+    panelClose.addEventListener('pointerdown', event => {
+      if (event.button === 0 && event.isPrimary !== false && writingField()) event.preventDefault();
+    });
+    panelClose.addEventListener('click', event => close(!(event.detail > 0 && writingField())));
+    toolbar.addEventListener('keydown', event => {
+      if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+      const visible = Object.values(buttons).filter(button => !button.hidden && !button.disabled);
+      const index = visible.indexOf(document.activeElement);
+      if (index < 0) return;
+      event.preventDefault();
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? visible.length - 1 :
+        (index + (event.key === 'ArrowRight' ? 1 : -1) + visible.length) % visible.length;
+      visible[next].focus();
+    });
+    dialog.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && close(true)) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    });
+    form.addEventListener('invalid', event => {
+      const panel = event.target.closest('[data-group-panel]');
+      if (panel) open(panel.dataset.groupPanel, false);
+    }, true);
+
+    function sync() {
+      const option = kind.selectedOptions[0], name = form.elements.room_id.selectedOptions[0]?.textContent || '';
+      context.textContent = name + ' · ' + option.textContent;
+      context.setAttribute('aria-label', '글 종류: ' + option.textContent);
+      context.disabled = buttons.kind.disabled = kind.disabled;
+      buttons.schedule.hidden = !['event','trip'].includes(kind.value);
+      buttons.room.hidden = roomFixed;
+      counter.textContent = form.elements.body.value.length.toLocaleString('ko-KR') + ' / 10,000';
+      buttons.photo.dataset.selected = String(!!form.querySelector('#attachments').children.length);
+      if (active && buttons[active].hidden) close();
+    }
+    form.addEventListener('input', sync);
+    form.addEventListener('change', event => {
+      sync();
+      if (event.target === kind && active === 'kind') {
+        if (!buttons.schedule.hidden) open('schedule');
+        else close(true);
+      }
+    });
+
+    function writingLine(field) {
+      const bounds = field.getBoundingClientRect(), style = getComputedStyle(field);
+      const pixels = name => parseFloat(style[name]) || 0;
+      const lineHeight = pixels('lineHeight') || pixels('fontSize') * 1.4;
+      if (field.tagName !== 'TEXTAREA') {
+        const contentHeight = field.clientHeight - pixels('paddingTop') - pixels('paddingBottom');
+        const top = bounds.top + pixels('borderTopWidth') + pixels('paddingTop') + Math.max(0, (contentHeight - lineHeight) / 2);
+        return {top, bottom:top + lineHeight};
+      }
+      if (!caretMirror) {
+        caretMirror = node('div', '');
+        caretMirror.setAttribute('aria-hidden', 'true');
+        caretMirror.inert = true;
+        Object.assign(caretMirror.style, {
+          position:'fixed', left:'-10000px', top:'0', visibility:'hidden', pointerEvents:'none',
+          boxSizing:'border-box', height:'auto', minHeight:'0', maxHeight:'none',
+          margin:'0', border:'0', overflow:'visible'
+        });
+        document.body.append(caretMirror);
+      }
+      for (const property of ['fontFamily','fontSize','fontWeight','fontStyle','fontStretch',
+        'fontVariant','fontKerning','fontFeatureSettings','fontVariationSettings',
+        'letterSpacing','wordSpacing','lineHeight','textAlign','textIndent','textTransform',
+        'direction','whiteSpace','wordBreak','overflowWrap','tabSize',
+        'paddingTop','paddingRight','paddingBottom','paddingLeft']) caretMirror.style[property] = style[property];
+      caretMirror.style.width = `${field.clientWidth}px`;
+      const position = field.selectionDirection === 'backward' ? field.selectionStart : field.selectionEnd;
+      const marker = node('span', '');
+      marker.textContent = field.value.slice(position) || '\u200b';
+      caretMirror.replaceChildren(document.createTextNode(field.value.slice(0, position)), marker);
+      try {
+        const fragment = marker.getClientRects()[0] || marker.getBoundingClientRect();
+        const leading = Math.max(0, (lineHeight - fragment.height) / 2);
+        const top = bounds.top + pixels('borderTopWidth') + fragment.top - caretMirror.getBoundingClientRect().top - leading - field.scrollTop;
+        return {top, bottom:top + lineHeight};
+      } finally { caretMirror.replaceChildren(); }
+    }
+    function ensureVisible() {
+      frame = 0;
+      if (!dialog.open || Math.abs((window.visualViewport?.scale || 1) - 1) > .02) return;
+      const focused = writingField();
+      if (!focused) return;
+      const area = body.getBoundingClientRect();
+      if (!area.height || !focused.getClientRects().length) return;
+      let line = writingLine(focused);
+      if (focused.tagName === 'TEXTAREA') {
+        // A native textarea can scroll its own first line slightly out of view
+        // after a keyboard resize. Keep that line inside the field as well as
+        // the outer sheet, without changing the selection or the draft.
+        const field = focused.getBoundingClientRect();
+        const inset = Math.min(6, Math.max(0, (focused.clientHeight - (line.bottom - line.top)) / 2));
+        const top = field.top + focused.clientTop + inset;
+        const bottom = field.top + focused.clientTop + focused.clientHeight - inset;
+        const delta = line.top < top ? line.top - top : line.bottom > bottom ? line.bottom - bottom : 0;
+        if (Math.abs(delta) > .5) {
+          focused.scrollTop += delta;
+          line = writingLine(focused);
+        }
+      }
+      const margin = Math.min(6, Math.max(0, (body.clientHeight - (line.bottom - line.top)) / 2));
+      const top = area.top + margin, bottom = area.bottom - margin;
+      const delta = line.bottom - line.top > bottom - top ? (line.top + line.bottom - top - bottom) / 2 :
+        line.top < top ? line.top - top : line.bottom > bottom ? line.bottom - bottom : 0;
+      if (Math.abs(delta) > .5) body.scrollTop += delta;
+    }
+    function queueVisibility() {
+      if (!frame && writingField()) frame = requestAnimationFrame(ensureVisible);
+    }
+    body.addEventListener('focusin', () => { close(); queueVisibility(); });
+    for (const event of ['input','select','keyup','pointerup']) body.addEventListener(event, queueVisibility);
+    document.addEventListener('selectionchange', queueVisibility);
+    const observer = window.ResizeObserver ? new ResizeObserver(queueVisibility) : null;
+    observer?.observe(body);
+    const oldOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    dialog.addEventListener('close', () => {
+      observer?.disconnect();
+      cancelAnimationFrame(frame);
+      document.removeEventListener('selectionchange', queueVisibility);
+      caretMirror?.remove();
+      document.body.style.overflow = oldOverflow;
+    }, {once:true});
+    sync();
+    dialog.focus({preventScroll:true});
+    const api = Object.freeze({sync, open, close});
+    form.ojjudaWriter = api;
+    return api;
+  }
+  window.OjjudaGroupComposer = Object.freeze({install});
+})();

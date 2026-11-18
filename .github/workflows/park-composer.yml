@@ -1,10 +1,11 @@
-name: Park composer checks
+name: Writing composer checks
 
 on:
   pull_request:
     paths:
       - 'note/**'
       - 'park/**'
+      - 'groups/**'
       - 'shared/viewport/**'
       - 'features/wallet/ju-decorations.*'
       - 'app/world/**'
@@ -14,6 +15,8 @@ on:
       - 'tests/park-*.test.cjs'
       - 'tests/mobile-viewport-ui.test.cjs'
       - 'tests/guest-access-ui.test.cjs'
+      - 'tests/group-board-dom.test.cjs'
+      - 'tests/group-composer-ui.test.cjs'
       - 'tests/package*.json'
       - '.github/workflows/park-composer.yml'
   push:
@@ -21,6 +24,7 @@ on:
     paths:
       - 'note/**'
       - 'park/**'
+      - 'groups/**'
       - 'shared/viewport/**'
       - 'features/wallet/ju-decorations.*'
       - 'app/world/**'
@@ -30,6 +34,8 @@ on:
       - 'tests/park-*.test.cjs'
       - 'tests/mobile-viewport-ui.test.cjs'
       - 'tests/guest-access-ui.test.cjs'
+      - 'tests/group-board-dom.test.cjs'
+      - 'tests/group-composer-ui.test.cjs'
       - 'tests/package*.json'
       - '.github/workflows/park-composer.yml'
   workflow_dispatch:
@@ -43,13 +49,14 @@ concurrency:
 
 jobs:
   composer:
-    name: Park writing options and mobile layout
+    name: Park and group writing options and mobile layout
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     env:
       OJJUDA_COPY_PROOF_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/world
       MOBILE_VIEWPORT_QA_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/viewport
       GUEST_PROOF_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/guest
+      GROUP_COMPOSER_QA_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/groups
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -61,6 +68,8 @@ jobs:
         run: npm --prefix tests ci --ignore-scripts
       - name: Check values, attachments, account boundaries and iframe lifecycle
         run: npm --prefix tests run test:park-composer:unit
+      - name: Check group drafts, post types and existing form values
+        run: node tests/group-board-dom.test.cjs
       - name: Install Chromium
         id: browser
         working-directory: tests
@@ -74,6 +83,9 @@ jobs:
       - name: Check guest restrictions and login return
         if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
         run: node tests/guest-access-ui.test.cjs
+      - name: Check group writing tools, attachments and keyboard layout
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/group-composer-ui.test.cjs
       - name: Save composer screenshots
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
