@@ -14,7 +14,15 @@ const sdk=`window.supabase={createClient:()=>{
   const db={auth:{getSession:async()=>({data:{session}}),onAuthStateChange(fn){callbacks.add(fn);return {data:{subscription:{unsubscribe(){callbacks.delete(fn)}}}};}},
     rpc:()=>result({data:{}}),from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:null})})})}),
     schema:()=>({rpc(name){if(name==='list_cards'){window.top.feedReads++;window.top.feedReadAt=performance.timeOrigin+performance.now();const p=new Promise(resolve=>setTimeout(()=>resolve({data:${JSON.stringify(cards)}}),180));p.abortSignal=()=>p;return p;}
-      return result({data:name==='get_note_state'?{}:[]});}})};return db;}};`;
+      return result({data:name==='get_note_state'?{}:[]});}})};return db;}};
+if(parent!==window){
+  function firstPaint(){
+    const quote=document.querySelector('#feed-list article .card-quote');
+    if(quote?.getClientRects().length){window.top.firstCardsAt=performance.timeOrigin+performance.now();return;}
+    requestAnimationFrame(firstPaint);
+  }
+  requestAnimationFrame(firstPaint);
+}`;
 (async()=>{
   const browser=await chromium.launch();
   try{
@@ -43,8 +51,8 @@ const sdk=`window.supabase={createClient:()=>{
         const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
         await page.goto(origin+'/world.html');await page.locator('#open').click();
         const frame=page.frameLocator('iframe');
-        await frame.locator('#feed-list article .card-quote').first().waitFor();
-        const elapsed=await page.evaluate(()=>performance.now()-window.started);
+        await page.waitForFunction(()=>Number.isFinite(window.firstCardsAt));
+        const elapsed=await page.evaluate(()=>window.firstCardsAt-performance.timeOrigin-window.started);
         const inner=page.frames().find(frame=>frame.url().includes('/park/'));
         assert.equal(await page.evaluate(()=>window.feedReads),1,'one initial card request');
         assert.equal(await frame.locator('#feed-list article').count(),20);
