@@ -100,10 +100,12 @@ async function fixture(browser,viewport){
     const url=new URL(route.request().url());
     if(url.origin==='https://group.test'&&url.pathname==='/shared/brand/brand-copy.css')
       return route.fulfill({contentType:'text/css',path:path.join(root,'shared/brand/brand-copy.css')});
+    if(url.origin==='https://group.test'&&/^\/assets\/(?:cozy-scenes|screw-flat)\/[a-z0-9-]+\.webp$/.test(url.pathname))
+      return route.fulfill({contentType:'image/webp',path:path.join(root,url.pathname.slice(1))});
     return route.abort();
   });
   await page.goto('https://group.test/groups/#room='+room);
-  for(const file of ['groups/style.css','shared/viewport/mobile-viewport.css','groups/composer.css'])await page.addStyleTag({path:path.join(root,file)});
+  for(const file of ['shared/viewport/mobile-viewport.css','groups/style.css','groups/composer.css','features/groups/appearance.css'])await page.addStyleTag({path:path.join(root,file)});
   await page.evaluate(({owner,room,second})=>{
     const rooms=[{id:room,name:'주말 여행단',owner_id:owner,member_count:2},{id:second,name:'함께 걷기',owner_id:owner,member_count:3}];
     const uploads=new Map();let posts=[];
@@ -137,7 +139,7 @@ async function fixture(browser,viewport){
       }
     })};
   },{owner,room,second});
-  for(const file of ['shared/viewport/mobile-viewport.js','groups/activities.js','groups/composer.js','groups/app.js'])await page.addScriptTag({path:path.join(root,file)});
+  for(const file of ['groups/activities.js','shared/viewport/mobile-viewport.js','groups/composer.js','shared/art/cozy-scenes.js','groups/app.js'])await page.addScriptTag({path:path.join(root,file)});
   await page.locator('[data-action=compose]').waitFor();
   return {page,context,errors};
 }
