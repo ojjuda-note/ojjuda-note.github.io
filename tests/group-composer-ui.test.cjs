@@ -40,15 +40,24 @@ async function verifyLayout(page,viewport,area,{panel=false}={}){
     const overflow=[document.documentElement,dialog,...dialog.querySelectorAll('.group-compose-body,.group-compose-options-body')]
       .filter(node=>node.clientWidth&&node.scrollWidth>node.clientWidth+1).map(node=>({class:node.className,width:node.clientWidth,scroll:node.scrollWidth}));
     return {dialog:rect(dialog),toolbar:rect(dialog.querySelector('.group-compose-toolbar')),
-      options:rect(dialog.querySelector('.group-compose-options')),overflow};
+      options:rect(dialog.querySelector('.group-compose-options')),overflow,
+      tools:[...dialog.querySelectorAll('.group-compose-toolbar [data-group-tool]')].map(button=>({key:button.dataset.groupTool,
+        icon:!!button.querySelector('svg'),...rect(button)}))};
   });
   assert.deepEqual(state.overflow,[],`${viewport.width}px has no horizontal overflow`);
   assert.ok(state.dialog.left>=-1&&state.dialog.right<=viewport.width+1,JSON.stringify(state));
   if(viewport.width<640)assert.ok(Math.abs(state.dialog.width-viewport.width)<=1,'mobile writer uses the full width');
   else assert.ok(state.dialog.width<=721,'desktop writer retains a readable maximum width');
   await inside(page,'.group-compose-toolbar',area,'writing toolbar');
+  assert.deepEqual(state.tools.map(tool=>tool.key),['post','photo','plan','poll','bet'],'the five categories keep the requested order');
+  for(const tool of state.tools){
+    assert.ok(tool.icon&&tool.width>=44&&tool.height>=44&&tool.left>=-1&&tool.right<=viewport.width+1
+      &&Math.abs(tool.top-state.tools[0].top)<=1,'every picture tool fits in one row with a full touch target: '+JSON.stringify(tool));
+    await inside(page,'.group-compose-toolbar [data-group-tool='+tool.key+']',area,tool.key+' writing option');
+  }
   if(panel){
     await inside(page,'.group-compose-options',area,'selected option panel');
+    assert.ok(state.options.height<=261,'group options keep their compact 260px maximum: '+JSON.stringify(state.options));
     assert.ok(Math.abs(state.options.bottom-state.toolbar.top)<=1,'options open immediately above the toolbar');
     assert.equal(await page.locator('[data-group-panel]:not([hidden])').count(),1,'only the selected options are visible');
   }else await inside(page,'.group-compose-head',area,'close and publish controls');
@@ -146,9 +155,29 @@ test('group writing tools, keyboard layout, photos and full drafts stay usable a
         await writer.waitFor();await settle(page);
         assert.equal(await body.evaluate(node=>document.activeElement===node),false,'initial opening leaves the keyboard closed');
         assert.equal(await writer.locator('[data-group-panel]:not([hidden])').count(),0);
-        assert.equal(await tool('schedule').isVisible(),false);assert.equal(await tool('room').isVisible(),true);
+        assert.equal(await tool('plan').isVisible(),true);assert.equal(await tool('room').isDisabled(),false);
+        assert.equal(await writer.locator('.group-compose-toolbar [data-group-tool=room]').count(),0);
         await verifyLayout(page,viewport,{top:0,bottom:viewport.height});
         await snapshot(page,'group-writing-'+viewport.width);
+
+        await tool('poll').tap();
+        assert.equal(await writer.locator('[name=kind]').inputValue(),'poll');
+        assert.equal(await writer.locator('[data-editor=poll]').isVisible(),true,'the poll icon opens its native editor directly');
+        await snapshot(page,'group-poll-'+viewport.width);
+        await tool('bet').tap();
+        assert.equal(await writer.locator('[name=kind]').inputValue(),'poll','opening bet choices preserves the current kind');
+        await verifyLayout(page,viewport,{top:0,bottom:viewport.height},{panel:true});
+        await snapshot(page,'group-bet-choices-'+viewport.width);
+        for(const kind of ['ladder','wheel']){
+          if(await tool('bet').getAttribute('aria-expanded')!=='true')await tool('bet').tap();
+          await writer.locator('[data-kind-choice='+kind+']').tap();
+          assert.equal(await writer.locator('[name=kind]').inputValue(),kind);
+          assert.equal(await writer.locator('[data-editor='+kind+']').isVisible(),true);
+          assert.equal(await writer.locator('[data-group-panel]:not([hidden])').count(),0,'a chosen bet opens in the writing body');
+        }
+        await tool('post').tap();
+        assert.equal(await writer.locator('[name=kind]').inputValue(),'post');
+        assert.equal(await body.isVisible(),true);
 
         await title.fill('함께 적은 여행 기록');await body.fill(writing);
         await body.evaluate(node=>{node.focus();node.setSelectionRange(12,28,'backward');});
@@ -191,22 +220,24 @@ test('group writing tools, keyboard layout, photos and full drafts stay usable a
         await writer.locator('[data-remove-file]').tap();assert.equal(await writer.locator('#attachments .attachment').count(),0);
         await writer.locator('#files').setInputFiles(path.join(root,'apple-touch-icon.png'));
         await snapshot(page,'group-photo-attached-'+viewport.width);
-        await tool('kind').tap();await writer.locator('[data-kind-choice=trip]').tap();
+        await tool('plan').tap();
+        assert.equal(await writer.locator('[name=kind]').inputValue(),'post','opening plan choices preserves the post kind');
+        await writer.locator('[data-kind-choice=trip]').tap();
         assert.equal(await writer.locator('[name=kind]').inputValue(),'trip');
-        assert.equal(await tool('schedule').isVisible(),true);
-        assert.equal(await writer.locator('[data-group-panel=schedule]').isVisible(),true,'choosing a trip opens its relevant settings');
+        assert.equal(await tool('plan').getAttribute('data-selected'),'true');
+        assert.equal(await writer.locator('[data-group-panel=plan]').isVisible(),true,'choosing a trip opens its relevant settings');
         await writer.locator('[name=all_day]').check();
         await writer.locator('[name=starts_at]').fill('');
         await writer.locator('[name=ends_at]').fill('2026-11-21');
         await writer.locator('[name=location]').fill('서울역');
-        await tool('schedule').tap();
+        await tool('plan').tap();
         await submit.tap();
-        assert.equal(await writer.locator('[data-group-panel=schedule]').isVisible(),true,'native validation reveals a required field inside a closed options panel');
+        assert.equal(await writer.locator('[data-group-panel=plan]').isVisible(),true,'native validation reveals a required field inside a closed options panel');
         assert.equal(await page.evaluate(()=>groupCalls.filter(call=>call.action==='save').length),0,'invalid dates never save a partial post');
         await writer.locator('[name=starts_at]').fill('2026-11-20');
         await verifyLayout(page,viewport,{top:0,bottom:viewport.height},{panel:true});
         await snapshot(page,'group-trip-'+viewport.width);
-        await tool('schedule').tap();
+        await tool('plan').tap();
         assert.equal(await body.inputValue(),writing,'photo and kind changes retain all 10,000 characters');
 
         await page.evaluate(()=>window.groupHoldSave=true);await submit.tap();
@@ -227,8 +258,8 @@ test('group writing tools, keyboard layout, photos and full drafts stay usable a
         await writer.locator('[data-close]').tap();await writer.waitFor({state:'detached'});
         await page.locator('[data-edit]').tap();await writer.waitFor();
         assert.equal(await body.inputValue(),writing);assert.equal(await writer.locator('[name=room_id]').isDisabled(),true);
-        assert.equal(await tool('room').isVisible(),false,'editing retains the original room');
-        assert.equal(await tool('schedule').isVisible(),true);
+        assert.equal(await tool('room').isDisabled(),true,'editing retains the original room');
+        assert.equal(await tool('plan').getAttribute('data-selected'),'true');
         await body.fill('수정하던 내용을 취소하지 않으면 그대로 남겨요.');
         await writer.locator('[data-close]').tap();await page.locator('[data-no]').tap();
         assert.equal(await body.inputValue(),'수정하던 내용을 취소하지 않으면 그대로 남겨요.');

@@ -452,8 +452,8 @@ function selectKind(){
  form.closest('dialog').dataset.composeKind=kind;
  schedule();
 }
-form.querySelector('.kind-picker')?.addEventListener('click',e=>{
- const b=e.target.closest('[data-kind-choice]');if(!b||busy)return;
+form.addEventListener('click',e=>{
+ const b=e.target.closest('[data-kind-choice]');if(!b||b.disabled||busy||form.elements.kind.disabled)return;
  form.elements.kind.value=b.dataset.kindChoice;form.elements.kind.dispatchEvent(new Event('change',{bubbles:true}));
 });
 form.elements.kind.onchange=selectKind;form.elements.all_day.onchange=schedule;selectKind();

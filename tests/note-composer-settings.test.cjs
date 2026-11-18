@@ -105,29 +105,62 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     assert.deepEqual(choices(), { identity: 'anonymous', gender: 'male', location: true });
     assert.deepEqual(styleChoices(), { font: 'default', size: 'normal', boxTransparency: 25 });
     assert.ok(document.querySelector('.composer').classList.contains('composer-tools-ready'));
-    assert.equal(document.querySelectorAll('[data-compose-tool]').length, 6);
+    assert.deepEqual([...document.querySelectorAll('[data-compose-tool]')].map(button => button.dataset.composeTool),
+      ['photo', 'font', 'color', 'box', 'effect', 'location', 'settings']);
     assert.equal(document.querySelectorAll('[data-compose-panel]:not([hidden])').length, 0,
       'writing starts with every option panel collapsed');
     assert.equal(document.activeElement, document.querySelector('.composer'),
       'opening the editor does not force the phone keyboard open');
     const originalInput = document.getElementById('compose-text');
     const originalPhotoInput = document.getElementById('card-photo-file');
+    const textPalette = document.querySelector('[data-color-field="textColor"]');
+    const boxPalette = document.querySelector('[data-color-field="boxColor"]');
+    const opacityInput = document.getElementById('compose-box-transparency');
     assert.equal(document.getElementById('compose-tags').closest('.compose-tag-entry')?.parentElement,
       document.querySelector('.composer-body'), 'tags stay above the card');
     assert.equal(document.getElementById('publish-card').closest('.composer-head'),
       document.querySelector('.composer-head'), 'the existing publish action stays in the header');
     originalInput.value = '옵션을 바꿔도 남아 있는 글';
     originalInput.dispatchEvent(new window.Event('input', { bubbles: true }));
-    for (const name of ['photo', 'font', 'color', 'effect', 'location', 'settings']) openTool(name);
+    for (const name of ['photo', 'font', 'color', 'box', 'effect', 'location', 'settings']) openTool(name);
     assert.equal(document.getElementById('compose-text'), originalInput, 'panel switches never replace the writing input');
     assert.equal(document.getElementById('card-photo-file'), originalPhotoInput,
       'the original attachment input and its listeners are kept');
     assert.equal(originalInput.value, '옵션을 바꿔도 남아 있는 글');
     assert.equal(document.querySelectorAll('#compose-text,#card-photo-file,#quick-identity,#quick-gender').length, 4,
       'moving options never duplicates an input id');
+    assert.equal(textPalette.closest('[data-compose-panel]'), panel('color'), 'text colors have their own short panel');
+    assert.equal(boxPalette.closest('[data-compose-panel]'), panel('box'), 'box colors stay with box opacity');
+    assert.equal(opacityInput.closest('[data-compose-panel]'), panel('box'));
+    assert.equal(panel('color').contains(boxPalette), false);
+    assert.equal(document.querySelectorAll('#compose-box-transparency,#compose-box-transparency-value').length, 2);
+    const chooseColor = (field, value) => {
+      const label = field.querySelector(value === 'default' ? '[data-color="default"]' : '.note-color-choice:not([data-color="default"])');
+      label.querySelector('input').click();
+      return label.dataset.color;
+    };
+    openTool('color');
+    const textValue = chooseColor(textPalette, 'custom');
+    assert.equal(run('currentStyle().textColor'), textValue);
+    assert.equal(tool('color').dataset.selected, 'true');
+    assert.equal(tool('box').dataset.selected, 'false', 'text color does not mark the box tool as changed');
+    openTool('box');
+    const boxValue = chooseColor(boxPalette, 'custom');
+    assert.equal(run('currentStyle().boxColor'), boxValue);
+    assert.equal(tool('box').dataset.selected, 'true');
+    openTool('color'); chooseColor(textPalette, 'default');
+    assert.equal(tool('color').dataset.selected, 'false');
+    assert.equal(tool('box').dataset.selected, 'true', 'resetting the lettering leaves the box selection intact');
+    openTool('box'); chooseColor(boxPalette, 'default');
+    assert.equal(tool('box').dataset.selected, 'false');
+    assert.equal(document.querySelector('[data-color-field="textColor"]'), textPalette);
+    assert.equal(document.querySelector('[data-color-field="boxColor"]'), boxPalette);
+    assert.equal(document.getElementById('compose-box-transparency'), opacityInput);
     chooseStyle('serif', 'large', 37);
-    openTool('photo'); openTool('color');
+    openTool('photo'); openTool('box');
     assert.deepEqual(styleChoices(), { font: 'serif', size: 'large', boxTransparency: 37 });
+    assert.equal(tool('color').dataset.selected, 'false');
+    assert.equal(tool('box').dataset.selected, 'true', 'opacity changes are marked only on the box tool');
     document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     assert.equal(document.getElementById('composer-backdrop').hidden, false,
       'Escape first dismisses the option panel without closing the draft');
