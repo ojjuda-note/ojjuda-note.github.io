@@ -308,8 +308,8 @@
 .draw-stage .ladder-board svg line{stroke:#b5e5d574;stroke-linecap:round}
 .draw-stage .ladder-board svg polyline{stroke:#bffadd;stroke-linecap:round;filter:drop-shadow(0 0 4px #66ffd6)}
 .draw-stage[data-phase=running] polyline:not([style]){visibility:hidden}
-.draw-stage svg circle{fill:#f4fff6;stroke:#4fcfae;stroke-width:2;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 4px #72fbd4)}
-.draw-stage svg circle:not([cx]){visibility:hidden}
+.draw-stage svg ellipse{fill:#f4fff6;stroke:#4fcfae;stroke-width:2;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 4px #72fbd4)}
+.draw-stage svg ellipse:not([cx]){visibility:hidden}
 .draw-stage .ladder-labels>*{margin:3px}
 .draw-stage .ladder-labels button,.draw-stage .ladder-finish span{
   border:1px solid #8dcabc61;border-radius:8px;

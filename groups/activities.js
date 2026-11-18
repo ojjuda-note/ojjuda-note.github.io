@@ -253,13 +253,30 @@
     return {routes,width,height,x,y};
   }
 
-  function ladder(activity, rungs, selected, esc) {
+  function ladder(activity, savedRungs, selected, esc) {
+    // Two adjacent crossings cancel each other, preserving the saved draw.
+    // Distribute these pairs throughout the board, including for old posts.
+    const laneCount = activity.names.length;
+    const minimumRungs = Math.max(12, laneCount * 2);
+    const extraPairs = Math.max(0, Math.ceil((minimumRungs - savedRungs.length) / 2));
+    const gapCount = savedRungs.length + 1;
+    const rungs = [];
+    let pair = 0;
+    const seed = savedRungs.reduce((sum, col, i) => sum + (col + 1) * (i + 1), 0);
+    for (let gap = 0; gap < gapCount; gap++) {
+      const pairLimit = Math.floor((gap + 1) * extraPairs / gapCount);
+      for (; pair < pairLimit; pair++) {
+        const col = (seed + pair + gap) % (laneCount - 1);
+        rungs.push(col, col);
+      }
+      if (gap < savedRungs.length) rungs.push(savedRungs[gap]);
+    }
     const {routes,width,height,x,y}=ladderRoutes(activity,rungs), path=routes[selected];
     const rails = activity.names.map((_,i)=>`<line x1="${x(i)}" x2="${x(i)}" y1="2" y2="${height-2}"/>`).join('');
     const steps = rungs.map((col,i)=>`<line x1="${x(col)}" x2="${x(col+1)}" y1="${y(i)}" y2="${y(i)}"/>`).join('');
     return `<div class="ladder-scroll"><div class="ladder-board" style="min-width:${width}px;--lanes:${activity.names.length}">
       <div class="ladder-labels">${activity.names.map((name,i)=>`<button type="button" data-lane="${i}" aria-pressed="${i===selected}">${esc(name)}</button>`).join('')}</div>
-      <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true"><g>${rails}${steps}</g>${path ? `<polyline points="${path.points}"/><circle r="5"/>` : ''}</svg>
+      <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true"><g>${rails}${steps}</g>${path ? `<polyline points="${path.points}"/><ellipse/>` : ''}</svg>
       <div class="ladder-labels ladder-finish">${activity.options.map((_,i)=>`<span data-finish="${i}" aria-label="도착 칸 ${i+1}"><i aria-hidden="true"></i>${i+1}</span>`).join('')}</div></div></div>`;
   }
 
@@ -272,11 +289,14 @@
   }
 
   function traceLadder(board, dialog) {
-    const path = board.querySelector('polyline'), dot = board.querySelector('circle');
+    const path = board.querySelector('polyline'), dot = board.querySelector('ellipse');
     if (!path?.getTotalLength || !window.requestAnimationFrame) return Promise.resolve();
     const length = path.getTotalLength(), scroll = board.closest('.ladder-scroll');
     const svg = path.ownerSVGElement;
-    const duration = Math.min(4400, 1950 + length * 3);
+    const duration = Math.min(5500, 2100 + length * 3);
+    const viewBox = svg.viewBox.baseVal;
+    dot.setAttribute('rx', 5 * viewBox.width / Math.max(1, svg.clientWidth));
+    dot.setAttribute('ry', 5 * viewBox.height / Math.max(1, svg.clientHeight));
     path.style.strokeDasharray = length;
     path.style.strokeDashoffset = length;
     return new Promise(resolve => {
@@ -290,7 +310,7 @@
         path.style.strokeDashoffset = length - distance;
         dot.setAttribute('cx', point.x);
         dot.setAttribute('cy', point.y);
-        const x = point.x * svg.clientWidth / svg.viewBox.baseVal.width;
+        const x = point.x * svg.clientWidth / viewBox.width;
         const maxScroll = scroll.scrollWidth - scroll.clientWidth;
         if (maxScroll > 0) scroll.scrollLeft = Math.max(0, Math.min(maxScroll, x - scroll.clientWidth / 2));
         if (progress < 1) window.requestAnimationFrame(step);
