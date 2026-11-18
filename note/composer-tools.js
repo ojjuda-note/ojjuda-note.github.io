@@ -102,6 +102,81 @@
     composer.classList.add('composer-tools-ready');
     composer.tabIndex = -1;
     let active = null, blocked = false, guest = false;
+    let writingFrame = 0, caretMirror = null;
+
+    function writingField() {
+      const field = document.activeElement;
+      return body.contains(field) && ['compose-text', 'compose-tags'].includes(field?.id) ? field : null;
+    }
+    function writingLine(field) {
+      const bounds = field.getBoundingClientRect(), style = getComputedStyle(field);
+      const pixels = name => parseFloat(style[name]) || 0;
+      const lineHeight = pixels('lineHeight') || pixels('fontSize') * 1.4;
+      if (field.tagName !== 'TEXTAREA') {
+        const contentHeight = field.clientHeight - pixels('paddingTop') - pixels('paddingBottom');
+        const top = bounds.top + pixels('borderTopWidth') + pixels('paddingTop') + Math.max(0, (contentHeight - lineHeight) / 2);
+        return { top, bottom: top + lineHeight };
+      }
+      if (!caretMirror) {
+        caretMirror = make('div');
+        caretMirror.setAttribute('aria-hidden', 'true');
+        caretMirror.inert = true;
+        Object.assign(caretMirror.style, {
+          position: 'fixed', left: '-10000px', top: '0', visibility: 'hidden',
+          pointerEvents: 'none', boxSizing: 'border-box', height: 'auto',
+          minHeight: '0', maxHeight: 'none', margin: '0', border: '0', overflow: 'visible'
+        });
+        document.body.append(caretMirror);
+      }
+      // A textarea can be taller than the visible editor. Measure its current line,
+      // including wrapping, instead of centering the whole field or moving its caret.
+      for (const property of ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'fontStretch',
+        'fontVariant', 'fontKerning', 'fontFeatureSettings', 'fontVariationSettings',
+        'letterSpacing', 'wordSpacing', 'lineHeight', 'textAlign', 'textIndent', 'textTransform',
+        'direction', 'whiteSpace', 'wordBreak', 'overflowWrap', 'tabSize',
+        'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft']) caretMirror.style[property] = style[property];
+      caretMirror.style.width = `${field.clientWidth}px`;
+      const position = field.selectionDirection === 'backward' ? field.selectionStart : field.selectionEnd;
+      const marker = make('span');
+      marker.textContent = field.value.slice(position) || '\u200b';
+      caretMirror.replaceChildren(document.createTextNode(field.value.slice(0, position)), marker);
+      try {
+        const fragment = marker.getClientRects()[0] || marker.getBoundingClientRect();
+        const leading = Math.max(0, (lineHeight - fragment.height) / 2);
+        const top = bounds.top + pixels('borderTopWidth') + fragment.top - caretMirror.getBoundingClientRect().top
+          - leading - field.scrollTop;
+        return { top, bottom: top + lineHeight };
+      } finally {
+        // Do not keep a second copy of a member's writing after measurement.
+        caretMirror.replaceChildren();
+      }
+    }
+    function keepWritingVisible() {
+      writingFrame = 0;
+      const field = writingField();
+      if (!field || composer.closest('[hidden]') || !field.getClientRects().length || body.clientHeight <= 0) return;
+      if (window.visualViewport && Math.abs(window.visualViewport.scale - 1) > .02) return;
+      const line = writingLine(field), bounds = body.getBoundingClientRect();
+      const margin = Math.min(6, Math.max(0, (body.clientHeight - (line.bottom - line.top)) / 2));
+      const top = bounds.top + margin, bottom = bounds.bottom - margin;
+      const delta = line.bottom - line.top > bottom - top ? (line.top + line.bottom - top - bottom) / 2
+        : line.top < top ? line.top - top : line.bottom > bottom ? line.bottom - bottom : 0;
+      // Scroll this editor only: scrollIntoView would also move the iframe/World.
+      if (Math.abs(delta) > .5) body.scrollTop += delta;
+    }
+    function scheduleWritingVisibility() {
+      if (!writingFrame && writingField()) writingFrame = requestAnimationFrame(keepWritingVisible);
+    }
+    if (window.ResizeObserver) new ResizeObserver(scheduleWritingVisibility).observe(body);
+    else {
+      window.addEventListener('resize', scheduleWritingVisibility, { passive: true });
+      window.visualViewport?.addEventListener('resize', scheduleWritingVisibility, { passive: true });
+    }
+    body.addEventListener('input', scheduleWritingVisibility);
+    body.addEventListener('select', scheduleWritingVisibility);
+    body.addEventListener('keyup', scheduleWritingVisibility);
+    body.addEventListener('pointerup', scheduleWritingVisibility);
+    document.addEventListener('selectionchange', scheduleWritingVisibility);
 
     function setExpanded(key) {
       for (const [name, button] of Object.entries(buttons)) {
@@ -157,7 +232,10 @@
       available[next].focus({ preventScroll: true });
     });
     composer.addEventListener('focusin', event => {
-      if (event.target.id === 'compose-text' || event.target.id === 'compose-tags') close(false);
+      if (event.target.id === 'compose-text' || event.target.id === 'compose-tags') {
+        close(false);
+        scheduleWritingVisibility();
+      }
     });
     function sync(state = {}) {
       guest = !!state.guest;

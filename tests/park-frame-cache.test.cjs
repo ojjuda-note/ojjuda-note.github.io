@@ -96,3 +96,41 @@ test('leaving a shared card before startup completes never reopens the old link'
     assert.equal(f.window.location.search,'?place=park&source=link');
   } finally {f.dom.window.close();}
 });
+
+test('only the current visible Park composer hides the host navigation', () => {
+  const f=fixture();
+  const composing=()=>f.window.document.documentElement.classList.contains('world-park-composing');
+  const report=(frame,data,origin='https://fixture.test')=>f.window.dispatchEvent(new f.window.MessageEvent('message',{
+    origin,source:frame.contentWindow,data:{type:'ojjuda:park-state',overlayOpen:true,cardOpen:false,...data}
+  }));
+  try {
+    f.render('park');
+    const first=f.frame();
+    first.contentWindow.OjjudaParkFull={returnHome:()=>true};
+    report(first,{composerOpen:false});
+    assert.equal(composing(),false,'another Park overlay does not hide page navigation');
+    report(first,{composerOpen:true},'https://foreign.invalid');
+    assert.equal(composing(),false,'foreign-origin messages cannot hide host controls');
+    report(first,{composerOpen:true});
+    assert.equal(composing(),true,'the active composer gets the full writing screen');
+    f.render('park');
+    assert.equal(composing(),true,'World repaint keeps the composer screen');
+    report(first,{composerOpen:false,overlayOpen:false});
+    assert.equal(composing(),false,'closing the writer restores host navigation');
+    report(first,{composerOpen:true});
+    f.render('my');
+    assert.equal(composing(),false,'a hidden Park frame cannot hide another page navigation');
+    report(first,{composerOpen:true});
+    assert.equal(composing(),false,'late reports from the cached hidden frame stay isolated');
+    f.setOwner('member-b');f.render('park');
+    const current=f.frame();
+    assert.notEqual(current,first);
+    assert.equal(composing(),false,'account replacement clears composing state');
+    report(first,{composerOpen:true});
+    assert.equal(composing(),false,'the previous frame cannot affect the new account');
+    report(current,{composerOpen:true});
+    assert.equal(composing(),true);
+    report(current,{composerOpen:false,overlayOpen:false});
+    assert.equal(composing(),false);
+  } finally {f.dom.window.close();}
+});

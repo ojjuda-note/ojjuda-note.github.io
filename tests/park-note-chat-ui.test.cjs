@@ -4,24 +4,39 @@ const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const copy='오늘 하루 어땠나요? 괜찮았나요';
 const checkComposerTools=async(frame,label)=>{
+ await frame.page().waitForFunction(()=>document.documentElement.classList.contains('world-park-composing'));
+ assert.equal(await frame.page().locator('.bottomnav:visible,.sidenav:visible,.side:visible,.topbar:visible,.notice-bar:visible').count(),0,
+  label+': page navigation and notices stay hidden while writing');
+ // The host first resizes its frame, then the embedded viewport updates on rAF.
+ // Measure after both CSS viewport values match their actual visible heights.
+ const viewportReady=()=>Math.abs(parseFloat(document.documentElement.style.getPropertyValue('--app-viewport-height'))-(visualViewport?.height||innerHeight))<1;
+ await frame.page().waitForFunction(viewportReady);
+ await frame.waitForFunction(viewportReady);
  const layout=await frame.evaluate(()=>{
   const buttons=[...document.querySelectorAll('[data-compose-tool]')].filter(button=>button.getClientRects().length);
   const rect=button=>button.getBoundingClientRect();
   const first=buttons[0]&&rect(buttons[0]);
+  const dock=rect(document.querySelector('.compose-tools-dock')),composer=rect(document.querySelector('.composer'));
   return {
    outsideScroll:!document.querySelector('.composer-body').contains(document.querySelector('.compose-tools-dock')),
+   dockAtBottom:Math.abs(dock.bottom-composer.bottom)<=2&&innerHeight-dock.bottom<=18,
    tools:buttons.map(button=>{
     const box=rect(button),hit=document.elementFromPoint(box.x+box.width/2,box.y+box.height/2);
-    return {name:button.dataset.composeTool,large:box.width>=44&&box.height>=44,
+    return {name:button.dataset.composeTool,box:{x:box.x,y:box.y,width:box.width,height:box.height,viewportWidth:innerWidth,viewportHeight:innerHeight},large:box.width>=44&&box.height>=44,
      inside:box.left>=0&&box.right<=innerWidth+1&&box.top>=0&&box.bottom<=innerHeight+1,
      singleRow:Math.abs(box.top-first.top)<=1,reachable:button===hit||button.contains(hit)};
    })
   };
  });
  assert.equal(layout.outsideScroll,true,label+': tools stay outside the scrolling editor');
+ assert.equal(layout.dockAtBottom,true,label+': the writing toolbar occupies the bottom of the full-height writing screen');
  assert.equal(layout.tools.length,6,label+': all six writing tools remain available');
  for(const tool of layout.tools)for(const rule of ['large','inside','singleRow','reachable'])
-  assert.equal(tool[rule],true,label+': '+tool.name+' '+rule);
+  assert.equal(tool[rule],true,label+': '+tool.name+' '+rule+' '+JSON.stringify(tool.box));
+};
+const checkPageNavigationRestored=async(page,label)=>{
+ await page.waitForFunction(()=>!document.documentElement.classList.contains('world-park-composing'));
+ assert.equal(await page.locator('.bottomnav:visible,.sidenav:visible').count(),1,label+': page navigation returns after writing closes');
 };
 const checkWritingCopy=async frame=>{
  const input=frame.locator('#compose-text');
@@ -71,9 +86,9 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  const source=new URL(await iframe.getAttribute('src'),'https://fixture.test');assert.equal(source.pathname,'/park/');assert.equal(source.searchParams.get('embedded'),'1');assert.equal(source.searchParams.get('compose'),'memo');assert.ok(source.searchParams.get('v'),'the embedded Park has a cache version');
  let frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
  await frame.locator('#composer-backdrop').waitFor({state:'visible'});
+ await checkComposerTools(frame,'390 initial');
  if(process.env.OJJUDA_COPY_PROOF_DIR){fs.mkdirSync(process.env.OJJUDA_COPY_PROOF_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.OJJUDA_COPY_PROOF_DIR,'composer-initial-390.png')});}
  await checkWritingCopy(frame);
- await checkComposerTools(frame,'390 initial');
  assert.equal(await frame.evaluate(()=>document.activeElement===document.querySelector('.composer')),true,'opening the writer leaves the phone keyboard closed');
  assert.equal(await frame.locator('[data-compose-panel]:visible').count(),0,'options start collapsed');
  await frame.evaluate(()=>window.fixtureToken='kept');
@@ -105,13 +120,15 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  assert.equal(await frame.locator('#compose-text').inputValue(),'아직 작성 중인 공원의 이야기');
  await frame.evaluate(()=>backdrop.dispatchEvent(new MouseEvent('click',{bubbles:true})));
  assert.equal(await frame.locator('#composer-backdrop').isVisible(),true,'canceling backdrop close preserves the draft');
- await page.locator('.bottomnav [data-tab="my"]').click();
+ await page.locator('.bottomnav [data-tab="my"]').evaluate(button=>button.click());
  assert.equal(await iframe.count(),1,'unsaved content blocks leaving through the World menu');
+ assert.equal(await frame.locator('#compose-text').inputValue(),'아직 작성 중인 공원의 이야기','a programmatic page-navigation event keeps the unsaved writing');
  await page.evaluate(()=>parkFixture.close());
  assert.equal(await frame.locator('#composer-backdrop').isVisible(),true,'Back protects unsaved text too');
  await frame.evaluate(()=>window.confirm=()=>true);
  await page.evaluate(()=>parkFixture.close());
  assert.equal(await frame.locator('#composer-backdrop').isVisible(),false);
+ await checkPageNavigationRestored(page,'390 initial close');
  await page.evaluate(()=>parkFixture.open('compose'));
  await frame.locator('#composer-backdrop').waitFor({state:'visible'});
  await frame.locator('#compose-text').fill('직접 닫기를 확인한 글');
@@ -213,8 +230,8 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   assert.equal(await frame.evaluate(()=>scrollY),scroll,width+': World updates preserve card scroll position');
   await page.locator('[data-park-action="compose"]').click();
   await frame.locator('#composer-backdrop').waitFor({state:'visible'});
-  await checkWritingCopy(frame);
   await checkComposerTools(frame,width+' responsive');
+  await checkWritingCopy(frame);
   await frame.locator('[data-compose-tool="font"]').click();
   assert.equal(await frame.locator('#compose-font').isVisible(),true,width+': font options are reachable');
   await checkComposerTools(frame,width+' panel open');
@@ -226,6 +243,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   assert.ok(composer.y>=frameRect.y-1&&composer.y+composer.height<=frameRect.y+frameRect.height+1,width+': composer fits above World navigation');
   if(process.env.OJJUDA_COPY_PROOF_DIR){fs.mkdirSync(process.env.OJJUDA_COPY_PROOF_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.OJJUDA_COPY_PROOF_DIR,`composer-${width}.png`)});}
   await page.evaluate(()=>parkFixture.close());
+  await checkPageNavigationRestored(page,width+' responsive close');
  }
  for(const width of [360,390,750]){
   await page.setViewportSize({width,height:500});
@@ -245,6 +263,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   assert.equal(await frame.locator('#composer-backdrop').isVisible(),true,width+': the first Back preserves the writing screen');
   await page.evaluate(()=>parkFixture.close());
   await frame.locator('#composer-backdrop').waitFor({state:'hidden'});
+  await checkPageNavigationRestored(page,width+' shortened viewport close');
  }
  await page.setViewportSize({width:390,height:850});
  await frame.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));

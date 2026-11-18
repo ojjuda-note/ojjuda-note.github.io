@@ -7,8 +7,8 @@
     return `<details class="my-menu-group" data-my-group="park"><summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true">▤</span><span class="my-menu-copy"><span class="my-menu-title">공원 활동</span></span></summary><div class="my-menu-body park-menu-actions">${[['feed','공원 카드'],['saved','메모함'],['mine','내 카드'],['events','내 이벤트'],['event-new','이벤트 만들기'],['settings','회원정보'],['blocked','공원 차단 목록'],['glasses','스마트 글래스 미리보기']].map(([action,label])=>`<button type="button" class="btn" data-park-action="${action}">${label}</button>`).join('')}</div></details>`;
   }
   window.OjjudaParkNotes = {menuMarkup,install(app) {
-    const frameVersion = '20261118-composer-tools1' + (app.version ? '-' + app.version : '');
-    let frame=null,panel=null,owner=null,routed=false,initial=window.performance?.getEntriesByType?.('navigation')[0]?.type!=='back_forward',pending=null,overlayOpen=false,cardOpen=false,stopFrameNavigation=()=>{};
+    const frameVersion = '20261118-composer-tools2' + (app.version ? '-' + app.version : '');
+    let frame=null,panel=null,owner=null,routed=false,initial=window.performance?.getEntriesByType?.('navigation')[0]?.type!=='back_forward',pending=null,overlayOpen=false,composerOpen=false,cardOpen=false,stopFrameNavigation=()=>{};
     let cacheTimer=null,frameVisible=false;
     // Short menu visits should not parse the entire Park app again. Retire an
     // inactive iframe so its feed, scripts and connections do not live forever.
@@ -20,7 +20,11 @@
       return `<section class="park-app" data-park-app aria-label="공원 카드"><div class="park-app-slot" data-park-app-slot></div><div class="park-load-cover" data-park-loading role="status"><p>🌷 쭈가 오늘의 카드를 모으는 중…</p><div class="park-skeleton-grid" aria-hidden="true">${loadingCards}</div></div><button type="button" class="park-compose-fab" data-park-action="compose" aria-label="새 카드 쓰기"><span aria-hidden="true">＋</span> 카드 쓰기</button></section>`;
     }
     function route(){if(requested&&!routed){routed=true;app.enter();}}
-    function syncFab(){const button=panel?.querySelector('.park-compose-fab'),cover=panel?.querySelector('[data-park-loading]');if(button)button.hidden=overlayOpen||cardOpen||frame?.dataset.view==='glasses'||cover?.hidden===false;}
+    function syncComposerMode(){
+      const writing=composerOpen&&active()&&frameVisible&&frame?.isConnected&&!panel?.hidden&&owner===app.userId()&&frame.dataset.view!=='glasses';
+      document.documentElement.classList.toggle('world-park-composing',!!writing);
+    }
+    function syncFab(){syncComposerMode();const button=panel?.querySelector('.park-compose-fab'),cover=panel?.querySelector('[data-park-loading]');if(button)button.hidden=overlayOpen||cardOpen||frame?.dataset.view==='glasses'||cover?.hidden===false;}
     function loading(visible){const cover=panel?.querySelector('[data-park-loading]');if(cover)cover.hidden=!visible;syncFab();}
     function flush(){
       if(!active()||!pending||!api()?.navigate)return;
@@ -31,17 +35,20 @@
       try{frame?.contentWindow?.postMessage({type:'ojjuda:park-visibility',visible},location.origin);}catch{}
     }
     function setVisible(visible){
-      if(frameVisible===visible)return;
+      if(frameVisible===visible){syncComposerMode();return;}
       frameVisible=visible;notifyVisibility(visible);
+      syncComposerMode();
     }
     function clearRetirement(){if(cacheTimer!==null){clearTimeout(cacheTimer);cacheTimer=null;}}
     function retire(){
       cacheTimer=null;
       if(active()||!panel?.hidden)return;
-      stopGestures();panel.remove();frame=panel=null;owner=null;frameVisible=false;overlayOpen=cardOpen=false;
+      stopGestures();panel.remove();frame=panel=null;owner=null;frameVisible=false;overlayOpen=composerOpen=cardOpen=false;
+      syncComposerMode();
     }
     function forget(){
-      clearRetirement();stopGestures();frame=panel=null;owner=null;frameVisible=false;overlayOpen=cardOpen=false;
+      clearRetirement();stopGestures();frame=panel=null;owner=null;frameVisible=false;overlayOpen=composerOpen=cardOpen=false;
+      syncComposerMode();
     }
     function clearEntryOptions(){
       const url=new URL(location.href);
@@ -53,6 +60,7 @@
     function sync(restored=false){
       const next=document.querySelector('[data-park-app]');
       document.documentElement.classList.toggle('world-park-active',active()&&!!next);
+      syncComposerMode();
       if(!active()||!next){
         if(frame?.isConnected&&panel===next&&owner===app.userId()){
           if(!panel.hidden){pending=null;clearEntryOptions();}
@@ -68,7 +76,7 @@
         clearRetirement();panel.hidden=false;panel.removeAttribute('aria-hidden');
         if(!returning||api()?.returnHome?.()){
           if(returning){
-            overlayOpen=cardOpen=false;
+            overlayOpen=composerOpen=cardOpen=false;
             stopGestures();stopFrameNavigation=app.onFrameReady?.(frame)||(()=>{});
           }
           setVisible(true);syncFab();flush();return;
@@ -76,7 +84,7 @@
         // A cold frame, an open dialog or the glasses page needs a fresh cards document.
       }
       forget();
-      panel=next;panel.hidden=false;panel.removeAttribute('aria-hidden');owner=app.userId();overlayOpen=false;cardOpen=false;
+      panel=next;panel.hidden=false;panel.removeAttribute('aria-hidden');owner=app.userId();overlayOpen=composerOpen=cardOpen=false;
       const view=initial&&new URL(location.href).searchParams.get('view')==='glasses'?'glasses':'cards';
       const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');url.searchParams.set('v',frameVersion);
       if(initial){const source=new URL(location.href);for(const key of ['card','keep','compose'])if(source.searchParams.has(key))url.searchParams.set(key,source.searchParams.get(key));initial=false;}
@@ -86,13 +94,14 @@
       const currentFrame=frame;
       frame.addEventListener('load',()=>{
         if(frame!==currentFrame||!frame?.isConnected)return;
+        composerOpen=false;syncComposerMode();
         let path='';try{path=frame.contentWindow.location.pathname;}catch{}
         if(path!=='/park/'&&path!=='/park/glasses.html')return;
         frame.dataset.view=path.endsWith('/glasses.html')?'glasses':'cards';
         loading(false);
         if(!active()||panel.hidden){notifyVisibility(false);return;}
         stopGestures();stopFrameNavigation=app.onFrameReady?.(frame)||(()=>{});
-        notifyVisibility(true);cardOpen=api()?.cardOpen?.()===true;syncFab();flush();
+        notifyVisibility(true);cardOpen=api()?.cardOpen?.()===true;composerOpen=api()?.composerOpen?.()===true;syncFab();flush();
       });
     }
     addEventListener('pageshow',event=>{if(event.persisted&&active()){clearEntryOptions();sync(true);}});
@@ -134,7 +143,7 @@
     addEventListener('message',event=>{
       if(event.origin!==location.origin||event.source!==frame?.contentWindow)return;
       if(event.data?.type==='ojjuda:park-ready'){loading(false);flush();}
-      if(event.data?.type==='ojjuda:park-state'){overlayOpen=event.data.overlayOpen===true;cardOpen=event.data.cardOpen===true;syncFab();}
+      if(event.data?.type==='ojjuda:park-state'){overlayOpen=event.data.overlayOpen===true;composerOpen=event.data.composerOpen===true;cardOpen=event.data.cardOpen===true;syncFab();}
       if(event.data?.type==='ojjuda:park-navigate'&&canLeave()){
         if(event.data.action==='world')app.toWorld?.();
         if(event.data.action==='menu')app.toMenu?.();

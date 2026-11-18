@@ -7,6 +7,14 @@ html.world-park-active,html.world-park-active body{height:100%;overflow:hidden;o
 .world-park-active .col>main.main{display:flex;flex-direction:column;flex:1;min-height:0;width:100%;max-width:none;padding:0;overflow:hidden}
 .world-park-active .main>.notice-bar{flex:none;margin:4px 14px}
 .world-park-active #app>.bottomnav{position:relative;inset:auto;flex:none}
+/* Writing has its own header and tools. Restore the site chrome on exit by class alone. */
+html.world-park-active.world-park-composing #app{box-sizing:border-box;padding:var(--app-safe-top,0px) 0 var(--app-safe-bottom,0px)}
+html.world-park-active.world-park-composing #app>.shell{display:flex;flex-direction:column;width:100%;max-width:none;margin:0;padding:0}
+html.world-park-active.world-park-composing #app>.shell>.col{flex:1;width:100%;min-width:0;height:auto;margin:0;padding:0}
+html.world-park-active.world-park-composing #app>.shell>.side,
+html.world-park-active.world-park-composing #app>.shell>.col>.topbar,
+html.world-park-active.world-park-composing #app>.bottomnav,
+html.world-park-active.world-park-composing .main>.notice-bar{display:none!important}
 .park-app{position:relative;display:flex;flex:1;min-height:0;width:100%;margin:0;border:0;border-radius:0;box-shadow:none;background:transparent;overflow:hidden}
 .park-app[hidden]{display:none}
 .park-app-slot{display:flex;flex:1;min-width:0;min-height:0}
