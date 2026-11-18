@@ -535,8 +535,8 @@
         { title: 'STAYC Weverse 공식 일정·공지', sub: '공연·방송·팬행사 안내 및 일정 변경 확인 · 일부 공지 열람은 로그인 필요', href: 'https://weverse.io/stayc/notice' }
       ],
       news: [
-        { date: '2026.11.12', tag: '방송', title: '11월 18일 MBC 아이돌라디오4 · 수민·아이사 스페셜 DJ 출연 발표', href: 'https://x.com/idolradiokorea/status/2120715809664471156' },
         { date: '2026.11.15', tag: '행사', title: 'STAYC, 11월 22일 안산 AUBL 개막전 참석 발표', href: 'https://x.com/STAYC_official/status/2121931980795458012' },
+        { date: '2026.11.12', tag: '방송', title: '11월 18일 MBC 아이돌라디오4 · 수민·아이사 스페셜 DJ 출연 발표', href: 'https://x.com/idolradiokorea/status/2120715809664471156' },
         { date: '2026.11.12', tag: '기념', title: '데뷔 6주년 기념 인사·Special Present 공개 · 열람 시 로그인 필요', href: 'https://weverse.io/stayc/media/2-181504379' },
         { date: '2026.07.03', tag: '공연', title: 'STAY CLOSER 팬콘 투어 7개 도시 일정 발표 · 10월 종료', href: 'https://www.highup-ent.com/en/stayc-announces-stay-closer-fan-con-tour-kicking-off-in-seoul-before-heading-to-global-cities/' },
         { date: '2026.06.16', tag: '음악', title: '싱글 6집 2:LOVE 발매 · 타이틀 2 L0VE', href: 'https://www.highup-ent.com/stayc/2love/' },
