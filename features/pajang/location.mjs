@@ -1,3 +1,5 @@
+import '../../shared/location/location.js?v=shared1';
+
 export async function readLocationCell(options={}) {
   const {latitude,longitude}=await globalThis.OjjudaLocation.readPosition({...options,coarseCache:true});
   return {latCell:Math.round(latitude*100),lonCell:Math.round(longitude*100)};
