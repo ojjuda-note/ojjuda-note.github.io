@@ -307,7 +307,7 @@
   }
   const api = {kstDate, missions, visitTarget, quizMode, recommended, themeFor, safeState, mergeProgress, visitStreak, isComplete, complete, stamp, trivia, chosung, initials, baseballAnswer, appendBaseballDigit, baseballResultMarkup, guessBaseball, markup, puzzleMarkup};
   if (root.document) {
-    const loadPajang=()=>import('/features/pajang/dialog.mjs?v=location3');
+    const loadPajang=()=>import('/features/pajang/dialog.mjs?v=location4');
     function warmPajang(event){
       if(event.target.closest?.('[data-pajang-launch]'))void loadPajang().catch(()=>{});
     }

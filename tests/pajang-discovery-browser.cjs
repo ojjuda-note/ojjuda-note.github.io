@@ -206,6 +206,7 @@ function clientFixture(hash) {
   try {
     const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,locale:'ko-KR',geolocation:{latitude:37.5665,longitude:126.978,accuracy:30},permissions:['geolocation']});
     const page=await context.newPage(), errors=[];
+    let legacyLocationPage=false;
     page.on('pageerror',err=>errors.push(err.message));
     await page.route(origin+'/**',async route=>{
       const pathname=new URL(route.request().url()).pathname;
@@ -220,9 +221,12 @@ function clientFixture(hash) {
         <main></main><script>document.querySelector('main').innerHTML=OjjudaAgitHub.markup({},{});</script></html>`});
       if(pathname==='/shared/location/location.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/location/location.js'))});
       const file=pathname.slice(project.length)||'index.html';
+      if(legacyLocationPage&&file==='location.mjs')return route.fulfill({contentType:'text/javascript',body:'export async function prepareLocation(state){return state;}'});
       if(!['station.html','station.css','member.mjs','member-main.mjs','load-station.mjs','location.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','shell.mjs','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
       const mime={html:'text/html',css:'text/css',mjs:'text/javascript',json:'application/json',svg:'image/svg+xml'}[path.extname(file).slice(1)];
-      return route.fulfill({contentType:mime,body:await fs.readFile(path.join(feature,file))});
+      let body=await fs.readFile(path.join(feature,file));
+      if(legacyLocationPage&&file.endsWith('.html'))body=body.toString().replace(/<script[^>]*src="\/shared\/location\/location\.js[^>]*><\/script>/,'');
+      return route.fulfill({contentType:mime,body});
     });
     const flightDir=path.join(__dirname,'artifacts/pajang-discovery');
     await fs.mkdir(flightDir,{recursive:true});
@@ -593,7 +597,16 @@ function clientFixture(hash) {
     await page.waitForFunction(()=>document.querySelector('[role=switch]')?.getAttribute('aria-checked')==='false');
     assert.equal(await page.locator('.scope-person').count(),0);
     console.log('PASS shared Park/Pajang setting changes update the mounted radar in both directions');
-
+    legacyLocationPage=true;
+    await context.grantPermissions(['geolocation']);
+    await page.goto(origin+project+'station.html?view=radar&cached-page=1');
+    await locationSwitch.waitFor();
+    assert.equal(await locationSwitch.getAttribute('aria-checked'),'false');
+    assert.equal(await page.evaluate(()=>typeof window.OjjudaLocation.readPosition),'function','the member program includes the provider for already-open older pages');
+    await locationSwitch.click();
+    await page.waitForFunction(()=>document.querySelector('[role=switch]')?.getAttribute('aria-checked')==='true');
+    assert.ok(await page.evaluate(()=>window.geoWrites.some(write=>!write.automatic)));
+    console.log('PASS cached page without the shared script can still turn location on');
 
     assert.deepEqual(errors,[]);
     console.log('PASS 320/390/1080px layout, artwork-independent startup, tap/swipe/keyboard, delayed results, cancellation, in-memory revisit, and denial');
