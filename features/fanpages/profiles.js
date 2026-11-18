@@ -154,12 +154,13 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   illit: {
-    checkedAt: '2026.11.15',
+    checkedAt: '2026.11.18',
     debut: '2024.03.25', debutWork: 'SUPER REAL ME · Magnetic',
     agency: 'BELIFT LAB · HYBE',
     concept: 'Magnetic부터 BREAK EVEN까지, 아일릿의 이야기.',
     heightSource: 'https://kprofiles.com/illit-members-profile/',
     awards: [
+      { year: '2026.11', title: 'MMA2026 4관왕', detail: '톱10 · 글로벌 톱10 · 베스트 퍼포먼스 여자 · 글로벌 임팩트 아티스트 · 2026.11.15', href: 'https://www.osen.co.kr/article/G1112910990' },
       { year: '2026.11', title: 'KBS 뮤직뱅크 1위', detail: '체포하겠어 (You\'re Under Arrest) · 2026.11.06 · 9,803점', href: 'https://www.soompi.com/article/1884749wpp/watch-nmixx-takes-1st-win-for-birthday-wish-on-music-bank-performances-by-ateez-illit-and-more-2' },
       { year: '2026.10', title: '제15회 TTA 베스트 여자 아이돌 그룹', detail: '2026.10.30 · 여자 아이돌 그룹 부문 1위', href: 'https://www.tenasia.co.kr/article/2026103060504' },
       { year: '2024', title: 'MAMA 여자 신인상', detail: 'BEST NEW FEMALE ARTIST', href: 'https://mama.mnetplus.world/history/2024/winners' }
