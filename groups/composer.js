@@ -75,14 +75,14 @@
     const roomFixed = room.classList.contains('fixed-room') || form.elements.room_id.disabled;
     panels.room.append(room);
     kind.closest('label').hidden = true;
-    for (const key of ['plan','bet']) {
+    for (const key of ['bet']) {
       const row = node('div', 'group-compose-kind-row');
       row.setAttribute('role', 'group');
       row.setAttribute('aria-label', labels[key] + ' 종류');
       for (const value of categories[key]) {
         const choice = kindChoice(value);
         if (!choice) continue;
-        choice.textContent = {event:'약속', trip:'여행계획', ladder:'사다리', wheel:'돌림판'}[value];
+        choice.textContent = {ladder:'사다리', wheel:'돌림판'}[value];
         row.append(choice);
       }
       panels[key].append(row);
@@ -154,8 +154,16 @@
         if (event.button === 0 && event.isPrimary !== false && writingField()) event.preventDefault();
       });
       button.addEventListener('click', event => {
-        if (!panels[key]) return;
+        if (button.disabled || !panels[key]) return;
         const focus = !(event.detail > 0 && writingField());
+        if (key === 'plan' && !categories.plan.includes(kind.value)) {
+          const value = categories.plan.find(value => availableKinds.has(value));
+          if (kind.disabled || !value) return;
+          kind.value = value;
+          kind.dispatchEvent(new Event('change', {bubbles:true}));
+          open(key, focus);
+          return;
+        }
         if (active === key) close(focus);
         else open(key, focus);
       });
@@ -188,7 +196,7 @@
 
     function sync() {
       const option = kind.selectedOptions[0], name = form.elements.room_id.selectedOptions[0]?.textContent || '';
-      const kindName = kind.value === 'post' ? '글' : option?.textContent || '';
+      const kindName = categories.plan.includes(kind.value) ? '계획' : kind.value === 'post' ? '글' : option?.textContent || '';
       context.textContent = name + ' · ' + kindName;
       context.setAttribute('aria-label', '올릴 그룹: ' + name + ', ' + kindName);
       context.disabled = roomFixed || form.elements.room_id.disabled;
