@@ -94,6 +94,15 @@ async function verifyCard(page, id, name) {
     assert.equal(sunchang?.attendance?.kind, 'previous');
     assert.equal(sunchang?.attendance?.year, 2025);
     console.log('PASS November 18 live JSON: nine sports and previous 2025 attendance');
+    // November 19: official Daejeon/Sejong/Chungbuk performing arts and exhibition.
+    const n62Performances = [
+      'cheongju-linephilharmonic-nostalgia-20261121',
+      'daejeon-sumi-jo-continuum-20261231',
+      'sejong-play-the-dresser-20261218'
+    ];
+    assert(payload.events.length >= 770, 'Deployed data missing November 19 additions');
+    n62Performances.forEach(id => assert(ids.has(id), 'Missing November 19 live performance: ' + id));
+    console.log('PASS November 19 live JSON: 770 events and sampled new official performances');
     console.log('PASS production JSON: at least 715 entries, November 14 updates and official attendance');
 
     await page.goto(origin + '/games/festival-schedule/index.html?period=all&category=festival&view=list&q=익산',
@@ -132,6 +141,12 @@ async function verifyCard(page, id, name) {
     await page.locator('#search').fill('');
     await page.locator('#search').fill('구내과병원');
     await verifyCard(page, 'paju-municipal-gu-hospital-musical-20261120', '구내과병원');
+    await page.locator('#search').fill('라인필하모닉');
+    await verifyCard(page, 'cheongju-linephilharmonic-nostalgia-20261121', '라인필하모닉');
+    await page.locator('#search').fill('조수미');
+    await verifyCard(page, 'daejeon-sumi-jo-continuum-20261231', '조수미');
+    await page.locator('#search').fill('더 드레서');
+    await verifyCard(page, 'sejong-play-the-dresser-20261218', '더 드레서');
     await page.locator('#search').fill('IBK기업은행 vs 정관장');
     await page.locator('[data-category="sports"]').click();
     await verifyCard(page, 'pro-kovo-202627-20261117-ibk-red', 'IBK기업은행 vs 정관장');
@@ -180,6 +195,12 @@ async function verifyCard(page, id, name) {
     await verifyCard(festivalFrame, 'sunchang-jangryu-tennis-20261129', '순창장류배');
     await festivalFrame.locator('#search').fill('전북특별자치도협회장기 클럽');
     await verifyCard(festivalFrame, 'jeonbuk-tennis-association-club-cup-20261205', '전북특별자치도협회장기');
+    await festivalFrame.locator('#search').fill('라인필하모닉');
+    await festivalFrame.locator('[data-category="performance"]').click();
+    await verifyCard(festivalFrame, 'cheongju-linephilharmonic-nostalgia-20261121', '라인필하모닉');
+    await festivalFrame.locator('#search').fill('조수미');
+    await verifyCard(festivalFrame, 'daejeon-sumi-jo-continuum-20261231', '조수미');
+    await festivalFrame.locator('#search').fill('');
     await arcade.screenshot({ path: path.join(snapshotDir, 'world-game-festival.png'), fullPage: true });
     if (hasNovember15Update) {
       await festivalFrame.locator('#search').fill('');
