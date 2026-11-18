@@ -186,3 +186,40 @@ dialog .primary{width:100%}#dialog-body>.secondary{margin:4px 3px 0 0}
 .yut-round-summary li{display:grid;grid-template-columns:3em 1fr auto;align-items:center;padding:3px 0;border-bottom:1px solid #81978b38;font-size:14px}
 .yut-round-summary li>span:last-child{font-size:12px;font-variant-numeric:tabular-nums}
 .yut-round-summary [role=status]{text-align:center}
+
+.first-seat {
+  position:absolute; inset:0; z-index:3; display:grid; place-items:center;
+  padding:8px; background:rgba(24,37,31,.76); container-type:size;
+}
+.first-seat-card {
+  display:grid; justify-items:center; gap:7px;
+  width:min(100%, 350px); padding:9px 8px;
+  border:1px solid #c38f49; border-radius:18px;
+  background:#f9edd5; color:#442c19; box-shadow:0 8px 25px #171a1680;
+}
+#first-seat-heading {font-size:clamp(1rem,4vw,1.35rem); line-height:1.2}
+#first-seat-order {min-height:1.25em; font-size:.875rem; font-weight:700}
+.first-seat-circle {
+  position:relative; width:min(100%, 16rem, max(70px,calc(100cqh - 74px)));
+  aspect-ratio:1; border-radius:50%;
+  background:radial-gradient(circle,#fff5e2 29%,#debb85 30%,#f2d6a9 31% 67%,#e0ba83 68%,#f8e4be 70%);
+}
+.first-seat-number {
+  position:absolute; display:grid; place-items:center; transform:translate(-50%,-50%);
+  width:clamp(23px,13cqh,35px); aspect-ratio:1; border-radius:50%;
+  color:#352215; border:2px solid var(--seat-color); background:#fff9eb; font-weight:800;
+  box-shadow:0 2px 5px #6c432940;
+}
+.first-seat-number.is-first {
+  background:#ffdd73; border-color:#925418;
+  box-shadow:0 0 0 3px #fff1b6,0 0 15px 4px #f6a931;
+}
+#first-seat-stick {
+  position:absolute; height:57%; width:11%; top:21.5%; left:44.5%; border-radius:30% 30% 37% 37% / 9% 9% 10% 10%;
+  background:linear-gradient(90deg,#8b5028,#eac387 25%,#f7dea9 57%,#bc8148 83%,#8b5028);
+  box-shadow:1px 3px 6px #45271585; border:1px solid #925928;
+}
+#first-seat-stick::before {
+  content:''; position:absolute; inset:3% 12% auto; height:14%;
+  border-radius:45% 45% 20% 20%; background:#a34228; box-shadow:0 2px #e9a465;
+}
