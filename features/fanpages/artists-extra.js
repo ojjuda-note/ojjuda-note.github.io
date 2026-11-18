@@ -750,7 +750,7 @@
         {"date":"2027-03-16","title":"BTS WORLD TOUR ARIRANG · 불라칸","sub":"불라칸 · 필리핀 스포츠 스타디움 · 현지 공연 시각·예매는 공식 사이트 확인","href":"https://btsworldtourofficial.com/"}
       ],
       news: [
-        {"date":"2026.11.18","tag":"굿즈","title":"BTS ISLAND IN THE SEOM 공식 피규어 V4 예약 판매 · 11/25 마감","href":"https://shop.weverse.io/ko/shop/USD/artists/2/notices/15011"},
+        {"date":"2026.11.17","tag":"굿즈","title":"11/18부터 BTS ISLAND IN THE SEOM 피규어 V4 예약 판매 · 11/25 마감","href":"https://shop.weverse.io/ko/shop/USD/artists/2/notices/15011"},
         {"date":"2026.11.15","tag":"수상","title":"2026 키즈 초이스 어워즈 3관왕 · 그룹·앨범 ARIRANG·노래 SWIM","href":"https://www.reuters.com/business/media-telecom/kids-choice-awards-honor-chris-pratt-bts-2026-11-15/"},
         {"date":"2026.11.11","tag":"공연","title":"가오슝·자카르타 공연 일본 영화관 생중계 예고편 및 관객 특전 발표","href":"https://bts-official.jp/news/7c1afecf3d0c"},
         {"date":"2026.11.09","tag":"굿즈","title":"ARIRANG 런던 공연 영상 패키지 일반·멤버판 공식 발매 안내","href":"https://bts-official.jp/news/d75ca5ab6dd5"},
