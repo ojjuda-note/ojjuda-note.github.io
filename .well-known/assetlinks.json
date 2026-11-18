@@ -20,7 +20,8 @@
       "namespace": "android_app",
       "package_name": "kr.ojjuda.pajang",
       "sha256_cert_fingerprints": [
-        "96:01:36:FF:F5:B3:27:DE:7F:C9:08:D9:44:97:5B:DE:DF:0C:DF:CE:F8:1E:8D:DB:A4:F5:88:1F:CC:CA:17:A0"
+        "96:01:36:FF:F5:B3:27:DE:7F:C9:08:D9:44:97:5B:DE:DF:0C:DF:CE:F8:1E:8D:DB:A4:F5:88:1F:CC:CA:17:A0",
+        "9F:E2:BE:07:19:60:CC:AB:D3:37:DC:CF:36:F4:23:78:33:5C:AF:0F:55:01:DD:04:30:94:F6:D8:2D:10:17:89"
       ]
     }
   },
@@ -32,7 +33,8 @@
       "namespace": "android_app",
       "package_name": "kr.ojjuda.park",
       "sha256_cert_fingerprints": [
-        "5B:66:ED:65:F9:74:BB:1C:5B:15:8E:CF:DB:A7:18:C7:6F:9C:C8:6C:5B:67:45:1B:5F:95:74:55:28:D0:9E:B1"
+        "5B:66:ED:65:F9:74:BB:1C:5B:15:8E:CF:DB:A7:18:C7:6F:9C:C8:6C:5B:67:45:1B:5F:95:74:55:28:D0:9E:B1",
+        "A5:9C:39:4A:4B:50:5D:DF:C3:BE:D3:28:09:1C:BA:C0:27:14:C6:AA:93:D8:F7:2B:08:15:8D:93:2A:5F:29:2D"
       ]
     }
   }
