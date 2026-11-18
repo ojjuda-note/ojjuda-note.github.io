@@ -6,10 +6,10 @@ const Age=(() => {
  const modes = [['all','전체'],['adults','성인전용'],['minors','성인불가'],['range','나이대 설정']];
  const validAge = (value, fallback) => Number.isInteger(Number(value)) && Number(value)>=14 && Number(value)<=150 ? Number(value) : fallback;
  function label(room = {}) {
-  if (room.age_policy === 'adults') return '성인전용 · 만 19세 이상';
-  if (room.age_policy === 'minors') return '성인불가 · 만 14~18세';
+  if (room.age_policy === 'adults') return '만 19세 이상';
+  if (room.age_policy === 'minors') return '만 14~18세';
   if (room.age_policy === 'range') return `만 ${validAge(room.min_age,14)}~${validAge(room.max_age,150)}세`;
-  return '전체 · 연령 제한 없음';
+  return '연령 제한 없음';
  }
  const policy = room => modes.some(([value])=>value===room?.age_policy) ? room.age_policy : 'all';
  function badge(room = {}) { return `<span class="tag age-tag" data-age-policy="${policy(room)}">${escape(label(room))}</span>`; }

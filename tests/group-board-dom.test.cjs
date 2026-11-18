@@ -389,7 +389,7 @@ test('age-restricted directory and invitation preview explain why joining is dis
   if(a==='home')return {data:{rooms:[],directory:[{id:other,name:'성인 모임',member_count:3,age_policy:'adults',age_eligible:false,age_note:'연령 조건이 맞지 않아요.'}],invitations:[]}};
   if(a==='preview_link')return {data:{room_id:other,group_name:'성인 모임',member:false,age_policy:'adults',age_eligible:false,age_note:'연령 조건이 맞지 않아요.'}};
  }});try{
-  await tick();const d=f.w.document;assert.equal(d.querySelector('[data-request]').disabled,true);assert.match(d.querySelector('#directory').textContent,/성인전용 · 만 19세 이상/);
+  await tick();const d=f.w.document;assert.equal(d.querySelector('[data-request]').disabled,true);assert.equal(d.querySelector('#directory .age-tag').textContent,'만 19세 이상');
   assert.equal(d.querySelector('[data-accept-link]').disabled,true);d.querySelector('[data-accept-link]').click();await tick();assert.equal(f.calls.some(([a])=>a==='accept_link'),false);
  }finally{f.dom.window.close();}
 });
@@ -409,11 +409,11 @@ test('owners can edit the age policy along with group settings',async()=>{
 
 
 test('age badges use four explicit color keys and keep readable labels with safe fallbacks',async()=>{
- const rows=[['all','전체'],['adults','성인전용'],['minors','성인불가'],['range','만 20~29세'],['adults" onclick="alert(1)','전체']].map(([age_policy,label],i)=>({id:'30000000-0000-4000-8000-'+String(i+1).padStart(12,'0'),name:label,member_count:1,age_policy,min_age:20,max_age:29}));
+ const rows=[['all','연령 제한 없음'],['adults','만 19세 이상'],['minors','만 14~18세'],['range','만 20~29세'],['adults" onclick="alert(1)','연령 제한 없음']].map(([age_policy,label],i)=>({id:'30000000-0000-4000-8000-'+String(i+1).padStart(12,'0'),name:label,member_count:1,age_policy,min_age:20,max_age:29}));
  const f=fixture({respond:a=>a==='home'?{data:{rooms:[],directory:rows,invitations:[]}}:undefined});try{
   await tick();const badges=[...f.w.document.querySelectorAll('#directory .age-tag')];
   assert.deepEqual(badges.map(b=>b.dataset.agePolicy),['all','adults','minors','range','all']);
-  for(let i=0;i<rows.length;i++)assert.ok(badges[i].textContent.includes(rows[i].name));
+  for(let i=0;i<rows.length;i++)assert.equal(badges[i].textContent,rows[i].name,'each badge shows one concise age condition');
   assert.equal(f.w.document.querySelector('[onclick]'),null);
  }finally{f.dom.window.close();}
 });
@@ -431,7 +431,7 @@ test('age selector previews colors and custom ages immediately without changing 
   form.elements.min_age.value='35';form.elements.max_age.value='45';form.elements.max_age.dispatchEvent(new f.w.Event('input'));assert.match(preview.textContent,/35~45세/);
   form.elements.max_age.value='30';form.elements.max_age.dispatchEvent(new f.w.Event('input'));assert.match(preview.textContent,/나이 범위를 확인/);assert.equal(form.elements.max_age.validity.customError,true);
   form.elements.min_age.value='';form.elements.min_age.dispatchEvent(new f.w.Event('input'));assert.match(preview.textContent,/나이 범위를 확인/);
-  mode.value='all';mode.dispatchEvent(new f.w.Event('change'));assert.match(preview.textContent,/전체/);assert.equal(form.elements.max_age.validity.customError,false);
+  mode.value='all';mode.dispatchEvent(new f.w.Event('change'));assert.equal(preview.textContent,'연령 제한 없음');assert.equal(form.elements.max_age.validity.customError,false);
  }finally{f.dom.window.close();}
 });
 test('room header and management form share the same adult color key',async()=>{
