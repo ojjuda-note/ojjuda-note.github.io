@@ -23,6 +23,7 @@ if (Object.hasOwn(destinations,next)) {
 // Keep the same document and masthead when a member finishes the entry step.
 let handoff;
 let program;
+let openProgram;
 let leaveEntry=()=>{};
 function enterMain(destination = main, savedStation) {
   if (window.top !== window) {
@@ -31,6 +32,7 @@ function enterMain(destination = main, savedStation) {
     window.top.location.assign(destination.href);return;
   }
   if (handoff) return handoff;
+  openProgram?.();
   leaveEntry();
   $('welcome').hidden=true;
   $('gate').hidden=false;
@@ -220,8 +222,9 @@ async function start(firstEntry) {
 
 let entryAction;
 let entry = await requireMember(user => entryAction=answeredRound()===user?'state':'entry', db=>{
-  // Fetch the authorized program alongside membership; it is never mounted before verification.
-  program=prepareProgram(db);
+  // Authorize alongside membership, then download only when the member needs the main screen.
+  const ready=new Promise(resolve=>{openProgram=resolve;});
+  program=prepareProgram(db,ready);
   program.catch(()=>{program=undefined;});
 });
 if (entry) {

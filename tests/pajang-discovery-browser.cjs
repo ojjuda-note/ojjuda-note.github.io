@@ -90,13 +90,13 @@ function clientFixture(hash) {
     if(mode==='new'||mode==='unanswered'){state.me.body='';entry.body='';}
     window.feedCalls=[];window.heldGender=null;window.releaseFeed=null;
     const messages=[{id:'1',src:'peer1',dst:'me',body:'안녕하세요!',at:1}];
-    window.authCalls=0;window.artCalls=[];window.memberCalls=[];window.sendIds=[];
+    window.authCalls=0;window.artCalls=[];window.memberCalls=[];window.sendIds=[];window.programCalls=0;
     const db={
       auth:{getUser:async()=>{window.authCalls++;if(flightCheck||sessionStorage.holdEntryIdentity==='yes')await new Promise(resolve=>{window.finishFlight=resolve;});return {data:{user:mode==='guest'?null:{id:'member'}}};},
         getSession:async()=>({data:{session:mode==='guest'?null:{user:{id:mode==='switched'?'next-member':'member'}}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
       functions:{invoke:async()=>({data:{bucket:'fixture',files:{'station.js':'${hash}',...Object.fromEntries(['coffee','walk','vinyl','camera','book','tennis'].map(key=>[key+'.webp','pending']))}}})},
       storage:{from:()=>({download:async key=>{
-        if(key.endsWith('station.js'))return {data:await (await fetch('/program')).blob()};
+        if(key.endsWith('station.js')){window.programCalls++;return {data:await (await fetch('/program')).blob()};}
         window.artCalls.push(key.split('/').pop());window.artPending=true;await new Promise(r=>window.addEventListener('finish-art',r,{once:true}));return {error:'fixture image unavailable'};
       }})},
       rpc:(name,p)=>{
@@ -553,6 +553,7 @@ function clientFixture(hash) {
         assert.equal(entryDocuments.length-opened,1,scenario+' opens just one Pajang document');
         const reads=await page.evaluate(()=>window.memberCalls.filter(action=>['entry','state'].includes(action)));
         assert.deepEqual(reads,scenario==='member'&&!openingBaseline?['state']:scenario==='new'?['entry']:['entry','state'],scenario+' uses only necessary member reads');
+        if(!openingBaseline)assert.equal(await page.evaluate(()=>window.programCalls),scenario==='new'?0:1,'only a member entering the main screen downloads its program');
       }
       openingTimes[version][scenario]=timings.sort((a,b)=>a-b)[2];
       console.log('PAJANG_OPEN_MS',version,scenario,JSON.stringify(timings),'median',openingTimes[version][scenario]);
