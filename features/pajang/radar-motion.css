@@ -1,0 +1,31 @@
+/* Shared by the entry preview and member radar, including the in-page handoff. */
+.scope .sweep,.radar-scope .radar-sweep{display:none;animation:none}
+.scope::before,.scope::after,.radar-scope::before,.radar-scope::after{
+  content:"";
+  position:absolute;
+  inset:1%;
+  z-index:1;
+  box-sizing:border-box;
+  border:2px solid #6f956b;
+  border-radius:50%;
+  background:radial-gradient(circle,transparent 62%,#8fae7c12 89%,#8fae7c26 100%);
+  box-shadow:0 0 9px #78996a26,inset 0 0 9px #78996a1a;
+  opacity:.2;
+  transform:scale(.42);
+  transform-origin:center;
+  pointer-events:none;
+}
+.scope::after,.radar-scope::after{transform:scale(.72);opacity:.14}
+.scope .rose,.scope .self,.scope .dot,.radar-scope .scope-self,.radar-scope .scope-person{z-index:2}
+@keyframes pajang-ripple{
+  0%{transform:scale(.055);opacity:0}
+  12%{opacity:.65}
+  65%{opacity:.3}
+  100%{transform:scale(1);opacity:0}
+}
+@media(prefers-reduced-motion:no-preference){
+  .scope::before,.scope::after,.radar-scope::before,.radar-scope::after{
+    animation:pajang-ripple 4.8s linear infinite;
+  }
+  .scope::after,.radar-scope::after{animation-delay:-2.4s}
+}
