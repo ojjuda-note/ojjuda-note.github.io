@@ -228,11 +228,13 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   a2osoul: {
-    checkedAt: '2026.11.13',
+    checkedAt: '2026.11.18',
     debut: '2026.10.13', debutWork: 'SUPERSTAR 선공개',
     agency: 'A2O Entertainment',
     concept: '15명의 NEW SYNTHWAVE.',
-    awards: [],
+    awards: [
+      { year: '2026.11', title: 'SBS Life 더쇼 음악방송 첫 1위', detail: 'Dancing in the Dark · 2026.11.17 · 11,660점', href: 'https://www.soompi.com/article/1888114wpp/watch-a2o-soul-takes-1st-ever-win-on-the-show-for-dancing-in-the-dark' }
+    ],
     records: [
       { year: '2026.11', title: '데뷔 EP 공개', detail: 'SUPERSTAR · 5곡', href: 'https://www.melon.com/album/detail.htm?albumId=14644792' },
       { year: '2026.10', title: 'SUPERSTAR 글로벌 차트 기록', detail: 'A2O 발표 기준 QQ Music 신곡 2위·MV 글로벌 4위, YouTube 인기 음악 18위', href: 'https://prtimes.jp/main/html/rd/p/000000007.000192898.html' }
@@ -329,25 +331,8 @@ const supplementaryProfiles = {
     }
   },
   a2osoul: {
-    sources: [
-      { label: '멤버 생일 참고(비공식)', href: 'https://tanjoubi.today/ja/group/20261013_A2OSOUL_3e68' }
-    ],
-    members: {
-      'TAI': { birthday: '2011.08.09' },
-      'GAKU': { birthday: '2009.09.04' },
-      'SEE-ONE': { birthday: '2011.02.10' },
-      'SEOHA': { birthday: '2008.01.01' },
-      'SONO': { birthday: '2011.11.05' },
-      'LUCIEN': { birthday: '2010.12.10' },
-      'ZAI': { birthday: '2012.01.06' },
-      'AYDEN': { birthday: '2012.03.27' },
-      'ALURE': { birthday: '2011.07.08' },
-      'ZET': { birthday: '2012.06.21' },
-      'SORA': { birthday: '2007.07.30' },
-      'TEO': { birthday: '2009.07.30' },
-      'JUNE': { birthday: '2009.11.09' },
-      'HANSUNG': { birthday: '2010.02.25' }
-    }
+    sources: [],
+    members: {}
   }
 };
 
