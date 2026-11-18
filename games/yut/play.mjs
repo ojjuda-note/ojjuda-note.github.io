@@ -1,9 +1,9 @@
 import {roundSummary} from './results.mjs?v=20261117-arcade-score-repair1';
-import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,chooseFirstSeat,firstSeatRemaining,FIRST_SEAT_SPIN_MS,FIRST_SEAT_RESULT_MS,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=18';
+import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,chooseFirstSeat,firstSeatRemaining,firstSeatTiming,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=19';
 import {createBoard,PAWN_HOP_MS} from './board.mjs?v=28';
 import {createToss,drawRack} from './toss.mjs?v=13';
 import {createTableSounds} from './sound.mjs?v=4';
-import {openRoom,roomCode} from './room.mjs?v=18';
+import {openRoom,roomCode} from './room.mjs?v=19';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=5';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
@@ -268,28 +268,35 @@ async function showFirstSeat(s,token,remaining){
     return badge;
   });
   circle.replaceChildren(firstSeatStick,...seats);
+  firstSeatLayer.classList.remove('resolved');
   heading.textContent='선을 정하는 중…';
   order.textContent='';
-  const from='rotate(0deg)', to='rotate('+(1440+s.team*degrees)+'deg)';
-  const spin=Math.max(0,remaining-FIRST_SEAT_RESULT_MS);
-  firstSeatStick.style.transform=to;
+  const angle=1080+s.team*degrees;
+  const rotate=degrees=>`rotate(${degrees}deg)`;
+  const [spinMs,resultMs]=firstSeatTiming(s);
+  const spin=Math.max(0,remaining-resultMs);
+  firstSeatStick.style.transform=rotate(angle);
   firstSeatLayer.hidden=false;
   if(spin){
     if(!reduced.matches&&firstSeatStick.animate){
-      firstSeatAnimation=firstSeatStick.animate([{transform:from},{transform:to}],{
-        duration:FIRST_SEAT_SPIN_MS,easing:'cubic-bezier(.12,.55,.22,1)'
-      });
-      firstSeatAnimation.currentTime=FIRST_SEAT_SPIN_MS-spin;
-    }else firstSeatStick.style.transform=from;
+      firstSeatAnimation=firstSeatStick.animate([
+        {transform:rotate(0),offset:0,easing:'cubic-bezier(.45,.18,.3,1)'},
+        {transform:rotate(angle-145),offset:.55,easing:'cubic-bezier(.18,.35,.45,1)'},
+        {transform:rotate(angle-30),offset:.82,easing:'cubic-bezier(.2,.32,.37,1)'},
+        {transform:rotate(angle),offset:1}
+      ],{duration:spinMs,fill:'forwards'});
+      firstSeatAnimation.currentTime=spinMs-spin;
+    }else firstSeatStick.style.transform=rotate(0);
     await delay(spin);
   }
   if(token!==motion)return;
   firstSeatAnimation?.cancel();
-  firstSeatStick.style.transform=to;
+  firstSeatStick.style.transform=rotate(angle);
+  firstSeatLayer.classList.add('resolved');
   seats[s.team].classList.add('is-first');
-  heading.textContent=(s.team+1)+'번부터 시작!';
+  heading.textContent=(s.team+1)+'번 '+TEAMS[s.team].name+' 팀부터 시작!';
   order.textContent=Array.from({length:count},(_,i)=>(s.team+i)%count+1).join(' → ');
-  await delay(Math.min(remaining,FIRST_SEAT_RESULT_MS));
+  await delay(Math.min(remaining,resultMs));
   if(token===motion)firstSeatLayer.hidden=true;
 }
 async function showState(s,animate=true){

@@ -337,7 +337,7 @@ test('eight distinct seats can play a full turn each and the ninth cannot act',a
     clients[2].action({type:'roll'});
     await new Promise(resolve=>setTimeout(resolve,60));
     assert.equal(host.view().game.revision,0);
-    await until(()=>Date.now()>=game.firstSeatAt+FIRST_SEAT_SPIN_MS+FIRST_SEAT_RESULT_MS,400);
+    await until(()=>Date.now()>=game.firstSeatAt+FIRST_SEAT_SPIN_MS+FIRST_SEAT_RESULT_MS,800);
     let face=0;rand.mock.mockImplementation(()=>face++%4===0?.1:.9);
     for(let turn=0;turn<8;turn++){
       const seat=(2+turn)%8;

@@ -79,7 +79,7 @@
 | 틀린그림찾기 | [games/spot-difference/index.html](../../games/spot-difference/index.html) |
 | 탑 쌓기 | [games/stacker/index.html](../../games/stacker/index.html) |
 | 탱크게임 | [games/tank/index.html](../../games/tank/index.html) |
-| 윳놀이 | [games/yut/index.html](../../games/yut/index.html) |
+| 윷놀이 | [games/yut/index.html](../../games/yut/index.html) |
 | 월드땅따먹기 | [games/ttang.html](../../games/ttang.html) |
 
 ### 게임의 별도 진입·체험 (4)
