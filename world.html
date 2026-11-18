@@ -79,7 +79,7 @@
 <script src="/app/world/world-navigation.js?v=20261113-game-popup-order1" defer></script>
 <script src="/app/world/world-pull-refresh.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/features/home/agit-hub.css?v=20261118-pajang-letter">
-<script src="/features/home/agit-hub.js?v=20261118-pajang-location" defer></script>
+<script src="/features/home/agit-hub.js?v=20261118-shared-location1" defer></script>
 <link rel="stylesheet" href="/features/home/agit-welcome.css?v=20261111-join-benefits1">
 <script src="/features/home/agit-welcome.js?v=20261117-park-guest2" defer></script>
 
@@ -101,7 +101,7 @@
 <script src="/shared/games/world-game-rankings.js?v=20261117-arcade-gold-units1" defer></script>
 <link rel="stylesheet" href="/park/world-park-notes.css?v=20261118-composer-tools2">
 <link rel="stylesheet" href="/park/card-grid.css?v=20261117-park-750">
-<script src="/park/world-park-notes.js?v=20261118-writing-options7" defer></script>
+<script src="/park/world-park-notes.js?v=20261118-shared-location1" defer></script>
 
 <!-- 서버 연결 도구 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
@@ -570,7 +570,7 @@ async function Oa(t,e,o){adminMutationPending++;t&&(t.disabled=!0);try{await e()
 const sectionReleases={
   hub:{name:'아지트',version:Go,manifest:'/version.json'},
   arcade:{name:'오락실',version:'1.0.4',manifest:'/features/arcade/version.json'},
-  park:{name:'공원',version:'1.3.3',manifest:'/park/version.json'}
+  park:{name:'공원',version:'1.3.4',manifest:'/park/version.json'}
 };
 function releaseSection(){
  const tab=worldMainTab();

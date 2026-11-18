@@ -36,6 +36,9 @@ test('discovery filtering uses its own opt-in and keeps dated answers paginated 
   await db.exec(await migration("20261117235000_pajang_my_answers.sql"));
   await db.exec(await migration("20261117235950_pajang_edit_current_answer.sql"));
   await db.exec(await migration("20261118052051_pajang_persistent_location.sql"));
+  await db.exec(`create schema ojjuda_note_internal;
+    create table ojjuda_note_internal.card_locations(card_id uuid primary key,author_id uuid,exact_lat double precision,exact_lon double precision);`);
+  await db.exec(await migration("20261118084120_shared_park_pajang_location.sql"));
   const account = randomUUID();
   const writer = randomUUID();
   await db.query('insert into auth.users values ($1)', [account]);
@@ -75,6 +78,33 @@ test('discovery filtering uses its own opt-in and keeps dated answers paginated 
     assert.equal((await member('state')).locationVersion,2,'failed saves roll back the preference too');
     await member('radar-disable',{locationVersion:2});
     assert.equal((await db.query('select count(*)::int n from pajang_private.locations where person=$1',[writer])).rows[0].n,0);
+  });
+  await t.test('Park and Pajang share the account switch and reject late location writes',async()=>{
+    const preference=async(enabled=null,version=null,extra={})=>(await db.query(
+      'select public.ojjuda_location_preference($1,$2,$3,$4) as value',
+      [enabled,version,extra.account??account,extra.legacy??false])).rows[0].value;
+    const member=async(action,data={})=>(await db.query('select public.pajang_member($1,$2) as value',[action,data])).rows[0].value;
+    let choice=await preference();assert.equal(choice.enabled,false);
+    choice=await preference(true,choice.version);
+    assert.equal((await member('state')).locationEnabled,true,'Park on is reflected by Pajang');
+    await db.query('insert into ojjuda_note_internal.card_locations values($1,$2,37.5,127)',[randomUUID(),account]);
+    let state=await member('radar-disable',{locationVersion:choice.version});
+    assert.equal((await preference()).enabled,false,'Pajang off is reflected by Park');
+    await assert.rejects(()=>db.query('insert into ojjuda_note_internal.card_locations values($1,$2,37.5,127)',[randomUUID(),account]),{code:'42501'});
+    await assert.rejects(()=>preference(true,choice.version),{code:'PT412'});
+    choice=await preference(true,state.locationVersion);
+    await member('radar-enable',{latCell:3750,lonCell:12700,consent:true,automatic:true,locationVersion:choice.version});
+    choice=await preference(false,choice.version);
+    state=await member('state');assert.equal(state.radarOn,false);assert.equal(state.locationEnabled,false);
+    assert.equal((await db.query('select count(*)::int n from pajang_private.locations where person=$1',[writer])).rows[0].n,0);
+    await assert.rejects(()=>preference(null,null,{account:randomUUID()}),{code:'42501'});
+    choice=await preference(true,choice.version);
+    assert.equal((await preference(null,null,{legacy:true})).enabled,true,'old Park settings cannot undo a newer explicit choice');
+    const parkOnly=randomUUID();await db.query('insert into auth.users values($1)',[parkOnly]);
+    await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:parkOnly})]);
+    const initial=await preference(null,null,{account:parkOnly,legacy:true});assert.equal(initial.enabled,false);assert.equal(initial.version,1);
+    assert.equal((await member('entry')).locationEnabled,false,'a future Pajang participant inherits Park off');
+    await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:account})]);
   });
   // The oldest answer falls outside the 30 calendar dates. Every other row has the same author.
   await db.query(`insert into pajang_private.answers(person,day,slot,at,body,question_prompt,archived)

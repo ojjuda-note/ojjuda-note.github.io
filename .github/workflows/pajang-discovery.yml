@@ -4,12 +4,23 @@ on:
     branches: [main]
     paths:
       - 'features/pajang/**'
+      - 'shared/location/**'
+      - 'note/preview.js'
+      - 'note/glasses.js'
+      - 'park/**'
       - 'supabase/functions/pajang-assets/index.ts'
       - '.github/workflows/pajang-discovery.yml'
   pull_request:
     paths:
       - 'features/pajang/**'
+      - 'shared/location/**'
+      - 'note/preview.js'
+      - 'note/glasses.js'
+      - 'park/**'
       - 'tests/pajang-discovery-browser.cjs'
+      - 'tests/pajang-location.test.mjs'
+      - 'tests/shared-location.test.cjs'
+      - 'tests/note-composer-settings.test.cjs'
       - '.github/workflows/pajang-discovery.yml'
   workflow_dispatch:
 permissions:
@@ -28,7 +39,8 @@ jobs:
       - run: npm --prefix tests ci --ignore-scripts
       - run: npm --prefix features/pajang install --no-package-lock --no-audit --no-fund
       - run: npm --prefix features/pajang run build
-      - run: node --test tests/pajang-discovery-gender.test.mjs
+      - run: node --test tests/pajang-discovery-gender.test.mjs tests/pajang-location.test.mjs tests/shared-location.test.cjs tests/park-loading.test.cjs tests/park-frame-cache.test.cjs
+      - run: node tests/note-composer-settings.test.cjs
       - name: Install Chromium and Korean fonts
         working-directory: tests
         run: |

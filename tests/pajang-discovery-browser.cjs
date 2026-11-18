@@ -89,12 +89,26 @@ function clientFixture(hash) {
         window.artCalls.push(key.split('/').pop());window.artPending=true;await new Promise(r=>window.addEventListener('finish-art',r,{once:true}));return {error:'fixture image unavailable'};
       }})},
       rpc:(name,p)=>{
+        if(name==='ojjuda_location_preference'){
+          state.locationEnabled=localStorage.locationEnabled!=='false';state.locationVersion=Number(localStorage.locationVersion||0);
+          if(typeof p.p_enabled==='boolean'){
+            if(p.p_expected_version!==state.locationVersion)return Promise.resolve({error:{code:'PT412',message:'다른 화면에서 위치 설정이 바뀌었어요.'}});
+            state.locationEnabled=p.p_enabled;state.locationVersion++;
+            localStorage.locationEnabled=String(p.p_enabled);localStorage.locationVersion=String(state.locationVersion);
+            if(!p.p_enabled)state.radarOn=false;
+          }
+          return Promise.resolve({data:{enabled:state.locationEnabled,version:state.locationVersion}});
+        }
+
         if(name==='pajang_member'){
+          state.locationEnabled=localStorage.locationEnabled!=='false';state.locationVersion=Number(localStorage.locationVersion||0);
+          if(!state.locationEnabled)state.radarOn=false;
           window.memberCalls.push(p.p_action);
           if(['entry','state'].includes(p.p_action) && mode==='denied')return Promise.resolve({error:{code:'42501'}});
           if(p.p_action==='state'&&!entry.joined)return Promise.resolve({error:{code:'42501',message:'먼저 파장에 참여해 주세요.'}});
           if(p.p_action==='entry')return Promise.resolve({data:entry});
           if(p.p_action==='radar-enable'||p.p_action==='radar-disable'){
+            if(window.locationSaveError)return Promise.resolve({error:{code:'P0001',message:'위치 설정 저장에 실패했어요. 다시 시도해 주세요.'}});
             if(p.p_data.automatic&&(!state.locationEnabled||p.p_data.locationVersion!==state.locationVersion))return Promise.resolve({data:structuredClone(state)});
             window.geoWrites.push(p.p_data);
             state.radarOn=p.p_action==='radar-enable';state.radarDirectionOn=state.radarOn;
@@ -204,6 +218,7 @@ function clientFixture(hash) {
         <link rel="stylesheet" href="/features/home/agit-hub.css"><title>아지트</title>
         <script src="/config.js"></script><script src="/features/home/agit-hub.js"></script>
         <main></main><script>document.querySelector('main').innerHTML=OjjudaAgitHub.markup({},{});</script></html>`});
+      if(pathname==='/shared/location/location.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/location/location.js'))});
       const file=pathname.slice(project.length)||'index.html';
       if(!['station.html','station.css','member.mjs','member-main.mjs','load-station.mjs','location.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','shell.mjs','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
       const mime={html:'text/html',css:'text/css',mjs:'text/javascript',json:'application/json',svg:'image/svg+xml'}[path.extname(file).slice(1)];
@@ -511,7 +526,7 @@ function clientFixture(hash) {
     assert.equal(await page.evaluate(()=>window.geoWrites.length),0,'off re-entry never uploads a location');
     await context.clearPermissions();
     await locationSwitch.click();
-    await page.getByText('브라우저의 사이트 권한에서 위치를 허용해 주세요.',{exact:true}).waitFor();
+    await page.getByText('위치 권한이 막혀 있어요. 휴대폰 설정에서 브라우저의 위치 권한과 오쭈다 사이트의 위치 허용을 확인해 주세요.',{exact:true}).waitFor();
     assert.equal(await locationSwitch.getAttribute('aria-checked'),'false','denial keeps the saved setting');
     await context.grantPermissions(['geolocation'],{origin});
     await locationSwitch.click();
@@ -521,13 +536,65 @@ function clientFixture(hash) {
     assert.ok(await page.evaluate(()=>window.geoWrites.some(p=>p.automatic)));
     await context.clearPermissions();
     await page.reload();await locationSwitch.waitFor();
-    await page.getByText('브라우저의 사이트 권한에서 위치를 허용해 주세요.',{exact:true}).last().waitFor();
+    await page.getByText('위치 권한이 막혀 있어요. 휴대폰 설정에서 브라우저의 위치 권한과 오쭈다 사이트의 위치 허용을 확인해 주세요.',{exact:true}).last().waitFor();
     assert.equal(await locationSwitch.getAttribute('aria-checked'),'true','browser denial does not overwrite the preference');
     await locationSwitch.click();
     await page.waitForFunction(()=>localStorage.locationEnabled==='false');
     assert.equal(await page.evaluate(()=>window.geoWrites.filter(p=>p.automatic).length),0);
     await page.locator('.radar-location-setting').screenshot({path:path.join(dir,'location-switch.png')});
     console.log('PASS default location request, persistent switch, denied recovery, and coarse-cell-only upload');
+    // Weak first fixes recover without storing raw coordinates; cancellation never toggles sharing.
+    await page.evaluate(()=>{
+      window.locationMode='recover';window.locationWatchCleared=0;
+      Object.defineProperties(navigator.geolocation,{
+        getCurrentPosition:{configurable:true,value:(ok)=>ok({coords:{latitude:37.5665,longitude:126.978,accuracy:8000}})},
+        watchPosition:{configurable:true,value:(ok)=>{
+          window.locationSuccess=ok;
+          if(window.locationMode==='recover')setTimeout(()=>ok({coords:{latitude:37.5665,longitude:126.978,accuracy:30}}),300);
+          return 77;
+        }},
+        clearWatch:{configurable:true,value:()=>{window.locationWatchCleared++;}}
+      });
+    });
+    await locationSwitch.click();
+    await page.getByRole('status').filter({hasText:'더 정확한 위치를 확인하고 있어요.'}).waitFor();
+    await page.waitForFunction(()=>localStorage.locationEnabled==='true');
+    assert.ok(await page.evaluate(()=>window.locationWatchCleared>0));
+    await locationSwitch.click();await page.waitForFunction(()=>localStorage.locationEnabled==='false');
+    await page.evaluate(()=>{window.locationMode='hold';window.geoWrites=[];});
+    await locationSwitch.click();
+    await page.getByRole('button',{name:'위치 확인 취소'}).click();
+    await page.getByRole('status').filter({hasText:'위치 확인을 취소했어요.'}).waitFor();
+    await page.evaluate(()=>window.locationSuccess({coords:{latitude:37.5665,longitude:126.978,accuracy:30}}));
+    assert.equal(await locationSwitch.getAttribute('aria-checked'),'false');
+    assert.equal(await page.evaluate(()=>window.geoWrites.length),0);
+    await locationSwitch.click();await page.getByRole('button',{name:'위치 확인 취소'}).waitFor();
+    await selectMenu('내 파장');
+    await page.evaluate(()=>window.locationSuccess({coords:{latitude:37.5665,longitude:126.978,accuracy:30}}));
+    assert.equal(await page.evaluate(()=>window.geoWrites.length),0,'leaving the radar cannot enable sharing');
+    await selectMenu('오늘');await page.getByRole('button',{name:'내 주변',exact:true}).click();
+    await page.evaluate(()=>{window.locationMode='recover';window.locationSaveError=true;});
+    await locationSwitch.click();
+    await page.getByRole('status').filter({hasText:'위치 설정 저장에 실패했어요. 다시 시도해 주세요.'}).waitFor();
+    assert.equal(await locationSwitch.getAttribute('aria-checked'),'false');
+    await page.evaluate(()=>window.scrollTo(0,0));
+    await page.screenshot({path:path.join(dir,'location-recovery.png')});
+    console.log('PASS precise recovery, visible reason, cancellation, navigation cleanup and save-error preservation');
+    await page.evaluate(()=>{window.locationSaveError=false;});
+    const setShared=async enabled=>page.evaluate(async enabled=>{
+      const db=await window.OjjudaGetClient(),service=window.OjjudaLocation;
+      const preference=await service.preference(db,'member',{refresh:true});
+      await service.setPreference(db,'member',enabled,preference.version);
+    },enabled);
+    await setShared(true);
+    await page.waitForFunction(()=>document.querySelector('[role=switch]')?.getAttribute('aria-checked')==='true');
+    await page.waitForFunction(()=>window.geoWrites.some(write=>write.automatic));
+    await setShared(false);
+    await page.waitForFunction(()=>document.querySelector('[role=switch]')?.getAttribute('aria-checked')==='false');
+    assert.equal(await page.locator('.scope-person').count(),0);
+    console.log('PASS shared Park/Pajang setting changes update the mounted radar in both directions');
+
+
     assert.deepEqual(errors,[]);
     console.log('PASS 320/390/1080px layout, artwork-independent startup, tap/swipe/keyboard, delayed results, cancellation, in-memory revisit, and denial');
   } finally {await browser.close();}
