@@ -632,9 +632,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "SUPERSTAR", date: "2026.11.09", type: "데뷔 EP · 더블 타이틀 · 실물 발매 11.10", songs: ["SUPERSTAR", "Dancing in the Dark", "While We’re Young", "Very First Love (첫사랑)", "Moonlight Shadow"], href: "https://www.melon.com/album/detail.htm?albumId=14644792" }
     ],
     appearances: [
-      { date: "2026-11-16", title: "아리랑TV SHOW K-POP 사전녹화", sub: "공식 팬클럽 참여 공지 · 시간·장소는 A2O SOUL 공식 공지 확인", href: "https://artist.mnetplus.world/main/stg/a2osoul/contents/6af88433fcbfd2033a1104ee" },
-      { date: "2026-11-16", title: "SUPERSTAR 대형 패널 전시 마지막 날", sub: "일본 타워레코드 시부야점 1F · 11/10~16 · 영업시간 내", href: "https://towershibuya.jp/news/2026/11/03/236821" },
-      { date: "2026-11-17", title: "SBS Life 더쇼 사전녹화", sub: "Dancing in the Dark · 상세 시간·참여 규정은 공식 공지 확인", href: "https://artist.mnetplus.world/main/stg/a2osoul/contents/6af969c70a97884ab9090a8e" },
+      { date: "2026-11-18", title: "ENA 케이팝업 차트쇼 사전녹화", sub: "14:30 KST · 일산 빛마루 방송지원센터 · 공식 팬클럽 신청 11/13 종료 · 방송일 별도 공지", href: "https://artist.mnetplus.world/main/stg/a2osoul/surveys/6af6dbb227f0386b83f4ba18" },
       { date: "2026-11-18", title: "단체 영상통화 팬사인회", sub: "MAKESTAR · 19:00", href: "https://www.makestar.com/product/21876" },
       { date: "2026-11-20", title: "단체 대면 팬사인회", sub: "MAKESTAR · 20:00", href: "https://www.makestar.com/product/21876" },
       { date: "2026-11-21", title: "SUPERSTAR 팬사인회", sub: "WITHMUU · 18:30", href: "https://withmuu.com/goods/event_sale.php?sno=1650" },
@@ -649,6 +647,8 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "A2O SOUL 공식 X", sub: "행사·활동 안내", href: "https://x.com/A2O_SOUL" }
     ],
     news: [
+      { date: "11.17", tag: "첫 1위", title: "Dancing in the Dark · SBS Life 더쇼 첫 음악방송 1위(11,660점)", href: "https://www.soompi.com/article/1888114wpp/watch-a2o-soul-takes-1st-ever-win-on-the-show-for-dancing-in-the-dark" },
+      { date: "11.16", tag: "공식 영상", title: "Dancing in the Dark · 공식 퍼포먼스 영상 공개", href: "https://www.youtube.com/watch?v=gQqCY_BXLfc" },
       { date: "11.15", tag: "방송", title: "SBS 인기가요 · Dancing in the Dark 무대 공개", href: "https://www.youtube.com/watch?v=so6VpcUmQGk" },
       { date: "11.14", tag: "팬이벤트", title: "WITHMUU 11/25 영상통화·11/27 대면 팬사인회 발표 · 응모 11/16 마감", href: "https://link.withmuu.com/s9e3EU" },
       { date: "11.13", tag: "보도", title: "첫 EP SUPERSTAR · 뉴 신스웨이브 음악 조명", href: "https://m.tf.co.kr/read/entertain/2388281.htm" },

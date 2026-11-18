@@ -101,6 +101,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'pc1t3-1smUw', title: 'NEON + Dance Break', kind: '음악방송 무대', source: 'KBS WORLD' }
   ],
   a2osoul: [
+    { id: 'e84FIWj4pOk', title: 'Dancing in the Dark · 더쇼 첫 1위 및 앙코르 (11.17)', kind: '음악방송 1위·앙코르', source: 'THE K-POP / SBS Life · 2026.11.17' },
+    { id: 'gQqCY_BXLfc', title: 'Dancing in the Dark · Performance Video', kind: '공식 퍼포먼스', source: 'A2O WORLD · 2026.11.16' },
     { id: 'so6VpcUmQGk', title: 'Dancing in the Dark · SBS 인기가요 (11.15)', kind: '음악방송 무대', source: 'SBSKPOP / SBS · 2026.11.15' },
     { id: 'MC4KZBX20cM', title: 'Dancing in the Dark · MBC 쇼! 음악중심 (11.14)', kind: '음악방송 무대', source: 'MBCkpop / MBC · 2026.11.14' },
     { id: 'KW3G-tnNOXw', title: 'Dancing in the Dark · MBC 쇼! 음악중심 8K 풀캠', kind: '음악방송 풀캠', source: 'MBCkpop / MBC · 2026.11.14' },
