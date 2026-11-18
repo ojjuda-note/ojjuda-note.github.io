@@ -56,7 +56,7 @@ window.canCloseParkNote = () => {
 let initialCardId = new URL(location.href).searchParams.get('card');
 let initialKeepId = ['memo','comment'].includes(new URL(location.href).searchParams.get('keep')) ? initialCardId : null;
 const reactionPending = new Set();
-let draftController = null, draftStatus = null, draftLoading = false;
+let draftController = null, draftStatus = null, draftLoading = false, composerTools = null;
 let requestedDraftContent = null, composerRun = 0, identityEpoch = 0;
 let localComposerBaseline = null, localComposerDirty = false, localComposerStored = false;
 let notificationController = null;
@@ -673,6 +673,7 @@ function syncCardPhotoAttach() {
   attach.closest('.compose-photo')?.classList.toggle('has-card-photo-attach', allowed);
   attach.classList.toggle('is-busy', cardPhotoPreparing);
   attach.setAttribute('aria-disabled', String(disabled));
+  syncComposerTools();
 }
 async function prepareCardPhotoEdit(cardId, run) {
   const epoch = identityEpoch;
@@ -2402,6 +2403,23 @@ function setComposerInputs() {
   $('#card-photo-remove').disabled = disabled || cardPhotoPreparing;
   document.querySelectorAll('.note-color-choice input, input[name="photo-choice"]').forEach(input => { input.disabled = disabled; });
   document.querySelectorAll('input[name="identity"]').forEach(input => { input.disabled = disabled; });
+  syncComposerTools();
+}
+function syncComposerTools() {
+  if (!composerTools) return;
+  const style = currentStyle();
+  composerTools.sync({
+    guest: isGuestComposer(), disabled: busy || draftLoading,
+    locationRequired: !editingId && (kind === 'event' ? !validEventPosition() : !writingPosition),
+    selected: {
+      photo: !!(selectedPhotoKey || cardPhotoBlob || cardPhotoEditPath || eventPhotoPreviewUrl || eventCurrentPhotoUrl),
+      font: style.font !== 'default' || style.size !== 'normal' || (style.shopFont && style.shopFont !== 'none'),
+      color: style.boxTransparency !== 25 || ['textColor', 'boxColor'].some(key => style[key] !== 'default'),
+      effect: style.effect !== 'none' || ['shopEffect', 'shopSticker'].some(key => style[key] && style[key] !== 'none'),
+      location: kind === 'event' ? validEventPosition() : !!writingPosition,
+      settings: $('#quick-identity')?.value === 'nickname' || $('#quick-gender')?.value !== 'private'
+    }
+  });
 }
 function installDrafts() {
   if (!client || !window.OjjudaNoteDrafts) return;
@@ -2454,7 +2472,8 @@ function updateComposer() {
   const extra = visual.boxTransparency !== 25 || selectedPhotoKey || tags.value.trim() || visual.font !== 'default'
     || visual.size !== 'normal' || visual.effect !== 'none'
     || ['textColor', 'boxColor'].some(key => visual[key] !== 'default');
-  $('#compose-more>summary').textContent = extra ? '꾸미기 · 추가 설정 (선택됨)' : '꾸미기 · 추가 설정';
+  if (composerTools) syncComposerTools();
+  else $('#compose-more>summary').textContent = extra ? '꾸미기 · 추가 설정 (선택됨)' : '꾸미기 · 추가 설정';
   const values = parsedTags();
   $('#compose-tag-display').replaceChildren(...previewTags.map(value => node('span', '', `#${value.slice(0, 20)}`)));
   fitTagRow($('#compose-tag-display'));
@@ -2485,7 +2504,8 @@ function updateComposer() {
   else if (kind === 'event' && !validEventBody(text.value)) composeMessage.textContent = '이벤트 내용을 입력해 주세요.';
   else if (!values) composeMessage.textContent = '태그는 중복 없이 5개까지, 각 20자 이내';
   else if (kind === 'comment' && replyDueChecking) composeMessage.textContent = '상위 카드 공개 종료일 확인 중';
-  else if (kind !== 'event' && !editingId && !writingPosition) composeMessage.textContent = '위치를 켜고 확인한 뒤 등록할 수 있어요.';
+  else if (kind !== 'event' && !editingId && !writingPosition) composeMessage.textContent = composerTools
+    ? '아래 위치 아이콘을 눌러 위치를 켜 주세요.' : '위치를 켜고 확인한 뒤 등록할 수 있어요.';
   else if (kind === 'event' && !editingId && !validEventPosition()) composeMessage.textContent = '지도에서 이벤트 중심을 정해 주세요.';
   else if (kind === 'event' && eventPhotoPreparing) composeMessage.textContent = '사진을 준비하는 중이에요.';
   else if (cardPhotoPreparing) composeMessage.textContent = '사진을 준비하는 중이에요.';
@@ -2493,7 +2513,7 @@ function updateComposer() {
   else if (kind === 'event' && !editingId && !validEventOptions()) composeMessage.textContent = '반경과 시간을 범위 안의 정수로 입력해 주세요.';
   else composeMessage.textContent = busy ? (editingId ? '수정 중' : '등록 중')
     : kind === 'event' && !editingId ? '이벤트 범위와 금액을 확인해 주세요.'
-      : '';   // 등록할 준비가 됐어요. 이름·성별은 아래쪽 선택 칸에 보여요
+      : '';
   submit.disabled = busy || draftLoading || replyDueChecking || eventPhotoPreparing || cardPhotoPreparing || !!eventPhotoError || !client || !ready || !session?.user || !canWrite() || !text.value.trim()
     || text.value.length > 200 || !values
     || (kind !== 'event' && !editingId && !writingPosition)
@@ -2596,7 +2616,8 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
       $('#event-photo-clear').hidden = false;
     }
   }
-  $('#compose-more').open = false;
+  if (composerTools) composerTools.close(false);
+  else $('#compose-more').open = false;
   $('#photo-gallery').hidden = true; $('#photo-gallery-toggle').setAttribute('aria-expanded', 'false');
   $('#photo-grid').replaceChildren(); photoPage = 0; selectedPhotoKey = null;
   $('input[name="photo-choice"][value="plain"]').checked = true;
@@ -2608,7 +2629,7 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   $('#event-location-status').textContent = '지도를 누르거나 Tab으로 지도에 초점을 맞춘 뒤 방향키로 이동하고 아래 버튼으로 중심을 선택해 주세요. 지정한 위치와 범위는 다른 사람에게 보입니다.';
   $('.composer').dataset.mode = !editingId && kind === 'memo' ? 'memo-new' : editingId ? 'edit' : kind;
   $('.composer').dataset.kind = kind;
-  $('#compose-title').textContent = editingId ? kind === 'event' ? '내 이벤트 수정' : '내 카드 수정' : kind === 'event' ? '이벤트 카드 쓰기' : kind === 'comment' ? '답글 카드 쓰기' : '새 카드 쓰기';
+  $('#compose-title').textContent = editingId ? kind === 'event' ? '내 이벤트 수정' : '내 카드 수정' : kind === 'event' ? '이벤트 카드 쓰기' : kind === 'comment' ? '답글 카드 쓰기' : '글 작성하기';
   $('#compose-context').textContent = editingId ? kind === 'event'
     ? '글·태그·꾸미기·사진을 수정할 수 있어요. 구매한 위치·반경·기간은 그대로 유지돼요.'
     : '글과 태그를 수정할 수 있어요.' : kind === 'comment' ? replyContext() : '마음을 카드에 적어 주세요.';
@@ -2634,7 +2655,8 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   if (draftStatus) draftStatus.hidden = true;
   updateComposer(); backdrop.hidden = false; lockPage(true); updateComposer();
   $('.composer-body').scrollTop = 0;
-  text.focus({ preventScroll: true });
+  // Opening the editor should show the card first, without opening the phone keyboard.
+  const dialog = $('.composer'); dialog.tabIndex = -1; dialog.focus({ preventScroll: true });
   if (guest) void loadGuestBackground(publishRequestId, run, epoch);
   if (editingId && (kind === 'memo' || kind === 'comment')) void prepareCardPhotoEdit(editingId, run);
   if (kind === 'event' && editingId && eventHadPhoto) void showExistingEventPhoto(card, run);
@@ -2656,7 +2678,7 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
       if (run === composerRun) { draftStatus.textContent = error.message || '임시 글을 불러오지 못했어요.'; draftStatus.hidden = false; }
     }
     finally {
-      if (run === composerRun) { draftLoading = false; setComposerInputs(); updateComposer(); if (!backdrop.hidden) text.focus({ preventScroll: true }); }
+      if (run === composerRun) { draftLoading = false; setComposerInputs(); updateComposer(); }
     }
   }
   if (pending && run === composerRun && epoch === identityEpoch && !backdrop.hidden) {
@@ -2674,7 +2696,10 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
       }
     }
     if (!guest && pending.convert && $('#compose-font').value !== 'calligraphy') toggleCalligraphy();
-    else if (!guest && !pending.convert) $('#compose-more').open = true;
+    else if (!guest && !pending.convert) {
+      if (composerTools) composerTools.open('font');
+      else $('#compose-more').open = true;
+    }
   }
   if (!guest && !editingId && kind !== 'event' && run === composerRun && !backdrop.hidden) autoWritingLocation(run);
 }
@@ -2689,6 +2714,7 @@ function autoWritingLocation(run) {
 
 function closeComposer(saveDraft = true) {
   if (busy) return;
+  composerTools?.close(false);
   clearLocalComposer();
   composerRun++; replyDueRun++; replyDueChecking = false; draftLoading = false; setComposerInputs();
   backdrop.hidden = true; writingPosition = null; eventPosition = null; locationRun++; composerMapFetchRun++;
@@ -3580,7 +3606,7 @@ function installManagement() {
     if (event.key === 'Escape' && !management.hidden) { event.preventDefault(); closeManagement(); return; }
     if (event.key !== 'Tab') return;
     const focusable = [...dialog.querySelectorAll('button:not(:disabled), a[href], input:not(:disabled), textarea:not(:disabled), select:not(:disabled), summary, [tabindex="0"]')]
-      .filter(item => !item.hidden && item.getClientRects().length > 0);
+      .filter(item => !item.hidden && item.tabIndex >= 0 && item.getClientRects().length > 0);
     if (!focusable.length) { event.preventDefault(); return; }
     const first = focusable[0], last = focusable.at(-1);
     if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
@@ -3675,7 +3701,11 @@ $('#guest-compose-login').addEventListener('click', event => {
 });
 $('#close-composer').addEventListener('click', requestCloseComposer);
 backdrop.addEventListener('click', event => { if (event.target === backdrop) requestCloseComposer(); });
-document.addEventListener('keydown', event => { if (event.key === 'Escape' && !backdrop.hidden) requestCloseComposer(); });
+document.addEventListener('keydown', event => {
+  if (event.key !== 'Escape' || event.defaultPrevented || backdrop.hidden) return;
+  if (composerTools?.close()) { event.preventDefault(); return; }
+  requestCloseComposer();
+});
 text.addEventListener('input', () => { if (autoTagMode && document.activeElement !== tags) refreshAutoTags(); updateComposer(); recordDraft(); });
 tags.addEventListener('input', () => { noteTagEdit(); updateComposer(); recordDraft(); });
 tags.addEventListener('focus', () => updateComposer()); tags.addEventListener('blur', () => updateComposer());
@@ -3766,6 +3796,13 @@ function receiveAuth(current) {
 
 installManagement(); installStyleChoices(); installFeatures(); installStageAuth(); installComposerSheet();
 function installComposerSheet() {
+  if (window.OjjudaComposerTools) {
+    composerTools = window.OjjudaComposerTools.install({
+      onOpen: panel => { if (panel === 'location') requestAnimationFrame(() => eventMap?.invalidate?.()); }
+    });
+    syncComposerTools();
+    return;
+  }
   const more = $('#compose-more'), body = $('.composer-body'), summary = more?.querySelector('summary');
   if (!more || !body || !summary) return;
   const settle = () => {

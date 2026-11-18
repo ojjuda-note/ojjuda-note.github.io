@@ -85,6 +85,7 @@ async function checkSixLineCard(page, width) {
      }};return q;
    }})})};
   });
+  await page.addScriptTag({content:read('note/composer-tools.js')});
   await page.addScriptTag({content:source.slice(0,boot)});
   await page.evaluate(async()=>{
    const card=(n,body,style={})=>({id:'00000000-0000-4000-8000-'+String(n).padStart(12,'0'),kind:'memo',body,style,tags:['오늘','함께'],background_key:'plain',created_at:'2026-10-20T22:00:00Z'});

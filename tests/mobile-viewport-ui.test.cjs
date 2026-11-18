@@ -68,7 +68,16 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
         page.on('pageerror', error => errors.push(error.message));
         await page.goto(`https://fixture.test/${source === 'world' ? 'world.html' : 'note/'}`);
         if (source === 'world') await page.waitForFunction(() => window.worldTest);
-        else await page.addScriptTag({content:read('note/navigation.js')});
+        else {
+          await page.addScriptTag({content:read('note/composer-tools.js')});
+          await page.addScriptTag({content:read('note/preview.js')});
+          await page.addScriptTag({content:read('note/navigation.js')});
+          await page.evaluate(() => {
+            authKnown=ready=true; session={user:{id:'viewport-test'}};
+            myIdentity={gender:'private'};myIdentityReady=true;myGender='private';
+            autoWritingLocation=()=>{};
+          });
+        }
         await page.addScriptTag({content:read('shared/viewport/mobile-viewport.js')});
         if (process.env.MOBILE_VIEWPORT_FONT) {
           const font = fs.readFileSync(process.env.MOBILE_VIEWPORT_FONT).toString('base64');
@@ -113,12 +122,69 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
         }
 
         if (source === 'note') {
-          await page.evaluate(() => {document.querySelector('#composer-backdrop').hidden=false;document.querySelector('#publish-card').disabled=false;});
+          await page.evaluate(async () => {await openComposer('memo');document.querySelector('#publish-card').disabled=false;});
           await assertInside(page, page.locator('#publish-card'), area, 'note publish');
+          for (const button of await page.locator('[data-compose-tool]').all()) {
+            await assertInside(page, button, area, 'note option toolbar');
+          }
           await snapshot(page, `note-composer-${viewport.width}`);
+          await page.locator('#compose-text').fill('입력 중');
           const shortHeight = Math.min(300, viewport.height - 100);
           await visibleArea(page, shortHeight, 30);
           await assertInside(page, page.locator('#publish-card'), {top:54,bottom:shortHeight+30-48}, 'note publish above keyboard');
+          for (const button of await page.locator('[data-compose-tool]').all()) {
+            await assertInside(page, button, {top:54,bottom:shortHeight+30-48}, 'note toolbar above keyboard');
+          }
+          const checkWritingLine = async (lineIndex, label) => {
+            const readPosition = ({lineIndex, visibleOnly=false, bottom}) => {
+              const input=document.getElementById('compose-text');
+              const box=input.getBoundingClientRect(), body=input.closest('.composer-body').getBoundingClientRect();
+              const style=getComputedStyle(input), line=parseFloat(style.lineHeight)||parseFloat(style.fontSize)*1.4;
+              const x=box.left+box.width/2, y=box.top+parseFloat(style.paddingTop)+(lineIndex+.5)*line-input.scrollTop;
+              const hit=document.elementFromPoint(x,y);
+              const result={focused:document.activeElement===input, atEnd:input.selectionEnd===input.value.length,
+                x, y, top:body.top, bottom:body.bottom, visible:y>=body.top&&y<=body.bottom&&hit===input};
+              return visibleOnly ? result.focused&&result.atEnd&&result.visible&&y>=54&&y<=bottom : result;
+            };
+            // The viewport resize, body ResizeObserver and scoped scroll run in separate frames.
+            // Wait for the real cursor line, then retain precise geometry in any assertion failure.
+            await page.waitForFunction(readPosition,{lineIndex,visibleOnly:true,bottom:shortHeight+30-48},{timeout:5000})
+              .catch(error=>{if(error.name!=='TimeoutError')throw error;});
+            const caret=await page.evaluate(readPosition,{lineIndex});
+            assert.equal(caret.focused,true,label+': the writing input keeps focus');
+            assert.equal(caret.atEnd,true,label+': the cursor stays at the end of the entered text');
+            assert.ok(caret.visible && caret.y>=54 && caret.y<=shortHeight+30-48,
+              label+': the current text line must stay visible above the keyboard: '+JSON.stringify(caret));
+          };
+          await checkWritingLine(0,'single line');
+          await snapshot(page, `note-composer-caret-${viewport.width}`);
+          await page.locator('#compose-text').fill('첫째\n둘째\n셋째');
+          await visibleArea(page, shortHeight, 30);
+          await checkWritingLine(2,'third explicit line');
+          await page.locator('#compose-tags').fill('태그');
+          await visibleArea(page, shortHeight, 30);
+          const readTagPosition = visibleOnly => {
+            const input=document.getElementById('compose-tags');
+            const box=input.getBoundingClientRect(), body=input.closest('.composer-body').getBoundingClientRect();
+            const x=box.left+box.width/2,y=box.top+box.height/2;
+            const result={focused:document.activeElement===input,x,y,top:body.top,bottom:body.bottom,
+              visible:y>=body.top&&y<=body.bottom&&document.elementFromPoint(x,y)===input};
+            return visibleOnly ? result.focused&&result.visible : result;
+          };
+          await page.waitForFunction(readTagPosition,true,{timeout:5000})
+            .catch(error=>{if(error.name!=='TimeoutError')throw error;});
+          const tagPosition=await page.evaluate(readTagPosition,false);
+          assert.equal(tagPosition.focused,true,'editing tags keeps focus above the keyboard');
+          assert.equal(tagPosition.visible,true,'the tag input stays visible inside the scrollable body: '+JSON.stringify(tagPosition));
+          await assertInside(page, page.locator('#compose-tags'), {top:54,bottom:shortHeight+30-48}, 'tag input above keyboard');
+          assert.equal(await page.locator('#compose-text').inputValue(),'첫째\n둘째\n셋째','moving to tags preserves all written lines');
+          await snapshot(page, `note-composer-tags-${viewport.width}`);
+          await page.locator('[data-compose-tool="color"]').click();
+          for (const button of await page.locator('[data-compose-tool]').all()) {
+            await assertInside(page, button, {top:54,bottom:shortHeight+30-48}, 'note toolbar with keyboard and color panel');
+          }
+          await snapshot(page, `note-composer-keyboard-${viewport.width}`);
+          await page.locator('[data-compose-tool="color"]').click();
           assert.ok(await page.locator('.composer-body').evaluate(node => node.clientHeight > 40 && node.scrollHeight > node.clientHeight));
           const beforeZoom = await page.locator('#publish-card').boundingBox();
           await visibleArea(page, 150, 40, 2);

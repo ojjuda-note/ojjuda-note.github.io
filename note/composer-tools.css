@@ -1,0 +1,679 @@
+/* The card editor keeps its tools in one row below the writing surface. */
+#composer-backdrop:has(.composer-tools-ready) {
+  place-items: center;
+  padding: calc(14px + var(--app-safe-top, 0px)) 14px calc(14px + var(--app-safe-bottom, 0px));
+}
+
+#composer-backdrop .composer-tools-ready {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, calc(var(--park-card-max-width, 750px) + 42px));
+  height: min(980px, var(--app-dialog-height, calc(100dvh - 28px)));
+  max-height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.composer-tools-ready .composer-head {
+  position: relative;
+  inset: auto;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  flex: none;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 0;
+  background: var(--surface);
+}
+
+.composer-tools-ready .composer-head h2 {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  white-space: normal;
+  text-align: center;
+  font: 600 19px/1.4 var(--font-b, sans-serif);
+  letter-spacing: -.025em;
+}
+
+.composer-tools-ready .composer-head .icon-button,
+.composer-tools-ready .composer-head #publish-card {
+  display: inline-grid;
+  place-items: center;
+  min-width: 44px;
+  width: 44px;
+  min-height: 44px;
+  height: 44px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink);
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.composer-tools-ready .composer-head .icon-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+.composer-tools-ready .composer-head #publish-card {
+  justify-self: end;
+  color: var(--accent-ink, var(--accent));
+  font-size: 0;
+}
+
+.composer-tools-ready .composer-head #publish-card::after {
+  content: "";
+  display: block;
+  width: 21px;
+  height: 12px;
+  margin-top: -5px;
+  border: solid currentColor;
+  border-width: 0 0 2px 2px;
+  transform: rotate(-45deg);
+}
+
+.composer-tools-ready .composer-head #publish-card:disabled {
+  opacity: .38;
+  cursor: default;
+}
+
+/* Paid actions must retain their complete, visible price and action text. */
+.composer-tools-ready .composer-head:has(#publish-card.has-price) {
+  grid-template-columns: 44px minmax(0, 1fr) minmax(92px, max-content);
+}
+
+.composer-tools-ready .composer-head #publish-card.has-price {
+  width: auto;
+  height: auto;
+  max-width: 190px;
+  padding: 9px 12px;
+  background: var(--accent);
+  color: var(--on-accent, #fff);
+  font: 600 12px/1.4 var(--font-b, sans-serif);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.composer-tools-ready .composer-head #publish-card.has-price::after {
+  content: none;
+}
+
+#composer-backdrop .composer-tools-ready .composer-body {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 8px 20px 14px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding-block: 12px;
+  scrollbar-width: thin;
+  container-type: inline-size;
+}
+
+.composer-tools-ready .compose-tag-entry {
+  display: block;
+  min-width: 0;
+  margin: 0 0 14px;
+}
+
+.composer-tools-ready .compose-tag-entry #compose-tags {
+  position: static;
+  inset: auto;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  height: auto;
+  padding: 11px 14px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  background: var(--surface-2);
+  color: var(--ink);
+  caret-color: auto;
+  font: 400 16px/1.4 var(--font-b, sans-serif);
+  box-shadow: none;
+}
+
+.composer-tools-ready .compose-tag-entry #compose-tags::placeholder {
+  color: var(--ink-2);
+  opacity: .82;
+}
+
+.composer-tools-ready .composer-body > .compose-photo {
+  position: relative;
+  inset: auto;
+  z-index: 0;
+  display: grid;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  margin: 0;
+  border-radius: 15px;
+  box-shadow: none;
+}
+
+.composer-tools-ready .compose-photo #compose-tag-display {
+  visibility: visible;
+  pointer-events: none;
+}
+
+.composer-tools-ready .compose-photo #compose-tag-display:empty {
+  display: none;
+}
+
+.composer-tools-ready .compose-status {
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px 10px;
+  margin: 7px 1px 0;
+  color: var(--ink-2);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.composer-tools-ready .compose-status .compose-overflow-warning {
+  flex: 1 1 220px;
+  font-size: 11px;
+}
+
+.composer-tools-ready .compose-selection-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 2px 0 0;
+}
+
+.composer-tools-ready .compose-selection-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink-2);
+  font: 400 12px/1.5 var(--font-b, sans-serif);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.composer-tools-ready .compose-selection-summary svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+.composer-tools-ready .park-ink-editor:not([hidden]) {
+  margin: 12px 0 5px;
+}
+
+.composer-tools-ready .composer-footer {
+  flex: none;
+  min-width: 0;
+  gap: 4px;
+  padding: 7px 18px;
+  border: 0;
+  background: var(--surface);
+}
+
+.composer-tools-ready .composer-footer:has(#compose-message:empty):not(:has(.note-draft-alert:not([hidden]))) {
+  display: none;
+}
+
+.composer-tools-ready .composer-footer #compose-message {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.composer-tools-ready .compose-tools-dock {
+  position: relative;
+  z-index: 10;
+  flex: none;
+  min-width: 0;
+  background: var(--surface);
+}
+
+.composer-tools-ready .compose-toolbar {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(44px, 1fr));
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 12px;
+  overflow-x: auto;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  scrollbar-width: none;
+}
+
+.composer-tools-ready .compose-toolbar::-webkit-scrollbar { display: none; }
+
+.composer-tools-ready .compose-toolbar .compose-tool {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 44px;
+  min-height: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink-2);
+  box-shadow: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.composer-tools-ready .compose-tool svg {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.composer-tools-ready .compose-toolbar .compose-tool[aria-expanded="true"] {
+  background: var(--accent-soft);
+  color: var(--accent-ink, var(--accent));
+}
+
+.composer-tools-ready .compose-tool[data-selected="true"]::after,
+.composer-tools-ready .compose-tool[data-required="true"]::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: max(6px, calc(50% - 18px));
+  width: 5px;
+  height: 5px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--accent-ink, var(--accent));
+}
+
+.composer-tools-ready .compose-tool[data-required="true"]::after {
+  background: #b75b31;
+}
+
+.composer-tools-ready .compose-toolbar .compose-tool:disabled {
+  opacity: .4;
+  cursor: default;
+}
+
+.composer-tools-ready .compose-tools-dock #compose-more {
+  --compose-panel-height: min(520px, calc(var(--app-viewport-height, 100dvh) - 148px));
+  position: absolute;
+  inset: auto 0 100%;
+  z-index: 1;
+  box-sizing: border-box;
+  max-height: var(--compose-panel-height);
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 18px 18px 0 0;
+  background: var(--surface);
+  box-shadow: 0 -14px 40px -18px #182a2340;
+}
+
+.composer-tools-ready .compose-tools-dock #compose-more:not([open]) { display: none; }
+.composer-tools-ready .compose-tools-dock #compose-more::before { content: none; }
+
+.composer-tools-ready .compose-tools-dock #compose-more > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  min-height: 50px;
+  margin: 0;
+  padding: 5px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font: 600 14px/1.5 var(--font-b, sans-serif);
+  list-style: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.composer-tools-ready .compose-tools-dock #compose-more > summary::-webkit-details-marker { display: none; }
+
+.composer-tools-ready .compose-tools-dock #compose-more > summary::after {
+  content: "×";
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  margin-right: -8px;
+  color: var(--ink-2);
+  font: 400 24px/1 sans-serif;
+  transform: none;
+}
+
+.composer-tools-ready .compose-tools-dock .compose-more-content {
+  box-sizing: border-box;
+  max-height: calc(var(--compose-panel-height) - 50px);
+  min-height: 0;
+  padding: 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.composer-tools-ready .compose-tool-panel { min-width: 0; }
+.composer-tools-ready .compose-tool-panel[hidden] { display: none !important; }
+.composer-tools-ready .compose-tool-panel > :first-child { margin-top: 0; }
+.composer-tools-ready .compose-tool-panel > :last-child { margin-bottom: 0; }
+
+.composer-tools-ready .compose-tool-panel .note-style-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 12px;
+}
+
+.composer-tools-ready .compose-tool-panel .note-style-controls > label:last-child { grid-column: auto; }
+.composer-tools-ready .compose-tool-panel[data-compose-panel="effect"] .note-style-controls { grid-template-columns: minmax(0, 1fr); }
+
+.composer-tools-ready .compose-tool-panel :is(.note-style-controls, .ju-compose-tools, .note-event-options) select,
+.composer-tools-ready .compose-tool-panel .note-event-options input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 400 16px/1.4 var(--font-b, sans-serif);
+}
+
+.composer-tools-ready .compose-tool-panel #convert-calligraphy {
+  width: 100%;
+  min-height: 44px;
+  margin-block: 2px 10px;
+}
+
+.composer-tools-ready .compose-tool-panel #convert-calligraphy[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink, var(--accent));
+}
+
+.composer-tools-ready .compose-tool-panel .note-color-choices { gap: 4px; }
+.composer-tools-ready .compose-tool-panel .note-color-choice { width: 44px; height: 44px; }
+.composer-tools-ready .compose-tool-panel .note-color-choice span { width: 27px; height: 27px; }
+
+.composer-tools-ready .compose-tool-panel .note-opacity-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 58px auto;
+  gap: 10px;
+  margin: 0 2px;
+}
+
+.composer-tools-ready .compose-tool-panel .note-opacity-control label { grid-column: 1 / -1; }
+.composer-tools-ready .compose-tool-panel .note-opacity-control input[type="range"] { width: 100%; min-height: 44px; margin: 0; }
+.composer-tools-ready .compose-tool-panel .note-opacity-control input[type="number"] { min-height: 44px; font-size: 16px; }
+.composer-tools-ready .compose-tool-panel .note-opacity-control > span { margin: 0; }
+
+.composer-tools-ready .compose-tool-panel .note-photo-pick {
+  margin: 14px 0 0;
+  padding: 13px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.composer-tools-ready .compose-tool-panel .note-photo-intro { font-size: 12px; }
+.composer-tools-ready .compose-tool-panel .note-photo-pages { flex-wrap: wrap; gap: 8px; }
+.composer-tools-ready .compose-tool-panel .note-photo-pages :is(button, select) { min-height: 44px; }
+
+.composer-tools-ready .compose-attachment {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.composer-tools-ready .compose-attachment #card-photo-attach {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 5px;
+  box-sizing: border-box;
+  width: 88px;
+  min-width: 88px;
+  height: 78px;
+  margin: 0;
+  padding: 8px;
+  overflow: hidden;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  background-color: var(--surface-2);
+  background-position: center;
+  background-size: cover;
+  color: var(--ink-2);
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.composer-tools-ready .compose-attachment #card-photo-attach::after {
+  content: "내 사진";
+  font: 500 11px/1.4 var(--font-b, sans-serif);
+}
+
+.composer-tools-ready .compose-attachment #card-photo-attach.has-photo { border-style: solid; align-content: end; }
+.composer-tools-ready .compose-attachment #card-photo-attach.has-photo::after {
+  content: "사진 바꾸기";
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: #182a23b3;
+  color: #fff;
+}
+
+.composer-tools-ready .compose-attachment #card-photo-remove {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 24px;
+  box-shadow: none;
+}
+
+.composer-tools-ready .compose-attachment :is(#card-photo-attach, #card-photo-remove)[hidden] { display: none; }
+.composer-tools-ready .compose-tool-panel .event-photo-choice { margin: 0; }
+
+.composer-tools-ready .compose-tool-panel .compose-publish-settings {
+  display: grid;
+  align-items: start;
+  gap: 14px;
+  min-height: 0;
+  padding: 0;
+}
+
+.composer-tools-ready .compose-tool-panel .compose-quick {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+}
+
+.composer-tools-ready .compose-tool-panel .quick-choice {
+  display: grid;
+  grid-template-columns: minmax(72px, 1fr) minmax(0, 2fr);
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.composer-tools-ready .compose-tool-panel .quick-label { font-size: 13px; }
+.composer-tools-ready .compose-tool-panel .quick-choice[hidden] { display: none; }
+
+.composer-tools-ready .compose-tool-panel .quick-choice select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  height: auto;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 400 16px/1.4 var(--font-b, sans-serif);
+}
+
+.composer-tools-ready .compose-tool-panel .note-location-consent {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 0;
+}
+
+.composer-tools-ready .compose-tool-panel #card-location-button { min-height: 44px; }
+.composer-tools-ready .compose-tool-panel #card-location-status { flex-basis: 100%; font-size: 12px; line-height: 1.5; }
+.composer-tools-ready .compose-tool-panel .note-event-fields { margin: 0; }
+
+.composer-tools-ready :is(.compose-tool, .compose-selection-button, #publish-card, #close-composer):focus-visible,
+.composer-tools-ready .compose-tools-dock #compose-more > summary:focus-visible {
+  outline: 2px solid var(--accent-ink, var(--accent));
+  outline-offset: -3px;
+}
+
+.composer-tools-ready .compose-tag-entry #compose-tags:focus-visible {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 1px;
+}
+
+.composer-tools-ready[data-guest] :is(.compose-tools-dock, .compose-tag-entry, .compose-selection-summary) {
+  display: none !important;
+}
+
+.composer-tools-ready[data-guest] .guest-compose-login:not([hidden]) {
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+  margin: 8px 0;
+}
+
+.composer-tools-ready[data-guest] .composer-body > #convert-calligraphy {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 12px;
+}
+
+@media (hover: hover) {
+  .composer-tools-ready .compose-toolbar .compose-tool:not(:disabled):hover,
+  .composer-tools-ready .compose-selection-button:not(:disabled):hover,
+  .composer-tools-ready .composer-head .icon-button:hover,
+  .composer-tools-ready .composer-head #publish-card:not(:disabled):not(.has-price):hover {
+    background: var(--surface-2);
+    color: var(--accent-ink, var(--accent));
+  }
+}
+
+@media (max-width: 640px) {
+  #composer-backdrop:has(.composer-tools-ready) {
+    place-items: stretch;
+    align-items: stretch;
+    padding: var(--app-safe-top, 0px) 0 var(--app-safe-bottom, 0px);
+  }
+
+  #composer-backdrop .composer-tools-ready {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .composer-tools-ready .composer-head { padding: 6px 10px; }
+  .composer-tools-ready .composer-head h2 { font-size: 18px; }
+  #composer-backdrop .composer-tools-ready .composer-body { padding: 8px 14px 10px; }
+  .composer-tools-ready .compose-tag-entry { margin-bottom: 12px; }
+  .composer-tools-ready .composer-body > .compose-photo { border-radius: 12px; }
+  .composer-tools-ready .composer-footer { padding: 6px 14px; }
+  .composer-tools-ready .compose-toolbar { gap: 2px; padding: 6px 8px; }
+  .composer-tools-ready .compose-tools-dock .compose-more-content { padding: 14px; }
+  .composer-tools-ready .compose-tools-dock #compose-more > summary { padding-inline: 14px; }
+}
+
+@media (max-width: 360px) {
+  .composer-tools-ready .composer-head:has(#publish-card.has-price) { gap: 4px; }
+  .composer-tools-ready .composer-head:has(#publish-card.has-price) h2 { font-size: 15px; }
+  .composer-tools-ready .composer-head #publish-card.has-price { max-width: 142px; padding-inline: 8px; font-size: 11px; }
+  .composer-tools-ready .compose-tool-panel .note-style-controls { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-height: 420px) {
+  .composer-tools-ready .composer-head { padding-block: 2px; }
+  .composer-tools-ready .compose-toolbar { padding-block: 3px; }
+  .composer-tools-ready .compose-tools-dock #compose-more {
+    --compose-panel-height: max(96px, calc(var(--app-viewport-height, 100dvh) - 112px));
+  }
+  .composer-tools-ready .compose-tools-dock #compose-more > summary { min-height: 44px; }
+  .composer-tools-ready .compose-tools-dock .compose-more-content { max-height: calc(var(--compose-panel-height) - 44px); padding-block: 10px; }
+}

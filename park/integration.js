@@ -5,9 +5,10 @@
   try { hosted = parent !== window && parent.location.origin === location.origin && parent.location.pathname === '/world.html'; } catch {}
   const send = data => { if (hosted) parent.postMessage(data, location.origin); };
   const originalCanLeave = window.canCloseParkNote;
-  let pendingAction = null, previousOverlay = null, previousDetail = null, previousBalance = null, reporting = false, hostVisible = true;
+  let pendingAction = null, previousOverlay = null, previousComposer = null, previousDetail = null, previousBalance = null, reporting = false, hostVisible = true;
   const visible = selector => !!document.querySelector(selector);
   const overlayOpen = () => visible('.dialog-backdrop:not([hidden]), .nn-backdrop:not([hidden]), .note-photo-lightbox:not([hidden]), dialog[open]');
+  const composerOpen = () => visible('#composer-backdrop:not([hidden])');
 
   function canLeave() {
     if (window.OjjudaNoteSupport?.canLeave?.() === false) return false;
@@ -25,7 +26,11 @@
     if (notificationController?.isOpen?.()) { notificationController.close(); return true; }
     if (window.OjjudaNoteSupport?.isOpen?.()) { window.OjjudaNoteSupport.close(); return true; }
     if (!management.hidden) { closeManagement(); return true; }
-    if (!backdrop.hidden) { if (canLeave()) closeComposer(); return true; }
+    if (!backdrop.hidden) {
+      if (document.querySelector('.composer')?.ojjudaTools?.close()) return true;
+      if (canLeave()) closeComposer();
+      return true;
+    }
     return false;
   }
 
@@ -88,9 +93,13 @@
     reporting = false;
     if (!hostVisible) return;
     const open = overlayOpen();
+    const writing = composerOpen();
     const cardOpen = !detail.hidden;
     const compose = document.querySelector('.write-fab');if(compose&&compose.hidden!==cardOpen)compose.hidden=cardOpen;
-    if (open !== previousOverlay || cardOpen !== previousDetail) { previousOverlay = open;previousDetail = cardOpen; send({ type: 'ojjuda:park-state', overlayOpen: open, cardOpen }); }
+    if (open !== previousOverlay || writing !== previousComposer || cardOpen !== previousDetail) {
+      previousOverlay = open; previousComposer = writing; previousDetail = cardOpen;
+      send({ type: 'ojjuda:park-state', overlayOpen: open, composerOpen: writing, cardOpen });
+    }
     const userId = session?.user?.id;
     if (userId && Number.isSafeInteger(worldCoins) && worldCoins >= 0) {
       const key = `${userId}:${worldCoins}`;
@@ -161,11 +170,16 @@
     if (!hosted || event.origin !== location.origin || event.source !== parent) return;
     if (event.data?.type === 'ojjuda:park-visibility') {
       hostVisible = event.data.visible === true;
-      if (hostVisible) { previousOverlay = previousDetail = previousBalance = null; scheduleReport(); }
+      if (hostVisible) { previousOverlay = previousComposer = previousDetail = previousBalance = null; scheduleReport(); }
       return;
     }
-    if (event.data?.type === 'ojjuda:park-host-ready') { previousOverlay = previousDetail = previousBalance = null; scheduleReport(); }
+    if (event.data?.type === 'ojjuda:park-host-ready') { previousOverlay = previousComposer = previousDetail = previousBalance = null; scheduleReport(); }
   });
+  addEventListener('pagehide', () => {
+    send({ type: 'ojjuda:park-state', overlayOpen: false, composerOpen: false, cardOpen: false });
+    previousOverlay = previousComposer = previousDetail = null;
+  });
+  addEventListener('pageshow', scheduleReport);
 
   // The parent Hub counts a mission only after the card RPC has succeeded.
   document.addEventListener('ojjuda:card-published', event => {
@@ -175,7 +189,7 @@
   });
 
   window.OjjudaNoteNavigation?.leaveMy();
-  window.OjjudaParkFull = Object.freeze({ embedded: hosted, navigate, returnHome, compose: () => navigate('compose'), back, canLeave, overlayOpen, cardOpen:()=>!detail.hidden,
+  window.OjjudaParkFull = Object.freeze({ embedded: hosted, navigate, returnHome, compose: () => navigate('compose'), back, canLeave, overlayOpen, composerOpen, cardOpen:()=>!detail.hidden,
     refresh,
     refreshBalance: () => loadWorldBalance(session?.user?.id) });
   reportState();

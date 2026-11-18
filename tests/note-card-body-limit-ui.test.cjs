@@ -8,6 +8,7 @@ const root=path.resolve(__dirname,'..'),read=file=>fs.readFileSync(path.join(roo
    const page=await browser.newPage({viewport:{width,height:900}});
    await page.route('**/*',route=>route.abort());
    await page.setContent(read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<link\b[^>]*>/gi,''));
+   await page.addScriptTag({content:read('note/composer-tools.js')});
    await page.addScriptTag({content:read('note/preview.js')});
    const result=await page.evaluate(async()=>{
     text.value='한 줄의 카드';updateComposer();

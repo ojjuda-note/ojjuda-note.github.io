@@ -76,6 +76,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
   // Run the actual card composer and its embedded navigation adapter.
   const preparePark=async frame=>{
    await frame.addScriptTag({content:read('note/calligraphy.js')});
+   await frame.addScriptTag({content:read('note/composer-tools.js')});
    await frame.addScriptTag({content:note.slice(0,noteBoot)});
    await frame.evaluate(()=>{
     authKnown=ready=true;
@@ -144,7 +145,9 @@ const cardId='00000000-0000-4000-8000-000000000001';
   const frame=page.frames().find(f=>f.url().includes('/park/'));await preparePark(frame);
   await page.locator('[data-park-action=compose]').click();
   await frame.locator('#compose-text').fill('공원의 첫 글');
+  if(process.env.GUEST_PROOF_DIR){fs.mkdirSync(process.env.GUEST_PROOF_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.GUEST_PROOF_DIR,'guest-composer.png')});}
   assert.equal(await frame.locator('#compose-more').isVisible(),false);
+  assert.equal(await frame.locator('.compose-toolbar').isVisible(),false,'member option toolbar is hidden for guests');
   assert.equal(await frame.locator('#card-photo-attach').isVisible(),false);
   assert.equal(await frame.locator('#photo-gallery-toggle').isVisible(),false);
   await frame.waitForFunction(()=>document.querySelector('.compose-photo').style.backgroundImage.includes('/297.jpg'));
@@ -187,7 +190,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
   await tagInput.fill('#붓글씨');
   assert.equal(await waitForInk('#compose-ink-art',editedInk),taggedInk);
   assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
-  await page.locator('#compose-more>summary').click();
+  await page.locator('[data-compose-tool="color"]').click();
   const slider=page.locator('#compose-box-transparency'), number=page.locator('#compose-box-transparency-value');
   const boxColors=[];
   for(const level of [0,50,100]){
@@ -209,6 +212,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
   });
   await page.locator('#feed-list .note-font-calligraphy').first().evaluate(el=>el.classList.add('ju-font-poster'));
   assert.deepEqual(await page.locator('#feed-list .card-quote').allTextContents(),['고쳐 쓴 붓글씨','고쳐 쓴 붓글씨']);
+  await page.locator('[data-compose-tool="font"]').click();
   await page.locator('#convert-calligraphy').click();
   assert.equal(await page.locator('#compose-font').inputValue(),'default');
   assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
