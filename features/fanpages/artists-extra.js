@@ -487,9 +487,9 @@
       ],
       news: [
         { date: '2026.11.16', tag: '소속사', title: 'YG 3분기 전속계약 명단에서 블랙핑크 제외 · YG는 그룹 활동 논의 중이라고 설명(계약 종료 확정 아님)', href: 'https://www.yna.co.kr/amp/view/AKR20261116160000005' },
-        { date: '2026.11.14', tag: '공연', title: '리사 VIVA LA LISA 라스베이거스 첫 공연 11/12 개최 · 다음 공연 11/27~29 예정', href: 'https://www.elle.com/culture/music/a74423576/lisa-viva-la-lisa-residency-night-one-setlist/' },
         { date: '2026.11.16', tag: '로그인', title: '위버스 BLINK 멤버십(GL/JP) 신규 구매 11/16 14시부터 일시 중단 · 기존 가입자 이용 유지', href: 'https://weverse.io/blackpink/notice/41029' },
         { date: '2026.11.15', tag: '수상', title: '로제·제니, 2026 키즈 초이스 어워즈 개인 부문 수상', href: 'https://www.soompi.com/article/1887086wpp/bts-rose-jennie-kpop-demon-hunters-and-katseye-win-at-2026-nickelodeon-kids-choice-awards' },
+        { date: '2026.11.13', tag: '공연', title: '리사 VIVA LA LISA 라스베이거스 첫 공연 11/12 개최 · 다음 공연 11/27~29 예정', href: 'https://www.elle.com/culture/music/a74423576/lisa-viva-la-lisa-residency-night-one-setlist/' },
         { date: '2026.11.11', tag: '협업', title: '지수, 토미 힐피거 2026 겨울 캠페인 참여', href: 'https://prtimes.jp/main/html/rd/p/000000305.000010635.html' },
         { date: '2026.11.05', tag: '기록', title: 'GO 뮤직비디오 11/4 조회수 1억 돌파 · 16번째 그룹 MV', href: 'https://www.soompi.com/article/1884332wpp/blackpinks-go-becomes-their-16th-group-mv-to-surpass-100-million-views' },
         { date: '2026.08.08', tag: '활동', title: '데뷔 10주년 기념 공식 영상 공개', href: 'https://www.youtube.com/watch?v=k--lCrP69hg' },
