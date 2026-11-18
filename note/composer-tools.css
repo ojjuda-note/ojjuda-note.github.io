@@ -231,10 +231,6 @@
   height: 14px;
 }
 
-.composer-tools-ready .park-ink-editor:not([hidden]) {
-  margin: 12px 0 5px;
-}
-
 .composer-tools-ready .composer-footer {
   flex: none;
   min-width: 0;
@@ -665,7 +661,6 @@
   .composer-tools-ready .composer-head:has(#publish-card.has-price) { gap: 4px; }
   .composer-tools-ready .composer-head:has(#publish-card.has-price) h2 { font-size: 15px; }
   .composer-tools-ready .composer-head #publish-card.has-price { max-width: 142px; padding-inline: 8px; font-size: 11px; }
-  .composer-tools-ready .compose-tool-panel .note-style-controls { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-height: 420px) {

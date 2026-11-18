@@ -254,7 +254,7 @@ html body .shell > .col > .main { width: min(100%, calc(2 * var(--park-card-max-
 }
 .guest-compose-login:not([hidden]) { display: inline-flex; margin-block: 10px; }
 .note-opacity-hint { margin: 4px 2px 0; color: var(--ink-2); font-size: 12px; }
-/* Calligraphy keeps its readable source in the DOM, separate from the painted card. */
+/* Calligraphy retains one editable source over the same photo as its painted preview. */
 .park-ink-art { display: none; pointer-events: none; }
 .park-ink-box-frame { display: none; }
 .park-ink-overlay > .park-ink-box-frame:not([hidden]) {
@@ -300,19 +300,10 @@ html body .shell > .col > .main { width: min(100%, calc(2 * var(--park-card-max-
   white-space: nowrap;
 }
 #main .park-photo-cards .park-ink-overlay .card-tags { z-index: 1; }
-.park-ink-editor:not([hidden]) { display: grid; gap: 4px; margin: 9px 0 5px; font: 600 13px var(--font-b); color: var(--ink); }
-.park-ink-editor #compose-text {
-  width: 100%;
-  min-height: 64px;
-  max-height: 10em;
-  padding: 9px 12px;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background: var(--surface);
-  color: var(--ink);
-  font: 400 16px/1.5 var(--font-b);
-  resize: vertical;
-  overflow-y: auto;
-}
+.compose-photo.park-ink-overlay > #compose-text { top: 0; cursor: text; }
+/* Keep the native field available to touch, keyboard and assistive technology.
+   Focusing it reveals the text before input; no caret or value is replaced. */
+.compose-photo.park-ink-preview > #compose-text { opacity: 0; }
+.compose-photo.park-ink-writing > :is(.park-ink-art,.park-ink-box-frame) { visibility: hidden; }
 .compose-photo.park-ink-overlay :is(#compose-tags,#compose-tag-display,#card-photo-attach,#card-photo-remove) { z-index: 2; }
 .park-ink-overlay > :is(.photo-shade,.compose-shade) { display: none; }

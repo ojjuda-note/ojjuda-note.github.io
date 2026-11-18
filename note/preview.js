@@ -868,28 +868,34 @@ function drawInkCard(photo) {
     requestTagFit();
   }
 }
-let composeInkFrame = 0, composeInkRun = 0;
+let composeInkFrame = 0, composeInkRun = 0, composeInkComposing = false;
+function syncComposeInkDisplay() {
+  const photo = $('.compose-photo'), canvas = $('#compose-ink-art');
+  const on = photo?.classList.contains('park-ink-overlay');
+  const preview = on && !composeInkComposing && document.activeElement !== text
+    && !!text.value.trim() && canvas?.dataset.inkReady === 'true';
+  photo?.classList.toggle('park-ink-preview', !!preview);
+  photo?.classList.toggle('park-ink-writing', !!on && !preview);
+}
 function syncComposeInk(selected, style, previewTags) {
-  const photo = $('.compose-photo'), editor = $('#compose-ink-editor'), canvas = $('#compose-ink-art');
-  if (!canvas || !editor) return;
+  const photo = $('.compose-photo'), canvas = $('#compose-ink-art');
+  if (!canvas || !photo) return;
   const on = selected && !!window.ParkCalligraphy && !backdrop.hidden;
   photo.classList.toggle('park-ink-overlay', on);
-  if (editor.hidden === on) {
-    // Move the same field so login handoff, IME, tags, and draft listeners keep their state.
-    const focused = document.activeElement === text, start = text.selectionStart, end = text.selectionEnd;
-    editor.hidden = !on;
-    if (on) { editor.append(text); text.style.width = ''; text.style.height = ''; text.style.fontSize = ''; }
-    else $('#compose-tag-display').before(text);
-    if (focused) { text.focus({ preventScroll: true }); text.setSelectionRange(start, end); }
-  }
+  // The same native field stays centered on the photo in both writing modes.
+  // Focus/IME uses the readable input; the painted preview appears after editing.
   cancelAnimationFrame(composeInkFrame);
   const run = ++composeInkRun;
   canvas.hidden = !on;
-  if (!on) { delete canvas.dataset.inkReady; return; }
+  if (!on) { delete canvas.dataset.inkReady; composeInkComposing = false; }
+  syncComposeInkDisplay();
+  if (!on || composeInkComposing) return;
   const body = text.value, options = inkOptions(style, 720, previewTags);
   composeInkFrame = requestAnimationFrame(() => {
     if (run !== composeInkRun || backdrop.hidden) return;
     if (renderParkInk(canvas, body, options)) canvas.dataset.inkReady = 'true';
+    else delete canvas.dataset.inkReady;
+    syncComposeInkDisplay();
   });
 }
 function fitPhotoQuote(photo, quote, tagRow) {
@@ -2545,7 +2551,7 @@ function resizeComposerText() {
   text.style.height = `${Math.min(maximum, Math.max(minimum, text.scrollHeight))}px`;
 }
 function composerPhotoOverflows() {
-  if (text.parentNode?.id === 'compose-ink-editor') return false;
+  if ($('.compose-photo').classList.contains('park-ink-overlay')) return false;
   const tagsRow = $('#compose-tag-display');
   return text.scrollHeight > text.clientHeight + 1 || (tagsRow.childElementCount > 0
     && text.getBoundingClientRect().bottom + 6 > tagsRow.getBoundingClientRect().top);
@@ -2556,6 +2562,7 @@ function validEventOptions() {
 }
 async function openComposer(mode, card = null, replyTo = null, pending = null) {
   if (busy || draftLoading) return;
+  composeInkComposing = false;
   if (!authKnown && client) { message('계정을 확인하고 있어요. 잠시 후 다시 눌러 주세요.'); return; }
   fontBeforeConversion = 'default';
   const guest = !session?.user;
@@ -2714,6 +2721,7 @@ function autoWritingLocation(run) {
 
 function closeComposer(saveDraft = true) {
   if (busy) return;
+  composeInkComposing = false;
   composerTools?.close(false);
   clearLocalComposer();
   composerRun++; replyDueRun++; replyDueChecking = false; draftLoading = false; setComposerInputs();
@@ -3707,6 +3715,10 @@ document.addEventListener('keydown', event => {
   requestCloseComposer();
 });
 text.addEventListener('input', () => { if (autoTagMode && document.activeElement !== tags) refreshAutoTags(); updateComposer(); recordDraft(); });
+text.addEventListener('focus', syncComposeInkDisplay);
+text.addEventListener('blur', syncComposeInkDisplay);
+text.addEventListener('compositionstart', () => { composeInkComposing = true; syncComposeInkDisplay(); });
+text.addEventListener('compositionend', () => { composeInkComposing = false; updateComposer(); });
 tags.addEventListener('input', () => { noteTagEdit(); updateComposer(); recordDraft(); });
 tags.addEventListener('focus', () => updateComposer()); tags.addEventListener('blur', () => updateComposer());
 window.addEventListener('resize', () => { if (!backdrop.hidden) updateComposer(); requestTagFit(); });
