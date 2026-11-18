@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const labels = {poll:'투표', ladder:'사다리 타기', wheel:'돌림판'};
-  const colors = ['#226c5d','#a34158','#315e96','#7f521b','#795290','#286973','#915037','#505a98','#546726','#8b4771'];
+  const colors = ['#963b51','#236963','#3a518c','#905517','#674680','#166077','#923b35','#4e548e','#5b652d','#833c68'];
 
   const fields = {
     poll: {title:'질문', example:'이번 모임에서 무엇을 먹을까요?', items:'보기', item:'보기', add:'보기 추가'},
@@ -222,14 +222,17 @@
   function wheel(options, winner, esc) {
     const step = 360 / options.length;
     const angle = winner == null ? 0 : 360 - (winner + 0.5) * step;
-    const stops = options.map((_,i) => colors[i]+' '+i*step+'deg '+(i+1)*step+'deg').join(',');
+    const stops = options.map((_,i) => {
+      const start = i * step, end = (i + 1) * step;
+      return `#f5d6a4 ${start}deg ${start + .65}deg, ${colors[i]} ${start + .65}deg ${end}deg`;
+    }).join(',');
     const numbers = options.map((value,i) => {
       const chars=Array.from(value),limit=options.length<=4?6:options.length<=6?4:0;
       const caption=limit ? esc(chars.slice(0,limit).join(''))+(chars.length>limit?'…':'') : '';
       const a = (i+0.5)*step*Math.PI/180;
       return `<span class="wheel-label" style="left:${50+36*Math.sin(a)}%;top:${50-36*Math.cos(a)}%;transform:translate(-50%,-50%) rotate(${-angle}deg)"><b class="${winner===i?'wheel-hit':''}">${i+1}</b>${caption?`<small>${caption}</small>`:''}</span>`;
     }).join('');
-    return `<div class="activity-wheel-frame" aria-hidden="true"><div class="activity-wheel" data-angle="${angle}" style="background:conic-gradient(${stops});transform:rotate(${angle}deg)">${numbers}</div><span class="wheel-center"></span></div>`;
+    return `<div class="activity-wheel-frame" aria-hidden="true"><div class="activity-wheel" data-angle="${angle}" style="background:conic-gradient(${stops});transform:rotate(${angle}deg)">${numbers}</div><span class="wheel-center"></span><span class="wheel-pointer"></span></div>`;
   }
 
   function ladderRoutes(activity, rungs) {
@@ -257,13 +260,13 @@
     return `<div class="ladder-scroll"><div class="ladder-board" style="min-width:${width}px;--lanes:${activity.names.length}">
       <div class="ladder-labels">${activity.names.map((name,i)=>`<button type="button" data-lane="${i}" aria-pressed="${i===selected}">${esc(name)}</button>`).join('')}</div>
       <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true"><g>${rails}${steps}</g>${path ? `<polyline points="${path.points}"/><circle r="5"/>` : ''}</svg>
-      <div class="ladder-labels ladder-finish">${activity.options.map((_,i)=>`<span data-finish="${i}">${i+1}</span>`).join('')}</div></div></div>`;
+      <div class="ladder-labels ladder-finish">${activity.options.map((_,i)=>`<span data-finish="${i}" aria-label="도착 칸 ${i+1}"><i aria-hidden="true"></i>${i+1}</span>`).join('')}</div></div></div>`;
   }
 
   function drawStage(kind, board, action) {
     return `<section class="draw-stage" data-stage="${kind}">
       ${board}
-      <div class="draw-display"><p data-draw-status role="status"></p></div>
+      <div class="draw-display"><p data-draw-status role="status"></p><span class="draw-progress" aria-hidden="true"></span></div>
       ${action ? `<button type="button" class="primary draw-action" data-draw>${action}</button>` : ''}
     </section>`;
   }
@@ -331,7 +334,8 @@
       const list = values => `<ol class="activity-legend">${values.map(v=>`<li>${esc(v)}</li>`).join('')}</ol>`;
       if (isWheel) {
         panel.innerHTML = drawStage('wheel', wheel(options,null,esc),
-          state.result ? '저장된 추첨 보기' : '돌림판 돌리기') + list(options);
+          state.result ? '저장된 추첨 보기' : '돌림판 돌리기') +
+          `<ol class="activity-legend wheel-options">${options.map((value,i)=>`<li><span aria-hidden="true" style="--option-color:${colors[i]}">${i+1}</span><div>${esc(value)}</div></li>`).join('')}</ol>`;
       } else if (state.result) {
         panel.innerHTML = drawStage('ladder',ladder(a,state.result.rungs,lane,esc));
         panel.querySelector('[data-draw-status]').textContent = '출발할 참가자를 선택하세요.';
