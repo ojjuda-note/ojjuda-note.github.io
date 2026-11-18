@@ -1,4 +1,4 @@
-import {TEAMS,validTeamCount,DEFAULT_MODE,DEFAULT_PIECES,newGame,act,restoreGame} from './rules.mjs?v=17';
+import {TEAMS,validTeamCount,DEFAULT_MODE,DEFAULT_PIECES,newGame,chooseFirstSeat,act,restoreGame} from './rules.mjs?v=18';
 const encoder=new TextEncoder();
 const curve={name:'ECDSA',namedCurve:'P-256'};
 const signing={name:'ECDSA',hash:'SHA-256'};
@@ -117,7 +117,7 @@ export async function openRoom(invite,update,clientFactory=()=>window.OjjudaGetC
       const humans=snapshot.seats.length,settings=snapshot.setup,count=settings?.count??humans;
       if(count<2||humans>count||(!fillBots&&humans<count))return;
       const bots=Array.from({length:count-humans},(_,i)=>humans+i);
-      const game=newGame(count,settings?.offset??zodiacOffset,settings?.mode??mode,settings?.counts??pieceCounts,bots,settings?.animals);
+      const game=chooseFirstSeat(newGame(count,settings?.offset??zodiacOffset,settings?.mode??mode,settings?.counts??pieceCounts,bots,settings?.animals));
       snapshot={...snapshot,game};changed();
     },
     computerAction(action,revision){

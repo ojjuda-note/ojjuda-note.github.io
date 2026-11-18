@@ -1,9 +1,9 @@
 import {roundSummary} from './results.mjs?v=20261117-arcade-score-repair1';
-import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=17';
+import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,chooseFirstSeat,firstSeatRemaining,FIRST_SEAT_SPIN_MS,FIRST_SEAT_RESULT_MS,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=18';
 import {createBoard,PAWN_HOP_MS} from './board.mjs?v=28';
 import {createToss,drawRack} from './toss.mjs?v=13';
 import {createTableSounds} from './sound.mjs?v=4';
-import {openRoom,roomCode} from './room.mjs?v=17';
+import {openRoom,roomCode} from './room.mjs?v=18';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=5';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
@@ -249,6 +249,49 @@ function reveal(s){
   rack.setAttribute('aria-label',rackFaces?'던진 윷 네 가락 · '+result(s):'던질 윷 네 가락');
   paintRack();
 }
+const firstSeatLayer=$('first-seat');
+const firstSeatStick=$('first-seat-stick');
+let firstSeatAnimation, pickingFirst=false;
+
+async function showFirstSeat(s,token,remaining){
+  const circle=$('first-seat-circle');
+  const heading=$('first-seat-heading');
+  const order=$('first-seat-order');
+  const count=s.pawns.length;
+  const degrees=360/Math.max(4,count);
+  const seats=s.pawns.map((_,seat)=>{
+    const radians=seat*degrees*Math.PI/180;
+    const badge=element('span',String(seat+1),'first-seat-number');
+    badge.style.left=50+43*Math.sin(radians)+'%';
+    badge.style.top=50-43*Math.cos(radians)+'%';
+    badge.style.setProperty('--seat-color',TEAMS[seat].color);
+    return badge;
+  });
+  circle.replaceChildren(firstSeatStick,...seats);
+  heading.textContent='선을 정하는 중…';
+  order.textContent='';
+  const from='rotate(0deg)', to='rotate('+(1440+s.team*degrees)+'deg)';
+  const spin=Math.max(0,remaining-FIRST_SEAT_RESULT_MS);
+  firstSeatStick.style.transform=to;
+  firstSeatLayer.hidden=false;
+  if(spin){
+    if(!reduced.matches&&firstSeatStick.animate){
+      firstSeatAnimation=firstSeatStick.animate([{transform:from},{transform:to}],{
+        duration:FIRST_SEAT_SPIN_MS,easing:'cubic-bezier(.12,.55,.22,1)'
+      });
+      firstSeatAnimation.currentTime=FIRST_SEAT_SPIN_MS-spin;
+    }else firstSeatStick.style.transform=from;
+    await delay(spin);
+  }
+  if(token!==motion)return;
+  firstSeatAnimation?.cancel();
+  firstSeatStick.style.transform=to;
+  seats[s.team].classList.add('is-first');
+  heading.textContent=(s.team+1)+'번부터 시작!';
+  order.textContent=Array.from({length:count},(_,i)=>(s.team+i)%count+1).join(' → ');
+  await delay(Math.min(remaining,FIRST_SEAT_RESULT_MS));
+  if(token===motion)firstSeatLayer.hidden=true;
+}
 async function showState(s,animate=true){
   if(shown===s)return;
   endHold();cancelTrayDrag();
@@ -257,15 +300,19 @@ async function showState(s,animate=true){
   placement=null;selectedPawn=null;pawnPicked=false;selectedSteps=null;
   if(panel==='destination'&&dialog.open)closePanel();
   toss.cancel();sounds.stop();clearBonus();$('toss-layer').hidden=true;
+  firstSeatAnimation?.cancel();firstSeatLayer.hidden=true;
+  const opening=firstSeatRemaining(s);pickingFirst=opening>0;
   const fresh=animate&&previous&&previous.revision+1===s.revision;
   const changed=fresh&&!reduced.matches;
   const rolled=fresh&&previous.phase==='roll';
   const launch=rolled&&releasedShuffle?.state===previous?releasedShuffle.pose:null;releasedShuffle=null;
-  casting=!!(changed&&rolled);busy=!!changed;
+  casting=!!(changed&&rolled);busy=!!changed||pickingFirst;
   if(casting)$('outcome').textContent='';else reveal(s);
   renderHUD();
   if(panel==='scores'&&dialog.open)standings();
-  if(casting){
+  if(pickingFirst){
+    draw(s);await showFirstSeat(s,token,opening);
+  }else if(casting){
     draw(s);
     $('toss-label').textContent=TEAMS[previous.team].name+' 팀 · 윷 던지기';
     $('toss-layer').hidden=false;
@@ -310,7 +357,7 @@ async function showState(s,animate=true){
     sounds.land(move.frames.at(-1)===FINISH?'finish':move.event||(move.captured?'capture':null));
   }
   if(token!==motion)return;
-  casting=false;busy=false;$('toss-layer').hidden=true;reveal(s);draw(s);renderHUD();
+  casting=false;busy=false;pickingFirst=false;$('toss-layer').hidden=true;reveal(s);draw(s);renderHUD();
   if(s.phase==='won'&&(animate||net?.game))showResult();
 }
 function showResult(reopen=false){
@@ -491,8 +538,8 @@ function renderHUD(){
   const s=game,lobby=net&&!net.game,other=net&&net.seat!==s.team;
   const team=turnTeam(s),bot=s.computerTeams?.includes(s.team);
   $('team-title').replaceChildren(...(lobby?[document.createTextNode('온라인 대기실')]:
-    [dot(team),document.createTextNode(TEAMS[team].name+' 팀'+(s.phase==='won'?' 승리!':busy&&!casting?' 이동 중':' 차례'))]));
-  $('goals').textContent=lobby?'':'골인 '+s.pawns[team].filter(p=>position(p)===FINISH).length+'/'+s.pawns[team].length;
+    pickingFirst?[document.createTextNode('선 정하기')]:[dot(team),document.createTextNode((team+1)+'번 · '+TEAMS[team].name+' 팀'+(s.phase==='won'?' 승리!':busy&&!casting?' 이동 중':' 차례'))]));
+  $('goals').textContent=lobby||pickingFirst?'':'골인 '+s.pawns[team].filter(p=>position(p)===FINISH).length+'/'+s.pawns[team].length;
   const actions=$('actions');
   resumeActionFocus=actions.contains(document.activeElement)||(resumeActionFocus&&document.activeElement===document.body&&!dialog.open);
   const keepCast=actions.firstElementChild===castButton&&canCast();
@@ -504,7 +551,7 @@ function renderHUD(){
     const preferred=eligible.find(o=>position(s.pawns[s.team][o.index])!==HOME)??eligible[0];
     selectedPawn=preferred?.index??null;pawnPicked=false;
   }
-  renderReserve(s,team,moving?options:[],lobby);
+  renderReserve(s,team,moving?options:[],lobby||pickingFirst);
   const manyRolls=bankCounts(s).size>1;
   board.setMoves(options.map(m=>({team:s.team,index:m.index,from:position(s.pawns[s.team][m.index]),
     to:targetTile(m),label:manyRolls?YUT[m.steps]:destinationLabel(s,m,options)})),selectedPawn,moving);
@@ -522,7 +569,7 @@ function renderHUD(){
   else{
     const disabled=!canCast();
     const throwLabel=pendingRolls(s).length||s.lastMove?.captured&&s.team===s.lastMove.team?'한 번 더 던지기':'윷 던지기';
-    const label=casting?'윷 던지는 중…':busy?'말 이동 중…':bot?'컴퓨터 차례':other?'상대 팀 차례':s.phase==='move'?'말 옮기기':throwLabel;
+    const label=pickingFirst?'선을 정하는 중…':casting?'윷 던지는 중…':busy?'말 이동 중…':bot?'컴퓨터 차례':other?'상대 팀 차례':s.phase==='move'?'말 옮기기':throwLabel;
     if(disabled)actions.append(button(label,'primary',null,true));
     else{castButton.textContent=label;if(!keepCast)actions.append(castButton);}
   }
@@ -586,8 +633,8 @@ function rules(){
 function resetLocal(setup,computer){
   const {count,offset,mode,counts,animals}=setup;
   const bots=computer?Array.from({length:count-1},(_,i)=>i+1):[];
-  closePanel();showTable();localRound++;local=newGame(count,offset,mode,counts,bots,animals);void showState(local,false);
-  $('actions').querySelector('button')?.focus({preventScroll:true});
+  closePanel();showTable();localRound++;local=chooseFirstSeat(newGame(count,offset,mode,counts,bots,animals));void showState(local,false);
+  resumeActionFocus=true;
 }
 function modePicker(current,onChange){
   const box=element('div'),label=element('label','놀이 방식'),select=element('select');

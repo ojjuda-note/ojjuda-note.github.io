@@ -50,6 +50,17 @@ export function newGame(count=2,zodiacOffset=2,mode=DEFAULT_MODE,pieceCounts=DEF
     pawns:counts.map(n=>Array.from({length:n},()=>[])), zodiacOffset, winner:null, lastMove:null,pendingRolls:[],
     note:'윷을 던져 첫 말을 출발시키세요.'};
 }
+export const FIRST_SEAT_SPIN_MS=2400;
+export const FIRST_SEAT_RESULT_MS=900;
+export function chooseFirstSeat(state){
+  const team=Math.floor(Math.random()*state.pawns.length);
+  return {...state,team,firstSeatAt:Date.now()};
+}
+export function firstSeatRemaining(state,now=Date.now()){
+  if(state.revision!==0||!Number.isFinite(state.firstSeatAt))return 0;
+  return Math.max(0,Math.min(FIRST_SEAT_SPIN_MS+FIRST_SEAT_RESULT_MS,
+    state.firstSeatAt+FIRST_SEAT_SPIN_MS+FIRST_SEAT_RESULT_MS-now));
+}
 export const position = trail => trail.length ? trail[trail.length-1] : HOME;
 export function lastThrowSeed(state) {
   if(!state.sticks)return null;
@@ -219,7 +230,7 @@ export function computerAction(state){
   return best;
 }
 export function act(state,action) {
-  if(!state||!action) return state;
+  if(!state||!action||firstSeatRemaining(state)) return state;
   if(action.type==='roll')return roll(state,throwSticks());
   if(action.type==='move')return move(state,action.index,action.shortcut,action.steps);
   return state;
