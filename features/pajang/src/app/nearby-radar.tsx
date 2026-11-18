@@ -80,13 +80,17 @@ export default function NearbyRadar({station,sample,autoLocation,onLocationChang
   const heading=compass.heading ?? 0;
   const visible=grouped.flatMap(group=>group.slice(current*3,current*3+3));
   const person=visible.find(p=>p.id===selected)||visible[0];
+  const sameCellPeople=visible.filter(p=>p.sameCell===true&&p.bearing===undefined);
+  const sameCellIndex=sameCellPeople.findIndex(p=>p.id===person?.id);
+  const sameCellPerson=sameCellPeople[Math.max(0,sameCellIndex)];
   const clusters=new Map<string,{members:LocatedPerson[];x:number;y:number}>();
   for(const p of visible){
     if(p.bearing===undefined)continue;
     const key=p.range+"/"+p.bearing;
     const cluster=clusters.get(key);
     if(cluster){cluster.members.push(p);continue;}
-    const radius=bands.find(b=>b.limit===p.range)!.radius;
+    // Leave space around the center group without assigning it a direction.
+    const radius=p.range===1&&sameCellPeople.length?44:bands.find(b=>b.limit===p.range)!.radius;
     clusters.set(key,{members:[p],...radarPosition(p.bearing,heading,radius)});
   }
   const enabled=sample||station.locationEnabled!==false;
@@ -126,7 +130,13 @@ export default function NearbyRadar({station,sample,autoLocation,onLocationChang
       <div className="dial-panel">
         <div className="dial-info"><span><i/> {sample?"체험 채널":"회원 채널"}</span><span>반경 약 15km</span></div>
         <div className="radar-scope" role="group" aria-label="거리와 방위별 프로필">
-          <Grid heading={heading}/><span className="scope-self">나</span>
+          <Grid heading={heading}/>
+          {sameCellPerson?<button type="button" className={"scope-self scope-same-cell"+(sameCellIndex>=0?" picked":"")}
+            aria-label={"나와 같은 구역 "+sameCellPeople.length+"명, "+sameCellPerson.name+(sameCellPeople.length>1?", 다음 프로필 보기":", 답변 보기")}
+            title={"나와 같은 구역 "+sameCellPeople.length+"명"} aria-pressed={sameCellIndex>=0}
+            onClick={()=>setSelected(sameCellPeople[(sameCellIndex+1)%sameCellPeople.length].id)}>
+            <span aria-hidden="true">나</span><small aria-hidden="true">+{sameCellPeople.length}</small>
+          </button>:<span className="scope-self">나</span>}
           {Array.from(clusters,([key,cluster])=>{
             const {members,x,y}=cluster;
             const index=members.findIndex(p=>p.id===person?.id);

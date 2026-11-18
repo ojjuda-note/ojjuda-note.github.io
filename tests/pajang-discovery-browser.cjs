@@ -18,10 +18,14 @@ const rows = [
   {...base,peer:'b',name:'단비',interest:'walk',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'나란히 걸으면서 같은 풍경을 보고 웃을 때요.'},
 ];
 
-async function checkCompass(view, selector, labelSelector, markerSelector) {
+async function checkCompass(view, selector, labelSelector, markerSelector, centerSelector) {
   const dial=view.locator(selector);
   const labels=['북','북동','동','남동','남','남서','서','북서'];
   assert.deepEqual(await dial.locator(labelSelector).allTextContents(),labels);
+  const centerBefore=centerSelector?await dial.locator(centerSelector).evaluate(node=>{
+    const box=node.getBoundingClientRect(),scope=node.closest('.radar-scope').getBoundingClientRect();
+    return [box.x+box.width/2-scope.x,box.y+box.height/2-scope.y];
+  }):null;
   await view.getByRole('button',{name:'휴대폰 방향 켜기'}).click();
   const stop=view.getByRole('button',{name:'북쪽 고정하기'});
   await stop.waitFor();
@@ -57,9 +61,31 @@ async function checkCompass(view, selector, labelSelector, markerSelector) {
       assert.ok(v.inside && difference(v.angle,i*45-heading)<3,'방위 위치: '+labels[i]+' / '+heading+' '+JSON.stringify(v));
     });
     assert.ok(difference(geometry.person.angle,315-heading)<3,'북서쪽 사람이 같은 각도로 이동');
+    if(centerSelector){
+      const center=await dial.locator(centerSelector).evaluate(node=>{
+        const box=node.getBoundingClientRect(),scope=node.closest('.radar-scope').getBoundingClientRect();
+        return [box.x+box.width/2-scope.x,box.y+box.height/2-scope.y];
+      });
+      assert.ok(center.every((value,i)=>Math.abs(value-centerBefore[i])<1),'같은 구역은 휴대폰 방향과 관계없이 중앙에 유지');
+    }
   }
   await stop.click();
   await view.getByText('북쪽 고정',{exact:true}).waitFor();
+}
+
+async function checkRadarMotion(page,selector){
+  const dial=page.locator(selector);
+  const motion=()=>dial.evaluate(el=>['::before','::after'].map(pseudo=>{
+    const css=getComputedStyle(el,pseudo);
+    return {name:css.animationName,duration:css.animationDuration,delay:css.animationDelay,opacity:Number(css.opacity),pointerEvents:css.pointerEvents};
+  }));
+  const animated=await motion();
+  assert.deepEqual(animated.map(v=>[v.name,v.duration,v.delay]),[['pajang-ripple','9.6s','0s'],['pajang-ripple','9.6s','-4.8s']],
+    'two outward waves move at half speed while preserving their spacing');
+  assert.ok(animated.every(v=>v.pointerEvents==='none'),'waves never cover profile tap targets');
+  await page.emulateMedia({reducedMotion:'reduce'});
+  assert.ok((await motion()).every(v=>v.name==='none'&&v.opacity>0),'reduced motion retains visible static rings');
+  await page.emulateMedia({reducedMotion:'no-preference'});
 }
 
 function clientFixture(hash) {
@@ -82,7 +108,17 @@ function clientFixture(hash) {
     const accepted=sessionStorage.accepted==='yes';
     const friend={id:'peer1',name:'라온',age:28,interest:'walk',region:'경기도',body:'함께 걸어요.',range:15,bearing:315};
     const offered={id:'peer2',name:'유진',age:30,interest:'book',region:'서울특별시'};
-    state.people=[friend,offered];state.signals=[{src:'me',dst:'peer1'},{src:'peer1',dst:'me'},{src:'peer2',dst:'me'}];
+    const nearDirection={id:'near-northwest',name:'가온',interest:'walk',region:'서울특별시',body:'가까운 공원에서 걸어요.',range:1,bearing:315};
+    const sameCell=[
+      {id:'nearby1',name:'도담',interest:'coffee',region:'서울특별시',body:'동네에서 따뜻한 차를 마셔요.',range:1,sameCell:true},
+      {id:'nearby2',name:'소담',interest:'book',region:'서울특별시',body:'가까운 책방에서 만나요.',range:1,sameCell:true},
+    ];
+    const privateDirection={id:'private1',name:'새롬',interest:'walk',region:'서울특별시',body:'방향은 공유하지 않아요.',range:3};
+    window.setNearbyCount=count=>{
+      state.people=[friend,offered,...sameCell.slice(0,count),nearDirection,privateDirection];
+      document.dispatchEvent(new Event('visibilitychange'));
+    };
+    window.setNearbyCount(2);state.signals=[{src:'me',dst:'peer1'},{src:'peer1',dst:'me'},{src:'peer2',dst:'me'}];
     if(accepted)state.signals.push({src:'me',dst:'peer2'});
     const entry={...state,joined:mode!=='new',body:mode==='new'?'':state.me.body,nickname:'보리',
       question:{...state.question,answers:['책을 골라요.','같이 걸어요.','커피를 마셔요.']}};
@@ -247,7 +283,7 @@ function clientFixture(hash) {
       if(pathname==='/shared/location/location.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/location/location.js'))});
       const file=pathname.slice(project.length)||'index.html';
       if(legacyLocationPage&&file==='location.mjs')return route.fulfill({contentType:'text/javascript',body:'export async function prepareLocation(state){return state;}'});
-      if(!['station.html','station.css','member.mjs','member-main.mjs','load-station.mjs','location.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','shell.mjs','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
+      if(!['station.html','station.css','radar-motion.css','member.mjs','member-main.mjs','load-station.mjs','location.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','shell.mjs','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
       const mime={html:'text/html',css:'text/css',mjs:'text/javascript',json:'application/json',svg:'image/svg+xml'}[path.extname(file).slice(1)];
       let body=openingBaseline&&previousFiles.has(file)?previousFiles.get(file):await fs.readFile(path.join(feature,file));
       if(legacyLocationPage&&file.endsWith('.html'))body=body.toString().replace(/<script[^>]*src="\/shared\/location\/location\.js[^>]*><\/script>/,'');
@@ -295,6 +331,11 @@ function clientFixture(hash) {
       if(!member)assert.match(await page.locator('#publication-note').textContent(),/1년\(365일\)/);
       if(member){releasePicture?.();await page.unroute(picture);}
       await page.emulateMedia({reducedMotion:'no-preference'});
+      if(!member){
+        await page.locator('.sample-radar summary').click();
+        await page.locator('.scope').waitFor();
+        await checkRadarMotion(page,'.scope');
+      }
     }
     console.log('PASS watercolor flight, upright static alternative, immediate handoff with art pending');
     await page.goto(origin+project+'station.html#answers');
@@ -401,10 +442,59 @@ function clientFixture(hash) {
     await page.goBack();await selected('female');await cards.filter({hasText:rows[1].body}).waitFor();
     assert.ok(Math.abs(await page.evaluate(()=>scrollY)-readingY)<5,'back restores the reading position');
     await page.getByRole('button',{name:'내 주변',exact:true}).click();await page.getByRole('heading',{name:'주변 레이더'}).waitFor();
-    await checkCompass(page,'.radar-scope','.radar-bearings text','.scope-person');
+    const sameCellButton=page.locator('.scope-same-cell');
+    await sameCellButton.waitFor();
+    assert.match(await sameCellButton.getAttribute('aria-label'),/나와 같은 구역 2명/);
+    assert.equal(await sameCellButton.textContent(),'나+2');
+    assert.equal(await page.locator('.scope-person').count(),2,'only the two direction-sharing members get directional dots');
+    assert.ok((await page.locator('.scope-person').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('aria-label')))).every(label=>!label.includes('새롬')),
+      'direction-private people are never assigned a made-up bearing');
+    await page.locator('.radar-alternates').getByRole('button',{name:'새롬',exact:true}).click();
+    assert.match(await page.locator('.radar-kicker').innerText(),/방향 비공개/);
+    assert.equal(await sameCellButton.getAttribute('aria-pressed'),'false');
+    await sameCellButton.click();
+    assert.equal(await page.locator('.radar-identity h2').innerText(),'도담');
+    assert.equal(await sameCellButton.getAttribute('aria-pressed'),'true');
+    assert.match(await page.locator('.radar-kicker').innerText(),/같은 위치 구역/);
+    await sameCellButton.click();
+    assert.equal(await page.locator('.radar-identity h2').innerText(),'소담','the center cycles through same-cell people');
+    await page.getByRole('button',{name:'공개 정보 보기'}).click();
+    await page.getByRole('dialog').getByRole('heading',{name:'소담',exact:true}).waitFor();
+    await page.getByRole('dialog').getByRole('button',{name:'닫기',exact:true}).click();
+    await sameCellButton.click();
+    assert.equal(await page.locator('.radar-identity h2').innerText(),'도담','cycling returns to the first same-cell person');
+    for(const width of [320,390]){
+      await page.setViewportSize({width,height:844});
+      const layout=await sameCellButton.evaluate(node=>{
+        const box=node.getBoundingClientRect(),scope=node.closest('.radar-scope').getBoundingClientRect();
+        const overlap=[...node.closest('.radar-scope').querySelectorAll('.scope-person')].some(person=>{
+          const peer=person.getBoundingClientRect();
+          const distance=Math.hypot(box.x+box.width/2-peer.x-peer.width/2,box.y+box.height/2-peer.y-peer.height/2);
+          return distance<(box.width+peer.width)/2;
+        });
+        return {inside:box.left>=scope.left&&box.right<=scope.right&&box.top>=scope.top&&box.bottom<=scope.bottom,
+          centered:Math.abs(box.x+box.width/2-scope.x-scope.width/2)<1&&Math.abs(box.y+box.height/2-scope.y-scope.height/2)<1,overlap};
+      });
+      assert.deepEqual(layout,{inside:true,centered:true,overlap:false},'same-cell center and nearby direction dots fit at '+width+'px');
+      await page.locator('.radar-scope').screenshot({path:path.join(dir,'pajang-radar-same-cell-'+width+'.png'),animations:'disabled'});
+    }
+    await checkRadarMotion(page,'.radar-scope');
+    await checkCompass(page,'.radar-scope','.radar-bearings text','.scope-person','.scope-same-cell');
+    await page.evaluate(()=>window.setNearbyCount(1));
+    await page.getByRole('button',{name:/나와 같은 구역 1명/}).waitFor();
+    await sameCellButton.click();
+    assert.equal(await page.locator('.radar-identity h2').innerText(),'도담');
+    assert.equal(await sameCellButton.textContent(),'나+1');
+    await page.evaluate(()=>window.setNearbyCount(0));
+    await sameCellButton.waitFor({state:'detached'});
+    assert.equal(await page.locator('.scope-self').innerText(),'나','without same-cell members the ordinary self marker remains');
+    await page.evaluate(()=>window.setNearbyCount(2));
+    await page.getByRole('button',{name:/나와 같은 구역 2명/}).waitFor();
+    console.log('PASS same-cell center, single/multiple profiles, no invented bearings, compass-stable center and half-speed reduced-motion-safe waves');
     await capture('radar-mobile');
     await page.reload();await page.getByRole('heading',{name:'주변 레이더'}).waitFor();
-    await checkCompass(page,'.radar-scope','.radar-bearings text','.scope-person');await expectHeaderClean();
+    await sameCellButton.waitFor();
+    await checkCompass(page,'.radar-scope','.radar-bearings text','.scope-person','.scope-same-cell');await expectHeaderClean();
     await selectMenu('마음함');await page.getByRole('button',{name:'수락하고 대화하기'}).waitFor();
     await capture('inbox-mobile');
     await page.getByRole('button',{name:'대화 열기'}).click();
@@ -642,6 +732,7 @@ function clientFixture(hash) {
     await page.reload();await locationSwitch.waitFor();
     assert.equal(await locationSwitch.getAttribute('aria-checked'),'false');
     assert.equal(await page.locator('.scope-person').count(),0,'hidden location also hides nearby people');
+    assert.equal(await sameCellButton.count(),0,'hidden location also hides the same-cell group');
     assert.equal(await page.evaluate(()=>window.geoWrites.length),0,'off re-entry never uploads a location');
     await context.clearPermissions();
     await locationSwitch.click();
@@ -712,6 +803,7 @@ function clientFixture(hash) {
     await setShared(false);
     await page.waitForFunction(()=>document.querySelector('[role=switch]')?.getAttribute('aria-checked')==='false');
     assert.equal(await page.locator('.scope-person').count(),0);
+    assert.equal(await sameCellButton.count(),0,'turning location off in Park clears the same-cell group');
     console.log('PASS shared Park/Pajang setting changes update the mounted radar in both directions');
     await context.grantPermissions(['geolocation']);
     await page.evaluate(()=>{localStorage.locationEnabled='true';sessionStorage.removeItem('ojjuda:location-cell:member');});
@@ -744,6 +836,7 @@ function clientFixture(hash) {
       await page.getByRole('button',{name:'내 주변',exact:true}).click();
       await page.getByRole('status').filter({hasText:'위치를 확인하고 있어요.'}).waitFor();
       assert.equal(await page.locator('.scope-person').count(),0);
+      assert.equal(await sameCellButton.count(),0,'an unresolved position does not reveal same-cell members');
       if(scenario==='member-cold'){
         await page.evaluate(()=>{window.holdLocationSave=true;window.finishEntryLocation();});
         await page.waitForFunction(()=>!!window.finishLocationSave);

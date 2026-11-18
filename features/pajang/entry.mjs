@@ -41,7 +41,7 @@ function enterMain(destination = main, savedStation) {
     const style=document.createElement('link');
     style.rel='stylesheet';
     style.media='print';
-    style.href='./station.css?v=letter1';
+    style.href='./station.css?v=20261119-radar2';
     const styled=new Promise((resolve,reject)=>{style.onload=resolve;style.onerror=reject;});
     document.querySelector('link[href*="shell.css"]').before(style);
     await Promise.all([styled,mountStation(async()=>{
