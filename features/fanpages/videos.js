@@ -261,6 +261,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'eTvUZymLyGY', title: 'SWEAT', kind: '뮤직비디오', source: "KISS OF LIFE Official · 2026.08.04" }
   ],
   kiiikiii: [
+    { id: 'kyzZ5uEzbsY', title: 'I Love You 3000 · 하음 커버', kind: '커버 영상', source: 'KiiiKiii 공식 YouTube · 2026.11.14' },
+    { id: '6l-FYlr0NVs', title: '키키팡팡 EP.29 · 1박 2일 교외 체험 학습', kind: '자체 예능', source: 'KiiiKiii 공식 YouTube · 2026.11.13' },
+    { id: 'LfRr1bE6pck', title: 'KiiiPoiiint · 인기가요 도쿄 공연 비하인드', kind: '공연 비하인드', source: 'KiiiKiii 공식 YouTube · 2026.11.11' },
     { id: 'SNFyIzOlxBc', title: 'MMA2026 · Pop Off Pop Off + Delulu + 404 (New Era)', kind: '공식 시상식 무대', source: '멜론 Melon · 2026.11.15' },
     { id: 'UsbRoaH6y-Q', title: 'Pop Off Pop Off', kind: '뮤직비디오', source: "STARSHIP · 공식 채널" },
     { id: 'hjcG58y_Fyc', title: 'Pop Off Pop Off', kind: '안무 영상', source: "KiiiKiii · 공식 채널" },
