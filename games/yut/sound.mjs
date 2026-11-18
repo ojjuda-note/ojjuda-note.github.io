@@ -74,6 +74,9 @@ export function createTableSounds(){
   function quickThrow(){
     play('wood',0,.53,.96);play('wood',37,.38,1.15);play('wood',94,.21,1.03);
   }
+  function spinFirstSeat(elapsed){
+    if(elapsed<160)play('roll',0,.27,.87,.38,.55);
+  }
   function applaud(){
     play('applause',0,.60,1);
   }
@@ -85,5 +88,5 @@ export function createTableSounds(){
     if(kind==='home')play('wood',delay+44,.56,.74);
     if(kind==='finish')play('table',delay+85,.57,1.04,1.48375,.29342);
   }
-  return {unlock,stop,setEnabled,get enabled(){return enabled;},throwSticks,quickThrow,applaud,land};
+  return {unlock,stop,setEnabled,get enabled(){return enabled;},throwSticks,quickThrow,spinFirstSeat,applaud,land};
 }

@@ -572,6 +572,19 @@ function resultRack(ctx,width,height,faces,seed){
   ctx.lineJoin='round';ctx.lineCap='round';renderBodies(ctx,parts,cam);ctx.restore();
 }
 
+export function drawFirstSeatStick(canvas) {
+  const ctx=canvas.getContext('2d');
+  if(!ctx)return;
+  const {width,height}=canvas;
+  const scale=width*.88/length;
+  const cam=camera(width,height,scale,.64);
+  const stick={index:0,x:0,depth:0,height:0,yaw:0,roll:Math.PI,pitch:0,face:0};
+  ctx.clearRect(0,0,width,height);
+  ctx.save();ctx.scale(scale,scale);ctx.lineJoin='round';ctx.lineCap='round';
+  renderBodies(ctx,bodies([stick],cam),cam);
+  ctx.restore();
+}
+
 export function drawRack(ctx,width,height,faces=null,seed=null) {
   if(!ctx||width<=0||height<=0)return;
   backdrop(ctx,width,height);
