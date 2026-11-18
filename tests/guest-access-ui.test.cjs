@@ -99,6 +99,8 @@ const cardId='00000000-0000-4000-8000-000000000001';
    const result=await page.waitForFunction(({selector,previous,accent})=>{
     const art=document.querySelector(selector);
     if(art?.dataset.inkReady!=='true'||!art.getBoundingClientRect().width)return false;
+    const style=getComputedStyle(art);
+    if(style.display==='none'||style.visibility==='hidden'||Number(style.opacity)===0)return false;
     const sample=document.createElement('canvas');sample.width=80;sample.height=60;
     const ctx=sample.getContext('2d');ctx.drawImage(art,0,0,sample.width,sample.height);
     const pixels=ctx.getImageData(0,0,sample.width,sample.height).data;
@@ -178,8 +180,68 @@ const cardId='00000000-0000-4000-8000-000000000001';
   await checkPhotoBehindInk('#compose-ink-art','37');
   const defaultBox=await readInkBox('.compose-photo');
   assert.ok(defaultBox[3]>0&&defaultBox[3]<255,'the default has a visible, translucent box');
-  await page.locator('#compose-text').fill('고쳐 쓴 붓글씨');
+  const composeInput=page.locator('#compose-text'), originalInput=await composeInput.elementHandle();
   const tagInput=page.locator('#compose-tags');
+  const checkInlineInput=async mode=>{
+   await page.waitForFunction(mode=>document.querySelector('.compose-photo').classList.contains('park-ink-'+mode),mode);
+   const state=await originalInput.evaluate(input=>{
+    const photo=document.querySelector('.compose-photo'),art=document.querySelector('#compose-ink-art');
+    const box=input.getBoundingClientRect(),face=photo.getBoundingClientRect();
+    const painted=node=>{const css=getComputedStyle(node);return !node.hidden&&css.display!=='none'&&css.visibility!=='hidden'&&Number(css.opacity)>0;};
+    const x=box.left+box.width/2,y=box.top+box.height/2;
+    return {same:input===document.querySelector('#compose-text')&&input.isConnected,
+     direct:input.parentElement===photo,legacy:!!document.querySelector('#compose-ink-editor'),
+     focused:document.activeElement===input,native:painted(input),canvas:painted(art),
+     dx:x-face.left-face.width/2,dy:y-face.top-face.height/2,
+     hit:document.elementFromPoint(x,y)===input};
+   });
+   assert.equal(state.same,true,'conversion and editing keep the original input node');
+   assert.equal(state.direct,true,'the editable text remains directly on the photo');
+   assert.equal(state.legacy,false,'there is no separate source editor below the photo');
+   assert.ok(Math.abs(state.dx)<=1&&Math.abs(state.dy)<=1,'the input is centered on the photo: '+JSON.stringify(state));
+   assert.equal(state.hit,true,'the center text remains a real input hit target: '+JSON.stringify(state));
+   assert.equal(state.focused,mode==='writing');
+   assert.equal(state.native,mode==='writing','native writing appears only while editing');
+   assert.equal(state.canvas,mode==='preview','the canvas appears only after editing');
+  };
+  await composeInput.fill('첫째 줄\n둘째 줄\n셋째 줄');
+  await checkInlineInput('writing');
+  assert.equal(await composeInput.inputValue(),'첫째 줄\n둘째 줄\n셋째 줄');
+  await composeInput.evaluate(input=>input.setSelectionRange(4,8,'backward'));
+  const selection=await composeInput.evaluate(input=>[input.selectionStart,input.selectionEnd,input.selectionDirection]);
+  if(process.env.GUEST_PROOF_DIR)await page.screenshot({path:path.join(process.env.GUEST_PROOF_DIR,'member-inline-writing.png')});
+  await tagInput.focus();
+  const multilineInk=await waitForInk('#compose-ink-art',initialInk);
+  await checkInlineInput('preview');
+  assert.deepEqual(await composeInput.evaluate(input=>[input.selectionStart,input.selectionEnd,input.selectionDirection]),selection,
+   'switching to the painted preview preserves the selection');
+  if(process.env.GUEST_PROOF_DIR)await page.screenshot({path:path.join(process.env.GUEST_PROOF_DIR,'member-inline-preview.png')});
+  await composeInput.click();
+  await checkInlineInput('writing');
+  assert.equal(await composeInput.inputValue(),'첫째 줄\n둘째 줄\n셋째 줄','touching the preview edits the same text');
+  await composeInput.evaluate(input=>{
+   input.dispatchEvent(new CompositionEvent('compositionstart',{bubbles:true,data:''}));
+   input.value='첫째 줄\n둘째 줄\n셋째 ㅎ';
+   input.setSelectionRange(input.value.length,input.value.length);
+   input.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertCompositionText',data:'ㅎ',isComposing:true}));
+  });
+  await page.evaluate(()=>new Promise(requestAnimationFrame));
+  await checkInlineInput('writing');
+  assert.equal(await composeInput.inputValue(),'첫째 줄\n둘째 줄\n셋째 ㅎ','IME input survives a preview frame');
+  const composedText='첫째 줄\n둘째 줄\n셋째 한글';
+  await composeInput.evaluate((input,body)=>{
+   input.value=body;
+   input.setSelectionRange(input.value.length,input.value.length);
+   input.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true,data:'한글'}));
+   input.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertText',data:'한글'}));
+  },composedText);
+  await checkInlineInput('writing');
+  assert.deepEqual(await composeInput.evaluate(input=>[input.value,input.selectionStart,input.selectionEnd]),
+   [composedText,composedText.length,composedText.length],'finishing Korean composition keeps the text and cursor');
+  await tagInput.focus();
+  await waitForInk('#compose-ink-art',multilineInk);
+  await checkInlineInput('preview');
+  await composeInput.fill('고쳐 쓴 붓글씨');
   await tagInput.fill('');
   const editedInk=await waitForInk('#compose-ink-art',initialInk,false);
   assert.deepEqual(await page.evaluate(()=>[currentStyle().font,text.value]),['calligraphy','고쳐 쓴 붓글씨']);

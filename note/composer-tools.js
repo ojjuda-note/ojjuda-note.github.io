@@ -207,10 +207,17 @@
       onOpen?.(key);
       return true;
     }
-    for (const [key, button] of Object.entries(buttons)) button.addEventListener('click', () => {
-      if (active === key && more.open) close();
-      else open(key);
-    });
+    for (const [key, button] of Object.entries(buttons)) {
+      button.addEventListener('pointerdown', event => {
+        // A tap opens settings above the keyboard without moving the native caret.
+        if (event.button === 0 && event.isPrimary !== false && writingField()) event.preventDefault();
+      });
+      button.addEventListener('click', event => {
+        const keepWriting = event.detail > 0 && !!writingField();
+        if (active === key && more.open) close(!keepWriting);
+        else open(key, !keepWriting);
+      });
+    }
     selectionButton.addEventListener('click', () => active === 'settings' ? close() : open('settings'));
     summary.addEventListener('click', event => { event.preventDefault(); close(); });
     more.addEventListener('toggle', () => {
@@ -247,7 +254,7 @@
         const parent = guest ? body : panels.font;
         if (convert.parentElement !== parent) {
           if (guest) body.insertBefore(convert, find('#guest-compose-login'));
-          else panels.font.prepend(convert);
+          else panels.font.insertBefore(convert, help?.parentElement === panels.font ? help : null);
         }
       }
       const available = {

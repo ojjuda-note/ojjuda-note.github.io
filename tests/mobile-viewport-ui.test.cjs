@@ -69,6 +69,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
         await page.goto(`https://fixture.test/${source === 'world' ? 'world.html' : 'note/'}`);
         if (source === 'world') await page.waitForFunction(() => window.worldTest);
         else {
+          await page.addScriptTag({content:read('note/calligraphy.js')});
           await page.addScriptTag({content:read('note/composer-tools.js')});
           await page.addScriptTag({content:read('note/preview.js')});
           await page.addScriptTag({content:read('note/navigation.js')});
@@ -185,6 +186,37 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
           }
           await snapshot(page, `note-composer-keyboard-${viewport.width}`);
           await page.locator('[data-compose-tool="color"]').click();
+          const fontTool=page.locator('[data-compose-tool="font"]');
+          const pressFont=()=>viewport.width<900?fontTool.tap():fontTool.click();
+          await pressFont();
+          await page.locator('#compose-font').selectOption('calligraphy');
+          await page.locator('#compose-text').fill('첫째\n둘째\n셋째');
+          await visibleArea(page,shortHeight,30);
+          await page.waitForFunction(()=>document.querySelector('.compose-photo').classList.contains('park-ink-writing'));
+          assert.equal(await page.locator('#compose-text').evaluate(input=>input.parentElement.matches('.compose-photo')),true,
+            'calligraphy edits stay on the photo while the keyboard is open');
+          await checkWritingLine(2,'calligraphy third explicit line');
+          await snapshot(page,`note-composer-calligraphy-caret-${viewport.width}`);
+          const writingSelection=await page.locator('#compose-text').evaluate(input=>[input.selectionStart,input.selectionEnd,input.selectionDirection]);
+          await pressFont();
+          assert.equal(await fontTool.getAttribute('aria-expanded'),'true');
+          assert.equal(await page.locator('#compose-text').evaluate(input=>document.activeElement===input),true,
+            'touching an option while typing keeps the writing input focused');
+          assert.deepEqual(await page.locator('#compose-text').evaluate(input=>[input.selectionStart,input.selectionEnd,input.selectionDirection]),
+            writingSelection,'opening an option preserves the writing selection');
+          const fontPanel=await page.locator('#compose-more').boundingBox();
+          const toolbar=await page.locator('.compose-toolbar').boundingBox();
+          assert.ok(fontPanel&&toolbar&&Math.abs(fontPanel.y+fontPanel.height-toolbar.y)<=2,
+            'the option panel opens directly above the writing toolbar: '+JSON.stringify({fontPanel,toolbar}));
+          for(const id of ['compose-font','compose-size']){
+            await assertInside(page,page.locator('#'+id),{top:54,bottom:shortHeight+30-48},id+' is immediately available above the keyboard');
+          }
+          assert.equal(await page.locator('#compose-more-content').evaluate(node=>node.scrollTop),0,
+            'font and size are visible without first scrolling the panel');
+          await snapshot(page,`note-composer-calligraphy-font-${viewport.width}`);
+          await pressFont();
+          assert.equal(await fontTool.getAttribute('aria-expanded'),'false');
+          await checkWritingLine(2,'calligraphy after closing the font panel');
           assert.ok(await page.locator('.composer-body').evaluate(node => node.clientHeight > 40 && node.scrollHeight > node.clientHeight));
           const beforeZoom = await page.locator('#publish-card').boundingBox();
           await visibleArea(page, 150, 40, 2);

@@ -140,7 +140,45 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     openTool('font'); tool('font').click();
     assert.equal(document.querySelectorAll('[data-compose-panel]:not([hidden])').length, 0,
       'tapping the active tool collapses its panel');
+    const photo = document.querySelector('.compose-photo');
+    assert.equal(originalInput.parentElement, photo, 'the writing input is a direct child of the photo');
+    assert.equal(document.getElementById('compose-ink-editor'), null, 'calligraphy has no separate source field');
+    const originalRenderer = window.ParkCalligraphy;
+    // Canvas pixels are covered by guest-access-ui; this fixture checks native editing state.
+    window.ParkCalligraphy = { render: () => true };
+    const inkFrame = () => new Promise(resolve => window.requestAnimationFrame(() => window.requestAnimationFrame(resolve)));
+    originalInput.value = '첫째\n둘째\n셋째';
+    originalInput.focus(); originalInput.setSelectionRange(1, 4, 'backward');
+    chooseStyle('calligraphy', 'normal', 25); await inkFrame();
+    assert.equal(document.getElementById('compose-text'), originalInput);
+    assert.equal(originalInput.parentElement, photo, 'conversion never moves or replaces the native input');
+    assert.equal(document.activeElement, originalInput);
+    assert.deepEqual([originalInput.value, originalInput.selectionStart, originalInput.selectionEnd, originalInput.selectionDirection],
+      ['첫째\n둘째\n셋째', 1, 4, 'backward'], 'conversion keeps multiline text and the selected range');
+    assert.equal(photo.classList.contains('park-ink-writing'), true);
+    assert.equal(photo.classList.contains('park-ink-preview'), false);
+    originalInput.blur(); await inkFrame();
+    assert.equal(photo.classList.contains('park-ink-preview'), true, 'blur shows the ready painted preview');
+    assert.deepEqual([originalInput.selectionStart, originalInput.selectionEnd, originalInput.selectionDirection], [1, 4, 'backward']);
+    originalInput.focus();
+    assert.equal(photo.classList.contains('park-ink-writing'), true, 'focusing the same field resumes native editing');
+    assert.equal(photo.classList.contains('park-ink-preview'), false);
+    originalInput.blur();
+    window.ParkCalligraphy.render = () => false;
+    run('updateComposer()'); await inkFrame();
+    assert.equal(photo.classList.contains('park-ink-writing'), true, 'a renderer failure leaves the native text available');
+    assert.equal(photo.classList.contains('park-ink-preview'), false);
+    assert.equal(originalInput.value, '첫째\n둘째\n셋째');
+    window.ParkCalligraphy.render = () => true;
+    originalInput.value = ''; originalInput.dispatchEvent(new window.Event('input', { bubbles: true }));
+    await inkFrame();
+    assert.equal(photo.classList.contains('park-ink-writing'), true, 'an empty card keeps its native placeholder available');
+    assert.equal(photo.classList.contains('park-ink-preview'), false);
     chooseStyle('default', 'normal', 25);
+    assert.equal(originalInput.parentElement, photo);
+    assert.equal(photo.classList.contains('park-ink-writing'), false);
+    assert.equal(photo.classList.contains('park-ink-preview'), false);
+    window.ParkCalligraphy = originalRenderer;
     originalInput.value = ''; originalInput.dispatchEvent(new window.Event('input', { bubbles: true }));
     choose('nickname', 'private'); await locationClick();
     assert.deepEqual(stored('account-a'), { identity: 'nickname', gender: 'private', locationEnabled: false,
