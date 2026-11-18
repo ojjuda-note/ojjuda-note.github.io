@@ -254,7 +254,7 @@
           </button>`;
         }).join('')}</div>
       </section>
-      <a class="agit-pajang-banner" href="/features/pajang/" id="pajang-radar" data-pajang-launch aria-haspopup="dialog">
+      <a class="agit-pajang-banner" href="/features/pajang/" id="pajang-radar" data-pajang-launch>
         <img class="agit-pajang-letter" src="https://ziezbdjofcugznowiuda.supabase.co/storage/v1/object/public/pajang-theme/c645eaa78edb29e31f2dce57f4fca38bb9a04754179e3e2ee9faa5e0ac66ea62/letter.webp" width="1450" height="967" alt="" loading="lazy" decoding="async">
         <span class="agit-pajang-copy">
           <span class="agit-pajang-brand"><span aria-hidden="true">♥</span><b>파장</b><small>19+ 회원 소개팅</small></span>
@@ -306,20 +306,6 @@
     return '';
   }
   const api = {kstDate, missions, visitTarget, quizMode, recommended, themeFor, safeState, mergeProgress, visitStreak, isComplete, complete, stamp, trivia, chosung, initials, baseballAnswer, appendBaseballDigit, baseballResultMarkup, guessBaseball, markup, puzzleMarkup};
-  if (root.document) {
-    const loadPajang=()=>import('/features/pajang/dialog.mjs?v=entry2');
-    function warmPajang(event){
-      if(event.target.closest?.('[data-pajang-launch]'))void loadPajang().catch(()=>{});
-    }
-    for(const type of ['pointerover','focusin','pointerdown'])root.document.addEventListener(type,warmPajang,{passive:true});
-    root.document.addEventListener('click', event => {
-      const launch = event.target.closest?.('[data-pajang-launch]');
-      if (!launch || event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-      if (typeof root.HTMLDialogElement?.prototype?.showModal !== 'function') return;
-      event.preventDefault();
-      loadPajang().then(({openPajang}) => openPajang(launch)).catch(() => root.location.assign(launch.href));
-    });
-  }
   root.OjjudaAgitHub = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
