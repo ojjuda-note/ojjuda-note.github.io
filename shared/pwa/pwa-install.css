@@ -8,6 +8,17 @@
 html[data-pwa-hide-banner="true"] .pwa-install-banner { display:none; }
 .pwa-install-entry { width:100%; }
 .pwa-install-entry .my-menu-title { display:block; }
+.app-store-downloads .app-store-link { display:flex; align-items:center; gap:12px; width:100%; box-sizing:border-box; color:inherit; text-decoration:none; }
+.app-store-downloads .app-store-link + .app-store-link { border-top:1px solid var(--line,#dce6dc); }
+.app-store-link .my-menu-copy { flex:1; min-width:0; }
+.app-store-link .my-menu-title { display:block; overflow-wrap:anywhere; }
+.app-store-link .app-store-icon--agit { color:#245a48; background:#e8f0e9; }
+.app-store-link .app-store-icon--pajang { color:#a14661; background:#faeaf0; }
+.app-store-link .app-store-icon--park { color:#32736b; background:#e7f3ef; }
+.app-store-action { flex:none; border-radius:9px; padding:7px 10px; background:var(--surface-2,#f1f5ef); color:var(--ink-2,#617166); font-size:12px; font-weight:700; white-space:nowrap; }
+.app-store-link:hover .app-store-action { color:var(--ink,#253d31); }
+.app-store-link:focus-visible { outline:3px solid var(--accent-ink,#245a48); outline-offset:-3px; border-radius:12px; }
+.app-store-note { margin:8px 4px 0; color:var(--ink-2,#617166); font-size:12px; line-height:1.5; word-break:keep-all; }
 .pwa-install-dialog { box-sizing:border-box; position:fixed; inset:0; width:min(440px,calc(100% - 32px)); max-height:calc(100dvh - 48px); margin:auto; padding:30px 24px 16px; overflow-y:auto; border:1px solid var(--line,#dce6dc); border-radius:24px; background:var(--surface,#fff); color:var(--ink,#253d31); box-shadow:0 24px 90px #142e3529; font:14px/1.7 var(--font-b,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif); text-align:left; }
 .pwa-install-dialog:not([open]) { display:none; }
 .pwa-install-dialog::backdrop { background:#10241bc2; }
