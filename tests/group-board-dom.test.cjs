@@ -49,9 +49,14 @@ test('writing tools preserve the same body, selection and draft while options op
     assert.ok(form.querySelector('.group-compose-head [type=submit]'));
     assert.equal(form.querySelector('.group-compose-toolbar').getAttribute('role'),'toolbar');
     assert.equal(form.querySelector('.group-compose-toolbar').getAttribute('aria-label'),'글쓰기 옵션');
+    assert.deepEqual([...form.querySelectorAll('.group-compose-toolbar [data-group-tool]')].map(button=>button.dataset.groupTool),
+      ['post','photo','plan','poll','bet'],'the five writing categories stay in the requested order');
+    assert.ok([...form.querySelectorAll('.group-compose-toolbar [data-group-tool]')].every(button=>button.querySelector('svg')),
+      'each category has a picture icon');
     assert.notEqual(d.activeElement,body,'opening the composer does not open the native keyboard');
-    assert.equal(form.querySelector('[data-group-tool=room]').hidden,true,'one available group needs no picker');
-    assert.equal(form.querySelector('[data-group-tool=schedule]').hidden,true,'ordinary posts have no schedule tool');
+    assert.equal(form.querySelector('[data-group-tool=room]').disabled,true,'one available group needs no picker');
+    assert.equal(form.querySelector('[data-group-tool=room]').closest('.group-compose-toolbar'),null,'group context stays outside the five categories');
+    assert.equal(form.querySelector('[data-group-tool=plan]').hidden,false,'plans remain directly available for an ordinary post');
     assert.ok([...form.querySelectorAll('[data-group-panel]')].every(panel=>panel.hidden));
     body.value='한글 조합과 선택한 내용을 그대로 남겨요.';body.focus();body.setSelectionRange(3,9,'backward');
     const selected=()=>[body.value,body.selectionStart,body.selectionEnd,body.selectionDirection];
@@ -63,11 +68,12 @@ test('writing tools preserve the same body, selection and draft while options op
       assert.equal(down.defaultPrevented,true,'pointer tap retains the writing focus');
       button.dispatchEvent(new f.w.MouseEvent('click',{bubbles:true,cancelable:true,detail:1}));
     }
-    for(const tool of ['photo','kind']){
+    for(const tool of ['photo','plan','bet']){
       tap(tool);
       assert.equal(form.querySelector('[data-group-panel='+tool+']').hidden,false);
       assert.equal([...form.querySelectorAll('[data-group-panel]')].filter(panel=>!panel.hidden).length,1);
       assert.equal(form.elements.body,body);assert.equal(d.activeElement,body);assert.deepEqual(selected(),before);
+      assert.equal(form.elements.kind.value,'post','opening choices alone does not change the post kind');
     }
     const escape=new f.w.Event('cancel',{cancelable:true});dialog.dispatchEvent(escape);
     assert.equal(escape.defaultPrevented,true);assert.equal(d.querySelectorAll('dialog').length,1);
@@ -77,14 +83,21 @@ test('writing tools preserve the same body, selection and draft while options op
     assert.equal(form.elements.body,body);assert.deepEqual(selected(),before);
   }finally{f.dom.window.close();}
 });
-test('group writing keeps full post serialization and exposes schedule options only for scheduled kinds',async()=>{
+test('group writing keeps full post serialization and shows schedule fields inside plans only for scheduled kinds',async()=>{
   const f=fixture({hash:'#room='+room});try{
     await tick();const d=f.w.document;d.querySelector('[data-action=compose]').click();
     const form=d.querySelector('#composer'),body='한글로 적은 긴 기록\n'.repeat(1000).slice(0,10000);
     form.elements.body.value=body;form.elements.title.value='여행 일정';
-    form.querySelector('[data-kind-choice=trip]').click();
-    assert.equal(form.querySelector('[data-group-tool=schedule]').hidden,false);
-    assert.equal(d.querySelector('#schedule-fields').hidden,false);
+    form.querySelector('[data-group-tool=plan]').click();
+    for(const kind of ['event','trip']){
+      form.querySelector('[data-kind-choice='+kind+']').click();
+      assert.equal(form.elements.kind.value,kind);
+      assert.equal(form.querySelector('[data-group-tool=plan]').dataset.selected,'true');
+      assert.equal(form.querySelector('[data-group-panel=plan]').hidden,false);
+      assert.equal(d.querySelector('#schedule-fields').hidden,false);
+      assert.equal(form.elements.starts_at.required,true);assert.equal(form.elements.ends_at.required,true);
+      assert.equal(form.elements.body.value,body,'both plan choices preserve the complete writing');
+    }
     form.elements.all_day.checked=true;form.elements.all_day.dispatchEvent(new f.w.Event('change'));
     form.elements.starts_at.value='2026-11-20';form.elements.ends_at.value='2026-11-21';form.elements.location.value='서울역';
     form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();await tick();
@@ -95,11 +108,12 @@ test('group writing keeps full post serialization and exposes schedule options o
     d.querySelector('[data-action=compose]').click();const fresh=d.querySelector('#composer');
     assert.equal(fresh.elements.body.value,'');assert.equal(fresh.elements.kind.value,'post');
     assert.ok([...fresh.querySelectorAll('[data-group-panel]')].every(panel=>panel.hidden));
-    assert.equal(fresh.querySelector('[data-group-tool=schedule]').hidden,true);
+    assert.equal(fresh.querySelector('[data-group-tool=plan]').hidden,false);
+    assert.equal(fresh.querySelector('#schedule-fields').hidden,true);
     fresh.closest('dialog').querySelector('[data-close]').click();
     d.querySelector('[data-edit]').click();const edit=d.querySelector('#composer');
-    assert.equal(edit.elements.room_id.disabled,true);assert.equal(edit.querySelector('[data-group-tool=room]').hidden,true);
-    assert.equal(edit.querySelector('[data-group-tool=schedule]').hidden,false);
+    assert.equal(edit.elements.room_id.disabled,true);assert.equal(edit.querySelector('[data-group-tool=room]').disabled,true);
+    assert.equal(edit.querySelector('[data-group-tool=plan]').dataset.selected,'true');
     assert.equal(edit.elements.kind.value,'trip');assert.equal(edit.elements.title.value,'부산에서 보내는 주말');
   }finally{f.dom.window.close();}
 });
@@ -108,7 +122,7 @@ test('the group picker stays available for multiple memberships without losing t
   const f=fixture({hash:'#room='+room,respond:action=>action==='rooms'?{data:rooms}:undefined});try{
     await tick();const d=f.w.document;d.querySelector('[data-action=compose]').click();const form=d.querySelector('#composer');
     form.elements.body.value='어느 모임에 올릴지 고르는 중이에요.';
-    const button=form.querySelector('[data-group-tool=room]');assert.equal(button.hidden,false);button.click();
+    const button=form.querySelector('[data-group-tool=room]');assert.equal(button.disabled,false);button.click();
     assert.equal(form.querySelector('[data-group-panel=room]').hidden,false);
     form.elements.room_id.value=other;form.elements.room_id.dispatchEvent(new f.w.Event('change',{bubbles:true}));
     form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
@@ -476,7 +490,15 @@ for (const kind of ['poll','ladder','wheel']) {
       await tick();const d=f.w.document;
       d.querySelector('[data-action=compose]').click();
       const form=d.querySelector('#composer');
-      form.elements.kind.value=kind;form.elements.kind.dispatchEvent(new f.w.Event('change'));
+      if(kind==='poll')form.querySelector('[data-group-tool=poll]').click();
+      else{
+        form.querySelector('[data-group-tool=bet]').click();
+        assert.equal(form.elements.kind.value,'post','opening bet choices leaves the draft kind unchanged');
+        form.querySelector('[data-kind-choice='+kind+']').click();
+      }
+      assert.equal(form.elements.kind.value,kind);
+      assert.ok([...form.querySelectorAll('[data-group-panel]')].every(panel=>panel.hidden),'the chosen activity opens in the writing body');
+      assert.equal(form.querySelector('[data-group-tool='+(kind==='poll'?'poll':'bet')+']').dataset.selected,'true');
       assert.equal(d.querySelector('#schedule-fields').hidden,true);
       assert.equal(form.querySelector('[data-title-label]').textContent,{poll:'질문',ladder:'사다리 제목',wheel:'추첨 주제'}[kind]);
       const group=form.querySelector('[data-editor="'+kind+'"]');
@@ -522,6 +544,9 @@ for (const kind of ['poll','ladder','wheel']) {
       d.querySelector('[data-close]').click();d.querySelector('[data-edit]').click();
       const edit=d.querySelector('#composer');
       assert.equal(edit.elements.kind.value,kind);assert.equal(edit.elements.kind.disabled,true);
+      for(const key of ['post','plan','poll','bet'])assert.equal(edit.querySelector('[data-group-tool='+key+']').disabled,true,
+        'editing an existing activity keeps its kind fixed');
+      assert.equal(edit.querySelector('[data-group-tool=photo]').disabled,false,'attachments remain editable');
       assert.ok([...edit.querySelectorAll('[data-editor] input')].every(input=>input.readOnly));
     }finally{f.dom.window.close();}
   });
@@ -551,7 +576,7 @@ test('multiline activity paste preserves other entries and rejects over-capacity
   const f=fixture({hash:'#room='+room});
   try{
     await tick();const d=f.w.document;d.querySelector('[data-action=compose]').click();
-    const form=d.querySelector('#composer');form.querySelector('[data-kind-choice=poll]').click();
+    const form=d.querySelector('#composer');form.querySelector('[data-group-tool=poll]').click();
     const editor=form.querySelector('[data-editor=poll]'),inputs=()=>[...editor.querySelectorAll('[name=activity_option]')];
     assert.equal(form.elements.kind.value,'poll');assert.equal(form.querySelector('.composer-extras').open,true,'the writing body stays available below activity options');
     inputs()[1].value='이미 적은 보기';
@@ -560,7 +585,7 @@ test('multiline activity paste preserves other entries and rejects over-capacity
     assert.deepEqual(values,['가','이미 적은 보기','나','다']);
     paste(inputs()[0],Array(11).fill('추가').join('\n'));assert.deepEqual(inputs().map(el=>el.value),values);
     paste(inputs()[0],'추가\n'+'글'.repeat(41));assert.deepEqual(inputs().map(el=>el.value),values);
-    form.querySelector('[data-kind-choice=post]').click();assert.equal(form.querySelector('.composer-extras').open,true);
+    form.querySelector('[data-group-tool=post]').click();assert.equal(form.elements.kind.value,'post');assert.equal(form.querySelector('.composer-extras').open,true);
   }finally{f.dom.window.close();}
 });
 

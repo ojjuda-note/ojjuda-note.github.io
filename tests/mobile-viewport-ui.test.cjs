@@ -37,27 +37,61 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
     return node === target || node.contains(target);
   }), `${label} must be reachable, not covered by another control`);
 }
+const writingTools = ['photo','font','color','box','effect','location','settings'];
+async function checkPanelLayout(page,key,viewport,area,keyboard=false){
+  const label=`${key} options ${viewport.width}px${keyboard?' above keyboard':''}`;
+  const panel=page.locator('#compose-more');
+  await snapshot(page,`note-composer-option-${key}-${keyboard?'keyboard':'compact'}-${viewport.width}`);
+  await assertInside(page,panel,area,label);
+  const geometry=await panel.evaluate(panel=>{
+    const box=panel.getBoundingClientRect(),toolbar=document.querySelector('.compose-toolbar').getBoundingClientRect();
+    const content=panel.querySelector('.compose-more-content');
+    return {height:box.height,left:box.left,right:box.right,bottom:box.bottom,toolbarTop:toolbar.top,
+      contentWidth:content.clientWidth,contentScrollWidth:content.scrollWidth};
+  });
+  const limit=key==='color'?140:key==='box'?200:key==='font'?220:280;
+  assert.ok(geometry.height<=limit+1,label+' keeps its compact height: '+JSON.stringify({limit,...geometry}));
+  assert.ok(geometry.left>=-1&&geometry.right<=viewport.width+1&&Math.abs(geometry.bottom-geometry.toolbarTop)<=2,
+    label+' stays in the viewport directly above the toolbar: '+JSON.stringify(geometry));
+  assert.ok(geometry.contentScrollWidth<=geometry.contentWidth+1,label+' has no horizontal page scrolling: '+JSON.stringify(geometry));
+  assert.equal(await page.locator('[data-compose-panel]:not([hidden])').count(),1,'only the selected option panel is visible');
+  assert.equal(await page.locator('[data-compose-panel="'+key+'"]').isVisible(),true);
+}
+async function checkAllCompactPanels(page,viewport,area,keyboard=false){
+  assert.deepEqual(await page.locator('[data-compose-tool]').evaluateAll(buttons=>buttons.map(button=>button.dataset.composeTool)),writingTools);
+  const state=()=>page.evaluate(()=>{
+    const input=document.activeElement;
+    return {body:document.querySelector('#compose-text').value,tags:document.querySelector('#compose-tags').value,
+      focused:input.id,start:input.selectionStart,end:input.selectionEnd,direction:input.selectionDirection};
+  });
+  const before=await state();
+  for(const key of writingTools){
+    const button=page.locator('[data-compose-tool="'+key+'"]');
+    const target=await button.boundingBox();
+    assert.ok(target.width>=44&&target.height>=44,key+' retains a full touch target');
+    await assertInside(page,button,area,key+' writing option');
+    if(await button.getAttribute('aria-expanded')!=='true')await button.tap();
+    await settle(page);
+    assert.deepEqual(await state(),before,'opening '+key+' keeps the native input, text and selection');
+    await checkPanelLayout(page,key,viewport,area,keyboard);
+  }
+  await page.locator('[data-compose-tool="settings"]').tap();
+  assert.equal(await page.locator('[data-compose-panel]:not([hidden])').count(),0,'the final tool closes without changing the draft');
+  assert.deepEqual(await state(),before);
+}
 async function checkCompactColors(page, viewport, area, keyboard = false) {
   const label = `color options ${viewport.width}px${keyboard ? ' above keyboard' : ''}`;
   const state = () => page.locator('#compose-text').evaluate(input => ({
     body:input.value, start:input.selectionStart, end:input.selectionEnd, direction:input.selectionDirection
   }));
   const before = await state();
-  const panel = page.locator('#compose-more'), content = page.locator('#compose-more-content');
-  await snapshot(page,`note-composer-color-${keyboard?'keyboard-palette':'compact'}-${viewport.width}`);
-  await assertInside(page, panel, area, label);
-  const geometry = await panel.evaluate(panel => {
-    const box=panel.getBoundingClientRect(), toolbar=document.querySelector('.compose-toolbar').getBoundingClientRect();
-    const content=panel.querySelector('.compose-more-content');
-    return {height:box.height, left:box.left, right:box.right, bottom:box.bottom, toolbarTop:toolbar.top,
-      contentWidth:content.clientWidth, contentScrollWidth:content.scrollWidth,
-      contentHeight:content.clientHeight, contentScrollHeight:content.scrollHeight};
-  });
-  assert.ok(geometry.height<=241,label+' stays within its compact 240px height: '+JSON.stringify(geometry));
-  assert.ok(geometry.left>=-1&&geometry.right<=viewport.width+1&&Math.abs(geometry.bottom-geometry.toolbarTop)<=2,
-    label+' stays in the viewport directly above the toolbar: '+JSON.stringify(geometry));
-  assert.ok(geometry.contentScrollWidth<=geometry.contentWidth+1,label+' has no horizontal scrolling: '+JSON.stringify(geometry));
-  for(const group of ['textColor','boxColor']){
+  const content = page.locator('#compose-more-content');
+  for(const [group,key] of [['textColor','color'],['boxColor','box']]){
+    const button=page.locator('[data-compose-tool="'+key+'"]');
+    if(await button.getAttribute('aria-expanded')!=='true')await button.tap();
+    await checkPanelLayout(page,key,viewport,area,keyboard);
+    const other=group==='textColor'?'boxColor':'textColor';
+    assert.equal(await page.locator(`[data-color-field="${other}"]`).isVisible(),false,'the other color palette stays in its own panel');
     const choices=page.locator(`[data-color-field="${group}"] .note-color-choice`);
     assert.equal(await choices.count(),8,group+' keeps all eight colors');
     const row=await choices.evaluateAll(choices=>choices.map(choice=>{
@@ -88,11 +122,14 @@ async function checkCompactColors(page, viewport, area, keyboard = false) {
   assert.equal(await slider.inputValue(),'37','numeric opacity updates the slider');
   assert.equal(await page.evaluate(()=>currentStyle().boxTransparency),37,'numeric opacity reaches the card style');
   assert.deepEqual(await state(),before,label+' preserves the original writing and selected range');
-  await snapshot(page,`note-composer-color-${keyboard?'keyboard-opacity':'compact-opacity'}-${viewport.width}`);
+  await snapshot(page,`note-composer-box-${keyboard?'keyboard-opacity':'compact-opacity'}-${viewport.width}`);
   await content.evaluate(node=>node.scrollTop=0);
-  if(keyboard)await snapshot(page,`note-composer-color-keyboard-palette-${viewport.width}`);
-  for(const group of ['textColor','boxColor'])await page.locator(`[data-color-field="${group}"] [data-color="default"]`).tap();
+  await page.locator('[data-color-field="boxColor"] [data-color="default"]').tap();
   await number.fill('25');
+  await page.locator('[data-compose-tool="color"]').tap();
+  await page.locator('[data-color-field="textColor"] [data-color="default"]').tap();
+  assert.equal(await page.locator('[data-compose-tool="color"]').getAttribute('data-selected'),'false');
+  assert.equal(await page.locator('[data-compose-tool="box"]').getAttribute('data-selected'),'false');
 }
 
 (async () => {
@@ -189,6 +226,7 @@ async function checkCompactColors(page, viewport, area, keyboard = false) {
           if(viewport.width<=360){
             await page.locator('#compose-text').fill('색상을 바꾸는 중\n남아 있는 글');
             await page.locator('#compose-text').evaluate(input=>input.setSelectionRange(2,5,'backward'));
+            await checkAllCompactPanels(page,viewport,area);
             await page.locator('[data-compose-tool="color"]').tap();
             assert.equal(await page.locator('#compose-text').evaluate(input=>document.activeElement===input),true,
               'opening the color panel keeps the writing input focused');
@@ -249,6 +287,7 @@ async function checkCompactColors(page, viewport, area, keyboard = false) {
           assert.equal(await page.locator('#compose-text').inputValue(),'첫째\n둘째\n셋째','moving to tags preserves all written lines');
           await snapshot(page, `note-composer-tags-${viewport.width}`);
           if(viewport.width<=360){
+            await checkAllCompactPanels(page,viewport,{top:54,bottom:shortHeight+30-48},true);
             await page.locator('[data-compose-tool="color"]').tap();
             assert.equal(await page.locator('#compose-tags').evaluate(input=>document.activeElement===input),true,
               'opening color options also keeps tag editing focused above the keyboard');

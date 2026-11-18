@@ -30,7 +30,7 @@ const checkComposerTools=async(frame,label)=>{
  });
  assert.equal(layout.outsideScroll,true,label+': tools stay outside the scrolling editor');
  assert.equal(layout.dockAtBottom,true,label+': the writing toolbar occupies the bottom of the full-height writing screen');
- assert.equal(layout.tools.length,6,label+': all six writing tools remain available');
+ assert.equal(layout.tools.length,7,label+': all seven writing tools remain available');
  for(const tool of layout.tools)for(const rule of ['large','inside','singleRow','reachable'])
   assert.equal(tool[rule],true,label+': '+tool.name+' '+rule+' '+JSON.stringify(tool.box));
 };
@@ -95,11 +95,11 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await frame.locator('#compose-text').fill('아직 작성 중인 공원의 이야기');
  await frame.locator('[data-compose-tool="font"]').click();
  await frame.locator('#compose-font').selectOption('serif');
- await frame.locator('[data-compose-tool="color"]').click();
+ await frame.locator('[data-compose-tool="box"]').click();
  assert.equal(await frame.locator('[data-compose-panel]:visible').count(),1,'switching tools shows one panel');
  assert.equal(await frame.locator('#compose-font').isVisible(),false,'the previous panel closes');
  await frame.locator('#compose-box-transparency-value').fill('37');
- await checkComposerTools(frame,'390 open color panel');
+ await checkComposerTools(frame,'390 open box panel');
  await page.keyboard.press('Escape');
  assert.equal(await frame.locator('[data-compose-panel]:visible').count(),0,'Escape collapses options first');
  assert.equal(await frame.locator('#composer-backdrop').isVisible(),true,'Escape keeps the writing screen open');

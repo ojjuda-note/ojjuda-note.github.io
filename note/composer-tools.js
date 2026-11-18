@@ -5,11 +5,12 @@
     photo: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 5-5 4 4 4-6 5 7"/>',
     font: '<path d="m3 19 6-14 6 14M5 14h8m4-3h4m-2 0v8m-2 0h4"/>',
     color: '<path d="m12 3 7 9a7 7 0 1 1-14 0Z"/><path d="M8 15a4 4 0 0 0 4 4"/>',
+    box: '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 10h8m-8 4h5"/>',
     effect: '<path d="m10 3 2.4 6.6L19 12l-6.6 2.4L10 21l-2.4-6.6L1 12l6.6-2.4ZM20 2v6m-3-3h6m-2 11v6m-3-3h6"/>',
     location: '<path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.5"/>',
     settings: '<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/>'
   };
-  const labels = { photo: '사진·배경', font: '글꼴·크기', color: '글씨·글상자 색', effect: '꾸미기 효과', location: '위치', settings: '표시 설정' };
+  const labels = { photo: '사진·배경', font: '글꼴·크기', color: '글씨 색', box: '글상자 색·불투명도', effect: '꾸미기 효과', location: '위치', settings: '표시 설정' };
   const make = (tag, className, text) => {
     const element = document.createElement(tag);
     if (className) element.className = className;
@@ -62,6 +63,15 @@
     panels.photo.append(attachment);
     move('#event-photo-choice', panels.photo);
     move('#note-photo-pick', panels.photo);
+    const photoBrowse = panels.photo.querySelector('#photo-gallery-toggle');
+    if (photoBrowse) {
+      photoBrowse.setAttribute('aria-label', photoBrowse.textContent.replace('↗', '').trim());
+      for (const node of photoBrowse.childNodes) {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) node.textContent = '배경 288장 보기 ';
+      }
+    }
+    const photoCaption = panels.photo.querySelector('.note-photo-random small');
+    if (photoCaption) photoCaption.textContent = '무료 · 미리보기 유지';
 
     const effectFields = make('div', 'note-style-controls');
     const effectLabel = find('#compose-effect')?.closest('label');
@@ -70,7 +80,26 @@
     move('.ju-compose-tools', panels.effect);
     move('#note-style-controls', panels.font);
     const convert = move('#convert-calligraphy', panels.font);
-    move('.note-color-fields', panels.color);
+    // Each color tool keeps its original inputs and listeners in a shorter panel.
+    const colorFields = move('.note-color-fields', panels.box);
+    const textColor = colorFields?.querySelector('[data-color-field="textColor"]');
+    if (textColor) {
+      const textColors = make('div', 'note-color-fields');
+      textColors.setAttribute('aria-label', '글씨 색 선택');
+      textColors.append(textColor);
+      panels.color.append(textColors);
+    }
+    colorFields?.setAttribute('aria-label', '글상자 색 선택');
+    // Compact labels sit on the control border without replacing native selects.
+    for (const panel of [panels.font, panels.effect]) {
+      for (const label of panel.querySelectorAll('.note-style-controls > label')) {
+        const caption = make('span', 'compose-field-label');
+        for (const node of [...label.childNodes]) {
+          if (node.nodeType === Node.TEXT_NODE) caption.append(node);
+        }
+        label.prepend(caption);
+      }
+    }
     move('#card-location-consent', panels.location);
     move('#note-event-fields', panels.location);
     move('.compose-publish-settings', panels.settings);

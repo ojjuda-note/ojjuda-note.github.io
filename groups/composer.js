@@ -2,10 +2,11 @@
 (() => {
   'use strict';
   const paths = {
+    post: '<path d="M13.5 5.5 18.5 10.5M4 20l5-1 12-12a2.1 2.1 0 0 0-5-5L4 14Z"/>',
     photo: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 5-5 4 4 3-3 6 6"/>',
-    kind: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
-    schedule: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h3m3 0h2"/>',
-    room: '<circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2m2-16a3 3 0 0 1 0 6m2 4a5 5 0 0 1 2 4v2"/>',
+    plan: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h3m3 0h2"/>',
+    poll: '<path d="M4 20V10h4v10m4 0V4h4v16m4 0v-7h2v7M2 20h21"/>',
+    bet: '<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="7.5" cy="7.5" r=".8"/><circle cx="12" cy="12" r=".8"/><circle cx="16.5" cy="16.5" r=".8"/>',
     close: '<path d="m6 6 12 12M18 6 6 18"/>',
     check: '<path d="m4 12 5 5L20 6"/>'
   };
@@ -24,7 +25,9 @@
     const panelHead = node('header', 'group-compose-options-head'), heading = node('h3', '');
     const panelClose = node('button', 'group-compose-panel-close'), content = node('div', 'group-compose-options-body');
     const context = node('button', 'group-compose-context'), status = node('div', 'group-compose-status');
-    const panels = {}, buttons = {}, labels = {photo:'사진·동영상', kind:'글 종류', schedule:'일정·장소', room:'올릴 그룹'};
+    const panels = {}, buttons = {}, labels = {post:'글', photo:'사진/영상', plan:'계획', poll:'투표', bet:'내기', room:'올릴 그룹'};
+    const categories = {post:['post'], plan:['event','trip'], poll:['poll'], bet:['ladder','wheel']};
+    const availableKinds = new Set(Array.from(kind.options, option => option.value));
     let active = '', frame = 0, caretMirror = null;
     heading.id = 'group-compose-option-title';
     card.setAttribute('aria-labelledby', heading.id);
@@ -36,28 +39,56 @@
     card.append(panelHead, content);
     toolbar.setAttribute('role', 'toolbar');
     toolbar.setAttribute('aria-label', '글쓰기 옵션');
-    for (const key of Object.keys(labels)) {
-      const panel = node('div', 'group-compose-panel'), button = node('button', 'group-compose-tool');
+    for (const key of ['photo','plan','bet','room']) {
+      const panel = node('div', 'group-compose-panel');
       panel.id = 'group-compose-' + key;
       panel.dataset.groupPanel = key;
       panel.hidden = true;
+      panels[key] = panel;
+      content.append(panel);
+    }
+    function kindChoice(value) {
+      if (!availableKinds.has(value)) return null;
+      const button = picker?.querySelector('[data-kind-choice="' + value + '"]') || node('button', '');
+      button.type = 'button';
+      button.dataset.kindChoice = value;
+      return button;
+    }
+    for (const key of ['post','photo','plan','poll','bet']) {
+      const button = (['post','poll'].includes(key) && kindChoice(key)) || node('button', '');
+      button.classList.add('group-compose-tool');
       button.type = 'button';
       button.dataset.groupTool = key;
       button.setAttribute('aria-label', labels[key]);
-      button.setAttribute('aria-controls', panel.id);
-      button.setAttribute('aria-expanded', 'false');
+      if (panels[key]) {
+        button.setAttribute('aria-controls', panels[key].id);
+        button.setAttribute('aria-expanded', 'false');
+      }
       button.innerHTML = icon(key) + `<span>${labels[key]}</span>`;
-      panels[key] = panel;
       buttons[key] = button;
-      content.append(panel);
       toolbar.append(button);
     }
+    context.dataset.groupTool = 'room';
+    context.setAttribute('aria-controls', panels.room.id);
+    context.setAttribute('aria-expanded', 'false');
+    buttons.room = context;
     const roomFixed = room.classList.contains('fixed-room') || form.elements.room_id.disabled;
     panels.room.append(room);
-    const kindField = kind.closest('label');
-    if (picker) panels.kind.append(picker);
-    panels.kind.append(kindField);
-    panels.schedule.append(schedule);
+    kind.closest('label').hidden = true;
+    for (const key of ['plan','bet']) {
+      const row = node('div', 'group-compose-kind-row');
+      row.setAttribute('role', 'group');
+      row.setAttribute('aria-label', labels[key] + ' 종류');
+      for (const value of categories[key]) {
+        const choice = kindChoice(value);
+        if (!choice) continue;
+        choice.textContent = {event:'약속', trip:'여행계획', ladder:'사다리', wheel:'돌림판'}[value];
+        row.append(choice);
+      }
+      panels[key].append(row);
+    }
+    picker?.remove();
+    panels.plan.append(schedule);
     const photo = extras.querySelector('.file-picker'), hint = photo?.nextElementSibling;
     if (photo) panels.photo.append(photo);
     if (hint?.classList.contains('hint')) panels.photo.append(hint);
@@ -97,13 +128,13 @@
       active = '';
       card.hidden = true;
       Object.values(panels).forEach(panel => { panel.hidden = true; });
-      Object.values(buttons).forEach(button => button.setAttribute('aria-expanded', 'false'));
+      Object.keys(panels).forEach(key => buttons[key].setAttribute('aria-expanded', 'false'));
       if (returnFocus && !previous.hidden && !previous.disabled) previous.focus({preventScroll:true});
       return true;
     }
     function open(key, focus = true) {
       const button = buttons[key];
-      if (!button || button.hidden || button.disabled) return;
+      if (!panels[key] || !button || button.hidden || button.disabled) return;
       active = key;
       heading.textContent = labels[key];
       card.hidden = false;
@@ -123,20 +154,20 @@
         if (event.button === 0 && event.isPrimary !== false && writingField()) event.preventDefault();
       });
       button.addEventListener('click', event => {
+        if (!panels[key]) return;
         const focus = !(event.detail > 0 && writingField());
         if (active === key) close(focus);
         else open(key, focus);
       });
     }
     Object.entries(buttons).forEach(([key, button]) => bindTool(button, key));
-    bindTool(context, 'kind');
     panelClose.addEventListener('pointerdown', event => {
       if (event.button === 0 && event.isPrimary !== false && writingField()) event.preventDefault();
     });
     panelClose.addEventListener('click', event => close(!(event.detail > 0 && writingField())));
     toolbar.addEventListener('keydown', event => {
       if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
-      const visible = Object.values(buttons).filter(button => !button.hidden && !button.disabled);
+      const visible = Object.values(buttons).filter(button => toolbar.contains(button) && !button.hidden && !button.disabled);
       const index = visible.indexOf(document.activeElement);
       if (index < 0) return;
       event.preventDefault();
@@ -157,21 +188,33 @@
 
     function sync() {
       const option = kind.selectedOptions[0], name = form.elements.room_id.selectedOptions[0]?.textContent || '';
-      context.textContent = name + ' · ' + option.textContent;
-      context.setAttribute('aria-label', '글 종류: ' + option.textContent);
-      context.disabled = buttons.kind.disabled = kind.disabled;
-      buttons.schedule.hidden = !['event','trip'].includes(kind.value);
-      buttons.room.hidden = roomFixed;
+      const kindName = kind.value === 'post' ? '글' : option?.textContent || '';
+      context.textContent = name + ' · ' + kindName;
+      context.setAttribute('aria-label', '올릴 그룹: ' + name + ', ' + kindName);
+      context.disabled = roomFixed || form.elements.room_id.disabled;
+      for (const [key, values] of Object.entries(categories)) {
+        const selected = values.includes(kind.value);
+        buttons[key].disabled = kind.disabled || !values.some(value => availableKinds.has(value));
+        buttons[key].dataset.selected = String(selected);
+        buttons[key].setAttribute('aria-pressed', String(selected));
+      }
+      for (const choice of content.querySelectorAll('[data-kind-choice]')) {
+        choice.disabled = kind.disabled;
+        choice.setAttribute('aria-pressed', String(choice.dataset.kindChoice === kind.value));
+      }
       counter.textContent = form.elements.body.value.length.toLocaleString('ko-KR') + ' / 10,000';
       buttons.photo.dataset.selected = String(!!form.querySelector('#attachments').children.length);
-      if (active && buttons[active].hidden) close();
+      if (active && (buttons[active].hidden || buttons[active].disabled)) close();
     }
     form.addEventListener('input', sync);
     form.addEventListener('change', event => {
       sync();
-      if (event.target === kind && active === 'kind') {
-        if (!buttons.schedule.hidden) open('schedule');
-        else close(true);
+      if (event.target === kind) {
+        if (categories.plan.includes(kind.value)) open('plan', false);
+        else {
+          close();
+          (kind.value === 'post' ? form.elements.body : form.elements.title).focus({preventScroll:true});
+        }
       }
     });
 

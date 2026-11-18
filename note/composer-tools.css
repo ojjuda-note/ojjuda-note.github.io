@@ -264,12 +264,12 @@
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: repeat(6, minmax(44px, 1fr));
+  grid-template-columns: repeat(7, minmax(44px, 1fr));
   align-items: center;
-  gap: 4px;
+  gap: 0;
   box-sizing: border-box;
   width: 100%;
-  padding: 8px 12px;
+  padding: 4px;
   overflow-x: auto;
   border-top: 1px solid var(--line);
   background: var(--surface);
@@ -290,7 +290,7 @@
   margin: 0;
   padding: 10px;
   border: 0;
-  border-radius: 12px;
+  border-radius: 10px;
   background: transparent;
   color: var(--ink-2);
   box-shadow: none;
@@ -301,8 +301,8 @@
 
 .composer-tools-ready .compose-tool svg {
   flex: none;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   overflow: visible;
   fill: none;
   stroke: currentColor;
@@ -340,7 +340,7 @@
 }
 
 .composer-tools-ready .compose-tools-dock #compose-more {
-  --compose-panel-height: min(520px, calc(var(--app-viewport-height, 100dvh) - 148px));
+  --compose-panel-height: min(280px, max(108px, calc(var(--app-viewport-height, 100dvh) - var(--app-safe-top, 0px) - var(--app-safe-bottom, 0px) - 112px)));
   position: absolute;
   inset: auto 0 100%;
   z-index: 1;
@@ -350,7 +350,7 @@
   overflow: hidden;
   border: 1px solid var(--line);
   border-bottom: 0;
-  border-radius: 18px 18px 0 0;
+  border-radius: 14px 14px 0 0;
   background: var(--surface);
   box-shadow: 0 -14px 40px -18px #182a2340;
 }
@@ -363,14 +363,14 @@
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
-  min-height: 50px;
+  min-height: 44px;
   margin: 0;
-  padding: 5px 16px;
+  padding: 0 10px;
   border: 0;
   border-bottom: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
-  font: 600 14px/1.5 var(--font-b, sans-serif);
+  font: 600 13px/1.4 var(--font-b, sans-serif);
   list-style: none;
   cursor: pointer;
   touch-action: manipulation;
@@ -393,9 +393,9 @@
 
 .composer-tools-ready .compose-tools-dock .compose-more-content {
   box-sizing: border-box;
-  max-height: calc(var(--compose-panel-height) - 50px);
+  max-height: calc(var(--compose-panel-height) - 45px);
   min-height: 0;
-  padding: 16px;
+  padding: 8px;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -410,8 +410,27 @@
 .composer-tools-ready .compose-tool-panel .note-style-controls {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin: 0 0 12px;
+  gap: 8px;
+  margin: 0 0 6px;
+}
+
+.composer-tools-ready .compose-tool-panel .note-style-controls > label {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
+.composer-tools-ready .compose-tool-panel .compose-field-label {
+  position: absolute;
+  z-index: 1;
+  top: -6px;
+  left: 8px;
+  max-width: calc(100% - 16px);
+  padding: 0 3px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font: 500 11px/12px var(--font-b, sans-serif);
+  white-space: nowrap;
 }
 
 .composer-tools-ready .compose-tool-panel .note-style-controls > label:last-child { grid-column: auto; }
@@ -423,7 +442,7 @@
   width: 100%;
   min-width: 0;
   min-height: 44px;
-  padding: 9px 11px;
+  padding: 8px 9px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface);
@@ -434,7 +453,9 @@
 .composer-tools-ready .compose-tool-panel #convert-calligraphy {
   width: 100%;
   min-height: 44px;
-  margin-block: 2px 10px;
+  margin-block: 0 6px;
+  padding: 6px 8px;
+  font-size: 12px;
 }
 
 .composer-tools-ready .compose-tool-panel #convert-calligraphy[aria-pressed="true"] {
@@ -443,23 +464,39 @@
   color: var(--accent-ink, var(--accent));
 }
 
-.composer-tools-ready .compose-tools-dock #compose-more:has([data-compose-panel="color"]:not([hidden])) {
-  --compose-panel-height: min(240px, max(96px, calc(var(--app-viewport-height, 100dvh) - 148px)));
+.composer-tools-ready .compose-tool-panel .note-setting-help {
+  margin: 4px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
-.composer-tools-ready .compose-tools-dock #compose-more:has([data-compose-panel="color"]:not([hidden])) > summary {
+.composer-tools-ready .compose-tool-panel .ju-compose-tools {
+  margin: 6px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.composer-tools-ready .compose-tool-panel .ju-compose-tools summary {
+  box-sizing: border-box;
   min-height: 44px;
-  padding: 0 12px;
+  padding: 12px 0;
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 20px;
 }
 
-.composer-tools-ready .compose-tools-dock #compose-more:has([data-compose-panel="color"]:not([hidden])) .compose-more-content {
-  max-height: calc(var(--compose-panel-height) - 44px);
-  padding: 4px 12px;
+.composer-tools-ready .compose-tool-panel .ju-compose-tools label {
+  gap: 8px;
+  margin: 4px 0;
+  font-size: 11px;
 }
 
-.composer-tools-ready .compose-tool-panel[data-compose-panel="color"] .note-color-fields { gap: 1px; }
+.composer-tools-ready .compose-tool-panel .ju-compose-tools select { max-width: 72%; }
 
-.composer-tools-ready .compose-tool-panel[data-compose-panel="color"] .note-color-field {
+.composer-tools-ready .compose-tool-panel:is([data-compose-panel="color"], [data-compose-panel="box"]) .note-color-fields { gap: 4px; }
+
+.composer-tools-ready .compose-tool-panel:is([data-compose-panel="color"], [data-compose-panel="box"]) .note-color-field {
   min-width: 0;
   margin: 0;
   padding: 0;
@@ -468,14 +505,22 @@
   background: transparent;
 }
 
-.composer-tools-ready .compose-tool-panel[data-compose-panel="color"] .note-color-field legend {
-  padding: 0 2px;
-  font-size: 11px;
-  line-height: 14px;
+/* The panel title repeats these labels visually; keep the fieldset names accessible. */
+.composer-tools-ready .compose-tool-panel:is([data-compose-panel="color"], [data-compose-panel="box"]) .note-color-field legend,
+.composer-tools-ready .compose-tool-panel .note-photo-pick legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* Small swatches keep full touch targets; a narrow screen scrolls just this row. */
-.composer-tools-ready .compose-tool-panel[data-compose-panel="color"] .note-color-choices {
+.composer-tools-ready .compose-tool-panel:is([data-compose-panel="color"], [data-compose-panel="box"]) .note-color-choices {
   display: flex;
   flex-wrap: nowrap;
   gap: 0;
@@ -487,12 +532,12 @@
   scrollbar-color: var(--line) transparent;
 }
 
-.composer-tools-ready .compose-tool-panel[data-compose-panel="color"] .note-color-choices::-webkit-scrollbar { height: 4px; }
-.composer-tools-ready .compose-tool-panel[data-compose-panel="color"] .note-color-choices::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
-.composer-tools-ready .compose-tool-panel[data-compose-panel="color"] .note-color-choice { flex: 0 0 44px; width: 44px; min-width: 44px; height: 44px; }
-.composer-tools-ready .compose-tool-panel[data-compose-panel="color"] .note-color-choice span { width: 20px; height: 20px; }
+.composer-tools-ready .compose-tool-panel:is([data-compose-panel="color"], [data-compose-panel="box"]) .note-color-choices::-webkit-scrollbar { height: 4px; }
+.composer-tools-ready .compose-tool-panel:is([data-compose-panel="color"], [data-compose-panel="box"]) .note-color-choices::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+.composer-tools-ready .compose-tool-panel:is([data-compose-panel="color"], [data-compose-panel="box"]) .note-color-choice { flex: 0 0 44px; width: 44px; min-width: 44px; height: 44px; }
+.composer-tools-ready .compose-tool-panel:is([data-compose-panel="color"], [data-compose-panel="box"]) .note-color-choice span { width: 20px; height: 20px; }
 
-.composer-tools-ready .compose-tool-panel[data-compose-panel="color"] .note-opacity-control {
+.composer-tools-ready .compose-tool-panel[data-compose-panel="box"] .note-opacity-control {
   display: grid;
   grid-template-columns: auto minmax(44px, 1fr) 54px auto;
   align-items: center;
@@ -501,27 +546,57 @@
   margin: 0;
 }
 
-.composer-tools-ready .compose-tool-panel[data-compose-panel="color"] .note-opacity-control label { grid-column: auto; font-size: 11px; line-height: 1.3; white-space: nowrap; }
-.composer-tools-ready .compose-tool-panel[data-compose-panel="color"] .note-opacity-control input[type="range"] { width: 100%; min-width: 44px; min-height: 44px; margin: 0; }
-.composer-tools-ready .compose-tool-panel[data-compose-panel="color"] .note-opacity-control input[type="number"] { box-sizing: border-box; width: 54px; min-height: 44px; padding: 3px; font-size: 16px; }
-.composer-tools-ready .compose-tool-panel[data-compose-panel="color"] .note-opacity-control > span { margin: 0; font-size: 11px; }
-.composer-tools-ready .compose-tool-panel[data-compose-panel="color"] .note-opacity-hint { margin: 0 2px; font-size: 10px; line-height: 12px; }
+.composer-tools-ready .compose-tool-panel[data-compose-panel="box"] .note-opacity-control label { grid-column: auto; font-size: 11px; line-height: 1.3; white-space: nowrap; }
+.composer-tools-ready .compose-tool-panel[data-compose-panel="box"] .note-opacity-control input[type="range"] { width: 100%; min-width: 44px; min-height: 44px; margin: 0; }
+.composer-tools-ready .compose-tool-panel[data-compose-panel="box"] .note-opacity-control input[type="number"] { box-sizing: border-box; width: 54px; min-height: 44px; padding: 3px; font-size: 16px; }
+.composer-tools-ready .compose-tool-panel[data-compose-panel="box"] .note-opacity-control > span { margin: 0; font-size: 11px; }
+.composer-tools-ready .compose-tool-panel[data-compose-panel="box"] .note-opacity-hint { margin: 0 2px; font-size: 10px; line-height: 12px; }
 
 .composer-tools-ready .compose-tool-panel .note-photo-pick {
-  margin: 14px 0 0;
-  padding: 13px;
-  border-radius: 12px;
-  background: var(--surface-2);
+  min-width: 0;
+  margin: 6px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
-.composer-tools-ready .compose-tool-panel .note-photo-intro { font-size: 12px; }
-.composer-tools-ready .compose-tool-panel .note-photo-pages { flex-wrap: wrap; gap: 8px; }
+.composer-tools-ready .compose-tool-panel .note-photo-intro { margin: 0 0 6px; font-size: 11px; line-height: 1.4; }
+.composer-tools-ready .compose-tool-panel .note-photo-modes { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.composer-tools-ready .compose-tool-panel .note-photo-random,
+.composer-tools-ready .compose-tool-panel .note-photo-open {
+  box-sizing: border-box;
+  min-height: 44px;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 8px;
+  font-size: 11px;
+  line-height: 1.3;
+}
+.composer-tools-ready .compose-tool-panel .note-photo-random span { gap: 1px; }
+.composer-tools-ready .compose-tool-panel .note-photo-random strong { font-size: 11px; }
+.composer-tools-ready .compose-tool-panel .note-photo-random small { font-size: 11px; }
+.composer-tools-ready .compose-tool-panel .note-photo-selection { margin: 4px 0 0; font-size: 11px; line-height: 1.4; }
+.composer-tools-ready .compose-tool-panel .note-photo-gallery { margin-top: 8px; padding-top: 8px; }
+.composer-tools-ready .compose-tool-panel .note-photo-featured { border-radius: 8px; box-shadow: none; }
+.composer-tools-ready .compose-tool-panel .note-photo-featured > img { max-height: 110px; }
+.composer-tools-ready .compose-tool-panel .note-photo-featured-caption { gap: 6px; padding: 24px 8px 8px; }
+.composer-tools-ready .compose-tool-panel .note-photo-featured-caption > span:first-child { min-width: 0; gap: 2px; }
+.composer-tools-ready .compose-tool-panel .note-photo-featured-caption strong { font-size: 13px; }
+.composer-tools-ready .compose-tool-panel .note-photo-featured-badge { padding: 3px 6px; }
+.composer-tools-ready .compose-tool-panel .note-photo-gallery-heading { gap: 3px 8px; margin: 8px 0 6px; font-size: 11px; }
+.composer-tools-ready .compose-tool-panel .note-photo-groups { gap: 4px; margin: 6px 0; }
+.composer-tools-ready .compose-tool-panel .note-photo-groups .button { font-size: 11px; }
+.composer-tools-ready .compose-tool-panel .note-photo-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.composer-tools-ready .compose-tool-panel .note-photo-tile { min-width: 44px; min-height: 44px; border-radius: 8px; }
+.composer-tools-ready .compose-tool-panel .note-photo-pages { flex-wrap: wrap; gap: 4px; margin-top: 8px; }
 .composer-tools-ready .compose-tool-panel .note-photo-pages :is(button, select) { min-height: 44px; }
+.composer-tools-ready .compose-tool-panel .note-photo-pages select { font-size: 16px; }
 
 .composer-tools-ready .compose-attachment {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -529,19 +604,20 @@
   position: relative;
   inset: auto;
   z-index: auto;
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   box-sizing: border-box;
-  width: 88px;
-  min-width: 88px;
-  height: 78px;
+  width: auto;
+  min-width: 96px;
+  min-height: 44px;
+  height: 44px;
   margin: 0;
   padding: 8px;
   overflow: hidden;
   border: 1px dashed var(--line);
-  border-radius: 12px;
+  border-radius: 8px;
   background-color: var(--surface-2);
   background-position: center;
   background-size: cover;
@@ -556,7 +632,7 @@
   font: 500 11px/1.4 var(--font-b, sans-serif);
 }
 
-.composer-tools-ready .compose-attachment #card-photo-attach.has-photo { border-style: solid; align-content: end; }
+.composer-tools-ready .compose-attachment #card-photo-attach.has-photo { border-style: solid; }
 .composer-tools-ready .compose-attachment #card-photo-attach.has-photo::after {
   content: "사진 바꾸기";
   padding: 3px 6px;
@@ -588,32 +664,38 @@
 .composer-tools-ready .compose-attachment :is(#card-photo-attach, #card-photo-remove)[hidden] { display: none; }
 .composer-tools-ready .compose-tool-panel .event-photo-choice { margin: 0; }
 
-.composer-tools-ready .compose-tool-panel .compose-publish-settings {
+.composer-tools-ready .compose-tool-panel[data-compose-panel="settings"] {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
-  gap: 14px;
-  min-height: 0;
-  padding: 0;
+  gap: 6px 8px;
 }
 
+.composer-tools-ready .compose-tool-panel .compose-publish-settings,
 .composer-tools-ready .compose-tool-panel .compose-quick {
-  display: grid;
-  gap: 12px;
+  display: contents;
+}
+
+.composer-tools-ready .compose-tool-panel .compose-public-scope {
+  grid-column: 1 / -1;
   min-width: 0;
   margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .composer-tools-ready .compose-tool-panel .quick-choice {
   display: grid;
-  grid-template-columns: minmax(72px, 1fr) minmax(0, 2fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  gap: 12px;
+  gap: 2px;
   width: 100%;
   min-width: 0;
 }
 
-.composer-tools-ready .compose-tool-panel .quick-label { font-size: 13px; }
+.composer-tools-ready .compose-tool-panel .quick-label { font-size: 11px; line-height: 1.3; }
 .composer-tools-ready .compose-tool-panel .quick-choice[hidden] { display: none; }
+.composer-tools-ready .compose-tool-panel :is(.compose-publish-settings, .compose-quick)[hidden] { display: none; }
 
 .composer-tools-ready .compose-tool-panel .quick-choice select {
   box-sizing: border-box;
@@ -621,7 +703,7 @@
   min-width: 0;
   min-height: 44px;
   height: auto;
-  padding: 9px 11px;
+  padding: 8px 9px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface);
@@ -632,13 +714,19 @@
 .composer-tools-ready .compose-tool-panel .note-location-consent {
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 8px 12px;
+  gap: 4px 8px;
   margin: 0;
 }
 
 .composer-tools-ready .compose-tool-panel #card-location-button { min-height: 44px; }
-.composer-tools-ready .compose-tool-panel #card-location-status { flex-basis: 100%; font-size: 12px; line-height: 1.5; }
+.composer-tools-ready .compose-tool-panel #card-location-status { flex-basis: 100%; font-size: 11px; line-height: 1.4; }
 .composer-tools-ready .compose-tool-panel .note-event-fields { margin: 0; }
+.composer-tools-ready .compose-tool-panel .note-event-fields h3 { margin: 0 0 4px; font: 600 13px/1.4 var(--font-b, sans-serif); }
+.composer-tools-ready .compose-tool-panel .note-event-fields > p { margin: 4px 0 6px; font-size: 11px; line-height: 1.4; }
+.composer-tools-ready .compose-tool-panel .note-event-fields .note-map { height: 140px; min-height: 140px; border-radius: 8px; }
+.composer-tools-ready .compose-tool-panel .note-event-fields #event-select-center { min-height: 44px; margin-top: 6px; padding: 6px 8px; font-size: 12px; }
+.composer-tools-ready .compose-tool-panel .note-event-options { gap: 8px; margin: 6px 0; }
+.composer-tools-ready .compose-tool-panel .note-event-options label { gap: 2px; }
 
 .composer-tools-ready :is(.compose-tool, .compose-selection-button, #publish-card, #close-composer):focus-visible,
 .composer-tools-ready .compose-tools-dock #compose-more > summary:focus-visible {
@@ -700,9 +788,10 @@
   .composer-tools-ready .compose-tag-entry { margin-bottom: 12px; }
   .composer-tools-ready .composer-body > .compose-photo { border-radius: 12px; }
   .composer-tools-ready .composer-footer { padding: 6px 14px; }
-  .composer-tools-ready .compose-toolbar { gap: 2px; padding: 6px 8px; }
-  .composer-tools-ready .compose-tools-dock .compose-more-content { padding: 14px; }
-  .composer-tools-ready .compose-tools-dock #compose-more > summary { padding-inline: 14px; }
+  .composer-tools-ready .compose-toolbar { gap: 0; padding: 4px; }
+  .composer-tools-ready .compose-tools-dock .compose-more-content { padding: 8px; }
+  .composer-tools-ready .compose-tools-dock #compose-more > summary { padding-inline: 10px; }
+  .composer-tools-ready .compose-tool-panel .note-photo-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 360px) {
@@ -714,9 +803,5 @@
 @media (max-height: 420px) {
   .composer-tools-ready .composer-head { padding-block: 2px; }
   .composer-tools-ready .compose-toolbar { padding-block: 3px; }
-  .composer-tools-ready .compose-tools-dock #compose-more {
-    --compose-panel-height: max(96px, calc(var(--app-viewport-height, 100dvh) - 112px));
-  }
-  .composer-tools-ready .compose-tools-dock #compose-more > summary { min-height: 44px; }
-  .composer-tools-ready .compose-tools-dock .compose-more-content { max-height: calc(var(--compose-panel-height) - 44px); padding-block: 10px; }
+  .composer-tools-ready .compose-tools-dock .compose-more-content { padding-block: 8px; }
 }

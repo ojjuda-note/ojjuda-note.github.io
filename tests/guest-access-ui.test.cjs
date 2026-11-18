@@ -252,7 +252,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
   await tagInput.fill('#붓글씨');
   assert.equal(await waitForInk('#compose-ink-art',editedInk),taggedInk);
   assert.equal(await page.locator('#compose-text').inputValue(),'고쳐 쓴 붓글씨');
-  await page.locator('[data-compose-tool="color"]').click();
+  await page.locator('[data-compose-tool="box"]').click();
   const slider=page.locator('#compose-box-transparency'), number=page.locator('#compose-box-transparency-value');
   const boxColors=[];
   for(const level of [0,50,100]){

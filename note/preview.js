@@ -2420,7 +2420,8 @@ function syncComposerTools() {
     selected: {
       photo: !!(selectedPhotoKey || cardPhotoBlob || cardPhotoEditPath || eventPhotoPreviewUrl || eventCurrentPhotoUrl),
       font: style.font !== 'default' || style.size !== 'normal' || (style.shopFont && style.shopFont !== 'none'),
-      color: style.boxTransparency !== 25 || ['textColor', 'boxColor'].some(key => style[key] !== 'default'),
+      color: style.textColor !== 'default',
+      box: style.boxColor !== 'default' || style.boxTransparency !== 25,
       effect: style.effect !== 'none' || ['shopEffect', 'shopSticker'].some(key => style[key] && style[key] !== 'none'),
       location: kind === 'event' ? validEventPosition() : !!writingPosition,
       settings: $('#quick-identity')?.value === 'nickname' || $('#quick-gender')?.value !== 'private'
