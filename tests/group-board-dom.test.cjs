@@ -531,16 +531,30 @@ for (const kind of ['poll','ladder','wheel']) {
         d.querySelector('[data-cast]').click();await tick();
         assert.equal(selection,0);assert.match(d.querySelector('.poll-results').textContent,/총 3표/);
       }else{
+        let finishSpin;
+        if(kind==='wheel')f.w.Element.prototype.animate=()=>({
+          finished:new Promise(resolve=>{finishSpin=resolve;}), cancel(){}
+        });
         d.querySelector('[data-draw]').click();await tick();
-        assert.match(d.querySelector('.draw-result').textContent,/떡볶이/);
-        assert.equal(d.querySelector('[data-draw]'),null);
+        if(kind==='wheel'){
+          assert.equal(d.querySelector('[data-phase=running]')!==null,true);
+          assert.equal(d.querySelector('.wheel-hit, [data-copy-result]'),null);
+          finishSpin();await tick();
+        }
+        assert.equal(d.querySelector('[data-draw-status] strong').textContent,'떡볶이');
         if(kind==='ladder'){
-          d.querySelector('[data-lane="1"]').click();
-          assert.match(d.querySelector('.draw-result').textContent,/서준 → 김밥/);
+          assert.equal(d.querySelector('.draw-all').open,false);
+          d.querySelector('[data-lane="1"]').click();await tick();
+          assert.match(d.querySelector('[data-draw-status]').textContent,/서준 도착김밥/);
           assert.deepEqual([...d.querySelectorAll('.ladder-results dd')].map(el=>el.textContent),['떡볶이','김밥']);
         }else{
-          assert.equal(d.querySelector('.wheel-hit').textContent,'2');assert.match(d.querySelector('.wheel-winner').textContent,/떡볶이.*당첨/);
+          assert.equal(d.querySelector('.wheel-hit').textContent,'2');
+          d.querySelector('[data-draw]').click();await tick();
+          assert.equal(d.querySelector('[data-draw-status] strong'),null);
+          finishSpin();await tick();
+          assert.equal(d.querySelector('[data-draw-status] strong').textContent,'떡볶이');
         }
+        assert.equal(f.calls.filter(([action])=>action==='activity_draw').length,1,'replaying does not draw again');
       }
       d.querySelector('[data-close]').click();d.querySelector('[data-edit]').click();
       const edit=d.querySelector('#composer');
