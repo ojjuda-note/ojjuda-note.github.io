@@ -223,48 +223,139 @@
 #composer .ladder-columns{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:0 0 4px 30px;font-size:.78rem;font-weight:650;color:#52685a}
 #composer [data-editor=ladder]:has([data-remove-row]:not([hidden])) .ladder-columns{padding-right:41px}
 
-/* Shared draw stage, with a separate palette for each game. */
-.draw-stage {
-  --stage-bg:#102c2c;
-  --stage-light:#254f49;
-  --stage-gold:#ffe3a0;
-  display:grid;
-  gap:14px;
-  padding:clamp(12px,4vw,24px);
-  border:1px solid #ffffff26;
-  border-radius:22px;
-  background:radial-gradient(ellipse at 50% 0,var(--stage-light),transparent 66%),var(--stage-bg);
-  color:#fbf7e9;
-  box-shadow:inset 0 1px 0 #ffffff26,0 10px 22px #17282420;
+/* Group draw boards */
+.dialog[data-activity-kind=ladder] .dialog-head,
+.dialog[data-activity-kind=wheel] .dialog-head{background:#f9f6ef}
+.dialog[data-activity-kind=ladder] .activity-subject,
+.dialog[data-activity-kind=wheel] .activity-subject{font-size:clamp(1.25rem,5vw,1.7rem);margin-bottom:12px}
+.draw-stage{
+  --stage-edge:#518d7d;
+  --stage-metal:#b9edd1;
+  --stage-ink:#102b25;
+  --stage-top:#204a43;
+  --stage-bottom:#0b2426;
+  display:grid;gap:12px;position:relative;isolation:isolate;
+  padding:clamp(13px,4vw,25px);
+  border:1px solid var(--stage-edge);border-radius:23px;
+  background:radial-gradient(ellipse at 50% 0,var(--stage-top),transparent 74%),var(--stage-bottom);
+  color:#f9f6e9;box-shadow:inset 0 0 0 4px #0003,0 9px 23px #19292524;
 }
-.draw-stage[data-stage=wheel]{--stage-bg:#1d2036;--stage-light:#49425e}
+.draw-stage[data-stage=wheel]{
+  --stage-edge:#915d50;--stage-metal:#ffe0a6;--stage-ink:#3c2025;
+  --stage-top:#613642;--stage-bottom:#281923;
+}
 .draw-stage h4,.draw-stage .activity-legend{margin:0}
-.draw-stage .activity-wheel-frame{width:min(100%,280px);margin:12px auto}
-.draw-stage .activity-wheel{border:7px solid #e8c987;box-shadow:0 0 0 2px #a4783e,0 9px 24px #080919b0,inset 0 0 26px #08091980}
-.draw-stage .activity-wheel-frame::before{border-top-color:#ffe3a0;filter:drop-shadow(0 2px 3px #141226)}
-.draw-stage .wheel-center{width:33px;height:33px;border:3px solid #986630;background:radial-gradient(circle at 40% 30%,#fff2b8,#cf913e)}
-.draw-stage .wheel-label{text-shadow:0 1px 3px #111}
-.draw-stage .wheel-hit{text-shadow:none}
-.draw-stage .ladder-scroll{margin:0;scrollbar-color:#a8bbae #172e30}
-.draw-stage .ladder-board svg{height:clamp(104px,24vh,214px)}
-.draw-stage .ladder-board svg line{stroke:#a8c4bc70}
-.draw-stage .ladder-board svg polyline{stroke:var(--stage-gold);stroke-linecap:round;filter:drop-shadow(0 0 4px #ffd36285)}
+.draw-stage .activity-wheel-frame{
+  width:min(100%,clamp(180px,42dvh,300px));margin:5px auto;
+  padding:13px;box-sizing:border-box;border-radius:50%;
+  background:linear-gradient(145deg,#fff0b5 3%,#a66a4b 33%,#57353e 64%,#d29b64 88%,#ffe5ad);
+  box-shadow:0 5px 0 #4c2a32,0 12px 26px #170a168a, inset 0 0 0 1px #ffdeab;
+}
+.draw-stage .activity-wheel-frame::before{
+  content:"";inset:4px;transform:none;border:0;border-radius:50%;pointer-events:none;
+  background:repeating-conic-gradient(from -2deg,#fff1bf 0 1.5deg,transparent 1.5deg 15deg);
+  mask-image:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 4px));
+  filter:drop-shadow(0 0 2px #3d2029);
+}
+.draw-stage .activity-wheel{
+  box-sizing:border-box;border:2px solid #603637;
+  box-shadow:0 0 0 1px #ffe7af,inset 0 0 24px #1a0f28ad;
+}
+.draw-stage .activity-wheel::before{
+  content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,#fff5da24 0 28%,transparent 29% 70%,#2b142253 100%);
+}
+.draw-stage .wheel-pointer{
+  position:absolute;z-index:3;top:-3px;left:50%;width:25px;height:34px;
+  transform:translateX(-50%);transform-origin:50% 6px;
+  background:linear-gradient(95deg,#946042,#ffe9a9 48%,#cd925b 52%,#b47c51);
+  clip-path:polygon(13% 0,87% 0,100% 29%,50% 100%,0 29%);
+}
+.draw-stage .wheel-center{
+  width:39px;height:39px;border:2px solid #f8d495;
+  background:radial-gradient(circle at 37% 31%,#fff7d8 6%,#e6aa68 43%,#7a3e3a 73%);
+  box-shadow:0 2px 7px #100713a8,inset 0 0 0 4px #592b353d;
+}
+.draw-stage .wheel-label{text-shadow:0 1px 4px #1a0d17;font-variant-numeric:tabular-nums}
+.draw-stage .wheel-label b{font-size:clamp(.85rem,3.2vw,1.13rem)}
+.draw-stage .wheel-label small{font-size:clamp(.56rem,2.1vw,.73rem)}
+.draw-stage .wheel-hit{text-shadow:none;box-shadow:0 0 0 2px #ffde9f,0 0 12px #ffdc8d}
+.wheel-options{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;
+  margin:12px 0;padding:0;list-style:none;
+}
+.wheel-options li{
+  display:flex;align-items:center;gap:7px;min-width:0;
+  padding:7px;border:1px solid var(--line);border-radius:10px;
+}
+.wheel-options li>span{
+  flex:none;display:grid;place-items:center;width:22px;height:22px;border-radius:6px;
+  background:var(--option-color);color:white;font-size:.76rem;font-weight:700;
+}
+.wheel-options li>div{min-width:0;font-size:.85rem}
+.wheel-options li.wheel-winner{border-color:#ac7441;background:#fff4dc}
+.wheel-options li.wheel-winner b{margin-inline-start:auto;border:0;color:#673a26}
+.draw-stage .ladder-scroll{margin:0;scrollbar-color:#9bc7b7 #142c2d}
+.draw-stage .ladder-board{
+  box-sizing:border-box;border-radius:13px;padding:6px 0;
+  background:radial-gradient(circle at 50% 0,#46877830,transparent 70%),#081d21;
+  box-shadow:inset 0 0 0 1px #b0ecd82c,inset 0 8px 16px #040e1466;
+}
+.draw-stage .ladder-board svg{
+  height:clamp(118px,29dvh,240px);
+  background:linear-gradient(#8ec4b410 1px,transparent 1px) 0 0/100% 20px;
+}
+.draw-stage .ladder-board svg line{stroke:#b5e5d574;stroke-linecap:round}
+.draw-stage .ladder-board svg polyline{stroke:#bffadd;stroke-linecap:round;filter:drop-shadow(0 0 4px #66ffd6)}
 .draw-stage[data-phase=running] polyline:not([style]){visibility:hidden}
-.draw-stage svg circle{fill:#fff9de;stroke:#bb823c;stroke-width:2;vector-effect:non-scaling-stroke}
+.draw-stage svg circle{fill:#f4fff6;stroke:#4fcfae;stroke-width:2;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 4px #72fbd4)}
 .draw-stage svg circle:not([cx]){visibility:hidden}
-.draw-stage .ladder-labels button,.draw-stage .ladder-finish span{border:1px solid #b6d8cf55;border-radius:8px;background:#173b39;color:#f1faf7}
-.draw-stage .ladder-labels button[aria-pressed=true],.draw-stage .ladder-finish .chosen{background:var(--stage-gold);border-color:var(--stage-gold);color:#352311}
+.draw-stage .ladder-labels>*{margin:3px}
+.draw-stage .ladder-labels button,.draw-stage .ladder-finish span{
+  border:1px solid #8dcabc61;border-radius:8px;
+  background:linear-gradient(#285851,#183a3a);color:#effaf6;
+}
+.draw-stage .ladder-labels button[aria-pressed=true],.draw-stage .ladder-finish .chosen{
+  background:linear-gradient(#dcfadd,#84caab);border-color:#edfdf3;color:#16352c;
+  box-shadow:0 0 12px #7fffd570;
+}
 .draw-stage .ladder-labels button:disabled{opacity:1}
-.draw-stage .ladder-finish span{padding:5px}
-.draw-display{min-height:62px;display:grid;place-items:center;text-align:center;border:1px solid #ffffff28;border-radius:12px;background:#07111270;padding:8px;overflow-wrap:anywhere}
-.draw-display p{margin:0;min-width:0;font-size:.87rem;color:#e3e4db}
+.draw-stage .ladder-finish span{padding:5px;display:flex;align-items:center;justify-content:center;gap:5px}
+.draw-stage .ladder-finish i{width:7px;height:7px;transform:rotate(45deg);border:1px solid currentColor;border-radius:1px}
+.draw-stage .ladder-finish .chosen i{background:currentColor}
+.draw-display{
+  position:relative;overflow:hidden;min-height:63px;
+  display:grid;place-items:center;text-align:center;
+  border:1px solid #f9f2df35;border-radius:12px;
+  background:#10131b82;padding:8px;overflow-wrap:anywhere;
+}
+.draw-display p{margin:0;min-width:0;font-size:.86rem;color:#f2ebdb}
 .draw-display p:empty::before{content:"준비"}
-.draw-display strong{display:block;color:var(--stage-gold);font-size:clamp(1.25rem,5vw,1.85rem);line-height:1.2}
-.draw-stage[data-phase=revealed] .draw-display{border-color:#ffe3a080;background:#191b20}
-.draw-action.primary{justify-self:stretch;background:#ffe3a0;color:#342611;border-color:#ffe3a0;font-weight:750}
+.draw-display strong{
+  display:block;color:var(--stage-metal);font-size:clamp(1.25rem,5vw,1.9rem);
+  line-height:1.2;letter-spacing:-.025em;
+}
+.draw-stage[data-phase=revealed] .draw-display{
+  border-color:var(--stage-metal);
+  background:radial-gradient(ellipse at 50% 100%,var(--stage-top),#111622 95%);
+  box-shadow:inset 0 0 0 3px #0d132780,0 0 16px #ffe7b523;
+}
+.draw-progress{display:none}
+.draw-action.primary{
+  justify-self:stretch;min-height:44px;color:var(--stage-ink);border-color:var(--stage-metal);font-weight:750;
+  background:linear-gradient(#fff1cc,var(--stage-metal));box-shadow:inset 0 1px 0 #fff,0 3px 0 #0005;
+}
+.draw-stage[data-stage=ladder] .draw-action.primary{background:linear-gradient(#eeffec,var(--stage-metal))}
 .draw-all{margin-block:14px;padding:9px 12px;border:1px solid var(--line);border-radius:12px}
 .draw-all summary{cursor:pointer;font-weight:650;padding:4px 0}
 @media(prefers-reduced-motion:no-preference){
+  .draw-stage[data-phase=running] .draw-progress{
+    display:block;position:absolute;bottom:0;left:0;width:34%;height:2px;
+    background:linear-gradient(90deg,transparent,var(--stage-metal),transparent);
+    animation:group-draw-progress 1.15s linear infinite;
+  }
   .draw-stage[data-phase=revealed] .draw-display strong{animation:group-draw-arrival .43s ease-out both}
+  @keyframes group-draw-progress{from{transform:translateX(-100%)}to{transform:translateX(300%)}}
   @keyframes group-draw-arrival{from{opacity:0;transform:translateY(7px) scale(.97)}to{opacity:1;transform:none}}
 }
+@media(max-width:350px){.wheel-options{grid-template-columns:1fr}}
