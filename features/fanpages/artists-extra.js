@@ -431,8 +431,8 @@
         { title: 'D AWARDS 2027 공식 라인업', sub: '2027.01.16 파리 DAY 2 · 주최사', href: 'https://d-awards.world/' }
       ],
       news: [
-        { date: '2026.11.14', tag: '공식 영상', title: '하음 · I Love You 3000 커버 영상 공개', href: 'https://www.youtube.com/watch?v=kyzZ5uEzbsY' },
         { date: '2026.11.16', tag: '수상', title: 'MMA2026 · TOP10·베스트 퍼포먼스(여자)·베스트 뮤직스타일 3관왕', href: 'https://www.bntnews.co.kr/article/view/bnt202611160169' },
+        { date: '2026.11.14', tag: '공식 영상', title: '하음 · I Love You 3000 커버 영상 공개', href: 'https://www.youtube.com/watch?v=kyzZ5uEzbsY' },
         { date: '2026.11.09', tag: '수상', title: 'KGMA2026 · 그랜드 아너스 초이스 대상 포함 3관왕', href: 'https://www.bntnews.co.kr/article/view/bnt202611090129' },
         { date: '2026.10.15', tag: '공연', title: '2026 MAMA AWARDS 11.21 출연 확정', href: 'https://www.cj.net/jp/press-release/view/1132' },
         { date: '2026.10.14', tag: '공연', title: 'MMA2026 Music Day 11.15 출연 확정', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' },
