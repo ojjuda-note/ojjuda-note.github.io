@@ -163,12 +163,14 @@
       members: ['릴리', '해원', '설윤', '배이', '지우', '규진'],
       debut: '2022.02.22', debutWork: 'AD MARE', songs: ['O.O', '占 (TANK)'],
       concept: '새로운 조합으로 넓혀 가는 NMIXX의 음악 세계.',
+      checkedAt: '2026.11.18',
       official: 'https://nmixx.jype.com/', youtube: 'https://www.youtube.com/@NMIXXOfficial',
       photo: 'Nmixx in Frankfurt 20260324 (1).jpg', photoLabel: '프랑크푸르트 공연', photoYear: '2026', credit: 'PFNKa', license: 'CC BY 4.0',
       morePhotos: [
         commonsPhoto('20260320 NMIXX Amsterdam concert 01.jpg', '암스테르담 월드투어 무대', '2026', 'Robbie Klinkenberg', 'CC BY 4.0'),
         commonsPhoto('20260320 NMIXX Amsterdam concert 12.jpg', '암스테르담 공연 현장', '2026', 'Robbie Klinkenberg', 'CC BY 4.0'),
-        commonsPhoto('20260320 NMIXX Amsterdam concert 04 Lily.jpg', '암스테르담 공연 릴리', '2026', 'Robbie Klinkenberg', 'CC BY 4.0')
+        commonsPhoto('20260320 NMIXX Amsterdam concert 04 Lily.jpg', '암스테르담 공연 릴리', '2026', 'Robbie Klinkenberg', 'CC BY 4.0'),
+        commonsPhoto('NMIXX (55195140992).jpg', '오클랜드 공연 · 단체', '2026', 'David Lee', 'CC BY 4.0')
       ],
       music: [
         { title: 'Strange Muse', date: '2026.10.19', type: '미니 6집 · 타이틀 긴 소원 (Birthday Wish)', songs: ['긴 소원 (Birthday Wish)', 'Kerosene', 'RudE TaLK', '너는 달 (Sing to the Moon) (LILY, HAEWON)', "Hot 'n Unbothered (SULLYOON, BAE)", '휙 (WHIP) (JIWOO, KYUJIN)'], href: 'https://nmixx.jype.com/discography/vmgvjirm' },
@@ -189,6 +191,7 @@
         { date: '2026-12-20', title: 'N=MIXX 일본 발매 기념 오사카 이벤트', sub: '일본 인텍스 오사카 3호관 · 구매자 응모 추첨(11.04 신청 종료) · 시간은 공식 안내 확인', href: 'https://nmixxjapan.com/s/222o/page/best_album_n_mixx' }
       ],
       news: [
+        { date: '2026.11.17', tag: '인터뷰', title: '브라질 UOL 단독 인터뷰 · Strange Muse와 MIXXTOPIA의 다음 이야기', href: 'https://www.uol.com.br/toca/noticias/2026/11/17/nmixx-encerra-era-mixxtopia-com-ep-strange-muse.ghtm' },
         { date: '2026.11.06', tag: '팬이벤트', title: 'N=MIXX · 12.02 시부야·12.11 나고야 멤버별 사인·하이바이 이벤트 발표', href: 'https://nmixxjapan.com/s/222o/news/detail/10030' },
         { date: '2026.11.06', tag: '굿즈', title: 'N=MIXX 일본 발매 특전 포토카드 럭키드로우 · 12.08~21 매장별 운영 안내', href: 'https://nmixxjapan.com/s/222o/news/detail/10031' },
         { date: '2026.10.30', tag: '수상', title: '2026 대한민국 대중문화예술상 문화체육관광부 장관 표창 수상(10.29 시상)', href: 'https://recruit.jype.com/ko/news/61' },
