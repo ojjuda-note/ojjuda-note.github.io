@@ -69,6 +69,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'g2IDtpL1YkE', title: 'THIS IS FOR', kind: '콘셉트 티저', source: 'TWICE / JYP' }
   ],
   illit: [
+    { id: 'MZsDgKYPXq0', title: '체포하겠어 + It’s Me · MMA2026 (4K)', kind: '공식 시상식 무대', source: '멜론 Melon · 2026.11.15' },
+    { id: 'WxPXMat4d_k', title: '체포하겠어 · 인기가요 11.15', kind: '음악방송 무대', source: 'SBSKPOP X INKIGAYO · 2026.11.15' },
     { id: 'V2V9-9VhYJo', title: '체포하겠어 (You\'re Under Arrest)', kind: '뮤직비디오', source: 'HYBE LABELS · 2026.10.26' },
     { id: '_H043SYWpF4', title: '체포하겠어 · Official MV (Performance ver.)', kind: '퍼포먼스 뮤직비디오', source: 'HYBE LABELS · 2026.10.29' },
     { id: 'Vk5-c_v4gMU', title: 'Magnetic', kind: '뮤직비디오', source: 'ILLIT / HYBE LABELS' },
