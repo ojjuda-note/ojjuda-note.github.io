@@ -1,0 +1,59 @@
+/* UUID-assigned room artwork. Match these fixed names with GroupAppearance. */
+[data-group-theme]{--room-cover:#e5eddc;--room-paper:#f8fbf4;--room-accent:#355c43;--room-border:#d8e3d0}
+[data-group-theme="lounge"]{--room-cover:#f1e2cc;--room-paper:#fffaf2;--room-accent:#76512f;--room-border:#e8dbc6}
+[data-group-theme="seaside"]{--room-cover:#deedf1;--room-paper:#f5fbfc;--room-accent:#32616c;--room-border:#cee1e6}
+[data-group-theme="teatime"]{--room-cover:#f4e1df;--room-paper:#fff8f7;--room-accent:#865255;--room-border:#ebd4d3}
+[data-group-theme="starlight"]{--room-cover:#e4e5f2;--room-paper:#f8f8ff;--room-accent:#51597f;--room-border:#d9dced}
+[data-group-theme="sunbeam"]{--room-cover:#f1e9d6;--room-paper:#fdfbf3;--room-accent:#756139;--room-border:#e5ddc6}
+#directory{max-width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}
+#directory>.empty,#directory>.error{grid-column:1/-1}
+.directory-toolbar{max-width:100%}
+.group-card.post{padding:0;overflow:hidden;border:1px solid var(--room-border);border-radius:23px;background:var(--room-paper);box-shadow:0 5px 18px #263e3306}
+.group-card-cover{position:relative;isolation:isolate;min-height:146px;background:var(--room-cover)}
+.group-artwork{position:absolute;z-index:-1;right:0;top:0;width:53%;height:100%;object-fit:cover;object-position:center 42%;pointer-events:none;-webkit-mask-image:linear-gradient(to right,transparent,#000 35%);mask-image:linear-gradient(to right,transparent,#000 35%)}
+.group-card-heading{position:relative;width:65%;padding:21px 0 22px 22px;color:#263e33}
+.group-card .group-status{display:inline-block;padding:5px 10px;border:1px solid #ffffff88;border-radius:999px;background:#ffffffab;color:var(--room-accent);font-size:11px;font-weight:700;line-height:1.4}
+.group-card h3{margin:12px 0 0;font-size:21px;font-weight:800;line-height:1.4;letter-spacing:-.04em;word-break:keep-all;overflow-wrap:anywhere}
+.group-card-body{padding:15px 21px 18px}
+.group-card .age-tag{margin:0;font-size:11px;padding:4px 8px}
+.group-card .group-description{margin:9px 0 0;font-size:13px;line-height:1.6;white-space:pre-line}
+.group-card-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:17px}
+.group-card-footer .metadata{min-width:0;overflow-wrap:anywhere;margin:0;font-size:12px;color:#677168}
+.group-card-footer .actions{justify-content:flex-end;flex:0 1 auto;min-width:0;gap:6px}
+.group-card-footer .actions>.muted{font-size:12px}
+.group-card-footer button{display:inline-flex;justify-content:center;align-items:center;gap:14px;min-height:42px;padding:9px 14px;font-size:13px;border-radius:12px;white-space:nowrap}
+.group-card-footer button.primary{background:var(--room-accent);border-color:var(--room-accent)}
+.group-card .age-note{margin:8px 0 0}
+.hero.group-room-hero{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;align-items:stretch;gap:24px;min-height:190px;padding:25px 26px 20px;margin-bottom:16px;border:1px solid var(--room-border);border-radius:24px;background:var(--room-cover)}
+.group-room-hero .group-artwork{width:48%;object-position:center 42%;-webkit-mask-image:linear-gradient(to right,transparent,#000 50%);mask-image:linear-gradient(to right,transparent,#000 50%)}
+.group-room-hero .hero-top{width:64%;flex:1;align-items:center}
+.group-room-hero h1{font-size:30px;line-height:1.35;margin:0;word-break:keep-all;overflow-wrap:anywhere}
+.group-room-hero .actions{position:relative;justify-content:space-between;gap:8px}
+.group-room-hero .actions button{flex:0 0 auto;background:#fffef9ed;border-color:#ffffffb8;box-shadow:0 2px 8px #263e3305}
+.group-room-hero .actions .page-share{margin-left:auto}
+@media(min-width:1100px){.group-card-cover{min-height:162px}.group-card-heading{padding-top:26px}.group-card h3{font-size:23px}}
+@media(max-width:600px){
+ #directory{grid-template-columns:minmax(0,1fr);gap:17px}
+ .directory-toolbar{margin-top:14px;margin-bottom:18px;padding:10px}
+ .group-card.post{border-radius:21px}
+ .group-card-cover{min-height:138px}
+ .group-card-heading{padding:20px 0 20px 19px}
+ .group-card h3{font-size:21px}
+ .group-card-body{padding:14px 18px 16px}
+ .group-card-footer{gap:9px;margin-top:14px}
+ .group-card-footer button{min-height:42px}
+ .hero.group-room-hero{min-height:180px;padding:21px 17px 15px;gap:20px;border-radius:21px}
+ .group-room-hero .hero-top{width:68%}
+ .hero.group-room-hero h1{font-size:26px;line-height:1.4;margin:0}
+ .hero.group-room-hero .actions button[data-action="home"],.hero.group-room-hero .actions .page-share{min-height:40px;padding:8px 11px;font-size:12px}
+}
+@media(forced-colors:active){.group-artwork{display:none}.group-card,.hero.group-room-hero{border:1px solid CanvasText}.group-card .group-status{border:1px solid CanvasText}}
+/* Let room details wrap before an age badge gets squeezed on phones. */
+@media(max-width:600px){
+ .group-room-hero+.room-context{grid-template-columns:minmax(0,1fr);gap:9px}
+ .group-room-hero+.room-context .muted{flex-wrap:wrap;gap:4px 7px;overflow:visible;white-space:normal}
+ .group-room-hero+.room-context .room-desc{flex-basis:100%;line-height:1.6}
+ .group-room-hero+.room-context .room-sep{display:none}
+ .group-room-hero+.room-context .age-tag{flex-shrink:0;margin:0}
+ .group-room-hero+.room-context .actions{justify-content:flex-end}
+}

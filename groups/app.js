@@ -40,6 +40,20 @@ const Age=(() => {
  return Object.freeze({label,badge,note,fields,bind});
 })();
 
+// Keep this order and hash stable: a room's immutable UUID owns its appearance.
+// Existing rooms and every device get the same design without another database read.
+const GroupAppearance=(()=>{
+ const themes=[['picnic','bear-picnic'],['lounge','cozy-room'],['seaside','puppy-beach'],['teatime','rabbit-tea'],['starlight','sky-whale'],['sunbeam','window-cat']];
+ function theme(room){
+  let hash=2166136261;
+  for(const ch of String(room.id||'').toLowerCase())hash=Math.imul(hash^ch.charCodeAt(0),16777619)>>>0;
+  return themes[hash%themes.length];
+ }
+ const attributes=room=>`data-group-theme="${theme(room)[0]}"`;
+ const artwork=(room,eager=false)=>`<img class="group-artwork" src="/assets/screw-flat/${theme(room)[1]}-v1.webp" alt="" aria-hidden="true" width="640" height="640" loading="${eager?'eager':'lazy'}" decoding="async">`;
+ return Object.freeze({attributes,artwork});
+})();
+
 const activities=window.OjjudaGroupActivities;
 const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uuid=()=>{if(crypto.randomUUID)return crypto.randomUUID();const a=crypto.getRandomValues(new Uint8Array(16));a[6]=(a[6]&15)|64;a[8]=(a[8]&63)|128;return [...a].map((b,i)=>([4,6,8,10].includes(i)?'-':'')+b.toString(16).padStart(2,'0')).join('');};
@@ -140,7 +154,7 @@ function gate(message=sharedCode()?'로그인 후 초대를 수락해 주세요.
 function dialog(title,body){const d=document.createElement('dialog');d.className='dialog';d.setAttribute('aria-label',title);d.innerHTML=`<header class="dialog-head"><h2>${esc(title)}</h2><button type="button" data-close aria-label="닫기">✕</button></header><div class="dialog-body">${body}</div>`;document.body.append(d);const prev=document.activeElement;d.showModal();d.querySelector('[data-close]').onclick=()=>d.close();d.addEventListener('close',()=>{d.remove();prev?.isConnected&&prev.focus({preventScroll:true});});return d;}
 function route(id=null){navigationRun++;if(id!==roomId){query='';filter='all';}roomId=id;date='';posts=[];history.pushState(null,'',id?'#room='+id:location.pathname);render();void loadFeed();}
 function render(){epoch++;clearTimeout(refreshTimer);loading=false;directoryLoading=false;clearMedia();const r=currentRoom();renderedRoomId=r?.id||null;
-$('#app').innerHTML=`<section class="hero"><div class="hero-top"><h1>${esc(r?.name||'그룹')}</h1>${r?'':`<button type="button" class="mine-toggle" data-action="mine" aria-pressed="${onlyMine}" aria-label="${onlyMine?'전체 그룹 보기':'내 그룹만 보기'}">${onlyMine?'전체 그룹':'내 그룹'}</button>`}</div><div class="actions">${r?'<button data-action="home">← 그룹 목록</button>':'<button class="primary" data-action="create">＋ 그룹 만들기</button>'}<button type="button" class="page-share" data-action="share-page" aria-label="${r?'그룹 페이지 공유':'그룹 목록 페이지 공유'}">↗ 페이지 공유</button></div></section>
+$('#app').innerHTML=`<section class="hero${r?' group-room-hero':''}" ${r?GroupAppearance.attributes(r):''}>${r?GroupAppearance.artwork(r,true):''}<div class="hero-top"><h1>${esc(r?.name||'그룹')}</h1>${r?'':`<button type="button" class="mine-toggle" data-action="mine" aria-pressed="${onlyMine}" aria-label="${onlyMine?'전체 그룹 보기':'내 그룹만 보기'}">${onlyMine?'전체 그룹':'내 그룹'}</button>`}</div><div class="actions">${r?'<button data-action="home">← 그룹 목록</button>':'<button class="primary" data-action="create">＋ 그룹 만들기</button>'}<button type="button" class="page-share" data-action="share-page" aria-label="${r?'그룹 페이지 공유':'그룹 목록 페이지 공유'}">↗ 페이지 공유</button></div></section>
 ${!r?`<section class="toolbar directory-toolbar"><input type="search" id="directory-query" maxlength="100" value="${esc(directoryQuery)}" placeholder="그룹 이름 검색" aria-label="그룹 이름 검색"></section><section id="group-invitations" class="feed" hidden></section><section id="directory" class="feed" aria-label="그룹 목록" aria-live="polite"><p class="empty">불러오는 중…</p></section><button class="more" id="directory-more" hidden>더 보기</button>`:
 `<div class="room-context"><p class="muted">${r.description?'<span class="room-desc" title="'+esc(r.description)+'">'+esc(r.description)+'</span><span class="room-sep"> · </span>':''}<span class="room-count">${r.member_count}명</span> ${Age.badge(r)}</p><div class="actions">${r.deleting||r.age_eligible===false?'':'<button data-action="share">초대 공유</button>'}${r.age_eligible!==false||r.owner_id===user.id?`<button data-action="manage">${r.owner_id===user.id?'그룹 관리':'그룹원'}</button>`:''}</div></div>
 ${r.deleting?`<div class="empty"><strong>그룹 삭제를 마무리해 주세요.</strong><button data-action="resume-delete" class="danger">삭제 계속하기</button></div>`:r.age_eligible===false?`<div class="empty">${Age.note(r)}${r.owner_id===user.id?'<p>그룹 관리에서 연령 조건을 변경하거나 그룹을 삭제할 수 있어요.</p>':'<button data-action="age-leave" class="danger">그룹 나가기</button>'}</div>`:
@@ -163,7 +177,10 @@ async function refresh({quiet=false}={}){
  }catch(e){notify(failure(e));}})();
  const holder={run,mutation,promise:request};refreshRequest=holder;try{await request;}finally{if(refreshRequest===holder)refreshRequest=null;}
 }
-function directoryCards(rows){return rows.map(r=>`<article class="post group-card" data-group="${r.id}"><div class="post-head"><div><h3>${esc(r.name)}</h3>${Age.badge(r)}${Age.note(r)}${r.description?`<p class="muted">${esc(r.description)}</p>`:''}<span class="metadata">${r.owner_name?esc(r.owner_name)+" · ":""}${r.member_count}명</span></div><span class="tag">${r.deleting?'삭제 중':r.is_member?'내 그룹':'가입 가능'}</span></div><div class="actions">${r.is_member?`<button data-room="${r.id}" class="primary">들어가기</button>`:r.requested?`<span class="muted">가입 승인 대기 중</span><button data-cancel-request="${r.id}">신청 취소</button>`:`<button data-request="${r.id}" class="primary" ${r.age_eligible===false?'disabled':''}>${r.age_eligible===false?'연령 조건 확인':'가입 신청'}</button>`}</div></article>`).join('');}
+function directoryCards(rows){return rows.map(r=>`<article class="post group-card" data-group="${r.id}" ${GroupAppearance.attributes(r)}>
+ <div class="group-card-cover">${GroupAppearance.artwork(r)}<div class="group-card-heading"><span class="tag group-status">${r.deleting?'삭제 중':r.is_member?'내 그룹':'가입 가능'}</span><h3>${esc(r.name)}</h3></div></div>
+ <div class="group-card-body">${Age.badge(r)}${Age.note(r)}${r.description?`<p class="muted group-description">${esc(r.description)}</p>`:''}
+ <div class="group-card-footer"><span class="metadata">${r.owner_name?esc(r.owner_name)+" · ":""}${r.member_count}명</span><div class="actions">${r.is_member?`<button data-room="${r.id}" class="primary">들어가기 <span aria-hidden="true">↗</span></button>`:r.requested?`<span class="muted">가입 승인 대기 중</span><button data-cancel-request="${r.id}">신청 취소</button>`:`<button data-request="${r.id}" class="primary" ${r.age_eligible===false?'disabled':''}>${r.age_eligible===false?'연령 조건 확인':'가입 신청'} <span aria-hidden="true">↗</span></button>`}</div></div></div></article>`).join('');}
 function drawDirectory(){
  const box=$('#directory');if(!box)return;
  const search=directoryQuery.trim().toLowerCase();

@@ -605,3 +605,24 @@ test('ladder member picker fills empty names and keeps the manually entered pair
     d.querySelector('[data-kind-choice=wheel]').click();assert.equal(editor.querySelector('[data-members-picker]').hidden,true);
   }finally{f.dom.window.close();}
 });
+
+test('automatic group artwork stays the same in the directory, room, rename and a new session',async()=>{
+ const f=fixture({empty:true,publicGroups:false});let theme,src;
+ try{
+  await tick();const d=f.w.document;
+  d.querySelector('[data-action=create]').click();const create=d.querySelector('#room-form');create.elements.name.value='자동 꾸미기 모임';create.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
+  const card=d.querySelector('[data-group]');theme=card.dataset.groupTheme;src=card.querySelector('.group-artwork').getAttribute('src');
+  assert.ok(theme);assert.ok(fs.existsSync(path.join(root,src)),'artwork must be an existing local asset');assert.equal(card.querySelector('.group-artwork').alt,'');
+  assert.ok(!Object.keys(f.calls.find(([a])=>a==='create_room')[1]).some(k=>/theme|image|color/.test(k)),'automatic appearance needs no extra creation fields');
+  card.querySelector('[data-room]').click();await tick();
+  const check=()=>{const hero=d.querySelector('.group-room-hero');assert.equal(hero.dataset.groupTheme,theme);assert.equal(hero.querySelector('.group-artwork').getAttribute('src'),src);};
+  check();d.querySelector('[data-action=manage]').click();await tick();const rename=d.querySelector('#rename-form');rename.elements.name.value='이름을 바꾼 모임';rename.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();check();
+  d.querySelector('[data-action=home]').click();await tick();assert.equal(d.querySelector('[data-group]').dataset.groupTheme,theme);
+ }finally{f.dom.window.close();}
+ const fresh=fixture();try{
+  await tick();const cards=fresh.w.document.querySelectorAll('[data-group]');
+  assert.equal(cards[0].dataset.groupTheme,theme);assert.equal(cards[0].querySelector('.group-artwork').getAttribute('src'),src);
+  assert.notEqual(cards[0].dataset.groupTheme,cards[1].dataset.groupTheme,'different rooms can receive different artwork');
+  assert.equal(fresh.w.document.querySelector('#directory script'),null);
+ }finally{fresh.dom.window.close();}
+});
