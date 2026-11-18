@@ -61,8 +61,14 @@ async function visibleEdgeLine(body,edge){
     const height=parseFloat(style.lineHeight),paddingTop=parseFloat(style.paddingTop),paddingBottom=parseFloat(style.paddingBottom);
     const top=rect.top+input.clientTop+(edge==='start'?paddingTop-input.scrollTop:input.scrollHeight-paddingBottom-input.scrollTop-height);
     return {top,bottom:top+height,visibleTop:Math.max(area.top,rect.top+input.clientTop),
-      visibleBottom:Math.min(area.bottom,rect.top+input.clientTop+input.clientHeight),focused:document.activeElement===input};
+      visibleBottom:Math.min(area.bottom,rect.top+input.clientTop+input.clientHeight),focused:document.activeElement===input,
+      field:{top:rect.top,bottom:rect.bottom,height:rect.height,clientTop:input.clientTop,clientHeight:input.clientHeight,
+        scrollTop:input.scrollTop,scrollHeight:input.scrollHeight},
+      area:{top:area.top,bottom:area.bottom,height:area.height,scrollTop:input.closest('.group-compose-body').scrollTop},
+      font:{size:style.fontSize,lineHeight:height,paddingTop,paddingBottom},
+      selection:{start:input.selectionStart,end:input.selectionEnd,direction:input.selectionDirection}};
   },edge);
+  await snapshot(body.page(),'group-short-keyboard-'+edge+'-320');
   assert.equal(line.focused,true,'native keyboard movement retains input focus');
   assert.ok(line.top>=line.visibleTop-3&&line.bottom<=line.visibleBottom+3,
     edge+' caret line stays visible in the writing area: '+JSON.stringify(line));

@@ -219,7 +219,21 @@
       if (!focused) return;
       const area = body.getBoundingClientRect();
       if (!area.height || !focused.getClientRects().length) return;
-      const line = writingLine(focused);
+      let line = writingLine(focused);
+      if (focused.tagName === 'TEXTAREA') {
+        // A native textarea can scroll its own first line slightly out of view
+        // after a keyboard resize. Keep that line inside the field as well as
+        // the outer sheet, without changing the selection or the draft.
+        const field = focused.getBoundingClientRect();
+        const inset = Math.min(6, Math.max(0, (focused.clientHeight - (line.bottom - line.top)) / 2));
+        const top = field.top + focused.clientTop + inset;
+        const bottom = field.top + focused.clientTop + focused.clientHeight - inset;
+        const delta = line.top < top ? line.top - top : line.bottom > bottom ? line.bottom - bottom : 0;
+        if (Math.abs(delta) > .5) {
+          focused.scrollTop += delta;
+          line = writingLine(focused);
+        }
+      }
       const margin = Math.min(6, Math.max(0, (body.clientHeight - (line.bottom - line.top)) / 2));
       const top = area.top + margin, bottom = area.bottom - margin;
       const delta = line.bottom - line.top > bottom - top ? (line.top + line.bottom - top - bottom) / 2 :
