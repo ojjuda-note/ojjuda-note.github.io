@@ -1,18 +1,37 @@
 /* Start the first card read while the rest of Park's tools download and initialize. */
 (() => {
   'use strict';
-  const config=window.OJJUDA_CONFIG;
-  if(!config?.supabaseUrl || !config?.supabaseKey || !window.supabase?.createClient)return;
-  const client=window.supabase.createClient(config.supabaseUrl,config.supabaseKey);
+  if(window.OjjudaParkFeedStarted)return;
+  const opening={client:null};
   let active=true,claimed=false,owner,subscription,timer;
   const controller=new AbortController();
   const cleanup=()=>{
     active=false;controller.abort();clearTimeout(timer);subscription?.unsubscribe();
     window.removeEventListener('pagehide',cleanup);
+    // Release the closure holding the response, while keeping the shared client.
+    delete window.OjjudaParkOpening?.take;
   };
   window.addEventListener('pagehide',cleanup,{once:true});
   timer=setTimeout(cleanup,15000);
   const request=(async()=>{
+    let client;
+    try{
+      const host=window.parent;
+      if(host!==window && host.location.origin===location.origin && host.location.pathname==='/world.html'){
+        client=await host.OjjudaGetClient?.();
+      }
+    }catch{/* Standalone documents use their own authenticated client. */}
+    if(!client){
+      if(!window.supabase?.createClient && document.readyState==='loading'){
+        await new Promise(resolve=>document.addEventListener('DOMContentLoaded',resolve,{once:true}));
+      }
+      const config=window.OJJUDA_CONFIG;
+      if(!active||!config?.supabaseUrl||!config?.supabaseKey||!window.supabase?.createClient)return;
+      client=opening.client||window.supabase.createClient(config.supabaseUrl,config.supabaseKey);
+      opening.client=client;
+    }
+    // The host client is used only for this short read. The iframe's other tools
+    // keep their own client so retired frames cannot leave host auth listeners behind.
     const {data,error}=await client.auth.getSession();
     if(error||!active)return;
     owner=data?.session?.user?.id||null;
@@ -38,9 +57,10 @@
     }
     return result;
   })().catch(()=>undefined);
-  window.OjjudaParkOpening={client,take(userId){
+  opening.take=function(userId){
     if(claimed||!active)return;
     claimed=true;
     return request.then(result=>active&&owner===(userId||null)?result:undefined).finally(cleanup);
-  }};
+  };
+  window.OjjudaParkOpening=opening;
 })();

@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const source=fs.readFileSync(require('node:path').join(__dirname,'../park/opening.js'),'utf8');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-function fixture({user='one',card=false,error=false}={}){
+function fixture({user='one',card=false,error=false,host=false,started=false}={}){
   let finish,onAuth,reads=0,signal,unsubscribed=false;
   const images=[],listeners=new Map();
   const db={auth:{getSession:async()=>({data:{session:user?{user:{id:user}}:null}}),
@@ -15,7 +15,10 @@ function fixture({user='one',card=false,error=false}={}){
     URL,AbortController,location:new URL('https://fixture.test/park/'+(card?'?card=shared':'')),
     document:{documentElement:{hasAttribute:()=>false}},Image:class{set src(value){images.push(value);}},
     setTimeout:()=>1,clearTimeout(){},addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:name=>listeners.delete(name)};
-  scope.window=scope;vm.runInNewContext(source,scope);
+  scope.window=scope;
+  if(host){scope.parent={location:new URL('https://fixture.test/world.html'),OjjudaGetClient:async()=>db};delete scope.supabase;delete scope.OJJUDA_CONFIG;}
+  if(started)scope.OjjudaParkFeedStarted=true;
+  vm.runInNewContext(source,scope);
   return {scope,db,images,get reads(){return reads;},get signal(){return signal;},get unsubscribed(){return unsubscribed;},
     finish:()=>finish(),auth:user=>onAuth('SIGNED_IN',user?{user:{id:user}}:null),leave:()=>listeners.get('pagehide')?.()};
 }
@@ -24,7 +27,7 @@ for(const user of ['one',null])test(`first feed is started early and consumed on
   assert.equal(f.scope.OjjudaParkOpening.client,f.db);
   const pending=f.scope.OjjudaParkOpening.take(user);f.finish();
   assert.equal((await pending).data[0].body,'fixture');
-  assert.equal(f.scope.OjjudaParkOpening.take(user),undefined);
+  assert.equal(f.scope.OjjudaParkOpening.take,undefined,'consumption releases the prepared response closure');
   assert.deepEqual(f.images,['/note/assets/10.jpg']);assert.equal(f.unsubscribed,true);
 });
 for(const change of ['other','logout','leave'])test(`late opening data is discarded on ${change}`,async()=>{
@@ -41,4 +44,13 @@ test('failed preparation falls back to a normal feed request',async()=>{
 test('shared-card navigation skips the general feed',async()=>{
   const f=fixture({card:true});await tick();assert.equal(f.reads,0);
   assert.equal(await f.scope.OjjudaParkOpening.take('one'),undefined);
+});
+test('embedded Park starts through Agit before its own SDK and tools are ready',async()=>{
+  const f=fixture({host:true});await tick();assert.equal(f.reads,1);
+  assert.equal(f.scope.OjjudaParkOpening.client,null,'other iframe tools must not retain the host client');
+  const pending=f.scope.OjjudaParkOpening.take('one');f.finish();
+  assert.equal((await pending).data[0].body,'fixture');assert.equal(f.unsubscribed,true);
+});
+test('a slow opening script cannot duplicate an already started feed',async()=>{
+  const f=fixture({started:true});await tick();assert.equal(f.reads,0);assert.equal(f.scope.OjjudaParkOpening,undefined);
 });

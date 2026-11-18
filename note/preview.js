@@ -5,6 +5,7 @@ const localStage = config?.localStage === true && ['localhost', '127.0.0.1'].inc
   && config.supabaseUrl === 'https://jucuqqbynilwlhqxyzrd.supabase.co';
 const client = window.OjjudaParkOpening?.client || (config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
   ? window.supabase.createClient(config.supabaseUrl, config.supabaseKey) : null);
+if (window.OjjudaParkOpening) window.OjjudaParkOpening.client = client;
 const columns = 'id,kind,parent_id,body,display_name,tags,background_key,created_at,like_count,reply_count,is_mine,is_liked,is_bookmarked,identity_mode,style,photo_key,style_until,photo_until,archive_due_at,permanent';
 const feed = $('#feed'), detail = $('#detail'), list = $('#feed-list');
 const slot = $('#detail-card-slot'), replies = $('#reply-list');
@@ -1198,6 +1199,7 @@ function filteredFeed() {
 }
 async function loadFeed(more = false, quiet = false) {
   if (!client || (more && feedLoading)) return false;
+  window.OjjudaParkFeedStarted = true;
   if (!more) feedDeferred = false;
   const searchContext = $('#feed-search-context');
   if (searchContext) {
@@ -1245,7 +1247,7 @@ async function loadFeed(more = false, quiet = false) {
   } else if (feedMode === 'all' && !feedTerm) {
     try {
       const pendingOpening = !more && !quiet && feedSort === 'latest' && !nearbyPosition
-        ? window.OjjudaParkOpening?.take(session?.user?.id) : undefined;
+        ? window.OjjudaParkOpening?.take?.(session?.user?.id) : undefined;
       const opening = pendingOpening ? await pendingOpening : undefined;
       if (version !== feedRun) return false;
       data = opening ? opening.data : await noteRpc('list_cards', { p_sort: feedSort === 'latest' ? 'recent' : feedSort,
