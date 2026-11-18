@@ -226,6 +226,12 @@ let entry = await requireMember(user => entryAction=answeredRound()===user?'stat
   const ready=new Promise(resolve=>{openProgram=resolve;});
   program=prepareProgram(db,ready);
   program.catch(()=>{program=undefined;});
+}, result=>{
+  // A slow identity endpoint must not serialize the download after a successful member read.
+  const needed=entryAction==='state'
+    ? result?.authenticated&&(result.me?.body||view==='feed')
+    : result?.body||(view==='feed'&&result?.joined);
+  if(needed)openProgram?.();
 });
 if (entry) {
   try {

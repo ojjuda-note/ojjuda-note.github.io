@@ -46,7 +46,7 @@ export function showGate(message,login = false) {
   link.textContent=login?'오쭈다 로그인하기':'아지트로 돌아가기';
   gate.replaceChildren(title,line,link);
 }
-export async function requireMember(action='entry',onSession) {
+export async function requireMember(action='entry',onSession,onResult) {
   try {
     const db=await client();
     const {data:{session}}=await db.auth.getSession();
@@ -66,7 +66,10 @@ export async function requireMember(action='entry',onSession) {
     window.addEventListener('pageshow',e=>{if(e.persisted)location.reload();});
     onSession?.(db);
     const [identity,result]=await Promise.all([
-      db.auth.getUser(),db.rpc('pajang_member',{p_action:action,p_data:{}})
+      db.auth.getUser(),Promise.resolve(db.rpc('pajang_member',{p_action:action,p_data:{}})).then(result=>{
+        if(!changed&&!result.error)onResult?.(result.data);
+        return result;
+      })
     ]);
     if(changed)return;
     const user=identity.data?.user;
