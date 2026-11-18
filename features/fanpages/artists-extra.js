@@ -460,7 +460,7 @@
       id: 'blackpink', name: 'BLACKPINK', korean: '블랙핑크', category: 'girl', fan: 'BLINK', agency: 'YG Entertainment',
       members: ['지수', '제니', '로제', '리사'],
       debut: '2016.08.08', debutWork: 'SQUARE ONE', songs: ['WHISTLE', 'BOOMBAYAH'],
-      checkedAt: '2026.11.16',
+      checkedAt: '2026.11.18',
       concept: '블랙과 핑크, 서로 다른 매력이 공존하는 무대.',
       official: 'https://ygfamily.com/ko/artists/blackpink/profile', youtube: 'https://www.youtube.com/@BLACKPINK',
       photo: '20240809 Blackpink Pink Carpet 09.png', photoLabel: '핑크 카펫', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
@@ -486,6 +486,8 @@
         { title: 'YG BLACKPINK 공식 공지', sub: '행사·예매·변경 사항', href: 'https://ygfamily.com/ko/artists/blackpink/notice' }
       ],
       news: [
+        { date: '2026.11.16', tag: '소속사', title: 'YG 3분기 전속계약 명단에서 블랙핑크 제외 · YG는 그룹 활동 논의 중이라고 설명(계약 종료 확정 아님)', href: 'https://www.yna.co.kr/amp/view/AKR20261116160000005' },
+        { date: '2026.11.14', tag: '공연', title: '리사 VIVA LA LISA 라스베이거스 첫 공연 11/12 개최 · 다음 공연 11/27~29 예정', href: 'https://www.elle.com/culture/music/a74423576/lisa-viva-la-lisa-residency-night-one-setlist/' },
         { date: '2026.11.16', tag: '로그인', title: '위버스 BLINK 멤버십(GL/JP) 신규 구매 11/16 14시부터 일시 중단 · 기존 가입자 이용 유지', href: 'https://weverse.io/blackpink/notice/41029' },
         { date: '2026.11.15', tag: '수상', title: '로제·제니, 2026 키즈 초이스 어워즈 개인 부문 수상', href: 'https://www.soompi.com/article/1887086wpp/bts-rose-jennie-kpop-demon-hunters-and-katseye-win-at-2026-nickelodeon-kids-choice-awards' },
         { date: '2026.11.11', tag: '협업', title: '지수, 토미 힐피거 2026 겨울 캠페인 참여', href: 'https://prtimes.jp/main/html/rd/p/000000305.000010635.html' },
@@ -502,6 +504,7 @@
         { title: 'DEADLINE MOOD LIGHT Ver.', sub: 'YG SELECT · 앨범·무드등 구성 · 재고는 판매처 확인', href: 'https://www.ygselect.com/product/blackpink-3rd-mini-album-deadline-mood-light-ver/12813/' }
       ],
       campaigns: [
+        { kind: '홍보대사', date: '2026.02.09', title: '리사 × SHISEIDO ULTIMUNE · 글로벌 앰배서더', sub: 'SHISEIDO 2월 9일 공식 발표 · ULTIMUNE 세럼 Fast. Slow. Free. 캠페인', href: 'https://prtimes.jp/main/html/rd/p/000003045.000005794.html' },
         { kind: '홍보대사', date: '2026.04.09', title: '제니 × Ray-Ban · 글로벌 앰배서더', sub: 'Ray-Ban 및 Ray-Ban Meta · Styles for Unfiltered Confidence 캠페인 · 공식 브랜드 페이지', href: 'https://www.ray-ban.com/row/ray-ban-and-jennie' },
         { kind: '광고', date: '2026.11.11', title: '지수 × TOMMY HILFIGER · 2026 Winter', sub: '글로벌 앰배서더 지수 · A Perfect Holiday 겨울 캠페인 · PVH Japan 11월 11일 발표', href: 'https://prtimes.jp/main/html/rd/p/000000305.000010635.html' },
         { kind: '콜라보', date: '2026.02.26', title: '국립중앙박물관 × BLACKPINK × Spotify', sub: 'DEADLINE 발매 기념 박물관 오디오 도슨트·리스닝존 · 2.26~3.08 종료', href: 'https://weverse.io/blackpink/notice/33735' }
