@@ -36,7 +36,8 @@ function fixture({tab='hub', gameUrl=null}={}) {
     gameCloseUrl: () => 'https://world.test/world.html?tab=arcade',
     closeOverlay() { closeCalls++; const wasOpen=overlay; overlay=false; return wasOpen; },
     canLeave: () => true, toMain() { mainCalls++; tab='hub'; },
-    tabs: ['hub','arcade','park','my'], currentTab: () => tab
+    tabs: ['hub','arcade','my'], currentTab: () => tab,
+    changeTab(next) { tab = next; }
   });
   navigation.sync();
   return {
@@ -110,6 +111,24 @@ test('park and settings Back stay in their own main sections', () => {
     assert.equal(f.mainCalls,0);
     assert.equal(f.history.state.ojjudaWorld,'menu');
   }
+});
+
+test('main menu swipes skip Park while Park swipes cannot leave its own section', () => {
+  const f = fixture();
+  assert.equal(f.navigation.step(1), true);
+  assert.equal(f.tab, 'arcade');
+  assert.equal(f.navigation.step(1), true);
+  assert.equal(f.tab, 'my', 'the main menu moves from Arcade directly to Settings');
+  assert.equal(f.navigation.step(1), false);
+  assert.equal(f.navigation.step(-1), true);
+  assert.equal(f.tab, 'arcade');
+  assert.equal(f.navigation.step(-1), true);
+  assert.equal(f.tab, 'hub');
+  assert.equal(f.navigation.step(-1), false);
+  const park = fixture({tab:'park'});
+  assert.equal(park.navigation.step(1), false);
+  assert.equal(park.navigation.step(-1), false);
+  assert.equal(park.tab, 'park', 'reading cards cannot swipe into the global menus');
 });
 
 test('a direct game link creates a hub return history entry', () => {

@@ -5,7 +5,8 @@
   try { hosted = parent !== window && parent.location.origin === location.origin && parent.location.pathname === '/world.html'; } catch {}
   const send = data => { if (hosted) parent.postMessage(data, location.origin); };
   const originalCanLeave = window.canCloseParkNote;
-  let pendingAction = null, previousOverlay = null, previousComposer = null, previousDetail = null, previousBalance = null, reporting = false, hostVisible = true;
+  let pendingAction = null, previousOverlay = null, previousComposer = null, previousDetail = null, previousNavigation = null, previousBalance = null, reporting = false, hostVisible = true;
+  let settingsContext = false;
   const visible = selector => !!document.querySelector(selector);
   const overlayOpen = () => visible('.dialog-backdrop:not([hidden]), .nn-backdrop:not([hidden]), .note-photo-lightbox:not([hidden]), dialog[open]');
   const composerOpen = () => visible('#composer-backdrop:not([hidden])');
@@ -20,12 +21,95 @@
   }
   window.canCloseParkNote = canLeave;
 
+  function navigationAction() {
+    if (management.hidden) settingsContext = false;
+    if (settingsContext) return 'settings';
+    return feedMode === 'saved' ? 'saved' : ['mine', 'events'].includes(feedMode) ? 'mine' : 'feed';
+  }
+
+  function showParkSettings() {
+    if (!canLeave()) return;
+    showManagement('공원 설정');
+    settingsContext = true;
+    const owner = session?.user?.id || null;
+    const settings = node('div', 'park-settings');
+    settings.setAttribute('data-park-settings-root', '');
+    const group = title => {
+      const section = node('section', 'park-settings-group');
+      section.setAttribute('aria-label', title);
+      section.append(node('h3', '', title));
+      const list = node('div', 'park-settings-list');
+      section.append(list); settings.append(section);
+      return list;
+    };
+    const row = (container, id, label, action, className = '') => {
+      const button = managementButton('', () => {
+        if (!canLeave()) return;
+        if (owner !== (session?.user?.id || null)) { showParkSettings(); return; }
+        action();
+      });
+      button.className = `park-settings-row ${className}`.trim();
+      button.dataset.parkSettings = id;
+      const arrow = node('span', 'park-settings-arrow', '›'); arrow.setAttribute('aria-hidden', 'true');
+      button.append(node('span', '', label), arrow); container.append(button);
+      return button;
+    };
+    const link = (container, id, label, href, newTab = false) => {
+      const anchor = node('a', 'park-settings-row');
+      anchor.dataset.parkSettings = id; anchor.href = href;
+      anchor.target = newTab ? '_blank' : '_top';
+      if (newTab) anchor.rel = 'noopener';
+      const arrow = node('span', 'park-settings-arrow', newTab ? '↗' : '›'); arrow.setAttribute('aria-hidden', 'true');
+      anchor.append(node('span', '', label), arrow); container.append(anchor);
+    };
+    const home = row(settings, 'world', '아지트 가기', () => navigate('world'), 'park-settings-home');
+    home.prepend(icon('home'));
+    const account = group('내 계정');
+    if (owner) {
+      row(account, 'member-info', '개인정보 관리', () => void showMemberInfo());
+      row(account, 'nickname', '닉네임 변경', () => void showNicknameChange());
+      row(account, 'password', '비밀번호 변경', showPasswordChange);
+      row(account, 'blocked', '차단 관리', () => void showBlocks());
+    } else {
+      link(account, 'login', '로그인 · 회원가입', '/?auth=login&next=note');
+    }
+    const help = group('이용 안내');
+    row(help, 'support', '문의·의견', () => navigate('support'));
+    link(help, 'terms', '이용약관', '/terms.html?from=park', true);
+    link(help, 'privacy', '개인정보처리방침', '/privacy.html?from=park', true);
+    if (owner) {
+      const access = group('계정 관리');
+      row(access, 'logout', '로그아웃', showAccountLogout);
+      row(access, 'delete-account', '회원 탈퇴', () => void showAccountDeletion(), 'park-settings-danger');
+    }
+    managementBody.append(settings);
+    syncSettingsBack();
+  }
+
+  function syncSettingsBack() {
+    const current = managementHeader.querySelector('[data-park-settings-back]');
+    const child = settingsContext && !management.hidden && !managementBody.querySelector('[data-park-settings-root]');
+    if (!child) { current?.remove(); return; }
+    if (current) { current.disabled = managementBusy; return; }
+    const button = managementButton('', () => { if (canLeave()) showParkSettings(); });
+    button.className = 'icon-button park-settings-back';
+    button.setAttribute('data-park-settings-back', '');
+    button.setAttribute('aria-label', '공원 설정으로 돌아가기');
+    button.disabled = managementBusy; button.append(icon('arrow'));
+    managementHeader.prepend(button);
+  }
+
   function closeTopOverlay() {
     if (window.OjjudaCharge?.isOpen?.()) { window.OjjudaCharge.close(); return true; }
     if (photoLightbox && !photoLightbox.hidden) { closePhotoLightbox(); return true; }
     if (notificationController?.isOpen?.()) { notificationController.close(); return true; }
     if (window.OjjudaNoteSupport?.isOpen?.()) { window.OjjudaNoteSupport.close(); return true; }
-    if (!management.hidden) { closeManagement(); return true; }
+    if (!management.hidden) {
+      if (settingsContext && !managementBody.querySelector('[data-park-settings-root]')) {
+        if (canLeave()) showParkSettings();
+      } else closeManagement();
+      return true;
+    }
     if (!backdrop.hidden) {
       if (document.querySelector('.composer')?.ojjudaTools?.close()) return true;
       if (canLeave()) closeComposer();
@@ -70,13 +154,18 @@
     if (!backdrop.hidden) closeComposer();
     window.OjjudaNoteNavigation?.leaveMy();
     pendingAction = null;
+    settingsContext = false;
     if (action === 'world' || action === 'menu' || action === 'board' || action === 'library') {
       if (hosted) send({ type: 'ojjuda:park-navigate', action });
       else location.assign('/world.html');
     } else if (action === 'glasses') location.assign('/park/glasses.html?embedded=1');
     else if (action === 'compose' || action === 'event-new') void openComposer(action === 'event-new' ? 'event' : 'new');
     else if (action === 'blocked') { selectCollection('all'); void showBlocks(); }
-    else if (action === 'settings' || action === 'member-info') { selectCollection('all'); void showMemberInfo(); }
+    else if (action === 'settings') showParkSettings();
+    else if (action === 'member-info') {
+      if (session?.user) { settingsContext = true; void showMemberInfo(); }
+      else showParkSettings();
+    }
     else if (action === 'notifications') notificationController?.open?.();
     else if (action === 'support') window.OjjudaNoteSupport?.open?.();
     else void selectCollection(action === 'feed' ? 'all' : action);
@@ -95,10 +184,12 @@
     const open = overlayOpen();
     const writing = composerOpen();
     const cardOpen = !detail.hidden;
+    const navigation = navigationAction();
+    syncSettingsBack();
     const compose = document.querySelector('.write-fab');if(compose&&compose.hidden!==cardOpen)compose.hidden=cardOpen;
-    if (open !== previousOverlay || writing !== previousComposer || cardOpen !== previousDetail) {
-      previousOverlay = open; previousComposer = writing; previousDetail = cardOpen;
-      send({ type: 'ojjuda:park-state', overlayOpen: open, composerOpen: writing, cardOpen });
+    if (open !== previousOverlay || writing !== previousComposer || cardOpen !== previousDetail || navigation !== previousNavigation) {
+      previousOverlay = open; previousComposer = writing; previousDetail = cardOpen; previousNavigation = navigation;
+      send({ type: 'ojjuda:park-state', overlayOpen: open, composerOpen: writing, cardOpen, navigationAction: navigation });
     }
     const userId = session?.user?.id;
     if (userId && Number.isSafeInteger(worldCoins) && worldCoins >= 0) {
@@ -170,14 +261,14 @@
     if (!hosted || event.origin !== location.origin || event.source !== parent) return;
     if (event.data?.type === 'ojjuda:park-visibility') {
       hostVisible = event.data.visible === true;
-      if (hostVisible) { previousOverlay = previousComposer = previousDetail = previousBalance = null; scheduleReport(); }
+      if (hostVisible) { previousOverlay = previousComposer = previousDetail = previousNavigation = previousBalance = null; scheduleReport(); }
       return;
     }
-    if (event.data?.type === 'ojjuda:park-host-ready') { previousOverlay = previousComposer = previousDetail = previousBalance = null; scheduleReport(); }
+    if (event.data?.type === 'ojjuda:park-host-ready') { previousOverlay = previousComposer = previousDetail = previousNavigation = previousBalance = null; scheduleReport(); }
   });
   addEventListener('pagehide', () => {
-    send({ type: 'ojjuda:park-state', overlayOpen: false, composerOpen: false, cardOpen: false });
-    previousOverlay = previousComposer = previousDetail = null;
+    send({ type: 'ojjuda:park-state', overlayOpen: false, composerOpen: false, cardOpen: false, navigationAction: 'feed' });
+    previousOverlay = previousComposer = previousDetail = previousNavigation = null;
   });
   addEventListener('pageshow', scheduleReport);
 
@@ -189,7 +280,7 @@
   });
 
   window.OjjudaNoteNavigation?.leaveMy();
-  window.OjjudaParkFull = Object.freeze({ embedded: hosted, navigate, returnHome, compose: () => navigate('compose'), back, canLeave, overlayOpen, composerOpen, cardOpen:()=>!detail.hidden,
+  window.OjjudaParkFull = Object.freeze({ embedded: hosted, navigate, navigationAction, returnHome, compose: () => navigate('compose'), back, canLeave, overlayOpen, composerOpen, cardOpen:()=>!detail.hidden,
     refresh,
     refreshBalance: () => loadWorldBalance(session?.user?.id) });
   reportState();

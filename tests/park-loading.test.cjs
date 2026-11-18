@@ -17,7 +17,7 @@ const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
   const panel = { hidden: false, isConnected: true,
     querySelector(selector) { return { '[data-park-loading]': cover, '.park-compose-fab': compose, '[data-park-app-slot]': slot }[selector] || null; },
     setAttribute() {}, removeAttribute() {} };
-  const doc = { querySelector: () => panel, createElement: () => { created++; return frame; },
+  const doc = { querySelector: selector => selector === '[data-park-app]' ? panel : null, querySelectorAll: () => [], createElement: () => { created++; return frame; },
     documentElement: { classList: { toggle() {} } }, addEventListener() {} };
   const scope = { document: doc, URL, Set, location: new URL('https://fixture.test/world.html?place=park'),
     setTimeout: (_, delay) => { timers.push(delay); return 1; }, clearTimeout() {}, addEventListener(type, listener) { if (type === 'message') onMessage = listener; } };
