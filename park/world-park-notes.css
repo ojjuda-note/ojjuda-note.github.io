@@ -1,6 +1,6 @@
 /* World owns the viewport; only the card content scrolls in Park. */
-html:root.world-park-active{--bg:#f3f9ff;--surface:#fff;--surface-2:#eaf4ff;--ink:#25394f;--ink-2:#59718a;--line:#d4e5f5;--accent:#2674c5;--accent-ink:#1f5f9f;--accent-soft:#e1f0ff;--on-accent:#fff;--hero-bg:#e1f0ff;color-scheme:light}
-html:root.world-park-active[data-theme=dark]{--bg:#111e2c;--surface:#182b3e;--surface-2:#21394f;--ink:#edf5ff;--ink-2:#b8cde2;--line:#36516b;--accent:#88c4ff;--accent-ink:#add7ff;--accent-soft:#244968;--on-accent:#102a43;--hero-bg:#21394f;color-scheme:dark}
+html:root.world-park-active{--bg:#f3f9ff;--surface:#fff;--surface-2:#eaf4ff;--ink:#25394f;--ink-2:#59718a;--line:#d4e5f5;--accent:#2674c5;--accent-ink:#1f5f9f;--accent-soft:#e1f0ff;--on-accent:#fff;--hero-bg:#e1f0ff;--accent-hover:#1f65ad;--paper:var(--surface);--muted:var(--ink-2);--pink:var(--accent);--pink-ink:var(--accent-ink);--pink-hover:var(--accent-hover);color-scheme:light}
+html:root.world-park-active[data-theme=dark]{--bg:#111e2c;--surface:#182b3e;--surface-2:#21394f;--ink:#edf5ff;--ink-2:#b8cde2;--line:#36516b;--accent:#88c4ff;--accent-ink:#add7ff;--accent-soft:#244968;--on-accent:#102a43;--hero-bg:#21394f;--accent-hover:#add7ff;color-scheme:dark}
 html.world-park-active,html.world-park-active body{height:100%;overflow:hidden;overscroll-behavior:none}
 .world-park-active #app{position:fixed;top:var(--app-viewport-top,0px);left:0;right:0;height:var(--app-viewport-height,100dvh);display:flex;flex-direction:column;overflow:hidden}
 .world-park-active #app>.shell{flex:1;min-height:0;grid-template-rows:minmax(0,1fr)}
