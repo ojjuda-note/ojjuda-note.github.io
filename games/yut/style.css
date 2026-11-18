@@ -189,70 +189,76 @@ dialog .primary{width:100%}#dialog-body>.secondary{margin:4px 3px 0 0}
 
 .first-seat {
   position:absolute; inset:0; z-index:3; display:grid; place-items:center;
-  padding:6px; container-type:size;
-  background:radial-gradient(ellipse at center,#27231db0,#151614eb);
+  padding:7px; container-type:size;
+  background:radial-gradient(ellipse at 50% 49%,#18392bc9,#091713f5 82%);
 }
 .first-seat-card {
-  display:grid; justify-items:center; gap:5px;
-  width:min(100%, 390px); padding:7px 10px;
-  color:#ffefc9; text-align:center;
+  display:grid; justify-items:center; gap:8px;
+  width:min(100%, 540px); color:#fff2cb; text-align:center;
 }
 #first-seat-heading {
-  font-size:clamp(1rem,4vw,1.55rem); line-height:1.15;
-  text-shadow:0 2px 8px #0e0a06;
+  font-size:clamp(1.05rem,4vw,1.8rem); line-height:1.15;
+  text-shadow:0 3px 0 #101b14,0 4px 20px #030906;
 }
 #first-seat-order {
-  min-height:1.3em; font-size:clamp(.78rem,3.5vw,1.05rem); font-weight:800;
-  color:#ffe8a3; font-variant-numeric:tabular-nums;
+  min-height:1.65em; color:#e7cc91; font-size:clamp(.76rem,3cqh,1.06rem); font-weight:800;
 }
+#first-seat-order b {
+  display:inline-grid; place-items:center; min-width:1.55em; min-height:1.55em;
+  background:#14271e; border:1px solid var(--seat-color); border-radius:6px;
+  color:#fff5d7; font-variant-numeric:tabular-nums;
+}
+#first-seat-order b:first-child {background:#ffe3a0;color:#453019}
 .first-seat-circle {
   position:relative; isolation:isolate;
-  width:min(96%, 19rem, max(76px,calc(100cqh - 82px))); aspect-ratio:1;
-  border-radius:50%; border:2px solid #d5a56b;
+  width:min(88%,29rem,max(84px,calc(100cqh - 90px))); aspect-ratio:1;
+  border-radius:50%; border:2px solid #dbae6c;
   background:
-    radial-gradient(circle at 38% 30%,#fff0c831,transparent 58%),
-    repeating-radial-gradient(ellipse at 3% 35%,#ffc87b18 0 1px,#411e151a 2px 3px,transparent 4px 9px),
-    linear-gradient(135deg,#aa7047,#64412d 62%,#462b20);
-  box-shadow:0 0 0 3px #512f22,0 6px 0 3px #23160f,0 13px 26px #0e0b09cf;
+    radial-gradient(ellipse at 34% 24%,#f6d48f60,transparent 56%),
+    repeating-linear-gradient(104deg,#ffc88520 0 1px,#32160e25 2px 3px,transparent 4px 10px),
+    linear-gradient(135deg,#8b5b3e,#503122 68%,#2f1e18);
+  box-shadow:0 0 0 5px #5e3926,0 8px 0 5px #261b14,0 18px 34px #010805e8,
+    inset 0 0 0 4px #372418,inset 0 0 0 6px #deb77b77;
 }
 .first-seat-circle::before {
-  content:''; position:absolute; inset:9%; border-radius:50%;
-  border:1px solid #f2bf865c;
-  box-shadow:0 0 0 3px #3b231a65,inset 0 0 0 4px #28191354,inset 0 4px 14px #24150f75;
-}
-.first-seat-circle::after {
-  content:''; position:absolute; z-index:-1; inset:29%; border:1px solid #edc29154;
-  border-radius:50%; background:radial-gradient(circle,#3c231768,transparent 70%);
+  content:''; position:absolute; inset:9%; border-radius:50%; z-index:-1;
+  border:2px solid #d5ad625f;
+  background:radial-gradient(circle,#e5c87951 0 3%,transparent 3.5% 27%,#e5c87945 27.5% 28%,transparent 29%),
+    repeating-conic-gradient(from 0deg,#ffdf8d14 0deg 1deg,transparent 2deg 15deg),
+    radial-gradient(circle at 45% 30%,#3b7654,#193e2e 65%,#0f251d);
+  box-shadow:inset 0 0 0 5px #112b22c7,inset 0 0 25px #081b15,0 0 0 4px #2a1e1680;
 }
 .first-seat-number {
-  position:absolute; display:grid; place-items:center; transform:translate(-50%,-50%);
-  width:clamp(20px,14%,43px); aspect-ratio:1; border-radius:50%;
-  color:#322217; font-size:clamp(.72rem,4cqh,1rem); font-weight:900;
+  position:absolute; z-index:2; display:grid; place-items:center; transform:translate(-50%,-50%);
+  width:clamp(22px,16%,58px); aspect-ratio:1; border-radius:50%;
   border:2px solid var(--seat-color);
-  background:linear-gradient(145deg,#fff7df,#d9ad75);
-  box-shadow:0 2px 0 #4c2a1c,0 3px 6px #26150fba;
+  background:radial-gradient(circle at 38% 28%,#42634a,#15271e 77%);
+  box-shadow:0 3px 0 #2a1a12,0 5px 8px #130d0acd,inset 0 0 0 2px #e4c07b55;
+  color:#fff4d6;
+}
+.first-seat-number .animal-icon {width:86%;height:auto;max-height:none}
+.first-seat-number b {
+  position:absolute; right:-13%; bottom:-9%; min-width:1.35em;
+  border:1px solid var(--seat-color); border-radius:50%;
+  background:#13261e; font-size:clamp(.66rem,2.5cqh,.88rem); line-height:1.3;
 }
 .first-seat-number.is-first {
-  background:radial-gradient(circle at 35% 26%,#fff5b6,#f6c854 72%);
+  background:radial-gradient(circle at 38% 30%,#ffecaa,#d69343 78%);
   border-color:#fff1b6;
-  box-shadow:0 0 0 2px #ad641e,0 0 17px 5px #ffb73ac2;
+  box-shadow:0 0 0 3px #ac622e,0 0 22px 6px #ffbc5298;
 }
 #first-seat-stick {
-  position:absolute; z-index:1; height:66%; width:12%; top:17%; left:44%;
-  border:1px solid #6b351b; border-radius:40% 40% 42% 42% / 10% 10% 10% 10%;
-  background:
-    repeating-linear-gradient(87deg,transparent 0 3px,#73391c30 4px 5px,transparent 6px 8px),
-    linear-gradient(90deg,#754122,#b57c45 14%,#f2ce90 25% 60%,#cf995a 78%,#895027 94%);
-  box-shadow:inset 0 0 0 1px #e5b67b89,inset 0 -4px 3px #6233177a,0 3px 5px #1c100cbf,2px 6px 8px #25170f8f;
+  position:absolute; z-index:1; width:72%; height:21%; top:39.5%; left:14%;
+  display:grid; place-items:center;
 }
-#first-seat-stick::before {
-  content:''; position:absolute; inset:3% 8% auto; height:18%; border-radius:40% 40% 15% 15%;
-  background:linear-gradient(90deg,#70291e,#d95f3d 48%,#923222);
-  box-shadow:0 2px 0 #683619,inset 0 1px 1px #f9a260;
+#first-seat-stick canvas {width:100%;height:100%;display:block}
+#first-seat-stick::after {
+  content:''; position:absolute; left:92%; top:38%; width:9%; height:24%;
+  background:#ffe7a2; clip-path:polygon(0 0,100% 50%,0 100%,25% 50%);
 }
-#first-seat-stick i {
-  position:absolute; top:6%; left:31%; width:38%; aspect-ratio:1;
-  background:#fff0aa; clip-path:polygon(50% 0,100% 100%,0 100%);
+.resolved #first-seat-stick::after {background:#fff7d3}
+.resolved .first-seat-circle {
+  box-shadow:0 0 0 5px #725032,0 8px 0 5px #261b14,0 0 40px color-mix(in srgb,var(--winner-color),transparent 47%),
+    inset 0 0 0 4px #372418,inset 0 0 0 6px #deb77b77;
 }
 .resolved #first-seat-heading {color:#ffe49e}
-.resolved #first-seat-stick::before {filter:brightness(1.3)}
