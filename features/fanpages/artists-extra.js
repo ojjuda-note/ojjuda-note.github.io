@@ -443,6 +443,7 @@
         { date: '2026.04.27', tag: '광고', title: 'PANDORA × 키키 · Be Your Lucky Charm 화보 공개', href: 'https://www.marieclairekorea.com/fashion/2026/04/pandora/' }
       ],
       merch: [
+        { title: '2026 MAMA FAN FESTA · WhyKiiiKiii 현장 한정 포토카드', sub: '11.19~21 10:00~20:00 JST · 일본 오사카 난바광장 · 앨범 1장 구매 시 멤버 5종 중 랜덤 1장 증정 · 수량·재고는 현장 확인', href: 'https://www.universal-music.co.jp/kiiikiii/news/2026-11-09/' },
         { title: 'WhyKiiiKiii · PLANET SUNSET 한정반', sub: '스타쉽스퀘어 공식 앨범 · 판매·재고는 판매처 확인', href: 'https://starship-square.com/product/planet-sunset-ver-kiiikiii-ep-whykiiikiii-%ED%95%9C%EC%A0%95%EB%B0%98/2077/category/1/display/9/' },
         { title: 'WhyKiiiKiii · AMENITIES ver.', sub: '스타쉽스퀘어 공식 앨범 · 재고는 판매처에서 확인', href: 'https://starship-square.com/product/amenities-ver-kiiikiii-ep-whykiiikiii/2061/category/58/display/1/' },
         { title: 'Delulu Pack · Headphone ver.', sub: '스타쉽스퀘어 공식 앨범 · 재고는 판매처에서 확인', href: 'https://starship-square.com/product/headphone-ver-kiiikiii-the-2nd-ep-delulu-pack/1874/' },
