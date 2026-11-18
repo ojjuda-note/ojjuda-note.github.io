@@ -30,7 +30,7 @@ export default function MyAnswers({onWrite,answered}:{onWrite:()=>void;answered:
     {error?<p role="alert">답변을 불러오지 못했어요. <button className="quiet" onClick={()=>retry(n=>n+1)}>다시 시도</button></p>:
       items===null?<p role="status">답변을 불러오는 중이에요.</p>:items.length?<>{items.slice(0,2).map(card)}
         {items.length>2&&<details><summary>지난 답변 {items.length-2}개 더 보기</summary>{items.slice(2).map(card)}</details>}</>:
-        <p>최근 30일 동안 남긴 답변이 없어요.</p>}
+        <p>아직 남긴 답변이 없어요.</p>}
     {!answered&&<button className="secondary" onClick={onWrite}>내 답변 쓰기</button>}
   </section>;
 }

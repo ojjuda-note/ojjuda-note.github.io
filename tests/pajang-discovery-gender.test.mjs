@@ -207,4 +207,51 @@ test('discovery filtering uses its own opt-in and keeps dated answers paginated 
     await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:account,is_anonymous:true})]);
     for(const request of [mine,()=>board(null),()=>discovered(null)])await assert.rejects(request,{code:'42501'});
   });
+
+  await t.test('a full year stays paginated with matching signal limits and private-answer protection',async()=>{
+    await db.exec(await migration('20261118093216_pajang_answer_history_one_year.sql'));
+    await db.exec(await readFile(new URL('./pajang-answer-history.sql',import.meta.url),'utf8'));
+    await db.query(`insert into pajang_private.answers(person,day,slot,at,body,question_prompt,archived)
+      select $1,(now() at time zone 'Asia/Seoul')::date-n,'am',100-n,'답변 '||n,'질문 '||n,true
+      from generate_series(31,365) n`,[writer]);
+    await db.query(`insert into pajang_private.answers(person,day,slot,at,body,question_prompt,archived)
+      values($1,(now() at time zone 'Asia/Seoul')::date-200,'pm',-100,'공개하지 않은 예전 답변','비공개 질문',false)`,[writer]);
+    await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:stranger})]);
+    const board=cursor=>value('select public.pajang_answer_feed($1) as v',[cursor]);
+    const discovered=cursor=>feed('all',cursor);
+    for(const request of [board,discovered]){
+      const items=[];let cursor=null,pages=0;
+      do{
+        const page=await request(cursor);assert.ok(page.items.length<=24);
+        items.push(...page.items);cursor=page.nextCursor;
+        assert.ok(++pages<=17,'the year finishes without a repeated cursor');
+      }while(cursor);
+      const others=items.filter(row=>row.peer===writer);
+      assert.equal(others.length,365);
+      assert.equal(new Set(others.map(row=>row.day+'/'+row.slot)).size,365);
+      assert.equal(others.at(-1).body,'답변 364');
+      assert.equal(others.at(-1).question,'질문 364');
+      assert.equal(others.some(row=>['이전 답변','미래 답변','답변 365','공개하지 않은 예전 답변'].includes(row.body)),false);
+    }
+    assert.equal((await feed('all')).total,365);
+    assert.equal((await feed('female')).total,0,'the longer window does not reveal gender without opt-in');
+    for(const order of ['recommend','local']){
+      const page=await value("select public.pajang_discovery_feed(null,'walk',$1,'all') as v",[order]);
+      assert.equal(page.total,365);assert.equal(page.items.length,24);assert.ok(page.nextCursor);
+    }
+    const member=(action,data={})=>value('select public.pajang_member($1,$2) as v',[action,data]);
+    const date=days=>value("select ((now() at time zone 'Asia/Seoul')::date-$1::int)::text as v",[days]);
+    await member('signal',{peer:writer,answerDay:await date(364),answerSlot:'am'});
+    await assert.rejects(()=>member('signal',{peer:writer,answerDay:'2000-01-01',answerSlot:'am'}),{code:'PT409'});
+    const expired=await date(365),privateDay=await date(200);
+    await assert.rejects(()=>member('signal',{peer:writer,answerDay:expired,answerSlot:'am'}),{code:'PT409'});
+    await assert.rejects(()=>member('signal',{peer:writer,answerDay:privateDay,answerSlot:'pm'}),{code:'PT409'});
+    await member('block',{peer:writer});
+    assert.equal((await feed('all')).total,0,'blocking still hides the whole year');
+    await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:account})]);
+    const own=await mine();
+    assert.ok(own.some(row=>row.body==='답변 365'),'the owner keeps older saved answers');
+    assert.ok(own.some(row=>row.body==='공개하지 않은 예전 답변'));
+    assert.equal(own.some(row=>row.body==='미래 답변'),false);
+  });
 });

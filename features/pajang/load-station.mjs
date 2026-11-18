@@ -1,5 +1,5 @@
-import {call,client,sameMember,showGate} from './member.mjs?v=location4';
-import {prepareLocation} from './location.mjs?v=location4';
+import {call,client,sameMember,showGate} from './member.mjs?v=history1';
+import {prepareLocation} from './location.mjs?v=history1';
 
 // Each protected read uses the current member token. No member data is stored between pages.
 export async function prepareProgram(db){

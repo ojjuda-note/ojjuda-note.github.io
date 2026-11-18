@@ -9,6 +9,7 @@ on:
       - 'note/glasses.js'
       - 'park/**'
       - 'supabase/functions/pajang-assets/index.ts'
+      - 'supabase/migrations/*pajang*'
       - '.github/workflows/pajang-discovery.yml'
   pull_request:
     paths:
@@ -18,6 +19,9 @@ on:
       - 'note/glasses.js'
       - 'park/**'
       - 'tests/pajang-discovery-browser.cjs'
+      - 'tests/pajang-discovery-gender.test.mjs'
+      - 'tests/pajang-answer-history.sql'
+      - 'supabase/migrations/*pajang*'
       - 'tests/pajang-location.test.mjs'
       - 'tests/shared-location.test.cjs'
       - 'tests/note-composer-settings.test.cjs'
