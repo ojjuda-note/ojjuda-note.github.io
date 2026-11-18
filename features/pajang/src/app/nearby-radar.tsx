@@ -13,7 +13,7 @@ type Props = {
   sample: boolean;
   onProfile: (id: string) => void;
   onJoin: () => void;
-  onSettings: (cell: RadarCell | null) => Promise<boolean>;
+  onSettings: (cell: RadarCell | null, accountId: string) => Promise<boolean>;
 };
 
 const bands = [
@@ -86,12 +86,15 @@ export default function NearbyRadar({station,sample,onProfile,onJoin,onSettings}
     if(working.current)return;
     working.current=true;setPending(true);setFeedback("");
     try {
+      const db=await window.OjjudaGetClient();
+      const {data:{session}}=await db.auth.getSession();
+      if(!session?.user||session.user.is_anonymous)throw Error("회원 정보를 다시 확인해 주세요.");
       let cell:RadarCell|null=null;
       if(enable){
         cell=await readLocationCell();
       }
       if(!alive.current)return;
-      if(!await onSettings(cell))throw Error("설정을 저장하지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요.");
+      if(!await onSettings(cell,session.user.id))throw Error("설정을 저장하지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요.");
       if(alive.current)setFeedback(enable?"위치 공개를 켰어요.":"위치를 숨겼어요. 다음에도 이 설정이 유지돼요.");
     }catch(e){if(alive.current)setFeedback(e instanceof Error?e.message:"다시 시도해 주세요.");}
     finally{working.current=false;if(alive.current)setPending(false);}
