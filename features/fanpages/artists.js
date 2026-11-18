@@ -525,8 +525,12 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "BOSS", date: "2025.04.25", type: "디지털 싱글 · 2곡", songs: ["BOSS (English Version)", "BOSS (Chinese Version)"], href: "https://music.apple.com/us/album/boss-single/1808057841" },
       { title: "Under My Skin (A2O)", date: "2024.12.20", type: "데뷔 싱글", songs: ["Under My Skin (A2O) [English Ver.]", "Under My Skin (A2O) [Chinese Ver.]"], href: "https://music.apple.com/us/album/under-my-skin-a2o-single/1791613999" }
     ],
-    appearances: [],
+    appearances: [
+      { date: "2026-11-27", title: "《打歌2026》 출연 예정", sub: "공식 팬클럽 11.16 일정 공지 · 방송 시각·장소 미발표 · 최종 편성 확인 필요", href: "https://www.sina.cn/news/detail/5365998939017912.html" },
+      { date: "2026-12-18", title: "2026 KBS 가요대축제", sub: "19:00 KST · 서울 KBS 아레나 · 11.13 출연 발표 · KBS 주최", href: "https://www.soompi.com/article/1886817wpp/2026-kbs-song-festival-announces-artist-lineup" }
+    ],
     campaigns: [
+      { kind: "콜라보", date: "2026.11.13", title: "TASAKI · Ready To Open 주얼리 전시 참석", sub: "상하이 고급 주얼리 행사 · TASAKI 공식 11.15 확인 · 홍보대사 계약 발표 아님", href: "https://www.sina.cn/news/detail/5365317909088145.html" },
       { kind: "콜라보", date: "2026.10.29", title: "FILA FUSION × A2O MAY · OOTidol", sub: "상하이 IDOL 다운 컬렉션 행사·런웨이 (10.29~11.01) · Hypebeast", href: "https://hypebeast.cn/2026/11/fila-fusion-a2o-may-idol" }
     ],
     schedules: [
@@ -534,9 +538,12 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "A2O 공식", sub: "새 일정 확인", href: "https://www.a2oentertainment.world/" }
     ],
     news: [
+      { date: "2026.11.16", tag: "행사", title: "11월 27일 《打歌2026》 출연 예정 · 공식 팬클럽 공지", href: "https://www.sina.cn/news/detail/5365998939017912.html" },
+      { date: "2026.11.15", tag: "브랜드", title: "TASAKI, A2O MAY의 주얼리 행사 참석 공식 확인", href: "https://www.sina.cn/news/detail/5365317909088145.html" },
+      { date: "2026.11.13", tag: "방송", title: "12월 18일 KBS 가요대축제 출연 명단 발표", href: "https://www.soompi.com/article/1886817wpp/2026-kbs-song-festival-announces-artist-lineup" },
+      { date: "2026.11.02", tag: "콜라보", title: "FILA FUSION 행사·런웨이 보도 · 행사 10.29~11.01", href: "https://www.sina.cn/news/detail/5360779742414008.html" },
       { date: "2026.10.23", tag: "방송", title: "장쑤TV Music Show 2026 · BAD HABITS TONITE 무대", href: "https://www.youtube.com/watch?v=a2JXTXnqfZc" },
-      { date: "10.18", tag: "앨범", title: "BAD HABITS TONITE 발매", href: "https://www.melon.com/album/detail.htm?albumId=14801672" },
-      { date: "2026.10", tag: "콜라보", title: "FILA FUSION 행사·화보", href: "https://hypebeast.cn/2026/11/fila-fusion-a2o-may-idol" }
+      { date: "2026.10.18", tag: "앨범", title: "BAD HABITS TONITE 발매", href: "https://www.melon.com/album/detail.htm?albumId=14801672" }
     ]
   },
   {
