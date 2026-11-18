@@ -87,7 +87,8 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
       auth:{onAuthStateChange(){},getSession:async()=>({data:{session:run('session')}})},
       schema:()=>({rpc:async()=>({data:[]})}),
       rpc:async(name,args={})=>{
-        if(name==='get_my_member_identity')return {data:{gender:run('myGender')}};
+        if(name==='get_my_member_identity')return window.deferIdentity
+          ? new Promise(resolve=>{window.resolveIdentity=resolve;}) : {data:{gender:run('myGender')}};
         if(name!=='ojjuda_location_preference')return {data:null};
         const owner=args.p_account_id;
         let preference=sharedPreferences.get(owner)||{enabled:true,version:0};
@@ -121,7 +122,12 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
       prepareCardPhotoEdit = async () => {};`);
   }
   try {
-    boot(); await open();
+    boot();
+    const opener=document.querySelector('[data-compose="new"]');opener.focus();opener.click();
+    assert.equal(document.activeElement,document.getElementById('compose-text'),
+      'a ready member starts typing in the same synchronous click that opens the writer');
+    assert.equal(document.getElementById('compose-text').disabled,false);
+    await settle();
     assert.deepEqual(choices(), { identity: 'anonymous', gender: 'male', location: true });
     assert.deepEqual(styleChoices(), { font: 'default', size: 'normal', boxTransparency: 25 });
     assert.ok(document.querySelector('.composer').classList.contains('composer-tools-ready'));
@@ -129,8 +135,8 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
       ['photo', 'font', 'color', 'box', 'effect', 'location', 'settings']);
     assert.equal(document.querySelectorAll('[data-compose-panel]:not([hidden])').length, 0,
       'writing starts with every option panel collapsed');
-    assert.equal(document.activeElement, document.querySelector('.composer'),
-      'opening the editor does not force the phone keyboard open');
+    assert.equal(document.activeElement, document.getElementById('compose-text'),
+      'background work keeps the writing input focused');
     const originalInput = document.getElementById('compose-text');
     const originalPhotoInput = document.getElementById('card-photo-file');
     const textPalette = document.querySelector('[data-color-field="textColor"]');
@@ -239,7 +245,9 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     chooseStyle('serif', 'large', 0);
     document.getElementById('compose-text').value = '다시 열어도 설정 유지';
     document.getElementById('compose-text').dispatchEvent(new window.Event('input'));
-    document.getElementById('close-composer').click(); await open();
+    document.getElementById('close-composer').click();
+    assert.equal(document.activeElement,opener,'closing returns focus to the original writing button');
+    await open();
     assert.deepEqual(choices(), { identity: 'nickname', gender: 'private', location: false });
     assert.equal(document.getElementById('compose-text').value, '', 'remember choices without saving unfinished text');
     assert.deepEqual(styleChoices(), { font: 'serif', size: 'large', boxTransparency: 0 });
@@ -275,6 +283,9 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     await run(`openComposer('edit', { id: '00000000-0000-4000-8000-000000000001', is_mine: true,
       kind: 'memo', parent_id: null, body: '기존 카드', tags: [], background_key: '42', identity_mode: 'anonymous',
       style: { font: 'handwriting', size: 'large', boxTransparency: 64 } })`);
+    assert.equal(document.activeElement,document.getElementById('compose-text'),'editing focuses the original writing input');
+    assert.deepEqual([document.activeElement.selectionStart,document.activeElement.selectionEnd],['기존 카드'.length,'기존 카드'.length],
+      'editing places the cursor at the end of the existing writing');
     assert.deepEqual(styleChoices(), { font: 'handwriting', size: 'large', boxTransparency: 64 }, 'editing uses the existing card style');
     assert.equal(tool('location').disabled, true, 'editing cannot expose a new location setting');
     assert.equal(tool('photo').disabled, true, 'a card without an existing attachment cannot gain one while editing');
@@ -296,6 +307,7 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     close();
     await run(`cache.set('00000000-0000-4000-8000-000000000003', {my_reply_alias:'활기찬 돌고래'});
       openComposer('reply',null,'00000000-0000-4000-8000-000000000003')`);
+    assert.equal(document.activeElement,document.getElementById('compose-text'),'replies also begin in the writing input');
     assert.equal(choices().identity,'anonymous');
     const nameBox = document.getElementById('quick-identity');
     assert.equal(nameBox.selectedOptions[0].textContent,'활기찬 돌고래');
@@ -403,6 +415,8 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
       byId('compose-text').dispatchEvent(new window.Event('input', { bubbles: true }));
     };
     const first = run("openComposer('memo')");
+    assert.equal(document.activeElement,byId('compose-text'),'guest writing focuses immediately while its background loads');
+    assert.equal(byId('compose-text').disabled,false);
     await settle();
     assert.equal(document.querySelector('.compose-toolbar').hidden, true,
       'guests cannot use member-only option panels');
@@ -416,9 +430,16 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     await settle();
     assert.equal(draws.length, 2);
     assert.notEqual(draws[0].id, draws[1].id);
-    draws[1].resolve('297'); await next; await settle();
     write('수묵 배경으로 글 쓰기');
+    byId('compose-text').setSelectionRange(1,4,'backward');
+    const guestSelection=()=>[byId('compose-text').selectionStart,byId('compose-text').selectionEnd,byId('compose-text').selectionDirection];
+    draws[1].resolve('297'); await next; await settle();
+    assert.equal(document.activeElement,byId('compose-text'));
+    assert.deepEqual(guestSelection(),[1,4,'backward'],'a late background preserves the selected writing');
+    byId('close-composer').focus();
     draws[0].resolve('42'); await first; await settle();
+    assert.equal(document.activeElement,byId('close-composer'),'stale background work does not steal focus back');
+    assert.deepEqual(guestSelection(),[1,4,'backward']);
     assert.match(preview(), /\/297\.jpg/, 'a response from the closed composer cannot replace this preview');
     byId('publish-card').click(); await settle();
     assert.deepEqual(posts, [{ p_request_id: draws[1].id, p_body: '수묵 배경으로 글 쓰기', p_parent_id: null }]);
@@ -427,8 +448,13 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     const reply = run("openComposer('reply', null, " + JSON.stringify(replyId) + ")");
     await settle();
     assert.equal(draws.length, 3);
-    draws[2].reject(new Error('preview unavailable')); await reply; await settle();
     write('미리보기가 끊겨도 등록');
+    byId('compose-text').setSelectionRange(2,5,'backward');byId('close-composer').focus();
+    draws[2].reject(new Error('preview unavailable')); await reply; await settle();
+    assert.equal(document.activeElement,byId('close-composer'),'a failed background does not move the current focus');
+    assert.deepEqual(guestSelection(),[2,5,'backward']);
+    assert.equal(byId('compose-text').value,'미리보기가 끊겨도 등록');
+    assert.equal(byId('compose-text').disabled,false,'a background failure leaves the writing editable');
     assert.doesNotMatch(preview(), /url\(/);
     assert.equal(byId('publish-card').disabled, false);
     byId('publish-card').click(); await settle();
@@ -482,6 +508,19 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     assert.equal(choices().location,false,'late automatic fix keeps the shared off choice');
     assert.equal(run('writingPosition'),null);
     run('stopLocationPreference()');
+    close();boot('pending-identity','male');window.deferIdentity=true;
+    run('myIdentityReady=false;myIdentity=null;');
+    const identityOpener=document.querySelector('[data-compose="new"]');identityOpener.focus();
+    const blockedOpen=run("openComposer('memo')");
+    assert.equal(run('backdrop.hidden'),true,'unverified member identity still blocks opening the writer');
+    assert.equal(document.activeElement,identityOpener);
+    window.resolveIdentity({error:{message:'회원정보 확인 실패'}});await blockedOpen;
+    assert.equal(run('backdrop.hidden'),true,'failed identity checks never open an editable composer');
+    assert.equal(document.activeElement,identityOpener,'failed opening leaves focus on the initiating button');
+    const verifiedOpen=run("openComposer('memo')");
+    window.resolveIdentity({data:{gender:'male'}});await verifiedOpen;await settle();
+    assert.equal(document.activeElement,document.getElementById('compose-text'),'a successfully verified opening focuses writing');
+    assert.equal(document.getElementById('compose-text').disabled,false);
     assert.deepEqual(errors, []);
     console.log('PASS: one-panel composer toolbar, input identity, Escape, busy/edit/reply/event/guest boundaries; composer preferences, gallery, backgrounds, offline submission and login return.');
   } finally { dom?.window.close(); }

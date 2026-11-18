@@ -2606,8 +2606,12 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   const run = ++composerRun, epoch = identityEpoch;
   if (session?.user && !card?.is_mine) {
     const userId = session.user.id;
-    try { await loadMyGender(userId); }
-    catch { message('회원정보를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.'); return; }
+    // Auth already loads this identity. Reuse it so an opening tap can focus
+    // the native field before any await and open the mobile keyboard.
+    if (!myIdentityReady) {
+      try { await loadMyGender(userId); }
+      catch { message('회원정보를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.'); return; }
+    }
     if (run !== composerRun || epoch !== identityEpoch || session?.user?.id !== userId) return;
     if (!myIdentity) { showMemberInfo(() => openComposer(mode, card, replyTarget, pending)); return; }
   }
@@ -2689,10 +2693,13 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   if (!guest && draftController && !requestedDraftContent.background_key)
     requestedDraftContent.background_key = randomDefaultBackground();
   if (draftStatus) draftStatus.hidden = true;
+  setComposerInputs();
   updateComposer(); backdrop.hidden = false; lockPage(true); updateComposer();
   $('.composer-body').scrollTop = 0;
-  // Opening the editor should show the card first, without opening the phone keyboard.
-  const dialog = $('.composer'); dialog.tabIndex = -1; dialog.focus({ preventScroll: true });
+  // Focus only while opening; later photo/location/render updates keep the
+  // member's chosen field and caret, including native calligraphy input.
+  text.focus({ preventScroll: true });
+  text.setSelectionRange(text.value.length, text.value.length);
   if (guest) void loadGuestBackground(publishRequestId, run, epoch);
   if (editingId && (kind === 'memo' || kind === 'comment')) void prepareCardPhotoEdit(editingId, run);
   if (kind === 'event' && editingId && eventHadPhoto) void showExistingEventPhoto(card, run);
