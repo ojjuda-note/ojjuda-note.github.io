@@ -572,6 +572,10 @@ for (const kind of ['poll','ladder','wheel']) {
         assert.equal(d.querySelector('[data-draw-status] strong').textContent,'떡볶이');
         if(kind==='ladder'){
           assert.equal(d.querySelector('.draw-all').open,false);
+          const lines = [...d.querySelectorAll('.ladder-board svg line')];
+          const crossings = lines.filter(line=>line.getAttribute('y1')===line.getAttribute('y2'));
+          assert.equal(crossings.length,13,'a saved two-person board has at least twelve crossings with outcome parity preserved');
+          assert.equal(new Set(crossings.map(line=>line.getAttribute('y1'))).size,13);
           d.querySelector('[data-lane="1"]').click();await tick();
           assert.match(d.querySelector('[data-draw-status]').textContent,/서준 도착김밥/);
           assert.deepEqual([...d.querySelectorAll('.ladder-results dd')].map(el=>el.textContent),['떡볶이','김밥']);
