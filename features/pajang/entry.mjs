@@ -167,7 +167,7 @@ async function start(firstEntry) {
     form.hidden = false;
     answerFields.hidden = joiningOnly;
     answerFields.disabled = joiningOnly;
-    submit.textContent = joiningOnly ? '참여하고 '+nextName+' 보기' : '답변 공개하고 오늘로';
+    submit.textContent = joiningOnly ? '참여하고 '+nextName+' 보기' : '365일간 공개하고 오늘로';
     write.setAttribute('aria-expanded', String(!joiningOnly));
     (!entry.joined ? form.elements.consent : mine).focus();
   }
@@ -199,7 +199,7 @@ async function start(firstEntry) {
     const joiningOnly = mode === 'feed';
     status.textContent = joiningOnly ? '참여 정보를 확인하고 있어요.' : '답변을 저장하고 있어요.';
     try {
-      const data = joiningOnly ? {} : {body, day:entry.day, slot:entry.slot, archive:true};
+      const data = joiningOnly ? {} : {body, day:entry.day, slot:entry.slot, archive:true, publicationPolicy:"year-v1"};
       if (!joiningOnly && entry.question) data.questionId = entry.question.id;
       if (!entry.joined) {
         const {province, city, interest, consent} = form.elements;
