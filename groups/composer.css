@@ -110,6 +110,43 @@
 }
 #composer .group-compose-body .activity-editor { flex: none; margin: 0; }
 #composer .group-compose-body .activity-editor[hidden] { display: none; }
+/* Matching headings and fields keep both ladder columns easy to follow. */
+#composer [data-editor="ladder"] .ladder-columns {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding-bottom: 6px;
+}
+#composer [data-editor="ladder"]:has([data-remove-row]:not([hidden])) .ladder-columns { padding-right: 51px; }
+#composer [data-editor="ladder"] .ladder-columns > span {
+  min-width: 0;
+  padding: 6px 5px;
+  border: 1px solid;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
+#composer [data-editor="ladder"] .ladder-columns > span:first-child,
+#composer [data-editor="ladder"] input[name="activity_name"] {
+  border-color: #71917c;
+  background: #edf5ef;
+  color: #365b45;
+}
+#composer [data-editor="ladder"] .ladder-columns > span:last-child,
+#composer [data-editor="ladder"] input[name="activity_option"] {
+  border-color: #b77f5a;
+  background: #fff1e6;
+  color: #7a4e34;
+}
+#composer [data-editor="ladder"] .activity-row input {
+  min-height: 44px;
+  height: 44px;
+  padding: 8px 6px;
+  font-size: 16px;
+}
+#composer [data-editor="ladder"] .activity-row input::placeholder { color: inherit; opacity: .9; }
+#composer [data-editor="ladder"] .activity-row input:focus-visible { border-color: currentColor; outline-color: currentColor; }
+#composer [data-editor="ladder"] :is([data-add-row], .roster-toggle, .roster-actions button, [data-member-list] label) { min-height: 44px; }
+#composer [data-editor="ladder"] [data-remove-row] { width: 44px; min-width: 44px; min-height: 44px; }
 #composer .group-compose-body .composer-extras {
   display: flex;
   flex-direction: column;

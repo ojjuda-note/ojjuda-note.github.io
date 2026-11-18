@@ -100,10 +100,12 @@ async function fixture(browser,viewport){
     const url=new URL(route.request().url());
     if(url.origin==='https://group.test'&&url.pathname==='/shared/brand/brand-copy.css')
       return route.fulfill({contentType:'text/css',path:path.join(root,'shared/brand/brand-copy.css')});
+    if(url.origin==='https://group.test'&&/^\/assets\/(?:cozy-scenes|screw-flat)\/[a-z0-9-]+\.webp$/.test(url.pathname))
+      return route.fulfill({contentType:'image/webp',path:path.join(root,url.pathname.slice(1))});
     return route.abort();
   });
   await page.goto('https://group.test/groups/#room='+room);
-  for(const file of ['groups/style.css','shared/viewport/mobile-viewport.css','groups/composer.css'])await page.addStyleTag({path:path.join(root,file)});
+  for(const file of ['shared/viewport/mobile-viewport.css','groups/style.css','groups/composer.css','features/groups/appearance.css'])await page.addStyleTag({path:path.join(root,file)});
   await page.evaluate(({owner,room,second})=>{
     const rooms=[{id:room,name:'주말 여행단',owner_id:owner,member_count:2},{id:second,name:'함께 걷기',owner_id:owner,member_count:3}];
     const uploads=new Map();let posts=[];
@@ -137,7 +139,7 @@ async function fixture(browser,viewport){
       }
     })};
   },{owner,room,second});
-  for(const file of ['shared/viewport/mobile-viewport.js','groups/activities.js','groups/composer.js','groups/app.js'])await page.addScriptTag({path:path.join(root,file)});
+  for(const file of ['groups/activities.js','shared/viewport/mobile-viewport.js','groups/composer.js','shared/art/cozy-scenes.js','groups/app.js'])await page.addScriptTag({path:path.join(root,file)});
   await page.locator('[data-action=compose]').waitFor();
   return {page,context,errors};
 }
@@ -174,6 +176,9 @@ test('group writing tools, keyboard layout, photos and full drafts stay usable a
           assert.equal(await writer.locator('[name=kind]').inputValue(),kind);
           assert.equal(await writer.locator('[data-editor='+kind+']').isVisible(),true);
           assert.equal(await writer.locator('[data-group-panel]:not([hidden])').count(),0,'a chosen bet opens in the writing body');
+          if(kind==='ladder'&&viewport.width<640){
+            await settle(page);await snapshot(page,'group-ladder-editor-'+viewport.width);
+          }
         }
         await tool('post').tap();
         assert.equal(await writer.locator('[name=kind]').inputValue(),'post');
@@ -220,12 +225,21 @@ test('group writing tools, keyboard layout, photos and full drafts stay usable a
         await writer.locator('[data-remove-file]').tap();assert.equal(await writer.locator('#attachments .attachment').count(),0);
         await writer.locator('#files').setInputFiles(path.join(root,'apple-touch-icon.png'));
         await snapshot(page,'group-photo-attached-'+viewport.width);
+        await body.evaluate(node=>{node.focus();node.setSelectionRange(12,28,'backward');});
+        const planSelection=await selection();
         await tool('plan').tap();
-        assert.equal(await writer.locator('[name=kind]').inputValue(),'post','opening plan choices preserves the post kind');
-        await writer.locator('[data-kind-choice=trip]').tap();
-        assert.equal(await writer.locator('[name=kind]').inputValue(),'trip');
+        assert.equal(await writer.locator('[name=kind]').inputValue(),'event','the plan icon directly starts a new schedule');
         assert.equal(await tool('plan').getAttribute('data-selected'),'true');
-        assert.equal(await writer.locator('[data-group-panel=plan]').isVisible(),true,'choosing a trip opens its relevant settings');
+        assert.equal(await writer.locator('[data-group-panel=plan]').isVisible(),true,'the plan icon opens date and location settings immediately');
+        assert.equal(await writer.locator('[data-group-panel=plan] [data-kind-choice]').count(),0,'no second plan-kind selection is shown');
+        assert.equal(await writer.locator('[name=starts_at]').evaluate(node=>node.required),true);
+        assert.equal(await writer.locator('[name=ends_at]').evaluate(node=>node.required),true);
+        assert.equal(await body.evaluate(node=>document.activeElement===node),true,'starting a plan retains native writing focus');
+        assert.deepEqual(await selection(),planSelection,'starting a plan preserves the body and selected range');
+        await tool('plan').tap();
+        assert.equal(await writer.locator('[data-group-panel=plan]').isVisible(),false,'tapping plan again collapses its settings');
+        assert.deepEqual(await selection(),planSelection);
+        await tool('plan').tap();
         await writer.locator('[name=all_day]').check();
         await writer.locator('[name=starts_at]').fill('');
         await writer.locator('[name=ends_at]').fill('2026-11-21');
@@ -236,7 +250,7 @@ test('group writing tools, keyboard layout, photos and full drafts stay usable a
         assert.equal(await page.evaluate(()=>groupCalls.filter(call=>call.action==='save').length),0,'invalid dates never save a partial post');
         await writer.locator('[name=starts_at]').fill('2026-11-20');
         await verifyLayout(page,viewport,{top:0,bottom:viewport.height},{panel:true});
-        await snapshot(page,'group-trip-'+viewport.width);
+        await snapshot(page,'group-plan-'+viewport.width);
         await tool('plan').tap();
         assert.equal(await body.inputValue(),writing,'photo and kind changes retain all 10,000 characters');
 
@@ -244,7 +258,7 @@ test('group writing tools, keyboard layout, photos and full drafts stay usable a
         await page.waitForFunction(()=>typeof groupFinishSave==='function');
         assert.equal(await submit.isDisabled(),true);
         const sent=await page.evaluate(()=>groupCalls.filter(call=>call.action==='save').at(-1).payload);
-        assert.equal(sent.body,writing);assert.equal(sent.body.length,10000);assert.equal(sent.kind,'trip');assert.equal(sent.room_id,room);
+        assert.equal(sent.body,writing);assert.equal(sent.body.length,10000);assert.equal(sent.kind,'event');assert.equal(sent.room_id,room);
         assert.equal(sent.starts_at,'2026-11-20T00:00:00+09:00');assert.equal(sent.ends_at,'2026-11-21T23:59:59+09:00');assert.equal(sent.location,'서울역');
         assert.equal(sent.media.length,1);assert.equal(sent.media[0].name,'apple-touch-icon.png');
         await writer.locator('[data-close]').evaluate(button=>button.click());await page.keyboard.press('Escape');

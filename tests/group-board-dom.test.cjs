@@ -69,13 +69,25 @@ test('writing tools preserve the same body, selection and draft while options op
       assert.equal(down.defaultPrevented,true,'pointer tap retains the writing focus');
       button.dispatchEvent(new f.w.MouseEvent('click',{bubbles:true,cancelable:true,detail:1}));
     }
-    for(const tool of ['photo','plan','bet']){
+    for(const tool of ['photo','bet']){
       tap(tool);
       assert.equal(form.querySelector('[data-group-panel='+tool+']').hidden,false);
       assert.equal([...form.querySelectorAll('[data-group-panel]')].filter(panel=>!panel.hidden).length,1);
       assert.equal(form.elements.body,body);assert.equal(d.activeElement,body);assert.deepEqual(selected(),before);
       assert.equal(form.elements.kind.value,'post','opening choices alone does not change the post kind');
     }
+    tap('plan');
+    assert.equal(form.elements.kind.value,'event','the plan icon starts a schedule directly');
+    assert.equal(form.querySelector('[data-group-panel=plan]').hidden,false);
+    assert.equal(form.querySelector('#schedule-fields').hidden,false);
+    assert.equal(form.querySelector('[data-group-panel=plan]').querySelectorAll('[data-kind-choice]').length,0,
+      'plans open without a second kind-selection row');
+    assert.equal(form.elements.starts_at.required,true);assert.equal(form.elements.ends_at.required,true);
+    assert.equal(form.elements.body,body);assert.equal(d.activeElement,body);assert.deepEqual(selected(),before);
+    tap('plan');
+    assert.ok([...form.querySelectorAll('[data-group-panel]')].every(panel=>panel.hidden),'tapping the same plan icon collapses its settings');
+    assert.equal(form.elements.kind.value,'event');assert.deepEqual(selected(),before);
+    tap('plan');
     const escape=new f.w.Event('cancel',{cancelable:true});dialog.dispatchEvent(escape);
     assert.equal(escape.defaultPrevented,true);assert.equal(d.querySelectorAll('dialog').length,1);
     assert.ok([...form.querySelectorAll('[data-group-panel]')].every(panel=>panel.hidden));
@@ -84,26 +96,26 @@ test('writing tools preserve the same body, selection and draft while options op
     assert.equal(form.elements.body,body);assert.deepEqual(selected(),before);
   }finally{f.dom.window.close();}
 });
-test('group writing keeps full post serialization and shows schedule fields inside plans only for scheduled kinds',async()=>{
+test('plans open directly and save complete new schedules while existing trips retain their dates and kind',async()=>{
   const f=fixture({hash:'#room='+room});try{
     await tick();const d=f.w.document;d.querySelector('[data-action=compose]').click();
     const form=d.querySelector('#composer'),body='한글로 적은 긴 기록\n'.repeat(1000).slice(0,10000);
     form.elements.body.value=body;form.elements.title.value='여행 일정';
+    const startInput=form.elements.starts_at;
     form.querySelector('[data-group-tool=plan]').click();
-    for(const kind of ['event','trip']){
-      form.querySelector('[data-kind-choice='+kind+']').click();
-      assert.equal(form.elements.kind.value,kind);
-      assert.equal(form.querySelector('[data-group-tool=plan]').dataset.selected,'true');
-      assert.equal(form.querySelector('[data-group-panel=plan]').hidden,false);
-      assert.equal(d.querySelector('#schedule-fields').hidden,false);
-      assert.equal(form.elements.starts_at.required,true);assert.equal(form.elements.ends_at.required,true);
-      assert.equal(form.elements.body.value,body,'both plan choices preserve the complete writing');
-    }
+    assert.equal(form.elements.kind.value,'event');
+    assert.equal(form.querySelector('[data-group-tool=plan]').dataset.selected,'true');
+    assert.equal(form.querySelector('[data-group-panel=plan]').hidden,false);
+    assert.equal(d.querySelector('#schedule-fields').hidden,false);
+    assert.equal(form.elements.starts_at,startInput,'opening plans retains the original date input');
+    assert.equal(form.elements.starts_at.required,true);assert.equal(form.elements.ends_at.required,true);
+    assert.equal(form.elements.body.value,body,'opening plans preserves the complete writing');
+    assert.match(form.querySelector('.group-compose-context').textContent,/계획$/);
     form.elements.all_day.checked=true;form.elements.all_day.dispatchEvent(new f.w.Event('change'));
     form.elements.starts_at.value='2026-11-20';form.elements.ends_at.value='2026-11-21';form.elements.location.value='서울역';
     form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();await tick();
     assert.equal(f.saved().body,body);assert.equal(f.saved().body.length,10000);
-    assert.equal(f.saved().kind,'trip');assert.equal(f.saved().room_id,room);assert.equal(f.saved().location,'서울역');
+    assert.equal(f.saved().kind,'event');assert.equal(f.saved().room_id,room);assert.equal(f.saved().location,'서울역');
     assert.equal(f.saved().starts_at,'2026-11-20T00:00:00+09:00');assert.equal(f.saved().ends_at,'2026-11-21T23:59:59+09:00');
     assert.deepEqual(Array.from(f.saved().media),[]);
     d.querySelector('[data-action=compose]').click();const fresh=d.querySelector('#composer');
@@ -116,6 +128,22 @@ test('group writing keeps full post serialization and shows schedule fields insi
     assert.equal(edit.elements.room_id.disabled,true);assert.equal(edit.querySelector('[data-group-tool=room]').disabled,true);
     assert.equal(edit.querySelector('[data-group-tool=plan]').dataset.selected,'true');
     assert.equal(edit.elements.kind.value,'trip');assert.equal(edit.elements.title.value,'부산에서 보내는 주말');
+    assert.match(edit.querySelector('.group-compose-context').textContent,/계획$/,'existing trips use the same plan label');
+    const existing={body:edit.elements.body.value,start:edit.elements.starts_at.value,end:edit.elements.ends_at.value,location:edit.elements.location.value};
+    edit.querySelector('[data-group-tool=plan]').click();
+    assert.equal(edit.elements.kind.value,'trip','opening a saved trip never converts its stored kind');
+    assert.equal(edit.querySelector('[data-group-panel=plan]').hidden,false);
+    assert.equal(edit.querySelector('[data-group-panel=plan]').querySelectorAll('[data-kind-choice]').length,0);
+    edit.querySelector('[data-group-tool=plan]').click();
+    assert.equal(edit.querySelector('[data-group-panel=plan]').hidden,true);
+    edit.querySelector('[data-group-tool=post]').click();
+    assert.equal(edit.elements.kind.value,'post');
+    edit.querySelector('[data-group-tool=plan]').click();
+    assert.equal(edit.elements.kind.value,'trip','returning to a saved trip restores its original scheduled kind');
+    assert.deepEqual({body:edit.elements.body.value,start:edit.elements.starts_at.value,end:edit.elements.ends_at.value,location:edit.elements.location.value},existing);
+    edit.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();await tick();
+    assert.equal(f.saved().kind,'trip');assert.equal(f.saved().body,existing.body);assert.equal(f.saved().location,'부산역');
+    assert.equal(f.saved().starts_at,'2026-11-07T09:00:00+09:00');assert.equal(f.saved().ends_at,'2026-11-09T18:00:00+09:00');
   }finally{f.dom.window.close();}
 });
 test('the group picker stays available for multiple memberships without losing the writing',async()=>{
@@ -142,9 +170,9 @@ test('creating from the main directory keeps the new group in the list until ent
     assert.ok(d.querySelector('[data-action=create]').compareDocumentPosition(d.querySelector('#directory'))&f.w.Node.DOCUMENT_POSITION_FOLLOWING);
     assert.equal(f.calls.some(([a])=>a==='feed'),false);assert.equal(d.querySelector('[data-action=compose]'),null);
     d.querySelector(`[data-room="${room}"]`).click();await tick();assert.equal(d.querySelector('h1').textContent,'우리 모임');
-    d.querySelector('[data-action=compose]').click();const c=d.querySelector('#composer');c.elements.kind.value='trip';c.elements.kind.dispatchEvent(new f.w.Event('change'));
+    d.querySelector('[data-action=compose]').click();const c=d.querySelector('#composer');c.querySelector('[data-group-tool=plan]').click();
     assert.equal(d.querySelector('#schedule-fields').hidden,false);c.elements.title.value='제주 여행';c.elements.body.value='첫날 공항에서 만나기';c.elements.all_day.checked=true;c.elements.all_day.dispatchEvent(new f.w.Event('change'));c.elements.starts_at.value='2026-11-08';c.elements.ends_at.value='2026-11-10';c.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
-    assert.equal(f.saved().starts_at,'2026-11-08T00:00:00+09:00');assert.equal(f.saved().ends_at,'2026-11-10T23:59:59+09:00');assert.equal(f.saved().kind,'trip');assert.equal(f.saved().room_id,room);
+    assert.equal(f.saved().starts_at,'2026-11-08T00:00:00+09:00');assert.equal(f.saved().ends_at,'2026-11-10T23:59:59+09:00');assert.equal(f.saved().kind,'event');assert.equal(f.saved().room_id,room);
     d.querySelector('[data-action=home]').click();await tick();assert.equal(d.querySelectorAll('#directory [data-group]').length,1);assert.equal(d.querySelector('#feed'),null);
   }finally{f.dom.window.close();}
 });
