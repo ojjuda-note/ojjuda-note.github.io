@@ -202,7 +202,7 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   a2olite: {
-    checkedAt: '2026.11.15',
+    checkedAt: '2026.11.18',
     debut: '2026.10.13', debutWork: 'NEON',
     agency: 'A2O Entertainment',
     concept: '아홉 멤버의 네온빛 Zalpha Pop.',
