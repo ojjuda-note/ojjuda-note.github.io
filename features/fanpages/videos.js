@@ -261,6 +261,7 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'eTvUZymLyGY', title: 'SWEAT', kind: '뮤직비디오', source: "KISS OF LIFE Official · 2026.08.04" }
   ],
   kiiikiii: [
+    { id: 'nKYMwWde7g4', title: '2027 수능 응원 메시지', kind: '응원 영상', source: 'KiiiKiii 공식 YouTube · 2026.11.16' },
     { id: 'kyzZ5uEzbsY', title: 'I Love You 3000 · 하음 커버', kind: '커버 영상', source: 'KiiiKiii 공식 YouTube · 2026.11.14' },
     { id: '6l-FYlr0NVs', title: '키키팡팡 EP.29 · 1박 2일 교외 체험 학습', kind: '자체 예능', source: 'KiiiKiii 공식 YouTube · 2026.11.13' },
     { id: 'LfRr1bE6pck', title: 'KiiiPoiiint · 인기가요 도쿄 공연 비하인드', kind: '공연 비하인드', source: 'KiiiKiii 공식 YouTube · 2026.11.11' },
