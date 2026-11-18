@@ -24,6 +24,8 @@ on:
       - 'tests/park-entry-browser.cjs'
       - 'tests/park-opening.test.cjs'
       - 'tests/pajang-discovery-browser.cjs'
+      - 'tests/pajang-account.test.mjs'
+      - 'features/account/account-deletion.js'
       - 'tests/pajang-discovery-gender.test.mjs'
       - 'tests/pajang-answer-history.sql'
       - 'supabase/migrations/*pajang*'
@@ -48,7 +50,7 @@ jobs:
       - run: npm --prefix tests ci --ignore-scripts
       - run: npm --prefix features/pajang install --no-package-lock --no-audit --no-fund
       - run: npm --prefix features/pajang run build
-      - run: node --test tests/pajang-discovery-gender.test.mjs tests/pajang-location.test.mjs tests/shared-location.test.cjs tests/agit-location.test.mjs tests/park-loading.test.cjs tests/park-frame-cache.test.cjs tests/park-opening.test.cjs
+      - run: node --test tests/pajang-account.test.mjs tests/pajang-discovery-gender.test.mjs tests/pajang-location.test.mjs tests/shared-location.test.cjs tests/agit-location.test.mjs tests/park-loading.test.cjs tests/park-frame-cache.test.cjs tests/park-opening.test.cjs
       - run: node tests/note-composer-settings.test.cjs
       - name: Install Chromium and Korean fonts
         working-directory: tests
@@ -77,3 +79,84 @@ jobs:
           assert re.search(r'"station.js": "' + digest + '"', source), "Program differs from the release manifest"
           print("Verified member program", digest)
           PYVERIFY
+
+  deploy:
+    if: github.repository == 'ojjuda-note/ojjuda-note.github.io' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    needs: browser
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: ojjuda-pajang-member-release
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix features/pajang install --no-package-lock --no-audit --no-fund
+      - run: npm --prefix features/pajang run build
+      - name: Verify the rebuilt member program
+        id: program
+        run: |
+          python - <<'PYVERIFY'
+          import hashlib, os, re
+          from pathlib import Path
+
+          program = Path("features/pajang/assets/station.js").read_bytes()
+          digest = hashlib.sha256(program).hexdigest()
+          source = Path("supabase/functions/pajang-assets/index.ts").read_text()
+          assert 0 < len(program) <= 1048576, "Member program exceeds its bucket limit"
+          assert re.search(r'"station.js": "' + digest + '"', source), "Program differs from the verified manifest"
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write("sha256=" + digest + "\n")
+          print("Verified member program", digest, len(program), "bytes")
+          PYVERIFY
+      - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1
+        with:
+          version: 2.118.0
+      - name: Upload, verify and activate the current member release
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          PAJANG_PROJECT: ziezbdjofcugznowiuda
+          PAJANG_PROGRAM_SHA: ${{ steps.program.outputs.sha256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_ACCESS_TOKEN"
+          manifest='supabase/functions/pajang-assets/index.ts'
+          latest_manifest="$RUNNER_TEMP/pajang-latest-manifest.ts"
+          # Queue order is not guaranteed. An older run must not replace a newer release.
+          # Compare the manifest so unrelated main commits do not suppress this release.
+          require_current_release() {
+            git fetch --depth=1 origin main
+            git show "FETCH_HEAD:$manifest" > "$latest_manifest"
+            if ! cmp -s "$manifest" "$latest_manifest"; then
+              echo 'A newer member release is on main; leaving its manifest unchanged.'
+              exit 0
+            fi
+          }
+          require_current_release
+          object="ss:///pajang-member-assets/$PAJANG_PROGRAM_SHA/station.js"
+          downloaded="$RUNNER_TEMP/pajang-station-verified.js"
+          # The immutable path also makes a rerun safe if the same object already exists.
+          if ! supabase storage cp features/pajang/assets/station.js "$object" \
+            --project-ref "$PAJANG_PROJECT" --experimental \
+            --content-type application/javascript --cache-control 'max-age=31536000'; then
+            echo 'Upload did not complete; checking for the identical existing release.'
+          fi
+          supabase storage cp "$object" "$downloaded" \
+            --project-ref "$PAJANG_PROJECT" --experimental
+          python - "$downloaded" <<'PYVERIFY'
+          import hashlib, os, sys
+          from pathlib import Path
+
+          digest = hashlib.sha256(Path(sys.argv[1]).read_bytes()).hexdigest()
+          assert digest == os.environ["PAJANG_PROGRAM_SHA"], "Uploaded member program failed verification"
+          print("Verified stored member program", digest)
+          PYVERIFY
+          require_current_release
+          # Existing function authenticates every request with pajang_art_allowed.
+          supabase functions deploy pajang-assets --project-ref "$PAJANG_PROJECT" \
+            --use-api --no-verify-jwt

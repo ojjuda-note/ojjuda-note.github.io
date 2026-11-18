@@ -108,6 +108,7 @@ test('standalone Back returns to the correct section, not the previous random pa
     ['arcade','/world.html?tab=hub'],
     ['park','/world.html?tab=park'],
     ['my','/world.html?tab=my'],
+    ['pajang','/features/pajang/station.html?tab=profile'],
     ['admin','/world.html?admin=overview']
   ];
   for (const [section,target] of cases) {
@@ -131,6 +132,11 @@ test('legal policy Back links keep their originating settings section', () => {
   assert.equal(settings.label.textContent,'설정으로 돌아가기');
   settings.back();
   assert.deepEqual(settings.replacements,['/world.html?tab=my']);
+  const pajang=fixture({section:'hub',from:'pajang',returnLink:true});
+  assert.equal(pajang.anchor.href,'/features/pajang/station.html?tab=profile');
+  assert.equal(pajang.label.textContent,'내 파장으로 돌아가기');
+  pajang.back();
+  assert.deepEqual(pajang.replacements,['/features/pajang/station.html?tab=profile']);
   const general=fixture({section:'hub',returnLink:true});
   assert.equal(general.anchor.href,'/world.html?tab=hub');
 });

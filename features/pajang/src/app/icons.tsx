@@ -1,4 +1,8 @@
 const paths:Record<string,React.ReactNode>={
+ home:<><path d="m3 10 9-7 9 7M5 9v12h14V9"/><path d="M9 21v-8h6v8"/></>,
+ document:<><path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8M8 16h6"/></>,
+ logout:<><path d="M10 4H4v16h6M10 12h11m-4-4 4 4-4 4"/></>,
+ "user-minus":<><circle cx="10" cy="7" r="3"/><path d="M3 20v-2a7 7 0 0 1 14 0v2M17 10h5"/></>,
  letter:<><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></>,
  heart:<path d="M20.6 5.4a5 5 0 0 0-7.2 0L12 6.9l-1.4-1.5a5 5 0 0 0-7.2 7l7.9 7.8a1 1 0 0 0 1.4 0l7.9-7.8a5 5 0 0 0 0-7Z"/>,
  radar:<><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="m12 12 6-7"/><circle cx="8" cy="16" r="1" fill="currentColor"/></>,

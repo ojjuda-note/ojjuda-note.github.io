@@ -25,6 +25,26 @@ body {background:var(--bg);color:var(--ink)}
 .pajang-mast .agit-return,.sheet-bar a {background:transparent;color:#725c56;border:0;border-left:1px solid #d8c7ba;border-radius:0;padding-left:14px;min-height:34px}
 .pajang-mast .agit-return:hover,.sheet-bar a:hover {color:var(--dark);background:#f7eee8}
 .pajang-members {margin-left:auto;color:var(--muted)}
+.account-heading {gap:12px;flex-wrap:wrap}
+.account-agit {display:inline-flex;align-items:center;min-height:44px;margin-left:auto;white-space:nowrap;text-decoration:none}
+.account-settings h2 {margin-bottom:8px}
+.account-menu {display:grid}
+.account-menu>a,.account-menu>button {display:flex;align-items:center;gap:12px;min-height:48px;padding:11px 2px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);font:500 14px/1.5 var(--sans);text-align:left;text-decoration:none}
+.account-menu>:last-child {border-bottom:0}
+.account-menu>*>span {flex:1;min-width:0;overflow-wrap:anywhere}
+.account-menu svg {flex:none;color:var(--muted)}
+.account-menu>.account-withdraw,.account-withdraw svg {color:#9d474c}
+.account-menu>a:focus-visible,.account-menu>button:focus-visible,.account-agit:focus-visible {outline:2px solid var(--berry);outline-offset:3px;border-radius:5px}
+.sheet-bar {justify-content:flex-end}
+.account-action-form .account-warning {color:#8e3f45}
+.account-retention {font-size:12px;line-height:1.65;color:var(--muted);margin:-6px 0 16px}
+.account-confirm-input {display:block;width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;background:#fffdf9;color:var(--ink);font:inherit;font-size:16px}
+.account-consent {display:flex;align-items:flex-start;gap:9px;margin:16px 0;font-size:13px;line-height:1.6}
+.account-consent input {width:18px;height:18px;margin-top:2px;flex:none;accent-color:var(--berry)}
+.account-action-buttons {display:flex;gap:10px;margin-top:20px}
+.account-action-buttons>button {flex:1;min-height:44px;justify-content:center}
+.account-action-buttons .account-danger {background:#96464d;border-color:#96464d;color:#fff}
+@media(hover:hover){.account-menu>a:hover,.account-menu>button:hover {background:#f8efe7}}
 .station-layout {display:block;width:min(1120px,calc(100% - 64px))}
 .station-content.wrap {padding:28px 0 55px}
 .station-nav {z-index:9;position:fixed;inset:calc(11px + env(safe-area-inset-top)) auto auto 50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;padding:0;border:0;background:none}
@@ -136,3 +156,6 @@ body {background:var(--bg);color:var(--ink)}
   .entry-intro .intro {max-width:85%;font-size:13px}
 }
 @media(max-width:360px){.pajang-mast-inner,.station-layout{width:calc(100% - 22px)}.letter-hero{padding:16px}.letter-copy{max-width:98%}}
+
+/* Entry announces the new heading without drawing an input-like focus box. */
+#station main :is(h1,h2)[tabindex="-1"]:focus {outline:none}

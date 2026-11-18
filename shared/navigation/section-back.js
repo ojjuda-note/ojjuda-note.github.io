@@ -10,11 +10,12 @@
     arcade: '/world.html?tab=hub',
     park: '/world.html?tab=park',
     my: '/world.html?tab=my',
+    pajang: '/features/pajang/station.html?tab=profile',
     admin: '/world.html?admin=overview'
   };
   const section = Object.hasOwn(destinations, from) ? from : script?.dataset.returnTo;
   const destination = destinations[section] || destinations.hub;
-  const labels = { hub: '아지트로', arcade: '아지트로', park: '공원으로', my: '설정으로', admin: '관리자 모드로' };
+  const labels = { hub: '아지트로', arcade: '아지트로', park: '공원으로', my: '설정으로', pajang: '내 파장으로', admin: '관리자 모드로' };
   const returnLink = document.querySelector('[data-section-return]');
   if (returnLink) {
     returnLink.href = destination;

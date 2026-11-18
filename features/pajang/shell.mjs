@@ -7,7 +7,7 @@ if(window.parent!==window && new URLSearchParams(location.search).get('embed')==
   if(agitHost){
     const host=window.parent.document;
     document.addEventListener('keydown',event=>{
-      if(event.key==='Escape'){event.preventDefault();window.parent.postMessage('pajang:close',location.origin);}
+      if(event.key==='Escape'&&!document.querySelector('dialog[open]')){event.preventDefault();window.parent.postMessage('pajang:close',location.origin);}
     });
     if(!host.getElementById('pajang-dialog-surface')){
       const link=host.createElement('link');
@@ -16,7 +16,8 @@ if(window.parent!==window && new URLSearchParams(location.search).get('embed')==
       link.href=new URL('./dialog-surface.css?v=letter1',import.meta.url).href;
       host.head.append(link);
     }
-    document.querySelector('.agit-return')?.addEventListener('click',event=>{
+    document.addEventListener('click',event=>{
+      if(!(event.target instanceof Element)||!event.target.closest('a.agit-return'))return;
       if(event.button||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
       event.preventDefault();
       window.parent.postMessage('pajang:close',location.origin);
