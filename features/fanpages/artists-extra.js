@@ -607,7 +607,7 @@
       photo: 'BTS during a White House press conference May 31, 2022 (cropped).jpg', photoLabel: '백악관 기자회견', photoYear: '2022', credit: 'The White House', license: 'Public domain',
       morePhotos: [
         commonsPhoto('BTS Arirang World Tour in Paris (17 July 2026) - stadium view.jpg', 'ARIRANG 파리 공연장 전경 · 원본 그대로', '2026', 'Chiyako92', 'CC BY-SA 4.0'),
-        commonsPhoto('BTS Arirang Tour in Madrid.jpg', 'ARIRANG 마드리드 공연장 · 2026', '2026', 'Elwin594', 'CC0 1.0')
+        { ...commonsPhoto('BTS Arirang Tour in Madrid.jpg', 'ARIRANG 마드리드 공연장 · 2026', '2026', 'Elwin594', 'CC0 1.0'), licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/' }
       ],
       music: [
         {
