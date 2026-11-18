@@ -541,9 +541,9 @@ window.OJJUDA_FAN_ARTISTS = [
       { date: "2026.11.16", tag: "행사", title: "11월 27일 《打歌2026》 출연 예정 · 공식 팬클럽 공지", href: "https://www.sina.cn/news/detail/5365998939017912.html" },
       { date: "2026.11.15", tag: "브랜드", title: "TASAKI, A2O MAY의 주얼리 행사 참석 공식 확인", href: "https://www.sina.cn/news/detail/5365317909088145.html" },
       { date: "2026.11.13", tag: "방송", title: "12월 18일 KBS 가요대축제 출연 명단 발표", href: "https://www.soompi.com/article/1886817wpp/2026-kbs-song-festival-announces-artist-lineup" },
+      { date: "2026.11.02", tag: "콜라보", title: "FILA FUSION 행사·런웨이 보도 · 행사 10.29~11.01", href: "https://www.sina.cn/news/detail/5360779742414008.html" },
       { date: "2026.10.23", tag: "방송", title: "장쑤TV Music Show 2026 · BAD HABITS TONITE 무대", href: "https://www.youtube.com/watch?v=a2JXTXnqfZc" },
-      { date: "2026.10.18", tag: "앨범", title: "BAD HABITS TONITE 발매", href: "https://www.melon.com/album/detail.htm?albumId=14801672" },
-      { date: "2026.11.02", tag: "콜라보", title: "FILA FUSION 행사·런웨이 보도 · 행사 10.29~11.01", href: "https://www.sina.cn/news/detail/5360779742414008.html" }
+      { date: "2026.10.18", tag: "앨범", title: "BAD HABITS TONITE 발매", href: "https://www.melon.com/album/detail.htm?albumId=14801672" }
     ]
   },
   {
