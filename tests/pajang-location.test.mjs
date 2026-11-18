@@ -92,3 +92,14 @@ test('leaving during entry stops the lookup and never saves a location',async t=
   const pending=prepareLocation(state,db,'member');await new Promise(setImmediate);window.dispatchEvent(new Event('pagehide'));
   late(fix(50));assert.equal(await pending,state);assert.equal(writes,0);
 });
+
+test('a background lookup is cancellable by a settings change without leaving the page',async t=>{
+  let writes=0,late;const progress=[],controller=new AbortController();
+  environment(t,{getCurrentPosition(ok){late=ok;}});
+  const db={auth:{getSession:async()=>({data:{session:{user:{id:'member'}}}})},rpc:async()=>{writes++;}};
+  const state={me:{id:'profile'},locationEnabled:true,locationVersion:0};
+  const pending=prepareLocation(state,db,'member',{signal:controller.signal,onProgress:message=>progress.push(message)});
+  await new Promise(setImmediate);assert.ok(progress.includes('위치를 확인하고 있어요.'));
+  controller.abort();late(fix(50));
+  assert.equal(await pending,state);assert.equal(writes,0);
+});

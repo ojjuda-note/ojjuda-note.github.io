@@ -1,5 +1,5 @@
-import {requireMember} from './member.mjs?v=history1';
-import {mountStation,prepareProgram} from './load-station.mjs?v=history1';
+import {requireMember} from './member.mjs?v=entry2';
+import {mountStation,prepareProgram} from './load-station.mjs?v=entry2';
 let program;
 const station=await requireMember('state',db=>{
   program=prepareProgram(db);

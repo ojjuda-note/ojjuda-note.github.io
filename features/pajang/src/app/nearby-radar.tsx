@@ -11,6 +11,8 @@ type LocatedPerson = Person & { range: RadarBand };
 type Props = {
   station: Station;
   sample: boolean;
+  autoLocation?: {pending:boolean;message:string};
+  onLocationChange?: () => void;
   onProfile: (id: string) => void;
   onJoin: () => void;
   onSettings: (cell: RadarCell | null, accountId: string) => Promise<boolean>;
@@ -56,9 +58,10 @@ function Grid({heading}:{heading:number}){
   </svg>;
 }
 
-export default function NearbyRadar({station,sample,onProfile,onJoin,onSettings}:Props){
+export default function NearbyRadar({station,sample,autoLocation,onLocationChange,onProfile,onJoin,onSettings}:Props){
   const [selected,setSelected]=useState(""),[page,setPage]=useState(0);
-  const [pending,setPending]=useState(false),[feedback,setFeedback]=useState(station.locationNotice||"");
+  const [pending,setPending]=useState(false),[feedback,setFeedback]=useState("");
+  const message=feedback||autoLocation?.message||(!autoLocation?station.locationNotice:"");
   const alive=useRef(true), working=useRef(false);
   const locationRead=useRef<AbortController|null>(null);
   const [locating,setLocating]=useState(false);
@@ -91,6 +94,7 @@ export default function NearbyRadar({station,sample,onProfile,onJoin,onSettings}
 
   async function toggleLocation(enable:boolean){
     if(working.current)return;
+    onLocationChange?.();
     working.current=true;setPending(true);setFeedback("");
     const controller=new AbortController();locationRead.current=controller;
     try {
@@ -117,7 +121,7 @@ export default function NearbyRadar({station,sample,onProfile,onJoin,onSettings}
     <div className="nearby-heading"><div><div className="onrow"><span className="onair"><i/>{sample?"DEMO":"RADAR"}</span><span className="questionlabel">{sample?"예시 거리·방향":"오늘의 거리·방향"}</span></div><h1 id="nearby-title">주변 레이더</h1><p>내 주변 15km 안에서 이번 시간대에 답한 사람을 찾아보세요.</p></div></div>
     {!sample&&<div className="radar-location-setting"><div><strong id="location-switch-label">내 위치 공개</strong><p>공원과 함께 적용돼요. 설정은 바꿀 때까지 유지돼요.</p></div>
       <button type="button" role="switch" aria-labelledby="location-switch-label" aria-checked={enabled} disabled={pending||!station.me} onClick={()=>void toggleLocation(!enabled)}><span aria-hidden="true"/></button></div>}
-    {feedback&&<div className="radar-location-feedback"><p className="radar-feedback" role="status">{feedback}</p>{locating&&<button type="button" className="secondary small" onClick={()=>locationRead.current?.abort()}>위치 확인 취소</button>}</div>}
+    {message&&<div className="radar-location-feedback"><p className="radar-feedback" role="status">{message}</p>{locating&&<button type="button" className="secondary small" onClick={()=>locationRead.current?.abort()}>위치 확인 취소</button>}</div>}
     <div className="radar-layout">
       <div className="dial-panel">
         <div className="dial-info"><span><i/> {sample?"체험 채널":"회원 채널"}</span><span>반경 약 15km</span></div>
@@ -145,7 +149,7 @@ export default function NearbyRadar({station,sample,onProfile,onJoin,onSettings}
           <p className="radar-quote">{person.body}</p><button className="primary radar-primary" onClick={()=>onProfile(person.id)}>공개 정보 보기<I n="arrow" s={17}/></button>
           {visible.length>1&&<div className="radar-alternates"><h3>주변 사람</h3><div>{visible.map(p=><button className={p.id===person.id?"sel":""} key={p.id} aria-pressed={p.id===person.id} onClick={()=>setSelected(p.id)}>{p.name}</button>)}</div></div>}</>:
           <div className="radar-empty"><span className="modalicon"><I n="pin" s={23}/></span><h2>{!enabled?"위치를 숨겼어요":locatedNow?"아직 주변 답변이 없어요":"현재 위치를 확인해 주세요"}</h2><p>{!enabled?"위 스위치를 켜면 주변 인연을 찾을 수 있어요.":locatedNow?"위치를 공개한 회원이 15km 안에서 이번 시간대에 답하면 여기에 나타나요.":"위치가 확인되면 주변 인연을 보여 드려요."}</p>
-          {enabled&&!locatedNow&&<button className="primary" disabled={pending} onClick={()=>void toggleLocation(true)}>{pending?"위치 확인 중…":"위치 다시 확인"}</button>}</div>}
+          {enabled&&!locatedNow&&<button className="primary" disabled={pending||autoLocation?.pending} onClick={()=>void toggleLocation(true)}>{pending||autoLocation?.pending?"위치 확인 중…":"위치 다시 확인"}</button>}</div>}
 
       </div>
     </div>

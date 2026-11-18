@@ -1,4 +1,5 @@
-import {call, requireMember, showGate} from './member.mjs?v=history1';
+import {call, client, sameMember, requireMember, showGate} from './member.mjs?v=entry2';
+import {prepareLocation} from './location.mjs?v=entry2';
 import {themeFor, interests} from './questions.mjs?v=rounds1';
 
 const $ = id => document.getElementById(id);
@@ -24,6 +25,7 @@ let leaveEntry=()=>{};
 function enterMain(destination = main, savedStation) {
   if (window.top !== window) {
     if(!window.frameElement?.isConnected && params.get('embed')==='1')return;
+    leaveEntry();
     window.top.location.assign(destination.href);return;
   }
   if (handoff) return handoff;
@@ -38,7 +40,7 @@ function enterMain(destination = main, savedStation) {
     style.href='./station.css?v=letter1';
     const styled=new Promise((resolve,reject)=>{style.onload=resolve;style.onerror=reject;});
     document.querySelector('link[href*="shell.css"]').before(style);
-    await Promise.all([styled,import('./load-station.mjs?v=history1').then(({mountStation})=>mountStation(async()=>{
+    await Promise.all([styled,import('./load-station.mjs?v=entry2').then(({mountStation})=>mountStation(async()=>{
       await styled;
       document.getElementById('entry-style').disabled=true;
       style.media='all';
@@ -129,7 +131,9 @@ async function start(firstEntry) {
   if (updates) updates.onmessage = refresh;
   const onVisible=()=>{if(!document.hidden)refresh();};
   document.addEventListener('visibilitychange',onVisible);
+  const locationRead=new AbortController();
   leaveEntry=()=>{
+    locationRead.abort();
     clearTimeout(timer);
     updates?.close();
     radarPanel.removeEventListener('toggle',openRadar);
@@ -140,6 +144,12 @@ async function start(firstEntry) {
   paint();
   $('gate').hidden = true;
   $('welcome').hidden = false;
+  // Questions are usable while the browser finds a position or waits for permission.
+  void client().then(async db=>{
+    const {data:{session}}=await db.auth.getSession();
+    if(!session?.user||locationRead.signal.aborted||!await sameMember(db))return;
+    await prepareLocation(entry,db,session.user.id,{signal:locationRead.signal});
+  }).catch(()=>{});
   if(entry.locationNotice)status.textContent=entry.locationNotice;
   const write = $('write');
   const browse = $('browse');
