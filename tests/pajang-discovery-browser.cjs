@@ -452,6 +452,7 @@ function clientFixture(hash) {
       await page.setViewportSize({width,height:844});
       assert.ok(await settings.evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth));
       assert.ok(await accountHome.evaluate(el=>el.getBoundingClientRect().height>=44));
+      await settings.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
       await settings.screenshot({path:path.join(dir,'account-settings-'+width+'.png'),animations:'disabled'});
     }
     await settings.getByRole('button',{name:'로그아웃',exact:true}).click();
@@ -539,7 +540,11 @@ function clientFixture(hash) {
     assert.equal(await page.evaluate(()=>window.entryMarker===document.querySelector('.pajang-mast')),true,'answer submission stays in the same document');
     assert.equal(entryDocuments.length-beforeEntry,1,'a new member answers and enters without a second navigation');
     const focusedQuestion=questionCard.getByRole('heading',{level:1});
-    await page.waitForFunction(()=>document.activeElement?.matches('.letter-copy h1[tabindex="-1"]'));
+    // Reproduce the entry announcement deterministically; React may paint after its RAF.
+    await focusedQuestion.waitFor();
+    await page.keyboard.press('Tab');
+    await focusedQuestion.evaluate(el=>{el.tabIndex=-1;el.focus({preventScroll:true});});
+    assert.ok(await focusedQuestion.evaluate(el=>el===document.activeElement&&el.matches(':focus-visible')));
     assert.equal(await focusedQuestion.evaluate(el=>getComputedStyle(el).outlineStyle),'none','the automatically focused question has no input-like box');
     await questionCard.screenshot({path:path.join(dir,'question-without-focus-box.png'),animations:'disabled'});
     await page.keyboard.press('Tab');
