@@ -502,6 +502,30 @@ test('age color palettes retain strong text contrast and do not depend on color 
  assert.match(css,/\.age-tag\{[^}]*white-space:normal/);assert.match(css,/@media\(forced-colors:active\)/);
 });
 
+test('saved five-person ladders fill every column gap without changing their outcomes',async()=>{
+  const f=fixture();
+  try {
+    const w=f.w, d=w.document;
+    const names=['A','B','C','D','E'], options=['1','2','3','4','5'];
+    await w.OjjudaGroupActivities.open({id:entry,title:'내기',activity:{kind:'ladder',names,options}},{
+      dialog(_title,body){
+        const dialog=d.createElement('dialog');dialog.innerHTML=body;d.body.append(dialog);dialog.showModal();return dialog;
+      },
+      api:async()=>({result:{rungs:[1,1]}}),esc:value=>value,failure:err=>err.message
+    });
+    const lines=[...d.querySelectorAll('.ladder-board svg line')];
+    const rungs=lines.filter(line=>line.getAttribute('y1')===line.getAttribute('y2'));
+    assert.equal(rungs.length,16);
+    for(const rail of lines.slice(0,names.length-1)){
+      assert.ok(rungs.filter(rung=>rung.getAttribute('x1')===rail.getAttribute('x1')).length>=2);
+    }
+    d.querySelector('[data-lane="0"]').click();await tick();
+    assert.deepEqual([...d.querySelectorAll('.ladder-results dd')].map(el=>el.textContent),options);
+    const points=d.querySelector('.ladder-board polyline').getAttribute('points').split(' ');
+    assert.equal(points[0].split(',')[0],points.at(-1).split(',')[0]);
+  } finally { f.w.close(); }
+});
+
 for (const kind of ['poll','ladder','wheel']) {
   test('compose and participate in a group '+kind,async()=>{
     let post, selection=null, drawn=null;
