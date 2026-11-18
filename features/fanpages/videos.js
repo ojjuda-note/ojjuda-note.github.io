@@ -167,7 +167,9 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'qUzSrkIuP0U', title: 'BTS · 2026 FIFA 월드컵 결승 하프타임 공연', kind: '공식 무대', source: 'FIFA 공식 YouTube · 2026.07.21 공개' },
     { id: 'b4iVv91Z6lY', title: 'SWIM', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.03.20' },
     { id: '_gyultVTesk', title: '2.0', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.04.01' },
-    { id: 'diBO0gMuTXo', title: 'Hooligan', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.04.08' }
+    { id: 'diBO0gMuTXo', title: 'Hooligan', kind: '뮤직비디오', source: 'BTS / HYBE LABELS · 2026.04.08' },
+    { id: 'HD9TQigBMxk', title: 'ARIRANG 도쿄 공연 스케치', kind: '메이킹', source: 'BANGTANTV 공식 · 2026.06.23' },
+    { id: 'ZOj-K8-_PIc', title: 'ARIRANG 고양 공연 스케치', kind: '메이킹', source: 'BANGTANTV 공식 · 2026.05.22' }
   ],
   seventeen: [
     { id: 'FEyF183bBWc', title: '도겸×정한 · 정답 없는 여행 NO-CLUE TRIP 하이라이트 예고', kind: '예고편', source: 'SEVENTEEN 공식 YouTube · 2026.11.12' },
