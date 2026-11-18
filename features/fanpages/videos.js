@@ -125,6 +125,8 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'EmeW6li6bbo', title: 'Blue Valentine', kind: '뮤직비디오', source: 'NMIXX / JYP Entertainment' }
   ],
   babymonster: [
+    { id: 'XWTQoR7nMbs', title: 'DESERVE · 음악방송 비하인드', kind: '메이킹', source: 'BABYMONSTER / YG Entertainment · 2026.11.13' },
+    { id: '5r5WKleBa28', title: '인기가요 끝나면 매점가요2 · BABYMONSTER', kind: '방송 인터뷰', source: 'SBSKPOP X INKIGAYO · 2026.11.13' },
     { id: 'oC6brLXQe4I', title: 'DESERVE', kind: '뮤직비디오', source: 'BABYMONSTER / YG Entertainment' },
     { id: 'naoGk-Zjc1s', title: 'SUGAR HONEY ICE TEA', kind: '뮤직비디오', source: 'BABYMONSTER / YG Entertainment' },
     { id: 'x3eqqoZPV_E', title: '춤 (CHOOM)', kind: '뮤직비디오', source: 'BABYMONSTER / YG Entertainment' },
