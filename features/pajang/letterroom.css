@@ -6,6 +6,14 @@
   --serif:"Nanum Myeongjo","Noto Serif CJK KR","AppleMyungjo","Batang",Georgia,serif;
   --letter-scene:url("https://ziezbdjofcugznowiuda.supabase.co/storage/v1/object/public/pajang-theme/c645eaa78edb29e31f2dce57f4fca38bb9a04754179e3e2ee9faa5e0ac66ea62/letter.webp");
 }
+.radar-location-setting {display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 18px;padding:16px 18px;border:1px solid #d4decb;border-radius:16px;background:#eef2e7}
+.radar-location-setting strong {font-size:15px;color:#362a29}
+.radar-location-setting p {margin:4px 0 0;font-size:12px;color:#52664c;line-height:1.5;word-break:keep-all}
+.radar-location-setting [role=switch] {display:block;flex:none;width:48px;min-width:48px;height:28px;padding:3px;border:1px solid #9daba0;border-radius:16px;background:#a6b0a4}
+.radar-location-setting [role=switch]>span {display:block;width:20px;height:20px;border-radius:50%;background:#fffaf5;box-shadow:0 1px 3px #1c2c1d33}
+.radar-location-setting [role=switch][aria-checked=true] {background:#50664c;border-color:#50664c}
+.radar-location-setting [role=switch][aria-checked=true]>span {transform:translateX(19px)}
+.radar-location-setting [role=switch]:disabled {opacity:.65;cursor:wait}
 body {background:var(--bg);color:var(--ink)}
 .pajang-mast {background:#fbf8f2f7;border-color:var(--line);color:var(--ink)}
 .pajang-mast-inner {display:flex;width:min(1120px,calc(100% - 64px));height:68px;gap:18px}

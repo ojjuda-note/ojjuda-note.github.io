@@ -63,6 +63,9 @@ async function checkCompass(view, selector, labelSelector, markerSelector) {
 function clientFixture(hash) {
   return `
     const state=${JSON.stringify(state)}, rows=${JSON.stringify(rows)};
+    state.locationEnabled=localStorage.locationEnabled!=='false';
+    state.locationVersion=Number(localStorage.locationVersion||0);
+    window.geoWrites=[];
     const flightCheck=new URLSearchParams(location.search).get('flight-check');
     const mode=flightCheck||sessionStorage.fixtureMode||'member';
     const accepted=sessionStorage.accepted==='yes';
@@ -72,6 +75,7 @@ function clientFixture(hash) {
     if(accepted)state.signals.push({src:'me',dst:'peer2'});
     const entry={...state,joined:mode!=='new',body:mode==='new'?'':state.me.body,nickname:'보리',
       question:{...state.question,answers:['책을 골라요.','같이 걸어요.','커피를 마셔요.']}};
+    delete entry.me;
     if(mode==='new'||mode==='unanswered'){state.me.body='';entry.body='';}
     window.feedCalls=[];window.heldGender=null;window.releaseFeed=null;
     const messages=[{id:'1',src:'peer1',dst:'me',body:'안녕하세요!',at:1}];
@@ -90,6 +94,16 @@ function clientFixture(hash) {
           if(['entry','state'].includes(p.p_action) && mode==='denied')return Promise.resolve({error:{code:'42501'}});
           if(p.p_action==='state'&&!entry.joined)return Promise.resolve({error:{code:'42501',message:'먼저 파장에 참여해 주세요.'}});
           if(p.p_action==='entry')return Promise.resolve({data:entry});
+          if(p.p_action==='radar-enable'||p.p_action==='radar-disable'){
+            if(p.p_data.automatic&&(!state.locationEnabled||p.p_data.locationVersion!==state.locationVersion))return Promise.resolve({data:structuredClone(state)});
+            window.geoWrites.push(p.p_data);
+            state.radarOn=p.p_action==='radar-enable';state.radarDirectionOn=state.radarOn;
+            if(!p.p_data.automatic){
+              state.locationEnabled=state.radarOn;state.locationVersion++;
+              localStorage.locationEnabled=String(state.locationEnabled);localStorage.locationVersion=String(state.locationVersion);
+            }
+            return Promise.resolve({data:structuredClone(state)});
+          }
           if(p.p_action==='edit-answer'){
             const {body,previousBody,day,slot,questionId}=p.p_data;
             if(day!==state.day||slot!==state.slot||questionId!==state.question.id)return Promise.resolve({error:{code:'PT409'}});
@@ -176,7 +190,7 @@ function clientFixture(hash) {
   const hash=crypto.createHash('sha256').update(bundle).digest('hex');
   const browser=await chromium.launch();
   try {
-    const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,locale:'ko-KR'});
+    const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,locale:'ko-KR',geolocation:{latitude:37.5665,longitude:126.978,accuracy:30},permissions:['geolocation']});
     const page=await context.newPage(), errors=[];
     page.on('pageerror',err=>errors.push(err.message));
     await page.route(origin+'/**',async route=>{
@@ -191,7 +205,7 @@ function clientFixture(hash) {
         <script src="/config.js"></script><script src="/features/home/agit-hub.js"></script>
         <main></main><script>document.querySelector('main').innerHTML=OjjudaAgitHub.markup({},{});</script></html>`});
       const file=pathname.slice(project.length)||'index.html';
-      if(!['station.html','station.css','member.mjs','member-main.mjs','load-station.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','shell.mjs','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
+      if(!['station.html','station.css','member.mjs','member-main.mjs','load-station.mjs','location.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','shell.mjs','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
       const mime={html:'text/html',css:'text/css',mjs:'text/javascript',json:'application/json',svg:'image/svg+xml'}[path.extname(file).slice(1)];
       return route.fulfill({contentType:mime,body:await fs.readFile(path.join(feature,file))});
     });
@@ -484,6 +498,36 @@ function clientFixture(hash) {
       }
       console.log('PAJANG_OPEN_MS',scenario,JSON.stringify(timings),'median',timings.sort((a,b)=>a-b)[2]);
     }
+    await page.goto(origin+project+'station.html?view=radar');
+    const locationSwitch=page.getByRole('switch',{name:'내 위치 공개'});
+    await locationSwitch.waitFor();
+    assert.equal(await locationSwitch.getAttribute('aria-checked'),'true');
+    assert.ok(await page.evaluate(()=>window.geoWrites.some(p=>p.automatic&&p.latCell===3757&&p.lonCell===12698&&!('latitude' in p))));
+    await locationSwitch.click();
+    await page.waitForFunction(()=>localStorage.locationEnabled==='false');
+    await page.reload();await locationSwitch.waitFor();
+    assert.equal(await locationSwitch.getAttribute('aria-checked'),'false');
+    assert.equal(await page.locator('.scope-person').count(),0,'hidden location also hides nearby people');
+    assert.equal(await page.evaluate(()=>window.geoWrites.length),0,'off re-entry never uploads a location');
+    await context.clearPermissions();
+    await locationSwitch.click();
+    await page.getByText('브라우저의 사이트 권한에서 위치를 허용해 주세요.',{exact:true}).waitFor();
+    assert.equal(await locationSwitch.getAttribute('aria-checked'),'false','denial keeps the saved setting');
+    await context.grantPermissions(['geolocation'],{origin});
+    await locationSwitch.click();
+    await page.waitForFunction(()=>localStorage.locationEnabled==='true');
+    await page.reload();await locationSwitch.waitFor();
+    assert.equal(await locationSwitch.getAttribute('aria-checked'),'true');
+    assert.ok(await page.evaluate(()=>window.geoWrites.some(p=>p.automatic)));
+    await context.clearPermissions();
+    await page.reload();await locationSwitch.waitFor();
+    await page.getByText('브라우저의 사이트 권한에서 위치를 허용해 주세요.',{exact:true}).last().waitFor();
+    assert.equal(await locationSwitch.getAttribute('aria-checked'),'true','browser denial does not overwrite the preference');
+    await locationSwitch.click();
+    await page.waitForFunction(()=>localStorage.locationEnabled==='false');
+    assert.equal(await page.evaluate(()=>window.geoWrites.filter(p=>p.automatic).length),0);
+    await page.locator('.radar-location-setting').screenshot({path:path.join(dir,'location-switch.png')});
+    console.log('PASS default location request, persistent switch, denied recovery, and coarse-cell-only upload');
     assert.deepEqual(errors,[]);
     console.log('PASS 320/390/1080px layout, artwork-independent startup, tap/swipe/keyboard, delayed results, cancellation, in-memory revisit, and denial');
   } finally {await browser.close();}

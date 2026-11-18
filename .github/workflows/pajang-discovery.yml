@@ -1,5 +1,11 @@
 name: Pajang discovery interaction
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'features/pajang/**'
+      - 'supabase/functions/pajang-assets/index.ts'
+      - '.github/workflows/pajang-discovery.yml'
   pull_request:
     paths:
       - 'features/pajang/**'
@@ -22,6 +28,7 @@ jobs:
       - run: npm --prefix tests ci --ignore-scripts
       - run: npm --prefix features/pajang install --no-package-lock --no-audit --no-fund
       - run: npm --prefix features/pajang run build
+      - run: node --test tests/pajang-discovery-gender.test.mjs
       - name: Install Chromium and Korean fonts
         working-directory: tests
         run: |
@@ -35,3 +42,35 @@ jobs:
           path: tests/artifacts/pajang-discovery/
           retention-days: 3
           if-no-files-found: ignore
+      - name: Publish verified member program
+        if: success() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          python - <<'PY'
+          import hashlib, json, os, re, urllib.request
+          from pathlib import Path
+
+          project = "ziezbdjofcugznowiuda"
+          base = f"https://{project}.supabase.co"
+          program = Path("features/pajang/assets/station.js").read_bytes()
+          digest = hashlib.sha256(program).hexdigest()
+          source = Path("supabase/functions/pajang-assets/index.ts").read_text()
+          assert re.search(r'"station.js": "' + digest + '"', source), "Program differs from the release manifest"
+          request = urllib.request.Request(
+              f"https://api.supabase.com/v1/projects/{project}/api-keys",
+              headers={"Authorization": "Bearer " + os.environ["SUPABASE_ACCESS_TOKEN"]})
+          with urllib.request.urlopen(request, timeout=30) as response:
+              keys = json.load(response)
+          key = next(item["api_key"] for item in keys if item["name"] == "service_role")
+          url = base + "/storage/v1/object/pajang-member-assets/" + digest + "/station.js"
+          headers = {"Authorization": "Bearer " + key, "apikey": key}
+          request = urllib.request.Request(url, data=program, method="POST",
+              headers={**headers, "Content-Type": "application/javascript", "x-upsert": "true"})
+          with urllib.request.urlopen(request, timeout=60) as response:
+              assert response.status in (200, 201)
+          with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=60) as response:
+              assert hashlib.sha256(response.read()).hexdigest() == digest
+          print("Verified member program", digest)
+          PY
+          npx --yes supabase@2.83.0 functions deploy pajang-assets --project-ref ziezbdjofcugznowiuda --use-api --no-verify-jwt

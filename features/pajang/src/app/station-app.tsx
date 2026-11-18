@@ -88,7 +88,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const currentPeer=useRef(thread);
   currentPeer.current=thread;
   const [pendingModal,setModal]=useState<Modal|null>(null),[inbox,setInbox]=useState("received");
-  const [messages,setMessages]=useState<Message[]>([]),[draft,setDraft]=useState(""),[busy,setBusy]=useState(false),[error,setError]=useState(""),[toast,setToast]=useState(""),[net,setNet]=useState(""),[ready,setReady]=useState(false);
+  const [messages,setMessages]=useState<Message[]>([]),[draft,setDraft]=useState(""),[busy,setBusy]=useState(false),[error,setError]=useState(""),[toast,setToast]=useState(initialStation.locationNotice||""),[net,setNet]=useState(""),[ready,setReady]=useState(false);
   const [historyRevision,setHistoryRevision]=useState(0);
   const lock=useRef(false),serverRevision=useRef(0),bottom=useRef<HTMLDivElement>(null);
   const s=live,me=s.me,theme=s.question??themeFor(s.day,s.slot),period=s.day+"/"+s.slot;
@@ -282,7 +282,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     <StationNavigation tab={tab} onGo={go} pending={signalCount}/>
     <main className="wrap station-content" id="station-content">
     {(net||threadError)&&<div className="notice" role="status">{net||threadError}<button onClick={()=>{void refresh();if(thread)void readThread(thread);}}>다시 연결</button></div>}
-    {tab==="radar"&&<><button className="return-today" onClick={()=>go("today")}><I n="back" s={15}/>오늘</button><NearbyRadar station={s} sample={false} onProfile={id=>open({kind:"person",peer:id})} onJoin={()=>location.assign("./")} onSettings={async cell=>Boolean(await act(cell?"radar-enable":"radar-disable",cell?{...cell,consent:true,shareBearing:true}:{},true))}/></>}
+    {tab==="radar"&&<><button className="return-today" onClick={()=>go("today")}><I n="back" s={15}/>오늘</button><NearbyRadar station={s} sample={false} onProfile={id=>open({kind:"person",peer:id})} onJoin={()=>location.assign("./")} onSettings={async (cell,accountId)=>Boolean(await act(cell?"radar-enable":"radar-disable",cell?{...cell,consent:true,shareBearing:true,accountId,locationVersion:s.locationVersion}:{accountId,locationVersion:s.locationVersion},true))}/></>}
     {visitedToday&&<div className="today-page" hidden={tab!=="today"}>
       <section className="letter-hero" aria-label={slotName+" 질문"}>
         <div className="letter-copy">
