@@ -54,6 +54,7 @@ export async function requireMember(action='entry',onSession) {
       showGate('로그인한 오쭈다 회원만 이용할 수 있어요.',true);return;
     }
     const expected=session.user.id;
+    if(typeof action==='function')action=action(expected);
     let changed=false;
     const {data:{subscription}}=db.auth.onAuthStateChange((_event,current)=>{
       if(!current||current.user?.id!==expected||current.user.is_anonymous){
@@ -75,6 +76,7 @@ export async function requireMember(action='entry',onSession) {
     verifiedUser=user.id;
     if(result.error){
       if(action==='state' && result.error.code==='42501' && result.error.message==='먼저 파장에 참여해 주세요.'){
+        rememberRound(user.id,false);
         return {joined:false};
       }
       throw result.error;

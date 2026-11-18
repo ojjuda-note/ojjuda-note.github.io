@@ -1,4 +1,4 @@
-import {call, client, requireMember, showGate} from './member.mjs?v=entry2';
+import {call, client, requireMember, showGate} from './member.mjs?v=entry3';
 
 const $ = id => document.getElementById(id);
 const cards = $('cards');
