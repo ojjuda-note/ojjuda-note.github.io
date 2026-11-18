@@ -7,7 +7,8 @@
       "namespace": "android_app",
       "package_name": "kr.ojjuda.agit",
       "sha256_cert_fingerprints": [
-        "99:24:73:40:5B:48:1B:CA:D0:B9:88:32:F1:1C:81:E4:12:57:79:A1:91:B1:1F:9E:A0:FA:5E:B4:22:54:B9:33"
+        "99:24:73:40:5B:48:1B:CA:D0:B9:88:32:F1:1C:81:E4:12:57:79:A1:91:B1:1F:9E:A0:FA:5E:B4:22:54:B9:33",
+        "30:3A:6A:E5:47:FA:7B:8C:D2:09:CE:14:56:6D:72:7F:E4:43:99:E6:94:F9:C5:0B:5C:9E:8E:D2:23:79:9E:26"
       ]
     }
   },
