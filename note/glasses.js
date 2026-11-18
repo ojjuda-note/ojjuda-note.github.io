@@ -25,7 +25,8 @@
   let index = 0;
   let isExpanded = false;
   let batteryLevel = null;
-  let loadVersion = 0;
+  let loadVersion = 0, locationController=null, stopLocationPreference=()=>{};
+  const service=window.OjjudaLocation;
 
   function validLocation(latitude, longitude) {
     return Number.isFinite(latitude) && latitude >= -90 && latitude <= 90
@@ -118,6 +119,14 @@
     (isExpanded ? $('glass-collapse') : $('glass-select')).focus({ preventScroll: true });
   }
   async function loadNearby(latitude, longitude) {
+    if(client&&service){
+      try{
+        const {data:{session}}=await client.auth.getSession();
+        const accountId=session?.user?.is_anonymous?undefined:session?.user?.id;
+        if(!(await service.preference(client,accountId)).enabled){setCards([],'공원과 파장의 위치가 꺼져 있어요.');return;}
+      }catch{status.textContent='위치 설정을 확인하지 못했어요.';return;}
+    }
+
     if (!validLocation(latitude, longitude)) {
       status.textContent = '위치를 확인할 수 없어요.';
       return;
@@ -152,32 +161,33 @@
     }
     setCards(result.data, '가까운 순서로 카드를 보여드려요.');
   }
-  function requestLocation() {
-    if (!navigator.geolocation) {
-      status.textContent = '이 기기에서는 위치 기능을 사용할 수 없어요.';
-      return;
-    }
-    const requestVersion = ++loadVersion;
-    locate.disabled = true;
-    status.textContent = '위치 허용을 기다리고 있어요.';
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        if (requestVersion !== loadVersion) return;
-        locate.disabled = false;
-        void loadNearby(coords.latitude, coords.longitude);
-      },
-      () => {
-        if (requestVersion !== loadVersion) return;
-        locate.disabled = false;
-        status.textContent = '위치 허용 후 가까운 카드를 볼 수 있어요.';
-      },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
-    );
+  async function requestLocation() {
+    const requestVersion=++loadVersion;
+    locationController?.abort();const controller=new AbortController();locationController=controller;
+    locate.disabled=true;status.textContent='위치를 확인하고 있어요.';
+    try {
+      const {data:{session}}=await client.auth.getSession();
+      const accountId=session?.user?.is_anonymous?undefined:session?.user?.id;
+      if(!service)throw Error('위치 기능을 불러오지 못했어요. 새로고침해 주세요.');
+      const position=await service.readPosition({db:client,accountId,cache:false,signal:controller.signal,
+        onProgress:message=>{if(requestVersion===loadVersion)status.textContent=message;}});
+      if(requestVersion===loadVersion)await loadNearby(position.latitude,position.longitude);
+    }catch(error){if(requestVersion===loadVersion)status.textContent=error.message||'위치를 확인하지 못했어요.';}
+    finally{if(locationController===controller)locationController=null;if(requestVersion===loadVersion)locate.disabled=false;}
   }
+  if(client&&service)void client.auth.getSession().then(({data:{session}})=>{
+    if(!session?.user||session.user.is_anonymous)return;
+    stopLocationPreference=service.observe(client,session.user.id,choice=>{
+      if(choice.enabled)return;
+      loadVersion++;locationController?.abort();locate.disabled=false;
+      setCards([],'공원과 파장의 위치가 꺼져 있어요.');
+    });
+  });
+  window.addEventListener('pagehide',()=>{locationController?.abort();stopLocationPreference();},{once:true});
 
   locate.addEventListener('click', requestLocation);
   $('glass-sample').addEventListener('click', () => {
-    ++loadVersion;
+    ++loadVersion;locationController?.abort();
     locate.disabled = false;
     setCards(sampleCards, '예시 화면입니다. 실제 위치와 관계없는 샘플 카드예요.');
   });

@@ -1,4 +1,4 @@
-import {call, requireMember, showGate} from './member.mjs?v=location1';
+import {call, requireMember, showGate} from './member.mjs?v=location3';
 import {themeFor, interests} from './questions.mjs?v=rounds1';
 
 const $ = id => document.getElementById(id);
@@ -38,7 +38,7 @@ function enterMain(destination = main, savedStation) {
     style.href='./station.css?v=letter1';
     const styled=new Promise((resolve,reject)=>{style.onload=resolve;style.onerror=reject;});
     document.querySelector('link[href*="shell.css"]').before(style);
-    await Promise.all([styled,import('./load-station.mjs?v=location1').then(({mountStation})=>mountStation(async()=>{
+    await Promise.all([styled,import('./load-station.mjs?v=location3').then(({mountStation})=>mountStation(async()=>{
       await styled;
       document.getElementById('entry-style').disabled=true;
       style.media='all';

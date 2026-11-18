@@ -5,6 +5,8 @@ const vm = require('node:vm');
 const { JSDOM } = require('jsdom');
 const root = path.join(__dirname, '..');
 const toolbarSource = fs.readFileSync(path.join(root, 'note/composer-tools.js'), 'utf8');
+const sharedLocationSource = fs.readFileSync(path.join(root,'shared/location/location.js'),'utf8');
+const sharedPreferences = new Map();
 const source = fs.readFileSync(path.join(root, 'note/preview.js'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'park/index.html'), 'utf8').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
 const key = id => `ojjuda-note-composer-settings-v1:${id}`;
@@ -80,22 +82,40 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     window.HTMLElement.prototype.scrollTo = () => {};
     window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
     for (const [k, value] of Object.entries(saved)) window.localStorage.setItem(k, value);
-    if (!id) {
-      window.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.invalid', supabaseKey: 'fixture' };
-      window.supabase = { createClient: () => ({
-        auth: { onAuthStateChange() {}, getSession: () => new Promise(() => {}) },
-        rpc: async name => ({ data: name === 'get_my_member_identity' ? { gender: 'private' } : null })
-      }) };
-    }
+    window.OJJUDA_CONFIG = { supabaseUrl: 'https://fixture.invalid', supabaseKey: 'fixture' };
+    window.supabase = {createClient:()=>({
+      auth:{onAuthStateChange(){},getSession:async()=>({data:{session:run('session')}})},
+      schema:()=>({rpc:async()=>({data:[]})}),
+      rpc:async(name,args={})=>{
+        if(name==='get_my_member_identity')return {data:{gender:run('myGender')}};
+        if(name!=='ojjuda_location_preference')return {data:null};
+        const owner=args.p_account_id;
+        let preference=sharedPreferences.get(owner)||{enabled:true,version:0};
+        if(typeof args.p_enabled==='boolean'||(args.p_legacy_disabled&&preference.version===0&&preference.enabled)){
+          if(args.p_expected_version!=null&&args.p_expected_version!==preference.version)return {error:{code:'PT412',message:'다른 화면에서 위치 설정이 바뀌었어요.'}};
+          preference={enabled:args.p_enabled??false,version:preference.version+1};sharedPreferences.set(owner,preference);
+        }
+        return {data:preference};
+      }
+    })};
+    run(sharedLocationSource);
     run(toolbarSource);
-    run(source);
+    run(source.slice(0,source.lastIndexOf('\nif (client) {\n  client.auth.onAuthStateChange')));
     if (id) signIn(id, gender);
     else run('authKnown = ready = true; selectCollection = async () => true; refreshCards = async () => {};');
     run(`window.geoCalls = 0; window.deferGeo = false;
-      currentPosition = async () => {
+      currentPosition = async (fresh=false,enable=false,signal) => {
+        const owner=session.user.id;
+        const choice=await window.OjjudaLocation.preference(client,owner);
+        if(!choice.enabled&&!enable)throw Object.assign(Error('위치가 꺼져 있어요.'),{code:'disabled'});
         window.geoCalls++;
-        if (window.deferGeo) return new Promise(resolve => { window.resolveGeo = resolve; });
-        return { latitude: 37 + window.geoCalls / 1000, longitude: 127 };
+        let position;
+        if(window.deferGeo)position=await new Promise((resolve,reject)=>{
+          window.resolveGeo=resolve;signal?.addEventListener('abort',()=>reject(new DOMException('cancelled','AbortError')),{once:true});
+        });
+        else position={latitude:37+window.geoCalls/1000,longitude:127};
+        if(enable&&!choice.enabled)await window.OjjudaLocation.setPreference(client,owner,true,choice.version);
+        return position;
       };
       draftController = null; // Unfinished text is no longer saved in production.
       prepareCardPhotoEdit = async () => {};`);
@@ -436,6 +456,32 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     draws[3].resolve('10'); await settle();
     assert.equal(byId('compose-text').value, window.pendingGuest.body);
     assert.match(preview(), /\/226\.jpg/);
+    close();boot('shared-member','female');await open();
+    run('watchLocationPreference(session.user.id)');await settle();
+    await run(`(async()=>{
+      const service=window.OjjudaLocation,id=session.user.id,p=await service.preference(client,id);
+      await service.setPreference(client,id,false,p.version);
+    })()`);await settle();
+    assert.equal(choices().location,false,'Pajang/shared off updates the real Park switch');
+    assert.equal(run('writingPosition'),null,'shared off clears the pending publishing location');
+    await run(`(async()=>{
+      const service=window.OjjudaLocation,id=session.user.id,p=await service.preference(client,id);
+      await service.setPreference(client,id,true,p.version);
+    })()`);await settle();
+    assert.equal(choices().location,true,'shared on restores the Park switch');
+    await locationClick();
+    assert.equal((await run('window.OjjudaLocation.preference(client,session.user.id)')).enabled,false,'Park off is saved for Pajang');
+    window.deferGeo=true;
+    await run(`(async()=>{
+      const service=window.OjjudaLocation,id=session.user.id,p=await service.preference(client,id);
+      await service.setPreference(client,id,true,p.version);
+    })()`);await settle();
+    assert.equal(document.getElementById('card-location-button').disabled,false,'Park can turn off while an automatic fix is pending');
+    await locationClick();
+    window.resolveGeo({latitude:36,longitude:128});await settle();
+    assert.equal(choices().location,false,'late automatic fix keeps the shared off choice');
+    assert.equal(run('writingPosition'),null);
+    run('stopLocationPreference()');
     assert.deepEqual(errors, []);
     console.log('PASS: one-panel composer toolbar, input identity, Escape, busy/edit/reply/event/guest boundaries; composer preferences, gallery, backgrounds, offline submission and login return.');
   } finally { dom?.window.close(); }

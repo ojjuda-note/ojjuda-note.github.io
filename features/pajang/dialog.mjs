@@ -1,4 +1,4 @@
-import {answeredRound,client} from './member.mjs?v=location1';
+import {answeredRound,client} from './member.mjs?v=location3';
 let opening=false;
 export async function openPajang(launch) {
   if(opening||document.querySelector('dialog.agit-pajang-dialog[open]'))return;
@@ -29,7 +29,7 @@ export async function openPajang(launch) {
   bar.append(heading, close);
   const frame = document.createElement('iframe');
   frame.title = '파장 회원 전용 소개팅';
-  frame.src = '/features/pajang/?embed=1&v=location1';
+  frame.src = '/features/pajang/?embed=1&v=location3';
   frame.allow = "geolocation 'self'; accelerometer 'self'; gyroscope 'self'; magnetometer 'self'";
   dialog.append(bar, frame);
   document.body.append(dialog);

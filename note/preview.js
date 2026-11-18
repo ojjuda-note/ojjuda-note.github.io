@@ -21,6 +21,34 @@ let accountNickname = null, accountProfileRun = 0;
 let editingId = null, composerUserId = null, moderator = false, moderatorRun = 0;
 let feedMode = 'all', feedSort = 'latest', feedTerm = '';
 let nearbyPosition = null, nearbyOffset = 0, writingPosition = null, eventPosition = null;
+let stopLocationPreference = () => {}, writingLocationController = null;
+function locationIsEnabled() { return window.OjjudaLocation?.current(session?.user?.id)?.enabled !== false; }
+function watchLocationPreference(userId) {
+  stopLocationPreference(); stopLocationPreference = () => {};
+  if (!userId || !window.OjjudaLocation) return;
+  const epoch = identityEpoch;
+  let previous;
+  const apply = choice => {
+    if (epoch !== identityEpoch || session?.user?.id !== userId) return;
+    const wasEnabled = previous; previous = choice.enabled;
+    if (!choice.enabled) {
+      locationRun++; writingLocationController?.abort();
+      nearbyPosition = null; writingPosition = null;
+      setCardLocationSwitch(false, '공원과 파장의 위치를 껐어요.');
+      updateComposer();
+      if (ready) { if(!detail.hidden)void renderDetail();else void loadFeed(false,true); }
+    } else if (wasEnabled === false) {
+      if (!backdrop.hidden && !editingId && kind !== 'event') { if(!writingLocationController)void autoWritingLocation(composerRun); }
+      else void positionIfAlreadyGranted().then(position => {
+        if (position && epoch === identityEpoch && locationIsEnabled()) { nearbyPosition = position; quietLocatedReload(); }
+      });
+    }
+  };
+  stopLocationPreference = window.OjjudaLocation.observe(client, userId, apply);
+  void window.OjjudaLocation.preference(client, userId, {
+    refresh: true, legacyDisabled: readComposerSettings(userId).locationEnabled === false
+  }).catch(() => {});
+}
 let nearbySnapshot = null;
 let publishRequestId = null, locationRun = 0;
 let replyDueChecking = false, replyDueRun = 0;
@@ -1176,7 +1204,7 @@ async function loadFeed(more = false, quiet = false) {
     searchContext.hidden = !feedTerm || feedMode !== 'all';
     searchContext.querySelector('span').textContent = feedTerm ? `태그 검색 · ${feedTerm}` : '';
   }
-  if (nearbyPosition && !positionIsFresh(nearbyPosition)) nearbyPosition = null;
+  if (!locationIsEnabled() || (nearbyPosition && !positionIsFresh(nearbyPosition))) nearbyPosition = null;
   const version = ++feedRun;
   feedLoading = true;
   if (!more) {
@@ -1196,7 +1224,7 @@ async function loadFeed(more = false, quiet = false) {
   if (feedMode === 'all' && feedSort === 'nearby' && !nearbyPosition) {
     feedLoading = false; ready = true; banner('');
     const note = node('p', 'reply-empty', '위치를 확인하면 반경 30km 안의 카드를 가까운 순서로 볼 수 있어요.');
-    const button = node('button', 'button primary', '위치 확인'); button.type = 'button';
+    const button = node('button', 'button primary', locationIsEnabled() ? '위치 확인' : '위치 켜기'); button.type = 'button';
     button.addEventListener('click', () => refreshNearbyPosition(button, version));
     list.replaceChildren(note, button); return true;
   }
@@ -1282,6 +1310,7 @@ async function loadFeed(more = false, quiet = false) {
   return true;
 }
 function locationErrorText(error) {
+  if (typeof error?.code === 'string') return error.message;
   if (error?.code === 1) return '위치 권한을 허용한 뒤 다시 눌러 주세요.';
   if (error?.code === 2) return '휴대폰 위치를 켜고 다시 시도해 주세요.';
   if (error?.code === 3) return '위치 확인 시간이 지났어요. 다시 시도해 주세요.';
@@ -1291,7 +1320,7 @@ async function refreshNearbyPosition(button, version) {
   const epoch = identityEpoch, label = button.textContent;
   button.disabled = true; button.textContent = '위치 확인 중…'; message('');
   try {
-    const position = await currentPosition(true);
+    const position = await currentPosition(true, true);
     if (version !== feedRun || epoch !== identityEpoch || feedMode !== 'all' || feedSort !== 'nearby') return;
     nearbyPosition = position;
     await loadFeed();
@@ -1301,23 +1330,20 @@ async function refreshNearbyPosition(button, version) {
     if (button.isConnected) { button.disabled = false; button.textContent = label; }
   }
 }
-function currentPosition(fresh = false) {
-  return new Promise((resolve, reject) => {
-    const unavailable = (message, code = 2) => Object.assign(new Error(message), { name: 'GeolocationPositionError', code });
-    if (!navigator.geolocation) { reject(unavailable('Location unavailable')); return; }
-    navigator.geolocation.getCurrentPosition(
-      value => resolve({ latitude: value.coords.latitude, longitude: value.coords.longitude,
-        capturedAt: value.timestamp }),
-      error => reject(unavailable(error.message || 'Location unavailable', error.code)),
-      { enableHighAccuracy: fresh, maximumAge: fresh ? 0 : 60000, timeout: 15000 }
-    );
-  });
+async function currentPosition(fresh = false, enable = false, signal) {
+  const service = window.OjjudaLocation, userId = session?.user?.id;
+  if (!service) throw Error('위치 기능을 불러오지 못했어요. 새로고침해 주세요.');
+  const choice = await service.preference(client, userId);
+  const position = await service.readPosition({db:client,accountId:userId,fresh,allowDisabled:enable,signal});
+  if (userId && userId !== session?.user?.id) throw Error('회원 정보를 다시 확인해 주세요.');
+  if (enable && userId && !choice.enabled) await service.setPreference(client,userId,true,choice.version);
+  return position;
 }
 function positionIsFresh(position) {
   return Number.isFinite(position?.capturedAt) && Date.now() - position.capturedAt < 120000;
 }
 async function positionIfAlreadyGranted() {
-  if (!navigator.geolocation || !navigator.permissions?.query) return null;
+  if (!locationIsEnabled() || !navigator.geolocation || !navigator.permissions?.query) return null;
   try {
     const permission = await navigator.permissions.query({ name: 'geolocation' });
     if (permission.state === 'granted') return await currentPosition();
@@ -1944,29 +1970,25 @@ function installFeatures() {
   });
   $('#card-location-button').addEventListener('click', async () => {
     if (busy || draftLoading || backdrop.hidden || editingId || kind === 'event' || composerUserId !== session?.user?.id) return;
-    if ($('#card-location-button').getAttribute('aria-checked') === 'true') {
-      rememberComposerSetting('locationEnabled', false);
-      locationRun++;
-      writingPosition = null;
-      setCardLocationSwitch(false, '위치를 껐어요. 등록하려면 다시 켜 주세요.');
-      updateComposer();
-      return;
+    const userId=session.user.id, service=window.OjjudaLocation;
+    if(writingLocationController&&!locationIsEnabled()){
+      locationRun++;writingLocationController.abort();writingLocationController=null;writingPosition=null;
+      setCardLocationSwitch(false,'위치 확인을 취소했어요. 공원과 파장은 꺼진 상태예요.');updateComposer();return;
     }
-    rememberComposerSetting('locationEnabled', true);
-    const run = ++locationRun;
-    writingPosition = null;
-    setCardLocationSwitch(true, '위치를 확인하는 중이에요.', true);
-    updateComposer();
+    if (!service) { setCardLocationSwitch(false,'위치 기능을 불러오지 못했어요. 새로고침해 주세요.',false,true); return; }
     try {
-      const position = await currentPosition();
-      if (run !== locationRun || backdrop.hidden || kind === 'event' || editingId) return;
-      writingPosition = position; nearbyPosition = position;
-      setCardLocationSwitch(true, '위치를 켰어요. 정확한 좌표는 카드에 표시되지 않아요.');
-    } catch (error) {
-      if (run !== locationRun || backdrop.hidden) return;
-      writingPosition = null;
-      setCardLocationSwitch(false, locationErrorText(error), false, true);
-    } finally { if (run === locationRun) updateComposer(); }
+      const choice=await service.preference(client,userId);
+      if (composerUserId!==userId || session?.user?.id!==userId || backdrop.hidden) return;
+      if (choice.enabled) {
+        $('#card-location-button').disabled=true;
+        await service.setPreference(client,userId,false,choice.version);
+        rememberComposerSetting('locationEnabled',false);
+        locationRun++; writingLocationController?.abort();writingPosition=null;nearbyPosition=null;
+        setCardLocationSwitch(false,'공원과 파장의 위치를 껐어요.');updateComposer();
+      } else await loadWritingLocation(composerRun,true);
+    } catch(error) {
+      if(session?.user?.id===userId&&!backdrop.hidden)setCardLocationSwitch(locationIsEnabled(),locationErrorText(error),false,true);
+    }finally{if(session?.user?.id===userId)$('#card-location-button').disabled=busy||draftLoading;}
   });
   $('#compose-box-transparency')?.addEventListener('input', event => {
     setBoxTransparency(event.target.value);
@@ -2711,17 +2733,42 @@ async function openComposer(mode, card = null, replyTo = null, pending = null) {
   }
   if (!guest && !editingId && kind !== 'event' && run === composerRun && !backdrop.hidden) autoWritingLocation(run);
 }
-function autoWritingLocation(run) {
-  const button = $('#card-location-button');
-  if (!button || run !== composerRun || backdrop.hidden || $('#card-location-consent').hidden) return;
-  if (!readComposerSettings().locationEnabled) return;
-  if (button.getAttribute('aria-checked') === 'true') return;
-  if (button.disabled) { setTimeout(() => autoWritingLocation(run), 200); return; }
-  button.click();
+async function loadWritingLocation(run, enable = false) {
+  const button=$('#card-location-button'),userId=session?.user?.id;
+  if(!button||run!==composerRun||backdrop.hidden||$('#card-location-consent').hidden||!userId)return;
+  const request=++locationRun;writingLocationController?.abort();
+  const controller=new AbortController();writingLocationController=controller;
+  writingPosition=null;setCardLocationSwitch(enable||locationIsEnabled(),'위치를 확인하고 있어요.',true);updateComposer();
+  try {
+    const position=await currentPosition(false,enable,controller.signal);
+    if(request!==locationRun||run!==composerRun||backdrop.hidden||userId!==session?.user?.id||!locationIsEnabled())return;
+    writingPosition=position;nearbyPosition=position;
+    if(enable)rememberComposerSetting('locationEnabled',true);
+    setCardLocationSwitch(true,'공원과 파장에서 함께 사용해요.');
+  }catch(error){
+    if(request===locationRun&&run===composerRun&&!backdrop.hidden){
+      writingPosition=null;setCardLocationSwitch(locationIsEnabled(),locationErrorText(error),false,true);
+    }
+  }finally{if(request===locationRun){writingLocationController=null;updateComposer();}}
+}
+async function autoWritingLocation(run) {
+  const userId=session?.user?.id;
+  if(!userId||!window.OjjudaLocation)return;
+  try {
+    $('#card-location-button').disabled=true;
+    const choice=await window.OjjudaLocation.preference(client,userId,{legacyDisabled:readComposerSettings().locationEnabled===false});
+    if(run!==composerRun||backdrop.hidden||userId!==session?.user?.id)return;
+    if(!choice.enabled){setCardLocationSwitch(false,'공원과 파장의 위치가 꺼져 있어요.');return;}
+    if(writingPosition)return;
+    $('#card-location-button').disabled=busy||draftLoading;
+    await loadWritingLocation(run);
+  }catch(error){if(run===composerRun&&!backdrop.hidden)setCardLocationSwitch(false,locationErrorText(error),false,true);}
+  finally{if(run===composerRun)$('#card-location-button').disabled=busy||draftLoading;}
 }
 
 function closeComposer(saveDraft = true) {
   if (busy) return;
+  writingLocationController?.abort();
   composeInkComposing = false;
   composerTools?.close(false);
   clearLocalComposer();
@@ -3762,10 +3809,12 @@ $('#quick-gender')?.addEventListener('change', event => pickQuickChoice('gender'
 
 
 function receiveAuth(current) {
+  const previousUserId=session?.user?.id;
   const firstSession = !authKnown;
   const changed = session?.user?.id !== current?.user?.id;
   session = current; authKnown = true;
   if (changed) {
+    stopLocationPreference();writingLocationController?.abort();window.OjjudaLocation?.forget(previousUserId);
     accountNickname = null; accountProfileRun++;
     identityEpoch++;
     myIdentity = null; myIdentityReady = false; myIdentityPromise = null; myGender = 'private'; setGenderInputs(true);
@@ -3793,6 +3842,7 @@ function receiveAuth(current) {
   setTimeout(() => {
     if (epoch !== identityEpoch) return;
     if (firstSession || changed) {
+      watchLocationPreference(current?.user?.id);
       feedDeferred = validCardId(initialCardId);
       if (feedDeferred) consumeInitialCard();
       else void loadFeed();

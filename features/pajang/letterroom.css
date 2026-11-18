@@ -14,6 +14,9 @@
 .radar-location-setting [role=switch][aria-checked=true] {background:#50664c;border-color:#50664c}
 .radar-location-setting [role=switch][aria-checked=true]>span {transform:translateX(19px)}
 .radar-location-setting [role=switch]:disabled {opacity:.65;cursor:wait}
+.radar-location-feedback {display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:-8px 0 18px;padding:0 4px}
+.radar-location-feedback .radar-feedback {flex:1 1 220px;margin:0;line-height:1.6;overflow-wrap:anywhere}
+.radar-location-feedback button {flex:none}
 body {background:var(--bg);color:var(--ink)}
 .pajang-mast {background:#fbf8f2f7;border-color:var(--line);color:var(--ink)}
 .pajang-mast-inner {display:flex;width:min(1120px,calc(100% - 64px));height:68px;gap:18px}

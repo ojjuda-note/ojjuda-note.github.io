@@ -256,11 +256,45 @@
     const steps = rungs.map((col,i)=>`<line x1="${x(col)}" x2="${x(col+1)}" y1="${y(i)}" y2="${y(i)}"/>`).join('');
     return `<div class="ladder-scroll"><div class="ladder-board" style="min-width:${width}px;--lanes:${activity.names.length}">
       <div class="ladder-labels">${activity.names.map((name,i)=>`<button type="button" data-lane="${i}" aria-pressed="${i===selected}">${esc(name)}</button>`).join('')}</div>
-      <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true"><g>${rails}${steps}</g><polyline pathLength="1" points="${path.points}"/></svg>
-      <div class="ladder-labels">${activity.options.map((option,i)=>`<span class="${i===path.col?'chosen':''}">${esc(option)}</span>`).join('')}</div></div></div>
-      <p class="draw-result" role="status">${esc(activity.names[selected])} → ${esc(activity.options[path.col])}</p>
-      <h4>참가자별 결과</h4><dl class="ladder-results">${routes.map((route,i)=>
-        `<div><dt>${esc(activity.names[i])}</dt><dd>${esc(activity.options[route.col])}</dd></div>`).join('')}</dl>`;
+      <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true"><g>${rails}${steps}</g>${path ? `<polyline points="${path.points}"/><circle r="5"/>` : ''}</svg>
+      <div class="ladder-labels ladder-finish">${activity.options.map((_,i)=>`<span data-finish="${i}">${i+1}</span>`).join('')}</div></div></div>`;
+  }
+
+  function drawStage(kind, board, action) {
+    return `<section class="draw-stage" data-stage="${kind}">
+      ${board}
+      <div class="draw-display"><p data-draw-status role="status"></p></div>
+      ${action ? `<button type="button" class="primary draw-action" data-draw>${action}</button>` : ''}
+    </section>`;
+  }
+
+  function traceLadder(board, dialog) {
+    const path = board.querySelector('polyline'), dot = board.querySelector('circle');
+    if (!path?.getTotalLength || !window.requestAnimationFrame) return Promise.resolve();
+    const length = path.getTotalLength(), scroll = board.closest('.ladder-scroll');
+    const svg = path.ownerSVGElement;
+    const duration = Math.min(4400, 1950 + length * 3);
+    path.style.strokeDasharray = length;
+    path.style.strokeDashoffset = length;
+    return new Promise(resolve => {
+      let start;
+      function step(time) {
+        if (!dialog.isConnected || !dialog.open) { resolve(); return; }
+        start ??= time;
+        const progress = Math.min(1, (time - start) / duration);
+        const distance = length * (1 - Math.pow(1 - progress, 1.5));
+        const point = path.getPointAtLength(distance);
+        path.style.strokeDashoffset = length - distance;
+        dot.setAttribute('cx', point.x);
+        dot.setAttribute('cy', point.y);
+        const x = point.x * svg.clientWidth / svg.viewBox.baseVal.width;
+        const maxScroll = scroll.scrollWidth - scroll.clientWidth;
+        if (maxScroll > 0) scroll.scrollLeft = Math.max(0, Math.min(maxScroll, x - scroll.clientWidth / 2));
+        if (progress < 1) window.requestAnimationFrame(step);
+        else resolve();
+      }
+      window.requestAnimationFrame(step);
+    });
   }
 
   async function open(post, {dialog, api, esc, failure}) {
@@ -268,7 +302,7 @@
     const d = dialog(labels[a.kind], `<h3 class="activity-subject">${esc(post.title)}</h3><div data-panel aria-busy="true"><p class="muted">불러오는 중…</p></div><p class="error" role="alert"></p>`);
     d.dataset.activityKind=a.kind;
     const panel = d.querySelector('[data-panel]'), error = d.querySelector('.error');
-    let state, busy = false, lane = 0, changingVote = false;
+    let state, busy = false, lane = null, changingVote = false;
 
     function copyText() {
       let lines;
@@ -293,22 +327,78 @@
         if(state.mine!=null && !changingVote)resultTools();
         return;
       }
-      if (a.kind === 'ladder' && state.result) {
-        panel.innerHTML = '<p class="hint">이름을 눌러 사다리를 따라가 보세요.</p>' + ladder(a,state.result.rungs,lane,esc);
-        resultTools();
-        return;
-      }
-      const isWheel = a.kind === 'wheel', winner = state.result?.winner;
-      const list = values => `<ol class="activity-legend">${values.map((v,i)=>
-        `<li ${i===winner?'class="wheel-winner"':''}>${esc(v)}${i===winner?' <b>당첨</b>':''}</li>`).join('')}</ol>`;
-      panel.innerHTML = isWheel ? wheel(options,winner,esc) + list(options) :
-        '<h4>참가자</h4>' + list(a.names) + '<h4>도착할 결과</h4>' + list(options);
-      if (state.result) {
-        panel.insertAdjacentHTML('beforeend',`<p class="draw-result" role="status">뽑힌 항목 · ${esc(options[winner])}</p>`);
-        resultTools();
+      const isWheel = a.kind === 'wheel';
+      const list = values => `<ol class="activity-legend">${values.map(v=>`<li>${esc(v)}</li>`).join('')}</ol>`;
+      if (isWheel) {
+        panel.innerHTML = drawStage('wheel', wheel(options,null,esc),
+          state.result ? '저장된 추첨 보기' : '돌림판 돌리기') + list(options);
+      } else if (state.result) {
+        panel.innerHTML = drawStage('ladder',ladder(a,state.result.rungs,lane,esc));
+        panel.querySelector('[data-draw-status]').textContent = '출발할 참가자를 선택하세요.';
       } else {
-        panel.insertAdjacentHTML('beforeend',`<p class="hint">한 번 뽑으면 모든 그룹원이 같은 결과를 봐요.</p>
-          <button class="primary" type="button" data-draw>${isWheel?'돌림판 돌리기':'사다리 타기'}</button>`);
+        panel.innerHTML = drawStage('ladder','<h4>참가자</h4>'+list(a.names)+'<h4>도착할 결과</h4>'+list(options),'사다리 타기');
+      }
+      if (!state.result) panel.insertAdjacentHTML('beforeend','<p class="hint">모든 그룹원이 같은 결과를 봐요.</p>');
+    }
+
+    async function reveal(selected) {
+      const isWheel = a.kind === 'wheel', result = state.result;
+      const winner = result.winner;
+      lane = selected;
+      const previousScroll = panel.querySelector('.ladder-scroll')?.scrollLeft || 0;
+      const expanded = panel.querySelector('.draw-all')?.open || false;
+      render();
+      const stage = panel.querySelector('[data-stage]'), status = stage.querySelector('[data-draw-status]');
+      const button = stage.querySelector('[data-draw]');
+      const controls = [...stage.querySelectorAll('button')];
+      const scroll = stage.querySelector('.ladder-scroll');
+      if (scroll) scroll.scrollLeft = previousScroll;
+      controls.forEach(control=>{ control.disabled = true; });
+      stage.dataset.phase = 'running';
+      status.textContent = isWheel ? '돌림판이 돌아가는 중…' : a.names[lane]+' · 내려가는 중…';
+      const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      if (!reduceMotion) {
+        if (isWheel) {
+          const disc = stage.querySelector('.activity-wheel');
+          const angle = 2160 - (winner + 0.5) * 360 / options.length;
+          const rotation = disc.animate?.([
+            {transform:'rotate(0deg)',offset:0,easing:'cubic-bezier(.16,.58,.42,1)'},
+            {transform:`rotate(${angle - 72}deg)`,offset:.72,easing:'cubic-bezier(.25,.62,.24,1)'},
+            {transform:`rotate(${angle}deg)`,offset:1}
+          ], {duration:4250,fill:'forwards'});
+          if (rotation) {
+            const stop = () => rotation.cancel();
+            d.addEventListener('close',stop,{once:true});
+            await rotation.finished.catch(()=>{});
+            d.removeEventListener('close',stop);
+            stop();
+          }
+        } else {
+          await traceLadder(stage.querySelector('.ladder-board'),d);
+        }
+      }
+      if (!d.isConnected || !d.open) return;
+      stage.dataset.phase = 'revealed';
+      controls.forEach(control=>{ control.disabled = false; });
+      if (isWheel) {
+        stage.querySelector('.activity-wheel-frame').outerHTML = wheel(options,winner,esc);
+        const item = panel.querySelector('.activity-legend').children[winner];
+        item.classList.add('wheel-winner');
+        item.insertAdjacentHTML('beforeend',' <b>당첨</b>');
+        button.textContent = '다시 보기';
+        status.innerHTML = `<span>당첨</span><strong>${esc(options[winner])}</strong>`;
+      } else {
+        const {routes} = ladderRoutes(a,result.rungs), finish = routes[lane].col;
+        stage.querySelector(`[data-finish="${finish}"]`).classList.add('chosen');
+        status.innerHTML = `<span>${esc(a.names[lane])} 도착</span><strong>${esc(options[finish])}</strong>`;
+        panel.insertAdjacentHTML('beforeend',`<details class="draw-all" ${expanded?'open':''}><summary>참가자별 결과</summary><dl class="ladder-results">${routes.map((route,i)=>
+          `<div><dt>${esc(a.names[i])}</dt><dd>${esc(options[route.col])}</dd></div>`).join('')}</dl></details>`);
+      }
+      resultTools();
+      // Keep focus in the dialog after replacing the clicked control.
+      const focus = isWheel ? button : stage.querySelector(`[data-lane="${lane}"]`);
+      if (document.activeElement === document.body || document.activeElement === d) {
+        focus.focus({preventScroll:true});
       }
     }
 
@@ -322,18 +412,10 @@
       try {
         const next = await api(action,{id:post.id,...extra});
         if (!d.isConnected) return;
-        if (a.kind==='wheel' && action==='activity_draw' && !state?.result) {
-          const disc = panel.querySelector('.activity-wheel');
-          if (disc?.animate && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-            const angle = 1440-(next.result.winner+0.5)*360/options.length;
-            await disc.animate([{transform:'rotate(0deg)'},{transform:`rotate(${angle}deg)`}],
-              {duration:1350,easing:'cubic-bezier(.16,.65,.18,1)',fill:'forwards'}).finished;
-          }
-        }
-        if (!d.isConnected) return;
         state = next;
         changingVote = false;
-        render();
+        if (action==='activity_draw') await reveal(0);
+        else render();
         if (action==='activity_vote') panel.querySelector('[data-results-heading]')?.focus();
       } catch (err) {
         if (!d.isConnected) return;
@@ -375,14 +457,15 @@
         changingVote = b.hasAttribute('data-change-vote');
         render();
         panel.querySelector(changingVote?'input:checked':'[data-results-heading]')?.focus();
-      } else if (b.hasAttribute('data-draw')) void request('activity_draw');
+      } else if (b.hasAttribute('data-draw') && !state.result) void request('activity_draw');
       else if (b.hasAttribute('data-reload')) void request('activity_state');
-      else if (b.hasAttribute('data-lane')) {
-        const scrollLeft=panel.querySelector('.ladder-scroll').scrollLeft;
-        lane = Number(b.dataset.lane);
-        render();
-        panel.querySelector('.ladder-scroll').scrollLeft=scrollLeft;
-        panel.querySelector(`[data-lane="${lane}"]`).focus({preventScroll:true});
+      else if (b.hasAttribute('data-lane') || b.hasAttribute('data-draw')) {
+        busy = true;
+        try {
+          await reveal(Number(b.dataset.lane ?? 0));
+        } finally {
+          busy = false;
+        }
       }
     };
     await request('activity_state');

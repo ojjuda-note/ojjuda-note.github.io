@@ -6,6 +6,7 @@ import regionCatalog from "../../regions.json";
 import {InterestArt as Art} from "./interest-art";
 import {I} from "./icons";
 import NearbyRadar from "./nearby-radar";
+import {prepareLocation} from "../../location.mjs";
 import MyAnswers from "./my-answers";
 import AnswerHistory, {type DiscoveryAnswer} from "./answer-history";
 import AnswerGenderVisibility from "./answer-gender-visibility";
@@ -91,6 +92,38 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const [messages,setMessages]=useState<Message[]>([]),[draft,setDraft]=useState(""),[busy,setBusy]=useState(false),[error,setError]=useState(""),[toast,setToast]=useState(initialStation.locationNotice||""),[net,setNet]=useState(""),[ready,setReady]=useState(false);
   const [historyRevision,setHistoryRevision]=useState(0);
   const lock=useRef(false),serverRevision=useRef(0),bottom=useRef<HTMLDivElement>(null);
+  const liveRef=useRef(live);liveRef.current=live;
+  const locationAccount=useRef("");
+  useEffect(()=>{
+    let closed=false,unsubscribe=()=>{};
+    void window.OjjudaGetClient().then(async db=>{
+      const {data:{session}}=await db.auth.getSession();
+      if(closed||!session?.user||session.user.is_anonymous)return;
+      const accountId=session.user.id;locationAccount.current=accountId;
+      const service=(window as any).OjjudaLocation;
+      const current=liveRef.current;
+      service.acceptPreference(accountId,{enabled:current.locationEnabled!==false,version:current.locationVersion??0},true);
+      unsubscribe=service.subscribe(accountId,(choice:{enabled:boolean;version:number})=>{
+        const previous=liveRef.current;
+        if(closed||choice.version<(previous.locationVersion??0)||
+          (choice.version===previous.locationVersion&&choice.enabled===previous.locationEnabled))return;
+        const next={...previous,locationEnabled:choice.enabled,locationVersion:choice.version,
+          radarOn:choice.enabled?previous.radarOn:false};
+        liveRef.current=next;setLive(next);
+        const revision=++serverRevision.current;
+        if(choice.enabled&&previous.locationEnabled===false){
+          void prepareLocation({...next,locationChecked:false},db,accountId).then(result=>{
+            if(!closed&&serverRevision.current===revision)setLive(result);
+          });
+        }
+      });
+    }).catch(()=>{});
+    return()=>{closed=true;unsubscribe();};
+  },[]);
+  useEffect(()=>{
+    if(locationAccount.current)(window as any).OjjudaLocation.acceptPreference(locationAccount.current,
+      {enabled:live.locationEnabled!==false,version:live.locationVersion??0},true);
+  },[live.locationEnabled,live.locationVersion]);
   const s=live,me=s.me,theme=s.question??themeFor(s.day,s.slot),period=s.day+"/"+s.slot;
   const slotName=s.slot==="am"?"오전":"오후";
   const obsoleteAnswer=pendingModal?.kind==="answer" && (pendingModal.questionId!==s.question?.id ||
@@ -221,6 +254,10 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       if(action==="block"||action==="answer"||action==="edit-answer")setHistoryRevision(n=>n+1);
       return next;
     }catch(e){
+      if(action==='radar-enable'||action==='radar-disable'){
+        if(e instanceof Error && 'code' in e && e.code==='PT412')await refresh();
+        throw e;
+      }
       if(origin!==navigationId.current)return null;
       if(b.answerDay && e instanceof Error && "code" in e && (e.code==="PT409"||e.code==="42501")){
         setModal(null);setToast("이 답변은 더 이상 볼 수 없어요.");setHistoryRevision(n=>n+1);void refresh();
