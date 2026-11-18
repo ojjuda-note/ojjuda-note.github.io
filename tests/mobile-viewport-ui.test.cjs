@@ -218,6 +218,10 @@ async function checkCompactColors(page, viewport, area, keyboard = false) {
 
         if (source === 'note') {
           await page.evaluate(async () => {await openComposer('memo');document.querySelector('#publish-card').disabled=false;});
+          assert.equal(await page.locator('#compose-text').evaluate(input=>document.activeElement===input),true,
+            'the initial writer focuses the native text field at every viewport size');
+          await page.keyboard.insertText('열자마자 한글 입력');
+          assert.equal(await page.locator('#compose-text').inputValue(),'열자마자 한글 입력');
           await assertInside(page, page.locator('#publish-card'), area, 'note publish');
           for (const button of await page.locator('[data-compose-tool]').all()) {
             await assertInside(page, button, area, 'note option toolbar');

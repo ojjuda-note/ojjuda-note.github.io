@@ -155,12 +155,19 @@ test('group writing tools, keyboard layout, photos and full drafts stay usable a
         const tool=key=>writer.locator('[data-group-tool='+key+']');
         const submit=writer.locator('.group-compose-head [type=submit]');
         await writer.waitFor();await settle(page);
-        assert.equal(await body.evaluate(node=>document.activeElement===node),false,'initial opening leaves the keyboard closed');
+        assert.equal(await title.evaluate(node=>document.activeElement===node),true,'opening directly focuses the title for native typing');
+        await page.keyboard.insertText('바로 적는 우리 모임');
+        assert.equal(await title.inputValue(),'바로 적는 우리 모임','Korean typing reaches the title without a second field tap');
         assert.equal(await writer.locator('[data-group-panel]:not([hidden])').count(),0);
         assert.equal(await tool('plan').isVisible(),true);assert.equal(await tool('room').isDisabled(),false);
         assert.equal(await writer.locator('.group-compose-toolbar [data-group-tool=room]').count(),0);
         await verifyLayout(page,viewport,{top:0,bottom:viewport.height});
         await snapshot(page,'group-writing-'+viewport.width);
+        await viewportArea(page,300,17);
+        await inside(page,'#composer [name=title]',{top:17,bottom:317},'initial title above the keyboard');
+        await verifyLayout(page,viewport,{top:17,bottom:317});
+        await snapshot(page,'group-title-keyboard-'+viewport.width);
+        await viewportArea(page,viewport.height);
 
         await tool('poll').tap();
         assert.equal(await writer.locator('[name=kind]').inputValue(),'poll');
@@ -267,10 +274,17 @@ test('group writing tools, keyboard layout, photos and full drafts stay usable a
         await page.locator('[data-edit]').waitFor();
         assert.equal(await page.evaluate(()=>document.body.style.overflow),'','closing restores the document scroll');
 
-        await page.locator('[data-action=compose]').tap();await writer.waitFor();
+        await page.locator('[data-action=compose]').focus();await page.locator('[data-action=compose]').tap();await writer.waitFor();
         assert.equal(await body.inputValue(),'');assert.equal(await writer.locator('[data-group-panel]:not([hidden])').count(),0);
+        assert.equal(await title.evaluate(node=>document.activeElement===node),true,'reopening focuses the new empty title');
         await writer.locator('[data-close]').tap();await writer.waitFor({state:'detached'});
+        assert.equal(await page.locator('[data-action=compose]').evaluate(node=>document.activeElement===node),true,
+          'closing an empty writer restores the focused opener');
         await page.locator('[data-edit]').tap();await writer.waitFor();
+        assert.equal(await title.evaluate(node=>document.activeElement===node),true,'editing focuses the existing title');
+        const titleEnd=(await title.inputValue()).length;
+        assert.deepEqual(await title.evaluate(node=>[node.selectionStart,node.selectionEnd]),
+          [titleEnd,titleEnd],'editing places the cursor after the existing title');
         assert.equal(await body.inputValue(),writing);assert.equal(await writer.locator('[name=room_id]').isDisabled(),true);
         assert.equal(await tool('room').isDisabled(),true,'editing retains the original room');
         assert.equal(await tool('plan').getAttribute('data-selected'),'true');

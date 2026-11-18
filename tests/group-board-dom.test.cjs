@@ -44,7 +44,7 @@ function fixture({empty=false,guest=false,member=false,publicGroups=true,hash=''
 }
 test('writing tools preserve the same body, selection and draft while options open and close',async()=>{
   const f=fixture({hash:'#room='+room});try{
-    await tick();const d=f.w.document;d.querySelector('[data-action=compose]').click();
+    await tick();const d=f.w.document,opener=d.querySelector('[data-action=compose]');opener.focus();opener.click();
     const form=d.querySelector('#composer'),dialog=form.closest('dialog'),body=form.elements.body;
     assert.ok(dialog.classList.contains('group-writing-dialog'));
     assert.ok(form.querySelector('.group-compose-head [type=submit]'));
@@ -54,7 +54,8 @@ test('writing tools preserve the same body, selection and draft while options op
       ['post','photo','plan','poll','bet'],'the five writing categories stay in the requested order');
     assert.ok([...form.querySelectorAll('.group-compose-toolbar [data-group-tool]')].every(button=>button.querySelector('svg')),
       'each category has a picture icon');
-    assert.notEqual(d.activeElement,body,'opening the composer does not open the native keyboard');
+    assert.equal(d.activeElement,form.elements.title,'the initiating click synchronously focuses the title for writing');
+    assert.deepEqual([form.elements.title.selectionStart,form.elements.title.selectionEnd],[0,0]);
     assert.equal(form.querySelector('[data-group-tool=room]').disabled,true,'one available group needs no picker');
     assert.equal(form.querySelector('[data-group-tool=room]').closest('.group-compose-toolbar'),null,'group context stays outside the five categories');
     assert.equal(form.querySelector('[data-group-tool=plan]').hidden,false,'plans remain directly available for an ordinary post');
@@ -94,6 +95,9 @@ test('writing tools preserve the same body, selection and draft while options op
     assert.deepEqual(selected(),before,'closing an option does not discard or replace writing');
     dialog.querySelector('[data-close]').click();assert.ok(d.querySelector('[data-no]'));d.querySelector('[data-no]').click();
     assert.equal(form.elements.body,body);assert.deepEqual(selected(),before);
+    dialog.querySelector('[data-close]').click();d.querySelector('[data-yes]').click();
+    assert.equal(d.querySelector('#composer'),null);
+    assert.equal(d.activeElement,opener,'closing the writing screen restores its original opener');
   }finally{f.dom.window.close();}
 });
 test('plans open directly and save complete new schedules while existing trips retain their dates and kind',async()=>{
@@ -125,6 +129,9 @@ test('plans open directly and save complete new schedules while existing trips r
     assert.equal(fresh.querySelector('#schedule-fields').hidden,true);
     fresh.closest('dialog').querySelector('[data-close]').click();
     d.querySelector('[data-edit]').click();const edit=d.querySelector('#composer');
+    assert.equal(d.activeElement,edit.elements.title,'editing synchronously focuses the existing title');
+    assert.deepEqual([edit.elements.title.selectionStart,edit.elements.title.selectionEnd],
+      [edit.elements.title.value.length,edit.elements.title.value.length],'editing starts at the end of the existing title');
     assert.equal(edit.elements.room_id.disabled,true);assert.equal(edit.querySelector('[data-group-tool=room]').disabled,true);
     assert.equal(edit.querySelector('[data-group-tool=plan]').dataset.selected,'true');
     assert.equal(edit.elements.kind.value,'trip');assert.equal(edit.elements.title.value,'부산에서 보내는 주말');

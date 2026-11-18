@@ -73,7 +73,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
  try{
- const context=await browser.newContext({viewport:{width:390,height:850}});
+ const context=await browser.newContext({viewport:{width:390,height:850},hasTouch:true});
  await context.route('**/*',route=>{
    const url=new URL(route.request().url());if(url.hostname!=='fixture.test')return route.abort();
    if(url.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});
@@ -89,7 +89,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await checkComposerTools(frame,'390 initial');
  if(process.env.OJJUDA_COPY_PROOF_DIR){fs.mkdirSync(process.env.OJJUDA_COPY_PROOF_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.OJJUDA_COPY_PROOF_DIR,'composer-initial-390.png')});}
  await checkWritingCopy(frame);
- assert.equal(await frame.evaluate(()=>document.activeElement===document.querySelector('.composer')),true,'opening the writer leaves the phone keyboard closed');
+ assert.equal(await frame.locator('#compose-text').evaluate(node=>document.activeElement===node),true,'opening the writer focuses its native writing input');
  assert.equal(await frame.locator('[data-compose-panel]:visible').count(),0,'options start collapsed');
  await frame.evaluate(()=>window.fixtureToken='kept');
  await frame.locator('#compose-text').fill('아직 작성 중인 공원의 이야기');
@@ -129,9 +129,11 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await page.evaluate(()=>parkFixture.close());
  assert.equal(await frame.locator('#composer-backdrop').isVisible(),false);
  await checkPageNavigationRestored(page,'390 initial close');
- await page.evaluate(()=>parkFixture.open('compose'));
+ await page.locator('.park-compose-fab').tap();
  await frame.locator('#composer-backdrop').waitFor({state:'visible'});
- await frame.locator('#compose-text').fill('직접 닫기를 확인한 글');
+ assert.equal(await frame.locator('#compose-text').evaluate(node=>document.activeElement===node),true,'tapping the writing button focuses the input directly');
+ await page.keyboard.insertText('직접 닫기를 확인한 글');
+ assert.equal(await frame.locator('#compose-text').inputValue(),'직접 닫기를 확인한 글','Korean typing works without another tap on the writing area');
  await frame.evaluate(()=>{window.discardConfirmCount=0;window.confirm=()=>{window.discardConfirmCount++;return true;};});
  await frame.locator('#close-composer').click();
  assert.equal(await frame.locator('#composer-backdrop').isVisible(),false,'accepting direct close discards the draft');

@@ -309,7 +309,10 @@
       document.body.style.overflow = oldOverflow;
     }, {once:true});
     sync();
-    dialog.focus({preventScroll:true});
+    // Keep the first editable focus inside the tap that opened the writer.
+    const firstField = form.elements.title;
+    firstField.focus({preventScroll:true});
+    firstField.setSelectionRange(firstField.value.length, firstField.value.length);
     const api = Object.freeze({sync, open, close});
     form.ojjudaWriter = api;
     return api;
