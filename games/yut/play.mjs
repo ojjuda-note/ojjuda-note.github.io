@@ -1,9 +1,9 @@
 import {roundSummary} from './results.mjs?v=20261117-arcade-score-repair1';
-import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,chooseFirstSeat,firstSeatRemaining,firstSeatTiming,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=19';
+import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,newMatch,firstSeatRemaining,firstSeatTiming,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=20';
 import {createBoard,PAWN_HOP_MS} from './board.mjs?v=28';
 import {createToss,drawRack,drawFirstSeatStick} from './toss.mjs?v=14';
 import {createTableSounds} from './sound.mjs?v=5';
-import {openRoom,roomCode} from './room.mjs?v=19';
+import {openRoom,roomCode} from './room.mjs?v=20';
 import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=5';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
@@ -252,7 +252,14 @@ function reveal(s){
 const firstSeatLayer=$('first-seat');
 const firstSeatStick=$('first-seat-stick');
 drawFirstSeatStick(firstSeatStick.querySelector('canvas'));
-let firstSeatAnimation, pickingFirst=false;
+let firstSeatAnimation, pickingFirst=false, firstSeatRevealed=false;
+function advanceOpening(type){
+  if(net&&(!net.isHost||!net.connected||!room))return;
+  resumeActionFocus=true;
+  const action={type};
+  if(net)room.opening(action);
+  else{local=act(local,action);void showState(local,false);}
+}
 
 async function showFirstSeat(s,token,remaining){
   const circle=$('first-seat-circle');
@@ -272,23 +279,22 @@ async function showFirstSeat(s,token,remaining){
   });
   circle.replaceChildren(firstSeatStick,...seats);
   firstSeatLayer.classList.remove('resolved');
-  heading.textContent='선을 정하는 중…';
+  const ready=s.phase==='opening'&&s.firstSeatAt==null;
+  heading.textContent=ready?'윷을 돌려 선을 정해요':'선을 정하는 중…';
   order.replaceChildren();
   firstSeatLayer.style.setProperty('--winner-color',TEAMS[s.team].color);
   const angle=1080+s.team*degrees;
   const rotate=degrees=>`rotate(${degrees-90}deg)`;
   const [spinMs,resultMs]=firstSeatTiming(s);
   const spin=Math.max(0,remaining-resultMs);
-  firstSeatStick.style.transform=rotate(angle);
+  firstSeatStick.style.transform=rotate(ready?0:angle);
   firstSeatLayer.hidden=false;
+  if(ready)return;
   if(spin){
     if(!reduced.matches&&firstSeatStick.animate){
       firstSeatAnimation=firstSeatStick.animate([
-        {transform:rotate(0),offset:0,easing:'cubic-bezier(.45,.18,.3,1)'},
-        {transform:rotate(angle-145),offset:.55,easing:'cubic-bezier(.18,.35,.45,1)'},
-        {transform:rotate(angle-30),offset:.82,easing:'cubic-bezier(.2,.32,.37,1)'},
-        {transform:rotate(angle),offset:1}
-      ],{duration:spinMs,fill:'forwards'});
+        {transform:rotate(0)},{transform:rotate(angle)}
+      ],{duration:spinMs,easing:'cubic-bezier(.17,.25,.30,1)',fill:'forwards'});
       firstSeatAnimation.currentTime=spinMs-spin;
       sounds.spinFirstSeat(spinMs-spin);
     }else firstSeatStick.style.transform=rotate(0);
@@ -308,6 +314,9 @@ async function showFirstSeat(s,token,remaining){
     order.append(spot);
   }
   if(spin)sounds.land('finish');
+  if(s.phase==='opening'){
+    firstSeatRevealed=true;renderHUD();return;
+  }
   await delay(Math.min(remaining,resultMs));
   if(token===motion)firstSeatLayer.hidden=true;
 }
@@ -320,7 +329,9 @@ async function showState(s,animate=true){
   if(panel==='destination'&&dialog.open)closePanel();
   toss.cancel();sounds.stop();clearBonus();$('toss-layer').hidden=true;
   firstSeatAnimation?.cancel();firstSeatLayer.hidden=true;
-  const opening=firstSeatRemaining(s);pickingFirst=opening>0;
+  const opening=firstSeatRemaining(s);
+  pickingFirst=s.phase==='opening'||opening>0;
+  firstSeatRevealed=false;
   const fresh=animate&&previous&&previous.revision+1===s.revision;
   const changed=fresh&&!reduced.matches;
   const rolled=fresh&&previous.phase==='roll';
@@ -331,6 +342,7 @@ async function showState(s,animate=true){
   if(panel==='scores'&&dialog.open)standings();
   if(pickingFirst){
     draw(s);await showFirstSeat(s,token,opening);
+    if(s.phase==='opening')return;
   }else if(casting){
     draw(s);
     $('toss-label').textContent=TEAMS[previous.team].name+' 팀 · 윷 던지기';
@@ -584,6 +596,16 @@ function renderHUD(){
   if(moving){
     resultControls(s,steps,options);moveControls(s,options,steps);
   }else if(lobby)actions.append(button('대기실 열기','primary',lobbyPanel));
+  else if(s.phase==='opening'){
+    const host=!net||net.isHost;
+    if(s.firstSeatAt==null){
+      actions.append(button(host?'선 정하기':'방장이 선을 정해요','primary',
+        ()=>advanceOpening('draw-first-seat'),!host||!!net&&(!net.connected||!room)));
+    }else if(firstSeatRevealed){
+      actions.append(button(host?'시작하기':'방장이 시작하면 진행돼요','primary',
+        ()=>advanceOpening('begin-play'),!host||!!net&&(!net.connected||!room)));
+    }else actions.append(button('선을 정하는 중…','primary',null,true));
+  }
   else if(s.phase==='won')actions.append(button('결과 보기','primary',()=>showResult(true),busy));
   else{
     const disabled=!canCast();
@@ -652,8 +674,8 @@ function rules(){
 function resetLocal(setup,computer){
   const {count,offset,mode,counts,animals}=setup;
   const bots=computer?Array.from({length:count-1},(_,i)=>i+1):[];
-  closePanel();showTable();localRound++;local=chooseFirstSeat(newGame(count,offset,mode,counts,bots,animals));void showState(local,false);
-  resumeActionFocus=true;
+  closePanel();showTable();localRound++;resumeActionFocus=true;
+  local=newMatch(count,offset,mode,counts,bots,animals);void showState(local,false);
 }
 function modePicker(current,onChange){
   const box=element('div'),label=element('label','놀이 방식'),select=element('select');
@@ -815,7 +837,7 @@ let lastLobby='';
 function networkUpdate(v){
   net=v;
   const signature=JSON.stringify([v.seats,v.status,!!v.game,v.seat,v.connected]);
-  if(v.game&&(!shown||!roomGame||v.game.revision!==game.revision)){const first=!roomGame;roomGame=true;showTable();if(first&&panel==='lobby')closePanel();void showState(v.game,!first);}
+  if(v.game&&(!shown||!roomGame||v.game.revision!==game.revision||v.game.phase!==game.phase||v.game.firstSeatAt!==game.firstSeatAt)){const first=!roomGame;roomGame=true;showTable();if(first&&panel==='lobby')closePanel();void showState(v.game,!first);}
   if(signature!==lastLobby){lastLobby=signature;if(panel==='lobby'&&dialog.open)lobbyPanel();renderHUD();}
 }
 let roomGame=false;

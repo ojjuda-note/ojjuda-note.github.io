@@ -51,10 +51,8 @@ export function newGame(count=2,zodiacOffset=2,mode=DEFAULT_MODE,pieceCounts=DEF
     note:'윷을 던져 첫 말을 출발시키세요.'};
 }
 export const FIRST_SEAT_SPIN_MS=4500;
-export const FIRST_SEAT_RESULT_MS=2700;
-export function chooseFirstSeat(state){
-  const team=Math.floor(Math.random()*state.pawns.length);
-  return {...state,team,firstSeatAt:Date.now(),firstSeatSpinMs:FIRST_SEAT_SPIN_MS,firstSeatResultMs:FIRST_SEAT_RESULT_MS};
+export function newMatch(...settings){
+  return {...newGame(...settings),phase:'opening'};
 }
 export const firstSeatTiming=state=>[state.firstSeatSpinMs??2400,state.firstSeatResultMs??900];
 export function firstSeatRemaining(state,now=Date.now()){
@@ -231,7 +229,18 @@ export function computerAction(state){
   return best;
 }
 export function act(state,action) {
-  if(!state||!action||firstSeatRemaining(state)) return state;
+  if(!state||!action)return state;
+  if(state.phase==='opening'){
+    if(action.type==='draw-first-seat'&&state.firstSeatAt==null){
+      const team=Math.floor(Math.random()*state.pawns.length);
+      return {...state,team,firstSeatAt:Date.now(),firstSeatSpinMs:FIRST_SEAT_SPIN_MS,firstSeatResultMs:0};
+    }
+    if(action.type==='begin-play'&&state.firstSeatAt!=null&&!firstSeatRemaining(state)){
+      return {...state,phase:'roll',firstSeatAt:null};
+    }
+    return state;
+  }
+  if(firstSeatRemaining(state))return state;
   if(action.type==='roll')return roll(state,throwSticks());
   if(action.type==='move')return move(state,action.index,action.shortcut,action.steps);
   return state;
