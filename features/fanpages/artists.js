@@ -530,7 +530,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { date: "2026-12-18", title: "2026 KBS 가요대축제", sub: "19:00 KST · 서울 KBS 아레나 · 11.13 출연 발표 · KBS 주최", href: "https://www.soompi.com/article/1886817wpp/2026-kbs-song-festival-announces-artist-lineup" }
     ],
     campaigns: [
-      { kind: "브랜드 행사", date: "2026.11.13", title: "TASAKI · Ready To Open 주얼리 전시 참석", sub: "상하이 고급 주얼리 행사 · TASAKI 공식 11.15 확인 · 홍보대사 계약 발표 아님", href: "https://www.sina.cn/news/detail/5365317909088145.html" },
+      { kind: "콜라보", date: "2026.11.13", title: "TASAKI · Ready To Open 주얼리 전시 참석", sub: "상하이 고급 주얼리 행사 · TASAKI 공식 11.15 확인 · 홍보대사 계약 발표 아님", href: "https://www.sina.cn/news/detail/5365317909088145.html" },
       { kind: "콜라보", date: "2026.10.29", title: "FILA FUSION × A2O MAY · OOTidol", sub: "상하이 IDOL 다운 컬렉션 행사·런웨이 (10.29~11.01) · Hypebeast", href: "https://hypebeast.cn/2026/11/fila-fusion-a2o-may-idol" }
     ],
     schedules: [
