@@ -29,7 +29,7 @@
 }
 @media(prefers-reduced-motion:no-preference){
   .scope::before,.scope::after,.radar-scope::before,.radar-scope::after{
-    animation:pajang-ripple 4.8s linear infinite;
+    animation:pajang-ripple 9.6s linear infinite;
   }
-  .scope::after,.radar-scope::after{animation-delay:-2.4s}
+  .scope::after,.radar-scope::after{animation-delay:-4.8s}
 }

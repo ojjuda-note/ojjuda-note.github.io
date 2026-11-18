@@ -29,6 +29,10 @@
 }
 .scope-self,.scope-person{position:absolute;display:grid;place-items:center;transform:translate(-50%,-50%);border-radius:50%;font-weight:750;line-height:1}
 .scope-self{left:50%;top:50%;width:9%;aspect-ratio:1;background:#342b40;color:white;font-size:clamp(12px,1.2vw,17px);box-shadow:0 0 0 3px #ffffff8c}
+.scope-same-cell{width:11%;padding:0;border:0;gap:1px;align-content:center;font-size:clamp(10px,1.15vw,14px);cursor:pointer}
+.scope-same-cell small{font-size:clamp(9px,.9vw,11px);line-height:1;font-weight:750;color:#e7eddc}
+.scope-same-cell.picked{outline:2px solid #8d70ad;outline-offset:2px}
+.scope-same-cell:focus-visible{outline:3px solid #5a3c87;outline-offset:3px}
 .scope-person{width:7.5%;aspect-ratio:1;font-size:clamp(12px,1.15vw,16px);color:#493957;border:2px solid #fff;box-shadow:0 1px 4px #49355d2b}
 .scope-person.picked{outline:2px solid #8d70ad;outline-offset:2px}
 .scope-person:focus-visible{outline:3px solid #5a3c87;outline-offset:3px}

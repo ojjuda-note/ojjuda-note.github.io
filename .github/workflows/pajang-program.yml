@@ -1,0 +1,50 @@
+name: Publish protected Pajang program
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'features/pajang/src/**'
+      - 'features/pajang/location.mjs'
+      - 'features/pajang/package*.json'
+      - 'supabase/functions/pajang-assets/index.ts'
+      - 'ops/publish-pajang-program.py'
+      - 'tests/test_pajang_program_publish.py'
+      - '.github/workflows/pajang-program.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ojjuda-pajang-protected-program
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: ${{ github.repository == 'ojjuda-note/ojjuda-note.github.io' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Install locked program dependencies
+        run: npm --prefix features/pajang ci --ignore-scripts --no-audit --no-fund
+      - name: Build the member program
+        run: npm --prefix features/pajang run build
+      - name: Check immutable publication without credentials
+        run: python -m unittest discover -s tests -p 'test_pajang_program_publish.py'
+      - name: Install the pinned Storage client
+        run: python -m pip install --disable-pip-version-check 'boto3==1.39.0'
+      - name: Stage one private program and verify its bytes
+        env:
+          SUPABASE_S3_ACCESS_KEY: ${{ secrets.BACKUP_SUPABASE_S3_ACCESS_KEY }}
+          SUPABASE_S3_SECRET_KEY: ${{ secrets.BACKUP_SUPABASE_S3_SECRET_KEY }}
+        run: python ops/publish-pajang-program.py
