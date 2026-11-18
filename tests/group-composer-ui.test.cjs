@@ -80,7 +80,13 @@ async function fixture(browser,viewport){
     });
     Object.defineProperty(window,'visualViewport',{value:viewport});
   });
-  await page.route('**/*',route=>route.request().isNavigationRequest()?route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="ko"><head><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body><header class="top">오쭈다 아지트</header><main id="app"></main><div id="toast" role="status"></div></body></html>'}):route.abort());
+  await page.route('**/*',route=>{
+    if(route.request().isNavigationRequest())return route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="ko"><head><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body><header class="top">오쭈다 아지트</header><main id="app"></main><div id="toast" role="status"></div></body></html>'});
+    const url=new URL(route.request().url());
+    if(url.origin==='https://group.test'&&url.pathname==='/shared/brand/brand-copy.css')
+      return route.fulfill({contentType:'text/css',path:path.join(root,'shared/brand/brand-copy.css')});
+    return route.abort();
+  });
   await page.goto('https://group.test/groups/#room='+room);
   for(const file of ['groups/style.css','shared/viewport/mobile-viewport.css','groups/composer.css'])await page.addStyleTag({path:path.join(root,file)});
   await page.evaluate(({owner,room,second})=>{
