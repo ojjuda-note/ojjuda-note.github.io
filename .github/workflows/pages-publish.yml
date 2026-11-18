@@ -137,11 +137,25 @@ jobs:
           node tests/fanpage-hub-transfer.cjs "$RUNNER_TEMP/ojjuda-public"
       - name: Build responsive Park card backgrounds
         run: python scripts/build-park-backgrounds.py "$RUNNER_TEMP/ojjuda-public"
+      - name: Package Pages with Android domain association
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          site="$RUNNER_TEMP/ojjuda-public"
+          tar --dereference --hard-dereference --directory "$site" \
+            -cf "$RUNNER_TEMP/artifact.tar" \
+            --exclude=.git --exclude=.github --exclude=".[^/]*" .
+          tar --directory "$site" -rf "$RUNNER_TEMP/artifact.tar" .well-known .nojekyll
+          tar -tf "$RUNNER_TEMP/artifact.tar" | grep -Fx '.well-known/assetlinks.json'
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          path: ${{ runner.temp }}/ojjuda-public
+          name: github-pages
+          path: ${{ runner.temp }}/artifact.tar
+          retention-days: 1
+          if-no-files-found: error
 
   deploy:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
