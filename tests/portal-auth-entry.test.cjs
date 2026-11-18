@@ -43,11 +43,22 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
       querySelector(selector) { return selector.startsWith('#') ? element(selector.slice(1)) : element(selector); },
       querySelectorAll(selector) { return selector === '[data-auth-mode]' ? tabs : []; },
       focus() { focused = key; }, scrollIntoView() {}, reset() {},
-      showModal() { this.open = true; }, close() { this.open = false; }
+      showModal() { this.open = true; },
+      close() {
+        if (!this.open) return;
+        this.open = false;
+        // Native dialog.close() queues its event, including when login immediately reopens the dialog.
+        const id = ++taskId;
+        tasks.set(id, { callback: () => this.listeners.close?.({ target: this }), at: clock });
+      }
     });
     return elements.get(key);
   };
   const tabs = ['login', 'signup'].map(mode => { const e = element(`${mode}-tab`); e.dataset.authMode = mode; return e; });
+  const authButtons = ['login', 'signup'].map(mode => { const e = element(`header-${mode}`); e.dataset.openAuth = mode; return e; });
+  const destinationButtons = ['world', 'pajang', 'note'].map(destination => {
+    const e = element(`destination-${destination}`); e.dataset.destination = destination; return e;
+  });
   const policyLinks = ['terms', 'privacy'].map(name => { const e = element(`${name}-link`); e.dataset.policyDocument = name; return e; });
   const location = new URL(`https://ojjuda.kr/${query}`);
   location.assign = value => navigations.push(value);
@@ -81,7 +92,9 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   };
   const context = {
     window: { OJJUDA_CONFIG: { supabaseUrl: 'https://example.test', supabaseKey: 'test' }, supabase: { createClient: () => client }, OjjudaIdentity: identity, crypto: webcrypto },
-    document: { getElementById: element, querySelector: element, querySelectorAll: selector => selector === '[data-policy-document]' ? policyLinks : [] },
+    document: { getElementById: element, querySelector: element, querySelectorAll: selector =>
+      selector === '[data-policy-document]' ? policyLinks : selector === '[data-open-auth]' ? authButtons
+        : selector === '[data-destination]' ? destinationButtons : [] },
     Date: class extends Date { static now() { return clock; } },
     location, URL, URLSearchParams, console: { warn() {}, error() {} },
     history: { replaceState(_state, _title, url) { location.href = new URL(url, location).href; } },
@@ -116,6 +129,70 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
 }
 
 (async () => {
+  const loginRoutes = [
+    ['world', '/world.html', '/world.html'],
+    ['pajang', '/features/pajang/', '/features/pajang/'],
+    ['note', '/world.html?place=park', '/world.html?place=park&guest=1']
+  ];
+  const signIn = async app => {
+    app.element('email').value = 'member@ojjuda.kr';
+    app.element('password').value = 'fixture-password';
+    await app.submit();
+  };
+  const closeDialog = async app => {
+    app.element('[data-close-dialog]').listeners.click();
+    await app.flush();
+    assert.equal(app.element('auth-dialog').open, false);
+  };
+  for (const [destination, route] of loginRoutes) {
+    const direct = setup(`?auth=login&next=${destination}`); await direct.flush();
+    await signIn(direct);
+    assert.deepEqual(direct.navigations, [route], `${destination} returns to its own section after login`);
+
+    const reopened = setup(`?auth=login&next=${destination}`); await reopened.flush();
+    await closeDialog(reopened);
+    reopened.element('header-login').listeners.click();
+    await signIn(reopened);
+    assert.deepEqual(reopened.navigations, [route], `${destination} survives closing and reopening header login`);
+  }
+  for (const [destination, route, guestRoute] of loginRoutes) {
+    const switched = setup(`?auth=login&next=${destination}`); await switched.flush();
+    switched.element('signup-tab').listeners.click(); switched.element('login-tab').listeners.click();
+    assert.equal(switched.element('guest-browse').href, guestRoute, `${destination} keeps its own guest entrance`);
+    await signIn(switched);
+    assert.deepEqual(switched.navigations, [route], `${destination} survives login/signup tab switches`);
+
+    for (const entry of ['tab', 'header']) {
+      const signup = setup(`?auth=login&next=${destination}`); await signup.flush();
+      if (entry === 'header') { await closeDialog(signup); signup.element('header-signup').listeners.click(); }
+      else signup.element('signup-tab').listeners.click();
+      signup.fill(); await signup.submit();
+      assert.equal(signup.signups[0].options.emailRedirectTo, `https://ojjuda.kr/?next=${destination}`, `${entry} signup keeps ${destination} in the confirmation link`);
+      assert.equal(JSON.parse(signup.storage.get('ojjuda_post_confirm_destination')).destination, destination);
+    }
+
+    const selected = setup(`?auth=login&next=${destination === 'world' ? 'pajang' : 'world'}`); await selected.flush();
+    await closeDialog(selected);
+    selected.element(`destination-${destination}`).listeners.click({ preventDefault() {} });
+    await closeDialog(selected);
+    selected.element('header-login').listeners.click();
+    await signIn(selected);
+    assert.deepEqual(selected.navigations, [route], 'an explicit section choice survives closing and reopening login');
+
+    const immediate = setup(`?auth=signup&next=${destination}`, { confirmed: true });
+    await immediate.flush(); immediate.fill(); await immediate.submit();
+    assert.deepEqual(immediate.navigations, [route], `${destination} also resumes when signup immediately returns a session`);
+    const existing = setup(`?auth=login&next=${destination}`, { user: { id: 'existing-member', email: 'member@ojjuda.kr' } });
+    await existing.flush();
+    assert.deepEqual(existing.navigations, [route], `${destination} also resumes an existing session`);
+  }
+  for (const next of ['', '&next=unknown', '&next=https://example.invalid/', '&next=//example.invalid/', '&next=toString']) {
+    const login = setup('?auth=login' + next); await login.flush(); await signIn(login);
+    assert.deepEqual(login.navigations, ['/world.html'], 'missing or untrusted login destinations use the Agit entrance');
+    const signup = setup('?auth=signup' + next, { confirmed: true });
+    await signup.flush(); signup.fill(); await signup.submit();
+    assert.deepEqual(signup.navigations, ['/world.html'], 'missing or untrusted immediate signup destinations use the Agit entrance');
+  }
   for (const [time, version, prefix] of [
     ['2026-11-19T14:59:59.999Z', '2026-09-29-age14', '/policies/2026-09-29/'],
     ['2026-11-19T15:00:00.000Z', '2026-11-20', '/']
@@ -331,6 +408,22 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
 
   const cardId = '00000000-0000-4000-8000-000000000010';
   const reader = { id: 'reader', email: 'reader@example.invalid' };
+  const pajangConfirmed = setup('?code=confirmation'); await pajangConfirmed.flush();
+  pajangConfirmed.storage.set('ojjuda_post_confirm_destination', JSON.stringify({
+    destination: 'pajang', email: reader.email, expiresAt: Date.now() + 60000
+  }));
+  await pajangConfirmed.emit('SIGNED_IN', { user: { ...reader, email: reader.email.toUpperCase() } });
+  assert.deepEqual(pajangConfirmed.navigations, ['/features/pajang/'], 'email confirmation returns the matching member to Pajang');
+  for (const stored of [
+    { destination: 'pajang', email: 'another@example.invalid', expiresAt: Date.now() + 60000 },
+    { destination: 'pajang', email: reader.email, expiresAt: Date.now() - 1 },
+    { destination: 'https://example.invalid/', email: reader.email, expiresAt: Date.now() + 60000 }
+  ]) {
+    const confirmation = setup('?code=confirmation'); await confirmation.flush();
+    confirmation.storage.set('ojjuda_post_confirm_destination', JSON.stringify(stored));
+    await confirmation.emit('SIGNED_IN', { user: reader });
+    assert.deepEqual(confirmation.navigations, [], 'confirmation cannot use another account, an expired choice or an external destination');
+  }
   const runningWorldRecovery = setup('?reset=1&next=world', { user: reader });
   await runningWorldRecovery.flush();
   assert.equal(runningWorldRecovery.element('auth-title').textContent, '새 비밀번호 설정');
@@ -341,6 +434,8 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   await runningWorldRecovery.submit();
   assert.deepEqual(runningWorldRecovery.passwordUpdates, [{ owner: 'reader', password: 'replacement-password' }], 'the handoff retains the current recovery session');
   assert.equal(runningWorldRecovery.element('auth-title').textContent, '비밀번호가 바뀌었어요');
+  runningWorldRecovery.element('back-to-login').listeners.click(); await runningWorldRecovery.flush();
+  assert.deepEqual(runningWorldRecovery.navigations, ['/world.html'], 'a completed session recovery returns to its requested section');
   const photoLogin = setup('?auth=login&next=photo', { user: reader });
   await photoLogin.flush();
   assert.deepEqual(photoLogin.navigations, ['/photo-ttang.html'], 'photo login returns to the full game page');
@@ -427,12 +522,41 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   const recovery = setup('?auth=signup&next=world&reset=1'); await recovery.flush();
   assert.equal(recovery.element('auth-title').textContent, '비밀번호 찾기');
   const invalid = setup('?auth=signup&next=https://example.invalid'); await invalid.flush(); invalid.fill(); await invalid.submit();
-  assert.equal(invalid.signups[0].options.emailRedirectTo, 'https://ojjuda.kr/');
+  assert.equal(invalid.signups[0].options.emailRedirectTo, 'https://ojjuda.kr/?next=world');
   assert.deepEqual(invalid.navigations, []);
   const failedSession = setup('?auth=signup&next=world', { sessionError: true }); await failedSession.flush();
   assert.equal(failedSession.element('signup-tab').attributes['aria-selected'], 'true');
   const recoveryValues = { email: 'recovery@example.invalid', 'recovery-phone': '+82 10-1234-5678', 'recovery-birth': '2000-02-29', 'recovery-gender': 'male' };
   const fillRecovery = app => { for (const [key, value] of Object.entries(recoveryValues)) app.element(key).value = value; };
+  for (const [destination, route] of loginRoutes) {
+    const app = setup(`?auth=login&next=${destination}`); await app.flush();
+    app.element('forgot-trigger').listeners.click(); fillRecovery(app); await app.submit();
+    app.element('recovery-reset-button').listeners.click();
+    app.element('password').value = app.element('password-confirm').value = 'new-password';
+    await app.submit();
+    assert.equal(app.location.search, `?next=${destination}`, 'direct password reset keeps only the safe section return');
+    app.element('back-to-login').listeners.click();
+    assert.equal(app.element('login-tab').attributes['aria-selected'], 'true');
+    assert.deepEqual(app.navigations, [], 'direct password recovery still requires a fresh login');
+    await signIn(app);
+    assert.deepEqual(app.navigations, [route], `${destination} survives password recovery and a fresh login`);
+  }
+  for (const [returnQuery, route] of [
+    ['next=pajang', '/features/pajang/'],
+    [`next=note&card=${cardId}`, `/world.html?place=park&card=${cardId}`],
+    [`next=groups&invite=${groupCode}`, groupPath],
+    ['next=byeolcheonji&' + bookingQuery, '/byeolcheonji/?' + bookingQuery]
+  ]) {
+    const app = setup(`?reset=1&${returnQuery}&code=fixture&token_hash=fixture&type=recovery#access_token=fixture&type=recovery`, { user: reader });
+    await app.flush();
+    assert.deepEqual(app.navigations, [], 'session recovery completes before resuming the section');
+    app.element('password').value = app.element('password-confirm').value = 'replacement-password';
+    await app.submit();
+    assert.equal(app.location.search, '?' + returnQuery, 'recovery keeps the validated card, invite or booking return');
+    assert.equal(app.location.hash, '', 'recovery removes callback tokens from the URL');
+    app.element('back-to-login').listeners.click(); await app.flush();
+    assert.deepEqual(app.navigations, [route], 'completed session recovery resumes the original destination');
+  }
   for (const user of [null, { id: 'existing' }]) {
     const app = setup('?auth=forgot&next=world', { user }); await app.flush();
     assert.equal(app.element('auth-dialog').open, true);
@@ -508,7 +632,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   assert.match(failedReset.element('auth-feedback').textContent, /확인부터 다시/);
   assert.equal(failedReset.element('recovery-reset-button').hidden, true);
   const closed = setup('?auth=forgot'); await closed.flush(); fillRecovery(closed); await closed.submit();
-  closed.element('auth-dialog').close(); closed.element('auth-dialog').listeners.close();
+  closed.element('auth-dialog').close(); await closed.flush();
   closed.element('recovery-reset-button').listeners.click();
   assert.equal(closed.recoveries.length, 1); assert.equal(closed.element('recovery-reset-button').hidden, true);
   const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
@@ -532,7 +656,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   const nicknameRace = setup('?auth=signup', { nicknameResponse: () => oldNickname.promise });
   await nicknameRace.flush(); nicknameRace.fill(); const pendingNickname = nicknameRace.submit();
   await nicknameRace.flush();
-  nicknameRace.element('auth-dialog').close(); nicknameRace.element('auth-dialog').listeners.close();
+  nicknameRace.element('auth-dialog').close(); await nicknameRace.flush();
   nicknameRace.element('login-tab').listeners.click(); nicknameRace.element('auth-dialog').showModal();
   nicknameRace.element('nickname').value = '새창의이름';
   oldNickname.resolve({ data: true }); await pendingNickname;
@@ -550,7 +674,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     const oldRecovery = deferred();
     const app = setup('?auth=forgot', { recoveryResponse: () => oldRecovery.promise });
     await app.flush(); fillRecovery(app); const pending = app.submit();
-    app.element('auth-dialog').close(); app.element('auth-dialog').listeners.close();
+    app.element('auth-dialog').close(); await app.flush();
     // Reopening the same recovery mode starts a new view even while the previous request settles.
     app.element('login-tab').listeners.click(); app.element('forgot-trigger').listeners.click();
     app.element('auth-dialog').showModal();
@@ -570,12 +694,12 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   await signupRace.flush(); signupRace.fill(); const pendingSignup = signupRace.submit();
   await signupRace.flush();
   assert.equal(signupRace.signups.length, 1, 'the signup request is pending before the dialog closes');
-  signupRace.element('auth-dialog').close(); signupRace.element('auth-dialog').listeners.close();
+  signupRace.element('auth-dialog').close(); await signupRace.flush();
   signupRace.element('login-tab').listeners.click(); signupRace.element('auth-dialog').showModal();
   signupRace.element('password').value = 'replacement-password';
   oldSignup.resolve({ data: { session: null } }); await pendingSignup;
   assert.equal(signupRace.element('login-tab').attributes['aria-selected'], 'true');
   assert.equal(signupRace.element('auth-form').hidden, false, 'a previous signup response cannot replace a reopened login form');
   assert.equal(signupRace.element('password').value, 'replacement-password');
-  console.log('PASS: verified recovery, unified signup entry, required inputs, confirmation destinations, retired destination rejection and account races');
+  console.log('PASS: Agit/Pajang/Park login returns, dialog reopen and signup switches, confirmation and recovery destinations, required inputs, untrusted destination rejection and account races');
 })().catch(error => { console.error(error); process.exitCode = 1; });

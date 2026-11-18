@@ -78,6 +78,8 @@
     ? authQuery.get('card') : null;
   let groupInvite = authQuery.get('next') === 'groups' && authQuery.getAll('invite').length === 1 && validReturnCard(authQuery.get('invite')) ? authQuery.get('invite') : null;
   let returnQueryDestination = destinationPath(authQuery.get('next')) ? authQuery.get('next') : null;
+  // Keep the chosen space when the dialog closes or switches account modes.
+  let entryDestination = returnQueryDestination;
   let requestedAuthMode = ['login', 'signup', 'forgot'].includes(authQuery.get('auth'))
     ? authQuery.get('auth') : returnQueryDestination ? 'login' : null;
 
@@ -173,6 +175,8 @@
     authViewVersion++;
     authMode = mode;
     $('guest-browse').hidden = mode !== 'login';
+    const guestDestination = pendingDestination || entryDestination || returnQueryDestination || 'world';
+    $('guest-browse').href = destinationPath(guestDestination) + (guestDestination === 'note' ? '&guest=1' : '');
     const isSignup = mode === 'signup';
     if (isSignup) prepareSignupFields();
     else referral?.setActive(false);
@@ -222,8 +226,8 @@
   }
 
   function openAuth(mode, destination) {
-    if (destination !== undefined) pendingDestination = destination;
-    else if (!pendingDestination) pendingDestination = returnQueryDestination;
+    if (destinationPath(destination)) entryDestination = destination;
+    pendingDestination = entryDestination || returnQueryDestination;
     setAuthMode(mode);
     showDialog();
     if (!client) {
@@ -254,6 +258,22 @@
   function destinationPath(key) {
     if (!Object.hasOwn(destinations, key)) return null;
     return destinations[key] + (key === 'groups' && groupInvite ? '#invite=' + encodeURIComponent(groupInvite) : key === 'byeolcheonji' && bookingReturn ? '?' + bookingReturn : '');
+  }
+
+  function authReturnUrl(destination) {
+    const url = new URL('/', location.href);
+    if (!destinationPath(destination)) return url;
+    url.searchParams.set('next', destination);
+    if (destination === 'groups' && groupInvite) url.searchParams.set('invite', groupInvite);
+    if (destination === 'note' && returnCard) url.searchParams.set('card', returnCard);
+    if (destination === 'byeolcheonji') for (const [key, value] of new URLSearchParams(bookingReturn)) url.searchParams.set(key, value);
+    return url;
+  }
+
+  function clearRecoveryLocation() {
+    const url = authReturnUrl(pendingDestination || entryDestination || returnQueryDestination);
+    // Remove recovery credentials while retaining only the validated return route.
+    history.replaceState(null, '', location.pathname + url.search);
   }
 
   function rememberAfterEmail(destination, address) {
@@ -561,21 +581,17 @@
         if (error) throw error;
         if (!data?.session?.user) throw new Error('missing_session');
         applySession(data.session);
-        const destination = pendingDestination || resumedDestination(data.session.user);
+        const destination = pendingDestination || entryDestination || resumedDestination(data.session.user) || 'world';
         pendingDestination = null;
         dialog.close();
-        if (destination) goToDestination(destination);
-        else $('places').scrollIntoView({ behavior: 'smooth' });
+        goToDestination(destination);
       } else if (authMode === 'signup') {
         await referral?.verify(signupReferrer);
         if (!currentView()) return;
         const name = await prepareSignupNickname(currentView);
         if (!currentView() || !name) return;
-        const confirmationUrl = new URL('/', location.href);
-        if (destinationPath(pendingDestination)) confirmationUrl.searchParams.set('next', pendingDestination);
-        if (pendingDestination === 'groups' && groupInvite) confirmationUrl.searchParams.set('invite', groupInvite);
-        if (pendingDestination === 'note' && returnCard) confirmationUrl.searchParams.set('card', returnCard);
-        if (pendingDestination === 'byeolcheonji') for (const [key, value] of new URLSearchParams(bookingReturn)) confirmationUrl.searchParams.set(key, value);
+        const destination = pendingDestination || entryDestination || 'world';
+        const confirmationUrl = authReturnUrl(destination);
         const { data, error } = await client.auth.signUp({
           email: address,
           password: secret,
@@ -601,13 +617,11 @@
         $('signup-result').textContent = '';
         if (data?.session?.user) {
           applySession(data.session);
-          const destination = pendingDestination;
           pendingDestination = null;
           dialog.close();
-          if (destination) goToDestination(destination);
-          else $('places').scrollIntoView({ behavior: 'smooth' });
+          goToDestination(destination);
         } else {
-          rememberAfterEmail(pendingDestination, address);
+          rememberAfterEmail(destination, address);
           pendingDestination = null;
           showState('이메일을 확인해 주세요', '가입 확인 메일을 보냈어요. 메일함에서 인증한 뒤 로그인해 주세요.');
         }
@@ -628,7 +642,7 @@
         if (!currentView() || recoveryGrant !== grant) return;
         if (data?.reset !== true) throw new Error('recovery_restart_required');
         recoveryPending = false;
-        history.replaceState(null, '', location.pathname);
+        clearRecoveryLocation();
         showState('비밀번호가 바뀌었어요', '새 비밀번호로 다시 로그인해 주세요.', '로그인하기');
         recoveryCompleted = true;
       } else if (authMode === 'reset') {
@@ -636,9 +650,9 @@
         if (!currentView()) return;
         if (error) throw error;
         recoveryPending = false;
-        history.replaceState(null, '', location.pathname);
+        clearRecoveryLocation();
         if (data?.user) applySession({ ...(session || {}), user: data.user });
-        showState('비밀번호가 바뀌었어요', '이제 아지트로 이동할 수 있어요.', '공간 고르기');
+        showState('비밀번호가 바뀌었어요', '로그인했던 곳으로 돌아갈 수 있어요.', '돌아가기');
       }
     } catch (error) {
       console.warn('계정 처리 실패:', error);
@@ -657,7 +671,7 @@
   }
 
   document.querySelectorAll('[data-open-auth]').forEach(button => {
-    button.addEventListener('click', () => openAuth(button.dataset.openAuth, 'world'));
+    button.addEventListener('click', () => openAuth(button.dataset.openAuth));
   });
   document.querySelectorAll('[data-destination]').forEach(button => {
     button.addEventListener('click', event => {
@@ -697,8 +711,9 @@
     if (recoveryGrant) { setAuthMode('forgot'); email.focus(); }
     else if (recoveryCompleted) { setAuthMode('login'); email.focus(); }
     else if (!recoveryPending && session?.user) {
+      const destination = pendingDestination || entryDestination || resumedDestination(session.user) || 'world';
       dialog.close();
-      $('places').scrollIntoView({ behavior: 'smooth' });
+      goToDestination(destination);
     } else {
       setAuthMode('login');
       email.focus();
