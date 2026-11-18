@@ -1,5 +1,5 @@
 /* Ojjuda Agit: a warm, playful place worth returning to. */
-body .bottomnav{grid-template-columns:repeat(4,minmax(0,1fr))}
+body .bottomnav{grid-template-columns:repeat(3,minmax(0,1fr))}
 body:has(.agit-hub) .navbtn.on{background:#ffede1;color:#79465c}
 body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 .agit-hub{--agit-ink:#3c3040;--agit-berry:#7a3f60;--agit-coral:#e56e72;--agit-muted:#796c77;--agit-line:#efe5e3;box-sizing:border-box;max-width:1120px;margin:0 auto;padding:6px 0 50px;color:var(--agit-ink);font-family:var(--font-b)}
@@ -300,6 +300,45 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 @media(min-width:740px) {
   .agit-reading-card { display:grid; grid-template-columns:44% minmax(0,1fr); align-items:center; }
   .agit-reading-copy { padding:10px 6px; }
+}
+
+.agit-park-banner {
+  --park-serif:"Nanum Myeongjo","Noto Serif CJK KR","AppleMyungjo","Batang",Georgia,serif;
+  position:relative; isolation:isolate; overflow:hidden; grid-column:1/-1;
+  display:block; margin-top:18px; border:1px solid #bfdef2; border-radius:20px;
+  background:linear-gradient(110deg,#f0faff 12%,#d9f0ff 59%,#bfe4fa);
+  color:#244760; text-align:left; text-decoration:none;
+}
+.agit-park-art {
+  position:absolute; z-index:-1; right:-2%; bottom:4%; width:52%; height:88%;
+  object-fit:contain; object-position:right bottom; pointer-events:none;
+}
+.agit-park-copy {
+  display:grid; justify-items:start; width:66%;
+  padding:clamp(19px,2.4vw,30px) clamp(18px,3.5vw,42px); word-break:keep-all;
+  background:linear-gradient(90deg,#f0faff 36%,#e8f7ffb8 75%,transparent);
+}
+.agit-park-brand {display:flex; align-items:center; gap:7px; color:#226992}
+.agit-park-brand svg {width:23px; height:25px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.agit-park-brand b {font:700 21px/1.2 var(--park-serif); letter-spacing:-.07em}
+.agit-park-brand small {margin-left:4px; padding-left:10px; border-left:1px solid #a9cce3; color:#3e6d89; font-size:12px}
+.agit-park-title {
+  margin:12px 0 5px; font:650 clamp(24px,3vw,37px)/1.35 var(--park-serif);
+  letter-spacing:-.065em; color:#244760;
+}
+.agit-park-desc {max-width:25ch; color:#486b83; font-size:clamp(13px,1.5vw,15px); line-height:1.6; text-wrap:pretty}
+.agit-park-open {
+  display:inline-flex; align-items:center; gap:12px; margin-top:15px; padding:8px 15px;
+  border-radius:24px; background:#1b74b3; color:#fff; font-size:13px; line-height:1.5; font-weight:700;
+}
+.agit-park-banner:is(:hover,:focus-visible) .agit-park-open {background:#125d96}
+.agit-hub .agit-park-banner:focus-visible {outline-color:#1679bd}
+@media(max-width:540px) {
+  .agit-park-copy {width:75%; padding-right:0}
+  .agit-park-art {right:-11%; bottom:6%; width:53%; height:75%}
+  .agit-park-brand small {font-size:11px}
+  .agit-park-title {font-size:clamp(22px,5.6vw,28px)}
+  .agit-park-desc {max-width:19ch}
 }
 
 .agit-pajang-banner {

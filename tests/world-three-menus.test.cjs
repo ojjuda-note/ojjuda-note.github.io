@@ -16,7 +16,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
  w.ResizeObserver=class{observe(){}disconnect(){}};
  w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
  w.fetch=async()=>({ok:true,json:async()=>({}),text:async()=>''});
- w.OjjudaParkNotes={install:()=>({markup:()=>'<section data-park-app>공원 카드</section>',sync(){},route(){},canLeave:()=>true,preserveShell:()=>false})};
+ w.eval(fs.readFileSync(path.join(root,'park/world-park-notes.js'),'utf8'));
  w.eval(fs.readFileSync(path.join(root,'shared/games/world-game-rankings.js'),'utf8'));
  w.eval(fs.readFileSync(path.join(root,'shared/games/world-game-assets.js'),'utf8'));
  w.eval(fs.readFileSync(path.join(root,'features/home/agit-hub.js'),'utf8'));
@@ -36,7 +36,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   };
   assert.equal(active(),'hub','the initial page opens Hub');
   for(const selector of ['.bottomnav','.sidenav']){
-   assert.deepEqual([...w.document.querySelectorAll(selector+' [data-tab]')].map(b=>b.textContent.trim()),['아지트','오락실','공원','설정']);
+   assert.deepEqual([...w.document.querySelectorAll(selector+' [data-tab]')].map(b=>b.textContent.trim()),['아지트','오락실','설정']);
    assert.equal(w.document.querySelector(selector+' [aria-current=page]').dataset.tab,'hub');
   }
   // Fanpages were swapped with festival: group, fanpages / restaurants, festival.
@@ -47,6 +47,15 @@ function fixture(url='https://ojjuda.kr/world.html'){
     ['group','restaurants','festival']);
   assert.equal(w.document.querySelector('#agit-daily h2').textContent,'일상 둘러보기');
   assert.deepEqual([...w.document.querySelectorAll('[data-act=agit-daily][aria-label*="회원 전용"]')].map(b=>b.dataset.v),['group']);
+  const parkBanner=w.document.querySelector('.agit-park-banner');
+  assert.ok(parkBanner,'Park stays discoverable after removal from the global menu');
+  assert.equal(parkBanner.previousElementSibling.id,'agit-daily');
+  assert.ok(parkBanner.nextElementSibling.classList.contains('agit-pajang-banner'),'the Park banner appears immediately before Pajang');
+  const parkClick=new w.MouseEvent('click',{bubbles:true,cancelable:true,button:0});
+  parkBanner.dispatchEvent(parkClick);
+  assert.equal(parkClick.defaultPrevented,true,'the banner does not also reload the whole page');
+  assert.equal(active(),'park','the actual banner opens Park within the existing World shell');
+  t.actions.tab({tab:'hub'});
   t.actions.tab({tab:'arcade'});assert.equal(active(),'arcade');
   assert.equal(w.document.querySelector('#pstage'),null,'the old arcade illustration is removed');
   assert.ok(w.document.querySelector('[data-arcade-rank-root]'));
@@ -117,7 +126,16 @@ function fixture(url='https://ojjuda.kr/world.html'){
   room.live=false;
   assert.equal(w.document.querySelector('#plog,#pmsg,[data-act="pl-send"],[data-act="pl-react"],.arcade-welcome [data-tab="park"]'),null,'Arcade contains no public chat or Park shortcut');
   t.actions.tab({tab:'park'});assert.equal(active(),'park');assert.ok(w.document.querySelector('[data-park-app]'));
+  for(const selector of ['.bottomnav','.sidenav']){
+   const menu=w.document.querySelector(selector);
+   assert.equal(menu.getAttribute('aria-label'),'공원 메뉴');
+   assert.deepEqual([...menu.querySelectorAll('[data-park-action]')].map(b=>[b.dataset.parkAction,b.textContent.trim()]),
+    [['feed','공원'],['mine','내 카드'],['saved','보관함'],['settings','설정']]);
+   assert.equal(menu.querySelector('[data-tab]'),null,'Park does not display global navigation');
+   assert.equal(menu.querySelector('[aria-current=page]').dataset.parkAction,'feed');
+  }
   t.actions.tab({tab:'my'});assert.equal(active(),'my');assert.equal(w.document.querySelector('.my-hub .h2').textContent,'설정');
+  assert.equal(w.document.querySelector('.bottomnav [data-park-action]'),null,'leaving Park restores the main menu');
   assert.deepEqual([...w.document.querySelectorAll('[data-my-group="help"] [data-section-versions] .line-row')].map(row=>[...row.children].map(el=>el.textContent)),
    [['아지트','version.json'],['오락실','features/arcade/version.json'],['공원','park/version.json']].map(([label,file])=>[label,JSON.parse(fs.readFileSync(path.join(root,file),'utf8')).version]));
 
@@ -128,7 +146,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   }
   for(const id of ['cafe','library']){t.actions['enter-place']({id});assert.equal(active(),'arcade');}
   t.auth.isAdmin=true;t.auth.online=true;t.actions.tab({tab:'my'});
-  assert.equal(w.document.querySelectorAll('.sidenav [data-tab]').length,4,'administration is inside settings');
+  assert.equal(w.document.querySelectorAll('.sidenav [data-tab]').length,3,'administration is inside settings');
   assert.ok(w.document.querySelector('.my-hub [data-tab=admin]'));
   assert.deepEqual(Array.from(t.adminTabs.content,x=>x[0]),['cards','messages','groups','photo-stages','drinking-prompts','risk','map','rewards']);
   assert.equal(t.adminTabs.operations.some(x=>x[0]==='quiz'),false);
@@ -174,5 +192,5 @@ function fixture(url='https://ojjuda.kr/world.html'){
   w.OjjudaGameRankings.mount(host,{client,owner:null,rankingsOnly:true});assert.ok(host.textContent.includes('로그인하면 게임 기록을 저장하고 순위에 도전'));
   w.OjjudaGameRankings.mount(null);
  }finally{dom.window.close();}
- console.log('PASS: four menus, legacy redirects, initial links, settings, presence, rankings-only requests, game launch, score refresh and access isolation');
+ console.log('PASS: three main menus, dedicated Park menus, legacy redirects, initial links, settings, presence, rankings-only requests, game launch, score refresh and access isolation');
 })().catch(error=>{console.error(error);process.exitCode=1});
