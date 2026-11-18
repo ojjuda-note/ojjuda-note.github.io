@@ -49,3 +49,8 @@ html[data-pwa-prompting="true"] [data-pwa-install] { opacity:.65; cursor:wait; }
   .pwa-install-dialog { padding:26px 19px 14px; }
   .pwa-install-dialog h2 { font-size:22px; }
 }
+
+/* Store entries navigate; only real expandable settings use a chevron. */
+.my-hub .app-store-downloads .app-store-link::after { display:none; }
+.app-store-pending > .app-store-action { text-decoration:none; }
+.app-store-pending > .app-store-action:focus-visible { outline:3px solid var(--accent-ink,#245a48); outline-offset:3px; }
