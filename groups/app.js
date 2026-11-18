@@ -49,8 +49,9 @@ const GroupAppearance=(()=>{
   for(const ch of String(room.id||'').toLowerCase())hash=Math.imul(hash^ch.charCodeAt(0),16777619)>>>0;
   return themes[hash%themes.length];
  }
- const attributes=room=>`data-group-theme="${theme(room)[0]}"`;
- const artwork=(room,eager=false)=>`<img class="group-artwork" src="/assets/screw-flat/${theme(room)[1]}-v1.webp" alt="" aria-hidden="true" width="640" height="640" loading="${eager?'eager':'lazy'}" decoding="async">`;
+ const picture=room=>window.OjjudaCozyArt?.forGroup(room)||{theme:theme(room)[0],src:'/assets/screw-flat/'+theme(room)[1]+'-v1.webp'};
+ const attributes=room=>`data-group-theme="${picture(room).theme}"`;
+ const artwork=(room,eager=false)=>`<img class="group-artwork" src="${picture(room).src}" alt="" aria-hidden="true" width="640" height="640" loading="${eager?'eager':'lazy'}" decoding="async">`;
  return Object.freeze({attributes,artwork});
 })();
 

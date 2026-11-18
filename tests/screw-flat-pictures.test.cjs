@@ -3,9 +3,9 @@ const G=require('../games/screw/screw-flat.js'),A=require('../games/screw/screw-
 const storage=new Map();global.localStorage={getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value))};
 const tap=(g,x,y)=>{g.onDown(x,y);g.onUp(x,y);};
 const finish=g=>{g.state.level.plates.forEach(p=>p.state='gone');g.update(.05);};
-assert.equal(A.PICTURES.length,6);assert.equal(new Set(A.PICTURES.map(p=>p.id)).size,6);
+assert.equal(A.PICTURES.length,106);assert.equal(new Set(A.PICTURES.map(p=>p.id)).size,106);
 for(let i=0;i<A.PICTURES.length;i++){
- const picture=A.PICTURES[i],bytes=fs.readFileSync(path.join(__dirname,'../assets/screw-flat',picture.id+'-v1.webp'));
+ const picture=A.PICTURES[i],bytes=fs.readFileSync(path.join(__dirname,'..',picture.src));
  assert.equal(bytes.toString('ascii',0,4),'RIFF');assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.ok(bytes.length<200000,'mobile artwork stays small');
  assert.equal(G.makeFlatLevel(i+1).name,picture.name);assert.equal(G.makeFlatLevel(i+1+A.PICTURES.length).picture,i);
 }
@@ -42,4 +42,5 @@ storage.set(G.STAGE_KEY,'999');const advanced=G.flat(api,999);assert.equal(advan
 // Disabled storage never prevents playing or collecting within the current session.
 global.localStorage={getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}};
 const blocked=G.flat(api);finish(blocked);assert.ok(blocked.state.collection.has('window-cat'));blocked.destroy();
-console.log('PASS: six small artwork assets, stage rotation, earned-only album, pause/resume, keyboard navigation, persistent collection, duplicate protection and unavailable storage.');
+console.log('PASS: 106 small artwork assets, stage rotation, earned-only album, pause/resume, keyboard navigation, persistent collection, duplicate protection and unavailable storage.');
+

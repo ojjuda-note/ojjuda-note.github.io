@@ -35,9 +35,10 @@
       await script('/vendor/poly-decomp-0.3.0.min.js',()=>!!window.decomp);
       await script('/games/screw/screw-flat-partitions.js?v=20261106-source-folders1',()=>!!window.OjjudaFlatPartitions);
       await script('/games/screw/screw-flat-physics.js?v=20261106-source-folders1', () => !!window.OjjudaFlatPhysics);
-      await script('/games/screw/screw-flat-pictures.js?v=20261106-source-folders1', () => !!window.OjjudaFlatPictures);
+      await script('/shared/art/cozy-scenes.js?v=20261118-cozy100-1',()=>!!window.OjjudaCozyArt);
+      await script('/games/screw/screw-flat-pictures.js?v=20261118-cozy100-1', () => !!window.OjjudaFlatPictures);
       await script('/games/screw/screw-flat-drills.js?v=20261106-source-folders1',()=>!!window.OjjudaFlatDrills);
-      await script('/games/screw/screw-flat.js?v=20261110-admin-record-free1', () => !!window.OjjudaScrewGames?.flat);
+      await script('/games/screw/screw-flat.js?v=20261118-cozy100-1', () => !!window.OjjudaScrewGames?.flat);
       return window.OjjudaScrewGames.flat;
     })().catch(error => { modes.delete(mode); throw error; });
     modes.set(mode, promise);
@@ -47,3 +48,4 @@
   if (typeof window !== 'undefined') window.OjjudaScrewLoader = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })();
+

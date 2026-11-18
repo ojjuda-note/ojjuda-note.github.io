@@ -12,6 +12,9 @@ on:
       - 'shared/games/world-game-assets.js'
       - 'game-release.json'
       - 'assets/screw-flat/**'
+      - 'assets/cozy-scenes/**'
+      - 'shared/art/**'
+      - 'tests/cozy-scenes.test.cjs'
       - 'tests/screw*.cjs'
       - 'tests/helpers/flat-*.cjs'
       - 'tests/helpers/certify-flat-solutions.cjs'
@@ -29,6 +32,9 @@ on:
       - 'shared/games/world-game-assets.js'
       - 'game-release.json'
       - 'assets/screw-flat/**'
+      - 'assets/cozy-scenes/**'
+      - 'shared/art/**'
+      - 'tests/cozy-scenes.test.cjs'
       - 'tests/screw*.cjs'
       - 'tests/helpers/flat-*.cjs'
       - 'tests/helpers/certify-flat-solutions.cjs'
@@ -67,3 +73,4 @@ jobs:
         run: npm --prefix tests run test:screw
       - name: Check game release cache links
         run: node tests/game-release-refresh.test.cjs
+

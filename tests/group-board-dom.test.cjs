@@ -37,6 +37,7 @@ function fixture({empty=false,guest=false,member=false,publicGroups=true,hash=''
     return {data};
   }})};
   if(coldReads){const make=w.supabase.createClient;w.supabase.createClient=()=>{const c=make(),invoke=c.rpc;c.rpc=(name,args)=>({then(resolve,reject){return invoke(name,args).then(resolve,reject);}});return c;};}
+  w.eval(fs.readFileSync(path.join(root,'shared/art/cozy-scenes.js'),'utf8'));
   w.eval(fs.readFileSync(path.join(root,'groups/activities.js'),'utf8'));
   w.eval(fs.readFileSync(path.join(root,'groups/composer.js'),'utf8'));
   w.eval(fs.readFileSync(path.join(root,'groups/app.js'),'utf8'));return {dom,w,calls,saved:()=>saved};
@@ -625,4 +626,14 @@ test('automatic group artwork stays the same in the directory, room, rename and 
   assert.notEqual(cards[0].dataset.groupTheme,cards[1].dataset.groupTheme,'different rooms can receive different artwork');
   assert.equal(fresh.w.document.querySelector('#directory script'),null);
  }finally{fresh.dom.window.close();}
+});
+
+test('new group directory and room header use the same expanded shared illustration',async()=>{
+ const r={id:room,name:'새로운 그림 모임',description:'함께 나누는 하루',owner_id:id,member_count:2,created_at:'2030-01-01T00:00:00Z'};
+ const f=fixture({respond:action=>action==='home'?{data:{rooms:[r],directory:[{...r,is_member:true}],invitations:[]}}:action==='rooms'?{data:[r]}:undefined});
+ try{await tick();const d=f.w.document,expected=f.w.OjjudaCozyArt.forGroup(r);assert.ok(expected.src.startsWith('/assets/cozy-scenes/'));
+ assert.equal(d.querySelector('.group-card .group-artwork').getAttribute('src'),expected.src);
+ d.querySelector('[data-room]').click();await tick();assert.equal(d.querySelector('.group-room-hero .group-artwork').getAttribute('src'),expected.src);
+ assert.equal(d.querySelector('.group-room-hero').dataset.groupTheme,expected.theme);
+ }finally{f.dom.window.close();}
 });

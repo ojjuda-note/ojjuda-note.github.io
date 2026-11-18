@@ -2,14 +2,9 @@
 (function () {
   'use strict';
   const COLLECTION_KEY='ojjuda-screw-flat-pictures-v1';
-  const PICTURES=[
-    {id:'window-cat',name:'창가 고양이',colors:['#F6DFC2','#FFF4E6']},
-    {id:'rabbit-tea',name:'토끼의 찻시간',colors:['#F4DDD9','#FFF4E9']},
-    {id:'bear-picnic',name:'곰의 소풍',colors:['#DCECCF','#FFF2D5']},
-    {id:'puppy-beach',name:'강아지의 바다',colors:['#D4EBEF','#FFF0D7']},
-    {id:'sky-whale',name:'별바다 고래',colors:['#DCE5EF','#EAE4DC']},
-    {id:'cozy-room',name:'포근한 우리집',colors:['#EFDBC1','#FFF0DF']}
-  ];
+  const Catalog=typeof module!=='undefined'&&module.exports?require('../../shared/art/cozy-scenes.js'):window.OjjudaCozyArt;
+  const {PICTURES}=Catalog;
+  const CACHE_LIMIT=12;
   const images=new Map();
   function readCollection(){
     try{const saved=JSON.parse(localStorage.getItem(COLLECTION_KEY)||'[]');return new Set(Array.isArray(saved)?saved.filter(id=>PICTURES.some(p=>p.id===id)):[]);}
@@ -21,13 +16,16 @@
     return collection;
   }
   function preload(index,retry=false){
-    if(typeof Image==='undefined')return null;
+    if(typeof Image==='undefined'||!PICTURES[index])return null;
     let entry=images.get(index);
     if(!entry||(retry&&entry.failed)){
       const img=new Image();entry={img,failed:false};images.set(index,entry);
       img.decoding='async';img.onerror=()=>{entry.failed=true;};
-      img.src='/assets/screw-flat/'+PICTURES[index].id+'-v1.webp';
+      img.src=PICTURES[index].src;
     }
+    // Only retain the current puzzle and a small number of album images on phones.
+    images.delete(index);images.set(index,entry);
+    while(images.size>CACHE_LIMIT)images.delete(images.keys().next().value);
     return entry;
   }
   function rounded(c,x,y,w,h,r){
@@ -52,3 +50,4 @@
   if(typeof window!=='undefined')window.OjjudaFlatPictures=api;
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })();
+

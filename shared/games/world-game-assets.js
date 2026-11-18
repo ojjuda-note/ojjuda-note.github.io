@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261118-restaurants-c2s49-gyeonggi-tv3'
+ const revision='20261118-cozy100-1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -48,7 +48,7 @@
   stacker:'1.6.2',
   breakout:'1.8.2',
   spot:'1.14.3',
-  screw:'2.24.1',
+  screw:'2.25.0',
   janggi:'1.14.3',
   chess:'1.5.1',
   billiards:'1.5.1',
@@ -85,7 +85,7 @@
   mole:[moleRanking,...controls,'/games/mole/mole-game.css?v=20261108-mole-grids1','/games/mole/mole-game.js?v=20261117-arcade-score-repair1'],
   runner:[...controls,'/games/runner/runner-game.css?v=20261110-runner-seahorse-v3-1','/games/runner/runner-game.js?v=20261111-runner-inset1'],
   breakout:[...controls,'/games/breakout/breakout-game.css?v=20261106-source-folders1','/games/breakout/breakout-game.js?v=20261110-admin-game-preview1'],
-  screw:[...controls,'/games/screw/screw-games.css?v=20261106-source-folders1','/games/screw/screw-loader.js?v=20261110-admin-record-free1'],
+  screw:[...controls,'/games/screw/screw-games.css?v=20261106-source-folders1','/games/screw/screw-loader.js?v=20261118-cozy100-1'],
   stacker:controls
  };
  const requests=new Map(),complete=new Set();
