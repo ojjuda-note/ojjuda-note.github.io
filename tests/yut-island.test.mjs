@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {newGame,roll,move,moves,position,FINISH,tileEffect,lastThrowSeed,computerAction,restoreGame,act} from '../games/yut/rules.mjs';
+import {newGame,roll,move,moves,position,FINISH,tileEffect,lastThrowSeed,computerAction,restoreGame,act,chooseFirstSeat,FIRST_SEAT_SPIN_MS,FIRST_SEAT_RESULT_MS} from '../games/yut/rules.mjs';
 import {ANIMALS,animalFor} from '../games/yut/zodiac.mjs';
 
 import {roundStandings} from '../games/yut/results.mjs';
@@ -12,6 +12,20 @@ test('mixed team sizes share ranks for equal finished proportions',()=>{
 const ordinary=(...args)=>({...newGame(...args),eventTiles:{},islandTiles:{}});
 const faces=n=>Array.from({length:4},(_,i)=>+(i<n&&n<5));
 function setup(at,steps){const g=ordinary(2,2,'island',2);g.pawns[0][0]=at;return roll(g,faces(steps));}
+test('the chosen seat starts and normal turns wrap around the numbered seats',t=>{
+  const board=ordinary(4);
+  const random=t.mock.method(Math,'random',()=>.6);
+  for(const [draw,expected] of [[.6,[3,4,1,2]],[0,[1,2,3,4]]]){
+    random.mock.mockImplementation(()=>draw);
+    let game=chooseFirstSeat(board);
+    const order=[];
+    for(let turn=0;turn<4;turn++){
+      order.push(game.team+1);
+      game=roll(game,[0,0,0,1]); // No pawn can move back, so pass to the next seat.
+    }
+    assert.deepEqual(order,expected);
+  }
+});
 test('new games give every team four pieces and enable island obstacles by default',()=>{
   for(const count of [2,3,4,5,6,7,8]){
     const game=newGame(count);
@@ -303,7 +317,7 @@ test('eight distinct seats can play a full turn each and the ninth cannot act',a
       async send({payload}){for(const other of bus)if(other!==ch&&other.topic===topic)queueMicrotask(()=>other.cb({payload:structuredClone(payload)}));return 'ok';}};
       return ch;},async removeChannel(ch){bus.delete(ch);}
   });
-  const until=async check=>{for(let i=0;i<150;i++){if(check())return;await new Promise(r=>setTimeout(r,10));}assert.fail('network update timeout');};
+  const until=async (check,limit=150)=>{for(let i=0;i<limit;i++){if(check())return;await new Promise(r=>setTimeout(r,10));}assert.fail('network update timeout');};
   try{
     const counts=[2,3,4,4,3,2,4,3],animals=[11,9,5,8,0,1,2,3];
     const host=await openRoom(null,()=>{},mock,{count:8,counts,mode:'easy',offset:8,animals});clients.push(host);
@@ -311,25 +325,32 @@ test('eight distinct seats can play a full turn each and the ninth cannot act',a
     for(let i=1;i<=8;i++){store.clear();clients.push(await openRoom(host.view().host,()=>{},mock));if(i<8)await until(()=>clients[i].view().seat===i);}
     await until(()=>clients[8].view().status.includes('찼'));
     let tile=0; // Put the home obstacle on square one so every seat ends its turn there.
-    const rand=t.mock.method(Math,'random',()=>tile++<2?.99:0);
+    const rand=t.mock.method(Math,'random',()=>[.99,.99,0,.26][tile++]??0);
     host.start();await until(()=>clients.slice(0,8).every(c=>c.view().game?.revision===0));
     const game=clients[7].view().game;
     assert.equal(game.mode,'easy');assert.equal(game.zodiacOffset,8);assert.deepEqual(game.islandTiles,{});
     assert.deepEqual(game.pawns.map(p=>p.length),counts);assert.deepEqual(game.teamAnimals,animals);
     assert.deepEqual(game.eventTiles,host.view().game.eventTiles);
     assert.equal(Object.keys(game.eventTiles).length,3);assert.equal(game.eventTiles[1],'home');
+    assert.equal(game.team,2);
+    assert.equal(game.firstSeatAt,host.view().game.firstSeatAt);
+    clients[2].action({type:'roll'});
+    await new Promise(resolve=>setTimeout(resolve,60));
+    assert.equal(host.view().game.revision,0);
+    await until(()=>Date.now()>=game.firstSeatAt+FIRST_SEAT_SPIN_MS+FIRST_SEAT_RESULT_MS,400);
     let face=0;rand.mock.mockImplementation(()=>face++%4===0?.1:.9);
-    for(let seat=0;seat<8;seat++){
+    for(let turn=0;turn<8;turn++){
+      const seat=(2+turn)%8;
       assert.equal(host.view().game.team,seat);
       clients[(seat+1)%8].action({type:'roll'});clients[8].action({type:'roll'});
-      await new Promise(r=>setTimeout(r,20));assert.equal(host.view().game.revision,seat*2);
+      await new Promise(r=>setTimeout(r,20));assert.equal(host.view().game.revision,turn*2);
       clients[seat].action({type:'roll'});await until(()=>clients[seat].view().game?.phase==='move');
       clients[seat].action({type:'move',...moves(clients[seat].view().game)[0]});
-      await until(()=>clients.slice(0,8).every(c=>c.view().game?.revision===(seat+1)*2));
+      await until(()=>clients.slice(0,8).every(c=>c.view().game?.revision===(turn+1)*2));
     }
-    assert.equal(host.view().game.team,0);assert.deepEqual(clients[7].view().game,host.view().game);
+    assert.equal(host.view().game.team,2);assert.deepEqual(clients[7].view().game,host.view().game);
     const send=async action=>{
-      const next=host.view().game.revision+1;host.action(action);
+      const next=host.view().game.revision+1;clients[2].action(action);
       await until(()=>clients.slice(0,8).every(c=>c.view().game.revision===next));
     };
     for(const n of [4,5,3]){
@@ -339,7 +360,7 @@ test('eight distinct seats can play a full turn each and the ninth cannot act',a
     assert.deepEqual(clients[7].view().game.pendingRolls,[4,5,3]);
     await send({type:'move',index:1,steps:5});
     assert.deepEqual(clients[7].view().game.pendingRolls,[4,3]);
-    assert.equal(position(clients[7].view().game.pawns[0][1]),5);
+    assert.equal(position(clients[7].view().game.pawns[2][1]),5);
     assert.equal(clients[8].view().seat,-1);
   }finally{await Promise.all(clients.map(c=>c.close()));if(previous)Object.defineProperty(globalThis,'sessionStorage',previous);else delete globalThis.sessionStorage;}
 });

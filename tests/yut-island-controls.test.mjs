@@ -76,6 +76,16 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   const first=()=>doc.querySelector('#actions button'), text=id=>doc.getElementById(id).textContent;
   const tick=()=>{const queued=[...frames.values()];frames.clear();queued.forEach(f=>f(performance.now()+4000));};
   const until=async(pred,limit=100)=>{for(let i=0;i<limit;i++){if(pred())return;await new Promise(r=>setTimeout(r,20));}assert.fail('state did not arrive');};
+  const firstSeatReady=async()=>{
+    const layer=doc.getElementById('first-seat');
+    assert.equal(layer.hidden,false);
+    assert.equal(first().disabled,true);
+    await until(()=>layer.hidden,190);
+  };
+  const drawFirstSeat=()=>{
+    let calls=0;
+    t.mock.method(Math,'random',()=>calls++===3?0:.99);
+  };
   function setFaces(n){let i=0;t.mock.method(Math,'random',()=>i++%4<n?0.1:0.9);}
   const selected=()=>doc.querySelector('#reserve-pawns [aria-pressed="true"], #move-tools:not([hidden]) [data-pawn][aria-pressed="true"]')?.dataset.pawn;
   const reserve=doc.getElementById('reserve-pawns');
@@ -97,7 +107,7 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   assert.match(recordNote.textContent,/첫 번째 팀\(산호 팀\).*내 월간 연승/);
   assert.equal(doc.getElementById('game-mode').value,'island');
   selectValue('team-count',8);assert.equal(doc.getElementById('team-pieces-7').value,'4');
-  selectValue('team-count',2);entryButton('컴퓨터 대전').click();assert.equal(recordNote.hidden,true);entryButton('게임 시작하기').click();
+  selectValue('team-count',2);entryButton('컴퓨터 대전').click();assert.equal(recordNote.hidden,true);drawFirstSeat();entryButton('게임 시작하기').click();await firstSeatReady();
   assert.equal(doc.body.dataset.mpEntry,'false');assert.equal(doc.getElementById('tabletop').hidden,false);
   assert.equal(doc.getElementById('entry-controls').childElementCount,0);
   const bonus=doc.getElementById('bonus-roll'),chips=doc.getElementById('result-picker');
@@ -160,7 +170,7 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   assert.ok(chips.hidden);assert.match(text('move-result'),/윷 · 4칸/);
   // A roll of five can bring out a fresh pawn, or a roll of one can move the pawn on four.
   t.mock.method(Math,'random',()=>.99);
-  doc.getElementById('settings').click();dialogButton('게임 시작').click();dialogButton('계속하기').click();
+  doc.getElementById('settings').click();dialogButton('게임 시작').click();drawFirstSeat();dialogButton('계속하기').click();await firstSeatReady();
   for(const n of [4,0,1]){setFaces(n);first().click();}
   chip(0).click();first().click();
   marks.clear();tick();
@@ -172,7 +182,7 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   assert.equal(text('move-result'),'도 · 1칸');
   // Restart, bank enough yuts to finish, and watch the final move land.
   t.mock.method(Math,'random',()=>.99);
-  doc.getElementById('settings').click();dialogButton('게임 시작').click();dialogButton('계속하기').click();
+  doc.getElementById('settings').click();dialogButton('게임 시작').click();drawFirstSeat();dialogButton('계속하기').click();await firstSeatReady();
   setFaces(4);for(let n=0;n<32;n++)first().click();
   assert.equal(bonus.hidden,false);assert.equal(bonus.querySelectorAll('.game-result-spark').length,0);
   setFaces(1);first().click();
@@ -195,7 +205,7 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   const resultButton=label=>[...doc.querySelectorAll('.game-result-actions button')].find(b=>b.textContent===label);
   resultButton('윷판 보기').click();await until(()=>!doc.querySelector('.game-result-card'));
   first().click();assert.equal(doc.querySelectorAll('.game-result-confetti').length,0);
-  t.mock.method(Math,'random',()=>.99);resultButton('다시 한 판').click();await until(()=>!doc.querySelector('.game-result-card'));
+  t.mock.method(Math,'random',()=>.99);drawFirstSeat();resultButton('다시 한 판').click();await firstSeatReady();await until(()=>!doc.querySelector('.game-result-card'));
   assert.equal(doc.querySelector('dialog').open,false);
   assert.equal(text('goals'),'골인 0/4');
   assert.equal(reserve.querySelectorAll('button').length,4);
@@ -220,7 +230,7 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   chip(0).click();first().click();
   assert.equal(text('move-result'),'뒤로 1칸');
   assert.equal(first().textContent,'뒤로 1칸 이동');first().click();
-  doc.getElementById('settings').click();dialogButton('게임 시작').click();dialogButton('계속하기').click();
+  doc.getElementById('settings').click();dialogButton('게임 시작').click();drawFirstSeat();dialogButton('계속하기').click();await firstSeatReady();
   prefs.matches=true;setFaces(1);first().click();tick();
   const [x,y]=marks.get('도착');
   doc.getElementById('board').dispatchEvent(new w.MouseEvent('click',{clientX:x,clientY:y,bubbles:true}));
@@ -245,7 +255,7 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   assert.equal(animals.size,8);
   selectValue('team-count',2);selectValue('team-pieces-0',2);selectValue('team-pieces-1',2);selectValue('game-mode','easy');
   prefs.matches=false;t.mock.method(Math,'random',()=>.99);
-  dialogButton('한 기기').click();dialogButton('게임 시작').click();dialogButton('계속하기').click();
+  dialogButton('한 기기').click();dialogButton('게임 시작').click();drawFirstSeat();dialogButton('계속하기').click();await firstSeatReady();
   assert.equal(doc.getElementById('event-key'),null);doc.getElementById('settings').click();dialogButton('특수 칸').click();
   assert.equal(text('dialog-title'),'이번 판 특수 칸');assert.equal(doc.querySelectorAll('.event-card').length,3);
   assert.match(text('dialog-body'),/대기 말 하나를 업어요/);doc.getElementById('close').click();
@@ -322,7 +332,7 @@ test('the arcade entrance, piece controls, winning move and rematch work togethe
   dialogButton('컴퓨터 대결').click();
   selectValue('team-count',3);selectValue('team-pieces-0',4);selectValue('team-pieces-1',3);
   selectValue('team-animal-0',11);selectValue('team-animal-1',6);selectValue('game-mode','island');
-  dialogButton('게임 시작').click();dialogButton('계속하기').click();
+  dialogButton('게임 시작').click();drawFirstSeat();dialogButton('계속하기').click();await firstSeatReady();
   doc.getElementById('team-title').click();
   assert.equal(text('goals'),'골인 0/4');
   const scores=doc.querySelectorAll('.score-card');

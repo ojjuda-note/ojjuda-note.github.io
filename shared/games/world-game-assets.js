@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261118-cozy100-1'
+ const revision='20261118-yut-first-seat1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -39,7 +39,7 @@
   mines:'1.5.2',
   sacheonseong:'1.18.3',
   saetbyeol:'1.10.0',
-  yut:'1.15.3',
+  yut:'1.16.0',
   tour:'1.6.1',
   ttang:'1.7.1',
   photo_ttang:'1.6.3',
@@ -85,7 +85,7 @@
   mole:[moleRanking,...controls,'/games/mole/mole-game.css?v=20261108-mole-grids1','/games/mole/mole-game.js?v=20261117-arcade-score-repair1'],
   runner:[...controls,'/games/runner/runner-game.css?v=20261110-runner-seahorse-v3-1','/games/runner/runner-game.js?v=20261111-runner-inset1'],
   breakout:[...controls,'/games/breakout/breakout-game.css?v=20261106-source-folders1','/games/breakout/breakout-game.js?v=20261110-admin-game-preview1'],
-  screw:[...controls,'/games/screw/screw-games.css?v=20261106-source-folders1','/games/screw/screw-loader.js?v=20261118-cozy100-1'],
+  screw:[...controls,'/games/screw/screw-games.css?v=20261106-source-folders1','/games/screw/screw-loader.js?v=20261118-yut-first-seat1'],
   stacker:controls
  };
  const requests=new Map(),complete=new Set();
