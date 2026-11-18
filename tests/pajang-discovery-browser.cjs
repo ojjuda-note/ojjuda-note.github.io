@@ -3,6 +3,8 @@ const crypto = require('node:crypto');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const {chromium} = require('playwright');
+const {execFileSync} = require('node:child_process');
+const previousRelease='71785aabf407ca239a27b4811e252a962a725717';
 
 const feature = path.resolve(__dirname, '../features/pajang');
 const origin = 'https://pajang.test';
@@ -217,7 +219,9 @@ function clientFixture(hash) {
   try {
     const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,locale:'ko-KR',geolocation:{latitude:37.5665,longitude:126.978,accuracy:30},permissions:['geolocation']});
     const page=await context.newPage(), errors=[];
-    let legacyLocationPage=false;
+    await page.route('https://cdn.jsdelivr.net/**',route=>route.fulfill({contentType:'text/javascript',body:'/* Auth client is supplied by the config fixture. */'}));
+    let legacyLocationPage=false,openingBaseline=false;
+    const previousFiles=new Map(['index.html','entry.mjs','member.mjs','member-main.mjs','load-station.mjs','station.html'].map(file=>[file,execFileSync('git',['show',previousRelease+':features/pajang/'+file],{cwd:path.join(feature,'../..'),maxBuffer:1e6})]));
     page.on('pageerror',err=>errors.push(err.message));
     await page.route(origin+'/**',async route=>{
       const pathname=new URL(route.request().url()).pathname;
@@ -236,7 +240,7 @@ function clientFixture(hash) {
       if(legacyLocationPage&&file==='location.mjs')return route.fulfill({contentType:'text/javascript',body:'export async function prepareLocation(state){return state;}'});
       if(!['station.html','station.css','member.mjs','member-main.mjs','load-station.mjs','location.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','shell.mjs','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
       const mime={html:'text/html',css:'text/css',mjs:'text/javascript',json:'application/json',svg:'image/svg+xml'}[path.extname(file).slice(1)];
-      let body=await fs.readFile(path.join(feature,file));
+      let body=openingBaseline&&previousFiles.has(file)?previousFiles.get(file):await fs.readFile(path.join(feature,file));
       if(legacyLocationPage&&file.endsWith('.html'))body=body.toString().replace(/<script[^>]*src="\/shared\/location\/location\.js[^>]*><\/script>/,'');
       return route.fulfill({contentType:mime,body});
     });
@@ -530,6 +534,10 @@ function clientFixture(hash) {
     assert.ok(page.url().endsWith('world.html'));
     assert.equal(await page.locator('dialog').count(),0);
     await page.evaluate(()=>{delete sessionStorage.holdEntryIdentity;});
+    const openingTimes={};
+    for(const version of ['before','after']){
+    openingBaseline=version==='before';
+    openingTimes[version]={};
     for(const scenario of ['new','member-cold','member']){
       const timings=[];
       for(let attempt=0;attempt<5;attempt++){
@@ -543,9 +551,15 @@ function clientFixture(hash) {
         await page.waitForFunction(()=>sessionStorage.openMs);
         timings.push(await page.evaluate(()=>Number(sessionStorage.openMs)));
         assert.equal(entryDocuments.length-opened,1,scenario+' opens just one Pajang document');
+        const reads=await page.evaluate(()=>window.memberCalls.filter(action=>['entry','state'].includes(action)));
+        assert.deepEqual(reads,scenario==='member'&&!openingBaseline?['state']:scenario==='new'?['entry']:['entry','state'],scenario+' uses only necessary member reads');
       }
-      console.log('PAJANG_OPEN_MS',scenario,JSON.stringify(timings),'median',timings.sort((a,b)=>a-b)[2]);
+      openingTimes[version][scenario]=timings.sort((a,b)=>a-b)[2];
+      console.log('PAJANG_OPEN_MS',version,scenario,JSON.stringify(timings),'median',openingTimes[version][scenario]);
     }
+    }
+    for(const scenario of ['member-cold','member'])assert.ok(openingTimes.after[scenario]<openingTimes.before[scenario]-50,scenario+' overlaps startup waits');
+    assert.ok(openingTimes.after.new<openingTimes.before.new+120,'first participation stays responsive');
     await page.goto(origin+project+'station.html?view=radar');
     const locationSwitch=page.getByRole('switch',{name:'내 위치 공개'});
     await locationSwitch.waitFor();
