@@ -1,10 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import '../shared/location/location.js';
 import {readLocationCell,prepareLocation} from '../features/pajang/location.mjs';
 
 const fix=accuracy=>({coords:{latitude:37.5665,longitude:126.978,accuracy}});
 const cell={latCell:3757,lonCell:12698};
 function environment(t,geolocation){
+  globalThis.OjjudaLocation.forget('member');
   for(const [key,value] of Object.entries({navigator:{geolocation},window:new EventTarget(),document:{querySelector:()=>null}})){
     const descriptor=Object.getOwnPropertyDescriptor(globalThis,key);
     Object.defineProperty(globalThis,key,{configurable:true,writable:true,value});
@@ -63,7 +65,7 @@ test('cancel ignores late callbacks and stops an active precise watch',async t=>
 test('cancel while the fast lookup is pending does not start a retry',async t=>{
   const controller=new AbortController();let late,watches=0;
   environment(t,{getCurrentPosition(ok){late=ok;},watchPosition(){watches++;}});
-  const pending=readLocationCell({signal:controller.signal});controller.abort();late(fix(5000));
+  const pending=readLocationCell({signal:controller.signal});await new Promise(setImmediate);controller.abort();late(fix(5000));
   await assert.rejects(pending,{name:'AbortError'});assert.equal(watches,0);
 });
 
@@ -72,6 +74,7 @@ test('entry respects off, preserves failures, and checks the account before uplo
   environment(t,{getCurrentPosition(ok,fail){reads++;denied?fail({code:1}):ok(fix(40));}});
   const state={me:{id:'profile'},locationEnabled:true,locationVersion:5};
   const db={auth:{getSession:async()=>({data:{session:{user:{id:account}}}})},rpc:async(name,args)=>{
+    if(name==='ojjuda_location_preference')return {data:{enabled:true,version:5}};
     writes++;assert.deepEqual(args.p_data,{...cell,accountId:'member',consent:true,shareBearing:true,automatic:true,locationVersion:5});
     return {data:{...state,radarOn:true}};
   }};
@@ -84,8 +87,8 @@ test('entry respects off, preserves failures, and checks the account before uplo
 test('leaving during entry stops the lookup and never saves a location',async t=>{
   let writes=0,late;
   environment(t,{getCurrentPosition(ok){late=ok;}});
-  const db={rpc:async()=>{writes++;}};
+  const db={auth:{getSession:async()=>({data:{session:{user:{id:'member'}}}})},rpc:async()=>{writes++;}};
   const state={me:{id:'profile'},locationEnabled:true};
-  const pending=prepareLocation(state,db,'member');window.dispatchEvent(new Event('pagehide'));
+  const pending=prepareLocation(state,db,'member');await new Promise(setImmediate);window.dispatchEvent(new Event('pagehide'));
   late(fix(50));assert.equal(await pending,state);assert.equal(writes,0);
 });

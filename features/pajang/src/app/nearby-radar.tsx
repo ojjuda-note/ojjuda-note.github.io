@@ -101,7 +101,7 @@ export default function NearbyRadar({station,sample,onProfile,onJoin,onSettings}
       let cell:RadarCell|null=null;
       if(enable){
         setLocating(true);
-        cell=await readLocationCell({signal:controller.signal,fresh:true,
+        cell=await readLocationCell({db,accountId:session.user.id,allowDisabled:true,signal:controller.signal,fresh:true,
           onProgress:(message:string)=>{if(alive.current)setFeedback(message);}});
         setLocating(false);
       }
@@ -115,7 +115,7 @@ export default function NearbyRadar({station,sample,onProfile,onJoin,onSettings}
 
   return <section className="nearby-section" aria-labelledby="nearby-title">
     <div className="nearby-heading"><div><div className="onrow"><span className="onair"><i/>{sample?"DEMO":"RADAR"}</span><span className="questionlabel">{sample?"예시 거리·방향":"오늘의 거리·방향"}</span></div><h1 id="nearby-title">주변 레이더</h1><p>내 주변 15km 안에서 이번 시간대에 답한 사람을 찾아보세요.</p></div></div>
-    {!sample&&<div className="radar-location-setting"><div><strong id="location-switch-label">내 위치 공개</strong><p>대략적인 거리와 방향을 보여 줘요. 설정은 바꿀 때까지 유지돼요.</p></div>
+    {!sample&&<div className="radar-location-setting"><div><strong id="location-switch-label">내 위치 공개</strong><p>공원과 함께 적용돼요. 설정은 바꿀 때까지 유지돼요.</p></div>
       <button type="button" role="switch" aria-labelledby="location-switch-label" aria-checked={enabled} disabled={pending||!station.me} onClick={()=>void toggleLocation(!enabled)}><span aria-hidden="true"/></button></div>}
     {feedback&&<div className="radar-location-feedback"><p className="radar-feedback" role="status">{feedback}</p>{locating&&<button type="button" className="secondary small" onClick={()=>locationRead.current?.abort()}>위치 확인 취소</button>}</div>}
     <div className="radar-layout">
