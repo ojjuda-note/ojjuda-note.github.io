@@ -223,7 +223,7 @@
       members: ['루카', '파리타', '아사', '아현', '라미', '로라', '치키타'],
       debut: '2024.04.01', debutWork: 'BABYMONS7ER', songs: ['SHEESH', 'LIKE THAT'],
       concept: '2023년 BATTER UP을 발표하고, 2024년 4월 일곱 멤버로 정식 데뷔한 YG의 걸그룹.',
-      checkedAt: '2026.11.16',
+      checkedAt: '2026.11.18',
       official: 'https://ygfamily.com/ko/artists/babymonster/profile', youtube: 'https://www.youtube.com/@BABYMONSTER',
       photo: 'BabyMonster Promoting drip on 2024112.png', photoLabel: 'DRIP 활동', photoYear: '2024', credit: 'SBS Radio', license: 'CC BY 3.0',
       morePhotos: [
@@ -245,7 +245,7 @@
       ],
       appearances: [
         { date: '2026-11-18', title: 'MTV JAPAN BABYMONSTER VideoSelects 재방송', sub: '일본 MTV · 21:00~22:00 (현지 시간)', href: 'https://www.sonymusic.co.jp/artist/BABYMONSTER/info/587656' },
-        { date: '2026-11-20', title: '2026 MAMA AWARDS', sub: '일본 오사카 교세라 돔 · 공식 일정 18:00', href: 'https://ygfamily.com/ko/artists/babymonster/schedule' },
+        { date: '2026-11-20', title: '2026 MAMA AWARDS', sub: '일본 오사카 교세라 돔 · 18:00 (현지·한국 동일) · 첫날 출연', href: 'https://help-origin.unext.jp/info-video/detail/info177c' },
         { date: '2026-11-21', title: 'CHOOM 월드투어 · 타이베이', sub: '대만 Taipei Arena · 현지 19:30', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
         { date: '2026-11-22', title: 'CHOOM 월드투어 · 타이베이', sub: '대만 Taipei Arena · 현지 18:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
         { date: '2026-11-28', title: 'CHOOM 월드투어 · 싱가포르', sub: 'Singapore Indoor Stadium · 현지 18:00', href: 'https://artist.ygfamily.co.kr/ARTISTS/BABYMONSTER/concert/worldtourchoom/index.html' },
@@ -271,6 +271,7 @@
         { date: '2026.11.11', tag: '공연', title: '2027년 코첼라 4월 11·18일 출연 확정 (YG 발표)', href: 'https://ygfamily.com/en/news/report/7601' },
         { date: '2026.11.03', tag: '방송', title: '12월 2일 후지TV 2026 FNS 가요제 제1야 첫 출연 발표', href: 'https://yg-babymonster-official.jp/news/media/2830/' },
         { date: '2026.10.28', tag: '발매', title: '12월 23일 일본 투어 실황 Blu-ray·라이브 CD·음원 발매 예고', href: 'https://yg-babymonster-official.jp/news/release/2820/' },
+        { date: '2026.10.23', tag: '협업', title: '루카·아사 SNIDEL 겨울 컬렉션 첫 화보 공개', href: 'https://www.sonymusic.co.jp/artist/BABYMONSTER/info/587759' },
         { date: '2026.10.23', tag: '컴백', title: '디지털 싱글 DESERVE · 공식 MV 공개', href: 'https://www.sonymusic.co.jp/artist/BABYMONSTER/info/587905' },
         { date: '2026.10.15', tag: '방송', title: '11.12·11.18 일본 MTV 뮤직비디오 특집 방송 안내', href: 'https://www.sonymusic.co.jp/artist/BABYMONSTER/info/587656' },
         { date: '2026.09.25', tag: '협업', title: '루카·아사, 일본 패션 브랜드 SNIDEL 홍보대사 선정', href: 'https://prtimes.jp/main/html/rd/p/000004511.000018505.html' }
@@ -285,6 +286,7 @@
       campaigns: [
         { kind: '콜라보', date: '2026.09.16', title: 'BABYMONSTER × SESAME STREET', sub: '공식 협업 굿즈 · 9.17 1차, 10.16 2차 온라인 판매 시작', href: 'https://yg-babymonster-official.jp/news/goods/2734/' },
         { kind: '콜라보', date: '2026.08.30', title: 'adidas × Mercedes-AMG F1 · Orchard Ignition', sub: '싱가포르 adidas × F1 협업 행사에 초청 아티스트로 참여', href: 'https://cnalifestyle.channelnewsasia.com/entertainment/babymonster-adidas-orchard-ignition-singapore-2026-587441' },
+        { kind: '화보', date: '2026.10.23', title: '루카·아사 × SNIDEL 겨울 컬렉션', sub: '브랜드 공식 My Select 겨울 룩 화보·특설 페이지 공개', href: 'https://prtimes.jp/main/html/rd/p/000004519.000018505.html' },
         { kind: '홍보대사', date: '2026.09.24', title: '루카·아사 × SNIDEL', sub: '일본 패션 브랜드 홍보대사 · 브랜드 공식 발표', href: 'https://prtimes.jp/main/html/rd/p/000004511.000018505.html' },
         { kind: '광고', date: '2025.02.13', title: 'BANILA CO × BABYMONSTER', sub: '바닐라코 브랜드 모델·메이크업 캠페인 (2025년 발표)', href: 'https://www.wwdjapan.com/articles/2035672' }
       ],
