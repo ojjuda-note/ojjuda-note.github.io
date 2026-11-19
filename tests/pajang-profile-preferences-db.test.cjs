@@ -1,0 +1,352 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const {test} = require('node:test');
+const {PGlite} = require('@electric-sql/pglite');
+
+const directory = path.join(__dirname, '../supabase/migrations');
+const read = name => fs.readFileSync(path.join(directory, name), 'utf8');
+const migrationName = fs.readdirSync(directory).find(name => name.endsWith('_pajang_public_profile_preferences.sql'));
+const account = n => `00000000-0000-4000-8000-${n.toString(16).padStart(12, '0')}`;
+const person = n => `10000000-0000-4000-8000-${n.toString(16).padStart(12, '0')}`;
+const today = '2026-11-19';
+const selection = () => ({
+  relationship_intents:['dating', 'friendship'],
+  meeting_styles:['deep_talk', 'cafe_talk'], relationship_values:['trust', 'honesty'],
+  affection_styles:['make_time'], life_priorities:['family'],
+  custom:{meeting_styles:['새벽시장 구경'], relationship_values:[], affection_styles:[], life_priorities:[]},
+});
+
+test('public Pajang preferences save atomically and relationship discovery preserves existing access rules', async t => {
+  assert.ok(migrationName, 'the migration is created with supabase migration new');
+  const migration = read(migrationName);
+  const catalog = await import('../features/pajang/src/lib/profile-preferences.mjs');
+  const db = new PGlite();
+  t.after(() => db.close());
+  await db.exec(`
+    create role anon; create role authenticated; create role service_role bypassrls;
+    create schema auth; grant usage on schema auth to anon, authenticated, service_role;
+    create table auth.users(id uuid primary key, suspended boolean not null default false);
+    create function auth.jwt() returns jsonb language sql stable as $$
+      select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb;
+    $$;
+    create function auth.uid() returns uuid language sql stable as $$select (auth.jwt()->>'sub')::uuid$$;
+    create table public.profiles(id uuid primary key,nickname text);
+    create schema ojjuda_account_internal;
+    create table ojjuda_account_internal.member_identity(user_id uuid primary key,birth_date date,gender text);
+    create schema ojjuda_restaurants_internal;
+    create function ojjuda_restaurants_internal.require_member() returns uuid
+      language plpgsql security definer set search_path='' as $$
+      declare actor uuid:=auth.uid();
+      begin
+        if actor is null or not exists(select from auth.users where id=actor and not suspended) then
+          raise exception 'member_required' using errcode='42501';
+        end if;
+        return actor;
+      end;
+    $$;
+    create function public.ojjuda_location_preference(
+      p_enabled boolean default null,p_expected_version bigint default null,p_account_id uuid default null
+    ) returns jsonb language sql as $$select '{"enabled":false,"version":0}'::jsonb$$;
+  `);
+  const members = read('20261117060900_pajang_members.sql');
+  await db.exec(members.slice(0, members.indexOf('insert into storage.buckets')));
+  await db.exec(`
+    alter table pajang_private.people alter column age drop not null;
+    alter table pajang_private.people add column location_enabled boolean not null default false,
+      add column location_version bigint not null default 0;
+    alter table pajang_private.answers add column slot text not null default 'am',
+      drop constraint answers_pkey, add primary key(person,day,slot);
+    create table pajang_private.region_choices(region text primary key);
+    insert into pajang_private.region_choices values ('서울특별시'),('서울특별시 종로구'),('경기도');
+    create table pajang_private.discovery_gender_opt_ins(person uuid primary key);
+    create function pajang_private.answer_window(timestamptz) returns table(day date,slot text,next_at timestamptz)
+      language sql as $$select date '${today}','pm'::text,timestamptz '${today} 21:00:00+00'$$;
+    create function pajang_private.question_for_window(date,text) returns jsonb
+      language sql as $$select '{"id":"synthetic-question","q":["검사용 질문"]}'::jsonb$$;
+    create function pajang_private.signal_quota(uuid,date) returns jsonb
+      language sql as $$select '{"remaining":13,"paidRemaining":10,"signalPrice":10}'::jsonb$$;
+  `);
+  const answerFeed = read('20261117180000_pajang_answer_feed.sql');
+  await db.exec(answerFeed.slice(0, answerFeed.indexOf('create or replace function public.pajang_member')));
+  await db.exec(read('20261118093216_pajang_answer_history_one_year.sql'));
+  // Model deployed publication and purchase changes absent from the old member snapshot.
+  await db.exec(`
+    alter table pajang_private.answers add column publication_window_days smallint not null default 30;
+    create function pajang_private.answer_is_visible(date,text,boolean,date,text,smallint)
+      returns boolean language sql immutable as $$
+      select $1 between $4-(case when $6=365 then 365 else 30 end-1) and $4
+        and (($1=$4 and $2=$5) or ($3 and ($1<$4 or ($2='am' and $5='pm'))));
+    $$;
+  `);
+  const addPublication = sql => sql
+    .replaceAll('a.archived,today,current_slot)', 'a.archived,today,current_slot,a.publication_window_days)')
+    .replaceAll('a.archived,today,active_window.slot)', 'a.archived,today,active_window.slot,a.publication_window_days)');
+  const memberSource = read('20261118084120_shared_park_pajang_location.sql');
+  const memberFunction = memberSource.slice(memberSource.indexOf('CREATE OR REPLACE FUNCTION public.pajang_member'),
+    memberSource.indexOf('-- An older Park tab'));
+  await db.exec(addPublication(memberFunction).replace('return result;', 'return result||pajang_private.signal_quota(u,today);'));
+  await db.exec(addPublication(read('20261118012000_pajang_owner_answer_history.sql')));
+  await db.exec(`
+    create function public.pajang_discovery_feed(p_cursor jsonb default null,p_interest text default 'all',p_order text default 'latest')
+      returns jsonb language sql security invoker set search_path='' as $$
+      select public.pajang_discovery_feed(p_cursor,p_interest,p_order,'all');
+    $$;
+    revoke all on function public.pajang_discovery_feed(jsonb,text,text,text),public.pajang_discovery_feed(jsonb,text,text)
+      from public,anon,authenticated,service_role;
+    grant execute on function public.pajang_discovery_feed(jsonb,text,text,text),public.pajang_discovery_feed(jsonb,text,text)
+      to authenticated;
+  `);
+  await db.exec(read('20261117200000_pajang_exchange.sql'));
+  // Use the actual moderation views and guarded read patch without the unrelated admin UI RPCs.
+  const moderation = read('20261119002758_pajang_admin_moderation.sql');
+  await db.exec(moderation.slice(0, moderation.indexOf('-- Reuse the existing private, expiring audit log')));
+  await db.exec(moderation.slice(moderation.indexOf('create view pajang_private.visible_answers'),
+    moderation.indexOf('create function ojjuda_admin_internal.pajang_require_admin')));
+  for (let n=1;n<=9;n++) {
+    await db.query('insert into auth.users values($1,$2)',[account(n),n===8]);
+    await db.query('insert into public.profiles values($1,$2)',[account(n),`회원${n}`]);
+    await db.query('insert into ojjuda_account_internal.member_identity values($1,$2,$3)',
+      [account(n),n===7?'2010-01-01':'1990-01-01',n%2?'female':'male']);
+    if (n<9) await db.query('insert into pajang_private.people(id,owner_id,name,region,interest) values($1,$2,$3,$4,$5)',
+      [person(n),account(n),`회원${n}`,n===3?'경기도':'서울특별시',n===3?'walk':'coffee']);
+  }
+  await db.exec(`
+    insert into pajang_private.answers(person,day,slot,body,at,question_prompt,archived,publication_window_days) values
+      ('${person(2)}','${today}','pm','현재 공개 답변',600,'검사용 질문',false,30),
+      ('${person(3)}',date '${today}'-40,'am','1년 공개 답변',500,'지난 질문',true,365),
+      ('${person(4)}','${today}','pm','관리자가 숨긴 답변',400,'검사용 질문',false,30),
+      ('${person(5)}',date '${today}'-40,'pm','공개 기한 만료',300,'지난 질문',true,30),
+      ('${person(6)}',date '${today}'-1,'pm','해당 회차만 공개',200,'지난 질문',false,30);
+    insert into ojjuda_admin_internal.pajang_answer_moderation(person,day,slot,reason)
+      values('${person(4)}','${today}','pm','검토 숨김');
+    insert into pajang_private.exchange_profiles(person,fields) values
+      ('${person(2)}','{"religion":"교환할 때만 공개","job":"비공개 직업"}');
+  `);
+  const definitions = async () => (await db.query(`
+    select p.oid::regprocedure::text as name,pg_get_functiondef(p.oid) as definition,p.proacl,p.prosecdef,p.proconfig
+    from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+    where n.nspname in ('public','pajang_private') order by p.oid::regprocedure::text
+  `)).rows;
+  const before = await definitions();
+  // A permissive installation default must not expose new objects accidentally.
+  await db.exec('alter default privileges grant execute on functions to anon,authenticated,service_role; alter default privileges grant all on tables to anon,authenticated,service_role;');
+  await db.exec(migration);
+  const after = await definitions();
+  const value = async (sql,args=[]) => (await db.query(sql,args)).rows[0]?.value;
+  const rpc = (name,args=[]) => value(`select public.${name}(${args.map((_,i)=>`$${i+1}`).join(',')}) as value`,args);
+  const as = async (actor,fn,role='authenticated',extra={}) => {
+    await db.exec('savepoint profile_request');
+    try {
+      await db.query("select set_config('request.jwt.claims',$1,true)",[JSON.stringify({sub:actor,...extra})]);
+      await db.exec(`set local role ${role}`);
+      const result=await fn();
+      await db.exec('reset role; release savepoint profile_request');
+      return result;
+    } catch(error) {
+      await db.exec('rollback to savepoint profile_request; reset role; release savepoint profile_request');
+      throw error;
+    }
+  };
+  const save = (data,actor=account(1),setup=false) => as(actor,()=>rpc('pajang_profile_save',[data,setup]));
+  const profile = (peer=null,actor=account(1)) => as(actor,()=>rpc('pajang_profile_preferences',[peer]));
+  const feed = (intent='all',cursor=null,order='latest',gender='all',actor=account(1)) =>
+    as(actor,()=>rpc('pajang_discovery_feed',[cursor,intent,order,gender]));
+  const store = (n,preferences) => db.query(`insert into pajang_private.public_profile_preferences(person,preferences,version)
+    values($1,pajang_private.normalize_public_profile_preferences($2),1)
+    on conflict(person) do update set preferences=excluded.preferences`,[person(n),preferences]);
+  t.beforeEach(()=>db.exec('begin'));
+  t.afterEach(()=>db.exec('rollback'));
+
+  await t.test('patches only discovery filters and preserves member, payment, exchange and grants',async()=>{
+    const feedName='pajang_discovery_feed(jsonb,text,text,text)';
+    for(const original of before) {
+      const current=after.find(row=>row.name===original.name);
+      assert.ok(current,original.name);
+      if(original.name!==feedName) assert.deepEqual(current,original,`${original.name} stays untouched`);
+      else {
+        assert.equal(current.prosecdef,original.prosecdef);
+        assert.deepEqual(current.proacl,original.proacl);
+        assert.deepEqual(current.proconfig,original.proconfig);
+        assert.match(current.definition,/a\.publication_window_days/);
+        assert.match(current.definition,/pajang_private\.visible_answers/g);
+        assert.match(current.definition,/relationship_intents/);
+      }
+    }
+    const state=await save({name:'새 이름'});
+    assert.equal(state.me.name,'새 이름');
+    assert.equal(state.remaining,13);
+    assert.equal(state.paidRemaining,10);
+    assert.deepEqual((await profile()).preferences.relationship_intents,[]);
+    assert.equal(await value('select count(*)::int as value from pajang_private.public_profile_preferences'),0,'no inferred or backfilled selection');
+  });
+
+  await t.test('saves all catalog choices, custom text and basic profile in one operation',async()=>{
+    const preferences=selection();
+    preferences.meeting_styles.push('deep_talk');
+    preferences.custom.meeting_styles=['  새벽시장 구경  ','새벽시장 구경','별 보러 가기'];
+    const saved=await save({name:'바뀐 이름',region:'경기도',preferences,preferencesVersion:0});
+    assert.equal(saved.me.name,'바뀐 이름');
+    assert.equal(saved.me.preferencesVersion,1);
+    assert.deepEqual(saved.me.preferences.meeting_styles,['deep_talk','cafe_talk']);
+    assert.deepEqual(saved.me.preferences.custom.meeting_styles,['새벽시장 구경','별 보러 가기']);
+    assert.deepEqual((await profile()).preferences,saved.me.preferences);
+    const allChoices={relationship_intents:catalog.relationshipIntents.map(item=>item.key)};
+    for(const group of catalog.profilePreferenceGroups) allChoices[group.key]=group.options.map(item=>item.key);
+    const all=await save({preferences:allChoices,preferencesVersion:1});
+    for(const group of catalog.profilePreferenceGroups) assert.deepEqual(all.me.preferences[group.key],allChoices[group.key]);
+    assert.deepEqual(all.me.preferences.relationship_intents,allChoices.relationship_intents);
+    assert.deepEqual(all.me.preferences.custom.meeting_styles,['새벽시장 구경','별 보러 가기'],'omitted nested choices survive');
+    const cleared=await save({preferences:{relationship_intents:[],custom:{meeting_styles:[]}},preferencesVersion:2});
+    assert.deepEqual(cleared.me.preferences.relationship_intents,[]);
+    assert.deepEqual(cleared.me.preferences.custom.meeting_styles,[]);
+    assert.equal(cleared.me.preferences.life_priorities.length,24);
+    await as(account(1),()=>rpc('pajang_member',['profile',{name:'구버전 저장',interest:'walk'}]));
+    assert.deepEqual((await profile()).preferences,cleared.me.preferences,'legacy profile writes preserve new choices');
+    assert.equal((await profile()).version,3);
+    const same=await save({preferences:{relationship_intents:[]},preferencesVersion:3});
+    assert.equal(same.me.preferencesVersion,3,'unchanged selections do not advance the version');
+  });
+
+  await t.test('rejects invalid data or stale edits without partially saving the nickname',async()=>{
+    const invalid=[
+      null,[],{unknown:[]},{relationship_intents:['unknown']},{relationship_intents:'dating'},
+      {meeting_styles:[null]},{meeting_styles:['unknown']},{life_priorities:['trust']},
+      {custom:null},{custom:{unknown:[]}},{custom:{meeting_styles:'text'}},
+      {custom:{meeting_styles:['   ']}},{custom:{meeting_styles:[42]}},
+      {custom:{meeting_styles:['가'.repeat(41)]}},
+      {meeting_styles:catalog.profilePreferenceGroups[0].options.map(item=>item.key),custom:{meeting_styles:Array.from({length:9},(_,i)=>`직접 ${i}`)}},
+    ];
+    for(const preferences of invalid) {
+      await assert.rejects(()=>save({name:'저장되면 안됨',preferences,preferencesVersion:0}),{code:'22023'});
+      assert.equal(await value('select name as value from pajang_private.people where id=$1',[person(1)]),'회원1');
+      assert.equal((await profile()).version,0);
+    }
+    for(const version of [undefined,null,-1,'0',0.5]) {
+      const payload={name:'저장되면 안됨',preferences:selection()};
+      if(version!==undefined)payload.preferencesVersion=version;
+      await assert.rejects(()=>save(payload),{code:'22023'});
+    }
+    await save({preferences:selection(),preferencesVersion:0});
+    await assert.rejects(()=>save({name:'다른 계정 초안',profilePerson:person(2),preferences:selection(),preferencesVersion:1}),{code:'42501'});
+    assert.equal(await value('select name as value from pajang_private.people where id=$1',[person(1)]),'회원1');
+    await assert.rejects(()=>save({name:'오래된 창',preferences:{relationship_intents:['marriage']},preferencesVersion:0}),{code:'PT412'});
+    assert.equal(await value('select name as value from pajang_private.people where id=$1',[person(1)]),'회원1');
+    assert.deepEqual((await profile()).preferences.relationship_intents,['dating','friendship']);
+    const unicode=await save({preferences:{custom:{meeting_styles:['🌿'.repeat(40)]}},preferencesVersion:1});
+    assert.equal([...unicode.me.preferences.custom.meeting_styles[0]].length,40);
+  });
+
+  await t.test('first participation is atomic, consented and harmless to retry',async()=>{
+    await assert.rejects(()=>save({name:'첫 참여',preferences:selection(),preferencesVersion:0},account(9),true));
+    assert.equal(await value('select count(*)::int as value from pajang_private.people where owner_id=$1',[account(9)]),0);
+    await assert.rejects(()=>save({name:'첫 참여',consent:true,preferences:{meeting_styles:['invalid']},preferencesVersion:0},account(9),true),{code:'22023'});
+    assert.equal(await value('select count(*)::int as value from pajang_private.people where owner_id=$1',[account(9)]),0);
+    const joined=await save({name:'첫 참여',consent:true,preferences:selection(),preferencesVersion:0},account(9),true);
+    assert.equal(joined.me.preferencesVersion,1);
+    const retry=await save({name:'재시도 이름',consent:true,preferences:{relationship_intents:['marriage']},preferencesVersion:0},account(9),true);
+    assert.equal(retry.me.name,'첫 참여');
+    assert.deepEqual(retry.me.preferences,joined.me.preferences);
+    assert.equal(retry.me.preferencesVersion,1);
+    await db.query('delete from auth.users where id=$1',[account(9)]);
+    assert.equal(await value('select count(*)::int as value from pajang_private.public_profile_preferences where person=$1',[joined.me.id]),0,'withdrawal cascades');
+  });
+
+  await t.test('requires an eligible authenticated actor and denies direct data access',async()=>{
+    const operations=[()=>rpc('pajang_profile_preferences',[null]),()=>rpc('pajang_profile_save',[{name:'금지'},false])];
+    for(const [actor,role,claims] of [[null,'authenticated',{}],[account(1),'anon',{}],[account(1),'service_role',{}],
+      [account(7),'authenticated',{}],[account(8),'authenticated',{}],[account(1),'authenticated',{is_anonymous:true}]]) {
+      for(const operation of operations)await assert.rejects(()=>as(actor,operation,role,claims),{code:'42501'});
+    }
+    await assert.rejects(()=>profile(null,account(9)),{code:'42501'});
+    for(const role of ['anon','authenticated','service_role']) {
+      await assert.rejects(()=>as(account(1),()=>db.query('select * from pajang_private.public_profile_preferences'),role),{code:'42501'});
+    }
+    assert.equal(await value("select relrowsecurity as value from pg_class where oid='pajang_private.public_profile_preferences'::regclass"),true);
+    assert.equal(await value("select has_schema_privilege('authenticated','pajang_private','USAGE') as value"),false);
+    for(const name of ['pajang_profile_preferences','pajang_profile_save']) {
+      assert.equal(after.find(row=>row.name.startsWith(`${name}(`)).prosecdef,false,'public entrypoint is an invoker wrapper');
+    }
+    await save({owner_id:account(2),person:person(2),preferences:selection(),preferencesVersion:0});
+    assert.equal(await value('select count(*)::int as value from pajang_private.public_profile_preferences where person=$1',[person(2)]),0,'caller cannot select the saved owner');
+  });
+
+  await t.test('reads only self, visible answer authors or existing signal peers and respects both block directions',async()=>{
+    await store(2,{relationship_intents:['conversation'],meeting_styles:['deep_talk']});
+    const visible=await profile(person(2));
+    assert.equal(visible.person,person(2));
+    assert.deepEqual(visible.preferences.relationship_intents,['conversation']);
+    assert.deepEqual(Object.keys(visible).sort(),['person','preferences','version']);
+    assert.ok(!JSON.stringify(visible).includes('교환할 때만 공개'));
+    assert.equal((await profile(person(3))).person,person(3),'published past answers are still reachable');
+    for(const peer of [person(4),person(5),person(6),person(99),account(2)]) {
+      await assert.rejects(()=>profile(peer),{code:'42501'});
+    }
+    await db.query('insert into pajang_private.signals values($1,$2,$3,$4,$5)',[person(1),person(5),today,'',1]);
+    assert.equal((await profile(person(5))).person,person(5),'existing signal remains a profile entrypoint');
+    for(const [src,dst] of [[person(1),person(2)],[person(2),person(1)]]) {
+      await db.query('insert into pajang_private.blocks values($1,$2)',[src,dst]);
+      await assert.rejects(()=>profile(person(2)),{code:'42501'});
+      await db.query('delete from pajang_private.blocks where src=$1 and dst=$2',[src,dst]);
+    }
+    await db.query('insert into pajang_private.blocks values($1,$2)',[person(5),person(1)]);
+    await assert.rejects(()=>profile(person(5)),{code:'42501'});
+  });
+
+  await t.test('relationship filters run before counts and pagination and preserve legacy filters',async()=>{
+    await store(2,{relationship_intents:['conversation','dating']});
+    await store(3,{relationship_intents:['friendship','marriage']});
+    await store(4,{relationship_intents:['dating']});
+    await store(5,{relationship_intents:['dating']});
+    assert.equal((await feed('dating')).total,1,'hidden and expired answers are excluded');
+    assert.deepEqual((await feed('dating')).items[0].relationship_intents,['conversation','dating']);
+    assert.equal((await feed('marriage')).total,1);
+    assert.equal((await feed('casual')).total,0);
+    assert.equal((await feed('all')).total,2);
+    assert.equal((await feed('coffee')).total,1);
+    assert.equal((await feed('walk')).total,1);
+    assert.equal((await feed('dating',null,'latest','male')).total,0,'gender still needs its separate opt-in');
+    await db.query('insert into pajang_private.discovery_gender_opt_ins values($1)',[person(2)]);
+    assert.equal((await feed('dating',null,'latest','male')).total,1);
+    assert.equal((await feed('all',null,'local')).items[0].peer,person(2));
+    await db.query('insert into pajang_private.blocks values($1,$2)',[person(2),person(1)]);
+    assert.equal((await feed('dating')).total,0);
+    await db.query('delete from pajang_private.blocks where src=$1',[person(2)]);
+    for(let n=20;n<50;n++) {
+      await db.query('insert into auth.users(id) values($1)',[account(n)]);
+      await db.query('insert into pajang_private.people(id,owner_id,name,region,interest) values($1,$2,$3,$4,$5)',
+        [person(n),account(n),`친구${n}`,'서울특별시','coffee']);
+      await db.query(`insert into pajang_private.answers(person,day,slot,body,at,question_prompt)
+        values($1,$2,'pm','새 답변',$3,'현재 질문')`,[person(n),today,1000+n]);
+      if(n!==49)await store(n,{relationship_intents:['friendship',...(n%2?['casual']:[])]});
+    }
+    const first=await feed('friendship');
+    assert.equal(first.total,30);
+    assert.equal(first.items.length,24);
+    assert.equal(first.nextCursor.interest,'friendship');
+    const second=await feed('friendship',first.nextCursor);
+    assert.equal(second.total,30);
+    assert.equal(second.items.length,6);
+    assert.equal(second.nextCursor,null);
+    assert.equal(new Set([...first.items,...second.items].map(item=>`${item.peer}/${item.day}/${item.slot}`)).size,30);
+    assert.ok(![...first.items,...second.items].some(item=>item.peer===person(49)),'unselected members are not inferred into a relationship');
+    assert.ok((await feed('all')).items.some(item=>item.peer===person(49)),'unselected members remain in All');
+    await assert.rejects(()=>feed('dating',first.nextCursor),{code:'22023'});
+    await assert.rejects(()=>feed('unknown'),{code:'22023'});
+    const legacy=await as(account(1),()=>rpc('pajang_discovery_feed',[null,'coffee','latest']));
+    assert.equal(legacy.total,31,'three-argument clients keep working');
+  });
+
+  await t.test('fails closed if the audited discovery anchors have drifted',async()=>{
+    const original=before.find(row=>row.name==='pajang_discovery_feed(jsonb,text,text,text)').definition;
+    await db.exec(original.replace("and (p_interest='all' or p.interest=p_interest)","and (p_interest='all' or p.interest=p_interest or false)"));
+    const start=migration.indexOf('do $migration$');
+    const end=migration.indexOf('$migration$;',start)+'$migration$;'.length;
+    assert.ok(start>=0 && end>start);
+    await db.exec('savepoint drift');
+    await assert.rejects(()=>db.exec(migration.slice(start,end)),/Unexpected Pajang discovery/);
+    await db.exec('rollback to savepoint drift; release savepoint drift');
+    assert.equal((await definitions()).find(row=>row.name==='pajang_member(text,jsonb)').definition,
+      before.find(row=>row.name==='pajang_member(text,jsonb)').definition);
+  });
+});

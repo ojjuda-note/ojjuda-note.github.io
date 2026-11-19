@@ -1,5 +1,6 @@
 import {useEffect, useMemo, useRef, useState, type PointerEvent} from "react";
-import {badges, interests, signalsWith, type Slot, type Station} from "../lib/station";
+import {signalsWith, type Slot, type Station} from "../lib/station";
+import {relationshipIntents,type RelationshipIntentKey} from "../lib/profile-preferences.mjs";
 import {InterestArt} from "./interest-art";
 import {I} from "./icons";
 
@@ -7,6 +8,7 @@ export type DiscoveryAnswer = {
   peer:string; name:string; region:string; interest:string;
   day:string; slot:Slot; at:number; question:string; body:string;
   own:boolean; sent:boolean; received:boolean;
+  relationship_intents?:RelationshipIntentKey[];
 };
 type Cursor = Record<string, unknown>;
 type Page = {items:DiscoveryAnswer[]; nextCursor:Cursor|null; total:number; remaining:number};
@@ -185,12 +187,12 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
       </div>
     </div>
     <div className="filterrow">
-      <div className="chips" aria-label="취향으로 필터">
+      <div className="chips relationship-filters" aria-label="원하는 인연으로 필터">
         <button className={filter==="all"?"sel":""} aria-pressed={filter==="all"} onClick={()=>setFilter("all")}>전체</button>
-        {interests.map(x=><button key={x.key} className={filter===x.key?"sel":""} aria-pressed={filter===x.key} onClick={()=>setFilter(x.key)}>{x.name}</button>)}
+        {relationshipIntents.map(x=><button key={x.key} className={filter===x.key?"sel":""} aria-pressed={filter===x.key} onClick={()=>setFilter(x.key)} title={x.description}>{x.shortLabel}</button>)}
       </div>
       <label className="sort"><select aria-label="답변 정렬" value={order} onChange={e=>setOrder(e.target.value as Order)}>
-        <option value="recommend">내 취향순</option><option value="latest">최신순</option><option value="local">같은 지역순</option>
+        <option value="recommend">대표 취향순</option><option value="latest">최신순</option><option value="local">같은 지역순</option>
       </select><I n="chevron" s={13}/></label>
     </div>
     {result.changed&&<p className="notice" role="status">답변 목록이 바뀌었어요.<button onClick={()=>load.current("first")}>새로고침</button></p>}
@@ -202,14 +204,14 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
         {group.map(row=>{
         const relation=signalsWith(station,row.peer);
         const sent=row.sent||!!relation.outgoing, received=row.received||!!relation.incoming, matched=sent&&received;
-        const badge=badges(row.interest);
+        const intents=relationshipIntents.filter(intent=>row.relationship_intents?.includes(intent.key));
         return <article key={rowKey(row)} className="answercard">
           <button className="person" onClick={()=>onProfile(row)}>
             <InterestArt interest={row.interest}/>
             <span><strong>{row.name}{row.own?" · 내 답변":""}</strong>{row.region&&<small>{row.region}</small>}</span>
           </button>
           <p className="quote">{row.body}</p>
-          <div className="answer-foot"><span className="tag">{badge.name}</span>
+          <div className="answer-foot"><div className="answer-intents" aria-label="원하는 인연">{intents.map(intent=><span key={intent.key} className="tag">{intent.shortLabel}</span>)}</div>
           {!row.own&&<button className={"sendlink "+(sent?"issent":"")} disabled={!matched&&(sent||(station.remaining===0&&!station.purchasingEnabled))}
             onClick={()=>matched?onChat(row.peer):onSignal(row)}>
             <span><I n={matched?"chat":sent?"check":"signal"} s={17}/>{matched?"대화하기":sent?"보낸 신호":received?"신호 수락하기":"신호 보내기"}</span>
@@ -219,7 +221,7 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
     </div>
     {result.error&&<p className="notice" role="alert">{result.error}<button onClick={()=>load.current(result.next&&result.items.length?"more":"first")}>다시 시도</button></p>}
     {result.total!==null&&!result.error&&!result.items.length&&<div className="empty"><span className="emptyicon" aria-hidden="true"><I n="wave" s={22}/></span>
-      <h3>{gender!=="all"?"선택한 조건에 맞는 답변이 없어요":filter==="all"?"최근 1년 동안 공개된 답변이 없어요":"이 취향의 답변이 아직 없어요"}</h3>
+      <h3>{gender!=="all"?"선택한 조건에 맞는 답변이 없어요":filter==="all"?"최근 1년 동안 공개된 답변이 없어요":"이 인연을 원하는 회원의 답변이 아직 없어요"}</h3>
       {gender!=="all"||filter!=="all"?<button className="secondary" onClick={()=>{setGender("all");setFilter("all");}}>전체 답변 보기<I n="arrow" s={16}/></button>:
         !station.me?.body&&<button className="secondary" onClick={onWrite}>첫 답변 쓰기<I n="pencil" s={16}/></button>}
     </div>}

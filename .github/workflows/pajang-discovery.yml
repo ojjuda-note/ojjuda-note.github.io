@@ -40,6 +40,8 @@ on:
       - 'tests/pajang-discovery-browser.cjs'
       - 'tests/window-safe-area-ui.test.cjs'
       - 'tests/pajang-question-suggestion.test.cjs'
+      - 'tests/pajang-profile-preferences-ui.test.cjs'
+      - 'tests/pajang-profile-preferences-db.test.cjs'
       - 'tests/pajang-exchange-profile.test.cjs'
       - 'tests/pajang-exchange-height.test.mjs'
       - 'tests/test_pajang_program_publish.py'
@@ -85,6 +87,8 @@ on:
       - 'tests/pajang-discovery-browser.cjs'
       - 'tests/window-safe-area-ui.test.cjs'
       - 'tests/pajang-question-suggestion.test.cjs'
+      - 'tests/pajang-profile-preferences-ui.test.cjs'
+      - 'tests/pajang-profile-preferences-db.test.cjs'
       - 'tests/pajang-exchange-profile.test.cjs'
       - 'tests/pajang-exchange-height.test.mjs'
       - 'ops/publish-pajang-program.py'
@@ -123,6 +127,7 @@ jobs:
       - run: node --test tests/pajang-account-toolbar.test.cjs tests/pajang-signal-purchase-db.test.mjs tests/pajang-signal-purchase-ui.test.cjs
       - run: node --test tests/pajang-account.test.mjs tests/pajang-discovery-gender.test.mjs tests/pajang-location.test.mjs tests/shared-location.test.cjs tests/agit-location.test.mjs tests/park-loading.test.cjs tests/park-frame-cache.test.cjs tests/park-opening.test.cjs
       - run: node --test tests/admin-pajang-moderation-db.test.cjs
+      - run: node --test tests/pajang-profile-preferences-db.test.cjs
       - run: node tests/note-composer-settings.test.cjs
       - name: Install Chromium and Korean fonts
         working-directory: tests
@@ -153,6 +158,7 @@ jobs:
       - name: Fetch previous release for opening comparisons
         run: git fetch --depth=1 origin 71785aabf407ca239a27b4811e252a962a725717
       - run: node tests/pajang-question-suggestion.test.cjs
+      - run: node tests/pajang-profile-preferences-ui.test.cjs
       - run: node tests/pajang-discovery-browser.cjs
       - run: node tests/park-entry-browser.cjs
       - if: always()
@@ -223,4 +229,3 @@ jobs:
           # Live activation is a separate action after reviewing this verified digest.
           printf '%s\n' '### Private member program staged' \
             'Storage bytes have been verified. This job has not activated the live Edge manifest.' >> "$GITHUB_STEP_SUMMARY"
-

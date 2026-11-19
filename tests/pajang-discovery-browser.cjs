@@ -402,6 +402,10 @@ function clientFixture(hash) {
           return Promise.resolve({data:structuredClone(state)});
         }
         if(name==='pajang_my_answers')return Promise.resolve({data:[{...rows[0],body:'내 책방 답변'}]});
+        if(name==='pajang_profile_preferences')return Promise.resolve({data:{person:p.p_peer||state.me.id,version:0,preferences:{
+          relationship_intents:[],meeting_styles:[],relationship_values:[],affection_styles:[],life_priorities:[],
+          custom:{meeting_styles:[],relationship_values:[],affection_styles:[],life_priorities:[]}
+        }}});
         if(name==='pajang_discovery_visibility')return Promise.resolve({data:{visible:false,hasGender:true}});
         if(name==='pajang_exchange')return Promise.resolve({data:{myCount:0,peerCount:1,eligible:false,profile:'none',photos:'none',fields:{}}});
         if(name!=='pajang_discovery_feed')throw Error(name);
