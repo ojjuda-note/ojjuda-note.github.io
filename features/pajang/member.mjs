@@ -39,12 +39,27 @@ export function showGate(message,login = false) {
   const gate=document.getElementById('gate');
   for(const id of ['welcome','station']){const area=document.getElementById(id);if(area)area.hidden=true;}
   gate.hidden=false;
-  const title=document.createElement('strong'),line=document.createElement('p'),link=document.createElement('a');
+  const title=document.createElement('strong'),line=document.createElement('p');
   title.textContent='파장 · 회원 전용 소개팅';
   line.textContent=message;
-  link.href=login?'/?auth=login&next=pajang':'/world.html';link.target='_top';
-  link.textContent=login?'오쭈다 로그인하기':'아지트로 돌아가기';
-  gate.replaceChildren(title,line,link);
+  gate.replaceChildren(title,line);
+  if(login){
+    const account=document.createElement('div'),actions=document.createElement('div');
+    account.className='ojjuda-guest-account';account.dataset.guestAccount='pajang';
+    account.setAttribute('role','group');account.setAttribute('aria-label','회원가입 및 로그인');
+    actions.className='ojjuda-guest-account-actions';
+    for(const [mode,label] of [['signup','회원가입'],['login','로그인']]){
+      const link=document.createElement('a');
+      link.className='ojjuda-guest-account-'+mode;
+      link.href='/?auth='+mode+'&next=pajang';link.target='_top';link.textContent=label;
+      actions.append(link);
+    }
+    account.append(actions);gate.append(account);
+  }else{
+    const link=document.createElement('a');
+    link.href='/world.html';link.target='_top';link.textContent='아지트로 돌아가기';
+    gate.append(link);
+  }
 }
 export async function requireMember(action='entry',onSession,onResult) {
   try {

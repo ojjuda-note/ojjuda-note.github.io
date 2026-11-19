@@ -1,4 +1,4 @@
-import {client} from './member.mjs?v=account1';
+import {client} from './member.mjs?v=20261119-guest-account1';
 import '../../note/notifications.js?v=20261117-inbox-keyboard1';
 import '../wallet/ju-charge.js?v=20261119-pajang-toolbar1';
 

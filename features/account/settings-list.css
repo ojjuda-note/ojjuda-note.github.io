@@ -81,6 +81,64 @@
   border-top: 1px solid var(--settings-line);
   overflow-wrap: anywhere;
 }
+/* Guests see the same prominent account entry in all three services. */
+.ojjuda-guest-account {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line, #dce5e9);
+  border-radius: 16px;
+  background: var(--accent-soft, #eef3ee);
+}
+.ojjuda-guest-account-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+:is(.ojjuda-settings, .park-settings, #gate) .ojjuda-guest-account-actions > a {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 64px;
+  margin: 0;
+  padding: 12px 10px;
+  border: 1px solid var(--accent, #365c49);
+  border-radius: 12px;
+  background: var(--surface, #fff);
+  color: var(--accent-ink, #365c49);
+  font: 700 18px/1.4 var(--font-b, var(--sans, system-ui, sans-serif));
+  letter-spacing: normal;
+  text-align: center;
+  text-decoration: none;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+:is(.ojjuda-settings, .park-settings, #gate) .ojjuda-guest-account-actions > .ojjuda-guest-account-signup {
+  background: var(--accent, #365c49);
+  color: var(--on-accent, #fff);
+}
+:is(.ojjuda-settings, .park-settings, #gate) .ojjuda-guest-account-actions > a:focus-visible {
+  outline: 3px solid var(--accent-ink, #365c49);
+  outline-offset: 3px;
+}
+@media (hover: hover) {
+  :is(.ojjuda-settings, .park-settings, #gate) .ojjuda-guest-account-actions > .ojjuda-guest-account-signup:hover {
+    background: var(--accent-hover, #294a39);
+  }
+  :is(.ojjuda-settings, .park-settings, #gate) .ojjuda-guest-account-actions > .ojjuda-guest-account-login:hover {
+    background: var(--surface-2, #f5f8f7);
+  }
+}
+@media (max-width: 360px) {
+  .ojjuda-guest-account { padding: 12px; }
+  .ojjuda-guest-account-actions { gap: 8px; }
+}
 @media (hover: hover) {
   .ojjuda-settings .ojjuda-settings-row:hover:not(:disabled) { background: var(--settings-hover); }
 }
