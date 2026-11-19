@@ -25,6 +25,7 @@ const signalOffers=[[1,10,2],[3,28,2],[5,45,2],[10,85,1],[20,160,1],[30,225,1]]
   .map(([quantity,price,revision])=>({id:'signal_'+quantity,quantity,price,revision}));
 const toolbarAssets=[
   '/shared/brand/service-header.css','/note/notifications.js','/note/notifications.css',
+  '/shared/share/page-share.js','/shared/share/page-share.css',
   '/features/wallet/ju-charge.js','/features/wallet/ju-charge.css','/ju-coins/ju-coins.css',
   ...['coin','10','30','50','100','300','500'].map(name=>'/ju-coins/'+name+'.svg')
 ];
@@ -35,16 +36,28 @@ async function checkServiceHeader(page,width) {
     const rect=node=>{const {left,right,top,bottom,width,height}=node.getBoundingClientRect();return {left,right,top,bottom,width,height};};
     const visible=node=>node.getClientRects().length>0&&getComputedStyle(node).visibility!=='hidden';
     const brand=header.querySelector('.ojjuda-service-brand'),actions=header.querySelector('.ojjuda-service-actions');
-    const nodes=[brand,actions,header.querySelector('.ojjuda-service-home'),header.querySelector('[data-notifications-open]'),header.querySelector('[data-ju-charge-open]')];
+    const invite=header.querySelector('[data-share-page="pajang"]');
+    const nodes=[brand,actions,header.querySelector('.ojjuda-service-home'),invite,header.querySelector('[data-notifications-open]'),header.querySelector('[data-ju-charge-open]')];
+    const navigation=document.querySelector('#station .station-nav');
     return {brand:rect(brand),actions:rect(actions),visible:nodes.every(visible),bounds:nodes.map(rect),
+      controls:[invite,header.querySelector('[data-notifications-open]'),header.querySelector('[data-ju-charge-open]')].map(rect),
+      nav:navigation&&visible(navigation)?rect(navigation):null,inviteText:invite.innerText,
+      scrollWidth:document.documentElement.scrollWidth,
       flex:getComputedStyle(header.querySelector('.ojjuda-service-header')).display,
       styles:[...document.styleSheets].map(sheet=>new URL(sheet.href||location.href).pathname)};
   });
   assert.equal(result.flex,'flex','the shared header stylesheet is active at '+width+'px');
-  assert.ok(result.visible,'brand, notification and balance controls are visible at '+width+'px');
+  assert.ok(result.visible,'brand, invitation, notification and balance controls are visible at '+width+'px');
+  assert.equal(result.inviteText,'초대','the invitation label remains visible at '+width+'px');
+  assert.ok(result.scrollWidth<=width+1,'the page has no horizontal overflow at '+width+'px');
   assert.ok(result.brand.right<=result.actions.left+1,'brand and account controls do not overlap at '+width+'px: '+JSON.stringify(result));
   assert.ok(result.bounds.every(box=>box.width>0&&box.height>0&&box.left>=-1&&box.right<=width+1),'all header controls fit at '+width+'px');
-  for(const stylesheet of ['/shared/brand/service-header.css','/features/pajang/account-toolbar.css','/features/pajang/signal-purchase.css'])
+  const overlaps=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1;
+  for(let i=0;i<result.controls.length;i++)for(let j=i+1;j<result.controls.length;j++)
+    assert.equal(overlaps(result.controls[i],result.controls[j]),false,'header controls do not overlap at '+width+'px: '+JSON.stringify(result));
+  if(result.nav)for(const box of [result.brand,result.actions])
+    assert.equal(overlaps(result.nav,box),false,'station navigation clears the header controls at '+width+'px: '+JSON.stringify(result));
+  for(const stylesheet of ['/shared/brand/service-header.css','/shared/share/page-share.css','/features/pajang/account-toolbar.css','/features/pajang/signal-purchase.css'])
     assert.ok(result.styles.includes(stylesheet),'fixture serves '+stylesheet);
 }
 
@@ -669,7 +682,7 @@ async function checkNavigation(page){
     assert.deepEqual(await group.locator('label span').allTextContents(),['남','','여']);
     const dir=path.join(__dirname,'artifacts/pajang-discovery');
     await fs.mkdir(dir,{recursive:true});
-    for(const width of [320,390,1080]){
+    for(const width of [320,390,750,1080]){
       await page.setViewportSize({width,height:844});
       await checkServiceHeader(page,width);
       await page.locator('.pajang-mast').screenshot({path:path.join(dir,'service-header-'+width+'.png'),animations:'disabled'});

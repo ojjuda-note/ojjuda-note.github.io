@@ -17,6 +17,7 @@ function agitDocument() {
     .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
     .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";', 'const screwGame={};');
   const helpers = [
+    'shared/share/page-share.js',
     'features/home/agit-hub.js', 'features/home/agit-welcome.js',
     'park/world-park-notes.js', 'app/world/world-themes.js',
     'shared/games/world-game-rankings.js', 'shared/games/world-game-assets.js',
@@ -33,7 +34,7 @@ function agitDocument() {
     g.tab=parkEntry?'place':'hub';g.place=parkEntry?{id:'park',ch:1,count:0,log:[]}:null;
     D.online=false;D.parkGuest=true;D.user=null;H();gm(()=>{});
     window.entryWorld={
-      member(value){D.online=value;D.parkGuest=!value;D.user=value?{id:'entry-member'}:null;H();},
+      member(value){D.online=value;D.parkGuest=!value;D.user=value?{id:'entry-member'}:null;$.coins=value?129447:0;H();},
       welcome(){OjjudaAgitWelcome.enter({member:false,owner:'entry-guest',settings:$.settings});}
     };
   ` + html.slice(end);
@@ -45,7 +46,10 @@ function installAccountFixture() {
     is_anonymous: false, user_metadata: { nickname: '테스트 이웃' } };
   const callbacks = new Set();
   const state = window.entryFixture = { session: member ? { user, access_token: 'fixture-token' } : null,
-    calls: [], logins: [], downloads: [] };
+    calls: [], logins: [], downloads: [], shares: [] };
+  Object.defineProperty(navigator, 'share', { configurable: true, value: async payload => {
+    state.shares.push({ ...payload });
+  } });
   const result = data => {
     const promise = Promise.resolve({ data, error: null });
     promise.abortSignal = promise.setHeader = () => promise;
@@ -134,6 +138,51 @@ async function fits(page, label, selectors = []) {
   }
 }
 
+async function mainInvitation(page, service, label, share = true) {
+  const names = { agit: '아지트', park: '공원', pajang: '파장' };
+  const paths = { agit: '/world.html?tab=hub', park: '/world.html?place=park', pajang: '/features/pajang/' };
+  const button = page.locator('.ojjuda-service-actions [data-share-page]:visible');
+  assert.equal(await button.count(), 1, `${label}: exactly one visible main invitation`);
+  assert.equal(await button.getAttribute('data-share-page'), service, `${label}: invitation matches the current service`);
+  assert.equal(await button.innerText(), '초대', `${label}: invitation keeps its visible text`);
+  assert.equal(await button.getAttribute('aria-label'), names[service] + ' 초대 링크 공유');
+  const layout = await button.evaluate(invite => {
+    const rect = node => { const { left, right, top, bottom, width, height } = node.getBoundingClientRect(); return { left, right, top, bottom, width, height }; };
+    const visible = node => node && node.getClientRects().length && getComputedStyle(node).visibility !== 'hidden';
+    const actions = invite.closest('.ojjuda-service-actions');
+    const brands = [...document.querySelectorAll('.ojjuda-service-brand')].filter(visible);
+    const controls = [invite, actions.querySelector('[data-notifications-open]'), actions.querySelector('.ojjuda-service-balance')];
+    const navigation = [...document.querySelectorAll('.sidenav,.station-nav')].filter(visible);
+    const label = [...invite.querySelectorAll('span')].find(node => node.textContent.trim() === '초대') || invite;
+    const range = document.createRange(); range.selectNodeContents(label);
+    const text = range.getBoundingClientRect();
+    return { width: innerWidth, scrollWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+      controls: controls.map(node => ({ visible: !!visible(node), box: node ? rect(node) : null })),
+      regions: [...brands, actions, ...navigation].map(rect),
+      brandCount: brands.length, text: { left: text.left, right: text.right, width: text.width, height: text.height } };
+  });
+  assert.equal(layout.brandCount, 1, `${label}: the main brand remains visible`);
+  assert.ok(layout.scrollWidth <= layout.width + 1, `${label}: no document overflow ${JSON.stringify(layout)}`);
+  assert.ok(layout.controls.every(control => control.visible), `${label}: invitation, notifications and wallet remain visible`);
+  const bounds = [...layout.regions, ...layout.controls.map(control => control.box)];
+  assert.ok(bounds.every(box => box.width > 0 && box.height > 0 && box.left >= -1 && box.right <= layout.width + 1), `${label}: header stays in the viewport ${JSON.stringify(layout)}`);
+  const invite = layout.controls[0].box;
+  assert.ok(layout.text.width > 5 && layout.text.height > 5 && layout.text.left >= invite.left - 1 && layout.text.right <= invite.right + 1, `${label}: invitation text is not clipped`);
+  const overlaps = (a, b) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1;
+  for (const boxes of [layout.regions, layout.controls.map(control => control.box)]) {
+    for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++)
+      assert.equal(overlaps(boxes[i], boxes[j]), false, `${label}: header elements overlap ${JSON.stringify(layout)}`);
+  }
+  if (share) {
+    const before = await page.evaluate(() => entryFixture.shares.length);
+    await button.click();
+    await page.waitForFunction(count => entryFixture.shares.length === count + 1, before);
+    const payload = await page.evaluate(() => entryFixture.shares.at(-1));
+    assert.equal(payload.url, origin + paths[service], `${label}: actual main button shares its clean public route`);
+    assert.match(payload.title, new RegExp(names[service]));
+  }
+}
+
 async function settled(page) {
   await page.evaluate(async () => {
     await document.fonts.ready;
@@ -180,7 +229,7 @@ async function openSpace(page, space) {
     await page.clock.setFixedTime(new Date('2026-11-19T03:00:00+09:00'));
 
     for (const space of spaces) {
-      for (const width of [320, 390, 750, 1280]) {
+      for (const width of [320, 390, 750, 1080, 1280]) {
         checkpoint = `${space.id}-guest-${width}`;
         await page.setViewportSize({ width, height: width === 750 ? 750 : 844 });
         const surface = await openSpace(page, space);
@@ -200,9 +249,16 @@ async function openSpace(page, space) {
         await settled(surface);
         await fits(surface, checkpoint, [space.login, space.signup]);
         if (space.id === 'park') await fits(page, checkpoint + ' host');
+        await mainInvitation(page, space.id, checkpoint);
         if (width === 390 || width === 750) await page.screenshot({ path: path.join(proof, checkpoint + '.png') });
+        await page.screenshot({ path: path.join(proof, `${space.id}-invite-header-${width}.png`), clip: { x: 0, y: 0, width, height: 100 } });
+        if (space.id !== 'pajang') {
+          await page.evaluate(() => { entryWorld.member(true); entryWorld.member(false); entryWorld.member(true); });
+          await settled(page);
+          await mainInvitation(page, space.id, `${space.id}-member-${width}`);
+        }
       }
-      console.log('PASS guest entrance and account targets:', space.id, '320/390/750/1280');
+      console.log('PASS guest entrance, main invitation and account targets:', space.id, '320/390/750/1080/1280');
     }
 
     checkpoint = 'agit-member-and-welcome';
@@ -241,6 +297,11 @@ async function openSpace(page, space) {
     await page.goto(origin + '/features/pajang/station.html');
     await page.locator('#gate > .pajang-invitation').waitFor({ state: 'visible' });
     await fits(page, 'direct Pajang station guest', [spaces[2].login, spaces[2].signup]);
+    for (const width of [320, 390, 750, 1080]) {
+      await page.setViewportSize({ width, height: 844 });
+      await settled(page);
+      await mainInvitation(page, 'pajang', `pajang-station-${width}`);
+    }
     await page.goto(origin + '/features/pajang/?member=1&blocked=1');
     await page.locator('#gate').waitFor({ state: 'visible' });
     assert.equal(await page.locator('#gate > .pajang-invitation').count(), 0, 'account restriction keeps its existing error gate');

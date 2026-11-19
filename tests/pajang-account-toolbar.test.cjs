@@ -73,6 +73,11 @@ test('both public Pajang entries share the brand and the real wallet/notificatio
     assert.equal(document.querySelector('.ojjuda-service-logo').getAttribute('viewBox'),'-16 -16 544 544');
     assert.equal(document.querySelectorAll('.pajang-mast [data-notifications-open]').length,1);
     assert.equal(document.querySelectorAll('.pajang-mast [data-ju-charge-open]').length,1);
+    const invitations=document.querySelectorAll('.pajang-mast [data-share-page="pajang"]');
+    assert.equal(invitations.length,1);assert.equal(invitations[0].textContent.trim(),'초대');
+    assert.equal(invitations[0].getAttribute('aria-label'),'파장 초대 링크 공유');
+    assert.ok(document.querySelector('script[src^="/shared/share/page-share.js?v="]'));
+    assert.ok(document.querySelector('link[href^="/shared/share/page-share.css?v="]'));
     assert.equal(document.querySelector('[data-pajang-balance]').textContent,'…');
     assert.match([...document.querySelectorAll('link[rel="stylesheet"]')].at(-1).href,/shared\/brand\/service-header\.css/);
     if(filename==='index.html')assert.equal(document.querySelector('input[name="consent"]').required,true);

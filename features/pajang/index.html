@@ -29,7 +29,9 @@
   <link rel="stylesheet" href="./account-toolbar.css?v=20261119-service-header1">
   <link rel="stylesheet" href="./signal-purchase.css?v=20261119-signal-purchase1">
   <link rel="stylesheet" href="./entry-design.css?v=20261119-water-letter1">
-  <link rel="stylesheet" href="/shared/brand/service-header.css?v=20261119-service-header1">
+  <link rel="stylesheet" href="/shared/share/page-share.css?v=20261119-main-invite1">
+  <link rel="stylesheet" href="/shared/brand/service-header.css?v=20261119-main-invite1">
+  <script src="/shared/share/page-share.js?v=20261119-main-invite1" defer></script>
   <script src="/app/world/world-themes.js?v=20261119-auto-theme1"></script>
   <script src="/app/world/world-weather.js?v=20261119-kma-current1" defer></script>
   <script type="module" src="./shell.mjs?v=20261119-service-header1"></script>
@@ -45,6 +47,7 @@
       <span class="ojjuda-service-beta">베타</span>
     </div>
     <div class="nn-top-actions ojjuda-service-actions">
+      <button class="ojjuda-service-invite" type="button" data-share-page="pajang" aria-label="파장 초대 링크 공유"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 16V3m-4 4 4-4 4 4M5 12v8h14v-8"/></svg><span>초대</span></button>
       <button class="nn-bell" type="button" data-notifications-open aria-label="알림" aria-haspopup="dialog" aria-controls="note-notification-dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span class="nn-dot" data-notification-dot hidden aria-hidden="true"></span></button>
       <button class="coinpill ojjuda-service-balance" type="button" data-ju-charge-open aria-label="보유 ZU 확인 중, 충전 열기" title="보유 ZU 확인 중, 충전 열기" aria-haspopup="dialog" aria-controls="ju-charge-dialog"><span class="cz" aria-hidden="true"><i>ZU</i></span><span data-pajang-balance>…</span></button>
     </div>
