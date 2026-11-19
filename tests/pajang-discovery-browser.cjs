@@ -539,7 +539,7 @@ async function checkNavigation(page){
       });
       if(pathname==='/program')return route.fulfill({contentType:'application/javascript',body:bundle});
       if(pathname==='/features/home/agit-hub.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../home/agit-hub.js'))});
-      if(/^\/features\/home\/theme-illustrations\/[a-z0-9-]+\.webp$/.test(pathname))return route.fulfill({contentType:'image/webp',body:await fs.readFile(path.join(feature,'../..',pathname))});
+      if(/^\/features\/home\/theme-illustrations\/[a-z0-9-]+\.webp$/.test(pathname)||['/features/home/park-community-3d-20261119.webp','/features/home/pajang-signal-3d-20261119.webp'].includes(pathname))return route.fulfill({contentType:'image/webp',body:await fs.readFile(path.join(feature,'../..',pathname))});
       if(pathname==='/features/home/location-warmup.mjs')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../home/location-warmup.mjs'))});
       if(pathname==='/world.html')return route.fulfill({contentType:'text/html',body:`<!doctype html>
         <html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
