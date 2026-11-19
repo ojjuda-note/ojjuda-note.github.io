@@ -1,9 +1,9 @@
-// Two warm glints flow around the players. Only their small layers move;
-// geometry is measured on resize, never inside the animation frame.
+// Two broad light ribbons follow the outer ellipse. Their SVG groups rotate
+// in circle coordinates, then the viewBox fits the full curves to the table.
 export function createDirectionOrbit({element,reduced}) {
   const markers=[...element.querySelectorAll('.orbit-marker')],tau=Math.PI*2;
   let phase=Math.PI/2,direction=1,active=false,paused=false,suspended=false;
-  let frame=0,lastTime=null,ready=false,rx=0,ry=0;
+  let frame=0,lastTime=null,ready=false;
 
   function measure(){
     // An entry-to-table transition can still report a zero-size box. Keep the
@@ -11,17 +11,12 @@ export function createDirectionOrbit({element,reduced}) {
     const rect=element.getBoundingClientRect();
     ready=rect.width>36&&rect.height>36;
     if(!ready){element.dataset.ready='false';return;}
-    rx=rect.width/2-18;ry=rect.height/2-18;
   }
   function paint(){
     if(!ready)return;
     markers.forEach((marker,index)=>{
       const angle=phase+index*tau/markers.length;
-      const x=Math.cos(angle)*rx,y=Math.sin(angle)*ry;
-      // Keep the ribbon's curve facing into the same ellipse after a reversal.
-      // CSS mirrors only its light gradient; its position and curvature stay put.
-      const tangent=Math.atan2(Math.cos(angle)*ry,-Math.sin(angle)*rx);
-      marker.style.transform=`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) rotate(${tangent.toFixed(5)}rad)`;
+      marker.style.transform=`rotate(${angle.toFixed(5)}rad)`;
     });
     if(element.dataset.ready!=='true')element.dataset.ready='true';
   }
@@ -45,6 +40,11 @@ export function createDirectionOrbit({element,reduced}) {
     element.hidden=!active;
     const label=direction===-1?'counterclockwise':'clockwise';
     if(element.dataset.direction!==label)element.dataset.direction=label;
+    if(changedDirection)markers.forEach(marker=>{
+      const flow=marker.querySelector('.orbit-flow');
+      if(direction===-1)flow.setAttribute('transform','translate(0 100) scale(1 -1)');
+      else flow.removeAttribute('transform');
+    });
     const remeasure=active&&(changedActive||!ready);
     if(!active){ready=false;element.dataset.ready='false';}
     else if(remeasure)measure();

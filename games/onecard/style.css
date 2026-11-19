@@ -81,15 +81,17 @@ a { color: inherit; }
 }
 .direction-orbit *, .direction-orbit *::before, .direction-orbit *::after { pointer-events: none; }
 .direction-orbit:not([data-ready="true"]) { visibility: hidden; }
-.orbit-marker {
-  position: absolute; top: 50%; left: 50%; width: 56px; height: 14px; margin: -7px 0 0 -28px;
-  transform-origin: center; will-change: transform;
+.orbit-surface {
+  position: absolute; inset: 18px; width: calc(100% - 36px); height: calc(100% - 36px);
+  overflow: visible; fill: none; stroke-linecap: round;
 }
-.orbit-marker svg { display: block; width: 100%; height: 100%; overflow: visible; fill: none; stroke-linecap: round; transform-origin: center; }
-.orbit-halo { stroke-width: 6; opacity: .18; }
-.orbit-ribbon { stroke-width: 2.2; }
-.direction-orbit[data-direction="counterclockwise"] .orbit-marker svg { transform: scaleX(-1); }
-.direction-orbit[data-state="reduced"] { opacity: .65; }
+.orbit-marker { transform-box: view-box; transform-origin: 50% 50%; will-change: transform; }
+.orbit-halo { stroke: #f1dda4; stroke-width: 14; opacity: .22; }
+.orbit-edge { stroke: #618476; stroke-width: 8.5; opacity: .6; }
+.orbit-ribbon { stroke: #fff1cb; stroke-width: 5.5; opacity: .5; }
+.orbit-front { stroke: #fff6dc; stroke-width: 5.5; opacity: .4; }
+.orbit-tip { stroke: #fffdf2; stroke-width: 5.5; opacity: .85; }
+.direction-orbit[data-state="reduced"] { opacity: .85; }
 .direction-orbit:not([data-state="running"]) .orbit-marker { will-change: auto; }
 .opponents { position: absolute; inset: 0; }
 .seat {
