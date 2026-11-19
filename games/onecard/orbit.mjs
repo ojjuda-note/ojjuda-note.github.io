@@ -10,8 +10,7 @@ export function createDirectionOrbit({element,reduced}) {
     // cue hidden until its real layout is available, including reduced motion.
     const rect=element.getBoundingClientRect();
     ready=rect.width>36&&rect.height>36;
-    element.dataset.ready=String(ready);
-    if(!ready)return;
+    if(!ready){element.dataset.ready='false';return;}
     rx=rect.width/2-18;ry=rect.height/2-18;
   }
   function paint(){
@@ -22,6 +21,7 @@ export function createDirectionOrbit({element,reduced}) {
       const tangent=Math.atan2(Math.cos(angle)*ry,-Math.sin(angle)*rx)+(direction===-1?Math.PI:0);
       marker.style.transform=`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) rotate(${tangent.toFixed(5)}rad)`;
     });
+    if(element.dataset.ready!=='true')element.dataset.ready='true';
   }
   function canRun(){return active&&ready&&!paused&&!suspended&&!document.hidden&&!reduced.matches;}
   function stop(){if(frame)cancelAnimationFrame(frame);frame=0;lastTime=null;}

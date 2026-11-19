@@ -199,14 +199,21 @@ async function joinPublicRoom(page, number) {
   assert.equal(await page.locator('#room-code-display').textContent(), `#${number}`);
 }
 async function oneScreen(page, label, playing = false) {
-  if (playing) await page.locator('#direction-orbit').waitFor({ state: 'visible' });
+  if (playing) await page.waitForFunction(() => {
+    const orbit = document.querySelector('#direction-orbit');
+    return orbit && !orbit.hidden && orbit.dataset.ready === 'true' &&
+      [orbit, ...orbit.querySelectorAll('.orbit-track, .orbit-marker')].every(node => {
+        const box = node.getBoundingClientRect();
+        return getComputedStyle(node).visibility === 'visible' && box.width > 0 && box.height > 0;
+      });
+  });
   const report = await page.evaluate(({ playing }) => {
     const rect = node => { const r = node.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height }; };
     const ids = playing ? ['onecard-app', 'game-table', 'hand-area', 'hand-scroll', 'hand-sort', 'sort-number', 'sort-color', 'game-controls', 'draw-button', 'onecard-button', 'status'] : ['setup', 'entry', 'entry-title', 'solo-mode', 'solo-start', 'online-open', 'entry-rules'];
     const scroller = document.querySelector('#hand-scroll'), style = scroller && getComputedStyle(scroller);
     const orbit = document.querySelector('#direction-orbit');
-    const motion = playing ? { hidden: orbit.hidden, state: orbit.dataset.state, ariaHidden: orbit.getAttribute('aria-hidden'),
-      boxes: [orbit, orbit.querySelector('.orbit-track'), ...orbit.querySelectorAll('.orbit-marker')].map(node => ({ ...rect(node), pointerEvents: getComputedStyle(node).pointerEvents, visibility: getComputedStyle(node).visibility })),
+    const motion = playing ? { hidden: orbit.hidden, ready: orbit.dataset.ready, state: orbit.dataset.state, ariaHidden: orbit.getAttribute('aria-hidden'),
+      boxes: [orbit, orbit.querySelector('.orbit-track'), ...orbit.querySelectorAll('.orbit-marker')].map(node => ({ ...rect(node), className: node.className, pointerEvents: getComputedStyle(node).pointerEvents, visibility: getComputedStyle(node).visibility })),
       controls: ['sort-number', 'sort-color', 'draw-pile', 'draw-button', 'menu-button'].map(id => {
         const node = document.getElementById(id), box = rect(node), hit = document.elementFromPoint((box.left + box.right) / 2, (box.top + box.bottom) / 2);
         return { id, reachable: node === hit || node.contains(hit) };
@@ -227,7 +234,7 @@ async function oneScreen(page, label, playing = false) {
     assert.equal(report.motion.boxes.length, 5, `${label}: track and all three moving markers exist`);
     for (const box of report.motion.boxes) {
       assert.equal(box.pointerEvents, 'none', `${label}: orbit never captures touch or mouse input`);
-      assert.equal(box.visibility, 'visible', `${label}: the complete direction cue is actually visible`);
+      assert.equal(box.visibility, 'visible', `${label}: the complete direction cue is actually visible: ${JSON.stringify({ box, ready: report.motion.ready, state: report.motion.state })}`);
       assert.ok(box.width > 0 && box.height > 0 && box.left >= -1 && box.top >= -1 && box.right <= report.viewport.width + 1 && box.bottom <= report.viewport.height + 1, `${label}: orbit stays within the screen: ${JSON.stringify(box)}`);
     }
     for (const control of report.motion.controls) assert.equal(control.reachable, true, `${label}: ${control.id} remains the actual touch target`);
