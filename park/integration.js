@@ -107,7 +107,6 @@
     if (owner) {
       const access = group('계정 관리');
       row(access, 'logout', '로그아웃', showAccountLogout);
-      row(access, 'delete-account', '회원 탈퇴', () => void showAccountDeletion(), 'park-settings-danger');
     }
     let adminGroup = null;
     syncAdminSettings = () => {
@@ -253,7 +252,7 @@
       if (card) {stack.splice(0,stack.length,card);void renderDetail();}
       else returnToFeed(false,feedReturnPoint);
       window.OjjudaNoteNavigation?.showMy?.(sameOwner&&route.my===true);
-      settingsContext=sameOwner&&['settings','member-info','nickname','password','blocked','logout','delete-account'].includes(route.view);
+      settingsContext=sameOwner&&['settings','member-info','nickname','password','blocked','logout'].includes(route.view);
       if (sameOwner) {
         const views={settings:showParkSettings,'member-info':showMemberInfo,nickname:showNicknameChange,password:showPasswordChange,blocked:showBlocks,logout:showAccountLogout,'delete-account':showAccountDeletion};
         if (Object.hasOwn(views,route.view)) void views[route.view]();

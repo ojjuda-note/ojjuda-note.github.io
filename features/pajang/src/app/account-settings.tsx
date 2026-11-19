@@ -2,6 +2,7 @@ import {useEffect,useRef,useState} from "react";
 import {I} from "./icons";
 import {openAccount,leaveAccount,accountError} from "../lib/account-actions.mjs";
 import {watchAdminAccess} from "../lib/admin-access.mjs";
+import {openPajangSupport,closePajangSupport} from "../lib/account-support.mjs";
 import {client} from "../../member.mjs";
 
 export type AccountAction="logout"|"withdraw";
@@ -9,6 +10,23 @@ export type AccountSettingsAction=AccountAction|"edit"|"privateProfile"|"private
 
 export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(action:AccountSettingsAction)=>void}){
   const [admin,setAdmin]=useState({owner:"",allowed:false});
+  const [supportBusy,setSupportBusy]=useState(false),[supportError,setSupportError]=useState("");
+  const supportScope=useRef({profileId,active:true}),openAction=useRef(onOpen);
+  openAction.current=onOpen;
+  useEffect(()=>{
+    const scope={profileId,active:true};supportScope.current=scope;
+    setSupportBusy(false);setSupportError("");
+    return()=>{scope.active=false;closePajangSupport(scope);};
+  },[profileId]);
+  async function showSupport(){
+    if(supportBusy)return;
+    const scope=supportScope.current;
+    const isCurrent=()=>scope.active&&supportScope.current===scope&&scope.profileId===profileId;
+    setSupportBusy(true);setSupportError("");
+    try{await openPajangSupport({owner:scope,isCurrent,onOpen:(action:"withdraw")=>openAction.current(action)});}
+    catch{if(isCurrent())setSupportError("문의·의견을 열지 못했어요. 다시 눌러 주세요.");}
+    finally{if(isCurrent())setSupportBusy(false);}
+  }
   useEffect(()=>{
     let active=true,dispose=()=>{};
     setAdmin({owner:profileId,allowed:false});
@@ -46,6 +64,9 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
     <section className="ojjuda-settings-group" aria-labelledby="account-help-title">
       <h2 className="ojjuda-settings-heading" id="account-help-title">이용 안내</h2>
       <div className="ojjuda-settings-list">
+        <button type="button" className="ojjuda-settings-row" onClick={()=>void showSupport()} disabled={supportBusy} aria-haspopup="dialog">
+          <span className="ojjuda-settings-label">문의·의견</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
+        </button>
         {row("help","사용법")}
         <a className="ojjuda-settings-row" href="/terms.html?from=pajang">
           <span className="ojjuda-settings-label">이용약관</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
@@ -54,6 +75,7 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
           <span className="ojjuda-settings-label">개인정보처리방침</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
         </a>
       </div>
+      {supportError&&<p className="error" role="alert">{supportError}</p>}
     </section>
     <section className="ojjuda-settings-group" aria-labelledby="account-app-download-title">
       <h2 className="ojjuda-settings-heading" id="account-app-download-title">앱 다운로드</h2>
@@ -76,7 +98,6 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
       <div className="ojjuda-settings-list">
         {row("logout","로그아웃")}
         {row("delete","파장 기록 삭제")}
-        {row("withdraw","회원 탈퇴",true)}
       </div>
     </section>
     {admin.owner===profileId&&admin.allowed&&<section className="ojjuda-settings-group" aria-labelledby="account-admin-title">

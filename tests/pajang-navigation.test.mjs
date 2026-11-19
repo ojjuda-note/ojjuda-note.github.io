@@ -92,3 +92,42 @@ test('reloading a chat retains the prior tab order, without persisting dialog co
   f.history.back();f.flush();assert.equal(f.path,'/station.html','reload closes the overlay without a duplicate Back stop');
   assert.ok(!JSON.stringify(f.entries).includes('private answer'));
 });
+
+test('external support shares the one popup entry for Back, Forward and manual close',()=>{
+  const f=fixture();f.controller.visit('/station.html?tab=profile');
+  let visible=false;
+  const support={show(){visible=true;},hide(){visible=false;},canLeave:()=>true,isCurrent:()=>true};
+  f.controller.openExternal(support);assert.equal(visible,true);assert.equal(f.entries.length,3);
+  f.history.back();f.flush();assert.equal(visible,false);assert.equal(f.path,'/station.html?tab=profile');
+  f.history.go(1);f.flush();assert.equal(visible,true);
+  visible=false;f.controller.closeExternal(support);f.flush();
+  f.history.back();f.flush();assert.equal(f.path,'/station.html','manual close consumes exactly the support entry');
+});
+
+test('busy support returns to its existing entry without losing Forward or the form',()=>{
+  const f=fixture();f.controller.visit('/station.html?tab=profile');
+  let busy=true,shows=0,hides=0;
+  const support={show(){shows++;},hide(){hides++;},canLeave:()=>!busy,isCurrent:()=>true};
+  f.controller.openExternal(support);const state=f.history.state;
+  f.history.back();f.flush();
+  assert.deepEqual(f.history.state,state);assert.equal(f.entries.length,3);
+  assert.equal(shows,1);assert.equal(hides,0,'blocked Back does not rebuild the draft');
+  f.controller.closeExternal(support);f.controller.visit('/station.html?tab=inbox');f.flush();
+  assert.deepEqual(f.history.state,state);
+  busy=false;f.controller.closeExternal(support);f.flush();
+  f.history.back();f.flush();assert.equal(f.path,'/station.html');
+});
+
+test('support to withdrawal replaces the closed support and invalid private contexts never reopen',()=>{
+  const f=fixture();f.controller.visit('/station.html?tab=profile');
+  let valid=true,shows=0;
+  const support={show(){shows++;},hide(){},canLeave:()=>true,isCurrent:()=>valid};
+  f.controller.openExternal(support);
+  f.controller.closeExternal(support,()=>{valid=false;f.controller.open({kind:'withdraw'});});f.flush();
+  assert.equal(f.modal.kind,'withdraw');assert.equal(f.entries.length,3);
+  f.controller.close();f.flush();f.history.go(1);f.flush();assert.equal(f.modal.kind,'withdraw');assert.equal(shows,1);
+  f.controller.close();f.flush();valid=true;f.controller.openExternal(support);
+  f.controller.closeExternal(support);f.flush();valid=false;
+  f.history.go(1);f.flush();assert.equal(f.history.state.pajangNavigation.modal,null);assert.equal(shows,2);
+  f.history.back();f.flush();assert.equal(f.path,'/station.html');
+});

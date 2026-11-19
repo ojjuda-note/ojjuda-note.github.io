@@ -3659,7 +3659,6 @@ function installManagement() {
   $('#note-change-nickname').addEventListener('click', showNicknameChange);
   $('#note-change-password').addEventListener('click', showPasswordChange);
   $('#note-logout').addEventListener('click', showAccountLogout);
-  $('#note-delete-account').addEventListener('click', showAccountDeletion);
   const tools = node('div', 'note-tools');
   const blocks = managementButton('차단 목록', showBlocks); blocks.id = 'note-blocks'; blocks.hidden = true;
   const reports = managementButton('관리자 모드 열기', () => {
@@ -3907,7 +3906,13 @@ function installComposerSheet() {
 }
 window.OjjudaCharge?.install({ client, getUserId: () => session?.user?.id || null, source: 'note',
   onBalance: (coins, userId) => { if (session?.user?.id === userId) { balanceRun++; worldCoins = coins; updateAuth(); } } });
-window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.50-beta' });
+window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note',
+  getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.50-beta',
+  onWithdrawal: () => {
+    if (!session?.user || managementBusy || window.canCloseParkNote?.() === false) return;
+    void showAccountDeletion();
+  }
+});
 notificationController = window.OjjudaNoteNotifications?.install({
   refreshClosedBadge: !parkEmbedded, // World owns the visible bell when Park is embedded.
   onGiftClaimed: userId => loadWorldBalance(userId),

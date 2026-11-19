@@ -6,7 +6,7 @@ const {JSDOM,VirtualConsole}=require('jsdom');
 
 // Exercise the built React member program with real DOM/history events. The
 // network boundary is an in-memory member fixture, never a live user account.
-function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin=false}={}){
+function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin=false,radar=false}={}){
   const errors=[];
   const console=new VirtualConsole();console.on('jsdomError',error=>errors.push(error.message));
   const dom=new JSDOM('<!doctype html><div id="station"></div>',{url,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:console});
@@ -16,21 +16,33 @@ function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin
   w.HTMLElement.prototype.scrollIntoView=function(){};
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;};
+  for(const href of ['/note/support.css?v=20261119-withdrawal-contact1','/features/pajang/support.css?v=20261119-withdrawal-contact1']){
+    const link=w.document.createElement('link');link.rel='stylesheet';link.href=href;
+    Object.defineProperty(link,'sheet',{value:{}});w.document.head.append(link);
+  }
   const me={id:'me',name:'보리',interest:'book',body:'내 답변',at:1};
-  const peer={id:'peer',name:'라온',interest:'walk',body:'함께 걸어요.',at:1};
+  const peer={id:'peer',name:'라온',interest:'walk',body:'함께 걸어요.',at:1,range:3,bearing:315};
+  const sameCell=radar?['도담','소담'].map((name,i)=>({id:'nearby'+i,name,interest:'book',body:'같은 동네에서 책을 읽어요.',range:1,sameCell:true})):[];
   const state={day:'2026-11-19',slot:'am',question:{id:1,q:['오늘은 무엇을 하고 싶나요?']},nextAt:new Date(Date.now()+3600000).toISOString(),
-    me,people:[peer],signals:[{src:'me',dst:'peer'},{src:'peer',dst:'me'}],messages:[],remaining:3,authenticated:true,
-    locationEnabled:false,locationVersion:0};
+    me,people:[peer,...sameCell],signals:[{src:'me',dst:'peer'},{src:'peer',dst:'me'}],messages:[],remaining:3,authenticated:true,
+    locationEnabled:radar,locationVersion:0,locationChecked:radar,radarOn:radar};
   const row={...peer,peer:peer.id,day:state.day,slot:state.slot,question:'오늘은 무엇을 하고 싶나요?',own:false,sent:true,received:true};
   w.pajangState=state;w.pajangArt={};
   w.OjjudaLocation={acceptPreference(){},subscribe(){return ()=>{};}};
   const calls=[],authListeners=new Set();
-  let session={access_token:'test-member-token',user:{id:'auth-member',is_anonymous:false}};
+  let finishInquiry,session={access_token:'test-member-token',user:{id:'auth-member',is_anonymous:false}};
   const db={auth:{
     getSession:async()=>({data:{session}}),
     getUser:async()=>({data:{user:session?.user||null}}),
     onAuthStateChange(listener){authListeners.add(listener);return {data:{subscription:{unsubscribe(){authListeners.delete(listener);}}}};}
-  },rpc:(name,params)=>{
+  },from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{nickname:'보리'}})})})}),
+  schema:()=>({rpc:async name=>{
+    calls.push({name});
+    if(name==='get_note_state')return {data:{}};
+    if(name==='list_my_inquiries')return {data:[]};
+    if(name==='submit_inquiry')return new Promise(resolve=>{finishInquiry=()=>resolve({data:{}});});
+    throw Error('Unexpected support operation '+name);
+  }}),rpc:(name,params)=>{
     calls.push({name,params});let data;
     if(name==='pajang_member')data=params.p_action==='thread'?[]:state;
     else if(name==='pajang_discovery_feed')data={items:[row],nextCursor:null,total:1,remaining:3};
@@ -48,7 +60,7 @@ function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin
   }
   async function click(selector,text){const element=byText(selector,text);assert.ok(element,'control '+text);element.click();await new Promise(resolve=>setTimeout(resolve,10));}
   function signOut(){session=null;for(const listener of authListeners)listener('SIGNED_OUT',null);}
-  return {w,errors,calls,authListeners,signOut,byText,until,click,menu:label=>click('nav a',label),modal:()=>w.document.querySelector('dialog[open]')};
+  return {w,errors,calls,authListeners,signOut,finishInquiry:()=>finishInquiry(),byText,until,click,menu:label=>click('nav a',label),modal:()=>w.document.querySelector('dialog[open]')};
 }
 
 test('the React app closes its popup first and restores real tabs, including button-close and Forward',async t=>{
@@ -118,5 +130,77 @@ test('administrator access stays tied to the current account through popup and t
   assert.equal(f.authListeners.size,1);
   assert.equal(f.calls.filter(call=>call.name==='is_admin').length,checks+1,'restored settings check the live account again');
   f.signOut();await f.until(()=>!adminEntry());
+  assert.deepEqual(f.errors,[]);
+});
+
+test('individual radar markers preserve person selection through popup Back and the chat returns to the radar',async t=>{
+  const f=fixture(t,'https://ojjuda.test/features/pajang/station.html?view=radar',{radar:true}),{w}=f;
+  const markers=()=>[...w.document.querySelectorAll('.scope-person')];
+  const select=async name=>{markers().find(node=>node.getAttribute('aria-label').startsWith(name+',')).click();await f.until(()=>f.byText('.radar-identity h2',name));};
+  await f.until(()=>markers().length===3);
+  assert.deepEqual(markers().map(node=>node.querySelector('.scope-person-name').textContent).sort(),['도','라','소']);
+  assert.equal(w.document.querySelectorAll('.scope-person.scope-same-cell').length,2);
+  assert.equal(w.document.querySelectorAll('.radar-links line').length,1,'same-cell markers never receive an invented bearing');
+  await select('소담');
+  const positions=markers().map(node=>[node.style.left,node.style.top]);
+  await f.click('button','공개 정보 보기');await f.until(()=>f.modal());
+  assert.ok(f.byText('dialog h2','소담'));
+  w.history.back();await f.until(()=>!f.modal());
+  assert.ok(f.byText('.radar-identity h2','소담'));
+  assert.deepEqual(markers().map(node=>[node.style.left,node.style.top]),positions);
+  await select('라온');await f.click('button','공개 정보 보기');await f.until(()=>f.modal());
+  await f.click('dialog button','대화 열기');await f.until(()=>w.document.querySelector('.composer'));
+  w.document.querySelector('.chatheader [aria-label="뒤로가기"]').click();
+  await f.until(()=>markers().length===3);
+  assert.equal(new URL(w.location.href).searchParams.get('view'),'radar');
+  assert.equal(f.modal(),null);
+  w.history.forward();await f.until(()=>w.document.querySelector('.composer'));
+  assert.equal(new URL(w.location.href).searchParams.get('chat'),'peer');
+  assert.deepEqual(f.errors,[]);
+});
+
+test('support closes before the visited tab and withdrawal replaces it without resurrecting private support',async t=>{
+  const f=fixture(t),{w}=f;
+  const support=()=>w.document.querySelector('.note-support-layer:not([hidden])');
+  await f.until(()=>f.byText('nav a','오늘'));await f.menu('마음함');await f.menu('내 파장');
+  assert.equal(f.byText('.account-settings button .ojjuda-settings-label','회원 탈퇴'),undefined);
+  await f.click('.account-settings button .ojjuda-settings-label','문의·의견');
+  await f.until(()=>w.document.querySelector('#note-inquiry-body'));
+  w.history.back();await f.until(()=>!support());
+  assert.equal(new URL(w.location.href).searchParams.get('tab'),'profile');
+  w.history.forward();await f.until(()=>support());
+  await f.click('.note-support-layer button','닫기');await f.until(()=>!support());
+  await f.until(()=>w.history.state.pajangNavigation.modal===null);
+  w.history.back();await f.until(()=>new URL(w.location.href).searchParams.get('tab')==='inbox');
+  w.history.forward();await f.until(()=>new URL(w.location.href).searchParams.get('tab')==='profile');
+  w.history.forward();await new Promise(resolve=>setTimeout(resolve,30));await f.until(()=>w.history.state.pajangNavigation.modal===null);
+  assert.equal(support(),null,'Forward cannot reopen support owned by the previous settings mount');
+  await f.click('.account-settings button .ojjuda-settings-label','문의·의견');
+  await f.until(()=>w.document.querySelector('#note-inquiry-body'));
+  await f.click('.note-support-layer button','회원 탈퇴');
+  await f.until(()=>f.modal()?.getAttribute('aria-label')==='오쭈다 회원탈퇴');
+  assert.equal(support(),null);
+  await f.click('dialog button','취소');await f.until(()=>!f.modal());
+  w.history.back();await f.until(()=>new URL(w.location.href).searchParams.get('tab')==='inbox');
+  assert.equal(support(),null);assert.deepEqual(f.errors,[]);
+});
+
+test('Back during an inquiry send preserves its form and exact history entry until the request finishes',async t=>{
+  const f=fixture(t),{w}=f;
+  await f.until(()=>f.byText('nav a','오늘'));await f.menu('내 파장');
+  await f.click('.account-settings button .ojjuda-settings-label','문의·의견');
+  await f.until(()=>w.document.querySelector('#note-inquiry-body'));
+  const field=w.document.querySelector('#note-inquiry-body'),state=structuredClone(w.history.state),length=w.history.length;
+  field.value='작성 중 문의';field.form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+  await f.until(()=>!w.OjjudaNoteSupport.canLeave());
+  w.history.back();
+  await new Promise(resolve=>setTimeout(resolve,30));
+  await f.until(()=>JSON.stringify(w.history.state)===JSON.stringify(state));
+  assert.equal(JSON.stringify(w.history.state),JSON.stringify(state));assert.equal(w.history.length,length);
+  assert.equal(w.document.querySelector('#note-inquiry-body'),field);assert.equal(field.value,'작성 중 문의');
+  assert.equal(w.OjjudaNoteSupport.isOpen(),true);
+  f.finishInquiry();await f.until(()=>w.OjjudaNoteSupport.canLeave());
+  await f.click('.note-support-layer button','닫기');await f.until(()=>w.history.state.pajangNavigation.modal===null);
+  w.history.back();await f.until(()=>!new URL(w.location.href).searchParams.has('tab'));
   assert.deepEqual(f.errors,[]);
 });

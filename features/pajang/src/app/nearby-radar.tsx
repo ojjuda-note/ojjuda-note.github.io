@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { badges, introDetails, type Person, type Station } from "../lib/station";
+import { introDetails, type Person, type Station } from "../lib/station";
 import { compassDirections, directionName, radarPosition, rangeNames, type RadarBand, type RadarCell } from "../lib/radar";
+import {radarBands as bands, radarMarkers} from "../lib/radar-markers";
 import {InterestArt} from "./interest-art";
 import { I } from "./icons";
 import { useCompass } from "./use-compass";
@@ -17,13 +18,6 @@ type Props = {
   onJoin: () => void;
   onSettings: (cell: RadarCell | null, accountId: string) => Promise<boolean>;
 };
-
-const bands = [
-  {limit:1, ring:48, radius:32},
-  {limit:3, ring:94, radius:72},
-  {limit:7, ring:140, radius:116},
-  {limit:15, ring:186, radius:153},
-] as const;
 
 function bearingLabel(person: LocatedPerson) {
   if (person.bearing !== undefined) return directionName(person.bearing) + "쪽";
@@ -80,19 +74,7 @@ export default function NearbyRadar({station,sample,autoLocation,onLocationChang
   const heading=compass.heading ?? 0;
   const visible=grouped.flatMap(group=>group.slice(current*3,current*3+3));
   const person=visible.find(p=>p.id===selected)||visible[0];
-  const sameCellPeople=visible.filter(p=>p.sameCell===true&&p.bearing===undefined);
-  const sameCellIndex=sameCellPeople.findIndex(p=>p.id===person?.id);
-  const sameCellPerson=sameCellPeople[Math.max(0,sameCellIndex)];
-  const clusters=new Map<string,{members:LocatedPerson[];x:number;y:number}>();
-  for(const p of visible){
-    if(p.bearing===undefined)continue;
-    const key=p.range+"/"+p.bearing;
-    const cluster=clusters.get(key);
-    if(cluster){cluster.members.push(p);continue;}
-    // Leave space around the center group without assigning it a direction.
-    const radius=p.range===1&&sameCellPeople.length?44:bands.find(b=>b.limit===p.range)!.radius;
-    clusters.set(key,{members:[p],...radarPosition(p.bearing,heading,radius)});
-  }
+  const markers=radarMarkers(visible,heading);
   const enabled=sample||station.locationEnabled!==false;
   const locatedNow=sample||Boolean(station.radarOn);
 
@@ -131,28 +113,26 @@ export default function NearbyRadar({station,sample,autoLocation,onLocationChang
         <div className="dial-info"><span><i/> {sample?"체험 채널":"회원 채널"}</span><span>반경 약 15km</span></div>
         <div className="radar-scope" role="group" aria-label="거리와 방위별 프로필">
           <Grid heading={heading}/>
-          {sameCellPerson?<button type="button" className={"scope-self scope-same-cell"+(sameCellIndex>=0?" picked":"")}
-            aria-label={"나와 같은 구역 "+sameCellPeople.length+"명, "+sameCellPerson.name+(sameCellPeople.length>1?", 다음 프로필 보기":", 답변 보기")}
-            title={"나와 같은 구역 "+sameCellPeople.length+"명"} aria-pressed={sameCellIndex>=0}
-            onClick={()=>setSelected(sameCellPeople[(sameCellIndex+1)%sameCellPeople.length].id)}>
-            <span aria-hidden="true">나</span><small aria-hidden="true">+{sameCellPeople.length}</small>
-          </button>:<span className="scope-self">나</span>}
-          {Array.from(clusters,([key,cluster])=>{
-            const {members,x,y}=cluster;
-            const index=members.findIndex(p=>p.id===person?.id);
-            const p=members[Math.max(0,index)];
+          <svg className="radar-links" aria-hidden="true" viewBox="0 0 100 100">
+            {markers.map(({person:p,x,y,anchor})=>anchor&&<g key={p.id} opacity={Math.hypot(x-anchor.x,y-anchor.y)>2?1:0}>
+              <line data-person-id={p.id} x1={anchor.x} y1={anchor.y} x2={x} y2={y}/>
+              <circle cx={anchor.x} cy={anchor.y} r=".65"/>
+            </g>)}
+          </svg>
+          <span className="scope-self">나</span>
+          {markers.map(({person:p,x,y,anchor})=>{
             const label=p.name+", "+bearingLabel(p)+", "+rangeNames[p.range];
-            return <button key={key} type="button" className={"scope-person"+(index>=0?" picked":"")} style={{left:x+"%",top:y+"%",background:badges(p.interest).bg}}
-              aria-label={members.length>1 ? label+", 같은 방향 "+members.length+"명, 다음 프로필 보기" : label+", 답변 보기"}
-              aria-pressed={index>=0} onClick={()=>setSelected(members[(index+1)%members.length].id)}>
-              {Array.from(p.name)[0]}{members.length>1&&<small className="cluster-count">{members.length}</small>}
+            const picked=p.id===person?.id;
+            return <button key={p.id} type="button" className={"scope-person"+(!anchor?" scope-same-cell":"")+(picked?" picked":"")} style={{left:x+"%",top:y+"%"}}
+              aria-label={label+", 답변 보기"} aria-pressed={picked} onClick={()=>setSelected(p.id)}>
+              <span className="scope-person-name" aria-hidden="true">{Array.from(p.name.trim())[0]}</span>
             </button>;
           })}
 
         </div>
         <div className="compass-controls"><div><b>{compass.heading===null?"북쪽 고정":"화면 위 · "+directionName(heading)+"쪽"}</b><p>{compass.status==="off"?"휴대폰을 돌리는 방향에 맞춰 보세요.":compass.message}</p></div>
           {compass.status==="on"||compass.status==="waiting"?<button onClick={compass.stop}>북쪽 고정하기</button>:<button onClick={()=>void compass.start()}>휴대폰 방향 켜기</button>}</div>
-        <div className="dial-foot"><span><I n="shield" s={14}/> {sample?"예시 방위를 표시해요.":"방향은 여덟 방위로 표시해요."}</span>{pageCount>1?<div className="scope-pages"><button aria-label="이전 레이더 페이지" disabled={current===0} onClick={()=>setPage(current-1)}>‹</button>{current+1}/{pageCount}<button aria-label="다음 레이더 페이지" disabled={current+1===pageCount} onClick={()=>setPage(current+1)}>›</button></div>:<span>{!enabled?'위치 숨김':locatedNow?'주변 '+located.length+'명':'위치 확인 필요'}</span>}</div>
+        <div className="dial-foot"><span><I n="shield" s={14}/> {sample?"예시 방위 · 표식은 펼쳐 표시해요.":"8방위 기준 · 표식은 펼쳐 표시해요."}</span>{pageCount>1?<div className="scope-pages"><button aria-label="이전 레이더 페이지" disabled={current===0} onClick={()=>setPage(current-1)}>‹</button>{current+1}/{pageCount}<button aria-label="다음 레이더 페이지" disabled={current+1===pageCount} onClick={()=>setPage(current+1)}>›</button></div>:<span>{!enabled?'위치 숨김':locatedNow?'주변 '+located.length+'명':'위치 확인 필요'}</span>}</div>
       </div>
       <div className="radar-details" aria-live="polite">
         {person?<><div className="radar-kicker"><I n="signal" s={16}/>{rangeNames[person.range]} · {bearingLabel(person)}</div><div className="radar-identity"><InterestArt interest={person.interest} large/><div><h2>{person.name}</h2><p>{introDetails(person)}</p></div></div>

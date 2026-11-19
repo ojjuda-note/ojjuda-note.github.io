@@ -6,7 +6,7 @@ user={id:'member'};
 rooms=[{id:'10000000-0000-4000-8000-000000000001'},{id:'20000000-0000-4000-8000-000000000002'}];
 render=()=>{document.getElementById('app').textContent=roomId||'groups';};
 loadFeed=async()=>{};showSharedInvitation=async()=>{};
-window.groupNavFixture={route,dialog,confirmAction,
+window.groupNavFixture={route,dialog,confirmAction,idle:()=>!pendingDialogDismiss,
  room:index=>route(rooms[index].id),
  dirty(){const d=dialog('작성 중','<textarea>남겨 둘 글</textarea>');d.requestDismiss=()=>confirmAction('지울까요?','',()=>d.close());return d;}
 };
@@ -20,7 +20,13 @@ async function fixture(browser){
  await page.goto('https://group-history.test/groups/');
  await page.evaluate(()=>history.replaceState({retained:'yes'},'',location.href));
  await page.addScriptTag({content:source});
- const settle=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ // Closing a dialog can traverse Forward and Back before reaching its page.
+ // Wait for the history entry to match the visible dialogs, not a frame count.
+ const settle=expectedDialogs=>page.waitForFunction(expected=>{
+  const open=[...document.querySelectorAll('dialog[open]')],marker=history.state?.ojjudaGroupDialog;
+  return groupNavFixture.idle()&&open.length===expected&&
+   (open.length?Number(open.at(-1).dataset.groupDialog)===marker:!marker);
+ },expectedDialogs);
  return {page,errors,settle};
 }
 test('group routes and dialogs consume one real Back step in Chromium',async()=>{
@@ -40,15 +46,14 @@ test('group routes and dialogs consume one real Back step in Chromium',async()=>
    const {page,errors,settle}=await fixture(browser);
    await page.evaluate(()=>groupNavFixture.dialog('팝업','<p>내용</p>'));
    if(manual)await page.locator('[data-close]').click();else await page.goBack();
-   await page.waitForFunction(()=>!document.querySelector('dialog[open]'));
-   await settle();assert.equal(new URL(page.url()).pathname,'/groups/');
+   await settle(0);assert.equal(new URL(page.url()).pathname,'/groups/');
    await page.goBack();assert.equal(new URL(page.url()).pathname,'/before');
    assert.deepEqual(errors,[]);await page.close();
   }
   {
    const {page,errors,settle}=await fixture(browser);
    await page.evaluate(()=>{const d=groupNavFixture.dialog('완료','<p>내용</p>');d.close();groupNavFixture.room(0);});
-   await settle();await page.goBack();assert.equal(new URL(page.url()).hash,'');
+   await settle(0);await page.goBack();assert.equal(new URL(page.url()).hash,'');
    await page.goBack();assert.equal(new URL(page.url()).pathname,'/before');
    assert.deepEqual(errors,[]);await page.close();
   }
@@ -57,11 +62,11 @@ test('group routes and dialogs consume one real Back step in Chromium',async()=>
    await page.evaluate(()=>groupNavFixture.dirty());await page.goBack();
    await page.locator('[data-no]').waitFor();
    assert.equal(await page.locator('dialog[open]').count(),2);
-   await page.locator('[data-no]').click();await settle();
+   await page.locator('[data-no]').click();await settle(1);
    assert.equal(await page.locator('dialog[open]').count(),1);
    assert.equal(await page.locator('textarea').inputValue(),'남겨 둘 글');
    await page.goBack();await page.locator('[data-yes]').waitFor();await page.locator('[data-yes]').click();
-   await page.waitForFunction(()=>!document.querySelector('dialog[open]'));await settle();
+   await settle(0);
    assert.equal(new URL(page.url()).pathname,'/groups/');
    await page.goBack();assert.equal(new URL(page.url()).pathname,'/before');
    assert.deepEqual(errors,[]);await page.close();
