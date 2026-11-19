@@ -232,7 +232,7 @@
     $('password-confirm-label').textContent = isReset ? '새 비밀번호 확인' : '비밀번호 확인';
     password.autocomplete = isSignup || isReset ? 'new-password' : 'current-password';
     $('auth-title').textContent = isForgot ? '비밀번호 찾기' : isReset ? '새 비밀번호 설정' : isNickname ? '닉네임 정하기' : '오쭈다 ' + entrySpace.name;
-    $('auth-intro').textContent = isSignup ? '한 번 가입하면 오쭈다 아지트의 모든 공간을 이용할 수 있어요.'
+    $('auth-intro').textContent = isSignup ? (guestDestination === 'pajang' ? '만 19세 이상 회원만 파장을 이용할 수 있어요.' : '오쭈다 계정 하나로 함께해요.')
       : isForgot ? '등록된 이메일·전화번호·생년월일·성별을 모두 입력해 주세요.'
         : isReset ? '새 비밀번호를 입력하고, 확인 칸에 한 번 더 입력해 주세요.'
           : isNickname ? '아지트에서 사용할 닉네임을 정해 주세요.'

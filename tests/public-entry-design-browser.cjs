@@ -222,9 +222,9 @@ async function openSpace(page, space) {
     const feedBefore = await parkFrame.locator('#feed-list').evaluate(node => node.getBoundingClientRect().top);
     await parkFrame.locator('#park-entry-browse').click();
     await parkFrame.waitForFunction(before => document.getElementById('feed-list').getBoundingClientRect().top < before - 30, feedBefore);
-    await page.evaluate(() => entryFixture.setMember(true));
+    await parkFrame.evaluate(() => entryFixture.setMember(true));
     await parkFrame.locator('#park-guest-entry').waitFor({ state: 'hidden' });
-    await page.evaluate(() => entryFixture.setMember(false));
+    await parkFrame.evaluate(() => entryFixture.setMember(false));
     await parkFrame.locator('#park-guest-entry').waitFor({ state: 'visible' });
     await parkFrame.locator('#park-guest-entry a[href*="auth=login"]').click();
     await page.locator('#auth-dialog[open][data-entry-space="park"]').waitFor();
