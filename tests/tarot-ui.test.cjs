@@ -14,7 +14,7 @@ async function until(predicate) {
   assert.ok(predicate(), 'tarot UI did not finish the expected transition');
 }
 
-async function page({ admin = false, topic = 'love', opened = [2, 3, 4], paidDay = '2026-11-12', drawn = ['fool', 'magician', 'priestess', 'empress', 'emperor'], pendingTopic = null, initError = false } = {}) {
+async function page({ admin = false, fresh = false, topic = 'love', discarded = [0, 1], opened = [2, 3, 4], paidDay = '2026-11-12', drawn = ['fool', 'magician', 'priestess', 'empress', 'emperor'], pendingTopic = null, initError = false } = {}) {
   const dom = new JSDOM(read('index.html'), { url: 'https://ojjuda.kr/games/moonlit-tarot/', runScripts: 'outside-only', pretendToBeVisual: true });
   const { window } = dom;
   const context = dom.getInternalVMContext();
@@ -50,7 +50,7 @@ async function page({ admin = false, topic = 'love', opened = [2, 3, 4], paidDay
   window.TarotAudio = class { play() {} setMuted() {} };
   const receipt = {
     topic, reading_day: paidDay, request_id: 'paid-original',
-    reset_at: new Date(clock + 86400000).toISOString(), drawn, discarded: [0, 1], openOrder: opened
+    reset_at: new Date(clock + 86400000).toISOString(), drawn, discarded: [...discarded], openOrder: [...opened]
   };
   let payment, revelations = 0;
   window.TarotRevelation = class { play() { revelations++; return Promise.resolve(true); } cancel() {} };
@@ -59,7 +59,8 @@ async function page({ admin = false, topic = 'love', opened = [2, 3, 4], paidDay
       payment = this;
       this.options = options; this.enabled = true; this.adminPreview = admin;
       this.user = 'account'; this.balance = 40; this.starts = 0; this.saves = 0;
-      this.record = { paid: !pendingTopic, requestId: receipt.request_id, resetAt: receipt.reset_at, readingDay: paidDay, topic: pendingTopic || receipt.topic };
+      this.savedProgress = [];
+      this.record = fresh ? null : { paid: !pendingTopic, requestId: receipt.request_id, resetAt: receipt.reset_at, readingDay: paidDay, topic: pendingTopic || receipt.topic };
       this.resetAt = receipt.reset_at;
     }
     async init() {
@@ -67,14 +68,33 @@ async function page({ admin = false, topic = 'love', opened = [2, 3, 4], paidDay
         if (initError) throw Error('연결을 다시 확인해 주세요.');
         return { signedIn: true, pending: { topic: pendingTopic } };
       }
-      return this.adminPreview ? { signedIn: true, preview: true, adminPreview: true } : { signedIn: true, resume: receipt };
+      return this.adminPreview ? { signedIn: true, preview: true, adminPreview: true }
+        : fresh ? { signedIn: true } : { signedIn: true, resume: receipt };
     }
     async refreshAdminMode() { return this.adminPreview; }
     now() { return clock; }
     async refreshToday() { this.resetAt = clock < Date.parse(receipt.reset_at) ? receipt.reset_at : new Date(clock + 86400000).toISOString(); }
-    receiptFor(topic) { return !this.adminPreview && topic === receipt.topic && clock < Date.parse(receipt.reset_at) ? receipt : null; }
-    async start() { this.starts++; return this.adminPreview ? null : receipt; }
-    async save() { this.saves++; return null; }
+    receiptFor(topic) { return !this.adminPreview && (!fresh || this.starts > 0) && topic === receipt.topic && clock < Date.parse(receipt.reset_at) ? receipt : null; }
+    async start() {
+      this.starts++;
+      if (!this.adminPreview && !this.record) this.record = { paid: true, requestId: receipt.request_id, resetAt: receipt.reset_at, readingDay: paidDay, topic: receipt.topic };
+      return this.adminPreview ? null : receipt;
+    }
+    async save(value) {
+      this.saves++;
+      if (this.adminPreview) return null;
+      const next = { discarded: Array.from(value.discarded), openOrder: Array.from(value.openOrder) };
+      assert.ok(next.discarded.length <= 2 && next.openOrder.length <= 3, 'the UI respects the existing server progress sizes');
+      assert.ok([...next.discarded, ...next.openOrder].every(index => Number.isInteger(index) && index >= 0 && index < 5));
+      assert.equal(new Set([...next.discarded, ...next.openOrder]).size, next.discarded.length + next.openOrder.length, 'chosen and excluded cards never overlap or repeat');
+      assert.ok(!next.openOrder.length || next.discarded.length === 2, 'all exclusions are committed before a card is revealed');
+      assert.ok(receipt.discarded.every((index, slot) => next.discarded[slot] === index), 'legacy exclusions keep their saved prefix');
+      assert.ok(receipt.openOrder.every((index, slot) => next.openOrder[slot] === index), 'revealing another card preserves the existing reading order');
+      this.savedProgress.push(next);
+      receipt.discarded = [...next.discarded];
+      receipt.openOrder = [...next.openOrder];
+      return null;
+    }
     clearRecord() { this.record = null; }
     newReading() { if (!this.adminPreview) this.record = null; }
     switchMode(value) { this.adminPreview = value; this.options.onModeChange({ adminPreview: value }); }
@@ -130,14 +150,14 @@ function assertSummaryDetails(view, summary) {
   const completedCards = completed.receipt.openOrder.map(index => completed.window.DECK.find(card => card.id === completed.receipt.drawn[index]));
   const completedSummary = completed.window.getSummary(completedCards, 'love');
   const expected = completedSummary.oneLine;
-  assert.notEqual(completed.$('#oracle-text').textContent, expected, 'combined fortune stays hidden until the revelation');
+  assert.notEqual(completed.$('#oracle-text').textContent, expected, 'combined fortune stays hidden until the explicit results action');
   assert.equal(completed.$('#oracle-card-name').hidden, true);
   assert.equal(completed.$('#oracle-keyword').hidden, true);
   assert.equal(completed.$('#reading-open span').textContent, '종합 점괘 자세히 보기');
   completed.click('#reading-open');
   await until(() => completed.$('#result-dialog').open);
-  assert.equal(completed.$('#oracle-text').textContent, expected, 'combined one-line reading appears after the revelation');
-  assert.equal(completed.revelations(), 1, 'lower combined CTA uses the revelation before the full result');
+  assert.equal(completed.$('#oracle-text').textContent, expected, 'combined one-line reading appears when the full result opens');
+  assert.equal(completed.revelations(), 0, 'the result opens directly without an extra full-screen presentation');
   assert.equal(completed.$('#reading-dialog').open, false);
   assert.equal(completed.$('.tarot-price span').textContent, '세 장의 풀이 · 종합 점괘 · 50가지 주제');
   assert.deepEqual(Array.from(completedSummary.groups, group => group.id), ['cards', 'problem', 'timeline', 'domains']);
@@ -432,10 +452,12 @@ function assertSummaryDetails(view, summary) {
   assert.equal(partial.$('#result-dialog').open, false);
   partial.closeReading();
   partial.click('.card[data-index="3"]');
-  await until(() => partial.phase('reading') && partial.$('#reading-dialog').open);
-  partial.closeReading();
+  await until(() => partial.phase('reading'));
+  assert.equal(partial.$('#reading-dialog').open, false, 'turning a card does not interrupt the table with a modal');
   partial.click('.card[data-index="4"]');
-  await until(() => partial.phase('complete') && partial.$('#reading-dialog').open);
+  await until(() => partial.phase('complete'));
+  assert.equal(partial.$('#reading-dialog').open, false);
+  assert.equal(partial.$('#result-dialog').open, false, 'the final card waits for an explicit result action');
   assert.equal(partial.$('#reading-open span').textContent, '종합 점괘 자세히 보기', 'the third reveal changes the lower CTA');
   assert.equal(partial.$('#oracle-card-name').hidden, true);
   partial.closeReading();
@@ -443,23 +465,83 @@ function assertSummaryDetails(view, summary) {
   await until(() => partial.$('#result-dialog').open);
   partial.dom.window.close();
 
+  // Ojjuda's five-card ritual saves each of the two cards the visitor sends away.
+  const direct = await page({ fresh: true, discarded: [], opened: [] });
+  assert.equal(direct.$('#app').dataset.view, 'welcome');
+  assert.equal(direct.payment.starts, 0);
+  direct.click('#welcome-next');
+  assert.equal(direct.$('#app').dataset.view, 'topics');
+  direct.click('[data-topic="love"]');
+  assert.equal(direct.$('#summon-button span').textContent, '10쭈로 운세 시작하기');
+  assert.equal(direct.payment.starts, 0, 'choosing a topic does not purchase a reading');
+  direct.click('#summon-button');
+  await until(() => direct.phase('choosing'));
+  const paidCards = [...direct.receipt.drawn];
+  for (const [slot, index] of [4, 0].entries()) {
+    direct.click(`.card[data-index="${index}"]`);
+    direct.click(`.card[data-index="${index}"]`);
+    await until(() => direct.phase(slot === 1 ? 'reading' : 'choosing'));
+    assert.equal(direct.window.document.querySelectorAll('.card-turner.flipped').length, 0, 'sending a card away keeps its face hidden');
+    assert.equal(direct.payment.saves, slot + 1, 'each exclusion is persisted once, including when a card is tapped twice');
+    assert.equal(direct.$(`.card[data-index="${index}"]`).closest('.card-wrap').hidden, true, 'a confirmed excluded card leaves the table');
+  }
+  assert.equal(direct.payment.starts, 1);
+  assert.deepEqual(direct.payment.savedProgress, [
+    { discarded: [4], openOrder: [] },
+    { discarded: [4, 0], openOrder: [] }
+  ]);
+  assert.deepEqual(direct.receipt.drawn, paidCards, 'the ritual does not reshuffle or replace the paid cards');
+  for (const [slot, index] of [3, 1, 2].entries()) {
+    direct.click(`.card[data-index="${index}"]`);
+    await until(() => direct.phase(slot === 2 ? 'complete' : 'reading'));
+    assert.equal(direct.$('#reading-dialog').open, false);
+    assert.equal(direct.$('#result-dialog').open, false);
+  }
+  assert.deepEqual(direct.receipt.openOrder, [3, 1, 2], 'the result preserves the actual reveal order of the three remaining cards');
+  assert.deepEqual(direct.receipt.discarded, [4, 0]);
+  direct.click('#action-button');
+  await until(() => direct.$('#result-dialog').open);
+  assert.equal(direct.revelations(), 0, 'results need no additional interstitial or animation');
+  assert.equal(direct.payment.starts, 1, 'opening the result never charges again');
+  direct.dom.window.close();
+
+  // An older half-finished exclusion must remain the first saved exclusion.
+  const legacyPick = await page({ discarded: [3], opened: [] });
+  assert.equal(legacyPick.phase('choosing'), true);
+  assert.equal(legacyPick.$('.card[data-index="3"]').closest('.card-wrap').hidden, true);
+  legacyPick.click('.card[data-index="1"]');
+  await until(() => legacyPick.phase('reading'));
+  assert.deepEqual(legacyPick.payment.savedProgress, [{ discarded: [3, 1], openOrder: [] }], 'continuing adds only the second exclusion and preserves the previous choice');
+  assert.equal(legacyPick.payment.starts, 0, 'resuming a legacy receipt does not buy a new reading');
+  legacyPick.dom.window.close();
+
   // Admin preview starts fresh, repeats, and keeps the actual paid reading intact.
   const admin = await page({ admin: true, paidDay: '2000-01-01' });
   const originalRecord = admin.payment.record;
   assert.equal(admin.phase('intro'), true);
+  assert.equal(admin.$('#app').dataset.view, 'welcome');
+  assert.ok(admin.$('#welcome-title').textContent.trim().length > 0);
+  assert.equal(admin.$('#main').hidden, true, 'the welcome screen only shows its own controls');
   assert.equal(admin.$('.tarot-price strong').textContent, '관리자 모드');
   assert.equal(admin.$('#summon-button span').textContent, '새 카드로 운세 시작하기');
+  admin.click('#welcome-next');
+  assert.equal(admin.$('#app').dataset.view, 'topics');
+  assert.equal(admin.payment.starts, 0, 'the welcome action only opens topics and never starts billing');
+  admin.click('#tarot-back');
+  assert.equal(admin.$('#app').dataset.view, 'welcome');
+  assert.equal(admin.payment.starts, 0, 'returning to the welcome screen has no billing effect');
+  admin.click('#welcome-next');
   admin.click('#summon-button');
-  await until(() => admin.phase('discard'));
+  await until(() => admin.phase('choosing'));
   const firstDraw = [...admin.window.document.querySelectorAll('.front-title strong')].map(node => node.textContent);
-  admin.click('.card[data-index="0"]');
-  await until(() => admin.phase('discard'));
-  admin.click('.card[data-index="1"]');
-  await until(() => admin.phase('reading'));
-  for (const index of [2, 3, 4]) {
+  for (const [slot, index] of [0, 1].entries()) {
     admin.click(`.card[data-index="${index}"]`);
-    await until(() => admin.$('#reading-dialog').open);
-    admin.closeReading();
+    await until(() => admin.phase(slot === 1 ? 'reading' : 'choosing'));
+  }
+  for (const [slot, index] of [2, 3, 4].entries()) {
+    admin.click(`.card[data-index="${index}"]`);
+    await until(() => admin.phase(slot === 2 ? 'complete' : 'reading'));
+    assert.equal(admin.$('#reading-dialog').open, false, 'each chosen card stays on the table after turning over');
   }
   assert.equal(admin.phase('complete'), true);
   assert.ok(!admin.$('#result-date').textContent.includes('2000'), 'preview does not display a paused paid receipt date');
@@ -471,7 +553,7 @@ function assertSummaryDetails(view, summary) {
   assert.equal(admin.$('#summary-domain-category'), null, 'starting over clears the previous category selection');
   assert.equal(admin.payment.record, originalRecord);
   admin.click('#summon-button');
-  await until(() => admin.phase('discard'));
+  await until(() => admin.phase('choosing'));
   const secondDraw = [...admin.window.document.querySelectorAll('.front-title strong')].map(node => node.textContent);
   assert.notDeepEqual(secondDraw, firstDraw, 'repeat uses a new shuffled draw');
   assert.equal(admin.payment.starts, 2);
@@ -710,6 +792,7 @@ function assertSummaryDetails(view, summary) {
 
   // Selection before a fresh draw is optional, scoped, and actually survives the draw.
   const chosen = await page({ admin: true });
+  chosen.click('#welcome-next');
   assert.equal(chosen.$('#intro-context-select').options.length, 16);
   chosen.chooseContext('love-crush', 'intro-context-select');
   assert.equal(chosen.$('#intro-context-select').value, 'love-crush');
@@ -718,15 +801,15 @@ function assertSummaryDetails(view, summary) {
   assert.equal(chosen.$('#intro-context-select').options.length, 6);
   chosen.chooseContext('love-reunion', 'intro-context-select');
   chosen.click('#summon-button');
-  await until(() => chosen.phase('discard'));
-  chosen.click('.card[data-index="0"]');
-  await until(() => chosen.phase('discard'));
-  chosen.click('.card[data-index="1"]');
-  await until(() => chosen.phase('reading'));
-  for (const index of [2, 4, 3]) {
+  await until(() => chosen.phase('choosing'));
+  for (const [slot, index] of [0, 1].entries()) {
     chosen.click(`.card[data-index="${index}"]`);
-    await until(() => chosen.$('#reading-dialog').open);
-    chosen.closeReading();
+    await until(() => chosen.phase(slot === 1 ? 'reading' : 'choosing'));
+  }
+  for (const [slot, index] of [2, 4, 3].entries()) {
+    chosen.click(`.card[data-index="${index}"]`);
+    await until(() => chosen.phase(slot === 2 ? 'complete' : 'reading'));
+    assert.equal(chosen.$('#reading-dialog').open, false);
   }
   chosen.click('#reading-open');
   await until(() => chosen.$('#result-dialog').open);
@@ -805,12 +888,13 @@ function assertSummaryDetails(view, summary) {
   }
 
   const freePreview = await page({ admin: true });
+  freePreview.click('#welcome-next');
   freePreview.click('#summon-button');
-  await until(() => freePreview.phase('discard'));
+  await until(() => freePreview.phase('choosing'));
   await freePreview.advanceTime(86400001);
   freePreview.window.dispatchEvent(new freePreview.window.Event('focus'));
   await settle();
-  assert.equal(freePreview.phase('discard'), true, 'administrator preview has no paid expiry');
+  assert.equal(freePreview.phase('choosing'), true, 'administrator preview has no paid expiry');
   freePreview.dom.window.close();
-  console.log('PASS tarot UI: two-line summaries for every section, intact expandable originals and full copy, personal situations and choices, scoped card reuse, accessible tabs, rolling 24-hour expiry, suspended mouse/keyboard disclosures and no automatic repurchase');
+  console.log('PASS tarot UI: welcome/back without billing, two individually saved exclusions and three reveals, legacy receipt compatibility, explicit results, intact summaries/copy, rolling 24-hour expiry and no automatic repurchase');
 })().catch(error => { console.error(error); process.exitCode = 1; });
