@@ -277,10 +277,10 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'z-xfGoabprU', title: 'BEBE', kind: '뮤직비디오', source: "STAYC Official · 2025.03.18" }
   ],
   riize: [
-    { id: 'RsDXsGIst-s', title: 'Sunburst', kind: '뮤직비디오', source: 'SMTOWN · 2026.08.26' },
-    { id: 'FM9l_F_tlUc', title: 'Sunburst', kind: '안무 영상', source: 'RIIZE 공식 YouTube · 2026.08.31' },
     { id: '_flsNDS92_o', title: 'MMA2026 · INSOMNIA + Overdrive + Do your dance', kind: '공식 시상식 무대', source: '멜론 Melon · 2026.11.14' },
     { id: 'RgkoXU4BlOE', title: 'Insomnia', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" },
+    { id: 'FM9l_F_tlUc', title: 'Sunburst', kind: '안무 영상', source: 'RIIZE 공식 YouTube · 2026.08.31' },
+    { id: 'RsDXsGIst-s', title: 'Sunburst', kind: '뮤직비디오', source: 'SMTOWN · 2026.08.26' },
     { id: '1ccDZDpPzEI', title: 'Sunburst · 일본 팬미팅', kind: '라이브 무대', source: "RIIZE · 공식 채널" },
     { id: 'HDGCTtuW-Yo', title: 'Do your dance', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" },
     { id: 'yfKBI5l81-A', title: 'All of You', kind: '뮤직비디오', source: "SMTOWN · 공식 채널" },
