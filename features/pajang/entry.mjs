@@ -1,6 +1,6 @@
 import {call, client, sameMember, requireMember, showGate, answeredRound} from './member.mjs?v=20261119-guest-account1';
 import {mountStation, prepareProgram} from './load-station.mjs?v=20261119-guest-account1';
-import {enhanceGuestGate} from './entry-design.mjs?v=20261119-invitation2';
+import {enhanceGuestGate} from './entry-design.mjs?v=20261119-water-letter1';
 import {prepareLocation} from './location.mjs?v=20261119-kma-current1';
 import {themeFor, interests} from './questions.mjs?v=rounds1';
 
