@@ -35,6 +35,9 @@
 .scope-person{width:14%;max-width:52px;aspect-ratio:1;display:grid;place-items:center;border:2px solid var(--paper);border-radius:50%;background:var(--soft);color:var(--dark);box-shadow:0 3px 8px #452e3333,0 0 0 1px var(--line);transition:box-shadow .18s,border-color .18s}
 .scope-person-name{font-size:clamp(15px,1.8vw,20px);line-height:1;font-weight:750}
 .radar-scope .scope-person.picked{outline:none;background:var(--dark)!important;color:var(--paper);border-color:var(--paper);box-shadow:0 0 0 2px var(--berry,var(--purple)),0 0 0 5px #963e5121,0 4px 10px #452e3333;z-index:3}
+.radar-scope .scope-person.scope-person-compact{background:transparent!important;border-color:transparent;box-shadow:none}
+.scope-person-dot{display:block;width:10px;height:10px;border-radius:50%;background:var(--berry,var(--purple));border:1px solid var(--paper);box-shadow:0 0 0 1px var(--berry,var(--purple));pointer-events:none}
+.scope-person-compact.picked .scope-person-dot{width:12px;height:12px;background:var(--dark);box-shadow:0 0 0 3px #963e5133}
 .scope-person:focus-visible{outline:2px solid var(--berry,var(--purple));outline-offset:1px}
 @media(prefers-reduced-motion:reduce){.scope-person{transition:none}}
 .scope-pages button{font-size:20px;line-height:1;min-width:28px;min-height:27px}

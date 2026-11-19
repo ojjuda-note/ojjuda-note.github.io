@@ -9,7 +9,8 @@ export const radarBands = [
 
 type Peer = {id:string; range:RadarBand; bearing?:number; sameCell?:boolean};
 type Point = {x:number; y:number};
-type Marker<T> = Point & {person:T; anchor?:Point};
+type Placement<T> = Point & {person:T; anchor?:Point};
+type Marker<T> = Placement<T> & {compact:boolean};
 
 // Display coordinates only: reserve a 64 × 72 box around each circular marker.
 // The twelve slots fit the existing maximum of three people per distance band.
@@ -43,19 +44,29 @@ function percentages<T>(markers:Marker<T>[]):Marker<T>[] {
 export function radarMarkers<T extends Peer>(people:T[],heading:number):Marker<T>[] {
   const same=people.filter(p=>p.sameCell===true&&p.bearing===undefined);
   const directional=people.filter(p=>p.bearing!==undefined);
-  function finish(placed:Marker<T>[]) {
+  const near=same.length===3?[{x:200,y:116},{x:128,y:248},{x:272,y:248}]:[{x:120,y:200},{x:280,y:200}];
+  const origins=[...same.map((person,i)=>({person,point:near[i]??{x:200,y:200}})),
+    ...directional.map(person=>({person,point:anchorFor(person,0)}))];
+  // Decide before separating the targets. Both people in a close pair become
+  // dots, and the decision stays unchanged when the phone's compass turns.
+  const compact=new Set(origins.filter((origin,i)=>origins.length>5
+    || (origin.person.sameCell===true&&origin.person.bearing===undefined&&same.length>1)
+    || origins.some((other,j)=>i!==j&&distance(origin.point,other.point)<64**2)
+  ).map(origin=>origin.person.id));
+  function finish(placed:Placement<T>[]) {
     // Expanded labels stay still instead of swapping sides with compass noise.
     // Their connecting anchors continue to show the current approximate direction.
     const expanded=same.length>0||placed.some(marker=>marker.anchor&&distance(marker,marker.anchor)>.01);
     return percentages(placed.map(marker=>{
-      if(!marker.anchor)return marker;
+      const result={...marker,compact:compact.has(marker.person.id)};
+      if(!marker.anchor)return result;
       const anchor=anchorFor(marker.person,heading);
-      return {...marker,...(!expanded?anchor:{}),anchor};
+      return {...result,...(!expanded?anchor:{}),anchor};
     }));
   }
   function packed() {
     const free=slots.slice();
-    const placed:Marker<T>[]=same.map(person=>({person,...free.shift()!}));
+    const placed:Placement<T>[]=same.map(person=>({person,...free.shift()!}));
     for(const person of directional){
       const anchor=anchorFor(person,0);
       const best=free.reduce((index,p,i)=>distance(p,anchor)<distance(free[index],anchor)?i:index,0);
@@ -65,8 +76,7 @@ export function radarMarkers<T extends Peer>(people:T[],heading:number):Marker<T
   }
   // A fixed set of slots keeps every person visible on a crowded mobile dial.
   if(same.length>3||same.length+directional.length>5)return packed();
-  const near=same.length===3?[{x:200,y:116},{x:128,y:248},{x:272,y:248}]:[{x:120,y:200},{x:280,y:200}];
-  const placed:Marker<T>[]=same.map((person,i)=>({person,...near[i]}));
+  const placed:Placement<T>[]=same.map((person,i)=>({person,...near[i]}));
   for(const person of directional){
     const anchor=anchorFor(person,0);
     const free=[anchor,...candidates].filter(point=>fits(point,placed));
