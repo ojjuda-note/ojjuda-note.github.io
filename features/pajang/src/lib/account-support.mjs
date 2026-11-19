@@ -24,7 +24,7 @@ function loadStyle(href) {
 
 function prepareStyles() {
   if(!styles)styles=Promise.all([
-    loadStyle('/note/support.css?v=20261119-withdrawal-disclosure1'),
+    loadStyle('/note/support.css?v=20261119-support-layout1'),
     loadStyle('/features/pajang/support.css?v=20261119-withdrawal-disclosure1')
   ]).catch(error=>{styles=null;throw error;});
   return styles;
