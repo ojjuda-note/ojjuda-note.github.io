@@ -958,7 +958,7 @@
       members: ['수빈', '연준', '범규', '태현', '휴닝카이'],
       debut: '2019.03.04', debutWork: '꿈의 장: STAR', songs: ['Angel Bite', '어느날 머리에서 뿔이 자랐다 (CROWN)', 'Blue Orangeade'],
       concept: '다섯 멤버가 함께 그려 나가는 성장과 판타지.',
-      checkedAt: '2026.11.16',
+      checkedAt: '2026.11.19',
       official: 'https://ibighit.com/ko/txt/profile/', youtube: 'https://www.youtube.com/@TXT_bighit',
       photo: 'Tomorrow X Together at a Dior event, April 18, 2025.png', photoLabel: '디올 행사', photoYear: '2025', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
       morePhotos: [
@@ -972,7 +972,7 @@
       ],
       appearances: [
         { date: '2026-11-17', endDate: '2026-11-22', title: 'PERFECT STORM 용산 팝업스토어', sub: '11.17~11.22 매일 11:00~20:00 KST · 서울 용산구 한강대로 42 HYBE 사옥 1층 · 위버스 예약 입장 · 공식 공지 로그인 필요할 수 있음', href: 'https://weverse.io/txt/notice/40808' },
-        { date: '2026-11-18', title: 'PERFECT STORM WITHMUU 팬사인회', sub: '21:00 KST · 당첨자 대상 · 응모 종료 · 장소·변경은 주최 측 확인', href: 'https://weverse.io/txt/notice/40680' },
+        { date: '2026-11-17', endDate: '2026-11-29', title: 'PERFECT STORM 위버스 럭키 스토어', sub: '11.17~11.29 매일 11:00~20:00 KST · 서울 용산 CGV 아이파크몰 7층 OPEN STUDIO · 당일 예약 입장 · 앨범 구매 럭키드로우', href: 'https://shop.weverse.io/en/shop/USD/artists/242/notices/15018' },
         { date: '2026-11-20', title: 'STEAL THE WIND 마카오 추가 공연', sub: '20:00 현지시간 · 마카오 GALAXY ARENA · BIGHIT MUSIC·HYBE·iMe 주최', href: 'https://weverse.io/txt/notice/39469' },
         { date: '2026-11-20', title: 'STEAL THE WIND 서울 첫날 온라인 지연 상영', sub: '19:00 KST · 11.13 공연 1회 재상영 · 기존 라이브 구매자 대상', href: 'https://concerts.weverse.io/events/txt_steal_the_wind_seoul' },
         { date: '2026-11-21', title: 'STEAL THE WIND 마카오 월드투어', sub: '19:00 현지시간 · 마카오 GALAXY ARENA · BIGHIT MUSIC·HYBE·iMe 주최', href: 'https://www.galaxymacau.com/offers/entertainment/tomorrow-x-together-world-tour-macau-2026/' },
@@ -981,6 +981,7 @@
         { date: '2026-11-22', title: 'STEAL THE WIND 서울 셋째 날 온라인 지연 상영', sub: '11:00 KST · 11.15 공연 1회 재상영 · 기존 라이브 구매자 대상', href: 'https://concerts.weverse.io/events/txt_steal_the_wind_seoul' },
         { date: '2026-11-27', title: 'PERFECT STORM 오프라인 팬사인회', sub: '20:00 KST · Weverse 당첨자 대상 · 세부 장소는 당첨자 안내', href: 'https://weverse.io/txt/notice/40006' },
         { date: '2026-11-27', title: 'PERFECT STORM 영상통화 팬사인회', sub: '22:00 KST · Weverse 당첨자 대상 · 구매·응모 조건 공식 공지 참조', href: 'https://weverse.io/txt/notice/40006' },
+        { date: '2026-11-28', title: 'PERFECT STORM 뮤직코리아 팬사인회', sub: '18:30 KST · 응모 11.16 종료 · 추첨 당첨자 100명 대상(사인 50명·관람 50명) · 장소는 주최 측 개별 안내 확인', href: 'https://weverse.io/txt/notice/40681' },
         { date: '2026-12-11', title: '2026 iHeartRadio Jingle Ball · 뉴욕', sub: '19:00 현지시간(EST) · 미국 뉴욕 Madison Square Garden · iHeartRadio 주최 · TXT 및 연준 출연', href: 'https://news.iheart.com/featured/jingle-ball/content/2026-09-25-iheartradio-jingle-ball-2026-lineup-revealed-olivia-rodrigo-hilary-duff-katseye-sombr-more/' },
         { date: '2026-12-13', title: '2026 iHeartRadio Jingle Ball · 보스턴', sub: '18:00 현지시간(EST) · 미국 보스턴 TD Garden · iHeartRadio 주최 · TXT 및 연준 출연', href: 'https://news.iheart.com/featured/jingle-ball/content/2026-09-25-iheartradio-jingle-ball-2026-lineup-revealed-olivia-rodrigo-hilary-duff-katseye-sombr-more/' },
         { date: '2026-12-14', title: '2026 iHeartRadio Jingle Ball · 워싱턴 D.C.', sub: '19:30 현지시간(EST) · 미국 워싱턴 D.C. Capital One Arena · iHeartRadio 주최 · TXT 및 연준 출연', href: 'https://news.iheart.com/featured/jingle-ball/content/2026-09-25-iheartradio-jingle-ball-2026-lineup-revealed-olivia-rodrigo-hilary-duff-katseye-sombr-more/' },
@@ -1002,6 +1003,8 @@
         { title: '서울 공연 온라인 생중계', sub: '11.13~15 실시간 공연 및 11.20~22 지연 스트리밍', href: 'https://concerts.weverse.io/events/txt_steal_the_wind_seoul' }
       ],
       news: [
+        { date: '2026.11.17', tag: '행사', title: 'PERFECT STORM 위버스 럭키 스토어 · 11.17~29 용산 아이파크몰 7층 · 당일 예약 입장', href: 'https://shop.weverse.io/en/shop/USD/artists/242/notices/15018' },
+        { date: '2026.11.17', tag: '굿즈', title: '위버스샵 PERFECT STORM 앨범 럭키드로우 이벤트 안내 · 특전·재고는 공식 판매처 확인', href: 'https://shop.weverse.io/ko/shop/KRW/artists/3/notices/14852' },
         { date: '2026.11.16', tag: '컴백', title: '미니 9집 PERFECT STORM 정식 발매 · 타이틀 Angel Bite 포함 6곡', href: 'https://txt-official.jp/news/878e1e995cc8' },
         { date: '2026.11.16', tag: '이벤트', title: 'PERFECT STORM 디지털 캠페인 · iTunes 응모 11.22까지, LINE MUSIC 응모 12.01까지', href: 'https://txt-official.jp/news/878e1e995cc8' },
         { date: '2026.11.16', tag: '굿즈', title: 'PERFECT STORM 일본 공식 MD 11.17 예약 판매 시작 발표', href: 'https://txt-official.jp/news/1cbd81913e95' },
@@ -1014,6 +1017,7 @@
         { date: '2026.10.20', tag: '컴백', title: '11월 16일 미니 9집 PERFECT STORM 발매 예정 · 위버스 공지 로그인 후 확인', href: 'https://weverse.io/txt/notice/40097' }
       ],
       merch: [
+        { title: 'PERFECT STORM 위버스 럭키 스토어', sub: '11.17~11.29 · 용산 CGV 아이파크몰 7층 · 공식 앨범 구매 시 럭키드로우 및 랜덤 포토카드 특전 · 당일 예약 입장 · 특전 소진·재고는 현장 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/242/notices/15018' },
         { title: 'PERFECT STORM 일본 공식 MD 사전 판매', sub: '11.17 11:00(JST)부터 품절 시까지 · 미니 포토카드·키링·백팩 등 · 일본 국내 배송·12월 하순부터 순차 발송 · 재고·가격은 공식 판매처 확인', href: 'https://txt-official.jp/news/1cbd81913e95' },
         { title: 'PERFECT STORM 용산 팝업 한정 MD·포토카드', sub: '11.17~11.22 11:00~20:00 · 위버스 예약 입장 · 포토카드·키링 등, 재고·특전은 매장 확인 · 공식 공지 로그인 필요할 수 있음', href: 'https://weverse.io/txt/notice/40808' },
         { title: 'PERFECT STORM 미니 9집 공식 음반', sub: '위버스샵 · 2026.10.20~11.15 예약 판매 종료 · 11.16 정식 발매 · 가격·재고는 판매처 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/3/notices/14652' },
