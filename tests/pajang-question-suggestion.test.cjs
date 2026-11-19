@@ -40,15 +40,19 @@ function fixture() {
       },
       from:table=>({insert:row=>{control.feedbackWrites.push({table,row});throw Error('Unexpected table write');}}),
       schema:name=>({rpc:(operation,args)=>{
-        const headers={};let request;
+        const headers={};let request,requestSignal;
         const query={
           setHeader(key,value){headers[key]=value;return query;},
+          abortSignal(signal){requestSignal=signal;return query;},
           then(resolve,reject){
             if(!request)request=Promise.resolve().then(async()=>{
               if(name!=='ojjuda_note'||operation!=='submit_inquiry')throw Error('Unexpected inquiry RPC');
               control.attempts.push({schema:name,operation,args:structuredClone(args),headers:{...headers}});
               let mode=control.responses.shift()||'success';
-              if(mode==='pending')mode=await new Promise(done=>{control.pending=done;});
+              if(mode==='pending')mode=await new Promise(done=>{
+                control.pending=done;
+                requestSignal?.addEventListener('abort',()=>done('error'),{once:true});
+              });
               return answer(mode,args);
             });
             return request.then(resolve,reject);
@@ -202,6 +206,20 @@ async function pressBack(page) {
     await form.dialog.waitFor({state:'hidden'});
     await page.waitForFunction(()=>!history.state?.pajangQuestionSuggestion);
     assert.equal(page.url(),address,'successful pending submission returns to the same page');
+
+    await reset();
+    await page.clock.install();
+    await page.evaluate(()=>window.questionFixture.responses.push('pending'));
+    form=await openForm(page);
+    await form.input.fill(question);
+    await form.send.click();
+    await waitForAttempts(page,1);
+    await page.clock.fastForward(15010);
+    await form.dialog.getByRole('alert').waitFor();
+    assert.equal(await form.input.inputValue(),question,'a timed-out request keeps its draft');
+    assert.equal(await form.send.isEnabled(),true,'a timed-out request releases the submit lock');
+    assert.equal(await form.dialog.getByRole('button',{name:'닫기',exact:true}).isEnabled(),true,'a timed-out request releases the close lock');
+    await page.clock.resume();
 
     await reset();
     form=await openForm(page);

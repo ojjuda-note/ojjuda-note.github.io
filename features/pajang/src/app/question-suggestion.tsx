@@ -45,6 +45,7 @@ export function QuestionSuggestionForm({onBusyChange,onSaved}:{onBusyChange:(bus
     if(!account.isCurrent()){invalidate();return;}
     locked.current=true;setBusy(true);setError("");onBusyChange(true);
     let saved=false;
+    let timeout:ReturnType<typeof setTimeout>|undefined;
     try{
       const identity=await account.db.auth.getSession();
       if(!active.current||!account.isCurrent())throw Error("account_changed");
@@ -53,10 +54,12 @@ export function QuestionSuggestionForm({onBusyChange,onSaved}:{onBusyChange:(bus
       if(session?.user?.id!==account.userId||session.user.is_anonymous||!session.access_token)throw Error("account_changed");
       let requestId=requests.current.get(body);
       if(!requestId){requestId=crypto.randomUUID();requests.current.set(body,requestId);}
+      const controller=new AbortController();
+      timeout=setTimeout(()=>controller.abort(),15000);
       // Pin this request to the member who opened the form, even if auth changes in flight.
       const {data,error}=await account.db.schema("ojjuda_note").rpc("submit_inquiry",{
         p_request_id:requestId,p_body:"[파장 · 오늘의 질문 제안]\n"+body
-      }).setHeader("Authorization",`Bearer ${session.access_token}`);
+      }).setHeader("Authorization",`Bearer ${session.access_token}`).abortSignal(controller.signal);
       if(!active.current||!account.isCurrent())throw Error("account_changed");
       if(error)throw error;
       if(typeof data!=="string"||!uuid.test(data))throw Error("inquiry_not_confirmed");
@@ -67,6 +70,7 @@ export function QuestionSuggestionForm({onBusyChange,onSaved}:{onBusyChange:(bus
         else setError(submissionError(error));
       }
     }finally{
+      if(timeout!==undefined)clearTimeout(timeout);
       locked.current=false;onBusyChange(false);
       if(active.current)setBusy(false);
     }
