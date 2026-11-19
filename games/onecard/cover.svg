@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="felt"><stop stop-color="#355a48"/><stop offset="1" stop-color="#173c31"/></radialGradient>
+    <linearGradient id="paper" x2=".9" y2="1"><stop stop-color="#fffef7"/><stop offset=".65" stop-color="#f8f1df"/><stop offset="1" stop-color="#e4dac1"/></linearGradient>
+    <linearGradient id="side" x2="0" y2="1"><stop stop-color="#eee4cc"/><stop offset="1" stop-color="#a89570"/></linearGradient>
+    <linearGradient id="back" x2=".7" y2="1"><stop stop-color="#3b5d4b"/><stop offset="1" stop-color="#1d3e32"/></linearGradient>
+    <filter id="shadow" x="-40%" y="-30%" width="190%" height="190%"><feDropShadow dx="0" dy="15" stdDeviation="12" flood-color="#071f18" flood-opacity=".4"/></filter>
+    <path id="spade" d="M0-46C-10-31-43-10-43 12c0 17 13 26 28 24 8-1 12-5 15-10-1 12-5 17-14 23h28C5 43 1 38 0 26c3 5 7 9 15 10 15 2 28-7 28-24C43-10 10-31 0-46Z"/>
+    <path id="heart" d="M0 48C-10 37-43 12-43-14c0-26 32-33 43-11 11-22 43-15 43 11C43 12 10 37 0 48Z"/>
+    <pattern id="weave" width="15" height="15" patternUnits="userSpaceOnUse"><path d="m0 0 15 15M15 0 0 15" stroke="#d8ba78" stroke-width=".7" opacity=".2"/></pattern>
+  </defs>
+  <rect x="8" y="8" width="496" height="496" rx="98" fill="url(#felt)"/>
+  <rect x="25" y="25" width="462" height="462" rx="84" fill="none" stroke="#bfa573" stroke-opacity=".5"/>
+  <ellipse cx="258" cy="355" rx="166" ry="58" fill="#0a271e" opacity=".15"/>
+  <g transform="translate(173 258) rotate(-20) skewY(2)" filter="url(#shadow)">
+    <rect x="-77" y="-112" width="154" height="230" rx="13" fill="url(#side)"/>
+    <rect x="-77" y="-119" width="154" height="230" rx="13" fill="#f4eddc"/>
+    <rect x="-69" y="-111" width="138" height="214" rx="8" fill="url(#back)" stroke="#b79b61"/>
+    <rect x="-60" y="-102" width="120" height="196" rx="4" fill="url(#weave)" stroke="#c4a870" stroke-opacity=".6"/>
+    <ellipse cx="0" cy="-3" rx="30" ry="41" fill="#2b4939" stroke="#cdb078"/>
+    <use href="#spade" fill="#ddc38c" transform="translate(0 -3) scale(.36)"/>
+  </g>
+  <g transform="translate(334 251) rotate(19) skewY(-2)" filter="url(#shadow)">
+    <rect x="-77" y="-112" width="154" height="230" rx="13" fill="url(#side)"/>
+    <rect x="-77" y="-119" width="154" height="230" rx="13" fill="url(#paper)" stroke="#faf3e3"/>
+    <g fill="#b84448"><text x="-61" y="-85" font-family="Georgia,serif" font-size="27" font-weight="bold">A</text><use href="#heart" transform="translate(-51 -65) scale(.18)"/><use href="#heart" transform="translate(0 -6) scale(.66)"/><g transform="rotate(180)"><text x="-61" y="-78" font-family="Georgia,serif" font-size="27" font-weight="bold">A</text><use href="#heart" transform="translate(-51 -58) scale(.18)"/></g></g>
+  </g>
+  <g transform="translate(248 266) rotate(-3)" filter="url(#shadow)">
+    <rect x="-78" y="-112" width="156" height="233" rx="13" fill="url(#side)"/>
+    <path d="M-65 117H65" stroke="#fff4da" stroke-width="1.4"/>
+    <rect x="-78" y="-120" width="156" height="233" rx="13" fill="url(#paper)" stroke="#fff9e7"/>
+    <g fill="#254537"><text x="-62" y="-86" font-family="Georgia,serif" font-size="28" font-weight="bold">A</text><use href="#spade" transform="translate(-52 -65) scale(.18)"/><use href="#spade" transform="translate(0 -8) scale(.72)"/><g transform="rotate(180)"><text x="-62" y="-79" font-family="Georgia,serif" font-size="28" font-weight="bold">A</text><use href="#spade" transform="translate(-52 -58) scale(.18)"/></g></g>
+    <text x="0" y="43" text-anchor="middle" font-family="Georgia,serif" font-size="9" letter-spacing="2" fill="#a28a54">OJJUDA</text>
+    <path d="M-69-107H67" stroke="#fff" stroke-width="2" opacity=".8"/>
+  </g>
+</svg>

@@ -3,6 +3,7 @@
 (() => {
  'use strict';
  const releases = Object.freeze({
+  onecard:'2026-11-20T00:00:00+09:00',
   yut:'2026-11-16T17:58:43+09:00',
   chacha_rush:'2026-11-08T00:00:00+09:00',
   solitaire:'2026-11-06T00:00:00+09:00',

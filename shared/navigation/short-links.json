@@ -66,6 +66,11 @@
       "label": "차차 러시!"
     },
     {
+      "slug": "onecard",
+      "target": "/games/onecard/index.html",
+      "label": "원카드 · 혼자 또는 최대 5명"
+    },
+    {
       "slug": "solitaire",
       "target": "/games/solitaire/index.html",
       "label": "솔리테어"
