@@ -1190,7 +1190,7 @@
         { title: 'BOYNEXTDOOR 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/112' }
       ],
       campaigns: [
-        { kind: '브랜드 모델·콜라보', date: '2026.11.17', title: 'WEGO 2026 가을·겨울 비주얼 모델 · 오리지널 MD', sub: '일본 WEGO 공식 발표 · 11/19 온라인·11/20 매장 판매 · 비주얼북 구매 조건 및 한정 수량은 공식 안내', href: 'https://wego.jp/blogs/news/bnd26aw-originalitem' },
+        { kind: '콜라보', date: '2026.11.17', title: 'WEGO 2026 가을·겨울 비주얼 모델 · 오리지널 MD', sub: '일본 WEGO 공식 발표 · 11/19 온라인·11/20 매장 판매 · 비주얼북 구매 조건 및 한정 수량은 공식 안내', href: 'https://wego.jp/blogs/news/bnd26aw-originalitem' },
         { kind: '홍보대사', date: '2026.05.19', title: 'LG유플러스 · 브랜드 앰배서더', sub: 'HOME 선공개곡과 연계한 통신사 공식 캠페인', href: 'https://m.lguplus.com/about/ko/corporation/promotion/press-kit/detail?atclNo=2000001561&pageNo=1&srchCond=titCon' },
         { kind: '콜라보', date: '2026.07.09', title: 'Anti Social Social Club(ASSC) × BOYNEXTDOOR', sub: 'KNOCK ON Vol.2 공식 투어 MD 협업 · Weverse Global 공식 판매 안내 · 판매·재고는 상품별 확인', href: 'https://shop.weverse.io/en/shop/USD/artists/112/notices/13681' },
         { kind: '홍보대사', date: '2026.07.30', title: 'Under Armour · 글로벌 브랜드 앰배서더', sub: '글로벌 COMMIT 캠페인 · 언더아머 공식 유통사 발표', href: 'https://www.erajaya.com/index.php/news/under-armour-tunjuk-boynextdoor-sebagai-global-brand-ambassadors' },
