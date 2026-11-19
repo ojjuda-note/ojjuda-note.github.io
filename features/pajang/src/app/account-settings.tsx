@@ -3,17 +3,49 @@ import {I} from "./icons";
 import {openAccount,leaveAccount,accountError} from "../lib/account-actions.mjs";
 
 export type AccountAction="logout"|"withdraw";
+export type AccountSettingsAction=AccountAction|"edit"|"privateProfile"|"privatePhotos"|"visibility"|"answers"|"help"|"delete";
 
-export function AccountSettings({onHelp,onAction}:{onHelp:()=>void;onAction:(action:AccountAction)=>void}){
-  return <section className="account-section account-settings" aria-labelledby="account-settings-title">
-    <h2 id="account-settings-title">기본 설정</h2>
-    <div className="account-menu">
-      <button type="button" onClick={onHelp}><I n="info"/><span>이용 안내</span><I n="right" s={16}/></button>
-      <a href="/terms.html?from=pajang" target="_top"><I n="document"/><span>이용약관</span><I n="right" s={16}/></a>
-      <a href="/privacy.html?from=pajang" target="_top"><I n="shield"/><span>개인정보처리방침</span><I n="right" s={16}/></a>
-      <button type="button" onClick={()=>onAction("logout")}><I n="logout"/><span>로그아웃</span><I n="right" s={16}/></button>
-      <button type="button" className="account-withdraw" onClick={()=>onAction("withdraw")}><I n="user-minus"/><span>회원탈퇴</span><I n="right" s={16}/></button>
-    </div>
+export function AccountSettings({onOpen}:{onOpen:(action:AccountSettingsAction)=>void}){
+  const row=(action:AccountSettingsAction,label:string,danger=false)=><button type="button"
+    className={"ojjuda-settings-row"+(danger?" ojjuda-settings-danger":"")} onClick={()=>onOpen(action)}>
+    <span className="ojjuda-settings-label">{label}</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
+  </button>;
+  return <section className="ojjuda-settings account-settings" aria-label="파장 설정">
+    <section className="ojjuda-settings-group" aria-labelledby="account-profile-title">
+      <h2 className="ojjuda-settings-heading" id="account-profile-title">내 계정</h2>
+      <div className="ojjuda-settings-list">
+        {row("edit","공개 소개 수정")}
+        {row("privateProfile","교환용 프로필 작성")}
+        {row("privatePhotos","교환용 사진 관리")}
+      </div>
+    </section>
+    <section className="ojjuda-settings-group" aria-labelledby="account-activity-title">
+      <h2 className="ojjuda-settings-heading" id="account-activity-title">내 활동</h2>
+      <div className="ojjuda-settings-list">
+        {row("visibility","답변 공개 설정")}
+        {row("answers","내가 남긴 답변")}
+      </div>
+    </section>
+    <section className="ojjuda-settings-group" aria-labelledby="account-help-title">
+      <h2 className="ojjuda-settings-heading" id="account-help-title">이용 안내</h2>
+      <div className="ojjuda-settings-list">
+        {row("help","사용법")}
+        <a className="ojjuda-settings-row" href="/terms.html?from=pajang" target="_blank" rel="noopener">
+          <span className="ojjuda-settings-label">이용약관</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a className="ojjuda-settings-row" href="/privacy.html?from=pajang" target="_blank" rel="noopener">
+          <span className="ojjuda-settings-label">개인정보처리방침</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </section>
+    <section className="ojjuda-settings-group" aria-labelledby="account-access-title">
+      <h2 className="ojjuda-settings-heading" id="account-access-title">계정 관리</h2>
+      <div className="ojjuda-settings-list">
+        {row("logout","로그아웃")}
+        {row("delete","파장 기록 삭제")}
+        {row("withdraw","회원 탈퇴",true)}
+      </div>
+    </section>
   </section>;
 }
 

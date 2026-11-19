@@ -44,6 +44,20 @@ body {background:var(--bg);color:var(--ink)}
 .account-action-buttons {display:flex;gap:10px;margin-top:20px}
 .account-action-buttons>button {flex:1;min-height:44px;justify-content:center}
 .account-action-buttons .account-danger {background:#96464d;border-color:#96464d;color:#fff}
+.station-content .station-account:has(.ojjuda-settings) {width:min(750px,100%);padding:0 20px 20px;border:1px solid var(--line);border-radius:20px;background:#fff}
+.station-account:has(.ojjuda-settings) .account-heading {display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 -20px 18px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.station-account:has(.ojjuda-settings) .account-heading h1 {margin:0;color:var(--ink);font:600 20px/1.4 var(--sans);letter-spacing:-.035em}
+.account-settings-close {display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);cursor:pointer}
+.account-settings-close:focus-visible {outline:2px solid var(--berry);outline-offset:2px}
+.station-account .ojjuda-settings {--settings-ink:var(--ink);--settings-muted:var(--muted);--settings-line:var(--line);--settings-surface:#fff;--settings-hover:var(--soft);--settings-accent:var(--berry)}
+.station-account .ojjuda-settings-row.account-agit {min-height:48px;margin:0;border:1px solid var(--line);border-radius:14px;background:var(--soft);color:var(--ink);white-space:normal}
+.station-account .ojjuda-settings-heading {font-family:var(--sans);letter-spacing:-.02em}
+.dialog .own-history {margin:0;padding:0;border:0;border-radius:0;background:transparent}
+.dialog .own-history>h2 {font-family:var(--sans)}
+@media(max-width:480px){
+  .station-content .station-account:has(.ojjuda-settings) {padding:0 14px 14px}
+  .station-account:has(.ojjuda-settings) .account-heading {margin-inline:-14px;padding:12px 14px}
+}
 @media(hover:hover){.account-menu>a:hover,.account-menu>button:hover {background:#f8efe7}}
 .station-layout {display:block;width:min(1120px,calc(100% - 64px))}
 .station-content.wrap {padding:28px 0 55px}

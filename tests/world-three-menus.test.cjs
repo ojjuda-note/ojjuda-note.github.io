@@ -134,7 +134,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
    assert.equal(menu.querySelector('[data-tab]'),null,'Park does not display global navigation');
    assert.equal(menu.querySelector('[aria-current=page]').dataset.parkAction,'feed');
   }
-  t.actions.tab({tab:'my'});assert.equal(active(),'my');assert.equal(w.document.querySelector('.my-hub .h2').textContent,'설정');
+  t.actions.tab({tab:'my'});assert.equal(active(),'my');assert.equal(w.document.querySelector('.world-settings-header h2').textContent,'아지트 설정');
   assert.equal(w.document.querySelector('.bottomnav [data-park-action]'),null,'leaving Park restores the main menu');
   assert.deepEqual([...w.document.querySelectorAll('[data-my-group="help"] [data-section-versions] .line-row')].map(row=>[...row.children].map(el=>el.textContent)),
    [['아지트','version.json'],['오락실','features/arcade/version.json'],['공원','park/version.json']].map(([label,file])=>[label,JSON.parse(fs.readFileSync(path.join(root,file),'utf8')).version]));

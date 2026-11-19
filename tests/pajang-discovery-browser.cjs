@@ -531,13 +531,26 @@ function clientFixture(hash) {
     await page.waitForURL('**/*chat=peer2');
     await page.getByText('두 사람의 대화가 열렸어요.').waitFor();
     await selectMenu('내 파장');await page.getByRole('heading',{name:'내 파장'}).waitFor();
-    await page.getByText('내 책방 답변').waitFor();
     await expectHeaderClean();
     assert.equal(await accountHome.getAttribute('href'),'/world.html');
     assert.equal(await accountHome.getAttribute('target'),'_top');
-    const settings=page.getByRole('region',{name:'기본 설정'});
+    const settings=page.getByRole('region',{name:'파장 설정',exact:true});
+    assert.deepEqual(await settings.getByRole('heading',{level:2}).allTextContents(),['내 계정','내 활동','이용 안내','계정 관리']);
+    await settings.getByRole('button',{name:'내가 남긴 답변',exact:true}).click();
+    const ownAnswers=page.getByRole('dialog',{name:'내가 남긴 답변',exact:true});
+    await ownAnswers.getByText('내 책방 답변').waitFor();
+    await ownAnswers.getByRole('button',{name:'닫기',exact:true}).click();
+    await settings.getByRole('button',{name:'답변 공개 설정',exact:true}).click();
+    const visibility=page.getByRole('dialog',{name:'답변 공개 설정',exact:true});
+    assert.equal(await visibility.getByRole('switch',{name:'성별 필터에 내 답변 표시'}).isChecked(),false);
+    await visibility.getByRole('button',{name:'닫기',exact:true}).click();
+    await settings.getByRole('button',{name:'파장 기록 삭제',exact:true}).click();
+    const deletion=page.getByRole('dialog',{name:'파장 기록 삭제',exact:true});
+    await deletion.getByRole('button',{name:'취소',exact:true}).click();
+    assert.equal(await page.evaluate(()=>window.memberCalls.includes('delete')),false,'opening and cancelling the record settings does not delete data');
     assert.equal(await settings.getByRole('link',{name:'이용약관',exact:true}).getAttribute('href'),'/terms.html?from=pajang');
     assert.equal(await settings.getByRole('link',{name:'개인정보처리방침',exact:true}).getAttribute('href'),'/privacy.html?from=pajang');
+    for(const label of ['이용약관','개인정보처리방침'])assert.equal(await settings.getByRole('link',{name:label,exact:true}).getAttribute('target'),'_blank');
     for(const width of [320,390]){
       await page.setViewportSize({width,height:844});
       assert.ok(await settings.evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth));
@@ -551,7 +564,7 @@ function clientFixture(hash) {
     assert.match(await logout.textContent(),/아지트·공원·파장이 함께 로그아웃/);
     await logout.getByRole('button',{name:'취소',exact:true}).click();
     assert.deepEqual(await page.evaluate(()=>window.accountWrites),[],'cancelling logout does not change the account');
-    await settings.getByRole('button',{name:'회원탈퇴',exact:true}).click();
+    await settings.getByRole('button',{name:'회원 탈퇴',exact:true}).click();
     const withdrawal=page.getByRole('dialog',{name:'오쭈다 회원탈퇴',exact:true});
     const nickname=withdrawal.getByLabel('확인을 위해 닉네임 ‘오쭈다보리’을 입력해 주세요.');
     const consent=withdrawal.getByRole('checkbox');
@@ -566,7 +579,7 @@ function clientFixture(hash) {
     await withdrawal.screenshot({path:path.join(dir,'account-withdrawal-confirmation.png'),animations:'disabled'});
     await withdrawal.getByRole('button',{name:'취소',exact:true}).click();
     assert.deepEqual(await page.evaluate(()=>window.accountWrites),[],'withdrawal confirmation does not delete data');
-    await settings.getByRole('button',{name:'회원탈퇴',exact:true}).click();
+    await settings.getByRole('button',{name:'회원 탈퇴',exact:true}).click();
     await nickname.waitFor();assert.equal(await nickname.inputValue(),'');assert.equal(await consent.isChecked(),false);
     await withdrawal.getByRole('button',{name:'닫기',exact:true}).click();
     await settings.getByRole('button',{name:'로그아웃',exact:true}).click();
@@ -663,7 +676,9 @@ function clientFixture(hash) {
     await page.evaluate(()=>window.releaseSignal());
     await page.waitForFunction(()=>!document.querySelector('.station-nav [aria-description]'));
     assert.ok(page.url().endsWith('tab=profile'),'a late acceptance leaves the selected page in place');
-    await page.getByText('내 책방 답변').waitFor();
+    await settings.getByRole('button',{name:'내가 남긴 답변',exact:true}).click();
+    await ownAnswers.getByText('내 책방 답변').waitFor();
+    await ownAnswers.getByRole('button',{name:'닫기',exact:true}).click();
     await selectMenu('마음함');await page.locator('.listperson').filter({hasText:'유진'}).getByRole('button',{name:'대화 열기'}).waitFor();
     assert.ok(!page.url().includes('chat='));
     await page.evaluate(()=>{sessionStorage.fixtureMode='switched';});

@@ -35,6 +35,38 @@ async function fitsViewport(page, name) {
     `${name} does not introduce horizontal scrolling`);
 }
 
+async function settingsListLayout(page, name) {
+  const layout = await page.locator('.world-settings-page').evaluate(root => {
+    const box = node => {
+      const { x, y, width, height } = node.getBoundingClientRect();
+      return { x, y, width, height };
+    };
+    return {
+      page: box(root),
+      groups: [...root.querySelectorAll('.ojjuda-settings-group')].map(box),
+      rows: [...root.querySelectorAll('.ojjuda-settings-row')].map(node => ({
+        ...box(node),
+        list: box(node.closest('.ojjuda-settings-list'))
+      })),
+      close: box(root.querySelector('.world-settings-close'))
+    };
+  });
+  assert.ok(layout.page.width <= 751, `${name} stays within the 750px settings width`);
+  assert.ok(layout.groups.length >= 5, `${name} retains all settings sections`);
+  for (const [index, group] of layout.groups.entries()) {
+    assert.ok(Math.abs(group.x - layout.groups[0].x) <= 1 && Math.abs(group.width - layout.groups[0].width) <= 1,
+      `${name} aligns its sections in one column`);
+    if (index) assert.ok(group.y >= layout.groups[index - 1].y + layout.groups[index - 1].height - 1,
+      `${name} stacks its sections without overlapping`);
+  }
+  for (const row of layout.rows) {
+    assert.ok(row.height >= 44 && row.width >= 44, `${name} keeps each settings row easy to tap`);
+    assert.ok(Math.abs(row.x - row.list.x - 1) <= 1 && Math.abs(row.width - row.list.width + 2) <= 1,
+      `${name} aligns each full-width row with its list border`);
+  }
+  assert.ok(layout.close.width >= 44 && layout.close.height >= 44, `${name} keeps the close button easy to tap`);
+}
+
 async function exerciseGroups(page, scope) {
   const groups = page.locator(`${scope} details.my-menu-group:visible`);
   assert.ok(await groups.count() >= 3, 'settings are grouped into a small set of sections');
@@ -61,11 +93,11 @@ async function worldFixture(context, mobile, errors) {
   const page = await context.newPage();
   page.on('pageerror', error => errors.push(error.message));
   await page.route('**/favicon.svg*', route => route.fulfill({ contentType: 'image/svg+xml', body: read('favicon.svg') }));
-  await page.setContent('<meta name="viewport" content="width=device-width,initial-scale=1"><base href="https://ojjuda.test/"><body class="world-redesign"><main class="main" id="world-my"></main></body>');
+  await page.setContent('<html data-world-brand="green"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="https://ojjuda.test/"><body class="world-redesign"><main class="main" id="world-my"></main></body></html>');
   for (const match of world.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) {
     await page.addStyleTag({ content: match[1] });
   }
-  for (const file of ['note/notifications.css', 'features/guide/guide-entry.css', 'features/profile/my-menu.css', 'app/world/world-design.css', 'app/world/world-themes.css']) {
+  for (const file of ['note/notifications.css', 'features/guide/guide-entry.css', 'features/profile/my-menu.css', 'shared/pwa/pwa-install.css', 'app/world/world-design.css', 'app/world/world-themes.css', 'app/world/world-green.css', 'features/account/settings-list.css']) {
     await page.addStyleTag({ content: read(file) });
   }
   // Execute the real renderer and door action with synthetic account data.
@@ -118,15 +150,29 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await page.locator('[data-my-group="admin"]').count(), 0, 'member menu omits the administrator entry');
   assert.equal(await page.locator('[data-notifications-slot]').count(), 0,
     'World menu omits the oversized notification shortcut');
-  assert.equal(await page.evaluate(() => {
-    const groups = [...document.querySelectorAll('.my-hub [data-my-group]')].map(node => node.dataset.myGroup);
-    return !groups.includes('account') && groups.indexOf('profile') < groups.indexOf('notifications')
-      && groups.indexOf('profile') < groups.indexOf('help');
-  }), true, 'profile and account share one entry before preferences and help');
+  assert.deepEqual(await page.locator('.world-settings-page .ojjuda-settings-heading').allTextContents(),
+    ['내 계정', '이용 설정', '이용 안내', '앱 다운로드', '계정 관리'], 'settings retain the Park-style section order');
+  assert.equal(await page.locator('.world-settings-header h2').textContent(), '아지트 설정');
+  assert.equal(await page.getByRole('button', { name: '설정 닫기', exact: true }).getAttribute('data-act'), 'tab');
+  assert.equal(await page.getByRole('button', { name: '설정 닫기', exact: true }).getAttribute('data-tab'), 'hub',
+    'closing settings returns to the Agit');
   assert.equal(await page.locator('details[open]').count(), 0, 'settings start closed to reduce clutter');
   await fitsViewport(page, 'closed World menu');
-  assert.equal(await page.locator('[data-my-group="profile"] .my-menu-title').textContent(), '프로필·계정정보');
-  assert.equal(await page.locator('[data-my-group="profile"] [data-act="member-info-open"]').count(), 1);
+  await settingsListLayout(page, 'closed World menu');
+  assert.equal(await page.locator('[data-my-group="profile"] > summary .ojjuda-settings-label').textContent(), '프로필·닉네임 변경');
+  assert.equal(await page.locator('.ojjuda-settings-group[aria-label="내 계정"] > .ojjuda-settings-list > :first-child').getAttribute('data-act'), 'member-info-open',
+    'personal information opens directly from the first account row');
+  assert.equal(await page.locator('[data-my-group="profile"] [data-act="member-info-open"]').count(), 0);
+  for (const action of ['member-info-open', 'pw-open', 'support-open', 'logout', 'account-delete-open']) {
+    assert.equal(await page.locator(`[data-act="${action}"]`).isVisible(), true, `${action} opens without expanding a section`);
+  }
+  assert.equal(await page.locator('.ojjuda-settings-danger').getAttribute('data-act'), 'account-delete-open');
+  if (mobile) {
+    await page.setViewportSize({ width: 320, height: 844 });
+    await settingsListLayout(page, '320px World menu');
+    await fitsViewport(page, '320px World menu');
+    await page.setViewportSize({ width: 360, height: 844 });
+  }
   if (screenshotDirectory) await page.screenshot({ path: path.join(screenshotDirectory, `world-${mobile ? 'mobile' : 'desktop'}.png`), fullPage: true });
 
   await exerciseGroups(page, '.my-hub');
@@ -142,7 +188,7 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await page.locator('#p-nick').inputValue(), '검사 회원');
   assert.equal(await page.locator('#n-friend').isChecked(), false);
   assert.equal(await page.locator('#p-mt, [data-act="mood-pick"]').count(), 0, 'profile omits retired mood controls');
-  const expectedActions = ['account-delete-open', 'fr-accept', 'fr-decline', 'fr-remove', 'logout', 'member-info-open', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'unblock'].sort();
+  const expectedActions = ['account-delete-open', 'fr-accept', 'fr-decline', 'fr-remove', 'logout', 'member-info-open', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'tab', 'unblock'].sort();
   assert.deepEqual(await page.locator('.my-hub [data-act]').evaluateAll(nodes => [...new Set(nodes.map(node => node.dataset.act))].sort()), expectedActions,
     'every existing account, notification, privacy and support action keeps its dispatch key');
   for (const action of expectedActions) assert.equal(await page.locator(`[data-act="${action}"]`).first().isVisible(), true, `${action} remains reachable`);
@@ -158,14 +204,17 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await page.locator('[data-act="enter-place"][data-id="park"]').count(),0,'menu omits the park shortcut');
   await uniqueIds(page);
   await fitsViewport(page, 'expanded World menu with a long email address');
+  await settingsListLayout(page, 'expanded World menu');
 
   assert.equal(await page.locator('[data-act="door-toggle"]').count(), 0);
   assert.equal(await page.locator('#n-guestbook').count(), 0);
 
   // Existing setting handlers rerender My; expanded sections must not snap shut.
-  await page.evaluate(() => { $.settings.theme = 'dark'; renderMy(); });
+  await page.evaluate(() => { $.settings.theme = 'dark'; document.documentElement.dataset.theme = 'dark'; renderMy(); });
   assert.equal(await page.locator('[data-my-group="notifications"]').evaluate(node => node.open), true,
     'a settings rerender preserves the expanded group');
+  await fitsViewport(page, 'dark World settings');
+  await settingsListLayout(page, 'dark World settings');
   assert.equal(await page.locator('[data-act="theme"],[data-act="accent"]').count(), 0, 'saved legacy choices do not restore manual appearance controls');
   await page.evaluate(() => { D.isAdmin = true; renderMy(); });
   await page.locator('[data-my-group="admin"] > summary').click();
@@ -174,6 +223,9 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await page.locator('[data-my-group="admin"]').count(), 0, 'offline mode cannot retain an administrator entry');
   assert.equal(await page.locator('[data-act="member-info-open"], [data-act="logout"], [data-act="pw-open"], [data-act="account-delete-open"], [data-act="unblock"], [data-act="door-toggle"]').count(), 0,
     'guest menus never reveal signed-in account actions');
+  assert.equal(await page.locator('.ojjuda-settings-group[aria-label="내 계정"] > .ojjuda-settings-list > [data-act="account-login"]').isVisible(), true,
+    'guests retain a direct login entry');
+  await page.locator('[data-my-group="local"] > summary').click();
   assert.equal(await page.locator('[data-act="reset"]').isVisible(), true, 'the existing offline reset action stays reachable');
   await uniqueIds(page);
   await page.close();

@@ -50,6 +50,15 @@ async function until(condition) { for (let i=0; i<50; i++) { if(condition())retu
   const group=()=>doc.querySelector('[data-my-group="friends"]');
   const click=selector=>{const button=doc.querySelector(selector);assert.ok(button,selector);button.click();};
   assert.equal(calls.length,0,'closed settings do not fetch friends');
+  assert.equal(doc.querySelector('.world-settings-header h2').textContent,'아지트 설정');
+  assert.deepEqual([...doc.querySelectorAll('.world-settings-page .ojjuda-settings-heading')].map(node=>node.textContent),
+   ['내 계정','이용 설정','이용 안내','앱 다운로드','계정 관리'],'settings retain the Park-style section order');
+  const account=doc.querySelector('.ojjuda-settings-group[aria-label="내 계정"] > .ojjuda-settings-list');
+  assert.equal(account.firstElementChild.dataset.act,'member-info-open','personal information opens directly from the first account row');
+  assert.equal(account.querySelector('[data-my-group="profile"] [data-act="member-info-open"]'),null);
+  assert.equal(group().closest('.ojjuda-settings-list'),account,'friend management stays in the account section');
+  const close=doc.querySelector('.world-settings-close');
+  assert.equal(close.dataset.act,'tab');assert.equal(close.dataset.tab,'hub','closing settings returns to the Agit');
   group().open=true;await until(()=>doc.querySelector('#fr-q'));
   assert.equal(group().open,true);
   assert.ok(group().textContent.includes('친구 1명'));
