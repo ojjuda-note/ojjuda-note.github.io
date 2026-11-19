@@ -1,0 +1,12 @@
+/* Reuse the shared inquiry dialog with Pajang's existing colors and type. */
+.pajang-support-layer {
+  --surface:var(--paper,#fffcf7);
+  --surface-2:var(--soft,#f7e8e3);
+  --ink-2:var(--muted,#796962);
+  --accent:var(--berry,#963e51);
+  --accent-ink:var(--dark,#773244);
+  --accent-soft:var(--soft,#f7e8e3);
+  --on-accent:#fff;
+  --font-b:var(--sans,system-ui,sans-serif);
+  --font-d:var(--serif,Georgia,serif);
+}

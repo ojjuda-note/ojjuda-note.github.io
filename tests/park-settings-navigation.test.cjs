@@ -5,7 +5,7 @@ const test = require('node:test');
 const {JSDOM} = require('jsdom');
 const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
 
-async function fixture(member = true, {hosted = false} = {}) {
+async function fixture(member = true, {hosted = false, submitInquiry} = {}) {
   const dom = new JSDOM(read('park/index.html'), {
     url: 'https://fixture.test/park/?embedded=1', runScripts: 'outside-only', pretendToBeVisual: true
   });
@@ -22,12 +22,12 @@ async function fixture(member = true, {hosted = false} = {}) {
   w.scrollTo = () => {};
   w.matchMedia = () => ({matches:false});
   w.HTMLElement.prototype.scrollIntoView = () => {};
-  let authChanged;
+  const authListeners = [];
   let session = member ? {user:{id:'park-member-a',email:'park@example.test'}} : null;
   const calls = [];
   const client = {
     auth: {
-      onAuthStateChange(callback) { authChanged = callback; },
+      onAuthStateChange(callback) { authListeners.push(callback); },
       async getSession() { return {data:{session}}; },
       async signOut() { calls.push('signOut'); return {error:{message:'fixture stops sign out'}}; },
       async updateUser() { calls.push('updateUser'); return {data:{}}; }
@@ -42,21 +42,23 @@ async function fixture(member = true, {hosted = false} = {}) {
     },
     schema:() => ({rpc:async(name) => {
       calls.push(name);
+      if (name === 'submit_inquiry' && submitInquiry) return submitInquiry();
       return {data:name === 'get_note_state' ? {} : []};
     }})
   };
   w.OJJUDA_CONFIG = {supabaseUrl:'https://fixture.test',supabaseKey:'fixture-key'};
   w.supabase = {createClient:() => client};
   w.OjjudaAccountDeletion = {run:async() => {calls.push('deleteAccount');}};
+  w.eval(read('note/support.js'));
   w.eval(read('note/preview.js') + '\nwindow.parkFixture={setBusy(value){managementBusy=value;}};\n' + read('park/integration.js'));
   const settle = () => new Promise(resolve => w.setTimeout(resolve,0));
-  authChanged('INITIAL_SESSION',session);
+  for (const callback of authListeners) callback('INITIAL_SESSION',session);
   await settle(); await settle();
   const api = w.OjjudaParkFull;
   const setting = action => w.document.querySelector(`[data-park-settings="${action}"]`);
   return {dom,w,api,calls,messages,settle,setting,
     async close() { await settle(); for (const observer of observers) observer.disconnect(); dom.window.close(); },
-    async changeUser(next) {session=next;authChanged(next?'SIGNED_IN':'SIGNED_OUT',next);await settle();},
+    async changeUser(next) {session=next;for (const callback of authListeners) callback(next?'SIGNED_IN':'SIGNED_OUT',next);await settle();},
     root:() => w.document.querySelector('[data-park-settings-root]'),
     management:() => w.document.querySelector('#management-backdrop')};
 }
@@ -73,6 +75,11 @@ test('guests can open Park settings, read policies and reach login', async () =>
     assert.ok(f.setting('privacy'));
     assert.equal(f.setting('logout'),null);
     assert.equal(f.setting('delete-account'),null);
+    f.setting('support').click(); await f.settle();
+    assert.equal(f.w.OjjudaNoteSupport.isOpen(),true);
+    assert.equal(f.w.document.querySelector('[data-support-withdrawal]').closest('footer').hidden,true,
+      'guests do not receive a withdrawal entry in support');
+    f.w.OjjudaNoteSupport.close(); f.api.navigate('settings');
     assert.equal(f.api.back(),true);
     assert.equal(f.management().hidden,true);
     assert.equal(f.api.navigationAction(),'feed');
@@ -88,8 +95,7 @@ test('Park settings opens the existing account forms and returns without executi
       ['nickname','#note-new-nickname'],
       ['password','#note-new-password'],
       ['blocked','.management-help'],
-      ['logout','.management-footer button'],
-      ['delete-account','#note-delete-nickname']
+      ['logout','.management-footer button']
     ]) {
       assert.ok(f.setting(action),action+' is available from Park');
       f.setting(action).click();
@@ -107,6 +113,57 @@ test('Park settings opens the existing account forms and returns without executi
     f.api.back();
     assert.equal(f.management().hidden,true);
     assert.equal(f.api.navigationAction(),'feed');
+  } finally {await f.close();}
+});
+
+test('Park withdrawal is reached through the last support control and cancellation never deletes an account', async () => {
+  const f = await fixture();
+  try {
+    f.api.navigate('settings');
+    assert.equal(f.setting('delete-account'),null,'settings have no direct withdrawal action');
+    assert.equal(f.w.document.getElementById('note-delete-account'),null,'the legacy account menu has no direct withdrawal action');
+    f.setting('support').click(); await f.settle();
+    const support = f.w.document.querySelector('.note-support-layer [role="dialog"]');
+    const withdrawal = support.querySelector('[data-support-withdrawal]');
+    assert.equal(f.w.OjjudaNoteSupport.isOpen(),true);
+    assert.equal(withdrawal.closest('footer').hidden,false);
+    assert.equal(support.lastElementChild,withdrawal.closest('footer'),'withdrawal is below the inquiry content and status');
+    assert.equal([...support.querySelectorAll('button')].at(-1),withdrawal);
+    withdrawal.click(); await f.settle();
+    assert.equal(f.w.OjjudaNoteSupport.isOpen(),false,'support closes before the existing confirmation form opens');
+    const nickname = f.w.document.getElementById('note-delete-nickname');
+    assert.ok(nickname,'the real existing account confirmation form opens');
+    assert.equal(nickname.value,'');
+    assert.equal(f.w.document.querySelector('.note-account-consent input').checked,false);
+    [...f.management().querySelectorAll('button')].find(button=>button.textContent==='취소').click();
+    assert.equal(f.management().hidden,true);
+    assert.equal(f.calls.includes('deleteAccount'),false);
+    assert.equal(f.calls.includes('signOut'),false);
+    f.w.OjjudaNoteSupport.report({onSubmit:async()=>{throw Error('not submitted');}});
+    assert.equal(withdrawal.closest('footer').hidden,true,'reporting content does not expose an account-deletion entry');
+  } finally {await f.close();}
+});
+
+test('pending support sends and account changes cannot open the withdrawal form', async () => {
+  let finishInquiry;
+  const f = await fixture(true,{submitInquiry:()=>new Promise(resolve=>{finishInquiry=resolve;})});
+  try {
+    f.api.navigate('settings'); f.setting('support').click(); await f.settle();
+    const field = f.w.document.getElementById('note-inquiry-body');
+    const withdrawal = f.w.document.querySelector('[data-support-withdrawal]');
+    field.value='검증용 문의';
+    field.form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));
+    assert.equal(withdrawal.disabled,true);
+    withdrawal.click();
+    assert.equal(f.w.OjjudaNoteSupport.isOpen(),true);
+    assert.equal(f.w.document.getElementById('note-delete-nickname'),null);
+    finishInquiry({data:null}); await f.settle();
+    assert.equal(withdrawal.disabled,false);
+    await f.changeUser({user:{id:'park-member-b',email:'other@example.test'}});
+    assert.equal(f.w.OjjudaNoteSupport.isOpen(),false);
+    withdrawal.click(); await f.settle();
+    assert.equal(f.w.document.getElementById('note-delete-nickname'),null,'a stale support button cannot target the next account');
+    assert.equal(f.calls.includes('deleteAccount'),false);
   } finally {await f.close();}
 });
 
