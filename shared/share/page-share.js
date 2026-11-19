@@ -1,4 +1,4 @@
-/* Public page links never include the current account, filters or iframe flags. */
+/* Share canonical public pages, with only the sender's explicit invitation reference. */
 (() => {
   'use strict';
   const installed = Symbol.for('ojjuda.page-share');
@@ -12,7 +12,7 @@
     pajang: { title: '파장 · 오쭈다', text: '오쭈다 파장으로 초대해요.', path: '/features/pajang/', invite: true }
   };
   let active = null, notice, noticeTimer;
-  function copied(invite) {
+  function announce(message) {
     if (!notice?.isConnected) {
       notice = document.createElement('div');
       notice.className = 'page-share-notice';
@@ -21,7 +21,7 @@
       document.body.append(notice);
     }
     clearTimeout(noticeTimer);
-    notice.textContent = invite ? '초대 링크를 복사했어요.' : '페이지 링크를 복사했어요.';
+    notice.textContent = message;
     notice.hidden = false;
     noticeTimer = setTimeout(() => { notice.hidden = true; }, 3000);
   }
@@ -76,7 +76,13 @@
       }
     };
     try {
-      const url = new URL(page.path, location.origin).href;
+      let url;
+      if (page.invite) {
+        try {
+          if (!window.OjjudaInvite) throw Error('초대 링크를 준비하지 못했어요. 새로고침해 주세요.');
+          url = window.OjjudaInvite.shareUrl(page.path);
+        } catch (error) { announce(error.message); return; }
+      } else url = new URL(page.path, location.origin).href;
       if (typeof navigator.share === 'function') {
         // Call from this click, before any asynchronous preparation loses activation.
         try { await navigator.share({ title: page.title, text: page.text, url }); return; }
@@ -85,7 +91,7 @@
       try {
         if (typeof navigator.clipboard?.writeText !== 'function') throw new Error('Clipboard unavailable');
         await navigator.clipboard.writeText(url);
-        copied(page.invite);
+        announce(page.invite ? '초대 링크를 복사했어요.' : '페이지 링크를 복사했어요.');
       } catch {
         restoreFocus = true;
         await manualCopy(url, page.invite, release);

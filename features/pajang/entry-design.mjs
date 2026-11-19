@@ -7,8 +7,14 @@ export function enhanceGuestGate(){
   const login=account?.querySelector('a.ojjuda-guest-account-login');
   const signup=account?.querySelector('a.ojjuda-guest-account-signup');
   const message=gate.querySelector(':scope > p');
-  if(!account||!message||login?.getAttribute('href')!=='/?auth=login&next=pajang'||
-    signup?.getAttribute('href')!=='/?auth=signup&next=pajang')return false;
+  const accountRoute=(link,mode)=>{
+    if(!link)return false;
+    const url=new URL(link.href,location.href),keys=[...url.searchParams.keys()];
+    return url.origin===location.origin&&url.pathname==='/'&&url.searchParams.get('auth')===mode&&
+      url.searchParams.get('next')==='pajang'&&keys.every(key=>['auth','next','ref'].includes(key))&&
+      keys.length===new Set(keys).size;
+  };
+  if(!account||!message||!accountRoute(login,'login')||!accountRoute(signup,'signup'))return false;
   const make=(tag,className,text)=>{
     const node=document.createElement(tag);node.className=className;
     if(text)node.textContent=text;

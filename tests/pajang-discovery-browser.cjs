@@ -26,6 +26,7 @@ const signalOffers=[[1,10,2],[3,28,2],[5,45,2],[10,85,1],[20,160,1],[30,225,1]]
 const toolbarAssets=[
   '/shared/brand/service-header.css','/note/notifications.js','/note/notifications.css',
   '/shared/share/page-share.js','/shared/share/page-share.css',
+  '/shared/auth/invite-referral.js',
   '/features/wallet/ju-charge.js','/features/wallet/ju-charge.css','/ju-coins/ju-coins.css',
   ...['coin','10','30','50','100','300','500'].map(name=>'/ju-coins/'+name+'.svg')
 ];

@@ -5,6 +5,7 @@ const path = require('node:path');
 const { JSDOM } = require('jsdom');
 const root = path.resolve(__dirname, '..');
 const script = fs.readFileSync(path.join(root, 'shared/share/page-share.js'), 'utf8');
+const inviteScript = fs.readFileSync(path.join(root, 'shared/auth/invite-referral.js'), 'utf8');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const services = {
   agit: { label: '아지트', path: '/world.html?tab=hub' },
@@ -12,16 +13,16 @@ const services = {
   pajang: { label: '파장', path: '/features/pajang/' }
 };
 
-function fixture(t, page, options = {}) {
+async function fixture(t, page, options = {}) {
   const folder = page === 'festival' ? 'festival-schedule' : 'certified-restaurants';
   const service = services[page];
   const html = service
     ? `<main><button type="button" data-share-page="${page}" aria-label="${service.label} 초대 링크 공유"><span>초대</span></button></main>`
     : fs.readFileSync(path.join(root, 'games', folder, 'index.html'), 'utf8');
   const dom = new JSDOM(html, {
-    url: service
+    url: options.url || (service
       ? 'https://ojjuda.kr/features/pajang/station.html?embed=1&member=private&ref=old&code=secret#messages'
-      : `https://ojjuda.kr/games/${folder}/index.html?v=old&embedded=1&member-ratings=1&saved=1#private`,
+      : `https://ojjuda.kr/games/${folder}/index.html?v=old&embedded=1&member-ratings=1&saved=1#private`),
     runScripts: 'outside-only'
   });
   t.after(() => dom.window.close());
@@ -35,6 +36,17 @@ function fixture(t, page, options = {}) {
     if (options.clipboardError) throw new Error('Clipboard blocked');
     copies.push(url);
   } } });
+  const authCallbacks = [];
+  let session = options.user ? { user: { id: options.user, is_anonymous: !!options.anonymous } } : null;
+  if (service) {
+    const client = { auth: {
+      getSession: async () => options.getSession ? options.getSession() : { data: { session }, error: options.authError || null },
+      onAuthStateChange(callback) { authCallbacks.push(callback); return { data: { subscription: { unsubscribe() {} } } }; }
+    } };
+    window.OjjudaGetClient = async () => client;
+    window.eval(inviteScript);
+    if (options.waitForAuth !== false) await window.OjjudaInvite.ready();
+  }
   window.eval(script);
   const button = window.document.querySelector('[data-share-page]');
   assert.equal(button.dataset.sharePage, page);
@@ -43,13 +55,19 @@ function fixture(t, page, options = {}) {
     assert.ok(window.document.querySelector('script[src^="/shared/share/page-share.js?v="]'));
     assert.ok(window.document.querySelector('link[href^="/shared/share/page-share.css?v="]'));
   }
-  return { window, document: window.document, button, shares, copies, copyAttempts };
+  return { window, document: window.document, button, shares, copies, copyAttempts,
+    async auth(id) {
+      session = id ? { user: { id, is_anonymous: false } } : null;
+      for (const callback of authCallbacks) callback(id ? 'SIGNED_IN' : 'SIGNED_OUT', session);
+      await tick();
+    }
+  };
 }
 
 for (const page of ['festival', 'restaurants']) {
   test(`${page}: native sharing uses only the public direct-entry route`, async t => {
     let finish;
-    const f = fixture(t, page, { share: () => new Promise(resolve => { finish = resolve; }) });
+    const f = await fixture(t, page, { share: () => new Promise(resolve => { finish = resolve; }) });
     f.button.click(); f.button.click();
     assert.equal(f.shares.length, 1, 'double taps do not open competing share sheets');
     assert.equal(f.shares[0].url, `https://ojjuda.kr/world.html?game=${page}`);
@@ -60,7 +78,7 @@ for (const page of ['festival', 'restaurants']) {
     assert.equal(f.copies.length, 0);
   });
   test(`${page}: unavailable native sharing copies a clean page link`, async t => {
-    const f = fixture(t, page);
+    const f = await fixture(t, page);
     f.button.click(); await tick();
     assert.deepEqual(f.copies, [`https://ojjuda.kr/world.html?game=${page}`]);
     assert.equal(f.document.querySelector('.page-share-notice').textContent, '페이지 링크를 복사했어요.');
@@ -69,7 +87,7 @@ for (const page of ['festival', 'restaurants']) {
 }
 
 test('cancelling native sharing leaves the clipboard unchanged', async t => {
-  const f = fixture(t, 'festival', { share: async () => { throw Object.assign(new Error('Cancelled'), { name: 'AbortError' }); } });
+  const f = await fixture(t, 'festival', { share: async () => { throw Object.assign(new Error('Cancelled'), { name: 'AbortError' }); } });
   f.button.click(); await tick();
   assert.deepEqual(f.copies, []);
   assert.equal(f.document.querySelector('.page-share-notice'), null);
@@ -78,14 +96,14 @@ test('cancelling native sharing leaves the clipboard unchanged', async t => {
 });
 
 test('native permission failure falls back to copying', async t => {
-  const f = fixture(t, 'restaurants', { share: async () => { throw new Error('Not allowed'); } });
+  const f = await fixture(t, 'restaurants', { share: async () => { throw new Error('Not allowed'); } });
   f.button.click(); await tick();
   assert.deepEqual(f.copies, ['https://ojjuda.kr/world.html?game=restaurants']);
 });
 
 for (const clipboard of [false, true]) {
   test(`manual copying works when clipboard is ${clipboard ? 'denied' : 'missing'}`, async t => {
-    const f = fixture(t, 'restaurants', { clipboard, clipboardError: true });
+    const f = await fixture(t, 'restaurants', { clipboard, clipboardError: true });
     f.button.focus(); f.button.click(); await tick();
     const dialog = f.document.querySelector('.page-share-dialog');
     const field = dialog.querySelector('input');
@@ -113,7 +131,7 @@ test('both embedded pages allow native sharing and clipboard writes', () => {
 
 for (const [page, service] of Object.entries(services)) {
   test(`${page}: an invitation shares its public entrance without account or iframe parameters`, async t => {
-    const f = fixture(t, page, { share: async () => {} });
+    const f = await fixture(t, page, { share: async () => {} });
     f.button.querySelector('span').click(); await tick();
     assert.equal(f.shares.length, 1);
     assert.equal(f.shares[0].url, 'https://ojjuda.kr' + service.path);
@@ -124,17 +142,80 @@ for (const [page, service] of Object.entries(services)) {
   });
 
   test(`${page}: an unavailable share sheet copies only the invitation link`, async t => {
-    const f = fixture(t, page);
+    const f = await fixture(t, page);
     f.button.click(); await tick();
     assert.deepEqual(f.copies, ['https://ojjuda.kr' + service.path]);
     assert.match(f.document.querySelector('.page-share-notice')?.textContent || '', /초대.*복사/);
     assert.equal(f.button.disabled, false);
   });
+
+  test(`${page}: a member shares their own public referral, never the received code or session parameters`, async t => {
+    const sender = '00000000-0000-4000-8000-000000000011';
+    const received = '00000000-0000-4000-8000-000000000022';
+    const f = await fixture(t, page, { user: sender, share: async () => {},
+      url: `https://ojjuda.kr/features/pajang/station.html?embed=1&ref=${received}&code=private-code&token_hash=private-hash#access_token=private-session` });
+    f.button.click();
+    assert.equal(f.shares.length, 1, 'a ready invitation starts sharing directly in the click handler');
+    const expected = new URL(service.path, 'https://ojjuda.kr'); expected.searchParams.set('ref', sender);
+    assert.equal(f.shares[0].url, expected.href);
+    assert.equal(f.window.OjjudaInvite.pending(), null, 'an existing member cannot inherit an incoming signup referral');
+    assert.deepEqual(f.copyAttempts, []);
+    await tick();
+  });
 }
+
+test('an invitation waits for account readiness and never silently shares a referral-free fallback', async t => {
+  let finish;
+  const sender = '00000000-0000-4000-8000-000000000011';
+  const session = new Promise(resolve => { finish = resolve; });
+  const f = await fixture(t, 'agit', { waitForAuth: false, getSession: () => session, share: async () => {} });
+  f.button.click(); await tick();
+  assert.deepEqual(f.shares, []); assert.deepEqual(f.copyAttempts, []);
+  assert.equal(f.document.querySelector('.page-share-dialog'), null);
+  assert.match(f.document.querySelector('.page-share-notice')?.textContent || '', /초대.*준비/);
+  assert.equal(f.button.disabled, false);
+  finish({ data: { session: { user: { id: sender } } } });
+  await f.window.OjjudaInvite.ready();
+  f.button.click();
+  assert.equal(f.shares.length, 1);
+  assert.equal(f.shares[0].url, 'https://ojjuda.kr/world.html?tab=hub&ref=' + sender);
+  await tick();
+});
+
+test('an account read failure blocks native sharing and clipboard until a successful retry', async t => {
+  let failing = true;
+  const sender = '00000000-0000-4000-8000-000000000011';
+  const f = await fixture(t, 'park', { getSession: async () => failing
+    ? { data: { session: null }, error: { message: 'Synthetic auth failure' } }
+    : { data: { session: { user: { id: sender } } }, error: null } });
+  f.button.click(); await tick();
+  assert.deepEqual(f.copyAttempts, []);
+  assert.equal(f.document.querySelector('.page-share-dialog'), null);
+  assert.match(f.document.querySelector('.page-share-notice')?.textContent || '', /초대.*불러오지 못/);
+  assert.equal(f.button.disabled, false);
+  failing = false;
+  await f.window.OjjudaInvite.ready();
+  f.button.click(); await tick();
+  assert.deepEqual(f.copies, ['https://ojjuda.kr/world.html?place=park&ref=' + sender]);
+});
+
+test('switching the sender account updates the next invitation without forwarding an incoming referral', async t => {
+  const first = '00000000-0000-4000-8000-000000000011';
+  const second = '00000000-0000-4000-8000-000000000022';
+  const f = await fixture(t, 'pajang', { user: first });
+  f.button.click(); await tick();
+  await f.auth(null); f.button.click(); await tick();
+  await f.auth(second); f.button.click(); await tick();
+  assert.deepEqual(f.copies, [
+    'https://ojjuda.kr/features/pajang/?ref=' + first,
+    'https://ojjuda.kr/features/pajang/',
+    'https://ojjuda.kr/features/pajang/?ref=' + second
+  ]);
+});
 
 test('cancelling an invitation does not copy or open a fallback and permits a later retry', async t => {
   let cancelled = true;
-  const f = fixture(t, 'agit', { share: async () => {
+  const f = await fixture(t, 'agit', { share: async () => {
     if (cancelled) throw Object.assign(new Error('Cancelled'), { name: 'AbortError' });
   } });
   f.button.click(); await tick();
@@ -149,7 +230,7 @@ test('cancelling an invitation does not copy or open a fallback and permits a la
 });
 
 test('an invitation falls back from failed sharing through clipboard to an accessible manual link', async t => {
-  const f = fixture(t, 'pajang', {
+  const f = await fixture(t, 'pajang', {
     share: async () => { throw new Error('Share blocked'); }, clipboardError: true
   });
   f.button.focus(); f.button.click(); await tick();
@@ -174,7 +255,7 @@ test('an invitation falls back from failed sharing through clipboard to an acces
 
 test('dynamic service headers and duplicate helper loads never launch competing invitations', async t => {
   let finish;
-  const f = fixture(t, 'agit', { share: () => new Promise(resolve => { finish = resolve; }) });
+  const f = await fixture(t, 'agit', { share: () => new Promise(resolve => { finish = resolve; }) });
   f.window.eval(script);
   f.button.click();
   assert.equal(f.shares.length, 1, 'reloading the helper must not install a second click handler');
@@ -196,7 +277,7 @@ test('dynamic service headers and duplicate helper loads never launch competing 
 });
 
 test('manual invitation stays single through rerenders and restores focus to the current header', async t => {
-  const f = fixture(t, 'park', { clipboard: false });
+  const f = await fixture(t, 'park', { clipboard: false });
   f.button.click(); await tick();
   const dialog = f.document.querySelector('.page-share-dialog');
   assert.equal(dialog?.open, true);

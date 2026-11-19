@@ -17,6 +17,7 @@ function agitDocument() {
     .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
     .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";', 'const screwGame={};');
   const helpers = [
+    'shared/auth/invite-referral.js',
     'shared/share/page-share.js',
     'features/home/agit-hub.js', 'features/home/agit-welcome.js',
     'park/world-park-notes.js', 'app/world/world-themes.js',
@@ -34,7 +35,7 @@ function agitDocument() {
     g.tab=parkEntry?'place':'hub';g.place=parkEntry?{id:'park',ch:1,count:0,log:[]}:null;
     D.online=false;D.parkGuest=true;D.user=null;H();gm(()=>{});
     window.entryWorld={
-      member(value){D.online=value;D.parkGuest=!value;D.user=value?{id:'entry-member'}:null;$.coins=value?129447:0;H();},
+      member(value){entryFixture.setMember(value);D.online=value;D.parkGuest=!value;D.user=entryFixture.session?.user||null;$.coins=value?129447:0;H();},
       welcome(){OjjudaAgitWelcome.enter({member:false,owner:'entry-guest',settings:$.settings});}
     };
   ` + html.slice(end);
@@ -85,6 +86,7 @@ function installAccountFixture() {
       if (name === 'list_app_notifications') return result({ items: [], unread_count: 0, as_of: '2026-11-19T00:00:00Z', has_more: false, next_cursor: null });
       if (name === 'beta_charge_status') return result({ ok: true, enabled: true, coins: 0, left: 5, limit: 5 });
       if (name === 'mask_banned') return result(args.t);
+      if (name === 'resolve_signup_referrer') return result([{ id: args.p_ref, nickname: '초대한이웃' }]);
       if (name === 'ensure_member_for_note') return result(true);
       if (name === 'pajang_member') {
         if (new URL(location.href).searchParams.has('blocked')) return Promise.resolve({ data: null, error: { code: '42501' } });
@@ -174,11 +176,15 @@ async function mainInvitation(page, service, label, share = true) {
       assert.equal(overlaps(boxes[i], boxes[j]), false, `${label}: header elements overlap ${JSON.stringify(layout)}`);
   }
   if (share) {
+    assert.equal(await page.evaluate(() => window.OjjudaInvite?.ready()), true, `${label}: invitation account is ready`);
     const before = await page.evaluate(() => entryFixture.shares.length);
     await button.click();
     await page.waitForFunction(count => entryFixture.shares.length === count + 1, before);
     const payload = await page.evaluate(() => entryFixture.shares.at(-1));
-    assert.equal(payload.url, origin + paths[service], `${label}: actual main button shares its clean public route`);
+    const sender = await page.evaluate(() => entryFixture.session?.user?.id || null);
+    const expected = new URL(paths[service], origin);
+    if (sender) expected.searchParams.set('ref', sender);
+    assert.equal(payload.url, expected.href, `${label}: actual main button shares only its public route and current sender`);
     assert.match(payload.title, new RegExp(names[service]));
   }
 }
@@ -261,6 +267,27 @@ async function openSpace(page, space) {
       console.log('PASS guest entrance, main invitation and account targets:', space.id, '320/390/750/1080/1280');
     }
 
+    const receivedReferral = '00000000-0000-4000-8000-000000000022';
+    const inviteRoutes = { agit: '/world.html?tab=hub', park: '/world.html?place=park', pajang: '/features/pajang/' };
+    for (const space of spaces) {
+      checkpoint = `${space.id}-received-invitation`;
+      const incoming = new URL(inviteRoutes[space.id], origin); incoming.searchParams.set('ref', receivedReferral);
+      const surface = await openSpace(page, { ...space, url: incoming.pathname + incoming.search });
+      await surface.locator(space.selector).waitFor({ state: 'visible' });
+      await settled(page);
+      for (const mode of ['login', 'signup']) {
+        const link = surface.locator(space[mode]);
+        await link.waitFor({ state: 'visible' });
+        assert.equal(await link.getAttribute('href'), `/?auth=${mode}&next=${space.next}&ref=${receivedReferral}`, `${space.id}: the incoming invitation survives its auth link`);
+      }
+      await mainInvitation(page, space.id, checkpoint);
+      await surface.locator(space.signup).click();
+      await page.locator(`#auth-dialog[open][data-entry-space="${space.id}"]`).waitFor();
+      assert.equal(new URL(page.url()).searchParams.get('ref'), receivedReferral);
+      await page.waitForFunction(() => document.getElementById('signup-referrer')?.value === '초대한이웃');
+      assert.ok((await page.evaluate(() => entryFixture.calls)).some(call => call.name === 'resolve_signup_referrer' && call.args.p_ref === receivedReferral), `${space.id}: signup resolves the exact invitation code`);
+    }
+
     checkpoint = 'agit-member-and-welcome';
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(origin + spaces[0].url);
@@ -292,6 +319,7 @@ async function openSpace(page, space) {
     checkpoint = 'pajang-membership';
     await page.goto(origin + '/features/pajang/?member=1');
     await page.locator('#welcome').waitFor({ state: 'visible' });
+    await mainInvitation(page, 'pajang', 'pajang-member-invitation');
     assert.equal(await page.locator('#gate').isVisible(), false, 'verified members enter the existing question flow');
     assert.deepEqual(await page.evaluate(() => entryFixture.downloads), [], 'the first question does not fetch the protected member program');
     await page.goto(origin + '/features/pajang/station.html');
