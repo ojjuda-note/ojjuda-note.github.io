@@ -9,7 +9,7 @@ import {buildCompatibilityReading} from '../games/starlit-saju/compatibility.mjs
 import {renderDetailedReport,renderCompatibilityReport,restoreReadingPage} from '../games/starlit-saju/report-view.mjs';
 
 const require=createRequire(import.meta.url),{JSDOM}=require('jsdom');
-const {currentStory,chooseStory,followStory,collectStories,originalParagraphs,assertOriginalParagraphs,
+const {currentStory,chooseStory,followStory,collectStories,assertOriginalParagraphs,
   assertSummaryAndScore,storiesForItem,groupStories,visible}=require('./helpers/saju-story-ui.cjs');
 const now=new Date('2026-11-13T00:00:00Z');
 const chart=calculateSaju({year:1990,month:5,day:17,hour:8,minute:37},{now});
@@ -51,11 +51,7 @@ test('every computed interpretation, paragraph and score remains reachable in th
       const parts=storiesForItem(scenes,item,{used}),label=item.id||item.title||item.label||item.headline;
       assertSummaryAndScore(parts,item,label);
       if(item.paragraphs)assertOriginalParagraphs(parts,item.paragraphs,label);
-      else if(item.text) {
-        const remainder=originalParagraphs(parts).join('');
-        assert.equal(item.text.startsWith(item.summaryLines[1])?item.summaryLines[1]+remainder:remainder,item.text,
-          'timing points retain the whole original explanation after their short summary');
-      }
+      else if(item.text)assertOriginalParagraphs(parts,[item.text],label);
     }
     const spotlightMonths=[fortune.months.find(item=>item.isCurrent)?.month||1,12];
     for(const month of spotlightMonths) {

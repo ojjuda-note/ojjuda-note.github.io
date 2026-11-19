@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261120-onecard10'
+ const revision='20261120-saju-topic1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -24,7 +24,7 @@
   drinking:'1.26.1',
   shapematch:'1.3.0',
   tarot:'1.12.0',
-  saju:'2.17.0',
+  saju:'2.17.1',
   group:'1.2.2',
   chacha_rush:'1.1.2',
   byeolcheonji:'1.0.5',

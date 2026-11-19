@@ -109,6 +109,7 @@ function snapshotStory(root) {
   return {id: scene.id, source: scene.dataset.storySource, topic: scene.dataset.storyTopic,
     kind: scene.dataset.storyKind, data: {...scene.dataset}, title: scene.querySelector('.story-title').textContent,
     label: scene.querySelector('.story-label')?.textContent || '', text: scene.textContent,
+    context: scene.querySelector('.story-context')?.textContent || '',
     summaries, paragraphs, scores};
 }
 
@@ -149,21 +150,67 @@ function collectCurrentTopic(root, {restore = true} = {}) {
 }
 
 function originalParagraphs(scenes, {kind = 'prose'} = {}) {
-  const paragraphs = new Map();
+  const paragraphs = new Map();let previousKey = null;
   for (const scene of scenes.filter(scene => scene.kind === kind)) for (const part of scene.paragraphs) {
     if (!part.key) continue;
     let paragraph = paragraphs.get(part.key);
     if (!paragraph) { paragraph = {text: '', end: 0}; paragraphs.set(part.key, paragraph); }
-    assert.equal(part.start, paragraph.end, `${part.key}: consecutive scenes retain every original character`);
+    else assert.equal(part.key, previousKey, `${part.key}: a paragraph never resumes after a different paragraph`);
+    assert.equal(part.start, paragraph.end, `${part.key}: consecutive scenes retain every displayed character`);
     assert.equal(part.end - part.start, part.text.length, `${part.key}: offsets describe the displayed text`);
-    paragraph.text += part.text;paragraph.end = part.end;
+    paragraph.text += part.text;paragraph.end = part.end;previousKey = part.key;
   }
   return [...paragraphs.values()].map(paragraph => paragraph.text);
 }
 
+const sentenceSegmenter = new Intl.Segmenter('ko', {granularity: 'sentence'});
+const normalizedUnit = text => text.trim().replace(/\s+/gu, ' ');
+const completeUnit = text => /[.!?。！？][”’"'」』)\]}]*$/u.test(text.trim());
+const regexLiteral = text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// This oracle uses the runtime's sentence segmentation, independently of the
+// production compactor. Only a whole sentence also visible in this exact topic's
+// summary may be omitted. Inside every retained sentence all characters, numbers
+// and punctuation must match; only whitespace between sentence units may change.
+function paragraphCoveragePattern(text, summaryUnits) {
+  const units = [...sentenceSegmenter.segment(text)].map(part => part.segment.trim()).filter(Boolean);
+  return new RegExp('^' + units.map(unit => {
+    const literal = '(?:\\s*' + regexLiteral(unit) + ')';
+    return completeUnit(unit) && summaryUnits.has(normalizedUnit(unit)) ? literal + '?' : literal;
+  }).join('') + '\\s*$', 'u');
+}
+
 function assertOriginalParagraphs(scenes, expected, label = 'the reading') {
   assert.ok(scenes.length, `${label} remains reachable`);
-  assert.deepEqual(originalParagraphs(scenes), expected, `${label} preserves every complete paragraph in its authored order`);
+  const scopes = new Set(scenes.map(scene => {
+    const data = scene.data || {};
+    return JSON.stringify([scene.source, scene.topic, data.storyPeriod, data.personKey, data.personMarker,
+      data.readerCard, data.portraitCard, data.daeunTopic, data.readingSupplement, data.compatibilityTopic,
+      data.month, scene.context]);
+  }));
+  assert.equal(scopes.size, 1, `${label}: omitted text must be covered by this same source, topic, period and person`);
+  const summaryUnits = new Set(storySummary(scenes).flatMap(line => [...sentenceSegmenter.segment(line)]
+    .map(part => part.segment.trim()).filter(completeUnit).map(normalizedUnit)));
+  const actual = originalParagraphs(scenes);
+  if (!summaryUnits.size) {
+    assert.deepEqual(actual, expected, `${label} preserves every complete paragraph in its authored order`);
+    return;
+  }
+  const patterns = expected.map(text => paragraphCoveragePattern(text, summaryUnits));
+  // Whole repeated paragraphs may disappear, so align the remaining paragraphs
+  // in source order. A missing paragraph is legal only if all its sentences are
+  // independently accounted for in the visible summary.
+  let positions = new Set([0]);
+  for (const pattern of patterns) {
+    const next = new Set();
+    for (const position of positions) {
+      if (pattern.test('')) next.add(position);
+      if (position < actual.length && pattern.test(actual[position].trim())) next.add(position + 1);
+    }
+    positions = next;
+  }
+  assert.ok(positions.has(actual.length),
+    `${label} keeps every unique sentence and paragraph in order; only whole sentences displayed in its own summary may be omitted`);
 }
 
 function groupStories(scenes) {

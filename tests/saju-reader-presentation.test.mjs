@@ -11,7 +11,7 @@ import {buildCompatibilityReading} from '../games/starlit-saju/compatibility.mjs
 import {renderDetailedReport,renderCompatibilityReport} from '../games/starlit-saju/report-view.mjs';
 
 const require=createRequire(import.meta.url),{JSDOM}=require('jsdom');
-const {currentStory,chooseStory,followStory,collectStories,originalParagraphs,assertSummaryAndScore,visible}=require('./helpers/saju-story-ui.cjs');
+const {currentStory,chooseStory,followStory,collectStories,assertOriginalParagraphs,assertSummaryAndScore,visible}=require('./helpers/saju-story-ui.cjs');
 const now=new Date('2026-11-20T00:00:00Z');
 const chart=calculateSaju({year:1990,month:5,day:17,hour:8,minute:37},{now});
 
@@ -43,6 +43,27 @@ test('sentence-sized story pieces preserve every original character and never tr
   assert.deepEqual(splitStoryText(''),[]);
 });
 
+test('source coverage accepts only whole summary repetitions and rejects lost meaning or mixed people',()=>{
+  const repeat='이번에 쓸 금액을 먼저 정해 보세요.',unique='다만 이미 약속한 3.5만 원은 따로 남겨 두세요.';
+  const snapshots=texts=>[
+    {source:'source',topic:'money',kind:'summary',data:{personMarker:'A'},paragraphs:[],
+      summaries:[{index:0,text:'지출을 미리 살펴보는 편이에요.'},{index:1,text:repeat}]},
+    ...texts.map((text,index)=>({source:'source',topic:'money',kind:'prose',data:{personMarker:'A'},summaries:[],
+      paragraphs:[{key:'p'+index,text,start:0,end:text.length}]})),
+  ];
+  const original=[repeat,repeat+' '+unique,'남은 비용도 서로 확인해 보세요.'];
+  assertOriginalParagraphs(snapshots([unique,original[2]]),original,'permitted summary repetitions');
+  assertOriginalParagraphs(snapshots(original),original,'uncompacted prose is still complete');
+  for(const invalid of [[original[2]],[unique.replace('3.5','5.3'),original[2]],[original[2],unique]]) {
+    assert.throws(()=>assertOriginalParagraphs(snapshots(invalid),original),{code:'ERR_ASSERTION'});
+  }
+  assert.throws(()=>assertOriginalParagraphs(snapshots([unique]),['“'+repeat+'”라는 말을 할 때도 '+unique]),{code:'ERR_ASSERTION'},
+    'matching words inside a quoted example never excuse deleting that example');
+  const mixed=snapshots([unique]);mixed[0].data.personMarker='B';
+  assert.throws(()=>assertOriginalParagraphs(mixed,[repeat+' '+unique]),{code:'ERR_ASSERTION'},
+    'another person’s summary cannot account for the omitted sentence');
+});
+
 test('a flat story shows its two real meters beside the summary and reconstructs all prose through next',()=>{
   const h=environment();
   try {
@@ -65,7 +86,7 @@ test('a flat story shows its two real meters beside the summary and reconstructs
     assert.equal(h.host.querySelector('.reading-map,details'),null);
     const scenes=collectStories(h.host);
     assertSummaryAndScore(scenes,item,'the synthetic topic');
-    assert.deepEqual(originalParagraphs(scenes),item.paragraphs);
+    assertOriginalParagraphs(scenes,item.paragraphs,'the synthetic topic');
     assert.ok(scenes.every(scene=>scene.kind!=='score'),'general scores stay with their topic summary instead of taking another screen');
     assert.equal(reader.restore('paragraph-2'),true);
     const restored=currentStory(h.host);assert.ok(restored.querySelector('.story-body').textContent.includes(item.paragraphs[2].slice(0,30)));
@@ -128,7 +149,7 @@ test('A and B remain identifiable in sequential stories and compatibility meters
       assert.ok(relevant.length,`${item.id} is in the normal reading order`);
       assert.ok(relevant.every(scene=>scene.data.personMarker===(index===0?'A':'B')));
       assert.ok(relevant[0].label.includes(index===0?'A · 예시 A':'B · 예시 B'));
-      assertSummaryAndScore(relevant,item,item.id);assert.deepEqual(originalParagraphs(relevant),item.paragraphs);
+      assertSummaryAndScore(relevant,item,item.id);assertOriginalParagraphs(relevant,item.paragraphs,item.id);
     }
     const scores=scenes.filter(scene=>scene.kind==='score');assert.equal(scores.length,1);
     chooseStory(h.host.querySelector('#compatibility-page-select'),scores[0].id);

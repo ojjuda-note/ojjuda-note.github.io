@@ -6,7 +6,7 @@ const vm = require('node:vm');
 const {pathToFileURL,fileURLToPath} = require('node:url');
 const {JSDOM} = require('jsdom');
 const {entryFlowDriver,selectReadingItem} = require('./helpers/saju-ui-harness.cjs');
-const {currentStory,chooseStory,followStory,collectStories,collectCurrentTopic,originalParagraphs,assertSummaryAndScore,storySummary,visible} = require('./helpers/saju-story-ui.cjs');
+const {currentStory,chooseStory,followStory,collectStories,collectCurrentTopic,originalParagraphs,assertOriginalParagraphs,assertSummaryAndScore,storySummary,visible} = require('./helpers/saju-story-ui.cjs');
 
 const appDir=path.resolve(__dirname,'../games/starlit-saju');
 const fixedNow='2026-11-13T03:00:00.000Z';
@@ -40,15 +40,17 @@ function selectCompatibilityPage(h,id) {
   return page;
 }
 function assertCompleteExplanation(scenes,item,label) {
-  const paragraphs=originalParagraphs(scenes);
-  const authored=paragraphs.filter(text=>item.paragraphs.includes(text));
-  assert.deepEqual(authored,item.paragraphs,`${label} retains every paragraph in its authored order through visible scenes`);
+  const authored=Number.isFinite(item.value)?[`${item.value}점 / 100점`,...item.paragraphs]:item.paragraphs;
+  assertOriginalParagraphs(scenes,authored,label);
   if(item.detailSections) {
     const headings=[...new Set(scenes.filter(scene=>scene.kind==='prose').map(scene=>scene.title))];
     let position=-1;
     for(const section of item.detailSections) {
       const next=headings.indexOf(section.title,position+1);
-      assert.ok(next>position,`${label} retains the heading ${section.title}`);position=next;
+      if(next<0) {
+        assertOriginalParagraphs(scenes.filter(scene=>scene.kind==='summary'),section.paragraphs,
+          `${label}: ${section.title} may disappear only when its complete text is already visible in this topic's summary`);
+      } else position=next;
     }
     assert.deepEqual(item.detailSections.flatMap(section=>section.paragraphs),item.paragraphs);
   }

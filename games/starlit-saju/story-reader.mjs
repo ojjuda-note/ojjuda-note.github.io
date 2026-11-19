@@ -2,6 +2,7 @@ import {createReadingNavigator} from './reading-navigator.mjs?v=20261120-saju-st
 import {createReadingProgress} from './reader-presentation.mjs?v=20261120-saju-clean1';
 import {attachReadingSwipe} from './reading-swipe.mjs?v=20261120-saju-story2';
 import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
+import {compactTopicScenes} from './topic-reading.mjs?v=20261120-saju-topic1';
 
 const SUMMARY='.saju-two-line-summary,.compatibility-two-line-summary';
 const SEMANTIC=['readerCard','portraitCard','daeunTopic','readingSupplement','personKey','personMarker','compatibilityTopic','month'];
@@ -200,6 +201,7 @@ export function collectStoryScenes(pages,{defaults=new Map()}={}) {
       for(const id of base.pendingIds)bind(id,scenes.at(-1));
     }
   }
+  scenes.splice(0,scenes.length,...compactTopicScenes(scenes,aliases));
   for(const [element,page] of defaults)if(element?.id) {
     const first=aliases.get(page?.id||page?.element?.id);if(first)aliases.set(element.id,first);
   }
