@@ -190,335 +190,234 @@ const server = http.createServer((request, response) => {
     await page.waitForFunction(() => document.querySelector('#app').dataset.phase === 'reading');
     const roles = ['지금의 문제', '현재 상황', '해결 방법과 결과'];
     const revealedNames = [];
+    async function inspectReaderPage(expected, prefix = 'result') {
+      const article = page.locator('#' + prefix + '-reader-page');
+      await page.waitForFunction(({prefix,id}) => document.getElementById(prefix + '-reader-page')?.dataset.pageId === id,
+        {prefix,id:expected.id});
+      assert.equal(await article.getAttribute('data-chapter-id'), expected.chapterId);
+      assert.equal(await article.getAttribute('data-group-id'), expected.groupId);
+      assert.equal(await page.locator('#' + prefix + '-reader-body [data-page-id]:visible').count(), 1,
+        'exactly one current reading page is visible');
+      assert.equal(await page.locator('#' + prefix + '-title').textContent(), expected.title);
+      assert.deepEqual(await article.locator('.reader-paragraph').allTextContents(), expected.paragraphs || []);
+      assert.deepEqual(await article.locator('.reader-summary-line').allTextContents(), expected.summaryLines || []);
+    }
+    async function openReaderMenu(prefix = 'result') {
+      if (!await page.locator('#' + prefix + '-reader-menu').isVisible()) await page.locator('#' + prefix + '-reader-menu-toggle').click();
+      assert.equal(await page.locator('#' + prefix + '-reader-menu-toggle').getAttribute('aria-expanded'), 'true');
+      assert.equal(await page.locator('#' + prefix + '-reader-body').getAttribute('aria-hidden'), 'true',
+        'the reading behind the contents menu is excluded from navigation');
+    }
+    async function goToReaderPage(expected, pages, prefix = 'result') {
+      const first = pages.find(item => item.chapterId === expected.chapterId);
+      await openReaderMenu(prefix);
+      await page.locator('#' + prefix + '-reader-menu [data-reader-target="' + first.id + '"]').click();
+      assert.equal(await page.locator('#' + prefix + '-reader-menu').isVisible(), false);
+      const start = pages.findIndex(item => item.id === first.id);
+      const target = pages.findIndex(item => item.id === expected.id);
+      for (let index = start; index < target; index++) await page.locator('#' + prefix + '-reader-next').click();
+      await inspectReaderPage(expected, prefix);
+    }
+    async function inspectReaderLayout(label, prefix = 'result') {
+      const geometry = await page.evaluate(prefix => {
+        const dialog = document.getElementById(prefix + '-dialog');
+        const body = document.getElementById(prefix + '-reader-body');
+        const title = document.getElementById(prefix + '-title');
+        const close = document.getElementById(prefix + '-reader-close').getBoundingClientRect();
+        const range = document.createRange(); range.selectNodeContents(title);
+        const titleClear = [...range.getClientRects()].every(line =>
+          line.right <= close.left || line.left >= close.right || line.bottom <= close.top || line.top >= close.bottom);
+        const controls = ['reader-prev','reader-next','reader-menu-toggle','reader-close'].map(name => {
+          const button = document.getElementById(prefix + '-' + name), box = button.getBoundingClientRect();
+          const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+          return {id:button.id,width:box.width,height:box.height,inside:box.left >= -1 && box.right <= innerWidth + 1
+            && box.top >= -1 && box.bottom <= innerHeight + 1,hit:hit === button || button.contains(hit)};
+        });
+        const prose = [...body.querySelectorAll('.reader-paragraph,.reader-summary-line')].map(node => {
+          const style = getComputedStyle(node);
+          return {text:node.textContent, font:parseFloat(style.fontSize), fits:node.scrollWidth <= node.clientWidth + 1
+            && node.scrollHeight <= node.clientHeight + 1, clamp:style.webkitLineClamp, ellipsis:style.textOverflow === 'ellipsis'};
+        });
+        return {horizontalOverflow:document.documentElement.scrollWidth > innerWidth + 1
+          || dialog.scrollWidth > dialog.clientWidth + 1 || body.scrollWidth > body.clientWidth + 1,
+          titleClear,controls,prose,scrollable:body.scrollHeight > body.clientHeight + 1,
+          bodyHeight:body.clientHeight,scrollStyle:getComputedStyle(body).overflowY};
+      }, prefix);
+      assert.equal(geometry.horizontalOverflow, false, label + ': the reader has no horizontal overflow');
+      assert.equal(geometry.titleClear, true, label + ': the full title stays clear of the close button');
+      assert.ok(geometry.controls.every(control => control.inside && control.hit && control.width >= 43.9 && control.height >= 43.9),
+        label + ': the previous, next, contents and close controls stay reachable with 44px targets');
+      assert.ok(geometry.bodyHeight > 100 && /auto|scroll/.test(geometry.scrollStyle), label + ': long content has its own usable scroll area');
+      assert.ok(geometry.prose.length && geometry.prose.every(item => item.text && item.font >= 16 && item.fits
+        && ['none','','unset'].includes(item.clamp) && !item.ellipsis), label + ': whole original sentences wrap without clipping or ellipses');
+      if (geometry.scrollable) {
+        const before = await page.locator('#' + prefix + '-reader-page').getAttribute('data-page-id');
+        await page.locator('#' + prefix + '-reader-body').evaluate(body => { body.scrollTop = body.scrollHeight; });
+        assert.ok(await page.locator('#' + prefix + '-reader-body').evaluate(body => body.scrollTop > 0),
+          label + ': the complete page can be scrolled');
+        assert.equal(await page.locator('#' + prefix + '-reader-page').getAttribute('data-page-id'), before,
+          'vertical reading does not navigate to another page');
+        await page.locator('#' + prefix + '-reader-body').evaluate(body => { body.scrollTop = 0; });
+      }
+      return geometry;
+    }
     for (const [slot, index] of [2, 4, 3].entries()) {
-      await page.locator(`.card[data-index="${index}"]`).click();
+      await page.locator('.card[data-index="' + index + '"]').click();
       await page.waitForFunction(phase => document.querySelector('#app').dataset.phase === phase, slot === 2 ? 'complete' : 'reading');
       assert.equal(await page.locator('#reading-dialog').isVisible(), false, 'revealing a card keeps the visitor at the table');
       assert.equal(await page.locator('#result-dialog').isVisible(), false, 'results wait for an explicit action');
-      await page.locator(`.card[data-index="${index}"]`).click();
+      const name = await page.locator('.card[data-index="' + index + '"] .front-title strong').textContent();
+      revealedNames.push(name);
+      await page.locator('.card[data-index="' + index + '"]').click();
       await page.locator('#reading-dialog[open]').waitFor();
-      assert.ok((await page.locator('#reading-position').textContent()).endsWith(roles[slot]));
-      assert.ok((await page.locator('#reading-introduction').textContent()).length > 20);
-      assert.ok((await page.locator('#reading-title').textContent()).length > 0);
-      const paragraphs = await page.locator('#reading-sections > p').allTextContents();
-      assert.ok(paragraphs.length >= 5, 'card meaning, topic, position, example and caution remain detailed; actions continue in the combined view');
-      assert.ok(paragraphs.every(text => text.trim().length > 20));
-      assert.ok(paragraphs.join('').length >= 350, 'the individual reading remains detailed');
-      assert.equal(await page.locator('#reading-sections h3').count(), 0);
-      const cardName = await page.locator('#reading-title').textContent();
-      revealedNames.push(cardName);
-      assert.ok((await page.locator('#reading-introduction .reading-card-name').allTextContents()).some(text => text.includes(cardName)), 'the actual card name is subtly emphasized');
-      assert.ok(await page.locator('#reading-detail-sections .reading-part').count() > 0, 'original meanings and cautions remain available');
-      assert.match(await page.locator('#reading-source-link').getAttribute('href'), /^https:\/\/en\.wikisource\.org\//);
-      if (index === 2) {
-        await page.screenshot({ path: path.join(artifacts, 'tarot-card-mobile.png') });
-        await page.locator('#reading-source-link').locator('xpath=ancestor::details[1]').locator('summary').click();
-        await page.locator('#reading-source-link').scrollIntoViewIfNeeded();
-        await page.screenshot({ path: path.join(artifacts, 'tarot-source-mobile.png') });
+      const cardModel = await page.evaluate(async ({index,slot,role}) => {
+        const {DECK,getReading} = await import('/games/moonlit-tarot/readings.js');
+        const {buildCardPages} = await import('/games/moonlit-tarot/reading-pages.js');
+        const name = document.querySelector('.card[data-index="' + index + '"] .front-title strong').textContent;
+        const card = DECK.find(item => item.name === name), reading = getReading(card,'money',slot);
+        const positionLabel = ['첫 번째','두 번째','세 번째'][slot] + ' 자리 · ' + role;
+        return {pages:buildCardPages(card,reading,{positionLabel}),paragraphs:reading.paragraphs,meaning:reading.meaning,reference:reading.reference.url};
+      }, {index,slot,role:roles[slot]});
+      assert.ok(cardModel.paragraphs.join('').length >= 350, 'individual card explanations retain their full detail');
+      await inspectReaderPage(cardModel.pages[0], 'reading');
+      assert.ok((await page.locator('#reading-reader-page').textContent()).includes(roles[slot]));
+      const sourcePage = cardModel.pages.find(item => item.links?.some(link => link.url === cardModel.reference));
+      assert.ok(sourcePage, 'original card references remain a reachable reader page');
+      if (slot === 0) {
+        await inspectReaderLayout('individual mobile', 'reading');
+        await page.screenshot({path:path.join(artifacts,'tarot-card-mobile.png'),animations:'disabled'});
+        await goToReaderPage(sourcePage, cardModel.pages, 'reading');
+        assert.match(await page.locator('#reading-reader-page a.reader-source-link').first().getAttribute('href'), /^https:\/\/en\.wikisource\.org\//);
+        await page.screenshot({path:path.join(artifacts,'tarot-source-mobile.png'),animations:'disabled'});
       }
-      await page.locator('#reading-dialog .modal-close').click();
+      await page.locator('#reading-reader-close').click();
     }
     assert.equal(await page.locator('#action-button').isVisible(), true);
     await page.locator('#action-button').click();
-    await page.locator('#result-dialog[open]').waitFor({ timeout: 15000 });
-    assert.equal(await page.locator('#summary-tab-cards').getAttribute('aria-selected'), 'true');
-    assert.deepEqual(await page.locator('#summary-tabs [role="tab"]').allTextContents(),
-      ['카드 소개', '나의 이야기', '과거·현재·미래', '분야별 풀이', '내 상황']);
-    assert.equal(await page.locator('#summary-panel-cards').isVisible(), true);
-    assert.equal(await page.locator('#summary-panel-problem').isVisible(), false);
-    assert.equal(await page.locator('#summary-panel-timeline').isVisible(), false);
-    await page.locator('#summary-tab-problem').click();
-    assert.equal(await page.locator('#result-title').textContent(), '나를 위한 종합 점괘');
-    assert.ok((await page.locator('#summary-panel-problem [data-section-id="together"] h3').textContent()).includes('지금 나에게 필요한 이야기'));
-    const storyVoice = (await page.locator('#summary-panel-problem').textContent()).replace(/[‘“][^’”]*[’”]/gu, '');
-    assert.doesNotMatch(storyVoice, /(?<![가-힣])(?:너에게|너는|너를|네가|네게|당신)|(?:보렴|하렴|거야|있어)[.!?]/u,
-      'the personal-story screen keeps its first-person perspective from heading to full explanation');
-    await page.locator('#summary-tab-problem').press('ArrowLeft');
-    assert.equal(await page.locator('#summary-tab-cards').getAttribute('aria-selected'), 'true', 'Left from the personal story selects the first introduction tab');
-    assert.equal(await page.locator('#summary-tab-cards').evaluate(tab => tab === document.activeElement), true);
-    await page.locator('#summary-tab-cards').press('ArrowLeft');
-    assert.equal(await page.locator('#summary-tab-personal').getAttribute('aria-selected'), 'true', 'Left from the first tab wraps to the final situation tab');
-    await page.locator('#summary-tab-personal').press('Home');
-    assert.equal(await page.locator('#summary-tab-cards').getAttribute('aria-selected'), 'true', 'Home selects the first introduction tab');
-    assert.equal(await page.locator('#summary-tab-cards').evaluate(tab => tab === document.activeElement), true);
-    await page.locator('#summary-tab-problem').click();
-    const solutionSummary = page.locator('#summary-panel-problem [data-section-id="solution"] > .reading-two-line-summary');
-    assert.equal(await solutionSummary.locator('.reading-summary-line').count(), 2, 'the direct reading keeps two complete summary sentences');
-    const solutionLines = await solutionSummary.locator('.reading-summary-line').allTextContents();
-    assert.ok(solutionLines.every(line => /[.!?]$/u.test(line.trim())), 'the reason and the action remain complete sentences');
-    assert.notEqual(solutionLines[0], solutionLines[1], 'the action does not merely repeat the explanation');
-    assert.equal(await page.locator('#summary-panel-problem > .reading-part').first().getAttribute('data-section-id'), 'together', 'the person’s combined story comes before the action sections');
-    assert.equal((await page.locator('#summary-panel-problem [data-section-id="possible-outcome"] h3').textContent()).replace(/^\d+\s*/u, ''), '실천한 뒤 살펴볼 변화', 'the outcome is presented as a change to check after acting');
-    const selectedSource = await page.evaluate(async () => {
-      const { DECK, getReading, getSummary } = await import('/games/moonlit-tarot/readings.js');
-      const { getFortune } = await import('/games/moonlit-tarot/fortune-corpus/index.js');
-      const cards = [2, 4, 3].map(index => {
-        const name = document.querySelector(`.card[data-index="${index}"] .front-title strong`).textContent;
-        return DECK.find(card => card.name === name);
-      });
-      const summary = getSummary(cards, 'money');
-      return { record: getFortune('money', summary.source.pattern), sections: summary.detailSections,
-        firstCardMeaning: getReading(cards[0], 'money', 0).meaning,
-        groupOriginals: Object.fromEntries(summary.groups.map(group =>
-          [group.id, group.sections.map(section => section.paragraphs.join(''))])) };
-    });
-    assert.ok((await page.locator('#summary-panel-cards [data-section-id="card-intro-0"] > .reading-summary-details .reading-summary-full').textContent()).includes(selectedSource.firstCardMeaning), 'card introductions preserve the actual first card meaning');
-    assert.ok(!(await page.locator('#summary-panel-problem').textContent()).includes(selectedSource.firstCardMeaning), 'the personal story does not repeat the card definition');
-    const tarotExplanation = /(?:이|첫|다음|마지막) 카드|카드(?:가|는|의 뜻|의 의미|로 살펴)|타로의|같은 세 장/u;
-    for (const group of ['problem', 'timeline', 'domains']) {
-      assert.doesNotMatch(await page.locator(`#summary-panel-${group}`).textContent(), tarotExplanation,
-        group + ': personal reading text has no card lesson');
+    await page.locator('#result-dialog[open]').waitFor({timeout:15000});
+    async function summaryModel(contextId = '') {
+      return page.evaluate(async contextId => {
+        const {DECK,getSummary,getReading} = await import('/games/moonlit-tarot/readings.js');
+        const {buildSummaryPages} = await import('/games/moonlit-tarot/reading-pages.js');
+        const {buildPersonalReading,personalReadingCopyLines} = await import('/games/moonlit-tarot/personal-reading.js');
+        const {getFortune} = await import('/games/moonlit-tarot/fortune-corpus/index.js');
+        const cards = [2,4,3].map(index => {
+          const name = document.querySelector('.card[data-index="' + index + '"] .front-title strong').textContent;
+          return DECK.find(card => card.name === name);
+        });
+        const summary = getSummary(cards,'money');
+        const report = contextId ? buildPersonalReading({cards,topicId:'money',contextId}) : null;
+        return {pages:buildSummaryPages(summary,{cards,personalReport:report}),summary,record:getFortune('money',summary.source.pattern),
+          firstCardMeaning:getReading(cards[0],'money',0).meaning,personalCopy:report ? personalReadingCopyLines(report).filter(Boolean) : []};
+      }, contextId);
     }
-    const tarotViews = { entry: tarotEntryViews };
-    const domainCategories = [['self', 5], ['timeline', 5], ['solutions', 5], ['love', 7], ['family', 4], ['career', 5], ['study', 5], ['money', 5], ['wellbeing', 4], ['opportunities', 5]];
-    const captureCategories = new Set(['self', 'love', 'money', 'wellbeing']);
-    const overflowState = () => page.evaluate(() => ({ document: document.documentElement.scrollWidth > innerWidth, modal: document.querySelector('#result-dialog').scrollWidth > document.querySelector('#result-dialog').clientWidth }));
-    async function inspectSummaryDetails(viewport) {
-      const details = page.locator('#summary-detail');
-      assert.equal(await details.count(), 1, 'tab and viewport changes never append duplicate source interpretations');
-      assert.equal(await details.locator('summary').textContent(), '함께 읽는 종합 해석');
-      assert.equal(await details.getAttribute('open'), null);
-      const sections = details.locator('#summary-detail-sections > .reading-part');
-      assert.equal(await sections.count(), selectedSource.sections.length);
-      for (const [index, source] of selectedSource.sections.entries()) {
-        assert.ok((await sections.nth(index).locator('h3').textContent()).endsWith(source.title));
-        if (source.subtitle) assert.equal(await sections.nth(index).locator('.reading-part-subtitle').textContent(), source.subtitle);
-        const paragraphs = await sections.nth(index).locator('p').allTextContents();
-        assert.equal(paragraphs.join(''), source.body.split(/\n\s*\n/).join(''), 'all selected source text and cautions survive visual paragraph breaks');
-      }
-      for (const text of [selectedSource.record.body, selectedSource.record.action]) assert.equal((await details.textContent()).split(text).length - 1, 1, 'the actual corpus body and practical advice appear once');
-      await details.locator('summary').focus();
-      await details.locator('summary').press('Enter');
-      assert.equal(await details.locator('#summary-detail-sections').isVisible(), true, 'keyboard activation opens the full selected interpretation');
-      assert.deepEqual(await overflowState(), { document: false, modal: false }, viewport + ': the complete source interpretation wraps without horizontal overflow');
-      await page.screenshot({ path: path.join(artifacts, `tarot-source-interpretation-${viewport}.png`) });
-      await details.locator('summary').press('Space');
-      assert.equal(await details.locator('#summary-detail-sections').isVisible(), false);
+    const selectedSource = await summaryModel();
+    const tarotViews = {entry:tarotEntryViews,reader:{pages:selectedSource.pages.length,layouts:{}}};
+    await inspectReaderPage(selectedSource.pages[0]);
+    assert.equal(await page.locator('#result-reader-prev').isDisabled(), true);
+    await openReaderMenu();
+    const targets = await page.locator('#result-reader-menu [data-reader-target]').evaluateAll(buttons => buttons.map(button => button.dataset.readerTarget));
+    const chapterFirst = selectedSource.pages.filter((item,index,pages) => !index || item.chapterId !== pages[index - 1].chapterId);
+    assert.deepEqual([...targets].sort(), chapterFirst.map(item => item.id).sort(), 'every original chapter and appendix is directly reachable once');
+    assert.equal(await page.locator('#result-context-select option').count(), 4, 'the money reading keeps its three scoped situations');
+    const domainChapters = chapterFirst.filter(item => item.groupId.startsWith('domains:'));
+    assert.equal(domainChapters.length, 50);
+    for (const category of selectedSource.summary.groups.find(group => group.id === 'domains').categories) {
+      const chapters = domainChapters.filter(item => item.groupId === 'domains:' + category.id);
+      assert.equal(chapters.length, category.count);
+      await goToReaderPage(chapters[0], selectedSource.pages);
+      await openReaderMenu();
+      assert.equal(await page.locator('#result-reader-menu [aria-current="page"]').getAttribute('data-reader-target'), chapters[0].id);
     }
-    async function inspectUnclippedSummaries(scope, label) {
-      const geometry = await scope.locator('.reading-summary-line:visible').evaluateAll(lines => lines.map(line => {
-        const style = getComputedStyle(line);
-        return { text: line.textContent.trim(), fits: line.scrollWidth <= line.clientWidth + 1 && line.scrollHeight <= line.clientHeight + 1,
-          wraps: style.whiteSpace !== 'nowrap', clamp: style.webkitLineClamp, overflow: style.textOverflow };
+    const firstStory = chapterFirst.find(item => item.groupId === 'problem');
+    await goToReaderPage(firstStory, selectedSource.pages);
+    await page.locator('#result-reader-body').focus();
+    await page.locator('#result-reader-body').press('ArrowRight');
+    await inspectReaderPage(selectedSource.pages[selectedSource.pages.findIndex(item => item.id === firstStory.id) + 1]);
+    await page.locator('#result-reader-body').focus();
+    await page.locator('#result-reader-body').press('ArrowLeft');
+    await inspectReaderPage(firstStory);
+    await openReaderMenu();
+    await page.locator('#result-reader-menu-toggle').press('Escape');
+    assert.equal(await page.locator('#result-reader-menu').isVisible(), false);
+    assert.equal(await page.locator('#result-reader-menu-toggle').evaluate(button => button === document.activeElement), true);
+
+    const longPage = selectedSource.pages.slice(0, -1).filter(item => item.paragraphs?.length && !item.links?.length)
+      .reduce((longest,item) => item.paragraphs.join('').length > longest.paragraphs.join('').length ? item : longest);
+    for (const [label,viewport] of [
+      ['small-phone',{width:320,height:640}], ['mobile',{width:390,height:844}], ['desktop',{width:750,height:750}]
+    ]) {
+      await page.setViewportSize(viewport);
+      await goToReaderPage(longPage, selectedSource.pages);
+      tarotViews.reader.layouts[label] = await inspectReaderLayout(label);
+      await page.screenshot({path:path.join(artifacts,'tarot-reader-' + label + '.png'),animations:'disabled'});
+      await page.locator('#result-reader-body').evaluate(body => { body.scrollTop = body.scrollHeight; });
+      const index = selectedSource.pages.findIndex(item => item.id === longPage.id);
+      await page.locator('#result-reader-next').click();
+      await inspectReaderPage(selectedSource.pages[index + 1]);
+      assert.equal(await page.locator('#result-reader-body').evaluate(body => body.scrollTop), 0, 'changing the page resets its own scroll');
+      await page.locator('#result-reader-prev').click();
+      await inspectReaderPage(longPage);
+      await openReaderMenu();
+      const menuGeometry = await page.locator('#result-reader-menu').evaluate(menu => ({
+        overflow:menu.scrollWidth > menu.clientWidth + 1,
+        entries:[...menu.querySelectorAll('[data-reader-target]')].map(button => {
+          const box = button.getBoundingClientRect();
+          return {width:box.width,height:box.height,fits:button.scrollWidth <= button.clientWidth + 1};
+        })
       }));
-      assert.ok(geometry.length >= 2, label + ': both summary meaning units are visible');
-      assert.ok(geometry.every(line => line.text && line.fits && line.wraps && ['none', '', 'unset'].includes(line.clamp) && line.overflow !== 'ellipsis'), label + ': complete sentences wrap naturally without clipping or an ellipsis');
+      assert.equal(menuGeometry.overflow, false);
+      assert.ok(menuGeometry.entries.every(button => button.width >= 44 && button.height >= 44 && button.fits),
+        label + ': every contents entry has a readable full-size button');
     }
-    async function inspectDomainCategories(viewport) {
-      const panel = page.locator('#summary-panel-domains');
-      const select = page.locator('#summary-domain-category');
-      assert.equal(await select.locator('option').count(), 10);
-      assert.equal(await page.locator('label[for="summary-domain-category"]').textContent(), '풀이 분야');
-      assert.equal(await page.locator('#summary-domain-total').textContent(), '50개 풀이 · 10개 분야');
-      const checks = [];
-      let firstNumber = 1;
-      for (const [category, count] of domainCategories) {
-        await select.selectOption(category);
-        assert.equal(await select.inputValue(), category);
-        assert.ok((await select.locator('option:checked').textContent()).endsWith(` · ${count}개`));
-        const visible = panel.locator('.reading-part:visible');
-        assert.equal(await visible.count(), count, category + ': only the chosen category is visible');
-        assert.ok((await visible.evaluateAll(sections => sections.map(section => section.dataset.categoryId))).every(id => id === category));
-        const numbers = (await visible.locator('.reading-part-number').allTextContents()).map(Number);
-        assert.deepEqual(numbers, Array.from({ length: count }, (_, index) => firstNumber + index), category + ': original topic numbers are retained');
-        firstNumber += count;
-        assert.equal(await panel.locator('.reading-part').count(), 50, 'all original topics remain in the DOM');
-        assert.equal(await visible.locator(':scope > .reading-two-line-summary > .reading-summary-line:visible').count(), count * 2, category + ': every topic starts with its own two-line summary');
-        assert.equal(await visible.locator('.reading-summary-full:visible').count(), 0, category + ': full explanations remain folded until requested');
-        assert.equal(await visible.locator('.reading-card-name').count(), 0, category + ': the personal domain text has no card-name labels');
-        await inspectUnclippedSummaries(visible, category + ' ' + viewport);
-        const overflow = await overflowState();
-        assert.deepEqual(overflow, { document: false, modal: false }, category + ': the ' + viewport + ' reading fits');
-        checks.push({ category, count, overflow });
-        if (captureCategories.has(category)) await page.screenshot({ path: path.join(artifacts, `tarot-domains-${category}-${viewport}.png`) });
-      }
-      assert.equal(firstNumber, 51, 'all fifty topics were reached through the native selector');
-      await select.selectOption('self');
-      return checks;
+    await page.setViewportSize({width:390,height:844});
+    let currentModel = selectedSource;
+    for (const contextId of ['money-spending','money-saving','money-agreement']) {
+      await openReaderMenu();
+      await page.locator('#result-context-select').selectOption(contextId);
+      currentModel = await summaryModel(contextId);
+      const firstPersonal = currentModel.pages.find(item => item.groupId === 'personal');
+      await inspectReaderPage(firstPersonal);
+      assert.equal(await page.locator('#result-reader-menu').isVisible(), false, 'choosing a situation moves directly to its own first page');
+      const personalPages = currentModel.pages.filter(item => item.groupId === 'personal');
+      assert.ok(personalPages.some(item => item.chapterId.includes('gain')) && personalPages.some(item => item.chapterId.includes('burden'))
+        && personalPages.some(item => item.chapterId.includes('prepare')), 'both choices retain gain, burden and preparation pages');
+      await goToReaderPage(personalPages[personalPages.length - 1], currentModel.pages);
     }
-    async function inspectPersonal(viewport) {
-      await page.locator('#summary-tab-personal').click();
-      const panel = page.locator('#summary-panel-personal');
-      await panel.waitFor({ state: 'visible' });
-      assert.equal(await page.locator('#result-context-select option').count(), 4, 'the money topic has three scoped situations');
-      await page.locator('#result-context-select').selectOption('money-spending');
-      const reading = page.locator('#personal-reading');
-      const paragraphs = await reading.locator('.personal-card-guides .reading-part').allTextContents();
-      assert.equal(paragraphs.length, 3);
-      assert.doesNotMatch(await panel.textContent(), tarotExplanation, 'the situation view stays about the person');
-      assert.equal(await reading.locator('.reading-card-name').count(), 0);
-      assert.ok(paragraphs.every(text => text.length > 60), 'every revealed role still has a substantive personal explanation');
-      assert.equal(await reading.locator('.personal-card-guides .reading-summary-line:visible, .personal-card-connections .reading-summary-line:visible').count(), 8, 'three roles and their connection each show two summary lines');
-      assert.equal(await reading.locator('.personal-card-guides .reading-summary-full:visible, .personal-card-connections .reading-summary-full:visible').count(), 0);
-      assert.equal(await page.locator('#personal-basis').getAttribute('open'), null);
-      assert.equal(await page.locator('#personal-followups details').count(), 3);
-      await page.locator('#result-context-select').scrollIntoViewIfNeeded();
-      assert.deepEqual(await overflowState(), { document: false, modal: false }, 'personal ' + viewport + ': no horizontal overflow');
-      await page.screenshot({ path: path.join(artifacts, `tarot-personal-${viewport}.png`) });
-      await page.locator('#personal-comparison > summary').click();
-      assert.equal(await page.locator('#personal-comparison .personal-choice:visible').count(), 2);
-      assert.equal(await page.locator('.personal-comparison-basis .reading-summary-line:visible').count(), 2, 'the card-based comparison criteria have their own overview');
-      assert.equal(await page.locator('.personal-choice > .reading-two-line-summary > .reading-summary-line:visible').count(), 4, 'both choices preview their gain and burden');
-      assert.equal(await page.locator('#personal-comparison dt:visible').count(), 0, 'each choice keeps its original detailed criteria folded');
-      await inspectUnclippedSummaries(page.locator('#personal-comparison'), 'comparison ' + viewport);
-      await page.locator('#personal-comparison > summary').scrollIntoViewIfNeeded();
-      assert.deepEqual(await overflowState(), { document: false, modal: false }, 'comparison ' + viewport + ': no horizontal overflow');
-      await page.screenshot({ path: path.join(artifacts, `tarot-comparison-${viewport}.png`) });
-      for (const choice of await page.locator('#personal-comparison .personal-choice').all()) {
-        await choice.locator('.reading-summary-details > summary').click();
-        assert.equal(await choice.locator('dt:visible').count(), 3, 'expanding a choice shows gain, burden and preparation');
-      }
-      assert.equal(await page.locator('#personal-comparison dt:visible').count(), 6);
-      assert.deepEqual(await page.locator('#personal-comparison dt:visible').allTextContents(), ['이 선택의 장점', '감수할 부담', '먼저 준비할 것', '이 선택의 장점', '감수할 부담', '먼저 준비할 것']);
-      const following = page.locator('#personal-followups details').first();
-      assert.equal(await following.getAttribute('open'), null);
-      assert.equal(await following.locator('summary .reading-summary-line:visible').count(), 2, 'a closed follow-up already previews its actual answer');
-      assert.equal(await following.locator('.personal-answer').isVisible(), false);
-      await following.locator('summary').scrollIntoViewIfNeeded();
-      await page.screenshot({ path: path.join(artifacts, `tarot-followup-summary-${viewport}.png`) });
-      await following.locator('summary').click();
-      await following.scrollIntoViewIfNeeded();
-      assert.ok((await following.locator('.personal-answer').textContent()).length > 100);
-      assert.deepEqual(await overflowState(), { document: false, modal: false }, 'follow-up ' + viewport + ': no horizontal overflow');
-      await page.screenshot({ path: path.join(artifacts, `tarot-followup-${viewport}.png`) });
-      const firstText = await reading.textContent();
-      await page.locator('#result-context-select').selectOption('money-saving');
-      assert.notEqual(await reading.textContent(), firstText, 'changing situations changes the substantive guidance');
-      await page.locator('#result-context-select').selectOption('money-agreement');
-      assert.notEqual(await reading.textContent(), firstText);
-      tarotViews.personal = { situations: 3, revealedNames, mobile: true, desktop: viewport === 'desktop' };
-    }
-    for (const [group, expectedSections] of [['cards', 3], ['problem', 5], ['timeline', 7], ['domains', 50]]) {
-      await page.locator(`#summary-tab-${group}`).click();
-      const panel = page.locator(`#summary-panel-${group}`);
-      await panel.waitFor({ state: 'visible' });
-      assert.equal(await page.locator(`#summary-tab-${group}`).getAttribute('aria-selected'), 'true');
-      assert.equal(await panel.getAttribute('aria-labelledby'), `summary-tab-${group}`);
-      const mainSelector = group === 'domains' ? '#summary-domain-sections > .reading-part'
-        : group === 'cards' ? '#card-introductions > .reading-part' : ':scope > .reading-part';
-      const mainSections = panel.locator(mainSelector);
-      assert.equal(await mainSections.count(), expectedSections);
-      const sectionDetails = await mainSections.evaluateAll((sections, originals) => sections.every((section, index) => {
-        const overview = section.querySelector(':scope > .reading-two-line-summary');
-        const details = section.querySelector(':scope > .reading-summary-details');
-        const paragraphs = [...(details?.querySelectorAll('.reading-summary-full p') || [])];
-        return section.querySelector('h3')?.textContent.trim() && overview?.querySelectorAll('.reading-summary-line').length === 2
-          && [...overview.children].every(line => line.textContent.trim()) && !overview.closest('details')
-          && details && !details.open && details.querySelector('summary')?.textContent === '자세히 읽기'
-          && paragraphs.length >= 1 && paragraphs.map(paragraph => paragraph.textContent).join('') === originals[index]
-          && !section.closest('details');
-      }), selectedSource.groupOriginals[group]);
-      assert.ok(sectionDetails, group + ': every title and two-line overview precede the complete selected explanation, without forcing extra paragraphs');
-      let categoryChecks;
-      if (group === 'domains') {
-        assert.equal(await page.locator('#summary-domain-basis').count(), 0);
-        assert.ok((await page.locator('#summary-domain-description').textContent()).includes('분야'));
-        categoryChecks = await inspectDomainCategories('mobile');
-      } else assert.equal(await panel.locator(mainSelector + ':visible').count(), expectedSections, group + ': every main section stays visible');
-      if (group === 'cards') {
-        assert.equal(await panel.locator('.card-introduction-art:visible').count(), 3);
-        const titles = await mainSections.locator('h3').allTextContents();
-        for (const name of revealedNames) assert.ok(titles.some(title => title.includes(name)), 'introductions identify the actual drawn cards');
-        const basis = page.locator('#card-reading-basis');
-        assert.ok((await basis.textContent()).includes('같은 세 장'));
-        await basis.locator('summary').click();
-        assert.equal(await basis.locator('p').first().isVisible(), true);
-        await basis.locator('summary').click();
-      }
-      const firstSection = panel.locator(mainSelector + ':visible').first();
-      const firstDetail = firstSection.locator(':scope > .reading-summary-details');
-      const originalText = await firstDetail.locator('.reading-summary-full').textContent();
-      assert.equal(await firstDetail.locator('.reading-summary-full').isVisible(), false);
-      await firstDetail.locator('summary').focus();
-      await firstDetail.locator('summary').press('Enter');
-      assert.equal(await firstDetail.locator('.reading-summary-full').isVisible(), true, group + ': keyboard Enter opens the original explanation');
-      assert.equal(await firstDetail.locator('.reading-summary-full').textContent(), originalText, group + ': expanding changes no original text');
-      if (group === 'problem') await page.screenshot({ path: path.join(artifacts, 'tarot-summary-expanded-mobile.png') });
-      await firstDetail.locator('summary').press('Space');
-      assert.equal(await firstDetail.locator('.reading-summary-full').isVisible(), false, group + ': keyboard Space folds the explanation again');
-      if (group === 'problem') await inspectSummaryDetails('mobile');
-      await inspectUnclippedSummaries(panel, group + ' mobile');
-      await firstSection.locator('.reading-two-line-summary').scrollIntoViewIfNeeded();
-      const overflow = await overflowState();
-      assert.deepEqual(overflow, { document: false, modal: false }, group + ': the mobile reading fits the viewport');
-      tarotViews[group] = { sections: expectedSections, overflow };
-      if (categoryChecks) tarotViews[group].mobileCategories = categoryChecks;
-      await page.screenshot({ path: path.join(artifacts, group === 'problem' ? 'tarot-result-mobile.png' : `tarot-${group}-mobile.png`) });
-      if (group === 'problem') await page.screenshot({ path: path.join(artifacts, 'tarot-summary-mobile.png') });
-    }
-    assert.ok((await page.locator('#summary-ritual').textContent()).length > 20);
-    await inspectPersonal('mobile');
-    await page.setViewportSize({ width: 1280, height: 900 });
-    for (const group of ['cards', 'problem', 'timeline', 'domains']) {
-      await page.locator(`#summary-tab-${group}`).click();
-      if (group === 'domains') tarotViews[group].desktopCategories = await inspectDomainCategories('desktop');
-      const overflow = await overflowState();
-      assert.deepEqual(overflow, { document: false, modal: false }, group + ': the desktop reading fits the viewport');
-      await inspectUnclippedSummaries(page.locator(`#summary-panel-${group}`), group + ' desktop');
-      if (group === 'problem') await inspectSummaryDetails('desktop');
-      await page.screenshot({ path: path.join(artifacts, group === 'problem' ? 'tarot-result-desktop.png' : `tarot-${group}-desktop.png`) });
-      if (group === 'problem') await page.screenshot({ path: path.join(artifacts, 'tarot-summary-desktop.png') });
-    }
-    await inspectPersonal('desktop');
-    await page.setViewportSize({ width: 320, height: 844 });
-    await page.locator('#summary-tab-cards').click();
-    await inspectUnclippedSummaries(page.locator('#summary-panel-cards'), 'card introductions on a small phone');
-    const adjacentTabs = await page.locator('#summary-tabs').evaluate(tabs => {
-      const a = tabs.querySelector('#summary-tab-cards').getBoundingClientRect();
-      const b = tabs.querySelector('#summary-tab-problem').getBoundingClientRect();
-      return Math.abs(a.top - b.top) < 2 && b.left >= a.right;
-    });
-    assert.ok(adjacentTabs, 'card introductions remain first, beside the personal story on a 320px screen');
-    const headingClearOfClose = await page.locator('#result-dialog').evaluate(dialog => {
-      const title = dialog.querySelector('#result-title');
-      const close = dialog.querySelector(':scope > .modal-close').getBoundingClientRect();
-      const range = document.createRange();
-      range.selectNodeContents(title);
-      return [...range.getClientRects()].every(line =>
-        line.right <= close.left || line.left >= close.right || line.bottom <= close.top || line.top >= close.bottom);
-    });
-    assert.ok(headingClearOfClose, 'the complete result heading stays clear of the close button on a 320px screen');
-    assert.deepEqual(await overflowState(), { document: false, modal: false });
-    await page.screenshot({ path: path.join(artifacts, 'tarot-cards-small-phone.png') });
-    await page.locator('#summary-tab-problem').click();
-    await inspectUnclippedSummaries(page.locator('#summary-panel-problem'), 'small phone');
-    assert.deepEqual(await overflowState(), { document: false, modal: false }, 'complete summary sentences fit a 320px phone without cropping');
-    await page.locator('#summary-panel-problem .reading-two-line-summary').first().scrollIntoViewIfNeeded();
-    await page.screenshot({ path: path.join(artifacts, 'tarot-summary-small-phone.png') });
-    await inspectSummaryDetails('small-phone');
-    await page.locator('#summary-tab-timeline').click();
     await page.evaluate(() => {
       globalThis.__tarotCopiedReading = '';
-      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
-        async writeText(text) { globalThis.__tarotCopiedReading = text; }
-      } });
+      Object.defineProperty(navigator,'clipboard',{configurable:true,value:{async writeText(text){globalThis.__tarotCopiedReading=text;}}});
     });
+    await openReaderMenu();
     await page.locator('#copy-result').click();
     await page.waitForFunction(() => globalThis.__tarotCopiedReading.length > 0);
     const copiedTarot = await page.evaluate(() => globalThis.__tarotCopiedReading);
-    const introStart = copiedTarot.indexOf('\n카드 소개\n');
-    const introEnd = copiedTarot.indexOf('\n나의 이야기\n');
-    assert.ok(introStart >= 0 && introEnd > introStart);
-    const copiedGroupOrder = ['\n카드 소개\n', '\n나의 이야기\n', '\n과거·현재·미래\n', '\n분야별 풀이\n', '\n내 상황 · ']
+    const copiedOrder = ['\n카드 소개\n','\n나의 이야기\n','\n과거·현재·미래\n','\n분야별 풀이\n','\n내 상황 · ']
       .map(heading => copiedTarot.indexOf(heading));
-    assert.ok(copiedGroupOrder.every((position, index) => position >= 0 && (index === 0 || position > copiedGroupOrder[index - 1])),
-      'copy follows the visible tab order and keeps the selected situation last');
-    assert.ok(copiedTarot.slice(introStart, introEnd).includes(selectedSource.firstCardMeaning));
-    assert.doesNotMatch(copiedTarot.slice(0, introStart) + copiedTarot.slice(introEnd), tarotExplanation,
-      'the clipboard keeps card explanations in their introduction section');
-    for (const source of selectedSource.sections) assert.ok(copiedTarot.includes(source.body), 'copy includes all source interpretations even while their panel and disclosure are closed');
-    for (const text of [selectedSource.record.body, selectedSource.record.action]) assert.equal(copiedTarot.split(text).length - 1, 1, 'the selected corpus body and advice are copied exactly once');
-    await page.locator('#result-dialog .modal-close').click();
+    assert.ok(copiedOrder.every((position,index) => position >= 0 && (!index || position > copiedOrder[index - 1])));
+    for (const group of selectedSource.summary.groups) for (const section of group.sections) {
+      for (const paragraph of section.paragraphs) assert.ok(copiedTarot.includes(paragraph), 'copy includes all original paragraphs on unseen pages');
+    }
+    for (const source of selectedSource.summary.detailSections) assert.ok(copiedTarot.includes(source.body));
+    for (const text of [selectedSource.record.body,selectedSource.record.action]) assert.equal(copiedTarot.split(text).length - 1, 1);
+    for (const line of currentModel.personalCopy) assert.ok(copiedTarot.includes(line), 'copy keeps every personal answer and both choices');
+    assert.ok(copiedTarot.slice(copiedOrder[0],copiedOrder[1]).includes(selectedSource.firstCardMeaning));
+    const sourcePage = currentModel.pages.find(item => item.chapterId === 'problem-detail-0' && item.paragraphs.length);
+    await goToReaderPage(sourcePage, currentModel.pages);
+    await inspectReaderLayout('selected source');
+    await page.screenshot({path:path.join(artifacts,'tarot-source-interpretation-mobile.png'),animations:'disabled'});
+    await page.locator('#result-reader-close').click();
     await page.locator('#action-button').click();
-    await page.locator('#result-dialog[open]').waitFor({ timeout: 15000 });
-    assert.equal(await page.locator('#summary-tab-cards').getAttribute('aria-selected'), 'true', 'reopening resets the view to card introductions');
-    assert.equal(await page.locator('#summary-panel-cards').isVisible(), true);
-    assert.equal(await page.locator('#result-context-select').inputValue(), 'money-agreement', 'reopening preserves the selected situation');
-    tarotViews.sourceInterpretation = { record: selectedSource.record.id, sections: selectedSource.sections.length, completeCopy: true, widths: [320, 390, 1280] };
+    await page.locator('#result-dialog[open]').waitFor();
+    await inspectReaderPage(sourcePage);
+    await openReaderMenu();
+    assert.equal(await page.locator('#result-context-select').inputValue(), 'money-agreement', 'reopening preserves the chosen situation');
+    await page.locator('#result-reader-menu-toggle').click();
+    tarotViews.sourceInterpretation = {record:selectedSource.record.id,completeCopy:true,domainChapters:50,contexts:3,widths:[320,390,750]};
     if (tarotOnly) {
-      assert.deepEqual(errors, []);
-      assert.deepEqual(failed, []);
-      console.log(JSON.stringify({ localPreviewOnly: true, tarotViews, errors, failed }));
+      assert.deepEqual(errors,[]);
+      assert.deepEqual(failed,[]);
+      console.log(JSON.stringify({localPreviewOnly:true,tarotViews,errors,failed}));
       return;
     }
     const saju = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', deviceScaleFactor: 1 });
