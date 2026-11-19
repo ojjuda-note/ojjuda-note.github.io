@@ -81,6 +81,29 @@ test('an unknown game opens the default ranking',async t=>{
  assert.equal(window.document.querySelector('#ranking-game').value,'sacheonseong');
 });
 
+test('One Card opens its monthly personal board with one game option and winning-streak units',async t=>{
+ const dom=new JSDOM(page,{url:'https://ojjuda.kr/features/arcade/monthly-ranking.html?game=onecard',runScripts:'outside-only'});
+ t.after(()=>dom.window.close());
+ const w=dom.window,requests=[];
+ w.AbortSignal=AbortSignal;
+ w.OJJUDA_CONFIG={supabaseUrl:'https://fixture.invalid',supabaseKey:'public'};
+ w.supabase={createClient:()=>({auth:{onAuthStateChange(){},async getSession(){return {data:{session:{user:{id:'member-a'}}}};}},rpc(name,args){
+  requests.push({name,args});return {abortSignal:async()=>({data:{month:'2026-11',startsAt:'2026-10-31T16:00:00Z',endsAt:'2026-11-30T16:00:00Z',
+   leaders:[{nick:'원카드친구',score:7,source:'best_streak'}],mine:{rank:12,nick:'나',score:3,me:true,source:'best_streak'}}})};
+ }})};
+ w.eval(read('shared/games/score-format.js'));w.eval(viewer);
+ await new Promise(resolve=>setTimeout(resolve,15));
+ assert.equal(requests.length,1);assert.equal(requests[0].name,'community_game_monthly_personal');
+ assert.equal(requests[0].args.p_game,'onecard');assert.equal(requests[0].args.p_guest_token,null);
+ const doc=w.document;
+ assert.equal(doc.querySelectorAll('#ranking-game option[value="onecard"]').length,1);
+ assert.equal(doc.querySelector('#ranking-game').value,'onecard');
+ assert.equal(doc.querySelector('#ranking-leaders .rank-points').textContent,'7연승');
+ assert.equal(doc.querySelector('#ranking-mine .rank-points').textContent,'3연승');
+ assert.equal(doc.querySelector('#ranking-mine .rank-place').textContent,'12위');
+ assert.equal(new URL(w.location.href).searchParams.get('game'),'onecard');
+});
+
 test('an account switch replaces the guest highlight and ignores stale replies',async t=>{
  const dom=new JSDOM(page,{url:'https://example.test/ranking?game=runner',runScripts:'outside-only'});
  t.after(()=>dom.window.close());
@@ -135,7 +158,7 @@ test('shared entry/result links remain while extra ranking tiles stay out of the
  assert.match(rendered,/monthly-ranking\.html\?game=sacheonseong/);
  assert.match(rendered,/game-result-social/);
  assert.match(rendered,/noopener noreferrer/);
- for(const game of ['bang','sacheonseong','tank','saetbyeol','solitaire','mines','tour','billiards',
+ for(const game of ['onecard','bang','sacheonseong','tank','saetbyeol','solitaire','mines','tour','billiards',
   'janggi','chess','screw_box','screw_flat','spot','ttang','mole','runner','stacker',
   'breakout','matgo','poker','photo_ttang','roulette','archery','chacha_rush']) {
   assert.match(window.OjjudaGameResults.markup({game,outcome:'success'}),

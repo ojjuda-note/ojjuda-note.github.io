@@ -5,18 +5,18 @@
  * Display metadata presents a dedicated four-color number/action deck.
  * Full state is private. Only projectState() may leave the authoritative server.
  * Attacks may stack only at the same or a higher printed strength; a normal
- * draw ends the turn; 7/jokers choose a suit; J skips and K repeats. Q is an
- * ordinary card. Every turn travels clockwise, including restored older games.
+ * draw ends the turn; 7/jokers choose a suit; J skips, Q reverses and K repeats.
+ * New games start clockwise. Reversal never adds an extra turn in a two-seat game.
  */
-export const ENGINE_VERSION = '1.2.0';
+export const ENGINE_VERSION = '1.3.0';
 export const MAX_HAND_SIZE = 20;
 export const SUITS = Object.freeze(['S', 'H', 'D', 'C']);
 export const RANKS = Object.freeze(['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']);
 export const SUIT_NAMES = Object.freeze({ S: '파랑', H: '빨강', D: '노랑', C: '초록' });
 const SYMBOLS = Object.freeze({ S: '●', H: '◆', D: '▲', C: '■' });
 const COLORS = Object.freeze({ S: 'blue', H: 'red', D: 'yellow', C: 'green' });
-const NUMBERS = Object.freeze({ Q: '1', 3: '2', 4: '3', 5: '4', 6: '5', 8: '6', 9: '7', 10: '8' });
-const ACTIONS = Object.freeze({ A: ['attack', '+3'], 2: ['attack', '+2'], 7: ['change', '색 바꾸기'], J: ['skip', '건너뛰기'], K: ['again', '한 번 더'] });
+const NUMBERS = Object.freeze({ 3: '1', 4: '2', 5: '3', 6: '4', 8: '5', 9: '6', 10: '7' });
+const ACTIONS = Object.freeze({ A: ['attack', '+3'], 2: ['attack', '+2'], 7: ['change', '색 바꾸기'], J: ['skip', '건너뛰기'], Q: ['reverse', '방향 바꾸기'], K: ['again', '한 번 더'] });
 const CARDS = new Map();
 for (const suit of SUITS) for (const rank of RANKS) {
   const id = `${suit}-${rank}`;
@@ -59,17 +59,18 @@ function shuffle(cards, random) {
   return cards;
 }
 function cloneState(state) {
-  return { ...state, engineVersion: ENGINE_VERSION, direction: 1, players: state.players.map(player => ({ ...player, hand: [...player.hand] })), deck: [...state.deck], discard: [...state.discard], winnerIds: [...(state.winnerIds || [])], lastEvents: [] };
+  return { ...state, engineVersion: ENGINE_VERSION, direction: directionOf(state), players: state.players.map(player => ({ ...player, hand: [...player.hand] })), deck: [...state.deck], discard: [...state.discard], winnerIds: [...(state.winnerIds || [])], lastEvents: [] };
 }
 function emit(state, type, data = {}) {
   state.lastEvents.push({ id: `${state.revision}:${state.lastEvents.length}`, type, ...data });
 }
 function activeIndices(state) { return state.players.flatMap((player, index) => player.active ? [index] : []); }
+function directionOf(state) { return state.direction === -1 ? -1 : 1; }
 function nextIndex(state, from, steps = 1) {
   let index = from;
   for (let step = 0; step < steps; step++) {
     for (let checked = 0; checked < state.players.length; checked++) {
-      index = (index + 1) % state.players.length;
+      index = (index + directionOf(state) + state.players.length) % state.players.length;
       if (state.players[index].active) break;
     }
   }
@@ -224,6 +225,10 @@ export function applyAction(state, playerId, action, options = {}) {
   next.currentSuit = isWild(card) ? action.suit : card.suit;
   next.dryPasses = 0;
   emit(next, 'play', { playerId, cardId: action.cardId, suit: next.currentSuit });
+  if (card.rank === 'Q') {
+    next.direction *= -1;
+    emit(next, 'reverse', { playerId, direction: next.direction });
+  }
   if (actor.hand.length === 0) {
     finish(next, [actor], 'empty-hand');
     return next;
@@ -252,7 +257,7 @@ export function applyAction(state, playerId, action, options = {}) {
 export function removePlayer(state, playerId, options = {}) {
   const player = playerById(state, playerId);
   if (!player) fail('NOT_PLAYER', '참가자를 찾을 수 없어요.');
-  if (!player.active || state.status !== 'playing') return state.direction === 1 ? state : { ...state, direction: 1 };
+  if (!player.active || state.status !== 'playing') return state.direction === directionOf(state) ? state : { ...state, direction: directionOf(state) };
   const next = cloneState(state); next.revision++;
   const actor = playerById(next, playerId);
   emit(next, 'leave', { playerId });
@@ -270,12 +275,12 @@ export function projectState(state, viewerId) {
     viewerId,
     players: state.players.map(player => ({ id: player.id, name: player.name, bot: player.bot, active: player.active, calledOne: player.calledOne, eliminatedReason: player.eliminatedReason || null, handCount: player.hand.length, ...(player.id === viewerId ? { hand: [...player.hand] } : {}) })),
     topCard: topCard(state), deckCount: state.deck.length, discardCount: state.discard.length,
-    currentSuit: state.currentSuit, turn: state.turn, direction: 1,
+    currentSuit: state.currentSuit, turn: state.turn, direction: directionOf(state),
     pendingDraw: state.pendingDraw, pendingOneId: state.pendingOneId, status: state.status,
     winnerId: state.winnerId, winnerIds: [...state.winnerIds], finishReason: state.finishReason,
     revision: state.revision, turnCount: state.turnCount,
     legalCardIds: legalCards(state, viewerId), canDeclare: canDeclare(state, viewerId),
-    lastEvents: state.lastEvents.filter(event => event.type !== 'reverse').map(event => {
+    lastEvents: state.lastEvents.map(event => {
       const visible = { id: event.id, type: event.type };
       for (const key of ['playerId', 'count', 'requestedCount', 'ordinal', 'reason', 'suit', 'direction', 'skippedPlayerId']) if (event[key] !== undefined) visible[key] = event[key];
       if (Array.isArray(event.playerIds)) visible.playerIds = [...event.playerIds];

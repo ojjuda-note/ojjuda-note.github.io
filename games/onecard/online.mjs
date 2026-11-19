@@ -86,7 +86,8 @@ export function createOnlineClient({ onRoom = () => {}, onError = () => {}, onCo
         const { data: sessionData, error: sessionError } = await client.auth.getSession();
         verify();
         const session = sessionData?.session;
-        if (sessionError || !session?.access_token || !session.user?.id || session.user.is_anonymous) throw problem('not_signed_in');
+        if (sessionError) throw problem('unavailable');
+        if (!session?.access_token || !session.user?.id || session.user.is_anonymous) throw problem('not_signed_in');
         if (userId && userId !== session.user.id) {
           sessionEpoch++; room = null; userId = session.user.id; onRoom(null); throw problem('not_signed_in');
         }
@@ -196,7 +197,7 @@ export function createOnlineClient({ onRoom = () => {}, onError = () => {}, onCo
   }
   return {
     enter, read, close,
-    create: ({ title } = {}) => act('create', { options: { capacity: 5, ...(title !== undefined ? { title } : {}) } }),
+    create: ({ title, mode } = {}) => act('create', { options: { capacity: 5, ...(title !== undefined ? { title } : {}), ...(mode !== undefined ? { mode } : {}) } }),
     join: code => act('join', { code: String(code).replace(/[\s-]/g, '').toUpperCase() }),
     start: () => act('start'),
     move: command => act('move', { command }),

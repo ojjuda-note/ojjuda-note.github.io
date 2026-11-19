@@ -1,7 +1,6 @@
 import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261114-tarot-first-person1';
 import { TarotFX, TarotAudio } from './fx.js';
 import { TarotPayment, getTarotPrice } from './payment.js?v=20261114-tarot-copy1';
-import { TarotRevelation } from './revelation.js?v=20261114-tarot-first-person1';
 import { createPersonalReading } from './personal-reading-ui.js?v=20261114-tarot-first-person1';
 import { renderSectionSummary, installSummaryExpiryGuard } from './reading-summary-view.js?v=20261113-tarot-summary1';
 
@@ -15,14 +14,13 @@ const state = {
   phase: 'intro', topic: 'overall', drawn: [], kept: [], openOrder: [], discarded: new Set(), revealed: 0,
   busy: false, sound: false, voice: false, reduced: mediaMotion.matches, epoch: 0, lastReading: -1, summaryReady: false, readingExpiresAt: null,
 };
-const effects = new TarotFX({ canvas: $('#magic-canvas'), reducedMotion: state.reduced });
+// The quiet scene is static; do not keep an invisible particle loop running.
+const effects = new TarotFX({ reducedMotion: state.reduced });
 const audio = new TarotAudio();
 const cards = [];
-const discardGhosts = new Map();
 let lastFocus = null;
 let toastTimeout;
 let oracleTimeout;
-let trailRaf = null;
 let voiceNoticeShown = false;
 let billingReady = false;
 let readingExpiryTimer;
@@ -185,10 +183,9 @@ for (let index = 0; index < 5; index++) {
   const wrap = document.createElement('div');
   wrap.className = 'card-wrap';
   wrap.style.setProperty('--float-delay', `${index * -.8}s`);
-  wrap.innerHTML = `<div class="card-pivot"><button class="card" type="button" disabled aria-label="${index + 1}번째 카드" data-index="${index}"><div class="card-turner"><div class="card-back">${backArtwork(index)}</div><div class="card-front" aria-hidden="true"><div class="front-art"></div><div class="front-shade"></div><div class="front-border"></div><span class="front-numeral"></span><div class="front-title"><strong></strong><span></span></div></div></div><span class="card-mark" aria-hidden="true">×</span></button><span class="card-label"></span></div>`;
+  wrap.innerHTML = `<div class="card-pivot"><button class="card" type="button" disabled aria-label="${index + 1}번째 카드" data-index="${index}"><div class="card-turner"><div class="card-back">${backArtwork(index)}</div><div class="card-front" aria-hidden="true"><div class="front-art"></div><div class="front-shade"></div><div class="front-border"></div><span class="front-numeral"></span><div class="front-title"><strong></strong><span></span></div></div></div></button><span class="card-label"></span></div>`;
   plane.append(wrap);
   const card = { wrap, button: wrap.querySelector('button'), turner: wrap.querySelector('.card-turner'), label: wrap.querySelector('.card-label'), pose: null, index };
-  card.button.insertAdjacentHTML('beforeend', `<span class="discard-tint" aria-hidden="true"></span><span class="discard-tag" aria-hidden="true"><b>${String(index + 1).padStart(2, '0')}번 · 버리는 중</b><small>별빛으로 사라지는 중</small></span>`);
   card.button.insertAdjacentHTML('beforeend', '<span class="reveal-number" hidden aria-hidden="true"></span>');
   card.button.addEventListener('click', () => onCard(index));
   card.button.addEventListener('pointerenter', () => { if (!card.button.disabled && state.sound) audio.play('hover'); });
@@ -199,19 +196,16 @@ const duration = (ms) => state.reduced ? Math.min(150, ms) : ms;
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const poseTransform = (p) => `translate3d(calc(-50% + ${p.x}px),calc(-50% + ${p.y}px),${p.z || 0}px) rotateZ(${p.r || 0}deg) rotateY(${p.ry || 0}deg) scale(${p.s ?? 1})`;
 function locationFor(index, arrangement = 'five') {
-  const w = arena.clientWidth;
+  const w = arena.clientWidth || 340;
+  const h = arena.clientHeight || 340;
   const cw = cards.find(card => !card.wrap.hidden)?.wrap.offsetWidth || 100;
-  if (arrangement === 'intro') {
-    const gap = Math.min(112, (w - cw - 48) / 4);
-    return { x: (index - 2) * gap, y: [19, -7, -17, -7, 19][index], r: (index - 2) * 8, s: 1 };
-  }
   if (arrangement === 'three') {
     const slot = state.kept.indexOf(index);
-    const gap = Math.min(cw + 48, (w - cw - 42) / 2);
-    return { x: (slot - 1) * gap, y: slot === 1 ? -7 : 5, r: (slot - 1) * 3, s: 1 };
+    const gap = Math.min(cw + 26, (w - cw - 24) / 2);
+    return { x: (slot - 1) * gap, y: -12, r: 0, s: 1 };
   }
-  const gap = Math.min(cw + 24, (w - cw - 34) / 4);
-  return { x: (index - 2) * gap, y: [5, 0, -4, 0, 5][index], r: (index - 2) * 1.2, s: 1 };
+  const gap = Math.max(18, Math.min(cw * .66, (w - cw - 40) / 4));
+  return { x: (index - 2) * gap, y: h * .12 + [16, 4, 0, 4, 16][index], r: (index - 2) * 8, s: 1 };
 }
 
 async function moveCard(card, pose, ms = 600, options = {}) {
@@ -225,13 +219,12 @@ async function moveCard(card, pose, ms = 600, options = {}) {
 }
 
 function layout(animate = false) {
-  const arrangement = state.phase === 'intro' ? 'intro' : state.kept.length ? 'three' : 'five';
   cards.forEach(card => {
     if (card.wrap.hidden || (state.kept.length && !state.kept.includes(card.index))) return;
-    moveCard(card, locationFor(card.index, arrangement), animate ? duration(650) : 0);
-    card.wrap.style.zIndex = String(['discard', 'discarding'].includes(state.phase) && state.discarded.has(card.index) ? 40 + card.index : 7 - Math.abs(card.index - 2));
+    const arrangement = state.kept.length ? 'three' : 'five';
+    moveCard(card, locationFor(card.index, arrangement), animate ? duration(320) : 0);
+    card.wrap.style.zIndex = String(7 - Math.abs(card.index - 2));
   });
-  discardGhosts.forEach((ghost, index) => { ghost.style.transform = poseTransform(locationFor(index, 'five')); });
 }
 
 function centerOf(card) {
@@ -249,15 +242,30 @@ function setStageCaption(text = '') {
   $('#stage-caption').textContent = text;
   $('#stage-caption').hidden = !text;
 }
+function setView(view, focus = false) {
+  app.dataset.view = view;
+  $('#welcome-screen').hidden = view !== 'welcome';
+  $('#main').hidden = view === 'welcome';
+  $('#tarot-back').setAttribute('aria-label', view === 'welcome' ? '아지트로 돌아가기' : '이전 화면으로');
+  if (view === 'topics') setTitle('어떤 이야기가 궁금한가요?', '마음에 걸리는 주제를 골라 주세요.');
+  if (focus) {
+    const target = view === 'welcome' ? $('#welcome-next') : $('#game-title');
+    if (target.id === 'game-title') target.setAttribute('tabindex', '-1');
+    target.focus({ preventScroll: true });
+  }
+}
 function setPhase(phase) {
   const wasBusy = state.busy;
   state.phase = phase;
   app.dataset.phase = phase;
-  const busy = ['summoning', 'discarding', 'revealing'].includes(phase);
+  const busy = ['summoning', 'choosing-busy', 'revealing'].includes(phase);
   state.busy = busy;
+  if (phase !== 'intro') setView('table');
+  $('#tarot-back').disabled = busy;
+  $('#pick-slots').hidden = true;
   if (wasBusy && !busy) layout(false);
   arena.setAttribute('aria-busy', String(busy));
-  const step = phase === 'summoning' ? 0 : ['discard', 'discarding'].includes(phase) ? 1 : ['reading', 'revealing', 'complete'].includes(phase) ? 2 : -1;
+  const step = phase === 'summoning' ? 0 : ['choosing', 'choosing-busy'].includes(phase) ? 1 : ['reading', 'revealing', 'complete'].includes(phase) ? 2 : -1;
   $$('#journey [data-step]').forEach((el, i) => {
     el.classList.toggle('active', i === step);
     el.classList.toggle('complete', i < step);
@@ -334,20 +342,6 @@ function setCardArtwork(card, data) {
   card.wrap.querySelector('.front-title span').textContent = data.english;
 }
 
-function followFlightTrails() {
-  if (trailRaf) cancelAnimationFrame(trailRaf);
-  if (state.reduced) return;
-  const tick = () => {
-    if (state.phase !== 'summoning') { trailRaf = null; return; }
-    cards.forEach((card, i) => {
-      const c = centerOf(card);
-      effects.trail(c.x, c.y + card.wrap.offsetHeight * .3, i % 2 ? '#c998ee' : '#e2c28b');
-    });
-    trailRaf = requestAnimationFrame(tick);
-  };
-  trailRaf = requestAnimationFrame(tick);
-}
-
 async function summon() {
   if (state.phase !== 'intro' || state.busy || !billingReady) return;
   // A stale free-replay button must show the price before starting a new purchase.
@@ -361,6 +355,7 @@ async function summon() {
   const epoch = ++state.epoch;
   state.busy = true;
   $('#summon-button').disabled = true;
+  $('#tarot-back').disabled = true;
   let receipt;
   try {
     receipt = await billing.start(state.topic);
@@ -370,7 +365,7 @@ async function summon() {
     scheduleReadingRefresh();
     if (receipt && (receipt.discarded?.length || receipt.openOrder?.length)) {
       restorePaidReading(receipt);
-      if (state.revealed === 3) void showResultsWithRevelation();
+      if (state.revealed === 3) void showResults();
       if (receipt.progressChanged) showToast('다른 화면에 저장된 점괘를 불러왔어요.');
       return;
     }
@@ -380,6 +375,7 @@ async function summon() {
   } catch (error) {
     if (epoch !== state.epoch || expireDisplayedReading()) return;
     state.busy = false;
+    $('#tarot-back').disabled = false;
     updatePaymentStatus();
     $('#summon-button').disabled = false;
     $('#payment-status').textContent = error.message;
@@ -392,152 +388,112 @@ async function summon() {
   state.openOrder = [];
   state.revealed = 0;
   state.summaryReady = false;
-  cards.forEach((card, i) => setCardArtwork(card, state.drawn[i]));
+  cards.forEach((card, i) => {
+    card.wrap.hidden = false;
+    setCardArtwork(card, state.drawn[i]);
+  });
   $('#intro-controls').hidden = true;
   $('#play-controls').hidden = false;
-  $('#action-button').hidden = false;
-  $('#selection-count').textContent = '카드를 모으는 중';
-  $('#action-button').disabled = true;
-  $('#action-button span').textContent = '카드가 날아오는 중';
+  $('#action-button').hidden = true;
+  $('#selection-count').textContent = '카드를 펼치고 있어요';
+  $('#reading-open').hidden = true;
   setStageCaption();
   setPhase('summoning');
+  updateSendProgress();
   updatePaymentStatus();
-  setTitle('카드를 불러오는 중', '', 'THE SUMMONING');
-  setOracle('잠시만 기다려 보렴.', { tag: '마녀의 속삭임' });
-  effects.setMood('dealing');
-  play('summon');
-  followFlightTrails();
-  const areaWidth = arena.clientWidth;
-  const arcX = Math.min(areaWidth * .34, 290);
-  const arcY = Math.min(100, arena.clientHeight * .4);
+  setTitle('잠시 마음을 가라앉혀 보세요', '카드를 펼치고 있어요.');
+  setOracle('궁금한 이야기를 하나 떠올려 보세요.', { speak: false });
+  effects.setMood('idle');
+  play('deal');
   await Promise.all(cards.map(async (card, index) => {
-    if (state.reduced) return moveCard(card, locationFor(index), 0);
-    const initial = card.wrap.style.transform;
-    const keys = [{ transform: initial, offset: 0 }];
-    const phase = index / 5 * Math.PI * 2;
-    for (let step = 1; step <= 11; step++) {
-      const t = step / 12;
-      const angle = phase + t * Math.PI * 3.7;
-      keys.push({
-        transform: poseTransform({ x: Math.cos(angle) * arcX * (.7 + .3 * Math.sin(t * Math.PI)), y: Math.sin(angle) * arcY - 40 * Math.sin(t * Math.PI), r: Math.sin(angle) * 25 + t * 360, ry: Math.cos(angle) * 40, s: .77 + .24 * (Math.sin(angle) + 1) / 2 }),
-        offset: .1 + t * .72,
-      });
-    }
-    const final = locationFor(index);
-    keys.push({ transform: poseTransform({ ...final, y: final.y - 10, r: final.r + 360 }), offset: .94 });
-    keys.push({ transform: poseTransform({ ...final, r: final.r + 360 }), offset: 1 });
-    const animation = card.wrap.animate(keys, { duration: 3700 + index * 140, easing: 'linear', fill: 'forwards' });
-    try { await animation.finished; } catch { return; }
+    moveCard(card, { x: (index - 2) * 3, y: arena.clientHeight * .12, r: (index - 2) * 2, s: .95 }, 0);
+    await sleep(duration(index * 35));
     if (epoch !== state.epoch || expireDisplayedReading()) return;
-    card.wrap.style.transform = poseTransform(final);
-    card.pose = final;
-    animation.cancel();
-    const c = centerOf(card);
-    effects.burst(c.x, c.y + card.wrap.offsetHeight * .4, { color: '#d6b988', power: .55, kind: 'land' });
-    play('deal');
+    await moveCard(card, locationFor(index), duration(360));
   }));
   if (epoch !== state.epoch || expireDisplayedReading()) return;
-  effects.setMood('idle');
-  setPhase('discard');
-  setTitle('버릴 카드 두 장을 고르세요', '누르면 바로 버려져요.', 'THE CHOICE');
-  setOracle('마음이 덜 가는 카드부터 골라 보렴.', { tag: '마녀의 속삭임' });
-  updateDiscardProgress();
+  setPhase('choosing');
+  updateChoiceProgress();
+  cards.find(card => !card.button.disabled)?.button.focus({ preventScroll: true });
 }
 
 function onCard(index) {
   if (expireDisplayedReading() || state.busy) return;
-  if (state.phase === 'discard') discardCard(index);
+  if (state.phase === 'choosing') void chooseCard(index);
   else if (['reading', 'complete'].includes(state.phase) && state.kept.includes(index)) {
     const slot = state.openOrder.indexOf(index);
     if (slot >= 0) showReading(slot);
-    else if (state.phase === 'reading') revealCard(index);
+    else if (state.phase === 'reading') void revealCard(index);
   }
 }
 
-function updateDiscardProgress() {
-  const count = state.discarded.size;
-  const numbers = [...state.discarded].map(index => String(index + 1).padStart(2, '0'));
-  cards.forEach(card => {
-    const discarded = state.discarded.has(card.index);
-    card.button.disabled = discarded || state.busy;
-    card.button.removeAttribute('aria-pressed');
-    card.button.setAttribute('aria-label', `${card.index + 1}번 카드${discarded ? ', 버린 카드' : ', 누르면 바로 버리기'}`);
-    card.label.textContent = discarded ? '' : `${String(card.index + 1).padStart(2, '0')}번`;
+function updateSendProgress() {
+  app.dataset.sent = String(state.discarded.size);
+  $('#pick-slots').hidden = true;
+  $$('[data-send-step]').forEach((step, index) => {
+    const sent = index < state.discarded.size;
+    step.classList.toggle('is-complete', sent);
+    step.setAttribute('aria-label', `${index + 1}번째 카드${sent ? ', 보냄' : ', 기다리는 중'}`);
   });
-  $('#selection-count').innerHTML = `버린 카드 <strong>${count} <span>/ 2</span></strong>`;
-  $('#discard-preview').hidden = !count;
-  $('#discard-preview').innerHTML = count ? `<span class="discard-preview-title">버린 카드</span>${numbers.map(number => `<span class="discard-number">× <b>${number}번</b></span>`).join('')}` : '';
+}
+
+function updateChoiceProgress() {
+  const count = state.discarded.size;
+  cards.forEach(card => {
+    const sent = state.discarded.has(card.index);
+    card.button.disabled = sent || state.busy;
+    card.button.removeAttribute('aria-pressed');
+    card.button.setAttribute('aria-label', `${card.index + 1}번 카드, ${sent ? '보낸 카드' : '누르면 보내기'}`);
+    card.label.textContent = '';
+  });
+  updateSendProgress();
+  $('#selection-count').innerHTML = `보낸 카드 <strong>${count} <span>/ 2</span></strong>`;
+  $('#discard-preview').hidden = true;
   $('#action-button').hidden = true;
+  $('#reveal-order').hidden = true;
+  if (count < 2) setTitle(count ? '한 장 더 보내 주세요' : '두 장을 보내 주세요', '마음이 덜 가는 카드부터 골라 주세요.');
+  else setTitle('남은 세 장을 펼쳐볼게요', '');
   setStageCaption();
 }
 
-function leaveDiscardGhost(card, pose) {
-  const ghost = document.createElement('div');
-  ghost.className = 'discard-slot';
-  ghost.setAttribute('aria-hidden', 'true');
-  ghost.innerHTML = `<span>×</span><b>${String(card.index + 1).padStart(2, '0')}번</b><small>버린 카드</small>`;
-  ghost.style.transform = poseTransform(pose);
-  plane.append(ghost);
-  discardGhosts.set(card.index, ghost);
-}
-
-async function discardCard(index) {
-  if (state.phase !== 'discard' || state.busy || state.discarded.size >= 2 || state.discarded.has(index)) return;
+async function chooseCard(index) {
+  if (state.phase !== 'choosing' || state.busy || state.discarded.size >= 2 || state.discarded.has(index)) return;
   const epoch = state.epoch;
   const card = cards[index];
-  const original = locationFor(index, 'five');
+  const pose = locationFor(index);
+  // Save each sent card immediately, keeping the original receipt and resumable
+  // five-card ritual. The confirmed choice is removed before the next choice.
   state.discarded.add(index);
   const saved = saveProgress();
-  setPhase('discarding');
-  effects.setMood('discard');
-  updateDiscardProgress();
-  setStageCaption(`${String(index + 1).padStart(2, '0')}번 카드를 버렸어요`);
-  card.wrap.style.zIndex = '60';
-  cards.forEach(item => {
-    item.button.classList.toggle('selected', item.index === index);
-    item.button.classList.toggle('not-selected', item.index !== index);
-  });
-  play('discard');
-  const focus = { x: 0, y: -24, r: 0, s: innerWidth <= 760 ? 1.18 : 1.12 };
-  const frames = state.reduced ? [
-    { transform: poseTransform(original), opacity: 1 },
-    { transform: poseTransform(original), opacity: 0 },
-  ] : [
-    { transform: poseTransform(original), opacity: 1, filter: 'brightness(1)' },
-    { transform: poseTransform(focus), opacity: 1, filter: 'brightness(1.18)', offset: .28 },
-    { transform: poseTransform(focus), opacity: 1, filter: 'brightness(1.8)', offset: .48 },
-    { transform: poseTransform({ ...focus, y: -150, r: state.discarded.size === 1 ? -100 : 100, s: .04 }), opacity: 0, filter: 'brightness(2.8)' },
-  ];
-  const animation = card.wrap.animate(frames, { duration: duration(1200), easing: 'cubic-bezier(.2,.65,.3,1)', fill: 'forwards' });
-  await sleep(duration(350));
-  if (epoch !== state.epoch || expireDisplayedReading()) return;
-  const point = centerOf(card);
-  effects.burst(point.x, point.y, { kind: 'discard', color: '#ef9cbb', power: 1.25 });
-  try { await animation.finished; } catch { return; }
+  setPhase('choosing-busy');
+  updateChoiceProgress();
+  card.wrap.style.zIndex = '20';
+  play('deal');
+  const lifted = { ...pose, y: pose.y - 14, r: 0, s: .98 };
+  await moveCard(card, lifted, duration(160));
   if (epoch !== state.epoch || expireDisplayedReading()) return;
   if (!await confirmProgress(saved, epoch)) return;
+  const sent = { ...lifted, y: lifted.y - 58, s: .88 };
+  const animation = card.wrap.animate([
+    { transform: poseTransform(lifted), opacity: 1 },
+    { transform: poseTransform(state.reduced ? lifted : sent), opacity: 0 }
+  ], { duration: duration(280), easing: 'ease-out', fill: 'forwards' });
+  try { await animation.finished; } catch { return; }
+  if (epoch !== state.epoch || expireDisplayedReading()) return;
   card.wrap.hidden = true;
   animation.cancel();
-  leaveDiscardGhost(card, original);
-  cards.forEach(item => item.button.classList.remove('selected', 'not-selected'));
   if (state.discarded.size < 2) {
-    setPhase('discard');
-    effects.setMood('idle');
-    setTitle('한 장 더 버려 주세요', '', 'THE CHOICE');
-    setOracle('남길 카드에 마음을 기울여 보렴.', { tag: '마녀의 속삭임' });
-    updateDiscardProgress();
-    cards.find(item => !state.discarded.has(item.index))?.button.focus({ preventScroll: true });
+    setPhase('choosing');
+    updateChoiceProgress();
+    cards.find(item => !item.button.disabled)?.button.focus({ preventScroll: true });
     return;
   }
   state.kept = cards.map(item => item.index).filter(i => !state.discarded.has(i));
-  discardGhosts.forEach(ghost => ghost.remove());
-  discardGhosts.clear();
-  $('#discard-preview').hidden = true;
-  await Promise.all(state.kept.map(i => moveCard(cards[i], locationFor(i, 'three'), duration(800))));
+  await Promise.all(state.kept.map(i => moveCard(cards[i], locationFor(i, 'three'), duration(360))));
   if (epoch !== state.epoch || expireDisplayedReading()) return;
-  effects.setMood('reading');
+  effects.setMood('idle');
   setPhase('reading');
-  setOracle('끌리는 카드부터 열어 보렴.', { tag: '마녀의 속삭임' });
+  setOracle('남은 카드를 한 장씩 펼쳐 보세요.', { speak: false });
   prepareNextReveal();
   focusUnopenedCard();
 }
@@ -554,10 +510,10 @@ function prepareNextReveal() {
     badge.hidden = !opened;
     if (opened) {
       badge.textContent = String(slot + 1);
-      card.label.textContent = `${String(slot + 1).padStart(2, '0')} · ${POSITIONS[slot].label}`;
+      card.label.textContent = state.drawn[index].name;
       card.button.setAttribute('aria-label', `${order[slot]} 카드 ${state.drawn[index].name}, ${POSITIONS[slot].label} 설명 다시 읽기`);
     } else {
-      card.label.textContent = '✧  선택해 열기';
+      card.label.textContent = '눌러서 펼치기';
       card.button.setAttribute('aria-label', `${['왼쪽', '가운데', '오른쪽'][physicalSlot]} 카드, 누르면 ${order[state.revealed]}로 열기`);
     }
   });
@@ -573,10 +529,12 @@ function prepareNextReveal() {
   });
   $('#action-button').hidden = state.revealed < 3;
   $('#action-button').disabled = false;
-  $('#action-button span').textContent = '종합 점괘 보기';
+  $('#action-button span').textContent = '풀이 보기';
   if (state.revealed < 3) {
-    setTitle(state.revealed === 0 ? '먼저 열 카드를 고르세요' : `${order[state.revealed]} 카드를 고르세요`, '', 'YOUR CHOICE, YOUR STORY');
+    setTitle(`${order[state.revealed]} 카드를 펼쳐 주세요`, '원하는 카드부터 눌러 주세요.');
     setStageCaption();
+  } else {
+    setTitle('나에게 남은 세 장', '열린 카드를 누르면 카드별 풀이를 볼 수 있어요.');
   }
 }
 
@@ -586,11 +544,7 @@ function focusUnopenedCard() {
 }
 
 function revealFlash(x, y, color) {
-  const flash = $('#screen-flash');
-  flash.style.setProperty('--flash-x', `${x}px`);
-  flash.style.setProperty('--flash-y', `${y}px`);
-  if (!state.reduced) flash.animate([{ opacity: 0 }, { opacity: .7, offset: .14 }, { opacity: .12, offset: .48 }, { opacity: 0 }], { duration: 1200, easing: 'ease-out' });
-  effects.burst(x, y, { kind: 'reveal', color, power: 1.3 });
+  if (!state.reduced) effects.burst(x, y, { kind: 'spark', color, power: .25 });
 }
 
 async function revealCard(index) {
@@ -606,42 +560,43 @@ async function revealCard(index) {
   const saved = saveProgress();
   $('#reading-open').disabled = true;
   $('#action-button').disabled = true;
-  $('#action-button span').textContent = '마녀가 카드를 읽고 있어요';
+  $('#action-button span').textContent = '카드를 펼치고 있어요';
   state.kept.forEach(index => { cards[index].button.disabled = true; cards[index].button.classList.remove('can-reveal'); });
   const pose = locationFor(card.index, 'three');
   card.wrap.style.zIndex = '20';
   play('reveal');
-  const revealPose = state.reduced ? pose : { ...pose, y: pose.y - (innerWidth < 760 ? 10 : 26), s: innerWidth < 760 ? 1.11 : 1.17, r: 0 };
-  moveCard(card, revealPose, duration(500));
-  await sleep(duration(220));
+  const revealPose = state.reduced ? pose : { ...pose, y: pose.y - 8, s: 1.04, r: 0 };
+  moveCard(card, revealPose, duration(180));
+  await sleep(duration(100));
   if (epoch !== state.epoch || expireDisplayedReading()) return;
   if (!await confirmProgress(saved, epoch)) return;
   card.turner.classList.add('flipped');
-  await sleep(duration(420));
+  await sleep(duration(340));
   if (epoch !== state.epoch || expireDisplayedReading()) return;
   const c = centerOf(card);
   revealFlash(c.x, c.y, data.color);
   card.button.classList.add('revealed');
   card.wrap.querySelector('.card-front').setAttribute('aria-hidden', 'false');
-  setTitle(`${POSITIONS[slot].label} · ${data.name}`, data.message, `${['I', 'II', 'III'][slot]} · THE REVELATION`);
-  setStageCaption(`${String(slot + 1).padStart(2, '0')}  ${data.english}  ✧  ${data.keyword}`);
   setOracle(reading.summary || reading.text, { title: data.name, tag: `${slot + 1}번째 카드 · ${POSITIONS[slot].label}`, keyword: reading.keyword });
-  await sleep(duration(1200));
-  if (epoch !== state.epoch || expireDisplayedReading()) return;
-  await moveCard(card, pose, duration(500));
+  await moveCard(card, pose, duration(180));
   if (epoch !== state.epoch || expireDisplayedReading()) return;
   state.revealed = state.openOrder.length;
+  state.lastReading = slot;
   setPhase(state.revealed === 3 ? 'complete' : 'reading');
   prepareNextReveal();
+  $('#reading-open').hidden = false;
+  $('#reading-open').disabled = false;
+  $('#reading-open span').textContent = '카드 풀이 읽기';
   if (state.revealed === 3) {
-    effects.setMood('reading');
+    effects.setMood('idle');
     $('#restart-small').hidden = false;
     setStageCaption('열린 카드를 누르면 풀이를 다시 볼 수 있어요');
     play('complete');
     buildResults();
+    $('#action-button').focus({ preventScroll: true });
+  } else {
+    focusUnopenedCard();
   }
-  if (innerWidth <= 760 && !state.reduced) $('#oracle').animate([{ boxShadow: '0 0 25px rgba(189,147,231,.3)' }, { boxShadow: '0 0 0 transparent' }], { duration: 1800 });
-  showReading(slot);
 }
 
 function renderReadingSections(container, sections, fallback = '', headingTag = 'h3', cardNames = []) {
@@ -749,7 +704,7 @@ function showReading(slot = state.lastReading) {
   $('#reading-source-note-body').textContent = reading.sourceNote?.body || '';
   if (reading.sourceNote) $('#reading-source-note-link').href = reading.sourceNote.reference.url;
   else $('#reading-source-note-link').removeAttribute('href');
-  $('#reading-next span').textContent = state.revealed < 3 ? '다음 카드 고르기' : '종합 점괘 보기';
+  $('#reading-next span').textContent = state.revealed < 3 ? '다음 카드 펼치기' : '풀이 보기';
   $('#reading-open span').textContent = state.revealed < 3 ? '이 카드의 이야기 자세히 읽기' : '종합 점괘 자세히 보기';
   $('#reading-open').hidden = false;
   $('#reading-open').disabled = false;
@@ -990,34 +945,13 @@ $$('dialog').forEach(dialog => {
 $$('[data-close]').forEach(button => button.addEventListener('click', () => closeDialog(button.dataset.close)));
 $('#help-open').addEventListener('click', () => openDialog('help-dialog'));
 
-const revelation = new TarotRevelation();
-let resultPresentation = null;
-const revelationOptions = () => ({
-  reducedMotion: state.reduced,
-  onCue: cue => { if (cue === 'gather') play('summon'); else if (cue === 'reveal') play('reveal'); }
-});
-$('#preview-revelation').addEventListener('click', () => { void revelation.play(revelationOptions()); });
-async function showResultsWithRevelation() {
-  if (expireDisplayedReading() || state.phase !== 'complete' || state.revealed !== 3 || resultPresentation || $('#result-dialog').open) return;
-  const presentation = { epoch: state.epoch };
-  resultPresentation = presentation;
+function showResults() {
+  if (expireDisplayedReading() || state.phase !== 'complete' || state.revealed !== 3 || $('#result-dialog').open) return;
   if ('speechSynthesis' in window) speechSynthesis.cancel();
-  let ready;
-  try {
-    ready = await revelation.play(revelationOptions());
-  } catch {
-    // A visual effect must never hide an already saved, paid reading.
-    revelation.cancel();
-    ready = true;
-  }
-  if (resultPresentation !== presentation || presentation.epoch !== state.epoch || expireDisplayedReading()) return;
-  resultPresentation = null;
-  if (ready && state.phase === 'complete' && state.revealed === 3) {
-    state.summaryReady = true;
-    showOverallOracle();
-    selectSummaryGroup('cards');
-    openDialog('result-dialog');
-  }
+  state.summaryReady = true;
+  showOverallOracle();
+  selectSummaryGroup('cards');
+  openDialog('result-dialog');
 }
 
 async function copyResult() {
@@ -1099,16 +1033,10 @@ async function copyResult() {
 function reset({ clearPaid = true } = {}) {
   personalReading?.reset();
   state.epoch++;
-  resultPresentation = null;
-  revelation.cancel();
   if (clearPaid && !billing.pending) billing.newReading();
   if ('speechSynthesis' in window) speechSynthesis.cancel();
-  if (trailRaf) cancelAnimationFrame(trailRaf);
-  trailRaf = null;
   $$('dialog[open]').forEach(dialog => dialog.close());
   state.discarded.clear();
-  discardGhosts.forEach(ghost => ghost.remove());
-  discardGhosts.clear();
   state.kept = [];
   state.openOrder = [];
   state.drawn = [];
@@ -1155,22 +1083,32 @@ function reset({ clearPaid = true } = {}) {
   $$('[data-topic]').forEach(button => { button.disabled = false; });
   $('#login-link').hidden = true;
   updatePaymentStatus();
-  $('#game-title').innerHTML = '운명이 속삭이는 밤,<br><em>달의 마녀</em>를 만나다';
-  $('#game-subtitle').textContent = '세 장으로 읽는 오늘의 운세.';
-  $('#game-subtitle').hidden = false;
-  $('#eyebrow').innerHTML = '<span></span> THE MOONLIT ORACLE <span></span>';
+  setView('topics');
+  updateSendProgress();
   setStageCaption();
-  setOracle('이번에는 어떤 이야기가 궁금하니?', { tag: '마녀의 초대' });
+  setOracle('이번에는 어떤 이야기가 궁금한가요?', { speak: false });
   effects.setMood('idle');
   layout(false);
-  $('#summon-button').focus({ preventScroll: true });
+  $('#game-title').focus({ preventScroll: true });
   if (innerWidth <= 760) window.scrollTo({ top: 0, behavior: state.reduced ? 'instant' : 'smooth' });
   if (clearPaid) void refreshReadingAvailability();
 }
 
+$('#welcome-next').addEventListener('click', () => { setView('topics', true); });
+$('#tarot-back').addEventListener('click', () => {
+  if (state.busy || billing.pending) return;
+  if (app.dataset.view === 'welcome') {
+    window.location.assign($('#azit-back').getAttribute('href') || '/world.html?tab=hub#agit-daily');
+  } else if (state.phase === 'intro') {
+    setView('welcome', true);
+  } else {
+    // Going back changes the screen, never the saved paid draw or its progress.
+    reset({ clearPaid: false });
+  }
+});
 $('#summon-button').addEventListener('click', summon);
 $('#action-button').addEventListener('click', () => {
-  if (state.phase === 'complete') void showResultsWithRevelation();
+  if (state.phase === 'complete') void showResults();
 });
 $('#restart-small').addEventListener('click', reset);
 $('#restart-result').addEventListener('click', reset);
@@ -1196,12 +1134,12 @@ $('#summary-text').addEventListener('change', event => {
   selectDomainCategory($('#summary-panel-domains'), event.target.value);
 });
 $('#reading-open').addEventListener('click', () => {
-  if (state.phase === 'complete') void showResultsWithRevelation();
+  if (state.phase === 'complete') void showResults();
   else showReading();
 });
 $('#reading-next').addEventListener('click', () => {
   closeDialog('reading-dialog');
-  if (state.phase === 'complete') void showResultsWithRevelation();
+  if (state.phase === 'complete') void showResults();
   else if (state.phase === 'reading') focusUnopenedCard();
 });
 $$('[data-topic]').forEach(button => button.addEventListener('click', () => {
@@ -1270,8 +1208,6 @@ window.addEventListener('resize', () => {
   resizeFrame = requestAnimationFrame(() => { if (!state.busy) layout(false); });
 }, { passive: true });
 window.addEventListener('pagehide', () => {
-  resultPresentation = null;
-  revelation.cancel();
   if ('speechSynthesis' in window) speechSynthesis.cancel();
   if (state.sound) audio.setMuted(true);
 });
@@ -1279,13 +1215,10 @@ window.addEventListener('pageshow', event => { if (event.persisted && state.soun
 window.addEventListener('focus', () => { void refreshReadingAvailability(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) void refreshReadingAvailability(); });
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    resultPresentation = null;
-    revelation.cancel();
-    if ('speechSynthesis' in window) speechSynthesis.cancel();
-  }
+  if (document.hidden && 'speechSynthesis' in window) speechSynthesis.cancel();
 });
 applyMotionPreference(state.reduced);
+setView(app.dataset.view || 'welcome');
 layout(false);
 $('#oracle-text').textContent = '마음에 걸리는 일을 하나 떠올려 보렴.';
 // Start image requests while the visitor chooses a topic; five cards share at most five atlases.
@@ -1308,6 +1241,7 @@ function restorePaidReading(receipt) {
     button.setAttribute('aria-pressed', String(button.dataset.topic === state.topic));
   });
   state.discarded = new Set(receipt.discarded);
+  updateSendProgress();
   state.openOrder = [...receipt.openOrder];
   state.revealed = state.openOrder.length;
   state.kept = state.discarded.size === 2 ? cards.map(card => card.index).filter(index => !state.discarded.has(index)) : [];
@@ -1321,21 +1255,19 @@ function restorePaidReading(receipt) {
     card.turner.classList.toggle('flipped', opened);
     card.button.classList.toggle('revealed', opened);
     card.wrap.querySelector('.card-front').setAttribute('aria-hidden', String(!opened));
-    if (card.wrap.hidden && !state.kept.length) leaveDiscardGhost(card, locationFor(index, 'five'));
   });
   if (state.kept.length) {
     setPhase(state.revealed === 3 ? 'complete' : 'reading');
     prepareNextReveal();
     if (state.revealed === 3) {
       buildResults();
-      setTitle('오늘의 타로', '', 'YOUR MOONLIT STORY');
+      setTitle('선택한 카드를 확인해 주세요', '세 장에 담긴 이야기를 살펴볼게요.');
       setStageCaption('열린 카드를 누르면 풀이를 다시 볼 수 있어요');
       $('#restart-small').hidden = false;
     }
   } else {
-    setPhase('discard');
-    updateDiscardProgress();
-    setTitle(state.discarded.size ? '한 장 더 버려 주세요' : '버릴 카드 두 장을 고르세요', '누르면 바로 버려져요.', 'WELCOME BACK');
+    setPhase('choosing');
+    updateChoiceProgress();
   }
   if (state.revealed > 0 && state.revealed < 3) {
     const data = state.drawn[state.openOrder[state.lastReading]];
@@ -1345,7 +1277,7 @@ function restorePaidReading(receipt) {
     $('#reading-open').disabled = false;
     $('#reading-open span').textContent = '이 카드의 이야기 자세히 읽기';
   } else if (!state.revealed) setOracle('아까의 이야기를 이어 가자.', { tag: '이어보기', speak: false });
-  effects.setMood(state.kept.length ? 'reading' : 'idle');
+  effects.setMood('idle');
   layout(false);
   updatePaymentStatus();
 }

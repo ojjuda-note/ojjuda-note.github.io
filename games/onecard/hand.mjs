@@ -1,13 +1,13 @@
-import {cardInfo} from './engine.mjs?v=20261120-onecard6';
+import {cardInfo} from './engine.mjs?v=20261120-onecard7';
 
 const COLOR_ORDER={blue:0,red:1,yellow:2,green:3,wild:4};
-const KIND_ORDER={number:0,attack:1,change:2,skip:3,again:4};
+const KIND_ORDER={number:0,attack:1,change:2,skip:3,reverse:4,again:5};
 
 // The saved hand stays in its original order. Equal display values keep that order.
 export function sortHand(cards,mode='number'){
   return cards.map((id,index)=>{
     const info=cardInfo(id);
-    return {id,index,color:COLOR_ORDER[info.color],kind:info.joker?5:KIND_ORDER[info.displayKind],value:Number.parseInt(info.displayValue,10)||0};
+    return {id,index,color:COLOR_ORDER[info.color],kind:info.joker?6:KIND_ORDER[info.displayKind],value:Number.parseInt(info.displayValue,10)||0};
   }).sort((a,b)=>(mode==='color'?a.color-b.color:0)||a.kind-b.kind||a.value-b.value||a.index-b.index).map(card=>card.id);
 }
 

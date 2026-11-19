@@ -25,11 +25,17 @@ function visible(element) {
 }
 function assertCurrentBody(element) {
   assert.ok(visible(element),'the selected reading is visible');
-  assert.equal(element.querySelector('details.reading-body-details'),null,'a selected explanation never needs a second disclosure');
   const owner=element.matches('[data-compatibility-current]')?'[data-compatibility-page]':'[data-reader-page]';
+  for(const details of element.querySelectorAll('details.reader-prose.reading-story-details')) {
+    if(details.closest(owner)!==element||details.closest('[hidden]'))continue;
+    const toggle=details.querySelector(':scope > summary');
+    assert.equal(toggle.textContent,'자세히 읽기');
+    assert.ok(visible(toggle),'the complete explanation has a visible native disclosure');
+    if(!details.open)toggle.click();
+  }
   const paragraphs=[...element.querySelectorAll('.reader-prose > p,.compatibility-person-prose > p')]
     .filter(paragraph=>paragraph.closest(owner)===element);
-  assert.ok(paragraphs.every(visible),'all paragraphs owned by the current reading are immediately readable');
+  assert.ok(paragraphs.every(visible),'every original paragraph is readable after opening the current explanation');
 }
 function mount(topic,{reading:report=reading,fortune:forecast=fortune}={}) {
   const dom=new JSDOM('<!doctype html><nav id="outside"></nav><div id="report-content"></div>',{url:'https://example.test/'});
@@ -105,7 +111,7 @@ function assertReadingScore(h,summary,expected) {
   }
 }
 
-test('every reading family exposes two summary units and its complete body without a second click',()=>{
+test('every reading family exposes two summary units and preserves its complete expandable body',()=>{
   const h=mount('all');
   try {
     const before=h.paragraphs(),checks=[];
@@ -123,7 +129,7 @@ test('every reading family exposes two summary units and its complete body witho
       const month=Number(card.querySelector('a').hash.match(/(\d+)$/)[1]);
       add(card,reading.reader.months.find(item=>item.month===month),null,null);
     }
-    add(h.doc.querySelector('#reading-daeun > .reader-prose'),reading.daeun,':scope > p');
+    add(h.doc.querySelector('#reading-daeun > .reader-prose'),reading.daeun,':scope > .reading-story-inline > p');
     for(const period of reading.daeun.periods) {
       add(h.host.querySelector(`[data-daeun-period="${period.id}"]`),period,'.daeun-period-body > .reader-prose > p');
       for(const topic of [...period.topics,...(period.situations||[])])add(h.host.querySelector(`[data-daeun-topic="${topic.id}"]`),topic);
@@ -150,8 +156,14 @@ test('every reading family exposes two summary units and its complete body witho
       if(!selector)continue;
       const body=[...element.querySelectorAll(selector)].filter(paragraph=>!paragraph.closest('.saju-two-line-summary'));
       assert.deepEqual(body.map(paragraph=>paragraph.textContent),paragraphs,'summary presentation preserves every original body paragraph');
-      assert.ok(body.length>0&&body.every(visible),'selecting the item immediately reveals every authored paragraph');
-      assert.ok(body.every(paragraph=>!paragraph.closest('details.reading-body-details')),'the summary cannot replace the purchased full explanation');
+      const stories=new Set(body.map(paragraph=>paragraph.closest('details.reading-story-details')));
+      assert.ok(body.length>0&&!stories.has(null),'summarized explanations keep their complete body behind a native disclosure');
+      for(const details of stories) {
+        const toggle=details.querySelector(':scope > summary');
+        assert.ok(visible(toggle));
+        if(!details.open)toggle.click();
+      }
+      assert.ok(body.every(visible),'opening the explanation reveals every authored paragraph');
       if(source.detailSections) {
         const prose=body[0].parentElement;
         assert.deepEqual([...prose.querySelectorAll(':scope > .reading-body-heading')].map(heading=>heading.textContent),source.detailSections.map(section=>section.title),'meaningful section headings retain their authored order');
@@ -297,6 +309,9 @@ test('portrait tables, outer contents and decade topics reveal their reading wit
   try {
     assert.equal(h.host.querySelector('.daeun-time-notice'),null,'a known birth time has no assumption notice');
     const first=h.host.querySelector('.portrait-card');assert.equal(visible(first),false);
+    const overview=h.host.querySelector('.reading-overview-details');
+    assert.equal(overview.open,false);
+    overview.querySelector('summary').click();
     h.host.querySelector('.portrait-summary-table tbody a').click();
     assert.equal(h.current(),first);assert.ok(visible(first));
     assert.equal([...h.host.querySelectorAll('.portrait-card,.reader-card')].filter(visible).length,1);

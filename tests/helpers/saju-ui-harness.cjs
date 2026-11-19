@@ -53,11 +53,12 @@ function selectReadingItem(select,id) {
   assert.ok(nav,'the reading has visible field and item navigation');
   const item=nav.querySelector('[data-reading-target="'+id+'"]');
   assert.ok(item,id+' is reachable from the item list');
+  const picker=nav.querySelector('.reading-item-picker');
+  if(!picker.open)picker.querySelector('summary').click();
+  assert.equal(picker.open,true,'open the contents before choosing a field inside it');
   const domain=nav.querySelector('.reading-domain-button[data-reading-domain="'+item.dataset.readingDomain+'"]');
   assert.ok(domain&&!domain.hidden,'the requested field is available');
   if(domain.getAttribute('aria-pressed')!=='true')domain.click();
-  const picker=nav.querySelector('.reading-item-picker');
-  if(!picker.open)picker.querySelector('summary').click();
   assert.equal(item.closest('[hidden]'),null,'the requested item is shown inside its selected field');
   item.click();
   assert.equal(select.value,id,'visible navigation and the selected reading agree');
