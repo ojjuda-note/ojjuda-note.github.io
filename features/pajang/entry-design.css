@@ -29,22 +29,75 @@
 #gate .pajang-entry-lead {
   margin:20px 0 0;color:var(--ink-2);font-size:14px;line-height:1.75;letter-spacing:-.025em;
 }
-.pajang-invitation-art {position:relative;min-width:0;aspect-ratio:1;isolation:isolate}
-.pajang-invitation-art::before {
-  content:"";position:absolute;inset:2% -8% 5% -1%;border:1px solid var(--line);
-  border-radius:50% 50% 42% 42%;transform:rotate(9deg);opacity:.6;
+.pajang-invitation-art {
+  --pajang-ripple-ink:color-mix(in srgb,var(--accent-ink) 46%,transparent);
+  --pajang-ripple-light:color-mix(in srgb,var(--surface) 88%,transparent);
+  position:relative;min-width:0;aspect-ratio:1;isolation:isolate;pointer-events:none;
 }
 .pajang-invitation-season {
-  position:absolute;inset:-11% -17% 1% -13%;border-radius:48%;
+  position:absolute;inset:-7% -13% 24% -8%;border-radius:48%;
   background:var(--hero-art) center/cover no-repeat;
-  opacity:.76;mask-image:radial-gradient(ellipse 54% 55% at 50% 48%,#000 47%,transparent 94%);
+  opacity:.5;mask-image:radial-gradient(ellipse 54% 55% at 50% 48%,#000 38%,transparent 94%);
 }
-.pajang-envelope {
-  position:absolute;left:4%;right:3%;bottom:4%;height:51%;
+/* A broad, soft water plane replaces the old outlined oval. Its reflections
+   borrow the active calendar/weather artwork and palette, including at night. */
+.pajang-invitation-water {
+  position:absolute;z-index:1;inset:48% -23% -8%;overflow:hidden;
+  border-radius:50%;
+  background:radial-gradient(ellipse at 52% 34%,color-mix(in srgb,var(--surface) 78%,transparent),transparent 59%),
+    linear-gradient(180deg,transparent,color-mix(in srgb,var(--accent-soft) 80%,var(--surface)) 25%,
+      color-mix(in srgb,var(--accent) 15%,var(--hero-bg)) 72%,transparent);
+  mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 52%,transparent 100%);
+}
+.pajang-invitation-water::before {
+  content:"";position:absolute;inset:-35% 0 10%;
+  background:var(--hero-art) center 65%/cover no-repeat;
+  transform:scaleY(-1);filter:blur(5px);opacity:.16;
+  mask-image:linear-gradient(transparent,#000 38%,transparent 90%);
+}
+.pajang-invitation-water::after {
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,var(--pajang-ripple-light),transparent) 30% 27%/40% 1px no-repeat,
+    linear-gradient(90deg,transparent,var(--pajang-ripple-light),transparent) 76% 64%/26% 1px no-repeat,
+    linear-gradient(90deg,transparent,var(--pajang-ripple-light),transparent) 40% 85%/52% 1px no-repeat;
+  opacity:.72;
+}
+.pajang-water-ripples {position:absolute;inset:0}
+.pajang-water-ring {
+  position:absolute;left:50%;top:40%;display:block;width:43%;height:25%;
+  border:1px solid var(--pajang-ripple-ink);border-top-color:color-mix(in srgb,var(--accent) 18%,transparent);
+  border-radius:50%;box-shadow:0 1px 0 var(--pajang-ripple-light),inset 0 -1px 0 var(--pajang-ripple-light);
+  transform:translate(-50%,-50%);opacity:.78;
+  animation:pajang-water-spread 8s ease-out infinite;
+}
+.pajang-water-ring:nth-child(2) {width:64%;height:42%;opacity:.66;animation-delay:-2s}
+.pajang-water-ring:nth-child(3) {width:85%;height:61%;opacity:.52;animation-delay:-4s}
+.pajang-water-ring:nth-child(4) {width:106%;height:82%;opacity:.4;animation-delay:-6s}
+.pajang-envelope,.pajang-letter-reflection {
+  position:absolute;left:13%;right:10%;bottom:26%;height:44%;
   border:1px solid color-mix(in srgb,var(--accent) 25%,var(--surface));border-radius:8px;
   background:color-mix(in srgb,var(--accent-soft) 83%,var(--surface));
-  transform:rotate(-9deg);
-  box-shadow:0 16px 23px -10px color-mix(in srgb,var(--ink) 25%,transparent);
+}
+.pajang-envelope {
+  z-index:3;transform-origin:50% 100%;
+  transform:perspective(650px) rotateX(28deg) rotateZ(-10deg);
+  box-shadow:0 12px 14px -9px color-mix(in srgb,var(--ink) 28%,transparent),
+    0 24px 24px -20px color-mix(in srgb,var(--accent-ink) 24%,transparent);
+  animation:pajang-letter-float 7s ease-in-out infinite;
+}
+.pajang-letter-reflection {
+  z-index:2;transform-origin:50% 100%;transform:scaleY(-.36) rotate(-10deg);
+  filter:blur(1.3px);opacity:.2;
+  mask-image:linear-gradient(to top,#000,transparent 88%);
+}
+@keyframes pajang-water-spread {
+  0% {transform:translate(-50%,-50%) scale(.9);opacity:.22}
+  24% {opacity:.76}
+  100% {transform:translate(-50%,-50%) scale(1.08);opacity:.22}
+}
+@keyframes pajang-letter-float {
+  0%,100% {transform:perspective(650px) translateY(0) rotateX(28deg) rotateZ(-10deg)}
+  50% {transform:perspective(650px) translateY(-4px) rotateX(30deg) rotateZ(-9deg)}
 }
 .pajang-invitation-paper {
   position:absolute;left:8%;right:8%;height:134%;bottom:17%;padding:18% 14%;
@@ -121,7 +174,12 @@
 #welcome .actions summary {padding:8px 0;color:var(--accent-ink);font-size:13px;cursor:pointer}
 #welcome .sample-radar {padding:7px 18px;border:1px solid var(--line);border-radius:18px;background:var(--surface-2)}
 #welcome .sample-radar>summary {font-size:13px;color:var(--ink-2)}
-:root[data-theme=dark] .pajang-invitation-season {opacity:.55}
+:root[data-theme=dark] .pajang-invitation-art {
+  --pajang-ripple-ink:color-mix(in srgb,var(--accent-ink) 54%,transparent);
+  --pajang-ripple-light:color-mix(in srgb,var(--ink) 25%,transparent);
+}
+:root[data-theme=dark] .pajang-invitation-season {opacity:.34}
+:root[data-theme=dark] .pajang-letter-reflection {opacity:.12}
 :root[data-theme=dark] #welcome .entry-intro::before {opacity:.6}
 @media(max-width:600px) {
   #gate:has(>.pajang-invitation) {width:calc(100% - 32px);margin:20px auto 28px}
@@ -130,12 +188,11 @@
   .pajang-entry-eyebrow {margin-bottom:16px;font-size:10px}
   #gate .pajang-entry-title {font-size:clamp(32px,8.9vw,43px);line-height:1.36}
   #gate .pajang-entry-lead {margin-top:13px;font-size:13px}
-  .pajang-invitation-art {width:76%;max-width:260px;aspect-ratio:1.44;justify-self:end;margin:5px -5px 0 0}
-  .pajang-invitation-season {inset:-21% -8% -3% -15%;background-size:cover}
-  .pajang-invitation-art::before {inset:-11% -3% -4% 10%}
-  .pajang-envelope {left:13%;right:1%;bottom:1%;height:66%;transform:rotate(-8deg)}
-  .pajang-invitation-paper {height:121%;bottom:18%;padding:15% 14%}
-  .pajang-paper-mark {margin-bottom:13%;font-size:22px}
+  .pajang-invitation-art {width:100%;max-width:340px;aspect-ratio:1.36;justify-self:center;margin:12px 0 0}
+  .pajang-invitation-season {inset:-8% -1% 28% 0;background-size:cover}
+  .pajang-envelope,.pajang-letter-reflection {left:16%;right:14%;height:48%}
+  .pajang-invitation-paper {height:121%;bottom:16%;padding:15% 14%}
+  .pajang-paper-mark {margin-bottom:13%;font-size:21px}
   .pajang-paper-line {margin:9% 0}
   .pajang-invitation-footer {padding:19px 22px 18px}
   .pajang-invitation-footer .ojjuda-guest-account-actions {gap:10px}
@@ -150,7 +207,10 @@
 @media(max-width:360px) {
   .pajang-invitation-opening {padding:25px 21px 16px}
   #gate .pajang-entry-title {font-size:31px}
-  .pajang-invitation-art {width:80%;margin-top:12px}
+  .pajang-invitation-art {margin-top:10px}
   .pajang-invitation-footer {padding:17px 18px}
   #welcome .entry-intro {padding:23px 20px}
+}
+@media(prefers-reduced-motion:reduce) {
+  .pajang-envelope,.pajang-water-ring {animation:none}
 }

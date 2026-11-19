@@ -303,6 +303,8 @@ async function openGroup(dialog,label) {
     await ownSummary.screenshot({path:path.join(artifacts,'public-own-profile.png'),animations:'disabled'});
 
     form=await openProfile(page);
+    // The editable draft is hydrated in an effect after the read enables Save.
+    await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{name:'대화 상대',exact:true,pressed:true}).waitFor();
     assert.equal(await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{pressed:true}).count(),2,'saved intentions are restored');
     meeting=await openGroup(form.dialog,'만남 스타일');
     assert.equal(await meeting.locator('.preference-chips').first().getByRole('button',{pressed:true}).count(),3,'saved presets are restored');
@@ -322,6 +324,7 @@ async function openGroup(dialog,label) {
 
     // Clearing choices sends explicit empty arrays; closing without saving keeps the saved values.
     form=await openProfile(page);
+    await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{name:'대화 상대',exact:true,pressed:true}).waitFor();
     await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{name:'대화 상대',exact:true}).click();
     await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{name:'친구',exact:true}).click();
     meeting=await openGroup(form.dialog,'만남 스타일');

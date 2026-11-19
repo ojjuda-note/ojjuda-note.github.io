@@ -24,11 +24,16 @@ export function enhanceGuestGate(){
   copy.append(eyebrow,title,make('p','pajang-entry-lead','답변으로 시작하는 새로운 인연.'));
   const art=make('div','pajang-invitation-art');art.setAttribute('aria-hidden','true');
   const season=make('div','pajang-invitation-season');
+  const water=make('div','pajang-invitation-water');
+  const ripples=make('div','pajang-water-ripples');
+  for(let i=0;i<4;i++)ripples.append(make('i','pajang-water-ring'));
+  water.append(ripples);
   const envelope=make('div','pajang-envelope');
   const paper=make('div','pajang-invitation-paper');
   paper.append(make('span','pajang-paper-mark','파장'),make('i','pajang-paper-line'),make('i','pajang-paper-line'),make('i','pajang-paper-line'));
   envelope.append(paper,make('div','pajang-envelope-fold'),make('span','pajang-letter-seal','♥'));
-  art.append(season,envelope);opening.append(copy,art);
+  const reflection=envelope.cloneNode(true);reflection.className='pajang-letter-reflection';
+  art.append(season,water,reflection,envelope);opening.append(copy,art);
   const footer=make('div','pajang-invitation-footer');
   message.classList.add('pajang-entry-access');
   footer.append(account,message);invitation.append(opening,footer);
