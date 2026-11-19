@@ -20,6 +20,7 @@ function fixtureBoot() {
     container.replaceChildren(message);return {canLeave:()=>true,hasDraft:()=>false,destroy(){}};
   }};
   U.overview=async()=>({users:1,reports_open:0,feedback_open:0,errors_24h:0});
+  U.logList=async()=>[];
   window.worldQuestionTest={
     state:()=>({service:worldAdminService,area:L.area,tab:L.tab}),canLeave:()=>adminCanLeave(),
     open:(tab,service)=>openWorldAdmin(tab,service)
