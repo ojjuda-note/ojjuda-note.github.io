@@ -6,6 +6,7 @@ import { PGlite } from '@electric-sql/pglite';
 
 const migration = name => readFile(new URL('../supabase/migrations/' + name, import.meta.url), 'utf8');
 const heightMigration = '20261119011919_pajang_exchange_decimal_height.sql';
+const religionRestoreMigration = '20261119031327_pajang_restore_exchange_religion.sql';
 
 // Production migration 20261117224836 was applied before this fix but is absent
 // from the historical repository. Keep that exact state in this local fixture.
@@ -94,7 +95,7 @@ before insert or update of fields on pajang_private.exchange_profiles
 for each row execute function pajang_private.protect_retired_exchange_field();
 `;
 
-test('exchange profile edits persist decimal heights without changing privacy or other members', async t => {
+test('exchange profiles persist decimal heights and restored religion with mutual consent', async t => {
   const db = new PGlite();
   t.after(() => db.close());
   await db.exec(`
@@ -118,6 +119,14 @@ test('exchange profile edits persist decimal heights without changing privacy or
   `);
   await db.exec(await migration('20261117060900_pajang_members.sql'));
   await db.exec(await migration('20261117200000_pajang_exchange.sql'));
+
+  await t.test('religion restoration also supports a clean repository schema', async () => {
+    // A clean install never received the out-of-repository retirement migration.
+    await db.exec(await migration(religionRestoreMigration));
+    await db.exec(await migration(religionRestoreMigration));
+    const result = await db.query("select pajang_private.exchange_fields($1) as fields",[{religion:'  선택한 값  ',height:'175'}]);
+    assert.deepEqual(result.rows[0].fields,{religion:'선택한 값',height:175});
+  });
 
   const person = async (name, gender) => {
     const account = randomUUID();
@@ -217,7 +226,7 @@ test('exchange profile edits persist decimal heights without changing privacy or
     await assert.rejects(() => db.query('select fields from pajang_private.exchange_profiles'),{code:'42501'});
   });
 
-  await t.test('retired fields stay hidden and unchanged while shared profiles show the decimal edit', async () => {
+  await t.test('the production retirement fixture reproduces ignored religion edits before restoration', async () => {
     await login(a);
     const saved = await rpc('save',{fields:{height:'177.5',religion:'새 값'},showAge:false,showGender:true});
     assert.deepEqual(saved.fields,{height:177.5});
@@ -239,5 +248,131 @@ test('exchange profile edits persist decimal heights without changing privacy or
     await db.exec('reset role');
     await login(a,true);
     await assert.rejects(() => rpc('save',{fields:{height:'175.5'}}),{code:'42501'});
+  });
+
+  await db.exec('reset role');
+  const memberRows = async () => (await db.query('select person,fields,show_age,show_gender from pajang_private.exchange_profiles order by person')).rows;
+  const boundaries = async () => (await db.query(`
+    select 'function' as kind,p.oid::text as id,jsonb_build_object(
+      'source',case when p.proname not in ('exchange_fields','exchange_profile') then p.prosrc end,
+      'owner',p.proowner::text,'acl',p.proacl::text,'definer',p.prosecdef,'config',p.proconfig) as definition
+    from pg_proc p where p.oid in (
+      'pajang_private.exchange_fields(jsonb)'::regprocedure,
+      'pajang_private.exchange_profile(uuid,boolean)'::regprocedure,
+      'pajang_private.exchange_actor()'::regprocedure,
+      'pajang_private.exchange_can_view(uuid,uuid,text)'::regprocedure,
+      'pajang_private.exchange_matched(uuid,uuid)'::regprocedure,
+      'public.pajang_exchange(text,uuid,text,jsonb)'::regprocedure)
+    union all
+    select 'table',c.oid::text,jsonb_build_object('rls',c.relrowsecurity,'forceRls',c.relforcerowsecurity,'acl',c.relacl::text)
+    from pg_class c where c.oid in ('pajang_private.exchange_profiles'::regclass,'pajang_private.exchanges'::regclass)
+    order by kind,id
+  `)).rows;
+  const beforeRows = await memberRows();
+  const beforeBoundaries = await boundaries();
+
+  await t.test('restoration changes no member rows, permissions, or mutual-consent rules', async () => {
+    await db.exec(await migration(religionRestoreMigration));
+    await db.exec(await migration(religionRestoreMigration));
+    assert.deepEqual(await memberRows(),beforeRows);
+    assert.deepEqual(await boundaries(),beforeBoundaries);
+    const retired = (await db.query(`select
+      to_regprocedure('pajang_private.protect_retired_exchange_field()')::text as helper,
+      (select count(*)::int from pg_trigger where tgrelid='pajang_private.exchange_profiles'::regclass
+        and tgname='protect_retired_exchange_field') as triggers`)).rows[0];
+    assert.deepEqual(retired,{helper:null,triggers:0});
+    await login(a);
+    assert.deepEqual((await rpc('mine')).fields,{height:177.5,religion:'기존 값'});
+  });
+
+  await t.test('restored religion and every optional field save, update, and reopen correctly', async () => {
+    await login(a);
+    const fields = {relationship:'싱글',job:'책방지기',region:'서울특별시 마포구',religion:'  첫 선택  ',
+      height:'175.5',mbti:'infp',bloodType:'ab',skills:'그림',hobbies:'산책',
+      drinking:'가끔 마셔요',smoking:'피우지 않아요',bio:'첫 자기소개'};
+    const expected = {...fields,religion:'첫 선택',height:175.5,mbti:'INFP',bloodType:'AB'};
+    const saved = await rpc('save',{fields,showAge:true,showGender:false});
+    assert.deepEqual(saved.fields,expected);
+    assert.deepEqual(await rpc('mine'),saved);
+    const edited = await rpc('save',{fields:{...expected,religion:'  바꾼 선택  ',height:'176.25'},showAge:false,showGender:true});
+    assert.deepEqual(edited.fields,{...expected,religion:'바꾼 선택',height:176.25});
+    assert.deepEqual(await rpc('mine'),edited);
+    await login(b);
+    const shared = (await rpc('state',{},a)).peerProfile;
+    assert.deepEqual(shared.fields,edited.fields);
+    assert.equal(shared.age,null);
+    assert.equal(shared.gender,'남성');
+  });
+
+  await t.test('clearing religion actually removes it instead of restoring the previous value', async () => {
+    for (const fields of [{height:'175.5'},{height:'175.5',religion:'   '},{height:'175.5',religion:null}]) {
+      await login(a);
+      await rpc('save',{fields:{height:'175.5',religion:'삭제할 값'}});
+      const cleared = await rpc('save',{fields});
+      assert.deepEqual(cleared.fields,{height:175.5});
+      assert.deepEqual((await rpc('mine')).fields,cleared.fields);
+      await login(b);
+      assert.deepEqual((await rpc('state',{},a)).peerProfile.fields,{height:175.5});
+      await db.exec('reset role');
+      const stored = (await db.query('select fields from pajang_private.exchange_profiles where person=$1',[a.id])).rows[0].fields;
+      assert.deepEqual(stored,{height:175.5});
+    }
+  });
+
+  await t.test('the first save creates a profile with religion and reloads the inserted value', async () => {
+    await db.exec('reset role');
+    const newcomer = await person('봄','female');
+    await login(newcomer);
+    assert.deepEqual((await rpc('mine')).fields,{});
+    const saved = await rpc('save',{fields:{religion:'  처음 선택한 값  ',height:'170.5'},showGender:true});
+    assert.deepEqual(saved.fields,{religion:'처음 선택한 값',height:170.5});
+    assert.deepEqual(await rpc('mine'),saved);
+    await assert.rejects(() => rpc('state',{},a),{code:'42501'});
+    await db.exec('reset role');
+    const rows = (await db.query('select fields from pajang_private.exchange_profiles where person=$1',[newcomer.id])).rows;
+    assert.deepEqual(rows,[{fields:{religion:'처음 선택한 값',height:170.5}}]);
+  });
+
+  await t.test('restored religion retains string, length, and atomic-save validation', async () => {
+    await login(a);
+    const prior = await rpc('save',{fields:{height:'175.5',religion:'가'.repeat(80),job:'보존할 직업'}});
+    for (const religion of ['가'.repeat(81),7,true,{},[]]) {
+      await assert.rejects(() => rpc('save',{fields:{height:'175.5',religion,job:'실패해야 하는 변경'}}),{code:'22023'});
+      assert.deepEqual(await rpc('mine'),prior);
+    }
+    for (const fields of [{religion:'선택한 값',unknown:'금지'},
+      {religion:'선택한 값',height:'300.1'},{religion:'선택한 값',mbti:'INVALID'}]) {
+      await assert.rejects(() => rpc('save',{fields}),{code:'22023'});
+      assert.deepEqual(await rpc('mine'),prior);
+    }
+    await login(b);
+    assert.deepEqual((await rpc('mine')).fields,{height:180,job:'다른 회원 직업'});
+  });
+
+  await t.test('religion is hidden without mutual profile consent and visible after acceptance', async () => {
+    await login(a);
+    await rpc('save',{fields:{religion:'공유할 선택',height:'175.5'}});
+    await login(b);
+    assert.equal((await rpc('state',{},a)).peerProfile.fields.religion,'공유할 선택');
+    const revoked = await rpc('revoke',{},a,'profile');
+    assert.equal(revoked.profile,'none');
+    assert.equal(revoked.peerProfile,null);
+    const requested = await rpc('request',{},a,'profile');
+    assert.equal(requested.profile,'sent');
+    assert.equal(requested.peerProfile,null);
+    await login(a);
+    const received = await rpc('state',{},b);
+    assert.equal(received.profile,'received');
+    assert.equal(received.peerProfile,null);
+    await rpc('accept',{},b,'profile');
+    await login(b);
+    assert.deepEqual((await rpc('state',{},a)).peerProfile.fields,{religion:'공유할 선택',height:175.5});
+    await assert.rejects(() => db.query('select fields from pajang_private.exchange_profiles'),{code:'42501'});
+    await db.exec('reset role');
+    await db.exec('set role anon');
+    await assert.rejects(() => rpc('mine'),{code:'42501'});
+    await db.exec('reset role');
+    await login(a,true);
+    await assert.rejects(() => rpc('save',{fields:{religion:'실패해야 하는 변경'}}),{code:'42501'});
   });
 });
