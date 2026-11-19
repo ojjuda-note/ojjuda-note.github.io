@@ -39,9 +39,9 @@ a { color: inherit; }
   display: grid;
   grid-template-rows: 66px minmax(0, 1fr) 202px calc(76px + env(safe-area-inset-bottom, 0px));
   overflow: hidden;
-  background: #f4efe6;
-  border: 1px solid #d5d4cc;
-  box-shadow: 0 18px 60px #24334717;
+  background: #fff9f0;
+  border: 1px solid #dedfd5;
+  box-shadow: 0 18px 60px #687c711c;
   container-type: inline-size;
 }
 .topbar {
@@ -69,11 +69,11 @@ a { color: inherit; }
 .table { position: relative; min-height: 0; margin: 0 22px; }
 .camp-scene {
   position: absolute; inset: 0 -22px; z-index: 0; pointer-events: none;
-  background: #4b6471 url("./campsite.svg?v=20261120-onecard6") center bottom / cover no-repeat;
+  background: #e6eddf url("./campsite-pastel.webp?v=20261120-onecard8") center 45% / cover no-repeat;
 }
 .camp-scene::after {
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(180deg, #152b3e16, transparent 35%, #162d3b17);
+  background: linear-gradient(180deg, #fff9ee0a, transparent 35%, #fff3e510);
 }
 .opponents { position: absolute; inset: 0; }
 .seat {
@@ -135,7 +135,7 @@ a { color: inherit; }
 .hand-area {
   --hand-head-h: 46px;
   position: relative; min-width: 0; padding: 0 24px; z-index: 5;
-  background: linear-gradient(180deg, #fcf7ed, #f4ecdf); border-top: 1px solid #e8dac6;
+  background: linear-gradient(180deg, #fffaf2, #f5eee6); border-top: 1px solid #e7e1d6;
 }
 .hand-meta {
   height: var(--hand-head-h); display: flex; align-items: center; justify-content: space-between;
@@ -146,9 +146,9 @@ a { color: inherit; }
 .hand-sort { display: inline-flex; align-items: center; gap: 4px; flex: none; }
 .hand-sort button {
   min-width: 58px; min-height: 44px; padding: 7px 8px; border: 1px solid #ccd4da; border-radius: 10px;
-  color: #566b7d; background: #fffdf7; font-size: 11px; font-weight: 600; white-space: nowrap; cursor: pointer;
+  color: #526a70; background: #fffdf7; font-size: 11px; font-weight: 600; white-space: nowrap; cursor: pointer;
 }
-.hand-sort button[aria-pressed="true"] { background: #2d4d69; border-color: #2d4d69; color: #fffdf6; }
+.hand-sort button[aria-pressed="true"] { background: #496c71; border-color: #496c71; color: #fffdf6; }
 .hand-sort button:disabled { opacity: .5; cursor: default; }
 .hand-scroll {
   position: absolute; top: var(--hand-head-h); bottom: 18px; left: 0; right: 0;
@@ -550,7 +550,7 @@ button.pile { border: 0; padding: 0; background: transparent; color: inherit; fo
 }
 @media (max-height: 560px) and (min-width: 600px) {
   /* Keep the camping scene and pile labels legible on a short screen. */
-  .camp-scene { background-size: 100% 100%; }
+  .camp-scene { background-position: center 45%; }
   .seat[data-position="top-left"] { left: 22%; }
   .seat[data-position="top-right"] { left: 78%; }
   .table-status {
@@ -590,29 +590,36 @@ button.pile { border: 0; padding: 0; background: transparent; color: inherit; fo
   .welcome .welcome-copy { grid-column: 2; margin: 4px 0 8px; font-size: 10px; }
   .status { bottom: 0; }
 }
-/* The campsite stays behind play; ivory controls keep the cards easy to read. */
-.topbar { background: #fffdf8a6; border-bottom: 1px solid #d9d6d050; }
-.brand-name, .topbar h1 { color: #263d59; font-weight: 750; }
-.icon-btn { border-color: #cdd4db; color: #425a73; background: #fffdf8; }
-.icon-btn:hover, .back-link:hover { background: #e8edf2; }
-.avatar { color: #3c5573; background: #fffdf8; border-color: #d4dbe0; box-shadow: 0 3px 8px #28384910; outline-color: transparent; }
-.seat.is-bot .avatar { color: #506b86; background: #e7edf2; }
-.seat.is-current .avatar { color: #fffdf7; background: #2d4d70; border-color: #2d4d70; outline-color: #7f9ab3; }
-.seat-name {
-  padding: 2px 5px; border-radius: 7px; color: #f8f3e8; background: #1e354ad9;
+@media (max-width: 520px) and (min-height: 561px) {
+  .camp-scene {
+    background-image: url("./campsite-pastel-portrait.webp?v=20261120-onecard8");
+    background-position: center 54%;
+  }
 }
-.seat.is-current .seat-name { color: #fff8e5; background: #355973; font-weight: 750; }
-.seat-count { margin-top: 2px; padding: 0 5px; border-radius: 5px; color: #e6e9df; background: #1e354ab8; }
-.seat.has-one .seat-count { color: #fff1c9; background: #8a5142; }
+/* Warm ivory and sage frame the painted campsite without dimming the cards. */
+.topbar { background: #fffaf2; border-bottom: 1px solid #dfdfd380; }
+.brand-name, .topbar h1 { color: #263d59; font-weight: 750; }
+.icon-btn { border-color: #d6ddd5; color: #49666e; background: #fffdf8; }
+.icon-btn:hover, .back-link:hover { background: #eaf0e8; }
+.avatar { color: #405f68; background: #fffdf8; border-color: #d6ded5; box-shadow: 0 3px 8px #526f591a; outline-color: transparent; }
+.seat.is-bot .avatar { color: #506e67; background: #e9f0e5; }
+.seat.is-current .avatar { color: #fffdf7; background: #486b68; border-color: #486b68; outline-color: #9cb6a8; }
+.seat-name {
+  padding: 2px 5px; border-radius: 7px; color: #40596a; background: #fffdf5f2;
+  box-shadow: 0 1px 5px #63765e1c;
+}
+.seat.is-current .seat-name { color: #fffdf5; background: #486b68; font-weight: 750; }
+.seat-count { margin-top: 2px; padding: 0 5px; border-radius: 5px; color: #506367; background: #fffdf0e8; }
+.seat.has-one .seat-count { color: #855044; background: #f8e2d8; }
 .seat-fan .playing-card { box-shadow: 0 1px 0 #b9b2a6, 0 3px 5px #25354b29; }
 .onecard-badge { background: #d75d55; color: #fff; }
 .pile.stock::before, .pile.stock::after { background: #e8e0d2; border-color: #f7f2e8; box-shadow: 0 3px 5px #29374a26; }
 .center-piles::before {
   content: ""; position: absolute; inset: -14px -16px -29px; z-index: -1;
-  border: 1px solid #e7c9a2; border-radius: 12px;
-  background: repeating-linear-gradient(90deg, transparent 0, transparent 22px, #9475581f 22px, #9475581f 23px),
-    linear-gradient(145deg, #dfc9a8, #bda183);
-  box-shadow: 0 4px 0 #8e755f, 0 8px 14px #142d3c40, inset 0 1px 0 #fff0d175;
+  border: 1px solid #e7d5b9; border-radius: 12px;
+  background: repeating-linear-gradient(90deg, transparent 0, transparent 22px, #b69b7714 22px, #b69b7714 23px),
+    linear-gradient(145deg, #fff5e3, #e8d5b8);
+  box-shadow: 0 4px 0 #c4ac8d, 0 8px 14px #64735c26, inset 0 1px 0 #fffdfa;
   pointer-events: none;
 }
 .pile-label, .pile-label b { color: #5b4e40; }
@@ -623,22 +630,22 @@ button.pile { border: 0; padding: 0; background: transparent; color: inherit; fo
 .suit-indicator[data-suit="H"] { color: #ae3f3c; background: #faedeb; border-color: #edc9c4; }
 .suit-indicator[data-suit="D"] { color: #866016; background: #fbf1d5; border-color: #e8d39b; }
 .suit-indicator[data-suit="C"] { color: #2b6d54; background: #e9f3ec; border-color: #bfd9c9; }
-.direction { padding: 1px 6px; border-radius: 5px; color: #f0eadc; background: #1c3449b8; }
+.direction { padding: 1px 6px; border-radius: 5px; color: #506367; background: #fffdf0ed; }
 .attack-badge { color: #ac453a; background: #f9e9e1; border-color: #e5c7ba; }
 .my-turn #turn-label { color: #244d77; }
 .my-dot { background: #3c719a; }
 #my-count, .status { color: #6e7d8d; }
 .hand-empty, .controls-note { color: #738294; }
-.controls { background: #faf6ee; border-top: 1px solid #e0ddd7; }
-.btn { color: #344e69; background: #fffdf7; border-color: #cfd7df; }
-.btn:not(:disabled):hover { background-color: #e8eef3; }
-.btn-primary { color: #fffdf7; background: #294766; border-color: #294766; box-shadow: inset 0 1px 0 #ffffff20, 0 3px 7px #2539501c; }
-.btn-primary:not(:disabled):hover { background: #355b7d; }
-.btn-secondary { color: #3e5771; background: #fffdf8; border-color: #c5d0db; }
+.controls { background: #fffaf2; border-top: 1px solid #e4e0d6; }
+.btn { color: #405e68; background: #fffdf7; border-color: #d0dcd7; }
+.btn:not(:disabled):hover { background-color: #eaf0e8; }
+.btn-primary { color: #fffdf7; background: #496c71; border-color: #496c71; box-shadow: inset 0 1px 0 #ffffff20, 0 3px 7px #4d6a591c; }
+.btn-primary:not(:disabled):hover { background: #3b5d62; }
+.btn-secondary { color: #405e68; background: #fffdf8; border-color: #ccd8d2; }
 .btn-quiet { color: #5a7086; background: transparent; border-color: transparent; }
 .btn-danger { color: #b24c44; border-color: #dcbab1; }
 .controls .rules-button { color: #61768c; }
-.onecard-button[aria-pressed="true"] { color: #fff; background: #3b719d; border-color: #3b719d; box-shadow: 0 0 0 2px #3b719d30; }
+.onecard-button[aria-pressed="true"] { color: #fff; background: #496c71; border-color: #496c71; box-shadow: 0 0 0 2px #496c7130; }
 .connection { color: #385778; background: #eef3f6; border: 1px solid #c8d5df; }
 .turn-timer { background: #d5dce2; }
 .turn-timer span { background: #567da1; }

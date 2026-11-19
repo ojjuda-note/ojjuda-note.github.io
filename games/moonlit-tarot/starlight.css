@@ -159,7 +159,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .modal[open] { animation: modal-appear .2s ease both; }
 .modal h2 { margin: 8px 0 24px; color: #f6e6bc; font: 600 25px/1.5 var(--sans); letter-spacing: -.025em; }
 .modal-close, .reading-modal > .modal-close, .result-modal > .modal-close {
-  position: sticky; top: 0; float: right; z-index: 8; width: 36px; height: 36px; margin: -12px -12px 0 0;
+  position: sticky; top: 0; right: auto; float: right; z-index: 8; width: 36px; height: 36px; margin: -12px -12px 0 0;
   border: 1px solid #d3e2e126; border-radius: 50%; color: #d4e2e5; background: #142b3b; box-shadow: none;
 }
 .help-modal { width: 520px; }
@@ -201,6 +201,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .secondary-button { min-height: 48px; border: 1px solid #c2d9e038; border-radius: 10px; background: #a8c6d40a; color: #d4e5ec; }
 .secondary-button:hover { background: #a8c6d41a; }
 .result-modal { width: 750px; padding: 32px; }
+.result-heading { padding-inline: 36px; }
 .result-heading h2 { margin-bottom: 8px; }
 .result-heading > p:last-child { font-size: 12px; color: #a5bdca; }
 .summary-tabs, .summary-tabs.has-personal-reading { display: flex; gap: 4px; width: 100%; max-width: none; margin: 0 0 24px; padding: 4px; border: 1px solid #a8c6d424; border-radius: 10px; background: #06152280; }

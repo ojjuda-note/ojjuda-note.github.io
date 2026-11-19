@@ -2,13 +2,15 @@
  * Ojjuda One Card — dependency-free rules shared by the browser and server.
  *
  * Cards retain immutable legacy IDs S-A ... C-K, X-B and X-R for saved games.
+ * New decks add S-Q-2 ... C-Q-2: two reversals per color, 58 cards in total.
+ * Existing rounds keep their stored card set; restoring never adds cards.
  * Display metadata presents a dedicated four-color number/action deck.
  * Full state is private. Only projectState() may leave the authoritative server.
  * Attacks may stack only at the same or a higher printed strength; a normal
  * draw ends the turn; 7/jokers choose a suit; J skips, Q reverses and K repeats.
  * New games start clockwise. Reversal never adds an extra turn in a two-seat game.
  */
-export const ENGINE_VERSION = '1.3.0';
+export const ENGINE_VERSION = '1.4.0';
 export const MAX_HAND_SIZE = 20;
 export const SUITS = Object.freeze(['S', 'H', 'D', 'C']);
 export const RANKS = Object.freeze(['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']);
@@ -26,6 +28,10 @@ for (const suit of SUITS) for (const rank of RANKS) {
 for (const [rank, attack] of [['B', 5], ['R', 7]]) {
   const id = `X-${rank}`;
   CARDS.set(id, Object.freeze({ id, suit: 'X', rank, symbol: '✦', label: `전체색 +${attack}`, color: 'wild', colorName: '전체색', displayKind: 'attack', displayValue: `+${attack}`, joker: true, attack }));
+}
+for (const suit of SUITS) {
+  const id = `${suit}-Q-2`;
+  CARDS.set(id, Object.freeze({ ...CARDS.get(`${suit}-Q`), id }));
 }
 
 export class OneCardError extends Error {

@@ -1,13 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ENGINE_VERSION, SUITS, makeDeck, cardInfo, createGame, applyAction, legalCards, isPlayable, projectState, chooseBotAction, removePlayer, canDeclare } from '../games/onecard/engine.mjs';
+import { ENGINE_VERSION, SUITS, RANKS, makeDeck, cardInfo, createGame, applyAction, legalCards, isPlayable, projectState, chooseBotAction, removePlayer, canDeclare } from '../games/onecard/engine.mjs';
 
 const players = count => Array.from({ length: count }, (_, index) => ({ id: `p${index}`, name: `친구 ${index + 1}`, bot: index > 0 }));
+const legacyDeck = SUITS.flatMap(suit => RANKS.map(rank => `${suit}-${rank}`)).concat('X-B', 'X-R');
 const fullCards = state => [...state.deck, ...state.discard, ...state.players.flatMap(player => player.hand)];
-function conserved(state) {
+function conserved(state, expected = 58) {
   const cards = fullCards(state);
-  assert.equal(cards.length, 54, 'all 54 cards remain in the game');
-  assert.equal(new Set(cards).size, 54, 'no card is duplicated');
+  assert.equal(cards.length, expected, `all ${expected} cards remain in the game`);
+  assert.equal(new Set(cards).size, expected, 'no card is duplicated');
   assert.ok(cards.every(cardId => cardInfo(cardId)), 'every card ID is valid');
   assert.ok(state.status === 'finished' || state.players[state.turn].active, 'turn always points to an active seat');
   assert.ok([1, -1].includes(state.direction), 'turn direction is always a valid clockwise or counterclockwise step');
@@ -28,10 +29,11 @@ function move(state, cardId, extras = {}) {
   return applyAction(state, state.players[state.turn].id, { type: 'play', cardId, ...extras });
 }
 
-test('54-card deck, valid setup and a visible neutral opening for 2–5 players', () => {
-  assert.equal(ENGINE_VERSION, '1.3.0');
-  assert.equal(makeDeck().length, 54);
-  assert.equal(new Set(makeDeck()).size, 54);
+test('58-card deck, valid setup and a visible neutral opening for 2–5 players', () => {
+  assert.equal(ENGINE_VERSION, '1.4.0');
+  assert.equal(makeDeck().length, 58);
+  assert.equal(new Set(makeDeck()).size, 58);
+  assert.deepEqual(makeDeck().slice(0, 54), legacyDeck, 'every original identity and its deck order stays intact');
   assert.equal(cardInfo('X-B').attack, 5);
   assert.equal(cardInfo('X-R').attack, 7);
   assert.equal(cardInfo('H-10').label, '빨강 7');
@@ -39,7 +41,7 @@ test('54-card deck, valid setup and a visible neutral opening for 2–5 players'
   for (const count of [2, 3, 4, 5]) {
     const state = createGame({ players: players(count), seed: count });
     assert.ok(state.players.every(player => player.hand.length === 7));
-    assert.equal(state.deck.length, 53 - count * 7);
+    assert.equal(state.deck.length, 57 - count * 7);
     assert.ok(['3', '4', '5', '6', '8', '9', '10'].includes(cardInfo(state.discard[0]).rank));
     assert.equal(state.lastEvents.length, count * 7 + 1);
     assert.deepEqual(state.lastEvents.slice(0, count).map(event => event.playerId), players(count).map(player => player.id));
@@ -50,6 +52,63 @@ test('54-card deck, valid setup and a visible neutral opening for 2–5 players'
   assert.throws(() => createGame({ players: [{ id: 'p0' }, { id: 'p0' }] }), { code: 'PLAYER_ID' });
   assert.throws(() => createGame({ players: players(2), handSize: 27 }), { code: 'HAND_SIZE' });
   assert.throws(() => createGame({ players: players(2), startIndex: 8 }), { code: 'START_INDEX' });
+});
+
+test('each color has two distinct reverse cards with the same label and rule', () => {
+  const reversals = makeDeck().filter(id => cardInfo(id).displayKind === 'reverse');
+  assert.equal(reversals.length, 8);
+  for (const suit of SUITS) {
+    const first = cardInfo(`${suit}-Q`), second = cardInfo(`${suit}-Q-2`);
+    assert.deepEqual(reversals.filter(id => cardInfo(id).suit === suit), [first.id, second.id]);
+    assert.deepEqual(second, { ...first, id: `${suit}-Q-2` });
+    assert.ok(Object.isFrozen(second));
+    assert.equal(second.id.length, 5, 'fits the existing move request card ID limit');
+    assert.equal(isPlayable(second.id, 'S-3', suit), true);
+    assert.equal(isPlayable(second.id, 'S-Q', 'S'), true, 'same action matches across colors');
+    assert.equal(isPlayable(second.id, `${suit}-2`, suit, 2), false, 'a reversal cannot defend an attack');
+  }
+  let state = table([['S-Q', 'S-Q-2', 'D-8'], ['C-4', 'D-5'], ['H-Q-2', 'H-3']]);
+  state = move(state, 'S-Q');
+  assert.equal(state.turn, 2); assert.equal(state.direction, -1);
+  assert.ok(state.players[0].hand.includes('S-Q-2'), 'playing one copy keeps the other in hand');
+  state = move(state, 'H-Q-2', { declare: true });
+  assert.equal(state.turn, 0); assert.equal(state.direction, 1);
+  state = move(state, 'S-Q-2', { declare: true });
+  assert.equal(state.turn, 2); assert.equal(state.direction, -1);
+  assert.equal(projectState(state, 'p1').topCard, 'S-Q-2');
+  assert.equal(projectState(state, 'p1').lastEvents.find(event => event.type === 'play').cardId, 'S-Q-2');
+  conserved(state);
+  const computer = table([['S-Q-2', 'H-8'], ['D-3', 'C-4']]);
+  assert.equal(chooseBotAction(projectState(computer, 'p0'), 'p0').cardId, 'S-Q-2');
+});
+
+test('saved 54-card rounds restore, recycle and finish without introducing new copies', () => {
+  const legacySet = new Set(legacyDeck), opening = 'C-4';
+  const cards = legacyDeck.filter(id => id !== opening);
+  const hands = Array.from({ length: 5 }, (_, index) => cards.slice(index * 7, index * 7 + 7));
+  const original = table(hands, { top: opening, deck: cards.slice(35), engineVersion: '1.3.0', direction: -1 });
+  const serialized = JSON.stringify(original);
+  let state = JSON.parse(serialized), turns = 0;
+  conserved(state, 54);
+  assert.equal(projectState(state, 'p0').direction, -1);
+  while (state.status === 'playing') {
+    assert.ok(++turns < 1500, 'a restored round still reaches its result');
+    const actor = state.players[state.turn].id;
+    state = applyAction(state, actor, chooseBotAction(projectState(state, actor), actor));
+    conserved(state, 54);
+    assert.ok(fullCards(state).every(id => legacySet.has(id)));
+  }
+  assert.equal(state.engineVersion, ENGINE_VERSION);
+  assert.ok(state.winnerIds.length);
+  assert.equal(JSON.stringify(original), serialized, 'restoring and playing never mutates the saved input');
+  const remainingHands = [['H-8'], ['C-9']];
+  const discard = legacyDeck.filter(id => !['H-8', 'C-9', 'S-4'].includes(id)).concat('S-4');
+  const exhausted = table(remainingHands, { discard, deck: [], pendingDraw: 3, engineVersion: '1.3.0' });
+  const recycled = applyAction(exhausted, 'p0', { type: 'draw' });
+  assert.ok(recycled.lastEvents.some(event => event.type === 'recycle'));
+  assert.deepEqual(recycled.discard, ['S-4']);
+  conserved(recycled, 54);
+  assert.ok(fullCards(recycled).every(id => legacySet.has(id)));
 });
 
 test('all legacy identities expose the dedicated four-color number/action deck', () => {
@@ -299,12 +358,13 @@ test('discard recycling preserves the top card and never duplicates cards', () =
 
 test('an empty deck cannot hang the table; one dry round resolves the result', () => {
   const cards = makeDeck().filter(id => id !== 'S-4');
-  let state = table([cards.slice(0, 17), cards.slice(17, 35), cards.slice(35)], { deck: [] });
+  let state = table([cards.slice(0, 13), cards.slice(13, 27), cards.slice(27, 42), cards.slice(42)], { deck: [] });
   state = applyAction(state, 'p0', { type: 'draw' });
   assert.equal(state.status, 'playing');
   assert.equal(state.lastEvents[0].count, 0);
   state = applyAction(state, 'p1', { type: 'draw' });
   state = applyAction(state, 'p2', { type: 'draw' });
+  state = applyAction(state, 'p3', { type: 'draw' });
   assert.equal(state.status, 'finished');
   assert.equal(state.finishReason, 'blocked');
   assert.equal(state.winnerId, 'p0');
@@ -318,7 +378,7 @@ test('20 cards eliminate a seat, recycle its cards privately and stop overdraw',
   assert.equal(state.players[0].active, false);
   assert.equal(state.players[0].eliminatedReason, 'too-many-cards');
   assert.equal(state.players[0].hand.length, 0);
-  assert.equal(state.deck.length, 51);
+  assert.equal(state.deck.length, 55);
   assert.equal(state.pendingDraw, 0);
   assert.equal(state.turn, 1);
   assert.equal(state.status, 'playing');
@@ -331,7 +391,7 @@ test('20 cards eliminate a seat, recycle its cards privately and stop overdraw',
 });
 
 test('finishing on any special card ends immediately and further actions are rejected', () => {
-  for (const cardId of ['S-3', 'S-A', 'S-7', 'S-J', 'S-Q', 'S-K', 'X-R']) {
+  for (const cardId of ['S-3', 'S-A', 'S-7', 'S-J', 'S-Q', 'S-Q-2', 'S-K', 'X-R']) {
     const state = table([[cardId], ['C-9', 'D-5']]);
     const result = move(state, cardId, { suit: 'H' });
     assert.equal(result.status, 'finished');
