@@ -80,12 +80,13 @@ a { color: inherit; }
   contain: layout style; opacity: .9;
 }
 .direction-orbit *, .direction-orbit *::before, .direction-orbit *::after { pointer-events: none; }
+.direction-orbit:not([data-ready="true"]) { visibility: hidden; }
 .orbit-track {
   position: absolute; inset: 18px; border: 1px solid #fff9e875; border-radius: 50%;
   box-shadow: 0 0 0 1px #667d5d12;
 }
 .orbit-marker {
-  position: absolute; top: 0; left: 0; width: 34px; height: 16px; margin: -8px 0 0 -17px;
+  position: absolute; top: 50%; left: 50%; width: 34px; height: 16px; margin: -8px 0 0 -17px;
   border-radius: 50%; color: #fff9e4; transform-origin: center; will-change: transform;
   background: radial-gradient(ellipse, #fff7d950, #fff7d900 72%);
 }
