@@ -131,6 +131,7 @@ async function pressBack(page) {
     page.setDefaultTimeout(10000);
     page.on('pageerror',error=>errors.push(error.message));
     const reset=async()=>{
+      if(page.url().startsWith(origin))await page.evaluate(()=>history.replaceState(null,'',location.href));
       await page.goto(address);
       await page.getByRole('button',{name:'이 질문 어때요?',exact:true}).waitFor();
       await page.waitForFunction(()=>!document.querySelector('.question-suggest')?.disabled);
@@ -233,6 +234,13 @@ async function pressBack(page) {
     assert.equal(await form.input.inputValue(),'','Forward restores a fresh suggestion form');
     await pressBack(page);
     await form.dialog.waitFor({state:'hidden'});
+
+    form=await openForm(page);
+    await page.reload();
+    await form.dialog.waitFor();
+    await pressBack(page);
+    await form.dialog.waitFor({state:'hidden'});
+    assert.equal(page.url(),address,'reloading an open question form does not add a second history entry');
 
     await reset();
     form=await openForm(page);

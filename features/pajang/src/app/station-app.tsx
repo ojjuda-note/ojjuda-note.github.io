@@ -90,8 +90,8 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const draftByPeer=useRef(new Map<string,string>());
   const currentPeer=useRef(thread);
   currentPeer.current=thread;
-  const [pendingModal,setModal]=useState<Modal|null>(null),[inbox,setInbox]=useState("received");
-  const suggestionHistory=useRef<{id:string;href:string;state:Record<string,unknown>}|null>(null);
+  const [pendingModal,setModal]=useState<Modal|null>(()=>initialStation.me&&tab==="today"&&typeof history.state?.pajangQuestionSuggestion==="string"?{kind:"suggestion"}:null),[inbox,setInbox]=useState("received");
+  const suggestionHistory=useRef<{id:string;href:string;state:Record<string,unknown>}|null>(pendingModal?.kind==="suggestion"?{id:history.state.pajangQuestionSuggestion,href:location.href,state:history.state}:null);
   const [messages,setMessages]=useState<Message[]>([]),[draft,setDraft]=useState(""),[busy,setBusy]=useState(false),[error,setError]=useState(""),[toast,setToast]=useState(initialStation.locationNotice||""),[net,setNet]=useState(""),[ready,setReady]=useState(false);
   const [historyRevision,setHistoryRevision]=useState(0);
   const lock=useRef(false),serverRevision=useRef(0),bottom=useRef<HTMLDivElement>(null);
