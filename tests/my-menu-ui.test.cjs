@@ -153,9 +153,8 @@ async function worldFixture(context, mobile, errors) {
   assert.deepEqual(await page.locator('.world-settings-page .ojjuda-settings-heading').allTextContents(),
     ['내 계정', '이용 설정', '이용 안내', '앱 다운로드', '계정 관리'], 'settings retain the Park-style section order');
   assert.equal(await page.locator('.world-settings-header h2').textContent(), '아지트 설정');
-  assert.equal(await page.getByRole('button', { name: '설정 닫기', exact: true }).getAttribute('data-act'), 'tab');
-  assert.equal(await page.getByRole('button', { name: '설정 닫기', exact: true }).getAttribute('data-tab'), 'hub',
-    'closing settings returns to the Agit');
+  assert.equal(await page.getByRole('button', { name: '설정 닫기', exact: true }).getAttribute('data-act'), 'navigation-back',
+    'closing settings returns to the actual previous screen');
   assert.equal(await page.locator('details[open]').count(), 0, 'settings start closed to reduce clutter');
   await fitsViewport(page, 'closed World menu');
   await settingsListLayout(page, 'closed World menu');
@@ -189,7 +188,7 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await page.locator('#p-nick').inputValue(), '검사 회원');
   assert.equal(await page.locator('#n-friend').isChecked(), false);
   assert.equal(await page.locator('#p-mt, [data-act="mood-pick"]').count(), 0, 'profile omits retired mood controls');
-  const expectedActions = ['fr-accept', 'fr-decline', 'fr-remove', 'logout', 'member-info-open', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'tab', 'unblock'].sort();
+  const expectedActions = ['fr-accept', 'fr-decline', 'fr-remove', 'logout', 'member-info-open', 'navigation-back', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'unblock'].sort();
   assert.deepEqual(await page.locator('.my-hub [data-act]').evaluateAll(nodes => [...new Set(nodes.map(node => node.dataset.act))].sort()), expectedActions,
     'every existing account, notification, privacy and support action keeps its dispatch key');
   for (const action of expectedActions) assert.equal(await page.locator(`[data-act="${action}"]`).first().isVisible(), true, `${action} remains reachable`);

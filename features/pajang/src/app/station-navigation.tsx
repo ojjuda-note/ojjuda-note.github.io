@@ -1,6 +1,12 @@
 import type {MouseEvent} from "react";
 import {I} from "./icons";
 
+declare global {
+  interface Window {
+    OjjudaSectionNavigation?: {back:()=>void;hasPreviousPage:boolean};
+  }
+}
+
 export const destinations=[
   {id:"today",label:"오늘",icon:"letter"},
   {id:"inbox",label:"마음함",icon:"heart"},

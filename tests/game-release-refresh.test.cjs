@@ -5,7 +5,7 @@ function fixture(){
  const calls=[],navigations=[];let reply=manifest,offline=false,rankReads=0,gaming=false;
  const c=vm.createContext({URL,AbortController,setTimeout,clearTimeout,Date,Promise,
   fetch:async(url,options)=>{calls.push({url,options});if(offline)throw Error('offline');return{ok:true,json:async()=>reply};},
-  window:{},D:{online:true,user:{id:'member-a'}},g:{tab:'place',place:{id:'arcade'}},L:{area:'',tab:''},worldNavigation:null,
+  window:{},D:{online:true,user:{id:'member-a'}},g:{tab:'place',place:{id:'arcade'}},L:{area:'',tab:''},worldAdminService:'agit',worldNavigation:null,
   document:{body:{classList:{contains:()=>gaming}},querySelector:()=>null},
   location:{href:'https://ojjuda.kr/world.html?tab=arcade&game=screw#main',replace:url=>navigations.push(url)}});
  vm.runInContext(read('shared/games/world-game-assets.js'),c);

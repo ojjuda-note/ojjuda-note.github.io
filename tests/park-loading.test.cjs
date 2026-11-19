@@ -316,7 +316,9 @@ test('a shared card starts before the feed and fetches reply backgrounds near th
     assert.equal(doc.querySelector('[data-sort="latest"]').getAttribute('aria-pressed'),'true');
     assert.equal(feedRequests(),4,'switching back from Popular loads the Latest feed once');
     doc.querySelector('#composer-backdrop').hidden=false;
-    assert.equal(w.OjjudaParkFull.returnHome(),false,'an open dialog requires a clean document on re-entry');
+    doc.querySelector('#compose-text').value='아직 작성 중인 카드';w.confirm=()=>false;
+    assert.equal(w.OjjudaParkFull.returnHome(),false,'an unconfirmed draft blocks resetting the loaded frame');
+    assert.equal(doc.querySelector('#composer-backdrop').hidden,false);
     await settle();
   } finally {
     for (const observer of observers) observer.disconnect();

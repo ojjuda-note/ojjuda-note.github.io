@@ -381,23 +381,21 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
       assert.equal((await current()).tab, saved.tab==='events'?'cards':saved.tab==='chats'?'messages':saved.tab);
       assert.equal(await page.locator('[data-act="adm-cr"], [data-act="adm-chatlim"], [data-act="adm-content-kind"]').count(), 0);
     }
-    assert.deepEqual(await page.locator('.adm-site-links [data-act="adm-back"]').allTextContents(), ['← 관리자 메인']);
+    assert.deepEqual(await page.locator('.adm-site-links [data-act="adm-back"]').allTextContents(), ['← 뒤로']);
     assert.equal(await page.locator('.adm-menu-external a').last().textContent(), '원고실');
     assert.equal(await page.locator('.adm-site-links [data-act="adm-back"]').getAttribute('type'), 'button');
-    // Each administrator section goes straight to the dashboard; its Back stays in Admin.
-    await area('operations'); await tab('errors');
+    // Both Back controls restore the actual visited administrator view.
+    await area('operations'); const previousOperation=await current(); await tab('errors');
     await page.locator('[data-act="adm-back"]').click();
-    assert.deepEqual(await current(), {area:'content',tab:'cards'});
-    assert.equal(await page.locator('[data-act="adm-back"]').count(), 0, 'the service dashboard has no leave-admin Back');
-    assert.equal(await page.evaluate(() => worldTest.state.tab), 'admin');
-    await page.evaluate(() => worldTest.actions.tab({tab:'admin'}));
-    assert.deepEqual(await current(), {area:'content',tab:'cards'}, 'the active Park mode stays at its own dashboard');
-    await area('content'); await tab('risk');
+    await page.waitForFunction(expected=>worldTest.admin.area===expected.area&&worldTest.admin.tab===expected.tab,previousOperation);
+    assert.deepEqual(await current(),previousOperation);
+    assert.equal(await page.locator('[data-act="adm-back"]').count(),1,'every administrator view retains a history Back control');
+    await area('account');await tab('overview');
+    await area('content');const previousContent=await current();await tab('risk');
     await page.evaluate(() => history.back());
-    await page.waitForFunction(() => worldTest.admin.area === 'content' && worldTest.admin.tab === 'cards');
-    await page.evaluate(() => history.back());
-    await page.waitForTimeout(100);
-    assert.equal(await page.evaluate(() => worldTest.state.tab), 'admin', 'Back at the dashboard stays in administrator mode');
+    await page.waitForFunction(expected=>worldTest.admin.area===expected.area&&worldTest.admin.tab===expected.tab,previousContent);
+    await page.evaluate(() => history.forward());
+    await page.waitForFunction(()=>worldTest.admin.area==='content'&&worldTest.admin.tab==='risk');
     // Exercise the real embedded editor with the host guard: discard is asked once.
     await page.goto('https://fixture.test/world.html?admin=notice&actualNote=1'); await loaded();
     await page.getByLabel(/^서비스 공지/).waitFor();

@@ -1366,9 +1366,10 @@ function updateCardUrl(id = null, push = false) {
   const url = new URL(location.href);
   if (id) url.searchParams.set('card', id); else url.searchParams.delete('card');
   const state = push
-    ? { noteNavigation: true, previousCardId: new URL(location.href).searchParams.get('card') }
-    : { noteNavigation: false };
-  history[push ? 'pushState' : 'replaceState'](state, '', url);
+    ? { ...history.state, noteMy: false, noteNavigation: true, previousCardId: new URL(location.href).searchParams.get('card') }
+    : { ...history.state, noteNavigation: false };
+  const managed = window.OjjudaParkHistory?.isTransition?.() === true;
+  history[push && !managed ? 'pushState' : 'replaceState'](state, '', url);
 }
 
 function showFeed(updateUrl = true, returnPoint = null) {
@@ -1531,7 +1532,8 @@ function returnToFeed(updateUrl = true, returnPoint = null) {
   showFeed(updateUrl, returnPoint);
   if (feedDeferred) void loadFeed();
 }
-window.addEventListener('popstate', () => {
+window.addEventListener('popstate', event => {
+  if (window.OjjudaParkHistory?.handles?.(event.state)) return;
   const id = new URL(location.href).searchParams.get('card');
   if (validCardId(id)) {
     if (!authKnown) { initialCardId = id; return; }
@@ -3666,8 +3668,8 @@ function installManagement() {
   $('#note-admin-entry').append(reports);
   const memberInfo = managementButton('내 회원정보', () => showMemberInfo()); memberInfo.id = 'note-member-info'; memberInfo.hidden = true;
   tools.append(memberInfo, blocks); $('#side-tools').append(tools);
-  managementClose.addEventListener('click', () => closeManagement());
-  management.addEventListener('click', event => { if (event.target === management) closeManagement(); });
+  managementClose.addEventListener('click', () => { if (!window.OjjudaParkHistory?.closeOverlay?.()) closeManagement(); });
+  management.addEventListener('click', event => { if (event.target === management && !window.OjjudaParkHistory?.closeOverlay?.()) closeManagement(); });
   document.addEventListener('keydown', event => {
     const dialog = !management.hidden ? managementPanel : !backdrop.hidden ? $('.composer') : null;
     if (!dialog) return;

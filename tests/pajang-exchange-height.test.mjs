@@ -241,4 +241,3 @@ test('exchange profile edits persist decimal heights without changing privacy or
     await assert.rejects(() => rpc('save',{fields:{height:'175.5'}}),{code:'42501'});
   });
 });
-

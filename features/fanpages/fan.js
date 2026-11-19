@@ -376,6 +376,7 @@ function renderFanCatalog() {
       trigger = button;
       show(Number(button.dataset.photoIndex));
       dialog.showModal();
+      window.OjjudaSectionNavigation?.openDialog(dialog, () => { dialog.showModal(); document.body.classList.add('photo-viewing'); close.focus(); });
       document.body.classList.add('photo-viewing');
       close.focus();
     }));
@@ -429,7 +430,7 @@ function renderFanCatalog() {
         const media = document.createElement('video');
         media.src = video.file; media.controls = true; media.playsInline = true;
         player.replaceChildren(media);
-        dialog.showModal(); close.focus(); return;
+        dialog.showModal(); window.OjjudaSectionNavigation?.openDialog(dialog, () => button.click()); close.focus(); return;
       }
       const iframe = document.createElement('iframe');
       iframe.src = `https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0`;
@@ -439,6 +440,7 @@ function renderFanCatalog() {
       iframe.referrerPolicy = 'strict-origin-when-cross-origin';
       player.replaceChildren(iframe);
       dialog.showModal();
+      window.OjjudaSectionNavigation?.openDialog(dialog, () => button.click());
       close.focus();
     }));
     close.addEventListener('click', () => dialog.close());

@@ -65,6 +65,10 @@
     const myButton = event.target.closest('[data-note-my]');
     if (myButton) {
       event.preventDefault();
+      if (window.OjjudaParkHistory?.transition) {
+        window.OjjudaParkHistory.transition(() => showMy(true, true));
+        return;
+      }
       if (!document.body.classList.contains('note-my-open')) {
         history.pushState({ ...history.state, noteMy: true }, '', location.href);
       }
@@ -75,11 +79,14 @@
     const cardAction = event.target.closest('[data-show], [data-sort], [data-collection], [data-open], [data-compose], #event-start');
     if (!cardAction || cardAction.disabled) return;
     // Existing card handlers will perform the selected navigation after capture.
-    history.replaceState({ ...history.state, noteMy: false }, '', location.href);
+    // The card/collection controller records the destination after this capture.
+    // Keep this entry's noteMy flag so Back can restore the settings screen.
+    if (!window.OjjudaParkHistory) history.pushState({ ...history.state, noteMy: false }, '', location.href);
     showMy(false);
   }, true);
 
   window.addEventListener('popstate', event => {
+    if (window.OjjudaParkHistory?.handles?.(event.state)) return;
     const wasOpen = document.body.classList.contains('note-my-open');
     const open = event.state?.noteMy === true;
     showMy(open, open);
@@ -104,7 +111,14 @@
     }
   }
 
-  window.OjjudaNoteNavigation=Object.freeze({leaveMy(){history.replaceState({...history.state,noteMy:false},'',location.href);showMy(false);}});
+  window.OjjudaNoteNavigation=Object.freeze({
+    showMy,
+    leaveMy(){
+      if (!document.body.classList.contains('note-my-open')) return;
+      if (!window.OjjudaParkHistory) history.pushState({...history.state,noteMy:false},'',location.href);
+      showMy(false);
+    }
+  });
   main.tabIndex = -1;
   desktop.addEventListener('change', placeAccountMenu);
   if (tools) new MutationObserver(syncBadge).observe(tools, {

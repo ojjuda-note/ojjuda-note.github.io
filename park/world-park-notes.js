@@ -10,13 +10,16 @@
   window.OjjudaParkNotes = {menuMarkup,install(app) {
     const frameVersion = '20261119-auto-theme1' + (app.version ? '-' + app.version : '');
     let frame=null,panel=null,owner=null,routed=false,initial=window.performance?.getEntriesByType?.('navigation')[0]?.type!=='back_forward',pending=null,overlayOpen=false,composerOpen=false,cardOpen=false,stopFrameNavigation=()=>{};
-    let cacheTimer=null,frameVisible=false;
+    let cacheTimer=null,frameVisible=false,pendingSnapshot=null;
     let currentNavigation='feed';
     // Short menu visits should not parse the entire Park app again. Retire an
     // inactive iframe so its feed, scripts and connections do not live forever.
     const cacheLifetime=60_000;
     const active=()=>app.place()?.id==='park';
-    const requested=new URL(location.href).searchParams.get('place')==='park';
+    // World can normalize its route before this first iframe mounts. Capture
+    // one-time card/composer options together with the original Park request.
+    const entryUrl=new URL(location.href);
+    const requested=entryUrl.searchParams.get('place')==='park';
     const api=()=>{try{return frame?.contentWindow.OjjudaParkFull;}catch{return null;}};
     function canOpenAdmin(){
       return !!(active()&&frameVisible&&frame?.isConnected&&!panel?.hidden&&owner&&owner===app.userId()&&app.isAdmin?.()===true);
@@ -44,7 +47,13 @@
     }
     function syncFab(){syncComposerMode();const button=panel?.querySelector('.park-compose-fab'),cover=panel?.querySelector('[data-park-loading]');if(button)button.hidden=overlayOpen||cardOpen||frame?.dataset.view==='glasses'||cover?.hidden===false;}
     function loading(visible){const cover=panel?.querySelector('[data-park-loading]');if(cover)cover.hidden=!visible;syncFab();}
+    function restoreSnapshot(snapshot){pendingSnapshot=snapshot&&typeof snapshot==='object'?snapshot:null;}
+    function flushSnapshot(){
+      if(!active()||!pendingSnapshot||!api()?.restoreNavigation)return;
+      const snapshot=pendingSnapshot;pendingSnapshot=null;api().restoreNavigation(snapshot);
+    }
     function flush(){
+      flushSnapshot();
       if(!active()||!pending||!api()?.navigate)return;
       const action=pending;pending=null;api().navigate(action);
       syncNavigation();
@@ -95,10 +104,12 @@
       }
       if(frame?.isConnected&&panel===next&&owner===app.userId()){
         const returning=panel.hidden||restored;
+        const preserve=restored||app.restoringHistory?.()===true||!!pendingSnapshot;
         clearRetirement();panel.hidden=false;panel.removeAttribute('aria-hidden');
-        if(!returning||api()?.returnHome?.()){
+        if(!returning||(preserve&&api())||api()?.returnHome?.()){
           if(returning){
-            overlayOpen=composerOpen=cardOpen=false;
+            if(preserve){overlayOpen=api()?.overlayOpen?.()===true;composerOpen=api()?.composerOpen?.()===true;cardOpen=api()?.cardOpen?.()===true;}
+            else overlayOpen=composerOpen=cardOpen=false;
             stopGestures();stopFrameNavigation=app.onFrameReady?.(frame)||(()=>{});
           }
           setVisible(true);syncFab();syncNavigation();flush();return;
@@ -107,9 +118,9 @@
       }
       forget();
       panel=next;panel.hidden=false;panel.removeAttribute('aria-hidden');owner=app.userId();overlayOpen=composerOpen=cardOpen=false;
-      const view=initial&&new URL(location.href).searchParams.get('view')==='glasses'?'glasses':'cards';
+      const view=initial&&entryUrl.searchParams.get('view')==='glasses'?'glasses':'cards';
       const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');url.searchParams.set('v',frameVersion);
-      if(initial){const source=new URL(location.href);for(const key of ['card','keep','compose'])if(source.searchParams.has(key))url.searchParams.set(key,source.searchParams.get(key));initial=false;}
+      if(initial){for(const key of ['card','keep','compose'])if(entryUrl.searchParams.has(key))url.searchParams.set(key,entryUrl.searchParams.get(key));initial=false;}
       frame=document.createElement('iframe');frame.title='공원 카드';frame.allow='geolocation; clipboard-write; web-share';frame.dataset.view=view;frame.src=url.pathname+url.search;
       frameVisible=true;
       panel.querySelector('[data-park-app-slot]').replaceChildren(frame);loading(true);
@@ -181,6 +192,6 @@
       if(event.data?.type==='ojjuda:park-balance'&&event.data.userId===owner&&owner&&Number.isSafeInteger(event.data.coins)&&event.data.coins>=0)app.onBalance?.(event.data.coins,owner);
       if(event.data?.type==='ojjuda:park-card-published'&&event.data.userId===owner&&owner&&typeof event.data.cardId==='string'&&/^[0-9a-f-]{36}$/i.test(event.data.cardId))app.onCardPublished?.(event.data.cardId);
     });
-    return {refresh:()=>active()?(api()?.refresh?.()??false):false,markup,sync,route,canLeave,close,open,refreshBalance,refreshAdmin,preserveShell,requested,navigationAction:()=>currentNavigation};
+    return {snapshot:()=>api()?.navigationSnapshot?.()||null,restoreSnapshot,refresh:()=>active()?(api()?.refresh?.()??false):false,markup,sync,route,canLeave,close,open,refreshBalance,refreshAdmin,preserveShell,requested,navigationAction:()=>currentNavigation};
   }};
 })();

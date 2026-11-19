@@ -143,6 +143,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  assert.equal(await frame.locator('#composer-backdrop').isVisible(),true,'Back protects unsaved text too');
  await frame.evaluate(()=>window.confirm=()=>true);
  await page.evaluate(()=>parkFixture.close());
+ await frame.locator('#composer-backdrop').waitFor({state:'hidden'});
  assert.equal(await frame.locator('#composer-backdrop').isVisible(),false);
  await checkPageNavigationRestored(page,'390 initial close');
  await page.locator('.park-compose-fab').tap();
@@ -334,6 +335,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await frame.evaluate(()=>finishInquiry());
  await frame.getByText('보내지 못했어요. 작성한 내용은 유지됩니다. 다시 시도해 주세요.').waitFor();
  await frame.evaluate(()=>OjjudaNoteSupport.close());
+ await frame.waitForFunction(()=>!OjjudaNoteSupport.isOpen()&&history.state?.ojjudaParkRoute?.view!=='support');
  // Closing a charge dialog does not cancel its server request. Keep the host
  // alive until the response has updated the shared balance.
  await frame.addScriptTag({content:read('features/wallet/ju-charge.js')});
@@ -347,9 +349,12 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
    }});
    OjjudaCharge.open();
  });
+ await frame.waitForFunction(()=>history.state?.ojjudaParkRoute?.view==='charge');
+ const chargeIndex=await frame.evaluate(()=>history.state.ojjudaParkRoute.index);
  await frame.getByRole('button',{name:'10 ZU 무료 충전',exact:true}).click();
  await frame.waitForFunction(()=>typeof finishCharge==='function');
  await frame.getByRole('button',{name:'충전창 닫기',exact:true}).click();
+ await frame.waitForFunction(index=>!OjjudaCharge.isOpen()&&history.state?.ojjudaParkRoute?.index===index-1&&history.state.ojjudaParkRoute.view!=='charge',chargeIndex);
  await page.locator('.bottomnav [data-park-action="settings"]').click();
  assert.equal(await iframe.count(),1,'Park navigation cannot interrupt a pending charge after its dialog closes');
  await frame.evaluate(()=>finishCharge());

@@ -23,7 +23,8 @@ function fixture() {
     const state = ${JSON.stringify(state)};
     const listeners = new Set();
     let session = {user:{id:'auth-member',is_anonymous:false},access_token:'mock-member-token'};
-    const control = window.questionFixture = {attempts:[],feedbackWrites:[],responses:[],pending:null,unexpected:[]};
+    const control = window.questionFixture = {attempts:[],feedbackWrites:[],responses:[],pending:null,unexpected:[],historyEvents:0};
+    window.addEventListener('popstate',()=>control.historyEvents++,true);
     control.changeUser = id => {
       session = id ? {user:{id,is_anonymous:false},access_token:'mock-next-token'} : null;
       for (const listener of listeners) listener(id ? 'SIGNED_IN' : 'SIGNED_OUT',session);
@@ -94,10 +95,11 @@ async function assertNoOverflow(page,label) {
 }
 
 async function pressBack(page) {
-  await page.evaluate(()=>new Promise(resolve=>{
-    window.addEventListener('popstate',()=>requestAnimationFrame(()=>resolve()),{once:true});
-    history.back();
-  }));
+  const observed=await page.evaluate(()=>{
+    const count=window.questionFixture.historyEvents;
+    history.back();return count;
+  });
+  await page.waitForFunction(count=>window.questionFixture.historyEvents>count,observed);
 }
 
 (async()=>{
@@ -157,7 +159,7 @@ async function pressBack(page) {
       if(width===390)await page.screenshot({path:path.join(artifacts,'question-suggestion-form.png'),fullPage:true});
       await dialog.getByRole('button',{name:'닫기',exact:true}).click();
       await dialog.waitFor({state:'hidden'});
-      await page.waitForFunction(()=>!history.state?.pajangQuestionSuggestion);
+      await page.waitForFunction(()=>!history.state?.pajangNavigation?.modal);
     }
 
     await page.setViewportSize({width:390,height:844});
@@ -199,13 +201,13 @@ async function pressBack(page) {
     assert.equal(await form.input.isDisabled(),true,'pending text is locked');
     assert.equal(await form.dialog.getByRole('button',{name:'닫기',exact:true}).isDisabled(),true,'pending close is locked');
     await pressBack(page);
-    await page.waitForFunction(()=>Boolean(history.state?.pajangQuestionSuggestion));
+    await page.waitForFunction(()=>Boolean(history.state?.pajangNavigation?.modal));
     assert.equal(await form.dialog.isVisible(),true,'Back retains an in-flight submission');
     assert.equal(page.url(),address);
     assert.equal(await page.evaluate(()=>window.questionFixture.attempts.length),1,'rapid duplicate submissions send once');
     await page.evaluate(()=>window.questionFixture.finish());
     await form.dialog.waitFor({state:'hidden'});
-    await page.waitForFunction(()=>!history.state?.pajangQuestionSuggestion);
+    await page.waitForFunction(()=>!history.state?.pajangNavigation?.modal);
     assert.equal(page.url(),address,'successful pending submission returns to the same page');
 
     await reset();

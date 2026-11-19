@@ -68,11 +68,11 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
           <span className="ojjuda-settings-label">문의·의견</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
         </button>
         {row("help","사용법")}
-        <a className="ojjuda-settings-row" href="/terms.html?from=pajang" target="_blank" rel="noopener">
-          <span className="ojjuda-settings-label">이용약관</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
+        <a className="ojjuda-settings-row" href="/terms.html?from=pajang">
+          <span className="ojjuda-settings-label">이용약관</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
         </a>
-        <a className="ojjuda-settings-row" href="/privacy.html?from=pajang" target="_blank" rel="noopener">
-          <span className="ojjuda-settings-label">개인정보처리방침</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
+        <a className="ojjuda-settings-row" href="/privacy.html?from=pajang">
+          <span className="ojjuda-settings-label">개인정보처리방침</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
         </a>
       </div>
       {supportError&&<p className="error" role="alert">{supportError}</p>}

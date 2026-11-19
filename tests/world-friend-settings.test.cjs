@@ -66,7 +66,7 @@ async function until(condition) { for (let i=0; i<50; i++) { if(condition())retu
   assert.equal(account.querySelector('[data-my-group="profile"] [data-act="member-info-open"]'),null);
   assert.equal(group().closest('.ojjuda-settings-list'),account,'friend management stays in the account section');
   const close=doc.querySelector('.world-settings-close');
-  assert.equal(close.dataset.act,'tab');assert.equal(close.dataset.tab,'hub','closing settings returns to the Agit');
+  assert.equal(close.dataset.act,'navigation-back','closing settings returns to the actual previous screen');
   assert.equal(doc.querySelector('.world-settings-page [data-act="account-delete-open"]'),null);
   click('[data-act="support-open"]');
   await until(()=>doc.querySelector('#note-inquiry-body'));
