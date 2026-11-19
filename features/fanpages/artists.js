@@ -63,12 +63,15 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "LIGHT STICK V2", sub: "Official Goods", href: "https://kplaceshop.com/products/rescene-official-light-stick-ver-2" }
     ],
     music: [
+      { title: "메리 베리 러브 OST Part 2 · 미나미", date: "2026.11.18", type: "멤버 솔로 OST", songs: ["사랑해볼래, 나 (Ready to Love)"], href: "https://www.youtube.com/watch?v=xUGLDz9U-k8" },
       { title: "PULSE", date: "2026.11.03", type: "미니 4집", songs: ["With", "Finest Thing", "백화요란 (Inside Out)", "MEME", "Dragon"], href: "https://www.melon.com/album/detail.htm?albumId=15082293" },
       { title: "Pretty Girl - Special Single", date: "2026.07.08", type: "싱글", songs: ["Pretty Girl"], href: "https://music.bugs.co.kr/album/4151191" },
       { title: "lip bomb", date: "2025.11.25", type: "미니 3집", songs: ["Heart Drop", "Bloom", "Love Echo", "Hello XO", "MVP"], href: "https://www.melon.com/album/detail.htm?albumId=12196394" },
       { title: "SCENEDROME", date: "2024.08.27", type: "미니 1집", songs: ["LOVE ATTACK", "Pinball"], href: "https://en.themuze.kr/scenedrome" }
     ],
     appearances: [
+      { date: "2026-11-27", title: "PULSE 위드뮤 팬사인회", sub: "대면·개인 영상통화 · 18:30(KST) · 응모 종료", href: "https://artist.mnetplus.world/main/stg/rescene-official/contents/6adf1b994366f257199e78ae" },
+      { date: "2026-12-10", title: "PULSE 위드뮤 개인 영상통화", sub: "20:00(KST) · 응모 11.19 23:59 마감 · 참여자 개별 안내", href: "https://withmuu.com/goods/event_sale.php?sno=1676&type=" },
       { date: "2026-11-24", title: "멜론 STAGE 99 팬밋업", sub: "서울 마포구 무신사 개러지 · 추첨 초청 560명 · 응모 종료", href: "https://www.asiae.co.kr/article/2026110409590132572" },
       { date: "2026-11-29", title: "후즈팬 PULSE 대면·영상통화 팬사인회", sub: "대면 14:00 · 장소 및 영상통화 참여 개별 안내 · 응모 종료", href: "https://whosfanstore.zendesk.com/hc/ko/articles/63913860664217--%EB%8B%B9%EC%B2%A8%EC%9E%90-%EB%B0%9C%ED%91%9C-RESCENE-%EB%A6%AC%EC%84%BC%EB%8A%90-4th-Mini-Album-PULSE-%EB%8C%80%EB%A9%B4-%EA%B0%9C%EC%9D%B8-%EC%98%81%EC%83%81%ED%86%B5%ED%99%94-%ED%8C%AC%EC%82%AC%EC%9D%B8%ED%9A%8C-11-29-%EC%9D%B4%EB%B2%A4%ED%8A%B8" },
       { date: "2026-11-20", title: "2026 MAMA AWARDS", sub: "일본 오사카 · CHAPTER 1", href: "https://www.cj.net/jp/press-release/view/1132" },
@@ -77,6 +80,7 @@ window.OJJUDA_FAN_ARTISTS = [
       { date: "2026-12-13", title: "뮤직뱅크 글로벌 페스티벌", sub: "도쿄 국립경기장 · 17:00 예정", href: "https://music-bank.jp/" }
     ],
     campaigns: [
+      { kind: "콜라보", date: "2026.11.03", title: "PHOTOISM × RESCENE 프레임·스내피즘", sub: "12.31까지 · 포토이즘 박스·컬러드 일부 매장 · 팝업 매장 제외", href: "https://x.com/photoism_kr/status/2117195014904156231" },
       { kind: "콜라보", date: "2026.09", title: "CU × 리센느 빵 5종", sub: "BAKE405 · 멤버별 베이커리·포토카드", href: "https://www.bgfretail.com/press/view/?id=2040" },
       { kind: "광고", date: "2026.10", title: "도미노피자", sub: "전속 모델 · 신규 브랜드 캠페인", href: "https://www.mt.co.kr/living/2026/10/12/2026101208525329438" },
       { kind: "광고", date: "2026.08", title: "나랑드사이다", sub: "동아오츠카 광고 모델", href: "https://www.edaily.co.kr/News/Read?mediaCodeNo=257&newsId=05323446645545024" },
@@ -89,6 +93,9 @@ window.OJJUDA_FAN_ARTISTS = [
       { title: "공식 스케줄", sub: "Mnet Plus · 최신 일정", href: "https://artist.mnetplus.world/main/stg/rescene-official/schedule/2026/11" }
     ],
     news: [
+      { date: "11.18", tag: "음악", title: "미나미 첫 솔로 OST 〈사랑해볼래, 나〉 발매 · 메리 베리 러브", href: "https://sports.khan.co.kr/en/article/202611181539017" },
+      { date: "11.16", tag: "영상", title: "〈With〉 공식 MV 유튜브 3천만 조회 돌파", href: "https://artist.mnetplus.world/main/stg/rescene-official/contents/6afae2e08f3fbb2353c1ca5d" },
+      { date: "11.16", tag: "음악", title: "제나 참여 〈Love Again〉 11.23 발매 예정 · 한해·문세윤", href: "https://x.com/Hanhae90/status/2122343942007963748" },
       { date: "11.15", tag: "수상", title: "〈인기가요〉 ‘With’ 1위 · 음악방송 4관왕", href: "https://www.soompi.com/article/1887262wpp/watch-rescene-snags-4th-win-for-with-on-inkigayo-performances-by-bestie-ateez-nct-dream-and-more" },
       { date: "11.14", tag: "수상", title: "MMA2026 글로벌 TOP10·모두의 스타·핫트렌드 3관왕", href: "https://www.xportsnews.com/article/2219598" },
       { date: "11.14", tag: "수상", title: "〈쇼! 음악중심〉 ‘With’ 1위", href: "https://www.soompi.com/article/1886997wpp/watch-rescene-takes-3rd-win-for-with-on-music-core-performances-by-bestie-ateez-nct-dream-and-more" },
