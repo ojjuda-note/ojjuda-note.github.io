@@ -949,7 +949,7 @@ async function checkNavigation(page){
     await settings.getByRole('button',{name:'로그아웃',exact:true}).click();
     await logout.locator('button[type="submit"]:enabled').waitFor();
     await logout.getByRole('button',{name:'로그아웃',exact:true}).click();
-    await page.getByRole('link',{name:'오쭈다 로그인하기'}).waitFor();
+    await page.getByRole('link',{name:'로그인',exact:true}).waitFor();
     assert.equal(await page.evaluate(()=>sessionStorage.lastSignOutScope),'local','the mocked sign-out completes at the Pajang entrance');
     await page.evaluate(()=>{sessionStorage.fixtureMode='member';});
     await page.goto(origin+project+'station.html?tab=profile');await settings.waitFor();
@@ -1062,7 +1062,7 @@ async function checkNavigation(page){
     await selectMenu('마음함');await page.locator('.listperson').filter({hasText:'유진'}).getByRole('button',{name:'대화 열기'}).waitFor();
     assert.ok(!page.url().includes('chat='));
     await page.evaluate(()=>{sessionStorage.fixtureMode='switched';});
-    await page.goto(origin+project+'station.html');await page.getByRole('link',{name:'오쭈다 로그인하기'}).waitFor();
+    await page.goto(origin+project+'station.html');await page.getByRole('link',{name:'로그인',exact:true}).waitFor();
     assert.equal(await nav.count(),0,'a different auth session cannot mount the previous member state');
     await page.evaluate(()=>{sessionStorage.fixtureMode='unanswered';});
     await page.goto(origin+project+'station.html');
@@ -1074,7 +1074,7 @@ async function checkNavigation(page){
       await page.locator('#gate p').filter({hasText:mode==='guest'?'로그인한':'이 계정은'}).waitFor();
       assert.equal(await page.locator('.flight-scene').count(),0);
       await expectHeaderClean();
-      if(mode==='guest')assert.equal(await page.getByRole('link',{name:'오쭈다 로그인하기'}).getAttribute('href'),'/?auth=login&next=pajang');
+      if(mode==='guest')assert.equal(await page.getByRole('link',{name:'로그인',exact:true}).getAttribute('href'),'/?auth=login&next=pajang');
       else {await page.getByRole('link',{name:'아지트로 돌아가기'}).click();await page.waitForURL('**/world.html');}
     }
     console.log('PASS three primary destinations, direct acceptance, profile-only Agit exit, modal cancellation, direct legacy routes, thread reload/back, single-document Agit entry and join, and guest/denied returns');
