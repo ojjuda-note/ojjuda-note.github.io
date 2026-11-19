@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'features/pajang/**'
+      - 'features/account/settings-list.css'
       - 'features/home/location-warmup.mjs'
       - 'shared/location/**'
       - 'note/preview.js'
@@ -11,12 +12,14 @@ on:
       - 'park/**'
       - 'supabase/functions/pajang-assets/index.ts'
       - 'ops/publish-pajang-program.py'
+      - 'tests/pajang-discovery-browser.cjs'
       - 'tests/test_pajang_program_publish.py'
       - 'supabase/migrations/*pajang*'
       - '.github/workflows/pajang-discovery.yml'
   pull_request:
     paths:
       - 'features/pajang/**'
+      - 'features/account/settings-list.css'
       - 'features/home/location-warmup.mjs'
       - 'tests/agit-location.test.mjs'
       - 'shared/location/**'

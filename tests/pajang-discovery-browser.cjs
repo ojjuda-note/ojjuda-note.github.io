@@ -272,6 +272,7 @@ function clientFixture(hash) {
       const pathname=new URL(route.request().url()).pathname;
       if(pathname==='/config.js')return route.fulfill({contentType:'text/javascript',body:clientFixture(hash)});
       if(pathname==='/features/home/agit-hub.css')return route.fulfill({contentType:'text/css',body:await fs.readFile(path.join(feature,'../home/agit-hub.css'))});
+      if(pathname==='/features/account/settings-list.css')return route.fulfill({contentType:'text/css',body:await fs.readFile(path.join(feature,'../account/settings-list.css'))});
       if(pathname==='/program')return route.fulfill({contentType:'application/javascript',body:bundle});
       if(pathname==='/features/home/agit-hub.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../home/agit-hub.js'))});
       if(pathname==='/features/home/location-warmup.mjs')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../home/location-warmup.mjs'))});
@@ -551,12 +552,24 @@ function clientFixture(hash) {
     assert.equal(await settings.getByRole('link',{name:'이용약관',exact:true}).getAttribute('href'),'/terms.html?from=pajang');
     assert.equal(await settings.getByRole('link',{name:'개인정보처리방침',exact:true}).getAttribute('href'),'/privacy.html?from=pajang');
     for(const label of ['이용약관','개인정보처리방침'])assert.equal(await settings.getByRole('link',{name:label,exact:true}).getAttribute('target'),'_blank');
+    const accountPage=page.locator('.station-account');
     for(const width of [320,390]){
       await page.setViewportSize({width,height:844});
       assert.ok(await settings.evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth));
       assert.ok(await accountHome.evaluate(el=>el.getBoundingClientRect().height>=44));
-      await settings.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
-      await settings.screenshot({path:path.join(dir,'account-settings-'+width+'.png'),animations:'disabled'});
+      const rows=await settings.locator('.ojjuda-settings-list > .ojjuda-settings-row').evaluateAll(elements=>elements.map(el=>{
+        const {top,bottom,left,right,height}=el.getBoundingClientRect();
+        return {top,bottom,left,right,height};
+      }));
+      assert.equal(rows.length,11,'all account settings use the shared list rows');
+      for(const [index,row] of rows.entries()){
+        assert.ok(row.height>=44,`settings row ${index+1} has a full touch target at ${width}px`);
+        assert.ok(row.left>=0&&row.right<=width+1,'settings rows stay within the viewport');
+        assert.ok(Math.abs(row.left-rows[0].left)<=1&&Math.abs(row.right-rows[0].right)<=1,'settings rows align in one full-width column');
+        if(index)assert.ok(row.top>=rows[index-1].bottom-1,'settings rows stack vertically without overlap');
+      }
+      await accountPage.evaluate(el=>el.scrollIntoView({block:'start',behavior:'instant'}));
+      await accountPage.screenshot({path:path.join(dir,'account-settings-'+width+'.png'),animations:'disabled'});
     }
     await settings.getByRole('button',{name:'로그아웃',exact:true}).click();
     const logout=page.getByRole('dialog',{name:'로그아웃',exact:true});
