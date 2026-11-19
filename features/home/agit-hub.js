@@ -263,20 +263,20 @@
           </button>`;
         }).join('')}</div>
       </section>
-      <a class="agit-park-banner" href="/world.html?place=park" data-act="agit-park" aria-label="공원 둘러보기">
-        <img class="agit-park-art" src="/features/home/theme-illustrations/${theme.key}.webp?v=20261110-themes3" width="960" height="640" alt="" loading="lazy" decoding="async">
-        <span class="agit-park-copy">
-          <span class="agit-park-brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a4.5 4.5 0 0 0-4.4 3.6A4.8 4.8 0 0 0 5 15.4a4.2 4.2 0 0 0 4 3.1h6a4.2 4.2 0 0 0 4-3.1 4.8 4.8 0 0 0-2.6-8.8A4.5 4.5 0 0 0 12 3Z"/><path d="M12 12v9m-4 0h8"/></svg><b>공원</b><small>일상을 나누는 곳</small></span>
-          <strong class="agit-park-title">나누고 싶은 오늘,<br>공원에 남겨요.</strong>
-          <span class="agit-park-open">공원 둘러보기 <span aria-hidden="true">→</span></span>
+      <a class="agit-place-banner agit-park-banner" href="/world.html?place=park" data-act="agit-park" aria-label="공원 둘러보기">
+        <img class="agit-place-art agit-park-art" src="/features/home/park-community-3d-20261119.webp" width="768" height="768" alt="" loading="lazy" decoding="async">
+        <span class="agit-place-copy agit-park-copy">
+          <span class="agit-place-brand agit-park-brand"><b>공원</b><small>일상 커뮤니티</small></span>
+          <strong class="agit-place-title agit-park-title">오늘의 이야기가<br>모이는 곳</strong>
+          <span class="agit-place-open agit-park-open">공원 둘러보기 <span aria-hidden="true">→</span></span>
         </span>
       </a>
-      <a class="agit-pajang-banner" href="/features/pajang/" id="pajang-radar" data-pajang-launch>
-        <img class="agit-pajang-letter" src="https://ziezbdjofcugznowiuda.supabase.co/storage/v1/object/public/pajang-theme/c645eaa78edb29e31f2dce57f4fca38bb9a04754179e3e2ee9faa5e0ac66ea62/letter.webp" width="1450" height="967" alt="" loading="lazy" decoding="async">
-        <span class="agit-pajang-copy">
-          <span class="agit-pajang-brand"><span aria-hidden="true">♥</span><b>파장</b><small>19+ 회원 소개팅</small></span>
-          <strong class="agit-pajang-title">어떤 대답에<br>마음이 가나요?</strong>
-          <span class="agit-pajang-open">오늘의 질문 보기 <span aria-hidden="true">→</span></span>
+      <a class="agit-place-banner agit-pajang-banner" href="/features/pajang/" id="pajang-radar" data-pajang-launch aria-label="파장, 19세 이상 회원 소개팅, 오늘의 질문 보기">
+        <img class="agit-place-art agit-pajang-letter" src="/features/home/pajang-signal-3d-20261119.webp" width="768" height="768" alt="" loading="lazy" decoding="async">
+        <span class="agit-place-copy agit-pajang-copy">
+          <span class="agit-place-brand agit-pajang-brand"><b>파장</b><small>19+ 회원 소개팅</small></span>
+          <strong class="agit-place-title agit-pajang-title">답변으로 시작되는<br>설렘</strong>
+          <span class="agit-place-open agit-pajang-open">오늘의 질문 보기 <span aria-hidden="true">→</span></span>
         </span>
       </a>
       <nav class="agit-reading-grid" aria-label="바이오리듬과 운세">
