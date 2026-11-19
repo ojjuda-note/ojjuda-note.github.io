@@ -222,13 +222,14 @@ world=world.slice(0,boot)+`
   await page.emulateMedia({colorScheme:appearance});const samples=[];
   for(const [theme,date] of calendarCases){
    await selectCalendarDate(page,date);await selectCalendarDate(park,date);
-   const host=await palette(page),inside=await palette(park,{primary:'.button.primary'});
+   const host=await palette(page),inside=await palette(park,{primary:'#publish-card',reply:'.reply-heading [data-compose=reply]'});
    assert.equal(inside.theme,theme);assert.equal(inside.body,inside.bg);
    assert.deepEqual([inside.bg,inside.accent,inside.surface],[host.bg,host.accent,host.surface],theme+' Park host/frame match');
    assert.equal(inside.nodes.primary.background,inside.accent,'Park primary button follows '+theme);
+   assert.equal(inside.nodes.reply.color,inside.accentInk,'Park reply button text follows '+theme);
    samples.push(inside);
   }
-  distinctPalettes(samples,'Park '+appearance,['bg','accent','nodes.primary.background']);
+  distinctPalettes(samples,'Park '+appearance,['bg','accent','nodes.primary.background','nodes.reply.color']);
   const weather=[];
   for(const kind of [null,'rain','snow']){
    await selectCalendarDate(page,'2026-10-15',kind);await selectCalendarDate(park,'2026-10-15',kind);

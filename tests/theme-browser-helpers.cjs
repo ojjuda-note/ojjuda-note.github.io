@@ -34,7 +34,7 @@ async function palette(view, selectors = {}) {
     };
     const result = {
       theme: root.dataset.worldTheme, weather: root.dataset.worldWeather || '',
-      bg: token('--bg'), accent: token('--accent'), soft: token('--accent-soft'),
+      bg: token('--bg'), accent: token('--accent'), accentInk: token('--accent-ink'), soft: token('--accent-soft'),
       surface: token('--surface'), ink: token('--ink'),
       body: getComputedStyle(document.body).backgroundColor, nodes: {}
     };
