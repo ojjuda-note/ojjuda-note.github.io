@@ -180,6 +180,8 @@ world=world.slice(0,boot)+`
  assert.equal(await page.locator('.world-settings-header h2').innerText(),'아지트 설정');
  assert.equal(await page.getByRole('button',{name:'설정 닫기',exact:true}).getAttribute('data-act'),'navigation-back','closing settings uses the actual previous visit');
  assert.equal(await page.locator('.bottomnav [aria-current=page]').getAttribute('data-tab'),'my','the Settings click opens and selects Settings');
+ assert.equal(await page.locator('[data-guest-account="agit"]').count(),1,'guest settings expose the signup and login entry');
+ assert.equal(await page.locator('[data-my-group=profile]').count(),0,'guests do not receive a member profile editor');
  assert.equal(await page.locator('[data-my-group=themes],.settings-theme-section,[data-world-theme-settings],[data-act=theme],[data-act=accent]').count(),0,'all manual appearance controls are removed');await fits('mobile settings');
  await page.screenshot({path:path.join(proof,'settings-mobile.png'),fullPage:true});
  // Check Hub -> Settings -> Back before subsection visits add their own history.
@@ -189,6 +191,13 @@ world=world.slice(0,boot)+`
  assert.equal(await page.locator('.bottomnav [aria-current=page]').getAttribute('data-tab'),'hub','the restored Agit is selected');
  assert.equal(await page.locator('.world-settings-page').count(),0,'the settings screen is closed after history traversal');
  await page.locator('.bottomnav [data-tab=my]').click();await page.locator('.my-hub').waitFor();
+ await page.evaluate(()=>{
+  const auth=designFixture.auth;
+  designFixture.guestAuth={online:auth.online,user:auth.user,parkGuest:auth.parkGuest,isAdmin:auth.isAdmin};
+  Object.assign(auth,{online:true,parkGuest:false,isAdmin:false,user:{id:'00000000-0000-4000-8000-000000000002',is_anonymous:false,email:'design-member@example.invalid'}});
+  designFixture.render();
+ });
+ assert.equal(await page.locator('[data-guest-account="agit"]').count(),0,'signed-in settings retain the existing member menu');
  await page.locator('[data-my-group=profile] summary').click();await page.locator('#p-bio').fill('바뀌지 않아야 하는 작성 내용');await page.evaluate(()=>OjjudaThemes.sync());assert.equal(await page.locator('#p-bio').inputValue(),'바뀌지 않아야 하는 작성 내용');
  await page.emulateMedia({colorScheme:'dark'});await page.waitForFunction(()=>document.documentElement.dataset.theme==='dark');assert.equal(await page.locator('#p-bio').inputValue(),'바뀌지 않아야 하는 작성 내용','system appearance change preserves the draft');
  await page.emulateMedia({colorScheme:'light'});await page.waitForFunction(()=>!document.documentElement.dataset.theme);assert.equal(await page.locator('#p-bio').inputValue(),'바뀌지 않아야 하는 작성 내용');
@@ -203,6 +212,7 @@ world=world.slice(0,boot)+`
  assert.ok(settingsLayout.groups.every((group,index)=>Math.abs(group.x-settingsLayout.groups[0].x)<=1&&Math.abs(group.width-settingsLayout.groups[0].width)<=1&&(!index||group.y>=settingsLayout.groups[index-1].y+settingsLayout.groups[index-1].height-1)),'desktop setting groups stay aligned in one column');
  assert.ok(settingsLayout.rowHeights.every(height=>height>=44),'settings rows retain touch-friendly targets');
  await page.screenshot({path:path.join(proof,'settings-desktop.png'),fullPage:true});
+ await page.evaluate(()=>Object.assign(designFixture.auth,designFixture.guestAuth));
  await page.locator('.sidenav [data-tab=hub]').click();await page.locator('.agit-park-banner').waitFor();
  // Inspect every theme in the real Arcade, including the dark variant.
  await page.locator('.sidenav [data-tab=arcade]').click();await page.evaluate(()=>{clearInterval(designFixture.state.placeT);designFixture.rank();});

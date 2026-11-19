@@ -79,7 +79,17 @@
       row(account, 'password', '비밀번호 변경', showPasswordChange);
       row(account, 'blocked', '차단 관리', () => void showBlocks());
     } else {
-      link(account, 'login', '로그인 · 회원가입', '/?auth=login&next=note');
+      account.className = 'ojjuda-guest-account';
+      account.dataset.guestAccount = 'park';
+      account.setAttribute('role', 'group');
+      account.setAttribute('aria-label', '회원가입 및 로그인');
+      const actions = node('div', 'ojjuda-guest-account-actions');
+      for (const [mode, label] of [['signup', '회원가입'], ['login', '로그인']]) {
+        const anchor = link(actions, mode, label, `/?auth=${mode}&next=note`);
+        anchor.className = `ojjuda-guest-account-${mode}`;
+        anchor.textContent = label;
+      }
+      account.append(actions);
     }
     const help = group('이용 안내');
     row(help, 'support', '문의·의견', () => navigate('support'));

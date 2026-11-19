@@ -127,8 +127,8 @@ async function until(condition) { for (let i=0; i<50; i++) { if(condition())retu
   assert.equal(t.model.friends.length,0,'a previous account response cannot restore its friend list');
   group().open=true;await until(()=>t.model.loaded);assert.equal(t.model.friends.length,0);
   t.auth.online=false;t.auth.user=null;t.render();
-  assert.ok(group().querySelector('[data-act="account-login"]'));
-  assert.equal(group().querySelector('#fr-search-form'),null,'guests cannot manage a previous account');
+  assert.equal(group(),null,'guests cannot manage a previous account');
+  assert.deepEqual([...doc.querySelectorAll('[data-guest-account="agit"] a')].map(link=>[link.textContent,link.getAttribute('href')]),[['회원가입','/?auth=signup&next=world'],['로그인','/?auth=login&next=world']]);
   assert.deepEqual(errors,[]);
   console.log('PASS: settings entry, search, request, accept, decline, cancel, confirmed removal, notification route, retry and account isolation');
  } finally { dom.window.close(); }

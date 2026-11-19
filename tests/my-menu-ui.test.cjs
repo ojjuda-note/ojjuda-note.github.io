@@ -107,8 +107,9 @@ async function worldFixture(context, mobile, errors) {
       notify: { guestbook: true, friend: false } },
       me: { nick: '검사 회원', bio: '오늘도 좋은 하루', mood: '😊', moodText: '맑음' },
       album: [{ type: 'image' }, { type: 'video' }] };
-    window.D = { online: true, isAdmin: false, mediaReady: true, doorReady: true,
-      user: { email: 'synthetic-account-with-a-very-long-address@example.invalid' } };
+    window.D = { online: true, parkGuest: false, isAdmin: false, mediaReady: true, doorReady: true,
+      user: { id: '00000000-0000-4000-8000-000000000001', is_anonymous: false,
+        email: 'synthetic-account-with-a-very-long-address@example.invalid' } };
     window.g = {};
     window.P = { loaded: true, communityOpen: false, incoming: [{req:'request-a',p:{id:'friend-a',nickname:'새 친구',bio:'함께 게임해요'}}],
       outgoing: [], friends: [{id:'friend-b',nickname:'기존 친구',bio:'반가워요'}], results: null, q:'',
@@ -219,14 +220,42 @@ async function worldFixture(context, mobile, errors) {
   await page.evaluate(() => { D.isAdmin = true; renderMy(); });
   await page.locator('[data-my-group="admin"] > summary').click();
   assert.equal(await page.locator('[data-act="tab"][data-tab="admin"]').isVisible(), true);
-  await page.evaluate(() => { D.online = false; renderMy(); });
+  await page.evaluate(() => { D.online = false; D.user = null; renderMy(); });
   assert.equal(await page.locator('[data-my-group="admin"]').count(), 0, 'offline mode cannot retain an administrator entry');
   assert.equal(await page.locator('[data-act="member-info-open"], [data-act="logout"], [data-act="pw-open"], [data-act="account-delete-open"], [data-act="unblock"], [data-act="door-toggle"]').count(), 0,
     'guest menus never reveal signed-in account actions');
-  assert.equal(await page.locator('.ojjuda-settings-group[aria-label="내 계정"] > .ojjuda-settings-list > [data-act="account-login"]').isVisible(), true,
-    'guests retain a direct login entry');
+  const guestAccount = page.locator('.ojjuda-settings-group[aria-label="내 계정"] [data-guest-account="agit"]');
+  assert.equal(await guestAccount.count(), 1, 'guests receive one account entry in the existing account section');
+  assert.deepEqual(await guestAccount.locator('a').allTextContents(), ['회원가입', '로그인']);
+  for (const [name, href] of [['회원가입', '/?auth=signup&next=world'], ['로그인', '/?auth=login&next=world']]) {
+    const entry = guestAccount.getByRole('link', { name, exact: true });
+    assert.equal(await entry.isVisible(), true);
+    assert.equal(await entry.getAttribute('href'), href, `${name} returns to Agit after authentication`);
+  }
+  assert.equal(await page.locator('[data-act="account-login"], [data-my-group="profile"], [data-my-group="friends"], [data-my-group="privacy"]').count(), 0,
+    'guest account buttons replace the small login row and member-only account sections');
   await page.locator('[data-my-group="local"] > summary').click();
   assert.equal(await page.locator('[data-act="reset"]').isVisible(), true, 'the existing offline reset action stays reachable');
+  await page.evaluate(() => {
+    D.parkGuest = true; D.isAdmin = false; $.settings.theme = 'light';
+    delete document.documentElement.dataset.theme;
+    document.querySelectorAll('details.my-menu-group').forEach(node => { node.open = false; });
+    renderMy();
+  });
+  assert.equal(await page.locator('[data-act="reset"], [data-act="logout"]').count(), 0, 'browsing guests have no local-reset or logout actions');
+  for (const width of mobile ? [320, 360] : [1440]) {
+    await page.setViewportSize({ width, height: 844 });
+    const buttons = await guestAccount.locator('.ojjuda-guest-account-actions > a').evaluateAll(nodes => nodes.map(node => ({
+      height: node.getBoundingClientRect().height,
+      fontSize: parseFloat(getComputedStyle(node).fontSize),
+      fits: node.scrollWidth <= node.clientWidth + 1
+    })));
+    assert.equal(buttons.length, 2);
+    assert.ok(buttons.every(button => button.height >= 56 && button.fontSize >= 18 && button.fits),
+      `guest account buttons stay large and readable at ${width}px`);
+    await fitsViewport(page, `${width}px World guest settings`);
+  }
+  if (screenshotDirectory) await page.screenshot({ path: path.join(screenshotDirectory, `world-guest-${mobile ? 'mobile' : 'desktop'}.png`), fullPage: true });
   await uniqueIds(page);
   await page.close();
 }

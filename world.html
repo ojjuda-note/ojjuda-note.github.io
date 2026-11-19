@@ -103,7 +103,7 @@
 <script src="/shared/games/world-game-rankings.js?v=20261117-arcade-gold-units1" defer></script>
 <link rel="stylesheet" href="/park/world-park-notes.css?v=20261119-auto-theme1">
 <link rel="stylesheet" href="/park/card-grid.css?v=20261117-park-750">
-<script src="/park/world-park-notes.js?v=20261119-history2" defer></script>
+<script src="/park/world-park-notes.js?v=20261119-guest-account1" defer></script>
 
 <!-- 서버 연결 도구 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
@@ -238,7 +238,7 @@
 <link rel="stylesheet" href="/app/world/world-design.css?v=20261116-arcade-card-spacing1">
 <link rel="stylesheet" href="/app/world/world-themes.css?v=20261119-auto-theme1">
 <link rel="stylesheet" href="/app/world/world-green.css?v=20261119-auto-theme1">
-<link rel="stylesheet" href="/features/account/settings-list.css?v=20261119-app-downloads1">
+<link rel="stylesheet" href="/features/account/settings-list.css?v=20261119-guest-account1">
 <link rel="stylesheet" href="/admin/shell.css?v=20261111-asset-library1">
 <script src="/app/world/world-themes.js?v=20261119-auto-theme1"></script>
 <script src="/shared/location/location.js?v=20261119-kma-current1" defer></script>
@@ -604,11 +604,11 @@ async function Oa(t,e,o){adminMutationPending++;t&&(t.disabled=!0);try{await e()
  Wt(button,async()=>{await mt("admin_set_first_visit_ju",{p_amount:amount});wt.first_visit_ju=amount;input.defaultValue=String(amount);},"첫 방문 선물을 "+amount.toLocaleString("ko-KR")+"쭈로 저장했어요");
 },"adm-limit"(t,e){let o=Math.max(0,Math.min(100,parseInt(z("#adm-limit").value,10)||0));Wt(e,async()=>{await U.setConfig("beta_charge_daily_limit",o),wt.beta_charge_daily_limit=o},`하루 ${o}번으로 바꿨어요`)}};document.addEventListener("change",t=>{if(t.target&&t.target.id==="adm-free"){let e=t.target.checked;Wt(null,async()=>{await U.setConfig("beta_free_charge",e),wt.beta_free_charge=e},e?"무료 충전을 켰어요":"무료 충전을 껐어요")}});document.addEventListener("submit",t=>{t.target.id==="adm-user-form"&&(t.preventDefault(),L.q=z("#adm-q").value.trim(),bt())});var F0="ojjuda-samsung-dark-tip",Is=()=>/SamsungBrowser/i.test(navigator.userAgent),fh=()=>!!(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);function Os(){return`<b>색이 이상하게 보이나요?</b> 삼성 인터넷의 다크 모드가 오쭈다 아지트의 색을 바꾸고 있어요.
   아래 메뉴 <b>≡</b> → <b>설정</b> → <b>실험실</b>(Labs) → <b>웹사이트 다크 테마 사용</b>을 켜주세요.
-  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.72.37-beta";
+  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.72.38-beta";
 const sectionReleases={
   hub:{name:'아지트',version:Go,manifest:'/version.json'},
   arcade:{name:'오락실',version:'1.0.10',manifest:'/features/arcade/version.json'},
-  park:{name:'공원',version:'1.4.10',manifest:'/park/version.json'}
+  park:{name:'공원',version:'1.4.11',manifest:'/park/version.json'}
 };
 function releaseSection(){
  const tab=worldMainTab();
@@ -2532,6 +2532,7 @@ document.addEventListener('change',event=>{
 });
 function Yg(){
  const settings=$.settings,profile=worldProfileValues();
+ const member=!!(D.online&&D.user?.id&&!D.parkGuest&&!D.user.is_anonymous);
  const arrow='<span class="ojjuda-settings-arrow" aria-hidden="true">›</span>';
  const label=text=>`<span class="ojjuda-settings-label">${text}</span>`;
  const row=(text,action,attributes='',danger=false)=>`<button type="button" class="ojjuda-settings-row${danger?' ojjuda-settings-danger':''}"${action?` data-act="${action}"`:''}${attributes}>${label(text)}${arrow}</button>`;
@@ -2542,17 +2543,18 @@ function Yg(){
  const profileBody=`<div class="set"><h3>프로필 수정</h3><button class="profile-photo-entry" type="button" data-act="profile-photo"><span data-own-profile-photo>${worldProfileAvatar($.me.avatar_url)}</span><span>사진 변경</span></button><div class="field"><label for="p-nick">닉네임</label><input class="inp" id="p-nick" maxlength="12" value="${w(profile.nick)}"></div><div class="field"><label for="p-bio">한 줄 소개</label><input class="inp" id="p-bio" maxlength="40" value="${w(profile.bio)}"></div><button class="btn pri" data-act="profile-save">프로필 저장</button></div>`;
  const friendsLabel=`친구 관리${D.online&&P.incoming.length?` <span class="badge">${P.incoming.length}</span>`:''}`;
  const blocks=D.online?`<div class="set"><h3>차단한 사람</h3>${ce.ready?ce.list.length?ce.list.map(person=>`<div class="line-row"><span>${w(person.nick)}</span><button class="btn sm" data-act="unblock" data-uid="${w(person.id)}">차단 풀기</button></div>`).join(''):'<p class="note" style="margin:0">차단한 사람이 없어요.</p>':'<p class="note" role="status">차단 목록을 불러오지 못했어요.</p>'}</div>`:'<p class="note">로그인하면 차단 목록을 관리할 수 있어요.</p>';
- const account=(D.online?row('개인정보 관리','member-info-open'):row('로그인 · 회원가입','account-login'))
+ const account=member?row('개인정보 관리','member-info-open')
    +detail('profile','프로필·닉네임 변경',profileBody,` data-profile-owner="${w(worldProfileOwner())}"`)
-   +(D.online?row('비밀번호 변경','pw-open'):'')
+   +row('비밀번호 변경','pw-open')
    +detail('friends',friendsLabel,Of(),` data-friend-owner="${w(D.online?D.user?.id||'':'')}"`,P.communityOpen)
-   +detail('privacy','차단 관리',blocks);
+   +detail('privacy','차단 관리',blocks)
+   :'<div class="ojjuda-guest-account" data-guest-account="agit" role="group" aria-label="회원가입 및 로그인"><div class="ojjuda-guest-account-actions"><a class="ojjuda-guest-account-signup" href="/?auth=signup&next=world">회원가입</a><a class="ojjuda-guest-account-login" href="/?auth=login&next=world">로그인</a></div></div>';
  const notifications=`<div class="set"><h3>실시간 알림 표시</h3><div class="line-row"><label for="n-friend">친구 신청</label><input type="checkbox" class="switch" id="n-friend" data-set="notify.friend"${settings.notify.friend?' checked':''}></div></div>`;
  const help=`<section class="ojjuda-guide-entry" aria-label="오쭈다 사용 안내"><h3>오쭈다 사용 안내</h3><a href="/guide.html?from=my&amp;v=20261113-public-info1">사용법 보기 <span aria-hidden="true">→</span></a></section><section class="set ojjuda-creator-entry" aria-labelledby="creator-entry-title"><h3 id="creator-entry-title">제작자 소개</h3><div class="line-row"><a href="/features/guide/creator.html?v=20261119-auto-theme1">만든이 mj830417의 이야기 <span aria-hidden="true">→</span></a></div></section><div class="set" data-section-versions><h3>버전 정보</h3>${Object.values(sectionReleases).map(section=>`<div class="line-row"><span>${section.name}</span><span class="note">${section.version}</span></div>`).join('')}</div>`;
  const apps=`<section class="ojjuda-settings-group" aria-labelledby="app-download-title"><h3 class="ojjuda-settings-heading" id="app-download-title">앱 다운로드</h3><div class="ojjuda-settings-list app-store-downloads"><div class="ojjuda-settings-row app-store-pending" data-store-app="agit" role="group" aria-label="오쭈다 아지트 앱 공개 준비 중"><span class="ojjuda-settings-label">오쭈다 아지트<small>앱 공개 준비 중</small></span><a class="app-store-action" href="/world.html?tab=hub" aria-label="오쭈다 아지트 웹으로 열기">웹으로 열기 ↗</a></div><a class="ojjuda-settings-row" data-store-app="pajang" href="https://play.google.com/store/apps/details?id=kr.ojjuda.pajang" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 파장 Google Play에서 보기 (새 창)">${label('오쭈다 파장')}<span class="ojjuda-settings-arrow" aria-hidden="true">↗</span></a><a class="ojjuda-settings-row" data-store-app="park" href="https://play.google.com/store/apps/details?id=kr.ojjuda.park" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 공원 Google Play에서 보기 (새 창)">${label('오쭈다 공원')}<span class="ojjuda-settings-arrow" aria-hidden="true">↗</span></a></div><p class="app-store-note">스토어 공개 후 설치할 수 있어요.</p></section>`;
- const admin=D.online&&D.isAdmin?group('관리자',detail('admin','운영 관리',`<div class="set admin-entry"><h3>관리자 게임 체험</h3><div class="line-row"><label for="admin-preview-toggle"><strong>관리자 모드</strong><small class="note" style="display:block">모든 단계 · 최고 업그레이드 · 틀린그림 정답</small></label><input type="checkbox" class="switch" id="admin-preview-toggle" aria-label="관리자 모드"${window.OjjudaAdminPreview?.isEnabled()?' checked':''}${window.OjjudaAdminPreview?.isAuthorized()?'':' disabled'}></div><p class="note">체험 중인 결과는 실제 진행도와 순위에 저장되지 않아요.</p><button class="btn pri" data-act="tab" data-tab="admin">운영 관리 열기</button></div>`)):'';
- const access=D.online?group('계정 관리',row('로그아웃','logout'))
-   :!D.parkGuest?group('기기 기록',detail('local','기기 기록 관리','<div class="set"><p class="note">체험 기록은 이 기기에 저장돼요.</p><button type="button" class="btn danger" data-act="reset">처음 상태로 되돌리기</button></div>')):'';
+ const admin=member&&D.isAdmin?group('관리자',detail('admin','운영 관리',`<div class="set admin-entry"><h3>관리자 게임 체험</h3><div class="line-row"><label for="admin-preview-toggle"><strong>관리자 모드</strong><small class="note" style="display:block">모든 단계 · 최고 업그레이드 · 틀린그림 정답</small></label><input type="checkbox" class="switch" id="admin-preview-toggle" aria-label="관리자 모드"${window.OjjudaAdminPreview?.isEnabled()?' checked':''}${window.OjjudaAdminPreview?.isAuthorized()?'':' disabled'}></div><p class="note">체험 중인 결과는 실제 진행도와 순위에 저장되지 않아요.</p><button class="btn pri" data-act="tab" data-tab="admin">운영 관리 열기</button></div>`)):'';
+ const access=member?group('계정 관리',row('로그아웃','logout'))
+   :!D.online&&!D.parkGuest?group('기기 기록',detail('local','기기 기록 관리','<div class="set"><p class="note">체험 기록은 이 기기에 저장돼요.</p><button type="button" class="btn danger" data-act="reset">처음 상태로 되돌리기</button></div>')):'';
  return `<section class="my-hub world-menu-grid world-settings-page" aria-label="설정"><header class="world-settings-header"><h2 class="h2">아지트 설정</h2><button type="button" class="world-settings-close" data-act="navigation-back" aria-label="설정 닫기"><span aria-hidden="true">×</span></button></header><div class="ojjuda-settings">${group('내 계정',account)}${group('이용 설정',detail('notifications','알림',notifications)+row('ZU 충전','',' data-ju-charge-open aria-haspopup="dialog" aria-controls="ju-charge-dialog"'))}${group('이용 안내',row('문의·의견','support-open')+link('이용약관','terms.html?from=my')+link('개인정보처리방침','privacy.html?from=my')+detail('help','도움말 · 버전 정보',help))}${apps}${access}${admin}</div></section>`;
 }var Hf='<span class="nl-logo" aria-hidden="true"><svg class="ojjuda-theme-logo" viewBox="-16 -16 544 544" width="26" height="26" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg></span>';function Wf(t){return `<button class="note-link${t==="my"?" my":""}" data-act="enter-place" data-id="park" aria-label="공원 열기">${Hf}<span>공원</span><span class="nl-arrow" aria-hidden="true">→</span></button>`}function worldNoticeMarkup(){
  if(g.tab==="admin"||!D.online||!wt.notice)return "";
