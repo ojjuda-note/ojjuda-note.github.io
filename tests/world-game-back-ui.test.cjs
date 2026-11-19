@@ -5,6 +5,39 @@ const { chromium } = require('playwright');
 const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const origin = 'https://back.test';
+function fixtureScript(file) {
+  const source=read(file);
+  if(file!=='app/world/world-navigation.js')return source;
+  const marker='let current = null, bouncing = false, requested = false, scrollTimer = null, pendingEntry = false;';
+  assert.ok(source.includes(marker),'navigation diagnostics must match the tested source');
+  return source.replace(marker,()=>marker+`
+      const navigationTrace=[];
+      const navigationSnapshot=()=>({returning,bouncing,pendingEntry,handling,departing,requested,initialized,
+        current:current?JSON.parse(JSON.stringify(current)):null,history:history.state,
+        hasOverlay:!!options.hasOverlay?.(),url:location.href});
+      const navigationRecord=(event,detail)=>{
+        navigationTrace.push({event,detail,time:Math.round(performance.now()),...navigationSnapshot()});
+        if(navigationTrace.length>160)navigationTrace.shift();
+      };
+      window.worldNavigationProbe=()=>({...navigationSnapshot(),trace:navigationTrace});
+      for(const method of ['back','forward','go','pushState','replaceState']){
+        const original=history[method];
+        history[method]=function(...args){
+          navigationRecord('history:'+method+':before',method==='go'?args[0]:undefined);
+          const result=original.apply(this,args);navigationRecord('history:'+method+':after');return result;
+        };
+      }
+      window.addEventListener('popstate',event=>{
+        navigationRecord('popstate:before',event.state);
+        queueMicrotask(()=>navigationRecord('popstate:after'));
+      },true);
+      new MutationObserver(()=>{
+        const snapshot=navigationSnapshot();
+        const last=navigationTrace.at(-1);
+        if(!last||last.hasOverlay!==snapshot.hasOverlay)navigationRecord('overlay-change');
+      }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','open','hidden']});
+  `);
+}
 
 // Exercise real World navigation, game close handlers and iframe bridges.
 // Only auth and the child game's response are fixtures; no live accounts run.
@@ -14,7 +47,7 @@ let world = read('world.html')
 const scripts = ['features/home/agit-hub.js','shared/games/puzzle-record-queue.js', 'shared/games/game-session.js', 'app/world/world-navigation.js', 'games/mines/world-mines-game.js', 'games/saetbyeol/world-saetbyeol-game.js',
   'games/ojjuda-tour/world-tour-game.js', 'games/certified-restaurants/world-restaurant-guide.js', 'games/certified-restaurants/recommended-restaurants.js', 'games/tank/world-tank-game.js', 'games/spot-difference/world-spot-game.js', 'games/ttang/ttang-bridge.js',
   'games/photo-ttang/photo-ttang-bridge.js', 'games/matgo/matgo-bridge.js', 'games/festival-schedule/world-festival-schedule.js', 'games/forest-archer/world-archery-game.js',
-  'games/sacheonseong/world-sacheonseong-game.js', 'games/bang/world-bang-game.js', 'games/poker/world-poker-game.js', 'games/roulette/world-roulette-game.js', 'games/screw/screw-loader.js'].map(read).join('\n');
+  'games/sacheonseong/world-sacheonseong-game.js', 'games/bang/world-bang-game.js', 'games/poker/world-poker-game.js', 'games/roulette/world-roulette-game.js', 'games/screw/screw-loader.js'].map(fixtureScript).join('\n');
 world = world.replace('<script type="module">', () => `<script>${scripts}</script><script type="module">`);
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0);
@@ -85,10 +118,10 @@ window.childReady=true;
       };
       const arcade = async (scenario='Arcade return') => {
         try {
-          await page.waitForFunction(() => history.state?.ojjudaWorldHistory?.overlay === false && history.state.ojjudaWorldHistory.route.tab === 'arcade' && !!document.querySelector('.arcade-home') && !document.querySelector('#gov,#matgo-overlay,#ttang-overlay,#photo-ttang-overlay,dialog[open],[data-bl="close"]'));
+          await page.waitForFunction(() => history.state?.ojjudaWorldHistory?.overlay === false && history.state.ojjudaWorldHistory.route.tab === 'arcade' && !!document.querySelector('.arcade-home') && !document.querySelector('#gov,#matgo-overlay,#ttang-overlay,#photo-ttang-overlay,dialog[open],[data-bl="close"]'),undefined,{timeout:scenario==='poker'?5000:30000});
         } catch (error) {
           const state=await page.evaluate(()=>({url:location.href,tab:backFixture.state.tab,place:backFixture.state.place?.id,
-            history:history.state,gaming:document.body.classList.contains('gaming'),arcade:!!document.querySelector('.arcade-home'),
+            history:history.state,navigation:window.worldNavigationProbe?.(),gaming:document.body.classList.contains('gaming'),arcade:!!document.querySelector('.arcade-home'),
             overlays:[...document.querySelectorAll('#gov,#matgo-overlay,#ttang-overlay,#photo-ttang-overlay,dialog[open],[data-bl="close"]')]
               .map(node=>({tag:node.tagName,id:node.id,classes:node.className,label:node.getAttribute('aria-label')}))})).catch(()=>null);
           console.error('Arcade Back failure:',JSON.stringify({native,scenario,state}));

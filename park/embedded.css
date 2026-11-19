@@ -1,49 +1,11 @@
-/* World supplies the only header, navigation, wallet and writing button. */
-/* This sheet is Park-only. Keep its sky palette above the shared seasonal selectors. */
-html:root,
-html:root[data-accent],
-html:root[data-world-theme] {
-  --bg: #f3f9ff;
-  --surface: #fff;
-  --surface-2: #eaf4ff;
-  --ink: #25394f;
-  --ink-2: #59718a;
-  --line: #d4e5f5;
-  --accent: #2674c5;
-  --accent-ink: #1f5f9f;
-  --accent-soft: #e1f0ff;
-  --on-accent: #fff;
-  --accent-hover: #1f65ad;
-  --paper: var(--surface);
-  --muted: var(--ink-2);
-  --pink: var(--accent);
-  --pink-ink: var(--accent-ink);
-  --pink-hover: var(--accent-hover);
-  --park-danger: #b13d4c;
-  color-scheme: light;
-}
-html:root[data-theme=dark],
-html:root[data-theme=dark][data-accent],
-html:root[data-theme=dark][data-world-theme] {
-  --bg: #111e2c;
-  --surface: #182b3e;
-  --surface-2: #21394f;
-  --ink: #edf5ff;
-  --ink-2: #b8cde2;
-  --line: #36516b;
-  --accent: #88c4ff;
-  --accent-ink: #add7ff;
-  --accent-soft: #244968;
-  --on-accent: #102a43;
-  --accent-hover: #add7ff;
-  --park-danger: #ff9faa;
-  color-scheme: dark;
-}
+/* World supplies the header; Park inherits the same automatic theme. */
+:root { --park-danger: #b13d4c; }
+:root[data-theme=dark] { --park-danger: #ff9faa; }
 html { overscroll-behavior-y: contain; scroll-padding-bottom: 24px; }
 body { min-height: 0; background: var(--bg); }
 html body .park-skeleton-photo { background: linear-gradient(140deg, var(--accent-soft), color-mix(in srgb, var(--accent) 18%, var(--surface)) 60%, color-mix(in srgb, var(--accent) 28%, var(--surface))); }
 html body .button.primary:not(:disabled):hover { background: color-mix(in srgb, var(--accent) 88%, var(--ink)); border-color: color-mix(in srgb, var(--accent) 88%, var(--ink)); }
-html body .dialog-backdrop { background: #1b355659; }
+html body .dialog-backdrop { background: color-mix(in srgb, var(--ink) 35%, transparent); }
 html body .shell { display: block; min-height: 0; grid-template-columns: minmax(0, 1fr); }
 html body .shell > .side,
 html body .shell > .col > .mobile-top,

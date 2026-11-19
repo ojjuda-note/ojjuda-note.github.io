@@ -5,7 +5,7 @@ const test = require('node:test');
 const {JSDOM} = require('jsdom');
 const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
 
-async function fixture(member = true, {hosted = false, submitInquiry} = {}) {
+async function fixture(member = true, {hosted = false, submitInquiry, mutationLimit = Infinity} = {}) {
   const dom = new JSDOM(read('park/index.html'), {
     url: 'https://fixture.test/park/?embedded=1', runScripts: 'outside-only', pretendToBeVisual: true
   });
@@ -16,8 +16,15 @@ async function fixture(member = true, {hosted = false, submitInquiry} = {}) {
     postMessage(data, origin) {messages.push({data, origin});}
   }});
   const observers = new Set(), MutationObserver = w.MutationObserver;
+  let mutationCount = 0;
   w.MutationObserver = class extends MutationObserver {
-    constructor(callback) { super(callback); observers.add(this); }
+    constructor(callback) {
+      super((...args) => {
+        if (++mutationCount > mutationLimit) { for (const observer of observers) observer.disconnect(); return; }
+        callback(...args);
+      });
+      observers.add(this);
+    }
   };
   w.scrollTo = () => {};
   w.matchMedia = () => ({matches:false});
@@ -61,7 +68,7 @@ async function fixture(member = true, {hosted = false, submitInquiry} = {}) {
   await settle(); await settle();
   const api = w.OjjudaParkFull;
   const setting = action => w.document.querySelector(`[data-park-settings="${action}"]`);
-  return {dom,w,api,calls,messages,settle,setting,
+  return {dom,w,api,calls,messages,settle,setting,mutationCount:() => mutationCount,
     async back() {const popped=new Promise(resolve=>w.addEventListener('popstate',resolve,{once:true}));assert.equal(api.back(),true);await popped;await settle();},
     async forward() {const popped=new Promise(resolve=>w.addEventListener('popstate',resolve,{once:true}));w.history.forward();await popped;await settle();},
     async close() { await settle(); for (const observer of observers) observer.disconnect(); dom.window.close(); },
@@ -286,6 +293,53 @@ test('explicit Park reentry resets retained settings without a reload or an extr
     assert.ok(f.root(),'Back can still restore the saved settings snapshot');
     assert.equal(f.api.navigationSnapshot().mode,'saved');
   }finally{await f.close();}
+});
+
+test('closing a pending charge consumes its popup history without repeating the busy guard', async () => {
+  // Bound observer callbacks so the previous microtask loop fails instead of
+  // preventing the test runner from ever reaching its timeout or cleanup.
+  const f = await fixture(true, {mutationLimit:200});
+  let finishCharge, chargeCalls = 0, balance;
+  try {
+    f.w.HTMLDialogElement.prototype.showModal = function() { this.open = true; };
+    f.w.HTMLDialogElement.prototype.close = function() {
+      if (!this.open) return;
+      this.open = false;
+      f.w.setTimeout(() => this.dispatchEvent(new f.w.Event('close')),0);
+    };
+    f.w.eval(read('features/wallet/ju-charge.js'));
+    f.w.OjjudaCharge.install({getUserId:() => 'park-member-a',source:'note',onBalance:coins => {balance = coins;},client:{
+      rpc:async name => {
+        if (name === 'beta_charge') {
+          chargeCalls++;
+          return new Promise(resolve => {finishCharge = () => resolve({data:{ok:true,coins:110,added:10}});});
+        }
+        return {data:{ok:true,enabled:true,coins:100,left:5,limit:5}};
+      }
+    }});
+    f.api.navigate('saved'); await f.settle();
+    const index = f.w.history.state.ojjudaParkRoute.index;
+    f.w.OjjudaCharge.open(); await f.settle();
+    assert.equal(f.w.history.state.ojjudaParkRoute.view,'charge');
+    f.w.document.querySelector('.ju-charge-checkout').click(); await f.settle();
+    assert.equal(chargeCalls,1);
+    assert.equal(f.w.OjjudaCharge.canLeave(),false);
+    f.w.document.querySelector('.ju-charge-close').click();
+    for (let i=0;i<4;i++) await f.settle();
+    assert.ok(f.mutationCount()<200,'closing the dialog must not feed busy messages back into its observer');
+    assert.equal(f.w.OjjudaCharge.isOpen(),false);
+    assert.equal(f.w.history.state.ojjudaParkRoute.view,null);
+    assert.equal(f.w.history.state.ojjudaParkRoute.index,index,'only the closed popup entry is consumed');
+    assert.equal(f.api.navigationAction(),'saved');
+    assert.equal(f.api.navigate('settings'),false,'a pending charge still blocks leaving the current screen');
+    assert.equal(f.api.navigationAction(),'saved');
+    finishCharge(); await f.settle();
+    assert.equal(balance,110);
+    assert.equal(chargeCalls,1);
+    assert.equal(f.w.OjjudaCharge.canLeave(),true);
+    await f.back();
+    assert.equal(f.api.navigationAction(),'feed','Back works again after the response updates the balance');
+  } finally {await f.close();}
 });
 
 

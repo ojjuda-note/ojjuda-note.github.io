@@ -1,9 +1,10 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
+const {calendarCases,selectCalendarDate,palette,distinctPalettes}=require('./theme-browser-helpers.cjs');
 const root=path.join(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const proof=process.env.WORLD_DESIGN_PROOF_DIR||'/tmp/world-design-proof';fs.mkdirSync(proof,{recursive:true});
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
-world=world.replace('</head>','<script>'+read('features/home/agit-hub.js')+'\n'+read('app/world/world-themes.js')+'\n'+read('shared/games/world-game-rankings.js')+'\n'+read('shared/games/world-game-assets.js')+'\n'+read('features/arcade/arcade-rooms.js')+'\n'+read('app/world/world-navigation.js').split('/* World-only ambient audio;')[0]+'</script></head>');
+world=world.replace('</head>','<script>'+read('features/home/agit-hub.js')+'\n'+read('park/world-park-notes.js')+'\n'+read('app/world/world-themes.js')+'\n'+read('shared/games/world-game-rankings.js')+'\n'+read('shared/games/world-game-assets.js')+'\n'+read('features/arcade/arcade-rooms.js')+'\n'+read('app/world/world-navigation.js').split('/* World-only ambient audio;')[0]+'</script></head>');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  $.me.nick='오쭈다';$.me.bio='오늘도 반가워요.';$.coins=250;D.online=false;S={rpc:async()=>({data:{ok:true,rooms:[],mine:null}})};
@@ -16,7 +17,7 @@ world=world.slice(0,boot)+`
  const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH}:{})});
  try{
  const context=await browser.newContext({viewport:{width:1440,height:1050},reducedMotion:'reduce',timezoneId:'America/Los_Angeles'});
- await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(u.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});const f=path.join(root,u.pathname);if(!f.startsWith(root+path.sep)||!fs.existsSync(f)||!fs.statSync(f).isFile())return route.abort();return route.fulfill({path:f});});
+ await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(u.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});if(u.pathname==='/park/')return route.fulfill({contentType:'text/html',body:read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,tag=>tag.includes('/app/world/world-themes.js')?tag:'')});const f=path.join(root,u.pathname);if(!f.startsWith(root+path.sep)||!fs.existsSync(f)||!fs.statSync(f).isFile())return route.abort();return route.fulfill({path:f});});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.designFixture);
  const fits=async(label)=>assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,label+' fits viewport');
@@ -158,6 +159,21 @@ world=world.slice(0,boot)+`
   assert.ok(boxes.every((b,i)=>b.y===boxes[0].y&&b.width>=44&&b.fits&&(!i||b.x>=boxes[i-1].x+boxes[i-1].width-1)),'three readable links share one row at '+width);
   await fits('Hub '+width);
  }
+ // Read rendered colors, not only the theme attribute or illustration URL.
+ for(const appearance of ['light','dark']){
+  await page.emulateMedia({colorScheme:appearance});
+  const samples=[];
+  for(const [theme,date] of calendarCases){
+   await selectCalendarDate(page,date);
+   const colors=await palette(page,{park:'.agit-park-open',pajang:'.agit-pajang-open'});
+   assert.equal(colors.theme,theme);assert.equal(colors.body,colors.bg,'Agit background follows '+theme);
+   assert.equal(colors.nodes.park.background,colors.accent,'Park entrance follows the shared accent');
+   assert.equal(colors.nodes.pajang.background,colors.accent,'Pajang entrance follows the shared accent');
+   samples.push(colors);
+  }
+  distinctPalettes(samples,'Agit '+appearance,['bg','accent','nodes.park.background','nodes.pajang.background']);
+ }
+ await page.emulateMedia({colorScheme:'light'});await page.evaluate(()=>OjjudaThemes.sync());
  await page.locator('.bottomnav [data-tab=my]').click();assert.equal(await page.locator('[data-ju-shop-open]').count(),0);
  await page.locator('.my-hub').waitFor();
  assert.equal(await page.evaluate(()=>designFixture.state.tab),'my');
@@ -193,6 +209,36 @@ world=world.slice(0,boot)+`
  for(const key of keys){await page.evaluate(k=>document.documentElement.dataset.worldTheme=k,key);await fits(key);assert.equal(await page.locator('.side .ojjuda-theme-logo').evaluate(n=>getComputedStyle(n).color===getComputedStyle(n.querySelector('path')).fill),true,'logo fill follows the theme');assert.ok(await page.locator('[data-arcade-rank-root]').evaluate(n=>getComputedStyle(n,':before').backgroundImage.includes('/assets/design/')));}
  await page.evaluate(()=>document.documentElement.dataset.worldTheme='christmas');await page.screenshot({path:path.join(proof,'christmas-desktop.png'),fullPage:true});
  await page.emulateMedia({colorScheme:'dark'});await page.waitForFunction(()=>document.documentElement.dataset.theme==='dark');await fits('dark theme');await page.screenshot({path:path.join(proof,'dark-desktop.png'),fullPage:true});
+ // The live host and the real Park stylesheet order must resolve the same palette.
+ await page.emulateMedia({colorScheme:'light'});
+ await page.locator('.sidenav [data-tab=hub]').click();
+ await page.locator('.agit-park-banner').click();
+ await page.waitForFunction(()=>document.documentElement.classList.contains('world-park-active'));
+ await page.waitForFunction(()=>document.querySelector('.park-app iframe')?.contentWindow?.OjjudaThemes);
+ const park=page.frames().find(frame=>new URL(frame.url()).pathname==='/park/');
+ assert.ok(park,'Park is mounted in the actual host iframe');
+ await park.waitForFunction(()=>window.OjjudaThemes);
+ for(const appearance of ['light','dark']){
+  await page.emulateMedia({colorScheme:appearance});const samples=[];
+  for(const [theme,date] of calendarCases){
+   await selectCalendarDate(page,date);await selectCalendarDate(park,date);
+   const host=await palette(page),inside=await palette(park,{primary:'#publish-card',reply:'.reply-heading [data-compose=reply]'});
+   assert.equal(inside.theme,theme);assert.equal(inside.body,inside.bg);
+   assert.deepEqual([inside.bg,inside.accent,inside.surface],[host.bg,host.accent,host.surface],theme+' Park host/frame match');
+   assert.equal(inside.nodes.primary.background,inside.accent,'Park primary button follows '+theme);
+   assert.equal(inside.nodes.reply.color,inside.accentInk,'Park reply button text follows '+theme);
+   samples.push(inside);
+  }
+  distinctPalettes(samples,'Park '+appearance,['bg','accent','nodes.primary.background','nodes.reply.color']);
+  const weather=[];
+  for(const kind of [null,'rain','snow']){
+   await selectCalendarDate(page,'2026-10-15',kind);await selectCalendarDate(park,'2026-10-15',kind);
+   const host=await palette(page),inside=await palette(park);
+   assert.equal(inside.weather,kind||'');assert.deepEqual([inside.bg,inside.accent],[host.bg,host.accent]);weather.push(inside);
+  }
+  assert.equal(new Set(weather.map(colors=>colors.bg)).size,3,'clear, rain and snow have distinct backgrounds');
+  await selectCalendarDate(park,'2026-12-25','snow');assert.equal((await palette(park)).weather,'','Christmas keeps its holiday palette');
+ }
  assert.deepEqual(errors,[]);await context.close();console.log('PASS: real redesigned renderer, responsive menus, artwork, all theme palettes, keyboard-safe monthly rankings, browser/native history back, automatic-only themes, draft preservation and ranking pagination');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

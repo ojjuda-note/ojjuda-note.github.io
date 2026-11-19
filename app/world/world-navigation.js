@@ -252,7 +252,11 @@
         if (exitChoice && !exitChoice.game.isConnected) exitChoice.finish();
         const wasGaming = gamingActive;
         gamingActive = document.body.classList?.contains('gaming') === true;
-        if (wasGaming && !gamingActive && !departing && options.currentTab() === 'arcade') {
+        if (wasGaming && !gamingActive && !departing && !returning && !bouncing && !handling &&
+          history.state?.[marker]?.session===session && history.state[marker].index===current?.index &&
+          options.currentTab() === 'arcade') {
+          // An asynchronous game close can finish while Back is bouncing to
+          // its overlay entry. Never overwrite the underlying target visit.
           const arcadeUrl = options.gameCloseUrl?.();
           if (arcadeUrl && current) write(current,arcadeUrl);
         }

@@ -5,7 +5,7 @@ const test = require('node:test');
 const { JSDOM } = require('jsdom');
 const source = fs.readFileSync(path.join(__dirname, '../app/world/world-navigation.js'), 'utf8');
 
-async function fixture({tab='hub',referrer,gameUrl,initialState,initialEntries,priorPage=false,navigationEntries,sharedDialogs=false}={}) {
+async function fixture({tab='hub',referrer,gameUrl,initialState,initialEntries,priorPage=false,navigationEntries,sharedDialogs=false,asyncClose=false}={}) {
   const dom = new JSDOM('<!doctype html><main class="main"></main>', {
     url:'https://world.test/world.html'+(gameUrl?'?game='+gameUrl:''),
     ...(referrer?{referrer}:{}),runScripts:'outside-only',pretendToBeVisual:true
@@ -43,7 +43,10 @@ async function fixture({tab='hub',referrer,gameUrl,initialState,initialEntries,p
     gameCloseUrl:()=>'https://world.test/world.html?tab=arcade',
     closeOverlay(){
       for(const dialog of [w.worldNotifications,w.OjjudaNoteSupport])if(dialog?.isOpen()){dialog.close();return true;}
-      if(!depth)return false;depth--;renderOverlay();return true;
+      if(!depth)return false;
+      const close=()=>{depth--;renderOverlay();};
+      if(asyncClose)Promise.resolve().then(close);else close();
+      return true;
     },
     playingGame:()=>running?document.getElementById('game'):null,
     exitGame(){running=false;depth=0;renderOverlay();},
@@ -131,6 +134,18 @@ test('reopening an overlay before its close traversal finishes preserves the und
     await f.nativeBack();assert.equal(f.overlay,0);assert.equal(f.route.tab,'arcade');
     await f.nativeBack();assert.equal(f.route.tab,'hub');
   }finally{f.close();}
+});
+
+test('an asynchronous game close cannot overwrite the Arcade visit during a browser Back bounce',async()=>{
+  for(const action of ['back','nativeBack']){
+    const f=await fixture({asyncClose:true});try{
+      await f.navigate('arcade');await f.show();await f[action]();
+      assert.equal(f.overlay,0);assert.equal(f.route.tab,'arcade');
+      assert.equal(f.state.ojjudaWorldHistory.index,1);
+      assert.equal(f.state.ojjudaWorldHistory.overlay,false);
+      await f.back();assert.equal(f.route.tab,'hub');
+    }finally{f.close();}
+  }
 });
 
 test('a nested overlay consumes one Back at a time without changing the underlying tab',async()=>{

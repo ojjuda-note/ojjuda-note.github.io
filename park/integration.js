@@ -223,12 +223,12 @@
     } else history.replaceState(historyState(next), '', nextHref);
     return result;
   }
-  function historyBack() {
+  function historyBack(alreadyClosed = false) {
     if (historyDeparting) return true;
     const route=history.state?.[historyKey];
     if (!route || route.scope!==historyScope || route.index<1) return false;
     if (historyPending) return true;
-    if (!canLeave()) return true;
+    if (!alreadyClosed && !canLeave()) return true;
     if (!backdrop.hidden && document.querySelector('.composer')?.ojjudaTools?.close()) return true;
     historyPending=true;historyAllowed=true;history.back();return true;
   }
@@ -336,7 +336,10 @@
       next.index=++historySequence;
       history.pushState(historyState(next),'',location.href);
     } else if (previous.view && !next.view && previous.card===next.card && previous.mode===next.mode) {
-      if (!historyBack()) history.replaceState(historyState(next),'',location.href);
+      // The popup's own close handler has already approved this dismissal.
+      // In-flight charges may outlive their dialog; re-running their leave
+      // guard here would repeatedly mutate the busy notice from this observer.
+      if (!historyBack(true)) history.replaceState(historyState(next),'',location.href);
     } else history.replaceState(historyState(next),'',location.href);
   }
 
