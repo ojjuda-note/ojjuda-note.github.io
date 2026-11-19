@@ -682,13 +682,13 @@ function ensurePhotoLightbox() {
     });
     document.addEventListener('keydown', event => {
       if (photoLightbox.hidden) return;
-      if (event.key === 'Escape') { event.preventDefault(); closePhotoLightbox(); }
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closePhotoLightbox(); }
       if (event.key === 'Tab') {
         if (video.hidden) { event.preventDefault(); close.focus(); }
         else if (!event.shiftKey && document.activeElement === close) { event.preventDefault(); video.focus(); }
         else if (event.shiftKey && document.activeElement === video) { event.preventDefault(); close.focus(); }
       }
-    });
+    }, true); // Native video controls can consume Escape before it bubbles.
   }
 }
 function openPhotoLightbox(url, protect = false) {

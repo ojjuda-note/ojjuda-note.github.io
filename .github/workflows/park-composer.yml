@@ -107,9 +107,12 @@ jobs:
       - name: Check the embedded Park toolbar and navigation
         if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
         run: node tests/park-note-chat-ui.test.cjs
-      - name: Check Park video playback, compression and mobile overlap
+      - name: Check Park video playback and mobile overlap
         if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
-        run: npm --prefix tests run test:park-video:ui
+        run: node tests/note-card-video-ui.test.cjs
+      - name: Check real Park video resizing, audio and cancellation
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/note-card-video-encode-ui.test.cjs
       - name: Check keyboard viewport and active text visibility
         if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
         run: node tests/mobile-viewport-ui.test.cjs

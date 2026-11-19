@@ -158,6 +158,22 @@ test('a video opens on demand, keeps its controls usable and releases playback w
   assert.equal(f.document.activeElement, thumb);
 });
 
+test('Escape closes playback even when the video consumes bubbling key events', async t => {
+  const f = fixture(t, { records: [videoRow(20)] });
+  await f.render([f.card(20)]);
+  const thumb = f.thumb(20); thumb.focus(); thumb.click(); await f.flush();
+  const box = f.document.querySelector('.note-photo-lightbox'), video = box.querySelector('video');
+  video.addEventListener('keydown', event => event.stopPropagation());
+  video.focus();
+  const pauses = f.calls.pauses.length, loads = f.calls.loads.length;
+  video.dispatchEvent(new f.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+  assert.equal(box.hidden, true, 'Escape reaches the lightbox before the player consumes it');
+  assert.ok(f.calls.pauses.length > pauses);
+  assert.ok(f.calls.loads.length > loads);
+  assert.ok(!video.getAttribute('src'), 'closing releases the selected video');
+  assert.equal(f.document.activeElement, thumb);
+});
+
 test('existing photo thumbnails still open an image without requesting any video', async t => {
   const f = fixture(t);
   await f.render([f.card(40)]);
