@@ -38,6 +38,22 @@ export function AccountSettings({onOpen}:{onOpen:(action:AccountSettingsAction)=
         </a>
       </div>
     </section>
+    <section className="ojjuda-settings-group" aria-labelledby="account-app-download-title">
+      <h2 className="ojjuda-settings-heading" id="account-app-download-title">앱 다운로드</h2>
+      <div className="ojjuda-settings-list app-store-downloads">
+        <div className="ojjuda-settings-row app-store-pending" data-store-app="agit" role="group" aria-label="오쭈다 아지트 앱 공개 준비 중">
+          <span className="ojjuda-settings-label">오쭈다 아지트<small>앱 공개 준비 중</small></span>
+          <a className="app-store-action" href="/world.html?tab=hub" aria-label="오쭈다 아지트 웹으로 열기">웹으로 열기 ↗</a>
+        </div>
+        <a className="ojjuda-settings-row" data-store-app="pajang" href="https://play.google.com/store/apps/details?id=kr.ojjuda.pajang" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 파장 Google Play에서 보기 (새 창)">
+          <span className="ojjuda-settings-label">오쭈다 파장</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a className="ojjuda-settings-row" data-store-app="park" href="https://play.google.com/store/apps/details?id=kr.ojjuda.park" target="_blank" rel="noopener noreferrer" aria-label="오쭈다 공원 Google Play에서 보기 (새 창)">
+          <span className="ojjuda-settings-label">오쭈다 공원</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
+      <p className="app-store-note">스토어 공개 후 설치할 수 있어요.</p>
+    </section>
     <section className="ojjuda-settings-group" aria-labelledby="account-access-title">
       <h2 className="ojjuda-settings-heading" id="account-access-title">계정 관리</h2>
       <div className="ojjuda-settings-list">
