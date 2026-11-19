@@ -72,21 +72,34 @@ function resolve(value=new Date()){
 }
 // Older devices may still have a manual choice saved; calendar selection always wins.
 try{localStorage.removeItem(STORAGE);}catch{}
-let timer=0,current='';
+let timer=0,current='',weather=null;
 const colorMode=window.matchMedia?.('(prefers-color-scheme: dark)');
+function syncBrowserColor(){
+ const meta=document.querySelector?.('meta[name="theme-color"]');
+ if(!meta||!window.getComputedStyle)return;
+ const root=document.documentElement,style=window.getComputedStyle(root);
+ // Resolve color-mix() into a browser color before using it for Android chrome.
+ const color=style.backgroundColor;
+ if(color&&color!=='rgba(0, 0, 0, 0)'&&color!=='transparent')meta.setAttribute('content',color);
+}
 function syncAppearance(){
  const root=document.documentElement;
  root.dataset.accent='pink';
  if(colorMode?.matches)root.dataset.theme='dark';else delete root.dataset.theme;
+ syncBrowserColor();
 }
 colorMode?.addEventListener?.('change',syncAppearance);
 function apply(){
  syncAppearance();
- const previous=current;
- current=resolve();document.documentElement.dataset.worldTheme=current;
+ const root=document.documentElement,previous=current,previousWeather=root.dataset.worldWeather;
+ current=resolve();root.dataset.worldTheme=current;
+ if(weather&&['spring','summer','autumn','winter'].includes(current))root.dataset.worldWeather=weather;
+ else delete root.dataset.worldWeather;
  document.querySelectorAll('[data-theme-greeting]').forEach(n=>{n.textContent=catalog[current].copy;});
- if(previous!==current)window.dispatchEvent(new Event('ojjuda:themechange'));
+ syncBrowserColor();
+ if(previous!==current||previousWeather!==root.dataset.worldWeather)window.dispatchEvent(new Event('ojjuda:themechange'));
 }
+function setWeather(kind){weather=kind==='rain'||kind==='snow'?kind:null;apply();}
 function schedule(){
  clearTimeout(timer);const now=Date.now(),next=(Math.floor((now+KST)/DAY)+1)*DAY-KST;
  timer=setTimeout(()=>{apply();schedule();},Math.max(1000,next-now+100));
@@ -94,6 +107,6 @@ function schedule(){
 function sync(){apply();schedule();}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync();});
 window.addEventListener('pageshow',sync);
-window.OjjudaThemes=Object.freeze({catalog,order,koreaDate,eventsOn,eventInSeason,seasonFor,resolve,getMode:()=>"auto",getCurrent:()=>current,sync,syncAppearance,scheduleFor(year){return order.filter(k=>catalog[k].date||lunar[year]?.[k]).map(k=>({key:k,name:catalog[k].name,date:lunar[year]?.[k]||year+'-'+catalog[k].date,period:catalog[k].period})).sort((a,b)=>a.date.localeCompare(b.date));}});
+window.OjjudaThemes=Object.freeze({catalog,order,koreaDate,eventsOn,eventInSeason,seasonFor,resolve,getMode:()=>"auto",getCurrent:()=>current,getWeather:()=>document.documentElement.dataset.worldWeather||null,setWeather,sync,syncAppearance,scheduleFor(year){return order.filter(k=>catalog[k].date||lunar[year]?.[k]).map(k=>({key:k,name:catalog[k].name,date:lunar[year]?.[k]||year+'-'+catalog[k].date,period:catalog[k].period})).sort((a,b)=>a.date.localeCompare(b.date));}});
 sync();
 })();

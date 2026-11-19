@@ -69,30 +69,33 @@ test('Park iframe survives a short visit to Arcade and returns without reloading
   } finally {f.dom.window.close();}
 });
 
-test('Park browser chrome restores the original section color without changing the member theme', () => {
+test('Park browser chrome follows the shared automatic palette across cached section visits', () => {
   const f = fixture();
   try {
     const root = f.window.document.documentElement;
     const theme = f.window.document.querySelector('meta[name="theme-color"]');
-    const original = theme.content;
+    let currentColor = '#704d30', refreshes = 0;
+    f.window.OjjudaThemes = {syncAppearance() {refreshes++;theme.content=currentColor;}};
     root.dataset.theme = 'dark';
     f.render('hub');
-    assert.equal(theme.content,original);
+    assert.equal(theme.content,currentColor);
     f.render('park');
-    const parkColor = theme.content;
-    assert.notEqual(parkColor,original,'entering Park applies its separate browser color');
+    assert.equal(theme.content,currentColor,'entering Park keeps the current automatic browser color');
     assert.equal(root.classList.contains('world-park-active'),true);
     assert.equal(root.dataset.theme,'dark','Park preserves the member dark-mode preference');
     const frame = f.frame();
     frame.contentWindow.OjjudaParkFull={returnHome:()=>true};
     for (const other of ['hub','arcade','my']) {
+      currentColor = {'hub':'#865668','arcade':'#2d6775','my':'#476d82'}[other];
+      const before = refreshes;
       f.render(other);
-      assert.equal(theme.content,original,other+' restores the exact previous section color');
+      assert.equal(refreshes,before+1,'section changes ask the shared engine for its current palette');
+      assert.equal(theme.content,currentColor,other+' uses the latest automatic color rather than a startup snapshot');
       assert.equal(root.classList.contains('world-park-active'),false);
       assert.equal(root.dataset.theme,'dark');
       f.render('park');
       assert.equal(f.frame(),frame,'color transitions preserve the cached Park frame');
-      assert.equal(theme.content,parkColor);
+      assert.equal(theme.content,currentColor,'returning to Park preserves the same latest palette');
     }
   } finally {f.dom.window.close();}
 });
