@@ -31,6 +31,7 @@ on:
       - 'supabase/functions/pajang-assets/index.ts'
       - 'ops/publish-pajang-program.py'
       - 'tests/pajang-discovery-browser.cjs'
+      - 'tests/window-safe-area-ui.test.cjs'
       - 'tests/pajang-question-suggestion.test.cjs'
       - 'tests/pajang-exchange-profile.test.cjs'
       - 'tests/pajang-exchange-height.test.mjs'
@@ -68,6 +69,7 @@ on:
       - 'tests/park-entry-browser.cjs'
       - 'tests/park-opening.test.cjs'
       - 'tests/pajang-discovery-browser.cjs'
+      - 'tests/window-safe-area-ui.test.cjs'
       - 'tests/pajang-question-suggestion.test.cjs'
       - 'tests/pajang-exchange-profile.test.cjs'
       - 'tests/pajang-exchange-height.test.mjs'
@@ -116,6 +118,10 @@ jobs:
           fi
           npx playwright install --with-deps chromium
           sudo apt-get install -y fonts-noto-cjk
+      - name: Check shared support layouts in Agit, Park and Pajang
+        env:
+          WINDOW_AUDIT_FILTER: '문의·의견'
+        run: node tests/window-safe-area-ui.test.cjs
       - name: Check guest account buttons and member settings
         env:
           MY_MENU_QA_DIR: tests/artifacts/pajang-discovery/guest-settings
