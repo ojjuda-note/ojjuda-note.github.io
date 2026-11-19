@@ -224,7 +224,10 @@ async function scenario(name, fn) {
 
   await scenario('mobile pagination reaches every card and locks while drawing', async () => {
     const mine = engine.makeDeck().filter(id => !['S-4', 'H-8', 'D-9'].includes(id)).slice(0, 18);
-    const page = await pageFor({ width: 360, height: 640, animated: true, saved: setup([mine, ['H-8', 'D-9']]) });
+    const saved = setup([mine, ['H-8', 'D-9']]);
+    const longName = '오쭈다원카드를함께즐기는친구'.repeat(3).slice(0, 32);
+    saved.state.players[0].name = longName;
+    const page = await pageFor({ width: 360, height: 640, animated: true, saved });
     await resume(page); assert.equal(await page.locator('#hand .hand-card').count(), 8);
     const shown = new Set(await page.locator('#hand .hand-card').evaluateAll(nodes => nodes.map(node => node.dataset.card)));
     await page.locator('#next-cards').click();
@@ -234,6 +237,25 @@ async function scenario(name, fn) {
     assert.equal(shown.size, 18, 'all held cards are reachable without scrolling the page');
     assert.equal(await page.locator('#next-cards').isDisabled(), true);
     await page.locator('#previous-cards').click();
+    const headerLayout = await page.evaluate(() => {
+      const box = selector => { const r = document.querySelector(selector).getBoundingClientRect(); return { left: r.left, right: r.right, width: r.width, centerY: r.top + r.height / 2 }; };
+      const name = document.querySelector('#my-name'), style = getComputedStyle(name), turn = document.querySelector('#turn-label');
+      return { row: box('.hand-meta'), nameGroup: box('.my-name'), name: box('#my-name'), turn: box('#turn-label'), pager: box('#hand-pager'), previous: box('#previous-cards'), next: box('#next-cards'),
+        nameText: name.textContent, nameWidth: name.clientWidth, nameScrollWidth: name.scrollWidth,
+        nameOverflow: style.textOverflow, nameWhiteSpace: style.whiteSpace, turnWidth: turn.clientWidth, turnScrollWidth: turn.scrollWidth };
+    });
+    assert.equal(headerLayout.nameText, longName, 'the full 32-character nickname remains in the DOM');
+    assert.equal(headerLayout.nameOverflow, 'ellipsis');
+    assert.equal(headerLayout.nameWhiteSpace, 'nowrap');
+    assert.ok(headerLayout.nameScrollWidth > headerLayout.nameWidth, 'a long nickname is visually shortened');
+    for (const key of ['nameGroup', 'name', 'turn', 'pager', 'previous', 'next']) {
+      const box = headerLayout[key];
+      assert.ok(box.width > 0 && box.left >= headerLayout.row.left - 1 && box.right <= headerLayout.row.right + 1, `${key} stays inside the hand header`);
+      assert.ok(Math.abs(box.centerY - headerLayout.row.centerY) <= 1, `${key} stays on the same line`);
+    }
+    assert.ok(headerLayout.nameGroup.right <= headerLayout.turn.left + 1, 'nickname does not overlap the turn label');
+    assert.ok(headerLayout.turn.right <= headerLayout.pager.left + 1, 'turn label does not overlap the page buttons');
+    assert.ok(headerLayout.turnScrollWidth <= headerLayout.turnWidth + 1, 'my-turn text remains fully readable');
     await oneScreen(page, '18-card pagination', true); await snapshot(page, 'mobile-many-cards');
     await page.locator('#draw-button').click();
     await page.waitForFunction(() => document.querySelectorAll('.flying-card').length > 0);
@@ -242,6 +264,7 @@ async function scenario(name, fn) {
     await stableBoard(page);
     assert.equal((await stored(page)).players[0].hand.length, 19);
     await page.context().close();
+    return { nicknameLength: longName.length, headerLayout };
   });
 
   await scenario('multiplayer login failure stays usable and explains how to continue', async () => {

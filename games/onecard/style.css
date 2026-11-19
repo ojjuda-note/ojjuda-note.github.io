@@ -222,8 +222,8 @@ a { color: inherit; }
 .card-ace::after { content: "OJJUDA"; position: absolute; top: calc(100% + 6px); width: 100%; text-align: center; font-family: Georgia, serif; font-size: 5px; letter-spacing: .18em; color: #9e895c; }
 .card-court { position: absolute; inset: 20% 21%; border: 1px solid #c3ab7259; border-radius: 22px 22px 18px 18px; background: #e5ddc329; }
 .card-court svg { position: absolute; width: 100%; height: 100%; color: inherit; }
-.card-court-rank { position: absolute; left: 0; right: 0; top: 36%; text-align: center; font: 700 24px/.9 Georgia, serif; color: inherit; }
-.card-court .court-suit { position: absolute; width: 13px; height: 15px; left: 50%; bottom: 12%; transform: translateX(-50%); }
+.card-court-rank { position: absolute; left: 0; right: 0; top: 32%; text-align: center; font: 700 24px/.9 Georgia, serif; color: inherit; }
+.card-court .court-suit { position: absolute; width: 10px; height: 10px; left: 50%; bottom: 10%; transform: translateX(-50%); }
 .card-back { border: 4px solid #f7f1e3; background: #2d4c42; box-shadow: inset 0 0 0 1px #b49b67, inset 0 0 0 4px #284539, inset 0 0 0 5px #b49b6755; }
 .card-back::before {
   content: ""; position: absolute; inset: 9px; border: 1px solid #d7be8259;
@@ -254,7 +254,7 @@ a { color: inherit; }
 
 .overlay {
   position: absolute; inset: 65px 0 0; z-index: 20; display: grid; place-items: center;
-  padding: 18px 28px 40px; background: #14382ff0;
+  padding: 18px 28px 40px; background: #14382f;
 }
 .overlay.welcome { background: #173d34; }
 .welcome::before { content: ""; position: absolute; inset: 22px; border: 1px solid #b6b58225; border-radius: 47%; pointer-events: none; }
@@ -344,12 +344,13 @@ button.pile { border: 0; padding: 0; background: transparent; color: inherit; fo
 .pile.discard .pile-card .playing-card { transform: rotate(6deg); }
 .pile-label b { padding-left: 4px; font-weight: 500; font-size: 10px; color: #d0d8c5; }
 .direction { color: #acbfae; font-size: 10px; }
-.my-name { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
-.my-dot { width: 6px; height: 6px; border-radius: 50%; background: #d8bf81; }
-#my-count { color: #adc0ad; font-size: 10px; }
+.my-name { display: inline-flex; align-items: center; gap: 5px; flex: 0 1 auto; min-width: 0; max-width: 38%; white-space: nowrap; }
+.my-name #my-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.my-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #d8bf81; }
+#my-count { flex: none; color: #adc0ad; font-size: 10px; }
 .hand-meta { justify-content: space-between; }
-.hand-meta #turn-label { flex: 1; text-align: center; font-size: 12px; line-height: 1.3; min-width: 0; }
-.hand-pager { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.hand-meta #turn-label { flex: 1; text-align: center; font-size: 12px; line-height: 1.3; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hand-pager { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; white-space: nowrap; }
 .hand-pager .icon-btn { width: 30px; height: 30px; font-size: 20px; background: #2a5142; }
 #hand-page { font-size: 10px; color: #b6c6b4; }
 .status { position: absolute; bottom: 3px; left: 15px; right: 15px; margin: 0; min-height: 16px; font-size: 11px; line-height: 1.4; text-align: center; color: #afc2ad; pointer-events: none; }
@@ -552,6 +553,8 @@ button.pile { border: 0; padding: 0; background: transparent; color: inherit; fo
   .card-pip { width: 9px; height: 11px; }
   .card-ace { width: 22px; height: 26px; }
   .card-ace::after { font-size: 4px; top: calc(100% + 3px); }
+  .card-court-rank { font-size: 14px; }
+  .card-court .court-suit { width: 8px; height: 9px; }
   .overlay { inset: 48px 0 0; padding: 8px 25px 16px; }
   .welcome .dialog { width: 470px; display: grid; grid-template-columns: 180px 1fr; grid-template-rows: auto auto auto auto; column-gap: 27px; align-items: center; }
   .welcome .eyebrow { grid-column: 2; margin: 0; font-size: 9px; }
