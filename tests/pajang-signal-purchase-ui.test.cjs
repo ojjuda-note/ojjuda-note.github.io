@@ -273,6 +273,42 @@ test('the exhausted feed enters purchasing and returns to the signal editor with
   assert.match(f.w.document.querySelector('dialog button.primary').textContent,/남은 3개/);
 });
 
+for(const freeRemaining of [0,3])test(`My Pajang opens and closes signal purchasing with ${freeRemaining} free signals without buying`,async t=>{
+  const f=await fixture(t,{mode:'station',wallet:{freeRemaining,remaining:freeRemaining}});
+  const {w}=f;
+  const entry=()=>[...w.document.querySelectorAll('.account-settings button')].find(button=>
+    button.querySelector('.ojjuda-settings-label')?.textContent==='신호 구매');
+  w.document.querySelector('nav [aria-label="내 파장"]').click();await wait(entry);
+  assert.equal(entry().disabled,false,'the account menu remains available before free signals run out');
+  assert.equal(entry().nextElementSibling,w.document.querySelector('.account-settings [data-ju-charge-open]'),
+    'signal purchasing appears directly above coin top-up');
+  const index=w.history.state.pajangNavigation.index;
+  entry().click();await wait(()=>f.form()?.getAttribute('aria-busy')==='false');
+  assert.equal(w.document.querySelector('dialog[open]').getAttribute('aria-label'),'추가 신호 구매');
+  assert.equal(new URL(w.location.href).searchParams.get('tab'),'profile');
+  assert.equal(f.purchases().length,0,'opening the existing purchase popup never buys a package');
+  if(freeRemaining){
+    assert.match(f.form().textContent,/무료 신호를 먼저 사용해 주세요/);
+    assert.equal(f.buy(),null);
+    assert.equal(f.form().querySelectorAll('[name="signal-pack"]').length,0);
+  }else{
+    assert.equal(f.form().querySelectorAll('[name="signal-pack"]').length,offers.length);
+    assert.equal(f.buy().disabled,true,'an available purchase still requires an explicit package choice');
+  }
+  w.history.back();await wait(()=>!f.form()&&w.history.state.pajangNavigation.index===index);
+  assert.equal(new URL(w.location.href).searchParams.get('tab'),'profile','Back closes the popup and keeps My Pajang');
+  assert.ok(entry());
+  entry().click();await wait(()=>f.form()?.getAttribute('aria-busy')==='false');
+  w.document.querySelector('dialog[open] [aria-label="닫기"]').click();
+  await wait(()=>!f.form()&&w.history.state.pajangNavigation.index===index);
+  assert.equal(new URL(w.location.href).searchParams.get('tab'),'profile','the close button also keeps My Pajang');
+  assert.ok(entry());
+  assert.equal(f.purchases().length,0);
+  assert.equal(f.state.receipts.size,0);
+  assert.equal(f.state.wallet.coins,150);
+  assert.equal(f.state.wallet.freeRemaining,freeRemaining);
+});
+
 test('a completed purchase cannot charge again while the history close is still pending',async t=>{
   const f=await fixture(t,{mode:'station'});
   f.w.document.querySelector('.signal-buy').click();await wait(()=>f.form()?.getAttribute('aria-busy')==='false');
