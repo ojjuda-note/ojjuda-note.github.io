@@ -1,14 +1,16 @@
+import {attachReaderTools} from './reader-tools.mjs?v=20261120-saju-story2';
 import {readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
 import {readingScopeText} from './reading-scope.mjs?v=20261114-saju-final-review2';
 import { SajuPayment } from './payment.js?v=20261115-saju-reopen1';
 import { SajuCompatibilityPayment, COMPATIBILITY_PRICE } from './compatibility-payment.mjs?v=20261113-compatibility20-1';
 import { compatibilityScoreText } from './compatibility-score-view.mjs?v=20261114-saju-copy1';
-import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261115-saju-menus1';
+import { compatibilityPeopleText, compatibilityPersonLabels } from './compatibility-people-view.mjs?v=20261120-saju-story2';
 import { SajuSavedProfiles, SAVED_PROFILES_PREFIX } from './saved-profiles.mjs?v=20261113-saju-reader1';
 import { SajuProfilePicker } from './profile-picker.mjs?v=20261114-saju-copy1';
 import { attachEntryFlow } from './entry-flow.mjs?v=20261115-saju-reopen1';
 
 const $=id=>document.getElementById(id);
+const readerTools=attachReaderTools(document,{resultId:'compatibility-result',dialogId:'compatibility-tools'});
 const form=$('compatibility-form'),button=$('compatibility-open');
 const savedOnly=new URL(window.location.href).searchParams.get('reading')==='saved';
 if(savedOnly) {
@@ -211,7 +213,7 @@ async function modules() {
   modulesPromise ||= Promise.all([
     import('./engine.mjs?v=20261113-saju-brief1'),
     import('./compatibility.mjs?v=20261114-saju-final-review2'),
-    import('./report-view.mjs?v=20261120-saju-clean1'),
+    import('./report-view.mjs?v=20261120-saju-story2'),
   ]).catch(error=>{modulesPromise=null;throw error;});
   return modulesPromise;
 }
