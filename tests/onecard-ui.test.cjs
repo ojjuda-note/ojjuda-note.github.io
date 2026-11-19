@@ -391,6 +391,41 @@ async function scenario(name, fn) {
     await snapshot(page, 'reverse-two-survivors'); await page.context().close();
   });
 
+  await scenario('matching reverse copies remain independently selectable and both finish in the discard pile', async () => {
+    const saved = setup([['S-Q', 'S-Q-2'], ['H-Q', 'D-5']]);
+    for (const player of saved.state.players.slice(2)) {
+      saved.state.deck.push(...player.hand); player.hand = []; player.active = false;
+    }
+    const page = await pageFor({ width: 390, height: 844, saved, animated: true });
+    await resume(page);
+    const first = page.locator('#hand [data-card="S-Q"]'), second = page.locator('#hand [data-card="S-Q-2"]');
+    assert.equal(await first.count(), 1); assert.equal(await second.count(), 1);
+    assert.equal(await first.getAttribute('aria-label'), await second.getAttribute('aria-label'));
+    await page.locator('#sort-color').click();
+    assert.equal(await first.isEnabled(), true); assert.equal(await second.isEnabled(), true);
+    await oneScreen(page, 'matching reverse cards', true);
+    await snapshot(page, 'two-matching-reverse-cards');
+    await page.locator('#onecard-button').click(); await second.click();
+    await page.waitForFunction(key => {
+      const state = JSON.parse(localStorage.getItem(key)).state;
+      return state.revision === 1 && state.direction === -1;
+    }, STORAGE);
+    assert.deepEqual((await stored(page)).players[0].hand, ['S-Q']);
+    assert.equal(await second.count(), 0); assert.equal(await first.count(), 1);
+    await page.waitForFunction(key => {
+      const state = JSON.parse(localStorage.getItem(key)).state;
+      return state.revision === 2 && state.direction === 1 && !document.querySelector('#draw-button').disabled;
+    }, STORAGE);
+    await page.locator('#sort-number').click(); await pressCard(page, 'S-Q');
+    await page.locator('#sheet[open]').waitFor();
+    const finished = await stored(page);
+    assert.equal(finished.winnerId, 'me'); assert.equal(finished.direction, -1);
+    assert.deepEqual(finished.discard.slice(-3), ['S-Q-2', 'H-Q', 'S-Q']);
+    assert.equal(await page.locator('#hand .hand-card').count(), 0);
+    await visibleResultActions(page, 'matching reverse copies result');
+    await page.context().close();
+  });
+
   await scenario('two-card round finishes, result is visible, restart and resume work', async () => {
     const page = await pageFor({ saved: setup([['S-K', 'S-3'], ['C-9', 'D-8']]) });
     await resume(page); await page.locator('#onecard-button').click(); await pressCard(page, 'S-K');

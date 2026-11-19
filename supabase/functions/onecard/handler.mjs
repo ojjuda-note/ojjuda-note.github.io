@@ -1,11 +1,29 @@
-import { createGame, applyAction, chooseBotAction, projectState } from './engine.mjs';
+import { ENGINE_VERSION, createGame, applyAction, chooseBotAction, projectState } from './engine.mjs';
 
 const ORIGINS = new Set(['https://ojjuda.kr', 'https://www.ojjuda.kr', 'https://ojjuda-note.github.io']);
 const UUID = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 const ACTIONS = new Set(['mine', 'list', 'create', 'join', 'read', 'start', 'move', 'leave']);
 const ERRORS = new Set(['not_signed_in', 'banned', 'room_in_progress', 'room_rate_limit', 'room_full',
   'room_not_found', 'room_unavailable', 'not_room_owner', 'need_players', 'state_conflict',
-  'not_your_turn', 'invalid_move', 'invalid_options', 'invalid_title', 'invalid_request', 'bad_request']);
+  'not_your_turn', 'invalid_move', 'invalid_options', 'invalid_title', 'invalid_request', 'bad_request', 'client_update_required']);
+
+function deckSize(state) {
+  return state.deck.length + state.discard.length + state.players.reduce((total, player) => total + player.hand.length, 0);
+}
+
+function supportsExtendedDeck(version) {
+  const parts = typeof version === 'string' && /^(\d+)\.(\d+)\.(\d+)$/.exec(version);
+  return !!parts && (+parts[1] > 1 || (+parts[1] === 1 && +parts[2] >= 4));
+}
+
+function requireCompatibleRoom(result, compatible) {
+  const state = result?.room?.state;
+  // Applying today's engine to an existing 54-card round updates its version
+  // without changing its cards. The actual set, not that label, controls access.
+  if (!compatible && state && (deckSize(state) > 54 ||
+    [...state.deck, ...state.discard, ...state.players.flatMap(player => player.hand)].some(id => /^[SHDC]-Q-2$/.test(id))))
+    throw Error('client_update_required');
+}
 
 function projectRoom(result, userId, now) {
   const r = result?.room;
@@ -17,7 +35,7 @@ function projectRoom(result, userId, now) {
     version: r.version, round: r.round, deadline: r.deadline, serverTime: now,
     // Room membership survives losing a round, so eliminated members can rematch.
     players: r.members.map((id, i) => ({ id, name: r.names[i], active: !r.departed[i] })),
-    game: r.state ? projectState(r.state, userId) : null,
+    game: r.state ? { ...projectState(r.state, userId), deckSize: deckSize(r.state) } : null,
     // A receipt comes only from the committed database result for this viewer.
     ranking: result.ranking?.recorded === true ? {
       recorded: true, won: result.ranking.won === true,
@@ -73,7 +91,7 @@ export function createHandler({ env, fetchImpl = fetch, now = Date.now,
     const headers = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', Vary: 'Origin',
       'Access-Control-Allow-Origin': ORIGINS.has(origin) ? origin : 'https://ojjuda.kr',
       'Access-Control-Allow-Headers': 'authorization,apikey,content-type,x-client-info', 'Access-Control-Allow-Methods': 'POST,OPTIONS' };
-    const reply = (data, status = 200) => new Response(JSON.stringify(data), { status, headers });
+    const reply = (data, status = 200) => new Response(JSON.stringify({ serverEngineVersion: ENGINE_VERSION, ...data }), { status, headers });
     if (origin && !ORIGINS.has(origin)) return reply({ error: 'origin_not_allowed' }, 403);
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers });
     if (request.method !== 'POST') return reply({ error: 'method_not_allowed' }, 405);
@@ -88,6 +106,10 @@ export function createHandler({ env, fetchImpl = fetch, now = Date.now,
       if (!auth.ok) return reply({ error: 'not_signed_in' }, 401);
       const user = await auth.json();
       if (!UUID.test(user.id) || user.is_anonymous) return reply({ error: 'not_signed_in' }, 401);
+      const compatible = supportsExtendedDeck(body.clientVersion);
+      // Every new round uses the extended deck. An older page must refresh
+      // before starting, but can still finish its existing 54-card round.
+      if (body.action === 'start' && !compatible) throw Error('client_update_required');
       const rpc = async (action, values = {}) => {
         const response = await get('/rest/v1/rpc/onecard_online_service', { method: 'POST',
           headers: { apikey: service, Authorization: `Bearer ${service}`, 'Content-Type': 'application/json' },
@@ -98,6 +120,7 @@ export function createHandler({ env, fetchImpl = fetch, now = Date.now,
       };
       let automaticAttempted = false;
       const catchUp = async result => {
+        requireCompatibleRoom(result, compatible);
         const r = result?.room;
         if (automaticAttempted || !r || r.status !== 'active' || !r.deadline || Date.parse(r.deadline) > now()) return result;
         // One request advances at most one automatic action, even with a slow RPC
@@ -119,8 +142,12 @@ export function createHandler({ env, fetchImpl = fetch, now = Date.now,
       let result;
       if (['start', 'move', 'leave'].includes(body.action)) {
         result = await rpc('read', { p_room: body.room_id });
+        if (body.action !== 'leave') requireCompatibleRoom(result, compatible);
         if (!result.room.requests.includes(`${user.id}:${body.request_id}`)) {
-          if (body.action === 'move') result = await catchUp(result);
+          if (body.action === 'move') {
+            result = await catchUp(result);
+            requireCompatibleRoom(result, compatible);
+          }
           const r = result.room;
           if (body.action !== 'leave' && body.version !== r.version) throw Error('state_conflict');
           let state = null;
@@ -165,6 +192,9 @@ export function createHandler({ env, fetchImpl = fetch, now = Date.now,
       // Return a mutation's own event before any later computer action. Only a
       // subsequent read/resume/join advances the next due turn.
       if (['read', 'mine', 'join'].includes(body.action)) result = await catchUp(result);
+      // Recheck even after a CAS retry or a duplicate mutation receipt: another
+      // request may have started a new round since our first read.
+      requireCompatibleRoom(result, compatible);
       return reply({ ok: true, userId: user.id, room: projectRoom(result, user.id, now()),
         ...(result.rooms ? { rooms: result.rooms } : {}) });
     } catch (error) {

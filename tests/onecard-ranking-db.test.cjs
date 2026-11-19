@@ -81,6 +81,7 @@ async function run() {
     await db.exec('reset role');
     room = await act(A, room, 'start');
     assert.equal(room.game.players.length, 5); assert.equal(room.game.players.filter(player => player.bot).length, 4);
+    assert.equal(room.game.deckSize, 58);
     assert.equal(room.ranking, null); assert.equal((await records()).length, 0);
     assert.equal((await call(A, { action: 'record', room_id: room.id, won: true, score: 999 })).httpStatus, 400);
 
@@ -135,7 +136,10 @@ async function run() {
       player.hand = remaining.splice(0, [A, B].includes(player.id) ? 2 : 16);
       player.calledOne = false;
     }
-    state.players.find(player => player.bot).hand.push(...remaining);
+    // A 58-card dry deck still keeps every active hand below the 20-card limit.
+    const computers = state.players.filter(player => player.bot);
+    for (let i = 0; remaining.length; i++) computers[i % computers.length].hand.push(remaining.shift());
+    assert.ok(state.players.every(player => player.hand.length < 20));
     Object.assign(state, { deck: [], discard: ['S-4'], currentSuit: 'S', pendingDraw: 0, pendingOneId: null,
       turn: state.players.findIndex(player => player.id === A), dryPasses: 4, lastEvents: [], revision: state.revision + 1 });
     await time(); await db.query("update ojjuda_onecard_internal.rooms set state=$2,version=version+1,deadline=clock_timestamp()+interval '1 minute' where id=$1", [room.id, state]);

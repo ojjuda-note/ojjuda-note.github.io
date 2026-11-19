@@ -79,19 +79,21 @@ async function fixture() {
   });
   async function call(id, body, options = {}) {
     if (!manualClock) await rankingClock(new Date().toISOString());
+    const clientVersion = options.clientVersion === undefined ? '1.4.0' : options.clientVersion;
     const response = await handler(new Request('https://edge.invalid', {
       method: 'POST', headers: { authorization: `Bearer ${id}`, origin: 'https://ojjuda.kr', ...options.headers },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ ...(clientVersion ? { clientVersion } : {}), ...body }),
     }));
     return { httpStatus: response.status, ...await response.json() };
   }
   const clock = async value => { manualClock = true; await rankingClock(value); };
   async function stageWin(roomId, winnerId) {
-    const { makeDeck } = await import('../games/onecard/engine.mjs');
     const row = (await db.query('select state from ojjuda_onecard_internal.rooms where id=$1', [roomId])).rows[0];
     const state = row.state, winner = state.players.find(player => player.id === winnerId);
     if (!winner || winner.active === false) throw Error('fixture winner must be an active existing seat');
-    const remaining = makeDeck().filter(id => !['S-4', 'S-3'].includes(id));
+    // Preserve the actual round's deck, including a pre-update 54-card round.
+    const remaining = [...state.deck, ...state.discard, ...state.players.flatMap(player => player.hand)]
+      .filter(id => !['S-4', 'S-3'].includes(id));
     for (const player of state.players) {
       player.hand = player === winner ? ['S-3'] : player.active === false ? [] : remaining.splice(0, 2);
       player.calledOne = player === winner;
