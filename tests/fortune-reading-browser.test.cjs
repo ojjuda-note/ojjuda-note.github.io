@@ -180,7 +180,9 @@ const server = http.createServer((request, response) => {
     await page.locator('#summon-button:not([disabled])').waitFor();
     await page.locator('[data-topic="money"]').click();
     assert.equal(await page.locator('.tarot-price strong').textContent(), '1회 10쭈');
-    await page.screenshot({ path: path.join(artifacts, 'tarot-intro-mobile.png') });
+    assert.equal(await page.locator('[data-topic="money"]').getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('[data-topic="overall"]').getAttribute('aria-pressed'), 'false');
+    await page.screenshot({ path: path.join(artifacts, 'tarot-intro-mobile.png'), animations: 'disabled' });
     await page.locator('#summon-button').click();
     await page.waitForFunction(() => document.querySelector('#app').dataset.phase === 'choosing');
     await page.screenshot({ path: path.join(artifacts, 'tarot-choice-mobile.png') });
@@ -469,6 +471,15 @@ const server = http.createServer((request, response) => {
       return Math.abs(a.top - b.top) < 2 && b.left >= a.right;
     });
     assert.ok(adjacentTabs, 'card introductions remain first, beside the personal story on a 320px screen');
+    const headingClearOfClose = await page.locator('#result-dialog').evaluate(dialog => {
+      const title = dialog.querySelector('#result-title');
+      const close = dialog.querySelector(':scope > .modal-close').getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(title);
+      return [...range.getClientRects()].every(line =>
+        line.right <= close.left || line.left >= close.right || line.bottom <= close.top || line.top >= close.bottom);
+    });
+    assert.ok(headingClearOfClose, 'the complete result heading stays clear of the close button on a 320px screen');
     assert.deepEqual(await overflowState(), { document: false, modal: false });
     await page.screenshot({ path: path.join(artifacts, 'tarot-cards-small-phone.png') });
     await page.locator('#summary-tab-problem').click();
