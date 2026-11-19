@@ -15,9 +15,9 @@ const { fixture } = require('./onecard-online-fixture.cjs');
   const join = async (actor, room) => ok(await call(actor, { action: 'join', code: room.code }));
   const raw = async id => (await db.query('select * from ojjuda_onecard_internal.rooms where id=$1', [id])).rows[0];
   const expireTurn = id => db.query("update ojjuda_onecard_internal.rooms set deadline=clock_timestamp()-interval '1 second' where id=$1", [id]);
-  function conserved(state, seats = 5) {
+  function conserved(state, seats = 5, expected = engine.makeDeck()) {
     assert.equal(state.players.length, seats); assert.ok([1, -1].includes(state.direction));
-    assert.deepEqual([...state.deck, ...state.discard, ...state.players.flatMap(p => p.hand)].sort(), engine.makeDeck().sort(), 'all 54 card identities remain conserved');
+    assert.deepEqual([...state.deck, ...state.discard, ...state.players.flatMap(p => p.hand)].sort(), [...expected].sort(), `all ${expected.length} card identities remain conserved`);
   }
   function privateView(room, actor, handSize) {
     const wire = JSON.stringify(room);
@@ -64,6 +64,8 @@ const { fixture } = require('./onecard-online-fixture.cjs');
     assert.equal((await action(B, room, 'start')).error, 'not_room_owner');
     room = ok(await action(A, room, 'start'));
     assert.equal(room.game.players.length, 5); assert.equal(room.status, 'active'); assert.equal(room.game.turn, 0);
+    assert.equal(room.game.deckSize, 58);
+    assert.equal(engine.makeDeck().filter(id => engine.cardInfo(id).rank === 'Q').length, 8);
     assert.equal(room.game.players.filter(p => p.bot).length, 0);
     const firstOrder = room.game.players.map(p => p.id);
     assert.notDeepEqual(firstOrder, [A, B, C, D, E], 'injected deterministic random source shuffles member order');
@@ -208,7 +210,7 @@ const { fixture } = require('./onecard-online-fixture.cjs');
     room = ok(await action(B, room, 'start'));
     for (const activeCount of [5, 2]) {
       const position = (await raw(room.id)).state;
-      const hands = new Map([[B, ['S-Q', 'D-5']], [C, ['H-Q', 'S-6']]]);
+      const hands = new Map([[B, activeCount === 2 ? ['S-Q-2', 'S-Q', 'D-5'] : ['S-Q', 'D-5']], [C, ['H-Q', 'S-6']]]);
       const remaining = engine.makeDeck().filter(id => !['S-4', ...hands.values()].flat().includes(id));
       for (const player of position.players) {
         player.active = activeCount === 5 || [B, C].includes(player.id);
@@ -221,20 +223,103 @@ const { fixture } = require('./onecard-online-fixture.cjs');
       conserved(position);
       await db.query("update ojjuda_onecard_internal.rooms set state=$2,version=version+1,deadline=clock_timestamp()+interval '1 minute' where id=$1", [room.id, position]);
       room = await read(B, room.id);
-      room = ok(await action(B, room, 'move', { command: { type: 'play', cardId: 'S-Q', declare: true } }));
+      const firstReverse = activeCount === 2 ? 'S-Q-2' : 'S-Q';
+      room = ok(await action(B, room, 'move', { command: { type: 'play', cardId: firstReverse, declare: activeCount === 5 } }));
       assert.equal(room.game.direction, -1);
+      assert.equal(room.game.topCard, firstReverse);
       const active = position.players.map((player, i) => player.active ? i : -1).filter(i => i >= 0);
       assert.equal(room.game.turn, active[(active.indexOf(position.turn) + active.length - 1) % active.length]);
       assert.ok(room.game.lastEvents.some(event => event.type === 'reverse'));
       if (activeCount === 2) {
+        assert.deepEqual(room.game.players.find(player => player.id === B).hand, ['S-Q', 'D-5'], 'playing the duplicate removes only that physical card');
         assert.equal(room.game.players[room.game.turn].id, C, 'two survivors pass to the other seat');
         room = ok(await action(C, await read(C, room.id), 'move', { command: { type: 'play', cardId: 'H-Q', declare: true } }));
         assert.equal(room.game.direction, 1);
         assert.equal(room.game.players[room.game.turn].id, B, 'a second reverse restores clockwise order');
+        room = ok(await action(B, await read(B, room.id), 'move', { command: { type: 'play', cardId: 'S-Q', declare: true } }));
+        assert.equal(room.game.direction, -1); assert.equal(room.game.topCard, 'S-Q');
+        assert.deepEqual(room.game.players.find(player => player.id === B).hand, ['D-5'], 'the original reverse remains independently playable');
       }
       conserved((await raw(room.id)).state);
     }
     await closeRoom([B, C], room);
+
+    // Old pages can finish the exact 54-card round they already know. They
+    // cannot start or receive a new 58-card round with unknown duplicate IDs.
+    const legacy = (actor, body) => call(actor, body, { clientVersion: null });
+    const createRequest = { action: 'create', request_id: crypto.randomUUID(), options: { capacity: 5 } };
+    const waitingReply = await legacy(D, createRequest);
+    assert.equal(waitingReply.serverEngineVersion, '1.4.0');
+    room = ok(waitingReply);
+    room = ok(await legacy(E, { action: 'join', code: room.code }));
+    assert.equal(ok(await legacy(D, { action: 'read', room_id: room.id })).game, null);
+    assert.equal((await legacy(D, { action: 'list' })).httpStatus, 200, 'public room metadata remains compatible');
+    const oldStart = { action: 'start', room_id: room.id, version: room.version, request_id: crypto.randomUUID() };
+    const waitingBefore = await raw(room.id);
+    for (const clientVersion of [null, '1.3.0']) {
+      assert.equal((await call(D, oldStart, { clientVersion })).error, 'client_update_required');
+      assert.deepEqual(await raw(room.id), waitingBefore, 'an unsupported start never creates a round');
+    }
+    room = ok(await call(D, oldStart)); assert.equal(room.game.deckSize, 58);
+    let compatibilityState = (await raw(room.id)).state;
+    compatibilityState.turn = compatibilityState.players.findIndex(player => player.bot);
+    await db.query("update ojjuda_onecard_internal.rooms set state=$2,version=version+1,deadline=clock_timestamp()-interval '1 second' where id=$1", [room.id, compatibilityState]);
+    const extendedBefore = await raw(room.id);
+    const oldRequests = [
+      { action: 'read', room_id: room.id }, { action: 'mine' }, { action: 'join', code: room.code }, createRequest,
+      { action: 'move', room_id: room.id, version: extendedBefore.version, request_id: crypto.randomUUID(), command: { type: 'draw' } },
+      { ...oldStart, version: extendedBefore.version, request_id: crypto.randomUUID() },
+    ];
+    for (const body of oldRequests) {
+      const rejected = await legacy(D, body);
+      assert.equal(rejected.httpStatus, 409); assert.equal(rejected.error, 'client_update_required');
+      assert.equal(rejected.room, undefined, 'an old page never receives an unknown card ID');
+      assert.deepEqual(await raw(room.id), extendedBefore, 'a rejected page cannot even advance a due computer turn');
+    }
+    assert.equal(Number((await db.query('select count(*) n from ojjuda_onecard_internal.results where room_id=$1', [room.id])).rows[0].n), 0);
+    const formerHand = extendedBefore.state.players.find(player => player.id === E).hand;
+    assert.equal(ok(await legacy(E, { action: 'leave', room_id: room.id, version: extendedBefore.version, request_id: crypto.randomUUID() })), null,
+      'an old page can always leave without receiving private state');
+    const afterLegacyExit = await raw(room.id);
+    assert.deepEqual(afterLegacyExit.state.players.find(player => player.id === E).hand, formerHand);
+    assert.equal(afterLegacyExit.state.players.find(player => player.id === E).bot, true);
+
+    const legacyDeck = engine.makeDeck().filter(id => !id.endsWith('-Q-2'));
+    compatibilityState = afterLegacyExit.state;
+    compatibilityState.deck = compatibilityState.deck.filter(id => legacyDeck.includes(id));
+    compatibilityState.discard = compatibilityState.discard.filter(id => legacyDeck.includes(id));
+    for (const player of compatibilityState.players) player.hand = player.hand.filter(id => legacyDeck.includes(id));
+    compatibilityState.engineVersion = '1.3.0'; compatibilityState.lastEvents = [];
+    compatibilityState.turn = compatibilityState.players.findIndex(player => player.id === D);
+    compatibilityState.pendingDraw = 0; compatibilityState.pendingOneId = null;
+    conserved(compatibilityState, 5, legacyDeck);
+    await db.query("update ojjuda_onecard_internal.rooms set state=$2,version=version+1,deadline=clock_timestamp()+interval '1 minute' where id=$1", [room.id, compatibilityState]);
+    room = ok(await legacy(D, { action: 'read', room_id: room.id })); assert.equal(room.game.deckSize, 54);
+    room = ok(await legacy(D, { action: 'move', room_id: room.id, version: room.version, request_id: crypto.randomUUID(), command: { type: 'draw' } }));
+    assert.equal(room.game.engineVersion, '1.4.0'); assert.equal(room.game.deckSize, 54);
+    conserved((await raw(room.id)).state, 5, legacyDeck);
+    await expireTurn(room.id);
+    room = ok(await legacy(D, { action: 'read', room_id: room.id }));
+    assert.equal(room.game.deckSize, 54, 'old-page polls still advance the existing deck');
+    conserved((await raw(room.id)).state, 5, legacyDeck);
+    await f.stageWin(room.id, D);
+    room = ok(await legacy(D, { action: 'mine' }));
+    const legacyFinish = { action: 'move', room_id: room.id, version: room.version, request_id: crypto.randomUUID(), command: { type: 'play', cardId: 'S-3' } };
+    room = ok(await legacy(D, legacyFinish)); assert.equal(room.status, 'finished'); assert.equal(room.game.deckSize, 54);
+    assert.equal(room.ranking.recorded, true); assert.equal(room.ranking.won, true);
+    conserved((await raw(room.id)).state, 5, legacyDeck);
+    assert.equal(ok(await legacy(D, legacyFinish)).version, room.version, 'legacy final retries remain idempotent');
+    const completedLegacy = await raw(room.id);
+    assert.equal((await legacy(D, { action: 'start', room_id: room.id, version: room.version, request_id: crypto.randomUUID() })).error, 'client_update_required');
+    assert.deepEqual(await raw(room.id), completedLegacy);
+    room = ok(await action(D, room, 'start'));
+    assert.equal(room.round, 2); assert.equal(room.game.deckSize, 58); assert.equal(room.ranking, null);
+    conserved((await raw(room.id)).state);
+    assert.equal(ok(await call(D, { action: 'read', room_id: room.id }, { clientVersion: '1.4.1' })).game.deckSize, 58, 'compatible patch clients remain supported');
+    assert.equal(ok(await legacy(D, { action: 'leave', room_id: room.id, version: room.version, request_id: crypto.randomUUID() })), null);
+    assert.equal((await raw(room.id)).status, 'closed');
+    assert.equal(Number((await db.query('select count(*) n from ojjuda_onecard_internal.results where room_id=$1', [room.id])).rows[0].n), 1,
+      'an unfinished 58-card rematch neither duplicates nor replaces the legacy result');
 
     room = await create(OUT, 2);
     for (const id of [C, D, E]) room = await join(id, room);
@@ -251,7 +336,7 @@ const { fixture } = require('./onecard-online-fixture.cjs');
     await db.query("update ojjuda_onecard_internal.rooms set expires_at=clock_timestamp()-interval '1 second' where id=$1", [room.id]);
     assert.equal((await call(C, { action: 'mine' })).room, null);
     assert.equal((await call(OUT, { action: 'join', code: room.code })).error, 'room_unavailable');
-    console.log(`PASS: ${turns} five-person turns, ${computerTurns} server computer turns; fixed five seats for 1–5 people, shuffled seats, reverse directions with two or five survivors, stronger-attack enforcement, private hands, authentication, races, retries, timeout, takeover, rematch, expiry and SQL permissions`);
+    console.log(`PASS: ${turns} five-person turns, ${computerTurns} server computer turns; 58-card rounds, eight independent reverses, legacy 54-card completion and upgrade gating, fixed five seats for 1–5 people, shuffled seats, stronger-attack enforcement, private hands, authentication, races, retries, timeout, takeover, rematch, expiry and SQL permissions`);
   } finally { await f.close(); }
   await require('./onecard-native-rooms.test.cjs')();
 })().catch(error => { console.error(error); process.exitCode = 1; });

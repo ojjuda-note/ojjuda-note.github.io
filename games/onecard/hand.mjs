@@ -1,4 +1,4 @@
-import {cardInfo} from './engine.mjs?v=20261120-onecard7';
+import {cardInfo} from './engine.mjs?v=20261120-onecard9';
 
 const COLOR_ORDER={blue:0,red:1,yellow:2,green:3,wild:4};
 const KIND_ORDER={number:0,attack:1,change:2,skip:3,reverse:4,again:5};

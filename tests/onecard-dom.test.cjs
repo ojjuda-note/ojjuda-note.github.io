@@ -55,7 +55,7 @@ async function check(name, fn) {
 
 (async () => {
   engine = await import('../games/onecard/engine.mjs');
-  await check('all 54 legacy cards render dedicated colors, numbers and actions with matching accessible labels', async () => {
+  await check('all 58 cards render dedicated colors, numbers and actions with matching accessible labels', async () => {
     const s = await open();
     for (const id of engine.makeDeck()) {
       const info = engine.cardInfo(id), node = s.w.__cards.createCard(id, { interactive: true });
@@ -68,7 +68,8 @@ async function check(name, fn) {
     }
     const back = s.w.__cards.createCard('X-R', { faceDown: true });
     const faces = engine.makeDeck().map(engine.cardInfo);
-    assert.equal(faces.filter(card => card.displayKind === 'reverse').length, 4);
+    assert.equal(faces.length, 58);
+    assert.equal(faces.filter(card => card.displayKind === 'reverse').length, 8);
     assert.deepEqual([...new Set(faces.filter(card => card.displayKind === 'number').map(card => Number(card.displayValue)))].sort((a, b) => a - b), [1, 2, 3, 4, 5, 6, 7]);
     assert.equal(back.dataset.cardId, undefined); assert.equal(back.dataset.color, undefined); assert.equal(back.dataset.kind, undefined);
     assert.equal(back.getAttribute('aria-label'), '뒤집힌 카드');
@@ -125,9 +126,12 @@ async function check(name, fn) {
       s.close();
     }
     const saved = rig([['S-3', 'H-8'], ['D-5', 'C-6']]); saved.state.direction = -1;
+    saved.state.engineVersion = '1.3.0';
+    saved.state.deck = saved.state.deck.filter(id => !id.endsWith('-Q-2'));
     const s = await open({ saved }); await resume(s);
     assert.equal(s.saved.direction, -1); assert.match(s.find('#direction').textContent, /반시계/);
     assert.match(s.find('#game-record-mode').textContent, /연습.*순위 제외/);
+    assert.equal([...s.saved.deck, ...s.saved.discard, ...s.saved.players.flatMap(player => player.hand)].length, 54, 'a legacy practice save resumes without adding four cards');
   });
 
   await check('a visible reverse card changes direction and passes to the other survivor when two remain', async () => {
@@ -150,6 +154,35 @@ async function check(name, fn) {
       await until(() => !s.find('#sort-number').disabled, 'reverse presentation fully settles');
       s.close();
     }
+  });
+
+  await check('two matching reverse copies stay separate through sorting and each can be played', async () => {
+    const saved = rig([['S-Q', 'S-Q-2'], ['H-Q', 'D-5']]);
+    for (const player of saved.state.players.slice(2)) {
+      saved.state.deck.push(...player.hand); player.hand = []; player.active = false;
+    }
+    const s = await open({ saved }); await resume(s);
+    const original = s.find('#hand [data-card="S-Q"]'), extra = s.find('#hand [data-card="S-Q-2"]');
+    assert.ok(original && extra); assert.notEqual(original, extra);
+    assert.equal(original.getAttribute('aria-label'), extra.getAttribute('aria-label'), 'the two real cards intentionally look alike');
+    s.click('#sort-color');
+    assert.equal(s.find('#hand [data-card="S-Q"]'), original);
+    assert.equal(s.find('#hand [data-card="S-Q-2"]'), extra);
+    s.visibility(true); s.click('#onecard-button'); s.click('#hand [data-card="S-Q-2"]');
+    await until(() => s.saved.revision === 1, 'the additional reverse copy is consumed first');
+    assert.deepEqual(s.saved.players[0].hand, ['S-Q']);
+    assert.equal(s.find('#hand [data-card="S-Q"]'), original, 'playing the extra copy preserves the original button');
+    assert.equal(extra.isConnected, false);
+    assert.equal(s.find('#discard-card').dataset.card, 'S-Q-2');
+    assert.equal(s.saved.direction, -1);
+    s.visibility(false);
+    await until(() => s.saved.revision === 2 && !s.find('#draw-button').disabled, 'the other survivor reverses play back to me');
+    assert.equal(s.saved.direction, 1);
+    s.click('#sort-number'); s.click('#hand [data-card="S-Q"]');
+    await until(() => s.saved.status === 'finished' && s.find('#sheet').open, 'the original copy finishes the hand');
+    assert.equal(s.saved.winnerId, 'me'); assert.equal(s.saved.direction, -1);
+    assert.deepEqual(s.saved.discard.slice(-3), ['S-Q-2', 'H-Q', 'S-Q']);
+    assert.equal(s.all('#hand .hand-card').length, 0);
   });
 
   await check('declare and bot progress integrate with the actual engine', async () => {

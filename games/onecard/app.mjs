@@ -1,9 +1,9 @@
-import {createGame,applyAction,projectState,chooseBotAction,cardInfo} from './engine.mjs?v=20261120-onecard7';
-import {createCard,cardLabel} from './cards.mjs?v=20261120-onecard7';
-import {createOnecardSound} from './sound.mjs?v=20261120-onecard7';
-import {createCardMotion} from './motion.mjs?v=20261120-onecard7';
-import {createOnlineClient} from './online.mjs?v=20261120-onecard7';
-import {sortHand,handLayout,visibleHandRect} from './hand.mjs?v=20261120-onecard7';
+import {createGame,applyAction,projectState,chooseBotAction,cardInfo} from './engine.mjs?v=20261120-onecard9';
+import {createCard,cardLabel} from './cards.mjs?v=20261120-onecard9';
+import {createOnecardSound} from './sound.mjs?v=20261120-onecard9';
+import {createCardMotion} from './motion.mjs?v=20261120-onecard9';
+import {createOnlineClient} from './online.mjs?v=20261120-onecard9';
+import {sortHand,handLayout,visibleHandRect} from './hand.mjs?v=20261120-onecard9';
 
 const $=id=>document.getElementById(id);
 const app=$('onecard-app'),hand=$('hand'),handScroll=$('hand-scroll'),sheet=$('sheet'),sound=createOnecardSound();
@@ -346,9 +346,9 @@ function showRules(){
   openSheet('원카드, 이렇게 해요','rules');
   const lead=element('p','같은 색이나 숫자를 한 장씩 내고, 손의 카드를 먼저 없애면 이겨요.','rules-lead');
   const list=element('div',undefined,'rules-list');
-  const rules=[['5인 플레이','항상 5명, 빈자리는 컴퓨터가 함께해요. 각자 7장으로 시작해요.'],['내 차례','같은 색이나 같은 숫자·기호를 한 장 내세요. 낼 카드가 없으면 1장 받고 넘겨요.'],['숫자 카드','네 가지 색의 1~7 카드예요. 색 옆의 도형으로도 구별할 수 있어요.'],['+2 · +3','다음 사람이 표시된 수만큼 카드를 받아요.'],['전체 색 +5 · +7','어떤 색에도 내고, 다음 색을 골라요. 다음 사람은 5장 · 7장을 받아요.'],['공격이 오면','마지막 공격 카드와 같거나 더 큰 + 카드만 이어 낼 수 있어요. 없으면 쌓인 장수만큼 받아요.'],['색 바꾸기','내고 나면 다음 색을 골라요.'],['건너뛰기 · 한 번 더','다음 사람을 건너뛰어요 · 내 차례를 한 번 더 해요.'],['방향 바꾸기','진행 방향을 반대로 바꿔요. 두 명이 남아도 상대에게 차례를 넘겨요.'],['원카드!','2장일 때 먼저 누르거나, 1장이 된 직후 눌러요. 다음 사람이 행동할 때까지 안 누르면 2장을 받아요.'],['진행','처음은 시계 방향이에요. 다음 판에는 자리를 다시 섞어요. 20장 이상이면 탈락해요.'],['연승 기록 경기','로그인한 컴퓨터·온라인 대전은 30초 안에 내거나 받아요. 시간이 지나면 자동으로 받아요.'],['게임 순위','로그인한 경기의 승리마다 연승이 늘어요. 패배·무승부는 현재 연승이 0이 되고, 이번 달 최고 연승은 남아요. 연습과 중도 나간 판은 제외해요.']];
+  const rules=[['5인 플레이','항상 5명, 빈자리는 컴퓨터가 함께해요. 각자 7장으로 시작해요.'],['내 차례','같은 색이나 같은 숫자·기호를 한 장 내세요. 낼 카드가 없으면 1장 받고 넘겨요.'],['숫자 카드','네 가지 색의 1~7 카드예요. 색 옆의 도형으로도 구별할 수 있어요.'],['+2 · +3','다음 사람이 표시된 수만큼 카드를 받아요.'],['전체 색 +5 · +7','어떤 색에도 내고, 다음 색을 골라요. 다음 사람은 5장 · 7장을 받아요.'],['공격이 오면','마지막 공격 카드와 같거나 더 큰 + 카드만 이어 낼 수 있어요. 없으면 쌓인 장수만큼 받아요.'],['색 바꾸기','내고 나면 다음 색을 골라요.'],['건너뛰기 · 한 번 더','다음 사람을 건너뛰어요 · 내 차례를 한 번 더 해요.'],['방향 바꾸기','색깔마다 2장씩, 모두 8장이에요. 진행 방향을 반대로 바꾸고, 두 명이 남아도 상대에게 넘겨요.'],['원카드!','2장일 때 먼저 누르거나, 1장이 된 직후 눌러요. 다음 사람이 행동할 때까지 안 누르면 2장을 받아요.'],['진행','처음은 시계 방향이에요. 다음 판에는 자리를 다시 섞어요. 20장 이상이면 탈락해요.'],['연승 기록 경기','로그인한 컴퓨터·온라인 대전은 30초 안에 내거나 받아요. 시간이 지나면 자동으로 받아요.'],['게임 순위','로그인한 경기의 승리마다 연승이 늘어요. 패배·무승부는 현재 연승이 0이 되고, 이번 달 최고 연승은 남아요. 연습과 중도 나간 판은 제외해요.']];
   for(const [label,text] of rules){const row=element('div',undefined,'rule-row');row.append(element('strong',label),element('span',text));list.append(row);}
-  $('sheet-body').append(lead,list);$('sheet-body').append(element('p','오쭈다 전용 원카드 54장으로 즐겨요.','small-note'),rankingLink());
+  $('sheet-body').append(lead,list);$('sheet-body').append(element('p','새 판은 전용 카드 58장으로 즐겨요. 방향 바꾸기는 8장이에요.','small-note'),rankingLink());
 }
 for(const id of ['rules-button','entry-rules'])$(id).onclick=showRules;
 $('menu-button').onclick=()=>{

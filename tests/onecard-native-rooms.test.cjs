@@ -32,7 +32,7 @@ async function verifyWorldCallbacks(f, directory) {
   assert.ok(callbacks); assert.equal(callbacks.getUserId(), actor);
   const request = crypto.randomUUID(), title = '오락실 badword 모임';
   await callbacks.onCreateNative('onecard', { title, capacity: 2, request_id: request });
-  assert.deepEqual(calls[0].body, { action: 'create', request_id: request, options: { title, capacity: 5 } });
+  assert.deepEqual(calls[0].body, { action: 'create', clientVersion: '1.4.0', request_id: request, options: { title, capacity: 5 } });
   assert.equal(calls[0].result.httpStatus, 200);
   const room = calls[0].result.room;
   assert.equal(room.title, '오락실 ❤️❤️ 모임'); assert.equal(room.capacity, 5);
@@ -48,6 +48,7 @@ async function verifyWorldCallbacks(f, directory) {
   assert.equal(calls.length, 1, 'opening or resuming a room does not create another game');
   await callbacks.onCancelNative(item);
   assert.deepEqual(calls.map(call => call.body.action), ['create', 'read', 'leave']);
+  assert.ok(calls.every(call => call.body.clientVersion === '1.4.0'), 'World advertises the same extended-deck support for create, read and leave');
   assert.equal(calls[2].body.room_id, room.id);
   assert.equal(calls[2].body.version, calls[1].result.room.version, 'World leaves using the freshly read authoritative version');
   assert.match(calls[2].body.request_id, /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i);
@@ -147,7 +148,7 @@ async function verifyNativeRooms() {
     const cards = engine.makeDeck().filter(id => !['S-4', 'S-3'].includes(id));
     for (const player of state.players) { player.hand = player.id === D ? ['S-3'] : cards.splice(0, 2); player.calledOne = false; }
     Object.assign(state, { deck: cards, discard: ['S-4'], currentSuit: 'S', pendingDraw: 0, pendingOneId: null, turn: state.players.findIndex(player => player.id === D), lastEvents: [] });
-    assert.equal(new Set([...state.deck, ...state.discard, ...state.players.flatMap(player => player.hand)]).size, 54);
+    assert.equal(new Set([...state.deck, ...state.discard, ...state.players.flatMap(player => player.hand)]).size, 58);
     await db.query("update ojjuda_onecard_internal.rooms set state=$2,version=version+1,deadline=clock_timestamp()+interval '30 seconds' where id=$1", [roomA.id, state]);
     roomA = ok(await move(D, await read(D, roomA), 'move', { command: { type: 'play', cardId: 'S-3' } }));
     assert.equal(roomA.status, 'finished');

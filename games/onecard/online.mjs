@@ -1,3 +1,8 @@
+const CLIENT_VERSION = '1.4.0';
+const supportsExpandedDeck = version => {
+  const match = /^1\.(\d+)\.\d+$/.exec(String(version || ''));
+  return !!match && Number(match[1]) >= 4;
+};
 const MESSAGES = {
   not_signed_in: '함께 하려면 먼저 로그인해 주세요.',
   banned: '이용이 제한된 계정이에요.',
@@ -15,6 +20,8 @@ const MESSAGES = {
   invalid_title: '방 제목을 1~40자로 입력해 주세요.',
   unavailable: '연결을 확인하고 있어요. 잠시 후 다시 시도해 주세요.',
   closed: '연결이 종료되었어요.',
+  client_update_required: '게임이 업데이트됐어요. 오락실로 나갔다가 다시 들어와 주세요.',
+  server_update_required: '새 카드를 준비하고 있어요. 잠시 후 다시 시작해 주세요.',
 };
 
 function problem(code) {
@@ -38,6 +45,7 @@ export function pollDelay(room, { hidden = false, failures = 0, now = Date.now()
 export function createOnlineClient({ onRoom = () => {}, onError = () => {}, onConnection = () => {}, invoke, timeoutMs = 18000 } = {}) {
   let room = null, userId = null, closed = false, busy = false, reading = null, pollTimer = null;
   let failures = 0, retry = null, authSubscription = null, authClient = null, sessionEpoch = 0;
+  let serverEngineVersion = null;
 
   function accept(data, force = false) {
     if (closed || !data) return;
@@ -57,6 +65,7 @@ export function createOnlineClient({ onRoom = () => {}, onError = () => {}, onCo
 
   async function rpc(body) {
     if (closed) throw problem('closed');
+    body = { ...body, clientVersion: CLIENT_VERSION };
     const epoch = sessionEpoch;
     let cancelled = false, timer;
     const verify = () => {
@@ -104,6 +113,9 @@ export function createOnlineClient({ onRoom = () => {}, onError = () => {}, onCo
       verify();
       if (data?.error) throw problem(data.error);
       if (!data?.ok) throw problem('unavailable');
+      serverEngineVersion = data.serverEngineVersion || null;
+      if (data.room?.game && (!supportsExpandedDeck(serverEngineVersion) || ![54, 58].includes(data.room.game.deckSize))) throw problem('server_update_required');
+      if (body.action === 'start' && data.room?.game?.deckSize !== 58) throw problem('server_update_required');
       return data;
     })();
     try {
@@ -158,6 +170,8 @@ export function createOnlineClient({ onRoom = () => {}, onError = () => {}, onCo
     const prior = room;
     try {
       if (['start', 'move', 'leave'].includes(action) && !room) throw problem('room_not_found');
+      // Confirm support before asking an older server to commit a new round.
+      if (action === 'start' && !supportsExpandedDeck(serverEngineVersion)) throw problem('server_update_required');
       const fingerprint = JSON.stringify([action, room?.id || null, values]);
       const requestId = retry?.fingerprint === fingerprint ? retry.id : crypto.randomUUID();
       retry = { fingerprint, id: requestId };
