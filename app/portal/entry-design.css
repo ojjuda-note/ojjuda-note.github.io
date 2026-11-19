@@ -24,9 +24,10 @@
 .entry-recovery-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }
 .entry-recovery-actions a { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent-ink); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
 
-dialog.auth-dialog { width: min(780px,calc(100vw - 36px)); max-width: none; max-height: calc(100dvh - 36px); margin: auto; padding: 0; border: 1px solid var(--line); border-radius: 26px; overflow: hidden; background: var(--surface); color: var(--ink); box-shadow: 0 26px 100px color-mix(in srgb,var(--ink) 22%,transparent); }
+/* Respect the keyboard and system insets supplied by the shared viewport controller. */
+dialog.auth-dialog { width: min(780px,calc(100vw - 36px)); max-width: none; max-height: var(--app-dialog-height,calc(100dvh - 36px)); margin: auto; padding: 0; border: 1px solid var(--line); border-radius: 26px; overflow: hidden; background: var(--surface); color: var(--ink); box-shadow: 0 26px 100px color-mix(in srgb,var(--ink) 22%,transparent); }
 dialog.auth-dialog::backdrop { background: color-mix(in srgb,var(--ink) 26%,transparent); backdrop-filter: blur(12px); }
-.auth-dialog .dialog-shell { display: grid; grid-template-columns: minmax(0,.82fr) minmax(0,1.18fr); width: 100%; max-height: calc(100dvh - 38px); margin: 0; padding: 0; border-radius: 0; overflow: auto; background: var(--surface); box-shadow: none; overscroll-behavior: contain; }
+.auth-dialog .dialog-shell { display: grid; grid-template-columns: minmax(0,.82fr) minmax(0,1.18fr); width: 100%; max-height: calc(var(--app-dialog-height,calc(100dvh - 36px)) - 2px); margin: 0; padding: 0; border-radius: 0; overflow: auto; background: var(--surface); box-shadow: none; overscroll-behavior: contain; }
 .auth-dialog .dialog-close { z-index: 3; top: 15px; right: 15px; width: 40px; height: 40px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); }
 .account-entry-art { position: sticky; top: 0; display: flex; flex-direction: column; align-items: flex-start; align-self: start; min-height: 575px; height: 100%; padding: 35px 30px 30px; overflow: hidden; isolation: isolate; border-right: 1px solid var(--line); background: var(--hero-bg); }
 .account-entry-art::before { content: ""; position: absolute; z-index: -1; inset: 70px -48px 30px; background: var(--hero-art) center/cover no-repeat; opacity: .63; }
@@ -68,8 +69,8 @@ dialog.auth-dialog::backdrop { background: color-mix(in srgb,var(--ink) 26%,tran
   .account-landing-paper strong { font-size: 32px; }
   .account-landing-paper i { font-size: 8px; padding-top: 7px; }
   .account-landing-actions { margin-top: 25px; }
-  dialog.auth-dialog { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); border-radius: 22px; }
-  .auth-dialog .dialog-shell { grid-template-columns: 1fr; max-height: calc(100dvh - 26px); }
+  dialog.auth-dialog { width: calc(100vw - 24px); max-height: var(--app-dialog-height,calc(100dvh - 24px)); border-radius: 22px; }
+  .auth-dialog .dialog-shell { grid-template-columns: 1fr; max-height: calc(var(--app-dialog-height,calc(100dvh - 24px)) - 2px); }
   .account-entry-art { position: relative; min-height: 146px; height: 146px; padding: 22px 26px; border-right: 0; border-bottom: 1px solid var(--line); }
   .account-entry-art::before { inset: -65px -10px -80px 36%; opacity: .68; }
   .account-entry-art::after { inset: 8px; border-radius: 14px; }
