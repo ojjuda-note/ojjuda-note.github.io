@@ -104,7 +104,7 @@ const PHOTO_GROUPS = [
   { label: '여러 색 수묵', first: 262, last: 297 }
 ];
 const PHOTO_FIRST = PHOTO_GROUPS[0].first, PHOTO_LAST = PHOTO_GROUPS.at(-1).last;
-const FONT_CODES = ['default', 'round', 'serif', 'handwriting', 'calligraphy', 'mono'];
+const FONT_CODES = ['default', 'round', 'serif', 'handwriting', 'heart', 'calligraphy', 'mono'];
 const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 'snow',
   'starlight', 'fireflies', 'petals', 'bubbles', 'aurora', 'confetti', 'sunbeams',
   'mist', 'ocean', 'heartbeat', 'orbit', 'glitter', 'meteor', 'leaves', 'neon', 'dawn'];
@@ -2020,10 +2020,28 @@ function installFeatures() {
   });
   for (const [selector, setting] of [['#compose-font', 'font'], ['#compose-size', 'size'], ['#compose-effect', null]]) {
     $(selector).addEventListener('change', event => {
+      if (setting === 'font' && event.target.value === 'heart') {
+        // A newly selected font wins over a previously purchased font.
+        // Keep the member's sticker, effect and ownership untouched.
+        const decorations = window.OjjudaDecorations?.styleFields?.();
+        if (decorations?.shopFont && decorations.shopFont !== 'none')
+          window.OjjudaDecorations?.setStyle?.({ ...decorations, shopFont: 'none' });
+      }
       if (setting) rememberComposerSetting(setting, event.target.value);
       applyComposeStyle(); recordDraft();
     });
   }
+  // Run before the decoration control dispatches its preview update, so the
+  // last font explicitly chosen by the member is also the one saved.
+  document.addEventListener('change', event => {
+    const selected = event.target;
+    if (backdrop.hidden || !selected?.matches?.('[data-shop-style="Font"]')
+      || !['book', 'letter', 'poster'].includes(selected.value)) return;
+    const font = $('#compose-font');
+    if (font.value !== 'heart') return;
+    font.value = 'default';
+    rememberComposerSetting('font', 'default');
+  }, true);
   for (const selector of ['#event-radius', '#event-hours']) $(selector).addEventListener('input', () => { updateEventPrice(); recordDraft(); });
 }
 function installStyleChoices() {

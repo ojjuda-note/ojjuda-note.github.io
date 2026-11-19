@@ -6,7 +6,7 @@
   let adminMap = null;
   const FONT_CHOICES = [
     ['default', '고운돋움'], ['round', '둥근 글씨'], ['serif', '명조'],
-    ['handwriting', '손글씨'], ['mono', '고정폭']
+    ['handwriting', '손글씨'], ['heart', '하트 손글씨 · 싱글데이'], ['mono', '고정폭']
   ];
   const EFFECT_CHOICES = [
     ['none', '없음'], ['rain', '비 내리기'], ['shimmer', '빛 스치기'],
@@ -387,7 +387,7 @@
         activeStyle = styleActive && visual.style && typeof visual.style === 'object' ? visual.style : {};
         const imageKey = photoActive && visual.photo_key ? visual.photo_key : visual.background_key || card.background_key;
         photo.style.backgroundImage = photoKeyValid(imageKey) ? `url("${photoUrl(imageKey)}")` : '';
-        for (const code of ['round', 'serif', 'handwriting', 'mono']) preview.classList.toggle(`na-edit-font-${code}`, activeStyle.font === code);
+        for (const code of ['round', 'serif', 'handwriting', 'heart', 'mono']) preview.classList.toggle(`na-edit-font-${code}`, activeStyle.font === code);
         for (const code of ['large', 'small']) preview.classList.toggle(`na-edit-size-${code}`, activeStyle.size === code);
         visualReady = true;
         previewHelp.textContent = '고정된 사진 크기에서 글과 태그가 보이는 모습입니다.';
@@ -511,6 +511,7 @@
           const nextStyle = { ...style, font: font.input.value, size: size.input.value,
             theme: theme.input.value, effect: effect.input.value,
             textColor: textColor.input.value, boxColor: boxColor.input.value };
+          if (nextStyle.font === 'heart') nextStyle.shopFont = 'none';
           delete nextStyle.backgroundColor;
           perform('admin_edit_card_visual', {
             p_card_id: card.id,
@@ -526,6 +527,7 @@
     });
   }
   function localDateTime(value) {
+    if (value == null || value === '') return '';
     const date = new Date(value);
     if (!Number.isFinite(date.getTime())) return '';
     return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);

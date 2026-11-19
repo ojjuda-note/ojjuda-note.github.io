@@ -57,6 +57,7 @@ jobs:
       MOBILE_VIEWPORT_QA_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/viewport
       GUEST_PROOF_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/guest
       GROUP_COMPOSER_QA_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/groups
+      PARK_FONT_PROOF_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/fonts
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -77,6 +78,9 @@ jobs:
       - name: Check Park brush lettering, numerals and punctuation
         if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
         run: node tests/park-calligraphy-finals-ui.test.cjs
+      - name: Check the local heart font and administrator previews
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/park-heart-font-ui.test.cjs
       - name: Check the embedded Park toolbar and navigation
         if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
         run: node tests/park-note-chat-ui.test.cjs
