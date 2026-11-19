@@ -575,7 +575,11 @@ window.addEventListener('popstate',event=>{
   if(direction>0&&index<groupHistoryMaximum){history.forward();return;}
   replaceGroupRoute(location.href);
  }
- navigationRun++;const match=location.hash.match(/^#room=([a-f0-9-]{36})$/);roomId=rooms.some(r=>r.id===match?.[1])?match[1]:null;date='';render();void loadFeed();void showSharedInvitation();
+ const match=location.hash.match(/^#room=([a-f0-9-]{36})$/),nextRoom=rooms.some(r=>r.id===match?.[1])?match[1]:null;
+ // Dismissing a dialog returns to the existing room and its focused opener.
+ // Rebuilding that same feed would discard the live DOM and reading position.
+ if(nextRoom===roomId)return;
+ navigationRun++;roomId=nextRoom;date='';render();void loadFeed();void showSharedInvitation();
 });
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&user&&!mutating&&!document.querySelector('dialog[open]'))void refresh({quiet:true});});
 window.addEventListener('pagehide',()=>clearMedia(true));

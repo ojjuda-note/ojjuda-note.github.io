@@ -8,8 +8,8 @@ const root=path.resolve(__dirname,'..'),origin='https://public-history.test';
   await context.route('**/*',async route=>{
    const url=new URL(route.request().url());
    if(url.origin!==origin)return route.abort();
-   if(url.pathname==='/before')return route.fulfill({contentType:'text/html',body:'<!doctype html><a href="/guide.html?from=my">사용법</a><a href="/terms.html?from=my">약관</a>'});
-   if(url.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:'<!doctype html><p>서비스 메인</p>'});
+   if(url.pathname==='/before')return route.fulfill({contentType:'text/html; charset=utf-8',body:'<!doctype html><a href="/guide.html?from=my">사용법</a><a href="/terms.html?from=my">약관</a>'});
+   if(url.pathname==='/world.html')return route.fulfill({contentType:'text/html; charset=utf-8',body:'<!doctype html><p>서비스 메인</p>'});
    const file=path.resolve(root,'.'+url.pathname);
    if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile())return route.fulfill({status:404,body:''});
    const types={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg'};

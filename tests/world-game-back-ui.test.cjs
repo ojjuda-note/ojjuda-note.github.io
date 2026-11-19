@@ -83,8 +83,17 @@ window.childReady=true;
         assert.equal(await page.locator('#agit-hub-view').isVisible(), true, 'the Hub main screen returns');
         assert.equal(await page.evaluate(() => backFixture.exits), 0, 'game Back never exits the native app');
       };
-      const arcade = async () => {
-        await page.waitForFunction(() => history.state?.ojjudaWorld === 'menu' && !!document.querySelector('.arcade-home') && !document.querySelector('#gov,#matgo-overlay,#ttang-overlay,#photo-ttang-overlay,dialog[open],[data-bl="close"]'));
+      const arcade = async (scenario='Arcade return') => {
+        try {
+          await page.waitForFunction(() => history.state?.ojjudaWorld === 'menu' && !!document.querySelector('.arcade-home') && !document.querySelector('#gov,#matgo-overlay,#ttang-overlay,#photo-ttang-overlay,dialog[open],[data-bl="close"]'));
+        } catch (error) {
+          const state=await page.evaluate(()=>({url:location.href,tab:backFixture.state.tab,place:backFixture.state.place?.id,
+            history:history.state,gaming:document.body.classList.contains('gaming'),arcade:!!document.querySelector('.arcade-home'),
+            overlays:[...document.querySelectorAll('#gov,#matgo-overlay,#ttang-overlay,#photo-ttang-overlay,dialog[open],[data-bl="close"]')]
+              .map(node=>({tag:node.tagName,id:node.id,classes:node.className,label:node.getAttribute('aria-label')}))})).catch(()=>null);
+          console.error('Arcade Back failure:',JSON.stringify({native,scenario,state}));
+          throw error;
+        }
         assert.equal(await page.locator('.arcade-home').isVisible(), true, 'the Arcade returns after a game closes');
         assert.equal(await page.evaluate(() => backFixture.exits), 0, 'game Back never exits the native app');
       };
@@ -97,6 +106,7 @@ window.childReady=true;
         ['ttang','#ttang-overlay'],['photo_ttang','#photo-ttang-overlay'],['matgo','#matgo-overlay'],['billiards','[data-bl="close"]']
       ];
       for (const [game, selector] of games) {
+        console.log('CHECK:',native?'native':'browser','Back from',game);
         await page.evaluate(async game => {
           backFixture.actions.tab({tab:['festival','restaurants'].includes(game)?'hub':'arcade'});
           if (game === 'matgo') await openMatgo();
@@ -112,7 +122,7 @@ window.childReady=true;
         for (const frame of page.frames().slice(1)) await frame.waitForFunction(() => window.childReady);
         await back();
         if(game==='billiards')await page.getByRole('button',{name:'오락실로 나가기',exact:true}).click();
-        if(['festival','restaurants'].includes(game))await main();else await arcade();
+        if(['festival','restaurants'].includes(game))await main();else await arcade(game);
       }
 
       // Both public directories have a visible return and support the same browser/native Back.
