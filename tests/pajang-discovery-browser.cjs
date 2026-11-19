@@ -21,6 +21,61 @@ const rows = [
   {...base,peer:'a',name:'은하',interest:'book',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'동네 책방에 들러서 서로에게 어울리는 책을 한 권씩 골라주고 싶어요.'},
   {...base,peer:'b',name:'단비',interest:'walk',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'나란히 걸으면서 같은 풍경을 보고 웃을 때요.'},
 ];
+const signalOffers=[[1,10,2],[3,28,2],[5,45,2],[10,85,1],[20,160,1],[30,225,1]]
+  .map(([quantity,price,revision])=>({id:'signal_'+quantity,quantity,price,revision}));
+const toolbarAssets=[
+  '/shared/brand/service-header.css','/note/notifications.js','/note/notifications.css',
+  '/features/wallet/ju-charge.js','/features/wallet/ju-charge.css','/ju-coins/ju-coins.css',
+  ...['coin','10','30','50','100','300','500'].map(name=>'/ju-coins/'+name+'.svg')
+];
+
+async function checkServiceHeader(page,width) {
+  await page.waitForFunction(()=>document.querySelector('[data-pajang-balance]')?.textContent==='129,447');
+  const result=await page.locator('.pajang-mast').evaluate(header=>{
+    const rect=node=>{const {left,right,top,bottom,width,height}=node.getBoundingClientRect();return {left,right,top,bottom,width,height};};
+    const visible=node=>node.getClientRects().length>0&&getComputedStyle(node).visibility!=='hidden';
+    const brand=header.querySelector('.ojjuda-service-brand'),actions=header.querySelector('.ojjuda-service-actions');
+    const nodes=[brand,actions,header.querySelector('.ojjuda-service-home'),header.querySelector('[data-notifications-open]'),header.querySelector('[data-ju-charge-open]')];
+    return {brand:rect(brand),actions:rect(actions),visible:nodes.every(visible),bounds:nodes.map(rect),
+      flex:getComputedStyle(header.querySelector('.ojjuda-service-header')).display,
+      styles:[...document.styleSheets].map(sheet=>new URL(sheet.href||location.href).pathname)};
+  });
+  assert.equal(result.flex,'flex','the shared header stylesheet is active at '+width+'px');
+  assert.ok(result.visible,'brand, notification and balance controls are visible at '+width+'px');
+  assert.ok(result.brand.right<=result.actions.left+1,'brand and account controls do not overlap at '+width+'px: '+JSON.stringify(result));
+  assert.ok(result.bounds.every(box=>box.width>0&&box.height>0&&box.left>=-1&&box.right<=width+1),'all header controls fit at '+width+'px');
+  for(const stylesheet of ['/shared/brand/service-header.css','/features/pajang/account-toolbar.css','/features/pajang/signal-purchase.css'])
+    assert.ok(result.styles.includes(stylesheet),'fixture serves '+stylesheet);
+}
+
+async function checkSignalPurchaseLayout(page,dir) {
+  await page.evaluate(()=>window.setSignalQuota(0));
+  await page.getByRole('button',{name:'신호 더하기',exact:true}).click();
+  const dialog=page.getByRole('dialog',{name:'추가 신호 구매',exact:true});
+  await dialog.locator('.signal-offers label').nth(5).waitFor();
+  assert.deepEqual(await dialog.locator('.signal-offers strong').allTextContents(),signalOffers.map(offer=>'신호 '+offer.quantity+'개'));
+  assert.deepEqual(await dialog.locator('.signal-offers b').allTextContents(),signalOffers.map(offer=>offer.price+'쭈'));
+  for(const width of [320,390,1080]){
+    await page.setViewportSize({width,height:844});
+    const layout=await dialog.locator('.signal-offers').evaluate(grid=>{
+      const css=getComputedStyle(grid),dialog=grid.closest('dialog'),box=dialog.getBoundingClientRect();
+      const packs=[...grid.querySelectorAll('label')].map(label=>{const {left,right,top,bottom,height}=label.getBoundingClientRect();return {left,right,top,bottom,height};});
+      return {display:css.display,columns:css.gridTemplateColumns.trim().split(/\s+/).length,
+        inside:box.left>=-.5&&box.right<=innerWidth+.5,overflow:dialog.scrollWidth>dialog.clientWidth,packs};
+    });
+    assert.equal(layout.display,'grid');assert.equal(layout.columns,3,'six offers keep three columns at '+width+'px');
+    assert.ok(layout.inside&&!layout.overflow,'the purchase dialog fits at '+width+'px');
+    assert.ok(layout.packs.every(pack=>pack.height>=44&&pack.left>=0&&pack.right<=width+1));
+    assert.ok(Math.abs(layout.packs[0].top-layout.packs[2].top)<1&&layout.packs[3].top>=layout.packs[0].bottom,
+      'six offers use two rows at '+width+'px');
+    await dialog.screenshot({path:path.join(dir,'signal-purchase-'+width+'.png'),animations:'disabled'});
+  }
+  assert.equal(await page.evaluate(()=>window.signalPurchaseCalls.length),0,'viewing the catalogue never purchases signals');
+  await dialog.getByRole('button',{name:'닫기',exact:true}).click();await dialog.waitFor({state:'detached'});
+  await page.evaluate(()=>window.setSignalQuota(3));
+  await page.waitForFunction(()=>document.querySelector('.budget b')?.textContent==='3 / 3');
+  await page.locator('#answers .cardgrid[aria-busy="false"]').waitFor();
+}
 
 function checkStartupRequests(trace,version,scenario) {
   if(scenario==='new')return;
@@ -182,6 +237,13 @@ async function checkRadarMotion(page,selector){
 function clientFixture(hash) {
   return `
     const state=${JSON.stringify(state)}, rows=${JSON.stringify(rows)};
+    const signalOffers=${JSON.stringify(signalOffers)},walletCoins=129447;
+    state.freeRemaining=state.remaining;state.paidRemaining=0;state.purchasingEnabled=true;
+    window.walletReads=[];window.toolbarCalls=[];window.signalPurchaseCalls=[];
+    window.setSignalQuota=remaining=>{state.remaining=remaining;state.freeRemaining=remaining;document.dispatchEvent(new Event('visibilitychange'));};
+    const signalWallet=()=>({ok:true,coins:walletCoins,remaining:state.remaining,freeRemaining:state.freeRemaining,
+      paidRemaining:state.paidRemaining,purchasingEnabled:true,offers:signalOffers});
+    const boundRead=data=>{const query=Promise.resolve({data});query.setHeader=()=>query;query.abortSignal=()=>query;return query;};
     state.locationEnabled=localStorage.locationEnabled!=='false';
     state.locationVersion=Number(localStorage.locationVersion||0);
     window.geoWrites=[];
@@ -249,6 +311,9 @@ function clientFixture(hash) {
         onAuthStateChange:listener=>{authListeners.add(listener);return {data:{subscription:{unsubscribe(){authListeners.delete(listener);}}}};},
         signOut:async options=>{window.accountWrites.push({action:'signOut',...options});sessionStorage.lastSignOutScope=options.scope;authSession=null;sessionStorage.fixtureMode='guest';for(const listener of authListeners)listener('SIGNED_OUT',null);return {error:null};}},
       from:table=>({select:columns=>({eq:(column,id)=>({maybeSingle:async()=>{
+        if(table==='user_private'&&columns==='coins'&&column==='user_id'){
+          window.walletReads.push({table,columns,column,id});return {data:{coins:walletCoins}};
+        }
         window.profileReads.push({table,columns,column,id});return {data:{nickname:'오쭈다보리'}};
       }})})}),
       schema:name=>{
@@ -256,6 +321,7 @@ function clientFixture(hash) {
         return {rpc:async operation=>{
           if(operation==='get_note_state')return {data:{}};
           if(operation==='list_my_inquiries')return {data:[]};
+          if(operation==='list_retention_alerts')return {data:[]};
           throw Error('unexpected support write: '+operation);
         }};
       },
@@ -265,6 +331,11 @@ function clientFixture(hash) {
         window.artCalls.push(key.split('/').pop());window.artPending=true;await new Promise(r=>window.addEventListener('finish-art',r,{once:true}));return {error:'fixture image unavailable'};
       }})},
       rpc:(name,p)=>{
+        if(name==='pajang_signal_wallet')return boundRead(signalWallet());
+        if(name==='pajang_signal_purchase'){window.signalPurchaseCalls.push(p);throw Error('unexpected signal purchase in layout fixture');}
+        if(name==='app_notification_summary'){window.toolbarCalls.push(name);return Promise.resolve({data:{notifications:2,retention:0}});}
+        if(name==='list_app_notifications')return Promise.resolve({data:{items:[],unread_count:2,as_of:'2026-11-19T00:00:00Z',has_more:false,next_cursor:null}});
+        if(name==='beta_charge_status')return Promise.resolve({data:{ok:true,enabled:true,coins:walletCoins,left:5,limit:5}});
         if(name==='is_admin'){window.adminChecks++;return Promise.resolve({data:mode==='admin'});}
         if(name==='ojjuda_location_preference'){
           state.locationEnabled=localStorage.locationEnabled!=='false';state.locationVersion=Number(localStorage.locationVersion||0);
@@ -458,6 +529,10 @@ async function checkNavigation(page){
       if(pathname==='/features/home/agit-hub.css')return route.fulfill({contentType:'text/css',body:await fs.readFile(path.join(feature,'../home/agit-hub.css'))});
       if(pathname==='/features/account/settings-list.css')return route.fulfill({contentType:'text/css',body:await fs.readFile(path.join(feature,'../account/settings-list.css'))});
       if(pathname==='/note/support.css')return route.fulfill({contentType:'text/css',body:await fs.readFile(path.join(feature,'../../note/support.css'))});
+      if(toolbarAssets.includes(pathname))return route.fulfill({
+        contentType:pathname.endsWith('.css')?'text/css':pathname.endsWith('.svg')?'image/svg+xml':'text/javascript',
+        body:await fs.readFile(path.join(feature,'../..',pathname))
+      });
       if(pathname==='/program')return route.fulfill({contentType:'application/javascript',body:bundle});
       if(pathname==='/features/home/agit-hub.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../home/agit-hub.js'))});
       if(/^\/features\/home\/theme-illustrations\/[a-z0-9-]+\.webp$/.test(pathname))return route.fulfill({contentType:'image/webp',body:await fs.readFile(path.join(feature,'../..',pathname))});
@@ -471,7 +546,7 @@ async function checkNavigation(page){
       if(pathname==='/shared/location/location.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/location/location.js'))});
       const file=pathname.slice(project.length)||'index.html';
       if(legacyLocationPage&&file==='location.mjs')return route.fulfill({contentType:'text/javascript',body:'export async function prepareLocation(state){return state;}'});
-      if(!['station.html','station.css','support.css','radar-motion.css','member.mjs','member-main.mjs','load-station.mjs','location.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','entry-design.css','entry-design.mjs','shell.mjs','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
+      if(!['station.html','station.css','support.css','radar-motion.css','member.mjs','member-main.mjs','load-station.mjs','location.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','entry-design.css','entry-design.mjs','shell.mjs','account-toolbar.mjs','account-toolbar.css','signal-purchase.css','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
       const mime={html:'text/html',css:'text/css',mjs:'text/javascript',json:'application/json',svg:'image/svg+xml'}[path.extname(file).slice(1)];
       let body=openingBaseline&&previousFiles.has(file)?previousFiles.get(file):await fs.readFile(path.join(feature,file));
       if(legacyLocationPage&&file.endsWith('.html'))body=body.toString().replace(/<script[^>]*src="\/shared\/location\/location\.js[^>]*><\/script>/,'');
@@ -591,6 +666,8 @@ async function checkNavigation(page){
     await fs.mkdir(dir,{recursive:true});
     for(const width of [320,390,1080]){
       await page.setViewportSize({width,height:844});
+      await checkServiceHeader(page,width);
+      await page.locator('.pajang-mast').screenshot({path:path.join(dir,'service-header-'+width+'.png'),animations:'disabled'});
       assert.ok(await answers.evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth));
       const bounds=await group.boundingBox();
       assert.equal(bounds.width,74);assert.equal(bounds.height,26);
@@ -598,6 +675,7 @@ async function checkNavigation(page){
       assert.ok(bounds.x>=title.x+title.width-1 && Math.abs((bounds.y+bounds.height/2)-(title.y+title.height/2))<10);
       await answers.screenshot({path:path.join(dir,'answers-'+width+'.png'),animations:'disabled'});
     }
+    await checkSignalPurchaseLayout(page,dir);
     await page.setViewportSize({width:390,height:844});
     await page.evaluate(()=>{window.heldGender='male';});
     await radio('male').tap();
@@ -882,6 +960,7 @@ async function checkNavigation(page){
     assert.equal(await settings.getByRole('link',{name:'개인정보처리방침',exact:true}).getAttribute('href'),'/privacy.html?from=pajang');
     for(const label of ['이용약관','개인정보처리방침'])assert.equal(await settings.getByRole('link',{name:label,exact:true}).getAttribute('target'),null);
     const accountPage=page.locator('.station-account');
+    assert.equal(await settings.getByRole('button',{name:'쭈 충전',exact:true}).getAttribute('aria-controls'),'ju-charge-dialog','settings exposes the shared coin charge dialog');
     for(const width of [320,390]){
       await page.setViewportSize({width,height:844});
       assert.ok(await settings.evaluate(el=>el.scrollWidth<=document.documentElement.clientWidth));
@@ -890,7 +969,7 @@ async function checkNavigation(page){
         const {top,bottom,left,right,height}=el.getBoundingClientRect();
         return {top,bottom,left,right,height};
       }));
-      assert.equal(rows.length,14,'account settings and the three app entries use the shared list rows');
+      assert.equal(rows.length,15,'account settings, coin charging and the three app entries use the shared list rows');
       for(const [index,row] of rows.entries()){
         assert.ok(row.height>=44,`settings row ${index+1} has a full touch target at ${width}px`);
         assert.ok(row.left>=0&&row.right<=width+1,'settings rows stay within the viewport');

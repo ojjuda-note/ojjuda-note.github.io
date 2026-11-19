@@ -3,6 +3,14 @@ const fs=require('node:fs');
 const path=require('node:path');
 const test=require('node:test');
 const {JSDOM,VirtualConsole}=require('jsdom');
+const root=path.resolve(__dirname,'..');
+// JSDOM does not load styles here. Preload the actual helper URLs so changing
+// a cache key cannot leave support waiting for a stylesheet load event forever.
+const supportSource=fs.readFileSync(path.join(root,'features/pajang/src/lib/account-support.mjs'),'utf8');
+const supportStyles=[...supportSource.matchAll(/\bloadStyle\(\s*(['"])([^'"]+)\1\s*\)/g)].map(match=>match[2]);
+const supportPaths=supportStyles.map(href=>new URL(href,'https://ojjuda.test').pathname);
+assert.deepEqual(supportPaths,['/note/support.css','/features/pajang/support.css'],'preload both actual support styles');
+for(const pathname of supportPaths)assert.ok(fs.statSync(path.join(root,pathname)).isFile(),'support stylesheet exists: '+pathname);
 
 // Exercise the built React member program with real DOM/history events. The
 // network boundary is an in-memory member fixture, never a live user account.
@@ -16,7 +24,7 @@ function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin
   w.HTMLElement.prototype.scrollIntoView=function(){};
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;};
-  for(const href of ['/note/support.css?v=20261119-withdrawal-disclosure1','/features/pajang/support.css?v=20261119-withdrawal-disclosure1']){
+  for(const href of supportStyles){
     const link=w.document.createElement('link');link.rel='stylesheet';link.href=href;
     Object.defineProperty(link,'sheet',{value:{}});w.document.head.append(link);
   }

@@ -14,6 +14,11 @@ on:
       - 'world.html'
       - 'tests/public-entry-design-browser.cjs'
       - 'shared/location/**'
+      - 'shared/brand/service-header.css'
+      - 'features/wallet/ju-charge.js'
+      - 'note/notifications.js'
+      - 'tests/pajang-account-toolbar.test.cjs'
+      - 'tests/pajang-signal-purchase*.test.*'
       - 'app/world/world-themes.*'
       - 'app/world/world-weather.js'
       - 'supabase/functions/theme-weather/**'
@@ -33,6 +38,7 @@ on:
       - 'supabase/functions/pajang-assets/index.ts'
       - 'ops/publish-pajang-program.py'
       - 'tests/pajang-discovery-browser.cjs'
+      - 'tests/window-safe-area-ui.test.cjs'
       - 'tests/pajang-question-suggestion.test.cjs'
       - 'tests/pajang-exchange-profile.test.cjs'
       - 'tests/pajang-exchange-height.test.mjs'
@@ -53,6 +59,11 @@ on:
       - 'tests/public-entry-design-browser.cjs'
       - 'tests/agit-location.test.mjs'
       - 'shared/location/**'
+      - 'shared/brand/service-header.css'
+      - 'features/wallet/ju-charge.js'
+      - 'note/notifications.js'
+      - 'tests/pajang-account-toolbar.test.cjs'
+      - 'tests/pajang-signal-purchase*.test.*'
       - 'app/world/world-themes.*'
       - 'app/world/world-weather.js'
       - 'supabase/functions/theme-weather/**'
@@ -72,6 +83,7 @@ on:
       - 'tests/park-entry-browser.cjs'
       - 'tests/park-opening.test.cjs'
       - 'tests/pajang-discovery-browser.cjs'
+      - 'tests/window-safe-area-ui.test.cjs'
       - 'tests/pajang-question-suggestion.test.cjs'
       - 'tests/pajang-exchange-profile.test.cjs'
       - 'tests/pajang-exchange-height.test.mjs'
@@ -108,6 +120,7 @@ jobs:
       - run: node --test tests/pajang-navigation.test.mjs tests/pajang-navigation-dom.test.cjs
       - run: python -m unittest discover -s tests -p 'test_pajang_program_publish.py'
       - run: node --test tests/pajang-exchange-profile.test.cjs tests/pajang-exchange-height.test.mjs tests/pajang-private-exchange.test.mjs
+      - run: node --test tests/pajang-account-toolbar.test.cjs tests/pajang-signal-purchase-db.test.mjs tests/pajang-signal-purchase-ui.test.cjs
       - run: node --test tests/pajang-account.test.mjs tests/pajang-discovery-gender.test.mjs tests/pajang-location.test.mjs tests/shared-location.test.cjs tests/agit-location.test.mjs tests/park-loading.test.cjs tests/park-frame-cache.test.cjs tests/park-opening.test.cjs
       - run: node --test tests/admin-pajang-moderation-db.test.cjs
       - run: node tests/note-composer-settings.test.cjs
@@ -119,6 +132,10 @@ jobs:
           fi
           npx playwright install --with-deps chromium
           sudo apt-get install -y fonts-noto-cjk
+      - name: Check shared support layouts in Agit, Park and Pajang
+        env:
+          WINDOW_AUDIT_FILTER: '문의·의견'
+        run: node tests/window-safe-area-ui.test.cjs
       - name: Check guest account buttons and member settings
         env:
           MY_MENU_QA_DIR: tests/artifacts/pajang-discovery/guest-settings

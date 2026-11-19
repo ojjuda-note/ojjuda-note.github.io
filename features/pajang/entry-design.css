@@ -1,8 +1,4 @@
 /* The public invitation follows the calendar/weather palette; member screens keep their own layout. */
-body:has(#gate:not([hidden])>.pajang-invitation) .pajang-mast-inner,
-body:has(#welcome:not([hidden])) .pajang-mast-inner {
-  width:min(750px,calc(100% - 40px));
-}
 #gate:has(>.pajang-invitation) {
   width:min(750px,calc(100% - 40px));max-width:none;
   margin:clamp(24px,5vh,44px) auto 32px;padding:0;
@@ -128,8 +124,6 @@ body:has(#welcome:not([hidden])) .pajang-mast-inner {
 :root[data-theme=dark] .pajang-invitation-season {opacity:.55}
 :root[data-theme=dark] #welcome .entry-intro::before {opacity:.6}
 @media(max-width:600px) {
-  body:has(#gate:not([hidden])>.pajang-invitation) .pajang-mast-inner,
-  body:has(#welcome:not([hidden])) .pajang-mast-inner {width:calc(100% - 32px)}
   #gate:has(>.pajang-invitation) {width:calc(100% - 32px);margin:20px auto 28px}
   .pajang-invitation {border-radius:24px}
   .pajang-invitation-opening {grid-template-columns:minmax(0,1fr);min-height:0;padding:29px 26px 18px;gap:0}

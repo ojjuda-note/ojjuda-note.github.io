@@ -1,0 +1,5 @@
+/* Shared dialogs use the Pajang palette and readable sans-serif controls. */
+.nn-dialog,.ju-charge-dialog {--font-b:var(--sans,system-ui,sans-serif);--font-d:var(--sans,system-ui,sans-serif)}
+.pajang-mast .ojjuda-service-actions {margin-left:auto}
+.pajang-mast [data-pajang-balance] {font-variant-numeric:tabular-nums}
+.pajang-mast .ojjuda-service-beta:not(button) {cursor:default}

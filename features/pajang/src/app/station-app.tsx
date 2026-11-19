@@ -16,10 +16,12 @@ import {ExchangeProfileEditor} from "./exchange-profile";
 import {MyExchangePhotos,removeAllExchangePhotos} from "./exchange-photos";
 import {AccountSettings,AccountActionForm} from "./account-settings";
 import {QuestionSuggestionForm} from "./question-suggestion";
+import {SignalPurchaseForm} from "./signal-purchase";
+import {type SignalCounts,type SignalWallet} from "../lib/signal-wallet";
 
 import {StationNavigation,readRoute,routeHref,type Tab} from "./station-navigation";
 import {createStationHistory} from "../lib/navigation.mjs";
-type Modal = {kind:"answer"|"suggestion"|"signal"|"result"|"setup"|"edit"|"channels"|"help"|"block"|"delete"|"person"|"privateProfile"|"privatePhotos"|"visibility"|"answers"|"logout"|"withdraw";peer?:string;period?:string;originalBody?:string;questionId?:number;answer?:DiscoveryAnswer};
+type Modal = {kind:"answer"|"suggestion"|"signal"|"buySignals"|"result"|"setup"|"edit"|"channels"|"help"|"block"|"delete"|"person"|"privateProfile"|"privatePhotos"|"visibility"|"answers"|"logout"|"withdraw";peer?:string;period?:string;originalBody?:string;questionId?:number;answer?:DiscoveryAnswer};
 const districts:Record<string,string[]> = regionCatalog;
 const provinces=Object.keys(districts);
 const fmtClock=(at:number)=>new Intl.DateTimeFormat("ko-KR",{hour:"2-digit",minute:"2-digit",timeZone:"Asia/Seoul"}).format(new Date(at));
@@ -39,10 +41,10 @@ function Dialog({children,close,title,busy=false}:{children:React.ReactNode;clos
   return <dialog ref={ref} className="dialog" aria-label={title} onCancel={e=>{e.preventDefault();close();}} onClick={e=>{if(e.target===ref.current){const b=ref.current.getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)close();}}}>
     <div className="sheet-bar"><button className="iconbtn" aria-label="닫기" disabled={busy} onClick={close}><I n="close"/></button></div>{children}</dialog>;
 }
-function Editor({initial="",max,label,submit,onSave,busy,hint,optional=false}:{initial?:string;max:number;label:string;submit:string;onSave:(v:string)=>void;busy:boolean;hint:string;optional?:boolean}){
+function Editor({initial="",max,label,submit,onSave,busy,hint,optional=false,onDraftChange}:{initial?:string;max:number;label:string;submit:string;onSave:(v:string)=>void;busy:boolean;hint:string;optional?:boolean;onDraftChange?:(v:string)=>void}){
   const [value,setValue]=useState(initial);
   return <form onSubmit={e=>{e.preventDefault();if(optional||value.trim())onSave(value.trim());}}>
-    <label className="formlabel" htmlFor="editor">{label}</label><textarea id="editor" value={value} onChange={e=>setValue(e.target.value)} placeholder={hint} maxLength={max} rows={4} required={!optional}/><div className="counter">{value.length} / {max}</div>
+    <label className="formlabel" htmlFor="editor">{label}</label><textarea id="editor" value={value} onChange={e=>{setValue(e.target.value);onDraftChange?.(e.target.value);}} placeholder={hint} maxLength={max} rows={4} required={!optional}/><div className="counter">{value.length} / {max}</div>
     <button className="primary wide" disabled={busy||(!optional&&!value.trim())}>{submit}<I n="arrow" s={17}/></button></form>;
 }
 function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew:boolean;onSave:(x:Record<string,unknown>)=>void;busy:boolean}){
@@ -74,7 +76,7 @@ function ListPerson({p,type,station,busy,onProfile,onAction}:{
   onProfile:()=>void;onAction:()=>void;
 }){
     const v=signalsWith(station,p.id);const sig=type==="received"?v.incoming:v.outgoing;
-    return <div className="listperson"><button className="person" onClick={onProfile}><Art interest={p.interest}/><span><strong>{p.name}</strong><small>{introDetails(p)}</small></span></button><p>{type==="chat"?"서로의 신호가 닿았어요.":sig?.note||(v.match?"서로의 신호가 닿았어요.":type==="received"?"신호를 보내왔어요.":"상대의 신호를 기다리고 있어요.")}</p><button className="secondary small" disabled={busy||(!station.remaining&&type==="received")} onClick={onAction}>{v.match?"대화 열기":type==="sent"?"상태 보기":"수락하고 대화하기"}<I n="right" s={15}/></button></div>;
+    return <div className="listperson"><button className="person" onClick={onProfile}><Art interest={p.interest}/><span><strong>{p.name}</strong><small>{introDetails(p)}</small></span></button><p>{type==="chat"?"서로의 신호가 닿았어요.":sig?.note||(v.match?"서로의 신호가 닿았어요.":type==="received"?"신호를 보내왔어요.":"상대의 신호를 기다리고 있어요.")}</p><button className="secondary small" disabled={busy||(!station.remaining&&type==="received"&&!station.purchasingEnabled)} onClick={onAction}>{v.match?"대화 열기":type==="sent"?"상태 보기":"수락하고 대화하기"}<I n="right" s={15}/></button></div>;
   }
 
 export default function StationApp({initialStation}:{initialStation:Station}){
@@ -91,6 +93,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const restoredScroll=useRef<number|null>(null);
   const pendingMessages=useRef(new Map<string,{body:string;id:string}>());
   const draftByPeer=useRef(new Map<string,string>());
+  const signalDrafts=useRef(new Map<string,string>());
   const currentPeer=useRef(thread);
   currentPeer.current=thread;
   const [pendingModal,setModal]=useState<Modal|null>(null),[inbox,setInbox]=useState("received");
@@ -244,7 +247,13 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       restoreDialog:(kind:string)=>kind==="suggestion"&&readRoute().tab==="today"&&liveRef.current.me?{kind:"suggestion"}:null
     });
     navigation.current=controller;
-    return ()=>{history.scrollRestoration=previous;controller.dispose();navigation.current=null;};
+    const bridge={openExternal:controller.openExternal,closeExternal:controller.closeExternal,canLeave:controller.canLeave};
+    (window as any).OjjudaPajangHistory=bridge;
+    window.dispatchEvent(new Event("pajang:history-ready"));
+    return ()=>{
+      history.scrollRestoration=previous;controller.dispose();navigation.current=null;
+      if((window as any).OjjudaPajangHistory===bridge)delete (window as any).OjjudaPajangHistory;
+    };
   },[]);
   function navigate(next:Tab,peer="",answers=false,replace=false){
     const href=routeHref(next,peer,answers);
@@ -282,6 +291,14 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     lock.current=value;setBusy(value);
     if(value){cancelAutoLocation();threadRead.current?.abort();}
   }
+  function signalDraftKey(peerId:string,answer?:DiscoveryAnswer){return me?.id+"/"+peerId+"/"+(answer?.day??s.day)+"/"+(answer?.slot??s.slot);}
+  function applySignalQuota(value:SignalCounts|SignalWallet,profileId:string){
+    const previous=liveRef.current;
+    if(previous.me?.id!==profileId)return;
+    const next={...previous,remaining:value.remaining,freeRemaining:value.freeRemaining,paidRemaining:value.paidRemaining,
+      ...("purchasingEnabled" in value?{purchasingEnabled:value.purchasingEnabled}:{})};
+    serverRevision.current++;liveRef.current=next;setLive(next);
+  }
   function go(t:Tab){navigate(t);}
   function startChat(p:string){navigate("chat",p);}
   function goBack(fallback:Tab){
@@ -315,7 +332,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     }
     finally{lock.current=false;setBusy(false);}
   }
-  function signal(p:Person){const v=signalsWith(s,p.id);if(v.match){startChat(p.id);return;}if(v.outgoing){open({kind:"result",peer:p.id});return;}if(!available){setToast("오늘의 신호를 모두 썼어요. 내일 다시 만나요.");return;}open({kind:"signal",peer:p.id});}
+  function signal(p:Person){const v=signalsWith(s,p.id);if(v.match){startChat(p.id);return;}if(v.outgoing){open({kind:"result",peer:p.id});return;}if(!available&&!s.purchasingEnabled){setToast("오늘의 신호를 모두 썼어요. 내일 다시 만나요.");return;}open({kind:"signal",peer:p.id});}
   async function openHistoryChat(id:string) {
     if(signalsWith(s,id).match && s.people.some(person=>person.id===id)){startChat(id);return;}
     const origin=navigationId.current;
@@ -334,9 +351,16 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const signalCount=waiting.length;
   const shownSignals=inbox==="received"?waiting:sent;
   async function deliver(peerId:string,note:string,answer?:DiscoveryAnswer){
+    const draftKey=signalDraftKey(peerId,answer);signalDrafts.current.set(draftKey,note);
+    if(!available){
+      if(s.purchasingEnabled)open({kind:"signal",peer:peerId,answer});
+      else setToast("오늘의 신호를 모두 썼어요. 내일 다시 만나요.");
+      return;
+    }
     const origin=navigationId.current;
     const next=await act("signal",{peer:peerId,note,...(answer?{answerDay:answer.day,answerSlot:answer.slot}:{day:s.day,slot:s.slot})});
     if(!next)return;
+    signalDrafts.current.delete(draftKey);
     setHistoryRevision(n=>n+1);
     if(origin!==navigationId.current)return;
     if(signalsWith(next,peerId).match)startChat(peerId);
@@ -358,7 +382,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     }
     if(currentPeer.current===peerId){followChat.current=true;void readThread(peerId,true);}
   }
-  const modalTitle=modal?({answer:answerTitle,suggestion:"이 질문 어때요?",signal:"신호 보내기",result:"신호 상태",setup:"회원 프로필 만들기",edit:"프로필 수정",channels:"채널 선택",help:"파장 이용 안내",block:"프로필 차단",delete:"파장 기록 삭제",person:"상대 프로필",privateProfile:"교환용 프로필",privatePhotos:"교환용 사진",visibility:"답변 공개 설정",answers:"내가 남긴 답변",logout:"로그아웃",withdraw:"오쭈다 회원탈퇴"}[modal.kind]):"";
+  const modalTitle=modal?({answer:answerTitle,suggestion:"이 질문 어때요?",signal:"신호 보내기",buySignals:"추가 신호 구매",result:"신호 상태",setup:"회원 프로필 만들기",edit:"프로필 수정",channels:"채널 선택",help:"파장 이용 안내",block:"프로필 차단",delete:"파장 기록 삭제",person:"상대 프로필",privateProfile:"교환용 프로필",privatePhotos:"교환용 사진",visibility:"답변 공개 설정",answers:"내가 남긴 답변",logout:"로그아웃",withdraw:"오쭈다 회원탈퇴"}[modal.kind]):"";
   return <div className="station-layout">
     <StationNavigation tab={tab} onGo={go} pending={signalCount}/>
     <main className="wrap station-content" id="station-content">
@@ -382,6 +406,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       <AnswerHistory active={tab==="today"} station={s} revision={historyRevision}
         onProfile={answer=>answer.own?go("profile"):open({kind:"person",peer:answer.peer,answer})}
         onSignal={answer=>open({kind:"signal",peer:answer.peer,answer})}
+        onBuySignals={()=>open({kind:"buySignals"})}
         onChat={id=>void openHistoryChat(id)}
         onWrite={()=>open({kind:"answer"})}/>
         <aside className="today-rail">
@@ -397,7 +422,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       <div className="seg">{(["received","sent"] as const).map(key=><button key={key} aria-pressed={inbox===key} className={inbox===key?"on":""} onClick={()=>setInbox(key)}>{key==="received"?"받은 신호 "+waiting.length:"보낸 신호 "+sent.length}</button>)}</div>
       {shownSignals.length?<div className="listbox">{shownSignals.map(p=><ListPerson key={p.id} p={p} station={s} busy={busy} onProfile={()=>open({kind:"person",peer:p.id})} onAction={()=>inbox==="received"?void deliver(p.id,""):signal(p)} type={inbox==="received"?"received":"sent"}/>)}</div>:
         <Blank icon="letter" title={inbox==="received"?"아직 받은 신호가 없어요":"아직 보낸 신호가 없어요"} body="" button="답변 둘러보기" onClick={()=>navigate("today","",true)}/>}
-      {inbox==="received"&&waiting.length>0&&<small className="accept-note">수락할 때 신호 1회를 사용해요. 오늘 남은 신호 {available}회</small>}
+      {inbox==="received"&&waiting.length>0&&<small className="accept-note">수락할 때 신호 1개를 사용해요. 남은 신호 {available}개{!!s.paidRemaining&&` (무료 ${s.freeRemaining??0} · 구매 ${s.paidRemaining})`}</small>}
       {error&&!modal&&<p className="error" role="alert">{error}</p>}
       <h2 className="inbox-chats">이어지는 대화</h2>
       {matches.length?<div className="listbox">{matches.map(p=><ListPerson key={p.id} p={p} station={s} busy={busy} onProfile={()=>open({kind:"person",peer:p.id})} onAction={()=>startChat(p.id)} type="chat"/>)}</div>:<Blank icon="chat" title="아직 열린 대화가 없어요" body="서로 신호를 보내면 여기서 대화를 이어 갈 수 있어요."/>}
@@ -411,6 +436,9 @@ export default function StationApp({initialStation}:{initialStation:Station}){
         <Blank icon="user" title="파장에 참여해 주세요" body="오쭈다 회원 정보로 시작할 수 있어요." button="참여하기" onClick={()=>void enterMember()}/>}</div></section>}
     </main>{toast&&<div role="status" className="toast">{toast}</div>}
   {modal&&<Dialog key={modal.kind} close={close} title={modalTitle} busy={busy}>
+    {(modal.kind==="buySignals"||(modal.kind==="signal"&&available===0&&s.purchasingEnabled))&&me&&<SignalPurchaseForm key={me.id}
+      onBusyChange={accountBusy} onWallet={wallet=>applySignalQuota(wallet,me.id)}
+      onPurchased={receipt=>{applySignalQuota(receipt,me.id);setError("");if(modal.kind==="buySignals")close();setToast(`신호 ${receipt.quantity}개를 구매했어요. 남은 신호 ${receipt.remaining}개`);}}/>}
     {modal.kind==="suggestion"&&me&&<QuestionSuggestionForm key={me.id} onBusyChange={accountBusy} onSaved={()=>{close();setToast("질문을 보냈어요. 고마워요!");}}/>}
     {(modal.kind==="logout"||modal.kind==="withdraw")&&<AccountActionForm action={modal.kind} close={close} onBusyChange={accountBusy}/>}
     {modal.kind==="visibility"&&me&&<><h2>답변 공개 설정</h2><AnswerGenderVisibility key={me.id} onSaved={()=>setHistoryRevision(n=>n+1)}/></>}
@@ -426,7 +454,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
           dismiss();setToast(slotName+(editingAnswer?" 답변을 수정했어요.":" 답변을 저장했어요."));
         }}/>
     </>}
-    {modal.kind==="signal"&&peer&&<><span className="modalicon"><I n="signal"/></span><h2>{peer.name}님{row?.received || signalsWith(s,peer.id).incoming?"의 신호 수락":"에게 신호 보내기"}</h2><p className="sub">서로 신호를 보내면 대화를 시작할 수 있어요.</p><div className="questionbox">{row&&<small>{row.question}</small>}{peer.body||signalsWith(s,peer.id).incoming?.note}</div><Editor max={120} label="함께 보낼 한마디 (선택)" hint="어떤 부분에 마음이 닿았나요?" submit={(row?.received || signalsWith(s,peer.id).incoming?"신호 수락하기":"신호 보내기")+" · 남은 "+available+"회"} busy={busy} optional onSave={note=>void deliver(peer.id,note,row)}/></>}
+    {modal.kind==="signal"&&peer&&!(available===0&&s.purchasingEnabled)&&<><span className="modalicon"><I n="signal"/></span><h2>{peer.name}님{row?.received || signalsWith(s,peer.id).incoming?"의 신호 수락":"에게 신호 보내기"}</h2><p className="sub">{available?"서로 신호를 보내면 대화를 시작할 수 있어요.":"오늘의 신호를 모두 썼어요. 내일 다시 만나요."}</p><div className="questionbox">{row&&<small>{row.question}</small>}{peer.body||signalsWith(s,peer.id).incoming?.note}</div><Editor key={signalDraftKey(peer.id,row)} initial={signalDrafts.current.get(signalDraftKey(peer.id,row))} onDraftChange={value=>signalDrafts.current.set(signalDraftKey(peer.id,row),value)} max={120} label="함께 보낼 한마디 (선택)" hint="어떤 부분에 마음이 닿았나요?" submit={(row?.received || signalsWith(s,peer.id).incoming?"신호 수락하기":"신호 보내기")+" · 남은 "+available+"개"} busy={busy||available===0} optional onSave={note=>void deliver(peer.id,note,row)}/></>}
     {modal.kind==="result"&&peer&&<div className="result"><span className="resultart"><Art interest={peer.interest} large/><i><I n={signalsWith(s,peer.id).match?"wave":"signal"}/></i></span><h2>{signalsWith(s,peer.id).match?"서로의 신호가 닿았어요":"신호를 보냈어요"}</h2><p className="sub">{signalsWith(s,peer.id).match?peer.name+"님도 당신에게 신호를 보냈어요. 이제 첫인사를 건네보세요.":peer.name+"님도 신호를 보내면 대화방이 열려요."}</p><button className="primary wide" onClick={()=>signalsWith(s,peer.id).match?startChat(peer.id):(setInbox("sent"),go("inbox"))}>{signalsWith(s,peer.id).match?"대화 시작하기":"보낸 신호 보기"}<I n="arrow" s={17}/></button></div>}
     {modal.kind==="person"&&peer&&<><Art interest={peer.interest} large/><h2>{peer.name}</h2><p className="sub">{introDetails(peer)}</p>{peer.body&&<div className="questionbox"><small>{row?.question||themeText}</small>{peer.body}</div>}<button className="primary wide" onClick={()=>{
         if(!row)return signal(peer);
@@ -439,7 +467,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     {(modal.kind==="edit"||modal.kind==="setup")&&<><h2>{modal.kind==="setup"?"회원 프로필 만들기":"프로필 수정"}</h2><p className="sub">{modal.kind==="setup"?"얼굴 사진 없이 닉네임과 취향으로 시작해요.":"내 프로필에 보여줄 정보를 정해 주세요."}</p><ProfileForm person={modal.kind==="setup"?null:me} isNew={modal.kind==="setup"} busy={busy} onSave={async b=>{const setup=modal.kind==="setup";if(await act(setup?"participate":"profile",b,setup)){go("profile");setToast("프로필을 저장했어요.");}}}/></>}
     {modal.kind==="block"&&peer&&<><span className="modalicon"><I n="shield"/></span><h2>{peer.name}님을 차단할까요?</h2><p className="sub">서로의 답변과 신호, 대화가 목록에서 사라져요. 이후 메시지도 보낼 수 없어요.</p><button className="primary wide" disabled={busy} onClick={async()=>{if(await act("block",{peer:peer.id})){go("today");setToast("프로필을 차단했어요.");}}}>차단하기</button><button className="textbtn" onClick={close}>취소</button></>}
     {modal.kind==="delete"&&<><h2>파장 기록을 삭제할까요?</h2><p className="sub">파장 프로필과 답변, 신호·대화·교환용 사진을 삭제해요. 삭제한 내용은 복구할 수 없으며, 오쭈다 계정은 유지돼요.</p><button className="primary wide" disabled={busy} onClick={async()=>{if(await act("delete",{})){location.replace("./");}}}>파장 기록 삭제</button><button className="textbtn" onClick={close}>취소</button></>}
-    {modal.kind==="help"&&<><span className="modalicon"><I n="headphones"/></span><h2>파장 이용 안내</h2><div className="guidelist">{[["오전과 오후에 한 번씩 답해요","한국 시간 자정과 낮 12시에 새 질문이 열려요. 한 번 답하면 다음 질문이 열릴 때까지 바로 메인으로 들어가요."],["답변에 신호를 보내요","모두의 답변에서 최근 1년의 질문과 답을 함께 읽어 보세요. 내 답을 쓰기 전에도 마음에 드는 사람에게 하루 세 번까지 신호를 보낼 수 있어요."],["서로 닿으면 대화해요","받은 신호를 수락하면 두 사람의 대화방이 열려요. 상대 프로필에서 언제든 차단할 수 있어요."],["프로필과 사진을 교환해요","이 대화방에서 각자 메시지를 5개 이상 보낸 뒤 프로필이나 사진 교환을 신청할 수 있어요. 상대가 수락하면 서로 볼 수 있어요."]].map(([a,b],i)=><div key={a}><b>{i+1}</b><div><strong>{a}</strong><p>{b}</p></div></div>)}</div><button className="primary wide" onClick={close}>알겠어요</button></>}
+    {modal.kind==="help"&&<><span className="modalicon"><I n="headphones"/></span><h2>파장 이용 안내</h2><div className="guidelist">{[["오전과 오후에 한 번씩 답해요","한국 시간 자정과 낮 12시에 새 질문이 열려요. 한 번 답하면 다음 질문이 열릴 때까지 바로 메인으로 들어가요."],["답변에 신호를 보내요","모두의 답변에서 최근 1년의 질문과 답을 함께 읽어 보세요. 내 답을 쓰기 전에도 마음에 드는 사람에게 하루 무료 신호 3개를 보낼 수 있어요."],["서로 닿으면 대화해요","받은 신호를 수락하면 두 사람의 대화방이 열려요. 상대 프로필에서 언제든 차단할 수 있어요."],["프로필과 사진을 교환해요","이 대화방에서 각자 메시지를 5개 이상 보낸 뒤 프로필이나 사진 교환을 신청할 수 있어요. 상대가 수락하면 서로 볼 수 있어요."]].map(([a,b],i)=><div key={a}><b>{i+1}</b><div><strong>{a}</strong><p>{b}</p></div></div>)}</div><button className="primary wide" onClick={close}>알겠어요</button></>}
     {error&&<p role="alert" className="error">{error}</p>}
   </Dialog>}</div>;
 }

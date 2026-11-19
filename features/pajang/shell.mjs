@@ -1,3 +1,7 @@
+import {installPajangToolbar} from './account-toolbar.mjs?v=20261119-service-header1';
+
+installPajangToolbar();
+
 // The Agit host restores focus and scroll when it dismisses its entry dialog.
 if(window.parent!==window && new URLSearchParams(location.search).get('embed')==='1'){
   let agitHost=false;

@@ -51,9 +51,9 @@ function installAccountFixture() {
     promise.abortSignal = promise.setHeader = () => promise;
     return promise;
   };
-  const query = () => {
+  const query = table => {
     const q = { then(resolve, reject) { return result([]).then(resolve, reject); },
-      maybeSingle: () => result(null), single: () => result(null) };
+      maybeSingle: () => result(table === 'user_private' ? { coins: 0 } : null), single: () => result(null) };
     for (const name of ['select', 'eq', 'neq', 'is', 'in', 'or', 'order', 'limit', 'range', 'gte', 'lte', 'gt', 'lt', 'abortSignal']) q[name] = () => q;
     return q;
   };
@@ -77,6 +77,9 @@ function installAccountFixture() {
       state.calls.push({ name, args });
       if (name === 'list_cards') return result(cards);
       if (name === 'get_note_state') return result({});
+      if (name === 'app_notification_summary') return result({ notifications: 0, retention: 0 });
+      if (name === 'list_app_notifications') return result({ items: [], unread_count: 0, as_of: '2026-11-19T00:00:00Z', has_more: false, next_cursor: null });
+      if (name === 'beta_charge_status') return result({ ok: true, enabled: true, coins: 0, left: 5, limit: 5 });
       if (name === 'has_banned') return result(false);
       if (name === 'ensure_member_for_note') return result(true);
       if (name === 'pajang_member') {
