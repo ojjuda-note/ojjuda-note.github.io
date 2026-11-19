@@ -23553,7 +23553,7 @@
       "region": "경남",
       "city": "김해시",
       "venue": "김해종합운동장",
-      "address": "경남 김해시 김해종합운동장(세부 도로명 주소 공식 확인)",
+      "address": "경상남도 김해시 가야로 243",
       "summary": "하나은행 K리그2 2026 최종 34라운드 김해FC 홈경기, 성남FC 원정경기입니다.",
       "scheduleNote": "11월 28일(토) 14:00 킥오프.",
       "priceNote": "관람 입장권 가격은 NOL티켓 공식 예매처 확인. 예매 수수료 1장당 1,000원(선수 참가비 해당 없음).",
@@ -23561,7 +23561,8 @@
       "sourceUrl": "https://nol.yanolja.com/ticket/genre/sports/gimhaefc",
       "sourceName": "김해FC 공식 입장권 판매처 NOL티켓",
       "verificationSources": [
-        "https://www.kleague.com/about/competition.do"
+        "https://www.kleague.com/about/competition.do",
+        "https://pf.kakao.com/_xnBHxij/112425625"
       ]
     }
   ]
