@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const { screen, until, pause } = require('./onecard-dom-fixture.cjs');
 const { fixture } = require('./onecard-online-fixture.cjs');
+const handCases = require('./onecard-hand-cases.cjs');
 const screens = [], results = [];
 let engine, server;
 const open = async options => { const s = await screen(options); screens.push(s); return s; };
@@ -82,8 +83,9 @@ async function check(name, fn) {
     assert.ok(flights.slice(1).every((animation, i) => animation.options.delay - flights[i].options.delay < flights[i].options.duration));
     assert.equal(s.find('#draw-button').disabled, true);
     assert.equal(s.all('#hand .hand-card:not(:disabled)').length, 0);
-    assert.equal(s.find('#previous-cards').disabled, true);
-    assert.equal(s.find('#next-cards').disabled, true);
+    assert.equal(s.find('#sort-number').disabled, true);
+    assert.equal(s.find('#sort-color').disabled, true);
+    assert.equal(s.find('#hand-pager, #previous-cards, #next-cards, #hand-page'), null, 'the whole hand replaces pagination');
     // Hidden fan rectangles at short heights must fall back to the visible avatar.
     const opponentFlights = flights.filter((_, i) => i < 35 && i % 5 !== 0);
     assert.ok(opponentFlights.every(animation => !animation.frames.at(-1).transform.includes('translate3d(-39px,-56px,0)')), 'opponent flights never target the viewport origin');
@@ -179,21 +181,100 @@ async function check(name, fn) {
     await resume(s); assert.equal(s.saved.players[0].hand.length, 7);
   });
 
-  await check('all mobile hand pages are reachable and locked during draw motion', async () => {
+  await check('the complete mobile hand scrolls to its last card without triggering play, and locks during draw motion', async () => {
     const hand = engine.makeDeck().filter(id => !['S-4', 'H-8', 'D-9'].includes(id)).slice(0, 18);
     const s = await open({ saved: rig([hand, ['H-8', 'D-9']]), width: 360, height: 640, animate: true });
     await resume(s);
-    const seen = new Set(s.all('#hand .hand-card').map(node => node.dataset.card));
-    s.click('#next-cards'); for (const node of s.all('#hand .hand-card')) seen.add(node.dataset.card);
-    s.click('#next-cards'); for (const node of s.all('#hand .hand-card')) seen.add(node.dataset.card);
-    assert.equal(seen.size, 18);
-    assert.equal(s.find('#next-cards').disabled, true);
-    s.click('#previous-cards'); s.click('#draw-button');
+    const scroller = s.find('#hand-scroll'), cards = s.all('#hand .hand-card');
+    assert.equal(cards.length, 18); assert.equal(new Set(cards.map(node => node.dataset.card)).size, 18);
+    assert.equal(s.find('#hand').parentElement, scroller);
+    assert.ok(scroller.scrollWidth > scroller.clientWidth, 'the hand owns the horizontal overflow');
+    const before = JSON.stringify(s.saved);
+    for (let i = 0; i < 6 && scroller.scrollLeft < scroller.scrollWidth - scroller.clientWidth; i++) {
+      s.pointer('#hand-scroll', 'pointerdown', { clientX: 300, clientY: 500 });
+      s.pointer('#hand-scroll', 'pointermove', { clientX: 30, clientY: 500 });
+      s.pointer('#hand-scroll', 'pointerup', { clientX: 30, clientY: 500 });
+    }
+    assert.equal(scroller.scrollLeft, scroller.scrollWidth - scroller.clientWidth, 'repeated drags reach the last held card');
+    const playable = cards.find(node => !node.disabled); assert.ok(playable);
+    playable.dispatchEvent(new s.w.MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 }));
+    await pause(); assert.equal(JSON.stringify(s.saved), before, 'a click following a drag cannot submit a card');
+    assert.equal(s.w.scrollX, 0); assert.equal(s.w.scrollY, 0);
+    s.click('#draw-button');
     await until(() => s.find('.flying-card'), 'draw in flight');
-    assert.equal(s.find('#previous-cards').disabled, true);
-    assert.equal(s.find('#next-cards').disabled, true);
+    assert.equal(s.find('#sort-number').disabled, true);
+    assert.equal(s.find('#sort-color').disabled, true);
+    const lockedLeft = scroller.scrollLeft;
+    s.pointer('#hand-scroll', 'pointerdown', { clientX: 30, clientY: 500 });
+    s.pointer('#hand-scroll', 'pointermove', { clientX: 300, clientY: 500 });
+    s.pointer('#hand-scroll', 'pointerup', { clientX: 300, clientY: 500 });
+    assert.equal(scroller.scrollLeft, lockedLeft, 'an in-flight landing target cannot move during a mouse drag');
+    const inFlight = s.all('#hand .hand-card').map(node => node.dataset.card);
+    s.find('#sort-color').click();
+    assert.deepEqual(s.all('#hand .hand-card').map(node => node.dataset.card), inFlight, 'disabled sorting does not invalidate flight targets');
     await s.finishAnimations();
     assert.equal(s.saved.players[0].hand.length, 19);
+    assert.equal(s.all('#hand .hand-card').length, 19, 'newly drawn cards join the full hand DOM');
+  });
+
+  await check('display-number and color sorting are stable and leave game hand, deck and revision unchanged', async () => {
+    const saved = rig([handCases.hand]), s = await open({ saved, width: 360, height: 640 }); await resume(s);
+    const order = () => s.all('#hand .hand-card').map(node => node.dataset.card), original = JSON.stringify(s.saved);
+    assert.deepEqual(order(), handCases.numberOrder);
+    assert.equal(s.find('#sort-number').getAttribute('aria-pressed'), 'true');
+    s.click('#sort-color'); assert.deepEqual(order(), handCases.colorOrder);
+    assert.equal(s.find('#sort-color').getAttribute('aria-pressed'), 'true');
+    assert.equal(s.w.localStorage.getItem('ojjuda-onecard-hand-sort-v1'), 'color');
+    s.click('#sort-color'); assert.deepEqual(order(), handCases.colorOrder, 'reselecting a mode is deterministic');
+    s.click('#sort-number'); assert.deepEqual(order(), handCases.numberOrder, 'ties return to original hand order, not the previous UI order');
+    assert.equal(JSON.stringify(s.saved), original, 'sorting never mutates hands, deck, RNG, turn or revision');
+    const reopened = await open({ saved, sortMode: 'color' }); await resume(reopened);
+    assert.deepEqual(reopened.all('#hand .hand-card').map(node => node.dataset.card), handCases.colorOrder, 'the chosen mode survives reopening');
+    assert.deepEqual(reopened.saved.players[0].hand, [...handCases.hand]);
+  });
+
+  await check('a stationary discard stays visible during each flight and changes only when the card lands', async () => {
+    const s = await open({ saved: rig([['S-K', 'S-3', 'H-8']]), animate: true }); await resume(s);
+    for (const [oldId, played] of [['S-4', 'S-K'], ['S-K', 'S-3']]) {
+      if (played === 'S-3') s.click('#onecard-button');
+      const stationary = s.find('#discard-card > .playing-card'); assert.equal(stationary.dataset.cardId, oldId);
+      s.click(`#hand [data-card="${played}"]`);
+      await until(() => s.find('.flying-card'), 'played card is in flight');
+      assert.equal(s.find('#discard-card').dataset.card, oldId);
+      assert.equal(s.find('#discard-card > .playing-card'), stationary, 'the previous face is retained during the flight');
+      assert.equal(stationary.isConnected, true);
+      assert.notEqual(s.w.getComputedStyle(s.find('#discard-card')).visibility, 'hidden');
+      assert.notEqual(s.w.getComputedStyle(stationary).visibility, 'hidden');
+      assert.notEqual(s.w.getComputedStyle(stationary).opacity, '0');
+      assert.equal(s.all('#discard-card > .playing-card').length, 1, 'the stationary pile never becomes empty');
+      await s.finishAnimations();
+      assert.equal(s.find('#discard-card').dataset.card, played);
+      assert.equal(s.find('#discard-card > .playing-card').dataset.cardId, played);
+    }
+    s.visibility(true);
+  });
+
+  await check('nineteen active cards stay present and the twentieth-card elimination clears every actionable hand node', async () => {
+    const s = await open({ saved: rig([handCases.hand]), animate: true, width: 360, height: 640 }); await resume(s);
+    assert.equal(s.all('#hand .hand-card').length, 19); assert.equal(s.find('#my-count').textContent, '19장');
+    s.click('#draw-button'); await until(() => s.find('.flying-card'), 'twentieth card arrives');
+    s.visibility(true); await s.finishAnimations();
+    assert.equal(s.saved.players[0].active, false); assert.equal(s.saved.players[0].eliminatedReason, 'too-many-cards');
+    assert.equal(s.saved.players[0].hand.length, 0, 'eliminated cards return to the real engine deck');
+    assert.equal(s.all('#hand .hand-card').length, 0); assert.equal(s.find('#draw-button').disabled, true);
+    assert.match(s.find('#status').textContent, /20장/);
+  });
+
+  await check('attack controls require at least the latest attack strength without comparing the accumulated draw count', async () => {
+    const high = await open({ saved: rig([['S-2', 'H-A', 'X-R', 'S-3']], { top: 'X-B', currentSuit: 'S', pendingDraw: 12 }) }); await resume(high);
+    for (const id of ['S-2', 'H-A', 'S-3']) assert.equal(high.find(`#hand [data-card="${id}"]`).disabled, true, `${id} cannot defend against +5`);
+    const before = JSON.stringify(high.saved); high.find('#hand [data-card="S-2"]').click();
+    assert.equal(JSON.stringify(high.saved), before, 'a disabled low attack cannot dispatch a move');
+    assert.equal(high.find('#hand [data-card="X-R"]').disabled, false); high.click('#hand [data-card="X-R"]');
+    assert.equal(high.find('#sheet').open, true); high.escape(); await pause(); assert.equal(JSON.stringify(high.saved), before);
+    const equal = await open({ saved: rig([['S-2', 'D-A', 'S-3']], { top: 'H-2', currentSuit: 'H', pendingDraw: 10 }) }); await resume(equal);
+    assert.equal(equal.find('#hand [data-card="S-2"]').disabled, false, 'same strength is legal even when more than two cards are accumulated');
+    assert.equal(equal.find('#hand [data-card="D-A"]').disabled, false); assert.equal(equal.find('#hand [data-card="S-3"]').disabled, true);
   });
 
   await check('login failure explains multiplayer access while solo remains available', async () => {

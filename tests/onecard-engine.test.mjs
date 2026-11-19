@@ -29,7 +29,7 @@ function move(state, cardId, extras = {}) {
 }
 
 test('54-card deck, valid setup and a visible neutral opening for 2–5 players', () => {
-  assert.equal(ENGINE_VERSION, '1.1.0');
+  assert.equal(ENGINE_VERSION, '1.2.0');
   assert.equal(makeDeck().length, 54);
   assert.equal(new Set(makeDeck()).size, 54);
   assert.equal(cardInfo('X-B').attack, 5);
@@ -113,7 +113,7 @@ test('ordinary matching, seven/joker suit choice and illegal moves remain atomic
   conserved(state);
 });
 
-test('attacks stack across suits and are paid once before passing the turn', () => {
+test('equal or higher attacks stack across suits and are paid once before passing the turn', () => {
   let state = table([['S-2', 'C-9'], ['D-A', 'D-8'], ['X-B', 'H-4'], ['X-R', 'C-3']], { top: 'S-4' });
   for (const [cardId, total, suit] of [['S-2', 2], ['D-A', 5], ['X-B', 10, 'C'], ['X-R', 17, 'H']]) {
     state = move(state, cardId, { declare: true, ...(suit ? { suit } : {}) });
@@ -127,6 +127,46 @@ test('attacks stack across suits and are paid once before passing the turn', () 
   assert.equal(state.pendingDraw, 0);
   assert.equal(state.turn, 1);
   assert.equal(state.lastEvents.at(-1).requestedCount, 17);
+  conserved(state);
+});
+
+test('every attack rejects lower printed strengths regardless of color or accumulated debt', () => {
+  const deck = makeDeck(), attacks = deck.filter(id => cardInfo(id).attack > 0);
+  for (const top of attacks) for (const candidate of deck) for (const suit of SUITS) {
+    const expected = cardInfo(candidate).attack >= cardInfo(top).attack;
+    for (const debt of [cardInfo(top).attack, 17]) {
+      assert.equal(isPlayable(candidate, top, suit, debt), expected,
+        `${candidate} against ${top}, color ${suit}, accumulated ${debt}`);
+    }
+  }
+  assert.equal(isPlayable('H-2', 'H-A', 'H', 0), true, 'after the debt is paid, ordinary color matching resumes');
+  assert.equal(isPlayable('H-2', 'H-A', 'H', 3), false, 'matching color does not override a stronger attack');
+});
+
+test('lower attack rejection is atomic and public views and computers share the same rule', () => {
+  let state = table([['H-2', 'H-A', 'X-R', 'S-4'], ['C-4', 'D-3']], { top: 'X-B', suit: 'H', pendingDraw: 10 });
+  const before = structuredClone(state);
+  for (const cardId of ['H-2', 'H-A']) assert.throws(() => move(state, cardId), { code: 'CARD_NOT_PLAYABLE' });
+  assert.deepEqual(state, before, 'rejection cannot consume cards, turns, penalties or randomness');
+  assert.deepEqual(legalCards(state, 'p0'), ['X-R']);
+  assert.deepEqual(projectState(state, 'p0').legalCardIds, ['X-R']);
+  assert.equal(chooseBotAction(projectState(state, 'p0'), 'p0').cardId, 'X-R');
+  state = move(state, 'X-R', { suit: 'S' });
+  assert.equal(state.pendingDraw, 17);
+  conserved(state);
+  const weaker = table([['H-2', 'H-A', 'S-4'], ['C-4', 'D-3']], { top: 'X-B', suit: 'H', pendingDraw: 5 });
+  assert.deepEqual(chooseBotAction(projectState(weaker, 'p0'), 'p0'), { type: 'draw' });
+});
+
+test('same-strength attacks remain legal when accumulated debt exceeds their printed value', () => {
+  let state = table([['H-2', 'D-4'], ['C-2', 'C-4'], ['S-A', 'D-5']], { top: 'S-2', pendingDraw: 2 });
+  state = move(state, 'H-2', { declare: true });
+  assert.equal(state.pendingDraw, 4);
+  state = move(state, 'C-2', { declare: true });
+  assert.equal(state.pendingDraw, 6);
+  assert.ok(legalCards(state, 'p2').includes('S-A'), '+3 can follow the latest +2 even with a total of 6');
+  state = move(state, 'S-A', { declare: true });
+  assert.equal(state.pendingDraw, 9);
   conserved(state);
 });
 

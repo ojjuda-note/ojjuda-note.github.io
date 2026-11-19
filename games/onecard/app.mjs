@@ -1,24 +1,27 @@
-import {createGame,applyAction,projectState,chooseBotAction,cardInfo} from './engine.mjs?v=20261120-onecard5';
-import {createCard,cardLabel} from './cards.mjs?v=20261120-onecard5';
-import {createOnecardSound} from './sound.mjs?v=20261120-onecard5';
-import {createCardMotion} from './motion.mjs?v=20261120-onecard5';
-import {createOnlineClient} from './online.mjs?v=20261120-onecard5';
+import {createGame,applyAction,projectState,chooseBotAction,cardInfo} from './engine.mjs?v=20261120-onecard6';
+import {createCard,cardLabel} from './cards.mjs?v=20261120-onecard6';
+import {createOnecardSound} from './sound.mjs?v=20261120-onecard6';
+import {createCardMotion} from './motion.mjs?v=20261120-onecard6';
+import {createOnlineClient} from './online.mjs?v=20261120-onecard6';
+import {sortHand,handLayout,visibleHandRect} from './hand.mjs?v=20261120-onecard6';
 
 const $=id=>document.getElementById(id);
-const app=$('onecard-app'),hand=$('hand'),sheet=$('sheet'),sound=createOnecardSound();
+const app=$('onecard-app'),hand=$('hand'),handScroll=$('hand-scroll'),sheet=$('sheet'),sound=createOnecardSound();
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const motion=createCardMotion({layer:$('motion-layer'),createCard,sound,reduced:()=>reduced.matches});
 const SUITS={S:['●','파랑'],H:['◆','빨강'],D:['▲','노랑'],C:['■','초록']};
 const STORAGE='ojjuda-onecard-solo-v1';
+const SORT_STORAGE='ojjuda-onecard-hand-sort-v1';
 const botNames=['하루','다온','보리','루아'];
 const tableSize=5,opponentCount=4;
-let local=null,view=null,mode='solo',net=null,room=null,handPage=0;
+let local=null,view=null,mode='solo',net=null,room=null;
 let animating=false,working=false,armed=false,botTimer=null,toastTimer=null,epoch=0;
 let presentation=Promise.resolve(),lastRoomVersion=-1,lastRoomId='',resultKey='',pendingSuit=null;
 let saved=null,sheetKind='',returnFocus=null,autoJoinCode='';
 let entryMode='computer',roomUI=null,lastNetworkIssue=null;
+let handSort='number',handGesture=null,suppressHandClick=false,handClickTimer=null,presentationId=0;
+try{if(localStorage.getItem(SORT_STORAGE)==='color')handSort='color';}catch{}
 const cardNodes=new Map(),seatNodes=new Map();
-const pageSize=()=>app.clientWidth<430?8:10;
 function element(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
 function button(text,cls,fn){const e=element('button',text,cls);e.type='button';e.onclick=fn;return e;}
 function resultName(player){return player.bot&&!/^컴퓨터(?:\s|$)/.test(player.name)?`${player.name} · 컴퓨터`:player.name;}
@@ -38,7 +41,6 @@ document.addEventListener('pointerdown',()=>{void sound.unlock();},{capture:true
 document.addEventListener('keydown',()=>{void sound.unlock();},{capture:true});
 $('sound-toggle').onclick=()=>{sound.setEnabled(!sound.enabled);renderSound();};
 $('stock-card').append(createCard(null,{faceDown:true}));
-$('discard-card').append(createCard('H-A'));
 function setScreen(name){
   app.dataset.view=name;$('entry').hidden=name!=='welcome';$('lobby').hidden=name!=='lobby';
   $('setup').hidden=name==='playing';app.hidden=name!=='playing';document.body.dataset.mpEntry=String(name!=='playing');
@@ -66,31 +68,42 @@ function renderSeats(){
   });
 }
 function setSeatCount(id,count){if(id===myId()){setText('my-count',`${count}장`);return;}const node=seatNodes.get(id);if(!node)return;node.querySelector('.seat-count').textContent=count===1?'원카드 · 1장':`${count}장`;node.querySelector('.seat-fan').style.opacity=count? '1':'0';}
+function resetHand(){
+  if(handGesture)finishHandGesture({pointerId:handGesture.id,type:'pointercancel'});
+  hand.replaceChildren();cardNodes.clear();handScroll.scrollLeft=0;hand.style.width='';clearTimeout(handClickTimer);suppressHandClick=false;handScroll.classList.remove('is-dragging','is-motion-locked');
+}
+function renderDiscard(cardId){
+  const discard=$('discard-card');
+  if(!cardId){discard.replaceChildren();delete discard.dataset.card;}
+  else if(discard.dataset.card!==cardId||!discard.firstElementChild){discard.replaceChildren(createCard(cardId));discard.dataset.card=cardId;}
+  discard.style.visibility='';
+}
+function renderSort(){
+  for(const [id,value] of [['sort-number','number'],['sort-color','color']]){const node=$(id);node.setAttribute('aria-pressed',String(handSort===value));node.disabled=locked();}
+}
 function renderHand(){
-  const player=me(),cards=player?.hand||[],size=pageSize();
-  handPage=Math.max(0,Math.min(handPage,Math.max(0,Math.ceil(cards.length/size)-1)));
-  const shown=cards.slice(handPage*size,(handPage+1)*size),showSet=new Set(shown);
-  for(const [id,node] of cardNodes)if(!showSet.has(id)){node.remove();cardNodes.delete(id);}
-  const width=hand.clientWidth||app.clientWidth-24,cardWidth=parseFloat(getComputedStyle(app).getPropertyValue('--card-w'))||(width<430?66:78);
-  const step=Math.min(cardWidth*.69,(width-cardWidth-64)/Math.max(1,shown.length-1));
-  const spread=shown.length>1?Math.min(4.5,22/(shown.length-1)):0;
-  shown.forEach((id,index)=>{
-    let node=cardNodes.get(id);if(!node){node=createCard(id,{interactive:true,label:cardLabel(id)});node.classList.add('hand-card');node.dataset.card=id;node.onclick=()=>void playCard(id);hand.append(node);cardNodes.set(id,node);}
-    const relative=index-(shown.length-1)/2,angle=relative*spread,y=Math.abs(relative)*Math.abs(relative)*.8;
-    node.style.setProperty('--x',`${relative*step}px`);node.style.setProperty('--y',`${y}px`);node.style.setProperty('--angle',`${angle}deg`);node.style.zIndex=String(index+1);
+  const player=me(),cards=sortHand(player?.hand||[],handSort),keep=new Set(cards),scrollLeft=handScroll.scrollLeft,focused=document.activeElement;
+  for(const [id,node] of cardNodes)if(!keep.has(id)){node.remove();cardNodes.delete(id);}
+  const width=handScroll.clientWidth||app.clientWidth,cardWidth=parseFloat(getComputedStyle(app).getPropertyValue('--card-w'))||(width<430?66:78);
+  const layout=handLayout(cards.length,width,cardWidth);hand.style.width=`${layout.width}px`;
+  handScroll.classList.toggle('is-scrollable',layout.width>width+1);handScroll.tabIndex=layout.width>width+1?0:-1;
+  cards.forEach((id,index)=>{
+    let node=cardNodes.get(id);if(!node){node=createCard(id,{interactive:true,label:cardLabel(id)});node.classList.add('hand-card');node.dataset.card=id;node.onclick=()=>void playCard(id);cardNodes.set(id,node);}
+    if(hand.children[index]!==node)hand.insertBefore(node,hand.children[index]||null);
+    const relative=index-(cards.length-1)/2;
+    node.style.setProperty('--x',`${relative*layout.step}px`);node.style.setProperty('--y','12px');node.style.setProperty('--angle','0deg');node.style.zIndex=String(index+1);
     const legal=view?.legalCardIds?.includes(id)===true;
     node.classList.toggle('is-playable',legal&&myTurn());node.classList.toggle('is-unplayable',myTurn()&&!legal);
     node.disabled=locked()||!myTurn()||!legal;
     node.setAttribute('aria-label',`${cardLabel(id)}${legal&&myTurn()?', 낼 수 있어요':''}`);
   });
-  $('hand-pager').hidden=cards.length<=size;
-  setText('hand-page',`${handPage+1}/${Math.max(1,Math.ceil(cards.length/size))}`);
-  $('previous-cards').disabled=locked()||handPage===0;$('next-cards').disabled=locked()||(handPage+1)*size>=cards.length;
+  if(focused?.isConnected&&hand.contains(focused)&&document.activeElement!==focused)focused.focus({preventScroll:true});
+  handScroll.scrollLeft=Math.max(0,Math.min(scrollLeft,layout.width-width));renderSort();
   setText('my-name',player?.name||'나');setText('my-count',`${cards.length}장`);
 }
-function renderBoard(){
+function renderBoard({deferDiscard=false}={}){
   if(!view)return;renderSeats();renderHand();
-  const discard=$('discard-card');if(discard.dataset.card!==view.topCard){discard.replaceChildren(createCard(view.topCard));discard.dataset.card=view.topCard;}
+  if(!deferDiscard)renderDiscard(view.topCard);
   setText('deck-count',String(view.deckCount));
   const suit=SUITS[view.currentSuit];$('suit-indicator').hidden=!suit;
   if(suit){setText('suit-indicator',`${suit[0]} ${suit[1]}`);$('suit-indicator').dataset.suit=view.currentSuit;}
@@ -112,6 +125,8 @@ function hint(){
 }
 function renderControls(){
   $('solo-mode').disabled=working||!!net?.busy;$('online-open').disabled=working||!!net?.busy;
+  handScroll.classList.toggle('is-motion-locked',animating);
+  if(animating&&handGesture)finishHandGesture({pointerId:handGesture.id,type:'pointercancel'});
   const playing=view?.status==='playing',can=myTurn()&&!locked();
   $('draw-button').disabled=!can;$('draw-pile').disabled=!can;
   const drawText=view?.pendingDraw?`${view.pendingDraw}장 받기`:'한 장 받기';
@@ -125,14 +140,14 @@ function renderControls(){
   setText('turn-label',turn);$('turn-label').classList.toggle('is-mine',myTurn());
   app.classList.toggle('my-turn',myTurn()&&!animating);
   for(const [id,node] of cardNodes)node.disabled=!can||!view?.legalCardIds?.includes(id);
-  $('previous-cards').disabled=locked()||handPage===0;
-  $('next-cards').disabled=locked()||(handPage+1)*pageSize()>=(player?.hand?.length||0);
+  renderSort();
   if(!working)announce(hint());
   updateTimer();
 }
 function rectOf(node){return node?.getBoundingClientRect();}
+function handCardRect(node){return visibleHandRect(rectOf(node),rectOf(handScroll));}
 function opponentRect(node){const fan=rectOf(node?.querySelector('.seat-fan'));return fan?.width&&fan?.height?fan:rectOf(node?.querySelector('.avatar'))||rectOf(node);}
-function rectForPlayer(id){return id===myId()?rectOf(hand):opponentRect(seatNodes.get(id));}
+function rectForPlayer(id){return id===myId()?rectOf(handScroll):opponentRect(seatNodes.get(id));}
 function gameMessage(events){
   const event=events?.findLast(e=>['attack','skip','again','onecard','eliminate'].includes(e.type));
   if(!event)return;
@@ -141,34 +156,37 @@ function gameMessage(events){
   showToast(messages[event.type]);if(event.type==='onecard')sound.play('onecard');
 }
 async function present(next,{deal=false,animate=true}={}){
-  const generation=epoch,previous=view;
-  const oldRects=new Map([...cardNodes].map(([id,node])=>[id,{rect:rectOf(node),angle:parseFloat(node.style.getPropertyValue('--angle'))||0,width:node.offsetWidth}]));
+  const generation=epoch,sequence=++presentationId,previous=view,isCurrent=()=>generation===epoch&&sequence===presentationId;
+  const events=next.lastEvents||[],plays=events.filter(event=>event.type==='play');
+  const continuous=!!previous&&next.revision===previous.revision+1&&plays.length<=1;
+  const movingDiscard=animate&&(deal||(continuous&&plays.length===1&&plays[0].cardId===next.topCard));
+  const oldRects=new Map([...cardNodes].map(([id,node])=>[id,{rect:handCardRect(node),angle:parseFloat(node.style.getPropertyValue('--angle'))||0,width:node.offsetWidth}]));
   const oldSeats=new Map([...seatNodes].map(([id,node])=>[id,opponentRect(node)]));
-  const fromStock=rectOf($('stock-card').firstElementChild),oldDiscard=rectOf($('discard-card').firstElementChild);
-  animating=true;view=next;if((me()?.hand?.length||0)!==2)armed=false;renderBoard();
-  const toDiscard=rectOf($('discard-card').firstElementChild),newRects=new Map([...cardNodes].map(([id,node])=>[id,{rect:rectOf(node),width:node.offsetWidth,angle:parseFloat(node.style.getPropertyValue('--angle'))||0}]));
-  const events=next.lastEvents||[],flights=[],counts=new Map();let delay=0;
+  const fromStock=rectOf($('stock-card').firstElementChild);
+  animating=true;view=next;if((me()?.hand?.length||0)!==2)armed=false;renderBoard({deferDiscard:movingDiscard});
+  const toDiscard=rectOf($('discard-card').firstElementChild)||rectOf($('discard-card'));
+  const discardScale=($('discard-card').offsetWidth||parseFloat(getComputedStyle(app).getPropertyValue('--card-w'))||78)/78;
+  const newRects=new Map([...cardNodes].map(([id,node])=>[id,{rect:handCardRect(node),width:node.offsetWidth,angle:parseFloat(node.style.getPropertyValue('--angle'))||0}]));
+  const flights=[],counts=new Map();let delay=0;
   const privateHand=new Set(me()?.hand||[]),reveal=new Set();
   const flightTarget=(id,cardId)=>newRects.get(cardId)?.rect||rectForPlayer(id);
-  function arrive(id,cardId,count){return()=>{if(generation!==epoch)return;if(cardId&&cardNodes.has(cardId))cardNodes.get(cardId).style.opacity='';if(count!==undefined)setSeatCount(id,count);};}
+  const landDiscard=()=>{if(isCurrent())renderDiscard(view?.topCard);};
+  function arrive(id,cardId,count){return()=>{if(!isCurrent())return;if(cardId&&cardNodes.has(cardId))cardNodes.get(cardId).style.opacity='';if(count!==undefined)setSeatCount(id,count);};}
   if(animate&&deal){
     announce('카드를 나누고 있어요.');
     for(const p of next.players){counts.set(p.id,0);setSeatCount(p.id,0);}
     for(const node of cardNodes.values()){node.style.opacity='0';reveal.add(node);}
-    $('discard-card').style.visibility='hidden';
     for(const event of events.filter(e=>e.type==='deal')){
       const count=(counts.get(event.playerId)||0)+1;counts.set(event.playerId,count);
       const target=newRects.get(event.cardId),own=event.playerId===myId();
       flights.push({from:fromStock,to:flightTarget(event.playerId,event.cardId),cardId:own?event.cardId:null,faceDown:true,reveal:own,toAngle:target?.angle||0,toScale:target?target.width/78:.48,delay,duration:390,onLand:arrive(event.playerId,event.cardId,count)});delay+=62;
     }
-    flights.push({from:fromStock,to:toDiscard,cardId:next.topCard,faceDown:true,reveal:true,toAngle:6,toScale:$('discard-card').firstElementChild.offsetWidth/78,delay,duration:390,onLand:()=>{$('discard-card').style.visibility='';},sound:'play'});
-  }else if(animate&&previous){
-    let playCount=0;
+    flights.push({from:fromStock,to:toDiscard,cardId:next.topCard,faceDown:true,reveal:true,toAngle:6,toScale:discardScale,delay,duration:390,onLand:landDiscard,sound:'play'});
+  }else if(animate&&continuous){
     for(const event of events){
-      if(event.type==='play'){
+      if(event.type==='play'&&movingDiscard){
         const own=event.playerId===myId(),old=oldRects.get(event.cardId);
-        $('discard-card').style.visibility='hidden';playCount++;
-        flights.push({from:own?old?.rect||rectOf(hand):oldSeats.get(event.playerId),to:toDiscard,cardId:event.cardId,faceDown:!own,reveal:!own,fromAngle:old?.angle||0,fromScale:own&&old?old.width/78:.48,toAngle:6,toScale:$('discard-card').firstElementChild.offsetWidth/78,delay,duration:360,sound:'play',onLand:()=>{$('discard-card').style.visibility='';}});delay+=130;
+        flights.push({from:own?old?.rect||rectOf(handScroll):oldSeats.get(event.playerId),to:toDiscard,cardId:event.cardId,faceDown:!own,reveal:!own,fromAngle:old?.angle||0,fromScale:own&&old?old.width/78:.48,toAngle:6,toScale:discardScale,delay,duration:360,sound:'play',onLand:landDiscard});delay+=130;
       }
       if(event.type==='draw'){
         const own=event.playerId===myId(),cards=event.cardIds||[];
@@ -179,15 +197,14 @@ async function present(next,{deal=false,animate=true}={}){
         }
       }
     }
-    // A reconnect may skip revisions. Its latest snapshot always wins over old motion.
-    if(playCount>1||next.revision>previous.revision+1)flights.length=0;
   }
-  try{await motion.run(flights);}finally{
-    for(const node of reveal)node.style.opacity='';$('discard-card').style.visibility='';
-    if(generation!==epoch)return;
-    animating=false;renderSeats();setText('my-count',`${me()?.hand?.length||0}장`);renderControls();
+  // Old top stays underneath the flight. A skipped revision renders its latest top directly.
+  try{await motion.run(flights);}catch{if(isCurrent())motion.cancel();}finally{
+    if(!isCurrent())return;
+    for(const node of reveal)node.style.opacity='';landDiscard();
+    animating=false;renderBoard();
   }
-  if(generation!==epoch)return;
+  if(!isCurrent())return;
   if(!deal)gameMessage(events);
   if(view.status==='finished'){showResult();return;}
   if(myTurn()&&previous?.players[previous.turn]?.id!==myId())sound.play('turn');
@@ -228,11 +245,46 @@ $('onecard-button').onclick=()=>{
   if(me()?.hand?.length===2){armed=!armed;sound.play('onecard');renderControls();announce(armed?'원카드! 이제 카드를 내세요.':hint());}
   else if(me()?.hand?.length===1)void dispatch({type:'declare'});
 };
-$('previous-cards').onclick=()=>{if(!locked()){handPage--;renderHand();}};$('next-cards').onclick=()=>{if(!locked()){handPage++;renderHand();}};
+for(const [id,value] of [['sort-number','number'],['sort-color','color']])$(id).onclick=()=>{
+  if(locked())return;handSort=value;try{localStorage.setItem(SORT_STORAGE,value);}catch{}renderHand();
+};
+
+// Touch keeps native scrolling and inertia. Mouse/pen drags move only this viewport.
+handScroll.addEventListener('pointerdown',event=>{
+  if(animating){event.preventDefault();return;}
+  if(event.isPrimary===false||event.button!==0)return;
+  clearTimeout(handClickTimer);suppressHandClick=false;handGesture={id:event.pointerId,type:event.pointerType,x:event.clientX,y:event.clientY,left:handScroll.scrollLeft,dragged:false};
+});
+handScroll.addEventListener('pointermove',event=>{
+  if(animating)return;
+  const gesture=handGesture;if(!gesture||gesture.id!==event.pointerId)return;
+  const dx=event.clientX-gesture.x,dy=event.clientY-gesture.y;
+  if(!gesture.dragged&&Math.hypot(dx,dy)>8){
+    gesture.dragged=true;suppressHandClick=true;
+    if(gesture.type!=='touch'){handScroll.classList.add('is-dragging');try{handScroll.setPointerCapture(event.pointerId);}catch{}}
+  }
+  if(gesture.dragged&&gesture.type!=='touch'){event.preventDefault();handScroll.scrollLeft=gesture.left-dx;}
+});
+function finishHandGesture(event){
+  const gesture=handGesture;if(!gesture||gesture.id!==event.pointerId)return;
+  if(gesture.dragged||(event.type==='pointercancel'&&gesture.type==='touch'))suppressHandClick=true;
+  if(suppressHandClick){clearTimeout(handClickTimer);handClickTimer=setTimeout(()=>{suppressHandClick=false;},450);}
+  handGesture=null;handScroll.classList.remove('is-dragging');
+  try{if(handScroll.hasPointerCapture(event.pointerId))handScroll.releasePointerCapture(event.pointerId);}catch{}
+}
+handScroll.addEventListener('pointerup',finishHandGesture);handScroll.addEventListener('pointercancel',finishHandGesture);handScroll.addEventListener('lostpointercapture',finishHandGesture);
+handScroll.addEventListener('click',event=>{if(suppressHandClick){suppressHandClick=false;event.preventDefault();event.stopImmediatePropagation();}},{capture:true});
+handScroll.addEventListener('keydown',event=>{
+  if(animating){if(['ArrowLeft','ArrowRight','Home','End',' '].includes(event.key))event.preventDefault();return;}
+  if(event.key==='Enter'||event.key===' ')suppressHandClick=false;
+  if(event.target!==handScroll||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+  event.preventDefault();const end=Math.max(0,handScroll.scrollWidth-handScroll.clientWidth);
+  handScroll.scrollLeft=event.key==='Home'?0:event.key==='End'?end:Math.max(0,Math.min(end,handScroll.scrollLeft+(event.key==='ArrowLeft'?-100:100)));
+});
 
 async function startSolo(resume=false){
   epoch++;motion.cancel();closeSheet();clearTimeout(botTimer);net?.close();net=null;room=null;lastRoomVersion=-1;lastRoomId='';
-  mode='solo';view=null;resultKey='';handPage=0;armed=false;working=false;animating=false;hand.replaceChildren();cardNodes.clear();
+  mode='solo';view=null;resultKey='';armed=false;working=false;animating=false;resetHand();renderDiscard(null);
   if(resume&&saved){local={...saved.state,direction:1};}
   else{
     const players=[{id:'me',name:'나'},...botNames.map((name,i)=>({id:`bot-${i}`,name,bot:true}))];
@@ -256,7 +308,7 @@ function showRules(){
   openSheet('원카드, 이렇게 해요','rules');
   const lead=element('p','같은 색이나 숫자를 한 장씩 내고, 손의 카드를 먼저 없애면 이겨요.','rules-lead');
   const list=element('div',undefined,'rules-list');
-  const rules=[['5인 플레이','항상 5명, 빈자리는 컴퓨터가 함께해요. 각자 7장으로 시작해요.'],['내 차례','같은 색이나 같은 숫자·기호를 한 장 내세요. 낼 카드가 없으면 1장 받고 넘겨요.'],['숫자 카드','네 가지 색의 1~8 카드예요. 색 옆의 도형으로도 구별할 수 있어요.'],['+2 · +3','다음 사람이 표시된 수만큼 카드를 받아요.'],['전체 색 +5 · +7','어떤 색에도 내고, 다음 색을 골라요. 다음 사람은 5장 · 7장을 받아요.'],['공격이 오면','+ 카드를 이어 내거나 쌓인 장수만큼 받아요.'],['색 바꾸기','내고 나면 다음 색을 골라요.'],['건너뛰기 · 한 번 더','다음 사람을 건너뛰어요 · 내가 한 장 더 내요.'],['원카드!','2장일 때 먼저 누르거나, 1장이 된 직후 눌러요. 다음 사람이 행동할 때까지 안 누르면 2장을 받아요.'],['진행','항상 시계 방향이에요. 다음 판에는 자리를 다시 섞어요. 20장 이상이면 탈락해요.'],['온라인 차례','30초 안에 내거나 받아요. 시간이 지나면 자동으로 받아요.']];
+  const rules=[['5인 플레이','항상 5명, 빈자리는 컴퓨터가 함께해요. 각자 7장으로 시작해요.'],['내 차례','같은 색이나 같은 숫자·기호를 한 장 내세요. 낼 카드가 없으면 1장 받고 넘겨요.'],['숫자 카드','네 가지 색의 1~8 카드예요. 색 옆의 도형으로도 구별할 수 있어요.'],['+2 · +3','다음 사람이 표시된 수만큼 카드를 받아요.'],['전체 색 +5 · +7','어떤 색에도 내고, 다음 색을 골라요. 다음 사람은 5장 · 7장을 받아요.'],['공격이 오면','마지막 공격 카드와 같거나 더 큰 + 카드만 이어 낼 수 있어요. 없으면 쌓인 장수만큼 받아요.'],['색 바꾸기','내고 나면 다음 색을 골라요.'],['건너뛰기 · 한 번 더','다음 사람을 건너뛰어요 · 내가 한 장 더 내요.'],['원카드!','2장일 때 먼저 누르거나, 1장이 된 직후 눌러요. 다음 사람이 행동할 때까지 안 누르면 2장을 받아요.'],['진행','항상 시계 방향이에요. 다음 판에는 자리를 다시 섞어요. 20장 이상이면 탈락해요.'],['온라인 차례','30초 안에 내거나 받아요. 시간이 지나면 자동으로 받아요.']];
   for(const [label,text] of rules){const row=element('div',undefined,'rule-row');row.append(element('strong',label),element('span',text));list.append(row);}
   $('sheet-body').append(lead,list);$('sheet-body').append(element('p','오쭈다 전용 원카드 54장으로 즐겨요.','small-note'));
 }
@@ -278,7 +330,7 @@ function confirmExit(toArcade){
 }
 async function exit(toArcade){
   if(working||net?.busy)return;working=true;renderControls();
-  try{if(mode==='online'&&room){const ok=await net.leave();if(!ok)return;}epoch++;motion.cancel();clearTimeout(botTimer);disposeRooms();net?.close();net=null;room=null;view=null;local=null;mode='solo';lastRoomId='';lastRoomVersion=-1;closeSheet();saved=loadLocal();$('resume-solo').hidden=!saved;setScreen('welcome');selectEntryMode('computer');if(toArcade)location.assign('/world.html?tab=arcade');}
+  try{if(mode==='online'&&room){const ok=await net.leave();if(!ok)return;}epoch++;motion.cancel();clearTimeout(botTimer);disposeRooms();net?.close();net=null;room=null;view=null;local=null;mode='solo';lastRoomId='';lastRoomVersion=-1;resetHand();renderDiscard(null);closeSheet();saved=loadLocal();$('resume-solo').hidden=!saved;setScreen('welcome');selectEntryMode('computer');if(toArcade)location.assign('/world.html?tab=arcade');}
   finally{working=false;animating=false;renderControls();}
 }
 $('arcade-back').onclick=e=>{if(app.dataset.view==='playing'||room){e.preventDefault();confirmExit(true);}};
@@ -330,8 +382,7 @@ function receiveRoom(next){
   if(!next){
     lastRoomId='';lastRoomVersion=-1;
     if(mode==='online'){
-      epoch++;motion.cancel();view=null;animating=false;handPage=0;
-      hand.replaceChildren();cardNodes.clear();
+      epoch++;motion.cancel();view=null;animating=false;resetHand();renderDiscard(null);
       setScreen('welcome');selectEntryMode('opponent');
       queueMicrotask(()=>{if(mode==='online'&&!room&&app.dataset.view==='welcome')mountRooms();});
     }
@@ -345,17 +396,17 @@ function receiveRoom(next){
   const first=!view||mode!=='online'||newRoom||roundChanged;
   const started=next.game.lastEvents?.some(e=>e.type==='deal')===true&&(previous?.status==='waiting'||first);
   lastRoomId=next.id;lastRoomVersion=next.version;setScreen('playing');
-  if(newRoom||roundChanged){epoch++;motion.cancel();view=null;handPage=0;resultKey='';animating=false;hand.replaceChildren();cardNodes.clear();presentation=Promise.resolve();closeSheet();}
+  if(newRoom||roundChanged){epoch++;motion.cancel();view=null;resultKey='';animating=false;resetHand();renderDiscard(null);presentation=Promise.resolve();closeSheet();}
   else if(sheetKind==='suit'&&(next.game.players[next.game.turn]?.id!==next.myId||!next.game.legalCardIds?.includes(pendingSuit)))closeSheet();
   const thisEpoch=epoch;
-  presentation=presentation.then(async()=>{if(epoch!==thisEpoch)return;await present(next.game,{deal:started,animate:started||!first});}).catch(()=>{animating=false;if(epoch===thisEpoch){view=next.game;renderBoard();connection('화면을 다시 맞췄어요. 계속할 수 있어요.');}});
+  presentation=presentation.then(async()=>{if(epoch!==thisEpoch)return;await present(next.game,{deal:started,animate:started||!first});}).catch(()=>{if(epoch===thisEpoch){animating=false;view=next.game;renderBoard();connection('화면을 다시 맞췄어요. 계속할 수 있어요.');}});
 }
 async function onlineAction(fn){
   if(working||net?.busy)return false;working=true;lastNetworkIssue=null;$('lobby-error').hidden=true;renderLobby();renderControls();
   try{return await fn();}catch(error){networkError(error);return false;}finally{working=false;renderLobby();renderControls();}
 }
 async function openOnline(code=''){
-  clearTimeout(botTimer);mode='online';view=null;local=null;setScreen('welcome');selectEntryMode('opponent');
+  clearTimeout(botTimer);mode='online';view=null;local=null;resetHand();renderDiscard(null);setScreen('welcome');selectEntryMode('opponent');
   $('online-account-note').textContent='방을 만들거나 열린 대전방에 참여하세요. 빈자리는 컴퓨터가 채워요.';
   const client=ensureNetwork();
   await onlineAction(async()=>{
@@ -426,8 +477,8 @@ function updateTimer(){
 }
 setInterval(updateTimer,250);
 new ResizeObserver(()=>{if(view&&!animating)renderHand();}).observe(app);
-document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(botTimer);sound.stop();}else{scheduleBot();if(mode==='online')void net?.read();}});
-window.addEventListener('pagehide',event=>{motion.cancel();sound.stop();clearTimeout(botTimer);if(!event.persisted)net?.close();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(botTimer);motion.cancel();if(view)renderDiscard(view.topCard);sound.stop();}else{scheduleBot();if(mode==='online')void net?.read();}});
+window.addEventListener('pagehide',event=>{motion.cancel();if(view)renderDiscard(view.topCard);sound.stop();clearTimeout(botTimer);if(!event.persisted)net?.close();});
 window.addEventListener('pageshow',event=>{if(event.persisted){animating=false;if(view)renderBoard();scheduleBot();if(mode==='online')void net?.read();}});
 saved=loadLocal();$('resume-solo').hidden=!saved;
 setScreen('welcome');
