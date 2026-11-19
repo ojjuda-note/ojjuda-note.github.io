@@ -5,7 +5,7 @@ const test = require('node:test');
 const { JSDOM } = require('jsdom');
 const source = fs.readFileSync(path.join(__dirname, '../app/world/world-navigation.js'), 'utf8');
 
-async function fixture({tab='hub',referrer,gameUrl,initialState,initialEntries,priorPage=false,navigationEntries}={}) {
+async function fixture({tab='hub',referrer,gameUrl,initialState,initialEntries,priorPage=false,navigationEntries,sharedDialogs=false}={}) {
   const dom = new JSDOM('<!doctype html><main class="main"></main>', {
     url:'https://world.test/world.html'+(gameUrl?'?game='+gameUrl:''),
     ...(referrer?{referrer}:{}),runScripts:'outside-only',pretendToBeVisual:true
@@ -21,9 +21,18 @@ async function fixture({tab='hub',referrer,gameUrl,initialState,initialEntries,p
   if(navigationEntries)Object.defineProperty(w,'navigation',{value:navigationEntries});
   if(initialState)w.history.replaceState(initialState,'',w.location.href);
   let route={tab}, parkSnapshot=null, depth=0, allowLeave=true, rootCalls=0, restores=0, running=false;
+  let hasOverlay=()=>depth>0;
+  if(sharedDialogs){
+    const client={auth:{onAuthStateChange(){}},schema:()=>({rpc:async()=>({data:[]})})};
+    for(const file of ['support','notifications'])w.eval(fs.readFileSync(path.join(__dirname,`../note/${file}.js`),'utf8'));
+    w.OjjudaNoteSupport.install({client,getUserId:()=>null,source:'world'});
+    w.worldNotifications=w.OjjudaNotifications.install({client,getUserId:()=>null});
+    const world=fs.readFileSync(path.join(__dirname,'../world.html'),'utf8');
+    hasOverlay=w.eval('('+world.match(/  hasOverlay:(.*),\n  playingGame/)[1]+')');
+  }
   w.eval(source);
   const navigation=w.OjjudaWorldNavigation.install({
-    isMain:()=>route.tab==='hub',hasOverlay:()=>depth>0,
+    isMain:()=>route.tab==='hub',hasOverlay,
     entryOverlayPending:()=>new URL(w.location.href).searchParams.has('game'),
     captureRoute:()=>route.tab==='park'?{...route,park:parkSnapshot}:route,
     routeKey:value=>{const {park,...key}=value;return key;},
@@ -32,7 +41,10 @@ async function fixture({tab='hub',referrer,gameUrl,initialState,initialEntries,p
     homeRoute:next=>({tab:next.tab==='park'?'park':'hub'}),
     routeUrl:next=>'https://world.test/world.html?tab='+next.tab,
     gameCloseUrl:()=>'https://world.test/world.html?tab=arcade',
-    closeOverlay(){if(!depth)return false;depth--;renderOverlay();return true;},
+    closeOverlay(){
+      for(const dialog of [w.worldNotifications,w.OjjudaNoteSupport])if(dialog?.isOpen()){dialog.close();return true;}
+      if(!depth)return false;depth--;renderOverlay();return true;
+    },
     playingGame:()=>running?document.getElementById('game'):null,
     exitGame(){running=false;depth=0;renderOverlay();},
     canLeave:()=>allowLeave,onRootBack:()=>rootCalls++,
@@ -92,6 +104,21 @@ test('an overlay closes before its route, and repeating open/close does not grow
     await f.back();assert.equal(f.route.tab,'hub');
   }finally{f.close();}
 });
+
+for(const [name,api] of [['support','OjjudaNoteSupport'],['notifications','worldNotifications']]){
+  test(`the shared ${name} dialog closes before Settings and its close button consumes the same visit`,async()=>{
+    const f=await fixture({sharedDialogs:true});try{
+      const dialog=f.w[api];
+      await f.navigate('my');dialog.open();await f.settle();
+      assert.equal(f.state.ojjudaWorldHistory.overlay,true);
+      await f.back();assert.equal(dialog.isOpen(),false);assert.equal(f.route.tab,'my');
+      assert.equal(f.state.ojjudaWorldHistory.overlay,false);
+      dialog.open();await f.settle();dialog.close();await f.settle();await f.settle();
+      assert.equal(f.state.ojjudaWorldHistory.overlay,false,'hiding a shared dialog consumes its entry');
+      await f.back();assert.equal(f.route.tab,'hub');
+    }finally{f.close();}
+  });
+}
 
 test('reopening an overlay before its close traversal finishes preserves the underlying visit',async()=>{
   const f=await fixture();try{

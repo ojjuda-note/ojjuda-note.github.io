@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {createStationHistory} from '../features/pajang/src/lib/navigation.mjs';
 
-function fixture(path='/station.html',state={sharedMarker:'preserved'}){
+function fixture(path='/station.html',state={sharedMarker:'preserved'},options={}){
   const listeners=new Map(),entries=[{url:'https://ojjuda.test'+path,state}];
   let cursor=0,queue=[];
   const win={location:new URL(entries[0].url),scrollY:0,crypto:{randomUUID:()=> 'document'},
@@ -19,12 +19,12 @@ function fixture(path='/station.html',state={sharedMarker:'preserved'}){
     go(delta){queue.push(()=>{const next=cursor+delta;if(next<0||next>=entries.length)return;cursor=next;load();emit('popstate');});}
   };
   const restored=[];
-  let controller=createStationHistory(win,(modal,scroll,cause)=>restored.push({modal,scroll,cause,path:win.location.pathname+win.location.search+win.location.hash}));
+  let controller=createStationHistory(win,(modal,scroll,cause)=>restored.push({modal,scroll,cause,path:win.location.pathname+win.location.search+win.location.hash}),options);
   return {win,history,restored,entries,
     get controller(){return controller;},
     flush(){while(queue.length){const tasks=queue;queue=[];tasks.forEach(fn=>fn());}},
     scroll(value){win.scrollY=value;emit('scroll');},
-    reload(){controller.dispose();controller=createStationHistory(win,(modal,scroll,cause)=>restored.push({modal,scroll,cause,path:win.location.pathname+win.location.search+win.location.hash}));},
+    reload(){controller.dispose();controller=createStationHistory(win,(modal,scroll,cause)=>restored.push({modal,scroll,cause,path:win.location.pathname+win.location.search+win.location.hash}),options);},
     get path(){return win.location.pathname+win.location.search+win.location.hash;},
     get modal(){return restored.at(-1)?.modal||null;}
   };
@@ -130,4 +130,20 @@ test('support to withdrawal replaces the closed support and invalid private cont
   f.controller.closeExternal(support);f.flush();valid=false;
   f.history.go(1);f.flush();assert.equal(f.history.state.pajangNavigation.modal,null);assert.equal(shows,2);
   f.history.back();f.flush();assert.equal(f.path,'/station.html');
+});
+
+test('a question form restarts empty on reload and pending submission preserves its one history entry',()=>{
+  let busy=false;
+  const f=fixture('/station.html',{sharedMarker:'preserved'},{canLeave:()=>!busy,
+    persistDialog:dialog=>dialog?.kind==='suggestion'?'suggestion':null,
+    restoreDialog:kind=>kind==='suggestion'?{kind:'suggestion'}:null});
+  f.controller.visit('/station.html?tab=inbox');f.controller.visit('/station.html');
+  f.controller.open({kind:'suggestion',draft:'private question'});
+  const length=f.entries.length;
+  f.reload();assert.deepEqual(f.modal,{kind:'suggestion'});assert.equal(f.entries.length,length);
+  assert.ok(!JSON.stringify(f.entries).includes('private question'));
+  busy=true;const state=f.history.state;f.history.back();f.flush();
+  assert.deepEqual(f.history.state,state);assert.equal(f.entries.length,length);
+  busy=false;f.controller.close();f.flush();f.history.back();f.flush();
+  assert.equal(f.path,'/station.html?tab=inbox','one close leaves the actual previous tab next');
 });

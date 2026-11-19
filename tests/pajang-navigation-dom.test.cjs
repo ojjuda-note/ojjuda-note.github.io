@@ -36,12 +36,16 @@ function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin
     getUser:async()=>({data:{user:session?.user||null}}),
     onAuthStateChange(listener){authListeners.add(listener);return {data:{subscription:{unsubscribe(){authListeners.delete(listener);}}}};}
   },from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{nickname:'보리'}})})})}),
-  schema:()=>({rpc:async name=>{
-    calls.push({name});
-    if(name==='get_note_state')return {data:{}};
-    if(name==='list_my_inquiries')return {data:[]};
-    if(name==='submit_inquiry')return new Promise(resolve=>{finishInquiry=()=>resolve({data:{}});});
-    throw Error('Unexpected support operation '+name);
+  schema:()=>({rpc:(name,params)=>{
+    const call={name,params,headers:{}};calls.push(call);
+    let result;
+    if(name==='get_note_state')result=Promise.resolve({data:{}});
+    else if(name==='list_my_inquiries')result=Promise.resolve({data:[]});
+    else if(name==='submit_inquiry')result=new Promise(resolve=>{finishInquiry=()=>resolve({data:params.p_request_id});});
+    else throw Error('Unexpected support operation '+name);
+    result.setHeader=(key,value)=>{call.headers[key]=value;return result;};
+    result.abortSignal=()=>result;
+    return result;
   }}),rpc:(name,params)=>{
     calls.push({name,params});let data;
     if(name==='pajang_member')data=params.p_action==='thread'?[]:state;
@@ -210,5 +214,37 @@ test('Back during an inquiry send preserves its form and exact history entry unt
   f.finishInquiry();await f.until(()=>w.OjjudaNoteSupport.canLeave());
   await f.click('.note-support-layer button','닫기');await f.until(()=>w.history.state.pajangNavigation.modal===null);
   w.history.back();await f.until(()=>!new URL(w.location.href).searchParams.has('tab'));
+  assert.deepEqual(f.errors,[]);
+});
+
+test('question suggestions use one popup entry and pending submission keeps the form until confirmed',async t=>{
+  const f=fixture(t),{w}=f;
+  await f.until(()=>f.byText('nav a','오늘'));
+  await f.menu('마음함');await f.menu('오늘');
+  await f.until(()=>!w.document.querySelector('.question-suggest').disabled);
+  await f.click('button','이 질문 어때요?');await f.until(()=>f.modal());
+  const length=w.history.length;
+  assert.equal(w.history.state.pajangNavigation.resume,'suggestion');
+  w.history.back();await f.until(()=>!f.modal());
+  assert.equal(new URL(w.location.href).searchParams.get('tab'),null);
+  w.history.forward();await f.until(()=>f.modal());
+  const field=w.document.getElementById('question-suggestion-body');
+  assert.equal(field.value,'');
+  Object.getOwnPropertyDescriptor(w.HTMLTextAreaElement.prototype,'value').set.call(field,'함께 나누고 싶은 행복은?');
+  field.dispatchEvent(new w.Event('input',{bubbles:true}));
+  await f.until(()=>!f.byText('dialog button','질문 보내기').disabled);
+  await f.click('dialog button','질문 보내기');
+  await f.until(()=>f.calls.some(call=>call.name==='submit_inquiry'));
+  const state=JSON.stringify(w.history.state);
+  assert.equal(f.modal().querySelector('[aria-label="닫기"]').disabled,true);
+  w.history.back();await new Promise(resolve=>setTimeout(resolve,30));
+  await f.until(()=>JSON.stringify(w.history.state)===state);
+  assert.equal(w.document.getElementById('question-suggestion-body'),field);
+  assert.equal(w.history.length,length);
+  const submitted=f.calls.find(call=>call.name==='submit_inquiry');
+  assert.equal(submitted.headers.Authorization,'Bearer test-member-token');
+  assert.ok(!state.includes('함께 나누고 싶은 행복'));
+  f.finishInquiry();await f.until(()=>!f.modal());
+  w.history.back();await f.until(()=>new URL(w.location.href).searchParams.get('tab')==='inbox');
   assert.deepEqual(f.errors,[]);
 });

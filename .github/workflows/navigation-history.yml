@@ -67,9 +67,11 @@ jobs:
         run: |
           export PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH="$(node -e 'process.stdout.write(require("./tests/node_modules/playwright").chromium.executablePath())')"
           export CHROMIUM_PATH="$PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH"
-          node tests/public-navigation-history-ui.test.cjs
-          node tests/group-navigation-history-ui.test.cjs
-          PAJANG_NAVIGATION_ONLY=1 node tests/pajang-discovery-browser.cjs
-          node tests/world-game-back-ui.test.cjs
-          node tests/arcade-exit-ui.test.cjs
-          node tests/admin-navigation-ui.test.cjs
+          navigation_test_failed=0
+          node tests/public-navigation-history-ui.test.cjs || navigation_test_failed=1
+          node tests/group-navigation-history-ui.test.cjs || navigation_test_failed=1
+          PAJANG_NAVIGATION_ONLY=1 node tests/pajang-discovery-browser.cjs || navigation_test_failed=1
+          node tests/world-game-back-ui.test.cjs || navigation_test_failed=1
+          node tests/arcade-exit-ui.test.cjs || navigation_test_failed=1
+          node tests/admin-navigation-ui.test.cjs || navigation_test_failed=1
+          exit "$navigation_test_failed"

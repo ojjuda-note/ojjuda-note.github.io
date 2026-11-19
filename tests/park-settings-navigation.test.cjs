@@ -266,6 +266,28 @@ test('Park Back and Forward restore the actual collections and settings sequence
   } finally {await f.close();}
 });
 
+test('explicit Park reentry resets retained settings without a reload or an extra child history step', async () => {
+  const f=await fixture();
+  try{
+    f.api.navigate('saved');await f.settle();
+    f.api.navigate('settings');await f.settle();
+    const previous=f.api.navigationSnapshot(),length=f.w.history.length;
+    f.w.parkFixture.setBusy(true);
+    assert.equal(f.api.returnHome(),false,'a pending account save blocks resetting the frame');
+    assert.ok(f.root());
+    f.w.parkFixture.setBusy(false);
+    assert.equal(f.api.returnHome(),true,'a loaded frame can close retained settings and serve the next visit');
+    await f.settle();
+    assert.equal(f.api.navigationAction(),'feed');
+    assert.equal(f.management().hidden,true);
+    assert.equal(f.w.history.length,length,'the parent owns this new visit');
+    assert.equal(f.w.history.state.ojjudaParkRoute.index,previous.index);
+    assert.equal(f.api.restoreNavigation(previous),true);await f.settle();
+    assert.ok(f.root(),'Back can still restore the saved settings snapshot');
+    assert.equal(f.api.navigationSnapshot().mode,'saved');
+  }finally{await f.close();}
+});
+
 
 test('card details return through saved cards and nested cards without resetting their collection', async () => {
   const f = await fixture();

@@ -15,10 +15,11 @@ import {ChatExchange} from "./chat-exchange";
 import {ExchangeProfileEditor} from "./exchange-profile";
 import {MyExchangePhotos,removeAllExchangePhotos} from "./exchange-photos";
 import {AccountSettings,AccountActionForm} from "./account-settings";
+import {QuestionSuggestionForm} from "./question-suggestion";
 
 import {StationNavigation,readRoute,routeHref,type Tab} from "./station-navigation";
 import {createStationHistory} from "../lib/navigation.mjs";
-type Modal = {kind:"answer"|"signal"|"result"|"setup"|"edit"|"channels"|"help"|"block"|"delete"|"person"|"privateProfile"|"privatePhotos"|"visibility"|"answers"|"logout"|"withdraw";peer?:string;period?:string;originalBody?:string;questionId?:number;answer?:DiscoveryAnswer};
+type Modal = {kind:"answer"|"suggestion"|"signal"|"result"|"setup"|"edit"|"channels"|"help"|"block"|"delete"|"person"|"privateProfile"|"privatePhotos"|"visibility"|"answers"|"logout"|"withdraw";peer?:string;period?:string;originalBody?:string;questionId?:number;answer?:DiscoveryAnswer};
 const districts:Record<string,string[]> = regionCatalog;
 const provinces=Object.keys(districts);
 const fmtClock=(at:number)=>new Intl.DateTimeFormat("ko-KR",{hour:"2-digit",minute:"2-digit",timeZone:"Asia/Seoul"}).format(new Date(at));
@@ -34,7 +35,7 @@ async function request<T,>(url:string,init?:RequestInit):Promise<T>{
 function Blank({icon,title,body,button,onClick}:{icon:string;title:string;body:string;button?:string;onClick?:()=>void}){return <div className="empty"><span className="emptyicon"><I n={icon} s={27}/></span><h3>{title}</h3>{body&&<p>{body}</p>}{button&&<button className="secondary" onClick={onClick}>{button}<I n="arrow" s={16}/></button>}</div>;}
 function Dialog({children,close,title,busy=false}:{children:React.ReactNode;close:()=>void;title:string;busy?:boolean}){
   const ref=useRef<HTMLDialogElement>(null);
-  useEffect(()=>{const node=ref.current;if(node&&!node.open)node.showModal();const overflow=document.body.style.overflow;document.body.style.overflow="hidden";return()=>{node?.close();document.body.style.overflow=overflow;};},[]);
+  useEffect(()=>{const node=ref.current;if(node&&!node.open)node.showModal();node?.querySelector<HTMLElement>('[data-autofocus]')?.focus({preventScroll:true});const overflow=document.body.style.overflow;document.body.style.overflow="hidden";return()=>{node?.close();document.body.style.overflow=overflow;};},[]);
   return <dialog ref={ref} className="dialog" aria-label={title} onCancel={e=>{e.preventDefault();close();}} onClick={e=>{if(e.target===ref.current){const b=ref.current.getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)close();}}}>
     <div className="sheet-bar"><button className="iconbtn" aria-label="닫기" disabled={busy} onClick={close}><I n="close"/></button></div>{children}</dialog>;
 }
@@ -237,6 +238,10 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       restoredScroll.current=Number.isFinite(scroll)?scroll:null;
       if(next.tab==="today")setVisitedToday(true);
       setModal(dialog);setError("");setRoute(next);
+    },{
+      canLeave:()=>!lock.current,
+      persistDialog:(dialog:Modal|null)=>dialog?.kind==="suggestion"?"suggestion":null,
+      restoreDialog:(kind:string)=>kind==="suggestion"&&readRoute().tab==="today"&&liveRef.current.me?{kind:"suggestion"}:null
     });
     navigation.current=controller;
     return ()=>{history.scrollRestoration=previous;controller.dispose();navigation.current=null;};
@@ -261,6 +266,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   },[thread,validThread]);
   function open(m:Modal){
     setError("");
+    if(m.kind==="suggestion"&&(lock.current||pendingModal?.kind==="suggestion"||!me))return;
     if(m.kind==="answer"){
       if(m.originalBody!==(me?.body||undefined))return;
       const next={...m,period,questionId:s.question?.id};
@@ -352,7 +358,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     }
     if(currentPeer.current===peerId){followChat.current=true;void readThread(peerId,true);}
   }
-  const modalTitle=modal?({answer:answerTitle,signal:"신호 보내기",result:"신호 상태",setup:"회원 프로필 만들기",edit:"프로필 수정",channels:"채널 선택",help:"파장 이용 안내",block:"프로필 차단",delete:"파장 기록 삭제",person:"상대 프로필",privateProfile:"교환용 프로필",privatePhotos:"교환용 사진",visibility:"답변 공개 설정",answers:"내가 남긴 답변",logout:"로그아웃",withdraw:"오쭈다 회원탈퇴"}[modal.kind]):"";
+  const modalTitle=modal?({answer:answerTitle,suggestion:"이 질문 어때요?",signal:"신호 보내기",result:"신호 상태",setup:"회원 프로필 만들기",edit:"프로필 수정",channels:"채널 선택",help:"파장 이용 안내",block:"프로필 차단",delete:"파장 기록 삭제",person:"상대 프로필",privateProfile:"교환용 프로필",privatePhotos:"교환용 사진",visibility:"답변 공개 설정",answers:"내가 남긴 답변",logout:"로그아웃",withdraw:"오쭈다 회원탈퇴"}[modal.kind]):"";
   return <div className="station-layout">
     <StationNavigation tab={tab} onGo={go} pending={signalCount}/>
     <main className="wrap station-content" id="station-content">
@@ -368,7 +374,10 @@ export default function StationApp({initialStation}:{initialStation:Station}){
           </button>
         </div>
       </section>
-      <button className="mobile-near" onClick={()=>go("radar")}><I n="radar" s={16}/>내 주변<I n="right" s={14}/></button>
+      <div className="today-actions">
+        <button type="button" className="question-suggest" aria-haspopup="dialog" disabled={!ready||!me} onClick={()=>open({kind:"suggestion"})}><I n="chat" s={17}/><span>이 질문 어때요?</span><I n="right" s={13}/></button>
+        <button className="mobile-near" onClick={()=>go("radar")}><I n="radar" s={16}/>내 주변<I n="right" s={14}/></button>
+      </div>
       <div className="today-columns">
       <AnswerHistory active={tab==="today"} station={s} revision={historyRevision}
         onProfile={answer=>answer.own?go("profile"):open({kind:"person",peer:answer.peer,answer})}
@@ -402,6 +411,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
         <Blank icon="user" title="파장에 참여해 주세요" body="오쭈다 회원 정보로 시작할 수 있어요." button="참여하기" onClick={()=>void enterMember()}/>}</div></section>}
     </main>{toast&&<div role="status" className="toast">{toast}</div>}
   {modal&&<Dialog key={modal.kind} close={close} title={modalTitle} busy={busy}>
+    {modal.kind==="suggestion"&&me&&<QuestionSuggestionForm key={me.id} onBusyChange={accountBusy} onSaved={()=>{close();setToast("질문을 보냈어요. 고마워요!");}}/>}
     {(modal.kind==="logout"||modal.kind==="withdraw")&&<AccountActionForm action={modal.kind} close={close} onBusyChange={accountBusy}/>}
     {modal.kind==="visibility"&&me&&<><h2>답변 공개 설정</h2><AnswerGenderVisibility key={me.id} onSaved={()=>setHistoryRevision(n=>n+1)}/></>}
     {modal.kind==="answers"&&me&&<MyAnswers key={me.id+period} answered={Boolean(me.body)} onWrite={()=>open({kind:"answer"})}/>}

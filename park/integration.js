@@ -165,15 +165,14 @@
   }
 
   function returnHome() {
-    if (!authKnown || overlayOpen() || pendingAction) return false;
+    if (!authKnown || pendingAction || !canLeave()) return false;
     initialCardId = initialKeepId = null;
     initialParkCompose = false;
     composerRun++;
-    const latestFeed = feedMode === 'all' && feedSort === 'latest' && !feedTerm;
-    feedSort = 'latest'; feedTerm = ''; tagTabReset?.();
-    window.OjjudaNoteNavigation?.leaveMy();
-    if (latestFeed) returnToFeed();
-    else void selectCollection('all');
+    // An explicit new Park visit can reuse a frame with retained settings.
+    // World records that visit; replace this child view without a ghost step.
+    restoreHistory({...historyRoute(),mode:'all',sort:'latest',term:'',card:null,my:false,view:null});
+    tagTabReset?.();
     return true;
   }
 

@@ -260,7 +260,7 @@
         if (active === overlayActive) return;
         overlayActive = active;
         sync();
-      }).observe(document.body, {childList:true, subtree:true, attributes:true, attributeFilter:['class','open']});
+      }).observe(document.body, {childList:true, subtree:true, attributes:true, attributeFilter:['class','open','hidden']});
       const reset = () => {
         edgeReturn?.cancel();
         edgeReturn = null;

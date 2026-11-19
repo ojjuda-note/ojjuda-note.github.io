@@ -4,13 +4,13 @@ const key='pajangNavigation';
 const controllers=new WeakMap();
 export const getStationHistory=win=>controllers.get(win);
 
-export function createStationHistory(win,onRestore){
+export function createStationHistory(win,onRestore,options={}){
   const {history,location}=win;
   const initial=history.state?.[key];
   const scope=typeof initial?.scope==='string'?initial.scope:
     (win.crypto?.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36));
   const dialogs=new Map(),externals=new Map(),scrolls=new Map();
-  let serial=0,pending=null,pendingClose=null,traversing=false,activeExternal=null,returning=false;
+  let serial=0,pending=null,pendingClose=null,traversing=false,activeExternal=null,returning=false,closeAfterReturn=false;
   let current=read()||{scope,index:0,modal:null,scroll:win.scrollY||0};
 
   function read(){
@@ -27,7 +27,7 @@ export function createStationHistory(win,onRestore){
     if(!current.modal){trackScroll();write({...current,scroll:win.scrollY||0});}
   }
   function trackScroll(){if(!current.modal)scrolls.set(current.index,win.scrollY||0);}
-  function canLeave(){return !activeExternal||activeExternal.canLeave();}
+  function canLeave(){return (!current.modal||!options.canLeave||options.canLeave())&&(!activeExternal||activeExternal.canLeave());}
   function restore(cause){
     const next=externals.get(current.modal)||null;
     if(activeExternal!==next){
@@ -45,7 +45,9 @@ export function createStationHistory(win,onRestore){
       history.go(current.index-next.index||1);return;
     }
     if(returning&&next.modal===current.modal){
-      event.stopImmediatePropagation?.();returning=false;traversing=false;return;
+      event.stopImmediatePropagation?.();returning=false;traversing=false;
+      if(closeAfterReturn){closeAfterReturn=false;close();}
+      return;
     }
     traversing=false;
     current=next;
@@ -57,8 +59,12 @@ export function createStationHistory(win,onRestore){
       // Never reopen support belonging to a settings component/account that left.
       traversing=true;history.back();return;
     }
-    // A reload deliberately clears a dialog's private in-memory contents.
-    if(current.modal&&!dialogs.has(current.modal))write({...current,modal:null});
+    // Only explicitly allowed, content-free dialog kinds can restart after reload.
+    if(current.modal&&!dialogs.has(current.modal)){
+      const resumed=options.restoreDialog?.(current.resume);
+      if(resumed)dialogs.set(current.modal,resumed);
+      else write({...current,modal:null,resume:null});
+    }
     restore('pop');
     const finished=pendingClose;pendingClose=null;finished?.();
   }
@@ -82,12 +88,13 @@ export function createStationHistory(win,onRestore){
     const id=scope+':'+(++serial);
     dialogs.set(id,dialog);
     if(external)externals.set(id,external);
-    const value={...current,index:current.index+(current.modal?0:1),modal:id};
+    const value={...current,index:current.index+(current.modal?0:1),modal:id,resume:options.persistDialog?.(dialog)||null};
     if(!write(value,location.href,Boolean(current.modal))){dialogs.delete(id);externals.delete(id);return false;}
     restore('modal');return true;
   }
   function close(){
-    if(traversing||!canLeave())return true;
+    if(traversing){if(returning&&canLeave())closeAfterReturn=true;return true;}
+    if(!canLeave())return true;
     if(!current.modal)return false;
     traversing=true;history.back();return true;
   }
@@ -106,8 +113,11 @@ export function createStationHistory(win,onRestore){
   // Mark the actual current entry, without adding an artificial tab visit.
   // A reload cannot restore private form contents. Consume its overlay entry
   // as a normal close so that the next Back still reaches the previous tab.
-  const reloadedDialog=Boolean(current.modal&&current.index>0);
-  if(!reloadedDialog)write({...current,modal:null});
+  const resumedDialog=current.modal&&options.restoreDialog?.(current.resume);
+  if(resumedDialog)dialogs.set(current.modal,resumedDialog);
+  const reloadedDialog=Boolean(current.modal&&current.index>0&&!resumedDialog);
+  if(resumedDialog)write(current);
+  else if(!reloadedDialog)write({...current,modal:null,resume:null});
   win.addEventListener('popstate',pop,true);
   win.addEventListener('pagehide',rememberScroll);
   win.addEventListener('scroll',trackScroll,{passive:true});
@@ -120,5 +130,6 @@ export function createStationHistory(win,onRestore){
     externals.clear();controllers.delete(win);
   }};
   controllers.set(win,controller);
+  if(resumedDialog)restore('reload');
   return controller;
 }

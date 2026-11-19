@@ -445,7 +445,7 @@ async function checkNavigation(page){
     const page=await context.newPage(), errors=[];
     await page.route('https://cdn.jsdelivr.net/**',route=>route.fulfill({contentType:'text/javascript',body:'/* Auth client is supplied by the config fixture. */'}));
     let legacyLocationPage=false,openingBaseline=false;
-    const previousFiles=new Map(['index.html','entry.mjs','member.mjs','member-main.mjs','load-station.mjs','station.html'].map(file=>[file,execFileSync('git',['show',previousRelease+':features/pajang/'+file],{cwd:path.join(feature,'../..'),maxBuffer:1e6})]));
+    const previousFiles=new Map();
     page.on('pageerror',err=>errors.push(err.message));
     await page.route(origin+'/**',async route=>{
       const pathname=new URL(route.request().url()).pathname;
@@ -473,6 +473,8 @@ async function checkNavigation(page){
     });
     await checkNavigation(page);
     if(process.env.PAJANG_NAVIGATION_ONLY==='1'){assert.deepEqual(errors,[]);return;}
+    for(const file of ['index.html','entry.mjs','member.mjs','member-main.mjs','load-station.mjs','station.html'])
+      previousFiles.set(file,execFileSync('git',['show',previousRelease+':features/pajang/'+file],{cwd:path.join(feature,'../..'),maxBuffer:1e6}));
     const flightDir=path.join(__dirname,'artifacts/pajang-discovery');
     await fs.mkdir(flightDir,{recursive:true});
     for(const [url,ready] of [['index.html?flight-check=new','#welcome #write'],['station.html?flight-check=member','#station #answers']]){
