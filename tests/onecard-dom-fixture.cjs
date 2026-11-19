@@ -88,7 +88,9 @@ async function screen({ server = null, actor = null, saved = null, animate = fal
     unlock: async () => true, play(kind) { sounds.push(kind); return true; }, stop() {}, dispose() {},
   }) };
   function load(file, names, namespace) {
-    const code = fs.readFileSync(path.join(ROOT, `games/onecard/${file}`), 'utf8').replace(/^export /gm, '');
+    const code = fs.readFileSync(path.join(ROOT, `games/onecard/${file}`), 'utf8')
+      .replace(/^import \{([^}]+)\} from '\.\/engine\.mjs[^']*';/gm, (_, imported) => `const {${imported}}=window.__rules;`)
+      .replace(/^export /gm, '');
     w.eval(`(function(){${code}\nwindow.${namespace}={${names}};})();`);
   }
   load('cards.mjs', 'createCard,cardLabel', '__cards');

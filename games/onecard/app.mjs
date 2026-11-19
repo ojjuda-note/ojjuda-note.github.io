@@ -1,14 +1,14 @@
-import {createGame,applyAction,projectState,chooseBotAction,cardInfo} from './engine.mjs?v=20261120-onecard4';
-import {createCard,cardLabel} from './cards.mjs?v=20261120-onecard4';
-import {createOnecardSound} from './sound.mjs?v=20261120-onecard4';
-import {createCardMotion} from './motion.mjs?v=20261120-onecard4';
-import {createOnlineClient} from './online.mjs?v=20261120-onecard4';
+import {createGame,applyAction,projectState,chooseBotAction,cardInfo} from './engine.mjs?v=20261120-onecard5';
+import {createCard,cardLabel} from './cards.mjs?v=20261120-onecard5';
+import {createOnecardSound} from './sound.mjs?v=20261120-onecard5';
+import {createCardMotion} from './motion.mjs?v=20261120-onecard5';
+import {createOnlineClient} from './online.mjs?v=20261120-onecard5';
 
 const $=id=>document.getElementById(id);
 const app=$('onecard-app'),hand=$('hand'),sheet=$('sheet'),sound=createOnecardSound();
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const motion=createCardMotion({layer:$('motion-layer'),createCard,sound,reduced:()=>reduced.matches});
-const SUITS={S:['♠','스페이드'],H:['♥','하트'],D:['♦','다이아몬드'],C:['♣','클로버']};
+const SUITS={S:['●','파랑'],H:['◆','빨강'],D:['▲','노랑'],C:['■','초록']};
 const STORAGE='ojjuda-onecard-solo-v1';
 const botNames=['하루','다온','보리','루아'];
 const tableSize=5,opponentCount=4;
@@ -98,7 +98,7 @@ function renderBoard(){
   renderControls();
 }
 function hint(){
-  if(!view)return '같은 무늬나 숫자를 내면 돼요.';
+  if(!view)return '같은 색이나 숫자를 내면 돼요.';
   if(me()?.active===false)return me()?.eliminatedReason==='too-many-cards'?'20장이 되어 이번 판은 관전해요.':'남은 사람들의 게임을 보고 있어요.';
   if(view.status==='finished')return '한 판 더, 가볍게 즐겨요.';
   if(animating)return '카드를 놓고 있어요.';
@@ -205,7 +205,7 @@ async function dispatch(command,actor=myId()){
   try{
     if(mode==='online'){const ok=await net.move(command);await presentation;return ok;}
     local=applyAction(local,actor,command);saveLocal();await present(projectState(local,'me'));return true;
-  }catch(error){showToast(({not_your_turn:'내 차례를 기다려 주세요.',invalid_card:'같은 무늬나 숫자를 골라 주세요.',invalid_move:'지금 낼 수 있는 카드를 골라 주세요.'})[error.code]||'지금 가능한 동작을 다시 골라 주세요.');return false;}
+  }catch(error){showToast(({not_your_turn:'내 차례를 기다려 주세요.',invalid_card:'같은 색이나 숫자를 골라 주세요.',invalid_move:'지금 낼 수 있는 카드를 골라 주세요.'})[error.code]||'지금 가능한 동작을 다시 골라 주세요.');return false;}
   finally{working=false;renderControls();scheduleBot();}
 }
 async function playCard(id){
@@ -214,7 +214,7 @@ async function playCard(id){
   await dispatch({type:'play',cardId:id,declare:armed});armed=false;
 }
 function chooseSuit(cardId){
-  pendingSuit=cardId;openSheet('무늬를 골라 주세요','suit');
+  pendingSuit=cardId;openSheet('색을 골라 주세요','suit');
   const choices=element('div',undefined,'suit-choices');
   for(const [suit,[mark,name]] of Object.entries(SUITS)){
     const b=button('',`suit-choice suit-${suit}`,()=>{const id=pendingSuit;pendingSuit=null;closeSheet();void dispatch({type:'play',cardId:id,suit,declare:armed});armed=false;});
@@ -254,11 +254,11 @@ sheet.addEventListener('cancel',()=>{pendingSuit=null;sheetKind='';setTimeout(()
 sheet.addEventListener('close',()=>{renderControls();scheduleBot();if(returnFocus?.isConnected&&!returnFocus.disabled)returnFocus.focus({preventScroll:true});});
 function showRules(){
   openSheet('원카드, 이렇게 해요','rules');
-  const lead=element('p','같은 무늬나 숫자를 한 장씩 내고, 손의 카드를 먼저 없애면 이겨요.','rules-lead');
+  const lead=element('p','같은 색이나 숫자를 한 장씩 내고, 손의 카드를 먼저 없애면 이겨요.','rules-lead');
   const list=element('div',undefined,'rules-list');
-  const rules=[['5인 플레이','항상 5명, 빈자리는 컴퓨터가 함께해요. 각자 7장으로 시작해요.'],['진행','시계방향으로 진행해요. 다음 판에는 자리를 무작위로 다시 정해요. 낼 카드가 없으면 1장 받고 넘겨요.'],['2 · A','다음 사람에게 2장 · 3장 공격'],['검정 · 빨강 조커','5장 · 7장 공격 + 원하는 무늬 선택'],['공격이 오면','공격 카드(2·A·조커)를 이어 내거나 쌓인 장수만큼 받아요.'],['7','원하는 무늬로 바꿔요.'],['J · K','다음 사람 건너뛰기 · 한 번 더'],['Q','같은 무늬나 숫자에 내는 일반 카드예요.'],['원카드!','2장일 때 먼저 누르거나, 1장이 된 직후 눌러요. 다음 사람이 행동할 때까지 안 누르면 2장을 받아요.'],['20장','손의 카드가 20장 이상이 되면 탈락해요.'],['멀티 차례','30초 안에 내거나 받아요. 시간이 지나면 자동으로 받아요.']];
+  const rules=[['5인 플레이','항상 5명, 빈자리는 컴퓨터가 함께해요. 각자 7장으로 시작해요.'],['내 차례','같은 색이나 같은 숫자·기호를 한 장 내세요. 낼 카드가 없으면 1장 받고 넘겨요.'],['숫자 카드','네 가지 색의 1~8 카드예요. 색 옆의 도형으로도 구별할 수 있어요.'],['+2 · +3','다음 사람이 표시된 수만큼 카드를 받아요.'],['전체 색 +5 · +7','어떤 색에도 내고, 다음 색을 골라요. 다음 사람은 5장 · 7장을 받아요.'],['공격이 오면','+ 카드를 이어 내거나 쌓인 장수만큼 받아요.'],['색 바꾸기','내고 나면 다음 색을 골라요.'],['건너뛰기 · 한 번 더','다음 사람을 건너뛰어요 · 내가 한 장 더 내요.'],['원카드!','2장일 때 먼저 누르거나, 1장이 된 직후 눌러요. 다음 사람이 행동할 때까지 안 누르면 2장을 받아요.'],['진행','항상 시계 방향이에요. 다음 판에는 자리를 다시 섞어요. 20장 이상이면 탈락해요.'],['온라인 차례','30초 안에 내거나 받아요. 시간이 지나면 자동으로 받아요.']];
   for(const [label,text] of rules){const row=element('div',undefined,'rule-row');row.append(element('strong',label),element('span',text));list.append(row);}
-  $('sheet-body').append(lead,list);$('sheet-body').append(element('p','동네마다 조금씩 다른 원카드, 이 테이블에서는 위 규칙으로 즐겨요.','small-note'));
+  $('sheet-body').append(lead,list);$('sheet-body').append(element('p','오쭈다 전용 원카드 54장으로 즐겨요.','small-note'));
 }
 for(const id of ['rules-button','entry-rules'])$(id).onclick=showRules;
 $('menu-button').onclick=()=>{

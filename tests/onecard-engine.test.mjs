@@ -34,7 +34,7 @@ test('54-card deck, valid setup and a visible neutral opening for 2–5 players'
   assert.equal(new Set(makeDeck()).size, 54);
   assert.equal(cardInfo('X-B').attack, 5);
   assert.equal(cardInfo('X-R').attack, 7);
-  assert.equal(cardInfo('H-10').label, '하트 10');
+  assert.equal(cardInfo('H-10').label, '빨강 8');
   assert.equal(cardInfo('not-a-card'), null);
   for (const count of [2, 3, 4, 5]) {
     const state = createGame({ players: players(count), seed: count });
@@ -50,6 +50,39 @@ test('54-card deck, valid setup and a visible neutral opening for 2–5 players'
   assert.throws(() => createGame({ players: [{ id: 'p0' }, { id: 'p0' }] }), { code: 'PLAYER_ID' });
   assert.throws(() => createGame({ players: players(2), handSize: 27 }), { code: 'HAND_SIZE' });
   assert.throws(() => createGame({ players: players(2), startIndex: 8 }), { code: 'START_INDEX' });
+});
+
+test('all legacy identities expose the dedicated four-color number/action deck', () => {
+  const colors = { S: ['blue', '파랑', '●'], H: ['red', '빨강', '◆'], D: ['yellow', '노랑', '▲'], C: ['green', '초록', '■'] };
+  const numbers = { Q: '1', 3: '2', 4: '3', 5: '4', 6: '5', 8: '6', 9: '7', 10: '8' };
+  const actions = { A: ['attack', '+3', 3], 2: ['attack', '+2', 2], 7: ['change', '색 바꾸기', 0], J: ['skip', '건너뛰기', 0], K: ['again', '한 번 더', 0] };
+  for (const [suit, [color, colorName, symbol]] of Object.entries(colors)) {
+    for (const [rank, displayValue] of Object.entries(numbers)) {
+      const card = cardInfo(`${suit}-${rank}`);
+      assert.equal(card.rank, rank); assert.equal(card.suit, suit);
+      assert.equal(card.color, color); assert.equal(card.colorName, colorName); assert.equal(card.symbol, symbol);
+      assert.equal(card.displayKind, 'number'); assert.equal(card.displayValue, displayValue);
+      assert.equal(card.label, `${colorName} ${displayValue}`); assert.equal(card.attack, 0);
+    }
+    for (const [rank, [kind, value, attack]] of Object.entries(actions)) {
+      const card = cardInfo(`${suit}-${rank}`);
+      assert.equal(card.rank, rank); assert.equal(card.displayKind, kind); assert.equal(card.displayValue, value);
+      assert.equal(card.label, `${colorName} ${value}`); assert.equal(card.attack, attack);
+    }
+  }
+  for (const [id, attack] of [['X-B', 5], ['X-R', 7]]) {
+    const card = cardInfo(id);
+    assert.equal(card.color, 'wild'); assert.equal(card.colorName, '전체색');
+    assert.equal(card.label, `전체색 +${attack}`); assert.equal(card.displayKind, 'attack');
+    assert.equal(card.displayValue, `+${attack}`); assert.equal(card.attack, attack); assert.equal(card.joker, true);
+  }
+  assert.ok(makeDeck().every(id => !/[♠♥♦♣]|스페이드|하트|다이아|클로버|조커|에이스|잭|퀸|킹/.test(cardInfo(id).label)));
+  const state = table([['S-7', 'H-8'], ['D-3', 'C-6']]);
+  assert.throws(() => move(state, 'S-7'), error => error.code === 'SUIT_REQUIRED' && error.message === '다음 색을 골라 주세요.');
+  assert.throws(() => move(state, 'H-8'), error => error.code === 'CARD_NOT_PLAYABLE' && error.message.includes('같은 색'));
+  const next = move(state, 'S-7', { suit: 'D' });
+  assert.equal(next.currentSuit, 'D'); assert.ok(next.lastEvents.some(event => event.type === 'play' && event.suit === 'D'));
+  conserved(next);
 });
 
 test('seeded and injected shuffles are reproducible; supplied random is checked', () => {

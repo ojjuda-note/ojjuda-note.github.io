@@ -233,6 +233,12 @@ async function scenario(name, fn) {
     await page.waitForFunction(() => !document.querySelector('#draw-button').disabled);
     assert.equal(await page.locator('#opponents .seat').count(), 4);
     assert.equal(await page.locator('#hand .hand-card').count(), 7);
+    const rendered = await page.locator('#hand .hand-card').evaluateAll(nodes => nodes.map(node => ({ id: node.dataset.card, color: node.dataset.color, kind: node.dataset.kind, label: node.getAttribute('aria-label'), value: node.querySelector('.card-center .card-value, .card-center .card-action-label')?.textContent })));
+    for (const card of rendered) {
+      const info = engine.cardInfo(card.id);
+      assert.equal(card.color, info.color); assert.equal(card.kind, info.displayKind); assert.equal(card.value, info.displayValue);
+      assert.ok(card.label.startsWith(info.label), 'visible dedicated cards retain their color/action accessible name');
+    }
     assert.equal((await stored(page)).players.length, 5);
     assert.equal((await stored(page)).players.filter(player => player.bot).length, 4);
     assert.equal((await stored(page)).revision, 0, 'blocked controls did not advance the game');
@@ -284,19 +290,22 @@ async function scenario(name, fn) {
     await page.context().close();
   });
 
-  await scenario('suit chooser cancels cleanly and applies the chosen suit', async () => {
+  await scenario('color chooser cancels cleanly and applies the chosen color', async () => {
     const page = await pageFor({ saved: setup([['D-9', 'S-7'], ['H-3', 'H-6']]) });
     await resume(page); await pressCard(page, 'S-7');
     await page.locator('#sheet[open]').waitFor();
+    assert.equal(await page.locator('#sheet-title').textContent(), '색을 골라 주세요');
     assert.equal(await page.locator('.suit-choice').count(), 4);
+    assert.deepEqual(await page.locator('.suit-choice').evaluateAll(nodes => nodes.map(node => node.getAttribute('aria-label'))), ['파랑', '빨강', '노랑', '초록']);
     assert.equal(await page.locator('#draw-button').isDisabled(), true);
     assert.equal(await page.locator('#hand .hand-card:not(:disabled)').count(), 0);
     await page.keyboard.press('Escape');
     await page.waitForFunction(() => !document.querySelector('#sheet').open);
     assert.equal((await stored(page)).revision, 0, 'cancel does not consume a card');
-    await pressCard(page, 'S-7'); await page.locator('.suit-H').click();
+    await pressCard(page, 'S-7'); await page.getByRole('button', { name: '빨강', exact: true }).click();
     await page.waitForFunction(key => JSON.parse(localStorage.getItem(key)).state.revision >= 1, STORAGE);
     assert.equal((await stored(page)).currentSuit, 'H');
+    assert.equal(await page.locator('#suit-indicator').textContent(), '◆ 빨강');
     assert.equal((await stored(page)).players[0].hand.includes('S-7'), false);
     await page.context().close();
   });

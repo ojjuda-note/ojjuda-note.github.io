@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const games = { onecard: ['♠', '원카드'], drinking: ['🍻', '술게임'], bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'], roulette: ['🎡', '룰렛'] };
+  const games = { onecard: ['▦', '원카드'], drinking: ['🍻', '술게임'], bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'], roulette: ['🎡', '룰렛'] };
   const drinkingKinds = new Set(['drinking','croc','liar','king','minority','mission','bottle','bomb','stopwatch','truth','initial','fingers','imagevote','updown']);
   const nativeGames = new Set(['onecard','bang','tank','tour','ttang','poker','roulette']);
   const drinkingLink = (shortcut = false) => `<a class="btn pri" data-drinking-hub${shortcut ? ' data-drinking-shortcut' : ''} href="/games/drinking/?mode=multi">술게임 입장</a>`;
@@ -70,7 +70,7 @@
     function card(room) {
       const [, name] = games[room.kind] || ['', '게임'];
       const artwork = /^(carom|pool)/.test(room.kind) ? 'carom4' : Object.hasOwn(games, room.kind) ? room.kind : 'tank';
-      const artworkUrl = room.kind === 'onecard' ? '/games/onecard/cover.svg' : `/assets/design/games/${artwork}.svg`;
+      const artworkUrl = room.kind === 'onecard' ? '/games/onecard/cover.svg?v=20261120-onecard5' : `/assets/design/games/${artwork}.svg`;
       const playing = room.status === 'playing';
       let action = room.is_member ? (playing ? '새 게임' : room.native ? '대기실 열기' : '대기 중') : playing ? '대전 중' : '참여';
       if (room.kind === 'onecard' && room.is_member && playing) action = '게임 이어하기';

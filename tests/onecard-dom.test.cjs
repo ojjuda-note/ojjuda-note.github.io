@@ -54,6 +54,21 @@ async function check(name, fn) {
 
 (async () => {
   engine = await import('../games/onecard/engine.mjs');
+  await check('all 54 legacy cards render dedicated colors, numbers and actions with matching accessible labels', async () => {
+    const s = await open();
+    for (const id of engine.makeDeck()) {
+      const info = engine.cardInfo(id), node = s.w.__cards.createCard(id, { interactive: true });
+      assert.equal(s.w.__cards.cardLabel(id), info.label);
+      assert.equal(node.getAttribute('aria-label'), info.label);
+      assert.equal(node.dataset.cardId, id); assert.equal(node.dataset.color, info.color); assert.equal(node.dataset.kind, info.displayKind);
+      const display = node.querySelector(['number', 'attack'].includes(info.displayKind) ? '.card-center .card-value' : '.card-center .card-action-label');
+      assert.ok(display, `${id} has a visible value or action label`); assert.equal(display.textContent, info.displayValue);
+      assert.ok(!/[♠♥♦♣]|JOKER|ACE|KING|QUEEN|스페이드|하트|다이아|클로버|조커|에이스|잭|퀸|킹/.test(node.textContent + node.getAttribute('aria-label')), `${id} has no playing-card terminology`);
+    }
+    const back = s.w.__cards.createCard('X-R', { faceDown: true });
+    assert.equal(back.dataset.cardId, undefined); assert.equal(back.dataset.color, undefined); assert.equal(back.dataset.kind, undefined);
+    assert.equal(back.getAttribute('aria-label'), '뒤집힌 카드');
+  });
   await check('real app creates a five-seat solo game and a shared overlapping deal', async () => {
     const s = await open({ animate: true, width: 360, height: 640 });
     assert.equal(s.find('#onecard-app').hidden, true);
@@ -124,18 +139,23 @@ async function check(name, fn) {
     assert.equal(s.saved.players[0].hand.length, 2);
   });
 
-  await check('suit modal cancels without playing and submits a chosen suit', async () => {
+  await check('color modal cancels without playing and submits a chosen color', async () => {
     const s = await open({ saved: rig([['D-9', 'S-7'], ['H-3', 'H-6']]) });
-    await resume(s); s.click('#hand [data-card="S-7"]');
+    await resume(s);
+    assert.match(s.find('#hand [data-card="S-7"]').getAttribute('aria-label'), /^파랑 색 바꾸기/);
+    s.click('#hand [data-card="S-7"]');
     assert.equal(s.find('#sheet').open, true);
+    assert.equal(s.find('#sheet-title').textContent, '색을 골라 주세요');
     assert.equal(s.all('.suit-choice').length, 4);
+    assert.deepEqual(s.all('.suit-choice').map(node => node.getAttribute('aria-label')), ['파랑', '빨강', '노랑', '초록']);
     assert.equal(s.find('#draw-button').disabled, true);
     s.escape(); await pause();
     assert.equal(s.saved.revision, 0);
     assert.equal(s.find('#sheet').open, false);
-    s.click('#hand [data-card="S-7"]'); s.click('.suit-H');
+    s.click('#hand [data-card="S-7"]'); s.click('.suit-choice[aria-label="빨강"]');
     await until(() => s.saved.revision >= 1, 'seven played');
     assert.equal(s.saved.currentSuit, 'H');
+    assert.equal(s.find('#suit-indicator').textContent, '◆ 빨강');
     assert.equal(s.saved.players[0].hand.includes('S-7'), false);
     assert.equal(s.find('#sheet').open, false);
   });
