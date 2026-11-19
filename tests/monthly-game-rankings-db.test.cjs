@@ -38,9 +38,15 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   const beforeCatalog=await catalogMeta();await db.exec(read(solitaireCatalog));await db.exec(read(solitaireCatalog));
   await db.exec(read(chachaCatalog));await db.exec(read(chachaCatalog));
   await installYutRankings(db);
+  // One Card's actual ranking upgrade also installs its private room ledger and
+  // native directory. Earlier fixtures already supply all three room providers;
+  // only the shared room-number allocator is missing from this catalog fixture.
+  await db.exec('create sequence ojjuda_arcade_internal.rooms_room_no_seq start 1001');
+  for(const name of fs.readdirSync(path.join(__dirname,'../supabase/migrations')).filter(name=>/_onecard_.*\.sql$/.test(name)).sort())
+   await db.exec(read(name));
   assert.deepEqual(await catalogMeta(),beforeCatalog,'catalog update preserves grants and execution settings');
   const updatedFunctions=await db.query(`select pg_get_functiondef(p.oid) definition from pg_proc p join pg_namespace n on n.oid=p.pronamespace
-   where n.nspname in('ojjuda_roulette_internal','ojjuda_ranking_internal','ojjuda_arcade_internal','ojjuda_guest_internal','ojjuda_archery_internal')`);
+   where n.nspname in('ojjuda_roulette_internal','ojjuda_ranking_internal','ojjuda_arcade_internal','ojjuda_guest_internal','ojjuda_archery_internal','ojjuda_onecard_internal')`);
   for(const {definition}of updatedFunctions.rows){
    const patched=definition.replace(/\b(?:clock_timestamp|statement_timestamp|now)\(\)/g,'fixture.clock()');
    if(patched!==definition)await db.exec(patched);
@@ -56,7 +62,8 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   const submit=(token,score,id=randomUUID(),game='runner')=>value('select public.submit_guest_game_score($1,$2,$3,$4) value',[game,score,token,id]);
   const guest=(token,period='month',game='runner')=>value('select ojjuda_guest_internal.ranking($1,$2,$3) value',[game,period,token]);
   const catalog=await value('select ojjuda_ranking_internal.catalog() value');
-  assert.equal(catalog.length,25);assert.equal(new Set(catalog).size,25);assert.ok(catalog.includes('roulette'));assert.ok(catalog.includes('archery'));assert.ok(catalog.includes('chacha_rush'));
+  assert.equal(catalog.length,26);assert.equal(new Set(catalog).size,26);assert.ok(catalog.includes('roulette'));assert.ok(catalog.includes('archery'));assert.ok(catalog.includes('chacha_rush'));
+  assert.equal(catalog.filter(game=>game==='onecard').length,1,'the shipped One Card migration registers one ranking category');
   assert.ok(catalog.includes('screw_box')&&catalog.includes('screw_flat')&&catalog.includes('billiards'));
   assert.ok(!catalog.includes('carom4')&&!catalog.includes('pool8'));
   const world=fs.readFileSync(path.join(__dirname,'../world.html'),'utf8');
@@ -116,7 +123,7 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   // Seed every launched category, preserving all twenty original criterion cases.
   await db.exec(`truncate public.game_scores,public.board_games,ojjuda_game_internal.practice_results,
    ojjuda_guest_internal.scores,ojjuda_guest_internal.round_records,ojjuda_guest_internal.spot_clears,
-   ojjuda_photo_internal.game_clears,ojjuda_bang_internal.results,
+   ojjuda_photo_internal.game_clears,ojjuda_bang_internal.results,ojjuda_onecard_internal.results,
    ojjuda_ranking_internal.guest_peaks,ojjuda_ranking_internal.picture_clears;`);
   await clock('2026-10-31T12:00:00Z');
   const score=(id,game,amount,time='2026-10-15T00:00:00Z')=>db.query('insert into game_scores values($1,$2,$3,$4)',[id,game,amount,time]);
@@ -147,8 +154,10 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   }
   await round(a,'matgo',1000,'2026-10-15T00:01:00Z');await round(b,'matgo',600,'2026-10-15T00:01:00Z');await round(b,'matgo',600,'2026-10-15T00:02:00Z');
   await round(a,'poker',0,'2026-10-15T00:01:00Z');await round(b,'poker',101,'2026-10-15T00:01:00Z');await round(minor,'poker',9999,'2026-10-15T00:01:00Z');
-  for(const [id,won,time] of [[a,true,'01'],[a,true,'02'],[a,false,'03'],[b,true,'01'],[b,true,'02']])
+  for(const [id,won,time] of [[a,true,'01'],[a,true,'02'],[a,false,'03'],[b,true,'01'],[b,true,'02']]){
    await db.query('insert into ojjuda_bang_internal.results values($1,$2,$3,$4)',[randomUUID(),id,won,`2026-10-15T00:${time}:00Z`]);
+   await db.query('insert into ojjuda_onecard_internal.results values($1,1,$2,$3,$4,$5)',[randomUUID(),id,won,'multiplayer',`2026-10-15T00:${time}:00Z`]);
+  }
   for(const game of ['spot','photo_ttang'])for(const id of [a,b])for(let i=1;i<=2;i++)
    await db.query("insert into ojjuda_ranking_internal.picture_clears values($1,'member:'||$2,$2::uuid,null,$3,'2026-10-01',$4)",[game,id,String(i),`2026-10-15T0${id===a?1:2}:0${i}:00Z`]);
   const rouletteRoom=randomUUID();let rouletteRound=0;
@@ -185,7 +194,7 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   assert.equal(leaders.janggi.difficulty,'online','remaining human seat retains its result');
   assert.equal(leaders.billiards.variant,'pool8');assert.equal(leaders.billiards.difficulty,'online');
   assert.equal(leaders.tank.opponents,5);assert.equal(leaders.tank.score,1);
-  for(const game of ['tour','ttang','bang']){
+  for(const game of ['onecard','tour','ttang','bang']){
    assert.equal(leaders[game].nick,'Alpha');assert.equal(leaders[game].score,2,'a later loss preserves the monthly best in '+game);
   }
   assert.equal(leaders.matgo.nick,'Alpha');assert.equal(leaders.matgo.score,1000);assert.equal(leaders.poker.score,101);
@@ -275,6 +284,6 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   const sql=read(migrationName);
   assert.ok(!/insert\s+into\s+ojjuda_rewards_internal|capture_month_end\(|update\s+.*wallets/i.test(sql));
   assert.match(sql,/'0 16 \$ \* \*'/);assert.match(sql,/'5 \* \* \* \*'/);
-  console.log('PASS: exact 01:00 KST and year boundaries; unchanged daily/coupon buckets; monthly guest receipts and picture clears; all 25 shipped criteria, Solitaire difficulty/time, archery cleared-stage/score and roulette paid-prize/month-boundary archives, and per-seat takeover exclusions; fixed immutable/empty archives, retries and concurrent requests; current/history parity; access controls and zero financial side effects.');
+  console.log('PASS: exact 01:00 KST and year boundaries; unchanged daily/coupon buckets; monthly guest receipts and picture clears; all 26 shipped criteria including One Card best streaks, Solitaire difficulty/time, archery cleared-stage/score and roulette paid-prize/month-boundary archives, and per-seat takeover exclusions; fixed immutable/empty archives, retries and concurrent requests; current/history parity; access controls and zero financial side effects.');
  } finally {await db.close();}
 })().catch(error=>{console.error(error.message,error.where||'',error.stack);process.exitCode=1;});

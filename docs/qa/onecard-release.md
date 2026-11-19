@@ -80,6 +80,13 @@ node scripts/check-source-layout.mjs
 
 이전 2.1.0의 캠핑장·손패 조작·바닥 카드 수정은 실제 Chromium 검사 [44612703395](https://github.com/ojjuda-note/ojjuda-note.github.io/actions/runs/44612703395)에서 18개 시나리오를 통과했다. 이는 2.2.0의 검증 완료 기록을 대신하지 않는다. 이번 방향 바꾸기·연승·3D 메뉴·사용법은 위 항목을 새로 검수한다. 실제 Chromium은 `.github/workflows/onecard.yml`에서 실행하며, 실행 기록과 화면 PNG·측정 JSON은 해당 PR의 `One Card rules, multiplayer and screen` 검사 및 `onecard-screen-review` 산출물로 확인한다. JSDOM 결과를 실제 화면이나 프레임 측정으로 간주하지 않는다. 프레임 수치는 측정 환경의 결과이며 모든 기기의 성능을 보장하지 않는다.
 
+## 2.2.0 실행 확인
+
+- [원카드 CI 44618855812](https://github.com/ojjuda-note/ojjuda-note.github.io/actions/runs/44618855812), 커밋 `1b434a81b16f83859968dd44c5d16c70973091b3`: 엔진·클라이언트 28개와 240판·23,312턴, 실제 SQL/Edge·연승 DB, 앱 DOM 18개, 공통 순위·사용법·버전 20개, 실제 Chromium 20개 통과.
+- 배분 36장의 실제 브라우저 타임라인에서 프레임 간격 중앙값은 16.7ms, 최댓값은 18.3ms였다. 해당 CI 환경의 측정치다.
+- 모바일·데스크톱 연승 결과, 방향 바꾸기 카드, 5인 화면 캡처를 확인했다. 연승 안내·결과 버튼·손패가 겹치지 않는다.
+- 공통 월간 순위 DB 검사의 현재 출시 카탈로그에도 실제 원카드 마이그레이션을 설치하도록 보완한다. 기존 게임의 순위·기간·공개 범위 검증은 유지한다.
+
 ## 배포 경로
 
 공개 주소 `/games/onecard/index.html`, 짧은 주소 `/onecard/`. 기존 GitHub Pages 자동 배포와 Supabase `onecard` 함수를 사용한다. 초기 출시 PR은 #1377이며 이번 변경은 별도 PR로 검수·배포한다.
