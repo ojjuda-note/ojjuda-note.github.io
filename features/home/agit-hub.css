@@ -311,80 +311,74 @@ body:has(.agit-hub) .bottomnav button.on{color:var(--accent-ink,#245a48)}
 .agit-park-banner {
   --park-serif:"Nanum Myeongjo","Noto Serif CJK KR","AppleMyungjo","Batang",Georgia,serif;
   position:relative; isolation:isolate; overflow:hidden; grid-column:1/-1;
-  display:block; margin-top:18px; border:1px solid #bfdef2; border-radius:20px;
+  display:flex; align-items:center; min-height:124px; margin-top:14px; border:1px solid #bfdef2; border-radius:18px;
   background:linear-gradient(110deg,#f0faff 12%,#d9f0ff 59%,#bfe4fa);
   color:#244760; text-align:left; text-decoration:none;
 }
 .agit-park-art {
-  position:absolute; z-index:-1; right:-2%; bottom:4%; width:52%; height:88%;
+  position:absolute; z-index:-1; right:0; bottom:0; width:40%; height:100%;
   object-fit:contain; object-position:right bottom; pointer-events:none;
 }
 .agit-park-copy {
-  display:grid; justify-items:start; width:66%;
-  padding:clamp(19px,2.4vw,30px) clamp(18px,3.5vw,42px); word-break:keep-all;
+  display:grid; justify-items:start; align-content:center; gap:5px; width:68%;
+  padding:10px clamp(16px,2.4vw,28px); word-break:keep-all;
   background:linear-gradient(90deg,#f0faff 36%,#e8f7ffb8 75%,transparent);
 }
-.agit-park-brand {display:flex; align-items:center; gap:7px; color:#226992}
-.agit-park-brand svg {width:23px; height:25px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
-.agit-park-brand b {font:700 21px/1.2 var(--park-serif); letter-spacing:-.07em}
-.agit-park-brand small {margin-left:4px; padding-left:10px; border-left:1px solid #a9cce3; color:#3e6d89; font-size:12px}
+.agit-park-brand {display:flex; align-items:center; gap:6px; color:#226992; white-space:nowrap}
+.agit-park-brand svg {flex:none; width:18px; height:20px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.agit-park-brand b {font:700 17px/1.2 var(--park-serif); letter-spacing:-.07em}
+.agit-park-brand small {margin-left:2px; padding-left:8px; border-left:1px solid #a9cce3; color:#3e6d89; font-size:11px}
 .agit-park-title {
-  margin:12px 0 5px; font:650 clamp(24px,3vw,37px)/1.35 var(--park-serif);
+  margin:0; font:650 clamp(17px,2.1vw,23px)/1.25 var(--park-serif);
   letter-spacing:-.065em; color:#244760;
 }
-.agit-park-desc {max-width:25ch; color:#486b83; font-size:clamp(13px,1.5vw,15px); line-height:1.6; text-wrap:pretty}
 .agit-park-open {
-  display:inline-flex; align-items:center; gap:12px; margin-top:15px; padding:8px 15px;
-  border-radius:24px; background:#1b74b3; color:#fff; font-size:13px; line-height:1.5; font-weight:700;
+  display:inline-flex; align-items:center; gap:9px; padding:5px 12px;
+  border-radius:24px; background:#1b74b3; color:#fff; font-size:12px; line-height:1.35; font-weight:700;
 }
 .agit-park-banner:is(:hover,:focus-visible) .agit-park-open {background:#125d96}
 .agit-hub .agit-park-banner:focus-visible {outline-color:#1679bd}
 @media(max-width:540px) {
-  .agit-park-copy {width:75%; padding-right:0}
-  .agit-park-art {right:-11%; bottom:6%; width:53%; height:75%}
-  .agit-park-brand small {font-size:11px}
-  .agit-park-title {font-size:clamp(22px,5.6vw,28px)}
-  .agit-park-desc {max-width:19ch}
+  .agit-park-copy {width:72%; padding-right:0}
+  .agit-park-art {right:-5%; width:42%}
 }
 
 .agit-pajang-banner {
   --pajang-serif:"Nanum Myeongjo","Noto Serif CJK KR","AppleMyungjo","Batang",Georgia,serif;
   position:relative; isolation:isolate; overflow:hidden; grid-column:1/-1;
-  display:block; margin-top:18px; border:1px solid #e3cfc3; border-radius:20px;
+  display:flex; align-items:center; min-height:124px; margin-top:14px; border:1px solid #e3cfc3; border-radius:18px;
   color:#362a29; text-align:left; text-decoration:none;
   background:linear-gradient(110deg,#fff8ed,#f7e6dc 58%,#efd2c3);
 }
 .agit-pajang-letter {
-  position:absolute; z-index:-1; inset:0 0 0 auto; width:52%; height:100%;
+  position:absolute; z-index:-1; inset:0 0 0 auto; width:40%; height:100%;
   object-fit:cover; object-position:66% 53%;
   mask-image:linear-gradient(90deg,transparent,#000 30%);
 }
 .agit-pajang-copy {
-  display:grid; justify-items:start; width:65%;
-  padding:clamp(19px,2.4vw,30px) clamp(18px,3.5vw,42px); word-break:keep-all;
+  display:grid; justify-items:start; align-content:center; gap:5px; width:68%;
+  padding:10px clamp(16px,2.4vw,28px); word-break:keep-all;
 }
-.agit-pajang-brand {display:flex; align-items:center; gap:7px; color:#773244}
+.agit-pajang-brand {display:flex; align-items:center; gap:6px; color:#773244; white-space:nowrap}
 .agit-pajang-brand>span {
-  display:grid; place-items:center; width:23px; height:23px; transform:rotate(-6deg);
-  border:1px solid #decabb; border-radius:7px; background:#f4e3d9; color:#963e51; font:15px/1 serif;
+  display:grid; place-items:center; flex:none; width:19px; height:19px; transform:rotate(-6deg);
+  border:1px solid #decabb; border-radius:6px; background:#f4e3d9; color:#963e51; font:13px/1 serif;
 }
-.agit-pajang-brand b {font:700 21px/1.2 var(--pajang-serif); letter-spacing:-.07em}
-.agit-pajang-brand small {margin-left:4px; padding-left:10px; border-left:1px solid #cbb1a6; color:#725951; font-size:12px}
+.agit-pajang-brand b {font:700 17px/1.2 var(--pajang-serif); letter-spacing:-.07em}
+.agit-pajang-brand small {margin-left:2px; padding-left:8px; border-left:1px solid #cbb1a6; color:#725951; font-size:11px}
 .agit-pajang-title {
-  margin:12px 0 5px; font:650 clamp(24px,3vw,37px)/1.35 var(--pajang-serif);
+  margin:0; font:650 clamp(17px,2.1vw,23px)/1.25 var(--pajang-serif);
   letter-spacing:-.065em; text-wrap:balance; color:#392a29;
 }
-.agit-pajang-desc {color:#654f4b; font-size:clamp(13px,1.5vw,15px); line-height:1.6; text-wrap:pretty}
 .agit-pajang-open {
-  display:inline-flex; align-items:center; gap:12px; margin-top:15px; padding:8px 15px;
-  border-radius:24px; background:#963e51; color:#fffaf5; font-size:13px; line-height:1.5; font-weight:700;
+  display:inline-flex; align-items:center; gap:9px; padding:5px 12px;
+  border-radius:24px; background:#963e51; color:#fffaf5; font-size:12px; line-height:1.35; font-weight:700;
 }
 .agit-pajang-banner:is(:hover,:focus-visible) .agit-pajang-open {background:#773244}
 .agit-pajang-banner+.agit-reading-grid {margin-top:14px}
 @media(max-width:540px) {
-  .agit-pajang-copy {width:70%; padding-right:0}
-  .agit-pajang-letter {width:49%; object-position:65% center; mask-image:linear-gradient(90deg,transparent,#000 65%)}
-  .agit-pajang-brand small {font-size:11px}
+  .agit-pajang-copy {width:72%; padding-right:0}
+  .agit-pajang-letter {width:42%; object-position:65% center; mask-image:linear-gradient(90deg,transparent,#000 45%)}
 }
 .agit-pajang-dialog {position:fixed;box-sizing:border-box;padding:0;margin:auto;border:1px solid #ded4e0;border-radius:22px;width:min(570px,calc(100vw - 24px));max-width:none;height:min(760px,91dvh);max-height:94dvh;overflow:hidden;background:#fbf8f4;color:#362b3e;box-shadow:0 18px 72px #23182d38}
 .agit-pajang-dialog::backdrop {background:#241c32a3}
