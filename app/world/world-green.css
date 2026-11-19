@@ -1,108 +1,72 @@
-/* Agit and Arcade keep their green identity while calendar artwork changes.
-   Park has its own palette, including when opened inside the World shell. */
-:root[data-world-brand="green"]:not(.world-park-active) {
-  --bg: #f3f8f4;
-  --surface: #fff;
-  --surface-2: #edf5ef;
-  --ink: #203c2f;
-  --ink-2: #607468;
-  --line: #d8e7dc;
-  --accent: #245a48;
-  --accent-ink: #245a48;
-  --accent-soft: #e5f1e8;
-  --accent-hover: #1d4c3b;
-  --on-accent: #fff;
-  --hero-bg: #e4f1e6;
-  --paper: var(--surface);
-  --muted: var(--ink-2);
-  --pink: var(--accent);
-  --pink-ink: var(--accent-ink);
-  --pink-hover: var(--accent-hover);
-}
-
-:root[data-world-brand="green"][data-theme="dark"]:not(.world-park-active) {
-  --bg: #15231c;
-  --surface: #20342a;
-  --surface-2: #294135;
-  --ink: #edf7ef;
-  --ink-2: #b4cabc;
-  --line: #3e5e4b;
-  --accent: #a4d5b4;
-  --accent-ink: #bde7c8;
-  --accent-soft: #304e3b;
-  --accent-hover: #b9e3c5;
-  --on-accent: #163422;
-  --hero-bg: #294333;
-}
-
+/* Shared controls inherit the automatic seasonal, holiday and weather palette. */
 /* Shared controls follow the section palette, including their active state. */
-[data-world-brand="green"] .arcade-home .arcade-room-card.mine {
+[data-world-theme] .arcade-home .arcade-room-card.mine {
   border-color: var(--accent);
   background: var(--accent-soft);
 }
-[data-world-brand="green"] .arcade-home .board-stage-select {
+[data-world-theme] .arcade-home .board-stage-select {
   border-color: var(--line);
   background: var(--surface);
   color: var(--ink);
 }
 
 /* The Agit account entrance uses the same colors as the main shell. */
-[data-world-brand="green"] .world-portal :is(.site-header, .dialog-shell) {
+[data-world-theme] .world-portal :is(.site-header, .dialog-shell) {
   background: var(--surface);
   color: var(--ink);
 }
-[data-world-brand="green"] .world-portal :is(.account-badge, .dialog-close, .auth-tabs, .dialog-demo-note, .guest-browse) {
+[data-world-theme] .world-portal :is(.account-badge, .dialog-close, .auth-tabs, .dialog-demo-note, .guest-browse) {
   border-color: var(--line);
   background: var(--surface-2);
   color: var(--ink-2);
 }
-[data-world-brand="green"] .world-portal .auth-tabs button {
+[data-world-theme] .world-portal .auth-tabs button {
   color: var(--ink-2);
 }
-[data-world-brand="green"] .world-portal :is(.text-button, .secondary-dialog-button) {
+[data-world-theme] .world-portal :is(.text-button, .secondary-dialog-button) {
   color: var(--ink-2);
 }
-[data-world-brand="green"] .world-portal :is(.text-button, .secondary-dialog-button):hover {
+[data-world-theme] .world-portal :is(.text-button, .secondary-dialog-button):hover {
   color: var(--accent-ink);
 }
-:root[data-world-brand="green"][data-theme="dark"] .world-portal .auth-feedback {
+:root[data-world-theme][data-theme="dark"] .world-portal .auth-feedback {
   color: #f2a5ad;
 }
-[data-world-brand="green"] .world-portal .auth-tabs button[aria-selected="true"] {
+[data-world-theme] .world-portal .auth-tabs button[aria-selected="true"] {
   background: var(--accent-soft);
   color: var(--accent-ink);
 }
-[data-world-brand="green"] .world-portal .field :is(input, select) {
+[data-world-theme] .world-portal .field :is(input, select) {
   border-color: var(--line);
   background: var(--surface);
   color: var(--ink);
 }
-[data-world-brand="green"] .world-portal .field :is(input, select):focus {
+[data-world-theme] .world-portal .field :is(input, select):focus {
   border-color: var(--accent);
   outline-color: var(--accent-ink);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
-[data-world-brand="green"] .world-portal :is(.identity-hint, .member-identity-summary dt) {
+[data-world-theme] .world-portal :is(.identity-hint, .member-identity-summary dt) {
   color: var(--ink-2);
 }
-[data-world-brand="green"] .world-portal .identity-result:not([data-invalid="true"]) {
+[data-world-theme] .world-portal .identity-result:not([data-invalid="true"]) {
   color: var(--ink);
 }
-:root[data-world-brand="green"][data-theme="dark"] .world-portal .identity-result[data-invalid="true"] {
+:root[data-world-theme][data-theme="dark"] .world-portal .identity-result[data-invalid="true"] {
   color: #f2a5ad;
 }
-[data-world-brand="green"] .world-portal .field input::placeholder {
+[data-world-theme] .world-portal .field input::placeholder {
   color: var(--ink-2);
 }
-[data-world-brand="green"] .world-portal :is(.pill-button, .primary-button, .submit-button):not(.guest-browse) {
+[data-world-theme] .world-portal :is(.pill-button, .primary-button, .submit-button):not(.guest-browse) {
   border-color: var(--accent);
   background: var(--accent) !important;
   color: var(--on-accent) !important;
 }
-[data-world-brand="green"] .world-portal :is(.pill-button, .primary-button, .submit-button):not(.guest-browse):hover {
+[data-world-theme] .world-portal :is(.pill-button, .primary-button, .submit-button):not(.guest-browse):hover {
   background: var(--accent-hover) !important;
 }
-[data-world-brand="green"] .world-portal :is(.guest-browse, .dialog-close):hover {
+[data-world-theme] .world-portal :is(.guest-browse, .dialog-close):hover {
   background: var(--accent-soft);
   color: var(--accent-ink);
 }

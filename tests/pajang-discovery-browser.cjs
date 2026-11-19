@@ -4,6 +4,8 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const {chromium} = require('playwright');
 const {execFileSync} = require('node:child_process');
+const {calendarCases,selectCalendarDate,palette,distinctPalettes}=require('./theme-browser-helpers.cjs');
+const themeOnly=process.env.PAJANG_THEME_ONLY==='1';
 const previousRelease='71785aabf407ca239a27b4811e252a962a725717';
 const startupDelayMs=180;
 
@@ -389,12 +391,14 @@ function clientFixture(hash) {
     const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,locale:'ko-KR',geolocation:{latitude:37.5665,longitude:126.978,accuracy:30},permissions:['geolocation']});
     const page=await context.newPage(), errors=[];
     await page.route('https://cdn.jsdelivr.net/**',route=>route.fulfill({contentType:'text/javascript',body:'/* Auth client is supplied by the config fixture. */'}));
+    await page.route('**/functions/v1/theme-weather**',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({kind:null,expiresAt:Date.now()+600000})}));
     let legacyLocationPage=false,openingBaseline=false;
-    const previousFiles=new Map(['index.html','entry.mjs','member.mjs','member-main.mjs','load-station.mjs','station.html'].map(file=>[file,execFileSync('git',['show',previousRelease+':features/pajang/'+file],{cwd:path.join(feature,'../..'),maxBuffer:1e6})]));
+    const previousFiles=new Map((themeOnly?[]:['index.html','entry.mjs','member.mjs','member-main.mjs','load-station.mjs','station.html']).map(file=>[file,execFileSync('git',['show',previousRelease+':features/pajang/'+file],{cwd:path.join(feature,'../..'),maxBuffer:1e6})]));
     page.on('pageerror',err=>errors.push(err.message));
     await page.route(origin+'/**',async route=>{
       const pathname=new URL(route.request().url()).pathname;
       if(pathname==='/config.js')return route.fulfill({contentType:'text/javascript',body:clientFixture(hash)});
+      if(['/app/world/world-themes.css','/app/world/world-themes.js','/app/world/world-weather.js'].includes(pathname))return route.fulfill({contentType:pathname.endsWith('.css')?'text/css':'text/javascript',body:await fs.readFile(path.join(feature,'../..',pathname))});
       if(pathname==='/features/home/agit-hub.css')return route.fulfill({contentType:'text/css',body:await fs.readFile(path.join(feature,'../home/agit-hub.css'))});
       if(pathname==='/features/account/settings-list.css')return route.fulfill({contentType:'text/css',body:await fs.readFile(path.join(feature,'../account/settings-list.css'))});
       if(pathname==='/note/support.css')return route.fulfill({contentType:'text/css',body:await fs.readFile(path.join(feature,'../../note/support.css'))});
@@ -415,6 +419,52 @@ function clientFixture(hash) {
       if(legacyLocationPage&&file.endsWith('.html'))body=body.toString().replace(/<script[^>]*src="\/shared\/location\/location\.js[^>]*><\/script>/,'');
       return route.fulfill({contentType:mime,body});
     });
+    // Reuse the real entry, protected member program and their exact stylesheet order.
+    const views=[
+      {name:'entry',url:'index.html?flight-check=new',selectors:{action:'#write',feature:'.entry-intro'},changing:['nodes.action.background','nodes.feature.background']},
+      {name:'member',url:'station.html',selectors:{action:'.dialog .primary',feature:'.letter-hero',menu:'.station-nav a[aria-current=page]'},changing:['nodes.action.background','nodes.feature.background','nodes.menu.background']},
+      {name:'radar',url:'station.html?tab=radar',selectors:{feature:'.radar-scope',menu:'.station-nav a[aria-current=page]'},changing:['nodes.feature.image','nodes.menu.background']},
+      {name:'settings',url:'station.html?tab=profile',selectors:{feature:'.account-agit',list:'.account-settings .ojjuda-settings-list'},changing:['nodes.feature.background']}
+    ];
+    await page.emulateMedia({reducedMotion:'reduce'});
+    for(const view of views){
+      await page.goto(origin+project+view.url,{waitUntil:'domcontentloaded'});
+      if(view.name==='entry'){
+        await page.waitForFunction(()=>typeof window.finishFlight==='function');
+        await page.evaluate(()=>window.finishFlight());await page.locator('#write').click();
+        await page.locator('#mine').fill('테마가 바뀌어도 남아야 하는 답변');
+      }else{
+        await page.locator('.station-nav').waitFor();
+        if(view.name==='member'){
+          await page.getByRole('button',{name:'내 답변 수정하기',exact:true}).click();
+          await page.locator('.dialog #editor').fill('테마가 바뀌어도 남아야 하는 답변');
+        }
+      }
+      await page.mouse.move(0,0);await page.evaluate(()=>window.OjjudaWeather?.clear());
+      for(const appearance of ['light','dark']){
+        await page.emulateMedia({colorScheme:appearance});const samples=[];
+        for(const [theme,date] of calendarCases){
+          await selectCalendarDate(page,date);const colors=await palette(page,view.selectors);
+          assert.equal(colors.theme,theme);assert.equal(colors.body,colors.bg,view.name+' uses the shared background');
+          if(view.selectors.action)assert.equal(colors.nodes.action.background,colors.accent,view.name+' primary action follows '+theme);
+          samples.push(colors);
+        }
+        distinctPalettes(samples,'Pajang '+view.name+' '+appearance,['bg','accent',...view.changing]);
+        const weather=[];
+        for(const kind of [null,'rain','snow']){
+          await selectCalendarDate(page,'2026-10-15',kind);const colors=await palette(page,view.selectors);
+          assert.equal(colors.weather,kind||'');weather.push(colors);
+        }
+        assert.equal(new Set(weather.map(colors=>colors.bg)).size,3,view.name+' responds to clear, rain and snow');
+        await selectCalendarDate(page,'2026-12-25','snow');assert.equal((await palette(page)).weather,'','holiday palette takes priority');
+      }
+      if(view.name==='entry')assert.equal(await page.locator('#mine').inputValue(),'테마가 바뀌어도 남아야 하는 답변');
+      if(view.name==='member')assert.equal(await page.locator('.dialog #editor').inputValue(),'테마가 바뀌어도 남아야 하는 답변');
+    }
+    assert.deepEqual(errors,[]);
+    console.log('PASS automatic Pajang entry/member/radar/settings palettes, system appearance, rain/snow, holiday priority and draft preservation');
+    if(themeOnly)return;
+    await page.emulateMedia({colorScheme:'light',reducedMotion:'no-preference'});
     const flightDir=path.join(__dirname,'artifacts/pajang-discovery');
     await fs.mkdir(flightDir,{recursive:true});
     for(const [url,ready] of [['index.html?flight-check=new','#welcome #write'],['station.html?flight-check=member','#station #answers']]){

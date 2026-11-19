@@ -71,6 +71,18 @@ async function measurePosition({signal,onProgress,fresh=false,preciseTimeout=200
 const preferences=new Map(),listeners=new Map(),active=new Map();
 let host=root;
 try{if(root.top&&root.location?.origin&&root.top.location.origin===root.location.origin)host=root.top;}catch{}
+// Weather only reuses a location that a feature has already obtained with consent.
+// Never persist the weather cell or include account identifiers in this event.
+function notifyWeather(position){
+  const target=typeof host.dispatchEvent==='function'?host:root;
+  if(typeof target.dispatchEvent!=='function'||typeof target.CustomEvent!=='function')return;
+  const detail=position&&freshPosition(position)?{
+    latitude:Math.round(position.latitude*10)/10,
+    longitude:Math.round(position.longitude*10)/10,
+    capturedAt:position.capturedAt
+  }:null;
+  target.dispatchEvent(new target.CustomEvent('ojjuda:weather-location',{detail}));
+}
 const memory=host.__ojjudaLocationMemory||(host.__ojjudaLocationMemory=new Map());
 const signalKey='ojjuda:location-choice',cachePrefix='ojjuda:location-cell:';
 let channel;
@@ -87,6 +99,7 @@ function acceptPreference(accountId,value,broadcast=false){
   const next={enabled:value.enabled,version:value.version,checkedAt:Date.now()};
   preferences.set(accountId,next);
   const changed=!previous||previous.version!==next.version||previous.enabled!==next.enabled;
+  if(!next.enabled)notifyWeather(null);
   if(changed&&!next.enabled){
     clearPosition(accountId);
     for(const controller of active.get(accountId)||[])controller.abort(failure('disabled'));
@@ -104,8 +117,10 @@ if(channel)channel.onmessage=event=>received(event.data);
 root.addEventListener?.('storage',event=>{if(event.key===signalKey){try{received(JSON.parse(event.newValue));}catch{}}});
 async function verifyAccount(db,accountId){
   const {data,error}=await db.auth.getSession();
-  if(error||data.session?.user?.id!==accountId||data.session?.user?.is_anonymous)
+  if(error||data.session?.user?.id!==accountId||data.session?.user?.is_anonymous){
+    notifyWeather(null);
     throw Error('회원 정보를 다시 확인해 주세요.');
+  }
 }
 async function preference(db,accountId,{refresh=false,legacyDisabled=false}={}){
   if(!accountId)return {enabled:true,version:0};
@@ -162,7 +177,7 @@ function rememberPosition(accountId,position){
 }
 async function cachedPosition(accountId,coarseCache){
   if(!accountId)return null;
-  try{if((await navigator.permissions?.query({name:'geolocation'}))?.state!=='granted'){clearPosition(accountId);return null;}}catch{return null;}
+  try{if((await navigator.permissions?.query({name:'geolocation'}))?.state!=='granted'){clearPosition(accountId);notifyWeather(null);return null;}}catch{return null;}
   let value=memory.get(accountId);
   if(!freshPosition(value)&&coarseCache){try{value=JSON.parse(sessionStorage.getItem(cachePrefix+accountId));}catch{}}
   if(freshPosition(value))return {...value};
@@ -180,6 +195,7 @@ async function readPosition({db,accountId,allowDisabled=false,coarseCache=false,
       if(db&&accountId)await verifyAccount(db,accountId);
       if(options.signal?.aborted)throw options.signal.reason;
       if(!allowDisabled&&preferences.get(accountId)?.enabled===false)throw failure('disabled');
+      if(preferences.get(accountId)?.enabled!==false)notifyWeather(cached);
       return cached;
     }
   }
@@ -193,10 +209,16 @@ async function readPosition({db,accountId,allowDisabled=false,coarseCache=false,
     const position=await measurePosition({...options,signal:controller.signal});
     if(db&&accountId)await verifyAccount(db,accountId);
     if(controller.signal.aborted)throw controller.signal.reason;
-    if(cache)rememberPosition(accountId,position);return position;
+    if(cache)rememberPosition(accountId,position);
+    if(preferences.get(accountId)?.enabled!==false)notifyWeather(position);
+    return position;
+  }catch(error){
+    if(error?.code==='denied'||error?.code==='disabled')notifyWeather(null);
+    throw error;
   }finally{controller.abort();active.get(accountId).delete(controller);options.signal?.removeEventListener('abort',cancel);}
 }
 function forget(accountId){
+  notifyWeather(null);
   clearPosition(accountId);preferences.delete(accountId);
   for(const controller of active.get(accountId)||[])controller.abort();
 }
