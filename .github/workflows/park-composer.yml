@@ -74,6 +74,9 @@ jobs:
         id: browser
         working-directory: tests
         run: npx playwright install --with-deps chromium
+      - name: Check Park brush lettering, numerals and punctuation
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/park-calligraphy-finals-ui.test.cjs
       - name: Check the embedded Park toolbar and navigation
         if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
         run: node tests/park-note-chat-ui.test.cjs
