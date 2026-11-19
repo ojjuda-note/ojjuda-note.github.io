@@ -23,7 +23,7 @@
   partyroulette:'1.6.0',
   drinking:'1.26.1',
   shapematch:'1.3.0',
-  tarot:'1.11.1',
+  tarot:'1.12.0',
   saju:'2.17.0',
   group:'1.2.2',
   chacha_rush:'1.1.2',

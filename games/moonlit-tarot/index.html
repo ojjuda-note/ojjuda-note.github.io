@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="./personal-reading.css?v=20261114-tarot-card-intro1">
   <link rel="stylesheet" href="./reading-summary.css?v=20261113-tarot-summary1">
   <link rel="stylesheet" href="./starlight.css?v=20261120-tarot-starlight2">
+  <link rel="stylesheet" href="./reading-reader.css?v=20261120-tarot-chapters1">
 </head>
 <body>
   <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -134,35 +135,11 @@
     <a id="azit-back" class="azit-back" href="/world.html?tab=hub#agit-daily">아지트로 돌아가기</a>
   </dialog>
 
-  <dialog id="reading-dialog" class="modal reading-modal" aria-labelledby="reading-position reading-title">
-    <button class="modal-close" data-close="reading-dialog" aria-label="자세한 점괘 닫기"><svg><use href="#i-close"/></svg></button>
-    <p id="reading-position" class="eyebrow">LUNA'S READING</p>
-    <p id="reading-introduction" class="reading-introduction"></p>
-    <div class="reading-intro">
-      <div id="reading-art" class="result-card-art" role="img"></div>
-      <div><h2 id="reading-title"></h2></div>
-    </div>
-    <div id="reading-sections" class="reading-sections reading-narrative"></div>
-    <details id="reading-card-detail" class="reading-source" hidden><summary>카드의 뜻과 주의점 더 보기</summary><div id="reading-detail-sections" class="reading-sections"></div></details>
-    <details id="reading-name-help" class="reading-name-help" hidden><summary>카드 이름 더 알아보기</summary><p id="reading-name-guide"></p></details>
-    <details class="reading-source"><summary>이 설명은 어떻게 만들었나요?</summary><p>옛 타로 그림에 담긴 뜻을 오쭈다에서 쉬운 말로 풀어 쓴 설명이다. 생활 속 이야기는 카드의 뜻을 이해하도록 만든 예시다. 나에게 실제로 있었던 일이나 앞으로 생길 일을 알아낸 내용은 아니다.</p><p><a id="reading-source-link" target="_blank" rel="noopener noreferrer">참고한 옛 타로 책 읽기 ↗</a></p><div id="reading-source-note" hidden><h3>다르게 읽는 풀이도 있어요</h3><p id="reading-source-note-body"></p><p><a id="reading-source-note-link" target="_blank" rel="noopener noreferrer">다른 풀이가 나온 부분 읽기 ↗</a></p></div></details>
-    <div class="reading-dialog-actions"><button class="secondary-button" data-close="reading-dialog">카드로 돌아가기</button><button id="reading-next" class="primary-button"><span>다음 카드 고르기</span><svg><use href="#i-arrow"/></svg></button></div>
-  </dialog>
-
-  <dialog id="result-dialog" class="modal result-modal" aria-labelledby="result-title">
-    <button class="modal-close" data-close="result-dialog" aria-label="종합 해석 닫기"><svg><use href="#i-close"/></svg></button>
-    <div class="result-heading"><p id="result-eyebrow" class="eyebrow">LUNA'S FINAL READING</p><h2 id="result-title">나를 위한 종합 점괘</h2><p id="result-date"></p></div>
-    <div id="summary-tabs" class="summary-tabs" role="tablist" aria-label="풀이 방식"></div>
-    <section class="summary-box" aria-label="종합 풀이">
-      <span class="summary-star" aria-hidden="true">✧</span>
-      <div id="summary-text" class="reading-sections summary-sections"></div>
-      <div class="ritual"><svg aria-hidden="true"><use href="#i-moon"/></svg><div><span>이렇게 해 보세요</span><p id="summary-ritual"></p></div></div>
-    </section>
-    <div class="result-actions"><button id="copy-result" class="secondary-button"><svg><use href="#i-copy"/></svg>종합 점괘 복사하기</button><button id="restart-result" class="primary-button"><svg><use href="#i-reset"/></svg><span>다른 주제 고르기</span></button></div>
-  </dialog>
+  <dialog id="reading-dialog" class="modal reading-modal" aria-labelledby="reading-title"></dialog>
+  <dialog id="result-dialog" class="modal result-modal" aria-labelledby="result-title"></dialog>
   <div id="toast" class="toast" role="status"></div>
   <script src="/shared/games/admin-preview.js?v=20261111-shared-auth3"></script>
   <script src="/shared/analytics/site-usage.js?v=20261113-fortune-visits1"></script>
-  <script type="module" src="./app.js?v=20261120-tarot-starlight1"></script>
+  <script type="module" src="./app.js?v=20261120-tarot-chapters1"></script>
 </body>
 </html>
