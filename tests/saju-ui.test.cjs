@@ -127,6 +127,11 @@ test('the personal portrait keeps every paragraph and topic while calculation ev
   assert.equal(summary.querySelector('.portrait-headline').textContent,expected.headline);
   assert.deepEqual([...summary.querySelectorAll('.portrait-prose>p')].map(p=>p.textContent),expected.paragraphs);
   const portraitTable=summary.querySelector('table.portrait-summary-table');
+  const portraitOverview=portraitTable.closest('details.reading-overview-details');
+  assert.ok(portraitOverview,'the full situation table remains available in its own disclosure');
+  assert.equal(portraitOverview.open,false,'the first reading starts with its personal summary');
+  assert.equal(portraitOverview.querySelector(':scope > summary').textContent,'상황별로 한눈에 보기');
+  portraitOverview.querySelector(':scope > summary').click();
   assert.equal(portraitTable.caption.textContent,'한눈에 보는 나');
   assert.deepEqual([...portraitTable.tHead.rows[0].cells].map(cell=>[cell.scope,cell.textContent]),[['col','상황'],['col','내 모습']]);
   assert.ok(summary.querySelector('.portrait-headline').compareDocumentPosition(portraitTable)&h.window.Node.DOCUMENT_POSITION_FOLLOWING,
@@ -271,7 +276,7 @@ test('the monthly overview preserves every calculated period, opportunity and ca
     assert.equal(article.open,true);assert.equal(doc.activeElement,heading);
     assert.equal(article.dataset.month,String(item.month));
     assert.deepEqual([...article.querySelectorAll('.reader-timing-content>.reader-prose>p')].map(p=>p.textContent),item.paragraphs);
-    assert.equal(article.querySelector('details.reading-body-details'),null,'a chosen period exposes its explanation without a second disclosure');
+    assert.ok(article.querySelector('details.reading-story-details'),'a chosen period retains its complete expandable explanation');
     assert.deepEqual([...article.querySelectorAll('.reader-timing-point')].map(point=>[point.querySelector('dt').textContent,[...point.querySelectorAll(':scope > dd:not(.saju-reading-score)')].map(part=>part.textContent).join('')]),
       [...item.cautions,...item.opportunities,...item.people,...item.documents].map(point=>[point.label,point.text]),
       'all detailed text remains present, with cautions before opportunities');
@@ -334,7 +339,7 @@ test('every product keeps its personal interpretations and practical suggestions
       const card=h.$('report-content').querySelector(`[data-reader-card="${item.id}"]`);
       assert.ok(card,'every actual personal interpretation remains available');
       assert.deepEqual([...card.querySelectorAll(':scope > .reader-prose > p')].map(paragraph=>paragraph.textContent),item.paragraphs);
-      assert.equal(card.querySelector('details.reading-body-details'),null,'the full explanation is part of the selected reading');
+      assert.ok(card.querySelector('details.reading-story-details'),'the full explanation stays available inside the selected reading');
       assert.deepEqual([...card.querySelectorAll('.saju-summary-line')].map(line=>line.textContent),item.summaryLines);
     }
     const advice=topic==='all'?[...expected.adviceByCategory.lifelong,...expected.adviceByCategory.annual,...expected.months.flatMap(month=>month.advice)]:topic==='monthly'?expected.months.flatMap(month=>month.advice):expected.adviceByCategory[topic];

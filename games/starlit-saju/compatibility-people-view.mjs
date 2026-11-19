@@ -2,7 +2,8 @@ import {connectReadingMap,indexPages} from './reading-map.mjs?v=20261115-saju-me
 import {appendReadingDetail,readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
 import {attachReadingSwipe} from './reading-swipe.mjs?v=20261114-saju-slide1';
 import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
-import {createReadingNavigator} from './reading-navigator.mjs?v=20261114-saju-almanac1';
+import {createReadingNavigator} from './reading-navigator.mjs?v=20261120-saju-clean1';
+import {createReadingProgress} from './reader-presentation.mjs?v=20261120-saju-clean1';
 
 const PERSON_KEYS=['self','partner'];
 const TOPIC_IDS=['decisions','relationships','work','pressure','adjustment'];
@@ -127,7 +128,9 @@ export function createCompatibilityPager(section,pages,map) {
   position.setAttribute('role','status');position.setAttribute('aria-live','polite');
   const next=node('button','reading-pager-step','다음');next.type='button';next.dataset.compatibilityStep='next';
   controls.append(previous,position,next);
-  navigation.append(label,select,picker.element,controls);
+  const progress=createReadingProgress(navigation.ownerDocument,'궁합 읽기 진행');
+  progress.element.setAttribute('aria-describedby',position.id);
+  navigation.append(label,select,picker.element,controls,progress.element);
   select.setAttribute('aria-describedby',position.id);
   picker.toggle.setAttribute('aria-describedby',position.id);
 
@@ -152,7 +155,10 @@ export function createCompatibilityPager(section,pages,map) {
     let transition=null;
     if(move&&current&&current!==page)transition=motion?.prepare(Math.sign(pages.indexOf(page)-pages.indexOf(current)));
     else motion?.cancel();
-    for(const element of managed)element.hidden=!(element===page.element||element.contains(page.element)||page.element.contains(element));
+    for(const element of managed) {
+      const hidden=!(element===page.element||element.contains(page.element)||page.element.contains(element));
+      if(element.hidden!==hidden)element.hidden=hidden;
+    }
     if(current)current.element.removeAttribute('data-compatibility-current');
     current=page;page.element.dataset.compatibilityCurrent='true';
     if(!page.support)lastReading=page;
@@ -163,6 +169,7 @@ export function createCompatibilityPager(section,pages,map) {
     previous.textContent=page.support?'풀이로':'이전';previous.disabled=page.support?!lastReading:index===0;
     next.disabled=page.support||index===readable.length-1;
     position.textContent=page.support?page.label:`${index+1} / ${readable.length} · ${page.label}`;
+    progress.update(page.support?0:index+1,readable.length,position.textContent);
     page.element.append(back);
     if(move) {
       // Keep focus on the control so arrows and repeated steps keep working.

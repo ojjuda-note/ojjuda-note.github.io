@@ -46,12 +46,17 @@ function assertCompleteExplanation(element,item,label) {
   assert.ok(prose,`${label} has its own complete explanation`);
   const paragraphs=[...prose.querySelectorAll(':scope > p')];
   assert.deepEqual(paragraphs.map(paragraph=>paragraph.textContent),item.paragraphs,`${label} retains every paragraph in its authored order`);
-  assert.equal(prose.closest('details.reading-body-details'),null,`${label} does not hide the body behind its summary`);
+  const disclosure=prose.closest('details.reading-story-details');
+  if(disclosure) {
+    const summary=disclosure.querySelector(':scope > summary');
+    assert.equal(summary.textContent,'자세히 읽기');
+    if(!disclosure.open)summary.click();
+  }
   assert.ok(paragraphs.length>0&&paragraphs.every(paragraph=>{
     if(paragraph.closest('[hidden]'))return false;
     for(let ancestor=paragraph.parentElement;ancestor;ancestor=ancestor.parentElement)if(ancestor.tagName==='DETAILS'&&!ancestor.open)return false;
     return true;
-  }),`${label} is fully readable as soon as its item is selected`);
+  }),`${label} is fully readable when its detailed explanation is opened`);
   if(item.detailSections) {
     assert.deepEqual([...prose.querySelectorAll(':scope > .reading-body-heading')].map(heading=>heading.textContent),item.detailSections.map(section=>section.title),`${label} has meaningful headings for its full explanation`);
     assert.deepEqual(item.detailSections.flatMap(section=>section.paragraphs),item.paragraphs);
@@ -406,7 +411,7 @@ test('an explicit twenty-ju purchase reveals the real reading and accessible sco
   receiptGate.resolve();await h.ready();
   assert.equal(h.state.charges,1);assert.equal(h.state.coins,40);assert.deepEqual(h.state.chargedAmounts,[20]);
   assert.equal(h.state.baseStarts.length,0);
-  assert.equal(h.$('compatibility-report').querySelector('details.reading-body-details'),null,'paid explanations are immediately readable after selecting an item');
+  assert.ok(h.$('compatibility-report').querySelector('details.reading-story-details'),'paid explanations retain their full content behind native detail toggles');
   assert.equal(h.$('compatibility-report').querySelectorAll('.reader-card').length,6);
   assert.ok(h.$('compatibility-expiry').textContent.trim());
   assert.equal(h.$('compatibility-page-select').value,'compatibility-synthesis','the purchased reading starts with the combined explanation and its score');
