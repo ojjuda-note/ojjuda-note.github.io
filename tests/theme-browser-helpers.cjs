@@ -39,10 +39,11 @@ async function palette(view, selectors = {}) {
       body: getComputedStyle(document.body).backgroundColor, nodes: {}
     };
     swatch.remove();
-    for (const [name, selector] of Object.entries(selectors)) {
+    for (const [name, target] of Object.entries(selectors)) {
+      const {selector, pseudo} = typeof target === 'string' ? {selector: target} : target;
       const node = document.querySelector(selector);
       if (!node) throw new Error('Missing theme target: ' + selector);
-      const css = getComputedStyle(node);
+      const css = getComputedStyle(node, pseudo);
       result.nodes[name] = {background: css.backgroundColor, image: css.backgroundImage,
         color: css.color, border: css.borderTopColor};
     }

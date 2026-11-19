@@ -83,3 +83,54 @@ test('missing app key, stale locations, background pages and unavailable forecas
   const config=f.parent.context.OJJUDA_CONFIG;delete f.parent.context.OJJUDA_CONFIG;f.location();await settle();assert.equal(f.requests.length,0);
   f.parent.context.OJJUDA_CONFIG=config;f.location();await settle();assert.equal(f.requests.length,1);assert.equal(f.parent.applied.at(-1),null);
 });
+
+test('a visible page refreshes expired weather once, but never uses a location beyond 30 minutes',async()=>{
+  const f=fixture();await settle();f.location();await settle();assert.equal(f.requests.length,1);
+  await f.advance(900001);
+  assert.equal(f.requests.length,2,'15-minute expiry refreshes only the proxy');assert.equal(f.parent.applied.at(-1),'rain');
+  const stored=JSON.parse(f.sessions.get(KEY));assert.deepEqual(Object.keys(stored).sort(),['expiresAt','kind']);
+  assert.equal(stored.expiresAt,Date.parse('2026-11-19T03:45:00Z'),'new summary stops at the original cell deadline');
+  await f.advance(900000);
+  assert.equal(f.requests.length,2,'30-minute-old cell is discarded without another request');
+  assert.equal(f.parent.applied.at(-1),null);assert.equal(f.sessions.has(KEY),false);
+  f.location();await settle();assert.equal(f.requests.length,3,'a new existing-feature location event permits weather again');
+});
+
+test('hidden/pagehide discard the refresh cell and resumed pages cannot revive an old location',async()=>{
+  for(const action of ['hidden','pagehide']){
+    const f=fixture();await settle();f.location();await settle();
+    if(action==='hidden'){
+      f.parent.document.hidden=true;f.parent.document.dispatchEvent(new Event('visibilitychange'));
+    }else f.parent.context.dispatchEvent(new Event('pagehide'));
+    await f.advance(900001);assert.equal(f.requests.length,1,action+' prevents background refresh');
+    f.parent.document.hidden=false;f.parent.document.dispatchEvent(new Event('visibilitychange'));
+    assert.equal(f.parent.context.OjjudaWeather.getState().kind,null);
+    await f.advance(900000);assert.equal(f.requests.length,1,action+' does not preserve coordinates for resume');
+  }
+});
+
+test('expiry rechecks existing permission and off/denied/hidden cancel an in-flight refresh',async()=>{
+  const denied=fixture();await settle();denied.location();await settle();
+  denied.status.state='denied';await denied.advance(900001);
+  assert.equal(denied.requests.length,1,'permission is rechecked even without a change event');assert.equal(denied.parent.applied.at(-1),null);
+  for(const action of ['off','denied','hidden']){
+    let calls=0,release;
+    const f=fixture({fetcher:(_url,_options,now)=>++calls===1?Response.json({kind:'rain',expiresAt:now+900000}):
+      new Promise(resolve=>release=()=>resolve(Response.json({kind:'snow',expiresAt:now+900000})))});
+    await settle();f.location();await settle();await f.advance(900001);assert.equal(f.requests.length,2);
+    if(action==='off')f.location(null);
+    else if(action==='denied'){f.status.state='denied';f.status.dispatchEvent(new Event('change'));}
+    else{f.parent.document.hidden=true;f.parent.document.dispatchEvent(new Event('visibilitychange'));}
+    assert.equal(f.requests[1].options.signal.aborted,true,action+' aborts pending refresh');
+    release();await settle();assert.equal(f.parent.context.OjjudaWeather.getState().kind,null);
+    await f.advance(900000);assert.equal(f.requests.length,2,action+' cannot revive a refresh timer');
+  }
+});
+
+test('failed automatic refresh falls back and stops retrying until a new location event',async()=>{
+  let calls=0;
+  const f=fixture({fetcher:(_url,_options,now)=>++calls===1?Response.json({kind:'rain',expiresAt:now+900000}):new Response('',{status:503})});
+  await settle();f.location();await settle();await f.advance(900001);
+  assert.equal(f.requests.length,2);assert.equal(f.parent.applied.at(-1),null);
+  await f.advance(1800000);assert.equal(f.requests.length,2);assert.equal(f.sessions.has(KEY),false);
+});

@@ -423,7 +423,7 @@ function clientFixture(hash) {
     const views=[
       {name:'entry',url:'index.html?flight-check=new',selectors:{action:'#write',feature:'.entry-intro'},changing:['nodes.action.background','nodes.feature.background']},
       {name:'member',url:'station.html',selectors:{action:'.dialog .primary',feature:'.letter-hero',menu:'.station-nav a[aria-current=page]'},changing:['nodes.action.background','nodes.feature.background','nodes.menu.background']},
-      {name:'radar',url:'station.html?tab=radar',selectors:{feature:'.radar-scope',menu:'.station-nav a[aria-current=page]'},changing:['nodes.feature.image','nodes.menu.background']},
+      {name:'radar',url:'station.html?tab=radar',selectors:{feature:{selector:'.radar-scope',pseudo:'::before'},menu:'.station-nav a[aria-current=page]'},changing:['nodes.feature.image','nodes.menu.background']},
       {name:'settings',url:'station.html?tab=profile',selectors:{feature:'.account-agit',list:'.account-settings .ojjuda-settings-list'},changing:['nodes.feature.background']}
     ];
     await page.emulateMedia({reducedMotion:'reduce'});

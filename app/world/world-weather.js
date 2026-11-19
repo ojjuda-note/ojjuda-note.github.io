@@ -11,7 +11,7 @@ try{if(root.top&&root.location?.origin&&root.top.location.origin===root.location
 
 function createCoordinator(surface){
   const subscribers=new Set();
-  let state={kind:null,expiresAt:0},timer=0,pending=null,lastCell='',revision=0;
+  let state={kind:null,expiresAt:0},timer=0,pending=null,lastCell='',weatherCell=null,revision=0;
   function valid(value){
     return value&&(value.kind===null||value.kind==='rain'||value.kind==='snow')&&
       Number.isFinite(value.expiresAt)&&value.expiresAt>Date.now()&&value.expiresAt<=Date.now()+MAX_AGE;
@@ -22,16 +22,20 @@ function createCoordinator(surface){
     state=valid(value)?{kind:value.kind,expiresAt:value.expiresAt}:{kind:null,expiresAt:0};
     try{if(state.expiresAt)surface.sessionStorage.setItem(KEY,JSON.stringify(state));else surface.sessionStorage.removeItem(KEY);}catch{}
     for(const listener of subscribers)listener(snapshot());
-    if(state.expiresAt)timer=setTimeout(()=>apply(null),Math.max(1,state.expiresAt-Date.now()+1));
+    if(state.expiresAt&&!surface.document?.hidden)timer=setTimeout(()=>{
+      apply(null);void refreshExpired();
+    },Math.max(1,state.expiresAt-Date.now()+1));
   }
-  function clear(){
-    revision++;pending?.controller.abort();pending=null;lastCell='';apply(null);
+  function stopLocation(){
+    revision++;pending?.controller.abort();pending=null;lastCell='';weatherCell=null;
+    clearTimeout(timer);timer=0;
   }
+  function clear(){stopLocation();apply(null);}
   function subscribe(listener){
     if(state.expiresAt&&state.expiresAt<=Date.now())apply(null);
     subscribers.add(listener);listener(snapshot());return()=>subscribers.delete(listener);
   }
-  async function receive(event){
+  function receive(event){
     const value=event.detail;
     if(value===null){clear();return;}
     if(surface.document?.hidden||!value||!Number.isFinite(value.latitude)||Math.abs(value.latitude)>90||
@@ -40,8 +44,25 @@ function createCoordinator(surface){
     // Round again at the network boundary so injected events cannot add precision.
     const lat=(Math.round(value.latitude*10)/10).toFixed(1),lon=(Math.round(value.longitude*10)/10).toFixed(1);
     const cell=lat+','+lon;
+    // Coordinates stay in this closure for at most 30 minutes, never in storage.
+    weatherCell={lat,lon,cell,capturedAt:value.capturedAt};
     if(pending?.cell===cell)return;
     if(cell===lastCell&&valid(state))return;
+    void requestWeather(weatherCell);
+  }
+  async function refreshExpired(){
+    const cell=weatherCell,expected=revision;
+    if(!cell||surface.document?.hidden)return;
+    if(Date.now()-cell.capturedAt>=MAX_AGE){weatherCell=null;lastCell='';return;}
+    try{
+      const permission=await surface.navigator.permissions?.query({name:'geolocation'});
+      if(expected!==revision||weatherCell!==cell||surface.document?.hidden)return;
+      if(permission?.state!=='granted'){clear();return;}
+      await requestWeather(cell);
+    }catch{if(expected===revision)clear();}
+  }
+  async function requestWeather({lat,lon,cell}){
+    if(!weatherCell||Date.now()-weatherCell.capturedAt>=MAX_AGE){clear();return;}
     const apiKey=surface.OJJUDA_CONFIG?.supabaseKey;
     if(typeof apiKey!=='string'||!/^sb_publishable_[A-Za-z0-9_-]+$/.test(apiKey)||apiKey.length>256){clear();return;}
     pending?.controller.abort();
@@ -57,9 +78,11 @@ function createCoordinator(surface){
       const data=await response.json();
       if(!valid(data))throw Error('Expired weather');
       if(request!==revision||controller.signal.aborted)return;
-      lastCell=cell;apply(data);
+      const expiresAt=Math.min(data.expiresAt,weatherCell.capturedAt+MAX_AGE);
+      if(expiresAt<=Date.now())throw Error('Expired location');
+      lastCell=cell;apply({kind:data.kind,expiresAt});
     }catch{
-      if(request===revision){lastCell='';apply(null);}
+      if(request===revision){weatherCell=null;lastCell='';apply(null);}
     }finally{
       clearTimeout(timeout);
       if(request===revision)pending=null;
@@ -83,16 +106,16 @@ function createCoordinator(surface){
   }
   void watchPermission();
   function visible(){
-    if(surface.document?.hidden){revision++;pending?.controller.abort();pending=null;return;}
-    if(!valid(state))apply(null);
+    if(surface.document?.hidden){stopLocation();return;}
+    apply(valid(state)?state:null);
   }
   surface.document?.addEventListener('visibilitychange',visible);
   surface.addEventListener('pageshow',visible);
-  surface.addEventListener('pagehide',()=>{revision++;pending?.controller.abort();pending=null;});
+  surface.addEventListener('pagehide',stopLocation);
   return Object.freeze({subscribe,getState:()=>valid(state)?snapshot():{kind:null,expiresAt:0},clear});
 }
 // One coordinator handles same-origin World/Park/Pajang frames. Only weather
-// summaries are exposed; location data are neither stored nor returned.
+// summaries are exposed or persisted; coarse cells stay in private memory.
 const coordinator=host.__ojjudaThemeWeather||(host.__ojjudaThemeWeather=createCoordinator(host));
 function sync(value=coordinator.getState()){
   root.OjjudaThemes?.setWeather(value.kind);
