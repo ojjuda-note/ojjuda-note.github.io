@@ -10,7 +10,7 @@
   window.OjjudaParkNotes = {menuMarkup,install(app) {
     const frameVersion = '20261119-park-admin1' + (app.version ? '-' + app.version : '');
     let frame=null,panel=null,owner=null,routed=false,initial=window.performance?.getEntriesByType?.('navigation')[0]?.type!=='back_forward',pending=null,overlayOpen=false,composerOpen=false,cardOpen=false,stopFrameNavigation=()=>{};
-    let cacheTimer=null,frameVisible=false;
+    let cacheTimer=null,frameVisible=false,pendingSnapshot=null;
     let currentNavigation='feed';
     const themeColor=document.querySelector('meta[name="theme-color"]');
     const defaultThemeColor=themeColor?.getAttribute('content')||'#245A48';
@@ -46,7 +46,13 @@
     }
     function syncFab(){syncComposerMode();const button=panel?.querySelector('.park-compose-fab'),cover=panel?.querySelector('[data-park-loading]');if(button)button.hidden=overlayOpen||cardOpen||frame?.dataset.view==='glasses'||cover?.hidden===false;}
     function loading(visible){const cover=panel?.querySelector('[data-park-loading]');if(cover)cover.hidden=!visible;syncFab();}
+    function restoreSnapshot(snapshot){pendingSnapshot=snapshot&&typeof snapshot==='object'?snapshot:null;}
+    function flushSnapshot(){
+      if(!active()||!pendingSnapshot||!api()?.restoreNavigation)return;
+      const snapshot=pendingSnapshot;pendingSnapshot=null;api().restoreNavigation(snapshot);
+    }
     function flush(){
+      flushSnapshot();
       if(!active()||!pending||!api()?.navigate)return;
       const action=pending;pending=null;api().navigate(action);
       syncNavigation();
@@ -97,10 +103,12 @@
       }
       if(frame?.isConnected&&panel===next&&owner===app.userId()){
         const returning=panel.hidden||restored;
+        const preserve=restored||app.restoringHistory?.()===true||!!pendingSnapshot;
         clearRetirement();panel.hidden=false;panel.removeAttribute('aria-hidden');
-        if(!returning||api()?.returnHome?.()){
+        if(!returning||(preserve&&api())||api()?.returnHome?.()){
           if(returning){
-            overlayOpen=composerOpen=cardOpen=false;
+            if(preserve){overlayOpen=api()?.overlayOpen?.()===true;composerOpen=api()?.composerOpen?.()===true;cardOpen=api()?.cardOpen?.()===true;}
+            else overlayOpen=composerOpen=cardOpen=false;
             stopGestures();stopFrameNavigation=app.onFrameReady?.(frame)||(()=>{});
           }
           setVisible(true);syncFab();syncNavigation();flush();return;
@@ -183,6 +191,6 @@
       if(event.data?.type==='ojjuda:park-balance'&&event.data.userId===owner&&owner&&Number.isSafeInteger(event.data.coins)&&event.data.coins>=0)app.onBalance?.(event.data.coins,owner);
       if(event.data?.type==='ojjuda:park-card-published'&&event.data.userId===owner&&owner&&typeof event.data.cardId==='string'&&/^[0-9a-f-]{36}$/i.test(event.data.cardId))app.onCardPublished?.(event.data.cardId);
     });
-    return {refresh:()=>active()?(api()?.refresh?.()??false):false,markup,sync,route,canLeave,close,open,refreshBalance,refreshAdmin,preserveShell,requested,navigationAction:()=>currentNavigation};
+    return {snapshot:()=>api()?.navigationSnapshot?.()||null,restoreSnapshot,refresh:()=>active()?(api()?.refresh?.()??false):false,markup,sync,route,canLeave,close,open,refreshBalance,refreshAdmin,preserveShell,requested,navigationAction:()=>currentNavigation};
   }};
 })();

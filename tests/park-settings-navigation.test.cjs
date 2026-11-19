@@ -40,21 +40,28 @@ async function fixture(member = true, {hosted = false} = {}) {
     from(table) {
       return {select:() => ({eq:() => ({maybeSingle:async() => ({data:table === 'profiles' ? {nickname:'공원회원'} : {coins:50}})})})};
     },
-    schema:() => ({rpc:async(name) => {
-      calls.push(name);
-      return {data:name === 'get_note_state' ? {} : []};
-    }})
+    schema:() => ({
+      rpc:async(name) => {
+        calls.push(name);
+        return {data:name === 'get_note_state' ? {} : ['get_card','get_my_event'].includes(name)?null:[]};
+      },
+      from() {
+        const q={select:()=>q,eq:()=>q,not:()=>q,contains:()=>q,lte:()=>q,or:()=>q,order:()=>q,limit:async()=>({data:[]})};return q;
+      }
+    })
   };
   w.OJJUDA_CONFIG = {supabaseUrl:'https://fixture.test',supabaseKey:'fixture-key'};
   w.supabase = {createClient:() => client};
   w.OjjudaAccountDeletion = {run:async() => {calls.push('deleteAccount');}};
-  w.eval(read('note/preview.js') + '\nwindow.parkFixture={setBusy(value){managementBusy=value;}};\n' + read('park/integration.js'));
+  w.eval(read('note/preview.js') + '\nwindow.parkFixture={setBusy(value){managementBusy=value;},openCard(id){openCard(id);},backCard(){goBack();},closeManagement(){closeManagement();}};\n' + read('park/integration.js'));
   const settle = () => new Promise(resolve => w.setTimeout(resolve,0));
   authChanged('INITIAL_SESSION',session);
   await settle(); await settle();
   const api = w.OjjudaParkFull;
   const setting = action => w.document.querySelector(`[data-park-settings="${action}"]`);
   return {dom,w,api,calls,messages,settle,setting,
+    async back() {const popped=new Promise(resolve=>w.addEventListener('popstate',resolve,{once:true}));assert.equal(api.back(),true);await popped;await settle();},
+    async forward() {const popped=new Promise(resolve=>w.addEventListener('popstate',resolve,{once:true}));w.history.forward();await popped;await settle();},
     async close() { await settle(); for (const observer of observers) observer.disconnect(); dom.window.close(); },
     async changeUser(next) {session=next;authChanged(next?'SIGNED_IN':'SIGNED_OUT',next);await settle();},
     root:() => w.document.querySelector('[data-park-settings-root]'),
@@ -73,7 +80,7 @@ test('guests can open Park settings, read policies and reach login', async () =>
     assert.ok(f.setting('privacy'));
     assert.equal(f.setting('logout'),null);
     assert.equal(f.setting('delete-account'),null);
-    assert.equal(f.api.back(),true);
+    await f.back();
     assert.equal(f.management().hidden,true);
     assert.equal(f.api.navigationAction(),'feed');
   } finally {await f.close();}
@@ -97,14 +104,14 @@ test('Park settings opens the existing account forms and returns without executi
       assert.ok(f.w.document.querySelector(selector),action+' opens its real existing form');
       assert.equal(f.api.navigationAction(),'settings',action+' stays in Park settings');
       assert.ok(f.w.document.querySelector('[data-park-settings-back]'));
-      assert.equal(f.api.back(),true);
+      await f.back();
       assert.ok(f.root(),'Back returns to the Park settings list');
       assert.equal(f.api.navigationAction(),'settings');
     }
     assert.equal(f.calls.includes('signOut'),false,'opening logout never signs the user out');
     assert.equal(f.calls.includes('deleteAccount'),false,'opening account deletion never deletes the user');
     assert.equal(f.calls.includes('updateUser'),false,'opening password change never changes a password');
-    f.api.back();
+    await f.back();
     assert.equal(f.management().hidden,true);
     assert.equal(f.api.navigationAction(),'feed');
   } finally {await f.close();}
@@ -131,6 +138,62 @@ test('pending account saves keep the current form and changing accounts clears p
     assert.equal(f.setting('logout'),null);
     assert.equal(f.setting('delete-account'),null);
   } finally {await f.close();}
+});
+
+
+test('Park Back and Forward restore the actual collections and settings sequence', async () => {
+  const f = await fixture();
+  try {
+    f.api.navigate('saved'); await f.settle();
+    f.api.navigate('mine'); await f.settle();
+    f.api.navigate('settings'); await f.settle();
+    assert.equal(f.api.navigationAction(),'settings');
+    assert.equal(f.setting('terms').target,'_top','internal policy links stay in the current app window');
+    await f.back(); assert.equal(f.api.navigationAction(),'mine');
+    await f.back(); assert.equal(f.api.navigationAction(),'saved');
+    await f.back(); assert.equal(f.api.navigationAction(),'feed');
+    await f.forward(); assert.equal(f.api.navigationAction(),'saved');
+    await f.forward(); assert.equal(f.api.navigationAction(),'mine');
+    await f.forward(); assert.equal(f.api.navigationAction(),'settings');
+    assert.ok(f.root());
+  } finally {await f.close();}
+});
+
+
+test('card details return through saved cards and nested cards without resetting their collection', async () => {
+  const f = await fixture();
+  const first='10000000-0000-4000-8000-000000000001',second='20000000-0000-4000-8000-000000000002';
+  try {
+    f.api.navigate('saved');await f.settle();
+    f.w.parkFixture.openCard(first);await f.settle();
+    f.w.parkFixture.openCard(second);await f.settle();
+    assert.equal(new URL(f.w.location.href).searchParams.get('card'),second);
+    await f.back();assert.equal(new URL(f.w.location.href).searchParams.get('card'),first);
+    await f.back();assert.equal(new URL(f.w.location.href).searchParams.get('card'),null);
+    assert.equal(f.api.navigationAction(),'saved');assert.equal(f.api.cardOpen(),false);
+    await f.forward();assert.equal(new URL(f.w.location.href).searchParams.get('card'),first);
+    assert.equal(f.api.cardOpen(),true);
+    const popped=new Promise(resolve=>f.w.addEventListener('popstate',resolve,{once:true}));
+    f.w.parkFixture.backCard();await popped;await f.settle();
+    assert.equal(f.api.cardOpen(),false);assert.equal(f.api.navigationAction(),'saved');
+  } finally {await f.close();}
+});
+
+
+test('a fresh Park frame restores a saved route without replaying actions or retaining another account', async () => {
+  const first = await fixture(),second = await fixture();
+  try {
+    first.api.navigate('saved');await first.settle();
+    first.w.parkFixture.openCard('10000000-0000-4000-8000-000000000001');await first.settle();
+    const route=first.api.navigationSnapshot();
+    assert.equal(second.api.restoreNavigation(route),true);await second.settle();
+    assert.equal(second.api.navigationAction(),'saved');assert.equal(second.api.cardOpen(),true);
+    assert.match(second.w.location.search,/card=10000000/);
+    assert.equal(second.w.history.state.ojjudaParkRoute.index,0,'a recreated iframe does not point to nonexistent old history entries');
+    second.api.restoreNavigation({...route,owner:'another-account',view:'delete-account'});await second.settle();
+    assert.equal(second.api.navigationAction(),'feed');assert.equal(second.api.cardOpen(),false);
+    assert.equal(second.calls.includes('deleteAccount'),false);assert.equal(second.management().hidden,true);
+  } finally {await first.close();await second.close();}
 });
 
 test('Park settings shows its administrator mode only for the matching verified host account', async () => {
@@ -162,7 +225,7 @@ test('Park settings shows its administrator mode only for the matching verified 
     assert.deepEqual(JSON.parse(JSON.stringify(entries()[0])), {
       data:{type:'ojjuda:park-navigate',action:'admin',userId:'park-member-a'},origin:'https://fixture.test'
     });
-    assert.equal(f.management().hidden,true);
+    assert.equal(f.api.navigationSnapshot().view,'settings','the host captures settings as the route to return to');
     f.api.navigate('settings');
     await f.changeUser({user:{id:'park-member-b'}});
     f.api.navigate('settings');
@@ -184,4 +247,40 @@ test('guest and standalone Park settings never expose the host administrator sho
       assert.equal(f.api.navigate('admin'),false);
     } finally {await f.close();}
   }
+});
+
+
+test('Park teardown cannot navigate Back and BFCache restores its displayed route', async () => {
+  const f=await fixture();
+  try {
+    f.api.navigate('settings');await f.settle();
+    const originalState=JSON.stringify(f.w.history.state),length=f.w.history.length;
+    let backCalls=0;
+    const nativeBack=f.w.history.back.bind(f.w.history);
+    f.w.history.back=()=>{backCalls++;nativeBack();};
+    f.w.dispatchEvent(new f.w.PageTransitionEvent('pagehide',{persisted:true}));
+    f.w.parkFixture.closeManagement();await f.settle();await f.settle();
+    assert.equal(backCalls,0,'teardown does not cancel the next-page navigation');
+    assert.equal(f.w.history.length,length);assert.equal(JSON.stringify(f.w.history.state),originalState);
+    assert.equal(f.api.navigate('mine'),false,'late callbacks do not create entries after leaving');
+    f.w.dispatchEvent(new f.w.PageTransitionEvent('pageshow',{persisted:true}));
+    await f.settle();await f.settle();
+    assert.ok(f.root(),'BFCache restores the saved settings screen');
+    assert.equal(f.api.navigationAction(),'settings');
+    await f.back();assert.equal(f.management().hidden,true);assert.equal(f.api.navigationAction(),'feed');
+  } finally {await f.close();}
+});
+
+
+test('leaving Park settings for Agit preserves the originating screen in host history', async () => {
+  const f=await fixture(true,{hosted:true});
+  try {
+    f.api.navigate('settings');await f.settle();
+    const before=f.api.navigationSnapshot(),length=f.w.history.length;
+    assert.equal(f.api.navigate('world'),true);await f.settle();
+    assert.equal(f.messages.at(-1).data.action,'world');
+    const after=f.api.navigationSnapshot();
+    assert.equal(after.view,before.view);assert.equal(after.index,before.index);
+    assert.equal(f.w.history.length,length,'the iframe does not add a transient feed step while leaving');
+  } finally {await f.close();}
 });

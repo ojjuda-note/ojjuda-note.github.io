@@ -17,6 +17,7 @@ import {MyExchangePhotos,removeAllExchangePhotos} from "./exchange-photos";
 import {AccountSettings,AccountActionForm} from "./account-settings";
 
 import {StationNavigation,readRoute,routeHref,type Tab} from "./station-navigation";
+import {createStationHistory} from "../lib/navigation.mjs";
 type Modal = {kind:"answer"|"signal"|"result"|"setup"|"edit"|"channels"|"help"|"block"|"delete"|"person"|"privateProfile"|"privatePhotos"|"visibility"|"answers"|"logout"|"withdraw";peer?:string;period?:string;originalBody?:string;questionId?:number;answer?:DiscoveryAnswer};
 const districts:Record<string,string[]> = regionCatalog;
 const provinces=Object.keys(districts);
@@ -85,6 +86,8 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const currentRoute=useRef(routeKey);
   const scrollTarget=useRef<"answers"|"restore">(location.hash==="#answers"?"answers":"restore");
   const navigationId=useRef(0),refreshInFlight=useRef(false),threadRead=useRef<AbortController|null>(null);
+  const navigation=useRef<ReturnType<typeof createStationHistory>|null>(null);
+  const restoredScroll=useRef<number|null>(null);
   const pendingMessages=useRef(new Map<string,{body:string;id:string}>());
   const draftByPeer=useRef(new Map<string,string>());
   const currentPeer=useRef(thread);
@@ -175,7 +178,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     document.addEventListener("visibilitychange",tick);
     return()=>{clearInterval(poll);clearTimeout(boundary);document.removeEventListener("visibilitychange",tick);};
   },[s.nextAt]);
-  useEffect(()=>{if(pendingModal&&!modal){setModal(null);setError("");}},[pendingModal,modal]);
+  useEffect(()=>{if(pendingModal&&!modal)dismiss();},[pendingModal,modal]);
   useEffect(()=>{if(!toast)return;const t=setTimeout(()=>setToast(""),3500);return()=>clearTimeout(t);},[toast]);
   const [threadError,setThreadError]=useState("");
   async function readThread(id:string,replace=false){
@@ -220,29 +223,32 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     currentRoute.current=routeKey;
     if(scrollTarget.current==="answers" && tab==="today")
       document.getElementById("answers")?.scrollIntoView({block:"start"});
-    else window.scrollTo(0,scrollPositions.current.get(routeKey)??0);
+    else window.scrollTo(0,restoredScroll.current??scrollPositions.current.get(routeKey)??0);
+    restoredScroll.current=null;
   },[route]);
   useEffect(()=>{
     const previous=history.scrollRestoration;
     history.scrollRestoration="manual";
-    function restore(){
+    const controller=createStationHistory(window,(dialog:Modal|null,scroll:number,cause:string)=>{
       navigationId.current++;
       scrollPositions.current.set(currentRoute.current,window.scrollY);
       const next=readRoute();
-      scrollTarget.current=location.hash==="#answers"?"answers":"restore";
+      scrollTarget.current=cause==="route"&&location.hash==="#answers"?"answers":"restore";
+      restoredScroll.current=Number.isFinite(scroll)?scroll:null;
       if(next.tab==="today")setVisitedToday(true);
-      setModal(null);setError("");setRoute(next);
-    }
-    window.addEventListener("popstate",restore);
-    return ()=>{history.scrollRestoration=previous;window.removeEventListener("popstate",restore);};
+      setModal(dialog);setError("");setRoute(next);
+    });
+    navigation.current=controller;
+    return ()=>{history.scrollRestoration=previous;controller.dispose();navigation.current=null;};
   },[]);
   function navigate(next:Tab,peer="",answers=false,replace=false){
-    navigationId.current++;
     const href=routeHref(next,peer,answers);
+    if(navigation.current?.visit(href,replace))return;
+    navigationId.current++;
     scrollPositions.current.set(currentRoute.current,window.scrollY);
     scrollTarget.current=answers?"answers":"restore";
     if(href!==location.pathname+location.search+location.hash){
-      if(replace)history.replaceState(history.state,"",href);else history.pushState(null,"",href);
+      if(replace)history.replaceState(history.state,"",href);else history.pushState(history.state,"",href);
     }
     if(next==="today")setVisitedToday(true);
     setModal(null);setError("");setRoute({tab:next,thread:peer});
@@ -257,18 +263,25 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     setError("");
     if(m.kind==="answer"){
       if(m.originalBody!==(me?.body||undefined))return;
-      setModal({...m,period,questionId:s.question?.id});
+      const next={...m,period,questionId:s.question?.id};
+      if(!navigation.current?.open(next))setModal(next);
       return;
     }
-    setModal(m.answer||m.kind==="signal"?{...m,period}:m);
+    const next=m.answer||m.kind==="signal"?{...m,period}:m;
+    if(!navigation.current?.open(next))setModal(next);
   }
-  function close(){if(!lock.current){setModal(null);setError("");}}
+  function dismiss(){if(!navigation.current?.close())setModal(null);setError("");}
+  function close(){if(!lock.current)dismiss();}
   function accountBusy(value:boolean){
     lock.current=value;setBusy(value);
     if(value){cancelAutoLocation();threadRead.current?.abort();}
   }
   function go(t:Tab){navigate(t);}
   function startChat(p:string){navigate("chat",p);}
+  function goBack(fallback:Tab){
+    if(navigation.current)navigation.current.back(routeHref(fallback));
+    else navigate(fallback,"",false,true);
+  }
   async function act(action:string,b:Record<string,any>,forceLive=false):Promise<Station|null>{
     if(lock.current)return null;
     const origin=navigationId.current;lock.current=true;setBusy(true);setError("");
@@ -285,9 +298,9 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       }
       if(origin!==navigationId.current)return null;
       if(b.answerDay && e instanceof Error && "code" in e && (e.code==="PT409"||e.code==="42501")){
-        setModal(null);setToast("이 답변은 더 이상 볼 수 없어요.");setHistoryRevision(n=>n+1);void refresh();
+        dismiss();setToast("이 답변은 더 이상 볼 수 없어요.");setHistoryRevision(n=>n+1);void refresh();
       }else if(e instanceof Error && "code" in e && e.code==="PT409"){
-        setModal(null);setToast("질문 시간이 바뀌었어요. 새 질문을 확인해 주세요.");void refresh();
+        dismiss();setToast("질문 시간이 바뀌었어요. 새 질문을 확인해 주세요.");void refresh();
       }else{
         setError(e instanceof Error?e.message:"다시 시도해 주세요.");
         if(e instanceof Error && "code" in e && e.code==="PT412")await refresh();
@@ -321,7 +334,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     setHistoryRevision(n=>n+1);
     if(origin!==navigationId.current)return;
     if(signalsWith(next,peerId).match)startChat(peerId);
-    else setModal({kind:"result",peer:peerId});
+    else open({kind:"result",peer:peerId});
   }
   async function sendMessage(){
     const submitted=draft,body=submitted.trim(),peerId=thread;
@@ -380,9 +393,9 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       <h2 className="inbox-chats">이어지는 대화</h2>
       {matches.length?<div className="listbox">{matches.map(p=><ListPerson key={p.id} p={p} station={s} busy={busy} onProfile={()=>open({kind:"person",peer:p.id})} onAction={()=>startChat(p.id)} type="chat"/>)}</div>:<Blank icon="chat" title="아직 열린 대화가 없어요" body="서로 신호를 보내면 여기서 대화를 이어 갈 수 있어요."/>}
     </section>}
-    {tab==="chat"&&active&&validThread&&<section className="innerpage" key={thread}><div className="chatbox"><div className="chatheader"><button className="iconbtn" aria-label="대화 목록" onClick={()=>go("inbox")}><I n="back"/></button><button className="person" onClick={()=>open({kind:"person",peer:active.id})}><Art interest={active.interest}/><span><strong>{active.name}</strong><small>서로 신호를 보낸 회원</small></span></button><button className="quiet" onClick={()=>open({kind:"block",peer:active.id})}>차단</button></div><ChatExchange key={active.id} peer={active.id} name={active.name} lastMessage={lastMsg}/><div className="chatlog" onScroll={event=>{const log=event.currentTarget;followChat.current=log.scrollHeight-log.scrollTop-log.clientHeight<64;}}>{threadMessages.length===0?<div className="chatintro"><I n="wave" s={32}/><p>두 사람의 대화가 열렸어요.</p><small>오늘의 답변을 떠올리며 첫인사를 건네보세요.</small></div>:<>{threadMessages.length>=100&&<p className="chatnote">최근 메시지 100개</p>}{threadMessages.map(m=><div key={m.id} className={"bubbleline "+(m.src===me?.id?"mine":"")}><p>{m.body}</p><time>{fmtClock(m.at)}</time></div>)}</>}<div ref={bottom}/></div>{error&&!modal&&<p className="error">{error}</p>}<form className="composer" onSubmit={e=>{e.preventDefault();void sendMessage();}}><input maxLength={500} aria-label="메시지" placeholder="메시지를 입력하세요" value={draft} onChange={e=>{setDraft(e.target.value);draftByPeer.current.set(thread,e.target.value);}}/><button aria-label="메시지 보내기" disabled={busy||!draft.trim()}><I n="send" s={18}/></button></form></div></section>}
+    {tab==="chat"&&active&&validThread&&<section className="innerpage" key={thread}><div className="chatbox"><div className="chatheader"><button className="iconbtn" aria-label="뒤로가기" onClick={()=>goBack("inbox")}><I n="back"/></button><button className="person" onClick={()=>open({kind:"person",peer:active.id})}><Art interest={active.interest}/><span><strong>{active.name}</strong><small>서로 신호를 보낸 회원</small></span></button><button className="quiet" onClick={()=>open({kind:"block",peer:active.id})}>차단</button></div><ChatExchange key={active.id} peer={active.id} name={active.name} lastMessage={lastMsg}/><div className="chatlog" onScroll={event=>{const log=event.currentTarget;followChat.current=log.scrollHeight-log.scrollTop-log.clientHeight<64;}}>{threadMessages.length===0?<div className="chatintro"><I n="wave" s={32}/><p>두 사람의 대화가 열렸어요.</p><small>오늘의 답변을 떠올리며 첫인사를 건네보세요.</small></div>:<>{threadMessages.length>=100&&<p className="chatnote">최근 메시지 100개</p>}{threadMessages.map(m=><div key={m.id} className={"bubbleline "+(m.src===me?.id?"mine":"")}><p>{m.body}</p><time>{fmtClock(m.at)}</time></div>)}</>}<div ref={bottom}/></div>{error&&!modal&&<p className="error">{error}</p>}<form className="composer" onSubmit={e=>{e.preventDefault();void sendMessage();}}><input maxLength={500} aria-label="메시지" placeholder="메시지를 입력하세요" value={draft} onChange={e=>{setDraft(e.target.value);draftByPeer.current.set(thread,e.target.value);}}/><button aria-label="메시지 보내기" disabled={busy||!draft.trim()}><I n="send" s={18}/></button></form></div></section>}
     {tab==="profile"&&<section className="station-account innerpage">
-      <div className="channel-heading account-heading"><h1>내 파장</h1><button type="button" className="account-settings-close" aria-label="설정 닫기" onClick={()=>go("today")}><I n="close"/></button></div>
+      <div className="channel-heading account-heading"><h1>내 파장</h1><button type="button" className="account-settings-close" aria-label="설정 닫기" onClick={()=>goBack("today")}><I n="close"/></button></div>
       <div className="ojjuda-settings">
       <a className="ojjuda-settings-row account-agit agit-return" href="/world.html" target="_top"><span className="ojjuda-settings-label">아지트 가기</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span></a>
           {me?<AccountSettings profileId={me.id} onOpen={kind=>open({kind})}/>:
@@ -396,10 +409,11 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       <p className="sub">{editingAnswer?"저장하면 모두의 답변에도 수정한 내용이 보여요.":"답변을 공개하면 작성일을 포함해 1년(365일) 동안 파장 회원이 질문과 내 답변을 함께 볼 수 있어요."}</p>
       <Editor initial={modal.originalBody} max={220} label="내 이야기" hint="장소, 노래, 기억처럼 구체적인 장면을 들려주세요."
         submit={editingAnswer?"수정 저장하기":"답변 공개하기"} busy={busy} onSave={async body=>{
+          const origin=navigationId.current;
           const data={body,day:s.day,slot:s.slot,questionId:modal.questionId};
           const next=editingAnswer?await act("edit-answer",{...data,previousBody:modal.originalBody}):await act("answer",{...data,archive:true});
-          if(!next)return;
-          setModal(null);setToast(slotName+(editingAnswer?" 답변을 수정했어요.":" 답변을 저장했어요."));
+          if(!next||origin!==navigationId.current)return;
+          dismiss();setToast(slotName+(editingAnswer?" 답변을 수정했어요.":" 답변을 저장했어요."));
         }}/>
     </>}
     {modal.kind==="signal"&&peer&&<><span className="modalicon"><I n="signal"/></span><h2>{peer.name}님{row?.received || signalsWith(s,peer.id).incoming?"의 신호 수락":"에게 신호 보내기"}</h2><p className="sub">서로 신호를 보내면 대화를 시작할 수 있어요.</p><div className="questionbox">{row&&<small>{row.question}</small>}{peer.body||signalsWith(s,peer.id).incoming?.note}</div><Editor max={120} label="함께 보낼 한마디 (선택)" hint="어떤 부분에 마음이 닿았나요?" submit={(row?.received || signalsWith(s,peer.id).incoming?"신호 수락하기":"신호 보내기")+" · 남은 "+available+"회"} busy={busy} optional onSave={note=>void deliver(peer.id,note,row)}/></>}

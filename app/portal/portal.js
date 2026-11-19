@@ -273,7 +273,7 @@
   function clearRecoveryLocation() {
     const url = authReturnUrl(pendingDestination || entryDestination || returnQueryDestination);
     // Remove recovery credentials while retaining only the validated return route.
-    history.replaceState(null, '', location.pathname + url.search);
+    history.replaceState(history.state, '', location.pathname + url.search);
   }
 
   function rememberAfterEmail(destination, address) {
@@ -320,17 +320,18 @@
       url.searchParams.delete('room');
       url.searchParams.delete('guests');
       url.searchParams.delete('invite');
-      history.replaceState(null, '', url.pathname + url.search + url.hash);
+      history.replaceState(history.state, '', url.pathname + url.search + url.hash);
     }
   }
 
-  function goToDestination(key) {
+  function goToDestination(key, replace = true) {
     const path = destinationPath(key);
     if (key === 'note') {
-      void enterNote();
+      void enterNote(undefined, replace);
     } else if (path) {
       clearReturnDestination();
-      location.assign(path);
+      // Authentication is an intermediate step, not a page to revisit on Back.
+      location[replace ? 'replace' : 'assign'](path);
     }
   }
 
@@ -348,7 +349,7 @@
       || /nickname|banned|forbidden|금지|닉네임/.test(detail);
   }
 
-  async function enterNote(overrideNickname) {
+  async function enterNote(overrideNickname, replace = true) {
     if (enteringNote) return;
     if (!client || !session?.user) {
       openAuth('login', 'note');
@@ -401,7 +402,7 @@
       }
       const notePath = destinations.note + (returnCard ? `&card=${encodeURIComponent(returnCard)}` : '');
       clearReturnDestination();
-      location.assign(notePath);
+      location[replace ? 'replace' : 'assign'](notePath);
     } catch (error) {
       console.warn('노트 회원 준비 실패:', error);
       if (accountChanged()) return;
@@ -418,7 +419,7 @@
       requestedAuthMode = null;
       const url = new URL(location.href);
       url.searchParams.delete('auth');
-      history.replaceState(null, '', url.pathname + url.search + url.hash);
+      history.replaceState(history.state, '', url.pathname + url.search + url.hash);
       // Existing sessions resume the chosen space; recovery links take priority.
       if ((!user || mode === 'forgot') && !recoveryPending) openAuth(mode, returnQueryDestination);
     }
@@ -678,7 +679,7 @@
       const target = button.dataset.destination;
       if (!destinationPath(target)) return;
       event.preventDefault();
-      if (session?.user) goToDestination(target);
+      if (session?.user) goToDestination(target, false);
       else openAuth('login', target);
     });
   });

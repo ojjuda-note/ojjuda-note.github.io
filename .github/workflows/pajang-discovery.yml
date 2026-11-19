@@ -57,6 +57,7 @@ jobs:
       - run: npm --prefix tests ci --ignore-scripts
       - run: npm --prefix features/pajang ci --ignore-scripts --no-audit --no-fund
       - run: npm --prefix features/pajang run build
+      - run: node --test tests/pajang-navigation.test.mjs tests/pajang-navigation-dom.test.cjs
       - run: python -m unittest discover -s tests -p 'test_pajang_program_publish.py'
       - run: node --test tests/pajang-account.test.mjs tests/pajang-discovery-gender.test.mjs tests/pajang-location.test.mjs tests/shared-location.test.cjs tests/agit-location.test.mjs tests/park-loading.test.cjs tests/park-frame-cache.test.cjs tests/park-opening.test.cjs
       - run: node --test tests/admin-pajang-moderation-db.test.cjs

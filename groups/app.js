@@ -152,8 +152,36 @@ async function makePreview(file){
  finally{source?.close?.();if(sourceUrl)URL.revokeObjectURL(sourceUrl);}
 }
 function gate(message=sharedCode()?'로그인 후 초대를 수락해 주세요.':'로그인하고 우리만의 그룹을 만들어 보세요.') {epoch++;clearMedia(true);for(const d of document.querySelectorAll('dialog'))d.close();$('#app').innerHTML=`<section class="hero"><div><h1>그룹</h1></div></section><div class="empty"><strong>${esc(message)}</strong><a href="/?auth=login&amp;next=groups${sharedCode()?'&amp;invite='+encodeURIComponent(sharedCode()):''}" class="back">로그인 · 가입 →</a></div>`;}
-function dialog(title,body){const d=document.createElement('dialog');d.className='dialog';d.setAttribute('aria-label',title);d.innerHTML=`<header class="dialog-head"><h2>${esc(title)}</h2><button type="button" data-close aria-label="닫기">✕</button></header><div class="dialog-body">${body}</div>`;document.body.append(d);const prev=document.activeElement;d.showModal();d.querySelector('[data-close]').onclick=()=>d.close();d.addEventListener('close',()=>{d.remove();prev?.isConnected&&prev.focus({preventScroll:true});});return d;}
-function route(id=null){navigationRun++;if(id!==roomId){query='';filter='all';}roomId=id;date='';posts=[];history.pushState(null,'',id?'#room='+id:location.pathname);render();void loadFeed();}
+// Dialogs own a real history entry; Back dismisses them before changing rooms.
+let dialogSequence=0, pendingDialogDismiss=null;
+let groupHistoryIndex=Number(history.state?.ojjudaGroupIndex)||0,groupHistoryMaximum=groupHistoryIndex;
+function pushGroupState(state,href){groupHistoryMaximum=++groupHistoryIndex;history.pushState({...state,ojjudaGroupIndex:groupHistoryIndex},'',href);}
+const groupDialogs=new Map();
+function groupRouteState(){const state={...(history.state||{})};delete state.ojjudaGroupDialog;return state;}
+function replaceGroupRoute(href){history.replaceState(groupRouteState(),'',href);}
+function dialog(title,body){
+ const d=document.createElement('dialog'),id=++dialogSequence;d.className='dialog';d.dataset.groupDialog=String(id);d.setAttribute('aria-label',title);d.innerHTML=`<header class="dialog-head"><h2>${esc(title)}</h2><button type="button" data-close aria-label="닫기">✕</button></header><div class="dialog-body">${body}</div>`;
+ document.body.append(d);const prev=document.activeElement;d.showModal();groupDialogs.set(id,d);
+ // A new dialog can replace one that was closed synchronously by the same action.
+ const previous=history.state?.ojjudaGroupDialog,previousDialog=groupDialogs.get(previous);
+ const method=previous&&!previousDialog?.open?'replaceState':'pushState';
+ if(method==='pushState')pushGroupState({...history.state,ojjudaGroupDialog:id},location.href);
+ else history.replaceState({...history.state,ojjudaGroupDialog:id},'',location.href);
+ d.querySelector('[data-close]').onclick=()=>d.close();
+ d.addEventListener('close',()=>{
+  d.remove();groupDialogs.delete(id);prev?.isConnected&&prev.focus({preventScroll:true});
+  if(user&&history.state?.ojjudaGroupDialog===id)history.back();
+ });
+ return d;
+}
+function route(id=null){
+ navigationRun++;if(id!==roomId){query='';filter='all';}roomId=id;date='';posts=[];
+ const href=id?'#room='+id:location.pathname,entry=history.state?.ojjudaGroupDialog;
+ // Completing a dialog replaces that transient screen, without adding a dead Back step.
+ if(entry&&!groupDialogs.get(entry)?.open)replaceGroupRoute(href);
+ else if(new URL(href,location.href).href!==location.href)pushGroupState(groupRouteState(),href);
+ render();void loadFeed();
+}
 function render(){epoch++;clearTimeout(refreshTimer);loading=false;directoryLoading=false;clearMedia();const r=currentRoom();renderedRoomId=r?.id||null;
 $('#app').innerHTML=`<section class="hero${r?' group-room-hero':''}" ${r?GroupAppearance.attributes(r):''}>${r?GroupAppearance.artwork(r,true):''}<div class="hero-top"><h1>${esc(r?.name||'그룹')}</h1>${r?'':`<button type="button" class="mine-toggle" data-action="mine" aria-pressed="${onlyMine}" aria-label="${onlyMine?'전체 그룹 보기':'내 그룹만 보기'}">${onlyMine?'전체 그룹':'내 그룹'}</button>`}</div><div class="actions">${r?'<button data-action="home">← 그룹 목록</button>':'<button class="primary" data-action="create">＋ 그룹 만들기</button>'}<button type="button" class="page-share" data-action="share-page" aria-label="${r?'그룹 페이지 공유':'그룹 목록 페이지 공유'}">↗ 페이지 공유</button></div></section>
 ${!r?`<section class="toolbar directory-toolbar"><input type="search" id="directory-query" maxlength="100" value="${esc(directoryQuery)}" placeholder="그룹 이름 검색" aria-label="그룹 이름 검색"></section><section id="group-invitations" class="feed" hidden></section><section id="directory" class="feed" aria-label="그룹 목록" aria-live="polite"><p class="empty">불러오는 중…</p></section><button class="more" id="directory-more" hidden>더 보기</button>`:
@@ -166,7 +194,7 @@ $('#search')?.addEventListener('input',e=>{query=e.target.value;epoch++;loading=
 $('#directory-query')?.addEventListener('input',e=>{directoryQuery=e.target.value;epoch++;directoryLoading=false;clearTimeout(refreshTimer);if(onlyMine)drawDirectory();else refreshTimer=setTimeout(()=>loadDirectory(),250);});
 $('#load-more')?.addEventListener('click',()=>loadFeed(true));$('#directory-more')?.addEventListener('click',()=>loadDirectory(true));
 if(!r)void loadHome();}
-async function reloadRooms(){const run=mutationRun,data=await api('rooms');if(run!==mutationRun)return;rooms=data;if(roomId&&!rooms.some(r=>r.id===roomId)){clearMedia(true);roomId=null;history.replaceState(null,'',location.pathname);}}
+async function reloadRooms(){const run=mutationRun,data=await api('rooms');if(run!==mutationRun)return;rooms=data;if(roomId&&!rooms.some(r=>r.id===roomId)){clearMedia(true);roomId=null;replaceGroupRoute(location.pathname);}}
 async function refresh({quiet=false}={}){
  if(refreshRequest?.run===navigationRun&&refreshRequest.mutation===mutationRun)return refreshRequest.promise;
  const run=navigationRun,mutation=mutationRun,prior=JSON.stringify(currentRoom());
@@ -406,7 +434,7 @@ function reportPost(p){const d=dialog("게시글 신고",`<form><p class="muted"
  function createRoom(){const requestId=uuid();const d=dialog('그룹 만들기',`<form id="room-form"><label class="field">그룹 이름<input name="name" required maxlength="60" placeholder="우리의 주말"></label><br><label class="field">그룹 소개<textarea name="description" maxlength="300" placeholder="그룹 소개"></textarea></label>${Age.fields()}<p class="hint">이름·소개 공개 · 게시물은 그룹원과 운영 관리자만 열람할 수 있어요.</p><p class="error" role="alert"></p><div class="dialog-foot"><button class="primary">만들기</button></div></form>`);Age.bind(d.querySelector('form'));d.querySelector('form').onsubmit=async e=>{e.preventDefault();const f=e.target,btn=f.querySelector('button');if(!f.reportValidity())return;if(btn.disabled)return;btn.disabled=true;try{await api('create_room',{...Object.fromEntries(new FormData(f)),id:requestId});await reloadRooms();d.close();directoryQuery='';route();notify('그룹을 만들었어요.');}catch(err){f.querySelector('.error').textContent=failure(err);}finally{btn.disabled=false;}};}
 function paintInvitations(rows){const box=$('#group-invitations');if(!box)return;const signature=JSON.stringify(rows);if(signatures.get(box)===signature)return;signatures.set(box,signature);box.hidden=onlyMine||!rows.length;box.innerHTML=rows.length?`<h3>받은 초대</h3>${rows.map(i=>`<article class="post"><h3>${esc(i.group_name)}</h3>${Age.badge(i)}${Age.note(i)}<p class="muted">${esc(i.sender_name)}님의 초대</p><div class="actions"><button class="primary" data-accept-invite="${i.id}" ${i.age_eligible===false?'disabled':''}>수락</button><button data-decline-invite="${i.id}">거절</button></div></article>`).join('')}`:'';}
 async function loadInvitations(){const box=$('#group-invitations');if(!box)return;const ticket=++invitationRun;try{const rows=await invitationApi('received');if(!box.isConnected||ticket!==invitationRun)return;paintInvitations(rows);}catch(e){if(box.isConnected&&ticket===invitationRun)notify(failure(e));}}
-async function showSharedInvitation(){const code=sharedCode();if(!code)return;try{const data=await invitationApi('preview_link',{code});if(sharedCode()!==code)return;const d=dialog('그룹 초대',`<h3>${esc(data.group_name)}</h3>${Age.badge(data)}${Age.note(data)}<p class="error" role="alert"></p><div class="dialog-foot"><button data-later>나중에</button><button class="primary" data-accept-link ${data.age_eligible===false?'disabled':''}>${data.member?'그룹 들어가기':'수락하고 가입'}</button></div>`);d.querySelector('[data-later]').onclick=()=>{d.close();history.replaceState(null,'',location.pathname);};d.querySelector('[data-accept-link]').onclick=async e=>{e.target.disabled=true;try{const result=await invitationApi('accept_link',{code});await reloadRooms();d.close();route(result.room_id);notify('그룹에 가입했어요.');}catch(err){d.querySelector('.error').textContent=failure(err);}finally{e.target.disabled=false;}};}catch(e){notify(failure(e));}}
+async function showSharedInvitation(){const code=sharedCode();if(!code)return;try{const data=await invitationApi('preview_link',{code});if(sharedCode()!==code)return;const d=dialog('그룹 초대',`<h3>${esc(data.group_name)}</h3>${Age.badge(data)}${Age.note(data)}<p class="error" role="alert"></p><div class="dialog-foot"><button data-later>나중에</button><button class="primary" data-accept-link ${data.age_eligible===false?'disabled':''}>${data.member?'그룹 들어가기':'수락하고 가입'}</button></div>`);d.querySelector('[data-later]').onclick=()=>{d.close();replaceGroupRoute(location.pathname);};d.querySelector('[data-accept-link]').onclick=async e=>{e.target.disabled=true;try{const result=await invitationApi('accept_link',{code});await reloadRooms();d.close();route(result.room_id);notify('그룹에 가입했어요.');}catch(err){d.querySelector('.error').textContent=failure(err);}finally{e.target.disabled=false;}};}catch(e){notify(failure(e));}}
 async function inviteMembers(r){const d=dialog('회원 초대',`<form id="invite-search" class="actions"><input name="query" type="search" maxlength="60" placeholder="회원 닉네임 검색" aria-label="회원 닉네임 검색"><button class="primary">검색</button></form><p class="muted">최근 가입순</p><div id="invite-results" aria-live="polite"></div><button id="invite-more" hidden>더 보기</button><p class="error" role="alert"></p>`),form=d.querySelector('form'),box=d.querySelector('#invite-results'),more=d.querySelector('#invite-more');let searchRun=0,rows=[],query='',loading=false;
 const card=m=>`<div class="member"><span>${esc(m.nickname)}</span><button data-send-invite="${m.user_id}" ${m.invited?'disabled':''}>${m.invited?'초대 보냄':'초대'}</button></div>`;
 async function load(append=false){if(append&&loading)return;const ticket=++searchRun,last=append?rows.at(-1):null;loading=true;more.disabled=true;form.querySelector('button').disabled=true;d.querySelector('.error').textContent='';if(!append){rows=[];more.hidden=true;box.innerHTML='<p class="muted">불러오는 중…</p>';}
@@ -445,7 +473,7 @@ else if(act==='transfer')confirmAction('방장을 위임할까요?','선택한 �
 else if(act==='kick')confirmAction('이 그룹원을 추방할까요?','그룹을 볼 수 없게 되며 기존 초대 링크도 사용할 수 없어요.',perform);
 else if(act==='leave')confirmAction('그룹을 나갈까요?','다시 들어오려면 가입 승인이 필요해요.',perform);
 else{await perform();}}catch(err){report(err);}finally{controls.forEach(x=>{if(x.isConnected)x.disabled=false;});}});}
-async function deleteRoom(r){const d=dialog('그룹 삭제 중',`<p role="status">첨부 파일을 정리하고 있어요…</p><p class="error"></p>`);try{await api('delete_room',{room_id:r.id});for(;;){const paths=await api('deletion_files',{room_id:r.id});if(!paths.length)break;const {error}=await client.storage.from(bucket).remove(paths);if(error)throw error;}await api('finish_delete',{room_id:r.id});d.close();roomId=null;history.replaceState(null,'',location.pathname);await refresh();notify('그룹을 삭제했어요.');}catch(e){d.querySelector('.error').textContent='삭제가 중단됐어요. 그룹의 ‘삭제 계속하기’로 다시 진행해 주세요. '+failure(e);await refresh();throw e;}}
+async function deleteRoom(r){const d=dialog('그룹 삭제 중',`<p role="status">첨부 파일을 정리하고 있어요…</p><p class="error"></p>`);try{await api('delete_room',{room_id:r.id});for(;;){const paths=await api('deletion_files',{room_id:r.id});if(!paths.length)break;const {error}=await client.storage.from(bucket).remove(paths);if(error)throw error;}await api('finish_delete',{room_id:r.id});d.close();roomId=null;replaceGroupRoute(location.pathname);await refresh();notify('그룹을 삭제했어요.');}catch(e){d.querySelector('.error').textContent='삭제가 중단됐어요. 그룹의 ‘삭제 계속하기’로 다시 진행해 주세요. '+failure(e);await refresh();throw e;}}
 async function removeFiles(paths){const files=[...new Set(paths.filter(Boolean))];if(!files.length)return;const {error}=await client.storage.from(bucket).remove(files);clearMedia(true);if(error)notify('기록은 저장됐지만 일부 이전 첨부 정리가 지연됐어요.');}
 function compose(existing){const available=activeRooms();if(!available.length){createRoom();return;}let saved=existing?.media?.map(x=>({...x}))||[],files=[],previewUrls=[],busy=false,entryId=existing?.id||uuid(),uploaded=[],published=false;
 const activity=existing?.activity, initialKind=activity?.kind||existing?.kind||'post';
@@ -515,7 +543,7 @@ try{
  const retained=new Set(result.media.flatMap(f=>[f.path,f.preview_path].filter(Boolean)));
  await removeFiles(uploaded.filter(path=>!retained.has(path)));
  if(existing)await removeFiles(existing.media.filter(x=>!saved.some(f=>f.path===x.path)).flatMap(f=>[f.path,f.preview_path]));
- d.close();roomId=fields.room_id;date='';query='';filter='all';history.replaceState(null,'','#room='+roomId);await refresh();notify(existing?'수정했어요.':'그룹에 올렸어요.');
+ d.close();roomId=fields.room_id;date='';query='';filter='all';replaceGroupRoute('#room='+roomId);await refresh();notify(existing?'수정했어요.':'그룹에 올렸어요.');
 }
 catch(err){if(!published)await removeFiles(uploaded);form.querySelector('.error').textContent=failure(err);d.querySelector('#upload-status').textContent='';}
 finally{busy=false;form.querySelectorAll('button,input,textarea,select').forEach(el=>el.disabled=false);if(existing)form.elements.room_id.disabled=true;if(activity)form.elements.kind.disabled=true;schedule();}};
@@ -525,7 +553,30 @@ async function load(append=false){if(append&&appendBusy)return;const ticket=++li
 d.querySelector('#older-comments').onclick=()=>load(true).catch(e=>notify(failure(e)));d.addEventListener('click',async e=>{const b=e.target.closest('[data-delete-comment]');if(!b)return;b.disabled=true;try{await api('delete_comment',{comment_id:b.dataset.deleteComment});await load();}catch(err){notify(failure(err));b.disabled=false;}});
 d.querySelector('form').onsubmit=async e=>{e.preventDefault();const f=e.target,b=f.querySelector('button');if(b.disabled)return;b.disabled=true;try{await api('comment',{id:p.id,comment_id:requestId,body:f.elements.body.value});requestId=uuid();f.reset();await load();}catch(err){f.querySelector('.error').textContent=failure(err);}finally{b.disabled=false;}};d.addEventListener('close',()=>loadFeed());await load();}
 async function initialize(){if(!window.supabase||!window.OJJUDA_CONFIG){gate('연결하지 못했어요. 새로고침해 주세요.');return;}client=window.supabase.createClient(window.OJJUDA_CONFIG.supabaseUrl,window.OJJUDA_CONFIG.supabaseKey);client.auth.onAuthStateChange((_event,session)=>{if(user&&session?.user?.id!==user.id){user=null;rooms=[];posts=[];gate('로그인 상태가 바뀌었어요. 다시 로그인해 주세요.');}});const ticket=++authEpoch;try{const {data,error}=await client.auth.getUser();if(error||!data.user||data.user.is_anonymous){gate();return;}if(ticket!==authEpoch)return;user=data.user;const match=location.hash.match(/^#room=([a-f0-9-]{36})$/);roomId=match?.[1]||null;if(roomId)await reloadRooms();render();if(roomId)await loadFeed();await showSharedInvitation();}catch(e){gate(failure(e));}}
-window.addEventListener('popstate',()=>{if(!user)return;const top=[...document.querySelectorAll('dialog[open]')].at(-1);if(top){history.pushState(null,'',roomId?'#room='+roomId:location.pathname);if(top.requestDismiss)top.requestDismiss();else top.close();return;}navigationRun++;const match=location.hash.match(/^#room=([a-f0-9-]{36})$/);roomId=rooms.some(r=>r.id===match?.[1])?match[1]:null;date='';render();void loadFeed();void showSharedInvitation();});
+window.addEventListener('popstate',event=>{
+ if(!user)return;
+ const index=Number(event.state?.ojjudaGroupIndex)||0,direction=index<groupHistoryIndex?-1:1;groupHistoryIndex=index;
+ if(pendingDialogDismiss){
+  const d=pendingDialogDismiss;pendingDialogDismiss=null;
+  if(d.open){if(d.requestDismiss)d.requestDismiss();else d.close();}
+  return;
+ }
+ const top=[...document.querySelectorAll('dialog[open]')].at(-1);
+ if(top&&event.state?.ojjudaGroupDialog!==Number(top.dataset.groupDialog)){
+  // Restore the dialog's entry before asking a dirty composer to dismiss.
+  // Cancelling the confirmation then leaves both the room and Forward history intact.
+  pendingDialogDismiss=top;history.forward();return;
+ }
+ if(event.state?.ojjudaGroupDialog){
+  const target=groupDialogs.get(event.state.ojjudaGroupDialog);
+  if(target?.open)return;
+  // Skip transient dialogs that already completed, without replaying their actions.
+  if(direction<0&&index>0){history.back();return;}
+  if(direction>0&&index<groupHistoryMaximum){history.forward();return;}
+  replaceGroupRoute(location.href);
+ }
+ navigationRun++;const match=location.hash.match(/^#room=([a-f0-9-]{36})$/);roomId=rooms.some(r=>r.id===match?.[1])?match[1]:null;date='';render();void loadFeed();void showSharedInvitation();
+});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&user&&!mutating&&!document.querySelector('dialog[open]'))void refresh({quiet:true});});
 window.addEventListener('pagehide',()=>clearMedia(true));
 setInterval(()=>{if(user&&!document.hidden&&!mutating&&!loading&&!document.querySelector('dialog[open]')&&!document.activeElement?.matches('input,textarea,select'))void refresh({quiet:true});},60000);

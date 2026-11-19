@@ -12,13 +12,14 @@ function fixture(search = '') {
   });
   const {window} = dom;
   const timers = new Map();
-  let nextTimer = 0, place = {id: 'park'}, owner = 'member-a', gestureAttach = 0, gestureDetach = 0, worldReturns = 0, admin = false, adminEntries = 0;
+  let nextTimer = 0, place = {id: 'park'}, owner = 'member-a', gestureAttach = 0, gestureDetach = 0, worldReturns = 0, restoring = false, admin = false, adminEntries = 0;
   window.setTimeout = (fn, delay) => {const id = ++nextTimer;timers.set(id, {fn, delay});return id;};
   window.clearTimeout = id => timers.delete(id);
   window.eval(source);
   const app = window.OjjudaParkNotes.install({
     place: () => place,
     userId: () => owner,
+    restoringHistory: () => restoring,
     isAdmin: () => admin,
     enter: () => {place = {id: 'park'};render('park');},
     toWorld: () => {worldReturns++;render('hub');},
@@ -36,7 +37,7 @@ function fixture(search = '') {
     app.sync();
   }
   const frame = () => window.document.querySelector('[data-park-app] iframe');
-  return {window, dom, app, render, frame, timers, setOwner: id => {owner = id;}, setAdmin: value => {admin = value;},
+  return {window, dom, app, render, frame, timers, setRestoring: value=>{restoring=value;}, setOwner: id => {owner = id;}, setAdmin: value => {admin = value;},
     gestures: () => ({gestureAttach, gestureDetach}), worldReturns: () => worldReturns, adminEntries: () => adminEntries};
 }
 
@@ -65,7 +66,7 @@ test('Park iframe survives a short visit to Arcade and returns without reloading
     f.render('my'); f.app.open('saved');
     assert.deepEqual(calls, ['home','home','saved'], 'an explicit shortcut still opens its target');
     f.window.dispatchEvent(new f.window.PageTransitionEvent('pageshow', {persisted:true}));
-    assert.equal(calls.at(-1),'home','browser history restoration returns to the main feed');
+    assert.equal(calls.at(-1),'saved','browser history restoration preserves the page the user was reading');
   } finally {f.dom.window.close();}
 });
 
@@ -219,6 +220,30 @@ test('Agit return from Park settings respects pending saves and the active frame
     assert.equal(f.worldReturns(),1);
     assert.equal(f.window.document.querySelector('.topbar').textContent,'hub');
     assert.equal(frame.closest('[data-park-app]').hidden,true,'returning to Agit keeps only an inactive cached Park');
+  } finally {f.dom.window.close();}
+});
+
+
+test('World history restores a cached Park view and delivers its snapshot to a recreated frame', () => {
+  const f=fixture();
+  const saved={owner:'member-a',mode:'saved',card:'10000000-0000-4000-8000-000000000001',view:null};
+  try {
+    f.render('park');const first=f.frame();let homes=0;
+    const restored=[];
+    first.contentWindow.OjjudaParkFull={
+      returnHome(){homes++;return true;},navigationAction:()=> 'saved',
+      navigationSnapshot:()=>saved,restoreNavigation:route=>restored.push(route),cardOpen:()=>true
+    };
+    assert.deepEqual(f.app.snapshot(),saved);
+    f.render('arcade');f.setRestoring(true);f.app.restoreSnapshot(saved);f.render('park');
+    assert.equal(f.frame(),first);assert.equal(homes,0,'history Back does not reset the cached frame to feed');
+    assert.deepEqual(restored,[saved]);assert.equal(f.app.navigationAction(),'saved');
+    f.setRestoring(false);f.render('arcade');[...f.timers.values()][0].fn();
+    f.setRestoring(true);f.app.restoreSnapshot(saved);f.render('park');const fresh=f.frame();
+    assert.notEqual(fresh,first);
+    fresh.contentWindow.OjjudaParkFull={restoreNavigation:route=>restored.push(route),navigationAction:()=> 'saved'};
+    f.window.dispatchEvent(new f.window.MessageEvent('message',{origin:'https://fixture.test',source:fresh.contentWindow,data:{type:'ojjuda:park-ready'}}));
+    assert.deepEqual(restored,[saved,saved],'retirement does not lose the saved menu/card route');
   } finally {f.dom.window.close();}
 });
 

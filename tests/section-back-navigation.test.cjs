@@ -8,13 +8,14 @@ const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const backSource = read('shared/navigation/section-back.js');
 
-function fixture({section='hub', from='', embedded=false, returnLink=false, hash='', initialState=null, failReplace=false, failPush=false}={}) {
+function fixture({section='hub', from='', embedded=false, returnLink=false, hash='', initialState=null, failReplace=false, failPush=false, previous='', referrer=previous, navigationEntries=null}={}) {
   const events = new Map(), replacements = [], warnings = [], emittedEvents = [];
   const window = {addEventListener(name, fn) { events.set(name, fn); }};
   window.top = embedded ? {} : window;
   const initialUrl='https://ojjuda.test/guide.html'+(from?'?from='+from:'')+hash;
-  const entries=[{href:initialUrl,state:initialState}];
-  let cursor=0;
+  const entries=[...(previous?[{href:previous,state:null}]:[]),{href:initialUrl,state:initialState}];
+  let cursor=entries.length-1;
+  if(navigationEntries)window.navigation={currentEntry:{index:navigationEntries.length-1},entries:()=>navigationEntries};
   const location = {
     href:initialUrl,
     search:from?'?from='+from:'',
@@ -43,7 +44,8 @@ function fixture({section='hub', from='', embedded=false, returnLink=false, hash
   const history = {
     get state() { return entries[cursor].state; },
     get length() { return entries.length; },
-    pushes:0, replaces:0,
+    pushes:0, replaces:0, backCalls:0,
+    back(){this.backCalls++;if(cursor>0){const before=location.href;cursor--;select(entries[cursor]);emitNavigation(before);}},
     replaceState(value, title, href=location.href) {
       if (failReplace) throw new Error('replaceState blocked');
       entries[cursor]={href:new URL(href,location.href).href,state:value};
@@ -61,12 +63,16 @@ function fixture({section='hub', from='', embedded=false, returnLink=false, hash
   };
   const label = {textContent:''}, anchor = {href:'',querySelector(selector) {return selector==='[data-section-return-label]'?label:null;}};
   const document = {
+    referrer,
     currentScript:{dataset:{returnTo:section}},
+    addEventListener(name,fn){events.set('document:'+name,fn);},
+    querySelectorAll(selector){return returnLink&&selector==='[data-section-return]'?[anchor]:[];},
     querySelector(selector) {return returnLink&&selector==='[data-section-return]'?anchor:null;}
   };
-  vm.runInNewContext(backSource,{window,history,location,document,URLSearchParams,console:{warn(...args) { warnings.push(args); }},Object});
+  vm.runInNewContext(backSource,{window,history,location,document,URL,URLSearchParams,console:{warn(...args) { warnings.push(args); }},Object});
   return {
     history,replacements,anchor,label,location,warnings,emittedEvents,
+    clickReturn(){let prevented=false;events.get('document:click')?.({button:0,target:{closest:()=>anchor},preventDefault(){prevented=true;}});return prevented;},
     back(state) {
       if (arguments.length===0) return this.go(-1);
       events.get('popstate')?.({state});
@@ -102,10 +108,10 @@ function fixture({section='hub', from='', embedded=false, returnLink=false, hash
   };
 }
 
-test('standalone Back returns to the correct section, not the previous random page', () => {
+test('a direct entry falls back to its owning section', () => {
   const cases = [
     ['hub','/world.html?tab=hub'],
-    ['arcade','/world.html?tab=hub'],
+    ['arcade','/world.html?tab=arcade'],
     ['park','/world.html?tab=park'],
     ['my','/world.html?tab=my'],
     ['pajang','/features/pajang/station.html?tab=profile'],
@@ -292,11 +298,11 @@ test('blocked history APIs leave the page usable and restore its existing state'
   }
 });
 
-test('unmarked path or query changes are not treated as hash navigation', () => {
+test('unmarked SPA path and query entries retain their own navigation', () => {
   for (const href of ['https://ojjuda.test/other.html#photos','https://ojjuda.test/guide.html?other=1#photos']) {
     const f=fixture({section:'hub'});
     f.popTo(href);
-    assert.deepEqual(f.replacements,['/world.html?tab=hub'],href);
+    assert.deepEqual(f.replacements,[],href);
   }
 });
 
@@ -336,7 +342,7 @@ test('hub is a valid navigation tab, while direct games return to the arcade', (
   assert.match(world,/function worldGameCloseUrl\(\)/);
   assert.match(world,/url\.searchParams\.set\('tab','arcade'\)/);
   assert.match(world,/sr\.tab\(\{tab:'arcade'\}\);\s*Al\(game\.id\)/);
-  assert.match(world,/isSectionRoot:\(\)=>\["park","my"\]\.includes\(worldMainTab\(\)\)/);
+  assert.doesNotMatch(world,/isSectionRoot:\(\)=>\["park","my"\]\.includes\(worldMainTab\(\)\)/);
   assert.match(read('index.html'),/url\.searchParams\.set\('tab', 'hub'\)/);
   assert.match(read('guide.html'),/header-back/);
   assert.match(world,/guide\.html\?from=my/);
@@ -349,4 +355,58 @@ test('game refresh revision stays consistent across loader and manifest', () => 
   const expected=JSON.parse(read('game-release.json')).revision;
   assert.match(read('shared/games/world-game-assets.js'),new RegExp(`const revision='${expected}'`));
   assert.ok(read('world.html').includes(`/shared/games/world-game-assets.js?v=${expected}`));
+});
+
+
+test('Back follows the actual previous page across standalone sections', () => {
+  for (const previous of ['https://ojjuda.test/features/fanpages/index.html?filter=girl', 'https://ojjuda.test/world.html?tab=my', 'https://ojjuda.test/admin/rewards.html']) {
+    const f=fixture({previous});
+    assert.equal(f.history.pushes,0,'normal navigation must not insert a duplicate');
+    f.back();
+    assert.equal(f.location.href,previous);
+    assert.deepEqual(f.replacements,[],'the owning-section fallback must not replace real history');
+  }
+});
+
+test('the visible Back link uses the same history as browser Back', () => {
+  const previous='https://ojjuda.test/features/fanpages/index.html?filter=boy';
+  const f=fixture({previous,returnLink:true});
+  assert.equal(f.label.textContent,'이전 화면으로 돌아가기');
+  assert.equal(f.clickReturn(),true);
+  assert.equal(f.history.backCalls,1);
+  assert.equal(f.location.href,previous);
+  assert.deepEqual(f.replacements,[]);
+});
+
+test('a new tab cannot mistake its opener for a previous history entry', () => {
+  const f=fixture({referrer:'https://ojjuda.test/world.html?tab=my'});
+  assert.equal(f.history.pushes,1);
+  f.back();
+  assert.deepEqual(f.replacements,['/world.html?tab=hub']);
+});
+
+test('external previous pages do not count as in-app history', () => {
+  const f=fixture({previous:'https://outside.test/',section:'park'});
+  assert.equal(f.history.pushes,1);
+  f.back();
+  assert.deepEqual(f.replacements,['/world.html?tab=park']);
+});
+
+test('Navigation API entries recover same-origin history even without a referrer', () => {
+  const previous='https://ojjuda.test/features/fanpages/index.html';
+  const f=fixture({previous,referrer:'',navigationEntries:[{index:0,url:previous},{index:1,url:'https://ojjuda.test/guide.html'}]});
+  assert.equal(f.history.pushes,0);
+  f.back();
+  assert.equal(f.location.href,previous);
+  assert.deepEqual(f.replacements,[]);
+});
+
+
+test('direct administrator tools retain the service that opened them', () => {
+  for(const from of ['park','pajang']) {
+    const f=fixture({section:'admin',from,returnLink:true});
+    const target='/world.html?admin=overview&from='+from;
+    assert.equal(f.anchor.href,target);
+    f.back();assert.deepEqual(f.replacements,[target]);
+  }
 });

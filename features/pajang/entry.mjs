@@ -48,7 +48,7 @@ function enterMain(destination = main, savedStation) {
       await styled;
       document.getElementById('entry-style').disabled=true;
       style.media='all';
-      history.replaceState(null,'',destination.href);
+      history.replaceState(history.state,'',destination.href);
       window.scrollTo(0,0);
     },savedStation,program,destination)]);
   })().catch(()=>location.replace(destination.href));

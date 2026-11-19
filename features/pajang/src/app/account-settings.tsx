@@ -47,11 +47,11 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
       <h2 className="ojjuda-settings-heading" id="account-help-title">이용 안내</h2>
       <div className="ojjuda-settings-list">
         {row("help","사용법")}
-        <a className="ojjuda-settings-row" href="/terms.html?from=pajang" target="_blank" rel="noopener">
-          <span className="ojjuda-settings-label">이용약관</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
+        <a className="ojjuda-settings-row" href="/terms.html?from=pajang">
+          <span className="ojjuda-settings-label">이용약관</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
         </a>
-        <a className="ojjuda-settings-row" href="/privacy.html?from=pajang" target="_blank" rel="noopener">
-          <span className="ojjuda-settings-label">개인정보처리방침</span><span className="ojjuda-settings-arrow" aria-hidden="true">↗</span>
+        <a className="ojjuda-settings-row" href="/privacy.html?from=pajang">
+          <span className="ojjuda-settings-label">개인정보처리방침</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
         </a>
       </div>
     </section>

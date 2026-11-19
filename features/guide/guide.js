@@ -93,6 +93,7 @@
         viewerImage.alt = link.querySelector('img').alt;
         caption.textContent = link.dataset.caption;
         viewer.showModal();
+        window.OjjudaSectionNavigation?.openDialog(viewer, () => link.click());
         document.body.classList.add('viewer-open');
         viewer.querySelector('.viewer-image').scrollTop = 0;
         viewer.querySelector('button').focus();

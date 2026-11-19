@@ -4,7 +4,7 @@ const files: Record<string,string> = {
   "walk.webp": "47bc50f315c0dcf65cdccb6e2af76b120c134d8d8e55034f8511efa633f27266",
   "book.webp": "2a76a993ac3a690eb73a17ee79d4180863ba20c991dd34459abc333d90a6b95a",
   "vinyl.webp": "dfe33b7665d0ecbf952d2004710940635e4879f589ae4680ef85ac6109a23d77",
-  "station.js": "4a80343eb2d6b21fc02bf5a1321bb11180267c8274227812c7b750e2eaccb6e1",
+  "station.js": "72cf366331f7a2599d558b7690d1aa3483901590dfee324cd03206004bdd400c",
   "camera.webp": "b686b71a0517be69e02f61a3028d18e2f406a1087dcebc060d588bcae3df046d"
 };
 const bucket='pajang-member-assets';

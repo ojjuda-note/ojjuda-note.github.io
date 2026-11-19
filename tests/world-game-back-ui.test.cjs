@@ -207,17 +207,29 @@ window.childReady=true;
       await page.locator('.bottomnav [data-tab="my"]').click();
       await page.waitForFunction(() => history.state?.ojjudaWorld === 'menu');
       await back();
-      assert.equal(await page.locator('.my-hub').isVisible(),true,'settings Back stays in settings');
+      assert.equal(await page.locator('.arcade-home').isVisible(),true,'settings Back returns to the Arcade that opened it');
       await page.locator('.bottomnav [data-tab="hub"]').click();
       await main();
       assert.deepEqual(errors, [], 'no navigation or game bridge errors');
-      if (!native) {
-        await page.goBack();
-        await page.waitForURL(origin + '/outside.html');
-      } else {
-        await page.evaluate(() => backFixture.nativeBack());
-        assert.equal(await page.evaluate(() => backFixture.exits), 1, 'only Back from the main screen may exit');
+      await back();
+      await arcade();
+      assert.equal(await page.evaluate(() => backFixture.exits),0,'reaching Hub does not discard the older Arcade visit or exit the app');
+      const first=await context.newPage();
+      let firstDialogs=0;
+      first.on('dialog',dialog=>{firstDialogs++;dialog.dismiss();});
+      await first.goto(origin+'/world.html');
+      await first.waitForFunction(()=>window.backFixture&&history.state?.ojjudaWorld==='main');
+      if(native){
+        await first.waitForFunction(()=>typeof window.nativeBack==='function');
+        await first.evaluate(()=>backFixture.nativeBack());
+        assert.equal(firstDialogs,1,'an explicit exit decision is required at the first screen');
+        assert.equal(await first.evaluate(()=>backFixture.exits),0,'dismissing exit keeps the app open');
+      }else{
+        await first.goBack();
+        await first.waitForFunction(()=>history.state?.ojjudaWorld==='main');
+        assert.equal(new URL(first.url()).pathname,'/world.html','a direct first-screen Back does not immediately leave the app');
       }
+      await first.close();
       const retired=await context.newPage();
       await retired.goto(origin+'/world.html?game=byeolcheonji',{waitUntil:'commit'});
       await retired.locator('#app .bottomnav').waitFor();

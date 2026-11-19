@@ -31,7 +31,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   let taskId = 0;
   let serviceUser = user;
   let focused = null;
-  const elements = new Map(), tasks = new Map(), navigations = [], signups = [], signins = [], passwordUpdates = [], recoveries = [], storage = new Map();
+  const elements = new Map(), tasks = new Map(), navigations = [], navigationKinds = [], signups = [], signins = [], passwordUpdates = [], recoveries = [], storage = new Map();
   const element = key => {
     if (!elements.has(key)) elements.set(key, {
       hidden: false, disabled: false, readOnly: false, tabIndex: 0, value: '', checked: false, textContent: '',
@@ -61,7 +61,8 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   });
   const policyLinks = ['terms', 'privacy'].map(name => { const e = element(`${name}-link`); e.dataset.policyDocument = name; return e; });
   const location = new URL(`https://ojjuda.kr/${query}`);
-  location.assign = value => navigations.push(value);
+  location.assign = value => { navigationKinds.push('assign'); navigations.push(value); };
+  location.replace = value => { navigationKinds.push('replace'); navigations.push(value); };
   let authListener;
   const account = user ? { user } : null;
   const client = {
@@ -97,7 +98,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
         : selector === '[data-destination]' ? destinationButtons : [] },
     Date: class extends Date { static now() { return clock; } },
     location, URL, URLSearchParams, console: { warn() {}, error() {} },
-    history: { replaceState(_state, _title, url) { location.href = new URL(url, location).href; } },
+    history: { state: { sharedNavigation: 'keep' }, replaceState(state, _title, url) { this.state = state; location.href = new URL(url, location).href; } },
     sessionStorage: { getItem: k => storage.get(k) || null, setItem: (k, v) => storage.set(k, v), removeItem: k => storage.delete(k) },
     setTimeout: (callback, delay = 0) => { const id = ++taskId; tasks.set(id, { callback, at: clock + delay }); return id; },
     clearTimeout: id => tasks.delete(id)
@@ -119,7 +120,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     for (const [key, value] of Object.entries({ email: 'signup-fixture@ojjuda.kr', password: 'test-password', 'password-confirm': 'test-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '010-2345-6789' })) element(key).value = value;
     element('age-check').checked = element('policy-check').checked = true;
   };
-  return { element, flush, emit, emitNow, submit, fill, navigations, signups, signins, passwordUpdates, recoveries, storage, location, window: context.window, client, get focused() { return focused; }, advance: ms => { clock += ms; } };
+  return { element, flush, emit, emitNow, submit, fill, navigations, navigationKinds, signups, signins, passwordUpdates, recoveries, storage, location, history: context.history, window: context.window, client, get focused() { return focused; }, advance: ms => { clock += ms; } };
 }
 
 // The login controller shares its auth client with navigation tracking.
@@ -148,6 +149,8 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     const direct = setup(`?auth=login&next=${destination}`); await direct.flush();
     await signIn(direct);
     assert.deepEqual(direct.navigations, [route], `${destination} returns to its own section after login`);
+    assert.deepEqual(direct.navigationKinds, ['replace'], `${destination} consumes the intermediate login page`);
+    assert.equal(direct.history.state.sharedNavigation, 'keep', 'auth URL cleanup preserves navigation metadata');
 
     const reopened = setup(`?auth=login&next=${destination}`); await reopened.flush();
     await closeDialog(reopened);
@@ -182,9 +185,18 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     const immediate = setup(`?auth=signup&next=${destination}`, { confirmed: true });
     await immediate.flush(); immediate.fill(); await immediate.submit();
     assert.deepEqual(immediate.navigations, [route], `${destination} also resumes when signup immediately returns a session`);
+    assert.deepEqual(immediate.navigationKinds, ['replace']);
     const existing = setup(`?auth=login&next=${destination}`, { user: { id: 'existing-member', email: 'member@ojjuda.kr' } });
     await existing.flush();
     assert.deepEqual(existing.navigations, [route], `${destination} also resumes an existing session`);
+    assert.deepEqual(existing.navigationKinds, ['replace']);
+
+    const explicit = setup('?auth=login', { user: { id: 'existing-member', email: 'member@ojjuda.kr' } });
+    await explicit.flush();
+    explicit.element(`destination-${destination}`).listeners.click({ preventDefault() {} });
+    await explicit.flush();
+    assert.deepEqual(explicit.navigations, [route]);
+    assert.deepEqual(explicit.navigationKinds, ['assign'], 'an explicit signed-in service choice keeps its real visit history');
   }
   for (const next of ['', '&next=unknown', '&next=https://example.invalid/', '&next=//example.invalid/', '&next=toString']) {
     const login = setup('?auth=login' + next); await login.flush(); await signIn(login);

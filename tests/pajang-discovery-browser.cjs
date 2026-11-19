@@ -259,10 +259,65 @@ function clientFixture(hash) {
   `;
 }
 
+async function checkNavigation(page){
+  const menu=page.getByRole('navigation',{name:'파장 메뉴'});
+  const choose=label=>menu.getByRole('link',{name:label,exact:true}).click();
+  const heading=label=>page.getByRole('heading',{name:label,exact:true});
+  await page.goto(origin+project+'station.html');
+  await menu.waitFor();
+  await choose('마음함');await heading('마음함').waitFor();
+  await choose('내 파장');await heading('내 파장').waitFor();
+  const settings=page.getByRole('region',{name:'파장 설정',exact:true});
+  await settings.getByRole('button',{name:'사용법',exact:true}).click();
+  const help=page.getByRole('dialog',{name:'파장 이용 안내'});
+  await help.waitFor();
+  const profileUrl=page.url();
+  await page.goBack();await help.waitFor({state:'detached'});
+  assert.equal(page.url(),profileUrl,'Back closes the dialog before leaving its page');
+  await heading('내 파장').waitFor();
+  await page.goBack();await heading('마음함').waitFor();
+  await page.goForward();await heading('내 파장').waitFor();
+  await settings.getByRole('button',{name:'공개 소개 수정',exact:true}).click();
+  const editor=page.getByRole('dialog',{name:'프로필 수정'});
+  await editor.waitFor();
+  await editor.getByRole('button',{name:'닫기',exact:true}).click();
+  await editor.waitFor({state:'detached'});
+  await page.goBack();await heading('마음함').waitFor();
+  assert.equal(await page.getByRole('dialog').count(),0,'a button-closed dialog leaves no phantom Back entry');
+  await page.goForward();await heading('내 파장').waitFor();
+  await page.goForward();await editor.waitFor();
+  await editor.getByRole('button',{name:'닫기',exact:true}).click();
+  await editor.waitFor({state:'detached'});
+  await choose('오늘');
+  await page.getByRole('button',{name:'내 주변',exact:true}).click();
+  await heading('주변 레이더').waitFor();
+  await page.locator('.scope-person').filter({hasText:'라'}).click();
+  await page.getByRole('button',{name:'공개 정보 보기'}).click();
+  await page.getByRole('dialog').getByRole('button',{name:'대화 열기',exact:true}).click();
+  await page.getByRole('textbox',{name:'메시지',exact:true}).waitFor();
+  assert.ok(page.url().includes('chat=peer1'));
+  await page.getByRole('button',{name:'뒤로가기',exact:true}).click();
+  await heading('주변 레이더').waitFor();
+  assert.equal(await page.getByRole('dialog').count(),0,'chat Back returns to the actual radar page without reopening its closed profile');
+  await page.goForward();await page.getByRole('textbox',{name:'메시지',exact:true}).waitFor();
+  await page.reload();await page.getByRole('textbox',{name:'메시지',exact:true}).waitFor();
+  await page.getByRole('button',{name:'뒤로가기',exact:true}).click();
+  await heading('주변 레이더').waitFor();
+  await page.route('https://outside.test/**',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><title>External entry</title>'}));
+  await page.goto('https://outside.test/');
+  await page.goto(origin+project+'station.html?tab=chat&chat=peer1');
+  await page.getByRole('textbox',{name:'메시지',exact:true}).waitFor();
+  await page.getByRole('button',{name:'뒤로가기',exact:true}).click();
+  await heading('마음함').waitFor();
+  await choose('내 파장');
+  for(const label of ['이용약관','개인정보처리방침'])assert.equal(await settings.getByRole('link',{name:label,exact:true}).getAttribute('target'),null);
+  console.log('PASS Pajang dialog-first Back, real tab history and Forward, closed-dialog cleanup, radar-to-chat return, reload and direct-chat fallback');
+}
+
 (async()=>{
   const bundle=await fs.readFile(process.env.PAJANG_TEST_BUNDLE||path.join(feature,'assets/station.js'));
   const hash=crypto.createHash('sha256').update(bundle).digest('hex');
-  const browser=await chromium.launch();
+  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined});
   try {
     const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,locale:'ko-KR',geolocation:{latitude:37.5665,longitude:126.978,accuracy:30},permissions:['geolocation']});
     const page=await context.newPage(), errors=[];
@@ -283,6 +338,7 @@ function clientFixture(hash) {
         <link rel="stylesheet" href="/features/home/agit-hub.css"><title>아지트</title>
         <script src="/config.js"></script><script src="/features/home/agit-hub.js"></script><script type="module" src="/features/home/location-warmup.mjs"></script>
         <main></main><script>document.querySelector('main').innerHTML=OjjudaAgitHub.markup({},{});</script></html>`});
+      if(pathname==='/shared/navigation/section-back.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/navigation/section-back.js'))});
       if(pathname==='/shared/location/location.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/location/location.js'))});
       const file=pathname.slice(project.length)||'index.html';
       if(legacyLocationPage&&file==='location.mjs')return route.fulfill({contentType:'text/javascript',body:'export async function prepareLocation(state){return state;}'});
@@ -292,6 +348,8 @@ function clientFixture(hash) {
       if(legacyLocationPage&&file.endsWith('.html'))body=body.toString().replace(/<script[^>]*src="\/shared\/location\/location\.js[^>]*><\/script>/,'');
       return route.fulfill({contentType:mime,body});
     });
+    await checkNavigation(page);
+    if(process.env.PAJANG_NAVIGATION_ONLY==='1'){assert.deepEqual(errors,[]);return;}
     const flightDir=path.join(__dirname,'artifacts/pajang-discovery');
     await fs.mkdir(flightDir,{recursive:true});
     for(const [url,ready] of [['index.html?flight-check=new','#welcome #write'],['station.html?flight-check=member','#station #answers']]){
@@ -554,7 +612,7 @@ function clientFixture(hash) {
     assert.equal(await page.evaluate(()=>window.memberCalls.includes('delete')),false,'opening and cancelling the record settings does not delete data');
     assert.equal(await settings.getByRole('link',{name:'이용약관',exact:true}).getAttribute('href'),'/terms.html?from=pajang');
     assert.equal(await settings.getByRole('link',{name:'개인정보처리방침',exact:true}).getAttribute('href'),'/privacy.html?from=pajang');
-    for(const label of ['이용약관','개인정보처리방침'])assert.equal(await settings.getByRole('link',{name:label,exact:true}).getAttribute('target'),'_blank');
+    for(const label of ['이용약관','개인정보처리방침'])assert.equal(await settings.getByRole('link',{name:label,exact:true}).getAttribute('target'),null);
     const accountPage=page.locator('.station-account');
     for(const width of [320,390]){
       await page.setViewportSize({width,height:844});
