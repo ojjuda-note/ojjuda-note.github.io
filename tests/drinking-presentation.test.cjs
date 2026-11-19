@@ -367,6 +367,13 @@ test('all native and local adapters publish outcomes only from a confirmed done 
     assert.ok(updates.at(-1).result?.key,kind+' local confirmed outcome');
     assert.equal(entries.at(-1)[1].local,true);
   }
+  f.w.eval(fs.readFileSync(path.join(root,'games/drinking/table-view.js'),'utf8'));
+  view.innerHTML='<section class="card"><div id="game"><h1>전원 불발</h1><p>다음 판을 시작해요.</p><p class="table-host">다음 방장 · 이전 참가자</p></div></section>';
+  f.w.DrinkingGameScreen.native('partyroulette',{code:'ROOM01',round:4,phase:'done',
+    players:['하나','둘','셋'],hostSeat:0,game:{allSafe:true,fired:false}},view);
+  assert.equal(updates.at(-1).result.title,'전원 불발');
+  assert.equal(updates.at(-1).result.body,'다음 판을 시작해요.');
+  assert.equal(view.querySelector('.table-host'),null,'an all-safe round does not announce a winner or new host');
   f.w.DrinkingGameScreen.native('king',{code:'KING01',round:1,phase:'done',declined:0},view);
   assert.equal(updates.at(-1).result.title,'이번 미션은 패스했어요','declined consent is not presented as completed action');
   app.innerHTML='<div class="play-body"><h2>소수파 결과</h2><p class="results-line"><strong>먼저 고백 · 1표</strong>하나</p><p class="results-line"><strong>고백 기다리기 · 2표</strong>둘, 셋</p></div>';

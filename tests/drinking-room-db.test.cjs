@@ -8,6 +8,20 @@ const {fixture} = require('./drinking-room-fixture.cjs');
 const kinds = ['croc','bottle','bomb','stopwatch','liar','king','truth','initial','minority','mission','fingers','imagevote','updown','secretcount','partyroulette'];
 const roomTables = ['drinking_rooms','croc_rooms','liar_rooms','king_rooms','party_vote_rooms'];
 
+// Exercise a chosen random outcome without replacing the production draw or
+// accepting a flaky test that sometimes never reaches the extra chamber.
+async function seedRouletteDraw(db, chambers, expected) {
+  for(let i=-100;i<=100;i++){
+    const seed=i/100;
+    await db.query('select setseed($1)',[seed]);
+    const value=(await db.query('select random() value')).rows[0].value;
+    if(Math.floor(value*chambers)!==expected)continue;
+    await db.query('select setseed($1)',[seed]);
+    return;
+  }
+  throw Error('No deterministic seed found for roulette chamber '+expected);
+}
+
 test('drinking rooms retain consistent state through overlapping account requests', {timeout: 120_000}, async t => {
   const f = await fixture();
   t.after(() => f.close());
@@ -314,9 +328,9 @@ test('truth completes three laps, synchronizes the toast, and rejects actions fr
   assert.equal(s.game.lap,1);
 });
 
-for (const withTargets of [false,true]) test(withTargets
-  ? 'group roulette seals targets and reveals the same winner on every phone after concurrent presses'
-  : 'legacy group roulette reveals exactly one phone and preserves its result on reconnect',async t=>{
+for (const withTargets of [false,true]) for(const allSafe of [false,true]) test(
+  'group roulette '+(withTargets?'with targets':'without target selection')+' '+
+  (allSafe?'can leave every phone safe and preserves lobby control':'reveals one phone and preserves its result on reconnect'),async t=>{
   const f=await fixture();t.after(()=>f.close());
   const n=5,seats=f.users.slice(0,n);
   const hub=(i,act,code,opts={})=>f.publicRpc(seats[i],'drinking_room',[act,code,opts]);
@@ -327,14 +341,14 @@ for (const withTargets of [false,true]) test(withTargets
   let s=await call(0,'state');
   const opts=()=>({round:s.round,revision:s.revision,request_id:randomUUID()});
   assert.deepEqual(s.players,['1번','2번','3번','4번','5번']);
-  assert.deepEqual(s.game,{phase:'prepare',count:0,mine:false});
+  assert.deepEqual(s.game,{phase:'prepare',chambers:n+1,count:0,mine:false});
   await assert.rejects(call(0,'roulette_press',opts()),/unavailable/);
   const targetFor=i=>(i+1)%n;
   // One older client chooses on press; the others choose before becoming ready.
   const readyOptions=i=>withTargets&&i!==1?{...opts(),target:targetFor(i)}:opts();
   if(withTargets)await assert.rejects(call(0,'roulette_ready',{...opts(),target:0}),/invalid_target/);
   const first=readyOptions(0);await call(0,'roulette_ready',first);await call(0,'roulette_ready',first);
-  assert.deepEqual((await call(1,'state')).game,{phase:'prepare',count:1,mine:false});
+  assert.deepEqual((await call(1,'state')).game,{phase:'prepare',chambers:n+1,count:1,mine:false});
   if(withTargets)assert.equal((await call(0,'state')).game.myTarget,targetFor(0));
   await Promise.all(seats.slice(1).map((_,i)=>call(i+1,'roulette_ready',readyOptions(i+1))));
   s=await call(1,'state');assert.equal(s.phase,'together');assert.ok(s.game.opensAt>s.serverMs);
@@ -353,26 +367,85 @@ for (const withTargets of [false,true]) test(withTargets
   await Promise.all(seats.slice(0,-1).map((_,i)=>call(i,'roulette_press',pressOptions(i))));
   if(withTargets)await assert.rejects(call(1,'roulette_press',{...opts(),target:3}),/target_locked/);
   const pending=await call(n-1,'state');
-  assert.deepEqual(pending.game,{phase:'together',count:n-1,mine:false,opensAt:0,...(withTargets?{myTarget:targetFor(n-1)}:{})});
+  assert.deepEqual(pending.game,{phase:'together',chambers:n+1,count:n-1,mine:false,opensAt:0,...(withTargets?{myTarget:targetFor(n-1)}:{})});
   assert.equal((await call(0,'state')).game.mine,true);
+  const drawn=allSafe?n:2;
+  await seedRouletteDraw(f.db,n+1,drawn);
   let last=pressOptions(n-1);await call(n-1,'roulette_press',last);await call(n-1,'roulette_press',last);
   const results=await Promise.all(seats.map((_,i)=>call(i,'state')));
-  assert.equal(results.filter(s=>s.game.fired).length,1);
+  assert.equal(results.filter(s=>s.game.fired).length,allSafe?0:1);
   for(const [i,r] of results.entries()){
     assert.equal(r.phase,'done');
-    if(withTargets){
+    assert.equal(r.game.chambers,n+1);
+    if(allSafe){
+      assert.deepEqual(r.game,{phase:'done',chambers:n+1,fired:false,allSafe:true,revealAt:results[0].game.revealAt});
+      assert.ok(r.game.revealAt>pending.serverMs);
+      assert.equal(r.hostSeat,0);
+    }else if(withTargets){
       const shooter=results.findIndex(s=>s.game.fired);
+      assert.equal(shooter,drawn);
       assert.equal(r.game.shooter,shooter);
       assert.equal(r.game.target,targetFor(shooter));
       assert.equal(r.game.revealAt,results[0].game.revealAt);
       assert.ok(r.game.revealAt>pending.serverMs);
       assert.equal(r.hostSeat,r.game.target);
     }else{
-      assert.deepEqual(Object.keys(r.game).sort(),['fired','phase']);
+      assert.deepEqual(Object.keys(r.game).sort(),['chambers','fired','phase']);
       assert.equal(r.hostSeat,0);
     }
     assert.deepEqual((await call(i,'state')).game,r.game);
   }
+  if(allSafe){
+    parent=await hub(0,'state',parent.code);
+    assert.equal(parent.hostSeat,0);
+    const returned={revision:parent.revision,request_id:randomUUID()};
+    await assert.rejects(hub(1,'return',parent.code,returned),/host_only/);
+    const priorPlayers=parent.players,priorRound=parent.round;
+    parent=await hub(0,'return',parent.code,returned);
+    assert.equal(parent.phase,'lobby');
+    assert.deepEqual(parent.players,priorPlayers);
+    parent=await hub(0,'start',parent.code,{kind:'partyroulette',revision:parent.revision,request_id:randomUUID()});
+    assert.equal(parent.round,priorRound+1);
+    const next=await call(0,'state');
+    assert.deepEqual(next.game,{phase:'prepare',chambers:n+1,count:0,mine:false});
+  }
+});
+
+test('roulette keeps active legacy rounds and gives new 2-to-12-player rounds one extra chamber',async t=>{
+  const f=await fixture();t.after(()=>f.close());
+  const step=async(g,action,opts,seat,n,ms=10000)=>(await f.db.query(
+    'select ojjuda_arcade_internal.live_partyroulette($1::jsonb,$2,$3::jsonb,$4,$5,$6) game',
+    [JSON.stringify(g),action,JSON.stringify(opts),seat,n,ms])).rows[0].game;
+  for(const n of [2,12]){
+    const targets=Object.fromEntries(Array.from({length:n},(_,i)=>[i,(i+1)%n]));
+    for(const legacy of [false,true]){
+      let state=legacy?{phase:'prepare',marks:{}}:await step({},'init',{},0,n);
+      for(let seat=0;seat<n;seat++)state=await step(state,'roulette_ready',{target:targets[seat]},seat,n);
+      const chambers=legacy?n:n+1;
+      assert.equal(state.chambers,chambers);
+      const beforeLast={...state,marks:Object.fromEntries(Array.from({length:n-1},(_,i)=>[i,true]))};
+      // Last occupied chamber is valid even at the maximum supported roster;
+      // only the additional chamber makes all participants safe.
+      for(const drawn of [0,n-1,...(legacy?[]:[n])]){
+        await seedRouletteDraw(f.db,chambers,drawn);
+        const result=await step(beforeLast,'roulette_press',{},n-1,n,14000);
+        assert.equal(result.drawn,drawn);
+        assert.equal(result.chambers,chambers);
+        const views=await Promise.all(Array.from({length:n},(_,i)=>step(result,'view',{},i,n,14000)));
+        assert.equal(views.filter(v=>v.fired).length,drawn===n?0:1);
+        for(const view of views){
+          assert.equal(view.allSafe,drawn===n?true:undefined);
+          assert.equal(view.target,drawn===n?undefined:targets[drawn]);
+        }
+      }
+    }
+  }
+  assert.deepEqual(await step({phase:'done',drawn:1},'view',{},1,3),
+    {phase:'done',fired:true,chambers:3},'a previously finished legacy result is unchanged');
+  const permissions=(await f.db.query(`select rolname,has_function_privilege(rolname,
+    'ojjuda_arcade_internal.live_partyroulette(jsonb,text,jsonb,integer,integer,bigint)','EXECUTE') allowed
+    from pg_roles where rolname in ('anon','authenticated')`)).rows;
+  assert.ok(permissions.every(role=>!role.allowed),'internal roulette hooks stay private');
 });
 
 test('initial next starts one server deadline and keeps the surviving seat and turn',async t=>{

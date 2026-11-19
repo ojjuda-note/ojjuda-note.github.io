@@ -840,6 +840,9 @@ test('local roulette loads in portrait then turns for play without a target pick
   await page.setViewportSize({width:390,height:844});
   await page.locator('[data-action="start"]').click();
   assert.equal(await page.locator('.pr-target').count(),0);
+  assert.equal(await page.locator('.pr-wheel > i').count(),4);
+  assert.equal(await page.locator('.pr-wheel > .loaded').count(),1);
+  assert.equal(await page.locator('.pr-status').textContent(),'4칸 중 한 칸에 한 발이 들어가요.');
   assert.equal(await page.locator('#access-content').getAttribute('data-roulette-angle'),null);
   await page.getByRole('button',{name:'장전하기'}).click();
   await expectRouletteStage(page,true);
@@ -861,9 +864,11 @@ test('local roulette loads in portrait then turns for play without a target pick
   assert.deepEqual(session.errors,[]);
 });
 
-test('three phones choose a target during loading and reveal the same winner',async t=>{
+for(const allSafe of [false,true])test(allSafe
+  ? 'three phones show an all-safe roulette result and can start the next round'
+  : 'three phones choose a target during loading and reveal the same winner',async t=>{
   const browser=await chromium.launch(launchOptions);t.after(()=>browser.close());
-  const n=3,ready=new Set(),pressed=new Set(),targets=new Map();let phase='prepare',revision=1,opensAt=0,revealAt=0;
+  const n=3,ready=new Set(),pressed=new Set(),targets=new Map();let phase='prepare',revision=1,round=1,opensAt=0,revealAt=0;
   const sessions=await Promise.all([0,1,2].map(async seat=>{
     return browserSession(browser,{actor:'roulette-device-'+seat,reducedMotion:'no-preference',viewport:seat===0?{width:360,height:640}:{width:844,height:390},rpc:(_name,args)=>{
       const act=args.p_action;
@@ -874,10 +879,14 @@ test('three phones choose a target during loading and reveal the same winner',as
         if(Date.now()<opensAt)throw Error('countdown_running');
         pressed.add(seat);revision++;
         if(pressed.size===n){phase='done';revealAt=Date.now()+900;}
+      }else if(act==='again'&&phase==='done'&&seat===(allSafe?0:2)){
+        phase='prepare';round++;revision++;ready.clear();pressed.clear();targets.clear();opensAt=0;revealAt=0;
       }
       const marks=phase==='prepare'?ready:pressed;
-      return {code:'GRP001',title:'함께',capacity:n,players:['1번','2번','3번'],me:seat,revision,round:1,
-        phase,serverMs:Date.now(),hostSeat:2,game:phase==='done'?{phase,fired:seat===1,shooter:1,target:targets.get(1),revealAt}:{phase,count:marks.size,mine:marks.has(seat),opensAt,myTarget:targets.get(seat)}};
+      return {code:'GRP001',title:'함께',capacity:n,players:['1번','2번','3번'],me:seat,revision,round,
+        phase,serverMs:Date.now(),hostSeat:allSafe?0:2,game:phase==='done'?
+          (allSafe?{phase,chambers:n+1,fired:false,allSafe:true,revealAt}:{phase,chambers:n+1,fired:seat===1,shooter:1,target:targets.get(1),revealAt}):
+          {phase,chambers:n+1,count:marks.size,mine:marks.has(seat),opensAt,myTarget:targets.get(seat)}};
     }});
   }));
   const pages=sessions.map(s=>s.page);
@@ -899,19 +908,41 @@ test('three phones choose a target during loading and reveal the same winner',as
       }).observe(document.body, {childList:true});
     });
     assert.equal(await p.getByRole('button',{name:'장전하기'}).isDisabled(),true);
+    assert.equal(await p.locator('.pr-wheel > i').count(),n+1);
+    assert.equal(await p.locator('.pr-wheel > .loaded').count(),1);
+    assert.match(await p.locator('.pr-status').textContent(),/4칸 중 한 칸에 한 발이 들어가요\./);
     const select=p.getByLabel('누구를 쏘실건가요?',{exact:true});
     assert.equal(await select.locator('option[value="'+i+'"]').count(),0);
     await select.selectOption(String((i+1)%n));
     await p.getByRole('button',{name:'장전하기'}).click();
     await expectRouletteStage(p,i===0);
-    await p.getByRole('button',{name:'시작',exact:true}).click();
   }));
-  await Promise.all(pages.map(p=>p.getByRole('button',{name:'방아쇠 누르기'}).click()));
+  await pages[0].getByRole('button',{name:'시작',exact:true}).click();
+  await pages[0].waitForFunction(()=>document.querySelector('.pr-status')?.textContent==='준비한 사람 1 / 3명');
+  await Promise.all(pages.slice(1).map(p=>p.getByRole('button',{name:'시작',exact:true}).click()));
+  await pages[0].getByRole('button',{name:'방아쇠 누르기'}).click();
+  await pages[0].waitForFunction(()=>document.querySelector('.pr-status')?.textContent==='누른 사람 1 / 3명');
+  await Promise.all(pages.slice(1).map(p=>p.getByRole('button',{name:'방아쇠 누르기'}).click()));
   for(const [i,p] of pages.entries()){
     const result=p.locator('[data-drinking-dialog="result"]');
-    await result.waitFor();assert.match(await result.innerText(),/3번 당첨!/);
-    assert.deepEqual(await p.evaluate(() => window.revealEvents), i === 1 ? ['shot','viewport'] : ['dry']);
+    await result.waitFor();
+    const copy=await result.innerText();
+    if(allSafe){
+      assert.match(copy,/전원 불발/);assert.match(copy,/다음 판을 시작해요\./);
+      assert.doesNotMatch(copy,/당첨|다음 방장|팡!/);
+      assert.equal(await p.locator('#view .table-host').count(),0);
+    }else assert.match(copy,/3번 당첨!/);
+    assert.deepEqual(await p.evaluate(() => window.revealEvents), !allSafe && i === 1 ? ['shot','viewport'] : ['dry']);
     assert.deepEqual(sessions[i].errors,[]);
+  }
+  if(allSafe){
+    await pages[0].getByRole('button',{name:'결과 확인',exact:true}).click();
+    await pages[0].getByRole('button',{name:'한 판 더',exact:true}).click();
+    for(const p of pages){
+      await p.locator('.roulette-table[data-step="load"]').waitFor();
+      assert.equal(await p.locator('.pr-wheel > i').count(),n+1);
+      assert.equal(await p.locator('[data-drinking-dialog="result"]').count(),0);
+    }
   }
 });
 

@@ -640,21 +640,45 @@ test('participant storage errors are visible and edits remain usable',async t=>{
 test('local roulette opens from its link without a target picker and keeps saved participants',async t=>{
   const key='oj.party.member-a.players',saved='["하나","둘","셋"]';
   const f=await screen({url:'/games/drinking/local/#partyroulette',prepare(w){
-    w.scrollTo=()=>{};w.localStorage.setItem(key,saved);
+    w.scrollTo=()=>{};w.localStorage.setItem(key,saved);w.Math.random=()=>.9999;
   }});
   t.after(()=>f.close());
   assert.equal(f.w.location.hash,'#partyroulette');
   f.click('[data-action="start"]');
   assert.equal(f.find('.roulette-table').dataset.step,'load');
   assert.equal(f.find('.pr-target'),null);
-  assert.equal(f.find('.pr-wheel').children.length,3);
+  assert.equal(f.find('.pr-wheel').children.length,4);
+  assert.equal(f.find('.pr-wheel').querySelectorAll('.loaded').length,1);
+  assert.equal(f.find('.pr-status').textContent,'4칸 중 한 칸에 한 발이 들어가요.');
   f.click('.pr-next');
   assert.equal(f.find('.roulette-table').dataset.step,'spin');
   f.click('.pr-next');
   assert.equal(f.find('.roulette-table').dataset.step,'play');
   assert.ok(!f.find('.pr-trigger').hidden);
+  const shots=[];f.w.PartyFX.play=cue=>shots.push(cue);
+  for(let i=0;i<3;i++){
+    f.click('.pr-trigger');
+    assert.match(f.find('.pr-status').textContent,/불발/);
+    await f.advance(650);
+  }
+  f.click('.pr-trigger');
+  assert.equal(f.find('.pr-status').textContent,'팡!');
+  assert.deepEqual(shots,['dry','dry','dry','shot'],'the extra fourth chamber can contain the shot');
   assert.equal(f.w.localStorage.getItem(key),saved);
   assert.deepEqual(f.errors,[]);
+});
+
+test('online roulette preserves legacy chambers and uses the server count for new rounds',async t=>{
+  for(const chambers of [undefined,3,4]){
+    const state={code:'ROUL01',title:'친구들 방',players:['1번','2번','3번'],me:0,capacity:3,
+      phase:'prepare',revision:1,round:1,game:{phase:'prepare',count:0,mine:false,...(chambers===undefined?{}:{chambers})}};
+    const f=await screen({url:'/games/partyroulette/?room=ROUL01',rpc:()=>state});
+    t.after(()=>f.close());
+    await until(()=>!!f.find('.pr-wheel'),'roulette loading screen');
+    assert.equal(f.find('.pr-wheel').children.length,chambers??3);
+    assert.equal(f.find('.pr-wheel').querySelectorAll('.loaded').length,1);
+    assert.deepEqual(f.errors,[]);
+  }
 });
 
 test('previous roulette selection can be replaced in an existing lobby',async t=>{
