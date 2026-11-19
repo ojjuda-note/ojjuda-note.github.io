@@ -16,7 +16,7 @@ function fixture(t,url='https://ojjuda.test/features/pajang/station.html',{admin
   w.HTMLElement.prototype.scrollIntoView=function(){};
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;};
-  for(const href of ['/note/support.css?v=20261119-withdrawal-contact1','/features/pajang/support.css?v=20261119-withdrawal-contact1']){
+  for(const href of ['/note/support.css?v=20261119-withdrawal-disclosure1','/features/pajang/support.css?v=20261119-withdrawal-disclosure1']){
     const link=w.document.createElement('link');link.rel='stylesheet';link.href=href;
     Object.defineProperty(link,'sheet',{value:{}});w.document.head.append(link);
   }
@@ -179,7 +179,13 @@ test('support closes before the visited tab and withdrawal replaces it without r
   assert.equal(support(),null,'Forward cannot reopen support owned by the previous settings mount');
   await f.click('.account-settings button .ojjuda-settings-label','문의·의견');
   await f.until(()=>w.document.querySelector('#note-inquiry-body'));
-  await f.click('.note-support-layer button','회원 탈퇴');
+  const disclosure=w.document.querySelector('[data-support-account]');
+  assert.equal(disclosure.open,false);
+  await f.click('.note-support-layer button','회원 탈퇴 안내');
+  assert.equal(f.modal(),null,'collapsed account guidance cannot open withdrawal');
+  w.document.querySelector('[data-support-account-toggle]').click();
+  assert.equal(disclosure.open,true);
+  await f.click('.note-support-layer button','회원 탈퇴 안내');
   await f.until(()=>f.modal()?.getAttribute('aria-label')==='오쭈다 회원탈퇴');
   assert.equal(support(),null);
   await f.click('dialog button','취소');await f.until(()=>!f.modal());

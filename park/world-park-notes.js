@@ -18,7 +18,10 @@
     // inactive iframe so its feed, scripts and connections do not live forever.
     const cacheLifetime=60_000;
     const active=()=>app.place()?.id==='park';
-    const requested=new URL(location.href).searchParams.get('place')==='park';
+    // World can normalize its route before this first iframe mounts. Capture
+    // one-time card/composer options together with the original Park request.
+    const entryUrl=new URL(location.href);
+    const requested=entryUrl.searchParams.get('place')==='park';
     const api=()=>{try{return frame?.contentWindow.OjjudaParkFull;}catch{return null;}};
     function canOpenAdmin(){
       return !!(active()&&frameVisible&&frame?.isConnected&&!panel?.hidden&&owner&&owner===app.userId()&&app.isAdmin?.()===true);
@@ -117,9 +120,9 @@
       }
       forget();
       panel=next;panel.hidden=false;panel.removeAttribute('aria-hidden');owner=app.userId();overlayOpen=composerOpen=cardOpen=false;
-      const view=initial&&new URL(location.href).searchParams.get('view')==='glasses'?'glasses':'cards';
+      const view=initial&&entryUrl.searchParams.get('view')==='glasses'?'glasses':'cards';
       const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');url.searchParams.set('v',frameVersion);
-      if(initial){const source=new URL(location.href);for(const key of ['card','keep','compose'])if(source.searchParams.has(key))url.searchParams.set(key,source.searchParams.get(key));initial=false;}
+      if(initial){for(const key of ['card','keep','compose'])if(entryUrl.searchParams.has(key))url.searchParams.set(key,entryUrl.searchParams.get(key));initial=false;}
       frame=document.createElement('iframe');frame.title='공원 카드';frame.allow='geolocation; clipboard-write; web-share';frame.dataset.view=view;frame.src=url.pathname+url.search;
       frameVisible=true;
       panel.querySelector('[data-park-app-slot]').replaceChildren(frame);loading(true);

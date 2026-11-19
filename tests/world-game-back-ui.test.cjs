@@ -85,7 +85,7 @@ window.childReady=true;
       };
       const arcade = async (scenario='Arcade return') => {
         try {
-          await page.waitForFunction(() => history.state?.ojjudaWorld === 'menu' && !!document.querySelector('.arcade-home') && !document.querySelector('#gov,#matgo-overlay,#ttang-overlay,#photo-ttang-overlay,dialog[open],[data-bl="close"]'));
+          await page.waitForFunction(() => history.state?.ojjudaWorldHistory?.overlay === false && history.state.ojjudaWorldHistory.route.tab === 'arcade' && !!document.querySelector('.arcade-home') && !document.querySelector('#gov,#matgo-overlay,#ttang-overlay,#photo-ttang-overlay,dialog[open],[data-bl="close"]'));
         } catch (error) {
           const state=await page.evaluate(()=>({url:location.href,tab:backFixture.state.tab,place:backFixture.state.place?.id,
             history:history.state,gaming:document.body.classList.contains('gaming'),arcade:!!document.querySelector('.arcade-home'),
@@ -118,7 +118,7 @@ window.childReady=true;
           else backFixture.open(game);
         }, game);
         await page.locator(selector).first().waitFor();
-        await page.waitForFunction(() => history.state?.ojjudaWorld === 'menu');
+        await page.waitForFunction(() => history.state?.ojjudaWorldHistory?.overlay === true);
         for (const frame of page.frames().slice(1)) await frame.waitForFunction(() => window.childReady);
         await back();
         if(game==='billiards')await page.getByRole('button',{name:'오락실로 나가기',exact:true}).click();
@@ -138,7 +138,7 @@ window.childReady=true;
       for(const action of ['back','button']){
         await page.evaluate(()=>backFixture.open('recommendations'));
         await page.locator('.recommended-restaurants-dialog').waitFor();
-        await page.waitForFunction(()=>history.state?.ojjudaWorld==='menu');
+        await page.waitForFunction(()=>history.state?.ojjudaWorldHistory?.overlay===true);
         if(action==='back')await back();
         else await page.locator('[data-rr=close]').click();
         await main();
@@ -167,10 +167,11 @@ window.childReady=true;
       await shared.goto(origin+'/world.html?game=stacker&challenge=1&score=100&fixture=yes');
       await shared.waitForFunction(()=>window.backFixture&&history.state?.ojjudaWorld==='menu');
       await shared.evaluate(()=>backFixture.open('stacker'));
+      await shared.waitForFunction(()=>history.state?.ojjudaWorldHistory?.overlay===true);
       assert.equal(new URL(shared.url()).searchParams.get('game'),'stacker');
       if(native){await shared.waitForFunction(()=>typeof window.nativeBack==='function');await shared.evaluate(()=>backFixture.nativeBack());}
       else await shared.goBack();
-      await shared.waitForFunction(()=>history.state?.ojjudaWorld==='menu'&&!!document.querySelector('.arcade-home')&&!document.querySelector('#gov'));
+      await shared.waitForFunction(()=>history.state?.ojjudaWorldHistory?.overlay===false&&history.state.ojjudaWorldHistory.route.tab==='arcade'&&!!document.querySelector('.arcade-home')&&!document.querySelector('#gov'));
       const returned=new URL(shared.url());
       assert.equal(returned.searchParams.get('tab'),'arcade');
       assert.equal(returned.searchParams.get('fixture'),'yes');
@@ -199,7 +200,7 @@ window.childReady=true;
       await page.locator('#gov [data-g="start"]').click();
       await chooseExit('#gov');
       await page.evaluate(async()=>{backFixture.allowExit=false;await openMatgo();});
-      await page.waitForFunction(()=>document.querySelector('#matgo-overlay')&&!document.getElementById('matgo-loading-bar')&&history.state?.ojjudaWorld==='menu');
+      await page.waitForFunction(()=>document.querySelector('#matgo-overlay')&&!document.getElementById('matgo-loading-bar')&&history.state?.ojjudaWorldHistory?.overlay===true);
       await page.frames()[1].evaluate(()=>{document.body.innerHTML='<section class="board"><div class="zone">게임 중</div></section>';});
       await chooseExit('#matgo-overlay');
       assert.equal(await page.evaluate(()=>backFixture.exits),0,'leaving a game never exits the app');
@@ -208,14 +209,14 @@ window.childReady=true;
       const historySize = await page.evaluate(() => history.length);
       for (let i=0;i<3;i++) {
         await page.evaluate(() => backFixture.open('stacker'));
-        await page.waitForFunction(() => history.state?.ojjudaWorld === 'menu');
+        await page.waitForFunction(() => history.state?.ojjudaWorldHistory?.overlay === true);
         await page.locator('#gov .ghead [data-g="close"]').click();
         // An unstarted game closes directly; running games ask for confirmation.
         await arcade();
       }
       assert.equal(await page.evaluate(() => history.length), historySize, 'reopening does not grow duplicate return entries');
       await page.locator('.bottomnav [data-tab="my"]').click();
-      await page.waitForFunction(() => history.state?.ojjudaWorld === 'menu');
+      await page.waitForFunction(() => history.state?.ojjudaWorldHistory?.overlay === false && history.state.ojjudaWorldHistory.route.tab === 'my');
       await back();
       assert.equal(await page.locator('.arcade-home').isVisible(),true,'settings Back returns to the Arcade that opened it');
       await page.locator('.bottomnav [data-tab="hub"]').click();

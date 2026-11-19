@@ -124,7 +124,7 @@ test('Park settings opens the existing account forms and returns without executi
   } finally {await f.close();}
 });
 
-test('Park withdrawal Back and Forward return through support without deleting an account', async () => {
+test('Park withdrawal disclosure and Back/Forward preserve support without deleting an account', async () => {
   const f = await fixture();
   try {
     f.api.navigate('settings');
@@ -132,11 +132,24 @@ test('Park withdrawal Back and Forward return through support without deleting a
     assert.equal(f.w.document.getElementById('note-delete-account'),null,'the legacy account menu has no direct withdrawal action');
     f.setting('support').click(); await f.settle();
     const support = f.w.document.querySelector('.note-support-layer [role="dialog"]');
+    const account = support.querySelector('[data-support-account]');
+    const toggle = support.querySelector('[data-support-account-toggle]');
     const withdrawal = support.querySelector('[data-support-withdrawal]');
     assert.equal(f.w.OjjudaNoteSupport.isOpen(),true);
     assert.equal(withdrawal.closest('footer').hidden,false);
     assert.equal(support.lastElementChild,withdrawal.closest('footer'),'withdrawal is below the inquiry content and status');
     assert.equal([...support.querySelectorAll('button')].at(-1),withdrawal);
+    assert.equal(account.open,false,'account management starts collapsed');
+    assert.equal(toggle.textContent,'계정 관리');
+    assert.equal(withdrawal.textContent,'회원 탈퇴 안내');
+    withdrawal.click(); await f.settle();
+    assert.equal(f.w.OjjudaNoteSupport.isOpen(),true,'a hidden withdrawal control cannot open confirmation');
+    assert.equal(f.w.document.getElementById('note-delete-nickname'),null);
+    toggle.click(); await f.settle();
+    assert.equal(account.open,true);
+    assert.equal(f.w.document.getElementById('note-delete-nickname'),null,'expanding account management only reveals the 안내 button');
+    assert.equal(f.calls.includes('deleteAccount'),false);
+    assert.equal(f.calls.includes('signOut'),false);
     withdrawal.click(); await f.settle();
     assert.equal(f.w.OjjudaNoteSupport.isOpen(),false,'support closes before the existing confirmation form opens');
     const nickname = f.w.document.getElementById('note-delete-nickname');
@@ -162,6 +175,16 @@ test('Park withdrawal Back and Forward return through support without deleting a
     assert.equal(f.w.OjjudaNoteSupport.isOpen(),true);
     assert.equal(f.calls.includes('deleteAccount'),false);
     assert.equal(f.calls.includes('signOut'),false);
+    f.w.OjjudaNoteSupport.open(); await f.settle();
+    assert.equal(account.open,false,'returning from confirmation starts collapsed again');
+    toggle.click(); await f.settle();
+    f.w.OjjudaNoteSupport.close();
+    assert.equal(account.open,false,'closing support resets the expanded account section');
+    f.w.OjjudaNoteSupport.open(); await f.settle();
+    assert.equal(account.open,false,'reopening support keeps the section collapsed');
+    toggle.click(); await f.settle();
+    support.querySelector('[data-support-view="feedback"]').click();
+    assert.equal(account.open,false,'changing support tabs resets account management');
     f.w.OjjudaNoteSupport.report({onSubmit:async()=>{throw Error('not submitted');}});
     assert.equal(withdrawal.closest('footer').hidden,true,'reporting content does not expose an account-deletion entry');
   } finally {await f.close();}
@@ -174,9 +197,14 @@ test('pending support sends and account changes cannot open the withdrawal form'
     f.api.navigate('settings'); f.setting('support').click(); await f.settle();
     const field = f.w.document.getElementById('note-inquiry-body');
     const withdrawal = f.w.document.querySelector('[data-support-withdrawal]');
+    f.w.document.querySelector('[data-support-account-toggle]').click(); await f.settle();
+    assert.equal(f.w.document.querySelector('[data-support-account]').open,true);
     field.value='검증용 문의';
     field.form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));
     assert.equal(withdrawal.disabled,true);
+    assert.equal(f.w.document.querySelector('[data-support-account]').open,false,'sending an inquiry closes account management');
+    f.w.document.querySelector('[data-support-account-toggle]').click();
+    assert.equal(f.w.document.querySelector('[data-support-account]').open,false,'account management cannot expand during a pending send');
     withdrawal.click();
     assert.equal(f.w.OjjudaNoteSupport.isOpen(),true);
     assert.equal(f.w.document.getElementById('note-delete-nickname'),null);
@@ -187,6 +215,7 @@ test('pending support sends and account changes cannot open the withdrawal form'
     assert.equal(field.value,'검증용 문의','a pending send retains its content');
     finishInquiry({data:null}); await f.settle();
     assert.equal(withdrawal.disabled,false);
+    assert.equal(f.w.document.querySelector('[data-support-account]').open,false,'finishing a send does not reveal withdrawal');
     await f.changeUser({user:{id:'park-member-b',email:'other@example.test'}});
     assert.equal(f.w.OjjudaNoteSupport.isOpen(),false);
     withdrawal.click(); await f.settle();

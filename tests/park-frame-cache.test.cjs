@@ -131,6 +131,29 @@ test('leaving a shared card before startup completes never reopens the old link'
   } finally {f.dom.window.close();}
 });
 
+test('World URL normalization preserves the first Park entry options exactly once', () => {
+  for(const [query,pathname,options] of [
+    ['compose=memo','/park/',{compose:'memo'}],
+    ['card=10000000-0000-4000-8000-000000000001&keep=memo','/park/',{card:'10000000-0000-4000-8000-000000000001',keep:'memo'}],
+    ['view=glasses','/park/glasses.html',{}]
+  ]){
+    const f=fixture('?place=park&'+query);
+    try{
+      f.window.history.replaceState({retained:true},'','/world.html?tab=hub');
+      f.app.route();
+      const first=f.frame(),url=new URL(first.src);
+      assert.equal(url.pathname,pathname);
+      for(const [key,value] of Object.entries(options))assert.equal(url.searchParams.get(key),value);
+      f.render('my');f.render('park');
+      assert.notEqual(f.frame(),first,'a cold frame is recreated after leaving');
+      const next=new URL(f.frame().src);
+      assert.equal(next.pathname,'/park/');
+      for(const key of ['card','keep','compose','view'])assert.equal(next.searchParams.has(key),false,'entry options do not replay');
+      assert.equal(f.window.history.state.retained,true);
+    }finally{f.dom.window.close();}
+  }
+});
+
 test('only the current visible Park composer hides the host navigation', () => {
   const f=fixture();
   const composing=()=>f.window.document.documentElement.classList.contains('world-park-composing');

@@ -857,9 +857,20 @@ async function checkNavigation(page){
     async function openWithdrawalFromSupport(){
       await settings.getByRole('button',{name:'문의·의견',exact:true}).click();
       await contact.locator('#note-inquiry-body').waitFor();
+      const accountDisclosure=contact.locator('[data-support-account]');
       const withdrawalEntry=contact.locator('[data-support-withdrawal]');
       assert.equal(await withdrawalEntry.evaluate(button=>button.closest('[role="dialog"]').lastElementChild===button.closest('footer')),true,
         'withdrawal appears after the support form, inquiry list and status');
+      assert.equal(await accountDisclosure.evaluate(node=>node.open),false,'every support opening starts with account management collapsed');
+      assert.equal(await withdrawalEntry.isVisible(),false,'the support form does not expose a withdrawal button');
+      await withdrawalEntry.evaluate(button=>button.click());
+      assert.equal(await contact.isVisible(),true);
+      assert.equal(await page.getByRole('dialog',{name:'오쭈다 회원탈퇴',exact:true}).count(),0,'a hidden withdrawal control cannot open confirmation');
+      await contact.locator('[data-support-account-toggle]').click();
+      assert.equal(await accountDisclosure.evaluate(node=>node.open),true);
+      assert.equal(await withdrawalEntry.isVisible(),true);
+      assert.equal(await withdrawalEntry.textContent(),'회원 탈퇴 안내');
+      assert.equal(await page.getByRole('dialog',{name:'오쭈다 회원탈퇴',exact:true}).count(),0,'expanding account management only shows the 안내 entry');
       assert.deepEqual(await page.evaluate(()=>window.accountWrites),[],'opening support never changes the account');
       await withdrawalEntry.click();
       await contact.waitFor({state:'hidden'});

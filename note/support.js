@@ -26,7 +26,7 @@
   const date = value => new Date(value).toLocaleString('ko-KR');
   let client, getUserId=()=>null, panel, layer, content, message, focus, run=0, busy=false;
   let inertState=[],previousOverflow='',targetInquiry=null,source='note',getScreen=()=>source,getAppVersion=()=>'',tabs,title,view='inquiries';
-  let onWithdrawal=null,withdrawalFooter,withdrawalButton,withdrawalOwner=null;
+  let onWithdrawal=null,withdrawalFooter,withdrawalDetails,withdrawalSummary,withdrawalButton,withdrawalOwner=null;
   const validId=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
   function bugDiagnostics(kind) {
     if(kind!=='bug')return {};
@@ -38,15 +38,18 @@
   function keepFocus(epoch,user) {
     if(!valid(epoch,user))return;
     const active=document.activeElement;
-    if(!panel.contains(active)||active?.disabled)panel.querySelector('button:not(:disabled)')?.focus({preventScroll:true});
+    if(!panel.contains(active)||active?.disabled||!active?.getClientRects().length)panel.querySelector('button:not(:disabled)')?.focus({preventScroll:true});
   }
   function setBusy(value) {
     busy=value;
     if(withdrawalButton)withdrawalButton.disabled=value;
+    if(withdrawalSummary)withdrawalSummary.setAttribute('aria-disabled',String(value));
+    if(value&&withdrawalDetails)withdrawalDetails.open=false;
   }
   function syncWithdrawal() {
     if(!withdrawalFooter)return;
     withdrawalOwner=getUserId();
+    withdrawalDetails.open=false;
     withdrawalFooter.hidden=layer.hidden||view==='report'||!withdrawalOwner||!onWithdrawal;
     withdrawalButton.disabled=busy;
   }
@@ -54,6 +57,7 @@
     if(!layer||layer.hidden||(busy&&force!==true))return;
     run++;setBusy(false);targetInquiry=null;layer.hidden=true;content.replaceChildren();message.textContent='';
     withdrawalOwner=null;if(withdrawalFooter)withdrawalFooter.hidden=true;
+    if(withdrawalDetails)withdrawalDetails.open=false;
     for(const [element,prior]of inertState)if(element.isConnected)element.inert=prior;
     inertState=[];document.body.style.overflow=previousOverflow;
     const restoreFocus=focus;focus=null;
@@ -206,14 +210,20 @@
     tabs=el('nav',undefined,'support-tabs');tabs.setAttribute('aria-label','문의·의견 메뉴');
     for(const [key,label] of [['feedback','의견 보내기'],['inquiries','문의·답변']]) {const tab=button(label,()=>{if(!busy){view=key;void renderView();}});tab.dataset.supportView=key;tabs.append(tab);}
     withdrawalFooter=el('footer',undefined,'support-account-footer');withdrawalFooter.hidden=true;
-    withdrawalButton=button('회원 탈퇴',()=>{
+    withdrawalDetails=el('details',undefined,'support-account-disclosure');
+    withdrawalDetails.setAttribute('data-support-account','');
+    withdrawalSummary=el('summary','계정 관리','support-account-toggle');
+    withdrawalSummary.setAttribute('data-support-account-toggle','');
+    withdrawalSummary.addEventListener('click',event=>{if(busy)event.preventDefault();});
+    withdrawalButton=button('회원 탈퇴 안내',()=>{
       const owner=withdrawalOwner;
-      if(busy||layer.hidden||view==='report'||!owner||owner!==getUserId()||!onWithdrawal)return;
+      if(busy||layer.hidden||view==='report'||!withdrawalDetails.open||!owner||owner!==getUserId()||!onWithdrawal)return;
       close();
       if(owner===getUserId())onWithdrawal();
     });
     withdrawalButton.setAttribute('data-support-withdrawal','');
-    withdrawalFooter.append(withdrawalButton);
+    withdrawalDetails.append(withdrawalSummary,withdrawalButton);
+    withdrawalFooter.append(withdrawalDetails);
     panel.append(head,tabs,content,message,withdrawalFooter);layer.append(panel);document.body.append(layer);
     const entry=button('문의·의견',()=>show());entry.classList.add('support-entry');(document.querySelector('#note-help-actions')||document.querySelector('.note-tools'))?.append(entry);
     document.addEventListener('click',event=>{if(event.target.closest('[data-note-feedback]')){event.preventDefault();show(null,'feedback');}});

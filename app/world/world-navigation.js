@@ -214,6 +214,12 @@
         const active = !!options.hasOverlay?.();
         // Forward can restore a route, but never restart a game or submit a form.
         const actual=clone(route()), normalized=routeKey(actual)!==routeKey(target.route);
+        if (programmatic && active && !target.overlay && !normalized) {
+          // A new window may open while the previous close is traversing Back.
+          // Give it its own entry instead of overwriting the underlying screen.
+          sync();
+          return;
+        }
         if (target.overlay !== active || normalized)
           write({...target,route:actual,overlay:active},normalized?hrefFor(actual):location.href);
       });

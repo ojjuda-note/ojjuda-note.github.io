@@ -93,6 +93,19 @@ test('an overlay closes before its route, and repeating open/close does not grow
   }finally{f.close();}
 });
 
+test('reopening an overlay before its close traversal finishes preserves the underlying visit',async()=>{
+  const f=await fixture();try{
+    await f.navigate('arcade');await f.show();
+    f.navigation.back();await Promise.resolve();
+    assert.equal(f.overlay,0);
+    assert.equal(f.state.ojjudaWorldHistory.overlay,true,'the previous close is still traversing history');
+    await f.show();
+    assert.equal(f.state.ojjudaWorldHistory.index,2,'the new window retains a separate entry');
+    await f.nativeBack();assert.equal(f.overlay,0);assert.equal(f.route.tab,'arcade');
+    await f.nativeBack();assert.equal(f.route.tab,'hub');
+  }finally{f.close();}
+});
+
 test('a nested overlay consumes one Back at a time without changing the underlying tab',async()=>{
   const f=await fixture();try{
     await f.navigate('my');await f.show();await f.show();

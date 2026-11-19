@@ -143,6 +143,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  assert.equal(await frame.locator('#composer-backdrop').isVisible(),true,'Back protects unsaved text too');
  await frame.evaluate(()=>window.confirm=()=>true);
  await page.evaluate(()=>parkFixture.close());
+ await frame.locator('#composer-backdrop').waitFor({state:'hidden'});
  assert.equal(await frame.locator('#composer-backdrop').isVisible(),false);
  await checkPageNavigationRestored(page,'390 initial close');
  await page.locator('.park-compose-fab').tap();
