@@ -1,5 +1,6 @@
 import {useEffect,useRef,useState} from "react";
 import {openAccount} from "../lib/account-actions.mjs";
+import {maskedTextLength} from "../../../../shared/content/text-length.mjs";
 import type {Slot,Station} from "../lib/station";
 import {I} from "./icons";
 
@@ -10,7 +11,6 @@ function editError(error:unknown){
   const value=error as {code?:string;message?:string};
   if(value?.message==="account_changed")return changedAccount;
   if(value?.code==="PT412")return "다른 곳에서 이 답변이 바뀌었어요. 작성한 내용은 그대로예요. 창을 닫고 최신 답변을 다시 열어 주세요.";
-  if(value?.message==="banned_word")return "사용할 수 없는 표현이 있어요. 내용을 고쳐 다시 저장해 주세요.";
   if(value?.code==="PT409")return "수정할 답변을 찾을 수 없어요. 작성한 내용은 그대로예요. 목록을 다시 열어 확인해 주세요.";
   if(value?.code==="42501"||value?.code==="PGRST301"||value?.code==="PGRST303")return "회원 정보를 확인하지 못했어요. 창을 닫고 답변 목록을 다시 열어 주세요.";
   if(value?.code==="22023")return "수정할 답변을 다시 선택해 주세요. 작성한 내용은 그대로예요.";
@@ -25,7 +25,7 @@ export function AnswerEditForm({answer,onBusyChange,onDirtyChange,onSaved}:{
   const [account,setAccount]=useState<Account|null>(null);
   const [busy,setBusy]=useState(false),[checking,setChecking]=useState(true),[blocked,setBlocked]=useState(false);
   const [attempt,setAttempt]=useState(0);
-  const length=Array.from(value).length,tooLong=length>220;
+  const length=maskedTextLength(value),tooLong=length>220;
   const active=useRef(true),locked=useRef(false);
   const request=useRef<AbortController|null>(null);
   function markDirty(next:boolean){onDirtyChange(next);}

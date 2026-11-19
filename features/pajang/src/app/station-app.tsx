@@ -6,6 +6,7 @@ import {InterestArt as Art} from "./interest-art";
 import {I} from "./icons";
 import NearbyRadar from "./nearby-radar";
 import {prepareLocation} from "../../location.mjs";
+import {maskedTextLength,textInputMaxLength} from "../../../../shared/content/text-length.mjs";
 import MyAnswers from "./my-answers";
 import AnswerHistory, {type DiscoveryAnswer} from "./answer-history";
 import AnswerGenderVisibility from "./answer-gender-visibility";
@@ -45,9 +46,9 @@ function Dialog({children,close,title,busy=false}:{children:React.ReactNode;clos
 }
 function Editor({initial="",max,label,submit,onSave,busy,hint,optional=false,onDraftChange}:{initial?:string;max:number;label:string;submit:string;onSave:(v:string)=>void;busy:boolean;hint:string;optional?:boolean;onDraftChange?:(v:string)=>void}){
   const [value,setValue]=useState(initial);
-  return <form onSubmit={e=>{e.preventDefault();if(optional||value.trim())onSave(value.trim());}}>
-    <label className="formlabel" htmlFor="editor">{label}</label><textarea id="editor" value={value} onChange={e=>{setValue(e.target.value);onDraftChange?.(e.target.value);}} placeholder={hint} maxLength={max} rows={4} required={!optional}/><div className="counter">{value.length} / {max}</div>
-    <button className="primary wide" disabled={busy||(!optional&&!value.trim())}>{submit}<I n="arrow" s={17}/></button></form>;
+  return <form onSubmit={e=>{e.preventDefault();if(maskedTextLength(value)<=max&&(optional||value.trim()))onSave(value.trim());}}>
+    <label className="formlabel" htmlFor="editor">{label}</label><textarea id="editor" value={value} onChange={e=>{setValue(e.target.value);onDraftChange?.(e.target.value);}} placeholder={hint} maxLength={textInputMaxLength(value,max)} rows={4} required={!optional}/><div className="counter">{maskedTextLength(value)} / {max}</div>
+    <button className="primary wide" disabled={busy||maskedTextLength(value)>max||(!optional&&!value.trim())}>{submit}<I n="arrow" s={17}/></button></form>;
 }
 function ListPerson({p,type,station,busy,onProfile,onAction}:{
   p:Person;type:"received"|"sent"|"chat";station:Station;busy:boolean;
@@ -368,7 +369,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   }
   async function sendMessage(){
     const submitted=draft,body=submitted.trim(),peerId=thread;
-    if(!body||lock.current||!validThread)return;
+    if(!body||maskedTextLength(body)>500||lock.current||!validThread)return;
     let message=pendingMessages.current.get(peerId);
     if(!message||message.body!==body){
       message={body,id:crypto.randomUUID()};pendingMessages.current.set(peerId,message);
@@ -428,7 +429,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       <h2 className="inbox-chats">이어지는 대화</h2>
       {matches.length?<div className="listbox">{matches.map(p=><ListPerson key={p.id} p={p} station={s} busy={busy} onProfile={()=>open({kind:"person",peer:p.id})} onAction={()=>startChat(p.id)} type="chat"/>)}</div>:<Blank icon="chat" title="아직 열린 대화가 없어요" body="서로 신호를 보내면 여기서 대화를 이어 갈 수 있어요."/>}
     </section>}
-    {tab==="chat"&&active&&validThread&&<section className="innerpage" key={thread}><div className="chatbox"><div className="chatheader"><button className="iconbtn" aria-label="뒤로가기" onClick={()=>goBack("inbox")}><I n="back"/></button><button className="person" onClick={()=>open({kind:"person",peer:active.id})}><Art interest={active.interest}/><span><strong>{active.name}</strong><small>서로 신호를 보낸 회원</small></span></button><button className="quiet" onClick={()=>open({kind:"block",peer:active.id})}>차단</button></div><ChatExchange key={active.id} peer={active.id} name={active.name} lastMessage={lastMsg}/><div className="chatlog" onScroll={event=>{const log=event.currentTarget;followChat.current=log.scrollHeight-log.scrollTop-log.clientHeight<64;}}>{threadMessages.length===0?<div className="chatintro"><I n="wave" s={32}/><p>두 사람의 대화가 열렸어요.</p><small>오늘의 답변을 떠올리며 첫인사를 건네보세요.</small></div>:<>{threadMessages.length>=100&&<p className="chatnote">최근 메시지 100개</p>}{threadMessages.map(m=><div key={m.id} className={"bubbleline "+(m.src===me?.id?"mine":"")}><p>{m.body}</p><time>{fmtClock(m.at)}</time></div>)}</>}<div ref={bottom}/></div>{error&&!modal&&<p className="error">{error}</p>}<form className="composer" onSubmit={e=>{e.preventDefault();void sendMessage();}}><input maxLength={500} aria-label="메시지" placeholder="메시지를 입력하세요" value={draft} onChange={e=>{setDraft(e.target.value);draftByPeer.current.set(thread,e.target.value);}}/><button aria-label="메시지 보내기" disabled={busy||!draft.trim()}><I n="send" s={18}/></button></form></div></section>}
+    {tab==="chat"&&active&&validThread&&<section className="innerpage" key={thread}><div className="chatbox"><div className="chatheader"><button className="iconbtn" aria-label="뒤로가기" onClick={()=>goBack("inbox")}><I n="back"/></button><button className="person" onClick={()=>open({kind:"person",peer:active.id})}><Art interest={active.interest}/><span><strong>{active.name}</strong><small>서로 신호를 보낸 회원</small></span></button><button className="quiet" onClick={()=>open({kind:"block",peer:active.id})}>차단</button></div><ChatExchange key={active.id} peer={active.id} name={active.name} lastMessage={lastMsg}/><div className="chatlog" onScroll={event=>{const log=event.currentTarget;followChat.current=log.scrollHeight-log.scrollTop-log.clientHeight<64;}}>{threadMessages.length===0?<div className="chatintro"><I n="wave" s={32}/><p>두 사람의 대화가 열렸어요.</p><small>오늘의 답변을 떠올리며 첫인사를 건네보세요.</small></div>:<>{threadMessages.length>=100&&<p className="chatnote">최근 메시지 100개</p>}{threadMessages.map(m=><div key={m.id} className={"bubbleline "+(m.src===me?.id?"mine":"")}><p>{m.body}</p><time>{fmtClock(m.at)}</time></div>)}</>}<div ref={bottom}/></div>{error&&!modal&&<p className="error" role="alert">{error}</p>}<form className="composer" onSubmit={e=>{e.preventDefault();void sendMessage();}}><input maxLength={textInputMaxLength(draft,500)} aria-label="메시지" placeholder="메시지를 입력하세요" value={draft} onChange={e=>{setDraft(e.target.value);draftByPeer.current.set(thread,e.target.value);}}/><button aria-label="메시지 보내기" disabled={busy||!draft.trim()||maskedTextLength(draft.trim())>500}><I n="send" s={18}/></button></form></div></section>}
     {tab==="profile"&&<section className="station-account innerpage">
       <div className="channel-heading account-heading"><h1>내 파장</h1><button type="button" className="account-settings-close" aria-label="설정 닫기" onClick={()=>goBack("today")}><I n="close"/></button></div>
       <div className="ojjuda-settings">

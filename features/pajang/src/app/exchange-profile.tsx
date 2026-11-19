@@ -1,10 +1,18 @@
 import {useEffect, useRef, useState} from "react";
 import regionCatalog from "../../regions.json";
+import {maskedTextLength,textInputMaxLength} from "../../../../shared/content/text-length.mjs";
 
 export type ExchangeKind = "profile"|"photos";
 type Fields = Partial<Record<"relationship"|"job"|"region"|"religion"|"height"|"mbti"|"bloodType"|"skills"|"hobbies"|"drinking"|"smoking"|"bio",string|number>>;
 export type SharedProfile = {fields: Fields; age:number|null; gender:string|null};
 type MyProfile = SharedProfile & {showAge:boolean; showGender:boolean};
+type SavedProfile = MyProfile & {masking?:Partial<Record<keyof Fields,{submitted:unknown;saved:unknown}>>};
+
+function confirmedMask(receipt:SavedProfile["masking"],key:keyof Fields,submitted:string,saved:string) {
+  const field=receipt?.[key];
+  return Boolean(submitted&&saved.includes("❤️❤️")&&field&&
+    field.submitted===submitted&&field.saved===saved);
+}
 
 export async function exchange<T>(action:string, options:{p_peer?:string; p_kind?:ExchangeKind; p_data?:object}={}):Promise<T> {
   const db=await window.OjjudaGetClient();
@@ -83,21 +91,23 @@ export function ExchangeProfileEditor({onSaved}:{onSaved:()=>void}) {
     const fields=Object.fromEntries(Object.entries(profile.fields).map(([k,v])=>[k,String(v??"").trim()]).filter(([,v])=>v));
     if(fields.height)fields.height=String(Number(fields.height));
     try {
-      const saved=await exchange<MyProfile>("save",{p_data:{fields,showAge:profile.showAge,showGender:profile.showGender}});
+      const saved=await exchange<SavedProfile>("save",{p_data:{fields,showAge:profile.showAge,showGender:profile.showGender}});
       if(!saved?.fields||typeof saved.fields!=="object"||Array.isArray(saved.fields))
         throw new Error("저장 결과를 확인하지 못했어요. 다시 시도해 주세요.");
       const changed=labels.filter(({key})=>{
         const expected=String(fields[key]??"");
         const actual=String(saved.fields[key]??"");
         if(key==="height"&&expected&&actual)return Number(expected)!==Number(actual);
-        if(key==="mbti"||key==="bloodType")return expected.toUpperCase()!==actual.toUpperCase();
-        return expected!==actual;
+        if((key==="mbti"||key==="bloodType")&&expected.toUpperCase()===actual.toUpperCase())return false;
+        // Only an explicit receipt for this submitted field can explain a changed value.
+        // Missing fields and unrelated server changes remain save failures.
+        return expected!==actual&&!confirmedMask(saved.masking,key,expected,actual);
       }).map(({label})=>label);
       if(saved.showAge!==profile.showAge)changed.push("나이 공개 설정");
       if(saved.showGender!==profile.showGender)changed.push("성별 공개 설정");
       if(changed.length)
         throw new Error(`${changed.join(", ")} 항목이 저장되지 않았어요. 입력 내용은 이 창에 남겨 뒀어요.`);
-      if(mounted.current)onSaved();
+      if(mounted.current){setProfile(saved);onSaved();}
     } catch(err) {
       if(mounted.current)setError(err instanceof Error?err.message:"저장하지 못했어요. 다시 시도해 주세요.");
     } finally {saving.current=false;if(mounted.current)setBusy(false);}
@@ -119,11 +129,11 @@ export function ExchangeProfileEditor({onSaved}:{onSaved:()=>void}) {
         {labels.map(({key,label,options,limit})=>{
           const value=String(profile.fields[key]??"");
           if(key==="region")return <RegionField key={key} value={value} onChange={v=>change(key,v)}/>;
-          if(key==="bio")return <label key={key} className="exchange-bio">{label}<textarea rows={4} maxLength={limit} value={value} onChange={e=>change(key,e.target.value)}/><small>{value.length} / {limit}자</small></label>;
+          if(key==="bio")return <label key={key} className="exchange-bio">{label}<textarea rows={4} maxLength={textInputMaxLength(value,limit||1000)} value={value} onChange={e=>change(key,e.target.value)}/><small>{maskedTextLength(value)} / {limit}자</small></label>;
           return <label key={key}>{key==="height"?"키 (cm)":label}
             {options?<select value={value} onChange={e=>change(key,e.target.value)}><option value="">미입력</option>{value&&!options.includes(value)&&<option>{value}</option>}{options.map(v=><option key={v} value={v}>{key==="bloodType"?v+"형":v}</option>)}</select>:
              key==="height"?<input name="height" type="number" inputMode="decimal" min={1} max={300} step="any" value={value} onChange={e=>change(key,e.target.value)}/>:
-             <input maxLength={limit||80} value={value} onChange={e=>change(key,e.target.value)}/>}</label>;
+             <input maxLength={textInputMaxLength(value,limit||80)} value={value} onChange={e=>change(key,e.target.value)}/>}</label>;
         })}
       </fieldset>
       {error&&<p ref={errorMessage} className="error" role="alert" tabIndex={-1}>{error}</p>}

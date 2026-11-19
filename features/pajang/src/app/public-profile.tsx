@@ -5,6 +5,7 @@ import {
   MAX_PROFILE_CUSTOM_LENGTH,MAX_PROFILE_GROUP_SELECTIONS,
 } from "../lib/profile-preferences.mjs";
 import regionCatalog from "../../regions.json";
+import {maskedTextLength,textInputMaxLength} from "../../../../shared/content/text-length.mjs";
 import {InterestArt} from "./interest-art";
 import {I} from "./icons";
 
@@ -56,7 +57,7 @@ function labelsFor(preferences:Preferences,key:GroupKey):string[]{
 function addCustom(preferences:Preferences,key:GroupKey,draft:string):{preferences:Preferences;error:string}{
   const value=draft.trim();
   if(!value)return {preferences,error:""};
-  if([...value].length>MAX_PROFILE_CUSTOM_LENGTH)return {preferences,error:"직접 입력은 40자까지 적어 주세요."};
+  if(maskedTextLength(value)>MAX_PROFILE_CUSTOM_LENGTH)return {preferences,error:"직접 입력은 40자까지 적어 주세요."};
   const preset=profilePreferenceGroups.find(group=>group.key===key)!.options.find(option=>option.label===value);
   if(preset?preferences[key].includes(preset.key):preferences.custom[key].includes(value))return {preferences,error:""};
   if(preferences[key].length+preferences.custom[key].length>=MAX_PROFILE_GROUP_SELECTIONS)return {preferences,error:"이 항목은 32개까지 고를 수 있어요."};
@@ -128,11 +129,12 @@ export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew
       if(result.error){setCustomError(result.error);return;}
       next=result.preferences;
     }
-    setPreferences(next);setDrafts(blankDrafts());setCustomError("");
+    // Keep typed values editable until the server accepts the complete profile.
+    setCustomError("");
     onSave({name:name.trim(),region,interest,consent,profilePerson:person?.id??null,preferences:next,preferencesVersion:read.version});
   }
   return <form className="profileform public-profile-form" onSubmit={submit}>
-    <label>닉네임<input value={name} maxLength={12} placeholder="오쭈다 닉네임 사용" disabled={busy} onChange={event=>setName(event.target.value)}/></label>
+    <label>닉네임<input value={name} maxLength={textInputMaxLength(name,12)} placeholder="오쭈다 닉네임 사용" disabled={busy} onChange={event=>setName(event.target.value)}/></label>
     <div className="fieldrow">
       <label>공개할 활동 지역<select value={knownProvince?province:region} disabled={busy} onChange={event=>setRegion(event.target.value)}>
         <option value="">공개하지 않음</option>

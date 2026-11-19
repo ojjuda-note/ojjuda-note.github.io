@@ -19,6 +19,18 @@ on:
       - 'note/notifications.js'
       - 'tests/pajang-account-toolbar.test.cjs'
       - 'tests/pajang-signal-purchase*.test.*'
+      - 'tests/pajang-content-validation.test.cjs'
+      - 'tests/all-service-word-rules*.test.*'
+      - 'tests/all-service-word-masking*.test.*'
+      - 'tests/fixtures/all-service-word-masking*'
+      - 'shared/content/**'
+      - 'groups/**'
+      - 'tests/portal-auth-entry.test.cjs'
+      - 'tests/world-profile-draft-ui.test.cjs'
+      - 'tests/note-content-validation.test.cjs'
+      - 'tests/friend-messages-ui.test.cjs'
+      - 'features/friends/friend-messages.js'
+      - 'supabase/migrations/*all_service_word_rules*'
       - 'app/world/world-themes.*'
       - 'app/world/world-weather.js'
       - 'supabase/functions/theme-weather/**'
@@ -69,6 +81,18 @@ on:
       - 'note/notifications.js'
       - 'tests/pajang-account-toolbar.test.cjs'
       - 'tests/pajang-signal-purchase*.test.*'
+      - 'tests/pajang-content-validation.test.cjs'
+      - 'tests/all-service-word-rules*.test.*'
+      - 'tests/all-service-word-masking*.test.*'
+      - 'tests/fixtures/all-service-word-masking*'
+      - 'shared/content/**'
+      - 'groups/**'
+      - 'tests/portal-auth-entry.test.cjs'
+      - 'tests/world-profile-draft-ui.test.cjs'
+      - 'tests/note-content-validation.test.cjs'
+      - 'tests/friend-messages-ui.test.cjs'
+      - 'features/friends/friend-messages.js'
+      - 'supabase/migrations/*all_service_word_rules*'
       - 'app/world/world-themes.*'
       - 'app/world/world-weather.js'
       - 'supabase/functions/theme-weather/**'
@@ -131,6 +155,8 @@ jobs:
       - run: python -m unittest discover -s tests -p 'test_pajang_program_publish.py'
       - run: node --test tests/pajang-exchange-profile.test.cjs tests/pajang-exchange-height.test.mjs tests/pajang-private-exchange.test.mjs
       - run: node --test tests/pajang-account-toolbar.test.cjs tests/pajang-signal-purchase-db.test.mjs tests/pajang-signal-purchase-ui.test.cjs
+      - name: Check automatic word masking and saved content
+        run: node --test tests/all-service-word-rules*.test.* tests/all-service-word-masking*.test.* tests/pajang-content-validation.test.cjs tests/note-content-validation.test.cjs tests/portal-auth-entry.test.cjs
       - run: node --test tests/pajang-account.test.mjs tests/pajang-discovery-gender.test.mjs tests/pajang-location.test.mjs tests/shared-location.test.cjs tests/agit-location.test.mjs tests/park-loading.test.cjs tests/park-frame-cache.test.cjs tests/park-opening.test.cjs
       - run: node --test tests/admin-pajang-moderation-db.test.cjs
       - run: node --test tests/pajang-profile-preferences-db.test.cjs
@@ -149,6 +175,14 @@ jobs:
         env:
           WINDOW_AUDIT_FILTER: '문의·의견'
         run: node tests/window-safe-area-ui.test.cjs
+      - name: Check masked friend messages and recovery
+        env:
+          FRIEND_MESSAGE_PROOF_DIR: tests/artifacts/pajang-discovery/friend-messages
+        run: node tests/friend-messages-ui.test.cjs
+      - name: Check profile masking and editable drafts
+        env:
+          WORLD_PROFILE_QA_DIR: tests/artifacts/pajang-discovery/profile-masking
+        run: node tests/world-profile-draft-ui.test.cjs
       - name: Check guest account buttons and member settings
         env:
           MY_MENU_QA_DIR: tests/artifacts/pajang-discovery/guest-settings

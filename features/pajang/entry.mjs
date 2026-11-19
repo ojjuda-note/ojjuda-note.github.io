@@ -3,6 +3,7 @@ import {mountStation, prepareProgram} from './load-station.mjs?v=20261119-guest-
 import {enhanceGuestGate} from './entry-design.mjs?v=20261119-water-letter1';
 import {prepareLocation} from './location.mjs?v=20261119-kma-current1';
 import {themeFor, interests} from './questions.mjs?v=rounds1';
+import {textInputMaxLength} from '../../shared/content/text-length.mjs';
 
 const $ = id => document.getElementById(id);
 const form = $('answer-form');
@@ -58,7 +59,10 @@ function enterMain(destination = main, savedStation) {
 
 function setupProfile(entry) {
   const {province, city, interest} = form.elements;
-  form.elements.namedItem('name').value = entry.nickname || '';
+  const name = form.elements.namedItem('name');
+  name.value = entry.nickname || '';
+  name.oninput = () => { name.maxLength = textInputMaxLength(name.value,12); };
+  name.oninput();
   for (const item of interests) interest.add(new Option(item.name, item.key));
   const fields = $('join-fields');
   fields.hidden = false;
@@ -186,7 +190,7 @@ async function start(firstEntry) {
     trigger.focus();
   };
   if (view === 'feed' || view === 'write') openForm(view === 'feed' ? 'feed' : 'answer');
-  mine.oninput = () => mine.setCustomValidity('');
+  mine.oninput = () => { mine.setCustomValidity(''); mine.maxLength = textInputMaxLength(mine.value,220); };
   form.onsubmit = async event => {
     event.preventDefault();
     if (submit.disabled) return;

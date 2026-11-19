@@ -1,5 +1,8 @@
 // World and Note use the same origin, Supabase project, and default Auth storage.
 const $ = selector => document.querySelector(selector);
+// Match the server's character limit without counting a masked phrase four times.
+const maskedTextLength = value => [...String(value ?? '').replaceAll('❤️❤️', '♥')].length;
+const textInputMaxLength = (value, limit) => limit + String(value ?? '').length - maskedTextLength(value);
 const config = window.OJJUDA_CONFIG;
 const localStage = config?.localStage === true && ['localhost', '127.0.0.1'].includes(location.hostname)
   && config.supabaseUrl === 'https://jucuqqbynilwlhqxyzrd.supabase.co';
@@ -74,7 +77,7 @@ let guestReturn = null;
 try {
   const stored = JSON.parse(sessionStorage.getItem(guestReturnKey));
   sessionStorage.removeItem(guestReturnKey);
-  if (stored && stored.until > Date.now() && typeof stored.body === 'string' && stored.body.length <= 200
+  if (stored && stored.until > Date.now() && typeof stored.body === 'string' && maskedTextLength(stored.body) <= 200
       && (stored.parent === null || stored.parent === new URL(location.href).searchParams.get('card'))) guestReturn = stored;
 } catch {}
 let initialParkCompose = parkEmbedded && new URL(location.href).searchParams.get('compose') === 'memo';
@@ -2362,7 +2365,7 @@ function restoreLocalComposer() {
   const content = saved?.content, age = Date.now() - Number(saved?.savedAt);
   if (!content || content.kind !== kind || content.editingId !== editingId
     || !Number.isFinite(age) || age < 0 || age > 7 * 86400000
-    || typeof content.body !== 'string' || content.body.length > 200
+    || typeof content.body !== 'string' || maskedTextLength(content.body) > 200
     || typeof content.tags !== 'string' || content.tags.length > 120
     || !content.style || typeof content.style !== 'object') {
     clearLocalComposer(); return false;
@@ -2473,11 +2476,11 @@ function installDrafts() {
 
 function parsedTags(raw = tags.value) {
   const values = tagList(raw);
-  return values.length <= 5 && values.every(value => value.length <= 20)
+  return values.length <= 5 && values.every(value => maskedTextLength(value) <= 20)
     && new Set(values).size === values.length ? values : null;
 }
 function validEventBody(value) {
-  return value.length <= 200
+  return maskedTextLength(value) <= 200
     && /[^\s\u0000-\u001f\u007f-\u009f\u00ad\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/u.test(value);
 }
 function validEventPosition(position = eventPosition) {
@@ -2492,6 +2495,8 @@ function isGuestComposer() {
   return authKnown && !session?.user && !composerUserId && !editingId && (kind === 'memo' || kind === 'comment');
 }
 function updateComposer() {
+  text.maxLength = textInputMaxLength(text.value, 200);
+  tags.maxLength = textInputMaxLength(tags.value, 120);
   const selected = !isGuestComposer() && $('#compose-font').value === 'calligraphy';
   const convert = $('#convert-calligraphy');
   convert.setAttribute('aria-pressed', String(selected));
@@ -2505,7 +2510,7 @@ function updateComposer() {
   const previewTags = tagList(tags.value).slice(0, 5);
   syncComposeInk(selected, visual, previewTags);
   if (!backdrop.hidden && text.parentNode === $('.compose-photo')) resizeComposerText();
-  $('#compose-count').textContent = `${text.value.length} / 200자`;
+  $('#compose-count').textContent = `${maskedTextLength(text.value)} / 200자`;
   const extra = visual.boxTransparency !== 25 || selectedPhotoKey || tags.value.trim() || visual.font !== 'default'
     || visual.size !== 'normal' || visual.effect !== 'none'
     || ['textColor', 'boxColor'].some(key => visual[key] !== 'default');
@@ -2537,7 +2542,7 @@ function updateComposer() {
     else link.href = noteLoginHref();
     composeMessage.replaceChildren(link);
   } else if (!canWrite()) composeMessage.textContent = writingMessage();
-  else if (text.value.length > 200) composeMessage.textContent = '글은 200자 이내로 작성해 주세요';
+  else if (maskedTextLength(text.value) > 200) composeMessage.textContent = '글은 200자 이내로 작성해 주세요';
   else if (kind === 'event' && !validEventBody(text.value)) composeMessage.textContent = '이벤트 내용을 입력해 주세요.';
   else if (!values) composeMessage.textContent = '태그는 중복 없이 5개까지, 각 20자 이내';
   else if (kind === 'comment' && replyDueChecking) composeMessage.textContent = '상위 카드 공개 종료일 확인 중';
@@ -2552,7 +2557,7 @@ function updateComposer() {
     : kind === 'event' && !editingId ? '이벤트 범위와 금액을 확인해 주세요.'
       : '';
   submit.disabled = busy || draftLoading || replyDueChecking || eventPhotoPreparing || cardPhotoPreparing || !!eventPhotoError || !client || !ready || !session?.user || !canWrite() || !text.value.trim()
-    || text.value.length > 200 || !values
+    || maskedTextLength(text.value) > 200 || !values
     || (kind !== 'event' && !editingId && !writingPosition)
     || (kind === 'event' && (!validEventBody(text.value)
       || (!editingId && (!validEventPosition() || !validEventOptions()))));
@@ -2846,9 +2851,7 @@ async function publishGuestCard(body) {
   if (run !== composerRun || !isGuestComposer()) return;
   busy = false; setComposerInputs(); updateComposer();
   if (!result?.card_id) {
-    composeMessage.textContent = noteSpamMessage(error) || (error?.code === '23514'
-      ? '내용을 확인해 주세요. 공원 운영 기준에 맞지 않는 표현이 있어요.'
-      : '등록하지 못했어요. 내용을 확인한 뒤 다시 시도해 주세요.');
+    composeMessage.textContent = noteSpamMessage(error) || '등록하지 못했어요. 내용을 확인한 뒤 다시 시도해 주세요.';
     return;
   }
   text.value = ''; tags.value = ''; closeComposer(false);
@@ -2860,7 +2863,7 @@ async function publishGuestCard(body) {
 async function publishCard() {
   if (busy || submit.disabled || !client || !ready) return;
   let body = text.value.replace(/\r\n?/g, '\n').trim(), values = parsedTags();
-  if (!body || body.length > 200 || !values) return;
+  if (!body || maskedTextLength(body) > 200 || !values) return;
   if (cardPhotoPreparing) { composeMessage.textContent = '사진을 준비하는 중이에요. 잠시 뒤 등록해 주세요.'; return; }
   const editId = editingId, actionUserId = composerUserId, actionEpoch = identityEpoch, actionComposerRun = composerRun;
   // Login may finish before the first guest preview arrived. Use one member draw if publishing first.
@@ -2917,7 +2920,7 @@ async function publishCard() {
       publishKind = draftToken.content.kind; publishParent = draftToken.content.parent_id;
       if (publishKind !== kind || publishParent !== parentId) throw new Error('임시 글의 원글이 바뀌었어요. 작성창을 다시 열어 확인해 주세요.');
       if (draftToken.content.background_key !== previewBackgroundKey) throw new Error('임시 글의 사진이 바뀌었어요. 작성창을 다시 열어 확인해 주세요.');
-      if (!body || body.length > 200 || !values) throw new Error('보관된 내용을 확인해 주세요.');
+      if (!body || maskedTextLength(body) > 200 || !values) throw new Error('보관된 내용을 확인해 주세요.');
     } catch (error) {
       draftController.cancelPublish(); busy = false; setComposerInputs(); updateComposer();
       composeMessage.textContent = error.message || '임시 글 저장을 확인한 뒤 등록해 주세요.'; return;
@@ -3230,13 +3233,15 @@ async function showNicknameChange() {
     if (run !== managementRun || session?.user?.id !== userId) return;
     const form = node('form', 'note-account-form'); form.noValidate = true;
     managementBody.replaceChildren(node('p', 'management-help', '아지트에서 사용하는 닉네임이에요.'), form);
-    const input = accountField(form, 'note-new-nickname', '닉네임'); input.maxLength = 12; input.value = nickname;
+    const input = accountField(form, 'note-new-nickname', '닉네임'); input.value = nickname;
+    const syncLimit = () => { input.maxLength = textInputMaxLength(input.value, 12); };
+    input.addEventListener('input', syncLimit); syncLimit();
     accountFormFooter(form, '저장'); input.focus();
     form.addEventListener('submit', event => {
       event.preventDefault();
       if (run !== managementRun || session?.user?.id !== userId) return;
       const value = input.value.trim();
-      if (!value || [...value].length > 12) { managementMessage.textContent = '닉네임은 1자부터 12자까지 적어 주세요.'; input.focus(); return; }
+      if (!value || maskedTextLength(value) > 12) { managementMessage.textContent = '닉네임은 1자부터 12자까지 적어 주세요.'; input.focus(); return; }
       void accountAction(async () => {
         const { data, error } = await client.from('profiles').update({ nickname: value, updated_at: new Date().toISOString() }).eq('id', userId).select('nickname').single();
         if (error) throw error;

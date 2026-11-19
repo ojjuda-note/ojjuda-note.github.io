@@ -26,13 +26,13 @@ function bundle(){
 
 // The production form and account helper run against local auth/RPC fixtures.
 // No live account or answer is read or changed.
-async function fixture(t,{save,shortTimeout=false}={}){
+async function fixture(t,{save,shortTimeout=false,answer={}}={}){
   const dom=new JSDOM('<!doctype html><div id="root"></div>',{
     url:'https://pajang.test/features/pajang/station.html',runScripts:'outside-only',pretendToBeVisual:true});
   const w=dom.window,listeners=new Set();
   const state={calls:[],busy:[],dirty:[],saved:[],events:[],timeouts:[],
     session:{access_token:'owner-token',user:{id:'auth-owner',is_anonymous:false}}};
-  w.editTarget={owner:'person-owner',day:'2026-11-17',slot:'pm',question:'기억에 남는 순간은?',body:'처음 함께 걸었던 날'};
+  w.editTarget={owner:'person-owner',day:'2026-11-17',slot:'pm',question:'기억에 남는 순간은?',body:'처음 함께 걸었던 날',...answer};
   const station={authenticated:true,day:'2026-11-19',slot:'am',me:{id:'person-owner',body:'오늘의 답변'}};
   state.success=()=>({data:clone(station),error:null});
   state.changeUser=(id,notify=true)=>{
@@ -128,8 +128,8 @@ test('switching accounts during a save clears the draft and ignores the old resp
   f.submit();await turn();assert.equal(f.state.calls.length,1);
 });
 
-test('conflict, moderation and network errors keep the exact draft and allow an explicit retry',async t=>{
-  for(const error of [{code:'PT412',message:'conflict'},{code:'P0001',message:'banned_word'},{message:'connection lost'}]){
+test('conflict and network errors keep the exact draft and allow an explicit retry',async t=>{
+  for(const error of [{code:'PT412',message:'conflict'},{message:'connection lost'}]){
     await t.test(error.code||'network',async t=>{
       let attempts=0;
       const f=await fixture(t,{save:()=>++attempts===1?{error}:undefined});
@@ -138,11 +138,58 @@ test('conflict, moderation and network errors keep the exact draft and allow an 
       assert.equal(f.textarea().value,draft);assert.equal(f.button().disabled,false);
       assert.equal(f.state.saved.length,0);assert.equal(f.state.dirty.at(-1),true);
       if(error.code==='PT412')assert.match(f.alert().textContent,/다른 곳에서.*바뀌었어요/);
-      if(error.message==='banned_word')assert.match(f.alert().textContent,/사용할 수 없는 표현/);
       f.submit();await wait(()=>f.state.saved.length===1);
       assert.deepEqual(f.state.calls[0].args,f.state.calls[1].args,'retry retains the original CAS body and target');
     });
   }
+});
+
+test('a server-masked historical answer remains editable up to the logical limit without changing its original round',async t=>{
+  const original='한'.repeat(218)+'❤️❤️',edited=original+'🙂';
+  const f=await fixture(t,{answer:{body:original}});
+  assert.equal(f.textarea().value,original);
+  assert.equal(f.w.document.querySelector('#history-answer-count').textContent,'219 / 220');
+  assert.equal(f.alert(),null);
+  await f.input(edited);
+  assert.equal(f.w.document.querySelector('#history-answer-count').textContent,'220 / 220');
+  assert.equal(f.button().disabled,false);
+  assert.equal(f.textarea().hasAttribute('maxlength'),false,'an IME draft must not be truncated by a UTF-16 limit');
+  await f.input(edited+'나');
+  assert.equal(f.textarea().value,edited+'나');assert.equal(f.button().disabled,true);
+  f.submit();await turn();assert.equal(f.state.calls.length,0);
+  await f.input(edited);f.submit();await wait(()=>f.state.saved.length===1);
+  assert.deepEqual(f.state.calls[0].args.p_data,{day:'2026-11-17',slot:'pm',body:edited,previousBody:original,expectedPerson:'person-owner'});
+  assert.equal(f.state.saved[0].me.body,'오늘의 답변','the historical draft must not replace the current answer');
+});
+
+test('a masked history save with a lost response retries its original draft and CAS token without a second write',async t=>{
+  // This token exists only in the transport fixture; the form does not contain a word catalog.
+  const raw='다시 떠올린 금칙 장면',canonical='다시 떠올린 ❤️❤️ 장면';
+  let stored='처음 함께 걸었던 날',writes=0,attempts=0;
+  const f=await fixture(t,{save:(args,state)=>{
+    const request=args.p_data,normalized=request.body.replaceAll('금칙','❤️❤️');
+    if(stored!==request.previousBody&&stored!==normalized)return {error:{code:'PT412',message:'conflict'}};
+    if(stored!==normalized){stored=normalized;writes++;}
+    if(++attempts===1)return {error:{message:'connection lost after commit'}};
+    return state.success();
+  }});
+  await f.input(raw);f.submit();await wait(f.alert);
+  assert.equal(stored,canonical);assert.equal(writes,1);assert.equal(f.state.saved.length,0);
+  assert.equal(f.textarea().value,raw);assert.equal(f.button().disabled,false);
+  f.submit();await wait(()=>f.state.saved.length===1);
+  assert.deepEqual(f.state.calls[0].args,f.state.calls[1].args);
+  assert.equal(stored,canonical);assert.equal(writes,1);
+  assert.equal(f.state.saved[0].me.body,'오늘의 답변');assert.equal(f.state.dirty.at(-1),false);
+});
+
+test('editing the current round from history passes the canonical server answer to the station',async t=>{
+  const raw='오늘의 금칙 이야기',canonical='오늘의 ❤️❤️ 이야기';
+  const f=await fixture(t,{answer:{day:'2026-11-19',slot:'am',body:'오늘의 답변'},save:(args,state)=>{
+    const result=state.success();result.data.me.body=args.p_data.body.replaceAll('금칙','❤️❤️');return result;
+  }});
+  await f.input(raw);f.submit();await wait(()=>f.state.saved.length===1);
+  assert.equal(f.state.calls[0].args.p_data.body,raw);
+  assert.equal(f.state.saved[0].me.body,canonical);assert.equal(f.alert(),null);
 });
 
 test('the RPC deadline releases the lock without discarding the draft',async t=>{

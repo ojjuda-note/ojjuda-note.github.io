@@ -26,12 +26,13 @@ for (const path of ['/?auth=login', '/?auth=signup&next=world', '/?auth=forgot',
 }
 
 // Exercise the real controller with a fake Auth service: no accounts or emails are created.
-function setup(query, { user = null, confirmed = false, sessionError = false, sessionResponse = null, userResponse = null, signInResponse = null, signupResponse = null, nicknameResponse = null, recoveryResponse = null, recoveryError = null, recoveryVerified = true, resetError = null, now = Date.now() } = {}) {
+function setup(query, { user = null, confirmed = false, sessionError = false, sessionResponse = null, userResponse = null, signInResponse = null, signupResponse = null, nicknameResponse = null, noteResponse = null, profileResponse = null, recoveryResponse = null, recoveryError = null, recoveryVerified = true, resetError = null, now = Date.now() } = {}) {
   let clock = now;
   let taskId = 0;
   let serviceUser = user;
+  let savedNickname = null;
   let focused = null;
-  const elements = new Map(), tasks = new Map(), navigations = [], navigationKinds = [], signups = [], signins = [], passwordUpdates = [], recoveries = [], storage = new Map();
+  const elements = new Map(), tasks = new Map(), navigations = [], navigationKinds = [], signups = [], signins = [], passwordUpdates = [], recoveries = [], storage = new Map(), nicknameChecks = [], profileReads = [], noteWrites = [];
   const element = key => {
     if (!elements.has(key)) elements.set(key, {
       hidden: false, disabled: false, readOnly: false, tabIndex: 0, value: '', checked: false, textContent: '',
@@ -85,9 +86,19 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
       }
     },
     functions: { async invoke(name, args) { recoveries.push({ name, ...args }); if (recoveryResponse) return recoveryResponse(args.body); const error = args.body.action === 'reset' ? resetError : recoveryError; return error ? { error: { context: { json: async () => ({ error }) } } } : { data: args.body.action === 'reset' ? { reset: true } : { verified: recoveryVerified, reset_token: 'a'.repeat(64), expires_in: 300 } }; } },
-    from() { return { select() { return this; }, eq() { return this; }, async maybeSingle() { return { data: null }; } }; },
+    from(table) { return { owner:null, select() { return this; }, eq(key,value) { if(key==='id')this.owner=value;return this; }, async maybeSingle() {
+      if(table!=='profiles')return {data:null};
+      profileReads.push(this.owner);
+      return profileResponse ? profileResponse(this.owner,serviceUser) : {data:{id:serviceUser?.id,nickname:savedNickname || serviceUser?.user_metadata?.nickname || '보리'}};
+    } }; },
     async rpc(name, args) {
-      if (name === 'has_banned') return nicknameResponse ? nicknameResponse(args.t) : { data: false };
+      if (name === 'mask_banned') { nicknameChecks.push(args.t);return nicknameResponse ? nicknameResponse(args.t) : { data: args.t }; }
+      if (name === 'ensure_member_for_note') {
+        noteWrites.push(args.p_nickname);
+        const result=noteResponse ? await noteResponse(args.p_nickname) : {data:true};
+        if(result.data===true)savedNickname=args.p_nickname || savedNickname;
+        return result;
+      }
       return { data: true };
     }
   };
@@ -105,7 +116,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   };
   vm.runInNewContext(source, context);
   const flush = async () => {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 20; i++) {
       await Promise.resolve();
       for (const [id, task] of tasks) {
         if (task.at > clock) continue;
@@ -120,7 +131,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     for (const [key, value] of Object.entries({ email: 'signup-fixture@ojjuda.kr', password: 'test-password', 'password-confirm': 'test-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '010-2345-6789' })) element(key).value = value;
     element('age-check').checked = element('policy-check').checked = true;
   };
-  return { element, flush, emit, emitNow, submit, fill, navigations, navigationKinds, signups, signins, passwordUpdates, recoveries, storage, location, history: context.history, window: context.window, client, get focused() { return focused; }, advance: ms => { clock += ms; } };
+  return { element, flush, emit, emitNow, submit, fill, navigations, navigationKinds, signups, signins, passwordUpdates, recoveries, storage, nicknameChecks, profileReads, noteWrites, location, history: context.history, window: context.window, client, get focused() { return focused; }, advance: ms => { clock += ms; } };
 }
 
 // The login controller shares its auth client with navigation tracking.
@@ -354,40 +365,52 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   assert.equal(switched.signups[0].options.data.nickname, '나만의별명', 'signup sends the nickname chosen by the member');
 
   const checkedNames = [];
-  const rejectedName = setup('?auth=signup', { nicknameResponse: name => {
-    checkedNames.push(name); return { data: checkedNames.length === 1 };
+  const maskedName = setup('?auth=signup', { nicknameResponse: name => {
+    checkedNames.push(name); return { data: '❤️❤️' + name.slice(2) };
   } });
-  await rejectedName.flush(); rejectedName.fill(); await rejectedName.submit();
-  assert.equal(checkedNames.length, 2, 'a forbidden candidate is regenerated before account creation');
-  assert.notEqual(checkedNames[0], checkedNames[1]);
-  assert.equal(rejectedName.signups.length, 1);
-  assert.equal(rejectedName.signups[0].options.data.nickname, checkedNames[1]);
+  await maskedName.flush(); maskedName.fill(); const suggestedName=maskedName.element('nickname').value;
+  await maskedName.submit();
+  assert.deepEqual(checkedNames,[suggestedName],'the suggested name is canonicalized once without regeneration');
+  assert.equal(maskedName.signups.length,1);
+  assert.equal(maskedName.signups[0].options.data.nickname,'❤️❤️'+suggestedName.slice(2));
+  assert.equal(maskedName.element('nickname').value,'❤️❤️'+suggestedName.slice(2));
   let customChecks = 0;
-  const rejectedCustom = setup('?auth=signup', { nicknameResponse: () => { customChecks++; return { data: true }; } });
-  await rejectedCustom.flush(); rejectedCustom.fill(); rejectedCustom.element('nickname').value = '직접고른이름';
-  await rejectedCustom.submit();
-  assert.equal(customChecks, 1, 'a rejected custom nickname is never silently regenerated');
-  assert.equal(rejectedCustom.signups.length, 0);
-  assert.equal(rejectedCustom.element('nickname').value, '직접고른이름');
-  assert.equal(rejectedCustom.element('nickname').disabled, false);
-  assert.equal(rejectedCustom.focused, 'nickname');
-  assert.match(rejectedCustom.element('auth-feedback').textContent, /다른 이름을 입력/);
-  let rejectedChecks = 0;
-  const blockedNames = setup('?auth=signup', { nicknameResponse: () => { rejectedChecks++; return { data: true }; } });
-  await blockedNames.flush(); blockedNames.fill(); await blockedNames.submit();
-  assert.equal(rejectedChecks, 4, 'candidate retries are bounded');
-  assert.equal(blockedNames.signups.length, 0);
-  assert.match(blockedNames.element('auth-feedback').textContent, /닉네임을 만들지 못했어요/);
-  for (const result of [{ data: null }, { data: 'false' }, { error: { message: 'network' } }]) {
+  const maskedCustom = setup('?auth=signup', { nicknameResponse: name => { customChecks++; return { data:name.replaceAll('금칙','❤️❤️') }; } });
+  await maskedCustom.flush(); maskedCustom.fill(); maskedCustom.element('nickname').value='가'.repeat(10)+'금칙';
+  await maskedCustom.submit();
+  assert.equal(customChecks,1,'a user-entered name needs one canonicalization request');
+  assert.equal(maskedCustom.signups.length,1);
+  assert.equal(maskedCustom.signups[0].options.data.nickname,'가'.repeat(10)+'❤️❤️');
+  assert.equal(maskedCustom.element('nickname').value,'가'.repeat(10)+'❤️❤️');
+  assert.equal(maskedCustom.element('nickname').maxLength,15,'expanded mask text remains editable');
+  assert.equal(maskedCustom.element('nickname').disabled,false);
+  const {maskedTextLength,textInputMaxLength}=await import('../shared/content/text-length.mjs');
+  for(const name of ['가'.repeat(11)+'❤️❤️','😀'.repeat(12),'❤️❤️'.repeat(12)]){
+    const app=setup('?auth=signup');await app.flush();app.fill();app.element('nickname').value=name;
+    app.element('nickname').listeners.input();
+    assert.equal(app.element('nickname').maxLength,textInputMaxLength(name,12));
+    assert.equal(maskedTextLength(name),12);
+    await app.submit();assert.equal(app.signups[0].options.data.nickname,name,'canonical-length names are accepted');
+  }
+  for (const result of [{data:null},{data:false},{data:true},{data:{}},{data:''},{data:'   '},{data:'가'.repeat(13)},{data:'❤️❤️'.repeat(13)},{error:{message:'network'}}]) {
     const app = setup('?auth=signup', { nicknameResponse: () => result });
-    await app.flush(); app.fill(); await app.submit();
-    assert.equal(app.signups.length, 0, 'only a successful false result allows signup');
+    await app.flush(); app.fill(); const before=app.element('nickname').value;await app.submit();
+    assert.equal(app.signups.length,0,'only a valid canonical string allows signup');
+    assert.equal(app.nicknameChecks.length,1,'malformed or failed canonicalization never retries automatically');
+    assert.equal(app.element('nickname').value,before,'a failed canonicalization preserves the entered name');
   }
   const failedSignup = setup('?auth=signup', { signupResponse: () => ({ error: { message: 'network' } }) });
   await failedSignup.flush(); failedSignup.fill(); const failedName = failedSignup.element('nickname').value;
   await failedSignup.submit();
   assert.equal(failedSignup.signups.length, 1, 'an account creation failure never triggers an automatic retry');
   assert.equal(failedSignup.element('nickname').value, failedName);
+  const takenName=setup('?auth=signup',{nicknameResponse:name=>({data:name.replaceAll('금칙','❤️❤️')}),
+    signupResponse:()=>({error:{code:'23505',message:'duplicate key violates profiles_nickname_key'}})});
+  await takenName.flush();takenName.fill();takenName.element('nickname').value='금칙별명';await takenName.submit();
+  assert.equal(takenName.signups.length,1,'a canonical nickname collision never creates a second signup attempt');
+  assert.equal(takenName.element('nickname').value,'❤️❤️별명');
+  assert.match(takenName.element('auth-feedback').textContent,/이미 사용 중인 닉네임/);
+  assert.equal(takenName.focused,'nickname');
 
   const nicknameMember = { id: 'nickname-member', email: 'member@ojjuda.kr', user_metadata: { nickname: '기존별명' } };
   let authStatus = 555, prepareCalls = 0, identityCalls = 0;
@@ -413,16 +436,30 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   assert.deepEqual(expiredPark.navigations,[]);
   assert.match(expiredPark.element('auth-feedback').textContent,/로그인을 다시 확인/);
 
-  const repair = setup('?auth=login&next=note', { user: nicknameMember });
-  repair.client.rpc = async () => ({ error: { code: '23505', message: 'nickname conflict' } });
+  let repairConflict=true;
+  const repair = setup('?auth=login&next=note', {user:nicknameMember,
+    nicknameResponse:name=>({data:name.replaceAll('금칙','❤️❤️')}),
+    noteResponse:()=>repairConflict?{error:{code:'23505',message:'nickname conflict'}}:{data:true},
+    profileResponse:owner=>({data:{id:owner,nickname:'저장❤️❤️별명'}})});
   await repair.flush();
   assert.equal(repair.element('auth-title').textContent, '닉네임 정하기');
   assert.equal(repair.element('nickname').readOnly, false, 'existing nickname repair remains editable');
   assert.equal(repair.element('nickname-auto-help').hidden, true);
-  repair.element('nickname').value = '새별명';
-  repair.client.rpc = async () => ({ data: true });
+  repair.element('nickname').value = '새금칙별명';
+  repairConflict=false;
   await repair.submit();
   assert.deepEqual(repair.navigations, ['/world.html?place=park']);
+  assert.deepEqual(repair.nicknameChecks,['새금칙별명']);
+  assert.deepEqual(repair.noteWrites,['기존별명','새❤️❤️별명']);
+  assert.deepEqual(repair.profileReads,[nicknameMember.id]);
+  assert.equal(repair.element('nickname').value,'저장❤️❤️별명','nickname mode uses the saved profile returned by the server');
+  assert.equal(repair.element('account-badge').textContent,'저장❤️❤️별명님');
+  for(const profile of [{error:{message:'network'}},{data:null},{data:{id:'another-member',nickname:'다른별명'}}]){
+    const app=setup('?next=note',{user:nicknameMember,profileResponse:()=>profile});await app.flush();
+    assert.deepEqual(app.navigations,[],'a profile read failure or another account cannot confirm entry');
+    assert.equal(app.element('nickname').value,'기존별명');
+    assert.match(app.element('auth-feedback').textContent,/저장한 닉네임을 확인하지 못했어요/);
+  }
   const existing = setup('?auth=signup&next=world', { user: { id: 'existing', email: 'member@example.invalid' } });
   await existing.flush();
   assert.deepEqual(existing.navigations, ['/world.html']);
@@ -658,6 +695,35 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   closed.element('recovery-reset-button').listeners.click();
   assert.equal(closed.recoveries.length, 1); assert.equal(closed.element('recovery-reset-button').hidden, true);
   const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
+  const oneMask=deferred();
+  const doubleSubmit=setup('?auth=signup',{nicknameResponse:()=>oneMask.promise});
+  await doubleSubmit.flush();doubleSubmit.fill();doubleSubmit.element('nickname').value='금칙별명';
+  const firstSubmit=doubleSubmit.submit();await doubleSubmit.flush();await doubleSubmit.submit();
+  assert.deepEqual(doubleSubmit.nicknameChecks,['금칙별명']);
+  assert.equal(doubleSubmit.signups.length,0);
+  doubleSubmit.emitNow('INITIAL_SESSION',null);
+  oneMask.resolve({data:'❤️❤️별명'});await firstSubmit;
+  assert.equal(doubleSubmit.signups.length,1,'two submits while masking create only one account request');
+  assert.equal(doubleSubmit.signups[0].options.data.nickname,'❤️❤️별명','same-identity Auth events do not cancel canonicalization');
+
+  const switchedMask=deferred();
+  const signupAccountSwitch=setup('?auth=signup',{nicknameResponse:()=>switchedMask.promise});
+  await signupAccountSwitch.flush();signupAccountSwitch.fill();signupAccountSwitch.element('nickname').value='이전금칙별명';
+  const signupBeforeSwitch=signupAccountSwitch.submit();await signupAccountSwitch.flush();
+  signupAccountSwitch.emitNow('SIGNED_IN',{user:reader});
+  switchedMask.resolve({data:'이전❤️❤️별명'});await signupBeforeSwitch;
+  assert.equal(signupAccountSwitch.signups.length,0,'an Auth switch invalidates a pending mask before any account is created');
+  assert.equal(signupAccountSwitch.element('nickname').value,'이전금칙별명');
+  assert.match(signupAccountSwitch.element('auth-feedback').textContent,/로그인 상태가 바뀌었어요/);
+
+  const delayedProfile=deferred();
+  const savedProfileRace=setup('?next=note',{user:nicknameMember,profileResponse:()=>delayedProfile.promise});
+  await savedProfileRace.flush();assert.deepEqual(savedProfileRace.profileReads,[nicknameMember.id]);
+  savedProfileRace.emitNow('SIGNED_IN',{user:{...reader,user_metadata:{nickname:'새회원'}}});
+  delayedProfile.resolve({data:{id:nicknameMember.id,nickname:'이전❤️❤️별명'}});await savedProfileRace.flush();
+  assert.deepEqual(savedProfileRace.navigations,[],'a late canonical profile cannot open another account’s park');
+  assert.equal(savedProfileRace.element('account-badge').textContent,'새회원님');
+
   const oldIdentity = deferred(), newIdentity = deferred();
   const owners = [];
   const sessionSwitch = setup('?next=note', {user:nicknameMember,userResponse:user => {
@@ -681,9 +747,9 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   nicknameRace.element('auth-dialog').close(); await nicknameRace.flush();
   nicknameRace.element('login-tab').listeners.click(); nicknameRace.element('auth-dialog').showModal();
   nicknameRace.element('nickname').value = '새창의이름';
-  oldNickname.resolve({ data: true }); await pendingNickname;
+  oldNickname.resolve({ data: '이전❤️❤️별명' }); await pendingNickname;
   assert.equal(nicknameRace.signups.length, 0, 'a late nickname check cannot create an account after closing signup');
-  assert.equal(nicknameRace.element('nickname').value, '새창의이름', 'a late rejection cannot regenerate a name in another view');
+  assert.equal(nicknameRace.element('nickname').value, '새창의이름', 'a late canonical result cannot replace a name in another view');
   assert.equal(nicknameRace.element('login-tab').attributes['aria-selected'], 'true');
   const oldSession = deferred();
   const sessionRace = setup('?auth=login', { sessionResponse: () => oldSession.promise });
@@ -723,6 +789,6 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   assert.equal(signupRace.element('login-tab').attributes['aria-selected'], 'true');
   assert.equal(signupRace.element('auth-form').hidden, false, 'a previous signup response cannot replace a reopened login form');
   assert.equal(signupRace.element('password').value, 'replacement-password');
-  console.log('PASS: Agit/Pajang/Park login returns, dialog reopen and signup switches, confirmation and recovery destinations, required inputs, untrusted destination rejection and account races');
+  console.log('PASS: Agit/Pajang/Park auth routes, canonical masked nicknames and saved profiles, Unicode/mask limits, unique-name failures, duplicate submits, confirmation/recovery, drafts and account/view races');
 })().catch(error => { console.error(error); process.exitCode = 1; });
 

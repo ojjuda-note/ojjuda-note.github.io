@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
 import {openAccount} from "../lib/account-actions.mjs";
+import {maskedTextLength,textInputMaxLength} from "../../../../shared/content/text-length.mjs";
 
 type Account=Awaited<ReturnType<typeof openAccount>>;
 const changedAccount="계정이 바뀌었어요. 창을 닫고 다시 열어 주세요.";
@@ -41,7 +42,7 @@ export function QuestionSuggestionForm({onBusyChange,onSaved}:{onBusyChange:(bus
   async function submit(event:React.FormEvent){
     event.preventDefault();
     const body=question.trim();
-    if(locked.current||!account||blocked||!body||body.length>200)return;
+    if(locked.current||!account||blocked||!body||maskedTextLength(body)>200)return;
     if(!account.isCurrent()){invalidate();return;}
     locked.current=true;setBusy(true);setError("");onBusyChange(true);
     let saved=false;
@@ -82,14 +83,14 @@ export function QuestionSuggestionForm({onBusyChange,onSaved}:{onBusyChange:(bus
     <p className="sub">함께 나누고 싶은 질문을 추천해 주세요.</p>
     <label className="formlabel" htmlFor="question-suggestion-body">추천할 질문</label>
     <textarea id="question-suggestion-body" value={question} onChange={event=>{setQuestion(event.target.value);if(account)setError("");}}
-      placeholder="예: 나를 가장 웃게 만드는 순간은?" maxLength={200} rows={4} required autoFocus data-autofocus
+      placeholder="예: 나를 가장 웃게 만드는 순간은?" maxLength={textInputMaxLength(question,200)} rows={4} required autoFocus data-autofocus
       disabled={busy||blocked} aria-describedby="question-suggestion-help question-suggestion-count"/>
-    <div className="counter" id="question-suggestion-count">{question.length} / 200</div>
+    <div className="counter" id="question-suggestion-count">{maskedTextLength(question)} / 200</div>
     <p className="question-suggestion-help" id="question-suggestion-help">운영자가 확인해 다음 질문에 참고해요.</p>
     {checking&&<p className="sub" role="status">계정을 확인하고 있어요.</p>}
     {error&&<p className="error" role="alert">{error}</p>}
     {!checking&&!account&&!blocked&&<button type="button" className="secondary wide" onClick={()=>setAttempt(value=>value+1)}>다시 확인</button>}
-    <button type="submit" className="primary wide" disabled={busy||!account||blocked||!question.trim()||question.trim().length>200}>
+    <button type="submit" className="primary wide" disabled={busy||!account||blocked||!question.trim()||maskedTextLength(question.trim())>200}>
       {busy?"보내는 중…":"질문 보내기"}
     </button>
   </form>;

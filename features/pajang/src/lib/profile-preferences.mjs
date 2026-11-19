@@ -1,3 +1,5 @@
+import {maskedTextLength} from '../../../../shared/content/text-length.mjs';
+
 // These are optional, self-selected profile details, not inferred personality types.
 export const MAX_PROFILE_CUSTOM_LENGTH = 40;
 export const MAX_PROFILE_GROUP_SELECTIONS = 32;
@@ -155,7 +157,7 @@ function customValues(value, limit) {
     if(result.length>=limit)break;
     if(typeof item!=="string")continue;
     const label=item.trim();
-    if(!label||Array.from(label).length>MAX_PROFILE_CUSTOM_LENGTH||seen.has(label))continue;
+    if(!label||maskedTextLength(label)>MAX_PROFILE_CUSTOM_LENGTH||seen.has(label))continue;
     seen.add(label);result.push(label);
   }
   return result;
