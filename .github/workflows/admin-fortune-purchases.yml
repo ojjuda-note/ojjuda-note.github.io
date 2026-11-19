@@ -7,7 +7,10 @@ on:
       - 'admin/**'
       - 'world.html'
       - 'supabase/migrations/*admin_fortune*'
+      - 'supabase/migrations/*pajang_admin*'
       - 'tests/admin-fortune-purchases*'
+      - 'tests/admin-pajang*'
+      - 'tests/admin-service-scope.test.cjs'
       - 'tests/admin-navigation-ui.test.cjs'
       - 'tests/package*.json'
       - '.github/workflows/admin-fortune-purchases.yml'
@@ -16,7 +19,10 @@ on:
       - 'admin/**'
       - 'world.html'
       - 'supabase/migrations/*admin_fortune*'
+      - 'supabase/migrations/*pajang_admin*'
       - 'tests/admin-fortune-purchases*'
+      - 'tests/admin-pajang*'
+      - 'tests/admin-service-scope.test.cjs'
       - 'tests/admin-navigation-ui.test.cjs'
       - 'tests/package*.json'
       - '.github/workflows/admin-fortune-purchases.yml'
@@ -44,12 +50,26 @@ jobs:
       - name: Check purchase history and administrator integration
         run: |
           node --check admin/fortune-purchases.js
+          node --check admin/pajang-moderation.js
           node --test tests/admin-fortune-purchases*.test.cjs
+          node --test tests/admin-pajang-moderation*.test.cjs tests/admin-service-scope.test.cjs tests/admin-back-navigation.test.cjs
           node tests/admin-menu-groups.test.cjs
           node tests/admin-current-features.test.cjs
           node tests/inline-scripts.test.cjs
           node scripts/check-source-layout.mjs
-      - name: Install browser
-        run: cd tests && npx playwright install --with-deps chromium
+      - name: Install browser and Korean fonts
+        working-directory: tests
+        run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get install -y fonts-noto-cjk
       - name: Check administrator menu navigation
         run: node tests/admin-navigation-ui.test.cjs
+      - name: Check Pajang moderation on mobile and desktop
+        run: node tests/admin-pajang-ui.test.cjs
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: admin-pajang-screens
+          path: tests/artifacts/admin-pajang/
+          retention-days: 3
+          if-no-files-found: ignore

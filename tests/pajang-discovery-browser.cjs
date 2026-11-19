@@ -175,6 +175,7 @@ function clientFixture(hash) {
     if(sessionStorage.holdEntryLocation==='yes')state.radarOn=false;
     const flightCheck=new URLSearchParams(location.search).get('flight-check');
     const mode=flightCheck||sessionStorage.fixtureMode||'member';
+    // Pajang person IDs and Auth user IDs deliberately differ, including for administrators.
     const accepted=sessionStorage.accepted==='yes';
     const friend={id:'peer1',name:'라온',age:28,interest:'walk',region:'경기도',body:'함께 걸어요.',range:15,bearing:315};
     const offered={id:'peer2',name:'유진',age:30,interest:'book',region:'서울특별시'};
@@ -208,7 +209,7 @@ function clientFixture(hash) {
     window.feedCalls=[];window.heldGender=null;window.releaseFeed=null;
     const messages=[{id:'1',src:'peer1',dst:'me',body:'안녕하세요!',at:1}];
     window.authCalls=0;window.artCalls=[];window.memberCalls=[];window.sendIds=[];window.programCalls=0;
-    window.accountWrites=[];window.profileReads=[];
+    window.accountWrites=[];window.profileReads=[];window.adminChecks=0;
     let authSession=mode==='guest'?null:{user:{id:mode==='switched'?'next-member':'member'},access_token:'fixture-token'};
     const authListeners=new Set();
     const db={
@@ -225,6 +226,7 @@ function clientFixture(hash) {
         window.artCalls.push(key.split('/').pop());window.artPending=true;await new Promise(r=>window.addEventListener('finish-art',r,{once:true}));return {error:'fixture image unavailable'};
       }})},
       rpc:(name,p)=>{
+        if(name==='is_admin'){window.adminChecks++;return Promise.resolve({data:mode==='admin'});}
         if(name==='ojjuda_location_preference'){
           state.locationEnabled=localStorage.locationEnabled!=='false';state.locationVersion=Number(localStorage.locationVersion||0);
           if(typeof p.p_enabled==='boolean'){
@@ -672,6 +674,7 @@ function clientFixture(hash) {
     assert.equal(await accountHome.getAttribute('target'),'_top');
     const settings=page.getByRole('region',{name:'파장 설정',exact:true});
     assert.deepEqual(await settings.getByRole('heading',{level:2}).allTextContents(),['내 계정','내 활동','이용 안내','앱 다운로드','계정 관리']);
+    assert.equal(await settings.getByRole('link',{name:'파장 관리자모드',exact:true}).count(),0);
     await settings.getByRole('button',{name:'내가 남긴 답변',exact:true}).click();
     const ownAnswers=page.getByRole('dialog',{name:'내가 남긴 답변',exact:true});
     await ownAnswers.getByText('내 책방 답변').waitFor();
@@ -696,7 +699,7 @@ function clientFixture(hash) {
         const {top,bottom,left,right,height}=el.getBoundingClientRect();
         return {top,bottom,left,right,height};
       }));
-      assert.equal(rows.length,14,'all account settings and app downloads use the shared list rows');
+      assert.equal(rows.length,14,'account settings and the three app entries use the shared list rows');
       for(const [index,row] of rows.entries()){
         assert.ok(row.height>=44,`settings row ${index+1} has a full touch target at ${width}px`);
         assert.ok(row.left>=0&&row.right<=width+1,'settings rows stay within the viewport');
@@ -741,7 +744,23 @@ function clientFixture(hash) {
     await page.getByRole('button',{name:'공개 소개 수정'}).click();
     const dialog=page.getByRole('dialog');await dialog.waitFor();await capture('profile-editor');
     assert.equal(await dialog.getByRole('link',{name:'아지트로',exact:true}).count(),0);
-    await dialog.getByRole('button',{name:'닫기'}).click();await goHome();
+    await dialog.getByRole('button',{name:'닫기'}).click();
+    await page.evaluate(()=>{sessionStorage.fixtureMode='admin';});
+    await page.goto(origin+project+'station.html?tab=profile');
+    const adminEntry=settings.getByRole('link',{name:'파장 관리자모드',exact:true});
+    await adminEntry.waitFor();
+    assert.equal(await adminEntry.getAttribute('href'),'/world.html?admin=pajang-answers&from=pajang');
+    assert.equal(await adminEntry.getAttribute('target'),'_top');
+    assert.ok(await adminEntry.evaluate(el=>el.getBoundingClientRect().height>=44));
+    await accountPage.screenshot({path:path.join(dir,'account-admin-settings-390.png'),animations:'disabled'});
+    await adminEntry.click();
+    await page.waitForURL('**/world.html?admin=pajang-answers&from=pajang');
+    await page.evaluate(()=>{sessionStorage.fixtureMode='not-admin';});
+    await page.goto(origin+project+'station.html?tab=profile');await settings.waitFor();
+    await page.waitForFunction(()=>window.adminChecks>0);
+    assert.equal(await adminEntry.count(),0,'a verified ordinary member has no administrator entry');
+    await page.evaluate(()=>{sessionStorage.fixtureMode='member';});await goHome();
+    console.log('PASS server-authorized Pajang administrator entry, top-level service route and ordinary-member concealment');
     await page.goto(origin+project+'station.html?view=radar');
     await page.getByRole('heading',{name:'주변 레이더'}).waitFor();
     await checkCompass(page,'.radar-scope','.radar-bearings text',friendAnchor,fixedPeople);

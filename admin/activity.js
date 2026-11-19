@@ -18,7 +18,9 @@
     add_moderator: '카드 운영자 지정', remove_moderator: '카드 운영자 해제',
     update_settings: '서비스 공지 변경', update_spam_settings: '도배 방지 설정 변경', reply_inquiry: '문의 답변',
     house_post_edit: '우리집 글 수정', house_post_delete: '우리집 글 삭제',
-    media_comment_edit: '앨범 댓글 수정', media_comment_delete: '앨범 댓글 삭제'
+    media_comment_edit: '앨범 댓글 수정', media_comment_delete: '앨범 댓글 삭제',
+    pajang_answer_hide: '파장 답변 숨김', pajang_answer_restore: '파장 답변 복구',
+    pajang_message_hide: '파장 채팅 숨김', pajang_message_restore: '파장 채팅 복구'
   };
   const fields = { body: '글 내용', tags: '태그', birth_date: '생년월일', gender: '성별', phone_number: '전화번호', nickname: '닉네임' };
   const el = (tag, cls, value) => { const n = document.createElement(tag); if (cls) n.className = cls; if (value != null) n.textContent = String(value); return n; };
@@ -132,7 +134,7 @@
     section.append(heading, el('p', 'aa-help', '변경 내용과 처리 사유를 확인해요. 시간은 한국 기준이에요.'));
     const controls = el('div', 'aa-controls');
     sourceSelect = el('select'); sourceSelect.setAttribute('aria-label', '기록 종류');
-    for (const [value, label] of [['world','계정·ZU·운영'],['park','카드·답글']]) { const option = el('option', '', label); option.value = value; sourceSelect.append(option); }
+    for (const [value, label] of [['world','공통 운영·파장'],['park','카드·답글']]) { const option = el('option', '', label); option.value = value; sourceSelect.append(option); }
     sourceSelect.value = source;
     actionSelect = el('select'); actionSelect.setAttribute('aria-label', '작업 분류'); actionSelect.append(el('option', '', '전체 작업')); actionSelect.firstElementChild.value = '';
     const sourceLabel = el('label', '', '기록 종류'), actionFilterLabel = el('label', 'aa-action-filter', '작업 분류'); sourceLabel.append(sourceSelect); actionFilterLabel.append(actionSelect);

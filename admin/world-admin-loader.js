@@ -4,8 +4,9 @@
  const scripts=[
   "/admin/visitors.js?v=20261113-biorhythm-paid1","/admin/trash.js?v=20261021-trash1",
   "/admin/friend-messages.js?v=20261116-message-page1","/admin/member-identity.js?v=20260929-phone-unique",
+  "/admin/pajang-moderation.js?v=20261119-pajang-admin1",
   "/admin/connections.js?v=20261022-entry1","/admin/accounts.js?v=20261116-history-pages1",
-  "/admin/activity.js?v=20261117-activity-page1","/admin/photo-stages.js?v=20261006-photo1",
+  "/admin/activity.js?v=20261119-pajang-admin1","/admin/photo-stages.js?v=20261006-photo1",
   "/admin/drinking-prompts.js?v=20261114-drinking-plus3001",
   "/admin/fortune-purchases.js?v=20261113-biorhythm-paid1",
   "/admin/groups.js?v=20261107-group-mod2","/admin/asset-library.js?v=20261111-asset-library1",
@@ -15,6 +16,7 @@
   "/admin/visitors.css?v=20261111-guest-popularity1",
   "/admin/visitors-charts.css?v=20261113-feature-chart2",
   "/admin/trash.css?v=20261021-trash1","/admin/friend-messages.css?v=20261020-messages1",
+  "/admin/pajang-moderation.css?v=20261119-pajang-admin1",
   "/admin/connections.css?v=20261004-design1","/admin/accounts.css?v=20261110-member-history1",
   "/admin/activity.css?v=20261004-admin1","/admin/drinking-prompts.css?v=20261114-drinks-content1","/admin/photo-stages.css?v=20261006-photo1",
   "/admin/fortune-purchases.css?v=20261113-biorhythm-paid1",
