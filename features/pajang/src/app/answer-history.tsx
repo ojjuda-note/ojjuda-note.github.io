@@ -156,9 +156,9 @@ function GenderSwitch({value,onChange}:{value:Gender;onChange:(next:Gender)=>voi
 
 type Props = {
   active:boolean; station:Station; revision:number; onProfile:(row:DiscoveryAnswer)=>void;
-  onSignal:(row:DiscoveryAnswer)=>void; onChat:(id:string)=>void; onWrite:()=>void;
+  onSignal:(row:DiscoveryAnswer)=>void; onChat:(id:string)=>void; onWrite:()=>void; onBuySignals?:()=>void;
 };
-export default function AnswerHistory({active,station,revision,onProfile,onSignal,onChat,onWrite}:Props) {
+export default function AnswerHistory({active,station,revision,onProfile,onSignal,onChat,onWrite,onBuySignals}:Props) {
   const [filter,setFilter]=useState("all");
   const [gender,setGender]=useState<Gender>("all");
   const [order,setOrder]=useState<Order>("latest");
@@ -179,7 +179,10 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
         <GenderSwitch value={gender} onChange={setGender}/>
         <span className="feednumber" aria-label={result.total===null?undefined:"답변 "+result.total+"개"}>{result.total}</span>
       </div>
-      <span className="budget"><I n="signal" s={16}/>남은 신호 <b>{station.remaining}<em> / 3</em></b></span>
+      <div className="signal-budget"><span className="budget"><I n="signal" s={16}/>남은 신호 <b>{station.remaining}{station.paidRemaining?<em>개</em>:<em> / 3</em>}</b></span>
+        {!!station.paidRemaining&&<small>무료 {station.freeRemaining??0} · 구매 {station.paidRemaining}</small>}
+        {station.purchasingEnabled&&(station.freeRemaining??station.remaining)===0&&onBuySignals&&<button type="button" className="signal-buy" onClick={onBuySignals}>신호 더하기<I n="right" s={13}/></button>}
+      </div>
     </div>
     <div className="filterrow">
       <div className="chips" aria-label="취향으로 필터">
@@ -207,7 +210,7 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
           </button>
           <p className="quote">{row.body}</p>
           <div className="answer-foot"><span className="tag">{badge.name}</span>
-          {!row.own&&<button className={"sendlink "+(sent?"issent":"")} disabled={!matched&&(sent||station.remaining===0)}
+          {!row.own&&<button className={"sendlink "+(sent?"issent":"")} disabled={!matched&&(sent||(station.remaining===0&&!station.purchasingEnabled))}
             onClick={()=>matched?onChat(row.peer):onSignal(row)}>
             <span><I n={matched?"chat":sent?"check":"signal"} s={17}/>{matched?"대화하기":sent?"보낸 신호":received?"신호 수락하기":"신호 보내기"}</span>
           </button>}</div>

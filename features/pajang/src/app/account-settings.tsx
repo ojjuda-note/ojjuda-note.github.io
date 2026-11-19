@@ -59,6 +59,9 @@ export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(act
       <div className="ojjuda-settings-list">
         {row("visibility","답변 공개 설정")}
         {row("answers","내가 남긴 답변")}
+        <button type="button" className="ojjuda-settings-row" data-ju-charge-open aria-haspopup="dialog" aria-controls="ju-charge-dialog">
+          <span className="ojjuda-settings-label">쭈 충전</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
+        </button>
       </div>
     </section>
     <section className="ojjuda-settings-group" aria-labelledby="account-help-title">

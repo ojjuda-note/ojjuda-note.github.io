@@ -104,6 +104,29 @@ test('external support shares the one popup entry for Back, Forward and manual c
   f.history.back();f.flush();assert.equal(f.path,'/station.html','manual close consumes exactly the support entry');
 });
 
+test('a stacked charge preserves the underlying purchase and consumes each overlay once',()=>{
+  const f=fixture();f.controller.visit('/station.html?tab=profile');
+  const purchase={kind:'buySignals',selection:'signal_3'};f.controller.open(purchase);
+  let visible=false;
+  const charge={show(){visible=true;},hide(){visible=false;},canLeave:()=>true,isCurrent:()=>true};
+  f.controller.openExternal(charge,{stack:true});
+  assert.equal(f.entries.length,4);assert.equal(visible,true);assert.equal(f.modal,purchase);
+  assert.ok(!JSON.stringify(f.entries).includes('signal_3'));
+  f.history.back();f.flush();assert.equal(visible,false);assert.equal(f.modal,purchase);
+  f.history.go(1);f.flush();assert.equal(visible,true);assert.equal(f.modal,purchase);
+  f.controller.closeExternal(charge);f.flush();assert.equal(f.modal,purchase);
+  f.controller.close();f.flush();assert.equal(f.modal,null);assert.equal(f.path,'/station.html?tab=profile');
+  f.history.back();f.flush();assert.equal(f.path,'/station.html');
+});
+
+test('reloading stacked private overlays consumes both stale entries without duplicate Back stops',()=>{
+  const f=fixture();f.controller.visit('/station.html?tab=profile');f.controller.open({kind:'buySignals'});
+  f.controller.openExternal({show(){},hide(){},canLeave:()=>true,isCurrent:()=>true},{stack:true});
+  f.reload();f.flush();assert.equal(f.history.state.pajangNavigation.modal,null);
+  assert.equal(f.history.state.pajangNavigation.index,1);assert.equal(f.path,'/station.html?tab=profile');
+  f.history.back();f.flush();assert.equal(f.path,'/station.html');
+});
+
 test('busy support returns to its existing entry without losing Forward or the form',()=>{
   const f=fixture();f.controller.visit('/station.html?tab=profile');
   let busy=true,shows=0,hides=0;

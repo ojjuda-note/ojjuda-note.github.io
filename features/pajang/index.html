@@ -10,6 +10,9 @@
   <meta name="description" content="오늘의 질문으로 시작하는 만남. 예시 레이더에서 마음이 닿는 인연의 답변을 읽어보세요.">
   <link rel="preconnect" href="https://ziezbdjofcugznowiuda.supabase.co" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <link rel="modulepreload" href="./member.mjs?v=account1">
   <link rel="modulepreload" href="./load-station.mjs?v=account1">
   <link rel="preload" href="./station.css?v=20261119-dots1" as="style">
@@ -19,15 +22,30 @@
   <link rel="stylesheet" href="./letterroom.css?v=20261119-auto-theme1">
   <link rel="stylesheet" href="./radar-motion.css?v=20261119-auto-theme1">
   <link rel="stylesheet" href="/features/account/settings-list.css?v=20261119-app-downloads1">
+  <link rel="stylesheet" href="/note/notifications.css?v=20261117-inbox-keyboard1">
+  <link rel="stylesheet" href="/features/wallet/ju-charge.css?v=20261106-source-folders1">
+  <link rel="stylesheet" href="/ju-coins/ju-coins.css?v=20261106-source-folders1">
+  <link rel="stylesheet" href="./account-toolbar.css?v=20261119-service-header1">
+  <link rel="stylesheet" href="./signal-purchase.css?v=20261119-signal-purchase1">
+  <link rel="stylesheet" href="/shared/brand/service-header.css?v=20261119-service-header1">
   <script src="/app/world/world-themes.js?v=20261119-auto-theme1"></script>
   <script src="/app/world/world-weather.js?v=20261119-kma-current1" defer></script>
-  <script type="module" src="./shell.mjs?v=20261119-auto-theme1"></script>
+  <script type="module" src="./shell.mjs?v=20261119-service-header1"></script>
   <script type="module" src="./entry.mjs?v=20261119-kma-current1"></script>
 <script src="/shared/navigation/section-back.js?v=20261119-history1" data-return-to="hub" defer></script></head>
 <body>
-  <header class="pajang-mast"><div class="pajang-mast-inner">
-    <span class="pajang-signature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path fill="currentColor" stroke="none" d="M12 21C8 18 2 13.5 2 8.5A5.5 5.5 0 0 1 12 5a5.5 5.5 0 0 1 10 3.5C22 13.5 16 18 12 21Z"/></svg>파장</span>
-    <span class="pajang-members">19+ 회원 전용</span>
+  <header class="pajang-mast"><div class="pajang-mast-inner ojjuda-service-header">
+    <div class="ojjuda-service-brand">
+      <a class="ojjuda-service-home" href="./" aria-label="오쭈다 파장 오늘로">
+        <svg class="ojjuda-service-logo ojjuda-theme-logo" viewBox="-16 -16 544 544" width="30" height="30" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/><path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/><path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg>
+        <span class="ojjuda-service-word">오쭈다 <span class="ojjuda-service-name">파장</span></span>
+      </a>
+      <span class="ojjuda-service-beta">베타</span>
+    </div>
+    <div class="nn-top-actions ojjuda-service-actions">
+      <button class="nn-bell" type="button" data-notifications-open aria-label="알림" aria-haspopup="dialog" aria-controls="note-notification-dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span class="nn-dot" data-notification-dot hidden aria-hidden="true"></span></button>
+      <button class="coinpill ojjuda-service-balance" type="button" data-ju-charge-open aria-label="보유 ZU 확인 중, 충전 열기" title="보유 ZU 확인 중, 충전 열기" aria-haspopup="dialog" aria-controls="ju-charge-dialog"><span class="cz" aria-hidden="true"><i>ZU</i></span><span data-pajang-balance>…</span></button>
+    </div>
   </div></header>
   <main id="gate" aria-live="polite">
     <div class="flight-scene" aria-hidden="true">
