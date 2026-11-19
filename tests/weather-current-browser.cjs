@@ -49,9 +49,9 @@ async function snapshot(page){
   return page.evaluate(()=>{
     const surfaces=[window,...[...document.querySelectorAll('iframe')].map(frame=>frame.contentWindow)];
     return {
-      surfaces:surfaces.map(surface=>({ready:!!surface.OjjudaWeather,
-        kind:surface.document.documentElement.dataset.worldWeather||null,
-        theme:surface.document.documentElement.dataset.worldTheme,
+      surfaces:surfaces.map(surface=>({ready:!!surface.document.documentElement&&!!surface.OjjudaWeather,
+        kind:surface.document.documentElement?.dataset.worldWeather||null,
+        theme:surface.document.documentElement?.dataset.worldTheme,
         background:surface.document.body?surface.getComputedStyle(surface.document.body).backgroundColor:null})),
       state:window.OjjudaWeather?.getState(),
       gps:{...window.__weatherNative,activeWatches:[...window.__weatherNative.activeWatches]},
@@ -138,7 +138,7 @@ async function fixture(browser,assets,{permission='granted',enabled=true,signedI
       if(responseHold)await new Promise(resolve=>gates.add(resolve));
       try{
         const now=await page.evaluate(()=>Date.now());
-        await route.fulfill({contentType:'application/json',headers:cors,body:JSON.stringify({kind:entry.kind,expiresAt:now+15*minute})});
+        await route.fulfill({contentType:'application/json',headers:cors,body:JSON.stringify({kind:entry.kind,expiresAt:now+10*minute})});
       }catch(error){
         // Cancellation is an expected outcome of the interruption cases below.
         if(!responseHold)throw error;
