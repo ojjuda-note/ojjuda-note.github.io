@@ -1,0 +1,106 @@
+name: PWA install checks
+
+on:
+  pull_request:
+    paths:
+      - 'shared/pwa/**'
+      - 'shared/app-icons/**'
+      - 'brand/app-icons/seasonal/**'
+      - 'ops/build-seasonal-app-icons.mjs'
+      - 'sw.js'
+      - 'offline.html'
+      - 'manifest.webmanifest'
+      - 'park/manifest.webmanifest'
+      - 'features/pajang/manifest.webmanifest'
+      - 'features/pajang/index.html'
+      - 'features/pajang/station.html'
+      - 'park/index.html'
+      - 'world.html'
+      - 'index.html'
+      - 'version.json'
+      - 'tests/pwa-*.test.cjs'
+      - 'tests/app-icon-calendar.test.mjs'
+      - 'tests/seasonal-app-icons-build.test.mjs'
+      - 'tests/package*.json'
+      - '.github/workflows/pwa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'shared/pwa/**'
+      - 'shared/app-icons/**'
+      - 'brand/app-icons/seasonal/**'
+      - 'ops/build-seasonal-app-icons.mjs'
+      - 'sw.js'
+      - 'offline.html'
+      - 'manifest.webmanifest'
+      - 'park/manifest.webmanifest'
+      - 'features/pajang/manifest.webmanifest'
+      - 'features/pajang/index.html'
+      - 'features/pajang/station.html'
+      - 'park/index.html'
+      - 'world.html'
+      - 'index.html'
+      - 'version.json'
+      - 'tests/pwa-*.test.cjs'
+      - 'tests/app-icon-calendar.test.mjs'
+      - 'tests/seasonal-app-icons-build.test.mjs'
+      - 'tests/package*.json'
+      - '.github/workflows/pwa.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  install-and-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /shared/pwa/app-identity.js
+            /shared/pwa/pwa-install.js
+            /shared/app-icons/
+            /brand/app-icons/seasonal/
+            /ops/build-seasonal-app-icons.mjs
+            /manifest.webmanifest
+            /park/manifest.webmanifest
+            /features/pajang/manifest.webmanifest
+            /features/pajang/index.html
+            /features/pajang/station.html
+            /sw.js
+            /offline.html
+            /world.html
+            /version.json
+            /index.html
+            /park/index.html
+            /note/index.html
+            /games/matgo.html
+            /games/ttang.html
+            /games/photo-ttang.html
+            /games/ojjuda-tour/index.html
+            /tests/package.json
+            /tests/package-lock.json
+            /tests/pwa-install.test.cjs
+            /tests/pwa-app-identity.test.cjs
+            /tests/app-icon-calendar.test.mjs
+            /tests/seasonal-app-icons-build.test.mjs
+            /tests/pwa-service-worker.test.cjs
+            /tests/inline-scripts.test.cjs
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix tests ci --ignore-scripts
+      - run: npm --prefix tests run test:pwa
+      - name: Verify seasonal icon packaging
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v magick >/dev/null && ! command -v convert >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends imagemagick
+          fi
+          node --test tests/app-icon-calendar.test.mjs tests/seasonal-app-icons-build.test.mjs
+      - run: node tests/inline-scripts.test.cjs

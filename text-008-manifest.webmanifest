@@ -1,0 +1,31 @@
+{
+  "id": "/world.html",
+  "name": "오쭈다 아지트",
+  "short_name": "오쭈다 아지트",
+  "description": "가볍게 한 판, 다정한 한마디. 오락실과 공원에서 만나요.",
+  "lang": "ko",
+  "start_url": "./world.html",
+  "display": "standalone",
+  "background_color": "#f7f8f4",
+  "theme_color": "#245A48",
+  "icons": [
+    {
+      "src": "icon-192.png?v=seasonal-v1-autumn-a93ca4a62190",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png?v=seasonal-v1-autumn-a93ca4a62190",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-maskable-512.png?v=seasonal-v1-autumn-a93ca4a62190",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "scope": "/",
+  "prefer_related_applications": false
+}

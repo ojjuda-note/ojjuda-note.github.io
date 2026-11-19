@@ -1,0 +1,395 @@
+{
+  "schemaVersion": 1,
+  "revision": "20261119-seasonal-icons-1",
+  "timezone": "Asia/Seoul",
+  "themes": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter",
+    "newyear",
+    "seollal",
+    "chuseok",
+    "christmas"
+  ],
+  "seasons": [
+    {
+      "theme": "spring",
+      "months": [
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "theme": "summer",
+      "months": [
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "theme": "autumn",
+      "months": [
+        9,
+        10,
+        11
+      ]
+    },
+    {
+      "theme": "winter",
+      "months": [
+        12,
+        1,
+        2
+      ]
+    }
+  ],
+  "annualEvents": [
+    {
+      "id": "newyear",
+      "theme": "newyear",
+      "start": "12-25",
+      "end": "01-01",
+      "eventDate": "01-01",
+      "leadDays": 7,
+      "endOffsetDays": 0,
+      "priority": 100
+    },
+    {
+      "id": "christmas",
+      "theme": "christmas",
+      "start": "12-18",
+      "end": "12-25",
+      "eventDate": "12-25",
+      "leadDays": 7,
+      "endOffsetDays": 0,
+      "priority": 100
+    }
+  ],
+  "datedEvents": [
+    {
+      "id": "seollal-2026",
+      "theme": "seollal",
+      "start": "2026-02-10",
+      "end": "2026-02-18",
+      "eventDate": "2026-02-17",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2026-01-01",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2026&mm=01&dd=01",
+      "sourceResponseSha256": "a97e7c73475f9d718690188dafa8cf6781a0d959249057f8204123134e0c3450"
+    },
+    {
+      "id": "chuseok-2026",
+      "theme": "chuseok",
+      "start": "2026-09-18",
+      "end": "2026-09-26",
+      "eventDate": "2026-09-25",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2026-08-15",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2026&mm=08&dd=15",
+      "sourceResponseSha256": "72b97d8d5cb1dc47b29f3ccff6cb6f72dd153f109c4df25501cf894af64cc1c3"
+    },
+    {
+      "id": "seollal-2027",
+      "theme": "seollal",
+      "start": "2027-01-31",
+      "end": "2027-02-08",
+      "eventDate": "2027-02-07",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2027-01-01",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2027&mm=01&dd=01",
+      "sourceResponseSha256": "3ba767fccb33b5d08532d4eaa6a618ba9d0a4021f477228cd81ff1baa262e8da"
+    },
+    {
+      "id": "chuseok-2027",
+      "theme": "chuseok",
+      "start": "2027-09-08",
+      "end": "2027-09-16",
+      "eventDate": "2027-09-15",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2027-08-15",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2027&mm=08&dd=15",
+      "sourceResponseSha256": "70bb607cac5bab406c0d8773b33e4f64e7cb7fa4f2304173354e0a280c76f3f5"
+    },
+    {
+      "id": "seollal-2028",
+      "theme": "seollal",
+      "start": "2028-01-20",
+      "end": "2028-01-28",
+      "eventDate": "2028-01-27",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2028-01-01",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2028&mm=01&dd=01",
+      "sourceResponseSha256": "418fce78dfe00207fd2ab951ffaa7532ec1d867e1eb656d568c74e373669c4da"
+    },
+    {
+      "id": "chuseok-2028",
+      "theme": "chuseok",
+      "start": "2028-09-26",
+      "end": "2028-10-04",
+      "eventDate": "2028-10-03",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2028-08-15",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2028&mm=08&dd=15",
+      "sourceResponseSha256": "a4bae0dc1a216517f0a44267457e5658b638c9493ba0f7780f92c87d079012a6"
+    },
+    {
+      "id": "seollal-2029",
+      "theme": "seollal",
+      "start": "2029-02-06",
+      "end": "2029-02-14",
+      "eventDate": "2029-02-13",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2029-01-01",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2029&mm=01&dd=01",
+      "sourceResponseSha256": "cf0de8af6180ae88983d981ebdfe71fc5335b1552f5149d7e1684ea6f55c080d"
+    },
+    {
+      "id": "chuseok-2029",
+      "theme": "chuseok",
+      "start": "2029-09-15",
+      "end": "2029-09-23",
+      "eventDate": "2029-09-22",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2029-08-15",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2029&mm=08&dd=15",
+      "sourceResponseSha256": "89d1791525cbc365dfe733f2cffef139b95d29ed53a53a3dcec1e12067132113"
+    },
+    {
+      "id": "seollal-2030",
+      "theme": "seollal",
+      "start": "2030-01-27",
+      "end": "2030-02-04",
+      "eventDate": "2030-02-03",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2030-01-01",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2030&mm=01&dd=01",
+      "sourceResponseSha256": "aef4ce88b8aee68fb6131cf52e4bed9c36c1372009b92bc54ecad92e7246e0bc"
+    },
+    {
+      "id": "chuseok-2030",
+      "theme": "chuseok",
+      "start": "2030-09-05",
+      "end": "2030-09-13",
+      "eventDate": "2030-09-12",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2030-08-15",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2030&mm=08&dd=15",
+      "sourceResponseSha256": "e28842a23471c2c7aade5f3af8dacc0f6b75e4c04c106676bca8586f5357664d"
+    },
+    {
+      "id": "seollal-2031",
+      "theme": "seollal",
+      "start": "2031-01-16",
+      "end": "2031-01-24",
+      "eventDate": "2031-01-23",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2031-01-01",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2031&mm=01&dd=01",
+      "sourceResponseSha256": "b4642d238b177b4fcc2f3112acf809685d73fdbfd4925da6c1792c66d062a957"
+    },
+    {
+      "id": "chuseok-2031",
+      "theme": "chuseok",
+      "start": "2031-09-24",
+      "end": "2031-10-02",
+      "eventDate": "2031-10-01",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2031-08-15",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2031&mm=08&dd=15",
+      "sourceResponseSha256": "a603535a594334d0f05433cffce716ad313365a83186affa4ece914ddbd9d721"
+    },
+    {
+      "id": "seollal-2032",
+      "theme": "seollal",
+      "start": "2032-02-04",
+      "end": "2032-02-12",
+      "eventDate": "2032-02-11",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2032-01-01",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2032&mm=01&dd=01",
+      "sourceResponseSha256": "c6172284c581709bd31d40a827b6e36b3e063f2a71d14a58e42047147e0ba501"
+    },
+    {
+      "id": "chuseok-2032",
+      "theme": "chuseok",
+      "start": "2032-09-12",
+      "end": "2032-09-20",
+      "eventDate": "2032-09-19",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2032-08-15",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2032&mm=08&dd=15",
+      "sourceResponseSha256": "8b1df59212917534363bc373b5021b45d97e563dcb81bb8a5fcceebc8146c766"
+    },
+    {
+      "id": "seollal-2033",
+      "theme": "seollal",
+      "start": "2033-01-24",
+      "end": "2033-02-01",
+      "eventDate": "2033-01-31",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2033-01-01",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2033&mm=01&dd=01",
+      "sourceResponseSha256": "5f63cd58df82e7f8ee9e0fda0d23b2a76951394cd5973010b0e66a96f54e52af"
+    },
+    {
+      "id": "chuseok-2033",
+      "theme": "chuseok",
+      "start": "2033-09-01",
+      "end": "2033-09-09",
+      "eventDate": "2033-09-08",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2033-08-15",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2033&mm=08&dd=15",
+      "sourceResponseSha256": "4bc69566bfdbc48f294f9cee9b092678b87cfe6aa1580d4a4fd47ef23920a5b3"
+    },
+    {
+      "id": "seollal-2034",
+      "theme": "seollal",
+      "start": "2034-02-12",
+      "end": "2034-02-20",
+      "eventDate": "2034-02-19",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2034-01-01",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2034&mm=01&dd=01",
+      "sourceResponseSha256": "6c8a7479587a0b72c98245cd7a46672807ca82d5c10cf6e92d6d8d642756460a"
+    },
+    {
+      "id": "chuseok-2034",
+      "theme": "chuseok",
+      "start": "2034-09-20",
+      "end": "2034-09-28",
+      "eventDate": "2034-09-27",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2034-08-15",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2034&mm=08&dd=15",
+      "sourceResponseSha256": "ae48a238c7e46dc7cc821de9b886ca2d1c94d3445c5cc0f49ce336ec06ded5ec"
+    },
+    {
+      "id": "seollal-2035",
+      "theme": "seollal",
+      "start": "2035-02-01",
+      "end": "2035-02-09",
+      "eventDate": "2035-02-08",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2035-01-01",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2035&mm=01&dd=01",
+      "sourceResponseSha256": "130103a1cb9da12c81ac208152f36a2160e9abe0cda4c38b5f12d615419103da"
+    },
+    {
+      "id": "chuseok-2035",
+      "theme": "chuseok",
+      "start": "2035-09-09",
+      "end": "2035-09-17",
+      "eventDate": "2035-09-16",
+      "leadDays": 7,
+      "endOffsetDays": 1,
+      "priority": 200,
+      "lunarDate": "2035-08-15",
+      "isLeapMonth": false,
+      "sourceId": "kasi-lunar",
+      "sourceUrl": "https://astro.kasi.re.kr/life/lunc?yyyy=2035&mm=08&dd=15",
+      "sourceResponseSha256": "db943765510bd87f3d1ab420aa7f60f472c106e788e933ae8f61cb515d113d9e"
+    }
+  ],
+  "lunarCoverage": {
+    "startYear": 2026,
+    "endYear": 2035
+  },
+  "sources": [
+    {
+      "id": "kasi-lunar",
+      "name": "한국천문연구원 음양력 변환 계산",
+      "url": "https://astro.kasi.re.kr/life/pageView/8",
+      "endpoint": "https://astro.kasi.re.kr/life/lunc",
+      "verifiedOn": "2026-11-19",
+      "method": "Lunar normal-month 01-01 and 08-15; all 20 dates verified using SOLC_YYYY/SOLC_MM/SOLC_DD from the public converter response."
+    },
+    {
+      "id": "korean-lunar-calendar",
+      "name": "korean-lunar-calendar 0.4.0",
+      "url": "https://github.com/usingsky/korean_lunar_calendar_py",
+      "version": "0.4.0",
+      "packageUrl": "https://pypi.org/project/korean-lunar-calendar/0.4.0/",
+      "method": "Independent calculation with setLunarDate(year, month, day, False), matched all 20 KASI results."
+    }
+  ]
+}
