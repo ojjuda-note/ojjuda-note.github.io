@@ -23,7 +23,7 @@ world=world.slice(0,boot)+`
  const fits=async(label)=>assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,label+' fits viewport');
  await page.evaluate(()=>document.documentElement.dataset.worldTheme='classic');await fits('desktop arcade');
  assert.equal(await page.locator('.sidenav').isVisible(),true);assert.equal(await page.locator('.bottomnav').isVisible(),false);
- const soloGames=['chacha_rush','solitaire','archery','sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'];
+ const soloGames=['onecard','chacha_rush','solitaire','archery','sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'];
  assert.deepEqual(await page.locator('[data-arcade-games=solo] .gbtn').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('.ge img').length}))),soloGames.map(id=>({id,images:1})),'solo cards retain exactly their intended games and cover images');
  assert.deepEqual(await page.locator('[data-arcade-games]').evaluateAll(grids=>grids.map(grid=>grid.dataset.arcadeGames)),['solo','multi'],'Arcade contains game categories only');
  assert.equal(await page.locator('[data-arcade-games=test]').count(),0,'daily tools have moved out of Arcade');
