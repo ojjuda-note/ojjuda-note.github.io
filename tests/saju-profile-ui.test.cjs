@@ -3,6 +3,15 @@ const assert = require('node:assert/strict');
 const {
   harness, fixedNow, PROFILE_USER_A, PROFILE_USER_B, pause, deferred, waitFor, selectReadingItem, assertNoReadingScores, assertNoCalculationUI, assertReadingScores, assertReadingScoreCopy
 } = require('./helpers/saju-ui-harness.cjs');
+const {chooseStory,currentStory,collectCurrentTopic}=require('./helpers/saju-story-ui.cjs');
+
+function daeunView(h,periodCount=9) {
+  const host=h.$('report-content'),scene=chooseStory(h.$('reading-page-select'),'reading-daeun');
+  const periods=[...host.querySelectorAll('.story-period-select option')].filter(option=>option.value.startsWith('reading-daeun-period-'));
+  assert.equal(periods.length,periodCount,'all calculated ten-year periods remain available in the actual contents');
+  assert.equal(new Set(periods.map(option=>option.value)).size,periodCount);
+  return scene;
+}
 
 // Saved people, birth-time conventions and zodiac display.
 // Separate files give Node a process boundary for fresh jsdom/VM app
@@ -207,27 +216,27 @@ test('a device storage failure is visible and preserves the entered information 
 test('name and gender edits reuse the original entitlement while the actual ten-year reading follows the selected gender',async t=>{
   const h=await harness({user:PROFILE_USER_A});t.after(h.close);
   h.fill({name:'민준',gender:'male',hour:8,minute:37});h.submit();await h.ready();
-  assert.equal(h.$('reading-daeun').querySelectorAll('.daeun-period[data-daeun-period]').length,9);
-  const firstDaeun=h.$('reading-daeun').textContent,receipt=[...h.state.receipts.values()][0],expiry=receipt.expires_at;
+  daeunView(h);
+  const firstDaeun=collectCurrentTopic(h.$('report-content')).map(scene=>scene.text).join(''),receipt=[...h.state.receipts.values()][0],expiry=receipt.expires_at;
   const firstBirth=JSON.stringify(h.state.starts[0].chart.input);
   assert.equal(h.$('saved-profiles').querySelectorAll('.profile-picker-use').length,1,'opening a reading also saves its entered person');
-  h.$('edit-birth').click();
+  h.openTools();h.$('edit-birth').click();
   h.$('person-name').value='민준 이름 수정';h.change(h.$('person-name'));
   h.$('person-gender').value='female';h.change(h.$('person-gender'));
   await waitFor(()=>h.$('open-story').dataset.expectedCharge==='0'&&!h.$('open-story').disabled);
   assert.equal(h.state.starts.length,1,'changing display details never purchases automatically');
   h.submit();await h.ready();
-  assert.notEqual(h.$('reading-daeun').textContent,firstDaeun);
+  daeunView(h);assert.notEqual(collectCurrentTopic(h.$('report-content')).map(scene=>scene.text).join(''),firstDaeun);
   assert.equal(h.state.starts.at(-1).expectedCharge,0);assert.equal(h.state.charges,1);
   assert.equal(JSON.stringify(h.state.starts.at(-1).chart.input),firstBirth);
   assert.equal([...h.state.receipts.values()][0].expires_at,expiry);
-  h.$('edit-birth').click();h.$('person-name').value='<svg/onload=alert(1)>';h.change(h.$('person-name'));
+  h.openTools();h.$('edit-birth').click();h.$('person-name').value='<svg/onload=alert(1)>';h.change(h.$('person-name'));
   await waitFor(()=>h.$('open-story').dataset.expectedCharge==='0'&&!h.$('open-story').disabled);
   h.submit();await h.ready();assert.equal(h.state.charges,1);
   assert.equal(h.$('birth-summary').querySelector('[onload],script'),null);
   assert.equal(h.$('saved-profiles').querySelector('[onload],script'),null);
   h.pickReport('all',2026);h.$('open-product').click();await h.ready('all',2026);
-  assert.equal(h.$('reading-daeun').querySelectorAll('.daeun-period[data-daeun-period]').length,9);
+  daeunView(h);
   assert.deepEqual(h.state.chargedAmounts,[10,20],'the ten-year reading adds no fee to lifelong or full access');
 });
 
@@ -235,8 +244,8 @@ test('unknown birth time assumes 06:00 only for daeun while preserving stored in
   const h=await harness({user:PROFILE_USER_A});t.after(h.close);
   h.fill({name:'시간 미상 예시',gender:'female',hour:null});h.submit();await h.ready();
   const notice='태어난 시간을 몰라 대운은 오전 6시 00분을 기준으로 계산했어요.';
-  assert.equal(h.$('reading-daeun').querySelectorAll('.daeun-period[data-daeun-period]').length,9);
-  assert.equal(h.$('reading-daeun').querySelector('.daeun-time-notice').textContent,notice);
+  const first=daeunView(h);
+  assert.ok(first.querySelector('.story-context').textContent.includes(notice));
   const chart=h.state.starts[0].chart,originalChart=JSON.stringify(chart);
   assert.equal(chart.timeKnown,false);assert.equal(chart.input.hour,null);assert.equal(chart.input.minute,0);
   const hourPillar=chart.pillars.find(pillar=>pillar.key==='hour');
@@ -250,11 +259,11 @@ test('unknown birth time assumes 06:00 only for daeun while preserving stored in
   const [receiptKey,receipt]=[...h.state.receipts.entries()][0],originalReceipt={...receipt};
   assert.match(receiptKey,/\|unknown\|lifelong\|0$/,'the payment identity remains the original unknown-time birth');
   assert.deepEqual(h.state.chargedAmounts,[10],'the assumed daeun adds no surcharge');
-  h.$('copy-reading').click();await waitFor(()=>h.state.copies.length===1);
+  h.openTools();h.$('copy-reading').click();await waitFor(()=>h.state.copies.length===1);
   assert.ok(h.state.copies[0].includes(notice),'the copy clearly discloses the daeun-only assumption');
   assertNoCalculationUI(h);
 
-  h.advance(2*3600000);h.$('edit-birth').click();
+  h.advance(2*3600000);h.openTools();h.$('edit-birth').click();
   h.$('time-unknown').checked=false;h.change(h.$('time-unknown'));
   h.$('birth-hour').value='6';h.change(h.$('birth-hour'));
   h.$('birth-minute').value='0';h.change(h.$('birth-minute'));
@@ -268,7 +277,7 @@ test('unknown birth time assumes 06:00 only for daeun while preserving stored in
   assert.equal(JSON.stringify(h.state.starts.at(-1).chart),originalChart,'daeun preparation leaves every original chart field unchanged');
   assert.deepEqual(h.state.receipts.get(receiptKey),originalReceipt,'reopening keeps the request, payment time and 24-hour deadline');
   assert.equal(stored().hour,null);assert.equal(stored().minute,0);
-  assert.equal(h.$('reading-daeun').querySelectorAll('.daeun-period[data-daeun-period]').length,9);
+  daeunView(h);assert.ok(currentStory(h.$('report-content')).querySelector('.story-context').textContent.includes(notice));
   h.advance(Date.parse(originalReceipt.expires_at)-h.window.Date.now());
   assert.equal(h.$('report-content').textContent,'');assert.equal(h.$('copy-reading').disabled,true);
   assert.deepEqual(h.state.chargedAmounts,[10],'the assumed-time reading never renews itself');
@@ -277,11 +286,10 @@ test('unknown birth time assumes 06:00 only for daeun while preserving stored in
 test('a known but uncertain solar-term minute still does not fabricate ten-year periods',async t=>{
   const h=await harness({user:PROFILE_USER_A});t.after(h.close);
   h.fill({name:'절기 경계',gender:'male',year:2024,month:2,day:4,hour:17,minute:27});h.submit();await h.ready();
-  assert.equal(h.$('reading-daeun').querySelectorAll('.daeun-period[data-daeun-period]').length,0);
-  const score=h.$('reading-daeun').querySelector('.saju-reading-score');
+  const scene=daeunView(h,0),score=scene.querySelector('.saju-reading-score');
   assert.equal(score.dataset.readingScoreStatus,'unavailable');
   assert.equal(score.querySelector('[role="meter"]'),null,'a known boundary minute is not replaced by 06:00');
-  assert.match(h.$('reading-daeun').textContent,/절기/);
+  assert.match(scene.textContent,/절기/);
   assert.equal(h.state.chargedAmounts[0],10);
 });
 

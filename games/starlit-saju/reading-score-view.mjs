@@ -33,7 +33,7 @@ export function createReadingScore(value,{tagName='section'}={}) {
   heading.append(node('p','saju-reading-score-title','순풍과 역풍'),node('p','saju-reading-score-scale','각각 100점 만점'));
   panel.append(heading);
   const items=node('div','saju-wind-items');
-  for(const [key,label] of [['tailwind','순풍 · 힘이 되는 점'],['headwind','역풍 · 주의할 점']]) {
+  for(const [key,label] of [['tailwind','순풍'],['headwind','역풍']]) {
     const item=score[key],row=node('div','saju-wind-item');row.dataset.wind=key;
     const top=node('div','saju-wind-label-row');
     const name=node('span','saju-wind-label',label);name.id=`${id}-${key}-label`;
