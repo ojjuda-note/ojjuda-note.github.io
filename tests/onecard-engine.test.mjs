@@ -10,7 +10,7 @@ function conserved(state) {
   assert.equal(new Set(cards).size, 54, 'no card is duplicated');
   assert.ok(cards.every(cardId => cardInfo(cardId)), 'every card ID is valid');
   assert.ok(state.status === 'finished' || state.players[state.turn].active, 'turn always points to an active seat');
-  assert.equal(state.direction, 1, 'turn direction always remains clockwise');
+  assert.ok([1, -1].includes(state.direction), 'turn direction is always a valid clockwise or counterclockwise step');
 }
 function table(hands, options = {}) {
   const state = createGame({ players: players(hands.length), seed: 77 });
@@ -29,12 +29,12 @@ function move(state, cardId, extras = {}) {
 }
 
 test('54-card deck, valid setup and a visible neutral opening for 2–5 players', () => {
-  assert.equal(ENGINE_VERSION, '1.2.0');
+  assert.equal(ENGINE_VERSION, '1.3.0');
   assert.equal(makeDeck().length, 54);
   assert.equal(new Set(makeDeck()).size, 54);
   assert.equal(cardInfo('X-B').attack, 5);
   assert.equal(cardInfo('X-R').attack, 7);
-  assert.equal(cardInfo('H-10').label, '빨강 8');
+  assert.equal(cardInfo('H-10').label, '빨강 7');
   assert.equal(cardInfo('not-a-card'), null);
   for (const count of [2, 3, 4, 5]) {
     const state = createGame({ players: players(count), seed: count });
@@ -54,8 +54,8 @@ test('54-card deck, valid setup and a visible neutral opening for 2–5 players'
 
 test('all legacy identities expose the dedicated four-color number/action deck', () => {
   const colors = { S: ['blue', '파랑', '●'], H: ['red', '빨강', '◆'], D: ['yellow', '노랑', '▲'], C: ['green', '초록', '■'] };
-  const numbers = { Q: '1', 3: '2', 4: '3', 5: '4', 6: '5', 8: '6', 9: '7', 10: '8' };
-  const actions = { A: ['attack', '+3', 3], 2: ['attack', '+2', 2], 7: ['change', '색 바꾸기', 0], J: ['skip', '건너뛰기', 0], K: ['again', '한 번 더', 0] };
+  const numbers = { 3: '1', 4: '2', 5: '3', 6: '4', 8: '5', 9: '6', 10: '7' };
+  const actions = { A: ['attack', '+3', 3], 2: ['attack', '+2', 2], 7: ['change', '색 바꾸기', 0], J: ['skip', '건너뛰기', 0], Q: ['reverse', '방향 바꾸기', 0], K: ['again', '한 번 더', 0] };
   for (const [suit, [color, colorName, symbol]] of Object.entries(colors)) {
     for (const [rank, displayValue] of Object.entries(numbers)) {
       const card = cardInfo(`${suit}-${rank}`);
@@ -170,29 +170,37 @@ test('same-strength attacks remain legal when accumulated debt exceeds their pri
   conserved(state);
 });
 
-test('J skips clockwise, Q is ordinary and K grants another turn', () => {
+test('Q reverses and passes to the other player; only J and K repeat a two-player turn', () => {
   for (const rank of ['J', 'Q', 'K']) {
     const state = table([[`S-${rank}`, 'D-5'], ['C-3', 'H-8']], { top: 'S-4' });
     const next = move(state, `S-${rank}`, { declare: true });
     assert.equal(next.turn, rank === 'Q' ? 1 : 0, `two-player ${rank} follows its current rule`);
-    assert.equal(next.direction, 1);
-    assert.ok(!next.lastEvents.some(event => event.type === 'reverse'));
+    assert.equal(next.direction, rank === 'Q' ? -1 : 1);
+    assert.equal(next.lastEvents.some(event => event.type === 'reverse'), rank === 'Q');
+    conserved(next);
   }
-  let state = table([['S-Q', 'C-3'], ['S-J', 'C-4'], ['S-8', 'C-5'], ['S-K', 'C-6'], ['S-9', 'C-7']]);
+});
+
+test('two reversals restore clockwise order without moving seats or changing skip and repeat', () => {
+  let state = table([['S-Q', 'H-J', 'C-3'], ['H-8', 'C-4'], ['H-K', 'C-5'], ['S-8', 'C-6'], ['H-Q', 'C-7']]);
   state = move(state, 'S-Q', { declare: true });
-  assert.equal(state.turn, 1, 'Q passes to the immediate clockwise seat');
-  state = move(state, 'S-J', { declare: true });
-  assert.equal(state.turn, 3, 'J skips one clockwise seat');
-  state = move(state, 'S-K', { declare: true });
+  assert.equal(state.turn, 4, 'reverse wraps to the immediate counterclockwise seat');
+  assert.equal(state.direction, -1);
+  assert.deepEqual(projectState(state, 'p1').lastEvents.find(event => event.type === 'reverse'), { id: '1:1', type: 'reverse', playerId: 'p0', direction: -1 });
+  state = move(state, 'H-Q', { declare: true });
+  assert.equal(state.turn, 0);
+  assert.equal(state.direction, 1);
+  state = move(state, 'H-J', { declare: true });
+  assert.equal(state.turn, 2, 'J skips one seat in the restored direction');
+  state = move(state, 'H-K', { declare: true });
+  assert.equal(state.turn, 2);
+  state = applyAction(state, 'p2', { type: 'draw' });
   assert.equal(state.turn, 3);
-  state = applyAction(state, 'p3', { type: 'draw' });
-  assert.equal(state.turn, 4);
-  state = move(state, 'S-9', { declare: true });
-  assert.equal(state.turn, 0, 'clockwise travel wraps around the five seats');
+  assert.deepEqual(state.players.map(player => player.id), players(5).map(player => player.id));
   conserved(state);
 });
 
-test('older reverse-direction states normalize without changing caller seat order', () => {
+test('reverse direction survives projection, restore, draws and departures without changing caller order', () => {
   const ordered = players(5).reverse();
   const fresh = createGame({ players: ordered, startIndex: 3, seed: 904 });
   assert.deepEqual(fresh.players.map(player => player.id), ordered.map(player => player.id));
@@ -200,16 +208,44 @@ test('older reverse-direction states normalize without changing caller seat orde
   const state = table([['S-Q', 'H-8'], ['C-3', 'D-5'], ['S-9', 'C-6']], { direction: -1 });
   state.lastEvents = [{ id: '0:0', type: 'reverse', playerId: 'p0', direction: -1 }];
   const view = projectState(state, 'p0');
-  assert.equal(view.direction, 1);
-  assert.equal(view.lastEvents.length, 0, 'old reversal events are not shown as a current rule');
+  assert.equal(view.direction, -1);
+  assert.deepEqual(view.lastEvents, state.lastEvents);
   const next = move(state, 'S-Q', { declare: true });
-  assert.equal(state.direction, -1, 'normalization does not mutate the supplied save');
+  assert.equal(state.direction, -1, 'playing does not mutate the supplied save');
   assert.equal(next.turn, 1);
+  assert.equal(next.direction, 1);
   assert.equal(next.engineVersion, ENGINE_VERSION);
   conserved(next);
+  const drawn = applyAction(state, 'p0', { type: 'draw' });
+  assert.equal(drawn.turn, 2);
+  assert.equal(drawn.direction, -1);
+  conserved(drawn);
   const departure = removePlayer(state, 'p0');
-  assert.equal(departure.turn, 1);
+  assert.equal(departure.turn, 2);
+  assert.equal(departure.direction, -1);
   conserved(departure);
+});
+
+test('reversed skip and extra turns bypass inactive seats, even when only two remain', () => {
+  let state = table([['S-Q', 'C-3'], ['S-K', 'C-4'], ['H-8', 'C-5'], ['S-J', 'C-6'], ['S-9', 'C-7']]);
+  state = removePlayer(state, 'p4');
+  state = move(state, 'S-Q', { declare: true });
+  assert.equal(state.turn, 3);
+  state = move(state, 'S-J', { declare: true });
+  assert.equal(state.turn, 1);
+  assert.equal(state.lastEvents.find(event => event.type === 'skip').skippedPlayerId, 'p2');
+  state = move(state, 'S-K', { declare: true });
+  assert.equal(state.turn, 1);
+  state = applyAction(state, 'p1', { type: 'draw' });
+  assert.equal(state.turn, 0);
+  assert.equal(state.direction, -1);
+  conserved(state);
+  let two = table([['S-Q', 'C-3'], ['H-8', 'C-4'], ['S-8', 'C-5'], ['S-J', 'C-6'], ['S-9', 'C-7']]);
+  for (const id of ['p2', 'p3', 'p4']) two = removePlayer(two, id);
+  two = move(two, 'S-Q', { declare: true });
+  assert.equal(two.turn, 1, 'reversal does not skip the sole remaining opponent');
+  assert.equal(two.direction, -1);
+  conserved(two);
 });
 
 test('one-card can be armed or called promptly; missed calls draw two without changing turn', () => {

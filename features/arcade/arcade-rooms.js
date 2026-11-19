@@ -70,7 +70,7 @@
     function card(room) {
       const [, name] = games[room.kind] || ['', '게임'];
       const artwork = /^(carom|pool)/.test(room.kind) ? 'carom4' : Object.hasOwn(games, room.kind) ? room.kind : 'tank';
-      const artworkUrl = room.kind === 'onecard' ? '/games/onecard/cover.svg?v=20261120-onecard5' : `/assets/design/games/${artwork}.svg`;
+      const artworkUrl = room.kind === 'onecard' ? '/assets/design/games/onecard.webp?v=20261120-onecard7' : `/assets/design/games/${artwork}.svg`;
       const playing = room.status === 'playing';
       let action = room.is_member ? (playing ? '새 게임' : room.native ? '대기실 열기' : '대기 중') : playing ? '대전 중' : '참여';
       if (room.kind === 'onecard' && room.is_member && playing) action = '게임 이어하기';

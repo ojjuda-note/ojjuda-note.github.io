@@ -10,12 +10,12 @@
   <link rel="stylesheet" href="/shared/games/game-entry.css?v=20261109-unified-multiplayer-ui2">
   <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
   <link rel="stylesheet" href="/features/arcade/arcade-rooms.css?v=20261114-drinks-hub1">
-  <link rel="stylesheet" href="/shared/games/game-results.css?v=20261116-yut-destinations">
-  <link rel="stylesheet" href="./style.css?v=20261120-onecard6">
+  <link rel="stylesheet" href="/shared/games/game-results.css?v=20261120-onecard7">
+  <link rel="stylesheet" href="./style.css?v=20261120-onecard7">
   <script defer src="/config.js"></script>
   <script defer src="/shared/games/game-entry.js?v=20261107-observer-guard1"></script>
-  <script defer src="/features/arcade/arcade-rooms.js?v=20261120-onecard5"></script>
-  <script type="module" src="./app.mjs?v=20261120-onecard6"></script>
+  <script defer src="/features/arcade/arcade-rooms.js?v=20261120-onecard7"></script>
+  <script type="module" src="./app.mjs?v=20261120-onecard7"></script>
 </head>
 <body class="onecard-page" data-mp-entry="true">
 <header class="mp-entry-bar"><a id="entry-arcade-back" class="mp-entry-back arcade-return" href="/world.html?tab=arcade">← 오쭈다 오락실</a><span>오쭈다 오락실</span></header>
@@ -30,9 +30,10 @@
     <div class="entry-controls">
       <div class="seg" role="group" aria-label="대결 방식"><button id="solo-mode" type="button" class="on" data-entry-mode="computer" aria-pressed="true">컴퓨터 대전</button><button id="online-open" type="button" data-entry-mode="opponent" aria-pressed="false">온라인 대전</button></div>
       <div data-entry-panel="computer">
-        <p class="ge-hint">나 + 컴퓨터 4명 · 항상 5명이 즐겨요.</p>
+        <p id="solo-ranking-note" class="ge-hint" role="status">나 + 컴퓨터 4명 · 로그인하면 연승을 기록해요.</p>
         <button id="solo-start" class="ge-primary" type="button">혼자 하기</button>
-        <button id="resume-solo" class="ge-secondary" type="button" hidden>이어서 하기</button>
+        <button id="resume-solo" class="ge-secondary" type="button" hidden>이전 연습 이어하기</button>
+        <button id="practice-start" class="ge-secondary" type="button" hidden>연습으로 시작 · 순위 제외</button>
       </div>
       <div data-entry-panel="opponent" hidden>
         <div id="online-room-host"><section class="arcade-rooms" data-arcade-rooms aria-label="원카드 대전방"></section></div>
@@ -52,7 +53,7 @@
 <div id="onecard-app" class="app" data-view="welcome" hidden>
   <header class="topbar">
     <a id="arcade-back" class="icon-btn back-link" href="/world.html?tab=arcade" aria-label="오락실로 돌아가기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6M8 12h12"/></svg><span>오락실</span></a>
-    <div class="brand"><h1>원카드</h1></div>
+    <div class="brand"><h1>원카드</h1><span id="game-record-mode" class="small-note">연습 · 순위 제외</span></div>
     <div class="topbar-actions">
       <button id="sound-toggle" class="icon-btn" type="button" aria-label="효과음 끄기" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m11 5-5 4H3v6h3l5 4V5Zm4 4a5 5 0 0 1 0 6m3-9a9 9 0 0 1 0 12"/></svg></button>
       <button id="menu-button" class="icon-btn" type="button" aria-label="게임 메뉴" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg></button>

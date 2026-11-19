@@ -1,11 +1,11 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261120-tarot-starlight1'
+ const revision='20261120-onecard7'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
-  onecard:'2.1.0',
+  onecard:'2.2.0',
   croc:'1.5.0',
   liar:'1.7.0',
   king:'1.12.0',

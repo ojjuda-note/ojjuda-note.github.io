@@ -370,6 +370,27 @@ async function scenario(name, fn) {
     await page.context().close();
   });
 
+  await scenario('reverse cards visibly change direction and pass the turn with two survivors', async () => {
+    const saved = setup([['S-Q', 'D-5'], ['H-Q', 'S-6']]);
+    for (const player of saved.state.players.slice(2)) {
+      saved.state.deck.push(...player.hand); player.hand = []; player.active = false;
+    }
+    const page = await pageFor({ width: 390, height: 844, saved, animated: true });
+    await resume(page);
+    assert.match(await page.locator('#hand [data-card="S-Q"]').getAttribute('aria-label'), /방향 바꾸기/);
+    assert.equal(await page.locator('#hand [data-card="S-Q"] .card-center > svg.card-action-icon').count(), 1);
+    await page.locator('#onecard-button').click(); await pressCard(page, 'S-Q');
+    await page.waitForFunction(key => {
+      const state = JSON.parse(localStorage.getItem(key)).state;
+      return state.revision === 1 && state.direction === -1 && state.turn === 1;
+    }, STORAGE);
+    await stableBoard(page);
+    assert.match(await page.locator('#direction').textContent(), /반시계/);
+    assert.equal(await page.locator('#draw-button').isDisabled(), true);
+    await oneScreen(page, 'reverse direction with two survivors', true);
+    await snapshot(page, 'reverse-two-survivors'); await page.context().close();
+  });
+
   await scenario('two-card round finishes, result is visible, restart and resume work', async () => {
     const page = await pageFor({ saved: setup([['S-K', 'S-3'], ['C-9', 'D-8']]) });
     await resume(page); await page.locator('#onecard-button').click(); await pressCard(page, 'S-K');
@@ -559,6 +580,41 @@ async function scenario(name, fn) {
     await page.context().close();
   });
 
+  await scenario('a signed-in computer game records once, restores its result and rematches explicitly', async () => {
+    network = await fixture();
+    const userId = network.users[0], page = await pageFor({ width: 390, height: 844, userId });
+    await page.locator('#solo-start').click(); await stableBoard(page);
+    await page.waitForFunction(() => document.querySelectorAll('#hand .hand-card').length === 7);
+    let room = (await network.call(userId, { action: 'mine' })).room;
+    assert.equal(room.mode, 'solo'); assert.equal(room.players.length, 1);
+    assert.equal(room.game.players.filter(player => player.bot).length, 4);
+    assert.equal(await page.locator('#lobby').isVisible(), false);
+    assert.match(await page.locator('#game-record-mode').textContent(), /연승 기록 경기/);
+    assert.equal(await page.evaluate(key => localStorage.getItem(key), STORAGE), null);
+    await oneScreen(page, 'private ranked solo', true);
+    await network.stageWin(room.id, userId);
+    await page.waitForFunction(() => document.querySelector('#my-count').textContent === '1장' && !document.querySelector('#draw-button').disabled);
+    await pressCard(page, 'S-3');
+    await page.waitForFunction(() => document.querySelector('#sheet').open && document.querySelector('#onecard-ranking-record')?.textContent.includes('저장 완료'));
+    assert.match(await page.locator('#onecard-ranking-record').textContent(), /현재 1연승.*이번 달 최고 1연승/s);
+    assert.equal(new URL(await page.locator('#onecard-ranking-record a').getAttribute('href'), origin).searchParams.get('game'), 'onecard');
+    await visibleResultActions(page, 'ranked solo mobile result'); await snapshot(page, 'ranked-solo-result-mobile');
+    await resizePage(page, 750, 750); await visibleResultActions(page, 'ranked solo desktop result');
+    await snapshot(page, 'ranked-solo-result-desktop');
+    assert.equal((await network.db.query('select count(*)::int n from ojjuda_onecard_internal.results')).rows[0].n, 1);
+    const id = room.id;
+    await page.reload({ waitUntil: 'networkidle' }); await page.locator('#solo-start').click();
+    await page.waitForFunction(() => document.querySelector('#sheet').open && document.querySelector('#onecard-ranking-record')?.textContent.includes('저장 완료'));
+    room = (await network.call(userId, { action: 'mine' })).room;
+    assert.equal(room.id, id); assert.equal(room.round, 1, 'reload shows the completed round without automatically rematching');
+    assert.equal((await network.db.query('select count(*)::int n from ojjuda_onecard_internal.results')).rows[0].n, 1);
+    await page.getByRole('button', { name: '다시 한 판', exact: true }).click();
+    await page.waitForFunction(() => !document.querySelector('#sheet').open && document.querySelectorAll('#hand .hand-card').length === 7);
+    room = (await network.call(userId, { action: 'mine' })).room;
+    assert.equal(room.round, 2); assert.equal(room.ranking, null);
+    await page.context().close(); await network.close(); network = null;
+  });
+
   await scenario('five real browser clients share turns, finish and rematch after host elimination', async () => {
     network = await fixture();
     const ids = network.users.slice(0, 5), pages = [];
@@ -646,7 +702,7 @@ async function scenario(name, fn) {
     await page.waitForFunction(({ id, count }) => document.querySelector(`#opponents [data-player="${id}"] .seat-count`).textContent !== count, { id: bot.id, count });
     const advanced = (await network.db.query('select state,version from ojjuda_onecard_internal.rooms where id=$1', [room.id])).rows[0];
     assert.ok(advanced.version > room.version, 'normal polling advances a server computer without human action');
-    assert.equal(advanced.state.direction, 1);
+    assert.ok([1, -1].includes(advanced.state.direction));
     assert.equal(await page.locator('#opponents .seat.is-bot').count(), 4);
     await oneScreen(page, 'one human and four computers', true);
     await snapshot(page, 'online-one-human-four-computers-game');

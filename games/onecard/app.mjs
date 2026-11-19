@@ -1,9 +1,9 @@
-import {createGame,applyAction,projectState,chooseBotAction,cardInfo} from './engine.mjs?v=20261120-onecard6';
-import {createCard,cardLabel} from './cards.mjs?v=20261120-onecard6';
-import {createOnecardSound} from './sound.mjs?v=20261120-onecard6';
-import {createCardMotion} from './motion.mjs?v=20261120-onecard6';
-import {createOnlineClient} from './online.mjs?v=20261120-onecard6';
-import {sortHand,handLayout,visibleHandRect} from './hand.mjs?v=20261120-onecard6';
+import {createGame,applyAction,projectState,chooseBotAction,cardInfo} from './engine.mjs?v=20261120-onecard7';
+import {createCard,cardLabel} from './cards.mjs?v=20261120-onecard7';
+import {createOnecardSound} from './sound.mjs?v=20261120-onecard7';
+import {createCardMotion} from './motion.mjs?v=20261120-onecard7';
+import {createOnlineClient} from './online.mjs?v=20261120-onecard7';
+import {sortHand,handLayout,visibleHandRect} from './hand.mjs?v=20261120-onecard7';
 
 const $=id=>document.getElementById(id);
 const app=$('onecard-app'),hand=$('hand'),handScroll=$('hand-scroll'),sheet=$('sheet'),sound=createOnecardSound();
@@ -12,6 +12,7 @@ const motion=createCardMotion({layer:$('motion-layer'),createCard,sound,reduced:
 const SUITS={S:['●','파랑'],H:['◆','빨강'],D:['▲','노랑'],C:['■','초록']};
 const STORAGE='ojjuda-onecard-solo-v1';
 const SORT_STORAGE='ojjuda-onecard-hand-sort-v1';
+const RANKING_URL='/features/arcade/monthly-ranking.html?game=onecard';
 const botNames=['하루','다온','보리','루아'];
 const tableSize=5,opponentCount=4;
 let local=null,view=null,mode='solo',net=null,room=null;
@@ -27,13 +28,14 @@ function button(text,cls,fn){const e=element('button',text,cls);e.type='button';
 function resultName(player){return player.bot&&!/^컴퓨터(?:\s|$)/.test(player.name)?`${player.name} · 컴퓨터`:player.name;}
 function me(){return view?.players.find(p=>p.id===(mode==='online'?room?.myId:'me'));}
 function myId(){return mode==='online'?room?.myId:'me';}
+function computerGame(){return mode==='solo'||room?.mode==='solo';}
 function myTurn(){return !!(view?.status==='playing'&&view.players[view.turn]?.id===myId()&&me()?.active!==false);}
 function locked(){return animating||working||!!net?.busy||sheet.open;}
 function setText(id,text){if($(id).textContent!==text)$(id).textContent=text;}
 function showToast(text){clearTimeout(toastTimer);$('toast').textContent=text;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,2700);}
 function announce(text){setText('status',text);}
 function saveLocal(){if(!local)return;try{localStorage.setItem(STORAGE,JSON.stringify({state:local,opponents:opponentCount}));saved={state:local,opponents:opponentCount};}catch{/* A full storage quota does not interrupt a game. */}}
-function loadLocal(){try{const data=JSON.parse(localStorage.getItem(STORAGE)||'null');if(data?.state?.status==='playing'&&data.state.players?.some(p=>p.id==='me')&&data.state.players.length===tableSize&&data.state.players.filter(p=>p.bot).length===opponentCount){data.state.direction=1;projectState(data.state,'me');return data;}}catch{}return null;}
+function loadLocal(){try{const data=JSON.parse(localStorage.getItem(STORAGE)||'null');if(data?.state?.status==='playing'&&data.state.players?.some(p=>p.id==='me')&&data.state.players.length===tableSize&&data.state.players.filter(p=>p.bot).length===opponentCount){data.state.direction=data.state.direction===-1?-1:1;projectState(data.state,'me');return data;}}catch{}return null;}
 
 function renderSound(){const enabled=sound.enabled;$('sound-toggle').setAttribute('aria-pressed',String(enabled));$('sound-toggle').setAttribute('aria-label',enabled?'효과음 끄기':'효과음 켜기');$('sound-toggle').classList.toggle('is-muted',!enabled);}
 renderSound();
@@ -107,7 +109,8 @@ function renderBoard({deferDiscard=false}={}){
   setText('deck-count',String(view.deckCount));
   const suit=SUITS[view.currentSuit];$('suit-indicator').hidden=!suit;
   if(suit){setText('suit-indicator',`${suit[0]} ${suit[1]}`);$('suit-indicator').dataset.suit=view.currentSuit;}
-  setText('direction','↻ 시계 방향');
+  setText('direction',view.direction===-1?'↺ 반시계 방향':'↻ 시계 방향');
+  setText('game-record-mode',mode==='online'?'연승 기록 경기':'연습 · 순위 제외');
   renderControls();
 }
 function hint(){
@@ -125,6 +128,7 @@ function hint(){
 }
 function renderControls(){
   $('solo-mode').disabled=working||!!net?.busy;$('online-open').disabled=working||!!net?.busy;
+  for(const id of ['solo-start','resume-solo','practice-start'])$(id).disabled=working||!!net?.busy;
   handScroll.classList.toggle('is-motion-locked',animating);
   if(animating&&handGesture)finishHandGesture({pointerId:handGesture.id,type:'pointercancel'});
   const playing=view?.status==='playing',can=myTurn()&&!locked();
@@ -149,10 +153,10 @@ function handCardRect(node){return visibleHandRect(rectOf(node),rectOf(handScrol
 function opponentRect(node){const fan=rectOf(node?.querySelector('.seat-fan'));return fan?.width&&fan?.height?fan:rectOf(node?.querySelector('.avatar'))||rectOf(node);}
 function rectForPlayer(id){return id===myId()?rectOf(handScroll):opponentRect(seatNodes.get(id));}
 function gameMessage(events){
-  const event=events?.findLast(e=>['attack','skip','again','onecard','eliminate'].includes(e.type));
+  const event=events?.findLast(e=>['attack','skip','reverse','again','onecard','eliminate'].includes(e.type));
   if(!event)return;
   const name=view?.players.find(p=>p.id===event.playerId)?.name||'상대';
-  const messages={attack:`${name} · 공격 +${event.count}`,skip:'다음 차례를 건너뛰어요',again:`${name} · 한 번 더`,onecard:`${name} · 원카드!`,eliminate:`${name} · 20장으로 탈락`};
+  const messages={attack:`${name} · 공격 +${event.count}`,skip:'다음 차례를 건너뛰어요',reverse:`${name} · ${event.direction===-1?'반시계':'시계'} 방향으로 바꿨어요`,again:`${name} · 한 번 더`,onecard:`${name} · 원카드!`,eliminate:`${name} · 20장으로 탈락`};
   showToast(messages[event.type]);if(event.type==='onecard')sound.play('onecard');
 }
 async function present(next,{deal=false,animate=true}={}){
@@ -282,10 +286,10 @@ handScroll.addEventListener('keydown',event=>{
   handScroll.scrollLeft=event.key==='Home'?0:event.key==='End'?end:Math.max(0,Math.min(end,handScroll.scrollLeft+(event.key==='ArrowLeft'?-100:100)));
 });
 
-async function startSolo(resume=false){
+async function startPractice(resume=false){
   epoch++;motion.cancel();closeSheet();clearTimeout(botTimer);net?.close();net=null;room=null;lastRoomVersion=-1;lastRoomId='';
   mode='solo';view=null;resultKey='';armed=false;working=false;animating=false;resetHand();renderDiscard(null);
-  if(resume&&saved){local={...saved.state,direction:1};}
+  if(resume&&saved){local={...saved.state,direction:saved.state.direction===-1?-1:1};}
   else{
     const players=[{id:'me',name:'나'},...botNames.map((name,i)=>({id:`bot-${i}`,name,bot:true}))];
     for(let i=players.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[players[i],players[j]]=[players[j],players[i]];}
@@ -293,7 +297,34 @@ async function startSolo(resume=false){
   }
   $('connection').hidden=true;setScreen('playing');saveLocal();await present(projectState(local,'me'),{deal:!resume,animate:!resume});
 }
+async function startSolo(resume=false,rematch=false){
+  if(working||net?.busy)return;
+  if(resume){await startPractice(true);return;}
+  working=true;lastNetworkIssue=null;closeSheet();disposeRooms();
+  $('practice-start').hidden=true;setText('solo-ranking-note','로그인을 확인하고 있어요.');renderControls();
+  const client=ensureNetwork();
+  try{
+    // Wait for the real session check; a slow login must never become practice.
+    const current=await client.enter();
+    if(net!==client)return;
+    if(current&&current.mode!=='solo'){showToast('참여 중인 대전방으로 돌아왔어요.');return;}
+    if(current?.status==='active'){showToast('하던 컴퓨터 대전을 이어해요.');return;}
+    if(current?.status==='finished'&&!rematch){await presentation;return;}
+    if(!current&&!await client.create({mode:'solo'}))return;
+    if(net===client&&room?.mode==='solo')await client.start();
+    await presentation;
+  }catch(error){
+    if(net!==client)return;
+    if(error?.code==='not_signed_in'&&!client.userId){await startPractice();return;}
+    networkError(error);
+    if(error?.code==='unavailable'){
+      setText('solo-ranking-note','로그인을 확인하지 못했어요. 다시 시도하거나 연습으로 시작해 주세요.');
+      $('practice-start').hidden=false;
+    }
+  }finally{working=false;renderControls();scheduleBot();}
+}
 $('solo-start').onclick=()=>{if(!working)void startSolo();};$('resume-solo').onclick=()=>{if(!working)void startSolo(true);};
+$('practice-start').onclick=()=>{if(!working&&!net?.busy&&!room)void startPractice();};
 
 function openSheet(title,kind='menu'){
   clearTimeout(botTimer);returnFocus=document.activeElement;sheetKind=kind;sheet.classList.toggle('game-result-dialog',kind==='result');sheet.setAttribute('aria-labelledby',kind==='result'?'onecard-result-title':'sheet-title');setText('sheet-title',title);$('sheet-body').replaceChildren();
@@ -315,24 +346,24 @@ function showRules(){
   openSheet('원카드, 이렇게 해요','rules');
   const lead=element('p','같은 색이나 숫자를 한 장씩 내고, 손의 카드를 먼저 없애면 이겨요.','rules-lead');
   const list=element('div',undefined,'rules-list');
-  const rules=[['5인 플레이','항상 5명, 빈자리는 컴퓨터가 함께해요. 각자 7장으로 시작해요.'],['내 차례','같은 색이나 같은 숫자·기호를 한 장 내세요. 낼 카드가 없으면 1장 받고 넘겨요.'],['숫자 카드','네 가지 색의 1~8 카드예요. 색 옆의 도형으로도 구별할 수 있어요.'],['+2 · +3','다음 사람이 표시된 수만큼 카드를 받아요.'],['전체 색 +5 · +7','어떤 색에도 내고, 다음 색을 골라요. 다음 사람은 5장 · 7장을 받아요.'],['공격이 오면','마지막 공격 카드와 같거나 더 큰 + 카드만 이어 낼 수 있어요. 없으면 쌓인 장수만큼 받아요.'],['색 바꾸기','내고 나면 다음 색을 골라요.'],['건너뛰기 · 한 번 더','다음 사람을 건너뛰어요 · 내가 한 장 더 내요.'],['원카드!','2장일 때 먼저 누르거나, 1장이 된 직후 눌러요. 다음 사람이 행동할 때까지 안 누르면 2장을 받아요.'],['진행','항상 시계 방향이에요. 다음 판에는 자리를 다시 섞어요. 20장 이상이면 탈락해요.'],['온라인 차례','30초 안에 내거나 받아요. 시간이 지나면 자동으로 받아요.']];
+  const rules=[['5인 플레이','항상 5명, 빈자리는 컴퓨터가 함께해요. 각자 7장으로 시작해요.'],['내 차례','같은 색이나 같은 숫자·기호를 한 장 내세요. 낼 카드가 없으면 1장 받고 넘겨요.'],['숫자 카드','네 가지 색의 1~7 카드예요. 색 옆의 도형으로도 구별할 수 있어요.'],['+2 · +3','다음 사람이 표시된 수만큼 카드를 받아요.'],['전체 색 +5 · +7','어떤 색에도 내고, 다음 색을 골라요. 다음 사람은 5장 · 7장을 받아요.'],['공격이 오면','마지막 공격 카드와 같거나 더 큰 + 카드만 이어 낼 수 있어요. 없으면 쌓인 장수만큼 받아요.'],['색 바꾸기','내고 나면 다음 색을 골라요.'],['건너뛰기 · 한 번 더','다음 사람을 건너뛰어요 · 내 차례를 한 번 더 해요.'],['방향 바꾸기','진행 방향을 반대로 바꿔요. 두 명이 남아도 상대에게 차례를 넘겨요.'],['원카드!','2장일 때 먼저 누르거나, 1장이 된 직후 눌러요. 다음 사람이 행동할 때까지 안 누르면 2장을 받아요.'],['진행','처음은 시계 방향이에요. 다음 판에는 자리를 다시 섞어요. 20장 이상이면 탈락해요.'],['연승 기록 경기','로그인한 컴퓨터·온라인 대전은 30초 안에 내거나 받아요. 시간이 지나면 자동으로 받아요.'],['게임 순위','로그인한 경기의 승리마다 연승이 늘어요. 패배·무승부는 현재 연승이 0이 되고, 이번 달 최고 연승은 남아요. 연습과 중도 나간 판은 제외해요.']];
   for(const [label,text] of rules){const row=element('div',undefined,'rule-row');row.append(element('strong',label),element('span',text));list.append(row);}
-  $('sheet-body').append(lead,list);$('sheet-body').append(element('p','오쭈다 전용 원카드 54장으로 즐겨요.','small-note'));
+  $('sheet-body').append(lead,list);$('sheet-body').append(element('p','오쭈다 전용 원카드 54장으로 즐겨요.','small-note'),rankingLink());
 }
 for(const id of ['rules-button','entry-rules'])$(id).onclick=showRules;
 $('menu-button').onclick=()=>{
   openSheet(mode==='online'?'게임 메뉴':'잠깐 쉬어가기');const body=$('sheet-body');
-  if(mode==='online'&&room?.status==='active')body.append(element('p','멀티게임은 메뉴를 열어도 계속돼요.','small-note'));
+  if(mode==='online'&&room?.status==='active')body.append(element('p','연승 기록 경기는 메뉴를 열어도 계속돼요.','small-note'));
   body.append(button('게임 방법','btn btn-secondary',showRules));
   if(app.dataset.view==='playing'){
-    body.append(button(mode==='solo'?'새 게임':'방 나가기','btn btn-secondary',()=>confirmExit(false)));
+    body.append(button(computerGame()?'새 게임':'방 나가기','btn btn-secondary',()=>confirmExit(false)));
     body.append(button('계속하기','btn btn-primary',closeSheet));
   }else body.append(button('닫기','btn btn-primary',closeSheet));
 };
 function confirmExit(toArcade){
   if(app.dataset.view!=='playing'&&(!room||room.status==='finished')){void exit(toArcade);return;}
   openSheet(toArcade?'오락실로 돌아갈까요?':'첫 화면으로 갈까요?','exit');
-  $('sheet-body').append(element('p',mode==='online'?(room?.status==='active'?'내 자리는 컴퓨터가 이어서 해요.':'이 대전방에서 나가요.'): '혼자 하던 게임은 이어서 할 수 있어요.'));
+  $('sheet-body').append(element('p',mode==='online'?(room?.status==='active'?(computerGame()?'이번 판은 끝나고 연승에 기록되지 않아요.':'내 자리는 컴퓨터가 이어서 해요. 이 판은 내 연승에 기록되지 않아요.'):'이 대전방에서 나가요.'): '혼자 하던 연습은 이어서 할 수 있어요.'));
   const row=element('div',undefined,'dialog-actions');row.append(button('계속하기','btn btn-secondary',closeSheet),button(toArcade?'오락실로':'나가기','btn btn-primary',()=>void exit(toArcade)));$('sheet-body').append(row);
 }
 async function exit(toArcade){
@@ -355,28 +386,32 @@ function resultIcon(outcome){
 }
 function showResult(){
   const key=`${mode}:${room?.id||'local'}:${room?.round||0}:${view.revision}`;if(resultKey===key)return;resultKey=key;
-  const winners=view.winnerIds||[view.winnerId],win=winners.includes(myId()),winner=view.players.find(p=>p.id===view.winnerId);
+  const win=view.winnerId===myId(),winner=view.players.find(p=>p.id===view.winnerId);
   const title=win?'승리!':winner?'게임 종료':'무승부',outcome=win?'success':winner?'failure':'draw';
   if(win)sound.play('win');openSheet(title,'result');
   const card=element('section',undefined,'game-result-card'),content=element('div',undefined,'game-result-content');
   card.dataset.resultOutcome=outcome;card.setAttribute('role','group');card.setAttribute('aria-labelledby','onecard-result-title');
   const heading=element('h2',title,'game-result-title');heading.id='onecard-result-title';
   const metric=winner?`${resultName(winner)} 승리`:'남은 카드 수로 마쳤어요.';
-  content.append(resultIcon(outcome),heading,element('div',metric,'game-result-metric'),element('p','다음 판에는 자리를 다시 정해요.','game-result-encouragement'));
+  const record=element('p',undefined,'game-result-encouragement');record.id='onecard-ranking-record';
+  const ranking=mode==='online'?room?.ranking:null;
+  record.append(document.createTextNode(ranking?.recorded?`현재 ${ranking.currentStreak}연승 · 이번 달 최고 ${ranking.bestStreak}연승\n저장 완료 · `:mode==='solo'?'연습 결과 · 순위 제외\n':'이번 판은 순위에 포함되지 않아요.\n'),rankingLink());
+  content.append(resultIcon(outcome),heading,element('div',metric,'game-result-metric'),record);
   const actions=element('div',undefined,'game-result-actions');
-  actions.append(button(mode==='solo'?'다시 한 판':'대기실로','',mode==='solo'?()=>void startSolo():()=>{closeSheet();setScreen('lobby');renderLobby();}),button('게임판 보기','',closeSheet),button('오락실로','',()=>void exit(true)));
+  actions.append(button(computerGame()?'다시 한 판':'대기실로','',computerGame()?()=>void startSolo(false,true):()=>{closeSheet();setScreen('lobby');renderLobby();}),button('게임판 보기','',closeSheet),button('오락실로','',()=>void exit(true)));
   content.append(actions);
   const extra=element('div',undefined,'game-result-extra'),scores=element('div',undefined,'result-players');
   for(const p of view.players){const row=element('div');row.append(element('span',resultName(p)),element('strong',p.active===false?'탈락':`${p.handCount??p.hand?.length??0}장`));scores.append(row);}
   extra.append(scores);content.append(extra);card.append(content);$('sheet-body').append(card);actions.querySelector('button').focus();
 }
+function rankingLink(){const link=element('a','월간 순위 보기');link.href=RANKING_URL;link.target='_blank';link.rel='noopener';return link;}
 
 function connection(message){$('connection').textContent=message||'';$('connection').hidden=!message;}
 function networkError(error){
   lastNetworkIssue=error;
   const text=error?.message||'연결을 확인한 뒤 다시 눌러 주세요.';
   if(app.dataset.view==='lobby'){$('lobby-error').textContent=text;$('lobby-error').hidden=false;}
-  else if(app.dataset.view==='welcome')$('online-account-note').textContent=text;
+  else if(app.dataset.view==='welcome')$(entryMode==='computer'?'solo-ranking-note':'online-account-note').textContent=text;
   else showToast(text);
   if(['not_signed_in','sign_in','auth_required'].includes(error?.code))$('login-link').hidden=false;
 }
@@ -390,13 +425,18 @@ function receiveRoom(next){
     lastRoomId='';lastRoomVersion=-1;
     if(mode==='online'){
       epoch++;motion.cancel();view=null;animating=false;resetHand();renderDiscard(null);
-      setScreen('welcome');selectEntryMode('opponent');
-      queueMicrotask(()=>{if(mode==='online'&&!room&&app.dataset.view==='welcome')mountRooms();});
+      closeSheet();$('sheet-body').replaceChildren();resultKey='';setScreen('welcome');selectEntryMode(previous?.mode==='solo'?'computer':'opponent');
+      queueMicrotask(()=>{if(mode==='online'&&!room&&entryMode==='opponent'&&app.dataset.view==='welcome')mountRooms();});
     }
     renderLobby();return;
   }
   mode='online';$('login-link').hidden=true;$('lobby-error').hidden=true;
-  if(next.status==='waiting'){if(sheetKind==='arcade-room')closeSheet();setScreen('lobby');renderLobby();return;}
+  if(next.status==='waiting'){
+    if(sheetKind==='arcade-room')closeSheet();
+    if(next.mode==='solo'){setScreen('welcome');selectEntryMode('computer');setText('solo-ranking-note','컴퓨터 대전을 준비했어요. 혼자 하기를 누르면 시작해요.');}
+    else{setScreen('lobby');renderLobby();}
+    return;
+  }
   if(!next.game)return;
   if(next.id===lastRoomId&&next.version<=lastRoomVersion){updateTimer();return;}
   const newRoom=next.id!==lastRoomId,roundChanged=!!previous&&previous.id===next.id&&previous.round!==next.round;
@@ -417,6 +457,8 @@ async function openOnline(code=''){
   $('online-account-note').textContent='방을 만들거나 열린 대전방에 참여하세요. 빈자리는 컴퓨터가 채워요.';
   const client=ensureNetwork();
   await onlineAction(async()=>{
+    // A prepared or completed private table has no multiplayer lobby to reopen.
+    if(room?.mode==='solo'&&room.status!=='active'&&!await client.leave())return false;
     const current=await client.enter();
     if(code&&!current)return client.join(code);
     if(code&&current&&current.code!==code)showToast('참여 중인 방으로 돌아왔어요. 나간 뒤 다른 방에 참여할 수 있어요.');
