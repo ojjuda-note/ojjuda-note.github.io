@@ -1,21 +1,22 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { PGlite } = require('@electric-sql/pglite');
+const { createFixture, installYutRankings } = require('./monthly-game-rankings-fixture.cjs');
 
 const users = Array.from({ length: 8 }, (_, i) => `00000000-0000-4000-8000-${String(i + 1).padStart(12, '0')}`);
 
 async function fixture() {
-  const db = new PGlite();
+  // Run the real common ranking readers before the One Card migrations so the
+  // room/API/UI suites exercise the same result-to-leaderboard path as production.
+  const rankingFixture = await createFixture();
+  const { db, clock: rankingClock, claim } = rankingFixture;
+  let manualClock = false;
+  await installYutRankings(db);
+  await rankingClock(new Date().toISOString());
   await db.exec(`
-    create role anon; create role authenticated; create role service_role;
-    create schema auth;
-    create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
-    create table auth.users (id uuid primary key, is_anonymous boolean default false);
-    create table public.profiles (id uuid primary key, nickname text);
     create table public.test_bans (id uuid primary key);
     create table public.test_blocks (a uuid, b uuid);
-    create function public.is_banned(uuid) returns boolean language sql as $$select exists(select 1 from public.test_bans where id=$1)$$;
-    create function public.blocked_between(uuid,uuid) returns boolean language sql as $$select exists(select 1 from public.test_blocks where a=$1 and b=$2 or a=$2 and b=$1)$$;
+    create or replace function public.is_banned(uuid) returns boolean language sql stable security definer set search_path='' as $$select exists(select 1 from public.test_bans where id=$1)$$;
+    create or replace function public.blocked_between(uuid,uuid) returns boolean language sql stable security definer set search_path='' as $$select exists(select 1 from public.test_blocks where a=$1 and b=$2 or a=$2 and b=$1)$$;
     create function public.mask_banned(text) returns text language sql as $$select replace($1, 'badword', '❤️❤️')$$;
     grant usage on schema public to anon,authenticated,service_role;
     create schema ojjuda_arcade_internal;
@@ -25,7 +26,7 @@ async function fixture() {
   // The One Card migration extends the existing arcade directory. Keep the
   // unrelated providers empty unless a directory regression explicitly seeds one.
   for (const game of ['poker', 'bang', 'roulette']) await db.exec(`
-    create schema ojjuda_${game}_internal;
+    create schema if not exists ojjuda_${game}_internal;
     grant usage on schema ojjuda_${game}_internal to authenticated;
     create function ojjuda_${game}_internal.arcade_rooms() returns jsonb language sql stable
       as $$select '{"ok":true,"rooms":[]}'::jsonb$$;
@@ -42,6 +43,19 @@ async function fixture() {
   const migrations = path.join(__dirname, '../supabase/migrations');
   const onecardMigrations = fs.readdirSync(migrations).filter(n => /_onecard_.*\.sql$/.test(n)).sort();
   for (const migration of onecardMigrations) await db.exec(fs.readFileSync(path.join(migrations, migration), 'utf8'));
+  // Only record/ranking time is controllable. Real room expiry, CAS, turn
+  // deadlines and rate limits remain untouched by the boundary-test clock.
+  const clockedFunctions = await db.query(`select pg_get_functiondef(p.oid) definition
+    from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+    where n.nspname='ojjuda_ranking_internal'
+       or (n.nspname='ojjuda_onecard_internal' and (p.proname='player_record' or p.prorettype='trigger'::regtype))
+       or (n.nspname='public' and p.proname in('community_game_monthly_personal','community_game_monthly_ranking','community_game_monthly_leaders','community_game_monthly_history'))`);
+  for (const { definition } of clockedFunctions.rows) {
+    const patched = definition.replace(/\b(?:clock_timestamp|statement_timestamp|now)\(\)/g, 'fixture.clock()');
+    if (patched !== definition) await db.exec(patched);
+  }
+  if ((await db.query("select to_regclass('ojjuda_onecard_internal.results') exists")).rows[0].exists)
+    await db.exec('alter table ojjuda_onecard_internal.results alter column achieved_at set default fixture.clock()');
   const { createHandler } = await import('../supabase/functions/onecard/handler.mjs');
   let seed = 209385;
   const handler = createHandler({
@@ -64,13 +78,31 @@ async function fixture() {
     },
   });
   async function call(id, body, options = {}) {
+    if (!manualClock) await rankingClock(new Date().toISOString());
     const response = await handler(new Request('https://edge.invalid', {
       method: 'POST', headers: { authorization: `Bearer ${id}`, origin: 'https://ojjuda.kr', ...options.headers },
       body: JSON.stringify(body),
     }));
     return { httpStatus: response.status, ...await response.json() };
   }
-  return { db, call, users, handler, close: () => db.close() };
+  const clock = async value => { manualClock = true; await rankingClock(value); };
+  async function stageWin(roomId, winnerId) {
+    const { makeDeck } = await import('../games/onecard/engine.mjs');
+    const row = (await db.query('select state from ojjuda_onecard_internal.rooms where id=$1', [roomId])).rows[0];
+    const state = row.state, winner = state.players.find(player => player.id === winnerId);
+    if (!winner || winner.active === false) throw Error('fixture winner must be an active existing seat');
+    const remaining = makeDeck().filter(id => !['S-4', 'S-3'].includes(id));
+    for (const player of state.players) {
+      player.hand = player === winner ? ['S-3'] : player.active === false ? [] : remaining.splice(0, 2);
+      player.calledOne = player === winner;
+    }
+    Object.assign(state, { deck: remaining, discard: ['S-4'], currentSuit: 'S', pendingDraw: 0, pendingOneId: null,
+      turn: state.players.indexOf(winner), status: 'playing', winnerId: null, winnerIds: [], finishReason: null,
+      dryPasses: 0, lastEvents: [], revision: state.revision + 1 });
+    await db.query("update ojjuda_onecard_internal.rooms set state=$2,version=version+1,deadline=clock_timestamp()+interval '1 minute' where id=$1", [roomId, state]);
+    return state;
+  }
+  return { db, call, users, handler, clock, claim, stageWin, close: () => db.close() };
 }
 
 module.exports = { fixture, users };

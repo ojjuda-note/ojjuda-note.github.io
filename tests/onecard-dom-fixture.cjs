@@ -11,7 +11,7 @@ async function until(fn, label, timeout = 7000) {
 }
 
 /** Browser APIs are mocked; game/app/client/Edge/SQL code stays real. Not a layout/FPS test. */
-async function screen({ server = null, actor = null, saved = null, animate = false, width = 750, height = 750, query = '', seatRolls = [.999999], sortMode } = {}) {
+async function screen({ server = null, actor = null, saved = null, animate = false, width = 750, height = 750, query = '', seatRolls = [.999999], sortMode, authWait = null, authError = null } = {}) {
   const errors = [], virtualConsole = new VirtualConsole();
   virtualConsole.on('jsdomError', error => errors.push(error.message));
   const dom = new JSDOM(fs.readFileSync(path.join(ROOT, 'games/onecard/index.html'), 'utf8'), {
@@ -106,7 +106,11 @@ async function screen({ server = null, actor = null, saved = null, animate = fal
   };
   w.OjjudaGetClient = async () => ({
     auth: {
-      getSession: async () => ({ data: { session: currentActor ? { access_token: 'fixture', user: { id: currentActor, is_anonymous: false } } : null } }),
+      getSession: async () => {
+        if (authWait) await authWait;
+        if (authError) throw authError;
+        return { data: { session: currentActor ? { access_token: 'fixture', user: { id: currentActor, is_anonymous: false } } : null } };
+      },
       onAuthStateChange: callback => { authChange = callback; return { data: { subscription: { unsubscribe() { authChange = null; } } } }; },
     },
     functions: { invoke: async (name, { body }) => {

@@ -9,7 +9,7 @@ const nextReset=month=>Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)
 const validMonth=month=>typeof month==='string'&&/^\d{4}-(0[1-9]|1[0-2])$/.test(month);
 const monthName=month=>Number(month.slice(0,4))+'년 '+Number(month.slice(5,7))+'월';
 const rankGroups=[{id:'solo',name:'혼자하는 플레이'},{id:'multi',name:'함께하는 플레이'},{id:'adult',name:'어른들 플레이'}];
-const multiGames=new Set(['bang','tank','tour','yut','ttang','janggi','chess','billiards']);
+const multiGames=new Set(['onecard','bang','tank','tour','yut','ttang','janggi','chess','billiards']);
 const adultGames=new Set(['matgo','poker','roulette','photo_ttang']);
 const rankGroupFor=id=>adultGames.has(id)?'adult':multiGames.has(id)?'multi':'solo';
 const groupedEntries=entries=>rankGroups.map(group=>({...group,entries:entries.filter(([id])=>rankGroupFor(id)===group.id)})).filter(group=>group.entries.length);
@@ -18,6 +18,7 @@ const boardCondition='회원 대결 → 어려움 → 보통 → 쉬움 순으�
 const scoreCondition='해당 월에 기록한 가장 높은 점수로 정해요.';
 const goldMetric=id=>id==='roulette'?'한 판 최대 당첨 골드':'한 판 최대 획득 골드(순이익)';
 const rankingConditions={
+ onecard:'로그인한 컴퓨터 대전과 온라인 대전의 월 최고 연승으로 정해요. 비로그인·이전 버전 이어하기는 연습이며, 끝나기 전에 나간 판은 내 기록에 넣지 않아요.',
  archery:'통과한 단계가 높은 순, 같은 단계에서는 해당 월 최고 점수, 점수도 같으면 먼저 달성한 순으로 정해요. 이벤트 사격 기록은 제외돼요.',
  bang:streakCondition,
  sacheonseong:'완료한 단계가 높은 순, 같은 단계에서는 완료 시간이 짧은 순으로 정해요.',

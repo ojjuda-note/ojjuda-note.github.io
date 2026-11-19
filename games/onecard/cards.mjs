@@ -1,5 +1,5 @@
 // Original four-color One Card artwork. Persistent DOM faces keep deals smooth.
-import {cardInfo} from './engine.mjs?v=20261120-onecard6';
+import {cardInfo} from './engine.mjs?v=20261120-onecard7';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const COLORS = Object.freeze({
@@ -54,6 +54,9 @@ function actionIcon(kind, className = 'card-action-icon') {
   if (kind === 'skip') {
     mark.append(svgElement('circle', {...attrs, cx: 32, cy: 32, r: 21}));
     mark.append(svgElement('path', {...attrs, d: 'M17 47 47 17'}));
+  } else if (kind === 'reverse') {
+    mark.append(svgElement('path', {...attrs, d: 'M14 44V29a13 13 0 0 1 13-13h9M27 7l9 9-9 9'}));
+    mark.append(svgElement('path', {...attrs, d: 'M50 20v15a13 13 0 0 1-13 13h-9M37 39l-9 9 9 9'}));
   } else if (kind === 'again') {
     mark.append(svgElement('path', {...attrs, d: 'M50 25a20 20 0 1 0 1 13M50 11v14H36'}));
     mark.append(svgElement('path', {...attrs, 'stroke-width': 4, d: 'M27 27l6-4v20M27 43h12'}));

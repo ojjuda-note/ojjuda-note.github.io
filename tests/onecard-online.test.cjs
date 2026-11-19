@@ -16,7 +16,7 @@ const { fixture } = require('./onecard-online-fixture.cjs');
   const raw = async id => (await db.query('select * from ojjuda_onecard_internal.rooms where id=$1', [id])).rows[0];
   const expireTurn = id => db.query("update ojjuda_onecard_internal.rooms set deadline=clock_timestamp()-interval '1 second' where id=$1", [id]);
   function conserved(state, seats = 5) {
-    assert.equal(state.players.length, seats); assert.equal(state.direction, 1);
+    assert.equal(state.players.length, seats); assert.ok([1, -1].includes(state.direction));
     assert.deepEqual([...state.deck, ...state.discard, ...state.players.flatMap(p => p.hand)].sort(), engine.makeDeck().sort(), 'all 54 card identities remain conserved');
   }
   function privateView(room, actor, handSize) {
@@ -97,7 +97,7 @@ const { fixture } = require('./onecard-online-fixture.cjs');
       assert.ok(turns++ < 2000, 'five-person game finishes');
       const currentId = room.game.players[room.game.turn].id, own = await read(currentId, room.id);
       room = ok(await action(currentId, own, 'move', { command: engine.chooseBotAction(own.game, currentId) }));
-      assert.equal(room.game.direction, 1);
+      assert.ok([1, -1].includes(room.game.direction));
       assert.deepEqual(room.game.players.map(p => p.id), firstOrder, 'seating is stable within a round');
     }
     conserved((await raw(room.id)).state);
@@ -161,7 +161,7 @@ const { fixture } = require('./onecard-online-fixture.cjs');
             const own = await read(owner, room.id);
             room = ok(await action(owner, own, 'move', { command: engine.chooseBotAction(own.game, owner) }));
           }
-          assert.equal(room.game.direction, 1);
+          assert.ok([1, -1].includes(room.game.direction));
         }
         conserved((await raw(room.id)).state);
         const next = ok(await action(owner, room, 'start'));
@@ -202,6 +202,40 @@ const { fixture } = require('./onecard-online-fixture.cjs');
     conserved((await raw(room.id)).state);
     await closeRoom([B], room);
 
+    // Both directions are authoritative, including the two-survivor case:
+    // reversing changes direction but never grants a second consecutive turn.
+    room = await create(B); room = await join(C, room);
+    room = ok(await action(B, room, 'start'));
+    for (const activeCount of [5, 2]) {
+      const position = (await raw(room.id)).state;
+      const hands = new Map([[B, ['S-Q', 'D-5']], [C, ['H-Q', 'S-6']]]);
+      const remaining = engine.makeDeck().filter(id => !['S-4', ...hands.values()].flat().includes(id));
+      for (const player of position.players) {
+        player.active = activeCount === 5 || [B, C].includes(player.id);
+        player.hand = hands.get(player.id) || (player.active ? remaining.splice(0, 2) : []);
+        player.calledOne = false;
+      }
+      Object.assign(position, { deck: remaining, discard: ['S-4'], currentSuit: 'S', pendingDraw: 0,
+        pendingOneId: null, turn: position.players.findIndex(player => player.id === B), direction: 1,
+        status: 'playing', winnerId: null, winnerIds: [], lastEvents: [], revision: position.revision + 1 });
+      conserved(position);
+      await db.query("update ojjuda_onecard_internal.rooms set state=$2,version=version+1,deadline=clock_timestamp()+interval '1 minute' where id=$1", [room.id, position]);
+      room = await read(B, room.id);
+      room = ok(await action(B, room, 'move', { command: { type: 'play', cardId: 'S-Q', declare: true } }));
+      assert.equal(room.game.direction, -1);
+      const active = position.players.map((player, i) => player.active ? i : -1).filter(i => i >= 0);
+      assert.equal(room.game.turn, active[(active.indexOf(position.turn) + active.length - 1) % active.length]);
+      assert.ok(room.game.lastEvents.some(event => event.type === 'reverse'));
+      if (activeCount === 2) {
+        assert.equal(room.game.players[room.game.turn].id, C, 'two survivors pass to the other seat');
+        room = ok(await action(C, await read(C, room.id), 'move', { command: { type: 'play', cardId: 'H-Q', declare: true } }));
+        assert.equal(room.game.direction, 1);
+        assert.equal(room.game.players[room.game.turn].id, B, 'a second reverse restores clockwise order');
+      }
+      conserved((await raw(room.id)).state);
+    }
+    await closeRoom([B, C], room);
+
     room = await create(OUT, 2);
     for (const id of [C, D, E]) room = await join(id, room);
     const lastSeat = await Promise.all([call(A, { action: 'join', code: room.code }), call(B, { action: 'join', code: room.code })]);
@@ -217,7 +251,7 @@ const { fixture } = require('./onecard-online-fixture.cjs');
     await db.query("update ojjuda_onecard_internal.rooms set expires_at=clock_timestamp()-interval '1 second' where id=$1", [room.id]);
     assert.equal((await call(C, { action: 'mine' })).room, null);
     assert.equal((await call(OUT, { action: 'join', code: room.code })).error, 'room_unavailable');
-    console.log(`PASS: ${turns} five-person turns, ${computerTurns} server computer turns; fixed five seats for 1–5 people, shuffled seats, clockwise rules, stronger-attack enforcement, private hands, authentication, races, retries, timeout, takeover, rematch, expiry and SQL permissions`);
+    console.log(`PASS: ${turns} five-person turns, ${computerTurns} server computer turns; fixed five seats for 1–5 people, shuffled seats, reverse directions with two or five survivors, stronger-attack enforcement, private hands, authentication, races, retries, timeout, takeover, rematch, expiry and SQL permissions`);
   } finally { await f.close(); }
   await require('./onecard-native-rooms.test.cjs')();
 })().catch(error => { console.error(error); process.exitCode = 1; });

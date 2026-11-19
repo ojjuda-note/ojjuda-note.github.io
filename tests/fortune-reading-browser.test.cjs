@@ -52,7 +52,7 @@ const compatibilityEntryFixture = tarotOnly ? '' : fs.readFileSync(path.join(rep
   .replace('</body>',entryFixtureScript+'</body>');
 // Isolated rendering fixture. It uses production calculation and reading modules
 // with a published example date, and never loads authentication or billing code.
-const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/reading-summary.css"><link rel="stylesheet" href="/games/starlit-saju/reading-score.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"><link rel="stylesheet" href="/games/starlit-saju/reading-detail.css"><link rel="stylesheet" href="/games/starlit-saju/almanac.css"><link rel="stylesheet" href="/games/starlit-saju/directory.css"></head><body class="saju-readable saju-flow saju-edition saju-directory"><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
+const sajuFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/reading-summary.css"><link rel="stylesheet" href="/games/starlit-saju/reading-score.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"><link rel="stylesheet" href="/games/starlit-saju/reading-detail.css"><link rel="stylesheet" href="/games/starlit-saju/almanac.css"><link rel="stylesheet" href="/games/starlit-saju/directory.css"><link rel="stylesheet" href="/games/starlit-saju/clean-reader.css"></head><body class="saju-readable saju-flow saju-edition saju-directory saju-clean"><main><section class="result"><label for="fixture-topic">검사할 풀이</label><select id="fixture-topic"><option value="lifelong">평생운</option><option value="annual">올해운</option><option value="monthly">월별운</option><option value="all">전체 풀이</option></select><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { analyzeFortune } from '/games/starlit-saju/fortune-data.mjs';
 import { analyzeDaeun } from '/games/starlit-saju/daeun.mjs';
@@ -87,7 +87,7 @@ function show(){
 }
 select.addEventListener('change',show);show();
 </script></body></html>`;
-const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/compatibility.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"><link rel="stylesheet" href="/games/starlit-saju/reading-detail.css"><link rel="stylesheet" href="/games/starlit-saju/almanac.css"><link rel="stylesheet" href="/games/starlit-saju/directory.css"></head><body class="saju-readable saju-flow saju-edition saju-directory"><main class="compatibility-main"><section class="result"><label for="fixture-pair">검사할 두 사람</label><select id="fixture-pair"><option value="confirmed">말띠와 양띠</option><option value="uncertain">입춘일 · 시간 모름</option></select><p id="fixture-zodiac" class="birth-summary"></p><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
+const compatibilityFixture = `<!doctype html><html lang="ko" data-reduced-motion="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/games/moonlit-tarot/assets/favicon.svg"><link rel="stylesheet" href="/games/starlit-saju/style.css"><link rel="stylesheet" href="/games/starlit-saju/report.css"><link rel="stylesheet" href="/games/starlit-saju/compatibility.css"><link rel="stylesheet" href="/games/starlit-saju/readable-design.css"><link rel="stylesheet" href="/games/starlit-saju/flow-design.css"><link rel="stylesheet" href="/games/starlit-saju/reading-detail.css"><link rel="stylesheet" href="/games/starlit-saju/almanac.css"><link rel="stylesheet" href="/games/starlit-saju/directory.css"><link rel="stylesheet" href="/games/starlit-saju/clean-reader.css"></head><body class="saju-readable saju-flow saju-edition saju-directory saju-clean"><main class="compatibility-main"><section class="result"><label for="fixture-pair">검사할 두 사람</label><select id="fixture-pair"><option value="confirmed">말띠와 양띠</option><option value="uncertain">입춘일 · 시간 모름</option></select><p id="fixture-zodiac" class="birth-summary"></p><div class="detailed-reading" id="report-content"></div></section></main><script type="module">
 import { calculateSaju } from '/games/starlit-saju/engine.mjs';
 import { buildCompatibilityReading } from '/games/starlit-saju/compatibility.mjs';
 import { renderCompatibilityReport } from '/games/starlit-saju/report-view.mjs';
@@ -529,6 +529,7 @@ const server = http.createServer((request, response) => {
     await saju.route('**/*', route => route.request().url().startsWith('http://127.0.0.1:') ? route.continue() : route.abort());
     const sajuEntryViews={},compatibilityEntryViews={},sajuNavigation={},sajuReadableViews={};
     async function inspectReadableSurface(label,{text,body='',minimumBody=18,controls='',placeholders=false}={}) {
+      if(body)await expandCurrentStories(saju);
       const view=await saju.evaluate(({text,body,minimumBody,controls,placeholders})=>{
         const canvas=document.createElement('canvas');canvas.width=canvas.height=1;
         const context=canvas.getContext('2d',{willReadFrequently:true});
@@ -594,7 +595,7 @@ const server = http.createServer((request, response) => {
       assert.deepEqual(view.smallProse,[],label+': reading text follows the normal/large size');
       assert.deepEqual(view.smallTargets,[],label+': actionable controls have at least a 44px touch target');
       assert.equal(view.horizontalOverflow,false,label+': the redesigned page stays inside the viewport');
-      assert.ok(view.inputs.every(input=>input.font>=16&&input.scheme==='light'),label+': readable input text and native menus use the light surface');
+      assert.ok(view.inputs.every(input=>input.font>=16&&input.scheme==='dark'),label+': readable input text and native menus use the dark surface');
       sajuReadableViews[label]={samples:view.samples,minimumContrast:view.minimumContrast,minimumBodyFont:view.prose.length?Math.min(...view.prose.map(item=>item.font)):null,minimumTargetHeight:view.minimumTargetHeight};
       return view;
     }
@@ -807,11 +808,11 @@ const server = http.createServer((request, response) => {
       const nav=page.locator('#'+pickerId+'-navigator');
       const item=nav.locator('[data-reading-target="'+id+'"]');
       assert.equal(await item.count(),1,id+': the item is available through the visible menu');
+      const list=nav.locator('.reading-item-picker'),toggle=list.locator(':scope > summary');
+      if(await list.getAttribute('open')===null)await toggle.click();
       const domain=await item.getAttribute('data-reading-domain');
       const field=nav.locator('.reading-domain-button[data-reading-domain="'+domain+'"]');
       if(await field.getAttribute('aria-pressed')!=='true')await field.click();
-      const list=nav.locator('.reading-item-picker'),toggle=list.locator(':scope > summary');
-      if(await list.getAttribute('open')===null)await toggle.click();
       assert.equal(await item.isVisible(),true,id+': the requested item is shown in its field');
       if(keyboard){await item.focus();await item.press('Enter');}else await item.click();
       assert.equal(await page.locator('#'+pickerId).inputValue(),id);
@@ -820,9 +821,16 @@ const server = http.createServer((request, response) => {
       assert.equal(await field.getAttribute('aria-pressed'),'true');
       await assertCurrentExplanation(page,pickerId==='reading-page-select'?'data-reader-current':'data-compatibility-current');
     }
+    async function expandCurrentStories(page) {
+      const current=page.locator('[data-reader-current],[data-compatibility-current]');
+      const toggles=current.locator('details.reading-story-details:not([open]) > summary:visible');
+      for(let count=0;count<20&&await toggles.count();count++)await toggles.first().click();
+      assert.equal(await toggles.count(),0,'each requested story can be opened through its visible disclosure');
+    }
     async function assertCurrentExplanation(page,currentAttribute,{requireBody=false}={}) {
       const current=page.locator('['+currentAttribute+']');
       assert.equal(await current.count(),1,'exactly one reading is selected');
+      if(requireBody)await expandCurrentStories(page);
       const state=await current.evaluate(element=>{
         const paragraphs=[...element.querySelectorAll('.reader-prose > p,.compatibility-person-prose > p')]
           .filter(paragraph=>!paragraph.closest('[hidden]'));
@@ -832,12 +840,21 @@ const server = http.createServer((request, response) => {
           for(let parent=paragraph.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS'&&!parent.open)return false;
           return true;
         };
+        const hidden=paragraphs.filter(paragraph=>!shown(paragraph));
+        const summaries=[...element.querySelectorAll('.saju-two-line-summary,.compatibility-two-line-summary')]
+          .filter(summary=>!summary.closest('[hidden]'));
         return {id:element.id,bodyDisclosures:element.querySelectorAll('details.reading-body-details').length,
-          paragraphs:paragraphs.length,hiddenParagraphs:paragraphs.filter(paragraph=>!shown(paragraph)).map(paragraph=>paragraph.textContent.slice(0,50))};
+          paragraphs:paragraphs.length,hiddenParagraphs:hidden.map(paragraph=>paragraph.textContent.slice(0,50)),
+          hiddenWithoutDisclosure:hidden.filter(paragraph=>!paragraph.closest('details.reading-story-details:not([open])')).length,
+          hiddenSummaries:summaries.filter(summary=>!shown(summary)).length};
       });
-      assert.equal(state.bodyDisclosures,0,state.id+': the full explanation does not need a second click');
-      assert.deepEqual(state.hiddenParagraphs,[],state.id+': selecting an item exposes its body immediately');
-      if(requireBody)assert.ok(state.paragraphs>0,state.id+': the body contains the authored explanation');
+      assert.equal(state.bodyDisclosures,0,state.id+': no obsolete nested body disclosure remains');
+      assert.equal(state.hiddenSummaries,0,state.id+': both summary units stay visible before opening the detailed story');
+      assert.equal(state.hiddenWithoutDisclosure,0,state.id+': every folded paragraph remains reachable through the story disclosure');
+      if(requireBody) {
+        assert.ok(state.paragraphs>0,state.id+': the body contains the authored explanation');
+        assert.deepEqual(state.hiddenParagraphs,[],state.id+': opening the detailed story exposes all of its paragraphs');
+      }
       return state;
     }
     await assertCurrentExplanation(saju,'data-reader-current',{requireBody:true});
@@ -845,9 +862,12 @@ const server = http.createServer((request, response) => {
       const picker=saju.locator('#'+pickerId),current=saju.locator('['+currentAttribute+']'),nav=saju.locator('#'+pickerId+'-navigator');
       assert.equal(await picker.isVisible(),false,'the long native picker is replaced by visible fields and an item list');
       const options=await picker.locator('option').evaluateAll(nodes=>nodes.map(node=>node.value));
+      const list=nav.locator('.reading-item-picker');
+      assert.equal(await list.getAttribute('open'),null,'the fields start inside the closed contents menu');
+      await list.locator(':scope > summary').click();
       const domains=nav.locator('.reading-domain-button:visible');
       const domainIds=await domains.evaluateAll(nodes=>nodes.map(node=>node.dataset.readingDomain));
-      assert.ok(domainIds.length>=2,label+': separate fields are directly visible');
+      assert.ok(domainIds.length>=2,label+': opening contents exposes the available fields');
       await domains.first().focus();await domains.first().press('ArrowRight');
       assert.equal(await nav.locator('.reading-domain-button[aria-pressed="true"]').getAttribute('data-reading-domain'),domainIds[1]);
       assert.equal(await domains.nth(1).evaluate(element=>element===document.activeElement),true,'field arrow navigation keeps keyboard focus visible');
@@ -1289,7 +1309,7 @@ const server = http.createServer((request, response) => {
     await zodiacCard.scrollIntoViewIfNeeded();
     await saju.screenshot({path:path.join(artifacts,'saju-zodiac-compatibility-desktop.png')});
     async function inspectCompatibilityPeople(label,personCount) {
-      await assertCurrentExplanation(saju,'data-compatibility-current');
+      await assertCurrentExplanation(saju,'data-compatibility-current',{requireBody:true});
       const current=saju.locator('[data-compatibility-current]');
       const geometry=await current.evaluate(page=>{
         const contained=(inner,outer)=>inner.left>=outer.left-1&&inner.right<=outer.right+1&&inner.top>=outer.top-1&&inner.bottom<=outer.bottom+1;
@@ -1556,7 +1576,7 @@ const server = http.createServer((request, response) => {
           // Start on actual paragraph glyphs, so PC dragging is verified over
           // reading text rather than only over blank card padding.
           async function paragraphPoints(direction) {
-            await assertCurrentExplanation(swipe,currentAttribute);
+            await assertCurrentExplanation(swipe,currentAttribute,{requireBody:true});
             const paragraph=current.locator('.reader-prose p:visible').first();
             await paragraph.evaluate(element=>element.scrollIntoView({block:'center',behavior:'instant'}));
             return paragraph.evaluate((element,direction)=>{
@@ -1699,7 +1719,7 @@ const server = http.createServer((request, response) => {
             await settled();await assertCurrentExplanation(slide,currentAttribute);return value;
           }
           async function points(direction,distance=120) {
-            await assertCurrentExplanation(slide,currentAttribute);
+            await assertCurrentExplanation(slide,currentAttribute,{requireBody:true});
             const paragraph=current.locator('.reader-prose p:visible').first();
             await paragraph.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
             return paragraph.evaluate((el,{direction,distance})=>{

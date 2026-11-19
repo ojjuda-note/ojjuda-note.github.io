@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#f7f5ef">
+  <meta name="theme-color" content="#101820">
   <meta name="description" content="별빛 서고에서 펼치는 나의 사주팔자. 타고난 성향과 평생운부터 한 해의 운세, 열두 달의 흐름까지 자세히 읽어 보세요.">
   <title>별빛 사주팔자 · 오쭈다</title>
   <link rel="icon" href="../moonlit-tarot/assets/favicon.svg" type="image/svg+xml">
@@ -16,8 +16,9 @@
   <link rel="stylesheet" href="./reading-detail.css?v=20261114-saju-correction1">
   <link rel="stylesheet" href="./almanac.css?v=20261115-saju-reading-map1">
   <link rel="stylesheet" href="./directory.css?v=20261115-saju-menus1">
+  <link rel="stylesheet" href="./clean-reader.css?v=20261120-saju-clean1">
 </head>
-<body class="saju-readable saju-flow saju-edition saju-directory">
+<body class="saju-readable saju-flow saju-edition saju-directory saju-clean">
   <a class="skip-link" href="#catalog-title">풀이 목록으로 바로가기</a>
   <svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
     <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6Z"/></symbol>
@@ -41,8 +42,14 @@
   <main>
     <section id="saju-catalog" aria-labelledby="catalog-title">
       <div class="catalog-cover">
+        <svg class="catalog-constellation" viewBox="0 0 100 58" aria-hidden="true">
+          <path d="M14 39 36 17 65 31 87 12" opacity=".45"/>
+          <path d="m36 8 2.4 6.6L45 17l-6.6 2.4L36 26l-2.4-6.6L27 17l6.6-2.4Z" fill="currentColor" stroke="none"/>
+          <circle cx="14" cy="39" r="2.5" fill="currentColor"/><circle cx="65" cy="31" r="3" fill="currentColor"/><circle cx="87" cy="12" r="2" fill="currentColor"/>
+          <path d="M24 48h52" opacity=".25"/>
+        </svg>
         <h1 id="catalog-title" tabindex="-1">별빛 사주</h1>
-        <img class="cover-art" src="/features/home/theme-illustrations/newyear.webp" alt="" width="960" height="640" fetchpriority="high">
+        <p class="catalog-subtitle">나를 읽는 고요한 시간</p>
       </div>
       <div class="catalog-index">
         <h2>풀이 고르기</h2>
@@ -151,6 +158,6 @@
   </main>
   <div id="status" class="toast" role="status" aria-live="polite"></div>
   <script src="/shared/analytics/site-usage.js?v=20261113-fortune-visits1"></script>
-  <script type="module" src="./app.js?v=20261115-saju-reopen1"></script>
+  <script type="module" src="./app.js?v=20261120-saju-clean1"></script>
 </body>
 </html>
