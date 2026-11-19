@@ -979,6 +979,8 @@ async function checkNavigation(page){
     assert.equal(await settings.getByRole('link',{name:'개인정보처리방침',exact:true}).getAttribute('href'),'/privacy.html?from=pajang');
     for(const label of ['이용약관','개인정보처리방침'])assert.equal(await settings.getByRole('link',{name:label,exact:true}).getAttribute('target'),null);
     const accountPage=page.locator('.station-account');
+    assert.deepEqual(await settings.locator('[aria-labelledby="account-activity-title"] .ojjuda-settings-label').allTextContents(),
+      ['답변 공개 설정','내가 남긴 답변','신호 구매','쭈 충전'],'signal purchase stays directly above coin charging in My Pajang activities');
     assert.equal(await settings.getByRole('button',{name:'쭈 충전',exact:true}).getAttribute('aria-controls'),'ju-charge-dialog','settings exposes the shared coin charge dialog');
     for(const width of [320,390]){
       await page.setViewportSize({width,height:844});
@@ -988,7 +990,7 @@ async function checkNavigation(page){
         const {top,bottom,left,right,height}=el.getBoundingClientRect();
         return {top,bottom,left,right,height};
       }));
-      assert.equal(rows.length,15,'account settings, coin charging and the three app entries use the shared list rows');
+      assert.equal(rows.length,16,'account settings, signal purchase, coin charging and the three app entries use the shared list rows');
       for(const [index,row] of rows.entries()){
         assert.ok(row.height>=44,`settings row ${index+1} has a full touch target at ${width}px`);
         assert.ok(row.left>=0&&row.right<=width+1,'settings rows stay within the viewport');
