@@ -11,7 +11,7 @@
   "/admin/fortune-purchases.js?v=20261113-biorhythm-paid1",
   "/admin/groups.js?v=20261107-group-mod2","/admin/asset-library.js?v=20261111-asset-library1",
   "/note/operations.js?v=20261119-question-admin1",
-  "note/admin.js?v=20261120-nanum-myeongjo1"
+  "note/admin.js?v=20261120-park-video1"
  ],styles=[
   "/admin/visitors.css?v=20261111-guest-popularity1",
   "/admin/visitors-charts.css?v=20261113-feature-chart2",

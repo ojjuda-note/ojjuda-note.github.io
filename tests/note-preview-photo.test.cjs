@@ -76,7 +76,7 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
     const calls=[];
     const c={ console:{warn(){}},busy:false,ready:true,authKnown:true,submit:{disabled:false},text:{value:body},composeMessage:{textContent:''},
       cardPhotoPreparing:false,editingId:null,composerUserId:member,identityEpoch:1,composerRun:1,backgroundKey:background,
-      cardPhotoEditPath:null,kind,parentId:parent,cardPhotoBlob:attachment&&kind!=='event'?{}:null,cardPhotoRequestId:photoId,
+      cardPhotoEditPath:null,kind,parentId:parent,cardPhotoBlob:attachment&&kind!=='event'?{}:null,cardVideoPrepared:null,cardPhotoRequestId:photoId,
       photoFromWorld:{card:true,event:true},eventPhotoBlob:attachment&&kind==='event'?{}:null,eventPhotoRequestId:photoId,
       eventPhotoRemove:false,eventPhotoPreparing:false,eventPhotoError:'',photoRequestId:randomUUID(),publishRequestId:requestId,EVENT_PHOTO_BUCKET:'note-event-photos',
       session:{user:{id:member}},myIdentity:{},myGender:'private',writingPosition:{latitude:37,longitude:127},eventPosition:{latitude:37,longitude:127},

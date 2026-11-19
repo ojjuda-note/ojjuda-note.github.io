@@ -22,6 +22,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/pages-publish.yml'
+      - 'note/vendor/**'
       - 'scripts/build-fanpage-hub.mjs'
       - 'tests/fanpage-hub-transfer.cjs'
       - 'scripts/build-short-links.mjs'
@@ -57,6 +58,14 @@ jobs:
           persist-credentials: false
       - name: Verify short addresses and complete drinking-game navigation
         run: node --test tests/short-links.test.mjs
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Build locked Park video libraries
+        run: |
+          npm --prefix note/vendor ci --ignore-scripts --no-audit --no-fund
+          npm --prefix note/vendor run build
+          git diff --exit-code -- note/vendor/manifest.json
       - name: Stage only public website files
         shell: bash
         run: |
@@ -66,6 +75,7 @@ jobs:
           rsync -a \
             --exclude='/.git/' \
             --exclude='/.github/' \
+            --exclude='node_modules/' \
             --exclude='/tests/' \
             --exclude='/scripts/' \
             --exclude='/supabase/' \
@@ -79,7 +89,7 @@ jobs:
           node scripts/sync-section-versions.mjs "$site"
           node scripts/build-short-links.mjs "$site"
           touch "$site/.nojekyll"
-          for required in CNAME index.html world.html park/index.html note/index.html sw.js config.js version.json; do
+          for required in CNAME index.html world.html park/index.html note/index.html sw.js config.js version.json note/vendor/mediabunny-1.66.2.mjs note/vendor/mediabunny-aac-encoder-1.66.2.mjs note/vendor/tus-js-client-4.3.1.mjs; do
             if [[ ! -s "$site/$required" ]]; then
               echo "Missing required public file: $required" >&2
               exit 1

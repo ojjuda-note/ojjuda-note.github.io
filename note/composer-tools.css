@@ -628,18 +628,19 @@
 }
 
 .composer-tools-ready .compose-attachment #card-photo-attach::after {
-  content: "내 사진";
+  content: "사진·영상";
   font: 500 11px/1.4 var(--font-b, sans-serif);
 }
 
 .composer-tools-ready .compose-attachment #card-photo-attach.has-photo { border-style: solid; }
 .composer-tools-ready .compose-attachment #card-photo-attach.has-photo::after {
-  content: "사진 바꾸기";
+  content: "첨부 바꾸기";
   padding: 3px 6px;
   border-radius: 6px;
   background: #182a23b3;
   color: #fff;
 }
+.compose-media-status { margin: 4px 0 10px; color: var(--ink-2); font: 400 12px/1.5 var(--font-b, sans-serif); }
 
 .composer-tools-ready .compose-attachment #card-photo-remove {
   position: static;

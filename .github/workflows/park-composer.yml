@@ -5,6 +5,8 @@ on:
     paths:
       - 'note/**'
       - 'park/**'
+      - 'supabase/functions/park-video/**'
+      - 'supabase/migrations/*park*video*.sql'
       - 'groups/**'
       - 'shared/viewport/**'
       - 'features/wallet/ju-decorations.*'
@@ -12,6 +14,10 @@ on:
       - 'world.html'
       - 'tests/note-composer-settings.test.cjs'
       - 'tests/note-preview-photo.test.cjs'
+      - 'tests/note-card-video*.test.*'
+      - 'tests/card-video-upload.test.cjs'
+      - 'tests/park-video*.test.*'
+      - 'tests/generate-park-video-fixtures.mjs'
       - 'tests/park-*.test.cjs'
       - 'tests/mobile-viewport-ui.test.cjs'
       - 'tests/guest-access-ui.test.cjs'
@@ -24,6 +30,8 @@ on:
     paths:
       - 'note/**'
       - 'park/**'
+      - 'supabase/functions/park-video/**'
+      - 'supabase/migrations/*park*video*.sql'
       - 'groups/**'
       - 'shared/viewport/**'
       - 'features/wallet/ju-decorations.*'
@@ -31,6 +39,10 @@ on:
       - 'world.html'
       - 'tests/note-composer-settings.test.cjs'
       - 'tests/note-preview-photo.test.cjs'
+      - 'tests/note-card-video*.test.*'
+      - 'tests/card-video-upload.test.cjs'
+      - 'tests/park-video*.test.*'
+      - 'tests/generate-park-video-fixtures.mjs'
       - 'tests/park-*.test.cjs'
       - 'tests/mobile-viewport-ui.test.cjs'
       - 'tests/guest-access-ui.test.cjs'
@@ -58,6 +70,7 @@ jobs:
       GUEST_PROOF_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/guest
       GROUP_COMPOSER_QA_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/groups
       PARK_FONT_PROOF_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/fonts
+      PARK_VIDEO_PROOF_DIR: ${{ github.workspace }}/tests/artifacts/park-composer/videos
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -67,6 +80,16 @@ jobs:
           node-version: '22'
       - name: Install locked test dependencies
         run: npm --prefix tests ci --ignore-scripts
+      - name: Build pinned Park video dependencies
+        run: |
+          npm --prefix note/vendor ci --ignore-scripts
+          npm --prefix note/vendor run build
+      - name: Install video fixture encoder
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install --yes ffmpeg
+          fi
       - name: Check values, attachments, account boundaries and iframe lifecycle
         run: npm --prefix tests run test:park-composer:unit
       - name: Check group drafts, post types and existing form values
@@ -84,6 +107,12 @@ jobs:
       - name: Check the embedded Park toolbar and navigation
         if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
         run: node tests/park-note-chat-ui.test.cjs
+      - name: Check Park video playback and mobile overlap
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/note-card-video-ui.test.cjs
+      - name: Check real Park video resizing, audio and cancellation
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node tests/note-card-video-encode-ui.test.cjs
       - name: Check keyboard viewport and active text visibility
         if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
         run: node tests/mobile-viewport-ui.test.cjs
