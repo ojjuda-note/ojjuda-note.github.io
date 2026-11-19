@@ -27,6 +27,7 @@ on:
       - 'tests/pajang-account-toolbar.test.cjs'
       - 'tests/pajang-signal-purchase*.test.*'
       - 'tests/pajang-content-validation.test.cjs'
+      - 'tests/pajang-question-copy-db.test.cjs'
       - 'tests/all-service-word-rules*.test.*'
       - 'tests/all-service-word-masking*.test.*'
       - 'tests/fixtures/all-service-word-masking*'
@@ -96,6 +97,7 @@ on:
       - 'tests/pajang-account-toolbar.test.cjs'
       - 'tests/pajang-signal-purchase*.test.*'
       - 'tests/pajang-content-validation.test.cjs'
+      - 'tests/pajang-question-copy-db.test.cjs'
       - 'tests/all-service-word-rules*.test.*'
       - 'tests/all-service-word-masking*.test.*'
       - 'tests/fixtures/all-service-word-masking*'
@@ -166,6 +168,8 @@ jobs:
       - run: npm --prefix features/pajang ci --ignore-scripts --no-audit --no-fund
       - run: npm --prefix features/pajang run build
       - run: node --test tests/pajang-navigation.test.mjs tests/pajang-navigation-dom.test.cjs
+      - name: Check question copy, calendar assignments and safe reruns
+        run: node --test tests/pajang-question-copy-db.test.cjs
       - run: python -m unittest discover -s tests -p 'test_pajang_program_publish.py'
       - run: node --test tests/pajang-exchange-profile.test.cjs tests/pajang-exchange-height.test.mjs tests/pajang-private-exchange.test.mjs
       - run: node --test tests/pajang-account-toolbar.test.cjs tests/pajang-signal-purchase-db.test.mjs tests/pajang-signal-purchase-ui.test.cjs

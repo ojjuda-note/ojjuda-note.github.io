@@ -2,7 +2,7 @@ import {call, client, sameMember, requireMember, showGate, answeredRound} from '
 import {mountStation, prepareProgram} from './load-station.mjs?v=20261119-guest-account1';
 import {enhanceGuestGate} from './entry-design.mjs?v=20261119-invite-referral1';
 import {prepareLocation} from './location.mjs?v=20261119-kma-current1';
-import {themeFor, interests} from './questions.mjs?v=rounds1';
+import {themeFor, interests} from './questions.mjs?v=20261120-question-copy1';
 import {textInputMaxLength} from '../../shared/content/text-length.mjs';
 
 const $ = id => document.getElementById(id);
