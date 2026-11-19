@@ -2,7 +2,7 @@
   'use strict';
   const full = Math.PI * 2;
   const art = () => window.PartyRouletteArt;
-  const model = n => ({n, loaded:Math.floor(Math.random()*n), angle:0, step:'load', target:null,
+  const model = (n, chambers = n + 1) => ({n, chambers, loaded:Math.floor(Math.random()*chambers), angle:0, step:'load', target:null,
     side:0, turn:1, slot:0, message:''});
 
   function markup() {
@@ -35,17 +35,17 @@
       select.value=m.target===null?'':String(m.target);
     }
     if(!multi)label.remove();
-    for(let i=0;i<m.n;i++){
+    for(let i=0;i<m.chambers;i++){
       const hole=document.createElement('i');
-      const a=full*i/m.n-Math.PI/2;
+      const a=full*i/m.chambers-Math.PI/2;
       hole.style.left=(50+34*Math.cos(a))+'%';hole.style.top=(50+34*Math.sin(a))+'%';
-      hole.style.width=Math.min(25,133/m.n)+'%';
+      hole.style.width=Math.min(25,133/m.chambers)+'%';
       if(i===m.loaded)hole.className='loaded';
       wheel.append(hole);
     }
-    let detent = Math.floor(m.angle * m.n / full), lastClick = -Infinity;
+    let detent = Math.floor(m.angle * m.chambers / full), lastClick = -Infinity;
     function paint() {
-      const nextDetent = Math.floor(m.angle * m.n / full);
+      const nextDetent = Math.floor(m.angle * m.chambers / full);
       if (m.step === 'spin' && nextDetent !== detent && performance.now() - lastClick > 65) {
         window.PartyFX?.play('ratchet', 0);
         lastClick = performance.now();
@@ -91,7 +91,7 @@
       menu.textContent=m.menuOpen?'게임으로':'메뉴';
       label.hidden=!(multi && (load || (room.phase==='together'&&m.target===null&&!waiting)));
       title.textContent=load?'탄창 장전':spin?'탄창을 돌려요':wait?'준비 완료':waiting?'모두 누르면 공개돼요':countdown?countdown+'초 후 함께 눌러요':'방아쇠를 눌러요';
-      status.textContent=load?(multi?'내 번호는 '+room.players[room.me]+' · ':'')+m.n+'칸 중 한 칸에 한 발이 들어가요.':
+      status.textContent=load?(multi?'내 번호는 '+room.players[room.me]+' · ':'')+m.chambers+'칸 중 한 칸에 한 발이 들어가요.':
         spin?'위에서 아래로 쓸어 보세요. 원하는 만큼 돌릴 수 있어요.':
         wait?'준비한 사람 '+g.count+' / '+m.n+'명':
         multi?(waiting?'누른 사람 '+g.count+' / '+m.n+'명':m.target!==null?'내가 가리킨 상대 · '+room.players[m.target]:'상대를 선택해 주세요.'):
@@ -148,7 +148,7 @@
       if(busy||next.disabled)return;
       if(m.step==='load'){window.PartyFX?.play('load');permitTilt();m.step='spin';render();paint();swipe.focus();return;}
       if(m.step!=='spin')return;
-      halt();m.slot=((Math.round(-m.angle*m.n/full)%m.n)+m.n)%m.n;
+      halt();m.slot=((Math.round(-m.angle*m.chambers/full)%m.chambers)+m.chambers)%m.chambers;
       if(multi){busy=true;render();await options.send('roulette_ready',{target:m.target});busy=false;if(alive)render();}
       else{m.step='play';render();trigger.focus();}
     });
@@ -160,7 +160,7 @@
       }
       const hit=m.slot===m.loaded;pulse(hit);
       if(hit){art().flash(prop);status.textContent='팡!';timer=setTimeout(options.finish,380);return;}
-      m.slot=(m.slot+1)%m.n;m.turn++;m.message='불발! 가리킨 사람에게 휴대폰을 넘기세요.';
+      m.slot=(m.slot+1)%m.chambers;m.turn++;m.message='불발! 가리킨 사람에게 휴대폰을 넘기세요.';
       render();timer=setTimeout(()=>{busy=false;render();},650);
     });
     listen(wheel,'pointerdown',e=>{
