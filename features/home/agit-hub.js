@@ -259,7 +259,6 @@
         <span class="agit-park-copy">
           <span class="agit-park-brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a4.5 4.5 0 0 0-4.4 3.6A4.8 4.8 0 0 0 5 15.4a4.2 4.2 0 0 0 4 3.1h6a4.2 4.2 0 0 0 4-3.1 4.8 4.8 0 0 0-2.6-8.8A4.5 4.5 0 0 0 12 3Z"/><path d="M12 12v9m-4 0h8"/></svg><b>공원</b><small>일상을 나누는 곳</small></span>
           <strong class="agit-park-title">나누고 싶은 오늘,<br>공원에 남겨요.</strong>
-          <span class="agit-park-desc">사진 한 장, 짧은 한마디로 나누는 일상.</span>
           <span class="agit-park-open">공원 둘러보기 <span aria-hidden="true">→</span></span>
         </span>
       </a>
@@ -267,8 +266,7 @@
         <img class="agit-pajang-letter" src="https://ziezbdjofcugznowiuda.supabase.co/storage/v1/object/public/pajang-theme/c645eaa78edb29e31f2dce57f4fca38bb9a04754179e3e2ee9faa5e0ac66ea62/letter.webp" width="1450" height="967" alt="" loading="lazy" decoding="async">
         <span class="agit-pajang-copy">
           <span class="agit-pajang-brand"><span aria-hidden="true">♥</span><b>파장</b><small>19+ 회원 소개팅</small></span>
-          <strong class="agit-pajang-title">어떤 대답에 마음이 가나요?</strong>
-          <span class="agit-pajang-desc">내 답을 남기고, 더 알고 싶은 사람에게 신호를 보내요.</span>
+          <strong class="agit-pajang-title">어떤 대답에<br>마음이 가나요?</strong>
           <span class="agit-pajang-open">오늘의 질문 보기 <span aria-hidden="true">→</span></span>
         </span>
       </a>

@@ -5,6 +5,7 @@ const path = require('node:path');
 const {chromium} = require('playwright');
 const {execFileSync} = require('node:child_process');
 const previousRelease='71785aabf407ca239a27b4811e252a962a725717';
+const startupDelayMs=180;
 
 const feature = path.resolve(__dirname, '../features/pajang');
 const origin = 'https://pajang.test';
@@ -17,6 +18,33 @@ const rows = [
   {...base,peer:'a',name:'은하',interest:'book',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'동네 책방에 들러서 서로에게 어울리는 책을 한 권씩 골라주고 싶어요.'},
   {...base,peer:'b',name:'단비',interest:'walk',question:'쉬는 날을 같이 보낸다면 어디에 가고 싶나요?',body:'나란히 걸으면서 같은 풍경을 보고 웃을 때요.'},
 ];
+
+function checkStartupRequests(trace,version,scenario) {
+  if(scenario==='new')return;
+  const detail=version+' '+scenario+' '+JSON.stringify(trace);
+  function request(name) {
+    const matches=trace.filter(item=>item.name===name);
+    assert.equal(matches.length,1,'one '+name+' startup request: '+detail);
+    assert.ok(Number.isFinite(matches[0].end),'completed '+name+' startup request: '+detail);
+    return matches[0];
+  }
+  function overlaps(first,second) {
+    const a=request(first),b=request(second);
+    const duration=Math.min(a.end,b.end)-Math.max(a.start,b.start);
+    assert.ok(duration>startupDelayMs/2,first+' overlaps '+second+' by more than half a mocked wait: '+detail);
+  }
+  const manifest=request('manifest'),program=request('program');
+  assert.ok(program.start>=manifest.end,'program waits for its manifest: '+detail);
+  if(version==='before') {
+    assert.ok(manifest.start>=request('member:entry').end,'baseline authorizes the program after entry: '+detail);
+  } else {
+    const initial=scenario==='member-cold'?'member:entry':'member:state';
+    overlaps('identity',initial);
+    overlaps('manifest',initial);
+    overlaps('manifest','identity');
+    overlaps('program',scenario==='member-cold'?'member:state':'feed');
+  }
+}
 
 async function checkPeopleLayout(view) {
   const result=await view.locator('.radar-scope').evaluate(scope=>{
@@ -276,22 +304,27 @@ function clientFixture(hash) {
       }
     };
     if(sessionStorage.openTiming){
-      const wait=()=>new Promise(r=>setTimeout(r,180));
+      window.openRequests=[];
+      const delayed=async(name,read)=>{
+        const request={name,start:performance.now()};window.openRequests.push(request);
+        await new Promise(r=>setTimeout(r,${startupDelayMs}));
+        try{return await read();}finally{request.end=performance.now();}
+      };
       for(const [obj,key] of [[db.auth,'getUser'],[db.functions,'invoke']]){
-        const original=obj[key];obj[key]=async(...args)=>{await wait();return original(...args);};
+        const original=obj[key];obj[key]=(...args)=>delayed(key==='getUser'?'identity':'manifest',()=>original(...args));
       }
       const rpc=db.rpc;
       db.rpc=(name,...args)=>{
         if(name==='pajang_discovery_feed'){
           const read=rpc(name,...args);
-          return {abortSignal:async signal=>{await wait();return read.abortSignal(signal);}};
+          return {abortSignal:signal=>delayed('feed',()=>read.abortSignal(signal))};
         }
-        return wait().then(()=>rpc(name,...args));
+        return delayed(name==='pajang_member'?'member:'+args[0].p_action:name,()=>rpc(name,...args));
       };
       const from=db.storage.from;
       db.storage.from=(...args)=>{
         const bucket=from(...args),download=bucket.download;
-        bucket.download=async key=>{if(key.endsWith('station.js'))await wait();return download(key);};
+        bucket.download=key=>key.endsWith('station.js')?delayed('program',()=>download(key)):download(key);
         return bucket;
       };
       document.addEventListener('click',event=>{
@@ -840,6 +873,7 @@ function clientFixture(hash) {
         if(scenario!=='new')await page.waitForURL('**/station.html');
         await page.waitForFunction(()=>sessionStorage.openMs);
         timings.push(await page.evaluate(()=>Number(sessionStorage.openMs)));
+        checkStartupRequests(await page.evaluate(()=>window.openRequests),version,scenario);
         assert.equal(entryDocuments.length-opened,1,scenario+' opens just one Pajang document');
         const reads=await page.evaluate(()=>window.memberCalls.filter(action=>['entry','state'].includes(action)));
         assert.deepEqual(reads,scenario==='member'&&!openingBaseline?['state']:scenario==='new'?['entry']:['entry','state'],scenario+' uses only necessary member reads');
@@ -849,7 +883,11 @@ function clientFixture(hash) {
       console.log('PAJANG_OPEN_MS',version,scenario,JSON.stringify(timings),'median',openingTimes[version][scenario]);
     }
     }
-    for(const scenario of ['member-cold','member'])assert.ok(openingTimes.after[scenario]<openingTimes.before[scenario]-50,scenario+' overlaps startup waits');
+    // Both cold paths contain three 180ms waits: the current feed can be the final
+    // dependency after its program is ready. Check request overlap above rather
+    // than requiring a 50ms rendering gain at a requestAnimationFrame boundary.
+    assert.ok(openingTimes.after['member-cold']<openingTimes.before['member-cold'],'cold member entry is faster with overlapping startup requests');
+    assert.ok(openingTimes.after.member<openingTimes.before.member-50,'member entry overlaps startup waits');
     assert.ok(openingTimes.after.new<openingTimes.before.new+120,'first participation stays responsive');
     await page.goto(origin+project+'station.html?view=radar');
     const locationSwitch=page.getByRole('switch',{name:'내 위치 공개'});
