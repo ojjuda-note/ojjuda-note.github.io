@@ -1,0 +1,47 @@
+name: One Card rules, multiplayer and screen
+
+on:
+  push:
+    paths: ['games/onecard/**', 'supabase/functions/onecard/**', 'supabase/migrations/*_onecard_*.sql', 'tests/onecard-*', '.github/workflows/onecard.yml']
+  pull_request:
+    paths: ['games/onecard/**', 'supabase/functions/onecard/**', 'supabase/migrations/*_onecard_*.sql', 'tests/onecard-*', '.github/workflows/onecard.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onecard-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  onecard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix tests ci --ignore-scripts
+      - name: Verify shared rules and complete games
+        run: node --test tests/onecard-engine.test.mjs tests/onecard-online-client.test.mjs
+      - name: Verify authoritative multiplayer and permissions
+        run: node tests/onecard-online.test.cjs
+      - name: Verify five independent application screens
+        run: node tests/onecard-dom.test.cjs
+      - name: Install the test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Check desktop, mobile, smooth deal and multiplayer screens
+        run: node tests/onecard-ui.test.cjs
+      - name: Keep review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: onecard-screen-review
+          path: tests/onecard-artifacts/
+          if-no-files-found: ignore
+          retention-days: 7
