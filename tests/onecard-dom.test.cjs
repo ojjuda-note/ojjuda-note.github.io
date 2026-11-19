@@ -147,6 +147,8 @@ async function check(name, fn) {
       s.click('#onecard-button'); s.click('#hand [data-card="S-Q"]');
       await until(() => s.saved.revision === 1, 'reverse commits before the next computer turn');
       assert.equal(s.saved.direction, -1); assert.match(s.find('#direction').textContent, /반시계/);
+      assert.equal(s.find('#direction-orbit').dataset.direction, 'counterclockwise');
+      assert.equal(s.find('#direction-orbit').dataset.state, 'reduced', 'reduced motion keeps a static direction cue');
       assert.equal(s.saved.turn, count === 2 ? 1 : 4);
       assert.equal(s.find('#discard-card').dataset.card, 'S-Q');
       assert.equal(s.saved.players[0].calledOne, true);
@@ -154,6 +156,24 @@ async function check(name, fn) {
       await until(() => !s.find('#sort-number').disabled, 'reverse presentation fully settles');
       s.close();
     }
+  });
+
+  await check('direction orbit follows the board and pauses for the menu or a hidden page', async () => {
+    const s = await open({ saved: rig([['S-3', 'H-8'], ['D-5', 'C-6']]), animate: true });
+    const orbit = s.find('#direction-orbit');
+    assert.equal(orbit.hidden, true); assert.equal(orbit.dataset.state, 'idle');
+    assert.equal(orbit.getAttribute('aria-hidden'), 'true');
+    assert.equal(orbit.querySelectorAll('.orbit-marker').length, 3);
+    await resume(s);
+    assert.equal(orbit.hidden, false); assert.equal(orbit.dataset.state, 'running');
+    assert.equal(orbit.dataset.direction, 'clockwise');
+    s.click('#menu-button'); assert.equal(orbit.dataset.state, 'paused');
+    s.button('계속하기'); assert.equal(orbit.dataset.state, 'running');
+    s.visibility(true); assert.equal(orbit.dataset.state, 'paused');
+    s.visibility(false); assert.equal(orbit.dataset.state, 'running');
+    assert.equal(s.saved.revision, 0, 'decorative motion never takes a game turn');
+    s.click('#menu-button'); s.button('새 게임'); s.button('나가기');
+    assert.equal(orbit.hidden, true); assert.equal(orbit.dataset.state, 'idle');
   });
 
   await check('two matching reverse copies stay separate through sorting and each can be played', async () => {
@@ -246,6 +266,8 @@ async function check(name, fn) {
     s.click('#hand [data-card="S-3"]');
     await until(() => s.find('#sheet').open && s.find('#sheet-title').textContent.includes('승리'), 'result');
     assert.equal(s.saved.winnerId, 'me');
+    assert.equal(s.find('#direction-orbit').hidden, true, 'the orbit is removed when the game finishes');
+    assert.equal(s.find('#direction-orbit').dataset.state, 'idle');
     assert.match(s.find('#onecard-ranking-record').textContent, /연습 결과.*순위 제외/s);
     assert.equal(s.requests.length, 0, 'a guest practice result never submits a ranking outcome');
     assert.equal(new URL(s.find('#onecard-ranking-record a').href).searchParams.get('game'), 'onecard');
