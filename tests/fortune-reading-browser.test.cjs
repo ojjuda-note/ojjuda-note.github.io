@@ -135,20 +135,66 @@ const server = http.createServer((request, response) => {
     page.on('response', response => { if (response.status() >= 400) failed.push([response.status(), response.url()]); });
     await page.route('**/*', route => route.request().url().startsWith('http://127.0.0.1:') ? route.continue() : route.abort());
     await page.goto(url);
+    await page.waitForFunction(() => !document.querySelector('#summon-button').disabled);
+    await page.locator('#welcome-next').waitFor({ state: 'visible' });
+    await page.screenshot({ path: path.join(artifacts, 'tarot-welcome-mobile.png') });
+    const tarotEntryViews = {};
+    async function inspectTarotEntry(label, view) {
+      const selectors = view === 'welcome' ? '#welcome-title, #welcome-next'
+        : '#game-title, #topics button, #intro-context-select, #summon-button';
+      const geometry = await page.evaluate(selectors => ({
+        view: document.querySelector('#app').dataset.view,
+        horizontalOverflow: document.documentElement.scrollWidth > innerWidth + 1,
+        controls: [...document.querySelectorAll(selectors)].map(element => {
+          const box = element.getBoundingClientRect();
+          return { id: element.id || element.dataset.topic, visible: box.width > 0 && box.height > 0,
+            fits: box.left >= -1 && box.right <= innerWidth + 1 && element.scrollWidth <= element.clientWidth + 1 };
+        })
+      }), selectors);
+      assert.equal(geometry.view, view);
+      assert.equal(geometry.horizontalOverflow, false, label + ': the entry fits horizontally');
+      assert.ok(geometry.controls.every(control => control.visible && control.fits), label + ': headings and controls remain readable and unclipped');
+      const primary = page.locator(view === 'welcome' ? '#welcome-next' : '#summon-button');
+      await primary.scrollIntoViewIfNeeded();
+      assert.ok(await primary.evaluate(button => {
+        const box = button.getBoundingClientRect();
+        const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+        return box.width >= 44 && box.height >= 44 && box.top >= -1 && box.bottom <= innerHeight + 1
+          && (hit === button || button.contains(hit));
+      }), label + ': the primary button is reachable with a full touch target');
+      return geometry;
+    }
+    for (const viewport of [{ width: 320, height: 640 }, { width: 750, height: 750 }]) {
+      const label = `${viewport.width}x${viewport.height}`;
+      await page.setViewportSize(viewport);
+      const welcome = await inspectTarotEntry(label + ' welcome', 'welcome');
+      await page.locator('#welcome-next').click();
+      const topics = await inspectTarotEntry(label + ' topics', 'topics');
+      assert.equal(await page.locator('#app').getAttribute('data-phase'), 'intro', 'welcome and topic navigation do not start a draw');
+      tarotEntryViews[label] = { welcome, topics };
+      await page.locator('#tarot-back').click();
+      await page.locator('#welcome-next').waitFor({ state: 'visible' });
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator('#welcome-next').click();
     await page.locator('#summon-button:not([disabled])').waitFor();
     await page.locator('[data-topic="money"]').click();
     assert.equal(await page.locator('.tarot-price strong').textContent(), '1회 10쭈');
     await page.screenshot({ path: path.join(artifacts, 'tarot-intro-mobile.png') });
     await page.locator('#summon-button').click();
-    await page.waitForFunction(() => document.querySelector('#app').dataset.phase === 'discard');
+    await page.waitForFunction(() => document.querySelector('#app').dataset.phase === 'choosing');
     await page.screenshot({ path: path.join(artifacts, 'tarot-choice-mobile.png') });
     await page.locator('.card[data-index="0"]').click();
-    await page.waitForFunction(() => document.querySelector('#app').dataset.phase === 'discard');
+    await page.waitForFunction(() => document.querySelector('#app').dataset.phase === 'choosing');
     await page.locator('.card[data-index="1"]').click();
     await page.waitForFunction(() => document.querySelector('#app').dataset.phase === 'reading');
     const roles = ['지금의 문제', '현재 상황', '해결 방법과 결과'];
     const revealedNames = [];
     for (const [slot, index] of [2, 4, 3].entries()) {
+      await page.locator(`.card[data-index="${index}"]`).click();
+      await page.waitForFunction(phase => document.querySelector('#app').dataset.phase === phase, slot === 2 ? 'complete' : 'reading');
+      assert.equal(await page.locator('#reading-dialog').isVisible(), false, 'revealing a card keeps the visitor at the table');
+      assert.equal(await page.locator('#result-dialog').isVisible(), false, 'results wait for an explicit action');
       await page.locator(`.card[data-index="${index}"]`).click();
       await page.locator('#reading-dialog[open]').waitFor();
       assert.ok((await page.locator('#reading-position').textContent()).endsWith(roles[slot]));
@@ -172,8 +218,8 @@ const server = http.createServer((request, response) => {
       }
       await page.locator('#reading-dialog .modal-close').click();
     }
-    assert.equal(await page.locator('#reading-open span').textContent(), '종합 점괘 자세히 보기');
-    await page.locator('#reading-open').click();
+    assert.equal(await page.locator('#action-button').isVisible(), true);
+    await page.locator('#action-button').click();
     await page.locator('#result-dialog[open]').waitFor({ timeout: 15000 });
     assert.equal(await page.locator('#summary-tab-cards').getAttribute('aria-selected'), 'true');
     assert.deepEqual(await page.locator('#summary-tabs [role="tab"]').allTextContents(),
@@ -223,7 +269,7 @@ const server = http.createServer((request, response) => {
       assert.doesNotMatch(await page.locator(`#summary-panel-${group}`).textContent(), tarotExplanation,
         group + ': personal reading text has no card lesson');
     }
-    const tarotViews = {};
+    const tarotViews = { entry: tarotEntryViews };
     const domainCategories = [['self', 5], ['timeline', 5], ['solutions', 5], ['love', 7], ['family', 4], ['career', 5], ['study', 5], ['money', 5], ['wellbeing', 4], ['opportunities', 5]];
     const captureCategories = new Set(['self', 'love', 'money', 'wellbeing']);
     const overflowState = () => page.evaluate(() => ({ document: document.documentElement.scrollWidth > innerWidth, modal: document.querySelector('#result-dialog').scrollWidth > document.querySelector('#result-dialog').clientWidth }));
@@ -454,7 +500,7 @@ const server = http.createServer((request, response) => {
     for (const source of selectedSource.sections) assert.ok(copiedTarot.includes(source.body), 'copy includes all source interpretations even while their panel and disclosure are closed');
     for (const text of [selectedSource.record.body, selectedSource.record.action]) assert.equal(copiedTarot.split(text).length - 1, 1, 'the selected corpus body and advice are copied exactly once');
     await page.locator('#result-dialog .modal-close').click();
-    await page.locator('#reading-open').click();
+    await page.locator('#action-button').click();
     await page.locator('#result-dialog[open]').waitFor({ timeout: 15000 });
     assert.equal(await page.locator('#summary-tab-cards').getAttribute('aria-selected'), 'true', 'reopening resets the view to card introductions');
     assert.equal(await page.locator('#summary-panel-cards').isVisible(), true);
