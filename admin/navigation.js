@@ -12,7 +12,7 @@
       ['payment','settings','첫 방문·무료 충전 설정'] ] },
     { id:'content', label:'콘텐츠 관리', items:[
       ['content','cards','카드'],['content','messages','쪽지 관리'],
-      ['content','pajang-answers','파장 답변 관리'],['content','pajang-chats','파장 채팅 관리'],
+      ['content','pajang-answers','파장 답변 관리'],['content','pajang-questions','질문 제안'],['content','pajang-chats','파장 채팅 관리'],
       ['content','groups','그룹 관리'],['content','photo-stages','포토땅따먹기'],
       ['content','drinking-prompts','술게임 질문·단어 관리'],
       ['content','map','위치 지도'],['library','assets','자료 모아보기'] ] },

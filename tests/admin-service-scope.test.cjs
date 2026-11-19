@@ -55,7 +55,7 @@ test('every current tab is either shared by all services or dedicated to exactly
   const expected={
     agit:['messages','groups','photo-stages','drinking-prompts','fortune-purchases','trash-messages'],
     park:['cards','risk','map','note-users','spam','trash-cards'],
-    pajang:['pajang-answers','pajang-chats']
+    pajang:['pajang-answers','pajang-questions','pajang-chats']
   };
   const registered=new Set(Object.values(f.context.adminTabsByArea).flatMap(tabs=>tabs.map(([tab])=>tab)));
   const classified=new Set([...scope.common,...Object.values(scope.dedicated).flat()]);
@@ -100,7 +100,7 @@ for(const service of services){
 }
 
 test('direct links infer the owning service while an explicit different service resets the tab',()=>{
-  for(const [tab,service] of [['messages','agit'],['risk','park'],['pajang-chats','pajang']]){
+  for(const [tab,service] of [['messages','agit'],['risk','park'],['pajang-chats','pajang'],['pajang-questions','pajang']]){
     const f=fixture();assert.equal(f.context.restoreWorldAdminView(tab),true);
     assert.equal(f.context.worldAdminService,service);assert.equal(f.L.tab,tab);
   }

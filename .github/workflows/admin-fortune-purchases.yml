@@ -6,10 +6,14 @@ on:
     paths:
       - 'admin/**'
       - 'world.html'
+      - 'note/operations.js'
+      - 'note/operations.css'
       - 'supabase/migrations/*admin_fortune*'
       - 'supabase/migrations/*pajang_admin*'
+      - 'supabase/migrations/*pajang_question_suggestions_admin*'
       - 'tests/admin-fortune-purchases*'
       - 'tests/admin-pajang*'
+      - 'tests/fixtures/admin-pajang-question-suggestions.cjs'
       - 'tests/admin-service-scope.test.cjs'
       - 'tests/admin-navigation-ui.test.cjs'
       - 'tests/package*.json'
@@ -18,10 +22,14 @@ on:
     paths:
       - 'admin/**'
       - 'world.html'
+      - 'note/operations.js'
+      - 'note/operations.css'
       - 'supabase/migrations/*admin_fortune*'
       - 'supabase/migrations/*pajang_admin*'
+      - 'supabase/migrations/*pajang_question_suggestions_admin*'
       - 'tests/admin-fortune-purchases*'
       - 'tests/admin-pajang*'
+      - 'tests/fixtures/admin-pajang-question-suggestions.cjs'
       - 'tests/admin-service-scope.test.cjs'
       - 'tests/admin-navigation-ui.test.cjs'
       - 'tests/package*.json'
@@ -51,8 +59,10 @@ jobs:
         run: |
           node --check admin/fortune-purchases.js
           node --check admin/pajang-moderation.js
+          node --check note/operations.js
           node --test tests/admin-fortune-purchases*.test.cjs
           node --test tests/admin-pajang-moderation*.test.cjs tests/admin-service-scope.test.cjs tests/admin-back-navigation.test.cjs
+          node --test tests/admin-pajang-question-suggestions.test.cjs tests/admin-pajang-question-suggestions-db.test.cjs
           node tests/admin-menu-groups.test.cjs
           node tests/admin-current-features.test.cjs
           node tests/inline-scripts.test.cjs
@@ -66,6 +76,8 @@ jobs:
         run: node tests/admin-navigation-ui.test.cjs
       - name: Check Pajang moderation on mobile and desktop
         run: node tests/admin-pajang-ui.test.cjs
+      - name: Check Pajang question suggestions and administrator entry
+        run: node tests/admin-pajang-question-suggestions-ui.test.cjs
       - if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

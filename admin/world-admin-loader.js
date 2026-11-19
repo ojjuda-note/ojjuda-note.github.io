@@ -10,7 +10,7 @@
   "/admin/drinking-prompts.js?v=20261114-drinking-plus3001",
   "/admin/fortune-purchases.js?v=20261113-biorhythm-paid1",
   "/admin/groups.js?v=20261107-group-mod2","/admin/asset-library.js?v=20261111-asset-library1",
-  "/note/operations.js?v=20261021-admin1",
+  "/note/operations.js?v=20261119-question-admin1",
   "note/admin.js?v=20261117-park-washes1"
  ],styles=[
   "/admin/visitors.css?v=20261111-guest-popularity1",
