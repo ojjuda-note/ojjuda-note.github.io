@@ -3,7 +3,7 @@ import { TarotFX, TarotAudio } from './fx.js';
 import { TarotPayment, getTarotPrice } from './payment.js?v=20261114-tarot-copy1';
 import { createPersonalReading } from './personal-reading-ui.js?v=20261120-tarot-chapters1';
 import { createReadingReader } from './reading-reader.js?v=20261120-tarot-chapters1';
-import { buildSummaryPages, buildCardPages } from './reading-pages.js?v=20261120-tarot-chapters1';
+import { buildSummaryPages, buildCardPages } from './reading-pages.js?v=20261120-tarot-topics1';
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];

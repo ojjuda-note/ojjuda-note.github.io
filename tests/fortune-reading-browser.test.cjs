@@ -308,7 +308,8 @@ const server = http.createServer((request, response) => {
         const summary = getSummary(cards,'money');
         const report = contextId ? buildPersonalReading({cards,topicId:'money',contextId}) : null;
         return {pages:buildSummaryPages(summary,{cards,personalReport:report}),summary,record:getFortune('money',summary.source.pattern),
-          firstCardMeaning:getReading(cards[0],'money',0).meaning,personalCopy:report ? personalReadingCopyLines(report).filter(Boolean) : []};
+          firstCardMeaning:getReading(cards[0],'money',0).meaning,personalCopy:report ? personalReadingCopyLines(report).filter(Boolean) : [],
+          personalOptions:report?.comparison?.options || []};
       }, contextId);
     }
     const selectedSource = await summaryModel();
@@ -318,17 +319,52 @@ const server = http.createServer((request, response) => {
     await openReaderMenu();
     const targets = await page.locator('#result-reader-menu [data-reader-target]').evaluateAll(buttons => buttons.map(button => button.dataset.readerTarget));
     const chapterFirst = selectedSource.pages.filter((item,index,pages) => !index || item.chapterId !== pages[index - 1].chapterId);
-    assert.deepEqual([...targets].sort(), chapterFirst.map(item => item.id).sort(), 'every original chapter and appendix is directly reachable once');
+    assert.deepEqual([...targets].sort(), chapterFirst.map(item => item.id).sort(), 'each distinct topic and appendix has one contents entry');
     assert.equal(await page.locator('#result-context-select option').count(), 4, 'the money reading keeps its three scoped situations');
+    const sharedTopics = [
+      ['problem-problem-now','domains-core-problem'],
+      ['problem-solution','domains-problem-solving'],
+      ['problem-possible-outcome','domains-possible-results'],
+      ['timeline-past-flow','domains-past-influence'],
+      ['timeline-past-achievements','domains-past-achievements'],
+      ['timeline-future-change','domains-future-changes']
+    ];
+    for (const [canonical,source] of sharedTopics) {
+      const combined = selectedSource.pages.filter(item => item.chapterId === canonical);
+      assert.ok(combined.length && combined.every(item => item.sourceIds?.includes(canonical) && item.sourceIds.includes(source)),
+        'the shared chapter retains both original source identities');
+      assert.equal(combined[0].groupId, canonical.split('-')[0]);
+      assert.ok(!chapterFirst.some(item => item.chapterId === source), 'a repeated topic is not a second contents entry');
+    }
     const domainChapters = chapterFirst.filter(item => item.groupId.startsWith('domains:'));
-    assert.equal(domainChapters.length, 50);
-    for (const category of selectedSource.summary.groups.find(group => group.id === 'domains').categories) {
+    assert.equal(domainChapters.length, 44);
+    const domainSource = selectedSource.summary.groups.find(group => group.id === 'domains');
+    assert.equal(domainSource.sections.length, 50, 'the original fifty domain readings remain intact');
+    assert.equal(domainSource.categories.length, 10);
+    const mergedDomainIds = new Set(sharedTopics.map(([,source]) => source.slice('domains-'.length)));
+    for (const part of domainSource.sections) {
+      const sourceId = 'domains-' + part.id;
+      assert.ok(selectedSource.pages.some(item => item.chapterId === sourceId || item.sourceIds?.includes(sourceId)),
+        sourceId + ': each domain reading is reachable as a separate or shared chapter');
+    }
+    for (const category of domainSource.categories) {
       const chapters = domainChapters.filter(item => item.groupId === 'domains:' + category.id);
-      assert.equal(chapters.length, category.count);
+      assert.equal(chapters.length, domainSource.sections.filter(part => part.categoryId === category.id && !mergedDomainIds.has(part.id)).length);
+      assert.ok(chapters.length, 'each of the ten categories still has its own readings');
       await goToReaderPage(chapters[0], selectedSource.pages);
       await openReaderMenu();
       assert.equal(await page.locator('#result-reader-menu [aria-current="page"]').getAttribute('data-reader-target'), chapters[0].id);
     }
+    const mergedSolution = selectedSource.pages.filter(item => item.chapterId === 'problem-solution');
+    assert.ok(mergedSolution.length > 1, 'the shared solution stays readable across its complete pages');
+    await goToReaderPage(mergedSolution[0], selectedSource.pages);
+    await inspectReaderLayout('shared solution first page');
+    await page.screenshot({path:path.join(artifacts,'tarot-shared-topic-first-mobile.png'),animations:'disabled'});
+    await page.locator('#result-reader-next').click();
+    await inspectReaderPage(mergedSolution[1]);
+    await inspectReaderLayout('shared solution next page');
+    await page.screenshot({path:path.join(artifacts,'tarot-shared-topic-next-mobile.png'),animations:'disabled'});
+    tarotViews.reader.sharedTopic = {chapterId:'problem-solution',sources:sharedTopics.find(([id]) => id === 'problem-solution'),pages:mergedSolution.length};
     const firstStory = chapterFirst.find(item => item.groupId === 'problem');
     await goToReaderPage(firstStory, selectedSource.pages);
     await page.locator('#result-reader-body').focus();
@@ -380,8 +416,18 @@ const server = http.createServer((request, response) => {
       await inspectReaderPage(firstPersonal);
       assert.equal(await page.locator('#result-reader-menu').isVisible(), false, 'choosing a situation moves directly to its own first page');
       const personalPages = currentModel.pages.filter(item => item.groupId === 'personal');
-      assert.ok(personalPages.some(item => item.chapterId.includes('gain')) && personalPages.some(item => item.chapterId.includes('burden'))
-        && personalPages.some(item => item.chapterId.includes('prepare')), 'both choices retain gain, burden and preparation pages');
+      for (const option of currentModel.personalOptions) {
+        const chapterId = 'personal-' + option.id;
+        const choicePages = personalPages.filter(item => item.chapterId === chapterId);
+        assert.ok(choicePages.length, 'each personal choice has one contents chapter');
+        const choiceText = choicePages.flatMap(item => [...item.paragraphs,...(item.summaryLines || [])]).join('').replace(/\s/gu,'');
+        for (const [key,subtitle] of [['gain','이 선택의 장점'],['burden','감수할 부담'],['prepare','먼저 준비할 것']]) {
+          assert.ok(!personalPages.some(item => item.chapterId === chapterId + '-' + key), 'choice criteria do not repeat as separate topics');
+          assert.ok(choicePages.some(item => item.subtitle === subtitle), 'each criterion keeps its readable subtitle');
+          assert.ok(choiceText.includes(option[key].replace(/\s/gu,'')), 'the complete choice criterion remains on its pages');
+        }
+        await goToReaderPage(choicePages[0], currentModel.pages);
+      }
       await goToReaderPage(personalPages[personalPages.length - 1], currentModel.pages);
     }
     await page.evaluate(() => {
@@ -413,7 +459,7 @@ const server = http.createServer((request, response) => {
     await openReaderMenu();
     assert.equal(await page.locator('#result-context-select').inputValue(), 'money-agreement', 'reopening preserves the chosen situation');
     await page.locator('#result-reader-menu-toggle').click();
-    tarotViews.sourceInterpretation = {record:selectedSource.record.id,completeCopy:true,domainChapters:50,contexts:3,widths:[320,390,750]};
+    tarotViews.sourceInterpretation = {record:selectedSource.record.id,completeCopy:true,originalDomainReadings:50,domainChapters:44,sharedTopics:6,contexts:3,widths:[320,390,750]};
     if (tarotOnly) {
       assert.deepEqual(errors,[]);
       assert.deepEqual(failed,[]);

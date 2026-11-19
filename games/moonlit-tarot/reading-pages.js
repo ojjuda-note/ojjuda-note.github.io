@@ -1,9 +1,21 @@
-// Pagination only: every sentence comes from the existing reading data.
+// Presentation only: every sentence comes from the existing reading data.
 // Keeping this separate from the view also keeps copying independent of the current page.
 const strings = values => Array.isArray(values) ? values.filter(value => typeof value === 'string' && value.trim()) : [];
 const paragraphsOf = part => strings(part?.paragraphs).length
   ? strings(part.paragraphs)
   : strings(String(part?.body || part?.text || '').split(/\n\s*\n/u));
+const textKey = value => value.trim().replace(/\s+/gu, ' ');
+
+// These pairs answer the same question. Other card roles, periods and subjects
+// stay separate, even when their titles or advice sound similar.
+const sharedTopics = new Map([
+  ['problem-problem-now', 'domains-core-problem'],
+  ['problem-solution', 'domains-problem-solving'],
+  ['problem-possible-outcome', 'domains-possible-results'],
+  ['timeline-past-flow', 'domains-past-influence'],
+  ['timeline-past-achievements', 'domains-past-achievements'],
+  ['timeline-future-change', 'domains-future-changes']
+]);
 
 /** Split at sentence/word boundaries, retaining the original characters and order. */
 export function splitReaderParagraphs(paragraphs, maxChars = 240) {
@@ -39,18 +51,36 @@ export function splitReaderParagraphs(paragraphs, maxChars = 240) {
 
 function chapter(pages, group, part, index, extras = {}) {
   const chapterId = `${group.id}-${part.id || index}`;
+  const sources = extras.sources || [{ id: chapterId, part }];
   const common = {
     chapterId, chapterTitle: extras.chapterTitle || part.title,
     groupId: group.id, groupLabel: group.label,
-    title: part.title, subtitle: part.subtitle || '',
+    title: part.title, sourceIds: sources.map(source => source.id),
     kind: extras.kind || 'reading'
   };
-  const chunks = splitReaderParagraphs(paragraphsOf(part));
-  const summaryLines = strings(part.summaryLines);
+  const bodyKeys = sources.flatMap(source => paragraphsOf(source.part).map(textKey));
+  const seenParagraphs = new Set(), seenSummaries = new Set();
   const start = pages.length;
-  if (summaryLines.length) pages.push({ ...common, summaryLines, paragraphs: [], kind: 'summary' });
-  for (const paragraphs of chunks) pages.push({ ...common, paragraphs });
-  if (pages.length === start) pages.push({ ...common, paragraphs: [] });
+  for (const source of sources) {
+    const page = { ...common, sourceId: source.id, subtitle: source.part.subtitle || '' };
+    const paragraphs = paragraphsOf(source.part).filter(paragraph => {
+      const key = textKey(paragraph);
+      // Only remove whole, identical paragraphs within an explicitly joined topic.
+      // A standalone card reading keeps its original body character for character.
+      if (extras.dedupeParagraphs && seenParagraphs.has(key)) return false;
+      seenParagraphs.add(key);
+      return true;
+    });
+    const summaryLines = strings(source.part.summaryLines).filter(line => {
+      const key = textKey(line);
+      if (bodyKeys.some(body => body.includes(key)) || seenSummaries.has(key)) return false;
+      seenSummaries.add(key);
+      return true;
+    });
+    if (summaryLines.length) pages.push({ ...page, summaryLines, paragraphs: [], kind: 'summary' });
+    for (const chunk of splitReaderParagraphs(paragraphs)) pages.push({ ...page, paragraphs: chunk });
+  }
+  if (pages.length === start) pages.push({ ...common, sourceId: sources[0].id, subtitle: part.subtitle || '', paragraphs: [] });
   if (extras.art) pages[start].art = extras.art;
   if (extras.links?.length) pages[pages.length - 1].links = extras.links;
   for (let offset = start; offset < pages.length; offset++) pages[offset].id = `${chapterId}-${offset - start + 1}`;
@@ -94,14 +124,12 @@ function personalPages(pages, report) {
     });
     (comparison.options || []).forEach(option => {
       const title = `${option.key.toUpperCase()}. ${option.label}`;
-      chapter(pages, group, {
-        id: option.id, title, summaryLines: option.summaryLines,
-        paragraphs: []
+      const part = { id: option.id, title, summaryLines: option.summaryLines, paragraphs: [] };
+      const sources = [{ id: `${group.id}-${option.id}`, part }];
+      for (const [key, label] of [['gain', '이 선택의 장점'], ['burden', '감수할 부담'], ['prepare', '먼저 준비할 것']]) sources.push({
+        id: `${group.id}-${option.id}-${key}`, part: { subtitle: label, paragraphs: [option[key]] }
       });
-      for (const [key, label] of [['gain', '이 선택의 장점'], ['burden', '감수할 부담'], ['prepare', '먼저 준비할 것']]) {
-        chapter(pages, group, { id: `${option.id}-${key}`, title, subtitle: label, paragraphs: [option[key]] }, 0,
-          { chapterTitle: `${title} · ${label}` });
-      }
+      chapter(pages, group, part, 0, { sources });
     });
   }
   (report.followUps || []).forEach((part, index) => chapter(pages, group, part, index));
@@ -112,14 +140,23 @@ export function buildSummaryPages(summary, { cards = [], personalReport = null }
   const pages = [], notes = [];
   const groups = Array.isArray(summary.groups) && summary.groups.length ? summary.groups
     : [{ id: 'problem', label: '나의 이야기', sections: summary.sections || [] }];
+  const sections = new Map(groups.flatMap(group => (group.sections || []).map((part, index) =>
+    [`${group.id}-${part.id || index}`, part])));
+  const joined = new Map([...sharedTopics].filter(([primary, detail]) => sections.has(primary) && sections.has(detail)));
+  const joinedDetails = new Set(joined.values());
   for (const group of groups) {
     for (const [index, part] of (group.sections || []).entries()) {
+      const sourceId = `${group.id}-${part.id || index}`;
+      if (joinedDetails.has(sourceId)) continue;
+      const detailId = joined.get(sourceId);
+      const sources = detailId ? [{ id: sourceId, part }, { id: detailId, part: sections.get(detailId) }] : undefined;
       const category = group.categories?.find(item => item.id === part.categoryId);
       const target = category ? { id: `domains:${category.id}`, label: category.label } : group;
       // Chapter IDs remain tied to the source section, even when grouped by category in the menu.
       const start = pages.length;
       chapter(pages, { id: group.id, label: target.label }, part, index,
-        { art: group.id === 'cards' ? cards.find(card => card.id === part.cardId) : null });
+        { sources, dedupeParagraphs: !!detailId,
+          art: group.id === 'cards' ? cards.find(card => card.id === part.cardId) : null });
       for (let page = start; page < pages.length; page++) pages[page].groupId = target.id;
       if (group.id === 'cards') cardAppendix(notes, part, part.id || `card-${index}`, part.displayName || cards[index]?.name || part.title);
     }

@@ -127,6 +127,15 @@ async function page({ admin = false, fresh = false, topic = 'love', discarded = 
 
 
 const compact = value => String(value).replace(/\s/gu, '');
+const sharedTopicChapters = [
+  ['problem-problem-now', 'domains-core-problem'],
+  ['problem-solution', 'domains-problem-solving'],
+  ['problem-possible-outcome', 'domains-possible-results'],
+  ['timeline-past-flow', 'domains-past-influence'],
+  ['timeline-past-achievements', 'domains-past-achievements'],
+  ['timeline-future-change', 'domains-future-changes']
+];
+const carriesSource = (item, sourceId) => item.chapterId === sourceId || item.sourceIds?.includes(sourceId);
 const cardIds = view => view.receipt.openOrder.map(index => view.window.DECK.find(card => card.id === view.receipt.drawn[index]));
 const pageNode = (view, prefix = 'result') => view.$('#' + prefix + '-reader-page');
 const currentId = (view, prefix = 'result') => pageNode(view, prefix)?.dataset.pageId;
@@ -243,6 +252,46 @@ function assertCompleteCopy(view, copied, summary) {
     'each of the fifty numbered readings is copied once, even when it is not the current page');
   assert.equal(copied.split(summary.ritual).length - 1, 1);
 }
+function assertSharedTopics(pages, summary) {
+  for (const [canonical, source] of sharedTopicChapters) {
+    const combined = pages.filter(item => item.chapterId === canonical);
+    assert.ok(combined.length, canonical + ': the established general chapter remains reachable');
+    assert.equal(combined[0].groupId, canonical.split('-')[0], 'the shared topic keeps its original general-reading location');
+    assert.ok(combined.every(item => item.sourceIds?.includes(canonical) && item.sourceIds.includes(source)),
+      canonical + ': every page identifies both original sources');
+    assert.ok(!pages.some(item => item.chapterId === source), source + ': the duplicate topic is no longer a separate contents entry');
+  }
+  const domains = summary.groups.find(group => group.id === 'domains');
+  assert.equal(domains.sections.length, 50, 'all fifty original domain readings still exist');
+  assert.equal(domains.categories.length, 10, 'the ten original domain categories remain available');
+  for (const group of summary.groups) for (const part of group.sections) {
+    const sourceId = group.id + '-' + part.id;
+    const sourcePages = pages.filter(item => carriesSource(item, sourceId));
+    assert.ok(sourcePages.length, sourceId + ': the original reading is reachable, including shared topics');
+    const displayed = compact(sourcePages.flatMap(item => [...item.paragraphs, ...(item.summaryLines || [])]).join(''));
+    for (const paragraph of part.paragraphs) assert.ok(displayed.includes(compact(paragraph)), sourceId + ': original prose is retained');
+    const normalized = value => String(value).trim().replace(/\s+/gu, ' ');
+    const sourceParagraphs = part.paragraphs.map(normalized);
+    for (const line of part.summaryLines || []) if (sourceParagraphs.some(paragraph => paragraph.includes(normalized(line)))) {
+      assert.ok(!sourcePages.some(item => (item.summaryLines || []).some(summary => normalized(summary) === normalized(line))),
+        sourceId + ': a summary already fully present in its own body does not add a repeated page');
+    }
+  }
+}
+function assertChoiceChapters(pages, report) {
+  for (const option of report.comparison?.options || []) {
+    const id = 'personal-' + option.id;
+    const choice = pages.filter(item => item.chapterId === id);
+    assert.ok(choice.length, id + ': each choice has a single contents chapter');
+    const text = compact(choice.flatMap(item => [...item.paragraphs, ...(item.summaryLines || [])]).join(''));
+    for (const [key, subtitle] of [['gain', '이 선택의 장점'], ['burden', '감수할 부담'], ['prepare', '먼저 준비할 것']]) {
+      assert.ok(!pages.some(item => item.chapterId === id + '-' + key), 'the choice criterion stays inside its parent chapter');
+      assert.ok(choice.some(item => item.subtitle === subtitle), id + ': the criterion keeps its clear subtitle');
+      assert.ok(text.includes(compact(option[key])), id + ': the complete criterion text remains readable');
+    }
+    for (const line of option.summaryLines || []) assert.ok(text.includes(compact(line)), id + ': the choice summary is preserved');
+  }
+}
 
 (async () => {
   const completed = await page();
@@ -256,11 +305,17 @@ function assertCompleteCopy(view, copied, summary) {
   assert.equal(completed.$('#reading-dialog').open, false);
   assertPage(completed, pages[0]);
   assertAllPages(completed, pages);
+  assertSharedTopics(pages, summary);
   const domains = pages.filter(item => item.groupId.startsWith('domains'));
-  assert.equal(new Set(domains.map(item => item.chapterId)).size, 50, 'all fifty original domain readings remain reachable');
+  assert.equal(new Set(domains.map(item => item.chapterId)).size, 44, 'six shared topics live in their general chapters, leaving forty-four separate domain entries');
   const domainModel = summary.groups.find(group => group.id === 'domains');
+  const mergedDomainIds = new Set(sharedTopicChapters.map(([, source]) => source.slice('domains-'.length)));
   for (const category of domainModel.categories) {
-    const first = domains.find(item => item.groupId === 'domains:' + category.id);
+    const categoryPages = domains.filter(item => item.groupId === 'domains:' + category.id);
+    assert.equal(new Set(categoryPages.map(item => item.chapterId)).size,
+      domainModel.sections.filter(part => part.categoryId === category.id && !mergedDomainIds.has(part.id)).length,
+      category.id + ': category contents count only independent topics');
+    const first = categoryPages[0];
     assert.ok(first, category.id + ': the domain category has reader pages');
     jump(completed, first.id);
     assert.equal(pageNode(completed).dataset.groupId, 'domains:' + category.id);
@@ -578,6 +633,7 @@ function assertCompleteCopy(view, copied, summary) {
     cards: cardIds(personal), topicId: 'love', contextId: 'love-crush'
   });
   const personalPages = modelFor(personal, report);
+  assertChoiceChapters(personalPages, report);
   const firstPersonal = personalPages.find(item => item.groupId === 'personal');
   assert.ok(firstPersonal);
   assertPage(personal, firstPersonal);
