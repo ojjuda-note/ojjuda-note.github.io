@@ -18,6 +18,11 @@
 .support-choices{border:0;margin:0;padding:0;display:grid;gap:8px}.support-choices legend{margin-bottom:8px;font-size:13px;color:var(--ink-2)}
 .support-choices label,.support-block{display:flex;align-items:center;gap:8px;font-size:14px}.support-choices input,.support-block input{width:16px;height:16px;accent-color:var(--accent)}
 .support-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}.support-quote{margin:0;padding:10px 12px;border-radius:12px;background:var(--surface-2);font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
-.note-support-layer .support-account-footer{display:flex;justify-content:flex-end;margin-top:24px;padding-top:16px;border-top:1px solid var(--line);flex-shrink:0}
-.note-support-layer .support-account-footer .button{min-height:44px;padding:0 8px;border-color:transparent;border-radius:8px;background:transparent;color:var(--ink-2);font-size:13px}
-.note-support-layer .support-account-footer .button:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
+.note-support-layer .support-account-footer{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);flex-shrink:0}
+.note-support-layer .support-account-toggle{box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:10px 8px;color:var(--ink-2);font:500 13px/1.5 var(--font-b);list-style:none;cursor:pointer}
+.note-support-layer .support-account-toggle::-webkit-details-marker{display:none}
+.note-support-layer .support-account-toggle::after{content:"";flex:none;width:7px;height:7px;margin-right:3px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg)}
+.note-support-layer .support-account-disclosure[open]>.support-account-toggle::after{transform:rotate(225deg)}
+.note-support-layer .support-account-toggle[aria-disabled=true]{opacity:.6;cursor:wait}
+.note-support-layer .support-account-footer .button{min-height:44px;margin-top:8px;padding:0 8px;border-color:transparent;border-radius:8px;background:transparent;color:var(--ink-2);font-size:13px}
+.note-support-layer .support-account-toggle:focus-visible,.note-support-layer .support-account-footer .button:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
