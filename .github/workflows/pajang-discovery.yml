@@ -12,6 +12,7 @@ on:
       - 'supabase/functions/theme-weather/**'
       - 'tests/theme-browser-helpers.cjs'
       - 'tests/world-design-ui.test.cjs'
+      - 'tests/weather-current-browser.cjs'
       - 'tests/world-themes.test.cjs'
       - 'tests/theme-preview-smoke.test.cjs'
       - 'tests/*weather*.test.cjs'
@@ -42,6 +43,7 @@ on:
       - 'supabase/functions/theme-weather/**'
       - 'tests/theme-browser-helpers.cjs'
       - 'tests/world-design-ui.test.cjs'
+      - 'tests/weather-current-browser.cjs'
       - 'tests/world-themes.test.cjs'
       - 'tests/theme-preview-smoke.test.cjs'
       - 'tests/*weather*.test.cjs'
@@ -105,6 +107,8 @@ jobs:
         env:
           WORLD_DESIGN_PROOF_DIR: tests/artifacts/pajang-discovery/world-themes
         run: node tests/world-design-ui.test.cjs
+      - name: Check current location and weather transitions
+        run: node tests/weather-current-browser.cjs
       - name: Fetch previous release for opening comparisons
         run: git fetch --depth=1 origin 71785aabf407ca239a27b4811e252a962a725717
       - run: node tests/pajang-question-suggestion.test.cjs

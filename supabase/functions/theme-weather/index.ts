@@ -1,19 +1,71 @@
-// Read-only coarse weather summary with project publishable-key authentication.
-// Deploy with verify_jwt = false; this handler validates the apikey itself.
-// MET Norway Locationforecast: https://docs.api.met.no/doc/locationforecast/HowTO
-// CC BY 4.0: https://docs.api.met.no/doc/License.html
+// Current KMA observations for one 5 km weather grid. No forecast or fallback city.
+// Public source used by weather.go.kr's current-weather panel (app-index.js).
+// Deploy with verify_jwt = false; this handler validates the project apikey.
 type Kind = 'rain' | 'snow' | null;
-type RecordHour = { at: number; kind: Kind };
-type Forecast = { hours: RecordHour[]; updatedAt: number; cacheUntil: number; modified: string };
-const HOUR=3600000,MAX_BYTES=524288;
+type Observation = { kind: Kind; observedAt: number; cacheUntil: number };
+type Grid = { nx: number; ny: number };
+const MINUTE=60000,MAX_AGE=30*MINUTE,MAX_BYTES=262144;
 const ORIGINS=new Set(['https://ojjuda.kr','https://www.ojjuda.kr']);
-const UPSTREAM='https://api.met.no/weatherapi/locationforecast/2.0/compact';
-const AGENT='ojjuda.kr weather-theme/1.0 (+https://ojjuda.kr/features/guide/creator.html)';
-
-export function weatherKind(symbol: unknown): Kind {
-  if(typeof symbol!=='string'||symbol.length>80||!/^[a-z]+(?:_(?:day|night|polartwilight))?$/.test(symbol))throw Error('Invalid symbol');
-  if(symbol.includes('snow')||symbol.includes('sleet'))return 'snow';
-  return symbol.includes('rain')?'rain':null;
+const UPSTREAM='https://www.weather.go.kr/w/wnuri-fct2021/main/current-weather.do';
+const AGENT='ojjuda.kr current-weather/2.0 (+https://ojjuda.kr/features/guide/creator.html)';
+// KMA's Lambert conformal conic grid: 5 km, 30/60 degree standard parallels.
+const RAD=Math.PI/180,RE=6371.00877/5,OLON=126*RAD;
+const SN=Math.log(Math.cos(30*RAD)/Math.cos(60*RAD))/
+  Math.log(Math.tan(Math.PI/4+60*RAD/2)/Math.tan(Math.PI/4+30*RAD/2));
+const SF=Math.pow(Math.tan(Math.PI/4+30*RAD/2),SN)*Math.cos(30*RAD)/SN;
+const RO=RE*SF/Math.pow(Math.tan(Math.PI/4+38*RAD/2),SN);
+function validGrid(nx: number,ny: number){return Number.isInteger(nx)&&Number.isInteger(ny)&&nx>=1&&nx<=149&&ny>=1&&ny<=253;}
+export function toGrid(lat: number,lon: number): Grid {
+  if(!Number.isFinite(lat)||!Number.isFinite(lon)||lat<=-90||lat>=90||Math.abs(lon)>180)throw Error('Outside KMA grid');
+  const ra=RE*SF/Math.pow(Math.tan(Math.PI/4+lat*RAD/2),SN);
+  let angle=lon*RAD-OLON;
+  if(angle>Math.PI)angle-=2*Math.PI;
+  if(angle<-Math.PI)angle+=2*Math.PI;
+  const nx=Math.floor(ra*Math.sin(angle*SN)+43.5),ny=Math.floor(RO-ra*Math.cos(angle*SN)+136.5);
+  if(!validGrid(nx,ny))throw Error('Outside KMA grid');
+  return {nx,ny};
+}
+export function gridCenter({nx,ny}: Grid){
+  if(!validGrid(nx,ny))throw Error('Outside KMA grid');
+  const x=nx-43,y=RO-ny+136,radius=Math.hypot(x,y);
+  return {latitude:(2*Math.atan(Math.pow(RE*SF/radius,1/SN))-Math.PI/2)/RAD,
+    longitude:(Math.atan2(x,y)/SN+OLON)/RAD};
+}
+export function weatherKind(label: string,code: string): Kind {
+  // Codes and labels come from KMA's public current-weather legend. Do not
+  // interpret a missing icon, unknown code or mismatched label as dry weather.
+  const labels: Record<string,string[]>={
+    DB00:[''],DB01:['맑음'],DB02:['구름조금'],DB03:['구름많음'],DB04:['흐림'],
+    DB05:['비'],DB06:['비 또는 눈','비/눈'],DB07:['눈 또는 비'],DB08:['눈'],
+    DB09:['소나기'],DB10:['빗방울'],DB11:['빗방울/눈날림'],DB12:['눈날림']
+  };
+  if(!labels[code]?.includes(label))throw Error('Unknown current weather');
+  if(['DB06','DB07','DB08','DB11','DB12'].includes(code))return 'snow';
+  return ['DB05','DB09','DB10'].includes(code)?'rain':null;
+}
+export function observationTime(label: string,now: number){
+  const match=/^(\d{1,2})\.(\d{1,2})\.\([일월화수목금토]\)\s+(\d{2}):(\d{2})$/.exec(label.trim());
+  if(!match)throw Error('Missing observation time');
+  const [,m,d,h,min]=match.map(Number),year=new Date(now+9*60*MINUTE).getUTCFullYear();
+  if(m<1||m>12||d<1||d>31||h>23||min>59)throw Error('Invalid observation time');
+  const candidates=[year-1,year,year+1].map(y=>{
+    const local=Date.UTC(y,m-1,d,h,min),date=new Date(local);
+    return date.getUTCMonth()===m-1&&date.getUTCDate()===d?local-9*60*MINUTE:NaN;
+  }).filter(at=>Number.isFinite(at)&&at<=now+2*MINUTE&&now-at<=MAX_AGE);
+  if(!candidates.length)throw Error('Stale observation');
+  return Math.max(...candidates);
+}
+export function parseObservation(html: string,now: number): Observation {
+  if(html.length>MAX_BYTES)throw Error('Oversized observation');
+  const timeBlock=/<div\b[^>]*class=["'][^"']*\bodam-updated\b[^"']*["'][^>]*>([\s\S]*?)<\/div>/i.exec(html)?.[1];
+  const timeLabel=timeBlock&&/<a\b[^>]*class=["'][^"']*\bupdated-at\b[^"']*["'][^>]*>\s*<span[^>]*>([^<]+)<\/span>/i.exec(timeBlock)?.[1];
+  const weatherBlock=/<div\b[^>]*class=["'][^"']*\bcmp-cur-weather\b[^"']*\bwbg\b[^"']*["'][^>]*>([\s\S]*?)<\/div>/i.exec(html)?.[1];
+  const iconBlock=weatherBlock&&/<li\b[^>]*class=["'][^"']*\bw-icon\b[^"']*["'][^>]*>([\s\S]*?)<\/li>/i.exec(weatherBlock)?.[1];
+  const icon=iconBlock&&/<span\b[^>]*class=["'][^"']*\bwic\s+(DB\d{2})\b[^"']*["'][^>]*>([^<>]*)<\/span>/i.exec(iconBlock);
+  if(!timeLabel||!icon)throw Error('Missing current observation');
+  const label=icon[2].replace(/&nbsp;|&#160;/g,' ').trim();
+  const observedAt=observationTime(timeLabel,now),kind=weatherKind(label,icon[1]);
+  return {kind,observedAt,cacheUntil:Math.min(now+2*MINUTE,observedAt+MAX_AGE)};
 }
 function configuredKeys(): string[]{
   try{
@@ -32,41 +84,31 @@ function keyMatches(received: string,keys: string[]){
   }
   return matched!==0;
 }
-function cacheDeadline(headers: Headers,now: number){
-  const expires=Date.parse(headers.get('expires')||'');
-  return Number.isFinite(expires)&&expires>now?Math.min(expires,now+6*HOUR):now+30*60*1000;
-}
-function parseForecast(value: any,headers: Headers,now: number): Forecast {
-  const updatedAt=Date.parse(value?.properties?.meta?.updated_at||'');
-  const series=value?.properties?.timeseries;
-  if(!Number.isFinite(updatedAt)||updatedAt>now+10*60*1000||now-updatedAt>12*HOUR||!Array.isArray(series)||series.length>1000)throw Error('Stale forecast');
-  const hours: RecordHour[]=[];
-  for(const row of series){
-    const at=Date.parse(row?.time||'');
-    const symbol=row?.data?.next_1_hours?.summary?.symbol_code;
-    if(!Number.isFinite(at)||at<now-HOUR||at>now+8*HOUR||typeof symbol!=='string')continue;
-    hours.push({at,kind:weatherKind(symbol)});
+function requestedGrid(url: URL): Grid {
+  const p=url.searchParams;
+  if(url.search.length>80)throw Error('Invalid grid');
+  if(p.has('nx')||p.has('ny')){
+    if([...p.keys()].some(k=>k!=='nx'&&k!=='ny')||p.getAll('nx').length!==1||p.getAll('ny').length!==1||
+      !/^\d{1,3}$/.test(p.get('nx')||'')||!/^\d{1,3}$/.test(p.get('ny')||''))throw Error('Invalid grid');
+    const nx=Number(p.get('nx')),ny=Number(p.get('ny'));
+    if(!validGrid(nx,ny))throw Error('Invalid grid');
+    return {nx,ny};
   }
-  if(!hours.length)throw Error('Missing hourly forecast');
-  return {hours,updatedAt,cacheUntil:cacheDeadline(headers,now),modified:headers.get('last-modified')||''};
+  // Keep already-open clients working while new pages switch to grid-only requests.
+  const lat=p.get('lat')||'',lon=p.get('lon')||'';
+  if([...p.keys()].some(k=>k!=='lat'&&k!=='lon')||p.getAll('lat').length!==1||p.getAll('lon').length!==1||
+    !/^-?\d{1,3}(?:\.\d)?$/.test(lat)||!/^-?\d{1,3}(?:\.\d)?$/.test(lon))throw Error('Invalid grid');
+  return toGrid(Number(lat),Number(lon));
 }
-function summarize(forecast: Forecast,now: number){
-  if(now-forecast.updatedAt>12*HOUR)throw Error('Stale forecast');
-  // Prefer the current hourly interval. A just-published first period may start
-  // a few minutes ahead; never reuse an expired or distant forecast period.
-  const row=forecast.hours.filter(h=>h.at<=now&&h.at+HOUR>now).sort((a,b)=>b.at-a.at)[0]||
-    forecast.hours.filter(h=>h.at>now&&h.at-now<=15*60*1000).sort((a,b)=>a.at-b.at)[0];
-  if(!row)throw Error('No current forecast');
-  return {kind:row.kind,expiresAt:Math.min(now+15*60*1000,row.at+HOUR)};
+function summarize(value: Observation,now: number){
+  if(value.observedAt>now+2*MINUTE||now-value.observedAt>=MAX_AGE)throw Error('Stale observation');
+  return {kind:value.kind,expiresAt:Math.min(now+10*MINUTE,value.observedAt+MAX_AGE),source:'kma',observedAt:value.observedAt};
 }
-
 export function createHandler({fetch:request=fetch,now=Date.now,publishableKeys=configuredKeys()}: {fetch?: typeof fetch;now?:()=>number;publishableKeys?:string[]}={}){
-  const cache=new Map<string,Forecast>();
-  const inflight=new Map<string,Promise<Forecast>>();
-  const failedUntil=new Map<string,number>();
+  const cache=new Map<string,Observation>(),inflight=new Map<string,Promise<Observation>>(),failedUntil=new Map<string,number>();
   const upstreamStarts: number[]=[];
-  async function forecastFor(lat: string,lon: string){
-    const key=lat+','+lon,time=now(),previous=cache.get(key);
+  async function currentFor(grid: Grid){
+    const key=grid.nx+','+grid.ny,time=now(),previous=cache.get(key);
     if(previous&&previous.cacheUntil>time)return previous;
     if((failedUntil.get(key)||0)>time)throw Error('Weather unavailable');
     if(inflight.has(key))return inflight.get(key)!;
@@ -74,27 +116,21 @@ export function createHandler({fetch:request=fetch,now=Date.now,publishableKeys=
     if(inflight.size>=8||upstreamStarts.length>=10)throw Error('Weather busy');
     upstreamStarts.push(time);
     const job=(async()=>{
-      const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);
+      const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),6500);
       try{
-        const headers: Record<string,string>={'User-Agent':AGENT,Accept:'application/json'};
-        if(previous?.modified)headers['If-Modified-Since']=previous.modified;
-        const response=await request(UPSTREAM+'?lat='+lat+'&lon='+lon,{headers,signal:controller.signal,redirect:'error'});
-        let forecast: Forecast;
-        if(response.status===304&&previous){forecast={...previous,cacheUntil:cacheDeadline(response.headers,now())};}
-        else{
-          if(!response.ok)throw Error('Weather unavailable');
-          const declared=Number(response.headers.get('content-length')||0);
-          if(declared>MAX_BYTES)throw Error('Oversized forecast');
-          const raw=await response.text();
-          if(raw.length>MAX_BYTES)throw Error('Oversized forecast');
-          forecast=parseForecast(JSON.parse(raw),response.headers,now());
-        }
-        summarize(forecast,now());
+        const center=gridCenter(grid),url=new URL(UPSTREAM);
+        url.search=new URLSearchParams({lat:center.latitude.toFixed(6),lon:center.longitude.toFixed(6),unit:'m/s',aws:'N'}).toString();
+        const response=await request(url.toString(),{headers:{'User-Agent':AGENT,Accept:'text/html'},signal:controller.signal,redirect:'error'});
+        if(!response.ok)throw Error('Weather unavailable');
+        const declared=Number(response.headers.get('content-length')||0);
+        if(declared>MAX_BYTES)throw Error('Oversized observation');
+        const value=parseObservation(await response.text(),now());
+        summarize(value,now());
         if(cache.size>=128&&!cache.has(key))cache.delete(cache.keys().next().value!);
-        cache.set(key,forecast);failedUntil.delete(key);return forecast;
+        cache.set(key,value);failedUntil.delete(key);return value;
       }catch(error){
         if(failedUntil.size>=128)failedUntil.delete(failedUntil.keys().next().value!);
-        failedUntil.set(key,now()+60000);throw error;
+        failedUntil.set(key,now()+MINUTE);throw error;
       }finally{clearTimeout(timer);inflight.delete(key);}
     })();
     inflight.set(key,job);return job;
@@ -110,16 +146,12 @@ export function createHandler({fetch:request=fetch,now=Date.now,publishableKeys=
     if(req.method!=='GET'){headers.set('Allow','GET, OPTIONS');return new Response('{"error":"Method not allowed"}',{status:405,headers});}
     if(!publishableKeys.length)return new Response('{"error":"Weather unavailable"}',{status:503,headers});
     if(!keyMatches(req.headers.get('apikey')||'',publishableKeys))return new Response('{"error":"Unauthorized"}',{status:401,headers});
-    const url=new URL(req.url),params=url.searchParams;
-    const lat=params.get('lat')||'',lon=params.get('lon')||'';
-    if(url.search.length>80||[...params.keys()].some(k=>k!=='lat'&&k!=='lon')||params.getAll('lat').length!==1||params.getAll('lon').length!==1||
-      !/^-?\d{1,3}(?:\.\d)?$/.test(lat)||!/^-?\d{1,3}(?:\.\d)?$/.test(lon)||Math.abs(Number(lat))>90||Math.abs(Number(lon))>180)
-      return new Response('{"error":"Coarse latitude and longitude required"}',{status:400,headers});
+    let grid: Grid;
+    try{grid=requestedGrid(new URL(req.url));}catch{return new Response('{"error":"KMA weather grid required"}',{status:400,headers});}
     try{
-      const forecast=await forecastFor(Number(lat).toFixed(1),Number(lon).toFixed(1));
-      const summary=summarize(forecast,now());
-      headers.set('Cache-Control','public, max-age='+Math.max(0,Math.floor((summary.expiresAt-now())/1000)));
-      headers.set('Link','<https://www.met.no/>; rel="author", <https://creativecommons.org/licenses/by/4.0/>; rel="license"');
+      const summary=summarize(await currentFor(grid),now());
+      headers.set('Cache-Control','public, max-age='+Math.max(0,Math.min(120,Math.floor((summary.expiresAt-now())/1000))));
+      headers.set('Link','<https://www.weather.go.kr/w/index.do>; rel="author"');
       return new Response(JSON.stringify(summary),{headers});
     }catch{return new Response('{"error":"Weather unavailable"}',{status:503,headers});}
   };
