@@ -13,11 +13,17 @@ function projectRoom(result, userId, now) {
   return {
     id: r.id, code: r.code, room_no: r.room_no, title: r.title, hostId: r.host_id, myId: userId,
     seat: r.state ? r.state.players.findIndex(player => player.id === userId) : r.members.indexOf(userId),
-    capacity: 5, status: r.status,
+    capacity: 5, mode: r.mode === 'solo' ? 'solo' : 'multiplayer', status: r.status,
     version: r.version, round: r.round, deadline: r.deadline, serverTime: now,
     // Room membership survives losing a round, so eliminated members can rematch.
     players: r.members.map((id, i) => ({ id, name: r.names[i], active: !r.departed[i] })),
     game: r.state ? projectState(r.state, userId) : null,
+    // A receipt comes only from the committed database result for this viewer.
+    ranking: result.ranking?.recorded === true ? {
+      recorded: true, won: result.ranking.won === true,
+      currentStreak: result.ranking.currentStreak, bestStreak: result.ranking.bestStreak,
+      month: result.ranking.month, achievedAt: result.ranking.achievedAt,
+    } : null,
   };
 }
 
@@ -44,6 +50,7 @@ async function readBody(request) {
     (!body.options || typeof body.options !== 'object' || Array.isArray(body.options))) throw Error('bad_request');
   if (body.action === 'create' && body.options?.capacity !== undefined && ![1, 2, 3, 4, 5].includes(body.options.capacity)) throw Error('bad_request');
   if (body.action === 'create' && body.options?.title !== undefined && typeof body.options.title !== 'string') throw Error('bad_request');
+  if (body.action === 'create' && body.options?.mode !== undefined && !['solo', 'multiplayer'].includes(body.options.mode)) throw Error('bad_request');
   if (body.action === 'join' && (typeof body.code !== 'string' || !/^[a-f0-9]{8}$/i.test(body.code))) throw Error('bad_request');
   if (body.action === 'move') {
     const command = body.command;
@@ -142,7 +149,7 @@ export function createHandler({ env, fetchImpl = fetch, now = Date.now,
             const player = state.players.find(candidate => candidate.id === user.id);
             if (!player) throw Error('invalid_move');
             player.bot = true;
-            state.direction = 1;
+            state.direction = state.direction === -1 ? -1 : 1;
             state.revision++;
             state.lastEvents = [{ id: `${state.revision}:0`, type: 'takeover', playerId: user.id }];
           }
@@ -152,7 +159,8 @@ export function createHandler({ env, fetchImpl = fetch, now = Date.now,
         }
       } else result = await rpc(body.action, { p_room: body.room_id ?? null, p_code: body.code ?? null,
         p_request: body.request_id ?? null, p_options: body.action === 'create' ? { capacity: 5,
-          ...(body.options?.title !== undefined ? { title: body.options.title } : {}) } : {} });
+          ...(body.options?.title !== undefined ? { title: body.options.title } : {}),
+          ...(body.options?.mode !== undefined ? { mode: body.options.mode } : {}) } : {} });
       if (body.action === 'leave') return reply({ ok: true, userId: user.id, room: null });
       // Return a mutation's own event before any later computer action. Only a
       // subsequent read/resume/join advances the next due turn.

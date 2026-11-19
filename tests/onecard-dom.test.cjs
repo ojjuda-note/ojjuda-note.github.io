@@ -67,6 +67,9 @@ async function check(name, fn) {
       assert.ok(!/[♠♥♦♣]|JOKER|ACE|KING|QUEEN|스페이드|하트|다이아|클로버|조커|에이스|잭|퀸|킹/.test(node.textContent + node.getAttribute('aria-label')), `${id} has no playing-card terminology`);
     }
     const back = s.w.__cards.createCard('X-R', { faceDown: true });
+    const faces = engine.makeDeck().map(engine.cardInfo);
+    assert.equal(faces.filter(card => card.displayKind === 'reverse').length, 4);
+    assert.deepEqual([...new Set(faces.filter(card => card.displayKind === 'number').map(card => Number(card.displayValue)))].sort((a, b) => a - b), [1, 2, 3, 4, 5, 6, 7]);
     assert.equal(back.dataset.cardId, undefined); assert.equal(back.dataset.color, undefined); assert.equal(back.dataset.kind, undefined);
     assert.equal(back.getAttribute('aria-label'), '뒤집힌 카드');
   });
@@ -113,7 +116,7 @@ async function check(name, fn) {
     await s.finishAnimations();
   });
 
-  await check('old two-to-four seat saves stay stored, and five-seat reverse saves resume clockwise', async () => {
+  await check('old two-to-four seat saves stay stored, and five-seat practice saves retain their reverse direction', async () => {
     for (const count of [2, 3, 4]) {
       const state = engine.createGame({ players: Array.from({ length: count }, (_, i) => ({ id: i ? `bot-${i}` : 'me', bot: i > 0 })), seed: count });
       const s = await open({ saved: { state, opponents: count - 1 } });
@@ -123,7 +126,30 @@ async function check(name, fn) {
     }
     const saved = rig([['S-3', 'H-8'], ['D-5', 'C-6']]); saved.state.direction = -1;
     const s = await open({ saved }); await resume(s);
-    assert.equal(s.saved.direction, 1); assert.match(s.find('#direction').textContent, /시계/);
+    assert.equal(s.saved.direction, -1); assert.match(s.find('#direction').textContent, /반시계/);
+    assert.match(s.find('#game-record-mode').textContent, /연습.*순위 제외/);
+  });
+
+  await check('a visible reverse card changes direction and passes to the other survivor when two remain', async () => {
+    for (const count of [5, 2]) {
+      const saved = rig([['S-Q', 'D-5'], ['H-Q', 'S-6']]);
+      if (count === 2) for (const player of saved.state.players.slice(2)) {
+        saved.state.deck.push(...player.hand); player.hand = []; player.active = false;
+      }
+      const s = await open({ saved }); await resume(s); s.visibility(true);
+      const card = s.find('#hand [data-card="S-Q"]');
+      assert.match(card.getAttribute('aria-label'), /방향 바꾸기/);
+      assert.equal(card.dataset.kind, 'reverse'); assert.ok(card.querySelector('svg'));
+      s.click('#onecard-button'); s.click('#hand [data-card="S-Q"]');
+      await until(() => s.saved.revision === 1, 'reverse commits before the next computer turn');
+      assert.equal(s.saved.direction, -1); assert.match(s.find('#direction').textContent, /반시계/);
+      assert.equal(s.saved.turn, count === 2 ? 1 : 4);
+      assert.equal(s.find('#discard-card').dataset.card, 'S-Q');
+      assert.equal(s.saved.players[0].calledOne, true);
+      assert.equal(s.find('#draw-button').disabled, true, 'reverse never repeats my turn with two survivors');
+      await until(() => !s.find('#sort-number').disabled, 'reverse presentation fully settles');
+      s.close();
+    }
   });
 
   await check('declare and bot progress integrate with the actual engine', async () => {
@@ -187,6 +213,9 @@ async function check(name, fn) {
     s.click('#hand [data-card="S-3"]');
     await until(() => s.find('#sheet').open && s.find('#sheet-title').textContent.includes('승리'), 'result');
     assert.equal(s.saved.winnerId, 'me');
+    assert.match(s.find('#onecard-ranking-record').textContent, /연습 결과.*순위 제외/s);
+    assert.equal(s.requests.length, 0, 'a guest practice result never submits a ranking outcome');
+    assert.equal(new URL(s.find('#onecard-ranking-record a').href).searchParams.get('game'), 'onecard');
     assert.equal(s.find('#draw-button').disabled, true);
     assert.ok(s.find('#sheet.game-result-dialog .game-result-card'));
     assert.equal(s.all('.result-players > div').length, 5);
@@ -308,6 +337,59 @@ async function check(name, fn) {
     assert.equal(s.saved.players[0].hand.length, 7);
   });
 
+  await check('an unresolved or failed login never silently starts ranked-looking practice', async () => {
+    let resolveAuth;
+    const authWait = new Promise(resolve => { resolveAuth = resolve; });
+    const waiting = await open({ authWait }); waiting.click('#solo-start');
+    assert.equal(waiting.find('#solo-start').disabled, true);
+    assert.equal(waiting.find('#onecard-app').hidden, true); assert.equal(waiting.saved, undefined);
+    assert.equal(waiting.requests.length, 0);
+    resolveAuth(); await until(() => waiting.saved?.players.length === 5 && !waiting.find('#draw-button').disabled, 'confirmed guest may practice');
+    assert.match(waiting.find('#game-record-mode').textContent, /연습.*순위 제외/);
+    const failed = await open({ authError: new Error('SDK connection failed') }); failed.click('#solo-start');
+    await until(() => !failed.find('#practice-start').hidden, 'explicit practice after unavailable login');
+    assert.equal(failed.saved, undefined); assert.equal(failed.find('#onecard-app').hidden, true);
+    assert.equal(failed.requests.length, 0);
+    failed.click('#practice-start'); await until(() => !failed.find('#draw-button').disabled, 'explicit unranked practice');
+    assert.match(failed.find('#game-record-mode').textContent, /연습.*순위 제외/);
+  });
+
+  await check('logged-in computer games save one server receipt and resume a finished result before rematching', async () => {
+    const ranked = await fixture(), owned = [];
+    try {
+      const actor = ranked.users[0];
+      const s = await open({ server: ranked, actor }); owned.push(s); s.click('#solo-start');
+      await until(() => s.client?.room?.status === 'active' && s.all('#hand .hand-card').length === 7, 'private server solo begins');
+      assert.equal(s.client.room.mode, 'solo'); assert.equal(s.client.room.players.length, 1);
+      assert.equal(s.client.room.game.players.filter(player => player.bot).length, 4);
+      assert.equal(s.find('#lobby').hidden, true, 'computer play starts without a public waiting room');
+      assert.match(s.find('#game-record-mode').textContent, /연승 기록 경기/);
+      assert.equal(s.saved, undefined, 'a ranked hand is not persisted as a client-authoritative practice save');
+      assert.equal(s.requests.find(request => request.action === 'create').options.mode, 'solo');
+      const id = s.client.room.id;
+      await ranked.stageWin(id, actor); await s.poll();
+      await until(() => s.find('#my-count').textContent === '1장' && !s.find('#draw-button').disabled, 'last-card server turn');
+      s.click('#hand [data-card="S-3"]');
+      await until(() => s.find('#sheet').open && s.find('#onecard-ranking-record')?.textContent.includes('저장 완료') && !s.client.busy, 'committed ranking receipt');
+      assert.match(s.find('#onecard-ranking-record').textContent, /현재 1연승.*이번 달 최고 1연승/s);
+      assert.equal(s.client.room.ranking.won, true);
+      await s.poll(); await s.poll();
+      assert.equal((await ranked.db.query('select count(*)::int n from ojjuda_onecard_internal.results')).rows[0].n, 1);
+      await s.settle(); s.close();
+      const restored = await open({ server: ranked, actor }); owned.push(restored); restored.click('#solo-start');
+      await until(() => restored.find('#sheet').open && restored.find('#onecard-ranking-record')?.textContent.includes('저장 완료'), 'finished private round resumes its result');
+      assert.equal(restored.client.room.id, id); assert.equal(restored.client.room.round, 1);
+      assert.equal(restored.requests.filter(request => request.action === 'start').length, 0, 'refresh never skips an unseen result');
+      restored.button('다시 한 판');
+      await until(() => restored.client.room.round === 2 && !restored.find('#sheet').open && restored.all('#hand .hand-card').length === 7, 'explicit rematch');
+      assert.equal(restored.client.room.ranking, null);
+      assert.equal((await ranked.db.query('select count(*)::int n from ojjuda_onecard_internal.results')).rows[0].n, 1);
+      const privateCards = restored.all('#hand .hand-card');
+      restored.changeActor(ranked.users[1]); await until(() => restored.find('#onecard-app').dataset.view === 'welcome', 'account switch clears the ranked session');
+      assert.equal(restored.find('#hand').children.length, 0); assert.ok(privateCards.every(node => !node.isConnected));
+    } finally { for (const s of owned) s.close(); await ranked.close(); }
+  });
+
   await check('five real app/client screens create, join, start, synchronize and rematch', async () => {
     server = await fixture();
     const ids = server.users.slice(0, 5), group = [];
@@ -380,7 +462,8 @@ async function check(name, fn) {
     await server.db.query("update ojjuda_onecard_internal.rooms set deadline=clock_timestamp()-interval '1 second' where id=$1", [current.id]);
     await s.poll(); await until(() => s.client.room.game.revision > revision, 'server computer move appears');
     assert.equal(s.client.room.game.revision, revision + 1);
-    assert.equal(s.client.room.game.direction, 1);
+    assert.equal(s.client.room.game.direction,
+      s.client.room.game.lastEvents.some(event => event.type === 'reverse') ? -current.game.direction : current.game.direction);
     assert.equal(s.all('#opponents .seat').length, 4);
   });
 })().catch(error => { results.push({ name: 'startup', pass: false }); console.error(error); }).finally(async () => {

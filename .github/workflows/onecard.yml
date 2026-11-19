@@ -2,9 +2,9 @@ name: One Card rules, multiplayer and screen
 
 on:
   push:
-    paths: ['games/onecard/**', 'supabase/functions/onecard/**', 'supabase/migrations/*_onecard_*.sql', 'tests/onecard-*', '.github/workflows/onecard.yml']
+    paths: ['games/onecard/**', 'supabase/functions/onecard/**', 'supabase/migrations/*_onecard_*.sql', 'tests/onecard-*', 'assets/design/games/onecard.webp', 'guide.html', 'features/arcade/monthly-ranking.*', 'shared/games/world-game-rankings.js', 'tests/game-ranking-criteria-dom.test.cjs', 'tests/monthly-game-personal-rank-dom.test.cjs', '.github/workflows/onecard.yml']
   pull_request:
-    paths: ['games/onecard/**', 'supabase/functions/onecard/**', 'supabase/migrations/*_onecard_*.sql', 'tests/onecard-*', '.github/workflows/onecard.yml']
+    paths: ['games/onecard/**', 'supabase/functions/onecard/**', 'supabase/migrations/*_onecard_*.sql', 'tests/onecard-*', 'assets/design/games/onecard.webp', 'guide.html', 'features/arcade/monthly-ranking.*', 'shared/games/world-game-rankings.js', 'tests/game-ranking-criteria-dom.test.cjs', 'tests/monthly-game-personal-rank-dom.test.cjs', '.github/workflows/onecard.yml']
   workflow_dispatch:
 
 permissions:
@@ -29,9 +29,13 @@ jobs:
       - name: Verify shared rules and complete games
         run: node --test tests/onecard-engine.test.mjs tests/onecard-online-client.test.mjs
       - name: Verify authoritative multiplayer and permissions
-        run: node tests/onecard-online.test.cjs
+        run: |
+          node tests/onecard-online.test.cjs
+          node tests/onecard-ranking-db.test.cjs
       - name: Verify five independent application screens
         run: node tests/onecard-dom.test.cjs
+      - name: Verify shared rankings, guide and releases
+        run: node --test tests/game-ranking-criteria-dom.test.cjs tests/monthly-game-personal-rank-dom.test.cjs tests/guide-signup-coverage.test.cjs tests/onecard-native-rooms.test.cjs tests/world-section-releases.test.cjs tests/game-release-refresh.test.cjs
       - name: Install the test browser
         working-directory: tests
         run: npx playwright install --with-deps chromium
