@@ -57,6 +57,7 @@ export function ExchangeProfileEditor({onSaved}:{onSaved:()=>void}) {
   const [profile,setProfile]=useState<MyProfile|null>(null);
   const [error,setError]=useState(""),[retry,setRetry]=useState(0),[busy,setBusy]=useState(false);
   const saving=useRef(false),mounted=useRef(false);
+  const errorMessage=useRef<HTMLParagraphElement>(null);
   useEffect(()=>{
     mounted.current=true;
     let current=true;
@@ -65,25 +66,50 @@ export function ExchangeProfileEditor({onSaved}:{onSaved:()=>void}) {
       .catch(()=>{if(current)setError("교환용 프로필을 불러오지 못했어요.");});
     return ()=>{current=false;mounted.current=false;};
   },[retry]);
+  useEffect(()=>{
+    if(!error||!profile)return;
+    errorMessage.current?.focus({preventScroll:true});
+    errorMessage.current?.scrollIntoView({block:"nearest"});
+  },[error,profile]);
   function change(key:keyof Fields,value:string) {
+    setError("");
     setProfile(prior=>prior?{...prior,fields:{...prior.fields,[key]:value}}:prior);
   }
   async function save(event:React.FormEvent) {
     event.preventDefault();
     if(!profile||saving.current)return;
+    if(!(event.currentTarget as HTMLFormElement).reportValidity())return;
     saving.current=true;setBusy(true);setError("");
     const fields=Object.fromEntries(Object.entries(profile.fields).map(([k,v])=>[k,String(v??"").trim()]).filter(([,v])=>v));
+    if(fields.height)fields.height=String(Number(fields.height));
     try {
-      await exchange<MyProfile>("save",{p_data:{fields,showAge:profile.showAge,showGender:profile.showGender}});
+      const saved=await exchange<MyProfile>("save",{p_data:{fields,showAge:profile.showAge,showGender:profile.showGender}});
+      if(!saved?.fields||typeof saved.fields!=="object"||Array.isArray(saved.fields))
+        throw new Error("저장 결과를 확인하지 못했어요. 다시 시도해 주세요.");
+      const changed=labels.filter(({key})=>{
+        const expected=String(fields[key]??"");
+        const actual=String(saved.fields[key]??"");
+        if(key==="height"&&expected&&actual)return Number(expected)!==Number(actual);
+        if(key==="mbti"||key==="bloodType")return expected.toUpperCase()!==actual.toUpperCase();
+        return expected!==actual;
+      }).map(({label})=>label);
+      if(saved.showAge!==profile.showAge)changed.push("나이 공개 설정");
+      if(saved.showGender!==profile.showGender)changed.push("성별 공개 설정");
+      if(changed.length)
+        throw new Error(`${changed.join(", ")} 항목이 저장되지 않았어요. 입력 내용은 이 창에 남겨 뒀어요.`);
       if(mounted.current)onSaved();
     } catch(err) {
       if(mounted.current)setError(err instanceof Error?err.message:"저장하지 못했어요. 다시 시도해 주세요.");
     } finally {saving.current=false;if(mounted.current)setBusy(false);}
   }
   return <><h2>교환용 프로필</h2><p className="sub">원하는 항목만 채워 주세요. 프로필을 교환한 상대는 나중에 수정한 내용도 볼 수 있어요. 대화방에서 언제든 공유를 끝낼 수 있어요.</p>
-    {error&&<p className="error" role="alert">{error} {!profile&&<button className="quiet" onClick={()=>setRetry(n=>n+1)}>다시 시도</button>}</p>}
+    {error&&!profile&&<p className="error" role="alert">{error} <button className="quiet" onClick={()=>setRetry(n=>n+1)}>다시 시도</button></p>}
     {!profile&&!error&&<p className="sub" role="status">회원정보를 확인하고 있어요.</p>}
-    {profile&&<form className="profileform exchange-editor" onSubmit={save}>
+    {profile&&<form className="profileform exchange-editor" onSubmit={save} onInvalidCapture={event=>{
+      event.preventDefault();
+      const input=event.target as HTMLInputElement;
+      setError(input.name==="height"?"키는 1~300cm 사이의 숫자로 입력해 주세요.":"입력한 내용을 확인해 주세요.");
+    }}>
       <fieldset disabled={busy}><legend>오쭈다 회원정보</legend>
         <p className="exchange-hint">교환용 프로필에 포함할 항목을 선택하세요.</p>
         <label className="exchange-check"><input type="checkbox" disabled={profile.age==null} checked={profile.age!=null&&profile.showAge} onChange={e=>setProfile({...profile,showAge:e.target.checked})}/><span>나이</span><b>{profile.age==null?"연동 정보 없음":`만 ${profile.age}세`}</b></label>
@@ -96,10 +122,11 @@ export function ExchangeProfileEditor({onSaved}:{onSaved:()=>void}) {
           if(key==="bio")return <label key={key} className="exchange-bio">{label}<textarea rows={4} maxLength={limit} value={value} onChange={e=>change(key,e.target.value)}/><small>{value.length} / {limit}자</small></label>;
           return <label key={key}>{key==="height"?"키 (cm)":label}
             {options?<select value={value} onChange={e=>change(key,e.target.value)}><option value="">미입력</option>{value&&!options.includes(value)&&<option>{value}</option>}{options.map(v=><option key={v} value={v}>{key==="bloodType"?v+"형":v}</option>)}</select>:
-             key==="height"?<input type="number" inputMode="numeric" min={1} max={300} step={1} value={value} onChange={e=>change(key,e.target.value)}/>:
+             key==="height"?<input name="height" type="number" inputMode="decimal" min={1} max={300} step="any" value={value} onChange={e=>change(key,e.target.value)}/>:
              <input maxLength={limit||80} value={value} onChange={e=>change(key,e.target.value)}/>}</label>;
         })}
       </fieldset>
-      <button className="primary wide" disabled={busy}>{busy?"저장 중…":"교환용 프로필 저장"}</button>
+      {error&&<p ref={errorMessage} className="error" role="alert" tabIndex={-1}>{error}</p>}
+      <button type="submit" className="primary wide" disabled={busy}>{busy?"저장 중…":"교환용 프로필 저장"}</button>
     </form>}</>;
 }
