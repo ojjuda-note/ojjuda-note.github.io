@@ -401,22 +401,26 @@
     dialog.setAttribute('aria-describedby', 'agit-welcome-copy');
     dialog.innerHTML = '<div class="agit-welcome-card">' +
       '<button type="button" class="agit-welcome-close" aria-label="가입 안내 닫기">×</button>' +
-      '<div class="agit-welcome-orbit" aria-hidden="true"><span>✦</span><span>✿</span><span>✧</span></div>' +
-      '<div class="agit-welcome-heart" aria-hidden="true">💗</div>' +
-      '<span class="agit-welcome-eyebrow">OJJUDA AGIT · 우리 같이 놀아요</span>' +
-      '<h2 id="agit-welcome-title">여기, 같이 놀래요? 💗</h2>' +
-      '<p id="agit-welcome-copy">회원이 되면 이런 즐거움이 있어요.</p>' +
-      '<ul class="agit-join-benefits">' +
-      '<li><span aria-hidden="true">🎁</span><span>초대한 친구 10명이 가입 후 14일 중 7일 방문하면 <b>5천원 상품권</b></span></li>' +
-      '<li><span aria-hidden="true">🏆</span><span>게임별 월간 1등에게도 <b>5천원 상품권</b></span></li>' +
-      '<li><span aria-hidden="true">💬</span><span>공원 글을 <b>캘리그라피</b>로 꾸미기</span></li>' +
-      '<li><span aria-hidden="true">🌷</span><span>매일 도장 찍고 내 게임 기록 남기기</span></li>' +
-      '</ul><div class="agit-welcome-actions">' +
+      '<div class="agit-join-scene" aria-hidden="true"><span class="agit-join-seal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 3h12l4 4v14H4zM15 3v5h5M8 14q4 5 8 0"/></svg></span></div>' +
+      '<span class="agit-welcome-eyebrow">OJJUDA · AGIT</span>' +
+      '<h2 id="agit-welcome-title">어서 와요, 아지트에.</h2>' +
+      '<p id="agit-welcome-copy">가볍게 놀고, 다정하게 나눠요.</p>' +
+      '<details class="agit-join-more"><summary>회원 혜택 보기 <span aria-hidden="true">＋</span></summary><ul class="agit-join-benefits">' +
+      '<li><span aria-hidden="true">01</span><span>초대한 친구 10명이 가입 후 14일 중 7일 방문하면 <b>5천원 상품권</b></span></li>' +
+      '<li><span aria-hidden="true">02</span><span>게임별 월간 1등에게도 <b>5천원 상품권</b></span></li>' +
+      '<li><span aria-hidden="true">03</span><span>공원 글을 <b>캘리그라피</b>로 꾸미기</span></li>' +
+      '<li><span aria-hidden="true">04</span><span>매일 도장 찍고 내 게임 기록 남기기</span></li>' +
+      '</ul></details><div class="agit-welcome-actions">' +
       '<button type="button" class="agit-welcome-okay">무료로 가입하기</button>' +
+      '<button type="button" class="agit-welcome-login">로그인</button>' +
       '<button type="button" class="agit-welcome-next">' + (previewOnly ? '미리보기 닫기' : '일단 구경할게요') + '</button></div>' +
       '<small class="agit-welcome-note">' + (previewOnly ? '관리자 미리보기 · 실제 가입이나 방문 기록에는 영향을 주지 않아요.' : '상품권은 참여 조건 확인 후 지급돼요.') + '</small></div>';
     dialog.querySelector('.agit-welcome-close').addEventListener('click', close);
     dialog.querySelector('.agit-welcome-next').addEventListener('click', close);
+    dialog.querySelector('.agit-welcome-login').addEventListener('click', () => {
+      if (!previewOnly && isCurrent(session)) { root.location.assign('/?auth=login&next=world'); return; }
+      close();
+    });
     dialog.querySelector('.agit-welcome-okay').addEventListener('click', () => {
       if (!previewOnly && isCurrent(session)) {
         // Keep the overlay open until departure: closing it triggers World Back
@@ -568,3 +572,4 @@
     addPending, monthForRanking, isBlocked: blocked, previewCatalog, preview };
   if (typeof module !== 'undefined' && module.exports) module.exports = root.OjjudaAgitWelcome;
 })(typeof window !== 'undefined' ? window : globalThis);
+

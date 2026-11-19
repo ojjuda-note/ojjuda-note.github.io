@@ -6,6 +6,13 @@ on:
       - 'features/pajang/**'
       - 'features/account/settings-list.css'
       - 'features/home/location-warmup.mjs'
+      - 'features/home/agit-hub.*'
+      - 'features/home/agit-welcome.*'
+      - 'features/home/entry-design.css'
+      - 'app/portal/**'
+      - 'index.html'
+      - 'world.html'
+      - 'tests/public-entry-design-browser.cjs'
       - 'shared/location/**'
       - 'shared/brand/service-header.css'
       - 'features/wallet/ju-charge.js'
@@ -17,8 +24,8 @@ on:
       - 'supabase/functions/theme-weather/**'
       - 'tests/theme-browser-helpers.cjs'
       - 'tests/world-design-ui.test.cjs'
-      - 'tests/weather-current-browser.cjs'
       - 'tests/my-menu-ui.test.cjs'
+      - 'tests/weather-current-browser.cjs'
       - 'tests/world-themes.test.cjs'
       - 'tests/theme-preview-smoke.test.cjs'
       - 'tests/*weather*.test.cjs'
@@ -43,6 +50,13 @@ on:
       - 'features/pajang/**'
       - 'features/account/settings-list.css'
       - 'features/home/location-warmup.mjs'
+      - 'features/home/agit-hub.*'
+      - 'features/home/agit-welcome.*'
+      - 'features/home/entry-design.css'
+      - 'app/portal/**'
+      - 'index.html'
+      - 'world.html'
+      - 'tests/public-entry-design-browser.cjs'
       - 'tests/agit-location.test.mjs'
       - 'shared/location/**'
       - 'shared/brand/service-header.css'
@@ -55,8 +69,8 @@ on:
       - 'supabase/functions/theme-weather/**'
       - 'tests/theme-browser-helpers.cjs'
       - 'tests/world-design-ui.test.cjs'
-      - 'tests/weather-current-browser.cjs'
       - 'tests/my-menu-ui.test.cjs'
+      - 'tests/weather-current-browser.cjs'
       - 'tests/world-themes.test.cjs'
       - 'tests/theme-preview-smoke.test.cjs'
       - 'tests/*weather*.test.cjs'
@@ -126,6 +140,10 @@ jobs:
         env:
           MY_MENU_QA_DIR: tests/artifacts/pajang-discovery/guest-settings
         run: node tests/my-menu-ui.test.cjs
+      - name: Check public entrances and account return routes
+        env:
+          PUBLIC_ENTRY_PROOF_DIR: tests/artifacts/pajang-discovery/entrances
+        run: node tests/public-entry-design-browser.cjs
       - name: Check Agit and Park automatic theme rendering
         env:
           WORLD_DESIGN_PROOF_DIR: tests/artifacts/pajang-discovery/world-themes
@@ -205,3 +223,4 @@ jobs:
           # Live activation is a separate action after reviewing this verified digest.
           printf '%s\n' '### Private member program staged' \
             'Storage bytes have been verified. This job has not activated the live Edge manifest.' >> "$GITHUB_STEP_SUMMARY"
+
