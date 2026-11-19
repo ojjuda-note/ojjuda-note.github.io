@@ -103,6 +103,21 @@ async function verifyCard(page, id, name) {
     assert(payload.events.length >= 770, 'Deployed data missing November 19 additions');
     n62Performances.forEach(id => assert(ids.has(id), 'Missing November 19 live performance: ' + id));
     console.log('PASS November 19 live JSON: 770 events and sampled new official performances');
+    // November 20: newly published Gangwon/Jeju festivals, exhibitions and K League 2 matches.
+    const n63Events = [
+      'gangneung-coffee-festival-2026', 'gangneung-dandan-festival-2026',
+      'donghae-mukho-dojjaebi-festa-2026', 'jeju-local-issue-festa-2026',
+      'cheorwon-hantangang-ice-trekking-2027', 'jeju-bookation-week-2026',
+      'jeju-santa-watsuda-2026', 'jeju-furniture-fair-movein-2-2026',
+      'pro-kleague2-2026-r34-yongin-paju', 'pro-kleague2-2026-r34-gimhae-seongnam'
+    ];
+    assert(payload.events.length >= 780, 'Deployed data missing November 20 events');
+    n63Events.forEach(id => assert(ids.has(id), 'Missing November 20 live event: ' + id));
+    const gimjangAttendance = payload.events.find(e => e.id === 'pyeongchang-gimjang-2026')?.attendance;
+    assert.equal(gimjangAttendance?.count, 80000);
+    assert.equal(gimjangAttendance?.kind, 'actual');
+    assert.equal(gimjangAttendance?.year, 2026);
+    console.log('PASS November 20 live JSON: 780 events and 2026 official Gimjang attendance');
     console.log('PASS production JSON: at least 715 entries, November 14 updates and official attendance');
 
     await page.goto(origin + '/games/festival-schedule/index.html?period=all&category=festival&view=list&q=익산',
@@ -120,6 +135,10 @@ async function verifyCard(page, id, name) {
     await verifyCard(page, 'gimje-horizon-2026', '김제지평선축제');
     await page.locator('#search').fill('성남 HIP:FESTA');
     await verifyCard(page, 'seongnam-hip-festa-20261121', '성남 HIP:FESTA');
+    await page.locator('#search').fill('단단단페스티벌');
+    await verifyCard(page, 'gangneung-dandan-festival-2026', '단단단페스티벌');
+    await page.locator('#search').fill('제주권 로컬페스타');
+    await verifyCard(page, 'jeju-local-issue-festa-2026', '로컬페스타');
     await page.screenshot({ path: path.join(snapshotDir, 'standalone.png'), fullPage: true });
     console.log('PASS standalone: three festival events actually displayed');
 
@@ -147,6 +166,10 @@ async function verifyCard(page, id, name) {
     await verifyCard(page, 'daejeon-sumi-jo-continuum-20261231', '조수미');
     await page.locator('#search').fill('더 드레서');
     await verifyCard(page, 'sejong-play-the-dresser-20261218', '더 드레서');
+    await page.locator('#search').fill('북케이션 위크');
+    await verifyCard(page, 'jeju-bookation-week-2026', '북케이션 위크');
+    await page.locator('#search').fill('산타왔수다');
+    await verifyCard(page, 'jeju-santa-watsuda-2026', '산타왔수다');
     await page.locator('#search').fill('IBK기업은행 vs 정관장');
     await page.locator('[data-category="sports"]').click();
     await verifyCard(page, 'pro-kovo-202627-20261117-ibk-red', 'IBK기업은행 vs 정관장');
@@ -159,6 +182,10 @@ async function verifyCard(page, id, name) {
     await verifyCard(page, 'sunchang-jangryu-tennis-20261129', '순창장류배');
     await page.locator('#search').fill('전북특별자치도협회장기 클럽');
     await verifyCard(page, 'jeonbuk-tennis-association-club-cup-20261205', '전북특별자치도협회장기');
+    await page.locator('#search').fill('용인FC vs 파주');
+    await verifyCard(page, 'pro-kleague2-2026-r34-yongin-paju', '용인FC vs 파주');
+    await page.locator('#search').fill('김해FC vs 성남FC');
+    await verifyCard(page, 'pro-kleague2-2026-r34-gimhae-seongnam', '김해FC vs 성남FC');
     await page.locator('#search').fill('');
     if (hasNovember15Update) {
       await page.locator('#search').fill('GIVE RUN 2026 부산');
@@ -187,6 +214,8 @@ async function verifyCard(page, id, name) {
     await festivalFrame.locator('[data-category="festival"]').click();
     await festivalFrame.locator('#search').fill('성남 HIP:FESTA');
     await verifyCard(festivalFrame, 'seongnam-hip-festa-20261121', '성남 HIP:FESTA');
+    await festivalFrame.locator('#search').fill('단단단페스티벌');
+    await verifyCard(festivalFrame, 'gangneung-dandan-festival-2026', '단단단페스티벌');
     await festivalFrame.locator('#search').fill('');
     await festivalFrame.locator('[data-category="sports"]').click();
     await festivalFrame.locator('#search').fill('무주반딧불 평화마라톤대회');
@@ -195,11 +224,15 @@ async function verifyCard(page, id, name) {
     await verifyCard(festivalFrame, 'sunchang-jangryu-tennis-20261129', '순창장류배');
     await festivalFrame.locator('#search').fill('전북특별자치도협회장기 클럽');
     await verifyCard(festivalFrame, 'jeonbuk-tennis-association-club-cup-20261205', '전북특별자치도협회장기');
+    await festivalFrame.locator('#search').fill('용인FC vs 파주');
+    await verifyCard(festivalFrame, 'pro-kleague2-2026-r34-yongin-paju', '용인FC vs 파주');
     await festivalFrame.locator('#search').fill('라인필하모닉');
     await festivalFrame.locator('[data-category="performance"]').click();
     await verifyCard(festivalFrame, 'cheongju-linephilharmonic-nostalgia-20261121', '라인필하모닉');
     await festivalFrame.locator('#search').fill('조수미');
     await verifyCard(festivalFrame, 'daejeon-sumi-jo-continuum-20261231', '조수미');
+    await festivalFrame.locator('#search').fill('북케이션 위크');
+    await verifyCard(festivalFrame, 'jeju-bookation-week-2026', '북케이션 위크');
     await festivalFrame.locator('#search').fill('');
     await arcade.screenshot({ path: path.join(snapshotDir, 'world-game-festival.png'), fullPage: true });
     if (hasNovember15Update) {
