@@ -18,7 +18,7 @@ export function createReadingNavigator({select,pages,domains,domainForPage,group
   toggle.append(currentTitle,make('span','reading-item-action','목차'));
   const list=make('div','reading-item-groups');list.id=`${select.id}-list`;
   toggle.setAttribute('aria-controls',list.id);
-  picker.append(toggle,list);root.append(domainNav,picker);
+  picker.append(toggle,domainNav,list);root.append(picker);
   // Its value is still the pager's single selection and clock-refresh anchor.
   // Only the visible buttons and disclosure participate in keyboard access.
   select.hidden=true;
@@ -36,14 +36,16 @@ export function createReadingNavigator({select,pages,domains,domainForPage,group
     const button=make('button','reading-domain-button',domain.label);
     button.type='button';button.id=`${select.id}-domain-${domain.id}`;
     button.dataset.readingDomain=domain.id;button.setAttribute('aria-pressed','false');
-    button.setAttribute('aria-controls',picker.id);
+    button.setAttribute('aria-controls',list.id);
     button.addEventListener('click',()=>{
       const candidates=[...items.values()].filter(item=>item.domain===domain.id);
       const remembered=lastSelection.get(domain.id);
       const target=candidates.find(item=>item.id===remembered)||candidates[0];
       if(target) {
         choose(target.id);
-        picker.open=candidates.length>1;
+        // The domain buttons live inside this disclosure. Keep them available
+        // for another field choice and consecutive arrow-key navigation.
+        picker.open=true;
       }
     });
     buttons.set(domain.id,button);domainNav.append(button);
