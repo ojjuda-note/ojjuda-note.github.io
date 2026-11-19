@@ -62,7 +62,6 @@ async function fixture(t,{wallet={},purchase,mode='form',remaining}={}){
     const offer=state.wallet.offers.find(x=>x.id===args.p_pack);
     if(!offer)return {data:{ok:false,reason:'purchase_unavailable'},error:null};
     if(offer.price!==args.p_expected_price||offer.revision!==args.p_expected_revision)return {data:{ok:false,reason:'price_changed'},error:null};
-    if(state.wallet.freeRemaining>0)return {data:{ok:false,reason:'free_remaining'},error:null};
     if(state.wallet.coins<offer.price)return {data:{ok:false,reason:'coins'},error:null};
     state.wallet.coins-=offer.price;state.wallet.paidRemaining+=offer.quantity;state.wallet.remaining+=offer.quantity;
     const result=receipt(args);state.receipts.set(args.p_request_id,clone(result));return {data:result,error:null};
@@ -254,12 +253,16 @@ test('an account change rejects a late purchase response and preserves recovery 
   assert.equal(f.w.sessionStorage.getItem('pajang:signal-purchase:member-two'),null);
 });
 
-test('a free signal restored before purchase blocks the charge and refreshes the quota',async t=>{
+test('free signals restored before purchase are preserved in the confirmed quota',async t=>{
   const f=await fixture(t);await f.select('signal_1');
   f.state.wallet.freeRemaining=3;f.state.wallet.remaining=3;
-  f.submit();await wait(()=>f.alert()?.textContent.includes('무료 신호'));
-  assert.equal(f.state.wallet.coins,150);assert.equal(f.buy(),null);
-  assert.equal(f.state.wallets.at(-1).value.freeRemaining,3);
+  f.submit();await wait(()=>f.state.successes.length===1&&f.buy()?.textContent==='구매 완료');
+  assert.equal(f.purchases().length,1);assert.equal(f.state.wallet.coins,139);
+  assert.equal(f.state.successes[0].value.freeRemaining,3);
+  assert.equal(f.state.successes[0].value.paidRemaining,1);
+  assert.equal(f.state.successes[0].value.remaining,4);
+  assert.match(f.form().querySelector('.signal-wallet-note').textContent,/오늘 무료 3개.*구매한 신호 1개/);
+  assert.equal(f.buy().disabled,true);
 });
 
 test('the exhausted feed enters purchasing and returns to the signal editor without sending',async t=>{
@@ -287,14 +290,11 @@ for(const freeRemaining of [0,3])test(`My Pajang opens and closes signal purchas
   assert.equal(w.document.querySelector('dialog[open]').getAttribute('aria-label'),'추가 신호 구매');
   assert.equal(new URL(w.location.href).searchParams.get('tab'),'profile');
   assert.equal(f.purchases().length,0,'opening the existing purchase popup never buys a package');
-  if(freeRemaining){
-    assert.match(f.form().textContent,/무료 신호를 먼저 사용해 주세요/);
-    assert.equal(f.buy(),null);
-    assert.equal(f.form().querySelectorAll('[name="signal-pack"]').length,0);
-  }else{
-    assert.equal(f.form().querySelectorAll('[name="signal-pack"]').length,offers.length);
-    assert.equal(f.buy().disabled,true,'an available purchase still requires an explicit package choice');
-  }
+  assert.equal(f.form().querySelectorAll('[name="signal-pack"]').length,offers.length);
+  assert.equal(f.buy().disabled,true,'an available purchase still requires an explicit package choice');
+  await f.select('signal_3');
+  assert.equal(f.buy().disabled,false);
+  assert.equal(f.purchases().length,0,'choosing a package still requires explicit purchase consent');
   w.history.back();await wait(()=>!f.form()&&w.history.state.pajangNavigation.index===index);
   assert.equal(new URL(w.location.href).searchParams.get('tab'),'profile','Back closes the popup and keeps My Pajang');
   assert.ok(entry());
@@ -307,6 +307,34 @@ for(const freeRemaining of [0,3])test(`My Pajang opens and closes signal purchas
   assert.equal(f.state.receipts.size,0);
   assert.equal(f.state.wallet.coins,150);
   assert.equal(f.state.wallet.freeRemaining,freeRemaining);
+});
+
+for(const freeRemaining of [1,2,3])test(`My Pajang explicitly purchases with ${freeRemaining} free signals and preserves its paid balance`,async t=>{
+  const f=await fixture(t,{mode:'station',wallet:{freeRemaining,paidRemaining:2,remaining:freeRemaining+2}});
+  const {w}=f;
+  const entry=()=>[...w.document.querySelectorAll('.account-settings button')].find(button=>
+    button.querySelector('.ojjuda-settings-label')?.textContent==='신호 구매');
+  w.document.querySelector('nav [aria-label="내 파장"]').click();await wait(entry);
+  entry().click();await wait(()=>f.form()?.getAttribute('aria-busy')==='false');
+  assert.equal(f.buy().disabled,true);
+  await f.select('signal_3');
+  assert.equal(f.buy().disabled,false);assert.equal(f.buy().textContent,'31쭈로 신호 3개 구매');
+  assert.equal(f.purchases().length,0);assert.equal(f.state.receipts.size,0);assert.equal(f.state.wallet.coins,150);
+  f.submit();await wait(()=>f.state.receipts.size===1&&!f.form());
+  assert.equal(new URL(w.location.href).searchParams.get('tab'),'profile');
+  assert.equal(f.purchases().length,1);
+  assert.equal(f.purchases()[0].args.p_expected_user,'member-one');
+  assert.equal(f.purchases()[0].args.p_expected_price,31);assert.equal(f.purchases()[0].args.p_expected_revision,7);
+  assert.equal(f.purchases()[0].args.p_verify_only,false);
+  assert.equal(f.state.wallet.coins,119);
+  assert.equal(f.state.wallet.freeRemaining,freeRemaining,'purchasing never uses a daily free signal');
+  assert.equal(f.state.wallet.paidRemaining,5,'purchased signals add to the existing paid balance');
+  assert.equal(f.state.wallet.remaining,freeRemaining+5);
+  assert.deepEqual(f.state.events,[{userId:'member-one',coins:119}]);
+  assert.equal(f.state.calls.filter(call=>call.name==='pajang_member'&&call.args.p_action==='signal').length,0);
+  w.document.querySelector('nav [aria-label="오늘"]').click();
+  await wait(()=>w.document.querySelector('.budget b')?.textContent===`${freeRemaining+5}개`);
+  assert.match(w.document.querySelector('.signal-budget small').textContent,new RegExp(`무료 ${freeRemaining}.*구매 5`));
 });
 
 test('a completed purchase cannot charge again while the history close is still pending',async t=>{

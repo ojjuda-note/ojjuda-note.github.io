@@ -11,7 +11,7 @@ const changedAccount="계정이 바뀌었어요. 창을 닫고 다시 열어 주
 const uncertainPurchase="구매 결과를 확인하지 못했어요. 다시 누르면 같은 구매 요청으로 이어져요.";
 const failureText:Record<string,string>={coins:"쭈가 부족해요. 충전한 뒤 다시 구매해 주세요.",
   price_changed:"신호 가격이 바뀌었어요. 새 가격을 확인하고 다시 선택해 주세요.",
-  purchase_unavailable:"지금은 추가 신호를 구매할 수 없어요.",free_remaining:"무료 신호를 먼저 사용해 주세요.",
+  purchase_unavailable:"지금은 추가 신호를 구매할 수 없어요.",free_remaining:"구매 조건을 다시 확인해 주세요. 창을 닫고 다시 열어 주세요.",
   invalid:"구매 정보를 다시 확인해 주세요.",request_conflict:"이 구매 요청을 확인하지 못했어요. 창을 닫고 다시 열어 주세요.",
   wallet_unavailable:"쭈 잔액을 확인하지 못했어요. 잠시 후 다시 시도해 주세요."};
 const format=(value:number)=>value.toLocaleString("ko-KR");
@@ -113,7 +113,7 @@ export function SignalPurchaseForm({onBusyChange,onWallet,onPurchased}:Props){
     if(locked.current||completed.current||checking||blocked||!account||!wallet)return;
     if(!current(account)){invalidate();return;}
     const choice=wallet.offers.find(item=>item.id===selected);
-    if(!pending&&(!wallet.purchasingEnabled||wallet.freeRemaining>0||!choice||wallet.coins<choice.price))return;
+    if(!pending&&(!wallet.purchasingEnabled||!choice||wallet.coins<choice.price))return;
     const value=pending??{userId:account.userId,requestId:crypto.randomUUID(),pack:choice!.id,
       quantity:choice!.quantity,price:choice!.price,revision:choice!.revision};
     // Save before the network call, so a dropped reply cannot become a second purchase.
@@ -149,12 +149,12 @@ export function SignalPurchaseForm({onBusyChange,onWallet,onPurchased}:Props){
 
   const choice=pending?{id:pending.pack,quantity:pending.quantity,price:pending.price,revision:pending.revision}:
     wallet?.offers.find(item=>item.id===selected);
-  const available=!!wallet?.purchasingEnabled&&wallet.freeRemaining===0&&wallet.offers.length>0;
+  const available=!!wallet?.purchasingEnabled&&wallet.offers.length>0;
   const short=!!choice&&!!wallet&&wallet.coins<choice.price;
   const canBuy=!!account&&!blocked&&!checking&&!busy&&!complete&&!!wallet&&!!choice&&(!!pending||(available&&!short));
   return <form className="signal-purchase" onSubmit={event=>void submit(event)} aria-busy={checking||busy}>
     <span className="modalicon"><I n="signal"/></span><h2>추가 신호 구매</h2>
-    <p className="sub">마음이 닿은 사람에게 신호를 더 보내세요.</p>
+    <p className="sub">무료 신호가 남아 있어도 미리 구매할 수 있어요.</p>
     {checking&&<p className="sub" role="status">신호와 쭈 잔액을 확인하고 있어요.</p>}
     {wallet&&<>
       <dl className="signal-wallet"><div><dt>보유 쭈</dt><dd>{format(wallet.coins)}<span>쭈</span></dd></div>
@@ -167,7 +167,7 @@ export function SignalPurchaseForm({onBusyChange,onWallet,onPurchased}:Props){
         </label>)}
       </fieldset>}
       {choice&&<div className="signal-confirm" role="status"><strong>신호 {format(choice.quantity)}개</strong><span>{format(choice.price)}쭈 사용</span></div>}
-      {!checking&&!available&&!pending&&<p className="sub" role="status">{wallet.freeRemaining>0?"무료 신호를 먼저 사용해 주세요.":"지금은 추가 신호를 구매할 수 없어요."}</p>}
+      {!checking&&!available&&!pending&&<p className="sub" role="status">지금은 추가 신호를 구매할 수 없어요.</p>}
     </>}
     {error&&<p className="error" role="alert">{error}</p>}
     {!checking&&!wallet&&!blocked&&<button type="button" className="secondary wide" onClick={()=>setAttempt(value=>value+1)}>다시 확인</button>}
@@ -176,6 +176,6 @@ export function SignalPurchaseForm({onBusyChange,onWallet,onPurchased}:Props){
     {(available||pending)&&<button type="submit" className="primary wide" disabled={!canBuy}>
       {complete?"구매 완료":busy?"구매 확인 중…":pending?"같은 구매 다시 확인":choice?format(choice.price)+"쭈로 신호 "+format(choice.quantity)+"개 구매":"신호 묶음을 선택해 주세요"}
     </button>}
-    {(available||pending)&&<p className="signal-purchase-note">구매한 신호는 다음 날에도 남아요. 구매 후 원하는 사람에게 직접 보내 주세요.</p>}
+    {(available||pending)&&<p className="signal-purchase-note">무료 신호부터 사용해요. 구매한 신호는 다음 날에도 남아요.</p>}
   </form>;
 }
