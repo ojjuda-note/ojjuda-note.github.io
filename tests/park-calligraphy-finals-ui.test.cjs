@@ -558,3 +558,39 @@ test('Park draws eight brush symbols in narrow and fullwidth text on small cards
       assert.deepEqual(result, { distinct: 8, sameSpelling: true, groups: 3 }, width + 'px');
     }
   }));
+
+test('Park draws every digit with the brush in numbers, dates and mixed Hangul', () =>
+  withBrushPage(async page => {
+    for (const width of [192, 328]) {
+      const result = await page.evaluate(width => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.fillText = ch => { throw new Error('System font used for digit sample: ' + ch); };
+        const wideDigits = body => body.replace(/[0-9]/g,
+          digit => String.fromCodePoint(digit.codePointAt(0) + 0xFEE0));
+        function draw(body) {
+          window.ParkCalligraphy.render(canvas, body, { width, accent: false });
+          const bounds = window.ParkCalligraphy.inkBounds(canvas);
+          if (!bounds) throw new Error('Missing brush number: ' + body);
+          const margin = Math.min(bounds.x, bounds.y, 1 - bounds.x - bounds.width,
+            1 - bounds.y - bounds.height);
+          if (margin <= 0) throw new Error('Clipped brush number: ' + body);
+          return canvas.toDataURL();
+        }
+        const singles = new Set();
+        let sameSpelling = true;
+        for (const digit of '1234567890') {
+          const single = draw(digit);
+          singles.add(single);
+          if (single !== draw(wideDigits(digit))) sameSpelling = false;
+        }
+        const samples = ['1234567890', '2026년 11월 20일', '오늘도 100점!',
+          '1,234.50', '010-1234-5678', '1\n2\n3\n4\n5\n6\n7\n8\n9\n0'];
+        for (const body of samples) {
+          if (draw(body) !== draw(wideDigits(body))) sameSpelling = false;
+        }
+        return { distinct: singles.size, sameSpelling, mixedSamples: samples.length };
+      }, width);
+      assert.deepEqual(result, { distinct: 10, sameSpelling: true, mixedSamples: 6 }, width + 'px');
+    }
+  }));
