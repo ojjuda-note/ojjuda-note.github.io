@@ -148,14 +148,15 @@ export function move(state,index,shortcut=false,steps=singleResult(state)) {
   const team=pawns[state.team], trail=team[index], from=position(trail);
   const moving=team.flatMap((p,i)=>i===index||(from!==HOME&&position(p)===from)?[i]:[]);
   let {next,frames}=advance(trail,steps,shortcut);
-  let at=position(next), effect='', captured=0;
+  let at=position(next), captured=0;
+  const effects=[];
   const landing=at,event=tileEffect(state,at);
   if(event==='home'){
     next=[];frames.push(HOME);
-    effect=EVENT_NAMES.home+'! '+(moving.length>1?'업은 말까지 모두 대기석으로 돌아갔어요.':'대기석으로 돌아갔어요.');
+    effects.push(EVENT_NAMES.home+'! '+(moving.length>1?'업은 말까지 모두 대기석으로 돌아갔어요.':'대기석으로 돌아갔어요.'));
   }else if(event==='back'){
     stepBack(next);frames.push(position(next));
-    effect=EVENT_NAMES.back+'! 왔던 길로 한 칸 물러났어요.';
+    effects.push(EVENT_NAMES.back+'! 왔던 길로 한 칸 물러났어요.');
   }
   at=position(next);
   moving.forEach(i=>{team[i]=[...next];});
@@ -167,13 +168,14 @@ export function move(state,index,shortcut=false,steps=singleResult(state)) {
     team.forEach((p,i)=>{if(position(p)===at)team[i]=[...next];});
   }
   let pickedUp=null;
-  if(event==='carry'){
+  // Carry is resolved where the pawn stops, including after a back-square move.
+  if(at!==HOME&&at!==FINISH&&tileEffect(state,at)==='carry'){
     const stacked=team.filter(trail=>position(trail)===at).length;
     const reserve=team.findIndex(trail=>position(trail)===HOME);
     if(stacked===1&&reserve>=0){
       team[reserve]=[...next];pickedUp=reserve;
-      effect=EVENT_NAMES.carry+'! 대기 중인 '+(reserve+1)+'번 말을 업었어요.';
-    }else effect=EVENT_NAMES.carry+'! '+(stacked>1?'이미 업힌 말이 함께 가요.':'업을 대기 말이 없어요.');
+      effects.push(EVENT_NAMES.carry+'! 대기 중인 '+(reserve+1)+'번 말을 업었어요.');
+    }else effects.push(EVENT_NAMES.carry+'! '+(stacked>1?'이미 업힌 말이 함께 가요.':'업을 대기 말이 없어요.'));
   }
   const won=team.every(p=>position(p)===FINISH);
   const remaining=[...pendingRolls(state)];remaining.splice(remaining.indexOf(steps),1);
@@ -184,7 +186,7 @@ export function move(state,index,shortcut=false,steps=singleResult(state)) {
   if(won)phase='won';
   else if(!extra&&remaining.length)phase='move';
   const notes=[TEAMS[state.team].name+' '+(index+1)+'번 말'+(at===FINISH?' 골인!':' 이동.')];
-  if(effect)notes.push(effect);
+  notes.push(...effects);
   if(captured)notes.push(captured+'마리를 잡았어요!');
   const stackSize=team.filter(p=>position(p)===at).length;
   if(!event&&at!==HOME&&at!==FINISH&&stackSize>moving.length)notes.push('말 '+stackSize+'개가 함께 가요.');
