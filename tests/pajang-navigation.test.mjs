@@ -170,3 +170,33 @@ test('a question form restarts empty on reload and pending submission preserves 
   busy=false;f.controller.close();f.flush();f.history.back();f.flush();
   assert.equal(f.path,'/station.html?tab=inbox','one close leaves the actual previous tab next');
 });
+
+test('cancelling a dirty editor Back checks once and returns to the same history entry',()=>{
+  let dirty=false,allow=false,checks=0;
+  const f=fixture('/station.html',{sharedMarker:'preserved'},{canLeave(){
+    if(!dirty)return true;
+    checks++;if(!allow)return false;dirty=false;return true;
+  }});
+  f.controller.visit('/station.html?tab=profile');f.controller.open({kind:'answers'});
+  f.controller.open({kind:'historyAnswer',body:'private draft'},null,{stack:true});
+  dirty=true;const state=f.history.state,length=f.entries.length;
+  f.history.back();f.flush();
+  assert.equal(checks,1,'the rejected Back recovery must not prompt a second time');
+  assert.deepEqual(f.history.state,state);assert.equal(f.entries.length,length);
+  assert.equal(f.modal.kind,'historyAnswer');
+  allow=true;f.history.back();f.flush();
+  assert.equal(checks,2);assert.equal(f.modal.kind,'answers');
+  assert.ok(!JSON.stringify(f.entries).includes('private draft'));
+});
+
+test('a pending stacked answer edit stays open and a successful close returns to its list',()=>{
+  let busy=false;
+  const f=fixture('/station.html',{sharedMarker:'preserved'},{canLeave:()=>!busy});
+  f.controller.visit('/station.html?tab=profile');f.controller.open({kind:'answers'});
+  f.controller.open({kind:'historyAnswer'},null,{stack:true});
+  busy=true;const state=f.history.state;f.history.back();f.flush();
+  assert.deepEqual(f.history.state,state);assert.equal(f.modal.kind,'historyAnswer');
+  busy=false;f.controller.close();f.flush();assert.equal(f.modal.kind,'answers');
+  f.controller.close();f.flush();assert.equal(f.modal,null);assert.equal(f.path,'/station.html?tab=profile');
+  f.history.back();f.flush();assert.equal(f.path,'/station.html');
+});

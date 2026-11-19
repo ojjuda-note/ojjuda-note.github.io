@@ -15,13 +15,14 @@ import {ExchangeProfileEditor} from "./exchange-profile";
 import {MyExchangePhotos,removeAllExchangePhotos} from "./exchange-photos";
 import {AccountSettings,AccountActionForm} from "./account-settings";
 import {QuestionSuggestionForm} from "./question-suggestion";
+import {AnswerEditForm,type AnswerEditTarget} from "./answer-edit";
 import {ProfileForm,PublicProfilePreferences} from "./public-profile";
 import {SignalPurchaseForm} from "./signal-purchase";
 import {type SignalCounts,type SignalWallet} from "../lib/signal-wallet";
 
 import {StationNavigation,readRoute,routeHref,type Tab} from "./station-navigation";
 import {createStationHistory} from "../lib/navigation.mjs";
-type Modal = {kind:"answer"|"suggestion"|"signal"|"buySignals"|"result"|"setup"|"edit"|"channels"|"help"|"block"|"delete"|"person"|"privateProfile"|"privatePhotos"|"visibility"|"answers"|"logout"|"withdraw";peer?:string;period?:string;originalBody?:string;questionId?:number;answer?:DiscoveryAnswer};
+type Modal = {kind:"answer"|"historyAnswer"|"suggestion"|"signal"|"buySignals"|"result"|"setup"|"edit"|"channels"|"help"|"block"|"delete"|"person"|"privateProfile"|"privatePhotos"|"visibility"|"answers"|"logout"|"withdraw";peer?:string;period?:string;originalBody?:string;questionId?:number;answer?:DiscoveryAnswer;editTarget?:AnswerEditTarget};
 const fmtClock=(at:number)=>new Intl.DateTimeFormat("ko-KR",{hour:"2-digit",minute:"2-digit",timeZone:"Asia/Seoul"}).format(new Date(at));
 async function request<T,>(url:string,init?:RequestInit):Promise<T>{
   const params=init?.body?JSON.parse(String(init.body)):{};
@@ -71,6 +72,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
   const pendingMessages=useRef(new Map<string,{body:string;id:string}>());
   const draftByPeer=useRef(new Map<string,string>());
   const signalDrafts=useRef(new Map<string,string>());
+  const historyEditDirty=useRef(false);
   const currentPeer=useRef(thread);
   currentPeer.current=thread;
   const [pendingModal,setModal]=useState<Modal|null>(null),[inbox,setInbox]=useState("received");
@@ -219,7 +221,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       if(next.tab==="today")setVisitedToday(true);
       setModal(dialog);setError("");setRoute(next);
     },{
-      canLeave:()=>!lock.current,
+      canLeave:canLeaveDialog,
       persistDialog:(dialog:Modal|null)=>dialog?.kind==="suggestion"?"suggestion":null,
       restoreDialog:(kind:string)=>kind==="suggestion"&&readRoute().tab==="today"&&liveRef.current.me?{kind:"suggestion"}:null
     });
@@ -227,12 +229,26 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     const bridge={openExternal:controller.openExternal,closeExternal:controller.closeExternal,canLeave:controller.canLeave};
     (window as any).OjjudaPajangHistory=bridge;
     window.dispatchEvent(new Event("pajang:history-ready"));
+    const beforeUnload=(event:BeforeUnloadEvent)=>{
+      if(!historyEditDirty.current)return;
+      event.preventDefault();event.returnValue="";
+    };
+    window.addEventListener("beforeunload",beforeUnload);
     return ()=>{
+      window.removeEventListener("beforeunload",beforeUnload);
       history.scrollRestoration=previous;controller.dispose();navigation.current=null;
       if((window as any).OjjudaPajangHistory===bridge)delete (window as any).OjjudaPajangHistory;
     };
   },[]);
+  function canLeaveDialog(){
+    if(lock.current)return false;
+    if(!historyEditDirty.current)return true;
+    if(!window.confirm("수정한 내용을 저장하지 않고 닫을까요?"))return false;
+    historyEditDirty.current=false;
+    return true;
+  }
   function navigate(next:Tab,peer="",answers=false,replace=false){
+    if(historyEditDirty.current&&!canLeaveDialog())return;
     const href=routeHref(next,peer,answers);
     if(navigation.current?.visit(href,replace))return;
     navigationId.current++;
@@ -251,6 +267,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     }
   },[thread,validThread]);
   function open(m:Modal){
+    if(historyEditDirty.current&&!canLeaveDialog())return;
     setError("");
     if(m.kind==="suggestion"&&(lock.current||pendingModal?.kind==="suggestion"||!me))return;
     if(m.kind==="answer"){
@@ -262,7 +279,13 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     const next=m.answer||m.kind==="signal"?{...m,period}:m;
     if(!navigation.current?.open(next))setModal(next);
   }
-  function dismiss(){if(!navigation.current?.close())setModal(null);setError("");}
+  function editHistoryAnswer(answer:AnswerEditTarget,stack=false){
+    if(!liveRef.current.authenticated||answer.owner!==liveRef.current.me?.id||!canLeaveDialog())return;
+    const next:Modal={kind:"historyAnswer",editTarget:answer};
+    setError("");
+    if(!navigation.current?.open(next,null,{stack}))setModal(next);
+  }
+  function dismiss(){if(historyEditDirty.current&&!canLeaveDialog())return;if(!navigation.current?.close())setModal(null);setError("");}
   function close(){if(!lock.current)dismiss();}
   function accountBusy(value:boolean){
     lock.current=value;setBusy(value);
@@ -359,7 +382,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     }
     if(currentPeer.current===peerId){followChat.current=true;void readThread(peerId,true);}
   }
-  const modalTitle=modal?({answer:answerTitle,suggestion:"이 질문 어때요?",signal:"신호 보내기",buySignals:"추가 신호 구매",result:"신호 상태",setup:"회원 프로필 만들기",edit:"프로필 수정",channels:"채널 선택",help:"파장 이용 안내",block:"프로필 차단",delete:"파장 기록 삭제",person:"상대 프로필",privateProfile:"교환용 프로필",privatePhotos:"교환용 사진",visibility:"답변 공개 설정",answers:"내가 남긴 답변",logout:"로그아웃",withdraw:"오쭈다 회원탈퇴"}[modal.kind]):"";
+  const modalTitle=modal?({answer:answerTitle,historyAnswer:"답변 수정",suggestion:"이 질문 어때요?",signal:"신호 보내기",buySignals:"추가 신호 구매",result:"신호 상태",setup:"회원 프로필 만들기",edit:"프로필 수정",channels:"채널 선택",help:"파장 이용 안내",block:"프로필 차단",delete:"파장 기록 삭제",person:"상대 프로필",privateProfile:"교환용 프로필",privatePhotos:"교환용 사진",visibility:"답변 공개 설정",answers:"내가 남긴 답변",logout:"로그아웃",withdraw:"오쭈다 회원탈퇴"}[modal.kind]):"";
   return <div className="station-layout">
     <StationNavigation tab={tab} onGo={go} pending={signalCount}/>
     <main className="wrap station-content" id="station-content">
@@ -385,6 +408,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
         onSignal={answer=>open({kind:"signal",peer:answer.peer,answer})}
         onBuySignals={()=>open({kind:"buySignals"})}
         onChat={id=>void openHistoryChat(id)}
+        onEdit={answer=>{if(answer.own&&answer.peer===me?.id)editHistoryAnswer({...answer,owner:answer.peer});}}
         onWrite={()=>open({kind:"answer"})}/>
         <aside className="today-rail">
           <section className="rail-paper"><div className="rail-title"><h2>마음함</h2><I n="heart" s={23}/></div>
@@ -419,7 +443,16 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     {modal.kind==="suggestion"&&me&&<QuestionSuggestionForm key={me.id} onBusyChange={accountBusy} onSaved={()=>{close();setToast("질문을 보냈어요. 고마워요!");}}/>}
     {(modal.kind==="logout"||modal.kind==="withdraw")&&<AccountActionForm action={modal.kind} close={close} onBusyChange={accountBusy}/>}
     {modal.kind==="visibility"&&me&&<><h2>답변 공개 설정</h2><AnswerGenderVisibility key={me.id} onSaved={()=>setHistoryRevision(n=>n+1)}/></>}
-    {modal.kind==="answers"&&me&&<MyAnswers key={me.id+period} answered={Boolean(me.body)} onWrite={()=>open({kind:"answer"})}/>}
+    {modal.kind==="answers"&&me&&<MyAnswers key={me.id+period} answered={Boolean(me.body)} revision={historyRevision}
+      onEdit={answer=>editHistoryAnswer({...answer,owner:me.id},true)} onWrite={()=>open({kind:"answer"})}/>}
+    {modal.kind==="historyAnswer"&&modal.editTarget&&<AnswerEditForm
+      key={modal.editTarget.owner+"/"+modal.editTarget.day+"/"+modal.editTarget.slot} answer={modal.editTarget}
+      onBusyChange={accountBusy} onDirtyChange={dirty=>{historyEditDirty.current=dirty;}}
+      onSaved={next=>{
+        if(next.me?.id!==modal.editTarget?.owner||liveRef.current.me?.id!==modal.editTarget.owner)return false;
+        serverRevision.current++;liveRef.current=next;setLive(next);setNet("");setHistoryRevision(value=>value+1);
+        dismiss();setToast("답변을 수정했어요.");return true;
+      }}/>}
     {modal.kind==="answer"&&<><span className="modalicon"><I n="pencil"/></span><h2>{answerTitle}</h2><p className="questionbox">{themeText}</p>
       <p className="sub">{editingAnswer?"저장하면 모두의 답변에도 수정한 내용이 보여요.":"답변을 공개하면 작성일을 포함해 1년(365일) 동안 파장 회원이 질문과 내 답변을 함께 볼 수 있어요."}</p>
       <Editor initial={modal.originalBody} max={220} label="내 이야기" hint="장소, 노래, 기억처럼 구체적인 장면을 들려주세요."
