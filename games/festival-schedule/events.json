@@ -23493,6 +23493,76 @@
         "박람회",
         "전시"
       ]
+    },
+    {
+      "category": "sport",
+      "section": "sports",
+      "start": "2026-11-28",
+      "end": "2026-11-28",
+      "geoApprox": false,
+      "lat": null,
+      "lng": null,
+      "locationStatus": "unmapped",
+      "sourceCheckedAt": "2026-11-20",
+      "status": "scheduled",
+      "sportType": "축구",
+      "tags": [
+        "축구",
+        "K리그2",
+        "프로축구",
+        "정규리그",
+        "34라운드"
+      ],
+      "id": "pro-kleague2-2026-r34-yongin-paju",
+      "title": "K리그2 2026 정규리그 34R 용인FC vs 파주 프런티어FC",
+      "region": "경기",
+      "city": "용인시",
+      "venue": "용인미르스타디움",
+      "address": "경기도 용인시 처인구 동백죽전대로 61",
+      "summary": "하나은행 K리그2 2026 최종 34라운드 용인FC 홈경기, 파주 프런티어FC 원정경기입니다.",
+      "scheduleNote": "11월 28일(토) 14:00 킥오프. 입장 게이트는 경기 시작 2시간 전에 개방 예정.",
+      "priceNote": "관람 입장권 가격은 구단·티켓링크 예매처 확인(선수 참가비 해당 없음).",
+      "accessNote": "일반 관람 가능, 티켓링크 예매 11월 16일 14:00 오픈으로 구단 안내. 잔여석·현장구매 여부는 공식 확인.",
+      "sourceUrl": "https://yonginfc.co.kr/match/schedule",
+      "sourceName": "용인FC 구단 공식 경기일정",
+      "verificationSources": [
+        "https://www.welfarehello.com/community/hometownNews/2026-%EC%9A%A9%EC%9D%B8FC-11%EC%9B%94-%EA%B2%BD%EA%B8%B0-%EC%9D%BC%EC%A0%95-%EC%95%88%EB%82%B4--188472b3-93e1-46ef-9d63-e0b1a1bc7e15"
+      ]
+    },
+    {
+      "category": "sport",
+      "section": "sports",
+      "start": "2026-11-28",
+      "end": "2026-11-28",
+      "geoApprox": false,
+      "lat": null,
+      "lng": null,
+      "locationStatus": "unmapped",
+      "sourceCheckedAt": "2026-11-20",
+      "status": "scheduled",
+      "sportType": "축구",
+      "tags": [
+        "축구",
+        "K리그2",
+        "프로축구",
+        "정규리그",
+        "34라운드"
+      ],
+      "id": "pro-kleague2-2026-r34-gimhae-seongnam",
+      "title": "K리그2 2026 정규리그 34R 김해FC vs 성남FC",
+      "region": "경남",
+      "city": "김해시",
+      "venue": "김해종합운동장",
+      "address": "경남 김해시 김해종합운동장(세부 도로명 주소 공식 확인)",
+      "summary": "하나은행 K리그2 2026 최종 34라운드 김해FC 홈경기, 성남FC 원정경기입니다.",
+      "scheduleNote": "11월 28일(토) 14:00 킥오프.",
+      "priceNote": "관람 입장권 가격은 NOL티켓 공식 예매처 확인. 예매 수수료 1장당 1,000원(선수 참가비 해당 없음).",
+      "accessNote": "일반 예매 11/25 11:00, 멤버십 선예매 11/23 11:00. 현장 매표소 경기 시작 2시간 전부터 잔여석 판매; 전 좌석 지정제.",
+      "sourceUrl": "https://nol.yanolja.com/ticket/genre/sports/gimhaefc",
+      "sourceName": "김해FC 공식 입장권 판매처 NOL티켓",
+      "verificationSources": [
+        "https://www.kleague.com/about/competition.do"
+      ]
     }
   ]
 }
