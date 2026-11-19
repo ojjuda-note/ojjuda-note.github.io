@@ -2242,7 +2242,7 @@
         "Under the skin",
         "Scent of you"
       ],
-      "checkedAt": '2026.11.17',
+      "checkedAt": '2026.11.19',
       "concept": "다른 개성을 지닌 아홉 멤버가 음악과 무대로 하나가 되는 팀.",
       "official": "https://www.andteam-official.jp/",
       "youtube": "https://www.youtube.com/@andTEAM_official",
@@ -2328,35 +2328,16 @@
           "href": "https://www.andteam-official.jp/news/d6fe308a947f"
         },
         {
-          "date": "2026-11-18",
-          "title": "Mark on You 홀 투어 · 오사카",
-          "sub": "그랑큐브 오사카 · 17:00 입장 / 18:00 개연 JST/KST · 예매·변경 사항은 공식 공지 확인",
-          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
-        },
-        {
-          "date": "2026-11-18",
-          "title": "JO·TAKI 후지TV ホンマでっか!?TV 출연",
-          "sub": "21:00~21:54 JST/KST 방송 · JO·TAKI 출연",
-          "href": "https://www.andteam-official.jp/news/a84de8968609"
-        },
-        {
-          "date": "2026-11-18",
-          "endDate": "2026-11-19",
-          "title": "JO·TAKI·MAKI TBS よるのブランチ 출연",
-          "sub": "11/18 23:56~11/19 00:55 JST/KST 방송 · JO·TAKI·MAKI 출연",
-          "href": "https://www.andteam-official.jp/news/2c290411ba85"
-        },
-        {
-          "date": "2026-11-19",
-          "title": "Mark on You 홀 투어 · 오사카",
-          "sub": "그랑큐브 오사카 · 17:00 입장 / 18:00 개연 JST/KST · 예매·변경 사항은 공식 공지 확인",
-          "href": "https://www.andteam-official.jp/news/021ab1de6a61"
-        },
-        {
           "date": "2026-11-22",
           "title": "EJ·FUMA·JO·MAKI · ABEMA 슈퍼 포뮬러 2026 VTR",
           "sub": "13:00경 JST/KST 방송 예정 · 녹화 영상 출연 · 생중계 사정에 따라 시간 변경 가능",
           "href": "https://www.andteam-official.jp/news/bc623a596e4f"
+        },
+        {
+          "date": "2026-11-26",
+          "title": "TAKI · 닛케이 CNBC 특별 프로그램 출연",
+          "sub": "일본 닛케이 CNBC · 11:35~12:20 JST/KST 방송 · 11/19 공식 발표",
+          "href": "https://www.andteam-official.jp/news/493c38d3ea9b"
         },
         {
           "date": "2026-11-27",
@@ -2596,6 +2577,18 @@
       ],
       news: [
         {
+          "date": "2026.11.19",
+          "tag": "굿즈",
+          "title": "Weverse Shop 11/20~12/4 블랙프라이데이 판매 발표",
+          "href": "https://www.andteam-official.jp/news/e5ce8c121d84"
+        },
+        {
+          "date": "2026.11.19",
+          "tag": "방송",
+          "title": "TAKI, 11월 26일 닛케이 CNBC 특별 프로그램 출연 발표",
+          "href": "https://www.andteam-official.jp/news/493c38d3ea9b"
+        },
+        {
           "date": "2026.11.17",
           "tag": "공연",
           "title": "Mark on You 12월 26일 삿포로 추가 공연 · 11월 18일 선예매 접수 시작",
@@ -2676,6 +2669,11 @@
         }
       ],
       merch: [
+        {
+          "title": "&TEAM 2026 Weverse Shop 블랙프라이데이",
+          "sub": "2026.11.20 12:00~12.04 23:59 JST · 일본 내 배송 · 2027.01.25부터 순차 출고 예정 · 가격·재고는 판매 페이지 확인",
+          "href": "https://www.andteam-official.jp/news/e5ce8c121d84"
+        },
         {
           "title": "Mark on You 현장 한정 오리지널 라벨 캔",
           "sub": "공연장·일본 전국 전용 자판기 판매 · 멤버별 랜덤 9종 · 가격·재고는 운영처 확인",
