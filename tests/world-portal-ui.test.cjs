@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '..');
 const origin = 'https://ojjuda.test';
 const cardId = '00000000-0000-4000-8000-000000000010';
-const copy = '오늘 하루 어땠나요? 괜찮았나요';
+const copy = '취향이 모이는 우리의 아지트.';
 const siteName = '오쭈다 아지트';
 const searchTitle = '오쭈다 아지트 | 게임·타로·사주·익명카드';
 
@@ -70,8 +70,8 @@ const searchTitle = '오쭈다 아지트 | 게임·타로·사주·익명카드'
       assert.equal(await page.locator('.world-welcome, .world-preview').count(), 0);
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'landing fits ' + width);
       if (process.env.OJJUDA_COPY_PROOF_DIR) { fs.mkdirSync(process.env.OJJUDA_COPY_PROOF_DIR, { recursive: true }); await page.screenshot({ path: path.join(process.env.OJJUDA_COPY_PROOF_DIR, `landing-${width}.png`) }); }
-      await page.getByRole('link', { name: '아지트로 이동', exact: true }).click();
-      await page.waitForURL(origin + '/world.html?tab=hub');
+      await page.locator('#entry-browse').click();
+      await page.waitForURL(origin + '/world.html');
       await page.goto(origin + '/sitemap.html');
       // The public sitemap now includes searchable game, food, fan and group pages.
       assert.ok(await page.locator('main section').count() >= 7, 'World destinations and discovery sections remain visible');
@@ -98,7 +98,7 @@ const searchTitle = '오쭈다 아지트 | 게임·타로·사주·익명카드'
     await page.locator('#auth-dialog[open]').waitFor();
     await page.locator('[data-close-dialog]').click();
     await page.locator('#account-actions:not([hidden])').waitFor();
-    await page.locator('[data-open-auth="signup"]').click();
+    await page.locator('#account-actions [data-open-auth="signup"]').click();
     const signupNickname = await page.locator('#nickname').inputValue();
     assert.ok(signupNickname.length > 0 && signupNickname.length <= 12, 'signup automatically provides a valid-length nickname');
     assert.equal(await page.locator('#nickname').evaluate(el => el.readOnly), false, 'the automatic nickname can be changed during signup');
@@ -129,3 +129,4 @@ const searchTitle = '오쭈다 아지트 | 게임·타로·사주·익명카드'
     await context.close();
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
+

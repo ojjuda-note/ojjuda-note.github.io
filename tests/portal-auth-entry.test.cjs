@@ -140,6 +140,12 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     app.element('password').value = 'fixture-password';
     await app.submit();
   };
+  const entryIdentity = (app, destination) => {
+    const [key, name] = { world: ['agit', '아지트'], note: ['park', '공원'], pajang: ['pajang', '파장'] }[destination];
+    assert.equal(app.element('auth-dialog').attributes['data-entry-space'], key);
+    assert.equal(app.element('auth-title').textContent, `오쭈다 ${name}`);
+    assert.equal(app.element('front-title').textContent, `오쭈다 ${name}`);
+  };
   const closeDialog = async app => {
     app.element('[data-close-dialog]').listeners.click();
     await app.flush();
@@ -147,6 +153,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   };
   for (const [destination, route] of loginRoutes) {
     const direct = setup(`?auth=login&next=${destination}`); await direct.flush();
+    entryIdentity(direct, destination);
     await signIn(direct);
     assert.deepEqual(direct.navigations, [route], `${destination} returns to its own section after login`);
     assert.deepEqual(direct.navigationKinds, ['replace'], `${destination} consumes the intermediate login page`);
@@ -155,12 +162,14 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     const reopened = setup(`?auth=login&next=${destination}`); await reopened.flush();
     await closeDialog(reopened);
     reopened.element('header-login').listeners.click();
+    entryIdentity(reopened, destination);
     await signIn(reopened);
     assert.deepEqual(reopened.navigations, [route], `${destination} survives closing and reopening header login`);
   }
   for (const [destination, route, guestRoute] of loginRoutes) {
     const switched = setup(`?auth=login&next=${destination}`); await switched.flush();
     switched.element('signup-tab').listeners.click(); switched.element('login-tab').listeners.click();
+    entryIdentity(switched, destination);
     assert.equal(switched.element('guest-browse').href, guestRoute, `${destination} keeps its own guest entrance`);
     await signIn(switched);
     assert.deepEqual(switched.navigations, [route], `${destination} survives login/signup tab switches`);
@@ -169,6 +178,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
       const signup = setup(`?auth=login&next=${destination}`); await signup.flush();
       if (entry === 'header') { await closeDialog(signup); signup.element('header-signup').listeners.click(); }
       else signup.element('signup-tab').listeners.click();
+      entryIdentity(signup, destination);
       signup.fill(); await signup.submit();
       assert.equal(signup.signups[0].options.emailRedirectTo, `https://ojjuda.kr/?next=${destination}`, `${entry} signup keeps ${destination} in the confirmation link`);
       assert.equal(JSON.parse(signup.storage.get('ojjuda_post_confirm_destination')).destination, destination);
@@ -223,7 +233,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     qr() { throw new Error('World must use the common signup form'); }
   });
   assert.deepEqual(worldRoutes, ['/?auth=signup&next=world', '/?auth=forgot&next=world']);
-  for (const destination of ['world', 'note']) {
+  for (const destination of ['world', 'note', 'pajang']) {
     const app = setup(`?auth=signup&next=${destination}`); await app.flush();
     const generatedNickname = app.element('nickname').value;
     assert.match(generatedNickname, /^[가-힣]{2}[0-9a-z]{10}$/);
@@ -233,7 +243,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     assert.equal(app.focused, 'email', 'signup starts with the first editable field');
     assert.equal(app.element('auth-dialog').open, true);
     assert.equal(app.element('signup-tab').attributes['aria-selected'], 'true');
-    assert.equal(app.element('auth-title').textContent, '오쭈다 아지트');
+    entryIdentity(app, destination);
     assert.equal(app.element('.password-confirm-field').hidden, false);
     assert.equal(app.element('password-confirm-label').textContent, '비밀번호 확인');
     assert.equal(app.element('password-confirm').required, true);
@@ -715,3 +725,4 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   assert.equal(signupRace.element('password').value, 'replacement-password');
   console.log('PASS: Agit/Pajang/Park login returns, dialog reopen and signup switches, confirmation and recovery destinations, required inputs, untrusted destination rejection and account races');
 })().catch(error => { console.error(error); process.exitCode = 1; });
+

@@ -200,7 +200,16 @@
         </button>`;
       }).join('')}</div></section>`;
   }
-  function markup(settings, games, date = kstDate()) {
+  function guestEntrance(theme) {
+    return `<header class="agit-hero agit-guest-hero" data-guest-entrance aria-label="아지트 시작하기">
+      <div class="agit-entry-top"><span>OJJUDA · AGIT</span><span>${escapeHtml(theme.name)}의 아지트</span></div>
+      <div class="agit-entry-story"><h1>취향이 모이는<br><em>우리의 아지트</em></h1><p>가볍게 놀고, 다정하게 나눠요.</p></div>
+      <figure class="agit-entry-art"><img class="agit-hero-theme-art" src="/features/home/theme-illustrations/${theme.key}.webp?v=20261110-themes3" alt="" width="960" height="640" decoding="async" fetchpriority="high"><figcaption>잠깐의 여유, 함께하는 즐거움.</figcaption></figure>
+      <nav class="agit-entry-actions" aria-label="아지트 계정 시작"><a class="agit-entry-primary" href="/?auth=signup&next=world">회원가입 <span aria-hidden="true">↗</span></a><a class="agit-entry-secondary" href="/?auth=login&next=world">로그인</a></nav>
+      <p class="agit-entry-note">게임부터 일상 이야기까지, 한곳에서.</p>
+    </header>`;
+  }
+  function markup(settings, games, date = kstDate(), options = {}) {
     const state = safeState(settings), game = recommended(games, date), theme = themeFor(date);
     const weekStart = addDays(date, -((new Date(date+'T00:00:00Z').getUTCDay()+6)%7));
     const weekDays = Array.from({length:7}, (_, i) => addDays(weekStart, i));
@@ -221,7 +230,7 @@
     }
     const dailyHints = {group:'함께하는 이야기',festival:'이번 주 어디 갈까?',restaurants:'맛있는 발견',tour:'가볍게 떠나요'};
     return `<div class="agit-hub" id="agit-hub-view" data-agit-hub data-agit-season="${theme.season}" data-agit-theme="${theme.key}">
-      <header class="agit-hero" aria-label="아지트">
+      ${options.guest ? guestEntrance(theme) : `      <header class="agit-hero" aria-label="아지트">
         <div class="agit-hero-story">
           <span class="agit-hero-eyebrow"><span aria-hidden="true">✦</span> ${Number(month)}월 ${Number(day)}일 ${weekday}요일 <strong>${escapeHtml(theme.name)} 테마</strong></span>
           <h1><span class="agit-hero-highlight">${escapeHtml(theme.headline[0])} <em>${escapeHtml(theme.headline[1])}</em></span></h1>
@@ -232,7 +241,7 @@
             ${game ? `<div class="agit-pick-body"><div class="agit-pick-art"><img src="/assets/design/games/${game.id}.svg" alt="" width="62" height="62" loading="lazy"></div><div class="agit-pick-foot"><strong>${escapeHtml(game.name)}</strong><button type="button" class="agit-play-button" data-act="agit-play" data-v="${game.id}" aria-label="${escapeHtml(game.name)} 게임 시작">한 판 놀기 <span aria-hidden="true">↗</span></button></div></div>` : '<p>추천게임을 준비하고 있어요.</p>'}
           </section>
         <div class="agit-hero-visual" aria-hidden="true"><span class="agit-hero-halo"></span><img class="agit-hero-theme-art" src="/features/home/theme-illustrations/${theme.key}.webp?v=20261110-themes3" alt="" width="960" height="640" decoding="async" loading="eager" fetchpriority="high"></div>
-      </header>
+      </header>`}
       <section class="agit-checkin" id="agit-stamp" aria-label="방문 도장">
         <div class="agit-checkin-label"><span class="agit-checkin-symbol" aria-hidden="true">✿</span><div><h2>방문 도장</h2><small>${streak?streak+'일 연속 방문 중!':'오늘부터 시작해요'} <span aria-hidden="true">·</span> 이번 주 ${stampedCount}/7</small></div></div>
         <div class="agit-stamp-days">${weekDays.map(d => {
@@ -255,7 +264,7 @@
         }).join('')}</div>
       </section>
       <a class="agit-park-banner" href="/world.html?place=park" data-act="agit-park" aria-label="공원 둘러보기">
-        <img class="agit-park-art" src="/features/home/theme-illustrations/spring.webp?v=20261110-themes3" width="960" height="640" alt="" loading="lazy" decoding="async">
+        <img class="agit-park-art" src="/features/home/theme-illustrations/${theme.key}.webp?v=20261110-themes3" width="960" height="640" alt="" loading="lazy" decoding="async">
         <span class="agit-park-copy">
           <span class="agit-park-brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a4.5 4.5 0 0 0-4.4 3.6A4.8 4.8 0 0 0 5 15.4a4.2 4.2 0 0 0 4 3.1h6a4.2 4.2 0 0 0 4-3.1 4.8 4.8 0 0 0-2.6-8.8A4.5 4.5 0 0 0 12 3Z"/><path d="M12 12v9m-4 0h8"/></svg><b>공원</b><small>일상을 나누는 곳</small></span>
           <strong class="agit-park-title">나누고 싶은 오늘,<br>공원에 남겨요.</strong>
@@ -316,3 +325,4 @@
   root.OjjudaAgitHub = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
+

@@ -51,6 +51,7 @@
 <link rel="stylesheet" href="/note/composer-tools.css?v=20261118-writing-options7">
 <link rel="stylesheet" href="/park/card-grid.css?v=20261117-park-750">
 <link rel="stylesheet" href="/app/world/world-themes.css?v=20261119-auto-theme1">
+<link rel="stylesheet" href="/park/entry-design.css?v=20261119-park-entry1">
 <script src="/app/world/world-themes.js?v=20261119-auto-theme1" defer></script>
 <script src="/app/world/world-weather.js?v=20261119-kma-current1" defer></script>
 <meta property="og:type" content="website">
@@ -150,6 +151,30 @@
 
         <section id="feed" class="screen park-feed" aria-labelledby="feed-title">
           <h1 id="feed-title" class="park-feed-title">공원 카드</h1>
+          <section id="park-guest-entry" class="park-guest-entry" aria-labelledby="park-entry-title" hidden>
+            <div class="park-entry-main">
+              <div class="park-entry-copy">
+                <p class="park-entry-eyebrow"><span aria-hidden="true"></span>누구나 머물 수 있는 곳</p>
+                <h2 id="park-entry-title" class="park-entry-title">마음이 쉬어가는 <em>공원</em></h2>
+                <p class="park-entry-description">이름 없이 나누는 오늘의 이야기.</p>
+              </div>
+              <div class="park-entry-still-life" aria-hidden="true">
+                <span class="park-entry-paper-back"></span>
+                <span class="park-entry-paper-front">
+                  <span class="park-entry-paper-art"></span>
+                  <span class="park-entry-paper-text"><small>오늘의 한 장</small><strong>오늘 하루,<br>어땠나요?</strong></span>
+                </span>
+                <span class="park-entry-paper-tag">잠시 쉬어가요.</span>
+              </div>
+            </div>
+            <div class="park-entry-footer">
+              <div class="park-entry-actions">
+                <a class="park-entry-signup" href="/?auth=signup&amp;next=note" target="_top">회원가입<span aria-hidden="true">↗</span></a>
+                <a class="park-entry-login" href="/?auth=login&amp;next=note" target="_top">로그인</a>
+              </div>
+              <button id="park-entry-browse" class="park-entry-browse" type="button" aria-controls="feed-list">카드 둘러보기<span aria-hidden="true">↓</span></button>
+            </div>
+          </section>
           <div class="feed-layout">
             <div class="feed-column">
               <div class="feed-sort-tabs tabs" role="group" aria-label="카드 정렬"></div>
@@ -266,6 +291,7 @@
   <script src="/note/preview.js?v=20261119-history1" defer></script>
   <script src="/note/pull-refresh.js?v=20261004-refresh1" defer></script>
   <script src="/note/navigation.js?v=20261119-history1" defer></script>
-  <script src="/park/integration.js?v=20261119-guest-account1" defer></script>
+  <script src="/park/integration.js?v=20261119-park-entry1" defer></script>
 </body>
 </html>
+
