@@ -78,7 +78,7 @@ jobs:
       - name: Check Park brush lettering, numerals and punctuation
         if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
         run: node tests/park-calligraphy-finals-ui.test.cjs
-      - name: Check the local heart font and administrator previews
+      - name: Check the local heart and Nanum Myeongjo fonts and administrator previews
         if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
         run: node tests/park-heart-font-ui.test.cjs
       - name: Check the embedded Park toolbar and navigation

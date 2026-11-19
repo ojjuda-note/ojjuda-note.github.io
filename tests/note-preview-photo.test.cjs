@@ -214,10 +214,20 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   assert.equal(await value("select style->>'font' as value from ojjuda_note_internal.card_visuals where card_id=$1", [heartPublished.card_id]), 'heart');
   assert.deepEqual(await rpc('publish_card', heartCard), heartPublished, 'retry keeps the selected heart font');
   assert.equal((await saveDraft(1, { ...draft, style: { font: 'heart' } })).style.font, 'heart');
-  for (const font of ['default', 'round', 'serif', 'handwriting', 'heart', 'calligraphy', 'mono'])
+  const nanumCard = { ...basic('190'), p_style: { font: 'nanum-myeongjo' } };
+  await assert.rejects(() => rpc('publish_card', nanumCard), e => e.code === '22023');
+  const nanumMigration = fs.readdirSync(path.join(root, 'supabase/migrations')).find(n => n.endsWith('_park_nanum_myeongjo_font.sql'));
+  assert.ok(nanumMigration, 'the Nanum Myeongjo validator migration is present');
+  await db.exec(read('supabase/migrations/' + nanumMigration));
+  assert.equal(await value("select proacl::text as value from pg_proc where oid='ojjuda_note_internal.valid_card_style(jsonb)'::regprocedure"), validatorAcl);
+  const nanumPublished = await rpc('publish_card', nanumCard);
+  assert.equal(await value("select style->>'font' as value from ojjuda_note_internal.card_visuals where card_id=$1", [nanumPublished.card_id]), 'nanum-myeongjo');
+  assert.deepEqual(await rpc('publish_card', nanumCard), nanumPublished, 'retry keeps the selected Nanum Myeongjo font');
+  assert.equal((await saveDraft(2, { ...draft, style: { font: 'nanum-myeongjo' } })).style.font, 'nanum-myeongjo');
+  for (const font of ['default', 'round', 'serif', 'nanum-myeongjo', 'handwriting', 'heart', 'calligraphy', 'mono'])
     assert.equal(await value('select ojjuda_note_internal.valid_card_style($1::jsonb) as value', [JSON.stringify({ font })]), true);
   await assert.rejects(() => rpc('publish_card', { ...basic('190'), p_style: { font: 'missing-font' } }), e => e.code === '22023');
-  await assert.rejects(() => saveDraft(2, { ...draft, style: { font: 'heart', unexpected: true } }), e => e.code === '22023');
+  await assert.rejects(() => saveDraft(3, { ...draft, style: { font: 'nanum-myeongjo', unexpected: true } }), e => e.code === '22023');
 
   // A real published style contains server-owned expiry keys. Administrators must
   // be able to edit that style without discarding or extending paid decorations.
@@ -261,6 +271,22 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   assert.deepEqual(audit.visual_after.style, correctedStyle, 'the audit records the actual stored style');
   for (const style of [{ ...correctedStyle, unexpected: true }, { ...correctedStyle, font: 'missing-font' }, null])
     await assert.rejects(() => rpc('admin_edit_card_visual', adminVisual(style)), e => e.code === '22023');
+  const readNanumStyle = () => value('select style as value from ojjuda_note_internal.card_visuals where card_id=$1', [nanumPublished.card_id]);
+  const adminNanumVisual = style => ({ ...adminVisual(style), p_card_id: nanumPublished.card_id, p_reason: '나눔명조 수정' });
+  const publishedNanumStyle = await readNanumStyle();
+  await db.exec('set role authenticated');
+  await rpc('admin_edit_card_visual', adminNanumVisual(publishedNanumStyle));
+  await db.exec('reset role');
+  assert.deepEqual(await readNanumStyle(), publishedNanumStyle, 'a published Nanum Myeongjo card survives an administrator round trip');
+  const nanumPaidStyle = { ...paidStyle, font: 'nanum-myeongjo' };
+  await db.query('update ojjuda_note_internal.card_visuals set style=$1 where card_id=$2', [JSON.stringify(nanumPaidStyle), nanumPublished.card_id]);
+  await rpc('admin_edit_card_visual', adminNanumVisual({ ...nanumPaidStyle, shopFont: 'none',
+    shopFontUntil: '2200-01-01T00:00:00Z', shopEffectUntil: '2200-01-01T00:00:00Z' }));
+  const correctedNanumStyle = await readNanumStyle();
+  assert.deepEqual(correctedNanumStyle, { ...nanumPaidStyle, shopFont: 'none', shopFontUntil: null },
+    'Nanum Myeongjo clears only the paid font expiry and cannot extend the retained effect');
+  const nanumAudit = await value("select detail as value from ojjuda_note_internal.moderation_actions where card_id=$1 and detail#>>'{visual_after,style,shopEffect}'='foil'", [nanumPublished.card_id]);
+  assert.deepEqual(nanumAudit.visual_after.style, correctedNanumStyle, 'the audit records the stored Nanum Myeongjo style');
   await db.exec("select set_config('test.moderator','false',false); set role authenticated");
   await assert.rejects(() => rpc('admin_edit_card_visual', adminVisual(publishedStyle)), e => e.code === '42501');
   await db.exec('reset role');

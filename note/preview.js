@@ -104,7 +104,8 @@ const PHOTO_GROUPS = [
   { label: '여러 색 수묵', first: 262, last: 297 }
 ];
 const PHOTO_FIRST = PHOTO_GROUPS[0].first, PHOTO_LAST = PHOTO_GROUPS.at(-1).last;
-const FONT_CODES = ['default', 'round', 'serif', 'handwriting', 'heart', 'calligraphy', 'mono'];
+const FONT_CODES = ['default', 'round', 'serif', 'nanum-myeongjo', 'handwriting', 'heart', 'calligraphy', 'mono'];
+const SELF_HOSTED_FONTS = ['heart', 'nanum-myeongjo'];
 const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 'snow',
   'starlight', 'fireflies', 'petals', 'bubbles', 'aurora', 'confetti', 'sunbeams',
   'mist', 'ocean', 'heartbeat', 'orbit', 'glitter', 'meteor', 'leaves', 'neon', 'dawn'];
@@ -2020,7 +2021,7 @@ function installFeatures() {
   });
   for (const [selector, setting] of [['#compose-font', 'font'], ['#compose-size', 'size'], ['#compose-effect', null]]) {
     $(selector).addEventListener('change', event => {
-      if (setting === 'font' && event.target.value === 'heart') {
+      if (setting === 'font' && SELF_HOSTED_FONTS.includes(event.target.value)) {
         // A newly selected font wins over a previously purchased font.
         // Keep the member's sticker, effect and ownership untouched.
         const decorations = window.OjjudaDecorations?.styleFields?.();
@@ -2038,7 +2039,7 @@ function installFeatures() {
     if (backdrop.hidden || !selected?.matches?.('[data-shop-style="Font"]')
       || !['book', 'letter', 'poster'].includes(selected.value)) return;
     const font = $('#compose-font');
-    if (font.value !== 'heart') return;
+    if (!SELF_HOSTED_FONTS.includes(font.value)) return;
     font.value = 'default';
     rememberComposerSetting('font', 'default');
   }, true);
