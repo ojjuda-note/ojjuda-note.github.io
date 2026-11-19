@@ -413,6 +413,55 @@ test('an invited player returning to a finished room sees their own outcome once
   assert.equal(w.location.hash,'');
 });
 
+for(const reducedMotion of [false,true])test(`back-to-carry announces the pickup and moves the pair together with reduced motion ${reducedMotion}`,async t=>{
+  const keys=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+  const host=Buffer.from(await crypto.subtle.exportKey('raw',keys.publicKey)).toString('base64url');
+  const html=readFileSync(new URL('../games/yut/index.html',import.meta.url),'utf8');
+  const dom=new JSDOM(html,{url:'https://example.test/games/yut/#room='+host,runScripts:'outside-only'});
+  const w=dom.window,doc=w.document,prefs={matches:reducedMotion,addEventListener(){}};
+  t.after(()=>w.close());
+  w.matchMedia=()=>prefs;
+  for(const [key,value] of Object.entries({window:w,document:doc,location:w.location,history:w.history,
+    sessionStorage:w.sessionStorage,matchMedia:w.matchMedia,requestAnimationFrame:()=>1,cancelAnimationFrame:()=>{}})){
+    Object.defineProperty(globalThis,key,{value,writable:true,configurable:true});
+  }
+  const game=newGame(2);
+  game.phase='move';game.steps=2;game.pendingRolls=[2];game.revision=1;
+  game.eventTiles={3:'carry',4:'back'};game.islandTiles={};
+  game.pawns[0][0]=[1,2];game.pawns[1][0]=[1,2,3];
+  w.sessionStorage.setItem('island-yut:key:'+host,JSON.stringify(await crypto.subtle.exportKey('jwk',keys.privateKey)));
+  w.sessionStorage.setItem('island-yut:state:'+host,JSON.stringify({seats:[host,'guest'],game}));
+  t.mock.method(globalThis,'setInterval',()=>0);
+  const channel={on(){return this;},subscribe(fn){fn('SUBSCRIBED');},async send(){}};
+  w.OjjudaGetClient=()=>({channel:()=>channel,async removeChannel(){}});
+  w.HTMLCanvasElement.prototype.getContext=()=>null;
+  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+  w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
+  const action=()=>doc.querySelector('#actions button');
+  const state=()=>JSON.parse(w.sessionStorage.getItem('island-yut:state:'+host)).game;
+  const wait=async pred=>{for(let n=0;n<250&&!pred();n++)await new Promise(r=>setTimeout(r,10));assert.ok(pred());};
+  await import('../games/yut/play.mjs?back-carry-'+reducedMotion);
+  await wait(()=>doc.querySelector('#pawn-picker [data-pawn="0"]')&&!doc.querySelector('dialog').open);
+  doc.querySelector('#pawn-picker [data-pawn="0"]').click();
+  assert.equal(action().textContent,'2칸 이동 · 뒤로');
+  action().click();
+  await wait(()=>action()?.textContent==='한 번 더 던지기'&&!action().disabled);
+  assert.equal(doc.getElementById('note').textContent,'뒤로 · 업기 · 잡기 · 한 번 더');
+  assert.deepEqual(state().pawns[0],[[1,2,3],[1,2,3],[],[]]);
+  assert.equal(state().lastMove.pickedUp,1);
+  assert.deepEqual([...doc.querySelectorAll('#reserve-pawns [data-pawn]')].map(b=>b.dataset.pawn),['2','3']);
+  // The captured opponent grants another throw, so the same UI can move the new pair.
+  prefs.matches=true;let face=0;t.mock.method(Math,'random',()=>face++%4<2?.1:.9);
+  action().click();
+  doc.querySelector('#pawn-picker [data-pawn="0"]').click();
+  assert.equal(action().textContent,'2칸 이동');
+  prefs.matches=reducedMotion;action().click();
+  await wait(()=>state().revision===4&&action().textContent==='상대 팀 차례');
+  assert.deepEqual(state().pawns[0],[[1,2,3,4,5],[1,2,3,4,5],[],[]]);
+  assert.deepEqual(state().lastMove.indices,[0,1]);
+  assert.match(doc.getElementById('team-title').textContent,/바다/);
+});
+
 test('board dragging uses the chosen pawn and its legal squares, including after rotation',()=>{
   globalThis.window={devicePixelRatio:1,addEventListener(){},removeEventListener(){}};
   globalThis.matchMedia=()=>({matches:true});

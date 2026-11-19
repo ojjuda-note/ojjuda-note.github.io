@@ -1,10 +1,10 @@
-import {roundSummary} from './results.mjs?v=20261117-arcade-score-repair1';
-import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,newMatch,firstSeatRemaining,firstSeatTiming,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=20';
-import {createBoard,PAWN_HOP_MS} from './board.mjs?v=28';
-import {createToss,drawRack,drawFirstSeatStick} from './toss.mjs?v=14';
+import {roundSummary} from './results.mjs?v=20261119-yut-back-carry1';
+import {TEAMS,HOME,FINISH,YUT,DEFAULT_MODE,DEFAULT_PIECES,EVENT_NAMES,tileEffect,newGame,newMatch,firstSeatRemaining,firstSeatTiming,position,moves,nodeName,act,computerAction,lastThrowSeed,pendingRolls,singleResult} from './rules.mjs?v=21';
+import {createBoard,PAWN_HOP_MS} from './board.mjs?v=29';
+import {createToss,drawRack,drawFirstSeatStick} from './toss.mjs?v=15';
 import {createTableSounds} from './sound.mjs?v=5';
-import {openRoom,roomCode} from './room.mjs?v=20';
-import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=5';
+import {openRoom,roomCode} from './room.mjs?v=21';
+import {ANIMALS,animalFor,drawZodiac} from './zodiac.mjs?v=6';
 
 const $=id=>document.getElementById(id), board=createBoard($('board'),chooseTile,choosePawn,dropPawn), toss=createToss($('toss-canvas'));
 const dialog=$('sheet'), body=$('dialog-body'), reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -234,6 +234,7 @@ function moveNotice(s){
   const parts=[];
   const eventName=EVENT_NAMES[move.event];
   if(eventName&&(move.event!=='carry'||move.pickedUp!=null))parts.push(eventName);
+  if(move.pickedUp!=null&&move.event!=='carry')parts.push(EVENT_NAMES.carry);
   const pawns=s.pawns[move.team],at=position(pawns[move.indices[0]]);
   if(at===FINISH)parts.push('골인');
   else if(at!==HOME&&move.pickedUp==null&&pawns.filter(p=>position(p)===at).length>move.indices.length)parts.push('같은 팀 말과 합류');
@@ -359,33 +360,38 @@ async function showState(s,animate=true){
     const dropAt=placed&&team===previous.team&&indices.includes(placed.index)?frames.indexOf(placed.to):-1;
     const remaining=dropAt<0?frames:frames.slice(dropAt+1);
     const movingAt=node=>[...base,...(node===HOME||node===FINISH?[]:indices.map(index=>({team,index,node})))];
-    const pauseAt=node=>{
+    const pauseAt=(node,index)=>{
       if(s.lastMove.event&&node===s.lastMove.landing){
         $('note').textContent=net?.status||EVENT_NAMES[s.lastMove.event]||'';
+        return 670;
+      }
+      if(index===frames.length-1&&s.lastMove.pickedUp!=null){
+        $('note').textContent=net?.status||EVENT_NAMES.carry;
         return 670;
       }
       return PAWN_HOP_MS;
     };
     const land=(node,ms,index)=>{
       const kind=node===FINISH?'finish':s.lastMove.landing===node&&s.lastMove.event?s.lastMove.event:
+        index===frames.length-1&&s.lastMove.pickedUp!=null?'carry':
         index===frames.length-1&&s.lastMove.captured?'capture':null;
       sounds.land(kind,ms,index);
     };
     if(dropAt>=0){
       land(placed.to,0,dropAt);
-      if(remaining.length){draw(s,movingAt(placed.to),true);await delay(pauseAt(placed.to));}
-      else{draw(s,undefined,true);if(s.lastMove.event)await delay(pauseAt(placed.to));}
+      if(remaining.length){draw(s,movingAt(placed.to),true);await delay(pauseAt(placed.to,dropAt));}
+      else{draw(s,undefined,true);if(s.lastMove.event)await delay(pauseAt(placed.to,dropAt));}
     }
     for(const [i,node] of remaining.entries()){
       if(token!==motion)return;
       land(node,node===HOME||node===FINISH?0:PAWN_HOP_MS,i+dropAt+1);
-      draw(s,movingAt(node));await delay(pauseAt(node));
+      draw(s,movingAt(node));await delay(pauseAt(node,i+dropAt+1));
     }
   }else if(rolled){
     sounds.quickThrow();showBonus(s);
   }else if(fresh&&previous.phase==='move'&&s.lastMove){
     const move=s.lastMove;
-    sounds.land(move.frames.at(-1)===FINISH?'finish':move.event||(move.captured?'capture':null));
+    sounds.land(move.frames.at(-1)===FINISH?'finish':move.pickedUp!=null?'carry':move.event||(move.captured?'capture':null));
   }
   if(token!==motion)return;
   casting=false;busy=false;pickingFirst=false;$('toss-layer').hidden=true;reveal(s);draw(s);renderHUD();
