@@ -199,6 +199,8 @@ const server = http.createServer((request, response) => {
       assert.equal(await page.locator('#' + prefix + '-reader-body [data-page-id]:visible').count(), 1,
         'exactly one current reading page is visible');
       assert.equal(await page.locator('#' + prefix + '-title').textContent(), expected.title);
+      assert.deepEqual(await article.locator('.reader-subtitle').allTextContents(), expected.subtitle ? [expected.subtitle] : [],
+        'the original source explanation is rendered below its title');
       assert.deepEqual(await article.locator('.reader-paragraph').allTextContents(), expected.paragraphs || []);
       assert.deepEqual(await article.locator('.reader-summary-line').allTextContents(), expected.summaryLines || []);
     }
@@ -329,6 +331,19 @@ const server = http.createServer((request, response) => {
       ['timeline-past-achievements','domains-past-achievements'],
       ['timeline-future-change','domains-future-changes']
     ];
+    const similarTopics = [
+      ['problem-situation-now',['timeline-present-luck','domains-present-flow'],'지금의 나와 현재 상황'],
+      ['timeline-strengths',['domains-my-tendencies','domains-my-strengths'],'나의 성향과 강점'],
+      ['timeline-past-hardships',['domains-past-hardships'],'지나온 어려움과 반복되는 문제'],
+      ['timeline-future-hardships',['domains-cautions-and-risks','domains-prepare-for-difficulties'],'조심할 점과 미리 할 준비'],
+      ['domains-study-habits',['domains-concentration-obstacles'],'공부 습관과 집중'],
+      ['domains-money-attitude',['domains-spending-habits'],'돈에 대한 태도와 지출 습관'],
+      ['domains-everyday-burdens',['domains-life-balance'],'생활의 부담과 균형'],
+      ['domains-stress-reactions',['domains-rest-and-recovery'],'스트레스와 회복'],
+      ['domains-good-fortune',['domains-unexpected-help'],'기회와 도움'],
+      ['domains-what-i-really-want',['domains-life-direction'],'내가 원하는 삶의 방향'],
+      ['domains-family-conflict',['domains-family-role'],'가족 관계와 역할']
+    ];
     for (const [canonical,source] of sharedTopics) {
       const combined = selectedSource.pages.filter(item => item.chapterId === canonical);
       assert.ok(combined.length && combined.every(item => item.sourceIds?.includes(canonical) && item.sourceIds.includes(source)),
@@ -336,12 +351,34 @@ const server = http.createServer((request, response) => {
       assert.equal(combined[0].groupId, canonical.split('-')[0]);
       assert.ok(!chapterFirst.some(item => item.chapterId === source), 'a repeated topic is not a second contents entry');
     }
+    const originals = new Map(selectedSource.summary.groups.flatMap(group => group.sections.map(part => [group.id + '-' + part.id,part])));
+    for (const [canonical,sources,title] of similarTopics) {
+      const combined = selectedSource.pages.filter(item => item.chapterId === canonical);
+      const sourceIds = [canonical,...sources];
+      assert.ok(combined.length && combined.every(item => item.chapterTitle === title
+        && item.sourceIds?.length === sourceIds.length && sourceIds.every((id,index) => item.sourceIds[index] === id)),
+      'the combined chapter keeps its representative title and complete source identities');
+      assert.equal(await page.locator('#result-reader-menu [data-reader-target="' + combined[0].id + '"] .reader-contents-label').textContent(), title);
+      for (const source of sources) assert.ok(!chapterFirst.some(item => item.chapterId === source),
+        'a related source does not repeat as a separate contents entry');
+      for (const source of sourceIds) {
+        const sourcePages = combined.filter(item => item.sourceId === source);
+        const original = originals.get(source);
+        assert.ok(sourcePages.length && sourcePages.every(item => item.sourceTitle === original.title && item.title === original.title
+          && item.subtitle === (original.subtitle || '')), 'each perspective retains its original title and explanation');
+      }
+    }
     const domainChapters = chapterFirst.filter(item => item.groupId.startsWith('domains:'));
-    assert.equal(domainChapters.length, 44);
+    assert.equal(domainChapters.length, 31);
+    assert.equal(new Set(domainChapters.map(item => item.groupId)).size, 9);
+    assert.equal(await page.locator('#result-reader-menu .reader-contents-group').evaluateAll(groups =>
+      groups.filter(group => group.querySelector('[data-reader-target^="domains-"]')).length), 9,
+    'only populated domain categories appear in the menu');
     const domainSource = selectedSource.summary.groups.find(group => group.id === 'domains');
     assert.equal(domainSource.sections.length, 50, 'the original fifty domain readings remain intact');
     assert.equal(domainSource.categories.length, 10);
-    const mergedDomainIds = new Set(sharedTopics.map(([,source]) => source.slice('domains-'.length)));
+    const mergedDomainIds = new Set([...sharedTopics.map(([,source]) => source),...similarTopics.flatMap(([,sources]) => sources)]
+      .filter(source => source.startsWith('domains-')).map(source => source.slice('domains-'.length)));
     for (const part of domainSource.sections) {
       const sourceId = 'domains-' + part.id;
       assert.ok(selectedSource.pages.some(item => item.chapterId === sourceId || item.sourceIds?.includes(sourceId)),
@@ -350,7 +387,7 @@ const server = http.createServer((request, response) => {
     for (const category of domainSource.categories) {
       const chapters = domainChapters.filter(item => item.groupId === 'domains:' + category.id);
       assert.equal(chapters.length, domainSource.sections.filter(part => part.categoryId === category.id && !mergedDomainIds.has(part.id)).length);
-      assert.ok(chapters.length, 'each of the ten categories still has its own readings');
+      if (!chapters.length) continue;
       await goToReaderPage(chapters[0], selectedSource.pages);
       await openReaderMenu();
       assert.equal(await page.locator('#result-reader-menu [aria-current="page"]').getAttribute('data-reader-target'), chapters[0].id);
@@ -365,6 +402,17 @@ const server = http.createServer((request, response) => {
     await inspectReaderLayout('shared solution next page');
     await page.screenshot({path:path.join(artifacts,'tarot-shared-topic-next-mobile.png'),animations:'disabled'});
     tarotViews.reader.sharedTopic = {chapterId:'problem-solution',sources:sharedTopics.find(([id]) => id === 'problem-solution'),pages:mergedSolution.length};
+    const strengths = selectedSource.pages.filter(item => item.chapterId === 'timeline-strengths');
+    for (const source of ['domains-my-tendencies','domains-my-strengths']) {
+      const first = strengths.find(item => item.sourceId === source);
+      assert.ok(first, 'both the disposition and strength perspectives remain inside the combined chapter');
+      await goToReaderPage(first, selectedSource.pages);
+      assert.equal(await page.locator('#result-title').textContent(), originals.get(source).title);
+      await inspectReaderLayout('combined strengths ' + source);
+    }
+    await page.screenshot({path:path.join(artifacts,'tarot-similar-topic-source-mobile.png'),animations:'disabled'});
+    tarotViews.reader.similarTopic = {chapterId:'timeline-strengths',sources:strengths[0].sourceIds,
+      pages:strengths.length,visibleSource:'domains-my-strengths'};
     const firstStory = chapterFirst.find(item => item.groupId === 'problem');
     await goToReaderPage(firstStory, selectedSource.pages);
     await page.locator('#result-reader-body').focus();
@@ -459,7 +507,8 @@ const server = http.createServer((request, response) => {
     await openReaderMenu();
     assert.equal(await page.locator('#result-context-select').inputValue(), 'money-agreement', 'reopening preserves the chosen situation');
     await page.locator('#result-reader-menu-toggle').click();
-    tarotViews.sourceInterpretation = {record:selectedSource.record.id,completeCopy:true,originalDomainReadings:50,domainChapters:44,sharedTopics:6,contexts:3,widths:[320,390,750]};
+    tarotViews.sourceInterpretation = {record:selectedSource.record.id,completeCopy:true,originalDomainReadings:50,domainChapters:31,
+      domainGroups:9,sharedTopics:6,similarTopics:11,contexts:3,widths:[320,390,750]};
     if (tarotOnly) {
       assert.deepEqual(errors,[]);
       assert.deepEqual(failed,[]);

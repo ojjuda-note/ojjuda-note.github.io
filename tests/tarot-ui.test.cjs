@@ -135,6 +135,19 @@ const sharedTopicChapters = [
   ['timeline-past-achievements', 'domains-past-achievements'],
   ['timeline-future-change', 'domains-future-changes']
 ];
+const similarTopicChapters = [
+  ['problem-situation-now', ['timeline-present-luck', 'domains-present-flow'], '지금의 나와 현재 상황'],
+  ['timeline-strengths', ['domains-my-tendencies', 'domains-my-strengths'], '나의 성향과 강점'],
+  ['timeline-past-hardships', ['domains-past-hardships'], '지나온 어려움과 반복되는 문제'],
+  ['timeline-future-hardships', ['domains-cautions-and-risks', 'domains-prepare-for-difficulties'], '조심할 점과 미리 할 준비'],
+  ['domains-study-habits', ['domains-concentration-obstacles'], '공부 습관과 집중'],
+  ['domains-money-attitude', ['domains-spending-habits'], '돈에 대한 태도와 지출 습관'],
+  ['domains-everyday-burdens', ['domains-life-balance'], '생활의 부담과 균형'],
+  ['domains-stress-reactions', ['domains-rest-and-recovery'], '스트레스와 회복'],
+  ['domains-good-fortune', ['domains-unexpected-help'], '기회와 도움'],
+  ['domains-what-i-really-want', ['domains-life-direction'], '내가 원하는 삶의 방향'],
+  ['domains-family-conflict', ['domains-family-role'], '가족 관계와 역할']
+];
 const carriesSource = (item, sourceId) => item.chapterId === sourceId || item.sourceIds?.includes(sourceId);
 const cardIds = view => view.receipt.openOrder.map(index => view.window.DECK.find(card => card.id === view.receipt.drawn[index]));
 const pageNode = (view, prefix = 'result') => view.$('#' + prefix + '-reader-page');
@@ -164,6 +177,8 @@ function assertPage(view, expected, prefix = 'result') {
   assert.equal(page.dataset.chapterId, expected.chapterId);
   assert.equal(page.dataset.groupId, expected.groupId);
   assert.equal(view.$('#' + prefix + '-title').textContent, expected.title);
+  assert.equal(page.querySelector('.reader-subtitle')?.textContent || '', expected.subtitle || '',
+    'the source explanation stays visible below its own title');
   assert.equal(view.window.document.querySelectorAll('#' + prefix + '-reader-body [data-page-id]').length, 1,
     'exactly one current reading page is mounted');
   assert.equal([...page.querySelectorAll('.reader-paragraph')].map(node => node.textContent).join(''),
@@ -180,6 +195,11 @@ function assertAllPages(view, pages, prefix = 'result') {
   const entries = [...view.$('#' + prefix + '-reader-menu').querySelectorAll('[data-reader-target]')];
   assert.deepEqual(entries.map(button => button.dataset.readerTarget).sort(), Array.from(chapters, chapter => chapter.id).sort(),
     'every chapter is directly reachable once, including source material');
+  for (const chapter of chapters) {
+    const entry = entries.find(button => button.dataset.readerTarget === chapter.id);
+    assert.equal(entry.querySelector('.reader-contents-label').textContent, chapter.chapterTitle,
+      'the contents menu uses the representative topic title');
+  }
   view.click('#' + prefix + '-reader-menu-toggle');
   jump(view, pages[0].id, prefix);
   assert.equal(view.$('#' + prefix + '-reader-prev').disabled, true);
@@ -253,6 +273,7 @@ function assertCompleteCopy(view, copied, summary) {
   assert.equal(copied.split(summary.ritual).length - 1, 1);
 }
 function assertSharedTopics(pages, summary) {
+  const originals = new Map(summary.groups.flatMap(group => Array.from(group.sections, part => [group.id + '-' + part.id, part])));
   for (const [canonical, source] of sharedTopicChapters) {
     const combined = pages.filter(item => item.chapterId === canonical);
     assert.ok(combined.length, canonical + ': the established general chapter remains reachable');
@@ -260,6 +281,26 @@ function assertSharedTopics(pages, summary) {
     assert.ok(combined.every(item => item.sourceIds?.includes(canonical) && item.sourceIds.includes(source)),
       canonical + ': every page identifies both original sources');
     assert.ok(!pages.some(item => item.chapterId === source), source + ': the duplicate topic is no longer a separate contents entry');
+  }
+  for (const [canonical, sources, title] of similarTopicChapters) {
+    const combined = pages.filter(item => item.chapterId === canonical);
+    const sourceIds = [canonical, ...sources];
+    assert.ok(combined.length, canonical + ': the related topics have one reachable chapter');
+    assert.ok(combined.every(item => item.chapterTitle === title && item.sourceIds?.length === sourceIds.length
+      && sourceIds.every((sourceId, index) => item.sourceIds[index] === sourceId)),
+    canonical + ': every page keeps the representative title and all source identities');
+    for (const sourceId of sources) assert.ok(!pages.some(item => item.chapterId === sourceId),
+      sourceId + ': related content no longer repeats as a separate menu entry');
+    for (const sourceId of sourceIds) {
+      const original = originals.get(sourceId);
+      const sourcePages = combined.filter(item => item.sourceId === sourceId);
+      assert.ok(sourcePages.length, sourceId + ': the original perspective still has its own readable pages');
+      assert.ok(sourcePages.every(item => item.sourceTitle === original.title && item.title === original.title
+        && item.subtitle === (original.subtitle || '')), sourceId + ': the original title and explanation remain distinct');
+      const text = compact(sourcePages.flatMap(item => [...item.paragraphs, ...(item.summaryLines || [])]).join(''));
+      for (const paragraph of original.paragraphs) assert.ok(text.includes(compact(paragraph)),
+        sourceId + ': related topics retain each source body even when their text overlaps');
+    }
   }
   const domains = summary.groups.find(group => group.id === 'domains');
   assert.equal(domains.sections.length, 50, 'all fifty original domain readings still exist');
@@ -272,8 +313,9 @@ function assertSharedTopics(pages, summary) {
     for (const paragraph of part.paragraphs) assert.ok(displayed.includes(compact(paragraph)), sourceId + ': original prose is retained');
     const normalized = value => String(value).trim().replace(/\s+/gu, ' ');
     const sourceParagraphs = part.paragraphs.map(normalized);
+    const ownPages = sourcePages.filter(item => item.sourceId === sourceId);
     for (const line of part.summaryLines || []) if (sourceParagraphs.some(paragraph => paragraph.includes(normalized(line)))) {
-      assert.ok(!sourcePages.some(item => (item.summaryLines || []).some(summary => normalized(summary) === normalized(line))),
+      assert.ok(!ownPages.some(item => (item.summaryLines || []).some(summary => normalized(summary) === normalized(line))),
         sourceId + ': a summary already fully present in its own body does not add a repeated page');
     }
   }
@@ -307,14 +349,21 @@ function assertChoiceChapters(pages, report) {
   assertAllPages(completed, pages);
   assertSharedTopics(pages, summary);
   const domains = pages.filter(item => item.groupId.startsWith('domains'));
-  assert.equal(new Set(domains.map(item => item.chapterId)).size, 44, 'six shared topics live in their general chapters, leaving forty-four separate domain entries');
+  assert.equal(new Set(domains.map(item => item.chapterId)).size, 31, 'shared and related topics leave thirty-one independent domain entries');
+  assert.equal(new Set(domains.map(item => item.groupId)).size, 9, 'only nine domain categories still have independent entries');
+  const menuGroups = [...completed.$('#result-reader-menu').querySelectorAll('.reader-contents-group')];
+  assert.equal(menuGroups.filter(group => group.querySelector('[data-reader-target^="domains-"]')).length, 9,
+    'the menu shows the nine populated domain groups without an empty timeline group');
   const domainModel = summary.groups.find(group => group.id === 'domains');
-  const mergedDomainIds = new Set(sharedTopicChapters.map(([, source]) => source.slice('domains-'.length)));
+  const mergedDomainIds = new Set([...sharedTopicChapters.map(([, source]) => source),
+    ...similarTopicChapters.flatMap(([, sources]) => sources)]
+    .filter(source => source.startsWith('domains-')).map(source => source.slice('domains-'.length)));
   for (const category of domainModel.categories) {
     const categoryPages = domains.filter(item => item.groupId === 'domains:' + category.id);
+    const expectedCount = domainModel.sections.filter(part => part.categoryId === category.id && !mergedDomainIds.has(part.id)).length;
     assert.equal(new Set(categoryPages.map(item => item.chapterId)).size,
-      domainModel.sections.filter(part => part.categoryId === category.id && !mergedDomainIds.has(part.id)).length,
-      category.id + ': category contents count only independent topics');
+      expectedCount, category.id + ': category contents count only independent topics');
+    if (!expectedCount) continue;
     const first = categoryPages[0];
     assert.ok(first, category.id + ': the domain category has reader pages');
     jump(completed, first.id);

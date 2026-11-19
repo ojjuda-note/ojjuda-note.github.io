@@ -37,7 +37,24 @@ const MERGED_TOPICS = [
   ['timeline-past-achievements', 'domains-past-achievements'],
   ['timeline-future-change', 'domains-future-changes']
 ];
-const domainToCanonical = new Map(MERGED_TOPICS.map(([canonical, domain]) => [domain, canonical]));
+const SIMILAR_TOPICS = [
+  ['problem-situation-now', ['timeline-present-luck','domains-present-flow'], '지금의 나와 현재 상황'],
+  ['timeline-strengths', ['domains-my-tendencies','domains-my-strengths'], '나의 성향과 강점'],
+  ['timeline-past-hardships', ['domains-past-hardships'], '지나온 어려움과 반복되는 문제'],
+  ['timeline-future-hardships', ['domains-cautions-and-risks','domains-prepare-for-difficulties'], '조심할 점과 미리 할 준비'],
+  ['domains-study-habits', ['domains-concentration-obstacles'], '공부 습관과 집중'],
+  ['domains-money-attitude', ['domains-spending-habits'], '돈에 대한 태도와 지출 습관'],
+  ['domains-everyday-burdens', ['domains-life-balance'], '생활의 부담과 균형'],
+  ['domains-stress-reactions', ['domains-rest-and-recovery'], '스트레스와 회복'],
+  ['domains-good-fortune', ['domains-unexpected-help'], '기회와 도움'],
+  ['domains-what-i-really-want', ['domains-life-direction'], '내가 원하는 삶의 방향'],
+  ['domains-family-conflict', ['domains-family-role'], '가족 관계와 역할']
+];
+const topicPolicies = new Map([
+  ...MERGED_TOPICS.map(([id,donor]) => [id,{mode:'exact',donors:[donor]}]),
+  ...SIMILAR_TOPICS.map(([id,donors,title]) => [id,{mode:'similar',donors,title}])
+]);
+const donorToCanonical = new Map([...topicPolicies].flatMap(([id,policy]) => policy.donors.map(donor => [donor,id])));
 const uniqueInOrder = values => {
   const seen = new Set();
   return values.filter(value => {
@@ -68,19 +85,22 @@ function chapterPages(pages, id) {
 function chapterText(pages, id) {
   return bodyOf(chapterPages(pages, id));
 }
-function assertChapterSources(pages, id, sources, dedupeParagraphs = false) {
+function assertChapterSources(pages, id, sources, policy = {}) {
   const chapter = chapterPages(pages, id);
+  const dedupeParagraphs = policy.mode === 'exact';
   const allParagraphs = sources.flatMap(source => paragraphsOf(source.part));
   const expectedParagraphs = dedupeParagraphs ? uniqueInOrder(allParagraphs) : allParagraphs;
   assert.equal(bodyOf(chapter), expectedParagraphs.join(''),
-    id + ': every unique paragraph, condition and example survives in original order');
+    id + ': source order and every permitted original paragraph survive');
   for (const page of chapter) assert.deepEqual(Array.from(page.sourceIds), sources.map(source => source.id));
   const bodyKeys = allParagraphs.map(whitespaceKey);
-  const expectedSummaries = uniqueInOrder(sources.flatMap(source => Array.from(source.part.summaryLines || [])))
-    .filter(line => !bodyKeys.some(paragraph => paragraph.includes(whitespaceKey(line))));
+  const expectedSummaries = policy.mode === 'similar'
+    ? sources.flatMap(source => uniqueInOrder(Array.from(source.part.summaryLines || []))
+      .filter(line => !paragraphsOf(source.part).some(paragraph => whitespaceKey(paragraph).includes(whitespaceKey(line)))))
+    : uniqueInOrder(sources.flatMap(source => Array.from(source.part.summaryLines || [])))
+      .filter(line => !bodyKeys.some(paragraph => paragraph.includes(whitespaceKey(line))));
   assert.deepEqual(plain(chapter.flatMap(page => page.summaryLines || [])), expectedSummaries,
-    id + ': only summaries already present in this chapter body or repeated exactly are omitted');
-  // A retained paragraph keeps the provenance of its first occurrence.
+    id + ': similar viewpoints only omit summaries repeated in their OWN source body');
   const seen = new Set();
   for (const source of sources) {
     const expected = paragraphsOf(source.part).filter(paragraph => {
@@ -89,8 +109,31 @@ function assertChapterSources(pages, id, sources, dedupeParagraphs = false) {
       seen.add(key);
       return true;
     });
-    assert.equal(bodyOf(chapter.filter(page => page.sourceId === source.id)), expected.join(''),
-      source.id + ': retained text remains attached to its actual source');
+    const sourcePages = chapter.filter(page => page.sourceId === source.id);
+    assert.equal(bodyOf(sourcePages), expected.join(''),
+      source.id + ': the exact original body remains attached to its source');
+    if (policy.mode === 'similar') {
+      if (paragraphsOf(source.part).length || source.part.summaryLines?.length) {
+        assert.ok(sourcePages.length, source.id + ': a related viewpoint must not disappear');
+      }
+      for (const page of sourcePages) {
+        assert.equal(page.chapterTitle, policy.title, 'the chapter menu uses one representative heading');
+        assert.equal(page.title, source.part.title, 'the reading page keeps this source’s original heading');
+        assert.equal(page.sourceTitle, source.part.title, 'source metadata preserves the original heading too');
+        assert.equal(page.subtitle, source.part.subtitle || '', 'each original subtitle stays with its own explanation');
+      }
+      const ownSummaries = uniqueInOrder(Array.from(source.part.summaryLines || []))
+        .filter(line => !paragraphsOf(source.part).some(paragraph => whitespaceKey(paragraph).includes(whitespaceKey(line))));
+      assert.deepEqual(plain(sourcePages.flatMap(page => page.summaryLines || [])), ownSummaries,
+        'another viewpoint cannot consume this source’s summary-only answer');
+    } else if (policy.mode === 'exact') {
+      for (const page of sourcePages) {
+        assert.equal(page.title, sources[0].part.title);
+        assert.equal(page.sourceTitle, source.part.title);
+        assert.ok((page.title + '\n' + page.subtitle).includes(source.part.title));
+        if (source.part.subtitle) assert.ok(page.subtitle.includes(source.part.subtitle));
+      }
+    }
   }
   return chapter;
 }
@@ -186,6 +229,72 @@ const loneDomain = {groups:[{id:'domains',label:'분야별 풀이',categories:[{
 const lonePages = buildSummaryPages(loneDomain);
 assertChapterSources(lonePages,'domains-core-problem',[{id:'domains-core-problem',part:loneDomain.groups[0].sections[0]}]);
 
+// Three related perspectives share one menu entry, but identical wording
+// remains under each original heading. Summary-only viewpoints are kept too.
+const viewpointBody = '지금 확인한 사실을 기준으로 상황을 살펴본다.';
+const viewpointSummary = '같은 표현도 이 관점의 답으로 남긴다.';
+const similarFixture = {
+  groups:[
+    {id:'problem',label:'나의 이야기',sections:[
+      {id:'situation-now',title:'현재 상황에서 보이는 모습',subtitle:'현재 조건을 살펴본다.',
+        paragraphs:[viewpointBody],summaryLines:[viewpointBody,viewpointSummary]}
+    ]},
+    {id:'timeline',label:'과거·현재·미래',sections:[
+      {id:'present-luck',title:'지금 드러나는 나의 모습',subtitle:'지금의 행동을 다른 관점에서 읽는다.',
+        paragraphs:[viewpointBody],summaryLines:[viewpointBody,viewpointSummary]}
+    ]},
+    {id:'domains',label:'분야별 풀이',categories:[{id:'timeline',label:'시간의 흐름',count:1}],sections:[
+      {id:'present-flow',categoryId:'timeline',title:'현재의 흐름',subtitle:'요약만 있는 관점도 남긴다.',
+        paragraphs:[],summaryLines:[viewpointBody,viewpointSummary]}
+    ]}
+  ],detailSections:[]
+};
+const similarBefore = JSON.stringify(similarFixture);
+const similarPages = buildSummaryPages(similarFixture);
+uniquePages(similarPages);
+assert.equal(JSON.stringify(similarFixture),similarBefore);
+const threeSources = [
+  {id:'problem-situation-now',part:similarFixture.groups[0].sections[0]},
+  {id:'timeline-present-luck',part:similarFixture.groups[1].sections[0]},
+  {id:'domains-present-flow',part:similarFixture.groups[2].sections[0]}
+];
+const situationPolicy = topicPolicies.get('problem-situation-now');
+const combinedViewpoints = assertChapterSources(similarPages,'problem-situation-now',threeSources,situationPolicy);
+assert.equal(bodyOf(combinedViewpoints),viewpointBody + viewpointBody,
+  'the two related source bodies remain byte-for-byte complete even when identical');
+assert.equal(combinedViewpoints.flatMap(page => page.summaryLines || []).filter(line => line === viewpointSummary).length,3,
+  'identical summaries belonging to three different viewpoints remain readable three times');
+const summaryOnlyViewpoint = combinedViewpoints.filter(page => page.sourceId === 'domains-present-flow');
+assert.ok(summaryOnlyViewpoint.length);
+assert.deepEqual(plain(summaryOnlyViewpoint.flatMap(page => page.summaryLines || [])),[viewpointBody,viewpointSummary],
+  'a summary-only perspective is not removed because its words occur in someone else’s body');
+assert.deepEqual([...new Set(similarPages.filter(page => page.sourceIds.includes('problem-situation-now')).map(page => page.chapterId))],
+  ['problem-situation-now']);
+assert.equal(similarPages.some(page => ['timeline-present-luck','domains-present-flow'].includes(page.chapterId)),false);
+
+// Missing the first or second donor must not lose whichever source remains.
+for (const missing of ['timeline-present-luck','domains-present-flow']) {
+  const partial = plain(similarFixture);
+  for (const group of partial.groups) group.sections = group.sections.filter(part => group.id + '-' + part.id !== missing);
+  const partialBefore = JSON.stringify(partial);
+  const partialPages = buildSummaryPages(partial);
+  uniquePages(partialPages);
+  assert.equal(JSON.stringify(partial),partialBefore);
+  const surviving = threeSources.filter(source => source.id !== missing);
+  assertChapterSources(partialPages,'problem-situation-now',surviving,situationPolicy);
+  assert.ok(partialPages.every(page => !page.sourceIds.includes(missing)));
+}
+const missingPrimary = plain(similarFixture);
+missingPrimary.groups[0].sections = [];
+const unjoinedPages = buildSummaryPages(missingPrimary);
+for (const source of threeSources.slice(1)) {
+  assertChapterSources(unjoinedPages,source.id,[source]);
+}
+const primaryOnly = plain(similarFixture);
+primaryOnly.groups[1].sections = [];
+primaryOnly.groups[2].sections = [];
+assertChapterSources(buildSummaryPages(primaryOnly),'problem-situation-now',[threeSources[0]]);
+
 let summaryCases = 0;
 for (const topic of ['overall', 'love', 'money', 'work']) {
   for (const ids of [
@@ -201,19 +310,18 @@ for (const topic of ['overall', 'love', 'money', 'work']) {
     const entries = summary.groups.flatMap(group => Array.from(group.sections, (part,index) =>
       ({id:group.id + '-' + (part.id || index),part,group,index})));
     const byId = new Map(entries.map(entry => [entry.id,entry]));
-    const primarySources = new Map(MERGED_TOPICS);
     for (const entry of entries) {
-      if (domainToCanonical.has(entry.id)) {
+      if (donorToCanonical.has(entry.id)) {
         assert.equal(pages.some(page => page.chapterId === entry.id), false, 'an integrated topic has no second menu entry');
-        const canonical = domainToCanonical.get(entry.id);
+        const canonical = donorToCanonical.get(entry.id);
         assert.ok(chapterPages(pages,canonical).every(page => page.sourceIds.includes(entry.id)),
           entry.id + ': its original meaning is traceable through the retained chapter');
         continue;
       }
-      const otherId = primarySources.get(entry.id);
-      const sources = [entry, ...(otherId ? [byId.get(otherId)] : [])];
-      assert.ok(sources.every(Boolean), 'all six real-world pairs have their exact expected source');
-      const chapter = assertChapterSources(pages,entry.id,sources,!!otherId);
+      const policy = topicPolicies.get(entry.id);
+      const sources = [entry, ...(policy?.donors || []).map(id => byId.get(id))];
+      assert.ok(sources.every(Boolean), 'all configured real-world sources exist');
+      const chapter = assertChapterSources(pages,entry.id,sources,policy);
       if (entry.group.id === 'domains') assert.ok(chapter.every(page => page.groupId === 'domains:' + entry.part.categoryId));
       else assert.ok(chapter.every(page => page.groupId === entry.group.id));
       if (entry.group.id === 'cards') {
@@ -221,10 +329,16 @@ for (const topic of ['overall', 'love', 'money', 'work']) {
         assertReferenceMaterial(pages,entry.part);
       }
     }
-    const expectedMainOrder = Array.from(entries.filter(entry => !domainToCanonical.has(entry.id)), entry => entry.id);
+    const expectedMainOrder = Array.from(entries.filter(entry => !donorToCanonical.has(entry.id)), entry => entry.id);
     const mainIds = new Set(expectedMainOrder);
     const actualMainOrder = [...new Set(pages.filter(page => mainIds.has(page.chapterId)).map(page => page.chapterId))];
     assert.deepEqual(actualMainOrder,expectedMainOrder, 'canonical topics keep their original positions; other perspectives keep their order');
+    assert.equal(actualMainOrder.length,entries.length - donorToCanonical.size, 'all intended menu duplicates disappear');
+    for (const entry of entries) {
+      const owners = [...new Set(pages.filter(page => page.sourceIds.includes(entry.id)).map(page => page.chapterId))];
+      assert.deepEqual(owners,[donorToCanonical.get(entry.id) || entry.id],
+        entry.id + ': every original source belongs to exactly one retained chapter');
+    }
     for (const group of summary.groups) {
       for (const detail of group.detailSections || []) assert.ok(compact(bodyOf(pages)).includes(compact(original(detail))));
       for (const paragraph of group.basisParagraphs || []) assert.ok(compact(bodyOf(pages)).includes(compact(paragraph)));
@@ -235,11 +349,11 @@ for (const topic of ['overall', 'love', 'money', 'work']) {
         'selected corpus explanations, cautions and practical advice are not part of the six-topic removal');
     }
     const independentDomains = new Set(pages.filter(page => page.groupId.startsWith('domains:')).map(page => page.chapterId));
-    assert.equal(independentDomains.size,44);
-    assert.equal(new Set(pages.filter(page => page.groupId.startsWith('domains:')).map(page => page.groupId)).size,10);
+    assert.equal(independentDomains.size,31);
+    assert.equal(new Set(pages.filter(page => page.groupId.startsWith('domains:')).map(page => page.groupId)).size,9);
     const domainSources = new Set(pages.flatMap(page => page.sourceIds).filter(id => id.startsWith('domains-')));
     assert.deepEqual([...domainSources].sort(),Array.from(entries.filter(entry => entry.group.id === 'domains'),entry => entry.id).sort(),
-      'all fifty original domain meanings survive, including the six now under their canonical topics');
+      'all fifty original domain meanings survive their exact or related topic grouping');
     assert.ok(pages.some(page => page.chapterId === 'personal-choose'));
     summaryCases++;
   }
@@ -314,4 +428,4 @@ for (const [index,card] of DECK.entries()) {
   assertReferenceMaterial(pages,reading);
   assert.equal(JSON.stringify(reading),before);
 }
-console.log('PASS tarot reading pages: ' + summaryCases + ' source-preserving summaries, six exact topic merges, 44 independent domains with all 50 meanings, fewer duplicate pages, intact A/B criteria, 78 unchanged card stories and immutable raw data');
+console.log('PASS tarot reading pages: ' + summaryCases + ' source-preserving summaries, 6 exact and 11 related topic groups, source-specific headings and summaries, partial-source recovery, 31 independent domains with all 50 meanings, intact A/B criteria and 78 unchanged card stories');
