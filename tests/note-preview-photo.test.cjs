@@ -218,6 +218,55 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
     assert.equal(await value('select ojjuda_note_internal.valid_card_style($1::jsonb) as value', [JSON.stringify({ font })]), true);
   await assert.rejects(() => rpc('publish_card', { ...basic('190'), p_style: { font: 'missing-font' } }), e => e.code === '22023');
   await assert.rejects(() => saveDraft(2, { ...draft, style: { font: 'heart', unexpected: true } }), e => e.code === '22023');
+
+  // A real published style contains server-owned expiry keys. Administrators must
+  // be able to edit that style without discarding or extending paid decorations.
+  await db.exec(`
+    alter table ojjuda_note.cards add column purge_after timestamptz;
+    create function ojjuda_note_internal.is_note_moderator() returns boolean language sql stable as
+      $$select auth.uid() is not null and coalesce(current_setting('test.moderator',true),'false')='true'$$;
+    create table ojjuda_note_internal.moderation_actions(card_id uuid,moderator_id uuid,action text,reason text,detail jsonb);
+    select set_config('test.moderator','true',false);
+  `);
+  const readHeartStyle = () => value('select style as value from ojjuda_note_internal.card_visuals where card_id=$1', [heartPublished.card_id]);
+  const publishedStyle = await readHeartStyle();
+  assert.equal(publishedStyle.shopFontUntil, null);
+  assert.equal(publishedStyle.shopEffectUntil, null);
+  const adminVisual = style => ({ p_card_id: heartPublished.card_id, p_style: style,
+    p_photo_key: null, p_style_until: '2099-01-01T00:00:00Z', p_photo_until: null, p_reason: '하트 글꼴 수정' });
+  await assert.rejects(() => rpc('admin_edit_card_visual', adminVisual(publishedStyle)), e => e.code === '22023');
+  const adminSignature = 'ojjuda_note.admin_edit_card_visual(uuid,jsonb,text,timestamp with time zone,timestamp with time zone,text)';
+  const adminAcl = await value('select proacl::text as value from pg_proc where oid=$1::regprocedure', [adminSignature]);
+  const adminMigration = fs.readdirSync(path.join(root, 'supabase/migrations')).find(n => n.endsWith('_park_admin_style_metadata.sql'));
+  await db.exec(read('supabase/migrations/' + adminMigration));
+  assert.equal(await value('select proacl::text as value from pg_proc where oid=$1::regprocedure', [adminSignature]), adminAcl);
+  await db.exec('set role authenticated');
+  await rpc('admin_edit_card_visual', adminVisual(publishedStyle));
+  await db.exec('reset role');
+  assert.deepEqual(await readHeartStyle(), publishedStyle, 'a published heart card survives an administrator round trip');
+  const paidStyle = { ...publishedStyle, shopFont: 'poster', shopFontUntil: '2099-02-01T00:00:00Z',
+    shopSticker: 'heart', shopEffect: 'foil', shopEffectUntil: '2099-03-01T00:00:00Z' };
+  await db.query('update ojjuda_note_internal.card_visuals set style=$1 where card_id=$2', [JSON.stringify(paidStyle), heartPublished.card_id]);
+  await rpc('admin_edit_card_visual', adminVisual({ ...paidStyle, size: 'large',
+    shopFontUntil: '2200-01-01T00:00:00Z', shopEffectUntil: '2200-01-01T00:00:00Z' }));
+  assert.deepEqual(await readHeartStyle(), { ...paidStyle, size: 'large' }, 'submitted expiry changes cannot extend a decoration');
+  const heartOnlyStyle = { ...paidStyle, font: 'heart', shopFont: 'none' };
+  delete heartOnlyStyle.shopFontUntil;
+  delete heartOnlyStyle.shopEffectUntil;
+  await rpc('admin_edit_card_visual', adminVisual(heartOnlyStyle));
+  const correctedStyle = await readHeartStyle();
+  assert.deepEqual(correctedStyle, { ...heartOnlyStyle, shopFontUntil: null, shopEffectUntil: paidStyle.shopEffectUntil },
+    'choosing the free heart font clears the old font expiry and preserves the sticker and effect expiry');
+  const audit = await value("select detail as value from ojjuda_note_internal.moderation_actions where detail#>>'{visual_after,style,shopFont}'='none' and detail#>>'{visual_after,style,shopEffect}'='foil'");
+  assert.deepEqual(audit.visual_after.style, correctedStyle, 'the audit records the actual stored style');
+  for (const style of [{ ...correctedStyle, unexpected: true }, { ...correctedStyle, font: 'missing-font' }, null])
+    await assert.rejects(() => rpc('admin_edit_card_visual', adminVisual(style)), e => e.code === '22023');
+  await db.exec("select set_config('test.moderator','false',false); set role authenticated");
+  await assert.rejects(() => rpc('admin_edit_card_visual', adminVisual(publishedStyle)), e => e.code === '42501');
+  await db.exec('reset role');
+  assert.equal(await value("select has_function_privilege('anon',$1,'execute') as value", [adminSignature]), false);
+  assert.equal(await value('select ojjuda_note_internal.valid_card_style($1::jsonb) as value', [JSON.stringify(paidStyle)]), false,
+    'the ordinary member validator still rejects server-owned expiry fields');
   const guestPublish = (id,body,parent=null) => rpc('publish_guest_card',{p_request_id:id,p_body:body,p_parent_id:parent});
   const guestPreview = id => rpc('guest_card_background',{p_request_id:id});
   const stored = id => value('select background_key as value from ojjuda_note.cards where id=$1',[id]);

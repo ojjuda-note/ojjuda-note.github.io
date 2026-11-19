@@ -9,6 +9,9 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const source = read('note/preview.js');
 const boot = source.lastIndexOf('\nif (client) {\n  client.auth.onAuthStateChange');
 assert.ok(boot > 0);
+const afterBoot = source.indexOf("\ndocument.addEventListener('ojjuda:decoration-style'", boot);
+assert.ok(afterBoot > boot, 'the fixture keeps the real post-auth decoration listener');
+const fixtureSource = source.slice(0, boot) + source.slice(afterBoot);
 const html = read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
 const family = locator => locator.evaluate(element =>
   getComputedStyle(element).fontFamily.split(',')[0].replace(/["']/g, '').trim());
@@ -54,7 +57,7 @@ const family = locator => locator.evaluate(element =>
     });
     await page.addScriptTag({ url: origin + '/features/wallet/ju-decorations.js' });
     await page.addScriptTag({ url: origin + '/note/composer-tools.js' });
-    await page.addScriptTag({ content: source.slice(0, boot) });
+    await page.addScriptTag({ content: fixtureSource });
     await page.evaluate(async () => {
       session = { user: { id: 'font-member' } }; authKnown = ready = myIdentityReady = true;
       myIdentity = { gender: 'female' }; myGender = 'female'; draftController = null;
@@ -112,7 +115,8 @@ const family = locator => locator.evaluate(element =>
     const admin = await context.newPage();
     admin.on('pageerror', error => errors.push(error.message));
     await admin.goto(origin + '/admin-fonts.html');
-    await admin.evaluate(async () => {
+    const shopUntil = { shopFontUntil: '2099-01-02T03:04:05.678Z', shopEffectUntil: '2099-02-03T04:05:06.789Z' };
+    await admin.evaluate(async (shopUntil) => {
       await OjjudaAdminAssets.load();
       window.fontCard = { id: '00000000-0000-4000-8000-000000000001', author_id: 'synthetic-member',
         kind: 'memo', body: '가나다 하트 123', tags: [], background_key: 'plain', total_count: 1 };
@@ -126,7 +130,7 @@ const family = locator => locator.evaluate(element =>
           if (name === 'is_note_moderator') return { data: true };
           if (name === 'admin_cards') return { data: [fontCard] };
           if (name === 'admin_card_visual') return { data: { background_key: 'plain',
-            style: { font: 'heart', size: 'normal', shopFont: 'poster', shopSticker: 'heart', shopEffect: 'foil' },
+            style: { font: 'heart', size: 'normal', shopFont: 'poster', shopSticker: 'heart', shopEffect: 'foil', ...shopUntil },
             style_until: new Date(Date.now() + 86400000).toISOString(), photo_key: null, photo_until: null } };
           if (name === 'admin_edit_card_visual') return { data: true };
           if (['admin_risk_cards', 'admin_risk_passed_ids'].includes(name)) return { data: [] };
@@ -134,7 +138,7 @@ const family = locator => locator.evaluate(element =>
         }
       };
       await OjjudaNoteAdmin.mount(document.getElementById('host'), { client, initialTab: 'cards' });
-    });
+    }, shopUntil);
     await admin.getByRole('button', { name: '본문·태그 수정', exact: true }).click();
     await admin.locator('.na-edit-font-heart').waitFor();
     await admin.waitForFunction(() => [...document.fonts].some(face => face.family.replace(/["']/g, '') === 'Single Day'));
@@ -152,6 +156,8 @@ const family = locator => locator.evaluate(element =>
     const saved = await admin.evaluate(() => adminCalls.find(call => call.name === 'admin_edit_card_visual').args.p_style);
     assert.equal(saved.font, 'heart'); assert.equal(saved.shopFont, 'none');
     assert.equal(saved.shopSticker, 'heart'); assert.equal(saved.shopEffect, 'foil');
+    assert.deepEqual(Object.fromEntries(Object.entries(saved).filter(([key]) => key.endsWith('Until'))), shopUntil,
+      'editing the font does not create or change server-provided purchase expiry metadata');
     assert.deepEqual(errors, []);
     await context.close();
     console.log('PASS: local heart font, Hangul and digits, purchased-font switching, saved-card rendering and administrator preview/save.');
