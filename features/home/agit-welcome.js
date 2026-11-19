@@ -348,6 +348,8 @@
   }
   function blocked() {
     if (!document.querySelector('#app .shell') || document.hidden) return true;
+    // Park has its own entrance and account menu, including inside World.
+    if (document.documentElement?.classList?.contains('world-park-active')) return true;
     if (document.body.classList.contains('gaming') || document.body.classList.contains('matgo-open')) return true;
     const overlays = document.querySelectorAll('dialog[open], [role="dialog"], #modal-root > :not(:empty), .ov.on, .auth-loading');
     if ([...overlays].some(overlay => overlay.getClientRects().length > 0)) return true;

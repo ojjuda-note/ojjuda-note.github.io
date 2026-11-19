@@ -82,7 +82,7 @@
 <script src="/features/home/agit-hub.js?v=20261119-park-navigation1" defer></script>
 <script type="module" src="/features/home/location-warmup.mjs?v=entry2"></script>
 <link rel="stylesheet" href="/features/home/agit-welcome.css?v=20261119-green1">
-<script src="/features/home/agit-welcome.js?v=20261117-park-guest2" defer></script>
+<script src="/features/home/agit-welcome.js?v=20261119-park-welcome1" defer></script>
 
 <link rel="stylesheet" href="/features/profile/world-profile-photo.css?v=20261106-source-folders1">
 <script src="/features/profile/world-profile-photo.js?v=20261106-source-folders1" defer></script>
@@ -587,7 +587,7 @@ async function Oa(t,e,o){adminMutationPending++;t&&(t.disabled=!0);try{await e()
 const sectionReleases={
   hub:{name:'아지트',version:Go,manifest:'/version.json'},
   arcade:{name:'오락실',version:'1.0.7',manifest:'/features/arcade/version.json'},
-  park:{name:'공원',version:'1.4.1',manifest:'/park/version.json'}
+  park:{name:'공원',version:'1.4.2',manifest:'/park/version.json'}
 };
 function releaseSection(){
  const tab=worldMainTab();
@@ -2695,6 +2695,7 @@ function mountWorldNote(){
 document.addEventListener("DOMContentLoaded",mountWorldNote,{once:!0}),window.addEventListener("load",mountWorldNote,{once:!0});
 function H(){
  if(!["my","admin","hub"].includes(g.tab)&&!(g.tab==="place"&&["arcade","park"].includes(g.place?.id))){xf("arcade",undefined,true);return;}
+ if(worldMainTab()==="park")window.OjjudaAgitWelcome?.close();
  setTimeout(()=>window.OjjudaDecorations?.decorateWorld(),0);
  enterReleaseSection();
  captureWorldFriendState();
