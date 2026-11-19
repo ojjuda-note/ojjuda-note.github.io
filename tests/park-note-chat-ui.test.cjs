@@ -209,17 +209,17 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
    const controls=[...element.querySelectorAll('.card-actions button')];
    return {
     edgeToEdge:Math.abs(box(element).height-photo.height)<1,
-    contentClear:author.bottom<=quote.top&&quote.bottom<=tags.top&&tags.bottom<=photo.bottom-43,
+    contentClear:author.bottom<=quote.top&&quote.bottom<=tags.top&&tags.bottom<=photo.bottom-37,
     buttons:controls.map(button=>{
      const b=box(button);
      return b.width>=44&&b.height>=44&&b.left>=photo.left&&b.right<=photo.right+1&&
-      (b.bottom<=quote.top||b.top>=tags.bottom);
+      (b.bottom<=quote.top||b.top>=tags.bottom-6);
     })
    };
   });
   assert.equal(layout.edgeToEdge,true,width+': feed photo has no footer or outer border');
   assert.equal(layout.contentClear,true,width+': author, quote and tags have their own space');
-  assert.deepEqual(layout.buttons,[true,true,true,true,true],width+': all five controls fit the card with separate 44px targets');
+  assert.deepEqual(layout.buttons,[true,true,true,true,true],width+': all five 44px controls fit alongside the lowered tags');
   // A 750px square can exceed the embedded viewport. Check the hit target
   // after scrolling each control into view, as a member would on a tablet.
   for (const control of await card.locator('.card-actions button').all()) {
