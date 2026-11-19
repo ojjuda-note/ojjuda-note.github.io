@@ -178,7 +178,7 @@ world=world.slice(0,boot)+`
  await page.locator('.my-hub').waitFor();
  assert.equal(await page.evaluate(()=>designFixture.state.tab),'my');
  assert.equal(await page.locator('.world-settings-header h2').innerText(),'아지트 설정');
- assert.equal(await page.getByRole('button',{name:'설정 닫기',exact:true}).getAttribute('data-tab'),'hub');
+ assert.equal(await page.getByRole('button',{name:'설정 닫기',exact:true}).getAttribute('data-act'),'navigation-back','closing settings uses the actual previous visit');
  assert.equal(await page.locator('.bottomnav [aria-current=page]').getAttribute('data-tab'),'my','the Settings click opens and selects Settings');
  assert.equal(await page.locator('[data-my-group=themes],.settings-theme-section,[data-world-theme-settings],[data-act=theme],[data-act=accent]').count(),0,'all manual appearance controls are removed');await fits('mobile settings');
  await page.screenshot({path:path.join(proof,'settings-mobile.png'),fullPage:true});
@@ -197,7 +197,10 @@ world=world.slice(0,boot)+`
  assert.ok(settingsLayout.rowHeights.every(height=>height>=44),'settings rows retain touch-friendly targets');
  await page.screenshot({path:path.join(proof,'settings-desktop.png'),fullPage:true});
  await page.getByRole('button',{name:'설정 닫기',exact:true}).click();
+ await page.locator('.agit-park-banner').waitFor();
  assert.equal(await page.evaluate(()=>designFixture.state.tab),'hub','the settings close button returns to the Agit');
+ assert.equal(await page.locator('.sidenav [aria-current=page]').getAttribute('data-tab'),'hub','the restored Agit is selected');
+ assert.equal(await page.locator('.world-settings-page').count(),0,'the settings screen is closed after history traversal');
  // Inspect every theme in the real Arcade, including the dark variant.
  await page.locator('.sidenav [data-tab=arcade]').click();await page.evaluate(()=>{clearInterval(designFixture.state.placeT);designFixture.rank();});
  assert.equal(await page.evaluate(()=>designFixture.state.tab==='place'&&designFixture.state.place?.id==='arcade'),true);
