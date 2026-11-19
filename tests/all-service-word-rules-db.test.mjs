@@ -368,3 +368,157 @@ test('actual Pajang RPCs return canonical text and preserve payment, retries, he
     assert.deepEqual((await exchange(actor,'mine')).fields,cleared.fields);
   });
 });
+
+test('the own detail editor atomically combines private fields and public tastes without changing disclosure or current introduction',async t=>{
+  const {db,value,as,functions,seed,member,exchange,signal,peers}=await pajangFixture(t);
+  const detailsName=(await readdir(directory)).find(name=>name.endsWith('_pajang_profile_details_editor.sql'));
+  assert.ok(detailsName,'detail editor migration was created with the Supabase CLI');
+  const detailsMigration=await read(detailsName),before=await functions();
+  const tableAccess=()=>db.query(`select oid::regclass::text as name,relacl,relrowsecurity
+    from pg_class where oid in('pajang_private.people'::regclass,'pajang_private.exchange_profiles'::regclass,
+      'pajang_private.public_profile_preferences'::regclass) order by name`);
+  const accessBefore=(await tableAccess()).rows;
+  await db.exec(detailsMigration);
+  const after=await functions();
+  const details=(actor,action='mine',data={})=>as(actor.id,()=>value('select public.pajang_profile_details($1,$2) as value',[action,data]));
+  const publicSave=(actor,data)=>as(actor.id,()=>value('select public.pajang_profile_save($1,false) as value',[data]));
+  const publicRead=(actor,peer=null)=>as(actor.id,()=>value('select public.pajang_profile_preferences($1) as value',[peer]));
+  const payload=(loaded,changes={})=>({profilePerson:loaded.person,fields:loaded.fields,
+    showAge:loaded.showAge,showGender:loaded.showGender,interest:loaded.interest,
+    preferencesVersion:loaded.preferencesVersion,preferences:{},...changes});
+
+  await t.test('adds an own-profile API and only patches missing interest in the existing save helper',async()=>{
+    const addition=`  if not (p_data ? 'interest') and previous_person is not null then
+    p_data := p_data || jsonb_build_object('interest',
+      (select p.interest from pajang_private.people p where p.id = previous_person));
+  end if;
+`;
+    for(const original of before){
+      const current=after.find(row=>row.name===original.name);
+      assert.ok(current,original.name);
+      for(const key of ['proacl','prosecdef','proconfig'])assert.deepEqual(current[key],original[key],original.name+' '+key);
+      if(original.name==='pajang_private.save_public_profile_preferences(jsonb,boolean)'){
+        assert.equal(current.definition.replace(addition,''),original.definition);
+        assert.match(current.definition,/returning public_profile_preferences\.preferences into next_preferences/,'canonical stored custom values still return');
+      }else assert.equal(current.definition,original.definition,original.name+' unchanged');
+    }
+    assert.deepEqual((await tableAccess()).rows,accessBefore,'public/private table grants and RLS are unchanged');
+    assert.equal(after.find(row=>row.name==='pajang_profile_details(text,jsonb)').prosecdef,false);
+    assert.equal(await value("select has_schema_privilege('authenticated','pajang_private','USAGE') as value"),false);
+  });
+
+  await t.test('round-trips public tastes and canonical private fields with the original masking receipt',async()=>{
+    const actor=await seed(),peer=peers[0];
+    await publicSave(actor,{name:'현재 이름',region:'경기도',preferencesVersion:0,
+      preferences:{relationship_intents:['dating'],custom:{meeting_styles:['기존 산책']}}});
+    const opened=await details(actor);
+    assert.equal(opened.person,actor.person);assert.equal(opened.interest,'walk');
+    const submitted={height:'175.5',religion:'기독교',region:'서울특별시 종로구',drinking:'가끔 마셔요',smoking:'피우지 않아요',bio:'가'.repeat(998)+'씨발'};
+    const saved=await details(actor,'save',payload(opened,{fields:submitted,showAge:true,interest:'book',preferences:{
+      meeting_styles:['deep_talk'],relationship_values:['trust'],affection_styles:['make_time'],life_priorities:['family'],
+      custom:{life_priorities:['나'.repeat(38)+'씨발']}}}));
+    assert.deepEqual(saved.fields,{...submitted,height:175.5,bio:'가'.repeat(998)+'❤️❤️'});
+    assert.deepEqual(saved.masking,{bio:{submitted:submitted.bio,saved:saved.fields.bio}});
+    assert.equal(saved.interest,'book');assert.equal(saved.preferencesVersion,2);
+    assert.deepEqual(saved.preferences.relationship_intents,['dating']);
+    assert.deepEqual(saved.preferences.custom.meeting_styles,['기존 산책'],'omitted public taste groups are preserved');
+    assert.deepEqual(saved.preferences.custom.life_priorities,['나'.repeat(38)+'❤️❤️']);
+    const reopened=await details(actor);
+    assert.deepEqual(reopened.fields,saved.fields);assert.deepEqual(reopened.preferences,saved.preferences);
+    const introduction=await member(actor);
+    assert.equal(introduction.me.name,'현재 이름');assert.equal(introduction.me.region,'경기도');
+    assert.equal(introduction.me.interest,'book','private location does not overwrite the public region');
+    const edited=await details(actor,'save',payload(reopened,{fields:{...reopened.fields,bio:reopened.fields.bio+'!'},
+      preferences:{custom:{life_priorities:[reopened.preferences.custom.life_priorities[0]+'!']}}}));
+    assert.equal(edited.fields.bio.length,saved.fields.bio.length+1,'heart pair counts as one character at the original limit');
+    assert.deepEqual(edited.preferences.custom.life_priorities,[saved.preferences.custom.life_priorities[0]+'!']);
+
+    const entry=await member(actor,'entry');
+    await member(actor,'answer',{body:'공개 답변',day:entry.day,slot:entry.slot,questionId:entry.question.id,archive:true});
+    const visible=await publicRead(peer,actor.person);
+    assert.deepEqual(visible.preferences,edited.preferences,'public tastes keep their previous public visibility');
+    assert.deepEqual(Object.keys(visible).sort(),['person','preferences','version']);
+    assert.ok(!JSON.stringify(visible).includes('기독교'));
+    await signal(actor,peer);await signal(peer,actor);
+    assert.equal((await exchange(peer,'state',{},actor)).peerProfile,null,'profile edit grants no exchange consent');
+    for(const [a,b] of [[actor,peer],[peer,actor]])await db.query("insert into pajang_private.messages(id,src,dst,body,at) select gen_random_uuid(),$1,$2,'안녕하세요',n from generate_series(1,5)n",[a.person,b.person]);
+    assert.equal((await exchange(peer,'state',{},actor)).peerProfile,null,'five messages still require explicit acceptance');
+    await exchange(actor,'request',{},peer,'profile');
+    const accepted=await exchange(peer,'accept',{},actor,'profile');
+    assert.deepEqual(accepted.peerProfile.fields,edited.fields);assert.equal(accepted.peerProfile.gender,null);
+    await exchange(actor,'revoke',{},peer,'profile');
+    assert.equal((await exchange(peer,'state',{},actor)).peerProfile,null);
+    await db.query('insert into pajang_private.blocks(src,dst) values($1,$2)',[peer.person,actor.person]);
+    await assert.rejects(()=>publicRead(peer,actor.person),{code:'42501'});
+  });
+
+  await t.test('rolls back both stores for invalid private fields, stale preferences or another account draft',async()=>{
+    const actor=await seed(),other=await seed(),opened=await details(actor);
+    const saved=await details(actor,'save',payload(opened,{fields:{religion:'유지할 종교',bio:'기존 소개'},
+      interest:'coffee',preferences:{relationship_values:['trust']}}));
+    const baseline=await details(actor);
+    const invalid=[
+      [{fields:{height:301},interest:'camera',preferences:{meeting_styles:['cafe_talk']}},'22023'],
+      [{fields:{bio:'변경되면 안 됨'},interest:'camera',preferences:{meeting_styles:['unknown']}},'22023'],
+      [{preferencesVersion:saved.preferencesVersion-1,fields:{bio:'오래된 창'}},'PT412'],
+      [{profilePerson:other.person,fields:{bio:'다른 회원 창'}},'42501'],
+      [{profilePerson:null},'42501'],[{preferencesVersion:null},'22023'],
+      [{name:'옛 이름'},'22023'],[{region:'옛 지역'},'22023'],
+      [{preferences:{relationship_intents:['marriage']}},'22023'],
+      [{preferences:{custom:{relationship_intents:['marriage']}}},'22023'],
+      [{interest:null},'22023'],
+    ];
+    for(const [changes,code] of invalid){
+      await assert.rejects(()=>details(actor,'save',payload(baseline,changes)),{code});
+      assert.deepEqual(await details(actor),baseline,'failed combined save leaves all prior fields and choices intact');
+    }
+    assert.deepEqual((await details(other)).fields,{});
+  });
+
+  await t.test('keeps fresh name, region and relationship intents and preserves omitted interests in the first editor',async()=>{
+    const actor=await seed();
+    await publicSave(actor,{preferences:{relationship_intents:['friendship']},preferencesVersion:0});
+    const opened=await details(actor);
+    await publicSave(actor,{name:'나중에 바꾼 이름',region:'경기도'});
+    const saved=await details(actor,'save',payload(opened,{interest:'camera',fields:{bio:'상세 소개'},
+      preferences:{meeting_styles:['deep_talk']}}));
+    let current=await member(actor);
+    assert.equal(current.me.name,'나중에 바꾼 이름');assert.equal(current.me.region,'경기도');
+    assert.deepEqual(saved.preferences.relationship_intents,['friendship']);
+    await publicSave(actor,{name:'이름만 수정',preferences:{relationship_intents:['dating']},preferencesVersion:saved.preferencesVersion});
+    current=await member(actor);
+    assert.equal(current.me.interest,'camera','first editor omits the representative picture');
+    assert.deepEqual((await publicRead(actor)).preferences.meeting_styles,['deep_talk']);
+    await assert.rejects(()=>details(actor,'save',payload(saved,{fields:{bio:'오래된 상세 창'}})),{code:'PT412'});
+    const latest=await details(actor);
+    const cleared=await details(actor,'save',payload(latest,{interest:'',preferences:{meeting_styles:[]}}));
+    assert.equal(cleared.interest,'');assert.deepEqual(cleared.preferences.meeting_styles,[]);
+    assert.deepEqual(cleared.preferences.relationship_intents,['dating']);
+    await publicSave(actor,{interest:'coffee'});
+    assert.equal((await member(actor)).me.interest,'coffee','cached clients retain explicit interest writes');
+    await publicSave(actor,{interest:''});
+    assert.equal((await member(actor)).me.interest,'','cached clients can still explicitly clear interest');
+    const newcomer={id:randomUUID()};
+    await db.query('insert into auth.users(id) values($1)',[newcomer.id]);
+    await db.query("insert into ojjuda_account_internal.member_identity values($1,'1990-01-01','female')",[newcomer.id]);
+    const joined=await as(newcomer.id,()=>value('select public.pajang_profile_save($1,true) as value',[
+      {name:'신규 회원',consent:true,preferences:{relationship_intents:[]},preferencesVersion:0}]));
+    assert.equal(joined.me.interest,'','new participants may leave the picture unselected');
+  });
+
+  await t.test('requires an eligible member, cannot target a peer and does not open private grants',async()=>{
+    const actor=await seed(),minor=await seed(),anonymous=await seed();
+    await db.query("update ojjuda_account_internal.member_identity set birth_date='2010-01-01' where user_id=$1",[minor.id]);
+    await db.query('update auth.users set is_anonymous=true where id=$1',[anonymous.id]);
+    for(const blocked of [{id:null},minor,anonymous])await assert.rejects(()=>details(blocked),{code:'42501'});
+    await assert.rejects(()=>details(actor,'mine',{profilePerson:peers[0].person}),{code:'22023'});
+    await assert.rejects(()=>details(actor,'state'),{code:'22023'});
+    for(const role of ['anon','service_role']){
+      await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:actor.id})]);
+      await db.exec(`set role ${role}`);
+      try{await assert.rejects(()=>db.query('select public.pajang_profile_details()'),{code:'42501'});}
+      finally{await db.exec('reset role');}
+    }
+    assert.equal(await value("select has_schema_privilege('authenticated','pajang_private','USAGE') as value"),false);
+  });
+});
