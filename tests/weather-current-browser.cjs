@@ -9,6 +9,7 @@ const minute=60000,refresh=10*minute+100;
 const firstPosition={latitude:37.5665,longitude:126.978,accuracy:30};
 const movedPosition={latitude:35.1796,longitude:129.0756,accuracy:30};
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const permissionSessions=new WeakMap();
 
 async function until(label,read,accept){
   const deadline=Date.now()+10000;let value;
@@ -27,11 +28,12 @@ async function setPermission(context,page,setting){
     browserContextId=targetInfo.browserContextId;
   }finally{await target.detach();}
   assert.ok(browserContextId,'the test uses an isolated browser context');
-  const session=await context.browser().newBrowserCDPSession();
-  try{
-    await session.send('Browser.setPermission',{permission:{name:'geolocation'},setting,
-      origin,browserContextId});
-  }finally{await session.detach();}
+  // Chromium resets permission overrides when their CDP session disconnects.
+  // Keep the native override alive for both startup and in-flight revocation.
+  let session=permissionSessions.get(context);
+  if(!session){session=await context.browser().newBrowserCDPSession();permissionSessions.set(context,session);}
+  await session.send('Browser.setPermission',{permission:{name:'geolocation'},setting,
+    origin,browserContextId});
 }
 
 async function visibility(page,hidden){
@@ -161,7 +163,10 @@ async function fixture(browser,assets,{permission='granted',enabled=true,signedI
     setKind(value){responseKind=value;},
     release(){for(const resolve of gates)resolve();gates.clear();},
     finished:()=>finished,
-    async close(){item.release();await context.close();}
+    async close(){
+      item.release();await context.close();
+      await permissionSessions.get(context)?.detach().catch(()=>{});permissionSessions.delete(context);
+    }
   };
   await page.goto(origin+'/',{waitUntil:'load'});
   return item;
