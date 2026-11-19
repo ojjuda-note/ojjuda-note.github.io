@@ -1455,16 +1455,16 @@
           "href": "https://www.nct-jp.net/news/detail.php?id=1137066"
         },
         {
-          "date": "2026.09.10",
-          "tag": "공연",
-          "title": "11.22 TV아사히 드림 페스티벌 출연 발표",
-          "href": "https://nct-jp.net/en/news/detail.php?id=1135918"
-        },
-        {
           "date": "2026.10.27",
           "tag": "방송",
           "title": "후지TV TWO 12/28 NCT DREAM 10주년 특별 라이브 방송 발표",
           "href": "https://otn.fujitv.co.jp/nctdream/"
+        },
+        {
+          "date": "2026.09.10",
+          "tag": "공연",
+          "title": "11.22 TV아사히 드림 페스티벌 출연 발표",
+          "href": "https://nct-jp.net/en/news/detail.php?id=1135918"
         }
       ],
       merch: [
