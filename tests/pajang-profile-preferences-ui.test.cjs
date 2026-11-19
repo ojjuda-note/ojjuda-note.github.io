@@ -196,10 +196,10 @@ async function closeProfile(page,dialog) {
   await page.waitForFunction(()=>!history.state?.pajangNavigation?.modal);
 }
 
-async function openDetails(page,{ready=true,fromSummary=false}={}) {
+async function openDetails(page,{ready=true}={}) {
   await page.waitForFunction(()=>!history.state?.pajangNavigation?.modal);
   await page.getByRole('navigation',{name:'파장 메뉴'}).getByRole('link',{name:'내 파장',exact:true}).click();
-  await page.getByRole('button',{name:fromSummary?'취향·그림 수정':'교환용 프로필·취향 수정',exact:true}).click();
+  await page.getByRole('button',{name:'교환용 프로필·취향 수정',exact:true}).click();
   const dialog=page.getByRole('dialog',{name:'교환용 프로필',exact:true});
   await dialog.waitFor();
   const save=dialog.getByRole('button',{name:'교환용 프로필 저장',exact:true});
@@ -321,9 +321,8 @@ async function openGroup(dialog,label) {
     assert.deepEqual(saves[0].p_data.preferences,{relationship_intents:['conversation','friendship']});
     assert.equal(Object.hasOwn(saves[0].p_data,'interest'),false,'public editing does not rewrite artwork');
 
-    // The public summary links directly to the relocated controls, with focus on the taste section.
-    form=await openDetails(page,{fromSummary:true});
-    await page.waitForFunction(()=>document.activeElement?.classList.contains('exchange-tastes'));
+    // The account menu opens the relocated controls without a separate summary card.
+    form=await openDetails(page);
     assert.equal(await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).count(),0,'the detailed editor preserves intentions without offering a second editor');
     await form.dialog.getByText('선택한 취향과 프로필 그림은 공개 프로필에도 보여요.',{exact:true}).waitFor();
     const placement=await form.dialog.evaluate(dialog=>{
@@ -382,12 +381,17 @@ async function openGroup(dialog,label) {
     assert.equal(detailSaves[0].p_data.interest,'coffee');
     assert.equal(detailSaves[0].p_data.fields.bio,'취향과 함께 저장할 소개');
     assert.deepEqual(await page.evaluate(()=>window.preferenceFixture.record().preferences.relationship_intents),['conversation','friendship']);
-    const ownSummary=page.getByRole('region',{name:'공개 프로필',exact:true});
-    await ownSummary.getByRole('heading',{name:'나를 표현하는 취향',exact:true}).waitFor();
-    for(const label of ['차분한 대화','유쾌한 수다','고민 나누기','별 보며 걷기']){
-      await ownSummary.locator('.preference-tags').getByText(label,{exact:true}).waitFor();
+    const settings=page.locator('.station-account');
+    await settings.getByRole('heading',{name:'내 파장',exact:true}).waitFor();
+    assert.equal(await settings.getByRole('region',{name:'공개 프로필',exact:true}).count(),0,'My Pajang does not show a separate public profile summary');
+    assert.equal(await settings.getByRole('button',{name:'취향·그림 수정',exact:true}).count(),0,'the removed summary shortcut is not duplicated above the account menu');
+    for(const width of [320,390]){
+      await page.setViewportSize({width,height:844});
+      await assertNoOverflow(page,'My Pajang settings at '+width+'px');
+      assert.equal(await settings.getByRole('button',{name:'공개 프로필 수정',exact:true}).isVisible(),true);
+      assert.equal(await settings.getByRole('button',{name:'교환용 프로필·취향 수정',exact:true}).isVisible(),true);
+      await settings.screenshot({path:path.join(artifacts,'my-pajang-settings-'+width+'.png'),animations:'disabled'});
     }
-    await ownSummary.screenshot({path:path.join(artifacts,'public-own-profile.png'),animations:'disabled'});
 
     form=await openDetails(page);
     meeting=await openGroup(form.dialog,'만남 스타일');
@@ -433,7 +437,7 @@ async function openGroup(dialog,label) {
     assert.deepEqual(await page.evaluate(()=>window.preferenceFixture.record().preferences.meeting_styles),['deep_talk','playful_chat','share_worries']);
     assert.deepEqual(await page.evaluate(()=>window.preferenceFixture.record().preferences.custom.meeting_styles),['별 보며 걷기','저녁 산책']);
 
-    // Each editor clears only its own values; the public summary reflects the complete saved profile.
+    // Each editor clears only its own saved values; My Pajang continues to show the account menu alone.
     form=await openProfile(page);
     await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{name:'대화 상대',exact:true,pressed:true}).waitFor();
     await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{name:'대화 상대',exact:true}).click();
@@ -441,7 +445,7 @@ async function openGroup(dialog,label) {
     await form.save.click();
     await form.dialog.waitFor({state:'hidden'});
     assert.deepEqual(await page.evaluate(()=>window.preferenceFixture.saves.at(-1).p_data.preferences),{relationship_intents:[]});
-    await ownSummary.locator('.preference-tags').getByText('별 보며 걷기',{exact:true}).waitFor();
+    assert.deepEqual(await page.evaluate(()=>window.preferenceFixture.record().preferences.custom.meeting_styles),['별 보며 걷기','저녁 산책'],'clearing intentions preserves the separately edited tastes');
     form=await openDetails(page);
     meeting=await openGroup(form.dialog,'만남 스타일');
     for(const label of ['차분한 대화','유쾌한 수다','고민 나누기'])await meeting.getByRole('button',{name:label,exact:true}).click();
@@ -454,11 +458,7 @@ async function openGroup(dialog,label) {
     assert.deepEqual(cleared.p_data.preferences.meeting_styles,[]);
     assert.deepEqual(cleared.p_data.preferences.custom.meeting_styles,[]);
     assert.equal(cleared.p_data.interest,'');
-    await ownSummary.getByRole('heading',{name:'나를 표현하는 취향',exact:true}).waitFor();
-    await ownSummary.locator('.preference-help').waitFor();
-    assert.equal(await ownSummary.locator('.public-preference-group').count(),0,'cleared tastes disappear from the public profile');
-    assert.equal(await ownSummary.locator('.preference-tags span').count(),0,'cleared intentions and custom tags are not left visible');
-    assert.equal(await ownSummary.locator('.preference-help').isVisible(),true,'the public profile shows an empty-state invitation');
+    assert.equal(await settings.getByRole('region',{name:'공개 프로필',exact:true}).count(),0,'clearing preferences does not restore the removed summary card');
     form=await openProfile(page);
     await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{name:'연애 상대',exact:true}).click();
     await closeProfile(page,form.dialog);
