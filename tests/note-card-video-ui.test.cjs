@@ -203,10 +203,13 @@ test('Park video posters stay light, retain the lower-right circle and play only
 
   const videoRequestCount = requests.filter(value => value.startsWith('/videos/')).length;
   await page.locator(`#feed-list [data-photo-card="${id(40)}"]`).click();
+  await box.locator('img').waitFor({ state: 'visible', timeout: 2000 });
   assert.equal(await box.locator('img').isVisible(), true, 'existing photo opens in the same viewer');
+  assert.ok(await box.locator('img').evaluate(element => element.naturalWidth > 0), 'the existing photo has loaded');
   assert.equal(await video.isVisible(), false);
   assert.equal(requests.filter(value => value.startsWith('/videos/')).length, videoRequestCount);
   await box.locator('button').click();
+  await box.waitFor({ state: 'hidden', timeout: 2000 });
   assert.equal(await box.isVisible(), false);
   assert.deepEqual(errors, [], 'the real Park rendering and media lifecycle produce no page errors');
 });
