@@ -1,0 +1,22 @@
+/* Single Day by DXKorea Inc., SIL OFL 1.1. See assets/fonts/Single-Day-OFL.txt. */
+@font-face {
+  font-family: "Single Day";
+  src: url("/park/assets/fonts/single-day.woff2?v=20261120-single-day1") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+.note-font-heart .card-quote,
+.note-font-heart textarea,
+.na-edit-font-heart .na-edit-quote {
+  font-family: "Single Day", "Nanum Pen Script", cursive;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* Switching back to a special font must also update the writing preview. */
+.compose-photo.ju-font-book textarea { font-family: "Gowun Batang", serif !important; }
+.compose-photo.ju-font-letter textarea { font-family: "Nanum Pen Script", cursive !important; }
+.compose-photo.ju-font-poster textarea { font-family: "Noto Serif KR", serif !important; font-weight: 600; }

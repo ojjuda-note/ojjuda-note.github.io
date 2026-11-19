@@ -11,7 +11,7 @@
   "/admin/fortune-purchases.js?v=20261113-biorhythm-paid1",
   "/admin/groups.js?v=20261107-group-mod2","/admin/asset-library.js?v=20261111-asset-library1",
   "/note/operations.js?v=20261119-question-admin1",
-  "note/admin.js?v=20261117-park-washes1"
+  "note/admin.js?v=20261120-single-day1"
  ],styles=[
   "/admin/visitors.css?v=20261111-guest-popularity1",
   "/admin/visitors-charts.css?v=20261113-feature-chart2",
@@ -22,7 +22,8 @@
   "/admin/fortune-purchases.css?v=20261113-biorhythm-paid1",
   "/admin/groups.css?v=20261107-group-mod1","/admin/asset-library.css?v=20261111-asset-library1",
   "/note/operations.css?v=20261021-admin1",
-  "note/admin.css?v=20261022-agit1"
+  "note/admin.css?v=20261022-agit1",
+  "/park/fonts.css?v=20261120-single-day1"
  ],loaded=new Map();
  let pending=null;
  function resource(url,style){
