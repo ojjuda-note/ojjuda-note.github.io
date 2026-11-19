@@ -1,0 +1,83 @@
+{
+  "file": "park-v1-original.aab",
+  "sha256": "40bfd79cc1ddb64f3017effba47ff6c02ef66f7b4d53415c11f8160a6941a045",
+  "package": "kr.ojjuda.park",
+  "manifest": {
+    "package": "kr.ojjuda.park",
+    "versionCode": "1",
+    "versionName": "1.0.0",
+    "compileSdkVersion": "36",
+    "platformBuildVersionCode": "36",
+    "compileSdkVersionCodename": "16",
+    "platformBuildVersionName": "16"
+  },
+  "sdk": {
+    "minSdkVersion": "24",
+    "targetSdkVersion": "36"
+  },
+  "permissions": [
+    {
+      "name": "kr.ojjuda.park.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+    }
+  ],
+  "buildToolchain": {
+    "gradlePlugin": "8.9.1",
+    "libraries": {
+      "com.google.androidbrowserhelper:androidbrowserhelper": "2.7.4"
+    }
+  },
+  "strings": {
+    "appName": "오쭈다 공원",
+    "launcherName": "오쭈다 공원",
+    "launchUrl": "https://ojjuda.com/",
+    "hostName": "ojjuda.com",
+    "webManifestUrl": "https://ojjuda.com/manifest.webmanifest",
+    "generatorApp": "unknown",
+    "providerAuthority": "kr.ojjuda.park.fileprovider",
+    "fallbackType": "customtabs",
+    "orientation": "default",
+    "assetStatements": "[{ \"relation\": [\"delegate_permission/common.handle_all_urls\"], \"target\": { \"namespace\": \"web\", \"site\": \"https://ojjuda.com\" } }] ,[{ \"relation\": [\"delegate_permission/common.handle_all_urls\"], \"target\": { \"namespace\": \"web\", \"site\": \"https://https://ojjuda.kr\" } }]"
+  },
+  "colors": {
+    "backgroundColor": "#fff8f5ef",
+    "colorPrimary": "#ff51664f",
+    "colorPrimaryDark": "#ff000000",
+    "navigationColor": "#fff8f5ef",
+    "navigationColorDark": "#ff000000",
+    "navigationDividerColor": "#ff000000",
+    "navigationDividerColorDark": "#ff000000"
+  },
+  "booleans": {
+    "enableNotification": false,
+    "enableSiteSettingsShortcut": true
+  },
+  "integers": {
+    "splashScreenFadeOutDuration": 200
+  },
+  "webManifest": {
+    "id": "/",
+    "name": "오쭈다 공원",
+    "short_name": "오쭈다 공원",
+    "lang": "ko",
+    "description": "익명으로 마음을 나누고 공감과 답글로 위로를 건네는 오쭈다 공원",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#f8f5ef",
+    "theme_color": "#51664f",
+    "icons": [
+      {
+        "src": "/app-icons/park-192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "/app-icons/park-512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any maskable"
+      }
+    ]
+  },
+  "nativeSourceStatus": "reconstructed-from-read-only-AAB-metadata; original-source-unavailable"
+}
