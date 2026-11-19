@@ -83,7 +83,7 @@ test('a flat story shows its two real meters beside the summary and reconstructs
     assert.equal(first.querySelectorAll('.saju-wind-meter[role="meter"]').length,2);
     assert.ok([...first.querySelectorAll('.saju-wind-meter')].every(visible));
     assert.equal(h.host.querySelector('dialog.story-menu').open,false);
-    assert.equal(h.host.querySelector('.reading-map,details'),null);
+    assert.equal(h.host.querySelector('.story-stage .reading-map,.story-stage details'),null);
     const scenes=collectStories(h.host);
     assertSummaryAndScore(scenes,item,'the synthetic topic');
     assertOriginalParagraphs(scenes,item.paragraphs,'the synthetic topic');
@@ -134,6 +134,50 @@ test('a paid report enters the story directly and its modal contents retain keyb
     const target=followStory(h.host,'reading-annual-summary');
     assert.ok(target.contains(h.doc.activeElement),'a source anchor reveals its story before focusing it');
     assert.equal(reading.copyByCategory.annual,copy,'presentation never rewrites the copied report');
+  } finally {h.close();}
+});
+
+test('related contents open one theme at a time while single choices and source links stay reachable',()=>{
+  const h=environment();
+  try {
+    const ids=['portrait-decisions','natal-character','natal-money','natal-contracts','reading-symbols'];
+    const pages=ids.map(id=>{
+      const source=h.doc.createElement('section');source.id=id;source.dataset.readerCard=id;
+      const heading=h.doc.createElement('h3');heading.className='reader-headline';heading.textContent=id;
+      const prose=h.doc.createElement('p');prose.textContent=id+' 항목의 고유 설명이에요.';source.append(heading,prose);h.host.append(source);
+      return {id,element:source,label:id,group:'평생운',domain:'lifelong'};
+    });
+    const reader=createStoryReader(h.host,{pages});
+    const select=h.host.querySelector('#reading-page-select'),toggle=h.host.querySelector('.story-menu-button');
+    const menu=h.host.querySelector('dialog.story-menu');toggle.click();
+    const groups=[...menu.querySelectorAll('details.story-theme-group')];
+    assert.deepEqual(groups.map(group=>group.dataset.readingTheme),['character','money','symbols']);
+    const multi=groups.filter(group=>!group.classList.contains('story-theme-single'));
+    assert.equal(multi.length,2);assert.ok(multi.every(group=>!group.open),'related subtopics begin collapsed');
+    assert.ok(multi.every(group=>visible(group.querySelector('summary'))));
+    assert.ok(multi.every(group=>[...group.querySelectorAll('.reading-item-button')].every(button=>!visible(button))));
+    const single=groups.at(-1);assert.equal(single.open,true);
+    assert.equal(single.querySelector('summary').hidden,true);assert.ok(visible(single.querySelector('.reading-item-button')),
+      'a theme with one source needs no extra expanding step');
+    const first=multi[0].querySelector('summary'),second=multi[1].querySelector('summary');
+    first.focus();first.click();assert.equal(multi[0].open,true);assert.equal(h.doc.activeElement,first);
+    second.focus();second.click();assert.equal(multi[0].open,false);assert.equal(multi[1].open,true);assert.equal(h.doc.activeElement,second);
+    const before=select.value;
+    second.dispatchEvent(new h.dom.window.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}));
+    assert.equal(select.value,before,'keyboard activity in a theme never turns the background story');
+    const target=multi[1].querySelectorAll('.reading-item-button')[1];assert.ok(visible(target));target.click();
+    assert.equal(menu.open,false);assert.equal(h.doc.activeElement,toggle);
+    assert.equal(currentStory(h.host).dataset.storySource,'natal-contracts');
+    assert.equal(currentStory(h.host).dataset.readingTheme,'money');
+    assert.equal(reader.restore('portrait-decisions'),true);
+    const linked=currentStory(h.host);
+    assert.equal(linked.dataset.storyTopic,'portrait-decisions');assert.equal(linked.dataset.readingTheme,'character');
+    assert.equal(h.doc.activeElement,toggle,'passive restoration preserves the controls focus');
+    toggle.click();
+    const current=menu.querySelector('.reading-item-button[aria-current="page"]');assert.equal(current.dataset.readingTarget,linked.id);
+    assert.equal(current.closest('.story-theme-group').classList.contains('is-current'),true);
+    menu.dispatchEvent(new h.dom.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));
+    assert.equal(menu.open,false);assert.equal(h.doc.activeElement,toggle);
   } finally {h.close();}
 });
 

@@ -469,6 +469,25 @@ body.saju-clean .story-menu-list .reading-item-list { grid-template-columns: min
 body.saju-clean .story-menu-list button { min-height: 48px; padding: 12px 4px; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent; color: var(--ink); text-align: left; font: 500 16px/1.6 var(--sans); }
 body.saju-clean .story-menu-list button[aria-current] { color: var(--primary); }
 body.saju-clean .story-menu-list :is(h3,h4) { margin: 24px 0 8px; font: 600 14px/1.6 var(--sans); color: var(--primary); }
+body.saju-clean .story-menu-list .story-theme-group {
+  margin: 0; padding: 0; border: 0; border-bottom: 1px solid var(--border);
+  border-radius: 0; background: transparent; box-shadow: none; overflow: visible;
+}
+body.saju-clean .story-theme-toggle {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  min-height: 52px; padding: 12px 4px; list-style: none; cursor: pointer;
+  color: var(--ink); font: 600 16px/1.6 var(--sans);
+}
+body.saju-clean .story-theme-toggle::-webkit-details-marker { display: none; }
+body.saju-clean .story-theme-toggle::after { content: '›'; color: var(--text-muted); font-size: 23px; transform: rotate(0deg); }
+body.saju-clean .story-theme-group[open] > .story-theme-toggle::after { transform: rotate(90deg); }
+body.saju-clean .story-theme-group.is-current > .story-theme-toggle { color: var(--primary); }
+body.saju-clean .story-theme-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+body.saju-clean .story-theme-group > .reading-item-list { margin: 0; padding: 0 0 8px 12px; gap: 0; }
+body.saju-clean .story-theme-group .reading-item-button { width: 100%; font-size: 15px; font-weight: 400; }
+body.saju-clean .story-theme-group .reading-item-list > li:last-child > button { border-bottom: 0; }
+body.saju-clean .story-theme-single > .reading-item-list { padding: 0; }
+body.saju-clean .story-theme-single .reading-item-button { font-size: 16px; font-weight: 500; }
 @media(max-width: 540px) {
   body.saju-clean .detailed-reading .story-reader { min-height: calc(100svh - 56px - env(safe-area-inset-top,0px)); }
   body.saju-clean .story-stage { min-height: calc(100svh - 98px - env(safe-area-inset-top,0px)); padding: 36px 40px calc(62px + env(safe-area-inset-bottom,0px)); }

@@ -3,8 +3,8 @@ import {applyReadingSummaryViews} from './reading-summary-view.mjs?v=20261113-sa
 import {applyReadingScoreViews} from './reading-score-view.mjs?v=20261120-saju-story2';
 import {createCompatibilityScoreboard,createCompatibilityScoreDetails} from './compatibility-score-view.mjs?v=20261114-saju-copy1';
 import {appendReadingDetail} from './reading-detail.mjs?v=20261114-saju-depth1';
-import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261120-saju-topic1';
-import {createStoryReader} from './story-reader.mjs?v=20261120-saju-topic1';
+import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261120-saju-themes1';
+import {createStoryReader} from './story-reader.mjs?v=20261120-saju-themes1';
 
 const readingPagers=new WeakMap();
 const pagerDocuments=new WeakSet();
@@ -337,6 +337,7 @@ function moreAdvice(advice, sectionId) {
   const suggestions=adviceView(advice,sectionId);
   if (!suggestions) return null;
   const details=node('details','reading-more-advice');
+  details.dataset.readingOverview='advice';
   details.append(node('summary','full-reading-toggle','생활에 적용해 보기'),suggestions);
   return details;
 }
@@ -660,6 +661,7 @@ function sourcesView(topic,year) {
 function monthSpotlight(overviews, currentMonth, year) {
   const start=currentMonth||1;
   const spotlight=node('section','months-spotlight');
+  spotlight.dataset.readingOverview='monthly';
   spotlight.setAttribute('aria-label',currentMonth?'지금부터 이어지는 월별 흐름':`${year}년의 시작`);
   spotlight.append(node('p','reader-label',currentMonth?'지금부터 이어지는 흐름':`${year}년의 시작`));
   const cards=node('div','month-spotlight-cards');
@@ -797,14 +799,15 @@ function supplementSection(id, reading, className) {
   return {section,body};
 }
 
-function timingPoints(items, title) {
+function timingPoints(items, title, kind) {
   if (!items?.length) return null;
   const group=node('section','reader-timing-group');
+  group.dataset.timingKind=kind;
   group.append(node('h5','reader-timing-kind',title));
   const list=node('dl','reader-timing-points');
   for (const item of items) {
     const point=node('div','reader-timing-point');
-    if (item.topic) point.dataset.topic=item.topic;
+    if (item.topic) {point.dataset.topic=item.topic;point.dataset.timingTopic=item.topic;}
     point.append(node('dt','',item.label),node('dd','',item.text));
     list.append(point);
   }
@@ -858,6 +861,7 @@ function timingsView(timings, reading, fortune) {
     const headingId=`reading-timings-month-${item.month}`;
     links.append(readingLink(`${item.month}월`,headingId,'reader-topic-link'));
     const article=node('details','reader-timing-card');
+    article.dataset.readingOverview='timing';
     article.open=item.month===initiallyOpen;
     article.dataset.month=String(item.month);
     article.dataset.origin=item.origin||timings.origin;
@@ -876,10 +880,10 @@ function timingsView(timings, reading, fortune) {
     const prose=node('div','report-prose reader-prose');
     appendReadingDetail(prose,item,addParagraphs);
     if (prose.childNodes.length) content.append(prose);
-    const opportunities=timingPoints(item.opportunities,'이 기간에 살릴 기회');
-    const people=timingPoints(item.people,'도움을 구해 볼 사람');
-    const documents=timingPoints(item.documents,'문서와 계약을 살필 때');
-    const cautions=timingPoints(item.cautions,'이 기간에 조심할 상황과 대처');
+    const opportunities=timingPoints(item.opportunities,'이 기간에 살릴 기회','opportunities');
+    const people=timingPoints(item.people,'도움을 구해 볼 사람','people');
+    const documents=timingPoints(item.documents,'문서와 계약을 살필 때','documents');
+    const cautions=timingPoints(item.cautions,'이 기간에 조심할 상황과 대처','cautions');
     if (cautions) content.append(cautions);
     if (opportunities) content.append(opportunities);
     if (people) content.append(people);
@@ -1139,6 +1143,9 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   const lifelong=find('reading-lifelong');
   if(lifelong) {
     const intro=lifelong.querySelector('.portrait-intro')||lifelong.querySelector('.reader-intro');
+    intro.dataset.readingOverview='lifelong';
+    const earlierIntro=lifelong.querySelector('.portrait-previous .reader-intro');
+    if(earlierIntro)earlierIntro.dataset.readingOverview='lifelong';
     const first=add(intro,'나의 성격 요약','평생운 · 나의 성격',{showHeading:true});
     defaults.set(lifelong,first);
     const portraitCards=new Map(all(lifelong,'.portrait-card').map(element=>[element.dataset.portraitCard,element]));
@@ -1164,6 +1171,7 @@ function buildReadingPager(root,{reading,fortune,topic}) {
   if(symbols)add(symbols,'색·숫자·방향','평생운 · 생활');
   const annual=find('reading-annual');
   if(annual) {
+    annual.querySelector('.reader-intro').dataset.readingOverview='annual';
     const first=add(annual.querySelector('.reader-intro'),`${fortune.year}년 운세 요약`,`${fortune.year}년 올해운`,{showHeading:true});
     defaults.set(annual,first);
     cards(annual,reading.reader?.annual,`${fortune.year}년 올해운`);

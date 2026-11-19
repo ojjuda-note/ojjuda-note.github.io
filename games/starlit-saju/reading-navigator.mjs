@@ -1,5 +1,5 @@
 /** The contents are a modal choice, separate from the story being read. */
-export function createReadingNavigator({select,pages,domains,domainForPage,groupForPage,periodForPage,topicForScene}) {
+export function createReadingNavigator({select,pages,domains,domainForPage,groupForPage,periodForPage,topicForScene,themeForPage}) {
   const doc=select.ownerDocument;
   const make=(tag,className,text)=>{
     const element=doc.createElement(tag);if(className)element.className=className;
@@ -57,23 +57,40 @@ export function createReadingNavigator({select,pages,domains,domainForPage,group
     select.value=id;select.dispatchEvent(new doc.defaultView.Event('change',{bubbles:true}));close();
   }
   for(const page of pages) {
-    const id=pageId(page),domain=domainForPage(page),label=groupForPage?.(page)||page.group||'항목';
+    const id=pageId(page),domain=domainForPage(page),theme=themeForPage?.(page);
+    const label=theme?.label||groupForPage?.(page)||page.group||'항목';
     const period=periodForPage?.(page);
     if(period) {
       if(!periods.has(domain))periods.set(domain,new Map());
       periods.get(domain).set(period.id,period);
     }
-    const key=`${domain}\n${period?.id||''}\n${label}`;
+    const key=`${domain}\n${period?.id||''}\n${theme?.id||label}`;
     if(!groups.has(key)) {
-      const group=make('section','reading-item-group');group.dataset.readingDomain=domain;
-      const entries=make('ul','reading-item-list');group.append(make('h3','reading-item-group-title',label),entries);
-      groups.set(key,{element:group,list:entries,domain,period:period?.id});list.append(group);
+      const group=make(theme?'details':'section','reading-item-group'+(theme?' story-theme-group':''));group.dataset.readingDomain=domain;
+      if(period)group.dataset.readingPeriod=period.id;
+      const entries=make('ul','reading-item-list');
+      const heading=make(theme?'summary':'h3',theme?'story-theme-toggle':'reading-item-group-title',label);
+      if(theme) {
+        group.dataset.readingTheme=theme.id;
+        heading.addEventListener('click',event=>{
+          event.preventDefault();const expanded=!group.open;
+          for(const other of groups.values())if(other.element!==group&&other.domain===domain
+            &&other.period===period?.id&&other.element.classList.contains('story-theme-group')
+            &&!other.element.classList.contains('story-theme-single'))other.element.open=false;
+          group.open=expanded;
+        });
+      }
+      group.append(heading,entries);
+      groups.set(key,{element:group,list:entries,heading,domain,period:period?.id,theme});list.append(group);
     }
     const button=make('button','reading-item-button story-topic-button',page.label);button.type='button';
     button.id=`${select.id}-item-${id}`;button.dataset.readingTarget=id;button.dataset.readingDomain=domain;
     if(period)button.dataset.readingPeriod=period.id;
     button.addEventListener('click',()=>choose(id));
     const entry=make('li');entry.append(button);groups.get(key).list.append(entry);items.set(id,button);
+  }
+  for(const group of groups.values())if(group.theme&&group.list.children.length===1) {
+    group.element.classList.add('story-theme-single');group.heading.hidden=true;group.element.open=true;
   }
   for(const domain of domains) {
     if(!pages.some(page=>domainForPage(page)===domain.id))continue;
@@ -105,6 +122,12 @@ export function createReadingNavigator({select,pages,domains,domainForPage,group
     showDomain();
     for(const [key,button] of items) {
       if(key===id)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');
+    }
+    for(const group of groups.values()) {
+      const current=Boolean(group.list.querySelector('[aria-current="page"]'));
+      group.element.classList.toggle('is-current',current);
+      if(group.theme&&current)group.heading.setAttribute('aria-current','true');
+      else group.heading.removeAttribute('aria-current');
     }
   }
   return {element:root,toggle,dialog,sync,focus({open:expanded=false}={}){if(expanded)open();else toggle.focus({preventScroll:true});}};

@@ -1,4 +1,4 @@
-import {createStoryReader} from './story-reader.mjs?v=20261120-saju-topic1';
+import {createStoryReader} from './story-reader.mjs?v=20261120-saju-themes1';
 import {appendReadingDetail,readingDetailText} from './reading-detail.mjs?v=20261114-saju-depth1';
 
 const PERSON_KEYS=['self','partner'];

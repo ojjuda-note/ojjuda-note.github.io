@@ -698,9 +698,17 @@ const server = http.createServer((request, response) => {
       if(await field.getAttribute('aria-pressed')!=='true')await field.click();
       const period=await item.getAttribute('data-reading-period');
       if(period&&await nav.locator('.story-period-select').inputValue()!==period)await nav.locator('.story-period-select').selectOption(period);
-      assert.equal(await item.isVisible(),true,id+': its field and period reveal the requested topic');
+      const theme=item.locator('xpath=ancestor::details[contains(@class,"story-theme-group")][1]');
+      assert.equal(await theme.count(),1,id+': a related theme contains the original topic');
+      if(await theme.getAttribute('open')===null) {
+        const summary=theme.locator(':scope > summary');
+        if(keyboard){await summary.focus();await summary.press('Enter');}else await summary.click();
+      }
+      assert.equal(await item.isVisible(),true,id+': its field, period and expanded theme reveal the requested topic');
+      assert.ok(await nav.locator('.story-theme-group[open]:not(.story-theme-single):visible').count()<=1,'contents expands one multi-item theme in the selected period');
       if(keyboard){await item.focus();await item.press('Enter');}else await item.click();
       assert.equal(await dialog.getAttribute('open'),null,'choosing a topic closes contents');
+      assert.equal(await theme.locator(':scope > summary').getAttribute('aria-current'),'true','the current theme is also announced when its choices are folded');
       assert.equal(await toggle.evaluate(element=>element===document.activeElement),true,'contents returns keyboard focus to its opening button');
       for(let index=first;index<target;index++)await page.locator('.story-next').click();
       assert.equal(await picker.inputValue(),id);
@@ -860,8 +868,8 @@ const server = http.createServer((request, response) => {
         sajuSummaryViews[viewport+' '+textSize]=checked;
       }
     }
-    // A period selector exposes one month or one ten-year interval, while all
-    // topics and scene values remain available through normal navigation.
+    // A period exposes a short set of related themes. Expanding a theme keeps
+    // every original topic and scene available through normal navigation.
     await saju.locator('.story-menu-button').click();
     const menu=saju.locator('dialog.story-menu');
     for(const domain of ['monthly','daeun']) {
@@ -869,10 +877,16 @@ const server = http.createServer((request, response) => {
       const period=menu.locator('.story-period-select');assert.equal(await period.isVisible(),true);
       const values=await period.locator('option').evaluateAll(nodes=>nodes.map(node=>node.value));assert.ok(values.length>=10);
       await period.selectOption(values[1]);
+      const groups=menu.locator('.story-theme-group:visible');
+      const groupCount=await groups.count();assert.ok(groupCount>0&&groupCount<=11,'a period presents related themes instead of a long flat topic list');
+      assert.ok((await groups.evaluateAll(nodes=>nodes.map(node=>node.dataset.readingPeriod))).every(value=>value===values[1]));
+      const expandable=menu.locator('.story-theme-group:not(.story-theme-single):visible');
+      if(await expandable.count()&&await expandable.first().getAttribute('open')===null)await expandable.first().locator(':scope > summary').click();
       const visible=await menu.locator('[data-reading-target]:visible').evaluateAll(nodes=>nodes.map(node=>({id:node.dataset.readingTarget,period:node.dataset.readingPeriod})));
       assert.ok(visible.length>0&&visible.length<40);assert.ok(visible.every(item=>item.period===values[1]));
       const before=await saju.locator('#reading-page-select').inputValue();await period.selectOption(values[2]);assert.equal(await saju.locator('#reading-page-select').inputValue(),before);
-      sajuNavigation[domain]={periods:values.length,visibleTopics:visible.length};
+      assert.ok((await menu.locator('.story-theme-group:visible').evaluateAll(nodes=>nodes.map(node=>node.dataset.readingPeriod))).every(value=>value===values[2]));
+      sajuNavigation[domain]={periods:values.length,themes:groupCount,visibleTopics:visible.length};
     }
     await menu.locator('.story-menu-close').click();
     for(const id of ['reading-lifelong','reading-annual','reading-months','person-portrait-topic-1']){await followStoryAlias(id);await assertCurrentExplanation(saju,'data-reader-current');}

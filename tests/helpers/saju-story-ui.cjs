@@ -50,12 +50,19 @@ function chooseStory(select, id) {
   const domain = menu.querySelector(`.reading-domain-button[data-reading-domain="${button.dataset.readingDomain}"]`);
   assert.ok(domain, 'the topic belongs to an available reading field');
   if (domain.getAttribute('aria-pressed') !== 'true') domain.click();
-  if (button.dataset.readingPeriod && !visible(button)) {
+  if (button.dataset.readingPeriod && button.closest('[hidden]')) {
     const period = [...menu.querySelectorAll('select.story-period-select')].find(control => visible(control)
       && [...control.options].some(option => option.value === button.dataset.readingPeriod));
     assert.ok(period, 'the requested month or decade can be chosen explicitly');
     period.value = button.dataset.readingPeriod;
     period.dispatchEvent(new doc.defaultView.Event('change', {bubbles: true}));
+  }
+  const theme = button.closest('details.story-theme-group');
+  if (theme && !theme.open) {
+    const heading = theme.querySelector(':scope > summary.story-theme-toggle');
+    assert.ok(visible(heading), 'the related subject has a readable contents heading');
+    heading.click();
+    assert.equal(theme.open, true, 'opening the related subject exposes its original reading choices');
   }
   assert.ok(visible(button), 'the requested contents item is visible in the open dialog');
   button.click();
@@ -107,6 +114,7 @@ function snapshotStory(root) {
     })),
   }));
   return {id: scene.id, source: scene.dataset.storySource, topic: scene.dataset.storyTopic,
+    theme: scene.dataset.readingTheme,
     kind: scene.dataset.storyKind, data: {...scene.dataset}, title: scene.querySelector('.story-title').textContent,
     label: scene.querySelector('.story-label')?.textContent || '', text: scene.textContent,
     context: scene.querySelector('.story-context')?.textContent || '',

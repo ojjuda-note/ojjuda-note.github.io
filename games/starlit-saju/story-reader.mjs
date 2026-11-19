@@ -1,11 +1,12 @@
-import {createReadingNavigator} from './reading-navigator.mjs?v=20261120-saju-story2';
+import {createReadingNavigator} from './reading-navigator.mjs?v=20261120-saju-themes1';
 import {createReadingProgress} from './reader-presentation.mjs?v=20261120-saju-clean1';
 import {attachReadingSwipe} from './reading-swipe.mjs?v=20261120-saju-story2';
 import {createReadingMotion} from './reading-motion.mjs?v=20261114-saju-slide1';
 import {compactTopicScenes} from './topic-reading.mjs?v=20261120-saju-topic1';
+import {arrangeRelatedReadings} from './related-reader.mjs?v=20261120-saju-themes1';
 
 const SUMMARY='.saju-two-line-summary,.compatibility-two-line-summary';
-const SEMANTIC=['readerCard','portraitCard','daeunTopic','readingSupplement','personKey','personMarker','compatibilityTopic','month'];
+const SEMANTIC=['readerCard','portraitCard','daeunTopic','readingSupplement','personKey','personMarker','compatibilityTopic','month','timingKind','timingTopic','readingOverview','adviceId'];
 const SKIP='nav,button,select,option,.report-section-heading,.portrait-summary-table,.timing-table-details,.reader-inline-links,.reader-detail-link,.compatibility-person-jumps,.compatibility-reading-guide,.month-navigation-label,.month-heading,.daeun-period-summary,.reader-timing-heading';
 const LABEL='.reader-card-label,.portrait-card-label,.reader-label,.month-spotlight-label,.compatibility-person-name,.compatibility-people-title,.reader-timing-kind';
 const DATES='.month-period,.daeun-dates,.reader-timing-period,.daeun-time-notice';
@@ -56,7 +57,7 @@ function contextsFor(element) {
 }
 
 /** Flatten authored reading units; no calculations, copy data or purchases change. */
-export function collectStoryScenes(pages,{defaults=new Map()}={}) {
+export function collectStoryScenes(pages,{defaults=new Map(),mode='general'}={}) {
   const registered=new Set(pages.map(page=>page.element));
   const scenes=[],aliases=new Map(),menuTargets=new Set(),topics=[];
   let paragraphSerial=0;
@@ -202,6 +203,7 @@ export function collectStoryScenes(pages,{defaults=new Map()}={}) {
     }
   }
   scenes.splice(0,scenes.length,...compactTopicScenes(scenes,aliases));
+  scenes.splice(0,scenes.length,...arrangeRelatedReadings(scenes,{mode}));
   for(const [element,page] of defaults)if(element?.id) {
     const first=aliases.get(page?.id||page?.element?.id);if(first)aliases.set(element.id,first);
   }
@@ -209,7 +211,7 @@ export function collectStoryScenes(pages,{defaults=new Map()}={}) {
   for(const scene of scenes) {
     if(!byTopic.has(scene.topic)) {
       byTopic.set(scene.topic,[]);
-      topics.push({id:scene.id,element:{id:scene.id},label:scene.label,group:scene.group,menuGroup:scene.group,domain:scene.domain,period:scene.period});
+      topics.push({id:scene.id,element:{id:scene.id},label:scene.label,group:scene.group,menuGroup:scene.group,domain:scene.domain,period:scene.period,theme:scene.theme});
     }
     byTopic.get(scene.topic).push(scene);
   }
@@ -221,7 +223,7 @@ export function collectStoryScenes(pages,{defaults=new Map()}={}) {
 
 /** Only the current flat scene is mounted; the source report never stays visible. */
 export function createStoryReader(container,{pages,initialPage,defaults=new Map(),mode='general'}={}) {
-  const doc=container.ownerDocument,model=collectStoryScenes(pages,{defaults});
+  const doc=container.ownerDocument,model=collectStoryScenes(pages,{defaults,mode});
   if(!model.scenes.length)throw new Error('읽을 이야기를 준비하지 못했어요. 다시 불러와 주세요.');
   const prefix=mode==='compatibility'?'compatibility':'reading';
   const select=node(doc,'select','reading-page-select');select.id=mode==='compatibility'?'compatibility-page-select':'reading-page-select';select.hidden=true;
@@ -234,7 +236,7 @@ export function createStoryReader(container,{pages,initialPage,defaults=new Map(
   const domains=mode==='compatibility'?[{id:'synthesis',label:'종합'},{id:'people',label:'두 사람'},{id:'scores',label:'점수'},{id:'details',label:'항목별 궁합'},{id:'information',label:'풀이 안내'}]
     :[{id:'lifelong',label:'평생운'},{id:'daeun',label:'대운'},{id:'annual',label:'올해운'},{id:'monthly',label:'월별운'},{id:'information',label:'풀이 안내'}];
   const picker=createReadingNavigator({select,pages:model.topics,domains,domainForPage:page=>page.domain,groupForPage:page=>page.menuGroup,
-    periodForPage:page=>page.period,
+    periodForPage:page=>page.period,themeForPage:page=>page.theme,
     topicForScene:id=>topicFirst.get(scenesById.get(id)?.topic)});
   const toolbar=node(doc,'div','story-toolbar');
   const position=node(doc,'p','reading-page-position story-position');position.id=`${prefix}-page-position`;position.setAttribute('role','status');position.setAttribute('aria-live','polite');
@@ -254,6 +256,7 @@ export function createStoryReader(container,{pages,initialPage,defaults=new Map(
   function render(scene) {
     const article=node(doc,'article',`story-scene story-scene--${scene.kind}`);article.id=scene.id;article.tabIndex=-1;
     article.dataset.storyScene=scene.id;article.dataset.storySource=scene.source;article.dataset.storyTopic=scene.topic;article.dataset.storyKind=scene.kind;
+    article.dataset.readingTheme=scene.theme.id;
     if(scene.period)article.dataset.storyPeriod=scene.period.id;
     article.dataset.readerPage=scene.id;
     if(mode==='compatibility'){article.dataset.compatibilityCurrent='true';article.dataset.compatibilityPage=scene.source;}

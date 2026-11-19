@@ -60,7 +60,8 @@ async function assertCalculatedPeople(h,names=['','']) {
   const {chart,partner}=h.state.starts.at(-1),reading=buildCompatibilityReading(chart,partner);
   const root=h.$('compatibility-report'),scenes=collectStories(root);
   const topics=[...new Set(scenes.filter(scene=>scene.data.personKey).map(scene=>scene.data.compatibilityTopic))];
-  assert.deepEqual(topics,PEOPLE_TOPICS,'the visible people stories retain the matching A/B topics in order');
+  assert.deepEqual(topics,['overview','decisions','relationships','adjustment','work','pressure'],
+    'related people topics read together while every original A/B topic remains separate');
   for(const topic of PEOPLE_TOPICS) {
     const topicScenes=scenes.filter(scene=>scene.data.compatibilityTopic===topic);
     assert.deepEqual([...new Set(topicScenes.map(scene=>scene.data.personKey))],['self','partner'],'each topic presents A then B in separate readable scenes');
