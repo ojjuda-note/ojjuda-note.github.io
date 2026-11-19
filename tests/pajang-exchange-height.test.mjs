@@ -6,7 +6,7 @@ import { PGlite } from '@electric-sql/pglite';
 
 const migration = name => readFile(new URL('../supabase/migrations/' + name, import.meta.url), 'utf8');
 const heightMigration = '20261119011919_pajang_exchange_decimal_height.sql';
-const religionRestoreMigration = '20261119030845_pajang_restore_exchange_religion.sql';
+const religionRestoreMigration = '20261119031327_pajang_restore_exchange_religion.sql';
 
 // Production migration 20261117224836 was applied before this fix but is absent
 // from the historical repository. Keep that exact state in this local fixture.
