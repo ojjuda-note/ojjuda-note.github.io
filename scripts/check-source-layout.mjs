@@ -6,6 +6,11 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const catalog=JSON.parse(fs.readFileSync(path.join(root,'docs/source-layout.json'),'utf8'));
 const tracked=execFileSync('git',['ls-files','--cached','--others','--exclude-standard','-z'],{cwd:root,encoding:'utf8'}).split('\0').filter(Boolean);
 const files=new Set(tracked.filter(p=>!Object.hasOwn(catalog.moves,p))),errors=[];
+// Reproducible deployment outputs have tracked build sources and a locked manifest.
+for(const [output,generator] of Object.entries(catalog.generatedAssets||{})){
+ if(!files.has(generator))errors.push(`Missing generator for ${output}: ${generator}`);
+ else files.add(output);
+}
 for(const [old,next] of Object.entries(catalog.moves)){
  if(fs.existsSync(path.join(root,old)))errors.push(`Old source remains: ${old}`);
  if(!fs.existsSync(path.join(root,next)))errors.push(`Missing moved source: ${next}`);

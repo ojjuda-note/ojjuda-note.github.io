@@ -464,6 +464,14 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Check automatic login after one guest round
         run: npm --prefix tests run test:guest-access
+      - name: Prepare Park video regression assets
+        run: |
+          npm --prefix note/vendor ci --ignore-scripts
+          npm --prefix note/vendor run build
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install --yes ffmpeg
+          fi
       - name: Check restaurant guide and arcade navigation
         run: |
           npm --prefix tests run test:restaurants
@@ -503,6 +511,14 @@ jobs:
       - name: Install the test browser
         working-directory: tests
         run: npx playwright install --with-deps chromium
+      - name: Prepare Park video regression assets
+        run: |
+          npm --prefix note/vendor ci --ignore-scripts
+          npm --prefix note/vendor run build
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install --yes ffmpeg
+          fi
       - name: Check the complete UI suite in independent shards
         env:
           NODE_OPTIONS: --test-shard=${{ matrix.shard }}

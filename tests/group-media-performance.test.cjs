@@ -56,9 +56,11 @@ test('private feed loads lightweight preview, reuses original for gallery and re
   assert.deepEqual(f.downloads,[preview,photo],'gallery fetches the original once');
   assert.equal(d.querySelector('.gallery-stage img')?.alt,'추억.jpg');
   d.querySelector('.lightbox [data-close]').click();
+  await until(()=>!f.w.history.state?.ojjudaGroupDialog);
   slot.querySelector('img').click();await tick();
   assert.equal(f.downloads.length,2,'reopening the gallery reuses the same authorized blob');
   d.querySelector('.lightbox [data-close]').click();
+  await until(()=>!f.w.history.state?.ojjudaGroupDialog);
   d.querySelector('[data-action="home"]').click();await tick();
   d.querySelector(`[data-room="${roomId}"]`).click();await tick(70);
   assert.equal(f.downloads.length,2,'returning to a room reuses the cached thumbnail');
