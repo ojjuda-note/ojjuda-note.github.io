@@ -308,7 +308,9 @@ test('exchange profiles accept a matching masking receipt and display the canoni
   await f.set(f.control('자기소개'),'첫 금칙 · 둘째 금칙 / 연락: hello@example.com, 010-1234-5678');
   await f.set(f.control('키 (cm)'),'175.5');
   await f.set(f.control('나이'),true);
-  f.q('.exchange-editor').requestSubmit(); await wait(() => f.state.saved);
+  f.q('.exchange-editor').requestSubmit();
+  await wait(() => f.state.saved && f.control('직업').value === f.state.exchange.fields.job,
+    'the saved profile should finish rendering before its canonical fields are checked');
   assert.equal(f.alert(),null); assert.equal(f.state.successes,1);
   assert.equal(f.control('직업').value,'❤️❤️ 책방지기');
   assert.equal(f.control('자기소개').value,'첫 ❤️❤️ · 둘째 ❤️❤️ / 연락: hello@example.com, 010-1234-5678');
