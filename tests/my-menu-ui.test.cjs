@@ -163,10 +163,11 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await page.locator('.ojjuda-settings-group[aria-label="내 계정"] > .ojjuda-settings-list > :first-child').getAttribute('data-act'), 'member-info-open',
     'personal information opens directly from the first account row');
   assert.equal(await page.locator('[data-my-group="profile"] [data-act="member-info-open"]').count(), 0);
-  for (const action of ['member-info-open', 'pw-open', 'support-open', 'logout', 'account-delete-open']) {
+  for (const action of ['member-info-open', 'pw-open', 'support-open', 'logout']) {
     assert.equal(await page.locator(`[data-act="${action}"]`).isVisible(), true, `${action} opens without expanding a section`);
   }
-  assert.equal(await page.locator('.ojjuda-settings-danger').getAttribute('data-act'), 'account-delete-open');
+  assert.equal(await page.locator('.world-settings-page [data-act="account-delete-open"]').count(), 0,
+    'withdrawal is reached from the support screen instead of the settings list');
   if (mobile) {
     await page.setViewportSize({ width: 320, height: 844 });
     await settingsListLayout(page, '320px World menu');
@@ -188,7 +189,7 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await page.locator('#p-nick').inputValue(), '검사 회원');
   assert.equal(await page.locator('#n-friend').isChecked(), false);
   assert.equal(await page.locator('#p-mt, [data-act="mood-pick"]').count(), 0, 'profile omits retired mood controls');
-  const expectedActions = ['account-delete-open', 'fr-accept', 'fr-decline', 'fr-remove', 'logout', 'member-info-open', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'tab', 'unblock'].sort();
+  const expectedActions = ['fr-accept', 'fr-decline', 'fr-remove', 'logout', 'member-info-open', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'tab', 'unblock'].sort();
   assert.deepEqual(await page.locator('.my-hub [data-act]').evaluateAll(nodes => [...new Set(nodes.map(node => node.dataset.act))].sort()), expectedActions,
     'every existing account, notification, privacy and support action keeps its dispatch key');
   for (const action of expectedActions) assert.equal(await page.locator(`[data-act="${action}"]`).first().isVisible(), true, `${action} remains reachable`);
@@ -291,9 +292,11 @@ async function noteFixture(context, mobile, errors) {
   await fitsViewport(page, 'closed Note menu');
   if (screenshotDirectory) await page.screenshot({ path: path.join(screenshotDirectory, `note-${mobile ? 'mobile' : 'desktop'}.png`), fullPage: true });
   await exerciseGroups(page, '#note-my-screen');
-  for (const id of ['event-start', 'note-change-nickname', 'note-change-password', 'note-logout', 'note-delete-account', 'note-member-info', 'note-blocks', 'note-notifications']) {
+  for (const id of ['event-start', 'note-change-nickname', 'note-change-password', 'note-logout', 'note-member-info', 'note-blocks', 'note-notifications']) {
     assert.equal(await page.locator(`#${id}`).isVisible(), true, `existing Note action ${id} stays reachable`);
   }
+  assert.equal(await page.locator('#note-delete-account').count(), 0,
+    'the legacy Note settings no longer have a direct withdrawal button');
   assert.equal(await page.locator('#note-my-screen [data-show="events"]').isVisible(), true);
   // The Park menu keeps return/context parameters; assert real destinations, not bare hrefs.
   for (const [selector, destination] of [

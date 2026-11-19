@@ -220,6 +220,14 @@ function clientFixture(hash) {
       from:table=>({select:columns=>({eq:(column,id)=>({maybeSingle:async()=>{
         window.profileReads.push({table,columns,column,id});return {data:{nickname:'오쭈다보리'}};
       }})})}),
+      schema:name=>{
+        if(name!=='ojjuda_note')throw Error('unexpected support schema');
+        return {rpc:async operation=>{
+          if(operation==='get_note_state')return {data:{}};
+          if(operation==='list_my_inquiries')return {data:[]};
+          throw Error('unexpected support write: '+operation);
+        }};
+      },
       functions:{invoke:async()=>({data:{bucket:'fixture',files:{'station.js':'${hash}',...Object.fromEntries(['coffee','walk','vinyl','camera','book','tennis'].map(key=>[key+'.webp','pending']))}}})},
       storage:{from:()=>({download:async key=>{
         if(key.endsWith('station.js')){window.programCalls++;return {data:await (await fetch('/program')).blob()};}
@@ -361,6 +369,7 @@ function clientFixture(hash) {
       if(pathname==='/config.js')return route.fulfill({contentType:'text/javascript',body:clientFixture(hash)});
       if(pathname==='/features/home/agit-hub.css')return route.fulfill({contentType:'text/css',body:await fs.readFile(path.join(feature,'../home/agit-hub.css'))});
       if(pathname==='/features/account/settings-list.css')return route.fulfill({contentType:'text/css',body:await fs.readFile(path.join(feature,'../account/settings-list.css'))});
+      if(pathname==='/note/support.css')return route.fulfill({contentType:'text/css',body:await fs.readFile(path.join(feature,'../../note/support.css'))});
       if(pathname==='/program')return route.fulfill({contentType:'application/javascript',body:bundle});
       if(pathname==='/features/home/agit-hub.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../home/agit-hub.js'))});
       if(pathname==='/features/home/location-warmup.mjs')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../home/location-warmup.mjs'))});
@@ -372,7 +381,7 @@ function clientFixture(hash) {
       if(pathname==='/shared/location/location.js')return route.fulfill({contentType:'text/javascript',body:await fs.readFile(path.join(feature,'../../shared/location/location.js'))});
       const file=pathname.slice(project.length)||'index.html';
       if(legacyLocationPage&&file==='location.mjs')return route.fulfill({contentType:'text/javascript',body:'export async function prepareLocation(state){return state;}'});
-      if(!['station.html','station.css','radar-motion.css','member.mjs','member-main.mjs','load-station.mjs','location.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','shell.mjs','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
+      if(!['station.html','station.css','support.css','radar-motion.css','member.mjs','member-main.mjs','load-station.mjs','location.mjs','letterroom.css','dialog-surface.css','assets/favicon.svg','shell.css','shell.mjs','index.html','entry.mjs','preview.mjs','preview.css','questions.mjs','regions.json','dialog.mjs','feed.html'].includes(file))return route.abort();
       const mime={html:'text/html',css:'text/css',mjs:'text/javascript',json:'application/json',svg:'image/svg+xml'}[path.extname(file).slice(1)];
       let body=openingBaseline&&previousFiles.has(file)?previousFiles.get(file):await fs.readFile(path.join(feature,file));
       if(legacyLocationPage&&file.endsWith('.html'))body=body.toString().replace(/<script[^>]*src="\/shared\/location\/location\.js[^>]*><\/script>/,'');
@@ -715,7 +724,19 @@ function clientFixture(hash) {
     assert.match(await logout.textContent(),/아지트·공원·파장이 함께 로그아웃/);
     await logout.getByRole('button',{name:'취소',exact:true}).click();
     assert.deepEqual(await page.evaluate(()=>window.accountWrites),[],'cancelling logout does not change the account');
-    await settings.getByRole('button',{name:'회원 탈퇴',exact:true}).click();
+    assert.equal(await settings.getByRole('button',{name:'회원 탈퇴',exact:true}).count(),0,'withdrawal is not a direct settings action');
+    const contact=page.getByRole('dialog',{name:'문의·의견',exact:true});
+    async function openWithdrawalFromSupport(){
+      await settings.getByRole('button',{name:'문의·의견',exact:true}).click();
+      await contact.locator('#note-inquiry-body').waitFor();
+      const withdrawalEntry=contact.locator('[data-support-withdrawal]');
+      assert.equal(await withdrawalEntry.evaluate(button=>button.closest('[role="dialog"]').lastElementChild===button.closest('footer')),true,
+        'withdrawal appears after the support form, inquiry list and status');
+      assert.deepEqual(await page.evaluate(()=>window.accountWrites),[],'opening support never changes the account');
+      await withdrawalEntry.click();
+      await contact.waitFor({state:'hidden'});
+    }
+    await openWithdrawalFromSupport();
     const withdrawal=page.getByRole('dialog',{name:'오쭈다 회원탈퇴',exact:true});
     const nickname=withdrawal.getByLabel('확인을 위해 닉네임 ‘오쭈다보리’을 입력해 주세요.');
     const consent=withdrawal.getByRole('checkbox');
@@ -730,7 +751,7 @@ function clientFixture(hash) {
     await withdrawal.screenshot({path:path.join(dir,'account-withdrawal-confirmation.png'),animations:'disabled'});
     await withdrawal.getByRole('button',{name:'취소',exact:true}).click();
     assert.deepEqual(await page.evaluate(()=>window.accountWrites),[],'withdrawal confirmation does not delete data');
-    await settings.getByRole('button',{name:'회원 탈퇴',exact:true}).click();
+    await openWithdrawalFromSupport();
     await nickname.waitFor();assert.equal(await nickname.inputValue(),'');assert.equal(await consent.isChecked(),false);
     await withdrawal.getByRole('button',{name:'닫기',exact:true}).click();
     await settings.getByRole('button',{name:'로그아웃',exact:true}).click();

@@ -107,7 +107,6 @@
     if (owner) {
       const access = group('계정 관리');
       row(access, 'logout', '로그아웃', showAccountLogout);
-      row(access, 'delete-account', '회원 탈퇴', () => void showAccountDeletion(), 'park-settings-danger');
     }
     let adminGroup = null;
     syncAdminSettings = () => {
