@@ -2,6 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin='https://referral.test';
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox'],executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined});
+ let page;
  try{
   const context=await browser.newContext({viewport:{width:390,height:844}});
   await context.route('**/*',route=>{
@@ -26,7 +27,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin=
     return f.fail?{error:{message:'synthetic failure'}}:{data:args.p_query==='없음'?[]:f.people};
    }};window.supabase={createClient:()=>client};window.OjjudaGetClient=async()=>client;
   });
-  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+  page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
   const open=async(query='')=>{await page.goto(origin+'/?auth=signup'+query);await page.locator('#auth-dialog[open]').waitFor();await page.locator('#signup-referrer').waitFor();};
   const fill=async()=>{
    for(const[id,value]of Object.entries({email:'referral-fixture@ojjuda.kr',password:'fixture-password','password-confirm':'fixture-password','signup-birth':'000101','signup-code':'3','signup-phone':'01023456789'}))await page.locator('#'+id).fill(value);
@@ -123,6 +124,8 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin=
   await open('&ref='+invitation);await autoReady();await fill();
   assert.equal(await page.locator('.referral-confirm').isVisible(),false,'a valid invitation does not require manual confirmation');
   await page.locator('#login-tab').click();await page.locator('#signup-tab').click();await autoReady();
+  // Switching authentication tabs intentionally clears both password fields.
+  await fill();
   await page.locator('#auth-submit').click();await page.waitForFunction(()=>referralFixture.signups.length===1);
   const automatic=await page.evaluate(()=>referralFixture.signups[0].options.data);
   assert.equal(automatic.referrer_code,invitation);
@@ -179,7 +182,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin=
 
   await open('&ref='+invitation+'&fixture_referral=pending');await fill();
   await page.waitForFunction(()=>referralFixture.resolvePending.length===1);
-  await page.locator('#login-tab').click();await page.locator('#auth-submit').click();
+  await page.locator('#login-tab').click();await page.locator('#password').fill('fixture-password');await page.locator('#auth-submit').click();
   await page.waitForFunction(()=>referralFixture.signins.length===1&&!document.getElementById('auth-submit').disabled);
   await page.locator('#signup-tab').click();
   await page.waitForFunction(()=>referralFixture.resolvePending.length===2);
@@ -192,5 +195,18 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin=
   assert.equal(await page.evaluate(()=>referralFixture.signups[0].options.data.referrer_code),invitation,'a failed login does not leave automatic signup attribution stuck loading');
   assert.deepEqual(errors,[]);
   console.log('PASS: real signup manual confirmation and automatic invitation attribution, nickname changes, retry/skip/pending state, metadata and responsive widths; no live signup');
+ }catch(error){
+  if(page&&!page.isClosed()){
+   try{
+    console.error('Signup referral failure state:',JSON.stringify(await page.evaluate(()=>({
+     authFeedback:document.getElementById('auth-feedback')?.textContent||'',
+     referralStatus:document.getElementById('referral-status')?.textContent||'',
+     signupCount:window.referralFixture?.signups.length||0,
+     signinCount:window.referralFixture?.signins.length||0
+    }))));
+    if(process.env.REFERRAL_PROOF_DIR){fs.mkdirSync(process.env.REFERRAL_PROOF_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.REFERRAL_PROOF_DIR,'signup-failure.png'),fullPage:true});}
+   }catch(diagnosticError){console.error('Could not capture referral failure:',diagnosticError.message);}
+  }
+  throw error;
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
