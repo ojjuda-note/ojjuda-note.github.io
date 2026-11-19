@@ -143,8 +143,8 @@ async function assertNoOverflow(page,label) {
 
 async function openProfile(page,{ready=true}={}) {
   await page.getByRole('navigation',{name:'파장 메뉴'}).getByRole('link',{name:'내 파장',exact:true}).click();
-  await page.getByRole('button',{name:'공개 소개 수정',exact:true}).click();
-  const dialog=page.getByRole('dialog',{name:'프로필 수정',exact:true});
+  await page.getByRole('button',{name:'공개 프로필 수정',exact:true}).click();
+  const dialog=page.getByRole('dialog',{name:'공개 프로필 수정',exact:true});
   await dialog.waitFor();
   const save=dialog.getByRole('button',{name:'프로필 저장',exact:true});
   if(ready){
@@ -240,8 +240,9 @@ async function openGroup(dialog,label) {
     // A profile opened from an answer displays only that member's chosen public information.
     await answers.locator('.answercard').filter({hasText:'서로 책을 골라 주고 싶어요.'}).getByRole('button',{name:/은하/}).click();
     const publicMember=page.getByRole('dialog').getByRole('region',{name:'공개 프로필',exact:true});
-    await publicMember.locator('summary').filter({hasText:'만남 스타일'}).click();
+    await publicMember.getByRole('heading',{name:'나를 표현하는 취향',exact:true}).waitFor();
     await publicMember.locator('.preference-tags').getByText('별 보며 걷기',{exact:true}).waitFor();
+    assert.equal(await publicMember.getByText('만남 스타일',{exact:true}).isVisible(),true,'a peer\'s public tastes are visible without opening an editor or disclosure');
     assert.ok((await page.evaluate(()=>window.preferenceFixture.reads)).some(read=>read.peer==='22222222-2222-4222-8222-222222222222'));
     await page.getByRole('dialog').screenshot({path:path.join(artifacts,'public-member-profile.png'),animations:'disabled'});
     await closeProfile(page,page.getByRole('dialog'));
@@ -295,8 +296,11 @@ async function openGroup(dialog,label) {
     assert.equal(saves[0].p_data.interest,'book','existing profile artwork survives the new choices');
     assert.deepEqual(saves[0].p_data.preferences.life_priorities,[],'unselected groups remain empty');
     const ownSummary=page.getByRole('region',{name:'공개 프로필',exact:true});
-    await openGroup(ownSummary,'만남 스타일');
-    await ownSummary.locator('.preference-tags').getByText('별 보며 걷기',{exact:true}).waitFor();
+    await ownSummary.getByRole('heading',{name:'나를 표현하는 취향',exact:true}).waitFor();
+    for(const label of ['차분한 대화','유쾌한 수다','고민 나누기','별 보며 걷기']){
+      await ownSummary.locator('.preference-tags').getByText(label,{exact:true}).waitFor();
+    }
+    await ownSummary.screenshot({path:path.join(artifacts,'public-own-profile.png'),animations:'disabled'});
 
     form=await openProfile(page);
     assert.equal(await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{pressed:true}).count(),2,'saved intentions are restored');
@@ -329,6 +333,11 @@ async function openGroup(dialog,label) {
     assert.deepEqual(cleared.p_data.preferences.relationship_intents,[]);
     assert.deepEqual(cleared.p_data.preferences.meeting_styles,[]);
     assert.deepEqual(cleared.p_data.preferences.custom.meeting_styles,[]);
+    await ownSummary.getByRole('heading',{name:'나를 표현하는 취향',exact:true}).waitFor();
+    await ownSummary.locator('.preference-help').waitFor();
+    assert.equal(await ownSummary.locator('.public-preference-group').count(),0,'cleared tastes disappear from the public profile');
+    assert.equal(await ownSummary.locator('.preference-tags span').count(),0,'cleared intentions and custom tags are not left visible');
+    assert.equal(await ownSummary.locator('.preference-help').isVisible(),true,'the public profile shows an empty-state invitation');
     form=await openProfile(page);
     await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{name:'연애 상대',exact:true}).click();
     await closeProfile(page,form.dialog);

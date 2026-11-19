@@ -161,8 +161,11 @@ export function PublicProfilePreferences({viewer,person,revision=0,onEdit}:{view
     <ReadStatus read={read}/>
     {read.status==="ready"&&<>
       {selectedIntents.length>0&&<div className="public-intents"><h4>원하는 인연</h4><div className="preference-tags">{selectedIntents.map(intent=><span key={intent.key}>{intent.label}</span>)}</div></div>}
-      {selectedGroups.map(group=><details key={group.key} className="preference-group public-preference-group"><summary><span><strong>{group.label}</strong><small>{group.labels.slice(0,2).join(" · ")}{group.labels.length>2?` 외 ${group.labels.length-2}개`:""}</small></span><I n="chevron" s={16}/></summary><div className="preference-tags">{group.labels.map(label=><span key={label}>{label}</span>)}</div></details>)}
-      {!selectedIntents.length&&!selectedGroups.length&&<p className="preference-help">{onEdit?"원하는 인연과 나다운 취향을 골라 보세요.":"아직 선택한 소개가 없어요."}</p>}
+      <section className="public-profile-tastes" aria-label="나를 표현하는 취향">
+        <h4>나를 표현하는 취향</h4>
+        {selectedGroups.length?selectedGroups.map(group=><div key={group.key} className="public-preference-group"><h5>{group.label}</h5><div className="preference-tags">{group.labels.map(label=><span key={label}>{label}</span>)}</div></div>):
+          <p className="preference-help">{onEdit?"수정에서 나를 표현하는 취향을 골라 보세요.":"아직 선택한 취향이 없어요."}</p>}
+      </section>
     </>}
   </section>;
 }

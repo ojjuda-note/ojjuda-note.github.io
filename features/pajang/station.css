@@ -285,12 +285,12 @@
 .custom-choices button{background:var(--soft)}
 .public-preference-summary{margin:14px 0 18px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--paper)}
 .public-preference-summary .preference-section-heading{margin:0 0 8px}
-.public-preference-summary .preference-group{margin-top:7px}
-.public-preference-summary .public-preference-group>summary{min-height:48px;padding:8px 10px}
-.public-intents h4{margin:0 0 7px;color:var(--muted);font-size:12px;font-weight:500}
+.public-intents h4,.public-profile-tastes>h4{margin:0 0 7px;color:var(--ink);font-size:13px;font-weight:650}
+.public-intents+.public-profile-tastes{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.public-preference-group+.public-preference-group{margin-top:12px}
+.public-preference-group h5{margin:0 0 6px;color:var(--muted);font-size:12px;font-weight:500}
 .preference-tags{display:flex;flex-wrap:wrap;gap:6px}
 .preference-tags>span{max-width:100%;padding:4px 8px;border:1px solid var(--line);border-radius:7px;background:var(--soft);color:var(--dark);font-size:12px;line-height:1.5;overflow-wrap:anywhere}
-.public-preference-group>.preference-tags{padding:10px}
 #answers .answer-intents{display:flex;flex:1 1 120px;flex-wrap:wrap;align-items:center;gap:4px 8px}
 #answers .answer-intents:empty{display:none}
 #answers .answer-intents .tag{font-size:11px;line-height:1.5}
