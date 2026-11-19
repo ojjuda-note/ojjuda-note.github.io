@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261120-onecard5'
+ const revision='20261120-partyroulette-extra1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -20,7 +20,7 @@
   imagevote:'1.10.0',
   secretcount:'1.2.0',
   updown:'1.5.0',
-  partyroulette:'1.5.0',
+  partyroulette:'1.6.0',
   drinking:'1.26.1',
   shapematch:'1.3.0',
   tarot:'1.10.2',
