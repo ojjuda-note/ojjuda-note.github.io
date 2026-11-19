@@ -65,7 +65,8 @@
     presentation.enter(kind);
     const phase = state?.phase || 'entry';
     const roundKey = ['room', kind, state?.code || 'entry', state?.round || 0].join('/');
-    const sharedResult = kind !== 'partyroulette' || Number.isInteger(state?.game?.target);
+    const allSafe = kind === 'partyroulette' && state?.game?.allSafe === true;
+    const sharedResult = kind !== 'partyroulette' || allSafe || Number.isInteger(state?.game?.target);
     const card=view.querySelector('.card');
     const ui=window.DrinkingTableView;
     if(ui && card && state && phase!=='waiting'){
@@ -85,7 +86,8 @@
         const title=window.DrinkingGameGuides?.[kind]?.title || document.querySelector('header strong')?.textContent || '';
         card.prepend(ui.heading(kind,title,state.players?.length??0));
       }
-      if(phase==='done'&&sharedResult&&Number.isInteger(state.hostSeat))ui.result(board,state.players[state.hostSeat]);
+      if(allSafe)board.querySelector('.table-host')?.remove();
+      else if(phase==='done'&&sharedResult&&Number.isInteger(state.hostSeat))ui.result(board,state.players[state.hostSeat]);
     }
     const root = view.querySelector('#game') || view.querySelector('.inside') || view.querySelector('.card') || view;
     const urgent = (['bomb', 'initial'].includes(kind) && phase === 'active') ||

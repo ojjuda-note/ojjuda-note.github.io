@@ -299,11 +299,18 @@ function openSheet(title,kind='menu'){
   clearTimeout(botTimer);returnFocus=document.activeElement;sheetKind=kind;sheet.classList.toggle('game-result-dialog',kind==='result');sheet.setAttribute('aria-labelledby',kind==='result'?'onecard-result-title':'sheet-title');setText('sheet-title',title);$('sheet-body').replaceChildren();
   if(!sheet.open)sheet.showModal();renderControls();
 }
-function closeSheet(){if(sheet.open)sheet.close();pendingSuit=null;sheetKind='';renderControls();scheduleBot();}
+function finishSheetClose(){
+  // Native close events are queued: an earlier close must not touch a reopened sheet.
+  if(sheet.open)return;
+  pendingSuit=null;sheetKind='';renderControls();scheduleBot();
+  const focus=returnFocus;returnFocus=null;
+  if(focus?.isConnected&&!focus.disabled)focus.focus({preventScroll:true});
+}
+function closeSheet(){if(sheet.open)sheet.close();finishSheetClose();}
 $('sheet-close').onclick=closeSheet;
 sheet.addEventListener('click',event=>{if(event.target.closest('[data-act="close"]'))closeSheet();});
-sheet.addEventListener('cancel',()=>{pendingSuit=null;sheetKind='';setTimeout(()=>{renderControls();scheduleBot();},0);});
-sheet.addEventListener('close',()=>{renderControls();scheduleBot();if(returnFocus?.isConnected&&!returnFocus.disabled)returnFocus.focus({preventScroll:true});});
+sheet.addEventListener('cancel',event=>{event.preventDefault();closeSheet();});
+sheet.addEventListener('close',finishSheetClose);
 function showRules(){
   openSheet('원카드, 이렇게 해요','rules');
   const lead=element('p','같은 색이나 숫자를 한 장씩 내고, 손의 카드를 먼저 없애면 이겨요.','rules-lead');

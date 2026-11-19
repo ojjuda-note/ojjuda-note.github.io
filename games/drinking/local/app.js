@@ -4,7 +4,7 @@ const $=selector=>document.querySelector(selector);
 const playerKey='oj.party.'+document.getElementById('access-content').dataset.member+'.players';
 const turnOrderKey=playerKey+'.turnOrder';
 const app=$('#app'), settings=$('#settings'), feedback=$('#feedback'), fx=window.PartyFX;
-const entryRevision=new URL(location.href).searchParams.get('v')||'20261117-drinking-menu-focus1';
+const entryRevision=new URL(location.href).searchParams.get('v')||'20261120-partyroulette-extra1';
 let entryRequest=0;
 // Half of each gum line, measured on the toy artwork from the hinge to the front.
 // Coordinates locate touch targets; the visible crown tilts inward independently.
@@ -29,7 +29,7 @@ const pageIntroductions={
   partyroulette:{
     heading:['탄창을 돌리고,','한 사람을 가리켜요.'],
     description:['불발이면 가리킨 사람에게 폰을 넘겨요.','팡! 하면 그 사람이 당첨이에요.'],
-    steps:[['장전','인원수만큼 칸이 생겨요'],['회전','위에서 아래로 쓸어요'],['시작','방아쇠를 눌러요']],
+    steps:[['장전','참가자 수보다 한 칸 더 생겨요'],['회전','위에서 아래로 쓸어요'],['시작','방아쇠를 눌러요']],
     button:'장전 화면 열기'
   },
   liar:{

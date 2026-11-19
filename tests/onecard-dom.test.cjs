@@ -144,17 +144,35 @@ async function check(name, fn) {
   await check('color modal cancels without playing and submits a chosen color', async () => {
     const s = await open({ saved: rig([['D-9', 'S-7'], ['H-3', 'H-6']]) });
     await resume(s);
-    assert.match(s.find('#hand [data-card="S-7"]').getAttribute('aria-label'), /^파랑 색 바꾸기/);
+    const card = s.find('#hand [data-card="S-7"]');
+    const before = JSON.stringify(s.saved);
+    assert.match(card.getAttribute('aria-label'), /^파랑 색 바꾸기/);
+    card.focus();
     s.click('#hand [data-card="S-7"]');
     assert.equal(s.find('#sheet').open, true);
     assert.equal(s.find('#sheet-title').textContent, '색을 골라 주세요');
     assert.equal(s.all('.suit-choice').length, 4);
     assert.deepEqual(s.all('.suit-choice').map(node => node.getAttribute('aria-label')), ['파랑', '빨강', '노랑', '초록']);
     assert.equal(s.find('#draw-button').disabled, true);
-    s.escape(); await pause();
-    assert.equal(s.saved.revision, 0);
+    s.escape();
+    // No timer flush: Escape must unlock and restore focus before the next Enter.
     assert.equal(s.find('#sheet').open, false);
-    s.click('#hand [data-card="S-7"]'); s.click('.suit-choice[aria-label="빨강"]');
+    assert.equal(card.disabled, false, 'the card is immediately usable after cancellation');
+    assert.equal(s.find('#draw-button').disabled, false);
+    assert.equal(s.w.document.activeElement, card, 'cancellation restores the originating card focus');
+    assert.equal(JSON.stringify(s.saved), before, 'cancellation does not mutate the game');
+    s.click('#hand [data-card="S-7"]');
+    const red = s.find('.suit-choice[aria-label="빨강"]');
+    red.focus();
+    s.find('#sheet').dispatchEvent(new s.w.Event('close'));
+    assert.equal(s.find('#sheet').open, true, 'an old close event cannot close the reopened sheet');
+    assert.equal(s.w.document.activeElement, red, 'an old close event cannot steal the new choice focus');
+    assert.equal(card.disabled, true, 'the reopened modal keeps the hand locked');
+    await pause(); // Also deliver the fixture's queued native close event from Escape.
+    assert.equal(s.find('#sheet').open, true);
+    assert.equal(s.w.document.activeElement, red);
+    assert.equal(JSON.stringify(s.saved), before);
+    s.click('.suit-choice[aria-label="빨강"]');
     await until(() => s.saved.revision >= 1, 'seven played');
     assert.equal(s.saved.currentSuit, 'H');
     assert.equal(s.find('#suit-indicator').textContent, '◆ 빨강');

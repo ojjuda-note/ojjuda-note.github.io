@@ -20,7 +20,7 @@
   imagevote:'1.10.0',
   secretcount:'1.2.0',
   updown:'1.5.0',
-  partyroulette:'1.5.0',
+  partyroulette:'1.6.0',
   drinking:'1.26.1',
   shapematch:'1.3.0',
   tarot:'1.10.2',

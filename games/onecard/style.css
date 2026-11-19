@@ -550,6 +550,8 @@ button.pile { border: 0; padding: 0; background: transparent; color: inherit; fo
 @media (max-height: 560px) and (min-width: 600px) {
   /* Keep the camping scene and pile labels legible on a short screen. */
   .camp-scene { background-size: 100% 100%; }
+  .seat[data-position="top-left"] { left: 22%; }
+  .seat[data-position="top-right"] { left: 78%; }
   .table-status {
     left: calc(50% + var(--card-w) + 24px); right: auto; top: 56%; bottom: auto;
     width: 92px; min-height: 0; transform: translateY(-50%);
@@ -567,8 +569,8 @@ button.pile { border: 0; padding: 0; background: transparent; color: inherit; fo
   .seat .avatar { width: 25px; height: 25px; font-size: 11px; }
   .seat-name { font-size: 10px; }
   .seat-count { font-size: 9px; }
-  .seat[data-position="top-left"] { top: 5%; left: 26%; }
-  .seat[data-position="top-right"] { top: 5%; left: 74%; }
+  .seat[data-position="top-left"] { top: 5%; left: min(22%, calc(50% - 192px)); }
+  .seat[data-position="top-right"] { top: 5%; left: max(78%, calc(50% + 192px)); }
   .table-status { top: 45%; bottom: auto; min-height: 20px; }
   .center-piles { top: 45%; }
   .pile-label { display: none; }
