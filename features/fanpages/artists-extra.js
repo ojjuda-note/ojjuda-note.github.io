@@ -1199,7 +1199,7 @@
       members: ['신유', '도훈', '영재', '한진', '지훈', '경민'],
       debut: '2024.01.22', debutWork: 'Sparkling Blue', songs: ['첫 만남은 계획대로 되지 않아', 'Oh Mymy : 7s'],
       concept: '언제나 함께라는 이름처럼 일상의 설렘을 노래하는 보이후드 팝 여섯 멤버.',
-      checkedAt: '2026.11.17',
+      checkedAt: '2026.11.19',
       official: 'https://tws-official.jp/profile/', youtube: 'https://www.youtube.com/@TWS_PLEDIS',
       photo: 'TWS at the 2024 Melon Music Awards.png', photoLabel: '멜론뮤직어워드', photoYear: '2024', credit: 'TenAsia', license: 'CC BY 3.0',
       morePhotos: [
@@ -1247,6 +1247,8 @@
         }
       ],
       appearances: [
+        { date: '2027-03-09', title: 'TO US 일본 하트터치 환송회 · 간사이', sub: 'PLEDIS · 간사이 지역 · 상세 시간·장소는 참가자에게만 안내 · 8종 세트 구매 선착순 참가', href: 'https://tws-official.jp/news/a5553d9b710b' },
+        { date: '2027-03-10', title: 'TO US 일본 하트터치 환송회 · 간토', sub: 'PLEDIS · 간토 지역 · 상세 시간·장소는 참가자에게만 안내 · 8종 세트 구매 선착순 참가', href: 'https://tws-official.jp/news/a5553d9b710b' },
         {
           "date": "2026-11-29",
           "title": "TO US 케이타운포유 1:1 영상통화 팬사인회",
@@ -1277,6 +1279,9 @@
         { title: 'TWS 일본 공식 일정', sub: '방송·공연 일정 · 공식 달력', href: 'https://tws-official.jp/schedule/' }
       ],
       news: [
+        { date: '2026.11.19', tag: '음반 특전', title: 'TO US HMV 유닛 포토카드 선착순 행사 발표 · 11/19~29', href: 'https://tws-official.jp/news/64d57006892a' },
+        { date: '2026.11.18', tag: '팬행사', title: '2027.03.09~10 일본 하트터치 환송회 발표 · 시간·장소 참가자 별도 안내', href: 'https://tws-official.jp/news/a5553d9b710b' },
+        { date: '2026.11.18', tag: '공식 굿즈', title: '2027 시즌 그리팅 발표 · 11/19 예약 시작', href: 'https://tws-official.jp/news/a23a263cb6d8' },
         {
           "date": "2026.11.15",
           "tag": "수상",
@@ -1303,6 +1308,9 @@
         }
       ],
       merch: [
+        { title: "TWS 2027 SEASON'S GREETINGS", sub: 'TWS AIRWAYS · 2026.11.19 11:00 일본 예약 시작 · 12.22부터 순차 배송 예정 · 재고는 공식몰 확인', href: 'https://tws-official.jp/news/a23a263cb6d8' },
+        { title: 'TO US HMV 유닛 포토카드 럭키드로우', sub: '일본 HMV · 2026.11.19 12:00~11.29 23:59 JST · 대상 음반 구매 시 포토카드 6종 중 무작위 1장 · 선착순 소진 가능', href: 'https://tws-official.jp/news/64d57006892a' },
+        { title: 'TWS 일본 위버스 블랙프라이데이', sub: '일본 국내 배송 한정 · 2026.11.20 12:00~12.04 23:59 JST · 상품·할인·재고는 판매처 확인', href: 'https://tws-official.jp/news/389b6abeab50' },
         {
           "title": "TWS · Weverse US 블랙프라이데이",
           "sub": "미국·캐나다 배송 한정 · 2026.11.13 18:00~12.02 23:59 PST · 할인·재고는 판매처 확인",
