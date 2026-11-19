@@ -85,13 +85,13 @@ test('the React app closes its popup first and restores real tabs, including but
   assert.equal(new URL(w.location.href).searchParams.get('tab'),'profile');
   w.history.back();await f.until(()=>new URL(w.location.href).searchParams.get('tab')==='inbox');
   w.history.forward();await f.until(()=>new URL(w.location.href).searchParams.get('tab')==='profile');
-  await f.click('.account-settings button .ojjuda-settings-label','공개 소개 수정');
+  await f.click('.account-settings button .ojjuda-settings-label','공개 프로필 수정');
   await f.until(()=>f.modal());
   f.modal().querySelector('[aria-label="닫기"]').click();await f.until(()=>!f.modal());
   w.history.back();await f.until(()=>new URL(w.location.href).searchParams.get('tab')==='inbox');
   w.history.forward();await f.until(()=>new URL(w.location.href).searchParams.get('tab')==='profile');
   w.history.forward();await f.until(()=>f.modal());
-  assert.equal(f.modal().getAttribute('aria-label'),'프로필 수정');
+  assert.equal(f.modal().getAttribute('aria-label'),'공개 프로필 수정');
   assert.deepEqual(f.errors,[]);
 });
 
