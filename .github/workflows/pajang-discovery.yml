@@ -15,6 +15,13 @@ on:
       - 'tests/public-entry-design-browser.cjs'
       - 'shared/location/**'
       - 'shared/brand/service-header.css'
+      - 'shared/share/**'
+      - 'shared/auth/**'
+      - 'tests/invite-referral.test.cjs'
+      - 'tests/signup-referrals*.test.cjs'
+      - 'tests/signup-invite-referral-db.test.cjs'
+      - 'supabase/migrations/*signup_invite_referral*'
+      - 'tests/page-share.test.cjs'
       - 'features/wallet/ju-charge.js'
       - 'note/notifications.js'
       - 'tests/pajang-account-toolbar.test.cjs'
@@ -77,6 +84,13 @@ on:
       - 'tests/agit-location.test.mjs'
       - 'shared/location/**'
       - 'shared/brand/service-header.css'
+      - 'shared/share/**'
+      - 'shared/auth/**'
+      - 'tests/invite-referral.test.cjs'
+      - 'tests/signup-referrals*.test.cjs'
+      - 'tests/signup-invite-referral-db.test.cjs'
+      - 'supabase/migrations/*signup_invite_referral*'
+      - 'tests/page-share.test.cjs'
       - 'features/wallet/ju-charge.js'
       - 'note/notifications.js'
       - 'tests/pajang-account-toolbar.test.cjs'
@@ -155,6 +169,8 @@ jobs:
       - run: python -m unittest discover -s tests -p 'test_pajang_program_publish.py'
       - run: node --test tests/pajang-exchange-profile.test.cjs tests/pajang-exchange-height.test.mjs tests/pajang-private-exchange.test.mjs
       - run: node --test tests/pajang-account-toolbar.test.cjs tests/pajang-signal-purchase-db.test.mjs tests/pajang-signal-purchase-ui.test.cjs
+      - name: Check main invitation links and sharing fallbacks
+        run: node --test tests/page-share.test.cjs tests/invite-referral.test.cjs tests/signup-referrals-db.test.cjs tests/signup-invite-referral-db.test.cjs
       - name: Check automatic word masking and saved content
         run: node --test tests/all-service-word-rules*.test.* tests/all-service-word-masking*.test.* tests/pajang-content-validation.test.cjs tests/note-content-validation.test.cjs tests/portal-auth-entry.test.cjs
       - run: node --test tests/pajang-account.test.mjs tests/pajang-discovery-gender.test.mjs tests/pajang-location.test.mjs tests/shared-location.test.cjs tests/agit-location.test.mjs tests/park-loading.test.cjs tests/park-frame-cache.test.cjs tests/park-opening.test.cjs
@@ -187,6 +203,10 @@ jobs:
         env:
           MY_MENU_QA_DIR: tests/artifacts/pajang-discovery/guest-settings
         run: node tests/my-menu-ui.test.cjs
+      - name: Check automatic invitation referrals and signup recovery
+        env:
+          REFERRAL_PROOF_DIR: tests/artifacts/pajang-discovery/signup-referrals
+        run: node tests/signup-referrals-ui.test.cjs
       - name: Check public entrances and account return routes
         env:
           PUBLIC_ENTRY_PROOF_DIR: tests/artifacts/pajang-discovery/entrances

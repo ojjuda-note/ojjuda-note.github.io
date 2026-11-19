@@ -5,6 +5,7 @@ const vm = require('node:vm');
 const { webcrypto } = require('node:crypto');
 const identity = require('../shared/auth/signup-identity.js');
 const source = fs.readFileSync(path.join(__dirname, '../app/portal/portal.js'), 'utf8');
+const invitationSource = fs.readFileSync(path.join(__dirname, '../shared/auth/invite-referral.js'), 'utf8');
 const entrance = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const entryScript = entrance.match(/<script id="world-default-entry">([\s\S]*?)<\/script>/)?.[1];
 assert.ok(entryScript, 'the root route runs before loading the account controller');
@@ -26,13 +27,14 @@ for (const path of ['/?auth=login', '/?auth=signup&next=world', '/?auth=forgot',
 }
 
 // Exercise the real controller with a fake Auth service: no accounts or emails are created.
-function setup(query, { user = null, confirmed = false, sessionError = false, sessionResponse = null, userResponse = null, signInResponse = null, signupResponse = null, nicknameResponse = null, noteResponse = null, profileResponse = null, recoveryResponse = null, recoveryError = null, recoveryVerified = true, resetError = null, now = Date.now() } = {}) {
+function setup(query, { user = null, confirmed = false, sessionError = false, sessionResponse = null, userResponse = null, signInResponse = null, signupResponse = null, nicknameResponse = null, noteResponse = null, profileResponse = null, recoveryResponse = null, recoveryError = null, recoveryVerified = true, resetError = null, now = Date.now(), invitation = false, referralValue, referralVerify = null } = {}) {
   let clock = now;
   let taskId = 0;
   let serviceUser = user;
   let savedNickname = null;
   let focused = null;
   const elements = new Map(), tasks = new Map(), navigations = [], navigationKinds = [], signups = [], signins = [], passwordUpdates = [], recoveries = [], storage = new Map(), nicknameChecks = [], profileReads = [], noteWrites = [];
+  const authListeners = [], referralReads = [], referralVerifications = [], referralResets = [];
   const element = key => {
     if (!elements.has(key)) elements.set(key, {
       hidden: false, disabled: false, readOnly: false, tabIndex: 0, value: '', checked: false, textContent: '',
@@ -64,11 +66,10 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   const location = new URL(`https://ojjuda.kr/${query}`);
   location.assign = value => { navigationKinds.push('assign'); navigations.push(value); };
   location.replace = value => { navigationKinds.push('replace'); navigations.push(value); };
-  let authListener;
   const account = user ? { user } : null;
   const client = {
     auth: {
-      onAuthStateChange(callback) { authListener = callback; },
+      onAuthStateChange(callback) { authListeners.push(callback); return { data: { subscription: { unsubscribe() {} } } }; },
       async getSession() { if (sessionResponse) return sessionResponse(); if (sessionError) throw new Error('network'); return { data: { session: account } }; },
       async getUser() { return userResponse ? userResponse(serviceUser) : { data: { user: serviceUser } }; },
       async updateUser(args) { passwordUpdates.push({ owner: user?.id, ...args }); return { data: { user } }; },
@@ -76,12 +77,14 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
         signins.push(args);
         const result = signInResponse ? await signInResponse(args) : { data: { session: { user: { id: 'signed-in-member', email: args.email, is_anonymous: false } } } };
         if (result.data?.session?.user) serviceUser = result.data.session.user;
+        if (invitation && result.data?.session) for (const callback of authListeners) callback('SIGNED_IN', result.data.session);
         return result;
       },
       async signUp(args) {
         signups.push(args);
         const result = signupResponse ? await signupResponse(args) : { data: { session: confirmed ? { user: { id: 'new-member', email: args.email, is_anonymous: false } } : null } };
         if (result.data?.session?.user) serviceUser = result.data.session.user;
+        if (invitation && result.data?.session) for (const callback of authListeners) callback('SIGNED_IN', result.data.session);
         return result;
       }
     },
@@ -103,8 +106,8 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     }
   };
   const context = {
-    window: { OJJUDA_CONFIG: { supabaseUrl: 'https://example.test', supabaseKey: 'test' }, supabase: { createClient: () => client }, OjjudaIdentity: identity, crypto: webcrypto },
-    document: { getElementById: element, querySelector: element, querySelectorAll: selector =>
+    window: { OJJUDA_CONFIG: { supabaseUrl: 'https://example.test', supabaseKey: 'test' }, supabase: { createClient: () => client }, OjjudaIdentity: identity, crypto: webcrypto, addEventListener() {} },
+    document: { documentElement: {}, addEventListener() {}, getElementById: element, querySelector: element, querySelectorAll: selector =>
       selector === '[data-policy-document]' ? policyLinks : selector === '[data-open-auth]' ? authButtons
         : selector === '[data-destination]' ? destinationButtons : [] },
     Date: class extends Date { static now() { return clock; } },
@@ -114,6 +117,17 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     setTimeout: (callback, delay = 0) => { const id = ++taskId; tasks.set(id, { callback, at: clock + delay }); return id; },
     clearTimeout: id => tasks.delete(id)
   };
+  if (referralValue !== undefined) context.window.OjjudaSignupReferral = { mount: () => ({
+    setActive() {}, setBusy() {}, reset() { referralResets.push(true); },
+    read() { referralReads.push(true); return referralValue ? { ...referralValue } : null; },
+    async verify(value) { referralVerifications.push(value); await referralVerify?.(value); }
+  }) };
+  if (invitation) {
+    context.window.parent = context.window;
+    context.window.OjjudaGetClient = async () => client;
+    context.MutationObserver = class { observe() {} disconnect() {} };
+    vm.runInNewContext(invitationSource, context);
+  }
   vm.runInNewContext(source, context);
   const flush = async () => {
     for (let i = 0; i < 20; i++) {
@@ -124,14 +138,14 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
       }
     }
   };
-  const emitNow = (event, session) => { serviceUser = session?.user || null; authListener(event, session); };
+  const emitNow = (event, session) => { serviceUser = session?.user || null; for (const callback of authListeners) callback(event, session); };
   const emit = async (event, session) => { emitNow(event, session); await flush(); };
   const submit = async () => { await element('auth-form').listeners.submit({ preventDefault() {} }); await flush(); };
   const fill = () => {
     for (const [key, value] of Object.entries({ email: 'signup-fixture@ojjuda.kr', password: 'test-password', 'password-confirm': 'test-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '010-2345-6789' })) element(key).value = value;
     element('age-check').checked = element('policy-check').checked = true;
   };
-  return { element, flush, emit, emitNow, submit, fill, navigations, navigationKinds, signups, signins, passwordUpdates, recoveries, storage, nicknameChecks, profileReads, noteWrites, location, history: context.history, window: context.window, client, get focused() { return focused; }, advance: ms => { clock += ms; } };
+  return { element, flush, emit, emitNow, submit, fill, navigations, navigationKinds, signups, signins, passwordUpdates, recoveries, storage, nicknameChecks, profileReads, noteWrites, referralReads, referralVerifications, referralResets, location, history: context.history, window: context.window, client, get focused() { return focused; }, advance: ms => { clock += ms; } };
 }
 
 // The login controller shares its auth client with navigation tracking.
@@ -240,6 +254,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   const renderer = world.slice(world.indexOf('function nr('), world.indexOf('function J1('));
   const worldRoutes = [];
   vm.runInNewContext(`${renderer}; nr('signup'); nr('forgot');`, {
+    window: {},
     ha: 'login', location: { assign: url => worldRoutes.push(url) },
     qr() { throw new Error('World must use the common signup form'); }
   });
@@ -789,6 +804,78 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   assert.equal(signupRace.element('login-tab').attributes['aria-selected'], 'true');
   assert.equal(signupRace.element('auth-form').hidden, false, 'a previous signup response cannot replace a reopened login form');
   assert.equal(signupRace.element('password').value, 'replacement-password');
+
+  const invitationCode='00000000-0000-4000-8000-000000000011';
+  const automaticReferrer={id:invitationCode,nickname:'민준',code:invitationCode};
+  for(const destination of ['world','note','pajang']){
+    const invited=setup(`?auth=signup&next=${destination}&ref=${invitationCode}`,{invitation:true,referralValue:automaticReferrer});
+    await invited.flush();invited.fill();await invited.submit();
+    assert.equal(invited.signups.length,1,`${destination}: one signup with an automatic invitation`);
+    const data=invited.signups[0].options.data;
+    assert.equal(data.referrer_code,invitationCode);
+    assert.equal('referrer_id'in data,false);assert.equal('referrer_nickname'in data,false);
+    assert.equal(invited.referralVerifications.length,1,'the controller revalidates the invitation before Auth signup');
+    assert.equal(invited.window.OjjudaInvite.pending(),null,'successful signup consumes the pending invitation');
+    assert.equal(invited.location.searchParams.has('ref'),false);
+    assert.equal(invited.storage.has('ojjuda:signup-referral'),false);
+  }
+  const manualReferrer=setup('?auth=signup',{referralValue:{id:invitationCode,nickname:'민준'}});
+  await manualReferrer.flush();manualReferrer.fill();await manualReferrer.submit();
+  assert.equal(manualReferrer.signups[0].options.data.referrer_id,invitationCode);
+  assert.equal(manualReferrer.signups[0].options.data.referrer_nickname,'민준');
+  assert.equal('referrer_code'in manualReferrer.signups[0].options.data,false,'the existing manual contract remains separate');
+
+  let verificationFails=true;
+  const retryInvitation=setup('?auth=signup&ref='+invitationCode,{invitation:true,referralValue:automaticReferrer,
+    referralVerify:async()=>{if(verificationFails)throw Error('추천인을 확인하지 못했어요. 다시 시도해 주세요.');}});
+  await retryInvitation.flush();retryInvitation.fill();await retryInvitation.submit();
+  assert.equal(retryInvitation.signups.length,0,'failed referral verification must not start Auth signup');
+  assert.equal(retryInvitation.window.OjjudaInvite.pending(),invitationCode);
+  assert.equal(retryInvitation.element('email').value,'signup-fixture@ojjuda.kr','a failed lookup preserves the signup draft');
+  verificationFails=false;retryInvitation.fill();await retryInvitation.submit();
+  assert.equal(retryInvitation.signups.length,1);assert.equal(retryInvitation.signups[0].options.data.referrer_code,invitationCode);
+
+  let signupFails=true;
+  const failedInvitedSignup=setup('?auth=signup&ref='+invitationCode,{invitation:true,referralValue:automaticReferrer,
+    signupResponse:async()=>signupFails?{error:{message:'Synthetic signup network failure'}}:{data:{session:null}}});
+  await failedInvitedSignup.flush();failedInvitedSignup.fill();await failedInvitedSignup.submit();
+  assert.equal(failedInvitedSignup.window.OjjudaInvite.pending(),invitationCode,'an Auth failure does not consume attribution');
+  signupFails=false;failedInvitedSignup.fill();await failedInvitedSignup.submit();
+  assert.equal(failedInvitedSignup.signups.length,2);
+  assert.ok(failedInvitedSignup.signups.every(request=>request.options.data.referrer_code===invitationCode));
+  assert.equal(failedInvitedSignup.window.OjjudaInvite.pending(),null);
+
+  const lookup=deferred();
+  const cancelledInvitation=setup('?auth=signup&ref='+invitationCode,{invitation:true,referralValue:automaticReferrer,referralVerify:()=>lookup.promise});
+  await cancelledInvitation.flush();cancelledInvitation.fill();const verifying=cancelledInvitation.submit();await cancelledInvitation.flush();
+  cancelledInvitation.element('auth-dialog').close();await cancelledInvitation.flush();
+  cancelledInvitation.element('login-tab').listeners.click();cancelledInvitation.element('auth-dialog').showModal();
+  lookup.resolve();await verifying;
+  assert.equal(cancelledInvitation.signups.length,0,'a late verification cannot submit a form that was closed and reopened in login mode');
+  assert.equal(cancelledInvitation.window.OjjudaInvite.pending(),invitationCode,'closing the draft does not discard the invitation');
+  cancelledInvitation.element('signup-tab').listeners.click();cancelledInvitation.fill();await cancelledInvitation.submit();
+  assert.equal(cancelledInvitation.signups.length,1,'the reopened signup can still use its invitation');
+
+  const missingReferralUI=setup('?auth=signup&ref='+invitationCode,{invitation:true});
+  await missingReferralUI.flush();missingReferralUI.fill();await missingReferralUI.submit();
+  assert.equal(missingReferralUI.signups.length,0,'missing referral UI must not silently create an unattributed account');
+  assert.match(missingReferralUI.element('auth-feedback').textContent,/추천인 입력 화면/);
+
+  const existingReferral='00000000-0000-4000-8000-000000000033';
+  const existingInvitedUser={id:'00000000-0000-4000-8000-000000000022',email:'existing@example.invalid',is_anonymous:false,user_metadata:{nickname:'보리',referrer_id:existingReferral}};
+  const existingInvited=setup('?auth=login&next=world&ref='+invitationCode,{invitation:true,user:existingInvitedUser,referralValue:automaticReferrer});
+  await existingInvited.flush();
+  assert.equal(existingInvited.window.OjjudaInvite.pending(),null,'an existing member consumes an inbound link without claiming it');
+  assert.deepEqual(existingInvited.signups,[]);assert.deepEqual(existingInvited.passwordUpdates,[]);
+  assert.equal(existingInvited.referralReads.length,0);assert.equal(existingInvitedUser.user_metadata.referrer_id,existingReferral);
+  assert.deepEqual(existingInvited.navigations,['/world.html']);
+  const invitedLogin=setup('?auth=login&next=world&ref='+invitationCode,{invitation:true,signInResponse:async()=>({data:{session:{user:existingInvitedUser}}})});
+  await invitedLogin.flush();await signIn(invitedLogin);
+  assert.equal(invitedLogin.window.OjjudaInvite.pending(),null,'both the common invitation and portal receive the Auth login event');
+  assert.deepEqual(invitedLogin.signups,[]);assert.deepEqual(invitedLogin.passwordUpdates,[]);
+  assert.equal(existingInvitedUser.user_metadata.referrer_id,existingReferral);
+  assert.deepEqual(invitedLogin.navigations,['/world.html']);
+  console.log('PASS: automatic referrer_code-only signup, manual contract, verification/Auth retry, view cancellation and existing-member attribution preservation');
   console.log('PASS: Agit/Pajang/Park auth routes, canonical masked nicknames and saved profiles, Unicode/mask limits, unique-name failures, duplicate submits, confirmation/recovery, drafts and account/view races');
 })().catch(error => { console.error(error); process.exitCode = 1; });
 

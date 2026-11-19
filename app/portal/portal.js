@@ -608,6 +608,7 @@
       prepareSignupFields();
       try {
         signupIdentity = window.OjjudaIdentity.read(form, 'signup');
+        if(window.OjjudaInvite?.pending()&&!referral)throw Error('추천인 입력 화면을 불러오지 못했어요. 새로고침한 뒤 다시 가입해 주세요.');
         signupReferrer = referral?.read() || null;
       } catch (error) {
         feedback.textContent = error.message;
@@ -667,11 +668,13 @@
               gender_code: signupIdentity.genderCode,
               phone_number: signupIdentity.phone,
               age_14_or_older: true,
-              ...(signupReferrer ? { referrer_id: signupReferrer.id, referrer_nickname: signupReferrer.nickname } : {})
+              ...(signupReferrer?.code ? {referrer_code:signupReferrer.code}
+                : signupReferrer ? { referrer_id: signupReferrer.id, referrer_nickname: signupReferrer.nickname } : {})
             },
             emailRedirectTo: confirmationUrl.href
           }
         });
+        if(!error)window.OjjudaInvite?.clear();
         if (!currentView()) return;
         if (error) throw error;
         signupNickname = null;
