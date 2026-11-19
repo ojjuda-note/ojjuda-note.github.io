@@ -8,6 +8,11 @@ const pajang = path.resolve(__dirname, '../features/pajang');
 const {build} = createRequire(path.join(pajang, 'package.json'))('esbuild');
 const copy = value => JSON.parse(JSON.stringify(value));
 const turn = () => new Promise(resolve => setTimeout(resolve, 10));
+const profileId = '11111111-1111-4111-8111-111111111111';
+const emptyPreferences = () => ({
+  relationship_intents:['friendship'], meeting_styles:[], relationship_values:[], affection_styles:[], life_priorities:[],
+  custom:{meeting_styles:[], relationship_values:[], affection_styles:[], life_priorities:[]},
+});
 let bundle;
 
 async function waitFor(predicate, message) {
@@ -29,7 +34,7 @@ async function editorBundle() {
           let root;
           window.mountEditor = () => {
             root = createRoot(document.getElementById('root'));
-            root.render(<ExchangeProfileEditor onSaved={() => window.profileSaved()}/>);
+            root.render(<ExchangeProfileEditor profileId={window.profileId} onSaved={saved => window.profileSaved(saved)}/>);
           };
           window.showPeerProfile = profile => root.render(<PeerProfile profile={profile}/>);
           window.unmountEditor = () => { root?.unmount(); root = null; };
@@ -51,7 +56,7 @@ async function editorBundle() {
 
 // The actual editor runs against an in-memory RPC boundary. These tests never
 // access a member account, live Supabase data, or browser authentication state.
-async function fixture(t, {fields = {}, save} = {}) {
+async function fixture(t, {fields = {}, save, read, ready = true} = {}) {
   const dom = new JSDOM('<!doctype html><div id="root"></div>', {
     url: 'https://ojjuda.kr/features/pajang/station.html?tab=profile',
     runScripts: 'outside-only',
@@ -61,21 +66,33 @@ async function fixture(t, {fields = {}, save} = {}) {
   const state = {
     calls: [],
     successes: 0,
-    profile: {fields: copy(fields), age: 35, gender: '남성', showAge: false, showGender: false},
+    profile: {fields: copy(fields), age: 35, gender: '남성', showAge: false, showGender: false,
+      person: profileId, interest: 'book', preferences: emptyPreferences(), preferencesVersion: 3},
   };
-  window.profileSaved = () => state.successes++;
+  window.profileId = profileId;
+  window.pajangArt = {};
+  window.profileSaved = saved => { state.successes++; state.saved = copy(saved); };
   window.OjjudaGetClient = async () => ({
     async rpc(name, args) {
-      assert.equal(name, 'pajang_exchange');
+      assert.equal(name, 'pajang_profile_details');
       state.calls.push(copy(args));
-      if (args.p_action === 'mine') return {data: copy(state.profile), error: null};
+      if (args.p_action === 'mine') {
+        const override = await read?.(state.calls.filter(call => call.p_action === 'mine').length, copy(state.profile));
+        return override || {data: copy(state.profile), error: null};
+      }
       assert.equal(args.p_action, 'save');
       const attempt = state.calls.filter(call => call.p_action === 'save').length;
-      const override = await save?.(copy(args.p_data), attempt);
-      if (override) return override;
+      assert.equal(args.p_data.profilePerson, profileId);
+      assert.equal(args.p_data.preferencesVersion, state.profile.preferencesVersion);
+      assert.equal(Object.hasOwn(args.p_data.preferences, 'relationship_intents'), false);
       const nextFields = copy(args.p_data.fields);
       if (Object.hasOwn(nextFields, 'height')) nextFields.height = Number(nextFields.height);
-      state.profile = {...state.profile, ...copy(args.p_data), fields: nextFields};
+      const next = {...state.profile, fields:nextFields, showAge:args.p_data.showAge, showGender:args.p_data.showGender,
+        interest:args.p_data.interest, preferencesVersion:state.profile.preferencesVersion + 1,
+        preferences:{...state.profile.preferences,...copy(args.p_data.preferences)}};
+      const override = await save?.(copy(args.p_data), attempt, copy(next));
+      if (override) return override;
+      state.profile = next;
       return {data: copy(state.profile), error: null};
     },
   });
@@ -86,7 +103,10 @@ async function fixture(t, {fields = {}, save} = {}) {
     window.close();
   });
   const form = () => window.document.querySelector('form');
-  await waitFor(form, 'the profile editor should finish loading');
+  const saveButton = () => form()?.querySelector('button[type="submit"]');
+  const isReady = () => saveButton() && !saveButton().disabled &&
+    form().querySelector('[aria-label="만남 스타일 직접 입력"]');
+  if (ready) await waitFor(isReady, 'the complete profile draft should finish loading');
   const control = label => {
     const element = [...window.document.querySelectorAll('input,select,textarea')].find(input =>
       input.getAttribute('aria-label') === label ||
@@ -95,7 +115,9 @@ async function fixture(t, {fields = {}, save} = {}) {
     return element;
   };
   return {
-    window, state, form, control,
+    window, state, form, control, saveButton, isReady,
+    button: label => [...window.document.querySelectorAll('button')].find(button =>
+      button.getAttribute('aria-label') === label || button.textContent.trim() === label),
     saves: () => state.calls.filter(call => call.p_action === 'save'),
     alert: () => window.document.querySelector('[role="alert"]'),
     async set(label, value) {
@@ -111,10 +133,10 @@ async function fixture(t, {fields = {}, save} = {}) {
       await turn();
     },
     submit() { form().requestSubmit(); },
-    async reopen() {
+    async reopen({ready = true} = {}) {
       window.unmountEditor();
       window.mountEditor();
-      await waitFor(form, 'the saved profile should reopen');
+      if (ready) await waitFor(isReady, 'the saved profile should reopen with its choices');
     },
     async showPeer() {
       window.showPeerProfile({fields: copy(state.profile.fields), age: null, gender: null});
@@ -124,6 +146,64 @@ async function fixture(t, {fields = {}, save} = {}) {
     },
   };
 }
+
+test('public tastes and artwork sit after drinking and smoking, before the introduction, and save with private fields once', async t => {
+  const f = await fixture(t, {fields:{drinking:'가끔 마셔요', smoking:'피우지 않아요', bio:'기존 소개'}});
+  const headings = [...f.form().querySelectorAll('h3')];
+  const tastes = headings.find(node => node.textContent === '나를 표현하는 취향');
+  const artwork = f.form().querySelector('.profile-art-choice');
+  assert.ok(tastes && artwork, 'all moved public choices belong to the detailed editor');
+  const follows = (before, after) => Boolean(before.compareDocumentPosition(after) & f.window.Node.DOCUMENT_POSITION_FOLLOWING);
+  assert.ok(follows(f.control('음주 여부'), tastes));
+  assert.ok(follows(f.control('흡연 여부'), tastes));
+  assert.ok(follows(tastes, artwork));
+  assert.ok(follows(artwork, f.control('자기소개')));
+  assert.equal([...f.form().querySelectorAll('legend')].some(node => node.textContent === '원하는 인연'), false,
+    'relationship intentions remain in the public editor');
+  assert.match(tastes.parentElement.parentElement.textContent, /파장 회원|공개 프로필/,
+    'the relocated choices still explain that they are public');
+  assert.equal(f.button('독서').getAttribute('aria-pressed'), 'true', 'saved artwork is hydrated before saving is enabled');
+  f.button('차분한 대화').click();
+  await f.set('만남 스타일 직접 입력', '  별 보며 걷기  ');
+  f.button('카페').click();
+  await f.set('자기소개', '취향과 함께 바꿀 소개');
+  f.submit();
+  await waitFor(() => f.state.successes === 1, 'one complete profile save should succeed');
+  const [saved] = f.saves();
+  assert.equal(f.saves().length, 1, 'one RPC saves private fields, public tastes and artwork');
+  assert.equal(saved.p_data.profilePerson, profileId);
+  assert.equal(saved.p_data.preferencesVersion, 3);
+  assert.deepEqual(Object.keys(saved.p_data.preferences).sort(),
+    ['meeting_styles','relationship_values','affection_styles','life_priorities','custom'].sort());
+  assert.deepEqual(saved.p_data.preferences.meeting_styles, ['deep_talk']);
+  assert.deepEqual(saved.p_data.preferences.custom.meeting_styles, ['별 보며 걷기']);
+  assert.equal(saved.p_data.interest, 'coffee');
+  assert.equal(saved.p_data.fields.bio, '취향과 함께 바꿀 소개');
+  assert.deepEqual(f.state.profile.preferences.relationship_intents, ['friendship'], 'the existing relationship intention is preserved');
+  assert.equal(f.state.saved.preferencesVersion, 4, 'the caller receives the canonical saved public version');
+  await f.reopen();
+  assert.equal(f.button('차분한 대화').getAttribute('aria-pressed'), 'true');
+  assert.ok(f.button('별 보며 걷기 삭제'));
+  assert.equal(f.button('카페').getAttribute('aria-pressed'), 'true');
+  assert.equal(f.control('자기소개').value, '취향과 함께 바꿀 소개');
+});
+
+test('a delayed complete-profile read cannot expose an empty editable taste draft', async t => {
+  let release;
+  const pending = new Promise(resolve => { release = resolve; });
+  const f = await fixture(t, {ready:false, read:async (_attempt, profile) => {
+    await pending;
+    return {data:{...profile,preferences:{...profile.preferences,meeting_styles:['deep_talk']}},error:null};
+  }});
+  await waitFor(() => f.state.calls.length === 1, 'the complete profile read should start');
+  assert.ok(!f.saveButton() || f.saveButton().disabled, 'saving is unavailable until the choices arrive');
+  assert.equal(f.button('차분한 대화'), undefined, 'an empty editable choice list is not shown while loading');
+  assert.equal(f.saves().length, 0);
+  release();
+  await waitFor(f.isReady, 'the loaded choices should become editable');
+  assert.equal(f.button('차분한 대화').getAttribute('aria-pressed'), 'true');
+  assert.equal(f.button('독서').getAttribute('aria-pressed'), 'true');
+});
 
 test('fractional height saves, accepts the numeric server response, and survives reopening', async t => {
   const f = await fixture(t, {fields: {height: 175, job: '책방지기'}});
@@ -212,17 +292,27 @@ test('an RPC failure keeps the draft, shows the error near save, and allows retr
     data: null, error: {message: '연결을 확인하고 다시 시도해 주세요.', code: '08006'},
   } : undefined});
   await f.set('직업', '다시 저장할 직업');
+  f.button('차분한 대화').click();
+  await waitFor(() => f.button('차분한 대화').getAttribute('aria-pressed') === 'true', 'the preset click should be committed before the next choice');
+  f.button('카페').click();
+  await f.set('만남 스타일 직접 입력', '다시 저장할 취향');
   f.submit();
   await waitFor(() => f.alert(), 'a failed request should display an error');
   assert.equal(f.state.successes, 0);
   assert.match(f.alert().textContent, /연결/);
   assert.ok(f.alert().closest('form') === f.form(), 'the error should be inside the form near the save button');
   assert.equal(f.control('직업').value, '다시 저장할 직업');
-  await waitFor(() => !f.form().querySelector('button').disabled, 'save should be available for retry');
+  assert.equal(f.control('만남 스타일 직접 입력').value, '다시 저장할 취향');
+  assert.equal(f.button('차분한 대화').getAttribute('aria-pressed'), 'true');
+  assert.equal(f.button('카페').getAttribute('aria-pressed'), 'true');
+  assert.equal(f.state.profile.preferencesVersion, 3, 'a failed atomic save leaves the saved version unchanged');
+  await waitFor(() => !f.saveButton().disabled, 'save should be available for retry');
   f.submit();
   await waitFor(() => f.state.successes === 1, 'retry should succeed');
   assert.equal(f.saves().length, 2);
   assert.equal(f.state.profile.fields.job, '다시 저장할 직업');
+  assert.deepEqual(f.state.profile.preferences.custom.meeting_styles, ['다시 저장할 취향']);
+  assert.deepEqual(f.saves().map(call => call.p_data.preferencesVersion), [3,3]);
   assert.ok(!f.alert(), 'a successful retry should clear the error');
 });
 
@@ -239,8 +329,8 @@ test('an out-of-range height shows a Korean error without sending a save request
 });
 
 test('a successful HTTP response that omits an edited field is not reported as saved', async t => {
-  const f = await fixture(t, {save: data => ({
-    data: {fields: {}, age: 35, gender: '남성', showAge: data.showAge, showGender: data.showGender},
+  const f = await fixture(t, {save: (_data, _attempt, next) => ({
+    data: {...next, fields: {}},
     error: null,
   })});
   await f.set('직업', '응답에서 사라진 직업');
@@ -250,6 +340,21 @@ test('a successful HTTP response that omits an edited field is not reported as s
   assert.equal(f.state.successes, 0);
   assert.equal(f.control('직업').value, '응답에서 사라진 직업');
   assert.match(f.alert().textContent, /[가-힣]/);
+});
+
+test('a successful HTTP response without public choices is not reported as a complete save', async t => {
+  const f = await fixture(t, {save: (_data, _attempt, next) => {
+    delete next.preferences;
+    return {data:next,error:null};
+  }});
+  await f.set('직업', '저장 확인이 필요한 직업');
+  f.button('차분한 대화').click();
+  f.submit();
+  await waitFor(() => f.alert(), 'a partial canonical response should be rejected');
+  assert.equal(f.saves().length, 1);
+  assert.equal(f.state.successes, 0);
+  assert.equal(f.control('직업').value, '저장 확인이 필요한 직업');
+  assert.equal(f.button('차분한 대화').getAttribute('aria-pressed'), 'true');
 });
 
 test('two submits while saving send one RPC and report success once', async t => {
@@ -263,7 +368,7 @@ test('two submits while saving send one RPC and report success once', async t =>
   await turn();
   assert.equal(f.saves().length, 1);
   assert.equal(f.state.successes, 0);
-  assert.ok(f.form().querySelector('button').disabled);
+  assert.ok(f.saveButton().disabled);
   release();
   await waitFor(() => f.state.successes === 1, 'the pending save should finish once');
   assert.equal(f.saves().length, 1);
