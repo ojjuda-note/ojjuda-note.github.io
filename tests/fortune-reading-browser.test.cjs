@@ -744,25 +744,23 @@ const server = http.createServer((request, response) => {
       const lines=new Map();for(const part of records.flatMap(record=>record.summaries))lines.set(part.index,(lines.get(part.index)||'')+part.text);
       return [...lines.values()];
     }
-    function originalParagraphs(records) {
-      const paragraphs=new Map();
-      for(const part of records.filter(record=>record.kind==='prose').flatMap(record=>record.paragraphs)) {
-        const previous=paragraphs.get(part.key)||{text:'',end:0};
-        assert.equal(part.start,previous.end,'split passages preserve consecutive character offsets');
-        assert.equal(part.end-part.start,part.text.length);previous.text+=part.text;previous.end=part.end;paragraphs.set(part.key,previous);
-      }
-      return [...paragraphs.values()].map(paragraph=>paragraph.text);
-    }
+    // Share the outcome-based Saju validator: omitted body units must remain
+    // complete in this same topic's visible summary; unique prose stays intact.
+    const {assertOriginalParagraphs:assertVisibleProse}=require('./helpers/saju-story-ui.cjs');
     function storyParts(records,item) {
       const groups=new Map();for(const record of records){if(!groups.has(record.topic))groups.set(record.topic,[]);groups.get(record.topic).push(record);}
       const choices=[...groups.values()].filter(group=>JSON.stringify(summaryLines(group))===JSON.stringify(item.summaryLines));
       const exact=item.id&&choices.find(group=>group.some(record=>[record.source,record.topic,record.data.readerCard,record.data.portraitCard,record.data.daeunTopic,record.data.readingSupplement].includes(item.id)));
-      const complete=item.paragraphs&&choices.find(group=>JSON.stringify(originalParagraphs(group))===JSON.stringify(item.paragraphs));
+      const complete=item.paragraphs&&choices.find(group=>{
+        try {assertVisibleProse(group,item.paragraphs);return true;}
+        catch(error){if(error.code==='ERR_ASSERTION')return false;throw error;}
+      });
       const found=exact||complete||choices[0];assert.ok(found,(item.id||item.label||item.headline)+': its original summary is reachable');return found;
     }
     function assertSourceStory(parts,item,{scoreValue=false}={}) {
       assert.deepEqual(summaryLines(parts),item.summaryLines,'both selected summary units survive the story sequence');
-      if(item.paragraphs)assert.deepEqual(originalParagraphs(parts),scoreValue?[item.value+'점 / 100점',...item.paragraphs]:item.paragraphs,'every complete authored paragraph remains in order');
+      if(item.paragraphs)assertVisibleProse(parts,scoreValue?[item.value+'점 / 100점',...item.paragraphs]:item.paragraphs,
+        'the story keeps its unique prose and displays each omitted complete sentence in its own summary');
       if(item.readingScore) {
         const panels=parts.flatMap(record=>record.scores);assert.equal(panels.length,1);assert.equal(parts.find(record=>record.kind==='summary').scores.length,1);
         const score=item.readingScore;assert.equal(panels[0].status,score.status);

@@ -3,8 +3,8 @@ import {applyReadingSummaryViews} from './reading-summary-view.mjs?v=20261113-sa
 import {applyReadingScoreViews} from './reading-score-view.mjs?v=20261120-saju-story2';
 import {createCompatibilityScoreboard,createCompatibilityScoreDetails} from './compatibility-score-view.mjs?v=20261114-saju-copy1';
 import {appendReadingDetail} from './reading-detail.mjs?v=20261114-saju-depth1';
-import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261120-saju-story2';
-import {createStoryReader} from './story-reader.mjs?v=20261120-saju-story2';
+import {createCompatibilityPeoplePages,createCompatibilityPager} from './compatibility-people-view.mjs?v=20261120-saju-topic1';
+import {createStoryReader} from './story-reader.mjs?v=20261120-saju-topic1';
 
 const readingPagers=new WeakMap();
 const pagerDocuments=new WeakSet();
