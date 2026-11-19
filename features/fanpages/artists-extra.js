@@ -915,7 +915,7 @@
         { title: 'SEVENTEEN 공식 상품 목록', sub: 'Weverse Shop · 앨범·응원봉·공식 MD · 가격·재고 확인', href: 'https://shop.weverse.io/ko/shop/KRW/artists/7' }
       ],
       campaigns: [
-        { kind: '홍보대사·콜라보', date: '2026.11.12', title: '정한×조슈아 JxJ × ENYA MUSIC',
+        { kind: '홍보대사', date: '2026.11.12', title: '정한×조슈아 JxJ × ENYA MUSIC',
           sub: '글로벌 브랜드 홍보대사 · DREAMSCAPE 협업 스마트 기타 컬렉션 · 11/12 ENYA MUSIC 공식 보도자료',
           href: 'https://www.zawya.com/en/press-release/asia-press-releases/seventeens-jeonghan-x-joshua-partner-with-enya-music-as-global-brand-ambassadors-for-dreamscape-collection-2246228' },
         { kind: '홍보대사', date: '2024.06.26', title: '유네스코 청년 친선대사', sub: 'UNESCO 첫 청년 친선대사로 임명 · Going Together 청년 지원 협력', href: 'https://www.unesco.org/en/articles/unesco-and-k-pop-group-seventeen-announce-1-million-grant-scheme-youth-well-being-and-creativity' },
