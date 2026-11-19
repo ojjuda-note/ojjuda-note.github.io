@@ -1,0 +1,14 @@
+{
+  "mediabunny-1.66.2.mjs": {
+    "bytes": 486226,
+    "sha256": "8e467ae9229fae475d2bc64328d1acd0010249c422da69e1ca2a17d943b1ad28"
+  },
+  "mediabunny-aac-encoder-1.66.2.mjs": {
+    "bytes": 1133467,
+    "sha256": "f5dd87872a7c7843814e03ea45f77e8aaf6d32401c12712c450edf16161f4c03"
+  },
+  "tus-js-client-4.3.1.mjs": {
+    "bytes": 62019,
+    "sha256": "9944a2bb880228ea96e4bbc2e2627ae2d4ea8d8e793281141f37a17fbef6ea8e"
+  }
+}

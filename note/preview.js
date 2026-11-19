@@ -528,10 +528,13 @@ function suggestTags(body, limit = 5) {
 let autoTagMode = true, manualTags = [], rejectedTags = new Set(), autoTagsNow = [];
 // 일반 카드의 첨부 사진은 비공개 저장소에서 읽을 때마다 서명합니다.
 const CARD_PHOTO_BUCKET = 'note-card-photos';
+const CARD_VIDEO_BUCKET = 'note-card-videos';
 let cardPhotoBlob = null, cardPhotoUrl = null, cardPhotoRequestId = null, cardPhotoPreparing = false, cardPhotoRun = 0;
+let cardVideoPrepared = null, cardMediaController = null, cardMediaUploadController = null, cardMediaProgress = '';
 let cardPhotoEditPath = null;
 const cardPhotoCache = new Map(), cardPhotoWanted = new Set();
 let cardPhotoTimer = null, cardPhotoRefreshTimer = null, photoLightbox = null, photoLightboxFocus = null;
+let photoLightboxRun = 0;
 function wantCardPhoto(id) {
   if (!validCardId(id) || !client || !session?.user) return;
   const hit = cardPhotoCache.get(id);
@@ -548,7 +551,7 @@ async function fetchCardPhotos() {
   if (!ids.length || !session?.user) return;
   const epoch = identityEpoch, userId = session.user.id;
   try {
-    const rows = await noteRpc('card_photo_paths', { p_ids: ids });
+    const rows = await noteRpc('card_media_paths', { p_ids: ids });
     if (epoch !== identityEpoch || session?.user?.id !== userId) return;
     let byPath = new Map();
     const paths = (rows || []).map(row => row.photo_path).filter(Boolean);
@@ -561,10 +564,11 @@ async function fetchCardPhotos() {
       if (error) console.warn('Note card photo signing:', error);
       byPath = new Map((data || []).filter(item => !item.error && item.signedUrl).map(item => [item.path, item.signedUrl]));
     }
-    const linked = new Map((rows || []).map(row => [row.card_id, row.photo_path]));
+    const linked = new Map((rows || []).map(row => [row.card_id, row]));
     for (const id of ids) {
-      const path = linked.get(id), url = byPath.get(path) || null;
-      cardPhotoCache.set(id, { url, failed: !!path && !url, at: Date.now() });
+      const media = linked.get(id), path = media?.photo_path, url = byPath.get(path) || null;
+      cardPhotoCache.set(id, { url, failed: !!path && !url, at: Date.now(),
+        videoPath: media?.video_path || null, duration: media?.duration, width: media?.width, height: media?.height });
     }
     ids.forEach(paintCardPhoto);
     scheduleCardPhotoRefresh();
@@ -576,37 +580,44 @@ async function fetchCardPhotos() {
   if (cardPhotoWanted.size && epoch === identityEpoch && session?.user?.id === userId)
     cardPhotoTimer = setTimeout(fetchCardPhotos, 80);
 }
-function applyCardPhoto(thumb, url, failed = false) {
-  const shown = !!url || failed;
+function applyCardPhoto(thumb, url, failed = false, media = null) {
+  const isVideo = !!media?.videoPath;
+  const shown = !!url || failed || isVideo;
   thumb.hidden = !shown;
   thumb.classList.toggle('photo-load-failed', failed);
   thumb.style.backgroundImage = '';
   if (!thumb.dataset.photoLabel) thumb.dataset.photoLabel = thumb.getAttribute('aria-label') || '사진 크게 보기';
-  thumb.setAttribute('aria-label', failed ? '첨부 사진을 불러오지 못했어요. 다시 불러오기' : thumb.dataset.photoLabel);
-  thumb.title = failed ? '사진 다시 불러오기' : '첨부 사진 크게 보기';
+  thumb.dataset.mediaKind = isVideo ? 'video' : 'photo';
+  if (isVideo) thumb.dataset.videoPath = media.videoPath; else delete thumb.dataset.videoPath;
+  thumb.setAttribute('aria-label', isVideo ? '첨부 영상 재생' : failed ? '첨부 사진을 불러오지 못했어요. 다시 불러오기' : thumb.dataset.photoLabel);
+  thumb.title = isVideo ? `영상 재생${media.duration ? ` · ${Math.ceil(media.duration)}초` : ''}` : failed ? '사진 다시 불러오기' : '첨부 사진 크게 보기';
   if (url) thumb.dataset.photoUrl = url; else delete thumb.dataset.photoUrl;
   thumb.dataset.photoState = failed ? 'error' : url ? 'ready' : 'empty';
   thumb.replaceChildren();
   if (url) {
-    const img = node('img'); img.alt = ''; img.decoding = 'async';
+    const img = node('img'); img.alt = ''; img.decoding = 'async'; img.loading = 'lazy';
     const epoch = identityEpoch;
     img.addEventListener('error', () => {
       if (epoch !== identityEpoch || !thumb.isConnected || thumb.dataset.photoUrl !== url) return;
       const id = thumb.dataset.photoCard;
-      cardPhotoCache.set(id, { url: null, failed: true, at: Date.now() }); paintCardPhoto(id);
+      cardPhotoCache.set(id, { ...cardPhotoCache.get(id), url: null, failed: true, at: Date.now() }); paintCardPhoto(id);
     }, { once: true });
     img.src = url; thumb.append(img);
-  } else if (failed) thumb.textContent = '사진\n재시도';
+  } else if (failed && !isVideo) thumb.textContent = '사진\n재시도';
+  if (isVideo) {
+    const play = node('span', 'card-video-badge', '▶'); play.setAttribute('aria-hidden', 'true'); thumb.append(play);
+  }
   const frame = thumb.closest('.card-photo-frame, .compose-photo');
   frame?.classList.toggle('has-card-photo', shown);
   requestTagFit();
 }
 function paintCardPhoto(id) {
   const hit = cardPhotoCache.get(id);
-  document.querySelectorAll(`[data-photo-card="${id}"]`).forEach(thumb => applyCardPhoto(thumb, hit?.url, !!hit?.failed));
+  document.querySelectorAll(`[data-photo-card="${id}"]`).forEach(thumb => applyCardPhoto(thumb, hit?.url, !!hit?.failed, hit));
   if (editingId === id && !backdrop.hidden && cardPhotoEditPath) syncCardPhotoAttach();
 }
 function activateCardPhoto(thumb) {
+  if (thumb.dataset.mediaKind === 'video') { void openCardVideo(thumb); return; }
   if (thumb.dataset.photoState === 'error') {
     cardPhotoCache.set(thumb.dataset.photoCard, { url: null, failed: true, at: 0 });
     thumb.textContent = '불러오는 중';
@@ -637,54 +648,131 @@ function selectDevicePhoto(target, anchor) {
   if (input && !input.disabled) input.click();
 }
 function closePhotoLightbox() {
+  photoLightboxRun++;
   if (!photoLightbox || photoLightbox.hidden) return;
   photoLightbox.hidden = true; photoLightbox.querySelector('img').removeAttribute('src');
+  const video = photoLightbox.querySelector('video');
+  if (video) {
+    video.pause(); video.removeAttribute('src'); video.removeAttribute('poster'); video.load();
+  }
   if (photoLightboxFocus?.isConnected) photoLightboxFocus.focus({ preventScroll: true });
   photoLightboxFocus = null;
 }
-function openPhotoLightbox(url, protect = false) {
-  if (!url || !session?.user) return;
+function ensurePhotoLightbox() {
   if (!photoLightbox) {
     photoLightbox = node('div', 'note-photo-lightbox');
     photoLightbox.hidden = true;
     photoLightbox.setAttribute('role', 'dialog'); photoLightbox.setAttribute('aria-modal', 'true');
     photoLightbox.setAttribute('aria-label', '카드 사진');
     const img = node('img'); img.alt = '카드에 넣은 사진';
+    const video = node('video'); video.hidden = true; video.controls = true; video.playsInline = true;
+    video.preload = 'none'; video.setAttribute('aria-label', '카드에 넣은 영상');
+    video.setAttribute('controlslist', 'nodownload');
+    const status = node('p', 'note-media-status'); status.hidden = true;
+    status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
+    video.addEventListener('error', () => {
+      if (photoLightbox.hidden || video.hidden || !video.getAttribute('src')) return;
+      status.textContent = '영상을 재생하지 못했어요. 닫은 뒤 다시 눌러 주세요.'; status.hidden = false;
+    });
+    video.addEventListener('playing', () => { status.hidden = true; });
     const close = node('button', 'note-photo-lightbox-close', '닫기'); close.type = 'button';
-    photoLightbox.append(img, close); document.body.append(photoLightbox);
-    photoLightbox.addEventListener('click', event => { if (event.target !== img) closePhotoLightbox(); });
+    photoLightbox.append(img, video, status, close); document.body.append(photoLightbox);
+    photoLightbox.addEventListener('click', event => {
+      if (event.target === photoLightbox || event.target === close) closePhotoLightbox();
+    });
     document.addEventListener('keydown', event => {
       if (photoLightbox.hidden) return;
       if (event.key === 'Escape') { event.preventDefault(); closePhotoLightbox(); }
-      if (event.key === 'Tab') { event.preventDefault(); close.focus(); }
+      if (event.key === 'Tab') {
+        if (video.hidden) { event.preventDefault(); close.focus(); }
+        else if (!event.shiftKey && document.activeElement === close) { event.preventDefault(); video.focus(); }
+        else if (event.shiftKey && document.activeElement === video) { event.preventDefault(); close.focus(); }
+      }
     });
   }
+}
+function openPhotoLightbox(url, protect = false) {
+  if (!url || !session?.user) return;
+  closePhotoLightbox(); ensurePhotoLightbox();
   photoLightboxFocus = document.activeElement;
-  photoLightbox.querySelector('img').dataset.protectPhoto = String(protect);
-  photoLightbox.querySelector('img').src = url;
+  photoLightbox.setAttribute('aria-label', '카드 사진');
+  const img = photoLightbox.querySelector('img'); img.hidden = false;
+  img.dataset.protectPhoto = String(protect); img.src = url;
+  photoLightbox.querySelector('video').hidden = true;
+  photoLightbox.querySelector('.note-media-status').hidden = true;
   photoLightbox.hidden = false;
   photoLightbox.querySelector('button').focus({ preventScroll: true });
 }
+async function openCardVideo(thumb) {
+  const path = thumb.dataset.videoPath;
+  if (!path || !client || !session?.user) return;
+  closePhotoLightbox(); ensurePhotoLightbox();
+  const run = ++photoLightboxRun, epoch = identityEpoch, userId = session.user.id;
+  photoLightboxFocus = document.activeElement;
+  photoLightbox.setAttribute('aria-label', '카드 영상');
+  photoLightbox.querySelector('img').hidden = true;
+  const video = photoLightbox.querySelector('video'); video.hidden = false;
+  if (thumb.dataset.photoUrl) video.poster = thumb.dataset.photoUrl;
+  const status = photoLightbox.querySelector('.note-media-status');
+  status.textContent = '영상을 불러오는 중이에요.'; status.hidden = false;
+  photoLightbox.hidden = false; photoLightbox.querySelector('button').focus({ preventScroll: true });
+  try {
+    // Only the selected attachment receives a video URL. The feed loads posters, never video bytes.
+    const { data, error } = await client.storage.from(CARD_VIDEO_BUCKET).createSignedUrl(path, 600);
+    if (run !== photoLightboxRun || epoch !== identityEpoch || userId !== session?.user?.id || photoLightbox.hidden) return;
+    if (error || !data?.signedUrl) throw error || new Error('missing_video_url');
+    video.src = data.signedUrl; status.hidden = true;
+    // This follows a deliberate tap. Browsers that require another tap retain the native play control.
+    const playing = video.play(); playing?.catch(() => {});
+  } catch (error) {
+    if (run !== photoLightboxRun || epoch !== identityEpoch || photoLightbox.hidden) return;
+    console.warn('Note card video:', error);
+    status.textContent = '영상을 불러오지 못했어요. 닫은 뒤 다시 눌러 주세요.'; status.hidden = false;
+  }
+}
 async function selectCardPhoto(file) {
   if (!file || busy || !(kind === 'memo' || kind === 'comment') || (editingId && !cardPhotoEditPath)) return;
+  cardMediaController?.abort();
+  const controller = new AbortController(); cardMediaController = controller;
   const run = ++cardPhotoRun, composer = composerRun, epoch = identityEpoch;
+  const isVideo = /^video\//i.test(file.type) || /\.(mp4|mov|m4v|webm)$/i.test(file.name || '');
+  cardMediaProgress = isVideo ? '영상을 확인하는 중이에요.' : '사진을 준비하는 중이에요.';
   cardPhotoPreparing = true; updateComposer();
   try {
-    const blob = await prepareEventPhoto(file, 10 * 1024 * 1024);   // JPG로 재생성하여 위치 정보를 지워요.
+    let prepared = null;
+    if (isVideo) {
+      const helper = window.ojjudaCardVideo || await import('/note/card-video.js?v=20261120-video1');
+      if (controller.signal.aborted) return;
+      prepared = await helper.prepareCardVideo(file, { signal: controller.signal, onProgress: ({ phase, progress }) => {
+        if (run !== cardPhotoRun || epoch !== identityEpoch || controller.signal.aborted) return;
+        const percent = Math.min(100, Math.max(0, Math.round((progress || 0) * 100)));
+        cardMediaProgress = phase === 'processing' ? `영상을 최적화하는 중이에요. ${percent}%`
+          : phase === 'poster' ? '영상 미리보기를 만드는 중이에요.' : '영상을 확인하는 중이에요.';
+        updateComposer();
+      } });
+    }
+    const blob = prepared?.posterBlob || await prepareEventPhoto(file, 10 * 1024 * 1024);
     if (run !== cardPhotoRun || composer !== composerRun || epoch !== identityEpoch
-      || backdrop.hidden || (editingId && !cardPhotoEditPath) || !(kind === 'memo' || kind === 'comment')) return;
+      || controller.signal.aborted || backdrop.hidden || (editingId && !cardPhotoEditPath) || !(kind === 'memo' || kind === 'comment')) return;
     if (cardPhotoUrl) URL.revokeObjectURL(cardPhotoUrl);
     cardPhotoBlob = blob; cardPhotoUrl = URL.createObjectURL(blob); cardPhotoRequestId = crypto.randomUUID();
+    cardVideoPrepared = prepared;
+    cardMediaProgress = prepared ? `영상 ${Math.ceil(prepared.duration)}초 · ${(prepared.blob.size / 1024 / 1024).toFixed(1)}MB · 준비됐어요.` : '';
   } catch (error) {
-    if (run === cardPhotoRun) message(error.message || '사진을 읽지 못했어요. 다시 골라 주세요.');
+    if (run === cardPhotoRun && !controller.signal.aborted) {
+      cardMediaProgress = error.message || '첨부 파일을 읽지 못했어요. 다시 골라 주세요.'; message(cardMediaProgress);
+    }
   } finally {
-    if (run === cardPhotoRun) { cardPhotoPreparing = false; syncCardPhotoAttach(); updateComposer(); }
+    if (run === cardPhotoRun) { cardMediaController = null; cardPhotoPreparing = false; syncCardPhotoAttach(); updateComposer(); }
   }
 }
 function clearCardPhoto() {
   cardPhotoRun++;
+  cardMediaController?.abort(); cardMediaController = null;
+  cardMediaUploadController?.abort(); cardMediaUploadController = null;
   if (cardPhotoUrl) URL.revokeObjectURL(cardPhotoUrl);
   cardPhotoBlob = null; cardPhotoUrl = null; cardPhotoRequestId = null; cardPhotoPreparing = false;
+  cardVideoPrepared = null; cardMediaProgress = '';
   const input = $('#card-photo-file'); if (input) input.value = '';
   syncCardPhotoAttach();
 }
@@ -693,16 +781,21 @@ function syncCardPhotoAttach() {
   if (!attach || !remove) return;
   const allowed = (!editingId || !!cardPhotoEditPath) && (kind === 'memo' || kind === 'comment');
   const previewUrl = cardPhotoUrl || (editingId && cardPhotoEditPath ? cardPhotoCache.get(editingId)?.url : null);
-  const disabled = !allowed || busy || draftLoading || cardPhotoPreparing;
+  const disabled = !allowed || busy || draftLoading;
   $('#card-photo-file').disabled = disabled;
   remove.disabled = disabled;
-  attach.hidden = !allowed; remove.hidden = !allowed || !cardPhotoUrl;
+  attach.hidden = !allowed; remove.hidden = !allowed || (!cardPhotoUrl && !cardPhotoPreparing);
   attach.tabIndex = allowed ? 0 : -1;
   attach.classList.toggle('has-photo', !!previewUrl);
   attach.style.backgroundImage = previewUrl ? `url("${previewUrl.replaceAll('"', '%22')}")` : '';
-  attach.title = editingId || cardPhotoUrl ? '첨부 사진 바꾸기' : '사진 첨부';
-  attach.setAttribute('aria-label', editingId ? '첨부 사진 바꾸기' : '사진 첨부');
-  remove.setAttribute('aria-label', editingId ? '사진 교체 취소' : '사진 빼기');
+  attach.title = editingId || cardPhotoUrl ? '사진·영상 바꾸기' : '사진·영상 첨부';
+  attach.setAttribute('aria-label', attach.title);
+  remove.setAttribute('aria-label', cardPhotoPreparing ? '첨부 준비 취소' : editingId ? '첨부 교체 취소' : '첨부 빼기');
+  const mediaStatus = $('#card-media-status');
+  if (mediaStatus) {
+    mediaStatus.hidden = !allowed;
+    mediaStatus.textContent = cardMediaProgress || '사진 또는 1분 미만 영상 · 영상은 자동으로 용량을 줄여요.';
+  }
   attach.closest('.compose-photo')?.classList.toggle('has-card-photo-attach', allowed);
   attach.classList.toggle('is-busy', cardPhotoPreparing);
   attach.setAttribute('aria-disabled', String(disabled));
@@ -715,14 +808,14 @@ async function prepareCardPhotoEdit(cardId, run) {
     if (epoch !== identityEpoch || run !== composerRun || backdrop.hidden || editingId !== cardId) return;
     cardPhotoEditPath = rows?.find(row => row.card_id === cardId)?.photo_path || null;
     $('#compose-context').textContent = cardPhotoEditPath
-      ? '글·태그와 첨부한 사진을 바꿀 수 있어요.'
-      : '글과 태그를 수정할 수 있어요. 사진은 처음 작성할 때만 첨부할 수 있어요.';
+      ? '글·태그와 첨부한 사진·영상을 바꿀 수 있어요.'
+      : '글과 태그를 수정할 수 있어요. 사진·영상은 처음 작성할 때만 첨부할 수 있어요.';
     if (cardPhotoEditPath) { cardPhotoCache.delete(cardId); wantCardPhoto(cardId); }
     syncCardPhotoAttach();
   } catch (error) {
     if (epoch !== identityEpoch || run !== composerRun || backdrop.hidden || editingId !== cardId) return;
     console.warn('Note editable photo:', error);
-    $('#compose-context').textContent = '글과 태그를 수정할 수 있어요. 사진 정보를 확인하려면 작성창을 다시 열어 주세요.';
+    $('#compose-context').textContent = '글과 태그를 수정할 수 있어요. 첨부 정보를 확인하려면 작성창을 다시 열어 주세요.';
   }
 }
 // 글쓰기 창 아래쪽의 이름·성별 빠른 선택 (꾸미기 · 추가 설정 안의 선택지와 서로 맞춰져요)
@@ -1057,7 +1150,7 @@ function cardElement(card, compact = false, expanded = false, deferBackground = 
     });
     frame.append(thumb);
     const known = cardPhotoCache.get(card.id);
-    if (known) applyCardPhoto(thumb, known.url, !!known.failed);
+    if (known) applyCardPhoto(thumb, known.url, !!known.failed, known);
     wantCardPhoto(card.id);
   }
   item.append(frame);
@@ -2457,8 +2550,8 @@ function setComposerInputs() {
   $('#photo-groups').querySelectorAll('button').forEach(button => { button.disabled = disabled; });
   $('#event-photo-file').disabled = disabled || eventPhotoPreparing;
   $('#event-photo-clear').disabled = disabled || eventPhotoPreparing;
-  $('#card-photo-file').disabled = disabled || cardPhotoPreparing;
-  $('#card-photo-remove').disabled = disabled || cardPhotoPreparing;
+  $('#card-photo-file').disabled = disabled;
+  $('#card-photo-remove').disabled = disabled;
   document.querySelectorAll('.note-color-choice input, input[name="photo-choice"]').forEach(input => { input.disabled = disabled; });
   document.querySelectorAll('input[name="identity"]').forEach(input => { input.disabled = disabled; });
   syncComposerTools();
@@ -2569,7 +2662,7 @@ function updateComposer() {
     ? '아래 위치 아이콘을 눌러 위치를 켜 주세요.' : '위치를 켜고 확인한 뒤 등록할 수 있어요.';
   else if (kind === 'event' && !editingId && !validEventPosition()) composeMessage.textContent = '지도에서 이벤트 중심을 정해 주세요.';
   else if (kind === 'event' && eventPhotoPreparing) composeMessage.textContent = '사진을 준비하는 중이에요.';
-  else if (cardPhotoPreparing) composeMessage.textContent = '사진을 준비하는 중이에요.';
+  else if (cardPhotoPreparing) composeMessage.textContent = cardMediaProgress || '첨부 파일을 준비하는 중이에요.';
   else if (kind === 'event' && eventPhotoError) composeMessage.textContent = eventPhotoError;
   else if (kind === 'event' && !editingId && !validEventOptions()) composeMessage.textContent = '반경과 시간을 범위 안의 정수로 입력해 주세요.';
   else composeMessage.textContent = busy ? (editingId ? '수정 중' : '등록 중')
@@ -2819,9 +2912,23 @@ function closeComposer(saveDraft = true) {
   clearTimeout(composerMapTimer); eventMap?.destroy(); eventMap = null; lockPage(false);
   if (focusBefore?.isConnected) focusBefore.focus({ preventScroll: true });
 }
-async function uploadCardPhotoFile(userId, blob, requestId) {
+async function uploadCardPhotoFile(userId, blob, requestId, video = null) {
   if (session?.user?.id !== userId || !validCardId(requestId))
-    throw new Error('계정이나 사진 정보를 다시 확인해 주세요.');
+    throw new Error('계정이나 첨부 정보를 다시 확인해 주세요.');
+  if (video) {
+    const controller = new AbortController(); cardMediaUploadController = controller;
+    const epoch = identityEpoch;
+    try {
+      const helper = window.ojjudaCardVideoUpload || await import('/note/card-video-upload.js?v=20261120-video1');
+      if (controller.signal.aborted || epoch !== identityEpoch || session?.user?.id !== userId) throw new Error('계정이 변경됐어요.');
+      return await helper.uploadCardVideo({ client, supabaseUrl: config.supabaseUrl, userId, requestId, video,
+        posterBlob: blob, signal: controller.signal, onProgress: ({ phase, progress }) => {
+          if (epoch !== identityEpoch || session?.user?.id !== userId || controller.signal.aborted) return;
+          cardMediaProgress = phase === 'uploading' ? `영상을 올리는 중이에요. ${Math.round(progress * 100)}%` : '올린 영상을 확인하는 중이에요.';
+          composeMessage.textContent = cardMediaProgress; syncCardPhotoAttach();
+        } });
+    } finally { if (cardMediaUploadController === controller) cardMediaUploadController = null; }
+  }
   const path = `${userId}/${requestId}.jpg`;
   const { error } = await client.storage.from(CARD_PHOTO_BUCKET).upload(
     path, blob, { contentType: 'image/jpeg', upsert: false, cacheControl: '600' });
@@ -2829,17 +2936,25 @@ async function uploadCardPhotoFile(userId, blob, requestId) {
   if (session?.user?.id !== userId) throw new Error('계정이 변경됐어요.');
   return path;
 }
+async function removeCardMediaFiles(path, videoPath = null) {
+  const paths = [[CARD_PHOTO_BUCKET, path]];
+  // Video paths share the poster's immutable request ID. Policies reject deletion while linked.
+  if (videoPath) paths.push([CARD_VIDEO_BUCKET, videoPath]);
+  for (const [bucket, objectPath] of paths) {
+    try {
+      const { error } = await client.storage.from(bucket).remove([objectPath]);
+      if (error) console.warn('Note attachment cleanup:', error);
+    } catch (error) { console.warn('Note attachment cleanup:', error); }
+  }
+}
 async function replacePublishedCardPhoto(cardId, userId, path, expectedPath) {
   if (session?.user?.id !== userId || !validCardId(cardId) || !expectedPath)
-    throw new Error('기존 사진이 있는 카드만 사진을 바꿀 수 있어요.');
+    throw new Error('기존 첨부가 있는 카드만 사진·영상을 바꿀 수 있어요.');
   const result = await noteRpc('replace_card_photo', { p_card_id: cardId, p_path: path, p_expected_path: expectedPath });
   if (session?.user?.id !== userId) return;
   cardPhotoCache.delete(cardId);
   if (result?.previous_path && result.previous_path !== path) {
-    try {
-      const { error } = await client.storage.from(CARD_PHOTO_BUCKET).remove([result.previous_path]);
-      if (error) console.warn('Note previous photo cleanup:', error);
-    } catch (error) { console.warn('Note previous photo cleanup:', error); }
+    await removeCardMediaFiles(result.previous_path, result.previous_video_path || result.previous_path.replace(/\.jpg$/, '.mp4'));
   }
 }
 async function showPublishedFeed(publishKind, values, cardPhotoFailed = false) {
@@ -2852,7 +2967,7 @@ async function showPublishedFeed(publishKind, values, cardPhotoFailed = false) {
   });
   const refreshed = await selectCollection(publishKind === 'event' ? 'events' : 'all', true);
   if (publishKind === 'memo') {
-    if (cardPhotoFailed) message('카드는 올렸지만 사진을 붙이지 못했어요. 다시 시도해 주세요.');
+    if (cardPhotoFailed) message('카드는 올렸지만 첨부 파일을 붙이지 못했어요. 다시 시도해 주세요.');
     else if (refreshed) flashMessage(values.includes('19금') ? '카드를 올렸어요. ‘19금’ 태그 검색에서 볼 수 있어요.' : '카드를 올렸어요', 3500);
     else message('카드는 올렸어요. 목록을 불러오지 못했어요. 새로고침해 주세요.');
   }
@@ -2883,7 +2998,7 @@ async function publishCard() {
   if (busy || submit.disabled || !client || !ready) return;
   let body = text.value.replace(/\r\n?/g, '\n').trim(), values = parsedTags();
   if (!body || maskedTextLength(body) > 200 || !values) return;
-  if (cardPhotoPreparing) { composeMessage.textContent = '사진을 준비하는 중이에요. 잠시 뒤 등록해 주세요.'; return; }
+  if (cardPhotoPreparing) { composeMessage.textContent = '첨부 파일을 준비하는 중이에요. 잠시 뒤 등록해 주세요.'; return; }
   const editId = editingId, actionUserId = composerUserId, actionEpoch = identityEpoch, actionComposerRun = composerRun;
   // Login may finish before the first guest preview arrived. Use one member draw if publishing first.
   if (composerUserId && !editId && backgroundKey === null) {
@@ -2891,6 +3006,7 @@ async function publishCard() {
   }
   const previewBackgroundKey = backgroundKey;
   const selectedCardPhoto = (!editId || cardPhotoEditPath) && (kind === 'memo' || kind === 'comment') ? cardPhotoBlob : null;
+  const selectedCardVideo = selectedCardPhoto ? cardVideoPrepared : null;
   const selectedCardPhotoExpectedPath = cardPhotoEditPath;
   const selectedCardPhotoId = cardPhotoRequestId;
   if (kind === 'event' && (!validEventBody(body) || eventPhotoPreparing || eventPhotoError
@@ -2960,14 +3076,17 @@ async function publishCard() {
   }
   let cardPhotoUploadPath = null;
   if (selectedCardPhoto) {
-    try { cardPhotoUploadPath = await uploadCardPhotoFile(actionUserId, selectedCardPhoto, selectedCardPhotoId); }
+    try { cardPhotoUploadPath = await uploadCardPhotoFile(actionUserId, selectedCardPhoto, selectedCardPhotoId, selectedCardVideo); }
     catch (photoError) {
+      if (actionEpoch !== identityEpoch || actionUserId !== session?.user?.id || actionComposerRun !== composerRun) return;
       console.warn('Note card photo upload:', photoError);
       draftController?.cancelPublish(); busy = false; setComposerInputs(); updateComposer();
-      composeMessage.textContent = '사진을 올리지 못했어요. 사진과 글을 그대로 두었으니 다시 시도해 주세요.';
+      composeMessage.textContent = selectedCardVideo ? (photoError.message || '영상을 올리지 못했어요. 다시 시도해 주세요.')
+        : '사진을 올리지 못했어요. 사진과 글을 그대로 두었으니 다시 시도해 주세요.';
       return;
     }
   }
+  if (actionEpoch !== identityEpoch || actionUserId !== session?.user?.id || actionComposerRun !== composerRun) return;
   let eventPhotoPath = null;
   if (publishKind === 'event' && selectedEventPhoto) {
     eventPhotoPath = `${actionUserId}/${selectedEventPhotoRequestId}.jpg`;
@@ -3109,31 +3228,32 @@ async function publishCard() {
         async () => {
           photoPurchaseFailed = false; retryBackground.remove(); keepBackground.remove();
           await refreshCards(false); await loadWorldBalance(actionUserId);
-          if (cardPhotoFailed) managementMessage.textContent = '사진 배경을 적용했어요. 카드 사진 첨부는 다시 시도해 주세요.';
+          if (cardPhotoFailed) managementMessage.textContent = '사진 배경을 적용했어요. 카드 첨부는 다시 시도해 주세요.';
           else closeManagement();
         }
       ), true);
       const keepBackground = managementButton('기본 배경으로 두기', () => {
         photoPurchaseFailed = false; retryBackground.remove(); keepBackground.remove();
-        if (cardPhotoFailed) managementMessage.textContent = '기본 배경으로 둘게요. 카드 사진 첨부는 다시 시도할 수 있어요.';
+        if (cardPhotoFailed) managementMessage.textContent = '기본 배경으로 둘게요. 카드 첨부는 다시 시도할 수 있어요.';
         else closeManagement();
       });
       managementFooter.append(retryBackground, keepBackground);
     }
     if (cardPhotoFailed) {
-      pendingCardPhotoCleanup = { userId: actionUserId, path: `${actionUserId}/${selectedCardPhotoId}.jpg` };
+      pendingCardPhotoCleanup = { userId: actionUserId, path: `${actionUserId}/${selectedCardPhotoId}.jpg`,
+        videoPath: selectedCardVideo ? `${actionUserId}/${selectedCardPhotoId}.mp4` : null };
       if (cardPhotoConflict) {
-        managementBody.append(node('p', 'management-help', '다른 화면에서 사진이 먼저 바뀌었어요. 카드를 다시 열어 현재 사진을 확인한 뒤 교체해 주세요.'));
+        managementBody.append(node('p', 'management-help', '다른 화면에서 첨부가 먼저 바뀌었어요. 카드를 다시 열어 확인한 뒤 교체해 주세요.'));
         managementFooter.append(managementButton('카드 다시 열기', () => { closeManagement(); openCard(publishedId); }, true));
         return;
       }
-      managementBody.append(node('p', 'management-help', '글은 수정됐지만 사진 교체는 완료되지 않았어요. 기존 사진은 그대로이고, 아래에서 다시 바꿀 수 있어요.'));
-      const retryCardPhoto = managementButton('사진 교체 다시 시도', () => managementAction(
+      managementBody.append(node('p', 'management-help', '글은 수정됐지만 첨부 교체는 완료되지 않았어요. 아래에서 다시 바꿀 수 있어요.'));
+      const retryCardPhoto = managementButton('첨부 교체 다시 시도', () => managementAction(
         () => replacePublishedCardPhoto(publishedId, actionUserId, cardPhotoUploadPath, selectedCardPhotoExpectedPath),
         async () => {
           cardPhotoFailed = false; pendingCardPhotoCleanup = null; retryCardPhoto.remove();
           await refreshCards(false);
-          if (photoPurchaseFailed) managementMessage.textContent = '첨부 사진을 바꿨어요. 제공 배경 결제는 다시 시도해 주세요.';
+          if (photoPurchaseFailed) managementMessage.textContent = '첨부를 바꿨어요. 제공 배경 결제는 다시 시도해 주세요.';
           else closeManagement();
         }
       ), true);
@@ -3412,9 +3532,7 @@ function closeManagement(force = false) {
   const cleanup = pendingCardPhotoCleanup; pendingCardPhotoCleanup = null;
   if (cleanup && session?.user?.id === cleanup.userId) {
     // 카드에 실제로 붙어 있다면 저장소 정책이 삭제를 거부합니다.
-    void client.storage.from(CARD_PHOTO_BUCKET).remove([cleanup.path]).then(({ error }) => {
-      if (error) console.warn('Note orphan card photo cleanup:', error);
-    }).catch(error => console.warn('Note orphan card photo cleanup:', error));
+    void removeCardMediaFiles(cleanup.path, cleanup.videoPath);
   }
   managementRun++; management.hidden = true; managementBusy = false;
   managementBody.replaceChildren(); managementFooter.replaceChildren(); managementMessage.textContent = '';
@@ -3842,7 +3960,9 @@ $('#card-photo-remove')?.addEventListener('click', event => {
 });
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') scheduleCardPhotoRefresh();
+  else closePhotoLightbox();
 });
+window.addEventListener('pagehide', closePhotoLightbox);
 $('#quick-gender')?.addEventListener('change', event => pickQuickChoice('gender', event.target.value));
 
 

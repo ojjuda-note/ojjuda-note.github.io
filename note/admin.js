@@ -223,7 +223,7 @@
     return true;
   }
   async function drainPendingPhotoCleanup(run) {
-    const buckets = new Set(['note-card-photos', 'note-event-photos']);
+    const buckets = new Set(['note-card-photos', 'note-event-photos', 'note-card-videos']);
     let previousBatch = '';
     for (let batch = 0; batch < 10; batch++) {
       if (!validInstance(run)) return { complete: false };

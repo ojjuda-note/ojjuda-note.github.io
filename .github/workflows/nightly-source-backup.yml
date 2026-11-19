@@ -63,6 +63,15 @@ jobs:
       - name: Install locked regression test dependencies
         if: ${{ !cancelled() }}
         run: npm --prefix tests ci --ignore-scripts
+      - name: Prepare Park video regression assets
+        if: ${{ !cancelled() }}
+        run: |
+          npm --prefix note/vendor ci --ignore-scripts
+          npm --prefix note/vendor run build
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install --yes ffmpeg
+          fi
       - name: Install Chromium for real interface checks
         if: ${{ !cancelled() }}
         working-directory: tests

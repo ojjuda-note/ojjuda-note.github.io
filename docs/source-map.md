@@ -71,3 +71,9 @@
 - 10위 밖 이용자가 없으면 추가 정렬을 하지 않습니다. 자기 기록이 있는 경우에만 앞선 사람 수를 계산합니다.
 - Supabase의 보호된 내부 원본 테이블과 사용 중인 게임·계정·게시판 기능은 검증 없이 삭제하지 않습니다. 비활성 소스 후보는 테스트·운영 참조가 없는 것을 확인한 뒤 별도 작업으로 정리합니다.
 
+
+## 공원 짧은 영상
+
+- 작성·피드·재생: `note/preview.js`, `note/card-video.js`, `note/card-video-worker.js`, `note/card-video-upload.js`
+- 검증·비공개 저장소: `supabase/functions/park-video/`, 공원 영상 마이그레이션
+- 영상 라이브러리: `note/vendor/package-lock.json`과 `note/vendor/build.mjs`로 고정 버전을 빌드합니다. 생성 모듈은 Git에 넣지 않고 Pages·검증 워크플로에서 만들며, `note/vendor/manifest.json`의 크기·해시로 확인합니다.

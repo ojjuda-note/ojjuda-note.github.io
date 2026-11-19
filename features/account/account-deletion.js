@@ -1,10 +1,11 @@
 /* Shared World/Note withdrawal: remove actual files before deleting the account. */
 (function (root) {
   'use strict';
-  const buckets = new Set(['media', 'note-card-photos', 'note-event-photos', 'restaurant-recommendations', 'pajang-exchange-photos']);
+  const buckets = new Set(['media', 'note-card-photos', 'note-event-photos', 'note-card-videos', 'restaurant-recommendations', 'pajang-exchange-photos']);
   const uuid = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
   const recommendationPhoto = new RegExp('^' + uuid + '/' + uuid + '/' + uuid + '\\.jpg$');
   const exchangePhoto = new RegExp('^' + uuid + '/' + uuid + '\\.jpg$');
+  const cardVideo = new RegExp('^' + uuid + '/' + uuid + '\\.mp4$');
   async function run({ client, userId, isCurrent = () => true }) {
     const current = () => {
       if (!userId || !isCurrent()) throw new Error('account_changed');
@@ -27,6 +28,7 @@
             || (file.bucket_id === 'pajang-exchange-photos' ? !exchangePhoto.test(file.photo_path) : !file.photo_path.startsWith(userId + '/'))
             || file.photo_path.split('/').some(part => !part || part === '.' || part === '..')
             || /[\\\x00]/.test(file.photo_path)
+            || (file.bucket_id === 'note-card-videos' && !cardVideo.test(file.photo_path))
             || (file.bucket_id === 'restaurant-recommendations' && !recommendationPhoto.test(file.photo_path))) throw new Error('account_storage_manual_review');
       }
       const inventory = JSON.stringify(files);
