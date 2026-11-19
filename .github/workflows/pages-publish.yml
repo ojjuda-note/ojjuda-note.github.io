@@ -18,6 +18,7 @@ on:
       - 'scripts/build-park-backgrounds.py'
       - 'scripts/build-park-ink-washes.py'
       - 'scripts/build-short-links.mjs'
+      - 'ops/build-seasonal-app-icons.mjs'
   pull_request:
     paths:
       - '.github/workflows/pages-publish.yml'
@@ -28,6 +29,15 @@ on:
       - 'shared/navigation/short-links.json'
       - 'tests/short-links.test.mjs'
       - 'sitemap.html'
+      - 'ops/build-seasonal-app-icons.mjs'
+      - 'brand/app-icons/seasonal/**'
+      - 'shared/app-icons/**'
+      - 'shared/pwa/**'
+      - 'tests/app-icon-calendar.test.mjs'
+      - 'tests/seasonal-app-icons-build.test.mjs'
+  schedule:
+    # 00:00 Asia/Seoul. GitHub may start scheduled jobs after the requested minute.
+    - cron: '0 15 * * *'
   workflow_dispatch:
 
 permissions:
@@ -130,6 +140,16 @@ jobs:
             --output "$RUNNER_TEMP/ojjuda-public/features/fanpages"
       - name: Build fanpage hub summaries from staged artist data
         run: node scripts/build-fanpage-hub.mjs "$RUNNER_TEMP/ojjuda-public/features/fanpages"
+      - name: Build the app icons for today's Korean calendar date
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v magick >/dev/null && ! command -v convert >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends imagemagick
+          fi
+          node --test tests/app-icon-calendar.test.mjs tests/seasonal-app-icons-build.test.mjs
+          node ops/build-seasonal-app-icons.mjs "$RUNNER_TEMP/ojjuda-public"
       - name: Compare cold mobile hub and detail navigation
         if: github.event_name == 'pull_request'
         run: |

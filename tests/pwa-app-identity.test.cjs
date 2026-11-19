@@ -6,7 +6,8 @@ const {JSDOM} = require('jsdom');
 
 const root = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'shared/pwa/app-identity.js'), 'utf8');
-const revision = '20261119-illustrated-icons-1';
+const revision = source.match(/const iconRevision = '([^']+)'/)[1];
+const manifestRevision = '20261119-illustrated-icons-1';
 const services = {
   agit: {name: '오쭈다 아지트', manifest: '/manifest.webmanifest', icon: '/icon-192.png', id: '/world.html', start: '/world.html'},
   park: {name: '오쭈다 공원', manifest: '/park/manifest.webmanifest', icon: '/park/assets/icon-192.png', id: '/world.html?place=park', start: '/world.html?place=park'},
@@ -33,7 +34,7 @@ test('entry routes select the right app without accepting arbitrary icon or inst
     assert.equal(document.documentElement.dataset.pwaApp, key);
     assert.equal(app.name, expected.name);
     assert.equal(app.path, expected.start);
-    assert.equal(document.querySelector('link[rel="manifest"]').getAttribute('href'), expected.manifest + '?v=' + revision);
+    assert.equal(document.querySelector('link[rel="manifest"]').getAttribute('href'), expected.manifest + '?v=' + manifestRevision);
     assert.equal(document.querySelector('link[rel="icon"]').getAttribute('href'), expected.icon + '?v=' + revision);
     assert.equal(document.querySelector('link[rel="icon"]').type, 'image/png');
     assert.equal(document.querySelector('meta[name="apple-mobile-web-app-title"]').content, expected.name);
@@ -51,7 +52,7 @@ test('an installed app keeps its original identity during in-app navigation and 
     dom.window.history.replaceState({}, '', '/world.html?tab=hub');
     dom.window.eval(source);
     assert.equal(dom.window.OjjudaAppIdentity, app);
-    assert.equal(dom.window.document.querySelector('link[rel="manifest"]').getAttribute('href'), '/park/manifest.webmanifest?v=' + revision);
+    assert.equal(dom.window.document.querySelector('link[rel="manifest"]').getAttribute('href'), '/park/manifest.webmanifest?v=' + manifestRevision);
     assert.equal(dom.window.document.querySelectorAll('link[rel="manifest"]').length, 1);
   } finally { dom.window.close(); }
 });

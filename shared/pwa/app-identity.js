@@ -3,7 +3,9 @@
   'use strict';
   if (window.OjjudaAppIdentity) return;
 
-  const revision = '20261119-illustrated-icons-1';
+  // Pages replaces only iconRevision. The installed manifest URL stays stable.
+  const iconRevision = 'seasonal-v1-autumn-a93ca4a62190';
+  const manifestRevision = '20261119-illustrated-icons-1';
   const apps = {
     agit: {
       key: 'agit', name: '오쭈다 아지트', path: '/world.html',
@@ -27,7 +29,7 @@
       (url.searchParams.get('place') === 'park' || url.searchParams.get('tab') === 'park'));
   const isPajang = url.pathname === '/features/pajang' || url.pathname.startsWith('/features/pajang/');
   const app = apps[isPajang ? 'pajang' : isPark ? 'park' : 'agit'];
-  const versioned = (path) => path + '?v=' + revision;
+  const versioned = (path) => path + '?v=' + iconRevision;
 
   function link(rel, href, type) {
     let element = document.head.querySelector('link[rel="' + rel + '"]');
@@ -52,10 +54,10 @@
 
   // All URLs and names come from this allowlist; no login parameters are reused.
   window.OjjudaAppIdentity = Object.freeze({
-    key: app.key, name: app.name, path: app.path, note: app.note,
+    key: app.key, name: app.name, path: app.path, note: app.note, iconRevision,
     icon: versioned(app.icons + 'icon-192.png'),
     appleIcon: versioned(app.icons + 'apple-touch-icon.png'),
-    manifest: versioned(app.manifest)
+    manifest: app.manifest + '?v=' + manifestRevision
   });
   document.documentElement.dataset.pwaApp = app.key;
   link('icon', window.OjjudaAppIdentity.icon, 'image/png');

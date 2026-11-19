@@ -6,7 +6,7 @@
   const root = document.documentElement;
   const app = window.OjjudaAppIdentity || Object.freeze({
     key: 'agit', name: '오쭈다 아지트', path: '/world.html',
-    icon: '/icon-192.png?v=20261119-illustrated-icons-1',
+    icon: '/icon-192.png?v=seasonal-v1-autumn-a93ca4a62190',
     note: '게임과 공원을 이용하려면 인터넷 연결이 필요해요.'
   });
   const displayMode = window.matchMedia('(display-mode: standalone)');

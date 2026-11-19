@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - 'shared/pwa/**'
+      - 'shared/app-icons/**'
+      - 'brand/app-icons/seasonal/**'
+      - 'ops/build-seasonal-app-icons.mjs'
       - 'sw.js'
       - 'offline.html'
       - 'manifest.webmanifest'
@@ -16,12 +19,17 @@ on:
       - 'index.html'
       - 'version.json'
       - 'tests/pwa-*.test.cjs'
+      - 'tests/app-icon-calendar.test.mjs'
+      - 'tests/seasonal-app-icons-build.test.mjs'
       - 'tests/package*.json'
       - '.github/workflows/pwa.yml'
   push:
     branches: [main]
     paths:
       - 'shared/pwa/**'
+      - 'shared/app-icons/**'
+      - 'brand/app-icons/seasonal/**'
+      - 'ops/build-seasonal-app-icons.mjs'
       - 'sw.js'
       - 'offline.html'
       - 'manifest.webmanifest'
@@ -34,6 +42,8 @@ on:
       - 'index.html'
       - 'version.json'
       - 'tests/pwa-*.test.cjs'
+      - 'tests/app-icon-calendar.test.mjs'
+      - 'tests/seasonal-app-icons-build.test.mjs'
       - 'tests/package*.json'
       - '.github/workflows/pwa.yml'
 
@@ -52,6 +62,9 @@ jobs:
           sparse-checkout: |
             /shared/pwa/app-identity.js
             /shared/pwa/pwa-install.js
+            /shared/app-icons/
+            /brand/app-icons/seasonal/
+            /ops/build-seasonal-app-icons.mjs
             /manifest.webmanifest
             /park/manifest.webmanifest
             /features/pajang/manifest.webmanifest
@@ -72,6 +85,8 @@ jobs:
             /tests/package-lock.json
             /tests/pwa-install.test.cjs
             /tests/pwa-app-identity.test.cjs
+            /tests/app-icon-calendar.test.mjs
+            /tests/seasonal-app-icons-build.test.mjs
             /tests/pwa-service-worker.test.cjs
             /tests/inline-scripts.test.cjs
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -79,4 +94,13 @@ jobs:
           node-version: '22'
       - run: npm --prefix tests ci --ignore-scripts
       - run: npm --prefix tests run test:pwa
+      - name: Verify seasonal icon packaging
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v magick >/dev/null && ! command -v convert >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends imagemagick
+          fi
+          node --test tests/app-icon-calendar.test.mjs tests/seasonal-app-icons-build.test.mjs
       - run: node tests/inline-scripts.test.cjs
