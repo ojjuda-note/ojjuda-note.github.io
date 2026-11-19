@@ -103,16 +103,19 @@ function PreferenceFields({value,onChange,drafts,onDraft,onAdd,disabled}:{
 export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew:boolean;onSave:(value:Record<string,unknown>)=>void;busy:boolean}){
   const [name,setName]=useState(person?.name||""),[region,setRegion]=useState(person?.region||""),[interest,setInterest]=useState(person?.interest||""),[consent,setConsent]=useState(false);
   const read=usePublicPreferences(person?.id||"",person?.id||"",0,!isNew);
-  const [preferences,setPreferences]=useState<Preferences>(emptyProfilePreferences);
+  const [preferenceDraft,setPreferenceDraft]=useState(()=>({scope:"",value:emptyProfilePreferences()}));
+  const preferences=preferenceDraft.value;
+  const setPreferences=(value:Preferences)=>setPreferenceDraft(previous=>({...previous,value}));
   const [drafts,setDrafts]=useState(blankDrafts),[customError,setCustomError]=useState("");
   useEffect(()=>{
-    if(read.status==="ready"){setPreferences(read.preferences);setDrafts(blankDrafts());setCustomError("");}
+    if(read.status==="ready"){setPreferenceDraft({scope:read.scope,value:read.preferences});setDrafts(blankDrafts());setCustomError("");}
   },[read.scope,read.status]);
   const [province,city=""]=region.split(" ");
   const knownProvince=Object.hasOwn(districts,province);
   const previousRegion=person?.region;
   const legacyRegion=previousRegion&&!Object.hasOwn(districts,previousRegion.split(" ")[0]);
-  const disabled=busy||read.status!=="ready";
+  const choicesReady=read.status==="ready"&&preferenceDraft.scope===read.scope;
+  const disabled=busy||!choicesReady;
   function add(key:GroupKey){
     const result=addCustom(preferences,key,drafts[key]);setCustomError(result.error);
     if(!result.error){setPreferences(result.preferences);setDrafts(previous=>({...previous,[key]:""}));}
@@ -141,7 +144,7 @@ export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew
       </select></label>}
     </div>
     <ReadStatus read={read}/>
-    {read.status==="ready"&&<PreferenceFields value={preferences} onChange={setPreferences} drafts={drafts}
+    {choicesReady&&<PreferenceFields value={preferences} onChange={setPreferences} drafts={drafts}
       onDraft={(key,value)=>{setDrafts(previous=>({...previous,[key]:value}));setCustomError("");}} onAdd={add} disabled={busy}/>}
     {customError&&<p className="error" role="alert">{customError}</p>}
     <details className="preference-group profile-art-choice"><summary><span><strong>대표 취향 · 프로필 그림</strong><small>{interests.find(option=>option.key===interest)?.name||"선택하지 않음"}</small></span><I n="chevron" s={16}/></summary>
