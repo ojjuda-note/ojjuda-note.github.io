@@ -266,7 +266,7 @@ footer,.footerbrand {color:var(--ink-2)}
 .answer-gender input:focus-visible+span {outline-color:var(--accent-ink)}
 .scope-self,.self,.radar-scope .cluster-count,.nearby-heading .onair {background:var(--accent);color:var(--on-accent)}
 .scope-self {box-shadow:0 0 0 3px color-mix(in srgb,var(--surface) 55%,transparent)}
-.radar-scope .scope-person.picked {box-shadow:0 0 0 2px var(--accent),0 0 0 5px color-mix(in srgb,var(--accent) 13%,transparent),0 4px 10px color-mix(in srgb,var(--ink) 20%,transparent)}
+.radar-scope .scope-person.picked:not(.scope-person-compact) {box-shadow:0 0 0 2px var(--accent),0 0 0 5px color-mix(in srgb,var(--accent) 13%,transparent),0 4px 10px color-mix(in srgb,var(--ink) 20%,transparent)}
 .scope-person-compact.picked .scope-person-dot {box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%,transparent)}
 .radar-bearings {stroke:var(--surface)}
 .radar-bearings text {fill:var(--accent-ink)}
