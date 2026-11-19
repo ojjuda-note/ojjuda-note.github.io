@@ -88,7 +88,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin=
   await page.getByRole('button',{name:'이 사람이 맞아요',exact:true}).click();
   assert.equal(await page.evaluate(()=>referralFixture.searches.length),3,'switching tabs preserves candidates and confirmation without a new lookup');
   await page.locator('[data-close-dialog]').click();
-  await page.locator('[data-open-auth=signup]').click();assert.equal(await page.locator('#signup-referrer').inputValue(),'');
+  await page.locator('#account-actions [data-open-auth="signup"]').click();assert.equal(await page.locator('#signup-referrer').inputValue(),'');
 
   await page.clock.install({time:new Date('2026-11-16T00:00:00Z')});
   await page.clock.pauseAt(new Date('2026-11-16T00:01:00Z'));
@@ -104,7 +104,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin=
   assert.equal(await page.evaluate(()=>referralFixture.searches.length),4,'a reply received on the login tab can still be selected');
   await page.locator('#signup-referrer').fill('닫기');await page.clock.runFor(350);
   await page.locator('[data-close-dialog]').click();
-  await page.locator('[data-open-auth=signup]').click();
+  await page.locator('#account-actions [data-open-auth="signup"]').click();
   await page.evaluate(()=>referralFixture.pending[4]({data:referralFixture.people}));
   assert.equal(await page.locator('.referral-candidate').count(),0,'a closed form discards its late reply');
   assert.equal(await page.locator('#referral-status').textContent(),'');
