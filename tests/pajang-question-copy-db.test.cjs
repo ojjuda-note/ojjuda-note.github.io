@@ -6,7 +6,7 @@ const { PGlite } = require('@electric-sql/pglite');
 
 const directory = path.join(__dirname, '../supabase/migrations');
 const read = name => fs.readFileSync(path.join(directory, name), 'utf8');
-const migration = read('20261119155739_pajang_natural_question_copy.sql');
+const migration = read('20261119160744_pajang_natural_question_copy.sql');
 const trainPrompt = '마음에 드는 사람과 기차 여행을 한다면, 어떤 풍경을 함께 보고 싶나요?';
 const seeds = [
   '20261117090101_pajang_questions_taste.sql',
