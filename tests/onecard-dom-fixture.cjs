@@ -11,13 +11,16 @@ async function until(fn, label, timeout = 7000) {
 }
 
 /** Browser APIs are mocked; game/app/client/Edge/SQL code stays real. Not a layout/FPS test. */
-async function screen({ server = null, actor = null, saved = null, animate = false, width = 750, height = 750, query = '' } = {}) {
+async function screen({ server = null, actor = null, saved = null, animate = false, width = 750, height = 750, query = '', seatRolls = [.999999] } = {}) {
   const errors = [], virtualConsole = new VirtualConsole();
   virtualConsole.on('jsdomError', error => errors.push(error.message));
   const dom = new JSDOM(fs.readFileSync(path.join(ROOT, 'games/onecard/index.html'), 'utf8'), {
     url: `https://ojjuda.kr/games/onecard/${query}`, runScripts: 'outside-only', pretendToBeVisual: true, virtualConsole,
   });
   const w = dom.window, sounds = [], animations = [], requests = [], responses = [], clients = [];
+  let seatRoll = 0;
+  // App seating uses the browser RNG; the imported rules keep their own real RNG.
+  w.Math.random = () => seatRolls[Math.min(seatRoll++, seatRolls.length - 1)];
   let currentActor = actor, authChange, hidden = false;
   w.structuredClone = structuredClone;
   Object.defineProperty(w.crypto, 'randomUUID', { value: () => crypto.randomUUID() });

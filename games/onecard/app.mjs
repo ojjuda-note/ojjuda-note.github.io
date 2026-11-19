@@ -1,8 +1,8 @@
-import {createGame,applyAction,projectState,chooseBotAction,cardInfo} from './engine.mjs?v=20261120-onecard1';
-import {createCard,cardLabel} from './cards.mjs?v=20261120-onecard1';
-import {createOnecardSound} from './sound.mjs?v=20261120-onecard1';
-import {createCardMotion} from './motion.mjs?v=20261120-onecard1';
-import {createOnlineClient} from './online.mjs?v=20261120-onecard1';
+import {createGame,applyAction,projectState,chooseBotAction,cardInfo} from './engine.mjs?v=20261120-onecard3';
+import {createCard,cardLabel} from './cards.mjs?v=20261120-onecard3';
+import {createOnecardSound} from './sound.mjs?v=20261120-onecard3';
+import {createCardMotion} from './motion.mjs?v=20261120-onecard3';
+import {createOnlineClient} from './online.mjs?v=20261120-onecard3';
 
 const $=id=>document.getElementById(id);
 const app=$('onecard-app'),hand=$('hand'),sheet=$('sheet'),sound=createOnecardSound();
@@ -11,7 +11,8 @@ const motion=createCardMotion({layer:$('motion-layer'),createCard,sound,reduced:
 const SUITS={S:['♠','스페이드'],H:['♥','하트'],D:['♦','다이아몬드'],C:['♣','클로버']};
 const STORAGE='ojjuda-onecard-solo-v1';
 const botNames=['하루','다온','보리','루아'];
-let local=null,view=null,mode='solo',net=null,room=null,opponentCount=1,handPage=0;
+const tableSize=5,opponentCount=4;
+let local=null,view=null,mode='solo',net=null,room=null,handPage=0;
 let animating=false,working=false,armed=false,botTimer=null,toastTimer=null,epoch=0;
 let presentation=Promise.resolve(),lastRoomVersion=-1,lastRoomId='',resultKey='',pendingSuit=null;
 let saved=null,sheetKind='',returnFocus=null,autoJoinCode='';
@@ -19,6 +20,7 @@ const cardNodes=new Map(),seatNodes=new Map();
 const pageSize=()=>app.clientWidth<430?8:10;
 function element(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
 function button(text,cls,fn){const e=element('button',text,cls);e.type='button';e.onclick=fn;return e;}
+function resultName(player){return player.bot&&!/^컴퓨터(?:\s|$)/.test(player.name)?`${player.name} · 컴퓨터`:player.name;}
 function me(){return view?.players.find(p=>p.id===(mode==='online'?room?.myId:'me'));}
 function myId(){return mode==='online'?room?.myId:'me';}
 function myTurn(){return !!(view?.status==='playing'&&view.players[view.turn]?.id===myId()&&me()?.active!==false);}
@@ -27,7 +29,7 @@ function setText(id,text){if($(id).textContent!==text)$(id).textContent=text;}
 function showToast(text){clearTimeout(toastTimer);$('toast').textContent=text;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,2700);}
 function announce(text){setText('status',text);}
 function saveLocal(){if(!local)return;try{localStorage.setItem(STORAGE,JSON.stringify({state:local,opponents:opponentCount}));saved={state:local,opponents:opponentCount};}catch{/* A full storage quota does not interrupt a game. */}}
-function loadLocal(){try{const data=JSON.parse(localStorage.getItem(STORAGE)||'null');if(data?.state?.status==='playing'&&data.state.players?.some(p=>p.id==='me')&&data.state.players.length>=2&&data.state.players.length<=5){projectState(data.state,'me');return data;}}catch{}return null;}
+function loadLocal(){try{const data=JSON.parse(localStorage.getItem(STORAGE)||'null');if(data?.state?.status==='playing'&&data.state.players?.some(p=>p.id==='me')&&data.state.players.length===tableSize&&data.state.players.filter(p=>p.bot).length===opponentCount){data.state.direction=1;projectState(data.state,'me');return data;}}catch{}return null;}
 
 function renderSound(){const enabled=sound.enabled;$('sound-toggle').setAttribute('aria-pressed',String(enabled));$('sound-toggle').setAttribute('aria-label',enabled?'효과음 끄기':'효과음 켜기');$('sound-toggle').classList.toggle('is-muted',!enabled);}
 renderSound();
@@ -52,13 +54,14 @@ function renderSeats(){
     let node=seatNodes.get(p.id);
     if(!node){node=element('div',undefined,'seat');node.dataset.player=p.id;const avatar=element('span',p.name.slice(0,1),'avatar');avatar.setAttribute('aria-hidden','true');node.append(avatar,element('span',p.name,'seat-name'),element('span','','seat-count'));const fan=element('div',undefined,'seat-fan');fan.setAttribute('aria-hidden','true');for(let j=0;j<3;j++)fan.append(createCard(null,{faceDown:true,small:true}));node.append(fan);$('opponents').append(node);seatNodes.set(p.id,node);}
     node.dataset.position=seatPosition(i,opponents.length);node.style.setProperty('--seat-index',String(i));
-    node.querySelector('.seat-name').textContent=p.name;
+    node.querySelector('.seat-name').textContent=p.bot?`${p.name} · AI`:p.name;
+    node.classList.toggle('is-bot',!!p.bot);node.querySelector('.avatar').textContent=p.bot?'AI':p.name.slice(0,1);
     node.classList.toggle('is-current',view.status==='playing'&&view.players[view.turn]?.id===p.id);
     node.classList.toggle('is-inactive',p.active===false);
     node.classList.toggle('has-one',p.handCount===1&&p.active!==false);
     setSeatCount(p.id,p.handCount??p.hand?.length??0);
     if(p.active===false)node.querySelector('.seat-count').textContent=p.eliminatedReason==='too-many-cards'?'탈락':'나감';
-    node.setAttribute('aria-label',`${p.name}, ${p.active===false?'참여 종료':`${p.handCount}장`}${view.players[view.turn]?.id===p.id?', 현재 차례':''}`);
+    node.setAttribute('aria-label',`${p.name}${p.bot?', 컴퓨터':''}, ${p.active===false?'참여 종료':`${p.handCount}장`}${view.players[view.turn]?.id===p.id?', 현재 차례':''}`);
   });
 }
 function setSeatCount(id,count){if(id===myId()){setText('my-count',`${count}장`);return;}const node=seatNodes.get(id);if(!node)return;node.querySelector('.seat-count').textContent=count===1?'원카드 · 1장':`${count}장`;node.querySelector('.seat-fan').style.opacity=count? '1':'0';}
@@ -90,7 +93,7 @@ function renderBoard(){
   setText('deck-count',String(view.deckCount));
   const suit=SUITS[view.currentSuit];$('suit-indicator').hidden=!suit;
   if(suit){setText('suit-indicator',`${suit[0]} ${suit[1]}`);$('suit-indicator').dataset.suit=view.currentSuit;}
-  setText('direction',view.direction===1?'↻ 시계 방향':'↺ 반대 방향');
+  setText('direction','↻ 시계 방향');
   renderControls();
 }
 function hint(){
@@ -129,10 +132,10 @@ function rectOf(node){return node?.getBoundingClientRect();}
 function opponentRect(node){const fan=rectOf(node?.querySelector('.seat-fan'));return fan?.width&&fan?.height?fan:rectOf(node?.querySelector('.avatar'))||rectOf(node);}
 function rectForPlayer(id){return id===myId()?rectOf(hand):opponentRect(seatNodes.get(id));}
 function gameMessage(events){
-  const event=events?.findLast(e=>['attack','skip','reverse','again','onecard','eliminate'].includes(e.type));
+  const event=events?.findLast(e=>['attack','skip','again','onecard','eliminate'].includes(e.type));
   if(!event)return;
   const name=view?.players.find(p=>p.id===event.playerId)?.name||'상대';
-  const messages={attack:`${name} · 공격 +${event.count}`,skip:'다음 차례를 건너뛰어요',reverse:'진행 방향이 바뀌었어요',again:`${name} · 한 번 더`,onecard:`${name} · 원카드!`,eliminate:`${name} · 20장으로 탈락`};
+  const messages={attack:`${name} · 공격 +${event.count}`,skip:'다음 차례를 건너뛰어요',again:`${name} · 한 번 더`,onecard:`${name} · 원카드!`,eliminate:`${name} · 20장으로 탈락`};
   showToast(messages[event.type]);if(event.type==='onecard')sound.play('onecard');
 }
 async function present(next,{deal=false,animate=true}={}){
@@ -228,14 +231,18 @@ $('previous-cards').onclick=()=>{if(!locked()){handPage--;renderHand();}};$('nex
 async function startSolo(resume=false){
   epoch++;motion.cancel();closeSheet();clearTimeout(botTimer);net?.close();net=null;room=null;lastRoomVersion=-1;lastRoomId='';
   mode='solo';view=null;resultKey='';handPage=0;armed=false;working=false;animating=false;hand.replaceChildren();cardNodes.clear();
-  if(resume&&saved){local=saved.state;opponentCount=saved.opponents||local.players.length-1;}
-  else{opponentCount=Number($('opponent-count').value)||1;local=createGame({players:[{id:'me',name:'나'},...botNames.slice(0,opponentCount).map((name,i)=>({id:`bot-${i}`,name,bot:true}))]});}
+  if(resume&&saved){local={...saved.state,direction:1};}
+  else{
+    const players=[{id:'me',name:'나'},...botNames.map((name,i)=>({id:`bot-${i}`,name,bot:true}))];
+    for(let i=players.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[players[i],players[j]]=[players[j],players[i]];}
+    local=createGame({players,startIndex:0});
+  }
   $('connection').hidden=true;setScreen('playing');saveLocal();await present(projectState(local,'me'),{deal:!resume,animate:!resume});
 }
 $('solo-start').onclick=()=>void startSolo();$('resume-solo').onclick=()=>void startSolo(true);
 
 function openSheet(title,kind='menu'){
-  clearTimeout(botTimer);returnFocus=document.activeElement;sheetKind=kind;setText('sheet-title',title);$('sheet-body').replaceChildren();
+  clearTimeout(botTimer);returnFocus=document.activeElement;sheetKind=kind;sheet.classList.toggle('game-result-dialog',kind==='result');sheet.setAttribute('aria-labelledby',kind==='result'?'onecard-result-title':'sheet-title');setText('sheet-title',title);$('sheet-body').replaceChildren();
   if(!sheet.open)sheet.showModal();renderControls();
 }
 function closeSheet(){if(sheet.open)sheet.close();pendingSuit=null;sheetKind='';renderControls();scheduleBot();}
@@ -246,7 +253,7 @@ function showRules(){
   openSheet('원카드, 이렇게 해요','rules');
   const lead=element('p','같은 무늬나 숫자를 한 장씩 내고, 손의 카드를 먼저 없애면 이겨요.','rules-lead');
   const list=element('div',undefined,'rules-list');
-  const rules=[['시작','각자 7장. 낼 카드가 없으면 1장 받고 차례를 넘겨요.'],['2 · A','다음 사람에게 2장 · 3장 공격'],['검정 · 빨강 조커','5장 · 7장 공격 + 원하는 무늬 선택'],['공격이 오면','공격 카드(2·A·조커)를 이어 내거나 쌓인 장수만큼 받아요.'],['7','원하는 무늬로 바꿔요.'],['J · Q · K','다음 사람 건너뛰기 · 방향 바꾸기 · 한 번 더'],['둘이 할 때 Q','방향을 바꾸고 한 번 더 내요.'],['원카드!','2장일 때 먼저 누르거나, 1장이 된 직후 눌러요. 다음 사람이 행동할 때까지 안 누르면 2장을 받아요.'],['20장','손의 카드가 20장 이상이 되면 탈락해요.'],['멀티 차례','30초 안에 내거나 받아요. 시간이 지나면 자동으로 받아요.']];
+  const rules=[['5인 플레이','항상 5명, 빈자리는 컴퓨터가 함께해요. 각자 7장으로 시작해요.'],['진행','시계방향으로 진행해요. 다음 판에는 자리를 무작위로 다시 정해요. 낼 카드가 없으면 1장 받고 넘겨요.'],['2 · A','다음 사람에게 2장 · 3장 공격'],['검정 · 빨강 조커','5장 · 7장 공격 + 원하는 무늬 선택'],['공격이 오면','공격 카드(2·A·조커)를 이어 내거나 쌓인 장수만큼 받아요.'],['7','원하는 무늬로 바꿔요.'],['J · K','다음 사람 건너뛰기 · 한 번 더'],['Q','같은 무늬나 숫자에 내는 일반 카드예요.'],['원카드!','2장일 때 먼저 누르거나, 1장이 된 직후 눌러요. 다음 사람이 행동할 때까지 안 누르면 2장을 받아요.'],['20장','손의 카드가 20장 이상이 되면 탈락해요.'],['멀티 차례','30초 안에 내거나 받아요. 시간이 지나면 자동으로 받아요.']];
   for(const [label,text] of rules){const row=element('div',undefined,'rule-row');row.append(element('strong',label),element('span',text));list.append(row);}
   $('sheet-body').append(lead,list);$('sheet-body').append(element('p','동네마다 조금씩 다른 원카드, 이 테이블에서는 위 규칙으로 즐겨요.','small-note'));
 }
@@ -263,7 +270,7 @@ $('menu-button').onclick=()=>{
 function confirmExit(toArcade){
   if(app.dataset.view!=='playing'&&(!room||room.status==='finished')){void exit(toArcade);return;}
   openSheet(toArcade?'오락실로 돌아갈까요?':'첫 화면으로 갈까요?','exit');
-  $('sheet-body').append(element('p',mode==='online'?'진행 중인 방에서는 나가게 돼요.': '혼자 하던 게임은 이어서 할 수 있어요.'));
+  $('sheet-body').append(element('p',mode==='online'?'내 자리는 컴퓨터가 이어서 해요.': '혼자 하던 게임은 이어서 할 수 있어요.'));
   const row=element('div',undefined,'dialog-actions');row.append(button('계속하기','btn btn-secondary',closeSheet),button(toArcade?'오락실로':'나가기','btn btn-primary',()=>void exit(toArcade)));$('sheet-body').append(row);
 }
 async function exit(toArcade){
@@ -272,16 +279,33 @@ async function exit(toArcade){
   finally{working=false;animating=false;renderControls();}
 }
 $('arcade-back').onclick=e=>{if(app.dataset.view==='playing'||room){e.preventDefault();confirmExit(true);}};
+function resultIcon(outcome){
+  // The same vector artwork and classes used by the arcade's shared result cards.
+  const paths=outcome==='success'
+    ? '<path d="M17 8h30v13c0 11-7 18-15 18S17 32 17 21V8Z"/><path d="M17 12H9v7c0 7 4 12 12 12m26-19h8v7c0 7-4 12-12 12M32 39v12m-10 4h20"/><path class="game-result-icon-star" d="m32 14 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z"/>'
+    : outcome==='failure'
+      ? '<circle cx="32" cy="30" r="22"/><path d="m18 24 7 3m14 0 7-3m-23 17c4-5 14-5 18 0M22 33v2m20-2v2"/><path class="game-result-icon-tear" d="M46 34c0 0-4 6-4 9a4 4 0 0 0 8 0c0-3-4-9-4-9Z"/>'
+      : '<circle cx="32" cy="31" r="22"/><path d="m22 31 7 7 14-16"/>';
+  const icon=element('div',undefined,'game-result-icon');
+  icon.innerHTML='<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+paths+'</svg>';
+  return icon;
+}
 function showResult(){
   const key=`${mode}:${room?.id||'local'}:${room?.round||0}:${view.revision}`;if(resultKey===key)return;resultKey=key;
   const winners=view.winnerIds||[view.winnerId],win=winners.includes(myId()),winner=view.players.find(p=>p.id===view.winnerId);
-  if(win)sound.play('win');openSheet(win?'멋진 한 판, 승리!':winner?`${winner.name} 승리`:'이번 판은 무승부','result');
-  $('sheet-body').append(element('div',win?'♠':'♣','result-mark'));
-  $('sheet-body').append(element('p',view.finishReason==='blocked'?'더 받을 카드가 없어, 남은 카드 수로 마쳤어요.':win?'마지막 카드까지 깔끔하게 내려놓았어요.':'다음 판에는 마지막 한 장까지!', 'result-copy'));
-  const scores=element('div',undefined,'result-players');for(const p of view.players){const row=element('div');row.append(element('span',p.name),element('strong',p.active===false?'탈락':`${p.handCount??p.hand?.length??0}장`));scores.append(row);}$('sheet-body').append(scores);
-  if(mode==='solo')$('sheet-body').append(button('한 판 더','btn btn-primary',()=>void startSolo()));
-  else $('sheet-body').append(button('대기실로','btn btn-primary',()=>{closeSheet();setScreen('lobby');renderLobby();}));
-  $('sheet-body').append(button('첫 화면으로','text-btn',()=>void exit(false)));
+  const title=win?'승리!':winner?'게임 종료':'무승부',outcome=win?'success':winner?'failure':'draw';
+  if(win)sound.play('win');openSheet(title,'result');
+  const card=element('section',undefined,'game-result-card'),content=element('div',undefined,'game-result-content');
+  card.dataset.resultOutcome=outcome;card.setAttribute('role','group');card.setAttribute('aria-labelledby','onecard-result-title');
+  const heading=element('h2',title,'game-result-title');heading.id='onecard-result-title';
+  const metric=winner?`${resultName(winner)} 승리`:'남은 카드 수로 마쳤어요.';
+  content.append(resultIcon(outcome),heading,element('div',metric,'game-result-metric'),element('p','다음 판에는 자리를 다시 정해요.','game-result-encouragement'));
+  const actions=element('div',undefined,'game-result-actions');
+  actions.append(button(mode==='solo'?'다시 한 판':'대기실로','',mode==='solo'?()=>void startSolo():()=>{closeSheet();setScreen('lobby');renderLobby();}),button('게임판 보기','',closeSheet),button('오락실로','',()=>void exit(true)));
+  content.append(actions);
+  const extra=element('div',undefined,'game-result-extra'),scores=element('div',undefined,'result-players');
+  for(const p of view.players){const row=element('div');row.append(element('span',resultName(p)),element('strong',p.active===false?'탈락':`${p.handCount??p.hand?.length??0}장`));scores.append(row);}
+  extra.append(scores);content.append(extra);card.append(content);$('sheet-body').append(card);actions.querySelector('button').focus();
 }
 
 function connection(message){$('connection').textContent=message||'';$('connection').hidden=!message;}
@@ -347,11 +371,17 @@ function renderLobby(){
   const players=room.players.filter(p=>p.active!==false),signature=JSON.stringify(players.map(p=>[p.id,p.name]))+room.hostId;
   if($('room-players').dataset.signature!==signature){
     $('room-players').dataset.signature=signature;const nodes=[];
-    for(let i=0;i<room.capacity;i++){const p=players[i],li=element('li',undefined,p?'lobby-player':'lobby-player empty');li.append(element('span',p?p.name.slice(0,1):'+','avatar'),element('span',p?p.name:'빈자리'),element('small',p?(p.id===room.hostId?'방장':p.id===room.myId?'나':'참여 완료'):'초대할 수 있어요'));nodes.push(li);}$('room-players').replaceChildren(...nodes);
+    for(let i=0;i<tableSize;i++){
+      const p=players[i],li=element('li',undefined,p?'lobby-player':'lobby-player is-bot');
+      if(p)li.append(element('span',p.name.slice(0,1),'avatar'),element('span',p.name),element('small',p.id===room.hostId?'방장':p.id===room.myId?'나':'참여 완료'));
+      else{const label=element('span',undefined,'player-label');label.append(element('span',`컴퓨터 ${i-players.length+1}`),element('small','컴퓨터가 참여해요','bot-seat-note'));li.append(element('span','AI','avatar'),label,element('span','AI','seat-tag ai-tag'));}
+      nodes.push(li);
+    }
+    $('room-players').replaceChildren(...nodes);
   }
-  const host=room.myId===room.hostId;$('start-room').hidden=!host;$('start-room').disabled=!host||players.length<2||working||!!net?.busy;
+  const host=room.myId===room.hostId;$('start-room').hidden=!host;$('start-room').disabled=!host||players.length<1||working||!!net?.busy;
   setText('start-room',room.status==='finished'?'새 판 시작':'게임 시작');
-  setText('lobby-note',players.length<2?'친구 한 명만 더 오면 시작할 수 있어요.':host?`${players.length}명이 모였어요. 준비되면 시작하세요.`:'방장이 게임을 시작하면 함께 들어가요.');
+  setText('lobby-note',host?`사람 ${players.length}명${players.length<tableSize?` · 컴퓨터 ${tableSize-players.length}명`:''}으로 시작해요.`:'방장이 시작하면 빈자리는 컴퓨터가 함께해요.');
 }
 $('copy-invite').onclick=async()=>{
   if(!room)return;const url=new URL('/games/onecard/',location.origin);url.searchParams.set('room',room.code);
@@ -361,7 +391,7 @@ $('copy-invite').onclick=async()=>{
 function updateTimer(){
   const timer=$('turn-timer');if(mode!=='online'||!room?.deadline||view?.status!=='playing'||app.dataset.view!=='playing'){timer.hidden=true;return;}
   const serverNow=(room.serverTime||Date.now())+Math.max(0,Date.now()-(room.receivedAt||Date.now()));
-  const remaining=Math.max(0,Date.parse(room.deadline)-serverNow),seconds=Math.ceil(remaining/1000);timer.hidden=false;
+  const remaining=Math.max(0,Date.parse(room.deadline)-serverNow),seconds=Math.ceil(remaining/1000);timer.hidden=!!view.players[view.turn]?.bot;if(timer.hidden)return;
   timer.firstElementChild.style.transform=`scaleX(${Math.min(1,remaining/30000)})`;timer.dataset.urgent=String(seconds<=7);timer.setAttribute('aria-label',`차례 남은 시간 ${seconds}초`);
 }
 setInterval(updateTimer,250);

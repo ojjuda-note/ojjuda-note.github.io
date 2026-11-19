@@ -32,6 +32,10 @@ async function startServer() {
 }
 
 function setup(hands, options = {}) {
+  hands = hands.map(hand => [...hand]);
+  const occupied = new Set([...(options.discard || [options.top || 'S-4']), ...hands.flat()]);
+  const spare = engine.makeDeck().filter(id => !occupied.has(id) && ['3', '4', '5', '6', '8', '9', '10'].includes(engine.cardInfo(id).rank));
+  while (hands.length < 5) hands.push(spare.splice(0, 2));
   const participants = hands.map((_, index) => ({ id: index ? `bot-${index - 1}` : 'me', name: index ? `친구 ${index}` : '나', bot: index > 0 }));
   const state = engine.createGame({ players: participants, seed: 2811 });
   const discard = options.discard || [options.top || 'S-4'];
@@ -58,6 +62,9 @@ function clientScript(userId) {
 async function pageFor({ width = 750, height = 750, saved, animated = false, userId = null, query = '' } = {}) {
   const context = await browser.newContext({ viewport: { width, height }, reducedMotion: animated ? 'no-preference' : 'reduce', hasTouch: width < 500, isMobile: width < 500 });
   contexts.push(context);
+  // Keep the human first in ordinary layout fixtures; separate DOM and SQL
+  // scenarios exercise random seat orders and bot-selected starting turns.
+  await context.addInitScript(() => { Math.random = () => .999999; });
   await context.route('**/*', async route => {
     const url = new URL(route.request().url());
     if (url.origin !== origin) return route.abort();
@@ -92,7 +99,7 @@ async function stableBoard(page) {
 async function oneScreen(page, label, playing = false) {
   const report = await page.evaluate(({ playing }) => {
     const rect = node => { const r = node.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height }; };
-    const ids = playing ? ['onecard-app', 'game-table', 'hand-area', 'game-controls', 'draw-button', 'onecard-button', 'status'] : ['onecard-app', 'entry-title', 'solo-start', 'online-open', 'opponent-count'];
+    const ids = playing ? ['onecard-app', 'game-table', 'hand-area', 'game-controls', 'draw-button', 'onecard-button', 'status'] : ['onecard-app', 'entry-title', 'solo-start', 'online-open', 'entry-rules'];
     return { viewport: { width: innerWidth, height: innerHeight }, document: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight }, boxes: Object.fromEntries(ids.map(id => [id, rect(document.getElementById(id))])), hand: [...document.querySelectorAll('#hand .hand-card')].map(rect) };
   }, { playing });
   assert.ok(report.document.width <= report.viewport.width + 1, `${label}: document must not scroll sideways`);
@@ -106,6 +113,40 @@ async function oneScreen(page, label, playing = false) {
     assert.ok(report.boxes.status.bottom <= report.boxes['game-controls'].bottom, `${label}: instructions do not spill below controls`);
   }
   return report;
+}
+async function visibleResultActions(page, label) {
+  const layout = await page.evaluate(() => {
+    const box = node => { const r = node.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height }; };
+    const dialog = document.querySelector('#sheet');
+    return { width: innerWidth, height: innerHeight, dialog: box(dialog), scrollHeight: dialog.scrollHeight, clientHeight: dialog.clientHeight,
+      title: box(document.querySelector('#onecard-result-title')),
+      actions: [...document.querySelectorAll('.game-result-actions button')].map(node => ({ ...box(node), text: node.textContent, enabled: !node.disabled })) };
+  });
+  assert.equal(layout.actions.length, 3);
+  assert.ok(layout.scrollHeight <= layout.clientHeight + 1, `${label}: result fits without internal scrolling`);
+  for (const box of [layout.dialog, layout.title, ...layout.actions]) {
+    assert.ok(box.width > 0 && box.height > 0 && box.left >= -1 && box.top >= -1 && box.right <= layout.width + 1 && box.bottom <= layout.height + 1, `${label}: result control fits viewport: ${JSON.stringify(box)}`);
+  }
+  for (const action of layout.actions) assert.equal(action.enabled, true, `${label}: ${action.text} remains available`);
+  return layout;
+}
+async function centralLayout(page, label) {
+  const layout = await page.evaluate(() => {
+    const selectors = { stock: '#stock-card > .playing-card', discard: '#discard-card > .playing-card', stockLabel: '#draw-pile .pile-label', discardLabel: '.discard .pile-label', suit: '#suit-indicator', direction: '#direction' };
+    return Object.fromEntries(Object.entries(selectors).map(([key, selector]) => {
+      const node = document.querySelector(selector), r = node.getBoundingClientRect(), style = getComputedStyle(node);
+      return [key, { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height, visible: style.display !== 'none' && r.width > 0 && r.height > 0 }];
+    }));
+  });
+  for (const key of ['stock', 'discard', 'suit', 'direction']) assert.equal(layout[key].visible, true, `${label}: ${key} remains visible`);
+  if (page.viewportSize().height > 430) for (const key of ['stockLabel', 'discardLabel']) assert.equal(layout[key].visible, true, `${label}: ${key} remains visible`);
+  const boxes = Object.entries(layout).filter(([, box]) => box.visible);
+  for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
+    const [aName, a] = boxes[i], [bName, b] = boxes[j];
+    const overlapX = Math.min(a.right, b.right) - Math.max(a.left, b.left), overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+    assert.ok(overlapX <= 1 || overlapY <= 1, `${label}: ${aName} must not overlap ${bName}: ${JSON.stringify({ a, b })}`);
+  }
+  return layout;
 }
 async function scenario(name, fn) {
   const start = Date.now();
@@ -127,7 +168,7 @@ async function scenario(name, fn) {
   await scenario('750px five-seat deal shares one overlapping browser timeline', async () => {
     const page = await pageFor({ animated: true });
     await oneScreen(page, 'desktop welcome'); await snapshot(page, 'desktop-welcome');
-    await page.selectOption('#opponent-count', '4');
+    assert.equal(await page.locator('#opponent-count').count(), 0, 'all games use five seats without a capacity selector');
     await page.locator('#solo-start').click();
     await page.waitForFunction(() => document.querySelectorAll('.flying-card').length >= 30);
     const timeline = await page.evaluate(() => document.getAnimations().filter(a => a.effect?.target?.classList.contains('flying-card')).map(a => ({ start: a.startTime, delay: a.effect.getTiming().delay, duration: a.effect.getTiming().duration })));
@@ -150,6 +191,8 @@ async function scenario(name, fn) {
     await page.waitForFunction(() => !document.querySelector('#draw-button').disabled);
     assert.equal(await page.locator('#opponents .seat').count(), 4);
     assert.equal(await page.locator('#hand .hand-card').count(), 7);
+    assert.equal((await stored(page)).players.length, 5);
+    assert.equal((await stored(page)).players.filter(player => player.bot).length, 4);
     assert.equal((await stored(page)).revision, 0, 'blocked controls did not advance the game');
     await oneScreen(page, 'desktop five seats', true); await snapshot(page, 'desktop-five-seats');
     await page.context().close();
@@ -159,11 +202,22 @@ async function scenario(name, fn) {
   for (const [width, height] of [[390, 844], [360, 640]]) await scenario(`${width}x${height} welcome and five-seat table fit one screen`, async () => {
     const page = await pageFor({ width, height });
     await oneScreen(page, `${width}px welcome`); await snapshot(page, `mobile-${width}-welcome`);
-    await page.selectOption('#opponent-count', '4'); await page.locator('#solo-start').click(); await stableBoard(page);
+    await page.locator('#solo-start').click(); await stableBoard(page);
     await page.waitForFunction(() => !document.querySelector('#draw-button').disabled);
     const layout = await oneScreen(page, `${width}px five seats`, true);
     await snapshot(page, `mobile-${width}-five-seats`);
     await page.context().close(); return layout;
+  });
+
+  for (const [width, height] of [[680, 469], [844, 390]]) await scenario(`${width}x${height} landscape has no central card, label or suit overlap`, async () => {
+    const page = await pageFor({ width, height, saved: setup([['S-3', 'H-8'], ['D-6', 'C-9']]) });
+    await oneScreen(page, `${width}x${height} landscape welcome`);
+    await snapshot(page, `landscape-${width}x${height}-welcome`);
+    await resume(page);
+    const screen = await oneScreen(page, `${width}x${height} landscape table`, true);
+    const center = await centralLayout(page, `${width}x${height} center`);
+    await snapshot(page, `landscape-${width}x${height}`);
+    await page.context().close(); return { screen, center };
   });
 
   await scenario('declare, valid keyboard play and bot progress work from a saved game', async () => {
@@ -175,10 +229,13 @@ async function scenario(name, fn) {
     await page.waitForFunction(key => JSON.parse(localStorage.getItem(key)).state.revision >= 1, STORAGE);
     assert.equal((await stored(page)).players[0].calledOne, true);
     assert.equal(await page.locator('#hand .hand-card:not(:disabled)').count(), 0, 'opponent turn disables hand keyboard activation');
-    await page.waitForFunction(key => JSON.parse(localStorage.getItem(key)).state.revision >= 2, STORAGE);
+    await page.waitForFunction(key => {
+      const state = JSON.parse(localStorage.getItem(key)).state;
+      return state.revision >= 5 && state.turn === 0 && !document.querySelector('#draw-button').disabled;
+    }, STORAGE);
     const after = await stored(page);
     assert.equal(after.players[0].hand.length, 1, 'declared card avoids missed-call penalty');
-    assert.equal(after.turn, 0, 'bot finishes its move and returns turn');
+    assert.equal(after.turn, 0, 'four computers finish their clockwise turns');
     await page.waitForFunction(() => !document.querySelector('#draw-button').disabled);
     await page.locator('#draw-button').click();
     assert.equal((await stored(page)).players[0].hand.length, 2);
@@ -203,16 +260,26 @@ async function scenario(name, fn) {
   });
 
   await scenario('two-card round finishes, result is visible, restart and resume work', async () => {
-    const page = await pageFor({ saved: setup([['S-J', 'S-3'], ['C-9', 'D-8']]) });
-    await resume(page); await page.locator('#onecard-button').click(); await pressCard(page, 'S-J');
+    const page = await pageFor({ saved: setup([['S-K', 'S-3'], ['C-9', 'D-8']]) });
+    await resume(page); await page.locator('#onecard-button').click(); await pressCard(page, 'S-K');
     await page.waitForFunction(() => !document.querySelector('#draw-button').disabled);
-    assert.equal((await stored(page)).turn, 0, 'J grants another turn with two players');
+    assert.equal((await stored(page)).turn, 0, 'K grants another turn at the five-seat table');
     await pressCard(page, 'S-3'); await page.locator('#sheet[open]').waitFor();
     assert.match(await page.locator('#sheet-title').textContent(), /승리/);
     assert.equal((await stored(page)).winnerId, 'me');
     assert.equal(await page.locator('#draw-button').isDisabled(), true);
+    assert.equal(await page.locator('#sheet.game-result-dialog .game-result-card').count(), 1);
+    assert.equal(await page.locator('.result-players > div').count(), 5);
+    assert.equal(await page.locator('.game-result-actions button').count(), 3);
+    await visibleResultActions(page, 'desktop result');
     await snapshot(page, 'solo-victory');
-    await page.getByRole('button', { name: '한 판 더', exact: true }).click();
+    for (const [width, height] of [[360, 640], [844, 390]]) {
+      await page.setViewportSize({ width, height });
+      await visibleResultActions(page, `${width}x${height} result`);
+      await snapshot(page, `solo-victory-${width}x${height}`);
+    }
+    await page.setViewportSize({ width: 750, height: 750 });
+    await page.getByRole('button', { name: '다시 한 판', exact: true }).click();
     await page.waitForFunction(() => !document.querySelector('#draw-button').disabled);
     assert.equal((await stored(page)).players[0].hand.length, 7);
     await page.locator('#menu-button').click(); await page.getByRole('button', { name: '새 게임', exact: true }).click();
@@ -291,7 +358,7 @@ async function scenario(name, fn) {
       await page.locator('#online-open').click(); await page.locator('#room-code').fill(code); await page.locator('#join-room').click();
       await page.locator('#room-code-display').waitFor({ state: 'visible' });
     }
-    await host.waitForFunction(() => document.querySelectorAll('#room-players .lobby-player:not(.empty)').length === 5);
+    await host.waitForFunction(() => document.querySelectorAll('#room-players .lobby-player:not(.is-bot)').length === 5);
     await snapshot(host, 'online-five-player-lobby');
     await host.locator('#start-room').click();
     for (const page of pages) { await stableBoard(page); await page.waitForFunction(() => document.querySelectorAll('#hand .hand-card').length === 7); }
@@ -300,11 +367,16 @@ async function scenario(name, fn) {
       assert.equal(await page.locator('#opponents .seat').count(), 4);
       assert.equal(await page.locator('#discard-card').getAttribute('data-card'), top);
     }
-    await host.waitForFunction(() => !document.querySelector('#draw-button').disabled);
-    await host.locator('#draw-button').click();
-    await pages[1].waitForFunction(() => !document.querySelector('#draw-button').disabled);
-    assert.equal(await host.locator('#draw-button').isDisabled(), true);
-    await snapshot(pages[1], 'online-mobile-turn');
+    const startRoom = (await network.call(ids[0], { action: 'mine' })).room;
+    const firstPage = pages[ids.indexOf(startRoom.game.players[startRoom.game.turn].id)];
+    await firstPage.waitForFunction(() => !document.querySelector('#draw-button').disabled);
+    await firstPage.locator('#draw-button').click();
+    await firstPage.waitForFunction(() => document.querySelector('#my-count').textContent === '8장');
+    const nextRoom = (await network.call(ids[0], { action: 'mine' })).room;
+    const next = pages[ids.indexOf(nextRoom.game.players[nextRoom.game.turn].id)];
+    await next.waitForFunction(() => !document.querySelector('#draw-button').disabled);
+    assert.equal(await firstPage.locator('#draw-button').isDisabled(), true);
+    await snapshot(next, 'online-mobile-turn');
 
     // Construct a complete, card-conserving near-end game in the isolated SQL fixture.
     // This tests UI rematch/membership, while the independent engine suite tests rules.
@@ -320,9 +392,11 @@ async function scenario(name, fn) {
     await host.locator('#draw-button').click();
     await pages[1].waitForFunction(() => !document.querySelector('#draw-button').disabled && document.querySelector('#my-count').textContent === '1장');
     await pressCard(pages[1], 'S-3');
-    for (const page of pages) await page.waitForFunction(() => document.querySelector('#sheet').open && document.querySelector('#sheet-title').textContent.includes('승리'));
+    for (const page of pages) await page.waitForFunction(() => document.querySelector('#sheet').open && document.querySelector('.game-result-metric')?.textContent.includes('승리'));
+    assert.equal(await host.locator('#onecard-result-title').textContent(), '게임 종료');
+    assert.equal(await pages[1].locator('#onecard-result-title').textContent(), '승리!');
     await host.getByRole('button', { name: '대기실로', exact: true }).click();
-    assert.equal(await host.locator('#room-players .lobby-player:not(.empty)').count(), 5, 'elimination does not remove room membership');
+    assert.equal(await host.locator('#room-players .lobby-player:not(.is-bot)').count(), 5, 'elimination does not remove room membership');
     assert.equal(await host.locator('#start-room').isDisabled(), false, 'eliminated host can start the next round');
     await host.locator('#start-room').click();
     for (const page of pages) {
@@ -332,6 +406,46 @@ async function scenario(name, fn) {
     await snapshot(host, 'online-rematch');
     for (const page of pages) await page.context().close();
     await network.close(); network = null;
+  });
+
+  await scenario('360x640 one-person online lobby fits and four server computers take turns', async () => {
+    network = await fixture(); const userId = network.users[0];
+    const page = await pageFor({ width: 360, height: 640, userId });
+    await page.locator('#online-open').click(); await page.locator('#create-room').click();
+    await page.locator('#room-code-display').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('#room-players .lobby-player').count(), 5);
+    assert.equal(await page.locator('#room-players .is-bot').count(), 4);
+    assert.equal(await page.locator('#start-room').isDisabled(), false);
+    const lobby = await page.evaluate(() => {
+      const selectors = ['#lobby-title', '#room-code-display', '#copy-invite', '#start-room', '#lobby-back'];
+      const nodes = [...selectors.map(selector => document.querySelector(selector)), ...document.querySelectorAll('#room-players .lobby-player')];
+      return { width: innerWidth, height: innerHeight, scrollWidth: document.documentElement.scrollWidth, scrollHeight: document.documentElement.scrollHeight,
+        boxes: nodes.map(node => { const r = node.getBoundingClientRect(); return { text: node.textContent, left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height }; }) };
+    });
+    assert.ok(lobby.scrollWidth <= lobby.width + 1 && lobby.scrollHeight <= lobby.height + 1, 'small online lobby fits one screen');
+    for (const box of lobby.boxes) assert.ok(box.width > 0 && box.height > 0 && box.left >= -1 && box.top >= -1 && box.right <= lobby.width + 1 && box.bottom <= lobby.height + 1, `online lobby control fits: ${JSON.stringify(box)}`);
+    await snapshot(page, 'online-one-human-four-computers-lobby');
+    await page.locator('#start-room').click(); await stableBoard(page);
+    await page.waitForFunction(() => document.querySelectorAll('#hand .hand-card').length === 7);
+    let room = (await network.call(userId, { action: 'mine' })).room;
+    assert.equal(room.game.players.length, 5); assert.equal(room.game.players.filter(player => player.bot).length, 4);
+    if (room.game.players[room.game.turn].id === userId) {
+      await page.waitForFunction(() => !document.querySelector('#draw-button').disabled);
+      await page.locator('#draw-button').click(); await page.waitForFunction(() => document.querySelector('#my-count').textContent === '8장');
+      room = (await network.call(userId, { action: 'mine' })).room;
+    }
+    const bot = room.game.players[room.game.turn]; assert.equal(bot.bot, true);
+    const count = await page.locator(`#opponents [data-player="${bot.id}"] .seat-count`).textContent();
+    await network.db.query("update ojjuda_onecard_internal.rooms set deadline=clock_timestamp()-interval '1 second' where id=$1", [room.id]);
+    await page.waitForFunction(({ id, count }) => document.querySelector(`#opponents [data-player="${id}"] .seat-count`).textContent !== count, { id: bot.id, count });
+    const advanced = (await network.db.query('select state,version from ojjuda_onecard_internal.rooms where id=$1', [room.id])).rows[0];
+    assert.ok(advanced.version > room.version, 'normal polling advances a server computer without human action');
+    assert.equal(advanced.state.direction, 1);
+    assert.equal(await page.locator('#opponents .seat.is-bot').count(), 4);
+    await oneScreen(page, 'one human and four computers', true);
+    await snapshot(page, 'online-one-human-four-computers-game');
+    await page.context().close(); await network.close(); network = null;
+    return lobby;
   });
 
   await scenario('no uncaught browser errors', async () => assert.deepEqual(browserErrors, []));

@@ -7,7 +7,7 @@ const MESSAGES = {
   room_not_found: '방 코드를 다시 확인해 주세요.',
   room_unavailable: '이미 끝났거나 참여할 수 없는 방이에요.',
   not_room_owner: '방장만 시작할 수 있어요.',
-  need_players: '두 명 이상 모이면 시작할 수 있어요.',
+  need_players: '방에 참여하면 시작할 수 있어요.',
   state_conflict: '차례가 바뀌었어요. 현재 판을 불러왔습니다.',
   not_your_turn: '내 차례를 기다려 주세요.',
   invalid_move: '지금 낼 수 있는 카드를 골라 주세요.',
@@ -195,7 +195,7 @@ export function createOnlineClient({ onRoom = () => {}, onError = () => {}, onCo
   }
   return {
     enter, read, close,
-    create: ({ capacity = 5 } = {}) => act('create', { options: { capacity } }),
+    create: () => act('create', { options: { capacity: 5 } }),
     join: code => act('join', { code: String(code).replace(/[\s-]/g, '').toUpperCase() }),
     start: () => act('start'),
     move: command => act('move', { command }),

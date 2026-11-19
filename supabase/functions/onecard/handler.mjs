@@ -1,4 +1,4 @@
-import { createGame, applyAction, removePlayer, projectState } from './engine.mjs';
+import { createGame, applyAction, chooseBotAction, projectState } from './engine.mjs';
 
 const ORIGINS = new Set(['https://ojjuda.kr', 'https://www.ojjuda.kr', 'https://ojjuda-note.github.io']);
 const UUID = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
@@ -12,7 +12,8 @@ function projectRoom(result, userId, now) {
   if (!r) return null;
   return {
     id: r.id, code: r.code, hostId: r.host_id, myId: userId,
-    seat: r.members.indexOf(userId), capacity: r.capacity, status: r.status,
+    seat: r.state ? r.state.players.findIndex(player => player.id === userId) : r.members.indexOf(userId),
+    capacity: 5, status: r.status,
     version: r.version, round: r.round, deadline: r.deadline, serverTime: now,
     // Room membership survives losing a round, so eliminated members can rematch.
     players: r.members.map((id, i) => ({ id, name: r.names[i], active: !r.departed[i] })),
@@ -38,7 +39,8 @@ async function readBody(request) {
   if (['read', 'start', 'move', 'leave'].includes(body.action) && !UUID.test(body.room_id)) throw Error('bad_request');
   if (['create', 'start', 'move', 'leave'].includes(body.action) && !UUID.test(body.request_id)) throw Error('bad_request');
   if (['start', 'move', 'leave'].includes(body.action) && (!Number.isInteger(body.version) || body.version < 0)) throw Error('bad_request');
-  if (body.action === 'create' && ![2, 3, 4, 5].includes(body.options?.capacity)) throw Error('bad_request');
+  // Older clients may still send 2–4. Every new table uses five seats.
+  if (body.action === 'create' && body.options?.capacity !== undefined && ![1, 2, 3, 4, 5].includes(body.options.capacity)) throw Error('bad_request');
   if (body.action === 'join' && (typeof body.code !== 'string' || !/^[a-f0-9]{8}$/i.test(body.code))) throw Error('bad_request');
   if (body.action === 'move') {
     const command = body.command;
@@ -84,13 +86,21 @@ export function createHandler({ env, fetchImpl = fetch, now = Date.now,
         if (!response.ok) throw Error(ERRORS.has(data.message) ? data.message : 'unavailable');
         return data;
       };
+      let automaticAttempted = false;
       const catchUp = async result => {
         const r = result?.room;
-        if (!r || r.status !== 'active' || !r.deadline || Date.parse(r.deadline) > now()) return result;
+        if (automaticAttempted || !r || r.status !== 'active' || !r.deadline || Date.parse(r.deadline) > now()) return result;
+        // One request advances at most one automatic action, even with a slow RPC
+        // or several people polling the same table at once.
+        automaticAttempted = true;
         const player = r.state.players[r.state.turn];
-        const state = applyAction(r.state, player.id, { type: 'draw' }, { random });
+        const command = player.bot
+          ? chooseBotAction(projectState(r.state, player.id), player.id, { random })
+          : { type: 'draw' };
+        if (!command) throw Error('invalid_move');
+        const state = applyAction(r.state, player.id, command, { random });
         try { return await rpc('commit', { p_room: r.id, p_expected: r.version, p_request: crypto.randomUUID(),
-          p_next: { state, kind: 'timeout', command: 'draw' } }); }
+          p_next: { state, kind: player.bot ? 'computer' : 'timeout', command: command.type } }); }
         catch (error) {
           if (error.message !== 'state_conflict') throw error;
           return rpc('read', { p_room: r.id });
@@ -107,21 +117,42 @@ export function createHandler({ env, fetchImpl = fetch, now = Date.now,
           if (body.action === 'start') {
             if (r.host_id !== user.id || !['waiting', 'finished'].includes(r.status)) throw Error('not_room_owner');
             const players = r.members.flatMap((id, i) => r.departed[i] ? [] : [{ id, name: r.names[i] }]);
-            if (players.length < 2) throw Error('need_players');
-            state = createGame({ players }, { random });
+            if (!players.length) throw Error('need_players');
+            const computerCount = 5 - players.length;
+            for (let i = 0; i < computerCount; i++) players.push({
+              id: `onecard-bot:${r.id}:${r.round + 1}:${i}`, name: `컴퓨터 ${i + 1}`, bot: true,
+            });
+            // Membership order and host permissions are independent of game seats.
+            // Reshuffle people and computers together on every fresh round.
+            for (let i = players.length - 1; i > 0; i--) {
+              const j = Math.floor(random() * (i + 1));
+              [players[i], players[j]] = [players[j], players[i]];
+            }
+            state = createGame({ players, startIndex: 0 }, { random });
           } else if (body.action === 'move') {
             if (r.status !== 'active') throw Error('room_unavailable');
             state = applyAction(r.state, user.id, body.command, { random });
-          } else if (r.status === 'active') state = removePlayer(r.state, user.id, { random });
+          } else if (r.status === 'active') {
+            // Leaving transfers this exact hand to the computer. No cards are
+            // removed, no eliminated seat revives, and no winner is fabricated.
+            state = structuredClone(r.state);
+            const player = state.players.find(candidate => candidate.id === user.id);
+            if (!player) throw Error('invalid_move');
+            player.bot = true;
+            state.direction = 1;
+            state.revision++;
+            state.lastEvents = [{ id: `${state.revision}:0`, type: 'takeover', playerId: user.id }];
+          }
           result = await rpc(body.action === 'move' ? 'commit' : body.action, {
             p_room: r.id, p_expected: r.version, p_request: body.request_id,
             p_next: { state, kind: body.action, command: body.command?.type || null } });
         }
       } else result = await rpc(body.action, { p_room: body.room_id ?? null, p_code: body.code ?? null,
-        p_request: body.request_id ?? null, p_options: body.action === 'create' ? { capacity: body.options.capacity } : {} });
+        p_request: body.request_id ?? null, p_options: body.action === 'create' ? { capacity: 5 } : {} });
       if (body.action === 'leave') return reply({ ok: true, userId: user.id, room: null });
-      // Polling advances at most one expired turn; a disconnected player cannot freeze the table.
-      result = await catchUp(result);
+      // Return a mutation's own event before any later computer action. Only a
+      // subsequent read/resume/join advances the next due turn.
+      if (['read', 'mine', 'join'].includes(body.action)) result = await catchUp(result);
       return reply({ ok: true, userId: user.id, room: projectRoom(result, user.id, now()),
         ...(result.rooms ? { rooms: result.rooms } : {}) });
     } catch (error) {

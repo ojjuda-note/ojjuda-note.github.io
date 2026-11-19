@@ -24,8 +24,8 @@ async function fixture() {
   }
   await db.query('insert into public.test_bans values($1)', [users[6]]);
   const migrations = path.join(__dirname, '../supabase/migrations');
-  const migration = fs.readdirSync(migrations).find(n => n.endsWith('_onecard_online_rooms.sql'));
-  await db.exec(fs.readFileSync(path.join(migrations, migration), 'utf8'));
+  const onecardMigrations = fs.readdirSync(migrations).filter(n => /_onecard_.*\.sql$/.test(n)).sort();
+  for (const migration of onecardMigrations) await db.exec(fs.readFileSync(path.join(migrations, migration), 'utf8'));
   const { createHandler } = await import('../supabase/functions/onecard/handler.mjs');
   let seed = 209385;
   const handler = createHandler({

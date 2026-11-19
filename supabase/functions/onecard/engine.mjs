@@ -4,9 +4,10 @@
  * Cards are immutable IDs: S-A ... C-K, X-B (black joker), X-R (red joker).
  * Full state is private. Only projectState() may leave the authoritative server.
  * House rules are deliberately small: attacks may stack on any attack; a normal
- * draw ends the turn; 7/jokers choose a suit; J skips, Q reverses and K repeats.
+ * draw ends the turn; 7/jokers choose a suit; J skips and K repeats. Q is an
+ * ordinary card. Every turn travels clockwise, including restored older games.
  */
-export const ENGINE_VERSION = '1.0.0';
+export const ENGINE_VERSION = '1.1.0';
 export const MAX_HAND_SIZE = 20;
 export const SUITS = Object.freeze(['S', 'H', 'D', 'C']);
 export const RANKS = Object.freeze(['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']);
@@ -53,7 +54,7 @@ function shuffle(cards, random) {
   return cards;
 }
 function cloneState(state) {
-  return { ...state, players: state.players.map(player => ({ ...player, hand: [...player.hand] })), deck: [...state.deck], discard: [...state.discard], winnerIds: [...(state.winnerIds || [])], lastEvents: [] };
+  return { ...state, engineVersion: ENGINE_VERSION, direction: 1, players: state.players.map(player => ({ ...player, hand: [...player.hand] })), deck: [...state.deck], discard: [...state.discard], winnerIds: [...(state.winnerIds || [])], lastEvents: [] };
 }
 function emit(state, type, data = {}) {
   state.lastEvents.push({ id: `${state.revision}:${state.lastEvents.length}`, type, ...data });
@@ -63,7 +64,7 @@ function nextIndex(state, from, steps = 1) {
   let index = from;
   for (let step = 0; step < steps; step++) {
     for (let checked = 0; checked < state.players.length; checked++) {
-      index = (index + state.direction + state.players.length) % state.players.length;
+      index = (index + 1) % state.players.length;
       if (state.players[index].active) break;
     }
   }
@@ -233,10 +234,6 @@ export function applyAction(state, playerId, action, options = {}) {
   } else if (card.rank === 'J') {
     steps = 2;
     emit(next, 'skip', { playerId, skippedPlayerId: next.players[nextIndex(next, next.turn)].id });
-  } else if (card.rank === 'Q') {
-    next.direction *= -1;
-    if (activeIndices(next).length === 2) steps = 0;
-    emit(next, 'reverse', { playerId, direction: next.direction });
   } else if (card.rank === 'K') {
     steps = 0;
     emit(next, 'again', { playerId });
@@ -249,7 +246,7 @@ export function applyAction(state, playerId, action, options = {}) {
 export function removePlayer(state, playerId, options = {}) {
   const player = playerById(state, playerId);
   if (!player) fail('NOT_PLAYER', '참가자를 찾을 수 없어요.');
-  if (!player.active || state.status !== 'playing') return state;
+  if (!player.active || state.status !== 'playing') return state.direction === 1 ? state : { ...state, direction: 1 };
   const next = cloneState(state); next.revision++;
   const actor = playerById(next, playerId);
   emit(next, 'leave', { playerId });
@@ -267,12 +264,12 @@ export function projectState(state, viewerId) {
     viewerId,
     players: state.players.map(player => ({ id: player.id, name: player.name, bot: player.bot, active: player.active, calledOne: player.calledOne, eliminatedReason: player.eliminatedReason || null, handCount: player.hand.length, ...(player.id === viewerId ? { hand: [...player.hand] } : {}) })),
     topCard: topCard(state), deckCount: state.deck.length, discardCount: state.discard.length,
-    currentSuit: state.currentSuit, turn: state.turn, direction: state.direction,
+    currentSuit: state.currentSuit, turn: state.turn, direction: 1,
     pendingDraw: state.pendingDraw, pendingOneId: state.pendingOneId, status: state.status,
     winnerId: state.winnerId, winnerIds: [...state.winnerIds], finishReason: state.finishReason,
     revision: state.revision, turnCount: state.turnCount,
     legalCardIds: legalCards(state, viewerId), canDeclare: canDeclare(state, viewerId),
-    lastEvents: state.lastEvents.map(event => {
+    lastEvents: state.lastEvents.filter(event => event.type !== 'reverse').map(event => {
       const visible = { id: event.id, type: event.type };
       for (const key of ['playerId', 'count', 'requestedCount', 'ordinal', 'reason', 'suit', 'direction', 'skippedPlayerId']) if (event[key] !== undefined) visible[key] = event[key];
       if (Array.isArray(event.playerIds)) visible.playerIds = [...event.playerIds];
@@ -295,7 +292,7 @@ export function chooseBotAction(state, playerId = state.players[state.turn]?.id,
   const score = cardId => {
     const card = cardInfo(cardId), remaining = hand.filter(id => id !== cardId);
     const suitCount = remaining.filter(id => cardInfo(id).suit === card.suit).length;
-    const repeat = card.rank === 'K' || (activeIndices(state).length === 2 && ['J', 'Q'].includes(card.rank));
+    const repeat = card.rank === 'K' || (activeIndices(state).length === 2 && card.rank === 'J');
     let value = suitCount * 5 + (repeat ? 14 : 0) + (card.attack ? (pressure ? 30 : 4) + card.attack : 0);
     if (isWild(card) && hand.length > 2 && !state.pendingDraw) value -= card.joker ? 18 : 9;
     return value;
