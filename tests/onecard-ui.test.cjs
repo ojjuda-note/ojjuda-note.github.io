@@ -202,7 +202,7 @@ async function oneScreen(page, label, playing = false) {
   if (playing) await page.waitForFunction(() => {
     const orbit = document.querySelector('#direction-orbit');
     return orbit && !orbit.hidden && orbit.dataset.ready === 'true' &&
-      [orbit, ...orbit.querySelectorAll('.orbit-track, .orbit-marker')].every(node => {
+      [orbit, ...orbit.querySelectorAll('.orbit-marker')].every(node => {
         const box = node.getBoundingClientRect();
         return getComputedStyle(node).visibility === 'visible' && box.width > 0 && box.height > 0;
       });
@@ -213,7 +213,7 @@ async function oneScreen(page, label, playing = false) {
     const scroller = document.querySelector('#hand-scroll'), style = scroller && getComputedStyle(scroller);
     const orbit = document.querySelector('#direction-orbit');
     const motion = playing ? { hidden: orbit.hidden, ready: orbit.dataset.ready, state: orbit.dataset.state, ariaHidden: orbit.getAttribute('aria-hidden'),
-      boxes: [orbit, orbit.querySelector('.orbit-track'), ...orbit.querySelectorAll('.orbit-marker')].map(node => ({ ...rect(node), className: node.className, pointerEvents: getComputedStyle(node).pointerEvents, visibility: getComputedStyle(node).visibility })),
+      boxes: [orbit, ...orbit.querySelectorAll('.orbit-marker')].map(node => ({ ...rect(node), className: node.className, pointerEvents: getComputedStyle(node).pointerEvents, visibility: getComputedStyle(node).visibility })),
       controls: ['sort-number', 'sort-color', 'draw-pile', 'draw-button', 'menu-button'].map(id => {
         const node = document.getElementById(id), box = rect(node), hit = document.elementFromPoint((box.left + box.right) / 2, (box.top + box.bottom) / 2);
         return { id, reachable: node === hit || node.contains(hit) };
@@ -231,7 +231,7 @@ async function oneScreen(page, label, playing = false) {
   if (playing) {
     assert.equal(report.motion.hidden, false, `${label}: direction cue is present during play`);
     assert.equal(report.motion.ariaHidden, 'true', `${label}: decoration does not duplicate accessible direction text`);
-    assert.equal(report.motion.boxes.length, 5, `${label}: track and all three moving markers exist`);
+    assert.equal(report.motion.boxes.length, 3, `${label}: direction cue and both moving markers exist`);
     for (const box of report.motion.boxes) {
       assert.equal(box.pointerEvents, 'none', `${label}: orbit never captures touch or mouse input`);
       assert.equal(box.visibility, 'visible', `${label}: the complete direction cue is actually visible: ${JSON.stringify({ box, ready: report.motion.ready, state: report.motion.state })}`);

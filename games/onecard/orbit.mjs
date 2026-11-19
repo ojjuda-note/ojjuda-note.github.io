@@ -1,4 +1,4 @@
-// A quiet direction cue around the players. Only the three small markers move;
+// Two warm glints flow around the players. Only their small layers move;
 // geometry is measured on resize, never inside the animation frame.
 export function createDirectionOrbit({element,reduced}) {
   const markers=[...element.querySelectorAll('.orbit-marker')],tau=Math.PI*2;
@@ -18,7 +18,9 @@ export function createDirectionOrbit({element,reduced}) {
     markers.forEach((marker,index)=>{
       const angle=phase+index*tau/markers.length;
       const x=Math.cos(angle)*rx,y=Math.sin(angle)*ry;
-      const tangent=Math.atan2(Math.cos(angle)*ry,-Math.sin(angle)*rx)+(direction===-1?Math.PI:0);
+      // Keep the ribbon's curve facing into the same ellipse after a reversal.
+      // CSS mirrors only its light gradient; its position and curvature stay put.
+      const tangent=Math.atan2(Math.cos(angle)*ry,-Math.sin(angle)*rx);
       marker.style.transform=`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) rotate(${tangent.toFixed(5)}rad)`;
     });
     if(element.dataset.ready!=='true')element.dataset.ready='true';
