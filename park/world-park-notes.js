@@ -8,7 +8,7 @@
     return `<details class="my-menu-group" data-my-group="park"><summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true">▤</span><span class="my-menu-copy"><span class="my-menu-title">공원 활동</span></span></summary><div class="my-menu-body park-menu-actions">${[['feed','공원 카드'],['saved','메모함'],['mine','내 카드'],['events','내 이벤트'],['event-new','이벤트 만들기'],['settings','회원정보'],['blocked','공원 차단 목록'],['glasses','스마트 글래스 미리보기']].map(([action,label])=>`<button type="button" class="btn" data-park-action="${action}">${label}</button>`).join('')}</div></details>`;
   }
   window.OjjudaParkNotes = {menuMarkup,install(app) {
-    const frameVersion = '20261119-park-navigation1' + (app.version ? '-' + app.version : '');
+    const frameVersion = '20261119-park-admin1' + (app.version ? '-' + app.version : '');
     let frame=null,panel=null,owner=null,routed=false,initial=window.performance?.getEntriesByType?.('navigation')[0]?.type!=='back_forward',pending=null,overlayOpen=false,composerOpen=false,cardOpen=false,stopFrameNavigation=()=>{};
     let cacheTimer=null,frameVisible=false;
     let currentNavigation='feed';
@@ -20,6 +20,13 @@
     const active=()=>app.place()?.id==='park';
     const requested=new URL(location.href).searchParams.get('place')==='park';
     const api=()=>{try{return frame?.contentWindow.OjjudaParkFull;}catch{return null;}};
+    function canOpenAdmin(){
+      return !!(active()&&frameVisible&&frame?.isConnected&&!panel?.hidden&&owner&&owner===app.userId()&&app.isAdmin?.()===true);
+    }
+    function refreshAdmin(){
+      // The host's server-verified role controls this shortcut, never frame metadata.
+      try{api()?.setAdminAccess?.({userId:owner,allowed:canOpenAdmin()});}catch{}
+    }
     function syncNavigation(action=api()?.navigationAction?.()) {
       if(navigationActions.has(action))currentNavigation=action;
       if(!active())return;
@@ -49,9 +56,9 @@
       try{frame?.contentWindow?.postMessage({type:'ojjuda:park-visibility',visible},location.origin);}catch{}
     }
     function setVisible(visible){
-      if(frameVisible===visible){syncComposerMode();return;}
+      if(frameVisible===visible){syncComposerMode();refreshAdmin();return;}
       frameVisible=visible;notifyVisibility(visible);
-      syncComposerMode();
+      syncComposerMode();refreshAdmin();
     }
     function clearRetirement(){if(cacheTimer!==null){clearTimeout(cacheTimer);cacheTimer=null;}}
     function retire(){
@@ -118,7 +125,7 @@
         loading(false);
         if(!active()||panel.hidden){notifyVisibility(false);return;}
         stopGestures();stopFrameNavigation=app.onFrameReady?.(frame)||(()=>{});
-        notifyVisibility(true);cardOpen=api()?.cardOpen?.()===true;composerOpen=api()?.composerOpen?.()===true;syncFab();syncNavigation();flush();
+        notifyVisibility(true);refreshAdmin();cardOpen=api()?.cardOpen?.()===true;composerOpen=api()?.composerOpen?.()===true;syncFab();syncNavigation();flush();
       });
     }
     addEventListener('pageshow',event=>{if(event.persisted&&active()){clearEntryOptions();sync(true);}});
@@ -129,6 +136,7 @@
       pending=action;
       if(!active()){app.enter();return;}
       if(frame?.dataset.view==='glasses'&&action!=='glasses'){loading(true);frame.src='/park/?embedded=1&v='+frameVersion;return;}
+      refreshAdmin();
       flush();
     }
     function refreshBalance(){api()?.refreshBalance?.();}
@@ -159,9 +167,14 @@
     },true);
     addEventListener('message',event=>{
       if(event.origin!==location.origin||event.source!==frame?.contentWindow)return;
-      if(event.data?.type==='ojjuda:park-ready'){loading(false);syncNavigation();flush();}
+      if(event.data?.type==='ojjuda:park-ready'){loading(false);refreshAdmin();syncNavigation();flush();}
+      if(event.data?.type==='ojjuda:park-admin-refresh')refreshAdmin();
       if(event.data?.type==='ojjuda:park-state'){overlayOpen=event.data.overlayOpen===true;composerOpen=event.data.composerOpen===true;cardOpen=event.data.cardOpen===true;syncFab();syncNavigation(event.data.navigationAction);}
       if(event.data?.type==='ojjuda:park-navigate'&&canLeave()){
+        if(event.data.action==='admin'){
+          if(event.data.userId===owner&&canOpenAdmin())app.toAdmin?.();
+          return;
+        }
         if(event.data.action==='world')app.toWorld?.();
         if(event.data.action==='menu')app.toMenu?.();
         if(event.data.action==='board')app.toBoard?.();
@@ -170,6 +183,6 @@
       if(event.data?.type==='ojjuda:park-balance'&&event.data.userId===owner&&owner&&Number.isSafeInteger(event.data.coins)&&event.data.coins>=0)app.onBalance?.(event.data.coins,owner);
       if(event.data?.type==='ojjuda:park-card-published'&&event.data.userId===owner&&owner&&typeof event.data.cardId==='string'&&/^[0-9a-f-]{36}$/i.test(event.data.cardId))app.onCardPublished?.(event.data.cardId);
     });
-    return {refresh:()=>active()?(api()?.refresh?.()??false):false,markup,sync,route,canLeave,close,open,refreshBalance,preserveShell,requested,navigationAction:()=>currentNavigation};
+    return {refresh:()=>active()?(api()?.refresh?.()??false):false,markup,sync,route,canLeave,close,open,refreshBalance,refreshAdmin,preserveShell,requested,navigationAction:()=>currentNavigation};
   }};
 })();

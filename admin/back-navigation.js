@@ -1,7 +1,10 @@
 /* Separate admin tools return to the admin dashboard, including browser Back. */
 (() => {
   'use strict';
-  const home = '/world.html?admin=overview';
+  let service = '';
+  try { service = new URL(location.href).searchParams.get('from'); } catch {}
+  const home = '/world.html?admin=overview' + (['park','pajang'].includes(service) ? '&from=' + service : '');
+  if (typeof document !== 'undefined') document.querySelectorAll('a[href="/world.html?admin=overview"]').forEach(link => { link.href = home; });
   const guard = 'ojjudaAdminSectionBack';
   try {
     if (!history.state?.[guard]) history.pushState({ ...(history.state || {}), [guard]: true }, '', location.href);

@@ -12,15 +12,17 @@ function fixture(search = '') {
   });
   const {window} = dom;
   const timers = new Map();
-  let nextTimer = 0, place = {id: 'park'}, owner = 'member-a', gestureAttach = 0, gestureDetach = 0, worldReturns = 0;
+  let nextTimer = 0, place = {id: 'park'}, owner = 'member-a', gestureAttach = 0, gestureDetach = 0, worldReturns = 0, admin = false, adminEntries = 0;
   window.setTimeout = (fn, delay) => {const id = ++nextTimer;timers.set(id, {fn, delay});return id;};
   window.clearTimeout = id => timers.delete(id);
   window.eval(source);
   const app = window.OjjudaParkNotes.install({
     place: () => place,
     userId: () => owner,
+    isAdmin: () => admin,
     enter: () => {place = {id: 'park'};render('park');},
     toWorld: () => {worldReturns++;render('hub');},
+    toAdmin: () => {adminEntries++;render('admin');},
     onFrameReady: () => {gestureAttach++;return () => {gestureDetach++;};}
   });
   function markup(tab) {
@@ -34,7 +36,8 @@ function fixture(search = '') {
     app.sync();
   }
   const frame = () => window.document.querySelector('[data-park-app] iframe');
-  return {window, dom, app, render, frame, timers, setOwner: id => {owner = id;}, gestures: () => ({gestureAttach, gestureDetach}), worldReturns: () => worldReturns};
+  return {window, dom, app, render, frame, timers, setOwner: id => {owner = id;}, setAdmin: value => {admin = value;},
+    gestures: () => ({gestureAttach, gestureDetach}), worldReturns: () => worldReturns, adminEntries: () => adminEntries};
 }
 
 test('Park iframe survives a short visit to Arcade and returns without reloading', () => {
@@ -216,5 +219,59 @@ test('Agit return from Park settings respects pending saves and the active frame
     assert.equal(f.worldReturns(),1);
     assert.equal(f.window.document.querySelector('.topbar').textContent,'hub');
     assert.equal(frame.closest('[data-park-app]').hidden,true,'returning to Agit keeps only an inactive cached Park');
+  } finally {f.dom.window.close();}
+});
+
+test('Park administrator entry uses the current host role, owner and visible frame', () => {
+  const f = fixture();
+  const send = (frame, data, origin = 'https://fixture.test') => f.window.dispatchEvent(new f.window.MessageEvent('message', {
+    origin, source: frame.contentWindow, data
+  }));
+  const enter = (frame, userId = 'member-a', origin) => send(frame, {type:'ojjuda:park-navigate', action:'admin', userId}, origin);
+  try {
+    f.render('park');
+    const frame = f.frame(), access = [], navigations = [];
+    frame.contentWindow.OjjudaParkFull = {
+      setAdminAccess(value) {access.push(JSON.parse(JSON.stringify(value)));},
+      returnHome: () => true,
+      navigate: action => navigations.push(action)
+    };
+    f.app.refreshAdmin();
+    assert.deepEqual(access.at(-1), {userId:'member-a', allowed:false});
+    enter(frame);
+    assert.equal(f.adminEntries(),0,'a member cannot request administrator entry');
+    f.setAdmin('true'); f.app.refreshAdmin(); enter(frame);
+    assert.equal(access.at(-1).allowed,false,'only the verified boolean host role enables the shortcut');
+    assert.equal(f.adminEntries(),0);
+    f.setAdmin(true);
+    send(frame,{type:'ojjuda:park-admin-refresh'});
+    assert.deepEqual(access.at(-1), {userId:'member-a', allowed:true},'a late host role result updates the open settings');
+    enter(frame,'member-a','https://foreign.invalid');
+    enter(frame,'member-b');
+    assert.equal(f.adminEntries(),0,'foreign origins and another member cannot enter');
+    frame.contentWindow.canCloseParkNote = () => false;
+    enter(frame);
+    assert.equal(f.adminEntries(),0,'pending Park writes still block administrator entry');
+    frame.contentWindow.canCloseParkNote = () => true;
+    f.setOwner('member-b'); f.app.refreshAdmin(); enter(frame);
+    assert.equal(access.at(-1).allowed,false,'an old frame loses its shortcut when the host account changes');
+    assert.equal(f.adminEntries(),0);
+    f.setOwner('member-a'); f.app.refreshAdmin();
+    enter(frame);
+    assert.equal(f.adminEntries(),1);
+    assert.equal(f.window.document.querySelector('.topbar').textContent,'admin');
+    assert.equal(access.at(-1).allowed,false,'the inactive cached frame loses the active administrator shortcut');
+    enter(frame);
+    assert.equal(f.adminEntries(),1,'hidden cached Park cannot reopen administrator mode');
+    f.app.open('settings');
+    assert.equal(f.frame(),frame,'returning to Park settings reuses the same frame');
+    assert.equal(navigations.at(-1),'settings');
+    assert.equal(access.at(-1).allowed,true);
+    f.setAdmin(false); f.app.refreshAdmin(); enter(frame);
+    assert.equal(access.at(-1).allowed,false,'revoking the host role removes access without reopening Park');
+    assert.equal(f.adminEntries(),1);
+    f.setOwner(null); f.setAdmin(true); f.app.refreshAdmin(); enter(frame,null);
+    assert.equal(access.at(-1).allowed,false,'a guest cannot inherit the previous administrator role');
+    assert.equal(f.adminEntries(),1);
   } finally {f.dom.window.close();}
 });

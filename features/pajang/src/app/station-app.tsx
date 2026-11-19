@@ -385,7 +385,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       <div className="channel-heading account-heading"><h1>내 파장</h1><button type="button" className="account-settings-close" aria-label="설정 닫기" onClick={()=>go("today")}><I n="close"/></button></div>
       <div className="ojjuda-settings">
       <a className="ojjuda-settings-row account-agit agit-return" href="/world.html" target="_top"><span className="ojjuda-settings-label">아지트 가기</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span></a>
-      {me?<AccountSettings onOpen={kind=>open({kind})}/>:
+          {me?<AccountSettings profileId={me.id} onOpen={kind=>open({kind})}/>:
         <Blank icon="user" title="파장에 참여해 주세요" body="오쭈다 회원 정보로 시작할 수 있어요." button="참여하기" onClick={()=>void enterMember()}/>}</div></section>}
     </main>{toast&&<div role="status" className="toast">{toast}</div>}
   {modal&&<Dialog key={modal.kind} close={close} title={modalTitle} busy={busy}>

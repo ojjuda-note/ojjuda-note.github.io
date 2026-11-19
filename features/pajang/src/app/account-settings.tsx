@@ -1,11 +1,28 @@
 import {useEffect,useRef,useState} from "react";
 import {I} from "./icons";
 import {openAccount,leaveAccount,accountError} from "../lib/account-actions.mjs";
+import {watchAdminAccess} from "../lib/admin-access.mjs";
+import {client} from "../../member.mjs";
 
 export type AccountAction="logout"|"withdraw";
 export type AccountSettingsAction=AccountAction|"edit"|"privateProfile"|"privatePhotos"|"visibility"|"answers"|"help"|"delete";
 
-export function AccountSettings({onOpen}:{onOpen:(action:AccountSettingsAction)=>void}){
+export function AccountSettings({profileId,onOpen}:{profileId:string;onOpen:(action:AccountSettingsAction)=>void}){
+  const [admin,setAdmin]=useState({owner:"",allowed:false});
+  useEffect(()=>{
+    let active=true,dispose=()=>{};
+    setAdmin({owner:profileId,allowed:false});
+    void Promise.resolve().then(()=>client()).then(async db=>{
+      // Pajang profile IDs are distinct from Auth user IDs. Pin the current Auth identity.
+      const {data,error}=await db.auth.getSession();
+      const user=data?.session?.user;
+      if(!active||error||!user?.id||user.is_anonymous)return;
+      dispose=watchAdminAccess(db,user.id,(allowed:boolean)=>{
+        if(active)setAdmin({owner:profileId,allowed});
+      });
+    }).catch(()=>{if(active)setAdmin({owner:profileId,allowed:false});});
+    return()=>{active=false;dispose();};
+  },[profileId]);
   const row=(action:AccountSettingsAction,label:string,danger=false)=><button type="button"
     className={"ojjuda-settings-row"+(danger?" ojjuda-settings-danger":"")} onClick={()=>onOpen(action)}>
     <span className="ojjuda-settings-label">{label}</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
@@ -62,6 +79,14 @@ export function AccountSettings({onOpen}:{onOpen:(action:AccountSettingsAction)=
         {row("withdraw","회원 탈퇴",true)}
       </div>
     </section>
+    {admin.owner===profileId&&admin.allowed&&<section className="ojjuda-settings-group" aria-labelledby="account-admin-title">
+      <h2 className="ojjuda-settings-heading" id="account-admin-title">운영 관리</h2>
+      <div className="ojjuda-settings-list">
+        <a className="ojjuda-settings-row" href="/world.html?admin=pajang-answers&from=pajang" target="_top">
+          <span className="ojjuda-settings-label">파장 관리자모드</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span>
+        </a>
+      </div>
+    </section>}
   </section>;
 }
 

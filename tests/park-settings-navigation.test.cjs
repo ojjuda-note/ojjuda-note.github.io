@@ -5,11 +5,16 @@ const test = require('node:test');
 const {JSDOM} = require('jsdom');
 const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
 
-async function fixture(member = true) {
+async function fixture(member = true, {hosted = false} = {}) {
   const dom = new JSDOM(read('park/index.html'), {
     url: 'https://fixture.test/park/?embedded=1', runScripts: 'outside-only', pretendToBeVisual: true
   });
   const w = dom.window;
+  const messages = [];
+  if (hosted) Object.defineProperty(w, 'parent', {value:{
+    location:new URL('https://fixture.test/world.html'),
+    postMessage(data, origin) {messages.push({data, origin});}
+  }});
   const observers = new Set(), MutationObserver = w.MutationObserver;
   w.MutationObserver = class extends MutationObserver {
     constructor(callback) { super(callback); observers.add(this); }
@@ -49,7 +54,7 @@ async function fixture(member = true) {
   await settle(); await settle();
   const api = w.OjjudaParkFull;
   const setting = action => w.document.querySelector(`[data-park-settings="${action}"]`);
-  return {dom,w,api,calls,settle,setting,
+  return {dom,w,api,calls,messages,settle,setting,
     async close() { await settle(); for (const observer of observers) observer.disconnect(); dom.window.close(); },
     async changeUser(next) {session=next;authChanged(next?'SIGNED_IN':'SIGNED_OUT',next);await settle();},
     root:() => w.document.querySelector('[data-park-settings-root]'),
@@ -126,4 +131,57 @@ test('pending account saves keep the current form and changing accounts clears p
     assert.equal(f.setting('logout'),null);
     assert.equal(f.setting('delete-account'),null);
   } finally {await f.close();}
+});
+
+test('Park settings shows its administrator mode only for the matching verified host account', async () => {
+  const f = await fixture(true, {hosted:true});
+  const entries = () => f.messages.filter(({data}) => data.type === 'ojjuda:park-navigate' && data.action === 'admin');
+  try {
+    f.api.navigate('settings');
+    assert.equal(f.setting('admin'),null,'ordinary members have no administrator entry');
+    assert.equal(f.api.navigate('admin'),false);
+    assert.ok(f.messages.some(({data}) => data.type === 'ojjuda:park-admin-refresh'),'opening settings refreshes the host role');
+    f.api.setAdminAccess({userId:'another-member',allowed:true});
+    assert.equal(f.setting('admin'),null,'a role for another account cannot appear');
+    f.api.setAdminAccess({userId:'park-member-a',allowed:true});
+    assert.equal(f.setting('admin').textContent,'공원 관리자모드›');
+    assert.equal(f.setting('admin').classList.contains('park-settings-row'),true,'administrator entry shares the existing settings layout');
+    f.w.parkFixture.setBusy(true); f.setting('admin').click();
+    assert.equal(entries().length,0,'an unfinished account save blocks leaving settings');
+    assert.ok(f.root());
+    f.w.parkFixture.setBusy(false);
+    f.api.setAdminAccess({userId:'park-member-a',allowed:false});
+    assert.equal(f.setting('admin'),null,'revoked access disappears immediately');
+    assert.equal(f.api.navigate('admin'),false);
+    await f.changeUser({user:{id:'park-member-a',user_metadata:{is_admin:true,role:'admin'}}});
+    f.api.navigate('settings');
+    assert.equal(f.setting('admin'),null,'editable user metadata cannot grant access');
+    f.api.setAdminAccess({userId:'park-member-a',allowed:true});
+    f.setting('admin').click();
+    assert.equal(entries().length,1);
+    assert.deepEqual(JSON.parse(JSON.stringify(entries()[0])), {
+      data:{type:'ojjuda:park-navigate',action:'admin',userId:'park-member-a'},origin:'https://fixture.test'
+    });
+    assert.equal(f.management().hidden,true);
+    f.api.navigate('settings');
+    await f.changeUser({user:{id:'park-member-b'}});
+    f.api.navigate('settings');
+    assert.equal(f.setting('admin'),null,'another member never inherits the earlier host grant');
+    assert.equal(f.api.navigate('admin'),false);
+    assert.equal(entries().length,1);
+    assert.equal(f.calls.includes('updateUser'),false);
+    assert.equal(f.calls.includes('deleteAccount'),false);
+  } finally {await f.close();}
+});
+
+test('guest and standalone Park settings never expose the host administrator shortcut', async () => {
+  for (const [member, hosted] of [[false,true],[true,false]]) {
+    const f = await fixture(member, {hosted});
+    try {
+      f.api.setAdminAccess({userId:'park-member-a',allowed:true});
+      f.api.navigate('settings');
+      assert.equal(f.setting('admin'),null);
+      assert.equal(f.api.navigate('admin'),false);
+    } finally {await f.close();}
+  }
 });

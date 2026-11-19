@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import test from 'node:test';
 import {openAccount,leaveAccount,accountError} from '../features/pajang/src/lib/account-actions.mjs';
+import {watchAdminAccess} from '../features/pajang/src/lib/admin-access.mjs';
 
 const cleanup=createRequire(import.meta.url)('../features/account/account-deletion.js');
 const owner='00000000-0000-4000-8000-000000000001';
@@ -273,4 +274,209 @@ test('anonymous visitors cannot open a member account action',async t=>{
   await assert.rejects(f.open(true),/account_changed/);
   assert.equal(f.state.listeners.size,0);
   assert.deepEqual(mutations(f.state),[]);
+});
+
+// Administrator visibility is tested against synthetic Auth and RPC results only.
+function adminFixture(t,options={}){
+  const state={session:ownSession(),verifiedUser:{id:owner,is_anonymous:false},role:true,
+    sessionError:null,verifiedError:null,roleError:null,hook:null,...options,
+    calls:[],shown:[],listeners:new Set(),sessionReads:0,inAuthCallback:false};
+  async function step(name){
+    assert.equal(state.inAuthCallback,false,'Auth operations never run inside an auth callback');
+    if(state.hook)await state.hook(name);
+  }
+  const db={auth:{
+    async getSession(){
+      const value=state.session,error=state.sessionError;
+      state.calls.push('getSession');
+      await step('getSession:'+ ++state.sessionReads);
+      return {data:{session:value},error};
+    },
+    async getUser(token){
+      state.calls.push('getUser');
+      assert.equal(token,originalToken,'identity verification uses the captured session token');
+      const value=state.verifiedUser,error=state.verifiedError;
+      await step('getUser');
+      return {data:{user:value},error};
+    },
+    onAuthStateChange(listener){
+      state.listeners.add(listener);
+      return {data:{subscription:{unsubscribe(){state.listeners.delete(listener);}}}};
+    }
+  },async rpc(name){
+    state.calls.push(name);assert.equal(name,'is_admin');
+    const data=state.role,error=state.roleError;
+    await step(name);
+    return {data,error};
+  }};
+  function emit(session,event='SIGNED_IN'){
+    state.session=session;state.inAuthCallback=true;
+    try{for(const listener of state.listeners)listener(event,session);}
+    finally{state.inAuthCallback=false;}
+  }
+  function start(){
+    const dispose=watchAdminAccess(db,owner,allowed=>state.shown.push(allowed));
+    t.after(dispose);
+    return dispose;
+  }
+  return {state,db,emit,start};
+}
+const settleAdmin=async()=>{
+  await new Promise(resolve=>setTimeout(resolve,0));
+  await new Promise(resolve=>setImmediate(resolve));
+};
+
+test('administrator entry requires the same authenticated member and a true server role',async t=>{
+  const f=adminFixture(t);f.start();
+  assert.deepEqual(f.state.shown,[false],'the entry starts hidden');
+  await settleAdmin();
+  assert.deepEqual(f.state.calls,['getSession','getUser','is_admin','getSession']);
+  assert.equal(f.state.shown.at(-1),true);
+});
+
+for(const [label,options] of [
+  ['ordinary member',{role:false}],
+  ['string role',{role:'true'}],
+  ['numeric role',{role:1}],
+  ['role RPC error',{roleError:Error('unavailable')}],
+  ['editable metadata',{role:false,verifiedUser:{id:owner,user_metadata:{role:'admin',is_admin:true},app_metadata:{role:'admin'}}}],
+]){
+  test(`${label} does not grant administrator entry`,async t=>{
+    const f=adminFixture(t,options);f.start();await settleAdmin();
+    assert.equal(f.state.calls.includes('is_admin'),true);
+    assert.equal(f.state.shown.includes(true),false);
+  });
+}
+
+for(const [label,options] of [
+  ['missing session',{session:null}],
+  ['anonymous session',{session:{...ownSession(),user:{id:owner,is_anonymous:true}}}],
+  ['different session',{session:ownSession(other)}],
+  ['session read error',{sessionError:Error('session unavailable')}],
+  ['different verified member',{verifiedUser:{id:other}}],
+  ['unverified identity',{verifiedError:Error('identity unavailable')}],
+]){
+  test(`${label} is rejected before reading the administrator role`,async t=>{
+    const f=adminFixture(t,options);f.start();await settleAdmin();
+    assert.equal(f.state.calls.includes('is_admin'),false);
+    assert.equal(f.state.shown.includes(true),false);
+  });
+}
+
+for(const stage of ['getSession:1','getUser','is_admin','getSession:2']){
+  test(`an account switch during ${stage} cannot reveal the old administrator entry`,async t=>{
+    const f=adminFixture(t,{hook:name=>{if(name===stage)f.emit(ownSession(other,'other-token'));}});
+    f.start();await settleAdmin();
+    assert.equal(f.state.shown.includes(true),false);
+  });
+}
+
+test('the final session check rejects a changed account before its auth event arrives',async t=>{
+  const f=adminFixture(t,{hook:name=>{if(name==='is_admin')f.state.session=ownSession(other);}});
+  f.start();await settleAdmin();
+  assert.equal(f.state.shown.includes(true),false);
+});
+
+test('logout hides administrator entry synchronously',async t=>{
+  const f=adminFixture(t);f.start();await settleAdmin();
+  assert.equal(f.state.shown.at(-1),true);
+  f.emit(null,'SIGNED_OUT');
+  assert.equal(f.state.shown.at(-1),false);
+  await settleAdmin();
+  assert.equal(f.state.shown.at(-1),false);
+});
+
+test('token refresh rechecks a revoked role after the auth callback finishes',async t=>{
+  const f=adminFixture(t);f.start();await settleAdmin();
+  assert.equal(f.state.shown.at(-1),true);
+  f.state.role=false;
+  const calls=f.state.calls.length;
+  f.emit(ownSession(),'TOKEN_REFRESHED');
+  assert.equal(f.state.shown.at(-1),false);
+  assert.equal(f.state.calls.length,calls,'no Auth request starts inside the callback');
+  await settleAdmin();
+  assert.equal(f.state.calls.filter(name=>name==='is_admin').length,2);
+  assert.equal(f.state.shown.at(-1),false);
+});
+
+test('an older role response cannot revive access after switching away and back',async t=>{
+  let release;
+  const pending=new Promise(resolve=>{release=resolve;});
+  const f=adminFixture(t,{hook:name=>name==='is_admin'?pending:undefined});
+  f.start();await settleAdmin();
+  f.emit(ownSession(other,'other-token'));
+  f.state.hook=null;f.state.role=false;
+  f.emit(ownSession());
+  await settleAdmin();release();await settleAdmin();
+  assert.equal(f.state.calls.filter(name=>name==='is_admin').length,2);
+  assert.equal(f.state.shown.includes(true),false);
+});
+
+test('disposing the settings listener ignores a pending administrator result',async t=>{
+  let release;
+  const pending=new Promise(resolve=>{release=resolve;});
+  const f=adminFixture(t,{hook:name=>name==='is_admin'?pending:undefined});
+  const dispose=f.start();await settleAdmin();
+  dispose();release();await settleAdmin();
+  assert.equal(f.state.listeners.size,0);
+  assert.equal(f.state.shown.includes(true),false);
+});
+
+test('a thrown role lookup remains hidden',async t=>{
+  const f=adminFixture(t,{hook:name=>{if(name==='is_admin')throw Error('network interrupted');}});
+  f.start();await settleAdmin();
+  assert.equal(f.state.shown.includes(true),false);
+});
+
+test('the real settings component checks Auth UID while keeping a distinct Pajang profile ID',async t=>{
+  const require=createRequire(import.meta.url);
+  const featureRequire=createRequire(new URL('../features/pajang/package.json',import.meta.url));
+  const {JSDOM}=require('jsdom');
+  const {build}=featureRequire('esbuild');
+  const built=await build({entryPoints:[new URL('../features/pajang/src/app/account-settings.tsx',import.meta.url).pathname],
+    bundle:true,write:false,platform:'node',format:'cjs',jsx:'automatic',external:['react','react/jsx-runtime']});
+  const dom=new JSDOM('<div id="root"></div>',{url:'https://fixture.invalid/features/pajang/station.html?tab=profile'});
+  const f=adminFixture(t);
+  dom.window.OjjudaGetClient=async()=>f.db;
+  const globals={window:dom.window,document:dom.window.document,navigator:dom.window.navigator,IS_REACT_ACT_ENVIRONMENT:true};
+  const originals=new Map();
+  for(const [key,value] of Object.entries(globals)){
+    originals.set(key,Object.getOwnPropertyDescriptor(globalThis,key));
+    Object.defineProperty(globalThis,key,{configurable:true,writable:true,value});
+  }
+  const {createElement,act}=featureRequire('react');
+  const {createRoot}=featureRequire('react-dom/client');
+  const module={exports:{}};
+  new Function('require','module','exports',built.outputFiles[0].text)(featureRequire,module,module.exports);
+  const {AccountSettings}=module.exports;
+  const host=dom.window.document.getElementById('root'),reactRoot=createRoot(host);
+  const profileId='synthetic-pajang-person';
+  assert.notEqual(profileId,f.state.session.user.id);
+  try{
+    await act(async()=>{
+      reactRoot.render(createElement(AccountSettings,{profileId,onOpen(){}}));
+      await settleAdmin();
+    });
+    const entry=host.querySelector('a[href="/world.html?admin=pajang-answers&from=pajang"]');
+    assert.equal(entry?.textContent,'파장 관리자모드›');
+    assert.equal(entry?.target,'_top');
+    assert.equal(f.state.calls.includes('is_admin'),true);
+    await act(async()=>{
+      f.emit(null,'SIGNED_OUT');
+      await settleAdmin();
+    });
+    assert.equal(host.querySelector('a[href*="admin="]'),null,'auth logout removes the live administrator entry');
+    f.state.session=ownSession();f.state.role=false;
+    await act(async()=>{
+      reactRoot.render(createElement(AccountSettings,{profileId:'another-pajang-person',onOpen(){}}));
+      await settleAdmin();
+    });
+    assert.equal(host.querySelector('a[href*="admin="]'),null,'a different profile does not inherit previous visibility');
+  }finally{
+    await act(async()=>reactRoot.unmount());
+    dom.window.close();
+    for(const [key,descriptor] of originals){
+      if(descriptor)Object.defineProperty(globalThis,key,descriptor);else delete globalThis[key];
+    }
+  }
 });

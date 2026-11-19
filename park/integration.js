@@ -7,6 +7,13 @@
   const originalCanLeave = window.canCloseParkNote;
   let pendingAction = null, previousOverlay = null, previousComposer = null, previousDetail = null, previousNavigation = null, previousBalance = null, reporting = false, hostVisible = true;
   let settingsContext = false;
+  let adminAccess = null, syncAdminSettings = () => {};
+  const canOpenAdmin = () => hosted && !!session?.user?.id && adminAccess?.allowed === true && adminAccess.userId === session.user.id;
+  function setAdminAccess(access) {
+    adminAccess = access?.allowed === true && typeof access.userId === 'string'
+      ? {userId: access.userId, allowed: true} : null;
+    syncAdminSettings();
+  }
   const visible = selector => !!document.querySelector(selector);
   const overlayOpen = () => visible('.dialog-backdrop:not([hidden]), .nn-backdrop:not([hidden]), .note-photo-lightbox:not([hidden]), dialog[open]');
   const composerOpen = () => visible('#composer-backdrop:not([hidden])');
@@ -102,7 +109,18 @@
       row(access, 'logout', '로그아웃', showAccountLogout);
       row(access, 'delete-account', '회원 탈퇴', () => void showAccountDeletion(), 'park-settings-danger');
     }
+    let adminGroup = null;
+    syncAdminSettings = () => {
+      if (!settings.isConnected) return;
+      if (!canOpenAdmin() || owner !== session?.user?.id) { adminGroup?.remove(); adminGroup = null; return; }
+      if (adminGroup) return;
+      const admin = group('관리자');
+      adminGroup = admin.parentElement;
+      row(admin, 'admin', '공원 관리자모드', () => navigate('admin'));
+    };
     managementBody.append(settings);
+    syncAdminSettings();
+    if (owner) send({type:'ojjuda:park-admin-refresh', userId:owner});
     syncSettingsBack();
   }
 
@@ -159,9 +177,10 @@
     return true;
   }
 
-  const actions = new Set(['feed', 'saved', 'mine', 'events', 'event-new', 'blocked', 'settings', 'member-info', 'compose', 'notifications', 'support', 'world', 'menu', 'board', 'library', 'glasses']);
+  const actions = new Set(['feed', 'saved', 'mine', 'events', 'event-new', 'blocked', 'settings', 'member-info', 'compose', 'notifications', 'support', 'world', 'menu', 'board', 'library', 'glasses', 'admin']);
   function navigate(action) {
     if (!actions.has(action)) return false;
+    if (action === 'admin' && !canOpenAdmin()) return false;
     if (!authKnown && client && !['world', 'menu', 'board', 'library', 'glasses'].includes(action)) { pendingAction = action; return true; }
     if (!canLeave()) return false;
     // Existing close methods retain their own saving guards.
@@ -175,8 +194,8 @@
     window.OjjudaNoteNavigation?.leaveMy();
     pendingAction = null;
     settingsContext = false;
-    if (action === 'world' || action === 'menu' || action === 'board' || action === 'library') {
-      if (hosted) send({ type: 'ojjuda:park-navigate', action });
+    if (action === 'world' || action === 'menu' || action === 'board' || action === 'library' || action === 'admin') {
+      if (hosted) send({ type: 'ojjuda:park-navigate', action, ...(action === 'admin' ? {userId:session.user.id} : {}) });
       else location.assign('/world.html');
     } else if (action === 'glasses') location.assign('/park/glasses.html?embedded=1');
     else if (action === 'compose' || action === 'event-new') void openComposer(action === 'event-new' ? 'event' : 'new');
@@ -205,6 +224,7 @@
     const writing = composerOpen();
     const cardOpen = !detail.hidden;
     const navigation = navigationAction();
+    syncAdminSettings();
     syncSettingsBack();
     const compose = document.querySelector('.write-fab');if(compose&&compose.hidden!==cardOpen)compose.hidden=cardOpen;
     if (open !== previousOverlay || writing !== previousComposer || cardOpen !== previousDetail || navigation !== previousNavigation) {
@@ -300,7 +320,7 @@
   });
 
   window.OjjudaNoteNavigation?.leaveMy();
-  window.OjjudaParkFull = Object.freeze({ embedded: hosted, navigate, navigationAction, returnHome, compose: () => navigate('compose'), back, canLeave, overlayOpen, composerOpen, cardOpen:()=>!detail.hidden,
+  window.OjjudaParkFull = Object.freeze({ embedded: hosted, navigate, navigationAction, returnHome, setAdminAccess, compose: () => navigate('compose'), back, canLeave, overlayOpen, composerOpen, cardOpen:()=>!detail.hidden,
     refresh,
     refreshBalance: () => loadWorldBalance(session?.user?.id) });
   reportState();
