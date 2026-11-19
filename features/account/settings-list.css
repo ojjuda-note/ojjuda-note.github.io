@@ -1,0 +1,133 @@
+/* Shared settings layout, based on the Park settings list. */
+.ojjuda-settings {
+  --settings-ink: var(--ink, #293b49);
+  --settings-muted: var(--ink-2, #647480);
+  --settings-line: var(--line, #dce5e9);
+  --settings-surface: var(--surface, #fff);
+  --settings-hover: var(--surface-2, #f5f8f7);
+  --settings-accent: var(--accent-ink, #256348);
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  color: var(--settings-ink);
+  font-family: var(--font-b, var(--sans, system-ui, sans-serif));
+}
+.ojjuda-settings .ojjuda-settings-group { min-width: 0; margin: 0; }
+.ojjuda-settings .ojjuda-settings-heading {
+  margin: 0 0 8px;
+  color: var(--settings-muted);
+  font: 600 12px/1.5 var(--font-b, var(--sans, system-ui, sans-serif));
+  letter-spacing: normal;
+}
+.ojjuda-settings .ojjuda-settings-list {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--settings-line);
+  border-radius: 14px;
+  background: var(--settings-surface);
+}
+.ojjuda-settings .ojjuda-settings-row {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  padding: 11px 14px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--settings-ink);
+  font: 500 14px/1.5 var(--font-b, var(--sans, system-ui, sans-serif));
+  letter-spacing: normal;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.ojjuda-settings .ojjuda-settings-label { min-width: 0; overflow-wrap: anywhere; }
+.ojjuda-settings .ojjuda-settings-arrow {
+  flex: none;
+  margin-left: auto;
+  color: var(--settings-muted);
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1;
+}
+.ojjuda-settings .ojjuda-settings-danger { color: #a64455; }
+.ojjuda-settings .ojjuda-settings-row:focus-visible {
+  position: relative;
+  outline: 2px solid var(--settings-accent);
+  outline-offset: -3px;
+}
+.ojjuda-settings .ojjuda-settings-row:disabled { cursor: wait; opacity: .6; }
+.ojjuda-settings .ojjuda-settings-details {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.ojjuda-settings .ojjuda-settings-list > * + * { border-top: 1px solid var(--settings-line); }
+.ojjuda-settings .ojjuda-settings-details > summary { list-style: none; }
+.ojjuda-settings .ojjuda-settings-details > summary::-webkit-details-marker { display: none; }
+.ojjuda-settings .ojjuda-settings-details[open] > summary .ojjuda-settings-arrow { transform: rotate(90deg); }
+.ojjuda-settings .ojjuda-settings-body {
+  min-width: 0;
+  padding: 4px 14px 16px;
+  border-top: 1px solid var(--settings-line);
+  overflow-wrap: anywhere;
+}
+@media (hover: hover) {
+  .ojjuda-settings .ojjuda-settings-row:hover:not(:disabled) { background: var(--settings-hover); }
+}
+/* The Agit keeps its existing editors and actions inside the shared list. */
+.world-redesign .world-settings-page {
+  display: block;
+  width: 100%;
+  max-width: 750px;
+  margin-inline: auto;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface);
+}
+.world-settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.world-settings-header h2 { margin: 0; color: var(--ink); font-size: 20px; line-height: 1.4; font-weight: 600; }
+.world-settings-close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 400 27px/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+.world-settings-close:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
+.world-settings-page > .ojjuda-settings { padding: 20px; }
+.world-settings-page .ojjuda-settings-body .set { margin: 10px 0 0; padding: 0; border: 0; background: transparent; }
+.world-settings-page .ojjuda-settings-body .set h3 { font-size: 14px; }
+.world-settings-page .ojjuda-settings-label .badge { margin-left: 6px; }
+.world-settings-page .app-store-downloads .ojjuda-settings-label { display: grid; gap: 2px; }
+.world-settings-page .app-store-downloads small { color: var(--ink-2); font-size: 11px; }
+.world-settings-page .app-store-pending { padding-block: 2px; cursor: default; }
+.world-settings-page .app-store-action { display: inline-flex; align-items: center; min-height: 44px; margin-left: auto; padding-block: 0; flex: none; color: var(--accent-ink); font-size: 12px; }
+.world-settings-page .app-store-note { margin: 8px 0 0; color: var(--ink-2); font-size: 11px; }
+@media (max-width: 600px) {
+  .world-settings-header { padding: 12px 14px; }
+  .world-settings-page > .ojjuda-settings { padding: 16px 14px; }
+}

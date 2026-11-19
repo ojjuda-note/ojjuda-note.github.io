@@ -161,13 +161,27 @@ world=world.slice(0,boot)+`
  await page.locator('.bottomnav [data-tab=my]').click();assert.equal(await page.locator('[data-ju-shop-open]').count(),0);
  await page.locator('.my-hub').waitFor();
  assert.equal(await page.evaluate(()=>designFixture.state.tab),'my');
+ assert.equal(await page.locator('.world-settings-header h2').innerText(),'아지트 설정');
+ assert.equal(await page.getByRole('button',{name:'설정 닫기',exact:true}).getAttribute('data-tab'),'hub');
  assert.equal(await page.locator('.bottomnav [aria-current=page]').getAttribute('data-tab'),'my','the Settings click opens and selects Settings');
  assert.equal(await page.locator('[data-my-group=themes],.settings-theme-section,[data-world-theme-settings],[data-act=theme],[data-act=accent]').count(),0,'all manual appearance controls are removed');await fits('mobile settings');
  await page.screenshot({path:path.join(proof,'settings-mobile.png'),fullPage:true});
  await page.locator('[data-my-group=profile] summary').click();await page.locator('#p-bio').fill('바뀌지 않아야 하는 작성 내용');await page.evaluate(()=>OjjudaThemes.sync());assert.equal(await page.locator('#p-bio').inputValue(),'바뀌지 않아야 하는 작성 내용');
  await page.emulateMedia({colorScheme:'dark'});await page.waitForFunction(()=>document.documentElement.dataset.theme==='dark');assert.equal(await page.locator('#p-bio').inputValue(),'바뀌지 않아야 하는 작성 내용','system appearance change preserves the draft');
  await page.emulateMedia({colorScheme:'light'});await page.waitForFunction(()=>!document.documentElement.dataset.theme);assert.equal(await page.locator('#p-bio').inputValue(),'바뀌지 않아야 하는 작성 내용');
- await page.setViewportSize({width:1440,height:1050});await page.evaluate(()=>{document.querySelectorAll('details.my-menu-group').forEach(n=>n.open=false);});await fits('desktop settings');assert.ok(await page.locator('.settings-columns').evaluate(n=>n.clientWidth>850),'settings use the full content width');await page.screenshot({path:path.join(proof,'settings-desktop.png'),fullPage:true});
+ await page.setViewportSize({width:1440,height:1050});await page.evaluate(()=>{document.querySelectorAll('details.my-menu-group').forEach(n=>n.open=false);});await fits('desktop settings');
+ const settingsLayout=await page.locator('.world-settings-page').evaluate(node=>{
+  const {width}=node.getBoundingClientRect();
+  const groups=[...node.querySelectorAll('.ojjuda-settings-group')].map(group=>{const {x,y,width,height}=group.getBoundingClientRect();return{x,y,width,height};});
+  const rowHeights=[...node.querySelectorAll('.ojjuda-settings-row')].map(row=>row.getBoundingClientRect().height);
+  return{width,groups,rowHeights};
+ });
+ assert.ok(settingsLayout.width>=749&&settingsLayout.width<=751,'desktop settings use one readable 750px panel');
+ assert.ok(settingsLayout.groups.every((group,index)=>Math.abs(group.x-settingsLayout.groups[0].x)<=1&&Math.abs(group.width-settingsLayout.groups[0].width)<=1&&(!index||group.y>=settingsLayout.groups[index-1].y+settingsLayout.groups[index-1].height-1)),'desktop setting groups stay aligned in one column');
+ assert.ok(settingsLayout.rowHeights.every(height=>height>=44),'settings rows retain touch-friendly targets');
+ await page.screenshot({path:path.join(proof,'settings-desktop.png'),fullPage:true});
+ await page.getByRole('button',{name:'설정 닫기',exact:true}).click();
+ assert.equal(await page.evaluate(()=>designFixture.state.tab),'hub','the settings close button returns to the Agit');
  // Inspect every theme in the real Arcade, including the dark variant.
  await page.locator('.sidenav [data-tab=arcade]').click();await page.evaluate(()=>{clearInterval(designFixture.state.placeT);designFixture.rank();});
  assert.equal(await page.evaluate(()=>designFixture.state.tab==='place'&&designFixture.state.place?.id==='arcade'),true);
