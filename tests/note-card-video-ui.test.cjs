@@ -177,7 +177,28 @@ test('Park video posters stay light, retain the lower-right circle and play only
     fs.mkdirSync(process.env.PARK_VIDEO_PROOF_DIR, { recursive: true });
     await page.screenshot({ path: path.join(process.env.PARK_VIDEO_PROOF_DIR, 'video-player-390.png') });
   }
+  await page.evaluate(() => {
+    const describe = element => element ? { tag: element.tagName, id: element.id, role: element.getAttribute('role') } : null;
+    window.parkVideoEscape = { before: describe(document.activeElement), events: [] };
+    window.addEventListener('keydown', event => {
+      window.parkVideoEscape.events.push({ key: event.key, code: event.code, trusted: event.isTrusted,
+        target: describe(event.target), activeElement: describe(document.activeElement),
+        defaultPrevented: event.defaultPrevented, composed: event.composed, phase: event.eventPhase });
+    }, { capture: true, once: true });
+  });
   await page.keyboard.press('Escape');
+  try {
+    await box.waitFor({ state: 'hidden', timeout: 2000 });
+  } catch (cause) {
+    const state = await page.evaluate(() => {
+      const describe = element => element ? { tag: element.tagName, id: element.id, role: element.getAttribute('role') } : null;
+      const lightbox = document.querySelector('.note-photo-lightbox');
+      return { hidden: lightbox?.hidden, display: lightbox ? getComputedStyle(lightbox).display : null,
+        activeElement: describe(document.activeElement), fullscreenElement: describe(document.fullscreenElement),
+        documentFocused: document.hasFocus(), before: window.parkVideoEscape.before, events: window.parkVideoEscape.events };
+    });
+    throw new Error(`Escape did not close the video lightbox within 2 seconds: ${JSON.stringify({ ...state, pageErrors: errors })}`, { cause });
+  }
   assert.equal(await box.isVisible(), false);
   assert.deepEqual(await video.evaluate(element => ({ paused: element.paused, src: element.getAttribute('src'), poster: element.getAttribute('poster') })),
     { paused: true, src: null, poster: null });
