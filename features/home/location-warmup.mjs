@@ -1,4 +1,4 @@
-import '../../shared/location/location.js?v=20261119-auto-theme1';
+import '../../shared/location/location.js?v=20261119-kma-current1';
 
 // Prepare a short-lived position on Agit. Member features decide when to save it.
 export function warmLocationOnAgit(db,{surface=window,service=globalThis.OjjudaLocation}={}){
