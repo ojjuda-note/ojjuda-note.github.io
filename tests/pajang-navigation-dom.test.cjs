@@ -140,6 +140,8 @@ test('individual radar markers preserve person selection through popup Back and 
   await f.until(()=>markers().length===3);
   assert.deepEqual(markers().map(node=>node.querySelector('.scope-person-name').textContent).sort(),['도','라','소']);
   assert.equal(w.document.querySelectorAll('.scope-person.scope-same-cell').length,2);
+  assert.equal(w.document.querySelectorAll('.scope-person.scope-same-cell .scope-person-dot').length,2);
+  assert.ok(markers().filter(node=>node.classList.contains('scope-same-cell')).every(node=>node.querySelector('.scope-person-name').hidden),'crowded same-cell dots retain their full accessible names while hiding initials');
   assert.equal(w.document.querySelectorAll('.radar-links line').length,1,'same-cell markers never receive an invented bearing');
   await select('소담');
   const positions=markers().map(node=>[node.style.left,node.style.top]);

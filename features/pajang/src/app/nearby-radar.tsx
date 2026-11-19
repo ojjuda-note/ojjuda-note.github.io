@@ -120,12 +120,13 @@ export default function NearbyRadar({station,sample,autoLocation,onLocationChang
             </g>)}
           </svg>
           <span className="scope-self">나</span>
-          {markers.map(({person:p,x,y,anchor})=>{
+          {markers.map(({person:p,x,y,anchor,compact})=>{
             const label=p.name+", "+bearingLabel(p)+", "+rangeNames[p.range];
             const picked=p.id===person?.id;
-            return <button key={p.id} type="button" className={"scope-person"+(!anchor?" scope-same-cell":"")+(picked?" picked":"")} style={{left:x+"%",top:y+"%"}}
+            return <button key={p.id} type="button" className={"scope-person"+(!anchor?" scope-same-cell":"")+(compact?" scope-person-compact":"")+(picked?" picked":"")} style={{left:x+"%",top:y+"%"}}
               aria-label={label+", 답변 보기"} aria-pressed={picked} onClick={()=>setSelected(p.id)}>
-              <span className="scope-person-name" aria-hidden="true">{Array.from(p.name.trim())[0]}</span>
+              <span className="scope-person-name" aria-hidden="true" hidden={compact}>{Array.from(p.name.trim())[0]}</span>
+              {compact&&<span className="scope-person-dot" aria-hidden="true"/>}
             </button>;
           })}
 
