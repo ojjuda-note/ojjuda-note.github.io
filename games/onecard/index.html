@@ -11,13 +11,13 @@
   <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
   <link rel="stylesheet" href="/features/arcade/arcade-rooms.css?v=20261114-drinks-hub1">
   <link rel="stylesheet" href="/shared/games/game-results.css?v=20261120-onecard7">
-  <link rel="stylesheet" href="./style.css?v=20261120-onecard8">
+  <link rel="stylesheet" href="./style.css?v=20261120-onecard10">
   <link rel="preload" as="image" href="./campsite-pastel.webp?v=20261120-onecard8" media="(min-width: 521px), (max-height: 560px)">
   <link rel="preload" as="image" href="./campsite-pastel-portrait.webp?v=20261120-onecard8" media="(max-width: 520px) and (min-height: 561px)">
   <script defer src="/config.js"></script>
   <script defer src="/shared/games/game-entry.js?v=20261107-observer-guard1"></script>
   <script defer src="/features/arcade/arcade-rooms.js?v=20261120-onecard7"></script>
-  <script type="module" src="./app.mjs?v=20261120-onecard9"></script>
+  <script type="module" src="./app.mjs?v=20261120-onecard10"></script>
 </head>
 <body class="onecard-page" data-mp-entry="true">
 <header class="mp-entry-bar"><a id="entry-arcade-back" class="mp-entry-back arcade-return" href="/world.html?tab=arcade">← 오쭈다 오락실</a><span>오쭈다 오락실</span></header>
@@ -63,9 +63,15 @@
   </header>
   <main class="table" id="game-table" aria-label="캠핑장 원카드 테이블" inert>
     <div class="camp-scene" aria-hidden="true"></div>
+    <div id="direction-orbit" class="direction-orbit" data-direction="clockwise" data-state="idle" aria-hidden="true" hidden>
+      <div class="orbit-track"></div>
+      <span class="orbit-marker"><svg viewBox="0 0 34 16" focusable="false"><path class="orbit-tail" d="M2 8h23"/><path class="orbit-arrow" d="m21 3 7 5-7 5"/></svg></span>
+      <span class="orbit-marker"><svg viewBox="0 0 34 16" focusable="false"><path class="orbit-tail" d="M2 8h23"/><path class="orbit-arrow" d="m21 3 7 5-7 5"/></svg></span>
+      <span class="orbit-marker"><svg viewBox="0 0 34 16" focusable="false"><path class="orbit-tail" d="M2 8h23"/><path class="orbit-arrow" d="m21 3 7 5-7 5"/></svg></span>
+    </div>
     <div id="opponents" class="opponents" aria-label="상대 플레이어"></div>
     <div class="center-piles">
-      <button id="draw-pile" class="pile stock" type="button" aria-label="카드 한 장 받기" disabled><span id="stock-card" class="pile-card"></span><span class="pile-label">가져오기 <b id="deck-count">54</b></span></button>
+      <button id="draw-pile" class="pile stock" type="button" aria-label="카드 한 장 받기" disabled><span id="stock-card" class="pile-card"></span><span class="pile-label">가져오기 <b id="deck-count">22</b></span></button>
       <div class="pile discard"><span id="discard-card" class="pile-card"></span><span class="pile-label">펼친 카드</span></div>
     </div>
     <div class="table-status"><span id="suit-indicator" class="suit-indicator" hidden></span><span id="direction" class="direction" aria-label="진행 방향">시계 방향</span></div>

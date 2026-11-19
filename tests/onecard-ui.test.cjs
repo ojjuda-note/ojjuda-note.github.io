@@ -104,6 +104,31 @@ async function pressCard(page, id) {
 async function stableBoard(page) {
   await page.waitForFunction(() => document.querySelector('#onecard-app').dataset.view === 'playing' && document.querySelectorAll('.flying-card').length === 0);
 }
+async function orbitFrames(page, durationMs) {
+  return page.evaluate(duration => new Promise(resolve => {
+    const root = document.querySelector('#direction-orbit'), marker = root.querySelector('.orbit-marker');
+    const samples = [], start = performance.now();
+    function frame(now) {
+      const bounds = root.getBoundingClientRect(), box = marker.getBoundingClientRect();
+      const x = (box.left + box.right) / 2, y = (box.top + box.bottom) / 2;
+      samples.push({ time: now, x, y, angle: Math.atan2((y - bounds.top - bounds.height / 2) / bounds.height, (x - bounds.left - bounds.width / 2) / bounds.width), direction: root.dataset.direction, state: root.dataset.state });
+      if (now - start >= duration) resolve(samples); else requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }), durationMs);
+}
+const orbitStep = (a, b) => Math.atan2(Math.sin(b.angle - a.angle), Math.cos(b.angle - a.angle));
+function orbitMoves(samples, sign, label) {
+  assert.ok(samples.length >= 4, `${label}: browser produced actual motion frames`);
+  const progress = samples.slice(1).reduce((sum, sample, i) => sum + orbitStep(samples[i], sample), 0);
+  assert.ok(progress * sign > .01, `${label}: marker moves in the displayed direction (${progress})`);
+  return { frames: samples.length, radians: progress };
+}
+function orbitStill(samples, label) {
+  const first = samples[0];
+  assert.ok(samples.length >= 4, `${label}: browser produced several stationary frames`);
+  assert.ok(samples.every(sample => Math.hypot(sample.x - first.x, sample.y - first.y) < .5), `${label}: marker stays still`);
+}
 async function handLayout(page) {
   return page.evaluate(() => {
     const rect = node => { const r = node.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height }; };
@@ -178,7 +203,14 @@ async function oneScreen(page, label, playing = false) {
     const rect = node => { const r = node.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height }; };
     const ids = playing ? ['onecard-app', 'game-table', 'hand-area', 'hand-scroll', 'hand-sort', 'sort-number', 'sort-color', 'game-controls', 'draw-button', 'onecard-button', 'status'] : ['setup', 'entry', 'entry-title', 'solo-mode', 'solo-start', 'online-open', 'entry-rules'];
     const scroller = document.querySelector('#hand-scroll'), style = scroller && getComputedStyle(scroller);
-    return { viewport: { width: innerWidth, height: innerHeight }, document: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight, x: scrollX, y: scrollY }, boxes: Object.fromEntries(ids.map(id => [id, rect(document.getElementById(id))])), hand: [...document.querySelectorAll('#hand .hand-card')].map(rect), overflow: style && { x: style.overflowX, y: style.overflowY, overscroll: style.overscrollBehaviorX } };
+    const orbit = document.querySelector('#direction-orbit');
+    const motion = playing ? { hidden: orbit.hidden, state: orbit.dataset.state, ariaHidden: orbit.getAttribute('aria-hidden'),
+      boxes: [orbit, orbit.querySelector('.orbit-track'), ...orbit.querySelectorAll('.orbit-marker')].map(node => ({ ...rect(node), pointerEvents: getComputedStyle(node).pointerEvents })),
+      controls: ['sort-number', 'sort-color', 'draw-pile', 'draw-button', 'menu-button'].map(id => {
+        const node = document.getElementById(id), box = rect(node), hit = document.elementFromPoint((box.left + box.right) / 2, (box.top + box.bottom) / 2);
+        return { id, reachable: node === hit || node.contains(hit) };
+      }) } : null;
+    return { viewport: { width: innerWidth, height: innerHeight }, document: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight, x: scrollX, y: scrollY }, boxes: Object.fromEntries(ids.map(id => [id, rect(document.getElementById(id))])), hand: [...document.querySelectorAll('#hand .hand-card')].map(rect), overflow: style && { x: style.overflowX, y: style.overflowY, overscroll: style.overscrollBehaviorX }, motion };
   }, { playing });
   assert.ok(report.document.width <= report.viewport.width + 1, `${label}: document must not scroll sideways`);
   assert.ok(report.document.height <= report.viewport.height + 1, `${label}: document must fit one screen`);
@@ -189,6 +221,14 @@ async function oneScreen(page, label, playing = false) {
     assert.ok(box.left >= -1 && box.right <= report.viewport.width + 1 && box.top >= -1 && box.bottom <= report.viewport.height + 1, `${label}: ${id} fits viewport: ${JSON.stringify(box)}`);
   }
   if (playing) {
+    assert.equal(report.motion.hidden, false, `${label}: direction cue is present during play`);
+    assert.equal(report.motion.ariaHidden, 'true', `${label}: decoration does not duplicate accessible direction text`);
+    assert.equal(report.motion.boxes.length, 5, `${label}: track and all three moving markers exist`);
+    for (const box of report.motion.boxes) {
+      assert.equal(box.pointerEvents, 'none', `${label}: orbit never captures touch or mouse input`);
+      assert.ok(box.width > 0 && box.height > 0 && box.left >= -1 && box.top >= -1 && box.right <= report.viewport.width + 1 && box.bottom <= report.viewport.height + 1, `${label}: orbit stays within the screen: ${JSON.stringify(box)}`);
+    }
+    for (const control of report.motion.controls) assert.equal(control.reachable, true, `${label}: ${control.id} remains the actual touch target`);
     const rail = report.boxes['hand-scroll'];
     assert.ok(['auto', 'scroll'].includes(report.overflow.x), `${label}: the hand owns horizontal scrolling`);
     assert.ok(['hidden', 'clip'].includes(report.overflow.y), `${label}: the hand cannot scroll vertically`);
@@ -371,24 +411,56 @@ async function scenario(name, fn) {
   });
 
   await scenario('reverse cards visibly change direction and pass the turn with two survivors', async () => {
-    const saved = setup([['S-Q', 'D-5'], ['H-Q', 'S-6']]);
+    const saved = setup([['S-Q', 'D-5'], ['S-6', 'C-5']]);
     for (const player of saved.state.players.slice(2)) {
       saved.state.deck.push(...player.hand); player.hand = []; player.active = false;
     }
     const page = await pageFor({ width: 390, height: 844, saved, animated: true });
     await resume(page);
+    const clockwise = orbitMoves(await orbitFrames(page, 600), 1, 'initial clockwise orbit');
     assert.match(await page.locator('#hand [data-card="S-Q"]').getAttribute('aria-label'), /방향 바꾸기/);
     assert.equal(await page.locator('#hand [data-card="S-Q"] .card-center > svg.card-action-icon').count(), 1);
+    const recording = orbitFrames(page, 800);
+    await page.waitForTimeout(120); // Retain real pre-click frames in the transition recording.
     await page.locator('#onecard-button').click(); await pressCard(page, 'S-Q');
     await page.waitForFunction(key => {
       const state = JSON.parse(localStorage.getItem(key)).state;
       return state.revision === 1 && state.direction === -1 && state.turn === 1;
     }, STORAGE);
     await stableBoard(page);
+    const frames = await recording;
+    const counterclockwise = orbitMoves(frames.filter(sample => sample.direction === 'counterclockwise'), -1, 'reversed orbit');
+    const transition = frames.findIndex((sample, i) => i && sample.direction !== frames[i - 1].direction);
+    assert.ok(transition > 0, 'the actual card play changes the orbit direction during capture');
+    assert.ok(Math.abs(orbitStep(frames[transition - 1], frames[transition])) < .08, 'reversal keeps the existing position instead of jumping to a new phase');
     assert.match(await page.locator('#direction').textContent(), /반시계/);
     assert.equal(await page.locator('#draw-button').isDisabled(), true);
     await oneScreen(page, 'reverse direction with two survivors', true);
     await snapshot(page, 'reverse-two-survivors'); await page.context().close();
+    return { clockwise, counterclockwise, transitionRadians: orbitStep(frames[transition - 1], frames[transition]) };
+  });
+
+  await scenario('direction orbit pauses in menus and respects live reduced-motion changes', async () => {
+    const page = await pageFor({ width: 390, height: 844, animated: true, saved: setup([['S-Q', 'D-5'], ['H-8', 'C-6']]) });
+    assert.equal(await page.locator('#direction-orbit').isVisible(), false, 'welcome has no active orbit');
+    await resume(page); await page.locator('#menu-button').click();
+    await page.waitForFunction(() => document.querySelector('#direction-orbit').dataset.state === 'paused');
+    orbitStill(await orbitFrames(page, 200), 'open game menu');
+    await page.getByRole('button', { name: '계속하기', exact: true }).click();
+    await page.waitForFunction(() => document.querySelector('#direction-orbit').dataset.state === 'running');
+    orbitMoves(await orbitFrames(page, 200), 1, 'resumed orbit');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.waitForFunction(() => document.querySelector('#direction-orbit').dataset.state === 'reduced');
+    orbitStill(await orbitFrames(page, 200), 'reduced-motion orbit');
+    await page.locator('#sort-color').click(); await page.locator('#onecard-button').click(); await pressCard(page, 'S-Q');
+    await page.waitForFunction(() => document.querySelector('#direction-orbit').dataset.direction === 'counterclockwise');
+    assert.match(await page.locator('#direction').textContent(), /반시계/);
+    orbitStill(await orbitFrames(page, 160), 'reduced motion after reversal');
+    await snapshot(page, 'direction-orbit-reduced');
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.waitForFunction(() => document.querySelector('#direction-orbit').dataset.state === 'running');
+    orbitMoves(await orbitFrames(page, 200), -1, 'motion preference restored after reversal');
+    await page.context().close();
   });
 
   await scenario('matching reverse copies remain independently selectable and both finish in the discard pile', async () => {
@@ -434,6 +506,7 @@ async function scenario(name, fn) {
     await pressCard(page, 'S-3'); await page.locator('#sheet[open]').waitFor();
     assert.match(await page.locator('#sheet-title').textContent(), /승리/);
     assert.equal((await stored(page)).winnerId, 'me');
+    assert.equal(await page.locator('#direction-orbit').isVisible(), false, 'finished games stop showing the orbit');
     assert.equal(await page.locator('#draw-button').isDisabled(), true);
     assert.equal(await page.locator('#sheet.game-result-dialog .game-result-card').count(), 1);
     assert.equal(await page.locator('.result-players > div').count(), 5);
@@ -675,6 +748,23 @@ async function scenario(name, fn) {
     await next.waitForFunction(() => !document.querySelector('#draw-button').disabled);
     assert.equal(await firstPage.locator('#draw-button').isDisabled(), true);
     await snapshot(next, 'online-mobile-turn');
+
+    // Exercise the real five-client delivery path with an actual reverse action.
+    const reverseRoom = (await network.call(ids[0], { action: 'mine' })).room;
+    const reverseGame = engine.createGame({ players: reverseRoom.players.map(p => ({ id: p.id, name: p.name })), seed: 107 });
+    const reverseHands = [['S-Q', 'H-8'], ['D-5', 'C-6'], ['S-3', 'H-3'], ['D-8', 'C-9'], ['H-10', 'C-10']];
+    const reverseUsed = new Set(['S-4', ...reverseHands.flat()]);
+    reverseGame.players.forEach((player, i) => { player.hand = reverseHands[i]; player.calledOne = false; });
+    Object.assign(reverseGame, { deck: engine.makeDeck().filter(id => !reverseUsed.has(id)), discard: ['S-4'], currentSuit: 'S', turn: 0, lastEvents: [] });
+    await network.db.query("update ojjuda_onecard_internal.rooms set state=$2::jsonb,version=version+1,deadline=clock_timestamp()+interval '30 seconds' where id=$1", [reverseRoom.id, JSON.stringify(reverseGame)]);
+    for (const page of pages) await page.waitForFunction(() => document.querySelector('#my-count').textContent === '2장');
+    await host.waitForFunction(() => !document.querySelector('#hand [data-card="S-Q"]')?.disabled);
+    await host.locator('#onecard-button').click(); await pressCard(host, 'S-Q');
+    for (const page of pages) {
+      await page.waitForFunction(() => document.querySelector('#discard-card').dataset.card === 'S-Q' && document.querySelector('#direction-orbit').dataset.direction === 'counterclockwise');
+      assert.match(await page.locator('#direction').textContent(), /반시계/);
+      assert.equal(await page.locator('#direction-orbit').isVisible(), true);
+    }
 
     // Construct a complete, card-conserving near-end game in the isolated SQL fixture.
     // This tests UI rematch/membership, while the independent engine suite tests rules.

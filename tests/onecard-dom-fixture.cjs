@@ -135,6 +135,7 @@ async function screen({ server = null, actor = null, saved = null, animate = fal
   }
   load('cards.mjs', 'createCard,cardLabel', '__cards');
   load('motion.mjs', 'createCardMotion', '__motion');
+  load('orbit.mjs', 'createDirectionOrbit', '__orbit');
   load('hand.mjs', null, '__hand');
   load('online.mjs', 'createOnlineClient,pollDelay', '__onlineModule');
   w.__online = { createOnlineClient(options) { const client = w.__onlineModule.createOnlineClient(options); clients.push(client); return client; } };
@@ -142,7 +143,7 @@ async function screen({ server = null, actor = null, saved = null, animate = fal
     w.eval(fs.readFileSync(path.join(ROOT, file), 'utf8'));
   if (saved) w.localStorage.setItem(STORAGE, JSON.stringify(saved));
   if (sortMode) w.localStorage.setItem('ojjuda-onecard-hand-sort-v1', sortMode);
-  const imports = { engine: '__rules', cards: '__cards', sound: '__audio', motion: '__motion', online: '__online', hand: '__hand' };
+  const imports = { engine: '__rules', cards: '__cards', sound: '__audio', motion: '__motion', orbit: '__orbit', online: '__online', hand: '__hand' };
   const code = fs.readFileSync(path.join(ROOT, 'games/onecard/app.mjs'), 'utf8').replace(/^import \{([^}]+)\} from '\.\/([^/.]+)\.mjs[^']*';/gm, (_, names, file) => `const {${names}}=window.${imports[file]};`);
   w.eval(`(function(){${code}\n})();`);
   const find = selector => w.document.querySelector(selector);

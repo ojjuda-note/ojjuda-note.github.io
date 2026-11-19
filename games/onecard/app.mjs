@@ -4,11 +4,13 @@ import {createOnecardSound} from './sound.mjs?v=20261120-onecard9';
 import {createCardMotion} from './motion.mjs?v=20261120-onecard9';
 import {createOnlineClient} from './online.mjs?v=20261120-onecard9';
 import {sortHand,handLayout,visibleHandRect} from './hand.mjs?v=20261120-onecard9';
+import {createDirectionOrbit} from './orbit.mjs?v=20261120-onecard10';
 
 const $=id=>document.getElementById(id);
 const app=$('onecard-app'),hand=$('hand'),handScroll=$('hand-scroll'),sheet=$('sheet'),sound=createOnecardSound();
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const motion=createCardMotion({layer:$('motion-layer'),createCard,sound,reduced:()=>reduced.matches});
+const orbit=createDirectionOrbit({element:$('direction-orbit'),reduced});
 const SUITS={S:['●','파랑'],H:['◆','빨강'],D:['▲','노랑'],C:['■','초록']};
 const STORAGE='ojjuda-onecard-solo-v1';
 const SORT_STORAGE='ojjuda-onecard-hand-sort-v1';
@@ -49,7 +51,9 @@ function setScreen(name){
   if(name!=='welcome')disposeRooms();
   for(const id of ['game-table','hand-area','game-controls'])$(id).inert=name!=='playing';
   if(name!=='playing'){clearTimeout(botTimer);$('turn-timer').hidden=true;}
+  renderOrbit();
 }
+function renderOrbit(){orbit.update({direction:view?.direction,active:app.dataset.view==='playing'&&view?.status==='playing',paused:sheet.open});}
 function seatPosition(index,total){if(total===1)return 'top';if(total===2)return ['top-left','top-right'][index];if(total===3)return ['left','top','right'][index];return ['left','top-left','top-right','right'][index];}
 function visiblePlayers(){if(!view)return[];const start=view.players.findIndex(p=>p.id===myId()),list=[];for(let i=1;i<view.players.length;i++)list.push(view.players[(Math.max(start,0)+i)%view.players.length]);return list;}
 function renderSeats(){
@@ -147,6 +151,7 @@ function renderControls(){
   renderSort();
   if(!working)announce(hint());
   updateTimer();
+  renderOrbit();
 }
 function rectOf(node){return node?.getBoundingClientRect();}
 function handCardRect(node){return visibleHandRect(rectOf(node),rectOf(handScroll));}
