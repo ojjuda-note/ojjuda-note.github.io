@@ -156,7 +156,7 @@ const family = locator => locator.evaluate(element =>
     await admin.evaluate(() => OjjudaNoteAdmin.refresh());
     await admin.locator('.na-more-actions summary').click();
     await admin.getByRole('button', { name: '꾸미기·사진 지정', exact: true }).click();
-    assert.equal(await admin.getByLabel('글꼴', { exact: true }).inputValue(), 'heart', 'administrator editing recognizes an existing heart card');
+    assert.equal(await admin.getByRole('combobox', { name: '글꼴', exact: true }).inputValue(), 'heart', 'administrator editing recognizes an existing heart card');
     await admin.getByLabel('처리 사유', { exact: false }).fill('하트 글꼴 표시 확인');
     await admin.getByRole('button', { name: '꾸미기·사진 지정 저장', exact: true }).click();
     await admin.waitForFunction(() => adminCalls.some(call => call.name === 'admin_edit_card_visual'));
