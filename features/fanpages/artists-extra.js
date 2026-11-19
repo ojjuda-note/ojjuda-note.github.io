@@ -1790,7 +1790,7 @@
       debut: '2020.08.07', debutWork: 'THE FIRST STEP : CHAPTER ONE', songs: ['BOY', '들어와 (COME TO ME)'],
       concept: '2020년 8월 BOY로 데뷔한 YG의 10인조 그룹. 2026년 NEW WAV와 SHOCK에서 힙합 사운드를 선보였다.',
       official: 'https://ygfamily.com/ko/artists/treasure/profile', youtube: 'https://www.youtube.com/@TREASURE',
-      checkedAt: '2026.11.15',
+      checkedAt: '2026.11.19',
       photo: '240405 트레저 TTA Malaysia 1st Place.jpg', photoLabel: '2024년 단체', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
       morePhotos: [
         commonsPhoto('230428 TREASURE(트레저) Yoshi ICN.jpg', '요시 · 인천공항', '2023', 'K-POPIT 케이팝잇 (TENASIA)', 'CC BY 3.0'),
@@ -1833,16 +1833,16 @@
       ],
       appearances: [
         {
-          "date": "2026-11-15",
-          "title": "SBS 인기가요 출연",
-          "sub": "15:20 KST 방송 예정 · YG 공식 일정 · 개별 무대·사전녹화·방청 안내는 공식 공지 확인",
-          "href": "https://ygfamily.com/ko/artists/treasure/schedule"
-        },
-        {
           "date": "2026-11-20",
           "title": "2026 MAMA AWARDS 출연",
           "sub": "공식 일정 18:00 JST/KST · 일본 교세라 돔 오사카 · 개별 무대 시각은 별도 안내 확인",
           "href": "https://ygfamily.com/ko/artists/treasure/schedule"
+        },
+        {
+          "date": "2026-12-12",
+          "title": "NEW WAV 일본 온라인 팬사인회·Meet & Greet",
+          "sub": "13:00~19:00 JST/KST 예정 · WithLIVE 추첨 당첨자 대상 · 준규 제외 9명 · 새 캠페인 응모 11/20 12:00~11/30 23:59 JST · 기존 DVD/BD 이벤트 응모는 11/19 23:59 마감 · 변경 사항은 공식 공지 확인",
+          "href": "https://shop.ygex.jp/blogs/notice/20261119"
         }
       ],
       schedules: [
@@ -1850,6 +1850,18 @@
         { title: 'YG 공식 공연 안내', sub: 'TREASURE 콘서트·팬콘 공식 안내', href: 'https://www.ygfamily.com/en/artists/treasure/concert' }
       ],
       news: [
+        {
+          "date": "2026.11.19",
+          "tag": "행사",
+          "title": "NEW WAV 일본 온라인 팬사인회·Meet & Greet 추가 응모 안내 · 11/20~11/30",
+          "href": "https://shop.ygex.jp/blogs/notice/20261119"
+        },
+        {
+          "date": "2026.11.18",
+          "tag": "방송·매체",
+          "title": "요시·아사히·하루토, 일본 smart 2027년 2월호 표지 확정 · 12/24 발매 예정",
+          "href": "https://ygex.jp/treasure/news/detail.php?id=1137348"
+        },
         {
           "date": "2026.11.14",
           "tag": "무대",
@@ -1870,6 +1882,16 @@
         }
       ],
       merch: [
+        {
+          "title": "일본 SHOCK 팝업 공식 MD · 유라쿠초·하카타",
+          "sub": "유라쿠초 11/19 미니 슬라이더·포토 참·캔 배지 판매 시작, 11/20 비니 추가 · 하카타 11/21 판매 예정 · 구매 가능 수량은 공식몰·현장 확인",
+          "href": "https://www.avexnet.jp/contents/TRSUR-XXXX-XXXX/goods/1002873"
+        },
+        {
+          "title": "THE STAGE 2026 NEW WAV : LIVE IN JAPAN DVD·Blu-ray",
+          "sub": "2026.11.11 일본 정식 발매 · 9/6 아리아케 아레나 투어 마지막 공연 수록 · 현지 공식 판매처에서 재고·가격 확인",
+          "href": "https://www.ygex.jp/treasure/news/detail.php?id=1136886"
+        },
         {
           "title": "SHOCK 공식 MD 구매 특전 · YG SELECT",
           "sub": "11.12 11:00 KST부터 · 3만원 구매당 미공개 랜덤 셀피 포토카드 1장 · 준비 수량 소진 시 종료 · 남은 수량은 판매처 확인",
