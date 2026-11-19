@@ -8,6 +8,7 @@ const directory = new URL('../supabase/migrations/', import.meta.url);
 const read = name => readFile(new URL(name, directory), 'utf8');
 const migration = await read('20261119033902_pajang_signal_purchase_preparation.sql');
 const activation = await read('20261119034822_pajang_signal_six_packs.sql');
+const anytimePurchase = await read('20261119101015_pajang_signal_purchase_anytime.sql');
 const clock = sql => sql.replaceAll('clock_timestamp()', 'public.signal_test_now()');
 const oldLimit = "       if (select count(*) from pajang_private.signals where src=mine.id and day=today)>=3 then raise exception '오늘 보낼 신호를 모두 사용했어요.';end if;";
 const newLimit = `       if (select count(*) from pajang_private.signals where src=mine.id and day=today)>=3 then
@@ -460,5 +461,130 @@ test('six approved signal packs activate without changing balances, receipts or 
     assert.deepEqual(await snapshot(actor),{coins:139,paid:10,receipts:1,signals:3});
     await login(actor);
     assert.equal((await purchase(actor,approved[4],requestId)).reason,'request_conflict');
+  });
+});
+
+test('prepaid signals can be bought with any free balance while free sends and payment safeguards remain intact', async t => {
+  const {db,value,admin,login,seed,member,wallet,purchase,setTime,publish,signal,free,snapshot}=await fixture(t);
+  await db.exec(activation);
+  const legacy=await seed(500);await free(legacy);
+  const offers=(await wallet()).offers,legacyRequest=randomUUID();
+  const legacyReceipt=await purchase(legacy,offers[1],legacyRequest);
+  const freeLimit="  if (quota->>'freeRemaining')::integer>0 then\n    return quota||jsonb_build_object('ok',false,'reason','free_remaining');\n  end if;";
+  const functions=()=>db.query(`select p.oid::regprocedure::text as signature,
+    pg_get_functiondef(p.oid) as definition,p.proacl,p.prosecdef,p.proconfig,p.proowner
+    from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+    where n.nspname='pajang_private' or (n.nspname='public' and p.proname like 'pajang_%')
+    order by signature`);
+  const privateRelations=()=>db.query(`select oid::regclass::text as relation,relacl,relrowsecurity
+    from pg_class where relnamespace='pajang_private'::regnamespace order by relation`);
+  const data=()=>value(`select jsonb_build_object(
+    'wallets',(select jsonb_agg(to_jsonb(w) order by user_id) from public.user_private w),
+    'balances',(select jsonb_agg(to_jsonb(b) order by user_id) from pajang_private.signal_balances b),
+    'receipts',(select jsonb_agg(to_jsonb(r) order by request_id) from ojjuda_note_internal.spend_requests r),
+    'offers',(select jsonb_agg(to_jsonb(p) order by quantity) from pajang_private.signal_packs p),
+    'signals',(select jsonb_agg(to_jsonb(s) order by src,dst,day) from pajang_private.signals s)) as value`);
+  const before=await admin(async()=>({functions:(await functions()).rows,relations:(await privateRelations()).rows,data:await data()}));
+  await db.exec(clock(anytimePurchase));
+
+  await t.test('the migration only removes the free-purchase gate and preserves ACLs, configuration and all saved data',async()=>{
+    assert.deepEqual((await functions()).rows,before.functions.map(fn=>fn.signature.startsWith('pajang_signal_purchase(')
+      ?{...fn,definition:fn.definition.replace(freeLimit,'')}:fn));
+    assert.deepEqual((await privateRelations()).rows,before.relations);
+    assert.deepEqual(await data(),before.data);
+    await login(legacy);await db.exec('begin read only');
+    try{
+      const replay=await purchase(legacy,offers[1],legacyRequest,true);
+      assert.equal(replay.replayed,true);assert.equal(replay.charged,0);
+      assert.equal(replay.price,legacyReceipt.price);assert.equal(replay.quantity,legacyReceipt.quantity);
+    }finally{await db.exec('rollback');}
+    assert.deepEqual(await admin(data),before.data,'recovering a legacy receipt leaves every saved row unchanged');
+  });
+
+  await t.test('all six packs can be bought with zero, one, two or three free signals without consuming that allowance',async()=>{
+    for(const freeRemaining of [0,1,2,3])for(const offer of offers){
+      const actor=await seed(500);await login(actor);
+      for(let i=0;i<3-freeRemaining;i++)await signal(i);
+      assert.equal((await wallet()).freeRemaining,freeRemaining);
+      const receipt=await purchase(actor,offer);
+      assert.equal(receipt.ok,true,`${offer.id} with ${freeRemaining} free signals`);
+      assert.equal(receipt.quantity,offer.quantity);assert.equal(receipt.charged,offer.price);
+      assert.equal(receipt.revision,offer.revision);assert.equal(receipt.coins,500-offer.price);
+      assert.equal(receipt.freeRemaining,freeRemaining);assert.equal(receipt.paidRemaining,offer.quantity);
+      assert.equal(receipt.remaining,freeRemaining+offer.quantity);
+      assert.equal((await member()).remaining,freeRemaining+offer.quantity);
+      assert.deepEqual(await snapshot(actor),{coins:500-offer.price,paid:offer.quantity,receipts:1,signals:3-freeRemaining});
+    }
+  });
+
+  await t.test('sending consumes free signals first, duplicate sends cost nothing and midnight preserves purchased credits',async()=>{
+    const actor=await seed(500);await login(actor);
+    const requestId=randomUUID();await purchase(actor,offers[1],requestId);
+    for(let i=0;i<3;i++){
+      const sent=await signal(i);
+      assert.equal(sent.freeRemaining,2-i);assert.equal(sent.paidRemaining,3);
+    }
+    assert.equal((await signal(3)).paidRemaining,2);
+    assert.equal((await signal(3)).paidRemaining,2,'a repeated send does not spend another purchased signal');
+    await setTime('2026-11-19T15:00:00Z');await publish('2026-11-20','am');await login(actor);
+    const renewed=await wallet();
+    assert.equal(renewed.freeRemaining,3);assert.equal(renewed.paidRemaining,2);assert.equal(renewed.remaining,5);
+    await db.exec('begin read only');
+    try{
+      const replay=await purchase(actor,offers[1],requestId,true);
+      assert.equal(replay.charged,0);assert.equal(replay.freeRemaining,3);assert.equal(replay.paidRemaining,2);
+    }finally{await db.exec('rollback');}
+    const prepaid=await purchase(actor,offers[0]);
+    assert.equal(prepaid.freeRemaining,3);assert.equal(prepaid.paidRemaining,3);
+    for(let i=4;i<7;i++)assert.equal((await signal(i)).paidRemaining,3);
+    assert.equal((await signal(7)).paidRemaining,2);
+    assert.deepEqual(await snapshot(actor),{coins:462,paid:2,receipts:2,signals:8});
+    await setTime('2026-11-19T01:00:00Z');
+  });
+
+  await t.test('prepaid retries and receipt-only recovery never duplicate a debit or a signal credit',async()=>{
+    const actor=await seed(500);await login(actor);await signal(0);
+    const requestId=randomUUID(),offer=offers[2];
+    const replies=await Promise.all(Array.from({length:4},()=>purchase(actor,offer,requestId)));
+    assert.equal(replies.filter(reply=>!reply.replayed).length,1);
+    assert.equal(replies.reduce((total,reply)=>total+reply.charged,0),offer.price);
+    assert.ok(replies.every(reply=>reply.freeRemaining===2&&reply.paidRemaining===5));
+    await db.exec('begin read only');
+    try{
+      assert.equal((await purchase(actor,offer,requestId,true)).charged,0);
+      assert.equal((await purchase(actor,offer,randomUUID(),true)).reason,'not_found');
+    }finally{await db.exec('rollback');}
+    assert.equal((await purchase(actor,offers[0],requestId)).reason,'request_conflict');
+    assert.deepEqual(await snapshot(actor),{coins:455,paid:5,receipts:1,signals:1});
+  });
+
+  await t.test('having free signals does not bypass price, revision, identity, funds or disabled-offer checks',async()=>{
+    const actor=await seed(500);await login(actor);
+    for(const overrides of [{price:1},{revision:99}])
+      assert.equal((await purchase(actor,offers[1],randomUUID(),false,overrides)).reason,'price_changed');
+    assert.equal((await purchase(actor,offers[1],randomUUID(),false,{expectedUser:randomUUID()})).reason,'account_changed');
+    assert.equal((await purchase(actor,offers[1],randomUUID(),false,{requestId:null})).reason,'invalid');
+    assert.deepEqual(await snapshot(actor),{coins:500,paid:0,receipts:0,signals:0});
+    const low=await seed(9);await login(low);
+    assert.equal((await purchase(low,offers[0])).reason,'coins');
+    assert.deepEqual(await snapshot(low),{coins:9,paid:0,receipts:0,signals:0});
+    await admin(()=>db.exec("update pajang_private.signal_packs set enabled=false where id='signal_1'"));
+    await login(actor);assert.equal((await purchase(actor,offers[0])).reason,'purchase_unavailable');
+    assert.deepEqual(await snapshot(actor),{coins:500,paid:0,receipts:0,signals:0});
+  });
+
+  await t.test('prepaid purchase retains age, membership and role boundaries',async()=>{
+    for(const options of [{anonymous:true},{minor:true},{banned:true},{pendingDeletion:true},{unjoined:true}]){
+      const invalid=await seed(500,options);await login(invalid);
+      await assert.rejects(()=>purchase(invalid,offers[1]),error=>error.code==='42501');
+      assert.deepEqual(await snapshot(invalid),{coins:500,paid:0,receipts:0,signals:0});
+    }
+    const actor=await seed(500);
+    for(const role of ['anon','service_role']){
+      await login(actor,role);await assert.rejects(()=>purchase(actor,offers[1]),error=>error.code==='42501');
+    }
+    await login(null);await assert.rejects(()=>purchase(actor,offers[1]),error=>error.code==='42501');
+    const noWallet=await seed(0,{noWallet:true});await login(noWallet);
+    assert.equal((await purchase(noWallet,offers[1])).reason,'wallet_unavailable');
   });
 });

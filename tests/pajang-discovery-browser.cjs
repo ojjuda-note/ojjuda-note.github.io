@@ -63,6 +63,27 @@ async function checkServiceHeader(page,width) {
 }
 
 async function checkSignalPurchaseLayout(page,dir) {
+  const menu=page.getByRole('navigation',{name:'파장 메뉴'});
+  await page.evaluate(()=>window.setSignalQuota(3));
+  await menu.getByRole('link',{name:'내 파장',exact:true}).click();
+  await page.getByRole('region',{name:'파장 설정',exact:true}).getByRole('button',{name:'신호 구매',exact:true}).click();
+  const prepaid=page.getByRole('dialog',{name:'추가 신호 구매',exact:true});
+  await prepaid.locator('.signal-offers label').nth(5).waitFor();
+  assert.match(await prepaid.locator('.signal-wallet-note').textContent(),/오늘 무료 3개/);
+  assert.equal(await prepaid.locator('button[type="submit"]').isDisabled(),true,'pre-purchasing still requires an explicit pack choice');
+  await prepaid.locator('input[name="signal-pack"][value="signal_3"]').check();
+  await prepaid.locator('button[type="submit"]:enabled').waitFor();
+  assert.equal(await prepaid.locator('button[type="submit"]').textContent(),'28쭈로 신호 3개 구매');
+  for(const width of [320,390]){
+    await page.setViewportSize({width,height:844});
+    assert.ok(await prepaid.evaluate(el=>el.scrollWidth<=el.clientWidth),'pre-purchase offers fit the mobile dialog');
+    await prepaid.screenshot({path:path.join(dir,'signal-purchase-with-free-'+width+'.png'),animations:'disabled'});
+  }
+  assert.equal(await page.evaluate(()=>window.signalPurchaseCalls.length),0,'opening and selecting a pack with free signals never buys automatically');
+  await prepaid.getByRole('button',{name:'닫기',exact:true}).click();await prepaid.waitFor({state:'detached'});
+  await page.getByRole('heading',{name:'내 파장',exact:true}).waitFor();
+  await menu.getByRole('link',{name:'오늘',exact:true}).click();
+  await page.locator('#answers .cardgrid[aria-busy="false"]').waitFor();
   await page.evaluate(()=>window.setSignalQuota(0));
   await page.getByRole('button',{name:'신호 더하기',exact:true}).click();
   const dialog=page.getByRole('dialog',{name:'추가 신호 구매',exact:true});
