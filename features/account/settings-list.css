@@ -57,6 +57,7 @@
   line-height: 1;
 }
 .ojjuda-settings .ojjuda-settings-danger { color: #a64455; }
+:root[data-theme="dark"] .world-settings-page .ojjuda-settings-danger { color: #f2a5ad; }
 .ojjuda-settings .ojjuda-settings-row:focus-visible {
   position: relative;
   outline: 2px solid var(--settings-accent);
