@@ -3,10 +3,15 @@ name: PWA install checks
 on:
   pull_request:
     paths:
-      - 'pwa-install.*'
+      - 'shared/pwa/**'
       - 'sw.js'
       - 'offline.html'
       - 'manifest.webmanifest'
+      - 'park/manifest.webmanifest'
+      - 'features/pajang/manifest.webmanifest'
+      - 'features/pajang/index.html'
+      - 'features/pajang/station.html'
+      - 'park/index.html'
       - 'world.html'
       - 'index.html'
       - 'version.json'
@@ -16,10 +21,15 @@ on:
   push:
     branches: [main]
     paths:
-      - 'pwa-install.*'
+      - 'shared/pwa/**'
       - 'sw.js'
       - 'offline.html'
       - 'manifest.webmanifest'
+      - 'park/manifest.webmanifest'
+      - 'features/pajang/manifest.webmanifest'
+      - 'features/pajang/index.html'
+      - 'features/pajang/station.html'
+      - 'park/index.html'
       - 'world.html'
       - 'index.html'
       - 'version.json'
@@ -40,7 +50,13 @@ jobs:
           persist-credentials: false
           sparse-checkout-cone-mode: false
           sparse-checkout: |
+            /shared/pwa/app-identity.js
             /shared/pwa/pwa-install.js
+            /manifest.webmanifest
+            /park/manifest.webmanifest
+            /features/pajang/manifest.webmanifest
+            /features/pajang/index.html
+            /features/pajang/station.html
             /sw.js
             /offline.html
             /world.html
@@ -55,6 +71,7 @@ jobs:
             /tests/package.json
             /tests/package-lock.json
             /tests/pwa-install.test.cjs
+            /tests/pwa-app-identity.test.cjs
             /tests/pwa-service-worker.test.cjs
             /tests/inline-scripts.test.cjs
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020

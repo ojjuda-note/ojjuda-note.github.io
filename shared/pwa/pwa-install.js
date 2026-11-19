@@ -4,6 +4,11 @@
   if (window.OjjudaPWA) return;
 
   const root = document.documentElement;
+  const app = window.OjjudaAppIdentity || Object.freeze({
+    key: 'agit', name: '오쭈다 아지트', path: '/world.html',
+    icon: '/icon-192.png?v=20261119-illustrated-icons-1',
+    note: '게임과 공원을 이용하려면 인터넷 연결이 필요해요.'
+  });
   const displayMode = window.matchMedia('(display-mode: standalone)');
   const minimalMode = window.matchMedia('(display-mode: minimal-ui)');
   const promoKey = 'ojjuda:pwa:hide-banner';
@@ -58,15 +63,18 @@
     dialog.setAttribute('aria-labelledby', 'pwa-install-title');
     dialog.setAttribute('aria-describedby', 'pwa-install-description');
     dialog.innerHTML = '<button type="button" class="pwa-dialog-close" data-pwa-close aria-label="설치 안내 닫기">×</button>' +
-      '<img class="pwa-app-icon" src="/icon-192.png?v=20261022-agit-logo2" alt="" width="64" height="64">' +
-      '<p class="pwa-eyebrow">오쭈다 아지트</p>' +
+      '<img class="pwa-app-icon" alt="" width="64" height="64">' +
+      '<p class="pwa-eyebrow"></p>' +
       '<h2 id="pwa-install-title"></h2>' +
       '<p id="pwa-install-description"></p>' +
       '<ol class="pwa-install-steps"></ol>' +
-      '<p class="pwa-install-note">게임과 공원을 이용하려면 인터넷 연결이 필요해요.</p>' +
+      '<p class="pwa-install-note"></p>' +
       '<div class="pwa-dialog-actions"><button type="button" class="pwa-copy-button" data-pwa-copy>주소 복사</button>' +
       '<button type="button" class="pwa-confirm-button" data-pwa-close>확인</button></div>' +
       '<p class="pwa-copy-status" role="status" aria-live="polite"></p>';
+    dialog.querySelector('.pwa-app-icon').src = app.icon;
+    dialog.querySelector('.pwa-eyebrow').textContent = app.name;
+    dialog.querySelector('.pwa-install-note').textContent = app.note;
     dialog.addEventListener('close', restoreFocus);
     dialog.addEventListener('click', (event) => {
       if (event.target !== dialog) return;
@@ -85,13 +93,13 @@
     const android = /Android/i.test(agent);
     const inApp = /KAKAOTALK|NAVER|DaumApps|Instagram|FBAN|FBAV|Line\/|; wv\)/i.test(agent);
     if (isStandalone()) return {
-      title: '앱으로 사용 중이에요', description: '지금처럼 홈 화면의 오쭈다 아이콘을 눌러 바로 들어오세요.', steps: []
+      title: '앱으로 사용 중이에요', description: '지금처럼 홈 화면의 ' + app.name + ' 아이콘을 눌러 바로 들어오세요.', steps: []
     };
     if (installed) return {
-      title: '설치가 완료됐어요', description: '휴대폰 홈 화면이나 앱 목록에서 오쭈다 아지트를 열어 주세요.', steps: []
+      title: '설치가 완료됐어요', description: '휴대폰 홈 화면이나 앱 목록에서 ' + app.name + ' 앱을 열어 주세요.', steps: []
     };
     if (requested) return {
-      title: '설치를 요청했어요', description: '설치가 끝나면 홈 화면이나 앱 목록에 오쭈다 아이콘이 생겨요.', steps: []
+      title: '설치를 요청했어요', description: '설치가 끝나면 홈 화면이나 앱 목록에 ' + app.name + ' 아이콘이 생겨요.', steps: []
     };
     if (ios) return {
       title: '홈 화면에 오쭈다 추가하기',
@@ -155,6 +163,8 @@
 
   window.addEventListener('beforeinstallprompt', (event) => {
     if (isStandalone() || installed) return;
+    // Pages without our own install button keep the browser's normal offer.
+    if (!document.querySelector('[data-pwa-install]')) return;
     event.preventDefault();
     deferredPrompt = event;
     requested = false;
@@ -186,7 +196,7 @@
       return;
     }
     // Never copy the current URL: login callbacks may contain private tokens.
-    const address = new URL('/world.html', location.origin).href;
+    const address = new URL(app.path, location.origin).href;
     const status = dialog.querySelector('.pwa-copy-status');
     if (!navigator.clipboard?.writeText) { status.textContent = address; return; }
     navigator.clipboard.writeText(address).then(() => {
