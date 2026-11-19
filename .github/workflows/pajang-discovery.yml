@@ -15,6 +15,8 @@ on:
       - 'supabase/functions/pajang-assets/index.ts'
       - 'ops/publish-pajang-program.py'
       - 'tests/pajang-discovery-browser.cjs'
+      - 'tests/pajang-exchange-profile.test.cjs'
+      - 'tests/pajang-exchange-height.test.mjs'
       - 'tests/test_pajang_program_publish.py'
       - 'supabase/migrations/*pajang*'
       - '.github/workflows/pajang-discovery.yml'
@@ -33,6 +35,8 @@ on:
       - 'tests/park-entry-browser.cjs'
       - 'tests/park-opening.test.cjs'
       - 'tests/pajang-discovery-browser.cjs'
+      - 'tests/pajang-exchange-profile.test.cjs'
+      - 'tests/pajang-exchange-height.test.mjs'
       - 'ops/publish-pajang-program.py'
       - 'tests/test_pajang_program_publish.py'
       - 'tests/pajang-account.test.mjs'
@@ -62,6 +66,7 @@ jobs:
       - run: npm --prefix features/pajang ci --ignore-scripts --no-audit --no-fund
       - run: npm --prefix features/pajang run build
       - run: python -m unittest discover -s tests -p 'test_pajang_program_publish.py'
+      - run: node --test tests/pajang-exchange-profile.test.cjs tests/pajang-exchange-height.test.mjs tests/pajang-private-exchange.test.mjs
       - run: node --test tests/pajang-account.test.mjs tests/pajang-discovery-gender.test.mjs tests/pajang-location.test.mjs tests/shared-location.test.cjs tests/agit-location.test.mjs tests/park-loading.test.cjs tests/park-frame-cache.test.cjs tests/park-opening.test.cjs
       - run: node --test tests/admin-pajang-moderation-db.test.cjs
       - run: node tests/note-composer-settings.test.cjs
