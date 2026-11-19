@@ -6,31 +6,43 @@ const paragraphsOf = part => strings(part?.paragraphs).length
   : strings(String(part?.body || part?.text || '').split(/\n\s*\n/u));
 const textKey = value => value.trim().replace(/\s+/gu, ' ');
 
-// Same questions can share exact paragraphs. Related questions share a menu
-// entry, but retain their own headings and complete explanations.
-const topicGroups = [
-  ...[
-    ['problem-problem-now', 'domains-core-problem'],
-    ['problem-solution', 'domains-problem-solving'],
-    ['problem-possible-outcome', 'domains-possible-results'],
-    ['timeline-past-flow', 'domains-past-influence'],
-    ['timeline-past-achievements', 'domains-past-achievements'],
-    ['timeline-future-change', 'domains-future-changes']
-  ].map(([id, detail]) => ({ id, related: [detail], sameQuestion: true })),
-  ...[
-    ['problem-situation-now', ['timeline-present-luck', 'domains-present-flow'], '지금의 나와 현재 상황'],
-    ['timeline-strengths', ['domains-my-tendencies', 'domains-my-strengths'], '나의 성향과 강점'],
-    ['timeline-past-hardships', ['domains-past-hardships'], '지나온 어려움과 반복되는 문제'],
-    ['timeline-future-hardships', ['domains-cautions-and-risks', 'domains-prepare-for-difficulties'], '조심할 점과 미리 할 준비'],
-    ['domains-study-habits', ['domains-concentration-obstacles'], '공부 습관과 집중'],
-    ['domains-money-attitude', ['domains-spending-habits'], '돈에 대한 태도와 지출 습관'],
-    ['domains-everyday-burdens', ['domains-life-balance'], '생활의 부담과 균형'],
-    ['domains-stress-reactions', ['domains-rest-and-recovery'], '스트레스와 회복'],
-    ['domains-good-fortune', ['domains-unexpected-help'], '기회와 도움'],
-    ['domains-what-i-really-want', ['domains-life-direction'], '내가 원하는 삶의 방향'],
-    ['domains-family-conflict', ['domains-family-role'], '가족 관계와 역할']
-  ].map(([id, related, title]) => ({ id, related, title, sameQuestion: false }))
+// Keep one representative for overlapping topics. Removed topics do not get
+// hidden pages, submenu entries or a second route through the copied reading.
+const representativeTopics = [
+  ['problem-problem-now', ['domains-core-problem']],
+  ['problem-solution', ['domains-problem-solving']],
+  ['problem-possible-outcome', ['domains-possible-results']],
+  ['timeline-past-flow', ['domains-past-influence']],
+  ['timeline-past-achievements', ['domains-past-achievements']],
+  ['timeline-future-change', ['domains-future-changes']],
+  ['problem-situation-now', ['timeline-present-luck', 'domains-present-flow']],
+  ['timeline-strengths', ['domains-my-tendencies', 'domains-my-strengths']],
+  ['timeline-past-hardships', ['domains-past-hardships']],
+  ['timeline-future-hardships', ['domains-cautions-and-risks', 'domains-prepare-for-difficulties']],
+  ['domains-study-habits', ['domains-concentration-obstacles']],
+  ['domains-money-attitude', ['domains-spending-habits']],
+  ['domains-everyday-burdens', ['domains-life-balance']],
+  ['domains-stress-reactions', ['domains-rest-and-recovery']],
+  ['domains-good-fortune', ['domains-unexpected-help']],
+  ['domains-what-i-really-want', ['domains-life-direction']],
+  ['domains-family-conflict', ['domains-family-role']]
 ];
+
+/** One selection policy for the reader and its complete-copy action. */
+export function selectSummaryGroups(summary) {
+  const groups = Array.isArray(summary.groups) && summary.groups.length ? summary.groups
+    : [{ id: 'problem', label: '나의 이야기', sections: summary.sections || [] }];
+  const sourceIds = new Set(groups.flatMap(group => (group.sections || []).map((part, index) => `${group.id}-${part.id || index}`)));
+  const removed = new Set(representativeTopics.filter(([id]) => sourceIds.has(id)).flatMap(([, related]) => related));
+  return groups.map(group => {
+    const sections = (group.sections || []).filter((part, index) => !removed.has(`${group.id}-${part.id || index}`));
+    const selected = { ...group, sections };
+    if (group.categories) selected.categories = group.categories.map(category => ({
+      ...category, count: sections.filter(part => part.categoryId === category.id).length
+    })).filter(category => category.count);
+    return selected;
+  }).filter(group => group.sections.length || group.description || group.detailSections?.length || group.basisParagraphs?.length);
+}
 
 /** Split at sentence/word boundaries, retaining the original characters and order. */
 export function splitReaderParagraphs(paragraphs, maxChars = 240) {
@@ -67,7 +79,7 @@ export function splitReaderParagraphs(paragraphs, maxChars = 240) {
 function chapter(pages, group, part, index, extras = {}) {
   const chapterId = `${group.id}-${part.id || index}`;
   const sources = extras.sources || [{ id: chapterId, part }];
-  const title = extras.title || part.title;
+  const title = part.title;
   const common = {
     chapterId, chapterTitle: extras.chapterTitle || title,
     groupId: group.id, groupLabel: group.label,
@@ -75,30 +87,16 @@ function chapter(pages, group, part, index, extras = {}) {
     kind: extras.kind || 'reading'
   };
   const bodyKeys = sources.flatMap(source => paragraphsOf(source.part).map(textKey));
-  const seenParagraphs = new Set(), seenSummaries = new Set();
+  const seenSummaries = new Set();
   const start = pages.length;
   for (const source of sources) {
     const sourceTitle = source.part.title || title;
-    const pageTitle = extras.keepPerspectives ? sourceTitle : title;
-    const subtitle = [sources.length > 1 && source.part.title !== pageTitle ? source.part.title : '', source.part.subtitle]
-      .filter(Boolean).join(' · ');
-    const page = { ...common, title: pageTitle, sourceId: source.id, sourceTitle, subtitle };
-    const paragraphs = paragraphsOf(source.part).filter(paragraph => {
-      const key = textKey(paragraph);
-      // Only remove whole, identical paragraphs within an explicitly joined topic.
-      // A standalone card reading keeps its original body character for character.
-      if (extras.dedupeParagraphs && seenParagraphs.has(key)) return false;
-      seenParagraphs.add(key);
-      return true;
-    });
-    // A related question can have a summary-only answer. Another question's body
-    // must not erase that viewpoint or its heading.
-    const summaryBodies = extras.keepPerspectives ? paragraphsOf(source.part).map(textKey) : bodyKeys;
-    const sourceSummaries = extras.keepPerspectives ? new Set() : seenSummaries;
+    const page = { ...common, sourceId: source.id, sourceTitle, subtitle: source.part.subtitle || '' };
+    const paragraphs = paragraphsOf(source.part);
     const summaryLines = strings(source.part.summaryLines).filter(line => {
       const key = textKey(line);
-      if (summaryBodies.some(body => body.includes(key)) || sourceSummaries.has(key)) return false;
-      sourceSummaries.add(key);
+      if (bodyKeys.some(body => body.includes(key)) || seenSummaries.has(key)) return false;
+      seenSummaries.add(key);
       return true;
     });
     if (summaryLines.length) pages.push({ ...page, summaryLines, paragraphs: [], kind: 'summary' });
@@ -162,27 +160,14 @@ function personalPages(pages, report) {
 
 export function buildSummaryPages(summary, { cards = [], personalReport = null } = {}) {
   const pages = [], notes = [];
-  const groups = Array.isArray(summary.groups) && summary.groups.length ? summary.groups
-    : [{ id: 'problem', label: '나의 이야기', sections: summary.sections || [] }];
-  const sections = new Map(groups.flatMap(group => (group.sections || []).map((part, index) =>
-    [`${group.id}-${part.id || index}`, part])));
-  const joined = new Map(topicGroups.filter(topic => sections.has(topic.id))
-    .map(topic => ({ ...topic, related: topic.related.filter(id => sections.has(id)) }))
-    .filter(topic => topic.related.length).map(topic => [topic.id, topic]));
-  const joinedDetails = new Set([...joined.values()].flatMap(topic => topic.related));
-  for (const group of groups) {
+  for (const group of selectSummaryGroups(summary)) {
     for (const [index, part] of (group.sections || []).entries()) {
-      const sourceId = `${group.id}-${part.id || index}`;
-      if (joinedDetails.has(sourceId)) continue;
-      const topic = joined.get(sourceId);
-      const sources = topic ? [{ id: sourceId, part }, ...topic.related.map(id => ({ id, part: sections.get(id) }))] : undefined;
       const category = group.categories?.find(item => item.id === part.categoryId);
       const target = category ? { id: `domains:${category.id}`, label: category.label } : group;
       // Chapter IDs remain tied to the source section, even when grouped by category in the menu.
       const start = pages.length;
       chapter(pages, { id: group.id, label: target.label }, part, index,
-        { sources, title: topic?.title, dedupeParagraphs: !!topic?.sameQuestion, keepPerspectives: topic && !topic.sameQuestion,
-          art: group.id === 'cards' ? cards.find(card => card.id === part.cardId) : null });
+        { art: group.id === 'cards' ? cards.find(card => card.id === part.cardId) : null });
       for (let page = start; page < pages.length; page++) pages[page].groupId = target.id;
       if (group.id === 'cards') cardAppendix(notes, part, part.id || `card-${index}`, part.displayName || cards[index]?.name || part.title);
     }

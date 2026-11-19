@@ -1,5 +1,5 @@
 import { listPersonalContexts } from './personal-contexts.js?v=20261114-tarot-first-person1';
-import { buildPersonalReading, personalReadingCopyLines } from './personal-reading.js?v=20261114-tarot-first-person1';
+import { buildPersonalReading, personalReadingCopyLines } from './personal-reading.js?v=20261120-tarot-topics3';
 
 // This view only reinterprets the three already revealed cards. It does not
 // start a purchase, draw a card, change a receipt, or extend its expiry.

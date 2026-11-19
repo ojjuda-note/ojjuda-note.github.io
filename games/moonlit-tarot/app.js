@@ -1,9 +1,9 @@
-import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261114-tarot-first-person1';
+import { DECK, TOPICS, POSITIONS, getReading, getSummary } from './readings.js?v=20261120-tarot-topics3';
 import { TarotFX, TarotAudio } from './fx.js';
 import { TarotPayment, getTarotPrice } from './payment.js?v=20261114-tarot-copy1';
-import { createPersonalReading } from './personal-reading-ui.js?v=20261120-tarot-chapters1';
+import { createPersonalReading } from './personal-reading-ui.js?v=20261120-tarot-topics3';
 import { createReadingReader } from './reading-reader.js?v=20261120-tarot-chapters1';
-import { buildSummaryPages, buildCardPages } from './reading-pages.js?v=20261120-tarot-topics2';
+import { buildSummaryPages, buildCardPages, selectSummaryGroups } from './reading-pages.js?v=20261120-tarot-topics3';
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -62,7 +62,7 @@ function updatePaymentStatus() {
   const preview = billing.adminPreview;
   app.dataset.adminPreview = String(preview);
   $('.tarot-price strong').textContent = preview ? '관리자 모드' : `1회 ${getTarotPrice(state.topic)}쭈`;
-  $('.tarot-price span').textContent = preview ? '쭈 차감 없음 · 기록 미저장' : '세 장의 풀이 · 종합 점괘 · 50가지 주제';
+  $('.tarot-price span').textContent = preview ? '쭈 차감 없음 · 기록 미저장' : '세 장의 풀이 · 종합 점괘 · 분야별 이야기';
   $('#daily-limit-note').textContent = preview ? '횟수 제한 없이 매번 새로운 카드로 시작해요.' : '결제 후 24시간 이용 · 만료 후 재결제';
   $('#help-usage-note').textContent = preview ? '관리자 모드에서는 쭈를 차감하거나 기록을 저장하지 않아요. 일반 이용으로 돌아가려면 아지트에서 관리자 모드를 꺼 주세요.' : '전체 30쭈 · 연애·금전·일과 도전 각 10쭈. 결제 후 24시간 동안 다시 보기는 무료이며, 만료 후에는 다시 결제해요.';
   $('#restart-small span').textContent = preview ? '새 운세 보기' : '다른 주제 고르기';
@@ -646,12 +646,6 @@ function showOverallOracle(summary = getSummary(state.openOrder.map(index => sta
   $('#reading-open').disabled = false;
 }
 
-function summaryGroups(summary) {
-  return Array.isArray(summary.groups) && summary.groups.length
-    ? summary.groups
-    : [{ id: 'problem', label: '문제 해결', sections: summary.sections || [] }];
-}
-
 const SUMMARY_DETAIL_TITLE = '함께 읽는 종합 해석';
 const readerOptions = {
   canRead: () => !expireDisplayedReading(),
@@ -740,14 +734,14 @@ async function copyResult() {
   const summary = getSummary(drawn, state.topic);
   const parts = ['오쭈다 · 달의 마녀 타로', '종합 점괘', $('#result-date').textContent, ''];
   const appendSection = section => {
-    parts.push(section.number ? `${section.number}. ${section.title}` : section.title);
+    parts.push(section.title);
     if (section.subtitle) parts.push(section.subtitle);
     narrativeParagraphs(section.paragraphs, section.body || '').forEach(paragraph => parts.push(paragraph, ''));
   };
   const appendReference = reference => {
     if (reference?.url) parts.push(`${reference.label || '참고 자료'}: ${reference.url}`, '');
   };
-  summaryGroups(summary).forEach(group => {
+  selectSummaryGroups(summary).forEach(group => {
     parts.push(group.label, '');
     if (group.description) parts.push(group.description, '');
     if (group.categories?.length) {

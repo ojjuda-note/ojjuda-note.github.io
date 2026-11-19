@@ -26,7 +26,7 @@ export const READING_CATEGORIES = Object.freeze([
   { id: 'opportunities', label: '행운·도움·주의할 흐름', count: 5 }
 ]);
 
-export const DOMAIN_READING_BASIS = '같은 세 장을 50가지 주제로 풀이한다. 카드의 기본 뜻과 전통 자료는 여러 풀이에서 함께 참고하며, 이해를 돕는 가상 장면과 생활 제안을 담고 있다. 예시는 실제로 겪은 일이나 앞으로 생길 일, 상대의 속마음을 확인한 내용은 아니다.';
+export const DOMAIN_READING_BASIS = '같은 세 장을 여러 생활 주제로 풀이한다. 카드의 기본 뜻과 전통 자료는 여러 풀이에서 함께 참고하며, 이해를 돕는 가상 장면과 생활 제안을 담고 있다. 예시는 실제로 겪은 일이나 앞으로 생길 일, 상대의 속마음을 확인한 내용은 아니다.';
 
 /** Independent of the initially selected topic: each domain has its own prose. */
 export function buildDomainGroup({ cards, readings } = {}) {

@@ -323,51 +323,63 @@ const server = http.createServer((request, response) => {
     const chapterFirst = selectedSource.pages.filter((item,index,pages) => !index || item.chapterId !== pages[index - 1].chapterId);
     assert.deepEqual([...targets].sort(), chapterFirst.map(item => item.id).sort(), 'each distinct topic and appendix has one contents entry');
     assert.equal(await page.locator('#result-context-select option').count(), 4, 'the money reading keeps its three scoped situations');
-    const sharedTopics = [
-      ['problem-problem-now','domains-core-problem'],
-      ['problem-solution','domains-problem-solving'],
-      ['problem-possible-outcome','domains-possible-results'],
-      ['timeline-past-flow','domains-past-influence'],
-      ['timeline-past-achievements','domains-past-achievements'],
-      ['timeline-future-change','domains-future-changes']
-    ];
-    const similarTopics = [
-      ['problem-situation-now',['timeline-present-luck','domains-present-flow'],'지금의 나와 현재 상황'],
-      ['timeline-strengths',['domains-my-tendencies','domains-my-strengths'],'나의 성향과 강점'],
-      ['timeline-past-hardships',['domains-past-hardships'],'지나온 어려움과 반복되는 문제'],
-      ['timeline-future-hardships',['domains-cautions-and-risks','domains-prepare-for-difficulties'],'조심할 점과 미리 할 준비'],
-      ['domains-study-habits',['domains-concentration-obstacles'],'공부 습관과 집중'],
-      ['domains-money-attitude',['domains-spending-habits'],'돈에 대한 태도와 지출 습관'],
-      ['domains-everyday-burdens',['domains-life-balance'],'생활의 부담과 균형'],
-      ['domains-stress-reactions',['domains-rest-and-recovery'],'스트레스와 회복'],
-      ['domains-good-fortune',['domains-unexpected-help'],'기회와 도움'],
-      ['domains-what-i-really-want',['domains-life-direction'],'내가 원하는 삶의 방향'],
-      ['domains-family-conflict',['domains-family-role'],'가족 관계와 역할']
-    ];
-    for (const [canonical,source] of sharedTopics) {
-      const combined = selectedSource.pages.filter(item => item.chapterId === canonical);
-      assert.ok(combined.length && combined.every(item => item.sourceIds?.includes(canonical) && item.sourceIds.includes(source)),
-        'the shared chapter retains both original source identities');
-      assert.equal(combined[0].groupId, canonical.split('-')[0]);
-      assert.ok(!chapterFirst.some(item => item.chapterId === source), 'a repeated topic is not a second contents entry');
+    const omittedReadingIds = new Set([
+      'domains-core-problem','domains-problem-solving','domains-possible-results',
+      'domains-past-influence','domains-past-achievements','domains-future-changes',
+      'timeline-present-luck','domains-present-flow','domains-my-tendencies','domains-my-strengths',
+      'domains-past-hardships','domains-cautions-and-risks','domains-prepare-for-difficulties',
+      'domains-concentration-obstacles','domains-spending-habits','domains-life-balance',
+      'domains-rest-and-recovery','domains-unexpected-help','domains-life-direction','domains-family-role'
+    ]);
+    const retainedGroups = selectedSource.summary.groups.map(group => ({...group,
+      sections:group.sections.filter(part => !omittedReadingIds.has(group.id + '-' + part.id))}));
+    const retainedIds = new Set(retainedGroups.flatMap(group => group.sections.map(part => group.id + '-' + part.id)));
+    assert.equal(retainedIds.size, 45);
+    assert.equal(chapterFirst.filter(item => retainedIds.has(item.chapterId)).length, 45,
+      'all forty-five retained main chapters remain available alongside card-specific references');
+    const compact = value => String(value).replace(/\s/gu,'');
+    const textValues = value => typeof value === 'string' ? [value]
+      : value && typeof value === 'object' ? Object.values(value).flatMap(textValues) : [];
+    function assertRemovedReadingText(text, extraAllowed = []) {
+      const retainedText = compact(textValues({groups:retainedGroups,details:selectedSource.summary.detailSections,
+        ritual:selectedSource.summary.ritual,oneLine:selectedSource.summary.oneLine,extraAllowed}).join('\n'));
+      const retainedTitles = new Set(retainedGroups.flatMap(group => group.sections.map(part => part.title)));
+      const headings = text.split('\n').map(line => line.replace(/^\s*\d+\.\s*/u,'').trim());
+      const actual = compact(text);
+      let uniqueSentences = 0;
+      for (const group of selectedSource.summary.groups) for (const part of group.sections) {
+        const sourceId = group.id + '-' + part.id;
+        if (!omittedReadingIds.has(sourceId)) continue;
+        if (!retainedTitles.has(part.title)) assert.ok(!headings.includes(part.title), 'an omitted title is not displayed or copied');
+        for (const paragraph of [...part.paragraphs,...(part.summaryLines || [])]) {
+          for (const sentence of paragraph.split(/(?<=[.!?])\s+/u).filter(Boolean)) {
+            const candidate = compact(sentence);
+            if (retainedText.includes(candidate)) continue;
+            uniqueSentences++;
+            assert.ok(!actual.includes(candidate), sourceId + ': its unique prose is not displayed or copied');
+          }
+        }
+      }
+      assert.ok(uniqueSentences > 0, 'the removal check includes unique omitted sentences');
     }
     const originals = new Map(selectedSource.summary.groups.flatMap(group => group.sections.map(part => [group.id + '-' + part.id,part])));
-    for (const [canonical,sources,title] of similarTopics) {
-      const combined = selectedSource.pages.filter(item => item.chapterId === canonical);
-      const sourceIds = [canonical,...sources];
-      assert.ok(combined.length && combined.every(item => item.chapterTitle === title
-        && item.sourceIds?.length === sourceIds.length && sourceIds.every((id,index) => item.sourceIds[index] === id)),
-      'the combined chapter keeps its representative title and complete source identities');
-      assert.equal(await page.locator('#result-reader-menu [data-reader-target="' + combined[0].id + '"] .reader-contents-label').textContent(), title);
-      for (const source of sources) assert.ok(!chapterFirst.some(item => item.chapterId === source),
-        'a related source does not repeat as a separate contents entry');
-      for (const source of sourceIds) {
-        const sourcePages = combined.filter(item => item.sourceId === source);
-        const original = originals.get(source);
-        assert.ok(sourcePages.length && sourcePages.every(item => item.sourceTitle === original.title && item.title === original.title
-          && item.subtitle === (original.subtitle || '')), 'each perspective retains its original title and explanation');
+    assert.equal(omittedReadingIds.size, 20);
+    for (const [sourceId,original] of originals) {
+      if (omittedReadingIds.has(sourceId)) {
+        assert.ok(!selectedSource.pages.some(item => item.chapterId === sourceId || item.sourceId === sourceId
+          || item.sourceIds?.includes(sourceId)), 'a removed reading is absent from both chapters and appended sources');
+        continue;
       }
+      const sourcePages = selectedSource.pages.filter(item => item.chapterId === sourceId);
+      assert.ok(sourcePages.length && sourcePages.every(item => item.sourceId === sourceId && item.sourceIds?.length === 1
+        && item.sourceIds[0] === sourceId && item.title === original.title && item.chapterTitle === original.title
+        && item.subtitle === (original.subtitle || '')), 'each retained chapter contains only its original reading');
+      assert.equal(await page.locator('#result-reader-menu [data-reader-target="' + sourcePages[0].id + '"] .reader-contents-label').textContent(), original.title);
+      const text = compact(sourcePages.flatMap(item => [...item.paragraphs,...(item.summaryLines || [])]).join(''));
+      for (const paragraph of original.paragraphs) assert.ok(text.includes(compact(paragraph)), 'every retained paragraph remains complete');
     }
+    assertRemovedReadingText(selectedSource.pages.flatMap(item => [item.title,item.chapterTitle,item.subtitle,
+      ...item.paragraphs,...(item.summaryLines || [])]).filter(Boolean).join('\n'));
     const domainChapters = chapterFirst.filter(item => item.groupId.startsWith('domains:'));
     assert.equal(domainChapters.length, 31);
     assert.equal(new Set(domainChapters.map(item => item.groupId)).size, 9);
@@ -375,44 +387,41 @@ const server = http.createServer((request, response) => {
       groups.filter(group => group.querySelector('[data-reader-target^="domains-"]')).length), 9,
     'only populated domain categories appear in the menu');
     const domainSource = selectedSource.summary.groups.find(group => group.id === 'domains');
-    assert.equal(domainSource.sections.length, 50, 'the original fifty domain readings remain intact');
-    assert.equal(domainSource.categories.length, 10);
-    const mergedDomainIds = new Set([...sharedTopics.map(([,source]) => source),...similarTopics.flatMap(([,sources]) => sources)]
-      .filter(source => source.startsWith('domains-')).map(source => source.slice('domains-'.length)));
-    for (const part of domainSource.sections) {
-      const sourceId = 'domains-' + part.id;
-      assert.ok(selectedSource.pages.some(item => item.chapterId === sourceId || item.sourceIds?.includes(sourceId)),
-        sourceId + ': each domain reading is reachable as a separate or shared chapter');
-    }
+    assert.equal(domainSource.sections.length, 50, 'the raw catalog is unchanged by presentation filtering');
+    assert.equal(domainSource.categories.length, 10, 'the raw category catalog stays unchanged');
     for (const category of domainSource.categories) {
       const chapters = domainChapters.filter(item => item.groupId === 'domains:' + category.id);
-      assert.equal(chapters.length, domainSource.sections.filter(part => part.categoryId === category.id && !mergedDomainIds.has(part.id)).length);
+      assert.equal(chapters.length, domainSource.sections.filter(part => part.categoryId === category.id && !omittedReadingIds.has('domains-' + part.id)).length);
       if (!chapters.length) continue;
       await goToReaderPage(chapters[0], selectedSource.pages);
       await openReaderMenu();
       assert.equal(await page.locator('#result-reader-menu [aria-current="page"]').getAttribute('data-reader-target'), chapters[0].id);
     }
-    const mergedSolution = selectedSource.pages.filter(item => item.chapterId === 'problem-solution');
-    assert.ok(mergedSolution.length > 1, 'the shared solution stays readable across its complete pages');
-    await goToReaderPage(mergedSolution[0], selectedSource.pages);
-    await inspectReaderLayout('shared solution first page');
-    await page.screenshot({path:path.join(artifacts,'tarot-shared-topic-first-mobile.png'),animations:'disabled'});
+    const solution = selectedSource.pages.filter(item => item.chapterId === 'problem-solution');
+    assert.ok(solution.length, 'the retained solution remains readable');
+    await goToReaderPage(solution[0], selectedSource.pages);
+    await inspectReaderLayout('retained solution first page');
+    await page.screenshot({path:path.join(artifacts,'tarot-retained-topic-first-mobile.png'),animations:'disabled'});
+    const nextSolutionPage = selectedSource.pages[selectedSource.pages.findIndex(item => item.id === solution[0].id) + 1];
+    assert.ok(nextSolutionPage, 'the next reading remains available even when the solution fits on one page');
     await page.locator('#result-reader-next').click();
-    await inspectReaderPage(mergedSolution[1]);
-    await inspectReaderLayout('shared solution next page');
-    await page.screenshot({path:path.join(artifacts,'tarot-shared-topic-next-mobile.png'),animations:'disabled'});
-    tarotViews.reader.sharedTopic = {chapterId:'problem-solution',sources:sharedTopics.find(([id]) => id === 'problem-solution'),pages:mergedSolution.length};
+    await inspectReaderPage(nextSolutionPage);
+    await inspectReaderLayout('retained solution next page');
+    await page.screenshot({path:path.join(artifacts,'tarot-retained-topic-next-mobile.png'),animations:'disabled'});
+    tarotViews.reader.retainedTopic = {chapterId:'problem-solution',sources:solution[0].sourceIds,pages:solution.length};
     const strengths = selectedSource.pages.filter(item => item.chapterId === 'timeline-strengths');
-    for (const source of ['domains-my-tendencies','domains-my-strengths']) {
-      const first = strengths.find(item => item.sourceId === source);
-      assert.ok(first, 'both the disposition and strength perspectives remain inside the combined chapter');
-      await goToReaderPage(first, selectedSource.pages);
-      assert.equal(await page.locator('#result-title').textContent(), originals.get(source).title);
-      await inspectReaderLayout('combined strengths ' + source);
-    }
-    await page.screenshot({path:path.join(artifacts,'tarot-similar-topic-source-mobile.png'),animations:'disabled'});
-    tarotViews.reader.similarTopic = {chapterId:'timeline-strengths',sources:strengths[0].sourceIds,
-      pages:strengths.length,visibleSource:'domains-my-strengths'};
+    await goToReaderPage(strengths[0], selectedSource.pages);
+    assert.equal(await page.locator('#result-title').textContent(), originals.get('timeline-strengths').title);
+    await inspectReaderLayout('retained strengths');
+    await page.screenshot({path:path.join(artifacts,'tarot-retained-strengths-mobile.png'),animations:'disabled'});
+    await goToReaderPage(strengths[strengths.length - 1], selectedSource.pages);
+    const following = selectedSource.pages[selectedSource.pages.findIndex(item => item.id === strengths[strengths.length - 1].id) + 1];
+    assert.notEqual(following.chapterId, 'timeline-strengths');
+    assert.equal(await page.locator('#result-reader-next').textContent(), '다음 풀이');
+    await page.locator('#result-reader-next').click();
+    await inspectReaderPage(following);
+    tarotViews.reader.prunedTopic = {chapterId:'timeline-strengths',sources:strengths[0].sourceIds,
+      pages:strengths.length,nextChapter:following.chapterId};
     const firstStory = chapterFirst.find(item => item.groupId === 'problem');
     await goToReaderPage(firstStory, selectedSource.pages);
     await page.locator('#result-reader-body').focus();
@@ -489,8 +498,13 @@ const server = http.createServer((request, response) => {
     const copiedOrder = ['\n카드 소개\n','\n나의 이야기\n','\n과거·현재·미래\n','\n분야별 풀이\n','\n내 상황 · ']
       .map(heading => copiedTarot.indexOf(heading));
     assert.ok(copiedOrder.every((position,index) => position >= 0 && (!index || position > copiedOrder[index - 1])));
-    for (const group of selectedSource.summary.groups) for (const section of group.sections) {
-      for (const paragraph of section.paragraphs) assert.ok(copiedTarot.includes(paragraph), 'copy includes all original paragraphs on unseen pages');
+    for (const group of retainedGroups) for (const section of group.sections) {
+      for (const paragraph of section.paragraphs) assert.ok(copiedTarot.includes(paragraph), 'copy includes every retained paragraph on unseen pages');
+    }
+    assertRemovedReadingText(copiedTarot, currentModel.personalCopy);
+    const copiedTitles = copiedTarot.split('\n').map(line => line.replace(/^\d+\.\s*/u,''));
+    for (const part of retainedGroups.find(group => group.id === 'domains').sections) {
+      assert.equal(copiedTitles.filter(title => title === part.title).length, 1, 'copy includes each retained domain title once');
     }
     for (const source of selectedSource.summary.detailSections) assert.ok(copiedTarot.includes(source.body));
     for (const text of [selectedSource.record.body,selectedSource.record.action]) assert.equal(copiedTarot.split(text).length - 1, 1);
@@ -507,8 +521,8 @@ const server = http.createServer((request, response) => {
     await openReaderMenu();
     assert.equal(await page.locator('#result-context-select').inputValue(), 'money-agreement', 'reopening preserves the chosen situation');
     await page.locator('#result-reader-menu-toggle').click();
-    tarotViews.sourceInterpretation = {record:selectedSource.record.id,completeCopy:true,originalDomainReadings:50,domainChapters:31,
-      domainGroups:9,sharedTopics:6,similarTopics:11,contexts:3,widths:[320,390,750]};
+    tarotViews.sourceInterpretation = {record:selectedSource.record.id,completeRetainedCopy:true,removedReadings:20,
+      domainChapters:31,domainGroups:9,contexts:3,widths:[320,390,750]};
     if (tarotOnly) {
       assert.deepEqual(errors,[]);
       assert.deepEqual(failed,[]);
