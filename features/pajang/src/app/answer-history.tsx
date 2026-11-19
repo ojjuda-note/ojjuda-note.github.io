@@ -158,9 +158,9 @@ function GenderSwitch({value,onChange}:{value:Gender;onChange:(next:Gender)=>voi
 
 type Props = {
   active:boolean; station:Station; revision:number; onProfile:(row:DiscoveryAnswer)=>void;
-  onSignal:(row:DiscoveryAnswer)=>void; onChat:(id:string)=>void; onWrite:()=>void; onBuySignals?:()=>void;
+  onSignal:(row:DiscoveryAnswer)=>void; onChat:(id:string)=>void; onWrite:()=>void; onEdit:(row:DiscoveryAnswer)=>void; onBuySignals?:()=>void;
 };
-export default function AnswerHistory({active,station,revision,onProfile,onSignal,onChat,onWrite,onBuySignals}:Props) {
+export default function AnswerHistory({active,station,revision,onProfile,onSignal,onChat,onWrite,onEdit,onBuySignals}:Props) {
   const [filter,setFilter]=useState("all");
   const [gender,setGender]=useState<Gender>("all");
   const [order,setOrder]=useState<Order>("latest");
@@ -212,6 +212,9 @@ export default function AnswerHistory({active,station,revision,onProfile,onSigna
           </button>
           <p className="quote">{row.body}</p>
           <div className="answer-foot"><div className="answer-intents" aria-label="원하는 인연">{intents.map(intent=><span key={intent.key} className="tag">{intent.shortLabel}</span>)}</div>
+          {row.own&&row.peer===station.me?.id&&<button type="button" className="sendlink" aria-haspopup="dialog" onClick={()=>onEdit(row)}>
+            <span><I n="pencil" s={17}/>답변 수정</span>
+          </button>}
           {!row.own&&<button className={"sendlink "+(sent?"issent":"")} disabled={!matched&&(sent||(station.remaining===0&&!station.purchasingEnabled))}
             onClick={()=>matched?onChat(row.peer):onSignal(row)}>
             <span><I n={matched?"chat":sent?"check":"signal"} s={17}/>{matched?"대화하기":sent?"보낸 신호":received?"신호 수락하기":"신호 보내기"}</span>

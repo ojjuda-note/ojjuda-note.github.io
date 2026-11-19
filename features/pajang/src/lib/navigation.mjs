@@ -40,7 +40,7 @@ export function createStationHistory(win,onRestore,options={}){
   }
   function pop(event){
     const next=read()||{scope,index:0,modal:null,scroll:0};
-    if(!canLeave()&&next.modal!==current.modal){
+    if(next.modal!==current.modal&&!canLeave()){
       // Return to the existing overlay entry while a send is pending. Pushing a
       // replacement would discard Forward and create a second close step.
       event.stopImmediatePropagation?.();traversing=true;returning=true;
