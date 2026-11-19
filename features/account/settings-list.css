@@ -123,11 +123,13 @@
 .world-settings-page .ojjuda-settings-body .set { margin: 10px 0 0; padding: 0; border: 0; background: transparent; }
 .world-settings-page .ojjuda-settings-body .set h3 { font-size: 14px; }
 .world-settings-page .ojjuda-settings-label .badge { margin-left: 6px; }
-.world-settings-page .app-store-downloads .ojjuda-settings-label { display: grid; gap: 2px; }
-.world-settings-page .app-store-downloads small { color: var(--ink-2); font-size: 11px; }
-.world-settings-page .app-store-pending { padding-block: 2px; cursor: default; }
-.world-settings-page .app-store-action { display: inline-flex; align-items: center; min-height: 44px; margin-left: auto; padding-block: 0; flex: none; color: var(--accent-ink); font-size: 12px; }
-.world-settings-page .app-store-note { margin: 8px 0 0; color: var(--ink-2); font-size: 11px; }
+/* The same store entries are available in Agit, Park and Pajang settings. */
+:is(.ojjuda-settings, .park-settings) .app-store-downloads .ojjuda-settings-label { display: grid; gap: 2px; }
+:is(.ojjuda-settings, .park-settings) .app-store-downloads small { color: var(--settings-muted, var(--ink-2)); font-size: 11px; }
+:is(.ojjuda-settings, .park-settings) .app-store-pending { padding-block: 2px; cursor: default; }
+:is(.ojjuda-settings, .park-settings) .app-store-action { display: inline-flex; align-items: center; min-height: 44px; margin-left: auto; padding: 0 10px; border-radius: 9px; flex: none; background: var(--settings-hover, var(--surface-2)); color: var(--settings-accent, var(--accent-ink)); font-size: 12px; font-weight: 700; white-space: nowrap; text-decoration: none; }
+:is(.ojjuda-settings, .park-settings) .app-store-action:focus-visible { outline: 3px solid var(--settings-accent, var(--accent-ink)); outline-offset: 3px; }
+:is(.ojjuda-settings, .park-settings) .app-store-note { margin: 8px 0 0; color: var(--settings-muted, var(--ink-2)); font-size: 11px; line-height: 1.5; word-break: keep-all; }
 @media (max-width: 600px) {
   .world-settings-header { padding: 12px 14px; }
   .world-settings-page > .ojjuda-settings { padding: 16px 14px; }

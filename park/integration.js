@@ -61,6 +61,7 @@
       if (newTab) anchor.rel = 'noopener';
       const arrow = node('span', 'park-settings-arrow', newTab ? '↗' : '›'); arrow.setAttribute('aria-hidden', 'true');
       anchor.append(node('span', '', label), arrow); container.append(anchor);
+      return anchor;
     };
     const home = row(settings, 'world', '아지트 가기', () => navigate('world'), 'park-settings-home');
     home.prepend(icon('home'));
@@ -77,6 +78,25 @@
     row(help, 'support', '문의·의견', () => navigate('support'));
     link(help, 'terms', '이용약관', '/terms.html?from=park', true);
     link(help, 'privacy', '개인정보처리방침', '/privacy.html?from=park', true);
+    const apps = group('앱 다운로드');
+    apps.classList.add('app-store-downloads');
+    const pending = node('div', 'park-settings-row app-store-pending');
+    pending.dataset.storeApp = 'agit';
+    pending.setAttribute('role', 'group');
+    pending.setAttribute('aria-label', '오쭈다 아지트 앱 공개 준비 중');
+    const agitLabel = node('span', 'ojjuda-settings-label', '오쭈다 아지트');
+    agitLabel.append(node('small', '', '앱 공개 준비 중'));
+    const agitLink = node('a', 'app-store-action', '웹으로 열기 ↗');
+    agitLink.href = '/world.html?tab=hub'; agitLink.target = '_top';
+    agitLink.setAttribute('aria-label', '오쭈다 아지트 웹으로 열기');
+    pending.append(agitLabel, agitLink); apps.append(pending);
+    for (const [app, name] of [['pajang', '오쭈다 파장'], ['park', '오쭈다 공원']]) {
+      const storeLink = link(apps, `app-${app}`, name, `https://play.google.com/store/apps/details?id=kr.ojjuda.${app}`, true);
+      storeLink.dataset.storeApp = app;
+      storeLink.rel = 'noopener noreferrer';
+      storeLink.setAttribute('aria-label', `${name} Google Play에서 보기 (새 창)`);
+    }
+    apps.parentElement.append(node('p', 'app-store-note', '스토어 공개 후 설치할 수 있어요.'));
     if (owner) {
       const access = group('계정 관리');
       row(access, 'logout', '로그아웃', showAccountLogout);
