@@ -6,7 +6,7 @@ import {PGlite} from '@electric-sql/pglite';
 
 const directory=new URL('../supabase/migrations/',import.meta.url);
 const read=name=>readFile(new URL(name,directory),'utf8');
-const migration=await read('20261119044520_pajang_edit_answer_history.sql');
+const migration=await read('20261119045325_pajang_edit_answer_history.sql');
 const today='2026-11-19';
 const clock=sql=>sql.replaceAll('clock_timestamp()','public.answer_edit_test_now()');
 

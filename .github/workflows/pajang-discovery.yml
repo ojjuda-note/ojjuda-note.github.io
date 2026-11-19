@@ -40,6 +40,9 @@ on:
       - 'tests/pajang-discovery-browser.cjs'
       - 'tests/window-safe-area-ui.test.cjs'
       - 'tests/pajang-question-suggestion.test.cjs'
+      - 'tests/pajang-answer-edit-browser.cjs'
+      - 'tests/pajang-answer-edit-form.test.cjs'
+      - 'tests/pajang-answer-history-edit-db.test.mjs'
       - 'tests/pajang-profile-preferences-ui.test.cjs'
       - 'tests/pajang-profile-preferences-db.test.cjs'
       - 'tests/pajang-exchange-profile.test.cjs'
@@ -87,6 +90,9 @@ on:
       - 'tests/pajang-discovery-browser.cjs'
       - 'tests/window-safe-area-ui.test.cjs'
       - 'tests/pajang-question-suggestion.test.cjs'
+      - 'tests/pajang-answer-edit-browser.cjs'
+      - 'tests/pajang-answer-edit-form.test.cjs'
+      - 'tests/pajang-answer-history-edit-db.test.mjs'
       - 'tests/pajang-profile-preferences-ui.test.cjs'
       - 'tests/pajang-profile-preferences-db.test.cjs'
       - 'tests/pajang-exchange-profile.test.cjs'
@@ -128,6 +134,8 @@ jobs:
       - run: node --test tests/pajang-account.test.mjs tests/pajang-discovery-gender.test.mjs tests/pajang-location.test.mjs tests/shared-location.test.cjs tests/agit-location.test.mjs tests/park-loading.test.cjs tests/park-frame-cache.test.cjs tests/park-opening.test.cjs
       - run: node --test tests/admin-pajang-moderation-db.test.cjs
       - run: node --test tests/pajang-profile-preferences-db.test.cjs
+      - name: Check past answer edit permissions and form state
+        run: node --test tests/pajang-answer-history-edit-db.test.mjs tests/pajang-answer-edit-form.test.cjs
       - run: node tests/note-composer-settings.test.cjs
       - name: Install Chromium and Korean fonts
         working-directory: tests
@@ -159,6 +167,8 @@ jobs:
         run: git fetch --depth=1 origin 71785aabf407ca239a27b4811e252a962a725717
       - run: node tests/pajang-question-suggestion.test.cjs
       - run: node tests/pajang-profile-preferences-ui.test.cjs
+      - name: Check past answer editing and return navigation
+        run: node tests/pajang-answer-edit-browser.cjs
       - run: node tests/pajang-discovery-browser.cjs
       - run: node tests/park-entry-browser.cjs
       - if: always()
