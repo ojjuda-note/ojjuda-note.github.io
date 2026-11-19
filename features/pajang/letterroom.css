@@ -90,6 +90,16 @@ body {background:var(--bg);color:var(--ink)}
 .rail-near b,.rail-near span {color:var(--sage)}
 .rail-near i {position:absolute;right:-30px;bottom:-49px;z-index:-1;width:135px;aspect-ratio:1;border-radius:50%;opacity:.54;background:repeating-radial-gradient(circle,transparent 0 15px,#c79ca0 16px 17px),conic-gradient(from 300deg,#e3b8b9aa 0deg,transparent 64deg)}
 .mobile-near {display:none}
+.today-actions {display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
+.question-suggest {display:flex;align-items:center;gap:7px;min-width:0;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:22px;background:var(--paper);color:var(--dark);font:650 13px/1.4 var(--sans);text-align:left;word-break:keep-all}
+.question-suggest svg {flex:none}
+.question-suggest:focus-visible {outline:2px solid var(--berry);outline-offset:3px}
+.today-actions .mobile-near {flex:none;min-height:44px;margin:0}
+.today-actions+.today-columns {margin-top:18px}
+.question-suggestion-help {margin:0 0 16px;color:var(--muted);font-size:12px;line-height:1.6}
+.question-suggestion-form textarea {font-size:16px}
+.question-suggestion-form textarea:focus-visible {outline-color:var(--berry)}
+@media(hover:hover){.question-suggest:hover:not(:disabled){background:var(--soft);border-color:#d9b9b8}}
 #answers.feedsection {margin:0;min-width:0}
 #answers .cardgrid {display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
 .answer-group {overflow:hidden;background:var(--paper);border:1px solid var(--line);border-radius:16px}
@@ -198,3 +208,4 @@ body {background:var(--bg);color:var(--ink)}
 
 /* Entry announces the new heading without drawing an input-like focus box. */
 #station main :is(h1,h2)[tabindex="-1"]:focus {outline:none}
+
