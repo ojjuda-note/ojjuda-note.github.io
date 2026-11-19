@@ -53,7 +53,7 @@ const root=path.join(__dirname,'..');
  try{
   controller.sync();await new Promise(r=>setTimeout(r,0));await controller.refresh();
   const choices=[...w.document.querySelector('[data-room-filter]').options].map(o=>o.value);
-  for(const game of ['tank','tour','ttang','janggi','chess','carom4','carom3','pool8','matgo'])assert.ok(choices.includes(game));
+  for(const game of ['onecard','tank','tour','ttang','janggi','chess','carom4','carom3','pool8','matgo'])assert.ok(choices.includes(game));
   assert.equal(w.document.querySelectorAll('.arcade-room-card').length,3);assert.equal(w.document.querySelectorAll('script').length,0);
   for (const card of cards) {
     w.document.querySelector('[data-arcade-action="join"][data-room="'+card.room_no+'"]').click();
@@ -66,6 +66,11 @@ const root=path.join(__dirname,'..');
   controller.openCreate('ttang');form=w.document.getElementById('arcade-room-form');assert.equal(form.elements.capacity.value,'2');await form.onsubmit({preventDefault(){}});
   assert.deepEqual(created.map(r=>r.kind),['tank','tour','ttang']);
   const world=fs.readFileSync(path.join(root,'world.html'),'utf8');
+  const soloMarkup=world.match(/data-arcade-games="solo">([\s\S]*?)<\/div>/)?.[1];
+  const multiMarkup=world.match(/data-arcade-games="multi">([\s\S]*?)<\/div>/)?.[1];
+  assert.ok(soloMarkup&&multiMarkup,'both catalog sections remain present');
+  assert.equal(JSDOM.fragment(soloMarkup).querySelectorAll('[data-v="onecard"]').length,0,'One Card is absent from the solo catalog');
+  assert.equal(JSDOM.fragment(multiMarkup).querySelectorAll('[data-v="onecard"]').length,1,'One Card appears once in the multiplayer catalog');
   const rankSource=world.slice(world.indexOf('function worldRankGames(){'),world.indexOf('function openWorldBoardGame'));
   const registrySource=world.slice(world.indexOf('var _r='),world.indexOf(',Z=360,he=540'))+';';
   w.D={online:true,user:{id:A}};

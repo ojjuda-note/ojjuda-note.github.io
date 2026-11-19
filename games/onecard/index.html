@@ -3,27 +3,62 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#123c34">
-  <meta name="description" content="부드럽게 나눠지는 카드, 조용한 테이블. 컴퓨터와 혼자, 친구와 최대 5명이 함께하는 오쭈다 원카드.">
+  <meta name="theme-color" content="#f6f7f0">
+  <meta name="description" content="네 가지 색의 전용 카드로 즐기는 원카드. 혼자서도 친구와도 항상 5명, 빈자리는 컴퓨터가 채워요.">
   <title>원카드 · 오쭈다 오락실</title>
-  <link rel="icon" href="./cover.svg?v=20261120-onecard1" type="image/svg+xml">
-  <link rel="stylesheet" href="./style.css?v=20261120-onecard1">
+  <link rel="icon" href="./cover.svg?v=20261120-onecard5" type="image/svg+xml">
+  <link rel="stylesheet" href="/shared/games/game-entry.css?v=20261109-unified-multiplayer-ui2">
+  <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
+  <link rel="stylesheet" href="/features/arcade/arcade-rooms.css?v=20261114-drinks-hub1">
+  <link rel="stylesheet" href="/shared/games/game-results.css?v=20261116-yut-destinations">
+  <link rel="stylesheet" href="./style.css?v=20261120-onecard5">
   <script defer src="/config.js"></script>
-  <script type="module" src="./app.mjs?v=20261120-onecard1"></script>
+  <script defer src="/shared/games/game-entry.js?v=20261107-observer-guard1"></script>
+  <script defer src="/features/arcade/arcade-rooms.js?v=20261120-onecard5"></script>
+  <script type="module" src="./app.mjs?v=20261120-onecard5"></script>
 </head>
-<body>
-<div id="onecard-app" class="app" data-view="welcome">
+<body class="onecard-page" data-mp-entry="true">
+<header class="mp-entry-bar"><a id="entry-arcade-back" class="mp-entry-back arcade-return" href="/world.html?tab=arcade">← 오쭈다 오락실</a><span>오쭈다 오락실</span></header>
+<main id="setup">
+  <section id="entry" class="game-entry mp-entry" data-entry-key="onecard" aria-labelledby="entry-title">
+    <div class="entry-heading">
+      <div class="ge-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="14" height="19" rx="2.5"/><path d="M4 6H3v16h13"/><g stroke="none"><circle cx="11.5" cy="8" r="2" fill="#4078b9"/><path d="m17 5.8 2.2 2.2-2.2 2.2L14.8 8Z" fill="#d25a55"/><path d="m11.5 12-2.3 4h4.6Z" fill="#e9b94d"/><rect x="15" y="12" width="4" height="4" rx=".4" fill="#438e72"/></g></svg></div>
+      <span class="ge-kicker">오쭈다 오락실 · 멀티게임</span>
+      <h1 id="entry-title" class="ge-title">원카드</h1>
+      <p class="ge-copy">같은 색이나 숫자를 이어 내세요.</p>
+    </div>
+    <div class="entry-controls">
+      <div class="seg" role="group" aria-label="대결 방식"><button id="solo-mode" type="button" class="on" data-entry-mode="computer" aria-pressed="true">컴퓨터 대전</button><button id="online-open" type="button" data-entry-mode="opponent" aria-pressed="false">온라인 대전</button></div>
+      <div data-entry-panel="computer">
+        <p class="ge-hint">나 + 컴퓨터 4명 · 항상 5명이 즐겨요.</p>
+        <button id="solo-start" class="ge-primary" type="button">혼자 하기</button>
+        <button id="resume-solo" class="ge-secondary" type="button" hidden>이어서 하기</button>
+      </div>
+      <div data-entry-panel="opponent" hidden>
+        <div id="online-room-host"><section class="arcade-rooms" data-arcade-rooms aria-label="원카드 대전방"></section></div>
+        <a id="login-link" class="ge-secondary" href="/?auth=login&amp;next=world" hidden>오쭈다 로그인하기</a>
+        <p id="online-account-note" class="ge-hint" role="status">빈자리는 컴퓨터가 채워요.</p>
+      </div>
+      <button id="entry-rules" class="ge-secondary entry-rules" type="button" aria-haspopup="dialog">게임 방법</button>
+    </div>
+  </section>
+  <section id="lobby" class="game-entry mp-entry" aria-labelledby="lobby-title" hidden>
+    <div class="lobby-heading"><span class="ge-kicker">오쭈다 오락실 · 원카드</span><h2 id="lobby-title" class="ge-title">온라인 대기실</h2><p id="room-title" class="ge-copy"></p></div>
+    <div class="room-code-row"><span class="small-note">방 번호 <strong id="room-code-display"></strong></span><button id="copy-invite" class="ge-secondary" type="button">초대 링크 복사</button></div>
+    <ol id="room-players" class="room-players" aria-label="대전할 5명"></ol>
+    <div class="lobby-controls"><p id="lobby-note" class="ge-hint" role="status">빈자리는 컴퓨터가 채워요.</p><button id="start-room" class="ge-primary" type="button" disabled>게임 시작</button><button id="lobby-back" class="ge-secondary" type="button">방 나가기</button><p id="lobby-error" class="inline-error" role="alert" hidden></p></div>
+  </section>
+</main>
+<div id="onecard-app" class="app" data-view="welcome" hidden>
   <header class="topbar">
     <a id="arcade-back" class="icon-btn back-link" href="/world.html?tab=arcade" aria-label="오락실로 돌아가기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6M8 12h12"/></svg><span>오락실</span></a>
-    <div class="brand"><span class="eyebrow">OJJUDA CARD CLUB</span><h1>원카드</h1></div>
+    <div class="brand"><h1>원카드</h1></div>
     <div class="topbar-actions">
       <button id="sound-toggle" class="icon-btn" type="button" aria-label="효과음 끄기" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m11 5-5 4H3v6h3l5 4V5Zm4 4a5 5 0 0 1 0 6m3-9a9 9 0 0 1 0 12"/></svg></button>
       <button id="menu-button" class="icon-btn" type="button" aria-label="게임 메뉴" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg></button>
     </div>
   </header>
   <main class="table" id="game-table" aria-label="원카드 테이블" inert>
-    <div class="table-line" aria-hidden="true"></div>
-    <div class="table-watermark" aria-hidden="true"><span>ONE CARD</span><small>즐거움이 모이는 자리</small></div>
     <div id="opponents" class="opponents" aria-label="상대 플레이어"></div>
     <div class="center-piles">
       <button id="draw-pile" class="pile stock" type="button" aria-label="카드 한 장 받기" disabled><span id="stock-card" class="pile-card"></span><span class="pile-label">가져오기 <b id="deck-count">54</b></span></button>
@@ -33,9 +68,9 @@
     <div id="turn-timer" class="turn-timer" hidden><span></span></div>
   </main>
   <section id="hand-area" class="hand-area" aria-label="내 카드" inert>
-    <div class="hand-meta"><span class="my-name"><span class="my-dot" aria-hidden="true"></span><b id="my-name">나</b><span id="my-count">7장</span></span><strong id="turn-label">같은 무늬나 숫자를 이어 보세요</strong><span id="hand-pager" class="hand-pager" hidden><button id="previous-cards" class="icon-btn" type="button" aria-label="앞쪽 카드">‹</button><span id="hand-page"></span><button id="next-cards" class="icon-btn" type="button" aria-label="뒤쪽 카드">›</button></span></div>
+    <div class="hand-meta"><span class="my-name"><span class="my-dot" aria-hidden="true"></span><b id="my-name">나</b><span id="my-count">7장</span></span><strong id="turn-label">같은 색이나 숫자를 이어 보세요</strong><span id="hand-pager" class="hand-pager" hidden><button id="previous-cards" class="icon-btn" type="button" aria-label="앞쪽 카드">‹</button><span id="hand-page"></span><button id="next-cards" class="icon-btn" type="button" aria-label="뒤쪽 카드">›</button></span></div>
     <div id="hand" class="hand" role="group" aria-label="내 카드 목록"></div>
-    <p id="status" class="status" role="status" aria-live="polite">같은 무늬나 숫자를 내면 돼요.</p>
+    <p id="status" class="status" role="status" aria-live="polite">같은 색이나 숫자를 내면 돼요.</p>
   </section>
   <footer id="game-controls" class="controls" inert>
     <button id="rules-button" class="icon-btn rules-button" type="button" aria-label="원카드 규칙" aria-haspopup="dialog">?<span>규칙</span></button>
@@ -43,24 +78,6 @@
     <button id="onecard-button" class="btn btn-primary onecard-button" type="button" aria-pressed="false" disabled>원카드!</button>
   </footer>
   <p id="connection" class="connection" role="status" hidden></p>
-  <section id="entry" class="overlay welcome" aria-labelledby="entry-title">
-    <div class="dialog welcome-card">
-      <span class="eyebrow">A LITTLE PLAY, A GOOD TIME</span>
-      <div id="hero-cards" class="hero-cards" aria-hidden="true"></div>
-      <h2 id="entry-title">한 장의 여유,<br>함께하는 즐거움.</h2>
-      <p class="welcome-copy">같은 무늬, 같은 숫자.<br>내 카드를 먼저 내려놓으면 이겨요.</p>
-      <div class="entry-actions"><button id="solo-start" class="btn btn-primary" type="button">혼자 하기 <span>컴퓨터 대전</span></button><button id="online-open" class="btn btn-secondary" type="button">함께 하기 <span>2–5명</span></button></div>
-      <div class="solo-options"><label for="opponent-count">컴퓨터 상대</label><select id="opponent-count" aria-label="컴퓨터 상대 수"><option value="1">1명</option><option value="2">2명</option><option value="3">3명</option><option value="4">4명</option></select><button id="entry-rules" class="text-btn" type="button">게임 방법</button></div>
-      <button id="resume-solo" class="text-btn resume-button" type="button" hidden>하던 게임 이어서</button>
-    </div>
-  </section>
-  <section id="lobby" class="overlay" aria-labelledby="lobby-title" hidden>
-    <div class="dialog lobby-card"><span class="eyebrow">FRIENDS AT THE TABLE</span><h2 id="lobby-title">함께하는 원카드</h2><p class="lobby-caption">방 코드를 나누고, 같은 테이블에 앉아요.</p>
-      <div id="room-entry"><button id="create-room" class="btn btn-primary" type="button">새 방 만들기</button><div class="entry-divider"><span>또는</span></div><form id="join-form"><label for="room-code">초대받은 방 코드</label><div class="join-row"><input id="room-code" name="code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" placeholder="8자리 코드" pattern="[A-Fa-f0-9]{8}" required><button id="join-room" class="btn btn-secondary" type="submit">참여</button></div></form><p class="small-note">멀티는 오쭈다 로그인 후 이용할 수 있어요.</p><a id="login-link" class="btn btn-secondary" href="/?auth=login&amp;next=world" hidden>오쭈다 로그인하기</a></div>
-      <div id="room-waiting" hidden><div class="room-code-row"><div><span class="small-note">우리 방 코드</span><strong id="room-code-display"></strong></div><button id="copy-invite" class="btn btn-secondary" type="button">초대 링크</button></div><ol id="room-players" class="room-players" aria-label="참여한 사람"></ol><p id="lobby-note" class="small-note" role="status"></p><button id="start-room" class="btn btn-primary" type="button" disabled>게임 시작</button></div>
-      <p id="lobby-error" class="inline-error" role="alert" hidden></p><button id="lobby-back" class="text-btn" type="button">돌아가기</button>
-    </div>
-  </section>
 </div>
 <div id="motion-layer" class="motion-layer" aria-hidden="true"></div>
 <dialog id="sheet" class="sheet" aria-labelledby="sheet-title"><div class="sheet-header"><h2 id="sheet-title"></h2><button id="sheet-close" class="icon-btn" type="button" aria-label="닫기">×</button></div><div id="sheet-body" class="sheet-body"></div></dialog>

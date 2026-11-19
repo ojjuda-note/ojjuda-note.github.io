@@ -11,18 +11,22 @@ async function until(fn, label, timeout = 7000) {
 }
 
 /** Browser APIs are mocked; game/app/client/Edge/SQL code stays real. Not a layout/FPS test. */
-async function screen({ server = null, actor = null, saved = null, animate = false, width = 750, height = 750, query = '' } = {}) {
+async function screen({ server = null, actor = null, saved = null, animate = false, width = 750, height = 750, query = '', seatRolls = [.999999] } = {}) {
   const errors = [], virtualConsole = new VirtualConsole();
   virtualConsole.on('jsdomError', error => errors.push(error.message));
   const dom = new JSDOM(fs.readFileSync(path.join(ROOT, 'games/onecard/index.html'), 'utf8'), {
     url: `https://ojjuda.kr/games/onecard/${query}`, runScripts: 'outside-only', pretendToBeVisual: true, virtualConsole,
   });
   const w = dom.window, sounds = [], animations = [], requests = [], responses = [], clients = [];
+  let seatRoll = 0;
+  // App seating uses the browser RNG; the imported rules keep their own real RNG.
+  w.Math.random = () => seatRolls[Math.min(seatRoll++, seatRolls.length - 1)];
   let currentActor = actor, authChange, hidden = false;
   w.structuredClone = structuredClone;
   Object.defineProperty(w.crypto, 'randomUUID', { value: () => crypto.randomUUID() });
   w.matchMedia = () => ({ matches: !animate, addEventListener() {}, removeEventListener() {} });
   w.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
+  w.HTMLElement.prototype.scrollIntoView = function () {};
   Object.defineProperty(w.document, 'hidden', { get: () => hidden });
   Object.defineProperty(w.document, 'visibilityState', { get: () => hidden ? 'hidden' : 'visible' });
   Object.defineProperty(w.document, 'timeline', { value: { currentTime: 1000 } });
@@ -84,13 +88,17 @@ async function screen({ server = null, actor = null, saved = null, animate = fal
     unlock: async () => true, play(kind) { sounds.push(kind); return true; }, stop() {}, dispose() {},
   }) };
   function load(file, names, namespace) {
-    const code = fs.readFileSync(path.join(ROOT, `games/onecard/${file}`), 'utf8').replace(/^export /gm, '');
+    const code = fs.readFileSync(path.join(ROOT, `games/onecard/${file}`), 'utf8')
+      .replace(/^import \{([^}]+)\} from '\.\/engine\.mjs[^']*';/gm, (_, imported) => `const {${imported}}=window.__rules;`)
+      .replace(/^export /gm, '');
     w.eval(`(function(){${code}\nwindow.${namespace}={${names}};})();`);
   }
   load('cards.mjs', 'createCard,cardLabel', '__cards');
   load('motion.mjs', 'createCardMotion', '__motion');
   load('online.mjs', 'createOnlineClient,pollDelay', '__onlineModule');
   w.__online = { createOnlineClient(options) { const client = w.__onlineModule.createOnlineClient(options); clients.push(client); return client; } };
+  for (const file of ['shared/games/game-entry.js', 'features/arcade/arcade-rooms.js'])
+    w.eval(fs.readFileSync(path.join(ROOT, file), 'utf8'));
   if (saved) w.localStorage.setItem(STORAGE, JSON.stringify(saved));
   const imports = { engine: '__rules', cards: '__cards', sound: '__audio', motion: '__motion', online: '__online' };
   const code = fs.readFileSync(path.join(ROOT, 'games/onecard/app.mjs'), 'utf8').replace(/^import \{([^}]+)\} from '\.\/([^/.]+)\.mjs[^']*';/gm, (_, names, file) => `const {${names}}=window.${imports[file]};`);

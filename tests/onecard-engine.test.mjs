@@ -10,6 +10,7 @@ function conserved(state) {
   assert.equal(new Set(cards).size, 54, 'no card is duplicated');
   assert.ok(cards.every(cardId => cardInfo(cardId)), 'every card ID is valid');
   assert.ok(state.status === 'finished' || state.players[state.turn].active, 'turn always points to an active seat');
+  assert.equal(state.direction, 1, 'turn direction always remains clockwise');
 }
 function table(hands, options = {}) {
   const state = createGame({ players: players(hands.length), seed: 77 });
@@ -28,12 +29,12 @@ function move(state, cardId, extras = {}) {
 }
 
 test('54-card deck, valid setup and a visible neutral opening for 2–5 players', () => {
-  assert.equal(ENGINE_VERSION, '1.0.0');
+  assert.equal(ENGINE_VERSION, '1.1.0');
   assert.equal(makeDeck().length, 54);
   assert.equal(new Set(makeDeck()).size, 54);
   assert.equal(cardInfo('X-B').attack, 5);
   assert.equal(cardInfo('X-R').attack, 7);
-  assert.equal(cardInfo('H-10').label, '하트 10');
+  assert.equal(cardInfo('H-10').label, '빨강 8');
   assert.equal(cardInfo('not-a-card'), null);
   for (const count of [2, 3, 4, 5]) {
     const state = createGame({ players: players(count), seed: count });
@@ -49,6 +50,39 @@ test('54-card deck, valid setup and a visible neutral opening for 2–5 players'
   assert.throws(() => createGame({ players: [{ id: 'p0' }, { id: 'p0' }] }), { code: 'PLAYER_ID' });
   assert.throws(() => createGame({ players: players(2), handSize: 27 }), { code: 'HAND_SIZE' });
   assert.throws(() => createGame({ players: players(2), startIndex: 8 }), { code: 'START_INDEX' });
+});
+
+test('all legacy identities expose the dedicated four-color number/action deck', () => {
+  const colors = { S: ['blue', '파랑', '●'], H: ['red', '빨강', '◆'], D: ['yellow', '노랑', '▲'], C: ['green', '초록', '■'] };
+  const numbers = { Q: '1', 3: '2', 4: '3', 5: '4', 6: '5', 8: '6', 9: '7', 10: '8' };
+  const actions = { A: ['attack', '+3', 3], 2: ['attack', '+2', 2], 7: ['change', '색 바꾸기', 0], J: ['skip', '건너뛰기', 0], K: ['again', '한 번 더', 0] };
+  for (const [suit, [color, colorName, symbol]] of Object.entries(colors)) {
+    for (const [rank, displayValue] of Object.entries(numbers)) {
+      const card = cardInfo(`${suit}-${rank}`);
+      assert.equal(card.rank, rank); assert.equal(card.suit, suit);
+      assert.equal(card.color, color); assert.equal(card.colorName, colorName); assert.equal(card.symbol, symbol);
+      assert.equal(card.displayKind, 'number'); assert.equal(card.displayValue, displayValue);
+      assert.equal(card.label, `${colorName} ${displayValue}`); assert.equal(card.attack, 0);
+    }
+    for (const [rank, [kind, value, attack]] of Object.entries(actions)) {
+      const card = cardInfo(`${suit}-${rank}`);
+      assert.equal(card.rank, rank); assert.equal(card.displayKind, kind); assert.equal(card.displayValue, value);
+      assert.equal(card.label, `${colorName} ${value}`); assert.equal(card.attack, attack);
+    }
+  }
+  for (const [id, attack] of [['X-B', 5], ['X-R', 7]]) {
+    const card = cardInfo(id);
+    assert.equal(card.color, 'wild'); assert.equal(card.colorName, '전체색');
+    assert.equal(card.label, `전체색 +${attack}`); assert.equal(card.displayKind, 'attack');
+    assert.equal(card.displayValue, `+${attack}`); assert.equal(card.attack, attack); assert.equal(card.joker, true);
+  }
+  assert.ok(makeDeck().every(id => !/[♠♥♦♣]|스페이드|하트|다이아|클로버|조커|에이스|잭|퀸|킹/.test(cardInfo(id).label)));
+  const state = table([['S-7', 'H-8'], ['D-3', 'C-6']]);
+  assert.throws(() => move(state, 'S-7'), error => error.code === 'SUIT_REQUIRED' && error.message === '다음 색을 골라 주세요.');
+  assert.throws(() => move(state, 'H-8'), error => error.code === 'CARD_NOT_PLAYABLE' && error.message.includes('같은 색'));
+  const next = move(state, 'S-7', { suit: 'D' });
+  assert.equal(next.currentSuit, 'D'); assert.ok(next.lastEvents.some(event => event.type === 'play' && event.suit === 'D'));
+  conserved(next);
 });
 
 test('seeded and injected shuffles are reproducible; supplied random is checked', () => {
@@ -96,25 +130,46 @@ test('attacks stack across suits and are paid once before passing the turn', () 
   conserved(state);
 });
 
-test('J skips, Q reverses and K grants another turn, including two-player rules', () => {
+test('J skips clockwise, Q is ordinary and K grants another turn', () => {
   for (const rank of ['J', 'Q', 'K']) {
     const state = table([[`S-${rank}`, 'D-5'], ['C-3', 'H-8']], { top: 'S-4' });
     const next = move(state, `S-${rank}`, { declare: true });
-    assert.equal(next.turn, 0, `two-player ${rank} returns turn to actor`);
-    if (rank === 'Q') assert.equal(next.direction, -1);
+    assert.equal(next.turn, rank === 'Q' ? 1 : 0, `two-player ${rank} follows its current rule`);
+    assert.equal(next.direction, 1);
+    assert.ok(!next.lastEvents.some(event => event.type === 'reverse'));
   }
-  let state = table([['S-Q', 'C-3'], ['S-J', 'C-4'], ['S-K', 'C-5'], ['S-9', 'C-6']]);
+  let state = table([['S-Q', 'C-3'], ['S-J', 'C-4'], ['S-8', 'C-5'], ['S-K', 'C-6'], ['S-9', 'C-7']]);
   state = move(state, 'S-Q', { declare: true });
-  assert.equal(state.turn, 3);
-  state = move(state, 'S-9', { declare: true });
-  assert.equal(state.turn, 2);
-  state = move(state, 'S-K', { declare: true });
-  assert.equal(state.turn, 2);
-  state = applyAction(state, 'p2', { type: 'draw' });
-  assert.equal(state.turn, 1);
+  assert.equal(state.turn, 1, 'Q passes to the immediate clockwise seat');
   state = move(state, 'S-J', { declare: true });
-  assert.equal(state.turn, 3, 'reverse direction skip bypasses p0');
+  assert.equal(state.turn, 3, 'J skips one clockwise seat');
+  state = move(state, 'S-K', { declare: true });
+  assert.equal(state.turn, 3);
+  state = applyAction(state, 'p3', { type: 'draw' });
+  assert.equal(state.turn, 4);
+  state = move(state, 'S-9', { declare: true });
+  assert.equal(state.turn, 0, 'clockwise travel wraps around the five seats');
   conserved(state);
+});
+
+test('older reverse-direction states normalize without changing caller seat order', () => {
+  const ordered = players(5).reverse();
+  const fresh = createGame({ players: ordered, startIndex: 3, seed: 904 });
+  assert.deepEqual(fresh.players.map(player => player.id), ordered.map(player => player.id));
+  assert.equal(fresh.turn, 3, 'only the caller chooses shuffled seats and starter');
+  const state = table([['S-Q', 'H-8'], ['C-3', 'D-5'], ['S-9', 'C-6']], { direction: -1 });
+  state.lastEvents = [{ id: '0:0', type: 'reverse', playerId: 'p0', direction: -1 }];
+  const view = projectState(state, 'p0');
+  assert.equal(view.direction, 1);
+  assert.equal(view.lastEvents.length, 0, 'old reversal events are not shown as a current rule');
+  const next = move(state, 'S-Q', { declare: true });
+  assert.equal(state.direction, -1, 'normalization does not mutate the supplied save');
+  assert.equal(next.turn, 1);
+  assert.equal(next.engineVersion, ENGINE_VERSION);
+  conserved(next);
+  const departure = removePlayer(state, 'p0');
+  assert.equal(departure.turn, 1);
+  conserved(departure);
 });
 
 test('one-card can be armed or called promptly; missed calls draw two without changing turn', () => {

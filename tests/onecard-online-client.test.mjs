@@ -58,6 +58,19 @@ test('closing invalidates a pending response without reviving the table', async 
   assert.deepEqual(seen, []);
 });
 
+test('new online rooms always request five seats, including legacy smaller options', async () => {
+  const calls = [];
+  const client = createOnlineClient({ invoke: async body => {
+    calls.push(body); return data(body.action === 'mine' ? null : { ...waiting(), capacity: 5 });
+  } });
+  try {
+    await client.enter();
+    assert.equal(await client.create(2), true);
+    assert.deepEqual(calls.find(body => body.action === 'create').options, { capacity: 5 });
+    assert.equal(client.room.capacity, 5);
+  } finally { client.close(); }
+});
+
 test('switching accounts during a request never displays the old account hand', async () => {
   const previous = globalThis.OjjudaGetClient, pending = deferred(), invoked = deferred(), seen = [];
   let notifyAuth, session = { user: { id: 'user-a' }, access_token: 'a' };

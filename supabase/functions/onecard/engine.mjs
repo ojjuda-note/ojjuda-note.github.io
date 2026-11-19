@@ -1,25 +1,31 @@
 /**
  * Ojjuda One Card — dependency-free rules shared by the browser and server.
  *
- * Cards are immutable IDs: S-A ... C-K, X-B (black joker), X-R (red joker).
+ * Cards retain immutable legacy IDs S-A ... C-K, X-B and X-R for saved games.
+ * Display metadata presents a dedicated four-color number/action deck.
  * Full state is private. Only projectState() may leave the authoritative server.
  * House rules are deliberately small: attacks may stack on any attack; a normal
- * draw ends the turn; 7/jokers choose a suit; J skips, Q reverses and K repeats.
+ * draw ends the turn; 7/jokers choose a suit; J skips and K repeats. Q is an
+ * ordinary card. Every turn travels clockwise, including restored older games.
  */
-export const ENGINE_VERSION = '1.0.0';
+export const ENGINE_VERSION = '1.1.0';
 export const MAX_HAND_SIZE = 20;
 export const SUITS = Object.freeze(['S', 'H', 'D', 'C']);
 export const RANKS = Object.freeze(['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']);
-export const SUIT_NAMES = Object.freeze({ S: '스페이드', H: '하트', D: '다이아', C: '클로버' });
-const SYMBOLS = Object.freeze({ S: '♠', H: '♥', D: '♦', C: '♣' });
+export const SUIT_NAMES = Object.freeze({ S: '파랑', H: '빨강', D: '노랑', C: '초록' });
+const SYMBOLS = Object.freeze({ S: '●', H: '◆', D: '▲', C: '■' });
+const COLORS = Object.freeze({ S: 'blue', H: 'red', D: 'yellow', C: 'green' });
+const NUMBERS = Object.freeze({ Q: '1', 3: '2', 4: '3', 5: '4', 6: '5', 8: '6', 9: '7', 10: '8' });
+const ACTIONS = Object.freeze({ A: ['attack', '+3'], 2: ['attack', '+2'], 7: ['change', '색 바꾸기'], J: ['skip', '건너뛰기'], K: ['again', '한 번 더'] });
 const CARDS = new Map();
 for (const suit of SUITS) for (const rank of RANKS) {
   const id = `${suit}-${rank}`;
-  CARDS.set(id, Object.freeze({ id, suit, rank, symbol: SYMBOLS[suit], label: `${SUIT_NAMES[suit]} ${rank}`, color: suit === 'H' || suit === 'D' ? 'red' : 'black', joker: false, attack: rank === 'A' ? 3 : rank === '2' ? 2 : 0 }));
+  const [displayKind, displayValue] = ACTIONS[rank] || ['number', NUMBERS[rank]];
+  CARDS.set(id, Object.freeze({ id, suit, rank, symbol: SYMBOLS[suit], label: `${SUIT_NAMES[suit]} ${displayValue}`, color: COLORS[suit], colorName: SUIT_NAMES[suit], displayKind, displayValue, joker: false, attack: rank === 'A' ? 3 : rank === '2' ? 2 : 0 }));
 }
-for (const [rank, color, attack, label] of [['B', 'black', 5, '블랙 조커'], ['R', 'red', 7, '레드 조커']]) {
+for (const [rank, attack] of [['B', 5], ['R', 7]]) {
   const id = `X-${rank}`;
-  CARDS.set(id, Object.freeze({ id, suit: 'X', rank, symbol: '✦', label, color, joker: true, attack }));
+  CARDS.set(id, Object.freeze({ id, suit: 'X', rank, symbol: '✦', label: `전체색 +${attack}`, color: 'wild', colorName: '전체색', displayKind: 'attack', displayValue: `+${attack}`, joker: true, attack }));
 }
 
 export class OneCardError extends Error {
@@ -53,7 +59,7 @@ function shuffle(cards, random) {
   return cards;
 }
 function cloneState(state) {
-  return { ...state, players: state.players.map(player => ({ ...player, hand: [...player.hand] })), deck: [...state.deck], discard: [...state.discard], winnerIds: [...(state.winnerIds || [])], lastEvents: [] };
+  return { ...state, engineVersion: ENGINE_VERSION, direction: 1, players: state.players.map(player => ({ ...player, hand: [...player.hand] })), deck: [...state.deck], discard: [...state.discard], winnerIds: [...(state.winnerIds || [])], lastEvents: [] };
 }
 function emit(state, type, data = {}) {
   state.lastEvents.push({ id: `${state.revision}:${state.lastEvents.length}`, type, ...data });
@@ -63,7 +69,7 @@ function nextIndex(state, from, steps = 1) {
   let index = from;
   for (let step = 0; step < steps; step++) {
     for (let checked = 0; checked < state.players.length; checked++) {
-      index = (index + state.direction + state.players.length) % state.players.length;
+      index = (index + 1) % state.players.length;
       if (state.players[index].active) break;
     }
   }
@@ -191,8 +197,8 @@ export function applyAction(state, playerId, action, options = {}) {
   if (action.type === 'play') {
     card = cardInfo(action.cardId);
     if (!card || !player.hand.includes(action.cardId)) fail('CARD_NOT_OWNED', '내 손에 없는 카드예요.');
-    if (!isPlayable(action.cardId, topCard(state), state.currentSuit, state.pendingDraw)) fail('CARD_NOT_PLAYABLE', state.pendingDraw ? '공격 카드로 이어받거나 카드를 가져오세요.' : '같은 무늬나 숫자의 카드를 내세요.');
-    if (isWild(card) && !SUITS.includes(action.suit)) fail('SUIT_REQUIRED', '다음 무늬를 골라 주세요.');
+    if (!isPlayable(action.cardId, topCard(state), state.currentSuit, state.pendingDraw)) fail('CARD_NOT_PLAYABLE', state.pendingDraw ? '공격 카드로 이어받거나 카드를 가져오세요.' : '같은 색, 숫자 또는 기능의 카드를 내세요.');
+    if (isWild(card) && !SUITS.includes(action.suit)) fail('SUIT_REQUIRED', '다음 색을 골라 주세요.');
   }
   const next = cloneState(state); next.revision++; next.turnCount++;
   const random = randomFor(next, options);
@@ -233,10 +239,6 @@ export function applyAction(state, playerId, action, options = {}) {
   } else if (card.rank === 'J') {
     steps = 2;
     emit(next, 'skip', { playerId, skippedPlayerId: next.players[nextIndex(next, next.turn)].id });
-  } else if (card.rank === 'Q') {
-    next.direction *= -1;
-    if (activeIndices(next).length === 2) steps = 0;
-    emit(next, 'reverse', { playerId, direction: next.direction });
   } else if (card.rank === 'K') {
     steps = 0;
     emit(next, 'again', { playerId });
@@ -249,7 +251,7 @@ export function applyAction(state, playerId, action, options = {}) {
 export function removePlayer(state, playerId, options = {}) {
   const player = playerById(state, playerId);
   if (!player) fail('NOT_PLAYER', '참가자를 찾을 수 없어요.');
-  if (!player.active || state.status !== 'playing') return state;
+  if (!player.active || state.status !== 'playing') return state.direction === 1 ? state : { ...state, direction: 1 };
   const next = cloneState(state); next.revision++;
   const actor = playerById(next, playerId);
   emit(next, 'leave', { playerId });
@@ -267,12 +269,12 @@ export function projectState(state, viewerId) {
     viewerId,
     players: state.players.map(player => ({ id: player.id, name: player.name, bot: player.bot, active: player.active, calledOne: player.calledOne, eliminatedReason: player.eliminatedReason || null, handCount: player.hand.length, ...(player.id === viewerId ? { hand: [...player.hand] } : {}) })),
     topCard: topCard(state), deckCount: state.deck.length, discardCount: state.discard.length,
-    currentSuit: state.currentSuit, turn: state.turn, direction: state.direction,
+    currentSuit: state.currentSuit, turn: state.turn, direction: 1,
     pendingDraw: state.pendingDraw, pendingOneId: state.pendingOneId, status: state.status,
     winnerId: state.winnerId, winnerIds: [...state.winnerIds], finishReason: state.finishReason,
     revision: state.revision, turnCount: state.turnCount,
     legalCardIds: legalCards(state, viewerId), canDeclare: canDeclare(state, viewerId),
-    lastEvents: state.lastEvents.map(event => {
+    lastEvents: state.lastEvents.filter(event => event.type !== 'reverse').map(event => {
       const visible = { id: event.id, type: event.type };
       for (const key of ['playerId', 'count', 'requestedCount', 'ordinal', 'reason', 'suit', 'direction', 'skippedPlayerId']) if (event[key] !== undefined) visible[key] = event[key];
       if (Array.isArray(event.playerIds)) visible.playerIds = [...event.playerIds];
@@ -295,7 +297,7 @@ export function chooseBotAction(state, playerId = state.players[state.turn]?.id,
   const score = cardId => {
     const card = cardInfo(cardId), remaining = hand.filter(id => id !== cardId);
     const suitCount = remaining.filter(id => cardInfo(id).suit === card.suit).length;
-    const repeat = card.rank === 'K' || (activeIndices(state).length === 2 && ['J', 'Q'].includes(card.rank));
+    const repeat = card.rank === 'K' || (activeIndices(state).length === 2 && card.rank === 'J');
     let value = suitCount * 5 + (repeat ? 14 : 0) + (card.attack ? (pressure ? 30 : 4) + card.attack : 0);
     if (isWild(card) && hand.length > 2 && !state.pendingDraw) value -= card.joker ? 18 : 9;
     return value;
