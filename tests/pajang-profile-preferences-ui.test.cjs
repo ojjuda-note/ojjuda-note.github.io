@@ -45,6 +45,7 @@ function fixture() {
     const emptyPreferences = ${emptyPreferences.toString()};
     const records = new Map();
     records.set(state.me.id,{person:state.me.id,preferences:emptyPreferences(),version:0});
+    let privateProfile={fields:{drinking:'가끔 마셔요',smoking:'피우지 않아요',bio:'반가워요.'},age:35,gender:'남성',showAge:false,showGender:false};
     for (const row of rows) records.set(row.peer,{
       person:row.peer,version:1,
       preferences:{...emptyPreferences(),relationship_intents:[...row.relationship_intents],custom:{...emptyPreferences().custom,meeting_styles:['별 보며 걷기']}}
@@ -53,6 +54,7 @@ function fixture() {
     let session = {user:{id:'auth-member',is_anonymous:false},access_token:'mock-member-token'};
     const control = window.preferenceFixture = {
       reads:[],saves:[],feeds:[],unexpected:[],readResponses:[],saveResponses:[],pendingReads:[],pendingSaves:[],
+      detailReads:[],detailSaves:[],detailReadResponses:[],detailSaveResponses:[],pendingDetailReads:[],pendingDetailSaves:[],
       emptyFilter:'',pagination:false,deniedFeed:false,historyEvents:0
     };
     window.addEventListener('popstate',()=>control.historyEvents++,true);
@@ -61,8 +63,15 @@ function fixture() {
       for (const listener of listeners) listener(id ? 'SIGNED_IN' : 'SIGNED_OUT',session);
     };
     control.record = () => structuredClone(records.get(state.me.id));
+    control.detail = () => {
+      const record=records.get(state.me.id);
+      return structuredClone({...privateProfile,person:state.me.id,interest:state.me.interest,
+        preferences:record.preferences,preferencesVersion:record.version});
+    };
     control.finishRead = () => control.pendingReads.shift()?.();
     control.finishSave = () => control.pendingSaves.shift()?.();
+    control.finishDetailRead = () => control.pendingDetailReads.shift()?.();
+    control.finishDetailSave = () => control.pendingDetailSaves.shift()?.();
     const error = (code,message) => ({data:null,error:{code,message}});
     function query(run) {
       let promise,signal;
@@ -108,11 +117,37 @@ function fixture() {
           if(mode==='error')return error('XX000','프로필을 저장하지 못했어요. 다시 시도해 주세요.');
           const current=records.get(state.me.id), data=args.p_data;
           if(mode==='conflict'||data.preferencesVersion!==current.version)return error('PT412','다른 화면에서 프로필을 변경했어요. 다시 열어 주세요.');
-          const record={person:state.me.id,preferences:structuredClone(data.preferences),version:current.version+1};
+          const record={person:state.me.id,preferences:{...current.preferences,...structuredClone(data.preferences)},version:current.version+1};
           records.set(state.me.id,record);
-          Object.assign(state.me,{name:data.name||state.me.name,region:data.region,interest:data.interest,
+          Object.assign(state.me,{name:data.name||state.me.name,region:data.region,
             preferences:record.preferences,preferencesVersion:record.version});
+          if(Object.hasOwn(data,'interest'))state.me.interest=data.interest;
           return {data:structuredClone(state),error:null};
+        }
+        if(name==='pajang_profile_details'&&args.p_action==='mine'){
+          control.detailReads.push(structuredClone(args));
+          const mode=control.detailReadResponses.shift() || 'success';
+          const snapshot=control.detail();
+          if(mode==='pending')await new Promise(resolve=>{
+            control.pendingDetailReads.push(resolve);
+            signal?.addEventListener('abort',resolve,{once:true});
+          });
+          if(mode==='error')return error('XX000','교환용 프로필을 불러오지 못했어요.');
+          return {data:snapshot,error:null};
+        }
+        if(name==='pajang_profile_details'&&args.p_action==='save'){
+          control.detailSaves.push(structuredClone(args));
+          const mode=control.detailSaveResponses.shift() || 'success';
+          if(mode==='pending')await new Promise(resolve=>control.pendingDetailSaves.push(resolve));
+          if(mode==='error')return error('XX000','프로필을 저장하지 못했어요. 다시 시도해 주세요.');
+          const current=records.get(state.me.id),data=args.p_data;
+          if(data.profilePerson!==state.me.id)return error('42501','회원 정보를 확인해 주세요.');
+          if(mode==='conflict'||data.preferencesVersion!==current.version)return error('PT412','다른 화면에서 프로필을 변경했어요. 다시 열어 주세요.');
+          const record={person:state.me.id,preferences:{...current.preferences,...structuredClone(data.preferences)},version:current.version+1};
+          records.set(state.me.id,record);
+          privateProfile={...privateProfile,fields:structuredClone(data.fields),showAge:data.showAge,showGender:data.showGender};
+          Object.assign(state.me,{interest:data.interest,preferences:record.preferences,preferencesVersion:record.version});
+          return {data:control.detail(),error:null};
         }
         if(name==='pajang_discovery_feed'){
           control.feeds.push(structuredClone(args));
@@ -142,6 +177,7 @@ async function assertNoOverflow(page,label) {
 }
 
 async function openProfile(page,{ready=true}={}) {
+  await page.waitForFunction(()=>!history.state?.pajangNavigation?.modal);
   await page.getByRole('navigation',{name:'파장 메뉴'}).getByRole('link',{name:'내 파장',exact:true}).click();
   await page.getByRole('button',{name:'공개 프로필 수정',exact:true}).click();
   const dialog=page.getByRole('dialog',{name:'공개 프로필 수정',exact:true});
@@ -158,6 +194,20 @@ async function closeProfile(page,dialog) {
   await dialog.getByRole('button',{name:'닫기',exact:true}).click();
   await dialog.waitFor({state:'hidden'});
   await page.waitForFunction(()=>!history.state?.pajangNavigation?.modal);
+}
+
+async function openDetails(page,{ready=true,fromSummary=false}={}) {
+  await page.waitForFunction(()=>!history.state?.pajangNavigation?.modal);
+  await page.getByRole('navigation',{name:'파장 메뉴'}).getByRole('link',{name:'내 파장',exact:true}).click();
+  await page.getByRole('button',{name:fromSummary?'취향·그림 수정':'교환용 프로필·취향 수정',exact:true}).click();
+  const dialog=page.getByRole('dialog',{name:'교환용 프로필',exact:true});
+  await dialog.waitFor();
+  const save=dialog.getByRole('button',{name:'교환용 프로필 저장',exact:true});
+  if(ready){
+    await save.waitFor();
+    await page.waitForFunction(button=>!button.disabled,await save.elementHandle());
+  }
+  return {dialog,save};
 }
 
 async function openGroup(dialog,label) {
@@ -253,10 +303,7 @@ async function openGroup(dialog,label) {
       await assertNoOverflow(page,'public profile editor at '+width+'px');
       const box=await form.dialog.boundingBox();
       assert.ok(box&&box.x>=-1&&box.x+box.width<=width+1,'profile editor fits '+width+'px');
-      for(const label of groupLabels){
-        const group=form.dialog.locator('details').filter({hasText:label});
-        assert.equal(await group.evaluate(node=>node.open),false,label+' starts collapsed');
-      }
+      assert.equal(await form.dialog.locator('.preference-group').count(),0,'taste groups and artwork are not duplicated in the public editor');
       await form.dialog.screenshot({path:path.join(artifacts,'profile-collapsed-'+width+'.png'),animations:'disabled'});
     }
     const intents=form.dialog.getByRole('group',{name:'원하는 인연',exact:true});
@@ -264,6 +311,40 @@ async function openGroup(dialog,label) {
     await intents.getByRole('button',{name:'대화 상대',exact:true}).click();
     await intents.getByRole('button',{name:'친구',exact:true}).click();
     assert.equal(await intents.getByRole('button',{pressed:true}).count(),2,'multiple relationship intentions are allowed');
+    await form.save.click();
+    await form.dialog.waitFor({state:'hidden'});
+    let saves=await page.evaluate(()=>window.preferenceFixture.saves);
+    assert.equal(saves.length,1,'one public profile save');
+    assert.equal(saves[0].p_setup,false);
+    assert.equal(saves[0].p_data.profilePerson,'11111111-1111-4111-8111-111111111111','save is bound to the profile opened for editing');
+    assert.equal(saves[0].p_data.preferencesVersion,0);
+    assert.deepEqual(saves[0].p_data.preferences,{relationship_intents:['conversation','friendship']});
+    assert.equal(Object.hasOwn(saves[0].p_data,'interest'),false,'public editing does not rewrite artwork');
+
+    // The public summary links directly to the relocated controls, with focus on the taste section.
+    form=await openDetails(page,{fromSummary:true});
+    await page.waitForFunction(()=>document.activeElement?.classList.contains('exchange-tastes'));
+    assert.equal(await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).count(),0,'the detailed editor preserves intentions without offering a second editor');
+    await form.dialog.getByText('선택한 취향과 프로필 그림은 공개 프로필에도 보여요.',{exact:true}).waitFor();
+    const placement=await form.dialog.evaluate(dialog=>{
+      const drinking=[...dialog.querySelectorAll('label')].find(label=>label.textContent.startsWith('음주 여부'));
+      const smoking=[...dialog.querySelectorAll('label')].find(label=>label.textContent.startsWith('흡연 여부'));
+      const tastes=dialog.querySelector('.exchange-tastes'),art=dialog.querySelector('.profile-art-choice'),bio=dialog.querySelector('.exchange-bio');
+      const before=(a,b)=>Boolean(a&&b&&(a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING));
+      return before(drinking,tastes)&&before(smoking,tastes)&&before(tastes,art)&&before(art,bio);
+    });
+    assert.equal(placement,true,'all tastes and artwork are below drinking/smoking and above the introduction');
+    for(const width of [320,390]){
+      await page.setViewportSize({width,height:844});
+      await assertNoOverflow(page,'detailed profile editor at '+width+'px');
+      const box=await form.dialog.boundingBox();
+      assert.ok(box&&box.x>=-1&&box.x+box.width<=width+1,'detailed editor fits '+width+'px');
+      for(const label of groupLabels){
+        const group=form.dialog.locator('details').filter({hasText:label});
+        assert.equal(await group.evaluate(node=>node.open),false,label+' starts collapsed');
+      }
+      await form.dialog.locator('.exchange-tastes').screenshot({path:path.join(artifacts,'detail-profile-collapsed-'+width+'.png'),animations:'disabled'});
+    }
     let meeting=await openGroup(form.dialog,'만남 스타일');
     assert.ok(await meeting.getByRole('button',{pressed:false}).count()>=24,'meeting styles provide broad examples');
     for(const label of ['차분한 대화','유쾌한 수다','고민 나누기'])await meeting.getByRole('button',{name:label,exact:true}).click();
@@ -283,18 +364,24 @@ async function openGroup(dialog,label) {
       assert.ok(await group.getByRole('button',{pressed:false}).count()>=24,label+' provides broad examples');
       await group.locator('summary').click();
     }
+    let art=await openGroup(form.dialog,'대표 취향 · 프로필 그림');
+    assert.equal(await art.getByRole('button',{name:'독서',exact:true}).getAttribute('aria-pressed'),'true','existing artwork is hydrated');
+    await art.getByRole('button',{name:'카페',exact:true}).click();
+    await form.dialog.getByLabel('자기소개',{exact:false}).fill('취향과 함께 저장할 소개');
     await form.save.click();
     await form.dialog.waitFor({state:'hidden'});
-    let saves=await page.evaluate(()=>window.preferenceFixture.saves);
-    assert.equal(saves.length,1,'one atomic public profile save');
-    assert.equal(saves[0].p_setup,false);
-    assert.equal(saves[0].p_data.profilePerson,'11111111-1111-4111-8111-111111111111','save is bound to the profile opened for editing');
-    assert.equal(saves[0].p_data.preferencesVersion,0);
-    assert.deepEqual(saves[0].p_data.preferences.relationship_intents,['conversation','friendship']);
-    assert.deepEqual(saves[0].p_data.preferences.meeting_styles,['deep_talk','playful_chat','share_worries']);
-    assert.deepEqual(saves[0].p_data.preferences.custom.meeting_styles,['별 보며 걷기']);
-    assert.equal(saves[0].p_data.interest,'book','existing profile artwork survives the new choices');
-    assert.deepEqual(saves[0].p_data.preferences.life_priorities,[],'unselected groups remain empty');
+    let detailSaves=await page.evaluate(()=>window.preferenceFixture.detailSaves);
+    assert.equal(detailSaves.length,1,'one atomic save for public tastes, artwork and exchange fields');
+    assert.equal((await page.evaluate(()=>window.preferenceFixture.saves)).length,1,'saving detailed tastes does not issue a second public profile write');
+    assert.equal(detailSaves[0].p_data.profilePerson,'11111111-1111-4111-8111-111111111111');
+    assert.equal(detailSaves[0].p_data.preferencesVersion,1);
+    assert.equal(Object.hasOwn(detailSaves[0].p_data.preferences,'relationship_intents'),false,'the relocated form cannot overwrite desired relationships');
+    assert.deepEqual(detailSaves[0].p_data.preferences.meeting_styles,['deep_talk','playful_chat','share_worries']);
+    assert.deepEqual(detailSaves[0].p_data.preferences.custom.meeting_styles,['별 보며 걷기']);
+    assert.deepEqual(detailSaves[0].p_data.preferences.life_priorities,[],'unselected groups remain empty');
+    assert.equal(detailSaves[0].p_data.interest,'coffee');
+    assert.equal(detailSaves[0].p_data.fields.bio,'취향과 함께 저장할 소개');
+    assert.deepEqual(await page.evaluate(()=>window.preferenceFixture.record().preferences.relationship_intents),['conversation','friendship']);
     const ownSummary=page.getByRole('region',{name:'공개 프로필',exact:true});
     await ownSummary.getByRole('heading',{name:'나를 표현하는 취향',exact:true}).waitFor();
     for(const label of ['차분한 대화','유쾌한 수다','고민 나누기','별 보며 걷기']){
@@ -302,40 +389,71 @@ async function openGroup(dialog,label) {
     }
     await ownSummary.screenshot({path:path.join(artifacts,'public-own-profile.png'),animations:'disabled'});
 
+    form=await openDetails(page);
+    meeting=await openGroup(form.dialog,'만남 스타일');
+    assert.equal(await meeting.locator('.preference-chips').first().getByRole('button',{pressed:true}).count(),3,'saved presets are restored before editing becomes available');
+    await meeting.getByRole('button',{name:'별 보며 걷기 삭제',exact:true}).waitFor();
+    await meeting.getByRole('textbox',{name:'만남 스타일 직접 입력',exact:true}).fill('저녁 산책');
+    await form.dialog.getByLabel('직업',{exact:true}).fill('다시 저장할 직업');
+    art=await openGroup(form.dialog,'대표 취향 · 프로필 그림');
+    await art.getByRole('button',{name:'사진',exact:true}).click();
+    await page.evaluate(()=>window.preferenceFixture.detailSaveResponses.push('error'));
+    await form.save.click();
+    await form.dialog.getByRole('alert').waitFor();
+    assert.equal(await form.dialog.getByLabel('직업',{exact:true}).inputValue(),'다시 저장할 직업','save failure preserves private fields');
+    meeting=await openGroup(form.dialog,'만남 스타일');
+    assert.equal(await meeting.getByRole('textbox',{name:'만남 스타일 직접 입력',exact:true}).inputValue(),'저녁 산책','save failure preserves uncommitted custom text');
+    assert.equal(await meeting.locator('.preference-chips').first().getByRole('button',{pressed:true}).count(),3,'save failure preserves selected presets');
+    art=await openGroup(form.dialog,'대표 취향 · 프로필 그림');
+    assert.equal(await art.getByRole('button',{name:'사진',exact:true}).getAttribute('aria-pressed'),'true','save failure preserves artwork');
+    assert.equal(await page.evaluate(()=>window.preferenceFixture.record().version),2,'failed save does not change the saved profile');
+    assert.equal(await page.evaluate(()=>window.preferenceFixture.detail().interest),'coffee','failed save leaves saved artwork intact');
+    await form.save.click();
+    await form.dialog.waitFor({state:'hidden'});
+    detailSaves=await page.evaluate(()=>window.preferenceFixture.detailSaves);
+    assert.equal(detailSaves[1].p_data.preferencesVersion,2);
+    assert.equal(detailSaves[2].p_data.preferencesVersion,2,'retry uses the same expected version');
+    assert.deepEqual(detailSaves[2].p_data.preferences.custom.meeting_styles,['별 보며 걷기','저녁 산책']);
+
     form=await openProfile(page);
-    // The editable draft is hydrated in an effect after the read enables Save.
     await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{name:'대화 상대',exact:true,pressed:true}).waitFor();
     assert.equal(await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{pressed:true}).count(),2,'saved intentions are restored');
-    meeting=await openGroup(form.dialog,'만남 스타일');
-    assert.equal(await meeting.locator('.preference-chips').first().getByRole('button',{pressed:true}).count(),3,'saved presets are restored');
-    await meeting.getByRole('button',{name:'별 보며 걷기 삭제',exact:true}).waitFor();
     await page.evaluate(()=>window.preferenceFixture.saveResponses.push('error'));
     await form.dialog.getByLabel('닉네임',{exact:true}).fill('새 보리');
     await form.save.click();
     await form.dialog.getByRole('alert').waitFor();
     assert.equal(await form.dialog.getByLabel('닉네임',{exact:true}).inputValue(),'새 보리','save failure preserves the nickname draft');
-    assert.equal(await meeting.locator('.preference-chips').first().getByRole('button',{pressed:true}).count(),3,'save failure preserves selected presets');
-    assert.equal(await page.evaluate(()=>window.preferenceFixture.record().version),1,'failed save does not change the saved profile');
+    assert.equal(await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{pressed:true}).count(),2,'save failure preserves selected intentions');
     await form.save.click();
     await form.dialog.waitFor({state:'hidden'});
     saves=await page.evaluate(()=>window.preferenceFixture.saves);
-    assert.equal(saves[1].p_data.preferencesVersion,1);
-    assert.equal(saves[2].p_data.preferencesVersion,1,'retry uses the same expected version');
+    assert.equal(saves[1].p_data.preferencesVersion,3);
+    assert.equal(saves[2].p_data.preferencesVersion,3,'retry uses the same expected public version');
+    assert.equal(await page.evaluate(()=>window.preferenceFixture.detail().interest),'camera','saving the public profile preserves relocated artwork');
+    assert.deepEqual(await page.evaluate(()=>window.preferenceFixture.record().preferences.meeting_styles),['deep_talk','playful_chat','share_worries']);
+    assert.deepEqual(await page.evaluate(()=>window.preferenceFixture.record().preferences.custom.meeting_styles),['별 보며 걷기','저녁 산책']);
 
-    // Clearing choices sends explicit empty arrays; closing without saving keeps the saved values.
+    // Each editor clears only its own values; the public summary reflects the complete saved profile.
     form=await openProfile(page);
     await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{name:'대화 상대',exact:true,pressed:true}).waitFor();
     await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{name:'대화 상대',exact:true}).click();
     await form.dialog.getByRole('group',{name:'원하는 인연',exact:true}).getByRole('button',{name:'친구',exact:true}).click();
-    meeting=await openGroup(form.dialog,'만남 스타일');
-    for(const label of ['차분한 대화','유쾌한 수다','고민 나누기'])await meeting.getByRole('button',{name:label,exact:true}).click();
-    await meeting.getByRole('button',{name:'별 보며 걷기 삭제',exact:true}).click();
     await form.save.click();
     await form.dialog.waitFor({state:'hidden'});
-    const cleared=await page.evaluate(()=>window.preferenceFixture.saves.at(-1));
-    assert.deepEqual(cleared.p_data.preferences.relationship_intents,[]);
+    assert.deepEqual(await page.evaluate(()=>window.preferenceFixture.saves.at(-1).p_data.preferences),{relationship_intents:[]});
+    await ownSummary.locator('.preference-tags').getByText('별 보며 걷기',{exact:true}).waitFor();
+    form=await openDetails(page);
+    meeting=await openGroup(form.dialog,'만남 스타일');
+    for(const label of ['차분한 대화','유쾌한 수다','고민 나누기'])await meeting.getByRole('button',{name:label,exact:true}).click();
+    for(const label of ['별 보며 걷기','저녁 산책'])await meeting.getByRole('button',{name:label+' 삭제',exact:true}).click();
+    art=await openGroup(form.dialog,'대표 취향 · 프로필 그림');
+    await art.getByRole('button',{name:'사진',exact:true}).click();
+    await form.save.click();
+    await form.dialog.waitFor({state:'hidden'});
+    const cleared=await page.evaluate(()=>window.preferenceFixture.detailSaves.at(-1));
     assert.deepEqual(cleared.p_data.preferences.meeting_styles,[]);
     assert.deepEqual(cleared.p_data.preferences.custom.meeting_styles,[]);
+    assert.equal(cleared.p_data.interest,'');
     await ownSummary.getByRole('heading',{name:'나를 표현하는 취향',exact:true}).waitFor();
     await ownSummary.locator('.preference-help').waitFor();
     assert.equal(await ownSummary.locator('.public-preference-group').count(),0,'cleared tastes disappear from the public profile');
@@ -362,6 +480,24 @@ async function openGroup(dialog,label) {
     assert.equal(await form.save.isDisabled(),true,'save is disabled while a profile read is pending');
     await page.waitForFunction(()=>window.preferenceFixture.pendingReads.length===1);
     await page.evaluate(()=>window.preferenceFixture.finishRead());
+    await page.waitForFunction(button=>!button.disabled,await form.save.elementHandle());
+    await closeProfile(page,form.dialog);
+
+    await page.evaluate(()=>window.preferenceFixture.detailReadResponses.push('error'));
+    form=await openDetails(page,{ready:false});
+    await form.dialog.getByRole('alert').waitFor();
+    assert.equal(await form.dialog.locator('.exchange-editor').count(),0,'a failed complete-profile read cannot expose an empty form');
+    await form.dialog.getByRole('button',{name:'다시 시도',exact:true}).click();
+    await form.save.waitFor();
+    await page.waitForFunction(button=>!button.disabled,await form.save.elementHandle());
+    await closeProfile(page,form.dialog);
+    await page.evaluate(()=>window.preferenceFixture.detailReadResponses.push('pending'));
+    form=await openDetails(page,{ready:false});
+    await form.dialog.getByText('회원정보와 취향을 확인하고 있어요.',{exact:true}).waitFor();
+    assert.equal(await form.dialog.locator('.exchange-editor').count(),0,'incomplete reads cannot submit private fields with empty public choices');
+    await page.waitForFunction(()=>window.preferenceFixture.pendingDetailReads.length===1);
+    await page.evaluate(()=>window.preferenceFixture.finishDetailRead());
+    await form.save.waitFor();
     await page.waitForFunction(button=>!button.disabled,await form.save.elementHandle());
     await closeProfile(page,form.dialog);
 

@@ -1,12 +1,11 @@
 import {useEffect,useState} from "react";
-import {interests,type Person} from "../lib/station";
+import {type Person} from "../lib/station";
 import {
   relationshipIntents,profilePreferenceGroups,emptyProfilePreferences,normalizeProfilePreferences,
-  MAX_PROFILE_CUSTOM_LENGTH,MAX_PROFILE_GROUP_SELECTIONS,
 } from "../lib/profile-preferences.mjs";
 import regionCatalog from "../../regions.json";
-import {maskedTextLength,textInputMaxLength} from "../../../../shared/content/text-length.mjs";
-import {InterestArt} from "./interest-art";
+import {textInputMaxLength} from "../../../../shared/content/text-length.mjs";
+import {tasteLabels} from "./profile-tastes";
 import {I} from "./icons";
 
 type Preferences=ReturnType<typeof emptyProfilePreferences>;
@@ -14,7 +13,6 @@ type GroupKey="meeting_styles"|"relationship_values"|"affection_styles"|"life_pr
 type PreferenceRead={scope:string;status:"loading"|"ready"|"error";preferences:Preferences;version:number};
 const districts:Record<string,string[]>=regionCatalog;
 const provinces=Object.keys(districts);
-const blankDrafts=():Record<GroupKey,string>=>({meeting_styles:"",relationship_values:"",affection_styles:"",life_priorities:""});
 
 function usePublicPreferences(viewer:string,person:string,revision=0,enabled=true){
   const [attempt,setAttempt]=useState(0);
@@ -50,66 +48,14 @@ function ReadStatus({read}:{read:ReturnType<typeof usePublicPreferences>}){
     read.status==="error"?<div className="preference-status" role="alert"><p>프로필 선택항목을 불러오지 못했어요.</p><button type="button" className="textbtn" onClick={read.reload}>다시 불러오기</button></div>:null;
 }
 
-function labelsFor(preferences:Preferences,key:GroupKey):string[]{
-  const group=profilePreferenceGroups.find(group=>group.key===key)!;
-  return [...group.options.filter(option=>preferences[key].includes(option.key)).map(option=>option.label),...preferences.custom[key]];
-}
-function addCustom(preferences:Preferences,key:GroupKey,draft:string):{preferences:Preferences;error:string}{
-  const value=draft.trim();
-  if(!value)return {preferences,error:""};
-  if(maskedTextLength(value)>MAX_PROFILE_CUSTOM_LENGTH)return {preferences,error:"직접 입력은 40자까지 적어 주세요."};
-  const preset=profilePreferenceGroups.find(group=>group.key===key)!.options.find(option=>option.label===value);
-  if(preset?preferences[key].includes(preset.key):preferences.custom[key].includes(value))return {preferences,error:""};
-  if(preferences[key].length+preferences.custom[key].length>=MAX_PROFILE_GROUP_SELECTIONS)return {preferences,error:"이 항목은 32개까지 고를 수 있어요."};
-  return {preferences:preset?{...preferences,[key]:[...preferences[key],preset.key]}:
-    {...preferences,custom:{...preferences.custom,[key]:[...preferences.custom[key],value]}},error:""};
-}
-
-function PreferenceFields({value,onChange,drafts,onDraft,onAdd,disabled}:{
-  value:Preferences;onChange:(value:Preferences)=>void;drafts:Record<GroupKey,string>;
-  onDraft:(key:GroupKey,value:string)=>void;onAdd:(key:GroupKey)=>void;disabled:boolean;
-}){
-  return <div className="preference-editor">
-    <fieldset className="profile-intent-field" disabled={disabled}>
-      <legend>원하는 인연</legend>
-      <p className="preference-help">여러 개 골라도 괜찮아요. 선택한 내용은 파장 회원에게 보여요.</p>
-      <div className="preference-chips intent-choices">{relationshipIntents.map(intent=><button key={intent.key} type="button"
-        aria-label={intent.label} aria-pressed={value.relationship_intents.includes(intent.key)} title={intent.description}
-        onClick={()=>onChange({...value,relationship_intents:value.relationship_intents.includes(intent.key)?value.relationship_intents.filter(key=>key!==intent.key):[...value.relationship_intents,intent.key]})}>
-        {intent.label}</button>)}</div>
-    </fieldset>
-    <div className="preference-section-heading"><h3>나를 표현하는 취향</h3><span>모두 선택 사항</span></div>
-    {profilePreferenceGroups.map(group=>{
-      const key=group.key as GroupKey,selected=labelsFor(value,key);
-      return <details className="preference-group" key={key} name="profile-preference-group">
-        <summary><span><strong>{group.label}</strong><small>{selected.length?selected.slice(0,2).join(" · ")+(selected.length>2?` 외 ${selected.length-2}개`:""):"나와 맞는 보기를 골라 주세요"}</small></span><I n="chevron" s={16}/></summary>
-        <fieldset className="preference-group-body" disabled={disabled} aria-label={group.label}>
-          <div className="preference-chips">{group.options.map(option=>{
-            const selected=value[key].includes(option.key);
-            return <button type="button" key={option.key} aria-label={option.label} aria-pressed={selected}
-              disabled={!selected&&value[key].length+value.custom[key].length>=MAX_PROFILE_GROUP_SELECTIONS}
-              onClick={()=>onChange({...value,[key]:selected?value[key].filter(item=>item!==option.key):[...value[key],option.key]})}>{option.label}</button>;
-          })}</div>
-          {value.custom[key].length>0&&<div className="preference-chips custom-choices">{value.custom[key].map(label=><button key={label} type="button" aria-label={label+" 삭제"} aria-pressed="true"
-            onClick={()=>onChange({...value,custom:{...value.custom,[key]:value.custom[key].filter(item=>item!==label)}})}>{label}<I n="close" s={12}/></button>)}</div>}
-          <div className="preference-custom"><input aria-label={group.label+" 직접 입력"} value={drafts[key]} placeholder="보기 외 항목 직접 추가"
-            onChange={event=>onDraft(key,event.target.value)} onKeyDown={event=>{if(event.key==="Enter"&&!event.nativeEvent.isComposing){event.preventDefault();onAdd(key);}}}/>
-            <button type="button" aria-label={group.label+" 추가"} disabled={!drafts[key].trim()} onClick={()=>onAdd(key)}>추가</button></div>
-        </fieldset>
-      </details>;
-    })}
-  </div>;
-}
-
 export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew:boolean;onSave:(value:Record<string,unknown>)=>void;busy:boolean}){
-  const [name,setName]=useState(person?.name||""),[region,setRegion]=useState(person?.region||""),[interest,setInterest]=useState(person?.interest||""),[consent,setConsent]=useState(false);
+  const [name,setName]=useState(person?.name||""),[region,setRegion]=useState(person?.region||""),[consent,setConsent]=useState(false);
   const read=usePublicPreferences(person?.id||"",person?.id||"",0,!isNew);
   const [preferenceDraft,setPreferenceDraft]=useState(()=>({scope:"",value:emptyProfilePreferences()}));
   const preferences=preferenceDraft.value;
   const setPreferences=(value:Preferences)=>setPreferenceDraft(previous=>({...previous,value}));
-  const [drafts,setDrafts]=useState(blankDrafts),[customError,setCustomError]=useState("");
   useEffect(()=>{
-    if(read.status==="ready"){setPreferenceDraft({scope:read.scope,value:read.preferences});setDrafts(blankDrafts());setCustomError("");}
+    if(read.status==="ready"){setPreferenceDraft({scope:read.scope,value:read.preferences});}
   },[read.scope,read.status]);
   const [province,city=""]=region.split(" ");
   const knownProvince=Object.hasOwn(districts,province);
@@ -117,21 +63,10 @@ export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew
   const legacyRegion=previousRegion&&!Object.hasOwn(districts,previousRegion.split(" ")[0]);
   const choicesReady=read.status==="ready"&&preferenceDraft.scope===read.scope;
   const disabled=busy||!choicesReady;
-  function add(key:GroupKey){
-    const result=addCustom(preferences,key,drafts[key]);setCustomError(result.error);
-    if(!result.error){setPreferences(result.preferences);setDrafts(previous=>({...previous,[key]:""}));}
-  }
   function submit(event:React.FormEvent){
     event.preventDefault();if(disabled)return;
-    let next=preferences;
-    for(const group of profilePreferenceGroups){
-      const key=group.key as GroupKey,result=addCustom(next,key,drafts[key]);
-      if(result.error){setCustomError(result.error);return;}
-      next=result.preferences;
-    }
-    // Keep typed values editable until the server accepts the complete profile.
-    setCustomError("");
-    onSave({name:name.trim(),region,interest,consent,profilePerson:person?.id??null,preferences:next,preferencesVersion:read.version});
+    onSave({name:name.trim(),region,consent,profilePerson:person?.id??null,
+      preferences:{relationship_intents:preferences.relationship_intents},preferencesVersion:read.version});
   }
   return <form className="profileform public-profile-form" onSubmit={submit}>
     <label>닉네임<input value={name} maxLength={textInputMaxLength(name,12)} placeholder="오쭈다 닉네임 사용" disabled={busy} onChange={event=>setName(event.target.value)}/></label>
@@ -146,30 +81,32 @@ export function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew
       </select></label>}
     </div>
     <ReadStatus read={read}/>
-    {choicesReady&&<PreferenceFields value={preferences} onChange={setPreferences} drafts={drafts}
-      onDraft={(key,value)=>{setDrafts(previous=>({...previous,[key]:value}));setCustomError("");}} onAdd={add} disabled={busy}/>}
-    {customError&&<p className="error" role="alert">{customError}</p>}
-    <details className="preference-group profile-art-choice"><summary><span><strong>대표 취향 · 프로필 그림</strong><small>{interests.find(option=>option.key===interest)?.name||"선택하지 않음"}</small></span><I n="chevron" s={16}/></summary>
-      <fieldset disabled={busy} aria-label="대표 취향"><div className="interestgrid">{interests.map(option=><button type="button" key={option.key} className={interest===option.key?"selected":""} aria-pressed={interest===option.key} onClick={()=>setInterest(interest===option.key?"":option.key)}><InterestArt interest={option.key}/>{option.name}</button>)}</div></fieldset>
-    </details>
+    {choicesReady&&<fieldset className="profile-intent-field" disabled={busy}>
+      <legend>원하는 인연</legend>
+      <p className="preference-help">여러 개 골라도 괜찮아요. 선택한 내용은 파장 회원에게 보여요.</p>
+      <div className="preference-chips intent-choices">{relationshipIntents.map(intent=><button key={intent.key} type="button"
+        aria-label={intent.label} aria-pressed={preferences.relationship_intents.includes(intent.key)} title={intent.description}
+        onClick={()=>setPreferences({...preferences,relationship_intents:preferences.relationship_intents.includes(intent.key)?preferences.relationship_intents.filter(key=>key!==intent.key):[...preferences.relationship_intents,intent.key]})}>
+        {intent.label}</button>)}</div>
+    </fieldset>}
     {isNew&&<label className="checkrow"><input type="checkbox" required disabled={busy} checked={consent} onChange={event=>setConsent(event.target.checked)}/><span>만 19세 이상이며 파장 회원에게 닉네임과 내가 선택한 공개 정보를 보여 주는 데 동의해요.</span></label>}
     <button className="primary wide" disabled={disabled||(isNew&&!consent)}>{isNew?"회원 채널 시작하기":"프로필 저장"}<I n="arrow" s={16}/></button>
   </form>;
 }
 
-export function PublicProfilePreferences({viewer,person,revision=0,onEdit}:{viewer:string;person:string;revision?:number;onEdit?:()=>void}){
+export function PublicProfilePreferences({viewer,person,revision=0,onEdit,onEditTastes}:{viewer:string;person:string;revision?:number;onEdit?:()=>void;onEditTastes?:()=>void}){
   const read=usePublicPreferences(viewer,person,revision);
   const selectedIntents=relationshipIntents.filter(intent=>read.preferences.relationship_intents.includes(intent.key));
-  const selectedGroups=profilePreferenceGroups.map(group=>({...group,labels:labelsFor(read.preferences,group.key as GroupKey)})).filter(group=>group.labels.length);
+  const selectedGroups=profilePreferenceGroups.map(group=>({...group,labels:tasteLabels(read.preferences,group.key as GroupKey)})).filter(group=>group.labels.length);
   return <section className="public-preference-summary" aria-label="공개 프로필">
-    <div className="preference-section-heading"><h3>공개 프로필</h3>{onEdit&&<button type="button" onClick={onEdit}>수정<I n="pencil" s={13}/></button>}</div>
+    <div className="preference-section-heading"><h3>공개 프로필</h3>{onEdit&&<button type="button" onClick={onEdit}>기본 정보 수정<I n="pencil" s={13}/></button>}</div>
     <ReadStatus read={read}/>
     {read.status==="ready"&&<>
       {selectedIntents.length>0&&<div className="public-intents"><h4>원하는 인연</h4><div className="preference-tags">{selectedIntents.map(intent=><span key={intent.key}>{intent.label}</span>)}</div></div>}
       <section className="public-profile-tastes" aria-label="나를 표현하는 취향">
-        <h4>나를 표현하는 취향</h4>
+        <div className="public-tastes-heading"><h4>나를 표현하는 취향</h4>{onEditTastes&&<button type="button" onClick={onEditTastes}>취향·그림 수정<I n="pencil" s={13}/></button>}</div>
         {selectedGroups.length?selectedGroups.map(group=><div key={group.key} className="public-preference-group"><h5>{group.label}</h5><div className="preference-tags">{group.labels.map(label=><span key={label}>{label}</span>)}</div></div>):
-          <p className="preference-help">{onEdit?"수정에서 나를 표현하는 취향을 골라 보세요.":"아직 선택한 취향이 없어요."}</p>}
+          <p className="preference-help">{onEditTastes?"취향·그림 수정에서 나와 맞는 보기를 골라 보세요.":"아직 선택한 취향이 없어요."}</p>}
       </section>
     </>}
   </section>;
