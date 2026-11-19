@@ -11,7 +11,7 @@ const proof = process.env.PUBLIC_ENTRY_PROOF_DIR || path.join(__dirname, 'artifa
 fs.mkdirSync(proof, { recursive: true });
 
 // Use the existing world-design test's bootstrap seam, keeping the production
-// shell, styles, hub renderer and navigation. Game services are outside this test.
+// shell, styles, main renderers and navigation. Individual games are outside this test.
 function agitDocument() {
   let html = read('world.html')
     .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
@@ -31,8 +31,8 @@ function agitDocument() {
   assert.ok(end > boot);
   return html.slice(0, boot) + `
     $.me.nick='구경하는 이웃';$.me.bio='';$.coins=0;S=window.entryFixture.client;
-    const parkEntry=new URL(location.href).searchParams.get('place')==='park';
-    g.tab=parkEntry?'place':'hub';g.place=parkEntry?{id:'park',ch:1,count:0,log:[]}:null;
+    const entryParams=new URL(location.href).searchParams,parkEntry=entryParams.get('place')==='park';
+    g.tab=parkEntry?'place':entryParams.get('tab')==='arcade'?'arcade':'hub';g.place=parkEntry?{id:'park',ch:1,count:0,log:[]}:null;
     D.online=false;D.parkGuest=true;D.user=null;H();gm(()=>{});
     window.entryWorld={
       member(value){entryFixture.setMember(value);D.online=value;D.parkGuest=!value;D.user=entryFixture.session?.user||null;$.coins=value?129447:0;H();},
@@ -141,8 +141,8 @@ async function fits(page, label, selectors = []) {
 }
 
 async function mainInvitation(page, service, label, share = true) {
-  const names = { agit: '아지트', park: '공원', pajang: '파장' };
-  const paths = { agit: '/world.html?tab=hub', park: '/world.html?place=park', pajang: '/features/pajang/' };
+  const names = { agit: '아지트', arcade: '오락실', park: '공원', pajang: '파장' };
+  const paths = { agit: '/world.html?tab=hub', arcade: '/world.html?tab=arcade', park: '/world.html?place=park', pajang: '/features/pajang/' };
   const button = page.locator('.ojjuda-service-actions [data-share-page]:visible');
   assert.equal(await button.count(), 1, `${label}: exactly one visible main invitation`);
   assert.equal(await button.getAttribute('data-share-page'), service, `${label}: invitation matches the current service`);
@@ -266,6 +266,21 @@ async function openSpace(page, space) {
       }
       console.log('PASS guest entrance, main invitation and account targets:', space.id, '320/390/750/1080/1280');
     }
+
+    for (const width of [320, 390, 750, 1080, 1280]) {
+      checkpoint = `arcade-guest-${width}`;
+      await page.setViewportSize({ width, height: width === 750 ? 750 : 844 });
+      await page.goto(origin + '/world.html?tab=arcade');
+      await page.locator('.arcade-home[aria-label="오락실"]').waitFor({ state: 'visible' });
+      await settled(page);
+      await mainInvitation(page, 'arcade', checkpoint);
+      await page.screenshot({ path: path.join(proof, `arcade-invite-header-${width}.png`), clip: { x: 0, y: 0, width, height: 100 } });
+      await page.evaluate(() => { entryWorld.member(true); entryWorld.member(false); entryWorld.member(true); });
+      await settled(page);
+      checkpoint = `arcade-member-${width}`;
+      await mainInvitation(page, 'arcade', checkpoint);
+    }
+    console.log('PASS arcade main invitation, generic/self-ref links and guest/member rerenders: 320/390/750/1080/1280');
 
     const receivedReferral = '00000000-0000-4000-8000-000000000022';
     const inviteRoutes = { agit: '/world.html?tab=hub', park: '/world.html?place=park', pajang: '/features/pajang/' };
