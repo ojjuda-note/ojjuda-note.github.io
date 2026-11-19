@@ -1,7 +1,6 @@
 "use client";
 import {useEffect,useLayoutEffect,useRef,useState} from "react";
-import {themeFor,interests,introDetails,signalsWith,type Person,type Message,type Station} from "../lib/station";
-import regionCatalog from "../../regions.json";
+import {themeFor,introDetails,signalsWith,type Person,type Message,type Station} from "../lib/station";
 
 import {InterestArt as Art} from "./interest-art";
 import {I} from "./icons";
@@ -16,20 +15,22 @@ import {ExchangeProfileEditor} from "./exchange-profile";
 import {MyExchangePhotos,removeAllExchangePhotos} from "./exchange-photos";
 import {AccountSettings,AccountActionForm} from "./account-settings";
 import {QuestionSuggestionForm} from "./question-suggestion";
+import {ProfileForm,PublicProfilePreferences} from "./public-profile";
 import {SignalPurchaseForm} from "./signal-purchase";
 import {type SignalCounts,type SignalWallet} from "../lib/signal-wallet";
 
 import {StationNavigation,readRoute,routeHref,type Tab} from "./station-navigation";
 import {createStationHistory} from "../lib/navigation.mjs";
 type Modal = {kind:"answer"|"suggestion"|"signal"|"buySignals"|"result"|"setup"|"edit"|"channels"|"help"|"block"|"delete"|"person"|"privateProfile"|"privatePhotos"|"visibility"|"answers"|"logout"|"withdraw";peer?:string;period?:string;originalBody?:string;questionId?:number;answer?:DiscoveryAnswer};
-const districts:Record<string,string[]> = regionCatalog;
-const provinces=Object.keys(districts);
 const fmtClock=(at:number)=>new Intl.DateTimeFormat("ko-KR",{hour:"2-digit",minute:"2-digit",timeZone:"Asia/Seoul"}).format(new Date(at));
 async function request<T,>(url:string,init?:RequestInit):Promise<T>{
   const params=init?.body?JSON.parse(String(init.body)):{};
   const peer=new URL(url,location.origin).searchParams.get("thread");
   const action=peer?"thread":params.action||"state";
-  const query=(await window.OjjudaGetClient()).rpc("pajang_member",{p_action:action,p_data:peer?{peer}:params});
+  const db=await window.OjjudaGetClient();
+  const query=action==="profile"||action==="participate"
+    ?db.rpc("pajang_profile_save",{p_data:params,p_setup:action==="participate"})
+    :db.rpc("pajang_member",{p_action:action,p_data:peer?{peer}:params});
   const {data,error}=await (init?.signal && query.abortSignal?query.abortSignal(init.signal):query);
   if(error)throw Object.assign(new Error(error.message),{code:error.code});
   return data as T;
@@ -47,30 +48,6 @@ function Editor({initial="",max,label,submit,onSave,busy,hint,optional=false,onD
     <label className="formlabel" htmlFor="editor">{label}</label><textarea id="editor" value={value} onChange={e=>{setValue(e.target.value);onDraftChange?.(e.target.value);}} placeholder={hint} maxLength={max} rows={4} required={!optional}/><div className="counter">{value.length} / {max}</div>
     <button className="primary wide" disabled={busy||(!optional&&!value.trim())}>{submit}<I n="arrow" s={17}/></button></form>;
 }
-function ProfileForm({person,isNew,onSave,busy}:{person:Person|null;isNew:boolean;onSave:(x:Record<string,unknown>)=>void;busy:boolean}){
-  const [name,setName]=useState(person?.name||""),[region,setRegion]=useState(person?.region||""),[interest,setInterest]=useState(person?.interest||""),[consent,setConsent]=useState(false);
-  const [province,city=""]=region.split(" ");
-  const knownProvince=Object.hasOwn(districts,province);
-  const previousRegion=person?.region;
-  const legacyRegion=previousRegion && !Object.hasOwn(districts,previousRegion.split(" ")[0]);
-  return <form className="profileform" onSubmit={e=>{e.preventDefault();onSave({name:name.trim(),region,interest,consent});}}>
-    <label>닉네임<input value={name} maxLength={12} placeholder="오쭈다 닉네임 사용" onChange={e=>setName(e.target.value)}/></label>
-    <div className="fieldrow">
-      <label>공개할 활동 지역<select value={knownProvince?province:region} onChange={e=>setRegion(e.target.value)}>
-        <option value="">공개하지 않음</option>
-        {legacyRegion&&<option value={previousRegion}>기존 지역 · {previousRegion}</option>}
-        {provinces.map(name=><option key={name}>{name}</option>)}
-      </select></label>
-      {knownProvince&&districts[province].length>0&&<label>시·군 (선택)<select value={city} onChange={e=>setRegion(e.target.value?province+" "+e.target.value:province)}>
-        <option value="">시·도만 표시</option>
-        {districts[province].map(name=><option key={name}>{name}</option>)}
-      </select></label>}
-    </div>
-    <fieldset><legend>공개할 취향 (선택)</legend><div className="interestgrid">{interests.map(x=><button type="button" key={x.key} className={interest===x.key?"selected":""} aria-pressed={interest===x.key} onClick={()=>setInterest(interest===x.key?"":x.key)}><Art interest={x.key}/>{x.name}</button>)}</div></fieldset>
-    {isNew&&<label className="checkrow"><input type="checkbox" required checked={consent} onChange={e=>setConsent(e.target.checked)}/><span>만 19세 이상이며 파장 회원에게 닉네임과 내가 선택한 공개 정보를 보여 주는 데 동의해요.</span></label>}
-    <button className="primary wide" disabled={busy||(isNew&&!consent)}>{isNew?"회원 채널 시작하기":"프로필 저장"}<I n="arrow" s={16}/></button></form>;
-}
-
 function ListPerson({p,type,station,busy,onProfile,onAction}:{
   p:Person;type:"received"|"sent"|"chat";station:Station;busy:boolean;
   onProfile:()=>void;onAction:()=>void;
@@ -312,7 +289,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
 
       if(action==="delete")await removeAllExchangePhotos();
       serverRevision.current++;const next=await request<Station>("/api/station",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,...b})});serverRevision.current++;if(action==="delete"){location.replace("./");return next;}setLive(next);setNet("");
-      if(action==="block"||action==="answer"||action==="edit-answer")setHistoryRevision(n=>n+1);
+      if(action==="block"||action==="answer"||action==="edit-answer"||action==="profile"||action==="participate")setHistoryRevision(n=>n+1);
       return next;
     }catch(e){
       if(action==='radar-enable'||action==='radar-disable'){
@@ -432,7 +409,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       <div className="channel-heading account-heading"><h1>내 파장</h1><button type="button" className="account-settings-close" aria-label="설정 닫기" onClick={()=>goBack("today")}><I n="close"/></button></div>
       <div className="ojjuda-settings">
       <a className="ojjuda-settings-row account-agit agit-return" href="/world.html" target="_top"><span className="ojjuda-settings-label">아지트 가기</span><span className="ojjuda-settings-arrow" aria-hidden="true">›</span></a>
-          {me?<AccountSettings profileId={me.id} onOpen={kind=>open({kind})}/>:
+          {me?<><PublicProfilePreferences viewer={me.id} person={me.id} revision={historyRevision} onEdit={()=>open({kind:"edit"})}/><AccountSettings profileId={me.id} onOpen={kind=>open({kind})}/></>:
         <Blank icon="user" title="파장에 참여해 주세요" body="오쭈다 회원 정보로 시작할 수 있어요." button="참여하기" onClick={()=>void enterMember()}/>}</div></section>}
     </main>{toast&&<div role="status" className="toast">{toast}</div>}
   {modal&&<Dialog key={modal.kind} close={close} title={modalTitle} busy={busy}>
@@ -456,7 +433,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
     </>}
     {modal.kind==="signal"&&peer&&!(available===0&&s.purchasingEnabled)&&<><span className="modalicon"><I n="signal"/></span><h2>{peer.name}님{row?.received || signalsWith(s,peer.id).incoming?"의 신호 수락":"에게 신호 보내기"}</h2><p className="sub">{available?"서로 신호를 보내면 대화를 시작할 수 있어요.":"오늘의 신호를 모두 썼어요. 내일 다시 만나요."}</p><div className="questionbox">{row&&<small>{row.question}</small>}{peer.body||signalsWith(s,peer.id).incoming?.note}</div><Editor key={signalDraftKey(peer.id,row)} initial={signalDrafts.current.get(signalDraftKey(peer.id,row))} onDraftChange={value=>signalDrafts.current.set(signalDraftKey(peer.id,row),value)} max={120} label="함께 보낼 한마디 (선택)" hint="어떤 부분에 마음이 닿았나요?" submit={(row?.received || signalsWith(s,peer.id).incoming?"신호 수락하기":"신호 보내기")+" · 남은 "+available+"개"} busy={busy||available===0} optional onSave={note=>void deliver(peer.id,note,row)}/></>}
     {modal.kind==="result"&&peer&&<div className="result"><span className="resultart"><Art interest={peer.interest} large/><i><I n={signalsWith(s,peer.id).match?"wave":"signal"}/></i></span><h2>{signalsWith(s,peer.id).match?"서로의 신호가 닿았어요":"신호를 보냈어요"}</h2><p className="sub">{signalsWith(s,peer.id).match?peer.name+"님도 당신에게 신호를 보냈어요. 이제 첫인사를 건네보세요.":peer.name+"님도 신호를 보내면 대화방이 열려요."}</p><button className="primary wide" onClick={()=>signalsWith(s,peer.id).match?startChat(peer.id):(setInbox("sent"),go("inbox"))}>{signalsWith(s,peer.id).match?"대화 시작하기":"보낸 신호 보기"}<I n="arrow" s={17}/></button></div>}
-    {modal.kind==="person"&&peer&&<><Art interest={peer.interest} large/><h2>{peer.name}</h2><p className="sub">{introDetails(peer)}</p>{peer.body&&<div className="questionbox"><small>{row?.question||themeText}</small>{peer.body}</div>}<button className="primary wide" onClick={()=>{
+    {modal.kind==="person"&&peer&&<><Art interest={peer.interest} large/><h2>{peer.name}</h2><p className="sub">{introDetails(peer)}</p>{peer.body&&<div className="questionbox"><small>{row?.question||themeText}</small>{peer.body}</div>}{me&&<PublicProfilePreferences key={me.id+peer.id} viewer={me.id} person={peer.id}/>}<button className="primary wide" onClick={()=>{
         if(!row)return signal(peer);
         if((row.sent&&row.received)||signalsWith(s,row.peer).match)return void openHistoryChat(row.peer);
         if(row.sent||signalsWith(s,row.peer).outgoing){setInbox("sent");go("inbox");return;}
@@ -464,7 +441,7 @@ export default function StationApp({initialStation}:{initialStation:Station}){
       }}>{(row?.sent&&row?.received)||signalsWith(s,peer.id).match?"대화 열기":row?.sent||signalsWith(s,peer.id).outgoing?"보낸 신호 확인":row?.received||signalsWith(s,peer.id).incoming?"신호 수락하기":"신호 보내기"}<I n="signal" s={17}/></button><button className="textbtn" onClick={()=>open({kind:"block",peer:peer.id,answer:row})}>이 프로필 차단</button></>}
     {modal.kind==="privateProfile"&&<ExchangeProfileEditor onSaved={()=>{close();setToast("교환용 프로필을 저장했어요.");}}/>}
     {modal.kind==="privatePhotos"&&<><h2>교환용 사진</h2><p className="sub">사진은 최대 10장까지 선택해 등록할 수 있어요. 사진을 교환한 상대에게는 나중에 추가한 사진도 보여요. 대화방에서 언제든 공유를 끝낼 수 있어요.</p><MyExchangePhotos/></>}
-    {(modal.kind==="edit"||modal.kind==="setup")&&<><h2>{modal.kind==="setup"?"회원 프로필 만들기":"프로필 수정"}</h2><p className="sub">{modal.kind==="setup"?"얼굴 사진 없이 닉네임과 취향으로 시작해요.":"내 프로필에 보여줄 정보를 정해 주세요."}</p><ProfileForm person={modal.kind==="setup"?null:me} isNew={modal.kind==="setup"} busy={busy} onSave={async b=>{const setup=modal.kind==="setup";if(await act(setup?"participate":"profile",b,setup)){go("profile");setToast("프로필을 저장했어요.");}}}/></>}
+    {(modal.kind==="edit"||modal.kind==="setup")&&<><h2>{modal.kind==="setup"?"회원 프로필 만들기":"프로필 수정"}</h2><p className="sub">원하는 인연과 나를 표현하는 취향을 골라 주세요.</p><ProfileForm key={me?.id||"new"} person={modal.kind==="setup"?null:me} isNew={modal.kind==="setup"} busy={busy} onSave={async b=>{const setup=modal.kind==="setup";if(await act(setup?"participate":"profile",b,setup)){go("profile");setToast("프로필을 저장했어요.");}}}/></>}
     {modal.kind==="block"&&peer&&<><span className="modalicon"><I n="shield"/></span><h2>{peer.name}님을 차단할까요?</h2><p className="sub">서로의 답변과 신호, 대화가 목록에서 사라져요. 이후 메시지도 보낼 수 없어요.</p><button className="primary wide" disabled={busy} onClick={async()=>{if(await act("block",{peer:peer.id})){go("today");setToast("프로필을 차단했어요.");}}}>차단하기</button><button className="textbtn" onClick={close}>취소</button></>}
     {modal.kind==="delete"&&<><h2>파장 기록을 삭제할까요?</h2><p className="sub">파장 프로필과 답변, 신호·대화·교환용 사진을 삭제해요. 삭제한 내용은 복구할 수 없으며, 오쭈다 계정은 유지돼요.</p><button className="primary wide" disabled={busy} onClick={async()=>{if(await act("delete",{})){location.replace("./");}}}>파장 기록 삭제</button><button className="textbtn" onClick={close}>취소</button></>}
     {modal.kind==="help"&&<><span className="modalicon"><I n="headphones"/></span><h2>파장 이용 안내</h2><div className="guidelist">{[["오전과 오후에 한 번씩 답해요","한국 시간 자정과 낮 12시에 새 질문이 열려요. 한 번 답하면 다음 질문이 열릴 때까지 바로 메인으로 들어가요."],["답변에 신호를 보내요","모두의 답변에서 최근 1년의 질문과 답을 함께 읽어 보세요. 내 답을 쓰기 전에도 마음에 드는 사람에게 하루 무료 신호 3개를 보낼 수 있어요."],["서로 닿으면 대화해요","받은 신호를 수락하면 두 사람의 대화방이 열려요. 상대 프로필에서 언제든 차단할 수 있어요."],["프로필과 사진을 교환해요","이 대화방에서 각자 메시지를 5개 이상 보낸 뒤 프로필이나 사진 교환을 신청할 수 있어요. 상대가 수락하면 서로 볼 수 있어요."]].map(([a,b],i)=><div key={a}><b>{i+1}</b><div><strong>{a}</strong><p>{b}</p></div></div>)}</div><button className="primary wide" onClick={close}>알겠어요</button></>}
