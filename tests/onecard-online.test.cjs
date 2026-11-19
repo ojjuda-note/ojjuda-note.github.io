@@ -172,6 +172,36 @@ const { fixture } = require('./onecard-online-fixture.cjs');
       await closeRoom(humans, room);
     }
 
+    // A forged client move is rejected by the authoritative engine as well as
+    // omitted from the UI's legal-card list. Failed attempts never commit.
+    room = await create(B);
+    room = ok(await action(B, room, 'start'));
+    const attackPosition = (await raw(room.id)).state;
+    const attackHand = ['H-2', 'H-A', 'X-R', 'S-4'];
+    const remaining = engine.makeDeck().filter(id => !attackHand.includes(id) && id !== 'X-B');
+    for (const player of attackPosition.players) {
+      player.hand = player.id === B ? [...attackHand] : remaining.splice(0, 2);
+      player.calledOne = false; player.active = true; player.eliminatedReason = null;
+    }
+    Object.assign(attackPosition, { deck: remaining, discard: ['X-B'], currentSuit: 'H',
+      pendingDraw: 10, pendingOneId: null, turn: attackPosition.players.findIndex(player => player.id === B),
+      lastEvents: [], revision: attackPosition.revision + 1 });
+    conserved(attackPosition);
+    await db.query("update ojjuda_onecard_internal.rooms set state=$2,version=version+1,deadline=clock_timestamp()+interval '1 minute' where id=$1", [room.id, attackPosition]);
+    room = await read(B, room.id);
+    assert.deepEqual(room.game.legalCardIds, ['X-R']);
+    const beforeRejectedAttack = await raw(room.id);
+    for (const cardId of ['H-2', 'H-A']) {
+      assert.equal((await action(B, room, 'move', { command: { type: 'play', cardId } })).error, 'invalid_move');
+      const unchanged = await raw(room.id);
+      assert.equal(unchanged.version, beforeRejectedAttack.version);
+      assert.deepEqual(unchanged.state, beforeRejectedAttack.state, 'a weaker attack cannot change the stored game');
+    }
+    room = ok(await action(B, room, 'move', { command: { type: 'play', cardId: 'X-R', suit: 'S' } }));
+    assert.equal(room.game.pendingDraw, 17, 'a stronger +7 adds to the outstanding draw debt');
+    conserved((await raw(room.id)).state);
+    await closeRoom([B], room);
+
     room = await create(OUT, 2);
     for (const id of [C, D, E]) room = await join(id, room);
     const lastSeat = await Promise.all([call(A, { action: 'join', code: room.code }), call(B, { action: 'join', code: room.code })]);
@@ -187,7 +217,7 @@ const { fixture } = require('./onecard-online-fixture.cjs');
     await db.query("update ojjuda_onecard_internal.rooms set expires_at=clock_timestamp()-interval '1 second' where id=$1", [room.id]);
     assert.equal((await call(C, { action: 'mine' })).room, null);
     assert.equal((await call(OUT, { action: 'join', code: room.code })).error, 'room_unavailable');
-    console.log(`PASS: ${turns} five-person turns, ${computerTurns} server computer turns; fixed five seats for 1–5 people, shuffled seats, clockwise rules, private hands, authentication, races, retries, timeout, takeover, rematch, expiry and SQL permissions`);
+    console.log(`PASS: ${turns} five-person turns, ${computerTurns} server computer turns; fixed five seats for 1–5 people, shuffled seats, clockwise rules, stronger-attack enforcement, private hands, authentication, races, retries, timeout, takeover, rematch, expiry and SQL permissions`);
   } finally { await f.close(); }
   await require('./onecard-native-rooms.test.cjs')();
 })().catch(error => { console.error(error); process.exitCode = 1; });

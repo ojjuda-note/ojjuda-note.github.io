@@ -1,5 +1,5 @@
 // Original four-color One Card artwork. Persistent DOM faces keep deals smooth.
-import {cardInfo} from './engine.mjs?v=20261120-onecard5';
+import {cardInfo} from './engine.mjs?v=20261120-onecard6';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const COLORS = Object.freeze({

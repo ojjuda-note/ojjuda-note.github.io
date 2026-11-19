@@ -4,11 +4,11 @@
  * Cards retain immutable legacy IDs S-A ... C-K, X-B and X-R for saved games.
  * Display metadata presents a dedicated four-color number/action deck.
  * Full state is private. Only projectState() may leave the authoritative server.
- * House rules are deliberately small: attacks may stack on any attack; a normal
+ * Attacks may stack only at the same or a higher printed strength; a normal
  * draw ends the turn; 7/jokers choose a suit; J skips and K repeats. Q is an
  * ordinary card. Every turn travels clockwise, including restored older games.
  */
-export const ENGINE_VERSION = '1.1.0';
+export const ENGINE_VERSION = '1.2.0';
 export const MAX_HAND_SIZE = 20;
 export const SUITS = Object.freeze(['S', 'H', 'D', 'C']);
 export const RANKS = Object.freeze(['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']);
@@ -114,7 +114,8 @@ export function createGame({ players, handSize = 7, startIndex = 0, seed } = {},
 export function isPlayable(cardId, currentCardId, currentSuit, pendingDraw = 0) {
   const card = cardInfo(cardId), top = cardInfo(currentCardId);
   if (!card || !top) return false;
-  if (pendingDraw > 0) return card.attack > 0;
+  // Compare the most recently played attack, not the accumulated draw debt.
+  if (pendingDraw > 0) return card.attack > 0 && card.attack >= top.attack;
   return card.joker || card.suit === currentSuit || (!top.joker && card.rank === top.rank);
 }
 
@@ -197,7 +198,7 @@ export function applyAction(state, playerId, action, options = {}) {
   if (action.type === 'play') {
     card = cardInfo(action.cardId);
     if (!card || !player.hand.includes(action.cardId)) fail('CARD_NOT_OWNED', '내 손에 없는 카드예요.');
-    if (!isPlayable(action.cardId, topCard(state), state.currentSuit, state.pendingDraw)) fail('CARD_NOT_PLAYABLE', state.pendingDraw ? '공격 카드로 이어받거나 카드를 가져오세요.' : '같은 색, 숫자 또는 기능의 카드를 내세요.');
+    if (!isPlayable(action.cardId, topCard(state), state.currentSuit, state.pendingDraw)) fail('CARD_NOT_PLAYABLE', state.pendingDraw ? '같거나 더 큰 숫자의 공격 카드를 내거나 카드를 가져오세요.' : '같은 색, 숫자 또는 기능의 카드를 내세요.');
     if (isWild(card) && !SUITS.includes(action.suit)) fail('SUIT_REQUIRED', '다음 색을 골라 주세요.');
   }
   const next = cloneState(state); next.revision++; next.turnCount++;

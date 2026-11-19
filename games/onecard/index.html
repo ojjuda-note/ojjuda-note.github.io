@@ -11,11 +11,11 @@
   <link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
   <link rel="stylesheet" href="/features/arcade/arcade-rooms.css?v=20261114-drinks-hub1">
   <link rel="stylesheet" href="/shared/games/game-results.css?v=20261116-yut-destinations">
-  <link rel="stylesheet" href="./style.css?v=20261120-onecard5">
+  <link rel="stylesheet" href="./style.css?v=20261120-onecard6">
   <script defer src="/config.js"></script>
   <script defer src="/shared/games/game-entry.js?v=20261107-observer-guard1"></script>
   <script defer src="/features/arcade/arcade-rooms.js?v=20261120-onecard5"></script>
-  <script type="module" src="./app.mjs?v=20261120-onecard5"></script>
+  <script type="module" src="./app.mjs?v=20261120-onecard6"></script>
 </head>
 <body class="onecard-page" data-mp-entry="true">
 <header class="mp-entry-bar"><a id="entry-arcade-back" class="mp-entry-back arcade-return" href="/world.html?tab=arcade">← 오쭈다 오락실</a><span>오쭈다 오락실</span></header>
@@ -58,7 +58,8 @@
       <button id="menu-button" class="icon-btn" type="button" aria-label="게임 메뉴" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg></button>
     </div>
   </header>
-  <main class="table" id="game-table" aria-label="원카드 테이블" inert>
+  <main class="table" id="game-table" aria-label="캠핑장 원카드 테이블" inert>
+    <div class="camp-scene" aria-hidden="true"></div>
     <div id="opponents" class="opponents" aria-label="상대 플레이어"></div>
     <div class="center-piles">
       <button id="draw-pile" class="pile stock" type="button" aria-label="카드 한 장 받기" disabled><span id="stock-card" class="pile-card"></span><span class="pile-label">가져오기 <b id="deck-count">54</b></span></button>
@@ -68,8 +69,8 @@
     <div id="turn-timer" class="turn-timer" hidden><span></span></div>
   </main>
   <section id="hand-area" class="hand-area" aria-label="내 카드" inert>
-    <div class="hand-meta"><span class="my-name"><span class="my-dot" aria-hidden="true"></span><b id="my-name">나</b><span id="my-count">7장</span></span><strong id="turn-label">같은 색이나 숫자를 이어 보세요</strong><span id="hand-pager" class="hand-pager" hidden><button id="previous-cards" class="icon-btn" type="button" aria-label="앞쪽 카드">‹</button><span id="hand-page"></span><button id="next-cards" class="icon-btn" type="button" aria-label="뒤쪽 카드">›</button></span></div>
-    <div id="hand" class="hand" role="group" aria-label="내 카드 목록"></div>
+    <div class="hand-meta"><span class="my-name"><span class="my-dot" aria-hidden="true"></span><b id="my-name">나</b><span id="my-count">7장</span></span><strong id="turn-label">같은 색이나 숫자를 이어 보세요</strong><div id="hand-sort" class="hand-sort" role="group" aria-label="카드 정렬"><button id="sort-number" type="button" aria-pressed="true">숫자순</button><button id="sort-color" type="button" aria-pressed="false">색상순</button></div></div>
+    <div id="hand-scroll" class="hand-scroll" role="region" tabindex="0" aria-label="내 카드, 좌우로 밀어서 보기"><div id="hand" class="hand" role="group" aria-label="내 카드 목록"></div></div>
     <p id="status" class="status" role="status" aria-live="polite">같은 색이나 숫자를 내면 돼요.</p>
   </section>
   <footer id="game-controls" class="controls" inert>

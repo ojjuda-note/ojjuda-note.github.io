@@ -5,6 +5,7 @@ const path = require('node:path');
 const http = require('node:http');
 const { chromium } = require('playwright');
 const { fixture } = require('./onecard-online-fixture.cjs');
+const handCases = require('./onecard-hand-cases.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const ARTIFACTS = path.join(__dirname, 'onecard-artifacts');
@@ -103,6 +104,53 @@ async function pressCard(page, id) {
 async function stableBoard(page) {
   await page.waitForFunction(() => document.querySelector('#onecard-app').dataset.view === 'playing' && document.querySelectorAll('.flying-card').length === 0);
 }
+async function handLayout(page) {
+  return page.evaluate(() => {
+    const rect = node => { const r = node.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height }; };
+    const scroller = document.querySelector('#hand-scroll');
+    return { viewport: rect(scroller), left: scroller.scrollLeft, maximum: scroller.scrollWidth - scroller.clientWidth,
+      pageX: scrollX, pageY: scrollY, cards: [...document.querySelectorAll('#hand .hand-card')].map(node => ({ ...rect(node), id: node.dataset.card, disabled: node.disabled })) };
+  });
+}
+async function settleHandScroll(page) {
+  await page.evaluate(() => new Promise(resolve => {
+    const scroller = document.querySelector('#hand-scroll'), start = performance.now(); let last = scroller.scrollLeft, stable = 0;
+    function frame() {
+      const now = scroller.scrollLeft; stable = Math.abs(now - last) < .2 ? stable + 1 : 0; last = now;
+      if (stable >= 4 || performance.now() - start > 1200) resolve(); else requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }));
+}
+async function touchHand(page, direction) {
+  const session = await page.context().newCDPSession(page), { viewport } = await handLayout(page);
+  const from = direction > 0 ? viewport.right - 30 : viewport.left + 30, to = direction > 0 ? viewport.left + 30 : viewport.right - 30;
+  const y = viewport.top + Math.min(viewport.height / 2, 55), point = x => ({ x, y, id: 7, radiusX: 3, radiusY: 3, force: 1 });
+  try {
+    await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point(from)] });
+    for (let step = 1; step <= 10; step++) {
+      await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(from + (to - from) * step / 10)] });
+      await page.waitForTimeout(16);
+    }
+    await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  } finally { await session.detach(); }
+  await settleHandScroll(page);
+}
+async function dragHand(page, { disabled = false, small = false } = {}) {
+  const layout = await handLayout(page), box = layout.viewport;
+  const candidates = layout.cards.filter(card => card.disabled === disabled && card.left >= box.left + 10 && card.left + 24 < box.right - 10);
+  const card = candidates.at(-1); assert.ok(card, `a visible ${disabled ? 'disabled' : 'playable'} card can begin the drag`);
+  const fromX = card.left + 12, toX = small ? fromX - 22 : box.left + 12, y = Math.max(box.top + 12, card.top + 28);
+  assert.ok(Math.abs(fromX - toX) > 8, 'the gesture crosses the drag threshold');
+  await page.mouse.move(fromX, y); await page.mouse.down(); await page.mouse.move(toX, y, { steps: 12 }); await page.mouse.up();
+  await settleHandScroll(page); return card.id;
+}
+function handEndpoint(layout, end, label) {
+  assert.ok(Math.abs(layout.left - (end ? layout.maximum : 0)) <= 2, `${label}: internal scroll reaches its ${end ? 'end' : 'start'}`);
+  assert.equal(layout.pageX, 0, `${label}: the page never shifts sideways`); assert.equal(layout.pageY, 0, `${label}: the page never shifts vertically`);
+  const card = end ? layout.cards.at(-1) : layout.cards[0];
+  assert.ok(card.left >= layout.viewport.left - 2 && card.right <= layout.viewport.right + 2, `${label}: endpoint card is fully inside the hand viewport`);
+}
 async function createPublicRoom(page, title = '친구와 원카드') {
   await page.locator('#online-open').click();
   await page.locator('[data-arcade-action="create"]').click();
@@ -128,17 +176,29 @@ async function joinPublicRoom(page, number) {
 async function oneScreen(page, label, playing = false) {
   const report = await page.evaluate(({ playing }) => {
     const rect = node => { const r = node.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height }; };
-    const ids = playing ? ['onecard-app', 'game-table', 'hand-area', 'game-controls', 'draw-button', 'onecard-button', 'status'] : ['setup', 'entry', 'entry-title', 'solo-mode', 'solo-start', 'online-open', 'entry-rules'];
-    return { viewport: { width: innerWidth, height: innerHeight }, document: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight }, boxes: Object.fromEntries(ids.map(id => [id, rect(document.getElementById(id))])), hand: [...document.querySelectorAll('#hand .hand-card')].map(rect) };
+    const ids = playing ? ['onecard-app', 'game-table', 'hand-area', 'hand-scroll', 'hand-sort', 'sort-number', 'sort-color', 'game-controls', 'draw-button', 'onecard-button', 'status'] : ['setup', 'entry', 'entry-title', 'solo-mode', 'solo-start', 'online-open', 'entry-rules'];
+    const scroller = document.querySelector('#hand-scroll'), style = scroller && getComputedStyle(scroller);
+    return { viewport: { width: innerWidth, height: innerHeight }, document: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight, x: scrollX, y: scrollY }, boxes: Object.fromEntries(ids.map(id => [id, rect(document.getElementById(id))])), hand: [...document.querySelectorAll('#hand .hand-card')].map(rect), overflow: style && { x: style.overflowX, y: style.overflowY, overscroll: style.overscrollBehaviorX } };
   }, { playing });
   assert.ok(report.document.width <= report.viewport.width + 1, `${label}: document must not scroll sideways`);
   assert.ok(report.document.height <= report.viewport.height + 1, `${label}: document must fit one screen`);
+  assert.equal(report.document.x, 0, `${label}: horizontal page offset remains zero`);
+  assert.equal(report.document.y, 0, `${label}: vertical page offset remains zero`);
   for (const [id, box] of Object.entries(report.boxes)) {
     assert.ok(box.width > 0 && box.height > 0, `${label}: ${id} is visible`);
     assert.ok(box.left >= -1 && box.right <= report.viewport.width + 1 && box.top >= -1 && box.bottom <= report.viewport.height + 1, `${label}: ${id} fits viewport: ${JSON.stringify(box)}`);
   }
   if (playing) {
-    for (const box of report.hand) assert.ok(box.left >= -4 && box.right <= report.viewport.width + 4, `${label}: hand card stays in the screen`);
+    const rail = report.boxes['hand-scroll'];
+    assert.ok(['auto', 'scroll'].includes(report.overflow.x), `${label}: the hand owns horizontal scrolling`);
+    assert.ok(['hidden', 'clip'].includes(report.overflow.y), `${label}: the hand cannot scroll vertically`);
+    assert.ok(['contain', 'none'].includes(report.overflow.overscroll), `${label}: hand boundary gestures do not scroll the page`);
+    // Offscreen cards intentionally stay in the DOM. Their clipping viewport
+    // retains the original strict page bounds, and full card height still fits.
+    for (const box of report.hand) {
+      assert.ok(box.top >= rail.top - 4 && box.bottom <= rail.bottom + 4, `${label}: each complete card fits the hand's vertical bounds`);
+      if (box.right > rail.left && box.left < rail.right) assert.ok(Math.max(box.left, rail.left) >= -1 && Math.min(box.right, rail.right) <= report.viewport.width + 1, `${label}: the visible part of every card stays in the screen`);
+    }
     assert.ok(report.boxes.status.bottom <= report.boxes['game-controls'].bottom, `${label}: instructions do not spill below controls`);
   }
   return report;
@@ -340,49 +400,149 @@ async function scenario(name, fn) {
     await page.context().close();
   });
 
-  await scenario('mobile pagination reaches every card and locks while drawing', async () => {
+  await scenario('mobile native swipes reach every held card, contain page scrolling and lock during draw motion', async () => {
     const mine = engine.makeDeck().filter(id => !['S-4', 'H-8', 'D-9'].includes(id)).slice(0, 18);
     const saved = setup([mine, ['H-8', 'D-9']]);
-    const longName = '오쭈다원카드를함께즐기는친구'.repeat(3).slice(0, 32);
-    saved.state.players[0].name = longName;
+    const longName = '오쭈다원카드를함께즐기는친구'.repeat(3).slice(0, 32); saved.state.players[0].name = longName;
     const page = await pageFor({ width: 360, height: 640, animated: true, saved });
-    await resume(page); assert.equal(await page.locator('#hand .hand-card').count(), 8);
-    const shown = new Set(await page.locator('#hand .hand-card').evaluateAll(nodes => nodes.map(node => node.dataset.card)));
-    await page.locator('#next-cards').click();
-    for (const id of await page.locator('#hand .hand-card').evaluateAll(nodes => nodes.map(node => node.dataset.card))) shown.add(id);
-    await page.locator('#next-cards').click();
-    for (const id of await page.locator('#hand .hand-card').evaluateAll(nodes => nodes.map(node => node.dataset.card))) shown.add(id);
-    assert.equal(shown.size, 18, 'all held cards are reachable without scrolling the page');
-    assert.equal(await page.locator('#next-cards').isDisabled(), true);
-    await page.locator('#previous-cards').click();
-    const headerLayout = await page.evaluate(() => {
+    await resume(page); assert.equal(await page.locator('#hand .hand-card').count(), 18);
+    assert.equal(await page.locator('#hand-pager, #previous-cards, #next-cards, #hand-page').count(), 0);
+    const original = JSON.stringify(await stored(page)), seen = new Set();
+    const observe = async () => {
+      const layout = await handLayout(page);
+      for (const card of layout.cards) if (card.right > layout.viewport.left + 4 && card.left < layout.viewport.right - 4) seen.add(card.id);
+      assert.equal(layout.pageX, 0); assert.equal(layout.pageY, 0); return layout;
+    };
+    let layout = await observe(); assert.ok(layout.maximum > 0);
+    for (let i = 0; i < 8 && layout.maximum - layout.left > 2; i++) { await touchHand(page, 1); layout = await observe(); }
+    handEndpoint(layout, true, 'touch hand end'); assert.equal(seen.size, 18, 'native swipes expose all eighteen cards');
+    await touchHand(page, 1); handEndpoint(await observe(), true, 'touch overscroll at the end');
+    await snapshot(page, 'mobile-full-hand-end');
+    for (let i = 0; i < 8 && layout.left > 2; i++) { await touchHand(page, -1); layout = await observe(); }
+    await touchHand(page, -1); handEndpoint(await observe(), false, 'touch overscroll at the start');
+    assert.equal(JSON.stringify(await stored(page)), original, 'swipes and their synthesized clicks never play a card');
+    const header = await page.evaluate(() => {
       const box = selector => { const r = document.querySelector(selector).getBoundingClientRect(); return { left: r.left, right: r.right, width: r.width, centerY: r.top + r.height / 2 }; };
       const name = document.querySelector('#my-name'), style = getComputedStyle(name), turn = document.querySelector('#turn-label');
-      return { row: box('.hand-meta'), nameGroup: box('.my-name'), name: box('#my-name'), turn: box('#turn-label'), pager: box('#hand-pager'), previous: box('#previous-cards'), next: box('#next-cards'),
-        nameText: name.textContent, nameWidth: name.clientWidth, nameScrollWidth: name.scrollWidth,
-        nameOverflow: style.textOverflow, nameWhiteSpace: style.whiteSpace, turnWidth: turn.clientWidth, turnScrollWidth: turn.scrollWidth };
+      return { row: box('.hand-meta'), nameGroup: box('.my-name'), name: box('#my-name'), turn: box('#turn-label'), sort: box('#hand-sort'), number: box('#sort-number'), color: box('#sort-color'),
+        nameText: name.textContent, nameWidth: name.clientWidth, nameScrollWidth: name.scrollWidth, nameOverflow: style.textOverflow, nameWhiteSpace: style.whiteSpace, turnWidth: turn.clientWidth, turnScrollWidth: turn.scrollWidth };
     });
-    assert.equal(headerLayout.nameText, longName, 'the full 32-character nickname remains in the DOM');
-    assert.equal(headerLayout.nameOverflow, 'ellipsis');
-    assert.equal(headerLayout.nameWhiteSpace, 'nowrap');
-    assert.ok(headerLayout.nameScrollWidth > headerLayout.nameWidth, 'a long nickname is visually shortened');
-    for (const key of ['nameGroup', 'name', 'turn', 'pager', 'previous', 'next']) {
-      const box = headerLayout[key];
-      assert.ok(box.width > 0 && box.left >= headerLayout.row.left - 1 && box.right <= headerLayout.row.right + 1, `${key} stays inside the hand header`);
-      assert.ok(Math.abs(box.centerY - headerLayout.row.centerY) <= 1, `${key} stays on the same line`);
+    assert.equal(header.nameText, longName); assert.equal(header.nameOverflow, 'ellipsis'); assert.equal(header.nameWhiteSpace, 'nowrap');
+    assert.ok(header.nameScrollWidth > header.nameWidth, 'the complete nickname stays in the DOM while its display is shortened');
+    for (const key of ['nameGroup', 'name', 'turn', 'sort', 'number', 'color']) {
+      assert.ok(header[key].width > 0 && header[key].left >= header.row.left - 1 && header[key].right <= header.row.right + 1, `${key} remains inside the hand header`);
+      assert.ok(Math.abs(header[key].centerY - header.row.centerY) <= 1, `${key} remains on the shared header line`);
     }
-    assert.ok(headerLayout.nameGroup.right <= headerLayout.turn.left + 1, 'nickname does not overlap the turn label');
-    assert.ok(headerLayout.turn.right <= headerLayout.pager.left + 1, 'turn label does not overlap the page buttons');
-    assert.ok(headerLayout.turnScrollWidth <= headerLayout.turnWidth + 1, 'my-turn text remains fully readable');
-    await oneScreen(page, '18-card pagination', true); await snapshot(page, 'mobile-many-cards');
-    await page.locator('#draw-button').click();
-    await page.waitForFunction(() => document.querySelectorAll('.flying-card').length > 0);
-    assert.equal(await page.locator('#previous-cards').isDisabled(), true, 'cannot invalidate an in-flight target');
-    assert.equal(await page.locator('#next-cards').isDisabled(), true, 'both pager directions lock during motion');
+    assert.ok(header.nameGroup.right <= header.turn.left + 1); assert.ok(header.turn.right <= header.sort.left + 1);
+    assert.ok(header.turnScrollWidth <= header.turnWidth + 1, 'the turn label is fully readable');
+    await oneScreen(page, 'eighteen-card scrollable hand', true);
+    await page.locator('#draw-button').click(); await page.waitForFunction(() => document.querySelector('.flying-card'));
+    await page.evaluate(() => document.getAnimations().forEach(animation => animation.pause()));
+    assert.equal(await page.locator('#sort-number').isDisabled(), true); assert.equal(await page.locator('#sort-color').isDisabled(), true);
+    const lockedLeft = await page.locator('#hand-scroll').evaluate(node => node.scrollLeft);
+    // Native touch must not move the actual landing target during a card flight.
+    const lock = await page.locator('#hand-scroll').evaluate(node => ({ overflow: getComputedStyle(node).overflowX, touch: getComputedStyle(node).touchAction }));
+    assert.equal(lock.overflow, 'hidden'); assert.equal(lock.touch, 'none');
+    await touchHand(page, 1);
+    assert.equal(await page.locator('#hand-scroll').evaluate(node => node.scrollLeft), lockedLeft, 'a real touch gesture cannot move a paused in-flight target');
+    await page.evaluate(() => document.getAnimations().forEach(animation => animation.play()));
     await stableBoard(page);
-    assert.equal((await stored(page)).players[0].hand.length, 19);
-    await page.context().close();
-    return { nicknameLength: longName.length, headerLayout };
+    assert.equal((await stored(page)).players[0].hand.length, 19); assert.equal(await page.locator('#hand .hand-card').count(), 19);
+    assert.equal(await page.locator('#hand-scroll').evaluate(node => node.scrollLeft), lockedLeft);
+    assert.ok(['auto', 'scroll'].includes(await page.locator('#hand-scroll').evaluate(node => getComputedStyle(node).overflowX)));
+    await oneScreen(page, 'nineteen-card scrollable hand', true); await snapshot(page, 'mobile-nineteen-cards');
+    await page.context().close(); return { seen: seen.size, header };
+  });
+
+  await scenario('mouse drags begin on disabled cards, reach both ends and never submit a playable card', async () => {
+    const page = await pageFor({ saved: setup([handCases.hand]) }); await resume(page);
+    const original = JSON.stringify(await stored(page));
+    const disabledId = await dragHand(page, { disabled: true });
+    assert.ok((await handLayout(page)).left > 0, 'dragging an unplayable card scrolls its parent');
+    assert.equal(JSON.stringify(await stored(page)), original);
+    await page.locator('#hand-scroll').focus(); await page.keyboard.press('End');
+    handEndpoint(await handLayout(page), true, 'keyboard hand end');
+    await page.keyboard.press('Home'); handEndpoint(await handLayout(page), false, 'keyboard hand start');
+    const playableId = await dragHand(page, { small: true });
+    assert.equal(JSON.stringify(await stored(page)), original, 'releasing a drag on a playable card is not a card action');
+    let layout = await handLayout(page);
+    for (let i = 0; i < 5 && layout.maximum - layout.left > 2; i++) {
+      const { viewport } = layout, y = viewport.top + 32;
+      await page.mouse.move(viewport.right - 25, y); await page.mouse.down();
+      await page.mouse.move(viewport.left + 25, y, { steps: 12 }); await page.mouse.up(); await settleHandScroll(page);
+      layout = await handLayout(page);
+    }
+    handEndpoint(layout, true, 'mouse hand end'); assert.equal(JSON.stringify(await stored(page)), original);
+    await oneScreen(page, 'desktop all nineteen cards', true); await snapshot(page, 'desktop-hand-dragged-end');
+    await page.context().close(); return { disabledId, playableId };
+  });
+
+  await scenario('number and color sorting follow visible values, preserve ties and never change game state', async () => {
+    const page = await pageFor({ width: 390, height: 844, saved: setup([handCases.hand]) }); await resume(page);
+    const ids = () => page.locator('#hand .hand-card').evaluateAll(nodes => nodes.map(node => node.dataset.card));
+    const original = JSON.stringify(await stored(page)); assert.deepEqual(await ids(), handCases.numberOrder);
+    await page.locator('#sort-color').click(); assert.deepEqual(await ids(), handCases.colorOrder);
+    assert.equal(await page.locator('#sort-color').getAttribute('aria-pressed'), 'true');
+    await page.locator('#sort-color').click(); assert.deepEqual(await ids(), handCases.colorOrder);
+    await page.locator('#sort-number').click(); assert.deepEqual(await ids(), handCases.numberOrder, 'same-value ties retain original hand order');
+    assert.equal(JSON.stringify(await stored(page)), original, 'hand, deck, RNG, turn and revision are byte-for-byte unchanged');
+    await page.locator('#sort-color').click(); await page.reload({ waitUntil: 'networkidle' }); await resume(page);
+    assert.equal(await page.locator('#sort-color').getAttribute('aria-pressed'), 'true'); assert.deepEqual(await ids(), handCases.colorOrder);
+    assert.equal(JSON.stringify(await stored(page)), original, 'reopening a preferred sort does not rewrite game state');
+    await oneScreen(page, 'color-sorted hand', true); await snapshot(page, 'mobile-color-sorted-hand'); await page.context().close();
+  });
+
+  await scenario('every animation frame keeps the previous discard visible until the played card lands', async () => {
+    const page = await pageFor({ animated: true, saved: setup([['S-K', 'S-3', 'H-8']]) }); await resume(page);
+    await page.evaluate(() => {
+      const pile = document.querySelector('#discard-card');
+      window.discardSamples = []; window.discardSampling = true;
+      function sample() {
+        if (!window.discardSampling) return;
+        const card = pile.firstElementChild, style = getComputedStyle(pile), face = card && getComputedStyle(card);
+        const rect = card?.getBoundingClientRect();
+        window.discardSamples.push({ id: pile.dataset.card, faceId: card?.dataset.cardId, count: pile.children.length,
+          visible: !!card && style.visibility !== 'hidden' && face.visibility !== 'hidden' && +style.opacity > 0 && +face.opacity > 0 && rect.width > 0 && rect.height > 0,
+          flying: !!document.querySelector('.flying-card') }); requestAnimationFrame(sample);
+      }
+      requestAnimationFrame(sample);
+    });
+    await pressCard(page, 'S-K'); await page.waitForFunction(() => document.querySelector('.flying-card'));
+    assert.equal(await page.locator('#discard-card').getAttribute('data-card'), 'S-4');
+    assert.equal(await page.locator('#discard-card > .playing-card').getAttribute('data-card-id'), 'S-4');
+    await snapshot(page, 'discard-old-card-during-flight');
+    await stableBoard(page); await page.waitForFunction(() => !document.querySelector('#draw-button').disabled);
+    assert.equal(await page.locator('#discard-card').getAttribute('data-card'), 'S-K');
+    const samples = await page.evaluate(() => { window.discardSampling = false; return window.discardSamples; });
+    assert.ok(samples.filter(sample => sample.flying && sample.id === 'S-4').length >= 3, 'several real rendered frames retain the stationary previous face');
+    assert.ok(samples.every(sample => sample.visible && sample.count === 1 && sample.id === sample.faceId), 'the discard never becomes blank or inconsistent');
+    assert.ok(samples.every(sample => ['S-4', 'S-K'].includes(sample.id)), 'no stale intermediate card appears');
+    await snapshot(page, 'discard-new-card-after-landing'); await page.context().close(); return { sampledFrames: samples.length };
+  });
+
+  await scenario('the nineteenth held card is accessible and receiving a twentieth removes active hand controls', async () => {
+    const page = await pageFor({ width: 360, height: 640, saved: setup([handCases.hand]) }); await resume(page);
+    assert.equal(await page.locator('#hand .hand-card').count(), 19);
+    await page.locator('#hand-scroll').focus(); await page.keyboard.press('End'); handEndpoint(await handLayout(page), true, 'nineteenth card');
+    await page.locator('#draw-button').click();
+    await page.waitForFunction(key => !JSON.parse(localStorage.getItem(key)).state.players[0].active, STORAGE);
+    const state = await stored(page); assert.equal(state.players[0].eliminatedReason, 'too-many-cards'); assert.equal(state.players[0].hand.length, 0);
+    assert.equal(await page.locator('#hand .hand-card').count(), 0); assert.equal(await page.locator('#draw-button').isDisabled(), true);
+    assert.match(await page.locator('#status').textContent(), /20장/);
+    await oneScreen(page, 'twentieth-card elimination', true); await snapshot(page, 'mobile-twentieth-card-elimination'); await page.context().close();
+  });
+
+  await scenario('attack defense controls reject lower strengths and compare the latest attack rather than the total', async () => {
+    const high = await pageFor({ saved: setup([['S-2', 'H-A', 'X-R', 'S-3']], { top: 'X-B', currentSuit: 'S', pendingDraw: 12 }) }); await resume(high);
+    for (const id of ['S-2', 'H-A', 'S-3']) assert.equal(await high.locator(`#hand [data-card="${id}"]`).isDisabled(), true, `${id} cannot defend against +5`);
+    assert.equal(await high.locator('#hand [data-card="X-R"]').isDisabled(), false);
+    assert.equal(await high.locator('#draw-button').textContent(), '12장 받기');
+    await pressCard(high, 'X-R'); await high.locator('#sheet[open]').waitFor(); await high.keyboard.press('Escape');
+    assert.equal((await stored(high)).revision, 0, 'canceling a legal high attack preserves the game'); await high.context().close();
+    const equal = await pageFor({ saved: setup([['S-2', 'D-A', 'S-3']], { top: 'H-2', currentSuit: 'H', pendingDraw: 10 }) }); await resume(equal);
+    assert.equal(await equal.locator('#hand [data-card="S-2"]').isDisabled(), false, 'a +2 still defends the latest +2 even with ten cards accumulated');
+    assert.equal(await equal.locator('#hand [data-card="D-A"]').isDisabled(), false); assert.equal(await equal.locator('#hand [data-card="S-3"]').isDisabled(), true);
+    await equal.context().close();
   });
 
   await scenario('multiplayer login failure stays usable and explains how to continue', async () => {
