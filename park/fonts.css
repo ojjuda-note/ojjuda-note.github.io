@@ -16,6 +16,24 @@
   letter-spacing: 0;
 }
 
+/* Nanum Myeongjo. License and source: assets/fonts/README.md. */
+@font-face {
+  font-family: "Nanum Myeongjo";
+  src: url("/park/assets/fonts/nanum-myeongjo.woff2?v=20261120-nanum-myeongjo1") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+.note-font-nanum-myeongjo .card-quote,
+.note-font-nanum-myeongjo textarea,
+.na-edit-font-nanum-myeongjo .na-edit-quote {
+  font-family: "Nanum Myeongjo", "Noto Serif KR", serif;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
 /* Switching back to a special font must also update the writing preview. */
 .compose-photo.ju-font-book textarea { font-family: "Gowun Batang", serif !important; }
 .compose-photo.ju-font-letter textarea { font-family: "Nanum Pen Script", cursive !important; }
