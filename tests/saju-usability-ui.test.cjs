@@ -1,6 +1,16 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { harness, fixedNow, pause, waitFor, selectReadingItem } = require('./helpers/saju-ui-harness.cjs');
+const {currentStory,chooseStory,followStory}=require('./helpers/saju-story-ui.cjs');
+
+function periodOptions(host) {return [...host.querySelectorAll('.story-period-select option')];}
+function currentPeriod(host) {return periodOptions(host).find(option=>option.textContent.includes(' · 지금'))?.value;}
+function choosePeriodDetail(h,period) {
+  const host=h.$('report-content'),button=[...host.querySelectorAll('.reading-item-button')]
+    .find(item=>item.dataset.readingPeriod===period&&!/^reading-(?:month-\d+|daeun-period-\d+)$/.test(item.dataset.readingTarget));
+  assert.ok(button,'the period has an explicitly selectable detailed topic');
+  return chooseStory(h.$('reading-page-select'),button.dataset.readingTarget);
+}
 
 // Keep these full-report transitions in a separate test worker: Node's VM
 // module contexts otherwise accumulate beside the core purchase scenarios.
@@ -31,7 +41,7 @@ test('the two-step entry keeps one task in view, validates before moving and pre
   await h.flow.next();assert.deepEqual(snapshot(),values);assert.equal(h.state.starts.length,0);
   await waitFor(()=>!h.$('open-story').disabled);h.$('open-story').click();await h.ready('annual',2026);
   assert.equal(h.state.starts.length,1);assert.deepEqual(h.state.chargedAmounts,[10]);
-  h.$('edit-birth').click();assert.equal(form.dataset.flowStep,'0');assert.deepEqual(snapshot(),values);
+  h.openTools();h.$('edit-birth').click();assert.equal(form.dataset.flowStep,'0');assert.deepEqual(snapshot(),values);
   assert.equal(h.$('open-story').hidden,true,'editing returns to birth information before another explicit confirmation');
   h.changeAccount('20000000-0000-4000-8000-000000000002');await pause();
   assert.equal(form.dataset.flowStep,'0');assert.equal(h.$('birth-year').value,'');
@@ -59,40 +69,32 @@ test('staged paid reports keep decade, month and detailed reading links connecte
   const h=await harness({coins:100});t.after(h.close);
   h.fill({topic:'all',gender:'female',hour:null});h.submit();await h.ready('all',2026);
   const doc=h.window.document,host=h.$('report-content'),picker=h.$('reading-page-select');
-  const current=()=>host.querySelector('[data-reader-current]');
-  const pick=id=>selectReadingItem(picker,id);
-  function follow(link) {
-    assert.ok(link,'the requested detail link is present');
-    const target=h.$(link.hash.slice(1));assert.ok(target);
-    link.click();
-    assert.equal(target.closest('[hidden]'),null,'clicking '+link.textContent+' reveals its target after the prepared report is moved');
-    assert.ok(current()===target||current().contains(target),'the requested target becomes the active page');
-    assert.equal(host.querySelectorAll('[data-reader-current]').length,1);
-    return target;
-  }
+  const pick=id=>chooseStory(picker,id);
   pick('reading-daeun');
-  const periods=[...host.querySelectorAll('.daeun-nav a')];assert.equal(periods.length,9);
+  const periods=periodOptions(host).map(option=>option.value).filter(id=>/^reading-daeun-period-\d+$/.test(id)).sort((a,b)=>Number(a.split('-').at(-1))-Number(b.split('-').at(-1)));
+  assert.equal(periods.length,9);
   for(const index of [0,4,8]) {
-    pick('reading-daeun');
-    const period=follow(periods[index]).closest('.daeun-period');
-    follow(period.querySelector('.reading-page-section-link'));
-    assert.equal(host.querySelector('.daeun-time-notice').closest('[hidden]'),null);
+    followStory(host,periods[index]+'-title');
+    assert.equal(currentStory(host).dataset.storyPeriod,periods[index]);
+    const detail=choosePeriodDetail(h,periods[index]);
+    assert.ok(detail.dataset.daeunTopic);
+    assert.match(detail.querySelector('.story-context').textContent,/오전 6시 00분을 기준/);
   }
-  h.$('report-toc').querySelector('a[href="#reading-topics"]').click();
-  assert.equal(h.$('reading-topics').closest('[hidden]'),null,'the outer contents opens the live report page');
-  follow(h.$('reading-topics').querySelector('a[href^="#"]'));
+  followStory(host,'reading-topics');assert.equal(host.querySelector('dialog.story-menu').open,true);
+  const firstTopic=host.querySelector('.reading-item-button[data-reading-domain="lifelong"]');
+  pick(firstTopic.dataset.readingTarget);assert.equal(host.querySelector('dialog.story-menu').open,false);
   for(const month of [1,6,12]) {
     pick('reading-month-'+month);
-    follow(h.$('reading-month-'+month).querySelector('.reading-page-section-link'));
+    assert.equal(currentStory(host).dataset.storySource,'reading-month-'+month);
+    assert.equal(choosePeriodDetail(h,'month-'+month).dataset.storyPeriod,'month-'+month);
   }
   h.pickReport('annual',2026);h.$('open-product').click();await h.ready('annual',2026);
-  h.$('report-toc').querySelector('a[href="#reading-topics"]').click();
-  const target=h.$(h.$('reading-topics').querySelector('a').hash.slice(1));
-  h.$('reading-topics').querySelector('a').click();
-  assert.equal(target.closest('[hidden]'),null,'links are connected after switching the purchased product too');
+  followStory(host,'reading-topics');assert.equal(host.querySelector('dialog.story-menu').open,true);
+  const target=host.querySelector('.reading-item-button[data-reading-domain="annual"]').dataset.readingTarget;
+  assert.equal(chooseStory(h.$('reading-page-select'),target).id,target,'the menu is connected after switching the purchased product too');
   assert.equal(host.querySelectorAll('[data-reader-current]').length,1);
   assert.deepEqual(h.state.chargedAmounts,[30],'navigation and the already included annual product do not add a charge');
-  h.$('copy-reading').click();await pause();assert.equal(h.state.copies.length,1);
+  h.openTools();h.$('copy-reading').click();await pause();assert.equal(h.state.copies.length,1);
   assert.ok(!doc.querySelector('.source-entry,[data-fact-id]'),'navigation does not restore calculation evidence');
 });
 
@@ -102,16 +104,19 @@ test('a foreground solar-term boundary refreshes only the open paid month and pr
   h.advance(boundary-30000-Date.parse(fixedNow));
   h.fill({topic:'monthly',hour:8,minute:37});h.submit();await h.ready('monthly',2026);
   const host=h.$('report-content'),doc=h.window.document;
-  assert.equal(host.querySelector('.month-reading.is-current').id,'reading-month-11');
+  assert.equal(currentStory(host).dataset.storySource,'reading-month-11');
+  assert.equal(currentPeriod(host),'month-11');
   selectReadingItem(h.$('reading-page-select'),'reading-month-6');
-  h.$('reading-month-6').querySelector('.reading-page-section-link').click();
+  choosePeriodDetail(h,'month-6');
   const selected=host.querySelector('[data-reader-current]').id;
+  h.openTools();
   doc.querySelector('[data-reading-size="large"]').click();
   h.pickReport('annual',2027);
+  h.$('reading-tools').querySelector('[data-reader-tools-close]').click();
   h.$('reading-page-select-toggle').focus();
   const receipt=JSON.stringify([...h.state.receipts.values()]),note=h.$('current-reading-note').textContent;
   h.advance(60000);
-  await waitFor(()=>host.querySelector('.month-reading.is-current')?.id==='reading-month-12'&&!h.$('report-product-picker').disabled);
+  await waitFor(()=>currentPeriod(host)==='month-12'&&!h.$('report-product-picker').disabled);
   assert.equal(host.dataset.topic,'monthly');assert.equal(host.dataset.year,'2026');
   assert.equal(host.querySelector('[data-reader-current]').id,selected,'a detailed page stays selected after a clock update');
   assert.equal(h.$('reading-page-select').value,selected);
@@ -120,7 +125,7 @@ test('a foreground solar-term boundary refreshes only the open paid month and pr
   assert.equal(h.$('other-reading-options').open,true);
   assert.equal(doc.querySelector('input[name="report-topic"]:checked').value,'annual');
   assert.equal(h.$('fortune-year').value,'2027');
-  assert.equal(h.$('reading-annual'),null,'a merely selected unpaid product is not generated or displayed');
+  assert.equal(host.querySelector('.reading-domain-button[data-reading-domain="annual"]'),null,'a merely selected unpaid product is not generated or displayed');
   assert.equal(h.state.starts.length,1);assert.deepEqual(h.state.chargedAmounts,[10]);
   assert.equal(JSON.stringify([...h.state.receipts.values()]),receipt);assert.equal(h.$('current-reading-note').textContent,note);
   const unchanged=host.firstElementChild,checks=h.state.statusCalls.length;
@@ -140,21 +145,19 @@ test('a resumed decade boundary keeps the same detailed topic and assumed-time n
   h.advance(boundary-30000-Date.parse(fixedNow));
   h.fill({gender:'female',hour:null});h.submit();await h.ready();
   const host=h.$('report-content');
-  const oldCurrent=host.querySelector('.daeun-period.is-current');
-  assert.equal(oldCurrent.dataset.daeunPeriod,'reading-daeun-period-'+ending.index);
   selectReadingItem(h.$('reading-page-select'),'reading-daeun');
-  host.querySelector(`.daeun-nav a[href="#${oldCurrent.dataset.daeunPeriod}-title"]`).click();
-  oldCurrent.querySelector('.reading-page-section-link').click();
+  assert.equal(currentPeriod(host),'reading-daeun-period-'+ending.index);
+  choosePeriodDetail(h,'reading-daeun-period-'+ending.index);
   const selected=host.querySelector('[data-reader-current]').dataset.daeunTopic;
   const receipt=JSON.stringify([...h.state.receipts.values()]);
   h.advance(60000,{runTimers:false,focus:true});
-  await waitFor(()=>host.querySelector('.daeun-period.is-current')?.dataset.daeunPeriod==='reading-daeun-period-'+(ending.index+1)&&!h.$('report-product-picker').disabled);
+  await waitFor(()=>currentPeriod(host)==='reading-daeun-period-'+(ending.index+1)&&!h.$('report-product-picker').disabled);
   assert.equal(host.querySelector('[data-reader-current]').dataset.daeunTopic,selected,'reordering the current decade does not change the chosen topic');
-  assert.equal(host.querySelector('.daeun-time-notice').closest('[hidden]'),null);
-  assert.match(host.querySelector('.daeun-time-notice').textContent,/오전 6시 00분을 기준/);
+  assert.equal(currentStory(host).querySelector('.story-context').closest('[hidden]'),null);
+  assert.match(currentStory(host).querySelector('.story-context').textContent,/오전 6시 00분을 기준/);
   assert.equal(h.state.starts.length,1);assert.deepEqual(h.state.chargedAmounts,[10]);
   assert.equal(JSON.stringify([...h.state.receipts.values()]),receipt);
-  h.$('copy-reading').click();await pause();
+  h.openTools();h.$('copy-reading').click();await pause();
   assert.ok(h.state.copies[0].includes(periods[ending.index].startLabel+'부터'),'copy uses the newly current period');
   assert.match(h.state.copies[0],/태어난 시간을 몰라 대운은 오전 6시 00분을 기준으로 계산했어요/);
 });
@@ -168,7 +171,7 @@ test('a failed clock refresh keeps the paid reading and an explicit retry never 
   await waitFor(()=>!h.$('report-error').hidden&&!h.$('retry-report').disabled);
   assert.equal(host.firstElementChild,original);assert.equal(h.state.starts.length,1);
   h.$('retry-report').click();
-  await waitFor(()=>host.querySelector('.month-reading.is-current')?.id==='reading-month-12'&&!h.$('report-product-picker').disabled);
+  await waitFor(()=>currentPeriod(host)==='month-12'&&!h.$('report-product-picker').disabled);
   assert.equal(h.$('report-error').hidden,true);assert.equal(h.state.starts.length,1);
   assert.deepEqual(h.state.chargedAmounts,[10]);
 });
@@ -184,7 +187,7 @@ test('New Year updates the birth-year limit on resume, input and submit while fu
   assert.equal(h.$('birth-year').validity.rangeOverflow,false);assert.equal(h.$('birth-form').checkValidity(),true);
   h.$('birth-year').max='2026';h.submit();await h.ready();
   assert.equal(h.$('birth-year').max,'2027');assert.equal(h.state.starts.length,1);
-  h.$('edit-birth').click();h.fill({year:2027,month:1,day:2,fortuneYear:2027,hour:null});await h.submit();
+  h.openTools();h.$('edit-birth').click();h.fill({year:2027,month:1,day:2,fortuneYear:2027,hour:null});await h.submit();
   const flowError=h.$('birth-form').querySelector('[data-flow-error]:not([hidden])');
   assert.ok(flowError,'a future birthday remains in the information step');
   assert.match(flowError.textContent,/미래의 날짜와 시간/);
@@ -196,8 +199,9 @@ test('today with unknown birth time opens before the assumed 06:00 and resuming 
   h.advance(Date.parse('2026-11-14T05:59:00+09:00')-Date.parse(fixedNow));
   h.fill({year:2026,month:11,day:14,hour:null,gender:'female'});h.submit();await h.ready();
   const host=h.$('report-content'),notice='태어난 시간을 몰라 대운은 오전 6시 00분을 기준으로 계산했어요.';
-  assert.equal(h.$('reading-daeun').querySelectorAll('.daeun-period[data-daeun-period]').length,9);
-  assert.equal(host.querySelector('.daeun-time-notice').textContent,notice);
+  chooseStory(h.$('reading-page-select'),'reading-daeun');
+  assert.equal(periodOptions(host).filter(option=>/^reading-daeun-period-\d+$/.test(option.value)).length,9);
+  assert.equal(currentStory(host).querySelector('.story-context').textContent,notice);
   assert.equal(h.$('form-error').hidden,true);
   const chart=h.state.starts[0].chart;
   assert.equal(chart.timeKnown,false);assert.equal(chart.input.hour,null);
@@ -206,8 +210,8 @@ test('today with unknown birth time opens before the assumed 06:00 and resuming 
   h.advance(60000,{focus:true});
   await waitFor(()=>h.state.statusCalls.length>checks&&!h.$('report-product-picker').disabled);
   assert.equal(h.$('result').hidden,false);assert.equal(host.dataset.topic,'lifelong');
-  assert.equal(h.$('reading-daeun').querySelectorAll('.daeun-period[data-daeun-period]').length,9);
-  assert.equal(host.querySelector('.daeun-time-notice').textContent,notice);
+  assert.equal(periodOptions(host).filter(option=>/^reading-daeun-period-\d+$/.test(option.value)).length,9);
+  assert.equal(currentStory(host).querySelector('.story-context').textContent,notice);
   assert.equal(h.state.starts.length,1);assert.deepEqual(h.state.chargedAmounts,[10]);
   assert.equal(JSON.stringify([...h.state.receipts.values()]),receipts,'the original 24-hour deadline stays unchanged');
 });
