@@ -1341,6 +1341,7 @@
       concept: '성장을 노래하는 NCT의 여섯 멤버 유닛.',
       official: 'https://www.smentertainment.com/', youtube: 'https://www.youtube.com/@NCTDREAM',
       photo: 'NCT Dream at DREAM()SCAPE Press Conference.png', photoLabel: 'DREAM()SCAPE 기자회견 · 당시 사진', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
+      morePhotos: [commonsPhoto('NCT DREAM 231202.png', 'MMA 2023 · 단체', '2023', 'K-POPIT 케이팝잇 · Commons 확인 2024.10.02', 'CC BY 3.0')],
       checkedAt: '2026.11.19',
       music: [
         {
