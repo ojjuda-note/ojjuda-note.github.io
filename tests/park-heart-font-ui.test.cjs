@@ -29,8 +29,8 @@ const family = locator => locator.evaluate(element =>
       const url = new URL(route.request().url());
       if (url.origin !== origin) return route.abort();
       if (url.pathname === '/park/') return route.fulfill({ contentType: 'text/html', body: html });
-      if (url.pathname === '/admin-fonts.html') return route.fulfill({ contentType: 'text/html', body:
-        '<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><main id="host"></main><script src="/admin/world-admin-loader.js"></script>' });
+      if (url.pathname === '/admin-fonts.html') return route.fulfill({ contentType: 'text/html; charset=utf-8', body:
+        '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><main id="host"></main><script src="/admin/world-admin-loader.js"></script>' });
       const file = path.resolve(root, '.' + url.pathname);
       if (!file.startsWith(root + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) return route.abort();
       if (url.pathname === '/park/assets/fonts/single-day.woff2') fontReads.push(url.pathname);
@@ -115,6 +115,7 @@ const family = locator => locator.evaluate(element =>
     const admin = await context.newPage();
     admin.on('pageerror', error => errors.push(error.message));
     await admin.goto(origin + '/admin-fonts.html');
+    assert.equal(await admin.evaluate(() => document.characterSet), 'UTF-8', 'administrator scripts use the same Korean encoding as the production shell');
     const shopUntil = { shopFontUntil: '2099-01-02T03:04:05.678Z', shopEffectUntil: '2099-02-03T04:05:06.789Z' };
     await admin.evaluate(async (shopUntil) => {
       await OjjudaAdminAssets.load();
@@ -139,6 +140,12 @@ const family = locator => locator.evaluate(element =>
       };
       await OjjudaNoteAdmin.mount(document.getElementById('host'), { client, initialTab: 'cards' });
     }, shopUntil);
+    const adminState = await admin.evaluate(() => ({
+      buttons: [...document.querySelectorAll('#host button')].map(button => button.textContent),
+      status: document.querySelector('.na-status')?.textContent,
+      calls: adminCalls.map(call => call.name)
+    }));
+    assert.ok(adminState.buttons.includes('본문·태그 수정'), 'the real administrator renders its Korean edit action: ' + JSON.stringify(adminState));
     await admin.getByRole('button', { name: '본문·태그 수정', exact: true }).click();
     await admin.locator('.na-edit-font-heart').waitFor();
     await admin.waitForFunction(() => [...document.fonts].some(face => face.family.replace(/["']/g, '') === 'Single Day'));
