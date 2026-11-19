@@ -1,0 +1,18 @@
+{
+  "id": "/world.html?place=park",
+  "name": "오쭈다 공원",
+  "short_name": "오쭈다 공원",
+  "description": "이름 없이 나누는 오늘의 이야기. 마음이 쉬어가는 오쭈다 공원.",
+  "lang": "ko",
+  "start_url": "/world.html?place=park",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f8f4",
+  "theme_color": "#32736b",
+  "icons": [
+    {"src": "/park/assets/icon-192.png?v=20261119-illustrated-icons-1", "sizes": "192x192", "type": "image/png"},
+    {"src": "/park/assets/icon-512.png?v=20261119-illustrated-icons-1", "sizes": "512x512", "type": "image/png"},
+    {"src": "/park/assets/icon-maskable-512.png?v=20261119-illustrated-icons-1", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ],
+  "prefer_related_applications": false
+}

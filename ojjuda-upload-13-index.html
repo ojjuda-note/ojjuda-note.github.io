@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ko" data-world-theme="classic">
+<head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
+<script src="/shared/location/location.js?v=20261119-kma-current1" defer></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf8f2">
+  <link rel="icon" href="/features/pajang/assets/icon-192.png?v=20261119-illustrated-icons-1" type="image/png">
+  <link rel="apple-touch-icon" href="/features/pajang/assets/apple-touch-icon.png?v=20261119-illustrated-icons-1">
+  <link rel="manifest" href="/features/pajang/manifest.webmanifest?v=20261119-illustrated-icons-1">
+  <meta name="apple-mobile-web-app-title" content="오쭈다 파장">
+  <script src="/shared/pwa/app-identity.js?v=20261119-illustrated-icons-1"></script>
+  <link rel="stylesheet" href="/shared/pwa/pwa-install.css?v=20261118-play-status2">
+  <script src="/shared/pwa/pwa-install.js?v=20261119-illustrated-icons-1" defer></script>
+  <title>파장 · 취향으로 만나는 소개팅 | 오쭈다 아지트</title>
+  <meta name="description" content="마음이 닿는 오늘의 한마디. 파장에서 질문에 답하고, 서로의 취향으로 새로운 인연을 만나보세요.">
+  <link rel="preconnect" href="https://ziezbdjofcugznowiuda.supabase.co" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link rel="modulepreload" href="./member.mjs?v=20261119-guest-account1">
+  <link rel="modulepreload" href="./load-station.mjs?v=20261119-guest-account1">
+  <link rel="modulepreload" href="./entry-design.mjs?v=20261119-invite-referral1">
+  <link rel="preload" href="./station.css?v=20261119-profile-detail-tastes1" as="style">
+  <link id="entry-style" rel="stylesheet" href="./preview.css?v=compass8">
+  <link rel="stylesheet" href="./shell.css?v=flight1">
+  <link rel="stylesheet" href="/app/world/world-themes.css?v=20261119-auto-theme1">
+  <link rel="stylesheet" href="./letterroom.css?v=20261119-auto-theme1">
+  <link rel="stylesheet" href="./radar-motion.css?v=20261119-auto-theme1">
+  <link rel="stylesheet" href="/features/account/settings-list.css?v=20261119-guest-account1">
+  <link rel="stylesheet" href="/note/notifications.css?v=20261117-inbox-keyboard1">
+  <link rel="stylesheet" href="/features/wallet/ju-charge.css?v=20261106-source-folders1">
+  <link rel="stylesheet" href="/ju-coins/ju-coins.css?v=20261106-source-folders1">
+  <link rel="stylesheet" href="./account-toolbar.css?v=20261119-service-header1">
+  <link rel="stylesheet" href="./signal-purchase.css?v=20261119-signal-purchase1">
+  <link rel="stylesheet" href="./entry-design.css?v=20261119-water-letter1">
+  <link rel="stylesheet" href="/shared/share/page-share.css?v=20261119-main-invite1">
+  <link rel="stylesheet" href="/shared/brand/service-header.css?v=20261119-main-invite1">
+  <script src="/shared/auth/invite-referral.js?v=20261119-invite-referral1" defer></script>
+<script src="/shared/share/page-share.js?v=20261119-arcade-invite1" defer></script>
+  <script src="/app/world/world-themes.js?v=20261119-auto-theme1"></script>
+  <script src="/app/world/world-weather.js?v=20261119-kma-current1" defer></script>
+  <script type="module" src="./shell.mjs?v=20261119-service-header1"></script>
+  <script type="module" src="./entry.mjs?v=20261119-invite-referral1"></script>
+<script src="/shared/navigation/section-back.js?v=20261119-history1" data-return-to="hub" defer></script></head>
+<body>
+  <header class="pajang-mast"><div class="pajang-mast-inner ojjuda-service-header">
+    <div class="ojjuda-service-brand">
+      <a class="ojjuda-service-home" href="./" aria-label="오쭈다 파장 오늘로">
+        <svg class="ojjuda-service-logo ojjuda-theme-logo" viewBox="-16 -16 544 544" width="30" height="30" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/><path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/><path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg>
+        <span class="ojjuda-service-word">오쭈다 <span class="ojjuda-service-name">파장</span></span>
+      </a>
+      <span class="ojjuda-service-beta">베타</span>
+    </div>
+    <div class="nn-top-actions ojjuda-service-actions">
+      <button class="ojjuda-service-invite" type="button" data-share-page="pajang" aria-label="파장 초대 링크 공유"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 16V3m-4 4 4-4 4 4M5 12v8h14v-8"/></svg><span>초대</span></button>
+      <button class="nn-bell" type="button" data-notifications-open aria-label="알림" aria-haspopup="dialog" aria-controls="note-notification-dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span class="nn-dot" data-notification-dot hidden aria-hidden="true"></span></button>
+      <button class="coinpill ojjuda-service-balance" type="button" data-ju-charge-open aria-label="보유 ZU 확인 중, 충전 열기" title="보유 ZU 확인 중, 충전 열기" aria-haspopup="dialog" aria-controls="ju-charge-dialog"><span class="cz" aria-hidden="true"><i>ZU</i></span><span data-pajang-balance>…</span></button>
+    </div>
+  </div></header>
+  <main id="gate" aria-live="polite">
+    <div class="flight-scene" aria-hidden="true">
+      <div class="flight-landscape"></div>
+      <div class="flight-across"><div class="flight-lift"><span class="paper-plane"><i></i></span></div></div>
+    </div>
+    <p class="flight-caption" role="status">파장을 열고 있어요.</p>
+  </main>
+  <main id="welcome" hidden>
+    <div class="entry-intro"><div class="entry-scene" aria-hidden="true"><div class="moon-study"></div></div><span class="entry-slot" id="slot-label">이번 질문</span>
+      <h1 id="entry-question">오늘의 질문</h1><p class="intro">한마디로 시작하는 새로운 인연.</p></div>
+    <section class="actions" aria-label="질문에 답하기">
+      <button id="write" type="button" aria-expanded="false" aria-controls="answer-form">내 답변 쓰기</button>
+      <button class="feed-shortcut" id="browse" type="button">모두의 답변 둘러보기 <span aria-hidden="true">→</span></button>
+      <form id="answer-form" hidden>
+        <fieldset id="join-fields" hidden disabled>
+          <legend>파장 첫 참여</legend>
+          <label class="consent"><input name="consent" type="checkbox" required> 만 19세 이상이며 파장 회원에게 닉네임과 내가 선택한 공개 정보를 보여 주는 데 동의해요.</label>
+          <details><summary>공개 정보 선택</summary>
+            <label>닉네임<input name="name" maxlength="12" autocomplete="nickname" placeholder="오쭈다 닉네임 사용"></label>
+            <label>활동 지역 · 시·도<select name="province"><option value="">공개하지 않음</option></select></label>
+            <label id="city-field" hidden>시·군 (선택)<select name="city"><option value="">시·도만 공개</option></select></label>
+            <label>공개할 취향<select name="interest"><option value="">공개하지 않음</option></select></label>
+          </details>
+        </fieldset>
+        <fieldset id="answer-fields">
+        <label for="mine">나의 답변</label>
+        <textarea id="mine" rows="3" maxlength="220" required placeholder="이번 질문에 대한 내 생각을 적어 주세요." aria-describedby="publication-note"></textarea>
+        <p class="publication-note" id="publication-note">답변을 공개하면 작성일을 포함해 1년(365일) 동안 파장 회원이 질문과 내 답변을 함께 볼 수 있어요.</p>
+        </fieldset>
+        <button type="submit">답변 공개하고 파장 메인으로</button>
+        <button type="button" class="cancel-form" id="cancel-form">취소</button>
+      </form>
+      <output id="my-answer" role="status"></output>
+      <small id="demo-note">내 답변은 최근 1년 동안 파장 회원에게 보여요. 차단한 회원과는 서로 볼 수 없어요.</small>
+    </section>
+    <details class="sample-radar"><summary>예시 레이더 보기</summary>
+    <section class="panel" aria-label="예시 인연 레이더">
+      <div class="radar-head"><strong>인연 레이더</strong><span>예시 프로필 3명</span></div>
+      <div class="scope" id="scope">
+        <div class="rose" aria-hidden="true"></div>
+        <div class="sweep" aria-hidden="true"></div>
+        <span class="self">나</span>
+        <div id="marks"></div>
+      </div>
+      <div class="control"><span id="direction">북쪽 고정</span><button type="button" id="compass">휴대폰 방향 켜기</button></div>
+      <p id="sensor-note" role="status"></p>
+    </section>
+    <div class="answer" aria-live="polite"><p id="reply">레이더의 점을 눌러 답변을 읽어보세요.</p><b id="by"></b></div>
+    </details>
+  </main>
+  <div id="station" hidden></div>
+  <script src="/config.js"></script>
+</body>
+</html>
+
