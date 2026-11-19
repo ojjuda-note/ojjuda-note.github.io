@@ -8,6 +8,10 @@ const toolbarSource = fs.readFileSync(path.join(root, 'note/composer-tools.js'),
 const sharedLocationSource = fs.readFileSync(path.join(root,'shared/location/location.js'),'utf8');
 const sharedPreferences = new Map();
 const source = fs.readFileSync(path.join(root, 'note/preview.js'), 'utf8');
+const authBoot = source.lastIndexOf('\nif (client) {\n  client.auth.onAuthStateChange');
+const afterAuthBoot = source.indexOf("\ndocument.addEventListener('ojjuda:decoration-style'", authBoot);
+assert.ok(authBoot > 0 && afterAuthBoot > authBoot, 'the fixture keeps the real post-auth decoration listener');
+const fixtureSource = source.slice(0, authBoot) + source.slice(afterAuthBoot);
 const html = fs.readFileSync(path.join(root, 'park/index.html'), 'utf8').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
 const key = id => `ojjuda-note-composer-settings-v1:${id}`;
 const settle = () => new Promise(resolve => setImmediate(resolve));
@@ -101,7 +105,7 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     })};
     run(sharedLocationSource);
     run(toolbarSource);
-    run(source.slice(0,source.lastIndexOf('\nif (client) {\n  client.auth.onAuthStateChange')));
+    run(fixtureSource);
     if (id) signIn(id, gender);
     else run('authKnown = ready = true; selectCollection = async () => true; refreshCards = async () => {};');
     run(`window.geoCalls = 0; window.deferGeo = false;
@@ -348,50 +352,53 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     assert.deepEqual(choices(), { identity: 'anonymous', gender: 'female', location: true });
     assert.deepEqual(styleChoices(), { font: 'default', size: 'normal', boxTransparency: 25 });
 
-    signIn('heart-account', 'female'); await open();
-    run(fs.readFileSync(path.join(root, 'features/wallet/ju-decorations.js'), 'utf8'));
-    await run(`(async () => {
-      const state = { ok: true, coins: 100, selected: {}, owned:
-        ['card_fonts', 'card_stickers', 'card_foil'].map(key => ({ key, expires_at: new Date(Date.now() + 86400000).toISOString() })) };
-      OjjudaDecorations.install({ getUserId: () => session?.user?.id, client: { rpc: () => {
-        const request = Promise.resolve({ data: state }); request.abortSignal = () => request; return request;
-      } } });
-      await OjjudaDecorations.refresh();
-      OjjudaDecorations.setStyle({ shopFont: 'poster', shopSticker: 'heart', shopEffect: 'foil' });
-    })()`);
-    chooseStyle('heart', 'normal', 25);
-    assert.deepEqual(JSON.parse(JSON.stringify(run('OjjudaDecorations.styleFields()'))),
-      { shopSticker: 'heart', shopFont: 'none', shopEffect: 'foil' },
-      'choosing the heart font replaces the purchased font while preserving stickers and effects');
-    assert.equal(document.querySelector('.compose-photo').classList.contains('note-font-heart'), true);
-    const purchasedFont = document.querySelector('[data-shop-style="Font"]');
-    purchasedFont.value = 'book'; purchasedFont.dispatchEvent(new window.Event('change', { bubbles: true }));
-    assert.equal(styleChoices().font, 'default', 'a later purchased-font choice becomes the active font');
-    assert.equal(stored('heart-account').font, 'default');
-    assert.deepEqual(JSON.parse(JSON.stringify(run('OjjudaDecorations.styleFields()'))),
-      { shopSticker: 'heart', shopFont: 'book', shopEffect: 'foil' });
-    chooseStyle('heart', 'normal', 25);
-    document.getElementById('compose-text').value = '가나다 하트 1234567890';
-    document.getElementById('compose-text').dispatchEvent(new window.Event('input', { bubbles: true }));
-    run('toggleCalligraphy(); toggleCalligraphy();');
-    assert.equal(styleChoices().font, 'heart', 'leaving calligraphy restores the chosen heart font');
-    close(); await open();
-    assert.equal(styleChoices().font, 'heart', 'the heart font is remembered when writing another card');
-    assert.equal(document.getElementById('compose-text').value, '', 'font preferences do not save unfinished text');
-    boot('heart-account', 'female'); await open();
-    assert.equal(styleChoices().font, 'heart', 'the heart font survives a page reload');
-    close();
-    await run(`openComposer('edit', { id: '00000000-0000-4000-8000-000000000009', is_mine: true,
-      kind: 'memo', parent_id: null, body: '저장한 하트 글씨 123', tags: [], background_key: '42',
-      identity_mode: 'anonymous', style: { font: 'heart', size: 'small', boxTransparency: 40 } })`);
-    assert.deepEqual(styleChoices(), { font: 'heart', size: 'small', boxTransparency: 40 });
-    chooseStyle('serif', 'large', 60);
-    close(); await open();
-    assert.equal(styleChoices().font, 'heart', 'editing a saved card does not change the new-card font preference');
-    signIn('heart-other-account', 'male'); await open();
-    assert.equal(styleChoices().font, 'default', 'a different account never inherits the heart font preference');
-    signIn('heart-account', 'female'); await open();
-    assert.equal(styleChoices().font, 'heart');
+    for (const font of ['heart', 'nanum-myeongjo']) {
+      const account = font + '-account';
+      signIn(account, 'female'); await open();
+      run(fs.readFileSync(path.join(root, 'features/wallet/ju-decorations.js'), 'utf8'));
+      await run(`(async () => {
+        const state = { ok: true, coins: 100, selected: {}, owned:
+          ['card_fonts', 'card_stickers', 'card_foil'].map(key => ({ key, expires_at: new Date(Date.now() + 86400000).toISOString() })) };
+        OjjudaDecorations.install({ getUserId: () => session?.user?.id, client: { rpc: () => {
+          const request = Promise.resolve({ data: state }); request.abortSignal = () => request; return request;
+        } } });
+        await OjjudaDecorations.refresh();
+        OjjudaDecorations.setStyle({ shopFont: 'poster', shopSticker: 'heart', shopEffect: 'foil' });
+      })()`);
+      chooseStyle(font, 'normal', 25);
+      assert.deepEqual(JSON.parse(JSON.stringify(run('OjjudaDecorations.styleFields()'))),
+        { shopSticker: 'heart', shopFont: 'none', shopEffect: 'foil' },
+        'choosing the selected free font replaces the purchased font while preserving stickers and effects');
+      assert.equal(document.querySelector('.compose-photo').classList.contains('note-font-' + font), true);
+      const purchasedFont = document.querySelector('[data-shop-style="Font"]');
+      purchasedFont.value = 'book'; purchasedFont.dispatchEvent(new window.Event('change', { bubbles: true }));
+      assert.equal(styleChoices().font, 'default', 'a later purchased-font choice becomes the active font');
+      assert.equal(stored(account).font, 'default');
+      assert.deepEqual(JSON.parse(JSON.stringify(run('OjjudaDecorations.styleFields()'))),
+        { shopSticker: 'heart', shopFont: 'book', shopEffect: 'foil' });
+      chooseStyle(font, 'normal', 25);
+      document.getElementById('compose-text').value = '가나다 하트 1234567890';
+      document.getElementById('compose-text').dispatchEvent(new window.Event('input', { bubbles: true }));
+      run('toggleCalligraphy(); toggleCalligraphy();');
+      assert.equal(styleChoices().font, font, 'leaving calligraphy restores the chosen free font');
+      close(); await open();
+      assert.equal(styleChoices().font, font, 'the selected free font is remembered when writing another card');
+      assert.equal(document.getElementById('compose-text').value, '', 'font preferences do not save unfinished text');
+      boot(account, 'female'); await open();
+      assert.equal(styleChoices().font, font, 'the selected free font survives a page reload');
+      close();
+      await run(`openComposer('edit', { id: '00000000-0000-4000-8000-000000000009', is_mine: true,
+        kind: 'memo', parent_id: null, body: '저장한 하트 글씨 123', tags: [], background_key: '42',
+        identity_mode: 'anonymous', style: { font: ${JSON.stringify(font)}, size: 'small', boxTransparency: 40 } })`);
+      assert.deepEqual(styleChoices(), { font, size: 'small', boxTransparency: 40 });
+      chooseStyle('serif', 'large', 60);
+      close(); await open();
+      assert.equal(styleChoices().font, font, 'editing a saved card does not change the new-card font preference');
+      signIn(account + '-other', 'male'); await open();
+      assert.equal(styleChoices().font, 'default', 'a different account never inherits the selected free font preference');
+      signIn(account, 'female'); await open();
+      assert.equal(styleChoices().font, font);
+    }
 
     signIn('gallery-account', 'female'); await open();
     const byId = id => document.getElementById(id);

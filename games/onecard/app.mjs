@@ -1,8 +1,8 @@
-import {createGame,applyAction,projectState,chooseBotAction,cardInfo} from './engine.mjs?v=20261120-onecard3';
-import {createCard,cardLabel} from './cards.mjs?v=20261120-onecard3';
-import {createOnecardSound} from './sound.mjs?v=20261120-onecard3';
-import {createCardMotion} from './motion.mjs?v=20261120-onecard3';
-import {createOnlineClient} from './online.mjs?v=20261120-onecard3';
+import {createGame,applyAction,projectState,chooseBotAction,cardInfo} from './engine.mjs?v=20261120-onecard4';
+import {createCard,cardLabel} from './cards.mjs?v=20261120-onecard4';
+import {createOnecardSound} from './sound.mjs?v=20261120-onecard4';
+import {createCardMotion} from './motion.mjs?v=20261120-onecard4';
+import {createOnlineClient} from './online.mjs?v=20261120-onecard4';
 
 const $=id=>document.getElementById(id);
 const app=$('onecard-app'),hand=$('hand'),sheet=$('sheet'),sound=createOnecardSound();
@@ -16,6 +16,7 @@ let local=null,view=null,mode='solo',net=null,room=null,handPage=0;
 let animating=false,working=false,armed=false,botTimer=null,toastTimer=null,epoch=0;
 let presentation=Promise.resolve(),lastRoomVersion=-1,lastRoomId='',resultKey='',pendingSuit=null;
 let saved=null,sheetKind='',returnFocus=null,autoJoinCode='';
+let entryMode='computer',roomUI=null,lastNetworkIssue=null;
 const cardNodes=new Map(),seatNodes=new Map();
 const pageSize=()=>app.clientWidth<430?8:10;
 function element(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
@@ -38,10 +39,10 @@ document.addEventListener('keydown',()=>{void sound.unlock();},{capture:true});
 $('sound-toggle').onclick=()=>{sound.setEnabled(!sound.enabled);renderSound();};
 $('stock-card').append(createCard(null,{faceDown:true}));
 $('discard-card').append(createCard('H-A'));
-for(const id of ['S-K','H-A','C-7'])$('hero-cards').append(createCard(id));
-
 function setScreen(name){
   app.dataset.view=name;$('entry').hidden=name!=='welcome';$('lobby').hidden=name!=='lobby';
+  $('setup').hidden=name==='playing';app.hidden=name!=='playing';document.body.dataset.mpEntry=String(name!=='playing');
+  if(name!=='welcome')disposeRooms();
   for(const id of ['game-table','hand-area','game-controls'])$(id).inert=name!=='playing';
   if(name!=='playing'){clearTimeout(botTimer);$('turn-timer').hidden=true;}
 }
@@ -110,6 +111,7 @@ function hint(){
   return '내 차례를 기다려 주세요.';
 }
 function renderControls(){
+  $('solo-mode').disabled=working||!!net?.busy;$('online-open').disabled=working||!!net?.busy;
   const playing=view?.status==='playing',can=myTurn()&&!locked();
   $('draw-button').disabled=!can;$('draw-pile').disabled=!can;
   const drawText=view?.pendingDraw?`${view.pendingDraw}장 받기`:'한 장 받기';
@@ -239,7 +241,7 @@ async function startSolo(resume=false){
   }
   $('connection').hidden=true;setScreen('playing');saveLocal();await present(projectState(local,'me'),{deal:!resume,animate:!resume});
 }
-$('solo-start').onclick=()=>void startSolo();$('resume-solo').onclick=()=>void startSolo(true);
+$('solo-start').onclick=()=>{if(!working)void startSolo();};$('resume-solo').onclick=()=>{if(!working)void startSolo(true);};
 
 function openSheet(title,kind='menu'){
   clearTimeout(botTimer);returnFocus=document.activeElement;sheetKind=kind;sheet.classList.toggle('game-result-dialog',kind==='result');sheet.setAttribute('aria-labelledby',kind==='result'?'onecard-result-title':'sheet-title');setText('sheet-title',title);$('sheet-body').replaceChildren();
@@ -247,6 +249,7 @@ function openSheet(title,kind='menu'){
 }
 function closeSheet(){if(sheet.open)sheet.close();pendingSuit=null;sheetKind='';renderControls();scheduleBot();}
 $('sheet-close').onclick=closeSheet;
+sheet.addEventListener('click',event=>{if(event.target.closest('[data-act="close"]'))closeSheet();});
 sheet.addEventListener('cancel',()=>{pendingSuit=null;sheetKind='';setTimeout(()=>{renderControls();scheduleBot();},0);});
 sheet.addEventListener('close',()=>{renderControls();scheduleBot();if(returnFocus?.isConnected&&!returnFocus.disabled)returnFocus.focus({preventScroll:true});});
 function showRules(){
@@ -270,15 +273,16 @@ $('menu-button').onclick=()=>{
 function confirmExit(toArcade){
   if(app.dataset.view!=='playing'&&(!room||room.status==='finished')){void exit(toArcade);return;}
   openSheet(toArcade?'오락실로 돌아갈까요?':'첫 화면으로 갈까요?','exit');
-  $('sheet-body').append(element('p',mode==='online'?'내 자리는 컴퓨터가 이어서 해요.': '혼자 하던 게임은 이어서 할 수 있어요.'));
+  $('sheet-body').append(element('p',mode==='online'?(room?.status==='active'?'내 자리는 컴퓨터가 이어서 해요.':'이 대전방에서 나가요.'): '혼자 하던 게임은 이어서 할 수 있어요.'));
   const row=element('div',undefined,'dialog-actions');row.append(button('계속하기','btn btn-secondary',closeSheet),button(toArcade?'오락실로':'나가기','btn btn-primary',()=>void exit(toArcade)));$('sheet-body').append(row);
 }
 async function exit(toArcade){
   if(working||net?.busy)return;working=true;renderControls();
-  try{if(mode==='online'&&room){const ok=await net.leave();if(!ok)return;}epoch++;motion.cancel();clearTimeout(botTimer);net?.close();net=null;room=null;view=null;local=null;lastRoomId='';lastRoomVersion=-1;closeSheet();saved=loadLocal();$('resume-solo').hidden=!saved;setScreen('welcome');if(toArcade)location.assign('/world.html?tab=arcade');}
+  try{if(mode==='online'&&room){const ok=await net.leave();if(!ok)return;}epoch++;motion.cancel();clearTimeout(botTimer);disposeRooms();net?.close();net=null;room=null;view=null;local=null;mode='solo';lastRoomId='';lastRoomVersion=-1;closeSheet();saved=loadLocal();$('resume-solo').hidden=!saved;setScreen('welcome');selectEntryMode('computer');if(toArcade)location.assign('/world.html?tab=arcade');}
   finally{working=false;animating=false;renderControls();}
 }
 $('arcade-back').onclick=e=>{if(app.dataset.view==='playing'||room){e.preventDefault();confirmExit(true);}};
+$('entry-arcade-back').onclick=e=>{if(room){e.preventDefault();confirmExit(true);}};
 function resultIcon(outcome){
   // The same vector artwork and classes used by the arcade's shared result cards.
   const paths=outcome==='success'
@@ -310,8 +314,11 @@ function showResult(){
 
 function connection(message){$('connection').textContent=message||'';$('connection').hidden=!message;}
 function networkError(error){
+  lastNetworkIssue=error;
   const text=error?.message||'연결을 확인한 뒤 다시 눌러 주세요.';
-  if(app.dataset.view==='lobby'){$('lobby-error').textContent=text;$('lobby-error').hidden=false;}else showToast(text);
+  if(app.dataset.view==='lobby'){$('lobby-error').textContent=text;$('lobby-error').hidden=false;}
+  else if(app.dataset.view==='welcome')$('online-account-note').textContent=text;
+  else showToast(text);
   if(['not_signed_in','sign_in','auth_required'].includes(error?.code))$('login-link').hidden=false;
 }
 function ensureNetwork(){
@@ -325,12 +332,13 @@ function receiveRoom(next){
     if(mode==='online'){
       epoch++;motion.cancel();view=null;animating=false;handPage=0;
       hand.replaceChildren();cardNodes.clear();
-      if(app.dataset.view==='playing')setScreen('lobby');
+      setScreen('welcome');selectEntryMode('opponent');
+      queueMicrotask(()=>{if(mode==='online'&&!room&&app.dataset.view==='welcome')mountRooms();});
     }
     renderLobby();return;
   }
   mode='online';$('login-link').hidden=true;$('lobby-error').hidden=true;
-  if(next.status==='waiting'){setScreen('lobby');renderLobby();return;}
+  if(next.status==='waiting'){if(sheetKind==='arcade-room')closeSheet();setScreen('lobby');renderLobby();return;}
   if(!next.game)return;
   if(next.id===lastRoomId&&next.version<=lastRoomVersion){updateTimer();return;}
   const newRoom=next.id!==lastRoomId,roundChanged=!!previous&&previous.id===next.id&&previous.round!==next.round;
@@ -343,31 +351,53 @@ function receiveRoom(next){
   presentation=presentation.then(async()=>{if(epoch!==thisEpoch)return;await present(next.game,{deal:started,animate:started||!first});}).catch(()=>{animating=false;if(epoch===thisEpoch){view=next.game;renderBoard();connection('화면을 다시 맞췄어요. 계속할 수 있어요.');}});
 }
 async function onlineAction(fn){
-  if(working||net?.busy)return false;working=true;$('lobby-error').hidden=true;renderLobby();
+  if(working||net?.busy)return false;working=true;lastNetworkIssue=null;$('lobby-error').hidden=true;renderLobby();renderControls();
   try{return await fn();}catch(error){networkError(error);return false;}finally{working=false;renderLobby();renderControls();}
 }
 async function openOnline(code=''){
-  clearTimeout(botTimer);mode='online';view=null;local=null;setScreen('lobby');renderLobby();
+  clearTimeout(botTimer);mode='online';view=null;local=null;setScreen('welcome');selectEntryMode('opponent');
+  $('online-account-note').textContent='방을 만들거나 열린 대전방에 참여하세요. 빈자리는 컴퓨터가 채워요.';
   const client=ensureNetwork();
   await onlineAction(async()=>{
     const current=await client.enter();
-    if(code&&!current){$('room-code').value=code;return client.join(code);}
+    if(code&&!current)return client.join(code);
     if(code&&current&&current.code!==code)showToast('참여 중인 방으로 돌아왔어요. 나간 뒤 다른 방에 참여할 수 있어요.');
     return true;
   });
+  if(net===client&&!room&&entryMode==='opponent'){mountRooms();$('login-link').hidden=!!client.userId;}
 }
 $('online-open').onclick=()=>void openOnline();
-$('create-room').onclick=()=>void onlineAction(()=>ensureNetwork().create({capacity:5}));
-$('join-form').onsubmit=e=>{e.preventDefault();const code=$('room-code').value.trim().toUpperCase();if(!/^[A-F0-9]{8}$/.test(code)){networkError({message:'초대받은 8자리 코드를 입력해 주세요.'});return;}void onlineAction(()=>ensureNetwork().join(code));};
-$('room-code').addEventListener('input',()=>{$('room-code').value=$('room-code').value.replace(/[^a-f0-9]/gi,'').toUpperCase();});
+$('solo-mode').onclick=()=>{if(working||net?.busy)return;selectEntryMode('computer');disposeRooms();if(!room){net?.close();net=null;mode='solo';}};
 $('start-room').onclick=()=>void onlineAction(()=>net.start());
-$('lobby-back').onclick=()=>{if(room)confirmExit(false);else{net?.close();net=null;mode='solo';setScreen('welcome');}};
+$('lobby-back').onclick=()=>confirmExit(false);
+function selectEntryMode(kind){
+  entryMode=kind;
+  for(const node of $('entry').querySelectorAll('[data-entry-mode]')){const selected=node.dataset.entryMode===kind;node.classList.toggle('on',selected);node.setAttribute('aria-pressed',String(selected));}
+  for(const node of $('entry').querySelectorAll('[data-entry-panel]'))node.hidden=node.dataset.entryPanel!==kind;
+}
+function disposeRooms(){roomUI?.dispose();roomUI=null;}
+function mountRooms(){
+  if(room||entryMode!=='opponent'||app.dataset.view!=='welcome'||!net)return;
+  if(roomUI){roomUI.sync();return;}
+  const client=net;
+  if(!window.OjjudaArcadeRooms){networkError({message:'대전방 화면을 불러오지 못했어요. 새로고침해 주세요.'});return;}
+  const requireSuccess=async task=>{if(!await onlineAction(task))throw Error(lastNetworkIssue?.code||'unavailable');};
+  roomUI=window.OjjudaArcadeRooms.create({
+    fixedKind:'onecard',getUserId:()=>net===client?client.userId:null,
+    readRooms:async()=>({rooms:await client.list()}),notify:message=>{$('online-account-note').textContent=message;},
+    renderModal:(markup,title)=>{openSheet(title,'arcade-room');$('sheet-body').innerHTML=markup;$('sheet-body').querySelector('.mhead')?.remove();},
+    closeModal:closeSheet,goArcade:()=>{},canOpen:()=>app.dataset.view==='welcome',
+    onCreateNative:async(kind,params)=>{if(kind!=='onecard')throw Error('invalid_request');await requireSuccess(()=>client.create({title:params.title}));},
+    onOpen:async item=>requireSuccess(()=>client.join(item.code)),
+    onFreshGame:async item=>requireSuccess(()=>client.join(item.code)),
+    onCancelNative:async()=>requireSuccess(async()=>{await client.enter();return client.leave();}),
+  });
+  roomUI.sync();
+}
 function renderLobby(){
-  if(app.dataset.view!=='lobby')return;
-  const waiting=!!room;$('room-entry').hidden=waiting;$('room-waiting').hidden=!waiting;
-  for(const id of ['create-room','join-room'])$(id).disabled=working||!!net?.busy;
-  if(!waiting)return;
-  setText('room-code-display',room.code);
+  if(app.dataset.view!=='lobby'||!room)return;
+  setText('room-title',room.title||'원카드 같이 한 판 해요');
+  setText('room-code-display',room.room_no?`#${room.room_no}`:room.code);
   const players=room.players.filter(p=>p.active!==false),signature=JSON.stringify(players.map(p=>[p.id,p.name]))+room.hostId;
   if($('room-players').dataset.signature!==signature){
     $('room-players').dataset.signature=signature;const nodes=[];
@@ -402,5 +432,5 @@ window.addEventListener('pageshow',event=>{if(event.persisted){animating=false;i
 saved=loadLocal();$('resume-solo').hidden=!saved;
 setScreen('welcome');
 const params=new URLSearchParams(location.search),requested=params.get('room')||'';
-if(/^[A-F0-9]{8}$/i.test(requested)){autoJoinCode=requested.toUpperCase();$('room-code').value=autoJoinCode;void openOnline(autoJoinCode);}
+if(/^[A-F0-9]{8}$/i.test(requested)){autoJoinCode=requested.toUpperCase();void openOnline(autoJoinCode);}
 else if(params.get('mode')==='online')void openOnline();

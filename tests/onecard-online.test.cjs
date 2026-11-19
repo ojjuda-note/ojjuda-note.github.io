@@ -189,4 +189,5 @@ const { fixture } = require('./onecard-online-fixture.cjs');
     assert.equal((await call(OUT, { action: 'join', code: room.code })).error, 'room_unavailable');
     console.log(`PASS: ${turns} five-person turns, ${computerTurns} server computer turns; fixed five seats for 1–5 people, shuffled seats, clockwise rules, private hands, authentication, races, retries, timeout, takeover, rematch, expiry and SQL permissions`);
   } finally { await f.close(); }
+  await require('./onecard-native-rooms.test.cjs')();
 })().catch(error => { console.error(error); process.exitCode = 1; });

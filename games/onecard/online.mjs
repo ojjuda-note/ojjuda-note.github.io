@@ -12,6 +12,7 @@ const MESSAGES = {
   not_your_turn: '내 차례를 기다려 주세요.',
   invalid_move: '지금 낼 수 있는 카드를 골라 주세요.',
   bad_request: '선택한 내용을 다시 확인해 주세요.',
+  invalid_title: '방 제목을 1~40자로 입력해 주세요.',
   unavailable: '연결을 확인하고 있어요. 잠시 후 다시 시도해 주세요.',
   closed: '연결이 종료되었어요.',
 };
@@ -195,7 +196,7 @@ export function createOnlineClient({ onRoom = () => {}, onError = () => {}, onCo
   }
   return {
     enter, read, close,
-    create: () => act('create', { options: { capacity: 5 } }),
+    create: ({ title } = {}) => act('create', { options: { capacity: 5, ...(title !== undefined ? { title } : {}) } }),
     join: code => act('join', { code: String(code).replace(/[\s-]/g, '').toUpperCase() }),
     start: () => act('start'),
     move: command => act('move', { command }),

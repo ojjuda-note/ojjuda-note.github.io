@@ -584,27 +584,112 @@ button.pile { border: 0; padding: 0; background: transparent; color: inherit; fo
   .table-watermark { display: none; }
   .status { bottom: 0; }
 }
-/* Reuse the same entry and result components as Solitaire, Sacheonseong and Yut. */
-html:has(.app[data-view="welcome"]), body:has(.app[data-view="welcome"]) { background: #f6f7f0; color-scheme: light; }
-.app[data-view="welcome"] { background: #f6f7f0; border-color: #dfe6dd; box-shadow: none; color: #223a30; color-scheme: light; }
-.app[data-view="welcome"]::after { display: none; }
-.app[data-view="welcome"] .topbar { background: #fff; border-bottom: 1px solid #dfe6dd; }
-.app[data-view="welcome"] .topbar h1, .app[data-view="welcome"] .topbar .back-link { color: #223a30; }
-.app[data-view="welcome"] .topbar .icon-btn { color: #52624d; border-color: #dfe6dd; background: #fff; }
-.app[data-view="welcome"] .topbar .icon-btn:hover { background: #edf5eb; }
-.app[data-view="welcome"] .topbar :is(button, a):focus-visible { outline-color: #2a644e; }
-.welcome .game-entry { width: min(100%, 420px); max-width: 420px; padding: 22px; }
-.welcome .game-entry .ge-kicker { margin-bottom: 5px; }
-.welcome .game-entry .hero-cards { width: 200px; height: 142px; margin: 12px auto 10px; }
-.welcome .game-entry .hero-cards .playing-card { --card-w: 72px; --card-h: 104px; top: 16px; left: calc(50% - var(--card-w) / 2); }
-.welcome .game-entry .welcome-copy { margin: 8px 0 12px; }
-.welcome .game-entry .entry-capacity { margin: 0 0 10px; font-size: 11px; color: #667467; }
-.welcome .game-entry .entry-actions { gap: 10px; }
-.welcome .game-entry .entry-actions > button { margin: 0; justify-content: space-between; }
-.welcome .game-entry .entry-actions > button > span { font-size: 11px; font-weight: 400; opacity: .8; }
-.welcome .game-entry .entry-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
-.welcome .game-entry .entry-links:has(.resume-button:not([hidden])) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.welcome .game-entry .entry-links > * { min-width: 0; min-height: 44px; margin: 0; padding: 10px 8px; font-size: 12px; white-space: nowrap; }
+/* The shared multiplayer entrance owns setup; the felt owns only the game. */
+body.onecard-page[data-mp-entry="true"] {
+  display: flex; flex-direction: column; height: 100dvh; min-height: 0 !important;
+  overflow: hidden !important;
+}
+.onecard-page > .mp-entry-bar { width: 100%; }
+.onecard-page .mp-entry-back { text-decoration: none; }
+body.onecard-page[data-mp-entry="true"] #setup {
+  flex: 1 1 0; min-height: 0 !important; overflow: hidden !important;
+}
+.onecard-page #setup > .game-entry { min-height: 0; max-height: 100%; }
+.onecard-page #entry { display: flex; flex-direction: column; }
+.onecard-page #entry:has([data-entry-panel="opponent"]:not([hidden])) { height: 100%; }
+.onecard-page .entry-heading { flex: none; }
+.onecard-page .entry-controls { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.onecard-page .entry-controls > .seg, .onecard-page .entry-rules { flex: none; }
+.onecard-page [data-entry-panel="opponent"] { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.onecard-page #online-room-host { display: flex; flex: 1; min-height: 0; }
+.onecard-page #online-account-note { flex: none; margin-top: 8px; }
+.onecard-page #setup .entry-rules { margin-top: 12px; }
+.onecard-page #setup .arcade-rooms {
+  --ink: var(--entry-ink); --ink-2: var(--entry-muted); --line: var(--entry-line);
+  --surface: #fff; --surface-2: #fbfcf9; --accent-soft: var(--entry-soft);
+  display: grid; flex: 1; min-width: 0; min-height: 0; grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto minmax(0, 1fr); gap: 8px;
+  margin: 8px 0 0; padding: 0; border: 0; border-radius: 0; background: transparent; text-align: left;
+}
+.onecard-page #setup .arcade-rooms-head { grid-column: 1 / -1; grid-row: 1; margin: 0; }
+.onecard-page #setup .arcade-rooms-head h3 { font-size: 17px; }
+.onecard-page #setup .arcade-rooms-head p { display: none; }
+.onecard-page #setup .arcade-room-filters { grid-column: 1; grid-row: 2; grid-template-columns: minmax(0, 1fr); margin: 0; }
+.onecard-page #setup [data-room-filter] { display: none; }
+.onecard-page #setup .arcade-room-filters input { min-height: 44px; padding: 8px 10px; font-size: 12px; }
+.onecard-page #setup .arcade-room-retry {
+  grid-column: 2; grid-row: 2; min-height: 44px; margin: 0; padding: 8px;
+  border: 1px solid var(--entry-line); border-radius: 12px; background: var(--entry-soft);
+  color: var(--entry-muted); font-size: 11px; text-decoration: none; white-space: nowrap;
+}
+.onecard-page #setup .arcade-room-issue { grid-column: 1 / -1; grid-row: 3; margin: 0; }
+.onecard-page #setup [data-room-list] {
+  grid-column: 1 / -1; grid-row: 4; min-height: 0; max-height: none; margin: 0;
+  overflow: auto; overscroll-behavior: contain; align-content: start; scrollbar-width: thin;
+}
+.onecard-page #setup .arcade-room-card { grid-template-columns: 35px minmax(0, 1fr) auto; gap: 7px; padding: 10px 7px; }
+.onecard-page #setup .arcade-room-copy h4 { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 13px; }
+.onecard-page #setup .arcade-room-copy p { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.onecard-page #setup .arcade-rooms .btn {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 44px; margin: 0; padding: 8px 10px;
+  border: 1px solid var(--entry-line); border-radius: 12px; background: var(--entry-soft);
+  color: var(--entry-ink); box-shadow: none; font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1.5;
+}
+.onecard-page #setup .arcade-rooms .btn.pri { background: var(--entry-accent); border-color: var(--entry-accent); color: #fff; }
+.onecard-page #setup .arcade-rooms .btn:not(:disabled):hover { background: #e0eddf; }
+.onecard-page #setup .arcade-rooms .btn.pri:not(:disabled):hover { background: #245643; }
+.onecard-page #setup .arcade-room-empty { padding: 14px 4px; font-size: 12px; }
+.onecard-page #lobby { display: flex; flex-direction: column; }
+.onecard-page #lobby :is(.lobby-heading, .room-code-row, .lobby-controls) { flex: none; }
+.onecard-page #lobby .ge-copy { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.onecard-page #lobby .room-code-row {
+  padding: 0; margin: 12px 0; border: 0; border-radius: 0; min-width: 0; text-align: left;
+}
+.onecard-page #lobby .room-code-row > .small-note { min-width: 0; color: var(--entry-muted); font-size: 11px; }
+.onecard-page #lobby #room-code-display { display: block; margin-top: 3px; color: var(--entry-accent); font-size: 18px; letter-spacing: .03em; }
+.onecard-page #lobby #copy-invite { flex: none; width: auto; min-height: 44px; margin: 0; padding: 8px 10px; font-size: 12px; }
+.onecard-page #lobby .room-players { min-height: 0; gap: 6px; margin: 12px 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.onecard-page #lobby .room-players li { min-height: 42px; padding: 6px 10px; border-color: var(--entry-line); background: #fbfcf9; color: var(--entry-ink); }
+.onecard-page #lobby .room-players li small, .onecard-page #lobby .bot-seat-note { color: var(--entry-muted); }
+.onecard-page #lobby .room-players .avatar { flex: none; color: var(--entry-accent); background: var(--entry-soft); border-color: var(--entry-line); }
+.onecard-page #lobby .room-players .player-label { flex-direction: row; align-items: center; gap: 6px; }
+.onecard-page #lobby .room-players .player-label .bot-seat-note { flex: none; font-size: 9px; }
+.onecard-page #lobby .ai-tag { border-color: #cbd9c7; background: var(--entry-soft); color: #516b45; }
+.onecard-page #lobby .inline-error { color: #a94232; }
+.onecard-page .sheet .arcade-room-form { text-align: left; }
+.onecard-page .sheet .arcade-room-form :is(input, select) {
+  width: 100%; min-height: 44px; border: 1px solid #dfe6dd; border-radius: 12px; padding: 9px 12px;
+  background: #fff; color: #223a30; font-size: 13px;
+}
+.onecard-page .sheet :is(.mhead, .mfoot) { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.onecard-page .sheet .mhead h3 { margin: 0; }
+.onecard-page .sheet .arcade-room-form .field { margin: 14px 0; font-size: 12px; color: #667467; }
+.onecard-page .sheet .btn.pri { color: #fff; background: #2a644e; border-color: #2a644e; }
+@media (max-height: 640px) {
+  .onecard-page #lobby .ge-copy { margin-top: 4px !important; margin-bottom: 8px !important; }
+  .onecard-page #lobby .room-code-row { margin: 8px 0; }
+  .onecard-page #lobby .room-players { margin: 8px 0; gap: 5px; }
+  .onecard-page #lobby .room-players li { min-height: 38px; padding: 4px 9px; }
+  .onecard-page #lobby #lobby-note { margin-top: 8px; }
+}
+@media (max-height: 560px) and (min-width: 600px) {
+  body.onecard-page[data-mp-entry="true"] #setup { padding: 12px 16px !important; }
+  .onecard-page #setup > .game-entry { display: grid; max-width: 620px !important; grid-template-columns: 200px minmax(0, 1fr); column-gap: 24px; }
+  .onecard-page #entry .entry-heading { grid-column: 1; grid-row: 1; align-self: center; }
+  .onecard-page #entry .entry-controls { display: contents; }
+  .onecard-page #entry .seg { grid-column: 1; grid-row: 2; margin: 8px 0; }
+  .onecard-page #entry [data-entry-panel] { grid-column: 2; grid-row: 1 / span 3; min-width: 0; }
+  .onecard-page #entry [data-entry-panel="computer"] { align-self: center; }
+  .onecard-page #entry .entry-rules { grid-column: 1; grid-row: 3; margin: 0; }
+  .onecard-page #lobby { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .onecard-page #lobby .lobby-heading { grid-column: 1; grid-row: 1; }
+  .onecard-page #lobby .room-code-row { grid-column: 1; grid-row: 2; }
+  .onecard-page #lobby .room-players { grid-column: 2; grid-row: 1 / span 3; align-self: center; margin: 0; }
+  .onecard-page #lobby .lobby-controls { grid-column: 1; grid-row: 3; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .onecard-page #lobby .lobby-controls > p { grid-column: 1 / -1; margin: 0; }
+  .onecard-page #lobby .lobby-controls > button { min-width: 0; margin: 0; padding: 9px 8px; font-size: 13px; }
+}
+/* Results share the same component as the other arcade games. */
 dialog.sheet.game-result-dialog { width: min(430px, calc(100vw - 24px)); max-width: 430px; max-height: calc(100dvh - 32px); }
 .game-result-dialog .sheet-header { display: none; }
 .game-result-dialog .sheet-body { line-height: 1.5; }
@@ -612,46 +697,6 @@ dialog.sheet.game-result-dialog { width: min(430px, calc(100vw - 24px)); max-wid
 .game-result-card .result-players > div { padding: 6px 3px; font-size: 12px; }
 .game-result-card .result-players > div > span:first-child { min-width: 0; padding-right: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .game-result-card .result-players > div > strong { flex: none; }
-@media (max-height: 640px) {
-  .welcome .game-entry { padding: 18px; }
-  .welcome .game-entry .hero-cards { height: 110px; margin: 8px auto 7px; }
-  .welcome .game-entry .hero-cards .playing-card { --card-w: 61px; --card-h: 88px; top: 7px; }
-  .welcome .game-entry .welcome-copy { margin: 6px 0 10px; font-size: 12px; line-height: 1.6; }
-  .welcome .game-entry .entry-capacity { margin-bottom: 8px; }
-  .welcome .game-entry .entry-actions { gap: 8px; }
-  .welcome .game-entry .entry-actions > button { min-height: 46px; padding: 10px 12px; font-size: 14px; }
-  .welcome .game-entry .entry-actions > button > span { font-size: 10px; }
-  .welcome .game-entry .entry-links { margin-top: 10px; }
-  #lobby { padding-top: 10px; padding-bottom: 10px; }
-  .lobby-card h2 { font-size: 25px; }
-  .lobby-card > .lobby-caption { margin-top: 6px; margin-bottom: 10px; }
-  .room-code-row .small-note { display: none; }
-  .room-players .player-label { flex-direction: row; align-items: center; gap: 6px; }
-  .room-players .player-label .bot-seat-note { font-size: 9px; }
-}
-@media (max-height: 560px) and (min-width: 600px) {
-  .welcome .game-entry { display: grid; width: min(100%, 620px); max-width: 620px; grid-template-columns: 190px minmax(0, 1fr); column-gap: 24px; padding: 18px 22px; }
-  .welcome .game-entry .ge-kicker { grid-column: 1; grid-row: 1; margin: 0 0 5px; }
-  .welcome .game-entry .ge-title { grid-column: 1; grid-row: 2; }
-  .welcome .game-entry .hero-cards { grid-column: 1; grid-row: 3 / span 3; width: 190px; height: 130px; margin: 8px auto 0; }
-  .welcome .game-entry .hero-cards .playing-card { --card-w: 67px; --card-h: 97px; top: 13px; }
-  .welcome .game-entry .welcome-copy { grid-column: 2; grid-row: 1 / span 2; align-self: end; margin: 0 0 9px; }
-  .welcome .game-entry .entry-capacity { grid-column: 2; grid-row: 3; align-self: end; margin: 0 0 9px; }
-  .welcome .game-entry .entry-actions { grid-column: 2; grid-row: 4; }
-  .welcome .game-entry .entry-actions > button { min-height: 44px; }
-  .welcome .game-entry .entry-links { grid-column: 2; grid-row: 5; margin-top: 10px; }
-  #lobby .lobby-card { display: grid; width: min(100%, 600px); grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
-  #lobby-title { grid-column: 1; grid-row: 1; align-self: end; text-align: left; }
-  .lobby-card > .lobby-caption { grid-column: 1; grid-row: 2; text-align: left; align-self: start; }
-  #room-entry { grid-column: 2; grid-row: 1 / span 6; }
-  #room-waiting { display: contents; }
-  .room-code-row { grid-column: 1; grid-row: 3; margin: 8px 0; }
-  #room-players { grid-column: 2; grid-row: 1 / span 5; align-self: start; margin: 0; }
-  #lobby-note { grid-column: 1; grid-row: 4; margin: 6px 0; text-align: left; }
-  #start-room { grid-column: 1; grid-row: 5; min-height: 42px; margin-top: 8px; }
-  #lobby-back { grid-column: 1; grid-row: 6; justify-self: start; }
-  #lobby-error { grid-column: 1 / -1; grid-row: 7; }
-}
 @media (max-height: 430px) and (min-width: 600px) {
   dialog.sheet.game-result-dialog { width: min(620px, calc(100vw - 32px)); max-width: 620px; }
   .game-result-dialog .game-result-card { max-width: none; padding: 16px 20px; }

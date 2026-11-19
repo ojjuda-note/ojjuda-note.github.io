@@ -26,6 +26,7 @@ async function screen({ server = null, actor = null, saved = null, animate = fal
   Object.defineProperty(w.crypto, 'randomUUID', { value: () => crypto.randomUUID() });
   w.matchMedia = () => ({ matches: !animate, addEventListener() {}, removeEventListener() {} });
   w.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
+  w.HTMLElement.prototype.scrollIntoView = function () {};
   Object.defineProperty(w.document, 'hidden', { get: () => hidden });
   Object.defineProperty(w.document, 'visibilityState', { get: () => hidden ? 'hidden' : 'visible' });
   Object.defineProperty(w.document, 'timeline', { value: { currentTime: 1000 } });
@@ -94,6 +95,8 @@ async function screen({ server = null, actor = null, saved = null, animate = fal
   load('motion.mjs', 'createCardMotion', '__motion');
   load('online.mjs', 'createOnlineClient,pollDelay', '__onlineModule');
   w.__online = { createOnlineClient(options) { const client = w.__onlineModule.createOnlineClient(options); clients.push(client); return client; } };
+  for (const file of ['shared/games/game-entry.js', 'features/arcade/arcade-rooms.js'])
+    w.eval(fs.readFileSync(path.join(ROOT, file), 'utf8'));
   if (saved) w.localStorage.setItem(STORAGE, JSON.stringify(saved));
   const imports = { engine: '__rules', cards: '__cards', sound: '__audio', motion: '__motion', online: '__online' };
   const code = fs.readFileSync(path.join(ROOT, 'games/onecard/app.mjs'), 'utf8').replace(/^import \{([^}]+)\} from '\.\/([^/.]+)\.mjs[^']*';/gm, (_, names, file) => `const {${names}}=window.${imports[file]};`);

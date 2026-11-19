@@ -9,6 +9,7 @@ async function fixture() {
   await db.exec(`
     create role anon; create role authenticated; create role service_role;
     create schema auth;
+    create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
     create table auth.users (id uuid primary key, is_anonymous boolean default false);
     create table public.profiles (id uuid primary key, nickname text);
     create table public.test_bans (id uuid primary key);
@@ -17,7 +18,22 @@ async function fixture() {
     create function public.blocked_between(uuid,uuid) returns boolean language sql as $$select exists(select 1 from public.test_blocks where a=$1 and b=$2 or a=$2 and b=$1)$$;
     create function public.mask_banned(text) returns text language sql as $$select replace($1, 'badword', '❤️❤️')$$;
     grant usage on schema public to anon,authenticated,service_role;
+    create schema ojjuda_arcade_internal;
+    create sequence ojjuda_arcade_internal.rooms_room_no_seq start 1001;
+    grant usage on schema ojjuda_arcade_internal to authenticated;
   `);
+  // The One Card migration extends the existing arcade directory. Keep the
+  // unrelated providers empty unless a directory regression explicitly seeds one.
+  for (const game of ['poker', 'bang', 'roulette']) await db.exec(`
+    create schema ojjuda_${game}_internal;
+    grant usage on schema ojjuda_${game}_internal to authenticated;
+    create function ojjuda_${game}_internal.arcade_rooms() returns jsonb language sql stable
+      as $$select '{"ok":true,"rooms":[]}'::jsonb$$;
+    revoke all on function ojjuda_${game}_internal.arcade_rooms() from public,anon;
+    grant execute on function ojjuda_${game}_internal.arcade_rooms() to authenticated;
+  `);
+  await db.exec(`create function public.arcade_general_extra_rooms() returns jsonb language sql stable
+    as $$select '{"ok":true,"rooms":[]}'::jsonb$$`);
   for (const [i, id] of users.entries()) {
     await db.query('insert into auth.users(id,is_anonymous) values($1,$2)', [id, i === 7]);
     await db.query('insert into public.profiles values($1,$2)', [id, ['하나', '두리', '세나', '네로', '다온', '여섯', '제한회원', '익명'][i]]);

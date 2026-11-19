@@ -1,8 +1,8 @@
 (function () {
   'use strict';
-  const games = { drinking: ['🍻', '술게임'], bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'], roulette: ['🎡', '룰렛'] };
+  const games = { onecard: ['♠', '원카드'], drinking: ['🍻', '술게임'], bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'], roulette: ['🎡', '룰렛'] };
   const drinkingKinds = new Set(['drinking','croc','liar','king','minority','mission','bottle','bomb','stopwatch','truth','initial','fingers','imagevote','updown']);
-  const nativeGames = new Set(['bang','tank','tour','ttang','poker','roulette']);
+  const nativeGames = new Set(['onecard','bang','tank','tour','ttang','poker','roulette']);
   const drinkingLink = (shortcut = false) => `<a class="btn pri" data-drinking-hub${shortcut ? ' data-drinking-shortcut' : ''} href="/games/drinking/?mode=multi">술게임 입장</a>`;
   const ACTIVE_POLL_MS = 4000, IDLE_POLL_MS = 6000;
   const layouts = [['eheh', '상마상마'], ['hehe', '마상마상'], ['ehhe', '상마마상'], ['heeh', '마상상마']];
@@ -27,10 +27,11 @@
   function markup() { return '<section class="arcade-rooms" data-arcade-rooms aria-label="오락실 대전방"></section>'; }
   function feedMarkup() { return '<div class="arcade-room-feed" data-arcade-room-feed data-room-list aria-label="열린 대전방"></div>'; }
   function create(options) {
+    const fixedKind = Object.hasOwn(games, options.fixedKind) ? options.fixedKind : '';
     let root = null, list = null, owner = null, epoch = 0, timer = null, polling = false, pollAgain = false, lastRead = null, busy = false, disposed = false;
     let rooms = [], mine = null, canMatgo = false, issue = '', signature = '', openedMatch = null, waitingRoom = null;
     let openingRoom = null, retryDelay = 0, readController = null;
-    let filter = '', query = '';
+    let filter = fixedKind, query = '';
     const current = id => !disposed && id && options.getUserId() === id;
     const drinkingAllowed = () => Boolean(current(owner) && options.matgoAllowed?.() === true);
     const offline = () => window.navigator.onLine === false;
@@ -69,11 +70,13 @@
     function card(room) {
       const [, name] = games[room.kind] || ['', '게임'];
       const artwork = /^(carom|pool)/.test(room.kind) ? 'carom4' : Object.hasOwn(games, room.kind) ? room.kind : 'tank';
+      const artworkUrl = room.kind === 'onecard' ? '/games/onecard/cover.svg' : `/assets/design/games/${artwork}.svg`;
       const playing = room.status === 'playing';
       let action = room.is_member ? (playing ? '새 게임' : room.native ? '대기실 열기' : '대기 중') : playing ? '대전 중' : '참여';
+      if (room.kind === 'onecard' && room.is_member && playing) action = '게임 이어하기';
       if (openingRoom?.roomNo === room.room_no) action = '입장 중…';
       return `<article class="arcade-room-card${room.is_member ? ' mine' : ''}">
-        <div class="arcade-room-game"><img src="/assets/design/games/${artwork}.svg" alt="" width="36" height="28"><b>${name}</b></div>
+        <div class="arcade-room-game"><img src="${artworkUrl}" alt="" width="36" height="28"><b>${name}</b></div>
         <div class="arcade-room-copy"><span class="arcade-room-number">방 #${escape(room.room_no)}${room.is_host ? ' · 내 방' : room.is_member ? ' · 참여한 방' : ''}</span><h4>${escape(room.title)}</h4><p>${escape(room.host_name)} <span>· ${escape(room.players)}/${escape(room.capacity)}명</span></p></div>
         <div class="arcade-room-actions"><span class="arcade-room-state${playing ? ' playing' : ''}">${playing ? '대전 중' : '상대 기다리는 중'}</span>
         <button class="btn sm${!playing || room.is_member ? ' pri' : ''}" data-arcade-action="join" data-room="${escape(room.room_no)}"${busy || (playing && !room.is_member) || (!playing && room.is_member && !room.native) || (!room.is_member && room.players>=room.capacity) ? ' disabled' : ''}>${action}</button>
@@ -119,12 +122,13 @@
       if (!nextList) { nextList = document.createElement('div'); nextList.dataset.roomList = ''; root.append(nextList); }
       if (list !== nextList) { list = nextList; signature = ''; }
       const select = root.querySelector('[data-room-filter]');
-      const choices = Object.entries(games).filter(([kind]) => kind === 'drinking' ? canDrink : !['matgo','poker','roulette'].includes(kind) || canMatgo);
+      const choices = Object.entries(games).filter(([kind]) => (!fixedKind || kind === fixedKind) && (kind === 'drinking' ? canDrink : !['matgo','poker','roulette'].includes(kind) || canMatgo));
       if (select.options.length !== choices.length + 1 || choices.some(([kind], i) => select.options[i + 1]?.value !== kind)) {
         select.innerHTML = '<option value="">모든 게임</option>' + choices.map(([kind, [, name]]) => `<option value="${kind}">${name}</option>`).join('');
       }
       if (filter && !choices.some(([kind]) => kind === filter)) filter = '';
       select.value = filter;
+      select.hidden = !!fixedKind;
       const drinking = filter === 'drinking';
       root.querySelector('[data-room-search]').disabled = drinking;
       const warning = root.querySelector('[data-room-issue]');
@@ -165,7 +169,7 @@
       const deadline = setTimeout(() => controller.abort(), 10000);
       try {
         const [primary,extra] = await Promise.allSettled([
-          call('list', {}, controller.signal), options.extraRooms?.(controller.signal) || []
+          options.readRooms ? options.readRooms(controller.signal) : call('list', {}, controller.signal), options.extraRooms?.(controller.signal) || []
         ]);
         // A return/manual refresh supersedes this read. Applying it first could
         // open an old match and pause the fresh read queued below.
@@ -173,8 +177,8 @@
         if (primary.status === 'rejected') throw primary.reason;
         const data = primary.value;
         const partial = extra.status === 'rejected';
-        rooms = [...(data.rooms || []), ...(partial ? [] : extra.value)].filter(room => !drinkingKinds.has(room.kind));
-        mine = data.mine && !drinkingKinds.has(data.mine.kind) ? data.mine : rooms.find(room => room.is_member) || null;
+        rooms = [...(data.rooms || []), ...(partial ? [] : extra.value)].filter(room => !drinkingKinds.has(room.kind) && (!fixedKind || room.kind === fixedKind));
+        mine = data.mine && !drinkingKinds.has(data.mine.kind) && (!fixedKind || data.mine.kind === fixedKind) ? data.mine : rooms.find(room => room.is_member) || null;
         canMatgo = data.can_matgo === true;
         issue = partial ? '일부 게임의 방 목록을 불러오지 못했어요. 잠시 후 다시 확인해요.' : '';
         if (partial) backoff(); else retryDelay = 0;
@@ -240,7 +244,7 @@
       const canDrink = drinkingAllowed();
       if (kind === 'drinking' && !canDrink) { options.notify(errors.adult_required); return; }
       if (mine && kind !== 'drinking') { options.goArcade(); options.closeModal(); options.notify(errors.room_in_progress); return; }
-      const allowed = Object.entries(games).filter(([id]) => id === 'drinking' ? canDrink : !['matgo','poker','roulette'].includes(id) || canMatgo || options.matgoAllowed?.());
+      const allowed = Object.entries(games).filter(([id]) => (!fixedKind || id === fixedKind) && (id === 'drinking' ? canDrink : !['matgo','poker','roulette'].includes(id) || canMatgo || options.matgoAllowed?.()));
       if (!allowed.some(([id]) => id === kind)) kind = allowed[0][0];
       const actor = owner, initial = games[kind][1] + ' 같이 한 판 해요';
       options.renderModal(`<div class="mhead"><h3>대전방 만들기</h3><button class="btn sm ghost" data-act="close">닫기</button></div>
@@ -265,9 +269,9 @@
         if (form.elements.title.value === previousTitle) form.elements.title.value = games[value][1] + ' 같이 한 판 해요';
         previousTitle = games[value][1] + ' 같이 한 판 해요';
         form.querySelector('[data-create-layout]').hidden = value !== 'janggi';
-        const min=value==='bang'?4:2,max=value==='bang'?7:value==='tank'?12:value==='tour'?8:['poker','roulette'].includes(value)?4:2;
-        form.querySelector('[data-create-capacity]').hidden=max===2;
-        form.elements.capacity.innerHTML=Array.from({length:max-min+1},(_,i)=>`<option value="${i+min}"${i+min===Math.min(4,max)?' selected':''}>${i+min}명</option>`).join('');
+        const min=value==='onecard'?5:value==='bang'?4:2,max=value==='onecard'?5:value==='bang'?7:value==='tank'?12:value==='tour'?8:['poker','roulette'].includes(value)?4:2;
+        form.querySelector('[data-create-capacity]').hidden=min===max;
+        form.elements.capacity.innerHTML=Array.from({length:max-min+1},(_,i)=>`<option value="${i+min}"${i+min===(value==='onecard'?5:Math.min(4,max))?' selected':''}>${i+min}명</option>`).join('');
       };
       form.elements.kind.onchange=chooseKind;chooseKind();
       form.onsubmit = async event => {

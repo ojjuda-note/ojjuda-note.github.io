@@ -16,6 +16,30 @@ function rig(hands, options = {}) {
   return { state, opponents: hands.length - 1 };
 }
 async function resume(s) { s.click('#resume-solo'); await until(() => !s.find('#draw-button').disabled, 'resume ready'); }
+async function createPublicRoom(s, title = '친구와 원카드') {
+  s.click('#online-open');
+  await until(() => s.find('[data-arcade-action="create"]') && !s.find('[data-arcade-action="create"]').disabled, 'shared room directory ready');
+  assert.equal(s.find('[data-entry-panel="computer"]').hidden, true);
+  assert.equal(s.find('[data-entry-panel="opponent"]').hidden, false);
+  s.click('[data-arcade-action="create"]');
+  assert.equal(s.find('#sheet').open, true);
+  assert.equal(s.find('#arcade-room-form [name="kind"]').value, 'onecard');
+  assert.equal(s.find('#arcade-room-form [name="capacity"]').value, '5');
+  s.find('#arcade-room-form [name="title"]').value = title;
+  s.click('#arcade-room-form button[type="submit"]');
+  await until(() => !s.find('#lobby').hidden && !s.find('#sheet').open, 'created room opens the real waiting area and closes the form');
+  assert.equal(s.find('#room-title').textContent, title);
+  assert.equal(s.find('#room-code-display').textContent, `#${s.client.room.room_no}`);
+  assert.equal(s.find('#onecard-app').hidden, true);
+  return s.client.room;
+}
+async function joinPublicRoom(s, number) {
+  s.click('#online-open');
+  const selector = `[data-arcade-action="join"][data-room="${number}"]`;
+  await until(() => s.find(selector) && !s.find(selector).disabled, 'join from shared native room card');
+  s.click(selector); await until(() => !s.find('#lobby').hidden, 'joined real waiting area');
+  assert.equal(s.client.room.room_no, number);
+}
 async function check(name, fn) {
   const first = screens.length;
   try { await fn(); results.push({ name, pass: true }); console.log(`PASS ${name}`); }
@@ -32,6 +56,9 @@ async function check(name, fn) {
   engine = await import('../games/onecard/engine.mjs');
   await check('real app creates a five-seat solo game and a shared overlapping deal', async () => {
     const s = await open({ animate: true, width: 360, height: 640 });
+    assert.equal(s.find('#onecard-app').hidden, true);
+    assert.equal(s.find('#setup').hidden, false);
+    assert.equal(s.find('#solo-mode').getAttribute('aria-pressed'), 'true');
     assert.equal(s.find('#opponent-count'), null, 'seat count is fixed, without a selector'); s.click('#solo-start');
     await until(() => s.all('.flying-card').length === 36, '35 cards plus opening');
     const flights = s.animations.filter(animation => animation.node.classList.contains('flying-card'));
@@ -152,8 +179,12 @@ async function check(name, fn) {
   await check('login failure explains multiplayer access while solo remains available', async () => {
     const s = await open(); s.click('#online-open');
     await until(() => !s.find('#login-link').hidden, 'login link');
-    assert.match(s.find('#lobby-error').textContent, /로그인/);
-    s.click('#lobby-back'); s.click('#solo-start');
+    assert.match(s.find('#online-account-note').textContent, /로그인/);
+    assert.equal(s.find('[data-entry-panel="opponent"]').hidden, false);
+    s.click('#solo-mode');
+    assert.equal(s.find('[data-entry-panel="computer"]').hidden, false);
+    assert.equal(s.find('[data-entry-panel="opponent"]').hidden, true);
+    s.click('#solo-start');
     await until(() => !s.find('#draw-button').disabled, 'solo ready');
     assert.equal(s.saved.players[0].hand.length, 7);
   });
@@ -162,15 +193,8 @@ async function check(name, fn) {
     server = await fixture();
     const ids = server.users.slice(0, 5), group = [];
     for (const actor of ids) group.push(await open({ server, actor }));
-    const host = group[0]; host.click('#online-open');
-    await until(() => !host.find('#create-room').disabled, 'lobby ready'); host.click('#create-room');
-    await until(() => !host.find('#room-waiting').hidden, 'room created');
-    const code = host.find('#room-code-display').textContent;
-    for (const guest of group.slice(1)) {
-      guest.click('#online-open'); await until(() => !guest.find('#join-room').disabled, 'guest lobby');
-      guest.find('#room-code').value = code; guest.click('#join-room');
-      await until(() => !guest.find('#room-waiting').hidden, 'guest joined');
-    }
+    const host = group[0], created = await createPublicRoom(host);
+    for (const guest of group.slice(1)) await joinPublicRoom(guest, created.room_no);
     await host.poll(); assert.equal(host.all('#room-players .lobby-player:not(.is-bot)').length, 5);
     host.click('#start-room');
     await until(() => host.find('#onecard-app').dataset.view === 'playing', 'host game starts');
@@ -210,7 +234,8 @@ async function check(name, fn) {
     const privateCards = host.all('#hand .hand-card');
     assert.equal(privateCards.length, 7, 'a private hand was rendered before sign-out');
     host.changeActor(null); await pause();
-    assert.equal(host.find('#onecard-app').dataset.view, 'lobby', 'sign-out cannot leave an active private game on screen');
+    assert.equal(host.find('#onecard-app').dataset.view, 'welcome', 'sign-out returns to the common entry');
+    assert.equal(host.find('#onecard-app').hidden, true, 'sign-out cannot leave an active private game on screen');
     assert.equal(host.find('#hand').children.length, 0, 'sign-out removes private hand nodes instead of covering them');
     assert.ok(privateCards.every(node => !node.isConnected), 'the old private card nodes are detached');
   });
@@ -218,8 +243,7 @@ async function check(name, fn) {
   await check('one online person can start with four computers and receives server-driven turns', async () => {
     // The previous five-screen room is still occupied; a sixth person owns this room.
     const s = await open({ server, actor: server.users[5], width: 360, height: 640 });
-    s.click('#online-open'); await until(() => !s.find('#create-room').disabled, 'single-person lobby'); s.click('#create-room');
-    await until(() => !s.find('#room-waiting').hidden, 'single-person room');
+    await createPublicRoom(s, '혼자서도 다섯 명');
     assert.equal(s.all('#room-players .lobby-player').length, 5);
     assert.equal(s.all('#room-players .is-bot').length, 4);
     assert.equal(s.find('#start-room').disabled, false); s.click('#start-room');

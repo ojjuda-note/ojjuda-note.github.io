@@ -5,13 +5,13 @@ const UUID = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 const ACTIONS = new Set(['mine', 'list', 'create', 'join', 'read', 'start', 'move', 'leave']);
 const ERRORS = new Set(['not_signed_in', 'banned', 'room_in_progress', 'room_rate_limit', 'room_full',
   'room_not_found', 'room_unavailable', 'not_room_owner', 'need_players', 'state_conflict',
-  'not_your_turn', 'invalid_move', 'invalid_options', 'invalid_request', 'bad_request']);
+  'not_your_turn', 'invalid_move', 'invalid_options', 'invalid_title', 'invalid_request', 'bad_request']);
 
 function projectRoom(result, userId, now) {
   const r = result?.room;
   if (!r) return null;
   return {
-    id: r.id, code: r.code, hostId: r.host_id, myId: userId,
+    id: r.id, code: r.code, room_no: r.room_no, title: r.title, hostId: r.host_id, myId: userId,
     seat: r.state ? r.state.players.findIndex(player => player.id === userId) : r.members.indexOf(userId),
     capacity: 5, status: r.status,
     version: r.version, round: r.round, deadline: r.deadline, serverTime: now,
@@ -40,7 +40,10 @@ async function readBody(request) {
   if (['create', 'start', 'move', 'leave'].includes(body.action) && !UUID.test(body.request_id)) throw Error('bad_request');
   if (['start', 'move', 'leave'].includes(body.action) && (!Number.isInteger(body.version) || body.version < 0)) throw Error('bad_request');
   // Older clients may still send 2–4. Every new table uses five seats.
+  if (body.action === 'create' && body.options !== undefined &&
+    (!body.options || typeof body.options !== 'object' || Array.isArray(body.options))) throw Error('bad_request');
   if (body.action === 'create' && body.options?.capacity !== undefined && ![1, 2, 3, 4, 5].includes(body.options.capacity)) throw Error('bad_request');
+  if (body.action === 'create' && body.options?.title !== undefined && typeof body.options.title !== 'string') throw Error('bad_request');
   if (body.action === 'join' && (typeof body.code !== 'string' || !/^[a-f0-9]{8}$/i.test(body.code))) throw Error('bad_request');
   if (body.action === 'move') {
     const command = body.command;
@@ -148,7 +151,8 @@ export function createHandler({ env, fetchImpl = fetch, now = Date.now,
             p_next: { state, kind: body.action, command: body.command?.type || null } });
         }
       } else result = await rpc(body.action, { p_room: body.room_id ?? null, p_code: body.code ?? null,
-        p_request: body.request_id ?? null, p_options: body.action === 'create' ? { capacity: 5 } : {} });
+        p_request: body.request_id ?? null, p_options: body.action === 'create' ? { capacity: 5,
+          ...(body.options?.title !== undefined ? { title: body.options.title } : {}) } : {} });
       if (body.action === 'leave') return reply({ ok: true, userId: user.id, room: null });
       // Return a mutation's own event before any later computer action. Only a
       // subsequent read/resume/join advances the next due turn.

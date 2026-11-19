@@ -84,6 +84,13 @@ async function pageFor({ width = 750, height = 750, saved, animated = false, use
 }
 async function snapshot(page, name) { await page.screenshot({ path: path.join(ARTIFACTS, `${name}.png`), fullPage: true }); }
 async function stored(page) { return page.evaluate(key => JSON.parse(localStorage.getItem(key)).state, STORAGE); }
+async function resizePage(page, width, height) {
+  await page.setViewportSize({ width, height });
+  await page.waitForFunction(({ width, height }) => innerWidth === width && innerHeight === height, { width, height });
+  // Viewport-unit styles and native modal placement need a rendering boundary
+  // after device metrics change; retain the same strict geometry assertions.
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+}
 async function resume(page) {
   await page.locator('#resume-solo').click();
   await page.waitForFunction(() => document.querySelector('#onecard-app').dataset.view === 'playing' && !document.querySelector('#draw-button').disabled);
@@ -96,10 +103,32 @@ async function pressCard(page, id) {
 async function stableBoard(page) {
   await page.waitForFunction(() => document.querySelector('#onecard-app').dataset.view === 'playing' && document.querySelectorAll('.flying-card').length === 0);
 }
+async function createPublicRoom(page, title = '친구와 원카드') {
+  await page.locator('#online-open').click();
+  await page.locator('[data-arcade-action="create"]').click();
+  const form = page.locator('#arcade-room-form'); await form.waitFor({ state: 'visible' });
+  assert.equal(await form.locator('[name="kind"]').inputValue(), 'onecard');
+  assert.equal(await form.locator('[name="capacity"]').inputValue(), '5');
+  assert.equal(await form.locator('[data-create-capacity]').isVisible(), false, 'the shared form keeps the table fixed at five');
+  await form.locator('[name="title"]').fill(title);
+  await form.getByRole('button', { name: '방 만들고 기다리기', exact: true }).click();
+  await page.locator('#lobby').waitFor({ state: 'visible' });
+  await page.waitForFunction(() => !document.querySelector('#sheet').open);
+  assert.equal(await page.locator('#room-title').textContent(), title);
+  assert.equal(await page.locator('#onecard-app').isVisible(), false);
+  const number = (await page.locator('#room-code-display').textContent()).trim();
+  assert.match(number, /^#[1-9]\d+$/); return Number(number.slice(1));
+}
+async function joinPublicRoom(page, number) {
+  await page.locator('#online-open').click();
+  await page.locator(`[data-arcade-action="join"][data-room="${number}"]`).click();
+  await page.locator('#lobby').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#room-code-display').textContent(), `#${number}`);
+}
 async function oneScreen(page, label, playing = false) {
   const report = await page.evaluate(({ playing }) => {
     const rect = node => { const r = node.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height }; };
-    const ids = playing ? ['onecard-app', 'game-table', 'hand-area', 'game-controls', 'draw-button', 'onecard-button', 'status'] : ['onecard-app', 'entry-title', 'solo-start', 'online-open', 'entry-rules'];
+    const ids = playing ? ['onecard-app', 'game-table', 'hand-area', 'game-controls', 'draw-button', 'onecard-button', 'status'] : ['setup', 'entry', 'entry-title', 'solo-mode', 'solo-start', 'online-open', 'entry-rules'];
     return { viewport: { width: innerWidth, height: innerHeight }, document: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight }, boxes: Object.fromEntries(ids.map(id => [id, rect(document.getElementById(id))])), hand: [...document.querySelectorAll('#hand .hand-card')].map(rect) };
   }, { playing });
   assert.ok(report.document.width <= report.viewport.width + 1, `${label}: document must not scroll sideways`);
@@ -129,6 +158,17 @@ async function visibleResultActions(page, label) {
   }
   for (const action of layout.actions) assert.equal(action.enabled, true, `${label}: ${action.text} remains available`);
   return layout;
+}
+async function visibleLobby(page, label) {
+  const lobby = await page.evaluate(() => {
+    const selectors = ['#setup', '#lobby', '#lobby-title', '#room-title', '#room-code-display', '#copy-invite', '#start-room', '#lobby-back'];
+    const nodes = [...selectors.map(selector => document.querySelector(selector)), ...document.querySelectorAll('#room-players .lobby-player')];
+    return { width: innerWidth, height: innerHeight, scrollWidth: document.documentElement.scrollWidth, scrollHeight: document.documentElement.scrollHeight,
+      boxes: nodes.map(node => { const r = node.getBoundingClientRect(); return { text: node.textContent, left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height }; }) };
+  });
+  assert.ok(lobby.scrollWidth <= lobby.width + 1 && lobby.scrollHeight <= lobby.height + 1, `${label}: online lobby fits one screen`);
+  for (const box of lobby.boxes) assert.ok(box.width > 0 && box.height > 0 && box.left >= -1 && box.top >= -1 && box.right <= lobby.width + 1 && box.bottom <= lobby.height + 1, `${label}: online lobby control fits: ${JSON.stringify(box)}`);
+  return lobby;
 }
 async function centralLayout(page, label) {
   const layout = await page.evaluate(() => {
@@ -168,6 +208,8 @@ async function scenario(name, fn) {
   await scenario('750px five-seat deal shares one overlapping browser timeline', async () => {
     const page = await pageFor({ animated: true });
     await oneScreen(page, 'desktop welcome'); await snapshot(page, 'desktop-welcome');
+    assert.equal(await page.locator('#onecard-app').isVisible(), false, 'common entry opens before the game table');
+    assert.equal(await page.locator('#solo-mode').getAttribute('aria-pressed'), 'true');
     assert.equal(await page.locator('#opponent-count').count(), 0, 'all games use five seats without a capacity selector');
     await page.locator('#solo-start').click();
     await page.waitForFunction(() => document.querySelectorAll('.flying-card').length >= 30);
@@ -274,11 +316,11 @@ async function scenario(name, fn) {
     await visibleResultActions(page, 'desktop result');
     await snapshot(page, 'solo-victory');
     for (const [width, height] of [[360, 640], [844, 390]]) {
-      await page.setViewportSize({ width, height });
+      await resizePage(page, width, height);
       await visibleResultActions(page, `${width}x${height} result`);
       await snapshot(page, `solo-victory-${width}x${height}`);
     }
-    await page.setViewportSize({ width: 750, height: 750 });
+    await resizePage(page, 750, 750);
     await page.getByRole('button', { name: '다시 한 판', exact: true }).click();
     await page.waitForFunction(() => !document.querySelector('#draw-button').disabled);
     assert.equal((await stored(page)).players[0].hand.length, 7);
@@ -338,8 +380,11 @@ async function scenario(name, fn) {
     const page = await pageFor({ width: 390, height: 844 });
     await page.locator('#online-open').click();
     await page.locator('#login-link').waitFor({ state: 'visible' });
-    assert.match(await page.locator('#lobby-error').textContent(), /로그인/);
-    await page.locator('#lobby-back').click();
+    assert.match(await page.locator('#online-account-note').textContent(), /로그인/);
+    assert.equal(await page.locator('[data-entry-panel="opponent"]').isVisible(), true);
+    await page.locator('#solo-mode').click();
+    assert.equal(await page.locator('[data-entry-panel="computer"]').isVisible(), true);
+    assert.equal(await page.locator('[data-entry-panel="opponent"]').isVisible(), false);
     await page.locator('#solo-start').click(); await stableBoard(page);
     assert.equal(await page.locator('#hand .hand-card').count(), 7, 'solo remains available after auth failure');
     await page.context().close();
@@ -349,15 +394,8 @@ async function scenario(name, fn) {
     network = await fixture();
     const ids = network.users.slice(0, 5), pages = [];
     for (const [i, userId] of ids.entries()) pages.push(await pageFor({ width: i ? 390 : 750, height: i ? 844 : 750, userId }));
-    const host = pages[0];
-    await host.locator('#online-open').click(); await host.locator('#create-room').click();
-    await host.locator('#room-code-display').waitFor({ state: 'visible' });
-    const code = (await host.locator('#room-code-display').textContent()).trim();
-    assert.match(code, /^[A-F0-9]{8}$/);
-    for (const page of pages.slice(1)) {
-      await page.locator('#online-open').click(); await page.locator('#room-code').fill(code); await page.locator('#join-room').click();
-      await page.locator('#room-code-display').waitFor({ state: 'visible' });
-    }
+    const host = pages[0], number = await createPublicRoom(host);
+    for (const page of pages.slice(1)) await joinPublicRoom(page, number);
     await host.waitForFunction(() => document.querySelectorAll('#room-players .lobby-player:not(.is-bot)').length === 5);
     await snapshot(host, 'online-five-player-lobby');
     await host.locator('#start-room').click();
@@ -408,23 +446,22 @@ async function scenario(name, fn) {
     await network.close(); network = null;
   });
 
-  await scenario('360x640 one-person online lobby fits and four server computers take turns', async () => {
+  await scenario('360x640 and 680x469 one-person online lobby fits and four server computers take turns', async () => {
     network = await fixture(); const userId = network.users[0];
     const page = await pageFor({ width: 360, height: 640, userId });
-    await page.locator('#online-open').click(); await page.locator('#create-room').click();
-    await page.locator('#room-code-display').waitFor({ state: 'visible' });
+    await createPublicRoom(page, '혼자서도 다섯 명');
     assert.equal(await page.locator('#room-players .lobby-player').count(), 5);
     assert.equal(await page.locator('#room-players .is-bot').count(), 4);
     assert.equal(await page.locator('#start-room').isDisabled(), false);
-    const lobby = await page.evaluate(() => {
-      const selectors = ['#lobby-title', '#room-code-display', '#copy-invite', '#start-room', '#lobby-back'];
-      const nodes = [...selectors.map(selector => document.querySelector(selector)), ...document.querySelectorAll('#room-players .lobby-player')];
-      return { width: innerWidth, height: innerHeight, scrollWidth: document.documentElement.scrollWidth, scrollHeight: document.documentElement.scrollHeight,
-        boxes: nodes.map(node => { const r = node.getBoundingClientRect(); return { text: node.textContent, left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height }; }) };
-    });
-    assert.ok(lobby.scrollWidth <= lobby.width + 1 && lobby.scrollHeight <= lobby.height + 1, 'small online lobby fits one screen');
-    for (const box of lobby.boxes) assert.ok(box.width > 0 && box.height > 0 && box.left >= -1 && box.top >= -1 && box.right <= lobby.width + 1 && box.bottom <= lobby.height + 1, `online lobby control fits: ${JSON.stringify(box)}`);
+    const lobby = await visibleLobby(page, '360x640');
     await snapshot(page, 'online-one-human-four-computers-lobby');
+    await resizePage(page, 680, 469);
+    const landscapeLobby = await visibleLobby(page, '680x469');
+    assert.equal(await page.locator('#room-players .lobby-player').count(), 5);
+    assert.equal(await page.locator('#room-players .is-bot').count(), 4);
+    assert.equal(await page.locator('#start-room').isDisabled(), false);
+    await snapshot(page, 'online-one-human-four-computers-lobby-680x469');
+    await resizePage(page, 360, 640);
     await page.locator('#start-room').click(); await stableBoard(page);
     await page.waitForFunction(() => document.querySelectorAll('#hand .hand-card').length === 7);
     let room = (await network.call(userId, { action: 'mine' })).room;
@@ -445,7 +482,7 @@ async function scenario(name, fn) {
     await oneScreen(page, 'one human and four computers', true);
     await snapshot(page, 'online-one-human-four-computers-game');
     await page.context().close(); await network.close(); network = null;
-    return lobby;
+    return { lobby, landscapeLobby };
   });
 
   await scenario('no uncaught browser errors', async () => assert.deepEqual(browserErrors, []));
